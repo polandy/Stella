@@ -6,8 +6,8 @@ import type { RelationshipRepository } from './relationships';
 import { stageRelationships } from './staged-relationships';
 
 /*
- * Linking several people in one go (docs/02 §2.4, docs/concepts/multi-pick-relationships.html
- * D3, D6): one type, one status, one description, a since day per pair. Each link passes
+ * Linking several people in one go (docs/02 §2.4, ADR-118): one type, one status, one
+ * description, a since day per pair. Each link passes
  * through `addRelationshipChecked` — the very checks a single link meets — against a staging
  * that already holds the links picked before it, so the batch is judged as a whole. Every
  * refused person is named with the reason; then nothing is written. Only when all pass are
@@ -20,7 +20,7 @@ export interface AddRelationshipsDeps extends AddCheckedDeps {
 	relationships: AddCheckedDeps['relationships'] & Pick<RelationshipRepository, 'insertAll'>;
 }
 
-/** One picked person who cannot be linked this way, and why — for the form to mark (D3). */
+/** One picked person who cannot be linked this way, and why — for the form to mark. */
 export interface RelationshipRefusal {
 	targetId: string;
 	/** As the author sees them; '' for someone they cannot see (any more). */

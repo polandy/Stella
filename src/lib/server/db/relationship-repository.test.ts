@@ -559,7 +559,7 @@ describe('loadKinshipGraphVisibleTo (docs/02 §2.4.1)', () => {
 		expect(deriveKinship(graph, 'hans').map((k) => k.personId)).not.toContain('kurt');
 	});
 
-	// Rule L3 tells a step-parent by these two dates (docs/concepts/relationship-suggestions.md §3.2).
+	// Rule L3 tells a step-parent by these two dates (docs/02 §2.4.1).
 	it('carries the birth dates and the day a partnership began', async () => {
 		db.update(schema.contact)
 			.set({ birthDate: '2015-05-20' })

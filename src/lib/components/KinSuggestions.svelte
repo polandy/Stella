@@ -24,8 +24,8 @@
 	import { heldAnswer } from '$lib/undo/held-answer';
 
 	/*
-	 * The rows of a suggestion block (docs/02 §2.4.1, docs/concepts/relationship-suggestions.md
-	 * §6.5). One component for both places a suggestion appears — the *Also true?* block in the
+	 * The rows of a suggestion block (docs/02 §2.4.1). One component for both places a
+	 * suggestion appears — the *Also true?* block in the
 	 * instant after a link is stored, and the review panel a member opens themselves — because
 	 * they are the same claim asking the same question, and a household should not have to learn
 	 * it twice.
@@ -36,8 +36,8 @@
 	 *
 	 * No bulk accept here, deliberately: a sweep of *yes* over a family is how one wrong parent
 	 * gets written across a tree. The one exception sits beside this list rather than in it —
-	 * *Add all* on the *Also true?* block (`KinPanels`, docs/concepts/multi-pick-relationships.html
-	 * D7) stores a batch as one `relationship.addMany`, so its one *Undo* takes the whole sweep
+	 * *Add all* on the *Also true?* block (`KinPanels`, docs/02 §2.4, *Several people in one
+	 * go*) stores a batch as one `relationship.addMany`, so its one *Undo* takes the whole sweep
 	 * back. The review keeps answering one claim at a time.
 	 *
 	 * Every control is a form action and the declined list is a `<details>`, so the whole panel
@@ -83,8 +83,7 @@
 		nameOfMember?: (id: string) => string | null;
 		/**
 		 * Whether the declined drawer starts open. A page whose whole purpose *is* the log
-		 * (docs/concepts/relationship-review-at-scale.html, fold 3) would otherwise open on a
-		 * closed disclosure with nothing else on it.
+		 * (docs/05 §5.5) would otherwise open on a closed disclosure with nothing else on it.
 		 */
 		declinedOpen?: boolean;
 		/**

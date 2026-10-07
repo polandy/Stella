@@ -5,7 +5,7 @@ import { getContactDeps } from '$lib/server/services';
 import type { RequestHandler } from './$types';
 
 /*
- * `GET /api/offline/people` (docs/concepts/offline-reading.md §4): who the member can see right
+ * `GET /api/offline/people` (docs/02 §2.18, docs/04 ADR-114): who the member can see right
  * now, so the service worker knows whose pages to keep ahead and whose to throw away. The same
  * list as the People directory, read through the same use-case. Signed in by the session
  * cookie, like `/api/commands`: the app talking to itself, not the scripting API.

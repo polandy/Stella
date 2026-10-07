@@ -3,8 +3,7 @@ import { indexDismissals, pairKey, type AnswerTo, type Dismissal } from './claim
 import type { PrimaryLink } from './types';
 
 /*
- * The read model a suggestion evaluation works over (docs/concepts/relationship-suggestions-
- * implementation.md §2).
+ * The read model a suggestion evaluation works over (docs/04 ADR-055).
  *
  * The graph arrives as edge lists — the shape a repository can read cheaply — but rules ask
  * about people: who are this child's parents, are these two already linked. Walking the lists
@@ -39,7 +38,7 @@ export interface SuggestionView extends KinshipGraph {
 	/**
 	 * The primary links a review of this person has to read: the ones they stand in, plus the
 	 * ones their siblings stand in. A link-scoped evaluation is handed its one link; a review
-	 * (docs/concepts/relationship-suggestions.md §6.5) is handed the sibling group, because
+	 * (docs/02 §2.4.1) is handed the sibling group, because
 	 * that is the group the link rules move a parent across — read from the other side, "my
 	 * sister's father is my father" is a claim about *me* that no link of mine mentions.
 	 */

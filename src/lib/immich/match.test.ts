@@ -7,7 +7,7 @@ import {
 } from './match';
 
 /*
- * Matching Stella's people to Immich's by name (docs/concepts/immich.md §4.2): a full name that
+ * Matching Stella's people to Immich's by name (docs/02 §2.24.7): a full name that
  * agrees once case and accents are folded is a likely match, a nickname or a first name alone a
  * maybe. The face, not the name, settles who is who — so a doubt is shown, never decided.
  */

@@ -6,7 +6,7 @@ import { createDrizzleCommandReceiptRepository } from './command-receipt-reposit
 import * as schema from './schema';
 
 /*
- * Integration spec for the command receipt book (docs/concepts/offline-capture.md §3): a claim
+ * Integration spec for the command receipt book (docs/03 §3.3): a claim
  * is taken once, a second claim reads the first back, a result survives the JSON round trip,
  * and a stale claim is taken over only by the one who saw it stale.
  */

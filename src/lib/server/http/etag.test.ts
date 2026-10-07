@@ -3,7 +3,7 @@ import { etagOf, isUnchanged, wantsEtag } from './etag';
 
 /*
  * A page's data carries a tag of its content, so a device holding a copy can ask "has this
- * changed?" and be told "no" in a few bytes (docs/concepts/offline-reading.md §4.2). The tag is
+ * changed?" and be told "no" in a few bytes (docs/04 ADR-074). The tag is
  * of what this member was sent, so a deletion, a relative's new name or a visibility change all
  * move it — nothing has to be listed.
  */

@@ -5,7 +5,7 @@ import type { FakeImmichGroupPhotos, FakeImmichLibrary, FakeImmichPerson } from 
  * The demo household's Immich (`IMMICH_DEMO=true`): faces named like the people the demo seed
  * creates, so *Find in Immich* has someone to find, and each has as many photos as its count for
  * the strip to show. The key belongs to the demo admin, as a household's key belongs to its
- * admin (docs/concepts/immich.md §9.2). One face is hidden and one unnamed, as in a real
+ * admin (docs/04 ADR-102). One face is hidden and one unnamed, as in a real
  * library; neither is ever offered. Two share a name and one has a first name only, so the
  * matching list has a maybe of each kind; Sandra's and Rosa's double names are only half there.
  * A few more are nobody in Stella yet, for *New from Immich*.
@@ -69,7 +69,7 @@ const ROSA = 'd0000000-0000-4000-8000-000000000007';
 
 /**
  * The photos the Brunners share, so *You and Sandra* and *Together* on a relationship row have
- * something to show (docs/concepts/immich.md §4.3): the couple, the family, a parent with each
+ * something to show (docs/02 §2.24.8): the couple, the family, a parent with each
  * child, the grandparents. Ids under `e…-9000-…`, apart from every face's.
  */
 function demoTogether(): FakeImmichGroupPhotos[] {

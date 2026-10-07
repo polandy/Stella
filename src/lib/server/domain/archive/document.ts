@@ -125,9 +125,9 @@ export function buildArchiveDocument(
 	const participants = linksBy(t('interaction_participant'), 'interaction_id', 'contact_id');
 	const contactTags = linksBy(t('contact_tag'), 'contact_id', 'tag_id');
 	const circleMembers = groupBy(t('circle_membership'), 'circle_id');
-	// One per person at most: the table's key is the contact (docs/concepts/immich.md §6).
+	// One per person at most: the table's key is the contact (docs/03 §immich_link).
 	const immichLinks = new Map(t('immich_link').map((row) => [id(row, 'contact_id'), row]));
-	// The Immich faces a member said this person is not (docs/concepts/immich.md §9), oldest first.
+	// The Immich faces a member said this person is not (docs/02 §2.24.7), oldest first.
 	const immichIgnores = groupBy(t('immich_ignore'), 'contact_id');
 	const immichIgnoredOf = (person: string) => {
 		const rows = immichIgnores.get(person);
@@ -168,7 +168,7 @@ export function buildArchiveDocument(
 			// Set on the square a photo is worn through as the avatar (docs/02 §2.14).
 			framing_of: text(row, 'framing_of'),
 			crop: framingCrop(row),
-			// The group photo a profile picture was cut from (docs/concepts/circle-photos.md §5.2).
+			// The group photo a profile picture was cut from (docs/02 §2.14).
 			cut_from: text(row, 'cut_from'),
 			// The circle role a circle's photo shows (docs/02 §2.4.2).
 			role: text(row, 'circle_role'),

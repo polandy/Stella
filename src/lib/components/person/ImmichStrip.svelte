@@ -8,7 +8,7 @@
 	import ImmichPhotoViewer from './ImmichPhotoViewer.svelte';
 
 	/*
-	 * A glimpse of a linked person's photos in Immich (docs/concepts/immich.md §4.3, §4.5): one
+	 * A glimpse of a linked person's photos in Immich (docs/02 §2.24.3): one
 	 * horizontal strip of their latest twelve, newest first, and *Show more* for the next twelve —
 	 * not a gallery. It is asked for after the page has loaded, so a slow Immich never holds the
 	 * page up, and every picture comes through Stella's signed proxy. A tap opens the photo in the

@@ -3,7 +3,7 @@ import { foldSurname, type SurnameOption, type SurnameProposal } from './rules/s
 import type { Confidence } from './types';
 
 /*
- * The *Last names* list (docs/concepts/surnames.md §3.1): the people without one, grouped by
+ * The *Last names* list (docs/02 §2.2.4.2): the people without one, grouped by
  * the name Stella proposes, so a family is given its name in one step. Pure: what is proposed
  * was settled by the rules, this only arranges it.
  */

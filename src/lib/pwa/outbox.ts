@@ -8,7 +8,7 @@ import {
 } from '../commands/commands';
 
 /*
- * The outbox (docs/concepts/offline-capture.md §4): what a phone holds back while Stella is
+ * The outbox (docs/02 §2.18.1): what a phone holds back while Stella is
  * out of reach, and what becomes of it. Pure; `outbox-store.ts` keeps it on the device and
  * `outbox.svelte.ts` sends it. Every function returns a new list and leaves its input alone.
  *
@@ -314,7 +314,7 @@ export function recover(items: readonly OutboxItem[]): OutboxItem[] {
 }
 
 /**
- * What became of a save the member is watching (concept §8 #10: online saves go through the
+ * What became of a save the member is watching (docs/04 ADR-076: online saves go through the
  * outbox too). *Applied* hands the form Stella's result; *refused* its reason, for the form to
  * show where the action's own error would be; *kept* means it waits on this device.
  */

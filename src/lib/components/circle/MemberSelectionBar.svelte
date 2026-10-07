@@ -8,7 +8,7 @@
 
 	/*
 	 * The bar that acts on the members selected on a circle's page (docs/02 §2.4.2): one role for
-	 * all of them, one last name for all of them (docs/concepts/surnames.md §3.2), or removing them. Fixed to the bottom so it stays in reach however long the
+	 * all of them, one last name for all of them (docs/02 §2.2.4.3), or removing them. Fixed to the bottom so it stays in reach however long the
 	 * circle is; offset above the mobile bottom tab bar (src/routes/(app)/+layout.svelte) so the
 	 * two never overlap, and below Toast's z-30 so a save/undo toast is never hidden behind it.
 	 */

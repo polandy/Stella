@@ -1,11 +1,10 @@
 import { expect, test, type Page } from '@playwright/test';
-import { fromPeopleMenu, openPerson, signIn } from './app';
+import { fromPeopleMenu, openPerson, signIn, unfoldPeople } from './app';
 import { LINK, seedHousehold } from './seed';
 
 /*
  * Check relationships also offers the relatives Stella works out and nobody entered (docs/02
- * §2.4.1, docs/concepts/relationship-suggestions.md §3.5, rule K1). Written after the owner
- * verified it in the running app (docs/08 §8.4.1).
+ * §2.4.1, rule K1). Written after the owner verified it in the running app (docs/08 §8.4.1).
  *
  * Each case seeds a three-generation family of its own — a grandfather, his two children and
  * a grandchild — so it answers nothing about the Brunners that other specs read.
@@ -113,5 +112,7 @@ test('declining stops both checks asking, and the profile still names the relati
 	await expect(row(his, f.parent)).toHaveCount(1);
 	await expect(row(his, f.child)).toHaveCount(0);
 	// A no to entering it is not a no to the fact: it still follows from the links on record.
+	// Two worked out and one entered fold the card, and the worked-out ones wait behind it.
+	await unfoldPeople(page);
 	await expect(page.getByTestId('derived-kin')).toContainText(f.child);
 });

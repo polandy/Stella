@@ -10,7 +10,7 @@ import { createFakeImmichGateway, fakeAssetId } from './fake-gateway';
 import { demoImmichLibrary } from './demo-library';
 
 /*
- * The in-memory Immich behind the use-case tests and the demo (docs/concepts/immich.md §6): what
+ * The in-memory Immich behind the use-case tests and the demo (docs/02 §2.24.5): what
  * it lists for one person and for people together decides what the together-view can show.
  */
 

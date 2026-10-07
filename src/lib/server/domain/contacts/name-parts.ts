@@ -8,8 +8,8 @@ import { withNameEdit, type StoredName } from '../../../people/display-name';
 import { EmptyContactNameError, type Contact } from './contacts';
 
 /*
- * Changing the parts of a person's name after they were added (docs/concepts/surnames.md §3.4,
- * §6, §7). Every path goes through `withNameParts`, so the shown name follows its parts the
+ * Changing the parts of a person's name after they were added (docs/02 §2.2, §2.2.4.4,
+ * ADR-106). Every path goes through `withNameParts`, so the shown name follows its parts the
  * same way wherever they change.
  */
 

@@ -22,7 +22,7 @@ import {
 } from './circle-photos';
 
 /*
- * The photos of a circle (docs/02 §2.4.2, docs/concepts/circle-photos.md §4): who may do what
+ * The photos of a circle (docs/02 §2.4.2): who may do what
  * to them, and which roles they may carry. Use-cases over the ports, tested with fakes.
  */
 

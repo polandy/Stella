@@ -57,8 +57,8 @@ test('names a namesake by their relationship when a text sent later is refused f
 	const sister = `Sabine${letters} Keller`;
 	await seedNamesakes(page, name, sister);
 
-	// What a phone's outbox sends once Stella is in reach again (docs/concepts/offline-capture.md
-	// §4): the writing screen asks first, but a text kept on the phone meets the server's
+	// What a phone's outbox sends once Stella is in reach again (docs/02 §2.18.1): the writing
+	// screen asks first, but a text kept on the phone meets the server's
 	// question — a note, a moment and a journal entry each.
 	const body = `Called @${name}`;
 	const day = '2026-09-01';

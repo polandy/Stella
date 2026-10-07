@@ -71,6 +71,12 @@
 	/* A field's edge has to clear 3:1 on the card and on its own `--bg` fill (WCAG 1.4.11);
 	   overlay1 reaches only 2.6:1 on the page ground in Latte, overlay2 clears both. */
 	--border-input: var(--ctp-overlay2);
+	/* Tint strength of avatars and chips, and the avatar ring — `TINT_PERCENT` and
+	   `AVATAR_RING_PX` in tokens.ts, held together by color.test.ts. */
+	--tint-avatar: 22%;
+	--tint-chip: 16%;
+	--tint-chip-active: 28%;
+	--avatar-ring: 0px;
 }
 
 :root[data-theme='dark'] {
@@ -114,6 +120,12 @@
 	--danger: var(--ctp-red);
 	--success-text: var(--ctp-green);
 	--border-input: var(--ctp-overlay1);
+	/* Mocha's dark ground swallows a light tint: avatars and chips mix more, and an initials
+	   avatar is ringed in its flat accent (tokens.ts). */
+	--tint-avatar: 28%;
+	--tint-chip: 22%;
+	--tint-chip-active: 28%;
+	--avatar-ring: 1.5px;
 }
 
 /* Follow the OS when the user hasn't explicitly chosen light. */
@@ -159,6 +171,12 @@
 		--danger: var(--ctp-red);
 		--success-text: var(--ctp-green);
 		--border-input: var(--ctp-overlay1);
+		/* Mocha's dark ground swallows a light tint: avatars and chips mix more, and an initials
+		   avatar is ringed in its flat accent (tokens.ts). */
+		--tint-avatar: 28%;
+		--tint-chip: 22%;
+		--tint-chip-active: 28%;
+		--avatar-ring: 1.5px;
 	}
 }
 
@@ -284,8 +302,17 @@ html {
 	color-scheme: light dark;
 }
 
+/*
+ * The visible height, not 100vh alone: a phone browser counts 100vh with its address bar
+ * hidden, so a body that tall makes the document scroll a little while the bar shows — and an
+ * anchor jump, a focus or a scroll into view then moves the whole app shell, sticky bars and
+ * all, off the top of the screen. At 100dvh the shell (`h-dvh`) fills the document exactly and
+ * the document cannot scroll; a page outside the shell (sign-in) still scrolls when it is taller.
+ * 100vh stays as the fallback for a browser without `dvh`.
+ */
 body {
 	min-height: 100vh;
+	min-height: 100dvh;
 	font-family: var(--font-sans);
 	-webkit-font-smoothing: antialiased;
 }
@@ -357,6 +384,25 @@ body {
 }
 .note-body em {
 	font-style: italic;
+}
+
+/* Where to edit (docs/05 §5.7): a value that edits in place carries a faint pencil inside its
+   trigger — always on a touch screen, where no hover ever says so, and on hover or keyboard
+   focus elsewhere. A plain rule rather than utilities, so no static class fights a variant. */
+.edit-pencil {
+	color: var(--fg-subtle);
+	opacity: 0;
+	transition: opacity var(--motion-fade) var(--ease-standard);
+}
+/* Descendant, not child: inside a clamped value the pencil sits in the value's own span. */
+button:hover .edit-pencil,
+button:focus-visible .edit-pencil {
+	opacity: 0.9;
+}
+@media (pointer: coarse) {
+	.edit-pencil {
+		opacity: 0.55;
+	}
 }
 
 @media (prefers-reduced-motion: reduce) {

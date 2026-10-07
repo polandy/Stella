@@ -6,7 +6,7 @@ import { renameFacts } from '../../../stream/notices';
 import type { NewActivityEntry } from '../activity/activity';
 
 /*
- * Editing a person's name parts on their profile (docs/concepts/surnames.md §3.4, §6): first
+ * Editing a person's name parts on their profile (docs/02 §2.2, ADR-106): first
  * name, last name and nickname, which until now could only be given when the person was added.
  * The shown name follows the parts when the parts made it, and a changed last name may be kept
  * as the former one.

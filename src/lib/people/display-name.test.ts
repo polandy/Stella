@@ -42,7 +42,7 @@ describe('deriveDisplayName', () => {
 });
 
 /*
- * The shown name following a changed name part (docs/concepts/surnames.md §6): made again when
+ * The shown name following a changed name part (docs/02 §2.2, ADR-106): made again when
  * the parts made it, kept when a member chose it, and never left empty.
  */
 describe('withNameParts', () => {

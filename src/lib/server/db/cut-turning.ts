@@ -13,7 +13,7 @@ import { contact, photo } from './schema';
 
 /*
  * Turning profile pictures cut from a group photo into photos of their own
- * (docs/concepts/circle-photos.md §5.2, §5.4). Every write that takes a cut off a person — a
+ * (docs/02 §2.14). Every write that takes a cut off a person — a
  * new picture, the group photo removed or made private, a merge — calls these inside its own
  * transaction, so there is never a moment in which someone's face is gone. The decisions are
  * the domain's (`domain/media/cuts.ts`); this only reads the rows they need and writes the

@@ -10,7 +10,7 @@ import { activityLog, contact, immichLink } from './schema';
 /*
  * Drizzle adapter for the ImmichLinkRepository port (docs/08 §8.3). A link has no visibility of
  * its own: reads join the contact and are scoped through the central `contactVisibleTo`, like
- * any record hanging off a contact (docs/concepts/immich.md §5). Writes come after the use-case
+ * any record hanging off a contact (docs/02 §2.24.2). Writes come after the use-case
  * has checked the contact, and carry their activity-log line in the same transaction.
  *
  * One Immich person is one contact: the unique index on `immich_person_id` decides, and a write

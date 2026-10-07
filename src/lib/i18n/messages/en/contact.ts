@@ -24,7 +24,7 @@ export const contact = {
 	'contact.archivedOn': (p: { day: string }) => `Archived on ${p.day}`,
 	'contact.write': 'Write a moment',
 	'contact.logContact': 'Log contact',
-	'contact.egoGraphLabel': (p: { name: string }) => `Relationship network for ${p.name}`,
+	'contact.openJournal': 'Open journal',
 	'contact.story.title': 'Activity',
 
 	// The cards of the main column, in the order the page stacks them (docs/05 §5.5).
@@ -182,6 +182,12 @@ export const contact = {
 	'contact.relationships.group.other': 'Other',
 	'contact.relationships.showMore': (p: { count: number }) => `Show ${p.count} more`,
 	'contact.relationships.showFewer': 'Show fewer',
+	/** The fold's collapsed line (docs/05 §5.5): the groups it hides whole. */
+	'contact.relationships.foldedAway': 'Folded away',
+	'contact.relationships.showGroup': (p: { group: string; count: number }) =>
+		`Show ${p.group} · ${p.count}`,
+	/** The worked-out relatives as a group on that line. */
+	'contact.relationships.derivedShort': 'Also related',
 	'contact.relationships.editMode': 'Edit',
 	'contact.relationships.editModeDone': 'Done',
 	'contact.relationships.editLink': (p: { name: string }) => `Edit the link to ${p.name}`,
@@ -199,8 +205,8 @@ export const contact = {
 	'contact.relationships.person': 'Person',
 	'contact.relationships.addSomeoneFirst': 'Add another person first, then link them here.',
 	/*
-	 * Several people picked in the relationship form (docs/02 §2.4,
-	 * docs/concepts/multi-pick-relationships.html): how many the type takes, who is refused.
+	 * Several people picked in the relationship form (docs/02 §2.4, *Several people in one
+	 * go*): how many the type takes, who is refused.
 	 */
 	'contact.relationships.parentsRoom': (p: { count: number }): string =>
 		p.count >= 2 ? 'Up to two parents.' : 'One more parent: one is on record already.',
@@ -231,15 +237,15 @@ export const contact = {
 	'contact.relationships.undoLinksFailed':
 		'Could not take the links back. They are still on the page.',
 	/*
-	 * The likely second parent, offered under the person field for "Child of" (docs/concepts/
-	 * multi-pick-relationships.html D4, rule L3): one tap makes them a chip.
+	 * The likely second parent, offered under the person field for "Child of" (docs/02 §2.4,
+	 * *Several people in one go*; rule L3, §2.4.1): one tap makes them a chip.
 	 */
 	'contact.relationships.secondParentAlso': 'Also',
 	'contact.relationships.secondParentAdd': (p: { name: string }) =>
 		`Add ${p.name} as the other parent`,
 	'contact.relationships.secondParentWhy': (p: { name: string }) => `${p.name}’s partner`,
 	/*
-	 * *Add all* on the *Also true?* block (D7): the claims one batch can store, said as the link
+	 * *Add all* on the *Also true?* block: the claims one batch can store, said as the link
 	 * they become, and stored in one step with one *Undo*.
 	 */
 	'contact.relationships.addAllParentsOf': (p: { parents: string; child: string }) =>
@@ -267,7 +273,7 @@ export const contact = {
 	'contact.relationships.accept': 'Accept',
 	'contact.relationships.decline': 'Decline',
 	/*
-	 * The on-demand review (docs/concepts/relationship-suggestions.md §6.5) — the one place a
+	 * The on-demand review (docs/02 §2.4.1) — the one place a
 	 * member can ask what follows from links entered long ago, rather than being told in the
 	 * instant after a write.
 	 */
@@ -323,7 +329,7 @@ export const contact = {
 	'contact.photos.takenOn': (p: { date: string }) => `Taken ${p.date}`,
 	'contact.photos.pin': 'Pin as favourite',
 	'contact.photos.unpin': 'Unpin favourite',
-	// Profile pictures cut from a group photo (docs/concepts/circle-photos.md §5.2).
+	// Profile pictures cut from a group photo (docs/02 §2.14).
 	'contact.photos.cutFrom': (p: { circle: string }) => `From ${p.circle}`,
 	'contact.photos.onGroupPhotos': 'On group photos',
 	'contact.photos.groupPhotoOf': (p: { circle: string }) => `Group photo of ${p.circle}`,

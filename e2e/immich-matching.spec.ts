@@ -2,7 +2,7 @@ import { expect, test, type Locator, type Page } from '@playwright/test';
 import { appReady, signIn } from './app';
 
 /*
- * *Settings → Immich → Find your people* (docs/02 §2.24.7, docs/concepts/immich.md §4.2): the
+ * *Settings → Immich → Find your people* (docs/02 §2.24.7): the
  * household's people next to the Immich faces their names match. Written after the owner tried
  * #246 in the preview (docs/08 §8.4.1).
  *
@@ -35,14 +35,14 @@ test.afterEach(async ({ page }) => {
 async function unlink(page: Page, href: string): Promise<void> {
 	await page.goto(href);
 	await appReady(page);
-	await page.getByRole('button', { name: 'Immich options' }).click();
+	await page.getByRole('button', { name: 'Photo library options' }).click();
 	const unlinkItem = page.getByRole('menuitem', { name: 'Unlink from Immich' });
 	const findItem = page.getByRole('menuitem', { name: 'Find in Immich' });
 	await expect(unlinkItem.or(findItem)).toBeVisible();
 	if (!(await unlinkItem.isVisible())) return;
 	await unlinkItem.click();
 	await appReady(page);
-	await page.getByRole('button', { name: 'Immich options' }).click();
+	await page.getByRole('button', { name: 'Photo library options' }).click();
 	await expect(findItem).toBeVisible();
 }
 

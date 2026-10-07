@@ -431,7 +431,7 @@ export const photo = sqliteTable(
 		// by case when matched); null = the circle as a whole, a candidate for its cover.
 		circleRole: text('circle_role'),
 		// When set, this photo is a profile picture that was cut from that circle photo and is now
-		// a photo of its own (docs/concepts/circle-photos.md §5.2): a reference, never a copy. No
+		// a photo of its own (docs/02 §2.14): a reference, never a copy. No
 		// foreign key, like `framing_of`; the repository clears it when the group photo goes.
 		cutFrom: text('cut_from'),
 		// The chosen square, in the full-size picture's pixels, so choosing again starts there.
@@ -578,7 +578,7 @@ export const circleMembership = sqliteTable(
 // ── Suggestions ───────────────────────────────────────────────────────────
 
 /**
- * The claims the household has declined (docs/concepts/relationship-suggestions.md §6.4).
+ * The claims the household has declined (docs/04 ADR-117).
  *
  * Keyed by the **claim** — a relation over an unordered pair — and never by the rule that
  * surfaced it: declining "Wing Kam is Steve's parent" answers those two people, and the answer
@@ -613,9 +613,9 @@ export const suggestionDismissal = sqliteTable(
 // ── Immich ────────────────────────────────────────────────────────────────
 
 /*
- * Which person in the household's Immich library a contact is (docs/concepts/immich.md §6,
+ * Which person in the household's Immich library a contact is (docs/02 §2.24.2,
  * docs/03 §immich_link). One per contact; it has no visibility of its own and follows the
- * contact's (§5). One Immich person belongs to one contact. Deleted with the contact, carried
+ * contact's. One Immich person belongs to one contact. Deleted with the contact, carried
  * through a merge.
  */
 export const immichLink = sqliteTable(
@@ -631,14 +631,14 @@ export const immichLink = sqliteTable(
 			.references(() => user.id),
 		linkedAt: integer('linked_at').notNull()
 	},
-	// One Immich person is one contact (docs/concepts/immich.md §9.8). The index, not a read before the write,
+	// One Immich person is one contact (docs/04 ADR-096). The index, not a read before the write,
 	// is what holds it when two members link the same face at once.
 	(t) => [uniqueIndex('immich_link_person_unique').on(t.immichPersonId)]
 );
 
 /*
  * A proposal of *Find your people* a member turned down: this contact is not that Immich person
- * (docs/concepts/immich.md §9, docs/03 §immich_ignore). Household data like a link — no
+ * (docs/02 §2.24.7, docs/03 §immich_ignore). Household data like a link — no
  * visibility of its own, seen by whoever sees the contact — kept with who said so and when, so
  * the list can show it and anyone may take it back. Deleted with the contact, carried through a
  * merge.
@@ -660,8 +660,8 @@ export const immichIgnore = sqliteTable(
 );
 
 /*
- * A face of *New from Immich* the household said is nobody to add (docs/concepts/immich.md
- * §9.36, docs/03 §immich_name_ignore). There is no contact to hang it on, so it belongs to the
+ * A face of *New from Immich* the household said is nobody to add (docs/02
+ * §2.24.7, docs/03 §immich_name_ignore). There is no contact to hang it on, so it belongs to the
  * household: every member sees it and may take it back. Kept with who said so and when.
  */
 export const immichNameIgnore = sqliteTable(
@@ -683,7 +683,7 @@ export const immichNameIgnore = sqliteTable(
 // ── Commands ──────────────────────────────────────────────────────────────
 
 /*
- * A command id that has been claimed or applied (docs/concepts/offline-capture.md §3). The
+ * A command id that has been claimed or applied (docs/03 §3.3). The
  * dispatcher claims an id before running its handler and keeps the result when done, so a
  * command sent twice — a phone that lost its connection after Stella saved — is applied once.
  * Never replayed and nothing is derived from it; it holds ids, not content, and is kept for

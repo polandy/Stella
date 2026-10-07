@@ -8,7 +8,7 @@ import * as v from 'valibot';
  * batch never reads half in German on an English Home.
  */
 
-/** The batch of last names (docs/concepts/surnames.md §7). */
+/** The batch of last names (docs/02 §2.2.4.4). */
 export const LAST_NAMES_ENTITY = 'last_name';
 /** A name edited on the profile (docs/02 §2.2). */
 export const RENAME_ENTITY = 'contact_name';

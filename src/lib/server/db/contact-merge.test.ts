@@ -387,7 +387,7 @@ describe('the link to Immich', () => {
 		]);
 	});
 
-	it('keeps the survivor’s link when both records were linked (docs/concepts/immich.md §6)', () => {
+	it('keeps the survivor’s link when both records were linked (docs/02 §2.24.5)', () => {
 		linkOf('keep', PERSON_A);
 		linkOf('dup', PERSON_B);
 		expect(merge()).toBe(true);
@@ -429,7 +429,7 @@ describe('ignored Immich proposals', () => {
 });
 
 describe('profile pictures cut from a group photo', () => {
-	// docs/concepts/circle-photos.md §5.2: one cut per person and photo, and a cut nobody wears
+	// docs/02 §2.14: one cut per person and photo, and a cut nobody wears
 	// any more is a photo of its own. Both records cut from one class photo would otherwise clash.
 	function seedCut(id: string, contactId: string) {
 		db.insert(schema.photo)

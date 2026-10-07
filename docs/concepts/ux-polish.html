@@ -1,0 +1,557 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>UX polish — C7, C12, B3, B4, B5 (+ C4, C10) — interactive mockup</title>
+<style>
+  /* Catppuccin tokens as src/app.css maps them: flavour → surfaces → semantic (Latte / Mocha). */
+  :root, :root[data-theme='latte'] {
+    --bg:#e6e9ef; --bg-sunken:#dce0e8; --card:#ffffff; --card-hover:#f4f5f9;
+    --border:#ccd0da; --border-subtle:#e7e9f0;
+    --fg:#4c4f69; --fg-muted:#5c5f77; --fg-subtle:#6c6f85;
+    --primary:#853ae8; --primary-fg:#ffffff; --link:#1e66f5;
+    --avatar-fg:#4c4f69; --av-pink:#f4dcdc; --av-blue:#d3e2fb; --av-teal:#cdeceb; --av-peach:#fbe2cf; --av-mauve:#e7dbfb; --av-sky:#cfeefa; --av-green:#d9eed2;
+    --shadow-card:0 1px 2px rgba(76,79,105,.07), 0 2px 8px rgba(76,79,105,.06);
+    --shadow-pop:0 8px 30px rgba(76,79,105,.18);
+    --page:#eff1f5; --map-line:#bcc0cc; --c-family:#40a02b; --c-social:#1e66f5;
+  }
+  :root[data-theme='mocha'] {
+    --bg:#181825; --bg-sunken:#11111b; --card:#232334; --card-hover:#2a2a3d;
+    --border:#313244; --border-subtle:#292939;
+    --fg:#cdd6f4; --fg-muted:#bac2de; --fg-subtle:#a6adc8;
+    --primary:#cba6f7; --primary-fg:#1e1e2e; --link:#89b4fa;
+    --avatar-fg:#cdd6f4; --av-pink:#45384a; --av-blue:#2f3a55; --av-teal:#2c4446; --av-peach:#4a3a33; --av-mauve:#3d3355; --av-sky:#2b4252; --av-green:#2e4232;
+    --shadow-card:0 1px 2px rgba(0,0,0,.3);
+    --shadow-pop:0 8px 30px rgba(0,0,0,.5);
+    --page:#1e1e2e; --map-line:#45475a; --c-family:#a6e3a1; --c-social:#89b4fa;
+  }
+  :root { --primary-soft:color-mix(in srgb, var(--primary) 14%, transparent);
+    --sans:'Instrument Sans Variable','Instrument Sans',ui-sans-serif,system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+    --serif:'Source Serif 4',Georgia,'Times New Roman',serif;
+    --ease:cubic-bezier(.2,0,0,1); --fade:160ms; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--page); color:var(--fg); font-family:var(--sans); line-height:1.5; -webkit-font-smoothing:antialiased; }
+  button { font:inherit; color:inherit; }
+  a { color:inherit; text-decoration:none; }
+  :focus-visible { outline:2px solid var(--primary); outline-offset:2px; border-radius:8px; }
+  svg.i { width:18px; height:18px; fill:none; stroke:currentColor; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; flex:none; }
+
+  /* ── The document around the frames ────────────────────────── */
+  .wrap { margin:0 auto; padding:28px 24px 80px; max-width:1640px; }
+  .kicker { font-size:12px; font-weight:600; letter-spacing:.14em; text-transform:uppercase; color:var(--primary); }
+  h1 { font-size:26px; font-weight:650; margin:4px 0 6px; letter-spacing:-.01em; }
+  .lede { color:var(--fg-muted); margin:0 0 18px; max-width:96ch; }
+  .controls { display:flex; flex-wrap:wrap; gap:10px 18px; align-items:center; margin-bottom:10px; }
+  .ctl { display:flex; align-items:center; gap:8px; }
+  .seg { display:flex; gap:3px; background:var(--bg-sunken); border-radius:999px; padding:3px; }
+  .seg button { border:0; background:transparent; padding:5px 12px; border-radius:999px; font-size:13px; color:var(--fg-muted); cursor:pointer; white-space:nowrap; }
+  .seg button[aria-pressed='true'] { background:var(--card); color:var(--fg); font-weight:600; box-shadow:var(--shadow-card); }
+  .seg button .rec { color:var(--primary); font-weight:700; margin-left:3px; }
+  .seg-label { font-size:11px; font-weight:600; letter-spacing:.1em; text-transform:uppercase; color:var(--fg-subtle); }
+  .ctl.off { opacity:.35; pointer-events:none; }
+  .note { font-size:12px; color:var(--fg-subtle); margin:0 0 22px; }
+  .stage { display:flex; flex-wrap:wrap; gap:28px; align-items:flex-start; }
+  .legend { flex:1 1 100%; columns:2 440px; column-gap:40px; margin-top:12px; }
+  .legend section { break-inside:avoid; margin-bottom:18px; }
+  .legend h2 { font-size:13px; font-weight:600; letter-spacing:.08em; text-transform:uppercase; color:var(--fg-subtle); margin:0 0 8px; }
+  .legend p, .legend li { font-size:14px; color:var(--fg-muted); margin:0 0 6px; }
+  .legend b { color:var(--fg); font-weight:600; }
+  .legend .q { margin-top:8px; padding:10px 14px; border-radius:12px; border:1px dashed var(--border); font-size:13px; color:var(--fg-muted); }
+
+  /* ── Desktop: a 1440 × 900 window, scaled to fit ───────────── */
+  .browser-fit { flex:none; width:var(--fit-w); height:var(--fit-h); }
+  .browser { width:1440px; height:900px; transform-origin:0 0; transform:scale(var(--fit)); border-radius:12px; overflow:hidden; box-shadow:0 20px 60px rgba(0,0,0,.2); display:flex; flex-direction:column; background:var(--bg); }
+  .chrome { height:36px; flex:none; background:var(--bg-sunken); display:flex; align-items:center; gap:7px; padding:0 14px; border-bottom:1px solid var(--border); }
+  .chrome i { width:11px; height:11px; border-radius:50%; background:var(--border); display:block; }
+  .chrome .url { margin-left:18px; font-size:12px; color:var(--fg-subtle); background:var(--card); padding:3px 14px; border-radius:6px; width:420px; }
+  .app { flex:1; display:flex; min-height:0; }
+  .side { width:240px; flex:none; background:var(--bg-sunken); padding:12px; display:flex; flex-direction:column; gap:4px; }
+  .logo { display:flex; align-items:center; gap:8px; font-weight:600; font-size:21px; padding:6px 10px 14px; }
+  .logo .mark { color:var(--primary); }
+  .side a { display:flex; align-items:center; gap:10px; padding:8px 12px; border-radius:10px; font-size:14px; color:var(--fg-muted); }
+  .side a.on { background:var(--card); color:var(--fg); font-weight:600; box-shadow:var(--shadow-card); }
+  .dmain { flex:1; display:flex; flex-direction:column; min-width:0; }
+  .dhead { display:flex; align-items:center; gap:8px; padding:14px 24px 8px; font-size:14px; color:var(--fg-muted); flex:none; }
+  .dhead .here { color:var(--fg); font-weight:600; }
+  .dhead .sp { flex:1; }
+  .search { display:flex; align-items:center; gap:8px; background:var(--card); box-shadow:var(--shadow-card); border-radius:10px; padding:7px 12px; font-size:14px; color:var(--fg-subtle); width:260px; }
+  .search kbd { margin-left:auto; font:inherit; font-size:11px; border:1px solid var(--border); border-radius:5px; padding:0 5px; }
+  .addp { display:flex; align-items:center; gap:6px; border:1px solid var(--border); border-radius:10px; padding:6px 12px; font-size:14px; color:var(--fg-muted); }
+  .scroller { flex:1; overflow-y:auto; scrollbar-width:none; position:relative; }
+  .scroller::-webkit-scrollbar { display:none; }
+  .dpage { max-width:880px; margin:0 auto; padding:12px 24px 60px; display:flex; flex-direction:column; gap:20px; }
+  .dhome { max-width:760px; margin:0 auto; padding:12px 24px 60px; display:flex; flex-direction:column; gap:16px; }
+
+  /* ── Phone: Pixel 9 Pro, 412 × 915 CSS px ──────────────────── */
+  .device { padding:10px; background:#0b0b12; border-radius:46px; box-shadow:0 20px 60px rgba(0,0,0,.25); flex:none; }
+  .screen { width:412px; height:915px; border-radius:36px; overflow:hidden; position:relative; background:var(--bg); display:flex; flex-direction:column; }
+  .status { height:30px; flex:none; display:flex; align-items:center; justify-content:space-between; padding:6px 26px 0; font-size:13px; font-weight:600; }
+  .status .cam { width:12px; height:12px; border-radius:50%; background:#0b0b12; }
+  .ptop { display:flex; align-items:center; gap:6px; padding:8px 16px; flex:none; font-size:14px; color:var(--fg-muted); min-height:48px; }
+  .ptop .trail { display:flex; flex-wrap:wrap; gap:2px 6px; align-items:center; min-width:0; }
+  .ptop .here { color:var(--fg); font-weight:600; }
+  .ptop .back { display:flex; align-items:center; gap:2px; color:var(--fg-muted); font-weight:500; margin-left:-6px; }
+  .ptop .sp { flex:1; }
+  .ptop .iconbtn { width:36px; height:36px; display:grid; place-items:center; border-radius:10px; background:var(--card); box-shadow:var(--shadow-card); color:var(--fg-muted); }
+  .ppage { padding:6px 12px 110px; display:flex; flex-direction:column; gap:12px; }
+  .tabbar { position:absolute; inset:auto 0 0 0; display:flex; align-items:flex-end; border-top:1px solid var(--border-subtle); background:var(--card); padding-bottom:14px; z-index:5; }
+  .tab { flex:1; display:flex; flex-direction:column; align-items:center; gap:2px; padding:10px 0 4px; font-size:11px; font-weight:500; color:var(--fg-subtle); }
+  .tab.on { color:var(--primary); font-weight:600; }
+  .tab.pen span { width:52px; height:52px; border-radius:50%; background:var(--primary); color:var(--primary-fg); display:grid; place-items:center; margin-top:-26px; box-shadow:var(--shadow-card); }
+
+  /* ── Cards ─────────────────────────────────────────────────── */
+  .card { background:var(--card); border-radius:16px; box-shadow:var(--shadow-card); padding:16px; }
+  .sechead { display:flex; align-items:center; gap:6px; min-height:34px; margin-bottom:8px; }
+  .sechead h3 { margin:0; font-size:15px; font-weight:600; }
+  .sechead .count { color:var(--fg-subtle); font-weight:400; margin-left:4px; }
+  .sechead .r { margin-left:auto; display:flex; gap:6px; }
+  .btn { display:inline-flex; align-items:center; justify-content:center; gap:7px; border-radius:10px; padding:6px 10px; font-size:14px; font-weight:500; border:1px solid var(--border); cursor:pointer; white-space:nowrap; background:transparent; color:var(--fg-muted); }
+  .btn.primary { background:var(--primary); color:var(--primary-fg); border-color:transparent; }
+  .btn.ghost { border-color:transparent; }
+  .btn svg.i { width:16px; height:16px; }
+  .av { border-radius:50%; display:grid; place-items:center; font-weight:600; color:var(--avatar-fg); flex:none; }
+
+  /* Identity card */
+  .id { display:flex; gap:18px; align-items:flex-start; }
+  .portrait { width:112px; height:112px; border-radius:22px; font-size:34px; }
+  .p .portrait { width:88px; height:88px; border-radius:18px; font-size:28px; }
+  .who { min-width:0; flex:1; }
+  .who h2 { margin:0; font-size:26px; font-weight:650; letter-spacing:-.01em; display:flex; align-items:center; gap:6px; }
+  .p .who h2 { font-size:22px; }
+  .edit { position:relative; display:inline; border-radius:8px; padding:1px 4px; margin:0 -4px; cursor:text; -webkit-box-decoration-break:clone; box-decoration-break:clone; }
+  .edit .pen { display:inline-block; vertical-align:-1px; margin-left:6px; }
+  .edit:has(.clamp) { display:flex; align-items:flex-end; gap:0; }
+  .edit:hover { background:var(--card-hover); }
+  .edit .pen { color:var(--fg-subtle); width:14px; height:14px; flex:none; }
+  .edit .v { min-width:0; }
+  .edit:has(.trunc) { display:flex; align-items:center; }
+  .desc { color:var(--fg-muted); font-size:15px; margin-top:2px; }
+  .desc .v.trunc { white-space:nowrap; overflow:hidden; text-overflow:ellipsis; display:block; }
+  .desc .v.clamp { display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+  /* C12 variants: today the pencil shows on the name only; "faint" shows a faint pencil on every
+     editable value on a coarse pointer, on hover elsewhere; "underline" dots the value instead. */
+  .c12-today .edit:not(.name) .pen { display:none; }
+  .c12-faint .edit:not(.name) .pen { opacity:0; transition:opacity var(--fade); }
+  .c12-faint .edit:not(.name):hover .pen { opacity:.9; }
+  .coarse.c12-faint .edit:not(.name) .pen { opacity:.55; }
+  .c12-underline .edit:not(.name) .pen { display:none; }
+  .coarse.c12-underline .edit:not(.name) .v, .c12-underline .edit:not(.name):hover .v { text-decoration:underline dotted color-mix(in srgb, var(--fg-subtle) 70%, transparent); text-underline-offset:4px; }
+  .facts { display:grid; grid-template-columns:repeat(2, minmax(0,1fr)); gap:12px 24px; margin-top:16px; }
+  .p .facts { grid-template-columns:1fr; gap:10px; }
+  .fact .k { font-size:12px; color:var(--fg-subtle); display:flex; align-items:center; gap:6px; }
+  .fact .k svg.i { width:13px; height:13px; }
+  .fact .val { font-size:14px; color:var(--fg); }
+  .fact .val .sub { color:var(--fg-subtle); }
+  .chips { display:flex; flex-wrap:wrap; gap:6px; }
+  .chip { display:inline-flex; align-items:center; gap:6px; border-radius:999px; padding:2px 10px 2px 3px; font-size:13px; background:var(--bg-sunken); color:var(--fg-muted); }
+  .chip .av { width:20px; height:20px; font-size:9px; }
+  .rows { margin-top:14px; border-top:1px solid var(--border-subtle); padding-top:6px; }
+  .row { display:flex; align-items:center; gap:10px; padding:8px 0; font-size:14px; color:var(--fg-muted); }
+  .row b { color:var(--fg); font-weight:500; min-width:92px; }
+  .row .r { margin-left:auto; color:var(--fg-subtle); }
+  .quiet { margin-top:10px; font-size:13px; color:var(--fg-subtle); display:inline-flex; gap:6px; align-items:center; border:1px dashed var(--border); border-radius:10px; padding:5px 10px; }
+  .actions { display:flex; gap:8px; margin-top:16px; }
+
+  /* C7: the jump bar. "rest" sits between the identity card and the People card like today;
+     "sticky" lives in a zero-height sticky slot and fades in once the identity card has gone by. */
+  .jumpslot { position:sticky; top:0; z-index:4; }
+  .jumpslot.b { height:0; }
+  .dpage > .jumpslot.b { margin-top:-20px; }
+  .ppage > .jumpslot.b { margin-top:-12px; }
+  .jump { background:color-mix(in srgb, var(--bg) 90%, transparent); backdrop-filter:blur(8px); margin:0 -24px; padding:8px 24px; transition:opacity var(--fade) var(--ease), transform var(--fade) var(--ease); }
+  .p .jump { margin:0 -12px; padding:8px 12px; }
+  .jumpslot.b .jump { opacity:0; transform:translateY(-6px); pointer-events:none; }
+  .jumpslot.b.shown .jump { opacity:1; transform:none; pointer-events:auto; border-bottom:1px solid var(--border-subtle); }
+  .jump ul { list-style:none; margin:0; padding:0; display:flex; gap:4px; }
+  .p .jump ul { display:grid; grid-template-columns:repeat(4, minmax(0,1fr)); }
+  .jump a { display:flex; height:32px; align-items:center; justify-content:center; gap:4px; padding:0 12px; border-radius:999px; font-size:13px; font-weight:500; color:var(--fg-muted); white-space:nowrap; }
+  .jump a .n { color:var(--fg-subtle); }
+  .jump a.cur { background:var(--card); color:var(--fg); box-shadow:var(--shadow-card); }
+
+  /* Cards below */
+  .strip { height:110px; border:1px solid var(--border); border-radius:14px; background:var(--bg-sunken); position:relative; overflow:hidden; margin-bottom:12px; }
+  .strip svg { position:absolute; inset:0; width:100%; height:100%; }
+  .strip text { font-family:var(--sans); font-size:11px; fill:var(--fg-muted); }
+  .tiles { display:grid; grid-template-columns:repeat(4, minmax(0,1fr)); gap:8px; }
+  .p .tiles { grid-template-columns:repeat(2, minmax(0,1fr)); }
+  .tile { display:flex; gap:8px; align-items:center; padding:8px; border-radius:12px; background:var(--bg-sunken); font-size:13px; min-width:0; }
+  .tile .av { width:32px; height:32px; font-size:12px; }
+  .tile small { display:block; color:var(--fg-subtle); font-size:12px; }
+  .tile span { min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .gh { font-size:11px; font-weight:600; letter-spacing:.06em; text-transform:uppercase; color:var(--fg-subtle); margin:4px 0 6px; }
+  .photos { display:grid; grid-template-columns:repeat(6, 1fr); gap:6px; }
+  .p .photos { grid-template-columns:repeat(4, 1fr); }
+  .photos i { aspect-ratio:1; border-radius:10px; display:block; }
+  .tl { display:flex; flex-direction:column; gap:12px; }
+  .tli { display:grid; grid-template-columns:28px 1fr; gap:10px; font-size:14px; }
+  .tli .dot { width:28px; height:28px; border-radius:50%; background:var(--bg-sunken); display:grid; place-items:center; color:var(--fg-subtle); }
+  .tli .dot svg.i { width:14px; height:14px; }
+  .tli .meta { font-size:12px; color:var(--fg-subtle); }
+  .serif { font-family:var(--serif); font-size:16px; line-height:1.55; color:var(--fg); }
+  .empty { border:1px dashed var(--border); border-radius:12px; padding:14px; font-size:14px; color:var(--fg-subtle); text-align:center; }
+
+  /* Home stream */
+  .home-search { display:flex; align-items:center; gap:8px; background:var(--card); box-shadow:var(--shadow-card); border-radius:12px; padding:10px 14px; color:var(--fg-subtle); font-size:15px; }
+  .fpill { align-self:flex-start; display:inline-flex; gap:6px; align-items:center; border:1px solid var(--border); border-radius:999px; padding:4px 12px; font-size:13px; color:var(--fg-muted); }
+  .day { font-size:12px; font-weight:600; letter-spacing:.08em; text-transform:uppercase; color:var(--fg-subtle); margin:10px 10px 0; }
+  .item { display:grid; grid-template-columns:32px 1fr; gap:12px; padding:10px; border-radius:16px; }
+  .item:hover { background:var(--card); }
+  .item .av { width:32px; height:32px; font-size:12px; }
+  .line { display:flex; flex-wrap:wrap; align-items:baseline; gap:0 6px; font-size:13px; color:var(--fg-muted); }
+  .line b { color:var(--fg); font-weight:600; }
+  .line a { color:var(--fg); font-weight:500; }
+  .line .age { margin-left:auto; font-size:12px; color:var(--fg-subtle); white-space:nowrap; font-variant-numeric:tabular-nums; }
+  .body { margin-top:4px; }
+  .mention { display:inline-flex; align-items:center; gap:4px; border-radius:999px; background:var(--primary-soft); color:var(--fg); padding:0 8px 0 2px; font-family:var(--sans); font-size:14px; font-weight:500; vertical-align:1px; }
+  .mention .av { width:18px; height:18px; font-size:8px; }
+  .mrow { display:flex; gap:6px; margin-top:6px; flex-wrap:wrap; }
+  .mrow a { display:inline-flex; align-items:center; gap:6px; border-radius:999px; background:var(--bg-sunken); padding:2px 8px 2px 3px; font-size:12px; color:var(--fg-muted); }
+  .mrow .av { width:18px; height:18px; font-size:8px; }
+  .kind { display:inline-flex; align-items:center; gap:4px; font-size:12px; color:var(--fg-subtle); border:1px solid var(--border); border-radius:999px; padding:0 8px; }
+
+  /* B5: the composer */
+  .composer { background:var(--card); border-radius:16px; box-shadow:var(--shadow-card); }
+  .composer textarea { width:100%; border:0; background:transparent; resize:none; padding:14px 16px 6px; font-family:var(--serif); font-size:16px; color:var(--fg); min-height:84px; outline:none; }
+  .composer textarea::placeholder { color:var(--fg-subtle); }
+  .cbar { display:flex; flex-wrap:wrap; align-items:center; gap:8px; border-top:1px solid var(--border-subtle); padding:8px 12px; }
+  .cbar .sp { flex:1; }
+  .cbar .hint { font-size:12px; color:var(--fg-subtle); }
+  .cpill { display:inline-flex; align-items:center; gap:6px; border:1px solid var(--border); border-radius:999px; padding:4px 10px; font-size:12px; color:var(--fg-muted); background:transparent; cursor:pointer; }
+  .cpill svg.i { width:13px; height:13px; }
+  .cpill.on { background:var(--primary-soft); border-color:transparent; color:var(--fg); font-weight:600; }
+  .cpill.menu .chev { margin-left:-2px; }
+  .switch { display:inline-flex; align-items:center; gap:8px; border:0; background:transparent; padding:4px 4px; font-size:12px; color:var(--fg-muted); cursor:pointer; }
+  .switch .track { width:30px; height:18px; border-radius:999px; background:var(--border); position:relative; transition:background var(--fade); flex:none; }
+  .switch .knob { position:absolute; top:2px; left:2px; width:14px; height:14px; border-radius:50%; background:var(--card); box-shadow:0 1px 2px rgba(0,0,0,.25); transition:transform var(--fade) var(--ease); }
+  .switch[aria-checked='true'] .track { background:var(--primary); }
+  .switch[aria-checked='true'] .knob { transform:translateX(12px); }
+  .switch .lab { display:inline-flex; align-items:center; gap:4px; }
+  .switch .lab svg.i { width:13px; height:13px; }
+  .switch[aria-checked='true'] .lab { color:var(--fg); font-weight:600; }
+  .segctl { display:inline-flex; background:var(--bg-sunken); border-radius:999px; padding:2px; }
+  .segctl button { border:0; background:transparent; display:inline-flex; align-items:center; gap:4px; padding:3px 10px; border-radius:999px; font-size:12px; color:var(--fg-subtle); cursor:pointer; }
+  .segctl button svg.i { width:13px; height:13px; }
+  .segctl button[aria-pressed='true'] { background:var(--card); color:var(--fg); font-weight:600; box-shadow:var(--shadow-card); }
+  .iconbtn2 { width:30px; height:30px; display:grid; place-items:center; border-radius:999px; border:0; background:transparent; color:var(--fg-muted); cursor:pointer; position:relative; }
+  .iconbtn2:hover { background:var(--card-hover); color:var(--fg); }
+  .iconbtn2 svg.i { width:17px; height:17px; }
+  .iconbtn2 .badge { position:absolute; top:-2px; right:-3px; min-width:16px; height:16px; border-radius:999px; background:var(--primary); color:var(--primary-fg); font-size:10px; font-weight:700; display:grid; place-items:center; padding:0 4px; }
+  .save kbd { font:inherit; font-size:10px; border:1px solid color-mix(in srgb, var(--primary-fg) 40%, transparent); border-radius:4px; padding:0 4px; opacity:.75; }
+  .coarse.b5-new .save kbd, .coarse.b5-seg .save kbd { display:none; }
+  .sheet { position:absolute; inset:auto 0 0 0; z-index:8; background:var(--card); border-radius:22px 22px 0 0; box-shadow:var(--shadow-pop); padding-bottom:18px; }
+  .sheet .grab { width:36px; height:4px; border-radius:2px; background:var(--border); margin:8px auto 2px; }
+  .sheet .composer { box-shadow:none; }
+  .scrim { position:absolute; inset:0; z-index:7; background:rgba(0,0,0,.28); }
+  .tip { position:absolute; bottom:calc(100% + 6px); left:50%; transform:translateX(-50%); background:var(--fg); color:var(--bg); font-size:11px; border-radius:6px; padding:2px 7px; white-space:nowrap; opacity:0; pointer-events:none; transition:opacity var(--fade); }
+  .iconbtn2:hover .tip { opacity:1; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="kicker">UX review 2026-10 · polish</div>
+  <h1>Jump bar, edit affordance, stream and composer</h1>
+  <p class="lede">Mockup for <b>C7</b> (the jump bar only once it sticks — decided), <b>C12</b> (where to edit on touch), <b>B3</b> (mentions once — decided), <b>B4</b> (the age under a day heading) and <b>B5</b> (the composer's three pills), plus the owed <b>C4</b> (the description wraps) and <b>C10</b> (a phone's back crumb), folded into the same PR. C3 is not here: gender already moved into the name editor with C1 (#263). Pick a screen and a variant; ★ marks the recommendation. Scroll inside a frame to see the jump bar.</p>
+
+  <div class="controls" id="controls"></div>
+  <p class="note" id="note"></p>
+  <div class="stage" id="stage"></div>
+
+  <div class="legend">
+    <section>
+      <h2>C7 — jump bar (decided: b)</h2>
+      <p>At rest nothing stands between the identity card and the People card. Once the card's bottom passes the top of the page, the bar fades in where it sticks today, with a hairline below it. It sits in a zero-height sticky slot, so it never takes room in the flow. A pure <code>barVisible(cardBottom)</code> rule sits beside <code>currentSection</code> in <code>jump-bar.ts</code>.</p>
+    </section>
+    <section>
+      <h2>C12 — where to edit on touch</h2>
+      <p><b>★ Faint pencil:</b> every value that edits in place gets the name's pencil, faint (55 %), always shown on a coarse pointer and on hover elsewhere. One rule in §5.7, applied in <code>InlineEdit</code>, <code>JobEdit</code> and the facts that edit in place.</p>
+      <p><b>Dotted underline:</b> the value is underlined in dots instead. Quieter, but it reads like a link or a spelling mark, and the name keeps a different sign (the pencil).</p>
+    </section>
+    <section>
+      <h2>C4 + C10 — owed from batch 1, folded in</h2>
+      <p><b>C4:</b> on a phone the description wraps to two lines instead of an ellipsis, and shows in full from <code>md</code>. <code>InlineEdit</code> gets a <code>clamp</code> prop. <b>C10:</b> below <code>md</code> the top bar shows only <i>‹ People</i>, because the name is the card's headline. Both were approved in <code>ux-review-batch-1.html</code>; switch <i>Owed</i> to compare.</p>
+    </section>
+    <section>
+      <h2>B3 — mentions once (decided)</h2>
+      <p>A moment's people are already chips in its body, so the avatar row under a moment goes away. Interactions keep their row: their participants are not in the text.</p>
+    </section>
+    <section>
+      <h2>B4 — the age under a day heading</h2>
+      <p><b>★ Time of day</b> for <i>Today</i> and <i>Yesterday</i> (<i>14:32</i>, in the viewer's locale), nothing for older days. The heading already says the day, and the time is what it does not say. The full date and time stay in the tooltip.</p>
+      <p><b>Relative, today only:</b> <i>3h ago</i> under Today, nothing else. <i>Yesterday</i> then has no time at all.</p>
+      <p>The stream is ordered by when a thing was written, so the time is when it was written, not the moment's day.</p>
+    </section>
+    <section>
+      <h2>B5 — composer pills</h2>
+      <p><b>★ Switch:</b> sharing is a small switch (<code>role="switch"</code>, which is what the checkbox already is). Its label is the state with its icon (<i>Shared</i> / <i>Private</i>). <i>Photo</i> becomes an icon button with a count badge. The day stays the one pill, and its chevron says it opens a menu. The <kbd>⌘⏎</kbd> hint is hidden on a coarse pointer.</p>
+      <p><b>Segmented:</b> <i>Shared | Private</i> side by side, the current one raised. Clear, but twice as wide, and on a phone the row wraps.</p>
+    </section>
+  </div>
+</div>
+
+<script>
+const ICON = {
+  pencil:'<path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M14 6l4 4"/>',
+  home:'<path d="M4 11l8-7 8 7v9H4z"/><path d="M10 20v-6h4v6"/>',
+  people:'<circle cx="9" cy="8" r="3.2"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/><circle cx="17" cy="9" r="2.5"/><path d="M16 14c2.8 0 5 2.2 5 5"/>',
+  circles:'<circle cx="9" cy="12" r="6"/><circle cx="15" cy="12" r="6"/>',
+  map:'<circle cx="6" cy="6" r="2.5"/><circle cx="18" cy="8" r="2.5"/><circle cx="10" cy="18" r="2.5"/><path d="M8 7l8 1M7 8l2 8M12 17l5-7"/>',
+  journal:'<path d="M5 4h11a3 3 0 0 1 3 3v13H8a3 3 0 0 1-3-3z"/><path d="M5 17a3 3 0 0 1 3-3h11"/>',
+  search:'<circle cx="11" cy="11" r="6.5"/><path d="M20 20l-4-4"/>',
+  plus:'<path d="M12 5v14M5 12h14"/>',
+  back:'<path d="M15 5l-7 7 7 7"/>',
+  chev:'<path d="M7 10l5 5 5-5"/>',
+  shared:'<circle cx="9" cy="8" r="3.2"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/><circle cx="17" cy="9" r="2.5"/><path d="M16 14c2.8 0 5 2.2 5 5"/>',
+  lock:'<rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>',
+  photo:'<rect x="3" y="5" width="18" height="14" rx="3"/><circle cx="9" cy="10" r="1.8"/><path d="M21 16l-5-5-8 8"/>',
+  cal:'<rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16M9 3v4M15 3v4"/>',
+  cake:'<path d="M4 20h16v-7H4z"/><path d="M4 16c2 1 4-1 6 0s4 1 6 0 3 0 4 0"/><path d="M12 13V9"/><path d="M12 5.5c.8.8.8 1.7 0 2.5-.8-.8-.8-1.7 0-2.5z"/>',
+  pin:'<path d="M12 21s-6-6-6-11a6 6 0 0 1 12 0c0 5-6 11-6 11z"/><circle cx="12" cy="10" r="2"/>',
+  work:'<rect x="3" y="7" width="18" height="13" rx="2"/><path d="M9 7V5h6v2"/>',
+  met:'<path d="M4 12l4 4 12-12"/>',
+  phone:'<path d="M6 3h3l2 5-2.5 1.5a11 11 0 0 0 6 6L16 13l5 2v3a2 2 0 0 1-2 2A16 16 0 0 1 4 5a2 2 0 0 1 2-2z"/>',
+  mail:'<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/>',
+  tag:'<path d="M3 12V4h8l10 10-8 8z"/><circle cx="7.5" cy="8.5" r="1.3"/>',
+  filter:'<path d="M4 6h16M7 12h10M10 18h4"/>',
+  write:'<path d="M4 20h4L19 9l-4-4L4 16z"/>',
+  gift:'<rect x="4" y="9" width="16" height="11" rx="1"/><path d="M12 9v11M3 9h18M12 9c-2-4-6-4-6-1s6 1 6 1c0 0 6 2 6-1s-4-3-6 1"/>'
+};
+const ic = (n, cls='i') => `<svg class="${cls}" viewBox="0 0 24 24" aria-hidden="true">${ICON[n]}</svg>`;
+const av = (ini, col, size) => `<span class="av" style="background:var(--av-${col});${size ? `width:${size}px;height:${size}px;font-size:${Math.round(size*.36)}px` : ''}">${ini}</span>`;
+
+const params = new URLSearchParams(location.search);
+const S = {
+  theme: params.get('theme') || 'latte',
+  device: params.get('device') || 'desktop',
+  screen: params.get('screen') || 'markus',
+  c7: params.get('c7') || 'b',
+  c12: params.get('c12') || 'faint',
+  owed: params.get('owed') || 'built',
+  b3: params.get('b3') || 'decided',
+  b4: params.get('b4') || 'time',
+  b5: params.get('b5') || 'new',
+  scroll: Number(params.get('scroll') || 0),
+  shared: true, photos: 0
+};
+
+const CONTROLS = [
+  ['theme', 'Theme', [['latte','Latte'],['mocha','Mocha']]],
+  ['device', 'Device', [['desktop','Desktop 1440'],['phone','Pixel 9 Pro']]],
+  ['screen', 'Screen', [['markus','Markus'],['kurt','Kurt'],['home','Home'],['compose','Home · composer']]],
+  ['c7', 'C7 jump bar', [['rest','Today'],['b','(b) once sticky','dec']], 'person'],
+  ['c12', 'C12 edit', [['today','Today'],['faint','Faint pencil','rec'],['underline','Dotted underline']], 'person'],
+  ['owed', 'Owed C4 + C10', [['today','Today'],['built','Built','dec']], 'person'],
+  ['b3', 'B3 mentions', [['today','Today'],['decided','Once','dec']], 'home'],
+  ['b4', 'B4 age', [['today','Today (1d ago)'],['time','Time of day','rec'],['rel','Relative, today only']], 'home'],
+  ['b5', 'B5 pills', [['today','Today'],['new','Switch','rec'],['seg','Segmented']], 'compose']
+];
+
+function renderControls() {
+  const isPerson = S.screen === 'markus' || S.screen === 'kurt';
+  document.getElementById('controls').innerHTML = CONTROLS.map(([key, label, opts, scope]) => {
+    const on = !scope || (scope === 'person' && isPerson) || (scope === 'home' && !isPerson) || (scope === 'compose' && !isPerson);
+    return `<div class="ctl ${on ? '' : 'off'}"><span class="seg-label">${label}</span><div class="seg">${opts.map(([v, l, mark]) =>
+      `<button data-k="${key}" data-v="${v}" aria-pressed="${S[key] === v}">${l}${mark === 'rec' ? '<span class="rec">★</span>' : mark === 'dec' ? '<span class="rec">✓</span>' : ''}</button>`).join('')}</div></div>`;
+  }).join('');
+  document.querySelectorAll('#controls button').forEach((b) => b.onclick = () => { S[b.dataset.k] = b.dataset.v; S.scroll = 0; render(); });
+}
+
+/* ── Person page ───────────────────────────────────────────── */
+const PEOPLE = {
+  markus: { ini:'MB', col:'pink', name:'Markus Brunner', desc:'Familienvater, Vorstand im FC Länggasse.',
+    birthday:'14 March 1983', age:'43', address:'Spitalackerstrasse 22, 3013 Bern', job:'Bauingenieur', company:'Rytz + Partner AG',
+    last:'6 October 2026', circles:[['FB','green','Familie Brunner'],['FC','blue','FC Länggasse'],['NS','peach','Nachbarschaft']],
+    counts:{ people:10, photos:8, notes:2 } },
+  kurt: { ini:'KL', col:'teal', name:'Kurt Lehmann', desc:'Nachbar an der Spitalackerstrasse.',
+    birthday:'27 March 1963', age:'63', job:'Postbote', circles:[['NS','peach','Nachbarschaft']], counts:{ people:2, photos:0, notes:0 } }
+};
+
+function editable(value, cls = '', vcls = '') {
+  return `<span class="edit ${cls}" title="Edit"><span class="v ${vcls}">${value}</span>${ic('pencil','i pen')}</span>`;
+}
+
+function fact(icon, key, val) {
+  return `<div class="fact"><div class="k">${ic(icon)}${key}</div><div class="val">${val}</div></div>`;
+}
+
+function personPage(phone) {
+  const p = PEOPLE[S.screen];
+  const descCls = phone ? (S.owed === 'built' ? 'clamp' : 'trunc') : '';
+  const facts = [
+    fact('cake', 'Birthday', editable(`${p.birthday} <span class="sub">· ${p.age}</span>`)),
+    p.address ? fact('pin', 'Address', editable(p.address)) : '',
+    fact('work', 'Job', editable(`${p.job}${p.company ? ` <span class="sub">· ${p.company}</span>` : ''}`)),
+    p.last ? fact('met', 'Last contact', p.last) : '',
+    fact('circles', 'Circles', `<div class="chips">${p.circles.map(([i, c, n]) => `<span class="chip">${av(i, c)}${n}</span>`).join('')}<span class="chip" style="padding:2px 8px">${ic('plus','i')}</span></div>`)
+  ].join('');
+  const rows = S.screen === 'markus'
+    ? `<div class="rows">
+        <div class="row">${ic('phone')}<b>Contact</b> +41 79 412 33 18 · markus.brunner@example.ch<span class="r">${ic('chev')}</span></div>
+        <div class="row">${ic('tag')}<b>Tags</b> <span class="chips"><span class="chip" style="padding:2px 10px">FC-Vorstand</span><span class="chip" style="padding:2px 10px">Werkzeug</span></span><span class="r">${ic('chev')}</span></div>
+        <div class="row">${ic('people')}<b>How we met</b> Through Sandra, at the 2008 Zibelemärit.<span class="r">${ic('chev')}</span></div>
+      </div>`
+    : `<span class="quiet">${ic('plus')} Add phone, email, tags, how we met</span>`;
+  const id = `<div class="card" id="idcard">
+      <div class="id">
+        ${av(p.ini, p.col).replace('class="av"', 'class="av portrait"')}
+        <div class="who">
+          <h2>${editable(p.name, 'name')}</h2>
+          <div class="desc">${editable(p.desc, '', descCls)}</div>
+        </div>
+      </div>
+      <div class="facts">${facts}</div>
+      ${rows}
+      <div class="actions"><button class="btn primary">${ic('write')}Write a moment</button><button class="btn">${ic('met')}Log contact</button></div>
+    </div>`;
+  const n = p.counts;
+  const jumpItems = [['People', n.people], ['Photos', n.photos], ['Activity', null], ['Notes', n.notes]];
+  const jump = `<div class="jumpslot ${S.c7 === 'b' ? 'b' : ''}" id="jumpslot"><nav class="jump" aria-label="On this page"><ul>${jumpItems.map(([l, c], i) =>
+    `<li><a href="#" class="${i === 0 && S.c7 === 'b' ? 'cur' : ''}">${l}${c ? ` <span class="n">${c}</span>` : ''}</a></li>`).join('')}</ul></nav></div>`;
+  const tilesM = [['SB','mauve','Sandra Brunner-Keller','Wife'],['LB','sky','Lena Brunner','Daughter'],['NB','blue','Noah Brunner','Son'],['MB','pink','Mia Brunner','Daughter'],['HB','peach','Hans Brunner','Father'],['RB','green','Rosa Brunner','Mother']];
+  const tilesK = [['HL','peach','Heidi Lehmann','Wife'],['MB','pink','Markus Brunner','Neighbour']];
+  const tiles = (S.screen === 'markus' ? tilesM : tilesK).map(([i, c, nm, r]) => `<div class="tile">${av(i, c)}<span>${nm}<small>${r}</small></span></div>`).join('');
+  const names = S.screen === 'markus' ? ['Sandra','Lena','Noah','Mia','Hans','Rosa','Thomas','Reto'] : ['Heidi','Markus'];
+  const strip = `<div class="strip"><svg viewBox="0 0 800 110" preserveAspectRatio="xMidYMid meet">${names.map((nm, i) => {
+      const x = 400 + (i - (names.length - 1) / 2) * 90, y = i % 2 ? 78 : 34;
+      return `<line x1="400" y1="56" x2="${x}" y2="${y}" stroke="var(--map-line)"/>`; }).join('')}
+      <circle cx="400" cy="56" r="13" fill="var(--av-${p.col})" stroke="var(--primary)" stroke-width="2"/>
+      ${names.map((nm, i) => { const x = 400 + (i - (names.length - 1) / 2) * 90, y = i % 2 ? 78 : 34;
+        return `<circle cx="${x}" cy="${y}" r="9" fill="var(--card)" stroke="${i < 6 ? 'var(--c-family)' : 'var(--c-social)'}" stroke-width="2"/><text x="${x}" y="${y + (i % 2 ? 24 : -14)}" text-anchor="middle">${nm}</text>`; }).join('')}</svg></div>`;
+  const people = `<div class="card"><div class="sechead"><h3>People<span class="count">${n.people}</span></h3><div class="r"><button class="btn ghost">${ic('plus')}Add</button></div></div>${strip}<div class="gh">Family · ${S.screen === 'markus' ? 7 : 1}</div><div class="tiles">${tiles}</div>${S.screen === 'markus' ? '<p style="margin:10px 0 0;font-size:13px;color:var(--fg-subtle)">Friends · 2 · Work · 1 — <a style="color:var(--link)">Show 4 more</a></p>' : ''}</div>`;
+  const photoCols = ['pink','blue','teal','peach','mauve','sky','green','pink'];
+  const photos = `<div class="card"><div class="sechead"><h3>Photos<span class="count">${n.photos}</span></h3><div class="r"><button class="btn ghost">${ic('plus')}Add photos</button></div></div>${n.photos
+    ? `<div class="photos">${photoCols.slice(0, phone ? 8 : 6).map((c) => `<i style="background:var(--av-${c})"></i>`).join('')}</div>`
+    : '<div class="empty">No photos of Kurt yet.</div>'}</div>`;
+  const activity = `<div class="card"><div class="sechead"><h3>Activity</h3><div class="r"><button class="btn ghost">${ic('journal')}Open journal</button></div></div>${S.screen === 'markus'
+    ? `<div class="tl">
+        <div class="tli"><span class="dot">${ic('phone')}</span><div>Sunday call<div class="meta">Call · 6 October</div></div></div>
+        <div class="tli"><span class="dot">${ic('write')}</span><div><div class="serif">Markus fixed the garden gate at last — with <span class="mention">${av('NB','blue')}Noah Brunner</span> holding the screws.</div><div class="meta">Moment · 5 October</div></div></div>
+        <div class="tli"><span class="dot">${ic('gift')}</span><div>Brought the Rivella crate for the FC party<div class="meta">Gift · 12 September</div></div></div>
+      </div>`
+    : '<div class="empty">Nothing written about Kurt yet.</div>'}</div>`;
+  const notes = `<div class="card"><div class="sechead"><h3>Notes<span class="count">${n.notes}</span></h3><div class="r"><button class="btn ghost">${ic('plus')}Add note</button></div></div>${n.notes
+    ? '<div class="serif">Thomas und Markus kennen sich seit dem Zivildienst. Treffen sich regelmässig am FC-Training.</div>'
+    : '<div class="empty">No notes yet.</div>'}</div>`;
+  return { id, jump, rest: people + photos + activity + notes };
+}
+
+/* ── Home ──────────────────────────────────────────────────── */
+function age(kind, days, hhmm) {
+  if (S.b4 === 'today') return days === 0 ? '2h ago' : `${days}d ago`.replace(/^(\d+)d ago$/, (m, d) => d >= 7 ? `${Math.floor(d / 7)}w ago` : m);
+  if (S.b4 === 'time') return days <= 1 ? hhmm : '';
+  return days === 0 ? '2h ago' : '';
+}
+
+function stream(phone) {
+  const ageSpan = (d, t, title) => { const a = age('', d, t); return a ? `<span class="age" title="${title}">${a}</span>` : ''; };
+  const momentRow = S.b3 === 'today' ? `<div class="mrow"><a>${av('NB','blue')}Noah Brunner</a></div>` : '';
+  return `
+    <div class="day">Today</div>
+    <article class="item">${av('TL','sky')}<div><div class="line"><b>Sandra</b> added <a>Thomas Lang</a> <span class="kind">New person</span>${ageSpan(0, '08:41', 'Wednesday 7 October 2026, 08:41')}</div></div></article>
+    <div class="day">Yesterday</div>
+    <article class="item">${av('MB','pink')}<div><div class="line"><b>You</b> logged <span class="kind">${ic('phone','i" style="width:11px;height:11px')}Call</span> with <a>Markus Brunner</a>${ageSpan(1, '19:20', 'Tuesday 6 October 2026, 19:20')}</div><div class="body" style="font-size:14px">Sunday call</div><div class="mrow"><a>${av('SB','mauve')}Sandra Brunner-Keller</a></div></div></article>
+    <div class="day">Monday 5 October</div>
+    <article class="item">${av('MB','pink')}<div><div class="line"><b>You</b> wrote in <span><a>Markus Brunner</a>’s journal</span>${ageSpan(2, '', 'Monday 5 October 2026, 21:05')}</div><div class="body serif">Markus fixed the garden gate at last — with <span class="mention">${av('NB','blue')}Noah Brunner</span> holding the screws.</div>${momentRow}</div></article>
+    <div class="day">Tuesday 29 September</div>
+    <article class="item">${av('HB','peach')}<div><div class="line"><b>You</b> wrote in <span><a>Hans Brunner</a>’s journal</span>${ageSpan(8, '', 'Tuesday 29 September 2026, 20:12')}</div><div class="body serif">Opa Hans told the story about the 1972 flood again, this time with the photo of the bridge.</div></div></article>
+    <div class="day">Thursday 17 September</div>
+    <article class="item">${av('NA','teal')}<div><div class="line"><b>You</b> logged <span class="kind">Met</span> with <a>Nadia Arslan</a>${ageSpan(20, '', 'Thursday 17 September 2026, 16:30')}</div><div class="body" style="font-size:14px">Coffee in Bern</div></div></article>`;
+}
+
+function composer(phone) {
+  let share, photo;
+  if (S.b5 === 'today') {
+    share = `<button class="cpill ${S.shared ? 'on' : ''}" data-act="share">${ic(S.shared ? 'shared' : 'lock')}${S.shared ? 'Shared' : 'Private'}</button>`;
+    photo = `<button class="cpill" data-act="photo">${ic('photo')}${S.photos ? `${S.photos} photos` : 'Photo'}</button>`;
+  } else if (S.b5 === 'new') {
+    share = `<button class="switch" role="switch" aria-checked="${S.shared}" aria-label="Share with household" data-act="share"><span class="track"><span class="knob"></span></span><span class="lab">${ic(S.shared ? 'shared' : 'lock')}${S.shared ? 'Shared' : 'Private'}</span></button>`;
+    photo = `<button class="iconbtn2" aria-label="Add photos" data-act="photo">${ic('photo')}${S.photos ? `<span class="badge">${S.photos}</span>` : ''}<span class="tip">Add photos</span></button>`;
+  } else {
+    share = `<span class="segctl" role="group" aria-label="Who sees this"><button aria-pressed="${S.shared}" data-act="shared">${ic('shared')}Shared</button><button aria-pressed="${!S.shared}" data-act="private">${ic('lock')}Private</button></span>`;
+    photo = `<button class="iconbtn2" aria-label="Add photos" data-act="photo">${ic('photo')}${S.photos ? `<span class="badge">${S.photos}</span>` : ''}<span class="tip">Add photos</span></button>`;
+  }
+  const day = `<button class="cpill menu" data-act="day">${S.b5 === 'today' ? '' : ic('cal')}Today<span class="chev">${ic('chev')}</span></button>`;
+  return `<div class="composer"><textarea rows="${phone ? 4 : 3}" placeholder="What happened? Mention someone with @">With @Lena at the Musikschule tonight — she played Für Elise without a slip.</textarea>
+    <div class="cbar">${share}${photo}${day}<span class="hint">Goes to <b style="color:var(--fg-muted)">Lena Brunner</b>’s journal</span><span class="sp"></span>
+      ${phone ? '<button class="btn ghost">Cancel</button>' : ''}<button class="btn primary save">Save <kbd>⌘⏎</kbd></button></div></div>`;
+}
+
+/* ── Frames ────────────────────────────────────────────────── */
+const SIDE = [['home','Home'],['people','People'],['circles','Circles'],['map','Map'],['journal','Journal']];
+function desktop() {
+  const isPerson = S.screen === 'markus' || S.screen === 'kurt';
+  const p = PEOPLE[S.screen];
+  const crumb = isPerson ? `<a>Home</a><span>/</span><a>People</a><span>/</span><span class="here">${p.name}</span>` : '';
+  let body;
+  if (isPerson) { const pg = personPage(false); body = `<div class="dpage">${pg.id}${pg.jump}${pg.rest}</div>`; }
+  else body = `<div class="dhome">${composer(false)}${stream(false)}</div>`;
+  return `<div class="browser-fit"><div class="browser"><div class="chrome"><i></i><i></i><i></i><span class="url">stella.home/${isPerson ? `contacts/demo-c-${S.screen}` : ''}</span></div>
+    <div class="app"><aside class="side"><div class="logo"><span class="mark">✦</span>Stella</div>${SIDE.map(([i, l]) =>
+      `<a class="${(isPerson ? i === 'people' : i === 'home') ? 'on' : ''}">${ic(i)}${l}</a>`).join('')}</aside>
+      <div class="dmain"><div class="dhead">${crumb}<span class="sp"></span><span class="search">${ic('search')}Search<kbd>⌘K</kbd></span><span class="addp">${ic('plus')}Add person</span></div>
+      <div class="scroller" id="scroller">${body}</div></div></div></div></div>`;
+}
+
+function phone() {
+  const isPerson = S.screen === 'markus' || S.screen === 'kurt';
+  const p = PEOPLE[S.screen];
+  let top, body;
+  if (isPerson) {
+    top = S.owed === 'built'
+      ? `<a class="back">${ic('back')}People</a>`
+      : `<span class="trail"><a>Home</a><span>/</span><a>People</a><span>/</span><span class="here">${p.name}</span></span>`;
+    const pg = personPage(true); body = `<div class="ppage">${pg.id}${pg.jump}${pg.rest}</div>`;
+  } else {
+    top = `<span class="logo" style="padding:0;font-size:19px"><span class="mark">✦</span>Stella</span>`;
+    body = `<div class="ppage"><div class="home-search">${ic('search')}Find a person…</div><span class="fpill">${ic('filter')}Filter</span>${stream(true)}</div>`;
+  }
+  const sheet = S.screen === 'compose' ? `<div class="scrim"></div><div class="sheet"><div class="grab"></div>${composer(true)}</div>` : '';
+  return `<div class="device"><div class="screen p"><div class="status"><span>9:41</span><span class="cam"></span><span>▮▮ 100%</span></div>
+    <div class="ptop">${top}<span class="sp"></span>${isPerson ? `<span class="iconbtn">${ic('search')}</span>` : ''}<span class="iconbtn">${ic('plus')}</span></div>
+    <div class="scroller" id="scroller">${body}</div>${sheet}
+    <nav class="tabbar"><a class="tab ${isPerson ? '' : 'on'}">${ic('home')}Home</a><a class="tab ${isPerson ? 'on' : ''}">${ic('people')}People</a><a class="tab pen"><span>${ic('write')}</span></a><a class="tab">${ic('circles')}Circles</a><a class="tab">${ic('map')}Map</a></nav></div></div>`;
+}
+
+function fit() {
+  const b = document.querySelector('.browser'); if (!b) return;
+  const w = Math.min(1, (document.querySelector('.wrap').clientWidth) / 1440);
+  const f = b.parentElement; f.style.setProperty('--fit', w); f.style.setProperty('--fit-w', `${1440 * w}px`); f.style.setProperty('--fit-h', `${900 * w}px`);
+  b.style.setProperty('--fit', w);
+}
+
+function render() {
+  document.documentElement.dataset.theme = S.theme;
+  renderControls();
+  const stage = document.getElementById('stage');
+  stage.innerHTML = S.device === 'desktop' ? desktop() : phone();
+  const coarse = S.device === 'phone';
+  stage.className = `stage ${coarse ? 'coarse' : 'fine'} c12-${S.c12} b5-${S.b5}`;
+  document.getElementById('note').textContent = coarse
+    ? 'The phone frame is a coarse pointer: the C12 pencils and the hidden ⌘⏎ show as on a touch screen.'
+    : 'The desktop frame is a fine pointer: hover a value to see the C12 affordance.';
+  fit();
+  const sc = document.getElementById('scroller');
+  const slot = document.getElementById('jumpslot');
+  const id = document.getElementById('idcard');
+  if (sc && slot && id) {
+    const update = () => slot.classList.toggle('shown', id.getBoundingClientRect().bottom <= sc.getBoundingClientRect().top);
+    sc.addEventListener('scroll', update, { passive: true });
+    if (S.scroll) sc.scrollTop = S.scroll;
+    update();
+  }
+  stage.querySelectorAll('[data-act]').forEach((el) => el.onclick = () => {
+    const a = el.dataset.act;
+    if (a === 'share') S.shared = !S.shared;
+    if (a === 'shared') S.shared = true;
+    if (a === 'private') S.shared = false;
+    if (a === 'photo') S.photos = S.photos >= 3 ? 0 : S.photos + 1;
+    if (a === 'day') return;
+    const keep = document.getElementById('scroller')?.scrollTop ?? 0;
+    S.scroll = keep; render();
+  });
+}
+window.addEventListener('resize', fit);
+render();
+</script>
+</body>
+</html>

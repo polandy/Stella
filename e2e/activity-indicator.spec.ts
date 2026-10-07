@@ -1,5 +1,5 @@
 import { expect, test, type Page, type Route } from '@playwright/test';
-import { editPeople, openPeople, openPerson, pickPerson, signIn } from './app';
+import { editPeople, enlargeMap, openPeople, openPerson, pickPerson, signIn } from './app';
 import { LINK, seedHousehold } from './seed';
 import { stateOf } from './graph-canvas';
 
@@ -86,6 +86,7 @@ test('says it is working while a change is in flight, without moving the page', 
 test('takes a removed link out of the map at once, before it is sent', async ({ page }) => {
 	await seedHousehold(page, [CARL, DORA], [{ from: CARL, to: DORA, type: LINK.siblingOf }]);
 	await openPerson(page, new RegExp(CARL));
+	await enlargeMap(page);
 
 	// The map is a canvas; this is the renderer answering, not the model being re-read.
 	await expect.poll(() => stateOf(page, DORA_ID)).toBe('drawn');

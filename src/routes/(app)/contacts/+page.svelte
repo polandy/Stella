@@ -32,7 +32,7 @@
 	const groups = $derived(groupByLetter(found));
 
 	/*
-	 * *Select* (docs/concepts/surnames.md §3.2): rows become ticks, and the bar gives the chosen
+	 * *Select* (docs/02 §2.2.4.3): rows become ticks, and the bar gives the chosen
 	 * people one last name. Everyone means everyone the find field has left on the list.
 	 */
 	let selecting = $state(false);

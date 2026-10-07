@@ -62,7 +62,7 @@ test.describe('the moment composer', () => {
 		page
 	}) => {
 		const composer = page.getByLabel('What happened?');
-		const shared = page.getByRole('checkbox', { name: 'Share with household' });
+		const shared = page.getByRole('switch', { name: 'Share with household' });
 		await composer.focus();
 
 		// The name stays put; only the state changes, which is what a screen reader reads out.
@@ -71,7 +71,7 @@ test.describe('the moment composer', () => {
 		await expect(shared).toBeChecked();
 		await page.keyboard.press('Space');
 		await expect(shared).not.toBeChecked();
-		await expect(page.getByRole('checkbox', { name: 'Share with household' })).toBeFocused();
+		await expect(page.getByRole('switch', { name: 'Share with household' })).toBeFocused();
 		await page.keyboard.press('Space');
 		await expect(shared).toBeChecked();
 

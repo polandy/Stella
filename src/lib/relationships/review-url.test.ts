@@ -9,7 +9,7 @@ import {
 } from './review-url';
 
 /*
- * The review's query string (docs/concepts/relationship-review-at-scale.html).
+ * The review's query string (docs/04 ADR-010).
  *
  * Every fold is a link, so this *is* the interface between the pager, the search and the log.
  * Two things break quietly if it is wrong: a link that drops `review` closes the pass and shows

@@ -76,3 +76,42 @@ export function currentSection(cards: readonly CardTop[], view: JumpView): JumpS
 	}
 	return current?.section ?? null;
 }
+
+/**
+ * The card the bar marks. A tapped link marks its card from the tap on — through the glide,
+ * while other cards pass under the bar, and after it, where a card beside another or at the
+ * foot of the page never becomes the one `currentSection` reads — until the reader scrolls on
+ * their own, which the page reports by letting go of `tapped`.
+ */
+export function markedSection(
+	measured: JumpSection | null,
+	tapped: JumpSection | null
+): JumpSection | null {
+	return tapped ?? measured;
+}
+
+/** Where the bar stands against the identity card, as far as showing it needs. */
+export interface BarPlace {
+	/** The identity card's bottom, in pixels from the top of the visible page. */
+	cardBottom: number;
+	/** The bar's own height. */
+	barHeight: number;
+}
+
+/**
+ * Whether the bar shows (docs/05 §5.5). At rest nothing stands between the identity card and
+ * the People card: the bar shows only once it sticks, which is when the card's bottom has
+ * passed under the bar's foot. That is also where a jump leaves it — a jump to People stops
+ * below the bar, with the card's foot still just in view — so a bar that was tapped never
+ * vanishes under the finger that used it.
+ */
+export function barVisible(place: BarPlace): boolean {
+	return place.cardBottom <= place.barHeight;
+}
+
+/** Whether `key` (a `KeyboardEvent.key`) scrolls the page — the reader moving on by keyboard. */
+export function scrollsThePage(key: string): boolean {
+	return SCROLL_KEYS.has(key);
+}
+
+const SCROLL_KEYS = new Set(['PageDown', 'PageUp', 'ArrowDown', 'ArrowUp', 'Home', 'End', ' ']);

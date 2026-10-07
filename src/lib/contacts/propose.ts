@@ -1,7 +1,7 @@
 /*
  * `?propose=<a>:<b>,<a>:<c>` names the pairs whose new links should be propagated (docs/02
  * §2.4.1): one pair after a single link, every pair of a batch stored together, so *Also true?*
- * is worked out across all of them (docs/concepts/multi-pick-relationships.html D7). The pairs
+ * is worked out across all of them (docs/02 §2.4, *Several people in one go*). The pairs
  * are only pointers: the use-case reads the real links back from the visible graph, so a
  * hand-written value can never conjure a suggestion out of nothing.
  */

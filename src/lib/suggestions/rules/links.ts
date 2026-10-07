@@ -5,7 +5,7 @@ import type { LinkSuggestion, PrimaryLink, Rule, RuleId, Trigger } from '../type
 import type { SuggestionView } from '../view';
 
 /*
- * The link rules (docs/concepts/relationship-suggestions.md §3, L1, L2 and L3).
+ * The link rules (docs/02 §2.4.1, L1, L2 and L3).
  *
  * Adding one primary link usually implies others: a mother added to one child is the mother
  * of that child's siblings too. Stella works those out and **offers** them — one confirmation
@@ -138,7 +138,7 @@ function beganAfter(since: string | null | undefined, birth: string | null | und
  * claim stays `likely`, and the household answers it.
  *
  * Pure. The engine asks it once a parent link is stored; the relationship form asks it while a
- * parent is only picked (docs/concepts/multi-pick-relationships.html D4), which is why the
+ * parent is only picked (docs/02 §2.4, *Several people in one go*), which is why the
  * chosen parent counts whether or not their link is on record yet.
  */
 export function likelyCoParent(

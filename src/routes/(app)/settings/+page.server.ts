@@ -37,7 +37,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 		lastNames,
 		version: APP_VERSION,
 		update: check?.status() ?? null,
-		// Immich's line (docs/concepts/immich.md §4.1), streamed like the release check; null
+		// Immich's line (docs/02 §2.24.1), streamed like the release check; null
 		// when this instance has no Immich, and then the section is not there at all.
 		immich: getImmich()?.connection.status() ?? null
 	};

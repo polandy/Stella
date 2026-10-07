@@ -48,6 +48,21 @@ test('holds only Coming up in the rail, with no band about who has gone quiet', 
 	await expect(rail.getByTestId('coming-up')).toBeVisible();
 
 	await expect(rail.getByRole('heading')).toHaveText(['Coming up']);
+	// A band's heading, not a divider inside a list: sentence case (docs/05 §5.3).
+	await expect(rail.getByRole('heading')).toHaveCSS('text-transform', 'none');
+});
+
+test('sets the rail beside the stream while something is coming up', async ({ page }) => {
+	// From lg the rail's column is there only while it has rows (docs/05 §5.5). The other side —
+	// the stream taking the width — needs an empty calendar, which nothing here can make
+	// deterministically: the seed's dates drift with the calendar and every spec shares them.
+	await addBirthdaysSoon(page, ['Nadia Quellmatt']);
+	const rail = await page.getByRole('complementary', { name: 'At a glance' }).boundingBox();
+	const stream = await page.getByTestId('stream').boundingBox();
+	expect(rail!.x).toBeGreaterThanOrEqual(stream!.x + stream!.width);
+	expect(rail!.y).toBeLessThan(stream!.y + stream!.height);
+	// Its own 17 rem column, not whatever room is left over.
+	expect(Math.round(rail!.width)).toBe(17 * 16);
 });
 
 test('finds a person by the nickname given when they were added', async ({ page }) => {

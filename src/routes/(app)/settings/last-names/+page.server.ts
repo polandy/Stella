@@ -15,7 +15,7 @@ import { getSurnameDismissalDeps, getSurnameReviewDeps } from '$lib/server/servi
 import type { Actions, PageServerLoad } from './$types';
 
 /*
- * *Settings → Data quality → Last names* (docs/02 §2.2.4, docs/concepts/surnames.md §3.1):
+ * *Settings → Data quality → Last names* (docs/02 §2.2.4.2):
  * everyone the viewer may see without a last name, grouped by what Stella proposes, the
  * largest group first; then those whose sources disagree; then the rest, each with a field.
  * The reasons are said here, in the reader's language, with every name still a way to that

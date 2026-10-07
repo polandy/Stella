@@ -11,8 +11,7 @@ import { isDirected, type LinkSuggestion, type Rule, type Trigger } from '../typ
 import type { SuggestionView } from '../view';
 
 /*
- * K1 — a worked-out relative, offered for entering (docs/02 §2.4.1,
- * docs/concepts/relationship-suggestions.md §3.5).
+ * K1 — a worked-out relative, offered for entering (docs/02 §2.4.1, rule K1).
  *
  * The derived block on a profile already carries *Confirm*; this puts the same question into
  * the review, so a household working through what Stella knows meets it in one list. It is

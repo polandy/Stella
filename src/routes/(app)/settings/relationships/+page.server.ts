@@ -37,9 +37,7 @@ import { translator } from '$lib/server/i18n/say';
 import type { Actions, PageServerLoad } from './$types';
 
 /*
- * The household-wide relationship review (docs/02 §2.4.1,
- * docs/concepts/relationship-suggestions.md §6.6), folded for scale in
- * docs/concepts/relationship-review-at-scale.html.
+ * The household-wide relationship review (docs/02 §2.4.1), folded for scale (docs/04 ADR-010).
  *
  * The person page asks what stands around *one* person, which only ever reaches the people
  * somebody thought to open. This asks about everyone the viewer can see, in one pass, because

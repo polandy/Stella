@@ -5,7 +5,7 @@ import { isDerivable, isRefusedByRules } from './suppressions';
 import { buildView } from './view';
 
 /*
- * The universal suppressions (docs/concepts/relationship-suggestions.md §6.2), tested apart
+ * The universal suppressions (docs/02 §2.4.1, docs/04 ADR-055), tested apart
  * from the rules on purpose: a rule that fires correctly and is then wrongly dropped is
  * invisible in a rule test (-implementation.md §8, §10).
  *

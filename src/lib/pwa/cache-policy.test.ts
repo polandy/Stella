@@ -38,7 +38,7 @@ describe('what may be kept on the device', () => {
 		expect(verdictFor(asset('/media/abc'))).toBe('keep');
 	});
 
-	it('never keeps anything from Immich, which Immich may change or delete (docs/concepts/immich.md §4.5)', () => {
+	it('never keeps anything from Immich, which Immich may change or delete (docs/04 ADR-099)', () => {
 		// A face or a photo through the signed proxy, at any size, and the strip that lists them.
 		expect(verdictFor(asset(immichMediaUrl('eyJrIjoicCJ9.c2lnbmF0dXJl')))).toBe('skip');
 		expect(verdictFor(page(immichMediaUrl('eyJrIjoicCJ9.c2lnbmF0dXJl')))).toBe('skip');
@@ -177,7 +177,7 @@ describe('what must never be kept', () => {
 
 describe('what is kept before it is read', () => {
 	it('is every place a phone starts from, so a fresh update is not an empty app on the train', () => {
-		// docs/concepts/offline-reading.md §4.1: Home, People, Circles and Settings.
+		// docs/02 §2.18, *What a device keeps*: Home, People, Circles and Settings.
 		expect([...KEPT_AHEAD].sort()).toEqual(['/', '/circles', '/contacts', '/settings']);
 	});
 

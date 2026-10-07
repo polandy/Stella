@@ -5,7 +5,7 @@ import { createTranslator } from '$lib/i18n/translate';
 import { copyAge } from './copy-age';
 
 /*
- * How old the page on screen is, in the offline line (docs/concepts/offline-reading.md §4.4).
+ * How old the page on screen is, in the offline line (docs/02 §2.18, *Saying so*).
  * "Now" is Tuesday, 29 September 2026, 21:30 in Zurich throughout; the zone is handed in, so
  * nothing here depends on where the tests run.
  */

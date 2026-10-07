@@ -5,7 +5,7 @@ import { say } from '$lib/server/i18n/say';
 import type { RequestHandler } from './$types';
 
 /*
- * Every image from Immich, through Stella (docs/concepts/immich.md §5, docs/02 §2.24.5): a face
+ * Every image from Immich, through Stella (docs/02 §2.24.4): a face
  * in the picker, a photo in the strip or the viewer, each for a token Stella signed. The browser
  * never reaches Immich and the key never leaves the server. What it answers is decided and
  * tested in `$lib/server/immich/routes.ts`; this only wires it.

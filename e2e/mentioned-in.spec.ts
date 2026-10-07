@@ -87,7 +87,7 @@ async function writeEntry(
 	text: string,
 	visibility: 'shared' | 'private'
 ): Promise<void> {
-	await page.getByRole('link', { name: 'Write' }).first().click();
+	await page.getByRole('link', { name: 'Open journal' }).click();
 	await appReady(page);
 	await page.getByRole('button', { name: 'Write a moment' }).click();
 

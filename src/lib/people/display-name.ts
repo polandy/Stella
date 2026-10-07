@@ -99,7 +99,7 @@ export type NamePartsChange = Partial<Pick<StoredName, 'firstName' | 'lastName' 
 const orNull = (value: string | null): string | null => clean(value) || null;
 
 /**
- * The name after its parts change (docs/concepts/surnames.md §6), the one rule every path that
+ * The name after its parts change (docs/02 §2.2, ADR-106), the one rule every path that
  * changes a part goes through — the profile and the bulk paths alike, so a shown name follows
  * its parts the same way wherever they change.
  *

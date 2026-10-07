@@ -7,7 +7,7 @@ import { removalKey } from '../undo/keys';
  *
  * Built from the claim's own identity — `(relation, pair)`, from either end — rather than from
  * the rule that raised it, so the household screen cannot offer one claim two ways and end up
- * holding two answers to it (docs/concepts/relationship-suggestions.md §6.4).
+ * holding two answers to it (docs/04 ADR-117).
  */
 export const answerKey = (relation: Relation, fromId: string, toId: string): string =>
 	removalKey('suggestion', claimKey(relation, fromId, toId));

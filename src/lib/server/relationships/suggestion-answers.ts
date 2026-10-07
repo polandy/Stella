@@ -15,8 +15,7 @@ import { say } from '$lib/server/i18n/say';
 import { RELATIONS } from '$lib/suggestions/types';
 
 /*
- * Answering a suggestion, wherever it was offered (docs/concepts/relationship-suggestions.md
- * §6.4–6.6).
+ * Answering a suggestion, wherever it was offered (docs/02 §2.4.1, docs/04 ADR-117).
  *
  * The same three answers now reach a household from two screens — the person page's review
  * panel and the household-wide pass in Settings — and they must mean exactly the same thing on

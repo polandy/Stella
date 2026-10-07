@@ -3,8 +3,8 @@ import { addPerson, factEditor, fillDate, profileRow, signIn } from './app';
 
 /*
  * The additions a person's page and their journal keep while Stella is out of reach, and what
- * saving through the outbox means while it is in reach (docs/02 §2.18, §2.20;
- * docs/concepts/offline-capture.md §8 #10, #22). The maintainer chose to verify these in the
+ * saving through the outbox means while it is in reach (docs/02 §2.18.1, §2.20;
+ * docs/04 ADR-076). The maintainer chose to verify these in the
  * released app rather than a preview, and asked for the e2e to go ahead (docs/08 §8.4.1).
  *
  * As in `offline-person.spec.ts`, service workers are blocked, so the page does not know it is
@@ -30,7 +30,7 @@ const dot = (name: string) => ({ name, mimeType: 'image/png', buffer: DOT_PNG })
 
 /** From a person's page to their journal, with the composer open. */
 async function openJournal(page: Page): Promise<void> {
-	await page.getByRole('link', { name: 'Write' }).first().click();
+	await page.getByRole('link', { name: 'Open journal' }).click();
 	await expect(page.getByRole('heading', { name: 'Journal' })).toBeVisible();
 	await page.getByRole('button', { name: 'Write a moment' }).click();
 }

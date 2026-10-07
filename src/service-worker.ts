@@ -93,7 +93,7 @@ let reachable = true;
 
 /*
  * When the page each open window shows was kept, if it came off the device: the offline line
- * says how old it is (docs/concepts/offline-reading.md §4.4). Null once Stella answered it.
+ * says how old it is (docs/02 §2.18, *Saying so*). Null once Stella answered it.
  * Keyed by client id, because two windows can show copies of different ages. Never pruned: a
  * window being navigated is not yet among the open ones, so pruning could drop the entry it is
  * about to ask for; and the browser stops an idle worker, map and all, within minutes.
@@ -190,7 +190,7 @@ let lastPeopleRefresh: number | null = null;
 let peopleRefresh: Promise<void> | null = null;
 
 /**
- * Keep every person the member can see readable offline (docs/concepts/offline-reading.md §4):
+ * Keep every person the member can see readable offline (docs/02 §2.18, docs/04 ADR-114):
  * drop the pages of anyone no longer visible, then revalidate each person's pages and fetch
  * the avatars not yet kept. One request at a time, in the background, while Stella answers.
  */

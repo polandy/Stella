@@ -1,28 +1,30 @@
 <script lang="ts">
 	import RelationshipMap from '$lib/components/graph/RelationshipMap.svelte';
 	import { withoutRelationships } from '$lib/graph/model/without-pending';
-	import { useI18n } from '$lib/i18n/context.svelte';
-	import { relationshipRowLabel } from '$lib/relationships/labels';
+	import { groupPeople } from '$lib/relationships/people-groups';
+	import { otherEndRole } from '$lib/relationships/roles';
 	import { useRemovals } from '$lib/undo/context.svelte';
 	import { removalKey } from '$lib/undo/keys';
 	import type { PersonPageData } from './types';
 
 	/*
-	 * The People card's map (docs/05 §5.5): who this person is connected to as a shape. Beside
-	 * the list on a wide card, above it on a narrow one, and a small preview on a phone that opens
-	 * the map full screen. It draws as plain SVG and becomes the interactive explorer once the
-	 * engine has loaded.
+	 * The People card's map (docs/05 §5.5): who this person is connected to as a shape, at the
+	 * card's top. A server-drawn preview on every width — a wide strip with first names on a
+	 * wide card, a small ring on a phone — that enlarges into the interactive explorer inside the
+	 * card, or opens it full screen.
 	 */
 	let { data }: { data: PersonPageData } = $props();
 
-	const t = useI18n().t;
 	const c = $derived(data.contact);
 	const removals = useRemovals();
 
 	// One map node per connected person (a person may hold several relationship types; the
-	// map shows them once, keeping the first label). The face comes from the graph slice,
+	// map shows them once, in the first one's category). The face comes from the graph slice,
 	// which already carries every visible person's avatar — so the first paint wears the same
 	// faces the interactive map does, rather than swapping initials for photos as it loads.
+	const firstNameById = $derived(
+		new Map(data.people.map((person) => [person.id, person.firstName]))
+	);
 	const photoById = $derived(
 		new Map(data.graph.nodes.map((node) => [node.id, node.avatarPhotoId ?? null]))
 	);
@@ -45,18 +47,25 @@
 		const out: {
 			id: string;
 			name: string;
-			label: string;
+			firstName: string;
 			category: string;
 			avatarPhotoId: string | null;
 		}[] = [];
-		for (const r of data.relationships) {
-			if (pendingRelationships.has(r.id)) continue;
+		// In the list's order — family first, the closest tie first — so the strip's innermost
+		// faces are the ones the list starts with.
+		const ordered = groupPeople(
+			data.relationships
+				.filter((r) => !pendingRelationships.has(r.id))
+				.map((r) => ({ ...r, role: otherEndRole(r) }))
+		).flatMap((group) => group.rows);
+		for (const r of ordered) {
 			if (seen.has(r.otherContactId)) continue;
 			seen.add(r.otherContactId);
 			out.push({
 				id: r.otherContactId,
 				name: r.otherDisplayName,
-				label: relationshipRowLabel(t, r),
+				// The strip names each face; a record without a first name gives its first word.
+				firstName: firstNameById.get(r.otherContactId) || r.otherDisplayName.split(/\s+/)[0],
 				category: r.category,
 				avatarPhotoId: photoById.get(r.otherContactId) ?? null
 			});

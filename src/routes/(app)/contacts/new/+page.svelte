@@ -70,7 +70,7 @@
 	}
 
 	/*
-	 * Saved through the outbox (docs/concepts/offline-capture.md §8 #10). Out of reach, the
+	 * Saved through the outbox (docs/04 ADR-076). Out of reach, the
 	 * person is kept on this device and added once Stella answers again (docs/02 §2.18). Their
 	 * page cannot open before then, so the form says so and stays here, empty, ready for the
 	 * next one; they show on Home as not sent yet.
@@ -225,7 +225,7 @@
 				data-testid="name-suggestions"
 				aria-live="polite"
 			>
-				<h2 class="text-xs font-medium tracking-wide text-fg-muted uppercase">
+				<h2 class="text-sm font-semibold text-fg">
 					{t('contacts.new.alreadyHere')}
 				</h2>
 				<ul class="flex flex-col gap-1.5">

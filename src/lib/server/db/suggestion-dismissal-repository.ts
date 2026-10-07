@@ -17,7 +17,7 @@ import { suggestionDismissal } from './schema';
 
 /*
  * Drizzle adapter for the SuggestionDismissalRepository port (docs/08 §8.3) — the claims a
- * household has declined (docs/concepts/relationship-suggestions.md §6.4).
+ * household has declined (docs/04 ADR-117).
  *
  * Scoping is the household and nothing finer: the household decided, so any member sees the
  * same answers and any member may take one back. There is no per-contact visibility question
@@ -80,7 +80,7 @@ const LAST_NAME = 'last_name';
 const surnameKey = (contactId: string, folded: string) => `${contactId} ${folded}`;
 
 /*
- * Drizzle adapter for the household's *not this name* (docs/concepts/surnames.md §5): the same
+ * Drizzle adapter for the household's *not this name* (docs/02 §2.2.4.2): the same
  * log as the relationship claims, under `last_name`, keyed by the person and the folded name.
  * Scoped to the household; the use-case has checked the person is visible before writing.
  */

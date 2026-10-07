@@ -1,5 +1,5 @@
 /*
- * After last names are given (docs/concepts/surnames.md §5): who now shares first and last name
+ * After last names are given (docs/02 §2.2.4.4): who now shares first and last name
  * with someone else the viewer can see, so the confirmation can ask *the same person?* and lead
  * to the merge. Pure, over the people the shell already holds; nothing merges on its own.
  */

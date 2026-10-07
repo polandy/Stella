@@ -1,5 +1,5 @@
 /*
- * The sizes a picture is stored at (docs/02 §2.14, docs/concepts/circle-photos.md §5.3). Pure
+ * The sizes a picture is stored at (docs/02 §2.14). Pure
  * geometry, so the browser's canvas code (`./process-image`) only draws what is decided here.
  * A person's or a journal photo is kept at 1600 px. A group photo is kept up to 4096 px, so a
  * face in a class photo can be cut from it, and gets a 1600 px view beside that for the grid and

@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
-import { editPeople, openPerson, pickPerson, signIn } from './app';
+import { editPeople, enlargeMap, openPerson, pickPerson, signIn } from './app';
 import {
 	clickNode,
 	drawnNode,
@@ -29,13 +29,14 @@ const MARKUS = 'demo-c-markus';
 const BETTINA = 'demo-c-bettina';
 const BETTINA_NAME = 'Bettina Roth';
 
-/** The embedded explorer, once the engine has taken the place of the SVG the server sent. */
+/** The embedded explorer, once it has been enlarged out of the preview the server sent. */
 const map = (page: Page) => page.getByRole('group', { name: 'The people around Lena Brunner' });
 
 test.describe('on a person’s page', () => {
 	test.beforeEach(async ({ page }) => {
 		await signIn(page);
 		await openPerson(page, /Lena Brunner/);
+		await enlargeMap(page);
 	});
 
 	test('runs the real explorer, without the controls that are about travelling', async ({
@@ -71,10 +72,11 @@ test.describe('on a person’s page', () => {
 		page
 	}) => {
 		// The menu is taller than the card-sized map, which cuts off whatever runs past it; the
-		// switches at its foot must still be reachable (docs/05 §5.8). A phone shows a preview
-		// instead of the map, so this is the narrowest window that still embeds it.
+		// switches at its foot must still be reachable (docs/05 §5.8). A phone enlarges the map to
+		// about a screen, so this is a narrow window whose enlarged map is the 24 rem one.
 		await page.setViewportSize({ width: 700, height: 915 });
 		await page.reload();
+		await enlargeMap(page);
 		await expect(map(page).locator('canvas').first()).toBeVisible();
 
 		const menu = await filterMenu(map(page));
@@ -97,15 +99,17 @@ test.describe('on a person’s page', () => {
 		page
 	}) => {
 		await expect(map(page).locator('canvas').first()).toBeVisible();
-		await map(page).scrollIntoViewIfNeeded();
+		// Flush to the top, so the map is still on screen once the page above it has grown.
+		await map(page).evaluate((el) => el.scrollIntoView({ block: 'start' }));
 		await settled(page);
 
 		// The canvas learns where it sits when the pointer first crosses it…
 		const lena = await drawnNode(page, LENA);
 		await page.mouse.move(lena.point!.x, lena.point!.y);
 		// …and then the page above it grows — no scroll, no resize, no transition reaches the
-		// canvas, just as when a card above unfolds or the server-drawn map gives way.
-		await map(page).evaluate((el) => {
+		// canvas, just as when a card above unfolds. The spacer goes in before the card's map
+		// frame: the live map stands absolutely inside it, so a sibling there would not move it.
+		await page.getByTestId('person-map-preview').evaluate((el) => {
 			// Without this, Chrome's scroll anchoring silently cancels the growth out: with the
 			// map already scrolled flush to the top, it treats the map as the anchor and adjusts
 			// scrollTop to keep it exactly where it was, so it never visually moves and the case
@@ -199,6 +203,7 @@ test.describe('on a person’s page', () => {
 		// left, and an explorer carried over from the previous person would still be showing
 		// it — over somebody else's neighbourhood.
 		await expect(page).toHaveURL(new RegExp(`/contacts/${nearby}$`));
+		await enlargeMap(page);
 		const theirs = page.getByRole('group', { name: /^The people around / });
 		await expect(theirs.locator('canvas').first()).toBeVisible();
 		await settled(page);
@@ -216,6 +221,7 @@ test.describe('when a relationship is entered', () => {
 	test.beforeEach(async ({ page }) => {
 		await signIn(page);
 		await openPerson(page, /Lena Brunner/);
+		await enlargeMap(page);
 	});
 
 	test('draws the new person into the map, without reloading the page', async ({ page }) => {
@@ -269,6 +275,7 @@ test.describe('when a relationship is entered', () => {
 
 		await openPerson(page, /Lena Brunner/);
 		await expect(page.getByTestId('relationship-list')).not.toContainText(BETTINA_NAME);
+		await enlargeMap(page);
 		await expect(map(page).locator('canvas').first()).toBeVisible();
 		await settled(page);
 		expect(await stateOf(page, BETTINA)).toBe('absent');
@@ -277,24 +284,27 @@ test.describe('when a relationship is entered', () => {
 
 /*
  * What the page shows before — or without — the ~400 KB engine. The server renders the plain
- * SVG ego graph and the explorer takes its place once it has loaded, so the map is never a
- * blank box waiting on a download, and a browser that never finishes the fetch still shows the
- * relationships (docs/05 §5.8).
+ * SVG preview — on a wide card a strip with every first name — and the engine waits behind
+ * *Enlarge map*, so the map is never a blank box waiting on a download, and a browser that
+ * never finishes the fetch still shows the shape; the list under it links everybody
+ * (docs/05 §5.8).
  */
 test.describe('without JavaScript', () => {
 	test.use({ javaScriptEnabled: false });
 
-	test('still draws the relationships, each name a link to that person', async ({ page }) => {
+	test('still draws the people, and the list links each one', async ({ page }) => {
 		await page.goto(`/contacts/${LENA}`);
 
-		// A group, not an img: an img would hide the links inside it from a screen reader.
-		const svg = page.getByRole('group', { name: 'Relationship network for Lena Brunner' });
-		await expect(svg).toBeVisible();
-		await expect(svg.getByRole('link', { name: /Markus Brunner/ })).toHaveAttribute(
-			'href',
-			`/contacts/${MARKUS}`
-		);
-		// The interactive map is the part that never arrives here.
+		const strip = page.getByTestId('person-map-preview').locator('svg.shape-strip');
+		await expect(strip).toBeVisible();
+		await expect(strip.locator('text', { hasText: /^Markus$/ })).toHaveCount(1);
+		await expect(
+			page.getByTestId('relationship-list').getByRole('link', { name: 'Markus Brunner' })
+		).toHaveAttribute('href', `/contacts/${MARKUS}`);
+		// Full screen is a plain link into the graph, and the interactive map never arrives.
+		await expect(
+			page.getByTestId('person-map-preview').getByRole('link', { name: 'Full screen' })
+		).toHaveAttribute('href', `/graph?center=${LENA}`);
 		await expect(page.locator('canvas')).toHaveCount(0);
 	});
 });

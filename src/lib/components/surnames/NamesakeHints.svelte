@@ -3,7 +3,7 @@
 	import type { NamesakeAfterNaming } from '$lib/surnames/namesakes';
 
 	/*
-	 * *The household might already have them* (docs/concepts/surnames.md §5): after a name is
+	 * *The household might already have them* (docs/02 §2.2.4.4): after a name is
 	 * given, someone who now shares first and last name with another person is pointed at the
 	 * merge on that person's page. Nothing merges on its own.
 	 */

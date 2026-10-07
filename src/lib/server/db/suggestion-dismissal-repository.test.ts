@@ -12,8 +12,7 @@ import {
 
 /*
  * Integration spec for the Drizzle SuggestionDismissalRepository: one row per claim however
- * often it is declined, and a log that never crosses a household (docs/concepts/relationship-
- * suggestions.md §6.4).
+ * often it is declined, and a log that never crosses a household (ADR-117, docs/03 §3.9).
  */
 
 const H = 'household-1';
@@ -102,7 +101,7 @@ describe('the dismissal log', () => {
 });
 
 /*
- * The household's *not this name* (docs/concepts/surnames.md §5) lives in the same log, under
+ * The household's *not this name* (docs/02 §2.2.4.2) lives in the same log, under
  * the relation `last_name`, keyed by the person and the folded name.
  */
 describe('the last-name dismissals', () => {

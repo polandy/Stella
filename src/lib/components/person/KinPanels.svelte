@@ -13,7 +13,7 @@
 	import { CURRENT_RELATIONSHIP_STATUS } from '$lib/relationships/status';
 	import { PARENT_CHILD_TYPE_KEY } from '$lib/relationships/type-keys';
 	import { encodeRelationshipChoice } from '$lib/relationships/type-options';
-	import { derivedShownWhenFolded } from '$lib/relationships/people-groups';
+	import { WORKED_OUT } from '$lib/relationships/people-groups';
 	import { addAllBatches, type AddAllBatch } from '$lib/suggestions/add-all';
 	import { claimEndpoints, confirmedClaimFor, directClaimFor } from '$lib/kinship/claims';
 	import { directClaimLabel, kinshipLabel } from '$lib/kinship/labels';
@@ -30,13 +30,13 @@
 	let {
 		data,
 		editing,
-		expanded
+		kinShown
 	}: {
 		data: PersonPageData;
 		/** The card's edit mode, which also puts *Confirm* on every worked-out relative. */
 		editing: boolean;
-		/** Unfolded by the card's *Show more*; folded, only the first worked-out relatives show. */
-		expanded: boolean;
+		/** How many worked-out relatives the card's fold shows: all of them, or none (`foldPeople`). */
+		kinShown: number;
 	} = $props();
 
 	const i18n = useI18n();
@@ -45,9 +45,7 @@
 	const removals = useRemovals();
 	// The shell's one activity indicator, which every change to the graph reports to (docs/05 §5.7).
 	const graphPending = usePending();
-	const shownKin = $derived(
-		data.derivedKin.slice(0, derivedShownWhenFolded(data.derivedKin.length, expanded))
-	);
+	const shownKin = $derived(data.derivedKin.slice(0, kinShown));
 	// A worked-out relative is often on the map too, wearing their face there.
 	const photoById = $derived(
 		new Map(data.graph.nodes.map((node) => [node.id, node.avatarPhotoId ?? null]))
@@ -65,7 +63,7 @@
 	});
 
 	/*
-	 * *Add all* (docs/concepts/multi-pick-relationships.html D7): the claims of the *Also true?*
+	 * *Add all* (docs/02 §2.4, *Several people in one go*): the claims of the *Also true?*
 	 * block that one batch can store, still listed and answerable row by row above. Worked out
 	 * from the rows still standing — one already answered in its undo window is not sent twice.
 	 */
@@ -149,11 +147,7 @@
 		data-kin-scope
 	>
 		<!-- Where focus goes when the last claim here is answered (KinSuggestions). -->
-		<h3
-			class="text-xs font-medium tracking-wide text-fg-subtle uppercase"
-			data-kin-heading
-			tabindex="-1"
-		>
+		<h3 class="text-sm font-semibold text-fg" data-kin-heading tabindex="-1">
 			{t('contact.relationships.alsoTrue')}
 		</h3>
 		<KinSuggestions suggestions={data.proposals} propose={data.proposeFor} bind:answered />
@@ -193,7 +187,7 @@
 {/if}
 
 <!--
-	The on-demand review (docs/concepts/relationship-suggestions.md §6.5). Every
+	The on-demand review (docs/02 §2.4.1). Every
 	other suggestion in Stella lives for one page load after a write; this is the
 	control that asks the same rules what stands around this person *now*, which
 	is the only way a household ever sees what follows from links entered years
@@ -207,11 +201,7 @@
 	>
 		<div class="flex flex-wrap items-center gap-x-2 gap-y-1">
 			<!-- Where focus goes when the last claim here is answered (KinSuggestions). -->
-			<h3
-				class="text-xs font-medium tracking-wide text-fg-subtle uppercase"
-				data-kin-heading
-				tabindex="-1"
-			>
+			<h3 class="text-sm font-semibold text-fg" data-kin-heading tabindex="-1">
 				{t('contact.relationships.reviewHeading')}
 			</h3>
 			<span class="text-xs text-fg-subtle">
@@ -238,10 +228,16 @@
 	stored only when the household says so. Kept visually apart and labelled, so
 	nobody mistakes an inference for something the household wrote down.
 -->
-{#if data.derivedKin.length > 0}
-	<div class="@container mt-3 border-t border-border-subtle pt-2" data-testid="derived-kin">
+{#if shownKin.length > 0}
+	<div
+		class="@container mt-3 border-t border-border-subtle pt-2"
+		data-testid="derived-kin"
+		data-people-group={WORKED_OUT}
+	>
+		<!-- Where the fold's collapsed line hands the cursor once it has unfolded the card. -->
 		<h3
 			class="mb-1 flex items-center gap-1.5 text-[11px] font-semibold tracking-wide text-fg-subtle uppercase"
+			tabindex="-1"
 		>
 			<Icon name="explore" size={12} />{t('contact.relationships.derived')}
 		</h3>

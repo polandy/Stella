@@ -1,5 +1,12 @@
 import { describe, expect, it } from 'bun:test';
-import { currentSection, JUMP_SECTIONS, jumpEntries } from './jump-bar';
+import {
+	barVisible,
+	currentSection,
+	JUMP_SECTIONS,
+	jumpEntries,
+	markedSection,
+	scrollsThePage
+} from './jump-bar';
 
 /*
  * The person page's jump bar (docs/05 §5.5): one link per card worth jumping to, with the
@@ -72,5 +79,55 @@ describe('currentSection', () => {
 		expect(
 			currentSection(cards({ relationships: -900, photos: 200, story: 900, notes: 1400 }), bottom)
 		).toBe('photos');
+	});
+});
+
+describe('markedSection', () => {
+	it('marks the card being read when nothing was tapped', () => {
+		expect(markedSection('photos', null)).toBe('photos');
+		expect(markedSection(null, null)).toBeNull();
+	});
+
+	it('marks the tapped card throughout the glide and after it, whatever passes under the bar', () => {
+		// On the way down Photos passes under the bar; the mark stays on the card asked for.
+		expect(markedSection('photos', 'notes')).toBe('notes');
+		// Notes beside Activity shares its top, and the page cannot scroll Notes any higher.
+		expect(markedSection('story', 'notes')).toBe('notes');
+		expect(markedSection(null, 'relationships')).toBe('relationships');
+	});
+});
+
+describe('scrollsThePage', () => {
+	it('names the keys that move the page, which let go of a tapped card', () => {
+		for (const key of ['PageDown', 'PageUp', 'ArrowDown', 'ArrowUp', 'Home', 'End', ' '])
+			expect(scrollsThePage(key)).toBe(true);
+	});
+
+	it('leaves the keys that only move the cursor, so Tab into the card keeps its mark', () => {
+		for (const key of ['Tab', 'Enter', 'a', 'Escape']) expect(scrollsThePage(key)).toBe(false);
+	});
+});
+
+describe('barVisible', () => {
+	const BAR = 49;
+
+	it('stays away while the identity card still shows below the bar', () => {
+		expect(barVisible({ cardBottom: 640, barHeight: BAR })).toBe(false);
+		expect(barVisible({ cardBottom: BAR + 1, barHeight: BAR })).toBe(false);
+	});
+
+	it('shows once the identity card’s bottom has passed under the bar’s foot', () => {
+		expect(barVisible({ cardBottom: BAR, barHeight: BAR })).toBe(true);
+		expect(barVisible({ cardBottom: -900, barHeight: BAR })).toBe(true);
+	});
+
+	it('shows where a jump to People leaves the page: that card just below the bar', () => {
+		// The page's gap is 20 px, so the identity card's foot stands 20 px above People's top.
+		expect(barVisible({ cardBottom: BAR - 20, barHeight: BAR })).toBe(true);
+	});
+
+	it('follows the bar’s height when its links wrap onto a second row', () => {
+		expect(barVisible({ cardBottom: 80, barHeight: BAR })).toBe(false);
+		expect(barVisible({ cardBottom: 80, barHeight: 2 * BAR })).toBe(true);
 	});
 });

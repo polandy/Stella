@@ -1,5 +1,5 @@
 /*
- * The command vocabulary (docs/concepts/offline-capture.md §3): every change a member can
+ * The command vocabulary (docs/04 §4.11.2): every change a member can
  * make, by name, with the payload it carries and the kind of change it is. Pure and shared, so
  * the outbox on a phone and the dispatcher on the server agree on one spelling — and on which
  * commands a device may hold back while Stella is out of reach. Not under `server/`, so the
@@ -55,6 +55,12 @@ export interface MomentCapturePayload {
 	 * older build queued, found in the body by its `@Handle`.
 	 */
 	newPeople: (string | MomentNewPerson)[];
+	/**
+	 * The person whose page the moment was written on (docs/02 §2.20): it lands in their journal
+	 * without an `@`. Absent, the first person mentioned is the anchor; a phone that queued the
+	 * moment before the field existed sends none.
+	 */
+	anchorId?: string;
 }
 
 /** A person named for the first time in a moment, with what tells them apart (docs/02 §2.2.3). */
@@ -137,7 +143,7 @@ export interface RelationshipAddPayload {
 
 /**
  * One type of link between the person whose page it was entered on and several others at once
- * (docs/02 §2.4, docs/concepts/multi-pick-relationships.html D6). The type, status and
+ * (docs/02 §2.4, ADR-118). The type, status and
  * description are shared; each pair keeps its own since day. Applied all or nothing: one
  * person refused, and none of the links is stored.
  */

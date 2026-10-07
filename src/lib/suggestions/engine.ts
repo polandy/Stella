@@ -6,7 +6,7 @@ import { claimKey } from './claims';
 import type { SuggestionView } from './view';
 
 /*
- * The suggestion engine (docs/concepts/relationship-suggestions.md §6).
+ * The suggestion engine (docs/02 §2.4.1, docs/04 ADR-055).
  *
  * `evaluate` selects the rules that answer the trigger, applies the universal suppressions to
  * all of their output **at once**, and orders what is left. The suppressions live here rather
@@ -21,7 +21,7 @@ import type { SuggestionView } from './view';
 
 /** Which rules answer which trigger. A new rule is a row here, not an edit to a shared switch. */
 const RULES: Record<Trigger['kind'], readonly Rule[]> = {
-	// L3 is a guess, so it answers a write only (docs/concepts/relationship-suggestions.md §3.2).
+	// L3 is a guess, so it answers a write only (docs/02 §2.4.1).
 	'link-stored': [L1, L2, L3],
 	'person-reviewed': [L1, L2, K1],
 	'household-reviewed': [L1, L2, K1]
@@ -43,7 +43,7 @@ const CONFIDENCE_RANK: Record<Confidence, number> = {
 /**
  * How a caller wants the run shaped. Only the dismissal suppression can be asked to stand
  * down, and only into a *marking*: the panel's "show dismissed" list needs the declined rows
- * to exist so a member can take a *no* back (docs/concepts/relationship-suggestions.md §6.5).
+ * to exist so a member can take a *no* back (docs/02 §2.4.1).
  */
 export interface EvaluateOptions {
 	/** List declined claims too, each carrying `dismissedAt`, instead of dropping them. */
@@ -51,8 +51,8 @@ export interface EvaluateOptions {
 }
 
 /**
- * Whether a suggestion must not be shown at all (docs/concepts/relationship-suggestions.md
- * §6.2). Suppressions 1–5. These are hard drops in every run: there is no reading in which a
+ * Whether a suggestion must not be shown at all (docs/02 §2.4.1, docs/04 ADR-055).
+ * Suppressions 1–5. These are hard drops in every run: there is no reading in which a
  * self-link, an invisible person, an already-stored claim — or one the write would refuse —
  * should be listed.
  */
@@ -126,7 +126,7 @@ export function evaluate(
 
 /**
  * `evaluate` for several triggers at once — the links a batch stored together
- * (docs/concepts/multi-pick-relationships.html D7). One list, not one per link: a claim two
+ * (docs/02 §2.4, *Several people in one go*). One list, not one per link: a claim two
  * links lead to is asked once, and the whole batch is in the engine's one order.
  */
 export function evaluateAll(

@@ -13,7 +13,7 @@ import {
 import { assertCropInside, type StoredFraming } from './framing';
 
 /*
- * Profile pictures cut from a group photo (docs/concepts/circle-photos.md §5). A class photo
+ * Profile pictures cut from a group photo (docs/02 §2.14). A class photo
  * already holds everybody's face, so a person's profile picture can be a square of it: a
  * *framing* of the circle photo (docs/03 §photo) that belongs to that person, one per person and
  * photo, rendered once at 1024 px so it can later stand on its own. Nothing is copied into the

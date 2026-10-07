@@ -18,6 +18,7 @@
 		handleFor,
 		insertHandle,
 		listPlacement,
+		pickableBeside,
 		suggest,
 		type ActiveHandle,
 		type ListPlacement
@@ -40,6 +41,7 @@
 		wantsSomethingToKnowThemBy
 	} from '$lib/people/new-person';
 	import type { MomentCapturePayload, MomentNewPerson } from '$lib/commands/commands';
+	import type { MomentDraft } from '$lib/contacts/story-forms';
 	import type { KeptOf, KeptPhoto } from '$lib/pwa/outbox';
 	import { outbox } from '$lib/pwa/outbox.svelte';
 	import { reachability } from '$lib/pwa/reachability.svelte';
@@ -52,7 +54,7 @@
 	 * @-picker, inline "Create …" queue and browser-side photo processing are enhancements.
 	 *
 	 * With JavaScript it saves as a named command through the outbox, in reach or not
-	 * (docs/concepts/offline-capture.md §4, §8 #10): in reach it waits for Stella's answer, and
+	 * (docs/02 §2.18.1, docs/04 ADR-076): in reach it waits for Stella's answer, and
 	 * when there is none it keeps the moment on the device. The name is what makes that safe: a
 	 * moment whose answer was lost on the way is recognised when it arrives a second time.
 	 * `editing` opens a kept moment that has not been sent yet.
@@ -61,6 +63,11 @@
 	 * id token, so two people called Thomas stay two people (docs/02 §2.2.3, `picks.ts`).
 	 * Creating somebody opens a small panel for their name and what to know them by; the text
 	 * then mentions them by a placeholder the server swaps for their id once it has them.
+	 *
+	 * With an `anchor` it is written on that person's own page (docs/02 §2.20): the moment
+	 * belongs to them without an `@`, shown as a chip above the field, and `@` offers everyone
+	 * else. There it saves in place (`onSaved`), can be cancelled (`onCancel`) and reports what
+	 * is typed (`onDraft`), so the page can keep a draft while the spot holds another form.
 	 */
 
 	interface Candidate {
@@ -90,6 +97,22 @@
 		onEditDone?: () => void;
 		/** A moment was kept on this device for later. */
 		onKept?: () => void;
+		/** The person whose page this is: the moment lands in their journal without an `@`. */
+		anchor?: Anchor | null;
+		/** A draft to start from, as `onDraft` or `onCancel` handed it over. */
+		held?: MomentDraft | null;
+		/** Stella took the moment; without it the composer goes back to the stream. */
+		onSaved?: () => void;
+		/** Cancel or Esc, with what was typed; without it the composer has no Cancel. */
+		onCancel?: (draft: MomentDraft) => void;
+		/** What is typed, as it changes. */
+		onDraft?: (draft: MomentDraft) => void;
+	}
+	interface Anchor {
+		id: string;
+		displayName: string;
+		firstName: string | null;
+		avatarPhotoId: string | null;
 	}
 	let {
 		candidates,
@@ -100,7 +123,12 @@
 		autofocus = false,
 		editing = null,
 		onEditDone,
-		onKept
+		onKept,
+		anchor = null,
+		held = null,
+		onSaved,
+		onCancel,
+		onDraft
 	}: Props = $props();
 
 	const t = useTranslate();
@@ -111,19 +139,25 @@
 
 	// svelte-ignore state_referenced_locally -- the kept moment is only a starting value on purpose
 	const kept = editing?.command.payload ?? null;
-	let newPeople = $state<(string | MomentNewPerson)[]>(kept ? [...kept.newPeople] : []);
+	// svelte-ignore state_referenced_locally -- the held draft is only a starting value on purpose
+	const startFrom = kept ?? held;
+	// A kept moment written on a person's page stays theirs, wherever it is opened again.
+	// svelte-ignore state_referenced_locally -- see above
+	const anchorId = anchor?.id ?? kept?.anchorId ?? null;
+	const anchorPerson = $derived(anchor ?? candidates.find((c) => c.id === anchorId) ?? null);
+	let newPeople = $state<(string | MomentNewPerson)[]>(startFrom ? [...startFrom.newPeople] : []);
 	// A kept moment and a draft are stored text: picked people come back as picks.
 	// svelte-ignore state_referenced_locally -- the draft is only a starting value on purpose
 	const startingPeople = [...candidates, ...newPeopleAsCandidates(newPeople)];
 	// svelte-ignore state_referenced_locally -- see above
-	const start = toEditable(kept?.body ?? draft ?? '', (id) => {
+	const start = toEditable(startFrom?.body ?? draft ?? '', (id) => {
 		const person = startingPeople.find((c) => c.id === id);
 		return person ? handleFor(person) : null;
 	});
 	let body = $state(start.text);
 	// Whom each picked handle in the text stands for.
 	let picks: MentionPick[] = start.picks;
-	let visibility = $state<'shared' | 'private'>(kept?.visibility ?? 'shared');
+	let visibility = $state<'shared' | 'private'>(startFrom?.visibility ?? 'shared');
 	// The command this draft will be saved as; a new one after every save.
 	let commandId = $state(ulid());
 	// Bumped after a save to start the day and photo fields afresh. `form.reset()` cannot:
@@ -145,7 +179,9 @@
 	// Picker state: the handle under the caret and the ranked suggestions for it.
 	let active = $state<ActiveHandle | null>(null);
 	let selected = $state(0);
-	const audience = $derived(allowedForAudience(candidates, visibility));
+	const audience = $derived(
+		allowedForAudience([...pickableBeside(candidates, anchorId)], visibility)
+	);
 	const created = $derived(newPeopleAsCandidates(newPeople));
 	const createdIds = $derived(new Set(created.map((c) => c.id)));
 	const known = $derived([...audience, ...created]);
@@ -187,7 +223,10 @@
 	const referenced = $derived(resolved.ids.flatMap((id) => known.filter((c) => c.id === id)));
 	const unclear = $derived(unclearHandles(toStored(body, picks), known, peopleContext()));
 	const canSave = $derived(
-		body.trim().length > 0 && referenced.length > 0 && unclear.length === 0 && !saving
+		body.trim().length > 0 &&
+			(anchorId !== null || referenced.length > 0) &&
+			unclear.length === 0 &&
+			!saving
 	);
 
 	// Leaving the field closes the picker a moment later, so a click on a suggestion still
@@ -328,6 +367,11 @@
 				return;
 			}
 		}
+		if (event.key === 'Escape' && onCancel) {
+			event.preventDefault();
+			cancel();
+			return;
+		}
 		if (event.key === 'Enter' && (event.metaKey || event.ctrlKey) && canSave) {
 			event.preventDefault();
 			(event.currentTarget as HTMLTextAreaElement).form?.requestSubmit();
@@ -346,9 +390,29 @@
 			entryDate: String(data.get('entryDate') ?? day),
 			visibility,
 			// Plain objects: the payload is kept in IndexedDB, which cannot clone a state proxy.
+			newPeople: $state.snapshot(newPeople),
+			...(anchorId ? { anchorId } : {})
+		};
+	}
+
+	/** What is typed, in the form it is stored and started from again. */
+	function currentDraft(): MomentDraft {
+		return {
+			body: toStored(body, picks),
+			visibility,
 			newPeople: $state.snapshot(newPeople)
 		};
 	}
+
+	function cancel() {
+		const typed = currentDraft();
+		clear();
+		onCancel?.(typed);
+	}
+
+	$effect(() => {
+		if (onDraft) onDraft(currentDraft());
+	});
 
 	function clear() {
 		body = '';
@@ -431,6 +495,7 @@
 			}
 			clear();
 			if (delivery.status === 'kept') return onKept?.();
+			if (onSaved) return onSaved();
 			// Back to the stream, offering to link the first two people in it (§2.22.1).
 			const { linkSuggestion } = delivery.result as { linkSuggestion: [string, string] | null };
 			await goto(linkHintHref(linkSuggestion), { invalidateAll: true });
@@ -474,8 +539,28 @@
 	class="relative flex flex-col rounded-app bg-card shadow-card transition-shadow focus-within:ring-2 focus-within:ring-primary/40"
 >
 	<FormError message={error ?? localError} id={errorId} class="mx-3 mt-3" />
+	{#if anchorPerson}
+		<!-- Not removable: the moment is on this person's page, so it is theirs. -->
+		<p class="flex flex-wrap items-center gap-1.5 px-3 pt-3 text-xs text-fg-subtle" data-anchor>
+			<span
+				class="inline-flex items-center gap-1.5 rounded-full bg-primary-soft py-0.5 pr-2.5 pl-0.5 font-semibold text-fg"
+			>
+				<Avatar
+					id={anchorPerson.id}
+					name={anchorPerson.displayName}
+					avatarPhotoId={anchorPerson.avatarPhotoId}
+					size={20}
+				/>{anchorPerson.displayName}
+			</span>
+			{t('composer.anchorGoesTo', {
+				name: anchorPerson.firstName ?? anchorPerson.displayName
+			})}
+		</p>
+	{/if}
 	<div class="flex items-start gap-3 p-3 pb-2">
-		<Avatar id={me.id} name={me.name} avatarPhotoId={me.avatarPhotoId ?? null} size={40} />
+		{#if !anchorPerson}
+			<Avatar id={me.id} name={me.name} avatarPhotoId={me.avatarPhotoId ?? null} size={40} />
+		{/if}
 		<textarea
 			bind:this={textarea}
 			value={body}
@@ -483,8 +568,16 @@
 			rows="2"
 			required
 			data-moment-body
-			placeholder={t('composer.placeholder')}
-			aria-label={t('composer.label')}
+			placeholder={anchorPerson
+				? t('composer.placeholderAbout', {
+						name: anchorPerson.firstName ?? anchorPerson.displayName
+					})
+				: t('composer.placeholder')}
+			aria-label={anchorPerson
+				? t('composer.placeholderAbout', {
+						name: anchorPerson.firstName ?? anchorPerson.displayName
+					})
+				: t('composer.label')}
 			aria-autocomplete="list"
 			aria-controls={listboxId}
 			aria-activedescendant={!creating && active && rows[selected] ? optionId(selected) : undefined}
@@ -643,37 +736,61 @@
 
 	<div class="flex flex-wrap items-center gap-2 border-t border-border-subtle px-3 py-2">
 		<!--
-			A checkbox whose name stays put — "Share with household", checked or not — so a screen
-			reader hears one control changing state rather than a label that swaps under it. The
-			visible word is the state, for the eye. Words on the tint in `--fg` (docs/05 §5.6).
+			A switch, because it is one (docs/05 §5.7): a checkbox in the switch role whose name stays
+			put — "Share with household", on or off — so a screen reader hears one control changing
+			state rather than a label that swaps under it. The visible word is the state with its
+			icon, for the eye.
 		-->
 		<label
-			class="inline-flex cursor-pointer items-center gap-1.5 rounded-full border border-border px-2.5 py-1 text-xs text-fg-muted has-checked:border-transparent has-checked:bg-primary-soft has-checked:font-semibold has-checked:text-fg has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-focus-ring"
+			class="group/share inline-flex cursor-pointer items-center gap-2 rounded-full px-1 py-1 text-xs text-fg-muted has-checked:font-semibold has-checked:text-fg has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-focus-ring"
 		>
 			<input
 				type="checkbox"
+				role="switch"
 				class="sr-only"
 				aria-label={t('composer.shareWithHousehold')}
 				checked={visibility === 'shared'}
 				onchange={(e) =>
 					(visibility = (e.currentTarget as HTMLInputElement).checked ? 'shared' : 'private')}
 			/>
-			<Icon name={visibility === 'shared' ? 'shared' : 'private'} size={13} />
-			<span aria-hidden="true"
-				>{visibility === 'shared' ? t('common.shared') : t('common.private')}</span
+			<span
+				class="relative h-4.5 w-7.5 shrink-0 rounded-full bg-border transition-colors duration-(--motion-fade) ease-standard group-has-checked/share:bg-primary"
+				aria-hidden="true"
+				><span
+					class="absolute top-0.5 left-0.5 size-3.5 rounded-full bg-card shadow-card transition-transform duration-(--motion-fade) ease-standard group-has-checked/share:translate-x-3"
+				></span></span
+			>
+			<span class="inline-flex items-center gap-1" aria-hidden="true"
+				><Icon name={visibility === 'shared' ? 'shared' : 'private'} size={13} />{visibility ===
+				'shared'
+					? t('common.shared')
+					: t('common.private')}</span
 			>
 		</label>
 		<input type="hidden" name="visibility" value={visibility} />
 		{#key fresh}
 			{#if !editing}
-				<!-- `sr-only`, not `hidden`: a hidden input is out of the tab order, and the photo
-			     button with it (WCAG 2.1.1). The pill shows where focus is instead. -->
+				<!-- An icon button, as it acts at once (docs/05 §5.7); the badge counts what was picked.
+				     `sr-only`, not `hidden`: a hidden input is out of the tab order, and the photo
+				     button with it (WCAG 2.1.1). The button shows where focus is instead. -->
 				<label
-					class="inline-flex cursor-pointer items-center gap-1.5 rounded-full border border-border px-2.5 py-1 text-xs text-fg-muted hover:text-fg has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-focus-ring"
+					title={t('composer.addPhotos')}
+					class="relative grid size-8 cursor-pointer place-items-center rounded-full text-fg-muted transition-colors hover:bg-card-hover hover:text-fg has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-focus-ring"
 				>
-					<Icon name="photo" size={13} />
-					{picked.length ? t('composer.photoCount', { count: picked.length }) : t('composer.photo')}
-					<input type="file" accept="image/*" multiple onchange={onFiles} class="sr-only" />
+					<Icon name="photo" size={17} />
+					{#if picked.length}<span
+							class="absolute -top-0.5 -right-1 grid h-4 min-w-4 place-items-center rounded-full bg-primary px-1 text-[10px] font-bold text-primary-fg tabular-nums"
+							aria-hidden="true"
+							data-testid="photo-count">{picked.length}</span
+						>{/if}
+					<input
+						type="file"
+						accept="image/*"
+						multiple
+						aria-label={t('composer.addPhotos')}
+						onchange={onFiles}
+						class="sr-only"
+					/>
 				</label>
 			{/if}
 			<DayPill name="entryDate" value={kept?.entryDate ?? day} today={day} />
@@ -681,6 +798,8 @@
 		<span class="text-xs text-fg-subtle" aria-live="polite">
 			{#if unclear.length}
 				<!-- The box above asks which one. -->
+			{:else if anchorId}
+				{t('composer.mentionsSomeoneElse')}
 			{:else if referenced.length}
 				{t('composer.goesTo')}
 				<b class="font-semibold text-fg-muted">{referenced[0].displayName}</b>{t(
@@ -697,6 +816,8 @@
 				<Button variant="ghost" type="button" onclick={() => onEditDone?.()}
 					>{t('common.cancel')}</Button
 				>
+			{:else if onCancel}
+				<Button variant="ghost" type="button" onclick={cancel}>{t('common.cancel')}</Button>
 			{/if}
 			<Button variant="primary" disabled={!canSave}>
 				{saving
@@ -704,7 +825,9 @@
 					: reachability.reachable
 						? t('common.save')
 						: t('composer.saveForLater')}
-				<kbd class="rounded border border-primary-fg/40 px-1 text-[10px] font-medium opacity-75"
+				<!-- A keyboard's shortcut; a touch screen has no keys to press (docs/05 §5.7). -->
+				<kbd
+					class="rounded border border-primary-fg/40 px-1 text-[10px] font-medium opacity-75 pointer-coarse:hidden"
 					>⌘⏎</kbd
 				>
 			</Button>

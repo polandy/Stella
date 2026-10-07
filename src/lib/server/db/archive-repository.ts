@@ -60,7 +60,7 @@ export const EXPORTED_TABLES: readonly Scoped[] = [
 	{ table: 'photo', where: 't.household_id = ?' },
 	{ table: 'tag', where: 't.household_id = ?' },
 	{ table: 'contact_tag', where: viaContact() },
-	// Which Immich person a contact is; the photos themselves stay in Immich (docs/concepts/immich.md §6).
+	// Which Immich person a contact is; the photos themselves stay in Immich (docs/02 §2.24.5).
 	{ table: 'immich_link', where: viaContact() },
 	// The Immich faces a member said a contact is not; left out, a restore would propose them again.
 	{ table: 'immich_ignore', where: viaContact() },
@@ -74,10 +74,10 @@ export const EXPORTED_TABLES: readonly Scoped[] = [
 	},
 	{ table: 'activity_log', where: 't.household_id = ?' },
 	// The claims the household declined. Left out, a restore would re-offer every suggestion
-	// they have already said no to (docs/concepts/relationship-suggestions.md §6.4).
+	// they have already said no to (docs/04 ADR-117).
 	{ table: 'suggestion_dismissal', where: 't.household_id = ?' },
 	// Which commands were applied. Left out, a phone still holding unsent items could send
-	// them twice to a household restored onto a new server (docs/concepts/offline-capture.md §3).
+	// them twice to a household restored onto a new server (docs/03 §3.3).
 	{ table: 'command_receipt', where: 't.household_id = ?' }
 ];
 

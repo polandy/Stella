@@ -1,5 +1,4 @@
 import { mixHex } from '../../design/color';
-import { AVATAR_TINT_PERCENT } from '../../design/tokens';
 import { FRAME } from '../layout/group-blocks';
 import { LABEL_MIN_ZOOMED_FONT_SIZE, NODE_LABEL_WIDTH } from '../layout/legibility';
 import { expandBadge } from './badge';
@@ -93,7 +92,7 @@ export function buildStylesheet(p: Palette, options: StylesheetOptions = {}): Cy
 		// rings the node, so a face keeps its colour between the list and the map.
 		...Object.entries(p.accents).map(([name, hex]) => ({
 			selector: `node.person[accent = "${name}"]`,
-			style: { 'background-color': mixHex(hex, AVATAR_TINT_PERCENT, p.card), 'border-color': hex }
+			style: { 'background-color': mixHex(hex, p.avatarTint, p.card), 'border-color': hex }
 		})),
 		// A person with a photo wears it, clipped to the disc; the accent stays as the border.
 		{
@@ -115,7 +114,7 @@ export function buildStylesheet(p: Palette, options: StylesheetOptions = {}): Cy
 		{
 			selector: 'node.deceased',
 			style: {
-				'background-color': mixHex(p.fgSubtle, AVATAR_TINT_PERCENT, p.card),
+				'background-color': mixHex(p.fgSubtle, p.avatarTint, p.card),
 				'border-color': p.fgSubtle,
 				'border-style': 'double',
 				'border-width': 5

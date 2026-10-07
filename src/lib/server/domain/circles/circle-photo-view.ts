@@ -2,11 +2,11 @@ import { roleKey } from '../../../circles/role-key';
 import { orderGallery, type Orderable } from '../media/gallery-order';
 
 /*
- * How a circle's photos are laid out on its page (docs/02 §2.4.2, docs/concepts/circle-photos.md
- * §3): the cover, a banner over each role group, the grid and its role chips, and the roles a
- * photo may be given. One rule decides which photo leads a group — the favourite pinned most
- * recently, otherwise the newest — and it is the gallery's own order (`gallery-order.ts`), so
- * the strip and the grid can never disagree about which photo comes first. Pure.
+ * How a circle's photos are laid out on its page (docs/02 §2.4.2): the cover, a banner over each
+ * role group, the grid and its role chips, and the roles a photo may be given. One rule decides
+ * which photo leads a group — the favourite pinned most recently, otherwise the newest — and it is
+ * the gallery's own order (`gallery-order.ts`), so the strip and the grid can never disagree about
+ * which photo comes first. Pure.
  */
 
 /** What the layout reads from a photo. */

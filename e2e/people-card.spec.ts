@@ -52,14 +52,17 @@ test.describe('the compact list', () => {
 		await expect(tile(list(page), 'Noah Brunner')).toHaveAccessibleDescription(/^Son\b/);
 		await expect(tile(list(page), 'Hans Brunner')).toHaveAccessibleDescription(/^Father\b/);
 
-		// Folded: six entered people and two worked-out relatives, the quieter group under its own
-		// heading, each saying whom the tie runs through.
+		// Folded: six entered people, and the worked-out relatives all behind the fold.
 		await expect(list(page).getByRole('link')).toHaveCount(6);
-		await expect(derived(page).getByRole('heading', { name: /^Also related/ })).toBeVisible();
-		await expect(derived(page).getByRole('link')).toHaveCount(2);
-		await expect(derived(page).getByRole('link').first()).toHaveAccessibleDescription(/ · via /);
-		// The friends and the neighbour are past the fold.
+		await expect(derived(page)).toHaveCount(0);
+		// The friends and the neighbour are past the fold, and the line under the tiles says so,
+		// the worked-out block last; Family, partly shown, is counted by its own heading.
 		await expect(list(page).getByRole('heading', { name: /^Friends · / })).toHaveCount(0);
+		const foldedAway = card(page).getByRole('list', { name: 'Folded away' });
+		await expect(foldedAway.getByRole('button')).toHaveText([
+			/^\s*Friends · 3$/,
+			/^\s*Also related · \d+$/
+		]);
 
 		const more = card(page).getByRole('button', { name: /^Show \d+ more$/ });
 		const folded = Number((await more.textContent())?.match(/\d+/)?.[0]);
@@ -70,16 +73,20 @@ test.describe('the compact list', () => {
 		await expect(tile(list(page), 'Thomas Widmer')).toHaveAccessibleDescription(/^Friend\b/);
 		await expect(tile(list(page), 'Kurt Lehmann')).toHaveAccessibleDescription(/^Neighbor\b/);
 		await expect(tile(list(page), 'Daniel Brunner')).toHaveAccessibleDescription(/^Brother\b/);
+		// The worked-out relatives, the quieter group under its own heading, each saying whom the
+		// tie runs through.
+		await expect(derived(page).getByRole('heading', { name: /^Also related/ })).toBeVisible();
+		await expect(derived(page).getByRole('link').first()).toHaveAccessibleDescription(/ · via /);
+		await expect(foldedAway).toHaveCount(0);
 		const entered = await list(page).getByRole('link').count();
 		const workedOut = await derived(page).getByRole('link').count();
-		expect(workedOut).toBeGreaterThan(2);
-		expect(entered - 6 + (workedOut - 2)).toBe(folded);
+		expect(entered - 6 + workedOut).toBe(folded);
 
 		// *Show fewer* folds it again.
 		await card(page).getByRole('button', { name: 'Show fewer' }).click();
 		await expect(card(page).getByRole('button', { name: `Show ${folded} more` })).toBeVisible();
 		await expect(list(page).getByRole('link')).toHaveCount(6);
-		await expect(derived(page).getByRole('link')).toHaveCount(2);
+		await expect(derived(page)).toHaveCount(0);
 	});
 
 	test('groups ties as Family, Friends, Work and Other', async ({ page }) => {
@@ -200,6 +207,11 @@ test.describe('the jump bar', () => {
 			/^Activity/,
 			/^Notes/
 		]);
+		// The bar shows only once the identity card has gone by (docs/05 §5.5).
+		await page
+			.locator('#section-relationships')
+			.evaluate((el) => el.scrollIntoView({ block: 'start' }));
+		await expect(bar(page)).toHaveAttribute('data-visible', 'true');
 
 		await bar(page)
 			.getByRole('link', { name: /^Notes/ })

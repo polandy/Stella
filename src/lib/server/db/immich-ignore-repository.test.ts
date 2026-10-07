@@ -8,7 +8,7 @@ import { createDrizzleImmichIgnoreRepository } from './immich-ignore-repository'
 
 /*
  * Integration spec for the Drizzle ImmichIgnoreRepository: an ignored pair follows its
- * contact's visibility (docs/concepts/immich.md §5), keeps its first record, and goes with the
+ * contact's visibility (docs/02 §2.24.2), keeps its first record, and goes with the
  * contact.
  */
 

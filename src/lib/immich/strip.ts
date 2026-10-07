@@ -1,5 +1,5 @@
 /*
- * The strip of a linked person's latest photos from Immich (docs/concepts/immich.md §4.3), as the
+ * The strip of a linked person's latest photos from Immich (docs/02 §2.24.3), as the
  * browser receives it from `/contacts/{id}/immich/photos`. Shared by the server, which builds it,
  * and the Photos card, which shows it; pure, so the one decision in it is tested without either.
  */
@@ -14,7 +14,7 @@ export interface GlimpsePhoto {
 	thumbnailUrl: string;
 	/** Signed, at Immich's `preview` size: the viewer's picture. */
 	previewUrl: string;
-	/** The photo in Immich's web app, for every member who sees the person (concept §9.2). */
+	/** The photo in Immich's web app, for every member who sees the person (docs/04 ADR-102). */
 	openUrl: string;
 }
 

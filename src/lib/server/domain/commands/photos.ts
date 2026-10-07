@@ -14,7 +14,7 @@ import type {
 } from './dispatch';
 
 /*
- * A photo that follows the command it belongs to (docs/concepts/offline-capture.md §4.2). A
+ * A photo that follows the command it belongs to (docs/04 ADR-111). A
  * phone sends a kept moment, journal-page entry or gallery upload first and its photos after,
  * each photo naming that command by id. The command's receipt says where the photo goes; it
  * lands there as it would have had it come in the same request.

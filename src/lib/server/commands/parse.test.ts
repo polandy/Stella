@@ -2,7 +2,7 @@ import { describe, expect, it } from 'bun:test';
 import { parseCommand, parsePhotoCommand } from './parse';
 
 /*
- * Reading a command off the wire (docs/concepts/offline-capture.md §3). The outbox on a phone
+ * Reading a command off the wire (docs/04 §4.11.2). The outbox on a phone
  * sends JSON that may have been written by an older build, or tampered with; anything that is
  * not exactly a known command is refused as a whole rather than half-read.
  */
@@ -31,6 +31,15 @@ describe('parseCommand', () => {
 			...good,
 			payload: { ...good.payload, body: 'Coffee with @Julia' }
 		});
+	});
+
+	it('reads the person a moment was written on the page of', () => {
+		const parsed = parseCommand({ ...good, payload: { ...good.payload, anchorId: 'markus' } });
+		expect(parsed?.payload).toMatchObject({ anchorId: 'markus' });
+	});
+
+	it('refuses an empty anchor rather than reading it as none', () => {
+		expect(parseCommand({ ...good, payload: { ...good.payload, anchorId: '' } })).toBeNull();
 	});
 
 	it('defaults a moment to shared and to nobody new, as the form does', () => {

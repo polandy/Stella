@@ -4,8 +4,7 @@ import { createTranslator } from '$lib/i18n/translate';
 import { parentThroughSibling } from './reasons';
 
 /*
- * The sentence a suggestion carries (docs/02 §2.19, docs/concepts/relationship-suggestions-
- * implementation.md §6).
+ * The sentence a suggestion carries (docs/02 §2.19, docs/04 ADR-014).
  *
  * A parent claim follows from *two* facts — the parent is on record for one child, and that
  * child and this one are siblings — and the reason has to carry both. Naming only the sibling

@@ -1,7 +1,7 @@
 /*
  * What tapping a person's picture offers (docs/02 §2.14, §2.24.6). With nothing to choose from
  * but a file, the tap opens the file picker at once, as it always did. With their group photos
- * (docs/concepts/circle-photos.md §5.1) or with Immich on this instance, it opens a chooser: a
+ * (docs/02 §2.14) or with Immich on this instance, it opens a chooser: a
  * file, the group photos, and — with Immich — the person's latest Immich photos, or *Find in
  * Immich* while they are not linked yet. Pure, so the one decision is tested without a page.
  */

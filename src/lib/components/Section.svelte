@@ -7,9 +7,8 @@
 	import { FIELD_SELECTOR, firstField } from './first-field';
 	import { focusLeftForm, owesFocusBack } from '$lib/ui/focus-return';
 	import { focusDestination } from '$lib/ui/focus-destination';
-	import { reveal } from '$lib/motion/motion.svelte';
-	import { scrollBehavior } from '$lib/motion/motion';
-	import { prefersReducedMotion } from 'svelte/motion';
+	import { reveal, settleOpenedForm, showOpenedForm } from '$lib/motion/motion.svelte';
+	import { openedFormGlide } from '$lib/motion/motion';
 	import type { IconName } from './icons';
 
 	/*
@@ -124,6 +123,7 @@
 	$effect(() => {
 		const justOpened = expanded && !wasExpanded && error === null;
 		const justClosed = !expanded && wasExpanded;
+		if (expanded && !wasExpanded) openGlide.opening();
 		wasExpanded = expanded;
 		if (justClosed) {
 			const hadFocusInside = focusInForm;
@@ -139,17 +139,23 @@
 		}
 		if (!justOpened || !form) return;
 		void tick().then(() => {
-			card?.scrollIntoView({ block: 'nearest' });
-			firstField([...(form?.querySelectorAll<HTMLElement>(FIELD_SELECTOR) ?? [])])?.focus();
+			if (!card) return;
+			openGlide.opened(
+				showOpenedForm(
+					card,
+					firstField([...(form?.querySelectorAll<HTMLElement>(FIELD_SELECTOR) ?? [])])
+				)
+			);
 		});
 	});
 
-	/* Once the form has grown to its height, all of it is in view — the page glides there. */
+	/*
+	 * Opening brings the card into view the one way every card form does (docs/05 §5.11), and
+	 * settles it once the form has grown.
+	 */
+	const openGlide = openedFormGlide();
 	function keepFormInView() {
-		form?.scrollIntoView({
-			block: 'nearest',
-			behavior: scrollBehavior(prefersReducedMotion.current)
-		});
+		settleOpenedForm(card, form, openGlide.settle());
 	}
 
 	/*
@@ -262,10 +268,20 @@
 		{/if}
 	</section>
 {:else}
-	<section {id} bind:this={card} class="scroll-mt-4 rounded-app bg-card p-4 shadow-card">
+	<!-- `tabindex="-1"` on an anchored card: the jump bar hands it the cursor on arrival. The
+	     check cannot read the value, which is never 0 or above. Named by its heading, so a
+	     screen reader arriving there says which card it is rather than reading all of it. -->
+	<!-- svelte-ignore a11y_no_noninteractive_tabindex -->
+	<section
+		{id}
+		bind:this={card}
+		tabindex={id ? -1 : undefined}
+		aria-labelledby={id && title ? `${id}-title` : undefined}
+		class="scroll-mt-4 rounded-app bg-card p-4 shadow-card"
+	>
 		<header class="mb-3 flex flex-wrap items-center gap-x-2 gap-y-1">
 			{#if title}
-				<h2 class="text-sm font-semibold text-fg">{title}</h2>
+				<h2 id={id ? `${id}-title` : undefined} class="text-sm font-semibold text-fg">{title}</h2>
 				{#if count !== undefined}<span class="text-sm text-fg-subtle">{count}</span>{/if}
 			{/if}
 			<span class="flex-1"></span>

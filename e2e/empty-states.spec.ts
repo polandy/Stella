@@ -166,7 +166,7 @@ test('a new person’s page names them in its empty sections and opens the relat
 
 test('a new person’s journal invites the first entry and opens the composer', async ({ page }) => {
 	await addPerson(page, 'Tobiah', fennwick());
-	await page.getByRole('link', { name: 'Write' }).first().click();
+	await page.getByRole('link', { name: 'Open journal' }).click();
 	await appReady(page);
 
 	await expect(page.getByText('No moments yet.')).toBeVisible();

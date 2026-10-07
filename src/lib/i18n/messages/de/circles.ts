@@ -87,7 +87,7 @@ export const circles: CirclesMessages = {
 	'circles.photos.ownerOnly': 'Nur du kannst das, weil du es hinzugefügt hast:',
 	'circles.photos.previous': 'Vorheriges Foto',
 	'circles.photos.next': 'Nächstes Foto',
-	// Ein Profilbild, aus einem Gruppenfoto geschnitten (docs/concepts/circle-photos.md §5).
+	// Ein Profilbild, aus einem Gruppenfoto geschnitten (docs/02 §2.14).
 	'circles.cut.use': 'Als Profilbild verwenden für …',
 	'circles.cut.dialog': 'Als Profilbild verwenden',
 	'circles.cut.whom': 'Wessen Profilbild ist auf diesem Foto?',

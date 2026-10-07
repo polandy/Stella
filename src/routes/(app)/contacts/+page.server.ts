@@ -68,10 +68,10 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 		// claim a filter that is not being applied.
 		activeTag: showArchived ? null : activeTag,
 		today: todayFor(systemClock),
-		// Whom a last name set here is offered on to (docs/concepts/surnames.md §3.3).
+		// Whom a last name set here is offered on to (docs/02 §2.2.4.5).
 		passOn: surnameHelp.passOn
 	};
 };
 
-/* *Select* → *Set last name* (docs/concepts/surnames.md §3.2), the one batch write. */
+/* *Select* → *Set last name* (docs/02 §2.2.4.3), the one batch write. */
 export const actions: Actions = { ...lastNameActions };

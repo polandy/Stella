@@ -25,7 +25,7 @@ export const contact: ContactMessages = {
 	'contact.archivedOn': (p) => `Archiviert am ${p.day}`,
 	'contact.write': 'Moment festhalten',
 	'contact.logContact': 'Kontakt festhalten',
-	'contact.egoGraphLabel': (p) => `Beziehungsnetz von ${p.name}`,
+	'contact.openJournal': 'Tagebuch öffnen',
 	'contact.story.title': 'Aktivität',
 
 	'contact.section.relationships': 'Menschen',
@@ -173,6 +173,9 @@ export const contact: ContactMessages = {
 	'contact.relationships.group.other': 'Weitere',
 	'contact.relationships.showMore': (p) => `${p.count} weitere zeigen`,
 	'contact.relationships.showFewer': 'Weniger zeigen',
+	'contact.relationships.foldedAway': 'Eingeklappt',
+	'contact.relationships.showGroup': (p) => `${p.group} · ${p.count} zeigen`,
+	'contact.relationships.derivedShort': 'Ebenfalls verwandt',
 	'contact.relationships.editMode': 'Bearbeiten',
 	'contact.relationships.editModeDone': 'Fertig',
 	'contact.relationships.editLink': (p) => `Verbindung zu ${p.name} bearbeiten`,
@@ -281,7 +284,7 @@ export const contact: ContactMessages = {
 	'contact.photos.takenOn': (p) => `Aufgenommen am ${p.date}`,
 	'contact.photos.pin': 'Als Favorit anheften',
 	'contact.photos.unpin': 'Favorit lösen',
-	// Profilbilder aus einem Gruppenfoto (docs/concepts/circle-photos.md §5.2).
+	// Profilbilder aus einem Gruppenfoto (docs/02 §2.14).
 	'contact.photos.cutFrom': (p) => `Aus ${p.circle}`,
 	'contact.photos.onGroupPhotos': 'Auf Gruppenfotos',
 	'contact.photos.groupPhotoOf': (p) => `Gruppenfoto von ${p.circle}`,

@@ -50,7 +50,7 @@ const NEVER_CACHED = [
 	'/settings/export',
 	// Faces and photos from Immich, through the signed proxy: Immich owns them and may delete,
 	// archive or lock one away, and the device keeps no copy of anything from Immich
-	// (docs/concepts/immich.md §4.5). The strip that lists them is a question with a query or
+	// (docs/04 ADR-099). The strip that lists them is a question with a query or
 	// none, and neither a page nor media, so it is never kept either. Nor is *Find your people*,
 	// whose rows are Immich's names, counts and signed faces.
 	IMMICH_MEDIA_PATH,
@@ -59,7 +59,7 @@ const NEVER_CACHED = [
 
 /**
  * Pages the service worker keeps as soon as a page opens in reach, rather than once they are
- * read: the places a phone starts from (docs/concepts/offline-reading.md §4.1). Every update
+ * read: the places a phone starts from (docs/02 §2.18, *What a device keeps*). Every update
  * starts from an empty cache, so without these the app is empty on the train the morning after
  * one — and Settings is opened rarely and wanted offline all the same.
  */

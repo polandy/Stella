@@ -56,9 +56,9 @@
 
 	/*
 	 * Where the picture comes from (`$lib/contacts/avatar-chooser`): a file at once when there is
-	 * nothing else, else the chooser — a file, their group photos (docs/concepts/circle-photos.md
-	 * §5.1), their latest Immich photos or *Find in Immich* (docs/02 §2.24.6). Every source opens
-	 * the same cropper; only how the square is sent differs.
+	 * nothing else, else the chooser — a file, their group photos (docs/02 §2.14), their latest
+	 * Immich photos or *Find in Immich* (docs/02 §2.24.6). Every source opens the same cropper;
+	 * only how the square is sent differs.
 	 */
 	const choices = $derived(avatarChoices({ groupPhotos: groupPhotos.length, immich }));
 	let chooserOpen = $state(false);

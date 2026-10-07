@@ -13,19 +13,19 @@ import { findImmichFaces, type ImmichLinkDeps } from '../domain/immich/links';
 import type { ImmichMediaSigner } from '../domain/immich/signed-media';
 
 /*
- * What the Immich routes answer (docs/concepts/immich.md §5, §6, docs/02 §2.24), decided here so
+ * What the Immich routes answer (docs/02 §2.24.3, §2.24.4), decided here so
  * it can be tested without a server; `src/routes/media/immich/[token]` and
  * `src/routes/(app)/contacts/[id]/immich/{faces,photos}` only wire the services and say a
  * refusal in the reader's language.
  *
  * Every image from Immich — a face in the picker, a photo in the strip or the viewer — comes
  * through one proxy, and only for a token Stella signed after the access layer let the viewer
- * see the contact (concept §9.10). Nothing from it is kept: not by the browser, not by the
- * service worker (concept §4.5).
+ * see the contact (docs/04 ADR-097). Nothing from it is kept: not by the browser, not by the
+ * service worker (docs/04 ADR-099).
  */
 
 /**
- * Nothing from Immich is kept on a device (concept §4.5): Immich owns the photos and may delete,
+ * Nothing from Immich is kept on a device (docs/04 ADR-099): Immich owns the photos and may delete,
  * archive or lock one away at any moment, and a signed URL is only ever meant for the page that
  * received it.
  */
@@ -84,7 +84,7 @@ export async function answerImmichMedia(
 /**
  * `GET /contacts/{id}/immich/photos?cursor=&with=`: a page of the strip under a linked person's
  * gallery, with signed URLs — with `with`, of the photos they are in together with that other
- * person (concept §4.3). Only for people the member can see and who are linked; a failure in
+ * person (docs/02 §2.24.8). Only for people the member can see and who are linked; a failure in
  * Immich is said in the body — the strip then quietly is not there — rather than failing the
  * request.
  */

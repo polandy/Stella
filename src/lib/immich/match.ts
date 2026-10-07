@@ -1,5 +1,5 @@
 /*
- * Which Immich person a contact probably is, by name (docs/concepts/immich.md §4.2). Pure: the
+ * Which Immich person a contact probably is, by name (docs/02 §2.24.7). Pure: the
  * *Find your people* list (docs/02 §2.24.7) reads the household's contacts and Immich's named
  * people through the access layer and the gateway, and this decides what to propose.
  *

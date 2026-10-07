@@ -2,7 +2,7 @@ import { describe, expect, it } from 'bun:test';
 import { addAllBatches } from './add-all';
 
 /*
- * *Add all* on the *Also true?* block (docs/concepts/multi-pick-relationships.html D7): the
+ * *Add all* on the *Also true?* block (docs/02 §2.4, *Several people in one go*): the
  * claims that can be stored as one batch — one person, one type, several people at the other
  * end — so a household that has read them all can take them in one step and one *Undo*.
  */

@@ -14,8 +14,8 @@ import { say, translator } from '$lib/server/i18n/say';
 import type { Actions } from '../$types';
 
 /*
- * The Photos card's Immich menu (docs/concepts/immich.md §4.3). Any member who can see the person
- * may link or unlink them (§9.4); without Immich configured, neither exists. *Use as photo* in the
+ * The Photos card's Immich menu (docs/02 §2.24.2). Any member who can see the person
+ * may link or unlink them; without Immich configured, neither exists. *Use as photo* in the
  * Immich viewer keeps a square of one of their photos as their own (docs/02 §2.24.6).
  */
 export const immichActions = {

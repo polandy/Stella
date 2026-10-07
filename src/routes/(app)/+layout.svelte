@@ -201,8 +201,8 @@
 	});
 
 	/*
-	 * What this member saved while Stella was out of reach (docs/concepts/offline-capture.md
-	 * §4) is sent when the app opens, when Stella answers again, when the tab comes back into
+	 * What this member saved while Stella was out of reach (docs/02 §2.18.1) is sent when the app
+	 * opens, when Stella answers again, when the tab comes back into
 	 * view and when the device joins a network — never on a timer. What Stella took is read back by reloading the page's data.
 	 */
 	onMount(() => {
@@ -297,7 +297,10 @@
 <Toast />
 
 <!-- The visible height, not 100vh: a phone browser counts 100vh with its address bar hidden,
-     so a shell that tall runs its foot under the fixed tab bar while the bar is showing. -->
+     so a shell that tall runs its foot under the fixed tab bar while the bar is showing. The
+     body is held to the same height (`app.css`), so the document never scrolls: only `#content`
+     does, and the motion helpers scroll it alone (`scrollTopToShow`, docs/05 §5.11) — a scrolled
+     document would carry the top bar and the sticky jump bar off the top of the screen. -->
 <!-- The first stop for a keyboard: past the sidebar and the top bar to the page itself. -->
 <a
 	href="#content"
@@ -395,9 +398,20 @@
 					><Logo size={26} wordmark /></a
 				>
 			{:else}
+				<!-- A phone shows only the way back: the page's own name is its card's headline, and the
+				     whole trail would wrap a long one onto a second line (docs/05 §5.4). -->
+				{@const parent = crumbs[crumbs.length - 2]}
+				<nav aria-label={t('nav.breadcrumb')} class="min-w-0 text-sm md:hidden">
+					<a
+						href={parent.href}
+						class="-ml-1 flex min-w-0 items-center gap-0.5 rounded-control py-1 pr-1 text-fg-muted hover:text-fg"
+						data-testid="back-crumb"
+						><Icon name="back" size={16} /><span class="truncate">{parent.label}</span></a
+					>
+				</nav>
 				<nav
 					aria-label={t('nav.breadcrumb')}
-					class="flex min-w-0 flex-wrap items-center gap-1.5 text-sm"
+					class="flex min-w-0 flex-wrap items-center gap-1.5 text-sm max-md:hidden"
 				>
 					{#each crumbs as crumb, i (i)}
 						{#if i > 0}<span class="text-fg-subtle/60" aria-hidden="true">/</span>{/if}

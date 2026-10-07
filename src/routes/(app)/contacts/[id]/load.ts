@@ -90,7 +90,7 @@ export const load = (async ({ locals, params, url }) => {
 		reviewOpen,
 		proposeFor: parseProposePairs(proposeFor)
 	});
-	// Which Immich person they are, when this instance has Immich (docs/concepts/immich.md §4.3).
+	// Which Immich person they are, when this instance has Immich (docs/02 §2.24.2).
 	const immich = getImmich();
 	const immichLinkDeps = getImmichLinkDeps();
 	const immichLink = immichLinkDeps
@@ -134,7 +134,7 @@ export const load = (async ({ locals, params, url }) => {
 		// A shown name a member chose does not follow its parts; the name editor says so (§2.2).
 		shownNameChosen: shownNameIsChosen(contact),
 		/*
-		 * Last names (docs/concepts/surnames.md §3.3, §3.4): the proposal for this person, as
+		 * Last names (docs/02 §2.2.4.5, §2.2.4.6): the proposal for this person, as
 		 * chips under the name, and whom a name given here is offered on to afterwards.
 		 */
 		lastNameHelp: {
@@ -159,15 +159,15 @@ export const load = (async ({ locals, params, url }) => {
 		// The person's photo gallery (docs/02 §2.14), favourites first, already visibility-scoped.
 		gallery: read.gallery,
 		/*
-		 * Immich (docs/concepts/immich.md §4.3): null when this instance has none, so the menu and
+		 * Immich (docs/02 §2.24.2): null when this instance has none, so the menu and
 		 * the line never appear. What Immich says about a linked person is a promise on purpose —
 		 * the page is sent at once and the line fills itself in, so a slow or absent Immich never
-		 * holds the page up (§4.5). `togetherWith` is whom the strip and the relationship rows offer
-		 * photos together with (§4.3, docs/02 §2.24.8).
+		 * holds the page up (docs/02 §2.24.3). `togetherWith` is whom the strip and the relationship
+		 * rows offer photos together with (docs/02 §2.24.8).
 		 */
 		immich: immich ? { linked: immichLink !== null, togetherWith: immichTogether } : null,
 		immichPerson: immich && immichLink ? readLinkedPerson(immich, immichLink.immichPersonId) : null,
-		// Every group photo they were cut from, now and before (docs/concepts/circle-photos.md §5.2).
+		// Every group photo they were cut from, now and before (docs/02 §2.14).
 		groupPhotos: read.groupPhotos,
 		// Their circles' photos a profile picture can be cut from; none means choosing looks as before.
 		groupPhotosToCut: read.groupPhotosToCut,
@@ -182,7 +182,7 @@ export const load = (async ({ locals, params, url }) => {
 		proposals: withReasonsSaid(read.family.kinship.proposals, t),
 		proposeFor,
 		/*
-		 * The on-demand review (docs/concepts/relationship-suggestions.md §6.5): what stands
+		 * The on-demand review (docs/02 §2.4.1): what stands
 		 * around this person right now, asked for rather than raised by a write. Closed, it
 		 * costs nothing — no rule runs until somebody presses the control.
 		 */

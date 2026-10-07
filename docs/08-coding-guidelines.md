@@ -342,15 +342,30 @@ magic literals, no timing-based tests) apply on top of this.
 - **A feature PR is complete**: the domain/access change, the UI that exposes it, the matching
   `docs/` page and `using-stella.md` when a user can see it. Never "UI in a follow-up", never
   "docs later".
-- **Run `/pr-review` on your own PR before asking for the go-ahead** — every PR, and its verdict
-  comment is the evidence it happened. A missing verdict is a blocker, not a formality.
-  Its depth follows the PR's risk (the skill's *Depth* section): a full review for schema,
-  access, offline-command or new-screen changes, a light one otherwise.
+- **Run `/pr-review` on your own PR before asking for the go-ahead** — every PR that touches
+  code, and its verdict comment is the evidence it happened. A missing verdict is a blocker,
+  not a formality. Its depth follows the PR's risk (the skill's *Depth* section): a full review
+  for schema, access, offline-command or new-screen changes, a light one otherwise. A PR that
+  touches only `docs/`, `.claude/` or `*.md` files needs no review — the owner reads it.
 - **Agents**: implementation goes to the `stella-implementer` agent, reviews to
-  `stella-reviewer` (`.claude/agents/`), which carry these rules so a brief only states scope
-  and decisions. Agents read doc *sections*, not whole docs; never run `bun run test:e2e`
-  (CI does, on every push); and read a red run with `scripts/ci-failures.sh <PR>` before
-  reaching for the full log.
+  `stella-reviewer` (`.claude/agents/`), which carry these rules so a brief only states scope,
+  tier and decisions. Agents read doc *sections*, not whole docs; never run the whole
+  `bun run test:e2e` (CI does, on every push) — but a PR that edits an existing
+  `e2e/*.spec.ts` runs just the specs `.claude/skills/feature-review/affected-specs.sh` lists
+  before the push; and read a red run with `scripts/ci-failures.sh <PR>` before reaching for
+  the full log.
+- **Model by tier.** The implementer inherits its model; the orchestrator picks it per brief
+  with the Agent tool's `model` parameter, using the review's tiers: `opus` for **Full** (a
+  schema or `drizzle/` change, access or visibility rules, the offline command path, a new
+  dependency, a new screen), `sonnet` for **Light** (copy, styling, a contained component or
+  pure-module change, docs). The brief names the tier. An orchestrator session that only
+  delegates and relays runs on Sonnet too.
+- **Session budget.** One session per PR or backlog row; `/clear` or a new session between
+  tasks. A subagent past ~120k of context or ~150 turns stops, writes a hand-off (branch, done,
+  open, the next command) and returns; the orchestrator starts a fresh agent with it rather than
+  continuing the old one, and relays an agent's report instead of re-reading the diff it
+  reviewed. Change an existing file with `Edit`; `Write` is for new files only — never a heredoc
+  or script that rewrites a whole file.
 - **A UI change ships a running Playwright case**, added after the owner's OK (§8.4.1). It
   asserts what is *rendered*, never only the URL, and never waits on a timeout: if nothing
   observable exists to wait on, that absence is the defect — give the production code a signal.

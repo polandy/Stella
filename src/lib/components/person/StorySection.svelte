@@ -2,13 +2,21 @@
 	import Button from '$lib/components/Button.svelte';
 	import DateField from '$lib/components/DateField.svelte';
 	import KeptItem from '$lib/components/KeptItem.svelte';
+	import MomentComposer from '$lib/components/MomentComposer.svelte';
 	import PersonSearchSelect from '$lib/components/PersonSearchSelect.svelte';
 	import Section from '$lib/components/Section.svelte';
 	import StoryTimeline from '$lib/components/StoryTimeline.svelte';
 	import { enhance } from '$app/forms';
-	import { goto } from '$app/navigation';
+	import { goto, invalidateAll } from '$app/navigation';
 	import type { JsonCommand } from '$lib/commands/commands';
 	import { contactSectionPath, sectionAnchor } from '$lib/contacts/sections';
+	import {
+		draftWorthUndo,
+		withLogAsked,
+		withMomentAsked,
+		type MomentDraft,
+		type StoryForm
+	} from '$lib/contacts/story-forms';
 	import { dayLabel } from '$lib/dates/labels';
 	import { useI18n } from '$lib/i18n/context.svelte';
 	import {
@@ -17,29 +25,34 @@
 		KIND_PRESENTATION,
 		type InteractionKind
 	} from '$lib/interactions/kinds';
+	import { asTyped, newPeopleAsCandidates } from '$lib/mentions/picks';
+	import { reveal, settleOpenedForm, showOpenedForm } from '$lib/motion/motion.svelte';
+	import { openedFormGlide } from '$lib/motion/motion';
 	import { keepable } from '$lib/pwa/keepable';
 	import { isKept, type KeptOf } from '$lib/pwa/outbox';
 	import { outbox } from '$lib/pwa/outbox.svelte';
 	import { useRemovals } from '$lib/undo/context.svelte';
 	import { savedEnhance } from '$lib/undo/saved';
 	import type { SubmitFunction } from '@sveltejs/kit';
+	import { tick } from 'svelte';
 	import { ulid } from 'ulid';
 	import { INPUT } from './inputs';
 	import type { PersonForm, PersonPageData } from './types';
 
-	// What has happened with someone (docs/02 §2.23): the person page's story card and its log form.
+	/*
+	 * What has happened with someone (docs/02 §2.23): the person page's story card, with the
+	 * moment composer and the log form sharing the spot at its top, one at a time (docs/05 §5.5).
+	 * The identity card opens either through `writeMoment` and `logContact`.
+	 */
 	let {
 		data,
 		form,
-		otherContacts,
-		logOpen = $bindable()
+		otherContacts
 	}: {
 		data: PersonPageData;
 		form: PersonForm;
-		/** Whom else a touchpoint can name: everyone visible but this person. */
+		/** Whom else a touchpoint or a moment can name: everyone visible but this person. */
 		otherContacts: PersonPageData['people'];
-		/** Whether the log form is open; the hero's "Log contact" opens it too. */
-		logOpen: boolean;
 	} = $props();
 
 	const i18n = useI18n();
@@ -55,6 +68,122 @@
 	};
 
 	let participantIds = $state<string[]>([]);
+
+	// Which form holds the spot at the top of the card; the other keeps what was typed in it.
+	let openForm = $state<StoryForm | null>(null);
+	const logOpen = $derived(openForm === 'log');
+	function closeForm(which: StoryForm) {
+		if (openForm === which) openForm = null;
+	}
+
+	/*
+	 * The moment composer, anchored on this person (docs/02 §2.20). Its draft lives here, so it
+	 * survives the composer folding away for the log form; `composerRun` starts a fresh composer
+	 * from it, which an *Undo* needs while the old one may still be folding away.
+	 */
+	let momentDraft = $state<MomentDraft | null>(null);
+	let composerRun = $state(0);
+	let editingMoment = $state<KeptOf<'moment.capture'> | null>(null);
+	// Whether opening glided the card, for settling it once the composer has grown.
+	const composerGlide = openedFormGlide();
+	let composerBox: HTMLElement | undefined = $state();
+	function keepComposerInView() {
+		settleOpenedForm(
+			document.getElementById(sectionAnchor('story')),
+			composerBox,
+			composerGlide.settle()
+		);
+	}
+
+	/** Open the composer — or, open already, bring the reader back to it. */
+	export async function writeMoment() {
+		const next = withMomentAsked(openForm);
+		if (next.opened) composerGlide.opening();
+		openForm = next.open;
+		if (next.opened) await tick();
+		const card = document.getElementById(sectionAnchor('story'));
+		const field = card?.querySelector<HTMLTextAreaElement>('[data-moment-body]');
+		// The way every card form opens (docs/05 §5.11): a card low in the view or off screen
+		// glides to just under the top bar, so on a phone the field sits above the keyboard.
+		if (card) composerGlide.opened(showOpenedForm(card, field));
+		field?.setSelectionRange(field.value.length, field.value.length);
+	}
+
+	export function logContact() {
+		openForm = withLogAsked(openForm, true);
+	}
+
+	/*
+	 * The composer folds away with the cursor in it; the browser would drop focus on the page
+	 * and the next Tab start at the top. It goes to the card's *Log contact* instead, as a
+	 * closing log form hands it back (WCAG 2.4.3).
+	 */
+	function closeMoment() {
+		const active = document.activeElement;
+		const focusInComposer =
+			!active || active === document.body || active.closest('[data-testid="story-composer"]');
+		closeForm('moment');
+		if (!focusInComposer) return;
+		document
+			.getElementById(sectionAnchor('story'))
+			?.querySelector<HTMLElement>('[data-section-toggle]')
+			?.focus({ preventScroll: true });
+	}
+
+	function momentCancelled(draft: MomentDraft) {
+		momentDraft = null;
+		closeMoment();
+		const offered = draftWorthUndo(draft);
+		if (!offered) return;
+		removals.notify(t('composer.discarded'), () => {
+			momentDraft = offered;
+			composerRun++;
+			void writeMoment();
+		});
+	}
+
+	async function momentSaved() {
+		momentDraft = null;
+		closeMoment();
+		removals.notify(t('components.saved'));
+		// The timeline is the page's: a fresh first page shows the moment at the top.
+		await invalidateAll();
+	}
+
+	function momentKept() {
+		momentDraft = null;
+		closeMoment();
+	}
+
+	/*
+	 * Moments written here while Stella was out of reach, kept on the device beside the kept
+	 * logs until they are sent. Editing one opens it in the composer, which saves into the copy.
+	 */
+	const keptMoments = $derived(
+		outbox.mine.filter(
+			(item): item is KeptOf<'moment.capture'> =>
+				isKept(item, 'moment.capture') && item.command.payload.anchorId === c.id
+		)
+	);
+	async function editKeptMoment(item: KeptOf<'moment.capture'>) {
+		if (!(await outbox.hold(item.command.id))) return;
+		const held = outbox.mine.find((i) => i.command.id === item.command.id);
+		editingMoment = held && isKept(held, 'moment.capture') ? held : null;
+		composerRun++;
+		await writeMoment();
+	}
+	function stopEditingMoment() {
+		closeMoment();
+	}
+	// However the edit ends — saved, cancelled, or the log form taking the spot — the kept
+	// moment is let go, to be sent with the rest.
+	$effect(() => {
+		if (openForm === 'moment' || !editingMoment) return;
+		const item = editingMoment;
+		editingMoment = null;
+		composerRun++;
+		void outbox.release(item.command.id);
+	});
 
 	/*
 	 * Calls and visits logged here while Stella was out of reach (docs/02 §2.18): kept on the
@@ -87,7 +216,7 @@
 	}
 	function closeLog() {
 		clearLog();
-		logOpen = false;
+		closeForm('log');
 	}
 	async function editKeptLog(item: KeptOf<'interaction.log'>) {
 		if (!(await outbox.hold(item.command.id))) return;
@@ -100,7 +229,7 @@
 		logVisibility = p.visibility;
 		participantIds = [...p.participantIds];
 		logFresh++;
-		logOpen = true;
+		openForm = 'log';
 	}
 	$effect(() => {
 		if (logOpen || !editingLog) return;
@@ -156,7 +285,7 @@
 		if (command?.type === 'interaction.log')
 			void outbox.revise(item.command.id, command.payload, ulid());
 		clearLog();
-		logOpen = false;
+		closeForm('log');
 	};
 </script>
 
@@ -165,9 +294,61 @@
 	title={t('contact.story.title')}
 	addLabel={t('contact.logContact')}
 	addIcon="met"
-	bind:open={logOpen}
+	bind:open={() => logOpen, (wanted) => (openForm = withLogAsked(openForm, wanted))}
 	error={form?.interactionError ?? null}
 >
+	{#snippet action()}
+		<Button variant="ghost" size="sm" icon="journal" href="/contacts/{c.id}/journal"
+			>{t('contact.openJournal')}</Button
+		>
+	{/snippet}
+	{#if openForm === 'moment'}
+		<!-- Unfolds in place (docs/05 §5.11); keyed so an Undo starts from the draft it offers. -->
+		<div
+			bind:this={composerBox}
+			transition:reveal
+			onintroend={keepComposerInView}
+			class="mb-3"
+			data-testid="story-composer"
+		>
+			{#key composerRun}
+				<MomentComposer
+					candidates={otherContacts}
+					me={{ id: data.user.id, name: data.user.name }}
+					{today}
+					anchor={c}
+					held={editingMoment ? null : momentDraft}
+					editing={editingMoment}
+					onEditDone={stopEditingMoment}
+					onSaved={momentSaved}
+					onKept={momentKept}
+					onCancel={editingMoment ? undefined : momentCancelled}
+					onDraft={editingMoment ? undefined : (draft) => (momentDraft = draft)}
+				/>
+			{/key}
+		</div>
+	{/if}
+	{#if keptMoments.length > 0}
+		<ul class="mb-3 flex flex-col gap-2" data-testid="kept-moments">
+			{#each keptMoments as item (item.command.id)}
+				<li>
+					<KeptItem {item} onEdit={() => editKeptMoment(item)}>
+						{#snippet meta()}
+							<span class="ml-auto text-xs whitespace-nowrap text-fg-subtle"
+								>{dayLabel(i18n, item.command.payload.entryDate)}</span
+							>
+						{/snippet}
+						<p class="mt-1 font-serif whitespace-pre-line text-fg">
+							{asTyped(item.command.payload.body, [
+								...data.people,
+								...newPeopleAsCandidates(item.command.payload.newPeople)
+							])}
+						</p>
+					</KeptItem>
+				</li>
+			{/each}
+		</ul>
+	{/if}
 	{#if keptLogs.length > 0}
 		<ul class="mb-3 flex flex-col gap-2" data-testid="kept-logs">
 			{#each keptLogs as item (item.command.id)}
@@ -193,18 +374,20 @@
 	{/if}
 	<!-- Keyed on the story itself: the timeline owns its paged list, so a new touchpoint
 		     reaches it as a fresh first page when the page's data is reloaded. -->
-	{#key data.story}
-		<StoryTimeline contactId={c.id} initial={data.story} />
-	{/key}
+	<!-- A person with nothing yet: the empty state steps aside while the composer is open. -->
+	{#if !(openForm === 'moment' && data.story.items.length === 0)}
+		{#key data.story}
+			<StoryTimeline contactId={c.id} initial={data.story} />
+		{/key}
+	{/if}
 
 	{#snippet editor()}
 		<form method="POST" action="?/logInteraction" use:enhance={logForm} class="flex flex-col gap-3">
 			<div class="flex flex-wrap items-end gap-2">
-				<select name="kind" aria-label={t('contact.kind')} class={INPUT}>
+				<!-- Bound, so the kind chosen survives the composer taking the spot for a while. -->
+				<select name="kind" aria-label={t('contact.kind')} class={INPUT} bind:value={logKind}>
 					{#each data.interactionKinds as kind (kind)}
-						<option value={kind} selected={kind === logKind}
-							>{t(KIND_PRESENTATION[kind].label)}</option
-						>
+						<option value={kind}>{t(KIND_PRESENTATION[kind].label)}</option>
 					{/each}
 				</select>
 				{#key logFresh}<DateField

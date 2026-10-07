@@ -13,7 +13,7 @@ import { circle, circleMembership, contact } from './schema';
 
 /*
  * Drizzle adapter for what the last-name rules read beyond the kinship graph
- * (docs/concepts/surnames.md §4, §8): every person the viewer may see — archived ones too,
+ * (docs/02 §2.2.4.1): every person the viewer may see — archived ones too,
  * since a grandmother's name is still a source — and the family-kind circles with their visible
  * members. Scoped through the central conditions (docs/03 §3.7); a circle's name is carried for
  * the reason only and never read as a name.

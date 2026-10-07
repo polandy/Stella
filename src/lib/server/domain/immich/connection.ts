@@ -2,12 +2,12 @@ import type { Clock } from '../../clock';
 import type { ImmichGateway, ImmichOwner, ImmichScope, ImmichVersion } from './gateway';
 
 /*
- * "Is Stella connected to Immich, and to whose?" (docs/concepts/immich.md §4.1). Settings shows
+ * "Is Stella connected to Immich, and to whose?" (docs/02 §2.24.1). Settings shows
  * the answer as one line to every member. The answer is kept for a while, so opening pages does
  * not turn into a round of calls to Immich each time.
  */
 
-/** The oldest Immich Stella speaks to (decision §9.5): one code path, the v3.2 search form. */
+/** The oldest Immich Stella speaks to (docs/04 ADR-103): one code path, the v3.2 search form. */
 export const MINIMUM_VERSION: ImmichVersion = { major: 3, minor: 2, patch: 0 };
 
 /** How long a good answer is kept. The key and the server rarely change; a restart is needed anyway. */
@@ -33,7 +33,7 @@ export interface ImmichConnectionDeps {
 	clock: Clock;
 }
 
-/** Whether a server is new enough for Stella (§9.5). */
+/** Whether a server is new enough for Stella (docs/04 ADR-103). */
 export function isSupportedVersion(version: ImmichVersion): boolean {
 	if (version.major !== MINIMUM_VERSION.major) return version.major > MINIMUM_VERSION.major;
 	if (version.minor !== MINIMUM_VERSION.minor) return version.minor > MINIMUM_VERSION.minor;

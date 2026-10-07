@@ -131,7 +131,7 @@ test('follows a rename of the mentioned person, in the chip and in the search', 
 
 test('offers the same picker in the journal composer, which had none', async ({ page }) => {
 	await openPerson(page, SUBJECT);
-	await page.getByRole('link', { name: 'Write' }).first().click();
+	await page.getByRole('link', { name: 'Open journal' }).click();
 	await appReady(page);
 	// The composer sits behind a button, so the journal opens as a list rather than a form.
 	await page.getByRole('button', { name: 'Write a moment' }).click();

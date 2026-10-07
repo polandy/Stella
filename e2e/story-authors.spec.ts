@@ -37,7 +37,7 @@ test('offers to remove only the items the viewer wrote', async ({ page }) => {
 });
 
 test('says the same on the journal page, where there is no kind beside it', async ({ page }) => {
-	await page.getByRole('link', { name: 'Write' }).first().click();
+	await page.getByRole('link', { name: 'Open journal' }).click();
 	await expect(page.getByRole('heading', { name: 'Journal' })).toBeVisible();
 
 	const hers = page.locator('article', { hasText: NINA_ENTRY });

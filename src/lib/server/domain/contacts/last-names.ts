@@ -24,7 +24,7 @@ import { withNameParts } from '../../../people/display-name';
 import type { NameDeps, NameWrite } from './name-parts';
 
 /*
- * Last names for several people at once (docs/concepts/surnames.md §3, §5, §7). One write
+ * Last names for several people at once (docs/02 §2.2.4.4). One write
  * behind every bulk path — the *Last names* list, *Select* on People and on a circle, passing a
  * name on — and the household's *not this name*. Nothing is written without a tap, and nothing
  * already there is overwritten unless that person was ticked by hand.

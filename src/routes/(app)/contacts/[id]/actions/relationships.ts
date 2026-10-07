@@ -97,8 +97,8 @@ export const relationshipActions = {
 	},
 
 	/**
-	 * Link several people in one go (docs/02 §2.4, docs/concepts/multi-pick-relationships.html
-	 * D6): the shared fields once, then `targetId` and `sinceDate` once per picked person, in
+	 * Link several people in one go (docs/02 §2.4, ADR-118): the shared fields once, then
+	 * `targetId` and `sinceDate` once per picked person, in
 	 * the same order. All or nothing; a refusal names each refused person so the form can mark
 	 * them. Applied, it answers the new ids, so one *Undo* can take the whole batch back
 	 * (`removeRelationships`).
@@ -253,7 +253,7 @@ export const relationshipActions = {
 
 	/**
 	 * Decline a claim, so it stops being offered however a rule reaches it later
-	 * (docs/concepts/relationship-suggestions.md §6.4). The household decided, so the *no*
+	 * (docs/04 ADR-117). The household decided, so the *no*
 	 * holds for every member — and `restoreSuggestion` takes it back.
 	 */
 	dismissSuggestion: async ({ request, params, locals }) => {

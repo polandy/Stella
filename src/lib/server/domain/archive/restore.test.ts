@@ -240,7 +240,7 @@ function fullHousehold(): HouseholdSnapshot {
 					pinned_at: EXPORTED,
 					created_at: EXPORTED
 				},
-				// Hans's profile picture, cut from the team photo (docs/concepts/circle-photos.md §5).
+				// Hans's profile picture, cut from the team photo (docs/02 §2.14).
 				{
 					id: 'p-cut',
 					household_id: 'h-1',

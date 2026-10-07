@@ -45,13 +45,14 @@
 	 * The relationships card's add form (docs/02 §2.4). What is being entered — the other ends,
 	 * the picked entry — is bound to the card, which outlives this form being opened and closed.
 	 *
-	 * The person field takes several people (docs/concepts/multi-pick-relationships.html): the
+	 * The person field takes several people (docs/02 §2.4, *Several people in one go*): the
 	 * type, status and description are shared, the since day is worked out per pair, and the type
 	 * decides how many people the field takes. One person picked saves exactly as it always has
 	 * (`relationship.add`, then *Also true?* for the pair); several save as one batch
 	 * (`relationship.addMany`), all or nothing, with one *Undo* — and then *Also true?* for the
-	 * whole batch at once (D7). With one parent picked for "Child of", the likely second parent
-	 * is offered under the field (D4, rule L3): one tap makes them a chip, nothing is preselected.
+	 * whole batch at once (ADR-118). With one parent picked for "Child of", the likely second
+	 * parent is offered under the field (rule L3, §2.4.1): one tap makes them a chip, nothing is
+	 * preselected.
 	 */
 	let {
 		data,
@@ -157,7 +158,7 @@
 						);
 						closeRelate();
 						// Back on the card naming every new pair, so *Also true?* is worked out for the
-						// whole batch at once rather than for whichever link came last (D7).
+						// whole batch at once rather than for whichever link came last.
 						await goto(
 							proposeHref(
 								c.id,
@@ -197,7 +198,7 @@
 	const nameOfPicked = (id: string) =>
 		pickedPeople.find((person) => person.id === id)?.displayName ?? nameOfContact(id);
 
-	/** An entry is greyed out only when it is refused for everyone picked (D3). */
+	/** An entry is greyed out only when it is refused for everyone picked. */
 	const forEveryone = (option: RelationshipChoices[number]) =>
 		exclusionForEveryone(picked, (targetId) => exclusionOf(option, targetId));
 	/*
@@ -259,7 +260,7 @@
 			: null
 	);
 	/*
-	 * The likely second parent (D4, rule L3), offered under the field while one parent is picked
+	 * The likely second parent (rule L3), offered under the field while one parent is picked
 	 * for "Child of". Someone the field could take: visible here, and not ruled out by the same
 	 * exclusion rules that grey out an entry.
 	 */
@@ -291,7 +292,7 @@
 			? { category: chosen.type.category, symmetric: chosen.type.symmetric, side: chosen.side }
 			: null
 	);
-	/** The since day per pair, from the birthday rule (D5). */
+	/** The since day per pair, from the birthday rule. */
 	const sincePairs = $derived(sincePerPair(kinChoice, data.contact, pickedPeople));
 	const sameSince = $derived(sharedSince(sincePairs));
 	/** *Use one date for all*, chosen while the pairs' days differ. */

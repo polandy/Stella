@@ -271,17 +271,17 @@ export function getContacts(): ContactRepository & NameCandidateSource & NameRep
 	return (contactRepository ??= createDrizzleContactRepository(getDb()));
 }
 
-/** Deps for changing name parts, one person or several (docs/concepts/surnames.md §7). */
+/** Deps for changing name parts, one person or several (docs/02 §2.2, §2.2.4.4). */
 export function getNameDeps(): NameDeps {
 	return { names: getContacts(), clock: systemClock, ids: ulidGenerator };
 }
 
-/** Deps for setting last names in one batch, with its log entry (docs/concepts/surnames.md §7). */
+/** Deps for setting last names in one batch, with its log entry (docs/02 §2.2.4.4). */
 export function getLastNameDeps(): LastNameDeps {
 	return getNameDeps();
 }
 
-/** Deps for reading what Stella proposes as last names (docs/concepts/surnames.md §4). */
+/** Deps for reading what Stella proposes as last names (docs/02 §2.2.4.1). */
 export function getSurnameReviewDeps(): SurnameReviewDeps {
 	return {
 		surnames: createDrizzleSurnameFacts(getDb()),
@@ -290,7 +290,7 @@ export function getSurnameReviewDeps(): SurnameReviewDeps {
 	};
 }
 
-/** Deps for the household's *not this name* (docs/concepts/surnames.md §5). */
+/** Deps for the household's *not this name* (docs/02 §2.2.4.2). */
 export function getSurnameDismissalDeps(): SurnameDismissalDeps {
 	return {
 		names: getContacts(),
@@ -381,7 +381,7 @@ export function getRelationshipDeps(): RelationshipDeps {
 
 let suggestionDismissalRepository: SuggestionDismissalRepository | null = null;
 
-/** The claims the household has declined (docs/concepts/relationship-suggestions.md §6.4). */
+/** The claims the household has declined (docs/04 ADR-117). */
 export function getSuggestionDismissals(): SuggestionDismissalRepository {
 	return (suggestionDismissalRepository ??= createDrizzleSuggestionDismissalRepository(getDb()));
 }
@@ -611,7 +611,7 @@ function viewerOf(actor: CommandActor): Viewer {
 	return { id: actor.userId, householdId: actor.householdId };
 }
 
-/** The dispatcher every change goes through (docs/concepts/offline-capture.md §3). */
+/** The dispatcher every change goes through (docs/04 §4.11.2). */
 export function getCommandDeps(): CommandDeps {
 	const capture = getCaptureMomentDeps();
 	const receipts = (commandReceiptRepository ??= createDrizzleCommandReceiptRepository(getDb()));
@@ -741,7 +741,7 @@ export function getCirclePhotoDeps(): CirclePhotoDeps {
 
 let cutRepository: CutRepository | null = null;
 
-/** Deps for profile pictures cut from a group photo (docs/concepts/circle-photos.md §5). */
+/** Deps for profile pictures cut from a group photo (docs/02 §2.14). */
 export function getCutDeps(): CutDeps {
 	return {
 		cuts: (cutRepository ??= createDrizzleCutRepository(getDb())),
@@ -763,13 +763,13 @@ export interface Immich {
 	gateway: ImmichGateway;
 	connection: ImmichConnection;
 	publicUrl: string;
-	/** Signs every image URL the browser gets for Immich (docs/concepts/immich.md §5). */
+	/** Signs every image URL the browser gets for Immich (docs/02 §2.24.4). */
 	signer: ImmichMediaSigner;
 }
 
 /*
  * Immich, or null when this instance has none — the feature then appears nowhere
- * (docs/concepts/immich.md §6). Built once, because the connection caches its status. The demo
+ * (docs/04 §4.3). Built once, because the connection caches its status. The demo
  * server gets the in-memory stand-in, so the feature can be tried without a real Immich.
  */
 let immich: Immich | null | undefined;

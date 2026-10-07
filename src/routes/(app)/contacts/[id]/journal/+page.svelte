@@ -49,8 +49,8 @@
 	}
 
 	/*
-	 * An entry is saved as a command through the outbox, in reach or not (docs/concepts/
-	 * offline-capture.md §4.1, §8 #10): its photos are processed first (downscaled, location
+	 * An entry is saved as a command through the outbox, in reach or not (docs/02 §2.18.1, docs/04
+	 * ADR-076): its photos are processed first (downscaled, location
 	 * stripped) and follow it. Kept on the device when Stella cannot take it, it shows above the
 	 * timeline until it is sent. Without JavaScript the form posts to its action as before.
 	 */

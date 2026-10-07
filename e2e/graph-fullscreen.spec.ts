@@ -1,5 +1,5 @@
 import { devices, expect, test } from '@playwright/test';
-import { signIn } from './app';
+import { enlargeMap, signIn } from './app';
 import { settled } from './graph-canvas';
 
 /*
@@ -69,6 +69,7 @@ test('touch full screen locks the page’s real scroll container, not document.b
 	page
 }) => {
 	await page.goto('/contacts/demo-c-lena');
+	await enlargeMap(page);
 	const map = page.getByRole('group', { name: 'The people around Lena Brunner' });
 	await expect(map.locator('canvas').first()).toBeVisible();
 	await map.scrollIntoViewIfNeeded();

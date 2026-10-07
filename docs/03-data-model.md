@@ -426,7 +426,7 @@ explicit row with `remind = 0`). See docs/02 §2.13.
 | circle_id | text null | set = belongs to that circle's photos (docs/02 §2.4.2), not to any person; no fk |
 | circle_role | text null | the circle role the photo shows, as picked; null = the circle as a whole |
 | framing_of | text null | set = the avatar framing of that gallery photo, or a profile picture cut from that circle photo (docs/02 §2.14); no fk |
-| cut_from | text null | set = a photo of its own that was cut from that circle photo (docs/concepts/circle-photos.md §5.2); no fk |
+| cut_from | text null | set = a photo of its own that was cut from that circle photo (docs/02 §2.14); no fk |
 | crop_x / crop_y / crop_size | real null | a framing's square, in its photo's full-size pixels |
 | file_path | text | path within media volume (original, sanitized) |
 | thumb_path | text | generated thumbnail path |
@@ -463,9 +463,9 @@ members list's folding (trimmed, case-folded), so a role nobody has any more kee
 `circle_id` carries no foreign key for the reason `journal_entry_id` has no cascade (below): the
 repository removes a circle's photos, and their files, with the circle. Nothing deletes a circle
 yet; the rule is for the day something does: it turns the cuts of all the circle's photos
-(below) first, as removing one photo does.
+(below) first, as removing one photo does. Archiving a circle keeps its photos.
 
-**A profile picture can be cut from a group photo** (docs/concepts/circle-photos.md §5). A
+**A profile picture can be cut from a group photo** (docs/02 §2.14, ADR-116). A
 *cut* is a framing of a circle photo with `contact_id` set to the person who wears it: one per
 photo **and person**, enforced by the partial unique index `photo_framing_person_idx` on
 (`framing_of`, `contact_id`) where `framing_of` is set. Like any framing it copies the circle
@@ -576,7 +576,7 @@ from the tables it happened to. `summary` is precomputed and `visibility` copied
 deleted record, since neither can be recovered afterwards; `entity_id` names a row that no
 longer exists, which is why it carries no foreign key.
 
-**And for last names given to several people at once** (`docs/concepts/surnames.md` §7): one
+**And for last names given to several people at once** (docs/02 §2.2.4.4): one
 row per batch, `action = 'update'`, `entity_type = 'last_name'`, `entity_id` the first person
 named, `contact_id` null, `visibility` private when any of them is. Its `summary` holds the
 **facts** as JSON (`{"lastName":"Brunner","count":4}`) rather than a sentence: the people are
@@ -596,7 +596,7 @@ link; not shown in the stream, which reports deletions and renames, not links.
 
 ### immich_link  [M3]
 Which person in the household's Immich library a contact is (docs/02 §2.24,
-`docs/concepts/immich.md` §6). Only present when Immich is configured; the photos themselves
+docs/04 ADR-101). Only present when Immich is configured; the photos themselves
 stay in Immich and nothing of them is stored here.
 
 | column | type | notes |
@@ -616,7 +616,7 @@ that is not a UUID.
 
 ### immich_ignore  [M3]
 A proposal of *Find your people* a member turned down: this contact is not that Immich person
-(docs/02 §2.24.7, `docs/concepts/immich.md` §9.21). Household data like a link.
+(docs/02 §2.24.7). Household data like a link.
 
 | column | type | notes |
 |---|---|---|
@@ -633,8 +633,8 @@ ignore`: the survivor's own record of a pair wins). Export writes them under the
 `immich_ignored: [{ person, ignored_by, ignored_at }]`; restore refuses an id that is not a UUID.
 
 ### immich_name_ignore  [M3]
-A face of *New from Immich* the household said is nobody to add (docs/02 §2.24.7,
-`docs/concepts/immich.md` §9.36). Unlike `immich_ignore` it names no contact — there is nobody to
+A face of *New from Immich* the household said is nobody to add (docs/02 §2.24.7).
+Unlike `immich_ignore` it names no contact — there is nobody to
 pair it with — so it belongs to the household.
 
 | column | type | notes |
@@ -652,7 +652,7 @@ carry it yet: a restored household is offered those faces again.
 
 ### suggestion_dismissal  [M2]
 The claims the household has declined, so a suggestion answered once is not offered again
-(`docs/concepts/relationship-suggestions.md` §6.4).
+(docs/02 §2.4.1, ADR-117).
 
 | column | type | notes |
 |---|---|---|
@@ -674,14 +674,14 @@ before a row is ever written, and a deleted contact leaves a row that matches no
 A row constrains only what Stella **offers**. It never touches what the kinship engine derives
 or what a profile displays, and deleting it (*Ask again*) puts the suggestion back.
 
-**A declined last name** (*Not Brunner*, `docs/concepts/surnames.md` §5) shares the table
+**A declined last name** (*Not Brunner*, docs/02 §2.2.4.2) shares the table
 rather than adding one: `relation = 'last_name'`, keyed by the person and the surname folded
 the §2.2.1 way, so *Brünner* and *brunner* are one answer and a different name can still be
 proposed. The column is text, so this needed no migration; the relationship log reads only
 the other relations, and the *Last names* page lists these with *Offer again*.
 
 ### command_receipt  [M3]
-A command id that has been claimed or applied (`docs/concepts/offline-capture.md` §3), so a
+A command id that has been claimed or applied (docs/04 §4.11.2), so a
 change that arrives twice — a phone that lost its connection after Stella saved — is applied
 once.
 

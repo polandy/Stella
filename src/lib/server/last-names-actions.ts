@@ -11,7 +11,7 @@ import { getLastNameDeps } from './services';
 
 /*
  * The one form action behind every path that gives several people a last name
- * (docs/concepts/surnames.md §3, §7): the *Last names* list, *Select* on People and on a
+ * (docs/02 §2.2.4): the *Last names* list, *Select* on People and on a
  * circle, and passing a name on. Each page spreads it into its own actions, so the rule — every
  * id visible or nothing written, no silent overwrite, one log line — lives in one place.
  */

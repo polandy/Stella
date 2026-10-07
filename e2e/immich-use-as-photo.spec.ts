@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 import { addPerson, appReady, signIn } from './app';
 
 /*
- * A photo from Immich as the person's own photo (docs/02 §2.24.6, docs/concepts/immich.md §4.3):
+ * A photo from Immich as the person's own photo (docs/02 §2.24.6):
  * *Use as photo* in the Immich viewer, and *From Immich* in the picture's chooser. Written after
  * the owner tried #245 in the preview (docs/08 §8.4.1).
  *
@@ -35,7 +35,7 @@ async function immichMenu(
 	page: Page,
 	item: 'Find in Immich' | 'Unlink from Immich'
 ): Promise<void> {
-	await page.getByRole('button', { name: 'Immich options' }).click();
+	await page.getByRole('button', { name: 'Photo library options' }).click();
 	await page.getByRole('menuitem', { name: item }).click();
 }
 
@@ -164,7 +164,7 @@ test('a person unlinked while the cropper is open is refused, and nothing is sto
 		await appReady(other);
 		await immichMenu(other, 'Unlink from Immich');
 		await appReady(other);
-		await other.getByRole('button', { name: 'Immich options' }).click();
+		await other.getByRole('button', { name: 'Photo library options' }).click();
 		await expect(other.getByRole('menuitem', { name: 'Find in Immich' })).toBeVisible();
 	} finally {
 		await other.close();

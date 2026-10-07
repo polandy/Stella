@@ -58,8 +58,8 @@
 	const photoDate = (photo: Dated): string => dayLabel(i18n, photoDay(photo));
 
 	/*
-	 * An upload is saved through the outbox like every addition (docs/concepts/offline-capture.md
-	 * §8 #10): the photos, processed first, go with a `gallery.add` naming the person, and are
+	 * An upload is saved through the outbox like every addition (docs/04 ADR-076):
+	 * the photos, processed first, go with a `gallery.add` naming the person, and are
 	 * kept on the device when Stella cannot take them — shown above the grid until they are sent.
 	 */
 	const keptGallery = $derived(
@@ -105,10 +105,10 @@
 	}
 
 	/*
-	 * Immich (docs/concepts/immich.md §4.3): a quiet menu on the card — *Find in Immich*, or
+	 * Immich (docs/02 §2.24.2, §2.24.3): a quiet menu on the card — *Find in Immich*, or
 	 * *Unlink* once linked — and, for a linked person, a line and a strip of their latest photos
 	 * under the gallery. None of it exists without Immich, and none offline, where nothing from
-	 * Immich is shown (§4.5).
+	 * Immich is shown (docs/02 §2.24.3).
 	 */
 	let pickerOpen = $state(false);
 	const showImmich = $derived(data.immich !== null && reachability.reachable);
@@ -285,9 +285,9 @@
 		<p class="text-sm text-fg-subtle">{t('contact.photos.none', { name: c.displayName })}</p>
 	{/if}
 	{#if data.groupPhotos.length > 0}
-		<!-- Every group photo their picture was cut from, now and before (circle-photos §5.2). -->
+		<!-- Every group photo their picture was cut from, now and before (docs/02 §2.14). -->
 		<div class="mt-4 flex flex-col gap-2" data-testid="on-group-photos">
-			<h3 class="text-xs font-medium tracking-wide text-fg-subtle uppercase">
+			<h3 class="text-sm font-semibold text-fg">
 				{t('contact.photos.onGroupPhotos')}
 			</h3>
 			<ul class="flex gap-2 overflow-x-auto pb-1">

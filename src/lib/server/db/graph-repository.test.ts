@@ -293,7 +293,7 @@ describe('loadVisibleGraphWithKinship', () => {
 		expect(sent).toHaveLength(4);
 	});
 
-	// Rule L3 (docs/concepts/relationship-suggestions.md §3.2) reads these through this reader
+	// Rule L3 (docs/02 §2.4.1) reads these through this reader
 	// when the person page asks for kinship via `loadVisibleGraphWithKinship` — the second of
 	// the two places that select them (the other is `kinship-graph-read.ts`, covered in
 	// `relationship-repository.test.ts`). Both must carry the values, not just agree on `null`.

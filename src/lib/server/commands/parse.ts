@@ -9,7 +9,7 @@ import { TAG_COLORS } from '../domain/tags/tags';
 import { isTakenAt } from '../../image/taken-at';
 
 /*
- * Reading a command off the wire (docs/concepts/offline-capture.md §3). The edge's half of the
+ * Reading a command off the wire (docs/04 §4.11.2). The edge's half of the
  * vocabulary: what the domain may assume about a command, checked once here for the Home form
  * and for `POST /api/commands` alike. Anything that is not exactly a known command is refused
  * whole; a queued item written by an older build is not guessed at.
@@ -45,7 +45,9 @@ const MomentCapture = v.object({
 	newPeople: v.optional(
 		v.array(v.union([v.pipe(v.string(), v.trim(), v.minLength(1)), MomentNewPerson])),
 		[]
-	)
+	),
+	// Optional: a moment queued before the person page could write one carries none.
+	anchorId: v.optional(v.pipe(v.string(), v.minLength(1)))
 });
 
 const NoteAdd = v.object({
