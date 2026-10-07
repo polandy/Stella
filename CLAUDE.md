@@ -50,7 +50,8 @@ Bun · SvelteKit (Svelte 5, runes) · SQLite WAL + Drizzle · Tailwind v4 + Catp
 ## Docs index — open the single relevant one
 
 `01` vision · `02` features · `03` data-model · `04` architecture · `05` ui-design-system ·
-`06` roadmap · `07` deployment · `08` coding-guidelines. User docs `install.md` and
+`06` roadmap · `07` deployment · `08` coding-guidelines. A screen's rules (`05` §5.5) live one
+file per screen in `docs/design/screens/` — *Intent*, *Rules*, *Why*. User docs `install.md` and
 `using-stella.md` stay in sync with behaviour.
 
 ## Non-negotiables

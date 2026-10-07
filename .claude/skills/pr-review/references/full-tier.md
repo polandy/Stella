@@ -18,7 +18,7 @@ section file directly.
 | New or changed feature behaviour | the owning section file under `docs/features/` (via `docs/02-features.md`'s index) |
 | Tables, columns, constraints, the visibility model | `docs/03-data-model.md` |
 | Structure, wiring, a new port/adapter, config, a real decision | the owning section file under `docs/architecture/` (via `docs/04-architecture.md`'s index); real decisions go in `docs/architecture/4.9-decision-log.md` |
-| A new screen, component or interaction pattern | the owning section file under `docs/design/` (via `docs/05-ui-design-system.md`'s index) |
+| A new screen, component or interaction pattern | the owning section file under `docs/design/` (via `docs/05-ui-design-system.md`'s index); a screen's rules go in its `docs/design/screens/` file, under *Rules* |
 | Milestone scope moving | `docs/06-roadmap.md` |
 | Anything an operator must do differently | `docs/07-deployment.md` **and** `docs/install.md` |
 | Anything a user does differently | `docs/using-stella.md`, and `README.md` if it is on the front page |
