@@ -147,11 +147,7 @@
 		data-kin-scope
 	>
 		<!-- Where focus goes when the last claim here is answered (KinSuggestions). -->
-		<h3
-			class="text-xs font-medium tracking-wide text-fg-subtle uppercase"
-			data-kin-heading
-			tabindex="-1"
-		>
+		<h3 class="text-sm font-semibold text-fg" data-kin-heading tabindex="-1">
 			{t('contact.relationships.alsoTrue')}
 		</h3>
 		<KinSuggestions suggestions={data.proposals} propose={data.proposeFor} bind:answered />
@@ -205,11 +201,7 @@
 	>
 		<div class="flex flex-wrap items-center gap-x-2 gap-y-1">
 			<!-- Where focus goes when the last claim here is answered (KinSuggestions). -->
-			<h3
-				class="text-xs font-medium tracking-wide text-fg-subtle uppercase"
-				data-kin-heading
-				tabindex="-1"
-			>
+			<h3 class="text-sm font-semibold text-fg" data-kin-heading tabindex="-1">
 				{t('contact.relationships.reviewHeading')}
 			</h3>
 			<span class="text-xs text-fg-subtle">

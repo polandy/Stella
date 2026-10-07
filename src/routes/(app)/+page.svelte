@@ -34,6 +34,7 @@
 		type StreamKind
 	} from '$lib/stream/filter';
 	import { filterPill } from '$lib/stream/filter-pill';
+	import { showsActorBadge } from '$lib/stream/actor-badge';
 	import type { ActionData, PageData } from './$types';
 
 	let { data, form }: { data: PageData; form: ActionData } = $props();
@@ -91,7 +92,9 @@
 		'rounded-full px-3 py-1 text-sm font-medium text-fg-muted transition-colors hover:text-fg aria-[current=true]:bg-primary-soft aria-[current=true]:font-semibold aria-[current=true]:text-fg';
 	// Words on a tint, and labels that carry content, are written in --fg / --fg-muted: in Latte
 	// --primary on its own tint and --fg-subtle on the page ground both fall below AA (docs/05 §5.6).
-	const CHIP_ROW_LABEL = 'mr-1 text-xs font-semibold uppercase tracking-wider text-fg-muted';
+	// The row's label is quiet sentence case, part of the control: the uppercase label is kept
+	// for dividers inside a list (docs/05 §5.3).
+	const CHIP_ROW_LABEL = 'mr-1 min-w-10 text-sm font-medium text-fg-muted';
 
 	// The rail's rows: one vertical list at every width — beside the stream from lg, above or
 	// below it on a phone. Nothing scrolls sideways, so nothing hides off the right edge.
@@ -181,8 +184,13 @@
 	{/key}
 {/snippet}
 
+<!-- From lg the rail's 17 rem column is there only while a date is close; otherwise the stream
+     takes the width (docs/05 §5.5). One class either way, never a static and a toggled one. -->
 <main
-	class="mx-auto grid w-full max-w-6xl gap-x-10 gap-y-6 px-4 py-6 md:px-6 md:py-10 lg:grid-cols-[minmax(0,1fr)_17rem] lg:grid-rows-[auto_auto_1fr]"
+	class="mx-auto grid w-full max-w-6xl gap-x-10 gap-y-6 px-4 py-6 md:px-6 md:py-10 lg:grid-rows-[auto_auto_1fr] {data
+		.upcoming.length
+		? 'lg:grid-cols-[minmax(0,1fr)_17rem]'
+		: 'lg:grid-cols-[minmax(0,1fr)]'}"
 >
 	<!-- The heading speaks to the composer; a phone's Home opens on the person search instead, so
      there it is left to screen readers and the search takes the top. -->
@@ -450,15 +458,10 @@
 						</div>
 						{#each day.items as item (item.kind + item.id)}
 							<article
-								class="grid grid-cols-[32px_1fr] gap-3 rounded-app px-2.5 py-2.5 transition-colors hover:bg-card"
+								class="group grid grid-cols-[32px_1fr] gap-3 rounded-app px-2.5 py-2.5 transition-colors hover:bg-card"
 							>
 								{#if item.kind === 'moment'}
-									<Avatar
-										id={item.anchor.id}
-										name={item.anchor.name}
-										avatarPhotoId={item.anchor.avatarPhotoId}
-										size={32}
-									/>
+									{@render face(item.anchor, item)}
 									<div class="min-w-0">
 										<div class="flex flex-wrap items-baseline gap-x-1.5 text-[13px] text-fg-muted">
 											<b class="font-semibold text-fg"
@@ -478,7 +481,9 @@
 												>{/if}
 											<StreamWhen time={stream.when(item.at)} />
 										</div>
-										<div class="note-body mt-1 text-fg">{@html item.bodyHtml}</div>
+										<!-- A full-width stream would run a line past 1000 px; ~72 characters
+										     keep it readable. -->
+										<div class="note-body mt-1 max-w-[72ch] text-fg">{@html item.bodyHtml}</div>
 										{#if item.photoIds.length}
 											<div class="mt-2 flex gap-1.5">
 												{#each item.photoIds as photoId, index (photoId)}
@@ -505,12 +510,7 @@
 										     interaction, whose participants the text does not name, lists them. -->
 									</div>
 								{:else if item.kind === 'person'}
-									<Avatar
-										id={item.person.id}
-										name={item.person.name}
-										avatarPhotoId={item.person.avatarPhotoId}
-										size={32}
-									/>
+									{@render face(item.person, item)}
 									<div class="min-w-0">
 										<div class="flex flex-wrap items-baseline gap-x-1.5 text-[13px] text-fg-muted">
 											<b class="font-semibold text-fg"
@@ -540,12 +540,7 @@
 									</div>
 								{:else if item.kind === 'interaction'}
 									{@const kind = KIND_PRESENTATION[item.interactionKind]}
-									<Avatar
-										id={item.subject.id}
-										name={item.subject.name}
-										avatarPhotoId={item.subject.avatarPhotoId}
-										size={32}
-									/>
+									{@render face(item.subject, item)}
 									<div class="min-w-0">
 										<div class="flex flex-wrap items-baseline gap-x-1.5 text-[13px] text-fg-muted">
 											<b class="font-semibold text-fg"
@@ -603,12 +598,7 @@
 										canOpen={(id) => peopleIds.has(id)}
 									/>
 								{:else}
-									<Avatar
-										id={item.from.id}
-										name={item.from.name}
-										avatarPhotoId={item.from.avatarPhotoId}
-										size={32}
-									/>
+									{@render face(item.from, item)}
 									<div class="min-w-0">
 										<div class="flex flex-wrap items-baseline gap-x-1.5 text-[13px] text-fg-muted">
 											<b class="font-semibold text-fg"
@@ -652,6 +642,27 @@
 			<EmptyState icon="write" title={t('home.empty.title')} hint={t('home.empty.hint')} />
 		{/if}
 	</div>
+
+	<!-- A row leads with its subject's face; on a row another member wrote, their own small face
+	     sits on its corner (docs/05 §5.5). The sentence names them already, so it is decorative.
+	     Its ring is the row's ground, and follows the row's hover tint. -->
+	{#snippet face(
+		person: { id: string; name: string; avatarPhotoId: string | null },
+		row: { mine: boolean; actor: { id: string; name: string } }
+	)}
+		<span class="relative size-8">
+			<Avatar id={person.id} name={person.name} avatarPhotoId={person.avatarPhotoId} size={32} />
+			{#if showsActorBadge(row, data.members)}
+				<span
+					class="absolute -right-1 -bottom-1 rounded-full ring-2 ring-bg transition-shadow group-hover:ring-card"
+					aria-hidden="true"
+					data-testid="actor-badge"
+				>
+					<Avatar id={row.actor.id} name={row.actor.name} size={16} />
+				</span>
+			{/if}
+		</span>
+	{/snippet}
 
 	{#snippet filterRows()}
 		<div class={CHIP_ROW}>
@@ -701,17 +712,15 @@
 	{/snippet}
 
 	<!-- The rail: what is coming up. It is absent when nothing is, because a box that is
-     permanently empty teaches people to stop looking at it; from lg its column stays reserved,
-     so the stream keeps its width whether or not a date is near. -->
+     permanently empty teaches people to stop looking at it; from lg its column goes with it,
+     and the stream takes the width rather than leave a quarter of the screen blank. -->
 	{#if data.upcoming.length}
 		<aside
 			class="flex min-w-0 flex-col lg:col-start-2 lg:row-span-3 lg:row-start-1 lg:self-start {railOrder}"
 			aria-label={t('home.atAGlance')}
 		>
 			<section data-testid="coming-up">
-				<h2
-					class="flex items-center gap-2 pb-2 text-xs font-semibold tracking-wider text-fg-subtle uppercase"
-				>
+				<h2 class="flex items-center gap-2 pb-2 text-sm font-semibold text-fg">
 					<Icon name="calendar" size={13} />{t('home.comingUp')}
 				</h2>
 				<!-- *Show all* opens the rest of the list in place (docs/05 §5.11). -->

@@ -225,7 +225,7 @@
 				data-testid="name-suggestions"
 				aria-live="polite"
 			>
-				<h2 class="text-xs font-medium tracking-wide text-fg-muted uppercase">
+				<h2 class="text-sm font-semibold text-fg">
 					{t('contacts.new.alreadyHere')}
 				</h2>
 				<ul class="flex flex-col gap-1.5">
