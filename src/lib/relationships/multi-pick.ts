@@ -5,8 +5,8 @@ import { PARENT_CHILD_TYPE_KEY, PARTNER_TYPE_KEYS } from './type-keys';
 import type { RelationshipSide } from './type-options';
 
 /*
- * The relationship form with several people picked (docs/02 §2.4,
- * docs/concepts/multi-pick-relationships.html D2, D3, D5). The type decides how many people
+ * The relationship form with several people picked (docs/02 §2.4, *Several people in one
+ * go*). The type decides how many people
  * the field takes; a person the household's records rule out is marked on their own chip
  * rather than skipped; and the since day is worked out for each pair.
  *
@@ -24,7 +24,7 @@ export interface CapChoice {
 const PARTNERS_AT_ONCE = 1;
 
 /**
- * How many people the field takes for `choice`, or null for no limit (D2). "Child of" makes
+ * How many people the field takes for `choice`, or null for no limit. "Child of" makes
  * the picked people the viewed person's parents, so only the free parent slots are on offer;
  * "Parent of" caps each child on their own, which the per-person exclusion already says.
  */
@@ -48,7 +48,7 @@ export function parentsOnRecord(
 /**
  * Where the picked count stands against the cap: `full` closes the field to more picks,
  * `excess` counts the people a narrower type no longer takes — they stay on screen and keep
- * Add off until someone removes them, because nothing is dropped silently (D3).
+ * Add off until someone removes them, because nothing is dropped silently.
  */
 export function capState(
 	cap: number | null,
@@ -70,7 +70,7 @@ export type ChipRefusal<E> =
 
 /**
  * Every picked person who cannot be linked with the chosen type, in the order they were
- * picked (D3). What the household's records rule out *now* comes first; a refusal an earlier
+ * picked. What the household's records rule out *now* comes first; a refusal an earlier
  * save brought back counts only while its person is still picked and nothing newer explains
  * it — the household's records may have moved on since.
  */
@@ -112,7 +112,7 @@ export interface PairSince {
 	sinceDate: string;
 }
 
-/** The since day for each picked person, from the birthday rule (D5). */
+/** The since day for each picked person, from the birthday rule. */
 export function sincePerPair(
 	choice: KinChoice | null,
 	self: BirthDated,
@@ -140,14 +140,14 @@ export function oneDateForAll(pairs: readonly PairSince[]): string {
 	return pairs.find((pair) => pair.sinceDate !== '')?.sinceDate ?? '';
 }
 
-/** The second parent the form offers (D4): who was picked, and whose partner is offered. */
+/** The second parent the form offers: who was picked, and whose partner is offered. */
 export interface SecondParentOffer {
 	parentId: string;
 	partnerId: string;
 }
 
 /**
- * The likely second parent to offer under the field (D4), or null. Only for "Child of" with
+ * The likely second parent to offer under the field, or null. Only for "Child of" with
  * exactly one parent picked and not refused; who that is, and whether a slot is free, is rule
  * L3's to say (`likelyCoParent`). `canOffer` is the field's own word: someone the picker could
  * take — visible, and not ruled out by the exclusion rules. Offered, never picked: the

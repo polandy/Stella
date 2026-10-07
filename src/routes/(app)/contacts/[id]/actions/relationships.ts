@@ -96,8 +96,8 @@ export const relationshipActions = {
 	},
 
 	/**
-	 * Link several people in one go (docs/02 §2.4, docs/concepts/multi-pick-relationships.html
-	 * D6): the shared fields once, then `targetId` and `sinceDate` once per picked person, in
+	 * Link several people in one go (docs/02 §2.4, ADR-118): the shared fields once, then
+	 * `targetId` and `sinceDate` once per picked person, in
 	 * the same order. All or nothing; a refusal names each refused person so the form can mark
 	 * them. Applied, it answers the new ids, so one *Undo* can take the whole batch back
 	 * (`removeRelationships`).

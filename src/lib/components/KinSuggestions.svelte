@@ -36,8 +36,8 @@
 	 *
 	 * No bulk accept here, deliberately: a sweep of *yes* over a family is how one wrong parent
 	 * gets written across a tree. The one exception sits beside this list rather than in it —
-	 * *Add all* on the *Also true?* block (`KinPanels`, docs/concepts/multi-pick-relationships.html
-	 * D7) stores a batch as one `relationship.addMany`, so its one *Undo* takes the whole sweep
+	 * *Add all* on the *Also true?* block (`KinPanels`, docs/02 §2.4, *Several people in one
+	 * go*) stores a batch as one `relationship.addMany`, so its one *Undo* takes the whole sweep
 	 * back. The review keeps answering one claim at a time.
 	 *
 	 * Every control is a form action and the declined list is a `<details>`, so the whole panel

@@ -168,7 +168,7 @@
 	/*
 	 * A refused batch names each refused person; the open form marks them on their chips and
 	 * says why under the field, so the section's own error line would only repeat it. A batch
-	 * refused from *Add all* (D7) has no form open to mark it, so the line says it there.
+	 * refused from *Add all* has no form open to mark it, so the line says it there.
 	 */
 	const refusedPeople = $derived(
 		form && 'refusals' in form && Array.isArray(form.refusals) ? form.refusals.length : 0

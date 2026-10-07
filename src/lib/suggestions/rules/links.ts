@@ -138,7 +138,7 @@ function beganAfter(since: string | null | undefined, birth: string | null | und
  * claim stays `likely`, and the household answers it.
  *
  * Pure. The engine asks it once a parent link is stored; the relationship form asks it while a
- * parent is only picked (docs/concepts/multi-pick-relationships.html D4), which is why the
+ * parent is only picked (docs/02 §2.4, *Several people in one go*), which is why the
  * chosen parent counts whether or not their link is on record yet.
  */
 export function likelyCoParent(

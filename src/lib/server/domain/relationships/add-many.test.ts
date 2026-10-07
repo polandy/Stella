@@ -23,8 +23,8 @@ import {
 } from './add-many';
 
 /*
- * Linking several people in one go (docs/02 §2.4, docs/concepts/multi-pick-relationships.html
- * D3, D6). Each pair is judged by the very guardrails a single link passes — and against the
+ * Linking several people in one go (docs/02 §2.4, ADR-118). Each pair is judged by the very
+ * guardrails a single link passes — and against the
  * other links of the same batch, so two new parents for a child who already has one are refused
  * even though each would pass alone. Any refusal writes nothing, and every refused person is
  * named with the reason, so the form can mark exactly that chip.

@@ -126,7 +126,7 @@ export function evaluate(
 
 /**
  * `evaluate` for several triggers at once — the links a batch stored together
- * (docs/concepts/multi-pick-relationships.html D7). One list, not one per link: a claim two
+ * (docs/02 §2.4, *Several people in one go*). One list, not one per link: a claim two
  * links lead to is asked once, and the whole batch is in the engine's one order.
  */
 export function evaluateAll(

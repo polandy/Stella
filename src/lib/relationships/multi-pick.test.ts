@@ -218,8 +218,8 @@ describe('oneDateForAll', () => {
 });
 
 /*
- * D4: with one parent picked for "Child of", the form offers the likely second parent under the
- * field — one tap, never preselected (docs/concepts/multi-pick-relationships.html).
+ * With one parent picked for "Child of", the form offers the likely second parent under the
+ * field — one tap, never preselected (docs/02 §2.4, *Several people in one go*; ADR-118).
  */
 describe('secondParentOffer', () => {
 	const facts = {

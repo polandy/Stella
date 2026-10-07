@@ -205,8 +205,8 @@ export const contact = {
 	'contact.relationships.person': 'Person',
 	'contact.relationships.addSomeoneFirst': 'Add another person first, then link them here.',
 	/*
-	 * Several people picked in the relationship form (docs/02 §2.4,
-	 * docs/concepts/multi-pick-relationships.html): how many the type takes, who is refused.
+	 * Several people picked in the relationship form (docs/02 §2.4, *Several people in one
+	 * go*): how many the type takes, who is refused.
 	 */
 	'contact.relationships.parentsRoom': (p: { count: number }): string =>
 		p.count >= 2 ? 'Up to two parents.' : 'One more parent: one is on record already.',
@@ -237,15 +237,15 @@ export const contact = {
 	'contact.relationships.undoLinksFailed':
 		'Could not take the links back. They are still on the page.',
 	/*
-	 * The likely second parent, offered under the person field for "Child of" (docs/concepts/
-	 * multi-pick-relationships.html D4, rule L3): one tap makes them a chip.
+	 * The likely second parent, offered under the person field for "Child of" (docs/02 §2.4,
+	 * *Several people in one go*; rule L3, §2.4.1): one tap makes them a chip.
 	 */
 	'contact.relationships.secondParentAlso': 'Also',
 	'contact.relationships.secondParentAdd': (p: { name: string }) =>
 		`Add ${p.name} as the other parent`,
 	'contact.relationships.secondParentWhy': (p: { name: string }) => `${p.name}’s partner`,
 	/*
-	 * *Add all* on the *Also true?* block (D7): the claims one batch can store, said as the link
+	 * *Add all* on the *Also true?* block: the claims one batch can store, said as the link
 	 * they become, and stored in one step with one *Undo*.
 	 */
 	'contact.relationships.addAllParentsOf': (p: { parents: string; child: string }) =>

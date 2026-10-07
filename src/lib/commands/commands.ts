@@ -143,7 +143,7 @@ export interface RelationshipAddPayload {
 
 /**
  * One type of link between the person whose page it was entered on and several others at once
- * (docs/02 §2.4, docs/concepts/multi-pick-relationships.html D6). The type, status and
+ * (docs/02 §2.4, ADR-118). The type, status and
  * description are shared; each pair keeps its own since day. Applied all or nothing: one
  * person refused, and none of the links is stored.
  */

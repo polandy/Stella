@@ -4,8 +4,8 @@ import { pairKey } from './claims';
 import { buildView } from './view';
 
 /*
- * The read model the rules and suppressions work over (docs/concepts/relationship-
- * suggestions-implementation.md §2). It is built once per evaluation: every rule asks it
+ * The read model the rules and suppressions work over (docs/02 §2.4.1, *The suggestion
+ * rules*). It is built once per evaluation: every rule asks it
  * questions rather than walking the edge lists itself, so "who are Hans's siblings" is
  * answered the same way wherever it is asked.
  */
