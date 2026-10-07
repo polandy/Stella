@@ -1,4 +1,5 @@
 import { error, fail, redirect } from '@sveltejs/kit';
+import { requireViewer } from '$lib/server/auth/guards';
 import { contactSectionPath } from '$lib/contacts/sections';
 import { ContactGoneError } from '$lib/server/domain/contacts/require-visible';
 import {
@@ -19,7 +20,7 @@ import type { Actions } from '../$types';
  */
 export const immichActions = {
 	linkImmich: async ({ request, params, locals }) => {
-		if (!locals.user) throw redirect(302, '/login');
+		const viewer = requireViewer(locals);
 		const deps = getImmichLinkDeps();
 		if (!deps) throw error(404, say(locals, 'errors.notFound'));
 
@@ -27,7 +28,7 @@ export const immichActions = {
 		try {
 			await linkToImmich(
 				deps,
-				{ userId: locals.user.id, householdId: locals.user.householdId },
+				{ userId: viewer.id, householdId: viewer.householdId },
 				params.id,
 				typeof personId === 'string' ? personId : ''
 			);
@@ -41,13 +42,13 @@ export const immichActions = {
 	},
 
 	unlinkImmich: async ({ params, locals }) => {
-		if (!locals.user) throw redirect(302, '/login');
+		const viewer = requireViewer(locals);
 		const deps = getImmichLinkDeps();
 		if (!deps) throw error(404, say(locals, 'errors.notFound'));
 		try {
 			await unlinkFromImmich(
 				deps,
-				{ userId: locals.user.id, householdId: locals.user.householdId },
+				{ userId: viewer.id, householdId: viewer.householdId },
 				params.id
 			);
 		} catch (err) {
@@ -63,7 +64,10 @@ export const immichActions = {
 	 * use-case checks the token, the viewer and the link before anything is stored.
 	 */
 	useImmichPhoto: async ({ request, params, locals }) => {
-		if (!locals.user) throw redirect(302, '/login');
+		// Before Immich configuration or the upload itself is read, so an anonymous caller is
+		// redirected rather than answered as if the route were simply unconfigured, and never
+		// has their upload decoded at all.
+		const viewer = requireViewer(locals);
 		const deps = getUseImmichPhotoDeps();
 		if (!deps) throw error(404, say(locals, 'errors.notFound'));
 
@@ -80,7 +84,6 @@ export const immichActions = {
 			width: Number(form.get('width')),
 			height: Number(form.get('height'))
 		};
-		const viewer = { id: locals.user.id, householdId: locals.user.householdId };
 		try {
 			const kept = await useImmichPhoto(deps, viewer, { contactId: params.id, token, upload });
 			// Every refusal reads the same: what changed — an unlink, a private person, a day gone

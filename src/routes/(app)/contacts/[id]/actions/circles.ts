@@ -3,6 +3,7 @@ import { parseCommand } from '$lib/server/commands/parse';
 import { ulidGenerator } from '$lib/server/id';
 import { systemClock } from '$lib/server/clock';
 import { error, fail, redirect } from '@sveltejs/kit';
+import { requireViewer } from '$lib/server/auth/guards';
 import * as v from 'valibot';
 import { getContact } from '$lib/server/domain/contacts/contacts';
 import { removeMember, setMembersRole } from '$lib/server/domain/circles/circles';
@@ -19,7 +20,7 @@ const RoleSchema = v.object({
 /** The profile card's circles (docs/02 §2.7). */
 export const circleActions = {
 	joinCircle: async ({ request, params, locals }) => {
-		if (!locals.user) throw redirect(302, '/login');
+		const viewer = requireViewer(locals);
 
 		const form = await request.formData();
 		const name = form.get('circleName');
@@ -37,8 +38,8 @@ export const circleActions = {
 		if (command?.type !== 'circle.join')
 			return fail(400, { circleError: say(locals, 'errors.circle.needName') });
 		const author = {
-			userId: locals.user.id,
-			householdId: locals.user.householdId,
+			userId: viewer.id,
+			householdId: viewer.householdId,
 			locale: locals.locale
 		};
 		const outcome = await dispatchCommand(getCommandDeps(), author, command);
@@ -56,8 +57,7 @@ export const circleActions = {
 
 	/* Their role in one circle, changed where their circles are read (docs/02 §2.2). */
 	setCircleRole: async ({ request, params, locals }) => {
-		if (!locals.user) throw redirect(302, '/login');
-		const viewer = { id: locals.user.id, householdId: locals.user.householdId };
+		const viewer = requireViewer(locals);
 
 		const form = await request.formData();
 		const parsed = v.safeParse(RoleSchema, {
@@ -78,8 +78,7 @@ export const circleActions = {
 	},
 
 	leaveCircle: async ({ request, params, locals }) => {
-		if (!locals.user) throw redirect(302, '/login');
-		const viewer = { id: locals.user.id, householdId: locals.user.householdId };
+		const viewer = requireViewer(locals);
 
 		const contact = await getContact(getContactDeps(), viewer, params.id);
 		if (!contact) throw error(404, say(locals, 'errors.contact.notFound'));

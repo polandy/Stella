@@ -64,6 +64,42 @@ const servicesExceptions = [
 	'src/lib/server/relationships/suggestion-answers.ts'
 ];
 
+// A command's refusal is already an answer; anything it throws is ours, and must reach
+// `handleError` to be logged rather than turn into a form message (docs/04 §4.4).
+const failLoudSyntax = [
+	{
+		selector:
+			"CallExpression[callee.property.name='catch'][callee.object.callee.name='dispatchCommand']",
+		message:
+			'Do not catch dispatchCommand: refusals come back as its outcome, everything else must reach handleError (docs/08 §8.2 item 11).'
+	}
+];
+
+// Edge boilerplate that has one shared home (docs/04 §4.4). A copy is a place to get the
+// status, the path or the household wrong, and a wall-clock read disagrees with the `clock`.
+const edgeBoilerplateSyntax = [
+	{
+		selector:
+			"IfStatement[test.operator='!'][test.argument.object.name='locals'][test.argument.property.name='user'] > ThrowStatement.consequent > CallExpression.argument[callee.name='redirect']",
+		message:
+			'Use requireViewer(locals) / requireUser(locals) from $lib/server/auth/guards instead of a hand-written login redirect.'
+	},
+	{
+		selector: "NewExpression[callee.name='Date']",
+		message:
+			'The edge reads time off the injected clock: todayFor(systemClock) from $lib/dates/today, or clock.now() (docs/08 §8.2 item 10).'
+	},
+	{
+		selector:
+			"FunctionDeclaration[id.name='key'], VariableDeclarator[id.name='key'][init.type=/FunctionExpression$/]",
+		message: 'Use messageKey() from $lib/i18n/translate instead of a local key() helper.'
+	}
+];
+
+// Server-side edge code: route modules (not components, which run in the browser too) and
+// the shared form actions that still live under lib/server until AR-02 moves them.
+const edgeFiles = ['src/routes/**/*.ts', ...servicesExceptions];
+
 export default ts.config(
 	{
 		ignores: ['build/', '.svelte-kit/', 'data/', 'drizzle/', 'test-results/', 'playwright-report/']
@@ -122,17 +158,16 @@ export default ts.config(
 		files: ['src/**'],
 		ignores: ['**/*.test.ts'],
 		rules: {
-			// A command's refusal is already an answer; anything it throws is ours, and must reach
-			// `handleError` to be logged rather than turn into a form message (docs/04 §4.4).
-			'no-restricted-syntax': [
-				'error',
-				{
-					selector:
-						"CallExpression[callee.property.name='catch'][callee.object.callee.name='dispatchCommand']",
-					message:
-						'Do not catch dispatchCommand: refusals come back as its outcome, everything else must reach handleError (docs/08 §8.2 item 11).'
-				}
-			]
+			'no-restricted-syntax': ['error', ...failLoudSyntax]
+		}
+	},
+	{
+		// Flat config replaces a rule's options rather than merging them, so the edge repeats
+		// the fail-loud selectors beside its own.
+		files: edgeFiles,
+		ignores: ['**/*.test.ts'],
+		rules: {
+			'no-restricted-syntax': ['error', ...failLoudSyntax, ...edgeBoilerplateSyntax]
 		}
 	},
 	{

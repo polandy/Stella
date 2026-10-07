@@ -3,6 +3,7 @@ import { parseCommand } from '$lib/server/commands/parse';
 import { ulidGenerator } from '$lib/server/id';
 import { systemClock } from '$lib/server/clock';
 import { error, fail, redirect } from '@sveltejs/kit';
+import { requireViewer } from '$lib/server/auth/guards';
 import * as v from 'valibot';
 import { getContact } from '$lib/server/domain/contacts/contacts';
 import { deleteInteraction, INTERACTION_KINDS } from '$lib/server/domain/interactions/interactions';
@@ -29,7 +30,7 @@ const LogInteractionSchema = v.object({
 /** The story card: touchpoints logged, and entries taken back (docs/02 §2.23). */
 export const storyActions = {
 	logInteraction: async ({ request, params, locals }) => {
-		if (!locals.user) throw redirect(302, '/login');
+		const viewer = requireViewer(locals);
 
 		const form = await request.formData();
 		const parsed = v.safeParse(LogInteractionSchema, {
@@ -61,8 +62,8 @@ export const storyActions = {
 			return fail(400, { interactionError: say(locals, 'errors.interaction.needKindAndDay') });
 		}
 		const author = {
-			userId: locals.user.id,
-			householdId: locals.user.householdId,
+			userId: viewer.id,
+			householdId: viewer.householdId,
 			locale: locals.locale
 		};
 		const outcome = await dispatchCommand(getCommandDeps(), author, command);
@@ -81,8 +82,7 @@ export const storyActions = {
 	},
 
 	removeInteraction: async ({ request, params, locals }) => {
-		if (!locals.user) throw redirect(302, '/login');
-		const viewer = { id: locals.user.id, householdId: locals.user.householdId };
+		const viewer = requireViewer(locals);
 
 		const form = await request.formData();
 		const interactionId = form.get('id');
@@ -92,8 +92,8 @@ export const storyActions = {
 		if (!contact) throw error(404, say(locals, 'errors.contact.notFound'));
 
 		const author = {
-			userId: locals.user.id,
-			householdId: locals.user.householdId,
+			userId: viewer.id,
+			householdId: viewer.householdId,
 			locale: locals.locale,
 			defaultVisibility: 'shared' as const
 		};
@@ -108,8 +108,7 @@ export const storyActions = {
 	 * possible from here too — previously only the full journal page could.
 	 */
 	removeJournalEntry: async ({ request, params, locals }) => {
-		if (!locals.user) throw redirect(302, '/login');
-		const viewer = { id: locals.user.id, householdId: locals.user.householdId };
+		const viewer = requireViewer(locals);
 
 		const form = await request.formData();
 		const id = form.get('id');
@@ -119,8 +118,8 @@ export const storyActions = {
 		if (!contact) throw error(404, say(locals, 'errors.contact.notFound'));
 
 		const author = {
-			userId: locals.user.id,
-			householdId: locals.user.householdId,
+			userId: viewer.id,
+			householdId: viewer.householdId,
 			defaultVisibility: 'shared' as const
 		};
 		const removed = await deleteJournalEntry(getJournalDeps(), author, id);

@@ -4,6 +4,8 @@ import { contextOfPeople } from './domain/contacts/person-context';
 import { peopleStampOf } from './domain/contacts/people-stamp';
 import { namesakesOn } from '../people/namesakes';
 import { getContactDeps, getPeopleStampDeps, getPersonContextDeps } from './services';
+import { systemClock } from './clock';
+import { todayFor } from '$lib/dates/today';
 
 /*
  * The people the app shell carries for the ⌘K palette and every picker (docs/05 §5.4), with
@@ -17,7 +19,7 @@ import { getContactDeps, getPeopleStampDeps, getPersonContextDeps } from './serv
 export async function readShellPeople(user: AuthUser) {
 	const viewer = { id: user.id, householdId: user.householdId };
 	// One reading of the clock, so the context and its stamp are about the same day.
-	const today = new Date().toLocaleDateString('en-CA');
+	const today = todayFor(systemClock);
 	const [contacts, peopleStamp] = await Promise.all([
 		listContacts(getContactDeps(), viewer),
 		stampFor(user, today)
@@ -57,7 +59,7 @@ export async function readShellPeople(user: AuthUser) {
  * context, because it is asked after every client-side navigation (docs/04 §4.9).
  */
 export function readPeopleStamp(user: AuthUser): Promise<string> {
-	return stampFor(user, new Date().toLocaleDateString('en-CA'));
+	return stampFor(user, todayFor(systemClock));
 }
 
 /** A short fingerprint of the markers the shell's people are read from (`peopleStampOf`). */

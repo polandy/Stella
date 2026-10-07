@@ -1,4 +1,5 @@
-import { json, redirect } from '@sveltejs/kit';
+import { json } from '@sveltejs/kit';
+import { requireViewer } from '$lib/server/auth/guards';
 import { suggestNameCandidates } from '$lib/server/domain/contacts/suggestions';
 import { getSuggestionDeps } from '$lib/server/services';
 import type { RequestHandler } from './$types';
@@ -10,8 +11,7 @@ import type { RequestHandler } from './$types';
  */
 
 export const GET: RequestHandler = async ({ locals, url }) => {
-	if (!locals.user) throw redirect(302, '/login');
-	const viewer = { id: locals.user.id, householdId: locals.user.householdId };
+	const viewer = requireViewer(locals);
 	const candidates = await suggestNameCandidates(getSuggestionDeps(), viewer, {
 		firstName: url.searchParams.get('firstName'),
 		lastName: url.searchParams.get('lastName')

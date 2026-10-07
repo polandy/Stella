@@ -1,4 +1,5 @@
-import { fail, redirect } from '@sveltejs/kit';
+import { fail } from '@sveltejs/kit';
+import { requireUser } from '$lib/server/auth/guards';
 import * as v from 'valibot';
 import {
 	API_TOKEN_DEFAULT_LIFETIME_DAYS,
@@ -30,8 +31,8 @@ const CreateSchema = v.object({
 const RevokeSchema = v.object({ tokenId: v.pipe(v.string(), v.minLength(1)) });
 
 function requireMember(locals: App.Locals) {
-	if (!locals.user) throw redirect(302, '/login');
-	return locals.user;
+	const user = requireUser(locals);
+	return user;
 }
 
 export const load: PageServerLoad = async ({ locals }) => {

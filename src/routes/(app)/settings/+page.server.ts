@@ -1,4 +1,5 @@
-import { fail, redirect } from '@sveltejs/kit';
+import { fail } from '@sveltejs/kit';
+import { requireUser, requireViewer } from '$lib/server/auth/guards';
 import { say, translator } from '$lib/server/i18n/say';
 import { setSelfContact, UnknownSelfContactError } from '$lib/server/domain/household/self-contact';
 import { countKnownByAFirstNameOnly } from '$lib/server/domain/contacts/contacts';
@@ -22,16 +23,16 @@ import type { Actions, PageServerLoad } from './$types';
  * answers — so an instance that cannot reach it still opens Settings immediately.
  */
 export const load: PageServerLoad = async ({ locals }) => {
-	if (!locals.user) throw redirect(302, '/login');
+	const user = requireUser(locals);
 	const check = getUpdateCheck();
-	const viewer = { id: locals.user.id, householdId: locals.user.householdId };
+	const viewer = requireViewer(locals);
 	// How many are left to tidy up, so the card says whether opening it is worth it.
 	const [firstNameOnlyCount, lastNames] = await Promise.all([
 		countKnownByAFirstNameOnly(getContactDeps(), viewer),
 		countLastNames(getSurnameReviewDeps(), viewer)
 	]);
 	return {
-		isAdmin: locals.user.role === 'admin',
+		isAdmin: user.role === 'admin',
 		firstNameOnlyCount,
 		lastNames,
 		version: APP_VERSION,
@@ -45,8 +46,8 @@ export const load: PageServerLoad = async ({ locals }) => {
 export const actions: Actions = {
 	/* "Which of these people am I?" (docs/02 §2.1.3). An empty pick clears the link. */
 	setSelf: async ({ request, locals }) => {
-		if (!locals.user) throw redirect(302, '/login');
-		const viewer = { id: locals.user.id, householdId: locals.user.householdId };
+		const user = requireUser(locals);
+		const viewer = requireViewer(locals);
 
 		const contactId = (await request.formData()).get('contactId');
 		try {
@@ -57,7 +58,7 @@ export const actions: Actions = {
 			);
 			// The load functions re-run inside this same request, off the `locals` the hook
 			// filled before the write — without this they would answer with the old pick.
-			locals.user = { ...locals.user, selfContactId: saved };
+			locals.user = { ...user, selfContactId: saved };
 		} catch (err) {
 			if (err instanceof UnknownSelfContactError)
 				return fail(400, { selfError: err.phrase(translator(locals)) });

@@ -1,4 +1,5 @@
-import { error, fail, redirect } from '@sveltejs/kit';
+import { error, fail } from '@sveltejs/kit';
+import { requireUser, requireViewer } from '$lib/server/auth/guards';
 import * as v from 'valibot';
 import { TranslatableError } from '$lib/errors/translatable';
 import type { MessageKey } from '$lib/i18n/translate';
@@ -32,6 +33,8 @@ import {
 } from '$lib/server/services';
 import { say, translator } from '$lib/server/i18n/say';
 import type { Actions, PageServerLoad } from './$types';
+import { systemClock } from '$lib/server/clock';
+import { todayFor } from '$lib/dates/today';
 
 /*
  * *Settings → Immich → Find your people* (docs/02 §2.24.7): every
@@ -58,14 +61,14 @@ const FAILURE_MESSAGE: Record<ImmichFailure, MessageKey> = {
 const MAX_PAIRS = 2000;
 
 export const load: PageServerLoad = async ({ locals }) => {
-	if (!locals.user) throw redirect(302, '/login');
+	const user = requireUser(locals);
 	const deps = getImmichMatchingDeps();
 	if (!deps) throw error(404, say(locals, 'errors.notFound'));
-	const viewer = { id: locals.user.id, householdId: locals.user.householdId };
+	const viewer = requireViewer(locals);
 	const nameOfMember = authorNames(getMemberDeps(), viewer.householdId);
 	const day = {
-		selfContactId: locals.user.selfContactId,
-		today: new Date().toLocaleDateString('en-CA')
+		selfContactId: user.selfContactId,
+		today: todayFor(systemClock)
 	};
 	return {
 		matches: Promise.all([findImmichMatches(deps, viewer, day), nameOfMember]).then(
@@ -117,7 +120,7 @@ function pairsOf(form: FormData): ConfirmedMatch[] | null {
 
 /** One row's Link and *Link all likely* are the same action: a list of confirmed pairs. */
 const linking: Actions[string] = async ({ request, locals }) => {
-	if (!locals.user) throw redirect(302, '/login');
+	const viewer = requireViewer(locals);
 	const deps = getImmichLinkDeps();
 	if (!deps) throw error(404, say(locals, 'errors.notFound'));
 	const pairs = pairsOf(await request.formData());
@@ -125,7 +128,7 @@ const linking: Actions[string] = async ({ request, locals }) => {
 
 	const result = await linkMatches(
 		deps,
-		{ userId: locals.user.id, householdId: locals.user.householdId },
+		{ userId: viewer.id, householdId: viewer.householdId },
 		pairs
 	);
 	const refusedIds = new Set(result.refused.map((r) => r.contactId));
@@ -139,8 +142,8 @@ const linking: Actions[string] = async ({ request, locals }) => {
 
 /** The actor of an action, or a redirect to sign in. */
 function actorOf(locals: App.Locals) {
-	if (!locals.user) throw redirect(302, '/login');
-	return { userId: locals.user.id, householdId: locals.user.householdId };
+	const viewer = requireViewer(locals);
+	return { userId: viewer.id, householdId: viewer.householdId };
 }
 
 const optionalText = v.optional(v.pipe(v.string(), v.trim()), '');

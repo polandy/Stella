@@ -3,6 +3,7 @@ import { parseCommand } from '$lib/server/commands/parse';
 import { ulidGenerator } from '$lib/server/id';
 import { systemClock } from '$lib/server/clock';
 import { error, fail, redirect } from '@sveltejs/kit';
+import { requireViewer } from '$lib/server/auth/guards';
 import * as v from 'valibot';
 import { getContact } from '$lib/server/domain/contacts/contacts';
 import { IMPORTANT_DATE_KINDS } from '$lib/dates/kinds';
@@ -21,8 +22,7 @@ const AddDateSchema = v.object({
 /** The profile card's dates (docs/02 §2.13). */
 export const dateActions = {
 	addDate: async ({ request, params, locals }) => {
-		if (!locals.user) throw redirect(302, '/login');
-		const viewer = { id: locals.user.id, householdId: locals.user.householdId };
+		const viewer = requireViewer(locals);
 
 		const form = await request.formData();
 		// The date field posts `--MM-DD` itself when the year was left blank (docs/02 §2.13).
@@ -67,8 +67,7 @@ export const dateActions = {
 	},
 
 	removeDate: async ({ request, params, locals }) => {
-		if (!locals.user) throw redirect(302, '/login');
-		const viewer = { id: locals.user.id, householdId: locals.user.householdId };
+		const viewer = requireViewer(locals);
 
 		const form = await request.formData();
 		const dateId = form.get('dateId');

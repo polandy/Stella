@@ -3,6 +3,7 @@ import { parseCommand } from '$lib/server/commands/parse';
 import { ulidGenerator } from '$lib/server/id';
 import { systemClock } from '$lib/server/clock';
 import { error, fail, redirect } from '@sveltejs/kit';
+import { requireViewer } from '$lib/server/auth/guards';
 import * as v from 'valibot';
 import { getContact } from '$lib/server/domain/contacts/contacts';
 import { TAG_COLORS, unassignTag } from '$lib/server/domain/tags/tags';
@@ -18,7 +19,7 @@ const AddTagSchema = v.object({
 /** The profile card's tags (docs/02 §2.8). */
 export const tagActions = {
 	addTag: async ({ request, params, locals }) => {
-		if (!locals.user) throw redirect(302, '/login');
+		const viewer = requireViewer(locals);
 
 		const form = await request.formData();
 		const parsed = v.safeParse(AddTagSchema, {
@@ -41,8 +42,8 @@ export const tagActions = {
 		if (command?.type !== 'tag.assign')
 			return fail(400, { tagError: say(locals, 'errors.tag.needName') });
 		const author = {
-			userId: locals.user.id,
-			householdId: locals.user.householdId,
+			userId: viewer.id,
+			householdId: viewer.householdId,
 			locale: locals.locale
 		};
 		const outcome = await dispatchCommand(getCommandDeps(), author, command);
@@ -59,8 +60,7 @@ export const tagActions = {
 	},
 
 	removeTag: async ({ request, params, locals }) => {
-		if (!locals.user) throw redirect(302, '/login');
-		const viewer = { id: locals.user.id, householdId: locals.user.householdId };
+		const viewer = requireViewer(locals);
 
 		const form = await request.formData();
 		const tagId = form.get('tagId');
@@ -69,7 +69,7 @@ export const tagActions = {
 		const contact = await getContact(getContactDeps(), viewer, params.id);
 		if (!contact) throw error(404, say(locals, 'errors.contact.notFound'));
 
-		await unassignTag(getTagDeps(), locals.user.householdId, params.id, tagId);
+		await unassignTag(getTagDeps(), viewer.householdId, params.id, tagId);
 		throw redirect(303, `/contacts/${params.id}`);
 	}
 } satisfies Actions;

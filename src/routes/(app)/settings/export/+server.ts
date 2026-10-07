@@ -1,4 +1,5 @@
-import { error, redirect } from '@sveltejs/kit';
+import { error } from '@sveltejs/kit';
+import { requireUser } from '$lib/server/auth/guards';
 import {
 	archiveEntries,
 	exportHousehold,
@@ -23,14 +24,14 @@ import { say } from '$lib/server/i18n/say';
 const MIME = 'application/x-tar';
 
 export const POST: RequestHandler = async ({ locals }) => {
-	if (!locals.user) throw redirect(302, '/login');
+	const user = requireUser(locals);
 	// The archive carries every member's private records, so only the household admin may take
 	// it (docs/02 §2.15). This is the authorisation; the repository scopes by household.
-	if (locals.user.role !== 'admin') throw error(403, say(locals, 'errors.export.adminOnly'));
+	if (user.role !== 'admin') throw error(403, say(locals, 'errors.export.adminOnly'));
 
 	const { fileName, document, mediaPaths } = await exportHousehold(getArchiveDeps(), {
-		userId: locals.user.id,
-		householdId: locals.user.householdId
+		userId: user.id,
+		householdId: user.householdId
 	});
 
 	// Named before anything is sent: a path the archive cannot carry must fail as an error,

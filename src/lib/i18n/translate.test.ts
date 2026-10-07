@@ -6,6 +6,7 @@ import {
 	createCatalogs,
 	createTranslator,
 	hasMessage,
+	messageKey,
 	loadCatalog,
 	type Messages
 } from './translate';
@@ -130,5 +131,11 @@ describe('createCatalogs — a language loaded on demand', () => {
 	it('has the real German catalogue in reach of the app’s own shelf', async () => {
 		await loadCatalog('de');
 		expect(createTranslator('de')('nav.people')).toBe('Menschen');
+	});
+});
+
+describe('messageKey', () => {
+	it('hands back the key it was given, so a schema can carry it as its message', () => {
+		expect(messageKey('auth.setup.needName')).toBe('auth.setup.needName');
 	});
 });

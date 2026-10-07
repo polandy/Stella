@@ -1,4 +1,5 @@
 import { fail, redirect } from '@sveltejs/kit';
+import { requireViewer } from '$lib/server/auth/guards';
 import {
 	DECLINED_PER_PAGE,
 	declinedFitsInline,
@@ -117,8 +118,7 @@ const linksFor = (
 });
 
 export const load: PageServerLoad = async ({ locals, url }): Promise<ReviewData> => {
-	if (!locals.user) throw redirect(302, '/login');
-	const viewer = { id: locals.user.id, householdId: locals.user.householdId };
+	const viewer = requireViewer(locals);
 
 	// Closed, the page costs a session lookup and nothing else: the rules run on request.
 	if (!reviewIsOpen(url.searchParams)) return NOTHING_CHECKED;
@@ -189,8 +189,7 @@ type Answer = (
 const answering =
 	(answer: Answer): Actions[string] =>
 	async ({ request, locals }) => {
-		if (!locals.user) throw redirect(302, '/login');
-		const viewer = { id: locals.user.id, householdId: locals.user.householdId };
+		const viewer = requireViewer(locals);
 		const form = await request.formData();
 		const refusal = await answer(locals, viewer, form);
 		if (refusal) return fail(refusal.status, { error: refusal.message });

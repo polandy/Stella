@@ -31,7 +31,10 @@ rule and pragmatism genuinely conflict, favor readability and testability.
    module-level singletons from within domain logic. The edge wires the real
    implementations; tests pass fakes.
 10. **Determinism.** No `Date.now()` / `Math.random()` / `crypto.randomUUID()` buried in
-    logic. Inject a `Clock` and an `IdGenerator` so tests are deterministic and fast.
+    logic. Inject a `Clock` and an `IdGenerator` so tests are deterministic and fast. The
+    edge is no exception: a route that needs today's date asks `todayFor(clock)`
+    (`src/lib/dates/today.ts`) with the server's `systemClock`, so it and the use-cases agree
+    on what day it is.
     Deliberately expensive work is injectable for the same reason — the demo seed takes its
     password hasher, so only the case that is about Argon2id pays for it. Where a test would
     otherwise wait and hope, the production code publishes the state instead: the explorer's
@@ -60,10 +63,13 @@ rule and pragmatism genuinely conflict, favor readability and testability.
     `bun run lint` checks both and runs in CI. The lint also guards the architecture with
     `no-restricted-imports`: no `$app` / `$env` / `@sveltejs/kit` under
     `src/lib/server/{domain,access}` or a folder CLAUDE.md calls *pure*, and no
-    `$lib/server/services` outside `src/routes/` and `src/hooks.server.ts` (§8.3). A file
-    that breaks a boundary today is listed, with the reason, in the config's exception
-    lists — shrink them, never grow them without a reason. Markdown is not formatted. The
-    one-time reformat is listed in `.git-blame-ignore-revs`
+    `$lib/server/services` outside `src/routes/` and `src/hooks.server.ts` (§8.3). And it
+    keeps the edge's boilerplate in one place: no hand-written `if (!locals.user) throw
+    redirect(…)` (use `requireViewer` / `requireUser`, docs/04 §4.4), no `new Date(` in a
+    route module (`todayFor(clock)`, item 10), no local `key()` helper (`messageKey()` from
+    `$lib/i18n/translate`). A file that breaks a boundary today is listed, with the reason,
+    in the config's exception lists — shrink them, never grow them without a reason.
+    Markdown is not formatted. The one-time reformat is listed in `.git-blame-ignore-revs`
     (`git config blame.ignoreRevsFile .git-blame-ignore-revs`).
 19. **Security by default.** Least privilege, validate all external input, no secrets in
     code or logs, central access-control (§3.7) as the only authorization path.
