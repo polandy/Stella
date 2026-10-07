@@ -7,7 +7,7 @@
 	import { FIELD_SELECTOR, firstField } from './first-field';
 	import { focusLeftForm, owesFocusBack } from '$lib/ui/focus-return';
 	import { focusDestination } from '$lib/ui/focus-destination';
-	import { keepInView, reveal, showOpenedForm } from '$lib/motion/motion.svelte';
+	import { reveal, settleOpenedForm, showOpenedForm } from '$lib/motion/motion.svelte';
 	import type { IconName } from './icons';
 
 	/*
@@ -146,12 +146,12 @@
 	});
 
 	/*
-	 * Opening glides the card into view the one way every card form does (docs/05 §5.11); a card
-	 * that held still has its grown form brought fully into view instead, once it has grown.
+	 * Opening brings the card into view the one way every card form does (docs/05 §5.11), and
+	 * settles it once the form has grown.
 	 */
 	let glidedOnOpen = false;
 	function keepFormInView() {
-		if (!glidedOnOpen) keepInView(form);
+		settleOpenedForm(card, form, glidedOnOpen);
 		glidedOnOpen = false;
 	}
 

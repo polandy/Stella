@@ -21,7 +21,7 @@ import {
  * - `glide`, an action: a box whose content changes under it glides between the two heights.
  * - `crossfade`, a Svelte transition: the two alternatives inside a gliding box fade over each
  *   other (`Swap.svelte` pairs the two).
- * - `showOpenedForm` and `keepInView`: a form that just opened in its card is brought into view
+ * - `showOpenedForm` and `settleOpenedForm`: a form that just opened in its card is brought into view
  *   and takes the cursor, one way for every card (Section's add forms, the story card's
  *   composer).
  */
@@ -225,30 +225,41 @@ function visibleBand(node: HTMLElement): { viewTop: number; viewBottom: number }
 	return { viewTop: rect.top + padding, viewBottom: Math.min(rect.bottom, keyboardTop) };
 }
 
+/** The page glides `card`'s top to just under the bar; at once with reduced motion. */
+function glideCardToTop(card: HTMLElement) {
+	card.scrollIntoView({ block: 'start', behavior: scrollBehavior(prefersReducedMotion.current) });
+}
+
 /**
  * A form has just opened in `card`: the page glides the card's top to just under the bar when
  * the rule asks for it (`glideToOpenedForm`), and the cursor goes into `field` without a jump of
- * its own. Returns whether the page glided — if it did, the form is in view already and needs
- * no `keepInView` once it has grown; a second scroll would only cut the first one short.
+ * its own. Returns whether the page glided, for `settleOpenedForm`.
  */
 export function showOpenedForm(card: HTMLElement, field: HTMLElement | null | undefined): boolean {
 	const glides = glideToOpenedForm({
 		cardTop: card.getBoundingClientRect().top,
 		...visibleBand(card)
 	});
-	if (glides) {
-		card.scrollIntoView({
-			block: 'start',
-			behavior: scrollBehavior(prefersReducedMotion.current)
-		});
-	}
+	if (glides) glideCardToTop(card);
 	field?.focus({ preventScroll: true });
 	return glides;
 }
 
-/** Once a form has grown to its height, all of it in view — the page glides there if need be. */
-export function keepInView(node: HTMLElement | null | undefined): void {
-	node?.scrollIntoView({
+/**
+ * The opened form has grown to its height. A card that glided is glided to the top once more:
+ * near the foot of the page the first glide stopped where the page then ended, before the form
+ * had made it longer. A card that held still has all of its form brought into view.
+ */
+export function settleOpenedForm(
+	card: HTMLElement | null | undefined,
+	form: HTMLElement | null | undefined,
+	glided: boolean
+): void {
+	if (glided) {
+		if (card) glideCardToTop(card);
+		return;
+	}
+	form?.scrollIntoView({
 		block: 'nearest',
 		behavior: scrollBehavior(prefersReducedMotion.current)
 	});

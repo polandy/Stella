@@ -26,7 +26,7 @@
 		type InteractionKind
 	} from '$lib/interactions/kinds';
 	import { asTyped, newPeopleAsCandidates } from '$lib/mentions/picks';
-	import { keepInView, reveal, showOpenedForm } from '$lib/motion/motion.svelte';
+	import { reveal, settleOpenedForm, showOpenedForm } from '$lib/motion/motion.svelte';
 	import { keepable } from '$lib/pwa/keepable';
 	import { isKept, type KeptOf } from '$lib/pwa/outbox';
 	import { outbox } from '$lib/pwa/outbox.svelte';
@@ -83,11 +83,11 @@
 	let momentDraft = $state<MomentDraft | null>(null);
 	let composerRun = $state(0);
 	let editingMoment = $state<KeptOf<'moment.capture'> | null>(null);
-	// Whether opening glided the card; if not, the grown composer is brought into view instead.
+	// Whether opening glided the card, for settling it once the composer has grown.
 	let composerGlided = false;
 	let composerBox: HTMLElement | undefined = $state();
 	function keepComposerInView() {
-		if (!composerGlided) keepInView(composerBox);
+		settleOpenedForm(document.getElementById(sectionAnchor('story')), composerBox, composerGlided);
 		composerGlided = false;
 	}
 
