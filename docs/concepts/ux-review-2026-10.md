@@ -25,15 +25,15 @@ PR updates its own row.
 | A1 one primary per screen | done | batch 1 mockup approved 2026-10-06 — `ux-review-batch-1.html` | merged #255, e2e #257 |
 | A2 §5.5 split per screen | decided | after the A4–C11 PR merges; docs only (owner 2026-10-07) | |
 | A3 one vocabulary | done | *moment* for the written thing (*Write a moment* everywhere), *Activity* for the per-person timeline; docs' *Story* → *Activity*; `/journal` stays the reading page | #260 (e2e in the same PR) |
-| A4 uppercase label roles | mockup | `ux-rest.html` | |
-| A5 Mocha accent tints | mockup | `ux-rest.html` | |
+| A4 uppercase label roles | mockup | `ux-rest.html`; uppercase only for dividers inside a list (day dividers, the People card's group headings); *Coming up* and the filter-row labels go sentence case | |
+| A5 Mocha accent tints | mockup | `ux-rest.html`; Mocha avatar 28 % / chip 22 % (active stays 28), plus a 1.5 px ring in the flat accent around initials avatars in Mocha; Latte unchanged; 32/24 and up fail AA | |
 | B1 filter pill on a phone | done | batch 1 mockup approved 2026-10-06 — `ux-review-batch-1.html` | merged #255, e2e #257 |
 | B2 two search entries | done | batch 1 mockup approved 2026-10-06 — `ux-review-batch-1.html` | merged #255, e2e #257 |
 | B3 mentions twice | done | drop the avatar row for moments (inline chips keep their links); keep it for interactions — shown in `ux-polish.html` | merged #290 (e2e in the same PR) |
 | B4 age vs. day heading | done | `ux-polish.html`; time of day (locale format) under *Today* and *Yesterday*, nothing for older days, full date and time in the tooltip | merged #290 (e2e in the same PR) |
 | B5 composer pills | done | `ux-polish.html`; sharing a switch (`role="switch"`, label is the state with its icon), *Photo* an icon button with a count badge, the day the one pill with a chevron; no `⌘⏎` hint on a coarse pointer | merged #290 (e2e in the same PR) |
 | B6 empty desktop rail | mockup | the stream takes the width when *Coming up* is empty; no *Recently opened* band — shown in `ux-rest.html` | |
-| B7 actor vs. subject avatar | mockup | `ux-rest.html` | |
+| B7 actor vs. subject avatar | mockup | `ux-rest.html`; subject avatar stays, a small actor badge on its bottom-right only on rows by another member and only when `offersMemberChoice` | |
 | C1 identity card facts | done | facts are the only reading surface and edit in place (like the job); rows keep only Contact (no address), Tags, How we met; empty facts wait behind the quiet button (which names them) and appear as dashed slots; every date is its own fact, one dates editor; C3 and C5 ride along in the same PR | merged #263 (e2e in the same PR) |
 | C2 empty cards | decided | batch 1 mockup approved 2026-10-06 — `ux-review-batch-1.html`; the planned PR 2 never opened, so C2 gets its own session after the polish PR; own session after the A4–C11 PR (owner 2026-10-07) | |
 | C3 gender into name editor | done | built with C1: gender sits in the name editor, the row is gone | merged #263 |
@@ -44,7 +44,7 @@ PR updates its own row.
 | C8 desktop map preview | done | mockup approved 2026-10-07 — `people-card.html`; preview strip with first names on every width, enlarges in place, the phone's corner icons; list at full width (four columns from `md`); phone map unchanged | merged #284 (e2e in the same PR) |
 | C9 fold order | done | mockup approved 2026-10-07 — `people-card.html`; folded shows the first six entered, worked-out wholly behind *Show more*; a tappable collapsed line names each wholly hidden group, worked-out last; *Show N more* everywhere | merged #284 (e2e in the same PR) |
 | C10 phone breadcrumb | done | batch 1 mockup approved 2026-10-06 — `ux-review-batch-1.html`; folded into the polish PR (owner 2026-10-07), shown in `ux-polish.html` | merged #290 (e2e in the same PR) |
-| C11 Immich label | mockup | `ux-rest.html` | |
+| C11 Immich label | mockup | `ux-rest.html`; *Photo library ▾* / *Fotobibliothek ▾*, the menu items keep naming Immich | |
 | C12 edit affordance on touch | done | `ux-polish.html`; a faint pencil after every value that edits in place — always on a coarse pointer, on hover elsewhere; one rule in §5.7 | merged #290 (e2e in the same PR) |
 
 What is *not* proposed, because it was decided before: "haven't seen" nudges or a "see more
