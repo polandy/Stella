@@ -59,6 +59,7 @@
 		isSelf,
 		archived,
 		logContact,
+		writeMoment,
 		tracePath
 	}: {
 		data: PersonPageData;
@@ -71,12 +72,26 @@
 		archived: boolean;
 		/** Opens the story card's own form, wherever the reader is. */
 		logContact: () => void;
+		/** Opens the moment composer at the top of the story card, and brings the reader there. */
+		writeMoment: () => void;
 		/** Opens "How are we connected?" on the relationships card. */
 		tracePath: () => void;
 	} = $props();
 
 	const i18n = useI18n();
 	const t = i18n.t;
+
+	/*
+	 * *Write a moment* opens the composer on this page (docs/05 §5.5). It stays a link to the
+	 * journal page underneath: without JavaScript, or opened in a new tab, it still leads
+	 * somewhere a moment can be written.
+	 */
+	function writeInPlace(event: MouseEvent) {
+		if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey)
+			return;
+		event.preventDefault();
+		writeMoment();
+	}
 	const c = $derived(data.contact);
 
 	/** The viewer's day, for the age beside a birthday and the years since a date. */
@@ -378,6 +393,7 @@
 			variant="primary"
 			icon="journal"
 			href="/contacts/{c.id}/journal"
+			onclick={writeInPlace}
 			class="flex-1 md:flex-none"
 		>
 			{t('contact.write')}

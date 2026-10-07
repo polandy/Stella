@@ -45,7 +45,9 @@ const MomentCapture = v.object({
 	newPeople: v.optional(
 		v.array(v.union([v.pipe(v.string(), v.trim(), v.minLength(1)), MomentNewPerson])),
 		[]
-	)
+	),
+	// Optional: a moment queued before the person page could write one carries none.
+	anchorId: v.optional(v.pipe(v.string(), v.minLength(1)))
 });
 
 const NoteAdd = v.object({

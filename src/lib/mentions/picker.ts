@@ -32,6 +32,17 @@ export function handleFor(c: MentionCandidate): string {
 	return '@' + raw.normalize('NFC').replace(/[^\p{L}\p{N}]/gu, '');
 }
 
+/**
+ * Whom the picker offers for a moment that already belongs to `anchorId` (docs/02 §2.20.1):
+ * everyone else, since naming the anchor would be the entry's own subject, not a mention.
+ */
+export function pickableBeside<C extends { id: string }>(
+	candidates: readonly C[],
+	anchorId: string | null
+): readonly C[] {
+	return anchorId ? candidates.filter((c) => c.id !== anchorId) : candidates;
+}
+
 export interface Suggestions<C extends MentionCandidate> {
 	people: C[];
 	/** Name to offer as "Create …", or null while the query is empty. */

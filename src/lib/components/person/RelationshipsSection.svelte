@@ -19,7 +19,7 @@
 	import { removalKey, type RemovalKind } from '$lib/undo/keys';
 	import { tick, untrack } from 'svelte';
 	import { prefersReducedMotion } from 'svelte/motion';
-	import { glide, reveal } from '$lib/motion/motion.svelte';
+	import { glide, reveal, showOpenedForm } from '$lib/motion/motion.svelte';
 	import { scrollBehavior } from '$lib/motion/motion';
 	import AddRelationshipForm from './AddRelationshipForm.svelte';
 	import KinPanels from './KinPanels.svelte';
@@ -196,7 +196,8 @@
 	async function askHowConnected() {
 		tracingPath = true;
 		await tick();
-		document.getElementById('path-target')?.focus();
+		const card = document.getElementById(sectionAnchor('relationships'));
+		if (card) showOpenedForm(card, document.getElementById('path-target'));
 	}
 
 	/*

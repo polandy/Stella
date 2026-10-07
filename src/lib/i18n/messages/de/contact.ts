@@ -25,6 +25,7 @@ export const contact: ContactMessages = {
 	'contact.archivedOn': (p) => `Archiviert am ${p.day}`,
 	'contact.write': 'Moment festhalten',
 	'contact.logContact': 'Kontakt festhalten',
+	'contact.openJournal': 'Tagebuch öffnen',
 	'contact.egoGraphLabel': (p) => `Beziehungsnetz von ${p.name}`,
 	'contact.story.title': 'Aktivität',
 

@@ -30,7 +30,7 @@ const dot = (name: string) => ({ name, mimeType: 'image/png', buffer: DOT_PNG })
 
 /** From a person's page to their journal, with the composer open. */
 async function openJournal(page: Page): Promise<void> {
-	await page.getByRole('link', { name: 'Write' }).first().click();
+	await page.getByRole('link', { name: 'Open journal' }).click();
 	await expect(page.getByRole('heading', { name: 'Journal' })).toBeVisible();
 	await page.getByRole('button', { name: 'Write a moment' }).click();
 }

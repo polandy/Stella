@@ -24,6 +24,7 @@ export const contact = {
 	'contact.archivedOn': (p: { day: string }) => `Archived on ${p.day}`,
 	'contact.write': 'Write a moment',
 	'contact.logContact': 'Log contact',
+	'contact.openJournal': 'Open journal',
 	'contact.egoGraphLabel': (p: { name: string }) => `Relationship network for ${p.name}`,
 	'contact.story.title': 'Activity',
 

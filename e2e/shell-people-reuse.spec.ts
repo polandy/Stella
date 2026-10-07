@@ -79,7 +79,7 @@ test("the journal's @-picker offers the household but not the person the journal
 	await addPerson(page, 'Lorenz', surname);
 	await addPerson(page, 'Isolde', surname);
 
-	await page.getByRole('link', { name: 'Write' }).first().click();
+	await page.getByRole('link', { name: 'Open journal' }).click();
 	await appReady(page);
 	await page.getByRole('button', { name: 'Write a moment' }).click();
 	await page.getByRole('textbox', { name: 'Moment', exact: true }).pressSequentially(`@${surname}`);
@@ -95,7 +95,7 @@ test('the journal lets the viewer edit their own entry, with its text, and not a
 }) => {
 	// Hans Brunner's journal holds an entry of the demo admin's and one of Nina's (seed).
 	await openPerson(page, /Hans Brunner/);
-	await page.getByRole('link', { name: 'Write' }).first().click();
+	await page.getByRole('link', { name: 'Open journal' }).click();
 	await appReady(page);
 
 	const mine = page.locator('article', { hasText: '1972 flood' });

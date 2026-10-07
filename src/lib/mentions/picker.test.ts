@@ -1,5 +1,12 @@
 import { describe, expect, it } from 'bun:test';
-import { activeHandle, handleFor, insertHandle, listPlacement, suggest } from './picker';
+import {
+	activeHandle,
+	handleFor,
+	insertHandle,
+	listPlacement,
+	pickableBeside,
+	suggest
+} from './picker';
 
 const people = [
 	{ id: 'j', displayName: 'Julia Meier', firstName: 'Julia', lastName: 'Meier' },
@@ -77,5 +84,15 @@ describe('listPlacement', () => {
 			side: 'below',
 			maxHeight: 180
 		});
+	});
+});
+
+describe('pickableBeside', () => {
+	it('offers everyone but the person a moment already belongs to', () => {
+		expect(pickableBeside(people, 'j').map((p) => p.id)).toEqual(['m', 'n']);
+	});
+
+	it('offers everyone when the moment belongs to nobody yet', () => {
+		expect(pickableBeside(people, null)).toEqual(people);
 	});
 });

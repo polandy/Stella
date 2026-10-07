@@ -145,3 +145,72 @@ export function gapToTakeUp(input: {
 	if (input.siblingAfter) return { top: 0, bottom: -input.gap };
 	return { top: 0, bottom: 0 };
 }
+
+/**
+ * Whether opening a form glides its card to the top of the view (docs/05 §5.11). A form opens
+ * under its card's header and grows downwards, so the card holds still while its top is in the
+ * upper half of the view — there is room for the form, and a jump would only unsettle the
+ * reader. A top lower than that, under the bar, or off screen would leave the form below the
+ * fold or out of sight, so the page glides the card's top to just under the bar.
+ */
+export function glideToOpenedForm(input: {
+	cardTop: number;
+	viewTop: number;
+	viewBottom: number;
+}): boolean {
+	const middle = (input.viewTop + input.viewBottom) / 2;
+	return input.cardTop < input.viewTop || input.cardTop > middle;
+}
+
+/**
+ * What an opened form owes its card once it has grown (`settleOpenedForm`, docs/05 §5.11): the
+ * glide its opening made, if any. The two land in either order — with reduced motion the reveal
+ * ends at once, before the opener has measured the card — so each opening starts owing nothing,
+ * and a settle uses up what is owed.
+ */
+export function openedFormGlide(): {
+	opening: () => void;
+	opened: (glided: boolean) => void;
+	settle: () => boolean;
+} {
+	let owed = false;
+	return {
+		opening: () => {
+			owed = false;
+		},
+		opened: (glided) => {
+			owed = glided;
+		},
+		settle: () => {
+			const was = owed;
+			owed = false;
+			return was;
+		}
+	};
+}
+
+/**
+ * Where the shell's scroller goes to show an element (docs/05 §5.11) — computed rather than
+ * left to `scrollIntoView`, which scrolls every scrollable ancestor, the document included, and
+ * on a phone drags the sticky bars off the top of the screen. Positions are on screen: the band
+ * the reader sees (under the scroller's scroll padding, above a keyboard) and the element's
+ * edges. `start` puts the element's top at the band's top, less its own scroll margin;
+ * `nearest` moves only as far as it takes, the top winning when it does not fit.
+ */
+export function scrollTopToShow(input: {
+	scrollTop: number;
+	maxScrollTop: number;
+	viewTop: number;
+	viewBottom: number;
+	element: { top: number; bottom: number; marginTop: number };
+	block: 'start' | 'nearest';
+}): number {
+	const { scrollTop, viewTop, viewBottom, element } = input;
+	const toTop = scrollTop + element.top - element.marginTop - viewTop;
+	const clamp = (top: number) => Math.min(Math.max(top, 0), input.maxScrollTop);
+	if (input.block === 'start') return clamp(toTop);
+	const fits = element.bottom - element.top + element.marginTop <= viewBottom - viewTop;
+	if (element.top - element.marginTop < viewTop || !fits) return clamp(toTop);
+	if (element.bottom > viewBottom) return clamp(scrollTop + element.bottom - viewBottom);
+	return scrollTop;
+}

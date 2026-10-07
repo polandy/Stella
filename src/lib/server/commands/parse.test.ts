@@ -33,6 +33,15 @@ describe('parseCommand', () => {
 		});
 	});
 
+	it('reads the person a moment was written on the page of', () => {
+		const parsed = parseCommand({ ...good, payload: { ...good.payload, anchorId: 'markus' } });
+		expect(parsed?.payload).toMatchObject({ anchorId: 'markus' });
+	});
+
+	it('refuses an empty anchor rather than reading it as none', () => {
+		expect(parseCommand({ ...good, payload: { ...good.payload, anchorId: '' } })).toBeNull();
+	});
+
 	it('defaults a moment to shared and to nobody new, as the form does', () => {
 		const parsed = parseCommand({
 			...good,

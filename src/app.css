@@ -284,8 +284,17 @@ html {
 	color-scheme: light dark;
 }
 
+/*
+ * The visible height, not 100vh alone: a phone browser counts 100vh with its address bar
+ * hidden, so a body that tall makes the document scroll a little while the bar shows — and an
+ * anchor jump, a focus or a scroll into view then moves the whole app shell, sticky bars and
+ * all, off the top of the screen. At 100dvh the shell (`h-dvh`) fills the document exactly and
+ * the document cannot scroll; a page outside the shell (sign-in) still scrolls when it is taller.
+ * 100vh stays as the fallback for a browser without `dvh`.
+ */
 body {
 	min-height: 100vh;
+	min-height: 100dvh;
 	font-family: var(--font-sans);
 	-webkit-font-smoothing: antialiased;
 }

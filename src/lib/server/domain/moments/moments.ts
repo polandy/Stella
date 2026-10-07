@@ -5,9 +5,15 @@ import type { Visibility, Viewer } from '../../access/visibility';
 import type { Clock } from '../../clock';
 import type { IdGenerator } from '../../id';
 import { newPersonMentionId, type MomentNewPerson } from '../../../commands/commands';
-import { extractHandles, mentionKey, mentionToken } from '../../../mentions/mentions';
+import {
+	extractHandles,
+	mentionKey,
+	mentionToken,
+	mentionsOtherThan
+} from '../../../mentions/mentions';
 import { resolveForAudience } from '../mentions/resolve-for-audience';
 import { createContact, type ContactRepository } from '../contacts/contacts';
+import { requireVisibleContact } from '../contacts/require-visible';
 import { addToJournalDay, type JournalAuthor, type JournalRepository } from '../journal/journal';
 
 /*
@@ -16,6 +22,10 @@ import { addToJournalDay, type JournalAuthor, type JournalRepository } from '../
  * other mention is stored as a journal_mention. People the composer queued for inline creation
  * are created first, so their handle resolves like anyone else's. Pure orchestration over the
  * contact + journal ports; the visibility-scoped reads live in the adapters.
+ *
+ * Written on a person's own page, a moment carries that person as its `anchorId`: it lands in
+ * their journal without an `@`, everyone else it names is a mention beside them, and naming the
+ * anchor too adds no self-mention — as on the journal page (`writeJournalEntry`).
  */
 
 export interface CaptureMomentInput {
@@ -30,6 +40,8 @@ export interface CaptureMomentInput {
 	 * name — by their `@Handle`.
 	 */
 	newPeople: (string | MomentNewPerson)[];
+	/** The person whose page it was written on; absent, the first person mentioned. */
+	anchorId?: string | null;
 }
 
 export interface CaptureMomentDeps {
@@ -72,6 +84,8 @@ export async function captureMoment(
 	const body = input.body.trim();
 	if (body.length === 0) throw new MomentNeedsPersonError();
 	const viewer: Viewer = { id: author.userId, householdId: author.householdId };
+	// Checked before anyone is created, so a refused moment leaves the household as it was.
+	if (input.anchorId) await requireVisibleContact(deps.contacts, author, input.anchorId);
 
 	const visible = await deps.contacts.listVisibleTo(viewer);
 	// A handle that is two people is asked about before anyone is created: a refused moment
@@ -127,9 +141,7 @@ export async function captureMoment(
 		input.visibility,
 		written
 	);
-	if (resolved.ids.length === 0) throw new MomentNeedsPersonError();
-
-	const [anchorContactId, ...mentionedContactIds] = resolved.ids;
+	const { anchorContactId, mentionedContactIds } = anchorAndMentions(resolved.ids, input.anchorId);
 	// A moment is an addition (§2.20): a day slot that already holds an entry gets it appended.
 	const entryId = await addToJournalDay(
 		{ journal: deps.journal, ids: deps.ids, clock: deps.clock },
@@ -152,4 +164,16 @@ export async function captureMoment(
 		linkSuggestion:
 			mentionedContactIds.length > 0 ? [anchorContactId, mentionedContactIds[0]] : null
 	};
+}
+
+/** Whose journal a moment lands in, and whom it mentions beside them. */
+function anchorAndMentions(
+	ids: string[],
+	anchorId: string | null | undefined
+): { anchorContactId: string; mentionedContactIds: string[] } {
+	if (anchorId)
+		return { anchorContactId: anchorId, mentionedContactIds: mentionsOtherThan(ids, anchorId) };
+	const [anchorContactId, ...mentionedContactIds] = ids;
+	if (!anchorContactId) throw new MomentNeedsPersonError();
+	return { anchorContactId, mentionedContactIds };
 }

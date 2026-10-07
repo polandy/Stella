@@ -102,7 +102,7 @@ test('adds a second moment about the same person that day to the first, keeping 
 
 	// One day slot, one entry: the earlier moment is still there beside the later one.
 	await openPerson(page, /\bUlric\b/);
-	await page.getByRole('link', { name: 'Write' }).first().click();
+	await page.getByRole('link', { name: 'Open journal' }).click();
 	await expect(page.getByRole('heading', { name: 'Journal' })).toBeVisible();
 	await appReady(page);
 	const entries = page.locator('article', { hasText: 'repotted the ferns' });

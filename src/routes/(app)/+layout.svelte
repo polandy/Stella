@@ -297,7 +297,10 @@
 <Toast />
 
 <!-- The visible height, not 100vh: a phone browser counts 100vh with its address bar hidden,
-     so a shell that tall runs its foot under the fixed tab bar while the bar is showing. -->
+     so a shell that tall runs its foot under the fixed tab bar while the bar is showing. The
+     body is held to the same height (`app.css`), so the document never scrolls: only `#content`
+     does, and the motion helpers scroll it alone (`scrollTopToShow`, docs/05 §5.11) — a scrolled
+     document would carry the top bar and the sticky jump bar off the top of the screen. -->
 <!-- The first stop for a keyboard: past the sidebar and the top bar to the page itself. -->
 <a
 	href="#content"

@@ -45,8 +45,9 @@ test('the person page writes a moment, and the journal keeps it as one', async (
 		page.locator('#section-story').getByRole('heading', { name: 'Activity' })
 	).toBeVisible();
 
-	// It leads to the journal, where an empty one invites the first moment.
-	await write.click();
+	// The card's *Open journal* leads to the journal, where an empty one invites the first
+	// moment (the primary opens the composer in place, docs/05 §5.5).
+	await page.getByRole('link', { name: 'Open journal' }).click();
 	await expect(page.getByRole('heading', { name: 'Journal' })).toBeVisible();
 	await appReady(page);
 	await expect(page.getByText('No moments yet.')).toBeVisible();
@@ -87,7 +88,7 @@ test.describe('in German', () => {
 			.getByTestId('identity-actions')
 			.getByRole('link', { name: 'Moment festhalten' });
 		await expect(write).toBeVisible();
-		await write.click();
+		await page.getByRole('link', { name: 'Tagebuch öffnen' }).click();
 		await expect(page.getByRole('heading', { name: 'Tagebuch' })).toBeVisible();
 	});
 });

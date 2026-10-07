@@ -3,8 +3,13 @@
 		currentSection,
 		JUMP_SECTIONS,
 		jumpEntries,
+		markedSection,
+		scrollsThePage,
 		type JumpSection
 	} from '$lib/contacts/jump-bar';
+	import { replaceState } from '$app/navigation';
+	import { page } from '$app/state';
+	import { bringCardIntoView } from '$lib/motion/motion.svelte';
 	import { sectionAnchor } from '$lib/contacts/sections';
 	import { useI18n } from '$lib/i18n/context.svelte';
 	import { useRemovals } from '$lib/undo/context.svelte';
@@ -49,6 +54,27 @@
 
 	let bar = $state<HTMLElement>();
 	let current = $state<JumpSection | null>(null);
+	// The card a link was tapped for, marked until the reader scrolls on their own.
+	let tapped = $state<JumpSection | null>(null);
+	const marked = $derived(markedSection(current, tapped));
+
+	/*
+	 * A plain click glides to the card the way an opened form does (docs/05 §5.11) instead of
+	 * the anchor's jump. The link stays a link: without JavaScript, in a new tab or copied, it is
+	 * the anchor it always was. The card takes the cursor, and the address names it, without a
+	 * second scroll.
+	 */
+	function jump(event: MouseEvent, section: JumpSection) {
+		if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey)
+			return;
+		const card = document.getElementById(sectionAnchor(section));
+		if (!card) return;
+		event.preventDefault();
+		tapped = section;
+		bringCardIntoView(card);
+		card.focus({ preventScroll: true });
+		replaceState(`#${card.id}`, page.state);
+	}
 
 	$effect(() => {
 		const scroller = bar?.closest<HTMLElement>('#content');
@@ -86,7 +112,17 @@
 		resized.observe(own);
 		resized.observe(own.parentElement ?? own);
 		scroller.addEventListener('scroll', onScroll, { passive: true });
+		// The reader scrolling on their own lets go of a tapped card; the glide itself is no input.
+		const letGo = () => (tapped = null);
+		const letGoOnScrollKey = (event: KeyboardEvent) => {
+			if (scrollsThePage(event.key)) letGo();
+		};
+		const inputs = ['wheel', 'touchstart', 'pointerdown'] as const;
+		for (const input of inputs) window.addEventListener(input, letGo, { passive: true });
+		window.addEventListener('keydown', letGoOnScrollKey);
 		return () => {
+			for (const input of inputs) window.removeEventListener(input, letGo);
+			window.removeEventListener('keydown', letGoOnScrollKey);
 			cancelAnimationFrame(frame);
 			resized.disconnect();
 			scroller.removeEventListener('scroll', onScroll);
@@ -110,7 +146,8 @@
 			<li class="min-w-0">
 				<a
 					href="#{sectionAnchor(entry.section)}"
-					aria-current={current === entry.section ? 'location' : undefined}
+					aria-current={marked === entry.section ? 'location' : undefined}
+					onclick={(event) => jump(event, entry.section)}
 					class="flex h-8 min-w-0 items-center justify-center gap-1 rounded-full px-2 text-[0.8125rem] font-medium whitespace-nowrap text-fg-muted transition-colors hover:text-fg aria-[current=location]:bg-card aria-[current=location]:text-fg aria-[current=location]:shadow-card sm:px-3"
 				>
 					<span class="truncate">{t(TITLE[entry.section])}</span>
