@@ -5,6 +5,11 @@ sentence about it. Everything else in the app exists to make that sentence usefu
 
 ## Your first visit
 
+Each time you open Stella — the app from your home screen, or a new browser tab — the logo
+draws itself and settles into its place at the top. It shows once per session and takes about a
+second; tap anywhere or press a key to skip it. If your device is set to reduce motion, you see
+the finished logo for a moment instead.
+
 A new Stella starts empty, so the first thing Home shows is a **Welcome to Stella** card with
 three ways in:
 

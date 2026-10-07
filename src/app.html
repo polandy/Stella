@@ -14,10 +14,292 @@
 					}
 				} catch (e) {}
 			})();
+			// The welcome on start, once per session (docs/05 §5.11.4): mirrors `shouldWelcome` in
+			// src/lib/motion/welcome.ts. Without the attribute the overlay is never drawn.
+			(function () {
+				try {
+					var seen = sessionStorage.getItem('stella-welcomed') !== null;
+					var still = matchMedia('(prefers-reduced-motion: reduce)').matches;
+					sessionStorage.setItem('stella-welcomed', '1');
+					if (!seen)
+						document.documentElement.setAttribute('data-welcome', still ? 'still' : 'animate');
+				} catch (e) {}
+			})();
 		</script>
+		<style>
+			/* The welcome on start (docs/05 §5.11.4). Its timings are the ones in
+			   src/lib/motion/welcome.ts; welcome-overlay.test.ts holds the two together. */
+			#stella-welcome {
+				display: none;
+				/* The one easing of its own (docs/05 §5.11.4): a node's pop overshoots a little. */
+				--welcome-overshoot: cubic-bezier(0.34, 1.5, 0.64, 1);
+			}
+			[data-welcome] #stella-welcome {
+				position: fixed;
+				inset: 0;
+				z-index: 1000;
+				display: flex;
+				flex-direction: column;
+				align-items: center;
+				justify-content: center;
+				gap: 14px;
+				background-color: var(--bg);
+				animation: welcome-cue 0s linear 1100ms both;
+			}
+			/* The logo the mark docks into is the mark itself until it lands. */
+			[data-welcome] [data-welcome-target] {
+				visibility: hidden;
+			}
+			#stella-welcome svg {
+				width: 96px;
+				height: 96px;
+				overflow: visible;
+			}
+			#stella-welcome .word {
+				font-size: 26px;
+				font-weight: 600;
+				letter-spacing: -0.025em;
+				color: var(--fg);
+			}
+			@media (min-width: 48rem) {
+				#stella-welcome svg {
+					width: 112px;
+					height: 112px;
+				}
+				#stella-welcome .word {
+					font-size: 30px;
+				}
+			}
+			#stella-welcome .thread {
+				fill: none;
+				stroke: var(--accent-teal);
+				stroke-width: 3.6;
+				stroke-linecap: round;
+			}
+			#stella-welcome circle {
+				transform-box: fill-box;
+				transform-origin: center;
+			}
+			#stella-welcome .halo {
+				fill: var(--accent-pink);
+				opacity: 0;
+			}
+
+			/* The build-up. A node pops rather than fades, so it reads as a star lighting up. */
+			#stella-welcome .n-pink {
+				animation: welcome-pop 260ms var(--welcome-overshoot) 0ms both;
+			}
+			#stella-welcome .t-mauve {
+				animation: welcome-draw-back 300ms var(--ease-standard) 170ms both;
+			}
+			#stella-welcome .t-blue {
+				animation: welcome-draw 300ms var(--ease-standard) 200ms both;
+			}
+			#stella-welcome .t-yellow {
+				animation: welcome-draw 300ms var(--ease-standard) 220ms both;
+			}
+			#stella-welcome .n-mauve {
+				animation: welcome-pop 260ms var(--welcome-overshoot) 420ms both;
+			}
+			#stella-welcome .n-blue {
+				animation: welcome-pop 260ms var(--welcome-overshoot) 450ms both;
+			}
+			#stella-welcome .n-yellow {
+				animation: welcome-pop 260ms var(--welcome-overshoot) 480ms both;
+			}
+			#stella-welcome .t-peach {
+				animation: welcome-draw 230ms var(--ease-standard) 500ms both;
+			}
+			#stella-welcome .word {
+				animation: welcome-rise 320ms var(--ease-standard) 620ms both;
+			}
+			#stella-welcome .n-peach {
+				animation: welcome-pop 260ms var(--welcome-overshoot) 680ms both;
+			}
+			#stella-welcome .halo {
+				animation: welcome-halo 520ms var(--ease-standard) 700ms both;
+			}
+
+			/* The exit: dock into the page's logo (the script measures it), or fade in place. */
+			#stella-welcome.dock {
+				animation: welcome-backdrop 260ms var(--ease-standard) forwards;
+			}
+			#stella-welcome.dock svg {
+				animation: welcome-dock 320ms var(--ease-standard) forwards;
+			}
+			#stella-welcome.dock .word {
+				animation: welcome-out 140ms var(--ease-standard) forwards;
+			}
+			#stella-welcome.fade {
+				animation: welcome-fade 200ms var(--ease-standard) forwards;
+			}
+
+			/* Reduced motion: the finished mark stands, then goes without a fade. */
+			[data-welcome='still'] #stella-welcome {
+				animation: welcome-cut 0s linear 600ms both;
+			}
+			[data-welcome='still'] #stella-welcome * {
+				animation: none;
+			}
+
+			@keyframes welcome-cue {
+				to {
+					visibility: visible;
+				}
+			}
+			@keyframes welcome-pop {
+				from {
+					opacity: 0;
+					transform: scale(0);
+				}
+				to {
+					opacity: 1;
+					transform: scale(1);
+				}
+			}
+			@keyframes welcome-draw {
+				from {
+					stroke-dasharray: 1 1;
+					stroke-dashoffset: 1;
+				}
+				to {
+					stroke-dasharray: 1 1;
+					stroke-dashoffset: 0;
+				}
+			}
+			@keyframes welcome-draw-back {
+				from {
+					stroke-dasharray: 1 1;
+					stroke-dashoffset: -1;
+				}
+				to {
+					stroke-dasharray: 1 1;
+					stroke-dashoffset: 0;
+				}
+			}
+			@keyframes welcome-halo {
+				0% {
+					opacity: 0;
+					transform: scale(1);
+				}
+				30% {
+					opacity: 0.28;
+				}
+				100% {
+					opacity: 0;
+					transform: scale(2.6);
+				}
+			}
+			@keyframes welcome-rise {
+				from {
+					opacity: 0;
+					transform: translateY(6px);
+					letter-spacing: 0.04em;
+				}
+				to {
+					opacity: 1;
+					transform: none;
+					letter-spacing: -0.025em;
+				}
+			}
+			@keyframes welcome-backdrop {
+				to {
+					background-color: transparent;
+				}
+			}
+			@keyframes welcome-dock {
+				to {
+					transform: translate(var(--dx), var(--dy)) scale(var(--k));
+				}
+			}
+			@keyframes welcome-out {
+				to {
+					opacity: 0;
+				}
+			}
+			@keyframes welcome-fade {
+				to {
+					opacity: 0;
+				}
+			}
+			@keyframes welcome-cut {
+				to {
+					visibility: hidden;
+				}
+			}
+		</style>
 		%sveltekit.head%
 	</head>
 	<body data-sveltekit-preload-data="hover">
+		<div id="stella-welcome" aria-hidden="true">
+			<svg viewBox="0 0 100 100">
+				<circle class="halo" cx="42" cy="50" r="8.5" />
+				<path class="thread t-mauve back" pathLength="1" d="M18,62 Q30,60 42,50" />
+				<path class="thread t-blue" pathLength="1" d="M42,50 Q54,44 66,60" />
+				<path class="thread t-peach" pathLength="1" d="M66,60 Q76,54 84,40" />
+				<path class="thread t-yellow" pathLength="1" d="M42,50 Q42,34 48,22" />
+				<circle class="n-mauve" cx="18" cy="62" r="6.5" fill="var(--accent-mauve)" />
+				<circle class="n-yellow" cx="48" cy="22" r="6.5" fill="var(--accent-yellow)" />
+				<circle class="n-blue" cx="66" cy="60" r="6.5" fill="var(--accent-blue)" />
+				<circle class="n-peach" cx="84" cy="40" r="6.5" fill="var(--accent-peach)" />
+				<circle class="n-pink" cx="42" cy="50" r="8.5" fill="var(--accent-pink)" />
+			</svg>
+			<div class="word">Stella</div>
+		</div>
+		<script>
+			// Plays the welcome's exit and takes the overlay away (docs/05 §5.11.4). Where the mark
+			// docks mirrors `dockMove` in src/lib/motion/welcome.ts; it is measured only now, when the
+			// page's CSS has long arrived.
+			(function () {
+				var root = document.documentElement;
+				var overlay = document.getElementById('stella-welcome');
+				if (!root.hasAttribute('data-welcome')) {
+					overlay.remove();
+					return;
+				}
+				function end() {
+					overlay.remove();
+					root.removeAttribute('data-welcome');
+					window.removeEventListener('pointerdown', end, true);
+					window.removeEventListener('keydown', end, true);
+				}
+				function leave() {
+					var mark = overlay.querySelector('svg').getBoundingClientRect();
+					var width = root.clientWidth;
+					var height = root.clientHeight;
+					var logos = document.querySelectorAll('[data-welcome-target]');
+					for (var i = 0; mark.width > 0 && mark.height > 0 && i < logos.length; i++) {
+						var logo = logos[i].getBoundingClientRect();
+						var onScreen =
+							logo.width > 0 &&
+							logo.height > 0 &&
+							logo.left < width &&
+							logo.left + logo.width > 0 &&
+							logo.top < height &&
+							logo.top + logo.height > 0;
+						if (onScreen) {
+							var dx = logo.left + logo.width / 2 - (mark.left + mark.width / 2);
+							var dy = logo.top + logo.height / 2 - (mark.top + mark.height / 2);
+							overlay.style.setProperty('--dx', dx + 'px');
+							overlay.style.setProperty('--dy', dy + 'px');
+							overlay.style.setProperty('--k', String(logo.width / mark.width));
+							overlay.classList.add('dock');
+							return;
+						}
+					}
+					overlay.classList.add('fade');
+				}
+				// Any tap or key skips it; the event still reaches the page underneath.
+				window.addEventListener('pointerdown', end, true);
+				window.addEventListener('keydown', end, true);
+				overlay.addEventListener('animationend', function (event) {
+					var name = event.animationName;
+					if (name === 'welcome-cue') leave();
+					else if (name === 'welcome-dock' || name === 'welcome-fade' || name === 'welcome-cut')
+						end();
+				});
+			})();
+		</script>
 		<div style="display: contents">%sveltekit.body%</div>
 	</body>
 </html>
