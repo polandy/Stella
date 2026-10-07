@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, mock } from 'bun:test';
+import { beforeEach, describe, expect, it } from 'bun:test';
 import { isRedirect, type Cookies } from '@sveltejs/kit';
 import type { AuthServices } from '$lib/server/services/auth';
 import type { AppServices } from '$lib/server/services/app-services';
@@ -10,9 +10,8 @@ import type { SessionRecord, SessionRepository } from '$lib/server/auth/session'
  * The sign-out edge (docs/02 §2.1) over a test-wired `locals.services` (AR-01): the route
  * reads its collaborators off the request, so its branching is testable without a database
  * or a provider. The cookie helpers read the configuration, whose `$env` only SvelteKit
- * provides; an empty one gives the defaults.
+ * provides; `env-test-preload.ts` (bunfig.toml) stubs it to the defaults for every test file.
  */
-mock.module('$env/dynamic/private', () => ({ env: {} }));
 const { POST } = await import('./+server');
 
 const NOW = Date.UTC(2026, 9, 7, 9);

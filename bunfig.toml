@@ -6,5 +6,9 @@ exact = true
 
 # Every message catalogue is loaded before the first test file, as the server does at start-up
 # (catalogues other than English are fetched on demand — src/lib/i18n/translate.ts).
+#
+# env-test-preload.ts stubs `$env/dynamic/private` once, before any file: a per-file
+# `mock.module` for it would leak into every later file's imports (bun:test never reverts a
+# module mock), making the outcome depend on test run order.
 [test]
-preload = ["./src/lib/i18n/test-preload.ts"]
+preload = ["./src/lib/i18n/test-preload.ts", "./src/lib/server/env-test-preload.ts"]
