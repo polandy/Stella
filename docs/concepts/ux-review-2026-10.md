@@ -39,7 +39,7 @@ PR updates its own row.
 | C3 gender into name editor | open | | |
 | C4 description clamp | building | batch 1 mockup approved 2026-10-06 — `ux-review-batch-1.html` | PR 2 (person page) |
 | C5 last contact only when set | building | batch 1 mockup approved 2026-10-06 — `ux-review-batch-1.html` | PR 2 (person page) |
-| C6 inline composer | open | | |
+| C6 inline composer | mockup | `inline-composer.html`; journal page stays as the reading/editing surface behind *Open journal*; the anchor shows as a chip above the field; *Log contact* shares the spot, one form at a time; the tab bar pencil stays Home's sheet | |
 | C7 jump bar at rest | decided | (b): render only once sticky — fades in when the identity card's bottom passes the top | |
 | C8 desktop map preview | open | | |
 | C9 fold order | open | | |
