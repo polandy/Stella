@@ -7,8 +7,8 @@ import { ImmichLinkRefusedError, linkToImmich, type ImmichLinkDeps } from './lin
 /*
  * *Assign…* on a row of *New from Immich* (docs/02 §2.24.7): a face Immich names that is nobody
  * in Stella yet goes to someone the member picked — *This is the person* — or to a person added
- * from it. Both end in `linkToImmich`, so every check of the picker holds (concept §9.8). Neither
- * has an undo, like a link made on *Find your people*.
+ * from it. Both end in `linkToImmich`, so every check of the picker holds (docs/04 ADR-096).
+ * Neither has an undo, like a link made on *Find your people*.
  */
 
 export interface AddFromImmichDeps extends ImmichLinkDeps {

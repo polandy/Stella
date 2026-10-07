@@ -8,7 +8,7 @@ import {
 import { BERT_ID, CARL_ID } from './test-library';
 
 /*
- * The signature on every Immich image URL Stella hands out (docs/concepts/immich.md §5). What it
+ * The signature on every Immich image URL Stella hands out (docs/02 §2.24.4). What it
  * must hold: a token names exactly what it was signed for, stops working at its expiry, and any
  * change to it — or a token signed with another secret — is refused rather than read.
  */

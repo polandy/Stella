@@ -13,7 +13,7 @@ import type { ImmichLinkRepository, LinkVisibleContacts } from './links';
 import type { ImmichCompanion, ImmichMediaSigner, SignedImmichMedia } from './signed-media';
 
 /*
- * A glimpse of a linked person's photos (docs/concepts/immich.md §4.3, §5): the strip under the
+ * A glimpse of a linked person's photos (docs/02 §2.24.3, §2.24.4): the strip under the
  * gallery, and what the proxy serves for each picture in it. Every image URL handed out is
  * signed, and only after the access layer let the viewer see the contact; the proxy checks the
  * signature, the viewer and the link again on every request, so a token outlives none of them.
@@ -36,7 +36,7 @@ export interface ImmichGlimpseDeps {
  * read photos reads as "Immich didn't answer", as everywhere on the person page; Settings names
  * the scope it lacks.
  *
- * With `togetherWith`, only the photos both people are in (concept §4.3, *You and Julia*): the
+ * With `togetherWith`, only the photos both people are in (docs/02 §2.24.8, *You and Julia*): the
  * other person must be someone else the viewer sees and who is linked too, or there is no
  * strip, and Immich is not asked. Which pairs the page offers is the page's choice; what is
  * checked here is only what the viewer could already see of each of them.
@@ -94,7 +94,7 @@ export async function readImmichGlimpse(
 }
 
 /**
- * Of `candidates`, the people the page may offer photos together with (concept §4.3): those the
+ * Of `candidates`, the people the page may offer photos together with (docs/02 §2.24.8): those the
  * viewer sees who are linked too, in the order given — and nobody when the page's own person is
  * not linked. Immich is asked nothing; the page offers, the strip's own request checks again.
  */
@@ -115,7 +115,7 @@ export async function readTogetherOffers(
 
 /**
  * The signed URL of a face the picker offers while linking `contactId`. Faces go through the
- * same proxy as photos (concept §9.10): the picker's route has checked the viewer may see the
+ * same proxy as photos (docs/04 ADR-097): the picker's route has checked the viewer may see the
  * contact, and the proxy checks it again.
  */
 export async function faceUrlFor(
@@ -208,7 +208,7 @@ export async function admitImmichMedia(
 	}
 	const link = await deps.links.findForContactVisibleTo(viewer, media.contactId);
 	if (link?.immichPersonId !== media.personId) return { ok: false, refusal: 'notLinked' };
-	// A photo of two people together is theirs only while both links hold (concept §4.3).
+	// A photo of two people together is theirs only while both links hold (docs/02 §2.24.8).
 	if (together) {
 		const otherLink = await deps.links.findForContactVisibleTo(viewer, together.contactId);
 		if (otherLink?.immichPersonId !== together.personId) return { ok: false, refusal: 'notLinked' };

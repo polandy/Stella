@@ -19,7 +19,7 @@
 	import type { ActionData, PageData } from './$types';
 
 	/*
-	 * *Settings → Immich → Find your people* (docs/concepts/immich.md §4.2, docs/02 §2.24.7): a
+	 * *Settings → Immich → Find your people* (docs/02 §2.24.7): a
 	 * review list in the style of the relationship suggestions. Each row puts the Immich face next
 	 * to the Stella avatar — you recognise your aunt faster than you read her name. A likely row
 	 * links in one tap, and *Link all likely* takes every one of them; a maybe asks, showing every
@@ -30,7 +30,7 @@
 	 * now* only hides a row for this visit: nothing is kept, and the next visit asks again. When
 	 * no row is left the list ends quietly.
 	 *
-	 * *Ignore* is the lasting no (concept §9): the pair is kept with who said so and when, and is
+	 * *Ignore* is the lasting no (docs/02 §2.24.7): the pair is kept with who said so and when, and is
 	 * listed under *Ignored* at the end, where *Propose again* takes it back. Both are held for the
 	 * undo window like any removal (docs/02 §2.23), then sent, and the list is read afresh. While
 	 * it is read, the rows already on screen stay — the list does not flash back to "Asking".

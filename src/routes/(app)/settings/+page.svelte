@@ -19,7 +19,7 @@
 	const checkedAt = (at: number) =>
 		new Date(at).toLocaleString(i18n.intlLocale, { dateStyle: 'short', timeStyle: 'short' });
 
-	/* What the Immich line says about a key that lacks one of the scopes Stella reads with (§4.1). */
+	/* What the Immich line says about a key lacking a scope Stella reads with (docs/02 §2.24.1). */
 	const SCOPE_MESSAGE = {
 		'user.read': 'immich.settings.scope.user.read',
 		'person.read': 'immich.settings.scope.person.read',
@@ -259,7 +259,7 @@
 		{/if}
 	</section>
 
-	<!-- Every member sees the line; the admin also reads what the key means (docs/concepts/immich.md §4.1). -->
+	<!-- Every member sees the line; the admin also reads what the key means (docs/02 §2.24.1). -->
 	{#if data.immich}
 		<section class="flex flex-col gap-3" data-testid="immich-settings">
 			<h2 class="text-sm font-medium text-fg-muted">{t('immich.settings.heading')}</h2>

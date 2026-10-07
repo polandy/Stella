@@ -121,7 +121,7 @@ export const ICONS = {
 	done: Check,
 	// What someone does and where (docs/02 §2.2).
 	work: Briefcase,
-	// Leaving Stella for another app — *Open in Immich* (docs/concepts/immich.md §4.3).
+	// Leaving Stella for another app — *Open in Immich* (docs/02 §2.24.3).
 	openElsewhere: ExternalLink,
 	// Undoing a link to another app's record, not deleting anything.
 	unlink: Unlink,

@@ -105,10 +105,10 @@
 	}
 
 	/*
-	 * Immich (docs/concepts/immich.md §4.3): a quiet menu on the card — *Find in Immich*, or
+	 * Immich (docs/02 §2.24.2, §2.24.3): a quiet menu on the card — *Find in Immich*, or
 	 * *Unlink* once linked — and, for a linked person, a line and a strip of their latest photos
 	 * under the gallery. None of it exists without Immich, and none offline, where nothing from
-	 * Immich is shown (§4.5).
+	 * Immich is shown (docs/02 §2.24.3).
 	 */
 	let pickerOpen = $state(false);
 	const showImmich = $derived(data.immich !== null && reachability.reachable);

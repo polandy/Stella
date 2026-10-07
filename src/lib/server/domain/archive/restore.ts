@@ -280,7 +280,7 @@ export function planRestore(
 		});
 	}
 
-	// Which Immich person each of them is (docs/concepts/immich.md §6). The id travels into
+	// Which Immich person each of them is (docs/02 §2.24.5). The id travels into
 	// Immich's URL paths, so one that is not an Immich id is refused rather than restored.
 	for (const person of people) {
 		const contactId = str(person, 'id');
@@ -662,7 +662,7 @@ export function planRestore(
 	// A profile picture cut from a group photo is such a framing too (concept §6). A photo that
 	// was cut from one before only remembers it, so it stays and forgets a group photo refused.
 	const photoIds = new Set(photos.filter((p) => p.framing_of === null).map((p) => p.id));
-	// The Immich faces each of them was said not to be (docs/concepts/immich.md §9), refused on
+	// The Immich faces each of them was said not to be (docs/02 §2.24.5), refused on
 	// the same terms as a link: the id travels into Immich's URL paths.
 	for (const person of people) {
 		const contactId = str(person, 'id');

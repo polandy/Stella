@@ -3,7 +3,7 @@ import { isTakenAt } from '../../../image/taken-at';
 import { isImmichId, type ImmichImageSize } from './gateway';
 
 /*
- * The signature on every Immich image URL Stella hands out (docs/concepts/immich.md §5, §9.10).
+ * The signature on every Immich image URL Stella hands out (docs/02 §2.24.4, docs/04 ADR-097).
  * The proxy never takes a bare Immich id: it takes a token Stella issued after the access layer
  * let the viewer see a contact, naming that contact, the Immich person and — for a photo — the
  * asset and its size, with an expiry. Guessing ids, or reusing ones seen elsewhere, gets nothing.
@@ -26,12 +26,12 @@ export type SignableImmichMedia =
 			size: ImmichImageSize;
 			/**
 			 * When Immich says it was taken, signed into a preview so *Use as photo* dates the copy
-			 * by what Immich said rather than by what a browser sends (concept §4.3). Absent when
+			 * by what Immich said rather than by what a browser sends (docs/02 §2.24.6). Absent when
 			 * Immich does not say, and on a thumbnail, where nothing reads it.
 			 */
 			takenAt?: string;
 			/**
-			 * For a photo of two people together (concept §4.3, *You and Julia*): the other person
+			 * For a photo of two people together (docs/02 §2.24.8, *You and Julia*): the other person
 			 * and the Immich person they were linked to when the photo was listed. The photo is then
 			 * served only while the viewer sees both and both links still hold.
 			 */
@@ -74,7 +74,7 @@ export interface ImmichMediaSigner {
 }
 
 /**
- * How long a token works: a day, as concept §5 set it. The proxy answers `no-store`, so a URL is
+ * How long a token works: a day (docs/02 §2.24.4). The proxy answers `no-store`, so a URL is
  * only ever used by the page that received it; the expiry bounds a page left open, and a URL
  * that escaped the page, not a cache.
  */

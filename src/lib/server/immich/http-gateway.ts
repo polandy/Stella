@@ -17,7 +17,7 @@ import {
 import { readCapped } from '../http/read-capped';
 
 /*
- * The Immich adapter (docs/concepts/immich.md §6): Immich's REST API over `fetch`, with the
+ * The Immich adapter (docs/04 §4.3): Immich's REST API over `fetch`, with the
  * household's key in the `x-api-key` header. The only file that knows Immich's paths; the
  * use-cases see the port.
  *
@@ -164,8 +164,9 @@ export function createHttpImmichGateway({
 		latestAssets: ({ personIds, match }, limit, cursor) => {
 			if (personIds.length === 0 || !personIds.every(isImmichId))
 				return Promise.resolve(failed('notFound'));
-			// The v3.2 search form (concept §2, §9.5). Images in the timeline only: archived photos
-			// and the locked folder are never asked for (§5); the parser checks each answer again.
+			// The v3.2 search form (docs/04 ADR-103). Images in the timeline only: archived photos
+			// and the locked folder are never asked for (docs/02 §2.24.3); the parser checks each answer
+			// again.
 			// A person Immich no longer has makes the search answer 400, like a call about them.
 			return ask('/api/search/metadata', json(readAssetPage), true, {
 				filter: {

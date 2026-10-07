@@ -5,7 +5,7 @@ import { ImmichLinkRefusedError } from './links';
 
 /*
  * Faces of *New from Immich* the household said are nobody to add (docs/02 §2.24.7,
- * docs/concepts/immich.md §9.36). Unlike an ignored pair of *Find your people*, there is no
+ * docs/02 §2.24.7). Unlike an ignored pair of *Find your people*, there is no
  * contact to hang it on: it is about the Immich person alone, so it belongs to the household —
  * every member sees it and may take it back. Kept with who said so and when, so the tab can show
  * it rather than having a face silently vanish. Not in the activity log, like an ignored pair.

@@ -9,7 +9,7 @@ import { createDrizzleImmichLinkRepository } from './immich-link-repository';
 
 /*
  * Integration spec for the Drizzle ImmichLinkRepository: a link follows its contact's
- * visibility (docs/concepts/immich.md §5), goes with the contact, and is written together with
+ * visibility (docs/02 §2.24.2), goes with the contact, and is written together with
  * its activity-log line.
  */
 

@@ -60,7 +60,7 @@ export const EXPORTED_TABLES: readonly Scoped[] = [
 	{ table: 'photo', where: 't.household_id = ?' },
 	{ table: 'tag', where: 't.household_id = ?' },
 	{ table: 'contact_tag', where: viaContact() },
-	// Which Immich person a contact is; the photos themselves stay in Immich (docs/concepts/immich.md §6).
+	// Which Immich person a contact is; the photos themselves stay in Immich (docs/02 §2.24.5).
 	{ table: 'immich_link', where: viaContact() },
 	// The Immich faces a member said a contact is not; left out, a restore would propose them again.
 	{ table: 'immich_ignore', where: viaContact() },

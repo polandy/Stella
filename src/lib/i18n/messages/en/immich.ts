@@ -1,7 +1,7 @@
 /* People's photos from Immich: the connection, the link on a person, the face picker (docs/02 §2.24). */
 
 export const immich = {
-	// Why a link was refused, or a call failed (docs/concepts/immich.md §4.5).
+	// Why a link was refused, or a call failed (docs/02 §2.24.2, §2.24.3).
 	'immich.error.personGone': 'This person is no longer in Immich.',
 	'immich.error.linkedTo': (p: { name: string }) => `This face is already linked to ${p.name}.`,
 	'immich.error.contactLinked': (p: { name: string }) => `${p.name} is linked already.`,
@@ -11,7 +11,7 @@ export const immich = {
 	'immich.error.missingScope': (p: { scope: string }) =>
 		`Stella’s key may not do this in Immich — it needs ${p.scope}.`,
 
-	// Settings → Immich: one line for every member, and what the key means for the admin (§4.1).
+	// Settings → Immich: one line for every member, and what the key means for the admin (§2.24.1).
 	'immich.settings.heading': 'Immich',
 	'immich.settings.checking': 'Asking Immich…',
 	'immich.settings.connected': (p: { owner: string; version: string }) =>
@@ -31,7 +31,7 @@ export const immich = {
 		'Everyone in the household can see the photos of the people linked from this library.',
 	'immich.settings.howToLink': 'Link a person from the menu of the Photos card on their page.',
 
-	// Settings → Immich → Find your people: the matching list (§4.2).
+	// Settings → Immich → Find your people: the matching list (§2.24.7).
 	'immich.match.title': 'Find your people',
 	'immich.match.blurb': 'Link the people in Stella to their faces in Immich.',
 	'immich.match.intro':
@@ -100,7 +100,7 @@ export const immich = {
 	'immich.new.photoFailed': 'The person was added, but the face could not be kept as their photo.',
 	'immich.new.done': 'Every named face is in Stella.',
 	'immich.new.showMore': (p: { count: number }) => `Show ${p.count} more`,
-	// The person page's Photos card (§4.3).
+	// The person page's Photos card (§2.24.2, §2.24.3).
 	// Without the person's name: the page heading already names them, and a second control
 	// carrying it would make "the button called Anna" ambiguous.
 	'immich.menu.label': 'Immich options',
@@ -116,7 +116,7 @@ export const immich = {
 	'immich.row.unlinkQuestion': 'Unlink?',
 	'immich.row.open': 'Open in Immich',
 
-	// The strip of their latest photos, and the viewer it opens (§4.3).
+	// The strip of their latest photos, and the viewer it opens (§2.24.3).
 	'immich.strip.label': 'Latest photos in Immich',
 	'immich.strip.loading': 'Loading photos from Immich…',
 	'immich.strip.photo': (p: { date: string }) => `Photo from ${p.date}, in Immich`,
@@ -129,7 +129,7 @@ export const immich = {
 	'immich.viewer.use': 'Use as photo',
 	'immich.viewer.useFailed': 'Couldn’t keep this photo. Reload the page and try again.',
 
-	// Photos of two people together: the strip's chips and a relationship row's chip (§4.3).
+	// Photos of two people together: the strip's chips and a relationship row's chip (§2.24.8).
 	'immich.together.label': 'Whose photos',
 	'immich.together.own': 'All photos',
 	'immich.together.withYou': (p: { name: string }) => `You and ${p.name}`,
@@ -146,7 +146,7 @@ export const immich = {
 	'immich.together.rowLabelPair': (p: { first: string; second: string }) =>
 		`Show photos of ${p.first} and ${p.second} together`,
 
-	// The face picker (§4.3).
+	// The face picker (§2.24.2).
 	'immich.picker.title': (p: { name: string }) => `Find ${p.name} in Immich`,
 	'immich.picker.search': 'Name in Immich',
 	'immich.picker.searching': 'Searching Immich…',

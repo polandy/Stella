@@ -7,7 +7,7 @@ import {
 } from './glimpse';
 
 /*
- * *Use as photo* from the Immich viewer (docs/concepts/immich.md §4.3, docs/02 §2.24.6): the one
+ * *Use as photo* from the Immich viewer (docs/02 §2.24.6): the one
  * way Immich content enters Stella, as a deliberate copy by a person, never a sync. A person
  * added from *New from Immich* takes the face Immich shows of them the same way (§2.24.7).
  *

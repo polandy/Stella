@@ -2,7 +2,7 @@ import { expect, test, type Locator, type Page } from '@playwright/test';
 import { appReady, signIn } from './app';
 
 /*
- * *Settings → Immich → Find your people* (docs/02 §2.24.7, docs/concepts/immich.md §4.2): the
+ * *Settings → Immich → Find your people* (docs/02 §2.24.7): the
  * household's people next to the Immich faces their names match. Written after the owner tried
  * #246 in the preview (docs/08 §8.4.1).
  *

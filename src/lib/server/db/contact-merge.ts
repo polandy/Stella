@@ -36,7 +36,7 @@ const DEDUPED_BY_KEY: readonly { table: string; column: string }[] = [
 	{ table: 'journal_mention', column: 'contact_id' },
 	{ table: 'interaction_participant', column: 'contact_id' },
 	{ table: 'contact_tag', column: 'contact_id' },
-	// One Immich link per person: a survivor that has one keeps it (docs/concepts/immich.md §6).
+	// One Immich link per person: a survivor that has one keeps it (docs/02 §2.24.5).
 	{ table: 'immich_link', column: 'contact_id' },
 	// An ignored proposal follows the person; the survivor's own record of a pair wins.
 	{ table: 'immich_ignore', column: 'contact_id' }

@@ -13,7 +13,7 @@ import { BERT_AND_CARL_ID, BERT_ID, CARL_ID, DORA_ID } from './test-library';
 import { useImmichPhoto, type UseImmichPhotoDeps } from './use-as-photo';
 
 /*
- * *Use as photo* from the Immich viewer (docs/concepts/immich.md §4.3, docs/02 §2.24): the one way
+ * *Use as photo* from the Immich viewer (docs/02 §2.24.6): the one way
  * Immich content enters Stella. The square comes from the browser, cut from the preview the proxy
  * served; the server takes it only for a preview token it signed for this person, while the
  * viewer still sees them and they are still linked to the Immich person the photo was listed for.

@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 import { addPerson, appReady, signIn } from './app';
 
 /*
- * A photo from Immich as the person's own photo (docs/02 §2.24.6, docs/concepts/immich.md §4.3):
+ * A photo from Immich as the person's own photo (docs/02 §2.24.6):
  * *Use as photo* in the Immich viewer, and *From Immich* in the picture's chooser. Written after
  * the owner tried #245 in the preview (docs/08 §8.4.1).
  *

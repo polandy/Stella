@@ -596,7 +596,7 @@ link; not shown in the stream, which reports deletions and renames, not links.
 
 ### immich_link  [M3]
 Which person in the household's Immich library a contact is (docs/02 §2.24,
-`docs/concepts/immich.md` §6). Only present when Immich is configured; the photos themselves
+docs/04 ADR-101). Only present when Immich is configured; the photos themselves
 stay in Immich and nothing of them is stored here.
 
 | column | type | notes |
@@ -616,7 +616,7 @@ that is not a UUID.
 
 ### immich_ignore  [M3]
 A proposal of *Find your people* a member turned down: this contact is not that Immich person
-(docs/02 §2.24.7, `docs/concepts/immich.md` §9.21). Household data like a link.
+(docs/02 §2.24.7). Household data like a link.
 
 | column | type | notes |
 |---|---|---|
@@ -633,8 +633,8 @@ ignore`: the survivor's own record of a pair wins). Export writes them under the
 `immich_ignored: [{ person, ignored_by, ignored_at }]`; restore refuses an id that is not a UUID.
 
 ### immich_name_ignore  [M3]
-A face of *New from Immich* the household said is nobody to add (docs/02 §2.24.7,
-`docs/concepts/immich.md` §9.36). Unlike `immich_ignore` it names no contact — there is nobody to
+A face of *New from Immich* the household said is nobody to add (docs/02 §2.24.7).
+Unlike `immich_ignore` it names no contact — there is nobody to
 pair it with — so it belongs to the household.
 
 | column | type | notes |

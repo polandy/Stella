@@ -2,9 +2,9 @@ import { expect, test, type Page } from '@playwright/test';
 import { addPerson, appReady, recordAction, signIn } from './app';
 
 /*
- * *Settings → Immich → Find your people → New from Immich* (docs/02 §2.24.7,
- * docs/concepts/immich.md §4.2, §9.30–37): the faces Immich has a name for that are nobody in
- * Stella yet. Written after the owner tried #252 in the preview (docs/08 §8.4.1).
+ * *Settings → Immich → Find your people → New from Immich* (docs/02 §2.24.7): the faces Immich
+ * has a name for that are nobody in Stella yet. Written after the owner tried #252 in the preview
+ * (docs/08 §8.4.1).
  *
  * The e2e server runs with `IMMICH_DEMO=true`, whose library ends in four faces made for this
  * tab (`src/lib/server/immich/demo-library.ts`): Grosi Ursula (420 photos) and Thomas W. (12)
