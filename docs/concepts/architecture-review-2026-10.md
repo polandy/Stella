@@ -132,10 +132,33 @@ circle photo, role rename and cut use-cases' deps) — `services/circles.ts`, bu
 `people`'s contacts; the media store still comes in as wiring from `index.ts`, so
 `ServicesWiring.media` is now the whole store. The command handler table's circle handlers read
 the group off the graph.
-Remaining contexts: `media`, `immich`, `offline`, `release`, then
-the command handler table (item 4). Each later slice adds its
-`services/<context>.ts`, its key in `AppServices`, its factories to the boundary test's
-retired list, and moves its callers to `locals.services.<context>`.
+**`media`** is grouped (#301; the photo repository, the file media store under `MEDIA_DIR`,
+the avatar, imported photo, gallery, framing, gallery upload, journal photo and home stream
+use-cases' deps) — `services/media.ts`. `createServices` builds it before `people` and
+`circles`, which read its store off the graph, so `ServicesWiring.media` is gone and the
+directory comes in as `config.mediaDir`. The command handler table, the journal and
+archive-restore factories and the Immich photo path read the same graph. Capturing a moment
+stays a factory: it reads `people`'s contacts while `people` reads `media`'s store, so it moves
+with the journal it writes.
+Remaining contexts — one PR each, grouped by the repositories their factories share in
+`services/index.ts`:
+1. **`story`** — the journal and interaction repositories, the journal, interaction,
+   capture-moment and story-timeline deps (the timeline reads both; capturing writes a
+   journal entry over `people`'s contacts).
+2. **`notes`** — the note repository and the "Mentioned in" read.
+3. **`records`** — a person's own records: contact fields, important dates, tags.
+4. **`household`** — the household-wide reads: members, search, the attention list.
+5. **`archive`** — moving a household in or out: the archive export, the archive restore
+   (over `media`'s store) and the Monica import.
+6. **`immich`** — the gateway, connection and signer, the link, ignore and name-ignore
+   repositories and every Immich deps (over `people`'s contacts and `media`'s avatar deps);
+   null without Immich, as today.
+7. **`release`** — the update check.
+8. **`offline`** — the command receipt repository and entry ownership; then the command
+   handler table moves to its own module over `AppServices` (item 4), and `index.ts` keeps
+   only `getServices()`.
+Each slice adds its `services/<context>.ts`, its key in `AppServices`, its factories to the
+boundary test's retired list, and moves its callers to `locals.services.<context>`.
 
 ### AR-02 · The composition root leaks below the edge
 **Severity: medium · Effort: S**
@@ -493,7 +516,7 @@ rule. Each is one Conventional-Commit `refactor:`/`chore:`/`docs:` PR unless mar
 | 3 | AR-03 `requireViewer`, `todayFor(clock)`, `messageKey` | S | ☑ #266 | Removes 150 edit sites before AR-01 moves them again |
 | 4 | AR-07 glossary (docs/03 §3.0) + AR-18 regenerate §4.3 | S | ☑ #294 | Vocabulary before renames; cheapest high-leverage doc change |
 | 5 | AR-04 one schema per command, `fromFormData` | M | ☑ #295 | Shrinks every form action; prerequisite for AR-13 |
-| 6 | AR-01 `createServices()` + `locals.services` — **series**, one bounded context per PR, `auth` first | L | ◐ auth #296, people #298, relationships #299, circles #300 | The central change; do after 3 and 5 so routes shrink while being touched |
+| 6 | AR-01 `createServices()` + `locals.services` — **series**, one bounded context per PR, `auth` first | L | ◐ auth #296, people #298, relationships #299, circles #300, media #301 | The central change; do after 3 and 5 so routes shrink while being touched |
 | 7 | AR-02 move shared actions under `routes/` taking deps | S | ☐ | Falls out of 6 |
 | 8 | AR-08 split read models off the three widest ports + AR-14 shared fakes | M | ☐ | Do together: the fakes are what makes the split pay |
 | 9 | AR-06 activity as a port; break `contacts ↔ relationships`; merge plan as data | M | ☐ | Needs 8's narrower ports |
