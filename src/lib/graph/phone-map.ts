@@ -1,7 +1,8 @@
 /*
- * The map on a person's page on a phone (docs/05 §5.5): a small preview in the People card,
- * the map enlarged inside the card — the full explorer, the reader still on the page — or the
- * map full screen. Pure, so which view follows which tap is tested without a browser; the
+ * The map on a person's page (docs/05 §5.5): a preview in the People card — the phone's small
+ * ring, a wider card's strip — the map enlarged inside the card — the full explorer, the reader
+ * still on the page — or the map full screen. Born on the phone, hence the name; every width
+ * runs it now. Pure, so which view follows which tap is tested without a browser; the
  * component only mounts what the view says.
  */
 

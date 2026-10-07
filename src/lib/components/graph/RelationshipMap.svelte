@@ -26,13 +26,16 @@
 	 * browser that never finishes the fetch still shows the relationships — the SVG it already
 	 * had is the fallback, not an error state.
 	 *
-	 * On a phone the map is a preview: a card-sized canvas there is too small to read and too
-	 * easy to pan by accident while scrolling past it, and it held the photos a screen away. The
-	 * preview offers two ways in, two icons in its corner (docs/05 §5.5): *Enlarge map* grows
-	 * this same explorer inside the card to about a screen's height, the reader still on the
-	 * page, and *Shrink map* in the map's own toolbar puts the preview back; *Full screen* opens
-	 * it full screen, and leaving full screen brings the preview back. Without full screen — or
-	 * before the engine has arrived — that second one is a plain link into the graph. `mapViewAfter` decides which view follows which.
+	 * On every width the map is a preview at the card's top: a canvas at rest there is too small
+	 * to read, too easy to pan by accident while scrolling past it, and as a column it squeezed
+	 * the list beside it. A phone's is a 100 px ring without names, a wider card's a 7.5 rem strip
+	 * with every first name (`EgoGraph`). The preview offers two ways in, two icons in its corner
+	 * (docs/05 §5.5): *Enlarge map* grows this same explorer inside the card — about a screen's
+	 * height on a phone, 24 rem wider up — the reader still on the page, and *Shrink map* in the
+	 * map's own toolbar puts the preview back; *Full screen* opens it full screen, and leaving
+	 * full screen brings the preview back. Without full screen — or before the engine has
+	 * arrived — that second one is a plain link into the graph. `mapViewAfter` decides which
+	 * view follows which.
 	 */
 	interface Props {
 		centerId: string;
@@ -45,7 +48,7 @@
 		nodes: {
 			id: string;
 			name: string;
-			label: string;
+			firstName: string;
 			category: string;
 			avatarPhotoId: string | null;
 		}[];
@@ -68,7 +71,7 @@
 		onReady?: () => void;
 	}> | null>(null);
 
-	/** Below `sm`: the preview stands in for the canvas (Tailwind's breakpoint, docs/05 §5.4). */
+	/** Below `sm` (Tailwind's breakpoint, docs/05 §5.4) the enlarged map is about a screen tall. */
 	const phone = new MediaQuery('(width < 40rem)', false);
 	let mapState = $state(PHONE_MAP_AT_REST);
 	const view = $derived(mapState.view);
@@ -93,13 +96,16 @@
 	/** The disc an icon on the preview sits on, so it reads over the drawing in either theme. */
 	const MAP_ICON_DISC = 'grid size-8 place-items-center rounded-full bg-card text-fg shadow-card';
 	/**
-	 * The enlarged height: about a screen less the top bar, the jump bar and the tab bar, so the
-	 * whole map fits on one screen with a strip of page below it to scroll by — the canvas takes
-	 * a swipe as a pan, so it must never fill the screen. The live map is mounted at this height
-	 * once the frame has glided there and keeps it while the frame shrinks over it, so its
-	 * canvas is never resized while the frame moves and is framed once, at its final size.
+	 * The enlarged height. On a phone, about a screen less the top bar, the jump bar and the tab
+	 * bar, so the whole map fits on one screen with a strip of page below it to scroll by — the
+	 * canvas takes a swipe as a pan, so it must never fill the screen. Wider up, 24 rem, which
+	 * the page has room for. The live map is mounted at this height once the frame has glided
+	 * there and keeps it while the frame shrinks over it, so its canvas is never resized while
+	 * the frame moves and is framed once, at its final size.
 	 */
-	const ENLARGED_HEIGHT = 'h-[max(20rem,calc(100dvh-12.75rem))]';
+	const ENLARGED_HEIGHT = 'h-[max(20rem,calc(100dvh-12.75rem))] sm:h-96';
+	/** The preview's height: the phone's 100 px ring, a wider card's 7.5 rem strip. */
+	const PREVIEW_HEIGHT = 'h-25 sm:h-30';
 	let frame = $state<HTMLDivElement>();
 	const scrolling = () => scrollBehavior(prefersReducedMotion.current);
 
@@ -108,13 +114,12 @@
 	function arrived(event: TransitionEvent) {
 		if (event.target !== frame || event.propertyName !== 'height') return;
 		go('settled');
-		if (view === 'enlarged') frame?.scrollIntoView({ block: 'start', behavior: scrolling() });
+		if (view === 'enlarged') frame?.scrollIntoView({ block: grownBlock(), behavior: scrolling() });
 		else enlargeButton?.scrollIntoView({ block: 'nearest', behavior: scrolling() });
 	}
-	// A frame that stops being shown mid-glide (the window widened past `sm`) never arrives.
-	$effect(() => {
-		if (!phone.current && !mapState.settled) go('settled');
-	});
+	/* Where the grown frame is brought: a phone's, about a screen tall, to the top; a wider one's
+	   only as far as it takes to show it. */
+	const grownBlock = (): ScrollLogicalPosition => (phone.current ? 'start' : 'nearest');
 
 	function openFullscreen(event: MouseEvent) {
 		// A modified click means "elsewhere" — a new tab — which the link already does.
@@ -132,7 +137,7 @@
 		go('enlarge');
 		await tick();
 		// The frame's top stays put while it grows, so the page can glide there alongside it.
-		frame?.scrollIntoView({ block: 'start', behavior: scrolling() });
+		if (phone.current) frame?.scrollIntoView({ block: 'start', behavior: scrolling() });
 	}
 	async function shrink() {
 		focusFollows = false;
@@ -150,7 +155,7 @@
 	});
 </script>
 
-{#if Explorer && (!phone.current || view === 'fullscreen')}
+{#if Explorer && view === 'fullscreen'}
 	<div
 		class="h-[24rem] overflow-hidden rounded-app border border-border"
 		role="group"
@@ -168,15 +173,14 @@
 	</div>
 {:else}
 	<!--
-		Both drawn by the server, the width picks one: the phone's frame, the map elsewhere. The
-		phone's frame holds the preview and, once enlarged, the live map under it; its height
-		glides between the two and the layers cross-fade (`mapLayers`, docs/05 §5.5).
+		One frame on every width: the preview and, once enlarged, the live map under it; its
+		height glides between the two and the layers cross-fade (`mapLayers`, docs/05 §5.5).
 	-->
 	<div
 		bind:this={frame}
-		class="relative scroll-mt-2 overflow-hidden rounded-app border border-border bg-bg-sunken transition-[height] duration-(--motion-expand) ease-standard sm:hidden {layers.tall
+		class="relative scroll-mt-2 overflow-hidden rounded-app border border-border bg-bg-sunken transition-[height] duration-(--motion-expand) ease-standard {layers.tall
 			? ENLARGED_HEIGHT
-			: 'h-25'}"
+			: PREVIEW_HEIGHT}"
 		style:contain={mapState.settled ? undefined : 'layout'}
 		ontransitionend={arrived}
 		data-testid="person-map-preview"
@@ -223,8 +227,12 @@
 				title={t('graph.onPerson.enlarge')}
 				class="flex size-full items-center text-left"
 			>
-				<span class="block h-22 w-full"
-					><EgoGraph {centerName} {centerPhotoId} {nodes} thumbnail /></span
+				<!-- Both drawn by the server; the width picks one. -->
+				<span class="block h-22 w-full sm:hidden"
+					><EgoGraph {centerName} {centerPhotoId} {nodes} variant="ring" /></span
+				>
+				<span class="relative block h-30 w-full overflow-hidden max-sm:hidden"
+					><EgoGraph {centerName} {centerPhotoId} {nodes} variant="strip" /></span
 				>
 			</button>
 			<div
@@ -246,8 +254,5 @@
 				</a>
 			</div>
 		</div>
-	</div>
-	<div class="max-sm:hidden">
-		<EgoGraph {centerName} {centerPhotoId} {nodes} />
 	</div>
 {/if}

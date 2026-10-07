@@ -25,7 +25,6 @@ export const contact = {
 	'contact.write': 'Write a moment',
 	'contact.logContact': 'Log contact',
 	'contact.openJournal': 'Open journal',
-	'contact.egoGraphLabel': (p: { name: string }) => `Relationship network for ${p.name}`,
 	'contact.story.title': 'Activity',
 
 	// The cards of the main column, in the order the page stacks them (docs/05 §5.5).
@@ -183,6 +182,12 @@ export const contact = {
 	'contact.relationships.group.other': 'Other',
 	'contact.relationships.showMore': (p: { count: number }) => `Show ${p.count} more`,
 	'contact.relationships.showFewer': 'Show fewer',
+	/** The fold's collapsed line (docs/05 §5.5): the groups it hides whole. */
+	'contact.relationships.foldedAway': 'Folded away',
+	'contact.relationships.showGroup': (p: { group: string; count: number }) =>
+		`Show ${p.group} · ${p.count}`,
+	/** The worked-out relatives as a group on that line. */
+	'contact.relationships.derivedShort': 'Also related',
 	'contact.relationships.editMode': 'Edit',
 	'contact.relationships.editModeDone': 'Done',
 	'contact.relationships.editLink': (p: { name: string }) => `Edit the link to ${p.name}`,

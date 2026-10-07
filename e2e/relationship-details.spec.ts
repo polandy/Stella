@@ -179,6 +179,8 @@ test('corrects the specifics from the row, the type picker preset to the link', 
 test('takes a link back with Undo, and the worked-out name returns with it', async ({ page }) => {
 	// Nadia is Hans's son's partner: nobody entered that, Stella works it out.
 	await openPeopleTab(page, /Hans Brunner/);
+	// The worked-out relatives wait behind the fold of a card with this many people.
+	await unfoldPeople(page);
 	await expect(page.getByTestId('derived-kin')).toContainText('Nadia Brunner-Rossi');
 
 	// An entered link keeps the household's own wording, so the derived one steps aside.
@@ -206,6 +208,8 @@ test('takes a link back with Undo, and the worked-out name returns with it', asy
 		.click();
 	await expect(page.getByTestId('toast-undo')).toBeVisible();
 	await openPeopleTab(page, /Hans Brunner/);
+	// The worked-out relatives wait behind the fold of a card with this many people.
+	await unfoldPeople(page);
 	await expect(page.getByTestId('derived-kin')).toContainText('Nadia Brunner-Rossi');
 	await expect(page.getByTestId('relationship-list')).not.toContainText('Nadia Brunner-Rossi');
 });

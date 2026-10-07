@@ -232,7 +232,7 @@ function visibleBand(node: HTMLElement): { viewTop: number; viewBottom: number }
  * phone's document, a little taller than the screen while the address bar shows, would carry the
  * sticky bars off its top. Outside the shell the document is the scroller.
  */
-function scrollToShow(node: HTMLElement, block: 'start' | 'nearest') {
+export function scrollToShow(node: HTMLElement, block: 'start' | 'nearest') {
 	const scroller =
 		node.closest<HTMLElement>('#content') ?? document.scrollingElement ?? document.documentElement;
 	const rect = node.getBoundingClientRect();
