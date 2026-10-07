@@ -23,7 +23,7 @@ PR updates its own row.
 | Item | Status | Decision | PR |
 |---|---|---|---|
 | A1 one primary per screen | done | batch 1 mockup approved 2026-10-06 — `ux-review-batch-1.html` | merged #255, e2e #257 |
-| A2 §5.5 split per screen | decided | after the A4–C11 PR merges; docs only (owner 2026-10-07) | |
+| A2 §5.5 split per screen | done | after the A4–C11 PR merges; docs only (owner 2026-10-07) | merged #297 |
 | A3 one vocabulary | done | *moment* for the written thing (*Write a moment* everywhere), *Activity* for the per-person timeline; docs' *Story* → *Activity*; `/journal` stays the reading page | #260 (e2e in the same PR) |
 | A4 uppercase label roles | done | `ux-rest.html`; uppercase only for dividers inside a list (day dividers, the People card's group headings); *Coming up* and the filter-row labels go sentence case | merged #292 (e2e in the same PR) |
 | A5 Mocha accent tints | done | `ux-rest.html`; Mocha avatar 28 % / chip 22 % (active stays 28), plus a 1.5 px ring in the flat accent around initials avatars in Mocha; Latte unchanged; 32/24 and up fail AA | merged #292 (e2e in the same PR) |

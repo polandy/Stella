@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'bun:test';
-import { parseCommand, parsePhotoCommand } from './parse';
+import { COMMAND_TYPES, isPhotoCommandType } from '../../commands/commands';
+import { parseCommand, parsePhotoCommand, readCommand } from './parse';
 
 /*
  * Reading a command off the wire (docs/04 §4.11.2). The outbox on a phone
@@ -511,5 +512,50 @@ describe('parsePhotoCommand', () => {
 		expect(parsePhotoCommand({ ...photo, image: 'bytes' })).toBeNull();
 		expect(parsePhotoCommand({ ...photo, width: Number.NaN })).toBeNull();
 		expect(parsePhotoCommand({ ...photo, id: '' })).toBeNull();
+	});
+});
+
+describe('readCommand', () => {
+	// What a form action needs to answer in the member's words: which part did not read.
+	it('reads a command of the type it was told, the same as parseCommand', () => {
+		const reading: unknown = readCommand(good);
+		expect(reading).toEqual({ ok: true, command: parseCommand(good) });
+	});
+
+	it('names the first payload field that does not read', () => {
+		expect(readCommand({ ...good, payload: { ...good.payload, body: ' ' } })).toEqual({
+			ok: false,
+			part: 'payload',
+			field: 'body'
+		});
+		expect(readCommand({ ...good, payload: { ...good.payload, entryDate: '27.09.2026' } })).toEqual(
+			{ ok: false, part: 'payload', field: 'entryDate' }
+		);
+	});
+
+	it('names no field when the payload as a whole is refused', () => {
+		const nameless = { firstName: ' ', nickname: '' };
+		expect(readCommand({ ...good, type: 'contact.add', payload: nameless })).toEqual({
+			ok: false,
+			part: 'payload',
+			field: null
+		});
+	});
+
+	it('tells a bad envelope from a bad payload, the payload first when both are', () => {
+		expect(readCommand({ ...good, id: 'not-an-id' })).toEqual({ ok: false, part: 'envelope' });
+		expect(
+			readCommand({ ...good, id: 'not-an-id', payload: { ...good.payload, body: '' } })
+		).toMatchObject({ ok: false, part: 'payload' });
+	});
+
+	it('knows every command that travels as JSON, so none is refused as an unknown type', () => {
+		for (const type of COMMAND_TYPES) {
+			if (isPhotoCommandType(type)) continue;
+			expect(readCommand({ ...good, type, payload: {} })).not.toEqual({
+				ok: false,
+				part: 'envelope'
+			});
+		}
 	});
 });

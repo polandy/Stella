@@ -1,12 +1,13 @@
 import { dispatchCommand } from '$lib/server/domain/commands/dispatch';
-import { parseCommand } from '$lib/server/commands/parse';
+import { readCommand } from '$lib/server/commands/parse';
+import { fromFormData } from '$lib/commands/form-data';
+import { InteractionLogSchema } from '$lib/commands/payloads';
 import { ulidGenerator } from '$lib/server/id';
 import { systemClock } from '$lib/server/clock';
 import { error, fail, redirect } from '@sveltejs/kit';
 import { requireViewer } from '$lib/server/auth/guards';
-import * as v from 'valibot';
 import { getContact } from '$lib/server/domain/contacts/contacts';
-import { deleteInteraction, INTERACTION_KINDS } from '$lib/server/domain/interactions/interactions';
+import { deleteInteraction } from '$lib/server/domain/interactions/interactions';
 import { deleteJournalEntry } from '$lib/server/domain/journal/journal';
 import { contactSectionPath } from '$lib/contacts/sections';
 import {
@@ -18,49 +19,29 @@ import {
 import { say, translator } from '$lib/server/i18n/say';
 import type { Actions } from '../$types';
 
-const LogInteractionSchema = v.object({
-	kind: v.picklist(INTERACTION_KINDS),
-	happenedAt: v.pipe(v.string(), v.minLength(1)),
-	title: v.optional(v.pipe(v.string(), v.trim())),
-	description: v.optional(v.pipe(v.string(), v.trim())),
-	visibility: v.optional(v.picklist(['shared', 'private']), 'shared'),
-	participantIds: v.array(v.pipe(v.string(), v.minLength(1)))
-});
-
 /** The story card: touchpoints logged, and entries taken back (docs/02 §2.23). */
 export const storyActions = {
 	logInteraction: async ({ request, params, locals }) => {
 		const viewer = requireViewer(locals);
 
-		const form = await request.formData();
-		const parsed = v.safeParse(LogInteractionSchema, {
-			kind: form.get('kind'),
-			happenedAt: form.get('happenedAt'),
-			title: form.get('title') || undefined,
-			description: form.get('description') || undefined,
-			visibility: form.get('visibility') || undefined,
-			participantIds: form.getAll('participants').filter((p) => typeof p === 'string')
-		});
-		if (!parsed.success) {
-			return fail(400, { interactionError: say(locals, 'errors.interaction.needKindAndDay') });
-		}
-
 		// A touchpoint is a command (docs/04 §4.11.2), named by the form when it can, so one
-		// kept on the phone after a lost answer is recognised when it arrives again.
-		const command = parseCommand({
+		// kept on the phone after a lost answer is recognised when it arrives again. The form
+		// names the people with it `participants`, one field each.
+		const form = await request.formData();
+		const reading = readCommand({
 			id: form.get('commandId') || ulidGenerator.next(),
 			type: 'interaction.log',
 			payload: {
-				contactId: params.id,
-				...parsed.output,
-				title: parsed.output.title ?? null,
-				description: parsed.output.description ?? null
+				...fromFormData(InteractionLogSchema, form),
+				participantIds: form.getAll('participants').filter((p) => typeof p === 'string'),
+				contactId: params.id
 			},
 			issuedAt: systemClock.now()
 		});
-		if (command?.type !== 'interaction.log') {
+		if (!reading.ok) {
 			return fail(400, { interactionError: say(locals, 'errors.interaction.needKindAndDay') });
 		}
+		const { command } = reading;
 		const author = {
 			userId: viewer.id,
 			householdId: viewer.householdId,

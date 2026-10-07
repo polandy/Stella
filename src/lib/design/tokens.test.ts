@@ -13,7 +13,7 @@ import {
 	TINT_PERCENT
 } from './tokens';
 import { CIRCLE_COLORS } from '../server/domain/circles/circles';
-import { TAG_COLORS } from '../server/domain/tags/tags';
+import { TAG_COLORS } from '../tags/colors';
 import { INTERACTION_KINDS, KIND_PRESENTATION } from '../interactions/kinds';
 
 describe('accents', () => {

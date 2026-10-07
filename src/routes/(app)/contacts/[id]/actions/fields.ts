@@ -1,11 +1,12 @@
 import { dispatchCommand } from '$lib/server/domain/commands/dispatch';
-import { parseCommand } from '$lib/server/commands/parse';
+import { readCommand } from '$lib/server/commands/parse';
+import { fromFormData } from '$lib/commands/form-data';
+import { FieldAddSchema } from '$lib/commands/payloads';
 import { ulidGenerator } from '$lib/server/id';
 import { systemClock } from '$lib/server/clock';
 import { error, fail, redirect } from '@sveltejs/kit';
 import { requireViewer } from '$lib/server/auth/guards';
 import * as v from 'valibot';
-import { CONTACT_FIELD_KINDS } from '$lib/contact-fields/kinds';
 import { editContactField } from '$lib/server/domain/contact-fields/contact-fields';
 import { getContact } from '$lib/server/domain/contacts/contacts';
 import {
@@ -16,12 +17,6 @@ import {
 } from '$lib/server/services';
 import { say, translator } from '$lib/server/i18n/say';
 import type { Actions } from '../$types';
-
-const AddFieldSchema = v.object({
-	kind: v.picklist(CONTACT_FIELD_KINDS),
-	label: v.optional(v.pipe(v.string(), v.trim())),
-	value: v.pipe(v.string(), v.trim(), v.minLength(1))
-});
 
 /** An address rewritten where it is read; its kind stays (docs/02 §2.2). */
 const EditFieldSchema = v.object({
@@ -36,29 +31,24 @@ export const fieldActions = {
 		const viewer = requireViewer(locals);
 
 		const form = await request.formData();
-		const parsed = v.safeParse(AddFieldSchema, {
-			kind: form.get('kind'),
-			label: form.get('label') || undefined,
-			value: form.get('value')
+		const reading = readCommand({
+			id: form.get('commandId') || ulidGenerator.next(),
+			type: 'field.add',
+			payload: { ...fromFormData(FieldAddSchema, form), contactId: params.id },
+			issuedAt: systemClock.now()
 		});
-		if (!parsed.success) {
+		if (!reading.ok && reading.part === 'payload') {
 			return fail(400, { fieldError: say(locals, 'errors.field.needKindAndValue') });
 		}
 
 		const contact = await getContact(getContactDeps(), viewer, params.id);
 		if (!contact) throw error(404, say(locals, 'errors.contact.notFound'));
 
-		const command = parseCommand({
-			id: form.get('commandId') || ulidGenerator.next(),
-			type: 'field.add',
-			payload: { contactId: params.id, ...parsed.output, label: parsed.output.label ?? null },
-			issuedAt: systemClock.now()
-		});
-		const outcome = command
+		const outcome = reading.ok
 			? await dispatchCommand(
 					getCommandDeps(),
 					{ userId: viewer.id, householdId: viewer.householdId, locale: locals.locale },
-					command
+					reading.command
 				)
 			: null;
 		if (outcome?.status !== 'applied') {

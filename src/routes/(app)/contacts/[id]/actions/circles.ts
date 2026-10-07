@@ -1,5 +1,7 @@
 import { dispatchCommand } from '$lib/server/domain/commands/dispatch';
-import { parseCommand } from '$lib/server/commands/parse';
+import { readCommand } from '$lib/server/commands/parse';
+import { fromFormData } from '$lib/commands/form-data';
+import { CircleJoinSchema } from '$lib/commands/payloads';
 import { ulidGenerator } from '$lib/server/id';
 import { systemClock } from '$lib/server/clock';
 import { error, fail, redirect } from '@sveltejs/kit';
@@ -22,21 +24,16 @@ export const circleActions = {
 	joinCircle: async ({ request, params, locals }) => {
 		const viewer = requireViewer(locals);
 
-		const form = await request.formData();
-		const name = form.get('circleName');
-		if (typeof name !== 'string' || name.trim() === '') {
-			return fail(400, { circleError: say(locals, 'errors.circle.needName') });
-		}
-
 		// A command (docs/04 §4.11.2), named by the form so one kept on the phone is recognised.
-		const command = parseCommand({
+		const form = await request.formData();
+		const reading = readCommand({
 			id: form.get('commandId') || ulidGenerator.next(),
 			type: 'circle.join',
-			payload: { contactId: params.id, circleName: name, role: form.get('role') ?? null },
+			payload: { ...fromFormData(CircleJoinSchema, form), contactId: params.id },
 			issuedAt: systemClock.now()
 		});
-		if (command?.type !== 'circle.join')
-			return fail(400, { circleError: say(locals, 'errors.circle.needName') });
+		if (!reading.ok) return fail(400, { circleError: say(locals, 'errors.circle.needName') });
+		const { command } = reading;
 		const author = {
 			userId: viewer.id,
 			householdId: viewer.householdId,
