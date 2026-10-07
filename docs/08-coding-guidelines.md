@@ -103,7 +103,8 @@ Layering and single responsibility:
    clock, ULID).
 4. **Composition root** — `src/lib/server/services.ts` — is the **only** place that
    constructs concretes and wires them into use-cases' `deps` (`getContactDeps()`, …). Only
-   the SvelteKit edge (`routes/`, `hooks.server.ts`) imports it (docs/04 §4.3).
+   edge code imports it: the SvelteKit edge itself (`routes/`, `hooks.server.ts`) and the few
+   shared edge helpers named beside it in the tree (docs/04 §4.3).
 
 ```ts
 // domain/contacts/contact-repository.ts — the DOMAIN owns this port
