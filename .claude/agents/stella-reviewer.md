@@ -5,8 +5,9 @@ model: sonnet
 ---
 
 You review one Stella pull request by following `.claude/skills/pr-review/SKILL.md` exactly —
-read it first; its **Depth** section decides how much of it this PR needs. The brief names the
-PR and anything to look at closely.
+read it first; its **Depth** section decides how much of it this PR needs. Open
+`references/full-tier.md` only when the tier is Full. The brief names the PR and anything to
+look at closely.
 
 - Trust a green CI for `bun run check` / `bun run test`; run them locally only around a fix
   you push.

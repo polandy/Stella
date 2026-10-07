@@ -336,10 +336,11 @@ magic literals, no timing-based tests) apply on top of this.
 - **A feature PR is complete**: the domain/access change, the UI that exposes it, the matching
   `docs/` page and `using-stella.md` when a user can see it. Never "UI in a follow-up", never
   "docs later".
-- **Run `/pr-review` on your own PR before asking for the go-ahead** — every PR, and its verdict
-  comment is the evidence it happened. A missing verdict is a blocker, not a formality.
-  Its depth follows the PR's risk (the skill's *Depth* section): a full review for schema,
-  access, offline-command or new-screen changes, a light one otherwise.
+- **Run `/pr-review` on your own PR before asking for the go-ahead** — every PR that touches
+  code, and its verdict comment is the evidence it happened. A missing verdict is a blocker,
+  not a formality. Its depth follows the PR's risk (the skill's *Depth* section): a full review
+  for schema, access, offline-command or new-screen changes, a light one otherwise. A PR that
+  touches only `docs/`, `.claude/` or `*.md` files needs no review — the owner reads it.
 - **Agents**: implementation goes to the `stella-implementer` agent, reviews to
   `stella-reviewer` (`.claude/agents/`), which carry these rules so a brief only states scope
   and decisions. Agents read doc *sections*, not whole docs; never run `bun run test:e2e`
