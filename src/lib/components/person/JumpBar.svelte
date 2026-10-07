@@ -1,5 +1,6 @@
 <script lang="ts">
 	import {
+		barVisible,
 		currentSection,
 		JUMP_SECTIONS,
 		jumpEntries,
@@ -18,15 +19,17 @@
 	import type { PersonPageData } from './types';
 
 	/*
-	 * The person page's jump bar (docs/05 §5.5): under the identity card, and sticking under the
-	 * top bar once that card has scrolled by — People, Photos, Story, Notes, each with its card's
-	 * count, the one being read marked. `currentSection` decides which; this only measures where
-	 * the cards stand.
+	 * The person page's jump bar (docs/05 §5.5): People, Photos, Story, Notes, each with its
+	 * card's count, the one being read marked. It shows only once it sticks — when the identity
+	 * card has scrolled by — and fades in there; at rest it sits in a zero-height slot, so nothing
+	 * stands between the identity card and the People card. `barVisible` and `currentSection`
+	 * decide; this only measures where the cards stand.
 	 *
 	 * It sticks to the top of the shell's scroller, which starts under the top bar wherever that
 	 * bar is, so a phone's sliding bar (docs/05 §5.4) takes it along by itself. The scroller is
 	 * told the bar's height as its scroll padding: a jump, an anchor in a link, or the cursor
-	 * moving down the page stops below the bar rather than behind it.
+	 * moving down the page stops below the bar rather than behind it. While it is hidden it is
+	 * inert: out of the tab order and the accessibility tree, as it is out of sight.
 	 */
 	let { data }: { data: PersonPageData } = $props();
 
@@ -54,9 +57,11 @@
 
 	let bar = $state<HTMLElement>();
 	let current = $state<JumpSection | null>(null);
+	let cardBottom = $state(Number.POSITIVE_INFINITY);
 	// The card a link was tapped for, marked until the reader scrolls on their own.
 	let tapped = $state<JumpSection | null>(null);
 	const marked = $derived(markedSection(current, tapped));
+	const visible = $derived(barVisible({ cardBottom, tapped }));
 
 	/*
 	 * A plain click glides to the card the way an opened form does (docs/05 §5.11) instead of
@@ -83,6 +88,10 @@
 
 		const measure = () => {
 			const top = scroller.getBoundingClientRect().top;
+			const identity = document.querySelector('[data-testid="identity-card"]');
+			cardBottom = identity
+				? identity.getBoundingClientRect().bottom - top
+				: Number.NEGATIVE_INFINITY;
 			const cards = JUMP_SECTIONS.flatMap((section) => {
 				const card = document.getElementById(sectionAnchor(section));
 				return card ? [{ section, top: card.getBoundingClientRect().top - top }] : [];
@@ -110,7 +119,8 @@
 		// Cards grow and shrink as forms open, photos load and the bar itself wraps.
 		const resized = new ResizeObserver(() => (pad(), onScroll()));
 		resized.observe(own);
-		resized.observe(own.parentElement ?? own);
+		// The page, not the bar's zero-height slot: that one never changes size.
+		resized.observe(own.closest('main') ?? own);
 		scroller.addEventListener('scroll', onScroll, { passive: true });
 		// The reader scrolling on their own lets go of a tapped card; the glide itself is no input.
 		const letGo = () => (tapped = null);
@@ -132,30 +142,37 @@
 </script>
 
 <!--
-	Full bleed across the page's own padding, so content scrolling under it never shows at its
-	sides; the negative margin stays inside the page, so nothing reaches past the screen's edge.
+	A zero-height sticky slot: it takes no room in the page's flow (its negative top margin hands
+	back the page's gap), so it sticks exactly when the identity card's bottom reaches the top.
+	The bar hangs out of it, full bleed across the page's own padding, so content scrolling under
+	it never shows at its sides; the negative margin stays inside the page, so nothing reaches
+	past the screen's edge.
 -->
-<nav
-	bind:this={bar}
-	aria-label={t('contact.jumpBar.label')}
-	class="sticky top-0 z-10 -mx-4 -my-2.5 bg-bg/90 px-4 py-2 backdrop-blur md:-mx-6 md:px-6"
-	data-testid="jump-bar"
->
-	<ul class="grid grid-cols-4 gap-1 sm:flex sm:flex-wrap">
-		{#each entries as entry (entry.section)}
-			<li class="min-w-0">
-				<a
-					href="#{sectionAnchor(entry.section)}"
-					aria-current={marked === entry.section ? 'location' : undefined}
-					onclick={(event) => jump(event, entry.section)}
-					class="flex h-8 min-w-0 items-center justify-center gap-1 rounded-full px-2 text-[0.8125rem] font-medium whitespace-nowrap text-fg-muted transition-colors hover:text-fg aria-[current=location]:bg-card aria-[current=location]:text-fg aria-[current=location]:shadow-card sm:px-3"
-				>
-					<span class="truncate">{t(TITLE[entry.section])}</span>
-					{#if entry.count !== null}
-						<span class="text-fg-subtle tabular-nums">{entry.count}</span>
-					{/if}
-				</a>
-			</li>
-		{/each}
-	</ul>
-</nav>
+<div class="sticky top-0 z-10 -mt-5 h-0">
+	<nav
+		bind:this={bar}
+		aria-label={t('contact.jumpBar.label')}
+		inert={!visible}
+		data-visible={visible}
+		class="-mx-4 border-b border-border-subtle bg-bg/90 px-4 py-2 backdrop-blur transition-[opacity,translate] duration-(--motion-fade) ease-standard data-[visible=false]:pointer-events-none data-[visible=false]:-translate-y-1.5 data-[visible=false]:opacity-0 md:-mx-6 md:px-6"
+		data-testid="jump-bar"
+	>
+		<ul class="grid grid-cols-4 gap-1 sm:flex sm:flex-wrap">
+			{#each entries as entry (entry.section)}
+				<li class="min-w-0">
+					<a
+						href="#{sectionAnchor(entry.section)}"
+						aria-current={marked === entry.section ? 'location' : undefined}
+						onclick={(event) => jump(event, entry.section)}
+						class="flex h-8 min-w-0 items-center justify-center gap-1 rounded-full px-2 text-[0.8125rem] font-medium whitespace-nowrap text-fg-muted transition-colors hover:text-fg aria-[current=location]:bg-card aria-[current=location]:text-fg aria-[current=location]:shadow-card sm:px-3"
+					>
+						<span class="truncate">{t(TITLE[entry.section])}</span>
+						{#if entry.count !== null}
+							<span class="text-fg-subtle tabular-nums">{entry.count}</span>
+						{/if}
+					</a>
+				</li>
+			{/each}
+		</ul>
+	</nav>
+</div>

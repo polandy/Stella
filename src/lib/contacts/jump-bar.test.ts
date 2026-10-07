@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'bun:test';
 import {
+	barVisible,
 	currentSection,
 	JUMP_SECTIONS,
 	jumpEntries,
@@ -104,5 +105,22 @@ describe('scrollsThePage', () => {
 
 	it('leaves the keys that only move the cursor, so Tab into the card keeps its mark', () => {
 		for (const key of ['Tab', 'Enter', 'a', 'Escape']) expect(scrollsThePage(key)).toBe(false);
+	});
+});
+
+describe('barVisible', () => {
+	it('stays away while the identity card still shows below the top', () => {
+		expect(barVisible({ cardBottom: 640, tapped: null })).toBe(false);
+		expect(barVisible({ cardBottom: 1, tapped: null })).toBe(false);
+	});
+
+	it('shows once the identity card’s bottom has passed the top', () => {
+		expect(barVisible({ cardBottom: 0, tapped: null })).toBe(true);
+		expect(barVisible({ cardBottom: -900, tapped: null })).toBe(true);
+	});
+
+	it('stays while a tapped link glides to a card the identity card has not quite left', () => {
+		// A jump to People stops it below the bar, which leaves the card's foot just in view.
+		expect(barVisible({ cardBottom: 28, tapped: 'relationships' })).toBe(true);
 	});
 });

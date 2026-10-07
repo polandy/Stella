@@ -398,9 +398,20 @@
 					><Logo size={26} wordmark /></a
 				>
 			{:else}
+				<!-- A phone shows only the way back: the page's own name is its card's headline, and the
+				     whole trail would wrap a long one onto a second line (docs/05 §5.4). -->
+				{@const parent = crumbs[crumbs.length - 2]}
+				<nav aria-label={t('nav.breadcrumb')} class="min-w-0 text-sm md:hidden">
+					<a
+						href={parent.href}
+						class="-ml-1 flex min-w-0 items-center gap-0.5 rounded-control py-1 pr-1 text-fg-muted hover:text-fg"
+						data-testid="back-crumb"
+						><Icon name="back" size={16} /><span class="truncate">{parent.label}</span></a
+					>
+				</nav>
 				<nav
 					aria-label={t('nav.breadcrumb')}
-					class="flex min-w-0 flex-wrap items-center gap-1.5 text-sm"
+					class="flex min-w-0 flex-wrap items-center gap-1.5 text-sm max-md:hidden"
 				>
 					{#each crumbs as crumb, i (i)}
 						{#if i > 0}<span class="text-fg-subtle/60" aria-hidden="true">/</span>{/if}

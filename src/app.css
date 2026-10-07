@@ -368,6 +368,24 @@ body {
 	font-style: italic;
 }
 
+/* Where to edit (docs/05 §5.7): a value that edits in place carries a faint pencil inside its
+   trigger — always on a touch screen, where no hover ever says so, and on hover or keyboard
+   focus elsewhere. A plain rule rather than utilities, so no static class fights a variant. */
+.edit-pencil {
+	color: var(--fg-subtle);
+	opacity: 0;
+	transition: opacity var(--motion-fade) var(--ease-standard);
+}
+:hover > .edit-pencil,
+:focus-visible > .edit-pencil {
+	opacity: 0.9;
+}
+@media (pointer: coarse) {
+	.edit-pencil {
+		opacity: 0.55;
+	}
+}
+
 @media (prefers-reduced-motion: reduce) {
 	*,
 	*::before,

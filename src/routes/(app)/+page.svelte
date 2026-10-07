@@ -13,6 +13,8 @@
 	import StreamCirclePhoto from '$lib/components/StreamCirclePhoto.svelte';
 	import { asTyped, newPeopleAsCandidates } from '$lib/mentions/picks';
 	import { dayLabel as calendarDayLabel } from '$lib/dates/labels';
+	import { streamDays, streamTime } from '$lib/stream/days';
+	import StreamWhen from '$lib/components/StreamWhen.svelte';
 	import { outbox } from '$lib/pwa/outbox.svelte';
 	import { isKept, type KeptOf } from '$lib/pwa/outbox';
 	import KeptItem from '$lib/components/KeptItem.svelte';
@@ -41,44 +43,15 @@
 	const i18n = useI18n();
 	const t = i18n.t;
 
-	function ago(ms: number): string {
-		const s = Math.max(1, Math.round((Date.now() - ms) / 1000));
-		if (s < 60) return t('home.justNow');
-		if (s < 3600) return t('home.minutesAgo', { minutes: Math.floor(s / 60) });
-		if (s < 86400) return t('home.hoursAgo', { hours: Math.floor(s / 3600) });
-		if (s < 604800) return t('home.daysAgo', { days: Math.floor(s / 86400) });
-		return t('home.weeksAgo', { weeks: Math.floor(s / 604800) });
-	}
-
-	function dayLabel(ms: number): string {
-		const d = new Date(ms);
-		const today = new Date();
-		const diff = Math.round(
-			(today.setHours(0, 0, 0, 0) - new Date(d).setHours(0, 0, 0, 0)) / 86400000
-		);
-		if (diff === 0) return t('home.today');
-		if (diff === 1) return t('home.yesterday');
-		return d.toLocaleDateString(i18n.intlLocale, {
-			weekday: 'long',
-			day: 'numeric',
-			month: 'long'
-		});
-	}
-
-	// Group the newest-first stream by calendar day.
-	const days = $derived.by(() => {
-		const groups: { label: string; items: PageData['stream'] }[] = [];
-		for (const item of data.stream) {
-			const label = dayLabel(item.at);
-			let g = groups.at(-1);
-			if (!g || g.label !== label) {
-				g = { label, items: [] };
-				groups.push(g);
-			}
-			g.items.push(item);
-		}
-		return groups;
+	// The stream by day, read against the clock at the moment it is drawn (docs/02 §2.22.2).
+	const stream = $derived.by(() => {
+		const now = Date.now();
+		return {
+			days: streamDays(i18n, data.stream, now),
+			when: (at: number) => streamTime(i18n, at, now)
+		};
 	});
+	const days = $derived(stream.days);
 
 	let hintDismissed = $state(false);
 
@@ -503,10 +476,7 @@
 													title={t('common.onlyYouSee')}
 													><Icon name="private" size={11} />{t('common.privateInline')}</span
 												>{/if}
-											<span
-												class="ml-auto text-xs whitespace-nowrap text-fg-subtle"
-												title={item.entryDate}>{ago(item.at)}</span
-											>
+											<StreamWhen time={stream.when(item.at)} />
 										</div>
 										<div class="note-body mt-1 text-fg">{@html item.bodyHtml}</div>
 										{#if item.photoIds.length}
@@ -531,23 +501,8 @@
 												{/each}
 											</div>
 										{/if}
-										{#if item.mentions.length}
-											<div class="mt-1.5 flex flex-wrap gap-1.5">
-												{#each item.mentions as m (m.id)}
-													<a
-														href="/contacts/{m.id}"
-														class="inline-flex items-center gap-1.5 rounded-full bg-bg-sunken py-0.5 pr-2 pl-1 text-xs text-fg-muted hover:text-fg"
-													>
-														<Avatar
-															id={m.id}
-															name={m.name}
-															avatarPhotoId={m.avatarPhotoId}
-															size={18}
-														/>{m.name}
-													</a>
-												{/each}
-											</div>
-										{/if}
+										<!-- The people a moment mentions are chips in its body already; only an
+										     interaction, whose participants the text does not name, lists them. -->
 									</div>
 								{:else if item.kind === 'person'}
 									<Avatar
@@ -577,9 +532,7 @@
 													title={t('common.onlyYouSee')}
 													><Icon name="private" size={11} />{t('common.privateInline')}</span
 												>{/if}
-											<span class="ml-auto text-xs whitespace-nowrap text-fg-subtle"
-												>{ago(item.at)}</span
-											>
+											<StreamWhen time={stream.when(item.at)} />
 										</div>
 										{#if item.description}<p class="mt-0.5 text-sm text-fg-muted">
 												{item.description}
@@ -615,10 +568,7 @@
 													title={t('common.onlyYouSee')}
 													><Icon name="private" size={11} />{t('common.privateInline')}</span
 												>{/if}
-											<span
-												class="ml-auto text-xs whitespace-nowrap text-fg-subtle"
-												title={item.happenedAt}>{ago(item.at)}</span
-											>
+											<StreamWhen time={stream.when(item.at)} />
 										</div>
 										{#if item.title}<p class="mt-0.5 text-sm text-fg">{item.title}</p>{/if}
 										{#if item.participants.length}
@@ -643,13 +593,13 @@
 									<StreamCirclePhoto
 										{item}
 										who={item.mine ? t('home.you') : item.actor.name}
-										ago={ago(item.at)}
+										time={stream.when(item.at)}
 									/>
 								{:else if item.kind === 'notice'}
 									<StreamNotice
 										content={item.content}
 										who={item.mine ? t('home.you') : item.actor.name}
-										ago={ago(item.at)}
+										time={stream.when(item.at)}
 										canOpen={(id) => peopleIds.has(id)}
 									/>
 								{:else}
@@ -679,9 +629,7 @@
 												class="rounded bg-link/16 px-1.5 text-[10px] font-semibold tracking-wide text-fg uppercase"
 												>{t('home.stream.relationship')}</span
 											>
-											<span class="ml-auto text-xs whitespace-nowrap text-fg-subtle"
-												>{ago(item.at)}</span
-											>
+											<StreamWhen time={stream.when(item.at)} />
 										</div>
 									</div>
 								{/if}
