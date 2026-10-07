@@ -58,8 +58,8 @@
 	const photoDate = (photo: Dated): string => dayLabel(i18n, photoDay(photo));
 
 	/*
-	 * An upload is saved through the outbox like every addition (docs/concepts/offline-capture.md
-	 * §8 #10): the photos, processed first, go with a `gallery.add` naming the person, and are
+	 * An upload is saved through the outbox like every addition (docs/04 ADR-076):
+	 * the photos, processed first, go with a `gallery.add` naming the person, and are
 	 * kept on the device when Stella cannot take them — shown above the grid until they are sent.
 	 */
 	const keptGallery = $derived(

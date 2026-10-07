@@ -12,7 +12,7 @@ import {
  * Logging a call or visit (docs/02 §2.6), with the checks that used to live in the person
  * page's action: the person must be one the author can see, and so must everyone named as
  * taking part — an unknown id is refused rather than stored. One use-case, so a touchpoint
- * kept on a phone (`interaction.log`, docs/concepts/offline-capture.md §4.1) is judged exactly
+ * kept on a phone (`interaction.log`, docs/02 §2.18.1) is judged exactly
  * like one logged online.
  */
 

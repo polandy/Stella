@@ -683,7 +683,7 @@ export const immichNameIgnore = sqliteTable(
 // ── Commands ──────────────────────────────────────────────────────────────
 
 /*
- * A command id that has been claimed or applied (docs/concepts/offline-capture.md §3). The
+ * A command id that has been claimed or applied (docs/03 §3.3). The
  * dispatcher claims an id before running its handler and keeps the result when done, so a
  * command sent twice — a phone that lost its connection after Stella saved — is applied once.
  * Never replayed and nothing is derived from it; it holds ids, not content, and is kept for

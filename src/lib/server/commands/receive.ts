@@ -5,7 +5,7 @@ import { RelationshipsRefusedError } from '../domain/relationships/add-many';
 import { parseCommand } from './parse';
 
 /*
- * What `POST /api/commands` does with a phone's outbox (docs/concepts/offline-capture.md §4):
+ * What `POST /api/commands` does with a phone's outbox (docs/04 §4.11.2):
  * each command in the order sent, each answered on its own. One the phone cannot fix by
  * waiting is *refused*, in the member's language; one that failed on our side is *failed*,
  * which says nothing about the command, so the phone keeps it and tries again later.

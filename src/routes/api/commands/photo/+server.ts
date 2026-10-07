@@ -8,7 +8,7 @@ import { getCommandDeps } from '$lib/server/services';
 import type { RequestHandler } from './$types';
 
 /*
- * `POST /api/commands/photo` (docs/concepts/offline-capture.md §4.2): one photo for a command a
+ * `POST /api/commands/photo` (docs/04 ADR-111): one photo for a command a
  * phone already sent, as multipart — `id`, `type` (`moment.photo`, `gallery.photo` or
  * `circleGallery.photo`), `parentId`, `image`, `thumb`, `width`, `height`, a large circle
  * photo's 1600 px `view`, and `takenAt` when the picture's EXIF said when it was taken. The photo is a command of its own, so a resend after a lost answer is

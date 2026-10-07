@@ -1,7 +1,7 @@
 import type { OutboxItem } from './outbox';
 
 /*
- * Keeps the outbox on the device (docs/concepts/offline-capture.md §4). An adapter: it holds
+ * Keeps the outbox on the device (docs/02 §2.18.1). An adapter: it holds
  * IndexedDB and decides nothing — what the list *means* is `outbox.ts`. The whole list is one
  * record, changed in one transaction at a time; it is a handful of items. Everything stored is
  * plain data — pass `$state.snapshot`, never a Svelte proxy, which cannot be cloned.

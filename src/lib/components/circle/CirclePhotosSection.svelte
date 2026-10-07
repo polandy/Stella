@@ -60,8 +60,8 @@
 		uploadRole = data.roleSuggestions.find((role) => roleKey(role) === key) ?? '';
 	}
 
-	// An upload goes through the outbox like a person's photos (docs/concepts/offline-capture.md
-	// §4), kept on the device while Stella cannot take it and shown here until it is sent.
+	// An upload goes through the outbox like a person's photos (docs/02 §2.18.1), kept on the
+	// device while Stella cannot take it and shown here until it is sent.
 	const kept = $derived(
 		outbox.mine.filter(
 			(item): item is KeptOf<'circleGallery.add'> =>

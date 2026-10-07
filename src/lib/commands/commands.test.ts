@@ -2,7 +2,7 @@ import { describe, expect, it } from 'bun:test';
 import { COMMAND_TYPES, isCommandType, isQueueable, kindOf, photoCommandFor } from './commands';
 
 /*
- * The command vocabulary (docs/concepts/offline-capture.md §3): which changes exist and what
+ * The command vocabulary (docs/04 §4.11.2): which changes exist and what
  * kind each one is. The kind is what decides whether a device may hold a command back while
  * Stella is out of reach, so the table is the whole of that rule.
  */

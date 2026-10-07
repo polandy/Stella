@@ -8,7 +8,7 @@ import { writeJournalEntry, type WriteJournalEntryDeps } from './write-entry';
 
 /*
  * Writing on a person's journal page (docs/02 §2.20) as one use-case, so the page and an entry
- * kept on a phone (`journal.write`, docs/concepts/offline-capture.md §4.1) go through the same
+ * kept on a phone (`journal.write`, docs/02 §2.18.1) go through the same
  * checks. Writing is an addition: a day that already holds an entry gets the new text appended,
  * as a moment does (§2.22.1) — a kept entry arriving late must never overwrite what was
  * written meanwhile.

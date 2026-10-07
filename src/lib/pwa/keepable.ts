@@ -10,8 +10,8 @@ import { outbox } from './outbox.svelte';
 import { reachability } from './reachability.svelte';
 
 /*
- * An adding form, saved as a command through the outbox (docs/concepts/offline-capture.md §4.1,
- * §8 #10): the same path whether Stella is in reach or not. In reach, the form waits for the
+ * An adding form, saved as a command through the outbox (docs/02 §2.18.1, docs/04
+ * ADR-076): the same path whether Stella is in reach or not. In reach, the form waits for the
  * answer — applied, or refused with a reason it shows where the action's own error would be —
  * and an answer that never comes leaves the command kept on the device, as it is when Stella is
  * known to be out of reach. The command's id is what makes that safe: had Stella stored it

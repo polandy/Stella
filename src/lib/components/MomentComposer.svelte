@@ -54,7 +54,7 @@
 	 * @-picker, inline "Create …" queue and browser-side photo processing are enhancements.
 	 *
 	 * With JavaScript it saves as a named command through the outbox, in reach or not
-	 * (docs/concepts/offline-capture.md §4, §8 #10): in reach it waits for Stella's answer, and
+	 * (docs/02 §2.18.1, docs/04 ADR-076): in reach it waits for Stella's answer, and
 	 * when there is none it keeps the moment on the device. The name is what makes that safe: a
 	 * moment whose answer was lost on the way is recognised when it arrives a second time.
 	 * `editing` opens a kept moment that has not been sent yet.

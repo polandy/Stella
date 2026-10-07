@@ -6,7 +6,7 @@
 	import Button from './Button.svelte';
 
 	/*
-	 * Signing out (docs/02 §2.18, docs/concepts/offline-capture.md §4.6). A plain form post, as
+	 * Signing out (docs/02 §2.18.1). A plain form post, as
 	 * before — but when moments written out of reach are still waiting on this device, it asks
 	 * first: keep them for the next sign-in, or throw them away. Signing out empties the page
 	 * cache; it must never take the only copy of what somebody wrote along with it unasked.

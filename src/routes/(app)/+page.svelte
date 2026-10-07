@@ -166,8 +166,8 @@
 	}
 
 	/*
-	 * Moments kept on this device while Stella was out of reach (docs/concepts/offline-capture.md
-	 * §4), shown where they will land: at the top of the stream, marked as not sent yet. One can
+	 * Moments kept on this device while Stella was out of reach (docs/02 §2.18.1), shown where they
+	 * will land: under the capture field, marked as not sent yet. One can
 	 * be opened in the composer until it is on its way; discarding asks twice, because the
 	 * device holds the only copy.
 	 */

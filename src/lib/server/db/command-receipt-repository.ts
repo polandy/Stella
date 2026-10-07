@@ -6,7 +6,7 @@ import type * as schema from './schema';
 import { commandReceipt } from './schema';
 
 /*
- * Drizzle adapter for the CommandReceiptRepository port (docs/concepts/offline-capture.md §3).
+ * Drizzle adapter for the CommandReceiptRepository port (docs/03 §3.3).
  * A claim is the primary key itself: `INSERT … ON CONFLICT DO NOTHING` either takes the id or
  * leaves the earlier claim standing, in one statement, so two runs of the same command cannot
  * both think they own it. A result is stored as JSON and read back as it was written.
