@@ -1,6 +1,6 @@
 /*
  * Tags on a page's data, so a device holding a copy can ask whether it changed and be told
- * "no" in a few bytes (docs/concepts/offline-reading.md §4.2). The tag is a hash of exactly
+ * "no" in a few bytes (docs/04 ADR-074). The tag is a hash of exactly
  * what this member was sent: whatever changed a page — a deletion, a relative's new name, a
  * visibility — changed its bytes, so no list of tables has to be kept in step with the page.
  */

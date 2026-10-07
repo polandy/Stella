@@ -14,7 +14,7 @@
 	 * polled: the worker reports when the answer changes.
 	 *
 	 * When the worker knows when the page on screen was kept, the line says so: an old copy is
-	 * normal offline, but it must never look current (docs/concepts/offline-reading.md §4.4).
+	 * normal offline, but it must never look current (docs/02 §2.18, *Saying so*).
 	 */
 	const i18n = useI18n();
 	const t = i18n.t;

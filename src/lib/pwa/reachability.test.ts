@@ -46,7 +46,7 @@ describe('a reachability report', () => {
 
 /*
  * A check runs when something changed under the page without a request to notice it: the
- * connection dropped, the app came back into view (docs/concepts/offline-reading.md §4.4).
+ * connection dropped, the app came back into view (docs/02 §2.18, *Saying so*).
  */
 describe('what a reachability check concludes', () => {
 	const stella = { ok: true, type: 'basic' as const, body: { status: 'ok' } };
