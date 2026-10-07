@@ -8,7 +8,9 @@ import {
 	categoryDiscFill,
 	accentDotStyle,
 	accentVar,
-	categoryVar
+	AVATAR_RING_PX,
+	categoryVar,
+	TINT_PERCENT
 } from './tokens';
 import { CIRCLE_COLORS } from '../server/domain/circles/circles';
 import { TAG_COLORS } from '../server/domain/tags/tags';
@@ -64,27 +66,43 @@ describe('interaction kinds', () => {
 describe('accent styles', () => {
 	it('tints a chip in its accent but writes the label in the foreground colour', () => {
 		expect(accentChipStyle('teal')).toBe(
-			'background:color-mix(in srgb, var(--accent-teal) 16%, transparent);color:var(--fg)'
+			'background:color-mix(in srgb, var(--accent-teal) var(--tint-chip), transparent);color:var(--fg)'
 		);
 	});
 
-	it('deepens the tint when the chip is the active filter', () => {
-		expect(accentChipStyle('teal', { active: true })).toContain('var(--accent-teal) 28%');
+	it('deepens the tint when the chip is the active filter, opaque over the card', () => {
+		// Latte's red at the active strength over the page ground is 4.11:1; over --card it
+		// clears AA, so the active chip carries its own ground wherever it sits.
+		expect(accentChipStyle('teal', { active: true })).toBe(
+			'background:color-mix(in srgb, var(--accent-teal) var(--tint-chip-active), var(--card));color:var(--fg)'
+		);
 	});
 
-	it('mixes an avatar over the card surface, so it stays opaque on any background', () => {
+	it('mixes an avatar over the card surface and rings it by the theme', () => {
 		expect(accentAvatarStyle('blue')).toBe(
-			'background:color-mix(in srgb, var(--accent-blue) 22%, var(--card));color:var(--fg)'
+			'background:color-mix(in srgb, var(--accent-blue) var(--tint-avatar), var(--card));' +
+				'box-shadow:inset 0 0 0 var(--avatar-ring) var(--accent-blue);color:var(--fg)'
 		);
 	});
 
 	it('fills an SVG initials disc with a tint of its category over the card, like an avatar', () => {
 		expect(categoryDiscFill('family')).toBe(
-			'color-mix(in srgb, var(--cat-family) 22%, var(--card))'
+			'color-mix(in srgb, var(--cat-family) var(--tint-avatar), var(--card))'
 		);
 	});
 
 	it('paints a dot in the flat accent, which carries no text', () => {
 		expect(accentDotStyle('pink')).toBe('background:var(--accent-pink)');
+	});
+});
+
+describe('tint strength per theme (docs/05 §5.2.2)', () => {
+	it('keeps Latte at 22 / 16 / 28 and lifts Mocha to 28 / 22 / 28', () => {
+		expect(TINT_PERCENT.light).toEqual({ avatar: 22, chip: 16, chipActive: 28 });
+		expect(TINT_PERCENT.dark).toEqual({ avatar: 28, chip: 22, chipActive: 28 });
+	});
+
+	it('rings an initials avatar in the flat accent in Mocha only', () => {
+		expect(AVATAR_RING_PX).toEqual({ light: 0, dark: 1.5 });
 	});
 });

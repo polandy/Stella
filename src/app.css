@@ -71,6 +71,12 @@
 	/* A field's edge has to clear 3:1 on the card and on its own `--bg` fill (WCAG 1.4.11);
 	   overlay1 reaches only 2.6:1 on the page ground in Latte, overlay2 clears both. */
 	--border-input: var(--ctp-overlay2);
+	/* Tint strength of avatars and chips, and the avatar ring — `TINT_PERCENT` and
+	   `AVATAR_RING_PX` in tokens.ts, held together by color.test.ts. */
+	--tint-avatar: 22%;
+	--tint-chip: 16%;
+	--tint-chip-active: 28%;
+	--avatar-ring: 0px;
 }
 
 :root[data-theme='dark'] {
@@ -114,6 +120,12 @@
 	--danger: var(--ctp-red);
 	--success-text: var(--ctp-green);
 	--border-input: var(--ctp-overlay1);
+	/* Mocha's dark ground swallows a light tint: avatars and chips mix more, and an initials
+	   avatar is ringed in its flat accent (tokens.ts). */
+	--tint-avatar: 28%;
+	--tint-chip: 22%;
+	--tint-chip-active: 28%;
+	--avatar-ring: 1.5px;
 }
 
 /* Follow the OS when the user hasn't explicitly chosen light. */
@@ -159,6 +171,12 @@
 		--danger: var(--ctp-red);
 		--success-text: var(--ctp-green);
 		--border-input: var(--ctp-overlay1);
+		/* Mocha's dark ground swallows a light tint: avatars and chips mix more, and an initials
+		   avatar is ringed in its flat accent (tokens.ts). */
+		--tint-avatar: 28%;
+		--tint-chip: 22%;
+		--tint-chip-active: 28%;
+		--avatar-ring: 1.5px;
 	}
 }
 

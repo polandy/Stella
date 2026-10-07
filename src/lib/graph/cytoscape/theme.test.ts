@@ -43,7 +43,8 @@ const TOKENS: Record<string, string> = {
 	'--cat-professional': '#fe640b',
 	'--cat-other': '#888',
 	'--edge-membership': '#7287fd',
-	'--edge-kinship': '#888'
+	'--edge-kinship': '#888',
+	'--tint-avatar': '28%'
 };
 const read = (v: string) => TOKENS[v] ?? '';
 
@@ -60,6 +61,16 @@ describe('resolvePalette', () => {
 	it('uses lavender for circle membership and the subtle fg for kinship', () => {
 		expect(p.membership).toBe('#7287fd');
 		expect(p.kinship).toBe('#888');
+	});
+
+	it("takes the theme's avatar tint, so a disc on the map matches the avatar in the list", () => {
+		expect(p.avatarTint).toBe(28);
+	});
+
+	it('refuses a tint it cannot read, rather than drawing an untinted disc', () => {
+		expect(() => resolvePalette((v) => (v === '--tint-avatar' ? '' : read(v)))).toThrow(
+			'--tint-avatar'
+		);
 	});
 
 	it('carries the interface font, so canvas labels match the page', () => {

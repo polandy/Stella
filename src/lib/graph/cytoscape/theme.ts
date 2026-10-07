@@ -22,6 +22,8 @@ export interface Palette {
 	border: string;
 	primary: string;
 	focusRing: string;
+	/** How strongly a disc mixes its accent into the card, in percent — the avatar's tint. */
+	avatarTint: number;
 	accents: Record<string, string>;
 	categories: Record<RelationshipCategory, string>;
 	membership: string;
@@ -42,6 +44,13 @@ export type TokenReader = (cssVariable: string) => string;
 /** Strip the `var(--x)` wrapper a token helper returns, leaving the bare custom property. */
 function propertyOf(token: string): string {
 	return token.slice('var('.length, -1);
+}
+
+/** A `NN%` token as a number; throws, since a missing tint would draw every disc flat. */
+function percentOf(read: TokenReader, cssVariable: string): number {
+	const match = /^(\d+(?:\.\d+)?)%$/.exec(read(cssVariable).trim());
+	if (!match) throw new Error(`${cssVariable} is not a percentage: "${read(cssVariable)}"`);
+	return Number(match[1]);
 }
 
 /** Build the palette from a token reader; pure, so it runs identically in tests and both themes. */
@@ -74,6 +83,7 @@ export function resolvePalette(read: TokenReader): Palette {
 		border: read('--border'),
 		primary: read('--primary'),
 		focusRing: read('--focus-ring'),
+		avatarTint: percentOf(read, '--tint-avatar'),
 		accents,
 		categories,
 		membership,
