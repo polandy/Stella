@@ -24,8 +24,8 @@ import { addToJournalDay, type JournalAuthor, type JournalRepository } from '../
  * contact + journal ports; the visibility-scoped reads live in the adapters.
  *
  * Written on a person's own page, a moment carries that person as its `anchorId`: it lands in
- * their journal without an `@`, and everyone it names — the anchor too, if named — is read as a
- * mention beside them, as on the journal page (`writeJournalEntry`).
+ * their journal without an `@`, everyone else it names is a mention beside them, and naming the
+ * anchor too adds no self-mention — as on the journal page (`writeJournalEntry`).
  */
 
 export interface CaptureMomentInput {

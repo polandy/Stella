@@ -436,6 +436,24 @@ describe('captureMoment with an anchor', () => {
 		expect(f.entries).toHaveLength(0);
 	});
 
+	it('lets a shared moment land on an anchor only its author can see, as the journal page does', async () => {
+		// The audience rule (§2.20.1) is for mentions; the anchor's own visibility already bounds
+		// who can read an entry in their journal (docs/03 §3.7).
+		const f = fakes([
+			...people,
+			{ id: 'mine', displayName: 'Mine Only', visibility: 'private', createdBy: author.userId }
+		]);
+		const result = await captureMoment(f.deps, author, {
+			...base,
+			body: 'Coffee with @NoahBrunner',
+			anchorId: 'mine'
+		});
+
+		expect(result.anchorContactId).toBe('mine');
+		expect(f.entries[0]).toMatchObject({ contactId: 'mine', visibility: 'shared' });
+		expect(result.mentionedContactIds).toEqual(['noah']);
+	});
+
 	it('joins the anchor’s day slot like any other addition (§2.20)', async () => {
 		const f = fakes(people);
 		await captureMoment(f.deps, author, { ...base, body: 'Morning run', anchorId: 'markus' });
