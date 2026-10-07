@@ -90,6 +90,25 @@ export function markedSection(
 	return tapped ?? measured;
 }
 
+/** Where the bar stands against the identity card, as far as showing it needs. */
+export interface BarPlace {
+	/** The identity card's bottom, in pixels from the top of the visible page. */
+	cardBottom: number;
+	/** The bar's own height. */
+	barHeight: number;
+}
+
+/**
+ * Whether the bar shows (docs/05 §5.5). At rest nothing stands between the identity card and
+ * the People card: the bar shows only once it sticks, which is when the card's bottom has
+ * passed under the bar's foot. That is also where a jump leaves it — a jump to People stops
+ * below the bar, with the card's foot still just in view — so a bar that was tapped never
+ * vanishes under the finger that used it.
+ */
+export function barVisible(place: BarPlace): boolean {
+	return place.cardBottom <= place.barHeight;
+}
+
 /** Whether `key` (a `KeyboardEvent.key`) scrolls the page — the reader moving on by keyboard. */
 export function scrollsThePage(key: string): boolean {
 	return SCROLL_KEYS.has(key);

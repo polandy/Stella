@@ -27,7 +27,9 @@ to add the first one.
 
 Home is a text field with the household's stream underneath it. Newest first, grouped by
 day, showing what someone wrote, who someone added, when someone was in touch, and the
-connections someone made.
+connections someone made. Under *Today* and *Yesterday* each item shows the time it was
+written; older days show only their heading. Point at the time for the full date. The people
+a moment mentions are the links in its text.
 
 Above the stream, two rows of chips narrow it down: **What** — only moments, only calls and
 visits, only relationships, only new people, or the notices — and **Who** — only what you did,
@@ -65,7 +67,9 @@ A few things worth knowing:
   typing a name and the people who match appear right under it; tap one to open their page.
   The last row, *Search everything*, also looks through notes. It works offline too, for
   everyone Stella already showed you. Because that field is the search on Home, the top bar
-  there has no search button; every other page keeps it in the top bar.
+  there has no search button; every other page keeps it in the top bar. On a phone the top bar
+  of every other page shows only the way back — *‹ People* on a person's page — since the
+  page's own name is right below it.
 - **Two people with the same name?** The suggestion list says which is which (their
   description, or where and when you met), and the one you pick is the one it means, even
   though both read `@Thomas` in the text. A `@Thomas` typed without picking is not guessed:
@@ -74,8 +78,9 @@ A few things worth knowing:
 - **Someone new?** Just mention them. The suggestion list offers *Create "…"*, which asks
   for a last name or, without one, a line to know them by, and the person is created with the
   moment, no detour. If somebody already has that name, it offers *Create another "…"*.
-- **Photos** can be attached; they are resized in your browser before upload, which also
-  strips location data out of them.
+- **Photos** can be attached with the picture button under the field; a small number on it
+  says how many you picked. They are resized in your browser before upload, which also strips
+  location data out of them.
 - **The day** defaults to today. Writing something down late? Tap *Today* and pick the day —
   the last week is right there, *Another day…* opens a calendar for any earlier one.
 - **Two moments about the same person on the same day** end up in one journal entry, one
@@ -83,8 +88,8 @@ A few things worth knowing:
 
 ### Shared or private
 
-The chip next to the field says **Shared** by default: the household sees it. Tap it and
-it says **Private**: only you do. Private is genuine — a private moment, and any person
+The switch under the field says **Shared** by default: the household sees it. Flip it and
+it says **Private**, with a lock: only you do. Private is genuine — a private moment, and any person
 you create inside one, is invisible to the rest of the household, including in search,
 in the stream and on other people's pages.
 
@@ -197,8 +202,10 @@ so "Quill is the child of Sandra" is one more click.
 **A person's page** reads top to bottom. First comes **who they are**: their picture (tap it
 to change it), name and description, and a few facts — birthday and age, every other date
 (*Hochzeitstag · 13 June 2009 · 17 years*), where they live, their job, when you were last in
-touch (once there has been a contact), the circles they are in. **Tap a fact to change it,
-right where it is**: any date opens all their dates — remove one, or *Add a date*, then
+touch (once there has been a contact), the circles they are in. On a phone a long description
+wraps onto a second line instead of being cut off. **Tap a fact to change it, right where it
+is** — everything you can change this way ends in a faint pencil, always visible on a phone or
+tablet and appearing when you point at it with a mouse: any date opens all their dates — remove one, or *Add a date*, then
 *Done*; the address opens its label and text to *Save*, *Remove address* or *Add another
 address*; the **+** after the circles lists their circles to change a role or *Leave*, and
 joins another. Under the facts are only the things that have no fact — phone and email, tags,
@@ -229,10 +236,10 @@ related**, with a dashed ring and quieter text. The card's header holds **Edit**
 
 After People come **Photos**, **Activity** and the **Notes** side by side (one under the other
 on a phone), and **Mentioned in** last. Nothing is behind a tab, so nothing has to be found
-before it can be read; each card says how many things are in it. Under the top card runs a
-**jump bar** — *People · Photos · Activity · Notes*, with their counts — which stays at the top
-of the screen as you scroll, marks the card you are reading, and takes you to any of them with
-one tap.
+before it can be read; each card says how many things are in it. Once you scroll past the top
+card a **jump bar** fades in at the top of the screen — *People · Photos · Activity · Notes*,
+with their counts — which marks the card you are reading and takes you to any of them with one
+tap. Scroll back to the top and it steps away again.
 
 Every card, and every row on the top card, holds one **+ Add** button, and the form opens right under
 the heading you pressed it from. Nothing is an open form until you ask for it, so the page reads

@@ -1,5 +1,7 @@
 <script lang="ts">
 	import Icon from '$lib/components/Icon.svelte';
+	import StreamWhen from '$lib/components/StreamWhen.svelte';
+	import type { StreamTime } from '$lib/stream/days';
 	import { useTranslate } from '$lib/i18n/context.svelte';
 	import { thumbnailUrl } from '$lib/media/urls';
 	import type { PageData } from '../../routes/(app)/$types';
@@ -15,13 +17,13 @@
 	let {
 		item,
 		who,
-		ago
+		time
 	}: {
 		item: CirclePhotoItem;
 		/** The actor's name, or *You*. */
 		who: string;
 		/** When it happened, as the stream says it. */
-		ago: string;
+		time: StreamTime;
 	} = $props();
 
 	const t = useTranslate();
@@ -52,7 +54,7 @@
 				title={t('common.onlyYouSee')}
 				><Icon name="private" size={11} />{t('common.privateInline')}</span
 			>{/if}
-		<span class="ml-auto text-xs whitespace-nowrap text-fg-subtle">{ago}</span>
+		<StreamWhen {time} />
 	</div>
 	{#if item.role}<p class="mt-0.5 text-xs text-fg-subtle">{item.role}</p>{/if}
 	<div class="mt-2 flex gap-1.5">

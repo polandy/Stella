@@ -108,11 +108,6 @@ export const home = {
 	'home.filter.done': 'Done',
 	'home.today': 'Today',
 	'home.yesterday': 'Yesterday',
-	'home.justNow': 'just now',
-	'home.minutesAgo': (p: { minutes: number }) => `${p.minutes}m ago`,
-	'home.hoursAgo': (p: { hours: number }) => `${p.hours}h ago`,
-	'home.daysAgo': (p: { days: number }) => `${p.days}d ago`,
-	'home.weeksAgo': (p: { weeks: number }) => `${p.weeks}w ago`,
 
 	'composer.saveForLater': 'Save for later',
 	'composer.couldNotKeep': 'This device could not keep the moment. The text is still here.',
@@ -130,9 +125,7 @@ export const home = {
 	'composer.createAnother': (p: { name: string }) => `Create another “${p.name}”`,
 	'composer.addPerson': 'Add to the moment',
 	'composer.newPerson': 'new person',
-	'composer.photo': 'Photo',
-	'composer.photoCount': (p: { count: number }) =>
-		p.count === 1 ? '1 photo' : `${p.count} photos`,
+	'composer.addPhotos': 'Add photos',
 	'composer.dayToday': 'Today',
 	'composer.dayYesterday': 'Yesterday',
 	'composer.dayOther': 'Another day…',

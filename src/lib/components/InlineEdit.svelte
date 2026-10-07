@@ -36,10 +36,16 @@
 		/** Shown in place of an empty value, e.g. "Add a description"; defaults to *Add*. */
 		empty?: string;
 		/**
-		 * Show a pencil beside the value. For a value that does not look editable on its own — a
-		 * small heading — and on touch, where the tooltip that otherwise says so never appears.
+		 * Show the pencil beside the value at full strength, always. For a value that does not
+		 * look editable on its own — a small heading. Without it the pencil is the faint one every
+		 * in-place value carries (docs/05 §5.7): always on touch, on hover or focus elsewhere.
 		 */
 		pencil?: boolean;
+		/**
+		 * Let the value wrap to two lines on a phone and show in full from `md`, instead of
+		 * cutting it off at one line — for a value worth reading whole, like a description.
+		 */
+		clamp?: boolean;
 		/** Classes for the value as read, when it is styled unlike the field it opens into. */
 		valueClass?: string;
 	}
@@ -54,6 +60,7 @@
 		heading = false,
 		empty,
 		pencil = false,
+		clamp = false,
 		valueClass = ''
 	}: Props = $props();
 
@@ -162,11 +169,17 @@
 	>
 		<!-- The pencil follows the value with no whitespace, which would join a heading's text. -->
 		{#if value}
-			<span class="truncate {valueClass}" class:text-2xl={heading} class:font-semibold={heading}
-				>{value}</span
+			<span
+				class="{clamp ? 'line-clamp-2 md:line-clamp-none' : 'truncate'} {valueClass}"
+				class:text-2xl={heading}
+				class:font-semibold={heading}>{value}</span
 			>
 		{:else}
 			<span class="text-fg-subtle">{emptyLabel}</span>
-		{/if}{#if pencil}<Icon name="rename" size={14} class="text-fg-subtle" />{/if}
+		{/if}{#if pencil}<Icon name="rename" size={14} class="text-fg-subtle" />{:else}<Icon
+				name="rename"
+				size={14}
+				class="edit-pencil"
+			/>{/if}
 	</button>
 {/if}

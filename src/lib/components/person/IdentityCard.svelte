@@ -273,14 +273,16 @@
 		</dt>
 		<dd class="min-w-0 text-sm [overflow-wrap:anywhere] text-fg">
 			{#if edit}
+				<!-- The pencil says where to edit, on touch too (docs/05 §5.7). -->
 				<button
 					type="button"
-					class="text-left after:absolute after:inset-0 after:rounded-control"
+					class="flex max-w-full items-start gap-1 text-left after:absolute after:inset-0 after:rounded-control"
 					title={edit.what}
 					data-edit={edit.key}
 					onclick={edit.open}
 				>
-					<span class="sr-only">{edit.what}: </span>{@render value()}
+					<span class="min-w-0"><span class="sr-only">{edit.what}: </span>{@render value()}</span
+					><Icon name="rename" size={12} class="edit-pencil mt-1" />
 				</button>
 			{:else}
 				{@render value()}
@@ -355,6 +357,7 @@
 				label={t('contact.editDescription')}
 				placeholder={t('contact.descriptionPlaceholder')}
 				empty={t('contact.addDescription')}
+				clamp
 			/>
 		</p>
 		{#if isSelf || c.visibility === 'private' || archived}
@@ -577,7 +580,7 @@
 								error={jobErrorFor(entry.slot ? 'profile' : 'header', form)}
 								formClass="mt-1 rounded-control border border-primary bg-card p-3"
 								triggerTitle={t('contact.job.edit')}
-								triggerClass="max-w-full text-left after:absolute after:inset-0 after:rounded-control"
+								triggerClass="flex max-w-full items-start gap-1 text-left after:absolute after:inset-0 after:rounded-control"
 							>
 								{#if entry.slot}
 									<span class="sr-only"
@@ -589,9 +592,9 @@
 									>
 								{:else}
 									<span class="sr-only">{t('contact.job.edit')}: </span><span
-										class="[overflow-wrap:anywhere]"
+										class="min-w-0 [overflow-wrap:anywhere]"
 										data-testid="person-job">{jobLine}</span
-									>
+									><Icon name="rename" size={12} class="edit-pencil mt-1" />
 								{/if}
 							</JobEdit>
 						</dd>

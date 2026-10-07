@@ -1,5 +1,7 @@
 <script lang="ts">
 	import Icon from '$lib/components/Icon.svelte';
+	import StreamWhen from '$lib/components/StreamWhen.svelte';
+	import type { StreamTime } from '$lib/stream/days';
 	import { useTranslate } from '$lib/i18n/context.svelte';
 	import type { NoticeContent } from '$lib/stream/notices';
 
@@ -11,12 +13,13 @@
 	let {
 		content,
 		who,
-		ago,
+		time,
 		canOpen
 	}: {
 		content: NoticeContent;
 		who: string;
-		ago: string;
+		/** When it happened, as the stream says it. */
+		time: StreamTime;
 		/** Whether the reader may open this person — someone they can see. */
 		canOpen: (contactId: string) => boolean;
 	} = $props();
@@ -63,6 +66,6 @@
 			{/if}
 			{#if t('home.stream.renamedAfter')}<span>{t('home.stream.renamedAfter')}</span>{/if}
 		{/if}
-		<span class="ml-auto text-xs whitespace-nowrap text-fg-subtle">{ago}</span>
+		<StreamWhen {time} />
 	</div>
 </div>

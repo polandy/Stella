@@ -104,7 +104,7 @@
 		{tracePath}
 	/>
 
-	<!-- Sticks under the top bar once the identity card has gone by (docs/05 §5.5). -->
+	<!-- Shows, sticking under the top bar, only once the identity card has gone by (docs/05 §5.5). -->
 	<JumpBar {data} />
 
 	<RelationshipsSection {data} {form} {otherContacts} {showTogether} bind:tracingPath />
