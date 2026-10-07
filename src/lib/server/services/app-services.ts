@@ -1,4 +1,5 @@
 import { createAuthServices, type AuthServices, type AuthWiring } from './auth';
+import { createCircleServices, type CircleServices, type CircleWiring } from './circles';
 import { createPeopleServices, type PeopleServices, type PeopleWiring } from './people';
 import {
 	createRelationshipServices,
@@ -19,17 +20,19 @@ export interface AppServices {
 	auth: AuthServices;
 	people: PeopleServices;
 	relationships: RelationshipServices;
+	circles: CircleServices;
 }
 
 /**
  * What the graph is built from; each context's wiring joins this as it moves in. A context
  * that reads another grouped context's repository gets it from here, not from the wiring
- * (`people` reads `auth`'s accounts and the relationships context's repository), so each
- * repository exists once.
+ * (`people` reads `auth`'s accounts and the relationships context's repository, `circles`
+ * reads `people`'s contacts), so each repository exists once.
  */
 export type ServicesWiring = AuthWiring &
 	RelationshipWiring &
-	Omit<PeopleWiring, 'accounts' | 'relationships'>;
+	Omit<PeopleWiring, 'accounts' | 'relationships'> &
+	Omit<CircleWiring, 'contacts'>;
 
 /** Wires every grouped context. Pure assembly: no I/O beyond what the adapters do when used. */
 export function createServices(wiring: ServicesWiring): AppServices {
@@ -40,5 +43,6 @@ export function createServices(wiring: ServicesWiring): AppServices {
 		accounts: auth.accounts,
 		relationships: relationships.relationships
 	});
-	return { auth, people, relationships };
+	const circles = createCircleServices({ ...wiring, contacts: people.contacts });
+	return { auth, people, relationships, circles };
 }

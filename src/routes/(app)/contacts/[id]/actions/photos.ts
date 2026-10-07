@@ -20,7 +20,7 @@ import { cutProfilePicture } from '$lib/server/domain/media/cuts';
 import { frameAsAvatar } from '$lib/server/domain/media/framing';
 import { readCutForm } from '$lib/server/http/cut-form';
 import { contactSectionPath } from '$lib/contacts/sections';
-import { getCommandDeps, getCutDeps, getFramingDeps, getGalleryDeps } from '$lib/server/services';
+import { getCommandDeps, getFramingDeps, getGalleryDeps } from '$lib/server/services';
 import { say, translator } from '$lib/server/i18n/say';
 import type { Actions } from '../$types';
 
@@ -203,7 +203,7 @@ export const photoActions = {
 		const input = await readCutForm(form);
 		if (!input) return fail(400, { photoError: say(locals, 'errors.photo.unreadable') });
 		try {
-			if (!(await cutProfilePicture(getCutDeps(), viewer, input))) {
+			if (!(await cutProfilePicture(locals.services.circles.cutDeps, viewer, input))) {
 				return fail(404, { photoError: say(locals, 'errors.photo.notFound') });
 			}
 		} catch (err) {

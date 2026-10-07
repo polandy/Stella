@@ -14,7 +14,6 @@ import { InvalidAvatarError } from '$lib/server/domain/media/avatars';
 import { cutProfilePicture } from '$lib/server/domain/media/cuts';
 import { CaptionTooLongError } from '$lib/server/domain/media/gallery';
 import { say, translator } from '$lib/server/i18n/say';
-import { getCircleDeps, getCirclePhotoDeps, getCutDeps } from '$lib/server/services';
 import { readCutForm } from '$lib/server/http/cut-form';
 import type { Actions } from '../$types';
 
@@ -33,7 +32,7 @@ async function circleOf({
 	params
 }: Pick<RequestEvent, 'locals'> & { params: { id: string } }) {
 	const viewer = requireViewer(locals);
-	if (!(await getCircle(getCircleDeps(), viewer, params.id))) {
+	if (!(await getCircle(locals.services.circles.circleDeps, viewer, params.id))) {
 		throw error(404, say(locals, 'errors.circle.notFound'));
 	}
 	return { viewer, circleId: params.id };
@@ -53,7 +52,10 @@ export const photoActions = {
 			return fail(400, { photoError: say(event.locals, 'errors.caption.unreadable') });
 		try {
 			if (
-				!(await captionCirclePhoto(getCirclePhotoDeps(), viewer, { circleId, ...parsed.output }))
+				!(await captionCirclePhoto(event.locals.services.circles.circlePhotoDeps, viewer, {
+					circleId,
+					...parsed.output
+				}))
 			) {
 				return fail(404, { photoError: say(event.locals, 'errors.photo.notFound') });
 			}
@@ -76,7 +78,10 @@ export const photoActions = {
 			return fail(400, { photoError: say(event.locals, 'errors.photo.unreadable') });
 		try {
 			if (
-				!(await setCirclePhotoRole(getCirclePhotoDeps(), viewer, { circleId, ...parsed.output }))
+				!(await setCirclePhotoRole(event.locals.services.circles.circlePhotoDeps, viewer, {
+					circleId,
+					...parsed.output
+				}))
 			) {
 				return fail(404, { photoError: say(event.locals, 'errors.photo.notFound') });
 			}
@@ -105,7 +110,7 @@ export const photoActions = {
 			photoId: parsed.output.photoId,
 			pinned: parsed.output.pinned === 'true'
 		};
-		if (!(await pinCirclePhoto(getCirclePhotoDeps(), viewer, input))) {
+		if (!(await pinCirclePhoto(event.locals.services.circles.circlePhotoDeps, viewer, input))) {
 			return fail(404, { photoError: say(event.locals, 'errors.photo.notFound') });
 		}
 		return saved;
@@ -124,7 +129,7 @@ export const photoActions = {
 		if (!parsed.success)
 			return fail(400, { photoError: say(event.locals, 'errors.photo.unreadable') });
 		if (
-			!(await setCirclePhotoVisibility(getCirclePhotoDeps(), viewer, {
+			!(await setCirclePhotoVisibility(event.locals.services.circles.circlePhotoDeps, viewer, {
 				circleId,
 				...parsed.output
 			}))
@@ -143,7 +148,7 @@ export const photoActions = {
 		const input = await readCutForm(await event.request.formData());
 		if (!input) return fail(400, { photoError: say(event.locals, 'errors.photo.unreadable') });
 		try {
-			if (!(await cutProfilePicture(getCutDeps(), viewer, input))) {
+			if (!(await cutProfilePicture(event.locals.services.circles.cutDeps, viewer, input))) {
 				return fail(404, { photoError: say(event.locals, 'errors.photo.notFound') });
 			}
 		} catch (err) {
@@ -161,7 +166,12 @@ export const photoActions = {
 		if (typeof photoId !== 'string' || photoId === '') {
 			return fail(400, { photoError: say(event.locals, 'errors.photo.unreadable') });
 		}
-		if (!(await removeCirclePhoto(getCirclePhotoDeps(), viewer, { circleId, photoId }))) {
+		if (
+			!(await removeCirclePhoto(event.locals.services.circles.circlePhotoDeps, viewer, {
+				circleId,
+				photoId
+			}))
+		) {
 			return fail(403, { photoError: say(event.locals, 'errors.photo.onlyOwnerRemove') });
 		}
 		return saved;

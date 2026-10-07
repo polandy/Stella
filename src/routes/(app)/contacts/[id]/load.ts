@@ -32,11 +32,9 @@ import { readImmichLink, readLinkedPerson } from '$lib/server/domain/immich/link
 import { togetherCandidates } from '$lib/immich/together';
 import {
 	getContactFieldDeps,
-	getCircleDeps,
 	getImportantDateDeps,
 	getInteractionDeps,
 	getNoteDeps,
-	getCutDeps,
 	getGalleryDeps,
 	getPhotos,
 	getStoryDeps,
@@ -222,7 +220,7 @@ export const load = (async ({ locals, params, url }) => {
  * through a use-case scoped to the viewer; nothing here decides what anyone may see.
  */
 function readPersonPage(
-	{ people, relationships }: Pick<AppServices, 'people' | 'relationships'>,
+	{ people, relationships, circles }: Pick<AppServices, 'people' | 'relationships' | 'circles'>,
 	viewer: Viewer,
 	contactId: string,
 	request: { reviewOpen: boolean; proposeFor: { a: string; b: string }[] }
@@ -232,14 +230,14 @@ function readPersonPage(
 		dates: listImportantDates(getImportantDateDeps(), viewer, contactId),
 		fields: listContactFields(getContactFieldDeps(), viewer, contactId),
 		tags: listTagsForContact(getTagDeps(), viewer, contactId),
-		contactCircles: listCirclesForContact(getCircleDeps(), viewer, contactId),
+		contactCircles: listCirclesForContact(circles.circleDeps, viewer, contactId),
 		storyPage: listStoryPage(getStoryDeps(), viewer, contactId, { limit: STORY_PAGE_SIZE }),
 		lastContactedAt: lastContactedOn(getInteractionDeps(), viewer, contactId),
 		notes: listNotesForContact(getNoteDeps(), viewer, contactId),
 		mentionedIn: listMentionedIn(getMentionedInDeps(), viewer, contactId),
 		gallery: listGallery(getGalleryDeps(), viewer, contactId),
-		groupPhotos: listGroupPhotosOf(getCutDeps(), viewer, contactId),
-		groupPhotosToCut: listGroupPhotosToCut(getCutDeps(), viewer, contactId),
+		groupPhotos: listGroupPhotosOf(circles.cutDeps, viewer, contactId),
+		groupPhotosToCut: listGroupPhotosToCut(circles.cutDeps, viewer, contactId),
 
 		/*
 		 * Their place in the family: their links, derived kin, proposals, the review, what the
@@ -254,7 +252,7 @@ function readPersonPage(
 		// What the forms offer, and who wrote what.
 		nameOfAuthor: authorNames(getMemberDeps(), viewer.householdId),
 		relationshipTypes: relationships.relationshipTypes.listTypes(viewer),
-		circleRolesByName: listRoleSuggestionsByCircleName(getCircleDeps(), viewer)
+		circleRolesByName: listRoleSuggestionsByCircleName(circles.circleDeps, viewer)
 	});
 }
 

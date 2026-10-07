@@ -9,7 +9,7 @@ import { requireViewer } from '$lib/server/auth/guards';
 import * as v from 'valibot';
 import { getContact } from '$lib/server/domain/contacts/contacts';
 import { removeMember, setMembersRole } from '$lib/server/domain/circles/circles';
-import { getCircleDeps, getCommandDeps } from '$lib/server/services';
+import { getCommandDeps } from '$lib/server/services';
 import { say, translator } from '$lib/server/i18n/say';
 import type { Actions } from '../$types';
 
@@ -65,7 +65,7 @@ export const circleActions = {
 
 		// Only a member the viewer can see in that circle is re-roled; anyone else is left out.
 		await setMembersRole(
-			getCircleDeps(),
+			locals.services.circles.circleDeps,
 			viewer,
 			parsed.output.circleId,
 			[params.id],
@@ -84,7 +84,7 @@ export const circleActions = {
 		const circleId = form.get('circleId');
 		if (typeof circleId !== 'string') return fail(400, {});
 
-		await removeMember(getCircleDeps(), circleId, params.id);
+		await removeMember(locals.services.circles.circleDeps, circleId, params.id);
 		throw redirect(303, `/contacts/${params.id}`);
 	}
 } satisfies Actions;

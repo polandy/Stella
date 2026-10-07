@@ -1,7 +1,6 @@
 import { json } from '@sveltejs/kit';
 import { unauthorized } from '$lib/server/api/responses';
 import { findCircles } from '$lib/server/domain/import/api/lookup';
-import { getCircleDeps } from '$lib/server/services';
 import type { RequestHandler } from './$types';
 
 /*
@@ -13,6 +12,10 @@ export const GET: RequestHandler = async ({ locals, url }) => {
 	if (!user) return unauthorized();
 	const viewer = { id: user.id, householdId: user.householdId };
 	return json({
-		circles: await findCircles(getCircleDeps(), viewer, url.searchParams.get('q') ?? '')
+		circles: await findCircles(
+			locals.services.circles.circleDeps,
+			viewer,
+			url.searchParams.get('q') ?? ''
+		)
 	});
 };
