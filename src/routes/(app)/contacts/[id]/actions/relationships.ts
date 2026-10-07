@@ -1,5 +1,7 @@
 import { dispatchCommand } from '$lib/server/domain/commands/dispatch';
-import { parseCommand } from '$lib/server/commands/parse';
+import { readCommand } from '$lib/server/commands/parse';
+import { fromFormData } from '$lib/commands/form-data';
+import { RelationshipAddManySchema, RelationshipAddSchema } from '$lib/commands/payloads';
 import { ulidGenerator } from '$lib/server/id';
 import { systemClock } from '$lib/server/clock';
 import { fail, redirect } from '@sveltejs/kit';
@@ -35,13 +37,6 @@ const RelationshipDetailsSchema = {
 	status: v.optional(v.pipe(v.string(), v.trim()))
 };
 
-const AddRelationshipSchema = v.object({
-	targetId: v.pipe(v.string(), v.minLength(1)),
-	/** Type *and* direction, as `relationshipTypeOptions` encodes them. */
-	typeChoice: v.pipe(v.string(), v.minLength(1)),
-	...RelationshipDetailsSchema
-});
-
 const EditRelationshipSchema = v.object({
 	relationshipId: v.pipe(v.string(), v.minLength(1)),
 	/** Type *and* direction, as `relationshipTypeOptions` encodes them; absent leaves the type. */
@@ -54,29 +49,19 @@ export const relationshipActions = {
 	addRelationship: async ({ request, params, locals }) => {
 		const viewer = requireViewer(locals);
 
-		const form = await request.formData();
-		const parsed = v.safeParse(AddRelationshipSchema, {
-			targetId: form.get('targetId'),
-			typeChoice: form.get('typeChoice'),
-			description: form.get('description') || undefined,
-			sinceDate: form.get('sinceDate') || undefined,
-			status: form.get('status') || undefined
-		});
-		if (!parsed.success) {
-			return fail(400, { error: say(locals, 'errors.relationship.needPersonAndType') });
-		}
-
 		// A command (docs/04 §4.11.2), named by the form so one kept on the phone is recognised;
 		// `addRelationshipChecked` holds every check the page used to make here.
-		const command = parseCommand({
+		const form = await request.formData();
+		const reading = readCommand({
 			id: form.get('commandId') || ulidGenerator.next(),
 			type: 'relationship.add',
-			payload: { contactId: params.id, ...parsed.output },
+			payload: { ...fromFormData(RelationshipAddSchema, form), contactId: params.id },
 			issuedAt: systemClock.now()
 		});
-		if (command?.type !== 'relationship.add') {
+		if (!reading.ok) {
 			return fail(400, { error: say(locals, 'errors.relationship.needPersonAndType') });
 		}
+		const { command } = reading;
 		const author = {
 			userId: viewer.id,
 			householdId: viewer.householdId,
@@ -93,7 +78,7 @@ export const relationshipActions = {
 		}
 
 		// Come back with the new pair named, so its implied links can be offered.
-		throw redirect(303, proposeHref(params.id, [parsed.output.targetId]));
+		throw redirect(303, proposeHref(params.id, [command.payload.targetId]));
 	},
 
 	/**
@@ -113,21 +98,20 @@ export const relationshipActions = {
 		if (sinceDates.length !== targetIds.length) {
 			return fail(400, { error: say(locals, 'errors.relationship.needPersonAndType') });
 		}
-		const command = parseCommand({
+		const reading = readCommand({
 			id: form.get('commandId') || ulidGenerator.next(),
 			type: 'relationship.addMany',
 			payload: {
-				contactId: params.id,
-				typeChoice: form.get('typeChoice'),
-				status: form.get('status') || null,
-				description: form.get('description'),
-				links: targetIds.map((targetId, index) => ({ targetId, sinceDate: sinceDates[index] }))
+				...fromFormData(RelationshipAddManySchema, form),
+				links: targetIds.map((targetId, index) => ({ targetId, sinceDate: sinceDates[index] })),
+				contactId: params.id
 			},
 			issuedAt: systemClock.now()
 		});
-		if (command?.type !== 'relationship.addMany') {
+		if (!reading.ok) {
 			return fail(400, { error: say(locals, 'errors.relationship.needPersonAndType') });
 		}
+		const { command } = reading;
 
 		const author = {
 			userId: viewer.id,

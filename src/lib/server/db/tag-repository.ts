@@ -2,7 +2,8 @@ import { and, eq, notInArray, sql } from 'drizzle-orm';
 import type { BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
 import { contactVisibleTo } from '../access/query-scoping';
 import type { Viewer } from '../access/visibility';
-import type { NewTag, Tag, TagColor, TagRepository } from '../domain/tags/tags';
+import type { NewTag, Tag, TagRepository } from '../domain/tags/tags';
+import type { TagColor } from '../../tags/colors';
 import { contact, contactTag, tag } from './schema';
 import type * as schema from './schema';
 

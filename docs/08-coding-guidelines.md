@@ -41,7 +41,9 @@ rule and pragmatism genuinely conflict, favor readability and testability.
     canvas carries `data-layout="settled"` once its layout has stopped moving the nodes, so
     a click can be aimed rather than retried.
 11. **Fail loud.** Validate at boundaries (Valibot) and throw on misconfiguration/invalid
-    state rather than limping on with bad data. No empty `catch {}` that swallows errors,
+    state rather than limping on with bad data. One shape, one schema: a form action that
+    builds a command reads it with that command's schema (`fromFormData`, docs/04 §4.11.2)
+    rather than declaring the fields again. No empty `catch {}` that swallows errors,
     and no `catch` that turns an unexpected error into a user message: only an expected,
     typed refusal (`TranslatableError`) is answered; everything else reaches `handleError`,
     which logs it with the request id (docs/04 §4.4).

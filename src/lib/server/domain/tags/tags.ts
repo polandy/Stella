@@ -2,30 +2,12 @@ import type { Viewer } from '../../access/visibility';
 import type { Clock } from '../../clock';
 import type { ContactSummary } from '../contacts/contacts';
 import type { IdGenerator } from '../../id';
+import { TAG_COLORS, type TagColor } from '../../../tags/colors';
 
 /*
  * Tag use-cases (docs/02 §2.8). Tags are household-global labels; assignments to contacts
  * are visibility-scoped in the adapter. Colour validation and orchestration are pure.
  */
-
-export const TAG_COLORS = [
-	'rosewater',
-	'flamingo',
-	'pink',
-	'mauve',
-	'red',
-	'maroon',
-	'peach',
-	'yellow',
-	'green',
-	'teal',
-	'sky',
-	'sapphire',
-	'blue',
-	'lavender'
-] as const;
-
-export type TagColor = (typeof TAG_COLORS)[number];
 
 const DEFAULT_COLOR: TagColor = 'blue';
 

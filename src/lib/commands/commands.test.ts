@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'bun:test';
 import { COMMAND_TYPES, isCommandType, isQueueable, kindOf, photoCommandFor } from './commands';
+import { COMMAND_PAYLOAD_SCHEMAS } from './payloads';
 
 /*
  * The command vocabulary (docs/04 §4.11.2): which changes exist and what
@@ -65,5 +66,12 @@ describe('photoCommandFor', () => {
 	it('names no photo command for what cannot carry photos', () => {
 		expect(photoCommandFor('note.add')).toBeNull();
 		expect(photoCommandFor('contact.add')).toBeNull();
+	});
+});
+
+describe('the payload schemas', () => {
+	// A command Stella names but cannot read, or reads but does not name, is a step forgotten.
+	it('read exactly the commands the vocabulary names', () => {
+		expect(Object.keys(COMMAND_PAYLOAD_SCHEMAS).toSorted()).toEqual(COMMAND_TYPES.toSorted());
 	});
 });

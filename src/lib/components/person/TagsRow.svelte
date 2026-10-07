@@ -12,6 +12,7 @@
 	import { useRemovals } from '$lib/undo/context.svelte';
 	import { removalKey, type RemovalKind } from '$lib/undo/keys';
 	import { savedEnhance } from '$lib/undo/saved';
+	import type { TagColor } from '$lib/tags/colors';
 	import { INPUT } from './inputs';
 	import type { PersonForm, PersonPageData } from './types';
 
@@ -67,7 +68,8 @@
 						payload: {
 							contactId: c.id,
 							name,
-							color: typeof color === 'string' && color ? color : null
+							// The picker offers only real colours; Stella's schema refuses any other.
+							color: typeof color === 'string' && color ? (color as TagColor) : null
 						},
 						issuedAt: Date.now()
 					};
