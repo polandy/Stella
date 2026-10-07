@@ -1,8 +1,8 @@
 # Concept — Welcome animation on start
 
-Status: **proposed, not built.** Asked for by the maintainer on 2026-10-08; the four choices in
+Status: **decided, not built.** Asked for by the maintainer on 2026-10-08; the five choices in
 §6 were made with them the same day. Mockup: `docs/concepts/welcome-animation.html` (Latte and
-Mocha, phone and desktop, slow motion, reduced motion, and both exits under §3.3).
+Mocha, phone and desktop, slow motion, reduced motion, both exits).
 Roadmap: docs/06 M3, *Welcome animation*.
 
 ---
@@ -31,7 +31,7 @@ when the app starts gives Stella a face without costing a second of anyone's tim
 
 ## 3. What it shows
 
-### 3.1 The sequence (≈ 1.2 s, then 200 ms out)
+### 3.1 The sequence (≈ 1.4 s in all)
 
 The mark is drawn at about 96 px (phone) or 112 px (desktop), centred on `--bg`, with the
 wordmark *Stella* under it. Nothing else is shown.
@@ -45,7 +45,7 @@ wordmark *Stella* under it. Nothing else is shown.
 | 680–940 | the **peach node** pops in, and the constellation is complete |
 | 700–1220 | a soft **halo** ripples once from the centre node and fades |
 | 620–940 | ***Stella*** fades in and rises 6 px, its letter spacing settling |
-| 1150–1350 | the whole overlay **fades out** (`--motion-fade`) and the app is there |
+| 1100–1420 | the mark **docks into the visible logo** while the backdrop fades (§3.3) |
 
 The threads use `--ease-standard`. The nodes use their own small overshoot curve: the pop is
 what makes a node read as a star lighting up rather than a dot appearing. This is the only
@@ -60,13 +60,19 @@ Latte or Mocha according to the stored theme, which `app.html` already applies b
 paint, so there is no flash. The PWA manifest's `background_color` is the same `--bg`, so the
 step from Android's own launch screen into the animation is seamless.
 
-### 3.3 The exit — **open, see the mockup**
+### 3.3 The exit — dock into the logo (decided, Q5)
 
-- **A — fade (recommended):** the overlay fades out in place, 200 ms. This is calm and works on
-  every page, including `/login`, which has no top bar.
-- **B — dock into the bar:** the mark shrinks and flies into the top bar's logo while the
-  backdrop fades out. It ties the welcome to the app, but it needs the bar logo's position
-  before the app has hydrated, and it has nowhere to fly on `/login`.
+From 1100 ms the mark **shrinks and flies into the visible Stella logo** (320 ms,
+`--ease-standard`): that logo is hidden until the mark lands on it, then shows again in the
+same frame. Meanwhile the wordmark under the mark fades out (140 ms) and the backdrop fades out
+(260 ms). The page appears around a mark that becomes its own logo.
+
+- **The target** is the first *visible* logo marked as one (`data-welcome-target` on the
+  `Logo` mark): the desktop sidebar's, the phone top bar's on Home, or the sign-in layout's.
+  It is measured at the moment the dock starts, not before, so the page's CSS has loaded by then.
+- **No visible logo** (a phone that starts on a deeper page, where the top bar shows the way
+  back instead) or one that cannot be measured: the overlay **fades out in place** (200 ms).
+- Under reduced motion there is no dock (§4).
 
 ---
 
@@ -116,4 +122,4 @@ step from Android's own launch screen into the animation is seamless.
 | Q2 | style | the constellation comes together: centre node, threads, nodes, wordmark |
 | Q3 | length | short, about 1.2 s, skippable; reduced motion shows the still mark |
 | Q4 | text | only *Stella*, no personal greeting |
-| Q5 | exit | **open**: A fade (recommended) or B dock into the bar (§3.3) |
+| Q5 | exit | dock into the visible logo; fade in place where none is visible (§3.3) |
