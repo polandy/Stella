@@ -7,7 +7,7 @@ import * as schema from './schema';
 import { createDrizzleSurnameFacts } from './surname-facts';
 
 /*
- * Integration spec for what the last-name rules read (docs/concepts/surnames.md §4): only what
+ * Integration spec for what the last-name rules read (docs/02 §2.2.4.1): only what
  * the viewer may see, archived people included, and only circles of the family kind.
  */
 

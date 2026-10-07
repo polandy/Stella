@@ -15,7 +15,7 @@
 	import { savedEnhance } from '$lib/undo/saved';
 
 	/*
-	 * The person's name, edited where it is read (docs/02 §2.2, docs/concepts/surnames.md §3.4).
+	 * The person's name, edited where it is read (docs/02 §2.2).
 	 * A tap on the name opens one editor for all of it: first name, last name, nickname and,
 	 * below them, *Shown as* — and the gender, which is rarely looked up and exists so kinship
 	 * terms can say *aunt* or *son*, so it has no row of its own on the card. While the shown name follows the parts it changes as they are

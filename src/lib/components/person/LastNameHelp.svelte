@@ -8,7 +8,7 @@
 	import type { PersonPageData } from './types';
 
 	/*
-	 * Under the shown name (docs/02 §2.2, docs/concepts/surnames.md §3.3, §3.4): Stella's
+	 * Under the shown name (docs/02 §2.2, §2.2.4.5, §2.2.4.6): Stella's
 	 * proposal for a missing last name as a chip (*Brunner?*), which a tap gives with the usual
 	 * undo. When the name editor gives someone their first last name, their children and siblings
 	 * who still have none are offered it right here; a chip's own toast offers it instead. Sized

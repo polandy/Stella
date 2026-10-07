@@ -2,7 +2,7 @@ import { describe, expect, it } from 'bun:test';
 import { passOnOffer, type PassOnMap } from './pass-on';
 
 /*
- * Passing a last name on (docs/concepts/surnames.md §3.3): after someone is given a name, their
+ * Passing a last name on (docs/02 §2.2.4.5): after someone is given a name, their
  * children and siblings who have none are offered it — one generation at a time, only ever
  * filling a blank, and never a name the household declined for them.
  */

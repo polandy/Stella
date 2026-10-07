@@ -1,5 +1,5 @@
 /*
- * What *Set last name* will do for the people chosen (docs/concepts/surnames.md §3.2), worked
+ * What *Set last name* will do for the people chosen (docs/02 §2.2.4.3), worked
  * out before anything is sent: the blanks are named, a different last name is replaced only
  * when ticked by hand, and the same name — folded, so *Brünner* is *Brunner* — is left alone.
  */

@@ -18,7 +18,7 @@ import type { NameWrite } from './name-parts';
 import { lastNamesFacts } from '../../../stream/notices';
 
 /*
- * Last names for several people at once (docs/concepts/surnames.md §3, §5, §7): the reviewed
+ * Last names for several people at once (docs/02 §2.2.4.4): the reviewed
  * list, the one batch write behind every bulk path, and the household's *not this name*.
  */
 

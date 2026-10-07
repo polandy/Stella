@@ -32,6 +32,6 @@ export const actions = {
 	...circleActions,
 	// Which Immich person they are (docs/02 §2.24.2).
 	...immichActions,
-	// The chip under the name and passing a name on (docs/concepts/surnames.md §3.3, §3.4).
+	// The chip under the name and passing a name on (docs/02 §2.2.4.5, §2.2.4.6).
 	...lastNameActions
 } satisfies Actions;

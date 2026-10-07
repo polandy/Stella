@@ -2,7 +2,7 @@ import { describe, expect, it } from 'bun:test';
 import { namesakesAfterNaming } from './namesakes';
 
 /*
- * *The household might already have them* (docs/concepts/surnames.md §5): after a last name is
+ * *The household might already have them* (docs/02 §2.2.4.4): after a last name is
  * given, someone who now shares first and last name with another person the viewer can see is
  * pointed at the merge. Nothing merges on its own.
  */

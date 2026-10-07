@@ -23,7 +23,7 @@ const EditProfileSchema = v.object({
 });
 
 /**
- * The three name parts and *Shown as*; each may be emptied (docs/concepts/surnames.md §3.4) —
+ * The three name parts and *Shown as*; each may be emptied (docs/02 §2.2) —
  * the use-case refuses only a name with nothing left in it. The gender rides along: it is
  * edited with the name (docs/02 §2.2), one of the three or empty for none on record.
  */

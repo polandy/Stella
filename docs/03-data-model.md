@@ -576,7 +576,7 @@ from the tables it happened to. `summary` is precomputed and `visibility` copied
 deleted record, since neither can be recovered afterwards; `entity_id` names a row that no
 longer exists, which is why it carries no foreign key.
 
-**And for last names given to several people at once** (`docs/concepts/surnames.md` §7): one
+**And for last names given to several people at once** (docs/02 §2.2.4.4): one
 row per batch, `action = 'update'`, `entity_type = 'last_name'`, `entity_id` the first person
 named, `contact_id` null, `visibility` private when any of them is. Its `summary` holds the
 **facts** as JSON (`{"lastName":"Brunner","count":4}`) rather than a sentence: the people are
@@ -674,7 +674,7 @@ before a row is ever written, and a deleted contact leaves a row that matches no
 A row constrains only what Stella **offers**. It never touches what the kinship engine derives
 or what a profile displays, and deleting it (*Ask again*) puts the suggestion back.
 
-**A declined last name** (*Not Brunner*, `docs/concepts/surnames.md` §5) shares the table
+**A declined last name** (*Not Brunner*, docs/02 §2.2.4.2) shares the table
 rather than adding one: `relation = 'last_name'`, keyed by the person and the surname folded
 the §2.2.1 way, so *Brünner* and *brunner* are one answer and a different name can still be
 proposed. The column is text, so this needed no migration; the relationship log reads only

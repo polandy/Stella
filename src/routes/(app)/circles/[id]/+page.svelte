@@ -108,7 +108,7 @@
 		bulkRole = '';
 	});
 	/*
-	 * *Set last name* for the chosen members (docs/concepts/surnames.md §3.2): *Family Brunner*
+	 * *Set last name* for the chosen members (docs/02 §2.2.4.3): *Family Brunner*
 	 * is the natural place to give the family its name. The last names come from the shell's
 	 * people, which carry them for every picker already.
 	 */

@@ -3,7 +3,7 @@ import type { SurnameProposal } from './rules/surnames';
 import { groupBySurname, householdSpellings } from './surname-groups';
 
 /*
- * The *Last names* list (docs/concepts/surnames.md §3.1): everyone without one, grouped by the
+ * The *Last names* list (docs/02 §2.2.4.2): everyone without one, grouped by the
  * name proposed — the largest group first — then those who must choose, then the rest.
  */
 

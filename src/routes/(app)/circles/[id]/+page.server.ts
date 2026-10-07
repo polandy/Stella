@@ -65,7 +65,7 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 		viewerId: viewer.id,
 		// Who is in already, so the picker offers the rest of the shell's people.
 		memberIds: members.map((m) => m.contactId),
-		// Whom a last name set here is offered on to (docs/concepts/surnames.md §3.3).
+		// Whom a last name set here is offered on to (docs/02 §2.2.4.5).
 		passOn: surnameHelp.passOn
 	};
 };

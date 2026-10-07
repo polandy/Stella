@@ -14,7 +14,7 @@
 	import type { PageData } from './$types';
 
 	/*
-	 * *Settings → Data quality → Last names* (docs/02 §2.2.4, docs/concepts/surnames.md §3.1).
+	 * *Settings → Data quality → Last names* (docs/02 §2.2.4.2).
 	 * Groups by proposed name first, then *Choose one*, then a field for everyone else. Every
 	 * save is held for the undo window; nothing is written without a tap.
 	 */

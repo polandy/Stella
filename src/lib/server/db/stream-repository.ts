@@ -162,7 +162,7 @@ export function createDrizzleStreamRepository(
 						or(
 							inArray(activityLog.action, ['delete', 'merge', 'export', 'import']),
 							// The one update the household is told about: a batch of last names
-							// changes how several people read at once (docs/concepts/surnames.md §7).
+							// changes how several people read at once (docs/02 §2.2.4.4).
 							and(
 								eq(activityLog.action, 'update'),
 								inArray(activityLog.entityType, [LAST_NAMES_ENTITY, RENAME_ENTITY])

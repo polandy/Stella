@@ -351,7 +351,7 @@ async function settled() {
 }
 
 /*
- * An offer beside Undo (docs/concepts/surnames.md §3.3): *Lea and Max have none yet — Brunner
+ * An offer beside Undo (docs/02 §2.2.4.5): *Lea and Max have none yet — Brunner
  * too? [Yes]*. Taking it runs once and leaves the toast with Undo alone; the window itself is
  * untouched, so the save it belongs to is still sent when it closes.
  */

@@ -19,7 +19,7 @@ export interface Scheduler {
 
 /**
  * Something the toast offers beside Undo — *Brunner too? [Yes]* after a last name was saved
- * (docs/concepts/surnames.md §3.3). Taken at most once.
+ * (docs/02 §2.2.4.5). Taken at most once.
  */
 export interface Offer {
 	label: string;

@@ -343,7 +343,7 @@ describe('recentNotices', () => {
 		expect((await repo.recentNotices(asU2, EVERYONE)).map((r) => r.id)).toEqual(['gone']);
 	});
 
-	it('reports last names set for several people at once (docs/concepts/surnames.md §7)', async () => {
+	it('reports last names set for several people at once (docs/02 §2.2.4.4)', async () => {
 		// An update, but the one the household is told about: a batch changes how people read.
 		db.insert(schema.activityLog)
 			.values({
