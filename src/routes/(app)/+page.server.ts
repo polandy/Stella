@@ -17,7 +17,7 @@ import { membersViewerFirst } from '$lib/server/domain/household/members';
 import { buildStream } from '$lib/server/domain/stream/stream';
 import { extractMentionIds, mentionToken } from '$lib/mentions/mentions';
 import { parseStreamFilter } from '$lib/stream/filter';
-import { getCommandDeps, getImportantDates, getMemberDeps } from '$lib/server/services';
+import { getCommandDeps, getMemberDeps } from '$lib/server/services';
 import type { Actions, PageServerLoad } from './$types';
 import { say, translator } from '$lib/server/i18n/say';
 import type { MessageKey } from '$lib/i18n/translate';
@@ -54,7 +54,7 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 		buildStream(locals.services.media.streamDeps, viewer, filter),
 		// Who the household can still act on — the browsing scope — among just those.
 		listBrowsableNamesAmong(locals.services.people.contactDeps, viewer, named),
-		getImportantDates().listSourcesVisibleTo(viewer),
+		locals.services.records.importantDates.listSourcesVisibleTo(viewer),
 		// Just enough of the household to tell whether it has begun (docs/02 §2.22.3).
 		listPeopleEnoughForFirstRun(locals.services.people.contactDeps, viewer)
 	]);

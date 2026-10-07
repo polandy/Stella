@@ -3,6 +3,7 @@ import { createCircleServices, type CircleServices, type CircleWiring } from './
 import { createMediaServices, type MediaServices, type MediaWiring } from './media';
 import { createNoteServices, type NoteServices, type NoteWiring } from './notes';
 import { createPeopleServices, type PeopleServices, type PeopleWiring } from './people';
+import { createRecordServices, type RecordServices, type RecordWiring } from './records';
 import {
 	createRelationshipServices,
 	type RelationshipServices,
@@ -27,6 +28,7 @@ export interface AppServices {
 	media: MediaServices;
 	story: StoryServices;
 	notes: NoteServices;
+	records: RecordServices;
 }
 
 /**
@@ -42,7 +44,8 @@ export type ServicesWiring = AuthWiring &
 	Omit<PeopleWiring, 'accounts' | 'relationships' | 'media'> &
 	Omit<CircleWiring, 'contacts' | 'media'> &
 	Omit<StoryWiring, 'contacts' | 'media'> &
-	NoteWiring;
+	NoteWiring &
+	RecordWiring;
 
 /** Wires every grouped context. Pure assembly: no I/O beyond what the adapters do when used. */
 export function createServices(wiring: ServicesWiring): AppServices {
@@ -66,5 +69,6 @@ export function createServices(wiring: ServicesWiring): AppServices {
 		media: media.store
 	});
 	const notes = createNoteServices(wiring);
-	return { auth, people, relationships, circles, media, story, notes };
+	const records = createRecordServices(wiring);
+	return { auth, people, relationships, circles, media, story, notes, records };
 }

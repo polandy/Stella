@@ -4,8 +4,6 @@ import { systemClock } from '../clock';
 import { getConfig } from '../config';
 import { getDb, getSqlite } from '../db';
 import { createDrizzleAttentionRepository } from '../db/attention-repository';
-import { createDrizzleContactFieldRepository } from '../db/contact-field-repository';
-import { createDrizzleImportantDateRepository } from '../db/important-date-repository';
 import { createDrizzleImportRepository } from '../db/import-repository';
 import { createGitHubReleaseFeed } from '../release/github-feed';
 import { createUpdateCheck, type UpdateCheck } from '../domain/release/update-check';
@@ -18,14 +16,8 @@ import { withNamesakeContext } from '../domain/mentions/namesake-context';
 import { createDrizzleSearchRepository } from '../db/search-repository';
 import type { MemberDeps, MemberRepository } from '../domain/household/members';
 import { createDrizzleMemberRepository } from '../db/member-repository';
-import { createDrizzleTagRepository } from '../db/tag-repository';
-import type {
-	ContactFieldDeps,
-	ContactFieldRepository
-} from '../domain/contact-fields/contact-fields';
 import type { SearchDeps, SearchRepository } from '../domain/search/search';
 import type { AttentionRepository } from '../domain/attention/last-touched';
-import type { TagDeps, TagRepository } from '../domain/tags/tags';
 import { prepareCirclePhotoUpload } from '../domain/circles/circle-photos';
 import { captureMoment } from '../domain/moments/moments';
 import type {
@@ -53,7 +45,6 @@ import { addPerson } from '../domain/contacts/add-person';
 import { createContact } from '../domain/contacts/contacts';
 import { assignTagByName } from '../domain/tags/tags';
 import { joinCircleByName } from '../domain/circles/circles';
-import type { ImportantDateDeps, ImportantDateRepository } from '../domain/dates/important-dates';
 import type { ImportDeps, ImportRepository } from '../domain/import/apply';
 import { setContactAvatar } from '../domain/media/avatars';
 import { ulidGenerator } from '../id';
@@ -131,26 +122,6 @@ export function getUpdateCheck(): UpdateCheck | null {
 	}));
 }
 
-let contactFieldRepository: ContactFieldRepository | null = null;
-
-export function getContactFields(): ContactFieldRepository {
-	return (contactFieldRepository ??= createDrizzleContactFieldRepository(getDb()));
-}
-
-export function getContactFieldDeps(): ContactFieldDeps {
-	return { fields: getContactFields(), ids: ulidGenerator, clock: systemClock };
-}
-
-let importantDateRepository: ImportantDateRepository | null = null;
-
-export function getImportantDates(): ImportantDateRepository {
-	return (importantDateRepository ??= createDrizzleImportantDateRepository(getDb()));
-}
-
-export function getImportantDateDeps(): ImportantDateDeps {
-	return { dates: getImportantDates(), ids: ulidGenerator, clock: systemClock };
-}
-
 let importRepository: ImportRepository | null = null;
 
 /** Deps for the Monica import (docs/02 §2.16); the wizard is the only caller. */
@@ -180,16 +151,6 @@ export function getMembers(): MemberRepository {
 
 export function getMemberDeps(): MemberDeps {
 	return { members: getMembers() };
-}
-
-let tagRepository: TagRepository | null = null;
-
-export function getTags(): TagRepository {
-	return (tagRepository ??= createDrizzleTagRepository(getDb()));
-}
-
-export function getTagDeps(): TagDeps {
-	return { tags: getTags(), ids: ulidGenerator, clock: systemClock };
 }
 
 let archiveRepository: ArchiveRepository | null = null;
@@ -223,6 +184,7 @@ function viewerOf(actor: CommandActor): Viewer {
 export function getCommandDeps(): CommandDeps {
 	const { captureMomentDeps, interactionDeps, journalDeps } = getServices().story;
 	const { noteDeps } = getServices().notes;
+	const { contactFieldDeps, importantDateDeps, tagDeps } = getServices().records;
 	const receipts = (commandReceiptRepository ??= createDrizzleCommandReceiptRepository(getDb()));
 	return {
 		receipts,
@@ -247,7 +209,7 @@ export function getCommandDeps(): CommandDeps {
 			}),
 			'tag.assign': onVisibleContact(people().contacts, async (actor, payload) => ({
 				tagId: await assignTagByName(
-					getTagDeps(),
+					tagDeps,
 					actor.householdId,
 					payload.contactId,
 					payload.name,
@@ -302,10 +264,10 @@ export function getCommandDeps(): CommandDeps {
 					writeJournalEntry({ ...journalDeps, contacts: people().contacts }, actor, payload)
 				),
 			'field.add': onVisibleContact(people().contacts, async (_actor, payload) => ({
-				fieldId: await addContactField(getContactFieldDeps(), payload)
+				fieldId: await addContactField(contactFieldDeps, payload)
 			})),
 			'date.add': onVisibleContact(people().contacts, async (_actor, payload) => ({
-				dateId: await addImportantDate(getImportantDateDeps(), payload)
+				dateId: await addImportantDate(importantDateDeps, payload)
 			})),
 			// Checks the person once; the photos following it land where it says (`photos.ts`).
 			'gallery.add': onVisibleContact(people().contacts, async (_actor, payload) => ({

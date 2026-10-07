@@ -7,7 +7,7 @@ import { systemClock } from '$lib/server/clock';
 import { error, fail, redirect } from '@sveltejs/kit';
 import { requireViewer } from '$lib/server/auth/guards';
 import { getContact } from '$lib/server/domain/contacts/contacts';
-import { getCommandDeps, getImportantDates } from '$lib/server/services';
+import { getCommandDeps } from '$lib/server/services';
 import { say, translator } from '$lib/server/i18n/say';
 import type { Actions } from '../$types';
 
@@ -61,7 +61,7 @@ export const dateActions = {
 		const contact = await getContact(locals.services.people.contactDeps, viewer, params.id);
 		if (!contact) throw error(404, say(locals, 'errors.contact.notFound'));
 
-		await getImportantDates().remove(params.id, dateId);
+		await locals.services.records.importantDates.remove(params.id, dateId);
 		throw redirect(303, `/contacts/${params.id}`);
 	}
 } satisfies Actions;
