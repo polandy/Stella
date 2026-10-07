@@ -192,7 +192,7 @@ handing the owner the prompt for the next row.
 | 1 | TE-05 `CLAUDE.md` to ≈ 4 KB; prune `MEMORY.md` | S | ☑ | Every later session pays less from the first turn |
 | 2 | TE-01 session budget, hand-off, Edit-over-Write in `docs/08` §8.10 + both agents | S | ☑ | Bounds the largest cost before anything else changes |
 | 3 | TE-03 docs-only PRs skip review; split the review skill | M | ☑ | Cuts the second-largest recurring cost |
-| 4 | TE-02 model by tier (`model: inherit`, Agent `model` param) | S | ☐ | Needs the tier wording from row 3 |
+| 4 | TE-02 model by tier (`model: inherit`, Agent `model` param) | S | ☑ | Needs the tier wording from row 3 |
 | 5 | TE-04 headings in the five largest docs; ADR index | M | ☐ | Makes the *read only the section* rule true |
 | 6 | TE-06 format hook complains instead of no-op | S | ☐ | Removes a lint round per stale checkout |
 | 7 | TE-07 run the edited e2e specs before the push | S | ☐ | Removes an e2e round per edited spec |

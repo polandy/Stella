@@ -342,10 +342,16 @@ magic literals, no timing-based tests) apply on top of this.
   for schema, access, offline-command or new-screen changes, a light one otherwise. A PR that
   touches only `docs/`, `.claude/` or `*.md` files needs no review — the owner reads it.
 - **Agents**: implementation goes to the `stella-implementer` agent, reviews to
-  `stella-reviewer` (`.claude/agents/`), which carry these rules so a brief only states scope
-  and decisions. Agents read doc *sections*, not whole docs; never run `bun run test:e2e`
+  `stella-reviewer` (`.claude/agents/`), which carry these rules so a brief only states scope,
+  tier and decisions. Agents read doc *sections*, not whole docs; never run `bun run test:e2e`
   (CI does, on every push); and read a red run with `scripts/ci-failures.sh <PR>` before
   reaching for the full log.
+- **Model by tier.** The implementer inherits its model; the orchestrator picks it per brief
+  with the Agent tool's `model` parameter, using the review's tiers: `opus` for **Full** (a
+  schema or `drizzle/` change, access or visibility rules, the offline command path, a new
+  dependency, a new screen), `sonnet` for **Light** (copy, styling, a contained component or
+  pure-module change, docs). The brief names the tier. An orchestrator session that only
+  delegates and relays runs on Sonnet too.
 - **Session budget.** One session per PR or backlog row; `/clear` or a new session between
   tasks. A subagent past ~120k of context or ~150 turns stops, writes a hand-off (branch, done,
   open, the next command) and returns; the orchestrator starts a fresh agent with it rather than
