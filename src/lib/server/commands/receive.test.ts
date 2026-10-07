@@ -7,7 +7,7 @@ import { phrase } from '../../i18n/phrase';
 import { receiveQueued } from './receive';
 
 /*
- * `POST /api/commands` behind its route (docs/concepts/offline-capture.md §4): a phone's
+ * `POST /api/commands` behind its route (docs/04 §4.11.2): a phone's
  * outbox sends what it held back, in order, and gets one answer per command. A command that
  * cannot be read or may not be queued is refused on its own; the rest are still applied.
  */

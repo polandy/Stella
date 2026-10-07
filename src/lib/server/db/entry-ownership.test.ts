@@ -7,7 +7,7 @@ import * as schema from './schema';
 
 /*
  * Whether a journal entry is still there and still its author's — what a photo sent after its
- * moment checks before landing (docs/concepts/offline-capture.md §4.2).
+ * moment checks before landing (docs/04 ADR-111).
  */
 
 describe('entry ownership', () => {

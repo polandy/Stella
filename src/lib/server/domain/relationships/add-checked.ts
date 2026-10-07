@@ -9,7 +9,7 @@ import { createRelationship, type CreateRelationshipDeps } from './relationships
  * Linking two people from one of their pages (docs/02 §2.4), with the checks that used to live
  * in the person page's action: both people must be visible, the chosen type and side must be
  * one Stella offers, and `createRelationship` then applies every guardrail. One use-case, so a
- * link kept on a phone (`relationship.add`, docs/concepts/offline-capture.md §4.1) is refused
+ * link kept on a phone (`relationship.add`, docs/02 §2.18.1) is refused
  * for the same reasons — each one a sentence, never an error the phone would retry for ever.
  */
 

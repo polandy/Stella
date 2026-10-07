@@ -201,8 +201,8 @@
 	});
 
 	/*
-	 * What this member saved while Stella was out of reach (docs/concepts/offline-capture.md
-	 * §4) is sent when the app opens, when Stella answers again, when the tab comes back into
+	 * What this member saved while Stella was out of reach (docs/02 §2.18.1) is sent when the app
+	 * opens, when Stella answers again, when the tab comes back into
 	 * view and when the device joins a network — never on a timer. What Stella took is read back by reloading the page's data.
 	 */
 	onMount(() => {

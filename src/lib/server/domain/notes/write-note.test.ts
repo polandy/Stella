@@ -8,7 +8,7 @@ import { writeNote, type WriteNoteDeps } from './write-note';
 
 /*
  * Writing a note on a person (docs/02 §2.5, §2.20.1) as one use-case, so the person page and a
- * note kept on a phone (docs/concepts/offline-capture.md §4.1) go through the same checks: the
+ * note kept on a phone (docs/02 §2.18.1) go through the same checks: the
  * person must be visible, @-mentions resolve only against the note's audience, and a note that
  * names its own subject does not list them as a mention.
  */
