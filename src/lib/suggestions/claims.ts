@@ -2,7 +2,7 @@ import type { Relation } from './types';
 
 /*
  * What a suggestion is *about*, and the log of the ones the household has declined
- * (docs/concepts/relationship-suggestions.md §6.4).
+ * (docs/04 ADR-117).
  *
  * A claim is a relation over an unordered pair. Every question Stella asks about a suggestion
  * without caring which rule raised it — has this been answered, has it already been offered in

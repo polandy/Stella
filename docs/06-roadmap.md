@@ -156,7 +156,8 @@ Goal: sand the edges and add the nice-to-haves.
   one per session — fold what only the concept says into the feature doc or docs/04 §4.9,
   point the comments there, delete the concept: ☑ `immich.md` · ☑ `surnames.md` ·
   ☑ `offline-capture.md` · ☑ `offline-reading.md` · ☑ `circle-photos.md` ·
-  ☐ relationship suggestions (`relationship-suggestions*.md` and its mockups).
+  ☑ relationship suggestions (`relationship-suggestions*.md` and its mockups) ·
+  ☐ `multi-pick-relationships.html`.
 
 ## Explicitly later / maybe-never
 

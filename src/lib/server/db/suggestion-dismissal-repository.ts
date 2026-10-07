@@ -17,7 +17,7 @@ import { suggestionDismissal } from './schema';
 
 /*
  * Drizzle adapter for the SuggestionDismissalRepository port (docs/08 §8.3) — the claims a
- * household has declined (docs/concepts/relationship-suggestions.md §6.4).
+ * household has declined (docs/04 ADR-117).
  *
  * Scoping is the household and nothing finer: the household decided, so any member sees the
  * same answers and any member may take one back. There is no per-contact visibility question

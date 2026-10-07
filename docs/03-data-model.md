@@ -652,7 +652,7 @@ carry it yet: a restored household is offered those faces again.
 
 ### suggestion_dismissal  [M2]
 The claims the household has declined, so a suggestion answered once is not offered again
-(`docs/concepts/relationship-suggestions.md` §6.4).
+(docs/02 §2.4.1, ADR-117).
 
 | column | type | notes |
 |---|---|---|

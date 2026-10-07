@@ -3,9 +3,8 @@ import { addPerson, fromPeopleMenu, openPerson, signIn } from './app';
 import { LINK, seedHousehold } from './seed';
 
 /*
- * The on-demand review on a person page (docs/02 §2.4.1,
- * docs/concepts/relationship-suggestions.md §6.5). Written after the flow was verified in the
- * running app (docs/08 §8.4.1).
+ * The on-demand review on a person page (docs/02 §2.4.1). Written after the flow was verified
+ * in the running app (docs/08 §8.4.1).
  *
  * Every other suggestion is raised by a write and is gone on the next page load; this one is
  * asked for. So each case brings its links in by archive, where no form ever raised them, and

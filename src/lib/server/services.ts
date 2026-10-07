@@ -381,7 +381,7 @@ export function getRelationshipDeps(): RelationshipDeps {
 
 let suggestionDismissalRepository: SuggestionDismissalRepository | null = null;
 
-/** The claims the household has declined (docs/concepts/relationship-suggestions.md §6.4). */
+/** The claims the household has declined (docs/04 ADR-117). */
 export function getSuggestionDismissals(): SuggestionDismissalRepository {
 	return (suggestionDismissalRepository ??= createDrizzleSuggestionDismissalRepository(getDb()));
 }

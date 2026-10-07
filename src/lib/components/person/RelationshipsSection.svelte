@@ -312,7 +312,7 @@
 					</button>
 				{/if}
 				<!--
-						The on-demand review (docs/concepts/relationship-suggestions.md §6.5): nothing
+						The on-demand review (docs/02 §2.4.1): nothing
 						runs until it is chosen, and asking what else might be true is never what this
 						card is for — so it waits in the menu.
 					-->

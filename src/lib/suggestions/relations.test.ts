@@ -5,7 +5,7 @@ import { RELATIONS } from './types';
 
 /*
  * Every relation a suggestion can name is stored as one built-in type, and back again
- * (docs/concepts/relationship-suggestions.md §6.1): *Accept* posts the type, a declined claim
+ * (docs/02 §2.4.1): *Accept* posts the type, a declined claim
  * is logged by the relation, and the two must never drift apart.
  */
 

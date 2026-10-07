@@ -4,8 +4,8 @@ import type { Answer } from './claims';
 import type { SuggestionView } from './view';
 
 /*
- * The vocabulary the suggestion engine speaks (docs/concepts/relationship-suggestions.md §6.1,
- * -implementation.md §3).
+ * The vocabulary the suggestion engine speaks (docs/02 §2.4.1,
+ * docs/04 ADR-055).
  *
  * A rule never names a message key, a repository or a route: it answers a `Trigger` by reading
  * the view and returning `Suggestion`s. Keeping that vocabulary in one file is what lets a new
@@ -58,7 +58,7 @@ export const isDirected = (relation: Relation): boolean => DIRECTED.has(relation
 
 /**
  * Which rule produced a suggestion, from the catalogue in
- * `docs/concepts/relationship-suggestions.md` §2. Carried so the household can be told what
+ * docs/02 §2.4.1 (*The suggestion rules*). Carried so the household can be told what
  * kind of claim it is looking at, and so ordering stays deterministic between rules.
  */
 export type RuleId = 'L1' | 'L2' | 'L3' | 'K1';
@@ -77,7 +77,7 @@ export type Confidence = 'certain' | 'likely' | 'possible';
  * `person-reviewed` is the one trigger no write raises: a member asks, on request, what stands
  * around this person right now. It is what makes the rule set reachable at all — every other
  * trigger only exists in the instant after a link is stored
- * (docs/concepts/relationship-suggestions.md §6.5).
+ * (docs/02 §2.4.1).
  *
  * `household-reviewed` widens that ask to everyone the viewer can see (§6.6). It is a
  * different question rather than a wider `where`: a per-person review only ever reaches the
@@ -121,7 +121,7 @@ export interface LinkSuggestion {
 	 * The household's *no* — who declined this claim and when — or null while it stands. A rule
 	 * never sets it: the engine drops a dismissed suggestion outright, and only fills this in
 	 * when the caller asked to see what was declined
-	 * (docs/concepts/relationship-suggestions.md §6.5).
+	 * (docs/02 §2.4.1).
 	 */
 	dismissed: Answer | null;
 }

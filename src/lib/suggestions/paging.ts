@@ -1,7 +1,7 @@
 import { groupBySubject, type NamedClaim, type SubjectGroup } from './grouping';
 
 /*
- * Paging and folding a review (docs/concepts/relationship-review-at-scale.html, docs/04 §4.9).
+ * Paging and folding a review (docs/04 ADR-010).
  *
  * The engine computes everything a household's graph implies — there is no cap, deliberately.
  * What has to stay finite is the *screen*, and the rule the whole module follows is: nothing is

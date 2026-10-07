@@ -256,7 +256,7 @@ export const relationshipActions = {
 
 	/**
 	 * Decline a claim, so it stops being offered however a rule reaches it later
-	 * (docs/concepts/relationship-suggestions.md §6.4). The household decided, so the *no*
+	 * (docs/04 ADR-117). The household decided, so the *no*
 	 * holds for every member — and `restoreSuggestion` takes it back.
 	 */
 	dismissSuggestion: async ({ request, params, locals }) => {

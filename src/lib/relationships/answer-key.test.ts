@@ -6,8 +6,8 @@ import { ANSWER_ANCHOR_PATTERN, answerAnchor, answerKey, withAnchor } from './an
  * (docs/02 §2.4.1, §2.23).
  *
  * A claim is `(relation, pair)` and never a rule — that is what makes one *no* hold however
- * another rule reaches the same two people later (docs/concepts/relationship-suggestions.md
- * §6.4). The undo key has to inherit that exactly: the household screen can reach the same
+ * another rule reaches the same two people later (docs/04 ADR-117). The undo key has to
+ * inherit that exactly: the household screen can reach the same
  * claim from either end of a sibling group, and two keys for one claim would let a member
  * answer it twice and undo only half of it.
  */

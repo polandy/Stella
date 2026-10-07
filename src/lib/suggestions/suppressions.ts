@@ -4,7 +4,7 @@ import type { Relation } from './types';
 import type { SuggestionView } from './view';
 
 /*
- * The universal suppressions (docs/concepts/relationship-suggestions.md §6.2).
+ * The universal suppressions (docs/02 §2.4.1, docs/04 ADR-055).
  *
  * They are applied by the engine to every rule's output, never inside a rule: a rule that
  * filters is a rule that can forget to, and the consequence of forgetting is not a stray row

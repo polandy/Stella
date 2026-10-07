@@ -8,8 +8,8 @@ import type { Clock } from '../../clock';
 import type { IdGenerator } from '../../id';
 
 /*
- * The on-demand review and the dismissal log (docs/concepts/relationship-suggestions.md §6.4
- * and §6.5).
+ * The on-demand review and the dismissal log (docs/02 §2.4.1,
+ * docs/04 ADR-117).
  *
  * Every other suggestion in Stella is a consequence of a write: something was stored, so the
  * page says what follows, and reloading loses it. That makes the whole rule set unreachable

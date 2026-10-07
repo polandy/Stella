@@ -578,7 +578,7 @@ export const circleMembership = sqliteTable(
 // ── Suggestions ───────────────────────────────────────────────────────────
 
 /**
- * The claims the household has declined (docs/concepts/relationship-suggestions.md §6.4).
+ * The claims the household has declined (docs/04 ADR-117).
  *
  * Keyed by the **claim** — a relation over an unordered pair — and never by the rule that
  * surfaced it: declining "Wing Kam is Steve's parent" answers those two people, and the answer

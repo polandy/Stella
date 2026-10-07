@@ -191,7 +191,7 @@
 {/if}
 
 <!--
-	The on-demand review (docs/concepts/relationship-suggestions.md §6.5). Every
+	The on-demand review (docs/02 §2.4.1). Every
 	other suggestion in Stella lives for one page load after a write; this is the
 	control that asks the same rules what stands around this person *now*, which
 	is the only way a household ever sees what follows from links entered years
