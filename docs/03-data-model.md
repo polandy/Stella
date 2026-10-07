@@ -4,6 +4,36 @@ Database: **SQLite** (WAL mode, foreign keys on) accessed via **Drizzle ORM**. T
 document is the conceptual schema; the Drizzle definitions in code are the
 implementation of record.
 
+## 3.0 Glossary
+
+One word per concept, in code, docs and conversation. Each term says what it means, where it
+lives (table, folder, route) and the words that are **not** used for it. `domain/` and `db/`
+are under `src/lib/server/`, `lib/` is `src/lib/`, `components/` is `src/lib/components/`.
+Detail stays in the feature doc the term points to.
+
+| Term | Meaning | Maps to | Not used |
+|---|---|---|---|
+| **person** | Anyone the household keeps a record of, with or without an account (docs/02 §2.2). | `contact` table, `domain/contacts/`, the `/contacts` route — the old name, kept for history; the UI and the API say *people* (`/api/v1/people`). Client helpers are split today: `lib/people/` (names, namesakes, the directory) and `lib/contacts/` (the person page's sections). | contact (in copy), profile (for the record itself) |
+| **household member** | Someone with an account in the household; everything they write carries their user id (docs/02 §2.1). | `user` table, `domain/household/members.ts` | user (in copy); *member* alone also names a circle's member |
+| **circle** | A named context people share — class, club, team, workplace, friend group; its people are its *members*, each with an optional role (docs/02 §2.4.2). | `circle`, `circle_membership`, `domain/circles/`, `lib/circles/`, `/circles` | group, context (for the record) |
+| **relationship** | A link someone entered between two people, with a type and a direction (docs/02 §2.4). | `relationship`, `relationship_type`, `domain/relationships/`, `lib/relationships/` | connection; *edge* only inside `lib/graph/` |
+| **kin** | A relative nobody entered — grandparent, cousin, in-law — named from the relationships the viewer may see, for display only and never stored (docs/02 §2.4.1). | `lib/kinship/` | inferred relationship (as if it were stored) |
+| **journal entry** | A dated diary record about one person, by one author, for one day (docs/02 §2.20). The UI calls every journal entry a *moment*. | `journal_entry`, `journal_mention`, `domain/journal/`, `/contacts/[id]/journal` | diary entry, post |
+| **moment** | The UI's word for a journal entry; also Home's one-sentence capture (*What happened?*) that writes one, landing in the journal of the first person it @-mentions (docs/02 §2.22.1). | a `journal_entry` row; the capture is `domain/moments/` | — (not a table of its own) |
+| **note** | A reference fact about a person, pinnable, not dated by what it is about (docs/02 §2.5). Not a journal entry. | `note`, `note_mention`, `domain/notes/` | memo, comment |
+| **touchpoint** | A logged contact with a person — met, call, video, message, letter, gift — on a day, with optional participants (docs/02 §2.6). Buttons say *Log contact* / *Log interaction*. | `interaction`, `interaction_participant`, `domain/interactions/`, `lib/interactions/` | activity, event |
+| **story** | One person's timeline: their journal entries and touchpoints in one order (docs/02 §2.23). Its heading on the person page reads *Activity*. | `domain/story/`, `lib/story/`, `/contacts/[id]/story` | feed, history |
+| **stream** | The household's newest-first read of what the family did, on Home (docs/02 §2.22.2): a query over the tables that still exist, plus the activity rows for what no table can report. | `domain/stream/`, `lib/stream/`, `db/stream-repository.ts` | feed, *What's new* (the older name, docs/02 §2.11) |
+| **activity** | One row of the household's log, written only for what no remaining table can tell — deletions, merges, export and import, renames, last-name batches, Immich links (§3.3 `activity_log`). | `activity_log`, `domain/activity/` | event; the person page's *Activity* heading is the story, not this |
+| **attention** | The latest day the household recorded anything about a person, as the People list shows it — what was written down, not how often anyone met (docs/02 §2.2). | `domain/attention/`, `db/attention-repository.ts` | *last contacted* (the latest touchpoint, on the profile) |
+| **stamp** | A cheap marker of the people list the app shell carries — counts and latest change times, scoped to the viewer; a page asks for it to tell whether its copy is current (docs/04 ADR-091). | `domain/contacts/people-stamp.ts`, `db/people-stamp-reads.ts`, `/api/people/stamp` | version; *ETag* is a page's content tag (ADR-074) |
+| **framing** | A chosen square of a photo worn as a person's avatar, kept as a photo row of its own so its address never changes (docs/02 §2.14). | `photo` row with `framing_of` set, `domain/media/framing.ts` | crop (the square is the crop; the framing is the row) |
+| **cut** | A framing of a circle photo one person wears as their profile picture; taken off them, it becomes a photo of their own rather than disappearing (docs/02 §2.14). | `photo` row with `framing_of` → a circle photo and `contact_id` set (`cut_from` once turned), `domain/media/cuts.ts`, `db/cut-turning.ts` | crop, excerpt |
+| **glimpse** | The strip of a linked person's Immich photos under their gallery, each picture behind a signed URL (docs/02 §2.24.3). | `domain/immich/glimpse.ts` | gallery (that is Stella's own photos) |
+| **holder** | The person in Stella an Immich person is linked to — at most one (docs/02 §2.24.2). | `immich_link`, `holdersOf` in `domain/immich/links.ts` | owner |
+| **newcomer** | A face in Immich nobody in Stella is linked to yet, offered as a row of *New from Immich* (docs/02 §2.24.7). | `domain/immich/newcomer-rows.ts`, `components/immich/NewcomerRow.svelte` | new person (a person just added in Stella) |
+| **namesake** | A person whose shown name another person on the list shares; a second line tells them apart (docs/02 §2.2.3). | `lib/people/namesakes.ts`, `lib/surnames/` | duplicate (a namesake is a different person) |
+
 ## 3.1 Conventions
 
 - **IDs:** text primary keys using a sortable unique id (UUIDv7 or ULID; rows brought in

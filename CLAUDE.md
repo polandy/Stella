@@ -29,18 +29,20 @@ don't) · `scripts/ci-failures.sh <PR>` (only the failures of a red run). The re
 Bun · SvelteKit (Svelte 5, runes) · SQLite WAL + Drizzle · Tailwind v4 + Catppuccin tokens ·
 `adapter-node` under Bun · Argon2id passwords · OIDC/Authelia SSO.
 
-## Code map — one clause per folder; detail in `docs/04` §4.3
+## Code map — one clause per folder group; the full tree is `docs/04` §4.3, the words `docs/03` §3.0
 
 | Path | Responsibility |
 |---|---|
+| `src/lib/server/services.ts` | the composition root — the only module wiring adapters into `deps`; only routes and hooks import it |
 | `src/lib/server/config.ts` | env parsing (Valibot) — the only `$env` reader |
-| `src/lib/server/db/` | Drizzle schema (`docs/03`) + `bun:sqlite` client |
+| `src/lib/server/db/` | Drizzle schema (`docs/03`), `bun:sqlite` client, one adapter per port |
 | `src/lib/server/access/` | **central** ACL / visibility (`docs/03` §3.7) — the *only* authz path |
 | `src/lib/server/domain/` | use-cases, test-first; `commands/` applies a command once |
-| `src/lib/server/{auth,immich,commands}/` | sessions + OIDC; the Immich gateway; the command wire edge |
+| `src/lib/server/{auth,immich,commands,…}/` | infrastructure and edge helpers: sessions + OIDC, the Immich gateway, the command wire edge, media store, HTTP helpers |
 | `src/lib/{commands,contacts,immich,kinship,menu,motion,onboarding,pwa,shell,stream,suggestions,surnames,sync}/` | **pure** decisions, test-first; a `*.svelte.ts` beside one is its browser adapter |
 | `src/lib/graph/` | pure `model/`, `layout/`, `keyboard.ts`, `phone-map.ts`; `cytoscape/` renders, no logic |
 | `src/routes/` | thin edges: `load` / form actions / `+server.ts`; big pages colocate `load.ts` + `actions/` |
+| `src/lib/{people,relationships,circles,dates,undo,…}/` | client-safe helpers per concept, not lint-guarded as pure |
 | `src/lib/components/` | design system; `graph/` the map, `person/` the person page's cards |
 | `src/lib/i18n/` | languages, catalogues `en` + `de`, translator — **all UI copy** (`docs/02` §2.19) |
 | `src/lib/design/tokens.ts`, `src/app.css` | the token table and its three layers — the only places that build a colour token |
