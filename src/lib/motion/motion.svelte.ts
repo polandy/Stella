@@ -23,7 +23,7 @@ import {
  *   other (`Swap.svelte` pairs the two).
  * - `showOpenedForm` and `settleOpenedForm`: a form that just opened in its card is brought into view
  *   and takes the cursor, one way for every card (Section's add forms, the story card's
- *   composer).
+ *   composer); `bringCardIntoView` is the same glide without the cursor, for the jump bar.
  */
 
 // Svelte passes the direction to a deferred transition; its types leave the argument out.
@@ -236,12 +236,22 @@ function glideCardToTop(card: HTMLElement) {
  * its own. Returns whether the page glided, for `settleOpenedForm`.
  */
 export function showOpenedForm(card: HTMLElement, field: HTMLElement | null | undefined): boolean {
+	const glides = bringCardIntoView(card);
+	field?.focus({ preventScroll: true });
+	return glides;
+}
+
+/**
+ * Bring `card` into view by the rule a form opens by (`glideToOpenedForm`): a card whose top is
+ * in the upper half of the view holds still, any other glides its top to just under the bar.
+ * The jump bar's links go to their cards this way too. Returns whether the page glided.
+ */
+export function bringCardIntoView(card: HTMLElement): boolean {
 	const glides = glideToOpenedForm({
 		cardTop: card.getBoundingClientRect().top,
 		...visibleBand(card)
 	});
 	if (glides) glideCardToTop(card);
-	field?.focus({ preventScroll: true });
 	return glides;
 }
 

@@ -76,3 +76,23 @@ export function currentSection(cards: readonly CardTop[], view: JumpView): JumpS
 	}
 	return current?.section ?? null;
 }
+
+/**
+ * The card the bar marks. A tapped link marks its card from the tap on — through the glide,
+ * while other cards pass under the bar, and after it, where a card beside another or at the
+ * foot of the page never becomes the one `currentSection` reads — until the reader scrolls on
+ * their own, which the page reports by letting go of `tapped`.
+ */
+export function markedSection(
+	measured: JumpSection | null,
+	tapped: JumpSection | null
+): JumpSection | null {
+	return tapped ?? measured;
+}
+
+/** Whether `key` (a `KeyboardEvent.key`) scrolls the page — the reader moving on by keyboard. */
+export function scrollsThePage(key: string): boolean {
+	return SCROLL_KEYS.has(key);
+}
+
+const SCROLL_KEYS = new Set(['PageDown', 'PageUp', 'ArrowDown', 'ArrowUp', 'Home', 'End', ' ']);

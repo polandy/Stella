@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'bun:test';
-import { currentSection, JUMP_SECTIONS, jumpEntries } from './jump-bar';
+import {
+	currentSection,
+	JUMP_SECTIONS,
+	jumpEntries,
+	markedSection,
+	scrollsThePage
+} from './jump-bar';
 
 /*
  * The person page's jump bar (docs/05 §5.5): one link per card worth jumping to, with the
@@ -72,5 +78,31 @@ describe('currentSection', () => {
 		expect(
 			currentSection(cards({ relationships: -900, photos: 200, story: 900, notes: 1400 }), bottom)
 		).toBe('photos');
+	});
+});
+
+describe('markedSection', () => {
+	it('marks the card being read when nothing was tapped', () => {
+		expect(markedSection('photos', null)).toBe('photos');
+		expect(markedSection(null, null)).toBeNull();
+	});
+
+	it('marks the tapped card throughout the glide and after it, whatever passes under the bar', () => {
+		// On the way down Photos passes under the bar; the mark stays on the card asked for.
+		expect(markedSection('photos', 'notes')).toBe('notes');
+		// Notes beside Activity shares its top, and the page cannot scroll Notes any higher.
+		expect(markedSection('story', 'notes')).toBe('notes');
+		expect(markedSection(null, 'relationships')).toBe('relationships');
+	});
+});
+
+describe('scrollsThePage', () => {
+	it('names the keys that move the page, which let go of a tapped card', () => {
+		for (const key of ['PageDown', 'PageUp', 'ArrowDown', 'ArrowUp', 'Home', 'End', ' '])
+			expect(scrollsThePage(key)).toBe(true);
+	});
+
+	it('leaves the keys that only move the cursor, so Tab into the card keeps its mark', () => {
+		for (const key of ['Tab', 'Enter', 'a', 'Escape']) expect(scrollsThePage(key)).toBe(false);
 	});
 });
