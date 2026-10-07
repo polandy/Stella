@@ -161,3 +161,29 @@ export function glideToOpenedForm(input: {
 	const middle = (input.viewTop + input.viewBottom) / 2;
 	return input.cardTop < input.viewTop || input.cardTop > middle;
 }
+
+/**
+ * Where the shell's scroller goes to show an element (docs/05 §5.11) — computed rather than
+ * left to `scrollIntoView`, which scrolls every scrollable ancestor, the document included, and
+ * on a phone drags the sticky bars off the top of the screen. Positions are on screen: the band
+ * the reader sees (under the scroller's scroll padding, above a keyboard) and the element's
+ * edges. `start` puts the element's top at the band's top, less its own scroll margin;
+ * `nearest` moves only as far as it takes, the top winning when it does not fit.
+ */
+export function scrollTopToShow(input: {
+	scrollTop: number;
+	maxScrollTop: number;
+	viewTop: number;
+	viewBottom: number;
+	element: { top: number; bottom: number; marginTop: number };
+	block: 'start' | 'nearest';
+}): number {
+	const { scrollTop, viewTop, viewBottom, element } = input;
+	const toTop = scrollTop + element.top - element.marginTop - viewTop;
+	const clamp = (top: number) => Math.min(Math.max(top, 0), input.maxScrollTop);
+	if (input.block === 'start') return clamp(toTop);
+	const fits = element.bottom - element.top + element.marginTop <= viewBottom - viewTop;
+	if (element.top - element.marginTop < viewTop || !fits) return clamp(toTop);
+	if (element.bottom > viewBottom) return clamp(scrollTop + element.bottom - viewBottom);
+	return scrollTop;
+}

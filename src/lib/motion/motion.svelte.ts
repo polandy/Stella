@@ -8,6 +8,7 @@ import {
 	glidePlan,
 	glideToOpenedForm,
 	revealFrame,
+	scrollTopToShow,
 	scrollBehavior,
 	standardEasing
 } from './motion';
@@ -225,9 +226,34 @@ function visibleBand(node: HTMLElement): { viewTop: number; viewBottom: number }
 	return { viewTop: rect.top + padding, viewBottom: Math.min(rect.bottom, keyboardTop) };
 }
 
+/**
+ * Scroll the shell's scroller — and only it — to show `node` (`scrollTopToShow`); smoothly, or at
+ * once with reduced motion. Never `scrollIntoView`: it scrolls every scrollable ancestor, and a
+ * phone's document, a little taller than the screen while the address bar shows, would carry the
+ * sticky bars off its top. Outside the shell the document is the scroller.
+ */
+function scrollToShow(node: HTMLElement, block: 'start' | 'nearest') {
+	const scroller =
+		node.closest<HTMLElement>('#content') ?? document.scrollingElement ?? document.documentElement;
+	const rect = node.getBoundingClientRect();
+	const top = scrollTopToShow({
+		scrollTop: scroller.scrollTop,
+		maxScrollTop: scroller.scrollHeight - scroller.clientHeight,
+		...visibleBand(node),
+		element: {
+			top: rect.top,
+			bottom: rect.bottom,
+			marginTop: parseFloat(getComputedStyle(node).scrollMarginTop) || 0
+		},
+		block
+	});
+	if (top === scroller.scrollTop) return;
+	scroller.scrollTo({ top, behavior: scrollBehavior(prefersReducedMotion.current) });
+}
+
 /** The page glides `card`'s top to just under the bar; at once with reduced motion. */
 function glideCardToTop(card: HTMLElement) {
-	card.scrollIntoView({ block: 'start', behavior: scrollBehavior(prefersReducedMotion.current) });
+	scrollToShow(card, 'start');
 }
 
 /**
@@ -269,8 +295,5 @@ export function settleOpenedForm(
 		if (card) glideCardToTop(card);
 		return;
 	}
-	form?.scrollIntoView({
-		block: 'nearest',
-		behavior: scrollBehavior(prefersReducedMotion.current)
-	});
+	if (form) scrollToShow(form, 'nearest');
 }

@@ -7,6 +7,7 @@ import {
 	gapToTakeUp,
 	glidePlan,
 	glideToOpenedForm,
+	scrollTopToShow,
 	revealFrame,
 	scrollBehavior,
 	standardEasing
@@ -180,5 +181,60 @@ describe('glideToOpenedForm', () => {
 
 	it('glides a card whose top has slipped under the bar', () => {
 		expect(glideToOpenedForm({ ...view, cardTop: 99 })).toBe(true);
+	});
+});
+
+describe('scrollTopToShow', () => {
+	// The scroller shows 100 px to 900 px of the screen (the band under the jump bar), it is
+	// scrolled to 1000 and can go up to 3000.
+	const scroller = { scrollTop: 1000, maxScrollTop: 3000, viewTop: 100, viewBottom: 900 };
+
+	it('puts an element’s top just under the band’s top, less its own scroll margin', () => {
+		const element = { top: 600, bottom: 800, marginTop: 16 };
+		expect(scrollTopToShow({ ...scroller, element, block: 'start' })).toBe(1484);
+	});
+
+	it('stops where the scroller ends, at either end', () => {
+		expect(
+			scrollTopToShow({
+				...scroller,
+				element: { top: 3000, bottom: 3200, marginTop: 0 },
+				block: 'start'
+			})
+		).toBe(3000);
+		expect(
+			scrollTopToShow({
+				...scroller,
+				element: { top: -5000, bottom: -4800, marginTop: 0 },
+				block: 'start'
+			})
+		).toBe(0);
+	});
+
+	it('leaves an element already wholly in view where it is, for the nearest edge', () => {
+		const element = { top: 200, bottom: 700, marginTop: 16 };
+		expect(scrollTopToShow({ ...scroller, element, block: 'nearest' })).toBe(1000);
+	});
+
+	it('brings a foot below the band up to its bottom edge', () => {
+		const element = { top: 500, bottom: 1100, marginTop: 0 };
+		expect(scrollTopToShow({ ...scroller, element, block: 'nearest' })).toBe(1200);
+	});
+
+	it('shows the top of an element taller than the band, or one above it', () => {
+		expect(
+			scrollTopToShow({
+				...scroller,
+				element: { top: 300, bottom: 1500, marginTop: 0 },
+				block: 'nearest'
+			})
+		).toBe(1200);
+		expect(
+			scrollTopToShow({
+				...scroller,
+				element: { top: 40, bottom: 400, marginTop: 0 },
+				block: 'nearest'
+			})
+		).toBe(940);
 	});
 });
