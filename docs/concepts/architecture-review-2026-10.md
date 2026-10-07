@@ -467,7 +467,7 @@ rule. Each is one Conventional-Commit `refactor:`/`chore:`/`docs:` PR unless mar
 | 1 | AR-15 formatter + linter + import-boundary rules | S | ☑ #259 | Makes every later move mechanically checked; one `chore:` PR, then a format-only commit |
 | 2 | AR-05 stop swallowing dispatch errors; add `handleError` | S | ☑ #261 | Pure risk reduction; independent of everything |
 | 3 | AR-03 `requireViewer`, `todayFor(clock)`, `messageKey` | S | ☑ #266 | Removes 150 edit sites before AR-01 moves them again |
-| 4 | AR-07 glossary (docs/03 §3.0) + AR-18 regenerate §4.3 | S | ☐ | Vocabulary before renames; cheapest high-leverage doc change |
+| 4 | AR-07 glossary (docs/03 §3.0) + AR-18 regenerate §4.3 | S | ☑ #294 | Vocabulary before renames; cheapest high-leverage doc change |
 | 5 | AR-04 one schema per command, `fromFormData` | M | ☐ | Shrinks every form action; prerequisite for AR-13 |
 | 6 | AR-01 `createServices()` + `locals.services` — **series**, one bounded context per PR, `auth` first | L | ☐ | The central change; do after 3 and 5 so routes shrink while being touched |
 | 7 | AR-02 move shared actions under `routes/` taking deps | S | ☐ | Falls out of 6 |
