@@ -30,9 +30,11 @@ already made — do not reopen them.
 3. The PR is complete: domain/access change, the UI that exposes it, the matching `docs/`
    sections, `docs/using-stella.md` when a user can see it, en **and** de copy.
 4. `bun run check` (zero warnings) and `bun run test` before every push; `bun run build` once
-   before the PR. **Never run `bun run test:e2e`** — CI runs it. Never write a new e2e spec:
-   that follows the owner's sign-off (§8.4.1). Editing an existing spec for an intended
-   behaviour change is fine; say so in the PR.
+   before the PR. **Never run the whole `bun run test:e2e`** — CI runs it. Never write a new
+   e2e spec: that follows the owner's sign-off (§8.4.1). Editing an existing spec for an
+   intended behaviour change is fine; say so in the PR. When the PR edits an existing `e2e/*.spec.ts`,
+   run just the specs `.claude/skills/feature-review/affected-specs.sh` lists
+   (`./e2e/run.sh $(.claude/skills/feature-review/affected-specs.sh)`) before the push.
 5. Conventional Commits in English, type by user-facing impact. **No `Co-Authored-By` and no
    "Generated with" line — not in commits, not in the PR body.**
 6. Push, `gh pr create` with a body listing what changed and a **"How to test by hand"**
