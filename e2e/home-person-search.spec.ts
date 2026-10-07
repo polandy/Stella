@@ -91,7 +91,8 @@ test.describe('on a phone', () => {
 	test('keeps the breadcrumb, not the logo, everywhere but Home', async ({ page }) => {
 		await page.getByRole('link', { name: 'People' }).last().click();
 
-		await expect(page.getByRole('navigation', { name: 'Breadcrumb' })).toContainText('People');
+		// A phone's trail is only the way back: on People that is Home (docs/05 §5.4).
+		await expect(page.getByRole('navigation', { name: 'Breadcrumb' })).toContainText('Home');
 		await expect(page.getByRole('banner').getByRole('link', { name: 'Stella home' })).toHaveCount(
 			0
 		);

@@ -109,18 +109,25 @@ describe('scrollsThePage', () => {
 });
 
 describe('barVisible', () => {
-	it('stays away while the identity card still shows below the top', () => {
-		expect(barVisible({ cardBottom: 640, tapped: null })).toBe(false);
-		expect(barVisible({ cardBottom: 1, tapped: null })).toBe(false);
+	const BAR = 49;
+
+	it('stays away while the identity card still shows below the bar', () => {
+		expect(barVisible({ cardBottom: 640, barHeight: BAR })).toBe(false);
+		expect(barVisible({ cardBottom: BAR + 1, barHeight: BAR })).toBe(false);
 	});
 
-	it('shows once the identity card’s bottom has passed the top', () => {
-		expect(barVisible({ cardBottom: 0, tapped: null })).toBe(true);
-		expect(barVisible({ cardBottom: -900, tapped: null })).toBe(true);
+	it('shows once the identity card’s bottom has passed under the bar’s foot', () => {
+		expect(barVisible({ cardBottom: BAR, barHeight: BAR })).toBe(true);
+		expect(barVisible({ cardBottom: -900, barHeight: BAR })).toBe(true);
 	});
 
-	it('stays while a tapped link glides to a card the identity card has not quite left', () => {
-		// A jump to People stops it below the bar, which leaves the card's foot just in view.
-		expect(barVisible({ cardBottom: 28, tapped: 'relationships' })).toBe(true);
+	it('shows where a jump to People leaves the page: that card just below the bar', () => {
+		// The page's gap is 20 px, so the identity card's foot stands 20 px above People's top.
+		expect(barVisible({ cardBottom: BAR - 20, barHeight: BAR })).toBe(true);
+	});
+
+	it('follows the bar’s height when its links wrap onto a second row', () => {
+		expect(barVisible({ cardBottom: 80, barHeight: BAR })).toBe(false);
+		expect(barVisible({ cardBottom: 80, barHeight: 2 * BAR })).toBe(true);
 	});
 });

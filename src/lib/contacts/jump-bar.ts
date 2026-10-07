@@ -94,19 +94,19 @@ export function markedSection(
 export interface BarPlace {
 	/** The identity card's bottom, in pixels from the top of the visible page. */
 	cardBottom: number;
-	/** The card a link of the bar was tapped for, until the reader scrolls on their own. */
-	tapped: JumpSection | null;
+	/** The bar's own height. */
+	barHeight: number;
 }
 
 /**
  * Whether the bar shows (docs/05 §5.5). At rest nothing stands between the identity card and
  * the People card: the bar shows only once it sticks, which is when the card's bottom has
- * passed the top of the visible page. A tapped link keeps it — a jump to People stops below
- * the bar's own height, which leaves the identity card's foot in view, and a bar that vanished
- * under the finger that used it would read as a fault.
+ * passed under the bar's foot. That is also where a jump leaves it — a jump to People stops
+ * below the bar, with the card's foot still just in view — so a bar that was tapped never
+ * vanishes under the finger that used it.
  */
 export function barVisible(place: BarPlace): boolean {
-	return place.tapped !== null || place.cardBottom <= 0;
+	return place.cardBottom <= place.barHeight;
 }
 
 /** Whether `key` (a `KeyboardEvent.key`) scrolls the page — the reader moving on by keyboard. */

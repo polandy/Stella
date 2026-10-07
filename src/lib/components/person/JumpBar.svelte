@@ -55,13 +55,18 @@
 		})
 	);
 
+	/** One row of links (`h-8`), its padding (`py-2`) and the hairline, before it is measured. */
+	const SINGLE_ROW_PX = 49;
+
 	let bar = $state<HTMLElement>();
 	let current = $state<JumpSection | null>(null);
 	let cardBottom = $state(Number.POSITIVE_INFINITY);
+	// The bar's own height, which its slot sticks at; a single row until it is measured.
+	let barHeight = $state(SINGLE_ROW_PX);
 	// The card a link was tapped for, marked until the reader scrolls on their own.
 	let tapped = $state<JumpSection | null>(null);
 	const marked = $derived(markedSection(current, tapped));
-	const visible = $derived(barVisible({ cardBottom, tapped }));
+	const visible = $derived(barVisible({ cardBottom, barHeight }));
 
 	/*
 	 * A plain click glides to the card the way an opened form does (docs/05 §5.11) instead of
@@ -113,7 +118,10 @@
 		};
 
 		const previousPadding = scroller.style.scrollPaddingTop;
-		const pad = () => (scroller.style.scrollPaddingTop = `${own.offsetHeight}px`);
+		const pad = () => {
+			barHeight = own.offsetHeight;
+			scroller.style.scrollPaddingTop = `${barHeight}px`;
+		};
 		pad();
 		measure();
 		// Cards grow and shrink as forms open, photos load and the bar itself wraps.
@@ -143,18 +151,20 @@
 
 <!--
 	A zero-height sticky slot: it takes no room in the page's flow (its negative top margin hands
-	back the page's gap), so it sticks exactly when the identity card's bottom reaches the top.
-	The bar hangs out of it, full bleed across the page's own padding, so content scrolling under
+	back the page's gap) and sticks at the bar's own height, so it sticks — and the bar shows —
+	exactly when the identity card's bottom passes under the bar's foot. Until then the hidden bar
+	hangs over the card's last line, inert and letting every tap through. It hangs above the slot,
+	full bleed across the page's own padding, so content scrolling under
 	it never shows at its sides; the negative margin stays inside the page, so nothing reaches
 	past the screen's edge.
 -->
-<div class="sticky top-0 z-10 -mt-5 h-0">
+<div class="sticky z-10 -mt-5 h-0" style:top="{barHeight}px">
 	<nav
 		bind:this={bar}
 		aria-label={t('contact.jumpBar.label')}
 		inert={!visible}
 		data-visible={visible}
-		class="-mx-4 border-b border-border-subtle bg-bg/90 px-4 py-2 backdrop-blur transition-[opacity,translate] duration-(--motion-fade) ease-standard data-[visible=false]:pointer-events-none data-[visible=false]:-translate-y-1.5 data-[visible=false]:opacity-0 md:-mx-6 md:px-6"
+		class="absolute -inset-x-4 bottom-0 border-b border-border-subtle bg-bg/90 px-4 py-2 backdrop-blur transition-[opacity,translate] duration-(--motion-fade) ease-standard data-[visible=false]:pointer-events-none data-[visible=false]:-translate-y-1.5 data-[visible=false]:opacity-0 md:-inset-x-6 md:px-6"
 		data-testid="jump-bar"
 	>
 		<ul class="grid grid-cols-4 gap-1 sm:flex sm:flex-wrap">

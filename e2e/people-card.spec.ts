@@ -207,6 +207,11 @@ test.describe('the jump bar', () => {
 			/^Activity/,
 			/^Notes/
 		]);
+		// The bar shows only once the identity card has gone by (docs/05 §5.5).
+		await page
+			.locator('#section-relationships')
+			.evaluate((el) => el.scrollIntoView({ block: 'start' }));
+		await expect(bar(page)).toHaveAttribute('data-visible', 'true');
 
 		await bar(page)
 			.getByRole('link', { name: /^Notes/ })

@@ -164,6 +164,11 @@ test.describe('the jump bar', () => {
 		await page.goto('/contacts/demo-c-markus');
 		await appReady(page);
 		const bar = page.getByRole('navigation', { name: 'Parts of this page' });
+		// The bar shows only once the identity card has gone by (docs/05 §5.5).
+		await page
+			.locator('#section-relationships')
+			.evaluate((el) => el.scrollIntoView({ block: 'start' }));
+		await expect(bar).toHaveAttribute('data-visible', 'true');
 
 		await bar.getByRole('link', { name: /^Photos/ }).click();
 		await expect(page).toHaveURL(/#section-photos$/);
