@@ -9,7 +9,7 @@
 	import type { SurnamePersonView } from './types';
 
 	/*
-	 * *No suggestion* (docs/concepts/surnames.md §3.1): a field per person, offering the
+	 * *No suggestion* (docs/02 §2.2.4.2): a field per person, offering the
 	 * surnames the household already uses. *Select…* ticks several of them and opens the same
 	 * bar as the People directory, so five cousins with no link at all still get one name in
 	 * one step.

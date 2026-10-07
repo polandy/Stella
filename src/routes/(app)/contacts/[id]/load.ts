@@ -133,7 +133,7 @@ export const load = (async ({ locals, params, url }) => {
 		// A shown name a member chose does not follow its parts; the name editor says so (§2.2).
 		shownNameChosen: shownNameIsChosen(contact),
 		/*
-		 * Last names (docs/concepts/surnames.md §3.3, §3.4): the proposal for this person, as
+		 * Last names (docs/02 §2.2.4.5, §2.2.4.6): the proposal for this person, as
 		 * chips under the name, and whom a name given here is offered on to afterwards.
 		 */
 		lastNameHelp: {

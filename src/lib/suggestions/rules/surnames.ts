@@ -5,7 +5,7 @@ import type { Confidence } from '../types';
 import { buildView } from '../view';
 
 /*
- * Where a last name can come from (docs/concepts/surnames.md §4). Each rule reads only what
+ * Where a last name can come from (docs/02 §2.2.4.1). Each rule reads only what
  * one viewer may see and yields a name, a confidence and a reason; `proposeSurname` combines
  * them for one person. The ids continue the F series of relationship-suggestions.md §4.
  *

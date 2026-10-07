@@ -371,7 +371,7 @@ export function createDrizzleContactRepository(
 
 		async writeNames(writes: readonly NameWrite[], audit: NewActivityEntry | null) {
 			// One transaction: a batch of last names lands whole, with the line that tells the
-			// household about it, or not at all (docs/concepts/surnames.md §7).
+			// household about it, or not at all (docs/02 §2.2.4.4).
 			db.transaction((tx) => {
 				for (const { id, ...name } of writes) {
 					tx.update(contactTable).set(name).where(eq(contactTable.id, id)).run();

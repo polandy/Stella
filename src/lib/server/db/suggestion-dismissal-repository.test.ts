@@ -102,7 +102,7 @@ describe('the dismissal log', () => {
 });
 
 /*
- * The household's *not this name* (docs/concepts/surnames.md §5) lives in the same log, under
+ * The household's *not this name* (docs/02 §2.2.4.2) lives in the same log, under
  * the relation `last_name`, keyed by the person and the folded name.
  */
 describe('the last-name dismissals', () => {

@@ -10,7 +10,7 @@
 	import type { SurnamePersonView } from './types';
 
 	/*
-	 * One proposed last name and everyone it is proposed for (docs/concepts/surnames.md §3.1).
+	 * One proposed last name and everyone it is proposed for (docs/02 §2.2.4.2).
 	 * Each row says why; rows from a sure rule start ticked, a partner's or a child's name starts
 	 * unticked. *Apply* gives the ticked people the name in one batch, with Undo. A row's menu
 	 * holds *Not this name*, which the household keeps, and the lower-ranked names, if any.

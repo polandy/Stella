@@ -12,7 +12,7 @@ import {
 } from './surnames';
 
 /*
- * Where a last name can come from (docs/concepts/surnames.md §4): the rules F1–F3 and F9–F11,
+ * Where a last name can come from (docs/02 §2.2.4.1): the rules F1–F3 and F9–F11,
  * and how their proposals combine for one person. Pure: the facts are what one viewer may see.
  */
 

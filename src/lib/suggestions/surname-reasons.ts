@@ -1,7 +1,7 @@
 import type { LinkedPhrase, PersonRef } from '$lib/i18n/linked';
 
 /*
- * Why a last name is proposed (docs/concepts/surnames.md §4), as sentences that are said only
+ * Why a last name is proposed (docs/02 §2.2.4.1), as sentences that are said only
  * once the reader's language is known — and whose names still lead to those people. One
  * builder per rule; the rules name a builder, never a message key.
  */

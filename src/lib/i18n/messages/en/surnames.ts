@@ -1,7 +1,7 @@
 /* Last names for several people at once, and where Stella proposes one (docs/02 §2.2.4). */
 
 export const surnames = {
-	// Why a last name is proposed: one sentence per rule (docs/concepts/surnames.md §4).
+	// Why a last name is proposed: one sentence per rule (docs/02 §2.2.4.1).
 	'surnames.reason.child': (p: { parent: string }) => `Child of ${p.parent}`,
 	'surnames.reason.sibling': (p: { sibling: string }) => `Sibling of ${p.sibling}`,
 	'surnames.reason.partner': (p: { partner: string }) => `Partner of ${p.partner}`,
@@ -53,7 +53,7 @@ export const surnames = {
 	'surnames.toast.passOn': (p: { people: string; count: number; name: string }) =>
 		`Last name saved. ${p.people} ${p.count === 1 ? 'has' : 'have'} none yet — ${p.name} too?`,
 	'surnames.toast.yes': 'Yes',
-	// The profile's chip (docs/concepts/surnames.md §3.4).
+	// The profile's chip (docs/02 §2.2).
 	'surnames.chip': (p: { name: string }) => `${p.name}?`,
 	'surnames.chipHint': (p: { name: string }) => `Give the last name ${p.name}`,
 	'surnames.passOnPrompt': (p: { people: string; count: number; name: string }) =>

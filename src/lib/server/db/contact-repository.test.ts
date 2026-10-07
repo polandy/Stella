@@ -751,7 +751,7 @@ describe('writeNames', () => {
 });
 
 /*
- * The owner's case from the preview (docs/concepts/surnames.md §6): Franziska — first name
+ * The owner's case from the preview (docs/02 §2.2, ADR-106): Franziska — first name
  * Franziska, no last name, shown as "Franziska" — given Widmer by a batch must read "Franziska
  * Widmer". Driven through the real adapter and the use-case, the way the batch action runs it.
  */

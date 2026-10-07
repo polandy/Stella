@@ -42,7 +42,7 @@
 	const savedArchive = savedEnhance(removals, t('components.saved'), () => (panel = null));
 	/*
 	 * `?merge=<id>` arrives from *There is already a Lea Brunner — the same person?* after a
-	 * last name was given (docs/concepts/surnames.md §5): the card opens this step with that
+	 * last name was given (docs/02 §2.2.4.4): the card opens this step with that
 	 * person in it, and the merge still waits for the admin's own click.
 	 */
 	const proposedMerge = page.url.searchParams.get('merge');

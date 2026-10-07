@@ -80,7 +80,7 @@ const LAST_NAME = 'last_name';
 const surnameKey = (contactId: string, folded: string) => `${contactId} ${folded}`;
 
 /*
- * Drizzle adapter for the household's *not this name* (docs/concepts/surnames.md §5): the same
+ * Drizzle adapter for the household's *not this name* (docs/02 §2.2.4.2): the same
  * log as the relationship claims, under `last_name`, keyed by the person and the folded name.
  * Scoped to the household; the use-case has checked the person is visible before writing.
  */

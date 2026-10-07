@@ -271,17 +271,17 @@ export function getContacts(): ContactRepository & NameCandidateSource & NameRep
 	return (contactRepository ??= createDrizzleContactRepository(getDb()));
 }
 
-/** Deps for changing name parts, one person or several (docs/concepts/surnames.md §7). */
+/** Deps for changing name parts, one person or several (docs/02 §2.2, §2.2.4.4). */
 export function getNameDeps(): NameDeps {
 	return { names: getContacts(), clock: systemClock, ids: ulidGenerator };
 }
 
-/** Deps for setting last names in one batch, with its log entry (docs/concepts/surnames.md §7). */
+/** Deps for setting last names in one batch, with its log entry (docs/02 §2.2.4.4). */
 export function getLastNameDeps(): LastNameDeps {
 	return getNameDeps();
 }
 
-/** Deps for reading what Stella proposes as last names (docs/concepts/surnames.md §4). */
+/** Deps for reading what Stella proposes as last names (docs/02 §2.2.4.1). */
 export function getSurnameReviewDeps(): SurnameReviewDeps {
 	return {
 		surnames: createDrizzleSurnameFacts(getDb()),
@@ -290,7 +290,7 @@ export function getSurnameReviewDeps(): SurnameReviewDeps {
 	};
 }
 
-/** Deps for the household's *not this name* (docs/concepts/surnames.md §5). */
+/** Deps for the household's *not this name* (docs/02 §2.2.4.2). */
 export function getSurnameDismissalDeps(): SurnameDismissalDeps {
 	return {
 		names: getContacts(),

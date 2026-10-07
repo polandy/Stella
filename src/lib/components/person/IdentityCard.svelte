@@ -230,7 +230,7 @@
 	const menu = $derived(
 		recordMenu({ isAdmin: data.isAdmin, archived, isSelf, canTracePath: otherContacts.length > 0 })
 	);
-	/** The confirm step the menu opened; `?merge=` opens merging (docs/concepts/surnames.md §5). */
+	/** The confirm step the menu opened; `?merge=` opens merging (docs/02 §2.2.4.4). */
 	let panel = $state<'archive' | 'merge' | 'delete' | null>(
 		untrack(() => initialPanel(page.url.searchParams.get('merge'), data.isAdmin))
 	);
