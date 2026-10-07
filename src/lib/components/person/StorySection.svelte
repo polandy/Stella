@@ -27,6 +27,7 @@
 	} from '$lib/interactions/kinds';
 	import { asTyped, newPeopleAsCandidates } from '$lib/mentions/picks';
 	import { reveal, settleOpenedForm, showOpenedForm } from '$lib/motion/motion.svelte';
+	import { openedFormGlide } from '$lib/motion/motion';
 	import { keepable } from '$lib/pwa/keepable';
 	import { isKept, type KeptOf } from '$lib/pwa/outbox';
 	import { outbox } from '$lib/pwa/outbox.svelte';
@@ -84,23 +85,27 @@
 	let composerRun = $state(0);
 	let editingMoment = $state<KeptOf<'moment.capture'> | null>(null);
 	// Whether opening glided the card, for settling it once the composer has grown.
-	let composerGlided = false;
+	const composerGlide = openedFormGlide();
 	let composerBox: HTMLElement | undefined = $state();
 	function keepComposerInView() {
-		settleOpenedForm(document.getElementById(sectionAnchor('story')), composerBox, composerGlided);
-		composerGlided = false;
+		settleOpenedForm(
+			document.getElementById(sectionAnchor('story')),
+			composerBox,
+			composerGlide.settle()
+		);
 	}
 
 	/** Open the composer — or, open already, bring the reader back to it. */
 	export async function writeMoment() {
 		const next = withMomentAsked(openForm);
+		if (next.opened) composerGlide.opening();
 		openForm = next.open;
 		if (next.opened) await tick();
 		const card = document.getElementById(sectionAnchor('story'));
 		const field = card?.querySelector<HTMLTextAreaElement>('[data-moment-body]');
 		// The way every card form opens (docs/05 §5.11): a card low in the view or off screen
 		// glides to just under the top bar, so on a phone the field sits above the keyboard.
-		if (card) composerGlided = showOpenedForm(card, field);
+		if (card) composerGlide.opened(showOpenedForm(card, field));
 		field?.setSelectionRange(field.value.length, field.value.length);
 	}
 

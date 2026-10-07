@@ -7,6 +7,7 @@ import {
 	gapToTakeUp,
 	glidePlan,
 	glideToOpenedForm,
+	openedFormGlide,
 	scrollTopToShow,
 	revealFrame,
 	scrollBehavior,
@@ -236,5 +237,33 @@ describe('scrollTopToShow', () => {
 				block: 'nearest'
 			})
 		).toBe(940);
+	});
+});
+
+describe('openedFormGlide', () => {
+	it('owes the settle the glide the opening made, once', () => {
+		const owed = openedFormGlide();
+		owed.opening();
+		owed.opened(true);
+		expect(owed.settle()).toBe(true);
+		expect(owed.settle()).toBe(false);
+	});
+
+	it('owes nothing for a card that held still', () => {
+		const owed = openedFormGlide();
+		owed.opening();
+		owed.opened(false);
+		expect(owed.settle()).toBe(false);
+	});
+
+	it('starts every opening owing nothing, though an instant reveal settled before the last one glided', () => {
+		// Reduced motion: the reveal ends at once, before the opener has measured the card.
+		const owed = openedFormGlide();
+		owed.opening();
+		expect(owed.settle()).toBe(false);
+		owed.opened(true);
+		// The next opening of a card that holds still must not glide it to the top.
+		owed.opening();
+		expect(owed.settle()).toBe(false);
 	});
 });

@@ -8,6 +8,7 @@
 	import { focusLeftForm, owesFocusBack } from '$lib/ui/focus-return';
 	import { focusDestination } from '$lib/ui/focus-destination';
 	import { reveal, settleOpenedForm, showOpenedForm } from '$lib/motion/motion.svelte';
+	import { openedFormGlide } from '$lib/motion/motion';
 	import type { IconName } from './icons';
 
 	/*
@@ -122,6 +123,7 @@
 	$effect(() => {
 		const justOpened = expanded && !wasExpanded && error === null;
 		const justClosed = !expanded && wasExpanded;
+		if (expanded && !wasExpanded) openGlide.opening();
 		wasExpanded = expanded;
 		if (justClosed) {
 			const hadFocusInside = focusInForm;
@@ -138,9 +140,11 @@
 		if (!justOpened || !form) return;
 		void tick().then(() => {
 			if (!card) return;
-			glidedOnOpen = showOpenedForm(
-				card,
-				firstField([...(form?.querySelectorAll<HTMLElement>(FIELD_SELECTOR) ?? [])])
+			openGlide.opened(
+				showOpenedForm(
+					card,
+					firstField([...(form?.querySelectorAll<HTMLElement>(FIELD_SELECTOR) ?? [])])
+				)
 			);
 		});
 	});
@@ -149,10 +153,9 @@
 	 * Opening brings the card into view the one way every card form does (docs/05 §5.11), and
 	 * settles it once the form has grown.
 	 */
-	let glidedOnOpen = false;
+	const openGlide = openedFormGlide();
 	function keepFormInView() {
-		settleOpenedForm(card, form, glidedOnOpen);
-		glidedOnOpen = false;
+		settleOpenedForm(card, form, openGlide.settle());
 	}
 
 	/*

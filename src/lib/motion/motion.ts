@@ -163,6 +163,33 @@ export function glideToOpenedForm(input: {
 }
 
 /**
+ * What an opened form owes its card once it has grown (`settleOpenedForm`, docs/05 §5.11): the
+ * glide its opening made, if any. The two land in either order — with reduced motion the reveal
+ * ends at once, before the opener has measured the card — so each opening starts owing nothing,
+ * and a settle uses up what is owed.
+ */
+export function openedFormGlide(): {
+	opening: () => void;
+	opened: (glided: boolean) => void;
+	settle: () => boolean;
+} {
+	let owed = false;
+	return {
+		opening: () => {
+			owed = false;
+		},
+		opened: (glided) => {
+			owed = glided;
+		},
+		settle: () => {
+			const was = owed;
+			owed = false;
+			return was;
+		}
+	};
+}
+
+/**
  * Where the shell's scroller goes to show an element (docs/05 §5.11) — computed rather than
  * left to `scrollIntoView`, which scrolls every scrollable ancestor, the document included, and
  * on a phone drags the sticky bars off the top of the screen. Positions are on screen: the band
