@@ -244,7 +244,8 @@ Goal: sand the edges and add the nice-to-haves.
   through it.
 - Keep the footprint lean: audit bundle size and idle memory each milestone.
 - Keep the agent workflow lean: the token-efficiency backlog in
-  `docs/concepts/token-efficiency-2026-10.md` §3 is worked off one row per session.
+  `docs/concepts/token-efficiency-2026-10.md` §3 is built (2026-10-07); new findings go
+  in a new review.
 
 ## Explicitly later / maybe-never
 

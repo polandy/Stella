@@ -1,5 +1,7 @@
 # Token-efficiency review — October 2026
 
+Status: **built** — all eight rows of §3 done on 2026-10-07.
+
 **Scope:** how much model context the agent workflow on this repository consumes, and why.
 Measured on 2026-10-07 from the 77 main-session and 133 subagent transcripts on the owner's
 machine (`~/.claude/projects/-home-andy-dev-Stella/`), the last 40 CI runs, the sizes of
@@ -179,6 +181,11 @@ Docs only if concept papers are still written there. Not a PR.
 
 Done when: the first turn of a fresh session is measurably smaller.
 
+Result (2026-10-07): the median first turn went from 43.47k (the nine sessions after row 1) to
+43.13k, −0.3k. Connector tools load deferred — only their names, not their schemas — so
+Drive's twelve names were the whole saving; Gmail and Calendar were already unauthenticated
+and still cost one notice line. Claude Docs stays loaded.
+
 ---
 
 ## 3. Work order
@@ -196,7 +203,7 @@ handing the owner the prompt for the next row.
 | 5 | TE-04 headings in the five largest docs; ADR index | M | ☑ | Makes the *read only the section* rule true |
 | 6 | TE-06 format hook complains instead of no-op | S | ☑ | Removes a lint round per stale checkout |
 | 7 | TE-07 run the edited e2e specs before the push | S | ☑ | Removes an e2e round per edited spec |
-| 8 | TE-08 disable unused connectors | S | ☐ | Owner setting, no PR; do when convenient |
+| 8 | TE-08 disable unused connectors | S | ☑ | Owner setting, no PR; do when convenient |
 
 Paste-ready prompt for a row:
 
