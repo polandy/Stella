@@ -35,8 +35,6 @@ import {
 	getImportantDateDeps,
 	getInteractionDeps,
 	getNoteDeps,
-	getGalleryDeps,
-	getPhotos,
 	getStoryDeps,
 	getTagDeps,
 	getMemberDeps,
@@ -108,7 +106,7 @@ export const load = (async ({ locals, params, url }) => {
 			: [];
 
 	// Only the photos of the entries on the story's first page; later pages bring their own.
-	const journalPhotos = await getPhotos().listJournalPhotosOfEntries(
+	const journalPhotos = await locals.services.media.photos.listJournalPhotosOfEntries(
 		viewer,
 		params.id,
 		entryIdsOf(read.storyPage.items)
@@ -220,7 +218,12 @@ export const load = (async ({ locals, params, url }) => {
  * through a use-case scoped to the viewer; nothing here decides what anyone may see.
  */
 function readPersonPage(
-	{ people, relationships, circles }: Pick<AppServices, 'people' | 'relationships' | 'circles'>,
+	{
+		people,
+		relationships,
+		circles,
+		media
+	}: Pick<AppServices, 'people' | 'relationships' | 'circles' | 'media'>,
 	viewer: Viewer,
 	contactId: string,
 	request: { reviewOpen: boolean; proposeFor: { a: string; b: string }[] }
@@ -235,7 +238,7 @@ function readPersonPage(
 		lastContactedAt: lastContactedOn(getInteractionDeps(), viewer, contactId),
 		notes: listNotesForContact(getNoteDeps(), viewer, contactId),
 		mentionedIn: listMentionedIn(getMentionedInDeps(), viewer, contactId),
-		gallery: listGallery(getGalleryDeps(), viewer, contactId),
+		gallery: listGallery(media.galleryDeps, viewer, contactId),
 		groupPhotos: listGroupPhotosOf(circles.cutDeps, viewer, contactId),
 		groupPhotosToCut: listGroupPhotosToCut(circles.cutDeps, viewer, contactId),
 

@@ -1,5 +1,4 @@
 import { error } from '@sveltejs/kit';
-import { getMediaStore, getPhotos } from '$lib/server/services';
 import type { RequestHandler } from './$types';
 import { say } from '$lib/server/i18n/say';
 
@@ -19,11 +18,11 @@ export const GET: RequestHandler = async ({ locals, params, url }) => {
 			? 'view'
 			: 'full';
 
-	const file = await getPhotos().getVisiblePhotoFile(viewer, params.id, variant);
+	const file = await locals.services.media.photos.getVisiblePhotoFile(viewer, params.id, variant);
 	if (!file) throw error(404, say(locals, 'errors.notFound'));
 
 	// Streamed from disk rather than read into memory first: a full-size photo is megabytes.
-	const opened = await getMediaStore().open(file.path);
+	const opened = await locals.services.media.store.open(file.path);
 	if (!opened) throw error(404, say(locals, 'errors.notFound'));
 
 	return new Response(opened.body, {

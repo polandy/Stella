@@ -88,7 +88,17 @@ describe('the composition root', () => {
 			// The circles context (AR-01, fourth slice): read `locals.services.circles`.
 			'CircleDeps',
 			'CirclePhotoDeps',
-			'CutDeps'
+			'CutDeps',
+			// The media context (AR-01, fifth slice): read `locals.services.media`.
+			'Photos',
+			'MediaStore',
+			'AvatarDeps',
+			'ImportedPhotoDeps',
+			'GalleryDeps',
+			'FramingDeps',
+			'GalleryUploadDeps',
+			'JournalPhotoDeps',
+			'StreamDeps'
 		];
 		const retired = new RegExp(`\\bget(?:${factories.join('|')})\\b`);
 		expect(files.filter((path) => retired.test(source(path)))).toEqual([]);

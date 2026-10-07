@@ -1,5 +1,6 @@
 import { createAuthServices, type AuthServices, type AuthWiring } from './auth';
 import { createCircleServices, type CircleServices, type CircleWiring } from './circles';
+import { createMediaServices, type MediaServices, type MediaWiring } from './media';
 import { createPeopleServices, type PeopleServices, type PeopleWiring } from './people';
 import {
 	createRelationshipServices,
@@ -21,28 +22,37 @@ export interface AppServices {
 	people: PeopleServices;
 	relationships: RelationshipServices;
 	circles: CircleServices;
+	media: MediaServices;
 }
 
 /**
  * What the graph is built from; each context's wiring joins this as it moves in. A context
  * that reads another grouped context's repository gets it from here, not from the wiring
- * (`people` reads `auth`'s accounts and the relationships context's repository, `circles`
- * reads `people`'s contacts), so each repository exists once.
+ * (`people` reads `auth`'s accounts, the relationships context's repository and `media`'s
+ * store, `circles` reads `people`'s contacts and `media`'s store), so each repository exists
+ * once.
  */
 export type ServicesWiring = AuthWiring &
 	RelationshipWiring &
-	Omit<PeopleWiring, 'accounts' | 'relationships'> &
-	Omit<CircleWiring, 'contacts'>;
+	MediaWiring &
+	Omit<PeopleWiring, 'accounts' | 'relationships' | 'media'> &
+	Omit<CircleWiring, 'contacts' | 'media'>;
 
 /** Wires every grouped context. Pure assembly: no I/O beyond what the adapters do when used. */
 export function createServices(wiring: ServicesWiring): AppServices {
 	const auth = createAuthServices(wiring);
 	const relationships = createRelationshipServices(wiring);
+	const media = createMediaServices(wiring);
 	const people = createPeopleServices({
 		...wiring,
 		accounts: auth.accounts,
-		relationships: relationships.relationships
+		relationships: relationships.relationships,
+		media: media.store
 	});
-	const circles = createCircleServices({ ...wiring, contacts: people.contacts });
-	return { auth, people, relationships, circles };
+	const circles = createCircleServices({
+		...wiring,
+		contacts: people.contacts,
+		media: media.store
+	});
+	return { auth, people, relationships, circles, media };
 }

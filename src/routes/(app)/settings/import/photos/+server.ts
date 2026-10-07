@@ -7,7 +7,7 @@ import { previewImport } from '$lib/server/domain/import/apply';
 import { attachImportedPhoto } from '$lib/server/domain/import/monica/photos';
 import { InvalidImageError } from '$lib/server/domain/media/journal-photos';
 import { readStagedDump } from '$lib/server/import/staging';
-import { getImportDeps, getImportedPhotoDeps } from '$lib/server/services';
+import { getImportDeps } from '$lib/server/services';
 import type { RequestHandler } from './$types';
 import { importWording } from '$lib/server/i18n/import-wording';
 import { takenAtField } from '$lib/server/http/taken-at-field';
@@ -87,7 +87,7 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 	if (!planned) throw error(404, say(locals, 'import.error.photoNotInImport'));
 
 	try {
-		const status = await attachImportedPhoto(getImportedPhotoDeps(), {
+		const status = await attachImportedPhoto(locals.services.media.importedPhotoDeps, {
 			photoId: planned.id,
 			contactId: planned.contactId,
 			householdId: user.householdId,

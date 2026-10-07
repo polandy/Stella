@@ -4,7 +4,6 @@ import { systemClock } from '../clock';
 import { getConfig } from '../config';
 import { getDb, getSqlite } from '../db';
 import { createDrizzleAttentionRepository } from '../db/attention-repository';
-import { createDrizzleStreamRepository } from '../db/stream-repository';
 import { createDrizzleJournalRepository } from '../db/journal-repository';
 import { createDrizzleContactFieldRepository } from '../db/contact-field-repository';
 import { createDrizzleImportantDateRepository } from '../db/important-date-repository';
@@ -12,8 +11,6 @@ import { createDrizzleImportRepository } from '../db/import-repository';
 import { createDrizzleInteractionRepository } from '../db/interaction-repository';
 import { createDrizzleMentionedInRepository } from '../db/mentioned-in-repository';
 import { createDrizzleNoteRepository } from '../db/note-repository';
-import { createDrizzlePhotoRepository } from '../db/photo-repository';
-import { createFileMediaStore } from '../media/file-store';
 import { createGitHubReleaseFeed } from '../release/github-feed';
 import { createUpdateCheck, type UpdateCheck } from '../domain/release/update-check';
 import { parseVersion } from '../domain/release/version';
@@ -38,7 +35,6 @@ import type { NoteDeps, NoteRepository } from '../domain/notes/notes';
 import type { JournalDeps, JournalRepository } from '../domain/journal/journal';
 import type { TagDeps, TagRepository } from '../domain/tags/tags';
 import { prepareCirclePhotoUpload } from '../domain/circles/circle-photos';
-import type { StreamDeps, StreamRepository } from '../domain/stream/stream';
 import { captureMoment, type CaptureMomentDeps } from '../domain/moments/moments';
 import type {
 	CommandActor,
@@ -67,19 +63,8 @@ import { assignTagByName } from '../domain/tags/tags';
 import { joinCircleByName } from '../domain/circles/circles';
 import type { ImportantDateDeps, ImportantDateRepository } from '../domain/dates/important-dates';
 import type { ImportDeps, ImportRepository } from '../domain/import/apply';
-import type { ImportedPhotoDeps } from '../domain/import/monica/photos';
 import type { InteractionDeps, InteractionRepository } from '../domain/interactions/interactions';
-import {
-	setContactAvatar,
-	type AvatarDeps,
-	type MediaStore,
-	type MediaStreamSource,
-	type PhotoRepository
-} from '../domain/media/avatars';
-import type { FramingDeps, FramingRepository } from '../domain/media/framing';
-import type { GalleryDeps } from '../domain/media/gallery';
-import type { GalleryUploadDeps } from '../domain/media/gallery-upload';
-import type { JournalPhotoDeps } from '../domain/media/journal-photos';
+import { setContactAvatar } from '../domain/media/avatars';
 import { ulidGenerator } from '../id';
 import { createDrizzleImmichIgnoreRepository } from '../db/immich-ignore-repository';
 import { createDrizzleImmichLinkRepository } from '../db/immich-link-repository';
@@ -124,16 +109,18 @@ export function getServices(): AppServices {
 		config: getConfig(),
 		db: getDb(),
 		clock: systemClock,
-		ids: ulidGenerator,
-		// Not grouped yet (AR-01): its factory below hands the people and circles contexts the
-		// same lazily built instance it hands everyone else.
-		media: getMediaStore()
+		ids: ulidGenerator
 	}));
 }
 
 /** The people context, for the factories of contexts not grouped yet. */
 function people(): AppServices['people'] {
 	return getServices().people;
+}
+
+/** The media context, for the factories of contexts not grouped yet. */
+function media(): AppServices['media'] {
+	return getServices().media;
 }
 
 /*
@@ -170,7 +157,7 @@ export function getJournal(): JournalRepository {
 }
 
 export function getJournalDeps(): JournalDeps {
-	return { journal: getJournal(), media: getMediaStore(), ids: ulidGenerator, clock: systemClock };
+	return { journal: getJournal(), media: media().store, ids: ulidGenerator, clock: systemClock };
 }
 
 let contactFieldRepository: ContactFieldRepository | null = null;
@@ -260,7 +247,6 @@ export function getTagDeps(): TagDeps {
 	return { tags: getTags(), ids: ulidGenerator, clock: systemClock };
 }
 
-let photoRepository: ReturnType<typeof createDrizzlePhotoRepository> | null = null;
 let archiveRepository: ArchiveRepository | null = null;
 
 /** Deps for exporting the household as one archive (docs/02 §2.15). */
@@ -276,62 +262,10 @@ export function getImportArchiveDeps(): ImportArchiveDeps {
 	restoreRepository ??= createDrizzleRestoreRepository(getDb(), getSqlite());
 	return {
 		restore: restoreRepository,
-		media: getMediaStore(),
+		media: media().store,
 		ids: ulidGenerator,
 		clock: systemClock
 	};
-}
-
-let mediaStore: (MediaStore & MediaStreamSource) | null = null;
-
-export function getPhotos(): PhotoRepository {
-	return photoAdapter();
-}
-
-/** One Drizzle adapter serves both photo ports; each use-case sees only its own. */
-function photoAdapter(): PhotoRepository & FramingRepository {
-	return (photoRepository ??= createDrizzlePhotoRepository(getDb()));
-}
-
-export function getMediaStore(): MediaStore & MediaStreamSource {
-	return (mediaStore ??= createFileMediaStore(getConfig().mediaDir));
-}
-
-export function getAvatarDeps(): AvatarDeps {
-	return { photos: getPhotos(), media: getMediaStore(), ids: ulidGenerator, clock: systemClock };
-}
-
-export function getImportedPhotoDeps(): ImportedPhotoDeps {
-	return { photos: getPhotos(), media: getMediaStore(), clock: systemClock };
-}
-
-/** Deps for the photo gallery on a person (docs/02 §2.14). */
-export function getGalleryDeps(): GalleryDeps {
-	return { photos: getPhotos(), media: getMediaStore(), clock: systemClock };
-}
-
-/** Deps for wearing a gallery photo through a chosen square (docs/02 §2.14). */
-export function getFramingDeps(): FramingDeps {
-	return {
-		framings: photoAdapter(),
-		media: getMediaStore(),
-		ids: ulidGenerator,
-		clock: systemClock
-	};
-}
-
-export function getGalleryUploadDeps(): GalleryUploadDeps {
-	return { photos: getPhotos(), media: getMediaStore(), ids: ulidGenerator, clock: systemClock };
-}
-
-export function getJournalPhotoDeps(): JournalPhotoDeps {
-	return { photos: getPhotos(), media: getMediaStore(), ids: ulidGenerator, clock: systemClock };
-}
-
-let streamRepository: StreamRepository | null = null;
-
-export function getStreamDeps(): StreamDeps {
-	return { stream: (streamRepository ??= createDrizzleStreamRepository(getDb())) };
 }
 
 export function getCaptureMomentDeps(): CaptureMomentDeps {
@@ -425,7 +359,7 @@ export function getCommandDeps(): CommandDeps {
 					{
 						receipts,
 						entries: createDrizzleEntryOwnership(getDb()),
-						photos: getJournalPhotoDeps()
+						photos: media().journalPhotoDeps
 					},
 					actor,
 					payload
@@ -447,7 +381,7 @@ export function getCommandDeps(): CommandDeps {
 			})),
 			'gallery.photo': (actor, payload) =>
 				attachGalleryPhoto(
-					{ receipts, contacts: people().contacts, photos: getGalleryUploadDeps() },
+					{ receipts, contacts: people().contacts, photos: media().galleryUploadDeps },
 					actor,
 					payload
 				),
@@ -590,7 +524,7 @@ export function getUseImmichPhotoDeps(): UseImmichPhotoDeps | null {
 		contacts: people().contacts,
 		signer: configured.signer,
 		setAvatar: (uploader, contactId, upload) =>
-			setContactAvatar(getAvatarDeps(), uploader, contactId, upload)
+			setContactAvatar(media().avatarDeps, uploader, contactId, upload)
 	};
 }
 

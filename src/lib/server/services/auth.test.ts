@@ -123,11 +123,11 @@ describe('createAuthServices', () => {
 describe('createServices', () => {
 	it('groups the auth context under `auth`', async () => {
 		const services = createServices({
-			config,
+			// Nothing here touches a file: the media store is lazy on disk.
+			config: { ...config, mediaDir: '/nonexistent/stella-media' },
 			db,
 			clock,
-			ids,
-			media: { put: async (key) => key, read: async () => null, delete: async () => {} }
+			ids
 		});
 		expect(await services.auth.accounts.countUsers()).toBe(0);
 	});

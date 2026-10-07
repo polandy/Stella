@@ -164,12 +164,11 @@ describe('createServices', () => {
 			}
 		};
 		const services = createServices({
-			config,
+			// Nothing here touches a file: the media store is lazy on disk.
+			config: { ...config, mediaDir: '/nonexistent/stella-media' },
 			db,
 			clock,
-			ids,
-			// The circles context stores photos, so the graph needs the whole store.
-			media: { ...media, put: async (key) => key, read: async () => null }
+			ids
 		});
 		expect(services.people.selfContactDeps.accounts).toBe(services.auth.accounts);
 	});
