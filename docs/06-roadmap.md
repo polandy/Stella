@@ -115,7 +115,8 @@ Goal: sand the edges and add the nice-to-haves.
 - **Gift ideas and gifts given** — per person: ideas to give, what was given and when, so
   the same present is not given twice. Shared by default, private per record (docs/02 §2.10).
   A Monica import already lands gifts as notes (docs/monica-mapping.md); once this ships they
-  move to real gift records. Scope and data model are still to be written (docs/02, docs/03).
+  move to real gift records. Ideas, gifts given and gifts received per person; the moment
+  kind *Gift* folds into them. Decided in `docs/concepts/gifts.md` (mockup alongside).
 - **Email and social sync** — bring in what already knows about people: Google Contacts as a
   first source, then mail and social. Read-only import first, matched against existing people
   through a review list rather than merged silently, every write through the domain
