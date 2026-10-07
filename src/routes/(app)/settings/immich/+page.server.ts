@@ -34,9 +34,9 @@ import { say, translator } from '$lib/server/i18n/say';
 import type { Actions, PageServerLoad } from './$types';
 
 /*
- * *Settings → Immich → Find your people* (docs/concepts/immich.md §4.2, docs/02 §2.24.7): every
+ * *Settings → Immich → Find your people* (docs/02 §2.24.7): every
  * person the viewer sees, next to the Immich face their name matches. Any member may use it — a
- * link is household data (§9.4). Without Immich it does not exist.
+ * link is household data (§2.24.2). Without Immich it does not exist.
  *
  * The list is handed over as a promise: the page opens at once, and the rows arrive when Immich
  * has listed its people. A link changes nothing else on the page, so linking does not ask Immich
@@ -174,7 +174,7 @@ export const actions: Actions = {
 	link: linking,
 	linkAll: linking,
 
-	/* Ignore a row: the contact with every face the row showed (concept §9). */
+	/* Ignore a row: the contact with every face the row showed (docs/02 §2.24.7). */
 	ignore: async ({ request, locals }) => {
 		const actor = actorOf(locals);
 		const deps = getImmichIgnoreDeps();

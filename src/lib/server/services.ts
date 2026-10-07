@@ -763,13 +763,13 @@ export interface Immich {
 	gateway: ImmichGateway;
 	connection: ImmichConnection;
 	publicUrl: string;
-	/** Signs every image URL the browser gets for Immich (docs/concepts/immich.md §5). */
+	/** Signs every image URL the browser gets for Immich (docs/02 §2.24.4). */
 	signer: ImmichMediaSigner;
 }
 
 /*
  * Immich, or null when this instance has none — the feature then appears nowhere
- * (docs/concepts/immich.md §6). Built once, because the connection caches its status. The demo
+ * (docs/04 §4.3). Built once, because the connection caches its status. The demo
  * server gets the in-memory stand-in, so the feature can be tried without a real Immich.
  */
 let immich: Immich | null | undefined;

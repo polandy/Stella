@@ -5,7 +5,7 @@
 	import type { PersonPageData } from './types';
 
 	/*
-	 * The line under a linked person's gallery (docs/concepts/immich.md §4.3, §4.5): how many
+	 * The line under a linked person's gallery (docs/02 §2.24.3): how many
 	 * photos Immich has of them and, for every member, the way there. It fills in after the
 	 * page — the answer is a promise — so a slow Immich never holds the page up, and a failure
 	 * is one quiet line rather than an error page. A person deleted in Immich offers the unlink.

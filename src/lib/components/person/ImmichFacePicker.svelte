@@ -6,18 +6,18 @@
 	import { submitAction } from '$lib/undo/submit-action';
 
 	/*
-	 * *Find in Immich* (docs/concepts/immich.md §4.3): the faces in the household's Immich, searched
+	 * *Find in Immich* (docs/02 §2.24.2): the faces in the household's Immich, searched
 	 * by the person's name, and one tap links the face that is them. The face does the work — you
 	 * recognise your aunt faster than you read her name — so faces lead and names follow. Faces
 	 * come through Stella's signed proxy, never from Immich directly: each arrives with a URL
-	 * signed for this person's picker (docs/concepts/immich.md §9.10).
+	 * signed for this person's picker (docs/04 ADR-097).
 	 *
 	 * Opened by the Photos card's menu through `open`; a pick is a plain form post, so the page
 	 * reloads with the link and the dialog goes with it. Opened from the picture's chooser
 	 * (docs/02 §2.24.6) it is given `onlinked` instead: the link is posted in place, the page's
 	 * data reloaded, and the chooser opens again on the person's Immich photos. A face already linked to another person
 	 * stays in the grid — leaving it out would read as "Immich does not know them" — but cannot
-	 * be picked, and says whose it is when the member may see that person (docs/concepts/immich.md §9.8).
+	 * be picked, and says whose it is when the member may see that person (docs/04 ADR-096).
 	 */
 	interface Props {
 		contactId: string;

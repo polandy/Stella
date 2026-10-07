@@ -9,8 +9,8 @@ import { ContactGoneError } from '../contacts/require-visible';
 import { isImmichId, type ImmichFailure, type ImmichGateway, type ImmichPerson } from './gateway';
 
 /*
- * Which Immich person a contact is (docs/concepts/immich.md §4.3, §5, §6). A link is household
- * data like a relationship: any member who can see the contact may set or remove it (§9.4), and
+ * Which Immich person a contact is (docs/02 §2.24.2). A link is household
+ * data like a relationship: any member who can see the contact may set or remove it, and
  * it has no visibility of its own — whoever sees the contact sees the link. The repository
  * checks that through the access layer; this file decides what a link may point at.
  */
@@ -131,10 +131,11 @@ function logEntry(
 }
 
 /**
- * Link a contact to an Immich person. One Immich person is one contact (docs/concepts/immich.md §9.8): a
+ * Link a contact to an Immich person. One Immich person is one contact (docs/04 ADR-096): a
  * person already linked elsewhere is refused, before Immich is asked anything. The person is
  * then looked up, so a stale picker cannot link someone deleted in Immich since, and a hidden
- * person — whom the picker never offers — cannot be linked by a hand-made request either (§5).
+ * person — whom the picker never offers — cannot be linked by a hand-made request either
+ * (docs/02 §2.24.2).
  *
  * Two members linking the same face at once both pass the first check; the table's unique
  * index lets one write through, and the other gets the same refusal rather than an error.
@@ -186,7 +187,7 @@ export interface LinkMatchesResult {
 }
 
 /**
- * Link pairs confirmed on *Find your people* (concept §4.2) — one row's Link, or *Link all
+ * Link pairs confirmed on *Find your people* (docs/02 §2.24.7) — one row's Link, or *Link all
  * likely*. Each goes through `linkToImmich`, so every check of the picker holds. Unlike the
  * picker, the list only ever adds: a contact linked since the list was shown — by another member,
  * in another tab — keeps that link, because the member confirmed a proposal made for an unlinked
@@ -239,7 +240,7 @@ export function readImmichLink(
 	return deps.links.findForContactVisibleTo(viewer, contactId);
 }
 
-/** What the person page says about a linked contact (concept §4.3, §4.5). */
+/** What the person page says about a linked contact (docs/02 §2.24.3). */
 export type LinkedPersonView =
 	| {
 			state: 'linked';
@@ -248,7 +249,7 @@ export type LinkedPersonView =
 			/** How many photos they are in, or null when the key may not count them. */
 			photoCount: number | null;
 			/**
-			 * Into Immich's web app, for every member who sees the contact (concept §2 point 5). It
+			 * Into Immich's web app, for every member who sees the contact (docs/02 §2.24.3). It
 			 * opens Immich as it is; someone not signed into the key owner's account lands on
 			 * Immich's sign-in or an empty page, which the owner accepted.
 			 */
@@ -301,8 +302,8 @@ export type FacesOutcome =
  * The faces the picker shows: those whose name matches what is typed, or the library's named
  * people when nothing is. When a full name finds nobody, the first name is tried — Stella and
  * Immich often spell the rest differently ("Bert Example-Smith" and "Bert Example"), and the
- * face, not the name, settles who is who (concept §4.2). Unnamed and hidden people are never
- * offered (§5).
+ * face, not the name, settles who is who (docs/02 §2.24.7). Unnamed and hidden people are never
+ * offered (docs/02 §2.24.2).
  */
 export async function findImmichFaces(
 	deps: Pick<ImmichLinkDeps, 'gateway' | 'links'>,

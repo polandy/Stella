@@ -3,9 +3,8 @@ import { addPerson, appReady, openPerson, signIn } from './app';
 import { DEMO_ADMIN_PASSWORD, DEMO_MEMBER_EMAIL } from '../src/lib/server/db/demo-seed';
 
 /*
- * Connecting Stella to Immich and linking a person to their Immich face (docs/02 §2.24,
- * docs/concepts/immich.md §4). Written after the owner tried slice 1 in the preview
- * (docs/08 §8.4.1).
+ * Connecting Stella to Immich and linking a person to their Immich face (docs/02 §2.24.1–
+ * §2.24.3). Written after the owner tried slice 1 in the preview (docs/08 §8.4.1).
  *
  * The e2e server runs with `IMMICH_DEMO=true`, so Immich is the in-memory demo library
  * (`src/lib/server/immich/demo-library.ts`): its key belongs to the demo admin, who therefore
@@ -146,7 +145,7 @@ test('the other member sees the photo count and the way into Immich too, and can
 	const nina = await signInAsNina(browser);
 	try {
 		await openPerson(nina, /Severin Halbmond/);
-		// She is not the key owner, and still gets the same link into Immich (concept §4.3).
+		// She is not the key owner, and still gets the same link into Immich (docs/04 ADR-102).
 		await expect(nina.getByText(HANS.countLine)).toBeVisible();
 		await expect(nina.getByRole('link', { name: 'Open in Immich' })).toHaveAttribute(
 			'href',

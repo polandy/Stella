@@ -387,7 +387,7 @@ describe('the link to Immich', () => {
 		]);
 	});
 
-	it('keeps the survivor’s link when both records were linked (docs/concepts/immich.md §6)', () => {
+	it('keeps the survivor’s link when both records were linked (docs/02 §2.24.5)', () => {
 		linkOf('keep', PERSON_A);
 		linkOf('dup', PERSON_B);
 		expect(merge()).toBe(true);

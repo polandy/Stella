@@ -10,7 +10,7 @@ import { ImmichLinkRefusedError, type LinkVisibleContacts } from './links';
 import { BERT_ID, CARL_ID } from './test-library';
 
 /*
- * Ignoring a proposal of *Find your people* (docs/concepts/immich.md §9, docs/02 §2.24.7): the
+ * Ignoring a proposal of *Find your people* (docs/02 §2.24.7): the
  * pair is kept with who said so and when, never proposed again, and anyone who sees the contact
  * may take it back.
  */

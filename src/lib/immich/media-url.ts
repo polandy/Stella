@@ -1,6 +1,6 @@
 /*
  * Where the browser asks for an image from Immich: Stella's own signed proxy, which fetches it
- * with the key the browser never sees (docs/concepts/immich.md §2 point 3, §5). The one place
+ * with the key the browser never sees (docs/02 §2.24.4, docs/04 ADR-101). The one place
  * this URL is spelled; the route lives at `src/routes/media/immich/[token]`, and the token is
  * issued by `src/lib/server/domain/immich/signed-media.ts`.
  */

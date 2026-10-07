@@ -1,8 +1,8 @@
 /*
- * What Stella asks of Immich, and how Immich's answers are read (docs/concepts/immich.md §2,
- * §6). The port is narrow and owned here; `src/lib/server/immich/http-gateway.ts` implements it
- * over HTTP and `fake-gateway.ts` in memory. Every answer is untrusted — another program wrote
- * it — so it is read by a pure parser below and anything that is not what it claims is refused.
+ * What Stella asks of Immich, and how Immich's answers are read (docs/04 §4.3, ADR-101). The
+ * port is narrow and owned here; `src/lib/server/immich/http-gateway.ts` implements it over HTTP
+ * and `fake-gateway.ts` in memory. Every answer is untrusted — another program wrote it — so it
+ * is read by a pure parser below and anything that is not what it claims is refused.
  */
 
 import { isTakenAt } from '../../../image/taken-at';
@@ -25,7 +25,7 @@ export interface ImmichPerson {
 	id: string;
 	/** Empty when nobody has named the face yet. */
 	name: string;
-	/** Hidden in Immich: never offered by Stella (concept §5). */
+	/** Hidden in Immich: never offered by Stella (docs/02 §2.24.2). */
 	hidden: boolean;
 }
 
@@ -40,7 +40,7 @@ export interface ImmichStatistics {
 	assets: number;
 }
 
-/** A photo in the library, as the glimpse needs it (concept §4.3). */
+/** A photo in the library, as the glimpse needs it (docs/02 §2.24.3). */
 export interface ImmichAsset {
 	id: string;
 	/**
@@ -60,7 +60,7 @@ export interface ImmichAssetPage {
 
 /**
  * Whose photos a listing asks for: the photos any of these people is in, or — the together-view
- * of concept §4.3 — only those all of them are in (Immich's `personIds.any` / `personIds.all`).
+ * of docs/02 §2.24.8 — only those all of them are in (Immich's `personIds.any` / `personIds.all`).
  */
 export interface ImmichPeopleFilter {
 	personIds: readonly string[];
@@ -78,7 +78,7 @@ export interface ImmichImage {
 
 /**
  * Why a call did not answer. The three statuses Immich uses for a key that cannot do what was
- * asked are outcomes, not exceptions — Settings has a sentence for each (concept §4.1):
+ * asked are outcomes, not exceptions — Settings has a sentence for each (docs/02 §2.24.1):
  * - `unauthorized`: the key was refused outright (revoked, or mistyped) — 401;
  * - `forbidden`: the key is valid but lacks the scope this call needs — 403;
  * - `notFound`: the person asked for is not (any more) in the library;
@@ -89,7 +89,7 @@ export type ImmichFailure = 'unauthorized' | 'forbidden' | 'notFound' | 'unreach
 /** A call's answer, or the reason there is none. */
 export type ImmichOutcome<T> = { ok: true; value: T } | { ok: false; failure: ImmichFailure };
 
-/** The calls Stella makes (concept §6, §8). Implemented at the edge; faked in tests. Never throws. */
+/** The calls Stella makes (docs/04 §4.3). Implemented at the edge; faked in tests. Never throws. */
 export interface ImmichGateway {
 	/** The server's version; needs no scope. */
 	version(): Promise<ImmichOutcome<ImmichVersion>>;
@@ -136,7 +136,7 @@ export function isServableImageType(contentType: string): boolean {
 	return SERVABLE_IMAGE_TYPES.has(contentType);
 }
 
-/** The read scopes the key needs, named as Immich names them (concept §2). */
+/** The read scopes the key needs, named as Immich names them (docs/02 §2.24.1). */
 export type ImmichScope =
 	'user.read' | 'person.read' | 'person.statistics' | 'asset.read' | 'asset.view';
 
@@ -243,7 +243,7 @@ function takenAtOf(body: Payload): string | null {
 /**
  * One photo of a search page, or null when it is not one Stella may show. The search already
  * asks for images in the timeline only; this reads each answer as if it had not, so a photo
- * archived, locked away, hidden or trashed in Immich is never passed on (concept §5).
+ * archived, locked away, hidden or trashed in Immich is never passed on (docs/02 §2.24.3).
  */
 function readAsset(payload: unknown): ImmichAsset | null {
 	const body = objectOf(payload);

@@ -3,12 +3,12 @@ import { foldName, type MatchableImmichPerson } from './match';
 
 /*
  * *New from Immich* — the other way round from *Find your people* (docs/02 §2.24.7,
- * docs/concepts/immich.md §4.2): the people Immich knows by name who have no Stella person yet,
+ * docs/02 §2.24.7): the people Immich knows by name who have no Stella person yet,
  * so a member can add them. Pure: the use-case reads Immich, the links and the ignores, and this
  * decides who is new, in which order, and what name a new person starts with.
  *
  * "No Stella person yet" means nobody holds the face — not even someone the member cannot see,
- * whose link takes the face all the same (concept §9.8) — and *Find your people* proposes it for
+ * whose link takes the face all the same (docs/04 ADR-096) — and *Find your people* proposes it for
  * nobody: a face whose name agrees with somebody's is theirs to confirm there, and offering it
  * here as well would put one person in both tabs.
  */

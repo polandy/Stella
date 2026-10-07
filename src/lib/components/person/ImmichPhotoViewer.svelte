@@ -8,11 +8,11 @@
 	import UseImmichPhoto from './UseImmichPhoto.svelte';
 
 	/*
-	 * A photo from the Immich strip, in the person page's lightbox (docs/concepts/immich.md §4.3):
+	 * A photo from the Immich strip, in the person page's lightbox (docs/02 §2.24.3):
 	 * Immich's `preview` size, through Stella's signed proxy, so it works for every member whatever
 	 * their own Immich account. Left and right — the buttons or the arrow keys — walk the strip.
 	 * *Open in Immich* takes anyone to the photo there; only the key owner's session shows it
-	 * (concept §9.2). *Use as photo* cuts a square of it into the person's own photo (docs/02
+	 * (docs/04 ADR-102). *Use as photo* cuts a square of it into the person's own photo (docs/02
 	 * §2.24.6) — a copy a member makes on purpose; the photo itself stays Immich's.
 	 */
 	interface Props {

@@ -4,9 +4,9 @@ import { immich as de } from '../src/lib/i18n/messages/de/immich';
 import { addPerson, appReady, editPeople, recordAction, signIn, unfoldPeople } from './app';
 
 /*
- * Photos of two people together, from Immich (docs/02 §2.24.8, docs/concepts/immich.md
- * §9.26–29): the chips over a person's strip, *Together* on a relationship row, and a together
- * photo's signed URL. Written after the owner tried #249 in the preview (docs/08 §8.4.1).
+ * Photos of two people together, from Immich (docs/02 §2.24.8): the chips over a person's
+ * strip, *Together* on a relationship row, and a together photo's signed URL. Written after the
+ * owner tried #249 in the preview (docs/08 §8.4.1).
  *
  * The e2e server runs with `IMMICH_DEMO=true`, whose Brunners share photos
  * (`src/lib/server/immich/demo-library.ts`). Its photo ids carry where a photo comes from: a

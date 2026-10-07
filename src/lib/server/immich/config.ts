@@ -1,5 +1,5 @@
 /*
- * The Immich settings (docs/concepts/immich.md §6, docs/07): pure, so the both-or-neither rule
+ * The Immich settings (docs/04 §4.5, docs/07): pure, so the both-or-neither rule
  * is tested without an environment. `config.ts` hands the raw variables over; this decides.
  * Without `IMMICH_URL` the feature appears nowhere.
  */
@@ -15,7 +15,7 @@ export type ImmichConfig =
 			url: string;
 			/** What links for the browser point at. */
 			publicUrl: string;
-			/** Never logged, never sent to a browser (concept §5). */
+			/** Never logged, never sent to a browser (docs/04 ADR-102). */
 			apiKey: string;
 	  }
 	/** The in-memory stand-in (`fake-gateway.ts`), for the demo and e2e server only. */

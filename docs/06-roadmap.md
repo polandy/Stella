@@ -154,7 +154,7 @@ Goal: sand the edges and add the nice-to-haves.
 - Keep the footprint lean: audit bundle size and idle memory each milestone.
 - Keep the agent workflow lean. Built concepts still cited from code comments are retired
   one per session — fold what only the concept says into the feature doc or docs/04 §4.9,
-  point the comments there, delete the concept: ☐ `immich.md` · ☐ `surnames.md` ·
+  point the comments there, delete the concept: ☑ `immich.md` · ☐ `surnames.md` ·
   ☐ `offline-capture.md` · ☐ `offline-reading.md` · ☐ `circle-photos.md` ·
   ☐ relationship suggestions (`relationship-suggestions*.md` and its mockups).
 
