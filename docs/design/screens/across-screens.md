@@ -23,8 +23,9 @@ offer the step that fills it; moving between screens should feel like staying in
 - **`compact`** is the same invitation inside a card that holds other things: a small icon
   beside the words and the action after them. A person's People card uses it in place of the
   map while they have no links.
-- **The copy names the person** where there is one: *Nothing noted about Lena yet* and what a
-  note is good for, not *No notes yet.*
+- **The copy names the person** where there is one: *Lena is not linked to anyone yet*, not a
+  bare *Not linked yet.* Photos and Notes are the one-line exception (`docs/05` §5.5, *Empty
+  cards*): their sentence stays generic so it fits beside the title on a phone.
 - A no-match state that replaces a filtered list sits in a `role="status"` wrapper.
 
 #### Between screens
