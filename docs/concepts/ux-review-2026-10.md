@@ -35,7 +35,7 @@ PR updates its own row.
 | B6 empty desktop rail | done | the stream takes the width when *Coming up* is empty; no *Recently opened* band — shown in `ux-rest.html` | merged #292 (e2e in the same PR) |
 | B7 actor vs. subject avatar | done | `ux-rest.html`; subject avatar stays, a small actor badge on its bottom-right only on rows by another member and only when `offersMemberChoice` | merged #292 (e2e in the same PR) |
 | C1 identity card facts | done | facts are the only reading surface and edit in place (like the job); rows keep only Contact (no address), Tags, How we met; empty facts wait behind the quiet button (which names them) and appear as dashed slots; every date is its own fact, one dates editor; C3 and C5 ride along in the same PR | merged #263 (e2e in the same PR) |
-| C2 empty cards | PR | batch 1 mockup approved 2026-10-06 — `ux-review-batch-1.html`; the planned PR 2 never opened, so C2 gets its own session after the polish PR; own session after the A4–C11 PR (owner 2026-10-07) | #293 |
+| C2 empty cards | done | batch 1 mockup approved 2026-10-06 — `ux-review-batch-1.html`; the planned PR 2 never opened, so C2 gets its own session after the polish PR; own session after the A4–C11 PR (owner 2026-10-07) | merged #293 (e2e in the same PR) |
 | C3 gender into name editor | done | built with C1: gender sits in the name editor, the row is gone | merged #263 |
 | C4 description clamp | done | batch 1 mockup approved 2026-10-06 — `ux-review-batch-1.html`; folded into the polish PR (owner 2026-10-07), shown in `ux-polish.html` | merged #290 (e2e in the same PR) |
 | C5 last contact only when set | done | batch 1 mockup approved 2026-10-06 — `ux-review-batch-1.html`; built with C1 | merged #263 |
