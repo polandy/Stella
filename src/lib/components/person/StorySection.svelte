@@ -26,8 +26,7 @@
 		type InteractionKind
 	} from '$lib/interactions/kinds';
 	import { asTyped, newPeopleAsCandidates } from '$lib/mentions/picks';
-	import { reveal } from '$lib/motion/motion.svelte';
-	import { scrollBehavior } from '$lib/motion/motion';
+	import { keepInView, reveal, showOpenedForm } from '$lib/motion/motion.svelte';
 	import { keepable } from '$lib/pwa/keepable';
 	import { isKept, type KeptOf } from '$lib/pwa/outbox';
 	import { outbox } from '$lib/pwa/outbox.svelte';
@@ -35,7 +34,6 @@
 	import { savedEnhance } from '$lib/undo/saved';
 	import type { SubmitFunction } from '@sveltejs/kit';
 	import { tick } from 'svelte';
-	import { prefersReducedMotion } from 'svelte/motion';
 	import { ulid } from 'ulid';
 	import { INPUT } from './inputs';
 	import type { PersonForm, PersonPageData } from './types';
@@ -85,6 +83,13 @@
 	let momentDraft = $state<MomentDraft | null>(null);
 	let composerRun = $state(0);
 	let editingMoment = $state<KeptOf<'moment.capture'> | null>(null);
+	// Whether opening glided the card; if not, the grown composer is brought into view instead.
+	let composerGlided = false;
+	let composerBox: HTMLElement | undefined = $state();
+	function keepComposerInView() {
+		if (!composerGlided) keepInView(composerBox);
+		composerGlided = false;
+	}
 
 	/** Open the composer — or, open already, bring the reader back to it. */
 	export async function writeMoment() {
@@ -93,12 +98,9 @@
 		if (next.opened) await tick();
 		const card = document.getElementById(sectionAnchor('story'));
 		const field = card?.querySelector<HTMLTextAreaElement>('[data-moment-body]');
-		// Just under the top bar, so on a phone the field sits above the keyboard.
-		card?.scrollIntoView({
-			block: 'start',
-			behavior: scrollBehavior(prefersReducedMotion.current)
-		});
-		field?.focus({ preventScroll: true });
+		// The way every card form opens (docs/05 §5.11): a card low in the view or off screen
+		// glides to just under the top bar, so on a phone the field sits above the keyboard.
+		if (card) composerGlided = showOpenedForm(card, field);
 		field?.setSelectionRange(field.value.length, field.value.length);
 	}
 
@@ -297,7 +299,13 @@
 	{/snippet}
 	{#if openForm === 'moment'}
 		<!-- Unfolds in place (docs/05 §5.11); keyed so an Undo starts from the draft it offers. -->
-		<div transition:reveal class="mb-3" data-testid="story-composer">
+		<div
+			bind:this={composerBox}
+			transition:reveal
+			onintroend={keepComposerInView}
+			class="mb-3"
+			data-testid="story-composer"
+		>
 			{#key composerRun}
 				<MomentComposer
 					candidates={otherContacts}

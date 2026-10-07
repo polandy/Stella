@@ -145,3 +145,19 @@ export function gapToTakeUp(input: {
 	if (input.siblingAfter) return { top: 0, bottom: -input.gap };
 	return { top: 0, bottom: 0 };
 }
+
+/**
+ * Whether opening a form glides its card to the top of the view (docs/05 §5.11). A form opens
+ * under its card's header and grows downwards, so the card holds still while its top is in the
+ * upper half of the view — there is room for the form, and a jump would only unsettle the
+ * reader. A top lower than that, under the bar, or off screen would leave the form below the
+ * fold or out of sight, so the page glides the card's top to just under the bar.
+ */
+export function glideToOpenedForm(input: {
+	cardTop: number;
+	viewTop: number;
+	viewBottom: number;
+}): boolean {
+	const middle = (input.viewTop + input.viewBottom) / 2;
+	return input.cardTop < input.viewTop || input.cardTop > middle;
+}

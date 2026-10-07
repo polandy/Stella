@@ -7,9 +7,7 @@
 	import { FIELD_SELECTOR, firstField } from './first-field';
 	import { focusLeftForm, owesFocusBack } from '$lib/ui/focus-return';
 	import { focusDestination } from '$lib/ui/focus-destination';
-	import { reveal } from '$lib/motion/motion.svelte';
-	import { scrollBehavior } from '$lib/motion/motion';
-	import { prefersReducedMotion } from 'svelte/motion';
+	import { keepInView, reveal, showOpenedForm } from '$lib/motion/motion.svelte';
 	import type { IconName } from './icons';
 
 	/*
@@ -139,17 +137,22 @@
 		}
 		if (!justOpened || !form) return;
 		void tick().then(() => {
-			card?.scrollIntoView({ block: 'nearest' });
-			firstField([...(form?.querySelectorAll<HTMLElement>(FIELD_SELECTOR) ?? [])])?.focus();
+			if (!card) return;
+			glidedOnOpen = showOpenedForm(
+				card,
+				firstField([...(form?.querySelectorAll<HTMLElement>(FIELD_SELECTOR) ?? [])])
+			);
 		});
 	});
 
-	/* Once the form has grown to its height, all of it is in view — the page glides there. */
+	/*
+	 * Opening glides the card into view the one way every card form does (docs/05 §5.11); a card
+	 * that held still has its grown form brought fully into view instead, once it has grown.
+	 */
+	let glidedOnOpen = false;
 	function keepFormInView() {
-		form?.scrollIntoView({
-			block: 'nearest',
-			behavior: scrollBehavior(prefersReducedMotion.current)
-		});
+		if (!glidedOnOpen) keepInView(form);
+		glidedOnOpen = false;
 	}
 
 	/*

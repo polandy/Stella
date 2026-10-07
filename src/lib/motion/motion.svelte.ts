@@ -1,7 +1,16 @@
 import type { ActionReturn } from 'svelte/action';
 import { prefersReducedMotion } from 'svelte/motion';
 import type { TransitionConfig } from 'svelte/transition';
-import { expandMs, fadeMs, gapToTakeUp, glidePlan, revealFrame, standardEasing } from './motion';
+import {
+	expandMs,
+	fadeMs,
+	gapToTakeUp,
+	glidePlan,
+	glideToOpenedForm,
+	revealFrame,
+	scrollBehavior,
+	standardEasing
+} from './motion';
 
 /*
  * The adapter between the motion rules (`motion.ts`, docs/05 §5.11) and the DOM. It holds the
@@ -12,6 +21,9 @@ import { expandMs, fadeMs, gapToTakeUp, glidePlan, revealFrame, standardEasing }
  * - `glide`, an action: a box whose content changes under it glides between the two heights.
  * - `crossfade`, a Svelte transition: the two alternatives inside a gliding box fade over each
  *   other (`Swap.svelte` pairs the two).
+ * - `showOpenedForm` and `keepInView`: a form that just opened in its card is brought into view
+ *   and takes the cursor, one way for every card (Section's add forms, the story card's
+ *   composer).
  */
 
 // Svelte passes the direction to a deferred transition; its types leave the argument out.
@@ -195,4 +207,49 @@ export function glide(node: HTMLElement, options: GlideOptions): ActionReturn<Gl
 			running?.cancel();
 		}
 	};
+}
+
+/**
+ * The band of the scroller a reader can see: under its scroll padding (the person page's sticky
+ * jump bar) and above a phone's keyboard. The shell's scroller is `#content`; the window
+ * otherwise.
+ */
+function visibleBand(node: HTMLElement): { viewTop: number; viewBottom: number } {
+	const scroller = node.closest<HTMLElement>('#content');
+	const keyboardTop = window.visualViewport
+		? window.visualViewport.offsetTop + window.visualViewport.height
+		: window.innerHeight;
+	if (!scroller) return { viewTop: 0, viewBottom: keyboardTop };
+	const rect = scroller.getBoundingClientRect();
+	const padding = parseFloat(getComputedStyle(scroller).scrollPaddingTop) || 0;
+	return { viewTop: rect.top + padding, viewBottom: Math.min(rect.bottom, keyboardTop) };
+}
+
+/**
+ * A form has just opened in `card`: the page glides the card's top to just under the bar when
+ * the rule asks for it (`glideToOpenedForm`), and the cursor goes into `field` without a jump of
+ * its own. Returns whether the page glided — if it did, the form is in view already and needs
+ * no `keepInView` once it has grown; a second scroll would only cut the first one short.
+ */
+export function showOpenedForm(card: HTMLElement, field: HTMLElement | null | undefined): boolean {
+	const glides = glideToOpenedForm({
+		cardTop: card.getBoundingClientRect().top,
+		...visibleBand(card)
+	});
+	if (glides) {
+		card.scrollIntoView({
+			block: 'start',
+			behavior: scrollBehavior(prefersReducedMotion.current)
+		});
+	}
+	field?.focus({ preventScroll: true });
+	return glides;
+}
+
+/** Once a form has grown to its height, all of it in view — the page glides there if need be. */
+export function keepInView(node: HTMLElement | null | undefined): void {
+	node?.scrollIntoView({
+		block: 'nearest',
+		behavior: scrollBehavior(prefersReducedMotion.current)
+	});
 }

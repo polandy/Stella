@@ -8,6 +8,7 @@
 	import StorySection from '$lib/components/person/StorySection.svelte';
 	import { sectionAnchor } from '$lib/contacts/sections';
 	import { useI18n } from '$lib/i18n/context.svelte';
+	import { showOpenedForm } from '$lib/motion/motion.svelte';
 	import { tick } from 'svelte';
 	import type { ActionData, PageData } from './$types';
 
@@ -46,8 +47,9 @@
 	async function tracePath() {
 		tracingPath = true;
 		await tick();
-		document.getElementById(sectionAnchor('relationships'))?.scrollIntoView({ block: 'start' });
-		document.getElementById('path-target')?.focus();
+		const card = document.getElementById(sectionAnchor('relationships'));
+		// Opens like every card form (docs/05 §5.11): the card glides into view when it must.
+		if (card) showOpenedForm(card, document.getElementById('path-target'));
 	}
 
 	/*

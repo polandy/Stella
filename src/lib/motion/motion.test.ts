@@ -6,6 +6,7 @@ import {
 	fadeMs,
 	gapToTakeUp,
 	glidePlan,
+	glideToOpenedForm,
 	revealFrame,
 	scrollBehavior,
 	standardEasing
@@ -155,5 +156,29 @@ describe('gapToTakeUp', () => {
 			top: 0,
 			bottom: 0
 		});
+	});
+});
+
+describe('glideToOpenedForm', () => {
+	// The scroller's visible band, under the sticky jump bar: 100 px to 900 px.
+	const view = { viewTop: 100, viewBottom: 900 };
+
+	it('holds still when the card’s top is in the upper half of the view', () => {
+		expect(glideToOpenedForm({ ...view, cardTop: 100 })).toBe(false);
+		expect(glideToOpenedForm({ ...view, cardTop: 500 })).toBe(false);
+	});
+
+	it('glides a card whose top is low in the view, where its form would open below the fold', () => {
+		expect(glideToOpenedForm({ ...view, cardTop: 501 })).toBe(true);
+		expect(glideToOpenedForm({ ...view, cardTop: 880 })).toBe(true);
+	});
+
+	it('glides a card that is off screen, below or above', () => {
+		expect(glideToOpenedForm({ ...view, cardTop: 2400 })).toBe(true);
+		expect(glideToOpenedForm({ ...view, cardTop: -300 })).toBe(true);
+	});
+
+	it('glides a card whose top has slipped under the bar', () => {
+		expect(glideToOpenedForm({ ...view, cardTop: 99 })).toBe(true);
 	});
 });
