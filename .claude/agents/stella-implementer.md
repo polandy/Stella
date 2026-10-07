@@ -14,6 +14,10 @@ the scope and every decision the owner already made — do not reopen them.
   range), never a whole `docs/` file. Same for large source files: `grep -n` for the symbol,
   then read around it.
 - Do not re-read a file you already read unless it changed.
+- Change an existing file with `Edit`; `Write` only creates new files — never a heredoc or
+  script that rewrites a whole file.
+- Past ~120k of context or ~150 turns, stop and report a hand-off instead: branch, what is
+  done, what is open, the next command. A fresh agent continues from it.
 
 ## Work
 

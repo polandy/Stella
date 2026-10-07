@@ -345,6 +345,12 @@ magic literals, no timing-based tests) apply on top of this.
   and decisions. Agents read doc *sections*, not whole docs; never run `bun run test:e2e`
   (CI does, on every push); and read a red run with `scripts/ci-failures.sh <PR>` before
   reaching for the full log.
+- **Session budget.** One session per PR or backlog row; `/clear` or a new session between
+  tasks. A subagent past ~120k of context or ~150 turns stops, writes a hand-off (branch, done,
+  open, the next command) and returns; the orchestrator starts a fresh agent with it rather than
+  continuing the old one, and relays an agent's report instead of re-reading the diff it
+  reviewed. Change an existing file with `Edit`; `Write` is for new files only — never a heredoc
+  or script that rewrites a whole file.
 - **A UI change ships a running Playwright case**, added after the owner's OK (§8.4.1). It
   asserts what is *rendered*, never only the URL, and never waits on a timeout: if nothing
   observable exists to wait on, that absence is the defect — give the production code a signal.
