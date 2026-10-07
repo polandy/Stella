@@ -8,7 +8,6 @@ import { createDrizzleCircleRepository } from '../db/circle-repository';
 import { createDrizzleCirclePhotoRepository } from '../db/circle-photo-repository';
 import { createDrizzleCutRepository } from '../db/cut-repository';
 import { createDrizzleStreamRepository } from '../db/stream-repository';
-import { createDrizzleGraphRepository } from '../db/graph-repository';
 import { createDrizzleJournalRepository } from '../db/journal-repository';
 import { createDrizzleContactFieldRepository } from '../db/contact-field-repository';
 import { createDrizzleImportantDateRepository } from '../db/important-date-repository';
@@ -25,9 +24,7 @@ import { createDrizzleArchiveRepository } from '../db/archive-repository';
 import { createDrizzleRestoreRepository } from '../db/restore-repository';
 import type { ArchiveDeps, ArchiveRepository } from '../domain/archive/archive';
 import type { ImportArchiveDeps, RestoreRepository } from '../domain/archive/import';
-import { createDrizzleRelationshipRepository } from '../db/relationship-repository';
 import { withNamesakeContext } from '../domain/mentions/namesake-context';
-import { createDrizzleSuggestionDismissalRepository } from '../db/suggestion-dismissal-repository';
 import { createDrizzleSearchRepository } from '../db/search-repository';
 import type { MemberDeps, MemberRepository } from '../domain/household/members';
 import type { MentionedInDeps, MentionedInRepository } from '../domain/mentions/mentioned-in';
@@ -42,21 +39,7 @@ import type { StoryDeps } from '../domain/story/story';
 import type { AttentionRepository } from '../domain/attention/last-touched';
 import type { NoteDeps, NoteRepository } from '../domain/notes/notes';
 import type { JournalDeps, JournalRepository } from '../domain/journal/journal';
-import type {
-	RelationshipDeps,
-	RelationshipRepository
-} from '../domain/relationships/relationships';
-import type {
-	SuggestionDismissalRepository,
-	SuggestionReviewDeps
-} from '../domain/relationships/suggestion-review';
-import type { FamilyReadDeps } from '../domain/relationships/family';
-import type {
-	RelationshipTypeDeps,
-	RelationshipTypeRepository
-} from '../domain/relationships/relationship-types';
 import type { TagDeps, TagRepository } from '../domain/tags/tags';
-import type { GraphRepository } from '../db/graph-repository';
 import type { CircleDeps, CircleRepository } from '../domain/circles/circles';
 import {
 	prepareCirclePhotoUpload,
@@ -151,9 +134,8 @@ export function getServices(): AppServices {
 		db: getDb(),
 		clock: systemClock,
 		ids: ulidGenerator,
-		// Not grouped yet (AR-01): their contexts' factories below hand the people context the
-		// same lazily built instance they hand everyone else.
-		relationships: getRelationships(),
+		// Not grouped yet (AR-01): its factory below hands the people context the same lazily
+		// built instance it hands everyone else.
 		media: getMediaStore()
 	}));
 }
@@ -178,61 +160,6 @@ export function getUpdateCheck(): UpdateCheck | null {
 		clock: systemClock,
 		currentVersion: APP_VERSION
 	}));
-}
-
-let relationshipRepository: (RelationshipRepository & RelationshipTypeRepository) | null = null;
-
-function getRelationshipRepository(): RelationshipRepository & RelationshipTypeRepository {
-	return (relationshipRepository ??= createDrizzleRelationshipRepository(getDb()));
-}
-
-export function getRelationships(): RelationshipRepository {
-	return getRelationshipRepository();
-}
-
-/** The relationship vocabulary — the built-in types and the household's own (docs/02 §2.4). */
-export function getRelationshipTypes(): RelationshipTypeRepository {
-	return getRelationshipRepository();
-}
-
-export function getRelationshipDeps(): RelationshipDeps {
-	return {
-		relationships: getRelationships(),
-		types: getRelationshipTypes(),
-		ids: ulidGenerator,
-		clock: systemClock
-	};
-}
-
-let suggestionDismissalRepository: SuggestionDismissalRepository | null = null;
-
-/** The claims the household has declined (docs/04 ADR-117). */
-export function getSuggestionDismissals(): SuggestionDismissalRepository {
-	return (suggestionDismissalRepository ??= createDrizzleSuggestionDismissalRepository(getDb()));
-}
-
-/** Deps for the on-demand suggestion review and the dismissal log (§6.5). */
-export function getSuggestionReviewDeps(): SuggestionReviewDeps {
-	return {
-		relationships: getRelationships(),
-		dismissals: getSuggestionDismissals(),
-		ids: ulidGenerator,
-		clock: systemClock
-	};
-}
-
-/** Deps for the family cards of the person page, read in one go (docs/04 §4.11). */
-export function getFamilyReadDeps(): FamilyReadDeps {
-	return {
-		family: getGraphRepository(),
-		relationships: getRelationships(),
-		dismissals: getSuggestionDismissals()
-	};
-}
-
-/** Deps for managing the custom relationship types (docs/02 §2.4). */
-export function getRelationshipTypeDeps(): RelationshipTypeDeps {
-	return { types: getRelationshipTypes(), ids: ulidGenerator };
 }
 
 let noteRepository: NoteRepository | null = null;
@@ -340,16 +267,6 @@ export function getTags(): TagRepository {
 
 export function getTagDeps(): TagDeps {
 	return { tags: getTags(), ids: ulidGenerator, clock: systemClock };
-}
-
-let graphRepository: GraphRepository | null = null;
-
-/**
- * Repository for the explorer's one-shot visible-graph load (docs/04 §4.11). The route hands
- * the resulting slim snapshot to the browser, which explores it entirely client-side.
- */
-export function getGraphRepository(): GraphRepository {
-	return (graphRepository ??= createDrizzleGraphRepository(getDb()));
 }
 
 let photoRepository: ReturnType<typeof createDrizzlePhotoRepository> | null = null;
@@ -492,13 +409,13 @@ export function getCommandDeps(): CommandDeps {
 				),
 			'relationship.add': (actor, payload) =>
 				addRelationshipChecked(
-					{ ...getRelationshipDeps(), contacts: people().contacts },
+					{ ...getServices().relationships.relationshipDeps, contacts: people().contacts },
 					actor,
 					payload
 				),
 			'relationship.addMany': (actor, payload) =>
 				addRelationshipsOrRefuse(
-					{ ...getRelationshipDeps(), contacts: people().contacts },
+					{ ...getServices().relationships.relationshipDeps, contacts: people().contacts },
 					actor,
 					payload
 				),

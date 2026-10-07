@@ -1,5 +1,4 @@
 import { requireUser, requireViewer } from '$lib/server/auth/guards';
-import { getGraphRepository } from '$lib/server/services';
 import { chooseCenter, chosenPathTarget, wayBackTo } from './center';
 import type { PageServerLoad } from './$types';
 
@@ -14,7 +13,7 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 	const user = requireUser(locals);
 	const viewer = requireViewer(locals);
 
-	const graph = await getGraphRepository().loadVisibleGraph(viewer);
+	const graph = await locals.services.relationships.graph.loadVisibleGraph(viewer);
 	const center = chooseCenter(graph.nodes, url.searchParams.get('center'), user.selfContactId);
 
 	/*

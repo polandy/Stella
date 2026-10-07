@@ -10,7 +10,6 @@ import {
 	dismissSuggestion,
 	restoreSuggestion
 } from '$lib/server/domain/relationships/suggestion-review';
-import { getRelationshipDeps, getSuggestionReviewDeps } from '$lib/server/services';
 import { say } from '$lib/server/i18n/say';
 import { RELATIONS } from '$lib/suggestions/types';
 
@@ -79,7 +78,7 @@ export async function acceptClaim(
 	if (!from || !to) return refused(say(locals, 'errors.person.notFound'));
 
 	try {
-		await createRelationship(getRelationshipDeps(), viewer, {
+		await createRelationship(locals.services.relationships.relationshipDeps, viewer, {
 			fromContactId: parsed.output.fromId,
 			toContactId: parsed.output.toId,
 			typeId: parsed.output.typeId,
@@ -110,7 +109,11 @@ export async function declineClaim(
 	const parsed = v.safeParse(ClaimSchema, read(form, 'relation', 'fromId', 'toId'));
 	if (!parsed.success) return refused(say(locals, 'errors.relationship.badSuggestion'));
 
-	return (await dismissSuggestion(getSuggestionReviewDeps(), viewer, parsed.output))
+	return (await dismissSuggestion(
+		locals.services.relationships.suggestionReviewDeps,
+		viewer,
+		parsed.output
+	))
 		? null
 		: refused(say(locals, 'errors.person.notFound'));
 }
@@ -125,6 +128,10 @@ export async function restoreClaim(
 	if (!parsed.success) return refused(say(locals, 'errors.relationship.badSuggestion'));
 
 	// Nothing to take back is not a failure worth a message: the claim is offered either way.
-	await restoreSuggestion(getSuggestionReviewDeps(), viewer, parsed.output);
+	await restoreSuggestion(
+		locals.services.relationships.suggestionReviewDeps,
+		viewer,
+		parsed.output
+	);
 	return null;
 }

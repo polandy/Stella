@@ -19,9 +19,10 @@ const INSIDE_SERVICES = 'src/lib/server/services/';
 
 /*
  * Shared edge code that still lives under lib/server and imports the registry. AR-02 moves it
- * under routes/; until then the list may only shrink.
+ * under routes/; until then the list may only shrink. Empty since the relationships slice:
+ * every shared edge helper now reads `locals.services`.
  */
-const EDGE_HELPERS = ['src/lib/server/relationships/suggestion-answers.ts'];
+const EDGE_HELPERS: string[] = [];
 
 const isEdge = (path: string) =>
 	path.startsWith('src/routes/') || path === 'src/hooks.server.ts' || EDGE_HELPERS.includes(path);
@@ -73,7 +74,17 @@ describe('the composition root', () => {
 			'NamesakeContextDeps',
 			'PeopleStampDeps',
 			'SelfContactDeps',
-			'SuggestionDeps'
+			'SuggestionDeps',
+			// The relationships context (AR-01, third slice): read `locals.services.relationships`.
+			'Relationships',
+			'RelationshipTypes',
+			'RelationshipRepository',
+			'RelationshipDeps',
+			'RelationshipTypeDeps',
+			'SuggestionDismissals',
+			'SuggestionReviewDeps',
+			'FamilyReadDeps',
+			'GraphRepository'
 		];
 		const retired = new RegExp(`\\bget(?:${factories.join('|')})\\b`);
 		expect(files.filter((path) => retired.test(source(path)))).toEqual([]);

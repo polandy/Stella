@@ -38,9 +38,7 @@ import {
 	getNoteDeps,
 	getCutDeps,
 	getGalleryDeps,
-	getFamilyReadDeps,
 	getPhotos,
-	getRelationshipTypes,
 	getStoryDeps,
 	getTagDeps,
 	getMemberDeps,
@@ -65,7 +63,7 @@ import {
 import { REVIEW_PARAM } from './review-path';
 import { entryIdsOf, nameLookup, photosByEntry, STORY_PAGE_SIZE, toStoryItem } from './story-view';
 import type { PageServerLoad } from './$types';
-import type { PeopleServices } from '$lib/server/services/people';
+import type { AppServices } from '$lib/server/services/app-services';
 
 export const load = (async ({ locals, params, url }) => {
 	const user = requireUser(locals);
@@ -86,7 +84,7 @@ export const load = (async ({ locals, params, url }) => {
 
 	const reviewOpen = url.searchParams.has(REVIEW_PARAM);
 	const proposeFor = url.searchParams.get('propose');
-	const read = await readPersonPage(locals.services.people, viewer, params.id, {
+	const read = await readPersonPage(locals.services, viewer, params.id, {
 		reviewOpen,
 		proposeFor: parseProposePairs(proposeFor)
 	});
@@ -224,7 +222,7 @@ export const load = (async ({ locals, params, url }) => {
  * through a use-case scoped to the viewer; nothing here decides what anyone may see.
  */
 function readPersonPage(
-	people: PeopleServices,
+	{ people, relationships }: Pick<AppServices, 'people' | 'relationships'>,
 	viewer: Viewer,
 	contactId: string,
 	request: { reviewOpen: boolean; proposeFor: { a: string; b: string }[] }
@@ -250,12 +248,12 @@ function readPersonPage(
 		 * derived kinship is worked out over the whole visible graph, so an inference cut from a
 		 * slice could name the wrong relative. Only the person's own slice is sent to the browser.
 		 */
-		family: readFamilyOf(getFamilyReadDeps(), viewer, contactId, request),
+		family: readFamilyOf(relationships.familyReadDeps, viewer, contactId, request),
 		surnameHelp: readSurnameHelp(people.surnameReviewDeps, viewer, contactId),
 
 		// What the forms offer, and who wrote what.
 		nameOfAuthor: authorNames(getMemberDeps(), viewer.householdId),
-		relationshipTypes: getRelationshipTypes().listTypes(viewer),
+		relationshipTypes: relationships.relationshipTypes.listTypes(viewer),
 		circleRolesByName: listRoleSuggestionsByCircleName(getCircleDeps(), viewer)
 	});
 }

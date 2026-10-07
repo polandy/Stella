@@ -13,7 +13,6 @@ import {
 	removeRelationshipType
 } from '$lib/server/domain/relationships/relationship-types';
 import { builtInReplacingImportedType } from '$lib/server/domain/import/monica/relationship-types';
-import { getRelationshipTypeDeps, getRelationshipTypes } from '$lib/server/services';
 import type { Actions, PageServerLoad } from './$types';
 import { say, translator } from '$lib/server/i18n/say';
 
@@ -65,8 +64,8 @@ export const load: PageServerLoad = async ({ locals }) => {
 	requireAdmin(locals);
 	const viewer = requireViewer(locals);
 	const [types, usage] = await Promise.all([
-		getRelationshipTypes().listTypes(viewer),
-		getRelationshipTypes().countRelationshipsByType(viewer)
+		locals.services.relationships.relationshipTypes.listTypes(viewer),
+		locals.services.relationships.relationshipTypes.countRelationshipsByType(viewer)
 	]);
 
 	// A type still in use cannot be removed, so the page counts first and offers the button
@@ -92,7 +91,7 @@ export const actions: Actions = {
 		if (!parsed.success) return fail(400, { error: parsed.issues[0].message });
 		try {
 			await createRelationshipType(
-				getRelationshipTypeDeps(),
+				locals.services.relationships.relationshipTypeDeps,
 				{ id: user.id, householdId: user.householdId },
 				inputOf(parsed.output)
 			);
@@ -110,7 +109,7 @@ export const actions: Actions = {
 		if (!parsed.success) return fail(400, { error: parsed.issues[0].message });
 		try {
 			const changed = await editRelationshipType(
-				getRelationshipTypeDeps(),
+				locals.services.relationships.relationshipTypeDeps,
 				{ id: user.id, householdId: user.householdId },
 				parsed.output.typeId,
 				inputOf(parsed.output)
@@ -130,7 +129,7 @@ export const actions: Actions = {
 		if (!parsed.success) return fail(400, { error: parsed.issues[0].message });
 		try {
 			const merged = await mergeRelationshipType(
-				getRelationshipTypeDeps(),
+				locals.services.relationships.relationshipTypeDeps,
 				{ id: user.id, householdId: user.householdId },
 				parsed.output.typeId,
 				parsed.output.intoId
@@ -150,7 +149,7 @@ export const actions: Actions = {
 		if (!parsed.success) return fail(400, { error: parsed.issues[0].message });
 		try {
 			await removeRelationshipType(
-				getRelationshipTypeDeps(),
+				locals.services.relationships.relationshipTypeDeps,
 				{ id: user.id, householdId: user.householdId },
 				parsed.output.typeId
 			);

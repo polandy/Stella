@@ -32,7 +32,7 @@ import {
 	restoreClaim,
 	type RefusedAnswer
 } from '$lib/server/relationships/suggestion-answers';
-import { getMemberDeps, getSuggestionReviewDeps } from '$lib/server/services';
+import { getMemberDeps } from '$lib/server/services';
 import { translator } from '$lib/server/i18n/say';
 import type { Actions, PageServerLoad } from './$types';
 
@@ -126,7 +126,9 @@ export const load: PageServerLoad = async ({ locals, url }): Promise<ReviewData>
 	// Normalised, so the log never carries the list's search into an address nothing filters by.
 	const at = placeOf(reviewLocationFrom(url.searchParams));
 	const [found, nameOfAuthor] = await Promise.all([
-		reviewHousehold(getSuggestionReviewDeps(), viewer, { includeDismissed: true }),
+		reviewHousehold(locals.services.relationships.suggestionReviewDeps, viewer, {
+			includeDismissed: true
+		}),
 		authorNames(getMemberDeps(), viewer.householdId)
 	]);
 	// The reason arrives unsaid; here is where it becomes a sentence in the language this request

@@ -25,7 +25,7 @@ import {
 	restoreClaim
 } from '$lib/server/relationships/suggestion-answers';
 import { RelationshipsRefusedError } from '$lib/server/domain/relationships/add-many';
-import { getCommandDeps, getRelationshipDeps } from '$lib/server/services';
+import { getCommandDeps } from '$lib/server/services';
 import { say, translator } from '$lib/server/i18n/say';
 import { reviewPath } from '../review-path';
 import type { Actions } from '../$types';
@@ -145,7 +145,7 @@ export const relationshipActions = {
 		if (ids.length === 0 || !ids.every((id): id is string => typeof id === 'string' && id !== '')) {
 			return fail(400, {});
 		}
-		if (!(await removeRelationships(getRelationshipDeps(), viewer, ids))) {
+		if (!(await removeRelationships(locals.services.relationships.relationshipDeps, viewer, ids))) {
 			return fail(404, { error: say(locals, 'errors.relationship.notFound') });
 		}
 		throw redirect(303, contactSectionPath(params.id, 'relationships'));
@@ -175,7 +175,7 @@ export const relationshipActions = {
 		}
 
 		try {
-			const saved = await editRelationship(getRelationshipDeps(), viewer, {
+			const saved = await editRelationship(locals.services.relationships.relationshipDeps, viewer, {
 				relationshipId: parsed.output.relationshipId,
 				perspectiveContactId: params.id,
 				typeChoice: choice,
@@ -212,7 +212,13 @@ export const relationshipActions = {
 		const relationshipId = form.get('relationshipId');
 		if (typeof relationshipId !== 'string') return fail(400, {});
 
-		if (!(await removeRelationship(getRelationshipDeps(), viewer, relationshipId))) {
+		if (
+			!(await removeRelationship(
+				locals.services.relationships.relationshipDeps,
+				viewer,
+				relationshipId
+			))
+		) {
 			return fail(404, { error: say(locals, 'errors.relationship.notFound') });
 		}
 		throw redirect(303, contactSectionPath(params.id, 'relationships'));
