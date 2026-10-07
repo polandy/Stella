@@ -273,11 +273,19 @@ test.describe('the stream on Home', () => {
 		await expect(time).toHaveAttribute('title', /\d{4}.*\d{1,2}:\d{2}/);
 		await expect(time).toHaveAttribute('datetime', /^\d{4}-\d{2}-\d{2}T/);
 
-		// The seed's oldest day is a year back: its heading is a date, and its rows carry no time.
-		const oldest = days(page).last();
-		await expect(oldest.locator(':scope > div').first()).not.toHaveText(/^(Today|Yesterday)$/);
-		await expect(oldest.locator('article').first()).toBeVisible();
-		await expect(oldest.locator('time')).toHaveCount(0);
+		// An older day's heading is its date, and its rows carry no time. Narrowed to Nina, the
+		// household's other member, whom no spec writes as: what the suite writes today would push
+		// the seed's older days off the stream's first page.
+		await page
+			.getByRole('navigation', { name: 'Filter the stream' })
+			.getByRole('link', { name: 'Nina Brunner', exact: true })
+			.click();
+		await expect(page).toHaveURL(/[?&]by=/);
+		const older = page.locator('article', { hasText: 'sharpened every knife' });
+		await expect(older).toHaveCount(1);
+		const olderDay = days(page).filter({ has: older });
+		await expect(olderDay.locator(':scope > div').first()).not.toHaveText(/^(Today|Yesterday)$/);
+		await expect(olderDay.locator('time')).toHaveCount(0);
 	});
 });
 
