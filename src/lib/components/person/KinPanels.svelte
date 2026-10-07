@@ -63,7 +63,7 @@
 	});
 
 	/*
-	 * *Add all* (docs/concepts/multi-pick-relationships.html D7): the claims of the *Also true?*
+	 * *Add all* (docs/02 §2.4, *Several people in one go*): the claims of the *Also true?*
 	 * block that one batch can store, still listed and answerable row by row above. Worked out
 	 * from the rows still standing — one already answered in its undo window is not sent twice.
 	 */

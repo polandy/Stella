@@ -3,7 +3,7 @@ import type { RelationshipSide } from '$lib/relationships/type-options';
 import type { Relation } from './types';
 
 /*
- * *Add all* on the *Also true?* block (docs/concepts/multi-pick-relationships.html D7).
+ * *Add all* on the *Also true?* block (docs/02 §2.4, *Several people in one go*).
  *
  * Every claim is still shown and answerable on its own row; this only finds the claims that can
  * also be stored together, as one `relationship.addMany` — one person, one type, several people

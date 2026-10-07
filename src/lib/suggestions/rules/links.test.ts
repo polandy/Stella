@@ -223,7 +223,7 @@ describe('a household-wide pass runs the same rules over every link there is', (
 /*
  * L3 — the likely second parent (docs/02 §2.4.1). Not a
  * logical consequence, so it is a pure question of its own before it is a rule: the form asks
- * it while a parent is picked but not stored yet (multi-pick-relationships D4), and the engine
+ * it while a parent is picked but not stored yet (docs/02 §2.4), and the engine
  * asks it once the link is stored.
  */
 describe('likelyCoParent — the chosen parent’s one current partner', () => {
@@ -396,7 +396,7 @@ describe('L3 — a parent stored from the parent’s side offers their partner',
 		);
 	});
 
-	// The form on the child's page offered the partner already (D4); asking twice is nagging.
+	// The form on the child's page offered the partner already; asking twice is nagging.
 	it('stays quiet when the link was entered on the child’s page', () => {
 		expect(L3(storedFrom('lio'), family())).toEqual([]);
 	});

@@ -470,7 +470,7 @@ describe('readKinship', () => {
 	});
 
 	/*
-	 * A batch stored together (docs/concepts/multi-pick-relationships.html D7): one list for all
+	 * A batch stored together (docs/02 §2.4, *Several people in one go*): one list for all
 	 * of its links, each claim once — not the list of whichever link happened to come last.
 	 */
 	it('proposes across every pair of a batch at once, each claim once', async () => {
@@ -496,7 +496,7 @@ describe('readKinship', () => {
 
 	/*
 	 * L3 after a write (docs/02 §2.4.1). The page the link was
-	 * entered on decides: the child's page offered the partner in the form already (D4).
+	 * entered on decides: the child's page offered the partner in the form already.
 	 */
 	describe('the likely second parent', () => {
 		const withPartner = () =>

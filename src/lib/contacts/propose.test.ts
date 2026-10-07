@@ -5,7 +5,7 @@ import { parseProposePairs, proposeHref } from './propose';
  * After a new link, the person page comes back naming the pair so its implied links can be
  * offered (docs/02 §2.4.1). Written by the form's action and by the page saving through the
  * outbox alike, read by the page's load. A batch names every pair it stored, so *Also true?*
- * is worked out for all of them at once (docs/concepts/multi-pick-relationships.html D7).
+ * is worked out for all of them at once (docs/02 §2.4, *Several people in one go*).
  */
 
 const proposeOf = (href: string) => new URL(href, 'http://x').searchParams.get('propose');

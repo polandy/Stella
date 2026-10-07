@@ -12,8 +12,7 @@ import {
 
 /*
  * Integration spec for the Drizzle SuggestionDismissalRepository: one row per claim however
- * often it is declined, and a log that never crosses a household (docs/concepts/relationship-
- * suggestions.md §6.4).
+ * often it is declined, and a log that never crosses a household (ADR-117, docs/03 §3.9).
  */
 
 const H = 'household-1';

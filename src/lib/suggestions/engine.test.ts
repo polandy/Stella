@@ -482,7 +482,7 @@ describe('evaluate — the likely second parent (L3)', () => {
 });
 
 /*
- * Several links stored together (docs/concepts/multi-pick-relationships.html D7): one list for
+ * Several links stored together (docs/02 §2.4, *Several people in one go*): one list for
  * the whole batch, each claim once, in the engine's one order — not one list per link.
  */
 describe('evaluateAll', () => {
