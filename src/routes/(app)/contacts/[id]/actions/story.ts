@@ -10,7 +10,7 @@ import { getContact } from '$lib/server/domain/contacts/contacts';
 import { deleteInteraction } from '$lib/server/domain/interactions/interactions';
 import { deleteJournalEntry } from '$lib/server/domain/journal/journal';
 import { contactSectionPath } from '$lib/contacts/sections';
-import { getCommandDeps, getInteractionDeps, getJournalDeps } from '$lib/server/services';
+import { getCommandDeps } from '$lib/server/services';
 import { say, translator } from '$lib/server/i18n/say';
 import type { Actions } from '../$types';
 
@@ -73,7 +73,11 @@ export const storyActions = {
 			locale: locals.locale,
 			defaultVisibility: 'shared' as const
 		};
-		const removed = await deleteInteraction(getInteractionDeps(), author, interactionId);
+		const removed = await deleteInteraction(
+			locals.services.story.interactionDeps,
+			author,
+			interactionId
+		);
 		if (!removed)
 			return fail(403, { interactionError: say(locals, 'errors.interaction.onlyLogger') });
 		throw redirect(303, `/contacts/${params.id}`);
@@ -98,7 +102,7 @@ export const storyActions = {
 			householdId: viewer.householdId,
 			defaultVisibility: 'shared' as const
 		};
-		const removed = await deleteJournalEntry(getJournalDeps(), author, id);
+		const removed = await deleteJournalEntry(locals.services.story.journalDeps, author, id);
 		if (!removed) return fail(403, { interactionError: say(locals, 'errors.journal.onlyAuthor') });
 		throw redirect(303, `/contacts/${params.id}`);
 	}

@@ -4,11 +4,9 @@ import { systemClock } from '../clock';
 import { getConfig } from '../config';
 import { getDb, getSqlite } from '../db';
 import { createDrizzleAttentionRepository } from '../db/attention-repository';
-import { createDrizzleJournalRepository } from '../db/journal-repository';
 import { createDrizzleContactFieldRepository } from '../db/contact-field-repository';
 import { createDrizzleImportantDateRepository } from '../db/important-date-repository';
 import { createDrizzleImportRepository } from '../db/import-repository';
-import { createDrizzleInteractionRepository } from '../db/interaction-repository';
 import { createDrizzleMentionedInRepository } from '../db/mentioned-in-repository';
 import { createDrizzleNoteRepository } from '../db/note-repository';
 import { createGitHubReleaseFeed } from '../release/github-feed';
@@ -29,13 +27,11 @@ import type {
 	ContactFieldRepository
 } from '../domain/contact-fields/contact-fields';
 import type { SearchDeps, SearchRepository } from '../domain/search/search';
-import type { StoryDeps } from '../domain/story/story';
 import type { AttentionRepository } from '../domain/attention/last-touched';
 import type { NoteDeps, NoteRepository } from '../domain/notes/notes';
-import type { JournalDeps, JournalRepository } from '../domain/journal/journal';
 import type { TagDeps, TagRepository } from '../domain/tags/tags';
 import { prepareCirclePhotoUpload } from '../domain/circles/circle-photos';
-import { captureMoment, type CaptureMomentDeps } from '../domain/moments/moments';
+import { captureMoment } from '../domain/moments/moments';
 import type {
 	CommandActor,
 	CommandDeps,
@@ -63,7 +59,6 @@ import { assignTagByName } from '../domain/tags/tags';
 import { joinCircleByName } from '../domain/circles/circles';
 import type { ImportantDateDeps, ImportantDateRepository } from '../domain/dates/important-dates';
 import type { ImportDeps, ImportRepository } from '../domain/import/apply';
-import type { InteractionDeps, InteractionRepository } from '../domain/interactions/interactions';
 import { setContactAvatar } from '../domain/media/avatars';
 import { ulidGenerator } from '../id';
 import { createDrizzleImmichIgnoreRepository } from '../db/immich-ignore-repository';
@@ -150,16 +145,6 @@ export function getNoteDeps(): NoteDeps {
 	return { notes: getNotes(), ids: ulidGenerator, clock: systemClock };
 }
 
-let journalRepository: JournalRepository | null = null;
-
-export function getJournal(): JournalRepository {
-	return (journalRepository ??= createDrizzleJournalRepository(getDb()));
-}
-
-export function getJournalDeps(): JournalDeps {
-	return { journal: getJournal(), media: media().store, ids: ulidGenerator, clock: systemClock };
-}
-
 let contactFieldRepository: ContactFieldRepository | null = null;
 
 export function getContactFields(): ContactFieldRepository {
@@ -178,16 +163,6 @@ export function getImportantDates(): ImportantDateRepository {
 
 export function getImportantDateDeps(): ImportantDateDeps {
 	return { dates: getImportantDates(), ids: ulidGenerator, clock: systemClock };
-}
-
-let interactionRepository: InteractionRepository | null = null;
-
-export function getInteractions(): InteractionRepository {
-	return (interactionRepository ??= createDrizzleInteractionRepository(getDb()));
-}
-
-export function getInteractionDeps(): InteractionDeps {
-	return { interactions: getInteractions(), ids: ulidGenerator, clock: systemClock };
 }
 
 let importRepository: ImportRepository | null = null;
@@ -209,11 +184,6 @@ export function getMentionedIn(): MentionedInRepository {
 /** The passive "Mentioned in" list only reads, so it needs no clock or ids either. */
 export function getMentionedInDeps(): MentionedInDeps {
 	return { mentions: getMentionedIn() };
-}
-
-/** The story timeline reads both sources; it writes nothing, so it needs no clock or ids. */
-export function getStoryDeps(): StoryDeps {
-	return { journal: getJournal(), interactions: getInteractions() };
 }
 
 let searchRepository: SearchRepository | null = null;
@@ -268,15 +238,6 @@ export function getImportArchiveDeps(): ImportArchiveDeps {
 	};
 }
 
-export function getCaptureMomentDeps(): CaptureMomentDeps {
-	return {
-		contacts: people().contacts,
-		journal: getJournal(),
-		ids: ulidGenerator,
-		clock: systemClock
-	};
-}
-
 let commandReceiptRepository: CommandReceiptRepository | null = null;
 
 function viewerOf(actor: CommandActor): Viewer {
@@ -285,7 +246,7 @@ function viewerOf(actor: CommandActor): Viewer {
 
 /** The dispatcher every change goes through (docs/04 §4.11.2). */
 export function getCommandDeps(): CommandDeps {
-	const capture = getCaptureMomentDeps();
+	const { captureMomentDeps, interactionDeps, journalDeps } = getServices().story;
 	const receipts = (commandReceiptRepository ??= createDrizzleCommandReceiptRepository(getDb()));
 	return {
 		receipts,
@@ -296,7 +257,7 @@ export function getCommandDeps(): CommandDeps {
 			'moment.capture': async (actor, payload) => ({
 				...(await withNamesakeContext(people().namesakeContextDeps, viewerOf(actor), () =>
 					captureMoment(
-						capture,
+						captureMomentDeps,
 						{
 							userId: actor.userId,
 							householdId: actor.householdId,
@@ -345,11 +306,7 @@ export function getCommandDeps(): CommandDeps {
 					payload
 				),
 			'interaction.log': (actor, payload) =>
-				logInteractionChecked(
-					{ ...getInteractionDeps(), contacts: people().contacts },
-					actor,
-					payload
-				),
+				logInteractionChecked({ ...interactionDeps, contacts: people().contacts }, actor, payload),
 			'note.add': (actor, payload) =>
 				withNamesakeContext(people().namesakeContextDeps, viewerOf(actor), () =>
 					writeNote({ ...getNoteDeps(), contacts: people().contacts }, actor, payload)
@@ -366,7 +323,7 @@ export function getCommandDeps(): CommandDeps {
 				),
 			'journal.write': (actor, payload) =>
 				withNamesakeContext(people().namesakeContextDeps, viewerOf(actor), () =>
-					writeJournalEntry({ ...getJournalDeps(), contacts: people().contacts }, actor, payload)
+					writeJournalEntry({ ...journalDeps, contacts: people().contacts }, actor, payload)
 				),
 			'field.add': onVisibleContact(people().contacts, async (_actor, payload) => ({
 				fieldId: await addContactField(getContactFieldDeps(), payload)
