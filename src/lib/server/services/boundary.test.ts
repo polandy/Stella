@@ -98,7 +98,14 @@ describe('the composition root', () => {
 			'FramingDeps',
 			'GalleryUploadDeps',
 			'JournalPhotoDeps',
-			'StreamDeps'
+			'StreamDeps',
+			// The story context (AR-01, sixth slice): read `locals.services.story`.
+			'Journal',
+			'Interactions',
+			'JournalDeps',
+			'InteractionDeps',
+			'StoryDeps',
+			'CaptureMomentDeps'
 		];
 		const retired = new RegExp(`\\bget(?:${factories.join('|')})\\b`);
 		expect(files.filter((path) => retired.test(source(path)))).toEqual([]);

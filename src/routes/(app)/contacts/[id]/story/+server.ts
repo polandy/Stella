@@ -3,7 +3,7 @@ import { requireViewer } from '$lib/server/auth/guards';
 import { getContact, listContactNamesAmong } from '$lib/server/domain/contacts/contacts';
 import { authorNames } from '$lib/server/domain/household/members';
 import { listStoryPage } from '$lib/server/domain/story/story';
-import { getMemberDeps, getStoryDeps } from '$lib/server/services';
+import { getMemberDeps } from '$lib/server/services';
 import { parseStoryCursor } from '$lib/story/cursor';
 import {
 	entryIdsOf,
@@ -36,7 +36,7 @@ export const POST: RequestHandler = async ({ locals, params, request }) => {
 	const cursor = parseStoryCursor(body);
 	if (cursor === null) throw error(400, say(locals, 'errors.story.badCursor'));
 
-	const page = await listStoryPage(getStoryDeps(), viewer, params.id, {
+	const page = await listStoryPage(locals.services.story.storyDeps, viewer, params.id, {
 		limit: STORY_PAGE_SIZE,
 		cursor
 	});

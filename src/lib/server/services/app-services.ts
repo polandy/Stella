@@ -7,6 +7,7 @@ import {
 	type RelationshipServices,
 	type RelationshipWiring
 } from './relationships';
+import { createStoryServices, type StoryServices, type StoryWiring } from './story';
 
 /*
  * The application's object graph, grouped by bounded context (docs/04 §4.3, docs/08 §8.3).
@@ -23,20 +24,22 @@ export interface AppServices {
 	relationships: RelationshipServices;
 	circles: CircleServices;
 	media: MediaServices;
+	story: StoryServices;
 }
 
 /**
  * What the graph is built from; each context's wiring joins this as it moves in. A context
  * that reads another grouped context's repository gets it from here, not from the wiring
  * (`people` reads `auth`'s accounts, the relationships context's repository and `media`'s
- * store, `circles` reads `people`'s contacts and `media`'s store), so each repository exists
- * once.
+ * store; `circles` and `story` read `people`'s contacts and `media`'s store), so each
+ * repository exists once.
  */
 export type ServicesWiring = AuthWiring &
 	RelationshipWiring &
 	MediaWiring &
 	Omit<PeopleWiring, 'accounts' | 'relationships' | 'media'> &
-	Omit<CircleWiring, 'contacts' | 'media'>;
+	Omit<CircleWiring, 'contacts' | 'media'> &
+	Omit<StoryWiring, 'contacts' | 'media'>;
 
 /** Wires every grouped context. Pure assembly: no I/O beyond what the adapters do when used. */
 export function createServices(wiring: ServicesWiring): AppServices {
@@ -54,5 +57,10 @@ export function createServices(wiring: ServicesWiring): AppServices {
 		contacts: people.contacts,
 		media: media.store
 	});
-	return { auth, people, relationships, circles, media };
+	const story = createStoryServices({
+		...wiring,
+		contacts: people.contacts,
+		media: media.store
+	});
+	return { auth, people, relationships, circles, media, story };
 }

@@ -33,9 +33,7 @@ import { togetherCandidates } from '$lib/immich/together';
 import {
 	getContactFieldDeps,
 	getImportantDateDeps,
-	getInteractionDeps,
 	getNoteDeps,
-	getStoryDeps,
 	getTagDeps,
 	getMemberDeps,
 	getMentionedInDeps,
@@ -222,8 +220,9 @@ function readPersonPage(
 		people,
 		relationships,
 		circles,
-		media
-	}: Pick<AppServices, 'people' | 'relationships' | 'circles' | 'media'>,
+		media,
+		story
+	}: Pick<AppServices, 'people' | 'relationships' | 'circles' | 'media' | 'story'>,
 	viewer: Viewer,
 	contactId: string,
 	request: { reviewOpen: boolean; proposeFor: { a: string; b: string }[] }
@@ -234,8 +233,8 @@ function readPersonPage(
 		fields: listContactFields(getContactFieldDeps(), viewer, contactId),
 		tags: listTagsForContact(getTagDeps(), viewer, contactId),
 		contactCircles: listCirclesForContact(circles.circleDeps, viewer, contactId),
-		storyPage: listStoryPage(getStoryDeps(), viewer, contactId, { limit: STORY_PAGE_SIZE }),
-		lastContactedAt: lastContactedOn(getInteractionDeps(), viewer, contactId),
+		storyPage: listStoryPage(story.storyDeps, viewer, contactId, { limit: STORY_PAGE_SIZE }),
+		lastContactedAt: lastContactedOn(story.interactionDeps, viewer, contactId),
 		notes: listNotesForContact(getNoteDeps(), viewer, contactId),
 		mentionedIn: listMentionedIn(getMentionedInDeps(), viewer, contactId),
 		gallery: listGallery(media.galleryDeps, viewer, contactId),

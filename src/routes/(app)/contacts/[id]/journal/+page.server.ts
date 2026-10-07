@@ -18,7 +18,7 @@ import { renderMarkdownWithMentions } from '$lib/server/domain/notes/markdown';
 import { extractMentionIds, mentionsOtherThan } from '$lib/mentions/mentions';
 import { resolveForAudience } from '$lib/server/domain/mentions/resolve-for-audience';
 import { withNamesakeContext } from '$lib/server/domain/mentions/namesake-context';
-import { getCommandDeps, getJournalDeps, getMemberDeps } from '$lib/server/services';
+import { getCommandDeps, getMemberDeps } from '$lib/server/services';
 import { parsePhotoCommand, readCommand } from '$lib/server/commands/parse';
 import { fromFormData } from '$lib/commands/form-data';
 import { JournalWriteSchema } from '$lib/commands/payloads';
@@ -39,7 +39,7 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 	if (!contact) throw error(404, say(locals, 'errors.contact.notFound')); // never reveal existence
 
 	const [entries, journalPhotos] = await Promise.all([
-		listJournalForContact(getJournalDeps(), viewer, params.id),
+		listJournalForContact(locals.services.story.journalDeps, viewer, params.id),
 		locals.services.media.photos.listJournalPhotos(viewer, params.id)
 	]);
 	// Names for the people the entries mention, not for the whole household.
@@ -189,7 +189,11 @@ export const actions: Actions = {
 
 		// Need the entry's own visibility to scope the @-picker candidates the same way `save`
 		// does — editing never changes the day/visibility slot (docs/02 §2.20).
-		const entries = await listJournalForContact(getJournalDeps(), viewer, params.id);
+		const entries = await listJournalForContact(
+			locals.services.story.journalDeps,
+			viewer,
+			params.id
+		);
 		const entry = entries.find((e) => e.id === parsed.output.id);
 		if (!entry || entry.createdBy !== viewer.id) {
 			return fail(404, { journalError: say(locals, 'errors.journal.editFailed') });
@@ -212,7 +216,7 @@ export const actions: Actions = {
 				viewer,
 				async () => resolveForAudience(contacts, entry.visibility, parsed.output.body)
 			);
-			ok = await editJournalEntry(getJournalDeps(), author, {
+			ok = await editJournalEntry(locals.services.story.journalDeps, author, {
 				id: parsed.output.id,
 				title: parsed.output.title ?? null,
 				body: resolved.body
@@ -230,7 +234,7 @@ export const actions: Actions = {
 		}
 
 		await setJournalMentions(
-			getJournalDeps(),
+			locals.services.story.journalDeps,
 			parsed.output.id,
 			mentionsOtherThan(resolved.ids, params.id)
 		);
@@ -246,7 +250,7 @@ export const actions: Actions = {
 		if (typeof id !== 'string') return fail(400, {});
 
 		await deleteJournalEntry(
-			getJournalDeps(),
+			locals.services.story.journalDeps,
 			{ userId: viewer.id, householdId: viewer.householdId, defaultVisibility: 'shared' },
 			id
 		);
