@@ -241,7 +241,10 @@ related**, with a dashed ring and quieter text. The card's header holds **Edit**
 
 After People come **Photos**, **Activity** and the **Notes** side by side (one under the other
 on a phone), and **Mentioned in** last. Nothing is behind a tab, so nothing has to be found
-before it can be read; each card says how many things are in it. Once you scroll past the top
+before it can be read; each card says how many things are in it. A card with nothing in it yet
+keeps out of the way: empty **Photos** and **Notes** are a single line with their **+ Add**
+button, an empty **Activity** says so in one sentence, and **Mentioned in** only appears once
+somebody has mentioned the person. Once you scroll past the top
 card a **jump bar** fades in at the top of the screen — *People · Photos · Activity · Notes*,
 with their counts — which marks the card you are reading and takes you to any of them with one
 tap. Scroll back to the top and it steps away again.
@@ -399,7 +402,8 @@ wait under **Ignored** at the end, with who ignored them and when, and **Propose
 
 ### Mentioned in
 
-**Mentioned in** is the last card, and it is the only one that is not really theirs: it lists
+**Mentioned in** is the last card — there once somebody has mentioned them — and it is the only
+one that is not really theirs: it lists
 what *other* people's notes and moments say about them. Write "hiked with `@Sandra`"
 in Beat's journal and it appears on Sandra's page as *in Beat Steiner's journal*, with the day
 and the first line of what was written. Click it and you land on Beat's page, where the entry

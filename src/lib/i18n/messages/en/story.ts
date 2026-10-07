@@ -1,8 +1,7 @@
 /* A person's story: the journal entries and interactions on their page (docs/02 §2.23). */
 
 export const story = {
-	'story.empty.title': 'Nothing written down yet.',
-	'story.empty.hint': 'Log a call or a visit, or write what happened — it all lands here.',
+	'story.empty': 'Nothing written down yet — calls, visits and moments land here.',
 	'story.journal': 'Moment',
 	'story.removeEntry': 'Remove moment',
 	'story.removeInteraction': 'Remove interaction',

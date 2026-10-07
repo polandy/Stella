@@ -2,9 +2,7 @@ import type { StoryMessages } from '../en/story';
 
 /** German for `messages/en/story.ts`. */
 export const story: StoryMessages = {
-	'story.empty.title': 'Noch nichts aufgeschrieben.',
-	'story.empty.hint':
-		'Halte einen Anruf oder einen Besuch fest, oder schreib, was passiert ist — alles landet hier.',
+	'story.empty': 'Noch nichts aufgeschrieben — Anrufe, Besuche und Momente landen hier.',
 	'story.journal': 'Moment',
 	'story.removeEntry': 'Moment entfernen',
 	'story.removeInteraction': 'Kontakt entfernen',

@@ -86,10 +86,12 @@
 </script>
 
 {#if items.length === 0}
-	<div class="rounded-app border border-dashed border-border px-6 py-10 text-center">
-		<p class="text-fg-muted">{t('story.empty.title')}</p>
-		<p class="mt-1 text-sm text-fg-subtle">{t('story.empty.hint')}</p>
-	</div>
+	<!-- One sentence: *Log contact* is already in the card's header (docs/05 §5.5). -->
+	<p
+		class="rounded-app border border-dashed border-border px-4 py-5 text-center text-sm text-fg-muted"
+	>
+		{t('story.empty')}
+	</p>
 {:else}
 	<ol class="flex flex-col" data-testid="story-timeline">
 		{#each days as group (group.day)}

@@ -37,7 +37,7 @@ test('logs a call with a participant, shows it on the timeline and derives last 
 	page
 }) => {
 	await openPerson(page, /Lena Brunner/);
-	await expect(page.getByText('Nothing written down yet.')).toBeVisible();
+	await expect(page.getByText(/^Nothing written down yet/)).toBeVisible();
 	// Nothing logged, so the facts state none (C5) — read once the facts are up.
 	const facts = page.getByTestId('identity-facts');
 	await expect(facts.locator('[data-fact="birthday"]')).toBeVisible();

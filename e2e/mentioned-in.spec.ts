@@ -106,15 +106,13 @@ test.beforeEach(async ({ page }) => {
 	await signIn(page);
 });
 
-test('says plainly that nobody has named this person yet', async ({ page }) => {
+test('leaves the card off the page while nobody has named this person', async ({ page }) => {
 	await addPerson(page, 'Fabian', 'Ineichen');
 	await addPerson(page, 'Rosmarie', 'Tschopp');
 
-	await openMentions(page);
-	await expect(references(page)).toHaveCount(0);
-	await expect(page.getByText(`Nobody has mentioned ${NAMED} anywhere else yet.`)).toBeVisible();
-	// The count sits on the tab and is exact, so an empty list says zero rather than nothing.
-	await await expect(page.locator('#section-mentions > header')).toContainText('0');
+	// Passive, with nothing to add there: an empty card would only say "nothing" (docs/05 §5.5).
+	await expect(page.locator('#section-notes')).toBeVisible();
+	await expect(page.locator('#section-mentions')).toHaveCount(0);
 });
 
 test('puts a note on the page of the person it names, not of the person it is about', async ({
@@ -124,9 +122,9 @@ test('puts a note on the page of the person it names, not of the person it is ab
 	const writtenOn = today();
 	await writeNote(page, NOTE_MARKER);
 
-	// The writer's own list stays empty: the note is *about* him, which is not a reference.
-	await openMentions(page);
-	await expect(references(page)).toHaveCount(0);
+	// The writer's own list stays empty: the note is *about* him, which is not a reference —
+	// and an empty list is not on the page (docs/05 §5.5).
+	await expect(page.locator('#section-mentions')).toHaveCount(0);
 
 	await openPerson(page, new RegExp(NAMED));
 	await openMentions(page);

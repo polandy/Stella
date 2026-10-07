@@ -148,14 +148,17 @@ test('an empty circle opens its members form from the invitation', async ({ page
 	await expect(page.locator('form[action="?/addMembers"]').getByLabel('People')).toBeVisible();
 });
 
-test('a new person’s page names them in its empty sections and opens the relationship form', async ({
+test('a new person’s page keeps its empty sections short and opens the relationship form', async ({
 	page
 }) => {
 	const name = `Tobiah ${fennwick()}`;
 	await addPerson(page, 'Tobiah', name.split(' ')[1]);
 
-	await expect(page.getByText(`Nothing noted about ${name} yet.`)).toBeVisible();
-	await expect(page.getByText(`No photos of ${name} yet.`)).toBeVisible();
+	// Empty Photos and Notes are one line each; nobody mentions a new person, so that card is
+	// not on the page at all (docs/05 §5.5).
+	await expect(page.locator('#section-notes').getByText('Nothing noted yet.')).toBeVisible();
+	await expect(page.locator('#section-photos').getByText('No photos yet.')).toBeVisible();
+	await expect(page.locator('#section-mentions')).toHaveCount(0);
 	const relationships = page.locator('#section-relationships');
 	await expect(relationships.getByText(`${name} is not linked to anyone yet`)).toBeVisible();
 	await expect(page.locator('form[action="?/addRelationship"]')).toHaveCount(0);

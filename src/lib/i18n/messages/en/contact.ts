@@ -304,16 +304,14 @@ export const contact = {
 	'contact.relationships.viaAnd': ' and ',
 
 	'contact.notes.add': 'Add note',
-	'contact.notes.none': (p: { name: string }) =>
-		`Nothing noted about ${p.name} yet. Keep what you would hate to forget here — gift ideas, allergies, the dog’s name.`,
+	'contact.notes.none': 'Nothing noted yet.',
 	'contact.notes.pinned': 'pinned',
 	'contact.notes.label': 'Note',
 	'contact.notes.placeholder': 'Write a note… (Markdown, @ to mention someone)',
 	'contact.notes.pin': 'Pin',
 
 	'contact.photos.add': 'Add photos',
-	'contact.photos.none': (p: { name: string }) =>
-		`No photos of ${p.name} yet. Add one, and it can become their picture.`,
+	'contact.photos.none': 'No photos yet.',
 	'contact.photos.of': (p: { name: string }) => `Photo of ${p.name}`,
 	'contact.photos.privateHint': 'Private — only you can see this',
 	'contact.photos.pictures': 'Pictures',
@@ -337,9 +335,7 @@ export const contact = {
 	'contact.mentions.in': 'in',
 	'contact.mentions.notes': 'notes',
 	'contact.mentions.journal': 'journal',
-	'contact.mentions.by': (p: { author: string }) => `by ${p.author}`,
-	'contact.mentions.none': (p: { name: string }) =>
-		`Nobody has mentioned ${p.name} anywhere else yet.`
+	'contact.mentions.by': (p: { author: string }) => `by ${p.author}`
 };
 
 /** The key set every translation of this area has to provide. */

@@ -4,7 +4,10 @@ import type { ContactSection } from './sections';
  * The person page's jump bar (docs/05 §5.5): under the identity card, sticking under the top
  * bar once that card has gone by, one link per card worth jumping to — People, Photos, Story,
  * Notes — and the card being read marked. *Mentioned in* is left out: it is the page's quiet
- * foot, reached by scrolling on, and a fifth link does not fit a phone's width.
+ * foot, reached by scrolling on, a fifth link does not fit a phone's width, and with nobody
+ * mentioning the person the card is not on the page at all (`cardShape`). Every card the bar
+ * does link stands on the page even when empty — as one line, at the least — since that is
+ * where its add button is; the tests hold the two rules together.
  *
  * Pure, so what the bar says and which card it marks are tested without a browser; the page
  * only measures where the cards stand.

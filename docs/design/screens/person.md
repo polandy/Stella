@@ -95,7 +95,8 @@ the person, and that never leaves the page. Keeping the record tidy (archive, me
 
 - `JumpBar` is a row of four links, *People · Photos · Activity · Notes*, each with its card's
   count where it has one (none for the paged Activity, none for a count of nothing).
-  *Mentioned in* is not in it.
+  *Mentioned in* is not in it. The four it links stay at zero — as one line, at the least —
+  since that is where their *+ Add* is; the bar's tests hold it to the empty-card rule.
 - It shows **only once it sticks**: it hangs from a zero-height sticky slot that takes no room
   in the flow and sticks at the bar's own height, so it sticks — and fades in (§5.11's fade) —
   exactly when the identity card's bottom passes under its foot (`barVisible`).
@@ -257,6 +258,21 @@ the person, and that never leaves the page. Keeping the record tidy (archive, me
   *in <person>’s journal · by <author>*, the day on the right, and a one-line preview
   underneath. Nothing in it is editable.
 
+#### Empty cards
+
+- `cardShape` (`$lib/contacts/empty-cards.ts`) decides each card's shape at zero.
+- An empty **Photos** or **Notes** is **one line** (`Section`'s `empty`): the title, one short
+  sentence cut off rather than wrapped (*No photos yet.*, *Nothing noted yet.*), and the
+  card's actions — *+ Add* and, on Photos, the Immich menu — with no count and no body.
+- Pressing *+ Add* grows it into the card with its form open; *Cancel* shrinks it back, and
+  the button pressed is the one that closes it.
+- Photos counts as empty only with no photo, none kept on the device, no group photo and no
+  Immich line.
+- An empty **Activity** keeps its card and a dashed box with one sentence (*Nothing written
+  down yet — calls, visits and moments land here.*): *Log contact* is in its header already.
+- An empty **Mentioned in** is **not on the page**. People keeps its card, whose empty state
+  is where linking starts.
+
 ### Why
 
 The cards replaced tabs because tabs hid the two things a page is most often opened for behind
@@ -280,7 +296,7 @@ pattern promises Undo, and after a deletion there is nothing to put back.
 The jump bar shows only once it sticks because at rest nothing should stand between the identity
 card and People. It appears exactly where a jump to People leaves the page, so a tapped bar never
 vanishes. Hidden, it is `inert` because it is out of sight. *Mentioned in* is the page's quiet
-foot, and a fifth link does not fit a phone.
+foot, and a fifth link does not fit a phone; at zero it is not there at all.
 
 In the folded People card worked-out relatives wait behind *Show more* so an inference never
 pushes something the household typed below the fold, and worked-out tiles look quieter so an
@@ -302,3 +318,8 @@ The photo lightbox puts the destructive action last so it is never the button ne
 you meant. *Mentioned in* is a list of whole-row links because the only thing to do with a
 passive item is go to where it is written; nothing there is editable, so there is no button to
 mistake for one.
+
+Most people in a household are reference records, and a page of boxes that each say "nothing"
+teaches the reader to stop looking — the rule *Coming up* follows. So an empty card shrinks to
+the line that still holds its *+ Add*. An empty *Mentioned in* goes entirely because it is
+passive: there is nothing to add there.
