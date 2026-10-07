@@ -1,7 +1,7 @@
 import { keptAt } from './cache-policy';
 
 /*
- * Every person the member can see, readable out of reach (docs/concepts/offline-reading.md §4).
+ * Every person the member can see, readable out of reach (docs/02 §2.18, docs/04 ADR-114).
  * Pure: which pages the service worker keeps ahead, which kept pages must go because their
  * person is no longer visible, and when to look again. `src/service-worker.ts` runs the plan.
  */

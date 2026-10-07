@@ -108,7 +108,7 @@ export const handleError: HandleServerError = ({ error, event, status, message }
 
 /**
  * A page's data, tagged with its content — or, when the device already holds exactly that, a
- * bodiless 304 (docs/concepts/offline-reading.md §4.2). The page is still worked out in full;
+ * bodiless 304 (docs/04 ADR-074). The page is still worked out in full;
  * what is saved is the phone's data, not the server's time.
  */
 async function withEtag(request: Request, response: Response): Promise<Response> {

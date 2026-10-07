@@ -59,7 +59,7 @@ const NEVER_CACHED = [
 
 /**
  * Pages the service worker keeps as soon as a page opens in reach, rather than once they are
- * read: the places a phone starts from (docs/concepts/offline-reading.md §4.1). Every update
+ * read: the places a phone starts from (docs/02 §2.18, *What a device keeps*). Every update
  * starts from an empty cache, so without these the app is empty on the train the morning after
  * one — and Settings is opened rarely and wanted offline all the same.
  */
