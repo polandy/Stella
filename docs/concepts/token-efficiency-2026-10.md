@@ -195,7 +195,7 @@ handing the owner the prompt for the next row.
 | 4 | TE-02 model by tier (`model: inherit`, Agent `model` param) | S | ☑ | Needs the tier wording from row 3 |
 | 5 | TE-04 headings in the five largest docs; ADR index | M | ☑ | Makes the *read only the section* rule true |
 | 6 | TE-06 format hook complains instead of no-op | S | ☑ | Removes a lint round per stale checkout |
-| 7 | TE-07 run the edited e2e specs before the push | S | ☐ | Removes an e2e round per edited spec |
+| 7 | TE-07 run the edited e2e specs before the push | S | ☑ | Removes an e2e round per edited spec |
 | 8 | TE-08 disable unused connectors | S | ☐ | Owner setting, no PR; do when convenient |
 
 Paste-ready prompt for a row:
