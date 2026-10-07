@@ -3,7 +3,7 @@ import { requireViewer } from '$lib/server/auth/guards';
 import { getContact, listContactNamesAmong } from '$lib/server/domain/contacts/contacts';
 import { authorNames } from '$lib/server/domain/household/members';
 import { listStoryPage } from '$lib/server/domain/story/story';
-import { getMemberDeps, getPhotos, getStoryDeps } from '$lib/server/services';
+import { getMemberDeps, getStoryDeps } from '$lib/server/services';
 import { parseStoryCursor } from '$lib/story/cursor';
 import {
 	entryIdsOf,
@@ -43,7 +43,11 @@ export const POST: RequestHandler = async ({ locals, params, request }) => {
 
 	// Only what this page shows: its entries' photos and the people its entries mention.
 	const [photos, names, nameOfAuthor] = await Promise.all([
-		getPhotos().listJournalPhotosOfEntries(viewer, params.id, entryIdsOf(page.items)),
+		locals.services.media.photos.listJournalPhotosOfEntries(
+			viewer,
+			params.id,
+			entryIdsOf(page.items)
+		),
 		listContactNamesAmong(locals.services.people.contactDeps, viewer, mentionIdsOf(page.items)),
 		authorNames(getMemberDeps(), viewer.householdId)
 	]);

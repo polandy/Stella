@@ -189,8 +189,14 @@ describe('createServices', () => {
 				rpLogout: false
 			}
 		};
-		const services = createServices({ config, db, clock, ids, media });
+		const services = createServices({
+			// Nothing here touches a file: the media store is lazy on disk.
+			config: { ...config, mediaDir: '/nonexistent/stella-media' },
+			db,
+			clock,
+			ids
+		});
 		expect<unknown>(services.circles.cutDeps.contacts).toBe(services.people.contacts);
-		expect(services.circles.circlePhotoDeps.media).toBe(media);
+		expect(services.circles.circlePhotoDeps.media).toBe(services.media.store);
 	});
 });

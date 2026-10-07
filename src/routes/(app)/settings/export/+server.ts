@@ -7,7 +7,7 @@ import {
 	serialiseDocument
 } from '$lib/server/domain/archive/archive';
 import { tarEntry, tarTrailer } from '$lib/archive/tar';
-import { getArchiveDeps, getMediaStore } from '$lib/server/services';
+import { getArchiveDeps } from '$lib/server/services';
 import type { RequestHandler } from './$types';
 import { say } from '$lib/server/i18n/say';
 
@@ -38,7 +38,7 @@ export const POST: RequestHandler = async ({ locals }) => {
 	// not as a truncated file that still looks like a backup.
 	const plan = planArchive(mediaPaths);
 
-	const media = getMediaStore();
+	const media = locals.services.media.store;
 	const mtime = Math.floor(Date.now() / 1000);
 	const entries = archiveEntries(plan, {
 		documentText: serialiseDocument(document),

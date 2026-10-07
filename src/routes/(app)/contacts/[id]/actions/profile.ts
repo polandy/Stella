@@ -14,7 +14,6 @@ import {
 } from '$lib/server/domain/contacts/contacts';
 import { InvalidAvatarError, setContactAvatar } from '$lib/server/domain/media/avatars';
 import { editNameParts } from '$lib/server/domain/contacts/name-parts';
-import { getAvatarDeps } from '$lib/server/services';
 import { takenAtField } from '$lib/server/http/taken-at-field';
 import { say, translator } from '$lib/server/i18n/say';
 import type { Actions } from '../$types';
@@ -162,7 +161,7 @@ export const profileActions = {
 
 		try {
 			await setContactAvatar(
-				getAvatarDeps(),
+				locals.services.media.avatarDeps,
 				{ userId: viewer.id, householdId: viewer.householdId },
 				params.id,
 				upload

@@ -18,7 +18,7 @@ import { renderMarkdownWithMentions } from '$lib/server/domain/notes/markdown';
 import { extractMentionIds, mentionsOtherThan } from '$lib/mentions/mentions';
 import { resolveForAudience } from '$lib/server/domain/mentions/resolve-for-audience';
 import { withNamesakeContext } from '$lib/server/domain/mentions/namesake-context';
-import { getCommandDeps, getJournalDeps, getPhotos, getMemberDeps } from '$lib/server/services';
+import { getCommandDeps, getJournalDeps, getMemberDeps } from '$lib/server/services';
 import { parsePhotoCommand, readCommand } from '$lib/server/commands/parse';
 import { fromFormData } from '$lib/commands/form-data';
 import { JournalWriteSchema } from '$lib/commands/payloads';
@@ -40,7 +40,7 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 
 	const [entries, journalPhotos] = await Promise.all([
 		listJournalForContact(getJournalDeps(), viewer, params.id),
-		getPhotos().listJournalPhotos(viewer, params.id)
+		locals.services.media.photos.listJournalPhotos(viewer, params.id)
 	]);
 	// Names for the people the entries mention, not for the whole household.
 	const contactNames = await listContactNamesAmong(

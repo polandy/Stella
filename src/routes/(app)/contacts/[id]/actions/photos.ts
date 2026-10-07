@@ -20,7 +20,7 @@ import { cutProfilePicture } from '$lib/server/domain/media/cuts';
 import { frameAsAvatar } from '$lib/server/domain/media/framing';
 import { readCutForm } from '$lib/server/http/cut-form';
 import { contactSectionPath } from '$lib/contacts/sections';
-import { getCommandDeps, getFramingDeps, getGalleryDeps } from '$lib/server/services';
+import { getCommandDeps } from '$lib/server/services';
 import { say, translator } from '$lib/server/i18n/say';
 import type { Actions } from '../$types';
 
@@ -96,7 +96,9 @@ export const photoActions = {
 			return fail(400, { photoError: say(locals, 'errors.caption.unreadable') });
 		}
 		try {
-			if (!(await captionGalleryPhoto(getGalleryDeps(), viewer, photoId, caption))) {
+			if (
+				!(await captionGalleryPhoto(locals.services.media.galleryDeps, viewer, photoId, caption))
+			) {
 				return fail(403, { photoError: say(locals, 'errors.photo.onlyOwnerCaption') });
 			}
 		} catch (err) {
@@ -118,7 +120,7 @@ export const photoActions = {
 		if (!parsed.success) return fail(400, { photoError: say(locals, 'errors.photo.unreadable') });
 		if (
 			!(await setGalleryPhotoVisibility(
-				getGalleryDeps(),
+				locals.services.media.galleryDeps,
 				viewer,
 				parsed.output.photoId,
 				parsed.output.visibility
@@ -143,7 +145,7 @@ export const photoActions = {
 			photoId: parsed.output.photoId,
 			pinned: parsed.output.pinned === 'true'
 		};
-		if (!(await pinGalleryPhoto(getGalleryDeps(), viewer, input))) {
+		if (!(await pinGalleryPhoto(locals.services.media.galleryDeps, viewer, input))) {
 			return fail(404, { photoError: say(locals, 'errors.photo.notFound') });
 		}
 		throw redirect(303, contactSectionPath(params.id, 'photos'));
@@ -175,7 +177,7 @@ export const photoActions = {
 		};
 		try {
 			if (
-				!(await frameAsAvatar(getFramingDeps(), viewer, {
+				!(await frameAsAvatar(locals.services.media.framingDeps, viewer, {
 					contactId: params.id,
 					photoId,
 					crop,
@@ -221,7 +223,7 @@ export const photoActions = {
 		const photoId = form.get('photoId');
 		if (typeof photoId !== 'string')
 			return fail(400, { photoError: say(locals, 'errors.photo.unreadable') });
-		if (!(await removeGalleryPhoto(getGalleryDeps(), viewer, photoId))) {
+		if (!(await removeGalleryPhoto(locals.services.media.galleryDeps, viewer, photoId))) {
 			return fail(403, { photoError: say(locals, 'errors.photo.onlyOwnerRemove') });
 		}
 		throw redirect(303, contactSectionPath(params.id, 'photos'));

@@ -17,12 +17,7 @@ import { membersViewerFirst } from '$lib/server/domain/household/members';
 import { buildStream } from '$lib/server/domain/stream/stream';
 import { extractMentionIds, mentionToken } from '$lib/mentions/mentions';
 import { parseStreamFilter } from '$lib/stream/filter';
-import {
-	getCommandDeps,
-	getImportantDates,
-	getMemberDeps,
-	getStreamDeps
-} from '$lib/server/services';
+import { getCommandDeps, getImportantDates, getMemberDeps } from '$lib/server/services';
 import type { Actions, PageServerLoad } from './$types';
 import { say, translator } from '$lib/server/i18n/say';
 import type { MessageKey } from '$lib/i18n/translate';
@@ -56,7 +51,7 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 	const named = [a, b, aboutId].filter((id): id is string => Boolean(id));
 
 	const [items, onList, dateSources, firstPeople] = await Promise.all([
-		buildStream(getStreamDeps(), viewer, filter),
+		buildStream(locals.services.media.streamDeps, viewer, filter),
 		// Who the household can still act on — the browsing scope — among just those.
 		listBrowsableNamesAmong(locals.services.people.contactDeps, viewer, named),
 		getImportantDates().listSourcesVisibleTo(viewer),
