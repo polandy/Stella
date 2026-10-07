@@ -1,0 +1,55 @@
+import type { BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
+import type { Clock } from '../clock';
+import { createDrizzleContactFieldRepository } from '../db/contact-field-repository';
+import { createDrizzleImportantDateRepository } from '../db/important-date-repository';
+import type * as schema from '../db/schema';
+import { createDrizzleTagRepository } from '../db/tag-repository';
+import type {
+	ContactFieldDeps,
+	ContactFieldRepository
+} from '../domain/contact-fields/contact-fields';
+import type { ImportantDateDeps, ImportantDateRepository } from '../domain/dates/important-dates';
+import type { TagDeps, TagRepository } from '../domain/tags/tags';
+import type { IdGenerator } from '../id';
+
+/*
+ * The `records` bounded context of the composition root (docs/08 §8.3): what a person's page
+ * keeps about them besides their story — contact fields, important dates and tags. Built once
+ * per process by `createServices`; the edge reads it off `locals.services.records`.
+ *
+ * A repository an edge reads directly sits under its noun (`contactFields`, `importantDates`,
+ * `tags`); everything else is a use-case's `deps`, named after its type (`tagDeps` is a
+ * `TagDeps`).
+ */
+export interface RecordServices {
+	/** The one contact field repository: adding, editing, listing and removing read it. */
+	contactFields: ContactFieldRepository;
+	/** The one important date repository, also the home page's source of upcoming dates. */
+	importantDates: ImportantDateRepository;
+	/** The one tag repository, household-wide: the chip row and each person's tags. */
+	tags: TagRepository;
+	contactFieldDeps: ContactFieldDeps;
+	importantDateDeps: ImportantDateDeps;
+	tagDeps: TagDeps;
+}
+
+export interface RecordWiring {
+	db: BunSQLiteDatabase<typeof schema>;
+	clock: Clock;
+	ids: IdGenerator;
+}
+
+export function createRecordServices({ db, clock, ids }: RecordWiring): RecordServices {
+	const contactFields = createDrizzleContactFieldRepository(db);
+	const importantDates = createDrizzleImportantDateRepository(db);
+	const tags = createDrizzleTagRepository(db);
+
+	return {
+		contactFields,
+		importantDates,
+		tags,
+		contactFieldDeps: { fields: contactFields, ids, clock },
+		importantDateDeps: { dates: importantDates, ids, clock },
+		tagDeps: { tags, ids, clock }
+	};
+}

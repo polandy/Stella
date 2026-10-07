@@ -30,18 +30,7 @@ import { TAG_COLORS } from '$lib/tags/colors';
 import { readTogetherOffers } from '$lib/server/domain/immich/glimpse';
 import { readImmichLink, readLinkedPerson } from '$lib/server/domain/immich/links';
 import { togetherCandidates } from '$lib/immich/together';
-import {
-	getContactFieldDeps,
-	getImportantDateDeps,
-	getInteractionDeps,
-	getNoteDeps,
-	getStoryDeps,
-	getTagDeps,
-	getMemberDeps,
-	getMentionedInDeps,
-	getImmich,
-	getImmichLinkDeps
-} from '$lib/server/services';
+import { getMemberDeps, getImmich, getImmichLinkDeps } from '$lib/server/services';
 import type { Viewer } from '$lib/server/access/visibility';
 import { say, translator } from '$lib/server/i18n/say';
 import { allOf } from '$lib/async/all-of';
@@ -222,22 +211,28 @@ function readPersonPage(
 		people,
 		relationships,
 		circles,
-		media
-	}: Pick<AppServices, 'people' | 'relationships' | 'circles' | 'media'>,
+		media,
+		story,
+		notes,
+		records
+	}: Pick<
+		AppServices,
+		'people' | 'relationships' | 'circles' | 'media' | 'story' | 'notes' | 'records'
+	>,
 	viewer: Viewer,
 	contactId: string,
 	request: { reviewOpen: boolean; proposeFor: { a: string; b: string }[] }
 ) {
 	return allOf({
 		// The person's own records.
-		dates: listImportantDates(getImportantDateDeps(), viewer, contactId),
-		fields: listContactFields(getContactFieldDeps(), viewer, contactId),
-		tags: listTagsForContact(getTagDeps(), viewer, contactId),
+		dates: listImportantDates(records.importantDateDeps, viewer, contactId),
+		fields: listContactFields(records.contactFieldDeps, viewer, contactId),
+		tags: listTagsForContact(records.tagDeps, viewer, contactId),
 		contactCircles: listCirclesForContact(circles.circleDeps, viewer, contactId),
-		storyPage: listStoryPage(getStoryDeps(), viewer, contactId, { limit: STORY_PAGE_SIZE }),
-		lastContactedAt: lastContactedOn(getInteractionDeps(), viewer, contactId),
-		notes: listNotesForContact(getNoteDeps(), viewer, contactId),
-		mentionedIn: listMentionedIn(getMentionedInDeps(), viewer, contactId),
+		storyPage: listStoryPage(story.storyDeps, viewer, contactId, { limit: STORY_PAGE_SIZE }),
+		lastContactedAt: lastContactedOn(story.interactionDeps, viewer, contactId),
+		notes: listNotesForContact(notes.noteDeps, viewer, contactId),
+		mentionedIn: listMentionedIn(notes.mentionedInDeps, viewer, contactId),
 		gallery: listGallery(media.galleryDeps, viewer, contactId),
 		groupPhotos: listGroupPhotosOf(circles.cutDeps, viewer, contactId),
 		groupPhotosToCut: listGroupPhotosToCut(circles.cutDeps, viewer, contactId),

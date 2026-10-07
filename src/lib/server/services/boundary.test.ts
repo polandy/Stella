@@ -98,7 +98,26 @@ describe('the composition root', () => {
 			'FramingDeps',
 			'GalleryUploadDeps',
 			'JournalPhotoDeps',
-			'StreamDeps'
+			'StreamDeps',
+			// The story context (AR-01, sixth slice): read `locals.services.story`.
+			'Journal',
+			'Interactions',
+			'JournalDeps',
+			'InteractionDeps',
+			'StoryDeps',
+			'CaptureMomentDeps',
+			// The notes context (AR-01, seventh slice): read `locals.services.notes`.
+			'Notes',
+			'NoteDeps',
+			'MentionedIn',
+			'MentionedInDeps',
+			// The records context (AR-01, eighth slice): read `locals.services.records`.
+			'ContactFields',
+			'ContactFieldDeps',
+			'ImportantDates',
+			'ImportantDateDeps',
+			'Tags',
+			'TagDeps'
 		];
 		const retired = new RegExp(`\\bget(?:${factories.join('|')})\\b`);
 		expect(files.filter((path) => retired.test(source(path)))).toEqual([]);

@@ -9,7 +9,7 @@ import { requireViewer } from '$lib/server/auth/guards';
 import * as v from 'valibot';
 import { editContactField } from '$lib/server/domain/contact-fields/contact-fields';
 import { getContact } from '$lib/server/domain/contacts/contacts';
-import { getCommandDeps, getContactFieldDeps, getContactFields } from '$lib/server/services';
+import { getCommandDeps } from '$lib/server/services';
 import { say, translator } from '$lib/server/i18n/say';
 import type { Actions } from '../$types';
 
@@ -76,7 +76,7 @@ export const fieldActions = {
 		const contact = await getContact(locals.services.people.contactDeps, viewer, params.id);
 		if (!contact) throw error(404, say(locals, 'errors.contact.notFound'));
 
-		await editContactField(getContactFieldDeps(), {
+		await editContactField(locals.services.records.contactFieldDeps, {
 			contactId: params.id,
 			fieldId: parsed.output.fieldId,
 			label: parsed.output.label ?? null,
@@ -95,7 +95,7 @@ export const fieldActions = {
 		const contact = await getContact(locals.services.people.contactDeps, viewer, params.id);
 		if (!contact) throw error(404, say(locals, 'errors.contact.notFound'));
 
-		await getContactFields().remove(params.id, fieldId);
+		await locals.services.records.contactFields.remove(params.id, fieldId);
 		throw redirect(303, `/contacts/${params.id}`);
 	}
 } satisfies Actions;
