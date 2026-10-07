@@ -2,10 +2,10 @@ import * as v from 'valibot';
 import type { CutProfilePictureInput } from '../domain/media/cuts';
 
 /*
- * The form a profile picture cut from a group photo is sent with (docs/concepts/circle-photos.md
- * §5): which photo and whom, the square in the full picture's pixels, and that square rendered
- * by the browser at 1024 px with its thumbnail. Read the same way from the circle page's
- * lightbox and from the person page, which both send it.
+ * The form a profile picture cut from a group photo is sent with (docs/02 §2.14): which photo and
+ * whom, the square in the full picture's pixels, and that square rendered by the browser at 1024 px
+ * with its thumbnail. Read the same way from the circle page's lightbox and from the person page,
+ * which both send it.
  */
 
 const Id = v.pipe(v.string(), v.minLength(1));

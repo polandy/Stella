@@ -168,7 +168,7 @@ export function buildArchiveDocument(
 			// Set on the square a photo is worn through as the avatar (docs/02 §2.14).
 			framing_of: text(row, 'framing_of'),
 			crop: framingCrop(row),
-			// The group photo a profile picture was cut from (docs/concepts/circle-photos.md §5.2).
+			// The group photo a profile picture was cut from (docs/02 §2.14).
 			cut_from: text(row, 'cut_from'),
 			// The circle role a circle's photo shows (docs/02 §2.4.2).
 			role: text(row, 'circle_role'),

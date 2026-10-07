@@ -2,7 +2,7 @@ import { filterPeople, type SelectablePerson } from '$lib/people/select';
 import { roleKey } from './role-key';
 
 /*
- * Whom a group photo's profile picture is cut for (docs/concepts/circle-photos.md §5.1). The
+ * Whom a group photo's profile picture is cut for (docs/02 §2.4.2). The
  * people most likely on the photo come first — the circle's members, those in the photo's role
  * ahead of the rest — and a search reaches everyone else the viewer can see. Someone already
  * wearing a cut of this photo is marked, so a whole class gets its pictures in one sitting

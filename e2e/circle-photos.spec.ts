@@ -304,7 +304,7 @@ test('the stream says who added how many photos to which circle, under the Circl
 });
 
 /*
- * Profile pictures cut from a group photo (docs/concepts/circle-photos.md §5). The picture is
+ * Profile pictures cut from a group photo (docs/02 §2.14). The picture is
  * drawn in the browser rather than read from a fixture: the cropper needs something larger
  * than a pixel to frame, and a cut is rendered from the full picture the cropper loads.
  */

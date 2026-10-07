@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'bun:test';
 import { readCutForm } from './cut-form';
 
-/* The form a profile picture cut from a group photo arrives in (docs/concepts/circle-photos.md §5). */
+/* The form a profile picture cut from a group photo arrives in (docs/02 §2.14). */
 
 function form(over: Record<string, string | null> = {}) {
 	const f = new FormData();

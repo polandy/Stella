@@ -12,10 +12,10 @@ import { createDrizzlePhotoRepository } from './photo-repository';
 import * as schema from './schema';
 
 /*
- * Integration spec for profile pictures cut from a group photo (docs/concepts/circle-photos.md
- * §5): a cut is a framing of a circle photo that one person wears, one per person and photo.
- * Whatever takes a cut off a person — another picture, the group photo going away or turning
- * private — first turns it into a photo of their own, in the same transaction.
+ * Integration spec for profile pictures cut from a group photo (docs/02 §2.14): a cut is a framing
+ * of a circle photo that one person wears, one per person and photo. Whatever takes a cut off a
+ * person — another picture, the group photo going away or turning private — first turns it into a
+ * photo of their own, in the same transaction.
  */
 
 const H = 'household-1';

@@ -285,7 +285,7 @@
 		<p class="text-sm text-fg-subtle">{t('contact.photos.none', { name: c.displayName })}</p>
 	{/if}
 	{#if data.groupPhotos.length > 0}
-		<!-- Every group photo their picture was cut from, now and before (circle-photos §5.2). -->
+		<!-- Every group photo their picture was cut from, now and before (docs/02 §2.14). -->
 		<div class="mt-4 flex flex-col gap-2" data-testid="on-group-photos">
 			<h3 class="text-xs font-medium tracking-wide text-fg-subtle uppercase">
 				{t('contact.photos.onGroupPhotos')}

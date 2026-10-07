@@ -23,7 +23,7 @@ export const components = {
 		'Drag to move, pinch or scroll to zoom. Arrow keys and + / − work too.',
 	'components.cropper.zoom': 'Zoom',
 	'components.cropper.use': 'Use photo',
-	// Choosing a profile picture when the person's circles have photos (circle-photos §5.1).
+	// Choosing a profile picture when the person's circles have photos (docs/02 §2.14).
 	'components.photo.choose': 'Choose a profile picture',
 	'components.photo.fromFile': 'Choose a picture…',
 	'components.photo.fromGroupPhoto': 'From a group photo',

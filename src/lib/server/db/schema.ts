@@ -431,7 +431,7 @@ export const photo = sqliteTable(
 		// by case when matched); null = the circle as a whole, a candidate for its cover.
 		circleRole: text('circle_role'),
 		// When set, this photo is a profile picture that was cut from that circle photo and is now
-		// a photo of its own (docs/concepts/circle-photos.md §5.2): a reference, never a copy. No
+		// a photo of its own (docs/02 §2.14): a reference, never a copy. No
 		// foreign key, like `framing_of`; the repository clears it when the group photo goes.
 		cutFrom: text('cut_from'),
 		// The chosen square, in the full-size picture's pixels, so choosing again starts there.

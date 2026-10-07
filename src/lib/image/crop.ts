@@ -11,7 +11,7 @@
 /**
  * The smallest square, in picture pixels, the cropper zooms down to. Below it the square holds
  * less detail than the avatar is drawn with, so zooming further only shows the camera's noise
- * (docs/concepts/circle-photos.md §5.3). A limit in pixels rather than a fixed factor is what
+ * (docs/02 §2.14). A limit in pixels rather than a fixed factor is what
  * lets a face in a 4096 px class photo fill the frame while a small picture barely zooms.
  */
 const SMALLEST_SQUARE_PX = 256;

@@ -741,7 +741,7 @@ export function getCirclePhotoDeps(): CirclePhotoDeps {
 
 let cutRepository: CutRepository | null = null;
 
-/** Deps for profile pictures cut from a group photo (docs/concepts/circle-photos.md §5). */
+/** Deps for profile pictures cut from a group photo (docs/02 §2.14). */
 export function getCutDeps(): CutDeps {
 	return {
 		cuts: (cutRepository ??= createDrizzleCutRepository(getDb())),

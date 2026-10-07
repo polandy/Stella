@@ -13,7 +13,7 @@ import { readCaptureDate } from './process-image';
 const AVATAR_SIZE = 512;
 /**
  * A profile picture cut from a group photo is rendered larger, so it stays sharp once it stands
- * on its own as a photo in the person's gallery (docs/concepts/circle-photos.md §5.2).
+ * on its own as a photo in the person's gallery (docs/02 §2.14).
  */
 export const CUT_SIZE = 1024;
 const THUMB_SIZE = 128;

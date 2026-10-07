@@ -16,7 +16,7 @@ import {
 import type { StoredFraming } from './framing';
 
 /*
- * Profile pictures cut from a group photo (docs/concepts/circle-photos.md §5). A cut is a
+ * Profile pictures cut from a group photo (docs/02 §2.14). A cut is a
  * framing of a circle photo that one person wears. These rules decide which cuts must become
  * photos of their own before something takes their group photo away, and how such a photo reads.
  */

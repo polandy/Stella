@@ -22,7 +22,7 @@ export const components: ComponentsMessages = {
 		'Zum Verschieben ziehen, zum Zoomen mit zwei Fingern oder dem Mausrad. Pfeiltasten und + / − gehen auch.',
 	'components.cropper.zoom': 'Zoom',
 	'components.cropper.use': 'Foto verwenden',
-	// Ein Profilbild wählen, wenn die Kreise der Person Fotos haben (circle-photos §5.1).
+	// Ein Profilbild wählen, wenn die Kreise der Person Fotos haben (docs/02 §2.14).
 	'components.photo.choose': 'Profilbild wählen',
 	'components.photo.fromFile': 'Bild auswählen…',
 	'components.photo.fromGroupPhoto': 'Aus einem Gruppenfoto',

@@ -78,7 +78,7 @@ describe('zooming in', () => {
 });
 
 describe('how far the picture lets you zoom', () => {
-	// Concept circle-photos §5.3: the square may shrink to about 256 px of the original, so a
+	// docs/02 §2.14: the square may shrink to about 256 px of the original, so a
 	// face in a class photo can fill the frame without being blown up past its detail.
 	it('lets the square shrink to 256 px of the picture', () => {
 		const classPhoto: ImageSize = { width: 4096, height: 2731 };

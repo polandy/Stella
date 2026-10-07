@@ -206,7 +206,7 @@ export const photoActions = {
 
 	/**
 	 * Cut this person's profile picture out of a photo of one of their circles
-	 * (docs/concepts/circle-photos.md §5.1). The browser sends the square and its rendering.
+	 * (docs/02 §2.14). The browser sends the square and its rendering.
 	 */
 	cutFromGroupPhoto: async ({ request, params, locals }) => {
 		if (!locals.user) throw redirect(302, '/login');
