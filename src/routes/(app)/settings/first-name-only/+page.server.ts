@@ -7,7 +7,7 @@ import {
 	listContacts
 } from '$lib/server/domain/contacts/contacts';
 import { contextOfPeople } from '$lib/server/domain/contacts/person-context';
-import { getAttention, getContactDeps, getPersonContextDeps } from '$lib/server/services';
+import { getAttention } from '$lib/server/services';
 import { say, translator } from '$lib/server/i18n/say';
 import { isKnownByAFirstNameOnly, suggestedDescription } from '$lib/people/namesakes';
 import type { Actions, PageServerLoad } from './$types';
@@ -26,14 +26,14 @@ export const load: PageServerLoad = async ({ locals }) => {
 	const user = requireUser(locals);
 	const viewer = requireViewer(locals);
 	const [everyone, touches] = await Promise.all([
-		listContacts(getContactDeps(), viewer),
+		listContacts(locals.services.people.contactDeps, viewer),
 		getAttention().listLastTouchedVisibleTo(viewer)
 	]);
 	const today = todayFor(systemClock);
 	const firstNameOnly = everyone.filter(isKnownByAFirstNameOnly);
 	// Read here rather than taken from the shell, which holds it for namesakes only: a Thomas
 	// nobody else shares a name with still deserves a suggestion from his links.
-	const peopleContext = await contextOfPeople(getPersonContextDeps(), viewer, {
+	const peopleContext = await contextOfPeople(locals.services.people.personContextDeps, viewer, {
 		people: firstNameOnly,
 		selfContactId: user.selfContactId,
 		today
@@ -64,7 +64,7 @@ export const actions: Actions = {
 
 		try {
 			const saved = await describeContact(
-				getContactDeps(),
+				locals.services.people.contactDeps,
 				viewer,
 				parsed.output.id,
 				parsed.output.description

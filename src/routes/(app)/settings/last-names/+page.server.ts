@@ -11,7 +11,6 @@ import {
 } from '$lib/server/domain/contacts/last-names';
 import { lastNameActions } from '$lib/server/last-names-actions';
 import { say, translator } from '$lib/server/i18n/say';
-import { getSurnameDismissalDeps, getSurnameReviewDeps } from '$lib/server/services';
 import type { Actions, PageServerLoad } from './$types';
 
 /*
@@ -25,8 +24,8 @@ import type { Actions, PageServerLoad } from './$types';
 export const load: PageServerLoad = async ({ locals }) => {
 	const viewer = requireViewer(locals);
 	const [review, help] = await Promise.all([
-		reviewLastNames(getSurnameReviewDeps(), viewer),
-		readSurnameHelp(getSurnameReviewDeps(), viewer, null)
+		reviewLastNames(locals.services.people.surnameReviewDeps, viewer),
+		readSurnameHelp(locals.services.people.surnameReviewDeps, viewer, null)
 	]);
 	const t = translator(locals);
 	const said = (reasons: readonly LinkedPhrase[]) => reasons.map((reason) => segmentsOf(reason(t)));
@@ -76,7 +75,7 @@ export const actions: Actions = {
 		const parsed = v.safeParse(AnswerSchema, Object.fromEntries(await request.formData()));
 		if (!parsed.success) throw error(400, say(locals, 'errors.contact.emptyLastName'));
 		const saved = await dismissLastName(
-			getSurnameDismissalDeps(),
+			locals.services.people.surnameDismissalDeps,
 			viewer,
 			parsed.output.contactId,
 			parsed.output.lastName
@@ -91,7 +90,7 @@ export const actions: Actions = {
 		const parsed = v.safeParse(AnswerSchema, Object.fromEntries(await request.formData()));
 		if (!parsed.success) throw error(400, say(locals, 'errors.contact.emptyLastName'));
 		await restoreLastName(
-			getSurnameDismissalDeps(),
+			locals.services.people.surnameDismissalDeps,
 			viewer,
 			parsed.output.contactId,
 			parsed.output.lastName

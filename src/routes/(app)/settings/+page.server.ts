@@ -4,13 +4,7 @@ import { say, translator } from '$lib/server/i18n/say';
 import { setSelfContact, UnknownSelfContactError } from '$lib/server/domain/household/self-contact';
 import { countKnownByAFirstNameOnly } from '$lib/server/domain/contacts/contacts';
 import { countLastNames } from '$lib/server/domain/contacts/last-names';
-import {
-	getContactDeps,
-	getImmich,
-	getSelfContactDeps,
-	getSurnameReviewDeps,
-	getUpdateCheck
-} from '$lib/server/services';
+import { getImmich, getUpdateCheck } from '$lib/server/services';
 import { APP_VERSION } from '$lib/version';
 import type { Actions, PageServerLoad } from './$types';
 
@@ -28,8 +22,8 @@ export const load: PageServerLoad = async ({ locals }) => {
 	const viewer = requireViewer(locals);
 	// How many are left to tidy up, so the card says whether opening it is worth it.
 	const [firstNameOnlyCount, lastNames] = await Promise.all([
-		countKnownByAFirstNameOnly(getContactDeps(), viewer),
-		countLastNames(getSurnameReviewDeps(), viewer)
+		countKnownByAFirstNameOnly(locals.services.people.contactDeps, viewer),
+		countLastNames(locals.services.people.surnameReviewDeps, viewer)
 	]);
 	return {
 		isAdmin: user.role === 'admin',
@@ -52,7 +46,7 @@ export const actions: Actions = {
 		const contactId = (await request.formData()).get('contactId');
 		try {
 			const saved = await setSelfContact(
-				getSelfContactDeps(),
+				locals.services.people.selfContactDeps,
 				viewer,
 				typeof contactId === 'string' ? contactId : null
 			);

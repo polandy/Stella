@@ -31,7 +31,6 @@ import { readTogetherOffers } from '$lib/server/domain/immich/glimpse';
 import { readImmichLink, readLinkedPerson } from '$lib/server/domain/immich/links';
 import { togetherCandidates } from '$lib/immich/together';
 import {
-	getContactDeps,
 	getContactFieldDeps,
 	getCircleDeps,
 	getImportantDateDeps,
@@ -40,7 +39,6 @@ import {
 	getCutDeps,
 	getGalleryDeps,
 	getFamilyReadDeps,
-	getSurnameReviewDeps,
 	getPhotos,
 	getRelationshipTypes,
 	getStoryDeps,
@@ -67,6 +65,7 @@ import {
 import { REVIEW_PARAM } from './review-path';
 import { entryIdsOf, nameLookup, photosByEntry, STORY_PAGE_SIZE, toStoryItem } from './story-view';
 import type { PageServerLoad } from './$types';
+import type { PeopleServices } from '$lib/server/services/people';
 
 export const load = (async ({ locals, params, url }) => {
 	const user = requireUser(locals);
@@ -81,13 +80,13 @@ export const load = (async ({ locals, params, url }) => {
 	const legacy = sectionForLegacyTab(url.searchParams.get('tab'));
 	if (legacy) throw redirect(302, contactSectionPath(params.id, legacy));
 
-	const contact = await getContact(getContactDeps(), viewer, params.id);
+	const contact = await getContact(locals.services.people.contactDeps, viewer, params.id);
 	// 404 for both "missing" and "not visible to you" — never reveal existence.
 	if (!contact) throw error(404, say(locals, 'errors.contact.notFound'));
 
 	const reviewOpen = url.searchParams.has(REVIEW_PARAM);
 	const proposeFor = url.searchParams.get('propose');
-	const read = await readPersonPage(viewer, params.id, {
+	const read = await readPersonPage(locals.services.people, viewer, params.id, {
 		reviewOpen,
 		proposeFor: parseProposePairs(proposeFor)
 	});
@@ -225,6 +224,7 @@ export const load = (async ({ locals, params, url }) => {
  * through a use-case scoped to the viewer; nothing here decides what anyone may see.
  */
 function readPersonPage(
+	people: PeopleServices,
 	viewer: Viewer,
 	contactId: string,
 	request: { reviewOpen: boolean; proposeFor: { a: string; b: string }[] }
@@ -251,7 +251,7 @@ function readPersonPage(
 		 * slice could name the wrong relative. Only the person's own slice is sent to the browser.
 		 */
 		family: readFamilyOf(getFamilyReadDeps(), viewer, contactId, request),
-		surnameHelp: readSurnameHelp(getSurnameReviewDeps(), viewer, contactId),
+		surnameHelp: readSurnameHelp(people.surnameReviewDeps, viewer, contactId),
 
 		// What the forms offer, and who wrote what.
 		nameOfAuthor: authorNames(getMemberDeps(), viewer.householdId),

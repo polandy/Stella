@@ -23,7 +23,6 @@ import { findImmichMatches } from '$lib/server/domain/immich/matching';
 import { ignoreNewcomer, proposeNewcomerAgain } from '$lib/server/domain/immich/name-ignores';
 import {
 	getAddFromImmichDeps,
-	getContactDeps,
 	getImmich,
 	getImmichIgnoreDeps,
 	getImmichLinkDeps,
@@ -240,7 +239,7 @@ export const actions: Actions = {
 			throw err;
 		}
 		const contact = await getContact(
-			getContactDeps(),
+			locals.services.people.contactDeps,
 			{ id: actor.userId, householdId: actor.householdId },
 			contactId
 		);
@@ -279,7 +278,7 @@ export const actions: Actions = {
 			throw err;
 		}
 		const contact = await getContact(
-			getContactDeps(),
+			locals.services.people.contactDeps,
 			{ id: actor.userId, householdId: actor.householdId },
 			contactId
 		);

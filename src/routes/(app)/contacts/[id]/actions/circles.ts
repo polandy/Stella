@@ -9,7 +9,7 @@ import { requireViewer } from '$lib/server/auth/guards';
 import * as v from 'valibot';
 import { getContact } from '$lib/server/domain/contacts/contacts';
 import { removeMember, setMembersRole } from '$lib/server/domain/circles/circles';
-import { getCircleDeps, getCommandDeps, getContactDeps } from '$lib/server/services';
+import { getCircleDeps, getCommandDeps } from '$lib/server/services';
 import { say, translator } from '$lib/server/i18n/say';
 import type { Actions } from '../$types';
 
@@ -77,7 +77,7 @@ export const circleActions = {
 	leaveCircle: async ({ request, params, locals }) => {
 		const viewer = requireViewer(locals);
 
-		const contact = await getContact(getContactDeps(), viewer, params.id);
+		const contact = await getContact(locals.services.people.contactDeps, viewer, params.id);
 		if (!contact) throw error(404, say(locals, 'errors.contact.notFound'));
 
 		const form = await request.formData();

@@ -1,7 +1,6 @@
 import { json } from '@sveltejs/kit';
 import { requireViewer } from '$lib/server/auth/guards';
 import { suggestNameCandidates } from '$lib/server/domain/contacts/suggestions';
-import { getSuggestionDeps } from '$lib/server/services';
 import type { RequestHandler } from './$types';
 
 /*
@@ -12,7 +11,7 @@ import type { RequestHandler } from './$types';
 
 export const GET: RequestHandler = async ({ locals, url }) => {
 	const viewer = requireViewer(locals);
-	const candidates = await suggestNameCandidates(getSuggestionDeps(), viewer, {
+	const candidates = await suggestNameCandidates(locals.services.people.suggestionDeps, viewer, {
 		firstName: url.searchParams.get('firstName'),
 		lastName: url.searchParams.get('lastName')
 	});

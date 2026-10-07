@@ -16,13 +16,7 @@ import { BlankRoleNameError, renameCircleRole } from '$lib/server/domain/circles
 import { listContactNamesAmong } from '$lib/server/domain/contacts/contacts';
 import { listCircleCuts } from '$lib/server/domain/media/cuts';
 import { readSurnameHelp } from '$lib/server/domain/contacts/last-names';
-import {
-	getCircleDeps,
-	getCirclePhotoDeps,
-	getContactDeps,
-	getCutDeps,
-	getSurnameReviewDeps
-} from '$lib/server/services';
+import { getCircleDeps, getCirclePhotoDeps, getCutDeps } from '$lib/server/services';
 import { photoActions } from './actions/photos';
 import { lastNameActions } from '$lib/server/last-names-actions';
 import type { Actions, PageServerLoad } from './$types';
@@ -42,7 +36,7 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 		listMembers(getCircleDeps(), viewer, params.id),
 		listCirclePhotos(getCirclePhotoDeps(), viewer, params.id),
 		listCircleCuts(getCutDeps(), viewer, params.id),
-		readSurnameHelp(getSurnameReviewDeps(), viewer, null)
+		readSurnameHelp(locals.services.people.surnameReviewDeps, viewer, null)
 	]);
 	const roles = suggestRoles(members.map((m) => m.role));
 
@@ -96,7 +90,9 @@ export const actions: Actions = {
 		// Every chosen person must be visible to the actor — one that is not fails the whole
 		// pick rather than being dropped silently from it (§3.7).
 		const chosen = new Set(parsed.output.contactIds);
-		const visible = await listContactNamesAmong(getContactDeps(), viewer, [...chosen]);
+		const visible = await listContactNamesAmong(locals.services.people.contactDeps, viewer, [
+			...chosen
+		]);
 		if (visible.length !== chosen.size) {
 			return fail(400, { error: say(locals, 'errors.person.notFound') });
 		}

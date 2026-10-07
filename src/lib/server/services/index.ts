@@ -6,7 +6,6 @@ import { getDb, getSqlite } from '../db';
 import { createDrizzleAttentionRepository } from '../db/attention-repository';
 import { createDrizzleCircleRepository } from '../db/circle-repository';
 import { createDrizzleCirclePhotoRepository } from '../db/circle-photo-repository';
-import { createDrizzleContactRepository } from '../db/contact-repository';
 import { createDrizzleCutRepository } from '../db/cut-repository';
 import { createDrizzleStreamRepository } from '../db/stream-repository';
 import { createDrizzleGraphRepository } from '../db/graph-repository';
@@ -27,24 +26,10 @@ import { createDrizzleRestoreRepository } from '../db/restore-repository';
 import type { ArchiveDeps, ArchiveRepository } from '../domain/archive/archive';
 import type { ImportArchiveDeps, RestoreRepository } from '../domain/archive/import';
 import { createDrizzleRelationshipRepository } from '../db/relationship-repository';
-import { createDrizzlePersonContextReads } from '../db/person-context-reads';
-import { createDrizzlePeopleStampReads } from '../db/people-stamp-reads';
-import type { PeopleStampDeps } from '../domain/contacts/people-stamp';
-import type { PersonContextDeps } from '../domain/contacts/person-context';
-import { withNamesakeContext, type NamesakeContextDeps } from '../domain/mentions/namesake-context';
-import {
-	createDrizzleSuggestionDismissalRepository,
-	createDrizzleSurnameDismissalRepository
-} from '../db/suggestion-dismissal-repository';
-import { createDrizzleSurnameFacts } from '../db/surname-facts';
-import type {
-	LastNameDeps,
-	SurnameDismissalDeps,
-	SurnameReviewDeps
-} from '../domain/contacts/last-names';
+import { withNamesakeContext } from '../domain/mentions/namesake-context';
+import { createDrizzleSuggestionDismissalRepository } from '../db/suggestion-dismissal-repository';
 import { createDrizzleSearchRepository } from '../db/search-repository';
 import type { MemberDeps, MemberRepository } from '../domain/household/members';
-import type { SelfContactDeps } from '../domain/household/self-contact';
 import type { MentionedInDeps, MentionedInRepository } from '../domain/mentions/mentioned-in';
 import { createDrizzleMemberRepository } from '../db/member-repository';
 import { createDrizzleTagRepository } from '../db/tag-repository';
@@ -55,9 +40,6 @@ import type {
 import type { SearchDeps, SearchRepository } from '../domain/search/search';
 import type { StoryDeps } from '../domain/story/story';
 import type { AttentionRepository } from '../domain/attention/last-touched';
-import type { ContactDeps, ContactRepository } from '../domain/contacts/contacts';
-import type { NameCandidateSource, SuggestionDeps } from '../domain/contacts/suggestions';
-import type { NameDeps, NameRepository } from '../domain/contacts/name-parts';
 import type { NoteDeps, NoteRepository } from '../domain/notes/notes';
 import type { JournalDeps, JournalRepository } from '../domain/journal/journal';
 import type {
@@ -168,75 +150,19 @@ export function getServices(): AppServices {
 		config: getConfig(),
 		db: getDb(),
 		clock: systemClock,
-		ids: ulidGenerator
+		ids: ulidGenerator,
+		// Not grouped yet (AR-01): their contexts' factories below hand the people context the
+		// same lazily built instance they hand everyone else.
+		relationships: getRelationships(),
+		media: getMediaStore()
 	}));
 }
 
-let contactRepository: (ContactRepository & NameCandidateSource & NameRepository) | null = null;
-
-export function getContacts(): ContactRepository & NameCandidateSource & NameRepository {
-	return (contactRepository ??= createDrizzleContactRepository(getDb()));
+/** The people context, for the factories of contexts not grouped yet. */
+function people(): AppServices['people'] {
+	return getServices().people;
 }
 
-/** Deps for changing name parts, one person or several (docs/02 §2.2, §2.2.4.4). */
-export function getNameDeps(): NameDeps {
-	return { names: getContacts(), clock: systemClock, ids: ulidGenerator };
-}
-
-/** Deps for setting last names in one batch, with its log entry (docs/02 §2.2.4.4). */
-export function getLastNameDeps(): LastNameDeps {
-	return getNameDeps();
-}
-
-/** Deps for reading what Stella proposes as last names (docs/02 §2.2.4.1). */
-export function getSurnameReviewDeps(): SurnameReviewDeps {
-	return {
-		surnames: createDrizzleSurnameFacts(getDb()),
-		relationships: getRelationships(),
-		surnameDismissals: createDrizzleSurnameDismissalRepository(getDb())
-	};
-}
-
-/** Deps for the household's *not this name* (docs/02 §2.2.4.2). */
-export function getSurnameDismissalDeps(): SurnameDismissalDeps {
-	return {
-		names: getContacts(),
-		surnameDismissals: createDrizzleSurnameDismissalRepository(getDb()),
-		ids: ulidGenerator,
-		clock: systemClock
-	};
-}
-
-export function getContactDeps(): ContactDeps {
-	return { contacts: getContacts(), ids: ulidGenerator, clock: systemClock };
-}
-
-/** What a namesake's second line may fall back on: their links and circles (docs/02 §2.2.3). */
-export function getPersonContextDeps(): PersonContextDeps {
-	return { contextReads: createDrizzlePersonContextReads(getDb()) };
-}
-
-/** Deps for the stamp of the shell's people (docs/04 §4.9). */
-export function getPeopleStampDeps(): PeopleStampDeps {
-	return { stamps: createDrizzlePeopleStampReads(getDb()) };
-}
-
-/** What a refused `@Thomas` names each Thomas by, a namesake with nothing typed included. */
-export function getNamesakeContextDeps(): NamesakeContextDeps {
-	return {
-		...getPersonContextDeps(),
-		selfContactOf: async (userId) =>
-			(await getServices().auth.accounts.findById(userId))?.selfContactId ?? null,
-		clock: systemClock
-	};
-}
-
-/** Deleting a person also unlinks the bytes of their photos (docs/02 §2.2). */
-export function getDeleteContactDeps(): ContactDeps & { media: MediaStore } {
-	return { ...getContactDeps(), media: getMediaStore() };
-}
-
-/** Deps for "which of these people am I" (docs/02 §2.1.3). */
 /*
  * The release check, or null when this instance makes none: either the operator did not ask
  * for it, or this build carries no readable release number and has nothing to compare.
@@ -252,15 +178,6 @@ export function getUpdateCheck(): UpdateCheck | null {
 		clock: systemClock,
 		currentVersion: APP_VERSION
 	}));
-}
-
-export function getSelfContactDeps(): SelfContactDeps {
-	return { contacts: getContacts(), accounts: getServices().auth.accounts };
-}
-
-/** Deps for quick-add's duplicate/relative suggestions (docs/02 §2.2.1). */
-export function getSuggestionDeps(): SuggestionDeps {
-	return { candidates: getContacts() };
 }
 
 let relationshipRepository: (RelationshipRepository & RelationshipTypeRepository) | null = null;
@@ -510,7 +427,12 @@ export function getStreamDeps(): StreamDeps {
 }
 
 export function getCaptureMomentDeps(): CaptureMomentDeps {
-	return { contacts: getContacts(), journal: getJournal(), ids: ulidGenerator, clock: systemClock };
+	return {
+		contacts: people().contacts,
+		journal: getJournal(),
+		ids: ulidGenerator,
+		clock: systemClock
+	};
 }
 
 let commandReceiptRepository: CommandReceiptRepository | null = null;
@@ -530,7 +452,7 @@ export function getCommandDeps(): CommandDeps {
 			// A moment carries its own visibility, so it is also the author's default for anyone
 			// the moment creates inline — and what a photo sent after it inherits.
 			'moment.capture': async (actor, payload) => ({
-				...(await withNamesakeContext(getNamesakeContextDeps(), viewerOf(actor), () =>
+				...(await withNamesakeContext(people().namesakeContextDeps, viewerOf(actor), () =>
 					captureMoment(
 						capture,
 						{
@@ -544,7 +466,7 @@ export function getCommandDeps(): CommandDeps {
 				)),
 				visibility: payload.visibility
 			}),
-			'tag.assign': onVisibleContact(getContacts(), async (actor, payload) => ({
+			'tag.assign': onVisibleContact(people().contacts, async (actor, payload) => ({
 				tagId: await assignTagByName(
 					getTagDeps(),
 					actor.householdId,
@@ -553,7 +475,7 @@ export function getCommandDeps(): CommandDeps {
 					payload.color
 				)
 			})),
-			'circle.join': onVisibleContact(getContacts(), async (actor, payload) => ({
+			'circle.join': onVisibleContact(people().contacts, async (actor, payload) => ({
 				circleId: await joinCircleByName(
 					getCircleDeps(),
 					{ ...actor, defaultVisibility: 'shared' },
@@ -563,24 +485,32 @@ export function getCommandDeps(): CommandDeps {
 				)
 			})),
 			'contact.add': (actor, payload) =>
-				addPerson({ ...getContactDeps(), accounts: getServices().auth.accounts }, actor, payload),
+				addPerson(
+					{ ...people().contactDeps, accounts: getServices().auth.accounts },
+					actor,
+					payload
+				),
 			'relationship.add': (actor, payload) =>
 				addRelationshipChecked(
-					{ ...getRelationshipDeps(), contacts: getContacts() },
+					{ ...getRelationshipDeps(), contacts: people().contacts },
 					actor,
 					payload
 				),
 			'relationship.addMany': (actor, payload) =>
 				addRelationshipsOrRefuse(
-					{ ...getRelationshipDeps(), contacts: getContacts() },
+					{ ...getRelationshipDeps(), contacts: people().contacts },
 					actor,
 					payload
 				),
 			'interaction.log': (actor, payload) =>
-				logInteractionChecked({ ...getInteractionDeps(), contacts: getContacts() }, actor, payload),
+				logInteractionChecked(
+					{ ...getInteractionDeps(), contacts: people().contacts },
+					actor,
+					payload
+				),
 			'note.add': (actor, payload) =>
-				withNamesakeContext(getNamesakeContextDeps(), viewerOf(actor), () =>
-					writeNote({ ...getNoteDeps(), contacts: getContacts() }, actor, payload)
+				withNamesakeContext(people().namesakeContextDeps, viewerOf(actor), () =>
+					writeNote({ ...getNoteDeps(), contacts: people().contacts }, actor, payload)
 				),
 			'moment.photo': (actor, payload) =>
 				attachMomentPhoto(
@@ -593,23 +523,23 @@ export function getCommandDeps(): CommandDeps {
 					payload
 				),
 			'journal.write': (actor, payload) =>
-				withNamesakeContext(getNamesakeContextDeps(), viewerOf(actor), () =>
-					writeJournalEntry({ ...getJournalDeps(), contacts: getContacts() }, actor, payload)
+				withNamesakeContext(people().namesakeContextDeps, viewerOf(actor), () =>
+					writeJournalEntry({ ...getJournalDeps(), contacts: people().contacts }, actor, payload)
 				),
-			'field.add': onVisibleContact(getContacts(), async (_actor, payload) => ({
+			'field.add': onVisibleContact(people().contacts, async (_actor, payload) => ({
 				fieldId: await addContactField(getContactFieldDeps(), payload)
 			})),
-			'date.add': onVisibleContact(getContacts(), async (_actor, payload) => ({
+			'date.add': onVisibleContact(people().contacts, async (_actor, payload) => ({
 				dateId: await addImportantDate(getImportantDateDeps(), payload)
 			})),
 			// Checks the person once; the photos following it land where it says (`photos.ts`).
-			'gallery.add': onVisibleContact(getContacts(), async (_actor, payload) => ({
+			'gallery.add': onVisibleContact(people().contacts, async (_actor, payload) => ({
 				contactId: payload.contactId,
 				visibility: payload.visibility
 			})),
 			'gallery.photo': (actor, payload) =>
 				attachGalleryPhoto(
-					{ receipts, contacts: getContacts(), photos: getGalleryUploadDeps() },
+					{ receipts, contacts: people().contacts, photos: getGalleryUploadDeps() },
 					actor,
 					payload
 				),
@@ -653,7 +583,7 @@ let cutRepository: CutRepository | null = null;
 export function getCutDeps(): CutDeps {
 	return {
 		cuts: (cutRepository ??= createDrizzleCutRepository(getDb())),
-		contacts: getContacts(),
+		contacts: people().contacts,
 		media: getMediaStore(),
 		ids: ulidGenerator,
 		clock: systemClock
@@ -719,7 +649,7 @@ export function getImmichMediaDeps(): ImmichMediaDeps | null {
 	if (!configured) return null;
 	return {
 		links: getImmichLinks(),
-		contacts: getContacts(),
+		contacts: people().contacts,
 		gateway: configured.gateway,
 		signer: configured.signer
 	};
@@ -745,8 +675,8 @@ export function getImmichMatchingDeps(): ImmichMatchingDeps | null {
 		links: getImmichLinks(),
 		ignores: getImmichIgnores(),
 		nameIgnores: getImmichNameIgnores(),
-		contacts: getContacts(),
-		contextReads: getPersonContextDeps().contextReads,
+		contacts: people().contacts,
+		contextReads: people().personContextDeps.contextReads,
 		gateway: configured.gateway,
 		signer: configured.signer,
 		publicUrl: configured.publicUrl
@@ -766,14 +696,14 @@ export function getAddFromImmichDeps(): AddFromImmichDeps | null {
 	return {
 		...linkDeps,
 		addContact: (adder, input) =>
-			createContact(getContactDeps(), { ...adder, defaultVisibility: 'shared' }, input)
+			createContact(people().contactDeps, { ...adder, defaultVisibility: 'shared' }, input)
 	};
 }
 
 /** Deps for ignoring a proposal of the matching list and taking it back, or null without Immich. */
 export function getImmichIgnoreDeps(): ImmichIgnoreDeps | null {
 	if (!getImmich()) return null;
-	return { ignores: getImmichIgnores(), contacts: getContacts(), clock: systemClock };
+	return { ignores: getImmichIgnores(), contacts: people().contacts, clock: systemClock };
 }
 
 /**
@@ -785,7 +715,7 @@ export function getUseImmichPhotoDeps(): UseImmichPhotoDeps | null {
 	if (!configured) return null;
 	return {
 		links: getImmichLinks(),
-		contacts: getContacts(),
+		contacts: people().contacts,
 		signer: configured.signer,
 		setAvatar: (uploader, contactId, upload) =>
 			setContactAvatar(getAvatarDeps(), uploader, contactId, upload)
@@ -798,7 +728,7 @@ export function getImmichLinkDeps(): ImmichLinkDeps | null {
 	if (!configured) return null;
 	return {
 		links: getImmichLinks(),
-		contacts: getContacts(),
+		contacts: people().contacts,
 		gateway: configured.gateway,
 		clock: systemClock,
 		ids: ulidGenerator

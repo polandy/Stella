@@ -41,7 +41,7 @@ function servicesWith(rpLogout: boolean): AppServices {
 		}
 	};
 	// Sign-out reads only these two; the rest of the graph is not built for this test.
-	return { auth: auth as AuthServices };
+	return { auth: auth as AuthServices } as AppServices;
 }
 
 function cookiesWith(token: string | undefined): Cookies {

@@ -1,7 +1,6 @@
 import { json } from '@sveltejs/kit';
 import type { VisiblePerson } from '$lib/pwa/people-ahead';
 import { listContacts } from '$lib/server/domain/contacts/contacts';
-import { getContactDeps } from '$lib/server/services';
 import type { RequestHandler } from './$types';
 
 /*
@@ -15,12 +14,12 @@ export const GET: RequestHandler = async ({ locals }) => {
 	if (!user) return json({ error: { code: 'unauthorized' } }, { status: 401 });
 
 	const viewer = { id: user.id, householdId: user.householdId };
-	const people: VisiblePerson[] = (await listContacts(getContactDeps(), viewer)).map(
-		({ id, avatarPhotoId }) => ({
-			id,
-			avatarPhotoId
-		})
-	);
+	const people: VisiblePerson[] = (
+		await listContacts(locals.services.people.contactDeps, viewer)
+	).map(({ id, avatarPhotoId }) => ({
+		id,
+		avatarPhotoId
+	}));
 	// An answer about right now: a copy of it would keep a person on the device, or drop one.
 	return json({ people }, { headers: { 'Cache-Control': 'no-store' } });
 };

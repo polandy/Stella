@@ -8,12 +8,7 @@ import {
 	restoreContact
 } from '$lib/server/domain/contacts/contacts';
 import { pruneOrphanTags } from '$lib/server/domain/tags/tags';
-import {
-	getContactDeps,
-	getDeleteContactDeps,
-	getSelfContactDeps,
-	getTagDeps
-} from '$lib/server/services';
+import { getTagDeps } from '$lib/server/services';
 import { setSelfContact, UnknownSelfContactError } from '$lib/server/domain/household/self-contact';
 import { say, translator } from '$lib/server/i18n/say';
 import type { Actions } from '../$types';
@@ -33,7 +28,12 @@ export const recordActions = {
 		);
 		if (!parsed.success) return fail(400, { mergeError: say(locals, 'errors.merge.choose') });
 
-		const merged = await mergeContacts(getContactDeps(), viewer, params.id, parsed.output.mergedId);
+		const merged = await mergeContacts(
+			locals.services.people.contactDeps,
+			viewer,
+			params.id,
+			parsed.output.mergedId
+		);
 		if (!merged) return fail(400, { mergeError: say(locals, 'errors.merge.failed') });
 		throw redirect(303, `/contacts/${params.id}`);
 	},
@@ -47,7 +47,7 @@ export const recordActions = {
 	delete: async ({ params, locals }) => {
 		const user = requireAdmin(locals);
 		const viewer = requireViewer(locals);
-		const done = await deleteContact(getDeleteContactDeps(), viewer, params.id);
+		const done = await deleteContact(locals.services.people.deleteContactDeps, viewer, params.id);
 		if (!done) throw error(404, say(locals, 'errors.contact.notFound'));
 		// Their tag assignments went with them by cascade, so a tag they were the last
 		// carrier of is orphaned here rather than by `unassignTag` (docs/02 §2.8).
@@ -62,7 +62,7 @@ export const recordActions = {
 	 */
 	archive: async ({ params, locals }) => {
 		const viewer = requireViewer(locals);
-		const done = await archiveContact(getContactDeps(), viewer, params.id);
+		const done = await archiveContact(locals.services.people.contactDeps, viewer, params.id);
 		if (!done) throw error(404, say(locals, 'errors.contact.notFound'));
 		throw redirect(303, `/contacts/${params.id}`);
 	},
@@ -77,7 +77,11 @@ export const recordActions = {
 		const alreadyMe = user.selfContactId === params.id;
 
 		try {
-			await setSelfContact(getSelfContactDeps(), viewer, alreadyMe ? null : params.id);
+			await setSelfContact(
+				locals.services.people.selfContactDeps,
+				viewer,
+				alreadyMe ? null : params.id
+			);
 		} catch (err) {
 			if (err instanceof UnknownSelfContactError)
 				return fail(400, { error: err.phrase(translator(locals)) });
@@ -89,7 +93,7 @@ export const recordActions = {
 
 	restore: async ({ params, locals }) => {
 		const viewer = requireViewer(locals);
-		const done = await restoreContact(getContactDeps(), viewer, params.id);
+		const done = await restoreContact(locals.services.people.contactDeps, viewer, params.id);
 		if (!done) throw error(404, say(locals, 'errors.contact.notFound'));
 		throw redirect(303, `/contacts/${params.id}`);
 	}

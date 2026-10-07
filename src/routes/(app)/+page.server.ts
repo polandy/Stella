@@ -19,7 +19,6 @@ import { extractMentionIds, mentionToken } from '$lib/mentions/mentions';
 import { parseStreamFilter } from '$lib/stream/filter';
 import {
 	getCommandDeps,
-	getContactDeps,
 	getImportantDates,
 	getMemberDeps,
 	getStreamDeps
@@ -59,15 +58,15 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 	const [items, onList, dateSources, firstPeople] = await Promise.all([
 		buildStream(getStreamDeps(), viewer, filter),
 		// Who the household can still act on — the browsing scope — among just those.
-		listBrowsableNamesAmong(getContactDeps(), viewer, named),
+		listBrowsableNamesAmong(locals.services.people.contactDeps, viewer, named),
 		getImportantDates().listSourcesVisibleTo(viewer),
 		// Just enough of the household to tell whether it has begun (docs/02 §2.22.3).
-		listPeopleEnoughForFirstRun(getContactDeps(), viewer)
+		listPeopleEnoughForFirstRun(locals.services.people.contactDeps, viewer)
 	]);
 	// What a mention already written is called (archived people included), for the moments
 	// on this page only.
 	const names = await listContactNamesAmong(
-		getContactDeps(),
+		locals.services.people.contactDeps,
 		viewer,
 		items.flatMap((item) => (item.kind === 'moment' ? extractMentionIds(item.body) : []))
 	);

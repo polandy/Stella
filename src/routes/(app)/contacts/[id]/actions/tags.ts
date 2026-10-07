@@ -8,7 +8,7 @@ import { error, fail, redirect } from '@sveltejs/kit';
 import { requireViewer } from '$lib/server/auth/guards';
 import { getContact } from '$lib/server/domain/contacts/contacts';
 import { unassignTag } from '$lib/server/domain/tags/tags';
-import { getCommandDeps, getContactDeps, getTagDeps } from '$lib/server/services';
+import { getCommandDeps, getTagDeps } from '$lib/server/services';
 import { say, translator } from '$lib/server/i18n/say';
 import type { Actions } from '../$types';
 
@@ -52,7 +52,7 @@ export const tagActions = {
 		const tagId = form.get('tagId');
 		if (typeof tagId !== 'string') return fail(400, {});
 
-		const contact = await getContact(getContactDeps(), viewer, params.id);
+		const contact = await getContact(locals.services.people.contactDeps, viewer, params.id);
 		if (!contact) throw error(404, say(locals, 'errors.contact.notFound'));
 
 		await unassignTag(getTagDeps(), viewer.householdId, params.id, tagId);

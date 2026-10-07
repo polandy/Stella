@@ -12,7 +12,7 @@ import type { RequestHandler } from './$types';
 export const GET: RequestHandler = async ({ locals }) => {
 	const user = locals.user;
 	if (!user) return json({ error: { code: 'unauthorized' } }, { status: 401 });
-	const peopleStamp = await readPeopleStamp(user);
+	const peopleStamp = await readPeopleStamp(locals.services.people, user);
 	// An answer about right now; a kept copy would say a stale list is current.
 	return json({ stamp: peopleStamp }, { headers: { 'Cache-Control': 'no-store' } });
 };

@@ -1,4 +1,5 @@
 import { createAuthServices, type AuthServices, type AuthWiring } from './auth';
+import { createPeopleServices, type PeopleServices, type PeopleWiring } from './people';
 
 /*
  * The application's object graph, grouped by bounded context (docs/04 §4.3, docs/08 §8.3).
@@ -11,12 +12,18 @@ import { createAuthServices, type AuthServices, type AuthWiring } from './auth';
  */
 export interface AppServices {
 	auth: AuthServices;
+	people: PeopleServices;
 }
 
-/** What the graph is built from; each context's wiring joins this as it moves in. */
-export type ServicesWiring = AuthWiring;
+/**
+ * What the graph is built from; each context's wiring joins this as it moves in. A context
+ * that reads another grouped context's repository gets it from here, not from the wiring
+ * (`people` reads `auth`'s accounts), so each repository exists once.
+ */
+export type ServicesWiring = AuthWiring & Omit<PeopleWiring, 'accounts'>;
 
 /** Wires every grouped context. Pure assembly: no I/O beyond what the adapters do when used. */
 export function createServices(wiring: ServicesWiring): AppServices {
-	return { auth: createAuthServices(wiring) };
+	const auth = createAuthServices(wiring);
+	return { auth, people: createPeopleServices({ ...wiring, accounts: auth.accounts }) };
 }

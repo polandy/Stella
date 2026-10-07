@@ -191,6 +191,11 @@ export interface ContactDeps {
 	clock: Clock;
 }
 
+/** Deleting a person also unlinks the bytes of their photos (docs/02 §2.2). */
+export interface DeleteContactDeps extends ContactDeps {
+	media: Pick<MediaStore, 'delete'>;
+}
+
 /** The two records a merge is about, with the names the log will have to remember. */
 export interface MergePair {
 	keep: { displayName: string; visibility: Visibility; profile: MergeableProfile };
@@ -560,7 +565,7 @@ export async function restoreContact(
  * not there. *Who* may delete is decided at the edge: this is admin-only (docs/02 §2.2).
  */
 export async function deleteContact(
-	deps: Pick<ContactDeps, 'contacts' | 'ids' | 'clock'> & { media: Pick<MediaStore, 'delete'> },
+	deps: DeleteContactDeps,
 	viewer: Viewer,
 	id: string
 ): Promise<boolean> {

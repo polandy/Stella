@@ -3,7 +3,7 @@ import { listContacts } from './domain/contacts/contacts';
 import { contextOfPeople } from './domain/contacts/person-context';
 import { peopleStampOf } from './domain/contacts/people-stamp';
 import { namesakesOn } from '../people/namesakes';
-import { getContactDeps, getPeopleStampDeps, getPersonContextDeps } from './services';
+import type { PeopleServices } from './services/people';
 import { systemClock } from './clock';
 import { todayFor } from '$lib/dates/today';
 
@@ -15,17 +15,23 @@ import { todayFor } from '$lib/dates/today';
  * (`$lib/sync/people-freshness`, docs/04 §4.9).
  */
 
+/** What the shell's people are read with; the edge hands in `locals.services.people`. */
+export type ShellPeopleDeps = Pick<
+	PeopleServices,
+	'contactDeps' | 'personContextDeps' | 'peopleStampDeps'
+>;
+
 /** The shell's people as `user` may see them, and the stamp of exactly that. */
-export async function readShellPeople(user: AuthUser) {
+export async function readShellPeople(deps: ShellPeopleDeps, user: AuthUser) {
 	const viewer = { id: user.id, householdId: user.householdId };
 	// One reading of the clock, so the context and its stamp are about the same day.
 	const today = todayFor(systemClock);
 	const [contacts, peopleStamp] = await Promise.all([
-		listContacts(getContactDeps(), viewer),
-		stampFor(user, today)
+		listContacts(deps.contactDeps, viewer),
+		stampFor(deps, user, today)
 	]);
 	// Only namesakes are ever given a second line, so only their links and circles are read.
-	const peopleContext = await contextOfPeople(getPersonContextDeps(), viewer, {
+	const peopleContext = await contextOfPeople(deps.personContextDeps, viewer, {
 		people: namesakesOn(contacts),
 		selfContactId: user.selfContactId,
 		today
@@ -58,14 +64,18 @@ export async function readShellPeople(user: AuthUser) {
  * The stamp alone, for `GET /api/people/stamp`: a few aggregates instead of the list and its
  * context, because it is asked after every client-side navigation (docs/04 §4.9).
  */
-export function readPeopleStamp(user: AuthUser): Promise<string> {
-	return stampFor(user, todayFor(systemClock));
+export function readPeopleStamp(deps: ShellPeopleDeps, user: AuthUser): Promise<string> {
+	return stampFor(deps, user, todayFor(systemClock));
 }
 
 /** A short fingerprint of the markers the shell's people are read from (`peopleStampOf`). */
-async function stampFor(user: AuthUser, today: string): Promise<string> {
+async function stampFor(
+	deps: Pick<ShellPeopleDeps, 'peopleStampDeps'>,
+	user: AuthUser,
+	today: string
+): Promise<string> {
 	const viewer = { id: user.id, householdId: user.householdId };
-	const markers = await peopleStampOf(getPeopleStampDeps(), viewer, {
+	const markers = await peopleStampOf(deps.peopleStampDeps, viewer, {
 		selfContactId: user.selfContactId,
 		today
 	});
