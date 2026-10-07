@@ -327,7 +327,7 @@ changes over the years, a child especially: their old photos stay right here to 
 ### Photos from Immich
 
 **Photos from Immich.** If your household's photos live in Immich and the admin has connected
-it (see *Installation*), the Photos card has a small **Immich** menu. **Find in Immich** shows the
+it (see *Installation*), the Photos card has a small **Photo library** menu. **Find in Immich** shows the
 faces Immich knows, searched by the person's name — change the search if Immich spells them
 differently — and a tap on the right face links the two. Each face belongs to one person: one already linked
 to someone else is greyed out and says to whom (or just *someone else*, if that person is

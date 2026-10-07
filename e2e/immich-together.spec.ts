@@ -67,7 +67,7 @@ async function immichMenu(
 	page: Page,
 	item: 'Find in Immich' | 'Unlink from Immich'
 ): Promise<void> {
-	await page.getByRole('button', { name: 'Immich options' }).click();
+	await page.getByRole('button', { name: 'Photo library options' }).click();
 	await page.getByRole('menuitem', { name: item }).click();
 }
 
@@ -104,14 +104,14 @@ async function openAndLink(page: Page, person: DemoPerson): Promise<void> {
 async function unlink(page: Page, href: string): Promise<void> {
 	await page.goto(href);
 	await appReady(page);
-	await page.getByRole('button', { name: 'Immich options' }).click();
+	await page.getByRole('button', { name: 'Photo library options' }).click();
 	const unlinkItem = page.getByRole('menuitem', { name: 'Unlink from Immich' });
 	const findItem = page.getByRole('menuitem', { name: 'Find in Immich' });
 	await expect(unlinkItem.or(findItem)).toBeVisible();
 	if (!(await unlinkItem.isVisible())) return;
 	await unlinkItem.click();
 	await appReady(page);
-	await page.getByRole('button', { name: 'Immich options' }).click();
+	await page.getByRole('button', { name: 'Photo library options' }).click();
 	await expect(findItem).toBeVisible();
 }
 
