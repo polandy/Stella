@@ -9,7 +9,7 @@ import { addToJournalDay, type JournalDayDeps } from './journal';
  * Adding to a person's journal (docs/02 §2.20). Whether it comes from the journal page or the
  * moment composer (§2.22.1), what is written is an *addition*: a day slot that already holds an
  * entry gets the new text appended rather than replaced. That is what lets an entry kept on a
- * phone (docs/concepts/offline-capture.md §4.1) arrive days later without overwriting anything
+ * phone (docs/02 §2.18.1) arrive days later without overwriting anything
  * written meanwhile. Changing what is already there is `editJournalEntry`'s job.
  */
 

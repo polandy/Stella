@@ -611,7 +611,7 @@ function viewerOf(actor: CommandActor): Viewer {
 	return { id: actor.userId, householdId: actor.householdId };
 }
 
-/** The dispatcher every change goes through (docs/concepts/offline-capture.md §3). */
+/** The dispatcher every change goes through (docs/04 §4.11.2). */
 export function getCommandDeps(): CommandDeps {
 	const capture = getCaptureMomentDeps();
 	const receipts = (commandReceiptRepository ??= createDrizzleCommandReceiptRepository(getDb()));

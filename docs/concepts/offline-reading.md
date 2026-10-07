@@ -1,6 +1,6 @@
 # Concept — Reading Stella while it is out of reach
 
-Status: **built** (§7). Its companion is `offline-capture.md`, which covers adding.
+Status: **built** (§7). Its companion, adding, is docs/02 §2.18.1.
 Together they are the whole offline story: out of reach, a member can **look anyone up** and
 **write down what happened**. Changing or deleting what already exists stays online
 (docs/04 §4.9, *Mutations become commands, not events*). Nothing here reopens that decision.

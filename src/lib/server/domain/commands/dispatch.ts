@@ -7,7 +7,7 @@ import type { CapturedMoment } from '../moments/moments';
 import type { Visibility } from '../../access/visibility';
 
 /*
- * The command dispatcher (docs/concepts/offline-capture.md §3, docs/04 §4.9). Every change a
+ * The command dispatcher (docs/04 §4.11.2, ADR-075). Every change a
  * member makes arrives as a command and is applied here, once, however often it arrives: a
  * phone that lost its connection after Stella saved something sends it again, and the answer
  * must be "done" rather than a second copy.

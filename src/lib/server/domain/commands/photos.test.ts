@@ -15,7 +15,7 @@ import {
 } from './photos';
 
 /*
- * A photo sent after the command it belongs to (docs/concepts/offline-capture.md §4.2): it
+ * A photo sent after the command it belongs to (docs/04 ADR-111): it
  * names that command by id, and lands where the command's receipt says — on the journal entry
  * a moment or a journal-page entry went into, or in the gallery of the person a gallery upload
  * was for. Only if that command is the same member's, was applied, and where it points is

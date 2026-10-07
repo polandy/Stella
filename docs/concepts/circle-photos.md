@@ -163,7 +163,7 @@ the household can **cut each person's profile picture out of the group photo**.
 ## 6. Offline and portability
 
 - **Offline.** Adding circle photos is queued exactly like a person's gallery photos
-  (docs/concepts/offline-capture.md §4): a photo taken without network is kept on the device
+  (docs/02 §2.18.1): a photo taken without network is kept on the device
   and sent once it is back, at most once. Changing role, pin or visibility is a change, not
   an addition, so it is not queued, as with pins today.
 - **Archive.** The export carries circle photos with their circle, role, caption, pin and

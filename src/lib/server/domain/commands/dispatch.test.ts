@@ -15,7 +15,7 @@ import {
 } from './dispatch';
 
 /*
- * The command dispatcher (docs/concepts/offline-capture.md §3). A command is applied once,
+ * The command dispatcher (docs/04 §4.11.2). A command is applied once,
  * however often it arrives: its id is claimed before the handler runs and the result kept, so a
  * resend answers with what happened the first time. A refusal the member can act on releases
  * the claim, so the same command can be corrected and sent again.

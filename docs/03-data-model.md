@@ -681,7 +681,7 @@ proposed. The column is text, so this needed no migration; the relationship log 
 the other relations, and the *Last names* page lists these with *Offer again*.
 
 ### command_receipt  [M3]
-A command id that has been claimed or applied (`docs/concepts/offline-capture.md` §3), so a
+A command id that has been claimed or applied (docs/04 §4.11.2), so a
 change that arrives twice — a phone that lost its connection after Stella saved — is applied
 once.
 

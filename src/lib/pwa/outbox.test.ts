@@ -21,7 +21,7 @@ import {
 } from './outbox';
 
 /*
- * The outbox (docs/concepts/offline-capture.md §4): what a phone holds back while Stella is out
+ * The outbox (docs/02 §2.18.1): what a phone holds back while Stella is out
  * of reach. Pure — the IndexedDB store and the fetch that sends are adapters around it. The
  * rule it keeps: nothing leaves until Stella has confirmed it or the member discards it, and an
  * item being edited is never sent from under the editor.
@@ -318,7 +318,7 @@ describe('discardAllOf', () => {
 	});
 });
 
-describe('what a save someone is watching learns (online saves, concept §8 #10)', () => {
+describe('what a save someone is watching learns (online saves, docs/04 ADR-076)', () => {
 	it('is done once Stella applied it and no photo of it waits', () => {
 		expect(deliveryFor({ id: 'a', status: 'applied', result: { noteId: 'n' } }, false)).toEqual({
 			status: 'applied',

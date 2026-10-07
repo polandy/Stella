@@ -1,5 +1,5 @@
 /*
- * The command vocabulary (docs/concepts/offline-capture.md §3): every change a member can
+ * The command vocabulary (docs/04 §4.11.2): every change a member can
  * make, by name, with the payload it carries and the kind of change it is. Pure and shared, so
  * the outbox on a phone and the dispatcher on the server agree on one spelling — and on which
  * commands a device may hold back while Stella is out of reach. Not under `server/`, so the
