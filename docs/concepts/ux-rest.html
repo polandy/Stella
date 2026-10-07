@@ -1,0 +1,552 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>UX review rest — A4, A5, B6, B7, C11 — interactive mockup</title>
+<style>
+  /* Catppuccin as src/app.css maps it: flavour → semantic (Latte / Mocha). */
+  :root, :root[data-theme='latte'] {
+    --bg:#e6e9ef; --bg-sunken:#dce0e8; --card:#ffffff; --card-hover:#f7f8fb;
+    --border:#ccd0da; --border-subtle:#e7e9f0;
+    --fg:#4c4f69; --fg-muted:#5c5f77; --fg-subtle:#6c6f85;
+    --primary:#853ae8; --primary-fg:#ffffff; --link:#1e66f5;
+    --shadow-card:0 1px 2px rgba(76,79,105,.07), 0 2px 8px rgba(76,79,105,.06);
+    --shadow-pop:0 8px 30px rgba(76,79,105,.18); --page:#eff1f5;
+    --accent-rosewater:#dc8a78; --accent-flamingo:#dd7878; --accent-pink:#ea76cb; --accent-mauve:#8839ef;
+    --accent-red:#d20f39; --accent-maroon:#e64553; --accent-peach:#fe640b; --accent-yellow:#df8e1d;
+    --accent-green:#40a02b; --accent-teal:#179299; --accent-sky:#04a5e5; --accent-sapphire:#209fb5;
+    --accent-blue:#1e66f5; --accent-lavender:#7287fd;
+  }
+  :root[data-theme='mocha'] {
+    --bg:#181825; --bg-sunken:#11111b; --card:#232334; --card-hover:#2a2a3d;
+    --border:#313244; --border-subtle:#292939;
+    --fg:#cdd6f4; --fg-muted:#bac2de; --fg-subtle:#a6adc8;
+    --primary:#cba6f7; --primary-fg:#1e1e2e; --link:#89b4fa;
+    --shadow-card:0 1px 2px rgba(0,0,0,.3); --shadow-pop:0 8px 30px rgba(0,0,0,.5); --page:#1e1e2e;
+    --accent-rosewater:#f5e0dc; --accent-flamingo:#f2cdcd; --accent-pink:#f5c2e7; --accent-mauve:#cba6f7;
+    --accent-red:#f38ba8; --accent-maroon:#eba0ac; --accent-peach:#fab387; --accent-yellow:#f9e2af;
+    --accent-green:#a6e3a1; --accent-teal:#94e2d5; --accent-sky:#89dceb; --accent-sapphire:#74c7ec;
+    --accent-blue:#89b4fa; --accent-lavender:#b4befe;
+  }
+  /* The three tint numbers of tokens.ts; JS sets them per theme and A5 variant. */
+  :root { --av-p:22%; --chip-p:16%; --chip-a:28%; --ring:0px;
+    --primary-soft:color-mix(in srgb, var(--primary) 14%, transparent);
+    --sans:'Instrument Sans Variable','Instrument Sans',ui-sans-serif,system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+    --serif:'Source Serif 4',Georgia,'Times New Roman',serif; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--page); color:var(--fg); font-family:var(--sans); line-height:1.5; -webkit-font-smoothing:antialiased; }
+  button { font:inherit; color:inherit; }
+  a { color:inherit; text-decoration:none; }
+  svg.i { width:18px; height:18px; fill:none; stroke:currentColor; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; flex:none; }
+
+  .wrap { margin:0 auto; padding:28px 24px 80px; max-width:1640px; }
+  .kicker { font-size:12px; font-weight:600; letter-spacing:.14em; text-transform:uppercase; color:var(--primary); }
+  h1 { font-size:26px; font-weight:650; margin:4px 0 6px; letter-spacing:-.01em; }
+  .lede { color:var(--fg-muted); margin:0 0 18px; max-width:100ch; }
+  .controls { display:flex; flex-wrap:wrap; gap:10px 18px; align-items:center; margin-bottom:10px; }
+  .ctl { display:flex; align-items:center; gap:8px; }
+  .seg { display:flex; gap:3px; background:var(--bg-sunken); border-radius:999px; padding:3px; }
+  .seg button { border:0; background:transparent; padding:5px 12px; border-radius:999px; font-size:13px; color:var(--fg-muted); cursor:pointer; white-space:nowrap; }
+  .seg button[aria-pressed='true'] { background:var(--card); color:var(--fg); font-weight:600; box-shadow:var(--shadow-card); }
+  .seg button .rec { color:var(--primary); font-weight:700; margin-left:3px; }
+  .seg button .bad { color:#e64553; font-weight:700; margin-left:3px; }
+  .seg-label { font-size:11px; font-weight:600; letter-spacing:.1em; text-transform:uppercase; color:var(--fg-subtle); }
+  .ctl.off { opacity:.35; pointer-events:none; }
+  .note { font-size:12px; color:var(--fg-subtle); margin:0 0 22px; }
+  .stage { display:flex; flex-wrap:wrap; gap:28px; align-items:flex-start; }
+  .legend { columns:2 440px; column-gap:40px; margin-top:28px; }
+  .legend section { break-inside:avoid; margin-bottom:18px; }
+  .legend h2 { font-size:13px; font-weight:600; letter-spacing:.08em; text-transform:uppercase; color:var(--fg-subtle); margin:0 0 8px; }
+  .legend p { font-size:14px; color:var(--fg-muted); margin:0 0 6px; }
+  .legend b { color:var(--fg); font-weight:600; }
+  .anno { display:inline-flex; gap:6px; align-items:center; border:1px dashed var(--primary); color:var(--primary); border-radius:8px; padding:3px 8px; font-size:11px; font-weight:600; background:var(--primary-soft); }
+
+  /* Desktop 1440 × 900, scaled to fit */
+  .browser-fit { flex:none; width:var(--fit-w); height:var(--fit-h); }
+  .browser { width:1440px; height:900px; transform-origin:0 0; transform:scale(var(--fit)); border-radius:12px; overflow:hidden; box-shadow:0 20px 60px rgba(0,0,0,.2); display:flex; flex-direction:column; background:var(--bg); }
+  .chrome { height:36px; flex:none; background:var(--bg-sunken); display:flex; align-items:center; gap:7px; padding:0 14px; border-bottom:1px solid var(--border); }
+  .chrome i { width:11px; height:11px; border-radius:50%; background:var(--border); display:block; }
+  .chrome .url { margin-left:18px; font-size:12px; color:var(--fg-subtle); background:var(--card); padding:3px 14px; border-radius:6px; width:420px; }
+  .app { flex:1; display:flex; min-height:0; }
+  .side { width:240px; flex:none; background:var(--bg-sunken); padding:12px; display:flex; flex-direction:column; gap:4px; }
+  .logo { display:flex; align-items:center; gap:8px; font-weight:600; font-size:21px; padding:6px 10px 14px; }
+  .logo .mark { color:var(--primary); }
+  .side a { display:flex; align-items:center; gap:10px; padding:8px 12px; border-radius:10px; font-size:14px; color:var(--fg-muted); }
+  .side a.on { background:var(--card); color:var(--fg); font-weight:600; box-shadow:var(--shadow-card); }
+  .dmain { flex:1; display:flex; flex-direction:column; min-width:0; }
+  .dhead { display:flex; align-items:center; gap:8px; padding:14px 24px 8px; font-size:14px; color:var(--fg-muted); flex:none; }
+  .dhead .here { color:var(--fg); font-weight:600; }
+  .sp { flex:1; }
+  .search { display:flex; align-items:center; gap:8px; background:var(--card); box-shadow:var(--shadow-card); border-radius:10px; padding:7px 12px; font-size:14px; color:var(--fg-subtle); width:260px; }
+  .search kbd { margin-left:auto; font:inherit; font-size:11px; border:1px solid var(--border); border-radius:5px; padding:0 5px; }
+  .addp { display:flex; align-items:center; gap:6px; border:1px solid var(--border); border-radius:10px; padding:6px 12px; font-size:14px; color:var(--fg-muted); }
+  .scroller { flex:1; overflow-y:auto; scrollbar-width:none; position:relative; }
+  .scroller::-webkit-scrollbar { display:none; }
+  .dpage { max-width:880px; margin:0 auto; padding:12px 24px 60px; display:flex; flex-direction:column; gap:20px; }
+  /* Home: max-w-6xl grid; 17rem rail from lg. */
+  .hgrid { max-width:1152px; margin:0 auto; padding:16px 24px 60px; display:grid; gap:24px 40px; grid-template-columns:minmax(0,1fr); align-items:start; }
+  .hgrid.rail { grid-template-columns:minmax(0,1fr) 17rem; }
+  .hgrid > .col { display:flex; flex-direction:column; gap:16px; min-width:0; }
+  .hgrid .railcol { grid-column:2; grid-row:1; min-height:300px; }
+  .hgrid .railcol.ghost { outline:1px dashed color-mix(in srgb, var(--fg-subtle) 45%, transparent); outline-offset:6px; border-radius:12px; display:grid; place-items:center; }
+  .hhead h2 { margin:0; font-size:24px; font-weight:600; }
+  .hhead p { margin:0; font-size:14px; color:var(--fg-muted); }
+
+  /* Phone: Pixel 9 Pro, 412 × 915 */
+  .device { padding:10px; background:#0b0b12; border-radius:46px; box-shadow:0 20px 60px rgba(0,0,0,.25); flex:none; }
+  .screen { width:412px; height:915px; border-radius:36px; overflow:hidden; position:relative; background:var(--bg); display:flex; flex-direction:column; }
+  .status { height:30px; flex:none; display:flex; align-items:center; justify-content:space-between; padding:6px 26px 0; font-size:13px; font-weight:600; }
+  .status .cam { width:12px; height:12px; border-radius:50%; background:#0b0b12; }
+  .ptop { display:flex; align-items:center; gap:6px; padding:8px 16px; flex:none; font-size:14px; color:var(--fg-muted); min-height:48px; }
+  .ptop .back { display:flex; align-items:center; gap:2px; font-weight:500; margin-left:-6px; }
+  .iconbtn { width:36px; height:36px; display:grid; place-items:center; border-radius:10px; background:var(--card); box-shadow:var(--shadow-card); color:var(--fg-muted); }
+  .ppage { padding:6px 12px 110px; display:flex; flex-direction:column; gap:12px; }
+  .tabbar { position:absolute; inset:auto 0 0 0; display:flex; align-items:flex-end; border-top:1px solid var(--border-subtle); background:var(--card); padding-bottom:14px; z-index:5; }
+  .tab { flex:1; display:flex; flex-direction:column; align-items:center; gap:2px; padding:10px 0 4px; font-size:11px; font-weight:500; color:var(--fg-subtle); }
+  .tab.on { color:var(--primary); font-weight:600; }
+  .tab.pen span { width:52px; height:52px; border-radius:50%; background:var(--primary); color:var(--primary-fg); display:grid; place-items:center; margin-top:-26px; box-shadow:var(--shadow-card); }
+
+  /* Shared pieces */
+  .card { background:var(--card); border-radius:16px; box-shadow:var(--shadow-card); padding:16px; }
+  .sechead { display:flex; align-items:center; gap:6px; min-height:34px; margin-bottom:8px; }
+  .sechead h3 { margin:0; font-size:15px; font-weight:600; }
+  .sechead .count { color:var(--fg-subtle); font-weight:400; margin-left:6px; }
+  .sechead .r { margin-left:auto; display:flex; gap:6px; align-items:center; position:relative; }
+  .btn { display:inline-flex; align-items:center; gap:7px; border-radius:10px; padding:6px 10px; font-size:14px; font-weight:500; border:1px solid var(--border); white-space:nowrap; background:transparent; color:var(--fg-muted); }
+  .btn.primary { background:var(--primary); color:var(--primary-fg); border-color:transparent; }
+  .btn.ghost { border-color:transparent; }
+  .btn svg.i { width:16px; height:16px; }
+  .av { position:relative; border-radius:50%; display:grid; place-items:center; font-weight:600; color:var(--fg); flex:none;
+    background:color-mix(in srgb, var(--a) var(--av-p), var(--card)); box-shadow:inset 0 0 0 var(--ring) var(--a); }
+  .tchip { display:inline-flex; align-items:center; gap:6px; border-radius:999px; padding:2px 10px; font-size:13px; color:var(--fg); background:color-mix(in srgb, var(--a) var(--chip-p), transparent); }
+  .tchip.act { background:color-mix(in srgb, var(--a) var(--chip-a), transparent); font-weight:600; }
+  .tchip .dot { width:8px; height:8px; border-radius:50%; background:var(--a); }
+
+  /* Person page */
+  .id { display:flex; gap:18px; align-items:flex-start; }
+  .portrait { width:112px; height:112px; border-radius:22px !important; font-size:34px; }
+  .p .portrait { width:88px; height:88px; border-radius:18px !important; font-size:28px; }
+  .who h2 { margin:0; font-size:26px; font-weight:650; }
+  .p .who h2 { font-size:22px; }
+  .desc { color:var(--fg-muted); font-size:15px; margin-top:2px; }
+  .facts { display:grid; grid-template-columns:repeat(2, minmax(0,1fr)); gap:12px 24px; margin-top:16px; }
+  .p .facts { grid-template-columns:1fr; gap:10px; }
+  .fact .k { font-size:12px; color:var(--fg-subtle); display:flex; align-items:center; gap:6px; }
+  .fact .k svg.i { width:13px; height:13px; }
+  .fact .val { font-size:14px; }
+  .chips { display:flex; flex-wrap:wrap; gap:6px; }
+  .actions { display:flex; gap:8px; margin-top:16px; }
+  .gh { margin:10px 0 6px; }
+  .gh.upper { font-size:11px; font-weight:600; letter-spacing:.05em; text-transform:uppercase; color:var(--fg-subtle); }
+  .gh.sent { font-size:13px; font-weight:600; color:var(--fg-muted); }
+  .tiles { display:grid; grid-template-columns:repeat(4, minmax(0,1fr)); gap:4px 12px; }
+  .p .tiles { grid-template-columns:repeat(2, minmax(0,1fr)); }
+  .tile { display:flex; gap:8px; align-items:center; padding:6px; border-radius:12px; font-size:13px; min-width:0; }
+  .tile .av { width:32px; height:32px; font-size:12px; }
+  .tile small { display:block; color:var(--fg-subtle); font-size:12px; }
+  .tile span { min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .photos { display:grid; grid-template-columns:repeat(4, 1fr); gap:8px; }
+  .p .photos { grid-template-columns:repeat(3, 1fr); }
+  .photos i { aspect-ratio:1; border-radius:10px; display:block; }
+  .imrow { font-size:13px; color:var(--fg-muted); display:flex; align-items:center; gap:6px; margin-bottom:10px; }
+  .muted { font-size:14px; color:var(--fg-subtle); margin:0; }
+  /* C11: MenuButton's pill trigger, and its menu */
+  .mtrig { display:inline-flex; align-items:center; gap:6px; border:1px solid var(--border); border-radius:999px; padding:4px 12px; font-size:12px; font-weight:500; color:var(--fg-muted); background:var(--card); position:relative; }
+  .mtrig.icon { padding:5px 8px; }
+  .mtrig.open { color:var(--fg); border-color:color-mix(in srgb, var(--primary) 45%, var(--border)); }
+  .mtrig svg.i { width:15px; height:15px; }
+  .mtrig .chev { width:10px; height:10px; opacity:.7; }
+  .menu { position:absolute; right:0; top:calc(100% + 6px); z-index:30; min-width:224px; display:grid; gap:2px; border:1px solid var(--border); border-radius:14px; background:var(--card); padding:6px; box-shadow:var(--shadow-pop); }
+  .menu a { display:flex; gap:8px; align-items:center; padding:6px 10px; border-radius:8px; font-size:14px; }
+  .menu a:first-child { background:var(--primary-soft); }
+  .menu svg.i { width:14px; height:14px; }
+  .tipb { position:absolute; bottom:calc(100% + 6px); right:0; background:var(--fg); color:var(--bg); font-size:11px; border-radius:6px; padding:2px 7px; white-space:nowrap; }
+
+  /* Home pieces */
+  .composer { background:var(--card); border-radius:16px; box-shadow:var(--shadow-card); }
+  .composer .ta { padding:14px 16px 6px; font-family:var(--serif); font-size:16px; color:var(--fg-subtle); min-height:72px; }
+  .cbar { display:flex; align-items:center; gap:10px; border-top:1px solid var(--border-subtle); padding:8px 12px; font-size:12px; color:var(--fg-muted); }
+  .frow { display:flex; flex-wrap:wrap; align-items:center; gap:4px; }
+  .flab { margin-right:4px; }
+  .flab.upper { font-size:12px; font-weight:600; letter-spacing:.06em; text-transform:uppercase; color:var(--fg-muted); }
+  .flab.sent { font-size:14px; font-weight:500; color:var(--fg-subtle); min-width:40px; }
+  .fchip { border-radius:999px; padding:4px 12px; font-size:14px; font-weight:500; color:var(--fg-muted); }
+  .fchip.cur { background:var(--primary-soft); color:var(--fg); font-weight:600; }
+  .day { display:flex; align-items:center; gap:12px; padding:16px 0 6px; font-size:12px; font-weight:600; letter-spacing:.06em; text-transform:uppercase; color:var(--fg-subtle); }
+  .day::after { content:''; height:1px; flex:1; background:var(--border); }
+  .item { display:grid; grid-template-columns:32px 1fr; gap:12px; padding:10px; border-radius:16px; }
+  .item > .av, .item > .stack > .av { width:32px; height:32px; font-size:12px; }
+  .stack { position:relative; width:32px; height:32px; }
+  .actor { position:absolute; right:-5px; bottom:-5px; width:16px !important; height:16px !important; font-size:7px !important; box-shadow:0 0 0 2px var(--bg), inset 0 0 0 var(--ring) var(--a) !important; }
+  .line { display:flex; flex-wrap:wrap; align-items:baseline; gap:0 6px; font-size:13px; color:var(--fg-muted); }
+  .line b { color:var(--fg); font-weight:600; }
+  .line a { color:var(--fg); font-weight:500; }
+  .line .age { margin-left:auto; font-size:12px; color:var(--fg-subtle); font-variant-numeric:tabular-nums; }
+  .kind { display:inline-flex; align-items:center; gap:4px; font-size:12px; color:var(--fg-subtle); border:1px solid var(--border); border-radius:999px; padding:0 8px; }
+  .body { margin-top:4px; font-family:var(--serif); font-size:16px; line-height:1.55; }
+  .body.plain { font-family:var(--sans); font-size:14px; }
+  .mention { display:inline-flex; align-items:center; gap:4px; border-radius:999px; background:var(--primary-soft); padding:0 8px 0 2px; font-family:var(--sans); font-size:14px; font-weight:500; }
+  .mention .av { width:18px; height:18px; font-size:8px; }
+  .mrow { display:flex; gap:6px; margin-top:6px; }
+  .mrow a { display:inline-flex; align-items:center; gap:6px; border-radius:999px; background:var(--bg-sunken); padding:2px 8px 2px 3px; font-size:12px; color:var(--fg-muted); }
+  .mrow .av { width:18px; height:18px; font-size:8px; }
+  .rail-h { display:flex; align-items:center; gap:8px; padding-bottom:8px; }
+  .rail-h svg.i { width:13px; height:13px; }
+  .rail-h.upper { font-size:12px; font-weight:600; letter-spacing:.06em; text-transform:uppercase; color:var(--fg-subtle); }
+  .rail-h.sent { font-size:14px; font-weight:600; color:var(--fg); }
+  .rrow { display:grid; grid-template-columns:28px 1fr; gap:10px; align-items:center; padding:6px; font-size:13px; line-height:1.35; color:var(--fg-muted); }
+  .rrow .av { width:28px; height:28px; font-size:11px; }
+  .rrow a { font-weight:600; color:var(--fg); }
+  .rrow small { display:block; font-size:12px; color:var(--fg-subtle); }
+  .rrow small a { color:var(--link); font-weight:400; }
+  .finder { display:flex; align-items:center; gap:8px; background:var(--card); box-shadow:var(--shadow-card); border-radius:12px; padding:10px 14px; color:var(--fg-subtle); font-size:15px; }
+  .fpill { align-self:flex-start; display:inline-flex; gap:6px; align-items:center; border:1px solid var(--border); background:var(--card); border-radius:999px; padding:5px 12px; font-size:14px; color:var(--fg-muted); }
+  .fpill svg.i { width:15px; height:15px; }
+
+  /* A5 swatches */
+  .swbox { flex:1 1 100%; }
+  .swrow { display:grid; grid-template-columns:200px 1fr; gap:16px; align-items:center; padding:12px 16px; border-radius:14px; background:var(--card); box-shadow:var(--shadow-card); margin-bottom:10px; }
+  .swrow.onbg { background:var(--bg); }
+  .swrow h4 { margin:0; font-size:14px; font-weight:600; }
+  .swrow p { margin:2px 0 0; font-size:12px; color:var(--fg-subtle); }
+  .swrow .ok { color:var(--fg); } .swrow .no { color:#e64553; font-weight:600; }
+  .avs { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:8px; }
+  .avs .av { width:36px; height:36px; font-size:13px; }
+  .strip { margin-top:18px; padding:12px 16px; border-radius:14px; background:var(--bg); border:1px solid var(--border); display:flex; flex-wrap:wrap; gap:12px 20px; align-items:center; width:100%; }
+  .strip .avs { margin:0; }
+  .strip .avs .av { width:32px; height:32px; font-size:12px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="kicker">UX review 2026-10 · the rest</div>
+  <h1>Uppercase labels, Mocha tints, the empty rail, stream actors, the Immich label</h1>
+  <p class="lede">Mockup for <b>A4</b> (the uppercase label is for dividers inside a list), <b>A5</b> (one tint strength per theme), <b>B6</b> (the stream takes the width when <i>Coming up</i> is empty — decided), <b>B7</b> (who wrote a row, when the subject's face leads it) and <b>C11</b> (the Photos card's <i>Immich ▾</i>). Pick a screen and a variant; ★ marks the recommendation, ✓ a decision, ✗ a variant that fails AA. Every state is in the URL.</p>
+  <div class="controls" id="controls"></div>
+  <p class="note" id="note"></p>
+  <div class="stage" id="stage"></div>
+  <div class="strip" id="strip"></div>
+
+  <div class="legend">
+    <section>
+      <h2>A4 — what the uppercase label is for</h2>
+      <p><b>★ List dividers:</b> the uppercase label stays where it splits a list into runs — day dividers in the stream, and the People card's group headings (<i>Family · 7</i>, <i>Also related</i>), which split one list of tiles and never stand alone. Section headings (<i>Coming up</i>) take the cards' sentence-case <code>text-sm font-semibold</code>. The desktop filter labels (<i>What</i>, <i>Who</i>) become quiet sentence-case text that is part of the chip row.</p>
+      <p><b>Sentence case:</b> the People group headings follow the section headings too. Then a card holds two headings of nearly the same weight (<i>People</i> and <i>Family · 7</i>), and the uppercase rule has one user left (day dividers).</p>
+    </section>
+    <section>
+      <h2>A5 — tint strength per theme</h2>
+      <p>The initials and chip labels stay in <code>--fg</code>, so the tint can only grow until <code>--fg</code> on it falls to 4.5:1. In Mocha the lightest accents (rosewater, yellow) reach that floor first: <b>32 % is already below AA</b> for an avatar (4.24:1 rosewater), so the asked-for 32/24 and 40/30 are flagged ✗ and not offered for the build.</p>
+      <p><b>★ 28 / 22 / 28:</b> Mocha's avatar and chip tints rise to the strength its active chip already has (28 %); the active chip stays 28 %, separated from a resting chip by weight as well as tint. Floor 4.76:1, the same as today's. Latte stays 22 / 16 / 28.</p>
+      <p><b>Ring:</b> ★'s numbers plus a 1.5 px ring in the flat accent around an initials avatar. Identity without touching the text's ground; it does not help chips.</p>
+      <p>Side finding: in Latte today the active chip (28 %) on <code>--bg</code> is 4.11:1 for red — only on <code>--card</code> does it clear AA (4.87). The build adds the chip-on-<code>--bg</code> pairing to <code>color.test.ts</code>.</p>
+    </section>
+    <section>
+      <h2>B6 — the empty rail (decided ✓)</h2>
+      <p>When nothing is coming up within 14 days the grid drops its 17 rem column and the stream takes the whole <code>max-w-6xl</code>. With dates, the rail is as today. A phone is unchanged (the rail is in the flow below <code>lg</code>). At full width a moment's body runs to ~1050 px; the build may cap the body's measure (~72ch) — open point.</p>
+    </section>
+    <section>
+      <h2>B7 — the actor beside the subject</h2>
+      <p>The subject's avatar stays: it is what one scans for. The rule goes into §5.5 either way.</p>
+      <p><b>★ (a) other members only:</b> a 16 px actor avatar, ringed in <code>--bg</code>, overlaps the subject's bottom-right on rows written by another member; your own rows stay plain, because <i>You</i> is the default reader's assumption. <b>(b) every row:</b> also your own — consistent, but a badge on most rows of a one-writer week. <b>(c) rule only:</b> no badge; today's look.</p>
+      <p>Badges show only when <code>offersMemberChoice</code> (more than one member) — the same test that shows the <i>Who</i> row.</p>
+    </section>
+    <section>
+      <h2>C11 — the Photos card's menu</h2>
+      <p><b>★ Photo library ▾</b> / <i>Fotobibliothek ▾</i>: says what it reaches; the menu items keep naming Immich (<i>Find in Immich</i>, <i>Unlink from Immich</i>), where the product matters. The key <code>immich.menu.trigger</code> stays; the menu's accessible name too.</p>
+      <p><b>Icon:</b> a photo-stack icon with the tooltip <i>Photo library (Immich)</i>. Quietest, but an unlabelled icon beside <i>Add photos</i> is a guess on touch. <b>Link photos ▾:</b> fits only an unlinked person — for Markus (linked) the menu then only unlinks.</p>
+    </section>
+  </div>
+</div>
+
+<script>
+const ICON = {
+  home:'<path d="M4 11l8-7 8 7v9H4z"/><path d="M10 20v-6h4v6"/>',
+  people:'<circle cx="9" cy="8" r="3.2"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/><circle cx="17" cy="9" r="2.5"/><path d="M16 14c2.8 0 5 2.2 5 5"/>',
+  circles:'<circle cx="9" cy="12" r="6"/><circle cx="15" cy="12" r="6"/>',
+  map:'<circle cx="6" cy="6" r="2.5"/><circle cx="18" cy="8" r="2.5"/><circle cx="10" cy="18" r="2.5"/><path d="M8 7l8 1M7 8l2 8M12 17l5-7"/>',
+  journal:'<path d="M5 4h11a3 3 0 0 1 3 3v13H8a3 3 0 0 1-3-3z"/><path d="M5 17a3 3 0 0 1 3-3h11"/>',
+  search:'<circle cx="11" cy="11" r="6.5"/><path d="M20 20l-4-4"/>',
+  plus:'<path d="M12 5v14M5 12h14"/>',
+  back:'<path d="M15 5l-7 7 7 7"/>',
+  chev:'<path d="M7 10l5 5 5-5"/>',
+  photos:'<rect x="7" y="7" width="14" height="12" rx="2"/><path d="M4 16V6a2 2 0 0 1 2-2h11"/><circle cx="12" cy="11" r="1.5"/><path d="M21 16l-4-4-7 7"/>',
+  cal:'<rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16M9 3v4M15 3v4"/>',
+  cake:'<path d="M4 20h16v-7H4z"/><path d="M4 16c2 1 4-1 6 0s4 1 6 0 3 0 4 0"/><path d="M12 13V9"/>',
+  work:'<rect x="3" y="7" width="18" height="13" rx="2"/><path d="M9 7V5h6v2"/>',
+  tag:'<path d="M3 12V4h8l10 10-8 8z"/><circle cx="7.5" cy="8.5" r="1.3"/>',
+  phone:'<path d="M6 3h3l2 5-2.5 1.5a11 11 0 0 0 6 6L16 13l5 2v3a2 2 0 0 1-2 2A16 16 0 0 1 4 5a2 2 0 0 1 2-2z"/>',
+  filter:'<path d="M4 6h16M7 12h10M10 18h4"/>',
+  write:'<path d="M4 20h4L19 9l-4-4L4 16z"/>',
+  met:'<path d="M4 12l4 4 12-12"/>',
+  unlink:'<path d="M9 15l-2 2a3 3 0 0 1-4-4l3-3a3 3 0 0 1 4 0"/><path d="M15 9l2-2a3 3 0 0 1 4 4l-3 3a3 3 0 0 1-4 0"/><path d="M4 4l16 16"/>',
+  shared:'<circle cx="9" cy="8" r="3.2"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/>'
+};
+const ic = (n, cls = 'i') => `<svg class="${cls}" viewBox="0 0 24 24" aria-hidden="true">${ICON[n]}</svg>`;
+
+/* ── Contrast, from the token hex values (WCAG 2.x) ─────────── */
+const ACC = {
+  latte:{ rosewater:'#dc8a78', flamingo:'#dd7878', pink:'#ea76cb', mauve:'#8839ef', red:'#d20f39', maroon:'#e64553', peach:'#fe640b', yellow:'#df8e1d', green:'#40a02b', teal:'#179299', sky:'#04a5e5', sapphire:'#209fb5', blue:'#1e66f5', lavender:'#7287fd' },
+  mocha:{ rosewater:'#f5e0dc', flamingo:'#f2cdcd', pink:'#f5c2e7', mauve:'#cba6f7', red:'#f38ba8', maroon:'#eba0ac', peach:'#fab387', yellow:'#f9e2af', green:'#a6e3a1', teal:'#94e2d5', sky:'#89dceb', sapphire:'#74c7ec', blue:'#89b4fa', lavender:'#b4befe' }
+};
+const SURF = { latte:{ fg:'#4c4f69', card:'#ffffff', bg:'#e6e9ef' }, mocha:{ fg:'#cdd6f4', card:'#232334', bg:'#181825' } };
+const rgb = (x) => [1, 3, 5].map((i) => parseInt(x.slice(i, i + 2), 16));
+const mix = (a, b, p) => a.map((v, i) => v * p / 100 + b[i] * (1 - p / 100));
+const lin = (c) => { c /= 255; return c <= .03928 ? c / 12.92 : ((c + .055) / 1.055) ** 2.4; };
+const lum = (c) => .2126 * lin(c[0]) + .7152 * lin(c[1]) + .0722 * lin(c[2]);
+const ratio = (a, b) => { const x = lum(a), y = lum(b); return (Math.max(x, y) + .05) / (Math.min(x, y) + .05); };
+/* The lowest --fg contrast over every accent's tint: avatars over --card, chips over --card and --bg. */
+function floor(theme, v) {
+  const s = SURF[theme], fg = rgb(s.fg); let min = 99, at = '';
+  for (const [name, hex] of Object.entries(ACC[theme])) {
+    const checks = [[v.av, 'card', 'avatar'], [v.chip, 'card', 'chip'], [v.chip, 'bg', 'chip'], [v.act, 'card', 'active chip'], [v.act, 'bg', 'active chip']];
+    for (const [p, on, what] of checks) { const r = ratio(fg, mix(rgb(hex), rgb(s[on]), p)); if (r < min) { min = r; at = `${what}, ${name} on --${on}`; } }
+  }
+  return { min, at };
+}
+const A5 = {
+  today:{ av:22, chip:16, act:28, label:'Today 22/16' },
+  rec:{ av:28, chip:22, act:28, label:'28/22', mark:'rec' },
+  ring:{ av:28, chip:22, act:28, ring:true, label:'28/22 + ring' },
+  v32:{ av:32, chip:24, act:36, label:'32/24' },
+  v40:{ av:40, chip:30, act:42, label:'40/30' }
+};
+for (const v of Object.values(A5)) { v.f = floor('mocha', v); if (v.f.min < 4.5) v.mark = 'bad'; }
+const LATTE = { av:22, chip:16, act:28 };
+
+/* ── Copy, en + de ─────────────────────────────────────────── */
+const T = {
+  home:['Home','Start'], people:['People','Menschen'], circles:['Circles','Kreise'], map:['Map','Karte'], journal:['Journal','Tagebuch'],
+  search:['Search','Suche'], addPerson:['Add person','Person hinzufügen'], heading:['What happened?','Was ist passiert?'],
+  intro:['Write down what happened — the whole household sees it, unless you keep it private.','Schreib auf, was war – der ganze Haushalt sieht es, außer du hältst es privat.'],
+  placeholder:['Met someone? Type it here, mention people with @','Jemanden getroffen? Schreib es hier, erwähne Menschen mit @'],
+  shared:['Shared','Geteilt'], todayPill:['Today','Heute'], save:['Save','Speichern'],
+  what:['What','Was'], who:['Who','Wer'], everything:['Everything','Alles'], moments:['Moments','Momente'], calls:['Calls & visits','Anrufe & Treffen'],
+  rels:['Relationships','Beziehungen'], newPeople:['New people','Neue Personen'], circlePhotos:['Circle photos','Kreisfotos'], notices:['Notices','Hinweise'],
+  everyone:['Everyone','Alle'], you:['You','Du'], comingUp:['Coming up','Kommt bald'], writeMoment:['Write a moment','Moment festhalten'],
+  today:['Today','Heute'], yesterday:['Yesterday','Gestern'], mon:['Monday 5 October','Montag, 5. Oktober'],
+  findPerson:['Find a person…','Person finden…'], filter:['Filter','Filter'], logContact:['Log contact','Kontakt festhalten'],
+  birthday:['Birthday','Geburtstag'], job:['Job','Beruf'], tags:['Tags','Schlagwörter'],
+  family:['Family','Familie'], friends:['Friends','Freunde'], also:['Also related','Ebenfalls verwandt'], photosT:['Photos','Fotos'], addPhotos:['Add photos','Fotos hinzufügen'],
+  find:['Find in Immich','In Immich suchen'], unlink:['Unlink from Immich','Verknüpfung mit Immich lösen'],
+  inImmich:['In Immich · 128 photos','In Immich · 128 Fotos'], noPhotos:['No photos of Kurt Lehmann yet. Add one, and it can become their picture.','Noch keine Fotos von Kurt Lehmann. Füge eines hinzu, dann kann es zum Profilbild werden.'],
+  showMore:['Show 3 more','3 weitere zeigen'], railEmpty:['17rem reserved, nothing coming up','17rem reserviert, nichts steht an'],
+  b7note:['B7: actor badges only when the household has more than one member (offersMemberChoice)','B7: Badges nur, wenn der Haushalt mehr als ein Mitglied hat (offersMemberChoice)']
+};
+const C11 = {
+  today:[['Immich','Immich']],
+  rec:[['Photo library','Fotobibliothek']],
+  icon:[['Photo library (Immich)','Fotobibliothek (Immich)']],
+  link:[['Link photos','Fotos verknüpfen']]
+};
+
+const P = new URLSearchParams(location.search);
+const S = {
+  lang:P.get('lang') || 'en', theme:P.get('theme') || 'latte', device:P.get('device') || 'desktop', screen:P.get('screen') || 'home',
+  a4:P.get('a4') || 'list', a5:P.get('a5') || 'rec', b6:P.get('b6') || 'decided', up:P.get('up') || 'empty',
+  b7:P.get('b7') || 'a', c11:P.get('c11') || 'rec', menu:P.get('menu') || 'closed'
+};
+const L = () => (S.lang === 'de' ? 1 : 0);
+const t = (k) => T[k][L()];
+
+const a5label = (key) => { const v = A5[key]; return key === 'today' ? `${v.label} · ${v.f.min.toFixed(2)}` : `${v.label} · ${v.f.min.toFixed(2)}`; };
+const CONTROLS = [
+  ['lang', 'Language', [['en','English'],['de','Deutsch']]],
+  ['theme', 'Theme', [['latte','Latte'],['mocha','Mocha']]],
+  ['device', 'Device', [['desktop','Desktop 1440'],['phone','Pixel 9 Pro']]],
+  ['screen', 'Screen', [['home','Home'],['markus','Markus'],['kurt','Kurt'],['swatch','A5 swatches']]],
+  ['a4', 'A4 labels', [['today','Today'],['list','List dividers','rec'],['sentence','Sentence case']], 'page'],
+  ['a5', 'A5 Mocha tint (min ratio)', Object.keys(A5).map((k) => [k, a5label(k), A5[k].mark])],
+  ['up', 'Coming up', [['present','Has dates'],['empty','Empty']], 'home'],
+  ['b6', 'B6 empty rail', [['today','Today'],['decided','Stream takes width','dec']], 'homeD'],
+  ['b7', 'B7 actor', [['c','(c) Rule only = today'],['a','(a) Others only','rec'],['b','(b) Every row']], 'home'],
+  ['c11', 'C11 Photos menu', [['today','Today'],['rec','Photo library','rec'],['icon','Icon'],['link','Link photos']], 'person'],
+  ['menu', 'Menu', [['closed','Closed'],['open','Open']], 'person']
+];
+
+function sync() { const q = new URLSearchParams(S); history.replaceState(null, '', `?${q}`); }
+function renderControls() {
+  const person = S.screen === 'markus' || S.screen === 'kurt';
+  const scopeOn = { page:S.screen !== 'swatch', home:S.screen === 'home', homeD:S.screen === 'home' && S.device === 'desktop' && S.up === 'empty', person };
+  document.getElementById('controls').innerHTML = CONTROLS.map(([key, label, opts, scope]) =>
+    `<div class="ctl ${!scope || scopeOn[scope] ? '' : 'off'}"><span class="seg-label">${label}</span><div class="seg">${opts.map(([v, l, m]) =>
+      `<button data-k="${key}" data-v="${v}" aria-pressed="${S[key] === v}">${l}${m === 'rec' ? '<span class="rec">★</span>' : m === 'dec' ? '<span class="rec">✓</span>' : m === 'bad' ? '<span class="bad">✗</span>' : ''}</button>`).join('')}</div></div>`).join('');
+  document.querySelectorAll('#controls button').forEach((b) => (b.onclick = () => { S[b.dataset.k] = b.dataset.v; render(); }));
+}
+
+/* ── People and avatars ────────────────────────────────────── */
+const WHO = {
+  MB:['Markus Brunner','rosewater'], KL:['Kurt Lehmann','teal'], SB:['Sandra Brunner-Keller','mauve'], LB:['Lena Brunner','sky'],
+  NB:['Noah Brunner','blue'], MiB:['Mia Brunner','pink'], HB:['Hans Brunner','peach'], RB:['Rosa Brunner','green'], TL:['Thomas Lang','sapphire'],
+  NA:['Nadia Arslan','lavender'], HL:['Heidi Lehmann','yellow'], RM:['Reto Meier','maroon'], DA:['Demo Admin','flamingo'], NiB:['Nina Brunner','maroon']
+};
+const ini = (k) => k.replace(/[a-z]/g, '').slice(0, 2);
+const av = (k, cls = '', extra = '') => `<span class="av ${cls}" style="--a:var(--accent-${WHO[k][1]})" title="${WHO[k][0]}">${ini(k)}${extra}</span>`;
+const chip = (name, accent, act) => `<span class="tchip ${act ? 'act' : ''}" style="--a:var(--accent-${accent})"><span class="dot"></span>${name}</span>`;
+
+/* ── Home ──────────────────────────────────────────────────── */
+function avatarWithActor(subject, actor) {
+  const mine = actor === 'DA';
+  const show = S.b7 === 'b' || (S.b7 === 'a' && !mine);
+  return show ? `<span class="stack">${av(subject)}${av(actor, 'actor')}</span>` : av(subject);
+}
+function row(subject, actor, line, body = '', extra = '') {
+  return `<article class="item">${avatarWithActor(subject, actor)}<div><div class="line">${line}</div>${body}${extra}</div></article>`;
+}
+const actorName = (k) => `<b>${k === 'DA' ? t('you') : WHO[k][0]}</b>`;
+function stream() {
+  const de = L();
+  const wrote = (a, k) => de ? `${actorName(a)} schrieb in <span><a>${WHO[k][0]}</a>s Tagebuch</span>` : `${actorName(a)} wrote in <span><a>${WHO[k][0]}</a>’s journal</span>`;
+  const added = (a, k) => de ? `${actorName(a)} legte <a>${WHO[k][0]}</a> an <span class="kind">Neue Person</span>` : `${actorName(a)} added <a>${WHO[k][0]}</a> <span class="kind">New person</span>`;
+  const logged = (a, kind, k) => de ? `${actorName(a)} hielt <span class="kind">${kind[1]}</span> mit <a>${WHO[k][0]}</a> fest` : `${actorName(a)} logged <span class="kind">${kind[0]}</span> with <a>${WHO[k][0]}</a>`;
+  const age = (s) => `<span class="age">${s}</span>`;
+  const mention = (k) => `<span class="mention">${av(k)}${WHO[k][0]}</span>`;
+  return `
+    <div class="day">${t('today')}</div>
+    ${row('TL', 'NiB', added('NiB', 'TL') + age('08:41'))}
+    ${row('LB', 'DA', wrote('DA', 'LB') + age('07:55'), `<div class="body">${de ? 'Gestern an der Musikschule hat sie Für Elise ohne einen Fehler gespielt.' : 'At the Musikschule last night she played Für Elise without a slip.'}</div>`)}
+    <div class="day">${t('yesterday')}</div>
+    ${row('MB', 'DA', logged('DA', ['Call', 'Anruf'], 'MB') + age('19:20'), `<div class="body plain">${de ? 'Sonntagsanruf' : 'Sunday call'}</div>`, `<div class="mrow"><a>${av('SB')}Sandra Brunner-Keller</a></div>`)}
+    ${row('MB', 'NiB', wrote('NiB', 'MB') + age('17:02'), `<div class="body">${de ? `Markus hat endlich das Gartentor geflickt — ${mention('NB')} hielt die Schrauben.` : `Markus fixed the garden gate at last — with ${mention('NB')} holding the screws.`}</div>`)}
+    <div class="day">${t('mon')}</div>
+    ${row('HB', 'NiB', logged('NiB', ['Visit', 'Besuch'], 'HB'), `<div class="body plain">${de ? 'Kaffee bei Opa' : 'Coffee at Opa’s'}</div>`)}
+    ${row('KL', 'DA', added('DA', 'KL'))}`;
+}
+function rail(phone) {
+  const de = L();
+  const rows = [['LB', de ? 'wird 12' : 'turns 12', de ? 'in 5 Tagen' : 'in 5 days'], ['HB', de ? 'wird 70' : 'turns 70', de ? 'in 9 Tagen' : 'in 9 days'],
+    ['RB', de ? 'hat Geburtstag' : 'has a birthday', de ? 'in 12 Tagen' : 'in 12 days'], ['NA', de ? 'wird 40' : 'turns 40', de ? 'in 13 Tagen' : 'in 13 days']];
+  const head = S.a4 === 'today' ? 'upper' : 'sent';
+  return `<section><div class="rail-h ${head}">${ic('cal')}${t('comingUp')}</div>${rows.slice(0, phone ? 3 : 4).map(([k, occ, when]) =>
+    `<div class="rrow">${av(k)}<div><a>${WHO[k][0]}</a> ${occ}<small>${when} · <a>${t('writeMoment')}</a></small></div></div>`).join('')}</section>`;
+}
+function filters() {
+  const lab = S.a4 === 'today' ? 'upper' : 'sent';
+  const r1 = [t('everything'), t('moments'), t('calls'), t('rels'), t('newPeople'), t('circlePhotos'), t('notices')];
+  const r2 = [t('everyone'), t('you'), 'Nina Brunner'];
+  const fr = (label, items) => `<div class="frow"><span class="flab ${lab}">${label}</span>${items.map((x, i) => `<a class="fchip ${i ? '' : 'cur'}">${x}</a>`).join('')}</div>`;
+  return `<nav style="display:flex;flex-direction:column;gap:6px">${fr(t('what'), r1)}${fr(t('who'), r2)}</nav>`;
+}
+function composer() {
+  return `<div class="composer"><div class="ta">${t('placeholder')}</div><div class="cbar"><span style="display:inline-flex;gap:6px;align-items:center">${ic('shared', 'i" style="width:13px;height:13px')}${t('shared')}</span><span class="sp"></span><span class="btn primary" style="padding:4px 12px">${t('save')}</span></div></div>`;
+}
+function homeDesktop() {
+  const present = S.up === 'present';
+  const keep = present || S.b6 === 'today';
+  const railCol = present ? `<aside class="railcol">${rail(false)}</aside>` : keep ? `<aside class="railcol ghost"><span class="anno">${t('railEmpty')}</span></aside>` : '';
+  return `<div class="hgrid ${keep ? 'rail' : ''}"><div class="col"><div class="hhead"><h2>${t('heading')}</h2><p>${t('intro')}</p></div>${composer()}${filters()}
+    <span class="anno" style="align-self:flex-start">${t('b7note')}</span><div>${stream()}</div></div>${railCol}</div>`;
+}
+function homePhone() {
+  const present = S.up === 'present';
+  return `<div class="ppage"><div class="finder">${ic('search')}${t('findPerson')}</div>${present ? rail(true) : ''}<span class="fpill">${ic('filter')}${t('filter')}</span>
+    <span class="anno" style="align-self:flex-start;max-width:100%">${t('b7note')}</span><div>${stream()}</div></div>`;
+}
+
+/* ── Person page ───────────────────────────────────────────── */
+function c11Trigger(linked) {
+  const open = S.menu === 'open';
+  const label = C11[S.c11][0][L()];
+  const trig = S.c11 === 'icon'
+    ? `<span class="mtrig icon ${open ? 'open' : ''}" aria-label="${label}">${ic('photos')}<svg class="chev" viewBox="0 0 10 10"><path d="M2 3.5l3 3 3-3" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>${open ? '' : `<span class="tipb">${label}</span>`}</span>`
+    : `<span class="mtrig ${open ? 'open' : ''}">${label}<svg class="chev" viewBox="0 0 10 10"><path d="M2 3.5l3 3 3-3" fill="none" stroke="currentColor" stroke-width="1.5"/></svg></span>`;
+  const menu = open ? `<div class="menu" role="menu">${linked ? `<a>${ic('unlink')}${t('unlink')}</a>` : `<a>${ic('search')}${t('find')}</a>`}</div>` : '';
+  return `${trig}${menu}`;
+}
+function personPage(phone) {
+  const markus = S.screen === 'markus', de = L();
+  const k = markus ? 'MB' : 'KL';
+  const desc = markus ? (de ? 'Familienvater, Vorstand im FC Länggasse.' : 'Family man, on the board of FC Länggasse.') : (de ? 'Nachbar an der Spitalackerstrasse.' : 'Neighbour on Spitalackerstrasse.');
+  const facts = [
+    [ic('cake'), t('birthday'), markus ? (de ? '14. März 1983 · 43' : '14 March 1983 · 43') : (de ? '27. März 1963 · 63' : '27 March 1963 · 63')],
+    [ic('work'), t('job'), markus ? 'Bauingenieur · Rytz + Partner AG' : 'Postbote'],
+    [ic('circles'), t('circles'), `<div class="chips">${(markus ? [['Familie Brunner', 'green'], ['FC Länggasse', 'blue'], ['Nachbarschaft', 'peach', 1]] : [['Nachbarschaft', 'peach', 1]]).map(([n, a, act]) => chip(n, a, act)).join('')}</div>`],
+    markus ? [ic('tag'), t('tags'), `<div class="chips">${chip('FC-Vorstand', 'yellow')}${chip('Werkzeug', 'teal')}${chip('Grill', 'rosewater')}</div>`] : null
+  ].filter(Boolean).map(([i, key, v]) => `<div class="fact"><div class="k">${i}${key}</div><div class="val">${v}</div></div>`).join('');
+  const id = `<div class="card"><div class="id">${av(k, 'portrait')}<div class="who"><h2>${WHO[k][0]}</h2><div class="desc">${desc}</div></div></div>
+    <div class="facts">${facts}</div><div class="actions"><span class="btn primary">${ic('write')}${t('writeMoment')}</span><span class="btn">${ic('met')}${t('logContact')}</span></div></div>`;
+  const gh = S.a4 === 'sentence' ? 'sent' : 'upper';
+  const rel = de
+    ? { Wife:'Ehefrau', Daughter:'Tochter', Son:'Sohn', Father:'Vater', Mother:'Mutter', Friend:'Freund', Neighbour:'Nachbar', 'Sister-in-law':'Schwägerin', 'Father-in-law':'Schwiegervater' }
+    : null;
+  const tiles = (list) => `<div class="tiles">${list.map(([kk, r]) => `<div class="tile">${av(kk)}<span>${WHO[kk][0]}<small>${rel ? rel[r] || r : r}</small></span></div>`).join('')}</div>`;
+  const groups = markus
+    ? `<div class="gh ${gh}">${t('family')} · 7</div>${tiles([['SB', 'Wife'], ['LB', 'Daughter'], ['NB', 'Son'], ['MiB', 'Daughter'], ['HB', 'Father'], ['RB', 'Mother']])}
+       <div class="gh ${gh}">${t('friends')} · 2</div>${tiles([['TL', 'Friend'], ['KL', 'Neighbour']])}
+       <div class="gh ${gh}">${t('also')}</div>${tiles([['HL', 'Sister-in-law'], ['RM', 'Father-in-law']])}
+       <p style="margin:8px 0 0;font-size:13px"><a style="color:var(--link)">${t('showMore')}</a></p>`
+    : `<div class="gh ${gh}">${t('family')} · 1</div>${tiles([['HL', 'Wife']])}<div class="gh ${gh}">${t('friends')} · 1</div>${tiles([['MB', 'Neighbour']])}`;
+  const people = `<div class="card"><div class="sechead"><h3>${t('people')}<span class="count">${markus ? 12 : 2}</span></h3><div class="r"><span class="btn ghost">${ic('plus')}${de ? 'Hinzufügen' : 'Add'}</span></div></div>${groups}</div>`;
+  const shots = ['peach', 'sky', 'green', 'mauve', 'yellow', 'teal', 'pink', 'blue'];
+  const photos = `<div class="card" id="photos"><div class="sechead"><h3>${t('photosT')}<span class="count">${markus ? 8 : 0}</span></h3><div class="r">${c11Trigger(markus)}<span class="btn ghost">${ic('plus')}${t('addPhotos')}</span></div></div>
+    ${markus ? `<div class="imrow">${ic('photos', 'i" style="width:14px;height:14px')}${t('inImmich')}</div><div class="photos">${shots.slice(0, phone ? 6 : 8).map((c) => `<i style="background:color-mix(in srgb, var(--accent-${c}) 45%, var(--bg-sunken))"></i>`).join('')}</div>` : `<p class="muted">${t('noPhotos')}</p>`}</div>`;
+  return id + people + photos;
+}
+
+/* ── A5 swatch screen ──────────────────────────────────────── */
+const SW = ['MB', 'KL', 'SB', 'LB', 'NB', 'MiB', 'HB', 'RB', 'TL', 'NA', 'HL', 'RM', 'DA'];
+const CH = [['Familie Brunner', 'green'], ['FC Länggasse', 'blue'], ['Nachbarschaft', 'peach'], ['FC-Vorstand', 'yellow'], ['Grill', 'rosewater'], ['Werkzeug', 'teal'], ['Chor', 'flamingo']];
+function tintVars(v) { return `--av-p:${v.av}%;--chip-p:${v.chip}%;--chip-a:${v.act}%;--ring:${v.ring ? '1.5px' : '0px'}`; }
+function swatchRow(key, onBg) {
+  const v = S.theme === 'mocha' ? A5[key] : { ...LATTE, label:'Latte (unchanged)' };
+  const f = S.theme === 'mocha' ? v.f : floor('latte', LATTE);
+  const ok = f.min >= 4.5;
+  return `<div class="swrow ${onBg ? 'onbg' : ''}" style="${tintVars(v)}"><div><h4>${v.label}${v.mark === 'rec' ? ' <span style="color:var(--primary)">★</span>' : ''}</h4>
+    <p>avatar ${v.av} % · chip ${v.chip} % · active ${v.act} %</p><p class="${ok ? 'ok' : 'no'}">min ${f.min.toFixed(2)}:1 ${ok ? '✓ AA' : '✗ below AA'}</p><p>${f.at}</p></div>
+    <div><div class="avs">${SW.map((k) => av(k)).join('')}</div><div class="chips">${CH.map(([n, a], i) => chip(n, a, i === 2)).join('')}</div></div></div>`;
+}
+function swatchScreen() {
+  const keys = S.theme === 'mocha' ? Object.keys(A5) : ['today'];
+  return `<div class="swbox"><p class="note" style="margin:0 0 10px">${S.theme === 'mocha' ? 'Mocha, every A5 variant. Rows on --card; the third chip is the active one. The floor is --fg on the tint, avatars over --card, chips over --card and --bg.' : 'Latte keeps 22 / 16 / 28. Switch the theme to Mocha to compare the variants.'}</p>
+    ${keys.map((k) => swatchRow(k, false)).join('')}${S.theme === 'mocha' ? `<p class="note" style="margin:14px 0 8px">The same rows on --bg (the stream's ground):</p>${['today', 'rec', 'v32'].map((k) => swatchRow(k, true)).join('')}` : ''}</div>`;
+}
+
+/* ── Frames ────────────────────────────────────────────────── */
+const SIDE = ['home', 'people', 'circles', 'map', 'journal'];
+function desktop() {
+  const person = S.screen !== 'home';
+  const name = person ? WHO[S.screen === 'markus' ? 'MB' : 'KL'][0] : '';
+  const crumb = person ? `<a>${t('home')}</a><span>/</span><a>${t('people')}</a><span>/</span><span class="here">${name}</span>` : '';
+  const body = person ? `<div class="dpage">${personPage(false)}</div>` : homeDesktop();
+  return `<div class="browser-fit"><div class="browser"><div class="chrome"><i></i><i></i><i></i><span class="url">stella.home/${person ? `contacts/demo-c-${S.screen}` : ''}</span></div>
+    <div class="app"><aside class="side"><div class="logo"><span class="mark">✦</span>Stella</div>${SIDE.map((i) => `<a class="${(person ? i === 'people' : i === 'home') ? 'on' : ''}">${ic(i)}${t(i)}</a>`).join('')}</aside>
+    <div class="dmain"><div class="dhead">${crumb}<span class="sp"></span><span class="search">${ic('search')}${t('search')}<kbd>⌘K</kbd></span><span class="addp">${ic('plus')}${t('addPerson')}</span></div>
+    <div class="scroller" id="scroller">${body}</div></div></div></div></div>`;
+}
+function phone() {
+  const person = S.screen !== 'home';
+  const top = person ? `<a class="back">${ic('back')}${t('people')}</a>` : `<span class="logo" style="padding:0;font-size:19px"><span class="mark">✦</span>Stella</span>`;
+  const body = person ? `<div class="ppage">${personPage(true)}</div>` : homePhone();
+  return `<div class="device"><div class="screen p"><div class="status"><span>9:41</span><span class="cam"></span><span>▮▮ 100%</span></div>
+    <div class="ptop">${top}<span class="sp"></span>${person ? `<span class="iconbtn">${ic('search')}</span>` : ''}<span class="iconbtn">${ic('plus')}</span></div>
+    <div class="scroller" id="scroller">${body}</div>
+    <nav class="tabbar"><a class="tab ${person ? '' : 'on'}">${ic('home')}${t('home')}</a><a class="tab ${person ? 'on' : ''}">${ic('people')}${t('people')}</a><a class="tab pen"><span>${ic('write')}</span></a><a class="tab">${ic('circles')}${t('circles')}</a><a class="tab">${ic('map')}${t('map')}</a></nav></div></div>`;
+}
+function fit() {
+  const b = document.querySelector('.browser'); if (!b) return;
+  const w = Math.min(1, document.querySelector('.wrap').clientWidth / 1440);
+  const f = b.parentElement; f.style.setProperty('--fit-w', `${1440 * w}px`); f.style.setProperty('--fit-h', `${900 * w}px`); b.style.setProperty('--fit', w);
+}
+function render() {
+  const root = document.documentElement;
+  root.dataset.theme = S.theme; root.lang = S.lang;
+  root.style.cssText = tintVars(S.theme === 'mocha' ? A5[S.a5] : LATTE);
+  renderControls(); sync();
+  const stage = document.getElementById('stage');
+  stage.innerHTML = S.screen === 'swatch' ? swatchScreen() : S.device === 'desktop' ? desktop() : phone();
+  const v = S.theme === 'mocha' ? A5[S.a5] : LATTE;
+  const f = S.theme === 'mocha' ? A5[S.a5].f : floor('latte', LATTE);
+  document.getElementById('strip').style.display = S.screen === 'swatch' ? 'none' : '';
+  document.getElementById('strip').innerHTML = `<span class="seg-label">A5 at ${v.av} / ${v.chip} / ${v.act} % · min ${f.min.toFixed(2)}:1</span><div class="avs">${SW.map((k) => av(k)).join('')}</div><div class="chips">${CH.map(([n, a], i) => chip(n, a, i === 2)).join('')}</div>`;
+  document.getElementById('note').textContent = S.theme === 'mocha'
+    ? `Mocha tints follow the A5 pill (avatar ${v.av} %, chip ${v.chip} %, active ${v.act} %). Latte always stays 22 / 16 / 28.`
+    : 'Latte keeps today’s tints (22 / 16 / 28); switch to Mocha to see A5.';
+  fit();
+  const ph = document.getElementById('photos');
+  if (ph && S.menu === 'open') { const sc = document.getElementById('scroller'); sc.scrollTop = ph.offsetTop - (sc.clientHeight - 330); }
+}
+window.addEventListener('resize', fit);
+render();
+</script>
+</body>
+</html>
