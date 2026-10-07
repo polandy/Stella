@@ -25,7 +25,9 @@ const payload: ContactAddPayload = {
 	howWeMet: null,
 	metPlace: null,
 	birthDate: null,
-	visibility: 'shared'
+	gender: null,
+	visibility: 'shared',
+	isSelf: false
 };
 
 /** A contact store that keeps what is inserted, and an account store that records every write. */

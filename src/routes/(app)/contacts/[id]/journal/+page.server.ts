@@ -26,7 +26,9 @@ import {
 	getMemberDeps,
 	getNamesakeContextDeps
 } from '$lib/server/services';
-import { parseCommand, parsePhotoCommand } from '$lib/server/commands/parse';
+import { parsePhotoCommand, readCommand } from '$lib/server/commands/parse';
+import { fromFormData } from '$lib/commands/form-data';
+import { JournalWriteSchema } from '$lib/commands/payloads';
 import { dispatchCommand } from '$lib/server/domain/commands/dispatch';
 import { systemClock } from '$lib/server/clock';
 import { ulidGenerator } from '$lib/server/id';
@@ -34,7 +36,7 @@ import { ulidGenerator } from '$lib/server/id';
 import type { Actions, PageServerLoad } from './$types';
 import { TranslatableError } from '$lib/errors/translatable';
 import { say, translator } from '$lib/server/i18n/say';
-import { messageKey, type MessageKey } from '$lib/i18n/translate';
+import type { MessageKey } from '$lib/i18n/translate';
 import { todayFor } from '$lib/dates/today';
 
 export const load: PageServerLoad = async ({ locals, params }) => {
@@ -100,16 +102,6 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 	};
 };
 
-const SaveSchema = v.object({
-	entryDate: v.pipe(
-		v.string(),
-		v.regex(/^\d{4}-\d{2}-\d{2}$/, messageKey('errors.journal.badDay'))
-	),
-	title: v.optional(v.pipe(v.string(), v.trim())),
-	body: v.pipe(v.string(), v.trim(), v.minLength(1)),
-	visibility: v.optional(v.picklist(['shared', 'private']), 'shared')
-});
-
 const EditSchema = v.object({
 	id: v.pipe(v.string(), v.minLength(1)),
 	title: v.optional(v.pipe(v.string(), v.trim())),
@@ -124,24 +116,23 @@ export const actions: Actions = {
 		const contact = await getContact(getContactDeps(), viewer, params.id);
 		if (!contact) throw error(404, say(locals, 'errors.contact.notFound'));
 
+		// Writing is an addition (§2.20) and a command (docs/04 §4.11.2): named by the form when it
+		// can, so a save whose answer was lost and is kept on the phone is recognised on arrival.
 		const form = await request.formData();
-		const parsed = v.safeParse(SaveSchema, {
-			entryDate: form.get('entryDate'),
-			title: form.get('title') || undefined,
-			body: form.get('body'),
-			visibility: form.get('visibility') || undefined
+		const reading = readCommand({
+			id: form.get('commandId') || ulidGenerator.next(),
+			type: 'journal.write',
+			payload: { ...fromFormData(JournalWriteSchema, form), contactId: params.id },
+			issuedAt: systemClock.now()
 		});
-		if (!parsed.success) {
+		if (!reading.ok && reading.part === 'payload') {
 			return fail(400, {
 				journalError: say(
 					locals,
-					(parsed.issues[0]?.message as MessageKey | undefined) ?? 'errors.note.empty'
+					reading.field === 'entryDate' ? 'errors.journal.badDay' : 'errors.note.empty'
 				)
 			});
 		}
-
-		// Writing is an addition (§2.20) and a command (docs/04 §4.11.2): named by the form when it
-		// can, so a save whose answer was lost and is kept on the phone is recognised on arrival.
 		const author = { userId: viewer.id, householdId: viewer.householdId, locale: locals.locale };
 		const refusal = (
 			outcome: Awaited<ReturnType<typeof dispatchCommand>> | null,
@@ -153,12 +144,7 @@ export const actions: Actions = {
 						? outcome.reason(translator(locals))
 						: say(locals, otherwise)
 			});
-		const command = parseCommand({
-			id: form.get('commandId') || ulidGenerator.next(),
-			type: 'journal.write',
-			payload: { contactId: params.id, ...parsed.output, title: parsed.output.title ?? null },
-			issuedAt: systemClock.now()
-		});
+		const command = reading.ok ? reading.command : null;
 		const written = command ? await dispatchCommand(getCommandDeps(), author, command) : null;
 		if (!command || written?.status !== 'applied')
 			return refusal(written, 'errors.journal.couldNotSave');

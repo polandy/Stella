@@ -1,6 +1,5 @@
 import { fail, redirect } from '@sveltejs/kit';
 import { requireUser, requireViewer } from '$lib/server/auth/guards';
-import * as v from 'valibot';
 import {
 	listBrowsableNamesAmong,
 	listContactNamesAmong,
@@ -8,7 +7,9 @@ import {
 } from '$lib/server/domain/contacts/contacts';
 import { hasImminentDate, upcomingDates } from '$lib/server/domain/dates/upcoming';
 import { dispatchCommand } from '$lib/server/domain/commands/dispatch';
-import { parseCommand, parsePhotoCommand } from '$lib/server/commands/parse';
+import { parsePhotoCommand, readCommand } from '$lib/server/commands/parse';
+import { fromFormData } from '$lib/commands/form-data';
+import { MomentCaptureSchema } from '$lib/commands/payloads';
 import { ulidGenerator } from '$lib/server/id';
 import { systemClock } from '$lib/server/clock';
 import { renderMarkdownWithMentions } from '$lib/server/domain/notes/markdown';
@@ -28,7 +29,6 @@ import { say, translator } from '$lib/server/i18n/say';
 import type { MessageKey } from '$lib/i18n/translate';
 import { LINK_PARAM, linkHintHref } from '$lib/stream/link-hint';
 import { welcomeSteps } from '$lib/onboarding/welcome';
-import { messageKey } from '$lib/i18n/translate';
 import { todayFor } from '$lib/dates/today';
 
 /*
@@ -112,12 +112,12 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 	};
 };
 
-const CaptureSchema = v.object({
-	body: v.pipe(v.string(), v.trim(), v.minLength(1, messageKey('errors.moment.needText'))),
-	entryDate: v.pipe(v.string(), v.regex(/^\d{4}-\d{2}-\d{2}$/, messageKey('errors.moment.badDay'))),
-	visibility: v.optional(v.picklist(['shared', 'private']), 'shared'),
-	newPeople: v.array(v.pipe(v.string(), v.trim(), v.minLength(1)))
-});
+/** What the composer says when the moment's field `field` did not read. */
+function captureProblem(field: string | null): MessageKey {
+	if (field === 'body') return 'errors.moment.needText';
+	if (field === 'entryDate') return 'errors.moment.badDay';
+	return 'errors.moment.couldNotSave';
+}
 
 export const actions: Actions = {
 	capture: async ({ request, locals }) => {
@@ -129,37 +129,25 @@ export const actions: Actions = {
 			defaultVisibility: 'shared' as const
 		};
 
+		// The composer names its command when it can, so a double submit is one moment; a form
+		// posted without JavaScript gets an id here.
 		const form = await request.formData();
-		const parsed = v.safeParse(CaptureSchema, {
-			body: form.get('body'),
-			entryDate: form.get('entryDate'),
-			visibility: form.get('visibility') || undefined,
-			newPeople: form.getAll('newPeople').filter((n): n is string => typeof n === 'string')
+		const reading = readCommand({
+			id: form.get('commandId') || ulidGenerator.next(),
+			type: 'moment.capture',
+			payload: fromFormData(MomentCaptureSchema, form),
+			issuedAt: systemClock.now()
 		});
-		if (!parsed.success) {
+		if (!reading.ok) {
 			return fail(400, {
 				momentError: say(
 					locals,
-					(parsed.issues[0]?.message as MessageKey | undefined) ?? 'errors.moment.couldNotSave'
+					reading.part === 'payload' ? captureProblem(reading.field) : 'errors.command.malformed'
 				),
 				draft: String(form.get('body') ?? '')
 			});
 		}
-
-		// The composer names its command when it can, so a double submit is one moment; a form
-		// posted without JavaScript gets an id here.
-		const command = parseCommand({
-			id: form.get('commandId') || ulidGenerator.next(),
-			type: 'moment.capture',
-			payload: parsed.output,
-			issuedAt: systemClock.now()
-		});
-		if (command?.type !== 'moment.capture') {
-			return fail(400, {
-				momentError: say(locals, 'errors.command.malformed'),
-				draft: parsed.output.body
-			});
-		}
+		const { command } = reading;
 
 		// A refusal is answered here; anything else is ours, and `handleError` logs it.
 		const outcome = await dispatchCommand(getCommandDeps(), author, command);
@@ -168,7 +156,7 @@ export const actions: Actions = {
 				outcome.status === 'refused'
 					? outcome.reason(translator(locals))
 					: say(locals, 'errors.moment.couldNotSave');
-			return fail(400, { momentError: message, draft: parsed.output.body });
+			return fail(400, { momentError: message, draft: command.payload.body });
 		}
 		const captured = outcome.result;
 

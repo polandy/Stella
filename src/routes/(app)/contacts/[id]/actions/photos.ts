@@ -1,5 +1,7 @@
 import { dispatchCommand } from '$lib/server/domain/commands/dispatch';
 import { parseCommand, parsePhotoCommand } from '$lib/server/commands/parse';
+import { fromFormData } from '$lib/commands/form-data';
+import { GalleryAddSchema } from '$lib/commands/payloads';
 import { ulidGenerator } from '$lib/server/id';
 import { systemClock } from '$lib/server/clock';
 import { error, fail, redirect } from '@sveltejs/kit';
@@ -28,9 +30,6 @@ import {
 import { say, translator } from '$lib/server/i18n/say';
 import type { Actions } from '../$types';
 
-/** Visibility of a newly uploaded gallery photo (docs/02 §2.14). */
-const VisibilitySchema = v.optional(v.picklist(['shared', 'private']), 'shared');
-
 const PhotoVisibilitySchema = v.object({
 	photoId: v.pipe(v.string(), v.minLength(1)),
 	visibility: v.picklist(['shared', 'private'])
@@ -58,7 +57,6 @@ export const photoActions = {
 		if (images.length === 0 || images.length !== thumbs.length) {
 			return fail(400, { photoError: say(locals, 'errors.image.chooseSome') });
 		}
-		const visibility = v.parse(VisibilitySchema, form.get('visibility') || undefined);
 
 		// An upload is a command, and each photo one of its own following it (docs/04 §4.11.2).
 		const author = { userId: viewer.id, householdId: viewer.householdId, locale: locals.locale };
@@ -72,7 +70,7 @@ export const photoActions = {
 		const upload = parseCommand({
 			id: form.get('commandId') || ulidGenerator.next(),
 			type: 'gallery.add',
-			payload: { contactId: params.id, visibility },
+			payload: { ...fromFormData(GalleryAddSchema, form), contactId: params.id },
 			issuedAt: systemClock.now()
 		});
 		const added = upload ? await dispatchCommand(getCommandDeps(), author, upload) : null;

@@ -1,13 +1,13 @@
 import { fail, redirect } from '@sveltejs/kit';
 import { requireViewer } from '$lib/server/auth/guards';
-import * as v from 'valibot';
 import { createTranslator } from '$lib/i18n/translate';
-import { parseCommand } from '$lib/server/commands/parse';
+import { readCommand } from '$lib/server/commands/parse';
+import { fromFormData } from '$lib/commands/form-data';
+import { ContactAddSchema } from '$lib/commands/payloads';
 import { systemClock } from '$lib/server/clock';
 import { dispatchCommand } from '$lib/server/domain/commands/dispatch';
 import { ulidGenerator } from '$lib/server/id';
 import { getCommandDeps } from '$lib/server/services';
-import { GENDERS } from '$lib/people/gender';
 import { readNewPersonRequest } from '$lib/people/new-person';
 import type { Actions, PageServerLoad } from './$types';
 
@@ -20,23 +20,6 @@ import type { Actions, PageServerLoad } from './$types';
  * themselves (§2.1.3, the first-run card), and the person saved is then recorded as them.
  */
 
-const optional = v.optional(v.pipe(v.string(), v.trim()));
-
-const QuickAddSchema = v.object({
-	firstName: optional,
-	lastName: optional,
-	nickname: optional,
-	description: optional,
-	howWeMet: optional,
-	metPlace: optional,
-	birthDate: optional,
-	gender: v.optional(v.picklist(GENDERS)),
-	/** An existing person to link right after creating (docs/02 §2.2.1). */
-	relateTo: optional,
-	visibility: v.optional(v.picklist(['shared', 'private']), 'shared'),
-	isSelf: v.optional(v.literal('1'))
-});
-
 export const load: PageServerLoad = async ({ locals, url }) => {
 	requireViewer(locals);
 	return readNewPersonRequest(url.searchParams);
@@ -46,36 +29,30 @@ export const actions: Actions = {
 	default: async ({ request, locals }) => {
 		const viewer = requireViewer(locals);
 
+		// A command (docs/04 §4.11.2), named by the form so one kept on the phone is recognised.
+		// `isSelf` is a hidden field the form posts only for the member adding themselves.
 		const form = await request.formData();
-		const parsed = v.safeParse(QuickAddSchema, {
-			firstName: form.get('firstName') || undefined,
-			lastName: form.get('lastName') || undefined,
-			nickname: form.get('nickname') || undefined,
-			description: form.get('description') || undefined,
-			howWeMet: form.get('howWeMet') || undefined,
-			metPlace: form.get('metPlace') || undefined,
-			birthDate: form.get('birthDate') || undefined,
-			gender: form.get('gender') || undefined,
-			relateTo: form.get('relateTo') || undefined,
-			visibility: form.get('visibility') || undefined,
-			isSelf: form.get('isSelf') || undefined
+		const reading = readCommand({
+			id: form.get('commandId') || ulidGenerator.next(),
+			type: 'contact.add',
+			payload: fromFormData(ContactAddSchema, form),
+			issuedAt: systemClock.now()
 		});
 		// The reader's language: everything this action can say back is a message key rendered
 		// here, where the request's locale is known (docs/02 §2.19).
 		const t = createTranslator(locals.locale);
-		if (!parsed.success) {
-			return fail(400, { error: t('errors.form.checkAndRetry') });
+		if (!reading.ok) {
+			// A field that does not read is the form's to fix; a person with nothing to be called
+			// by is refused as a whole.
+			const fieldWrong = reading.part === 'payload' && reading.field !== null;
+			return fail(400, {
+				error: t(fieldWrong ? 'errors.form.checkAndRetry' : 'errors.contact.needAName')
+			});
 		}
-
-		// A command (docs/04 §4.11.2), named by the form so one kept on the phone is recognised.
-		const { relateTo, isSelf, ...input } = parsed.output;
-		const command = parseCommand({
-			id: form.get('commandId') || ulidGenerator.next(),
-			type: 'contact.add',
-			payload: { ...input, isSelf: isSelf === '1' },
-			issuedAt: systemClock.now()
-		});
-		if (command?.type !== 'contact.add') return fail(400, { error: t('errors.contact.needAName') });
+		const { command } = reading;
+		// An existing person to link right after creating (docs/02 §2.2.1); not the command's.
+		const relate = form.get('relateTo');
+		const relateTo = typeof relate === 'string' ? relate.trim() : '';
 		const author = {
 			userId: viewer.id,
 			householdId: viewer.householdId,

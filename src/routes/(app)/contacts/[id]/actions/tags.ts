@@ -1,46 +1,32 @@
 import { dispatchCommand } from '$lib/server/domain/commands/dispatch';
-import { parseCommand } from '$lib/server/commands/parse';
+import { readCommand } from '$lib/server/commands/parse';
+import { fromFormData } from '$lib/commands/form-data';
+import { TagAssignSchema } from '$lib/commands/payloads';
 import { ulidGenerator } from '$lib/server/id';
 import { systemClock } from '$lib/server/clock';
 import { error, fail, redirect } from '@sveltejs/kit';
 import { requireViewer } from '$lib/server/auth/guards';
-import * as v from 'valibot';
 import { getContact } from '$lib/server/domain/contacts/contacts';
-import { TAG_COLORS, unassignTag } from '$lib/server/domain/tags/tags';
+import { unassignTag } from '$lib/server/domain/tags/tags';
 import { getCommandDeps, getContactDeps, getTagDeps } from '$lib/server/services';
 import { say, translator } from '$lib/server/i18n/say';
 import type { Actions } from '../$types';
-
-const AddTagSchema = v.object({
-	name: v.pipe(v.string(), v.trim(), v.minLength(1)),
-	color: v.optional(v.picklist(TAG_COLORS))
-});
 
 /** The profile card's tags (docs/02 §2.8). */
 export const tagActions = {
 	addTag: async ({ request, params, locals }) => {
 		const viewer = requireViewer(locals);
 
-		const form = await request.formData();
-		const parsed = v.safeParse(AddTagSchema, {
-			name: form.get('name'),
-			color: form.get('color') || undefined
-		});
-		if (!parsed.success) return fail(400, { tagError: say(locals, 'errors.tag.needName') });
-
 		// A command (docs/04 §4.11.2), named by the form so one kept on the phone is recognised.
-		const command = parseCommand({
+		const form = await request.formData();
+		const reading = readCommand({
 			id: form.get('commandId') || ulidGenerator.next(),
 			type: 'tag.assign',
-			payload: {
-				contactId: params.id,
-				name: parsed.output.name,
-				color: parsed.output.color ?? null
-			},
+			payload: { ...fromFormData(TagAssignSchema, form), contactId: params.id },
 			issuedAt: systemClock.now()
 		});
-		if (command?.type !== 'tag.assign')
-			return fail(400, { tagError: say(locals, 'errors.tag.needName') });
+		if (!reading.ok) return fail(400, { tagError: say(locals, 'errors.tag.needName') });
+		const { command } = reading;
 		const author = {
 			userId: viewer.id,
 			householdId: viewer.householdId,
