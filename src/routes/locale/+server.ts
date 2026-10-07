@@ -4,7 +4,6 @@ import { createTranslator } from '$lib/i18n/translate';
 import { changeLocale } from '$lib/server/auth/accounts';
 import { setLocaleCookie } from '$lib/server/auth/cookies';
 import { safeDestination } from '$lib/server/http/safe-redirect';
-import { getAccountDeps } from '$lib/server/services';
 
 /*
  * The one place the interface language is chosen (docs/02 §2.19). It answers the picker in
@@ -26,7 +25,7 @@ export const POST: RequestHandler = async ({ request, cookies, locals }) => {
 
 	// The profile is the lasting choice; the cookie carries it to the pages seen while
 	// signed out, and to the first paint of the very next request.
-	if (locals.user) await changeLocale(getAccountDeps(), locals.user.id, requested);
+	if (locals.user) await changeLocale(locals.services.auth.accountDeps, locals.user.id, requested);
 	setLocaleCookie(cookies, requested);
 
 	throw redirect(303, safeDestination(form.get('redirectTo')));

@@ -3,7 +3,6 @@ import { badRequest, unauthorized } from '$lib/server/api/responses';
 import { importViaApi } from '$lib/server/domain/import/api/api-import';
 import { apiImportWording } from '$lib/server/i18n/import-wording';
 import { readApiImportDocument } from '$lib/server/import/api-document';
-import { getApiImportDeps } from '$lib/server/services';
 import type { RequestHandler } from './$types';
 
 /*
@@ -38,7 +37,7 @@ export const POST: RequestHandler = async ({ locals, request, url }) => {
 	if (!reading.ok) return json({ problems: reading.problems }, { status: 400 });
 
 	const result = await importViaApi(
-		getApiImportDeps(),
+		locals.services.auth.apiImportDeps,
 		// A document that names no visibility is shared, like anything added in the app (§2.10).
 		{ userId: user.id, householdId: user.householdId, defaultVisibility: 'shared' },
 		reading.document,

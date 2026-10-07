@@ -1,5 +1,4 @@
 import { redirect } from '@sveltejs/kit';
-import { getAccounts } from '$lib/server/services';
 import { readShellPeople } from '$lib/server/shell-people';
 import type { LayoutServerLoad } from './$types';
 
@@ -18,7 +17,7 @@ const PEOPLE_DEPENDENCY = 'app:people';
 
 export const load: LayoutServerLoad = async ({ locals, depends }) => {
 	if (!locals.user) {
-		const hasUsers = (await getAccounts().countUsers()) > 0;
+		const hasUsers = (await locals.services.auth.accounts.countUsers()) > 0;
 		throw redirect(302, hasUsers ? '/login' : '/setup');
 	}
 	depends(PEOPLE_DEPENDENCY);

@@ -19,16 +19,12 @@ const user = (role: AuthUser['role']): AuthUser => ({
 	selfContactId: null
 });
 
-/** The guard only reads `user`; the language and id ride along on every request's locals. */
-const locals = (user: AuthUser | null): App.Locals => ({
-	user,
-	locale: DEFAULT_LOCALE,
-	requestId: 'r1'
-});
+/** The guards read only `user` off a request's locals. */
+const locals = (user: AuthUser | null): Pick<App.Locals, 'user'> => ({ user });
 
 function thrownBy(
-	locals: App.Locals,
-	guard: (locals: App.Locals) => unknown = requireAdmin
+	locals: Pick<App.Locals, 'user'>,
+	guard: (locals: Pick<App.Locals, 'user'>) => unknown = requireAdmin
 ): unknown {
 	try {
 		guard(locals);

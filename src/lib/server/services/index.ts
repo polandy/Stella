@@ -1,268 +1,175 @@
-import type { AccountDeps, AccountRepository } from './auth/accounts';
-import type { ApiTokenDeps } from './auth/api-tokens';
-import type {
-	AuthorizationRequestDeps,
-	CompleteLoginDeps,
-	IdentityStore,
-	OidcProvider
-} from './auth/oidc/login';
-import { SIGNED_OUT_PATH, type RpLogoutDeps } from './auth/oidc/logout';
-import { createOidcProvider } from './auth/oidc/provider';
-import type { OidcPolicy } from './auth/oidc/types';
-import { hashPassword, verifyPassword } from './auth/password';
-import type { SessionDeps, SessionRepository } from './auth/session';
-import { APP_VERSION } from '../version';
-import { systemClock } from './clock';
-import { getConfig } from './config';
-import { getDb, getSqlite } from './db';
-import { createDrizzleAccountRepository } from './db/account-repository';
-import { createDrizzleApiImportRepository } from './db/api-import-repository';
-import { createDrizzleApiTokenRepository } from './db/api-token-repository';
-import { createDrizzleAttentionRepository } from './db/attention-repository';
-import { createDrizzleCircleRepository } from './db/circle-repository';
-import { createDrizzleCirclePhotoRepository } from './db/circle-photo-repository';
-import { createDrizzleContactRepository } from './db/contact-repository';
-import { createDrizzleCutRepository } from './db/cut-repository';
-import { createDrizzleStreamRepository } from './db/stream-repository';
-import { createDrizzleGraphRepository } from './db/graph-repository';
-import { createDrizzleJournalRepository } from './db/journal-repository';
-import { createDrizzleIdentityStore } from './db/identity-store';
-import { createDrizzleContactFieldRepository } from './db/contact-field-repository';
-import { createDrizzleImportantDateRepository } from './db/important-date-repository';
-import { createDrizzleImportRepository } from './db/import-repository';
-import { createDrizzleInteractionRepository } from './db/interaction-repository';
-import { createDrizzleMentionedInRepository } from './db/mentioned-in-repository';
-import { createDrizzleNoteRepository } from './db/note-repository';
-import { createDrizzlePhotoRepository } from './db/photo-repository';
-import { createFileMediaStore } from './media/file-store';
-import { createGitHubReleaseFeed } from './release/github-feed';
-import { createUpdateCheck, type UpdateCheck } from './domain/release/update-check';
-import { parseVersion } from './domain/release/version';
-import { createDrizzleArchiveRepository } from './db/archive-repository';
-import { createDrizzleRestoreRepository } from './db/restore-repository';
-import type { ArchiveDeps, ArchiveRepository } from './domain/archive/archive';
-import type { ImportArchiveDeps, RestoreRepository } from './domain/archive/import';
-import { createDrizzleRelationshipRepository } from './db/relationship-repository';
-import { createDrizzlePersonContextReads } from './db/person-context-reads';
-import { createDrizzlePeopleStampReads } from './db/people-stamp-reads';
-import type { PeopleStampDeps } from './domain/contacts/people-stamp';
-import type { PersonContextDeps } from './domain/contacts/person-context';
-import { withNamesakeContext, type NamesakeContextDeps } from './domain/mentions/namesake-context';
+import { createServices, type AppServices } from './app-services';
+import { APP_VERSION } from '../../version';
+import { systemClock } from '../clock';
+import { getConfig } from '../config';
+import { getDb, getSqlite } from '../db';
+import { createDrizzleAttentionRepository } from '../db/attention-repository';
+import { createDrizzleCircleRepository } from '../db/circle-repository';
+import { createDrizzleCirclePhotoRepository } from '../db/circle-photo-repository';
+import { createDrizzleContactRepository } from '../db/contact-repository';
+import { createDrizzleCutRepository } from '../db/cut-repository';
+import { createDrizzleStreamRepository } from '../db/stream-repository';
+import { createDrizzleGraphRepository } from '../db/graph-repository';
+import { createDrizzleJournalRepository } from '../db/journal-repository';
+import { createDrizzleContactFieldRepository } from '../db/contact-field-repository';
+import { createDrizzleImportantDateRepository } from '../db/important-date-repository';
+import { createDrizzleImportRepository } from '../db/import-repository';
+import { createDrizzleInteractionRepository } from '../db/interaction-repository';
+import { createDrizzleMentionedInRepository } from '../db/mentioned-in-repository';
+import { createDrizzleNoteRepository } from '../db/note-repository';
+import { createDrizzlePhotoRepository } from '../db/photo-repository';
+import { createFileMediaStore } from '../media/file-store';
+import { createGitHubReleaseFeed } from '../release/github-feed';
+import { createUpdateCheck, type UpdateCheck } from '../domain/release/update-check';
+import { parseVersion } from '../domain/release/version';
+import { createDrizzleArchiveRepository } from '../db/archive-repository';
+import { createDrizzleRestoreRepository } from '../db/restore-repository';
+import type { ArchiveDeps, ArchiveRepository } from '../domain/archive/archive';
+import type { ImportArchiveDeps, RestoreRepository } from '../domain/archive/import';
+import { createDrizzleRelationshipRepository } from '../db/relationship-repository';
+import { createDrizzlePersonContextReads } from '../db/person-context-reads';
+import { createDrizzlePeopleStampReads } from '../db/people-stamp-reads';
+import type { PeopleStampDeps } from '../domain/contacts/people-stamp';
+import type { PersonContextDeps } from '../domain/contacts/person-context';
+import { withNamesakeContext, type NamesakeContextDeps } from '../domain/mentions/namesake-context';
 import {
 	createDrizzleSuggestionDismissalRepository,
 	createDrizzleSurnameDismissalRepository
-} from './db/suggestion-dismissal-repository';
-import { createDrizzleSurnameFacts } from './db/surname-facts';
+} from '../db/suggestion-dismissal-repository';
+import { createDrizzleSurnameFacts } from '../db/surname-facts';
 import type {
 	LastNameDeps,
 	SurnameDismissalDeps,
 	SurnameReviewDeps
-} from './domain/contacts/last-names';
-import { createDrizzleSearchRepository } from './db/search-repository';
-import { createDrizzleSessionRepository } from './db/session-repository';
-import type { MemberDeps, MemberRepository } from './domain/household/members';
-import type { SelfContactDeps } from './domain/household/self-contact';
-import type { MentionedInDeps, MentionedInRepository } from './domain/mentions/mentioned-in';
-import { createDrizzleMemberRepository } from './db/member-repository';
-import { createDrizzleTagRepository } from './db/tag-repository';
+} from '../domain/contacts/last-names';
+import { createDrizzleSearchRepository } from '../db/search-repository';
+import type { MemberDeps, MemberRepository } from '../domain/household/members';
+import type { SelfContactDeps } from '../domain/household/self-contact';
+import type { MentionedInDeps, MentionedInRepository } from '../domain/mentions/mentioned-in';
+import { createDrizzleMemberRepository } from '../db/member-repository';
+import { createDrizzleTagRepository } from '../db/tag-repository';
 import type {
 	ContactFieldDeps,
 	ContactFieldRepository
-} from './domain/contact-fields/contact-fields';
-import type { SearchDeps, SearchRepository } from './domain/search/search';
-import type { StoryDeps } from './domain/story/story';
-import type { AttentionRepository } from './domain/attention/last-touched';
-import type { ContactDeps, ContactRepository } from './domain/contacts/contacts';
-import type { NameCandidateSource, SuggestionDeps } from './domain/contacts/suggestions';
-import type { NameDeps, NameRepository } from './domain/contacts/name-parts';
-import type { NoteDeps, NoteRepository } from './domain/notes/notes';
-import type { JournalDeps, JournalRepository } from './domain/journal/journal';
+} from '../domain/contact-fields/contact-fields';
+import type { SearchDeps, SearchRepository } from '../domain/search/search';
+import type { StoryDeps } from '../domain/story/story';
+import type { AttentionRepository } from '../domain/attention/last-touched';
+import type { ContactDeps, ContactRepository } from '../domain/contacts/contacts';
+import type { NameCandidateSource, SuggestionDeps } from '../domain/contacts/suggestions';
+import type { NameDeps, NameRepository } from '../domain/contacts/name-parts';
+import type { NoteDeps, NoteRepository } from '../domain/notes/notes';
+import type { JournalDeps, JournalRepository } from '../domain/journal/journal';
 import type {
 	RelationshipDeps,
 	RelationshipRepository
-} from './domain/relationships/relationships';
+} from '../domain/relationships/relationships';
 import type {
 	SuggestionDismissalRepository,
 	SuggestionReviewDeps
-} from './domain/relationships/suggestion-review';
-import type { FamilyReadDeps } from './domain/relationships/family';
+} from '../domain/relationships/suggestion-review';
+import type { FamilyReadDeps } from '../domain/relationships/family';
 import type {
 	RelationshipTypeDeps,
 	RelationshipTypeRepository
-} from './domain/relationships/relationship-types';
-import type { TagDeps, TagRepository } from './domain/tags/tags';
-import type { GraphRepository } from './db/graph-repository';
-import type { CircleDeps, CircleRepository } from './domain/circles/circles';
+} from '../domain/relationships/relationship-types';
+import type { TagDeps, TagRepository } from '../domain/tags/tags';
+import type { GraphRepository } from '../db/graph-repository';
+import type { CircleDeps, CircleRepository } from '../domain/circles/circles';
 import {
 	prepareCirclePhotoUpload,
 	type CirclePhotoDeps,
 	type CirclePhotoRepository
-} from './domain/circles/circle-photos';
-import type { StreamDeps, StreamRepository } from './domain/stream/stream';
-import { captureMoment, type CaptureMomentDeps } from './domain/moments/moments';
+} from '../domain/circles/circle-photos';
+import type { StreamDeps, StreamRepository } from '../domain/stream/stream';
+import { captureMoment, type CaptureMomentDeps } from '../domain/moments/moments';
 import type {
 	CommandActor,
 	CommandDeps,
 	CommandReceiptRepository
-} from './domain/commands/dispatch';
-import type { Viewer } from './access/visibility';
-import { createDrizzleCommandReceiptRepository } from './db/command-receipt-repository';
-import { createDrizzleEntryOwnership } from './db/entry-ownership';
-import { attachCirclePhoto, attachGalleryPhoto, attachMomentPhoto } from './domain/commands/photos';
-import { writeJournalEntry } from './domain/journal/write-entry';
-import { addContactField } from './domain/contact-fields/contact-fields';
-import { addImportantDate } from './domain/dates/important-dates';
-import { writeNote } from './domain/notes/write-note';
-import { logInteractionChecked } from './domain/interactions/log-checked';
-import { onVisibleContact } from './domain/contacts/require-visible';
-import { addRelationshipChecked } from './domain/relationships/add-checked';
-import { addRelationshipsOrRefuse } from './domain/relationships/add-many';
-import { addPerson } from './domain/contacts/add-person';
-import { createContact } from './domain/contacts/contacts';
-import { assignTagByName } from './domain/tags/tags';
-import { joinCircleByName } from './domain/circles/circles';
-import type { ImportantDateDeps, ImportantDateRepository } from './domain/dates/important-dates';
-import type { ImportDeps, ImportRepository } from './domain/import/apply';
-import type { ApiImportDeps } from './domain/import/api/api-import';
-import type { ImportedPhotoDeps } from './domain/import/monica/photos';
-import type { InteractionDeps, InteractionRepository } from './domain/interactions/interactions';
+} from '../domain/commands/dispatch';
+import type { Viewer } from '../access/visibility';
+import { createDrizzleCommandReceiptRepository } from '../db/command-receipt-repository';
+import { createDrizzleEntryOwnership } from '../db/entry-ownership';
+import {
+	attachCirclePhoto,
+	attachGalleryPhoto,
+	attachMomentPhoto
+} from '../domain/commands/photos';
+import { writeJournalEntry } from '../domain/journal/write-entry';
+import { addContactField } from '../domain/contact-fields/contact-fields';
+import { addImportantDate } from '../domain/dates/important-dates';
+import { writeNote } from '../domain/notes/write-note';
+import { logInteractionChecked } from '../domain/interactions/log-checked';
+import { onVisibleContact } from '../domain/contacts/require-visible';
+import { addRelationshipChecked } from '../domain/relationships/add-checked';
+import { addRelationshipsOrRefuse } from '../domain/relationships/add-many';
+import { addPerson } from '../domain/contacts/add-person';
+import { createContact } from '../domain/contacts/contacts';
+import { assignTagByName } from '../domain/tags/tags';
+import { joinCircleByName } from '../domain/circles/circles';
+import type { ImportantDateDeps, ImportantDateRepository } from '../domain/dates/important-dates';
+import type { ImportDeps, ImportRepository } from '../domain/import/apply';
+import type { ImportedPhotoDeps } from '../domain/import/monica/photos';
+import type { InteractionDeps, InteractionRepository } from '../domain/interactions/interactions';
 import {
 	setContactAvatar,
 	type AvatarDeps,
 	type MediaStore,
 	type MediaStreamSource,
 	type PhotoRepository
-} from './domain/media/avatars';
-import type { CutDeps, CutRepository } from './domain/media/cuts';
-import type { FramingDeps, FramingRepository } from './domain/media/framing';
-import type { GalleryDeps } from './domain/media/gallery';
-import type { GalleryUploadDeps } from './domain/media/gallery-upload';
-import type { JournalPhotoDeps } from './domain/media/journal-photos';
-import { ulidGenerator } from './id';
-import { createDrizzleImmichIgnoreRepository } from './db/immich-ignore-repository';
-import { createDrizzleImmichLinkRepository } from './db/immich-link-repository';
-import { createDrizzleImmichNameIgnoreRepository } from './db/immich-name-ignore-repository';
-import type { AddFromImmichDeps } from './domain/immich/add-from-immich';
+} from '../domain/media/avatars';
+import type { CutDeps, CutRepository } from '../domain/media/cuts';
+import type { FramingDeps, FramingRepository } from '../domain/media/framing';
+import type { GalleryDeps } from '../domain/media/gallery';
+import type { GalleryUploadDeps } from '../domain/media/gallery-upload';
+import type { JournalPhotoDeps } from '../domain/media/journal-photos';
+import { ulidGenerator } from '../id';
+import { createDrizzleImmichIgnoreRepository } from '../db/immich-ignore-repository';
+import { createDrizzleImmichLinkRepository } from '../db/immich-link-repository';
+import { createDrizzleImmichNameIgnoreRepository } from '../db/immich-name-ignore-repository';
+import type { AddFromImmichDeps } from '../domain/immich/add-from-immich';
 import type {
 	ImmichNameIgnoreDeps,
 	ImmichNameIgnoreRepository
-} from './domain/immich/name-ignores';
-import { createImmichConnection, type ImmichConnection } from './domain/immich/connection';
-import type { ImmichGateway } from './domain/immich/gateway';
-import type { ImmichGlimpseDeps, ImmichMediaDeps } from './domain/immich/glimpse';
-import type { ImmichIgnoreDeps, ImmichIgnoreRepository } from './domain/immich/ignores';
-import type { ImmichLinkDeps, ImmichLinkRepository } from './domain/immich/links';
-import type { ImmichMatchingDeps } from './domain/immich/matching';
-import type { UseImmichPhotoDeps } from './domain/immich/use-as-photo';
-import { createImmichMediaSigner, type ImmichMediaSigner } from './domain/immich/signed-media';
-import { demoImmichLibrary } from './immich/demo-library';
-import { createFakeImmichGateway } from './immich/fake-gateway';
-import { createHttpImmichGateway } from './immich/http-gateway';
+} from '../domain/immich/name-ignores';
+import { createImmichConnection, type ImmichConnection } from '../domain/immich/connection';
+import type { ImmichGateway } from '../domain/immich/gateway';
+import type { ImmichGlimpseDeps, ImmichMediaDeps } from '../domain/immich/glimpse';
+import type { ImmichIgnoreDeps, ImmichIgnoreRepository } from '../domain/immich/ignores';
+import type { ImmichLinkDeps, ImmichLinkRepository } from '../domain/immich/links';
+import type { ImmichMatchingDeps } from '../domain/immich/matching';
+import type { UseImmichPhotoDeps } from '../domain/immich/use-as-photo';
+import { createImmichMediaSigner, type ImmichMediaSigner } from '../domain/immich/signed-media';
+import { demoImmichLibrary } from '../immich/demo-library';
+import { createFakeImmichGateway } from '../immich/fake-gateway';
+import { createHttpImmichGateway } from '../immich/http-gateway';
 
 /*
  * Composition root — the single place that wires concrete adapters (Drizzle repositories,
  * system clock, ULID generator, Bun password hashing) into the domain use-cases' `deps`
  * (docs/08 §8.3). Everything is lazy so importing this module has no side effects and the
  * build's route analysis never touches the Bun-only database (see db/index.ts).
+ *
+ * The object graph is moving into `AppServices` one bounded context at a time (AR-01): a
+ * grouped context is built by `createServices` once per process and handed to every request
+ * as `locals.services`; the `get*()` factories below wire the contexts not grouped yet.
  */
 
-let accountRepository: AccountRepository | null = null;
-let sessionRepository: SessionRepository | null = null;
+let services: AppServices | null = null;
 
-export function getAccounts(): AccountRepository {
-	return (accountRepository ??= createDrizzleAccountRepository(getDb()));
-}
-
-export function getSessions(): SessionRepository {
-	return (sessionRepository ??= createDrizzleSessionRepository(getDb()));
-}
-
-export function getSessionDeps(): SessionDeps {
-	return { sessions: getSessions(), clock: systemClock };
-}
-
-export function getAccountDeps(): AccountDeps {
-	return { accounts: getAccounts(), ids: ulidGenerator, hashPassword, verifyPassword };
-}
-
-/** API tokens (docs/02 §2.16.1): minted in Settings, read by the hook for `/api/v1/`. */
-export function getApiTokenDeps(): ApiTokenDeps {
-	return {
-		tokens: createDrizzleApiTokenRepository(getDb()),
+/**
+ * The process's one `AppServices`, built on the first request. Only `hooks.server.ts` calls
+ * this; everything else reads `locals.services`, or — for a factory below that needs a grouped
+ * repository — this same graph, so no repository exists twice.
+ */
+export function getServices(): AppServices {
+	return (services ??= createServices({
+		config: getConfig(),
+		db: getDb(),
 		clock: systemClock,
 		ids: ulidGenerator
-	};
-}
-
-/** The import API's use-case (docs/02 §2.16.1). */
-export function getApiImportDeps(): ApiImportDeps {
-	return {
-		imports: createDrizzleApiImportRepository(getDb()),
-		clock: systemClock,
-		ids: ulidGenerator
-	};
-}
-
-let oidcProvider: OidcProvider | null = null;
-let identityStore: IdentityStore | null = null;
-
-export function getOidcProvider(): OidcProvider {
-	const oidc = getConfig().oidc;
-	return (oidcProvider ??= createOidcProvider({
-		issuer: oidc.issuer,
-		clientId: oidc.clientId,
-		clientSecret: oidc.clientSecret,
-		redirectUri: oidc.redirectUri
 	}));
-}
-
-export function getIdentities(): IdentityStore {
-	return (identityStore ??= createDrizzleIdentityStore(
-		getDb(),
-		ulidGenerator,
-		getConfig().oidc.providerName
-	));
-}
-
-export function getOidcPolicy(): OidcPolicy {
-	const oidc = getConfig().oidc;
-	return {
-		allowedGroups: oidc.allowedGroups,
-		adminGroups: oidc.adminGroups,
-		allowedEmails: oidc.allowedEmails,
-		jitProvision: oidc.jitProvision,
-		linkByEmail: oidc.linkByEmail,
-		syncRoles: oidc.syncRoles,
-		syncProfile: oidc.syncProfile
-	};
-}
-
-export function getAuthorizationRequestDeps(): AuthorizationRequestDeps {
-	const oidc = getConfig().oidc;
-	return {
-		provider: getOidcProvider(),
-		config: { clientId: oidc.clientId, redirectUri: oidc.redirectUri, scopes: oidc.scopes }
-	};
-}
-
-/** Deps for RP-initiated logout; the redirect target must be registered at the provider. */
-export function getRpLogoutDeps(): RpLogoutDeps {
-	const config = getConfig();
-	return {
-		provider: getOidcProvider(),
-		enabled: config.auth.oidc && config.oidc.rpLogout,
-		clientId: config.oidc.clientId,
-		postLogoutRedirectUri: `${config.url}${SIGNED_OUT_PATH}`
-	};
-}
-
-export function getCompleteLoginDeps(): CompleteLoginDeps {
-	return {
-		provider: getOidcProvider(),
-		identities: getIdentities(),
-		policy: getOidcPolicy(),
-		clock: systemClock
-	};
 }
 
 let contactRepository: (ContactRepository & NameCandidateSource & NameRepository) | null = null;
@@ -318,7 +225,8 @@ export function getPeopleStampDeps(): PeopleStampDeps {
 export function getNamesakeContextDeps(): NamesakeContextDeps {
 	return {
 		...getPersonContextDeps(),
-		selfContactOf: async (userId) => (await getAccounts().findById(userId))?.selfContactId ?? null,
+		selfContactOf: async (userId) =>
+			(await getServices().auth.accounts.findById(userId))?.selfContactId ?? null,
 		clock: systemClock
 	};
 }
@@ -347,7 +255,7 @@ export function getUpdateCheck(): UpdateCheck | null {
 }
 
 export function getSelfContactDeps(): SelfContactDeps {
-	return { contacts: getContacts(), accounts: getAccounts() };
+	return { contacts: getContacts(), accounts: getServices().auth.accounts };
 }
 
 /** Deps for quick-add's duplicate/relative suggestions (docs/02 §2.2.1). */
@@ -655,7 +563,7 @@ export function getCommandDeps(): CommandDeps {
 				)
 			})),
 			'contact.add': (actor, payload) =>
-				addPerson({ ...getContactDeps(), accounts: getAccounts() }, actor, payload),
+				addPerson({ ...getContactDeps(), accounts: getServices().auth.accounts }, actor, payload),
 			'relationship.add': (actor, payload) =>
 				addRelationshipChecked(
 					{ ...getRelationshipDeps(), contacts: getContacts() },

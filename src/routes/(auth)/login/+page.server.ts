@@ -6,7 +6,6 @@ import { setSessionCookie } from '$lib/server/auth/cookies';
 import { createSession } from '$lib/server/auth/session';
 import { getConfig } from '$lib/server/config';
 import { DEMO_ADMIN_EMAIL, DEMO_ADMIN_PASSWORD } from '$lib/server/db/demo-seed';
-import { getAccountDeps, getAccounts, getSessionDeps } from '$lib/server/services';
 import type { Actions, PageServerLoad } from './$types';
 
 /*
@@ -31,7 +30,7 @@ const SSO_ERRORS: Record<string, MessageKey> = {
 export const load: PageServerLoad = async ({ locals, url }) => {
 	const t = createTranslator(locals.locale);
 	if (locals.user) throw redirect(302, '/');
-	if ((await getAccounts().countUsers()) === 0) throw redirect(302, '/setup');
+	if ((await locals.services.auth.accounts.countUsers()) === 0) throw redirect(302, '/setup');
 	const config = getConfig();
 	const errorKey = url.searchParams.get('error');
 	return {
@@ -60,12 +59,12 @@ export const actions: Actions = {
 			return fail(400, { error: t('auth.invalidInput') });
 		}
 
-		const user = await authenticateLocal(getAccountDeps(), parsed.output);
+		const user = await authenticateLocal(locals.services.auth.accountDeps, parsed.output);
 		if (!user) {
 			return fail(400, { error: t('auth.invalidCredentials') });
 		}
 
-		const { token, session } = await createSession(getSessionDeps(), user.id);
+		const { token, session } = await createSession(locals.services.auth.sessionDeps, user.id);
 		setSessionCookie(cookies, token, session.expiresAt);
 		throw redirect(303, '/');
 	}

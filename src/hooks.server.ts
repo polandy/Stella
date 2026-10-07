@@ -12,7 +12,7 @@ import {
 } from '$lib/server/http/unexpected-error';
 import { createTranslator } from '$lib/i18n/translate';
 import { getConfig } from '$lib/server/config';
-import { getAccounts, getApiTokenDeps, getSessionDeps } from '$lib/server/services';
+import { getServices } from '$lib/server/services';
 
 /*
  * Request entry point (docs/04 §4.4). Resolves the session cookie to `locals.user`, settles
@@ -40,11 +40,14 @@ export const handle: Handle = async ({ event, resolve }) => {
 	event.locals.requestId = requestIdFrom(event.request.headers.get('x-request-id'), () =>
 		crypto.randomUUID()
 	);
+	// The process's one object graph, built on the first request (docs/08 §8.3).
+	event.locals.services = getServices();
+	const { auth } = event.locals.services;
 	const identity = await resolveRequestIdentity(
 		{
-			apiTokens: getApiTokenDeps(),
-			sessions: getSessionDeps(),
-			findUser: (id) => getAccounts().findById(id)
+			apiTokens: auth.apiTokenDeps,
+			sessions: auth.sessionDeps,
+			findUser: (id) => auth.accounts.findById(id)
 		},
 		{
 			pathname: event.url.pathname,

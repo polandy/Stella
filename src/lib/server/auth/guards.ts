@@ -12,19 +12,19 @@ import type { AuthUser } from './accounts';
  */
 
 /** The whole signed-in account, for a route that reads more than who is asking. */
-export function requireUser(locals: App.Locals): AuthUser {
+export function requireUser(locals: Pick<App.Locals, 'user'>): AuthUser {
 	if (!locals.user) throw redirect(302, '/login');
 	return locals.user;
 }
 
 /** Who is asking, as the access layer takes it (docs/03 §3.7). */
-export function requireViewer(locals: App.Locals): Viewer {
+export function requireViewer(locals: Pick<App.Locals, 'user'>): Viewer {
 	const { id, householdId } = requireUser(locals);
 	return { id, householdId };
 }
 
 /** The signed-in admin, or a redirect to login / a 403 for members. */
-export function requireAdmin(locals: App.Locals): AuthUser {
+export function requireAdmin(locals: Pick<App.Locals, 'user'>): AuthUser {
 	const user = requireUser(locals);
 	if (user.role !== 'admin') throw error(403, 'Only an admin can do this.');
 	return user;

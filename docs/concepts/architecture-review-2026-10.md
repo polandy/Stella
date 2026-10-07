@@ -113,6 +113,15 @@ Proposal:
 Do this in slices (per bounded context), never as one PR; the file is touched by every
 feature branch.
 
+Progress: **`auth`** is grouped (sessions, accounts, API tokens, the API import, OIDC) —
+`services/app-services.ts` holds `AppServices` and `createServices`, `services/auth.ts` the
+group's builder, `services/index.ts` the hook's `getServices()` and the factories still
+left; `services/boundary.test.ts` pins the edge-helper allow-list and the retired factories.
+Remaining contexts: `people`, `relationships`, `circles`, `media`, `immich`, `offline`,
+`release`, then the command handler table (item 4). Each later slice adds its
+`services/<context>.ts`, its key in `AppServices`, its factories to the boundary test's
+retired list, and moves its callers to `locals.services.<context>`.
+
 ### AR-02 · The composition root leaks below the edge
 **Severity: medium · Effort: S**
 
@@ -469,7 +478,7 @@ rule. Each is one Conventional-Commit `refactor:`/`chore:`/`docs:` PR unless mar
 | 3 | AR-03 `requireViewer`, `todayFor(clock)`, `messageKey` | S | ☑ #266 | Removes 150 edit sites before AR-01 moves them again |
 | 4 | AR-07 glossary (docs/03 §3.0) + AR-18 regenerate §4.3 | S | ☑ #294 | Vocabulary before renames; cheapest high-leverage doc change |
 | 5 | AR-04 one schema per command, `fromFormData` | M | ☑ #295 | Shrinks every form action; prerequisite for AR-13 |
-| 6 | AR-01 `createServices()` + `locals.services` — **series**, one bounded context per PR, `auth` first | L | ☐ | The central change; do after 3 and 5 so routes shrink while being touched |
+| 6 | AR-01 `createServices()` + `locals.services` — **series**, one bounded context per PR, `auth` first | L | ◐ auth #PR | The central change; do after 3 and 5 so routes shrink while being touched |
 | 7 | AR-02 move shared actions under `routes/` taking deps | S | ☐ | Falls out of 6 |
 | 8 | AR-08 split read models off the three widest ports + AR-14 shared fakes | M | ☐ | Do together: the fakes are what makes the split pay |
 | 9 | AR-06 activity as a port; break `contacts ↔ relationships`; merge plan as data | M | ☐ | Needs 8's narrower ports |

@@ -6,7 +6,6 @@ import {
 } from '$lib/server/auth/cookies';
 import { completeOidcLogin } from '$lib/server/auth/oidc/login';
 import { createSession } from '$lib/server/auth/session';
-import { getCompleteLoginDeps, getSessionDeps } from '$lib/server/services';
 import type { RequestHandler } from './$types';
 
 /*
@@ -15,7 +14,7 @@ import type { RequestHandler } from './$types';
  * (never a blank page).
  */
 
-export const GET: RequestHandler = async ({ url, cookies }) => {
+export const GET: RequestHandler = async ({ url, cookies, locals }) => {
 	const code = url.searchParams.get('code');
 	const state = url.searchParams.get('state');
 	const transaction = readOidcTransaction(cookies);
@@ -27,7 +26,7 @@ export const GET: RequestHandler = async ({ url, cookies }) => {
 
 	let result;
 	try {
-		result = await completeOidcLogin(getCompleteLoginDeps(), {
+		result = await completeOidcLogin(locals.services.auth.completeLoginDeps, {
 			code,
 			codeVerifier: transaction.codeVerifier,
 			expectedNonce: transaction.nonce
@@ -40,7 +39,11 @@ export const GET: RequestHandler = async ({ url, cookies }) => {
 		throw redirect(302, `/login?error=${result.reason}`);
 	}
 
-	const { token, session } = await createSession(getSessionDeps(), result.userId, result.idToken);
+	const { token, session } = await createSession(
+		locals.services.auth.sessionDeps,
+		result.userId,
+		result.idToken
+	);
 	setSessionCookie(cookies, token, session.expiresAt);
 	throw redirect(303, '/');
 };
