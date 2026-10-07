@@ -105,7 +105,12 @@ describe('the composition root', () => {
 			'JournalDeps',
 			'InteractionDeps',
 			'StoryDeps',
-			'CaptureMomentDeps'
+			'CaptureMomentDeps',
+			// The notes context (AR-01, seventh slice): read `locals.services.notes`.
+			'Notes',
+			'NoteDeps',
+			'MentionedIn',
+			'MentionedInDeps'
 		];
 		const retired = new RegExp(`\\bget(?:${factories.join('|')})\\b`);
 		expect(files.filter((path) => retired.test(source(path)))).toEqual([]);

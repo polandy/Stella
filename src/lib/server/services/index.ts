@@ -7,8 +7,6 @@ import { createDrizzleAttentionRepository } from '../db/attention-repository';
 import { createDrizzleContactFieldRepository } from '../db/contact-field-repository';
 import { createDrizzleImportantDateRepository } from '../db/important-date-repository';
 import { createDrizzleImportRepository } from '../db/import-repository';
-import { createDrizzleMentionedInRepository } from '../db/mentioned-in-repository';
-import { createDrizzleNoteRepository } from '../db/note-repository';
 import { createGitHubReleaseFeed } from '../release/github-feed';
 import { createUpdateCheck, type UpdateCheck } from '../domain/release/update-check';
 import { parseVersion } from '../domain/release/version';
@@ -19,7 +17,6 @@ import type { ImportArchiveDeps, RestoreRepository } from '../domain/archive/imp
 import { withNamesakeContext } from '../domain/mentions/namesake-context';
 import { createDrizzleSearchRepository } from '../db/search-repository';
 import type { MemberDeps, MemberRepository } from '../domain/household/members';
-import type { MentionedInDeps, MentionedInRepository } from '../domain/mentions/mentioned-in';
 import { createDrizzleMemberRepository } from '../db/member-repository';
 import { createDrizzleTagRepository } from '../db/tag-repository';
 import type {
@@ -28,7 +25,6 @@ import type {
 } from '../domain/contact-fields/contact-fields';
 import type { SearchDeps, SearchRepository } from '../domain/search/search';
 import type { AttentionRepository } from '../domain/attention/last-touched';
-import type { NoteDeps, NoteRepository } from '../domain/notes/notes';
 import type { TagDeps, TagRepository } from '../domain/tags/tags';
 import { prepareCirclePhotoUpload } from '../domain/circles/circle-photos';
 import { captureMoment } from '../domain/moments/moments';
@@ -135,16 +131,6 @@ export function getUpdateCheck(): UpdateCheck | null {
 	}));
 }
 
-let noteRepository: NoteRepository | null = null;
-
-export function getNotes(): NoteRepository {
-	return (noteRepository ??= createDrizzleNoteRepository(getDb()));
-}
-
-export function getNoteDeps(): NoteDeps {
-	return { notes: getNotes(), ids: ulidGenerator, clock: systemClock };
-}
-
 let contactFieldRepository: ContactFieldRepository | null = null;
 
 export function getContactFields(): ContactFieldRepository {
@@ -173,17 +159,6 @@ export function getImportDeps(): ImportDeps {
 		importer: (importRepository ??= createDrizzleImportRepository(getDb())),
 		clock: systemClock
 	};
-}
-
-let mentionedInRepository: MentionedInRepository | null = null;
-
-export function getMentionedIn(): MentionedInRepository {
-	return (mentionedInRepository ??= createDrizzleMentionedInRepository(getDb()));
-}
-
-/** The passive "Mentioned in" list only reads, so it needs no clock or ids either. */
-export function getMentionedInDeps(): MentionedInDeps {
-	return { mentions: getMentionedIn() };
 }
 
 let searchRepository: SearchRepository | null = null;
@@ -247,6 +222,7 @@ function viewerOf(actor: CommandActor): Viewer {
 /** The dispatcher every change goes through (docs/04 §4.11.2). */
 export function getCommandDeps(): CommandDeps {
 	const { captureMomentDeps, interactionDeps, journalDeps } = getServices().story;
+	const { noteDeps } = getServices().notes;
 	const receipts = (commandReceiptRepository ??= createDrizzleCommandReceiptRepository(getDb()));
 	return {
 		receipts,
@@ -309,7 +285,7 @@ export function getCommandDeps(): CommandDeps {
 				logInteractionChecked({ ...interactionDeps, contacts: people().contacts }, actor, payload),
 			'note.add': (actor, payload) =>
 				withNamesakeContext(people().namesakeContextDeps, viewerOf(actor), () =>
-					writeNote({ ...getNoteDeps(), contacts: people().contacts }, actor, payload)
+					writeNote({ ...noteDeps, contacts: people().contacts }, actor, payload)
 				),
 			'moment.photo': (actor, payload) =>
 				attachMomentPhoto(

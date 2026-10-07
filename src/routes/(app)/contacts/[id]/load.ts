@@ -33,10 +33,8 @@ import { togetherCandidates } from '$lib/immich/together';
 import {
 	getContactFieldDeps,
 	getImportantDateDeps,
-	getNoteDeps,
 	getTagDeps,
 	getMemberDeps,
-	getMentionedInDeps,
 	getImmich,
 	getImmichLinkDeps
 } from '$lib/server/services';
@@ -221,8 +219,9 @@ function readPersonPage(
 		relationships,
 		circles,
 		media,
-		story
-	}: Pick<AppServices, 'people' | 'relationships' | 'circles' | 'media' | 'story'>,
+		story,
+		notes
+	}: Pick<AppServices, 'people' | 'relationships' | 'circles' | 'media' | 'story' | 'notes'>,
 	viewer: Viewer,
 	contactId: string,
 	request: { reviewOpen: boolean; proposeFor: { a: string; b: string }[] }
@@ -235,8 +234,8 @@ function readPersonPage(
 		contactCircles: listCirclesForContact(circles.circleDeps, viewer, contactId),
 		storyPage: listStoryPage(story.storyDeps, viewer, contactId, { limit: STORY_PAGE_SIZE }),
 		lastContactedAt: lastContactedOn(story.interactionDeps, viewer, contactId),
-		notes: listNotesForContact(getNoteDeps(), viewer, contactId),
-		mentionedIn: listMentionedIn(getMentionedInDeps(), viewer, contactId),
+		notes: listNotesForContact(notes.noteDeps, viewer, contactId),
+		mentionedIn: listMentionedIn(notes.mentionedInDeps, viewer, contactId),
 		gallery: listGallery(media.galleryDeps, viewer, contactId),
 		groupPhotos: listGroupPhotosOf(circles.cutDeps, viewer, contactId),
 		groupPhotosToCut: listGroupPhotosToCut(circles.cutDeps, viewer, contactId),
