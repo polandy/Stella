@@ -2,8 +2,8 @@ import { splitTypedName } from '../people/new-person';
 import { foldName, type MatchableImmichPerson } from './match';
 
 /*
- * *New from Immich* — the other way round from *Find your people* (docs/02 §2.24.7,
- * docs/02 §2.24.7): the people Immich knows by name who have no Stella person yet,
+ * *New from Immich* — the other way round from *Find your people* (docs/02 §2.24.7): the
+ * people Immich knows by name who have no Stella person yet,
  * so a member can add them. Pure: the use-case reads Immich, the links and the ignores, and this
  * decides who is new, in which order, and what name a new person starts with.
  *
