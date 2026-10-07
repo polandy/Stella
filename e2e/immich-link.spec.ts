@@ -57,7 +57,7 @@ async function immichMenu(
 	page: Page,
 	item: 'Find in Immich' | 'Unlink from Immich'
 ): Promise<void> {
-	await page.getByRole('button', { name: 'Immich options' }).click();
+	await page.getByRole('button', { name: 'Photo library options' }).click();
 	await page.getByRole('menuitem', { name: item }).click();
 }
 
@@ -105,7 +105,7 @@ test('links a person to their face from the picker, and the key owner can open t
 	await expect(open).toHaveAttribute('href', new RegExp(`/people/${ELIAS.id}$`));
 
 	// Linked, the menu offers the way back out instead of another search.
-	await page.getByRole('button', { name: 'Immich options' }).click();
+	await page.getByRole('button', { name: 'Photo library options' }).click();
 	await expect(page.getByRole('menuitem', { name: 'Unlink from Immich' })).toBeVisible();
 	await expect(page.getByRole('menuitem', { name: 'Find in Immich' })).toHaveCount(0);
 });
@@ -157,7 +157,7 @@ test('the other member sees the photo count and the way into Immich too, and can
 		// offering the search again is the positive answer that the link is gone.
 		await expect(nina.getByText(HANS.countLine)).toHaveCount(0);
 		await appReady(nina);
-		await nina.getByRole('button', { name: 'Immich options' }).click();
+		await nina.getByRole('button', { name: 'Photo library options' }).click();
 		await expect(nina.getByRole('menuitem', { name: 'Find in Immich' })).toBeVisible();
 	} finally {
 		await nina.context().close();
@@ -166,7 +166,7 @@ test('the other member sees the photo count and the way into Immich too, and can
 	// Her unlink is the household's: the admin's page has no link any more either.
 	await page.reload();
 	await appReady(page);
-	await page.getByRole('button', { name: 'Immich options' }).click();
+	await page.getByRole('button', { name: 'Photo library options' }).click();
 	await expect(page.getByRole('menuitem', { name: 'Find in Immich' })).toBeVisible();
 	await expect(page.getByText(HANS.countLine)).toHaveCount(0);
 });

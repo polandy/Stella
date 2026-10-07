@@ -94,7 +94,7 @@ async function openAdded(page: Page): Promise<void> {
 
 /** Links the person on screen to the demo face of that name, through the Photos card's picker. */
 async function linkFace(page: Page, personName: string, faceName: string): Promise<void> {
-	await page.getByRole('button', { name: 'Immich options' }).click();
+	await page.getByRole('button', { name: 'Photo library options' }).click();
 	await page.getByRole('menuitem', { name: 'Find in Immich' }).click();
 	const picker = page.getByRole('dialog', {
 		name: `Find ${personName} in Immich`

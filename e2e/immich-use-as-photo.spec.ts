@@ -35,7 +35,7 @@ async function immichMenu(
 	page: Page,
 	item: 'Find in Immich' | 'Unlink from Immich'
 ): Promise<void> {
-	await page.getByRole('button', { name: 'Immich options' }).click();
+	await page.getByRole('button', { name: 'Photo library options' }).click();
 	await page.getByRole('menuitem', { name: item }).click();
 }
 
@@ -164,7 +164,7 @@ test('a person unlinked while the cropper is open is refused, and nothing is sto
 		await appReady(other);
 		await immichMenu(other, 'Unlink from Immich');
 		await appReady(other);
-		await other.getByRole('button', { name: 'Immich options' }).click();
+		await other.getByRole('button', { name: 'Photo library options' }).click();
 		await expect(other.getByRole('menuitem', { name: 'Find in Immich' })).toBeVisible();
 	} finally {
 		await other.close();

@@ -39,11 +39,24 @@ export type Accent = (typeof ACCENTS)[number];
  */
 export const AVATAR_ACCENTS = ACCENTS.filter((accent) => accent !== 'red');
 
-/** How strongly a tinted surface mixes its accent into the background. */
-const CHIP_TINT_PERCENT = 16;
-const CHIP_ACTIVE_TINT_PERCENT = 28;
-/** How strongly an avatar accent tints the card, shared with the explorer canvas. */
-export const AVATAR_TINT_PERCENT = 22;
+/**
+ * How strongly a tinted surface mixes its accent in, per flavour (docs/05 §5.2.2) — one number
+ * per theme, never per component. `app.css` publishes them as `--tint-avatar`, `--tint-chip`
+ * and `--tint-chip-active` in each theme block, so the inline styles below stay theme-blind;
+ * `color.test.ts` holds the two halves together and every accent to AA at these strengths.
+ * Mocha's dark ground swallows a light tint, so it mixes more: 32 % already drops its
+ * lightest accents below 4.5:1 for an avatar, 28 % is the ceiling.
+ */
+export const TINT_PERCENT = {
+	light: { avatar: 22, chip: 16, chipActive: 28 },
+	dark: { avatar: 28, chip: 22, chipActive: 28 }
+} as const;
+
+/**
+ * A ring in the flat accent around an initials avatar, published as `--avatar-ring`. Mocha
+ * only: it gives the disc its identity without darkening the ground the initials are read on.
+ */
+export const AVATAR_RING_PX = { light: 0, dark: 1.5 } as const;
 
 /** The CSS variable that carries an accent. */
 export function accentVar(accent: Accent): string {
@@ -64,19 +77,24 @@ export function categoryVar(category: RelationshipCategory): string {
  * reads it (docs/05 §5.6); `contrast.test.ts` holds that pairing to 4.5:1 in both themes.
  */
 export function accentChipStyle(accent: Accent, options?: { active?: boolean }): string {
-	const tint = options?.active ? CHIP_ACTIVE_TINT_PERCENT : CHIP_TINT_PERCENT;
-	return `background:color-mix(in srgb, ${accentVar(accent)} ${tint}%, transparent);color:var(--fg)`;
+	// The active chip is laid over --card rather than see-through: Latte's red at the active
+	// strength over the page ground is 4.11:1, over the card 4.87:1.
+	const tint = options?.active
+		? 'var(--tint-chip-active), var(--card)'
+		: 'var(--tint-chip), transparent';
+	return `background:color-mix(in srgb, ${accentVar(accent)} ${tint});color:var(--fg)`;
 }
 
 /**
  * Inline style for an initials avatar: the disc carries the person's accent, the initials are
  * written in `--fg` for the same reason a chip's label is. Mixed over `--card` rather than
- * transparent so the avatar stays opaque when it overlaps another one in a stack.
+ * transparent so the avatar stays opaque when it overlaps another one in a stack. The ring is
+ * zero wide except where the theme sets `--avatar-ring`.
  */
 export function accentAvatarStyle(accent: Accent): string {
 	return (
-		`background:color-mix(in srgb, ${accentVar(accent)} ${AVATAR_TINT_PERCENT}%, var(--card));` +
-		`color:var(--fg)`
+		`background:color-mix(in srgb, ${accentVar(accent)} var(--tint-avatar), var(--card));` +
+		`box-shadow:inset 0 0 0 var(--avatar-ring) ${accentVar(accent)};color:var(--fg)`
 	);
 }
 
@@ -86,7 +104,7 @@ export function accentAvatarStyle(accent: Accent): string {
  * Mocha (docs/05 §5.9).
  */
 export function categoryDiscFill(category: RelationshipCategory): string {
-	return `color-mix(in srgb, ${categoryVar(category)} ${AVATAR_TINT_PERCENT}%, var(--card))`;
+	return `color-mix(in srgb, ${categoryVar(category)} var(--tint-avatar), var(--card))`;
 }
 
 /** Inline style for a solid colour dot, as used by circles and legends. */

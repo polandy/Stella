@@ -3,6 +3,7 @@
 	import { enhance } from '$app/forms';
 	import Button from '$lib/components/Button.svelte';
 	import Icon from '$lib/components/Icon.svelte';
+	import { PENCIL_AT_VALUE_END, VALUE_WITH_PENCIL } from '$lib/components/edit-pencil';
 	import { useTranslate } from '$lib/i18n/context.svelte';
 	import { useRemovals } from '$lib/undo/context.svelte';
 	import { savedEnhance } from '$lib/undo/saved';
@@ -167,19 +168,36 @@
 		class="group/inline -mx-1 flex max-w-full items-center gap-1.5 rounded-control px-1 text-left transition-colors hover:bg-card-hover"
 		class:min-h-8={pencil}
 	>
-		<!-- The pencil follows the value with no whitespace, which would join a heading's text. -->
-		{#if value}
+		<!-- The pencil follows the value with no whitespace, which would join a heading's text. A
+		     one-line value is only as wide as its text, so the pencil beside it sits right after
+		     the last word. A clamped value wraps and would push a sibling pencil to the column's
+		     edge, so there the pencil goes inside it, after the last word (docs/05 §5.7); when the clamp cuts the value, the pencil goes with the cut tail —
+		     the whole value is still the button. -->
+		{#if value && clamp}
 			<span
-				class="{clamp ? 'line-clamp-2 md:line-clamp-none' : 'truncate'} {valueClass}"
+				class="line-clamp-2 md:line-clamp-none {valueClass}"
 				class:text-2xl={heading}
-				class:font-semibold={heading}>{value}</span
+				class:font-semibold={heading}
+				><span class={VALUE_WITH_PENCIL}
+					><Icon
+						name="rename"
+						size={14}
+						class={pencil ? 'absolute right-0 bottom-[0.2em] text-fg-subtle' : PENCIL_AT_VALUE_END}
+					/>{value}</span
+				></span
 			>
 		{:else}
-			<span class="text-fg-subtle">{emptyLabel}</span>
-		{/if}{#if pencil}<Icon name="rename" size={14} class="text-fg-subtle" />{:else}<Icon
-				name="rename"
-				size={14}
-				class="edit-pencil"
-			/>{/if}
+			{#if value}
+				<span class="truncate {valueClass}" class:text-2xl={heading} class:font-semibold={heading}
+					>{value}</span
+				>
+			{:else}
+				<span class="text-fg-subtle">{emptyLabel}</span>
+			{/if}{#if pencil}<Icon name="rename" size={14} class="text-fg-subtle" />{:else}<Icon
+					name="rename"
+					size={14}
+					class="edit-pencil"
+				/>{/if}
+		{/if}
 	</button>
 {/if}

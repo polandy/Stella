@@ -89,7 +89,7 @@
 			? t('contact.photos.of', { name })
 			: t('immich.strip.photo', { date: dayLabel(i18n, photo.takenOn) });
 
-	const HEADING = 'text-xs font-medium uppercase tracking-wide text-fg-subtle';
+	const HEADING = 'text-sm font-semibold text-fg';
 	const TILE =
 		'flex w-full flex-col gap-1 rounded-control text-left focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary';
 </script>

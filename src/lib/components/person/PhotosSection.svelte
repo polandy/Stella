@@ -287,7 +287,7 @@
 	{#if data.groupPhotos.length > 0}
 		<!-- Every group photo their picture was cut from, now and before (docs/02 §2.14). -->
 		<div class="mt-4 flex flex-col gap-2" data-testid="on-group-photos">
-			<h3 class="text-xs font-medium tracking-wide text-fg-subtle uppercase">
+			<h3 class="text-sm font-semibold text-fg">
 				{t('contact.photos.onGroupPhotos')}
 			</h3>
 			<ul class="flex gap-2 overflow-x-auto pb-1">

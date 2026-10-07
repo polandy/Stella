@@ -31,6 +31,11 @@ connections someone made. Under *Today* and *Yesterday* each item shows the time
 written; older days show only their heading. Point at the time for the full date. The people
 a moment mentions are the links in its text.
 
+The face at the start of an item is the person it is about, not whoever wrote it — the
+sentence starts with that. When another member of the household wrote it, their own small
+face sits on the corner of the big one, so a glance down the stream tells whose news is
+whose. Your own items stay without it.
+
 Above the stream, two rows of chips narrow it down: **What** — only moments, only calls and
 visits, only relationships, only new people, or the notices — and **Who** — only what you did,
 or only what one other member did. They combine, so "Lena's moments" is two taps. The filter
@@ -43,7 +48,7 @@ quiet one. *Done*, or a tap outside, puts the chips away.
 
 Beside the stream sits a short list, **Coming up**: the next thirty days of birthdays and
 anniversaries. Each name offers one thing: *Write a moment*. The list disappears when it has
-nothing to say. On a phone there is no room beside the stream, so it goes under it — and
+nothing to say, and on a wide screen the stream then takes its room. On a phone there is no room beside the stream, so it goes under it — and
 above it only while something is due within a fortnight, which is when it is worth the top
 of the screen. It shows three people there, with *Show all* underneath when there are more.
 
@@ -327,7 +332,7 @@ changes over the years, a child especially: their old photos stay right here to 
 ### Photos from Immich
 
 **Photos from Immich.** If your household's photos live in Immich and the admin has connected
-it (see *Installation*), the Photos card has a small **Immich** menu. **Find in Immich** shows the
+it (see *Installation*), the Photos card has a small **Photo library** menu. **Find in Immich** shows the
 faces Immich knows, searched by the person's name — change the search if Immich spells them
 differently — and a tap on the right face links the two. Each face belongs to one person: one already linked
 to someone else is greyed out and says to whom (or just *someone else*, if that person is

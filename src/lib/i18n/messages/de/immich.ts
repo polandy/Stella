@@ -101,8 +101,8 @@ export const immich: ImmichMessages = {
 	'immich.new.done': 'Alle benannten Gesichter sind in Stella.',
 	'immich.new.showMore': (p) => `${p.count} weitere zeigen`,
 
-	'immich.menu.label': 'Immich-Optionen',
-	'immich.menu.trigger': 'Immich',
+	'immich.menu.label': 'Fotobibliothek-Optionen',
+	'immich.menu.trigger': 'Fotobibliothek',
 	'immich.menu.find': 'In Immich suchen',
 	'immich.menu.unlink': 'Verknüpfung mit Immich lösen',
 	'immich.row.label': 'In Immich',

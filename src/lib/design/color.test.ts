@@ -9,7 +9,14 @@ import {
 	relativeLuminance
 } from './color';
 import { resolveColor, tokensFor, type Theme } from './css-tokens';
-import { ACCENTS, AVATAR_ACCENTS, AVATAR_TINT_PERCENT, accentVar, categoryVar } from './tokens';
+import {
+	ACCENTS,
+	AVATAR_ACCENTS,
+	AVATAR_RING_PX,
+	TINT_PERCENT,
+	accentVar,
+	categoryVar
+} from './tokens';
 import { INTERACTION_KINDS } from '../interactions/kinds';
 
 /*
@@ -25,6 +32,9 @@ const THEMES: Theme[] = ['light', 'dark', 'system-dark'];
 
 /** The property name inside a `var(--x)` string, as the token helpers return it. */
 const property = (token: string) => token.slice('var('.length, -1);
+
+/** Which flavour a theme block paints: both dark blocks are Mocha. */
+const flavourOf = (theme: Theme) => (theme === 'light' ? 'light' : 'dark');
 
 describe('contrastRatio', () => {
 	it('is 21 for black on white and 1 for a colour on itself', () => {
@@ -201,18 +211,38 @@ describe('AA contrast, both themes (docs/05 §5.9)', () => {
  * change back to a coloured label fails here rather than in a screenshot.
  */
 describe('text on an accent tint', () => {
-	/** Mirrors the tints `tokens.ts` emits, so a percentage change there shows up here. */
-	const TINTS = [
-		{ what: 'chip', percent: 16, over: '--card' },
-		{ what: 'chip', percent: 16, over: '--bg' },
-		{ what: 'active chip', percent: 28, over: '--card' },
-		{ what: 'avatar', percent: 22, over: '--card' }
-	];
-
 	for (const theme of THEMES) {
 		const tokens = tokensFor(css, theme);
+		const tint = TINT_PERCENT[flavourOf(theme)];
+
+		it(`publishes the theme's tint strengths and avatar ring in ${theme}`, () => {
+			expect({
+				avatar: tokens.get('--tint-avatar'),
+				chip: tokens.get('--tint-chip'),
+				chipActive: tokens.get('--tint-chip-active'),
+				ring: tokens.get('--avatar-ring')
+			}).toEqual({
+				avatar: `${tint.avatar}%`,
+				chip: `${tint.chip}%`,
+				chipActive: `${tint.chipActive}%`,
+				ring: `${AVATAR_RING_PX[flavourOf(theme)]}px`
+			});
+		});
+
+		/*
+		 * Mirrors the grounds `tokens.ts` mixes over: a resting chip is see-through, so it is held
+		 * on both grounds it sits on; an active chip and an avatar are opaque over --card, which
+		 * is what they read against wherever they sit — Latte's red active chip over --bg would
+		 * be 4.11:1, which is why it carries its own ground.
+		 */
+		const TINTS = [
+			{ what: 'chip', percent: tint.chip, over: '--card' },
+			{ what: 'chip', percent: tint.chip, over: '--bg' },
+			{ what: 'active chip', percent: tint.chipActive, over: '--card' },
+			{ what: 'avatar', percent: tint.avatar, over: '--card' }
+		];
 		for (const { what, percent, over } of TINTS) {
-			it(`reads --fg on every ${what} tint over ${over} in ${theme}`, () => {
+			it(`reads --fg on every ${what} tint (${percent} %) over ${over} in ${theme}`, () => {
 				const fg = resolveColor(tokens, '--fg');
 				const surface = resolveColor(tokens, over);
 				expect(fg).not.toBeNull();
@@ -220,8 +250,8 @@ describe('text on an accent tint', () => {
 
 				const failing = ACCENTS.filter((accent) => {
 					const color = resolveColor(tokens, property(accentVar(accent)));
-					const tint = mixHex(color as string, percent, surface as string);
-					return contrastRatio(fg as string, tint) < AA_TEXT;
+					const tinted = mixHex(color as string, percent, surface as string);
+					return contrastRatio(fg as string, tinted) < AA_TEXT;
 				});
 				expect(failing).toEqual([]);
 			});
@@ -236,8 +266,8 @@ describe('text on an accent tint', () => {
 
 			const failing = RELATIONSHIP_CATEGORIES.filter((category) => {
 				const color = resolveColor(tokens, property(categoryVar(category)));
-				const tint = mixHex(color as string, AVATAR_TINT_PERCENT, card as string);
-				return contrastRatio(fg as string, tint) < AA_TEXT;
+				const tinted = mixHex(color as string, tint.avatar, card as string);
+				return contrastRatio(fg as string, tinted) < AA_TEXT;
 			});
 			expect(failing).toEqual([]);
 		});
