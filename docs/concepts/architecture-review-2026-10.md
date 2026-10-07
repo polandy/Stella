@@ -121,7 +121,13 @@ left; `services/boundary.test.ts` pins the edge-helper allow-list and the retire
 namesake context, the people stamp, the self contact, quick-add suggestions, deleting a
 contact) — `services/people.ts`, built over `auth`'s accounts; the relationship repository and
 the media store it reads come in as wiring from `index.ts` until their contexts move in.
-Remaining contexts: `relationships`, `circles`, `media`, `immich`, `offline`, `release`, then
+**`relationships`** is grouped (#299; the relationship repository and the relationship types it
+also serves, the map's graph repository, the suggestion review and its dismissals, the family
+cards' read) — `services/relationships.ts`; `people` now reads the relationship repository off
+the graph, and so does the command handler table, so it exists once. The last shared edge
+helper (`relationships/suggestion-answers.ts`) reads `locals.services` too, so the boundary
+test's edge-helper list is empty.
+Remaining contexts: `circles`, `media`, `immich`, `offline`, `release`, then
 the command handler table (item 4). Each later slice adds its
 `services/<context>.ts`, its key in `AppServices`, its factories to the boundary test's
 retired list, and moves its callers to `locals.services.<context>`.
@@ -482,7 +488,7 @@ rule. Each is one Conventional-Commit `refactor:`/`chore:`/`docs:` PR unless mar
 | 3 | AR-03 `requireViewer`, `todayFor(clock)`, `messageKey` | S | ☑ #266 | Removes 150 edit sites before AR-01 moves them again |
 | 4 | AR-07 glossary (docs/03 §3.0) + AR-18 regenerate §4.3 | S | ☑ #294 | Vocabulary before renames; cheapest high-leverage doc change |
 | 5 | AR-04 one schema per command, `fromFormData` | M | ☑ #295 | Shrinks every form action; prerequisite for AR-13 |
-| 6 | AR-01 `createServices()` + `locals.services` — **series**, one bounded context per PR, `auth` first | L | ◐ auth #296, people #298 | The central change; do after 3 and 5 so routes shrink while being touched |
+| 6 | AR-01 `createServices()` + `locals.services` — **series**, one bounded context per PR, `auth` first | L | ◐ auth #296, people #298, relationships #299 | The central change; do after 3 and 5 so routes shrink while being touched |
 | 7 | AR-02 move shared actions under `routes/` taking deps | S | ☐ | Falls out of 6 |
 | 8 | AR-08 split read models off the three widest ports + AR-14 shared fakes | M | ☐ | Do together: the fakes are what makes the split pay |
 | 9 | AR-06 activity as a port; break `contacts ↔ relationships`; merge plan as data | M | ☐ | Needs 8's narrower ports |

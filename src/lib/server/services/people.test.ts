@@ -168,7 +168,6 @@ describe('createServices', () => {
 			db,
 			clock,
 			ids,
-			relationships: wiring.relationships,
 			media
 		});
 		expect(services.people.selfContactDeps.accounts).toBe(services.auth.accounts);
