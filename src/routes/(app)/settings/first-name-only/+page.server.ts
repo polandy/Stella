@@ -7,7 +7,6 @@ import {
 	listContacts
 } from '$lib/server/domain/contacts/contacts';
 import { contextOfPeople } from '$lib/server/domain/contacts/person-context';
-import { getAttention } from '$lib/server/services';
 import { say, translator } from '$lib/server/i18n/say';
 import { isKnownByAFirstNameOnly, suggestedDescription } from '$lib/people/namesakes';
 import type { Actions, PageServerLoad } from './$types';
@@ -27,7 +26,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 	const viewer = requireViewer(locals);
 	const [everyone, touches] = await Promise.all([
 		listContacts(locals.services.people.contactDeps, viewer),
-		getAttention().listLastTouchedVisibleTo(viewer)
+		locals.services.household.attention.listLastTouchedVisibleTo(viewer)
 	]);
 	const today = todayFor(systemClock);
 	const firstNameOnly = everyone.filter(isKnownByAFirstNameOnly);

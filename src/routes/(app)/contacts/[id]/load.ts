@@ -30,7 +30,7 @@ import { TAG_COLORS } from '$lib/tags/colors';
 import { readTogetherOffers } from '$lib/server/domain/immich/glimpse';
 import { readImmichLink, readLinkedPerson } from '$lib/server/domain/immich/links';
 import { togetherCandidates } from '$lib/immich/together';
-import { getMemberDeps, getImmich, getImmichLinkDeps } from '$lib/server/services';
+import { getImmich, getImmichLinkDeps } from '$lib/server/services';
 import type { Viewer } from '$lib/server/access/visibility';
 import { say, translator } from '$lib/server/i18n/say';
 import { allOf } from '$lib/async/all-of';
@@ -214,10 +214,11 @@ function readPersonPage(
 		media,
 		story,
 		notes,
-		records
+		records,
+		household
 	}: Pick<
 		AppServices,
-		'people' | 'relationships' | 'circles' | 'media' | 'story' | 'notes' | 'records'
+		'people' | 'relationships' | 'circles' | 'media' | 'story' | 'notes' | 'records' | 'household'
 	>,
 	viewer: Viewer,
 	contactId: string,
@@ -248,7 +249,7 @@ function readPersonPage(
 		surnameHelp: readSurnameHelp(people.surnameReviewDeps, viewer, contactId),
 
 		// What the forms offer, and who wrote what.
-		nameOfAuthor: authorNames(getMemberDeps(), viewer.householdId),
+		nameOfAuthor: authorNames(household.memberDeps, viewer.householdId),
 		relationshipTypes: relationships.relationshipTypes.listTypes(viewer),
 		circleRolesByName: listRoleSuggestionsByCircleName(circles.circleDeps, viewer)
 	});

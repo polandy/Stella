@@ -6,7 +6,6 @@ import {
 } from '$lib/server/domain/contacts/contacts';
 import { listContactsByTag, listTags } from '$lib/server/domain/tags/tags';
 import { readSurnameHelp } from '$lib/server/domain/contacts/last-names';
-import { getAttention } from '$lib/server/services';
 import { lastNameActions } from '$lib/server/last-names-actions';
 import type { Actions, PageServerLoad } from './$types';
 import { systemClock } from '$lib/server/clock';
@@ -35,7 +34,7 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 			: activeTag
 				? listContactsByTag(locals.services.records.tagDeps, viewer, activeTag)
 				: listContacts(locals.services.people.contactDeps, viewer),
-		getAttention().listLastTouchedVisibleTo(viewer),
+		locals.services.household.attention.listLastTouchedVisibleTo(viewer),
 		readSurnameHelp(locals.services.people.surnameReviewDeps, viewer, null)
 	]);
 	const lastTouchedOn = new Map(touches.map((t) => [t.contactId, t.lastTouchedOn]));

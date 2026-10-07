@@ -17,7 +17,7 @@ import { membersViewerFirst } from '$lib/server/domain/household/members';
 import { buildStream } from '$lib/server/domain/stream/stream';
 import { extractMentionIds, mentionToken } from '$lib/mentions/mentions';
 import { parseStreamFilter } from '$lib/stream/filter';
-import { getCommandDeps, getMemberDeps } from '$lib/server/services';
+import { getCommandDeps } from '$lib/server/services';
 import type { Actions, PageServerLoad } from './$types';
 import { say, translator } from '$lib/server/i18n/say';
 import type { MessageKey } from '$lib/i18n/translate';
@@ -39,7 +39,7 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 	const viewer = requireViewer(locals);
 
 	// The filter names a member, so it can only be read once the household's members are known.
-	const members = await membersViewerFirst(getMemberDeps(), viewer);
+	const members = await membersViewerFirst(locals.services.household.memberDeps, viewer);
 	const filter = parseStreamFilter(
 		url.searchParams,
 		members.map((m) => m.id)
