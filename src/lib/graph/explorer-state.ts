@@ -12,10 +12,10 @@ import { DEFAULT_VIEW_SWITCHES, type ViewSwitches } from './view-switches';
 /*
  * What the explorer is doing (docs/05 §5.8, docs/02 §2.7): who is selected and why, the
  * connection path being picked, how the map is looked at, and what the canvas last heard of
- * full screen. Pure, so which tap leads where is tested without a browser; how the map is
- * looked at is answered in `explorer-look.ts`. `GraphExplorer`
- * holds one of these, renders it, and carries out the commands each event hands back — the
- * map's growing and drawing stay with it, since they await the graph and the canvas.
+ * full screen; how the map is looked at is answered in `explorer-look.ts`. Pure, so which tap
+ * leads where is tested without a browser. `GraphExplorer` holds one of these, renders it, and
+ * carries out the commands each event hands back — the map's growing and drawing stay with it,
+ * since they await the graph and the canvas.
  */
 
 export interface ExplorerState {
