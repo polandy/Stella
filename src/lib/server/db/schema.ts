@@ -49,7 +49,7 @@ export const user = sqliteTable('user', {
 	// No foreign key, like `avatar_photo_id` above: SQLite cannot add one with an ON DELETE
 	// action through ALTER TABLE, and a plain reference would refuse to delete that person.
 	// Deleting the contact clears the link and a merge repoints it (contact-repository.ts,
-	// contact-merge.ts), so a member never points at a record that is gone.
+	// domain/contacts/merge-plan.ts), so a member never points at a record that is gone.
 	selfContactId: text('self_contact_id'),
 	// Null until the member picks one: an unchosen language must not outrank the browser's.
 	localePref: text('locale_pref').$type<Locale>(),
