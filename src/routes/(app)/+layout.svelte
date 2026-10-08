@@ -313,7 +313,7 @@
 	<!-- Sidebar (desktop) -->
 	<aside class="hidden w-60 shrink-0 flex-col gap-1 bg-bg-sunken p-3 md:flex">
 		<a href="/" class="mb-3 flex items-center px-2 py-1.5" aria-label={t('nav.stellaHome')}>
-			<Logo size={26} wordmark />
+			<Logo size={26} wordmark welcomeTarget />
 		</a>
 
 		<nav aria-label={t('nav.main')} class="flex flex-col gap-1">
@@ -395,7 +395,7 @@
 			     a phone, which has no sidebar, shows the logo there instead. -->
 			{#if crumbs.length <= 1}
 				<a href="/" class="flex items-center md:hidden" aria-label={t('nav.stellaHome')}
-					><Logo size={26} wordmark /></a
+					><Logo size={26} wordmark welcomeTarget /></a
 				>
 			{:else}
 				<!-- A phone shows only the way back: the page's own name is its card's headline, and the

@@ -33,11 +33,16 @@ export async function signIn(page: Page): Promise<void> {
  * Waits until the app shell is interactive, so a JavaScript-only control will answer. The top
  * bar's search button is enabled once the shell has mounted; on a phone's Home it is hidden
  * (the page's own field is the search there), so it is read whether shown or not.
+ *
+ * It also waits out the welcome on start (docs/05 §5.11.4), which a fresh context's first page
+ * shows: a click waits for it by itself, but a wheel or a raw `page.mouse` press would land on
+ * the overlay instead of the page.
  */
 export async function appReady(page: Page): Promise<void> {
 	await expect(
 		page.getByTestId('top-bar').getByRole('button', { name: 'Search', includeHidden: true })
 	).toBeEnabled();
+	await expect(page.locator('#stella-welcome')).toHaveCount(0);
 }
 
 /**

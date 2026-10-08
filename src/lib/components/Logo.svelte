@@ -6,8 +6,10 @@
 		wordmark?: boolean;
 		/** Show the tagline under the wordmark (implies wordmark). */
 		tagline?: boolean;
+		/** The shell's logo: the welcome on start docks into it (docs/05 §5.11.4, `src/app.html`). */
+		welcomeTarget?: boolean;
 	}
-	let { size = 32, wordmark = false, tagline = false }: Props = $props();
+	let { size = 32, wordmark = false, tagline = false, welcomeTarget = false }: Props = $props();
 
 	const showWord = $derived(wordmark || tagline);
 </script>
@@ -21,6 +23,7 @@
 		role="img"
 		aria-label="Stella"
 		style="flex:none;overflow:visible"
+		data-welcome-target={welcomeTarget ? '' : undefined}
 	>
 		<g fill="none" stroke="var(--accent-teal)" stroke-width="3.6" stroke-linecap="round">
 			<path d="M18,62 Q30,60 42,50" />

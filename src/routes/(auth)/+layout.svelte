@@ -16,7 +16,9 @@
 
 <div class="grid min-h-screen bg-bg text-fg md:grid-cols-[minmax(0,5fr)_minmax(0,6fr)]">
 	<aside class="flex flex-col justify-between gap-8 bg-bg-sunken px-6 py-8 md:px-12 md:py-14">
-		<a href="/" class="flex items-center" aria-label="Stella"><Logo size={30} wordmark /></a>
+		<a href="/" class="flex items-center" aria-label="Stella"
+			><Logo size={30} wordmark welcomeTarget /></a
+		>
 		<div class="hidden md:block">
 			<p class="max-w-sm font-serif text-3xl leading-snug text-fg">
 				{t('auth.shell.tagline')}
