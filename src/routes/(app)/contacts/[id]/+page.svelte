@@ -4,6 +4,7 @@
 	import MentionsSection from '$lib/components/person/MentionsSection.svelte';
 	import NotesSection from '$lib/components/person/NotesSection.svelte';
 	import PhotosSection from '$lib/components/person/PhotosSection.svelte';
+	import type { PhotoView } from '$lib/components/person/photo-card-state.svelte';
 	import RelationshipsSection from '$lib/components/person/RelationshipsSection.svelte';
 	import StorySection from '$lib/components/person/StorySection.svelte';
 	import { sectionAnchor } from '$lib/contacts/sections';
@@ -53,22 +54,25 @@
 	}
 
 	/*
-	 * Photos of two people together, from Immich (docs/02 §2.24.8): the pair a relationship row's
-	 * *Together* asked for, and the pair the Photos card's strip shows. Both belong to this person,
-	 * so another person's page starts on their own photos again.
+	 * The Photos card's tab and, from Immich (docs/02 §2.24.8), the pair a relationship row's
+	 * *Together* asked for and the pair the Immich tab shows. All of it belongs to this person,
+	 * so another person's page starts on *All* and their own photos again.
 	 */
-	let immichTogether = $state<{ askedByRow: string | null; shown: string | null }>({
+	const PHOTO_VIEW_AT_START: PhotoView = {
+		tab: 'all',
+		expanded: false,
 		askedByRow: null,
 		shown: null
-	});
+	};
+	let photoView = $state<PhotoView>({ ...PHOTO_VIEW_AT_START });
 	// A primitive, so a reload of this same person's data (a save) is not read as a new person.
 	const contactId = $derived(c.id);
 	$effect(() => {
 		void contactId;
-		immichTogether = { askedByRow: null, shown: null };
+		photoView = { ...PHOTO_VIEW_AT_START };
 	});
 	async function showTogether(contactId: string) {
-		immichTogether = { askedByRow: contactId, shown: contactId };
+		photoView = { ...photoView, tab: 'immich', askedByRow: contactId, shown: contactId };
 		await tick();
 		document.getElementById(sectionAnchor('photos'))?.scrollIntoView({ block: 'start' });
 		// The chip now pressed, so a keyboard or a screen reader lands where the photos changed.
@@ -109,7 +113,7 @@
 
 	<RelationshipsSection {data} {form} {otherContacts} {showTogether} bind:tracingPath />
 
-	<PhotosSection {data} {form} bind:together={immichTogether} />
+	<PhotosSection {data} {form} bind:view={photoView} />
 
 	<!-- What happened beside what was written down; stacked, story first, below `lg`. -->
 	<div class="grid gap-5 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)] lg:items-start">

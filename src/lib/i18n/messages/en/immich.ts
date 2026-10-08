@@ -116,22 +116,18 @@ export const immich = {
 	'immich.row.unlinkQuestion': 'Unlink?',
 	'immich.row.open': 'Open in Immich',
 
-	// The strip of their latest photos, and the viewer it opens (§2.24.3).
+	// Their latest photos on the Photos card, and the lightbox's Immich actions (§2.24.3).
 	'immich.strip.label': 'Latest photos in Immich',
 	'immich.strip.loading': 'Loading photos from Immich…',
 	'immich.strip.photo': (p: { date: string }) => `Photo from ${p.date}, in Immich`,
 	'immich.strip.undated': 'Photo in Immich',
 	'immich.strip.showMore': 'Show more',
-	'immich.viewer.dialog': 'Photo from Immich',
-	'immich.viewer.position': (p: { at: number; count: number }) => `${p.at} of ${p.count}`,
-	'immich.viewer.previous': 'Previous photo',
-	'immich.viewer.next': 'Next photo',
 	'immich.viewer.use': 'Use as photo',
 	'immich.viewer.useFailed': 'Couldn’t keep this photo. Reload the page and try again.',
 
-	// Photos of two people together: the strip's chips and a relationship row's chip (§2.24.8).
+	// Photos of two people together: the Immich tab's chips and a relationship row's (§2.24.8).
 	'immich.together.label': 'Whose photos',
-	'immich.together.own': 'All photos',
+	'immich.together.own': (p: { name: string }) => p.name,
 	'immich.together.withYou': (p: { name: string }) => `You and ${p.name}`,
 	'immich.together.pair': (p: { first: string; second: string }) => `${p.first} and ${p.second}`,
 	// Said of the pair as an object, so "you" is not capitalised mid-sentence.
