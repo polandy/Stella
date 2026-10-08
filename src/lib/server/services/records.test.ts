@@ -131,7 +131,12 @@ describe('createServices', () => {
 		};
 		const services = createServices({
 			// Nothing here touches a file: the media store is lazy on disk.
-			config: { ...config, mediaDir: '/nonexistent/stella-media' },
+			config: {
+				...config,
+				immich: null,
+				sessionSecret: 'a-session-secret',
+				mediaDir: '/nonexistent/stella-media'
+			},
 			db,
 			sqlite,
 			clock,

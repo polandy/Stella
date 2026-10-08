@@ -127,7 +127,20 @@ describe('the composition root', () => {
 			// The archive context (AR-01, tenth slice): read `locals.services.archive`.
 			'ArchiveDeps',
 			'ImportArchiveDeps',
-			'ImportDeps'
+			'ImportDeps',
+			// The immich context (AR-01, eleventh slice): read `locals.services.immich`.
+			'Immich',
+			'ImmichLinks',
+			'ImmichIgnores',
+			'ImmichNameIgnores',
+			'ImmichGlimpseDeps',
+			'ImmichMediaDeps',
+			'ImmichMatchingDeps',
+			'ImmichNameIgnoreDeps',
+			'AddFromImmichDeps',
+			'ImmichIgnoreDeps',
+			'UseImmichPhotoDeps',
+			'ImmichLinkDeps'
 		];
 		const retired = new RegExp(`\\bget(?:${factories.join('|')})\\b`);
 		expect(files.filter((path) => retired.test(source(path)))).toEqual([]);

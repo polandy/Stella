@@ -1,6 +1,5 @@
 import { error } from '@sveltejs/kit';
 import { answerImmichMedia } from '$lib/server/immich/routes';
-import { getImmichMediaDeps } from '$lib/server/services';
 import { say } from '$lib/server/i18n/say';
 import type { RequestHandler } from './$types';
 
@@ -12,7 +11,11 @@ import type { RequestHandler } from './$types';
  */
 export const GET: RequestHandler = async ({ locals, params }) => {
 	const viewer = locals.user ? { id: locals.user.id, householdId: locals.user.householdId } : null;
-	const answer = await answerImmichMedia(getImmichMediaDeps(), viewer, params.token);
+	const answer = await answerImmichMedia(
+		locals.services.immich?.immichMediaDeps ?? null,
+		viewer,
+		params.token
+	);
 	if (answer instanceof Response) return answer;
 	throw error(answer.status, say(locals, answer.message));
 };

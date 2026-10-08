@@ -30,7 +30,6 @@ import { TAG_COLORS } from '$lib/tags/colors';
 import { readTogetherOffers } from '$lib/server/domain/immich/glimpse';
 import { readImmichLink, readLinkedPerson } from '$lib/server/domain/immich/links';
 import { togetherCandidates } from '$lib/immich/together';
-import { getImmich, getImmichLinkDeps } from '$lib/server/services';
 import type { Viewer } from '$lib/server/access/visibility';
 import { say, translator } from '$lib/server/i18n/say';
 import { allOf } from '$lib/async/all-of';
@@ -74,8 +73,8 @@ export const load = (async ({ locals, params, url }) => {
 		proposeFor: parseProposePairs(proposeFor)
 	});
 	// Which Immich person they are, when this instance has Immich (docs/02 §2.24.2).
-	const immich = getImmich();
-	const immichLinkDeps = getImmichLinkDeps();
+	const { immich } = locals.services;
+	const immichLinkDeps = immich?.immichLinkDeps;
 	const immichLink = immichLinkDeps
 		? await readImmichLink(immichLinkDeps, viewer, params.id)
 		: null;

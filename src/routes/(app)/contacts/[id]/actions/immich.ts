@@ -9,7 +9,6 @@ import {
 } from '$lib/server/domain/immich/links';
 import { useImmichPhoto } from '$lib/server/domain/immich/use-as-photo';
 import { InvalidAvatarError } from '$lib/server/domain/media/avatars';
-import { getImmichLinkDeps, getUseImmichPhotoDeps } from '$lib/server/services';
 import { say, translator } from '$lib/server/i18n/say';
 import type { Actions } from '../$types';
 
@@ -21,7 +20,7 @@ import type { Actions } from '../$types';
 export const immichActions = {
 	linkImmich: async ({ request, params, locals }) => {
 		const viewer = requireViewer(locals);
-		const deps = getImmichLinkDeps();
+		const deps = locals.services.immich?.immichLinkDeps;
 		if (!deps) throw error(404, say(locals, 'errors.notFound'));
 
 		const personId = (await request.formData()).get('immichPersonId');
@@ -43,7 +42,7 @@ export const immichActions = {
 
 	unlinkImmich: async ({ params, locals }) => {
 		const viewer = requireViewer(locals);
-		const deps = getImmichLinkDeps();
+		const deps = locals.services.immich?.immichLinkDeps;
 		if (!deps) throw error(404, say(locals, 'errors.notFound'));
 		try {
 			await unlinkFromImmich(
@@ -68,7 +67,7 @@ export const immichActions = {
 		// redirected rather than answered as if the route were simply unconfigured, and never
 		// has their upload decoded at all.
 		const viewer = requireViewer(locals);
-		const deps = getUseImmichPhotoDeps();
+		const deps = locals.services.immich?.useImmichPhotoDeps;
 		if (!deps) throw error(404, say(locals, 'errors.notFound'));
 
 		const form = await request.formData();

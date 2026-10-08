@@ -2,6 +2,7 @@ import { createArchiveServices, type ArchiveServices, type ArchiveWiring } from 
 import { createAuthServices, type AuthServices, type AuthWiring } from './auth';
 import { createCircleServices, type CircleServices, type CircleWiring } from './circles';
 import { createHouseholdServices, type HouseholdServices, type HouseholdWiring } from './household';
+import { createImmichServices, type ImmichServices, type ImmichWiring } from './immich';
 import { createMediaServices, type MediaServices, type MediaWiring } from './media';
 import { createNoteServices, type NoteServices, type NoteWiring } from './notes';
 import { createPeopleServices, type PeopleServices, type PeopleWiring } from './people';
@@ -33,6 +34,8 @@ export interface AppServices {
 	records: RecordServices;
 	household: HouseholdServices;
 	archive: ArchiveServices;
+	/** Null when this instance has no Immich: the feature then appears nowhere. */
+	immich: ImmichServices | null;
 }
 
 /**
@@ -40,7 +43,7 @@ export interface AppServices {
  * that reads another grouped context's repository gets it from here, not from the wiring
  * (`people` reads `auth`'s accounts, the relationships context's repository and `media`'s
  * store; `circles` and `story` read `people`'s contacts and `media`'s store; `archive` restores
- * into `media`'s store), so each
+ * into `media`'s store; `immich` reads `people`'s contacts and `media`'s avatar deps), so each
  * repository exists once.
  */
 export type ServicesWiring = AuthWiring &
@@ -52,7 +55,8 @@ export type ServicesWiring = AuthWiring &
 	NoteWiring &
 	RecordWiring &
 	HouseholdWiring &
-	Omit<ArchiveWiring, 'media'>;
+	Omit<ArchiveWiring, 'media'> &
+	Omit<ImmichWiring, 'contacts' | 'contactDeps' | 'contextReads' | 'avatarDeps'>;
 
 /** Wires every grouped context. Pure assembly: no I/O beyond what the adapters do when used. */
 export function createServices(wiring: ServicesWiring): AppServices {
@@ -79,6 +83,13 @@ export function createServices(wiring: ServicesWiring): AppServices {
 	const records = createRecordServices(wiring);
 	const household = createHouseholdServices(wiring);
 	const archive = createArchiveServices({ ...wiring, media: media.store });
+	const immich = createImmichServices({
+		...wiring,
+		contacts: people.contacts,
+		contactDeps: people.contactDeps,
+		contextReads: people.personContextDeps.contextReads,
+		avatarDeps: media.avatarDeps
+	});
 	return {
 		auth,
 		people,
@@ -89,6 +100,7 @@ export function createServices(wiring: ServicesWiring): AppServices {
 		notes,
 		records,
 		household,
-		archive
+		archive,
+		immich
 	};
 }

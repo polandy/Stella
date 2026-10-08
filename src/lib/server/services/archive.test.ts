@@ -132,7 +132,7 @@ describe('createServices', () => {
 			}
 		};
 		const services = createServices({
-			config: { ...config, mediaDir },
+			config: { ...config, immich: null, sessionSecret: 'a-session-secret', mediaDir },
 			db,
 			sqlite,
 			clock,
