@@ -547,7 +547,7 @@ rule. Each is one Conventional-Commit `refactor:`/`chore:`/`docs:` PR unless mar
 | 7 | AR-02 move shared actions under `routes/` taking deps | S | ☑ #315 | Falls out of 6 |
 | 8 | AR-08 split read models off the three widest ports + AR-14 shared fakes — **series** | M | ☑ contacts #317, circles + tags #318, photo + media #319, relationships #320 | Do together: the fakes are what makes the split pay |
 | 9 | AR-06 activity as a port; break `contacts ↔ relationships`; merge plan as data — **series** | M | ◐ activity #321, cycles #322 | Needs 8's narrower ports |
-| 10 | AR-11 `GraphExplorer` state → pure module; then `MomentComposer` | M ×2 | ☑ explorer #327, composer #PR | Independent of the server work; can run as the "second open PR" alongside 6–9 |
+| 10 | AR-11 `GraphExplorer` state → pure module; then `MomentComposer` | M ×2 | ☑ explorer #327, composer #328 | Independent of the server work; can run as the "second open PR" alongside 6–9 |
 | 11 | AR-10 lib taxonomy + AR-12 components split | M | ☐ | Last of the moves: after the renames the final layout is known |
 | 12 | AR-09 `PartialDate`, `RelationshipPair`; AR-17 schema split; AR-19 parity test; AR-16 route tests | S–M | ☐ | Opportunistic, when the area is touched anyway |
 
