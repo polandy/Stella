@@ -241,7 +241,7 @@ describe('story read', () => {
 		});
 		await logInteraction(writeDeps(), interactionAuthor, {
 			contactId: 'oma',
-			kind: 'gift',
+			kind: 'letter',
 			happenedAt: '2026-08-03',
 			visibility: 'private'
 		});

@@ -352,9 +352,7 @@ export const interaction = sqliteTable(
 			.notNull()
 			.references(() => user.id),
 		visibility: text('visibility').$type<Visibility>().notNull().default('shared'),
-		kind: text('kind')
-			.$type<'met' | 'call' | 'video' | 'message' | 'letter' | 'gift' | 'other'>()
-			.notNull(),
+		kind: text('kind').$type<'met' | 'call' | 'video' | 'message' | 'letter' | 'other'>().notNull(),
 		title: text('title'),
 		description: text('description'),
 		happenedAt: text('happened_at').notNull(),

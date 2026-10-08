@@ -85,7 +85,9 @@ export type RestoreWarning =
 	| { code: 'relationshipMissingEnd' }
 	| { code: 'relationshipsMissingPeople' }
 	| { code: 'relationshipUnknownType' }
-	| { code: 'imagesMissing'; count: number };
+	| { code: 'imagesMissing'; count: number }
+	/** Gift notes or gift touchpoints the archive held, made gift records (docs/02 §2.25.4). */
+	| { code: 'giftsConverted'; count: number };
 
 /** What this installation already has, so the plan can fit itself into it. */
 export interface RestoreTarget {

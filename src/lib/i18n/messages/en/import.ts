@@ -31,10 +31,11 @@ export const importer = {
 		contacts: number;
 		relationships: number;
 		notes: number;
+		gifts: number;
 		interactions: number;
 		tags: number;
 	}) =>
-		`Imported ${p.contacts} people, ${p.relationships} relationships, ${p.notes} notes, ${p.interactions} interactions and ${p.tags} tags.`,
+		`Imported ${p.contacts} people, ${p.relationships} relationships, ${p.notes} notes, ${p.gifts} gifts, ${p.interactions} interactions and ${p.tags} tags.`,
 	'import.nothingTwice': 'Everything was already there, so nothing was written twice.',
 	'import.photos': (p: { count: number }) => `Photos (${p.count})`,
 	'import.photos.embedded':
@@ -62,6 +63,7 @@ export const importer = {
 	'import.count.contactFields': 'contact fields',
 	'import.count.relationships': 'relationships',
 	'import.count.relationshipTypes': 'relationship types',
+	'import.count.gifts': 'gifts',
 	'import.count.notes': 'notes',
 	'import.count.interactions': 'interactions',
 	'import.count.tags': 'tags',

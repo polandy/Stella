@@ -49,7 +49,7 @@ export interface AppServices {
  * (`people` reads `auth`'s accounts, the relationships context's kinship graph and `media`'s
  * store; `circles` and `story` read `people`'s contacts and `media`'s store; `gifts` reads
  * `people`'s contacts and `story` reads `gifts`' repository; `archive` restores into `media`'s
- * store; `immich` reads `people`'s contacts and `media`'s avatar deps; `offline`'s command
+ * store and hands what it restored to `gifts`' conversion; `immich` reads `people`'s contacts and `media`'s avatar deps; `offline`'s command
  * handlers read the contexts whose use-cases they call), so each repository exists once.
  */
 export type ServicesWiring = AuthWiring &
@@ -61,7 +61,7 @@ export type ServicesWiring = AuthWiring &
 	NoteWiring &
 	RecordWiring &
 	HouseholdWiring &
-	Omit<ArchiveWiring, 'media'> &
+	Omit<ArchiveWiring, 'media' | 'convertHeldGifts'> &
 	Omit<ImmichWiring, 'contacts' | 'directory' | 'contactDeps' | 'contextReads' | 'avatarDeps'> &
 	ReleaseWiring &
 	Omit<OfflineWiring, 'contexts'> &
@@ -94,7 +94,11 @@ export function createServices(wiring: ServicesWiring): AppServices {
 	const notes = createNoteServices(wiring);
 	const records = createRecordServices(wiring);
 	const household = createHouseholdServices(wiring);
-	const archive = createArchiveServices({ ...wiring, media: media.store });
+	const archive = createArchiveServices({
+		...wiring,
+		media: media.store,
+		convertHeldGifts: gifts.convertHeldGifts
+	});
 	const immich = createImmichServices({
 		...wiring,
 		contacts: people.contacts,

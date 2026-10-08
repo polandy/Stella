@@ -140,7 +140,8 @@ test('pages back through both sources with "Show earlier", showing every item on
 
 	await page.getByRole('button', { name: 'Show earlier' }).click();
 
-	// The seed gives Hans fourteen items, journal and touchpoints alike: one more page, no repeats.
+	// The seed gives Hans fourteen items, journal, touchpoints and a gift alike: one more page, no
+	// repeats.
 	await expect(storyItems(page)).toHaveCount(14);
 	const all = await storyItems(page).allTextContents();
 	expect(all.slice(0, STORY_PAGE_SIZE)).toEqual(firstPage);

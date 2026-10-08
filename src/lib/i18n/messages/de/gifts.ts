@@ -8,6 +8,7 @@ export const gifts: GiftsMessages = {
 	'gifts.addGiven': 'Geschenkt',
 	'gifts.addReceived': 'Bekommen',
 	'gifts.menu': 'Mehr zu Geschenken',
+	'gifts.untitled': 'Geschenk',
 
 	'gifts.tabs.label': 'Geschenke nach Art',
 	'gifts.tab.ideas': 'Ideen',

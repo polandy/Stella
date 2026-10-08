@@ -8,6 +8,8 @@ export const gifts = {
 	'gifts.addGiven': 'Given',
 	'gifts.addReceived': 'Received',
 	'gifts.menu': 'More for gifts',
+	// The title of a gift made from a touchpoint that said nothing (docs/02 §2.25.4).
+	'gifts.untitled': 'Gift',
 
 	'gifts.tabs.label': 'Gifts by kind',
 	'gifts.tab.ideas': 'Ideas',

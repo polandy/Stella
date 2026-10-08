@@ -37,5 +37,5 @@ resolves by opening the matching file below).
 - [2.22 Moments & the household stream](features/2.22-moments-household-stream.md) **[M2]**
 - [2.23 The activity timeline](features/2.23-story-timeline.md) **[M2]**
 - [2.24 A person's photos, from Immich](features/2.24-immich.md) **[M3]** — optional
-- [2.25 Gift ideas and gifts given](features/2.25-gifts.md) **[M3]** — slice 1 of 3 built
+- [2.25 Gift ideas and gifts given](features/2.25-gifts.md) **[M3]** — slices 1 and 2 of 3 built
 - [2.21 Feature ↔ milestone summary](features/2.21-feature-milestone-summary.md)

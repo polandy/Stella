@@ -7,6 +7,7 @@ import {
 	contact,
 	contactField,
 	contactTag,
+	gift,
 	interaction,
 	interactionParticipant,
 	note,
@@ -102,6 +103,17 @@ export function createDrizzleImportRepository(
 					);
 				}
 
+				// A gift whose note an earlier import wrote, and that was left a note because someone
+				// wrote in it (docs/02 §2.25.4), shares its id: it is already here, as that note.
+				let gifts = 0;
+				for (const g of plan.gifts) {
+					const keptAsNote = tx.select({ id: note.id }).from(note).where(eq(note.id, g.id)).get();
+					if (keptAsNote) continue;
+					gifts += inserted(
+						tx.insert(gift).values(g).onConflictDoNothing().returning({ id: gift.id }).all()
+					);
+				}
+
 				let interactions = 0;
 				for (const i of plan.interactions) {
 					const { participantIds, ...row } = i;
@@ -156,6 +168,7 @@ export function createDrizzleImportRepository(
 						relationshipTypes,
 						contactFields,
 						notes,
+						gifts,
 						interactions,
 						tags,
 						// Photos are copied in a second step by the wizard (browser-side resize).

@@ -6,7 +6,6 @@ export const interactions = {
 	'interactions.kind.video': 'Video call',
 	'interactions.kind.message': 'Message',
 	'interactions.kind.letter': 'Letter',
-	'interactions.kind.gift': 'Gift',
 	'interactions.kind.other': 'Other'
 };
 

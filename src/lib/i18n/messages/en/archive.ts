@@ -101,6 +101,10 @@ export const archive = {
 		p.count === 1
 			? '1 image named in the document was not in the archive; that photo will show as missing.'
 			: `${p.count} images named in the document were not in the archive; those photos will show as missing.`,
+	'archive.warning.giftsConverted': (p: { count: number }) =>
+		p.count === 1
+			? 'The archive held a gift as a Monica note or a gift touchpoint; it is now a gift on the Gifts card.'
+			: `The archive held gifts as Monica notes or gift touchpoints; they are now ${p.count} gifts on the Gifts cards.`,
 	'archive.error.unusableFileName': (p: { name: string }) =>
 		`This archive contains an unusable file name: “${p.name}”.`,
 	'archive.error.noDocument': (p: { document: string }) =>

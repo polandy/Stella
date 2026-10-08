@@ -181,14 +181,14 @@ describe('interaction repository', () => {
 		});
 		await logInteraction(deps(), author1, {
 			contactId: 'oma',
-			kind: 'gift',
+			kind: 'letter',
 			happenedAt: '2026-08-02',
-			title: 'private gift',
+			title: 'private letter',
 			visibility: 'private'
 		});
 
 		const asAuthor = await listInteractions(deps(), viewerU1, 'oma');
-		expect(asAuthor.map((i) => i.title)).toEqual(['private gift', 'shared call']);
+		expect(asAuthor.map((i) => i.title)).toEqual(['private letter', 'shared call']);
 
 		const asOther = await listInteractions(deps(), viewerU2, 'oma');
 		expect(asOther.map((i) => i.title)).toEqual(['shared call']);
@@ -252,7 +252,7 @@ describe('interaction repository', () => {
 			});
 			await logInteraction(deps(), author1, {
 				contactId: 'oma',
-				kind: 'gift',
+				kind: 'letter',
 				happenedAt: '2026-01-05'
 			});
 			await logInteraction(deps(), author1, {
@@ -272,7 +272,7 @@ describe('interaction repository', () => {
 			});
 			await logInteraction(deps(), author1, {
 				contactId: 'oma',
-				kind: 'gift',
+				kind: 'letter',
 				happenedAt: '2026-08-02',
 				visibility: 'private'
 			});
