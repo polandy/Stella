@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test';
-import type { CircleWithCount } from '../../circles/circles';
+import { inMemoryCircleDirectory, someCircle } from '../../testing';
 import { findCircles, findPeople } from './lookup';
 
 /*
@@ -9,31 +9,17 @@ import { findCircles, findPeople } from './lookup';
 
 const viewer = { id: 'user-1', householdId: 'h' };
 
-const circle = (id: string, name: string): CircleWithCount => ({
-	id,
-	householdId: 'h',
-	createdBy: 'user-1',
-	visibility: 'shared',
-	name,
-	description: null,
-	kind: 'class',
-	color: 'blue',
-	startDate: '2023-08-01',
-	endDate: null,
-	memberCount: 3,
-	preview: []
-});
+const circle = (id: string, name: string) =>
+	someCircle(id, name, { kind: 'class', startDate: '2023-08-01', memberCount: 3 });
 
 describe('findCircles', () => {
-	const circles = {
-		listVisibleTo: async () => [
-			circle('ci-1', 'Kindergarten Münzstrasse'),
-			circle('ci-2', 'FC Example')
-		]
-	};
+	const directory = inMemoryCircleDirectory([
+		circle('ci-1', 'Kindergarten Münzstrasse'),
+		circle('ci-2', 'FC Example')
+	]);
 
 	it('finds circles whose name contains the query, ignoring case and accents', async () => {
-		expect(await findCircles({ circles }, viewer, 'munz')).toEqual([
+		expect(await findCircles({ directory }, viewer, 'munz')).toEqual([
 			{
 				id: 'ci-1',
 				name: 'Kindergarten Münzstrasse',
@@ -46,9 +32,9 @@ describe('findCircles', () => {
 	});
 
 	it('lists every circle for an empty query', async () => {
-		expect((await findCircles({ circles }, viewer, '  ')).map((c) => c.id)).toEqual([
-			'ci-1',
-			'ci-2'
+		expect((await findCircles({ directory }, viewer, '  ')).map((c) => c.id)).toEqual([
+			'ci-2',
+			'ci-1'
 		]);
 	});
 });

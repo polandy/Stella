@@ -1,14 +1,16 @@
-import { circleNameKey } from '../../../circles/name-key';
 import { roleKey } from '../../../circles/role-key';
 import type { Viewer } from '../../access/visibility';
 import type { Clock } from '../../clock';
 import type { IdGenerator } from '../../id';
+import type { CircleMembershipReads } from './memberships';
 
 /*
  * Circles = shared contexts (docs/02 §2.4.2): a named group contacts belong to over a period
  * (class, club, team, workplace, friend group…). A first-class shareable record — distinct
  * from tags. Two contacts in the same circle are connected "via {circle}". Pure validation +
- * use-cases over a repository port; all reads are visibility-scoped in the adapter (§3.7).
+ * use-cases over a repository port; all reads are visibility-scoped in the adapter (§3.7). What
+ * the screens list are read models of their own: the overview (`directory.ts`) and who is in
+ * which circle (`memberships.ts`).
  */
 
 export const CIRCLE_KINDS = [
@@ -219,11 +221,11 @@ export interface RoleRename {
 
 // ── Ports ─────────────────────────────────────────────────────────────────
 
+/** A circle's writes and the one-circle reads they rest on; the lists are read models. */
 export interface CircleRepository {
 	insert(circle: NewCircle): Promise<void>;
 	findByNameVisibleTo(viewer: Viewer, name: string): Promise<Circle | null>;
 	getVisibleTo(viewer: Viewer, circleId: string): Promise<Circle | null>;
-	listVisibleTo(viewer: Viewer): Promise<CircleWithCount[]>;
 	/**
 	 * Insert those of `memberships` whose contact is not in the circle yet, in **one**
 	 * transaction. Skipping is decided inside that transaction, so a pick either lands whole or
@@ -249,15 +251,18 @@ export interface CircleRepository {
 	 * old. Rows of other circles are never touched, whatever ids are passed.
 	 */
 	renameRole(change: RoleRename): Promise<void>;
-	listMembersVisibleTo(viewer: Viewer, circleId: string): Promise<MemberView[]>;
-	listForContactVisibleTo(viewer: Viewer, contactId: string): Promise<ContactCircleView[]>;
-	/** Every visible membership's role, with the name of the circle it belongs to. */
-	listRoleUsesVisibleTo(viewer: Viewer): Promise<CircleRoleUse[]>;
 }
 
 export interface CircleDeps {
 	circles: CircleRepository;
 	ids: IdGenerator;
+	clock: Clock;
+}
+
+/** Re-roling members: who is in the circle decides whom the write may touch. */
+export interface MemberRoleDeps {
+	circles: Pick<CircleRepository, 'setRoles'>;
+	memberships: Pick<CircleMembershipReads, 'listMembersVisibleTo'>;
 	clock: Clock;
 }
 
@@ -381,14 +386,14 @@ export async function addMembers(
  * that is not a member, is left out rather than written or joined (§3.7).
  */
 export async function setMembersRole(
-	deps: Pick<CircleDeps, 'circles' | 'clock'>,
+	deps: MemberRoleDeps,
 	viewer: Viewer,
 	circleId: string,
 	contactIds: readonly string[],
 	role: string | null | undefined
 ): Promise<void> {
 	const visible = new Set(
-		(await deps.circles.listMembersVisibleTo(viewer, circleId)).map((m) => m.contactId)
+		(await deps.memberships.listMembersVisibleTo(viewer, circleId)).map((m) => m.contactId)
 	);
 	const chosen = [...new Set(contactIds)].filter((id) => visible.has(id));
 	if (chosen.length === 0) return;
@@ -403,58 +408,10 @@ export async function removeMember(
 	await deps.circles.removeMembership(circleId, contactId);
 }
 
-export async function listCircles(
-	deps: Pick<CircleDeps, 'circles'>,
-	viewer: Viewer
-): Promise<CircleWithCount[]> {
-	return deps.circles.listVisibleTo(viewer);
-}
-
 export async function getCircle(
 	deps: Pick<CircleDeps, 'circles'>,
 	viewer: Viewer,
 	circleId: string
 ): Promise<Circle | null> {
 	return deps.circles.getVisibleTo(viewer, circleId);
-}
-
-export async function listMembers(
-	deps: Pick<CircleDeps, 'circles'>,
-	viewer: Viewer,
-	circleId: string
-): Promise<MemberView[]> {
-	return deps.circles.listMembersVisibleTo(viewer, circleId);
-}
-
-export async function listCirclesForContact(
-	deps: Pick<CircleDeps, 'circles'>,
-	viewer: Viewer,
-	contactId: string
-): Promise<ContactCircleView[]> {
-	return deps.circles.listForContactVisibleTo(viewer, contactId);
-}
-
-/**
- * The roles already used, per circle, for the join-a-circle-by-name flow where the circle is
- * only known by what was typed. Keyed by {@link circleNameKey}, the same rule the field that
- * offers them looks its suggestions up with.
- */
-export async function listRoleSuggestionsByCircleName(
-	deps: Pick<CircleDeps, 'circles'>,
-	viewer: Viewer
-): Promise<Record<string, string[]>> {
-	const uses = await deps.circles.listRoleUsesVisibleTo(viewer);
-	const rolesByName = new Map<string, string[]>();
-	for (const use of uses) {
-		const key = circleNameKey(use.circleName);
-		const roles = rolesByName.get(key) ?? [];
-		if (use.role !== null) roles.push(use.role);
-		rolesByName.set(key, roles);
-	}
-	const suggestions: Record<string, string[]> = {};
-	for (const [name, roles] of rolesByName) {
-		const ranked = suggestRoles(roles);
-		if (ranked.length > 0) suggestions[name] = ranked;
-	}
-	return suggestions;
 }

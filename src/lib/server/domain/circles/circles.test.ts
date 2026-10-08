@@ -1,6 +1,11 @@
 import { describe, expect, it } from 'bun:test';
-import type { Clock } from '../../clock';
-import type { IdGenerator } from '../../id';
+import {
+	circleRepositoryWith,
+	fixedClock,
+	inMemoryCircleMemberships,
+	membership,
+	sequentialIds
+} from '../testing';
 import {
 	addMember,
 	addMembers,
@@ -8,7 +13,6 @@ import {
 	createCircle,
 	groupMembersByRole,
 	joinCircleByName,
-	listRoleSuggestionsByCircleName,
 	resolveCircleColor,
 	resolveCircleKind,
 	setMembersRole,
@@ -16,8 +20,6 @@ import {
 	suggestRoles,
 	type Circle,
 	type CircleDeps,
-	type CircleRepository,
-	type CircleRoleUse,
 	type MemberView,
 	type NewCircle,
 	type NewMembership
@@ -42,26 +44,17 @@ describe('resolveCircleKind / resolveCircleColor', () => {
 });
 
 const NOW = 1_700_000_000_000;
-const clock: Clock = { now: () => NOW };
-const idGen = (values: string[]): IdGenerator => {
-	let i = 0;
-	return { next: () => values[i++] ?? `id-${i}` };
-};
+const clock = fixedClock(NOW);
 const creator = { userId: 'u1', householdId: 'h1', defaultVisibility: 'shared' as const };
-
-const member = (contactId: string): MemberView => ({
-	membershipId: `ms-${contactId}`,
-	contactId,
-	displayName: contactId,
-	avatarPhotoId: null,
-	role: null
-});
 const viewer = { id: 'u1', householdId: 'h1' };
 
+/**
+ * The repository's writes, recorded: what was written is what these tests assert. Whoever is in
+ * the circle is the membership read model's, from `inMemoryCircleMemberships`.
+ */
 function fakeRepo(existing: Circle | null = null) {
 	const inserted: NewCircle[] = [];
 	const memberships: NewMembership[] = [];
-	const removed: Array<[string, string]> = [];
 	const roleChanges: Array<{
 		circleId: string;
 		contactIds: string[];
@@ -71,45 +64,39 @@ function fakeRepo(existing: Circle | null = null) {
 	let exists = false;
 	// Per-contact membership, for picks that mix people already in the circle with new ones.
 	const existingMembers = new Set<string>();
-	let roleUses: CircleRoleUse[] = [];
-	let visibleMembers: MemberView[] = [];
-	const repo: CircleRepository = {
+	const repo = circleRepositoryWith({
 		insert: async (c) => void inserted.push(c),
 		findByNameVisibleTo: async () => existing,
-		getVisibleTo: async () => null,
-		listVisibleTo: async () => [],
 		addMemberships: async (batch) => {
 			// Mirrors the adapter: skip whoever is already a member, insert the rest.
 			const fresh = batch.filter((m) => !exists && !existingMembers.has(m.contactId));
 			memberships.push(...fresh);
 			fresh.forEach((m) => existingMembers.add(m.contactId));
 		},
-		removeMembership: async (cid, contactId) => void removed.push([cid, contactId]),
-		renameRole: async () => {},
 		setRoles: async (circleId, contactIds, role, at) =>
-			void roleChanges.push({ circleId, contactIds: [...contactIds], role, at }),
-		listMembersVisibleTo: async () => visibleMembers,
-		listForContactVisibleTo: async () => [],
-		listRoleUsesVisibleTo: async () => roleUses
-	};
+			void roleChanges.push({ circleId, contactIds: [...contactIds], role, at })
+	});
 	return {
 		repo,
 		inserted,
 		memberships,
-		removed,
 		roleChanges,
 		setExists: (v: boolean) => (exists = v),
-		setExistingMembers: (ids: string[]) => ids.forEach((id) => existingMembers.add(id)),
-		setRoleUses: (v: CircleRoleUse[]) => (roleUses = v),
-		setVisibleMembers: (ids: string[]) =>
-			(visibleMembers = ids.map((contactId) => member(contactId)))
+		setExistingMembers: (ids: string[]) => ids.forEach((id) => existingMembers.add(id))
 	};
 }
+
+/** The deps `setMembersRole` takes, with `visible` the members the viewer may see in the circle. */
+const roleDeps = (f: ReturnType<typeof fakeRepo>, visible: string[]) => ({
+	circles: f.repo,
+	memberships: inMemoryCircleMemberships(visible.map((id) => membership('circle-1', id))),
+	clock
+});
 
 describe('createCircle', () => {
 	it('creates a circle with normalised kind/colour and defaulted visibility', async () => {
 		const f = fakeRepo();
-		const deps: CircleDeps = { circles: f.repo, ids: idGen(['circle-1']), clock };
+		const deps: CircleDeps = { circles: f.repo, ids: sequentialIds('circle-1'), clock };
 		const id = await createCircle(deps, creator, { name: '  Kegelclub  ', kind: 'club' });
 		expect(id).toBe('circle-1');
 		expect(f.inserted[0]).toMatchObject({
@@ -125,7 +112,7 @@ describe('createCircle', () => {
 
 	it('rejects a blank name', async () => {
 		const f = fakeRepo();
-		const deps: CircleDeps = { circles: f.repo, ids: idGen(['x']), clock };
+		const deps: CircleDeps = { circles: f.repo, ids: sequentialIds('x'), clock };
 		await expect(createCircle(deps, creator, { name: '   ' })).rejects.toThrow();
 	});
 });
@@ -145,7 +132,7 @@ describe('joinCircleByName', () => {
 			endDate: null
 		};
 		const f = fakeRepo(existing);
-		const deps: CircleDeps = { circles: f.repo, ids: idGen(['membership-1']), clock };
+		const deps: CircleDeps = { circles: f.repo, ids: sequentialIds('membership-1'), clock };
 		const id = await joinCircleByName(deps, creator, 'mara', 'Kegelclub', 'member');
 		expect(id).toBe('circle-existing');
 		expect(f.inserted).toHaveLength(0); // not re-created
@@ -158,7 +145,11 @@ describe('joinCircleByName', () => {
 
 	it('creates the circle when none exists', async () => {
 		const f = fakeRepo(null);
-		const deps: CircleDeps = { circles: f.repo, ids: idGen(['circle-1', 'membership-1']), clock };
+		const deps: CircleDeps = {
+			circles: f.repo,
+			ids: sequentialIds('circle-1', 'membership-1'),
+			clock
+		};
 		const id = await joinCircleByName(deps, creator, 'mara', 'Ski Course');
 		expect(id).toBe('circle-1');
 		expect(f.inserted[0]).toMatchObject({ name: 'Ski Course' });
@@ -187,7 +178,7 @@ describe('addMember', () => {
 	it('is idempotent when the membership already exists', async () => {
 		const f = fakeRepo();
 		f.setExists(true);
-		const deps: CircleDeps = { circles: f.repo, ids: idGen(['m1']), clock };
+		const deps: CircleDeps = { circles: f.repo, ids: sequentialIds('m1'), clock };
 		await addMember(deps, creator, 'circle-1', 'mara');
 		expect(f.memberships).toHaveLength(0);
 	});
@@ -196,7 +187,7 @@ describe('addMember', () => {
 describe('addMembers', () => {
 	it('adds every chosen contact, with the one role on each of them', async () => {
 		const f = fakeRepo();
-		const deps: CircleDeps = { circles: f.repo, ids: idGen(['m1', 'm2', 'm3']), clock };
+		const deps: CircleDeps = { circles: f.repo, ids: sequentialIds('m1', 'm2', 'm3'), clock };
 		await addMembers(deps, creator, 'circle-1', ['mara', 'jonas', 'ida'], ' coach ');
 		expect(f.memberships.map((m) => m.contactId)).toEqual(['mara', 'jonas', 'ida']);
 		expect(f.memberships.every((m) => m.role === 'coach')).toBe(true);
@@ -205,7 +196,7 @@ describe('addMembers', () => {
 
 	it('adds a contact named twice only once', async () => {
 		const f = fakeRepo();
-		const deps: CircleDeps = { circles: f.repo, ids: idGen(['m1']), clock };
+		const deps: CircleDeps = { circles: f.repo, ids: sequentialIds('m1'), clock };
 		await addMembers(deps, creator, 'circle-1', ['mara', 'mara']);
 		expect(f.memberships).toHaveLength(1);
 	});
@@ -213,7 +204,7 @@ describe('addMembers', () => {
 	it('skips those already in the circle', async () => {
 		const f = fakeRepo();
 		f.setExists(true);
-		const deps: CircleDeps = { circles: f.repo, ids: idGen(['m1']), clock };
+		const deps: CircleDeps = { circles: f.repo, ids: sequentialIds('m1'), clock };
 		await addMembers(deps, creator, 'circle-1', ['mara', 'jonas']);
 		expect(f.memberships).toHaveLength(0);
 	});
@@ -221,7 +212,7 @@ describe('addMembers', () => {
 	it('adds only the new people in a mixed pick, leaving an existing member’s role alone', async () => {
 		const f = fakeRepo();
 		f.setExistingMembers(['mara']);
-		const deps: CircleDeps = { circles: f.repo, ids: idGen(['m1']), clock };
+		const deps: CircleDeps = { circles: f.repo, ids: sequentialIds('m1'), clock };
 		await addMembers(deps, creator, 'circle-1', ['mara', 'jonas'], 'coach');
 		// The positive control for the skip: jonas proves the call did run and did write.
 		expect(f.memberships.map((m) => m.contactId)).toEqual(['jonas']);
@@ -234,8 +225,7 @@ describe('setMembersRole', () => {
 
 	it('gives every chosen member the one trimmed role, in a single write', async () => {
 		const f = fakeRepo();
-		f.setVisibleMembers(everyone);
-		const deps: CircleDeps = { circles: f.repo, ids: idGen([]), clock };
+		const deps = roleDeps(f, everyone);
 		await setMembersRole(deps, viewer, 'circle-1', everyone, ' coach ');
 		expect(f.roleChanges).toEqual([
 			{ circleId: 'circle-1', contactIds: everyone, role: 'coach', at: NOW }
@@ -244,16 +234,14 @@ describe('setMembersRole', () => {
 
 	it('takes the role away when it is blank', async () => {
 		const f = fakeRepo();
-		f.setVisibleMembers(['mara']);
-		const deps: CircleDeps = { circles: f.repo, ids: idGen([]), clock };
+		const deps = roleDeps(f, ['mara']);
 		await setMembersRole(deps, viewer, 'circle-1', ['mara'], '   ');
 		expect(f.roleChanges[0].role).toBeNull();
 	});
 
 	it('names each member once, even when the pick names one twice', async () => {
 		const f = fakeRepo();
-		f.setVisibleMembers(everyone);
-		const deps: CircleDeps = { circles: f.repo, ids: idGen([]), clock };
+		const deps = roleDeps(f, everyone);
 		await setMembersRole(deps, viewer, 'circle-1', ['mara', 'mara', 'jonas'], 'coach');
 		expect(f.roleChanges[0].contactIds).toEqual(['mara', 'jonas']);
 	});
@@ -261,8 +249,7 @@ describe('setMembersRole', () => {
 	it('leaves out anyone the viewer cannot see in the circle, and keeps those they can', async () => {
 		const f = fakeRepo();
 		// `ghost` is not among the members this viewer may see (private, or not a member at all).
-		f.setVisibleMembers(['mara', 'jonas']);
-		const deps: CircleDeps = { circles: f.repo, ids: idGen([]), clock };
+		const deps = roleDeps(f, ['mara', 'jonas']);
 		await setMembersRole(deps, viewer, 'circle-1', ['mara', 'ghost', 'jonas'], 'coach');
 		// The positive control: the two visible ones were written, so the call did run.
 		expect(f.roleChanges[0].contactIds).toEqual(['mara', 'jonas']);
@@ -270,8 +257,7 @@ describe('setMembersRole', () => {
 
 	it('writes nothing when none of the pick is visible, or the pick is empty', async () => {
 		const f = fakeRepo();
-		f.setVisibleMembers(['mara']);
-		const deps: CircleDeps = { circles: f.repo, ids: idGen([]), clock };
+		const deps = roleDeps(f, ['mara']);
 		await setMembersRole(deps, viewer, 'circle-1', ['ghost'], 'coach');
 		await setMembersRole(deps, viewer, 'circle-1', [], 'coach');
 		expect(f.roleChanges).toHaveLength(0);
@@ -355,33 +341,5 @@ describe('groupMembersByRole', () => {
 
 	it('has no groups for an empty circle', () => {
 		expect(groupMembersByRole([])).toEqual([]);
-	});
-});
-
-describe('listRoleSuggestionsByCircleName', () => {
-	it('groups the roles per circle, keyed by the circle name as typed', async () => {
-		const f = fakeRepo();
-		f.setRoleUses([
-			{ circleName: 'Ski Course', role: 'coach' },
-			{ circleName: 'Ski Course', role: 'pupil' },
-			{ circleName: 'Ski Course', role: 'pupil' },
-			{ circleName: 'Day School', role: 'teacher' },
-			{ circleName: 'Day School', role: null }
-		]);
-		const deps: CircleDeps = { circles: f.repo, ids: idGen([]), clock };
-		const byName = await listRoleSuggestionsByCircleName(deps, { id: 'u1', householdId: 'h1' });
-		expect(byName).toEqual({ 'ski course': ['pupil', 'coach'], 'day school': ['teacher'] });
-	});
-
-	it('is keyed case-insensitively so a differently typed name still matches', async () => {
-		const f = fakeRepo();
-		f.setRoleUses([
-			{ circleName: 'Ski Course', role: 'coach' },
-			{ circleName: 'ski course', role: 'coach' }
-		]);
-		const deps: CircleDeps = { circles: f.repo, ids: idGen([]), clock };
-		expect(await listRoleSuggestionsByCircleName(deps, { id: 'u1', householdId: 'h1' })).toEqual({
-			'ski course': ['coach']
-		});
 	});
 });

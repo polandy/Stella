@@ -8,7 +8,9 @@ import { createDrizzleAccountRepository } from '../db/account-repository';
 import { createDrizzleContactRepository } from '../db/contact-repository';
 import * as schema from '../db/schema';
 import { listCirclePhotos } from '../domain/circles/circle-photos';
-import { joinCircleByName, listCirclesForContact, listMembers } from '../domain/circles/circles';
+import { joinCircleByName } from '../domain/circles/circles';
+import { listCircles } from '../domain/circles/directory';
+import { listCirclesForContact, listMembers } from '../domain/circles/memberships';
 import { renameCircleRole } from '../domain/circles/rename-role';
 import { createContact } from '../domain/contacts/contacts';
 import type { MediaStore } from '../domain/media/avatars';
@@ -105,6 +107,7 @@ describe('createCircleServices', () => {
 		expect(circles.circleDeps.circles).toBe(circles.circles);
 		expect<unknown>(circles.circlePhotoDeps.circles).toBe(circles.circles);
 		expect<unknown>(circles.renameRoleDeps.circles).toBe(circles.circles);
+		expect<unknown>(circles.memberRoleDeps.circles).toBe(circles.circles);
 
 		const anna = await addPerson('Anna');
 		const circleId = await joinCircleByName(
@@ -114,8 +117,18 @@ describe('createCircleServices', () => {
 			'Choir',
 			'Alto'
 		);
-		const joined = await listCirclesForContact(circles.circleDeps, viewerOf(admin), anna);
+		const joined = await listCirclesForContact(circles.circleMembershipDeps, viewerOf(admin), anna);
 		expect(joined.map((circle) => circle.circleId)).toEqual([circleId]);
+		const overview = await listCircles(circles.circleDirectoryDeps, viewerOf(admin));
+		expect(overview.map((circle) => [circle.id, circle.memberCount])).toEqual([[circleId, 1]]);
+	});
+
+	it('hands every use-case that asks who is in a circle the one membership read model', () => {
+		const circles = createCircleServices(wiring);
+		const { memberships } = circles.circleMembershipDeps;
+		expect<unknown>(circles.memberRoleDeps.memberships).toBe(memberships);
+		expect<unknown>(circles.renameRoleDeps.memberships).toBe(memberships);
+		expect<unknown>(circles.circlePhotoDeps.memberships).toBe(memberships);
 	});
 
 	it('hands every use-case the one circle photo repository the edge reads', () => {
@@ -139,6 +152,7 @@ describe('createCircleServices', () => {
 			expect(deps.ids).toBe(ids);
 		}
 		expect(circles.renameRoleDeps.clock).toBe(clock);
+		expect(circles.memberRoleDeps.clock).toBe(clock);
 	});
 
 	it('renames a role across members and photos, and offers the photo to cut from', async () => {
@@ -158,7 +172,7 @@ describe('createCircleServices', () => {
 			from: 'Alto',
 			to: 'Altos'
 		});
-		const members = await listMembers(circles.circleDeps, viewerOf(admin), circleId);
+		const members = await listMembers(circles.circleMembershipDeps, viewerOf(admin), circleId);
 		expect(members.map((member) => member.role)).toEqual(['Altos']);
 		const photos = await listCirclePhotos(circles.circlePhotoDeps, viewerOf(admin), circleId);
 		expect(photos.map((photo) => photo.role)).toEqual(['Altos']);

@@ -6,23 +6,24 @@ import { migrate } from 'drizzle-orm/bun-sqlite/migrator';
 import type { Viewer } from '../access/visibility';
 import type { NewTag } from '../domain/tags/tags';
 import * as schema from './schema';
+import { createDrizzleTagListReads } from './tag-list-reads';
 import { createDrizzleTagRepository } from './tag-repository';
 
 /*
  * Integration spec for the Drizzle TagRepository: case-insensitive lookup, idempotent
- * assignment, and visibility-scoped reads (tags on a private contact stay private).
+ * assignment, and the household-wide count and deletes behind pruning. The lists are the read
+ * model's, specified in `tag-list-reads.test.ts`.
  */
 
 const H = 'household-1';
 const U1 = 'user-1';
 const U2 = 'user-2';
 const viewerU1: Viewer = { id: U1, householdId: H };
-const viewerU2: Viewer = { id: U2, householdId: H };
-/** The one fixture birthday, asserted where the tag-filtered summary is read back. */
-const BIRTH_DATE = '2015-05-20';
 
 let db: BunSQLiteDatabase<typeof schema>;
 let repo: ReturnType<typeof createDrizzleTagRepository>;
+/** The read model, to see what the writes left behind. */
+let lists: ReturnType<typeof createDrizzleTagListReads>;
 
 const tag = (over: Partial<NewTag>): NewTag => ({
 	id: 't',
@@ -53,14 +54,13 @@ beforeEach(() => {
 				householdId: H,
 				createdBy: U1,
 				visibility: 'shared',
-				displayName: 'Shared',
-				nickname: 'Sha',
-				birthDate: BIRTH_DATE
+				displayName: 'Shared'
 			},
 			{ id: 'c-priv', householdId: H, createdBy: U1, visibility: 'private', displayName: 'Private' }
 		])
 		.run();
 	repo = createDrizzleTagRepository(db);
+	lists = createDrizzleTagListReads(db);
 });
 
 describe('tags', () => {
@@ -74,36 +74,17 @@ describe('tags', () => {
 		await repo.insert(tag({ id: 't-fam' }));
 		await repo.assign('c-shared', 't-fam');
 		await repo.assign('c-shared', 't-fam'); // duplicate — must not error or duplicate
-		expect(await repo.listForContactVisibleTo(viewerU1, 'c-shared')).toHaveLength(1);
+		expect(await lists.listForContactVisibleTo(viewerU1, 'c-shared')).toHaveLength(1);
 		await repo.unassign('c-shared', 't-fam');
-		expect(await repo.listForContactVisibleTo(viewerU1, 'c-shared')).toHaveLength(0);
+		expect(await lists.listForContactVisibleTo(viewerU1, 'c-shared')).toHaveLength(0);
 	});
 });
 
-describe('visibility scoping', () => {
+describe('assignments across the household', () => {
 	beforeEach(async () => {
 		await repo.insert(tag({ id: 't-fam', name: 'Family' }));
 		await repo.assign('c-shared', 't-fam');
 		await repo.assign('c-priv', 't-fam');
-	});
-
-	it('hides tags on a private contact from non-owners', async () => {
-		expect(await repo.listForContactVisibleTo(viewerU2, 'c-priv')).toHaveLength(0);
-		expect(await repo.listForContactVisibleTo(viewerU1, 'c-priv')).toHaveLength(1);
-	});
-
-	it('carries the nickname on a tag-filtered list, so the directory filter still finds people by it', async () => {
-		expect(
-			(await repo.listContactsByTagVisibleTo(viewerU1, 't-fam')).find((c) => c.id === 'c-shared')
-				?.nickname
-		).toBe('Sha');
-	});
-
-	it('carries the birth date there too, so a tag-filtered list is the same summary', async () => {
-		expect(
-			(await repo.listContactsByTagVisibleTo(viewerU1, 't-fam')).find((c) => c.id === 'c-shared')
-				?.birthDate
-		).toBe(BIRTH_DATE);
 	});
 
 	/*
@@ -125,8 +106,8 @@ describe('visibility scoping', () => {
 		await repo.assign('c-shared', 't-other');
 		await repo.deleteTag(H, 't-fam');
 		expect(await repo.findByName(H, 'Family')).toBeNull();
-		expect((await repo.listByHousehold(H)).map((t) => t.id)).toEqual(['t-other']);
-		expect(await repo.listForContactVisibleTo(viewerU1, 'c-shared')).toHaveLength(1);
+		expect((await lists.listByHousehold(H)).map((t) => t.id)).toEqual(['t-other']);
+		expect(await lists.listForContactVisibleTo(viewerU1, 'c-shared')).toHaveLength(1);
 	});
 
 	/*
@@ -139,7 +120,7 @@ describe('visibility scoping', () => {
 		db.delete(schema.contact).where(eq(schema.contact.id, 'c-priv')).run();
 
 		expect(await repo.deleteOrphans(H)).toBe(1);
-		expect((await repo.listByHousehold(H)).map((t) => t.id)).toEqual(['t-fam']);
+		expect((await lists.listByHousehold(H)).map((t) => t.id)).toEqual(['t-fam']);
 	});
 
 	/*
@@ -153,7 +134,7 @@ describe('visibility scoping', () => {
 
 		await repo.deleteTag(H, 't-theirs');
 
-		expect((await repo.listByHousehold('household-3')).map((t) => t.id)).toEqual(['t-theirs']);
+		expect((await lists.listByHousehold('household-3')).map((t) => t.id)).toEqual(['t-theirs']);
 		// …and the same call still deletes the household's own tag, so the scoping is not
 		// simply making `deleteTag` a no-op.
 		await repo.deleteTag(H, 't-fam');
@@ -165,15 +146,6 @@ describe('visibility scoping', () => {
 		await repo.insert(tag({ id: 't-elsewhere', householdId: 'household-2', name: 'Elsewhere' }));
 
 		expect(await repo.deleteOrphans(H)).toBe(0);
-		expect((await repo.listByHousehold('household-2')).map((t) => t.id)).toEqual(['t-elsewhere']);
-	});
-
-	it('lists only visible contacts for a tag', async () => {
-		expect((await repo.listContactsByTagVisibleTo(viewerU2, 't-fam')).map((c) => c.id)).toEqual([
-			'c-shared'
-		]);
-		expect(
-			(await repo.listContactsByTagVisibleTo(viewerU1, 't-fam')).map((c) => c.id).sort()
-		).toEqual(['c-priv', 'c-shared']);
+		expect((await lists.listByHousehold('household-2')).map((t) => t.id)).toEqual(['t-elsewhere']);
 	});
 });

@@ -5,6 +5,7 @@ import type { Viewer } from '../../access/visibility';
 import type { Clock } from '../../clock';
 import type { CirclePhotoRepository } from './circle-photos';
 import type { CircleRepository } from './circles';
+import type { CircleMembershipReads } from './memberships';
 
 /*
  * Renaming one role of a circle (docs/02 §2.4.2). A role is free text on each membership and on
@@ -21,7 +22,8 @@ export class BlankRoleNameError extends TranslatableError {
 }
 
 export interface RenameRoleDeps {
-	circles: Pick<CircleRepository, 'listMembersVisibleTo' | 'renameRole'>;
+	circles: Pick<CircleRepository, 'renameRole'>;
+	memberships: Pick<CircleMembershipReads, 'listMembersVisibleTo'>;
 	circlePhotos: Pick<CirclePhotoRepository, 'listVisible'>;
 	clock: Clock;
 }
@@ -48,7 +50,7 @@ export async function renameCircleRole(
 		return key !== null && keys.has(key);
 	};
 	const [members, photos] = await Promise.all([
-		deps.circles.listMembersVisibleTo(viewer, input.circleId),
+		deps.memberships.listMembersVisibleTo(viewer, input.circleId),
 		deps.circlePhotos.listVisible(viewer, input.circleId)
 	]);
 	// Only the old role decides whether there is anything to rename; the target alone is not one.

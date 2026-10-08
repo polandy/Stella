@@ -5,9 +5,9 @@ import {
 	CIRCLE_COLORS,
 	CIRCLE_KINDS,
 	createCircle,
-	listCircles,
 	suggestCircleColor
 } from '$lib/server/domain/circles/circles';
+import { listCircles } from '$lib/server/domain/circles/directory';
 import { listCircleCovers } from '$lib/server/domain/circles/circle-photos';
 import type { Actions, PageServerLoad } from './$types';
 import { say } from '$lib/server/i18n/say';
@@ -20,7 +20,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 	const viewer = requireViewer(locals);
 
 	const [circles, covers] = await Promise.all([
-		listCircles(locals.services.circles.circleDeps, viewer),
+		listCircles(locals.services.circles.circleDirectoryDeps, viewer),
 		listCircleCovers(locals.services.circles.circlePhotoDeps, viewer)
 	]);
 	const usedColors = circles.map((c) => c.color);
