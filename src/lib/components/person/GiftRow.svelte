@@ -128,14 +128,15 @@
 					</p>
 					<!-- Under the idea rather than beside it, so a phone keeps the title on one line. -->
 					{#if gift.state === 'idea' && mode === 'view'}
+						<!-- Outlined, not filled: one per idea, so a list of them must not shout over the card's own add actions. -->
 						<Button
-							variant="primary"
+							variant="secondary"
 							size="sm"
 							type="button"
 							class="mt-2"
 							onclick={() => start('give')}
 						>
-							{t('gifts.markGiven')}
+							{t('gifts.markGiven.open')}
 						</Button>
 					{/if}
 				</div>

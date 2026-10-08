@@ -36,6 +36,7 @@ export const gifts: GiftsMessages = {
 	'gifts.occasion.other': 'Anderer …',
 
 	'gifts.markGiven': 'Als verschenkt eintragen',
+	'gifts.markGiven.open': 'Verschenkt …',
 	'gifts.markGiven.title': (p) => `„${p.title}“ verschenkt`,
 	'gifts.notedBy': (p) => `notiert von ${p.name}`,
 	'gifts.notedByYou': 'notiert von dir',

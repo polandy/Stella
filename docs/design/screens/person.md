@@ -256,15 +256,17 @@ the person, and that never leaves the page. Keeping the record tidy (archive, me
 - A row: a square icon tile (a light bulb in `--accent-yellow` for an idea, the gift in
   `--kind-gift` otherwise), the title, *day · occasion*, the note, then *noted by …* · *Link* ·
   *private* in the subtle line; the pencil and the remove cross on the right. An idea's
-  *Mark as given* stands under its text, so a phone keeps the title on one line.
+  *Mark as given…* (German *Verschenkt …*) stands under its text, so a phone keeps the title on
+  one line — an outlined `secondary` button, since every idea carries one and a list of filled
+  buttons would shout over the card's own add actions.
 - Given and Received are grouped by year under uppercase dividers (the list-divider style,
   §5.4), newest first.
 - The add form opens at the card's top like every card form: *Idea for Hilde* asks *What?*,
   with *Note or link* folded away; *Given to Hilde* and *Received from Hilde* add the day
   (today) and the occasion chips *Birthday · Christmas · Anniversary · Other…* (a pressed chip
   pressed again lets go; *Other…* opens a field). Shared/Private radios, *Save*.
-- *Mark as given* opens a small sunken box under the idea: *“Teapot” given*, the day, the
-  occasion chips, *Cancel* and *Mark as given*. The pencil rewrites the row in place with the
+- *Mark as given…* opens a small sunken box under the idea: *“Teapot” given*, the day, the
+  occasion chips, *Cancel* and the filled *Mark as given* (German *Als verschenkt eintragen*). The pencil rewrites the row in place with the
   add form's fields; only the author is offered Shared/Private.
 - Removing follows the undo window of docs/02 §2.23.
 
