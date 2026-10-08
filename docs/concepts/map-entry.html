@@ -1,0 +1,451 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Map entry — the People card's honest way into the map (interactive mockup)</title>
+<style>
+  /* Catppuccin tokens as src/app.css maps them: flavour → surfaces → semantic (Latte / Mocha). */
+  :root, :root[data-theme='latte'] {
+    --bg:#e6e9ef; --bg-sunken:#dce0e8; --card:#ffffff; --card-hover:#f4f5f9;
+    --border:#ccd0da; --border-subtle:#e7e9f0;
+    --fg:#4c4f69; --fg-muted:#5c5f77; --fg-subtle:#6c6f85;
+    --primary:#853ae8; --primary-fg:#ffffff; --link:#1e66f5;
+    --c-romantic:#ea76cb; --c-family:#40a02b; --c-social:#1e66f5; --c-professional:#fe640b; --c-other:#179299;
+    --avatar-fg:#4c4f69; --av-pink:#f4dcdc; --av-blue:#d3e2fb; --av-teal:#cdeceb; --av-peach:#fbe2cf; --av-mauve:#e7dbfb; --av-sky:#cfeefa;
+    --shadow-card:0 1px 2px rgba(76,79,105,.07), 0 2px 8px rgba(76,79,105,.06);
+    --page:#eff1f5; --map-line:#bcc0cc;
+  }
+  :root[data-theme='mocha'] {
+    --bg:#181825; --bg-sunken:#11111b; --card:#232334; --card-hover:#2a2a3d;
+    --border:#313244; --border-subtle:#292939;
+    --fg:#cdd6f4; --fg-muted:#bac2de; --fg-subtle:#a6adc8;
+    --primary:#cba6f7; --primary-fg:#1e1e2e; --link:#89b4fa;
+    --c-romantic:#f5c2e7; --c-family:#a6e3a1; --c-social:#89b4fa; --c-professional:#fab387; --c-other:#94e2d5;
+    --avatar-fg:#cdd6f4; --av-pink:#45384a; --av-blue:#2f3a55; --av-teal:#2c4446; --av-peach:#4a3a33; --av-mauve:#3d3355; --av-sky:#2b4252;
+    --shadow-card:0 1px 2px rgba(0,0,0,.3);
+    --page:#1e1e2e; --map-line:#45475a;
+  }
+  :root { --primary-soft:color-mix(in srgb, var(--primary) 14%, transparent);
+    --sans:'Instrument Sans Variable','Instrument Sans',ui-sans-serif,system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+    --ease:cubic-bezier(.2,0,0,1); --expand:260ms; --fade:160ms; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--page); color:var(--fg); font-family:var(--sans); line-height:1.5; -webkit-font-smoothing:antialiased; }
+  button { font:inherit; color:inherit; }
+  a { color:inherit; text-decoration:none; }
+  :focus-visible { outline:2px solid var(--primary); outline-offset:2px; border-radius:8px; }
+  svg.i { width:18px; height:18px; fill:none; stroke:currentColor; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; flex:none; }
+
+  /* ── The document around the frames ────────────────────────── */
+  .wrap { margin:0 auto; padding:28px 24px 80px; max-width:1640px; }
+  .kicker { font-size:12px; font-weight:600; letter-spacing:.14em; text-transform:uppercase; color:var(--primary); }
+  h1 { font-size:26px; font-weight:650; margin:4px 0 6px; letter-spacing:-.01em; }
+  .lede { color:var(--fg-muted); margin:0 0 18px; max-width:92ch; }
+  .controls { display:flex; flex-wrap:wrap; gap:12px 18px; align-items:center; margin-bottom:10px; }
+  .ctl { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+  .seg { display:flex; flex-wrap:wrap; gap:3px; background:var(--bg-sunken); border-radius:18px; padding:3px; }
+  .seg button { border:0; background:transparent; padding:5px 12px; border-radius:999px; font-size:13px; color:var(--fg-muted); cursor:pointer; white-space:nowrap; }
+  .seg button[aria-pressed='true'] { background:var(--card); color:var(--fg); font-weight:600; box-shadow:var(--shadow-card); }
+  .seg button .rec { color:var(--primary); font-weight:700; margin-left:4px; font-size:11px; letter-spacing:.04em; }
+  .seg-label { font-size:11px; font-weight:600; letter-spacing:.1em; text-transform:uppercase; color:var(--fg-subtle); }
+  .note { font-size:12px; color:var(--fg-subtle); margin:0 0 22px; max-width:120ch; }
+  .stage { display:flex; flex-wrap:wrap; gap:28px; align-items:flex-start; }
+  .legend { flex:1 1 100%; columns:2 420px; column-gap:40px; }
+  .legend ol, .legend .q { break-inside:avoid; }
+  .legend h2 { font-size:13px; font-weight:600; letter-spacing:.08em; text-transform:uppercase; color:var(--fg-subtle); margin:0 0 10px; }
+  .legend ol { padding-left:20px; margin:0 0 18px; display:flex; flex-direction:column; gap:9px; font-size:14px; color:var(--fg-muted); }
+  .legend b { color:var(--fg); font-weight:600; }
+  .legend .q { margin-top:12px; padding:12px 14px; border-radius:12px; border:1px dashed var(--border); font-size:13px; color:var(--fg-muted); }
+  .legend .q b { display:block; margin-bottom:4px; }
+  .legend li.cur { color:var(--fg); }
+
+  /* ── Desktop: a 1440 × 900 window, scaled to fit ───────────── */
+  .browser-fit { flex:none; width:var(--fit-w); height:var(--fit-h); }
+  .browser { width:1440px; height:900px; transform-origin:0 0; transform:scale(var(--fit)); border-radius:12px; overflow:hidden; box-shadow:0 20px 60px rgba(0,0,0,.2); display:flex; flex-direction:column; background:var(--bg); }
+  .chrome { height:36px; flex:none; background:var(--bg-sunken); display:flex; align-items:center; gap:7px; padding:0 14px; border-bottom:1px solid var(--border); }
+  .chrome i { width:11px; height:11px; border-radius:50%; background:var(--border); display:block; }
+  .chrome .url { margin-left:18px; font-size:12px; color:var(--fg-subtle); background:var(--card); padding:3px 14px; border-radius:6px; width:420px; }
+  .app { flex:1; display:flex; min-height:0; }
+  .side { width:240px; flex:none; background:var(--bg-sunken); padding:12px; display:flex; flex-direction:column; gap:4px; }
+  .logo { display:flex; align-items:center; gap:8px; font-weight:600; font-size:21px; padding:6px 10px 14px; }
+  .logo .mark { color:var(--primary); }
+  .side a { display:flex; align-items:center; gap:10px; padding:8px 12px; border-radius:10px; font-size:14px; color:var(--fg-muted); }
+  .side a.on { background:var(--card); color:var(--fg); font-weight:600; box-shadow:var(--shadow-card); }
+  .dmain { flex:1; display:flex; flex-direction:column; min-width:0; }
+  .dhead { display:flex; align-items:center; gap:8px; padding:16px 24px 8px; font-size:14px; color:var(--fg-muted); }
+  .dhead .here { color:var(--fg); font-weight:600; }
+  .scroller { flex:1; overflow-y:auto; scrollbar-width:none; position:relative; }
+  .scroller::-webkit-scrollbar { display:none; }
+  .dpage { max-width:1060px; margin:0 auto; padding:12px 24px 60px; display:flex; flex-direction:column; gap:20px; }
+
+  /* ── Phone: Pixel 9 Pro, 412 × 915 CSS px ──────────────────── */
+  .device { padding:10px; background:#0b0b12; border-radius:46px; box-shadow:0 20px 60px rgba(0,0,0,.25); flex:none; }
+  .screen { width:412px; height:915px; border-radius:36px; overflow:hidden; position:relative; background:var(--bg); display:flex; flex-direction:column; }
+  .status { height:30px; flex:none; display:flex; align-items:center; justify-content:space-between; padding:6px 26px 0; font-size:13px; font-weight:600; }
+  .status .cam { width:12px; height:12px; border-radius:50%; background:#0b0b12; }
+  .ptop { display:flex; align-items:center; gap:6px; padding:8px 16px; flex:none; font-size:15px; color:var(--fg-muted); white-space:nowrap; }
+  .ptop .here { color:var(--fg); font-weight:600; overflow:hidden; text-overflow:ellipsis; }
+  .ppage { padding:6px 12px 110px; display:flex; flex-direction:column; gap:12px; }
+  .tabbar { position:absolute; inset:auto 0 0 0; display:flex; align-items:flex-end; border-top:1px solid var(--border-subtle); background:var(--card); padding-bottom:14px; }
+  .tab { flex:1; display:flex; flex-direction:column; align-items:center; gap:2px; padding:10px 0 4px; font-size:11px; font-weight:500; color:var(--fg-subtle); }
+  .tab.on { color:var(--primary); font-weight:600; }
+  .tab.pen span { width:52px; height:52px; border-radius:50%; background:var(--primary); color:var(--primary-fg); display:grid; place-items:center; margin-top:-26px; box-shadow:var(--shadow-card); }
+
+  /* ── Cards ─────────────────────────────────────────────────── */
+  .card { background:var(--card); border-radius:16px; box-shadow:var(--shadow-card); padding:16px; }
+  .idcard { display:flex; gap:16px; align-items:center; }
+  .idcard h2 { margin:0; font-size:24px; font-weight:650; letter-spacing:-.01em; }
+  .p .idcard h2 { font-size:20px; }
+  .idcard p { margin:2px 0 0; color:var(--fg-muted); font-size:14px; }
+  .idcard .ghost { font-size:12px; color:var(--fg-subtle); margin-top:6px; }
+  .sechead { display:flex; align-items:center; gap:6px; min-height:34px; margin-bottom:8px; }
+  .sechead h3 { margin:0; font-size:15px; font-weight:600; }
+  .sechead .count { color:var(--fg-subtle); font-weight:400; margin-left:4px; }
+  .sechead .r { margin-left:auto; display:flex; align-items:center; gap:2px; }
+  .btn { display:inline-flex; align-items:center; justify-content:center; gap:7px; border-radius:10px; padding:5px 8px; font-size:14px; font-weight:500; border:1px solid transparent; cursor:pointer; white-space:nowrap; background:transparent; color:var(--fg-muted); }
+  .btn:hover { background:var(--card-hover); }
+  .btn.square { border-color:var(--border); padding:6px 9px; }
+  .btn svg.i { width:16px; height:16px; }
+  .av { border-radius:50%; display:grid; place-items:center; font-weight:600; color:var(--avatar-fg); flex:none; overflow:hidden; }
+  .av svg { width:100%; height:100%; display:block; }
+
+  /* ── The map entry: one frame that holds the strip and, enlarged, the live map ── */
+  .mapframe { position:relative; overflow:hidden; border:1px solid var(--border); border-radius:14px; background:var(--bg-sunken); transition:height var(--expand) var(--ease); margin-bottom:12px; }
+  .entry { position:relative; width:100%; min-height:60px; border:0; margin:0; background:transparent; cursor:pointer; display:flex; align-items:center; gap:12px; padding:10px 52px 10px 12px; text-align:left; color:var(--fg); transition:opacity var(--fade) var(--ease); }
+  .entry:hover { background:var(--card-hover); }
+  .mapframe.big .entry, .mapframe.big .fs { opacity:0; pointer-events:none; }
+  .fs { position:absolute; right:4px; top:50%; transform:translateY(-50%); transition:opacity var(--fade) var(--ease); }
+  .disc { width:44px; height:44px; display:grid; place-items:center; border:0; background:transparent; cursor:pointer; padding:0; color:var(--fg-muted); }
+  .disc span { width:32px; height:32px; border-radius:50%; display:grid; place-items:center; background:var(--card); box-shadow:var(--shadow-card); }
+  .disc:hover { color:var(--fg); }
+  .disc svg.i { width:15px; height:15px; }
+  .glyph { width:32px; height:32px; border-radius:50%; display:grid; place-items:center; background:var(--card); color:var(--fg-muted); box-shadow:var(--shadow-card); flex:none; }
+  .glyph svg.i { width:15px; height:15px; }
+  .entry:hover .glyph { color:var(--fg); }
+  /* On a phone the enlarge glyph sheds its disc: the whole strip is the target, the room goes to the words. */
+  .p .glyph { width:20px; background:none; box-shadow:none; color:var(--fg-subtle); }
+  .p .entry { gap:10px; }
+
+  /* The face stack: direct relations, overlapping, a +N chip for the rest. */
+  .stack { display:flex; flex:none; }
+  .stack > * { border:2px solid var(--bg-sunken); box-sizing:content-box; }
+  .entry:hover .stack > * { border-color:var(--card-hover); }
+  .stack > * + * { margin-left:calc(var(--face) * -.3); }
+  .stack .more { width:var(--face); height:var(--face); border-radius:50%; display:grid; place-items:center; background:var(--card); color:var(--fg-muted); font-size:12px; font-weight:600; flex:none; }
+  .txt { display:flex; flex-direction:column; min-width:0; flex:1; line-height:1.25; }
+  .txt b { font-weight:600; font-size:15px; }
+  .txt small { font-size:13px; color:var(--fg-muted); }
+  .txt small .sep { color:var(--fg-subtle); padding-left:.3em; }
+  .txt small .n { white-space:nowrap; }
+  .txt b { white-space:nowrap; }
+  .cats { display:flex; flex-wrap:wrap; gap:2px 10px; margin-top:3px; font-size:12px; color:var(--fg-subtle); }
+  .cats span { display:inline-flex; align-items:center; gap:5px; white-space:nowrap; }
+  .cats i { width:8px; height:8px; border-radius:50%; display:block; }
+  .p .cats .w { display:none; }
+  /* Variant C: a list row. */
+  .entry.row { gap:10px; padding-left:14px; min-height:52px; }
+  .entry.row .ico { color:var(--primary); display:grid; place-items:center; }
+  .entry.row .lbl { font-weight:600; font-size:15px; white-space:nowrap; }
+  .entry.row .cnt { color:var(--fg-subtle); font-size:13px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; min-width:0; flex:1; }
+  .entry.row .chev { color:var(--fg-subtle); }
+
+  /* The live map, enlarged — a placeholder for the real explorer. */
+  .live { position:absolute; inset:0; opacity:0; pointer-events:none; transition:opacity var(--fade) var(--ease); }
+  .mapframe.big .live { opacity:1; pointer-events:auto; transition-delay:var(--expand); }
+  .toolbar { position:absolute; top:10px; left:10px; right:10px; display:flex; gap:8px; align-items:center; }
+  .toolbar span { white-space:nowrap; display:inline-flex; align-items:center; gap:6px; border:1px solid var(--border); background:var(--card); border-radius:999px; padding:3px 11px; font-size:13px; color:var(--fg-muted); }
+  .toolbar span b { font-weight:600; background:var(--bg-sunken); border-radius:999px; padding:0 6px; font-size:12px; }
+  .toolbar .sp { flex:1; }
+  .toolbar button { border:0; background:transparent; color:var(--fg-muted); cursor:pointer; display:grid; place-items:center; width:30px; height:30px; border-radius:8px; }
+  .toolbar button:hover { background:var(--card-hover); }
+  .ph { position:absolute; inset:52px 12px 12px; border:1.5px dashed var(--border); border-radius:12px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:6px; text-align:center; padding:12px; color:var(--fg-subtle); }
+  .ph b { color:var(--fg-muted); font-weight:600; font-size:15px; }
+  .ph small { font-size:13px; max-width:40ch; }
+  .ph svg.i { width:28px; height:28px; color:var(--primary); margin-bottom:4px; }
+
+  /* The list. */
+  .people { display:flex; flex-direction:column; gap:12px; }
+  .group h4 { margin:0 0 4px; font-size:11px; font-weight:600; letter-spacing:.06em; text-transform:uppercase; color:var(--fg-subtle); }
+  .tiles { display:grid; column-gap:12px; list-style:none; margin:0; padding:0; }
+  .tile { display:flex; align-items:center; gap:10px; padding:4px; border-radius:10px; min-width:0; }
+  .tile:hover { background:var(--card-hover); }
+  .tile .nm { display:flex; flex-direction:column; min-width:0; }
+  .tile .nm b { font-weight:500; line-height:1.2; overflow-wrap:anywhere; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+  .tile .nm small { font-size:12px; color:var(--fg-subtle); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .toggle { margin-top:6px; }
+  .fs-toast { position:fixed; left:50%; bottom:28px; transform:translateX(-50%); background:var(--fg); color:var(--card); padding:8px 16px; border-radius:10px; font-size:13px; opacity:0; transition:opacity .2s; pointer-events:none; }
+  .fs-toast.on { opacity:1; }
+  @media (prefers-reduced-motion: reduce) { .mapframe, .entry, .fs, .live { transition:none !important; } }
+
+  /* On a phone the page drops the bezel: the screen is the viewport, 412 px on the Pixel 9 Pro. */
+  @media (max-width: 520px) {
+    .wrap { padding:20px 0 60px; }
+    .wrap > .kicker, .wrap > h1, .wrap > .lede, .wrap > .controls, .wrap > .note, .legend { padding:0 16px; }
+    .device { padding:0; border-radius:0; background:none; box-shadow:none; width:100%; order:-1; }
+    .screen { width:100%; max-width:412px; margin:0 auto; border-radius:0; }
+    .browser { border-radius:0; }
+  }
+
+  /* ?frame=desktop|phone renders one frame alone, at its own size — for the PNGs. */
+  body.solo .wrap { padding:0; max-width:none; }
+  body.solo .wrap > :not(.stage), body.solo .legend { display:none; }
+  body.solo .stage { gap:0; }
+  body.solo .browser { border-radius:0; box-shadow:none; }
+  body.solo .device { border-radius:0; padding:0; background:var(--page); box-shadow:none; }
+  body.solo .screen { border-radius:0; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="kicker">Person page · People card · mockup</div>
+  <h1>The map entry: an honest way into the map, not a fake one</h1>
+  <p class="lede">
+    The drawn preview (ring on a phone, fan wider up) goes. In its place a compact strip that does not pretend to be a map:
+    the faces of the direct relations, the title, and the two counts the live map will show — <i>direct</i> and <i>within two steps</i>,
+    the same reach as the explorer. The whole strip is <i>Enlarge map</i>; the icon at its end is <i>Full screen</i>.
+    Tap the strip in either frame to grow the live map in the card (here a placeholder), then <i>Shrink map</i> in its toolbar.
+  </p>
+  <div class="controls" id="controls"></div>
+  <p class="note">Data is the demo seed (Markus Brunner, 10 entered). <i>Within two steps</i> counts everyone the live map shows around this person — the direct ones included — so the strip's second number is exactly the number of faces on the enlarged map.
+    Faces stand in for photos as silhouettes; <i>No photos</i> shows the initials fallback. The identity card is abbreviated.</p>
+  <div class="stage">
+    <div class="browser-fit" id="dfit"><div class="browser d" id="desk"></div></div>
+    <div class="device"><div class="screen p" id="phone"></div></div>
+    <aside class="legend">
+      <h2>The variants</h2>
+      <ol id="vlist">
+        <li data-v="a"><b>A · Faces + title + counts (recommended).</b> One row: a stack of the first direct relations (four, three on a phone) with a <i>+N</i> chip, then <i>Relationship map</i> over <i>10 direct · 24 within two steps</i>, then the enlarge glyph and the full-screen icon. Says who, what and how many — and that it is a door, not a drawing.</li>
+        <li data-v="b"><b>B · A plus category dots.</b> The same row with a third line: a coloured dot and count per group (family, friends, work), in the category colours the map uses for its lines. More information, but it repeats the group headings of the list right below, and three lines make the strip taller on a phone.</li>
+        <li data-v="c"><b>C · A list row.</b> Map icon, <i>Relationship map</i>, one muted count (<i>24 people</i>) and a chevron that turns as the map opens. The quietest; but no faces means nothing to recognise, and it reads like a link to another page.</li>
+      </ol>
+      <h2>What stays</h2>
+      <ol>
+        <li><b>Enlarge in the card</b> is unchanged: the frame glides from the strip's height to the enlarged one (<code>100dvh − 12.75rem</code> on a phone, 24 rem wider up), the strip fades, the live map arrives, focus moves to <i>Shrink map</i>.</li>
+        <li><b>Full screen</b> keeps its icon and its link to the graph route with this person in the middle.</li>
+        <li><b>No server drawing</b>: <code>EgoGraph</code>, <code>stripFan</code> and the ring go; the strip needs only the faces and two counts, from the same reach the explorer uses so they cannot drift.</li>
+      </ol>
+      <h2>Open questions</h2>
+      <div class="q"><b>1 · Which variant</b>A (recommended) · B · C.</div>
+      <div class="q"><b>2 · The second count's words</b><i>within two steps</i> / <i>über zwei Schritte</i> (recommended — it includes the direct ones, like the map) · <i>reachable in two steps</i> · just <i>24 on the map</i>. German alternative to consider: <i>in zwei Schritten</i>.</div>
+      <div class="q"><b>3 · Which faces lead the stack</b>Entered order of the list (partner, family, friends — recommended, so the first face is also the first tile) · the most recently touched · the ones with a photo first.</div>
+    </aside>
+  </div>
+</div>
+<div class="fs-toast" id="toast"></div>
+
+<script>
+/* ── Copy, en + de (as the catalogues would hold it) ─────────── */
+const T = {
+  en: { people:'People', edit:'Edit', add:'Add', more:'More', map:'Relationship map',
+    direct:(n) => `${n} direct`, reach:(n) => `${n} within two steps`, onMap:(n) => `${n} ${n === 1 ? 'person' : 'people'}`,
+    enlarge:'Enlarge map', shrink:'Shrink map', full:'Full screen', filter:'Filter', arrange:'Arrange: Free',
+    live:'Live map', liveHint:'The explorer from the Graph page, this person in the middle, two steps out — Free, By circle or Tree, as the reader last chose.',
+    showMore:(n) => `Show ${n} more`, showFewer:'Show fewer', photos:'Photos',
+    groups:{ family:'Family', social:'Friends', professional:'Work', other:'Other' },
+    roles:{} , home:'Home', circles:'Circles', graph:'Graph',
+    toast:'Opens the graph page full screen, this person in the middle' },
+  de: { people:'Menschen', edit:'Bearbeiten', add:'Hinzufügen', more:'Mehr', map:'Beziehungskarte',
+    direct:(n) => `${n} direkt`, reach:(n) => `${n} über zwei Schritte`, onMap:(n) => `${n} ${n === 1 ? 'Person' : 'Personen'}`,
+    enlarge:'Karte vergrößern', shrink:'Karte verkleinern', full:'Vollbild', filter:'Filter', arrange:'Anordnen: Frei',
+    live:'Live-Karte', liveHint:'Der Explorer der Graph-Seite, diese Person in der Mitte, zwei Schritte weit — Frei, Nach Kreisen oder Stammbaum, wie zuletzt gewählt.',
+    showMore:(n) => `${n} weitere zeigen`, showFewer:'Weniger zeigen', photos:'Fotos',
+    groups:{ family:'Familie', social:'Freunde', professional:'Arbeit', other:'Andere' },
+    roles:{ Wife:'Ehefrau', Father:'Vater', Mother:'Mutter', Daughter:'Tochter', Son:'Sohn', Brother:'Bruder', Sister:'Schwester', Friend:'Freund', Neighbor:'Nachbar', Colleague:'Kollege', Cousin:'Cousin' },
+    home:'Start', circles:'Kreise', graph:'Graph',
+    toast:'Öffnet die Graph-Seite im Vollbild, diese Person in der Mitte' },
+};
+
+/* ── Data ─────────────────────────────────────────────────────── */
+const P = (name, role, cat) => ({ name, role, cat });
+const MARKUS = [P('Sandra Brunner-Keller','Wife','romantic'),P('Hans Brunner','Father','family'),P('Rosa Brunner-Aebi','Mother','family'),P('Lena Brunner','Daughter','family'),P('Noah Brunner','Son','family'),P('Elias Brunner','Son','family'),P('Daniel Brunner','Brother','family'),P('Thomas Widmer','Friend','social'),P('Beat Steiner','Friend','social'),P('Kurt Lehmann','Neighbor','social')];
+const FIRST = ['Anna','Beat','Claudia','Dario','Eva','Fabian','Gabi','Hugo','Iris','Jonas','Karin','Luca','Mia','Nico','Olivia','Pascal','Rahel','Simon','Tanja','Urs'];
+const LAST = ['Meier','Frei','Huber','Graf','Baumann','Roth','Kunz','Moser'];
+const FORTY = Array.from({ length:40 }, (_, i) => {
+  const cat = i < 1 ? 'romantic' : i < 14 ? 'family' : i < 30 ? 'social' : 'professional';
+  const role = cat === 'romantic' ? 'Wife' : cat === 'family' ? ['Cousin','Brother','Sister','Father','Mother'][i % 5] : cat === 'social' ? 'Friend' : 'Colleague';
+  return P(`${FIRST[i % 20]} ${LAST[(i * 3) % 8]}`, role, cat);
+});
+const DATA = {
+  typical:{ who:'Markus Brunner', desc:'Familienvater, Vorstand im FC Längenfeld', direct:MARKUS, reach:24, photos:true },
+  one:{ who:'Vreni Zbinden', desc:'Sandra’s colleague at the school', direct:[P('Sandra Brunner-Keller','Colleague','professional')], reach:3, photos:true },
+  forty:{ who:'Markus Brunner', desc:'A big network — the strip stays one row', direct:FORTY, reach:87, photos:true },
+  nophoto:{ who:'Markus Brunner', desc:'Familienvater, Vorstand im FC Längenfeld', direct:MARKUS, reach:24, photos:false },
+};
+const GROUPS = ['family','social','professional','other'];
+const groupOf = (cat) => (cat === 'romantic' || cat === 'family') ? 'family' : (cat === 'social' || cat === 'professional') ? cat : 'other';
+const COLOR = { family:'var(--c-family)', social:'var(--c-social)', professional:'var(--c-professional)', other:'var(--c-other)' };
+const AVS = ['av-pink','av-blue','av-teal','av-peach','av-mauve','av-sky'];
+const avOf = (name) => AVS[[...name].reduce((h, ch) => (h * 31 + ch.charCodeAt(0)) >>> 0, 7) % AVS.length];
+const initials = (name) => name.split(/[\s-]+/).filter(Boolean).slice(0, 2).map(w => w[0]).join('');
+const esc = (s) => String(s).replace(/[&<>"]/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;' }[c]));
+
+const ICON = {
+  pencil:'<path d="M4 20h4L19 9a2.8 2.8 0 0 0-4-4L4 16v4Z"/><path d="m13.5 6.5 4 4"/>',
+  plus:'<path d="M12 5v14M5 12h14"/>', more:'<circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/>',
+  down:'<path d="m6 9 6 6 6-6"/>', up:'<path d="m6 15 6-6 6 6"/>',
+  enlarge:'<path d="M14 4h6v6M10 20H4v-6M20 4l-6 6M4 20l6-6"/>', shrink:'<path d="M4 14h6v6M20 10h-6V4M14 10l6-6M10 14l-6 6"/>',
+  full:'<path d="M4 9V4h5M15 4h5v5M20 15v5h-5M9 20H4v-5"/>',
+  home:'<path d="M4 11 12 4l8 7v9H4z"/>', people:'<circle cx="9" cy="8" r="3.2"/><path d="M3 20c.5-3.4 3-5.4 6-5.4s5.5 2 6 5.4"/><path d="M16 4.8a3.2 3.2 0 0 1 0 6.3M18 14.8c1.7.7 2.8 2.4 3 5.2"/>',
+  circles:'<circle cx="9" cy="12" r="5.5"/><circle cx="15" cy="12" r="5.5"/>', graph:'<circle cx="5" cy="12" r="2"/><circle cx="19" cy="5" r="2"/><circle cx="19" cy="19" r="2"/><path d="m7 11 10-5M7 13l10 5"/>',
+  write:'<path d="M12 20h8"/><path d="M15.5 4.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4Z"/>', filter:'<path d="M4 6h16M7 12h10M10 18h4"/>',
+  star:'<path d="M12 3v4M12 17v4M3 12h4M17 12h4M5.6 5.6l2.8 2.8M15.6 15.6l2.8 2.8M18.4 5.6l-2.8 2.8M8.4 15.6l-2.8 2.8"/>',
+};
+const ic = (n, cls = 'i') => `<svg class="${cls}" viewBox="0 0 24 24" aria-hidden="true">${ICON[n]}</svg>`;
+
+/** A face: a photo (here a silhouette on the avatar colour) or the initials fallback. */
+function face(name, size, photo) {
+  const bg = `var(--${avOf(name)})`;
+  if (!photo) return `<span class="av" style="width:${size}px;height:${size}px;font-size:${Math.round(size * .36)}px;background:${bg}">${esc(initials(name))}</span>`;
+  const sil = 'color-mix(in srgb, var(--avatar-fg) 38%, ' + bg + ')';
+  return `<span class="av" style="width:${size}px;height:${size}px;background:${bg}"><svg viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="13" r="6" fill="${sil}"/><path d="M4 32c1-7 6-10.5 12-10.5S27 25 28 32Z" fill="${sil}"/></svg></span>`;
+}
+
+/* ── State, from the URL so every PNG is a link ─────────────── */
+const q = new URLSearchParams(location.search);
+const S = {
+  variant: q.get('variant') || 'a', theme: q.get('theme') || 'latte', lang: q.get('lang') || 'en', data: q.get('data') || 'typical',
+  big: { desk: q.get('big') === '1', phone: q.get('big') === '1' }, open: { desk:false, phone:false },
+};
+const CONTROLS = [
+  ['variant','Variant',[['a','A · Faces + counts',1],['b','B · + category dots'],['c','C · List row']]],
+  ['theme','Theme',[['latte','Latte'],['mocha','Mocha']]],
+  ['lang','Language',[['en','English'],['de','Deutsch']]],
+  ['data','Data',[['typical','Typical (10)'],['one','1 person'],['forty','40 people'],['nophoto','No photos']]],
+];
+
+/* ── The strip ─────────────────────────────────────────────── */
+const BIG = { phone:352, desk:384 };
+
+function stack(d, where) {
+  const shown = where === 'phone' ? 3 : 4, size = where === 'phone' ? 32 : 36;
+  // a +1 chip hides no more than a face would show: show the last face instead
+  const faces = d.direct.length <= shown + 1 ? d.direct : d.direct.slice(0, shown);
+  const rest = d.direct.length - faces.length;
+  return `<span class="stack" style="--face:${size}px" aria-hidden="true">${faces.map(r => face(r.name, size, d.photos)).join('')}${rest ? `<span class="more">+${rest}</span>` : ''}</span>`;
+}
+function counts(d, t) { return `<small><span class="n">${t.direct(d.direct.length)}<span class="sep">·</span></span> <span class="n">${t.reach(d.reach)}</span></small>`; }
+function cats(d, t) {
+  const n = {}; d.direct.forEach(r => { const g = groupOf(r.cat); n[g] = (n[g] || 0) + 1; });
+  return `<span class="cats">${GROUPS.filter(g => n[g]).map(g => `<span title="${t.groups[g]}"><i style="background:${COLOR[g]}"></i><span class="w">${t.groups[g]}</span> ${n[g]}</span>`).join('')}</span>`;
+}
+function entry(d, where, t) {
+  const big = S.big[where];
+  const label = `${t.enlarge} — ${t.map}, ${t.direct(d.direct.length)}, ${t.reach(d.reach)}`;
+  let inner;
+  if (S.variant === 'c') {
+    inner = `<button class="entry row" data-act="enlarge" aria-label="${esc(label)}" title="${esc(t.enlarge)}"><span class="ico">${ic('graph')}</span><span class="lbl">${t.map}</span><span class="cnt">${t.onMap(d.reach)}</span><span class="chev">${ic('down')}</span></button>`;
+  } else {
+    inner = `<button class="entry" data-act="enlarge" aria-label="${esc(label)}" title="${esc(t.enlarge)}">${stack(d, where)}<span class="txt"><b>${t.map}</b>${counts(d, t)}${S.variant === 'b' ? cats(d, t) : ''}</span><span class="glyph">${ic('enlarge')}</span></button>`;
+  }
+  const fs = `<span class="fs"><button class="disc" data-act="full" title="${t.full}" aria-label="${t.full}"><span>${ic('full')}</span></button></span>`;
+  const live = `<div class="live"><div class="toolbar"><span>${ic('filter')}${t.filter} <b>6/6</b></span><span>${t.arrange} ${ic('down')}</span><i class="sp"></i><button data-act="shrink" title="${t.shrink}" aria-label="${t.shrink}">${ic('shrink')}</button><button data-act="full" title="${t.full}" aria-label="${t.full}">${ic('full')}</button></div>
+    <div class="ph">${ic('graph')}<b>${t.live} · ${t.onMap(d.reach)}</b><small>${t.liveHint}</small></div></div>`;
+  return `<div class="mapframe${big ? ' big' : ''}" ${big ? ` style="height:${BIG[where]}px"` : ''}>${inner}${fs}${live}</div>`;
+}
+
+/* ── The card ──────────────────────────────────────────────── */
+const FOLDED = 6;
+function list(d, where, t) {
+  const cols = where === 'phone' ? 2 : 4, open = S.open[where];
+  let room = open || d.direct.length - FOLDED < 2 ? Infinity : FOLDED;
+  let s = '<div class="people">';
+  for (const g of GROUPS) {
+    const rows = d.direct.filter(r => groupOf(r.cat) === g); if (!rows.length) continue;
+    const shown = rows.slice(0, Math.max(0, room)); room -= shown.length; if (!shown.length) continue;
+    s += `<section class="group"><h4>${t.groups[g]} · ${rows.length}</h4><ul class="tiles" style="grid-template-columns:repeat(${cols},minmax(0,1fr))">${shown.map(r => {
+      const role = t.roles[r.role] || r.role;
+      return `<li><a class="tile" href="#">${face(r.name, 36, d.photos)}<span class="nm"><b>${esc(r.name)}</b><small>${esc(role)}</small></span></a></li>`;
+    }).join('')}</ul></section>`;
+  }
+  s += '</div>';
+  const hidden = d.direct.length - FOLDED;
+  if (open) s += `<button class="btn toggle" data-act="fold">${ic('up')}${t.showFewer}</button>`;
+  else if (hidden >= 2) s += `<button class="btn toggle" data-act="fold">${ic('down')}${t.showMore(hidden)}</button>`;
+  return s;
+}
+function card(d, where, t) {
+  return `<section class="card" id="people-${where}"><div class="sechead"><h3>${t.people}<span class="count">${d.direct.length}</span></h3><span class="r"><button class="btn">${ic('pencil')}${t.edit}</button><button class="btn" aria-label="${t.add}">${ic('plus')}</button><button class="btn square" aria-label="${t.more}">${ic('more')}</button></span></div>${entry(d, where, t)}${list(d, where, t)}</section>`;
+}
+const idcard = (d, big) => `<section class="card idcard">${face(d.who, big ? 96 : 72, false)}<div><h2>${esc(d.who)}</h2><p>${esc(d.desc)}</p><div class="ghost">identity card abbreviated</div></div></section>`;
+
+function renderDesk(d, t) {
+  const nav = [['home',t.home],['people',t.people,1],['circles',t.circles],['graph',t.graph]];
+  return `<div class="chrome"><i></i><i></i><i></i><span class="url">stella.home/contacts/demo-c-markus</span></div>
+  <div class="app"><nav class="side"><div class="logo"><span class="mark">${ic('star')}</span>Stella</div>${nav.map(([i, l, on]) => `<a class="${on ? 'on' : ''}">${ic(i)}${l}</a>`).join('')}</nav>
+  <div class="dmain"><div class="dhead">${t.home} <span>/</span> ${t.people} <span>/</span> <span class="here">${esc(d.who)}</span></div>
+  <div class="scroller" data-scroller><div class="dpage">${idcard(d, true)}${card(d, 'desk', t)}<section class="card" style="height:220px"><div class="sechead"><h3>${t.photos}</h3></div></section></div></div></div></div>`;
+}
+function renderPhone(d, t) {
+  return `<div class="status"><span>9:41</span><span class="cam"></span><span>5G</span></div>
+  <div class="ptop">${t.home} <span>/</span> ${t.people} <span>/</span> <span class="here">${esc(d.who)}</span></div>
+  <div class="scroller" data-scroller><div class="ppage">${idcard(d, false)}${card(d, 'phone', t)}<section class="card" style="height:200px"><div class="sechead"><h3>${t.photos}</h3></div></section></div></div>
+  <nav class="tabbar"><a class="tab">${ic('home')}${t.home}</a><a class="tab on">${ic('people')}${t.people}</a><a class="tab pen"><span>${ic('write')}</span></a><a class="tab">${ic('circles')}${t.circles}</a><a class="tab">${ic('graph')}${t.graph}</a></nav>`;
+}
+
+function renderControls() {
+  document.getElementById('controls').innerHTML = CONTROLS.map(([key, label, opts]) =>
+    `<div class="ctl"><span class="seg-label">${label}</span><div class="seg">${opts.map(([v, l, rec]) => `<button data-key="${key}" data-val="${v}" aria-pressed="${S[key] === v}">${l}${rec ? '<span class="rec">RECOMMENDED</span>' : ''}</button>`).join('')}</div></div>`).join('');
+  document.querySelectorAll('#vlist li').forEach(li => li.classList.toggle('cur', li.dataset.v === S.variant));
+}
+function render(keepScroll = true) {
+  document.documentElement.dataset.theme = S.theme;
+  document.documentElement.lang = S.lang;
+  const d = DATA[S.data], t = T[S.lang];
+  const scrolls = [...document.querySelectorAll('[data-scroller]')].map(s => s.scrollTop);
+  document.getElementById('desk').innerHTML = renderDesk(d, t);
+  document.getElementById('phone').innerHTML = renderPhone(d, t);
+  const now = [...document.querySelectorAll('[data-scroller]')];
+  if (keepScroll && scrolls.length) now.forEach((s, i) => (s.scrollTop = scrolls[i] ?? 0));
+  else { const ph = document.querySelector('#phone [data-scroller]'); ph.scrollTop = document.getElementById('people-phone').offsetTop - 8; }
+  renderControls();
+}
+function setBig(where, big) {
+  S.big[where] = big;
+  const frame = document.querySelector(`#people-${where} .mapframe`);
+  // the frame glides between the strip's own height and the enlarged one (docs/05 §5.11)
+  const entryH = frame.querySelector('.entry').offsetHeight + 2;
+  frame.style.height = (big ? entryH : frame.offsetHeight) + 'px';
+  void frame.offsetHeight;
+  frame.classList.toggle('big', big);
+  frame.style.height = (big ? BIG[where] : entryH) + 'px';
+  if (!big) frame.addEventListener('transitionend', () => { if (!S.big[where]) frame.style.height = ''; }, { once:true });
+  const chev = frame.querySelector('.chev'); if (chev) chev.innerHTML = ic(big ? 'up' : 'down');
+  // focus follows the reader: Shrink once the live map shows, Enlarge again on the way back
+  const to = frame.querySelector(big ? '[data-act="shrink"]' : '.entry');
+  setTimeout(() => to && to.focus({ preventScroll:true }), big ? 420 : 0);
+}
+let toastTimer;
+function toast(text) { const el = document.getElementById('toast'); el.textContent = text; el.classList.add('on'); clearTimeout(toastTimer); toastTimer = setTimeout(() => el.classList.remove('on'), 1800); }
+
+document.addEventListener('click', (e) => {
+  const seg = e.target.closest('[data-key]');
+  if (seg) { S[seg.dataset.key] = seg.dataset.val; S.big = { desk:false, phone:false }; S.open = { desk:false, phone:false }; render(); return; }
+  const act = e.target.closest('[data-act]');
+  if (!act) { if (e.target.closest('a')) e.preventDefault(); return; }
+  e.preventDefault();
+  const where = act.closest('#phone') ? 'phone' : 'desk';
+  switch (act.dataset.act) {
+    case 'enlarge': return setBig(where, true);
+    case 'shrink': return setBig(where, false);
+    case 'full': return toast(T[S.lang].toast);
+    case 'fold': S.open[where] = !S.open[where]; return render();
+  }
+});
+
+/* The desktop frame scales to the room beside the phone. */
+function fit() {
+  const solo = q.get('frame');
+  if (solo) { document.body.classList.add('solo'); document.querySelector(solo === 'phone' ? '.browser-fit' : '.device').style.display = 'none'; }
+  // beside the phone when there is room, else stacked at the full content width (the owner reads this on a phone)
+  const wrap = document.querySelector('.wrap'), cs = getComputedStyle(wrap);
+  const inner = wrap.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
+  const room = solo ? 1440 : Math.min(1440, inner - 432 - 28 >= 560 ? inner - 432 - 28 : inner);
+  const k = room / 1440;
+  const root = document.documentElement.style;
+  root.setProperty('--fit', k); root.setProperty('--fit-w', 1440 * k + 'px'); root.setProperty('--fit-h', 900 * k + 'px');
+}
+addEventListener('resize', fit);
+fit(); render(false);
+</script>
+</body>
+</html>
