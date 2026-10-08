@@ -149,6 +149,26 @@ describe('seedDemoData', () => {
 		expect(dates.some((d) => d.kind === 'anniversary')).toBe(true);
 	});
 
+	it('stores every symmetric link with its ends sorted, as relationshipPair does', () => {
+		seed(db);
+		const links = db
+			.select({
+				from: schema.relationship.fromContactId,
+				to: schema.relationship.toContactId,
+				symmetric: schema.relationshipType.symmetric
+			})
+			.from(schema.relationship)
+			.innerJoin(
+				schema.relationshipType,
+				eq(schema.relationship.typeId, schema.relationshipType.id)
+			)
+			.all();
+		const symmetric = links.filter((link) => link.symmetric === 1);
+
+		expect(symmetric.length).toBeGreaterThan(10);
+		for (const link of symmetric) expect(link.from < link.to).toBe(true);
+	});
+
 	it('is idempotent — reseeding does not duplicate rows', () => {
 		seed(db);
 		const firstContacts = db.select().from(schema.contact).all().length;

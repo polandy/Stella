@@ -21,6 +21,7 @@ export interface PartialDate {
 /** The precisions that name a day, so a birthday and its reminder can fall on them. */
 export const DAY_PRECISIONS = ['full', 'month_day'] as const satisfies readonly DatePrecision[];
 
+/** Whether a date of this precision falls on a day — a birthday can be shown and reminded. */
 export function namesADay(precision: DatePrecision): boolean {
 	return (DAY_PRECISIONS as readonly DatePrecision[]).includes(precision);
 }
