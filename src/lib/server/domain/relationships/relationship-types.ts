@@ -230,7 +230,7 @@ export async function editRelationshipType(
 	// the household reads in the picker, and two of the same would be indistinguishable.
 	claimTypeKey(fields.forwardLabel, await deps.types.listTypes(viewer), typeId);
 	if (fields.symmetric !== existing.symmetric) {
-		// Symmetry decides the canonical storage direction (`canonicalEndpoints`), so flipping
+		// Symmetry decides the canonical storage direction (`relationshipPair`), so flipping
 		// it would strand the rows already written the other way round.
 		const count = await deps.types.countRelationshipsOfType(viewer, typeId);
 		if (count > 0) throw new RelationshipTypeInUseError(count);
@@ -255,7 +255,7 @@ export async function removeRelationshipType(
 
 /**
  * Whether `into` can take over `from`'s relationships. Symmetry decides the canonical storage
- * direction (`canonicalEndpoints`), and a one-way type says which end is which: folding across
+ * direction (`relationshipPair`), and a one-way type says which end is which: folding across
  * would invent a direction or lose one.
  */
 export const canMergeInto = (

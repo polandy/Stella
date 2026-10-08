@@ -1,6 +1,7 @@
 import type { BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
 import { eq, like } from 'drizzle-orm';
 import type * as schema from './schema';
+import { relationshipPair } from '../../relationships/endpoints';
 import { extractMentionIds, mentionToken, mentionsOtherThan } from '../../mentions/mentions';
 import { hashPasswordSync } from '../auth/password';
 import {
@@ -855,16 +856,11 @@ export function seedDemoData(
 	db.insert(relationship)
 		.values(
 			RELATIONSHIPS.map((r) => {
-				// Store symmetric links order-independently, mirroring canonicalEndpoints so the
-				// graph dedupes regardless of direction (docs/02 §2.4).
-				const [a, b] = [cid(r.from), cid(r.to)];
 				const symmetric = r.symmetric ?? SYMMETRIC_TYPES.has(r.type);
-				const [fromId, toId] = symmetric && b < a ? [b, a] : [a, b];
 				return {
 					id: `demo-rel-${r.from}-${r.to}-${r.type}`,
 					householdId,
-					fromContactId: fromId,
-					toContactId: toId,
+					...relationshipPair(cid(r.from), cid(r.to), symmetric),
 					typeId: r.type,
 					createdBy: authorId,
 					createdAt: seededAt

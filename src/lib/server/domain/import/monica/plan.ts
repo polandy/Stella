@@ -11,7 +11,7 @@ import type { RelationshipCategory } from '../../../../relationships/categories'
 import { CURRENT_RELATIONSHIP_STATUS } from '../../../../relationships/status';
 import type { NewRelationship } from '../../relationships/relationships';
 import { BUILT_IN_RELATIONSHIP_TYPES } from '../../relationships/built-in-types';
-import { canonicalEndpoints } from '../../relationships/relationships';
+import { relationshipPair } from '../../../../relationships/endpoints';
 import { resolveTagColor, type NewTag } from '../../tags/tags';
 import type { MonicaContact, SourceExport, MonicaId, MonicaSpecialDate } from './monica-export';
 import { mapRelationshipType } from './relationship-types';
@@ -306,7 +306,7 @@ export function planMonicaImport(exp: SourceExport, opts: ImportOptions): Import
 		// whether Monica's type name is Stella's forward-label side, and that role belongs to
 		// of_contact, not contact_is.
 		const [a, b] = mapped.forward ? [r.ofContact, r.contactIs] : [r.contactIs, r.ofContact];
-		const ends = canonicalEndpoints(contactId(a), contactId(b), symmetric);
+		const ends = relationshipPair(contactId(a), contactId(b), symmetric);
 		const dedupeKey = `${typeId}|${ends.fromContactId}|${ends.toContactId}`;
 		if (seenRelationships.has(dedupeKey)) continue;
 		seenRelationships.add(dedupeKey);

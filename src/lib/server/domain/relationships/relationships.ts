@@ -14,7 +14,7 @@ import {
 } from './suggestion-review';
 import type { Viewer } from '../../access/visibility';
 import type { RelationshipCategory } from '../../../relationships/categories';
-import type { Endpoints } from '../../../relationships/endpoints';
+import { relationshipPair, type Endpoints } from '../../../relationships/endpoints';
 import { endpointsForSide, type RelationshipSide } from '../../../relationships/type-options';
 import {
 	exclusionFor,
@@ -54,19 +54,9 @@ export interface RelationshipType {
 
 export type { Endpoints };
 
-/**
- * Canonical storage direction. Symmetric links are stored order-independently (endpoint
- * ids sorted) so duplicates collide regardless of input order; asymmetric links keep the
- * given order (from = forward-label side). Self relationships are rejected.
- */
+/** The canonical storage direction (`relationshipPair`), as plain endpoints. */
 export function canonicalEndpoints(fromId: string, toId: string, symmetric: boolean): Endpoints {
-	if (fromId === toId) {
-		throw new Error('A contact cannot have a relationship with themselves.');
-	}
-	if (symmetric && toId < fromId) {
-		return { fromContactId: toId, toContactId: fromId };
-	}
-	return { fromContactId: fromId, toContactId: toId };
+	return relationshipPair(fromId, toId, symmetric);
 }
 
 export interface RelationshipDescription {
@@ -464,7 +454,7 @@ export async function createRelationship(
 	}
 	const details = parseRelationshipDetails(input);
 
-	const { fromContactId, toContactId } = canonicalEndpoints(
+	const { fromContactId, toContactId } = relationshipPair(
 		input.fromContactId,
 		input.toContactId,
 		type.symmetric
@@ -635,7 +625,7 @@ async function planRetype(
 	if (otherContactId === null) return null;
 
 	const asked = endpointsForSide(perspectiveContactId, otherContactId, choice.side);
-	const endpoints = canonicalEndpoints(asked.fromContactId, asked.toContactId, type.symmetric);
+	const endpoints = relationshipPair(asked.fromContactId, asked.toContactId, type.symmetric);
 
 	if (
 		await deps.relationships.exists(

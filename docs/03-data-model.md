@@ -17,7 +17,7 @@ Detail stays in the feature doc the term points to.
 | **person** | Anyone the household keeps a record of, with or without an account (docs/02 §2.2). | `contact` table, `domain/contacts/`, the `/contacts` route — the old name, kept for history; the UI and the API say *people* (`/api/v1/people`). Client helpers live in `lib/people/` (names, namesakes, the directory, the person page's sections). | contact (in copy), profile (for the record itself) |
 | **household member** | Someone with an account in the household; everything they write carries their user id (docs/02 §2.1). | `user` table, `domain/household/members.ts` | user (in copy); *member* alone also names a circle's member |
 | **circle** | A named context people share — class, club, team, workplace, friend group; its people are its *members*, each with an optional role (docs/02 §2.4.2). | `circle`, `circle_membership`, `domain/circles/`, `lib/circles/`, `/circles` | group, context (for the record) |
-| **relationship** | A link someone entered between two people, with a type and a direction (docs/02 §2.4). | `relationship`, `relationship_type`, `domain/relationships/`, `lib/relationships/` | connection; *edge* only inside `lib/graph/` |
+| **relationship** | A link someone entered between two people, with a type and a direction (docs/02 §2.4). | `relationship`, `relationship_type`, `domain/relationships/`, `lib/relationships/`; its two ends as stored are a `RelationshipPair` (`lib/relationships/endpoints.ts`) | connection; *edge* only inside `lib/graph/` |
 | **partial date** | A date known only in part — a whole day, a day without its year, a year, or a year estimated from an age (§3.4). A birth date is one. | `birth_date` + `birth_date_precision` on `contact`, `PartialDate` in `lib/dates/partial-date.ts` | fuzzy date (in code), incomplete date |
 | **kin** | A relative nobody entered — grandparent, cousin, in-law — named from the relationships the viewer may see, for display only and never stored (docs/02 §2.4.1). | `lib/kinship/` | inferred relationship (as if it were stored) |
 | **journal entry** | A dated diary record about one person, by one author, for one day (docs/02 §2.20). The UI calls every journal entry a *moment*. | `journal_entry`, `journal_mention`, `domain/journal/`, `/contacts/[id]/journal` | diary entry, post |
@@ -340,7 +340,11 @@ so the delete is plain and the graph and derived kinship follow on the next read
 Constraints: `from != to`; unique on `(from_contact_id, to_contact_id, type_id)`.
 Indexed on `from_contact_id`, `to_contact_id`, `type_id`, and on `created_at` for the Home
 stream's newest links.
-Direction is stored canonically for asymmetric types (from = forward-label side).
+Direction is stored canonically for asymmetric types (from = forward-label side); a
+symmetric link is stored with its ends sorted, so the unique index catches a duplicate entered
+from either end. Every writer — the use-cases, both import plans, the demo seed — gets the two
+ends from one constructor, `relationshipPair` (a **`RelationshipPair`**,
+`src/lib/relationships/endpoints.ts`), never by ordering them itself.
 Visibility is **derived** from the two endpoints (see 2.10), not stored.
 
 **Reciprocity is implicit — never a second row.** A relationship is stored once and
