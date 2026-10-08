@@ -5,7 +5,7 @@ import { giftLink, type GiftState } from '../../../gifts/gifts';
 import type { Visibility, Viewer } from '../../access/visibility';
 import type { Clock } from '../../clock';
 import type { IdGenerator } from '../../id';
-import type { ContactRepository } from '../contacts/contacts';
+import type { ContactLookup } from '../contacts/contacts';
 import { requireVisibleContact } from '../contacts/require-visible';
 
 /*
@@ -81,7 +81,7 @@ export interface GiftRepository {
 /** Collaborators the use-cases need, injected by the composition root. */
 export interface GiftDeps {
 	gifts: GiftRepository;
-	contacts: Pick<ContactRepository, 'findByIdVisibleTo'>;
+	contacts: ContactLookup;
 	ids: IdGenerator;
 	clock: Clock;
 }

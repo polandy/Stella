@@ -1,12 +1,8 @@
 import { error, fail, redirect } from '@sveltejs/kit';
 import * as v from 'valibot';
 import { requireAdmin, requireUser, requireViewer } from '$lib/server/auth/guards';
-import {
-	archiveContact,
-	deleteContact,
-	mergeContacts,
-	restoreContact
-} from '$lib/server/domain/contacts/contacts';
+import { archiveContact, restoreContact } from '$lib/server/domain/contacts/contacts';
+import { deleteContact, mergeContacts } from '$lib/server/domain/contacts/remove-contact';
 import { pruneOrphanTags } from '$lib/server/domain/tags/tags';
 import { setSelfContact, UnknownSelfContactError } from '$lib/server/domain/household/self-contact';
 import { say, translator } from '$lib/server/i18n/say';

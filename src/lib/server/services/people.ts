@@ -11,11 +11,7 @@ import type * as schema from '../db/schema';
 import { createDrizzleSurnameDismissalRepository } from '../db/suggestion-dismissal-repository';
 import { createDrizzleSurnameFacts } from '../db/surname-facts';
 import type { ContactNameDeps, ContactNameReads } from '../domain/contacts/contact-names';
-import type {
-	ContactDeps,
-	ContactRepository,
-	DeleteContactDeps
-} from '../domain/contacts/contacts';
+import type { ContactDeps, ContactRepository } from '../domain/contacts/contacts';
 import type { ContactDirectoryDeps, ContactDirectoryReads } from '../domain/contacts/directory';
 import type {
 	LastNameDeps,
@@ -24,6 +20,7 @@ import type {
 } from '../domain/contacts/last-names';
 import type { NameDeps } from '../domain/contacts/name-parts';
 import type { PeopleStampDeps } from '../domain/contacts/people-stamp';
+import type { DeleteContactDeps } from '../domain/contacts/remove-contact';
 import type { PersonContextDeps } from '../domain/contacts/person-context';
 import type { SuggestionDeps } from '../domain/contacts/suggestions';
 import type { SelfContactDeps } from '../domain/household/self-contact';
@@ -74,7 +71,7 @@ export interface PeopleWiring {
 	/** The kinship a surname proposal follows; the relationships context owns the read model. */
 	kinship: SurnameReviewDeps['kinship'];
 	/** Where a deleted person's photo bytes are unlinked; the media context owns the store. */
-	media: DeleteContactDeps['media'];
+	media: DeleteContactDeps['photoFiles'];
 }
 
 export function createPeopleServices({
@@ -102,7 +99,7 @@ export function createPeopleServices({
 		contactDeps,
 		contactDirectoryDeps: { directory },
 		contactNameDeps: { contactNames },
-		deleteContactDeps: { ...contactDeps, media },
+		deleteContactDeps: { ...contactDeps, photoFiles: media },
 		nameDeps,
 		lastNameDeps: nameDeps,
 		surnameReviewDeps: {

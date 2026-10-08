@@ -7,7 +7,8 @@ import type { Clock } from '../clock';
 import { createDrizzleAccountRepository } from '../db/account-repository';
 import { createDrizzleKinshipGraphReads } from '../db/kinship-graph-read';
 import * as schema from '../db/schema';
-import { createContact, deleteContact } from '../domain/contacts/contacts';
+import { createContact } from '../domain/contacts/contacts';
+import { deleteContact } from '../domain/contacts/remove-contact';
 import { setSelfContact } from '../domain/household/self-contact';
 import type { IdGenerator } from '../id';
 import { hashPassword, verifyPassword } from '../auth/password';
@@ -139,7 +140,7 @@ describe('createPeopleServices', () => {
 		const people = createPeopleServices(wiring);
 		const id = await addAnna(people.contactDeps);
 		expect(await deleteContact(people.deleteContactDeps, viewerOf(admin), id)).toBe(true);
-		expect(people.deleteContactDeps.media).toBe(media);
+		expect(people.deleteContactDeps.photoFiles).toBe(media);
 		expect(await people.contacts.findByIdVisibleTo(viewerOf(admin), id)).toBeNull();
 	});
 });

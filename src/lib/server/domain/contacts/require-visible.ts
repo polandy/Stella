@@ -1,6 +1,6 @@
 import { TranslatableError } from '../../../errors/translatable';
 import { phrase } from '../../../i18n/phrase';
-import type { ContactRepository } from './contacts';
+import type { ContactLookup } from './contacts';
 
 /*
  * The check every addition on a person starts with (docs/03 §3.7): the person must be one the
@@ -18,7 +18,7 @@ export class ContactGoneError extends TranslatableError {
 
 /** Resolve when `contactId` is visible to the author; refuse with `ContactGoneError` otherwise. */
 export async function requireVisibleContact(
-	contacts: Pick<ContactRepository, 'findByIdVisibleTo'>,
+	contacts: ContactLookup,
 	author: { userId: string; householdId: string },
 	contactId: string
 ): Promise<void> {
@@ -31,7 +31,7 @@ export async function requireVisibleContact(
  * additions whose use-case predates commands and takes the check on trust from its caller.
  */
 export function onVisibleContact<P extends { contactId: string }, R>(
-	contacts: Pick<ContactRepository, 'findByIdVisibleTo'>,
+	contacts: ContactLookup,
 	apply: (author: { userId: string; householdId: string }, payload: P) => Promise<R>
 ): (author: { userId: string; householdId: string }, payload: P) => Promise<R> {
 	return async (author, payload) => {
