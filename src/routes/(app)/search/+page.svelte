@@ -109,8 +109,9 @@
 						>
 							<GiftStateMark state={g.state} />
 							<span class="flex min-w-0 flex-col">
-								<span class="truncate text-fg">{g.title}</span>
-								<span class="truncate text-sm text-fg-muted"
+								<span class="break-words text-fg">{g.title}</span>
+								<!-- Wraps rather than truncates: the day it was given is the point. -->
+								<span class="text-sm text-fg-muted"
 									>{t('search.giftFor', { name: g.contactName })} · {stateLabel(i18n, g)}</span
 								>
 							</span>
