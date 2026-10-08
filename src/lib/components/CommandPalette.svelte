@@ -7,7 +7,12 @@
 	import Icon from '$lib/components/Icon.svelte';
 	import NamesakeLine from '$lib/components/NamesakeLine.svelte';
 	import { useTranslate } from '$lib/i18n/context.svelte';
-	import { paletteRows, type PalettePerson } from '$lib/palette/palette';
+	import {
+		paletteRows,
+		type PalettePerson,
+		type PaletteRow,
+		type PaletteStep
+	} from '$lib/palette/palette';
 	import { usePeopleContext } from '$lib/people/context.svelte';
 	import { tick } from 'svelte';
 
@@ -16,6 +21,10 @@
 	 * from the platform; the rows come from the pure `paletteRows`, this only draws and
 	 * navigates. Arrow keys move, Enter follows, and the list resets on every open so a stale
 	 * query from last time never greets the next keystroke.
+	 *
+	 * *Gift idea for …* asks a second question in the same dialog: the field empties and the
+	 * list becomes the people the idea could be for. Backspace in the empty field, or the back
+	 * arrow in front of it, returns to the start.
 	 */
 
 	interface Props {
@@ -28,6 +37,7 @@
 	let input: HTMLInputElement | undefined = $state();
 	let query = $state('');
 	let selected = $state(0);
+	let step = $state<PaletteStep>('start');
 
 	const t = useTranslate();
 	const peopleContext = usePeopleContext();
@@ -37,10 +47,12 @@
 			people,
 			{
 				write: t('components.palette.write'),
+				giftIdea: t('components.palette.giftIdea'),
 				addPerson: t('components.palette.addPerson'),
 				searchEverything: (q) => t('components.palette.searchEverything', { query: q })
 			},
-			peopleContext()
+			peopleContext(),
+			step
 		)
 	);
 
@@ -49,6 +61,7 @@
 		if (open && !dialog.open) {
 			query = '';
 			selected = 0;
+			step = 'start';
 			dialog.showModal();
 			void tick().then(() => input?.focus());
 		} else if (!open && dialog.open) {
@@ -61,9 +74,17 @@
 		if (selected >= rows.length) selected = Math.max(0, rows.length - 1);
 	});
 
-	function follow(href: string) {
+	function goTo(next: PaletteStep) {
+		step = next;
+		query = '';
+		selected = 0;
+		input?.focus();
+	}
+
+	function follow(row: PaletteRow) {
+		if (row.kind === 'step') return goTo(row.step);
 		open = false;
-		void goto(href);
+		void goto(row.href);
 	}
 
 	function onKeydown(event: KeyboardEvent) {
@@ -76,7 +97,10 @@
 		} else if (event.key === 'Enter') {
 			event.preventDefault();
 			const row = rows[selected];
-			if (row) follow(row.href);
+			if (row) follow(row);
+		} else if (event.key === 'Backspace' && query === '' && step !== 'start') {
+			event.preventDefault();
+			goTo('start');
 		}
 	}
 </script>
@@ -89,7 +113,17 @@
 	class="m-0 w-full max-w-lg self-start justify-self-center rounded-app border border-border bg-card p-0 text-fg shadow-pop backdrop:bg-bg-sunken/70 backdrop:backdrop-blur-sm max-sm:max-w-none max-sm:rounded-b-none sm:mt-[12vh]"
 >
 	<div class="flex items-center gap-2.5 border-b border-border-subtle px-3.5 py-3">
-		<Icon name="search" size={16} />
+		{#if step === 'start'}
+			<Icon name="search" size={16} />
+		{:else}
+			<button
+				type="button"
+				onclick={() => goTo('start')}
+				aria-label={t('components.palette.back')}
+				class="-m-1 grid place-items-center rounded-control p-1 text-fg-muted hover:text-fg"
+				><Icon name="back" size={16} /></button
+			>
+		{/if}
 		<input
 			bind:this={input}
 			bind:value={query}
@@ -99,8 +133,12 @@
 			role="combobox"
 			aria-expanded={rows.length > 0}
 			aria-autocomplete="list"
-			placeholder={t('components.palette.placeholder')}
-			aria-label={t('components.palette.jumpTo')}
+			placeholder={step === 'giftIdea'
+				? t('components.palette.giftIdeaFor')
+				: t('components.palette.placeholder')}
+			aria-label={step === 'giftIdea'
+				? t('components.palette.giftIdeaFor')
+				: t('components.palette.jumpTo')}
 			aria-controls="palette-rows"
 			aria-activedescendant={rows[selected]
 				? `palette-${rows[selected].kind}-${rows[selected].id}`
@@ -119,10 +157,10 @@
 					id="palette-{row.kind}-{row.id}"
 					role="option"
 					aria-selected={i === selected}
-					href={row.href}
+					href={row.kind === 'step' ? undefined : row.href}
 					onclick={(e) => {
 						e.preventDefault();
-						follow(row.href);
+						follow(row);
 					}}
 					onpointerenter={() => (selected = i)}
 					tabindex="-1"

@@ -51,3 +51,20 @@ export function byYear<T extends { givenOn: string | null }>(gifts: readonly T[]
 	}
 	return years;
 }
+
+const GIFT_PARAM = 'gift';
+
+/**
+ * Where the command palette's *Gift idea for …* lands (docs/05 §5.4): the person's page, its
+ * Gifts card's idea form open. No `#section-gifts`: after a client navigation SvelteKit focuses
+ * the hash's target, which would take the cursor back out of the form; opening the form scrolls
+ * it into view anyway.
+ */
+export function giftIdeaPath(contactId: string): string {
+	return `/contacts/${contactId}?${GIFT_PARAM}=idea`;
+}
+
+/** Whether a page address asks for the idea form (`giftIdeaPath`). */
+export function asksForGiftIdea(url: URL): boolean {
+	return url.searchParams.get(GIFT_PARAM) === 'idea';
+}

@@ -16,6 +16,10 @@ export const home = {
 	'home.atAGlance': 'At a glance',
 	'home.comingUp': 'Coming up',
 	'home.writeMoment': 'Write a moment',
+	// A person in *Coming up* with open gift ideas (docs/02 §2.13.3): links to their Gifts card.
+	'home.giftIdeas': (p: { count: number }) => (p.count === 1 ? '1 idea' : `${p.count} ideas`),
+	'home.giftIdeasFor': (p: { count: number; name: string }) =>
+		p.count === 1 ? `1 gift idea for ${p.name}` : `${p.count} gift ideas for ${p.name}`,
 	'home.findPerson': 'Find a person…',
 	'home.showAll': (p: { count: number }) => `Show all ${p.count}`,
 	'home.outbox.label': 'Not sent yet',

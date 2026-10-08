@@ -68,6 +68,14 @@ export interface GiftRepository {
 	 */
 	listForContactVisibleTo(viewer: Viewer, contactId: string): Promise<Gift[]>;
 	/**
+	 * How many open ideas the viewer may see on each of `contactIds` — Home's *Coming up* hint
+	 * (docs/02 §2.13.3). A person with none is left out.
+	 */
+	countOpenIdeasVisibleTo(
+		viewer: Viewer,
+		contactIds: readonly string[]
+	): Promise<Map<string, number>>;
+	/**
 	 * One keyset page of the person's given and received gifts, newest day first, then latest
 	 * noted — the story's order (docs/02 §2.23). Ideas are never in it.
 	 */
@@ -267,4 +275,13 @@ export async function listGiftsForContact(
 	contactId: string
 ): Promise<Gift[]> {
 	return deps.gifts.listForContactVisibleTo(viewer, contactId);
+}
+
+/** The open ideas the viewer may see on each of these people; one with none is left out. */
+export async function countOpenIdeas(
+	deps: Pick<GiftDeps, 'gifts'>,
+	viewer: Viewer,
+	contactIds: readonly string[]
+): Promise<Map<string, number>> {
+	return deps.gifts.countOpenIdeasVisibleTo(viewer, [...new Set(contactIds)]);
 }

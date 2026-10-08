@@ -1,3 +1,4 @@
+import { giftIdeaPath } from '$lib/gifts/card';
 import { foundByFormerName } from '$lib/people/former-name';
 import { foundByJob, jobOf, type Job } from '$lib/people/job';
 import type { IconName } from '$lib/components/icons';
@@ -10,6 +11,9 @@ import { tellApart, type Distinction } from '$lib/people/namesakes';
  * empty query is always "Write a moment", which keeps the shortcut's original promise —
  * ⌘K then Enter lands in the capture field — while letting the same keys reach a person or
  * an action. Notes are not searched here; a typed query always ends in the full search.
+ *
+ * Most rows go somewhere. *Gift idea for …* asks something first: it turns the palette into a
+ * second step, `giftIdea`, which lists only people, each leading to their idea form.
  *
  * The wording arrives as `PaletteLabels` rather than being written here: this module is
  * pure and language-free, and the component hands it the viewer's language (docs/02 §2.19).
@@ -36,9 +40,13 @@ export interface PalettePerson {
 	company?: string | null;
 }
 
-/** One row of the palette; `href` is where Enter goes. */
+/** What the palette is asking: anything (`start`), or whom a gift idea is for. */
+export type PaletteStep = 'start' | 'giftIdea';
+
+/** One row of the palette; `href` is where Enter goes, `step` what the palette asks next. */
 export type PaletteRow =
 	| { kind: 'action'; id: string; label: string; icon: IconName; href: string }
+	| { kind: 'step'; id: string; label: string; icon: IconName; step: PaletteStep }
 	| {
 			kind: 'person';
 			id: string;
@@ -56,12 +64,16 @@ export type PaletteRow =
 	  }
 	| { kind: 'search'; id: 'search'; label: string; icon: IconName; href: string };
 
+/** A row a search for people yields: a person, or the way into full search. Each goes somewhere. */
+export type PersonSearchRow = Extract<PaletteRow, { kind: 'person' | 'search' }>;
+
 /** Most people shown at once; the query narrows the rest. */
 export const PALETTE_PEOPLE_LIMIT = 6;
 
 /** The rows Stella offers on top of the people, in the viewer's language. */
 export interface PaletteLabels {
 	write: string;
+	giftIdea: string;
 	addPerson: string;
 	/** The last row of a non-empty query: "Search everything for …". */
 	searchEverything: (query: string) => string;
@@ -70,8 +82,11 @@ export interface PaletteLabels {
 /** The label of an action row, by the field of `PaletteLabels` that words it. */
 type ActionLabel = Exclude<keyof PaletteLabels, 'searchEverything'>;
 
-const ACTIONS: readonly { id: string; label: ActionLabel; icon: IconName; href: string }[] = [
+const ACTIONS: readonly ({ id: string; label: ActionLabel; icon: IconName } & (
+	{ href: string } | { step: PaletteStep }
+))[] = [
 	{ id: 'write', label: 'write', icon: 'write', href: '/?compose' },
+	{ id: 'gift-idea', label: 'giftIdea', icon: 'gift', step: 'giftIdea' },
 	{ id: 'add-person', label: 'addPerson', icon: 'add', href: '/contacts/new' }
 ];
 
@@ -81,16 +96,29 @@ export function paletteRows(
 	people: PalettePerson[],
 	labels: PaletteLabels,
 	/** What the namesake line falls back on, by person (docs/02 §2.2.3). */
-	contexts: ReadonlyMap<string, PersonContext> = new Map()
+	contexts: ReadonlyMap<string, PersonContext> = new Map(),
+	step: PaletteStep = 'start'
 ): PaletteRow[] {
 	const q = query.trim();
-	const rows: PaletteRow[] = [];
+	if (step === 'giftIdea') {
+		// Only whom it is for: a name nobody matches has no idea form to land on.
+		return personSearchRows(q, people, labels.searchEverything, contexts, {
+			listAllWhenEmpty: true
+		})
+			.filter((row) => row.kind === 'person')
+			.map((row) => ({ ...row, href: giftIdeaPath(row.id) }));
+	}
 
+	const rows: PaletteRow[] = [];
 	for (const action of ACTIONS) {
 		const label = labels[action.label];
-		if (q === '' || label.toLowerCase().includes(q.toLowerCase())) {
-			rows.push({ kind: 'action', id: action.id, label, icon: action.icon, href: action.href });
-		}
+		if (q !== '' && !label.toLowerCase().includes(q.toLowerCase())) continue;
+		const { id, icon } = action;
+		rows.push(
+			'href' in action
+				? { kind: 'action', id, label, icon, href: action.href }
+				: { kind: 'step', id, label, icon, step: action.step }
+		);
 	}
 
 	rows.push(
@@ -111,12 +139,12 @@ export function personSearchRows(
 	contexts: ReadonlyMap<string, PersonContext> = new Map(),
 	/** The palette doubles as a jump list, so it shows people before anything is typed. */
 	{ listAllWhenEmpty = false }: { listAllWhenEmpty?: boolean } = {}
-): PaletteRow[] {
+): PersonSearchRow[] {
 	const q = query.trim();
 	if (q === '' && !listAllWhenEmpty) return [];
 
 	const namesakes = tellApart(people, contexts);
-	const rows: PaletteRow[] = people
+	const rows: PersonSearchRow[] = people
 		// Matched by name and job; the description is shown, not searched — full search reads it.
 		.map((p) => ({ ...p, description: null }))
 		.filter((p) => matchesQuery(p, q))

@@ -4,6 +4,7 @@ import type { Viewer } from '../../access/visibility';
 import { ContactGoneError } from '../contacts/require-visible';
 import {
 	addGift,
+	countOpenIdeas,
 	editGift,
 	GiftGoneError,
 	InvalidGiftError,
@@ -50,6 +51,15 @@ function fakeGifts(): GiftRepository & { rows: Map<string, Gift> } {
 		},
 		async listStoryPageForContactVisibleTo() {
 			return [];
+		},
+		async countOpenIdeasVisibleTo(viewer, contactIds) {
+			const counts = new Map<string, number>();
+			for (const g of rows.values()) {
+				if (g.state !== 'idea' || !contactIds.includes(g.contactId) || !visible(viewer, g))
+					continue;
+				counts.set(g.contactId, (counts.get(g.contactId) ?? 0) + 1);
+			}
+			return counts;
 		}
 	};
 }
@@ -313,5 +323,30 @@ describe('listGiftsForContact', () => {
 		await addGift(deps, JULIA, { ...idea('Hers'), visibility: 'private' });
 		const listed = await listGiftsForContact(deps, { id: 'andy', householdId: 'h1' }, HILDE);
 		expect(listed.map((g) => g.title)).toEqual(['Mine']);
+	});
+});
+
+describe('countOpenIdeas', () => {
+	it('counts the open ideas the viewer may see, once per person however often asked', async () => {
+		await addGift(deps, ANDY, idea('Teapot'));
+		await addGift(deps, ANDY, idea('Scarf'));
+		await addGift(deps, JULIA, { ...idea('Hers'), visibility: 'private' });
+		const given = await addGift(deps, ANDY, idea('Book'));
+		await markGiftGiven(deps, ANDY, {
+			contactId: HILDE,
+			giftId: given.giftId,
+			givenOn: '2026-10-01',
+			occasion: null
+		});
+
+		let asked: readonly string[] = [];
+		const counting = gifts.countOpenIdeasVisibleTo.bind(gifts);
+		gifts.countOpenIdeasVisibleTo = async (viewer, ids) => {
+			asked = ids;
+			return counting(viewer, ids);
+		};
+		const counts = await countOpenIdeas(deps, { id: 'andy', householdId: 'h1' }, [HILDE, HILDE]);
+		expect([...counts]).toEqual([[HILDE, 2]]);
+		expect(asked).toEqual([HILDE]);
 	});
 });

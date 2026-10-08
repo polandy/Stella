@@ -751,6 +751,21 @@
 										>{t('home.writeMoment')}</a
 									>
 								</span>
+								{#if item.giftIdeas > 0}
+									<!-- The occasion is the moment an idea was noted for (docs/02 §2.13.3). -->
+									<a
+										href={contactSectionPath(item.contactId, 'gifts')}
+										class="mt-0.5 inline-flex items-center gap-1 text-xs text-link hover:underline"
+										aria-label={t('home.giftIdeasFor', {
+											count: item.giftIdeas,
+											name: item.contactName
+										})}
+										data-testid="coming-up-gift-ideas"
+										><Icon name="gift" size={12} />{t('home.giftIdeas', {
+											count: item.giftIdeas
+										})}</a
+									>
+								{/if}
 							</div>
 						</li>
 					{/each}

@@ -21,7 +21,10 @@ first to find somebody, so there the page opens on the person search.
   narrowed, and *Done*. The sheet is a native `popover`: it closes on a tap outside or Escape,
   its chips work with JavaScript off, and a chip keeps it open over the narrowed stream.
 - **Coming up** (docs/02 §2.13.3) is one band; each row is an avatar, the person, one line of
-  context and one action, *Write a moment*.
+  context and one action, *Write a moment*. A person with open gift ideas gets one more line
+  beneath: the gift icon and *2 ideas* in `--link`, `text-xs`, to their Gifts card; its
+  accessible name says *2 gift ideas for Hilde*. Its own line, not on the *Write a moment*
+  line, because the 17 rem rail would wrap them mid-phrase.
 - From `lg` the band stands in a **rail** on the right, a 17 rem column. Below `lg` it is the
   same vertical list at full width; nothing on the page scrolls sideways.
 - The band stops after **three rows**, with *Show all N* beneath it.

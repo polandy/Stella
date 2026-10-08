@@ -52,7 +52,8 @@ shows how many filters are on and what they are, so a narrowed stream never look
 quiet one. *Done*, or a tap outside, puts the chips away.
 
 Beside the stream sits a short list, **Coming up**: the next thirty days of birthdays and
-anniversaries. Each name offers one thing: *Write a moment*. The list disappears when it has
+anniversaries. Each name offers one thing: *Write a moment*. Someone with gift ideas noted
+also shows *2 ideas* under their name, which takes you to their Gifts card. The list disappears when it has
 nothing to say, and on a wide screen the stream then takes its room. On a phone there is no room beside the stream, so it goes under it — and
 above it only while something is due within a fortnight, which is when it is worth the top
 of the screen. It shows three people there, with *Show all* underneath when there are more.
@@ -433,12 +434,19 @@ and a good idea is still there on the birthday it was meant for.
   unless you change it) and the occasion — *Birthday*, *Christmas*, *Anniversary*, or *Other…*
   in your own words. The idea moves to the **Given** tab, grouped by year, with its note and
   link kept.
+- While you type what it is, Stella checks what was already given to them: *Already given:
+  “Teapot, cast iron” on 12 October 2023 (Birthday).* It is only a hint — save anyway if the
+  second one is on purpose.
 - **+ Given** records something given earlier, for catching up. **+ Received**, in the card's
   **⋯** menu, records a present *from* them; the **Received** tab appears once there is one.
 - Each gift says who noted it. The pencil changes it, the cross removes it (with *Undo* for a
   few seconds). Anyone who can see a gift can change it or mark it given — only the person who
   noted it can make it private.
 - Given and received gifts also appear under **Activity** on their day. Ideas never do.
+- An idea can be noted from anywhere: `⌘K` / `Ctrl-K`, **Gift idea for …**, then the person's
+  name and `Enter`. Their Gifts card opens with the idea form ready.
+- When their birthday or another date comes up on Home, the number of open ideas is right
+  there under their name.
 - Without a connection a new gift is kept on your device and shown on the card until it can be
   sent; changing, giving or removing one needs Stella to be reachable.
 
@@ -761,7 +769,8 @@ your removing it never quietly takes it off someone else's private contact.
 ## Finding things
 
 `⌘K` / `Ctrl-K` — or the search button at the top — opens a palette that jumps straight to a
-person as you type, and offers *Write a moment* and *Add person* as its first rows. Notes are
+person as you type, and offers *Write a moment*, *Gift idea for …* and *Add person* as its
+first rows. Notes are
 not in it; the last row, *Search everything*, opens the full search, which looks through
 people and notes at once, matches partial words, and only ever returns what you are allowed
 to see. When it finds nothing it offers *Add "…"*, which opens *Add person* with what you typed
