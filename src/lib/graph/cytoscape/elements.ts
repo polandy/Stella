@@ -39,6 +39,11 @@ export interface ElementOptions {
 		groupLabel: (group: RoleGroup) => string;
 		bundleLabel: (bundle: EdgeBundle) => string;
 	};
+	/**
+	 * Who each person is to the centre, already in the viewer's language ("Grandfather"); the
+	 * family tree writes it under the name (docs/05 §5.8). Everybody else carries an empty role.
+	 */
+	roleOf?: (nodeId: string) => string | undefined;
 }
 
 export function toCytoscapeElements(model: GraphModel, options: ElementOptions = {}): CyElement[] {
@@ -71,6 +76,8 @@ export function toCytoscapeElements(model: GraphModel, options: ElementOptions =
 				degree: degree.get(n.id) ?? 0,
 				size: nodeDiameter(degree.get(n.id) ?? 0),
 				more,
+				// Always set, so a role a node no longer has is cleared rather than left behind.
+				role: options.roleOf?.(n.id) ?? '',
 				...(photo ? { photo } : {}),
 				...(parent ? { parent } : {})
 			},

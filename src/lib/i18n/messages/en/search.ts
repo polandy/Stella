@@ -34,6 +34,8 @@ export const search = {
 	'graph.labels.hint': 'Name every line with its relationship',
 	'graph.labels.tooMany': (p: { count: number }) =>
 		`Paused while more than ${p.count} lines are shown — point at a line or select someone to read theirs`,
+	'graph.labels.inTree':
+		'Off at first in the tree, where each person’s role stands under their name — switch on to name the lines too',
 	'graph.density': 'Spacing',
 	'graph.density.compact': 'Compact',
 	'graph.density.comfortable': 'Comfortable',
@@ -53,6 +55,13 @@ export const search = {
 	'graph.arrange.force.hint': 'Let the connections pull the map into shape',
 	'graph.arrange.tree': 'Tree',
 	'graph.arrange.tree.hint': 'One row per generation, the oldest at the top',
+	'graph.tree.outsideFamily': 'Outside the family',
+	// Under somebody on the shelf: what they are to the person they hang off.
+	'graph.tree.tieOf': (p: { role: string; name: string }) => `${p.role} of ${p.name}`,
+	// A household's own type, by its own words ("Godparent of") and the person.
+	'graph.tree.ownWords': (p: { words: string; name: string }) => `${p.words} ${p.name}`,
+	'graph.tree.namePair': (p: { first: string; second: string }) => `${p.first}, ${p.second}`,
+	'graph.tree.andMore': (p: { text: string; count: number }) => `${p.text} +${p.count}`,
 	'graph.arrange.circles': 'By circle',
 	'graph.arrange.circles.hint': 'Each circle with its members around it',
 	'graph.loading': 'Loading the graph…',

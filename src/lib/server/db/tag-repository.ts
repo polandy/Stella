@@ -1,31 +1,15 @@
 import { and, eq, notInArray, sql } from 'drizzle-orm';
 import type { BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
-import { contactVisibleTo } from '../access/query-scoping';
-import type { Viewer } from '../access/visibility';
-import type { NewTag, Tag, TagRepository } from '../domain/tags/tags';
-import type { TagColor } from '../../tags/colors';
-import { contact, contactTag, tag } from './schema';
+import type { NewTag, TagRepository } from '../domain/tags/tags';
+import { tagColumns, toTag } from './tag-columns';
+import { contactTag, tag } from './schema';
 import type * as schema from './schema';
 
 /*
- * Drizzle adapter for the TagRepository port (docs/08 §8.3). Tags are household-global;
- * assignments are read through the central `contactVisibleTo` so tags on a private contact
- * (and that contact) never surface to others.
+ * Drizzle adapter for the TagRepository port (docs/08 §8.3): a tag's writes and the lookups they
+ * rest on. Tags are household-global, and so is the count behind deleting one nobody carries.
+ * The lists are a read model of their own (`tag-list-reads.ts`).
  */
-
-const toTag = (row: { id: string; householdId: string; name: string; color: string }): Tag => ({
-	id: row.id,
-	householdId: row.householdId,
-	name: row.name,
-	color: row.color as TagColor
-});
-
-const tagColumns = {
-	id: tag.id,
-	householdId: tag.householdId,
-	name: tag.name,
-	color: tag.color
-};
 
 export function createDrizzleTagRepository(db: BunSQLiteDatabase<typeof schema>): TagRepository {
 	return {
@@ -42,16 +26,6 @@ export function createDrizzleTagRepository(db: BunSQLiteDatabase<typeof schema>)
 
 		async insert(t: NewTag) {
 			db.insert(tag).values(t).run();
-		},
-
-		async listByHousehold(householdId: string) {
-			return db
-				.select(tagColumns)
-				.from(tag)
-				.where(eq(tag.householdId, householdId))
-				.orderBy(tag.name)
-				.all()
-				.map(toTag);
 		},
 
 		async assign(contactId: string, tagId: string) {
@@ -87,43 +61,6 @@ export function createDrizzleTagRepository(db: BunSQLiteDatabase<typeof schema>)
 				.returning({ id: tag.id })
 				.all();
 			return gone.length;
-		},
-
-		async listForContactVisibleTo(viewer: Viewer, contactId: string) {
-			return db
-				.select(tagColumns)
-				.from(contactTag)
-				.innerJoin(tag, eq(contactTag.tagId, tag.id))
-				.innerJoin(contact, eq(contactTag.contactId, contact.id))
-				.where(and(eq(contactTag.contactId, contactId), contactVisibleTo(viewer)))
-				.orderBy(tag.name)
-				.all()
-				.map(toTag);
-		},
-
-		async listContactsByTagVisibleTo(viewer: Viewer, tagId: string) {
-			return db
-				.select({
-					id: contact.id,
-					displayName: contact.displayName,
-					firstName: contact.firstName,
-					lastName: contact.lastName,
-					nickname: contact.nickname,
-					formerName: contact.formerName,
-					description: contact.description,
-					metPlace: contact.metPlace,
-					metDate: contact.metDate,
-					visibility: contact.visibility,
-					avatarPhotoId: contact.avatarPhotoId,
-					birthDate: contact.birthDate,
-					jobTitle: contact.jobTitle,
-					company: contact.company
-				})
-				.from(contactTag)
-				.innerJoin(contact, eq(contactTag.contactId, contact.id))
-				.where(and(eq(contactTag.tagId, tagId), contactVisibleTo(viewer)))
-				.orderBy(contact.displayName)
-				.all();
 		}
 	};
 }

@@ -35,6 +35,8 @@ export const search: SearchMessages = {
 	'graph.labels.hint': 'Jede Linie mit ihrer Beziehung benennen',
 	'graph.labels.tooMany': (p) =>
 		`Pausiert, solange mehr als ${p.count} Linien zu sehen sind — zeig auf eine Linie oder wähle jemanden aus, um seine zu lesen`,
+	'graph.labels.inTree':
+		'Im Stammbaum zunächst aus, weil unter jedem Namen die Rolle steht — einschalten, um auch die Linien zu benennen',
 	'graph.density': 'Abstand',
 	'graph.density.compact': 'Kompakt',
 	'graph.density.comfortable': 'Ausgewogen',
@@ -55,6 +57,11 @@ export const search: SearchMessages = {
 	'graph.arrange.force.hint': 'Die Verbindungen ziehen den Graphen in Form',
 	'graph.arrange.tree': 'Stammbaum',
 	'graph.arrange.tree.hint': 'Eine Zeile pro Generation, die Ältesten oben',
+	'graph.tree.outsideFamily': 'Außerhalb der Familie',
+	'graph.tree.tieOf': (p) => `${p.role} von ${p.name}`,
+	'graph.tree.ownWords': (p) => `${p.words} ${p.name}`,
+	'graph.tree.namePair': (p) => `${p.first}, ${p.second}`,
+	'graph.tree.andMore': (p) => `${p.text} +${p.count}`,
 	'graph.arrange.circles': 'Nach Kreisen',
 	'graph.arrange.circles.hint': 'Jeder Kreis mit seinen Mitgliedern darum',
 	'graph.loading': 'Der Graph lädt…',

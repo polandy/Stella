@@ -15,6 +15,7 @@ import {
 import { sniffImageMime } from '../media/avatars';
 import { leadPhoto, matchRoleOption, photoRoleOptions } from './circle-photo-view';
 import { suggestRoles, type CircleRepository } from './circles';
+import type { CircleMembershipReads } from './memberships';
 
 /*
  * The photos of a circle (docs/02 §2.4.2). A circle photo is a
@@ -106,7 +107,9 @@ export interface CirclePhotoRepository {
 
 export interface CirclePhotoDeps {
 	circlePhotos: CirclePhotoRepository;
-	circles: Pick<CircleRepository, 'getVisibleTo' | 'listMembersVisibleTo'>;
+	circles: Pick<CircleRepository, 'getVisibleTo'>;
+	/** Which roles a photo may carry: the ones the circle's members hold. */
+	memberships: Pick<CircleMembershipReads, 'listMembersVisibleTo'>;
 	media: MediaStore;
 	ids: IdGenerator;
 	clock: Clock;
@@ -134,12 +137,12 @@ const EXT: Record<ImageMime, string> = {
 
 /** The circle's roles as its members carry them, most common first (the members list's order). */
 async function memberRoles(
-	deps: Pick<CirclePhotoDeps, 'circles'>,
+	deps: Pick<CirclePhotoDeps, 'memberships'>,
 	viewer: Viewer,
 	circleId: string
 ) {
 	return suggestRoles(
-		(await deps.circles.listMembersVisibleTo(viewer, circleId)).map((m) => m.role)
+		(await deps.memberships.listMembersVisibleTo(viewer, circleId)).map((m) => m.role)
 	);
 }
 
@@ -158,7 +161,7 @@ export async function listCirclePhotos(
  * counts too, so a phone that queued its photos before a re-role does not lose them.
  */
 export async function prepareCirclePhotoUpload(
-	deps: Pick<CirclePhotoDeps, 'circles' | 'circlePhotos'>,
+	deps: Pick<CirclePhotoDeps, 'circles' | 'memberships' | 'circlePhotos'>,
 	viewer: Viewer,
 	input: { circleId: string; role: string | null; visibility: Visibility }
 ): Promise<{ circleId: string; role: string | null; visibility: Visibility }> {
@@ -270,7 +273,7 @@ export async function captionCirclePhoto(
  * a choice after its members are gone (concept §4). Anyone who sees the photo may.
  */
 export async function setCirclePhotoRole(
-	deps: Pick<CirclePhotoDeps, 'circlePhotos' | 'circles'>,
+	deps: Pick<CirclePhotoDeps, 'circlePhotos' | 'memberships'>,
 	viewer: Viewer,
 	input: PhotoRef & { role: string | null }
 ): Promise<boolean> {

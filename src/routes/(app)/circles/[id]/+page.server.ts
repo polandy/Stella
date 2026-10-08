@@ -5,11 +5,11 @@ import {
 	addMembers,
 	getCircle,
 	groupMembersByRole,
-	listMembers,
 	removeMember,
 	setMembersRole,
 	suggestRoles
 } from '$lib/server/domain/circles/circles';
+import { listMembers } from '$lib/server/domain/circles/memberships';
 import { circlePhotoView, photoRoleOptions } from '$lib/server/domain/circles/circle-photo-view';
 import { listCirclePhotos } from '$lib/server/domain/circles/circle-photos';
 import { BlankRoleNameError, renameCircleRole } from '$lib/server/domain/circles/rename-role';
@@ -32,7 +32,7 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 	if (!circle) throw error(404, say(locals, 'errors.circle.notFound'));
 
 	const [members, photos, cuts, surnameHelp] = await Promise.all([
-		listMembers(locals.services.circles.circleDeps, viewer, params.id),
+		listMembers(locals.services.circles.circleMembershipDeps, viewer, params.id),
 		listCirclePhotos(locals.services.circles.circlePhotoDeps, viewer, params.id),
 		listCircleCuts(locals.services.circles.cutDeps, viewer, params.id),
 		readSurnameHelp(locals.services.people.surnameReviewDeps, viewer, null)
@@ -121,7 +121,7 @@ export const actions: Actions = {
 		if (!parsed.success) return fail(400, { error: say(locals, 'errors.circle.choosePerson') });
 
 		await setMembersRole(
-			locals.services.circles.circleDeps,
+			locals.services.circles.memberRoleDeps,
 			viewer,
 			params.id,
 			parsed.output.contactIds,

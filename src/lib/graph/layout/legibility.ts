@@ -7,11 +7,49 @@
 /** The widest a person's name is drawn under their disc, in model units. */
 export const NODE_LABEL_WIDTH = 96;
 
+/** The widest a circle's pill writes its name and, in the tree, its people, in model units. */
+export const CIRCLE_LABEL_WIDTH = 160;
+
 /**
  * Below this rendered size (in screen pixels) a name is dropped rather than drawn. Zoomed far
  * out, names would otherwise pile into smudges over the people and lines they belong to.
  */
 export const LABEL_MIN_ZOOMED_FONT_SIZE = 8;
+
+/** The smallest text the map draws: a line's name. A person's name and a caption are 11. */
+export const SMALLEST_LABEL_FONT_SIZE = 10;
+
+/**
+ * Whether a label of `fontSize` is drawn at `zoom` on a screen of `pixelRatio`. Cytoscape draws
+ * labels from a texture at the next power of two of zoom × pixel ratio and leaves out a label
+ * whose font falls under the floor at that level (`eleTextBiggerThanMin`); this mirrors it, so
+ * framing can stop before the names vanish.
+ */
+export function labelsDrawnAt(
+	zoom: number,
+	pixelRatio: number,
+	fontSize: number = SMALLEST_LABEL_FONT_SIZE
+): boolean {
+	const level = 2 ** Math.ceil(Math.log2(zoom * pixelRatio));
+	return fontSize * level >= LABEL_MIN_ZOOMED_FONT_SIZE;
+}
+
+/** A little past the exact edge, so a rounding error in the renderer never drops the names. */
+const LEGIBLE_MARGIN = 1.02;
+
+/**
+ * The furthest out the map can be zoomed on a screen of `pixelRatio` with every name still
+ * drawn — half zoom on a desktop, much further on a phone's denser screen.
+ */
+export function legibleZoom(
+	pixelRatio: number,
+	fontSize: number = SMALLEST_LABEL_FONT_SIZE
+): number {
+	// The lowest texture level at which the font clears the floor; the zoom just above the
+	// level below it is the first to reach that one.
+	const level = Math.ceil(Math.log2(LABEL_MIN_ZOOMED_FONT_SIZE / fontSize));
+	return (2 ** (level - 1) / pixelRatio) * LEGIBLE_MARGIN;
+}
 
 /**
  * The most lines the map names at once. Past it, the names around a hub stack on top of each
@@ -22,9 +60,24 @@ export const EDGE_LABEL_LIMIT = 40;
 /**
  * Whether every line is named, given the reader's Labels switch and how many lines are shown.
  * A highlighted, hovered or traced line is named regardless; this is only about naming all.
+ * In the family tree the switch is the tree's own (`tree-view.ts`), not the reader's habit.
  */
 export function edgeLabelsFit(switchedOn: boolean, visibleEdges: number): boolean {
 	return switchedOn && visibleEdges <= EDGE_LABEL_LIMIT;
+}
+
+/**
+ * What the Labels switch says under its name: why the names paused when there are too many;
+ * in the tree, `rolesInstead`, why they start off there and that the switch brings them; else
+ * what it does.
+ */
+export function labelsHint(
+	switchedOn: boolean,
+	fit: boolean,
+	rolesInstead: boolean
+): 'graph.labels.hint' | 'graph.labels.tooMany' | 'graph.labels.inTree' {
+	if (switchedOn && !fit) return 'graph.labels.tooMany';
+	return rolesInstead ? 'graph.labels.inTree' : 'graph.labels.hint';
 }
 
 /**

@@ -193,7 +193,10 @@ the person, and that never leaves the page. Keeping the record tidy (archive, me
 - **Enlarge map** (expand icon; the whole strip is that button) grows the same explorer
   **inside the card**: full card width; on a phone `100dvh − 12.75rem` tall (at least 20 rem),
   wider up 24 rem; with its Filter and Arrange controls and an icon-only **Shrink map** in the
-  map's own toolbar, just left of its full-screen icon and drawn like it.
+  map's own toolbar, just left of its full-screen icon and drawn like it. Its *Tree*
+  arrangement is the graph route's (§5.5.5, §5.8): roles towards this person under every
+  name — *Father, Grandmother, Cousin* — and the family lines at right angles. The strip is
+  never a tree.
 - On a phone the enlarged height leaves the top bar, the jump bar, the tab bar and a strip of
   page in view.
 - The way there and back is animated: one frame holds both, its height glides between the

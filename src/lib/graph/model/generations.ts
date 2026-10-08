@@ -88,6 +88,30 @@ function constraintOf(edge: GraphEdge): Constraint | null {
 	return null;
 }
 
+/** Whether a line ties two people into one family — one of the links the rows are read from. */
+export function isFamilyLink(edge: GraphEdge): boolean {
+	return constraintOf(edge) !== null;
+}
+
+/**
+ * The entered family links of `snapshot` between people already on the map. The map grows from
+ * one person, so it holds their own lines but not the ones among their relatives — the parents'
+ * marriage, the partner's children — and a family tree without them is a star, not a tree.
+ * Only the links a tree is drawn from come along, parents and partners: a grandparent or an
+ * in-law, entered or worked out, is what those lines already say, and drawn again it would
+ * only stack lines between the rows.
+ */
+export function familyLinksAmong(snapshot: GraphModel, onMap: ReadonlySet<string>): GraphEdge[] {
+	return snapshot.edges.filter(
+		(e) =>
+			e.kind === 'relationship' &&
+			e.typeKey !== undefined &&
+			(e.typeKey === PARENT_CHILD_TYPE_KEY || PARTNER_TYPE_KEYS.includes(e.typeKey)) &&
+			onMap.has(e.source) &&
+			onMap.has(e.target)
+	);
+}
+
 /**
  * The separate families on the map, each as its members' generations, 0 at the top of each.
  * Only people tied to someone by a family link belong to one; everyone else (and every circle)

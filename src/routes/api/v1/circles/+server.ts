@@ -13,7 +13,7 @@ export const GET: RequestHandler = async ({ locals, url }) => {
 	const viewer = { id: user.id, householdId: user.householdId };
 	return json({
 		circles: await findCircles(
-			locals.services.circles.circleDeps,
+			locals.services.circles.circleDirectoryDeps,
 			viewer,
 			url.searchParams.get('q') ?? ''
 		)

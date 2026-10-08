@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'bun:test';
-import { deriveKinship, deriveKinshipForAll, type KinshipGraph, type KinTerm } from './kinship';
+import {
+	deriveKinship,
+	deriveKinshipForAll,
+	reciprocalKinTerm,
+	type KinshipGraph,
+	type KinTerm
+} from './kinship';
 import { createTranslator } from '$lib/i18n/translate';
 import { directClaimLabel, kinshipLabel } from './labels';
 import { directClaimFor } from './claims';
@@ -282,5 +288,48 @@ describe('directClaimLabel', () => {
 		expect(directClaimLabel(de, claim('step-parent'))).toBe('Doch ein eigener Elternteil');
 		// Singular, as `kinship.reason.siblingOf` already words it — "Geschwister" is the plural.
 		expect(directClaimLabel(de, claim('step-sibling'))).toBe('Doch ein Geschwisterteil');
+	});
+});
+
+describe('reciprocalKinTerm', () => {
+	it('reads a relation down the generations from the other end: a grandparent has a grandchild', () => {
+		expect(reciprocalKinTerm('grandparent')).toBe('grandchild');
+		expect(reciprocalKinTerm('grandchild')).toBe('grandparent');
+		expect(reciprocalKinTerm('aunt-uncle')).toBe('niece-nephew');
+		expect(reciprocalKinTerm('great-grandchild')).toBe('great-grandparent');
+		expect(reciprocalKinTerm('step-parent')).toBe('step-child');
+		expect(reciprocalKinTerm('child-in-law')).toBe('parent-in-law');
+	});
+
+	it('leaves a relation that reads the same from both ends as it is', () => {
+		for (const term of [
+			'sibling',
+			'half-sibling',
+			'cousin',
+			'step-sibling',
+			'sibling-in-law'
+		] as KinTerm[])
+			expect(reciprocalKinTerm(term)).toBe(term);
+	});
+
+	it('gives back the term it started from when read twice, for every term', () => {
+		const terms: KinTerm[] = [
+			'sibling',
+			'half-sibling',
+			'grandparent',
+			'grandchild',
+			'aunt-uncle',
+			'niece-nephew',
+			'great-grandparent',
+			'great-grandchild',
+			'cousin',
+			'step-parent',
+			'step-child',
+			'step-sibling',
+			'parent-in-law',
+			'child-in-law',
+			'sibling-in-law'
+		];
+		for (const term of terms) expect(reciprocalKinTerm(reciprocalKinTerm(term))).toBe(term);
 	});
 });

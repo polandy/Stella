@@ -1,5 +1,6 @@
 import type { Viewer } from '../../../access/visibility';
-import type { CircleKind, CircleRepository } from '../../circles/circles';
+import type { CircleKind } from '../../circles/circles';
+import type { CircleDirectoryReads } from '../../circles/directory';
 import { search, type SearchDeps } from '../../search/search';
 
 /*
@@ -49,12 +50,12 @@ const folded = (value: string) =>
 
 /** The circles whose name contains `query`; all of them for an empty one. */
 export async function findCircles(
-	deps: { circles: Pick<CircleRepository, 'listVisibleTo'> },
+	deps: { directory: Pick<CircleDirectoryReads, 'listVisibleTo'> },
 	viewer: Viewer,
 	query: string
 ): Promise<CircleMatch[]> {
 	const wanted = folded(query);
-	return (await deps.circles.listVisibleTo(viewer))
+	return (await deps.directory.listVisibleTo(viewer))
 		.filter((c) => folded(c.name).includes(wanted))
 		.map(({ id, name, kind, startDate, endDate, memberCount }) => ({
 			id,

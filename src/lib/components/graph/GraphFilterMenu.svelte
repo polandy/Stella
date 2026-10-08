@@ -4,7 +4,7 @@
 	import { categoryVar } from '$lib/design/tokens';
 	import { useTranslate } from '$lib/i18n/context.svelte';
 	import { DENSITIES, type Density } from '$lib/graph/layout/density';
-	import { EDGE_LABEL_LIMIT } from '$lib/graph/layout/legibility';
+	import { EDGE_LABEL_LIMIT, labelsHint } from '$lib/graph/layout/legibility';
 	import type { SavedView } from '$lib/graph/model/saved-views';
 	import type { FilterKey } from '$lib/graph/model/view-filters';
 	import type { ViewSwitches } from '$lib/graph/view-switches';
@@ -25,6 +25,8 @@
 		onSwitch: (name: keyof ViewSwitches) => void;
 		/** Whether every line is named right now; false while there are too many to name. */
 		labelsFit: boolean;
+		/** The family tree writes each person's role under their name instead of naming lines. */
+		rolesInstead: boolean;
 		density: Density;
 		onChooseDensity: (density: Density) => void;
 		/** The views this device keeps, and the one the map shows now (docs/02 §2.7). */
@@ -41,6 +43,7 @@
 		switches,
 		onSwitch,
 		labelsFit,
+		rolesInstead,
 		density,
 		onChooseDensity,
 		savedViews,
@@ -52,6 +55,7 @@
 
 	const t = useTranslate();
 	const uid = $props.id();
+	const hint = $derived(labelsHint(switches.edgeLabels, labelsFit, rolesInstead));
 
 	// The filterable connection kinds, each tied to its category colour (docs/05 §5.6).
 	// Each filter carries the same token the canvas draws that edge kind with (docs/05 §5.6),
@@ -170,9 +174,11 @@
 			<span class="flex-1">
 				{t('graph.labels')}
 				<span class="block text-[11px] text-fg-subtle">
-					{switches.edgeLabels && !labelsFit
-						? t('graph.labels.tooMany', { count: EDGE_LABEL_LIMIT })
-						: t('graph.labels.hint')}
+					{#if hint === 'graph.labels.tooMany'}
+						{t(hint, { count: EDGE_LABEL_LIMIT })}
+					{:else}
+						{t(hint)}
+					{/if}
 				</span>
 			</span>
 			{@render toggle(switches.edgeLabels)}

@@ -6,7 +6,7 @@ import { listContactFields } from '$lib/server/domain/contact-fields/contact-fie
 import {
 	listCirclesForContact,
 	listRoleSuggestionsByCircleName
-} from '$lib/server/domain/circles/circles';
+} from '$lib/server/domain/circles/memberships';
 import { getContact } from '$lib/server/domain/contacts/contacts';
 import { shownNameIsChosen } from '$lib/people/display-name';
 import { readSurnameHelp } from '$lib/server/domain/contacts/last-names';
@@ -26,7 +26,7 @@ import { listMentionedIn } from '$lib/server/domain/mentions/mentioned-in';
 import { listNotesForContact } from '$lib/server/domain/notes/notes';
 import { listGiftsForContact } from '$lib/server/domain/gifts/gifts';
 import { readFamilyOf } from '$lib/server/domain/relationships/family';
-import { listTagsForContact } from '$lib/server/domain/tags/tags';
+import { listTagsForContact } from '$lib/server/domain/tags/tag-lists';
 import { TAG_COLORS } from '$lib/tags/colors';
 import { readTogetherOffers } from '$lib/server/domain/immich/glimpse';
 import { readImmichLink, readLinkedPerson } from '$lib/server/domain/immich/links';
@@ -240,8 +240,8 @@ function readPersonPage(
 		// The person's own records.
 		dates: listImportantDates(records.importantDateDeps, viewer, contactId),
 		fields: listContactFields(records.contactFieldDeps, viewer, contactId),
-		tags: listTagsForContact(records.tagDeps, viewer, contactId),
-		contactCircles: listCirclesForContact(circles.circleDeps, viewer, contactId),
+		tags: listTagsForContact(records.tagListDeps, viewer, contactId),
+		contactCircles: listCirclesForContact(circles.circleMembershipDeps, viewer, contactId),
 		storyPage: listStoryPage(story.storyDeps, viewer, contactId, { limit: STORY_PAGE_SIZE }),
 		lastContactedAt: lastContactedOn(story.interactionDeps, viewer, contactId),
 		notes: listNotesForContact(notes.noteDeps, viewer, contactId),
@@ -264,7 +264,7 @@ function readPersonPage(
 		// What the forms offer, and who wrote what.
 		nameOfAuthor: authorNames(household.memberDeps, viewer.householdId),
 		relationshipTypes: relationships.relationshipTypes.listTypes(viewer),
-		circleRolesByName: listRoleSuggestionsByCircleName(circles.circleDeps, viewer)
+		circleRolesByName: listRoleSuggestionsByCircleName(circles.circleMembershipDeps, viewer)
 	});
 }
 

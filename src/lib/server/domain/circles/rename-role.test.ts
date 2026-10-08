@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'bun:test';
 import { TranslatableError } from '../../../errors/translatable';
-import type { Clock } from '../../clock';
+import { fixedClock, inMemoryCircleMemberships, membership, type FakeMembership } from '../testing';
 import type { CirclePhoto } from './circle-photos';
-import type { MemberView, RoleRename } from './circles';
+import type { RoleRename } from './circles';
 import { BlankRoleNameError, renameCircleRole, type RenameRoleDeps } from './rename-role';
 
 /*
@@ -11,16 +11,10 @@ import { BlankRoleNameError, renameCircleRole, type RenameRoleDeps } from './ren
  */
 
 const NOW = 1_700_000_000_000;
-const clock: Clock = { now: () => NOW };
+const clock = fixedClock(NOW);
 const viewer = { id: 'u1', householdId: 'h1' };
 
-const member = (contactId: string, role: string | null): MemberView => ({
-	membershipId: `ms-${contactId}`,
-	contactId,
-	displayName: contactId,
-	avatarPhotoId: null,
-	role
-});
+const member = (contactId: string, role: string | null) => membership('class', contactId, { role });
 
 const photo = (id: string, role: string | null): CirclePhoto => ({
 	takenAt: null,
@@ -37,13 +31,11 @@ const photo = (id: string, role: string | null): CirclePhoto => ({
 	pinnedAt: null
 });
 
-function fakes(members: MemberView[], photos: CirclePhoto[] = []) {
+function fakes(members: FakeMembership[], photos: CirclePhoto[] = []) {
 	const renames: RoleRename[] = [];
 	const deps: RenameRoleDeps = {
-		circles: {
-			listMembersVisibleTo: async () => members,
-			renameRole: async (change) => void renames.push(change)
-		},
+		circles: { renameRole: async (change) => void renames.push(change) },
+		memberships: inMemoryCircleMemberships(members),
 		circlePhotos: { listVisible: async () => photos },
 		clock
 	};
@@ -69,7 +61,7 @@ describe('renameCircleRole', () => {
 		expect(f.renames).toEqual([
 			{
 				circleId: 'class',
-				contactIds: ['mara', 'jonas'],
+				contactIds: ['jonas', 'mara'],
 				photoIds: ['p1'],
 				role: 'Class teacher',
 				updatedAt: NOW
@@ -80,7 +72,7 @@ describe('renameCircleRole', () => {
 	it('fixes the spelling when only the case changes', async () => {
 		const f = fakes([member('mara', 'teacher'), member('jonas', 'Teacher')]);
 		await renameCircleRole(f.deps, viewer, { circleId: 'class', from: 'Teacher', to: 'TEACHER' });
-		expect(f.renames[0]).toMatchObject({ contactIds: ['mara', 'jonas'], role: 'TEACHER' });
+		expect(f.renames[0]).toMatchObject({ contactIds: ['jonas', 'mara'], role: 'TEACHER' });
 	});
 
 	it('merges into a role that already exists, which then reads exactly as typed', async () => {
@@ -90,7 +82,7 @@ describe('renameCircleRole', () => {
 		);
 		await renameCircleRole(f.deps, viewer, { circleId: 'class', from: 'Trainer', to: 'coach' });
 		expect(f.renames[0]).toMatchObject({
-			contactIds: ['mara', 'jonas'],
+			contactIds: ['jonas', 'mara'],
 			photoIds: ['p1', 'p2'],
 			role: 'coach'
 		});

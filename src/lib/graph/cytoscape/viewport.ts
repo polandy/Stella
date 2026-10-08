@@ -60,20 +60,31 @@ export function widenToReveal(
 	};
 }
 
+/** Screen pixels along the canvas's edges that something floats over: a toolbar, a panel. */
+export interface Covered {
+	top: number;
+	right?: number;
+	bottom?: number;
+}
+
 /**
- * The viewport that frames `box` — the whole map — in the part of the canvas below `top`
- * screen pixels, where the toolbar floats over the drawing, with `padding` all round and the
- * map centred in what is left. The zoom stays within `zoom.min`..`zoom.max`, so a lone node is
- * not blown up and a huge map is not shrunk to dust.
+ * The viewport that frames `box` — the whole map — in the part of the canvas nothing floats
+ * over (`covered`: the toolbar at the top, a panel at the right or along the foot), with
+ * `padding` all round and the map centred in what is left. The zoom stays within
+ * `zoom.min`..`zoom.max`, so a lone node is not blown up and a huge map is not shrunk to dust.
  */
 export function frameBelow(
 	box: Box,
 	screen: { width: number; height: number },
-	top: number,
+	covered: Covered,
 	padding: number,
 	zoom: { min: number; max: number }
 ): Viewport {
-	const free = { width: screen.width - 2 * padding, height: screen.height - top - 2 * padding };
+	const { top, right = 0, bottom = 0 } = covered;
+	const free = {
+		width: screen.width - right - 2 * padding,
+		height: screen.height - top - bottom - 2 * padding
+	};
 	const fitted = Math.min(
 		free.width / Math.max(box.x2 - box.x1, Number.EPSILON),
 		free.height / Math.max(box.y2 - box.y1, Number.EPSILON)
@@ -82,8 +93,49 @@ export function frameBelow(
 	return {
 		zoom: next,
 		pan: {
-			x: screen.width / 2 - next * ((box.x1 + box.x2) / 2),
-			y: top + (screen.height - top) / 2 - next * ((box.y1 + box.y2) / 2)
+			x: (screen.width - right) / 2 - next * ((box.x1 + box.x2) / 2),
+			y: top + (screen.height - top - bottom) / 2 - next * ((box.y1 + box.y2) / 2)
 		}
+	};
+}
+
+/** What to keep in view when the whole map cannot be shown with its names drawn. */
+export interface Focus {
+	/** The part that matters most — the family tree. */
+	box: Box;
+	/** Where to centre when even that is too wide: the person the map is about. */
+	point?: { x: number; y: number };
+}
+
+/**
+ * Like {@link frameBelow}, but never zoomed out past `zoom.legible`, where the canvas would stop
+ * drawing the names (`legibleZoom`, docs/05 §5.8). When the whole map fits only further out, it
+ * is shown at the legible zoom instead: the `focus` (else the map) from its top edge down, centred
+ * across the free part — or, if wider than that, centred on its `point` — and whatever falls
+ * outside, the shelf beneath the tree, is left to pan to.
+ */
+export function frameLegibly(
+	map: Box,
+	focus: Focus | null,
+	screen: { width: number; height: number },
+	covered: Covered,
+	padding: number,
+	zoom: { min: number; max: number; legible: number }
+): Viewport {
+	const fitted = frameBelow(map, screen, covered, padding, { min: zoom.min, max: zoom.max });
+	if (fitted.zoom >= zoom.legible) return fitted;
+
+	const { top, right = 0 } = covered;
+	const z = Math.min(zoom.max, Math.max(zoom.min, zoom.legible));
+	const target = focus?.box ?? map;
+	const freeWidth = screen.width - right - 2 * padding;
+	const middle = (screen.width - right) / 2;
+	const x =
+		(target.x2 - target.x1) * z <= freeWidth
+			? (target.x1 + target.x2) / 2
+			: (focus?.point?.x ?? (target.x1 + target.x2) / 2);
+	return {
+		zoom: z,
+		pan: { x: middle - z * x, y: top + padding - z * target.y1 }
 	};
 }

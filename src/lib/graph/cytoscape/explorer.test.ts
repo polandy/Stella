@@ -4,7 +4,13 @@ import { explorerFromCore } from './explorer';
 import type { CyElement } from './elements';
 import { frameAround } from '../layout/group-blocks';
 import { spacingFor } from '../layout/density';
-import { HAS_MORE_CLASS, HOVERED_CLASS } from './stylesheet';
+import {
+	CAPTION_CLASS,
+	HAS_MORE_CLASS,
+	HOVERED_CLASS,
+	ROUTE_FIELDS,
+	ROUTED_CLASS
+} from './stylesheet';
 
 /*
  * The controller's lifecycle, exercised against a headless Cytoscape core — the same core the
@@ -186,6 +192,21 @@ describe('explorerFromCore', () => {
 		expect(Math.hypot(c.x - b.x, c.y - b.y)).toBeLessThan(200);
 	});
 
+	it('sets newcomers down on the person they came from when an arrangement follows', () => {
+		// The family tree lays the whole map out again after an expand; a newcomer then glides
+		// out from whoever brought it in, together with everybody else, instead of first.
+		const cy = linkedPair();
+		const explorer = controller(cy);
+		const b = { ...cy.$id('b').position() };
+
+		explorer.setGraph([node('a'), node('b'), node('c'), edge('a', 'b'), edge('b', 'c')], {
+			arrangedNext: true
+		});
+
+		expect(cy.$id('c').position()).toEqual(b);
+		expect(cy.$id('c').animated()).toBe(false);
+	});
+
 	it('runs no layout for an expand, so nothing re-frames the view', () => {
 		const cy = linkedPair();
 		const names = layoutNames(cy);
@@ -313,6 +334,80 @@ describe('explorerFromCore', () => {
 		expect(middleAfterArranging(100)).toBeCloseTo(100 + 700 / 2);
 	});
 
+	it('never frames the map so far out that its names stop being drawn', () => {
+		// A family over two rows and a shelf far beneath it: all of it fits only far out.
+		const cy = cytoscape({
+			headless: true,
+			elements: [
+				{ data: { id: 'a' }, classes: 'person center' },
+				{ data: { id: 'b' }, classes: 'person' },
+				{ data: { id: 'shelf' }, classes: 'person' }
+			]
+		});
+		cy.width = () => 1000;
+		cy.height = () => 700;
+		const explorer = explorerFromCore(cy, {
+			reducedMotion: true,
+			pixelRatio: 1,
+			onTapNode: () => {},
+			onTapBackground: () => {}
+		});
+
+		explorer.arrangeAt(
+			{
+				positions: new Map([
+					['a', { x: 0, y: 0 }],
+					['b', { x: 300, y: 230 }],
+					['shelf', { x: 0, y: 4000 }]
+				]),
+				bows: new Map(),
+				outsideFamily: { x: 0, y: 3900 }
+			},
+			{ outsideFamily: 'Outside the family', keepNamesDrawn: true }
+		);
+
+		// Half zoom is where a desktop stops drawing names; the family is shown from the top.
+		expect(cy.zoom()).toBeGreaterThan(0.5);
+		const a = cy.$id('a').renderedPosition();
+		const b = cy.$id('b').renderedPosition();
+		expect(a.y).toBeGreaterThan(0);
+		expect(b.y).toBeLessThan(700);
+		expect(cy.$id('shelf').renderedPosition().y).toBeGreaterThan(700);
+
+		// Arranged otherwise, the whole map is framed, however far out that takes it.
+		explorer.arrangeAt({
+			positions: new Map([
+				['a', { x: 0, y: 0 }],
+				['b', { x: 300, y: 230 }],
+				['shelf', { x: 0, y: 4000 }]
+			]),
+			bows: new Map()
+		});
+		expect(cy.$id('shelf').renderedPosition().y).toBeLessThan(700);
+	});
+
+	it('frames the map clear of a panel over the right or the foot of the canvas', () => {
+		const cy = linkedPair();
+		cy.width = () => 1000;
+		cy.height = () => 800;
+		const explorer = controller(cy);
+		explorer.setCovered({ right: 300, bottom: 200 });
+
+		explorer.arrangeAt({
+			positions: new Map([
+				['a', { x: 0, y: 0 }],
+				['b', { x: 400, y: 0 }]
+			]),
+			bows: new Map()
+		});
+		const a = cy.$id('a').renderedPosition();
+		const b = cy.$id('b').renderedPosition();
+
+		// Centred in the 700 × 600 the panels leave, not in the whole canvas.
+		expect((a.x + b.x) / 2).toBeCloseTo(700 / 2);
+		expect(a.y).toBeCloseTo(600 / 2);
+	});
+
 	it('bends the lines an arrangement says to, and straightens the rest', () => {
 		const cy = linkedPair();
 		cy.add({ group: 'nodes', data: { id: 'c' } });
@@ -337,6 +432,84 @@ describe('explorerFromCore', () => {
 		explorer.arrange();
 
 		expect(cy.$id('a-b').hasClass('bowed')).toBe(false);
+	});
+
+	it('draws a routed line at right angles, measured from where its people are going', () => {
+		const cy = linkedPair();
+		const explorer = controller(cy);
+		explorer.arrangeAt({ positions: new Map(), bows: new Map([['a-b', 80]]) });
+
+		explorer.arrangeAt({
+			positions: new Map([
+				['a', { x: 0, y: 0 }],
+				['b', { x: 200, y: 170 }]
+			]),
+			bows: new Map(),
+			routes: new Map([
+				[
+					'a-b',
+					{
+						waypoints: [
+							{ x: 0, y: 93.5 },
+							{ x: 200, y: 93.5 }
+						],
+						sourceEnd: { x: -60, y: 0 },
+						nameEnd: 'target' as const
+					}
+				]
+			])
+		});
+
+		const line = cy.$id('a-b');
+		expect(line.hasClass(ROUTED_CLASS)).toBe(true);
+		expect(line.hasClass('bowed')).toBe(false);
+		expect(line.data(ROUTE_FIELDS.weights)).toHaveLength(2);
+		expect(line.data(ROUTE_FIELDS.sourceEndpoint)).toBe('-60px 0px');
+		// Its name goes on the drop down to the child, the end the route says.
+		expect(line.data(ROUTE_FIELDS.nameEnd)).toBe('target');
+
+		explorer.arrange();
+		expect(line.hasClass(ROUTED_CLASS)).toBe(false);
+	});
+
+	it('names the shelf beneath the family tree, as words nobody can tap or walk to', () => {
+		const cy = linkedPair();
+		const explorer = controller(cy);
+		const shelf = { x: 0, y: 300 };
+
+		explorer.arrangeAt(
+			{ positions: new Map(), bows: new Map(), outsideFamily: shelf },
+			{ outsideFamily: 'Outside the family' }
+		);
+		const caption = cy.nodes(`.${CAPTION_CLASS}`).first();
+
+		expect(cy.nodes(`.${CAPTION_CLASS}`).length).toBe(1);
+		expect(caption.data('label')).toBe('Outside the family');
+		expect(caption.position().x).toBe(shelf.x);
+		expect(caption.position().y).toBeLessThan(shelf.y);
+		expect(caption.grabbable()).toBe(false);
+		// The keyboard walks people only, and filtering or a fresh element set leaves it be.
+		expect([...explorer.positions().keys()].sort()).toEqual(['a', 'b']);
+		explorer.setVisible(new Set(['a', 'b']), new Set(['a-b']));
+		explorer.setGraph([node('a'), node('b'), edge('a', 'b')]);
+		expect(caption.removed()).toBe(false);
+		expect(caption.hasClass('filtered-out')).toBe(false);
+
+		explorer.arrange();
+		expect(cy.nodes(`.${CAPTION_CLASS}`).length).toBe(0);
+	});
+
+	it('writes no caption for an arrangement without a shelf to name', () => {
+		const cy = linkedPair();
+		const explorer = controller(cy);
+
+		explorer.arrangeAt(
+			{ positions: new Map(), bows: new Map() },
+			{ outsideFamily: 'Outside the family' }
+		);
+
+		expect(cy.nodes().length).toBe(2);
+		expect(cy.nodes(`.${CAPTION_CLASS}`).length).toBe(0);
 	});
 
 	it('sets newcomers the edge length of the density it was given away', () => {

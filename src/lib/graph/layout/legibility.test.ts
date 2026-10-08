@@ -2,6 +2,10 @@ import { describe, expect, it } from 'bun:test';
 import {
 	EDGE_LABEL_LIMIT,
 	edgeLabelsFit,
+	labelsHint,
+	labelsDrawnAt,
+	legibleZoom,
+	SMALLEST_LABEL_FONT_SIZE,
 	linesDrawn,
 	MAX_NODE_DIAMETER,
 	MIN_NODE_DIAMETER,
@@ -29,6 +33,26 @@ describe('edgeLabelsFit', () => {
 
 	it('sits around forty lines', () => {
 		expect(EDGE_LABEL_LIMIT).toBe(40);
+	});
+});
+
+describe('labelsHint', () => {
+	it('says what the switch does while the names fit', () => {
+		expect(labelsHint(true, true, false)).toBe('graph.labels.hint');
+		expect(labelsHint(false, false, false)).toBe('graph.labels.hint');
+	});
+
+	it('says why the names paused once there are too many', () => {
+		expect(labelsHint(true, false, false)).toBe('graph.labels.tooMany');
+	});
+
+	it('says in the tree why the names start off and that the switch brings them', () => {
+		expect(labelsHint(false, false, true)).toBe('graph.labels.inTree');
+		expect(labelsHint(true, true, true)).toBe('graph.labels.inTree');
+	});
+
+	it('says why the names paused in the tree too, once there are too many', () => {
+		expect(labelsHint(true, false, true)).toBe('graph.labels.tooMany');
 	});
 });
 
@@ -75,5 +99,29 @@ describe('nodeDiameter', () => {
 
 	it('treats a negative count as none rather than drawing a dot', () => {
 		expect(nodeDiameter(-3)).toBe(MIN_NODE_DIAMETER);
+	});
+});
+
+describe('labelsDrawnAt and legibleZoom', () => {
+	// Cytoscape draws a label from a texture at the next power of two of zoom × pixel ratio and
+	// drops it when the font is under the floor at that level — at a desktop's ratio of 1 that is
+	// everything below a zoom of one half.
+	it('drops the smallest names below half zoom on a desktop, and draws them above', () => {
+		expect(labelsDrawnAt(0.494, 1)).toBe(false);
+		expect(labelsDrawnAt(0.51, 1)).toBe(true);
+	});
+
+	it('draws them much further out on a phone’s denser screen', () => {
+		expect(labelsDrawnAt(0.35, 2.625)).toBe(true);
+		expect(labelsDrawnAt(0.18, 2.625)).toBe(false);
+	});
+
+	it('names the furthest zoom out at which every name is still drawn', () => {
+		for (const ratio of [1, 1.5, 2, 2.625, 3]) {
+			const zoom = legibleZoom(ratio);
+			expect(labelsDrawnAt(zoom, ratio)).toBe(true);
+			expect(labelsDrawnAt(zoom * 0.95, ratio)).toBe(false);
+		}
+		expect(SMALLEST_LABEL_FONT_SIZE).toBeLessThanOrEqual(11);
 	});
 });

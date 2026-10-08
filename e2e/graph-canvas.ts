@@ -355,6 +355,9 @@ async function askCore<T>(page: Page, query: CoreQuery<T>): Promise<T> {
 /** How many lines an arrangement has bent around somebody standing in their way. */
 export const bowedLines = (page: Page) => askCore(page, (cy) => cy.edges('.bowed').length);
 
+/** How many lines the family tree draws at right angles (docs/05 §5.8). */
+export const routedLines = (page: Page) => askCore(page, (cy) => cy.edges('.routed').length);
+
 /** The ids of the circles on the canvas. */
 export const circlesOnCanvas = (page: Page) =>
 	askCore(page, (cy) => cy.nodes('[kind = "circle"]').map((n) => n.id()));
@@ -384,3 +387,85 @@ export const overlappingNodes = (page: Page) =>
 		}
 		return pairs;
 	});
+
+/** The core as the reading helpers below ask it, with an element's computed style. */
+type StyledCore = {
+	$id(id: string): { empty(): boolean; style(name: string): string };
+	edges(selector?: string): StyledEdge[] & { filter(fn: (e: StyledEdge) => boolean): StyledEdge[] };
+	nodes(selector?: string): StyledNode[] & { filter(fn: (n: StyledNode) => boolean): StyledNode[] };
+	renderer(): { eleTextBiggerThanMin(ele: StyledNode): boolean };
+};
+type StyledEdge = { data(key: string): string; style(name: string): string };
+type StyledNode = { id(): string; hasClass(name: string): boolean; style(name: string): string };
+
+/**
+ * The words the renderer writes at a node — its name, and in the family tree the role or the
+ * shelf caption on a second line beneath — as the stylesheet computes them, not as the model
+ * holds them. Empty when the node is not on the canvas.
+ */
+export async function nodeLabel(page: Page, id: string): Promise<string> {
+	return page.evaluate((nodeId) => {
+		let el: HTMLElement | null = document.querySelector('canvas');
+		while (el && !('_cyreg' in el)) el = el.parentElement;
+		const cy = (el as unknown as { _cyreg: { cy: StyledCore } })._cyreg.cy;
+		const node = cy.$id(nodeId);
+		return node.empty() ? '' : node.style('label');
+	}, id);
+}
+
+/**
+ * The family tree's right-angled lines, and how many of them the renderer names right now: a
+ * routed line is named at one of its ends, and its name shows only while its text is opaque.
+ */
+export async function routedLineNames(page: Page): Promise<{ routed: number; named: number }> {
+	return page.evaluate(() => {
+		let el: HTMLElement | null = document.querySelector('canvas');
+		while (el && !('_cyreg' in el)) el = el.parentElement;
+		const cy = (el as unknown as { _cyreg: { cy: StyledCore } })._cyreg.cy;
+		const routed = cy.edges('.routed').filter((e) => e.style('display') !== 'none');
+		const named = routed.filter(
+			(e) =>
+				Number(e.style('text-opacity')) > 0 &&
+				(e.style('source-label') !== '' || e.style('target-label') !== '')
+		);
+		return { routed: routed.length, named: named.length };
+	});
+}
+
+/**
+ * Of the people and circles on the canvas, how many carry a name and which of those the
+ * renderer leaves unwritten at the current zoom — Cytoscape skips a label whose font would
+ * come out under its `min-zoomed-font-size`, and this asks it that very question.
+ */
+export async function namesNotDrawn(page: Page): Promise<{ named: number; undrawn: string[] }> {
+	return page.evaluate(() => {
+		let el: HTMLElement | null = document.querySelector('canvas');
+		while (el && !('_cyreg' in el)) el = el.parentElement;
+		const cy = (el as unknown as { _cyreg: { cy: StyledCore } })._cyreg.cy;
+		const named = cy
+			.nodes('node.person, node.circle')
+			.filter((n) => !n.hasClass('filtered-out') && n.style('label') !== '');
+		const undrawn = named.filter((n) => !cy.renderer().eleTextBiggerThanMin(n)).map((n) => n.id());
+		return { named: named.length, undrawn };
+	});
+}
+
+/** How many lines between these two the renderer draws right now. */
+export async function linesShownBetween(page: Page, a: string, b: string): Promise<number> {
+	return page.evaluate(
+		([x, y]) => {
+			let el: HTMLElement | null = document.querySelector('canvas');
+			while (el && !('_cyreg' in el)) el = el.parentElement;
+			const cy = (el as unknown as { _cyreg: { cy: StyledCore } })._cyreg.cy;
+			return cy
+				.edges()
+				.filter(
+					(e) =>
+						((e.data('source') === x && e.data('target') === y) ||
+							(e.data('source') === y && e.data('target') === x)) &&
+						e.style('display') !== 'none'
+				).length;
+		},
+		[a, b] as const
+	);
+}

@@ -1,12 +1,11 @@
-import type { Viewer } from '../../access/visibility';
 import type { Clock } from '../../clock';
-import type { ContactSummary } from '../contacts/contacts';
 import type { IdGenerator } from '../../id';
 import { TAG_COLORS, type TagColor } from '../../../tags/colors';
 
 /*
  * Tag use-cases (docs/02 §2.8). Tags are household-global labels; assignments to contacts
- * are visibility-scoped in the adapter. Colour validation and orchestration are pure.
+ * are visibility-scoped in the adapter. Colour validation and orchestration are pure. What the
+ * screens list is a read model of its own (`tag-lists.ts`).
  */
 
 const DEFAULT_COLOR: TagColor = 'blue';
@@ -31,10 +30,10 @@ export interface NewTag extends Tag {
 	updatedAt: number;
 }
 
+/** A tag's writes and the lookups they rest on; the lists are a read model (`TagListReads`). */
 export interface TagRepository {
 	findByName(householdId: string, name: string): Promise<Tag | null>;
 	insert(tag: NewTag): Promise<void>;
-	listByHousehold(householdId: string): Promise<Tag[]>;
 	assign(contactId: string, tagId: string): Promise<void>;
 	unassign(contactId: string, tagId: string): Promise<void>;
 	/** How many contacts carry this tag, across the whole household — never viewer-scoped. */
@@ -43,8 +42,6 @@ export interface TagRepository {
 	deleteTag(householdId: string, tagId: string): Promise<void>;
 	/** Delete every tag in the household nobody carries; answers how many went. */
 	deleteOrphans(householdId: string): Promise<number>;
-	listForContactVisibleTo(viewer: Viewer, contactId: string): Promise<Tag[]>;
-	listContactsByTagVisibleTo(viewer: Viewer, tagId: string): Promise<ContactSummary[]>;
 }
 
 export interface TagDeps {
@@ -121,24 +118,4 @@ export async function pruneOrphanTags(
 	householdId: string
 ): Promise<number> {
 	return deps.tags.deleteOrphans(householdId);
-}
-
-export async function listTags(deps: Pick<TagDeps, 'tags'>, householdId: string): Promise<Tag[]> {
-	return deps.tags.listByHousehold(householdId);
-}
-
-export async function listTagsForContact(
-	deps: Pick<TagDeps, 'tags'>,
-	viewer: Viewer,
-	contactId: string
-): Promise<Tag[]> {
-	return deps.tags.listForContactVisibleTo(viewer, contactId);
-}
-
-export async function listContactsByTag(
-	deps: Pick<TagDeps, 'tags'>,
-	viewer: Viewer,
-	tagId: string
-): Promise<ContactSummary[]> {
-	return deps.tags.listContactsByTagVisibleTo(viewer, tagId);
 }
