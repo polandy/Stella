@@ -719,6 +719,19 @@
 		if (wasFullscreen && !on) onFullscreenExit?.();
 		wasFullscreen = on;
 	});
+	/*
+	 * Full screen gives the map a different room; the canvas frames it afresh for it once it has
+	 * resized, unless the reader has moved the view (docs/05 §5.8). Compared with the state the
+	 * canvas last heard of, which starts out windowed: a map opened straight into full screen
+	 * may be built before its frame has grown.
+	 */
+	let screenTold = false;
+	$effect(() => {
+		const on = screen.on;
+		if (!ready || !controller || on === screenTold) return;
+		screenTold = on;
+		controller.screenChanged();
+	});
 
 	onMount(async () => {
 		// Before anything is awaited: a browser grants full screen only close to the tap.

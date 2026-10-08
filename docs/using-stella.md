@@ -941,6 +941,10 @@ Opening up someone's connections in the tree lays the whole tree out again, so t
 land in their own generation (or on the shelf) and everyone glides to their new place. *Connection path* traces how two people are linked, and it always answers
 with the people in between rather than the worked-out shortcut — that is the point of asking.
 
+**Full screen**, at the end of the map's toolbar, gives the map the whole screen and fits it to
+the new size; leaving full screen fits it back. If you have already moved or zoomed the map, it
+stays exactly where you had it instead.
+
 The map works from the keyboard too. *Tab* onto it and the arrow keys walk from person to
 person — to whoever stands next in that direction — with a dashed ring showing where you are
 (the person you selected wears a solid ring with a soft glow instead). *Enter*

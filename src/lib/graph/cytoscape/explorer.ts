@@ -14,6 +14,7 @@ import { boxAround, frameAround, packGroups } from '../layout/group-blocks';
 import { placeNewcomers, type Placement, type Point } from './placement';
 import { frameLegibly, widenToReveal, type Box } from './viewport';
 import { legibleZoom } from '../layout/legibility';
+import { FOLLOWING, followView, type ViewEvent } from '../view-follow';
 import { DEFAULT_DENSITY, spacingFor, type Spacing } from '../layout/density';
 import { bendLines, CAPTION_ID, writeCaption, type Captions } from './tree-canvas';
 import {
@@ -109,6 +110,12 @@ export interface ExplorerController {
 	 * screen or under the toolbar.
 	 */
 	markCursor(nodeId: string | null): void;
+	/**
+	 * Full screen was entered or left. Once the canvas has taken its new size, the map is framed
+	 * afresh for it — unless the reader has panned or zoomed since the map last framed itself,
+	 * in which case their view is kept (docs/05 §5.8).
+	 */
+	screenChanged(): void;
 	/** Re-theme the canvas from a freshly-resolved palette. */
 	setStylesheet(stylesheet: CyStyle[]): void;
 	/** Tear the canvas down. Idempotent, and every other method no-ops afterwards. */
@@ -214,10 +221,28 @@ export function explorerFromCore(cy: Core, opts: ControllerOptions): ExplorerCon
 	// view stepping back to show them. Until they end the drawn positions are still moving,
 	// just as during a layout.
 	let moving = 0;
+	// Whether the view is still the map's own framing, and a reframe a full-screen change asked
+	// for (`view-follow.ts`); the canvas only reports what happened and does what it says.
+	let viewFollow = FOLLOWING;
+	const follow = (event: ViewEvent) => {
+		const next = followView(viewFollow, event);
+		viewFollow = next.state;
+		if (next.reframe) reframe();
+	};
+	// A reframe asked for while the canvas was still moving, run once it comes to rest.
+	let reframeOnceSettled = false;
+	// The family the last framing kept first, so a reframe frames the tree the same way.
+	let framedFocus: ReadonlySet<string> | undefined;
 	// Only the last layout to finish, with nothing else moving, has brought the canvas to rest;
 	// the nodes an earlier layout left behind are still being moved by a later one.
-	const publishLayoutState = () =>
-		setLayoutState(running.size === 0 && moving === 0 ? SETTLED : SETTLING);
+	const publishLayoutState = () => {
+		const settled = running.size === 0 && moving === 0;
+		setLayoutState(settled ? SETTLED : SETTLING);
+		if (settled && reframeOnceSettled) {
+			reframeOnceSettled = false;
+			reframe();
+		}
+	};
 	/** Runs an animation that counts as the canvas moving until it completes. */
 	const whileMoving = (start: (complete: () => void) => void) => {
 		moving++;
@@ -237,6 +262,14 @@ export function explorerFromCore(cy: Core, opts: ControllerOptions): ExplorerCon
 		running.delete((e as LayoutEvent).layout);
 		publishLayoutState();
 	});
+
+	// Only the reader's own gestures raise these — never `cy.viewport`, `cy.animate` or a
+	// layout — so the map's framing and its glides are not mistaken for the reader moving it.
+	cy.on('dragpan pinchzoom scrollzoom', () => follow({ kind: 'navigated' }));
+	// Raised once the container has been measured afresh: Cytoscape watches its size itself.
+	cy.on('resize', () =>
+		follow({ kind: 'resized', size: { width: cy.width(), height: cy.height() } })
+	);
 
 	cy.on('tap', 'node', (e) => opts.onTapNode(e.target.id()));
 	cy.on('tap', (e) => {
@@ -304,6 +337,29 @@ export function explorerFromCore(cy: Core, opts: ControllerOptions): ExplorerCon
 		focusIds?: ReadonlySet<string>
 	) => {
 		const placeOf = (node: NodeSingular) => positions.get(node.id()) ?? { ...node.position() };
+		framedFocus = focusIds;
+		const view = frameFor(placeOf, focusIds);
+		cy.layout(presetLayout(glide, placeOf) as Parameters<Core['layout']>[0]).run();
+		if (!view) return;
+		follow({ kind: 'framed' });
+		if (!glide) {
+			cy.viewport(view);
+			return;
+		}
+		whileMoving((complete) =>
+			cy.animate(view, { duration: TIDY_GLIDE_DURATION, easing: GLIDE_EASING, complete })
+		);
+	};
+
+	/*
+	 * The view that frames the map with everyone at `placeOf` — below the toolbar, clear of a
+	 * panel, and, with `focusIds` (the family tree), never so far out that the names vanish.
+	 * Null when there is nobody shown or no canvas to frame them on.
+	 */
+	const frameFor = (
+		placeOf: (node: NodeSingular) => Point,
+		focusIds: ReadonlySet<string> | undefined
+	) => {
 		const shown = people().filter((n) => !n.hasClass('filtered-out')) as NodeCollection;
 		const boxOf = (nodes: NodeCollection) =>
 			boxAround(nodes.map((n) => ({ at: placeOf(n), size: sizeOf(n) })));
@@ -323,31 +379,40 @@ export function explorerFromCore(cy: Core, opts: ControllerOptions): ExplorerCon
 							: {})
 					}
 				: null;
-		const view =
-			shown.nonempty() && cy.width() > 0 && cy.height() > 0
-				? frameLegibly(
-						[boxOf(shown), ...frames].reduce(union),
-						focus,
-						{ width: cy.width(), height: cy.height() },
-						{ top: topInset, ...covered },
-						FRAME_PADDING,
-						{
-							min: cy.minZoom(),
-							max: cy.maxZoom(),
-							// The family tree keeps its names drawn; Free and By circle frame as before.
-							legible: focus ? legibleZoom(opts.pixelRatio ?? 1) : 0
-						}
-					)
-				: null;
-		cy.layout(presetLayout(glide, placeOf) as Parameters<Core['layout']>[0]).run();
-		if (!view) return;
-		if (!glide) {
-			cy.viewport(view);
+		return shown.nonempty() && cy.width() > 0 && cy.height() > 0
+			? frameLegibly(
+					[boxOf(shown), ...frames].reduce(union),
+					focus,
+					{ width: cy.width(), height: cy.height() },
+					{ top: topInset, ...covered },
+					FRAME_PADDING,
+					{
+						min: cy.minZoom(),
+						max: cy.maxZoom(),
+						// The family tree keeps its names drawn; Free and By circle frame as before.
+						legible: focus ? legibleZoom(opts.pixelRatio ?? 1) : 0
+					}
+				)
+			: null;
+	};
+
+	/*
+	 * Frames the map afresh where everyone stands now, keeping the family first as the last
+	 * framing did (docs/05 §5.8). At once: the canvas has just jumped to its new size, and a
+	 * glide would only replay that jump. While the canvas still moves, the glide under way is
+	 * aiming at the old size, so the reframe waits until it has come to rest.
+	 */
+	const reframe = () => {
+		if (running.size > 0 || moving > 0) {
+			reframeOnceSettled = true;
 			return;
 		}
-		whileMoving((complete) =>
-			cy.animate(view, { duration: TIDY_GLIDE_DURATION, easing: GLIDE_EASING, complete })
-		);
+		// The reader may have taken the view over while the canvas was coming to rest.
+		if (viewFollow.navigated) return;
+		const view = frameFor((node) => ({ ...node.position() }), framedFocus);
+		if (!view) return;
+		follow({ kind: 'framed' });
+		cy.viewport(view);
 	};
 
 	/*
@@ -568,6 +633,8 @@ export function explorerFromCore(cy: Core, opts: ControllerOptions): ExplorerCon
 			if (!alive()) return;
 			const node = cy.$id(nodeId);
 			if (node.empty()) return;
+			// The reader asked to see this person: the view is theirs now, as after a pan.
+			follow({ kind: 'navigated' });
 			cy.animate({ center: { eles: node }, zoom: 1.3 }, { duration });
 		},
 
@@ -593,7 +660,16 @@ export function explorerFromCore(cy: Core, opts: ControllerOptions): ExplorerCon
 			const inView =
 				box.x1 >= 0 && box.x2 <= cy.width() && box.y1 >= topInset && box.y2 <= cy.height();
 			if (inView) return;
+			// The keyboard moved the view, so it counts as the reader's own, as a drag would.
+			follow({ kind: 'navigated' });
 			whileMoving((complete) => cy.animate({ center: { eles: node } }, { duration, complete }));
+		},
+
+		screenChanged() {
+			if (!alive()) return;
+			// The size Cytoscape last measured: it measures afresh, and says `resize`, only once
+			// the container has settled at its new one.
+			follow({ kind: 'screenChanged', size: { width: cy.width(), height: cy.height() } });
 		},
 
 		setStylesheet(stylesheet) {
