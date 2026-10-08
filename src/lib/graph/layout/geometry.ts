@@ -196,3 +196,16 @@ export function spreadCoincident(
 	}
 	return spread;
 }
+
+/**
+ * Who in `arrangement` stands in the family: everyone above the shelf of people outside it, or
+ * everyone when there is no such shelf. The family is what framing keeps first (docs/05 §5.8).
+ */
+export function familyIn({
+	positions,
+	outsideFamily
+}: Pick<Arrangement, 'positions' | 'outsideFamily'>): Set<string> {
+	return new Set(
+		[...positions].filter(([, at]) => !outsideFamily || at.y < outsideFamily.y).map(([id]) => id)
+	);
+}

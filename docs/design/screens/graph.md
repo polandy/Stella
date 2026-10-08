@@ -48,6 +48,8 @@ card (§5.5.2); its styling is §5.8.
   (`startFullscreen`), and leaving it hands the place back to the preview (`onFullscreenExit`).
   The map enlarged inside the card keeps the button, with *Shrink map* (`onShrink`) just left
   of it; leaving full screen from there returns to the enlarged map.
+- Entering or leaving full screen frames the map afresh for its new size, unless the reader
+  has panned or zoomed since the map last framed itself — then their view stays (§5.8).
 - Both icon buttons carry their name as a tooltip.
 - With a mouse, and on every touch device except iPadOS/iOS Safari (Android, a touch laptop),
   full screen is the browser's own Fullscreen API; Esc leaves it too.
@@ -65,3 +67,7 @@ Esc leaving the native full screen is fine: nobody presses Esc mid-drag. iPadOS/
 a downward drag on a Fullscreen-API element as "swipe to dismiss" — the gesture that closes a
 full-screen video — and panning the canvas is exactly that drag, so those devices never hand the
 frame to the browser.
+
+A map framed for a 24 rem card is framed far too small for a whole screen, and the other way
+round it spills out of the card; reframing fixes that. A reader who has already moved the view
+was looking at something, and taking it away from under them is worse than a map off centre.

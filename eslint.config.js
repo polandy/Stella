@@ -46,8 +46,11 @@ const frameworkFreeFolders = [
 	'src/lib/immich/**',
 	'src/lib/graph/model/**',
 	'src/lib/graph/layout/**',
+	'src/lib/graph/explorer-look.ts',
+	'src/lib/graph/explorer-state.ts',
 	'src/lib/graph/keyboard.ts',
-	'src/lib/graph/phone-map.ts'
+	'src/lib/graph/phone-map.ts',
+	'src/lib/graph/view-follow.ts'
 ];
 
 // Files that break a boundary today. They are not refactored here: each is a later item of

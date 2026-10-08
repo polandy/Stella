@@ -12,14 +12,15 @@
 	import { captionWords } from '$lib/graph/caption-words';
 	import { familyLinksAmong } from '$lib/graph/model/generations';
 	import { hiddenInTree } from '$lib/graph/model/tree-shown';
+	import { selectionAsked, treeRelaidFor } from '$lib/graph/tree-view';
 	import {
-		labelsAfterArranging,
-		labelsOn,
-		selectionAsked,
-		toggledLabels,
-		treeRelaidFor,
-		type SelectionCause
-	} from '$lib/graph/tree-view';
+		explorerAfter,
+		explorerAtOpen,
+		type ExplorerCommand,
+		type ExplorerEvent,
+		type KeptPreferences
+	} from '$lib/graph/explorer-state';
+	import { currentViewOf, groupingApplies, labelsSwitchOf } from '$lib/graph/explorer-look';
 	import { toCytoscapeElements } from '$lib/graph/cytoscape/elements';
 	import { createExplorer, type ExplorerController } from '$lib/graph/cytoscape/explorer';
 	import { buildStylesheet } from '$lib/graph/cytoscape/stylesheet';
@@ -31,8 +32,7 @@
 		expandNode,
 		rebuildExplored,
 		rolesOpenAfter,
-		type CircleRole,
-		type CircleRoleOption
+		type CircleRole
 	} from '$lib/graph/model/ego-network';
 	import { canExpand, hasLinks, ringsFrom } from '$lib/graph/model/rings';
 	import { expandWouldAdd } from '$lib/graph/model/expand-offer';
@@ -46,14 +46,12 @@
 	import { inMemoryGraphSource } from '$lib/graph/model/in-memory-source';
 	import {
 		groupByRole,
-		isRoleGroupId,
 		linksOfGrouped,
 		type EdgeBundle,
 		type RoleGroup
 	} from '$lib/graph/model/role-groups';
 	import { shownOnCanvas } from '$lib/graph/model/shown-on-canvas';
 	import { graphFiltersFor, openingFilterKeys } from '$lib/graph/model/view-filters';
-	import { removeView, saveView, viewMatching, type SavedView } from '$lib/graph/model/saved-views';
 	import {
 		savedViewsPreference,
 		type SavedViewsPreference
@@ -62,17 +60,16 @@
 	import { circleClustersLayout } from '$lib/graph/layout/circle-clusters';
 	import { familyTreeLayout } from '$lib/graph/layout/family-tree';
 	import { DEFAULT_NODE_SIZE } from '$lib/graph/layout/geometry';
-	import { DEFAULT_DENSITY, spacingFor, type Density } from '$lib/graph/layout/density';
+	import { spacingFor } from '$lib/graph/layout/density';
 	import { edgeLabelsFit, linesDrawn } from '$lib/graph/layout/legibility';
 	import { hiddenNeighbourCounts } from '$lib/graph/model/hidden-neighbours';
 	import { densityPreference, type DensityPreference } from '$lib/graph/density-preference';
 	import {
-		DEFAULT_VIEW_SWITCHES,
 		viewSwitchPreference,
 		type ViewSwitchPreference,
 		type ViewSwitches
 	} from '$lib/graph/view-switches';
-	import type { ConnectionPath, GraphEdge, GraphFilters, GraphModel } from '$lib/graph/model/types';
+	import type { GraphEdge, GraphFilters, GraphModel } from '$lib/graph/model/types';
 	import { frameFullscreen } from './frame-fullscreen.svelte';
 	import GraphArrangeMenu from './GraphArrangeMenu.svelte';
 	import GraphCanvas from './GraphCanvas.svelte';
@@ -170,65 +167,81 @@
 	// Starts empty; the ego view around the centre is built client-side on mount.
 	let model = $state<GraphModel>(emptyModel());
 	/*
-	 * The route opens with its centre selected, because the peek panel beside a full-screen
-	 * canvas is where that route says who you are looking at. Embedded, the same panel would
-	 * cover half a map the size of a card before anybody has asked anything — the page's own
-	 * header already names the person, so nothing is selected until a node is tapped.
+	 * Who is selected and why, the path being picked, how the map is looked at, and what the
+	 * canvas last heard of full screen: the transitions are `explorer-state.ts`, and this
+	 * component carries out the commands they hand back. Raw, and read through one derived per
+	 * field, so an event that changes one of them re-runs only what reads that one.
 	 */
-	let selected = $state<string | null>(untrack(() => (compact ? null : centerId)));
-	/** What last put somebody in the selection: only a tap or a search asks for their lines. */
-	let selectionCause = $state<SelectionCause>('opened');
+	let ui = $state.raw(untrack(() => explorerAtOpen({ centerId, compact })));
+	const selected = $derived(ui.selected);
+	const selectionCause = $derived(ui.selectionCause);
+	const active = $derived(ui.active);
+	const pathMode = $derived(ui.pathMode);
+	const pathFrom = $derived(ui.pathFrom);
+	const path = $derived(ui.path);
+	const pathMissing = $derived(ui.pathMissing);
+	const switches = $derived(ui.switches);
+	const dissolved = $derived(ui.dissolved);
+	const density = $derived(ui.density);
+	const savedViews = $derived(ui.savedViews);
+	const currentView = $derived(currentViewOf(ui));
+	const arrangedBy = $derived(ui.arrangedBy);
+	const roleOptions = $derived(ui.circleRoles.options);
+	const chosenRoles = $derived(ui.circleRoles.chosen);
 	const openingFilters = openingFilterKeys(untrack(() => compact));
-	let active = $state<Set<string>>(new Set(openingFilters));
-	let pathMode = $state(false);
-	let pathFrom = $state<string | null>(null);
-	let path = $state<ConnectionPath | null>(null);
-	let pathMissing = $state(false);
+
 	/*
-	 * How the reader looks at the map: the line names, the circles grouped by role (docs/02
-	 * §2.7) and every derived line. Ways of looking rather than filters, and a habit, so this
-	 * browser keeps them (`view-switches.ts`).
+	 * The habits this browser keeps (docs/05 §5.8, docs/02 §2.7): the Filter menu's switches,
+	 * the density, and the saved views — named Filter-menu states, never the centre or anybody's
+	 * position, since a view is how to look, not where.
 	 */
-	let switches = $state<ViewSwitches>({ ...DEFAULT_VIEW_SWITCHES });
 	let switchStore: ViewSwitchPreference | null = null;
-	/** Groups the reader asked to see individually; the rest stay grouped. */
-	let dissolved = $state(new Set<string>());
-	function toggleSwitch(name: keyof ViewSwitches) {
-		switches[name] = !switches[name];
-		switchStore?.save(name, switches[name]);
-	}
-
-	/*
-	 * How close together people are set (docs/05 §5.8): a habit, so this browser keeps it. A
-	 * new density re-runs the free arrangement, since that is the shape it describes; the tree
-	 * and the circles measure every name already, and only the next expand follows it there.
-	 */
-	let density = $state<Density>(DEFAULT_DENSITY);
 	let densityStore: DensityPreference | null = null;
-	function chooseDensity(next: Density) {
-		if (next === density) return;
-		density = next;
-		densityStore?.save(next);
-		controller?.setSpacing(spacingFor(next));
-		if (arrangedBy === 'force') controller?.arrange();
+	let viewStore: SavedViewsPreference | null = null;
+
+	/** Moves the state on, then carries out what it asks for; settles once all of it has. */
+	async function dispatch(event: ExplorerEvent): Promise<void> {
+		// Untracked: an effect that dispatches must not come to depend on the state it writes, nor
+		// on whatever a command reads on its way.
+		const step = explorerAfter(
+			untrack(() => ui),
+			event
+		);
+		ui = step.state;
+		await Promise.all(untrack(() => step.commands.map(carryOut)));
 	}
 
-	/*
-	 * Named Filter-menu states this device keeps (docs/02 §2.7): the kinds of line and the
-	 * switches, never the centre or anybody's position — a view is how to look, not where.
-	 */
-	let savedViews = $state<SavedView[]>([]);
-	let viewStore: SavedViewsPreference | null = null;
-	const currentView = $derived(viewMatching(savedViews, { active, switches }));
-	function keepViews(next: SavedView[]) {
-		savedViews = next;
-		viewStore?.save(next);
-	}
-	function applyView(view: SavedView) {
-		active = new Set(view.filters);
-		// The switches are habits this browser keeps one by one; a view sets them like a tap would.
-		for (const name of Object.keys(view.switches) as (keyof ViewSwitches)[]) {
-			if (switches[name] !== view.switches[name]) toggleSwitch(name);
+	async function carryOut(command: ExplorerCommand): Promise<void> {
+		switch (command.kind) {
+			case 'expand':
+				return expand(command.id);
+			case 'tracePath': {
+				const found = await findConnectionPath(pathSource, command.from, command.to);
+				if (found) model = mergeModels(model, found.model);
+				return dispatch({ type: 'pathTraced', path: found });
+			}
+			case 'arrange':
+				// Leaving the tree may bring the groups back; they settle the map themselves (see below).
+				settledForGroups = false;
+				await tick();
+				if (!settledForGroups) arrangeNow(command.key);
+				return;
+			case 'keepSwitch':
+				return switchStore?.save(command.name, command.on);
+			case 'keepDensity':
+				return densityStore?.save(command.density);
+			case 'respace':
+				// A new density re-runs the free arrangement, since that is the shape it describes; the
+				// tree and the circles measure every name already, and only the next expand follows it.
+				controller?.setSpacing(spacingFor(command.density));
+				if (command.rearrange) controller?.arrange();
+				return;
+			case 'keepViews':
+				return viewStore?.save(command.views);
+			case 'leftFullscreen':
+				return onFullscreenExit?.();
+			case 'screenChanged':
+				return controller?.screenChanged();
 		}
 	}
 
@@ -236,8 +249,6 @@
 		return graphFiltersFor(active, centerId);
 	}
 
-	/** The arrangement last chosen, which the Arrange pill names; free until one is picked (docs/05 §5.8). */
-	let arrangedBy = $state<ArrangementKey>('force');
 	/*
 	 * The family tree around a person says who everybody is to them under each name — Father,
 	 * Grandmother — instead of naming every line (docs/05 §5.8). Around a circle there is nobody
@@ -263,7 +274,7 @@
 	const visible = $derived(applyFilters(model, buildFilters()));
 	// Grouping reads what is shown, so the Circles chip off leaves no membership to group by;
 	// the tree's rows are generations, which a group would only pull apart (docs/02 §2.7).
-	const groupingOn = $derived(switches.groupRoles && arrangedBy !== 'tree');
+	const groupingOn = $derived(groupingApplies(ui));
 	// Who is grouped depends only on the memberships shown; it decides whose links come along.
 	const grouped = $derived(
 		groupingOn
@@ -329,15 +340,9 @@
 	 * where the roles under the names say it — the tree's own choice, off each time the tree is
 	 * entered (`tree-view.ts`, docs/05 §5.8).
 	 */
-	let treeLabels = $state(false);
-	const labelsState = $derived({ habit: switches.edgeLabels, inTree: treeLabels });
-	const labelsSwitch = $derived(labelsOn(labelsState, rolesInstead));
-	function flipSwitch(name: keyof ViewSwitches) {
-		if (name !== 'edgeLabels') return toggleSwitch(name);
-		const next = toggledLabels(labelsState, rolesInstead);
-		treeLabels = next.inTree;
-		if (next.habit !== switches.edgeLabels) toggleSwitch('edgeLabels');
-	}
+	const labelsSwitch = $derived(labelsSwitchOf(ui, rolesInstead));
+	const flipSwitch = (name: keyof ViewSwitches) =>
+		dispatch({ type: 'switchFlipped', name, rolesInstead });
 	// The lines the tree leaves off are no more drawn than the left-off kinship.
 	const treeLeftOff = $derived(
 		arrangedBy === 'tree' ? hiddenInTree(drawnVisible, null) : new Set<string>()
@@ -416,34 +421,19 @@
 	const expandedRoles = new Map<string, ReadonlySet<CircleRole>>();
 
 	/*
-	 * The selected circle's roles and which of them the next expansion opens. Everything starts
-	 * chosen, so a plain "expand" still shows the whole circle. `roleOptionsFor` names the circle
-	 * they belong to, so a slow answer for a circle the reader has since left is dropped.
+	 * The selected circle's roles, fetched for the peek panel to choose which of them the next
+	 * expansion opens (`explorer-state.ts` drops an answer for a circle since left). A primitive,
+	 * so growing the model (which may hand back new node objects) doesn't reset it.
 	 */
-	let roleOptions = $state<CircleRoleOption[]>([]);
-	let roleOptionsFor: string | null = null;
-	let chosenRoles = $state(new Set<CircleRole>());
-	// A primitive, so growing the model (which may hand back new node objects) doesn't reset it.
 	const peekCircleId = $derived(peekNode?.kind === 'circle' ? peekNode.id : null);
 	$effect(() => {
 		const circleId = peekCircleId;
-		roleOptions = [];
-		roleOptionsFor = null;
-		chosenRoles = new Set();
+		void dispatch({ type: 'circlePeeked', circleId });
 		if (circleId === null) return;
-		roleOptionsFor = circleId;
 		void source.neighborhood(circleId).then((hood) => {
-			if (!hood || roleOptionsFor !== circleId) return;
-			roleOptions = circleRoles(hood);
-			chosenRoles = new Set(roleOptions.map((o) => o.role));
+			if (hood) void dispatch({ type: 'circleRolesArrived', circleId, options: circleRoles(hood) });
 		});
 	});
-
-	function toggleRole(role: CircleRole) {
-		const next = new Set(chosenRoles);
-		if (!next.delete(role)) next.add(role);
-		chosenRoles = next;
-	}
 	/** The snapshot the model on screen was built from; a different one means resync. */
 	let synced = untrack(() => graph);
 
@@ -463,13 +453,10 @@
 
 	async function resync() {
 		if (!centerId) return;
-		// A traced chain belongs to the links as they were; the snapshot may have changed them.
-		path = null;
-		pathFrom = null;
-		pathMissing = false;
+		void dispatch({ type: 'snapshotChanged' });
 		model = await rebuildExplored(source, centerId, expandedIds, 1, expandedRoles);
 		expandedIds = new Set([...expandedIds].filter((id) => model.nodes.some((n) => n.id === id)));
-		if (selected !== null && !model.nodes.some((n) => n.id === selected)) selected = null;
+		void dispatch({ type: 'rebuilt', nodeIds: new Set(model.nodes.map((n) => n.id)) });
 	}
 
 	/*
@@ -496,7 +483,7 @@
 		const joined = [...groupOf].some(([id, group]) => placedInGroups.get(id) !== group);
 		placedInGroups = groupOf;
 		if (joined) settledForGroups = true;
-		if (arrival) selectionCause = 'treeRelaid';
+		if (arrival) void dispatch({ type: 'treeRelaid' });
 		if (joined || arrival) untrack(() => arrangeNow(arrangedBy));
 	});
 	// Apply filtering as show/hide (no re-layout).
@@ -507,7 +494,8 @@
 	});
 	// A group dissolved, or grouping switched off, takes its selection with it.
 	$effect(() => {
-		if (selected && isRoleGroupId(selected) && !peekGroup) selected = null;
+		const groupIds = new Set(grouping?.groups.map((g) => g.id));
+		void dispatch({ type: 'groupsDrawn', groupIds });
 	});
 	// Selection / path highlighting.
 	$effect(() => {
@@ -522,31 +510,9 @@
 		controller.setStylesheet(sheet);
 	});
 
-	async function onTapNode(id: string) {
-		selectionCause = 'tapped';
-		// A group is a way of drawing people, not somebody to trace a path to or open up.
-		if (grouping?.groups.some((g) => g.id === id)) {
-			if (!pathMode) selected = id;
-			return;
-		}
-		if (pathMode) {
-			await pickPath(id);
-			return;
-		}
-		if (selected === id) {
-			await expand(id);
-			return;
-		}
-		selected = id;
-		path = null;
-		pathMissing = false;
-	}
-
-	function onTapBackground() {
-		if (pathMode) return;
-		selected = null;
-		path = null;
-	}
+	const onTapNode = (id: string) =>
+		dispatch({ type: 'tapped', id, isGroup: grouping?.groups.some((g) => g.id === id) ?? false });
+	const onTapBackground = () => dispatch({ type: 'tappedBackground' });
 
 	async function expand(id: string) {
 		// The embedded map is one person's neighbourhood, not a way into the whole household:
@@ -565,23 +531,12 @@
 	}
 
 	async function reveal(id: string) {
-		selectionCause = 'found';
 		if (!model.nodes.some((n) => n.id === id)) {
 			model = mergeModels(model, await buildEgoNetwork(source, id, 1));
 			expandedIds.add(id);
 		}
-		selected = id;
-		path = null;
+		void dispatch({ type: 'found', id });
 		controller?.focus(id);
-	}
-
-	async function arrangeBy(key: ArrangementKey) {
-		treeLabels = labelsAfterArranging(labelsState, arrangedBy, key).inTree;
-		arrangedBy = key;
-		// Leaving the tree may bring the groups back; they settle the map themselves (see above).
-		settledForGroups = false;
-		await tick();
-		if (!settledForGroups) arrangeNow(key);
 	}
 
 	function arrangeNow(key: ArrangementKey) {
@@ -602,50 +557,6 @@
 			return;
 		}
 		canvas.arrangeAt(circleClustersLayout(drawn, sizeOf, grouping ?? undefined));
-	}
-
-	function togglePath() {
-		pathMode = !pathMode;
-		pathFrom = null;
-		path = null;
-		pathMissing = false;
-		if (pathMode) selected = null;
-	}
-
-	async function pickPath(id: string) {
-		if (!pathFrom) {
-			pathFrom = id;
-			return;
-		}
-		if (id === pathFrom) {
-			pathFrom = null;
-			return;
-		}
-		const found = await findConnectionPath(pathSource, pathFrom, id);
-		if (found) {
-			model = mergeModels(model, found.model);
-			path = found;
-			pathMissing = false;
-		} else {
-			path = null;
-			pathMissing = true;
-		}
-		pathFrom = null;
-	}
-
-	// Escape on the canvas: in path mode it takes back a half-picked pair first, then leaves
-	// the mode.
-	function onCanvasClear() {
-		if (pathMode && pathFrom) pathFrom = null;
-		else if (pathMode) togglePath();
-		else onTapBackground();
-	}
-
-	function toggleFilter(key: string) {
-		const next = new Set(active);
-		if (next.has(key)) next.delete(key);
-		else next.add(key);
-		active = next;
 	}
 
 	// The one place a stylesheet is built: theme changes and the label toggle share it, so
@@ -712,12 +623,13 @@
 
 	const screen = frameFullscreen(() => frame);
 	const overlay = $derived(screen.on && screen.usesCss);
-	// Only a full screen that was entered can be left: the first `false` is the frame arriving.
-	let wasFullscreen = false;
+	/*
+	 * Leaving full screen is told to the page, so a preview can take the frame's place again;
+	 * entering or leaving it gives the map a different room, which the canvas frames afresh once
+	 * it has resized, unless the reader has moved the view (docs/05 §5.8).
+	 */
 	$effect(() => {
-		const on = screen.on;
-		if (wasFullscreen && !on) onFullscreenExit?.();
-		wasFullscreen = on;
+		void dispatch({ type: 'screen', on: screen.on, canvasReady: ready && controller !== null });
 	});
 
 	onMount(async () => {
@@ -730,27 +642,24 @@
 		// canvas is built, so the chain is what the first layout lays out rather than a jump.
 		if (centerId && tracePathTo) {
 			const found = await findConnectionPath(pathSource, centerId, tracePathTo);
-			if (found) {
-				model = mergeModels(model, found.model);
-				path = found;
-			} else {
-				pathMissing = true;
-			}
-			pathMode = true;
+			if (found) model = mergeModels(model, found.model);
+			void dispatch({ type: 'tracedOnOpen', path: found });
 		}
 
 		if (disposed) return;
 
+		const kept: KeptPreferences = {};
 		try {
 			switchStore = viewSwitchPreference(localStorage);
-			switches = switchStore.load();
+			kept.switches = switchStore.load();
 			densityStore = densityPreference(localStorage);
-			density = densityStore.load();
+			kept.density = densityStore.load();
 			viewStore = savedViewsPreference(localStorage);
-			savedViews = viewStore.load();
+			kept.savedViews = viewStore.load();
 		} catch {
 			// Storage can be blocked; the defaults stand.
 		}
+		void dispatch({ type: 'preferencesLoaded', kept });
 
 		// Bound by the canvas as it mounts, which is before this runs.
 		if (!container) throw new Error('The graph canvas has no element to draw into.');
@@ -820,7 +729,7 @@
 		positions={() => controller?.positions() ?? new Map()}
 		markCursor={(id) => controller?.markCursor(id)}
 		onActivate={onTapNode}
-		onClear={onCanvasClear}
+		onClear={() => dispatch({ type: 'cleared' })}
 	/>
 
 	<!-- Below the centre rather than over it, and out of the way while a peek panel is open. -->
@@ -874,21 +783,21 @@
 		<GraphFilterMenu
 			{active}
 			{openingFilters}
-			onToggleFilter={toggleFilter}
+			onToggleFilter={(key) => dispatch({ type: 'filterToggled', key })}
 			switches={{ ...switches, edgeLabels: labelsSwitch }}
 			onSwitch={flipSwitch}
 			{labelsFit}
 			{rolesInstead}
 			{density}
-			onChooseDensity={chooseDensity}
+			onChooseDensity={(next) => dispatch({ type: 'densityChosen', density: next })}
 			{savedViews}
 			{currentView}
-			onApplyView={applyView}
-			onSaveView={(name) => keepViews(saveView(savedViews, name, { active, switches }))}
-			onDeleteView={(name) => keepViews(removeView(savedViews, name))}
+			onApplyView={(view) => dispatch({ type: 'viewApplied', view })}
+			onSaveView={(name) => dispatch({ type: 'viewSaved', name })}
+			onDeleteView={(name) => dispatch({ type: 'viewDeleted', name })}
 		/>
 
-		<GraphArrangeMenu {arrangedBy} onArrange={arrangeBy} />
+		<GraphArrangeMenu {arrangedBy} onArrange={(key) => dispatch({ type: 'arranged', key })} />
 
 		{#if !compact}
 			<!-- Full screen and the connection path start the second row on a phone. -->
@@ -920,7 +829,7 @@
 		{/if}
 		{#if !compact}
 			<button
-				onclick={togglePath}
+				onclick={() => dispatch({ type: 'pathToggled' })}
 				aria-pressed={pathMode}
 				class="pointer-events-auto rounded-full border px-3 py-1 text-xs font-medium backdrop-blur transition-colors {pathMode
 					? 'border-transparent bg-warning-soft text-fg'
@@ -944,11 +853,8 @@
 			nodes={model.nodes}
 			{nameOf}
 			{compact}
-			onShowIndividually={() => {
-				dissolved = new Set([...dissolved, peekGroup!.id]);
-				selected = null;
-			}}
-			onClose={() => (selected = null)}
+			onShowIndividually={() => dispatch({ type: 'groupDissolved', id: peekGroup!.id })}
+			onClose={() => dispatch({ type: 'peekClosed' })}
 		/>
 	{:else if peekNode && !pathMode}
 		<GraphNodePeek
@@ -958,10 +864,10 @@
 			expandable={peekExpandable}
 			{roleOptions}
 			{chosenRoles}
-			onToggleRole={toggleRole}
+			onToggleRole={(role) => dispatch({ type: 'roleToggled', role })}
 			onExpand={expand}
 			{fullGraphHref}
-			onClose={() => (selected = null)}
+			onClose={() => dispatch({ type: 'peekClosed' })}
 		/>
 	{/if}
 </div>
