@@ -403,6 +403,39 @@ export const importantDate = sqliteTable(
 	(t) => [index('important_date_contact_idx').on(t.contactId)]
 );
 
+/*
+ * A present for one person (docs/02 §2.25): an idea, a gift the household gave, or one it
+ * received. An idea and the gift it became are one row — *Mark as given* sets `state` and the
+ * day. Visibility follows the child-record rule (private ⇒ only the author).
+ */
+export const gift = sqliteTable(
+	'gift',
+	{
+		id: text('id').primaryKey(),
+		contactId: text('contact_id')
+			.notNull()
+			.references(() => contact.id, { onDelete: 'cascade' }),
+		createdBy: text('created_by')
+			.notNull()
+			.references(() => user.id),
+		visibility: text('visibility').$type<Visibility>().notNull().default('shared'),
+		state: text('state').$type<'idea' | 'given' | 'received'>().notNull(),
+		title: text('title').notNull(),
+		note: text('note'),
+		url: text('url'),
+		// ISO YYYY-MM-DD; null while an idea.
+		givenOn: text('given_on'),
+		// A preset key (`birthday`, `christmas`, `anniversary`) or free text.
+		occasion: text('occasion'),
+		createdAt: integer('created_at').notNull().default(now),
+		updatedAt: integer('updated_at').notNull().default(now)
+	},
+	(t) => [
+		// A person's gifts by state, and their given and received ones in story order.
+		index('gift_contact_state_given_idx').on(t.contactId, t.state, t.givenOn)
+	]
+);
+
 // ── Media & tags ───────────────────────────────────────────────────────────
 
 export const photo = sqliteTable(

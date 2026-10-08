@@ -22,6 +22,7 @@ const SHAPE_WHEN_EMPTY = {
 	photos: 'line',
 	story: 'card',
 	notes: 'line',
+	gifts: 'line',
 	mentions: 'absent'
 } as const satisfies Record<ContactSection, CardShape>;
 

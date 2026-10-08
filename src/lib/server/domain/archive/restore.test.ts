@@ -160,6 +160,34 @@ function fullHousehold(): HouseholdSnapshot {
 				}
 			],
 			interaction_participant: [{ interaction_id: 'i-1', contact_id: 'c-rosa' }],
+			gift: [
+				{
+					id: 'g-idea',
+					contact_id: 'c-hans',
+					created_by: 'u-1',
+					visibility: 'private',
+					state: 'idea',
+					title: 'Teapot',
+					note: 'the black one',
+					url: 'https://shop.example/teapot',
+					given_on: null,
+					occasion: null,
+					created_at: EXPORTED
+				},
+				{
+					id: 'g-given',
+					contact_id: 'c-hans',
+					created_by: 'u-1',
+					visibility: 'shared',
+					state: 'given',
+					title: 'Slippers',
+					note: null,
+					url: null,
+					given_on: '2024-12-24',
+					occasion: 'christmas',
+					created_at: EXPORTED
+				}
+			],
 			photo: [
 				{
 					id: 'p-gallery',
@@ -447,6 +475,18 @@ describe('the round trip', () => {
 			'created_at'
 		],
 		interaction_participant: ['interaction_id', 'contact_id'],
+		gift: [
+			'id',
+			'contact_id',
+			'visibility',
+			'state',
+			'title',
+			'note',
+			'url',
+			'given_on',
+			'occasion',
+			'created_at'
+		],
 		photo: [
 			'id',
 			'contact_id',
@@ -802,6 +842,55 @@ describe('an archive that does not add up', () => {
 		);
 		expect(rowsOf(plan, 'note').map((n) => n.id)).toEqual(['n-1']);
 		expect(plan.warnings).toContainEqual({ code: 'noteWithoutText' });
+	});
+
+	it('leaves out a gift without a name or a state it knows, and a given one without a real day', () => {
+		const plan = planRestore(
+			deps(),
+			archived(
+				bent((s) => {
+					const broken = { contact_id: 'c-hans', created_by: 'u-1', created_at: EXPORTED };
+					s.tables.gift.push(
+						{ ...broken, id: 'g-untitled', state: 'idea', title: '' },
+						{ ...broken, id: 'g-offered', state: 'offered', title: 'Book' },
+						{ ...broken, id: 'g-undated', state: 'given', title: 'Book', given_on: null },
+						{ ...broken, id: 'g-no-day', state: 'given', title: 'Book', given_on: '2024-02-30' }
+					);
+				})
+			),
+			target()
+		);
+		expect(
+			rowsOf(plan, 'gift')
+				.map((g) => g.id)
+				.sort()
+		).toEqual(['g-given', 'g-idea']);
+		expect(plan.warnings).toContainEqual({ code: 'giftIncomplete' });
+	});
+
+	it('keeps a gift whose link is not a web address, without the link', () => {
+		// The card renders the link as one; a `javascript:` address would run when tapped.
+		const plan = planRestore(
+			deps(),
+			archived(
+				bent((s) => {
+					s.tables.gift.push({
+						id: 'g-script',
+						contact_id: 'c-hans',
+						created_by: 'u-1',
+						created_at: EXPORTED,
+						state: 'idea',
+						title: 'Book',
+						url: 'javascript:alert(1)'
+					});
+				})
+			),
+			target()
+		);
+		const byId = new Map(rowsOf(plan, 'gift').map((g) => [g.id, g]));
+		expect(byId.get('g-idea')?.url).toBe('https://shop.example/teapot');
+		expect(byId.get('g-script')?.title).toBe('Book');
+		expect(byId.get('g-script')?.url).toBeNull();
 	});
 
 	it('gives a record with no id of its own a fresh one rather than dropping it', () => {

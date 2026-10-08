@@ -12,6 +12,7 @@ import { contact } from './contact';
 import { contacts } from './contacts';
 import { dates } from './dates';
 import { errors } from './errors';
+import { gifts } from './gifts';
 import { home } from './home';
 import { immich } from './immich';
 import { importer } from './import';
@@ -37,6 +38,7 @@ export const en = {
 	...contacts,
 	...dates,
 	...errors,
+	...gifts,
 	...home,
 	...immich,
 	...importer,

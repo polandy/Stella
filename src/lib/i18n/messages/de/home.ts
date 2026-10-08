@@ -39,6 +39,7 @@ export const home: HomeMessages = {
 	'home.outbox.dateFor': (p: { name: string }) => `· Datum für ${p.name}`,
 	'home.outbox.photosOf': (p: { name: string }) => `· Fotos von ${p.name}`,
 	'home.outbox.photosFor': (p: { name: string }) => `· Fotos für ${p.name}`,
+	'home.outbox.giftFor': (p: { name: string }) => `· Geschenk für ${p.name}`,
 	'home.welcome.label': 'Erste Schritte',
 	'home.welcome.title': 'Willkommen bei Stella',
 	'home.welcome.intro':

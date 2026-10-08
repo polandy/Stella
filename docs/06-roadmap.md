@@ -118,6 +118,9 @@ Goal: sand the edges and add the nice-to-haves.
   A Monica import already lands gifts as notes (docs/monica-mapping.md); once this ships they
   move to real gift records. Ideas, gifts given and gifts received per person; the moment
   kind *Gift* folds into them. Decided in `docs/concepts/gifts.md` (mockup alongside).
+  **Slice 1 built** (§2.25): the `gift` record, the Gifts card and gifts in the story.
+  Next: slice 2 (Monica gift notes and gift touchpoints become gifts, the importer writes
+  them), slice 3 (the *Coming up* hint, the *already given* hint, the palette entry).
 - **Email and social sync** — bring in what already knows about people: Google Contacts as a
   first source, then mail and social. Read-only import first, matched against existing people
   through a review list rather than merged silently, every write through the domain

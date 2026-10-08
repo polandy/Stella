@@ -20,6 +20,7 @@ export const RESTORE_TABLES: readonly string[] = [
 	'journal_mention',
 	'interaction',
 	'interaction_participant',
+	'gift',
 	'photo',
 	'tag',
 	'contact_tag',

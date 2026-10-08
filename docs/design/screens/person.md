@@ -13,7 +13,8 @@ the person, and that never leaves the page. Keeping the record tidy (archive, me
 #### Layout
 
 - One column of full-width cards, at most `66.25rem` (about 1060 px), in a fixed order: the
-  identity card, then **People · Photos · Activity and Notes · Mentioned in**. No tabs.
+  identity card, then **People · Photos · Activity and Notes · Gifts · Mentioned in**. No
+  page tabs (the Gifts card has tabs of its own, inside it).
 - Activity (about 1.4 parts) and Notes (1 part) stand side by side from `lg`, and stack below
   it with Activity first.
 - Each card carries its own count where the count is exact, its own `+ Add` disclosure (§5.7),
@@ -93,9 +94,10 @@ the person, and that never leaves the page. Keeping the record tidy (archive, me
 
 #### Jump bar
 
-- `JumpBar` is a row of four links, *People · Photos · Activity · Notes*, each with its card's
-  count where it has one (none for the paged Activity, none for a count of nothing).
-  *Mentioned in* is not in it. The four it links stay at zero — as one line, at the least —
+- `JumpBar` is a row of five links, *People · Photos · Activity · Notes · Gifts*, each with its
+  card's count where it has one (none for the paged Activity, none for Gifts — whose count is
+  on its *Ideas* tab — none for a count of nothing). *Mentioned in* is not in it. The five it
+  links stay at zero — as one line, at the least —
   since that is where their *+ Add* is; the bar's tests hold it to the empty-card rule.
 - It shows **only once it sticks**: it hangs from a zero-height sticky slot that takes no room
   in the flow and sticks at the bar's own height, so it sticks — and fades in (§5.11's fade) —
@@ -106,7 +108,9 @@ the person, and that never leaves the page. Keeping the record tidy (archive, me
 - The card being read wears the selected-pill look (`aria-current`): the last card whose top
   has passed under the bar; of two side by side, the first; at the foot of a page that cannot
   scroll further, the last card on screen (`src/lib/contacts/jump-bar.ts`).
-- Four even columns on a phone, a left-aligned row from `sm`.
+- On a phone the five spread across the width, each as wide as its label — five even columns
+  cut *Menschen 7* and *Geschenke* short at 412 px — and only a label that still does not fit
+  is cut short; a left-aligned row from `sm`.
 - It sticks to the shell's scroller, so the phone's sliding top bar (§5.4) takes it along. The
   scroller's `scroll-padding-top` is the bar's height, so a jump, a `#section-…` link and
   keyboard focus all stop below the bar.
@@ -241,6 +245,35 @@ the person, and that never leaves the page. Keeping the record tidy (archive, me
 - While the composer is open for somebody with no activity yet, the empty state steps aside.
 - Moments kept on the device while Stella is out of reach stand above the timeline, beside
   the kept logs.
+- A given or received **gift** (docs/02 §2.25) is an item of its own, read from the gift: the
+  gift icon and `--kind-gift` like the touchpoint kind *Gift*, but labelled *Given* or
+  *Received*, its title a link to the Gifts card and its occasion beneath. It offers no
+  remove button — a gift is changed and removed on its card.
+
+#### Gifts card
+
+- After Activity and Notes, full width (docs/02 §2.25). Its header: *+ Given* (ghost), the
+  card's own *+ Idea* disclosure, and a ⋯ menu holding *+ Received*. No count in the header.
+- Three tabs in the segmented-pill look of the Immich page: *Ideas · n* (the open ideas,
+  counted), *Given*, and *Received* only once there is one; arrow keys move between them.
+- A row: a square icon tile (a light bulb in `--accent-yellow` for an idea, the gift in
+  `--kind-gift` otherwise), the title, *day · occasion* — on an idea instead the quiet
+  *Added 3 October 2026* (`text-xs`, `--fg-muted`; the day named like every day on the page, in
+  the reader's time zone) — the note, then *noted by …* · *Link* ·
+  *private* in the subtle line; the pencil and the remove cross on the right. An idea's
+  *Mark as given…* (German *Verschenkt …*) stands under its text, so a phone keeps the title on
+  one line — an outlined `secondary` button, since every idea carries one and a list of filled
+  buttons would shout over the card's own add actions.
+- Given and Received are grouped by year under uppercase dividers (the list-divider style,
+  §5.4), newest first.
+- The add form opens at the card's top like every card form: *Idea for Hilde* asks *What?*,
+  with *Note or link* folded away; *Given to Hilde* and *Received from Hilde* add the day
+  (today) and the occasion chips *Birthday · Christmas · Anniversary · Other…* (a pressed chip
+  pressed again lets go; *Other…* opens a field). Shared/Private radios, *Save*.
+- *Mark as given…* opens a small sunken box under the idea: *“Teapot” given*, the day, the
+  occasion chips, *Cancel* and the filled *Mark as given* (German *Als verschenkt eintragen*). The pencil rewrites the row in place with the
+  add form's fields; only the author is offered Shared/Private.
+- Removing follows the undo window of docs/02 §2.23.
 
 #### Notes, Photos, Mentioned in
 
@@ -297,9 +330,10 @@ the person, and that never leaves the page. Keeping the record tidy (archive, me
 #### Empty cards
 
 - `cardShape` (`$lib/contacts/empty-cards.ts`) decides each card's shape at zero.
-- An empty **Photos** or **Notes** is **one line** (`Section`'s `empty`): the title, one short
-  sentence cut off rather than wrapped (*No photos yet.*, *Nothing noted yet.*), and the
-  card's actions — *+ Add* and, on Photos, the Immich menu — with no count and no body.
+- An empty **Photos**, **Notes** or **Gifts** is **one line** (`Section`'s `empty`): the title,
+  one short sentence cut off rather than wrapped (*No photos yet.*, *Nothing noted yet.*,
+  *No gift ideas yet.*), and the card's actions — *+ Add* and, on Photos, the Immich menu; on
+  Gifts *+ Idea* and the ⋯ menu, which then holds *+ Given* too — with no count and no body.
 - Pressing *+ Add* grows it into the card with its form open; *Cancel* shrinks it back, and
   the button pressed is the one that closes it.
 - Photos counts as empty only with no photo, none kept on the device, no group photo and no

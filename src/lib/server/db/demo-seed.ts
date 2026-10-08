@@ -8,6 +8,7 @@ import {
 	circleMembership,
 	contact,
 	contactField,
+	gift,
 	household,
 	importantDate,
 	interaction,
@@ -713,6 +714,69 @@ const withMentions = (text: string) =>
 const mentionedBy = (row: { contactId: string; body: string }) =>
 	mentionsOtherThan(extractMentionIds(row.body), row.contactId);
 
+/**
+ * Gifts for Grosi Ursula (docs/02 §2.25): two open ideas, what was given over two years and one
+ * present back, so every tab of the Gifts card has something in it. On a grandparent nobody
+ * else's demo story reads, so the story's given and received gifts show without shifting a
+ * timeline another case counts. `daysAgo` dates the given and received ones.
+ */
+const GIFTS: readonly {
+	key: string;
+	state: 'idea' | 'given' | 'received';
+	title: string;
+	note?: string;
+	url?: string;
+	daysAgo: number;
+	occasion?: string;
+	byMember?: boolean;
+}[] = [
+	{
+		key: 'player',
+		state: 'idea',
+		title: 'Audiobook player with big buttons',
+		note: 'She said the remote is too fiddly.',
+		url: 'https://shop.example/audiobook-player',
+		daysAgo: 12
+	},
+	{
+		key: 'photobook',
+		state: 'idea',
+		title: 'Photo book of the summer at the lake',
+		daysAgo: 30,
+		byMember: true
+	},
+	{
+		key: 'socks',
+		state: 'received',
+		title: 'Hand-knitted socks',
+		daysAgo: 288,
+		occasion: 'christmas'
+	},
+	{
+		key: 'tea',
+		state: 'given',
+		title: 'Her favourite tea, the big tin',
+		daysAgo: 355,
+		occasion: 'birthday'
+	},
+	{
+		key: 'slippers',
+		state: 'given',
+		title: 'Warm slippers',
+		daysAgo: 653,
+		occasion: 'christmas',
+		byMember: true
+	},
+	{
+		key: 'garden',
+		state: 'given',
+		title: 'Day trip to the garden show',
+		note: 'With lunch by the river.',
+		daysAgo: 720,
+		occasion: 'birthday'
+	}
+];
+
 /** How the seed turns the demo password into what it stores. */
 export type HashPassword = (password: string) => string;
 
@@ -903,6 +967,25 @@ export function seedDemoData(
 				title: s.text,
 				createdAt: now - s.daysAgo * DAY_MS,
 				updatedAt: now - s.daysAgo * DAY_MS
+			}))
+		)
+		.onConflictDoNothing()
+		.run();
+
+	db.insert(gift)
+		.values(
+			GIFTS.map((g) => ({
+				id: `demo-gift-${g.key}`,
+				contactId: cid('ursula'),
+				createdBy: g.byMember ? memberId : authorId,
+				state: g.state,
+				title: g.title,
+				note: g.note ?? null,
+				url: g.url ?? null,
+				givenOn: g.state === 'idea' ? null : dayBefore(now, g.daysAgo),
+				occasion: g.occasion ?? null,
+				createdAt: now - g.daysAgo * DAY_MS,
+				updatedAt: now - g.daysAgo * DAY_MS
 			}))
 		)
 		.onConflictDoNothing()

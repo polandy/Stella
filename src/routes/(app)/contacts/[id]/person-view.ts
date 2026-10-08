@@ -9,6 +9,7 @@ import {
 	type ImportantDate
 } from '$lib/server/domain/dates/important-dates';
 import type { GraphModel } from '$lib/graph/model/types';
+import type { Gift } from '$lib/server/domain/gifts/gifts';
 import type { MentionedIn } from '$lib/server/domain/mentions/mentioned-in';
 import { renderMarkdownWithMentions } from '$lib/server/domain/notes/markdown';
 import type { Note } from '$lib/server/domain/notes/notes';
@@ -76,6 +77,28 @@ export function fieldView(field: Pick<ContactField, 'id' | 'kind' | 'label' | 'v
 		label: field.label,
 		value: field.value,
 		href: fieldHref(field.kind, field.value)
+	};
+}
+
+/**
+ * A gift as the Gifts card shows it (docs/02 §2.25). Who noted it is named by first name, like
+ * an item of the story; `mine` is what offers *Private*, which only the author may set.
+ */
+export function giftView(gift: Gift, ctx: PersonViewContext) {
+	const mine = gift.createdBy === ctx.viewerId;
+	return {
+		id: gift.id,
+		state: gift.state,
+		title: gift.title,
+		note: gift.note,
+		url: gift.url,
+		givenOn: gift.givenOn,
+		occasion: gift.occasion,
+		visibility: gift.visibility,
+		mine,
+		notedBy: mine ? null : authorLabel(false, ctx.nameOfAuthor(gift.createdBy)),
+		/** When it was noted, shown on an idea; given and received gifts show their day. */
+		createdAt: gift.createdAt
 	};
 }
 

@@ -345,6 +345,12 @@
 							{#snippet meta()}<span>{t('home.outbox.photosFor', { name: item.about ?? '' })}</span
 								>{/snippet}
 						</KeptItem>
+					{:else if isKept(item, 'gift.add')}
+						<KeptItem {item} editHref={contactSectionPath(item.command.payload.contactId, 'gifts')}>
+							{#snippet meta()}<span>{t('home.outbox.giftFor', { name: item.about ?? '' })}</span
+								>{/snippet}
+							<p class="mt-1 text-fg">{item.command.payload.title}</p>
+						</KeptItem>
 					{/if}
 				{/each}
 			</section>

@@ -1,13 +1,15 @@
 import type { Viewer } from '../../access/visibility';
+import type { DatedGift, GiftRepository } from '../gifts/gifts';
 import type { Interaction, InteractionRepository } from '../interactions/interactions';
 import type { JournalEntry, JournalRepository } from '../journal/journal';
 
 /*
- * The story of a person (docs/02 §2.23): the journal someone wrote about them and the
- * touchpoints someone had with them, read as one thing in one order — because that is how it
- * happened. Two lists side by side made the reader do the merging.
+ * The story of a person (docs/02 §2.23): the journal someone wrote about them, the
+ * touchpoints someone had with them and the gifts given to them or received from them (docs/02
+ * §2.25), read as one thing in one order — because that is how it happened. Lists side by side
+ * made the reader do the merging.
  *
- * The two sources are stored and paginated separately, so `mergeStory` is a pure merge over one
+ * The sources are stored and paginated separately, so `mergeStory` is a pure merge over one
  * page of each and `listStoryPage` is the thin part that fetches them. Keeping the merge pure is
  * what makes the cursor rules — the ones that decide whether paging repeats or drops an item —
  * testable without a database.
@@ -23,7 +25,9 @@ export interface StoryPoint {
 /** One thing that happened with a person. */
 export type StoryItem =
 	| ({ kind: 'journal'; entry: JournalEntry } & StoryPoint)
-	| ({ kind: 'interaction'; interaction: Interaction } & StoryPoint);
+	| ({ kind: 'interaction'; interaction: Interaction } & StoryPoint)
+	/** Read from the gift itself, never a copy, so an edit or a removal shows here too. */
+	| ({ kind: 'gift'; gift: DatedGift } & StoryPoint);
 
 /**
  * Where one source picks up: at the top, strictly older than a point, or nowhere because it
@@ -46,6 +50,7 @@ export interface StorySource<T> {
 export interface StoryCursor {
 	journal: StoryResume;
 	interactions: StoryResume;
+	gifts: StoryResume;
 }
 
 export interface StoryPage {
@@ -57,6 +62,7 @@ export interface StoryPage {
 export interface StoryDeps {
 	journal: Pick<JournalRepository, 'listPageForContactVisibleTo'>;
 	interactions: Pick<InteractionRepository, 'listPageForContactVisibleTo'>;
+	gifts: Pick<GiftRepository, 'listStoryPageForContactVisibleTo'>;
 }
 
 /** Most recent first: later day wins, then later recording, then a fixed order for a dead heat. */
@@ -84,6 +90,7 @@ function resume<T>(source: StorySource<T>, shown: StoryItem[]): StoryResume {
 export function mergeStory(input: {
 	journal: StorySource<JournalEntry>;
 	interactions: StorySource<Interaction>;
+	gifts: StorySource<DatedGift>;
 	limit: number;
 }): StoryPage {
 	const journalItems: StoryItem[] = input.journal.items.map((entry) => ({
@@ -99,7 +106,14 @@ export function mergeStory(input: {
 		recordedAt: interaction.createdAt
 	}));
 
-	const items = [...journalItems, ...interactionItems]
+	const giftItems: StoryItem[] = input.gifts.items.map((gift) => ({
+		kind: 'gift',
+		gift,
+		day: gift.givenOn,
+		recordedAt: gift.createdAt
+	}));
+
+	const items = [...journalItems, ...interactionItems, ...giftItems]
 		.sort(newestFirst)
 		.slice(0, Math.max(0, Math.trunc(input.limit)));
 
@@ -112,11 +126,13 @@ export function mergeStory(input: {
 		items.filter((i) => i.kind === 'interaction')
 	);
 
-	return {
-		items,
-		nextCursor:
-			journal === 'finished' && interactions === 'finished' ? null : { journal, interactions }
-	};
+	const gifts = resume(
+		input.gifts,
+		items.filter((i) => i.kind === 'gift')
+	);
+
+	const finished = journal === 'finished' && interactions === 'finished' && gifts === 'finished';
+	return { items, nextCursor: finished ? null : { journal, interactions, gifts } };
 }
 
 /**
@@ -136,12 +152,14 @@ export async function listStoryPage(
 	const perSource = limit;
 	const journalFrom: StoryResume = opts.cursor?.journal ?? 'top';
 	const interactionsFrom: StoryResume = opts.cursor?.interactions ?? 'top';
+	const giftsFrom: StoryResume = opts.cursor?.gifts ?? 'top';
 
 	// A finished source is never read again.
 	const wantJournal = journalFrom !== 'finished';
 	const wantInteractions = interactionsFrom !== 'finished';
+	const wantGifts = giftsFrom !== 'finished';
 
-	const [journalRows, interactionRows] = await Promise.all([
+	const [journalRows, interactionRows, giftRows] = await Promise.all([
 		wantJournal
 			? deps.journal.listPageForContactVisibleTo(viewer, contactId, {
 					limit: perSource + 1,
@@ -159,12 +177,22 @@ export async function listStoryPage(
 							? undefined
 							: { happenedAt: interactionsFrom.day, createdAt: interactionsFrom.recordedAt }
 				})
+			: Promise.resolve([]),
+		wantGifts
+			? deps.gifts.listStoryPageForContactVisibleTo(viewer, contactId, {
+					limit: perSource + 1,
+					before:
+						giftsFrom === 'top'
+							? undefined
+							: { givenOn: giftsFrom.day, createdAt: giftsFrom.recordedAt }
+				})
 			: Promise.resolve([])
 	]);
 
 	// One row over the asked-for page is how each source says "there is more behind me".
 	const journalHasMore = journalRows.length > perSource;
 	const interactionsHaveMore = interactionRows.length > perSource;
+	const giftsHaveMore = giftRows.length > perSource;
 
 	return mergeStory({
 		journal: {
@@ -176,6 +204,11 @@ export async function listStoryPage(
 			items: interactionsHaveMore ? interactionRows.slice(0, perSource) : interactionRows,
 			exhausted: !interactionsHaveMore,
 			resumeFrom: interactionsFrom
+		},
+		gifts: {
+			items: giftsHaveMore ? giftRows.slice(0, perSource) : giftRows,
+			exhausted: !giftsHaveMore,
+			resumeFrom: giftsFrom
 		},
 		limit
 	});

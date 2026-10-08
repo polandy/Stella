@@ -1,6 +1,7 @@
 import * as v from 'valibot';
 import { CONTACT_FIELD_KINDS } from '../contact-fields/kinds';
 import { IMPORTANT_DATE_KINDS } from '../dates/kinds';
+import { GIFT_STATES } from '../gifts/gifts';
 import { isTakenAt } from '../image/taken-at';
 import { INTERACTION_KINDS } from '../interactions/kinds';
 import { GENDERS } from '../people/gender';
@@ -94,6 +95,49 @@ export const InteractionLogSchema = v.object({
 	description: v.optional(v.nullable(v.pipe(v.string(), v.trim())), null),
 	visibility,
 	participantIds: v.optional(v.array(nonEmpty), [])
+});
+
+/**
+ * What a gift says (docs/02 §2.25). Only the title is required; whether the day is — and
+ * whether it is real — is the use-case's to judge by the gift's state, and so is the link.
+ */
+const giftContent = {
+	title: requiredText,
+	note: optionalText,
+	url: optionalText,
+	/** ISO `YYYY-MM-DD` for a given or received gift; an idea has none. */
+	givenOn: optionalText,
+	/** A preset key (`GIFT_OCCASION_PRESETS`) or free text. */
+	occasion: optionalText,
+	visibility
+};
+
+/** A gift noted on a person: an idea, or one given or received (docs/02 §2.25). */
+export const GiftAddSchema = v.object({
+	contactId: nonEmpty,
+	state: v.picklist(GIFT_STATES),
+	...giftContent
+});
+
+/** A gift rewritten where it is listed; its state stays. */
+export const GiftEditSchema = v.object({
+	contactId: nonEmpty,
+	giftId: nonEmpty,
+	...giftContent
+});
+
+/** An idea given: the day, and the occasion if there was one. */
+export const GiftMarkGivenSchema = v.object({
+	contactId: nonEmpty,
+	giftId: nonEmpty,
+	givenOn: v.pipe(v.string(), v.regex(ISO_DAY)),
+	occasion: optionalText
+});
+
+/** A gift taken off a person. */
+export const GiftRemoveSchema = v.object({
+	contactId: nonEmpty,
+	giftId: nonEmpty
 });
 
 /** A tag put on a person by name; a name the household has not used yet makes a new tag. */
@@ -245,6 +289,10 @@ export const COMMAND_PAYLOAD_SCHEMAS = {
 	'moment.photo': PhotoWireSchema,
 	'note.add': NoteAddSchema,
 	'interaction.log': InteractionLogSchema,
+	'gift.add': GiftAddSchema,
+	'gift.edit': GiftEditSchema,
+	'gift.markGiven': GiftMarkGivenSchema,
+	'gift.remove': GiftRemoveSchema,
 	'tag.assign': TagAssignSchema,
 	'circle.join': CircleJoinSchema,
 	'relationship.add': RelationshipAddSchema,

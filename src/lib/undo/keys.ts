@@ -10,6 +10,7 @@ export const REMOVAL_KINDS = [
 	'interaction',
 	'field',
 	'date',
+	'gift',
 	'tag',
 	'membership',
 	'relationship',

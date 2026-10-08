@@ -18,6 +18,7 @@ describe('CONTACT_SECTIONS', () => {
 			'photos',
 			'story',
 			'notes',
+			'gifts',
 			'mentions'
 		]);
 	});

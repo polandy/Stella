@@ -28,14 +28,15 @@ test.beforeEach(async ({ page }) => {
 	await signIn(page);
 });
 
-test('an empty person’s page keeps Photos and Notes to one line and leaves Mentioned in off', async ({
+test('an empty person’s page keeps Photos, Notes and Gifts to one line and leaves Mentioned in off', async ({
 	page
 }) => {
 	await addEmptyPerson(page);
 
 	for (const [card, sentence, add] of [
 		['photos', 'No photos yet.', 'Add photos'],
-		['notes', 'Nothing noted yet.', 'Add note']
+		['notes', 'Nothing noted yet.', 'Add note'],
+		['gifts', 'No gift ideas yet.', 'Idea']
 	] as const) {
 		const section = page.locator(`#section-${card}`);
 		await expect(section).toHaveAttribute('data-empty-line', 'true');
@@ -57,12 +58,13 @@ test('an empty person’s page keeps Photos and Notes to one line and leaves Men
 	// Passive, with nothing to add there: at zero the card is not on the page.
 	await expect(page.locator('#section-mentions')).toHaveCount(0);
 
-	// The jump bar keeps all four cards it links: the one-line cards are where their *+ Add* is.
+	// The jump bar keeps all five cards it links: the one-line cards are where their *+ Add* is.
 	await expect(page.getByTestId('jump-bar').locator('a')).toHaveText([
 		/^People/,
 		/^Photos/,
 		/^Activity/,
-		/^Notes/
+		/^Notes/,
+		/^Gifts/
 	]);
 });
 

@@ -134,6 +134,32 @@ describe('what follows the person', () => {
 		expect(db.select().from(schema.contact).all()[0].description).toBe('the merged one');
 	});
 
+	it('brings their gifts across, ideas and given alike (docs/02 §2.25)', () => {
+		db.insert(schema.gift)
+			.values([
+				{ id: 'g1', contactId: 'dup', createdBy: U1, state: 'idea', title: 'Teapot' },
+				{
+					id: 'g2',
+					contactId: 'dup',
+					createdBy: U1,
+					state: 'given',
+					title: 'Slippers',
+					givenOn: '2024-12-24'
+				}
+			])
+			.run();
+
+		expect(merge()).toBe(true);
+
+		expect(
+			db
+				.select()
+				.from(schema.gift)
+				.all()
+				.map((g) => g.contactId)
+		).toEqual(['keep', 'keep']);
+	});
+
 	it('keeps a member pointing at themselves when their record is the one merged away', () => {
 		db.update(schema.user).set({ selfContactId: 'dup' }).where(eq(schema.user.id, U1)).run();
 		db.update(schema.user).set({ selfContactId: 'keep' }).where(eq(schema.user.id, U2)).run();

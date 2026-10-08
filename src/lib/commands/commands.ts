@@ -19,6 +19,11 @@ const KINDS = {
 	'moment.photo': 'add',
 	'note.add': 'add',
 	'interaction.log': 'add',
+	'gift.add': 'add',
+	// Somebody may have seen the gift already, so these wait for Stella rather than the device.
+	'gift.edit': 'change',
+	'gift.markGiven': 'change',
+	'gift.remove': 'remove',
 	'tag.assign': 'add',
 	'circle.join': 'add',
 	'relationship.add': 'add',

@@ -6,6 +6,8 @@ import { isSafeMediaPath } from './archive';
 import { isImmichId } from '../immich/gateway';
 import { ARCHIVE_FORMAT, ARCHIVE_VERSION } from './document';
 import { CURRENT_RELATIONSHIP_STATUS } from '../../../relationships/status';
+import { giftLink, isGiftState } from '../../../gifts/gifts';
+import { FULL_DATE_SHAPE, isRealCalendarDay } from '../../../dates/calendar';
 
 /*
  * Reading an archive back (docs/02 §2.15): the document turned into rows this installation can
@@ -71,6 +73,7 @@ export type RestoreWarning =
 	| { code: 'noteWithoutText' }
 	| { code: 'journalEntryIncomplete' }
 	| { code: 'touchpointIncomplete' }
+	| { code: 'giftIncomplete' }
 	| { code: 'tagWithoutName' }
 	| { code: 'tagsNotInList' }
 	| { code: 'immichLinkIncomplete' }
@@ -194,6 +197,12 @@ export function readArchiveDocument(parsed: unknown): Row {
 	return document;
 }
 
+/** A gift's link if it is a web address; anything else is dropped rather than kept as a link. */
+function webLinkOf(raw: string | null): string | null {
+	const link = giftLink(raw ?? '');
+	return link.ok ? link.url : null;
+}
+
 /**
  * Turn a parsed archive document into the rows to insert. Nothing here touches the database:
  * what the installation already has arrives in `target`, and what comes out is a plan.
@@ -234,6 +243,7 @@ export function planRestore(
 	const journalMentions: Row[] = [];
 	const interactions: Row[] = [];
 	const participants: Row[] = [];
+	const gifts: Row[] = [];
 	const photos: Row[] = [];
 	const contactTags: Row[] = [];
 	const immichLinks: Row[] = [];
@@ -477,6 +487,33 @@ export function planRestore(
 			}
 		}
 
+		for (const giftRow of records(person, 'gifts')) {
+			const state = str(giftRow, 'state');
+			const title = str(giftRow, 'title');
+			const givenOn = str(giftRow, 'given_on');
+			// A gift needs its name and one of its three states; a given or received one, its day.
+			const known = state !== null && isGiftState(state);
+			const dated = givenOn !== null && FULL_DATE_SHAPE.test(givenOn) && isRealCalendarDay(givenOn);
+			if (!known || title === null || (state !== 'idea' && !dated)) {
+				warn({ code: 'giftIncomplete' });
+				continue;
+			}
+			gifts.push({
+				id: str(giftRow, 'id') ?? deps.ids.next(),
+				contact_id: contactId,
+				created_by: author(giftRow),
+				visibility: visibilityOf(giftRow),
+				state,
+				title,
+				note: str(giftRow, 'note'),
+				// Only a web address is kept, as the form keeps it: the card renders it as a link.
+				url: webLinkOf(str(giftRow, 'url')),
+				given_on: state === 'idea' ? null : givenOn,
+				occasion: str(giftRow, 'occasion'),
+				...stamps(giftRow)
+			});
+		}
+
 		for (const image of records(person, 'photos'))
 			addPhoto(image, { contactId, journalEntryId: null });
 	}
@@ -714,6 +751,7 @@ export function planRestore(
 			{ table: 'journal_mention', rows: journalMentions },
 			{ table: 'interaction', rows: interactions },
 			{ table: 'interaction_participant', rows: participants },
+			{ table: 'gift', rows: gifts },
 			{ table: 'photo', rows: keptPhotos },
 			{ table: 'circle', rows: circles },
 			{ table: 'circle_membership', rows: memberships },

@@ -1,4 +1,5 @@
 <script lang="ts">
+	import GiftsSection from '$lib/components/person/GiftsSection.svelte';
 	import IdentityCard from '$lib/components/person/IdentityCard.svelte';
 	import JumpBar from '$lib/components/person/JumpBar.svelte';
 	import MentionsSection from '$lib/components/person/MentionsSection.svelte';
@@ -120,6 +121,9 @@
 		<StorySection bind:this={story} {data} {form} {otherContacts} />
 		<NotesSection {data} {form} {otherContacts} />
 	</div>
+
+	<!-- Ideas, and what was given and received (docs/02 §2.25). -->
+	<GiftsSection {data} {form} />
 
 	<MentionsSection {data} />
 </main>

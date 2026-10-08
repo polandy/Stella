@@ -146,6 +146,46 @@ describe('toStoryItem, touchpoints', () => {
 	});
 });
 
+describe('toStoryItem, gifts', () => {
+	const giftItem = (overrides: Record<string, unknown> = {}): StoryItem => ({
+		kind: 'gift',
+		day: '2025-12-24',
+		recordedAt: 300,
+		gift: {
+			id: 'g1',
+			contactId: 'c1',
+			createdBy: 'user-2',
+			visibility: 'shared',
+			state: 'received',
+			title: 'Knitted socks',
+			note: 'Grey ones',
+			url: null,
+			givenOn: '2025-12-24',
+			occasion: 'christmas',
+			createdAt: 300,
+			updatedAt: 300,
+			...overrides
+		}
+	});
+
+	it('says what was given or received, and on which occasion', () => {
+		const view = toStoryItem(giftItem(), context({ nameOfAuthor: () => 'Lena Brunner' }));
+
+		expect(view).toEqual({
+			kind: 'gift',
+			id: 'g1',
+			day: '2025-12-24',
+			recordedAt: 300,
+			visibility: 'shared',
+			mine: false,
+			author: 'Lena',
+			giftState: 'received',
+			title: 'Knitted socks',
+			occasion: 'christmas'
+		});
+	});
+});
+
 describe('toStoryItem, who wrote it', () => {
 	it('names the viewer "you" on their own entry', () => {
 		const view = toStoryItem(journalItem(), context({ nameOfAuthor: () => 'Markus Brunner' }));

@@ -37,7 +37,19 @@ export interface StoryInteractionItem extends StoryItemBase {
 	participants: { contactId: string; displayName: string }[];
 }
 
-export type StoryItemView = StoryJournalItem | StoryInteractionItem;
+/**
+ * A gift given to this person or received from them (docs/02 §2.25), read from the gift
+ * itself. It is changed and removed on the Gifts card, so the story offers no removal of its own.
+ */
+export interface StoryGiftItem extends StoryItemBase {
+	kind: 'gift';
+	giftState: 'given' | 'received';
+	title: string;
+	/** A preset key or free text; the timeline words a preset in the reader's language. */
+	occasion: string | null;
+}
+
+export type StoryItemView = StoryJournalItem | StoryInteractionItem | StoryGiftItem;
 
 /** Where each source resumes; mirrors the domain's `StoryResume` across the wire. */
 export type StoryResumeView = { day: string; recordedAt: number } | 'top' | 'finished';
@@ -45,6 +57,7 @@ export type StoryResumeView = { day: string; recordedAt: number } | 'top' | 'fin
 export interface StoryCursorView {
 	journal: StoryResumeView;
 	interactions: StoryResumeView;
+	gifts: StoryResumeView;
 }
 
 export interface StoryPageView {

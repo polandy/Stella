@@ -1,7 +1,9 @@
 # Concept — Gift ideas and gifts given
 
-Status: **decided, not built.** Written and decided with the maintainer on 2026-10-06 (§8);
-checked against `main` on 2026-10-08 (§9). Mockup:
+Status: **decided; slice 1 of 3 built** (docs/02 §2.25: the `gift` record, the Gifts card,
+gifts in the story). Slice 2 — §6 and the touchpoint conversion of §3.2 — and slice 3 — §3.3,
+§3.4 and the palette entry of §4 — are open. Written and decided with the maintainer on
+2026-10-06 (§8); checked against `main` on 2026-10-08 (§9). Mockup:
 `docs/concepts/gifts.html`. Roadmap: docs/06 M3, *Gift ideas and gifts given*.
 
 ---

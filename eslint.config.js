@@ -35,6 +35,7 @@ const frameworkFreeFolders = [
 	'src/lib/sync/**',
 	'src/lib/shell/**',
 	'src/lib/contacts/**',
+	'src/lib/gifts/**',
 	'src/lib/onboarding/**',
 	'src/lib/surnames/**',
 	'src/lib/motion/**',

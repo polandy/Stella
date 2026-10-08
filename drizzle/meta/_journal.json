@@ -169,6 +169,13 @@
       "when": 1791228083472,
       "tag": "0023_immich_name_ignore",
       "breakpoints": true
+    },
+    {
+      "idx": 24,
+      "version": "6",
+      "when": 1791419369769,
+      "tag": "0024_gift",
+      "breakpoints": true
     }
   ]
 }

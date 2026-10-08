@@ -39,7 +39,7 @@ Bun · SvelteKit (Svelte 5, runes) · SQLite WAL + Drizzle · Tailwind v4 + Catp
 | `src/lib/server/access/` | **central** ACL / visibility (`docs/03` §3.7) — the *only* authz path |
 | `src/lib/server/domain/` | use-cases, test-first; `commands/` applies a command once |
 | `src/lib/server/{auth,immich,commands,…}/` | infrastructure and edge helpers: sessions + OIDC, the Immich gateway, the command wire edge, media store, HTTP helpers |
-| `src/lib/{commands,contacts,immich,kinship,menu,motion,onboarding,pwa,shell,stream,suggestions,surnames,sync}/` | **pure** decisions, test-first; a `*.svelte.ts` beside one is its browser adapter |
+| `src/lib/{commands,contacts,gifts,immich,kinship,menu,motion,onboarding,pwa,shell,stream,suggestions,surnames,sync}/` | **pure** decisions, test-first; a `*.svelte.ts` beside one is its browser adapter |
 | `src/lib/graph/` | pure `model/`, `layout/`, `keyboard.ts`, `phone-map.ts`; `cytoscape/` renders, no logic |
 | `src/routes/` | thin edges: `load` / form actions / `+server.ts`; big pages colocate `load.ts` + `actions/` |
 | `src/lib/{people,relationships,circles,dates,undo,…}/` | client-safe helpers per concept, not lint-guarded as pure |

@@ -42,6 +42,8 @@ export interface StoryWiring {
 	directory: CaptureMomentDeps['directory'];
 	/** Where a deleted entry's photo bytes are unlinked; the media context owns the store. */
 	media: JournalDeps['media'];
+	/** The given and received gifts the story shows; the gifts context owns the repository. */
+	gifts: StoryDeps['gifts'];
 }
 
 export function createStoryServices({
@@ -50,7 +52,8 @@ export function createStoryServices({
 	ids,
 	contacts,
 	directory,
-	media
+	media,
+	gifts
 }: StoryWiring): StoryServices {
 	const journal = createDrizzleJournalRepository(db);
 	const interactions = createDrizzleInteractionRepository(db);
@@ -61,6 +64,6 @@ export function createStoryServices({
 		journalDeps: { journal, media, ids, clock },
 		interactionDeps: { interactions, ids, clock },
 		captureMomentDeps: { contacts, directory, journal, ids, clock },
-		storyDeps: { journal, interactions }
+		storyDeps: { journal, interactions, gifts }
 	};
 }
