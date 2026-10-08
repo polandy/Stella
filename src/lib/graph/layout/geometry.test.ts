@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test';
-import { bowsAround, shelve, spreadCoincident, type Point, type Size } from './geometry';
+import { bowsAround, familyIn, shelve, spreadCoincident, type Point, type Size } from './geometry';
 
 /*
  * The shared geometry of the arrangements (docs/05 §5.8): shelving by real width, and bending
@@ -131,5 +131,23 @@ describe('spreadCoincident', () => {
 		const backwards = spreadCoincident(new Map([...ids].reverse().map((id) => [id, origin])), 90);
 
 		for (const id of ids) expect(backwards.get(id), id).toEqual(forwards.get(id)!);
+	});
+});
+
+describe('familyIn', () => {
+	const positions = new Map([
+		['anna', { x: 0, y: 0 }],
+		['bert', { x: 120, y: 170 }],
+		['choir', { x: 0, y: 400 }]
+	]);
+
+	it('takes everyone above the shelf of people outside the family', () => {
+		expect(familyIn({ positions, outsideFamily: { x: 0, y: 300 } })).toEqual(
+			new Set(['anna', 'bert'])
+		);
+	});
+
+	it('takes everyone when there is no shelf', () => {
+		expect(familyIn({ positions })).toEqual(new Set(['anna', 'bert', 'choir']));
 	});
 });

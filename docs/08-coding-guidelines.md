@@ -266,7 +266,7 @@ test may not race — not in `bun test`, not in Playwright.
   bare `await` on something that dispatches work elsewhere is the same mistake.
 - **The fix belongs in the production code, never in a longer wait.** If a test can only
   pass by waiting and hoping, the code is missing a seam: an injected `clock`, a completion
-  signal, a settled state something can read. `src/lib/graph/cytoscape/explorer.ts` is the
+  signal, a settled state something can read. `src/lib/graph/cytoscape/motion.ts` is the
   worked example — it writes `data-layout="settled"` on the container when a layout stops,
   because the nodes' drawn positions mean nothing until then, and `settled()` in
   `e2e/graph-canvas.ts` waits on that attribute instead of guessing how long a layout takes.

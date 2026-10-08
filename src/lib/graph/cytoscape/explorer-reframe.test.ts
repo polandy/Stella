@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'bun:test';
 import cytoscape, { type Core } from 'cytoscape';
-import { explorerFromCore } from './explorer';
+import { controller } from './explorer-fixtures';
 
 /*
  * Entering or leaving full screen frames the map afresh for its new room (docs/05 §5.8) — once
@@ -20,11 +20,7 @@ function pairOn(size: { width: number; height: number }) {
 		]
 	});
 	resizeTo(cy, size);
-	const explorer = explorerFromCore(cy, {
-		reducedMotion: true,
-		onTapNode: () => {},
-		onTapBackground: () => {}
-	});
+	const explorer = controller(cy);
 	explorer.arrangeAt({
 		positions: new Map([
 			['a', { x: 0, y: 0 }],

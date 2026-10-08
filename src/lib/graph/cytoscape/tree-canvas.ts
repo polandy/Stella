@@ -6,8 +6,8 @@ import { BOW_FIELD, BOWED_CLASS, CAPTION_CLASS, ROUTE_FIELDS, ROUTED_CLASS } fro
 /*
  * What the canvas does for the arranged maps beyond moving people (docs/05 §5.8): bending and
  * routing their lines, and writing the family tree's "Outside the family" caption. Split from
- * `explorer.ts`, which drives the core and calls these; like it, the only place besides that
- * one where the library is touched, and no domain rules.
+ * `explorer.ts`, which drives the core and calls these; like the controller's other parts, it
+ * touches the library only inside `cytoscape/`, and holds no domain rules.
  */
 
 /** The words an arrangement's caption reads, in the viewer's language. */
