@@ -36,6 +36,10 @@ export const components = {
 	'components.palette.empty': 'Nobody by that name.',
 	'components.palette.write': 'Write a moment',
 	'components.palette.addPerson': 'Add person',
+	'components.palette.giftIdea': 'Gift idea for …',
+	// The palette's second step after *Gift idea for …*: whom the idea is for.
+	'components.palette.giftIdeaFor': 'Gift idea for whom?',
+	'components.palette.back': 'Back',
 	'components.palette.searchEverything': (p: { query: string }) =>
 		`Search everything for “${p.query}”`,
 	'components.palette.kindSearch': 'search',

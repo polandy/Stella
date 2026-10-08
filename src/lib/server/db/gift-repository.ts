@@ -1,4 +1,4 @@
-import { and, asc, desc, eq, inArray, lt, or, sql } from 'drizzle-orm';
+import { and, asc, count, desc, eq, inArray, lt, or, sql } from 'drizzle-orm';
 import type { BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
 import { childRecordVisibleTo } from '../access/query-scoping';
 import type { Viewer } from '../access/visibility';
@@ -83,6 +83,24 @@ export function createDrizzleGiftRepository(db: BunSQLiteDatabase<typeof schema>
 					.orderBy(asc(sql`${gift.givenOn} IS NOT NULL`), desc(gift.givenOn), desc(gift.createdAt))
 					.all()
 			);
+		},
+
+		async countOpenIdeasVisibleTo(viewer, contactIds) {
+			if (contactIds.length === 0) return new Map();
+			const rows = db
+				.select({ contactId: gift.contactId, ideas: count() })
+				.from(gift)
+				.innerJoin(contact, eq(gift.contactId, contact.id))
+				.where(
+					and(
+						inArray(gift.contactId, [...contactIds]),
+						eq(gift.state, 'idea'),
+						childRecordVisibleTo(viewer, { visibility: gift.visibility, createdBy: gift.createdBy })
+					)
+				)
+				.groupBy(gift.contactId)
+				.all();
+			return new Map(rows.map((row) => [row.contactId, row.ideas]));
 		},
 
 		async listStoryPageForContactVisibleTo(viewer, contactId, opts) {

@@ -9,6 +9,9 @@ export const home: HomeMessages = {
 	'home.atAGlance': 'Auf einen Blick',
 	'home.comingUp': 'Kommt bald',
 	'home.writeMoment': 'Moment festhalten',
+	'home.giftIdeas': (p) => (p.count === 1 ? '1 Idee' : `${p.count} Ideen`),
+	'home.giftIdeasFor': (p) =>
+		p.count === 1 ? `1 Geschenkidee für ${p.name}` : `${p.count} Geschenkideen für ${p.name}`,
 	'home.findPerson': 'Person suchen…',
 	'home.showAll': (p) => `Alle ${p.count} anzeigen`,
 	'home.outbox.label': 'Noch nicht gesendet',

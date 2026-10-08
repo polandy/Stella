@@ -32,6 +32,7 @@ function person(
 /** English wording, as a component in an English session would pass it. */
 const labels: PaletteLabels = {
 	write: 'Write a moment',
+	giftIdea: 'Gift idea for …',
 	addPerson: 'Add person',
 	searchEverything: (query) => `Search everything for “${query}”`
 };
@@ -151,6 +152,7 @@ describe('paletteRows', () => {
 	it('offers the actions in the wording it was given, so a German session searches German', () => {
 		const german: PaletteLabels = {
 			write: 'Moment festhalten',
+			giftIdea: 'Geschenkidee für …',
 			addPerson: 'Person hinzufügen',
 			searchEverything: (query) => `Überall nach „${query}“ suchen`
 		};
@@ -181,6 +183,33 @@ describe('paletteRows', () => {
 	});
 });
 
+describe('a gift idea from the palette (docs/02 §2.25.2)', () => {
+	it('sits next to writing a moment, and leads to a second step rather than a page', () => {
+		const rows = paletteRows('', people, labels);
+
+		expect(rows.slice(0, 3).map((r) => r.id)).toEqual(['write', 'gift-idea', 'add-person']);
+		expect(rows[1]).toMatchObject({ kind: 'step', step: 'giftIdea', label: 'Gift idea for …' });
+	});
+
+	it('is found by what it does', () => {
+		expect(paletteRows('gift', people, labels).map((r) => r.id)).toContain('gift-idea');
+	});
+
+	it('then asks only whom it is for: people, each landing on their idea form', () => {
+		const rows = paletteRows('', people, labels, new Map(), 'giftIdea');
+
+		expect(rows.every((r) => r.kind === 'person')).toBe(true);
+		expect(rows.map((r) => r.id)).toEqual(['lena', 'oma', 'markus']);
+		expect(rows[0]).toMatchObject({ href: '/contacts/lena?gift=idea' });
+	});
+
+	it('narrows that list as a name is typed, and offers no full search there', () => {
+		const rows = paletteRows('oma', people, labels, new Map(), 'giftIdea');
+
+		expect(rows.map((r) => r.id)).toEqual(['oma']);
+	});
+});
+
 describe('personSearchRows', () => {
 	const searchEverything = labels.searchEverything;
 
@@ -197,7 +226,7 @@ describe('personSearchRows', () => {
 		);
 
 		expect(rows.filter((r) => r.kind === 'person').map((r) => r.id)).toEqual(['lena', 'corinne']);
-		expect(rows.some((r) => r.kind === 'action')).toBe(false);
+		expect(rows.map((r) => r.kind)).toEqual(['person', 'person', 'search']);
 	});
 
 	it('ends with full search, so a query nobody matches still leads somewhere', () => {
