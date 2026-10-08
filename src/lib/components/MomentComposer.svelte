@@ -11,42 +11,32 @@
 	import WhichNamesake from '$lib/components/WhichNamesake.svelte';
 	import { useTranslate } from '$lib/i18n/context.svelte';
 	import { processImage } from '$lib/image/process-image';
-	import { allowedForAudience } from '$lib/mentions/audience';
-	import { createHandleResolver, mentionKey, resolveMentions } from '$lib/mentions/mentions';
-	import {
-		activeHandle,
-		handleFor,
-		insertHandle,
-		listPlacement,
-		pickableBeside,
-		suggest,
-		type ActiveHandle,
-		type ListPlacement
-	} from '$lib/mentions/picker';
-	import {
-		isQueuedName,
-		newPeopleAsCandidates,
-		shiftPicks,
-		toEditable,
-		toStored,
-		type MentionPick
-	} from '$lib/mentions/picks';
-	import { unclearHandles } from '$lib/mentions/unclear';
+	import { listPlacement, type ListPlacement } from '$lib/mentions/picker';
 	import { usePeopleContext } from '$lib/people/context.svelte';
 	import { tellApart } from '$lib/people/namesakes';
-	import {
-		capitalisedIfTypedLowercase,
-		isKnownByMoreThanAFirstName,
-		splitTypedName,
-		wantsSomethingToKnowThemBy
-	} from '$lib/people/new-person';
-	import type { MomentCapturePayload, MomentNewPerson } from '$lib/commands/commands';
+	import { isKnownByMoreThanAFirstName, wantsSomethingToKnowThemBy } from '$lib/people/new-person';
 	import type { MomentDraft } from '$lib/contacts/story-forms';
 	import type { KeptOf, KeptPhoto } from '$lib/pwa/outbox';
 	import { outbox } from '$lib/pwa/outbox.svelte';
 	import { reachability } from '$lib/pwa/reachability.svelte';
-	import { linkHintHref } from '$lib/stream/link-hint';
-	import { tick } from 'svelte';
+	import { createPanelKey, keyupAsksPicker, textKey } from '$lib/stream/composer-keys';
+	import {
+		composerPeople,
+		composerReading,
+		defaultDay,
+		draftOf,
+		pickerRows
+	} from '$lib/stream/composer-reading';
+	import {
+		composerAfter,
+		composerAtOpen,
+		type ComposerCandidate,
+		type ComposerCommand,
+		type ComposerError,
+		type ComposerEvent,
+		type Creating
+	} from '$lib/stream/composer-state';
+	import { tick, untrack } from 'svelte';
 	import { ulid } from 'ulid';
 
 	/*
@@ -70,21 +60,9 @@
 	 * is typed (`onDraft`), so the page can keep a draft while the spot holds another form.
 	 */
 
-	interface Candidate {
-		id: string;
-		displayName: string;
-		firstName: string | null;
-		lastName: string | null;
-		visibility: 'shared' | 'private';
-		/** What tells namesakes apart in the list (docs/02 §2.2.3). */
-		description?: string | null;
-		metPlace?: string | null;
-		metDate?: string | null;
-		avatarPhotoId: string | null;
-	}
 	interface Props {
 		/** People the author may see; the picker narrows to the moment's audience itself. */
-		candidates: Candidate[];
+		candidates: ComposerCandidate[];
 		me: { id: string; name: string; avatarPhotoId?: string | null };
 		today: string;
 		error?: string | null;
@@ -137,373 +115,267 @@
 	const listboxId = `${uid}-people`;
 	const optionId = (i: number) => `${uid}-person-${i}`;
 
+	/*
+	 * What the composer is doing — the text and its picks, the @-list, a person being created,
+	 * the photos and a save on its way: the transitions are `composer-state.ts`, and this
+	 * component carries out the commands they hand back. Raw, and read through one derived per
+	 * field, so an event that changes one of them re-runs only what reads that one.
+	 */
 	// svelte-ignore state_referenced_locally -- the kept moment is only a starting value on purpose
 	const kept = editing?.command.payload ?? null;
-	// svelte-ignore state_referenced_locally -- the held draft is only a starting value on purpose
-	const startFrom = kept ?? held;
-	// A kept moment written on a person's page stays theirs, wherever it is opened again.
-	// svelte-ignore state_referenced_locally -- see above
-	const anchorId = anchor?.id ?? kept?.anchorId ?? null;
-	const anchorPerson = $derived(anchor ?? candidates.find((c) => c.id === anchorId) ?? null);
-	let newPeople = $state<(string | MomentNewPerson)[]>(startFrom ? [...startFrom.newPeople] : []);
-	// A kept moment and a draft are stored text: picked people come back as picks.
-	// svelte-ignore state_referenced_locally -- the draft is only a starting value on purpose
-	const startingPeople = [...candidates, ...newPeopleAsCandidates(newPeople)];
-	// svelte-ignore state_referenced_locally -- see above
-	const start = toEditable(startFrom?.body ?? draft ?? '', (id) => {
-		const person = startingPeople.find((c) => c.id === id);
-		return person ? handleFor(person) : null;
-	});
-	let body = $state(start.text);
-	// Whom each picked handle in the text stands for.
-	let picks: MentionPick[] = start.picks;
-	let visibility = $state<'shared' | 'private'>(startFrom?.visibility ?? 'shared');
-	// The command this draft will be saved as; a new one after every save.
-	let commandId = $state(ulid());
-	// Bumped after a save to start the day and photo fields afresh. `form.reset()` cannot:
-	// it empties the date field's parts instead of returning them to the default day.
-	let fresh = $state(0);
+	let ui = $state.raw(
+		untrack(() =>
+			composerAtOpen({
+				candidates,
+				// Plain objects: the payload is kept in IndexedDB, which cannot clone a state proxy.
+				kept: $state.snapshot(kept),
+				held: $state.snapshot(held),
+				draft,
+				anchorId: anchor?.id ?? null,
+				commandId: ulid()
+			})
+		)
+	);
+	const body = $derived(ui.body);
+	const picks = $derived(ui.picks);
+	const newPeople = $derived(ui.newPeople);
+	const visibility = $derived(ui.visibility);
+	const anchorId = $derived(ui.anchorId);
+	const fresh = $derived(ui.fresh);
+	const photos = $derived(ui.photos);
+	const active = $derived(ui.active);
+	const selected = $derived(ui.highlighted);
+	const creating = $derived(ui.creating);
+	const sending = $derived(ui.sending);
+	const saving = $derived(sending !== null);
+	const localError = $derived(errorText(ui.error));
 
-	// A page kept on the device may be days old, and so is the day it was rendered with. The
-	// device's own calendar is the writer's; it only ever moves the default forward.
+	const anchorPerson = $derived(anchor ?? candidates.find((c) => c.id === anchorId) ?? null);
+
+	// A page kept on the device may be days old, and so is the day it was rendered with.
 	const localDay = () => new Date().toLocaleDateString('en-CA');
-	const day = $derived(browser && localDay() > today ? localDay() : today);
-	let picked = $state<File[]>([]);
-	let saving = $state(false);
-	let localError = $state<string | null>(null);
+	const day = $derived(defaultDay(today, browser ? localDay() : null));
 	let textarea: HTMLTextAreaElement | undefined = $state();
 	let composer: HTMLFormElement | undefined = $state();
 	let list: HTMLUListElement | undefined = $state();
 	let placement: ListPlacement = $state({ side: 'below', maxHeight: Number.POSITIVE_INFINITY });
 
-	// Picker state: the handle under the caret and the ranked suggestions for it.
-	let active = $state<ActiveHandle | null>(null);
-	let selected = $state(0);
-	const audience = $derived(
-		allowedForAudience([...pickableBeside(candidates, anchorId)], visibility)
-	);
-	const created = $derived(newPeopleAsCandidates(newPeople));
-	const createdIds = $derived(new Set(created.map((c) => c.id)));
-	const known = $derived([...audience, ...created]);
-	const suggestions = $derived(
-		active ? suggest(active.query, known) : { people: [], create: null, createsAnother: false }
-	);
+	const people = $derived(composerPeople({ anchorId, visibility, newPeople }, candidates));
+	const audience = $derived(people.audience);
+	const createdIds = $derived(new Set(people.created.map((c) => c.id)));
+	const known = $derived(people.known);
+	const rows = $derived(pickerRows(active, known));
+	const listOpen = $derived(active !== null && rows.length > 0);
 	// The second line counts everyone the list could offer, not only what the query left.
 	const peopleContext = usePeopleContext();
 	const namesakes = $derived(tellApart(audience, peopleContext()));
-	const rows = $derived([
-		...suggestions.people.map((p) => ({ kind: 'person' as const, person: p })),
-		...(suggestions.create
-			? [{ kind: 'create' as const, name: suggestions.create, another: suggestions.createsAnother }]
-			: [])
-	]);
-
-	/*
-	 * Somebody being created from the picker: their name, what to know them by, and where in the
-	 * text the `@` they came from sits. Open, it stands in for the list.
-	 */
-	let creating = $state<{
-		firstName: string;
-		lastName: string;
-		description: string;
-		at: ActiveHandle;
-		caret: number;
-	} | null>(null);
-	let createFirstName: HTMLInputElement | undefined = $state();
 	const askForSomethingToKnowThemBy = $derived(
 		creating
 			? wantsSomethingToKnowThemBy({ firstName: creating.firstName, lastName: creating.lastName })
 			: false
 	);
-
-	// The people the text currently references, for the "goes to …'s journal" line — read the
-	// way the server will: picks by id, anything typed by name, a namesake nobody picked as a
-	// question rather than a guess.
-	const resolved = $derived(resolveMentions(toStored(body, picks), createHandleResolver(known)));
-	const referenced = $derived(resolved.ids.flatMap((id) => known.filter((c) => c.id === id)));
-	const unclear = $derived(unclearHandles(toStored(body, picks), known, peopleContext()));
-	const canSave = $derived(
-		body.trim().length > 0 &&
-			(anchorId !== null || referenced.length > 0) &&
-			unclear.length === 0 &&
-			!saving
+	const reading = $derived(
+		composerReading({ body, picks, anchorId, sending }, known, peopleContext())
 	);
+	const referenced = $derived(reading.referenced);
+	const unclear = $derived(reading.unclear);
+	const canSave = $derived(reading.canSave);
+
+	const ERRORS = {
+		couldNotKeep: 'composer.couldNotKeep',
+		alreadySending: 'composer.alreadySending',
+		saveFailed: 'composer.saveFailed'
+	} as const;
+	function errorText(error: ComposerError | null): string | null {
+		if (!error) return null;
+		return error.kind === 'refused' ? error.reason : t(ERRORS[error.kind]);
+	}
+
+	/** Moves the state on, then carries out what it asks for; settles once all of it has. */
+	async function dispatch(event: ComposerEvent): Promise<void> {
+		// Untracked: an effect that dispatches must not come to depend on the state it writes, nor
+		// on whatever a command reads on its way.
+		const step = composerAfter(
+			untrack(() => ui),
+			event
+		);
+		ui = step.state;
+		await Promise.all(untrack(() => step.commands.map(carryOut)));
+	}
+
+	async function carryOut(command: ComposerCommand): Promise<void> {
+		switch (command.kind) {
+			case 'focusText':
+				await tick();
+				textarea?.focus();
+				if (command.caret !== null) textarea?.setSelectionRange(command.caret, command.caret);
+				return;
+			case 'focusCreate':
+				clearTimeout(closingPicker);
+				await tick();
+				createFirstName?.focus();
+				return;
+			case 'preparePhotos': {
+				const prepared = await preparePhotos(command.files);
+				return dispatch({
+					type: 'photosPrepared',
+					photos: prepared,
+					reachable: reachability.reachable
+				});
+			}
+			case 'keep':
+				// Keep the moment, and its photos, on this device until Stella answers again.
+				try {
+					await outbox.add(
+						{
+							id: command.id,
+							type: 'moment.capture',
+							payload: command.payload,
+							issuedAt: Date.now()
+						},
+						command.photos
+					);
+					await dispatch({ type: 'keptOnDevice', nextCommandId: ulid() });
+				} catch {
+					await dispatch({ type: 'keepFailed' });
+				}
+				return;
+			case 'submit': {
+				const delivery = await outbox.submit(
+					{
+						id: command.id,
+						type: 'moment.capture',
+						payload: command.payload,
+						issuedAt: Date.now()
+					},
+					command.photos
+				);
+				return dispatch({
+					type: 'answered',
+					delivery,
+					inPlace: onSaved !== undefined,
+					nextCommandId: ulid()
+				});
+			}
+			case 'revise': {
+				const saved = await outbox.revise(command.id, command.payload, ulid());
+				return dispatch({ type: 'revised', saved, nextCommandId: ulid() });
+			}
+			case 'backToStream':
+				return goto(command.href, { invalidateAll: true });
+			case 'onSaved':
+				return onSaved?.();
+			case 'onKept':
+				return onKept?.();
+			case 'onEditDone':
+				return onEditDone?.();
+			case 'onCancel':
+				return onCancel?.(command.draft);
+		}
+	}
 
 	// Leaving the field closes the picker a moment later, so a click on a suggestion still
 	// lands. Coming back must cancel that: a navigation that returns focus to the page after a
 	// save would otherwise close the picker under whoever is already typing the next moment.
 	let closingPicker: ReturnType<typeof setTimeout> | undefined;
 	function closePickerSoon() {
-		closingPicker = setTimeout(() => (active = null), 120);
-	}
-
-	/** Take the field's new text, carrying the picks across the change. */
-	function changeText(next: string, picked?: MentionPick) {
-		picks = shiftPicks(body, next, picks);
-		if (picked) picks = [...picks, picked];
-		body = next;
+		closingPicker = setTimeout(() => void dispatch({ type: 'pickerClosed' }), 120);
 	}
 
 	function onInput(event: Event) {
-		changeText((event.currentTarget as HTMLTextAreaElement).value);
-		refreshPicker();
+		const field = event.currentTarget as HTMLTextAreaElement;
+		clearTimeout(closingPicker);
+		void dispatch({ type: 'typed', text: field.value, caret: field.selectionStart });
 	}
 
-	/*
-	 * A caret moved by the arrow keys may have entered or left an @-handle, so the list is asked
-	 * again — except for Up and Down while the list is open: those moved its highlight on
-	 * keydown, and asking again would put it straight back on the first row.
-	 */
 	function onKeyup(event: KeyboardEvent) {
-		if (!event.key.startsWith('Arrow')) return;
-		if ((event.key === 'ArrowUp' || event.key === 'ArrowDown') && active && rows.length > 0) return;
-		refreshPicker();
+		if (keyupAsksPicker(event.key, listOpen)) refreshPicker();
 	}
 
 	function refreshPicker() {
 		clearTimeout(closingPicker);
-		if (!textarea) return;
-		active = activeHandle(body, textarea.selectionStart);
-		selected = 0;
+		if (textarea) void dispatch({ type: 'caretMoved', caret: textarea.selectionStart });
 	}
 
-	async function choose(index: number) {
+	function choose(index: number) {
 		const row = rows[index];
-		if (!row || !active || !textarea) return;
-		if (row.kind === 'create') return openCreate(row.name, active, textarea.selectionStart);
-		const handle = handleFor(row.person);
-		// A name an older build queued has no id or placeholder; the server finds it by name.
-		const picked = isQueuedName(row.person.id)
-			? undefined
-			: { start: active.start, end: active.start + handle.length, id: row.person.id };
-		await insert(handle, active, textarea.selectionStart, picked);
+		if (!row || !textarea) return;
+		void dispatch({ type: 'rowChosen', row, caret: textarea.selectionStart, audience });
 	}
 
-	async function insert(handle: string, at: ActiveHandle, caret: number, picked?: MentionPick) {
-		if (!textarea) return;
-		const r = insertHandle(body, at, caret, handle);
-		changeText(r.text, picked);
-		active = null;
-		await tick();
-		textarea.focus();
-		textarea.setSelectionRange(r.caret, r.caret);
-	}
-
-	/** Open the panel for a new person, named as typed — or as the namesake is, when there is one. */
-	async function openCreate(typed: string, at: ActiveHandle, caret: number) {
-		const namesake = audience.find((c) => mentionKey(c.displayName) === mentionKey(typed));
-		const asTyped = splitTypedName(typed);
-		const name = namesake?.firstName
-			? { firstName: namesake.firstName, lastName: '' }
-			: { ...asTyped, firstName: capitalisedIfTypedLowercase(asTyped.firstName) };
-		creating = { firstName: name.firstName, lastName: name.lastName, description: '', at, caret };
-		active = null;
-		clearTimeout(closingPicker);
-		await tick();
-		createFirstName?.focus();
-	}
-
-	async function cancelCreate() {
-		const was = creating;
-		creating = null;
-		await tick();
-		textarea?.focus();
-		if (was) textarea?.setSelectionRange(was.caret, was.caret);
-	}
-
-	/** Queue the new person with the moment and mention them by their placeholder. */
-	async function addCreated() {
-		if (!creating || !creating.firstName.trim()) return;
-		// Stella refuses a first name alone (docs/02 §2.2.3); the button says so by staying off.
-		if (!isKnownByMoreThanAFirstName(creating)) return;
-		const person: MomentNewPerson = {
-			key: ulid(),
-			firstName: creating.firstName.trim(),
-			lastName: creating.lastName.trim() || null,
-			description: creating.description.trim() || null
-		};
-		newPeople = [...newPeople, person];
-		const [candidate] = newPeopleAsCandidates([person]);
-		const handle = handleFor(candidate);
-		const { at, caret } = creating;
-		creating = null;
-		await insert(handle, at, caret, {
-			start: at.start,
-			end: at.start + handle.length,
-			id: candidate.id
-		});
-	}
+	let createFirstName: HTMLInputElement | undefined = $state();
+	const addCreated = () => void dispatch({ type: 'createAdded', key: ulid() });
+	const cancelCreate = () => void dispatch({ type: 'createCancelled' });
+	const editCreating = (field: keyof Omit<Creating, 'at' | 'caret'>, value: string) =>
+		void dispatch({ type: 'createEdited', field, value });
 
 	function onCreateKeydown(event: KeyboardEvent) {
-		// The panel sits inside the moment's form: Enter adds the person, it never saves the moment.
-		if (event.key === 'Enter') {
-			event.preventDefault();
-			void addCreated();
-		} else if (event.key === 'Escape') {
-			event.preventDefault();
-			void cancelCreate();
-		}
+		const key = createPanelKey(event.key);
+		if (!key) return;
+		event.preventDefault();
+		if (key === 'add') addCreated();
+		else cancelCreate();
 	}
 
 	function onKeydown(event: KeyboardEvent) {
-		if (active && rows.length > 0) {
-			if (event.key === 'ArrowDown') {
-				event.preventDefault();
-				selected = (selected + 1) % rows.length;
-				return;
-			}
-			if (event.key === 'ArrowUp') {
-				event.preventDefault();
-				selected = (selected - 1 + rows.length) % rows.length;
-				return;
-			}
-			if (event.key === 'Enter' || event.key === 'Tab') {
-				event.preventDefault();
-				void choose(selected);
-				return;
-			}
-			if (event.key === 'Escape') {
-				active = null;
-				return;
-			}
-		}
-		if (event.key === 'Escape' && onCancel) {
-			event.preventDefault();
-			cancel();
-			return;
-		}
-		if (event.key === 'Enter' && (event.metaKey || event.ctrlKey) && canSave) {
-			event.preventDefault();
-			(event.currentTarget as HTMLTextAreaElement).form?.requestSubmit();
+		const key = textKey(
+			{ key: event.key, mod: event.metaKey || event.ctrlKey },
+			{ listOpen, cancellable: onCancel !== undefined, canSave }
+		);
+		if (!key) return;
+		if (key.consumed) event.preventDefault();
+		switch (key.intent) {
+			case 'next':
+				return void dispatch({ type: 'highlightMoved', by: 1, rows: rows.length });
+			case 'previous':
+				return void dispatch({ type: 'highlightMoved', by: -1, rows: rows.length });
+			case 'choose':
+				return choose(selected);
+			case 'closePicker':
+				return void dispatch({ type: 'pickerClosed' });
+			case 'cancel':
+				return cancel();
+			case 'save':
+				return (event.currentTarget as HTMLTextAreaElement).form?.requestSubmit();
 		}
 	}
 
-	function onFiles(event: Event) {
-		picked = Array.from((event.currentTarget as HTMLInputElement).files ?? []);
-	}
+	const cancel = () => void dispatch({ type: 'cancelled', nextCommandId: ulid() });
 
-	/** What the form says, as the command's payload. */
-	function payloadFrom(formEl: HTMLFormElement): MomentCapturePayload {
-		const data = new FormData(formEl);
-		return {
-			body: toStored(body, picks).trim(),
-			entryDate: String(data.get('entryDate') ?? day),
-			visibility,
-			// Plain objects: the payload is kept in IndexedDB, which cannot clone a state proxy.
-			newPeople: $state.snapshot(newPeople),
-			...(anchorId ? { anchorId } : {})
-		};
-	}
-
-	/** What is typed, in the form it is stored and started from again. */
-	function currentDraft(): MomentDraft {
-		return {
-			body: toStored(body, picks),
-			visibility,
-			newPeople: $state.snapshot(newPeople)
-		};
-	}
-
-	function cancel() {
-		const typed = currentDraft();
-		clear();
-		onCancel?.(typed);
-	}
-
+	// Picks change only with the text, so the text alone says when the draft has changed.
 	$effect(() => {
-		if (onDraft) onDraft(currentDraft());
+		if (!onDraft) return;
+		onDraft(draftOf({ body, visibility, newPeople, picks: untrack(() => picks) }));
 	});
-
-	function clear() {
-		body = '';
-		picks = [];
-		picked = [];
-		newPeople = [];
-		fresh++;
-		commandId = ulid();
-	}
 
 	/**
 	 * The picked photos, processed in the browser (downscaled, location stripped) and each named
 	 * as a command of its own — once per save, so a save that ends up kept for later sends the
 	 * very same photos under the very same names.
 	 */
-	async function preparePhotos(): Promise<KeptPhoto[]> {
-		const photos: KeptPhoto[] = [];
-		for (const file of picked) {
+	async function preparePhotos(files: readonly File[]): Promise<KeptPhoto[]> {
+		const prepared: KeptPhoto[] = [];
+		for (const file of files) {
 			const { image, thumb, width, height, takenAt } = await processImage(file);
-			photos.push({ id: ulid(), image, thumb, width, height, takenAt });
+			prepared.push({ id: ulid(), image, thumb, width, height, takenAt });
 		}
-		return photos;
-	}
-
-	/** Keep the moment, and its photos, on this device until Stella answers again. */
-	async function keepForLater(formEl: HTMLFormElement, photos: KeptPhoto[]) {
-		try {
-			await outbox.add(
-				{
-					id: commandId,
-					type: 'moment.capture',
-					payload: payloadFrom(formEl),
-					issuedAt: Date.now()
-				},
-				photos
-			);
-			clear();
-			onKept?.();
-		} catch {
-			// The text stays in the field: nothing is half-saved.
-			localError = t('composer.couldNotKeep');
-		}
-	}
-
-	/** Save an edit into the kept moment it came from. */
-	async function saveEdit(formEl: HTMLFormElement, item: KeptOf<'moment.capture'>) {
-		const saved = await outbox.revise(item.command.id, payloadFrom(formEl), ulid());
-		if (!saved) {
-			localError = t('composer.alreadySending');
-			return;
-		}
-		clear();
-		onEditDone?.();
+		return prepared;
 	}
 
 	async function onSubmit(event: SubmitEvent) {
 		event.preventDefault();
-		const formEl = event.currentTarget as HTMLFormElement;
-		saving = true;
-		localError = null;
+		const data = new FormData(event.currentTarget as HTMLFormElement);
+		let failed = false;
 		try {
-			if (editing) return await saveEdit(formEl, editing);
-			const photos = await preparePhotos();
-			if (!reachability.reachable) return await keepForLater(formEl, photos);
-
-			const delivery = await outbox.submit(
-				{
-					id: commandId,
-					type: 'moment.capture',
-					payload: payloadFrom(formEl),
-					issuedAt: Date.now()
-				},
-				photos
-			);
-			if (delivery.status === 'refused') {
-				// The text stays in the field, to be corrected and saved as a new moment.
-				localError = delivery.reason;
-				commandId = ulid();
-				return;
-			}
-			clear();
-			if (delivery.status === 'kept') return onKept?.();
-			if (onSaved) return onSaved();
-			// Back to the stream, offering to link the first two people in it (§2.22.1).
-			const { linkSuggestion } = delivery.result as { linkSuggestion: [string, string] | null };
-			await goto(linkHintHref(linkSuggestion), { invalidateAll: true });
+			await dispatch({
+				type: 'submitted',
+				entryDate: String(data.get('entryDate') ?? day),
+				editing: editing?.command.id ?? null
+			});
 		} catch {
-			localError = t('composer.saveFailed');
-		} finally {
-			saving = false;
+			failed = true;
 		}
+		void dispatch({ type: 'settled', failed });
 	}
 
 	$effect(() => {
@@ -608,7 +480,7 @@
 					{t('components.personSearch.firstName')}
 					<input
 						bind:this={createFirstName}
-						bind:value={creating.firstName}
+						bind:value={() => creating?.firstName ?? '', (v) => editCreating('firstName', v)}
 						type="text"
 						autocomplete="off"
 						class="rounded-control border border-border-input bg-bg px-2 py-1.5 text-sm text-fg outline-none focus:ring-2 focus:ring-primary"
@@ -617,7 +489,7 @@
 				<label class="flex flex-col gap-1 text-xs text-fg-muted">
 					{t('components.personSearch.lastName')}
 					<input
-						bind:value={creating.lastName}
+						bind:value={() => creating?.lastName ?? '', (v) => editCreating('lastName', v)}
 						type="text"
 						autocomplete="off"
 						class="rounded-control border border-border-input bg-bg px-2 py-1.5 text-sm text-fg outline-none focus:ring-2 focus:ring-primary"
@@ -629,14 +501,14 @@
 					firstName={creating.firstName}
 					compact
 					label={t('components.personSearch.description')}
-					bind:value={creating.description}
+					bind:value={() => creating?.description ?? '', (v) => editCreating('description', v)}
 					inputClass="rounded-control border border-border-input bg-card px-2 py-1.5 text-sm text-fg outline-none focus:ring-2 focus:ring-primary"
 				/>
 			{:else}
 				<label class="flex flex-col gap-1 text-xs text-fg-muted">
 					{t('components.personSearch.description')}
 					<input
-						bind:value={creating.description}
+						bind:value={() => creating?.description ?? '', (v) => editCreating('description', v)}
 						type="text"
 						autocomplete="off"
 						placeholder={t('components.namesake.placeholder')}
@@ -693,7 +565,7 @@
 							e.preventDefault();
 							void choose(i);
 						}}
-						onmouseenter={() => (selected = i)}
+						onmouseenter={() => dispatch({ type: 'highlighted', index: i })}
 						class="flex w-full items-center gap-2.5 rounded-control px-2.5 py-1.5 text-left text-sm text-fg aria-selected:bg-primary-soft"
 					>
 						{#if row.kind === 'person'}
@@ -751,7 +623,10 @@
 				aria-label={t('composer.shareWithHousehold')}
 				checked={visibility === 'shared'}
 				onchange={(e) =>
-					(visibility = (e.currentTarget as HTMLInputElement).checked ? 'shared' : 'private')}
+					dispatch({
+						type: 'visibilitySet',
+						visibility: (e.currentTarget as HTMLInputElement).checked ? 'shared' : 'private'
+					})}
 			/>
 			<span
 				class="relative h-4.5 w-7.5 shrink-0 rounded-full bg-border transition-colors duration-(--motion-fade) ease-standard group-has-checked/share:bg-primary"
@@ -778,17 +653,21 @@
 					class="relative grid size-8 cursor-pointer place-items-center rounded-full text-fg-muted transition-colors hover:bg-card-hover hover:text-fg has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-focus-ring"
 				>
 					<Icon name="photo" size={17} />
-					{#if picked.length}<span
+					{#if photos.length}<span
 							class="absolute -top-0.5 -right-1 grid h-4 min-w-4 place-items-center rounded-full bg-primary px-1 text-[10px] font-bold text-primary-fg tabular-nums"
 							aria-hidden="true"
-							data-testid="photo-count">{picked.length}</span
+							data-testid="photo-count">{photos.length}</span
 						>{/if}
 					<input
 						type="file"
 						accept="image/*"
 						multiple
 						aria-label={t('composer.addPhotos')}
-						onchange={onFiles}
+						onchange={(e) =>
+							dispatch({
+								type: 'photosPicked',
+								files: Array.from((e.currentTarget as HTMLInputElement).files ?? [])
+							})}
 						class="sr-only"
 					/>
 				</label>
