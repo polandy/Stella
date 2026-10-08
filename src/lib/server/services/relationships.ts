@@ -28,8 +28,8 @@ import type { IdGenerator } from '../id';
  * map. Built once per process by `createServices`; the edge reads it off
  * `locals.services.relationships`.
  *
- * A repository an edge — or another context — reads directly sits under its plural noun
- * (`relationships`); everything else is a use-case's `deps`, named after its type
+ * A port an edge — or another context — reads directly sits under its own name
+ * (`relationshipTypes`, `kinship`); everything else is a use-case's `deps`, named after its type
  * (`relationshipDeps` is a `RelationshipDeps`).
  */
 export interface RelationshipServices {
