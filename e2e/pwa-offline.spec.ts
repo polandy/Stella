@@ -1,7 +1,8 @@
 import { expect, test, type BrowserContext, type Page } from '@playwright/test';
 import { NETWORK_PATIENCE_MS } from '../src/lib/pwa/cache-policy';
 import { COMMAND_PATIENCE_MS } from '../src/lib/pwa/outbox';
-import { signIn } from './app';
+import { addPerson, signIn } from './app';
+import { linkCardFace, photoTab, unlinkFace, uploadPhotos } from './photo-card';
 
 /*
  * Reading and adding while Stella is out of reach, with the service worker running (docs/02
@@ -135,4 +136,25 @@ test('answers from the device when requests are never answered, and keeps a new 
 	// without the limit, this tap waits forever and the test times out.
 	test.setTimeout(COMMAND_PATIENCE_MS + 4 * NETWORK_PATIENCE_MS + 10_000);
 	await tapToLena(page);
+});
+
+test('drops the Immich tab offline and keeps the gallery', async ({ page, context }) => {
+	await addPerson(page, 'Funkline', 'Kartenbild');
+	const href = new URL(page.url()).pathname;
+	try {
+		await uploadPhotos(page, 1);
+		await linkCardFace(page, 'Funkline Kartenbild');
+		const all = page.getByTestId('photo-grid').and(page.locator('[data-view="all"]'));
+		await expect(all.locator('li[data-source="immich"]').first()).toBeVisible();
+
+		// Nothing from Immich is shown offline (docs/02 §2.24.3): the tab and its photos in All go.
+		await context.setOffline(true);
+		await expect(photoTab(page, 'Immich')).toHaveCount(0);
+		await expect(photoTab(page, 'Stella')).toBeVisible();
+		await expect(all.locator('li[data-source="immich"]')).toHaveCount(0);
+		await expect(all.locator('li[data-source="stella"] img')).toBeVisible();
+	} finally {
+		await context.setOffline(false);
+		await unlinkFace(page, href);
+	}
 });
