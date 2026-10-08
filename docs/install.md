@@ -200,7 +200,11 @@ git pull
 ```
 
 Database changes are applied automatically on startup and only ever move forward. Take a
-backup first if it has been a while since the last one.
+backup first if it has been a while since the last one. When an update also moves data into a
+new shape — gifts imported from Monica as notes becoming entries on the **Gifts** card, say —
+the server log says what it moved and what it left as it was (`./deploy.sh logs`, or
+`docker compose logs stella`;
+details in docs/07 §7.10).
 
 ### Being told when there is something to update to
 

@@ -93,6 +93,10 @@ export const archive: ArchiveMessages = {
 		p.count === 1
 			? 'Ein im Dokument genanntes Bild war nicht im Archiv; dieses Foto wird als fehlend angezeigt.'
 			: `${p.count} im Dokument genannte Bilder waren nicht im Archiv; diese Fotos werden als fehlend angezeigt.`,
+	'archive.warning.giftsConverted': (p) =>
+		p.count === 1
+			? 'Das Archiv enthielt ein Geschenk als Monica-Notiz oder als Kontakt der Art Geschenk; es steht jetzt als Geschenk auf der Geschenke-Karte.'
+			: `Das Archiv enthielt Geschenke als Monica-Notizen oder als Kontakte der Art Geschenk; sie stehen jetzt als ${p.count} Geschenke auf den Geschenke-Karten.`,
 	'archive.error.unusableFileName': (p) =>
 		`Dieses Archiv enthält einen unbrauchbaren Dateinamen: „${p.name}“.`,
 	'archive.error.noDocument': (p) =>

@@ -442,9 +442,10 @@ and a good idea is still there on the birthday it was meant for.
 - Without a connection a new gift is kept on your device and shown on the card until it can be
   sent; changing, giving or removing one needs Stella to be reachable.
 
-Gift *touchpoints* logged with *Log contact* before this card existed are still in Activity as
-they were; they will be moved into the Gifts card by a later update, together with the gifts a
-Monica import brought in as notes.
+Gifts noted before this card existed have moved into it: a *Gift* logged with *Log contact* is
+now a given gift on its day (one on each person it was logged with), and the gifts a Monica
+import brought in as notes are now ideas, given or received gifts. A gift note somebody had
+written in since the import stays a note, so nothing you wrote is lost.
 
 ### Mentioned in
 
@@ -484,7 +485,7 @@ Two small mercies: people who have died are left out, and a 29 February annivers
 
 When you have called Oma, met a friend for lunch or posted a parcel, press **Log contact** in
 the header of their *Activity* card (it is also in the **⋯** menu at the top of the page). Pick what it was (met in person, call, video call, message, letter,
-gift, other), the day, and if you like a line about it. If other people were there, tick them
+other — a present goes on the **Gifts** card, with *+ Given*), the day, and if you like a line about it. If other people were there, tick them
 too and the entry links to each of them. It lands in Activity alongside the moments, marked
 with its own colour.
 
@@ -796,8 +797,8 @@ now*, and it is all or nothing: if anything goes wrong half-way, nothing is kept
 What lands where: people with their names, birthdays (an age-based one becomes "born
 around 2016"), job and how you met; relationships, with Monica's kinds that Stella lacks
 (cousin, godparent, best friend, …) added as new kinds rather than dropped; notes;
-activities as **interactions**; tags; and Monica's gifts, life events and pets as clearly
-labelled notes on the person, so nothing quietly disappears. The full table is in
+activities as **interactions**; Monica's gifts onto the **Gifts** card; tags; and life events
+and pets as clearly labelled notes on the person, so nothing quietly disappears. The full table is in
 [monica-mapping.md](monica-mapping.md).
 
 **Photos** come in a last step, and this is where the two files differ. From the **JSON

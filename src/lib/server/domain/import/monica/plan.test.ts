@@ -312,7 +312,7 @@ describe('planMonicaImport — fields, notes, tags', () => {
 		expect(fields.every((f) => f.contactId === 'monica:contact:9')).toBe(true);
 	});
 
-	it('maps notes with favourites pinned, and gifts, life events and pets as labelled notes', () => {
+	it('maps notes with favourites pinned, and life events and pets as labelled notes', () => {
 		const exp = emptyExport();
 		exp.contacts = [contact(1, 'A', null)];
 		exp.notes = [{ id: 1, contactId: 1, body: 'Postkonto', isFavorited: true, createdAt: null }];
@@ -342,12 +342,6 @@ describe('planMonicaImport — fields, notes, tags', () => {
 		expect(notes.map((n) => [n.id, n.title, n.body, n.isPinned])).toEqual([
 			['monica:note:1', null, 'Postkonto', true],
 			[
-				'monica:gift:1',
-				'Gift',
-				'🎁 **3 Fragezeichen Buch** — offered, 30 December 2023\n\nloved it',
-				false
-			],
-			[
 				'monica:lifeevent:1',
 				'Life event',
 				'📅 **Kindergarten** (new school) — 14 August 2023',
@@ -358,6 +352,46 @@ describe('planMonicaImport — fields, notes, tags', () => {
 		expect(
 			notes.every((n) => n.contactId === 'monica:contact:1' && n.visibility === 'shared')
 		).toBe(true);
+	});
+	it('maps gifts onto gift records: idea, given (offered) and received, under the note’s old id', () => {
+		const exp = emptyExport();
+		exp.contacts = [contact(1, 'A', null)];
+		const gift = (id: number, status: string | null, date: string | null) => ({
+			id,
+			contactId: 1,
+			name: `Gift ${id}`,
+			comment: id === 2 ? 'loved it' : null,
+			url: id === 2 ? 'shop.example/book' : null,
+			status,
+			date
+		});
+		exp.gifts = [
+			gift(1, 'idea', null),
+			gift(2, 'offered', '2023-12-30'),
+			gift(3, 'received', '2024-01-02')
+		];
+		const plan = planMonicaImport(exp, opts);
+		expect(plan.gifts.map((g) => [g.id, g.state, g.title, g.givenOn, g.note, g.url])).toEqual([
+			['monica:gift:1', 'idea', 'Gift 1', null, null, null],
+			['monica:gift:2', 'given', 'Gift 2', '2023-12-30', 'loved it', 'https://shop.example/book'],
+			['monica:gift:3', 'received', 'Gift 3', '2024-01-02', null, null]
+		]);
+		expect(plan.gifts.every((g) => g.contactId === 'monica:contact:1')).toBe(true);
+		expect(plan.notes).toEqual([]);
+		expect(plan.report.counts.gifts).toBe(3);
+	});
+
+	it('keeps a gift it cannot make a record of as the note it always was', () => {
+		const exp = emptyExport();
+		exp.contacts = [contact(1, 'A', null)];
+		exp.gifts = [
+			{ id: 4, contactId: 1, name: 'Book', comment: null, url: null, status: 'offered', date: null }
+		];
+		const plan = planMonicaImport(exp, opts);
+		expect(plan.gifts).toEqual([]);
+		expect(plan.notes.map((n) => [n.id, n.title, n.body])).toEqual([
+			['monica:gift:4', 'Gift', '🎁 **Book** — offered']
+		]);
 	});
 
 	it('maps tags and their assignments', () => {
@@ -555,6 +589,7 @@ describe('planMonicaImport — activities, photos, leftovers', () => {
 			relationshipTypes: 0,
 			contactFields: 0,
 			notes: 1,
+			gifts: 0,
 			interactions: 0,
 			tags: 0,
 			photos: 0

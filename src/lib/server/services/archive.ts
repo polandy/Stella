@@ -41,6 +41,8 @@ export interface ArchiveWiring {
 	ids: IdGenerator;
 	/** The media context's store, which a restore writes the archive's images into. */
 	media: MediaStore;
+	/** The gifts context's conversion, run after a restore on what an older archive held. */
+	convertHeldGifts: ImportArchiveDeps['convertHeldGifts'];
 }
 
 export function createArchiveServices({
@@ -48,7 +50,8 @@ export function createArchiveServices({
 	sqlite,
 	clock,
 	ids,
-	media
+	media,
+	convertHeldGifts
 }: ArchiveWiring): ArchiveServices {
 	return {
 		archiveDeps: { archive: createDrizzleArchiveRepository(db, sqlite), ids, clock },
@@ -56,7 +59,8 @@ export function createArchiveServices({
 			restore: createDrizzleRestoreRepository(db, sqlite, activityWording),
 			media,
 			ids,
-			clock
+			clock,
+			convertHeldGifts
 		},
 		importDeps: { importer: createDrizzleImportRepository(db), clock }
 	};

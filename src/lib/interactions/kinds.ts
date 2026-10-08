@@ -7,15 +7,7 @@
 import type { MessageKey } from '../i18n/translate';
 
 /** Every kind an interaction can have, in the order the form offers them. */
-export const INTERACTION_KINDS = [
-	'met',
-	'call',
-	'video',
-	'message',
-	'letter',
-	'gift',
-	'other'
-] as const;
+export const INTERACTION_KINDS = ['met', 'call', 'video', 'message', 'letter', 'other'] as const;
 
 /** One of `INTERACTION_KINDS`. */
 export type InteractionKind = (typeof INTERACTION_KINDS)[number];
@@ -47,6 +39,5 @@ export const KIND_PRESENTATION: Record<InteractionKind, KindPresentation> = {
 	video: { label: 'interactions.kind.video', icon: 'video', accent: 'var(--kind-video)' },
 	message: { label: 'interactions.kind.message', icon: 'message', accent: 'var(--kind-message)' },
 	letter: { label: 'interactions.kind.letter', icon: 'letter', accent: 'var(--kind-letter)' },
-	gift: { label: 'interactions.kind.gift', icon: 'gift', accent: 'var(--kind-gift)' },
 	other: { label: 'interactions.kind.other', icon: 'other', accent: 'var(--kind-other)' }
 };

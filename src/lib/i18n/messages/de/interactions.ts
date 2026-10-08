@@ -7,6 +7,5 @@ export const interactions: InteractionsMessages = {
 	'interactions.kind.video': 'Videoanruf',
 	'interactions.kind.message': 'Nachricht',
 	'interactions.kind.letter': 'Brief',
-	'interactions.kind.gift': 'Geschenk',
 	'interactions.kind.other': 'Sonstiges'
 };

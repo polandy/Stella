@@ -93,7 +93,17 @@ function fixture(): SourceExport {
 		],
 		tags: [{ id: 1, name: 'Tennis', contactIds: [1, 2] }],
 		photos: [],
-		gifts: [],
+		gifts: [
+			{
+				id: 1,
+				contactId: 2,
+				name: 'Teapot',
+				comment: null,
+				url: null,
+				status: 'offered',
+				date: '2023-10-12'
+			}
+		],
 		lifeEvents: [],
 		pets: [],
 		journalEntries: [],
@@ -134,6 +144,7 @@ describe('import repository', () => {
 			relationshipTypes: 1,
 			contactFields: 1,
 			notes: 1,
+			gifts: 1,
 			interactions: 1,
 			tags: 1,
 			photos: 0
@@ -173,12 +184,41 @@ describe('import repository', () => {
 			relationshipTypes: 0,
 			contactFields: 0,
 			notes: 0,
+			gifts: 0,
 			interactions: 0,
 			tags: 0,
 			photos: 0
 		});
 		expect(rows(schema.contact)).toBe(3);
 		expect(rows(schema.interactionParticipant)).toBe(1);
+	});
+
+	it('writes a Monica gift as a gift record under the id its note had', async () => {
+		await repo.applyPlan(plan());
+		expect(db.select().from(schema.gift).all()).toMatchObject([
+			{ id: 'monica:gift:1', contactId: 'monica:contact:2', state: 'given', title: 'Teapot' }
+		]);
+	});
+
+	it('writes no gift where an earlier import’s gift note was kept because someone wrote in it', async () => {
+		await repo.applyPlan(plan());
+		db.delete(schema.gift).run();
+		db.insert(schema.note)
+			.values({
+				id: 'monica:gift:1',
+				contactId: 'monica:contact:2',
+				createdBy: U1,
+				body: '🎁 **Teapot** — offered, 12 October 2023\n\nShe loved it',
+				createdAt: NOW,
+				updatedAt: NOW + 1
+			})
+			.run();
+
+		const again = await repo.applyPlan(plan());
+
+		expect(again.inserted.gifts).toBe(0);
+		expect(rows(schema.gift)).toBe(0);
+		expect(rows(schema.note)).toBe(2);
 	});
 
 	it('reuses a tag that already exists under the same name instead of duplicating it', async () => {

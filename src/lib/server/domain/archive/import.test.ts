@@ -88,9 +88,15 @@ function fakeRestore(counts: RestoreCounts = { contact: { added: 1, skipped: 0 }
 }
 
 const actor = { userId: 'u-admin', householdId: 'h-here' };
+const nothingConverted = {
+	notesConverted: 0,
+	notesLeft: 0,
+	touchpointsConverted: 0,
+	giftsWritten: 0
+};
 
 function depsWith(restore: RestoreRepository, media: MediaStore): ImportArchiveDeps {
-	return { restore, media, clock, ids };
+	return { restore, media, clock, ids, convertHeldGifts: async () => nothingConverted };
 }
 
 const archiveFile = (media: Record<string, Uint8Array> = {}) => ({

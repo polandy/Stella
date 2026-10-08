@@ -93,7 +93,7 @@ describe('logInteraction', () => {
 		const f = fakeRepo();
 		await logInteraction(deps(f.repo), author, {
 			contactId: 'c1',
-			kind: 'gift',
+			kind: 'letter',
 			happenedAt: '2026-08-30',
 			visibility: 'private'
 		});

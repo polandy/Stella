@@ -1,8 +1,12 @@
 import type { BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
 import type { Clock } from '../clock';
+import { DEFAULT_LOCALE } from '$lib/i18n/locales';
+import { createTranslator } from '$lib/i18n/translate';
 import { createDrizzleGiftRepository } from '../db/gift-repository';
+import { createDrizzleHeldGiftRepository } from '../db/held-gift-repository';
 import type * as schema from '../db/schema';
 import type { GiftDeps, GiftRepository } from '../domain/gifts/gifts';
+import { convertHeldGifts, type HeldGiftsReport } from '../domain/gifts/held-gifts';
 import type { IdGenerator } from '../id';
 
 /*
@@ -18,6 +22,11 @@ export interface GiftServices {
 	/** The one gift repository: the card, the use-cases and the story read it. */
 	gifts: GiftRepository;
 	giftDeps: GiftDeps;
+	/**
+	 * Makes gift records of the gifts still held as Monica notes or gift touchpoints (docs/02
+	 * §2.25.4); run at start and after a restore, writing what it did to the server log.
+	 */
+	convertHeldGifts: () => Promise<HeldGiftsReport>;
 }
 
 export interface GiftWiring {
@@ -32,6 +41,12 @@ export function createGiftServices({ db, clock, ids, contacts }: GiftWiring): Gi
 	const gifts = createDrizzleGiftRepository(db);
 	return {
 		gifts,
-		giftDeps: { gifts, contacts, ids, clock }
+		giftDeps: { gifts, contacts, ids, clock },
+		convertHeldGifts: () =>
+			convertHeldGifts({
+				held: createDrizzleHeldGiftRepository(db),
+				untitled: (locale) => createTranslator(locale ?? DEFAULT_LOCALE)('gifts.untitled'),
+				log: (line) => console.info(line)
+			})
 	};
 }
