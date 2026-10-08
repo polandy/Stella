@@ -159,7 +159,7 @@ export function createDrizzleJournalRepository(
 				if (!own) return null;
 
 				// The photos go first and explicitly: the migration that added
-				// `photo.journal_entry_id` never carried the cascade `schema.ts` declares, so
+				// `photo.journal_entry_id` never carried a cascade (schema/media.ts), so
 				// the database refuses to delete an entry that still has them (docs/03 §photo).
 				// Their bytes go back to the caller to unlink.
 				const files = tx

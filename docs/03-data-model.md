@@ -1,8 +1,9 @@
 # 03 — Data Model
 
 Database: **SQLite** (WAL mode, foreign keys on) accessed via **Drizzle ORM**. This
-document is the conceptual schema; the Drizzle definitions in code are the
-implementation of record.
+document is the conceptual schema; the Drizzle definitions in
+`src/lib/server/db/schema/` — one file per bounded context (§3.0), re-exported by its
+`index.ts` — are the implementation of record.
 
 ## 3.0 Glossary
 

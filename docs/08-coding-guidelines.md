@@ -432,3 +432,11 @@ magic literals, no timing-based tests) apply on top of this.
 - **English throughout** — specs, code comments, commit messages and PR text. A request made in
   German is *translated*, never pasted in as a quote. German is fine only as **content**: UI copy
   being specified, sample and seed data.
+
+## 8.11 Migrations
+
+Every new migration is generated with a name that says what it does —
+`bunx drizzle-kit generate --name <what_it_does>` (e.g. `0024_gift.sql`) — because the
+`drizzle/` folder is read as the schema's history, and drizzle-kit's random names
+(`0000_conscious_scream.sql` … `0019_volatile_wild_pack.sql`) say nothing; those twenty keep
+their names, since renaming a migration breaks the journal that records it as applied.
