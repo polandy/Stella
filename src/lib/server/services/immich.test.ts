@@ -154,12 +154,15 @@ describe('createServices', () => {
 				...config,
 				mediaDir: '/nonexistent/stella-media',
 				immich: wiring.config.immich,
-				sessionSecret: wiring.config.sessionSecret
+				sessionSecret: wiring.config.sessionSecret,
+				updateCheck: false,
+				updateFeedUrl: ''
 			},
 			db,
 			sqlite,
 			clock,
-			ids
+			ids,
+			version: '1.0.0'
 		});
 		const { immich } = services;
 		if (!immich) throw new Error('Immich should be configured');
@@ -187,12 +190,15 @@ describe('createServices', () => {
 				...config,
 				mediaDir: '/nonexistent/stella-media',
 				immich: null,
-				sessionSecret: wiring.config.sessionSecret
+				sessionSecret: wiring.config.sessionSecret,
+				updateCheck: false,
+				updateFeedUrl: ''
 			},
 			db,
 			sqlite,
 			clock,
-			ids
+			ids,
+			version: '1.0.0'
 		});
 		expect(services.immich).toBe(null);
 	});

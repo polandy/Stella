@@ -3,9 +3,6 @@ import { APP_VERSION } from '../../version';
 import { systemClock } from '../clock';
 import { getConfig } from '../config';
 import { getDb, getSqlite } from '../db';
-import { createGitHubReleaseFeed } from '../release/github-feed';
-import { createUpdateCheck, type UpdateCheck } from '../domain/release/update-check';
-import { parseVersion } from '../domain/release/version';
 import { withNamesakeContext } from '../domain/mentions/namesake-context';
 import { prepareCirclePhotoUpload } from '../domain/circles/circle-photos';
 import { captureMoment } from '../domain/moments/moments';
@@ -59,7 +56,8 @@ export function getServices(): AppServices {
 		db: getDb(),
 		sqlite: getSqlite(),
 		clock: systemClock,
-		ids: ulidGenerator
+		ids: ulidGenerator,
+		version: APP_VERSION
 	}));
 }
 
@@ -71,23 +69,6 @@ function people(): AppServices['people'] {
 /** The media context, for the factories of contexts not grouped yet. */
 function media(): AppServices['media'] {
 	return getServices().media;
-}
-
-/*
- * The release check, or null when this instance makes none: either the operator did not ask
- * for it, or this build carries no readable release number and has nothing to compare.
- * Built once, because the answer it caches is the whole point (docs/02 §2.17.1).
- */
-let updateCheck: UpdateCheck | null | undefined;
-export function getUpdateCheck(): UpdateCheck | null {
-	if (updateCheck !== undefined) return updateCheck;
-	const config = getConfig();
-	if (!config.updateCheck || !parseVersion(APP_VERSION)) return (updateCheck = null);
-	return (updateCheck = createUpdateCheck({
-		feed: createGitHubReleaseFeed({ version: APP_VERSION, url: config.updateFeedUrl || undefined }),
-		clock: systemClock,
-		currentVersion: APP_VERSION
-	}));
 }
 
 let commandReceiptRepository: CommandReceiptRepository | null = null;

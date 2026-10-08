@@ -183,12 +183,15 @@ describe('createServices', () => {
 				...config,
 				immich: null,
 				sessionSecret: 'a-session-secret',
+				updateCheck: false,
+				updateFeedUrl: '',
 				mediaDir: '/nonexistent/stella-media'
 			},
 			db,
 			sqlite,
 			clock,
-			ids
+			ids,
+			version: '1.0.0'
 		});
 		expect(services.people.surnameReviewDeps.relationships).toBe(
 			services.relationships.relationships
