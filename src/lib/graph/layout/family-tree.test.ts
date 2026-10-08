@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'bun:test';
 import { familyTreeLayout, TREE_SPACING } from './family-tree';
-import { DEFAULT_NODE_SIZE } from './geometry';
+import { DEFAULT_NODE_SIZE, type SizeOf } from './geometry';
+import { barSpans, crossingBars, TREE_LINES } from './tree-lines';
+import { brunnerKeller, brunnerKellerWidened, twoFamilies } from './family-fixtures';
 import type { GraphEdge, GraphModel, GraphNode } from '../model/types';
 
 /*
@@ -109,19 +111,30 @@ describe('familyTreeLayout', () => {
 		expect(gapBetween).toBeGreaterThanOrEqual(TREE_SPACING.gap);
 	});
 
-	it('draws the family lines at right angles, the grandparent line around the parent', () => {
-		// Otto, Hans and Lena stand in one column; the straight line from Otto to Lena would run
-		// through Hans. How it bends is `tree-lines.ts`'s; here, that the tree asks for it.
+	it('draws the family lines at right angles, and no route for a line the bars already draw', () => {
+		// Otto, Hans and Lena stand in one column. How a line bends is `tree-lines.ts`'s; here,
+		// that the tree asks for it — and not for the grandparent line, which the two parent
+		// lines already draw, so it takes no lane between the rows (`tree-shown.ts`).
 		const grandparent = stored('otto', 'lena', 'grandparent_grandchild');
-		const { bows, routes } = familyTreeLayout({
+		const { routes } = familyTreeLayout({
 			nodes: ['otto', 'hans', 'lena'].map(person),
 			edges: [parentOf('otto', 'hans'), parentOf('hans', 'lena'), grandparent]
 		});
 
 		expect([...(routes?.keys() ?? [])].sort()).toEqual(
-			[grandparent.id, 'hans-parent_child-lena', 'otto-parent_child-hans'].sort()
+			['hans-parent_child-lena', 'otto-parent_child-hans'].sort()
 		);
-		expect(bows.size).toBe(0);
+	});
+
+	it('routes a grandparent line around the parent where it is the only tie between them', () => {
+		// Without Hans's own line to Lena, nothing else on the map draws the grandparent line.
+		const grandparent = stored('otto', 'lena', 'grandparent_grandchild');
+		const { routes } = familyTreeLayout({
+			nodes: ['otto', 'hans', 'lena'].map(person),
+			edges: [parentOf('otto', 'hans'), grandparent]
+		});
+
+		expect(routes?.has(grandparent.id)).toBe(true);
 	});
 
 	it('still bends a line to somebody outside the family around whoever is in its way', () => {
@@ -196,5 +209,67 @@ describe('familyTreeLayout', () => {
 
 		expect(layout.get('ida')!.y).toBeGreaterThan(lowestInTree);
 		expect(layout.get('ski')!.y).toBeGreaterThan(lowestInTree);
+	});
+
+	describe('keeps each family together, so no bar crosses another', () => {
+		// Names of every length, as the canvas measures them, not one width for all.
+		const measured: SizeOf = (id) => ({ width: 50 + 9 * id.length, height: 64 });
+		const crossings = (model: GraphModel) => {
+			const { positions } = familyTreeLayout(model, measured);
+			const members = new Set(model.nodes.map((n) => n.id));
+			return crossingBars(barSpans(model.edges, positions, members));
+		};
+
+		for (const [name, model] of Object.entries({
+			twoHouseholds,
+			brunnerKeller,
+			brunnerKellerWidened,
+			twoFamilies
+		})) {
+			it(`in ${name}, whatever order the map lists its people in`, () => {
+				// A bar for every couple with children on the map, and not one of them crossed —
+				// for every order the people can arrive in, since a map grows from whoever it is
+				// centred on.
+				const { positions } = familyTreeLayout(model);
+				expect(barSpans(model.edges, positions, new Set(positions.keys())).length).toBeGreaterThan(
+					1
+				);
+				const orders = model.nodes.flatMap((_, k) => {
+					const rotated = [...model.nodes.slice(k), ...model.nodes.slice(0, k)];
+					return [rotated, [...rotated].reverse()];
+				});
+				const crossed = orders.filter((nodes) => crossings({ ...model, nodes }) > 0);
+				expect(crossed.map((nodes) => nodes.map((n) => n.id).join(','))).toEqual([]);
+			});
+		}
+	});
+
+	it('sets siblings side by side, the father’s family on the left and the mother’s on the right', () => {
+		const { positions } = familyTreeLayout(brunnerKeller);
+		const x = (id: string) => positions.get(id)!.x;
+		const order = (ids: string[]) => [...ids].sort((a, b) => x(a) - x(b));
+
+		// Hans and Rosa above Markus, Peter and Ursula above Sandra: his side left, hers right.
+		expect(order(['hans', 'rosa', 'peter', 'ursula']).slice(0, 2).sort()).toEqual(['hans', 'rosa']);
+		expect(order(['daniel', 'markus', 'sandra', 'corinne'])).toEqual([
+			'daniel',
+			'markus',
+			'sandra',
+			'corinne'
+		]);
+		// Lena and her brothers stand together, their cousin outside the three.
+		const children = order(['lena', 'noah', 'elias', 'timo']);
+		expect(children[0] === 'timo' || children[3] === 'timo').toBe(true);
+	});
+
+	it('leaves every gap between rows room for its lanes, clear of the names above and below', () => {
+		const bars = TREE_LINES.bar * TREE_SPACING.row;
+		const lastLane = bars + (TREE_LINES.lanes - 1) * TREE_LINES.lane;
+		// The name and role hang up to about 80 units under a disc; the biggest disc and its
+		// "+N" reach about 40 above its centre.
+		expect(bars).toBeGreaterThan(80 + TREE_LINES.lane);
+		expect(lastLane).toBeLessThan(TREE_SPACING.row - 40 - TREE_LINES.lane);
+		// Lanes far enough apart to read as separate lines even on a phone.
+		expect(TREE_LINES.lane).toBeGreaterThanOrEqual(14);
 	});
 });

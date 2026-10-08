@@ -69,7 +69,7 @@ describe('frameBelow', () => {
 	const TOP = 100;
 
 	it('fits the whole map into the part of the canvas the toolbar leaves free', () => {
-		const next = frameBelow(map, SCREEN_WIDE, TOP, PADDING, { min: MIN_ZOOM, max: 3 });
+		const next = frameBelow(map, SCREEN_WIDE, { top: TOP }, PADDING, { min: MIN_ZOOM, max: 3 });
 		const topLeft = onScreen(0, 0, next);
 		const bottomRight = onScreen(1000, 400, next);
 
@@ -80,7 +80,7 @@ describe('frameBelow', () => {
 	});
 
 	it('centres the map in that free part', () => {
-		const next = frameBelow(map, SCREEN_WIDE, TOP, PADDING, { min: MIN_ZOOM, max: 3 });
+		const next = frameBelow(map, SCREEN_WIDE, { top: TOP }, PADDING, { min: MIN_ZOOM, max: 3 });
 		const middle = onScreen(500, 200, next);
 
 		expect(middle.x).toBeCloseTo(SCREEN_WIDE.width / 2);
@@ -88,7 +88,7 @@ describe('frameBelow', () => {
 	});
 
 	it('does not blow a tiny map up past the largest zoom', () => {
-		const next = frameBelow(box(0, 0, 10, 10), SCREEN_WIDE, TOP, PADDING, {
+		const next = frameBelow(box(0, 0, 10, 10), SCREEN_WIDE, { top: TOP }, PADDING, {
 			min: MIN_ZOOM,
 			max: 1.5
 		});
@@ -97,11 +97,26 @@ describe('frameBelow', () => {
 	});
 
 	it('stops at the smallest zoom for a map too big to fit', () => {
-		const next = frameBelow(box(0, 0, 100_000, 100), SCREEN_WIDE, TOP, PADDING, {
+		const next = frameBelow(box(0, 0, 100_000, 100), SCREEN_WIDE, { top: TOP }, PADDING, {
 			min: MIN_ZOOM,
 			max: 3
 		});
 
 		expect(next.zoom).toBe(MIN_ZOOM);
+	});
+
+	it('keeps the map clear of a panel over the right or the bottom of the canvas too', () => {
+		// The peek panel stands beside the map on a wide screen and along its foot on a phone.
+		const covered = { top: TOP, right: 300, bottom: 150 };
+		const next = frameBelow(map, SCREEN_WIDE, covered, PADDING, { min: MIN_ZOOM, max: 3 });
+		const topLeft = onScreen(0, 0, next);
+		const bottomRight = onScreen(1000, 400, next);
+
+		expect(topLeft.x).toBeGreaterThanOrEqual(PADDING - 1e-9);
+		expect(topLeft.y).toBeGreaterThanOrEqual(TOP + PADDING - 1e-9);
+		expect(bottomRight.x).toBeLessThanOrEqual(SCREEN_WIDE.width - 300 - PADDING + 1e-9);
+		expect(bottomRight.y).toBeLessThanOrEqual(SCREEN_WIDE.height - 150 - PADDING + 1e-9);
+		const middle = onScreen(500, 200, next);
+		expect(middle.x).toBeCloseTo((SCREEN_WIDE.width - 300) / 2);
 	});
 });

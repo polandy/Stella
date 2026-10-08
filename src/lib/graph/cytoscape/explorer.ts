@@ -60,9 +60,11 @@ export interface ExplorerController {
 	/**
 	 * Reconcile the full (expanded) element set. Nodes already on the canvas stay where they
 	 * are; only the newcomers are placed, clear of everyone, and the view is left alone
-	 * unless it has to step back to show them.
+	 * unless it has to step back to show them. With `arrangedNext` the caller lays the whole map
+	 * out again straight after (the family tree, docs/05 §5.8): the newcomers are then set down
+	 * on the person they came from and travel with that arrangement, not on their own first.
 	 */
-	setGraph(elements: CyElement[]): void;
+	setGraph(elements: CyElement[], options?: { arrangedNext?: boolean }): void;
 	/** Arrange the whole map afresh by the forces between people, and frame it. */
 	arrange(): void;
 	/**
@@ -80,6 +82,11 @@ export interface ExplorerController {
 	 * Framing the map, and stepping back to show newcomers, keep the map below them.
 	 */
 	setTopInset(pixels: number): void;
+	/**
+	 * How many screen pixels a panel covers at the right or along the foot of the canvas (the
+	 * peek panel). The next framing keeps the map clear of them; nothing moves by itself.
+	 */
+	setCovered(covered: { right: number; bottom: number }): void;
 	/**
 	 * How far apart people are set (docs/05 §5.8). Moves nobody by itself: the next expand and
 	 * the next free arrangement use it.
@@ -264,6 +271,8 @@ export function explorerFromCore(cy: Core, opts: ControllerOptions): ExplorerCon
 	const alive = () => !cy.destroyed();
 	// Screen pixels at the top of the canvas the toolbar floats over; framing leaves them free.
 	let topInset = opts.topInset ?? 0;
+	// Screen pixels a panel covers at the right or along the foot; framing leaves them free.
+	let covered = { right: 0, bottom: 0 };
 	// How far apart people are set: the reader's density (docs/05 §5.8).
 	let spacing = opts.spacing ?? spacingFor(DEFAULT_DENSITY);
 
@@ -312,7 +321,7 @@ export function explorerFromCore(cy: Core, opts: ControllerOptions): ExplorerCon
 				? frameBelow(
 						[boxOf(shown), ...frames].reduce(union),
 						{ width: cy.width(), height: cy.height() },
-						topInset,
+						{ top: topInset, ...covered },
 						FRAME_PADDING,
 						{ min: cy.minZoom(), max: cy.maxZoom() }
 					)
@@ -442,7 +451,7 @@ export function explorerFromCore(cy: Core, opts: ControllerOptions): ExplorerCon
 	glideTo(forcePositions(), false);
 
 	return {
-		setGraph(elements) {
+		setGraph(elements, { arrangedNext = false } = {}) {
 			if (!alive()) return;
 			const incoming = new Map(elements.map((e) => [e.data.id as string, e] as const));
 			const newcomers = new Set<string>();
@@ -492,7 +501,7 @@ export function explorerFromCore(cy: Core, opts: ControllerOptions): ExplorerCon
 					.map((e) => ({ source: e.data.source as string, target: e.data.target as string }));
 				placements = placeNewcomers(placed, [...newcomers], links, spacing.edgeLength);
 				// With motion, a newcomer starts on the person it was opened from and travels out.
-				const startAt = (p: Placement) => (duration === 0 ? p.at : p.from);
+				const startAt = (p: Placement) => (duration === 0 && !arrangedNext ? p.at : p.from);
 				cy.add(
 					toAdd.map((e) => {
 						const placement = placements.get(e.data.id as string);
@@ -506,7 +515,7 @@ export function explorerFromCore(cy: Core, opts: ControllerOptions): ExplorerCon
 			// to keep, and gets a full arrangement.
 			if (newcomers.size === 0) return;
 			if (wasEmpty) glideTo(forcePositions(), false);
-			else bringIn(placements);
+			else if (!arrangedNext) bringIn(placements);
 		},
 
 		arrange() {
@@ -531,6 +540,10 @@ export function explorerFromCore(cy: Core, opts: ControllerOptions): ExplorerCon
 
 		setTopInset(pixels) {
 			topInset = pixels;
+		},
+
+		setCovered(next) {
+			covered = next;
 		},
 
 		setSpacing(next) {

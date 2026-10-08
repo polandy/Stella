@@ -1,5 +1,6 @@
 import { PARTNER_TYPE_KEYS } from '../../relationships/type-keys';
 import { familiesOf } from '../model/generations';
+import { hiddenInTree } from '../model/tree-shown';
 import type { GraphModel } from '../model/types';
 import {
 	bowsAround,
@@ -10,6 +11,7 @@ import {
 	type Point,
 	type SizeOf
 } from './geometry';
+import { arrangeFamily } from './family-rows';
 import { treeRoutes } from './tree-lines';
 
 /*
@@ -30,16 +32,10 @@ export const TREE_SPACING = {
 	/** Extra room between one couple or single and the next on a row. */
 	unit: 40,
 	/** Between one generation's row and the next. */
-	row: 170,
+	row: 230,
 	/** Between two separate families standing side by side. */
 	family: 120
 } as const;
-
-/**
- * Down-and-up passes that re-order each row under the one above and over the one below. A few
- * settle a household-sized tree; more only shuffle the same order again.
- */
-const ORDERING_PASSES = 4;
 
 /** The narrowest the shelf beneath gets, so a map with no family still reads as rows. */
 const SHELF_MIN_WIDTH = 600;
@@ -66,7 +62,7 @@ export function familyTreeLayout(model: GraphModel, sizeOf: SizeOf = defaultSize
 	let left = 0;
 	let deepest = -1;
 	for (const family of familiesOf(model)) {
-		const x = arrangeFamily(model, family, neighbours, partners, sizeOf);
+		const x = arrangeFamily(model, family, neighbours, partners, sizeOf, TREE_SPACING);
 		const lefts = [...x].map(([id, at]) => at - sizeOf(id).width / 2);
 		const rights = [...x].map(([id, at]) => at + sizeOf(id).width / 2);
 		const shift = left - Math.min(...lefts);
@@ -80,7 +76,8 @@ export function familyTreeLayout(model: GraphModel, sizeOf: SizeOf = defaultSize
 	const rest = model.nodes.filter((n) => !positions.has(n.id));
 	// Circles first, so the people shelved after them read as the loose ends they are.
 	rest.sort((a, b) => Number(b.kind === 'circle') - Number(a.kind === 'circle'));
-	const shelfTop = (deepest + 1) * TREE_SPACING.row + (deepest >= 0 ? TREE_SPACING.row / 2 : 0);
+	// One row beneath the youngest generation: no line runs down to the shelf (docs/05 §5.8).
+	const shelfTop = (deepest + 1) * TREE_SPACING.row;
 	const width = Math.max(left - TREE_SPACING.family, SHELF_MIN_WIDTH);
 	const members = new Set(positions.keys());
 	shelve(
@@ -92,7 +89,15 @@ export function familyTreeLayout(model: GraphModel, sizeOf: SizeOf = defaultSize
 		TREE_SPACING.gap
 	).forEach((point, id) => positions.set(id, point));
 
-	const routes = treeRoutes(model.edges, positions, members, sizeOf, TREE_SPACING.row);
+	// A line the bars already draw is left off (`tree-shown.ts`), so it takes no lane either.
+	const repeated = hiddenInTree(model, null);
+	const routes = treeRoutes(
+		model.edges.filter((e) => !repeated.has(e.id)),
+		positions,
+		members,
+		sizeOf,
+		TREE_SPACING.row
+	);
 	const straightOrBowed = model.edges.filter((e) => !routes.has(e.id));
 	return {
 		positions,
@@ -101,70 +106,4 @@ export function familyTreeLayout(model: GraphModel, sizeOf: SizeOf = defaultSize
 		// Named only beneath a family: on a map with none, everybody is on the shelf.
 		...(members.size > 0 && rest.length > 0 ? { outsideFamily: { x: 0, y: shelfTop } } : {})
 	};
-}
-
-/** Horizontal position of each member of one family, ordered row by row. */
-function arrangeFamily(
-	model: GraphModel,
-	family: Map<string, number>,
-	neighbours: Map<string, Set<string>>,
-	partners: Map<string, Set<string>>,
-	sizeOf: SizeOf
-): Map<string, number> {
-	// Rows of units: a couple (or a longer chain of partners) is one unit that moves together.
-	const rows: string[][][] = [];
-	const assigned = new Set<string>();
-	for (const node of model.nodes) {
-		const generation = family.get(node.id);
-		if (generation === undefined || assigned.has(node.id)) continue;
-		const unit = [node.id];
-		assigned.add(node.id);
-		for (let i = 0; i < unit.length; i++) {
-			for (const partner of partners.get(unit[i]) ?? []) {
-				if (family.get(partner) !== generation || assigned.has(partner)) continue;
-				unit.push(partner);
-				assigned.add(partner);
-			}
-		}
-		(rows[generation] ??= []).push(unit);
-	}
-
-	const x = new Map<string, number>();
-	const pack = (row: string[][]) => {
-		let cursor = 0;
-		for (const unit of row) {
-			for (const id of unit) {
-				const width = sizeOf(id).width;
-				x.set(id, cursor + width / 2);
-				cursor += width + TREE_SPACING.gap;
-			}
-			cursor += TREE_SPACING.unit;
-		}
-		const middle = (cursor - TREE_SPACING.gap - TREE_SPACING.unit) / 2;
-		for (const unit of row) for (const id of unit) x.set(id, x.get(id)! - middle);
-	};
-	for (const row of rows) if (row) pack(row);
-
-	/** Mean position of a unit's neighbours on row `towards`, or where it stands without any. */
-	const pull = (unit: string[], towards: number) => {
-		const xs = unit.flatMap((id) =>
-			[...(neighbours.get(id) ?? [])].filter((n) => family.get(n) === towards).map((n) => x.get(n)!)
-		);
-		return xs.length > 0
-			? xs.reduce((a, b) => a + b, 0) / xs.length
-			: unit.reduce((a, id) => a + x.get(id)!, 0) / unit.length;
-	};
-	const reorder = (generation: number, towards: number) => {
-		const row = rows[generation];
-		if (!row || !rows[towards]) return;
-		const keyed = row.map((unit) => ({ unit, key: pull(unit, towards) }));
-		keyed.sort((a, b) => a.key - b.key);
-		rows[generation] = keyed.map((k) => k.unit);
-		pack(rows[generation]);
-	};
-	for (let pass = 0; pass < ORDERING_PASSES; pass++) {
-		for (let g = 1; g < rows.length; g++) reorder(g, g - 1);
-		for (let g = rows.length - 2; g >= 0; g--) reorder(g, g + 1);
-	}
-	return x;
 }

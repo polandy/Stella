@@ -98,7 +98,7 @@ test('expanding a person brings the connections of theirs the canvas did not hav
 	await settled(page);
 });
 
-test('expanding moves nobody already on the map, and arranging it freely re-arranges it', async ({
+test('in Free, expanding moves nobody already on the map, and arranging it freely re-arranges it', async ({
 	page
 }) => {
 	await page.goto('/graph?center=demo-c-hans');
@@ -115,7 +115,8 @@ test('expanding moves nobody already on the map, and arranging it freely re-arra
 	await expect(async () => expect(await stateOf(page, 'demo-c-peter')).toBe('drawn')).toPass();
 	await settled(page);
 
-	// Peter came in, and everyone who was already there stands exactly where they stood.
+	// Peter came in, and everyone who was already there stands exactly where they stood. (The
+	// map opens in Free; in the Tree an expand lays the whole tree out again, docs/05 §5.8.)
 	const grown = await arrangement(page);
 	expect(grown.has('demo-c-peter')).toBe(true);
 	for (const [id, point] of before) expect(grown.get(id), id).toEqual(point);

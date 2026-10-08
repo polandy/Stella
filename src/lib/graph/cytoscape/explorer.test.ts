@@ -192,6 +192,21 @@ describe('explorerFromCore', () => {
 		expect(Math.hypot(c.x - b.x, c.y - b.y)).toBeLessThan(200);
 	});
 
+	it('sets newcomers down on the person they came from when an arrangement follows', () => {
+		// The family tree lays the whole map out again after an expand; a newcomer then glides
+		// out from whoever brought it in, together with everybody else, instead of first.
+		const cy = linkedPair();
+		const explorer = controller(cy);
+		const b = { ...cy.$id('b').position() };
+
+		explorer.setGraph([node('a'), node('b'), node('c'), edge('a', 'b'), edge('b', 'c')], {
+			arrangedNext: true
+		});
+
+		expect(cy.$id('c').position()).toEqual(b);
+		expect(cy.$id('c').animated()).toBe(false);
+	});
+
 	it('runs no layout for an expand, so nothing re-frames the view', () => {
 		const cy = linkedPair();
 		const names = layoutNames(cy);
@@ -317,6 +332,28 @@ describe('explorerFromCore', () => {
 		// middle of what the toolbar leaves.
 		expect(middleAfterArranging(0)).toBeCloseTo(400);
 		expect(middleAfterArranging(100)).toBeCloseTo(100 + 700 / 2);
+	});
+
+	it('frames the map clear of a panel over the right or the foot of the canvas', () => {
+		const cy = linkedPair();
+		cy.width = () => 1000;
+		cy.height = () => 800;
+		const explorer = controller(cy);
+		explorer.setCovered({ right: 300, bottom: 200 });
+
+		explorer.arrangeAt({
+			positions: new Map([
+				['a', { x: 0, y: 0 }],
+				['b', { x: 400, y: 0 }]
+			]),
+			bows: new Map()
+		});
+		const a = cy.$id('a').renderedPosition();
+		const b = cy.$id('b').renderedPosition();
+
+		// Centred in the 700 × 600 the panels leave, not in the whole canvas.
+		expect((a.x + b.x) / 2).toBeCloseTo(700 / 2);
+		expect(a.y).toBeCloseTo(600 / 2);
 	});
 
 	it('bends the lines an arrangement says to, and straightens the rest', () => {

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test';
-import { familyTreeLayout } from './family-tree';
+import { familyTreeLayout, TREE_SPACING } from './family-tree';
 import { DEFAULT_NODE_SIZE, type Point, type Route } from './geometry';
 import { TREE_LINES, treeRoutes } from './tree-lines';
 import type { GraphEdge, GraphModel, GraphNode } from '../model/types';
@@ -35,7 +35,7 @@ const kin = (
 	derived: true
 });
 
-const ROW = 170;
+const ROW = TREE_SPACING.row;
 const size = () => DEFAULT_NODE_SIZE;
 
 /** Routes for a model laid out as the tree lays it out, with everybody counted in the family. */
@@ -234,8 +234,9 @@ describe('treeRoutes', () => {
 		const barOf = (id: string) => routes.get(id)!.waypoints.at(-1)!.y;
 
 		expect(barOf('a1-parent_child-ac')).toBe(barOf('a2-parent_child-ac'));
-		expect(Math.abs(barOf('a1-parent_child-ac') - barOf('b1-parent_child-bc'))).toBe(
-			TREE_LINES.lane
+		expect(Math.abs(barOf('a1-parent_child-ac') - barOf('b1-parent_child-bc'))).toBeCloseTo(
+			TREE_LINES.lane,
+			9
 		);
 	});
 

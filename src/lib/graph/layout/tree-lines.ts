@@ -21,7 +21,7 @@ export const TREE_LINES = {
 	/** Where a bar runs below the row above it, as a share of the distance between two rows. */
 	bar: 0.55,
 	/** Between two bars that would otherwise run along each other. */
-	lane: 10,
+	lane: 14,
 	/** The lanes one gap between rows has room for; more are squeezed into the same room. */
 	lanes: 4,
 	/** The room left between two bars that end and begin on the same lane. */
@@ -62,60 +62,17 @@ export function treeRoutes(
 	sizeOf: SizeOf,
 	row: number
 ): Map<string, Route> {
-	const at = (id: string) => positions.get(id)!;
-	const sameRow = (a: Point, b: Point) => Math.abs(a.y - b.y) < SAME_ROW;
-	const familyLines = edges.filter(
-		(e) =>
-			e.source !== e.target &&
-			members.has(e.source) &&
-			members.has(e.target) &&
-			positions.has(e.source) &&
-			positions.has(e.target) &&
-			isFamilyLink(e)
+	const { at, sameRow, familyLines, standsBetween, dropOf } = familyStructure(
+		edges,
+		positions,
+		members
 	);
-
-	const partners = new Map<string, Set<string>>();
 	const parents = new Map<string, Set<string>>();
-	const link = (map: Map<string, Set<string>>, a: string, b: string) => {
-		if (!map.has(a)) map.set(a, new Set());
-		map.get(a)!.add(b);
-	};
 	for (const e of familyLines) {
-		if (isPartnerLine(e)) {
-			link(partners, e.source, e.target);
-			link(partners, e.target, e.source);
-		}
-		if (e.typeKey === PARENT_CHILD_TYPE_KEY) link(parents, e.target, e.source);
+		if (e.typeKey !== PARENT_CHILD_TYPE_KEY) continue;
+		if (!parents.has(e.target)) parents.set(e.target, new Set());
+		parents.get(e.target)!.add(e.source);
 	}
-
-	/** Whether somebody other than `except` stands on the row at `y`, strictly between x1 and x2. */
-	const standsBetween = (y: number, x1: number, x2: number, except: readonly string[]) =>
-		[...positions].some(
-			([id, p]) =>
-				!except.includes(id) &&
-				Math.abs(p.y - y) < SAME_ROW &&
-				p.x > Math.min(x1, x2) &&
-				p.x < Math.max(x1, x2)
-		);
-
-	/**
-	 * Where the line from a parent to a child leaves: the middle of the bar between the parent and
-	 * the partners who are this child's parents too, or the parent alone. One drop per couple.
-	 */
-	const dropOf = (parent: string, child: string) => {
-		const couple = [
-			parent,
-			...[...(partners.get(parent) ?? [])].filter(
-				(p) => parents.get(child)?.has(p) && sameRow(at(p), at(parent))
-			)
-		].sort();
-		const xs = couple.map((id) => at(id).x);
-		const apart =
-			couple.length === 1 || standsBetween(at(parent).y, Math.min(...xs), Math.max(...xs), couple);
-		return apart
-			? { group: `drop:${parent}`, x: at(parent).x, couple: [parent] }
-			: { group: `drop:${couple.join('+')}`, x: xs.reduce((a, b) => a + b, 0) / xs.length, couple };
-	};
 
 	/** The bar a child hangs from, for each of its parents on the map. */
 	const barsOf = (child: string) =>
@@ -228,6 +185,116 @@ export function treeRoutes(
 /** Partners stand side by side on one row; their bar is the one line the tree keeps straight. */
 function isPartnerLine(edge: GraphEdge): boolean {
 	return edge.typeKey !== undefined && PARTNER_TYPE_KEYS.includes(edge.typeKey);
+}
+
+/**
+ * What both the lines and their crossings are read from: the family lines between members, and
+ * where the line from a parent to a child leaves — the middle of the bar between the parent and
+ * the partners who are this child's parents too, or the parent alone. One drop per couple.
+ */
+function familyStructure(
+	edges: readonly GraphEdge[],
+	positions: ReadonlyMap<string, Point>,
+	members: ReadonlySet<string>
+) {
+	const at = (id: string) => positions.get(id)!;
+	const sameRow = (a: Point, b: Point) => Math.abs(a.y - b.y) < SAME_ROW;
+	const familyLines = edges.filter(
+		(e) =>
+			e.source !== e.target &&
+			members.has(e.source) &&
+			members.has(e.target) &&
+			positions.has(e.source) &&
+			positions.has(e.target) &&
+			isFamilyLink(e)
+	);
+
+	const partners = new Map<string, Set<string>>();
+	const parents = new Map<string, Set<string>>();
+	const link = (map: Map<string, Set<string>>, a: string, b: string) => {
+		if (!map.has(a)) map.set(a, new Set());
+		map.get(a)!.add(b);
+	};
+	for (const e of familyLines) {
+		if (isPartnerLine(e)) {
+			link(partners, e.source, e.target);
+			link(partners, e.target, e.source);
+		}
+		if (e.typeKey === PARENT_CHILD_TYPE_KEY) link(parents, e.target, e.source);
+	}
+
+	/** Whether somebody other than `except` stands on the row at `y`, strictly between x1 and x2. */
+	const standsBetween = (y: number, x1: number, x2: number, except: readonly string[]) =>
+		[...positions].some(
+			([id, p]) =>
+				!except.includes(id) &&
+				Math.abs(p.y - y) < SAME_ROW &&
+				p.x > Math.min(x1, x2) &&
+				p.x < Math.max(x1, x2)
+		);
+
+	const dropOf = (parent: string, child: string) => {
+		const couple = [
+			parent,
+			...[...(partners.get(parent) ?? [])].filter(
+				(p) => parents.get(child)?.has(p) && sameRow(at(p), at(parent))
+			)
+		].sort();
+		const xs = couple.map((id) => at(id).x);
+		const apart =
+			couple.length === 1 || standsBetween(at(parent).y, Math.min(...xs), Math.max(...xs), couple);
+		return apart
+			? { group: `drop:${parent}`, x: at(parent).x, couple: [parent] }
+			: { group: `drop:${couple.join('+')}`, x: xs.reduce((a, b) => a + b, 0) / xs.length, couple };
+	};
+
+	return { at, sameRow, familyLines, standsBetween, dropOf };
+}
+
+/** The stretch one couple's bar takes in the gap below their row: from their drop to each child. */
+export interface BarSpan {
+	/** The y of the parents' row. */
+	channel: number;
+	left: number;
+	right: number;
+}
+
+/** Every couple's (or lone parent's) bar over their children, as the stretch of its gap it takes. */
+export function barSpans(
+	edges: readonly GraphEdge[],
+	positions: ReadonlyMap<string, Point>,
+	members: ReadonlySet<string>
+): BarSpan[] {
+	const { at, familyLines, dropOf } = familyStructure(edges, positions, members);
+	const spans = new Map<string, BarSpan>();
+	for (const e of familyLines) {
+		if (e.typeKey !== PARENT_CHILD_TYPE_KEY || at(e.source).y >= at(e.target).y) continue;
+		const drop = dropOf(e.source, e.target);
+		const key = `${at(e.source).y}|${drop.group}`;
+		const known = spans.get(key) ?? { channel: at(e.source).y, left: drop.x, right: drop.x };
+		const child = at(e.target).x;
+		spans.set(key, {
+			...known,
+			left: Math.min(known.left, child),
+			right: Math.max(known.right, child)
+		});
+	}
+	return [...spans.values()];
+}
+
+/**
+ * How many pairs of bars share a stretch of one gap. Each such pair crosses: one family's drop
+ * runs down through the other's bar, and the reader can no longer tell whose children are whose.
+ */
+export function crossingBars(spans: readonly BarSpan[]): number {
+	let crossings = 0;
+	for (let i = 0; i < spans.length; i++) {
+		for (let j = i + 1; j < spans.length; j++) {
+			const [a, b] = [spans[i], spans[j]];
+			if (a.channel === b.channel && a.left < b.right && b.left < a.right) crossings++;
+		}
+	}
+	return crossings;
 }
 
 const laneKey = (leg: Leg) => `${leg.channel}|${leg.group}`;

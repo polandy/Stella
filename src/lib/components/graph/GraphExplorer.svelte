@@ -9,6 +9,7 @@
 	import { roleTermLabel } from '$lib/relationships/roles';
 	import { rolesTowards } from '$lib/graph/model/tree-roles';
 	import { familyLinksAmong } from '$lib/graph/model/generations';
+	import { hiddenInTree } from '$lib/graph/model/tree-shown';
 	import { toCytoscapeElements } from '$lib/graph/cytoscape/elements';
 	import { createExplorer, type ExplorerController } from '$lib/graph/cytoscape/explorer';
 	import { buildStylesheet } from '$lib/graph/cytoscape/stylesheet';
@@ -165,6 +166,8 @@
 	 * header already names the person, so nothing is selected until a node is tapped.
 	 */
 	let selected = $state<string | null>(untrack(() => (compact ? null : centerId)));
+	/** Whether the selection is the reader's own rather than the centre the route opened with. */
+	let readerSelected = $state(false);
 	const openingFilters = openingFilterKeys(untrack(() => compact));
 	let active = $state<Set<string>>(new Set(openingFilters));
 	let pathMode = $state(false);
@@ -312,10 +315,21 @@
 			rolesInstead
 		)
 	);
-	// The same lines, but the selected person's own are drawn: selecting names every line.
-	const implied = $derived(
-		switches.allKinship ? new Set<string>() : impliedKinshipEdgeIds(drawnVisible, selected)
-	);
+	// The same lines, but the selected person's own are drawn: selecting names every line. The
+	// family tree also leaves off the lines its bars already draw, and the shelf's lines until
+	// one end is selected (docs/05 §5.8); a traced path shows every line it runs along.
+	const implied = $derived.by(() => {
+		const left = switches.allKinship
+			? new Set<string>()
+			: impliedKinshipEdgeIds(drawnVisible, selected);
+		if (arrangedBy !== 'tree') return left;
+		const onPath = new Set(path?.model.edges.map((e) => e.id) ?? []);
+		// The centre the route opens with selected is not a question the reader asked: its
+		// friends and circles stay unlinked until somebody is tapped.
+		const asked = readerSelected ? selected : null;
+		for (const id of hiddenInTree(drawnVisible, asked, onPath)) left.add(id);
+		return left;
+	});
 	/** What the canvas shows: the filtered map, plus the frames and bundles grouping adds. */
 	const shownIds = () => shownOnCanvas(drawnVisible, implied, grouping);
 	const peekGroup = $derived(
@@ -428,18 +442,27 @@
 	let placedInGroups = new Map<string, string>();
 	/** Set when joining a group settled the map, so an arrangement asked for then is not run twice. */
 	let settledForGroups = false;
+	/** Who the canvas held when it last took the map in, so the tree knows when somebody came. */
+	let onCanvas = new Set<string>();
 	// Push the full (expanded) element set to the renderer whenever the model grows.
 	$effect(() => {
 		const els = elements();
 		const groupOf = grouping?.groupOf ?? new Map<string, string>();
+		const tree = arrangedBy === 'tree';
 		if (!ready || !controller) return;
-		controller.setGraph(els);
+		const nodeIds = new Set(els.filter((e) => e.group === 'nodes').map((e) => e.data.id as string));
+		/*
+		 * In the family tree an expand lays the whole tree out again: a newcomer belongs in their
+		 * generation's row or on the shelf, not wherever there was room beside the person opened
+		 * (docs/05 §5.8). Free and By circle keep everybody where they stood.
+		 */
+		const arrival = tree && [...nodeIds].some((id) => !onCanvas.has(id));
+		onCanvas = nodeIds;
+		controller.setGraph(els, { arrangedNext: arrival });
 		const joined = [...groupOf].some(([id, group]) => placedInGroups.get(id) !== group);
 		placedInGroups = groupOf;
-		if (joined) {
-			settledForGroups = true;
-			untrack(() => arrangeNow(arrangedBy));
-		}
+		if (joined) settledForGroups = true;
+		if (joined || arrival) untrack(() => arrangeNow(arrangedBy));
 	});
 	// Apply filtering as show/hide (no re-layout).
 	$effect(() => {
@@ -465,6 +488,7 @@
 	});
 
 	async function onTapNode(id: string) {
+		readerSelected = true;
 		// A group is a way of drawing people, not somebody to trace a path to or open up.
 		if (grouping?.groups.some((g) => g.id === id)) {
 			if (!pathMode) selected = id;
@@ -506,6 +530,7 @@
 	}
 
 	async function reveal(id: string) {
+		readerSelected = true;
 		if (!model.nodes.some((n) => n.id === id)) {
 			model = mergeModels(model, await buildEgoNetwork(source, id, 1));
 			expandedIds.add(id);
@@ -623,6 +648,30 @@
 		if (!ready || !controller) return;
 		controller.setTopInset(inset);
 	});
+	/*
+	 * The peek panel floats beside the map on a wide window and along its foot on a phone. The
+	 * next framing — the family tree after an expand — keeps the map clear of it, so nobody it
+	 * brought in lands underneath. Read from the layout, not the screen, so a panel still
+	 * sliding in is measured where it will stand.
+	 */
+	const peekOpen = $derived((peekNode !== null || peekGroup !== null) && !pathMode);
+	$effect(() => {
+		const open = peekOpen;
+		if (!ready || !controller) return;
+		void tick().then(() => {
+			const panel = open ? frame.querySelector<HTMLElement>('aside') : null;
+			if (!panel) {
+				controller?.setCovered({ right: 0, bottom: 0 });
+				return;
+			}
+			const beside = panel.offsetLeft > frame.clientWidth / 2;
+			controller?.setCovered(
+				beside
+					? { right: frame.clientWidth - panel.offsetLeft, bottom: 0 }
+					: { right: 0, bottom: frame.clientHeight - panel.offsetTop }
+			);
+		});
+	});
 
 	const screen = frameFullscreen(() => frame);
 	const overlay = $derived(screen.on && screen.usesCss);
@@ -684,6 +733,11 @@
 		}
 		controller = explorer;
 		placedInGroups = grouping?.groupOf ?? new Map();
+		onCanvas = new Set(
+			elements()
+				.filter((e) => e.group === 'nodes')
+				.map((e) => e.data.id as string)
+		);
 		const shown = shownIds();
 		controller.setVisible(shown.nodes, shown.edges);
 		controller.highlightNeighborhood(selected);
