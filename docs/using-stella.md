@@ -447,6 +447,9 @@ and a good idea is still there on the birthday it was meant for.
   name and `Enter`. Their Gifts card opens with the idea form ready.
 - When their birthday or another date comes up on Home, the number of open ideas is right
   there under their name.
+- **Search everything** finds a gift by what it is or by its note — *Fotobuch* finds the photo
+  book, whoever it was for. The hit says who it is for and whether it is an idea or was given or
+  received on which day; tap it and you land on their Gifts card.
 - Without a connection a new gift is kept on your device and shown on the card until it can be
   sent; changing, giving or removing one needs Stella to be reachable.
 
@@ -772,8 +775,8 @@ your removing it never quietly takes it off someone else's private contact.
 person as you type, and offers *Write a moment*, *Gift idea for …* and *Add person* as its
 first rows. Notes are
 not in it; the last row, *Search everything*, opens the full search, which looks through
-people and notes at once, matches partial words, and only ever returns what you are allowed
-to see. When it finds nothing it offers *Add "…"*, which opens *Add person* with what you typed
+people, notes and gifts at once, matches partial words, and only ever returns what you are
+allowed to see — a private gift only to whoever noted it. When it finds nothing it offers *Add "…"*, which opens *Add person* with what you typed
 already filled in as the name — and so does the filter on the People page.
 
 ## Moving in from Monica, or from an address book

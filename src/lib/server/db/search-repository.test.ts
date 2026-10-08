@@ -189,3 +189,92 @@ describe('searching a note that mentions someone', () => {
 		expect(await repo.searchNotes(viewerU1, toFtsQuery('secretina'), 20)).toHaveLength(0);
 	});
 });
+
+/*
+ * Gifts are found by their title and their note — not by the link, which is a shop's address,
+ * nor by the occasion, which is a preset key in one language (docs/02 §2.9, §2.25.5).
+ */
+describe('searchGifts', () => {
+	beforeEach(() => {
+		db.insert(schema.gift)
+			.values([
+				{
+					id: 'g-book',
+					contactId: 'c-hans',
+					createdBy: U1,
+					visibility: 'shared',
+					state: 'given',
+					title: 'Fotobuch Sommer',
+					note: 'mit den Bildern vom Zeltlager',
+					url: 'https://shop.example/teekanne',
+					givenOn: '2025-12-24',
+					occasion: 'christmas'
+				},
+				{
+					id: 'g-private',
+					contactId: 'c-hans',
+					createdBy: U1,
+					visibility: 'private',
+					state: 'idea',
+					title: 'Fotobuch Winter'
+				},
+				{
+					id: 'g-on-secret',
+					contactId: 'c-secret',
+					createdBy: U1,
+					visibility: 'shared',
+					state: 'received',
+					title: 'Fotobuch Hochzeit',
+					givenOn: '2024-06-01'
+				}
+			])
+			.run();
+	});
+
+	it('matches the title and returns the person it is for and its state', async () => {
+		const hits = await repo.searchGifts(viewerU1, toFtsQuery('fotobuch'), 20);
+		expect(hits.map((h) => h.giftId).sort()).toEqual(['g-book', 'g-on-secret', 'g-private']);
+		expect(hits.find((h) => h.giftId === 'g-book')).toMatchObject({
+			title: 'Fotobuch Sommer',
+			state: 'given',
+			givenOn: '2025-12-24',
+			contactId: 'c-hans',
+			contactName: 'Hans Müller'
+		});
+	});
+
+	it('matches the note', async () => {
+		const hits = await repo.searchGifts(viewerU1, toFtsQuery('zeltlager'), 20);
+		expect(hits.map((h) => h.giftId)).toEqual(['g-book']);
+	});
+
+	it('does not match the link or the occasion', async () => {
+		expect(await repo.searchGifts(viewerU1, toFtsQuery('teekanne'), 20)).toHaveLength(0);
+		expect(await repo.searchGifts(viewerU1, toFtsQuery('christmas'), 20)).toHaveLength(0);
+	});
+
+	it('finds a private gift only for its author, and none on a person the viewer cannot see', async () => {
+		const hits = await repo.searchGifts(viewerU2, toFtsQuery('fotobuch'), 20);
+		expect(hits.map((h) => h.giftId)).toEqual(['g-book']);
+	});
+
+	it('follows an edit and a removal', async () => {
+		db.update(schema.gift)
+			.set({ title: 'Kalender', note: null })
+			.where(eq(schema.gift.id, 'g-book'))
+			.run();
+		expect(
+			(await repo.searchGifts(viewerU1, toFtsQuery('kalender'), 20)).map((h) => h.giftId)
+		).toEqual(['g-book']);
+		expect(await repo.searchGifts(viewerU1, toFtsQuery('zeltlager'), 20)).toHaveLength(0);
+
+		db.delete(schema.gift).where(eq(schema.gift.id, 'g-book')).run();
+		expect(await repo.searchGifts(viewerU1, toFtsQuery('kalender'), 20)).toHaveLength(0);
+	});
+
+	it('goes with the person it is for', async () => {
+		db.delete(schema.contact).where(eq(schema.contact.id, 'c-secret')).run();
+		const rows = await repo.searchGifts(viewerU1, toFtsQuery('hochzeit'), 20);
+		expect(rows).toHaveLength(0);
+	});
+});

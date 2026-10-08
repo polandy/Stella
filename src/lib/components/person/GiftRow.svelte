@@ -14,6 +14,7 @@
 	import { tick } from 'svelte';
 	import GiftForm from './GiftForm.svelte';
 	import GiftOccasionField from './GiftOccasionField.svelte';
+	import GiftStateMark from './GiftStateMark.svelte';
 	import type { PersonPageData } from './types';
 
 	/*
@@ -77,14 +78,7 @@
 </script>
 
 <li bind:this={row} class="flex gap-3 border-t border-border-subtle py-2.5 first:border-t-0">
-	<span
-		class="grid size-8 shrink-0 place-items-center rounded-control"
-		style="color:{gift.state === 'idea'
-			? 'var(--accent-yellow)'
-			: 'var(--kind-gift)'};background:color-mix(in srgb, currentColor 16%, transparent)"
-	>
-		<Icon name={gift.state === 'idea' ? 'idea' : 'gift'} size={15} />
-	</span>
+	<GiftStateMark state={gift.state} />
 
 	<div class="min-w-0 flex-1">
 		{#if mode === 'edit'}

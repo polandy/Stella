@@ -172,6 +172,33 @@ describe('ensureSearchIndex backfill', () => {
 		expect(hits.map((h) => h.contact_id)).toEqual(['c-later', 'c-sandra']);
 	});
 
+	it('backfills the gifts, by title and note only, so a gift is findable after the upgrade', () => {
+		db.insert(schema.gift)
+			.values({
+				id: 'g-1',
+				contactId: 'c-beat',
+				createdBy: U,
+				visibility: 'shared',
+				state: 'given',
+				title: 'Fotobuch',
+				note: 'vom Zeltlager',
+				url: 'https://shop.example/teekanne',
+				givenOn: '2025-12-24',
+				occasion: 'christmas'
+			})
+			.run();
+
+		ensureSearchIndex(sqlite);
+
+		const row = sqlite.query("SELECT content FROM gift_fts WHERE gift_id = 'g-1'").get() as {
+			content: string;
+		} | null;
+		expect(row?.content).toContain('Fotobuch');
+		expect(row?.content).toContain('Zeltlager');
+		expect(row?.content).not.toContain('teekanne');
+		expect(row?.content).not.toContain('christmas');
+	});
+
 	it('backfills the contacts too, so people are findable after the upgrade', () => {
 		ensureSearchIndex(sqlite);
 
@@ -228,6 +255,30 @@ describe('ensureSearchIndex upgrade', () => {
 			.run();
 
 		expect(indexed('n-9')).not.toContain('@{contact:');
+	});
+
+	it('builds the gift part on the first start whose database has the gift table', () => {
+		// A database migrated only up to before the gifts, as a migration test builds one.
+		sqlite.exec('ALTER TABLE gift RENAME TO gift_not_yet');
+		ensureSearchIndex(sqlite);
+		sqlite.exec('ALTER TABLE gift_not_yet RENAME TO gift');
+
+		ensureSearchIndex(sqlite);
+		db.insert(schema.gift)
+			.values({
+				id: 'g-1',
+				contactId: 'c-beat',
+				createdBy: U,
+				visibility: 'shared',
+				state: 'idea',
+				title: 'Fotobuch'
+			})
+			.run();
+
+		const hits = sqlite
+			.query("SELECT gift_id FROM gift_fts WHERE gift_fts MATCH 'fotobuch'")
+			.all() as { gift_id: string }[];
+		expect(hits.map((h) => h.gift_id)).toEqual(['g-1']);
 	});
 
 	it('leaves an unchanged definition alone, so a restart is not a rebuild', () => {

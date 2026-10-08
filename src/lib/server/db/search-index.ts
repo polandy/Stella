@@ -3,7 +3,7 @@ import { MENTION_TOKEN_PREFIX } from '../../mentions/mentions';
 
 /*
  * Full-text search index (docs/03 §3.5). Creates the FTS5 virtual tables and the triggers that
- * keep them in sync with `contact` and `note`, and builds the rows for everything already
+ * keep them in sync with `contact`, `note` and `gift`, and builds the rows for everything already
  * stored. Runs on every startup and does nothing when the index on disk was built from the
  * same definitions — see `fingerprint`. Kept as raw SQL because FTS5 virtual tables are
  * outside Drizzle's schema management.
@@ -37,13 +37,20 @@ const strippedBody = (t: string) => `(WITH RECURSIVE strip(s) AS (
 const noteContent = (t: string) =>
 	`coalesce(${t}.title,'')||' '||${strippedBody(t)}||' '||coalesce((SELECT group_concat(c.display_name,' ') FROM note_mention m JOIN contact c ON c.id = m.contact_id WHERE m.note_id = ${t}.id),'')`;
 
+/*
+ * What of a gift is searchable: its title and its note. Not the link — a shop's address, whose
+ * words nobody means — and not the occasion, a preset key that reads differently per language
+ * (docs/02 §2.25.5).
+ */
+const giftContent = (t: string) => `coalesce(${t}.title,'')||' '||coalesce(${t}.note,'')`;
+
 /** Rebuild the index rows for the notes selected by `where`, evaluated against `note n`. */
 const reindexNotes = (where: string) => `
 			DELETE FROM note_fts WHERE note_id IN (SELECT n.id FROM note n WHERE ${where});
 			INSERT INTO note_fts(note_id, contact_id, content)
 				SELECT n.id, n.contact_id, ${noteContent('n')} FROM note n WHERE ${where};`;
 
-/** The triggers that keep the index in step with `contact`, `note` and `note_mention`. */
+/** The triggers that keep the index in step with `contact`, `note`, `note_mention` and `gift`. */
 const TRIGGERS: Record<string, string> = {
 	contact_fts_ai: `AFTER INSERT ON contact BEGIN
 			INSERT INTO contact_fts(contact_id, content) VALUES (new.id, ${contactContent('new')});
@@ -79,6 +86,24 @@ const TRIGGERS: Record<string, string> = {
 		END`
 };
 
+/*
+ * The triggers that keep the gift index in step with `gift`. A gift is added, edited, marked
+ * given and removed through that table alone — and restored, merged and converted from a
+ * Monica note the same way — so these three cover every path.
+ */
+const GIFT_TRIGGERS: Record<string, string> = {
+	gift_fts_ai: `AFTER INSERT ON gift BEGIN
+			INSERT INTO gift_fts(gift_id, content) VALUES (new.id, ${giftContent('new')});
+		END`,
+	gift_fts_ad: `AFTER DELETE ON gift BEGIN
+			DELETE FROM gift_fts WHERE gift_id = old.id;
+		END`,
+	gift_fts_au: `AFTER UPDATE ON gift BEGIN
+			DELETE FROM gift_fts WHERE gift_id = old.id;
+			INSERT INTO gift_fts(gift_id, content) VALUES (new.id, ${giftContent('new')});
+		END`
+};
+
 /** The FTS5 virtual tables. Outside Drizzle's schema management, hence the raw DDL. */
 const TABLES = `
 		CREATE VIRTUAL TABLE IF NOT EXISTS contact_fts USING fts5(
@@ -86,16 +111,35 @@ const TABLES = `
 		);
 		CREATE VIRTUAL TABLE IF NOT EXISTS note_fts USING fts5(
 			note_id UNINDEXED, contact_id UNINDEXED, content, tokenize='unicode61 remove_diacritics 2'
+		);
+		CREATE VIRTUAL TABLE IF NOT EXISTS gift_fts USING fts5(
+			gift_id UNINDEXED, content, tokenize='unicode61 remove_diacritics 2'
 		);`;
 
+/*
+ * A database migrated only part of the way — which only a migration test builds, since startup
+ * runs every migration first — has no `gift` table to hang a trigger on. The gift part is left
+ * out there, and the fingerprint says so, so the start that has the table builds it.
+ */
+function hasGiftTable(sqlite: Database): boolean {
+	return (
+		sqlite.query("SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = 'gift'").get() !==
+		null
+	);
+}
+
+const triggersFor = (withGifts: boolean): Record<string, string> =>
+	withGifts ? { ...TRIGGERS, ...GIFT_TRIGGERS } : TRIGGERS;
+
 /** Everything the index is made of, as one string — the input to the fingerprint. */
-const definition = (): string =>
+const definition = (withGifts: boolean): string =>
 	TABLES +
-	Object.entries(TRIGGERS)
+	Object.entries(triggersFor(withGifts))
 		.map(([name, body]) => `CREATE TRIGGER ${name} ${body};`)
 		.join('') +
 	contactContent('contact') +
-	noteContent('note');
+	noteContent('note') +
+	(withGifts ? giftContent('gift') : '');
 
 /**
  * A content-addressed stamp of the definitions above. Stored beside the index so a startup can
@@ -104,8 +148,8 @@ const definition = (): string =>
  * the triggers are replaced and the rows rebuilt. Any edit to the SQL above moves the stamp and
  * upgrades every existing database on its next start — there is no version number to remember.
  */
-function fingerprint(): string {
-	return new Bun.CryptoHasher('sha256').update(definition()).digest('hex');
+function fingerprint(withGifts: boolean): string {
+	return new Bun.CryptoHasher('sha256').update(definition(withGifts)).digest('hex');
 }
 
 /** Where that stamp lives. Its own tiny table, like the FTS tables outside Drizzle. */
@@ -119,21 +163,27 @@ function storedFingerprint(sqlite: Database): string | null {
 }
 
 /** Drop and re-create every trigger, so they carry the current definition. */
-function recreateTriggers(sqlite: Database): void {
+function recreateTriggers(sqlite: Database, withGifts: boolean): void {
 	sqlite.exec(
-		Object.entries(TRIGGERS)
+		Object.entries(triggersFor(withGifts))
 			.map(([name, body]) => `DROP TRIGGER IF EXISTS ${name};CREATE TRIGGER ${name} ${body};`)
 			.join('\n')
 	);
 }
 
 /** Throw away the index and build it from the tables of record. */
-function rebuild(sqlite: Database): void {
+function rebuild(sqlite: Database, withGifts: boolean): void {
 	sqlite.exec(`
 		DELETE FROM contact_fts;
 		INSERT INTO contact_fts(contact_id, content) SELECT id, ${contactContent('contact')} FROM contact;
 		DELETE FROM note_fts;
-		INSERT INTO note_fts(note_id, contact_id, content) SELECT id, contact_id, ${noteContent('note')} FROM note;`);
+		INSERT INTO note_fts(note_id, contact_id, content) SELECT id, contact_id, ${noteContent('note')} FROM note;
+		DELETE FROM gift_fts;`);
+	if (withGifts) {
+		sqlite.exec(
+			`INSERT INTO gift_fts(gift_id, content) SELECT id, ${giftContent('gift')} FROM gift;`
+		);
+	}
 }
 
 /**
@@ -145,11 +195,12 @@ export function ensureSearchIndex(sqlite: Database): void {
 	sqlite.exec(TABLES);
 	sqlite.exec(`CREATE TABLE IF NOT EXISTS ${META_TABLE} (fingerprint TEXT NOT NULL);`);
 
-	const current = fingerprint();
+	const withGifts = hasGiftTable(sqlite);
+	const current = fingerprint(withGifts);
 	if (storedFingerprint(sqlite) === current) return;
 
-	recreateTriggers(sqlite);
-	rebuild(sqlite);
+	recreateTriggers(sqlite, withGifts);
+	rebuild(sqlite, withGifts);
 	sqlite.exec(`DELETE FROM ${META_TABLE};`);
 	sqlite.query(`INSERT INTO ${META_TABLE}(fingerprint) VALUES (?)`).run(current);
 }

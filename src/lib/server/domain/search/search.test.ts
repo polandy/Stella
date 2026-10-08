@@ -47,6 +47,19 @@ function fakeRepo() {
 		searchNotes: async (_v, q) => {
 			calls.push(`notes:${q}`);
 			return [];
+		},
+		searchGifts: async (_v, q) => {
+			calls.push(`gifts:${q}`);
+			return [
+				{
+					giftId: 'g1',
+					title: 'Fotobuch',
+					state: 'given',
+					givenOn: '2025-12-24',
+					contactId: 'c1',
+					contactName: 'Hans'
+				}
+			];
 		}
 	};
 	return { repo, calls };
@@ -56,15 +69,16 @@ describe('search', () => {
 	it('returns empty results without touching the index for a blank query', async () => {
 		const f = fakeRepo();
 		const results = await search({ search: f.repo }, viewer, '   ');
-		expect(results).toEqual({ contacts: [], notes: [] });
+		expect(results).toEqual({ contacts: [], notes: [], gifts: [] });
 		expect(f.calls).toEqual([]);
 	});
 
-	it('queries both contacts and notes with the derived FTS query', async () => {
+	it('queries contacts, notes and gifts with the derived FTS query', async () => {
 		const f = fakeRepo();
 		const results = await search({ search: f.repo }, viewer, 'Hans');
-		expect(f.calls).toEqual(['contacts:hans*', 'notes:hans*']);
+		expect(f.calls).toEqual(['contacts:hans*', 'notes:hans*', 'gifts:hans*']);
 		expect(results.contacts[0]?.displayName).toBe('Hans');
+		expect(results.gifts.map((g) => g.giftId)).toEqual(['g1']);
 	});
 
 	it('says who was found by their former name rather than the name they are shown by', async () => {

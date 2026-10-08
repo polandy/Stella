@@ -8,6 +8,6 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 	const q = url.searchParams.get('q')?.trim() ?? '';
 	const results = q
 		? await search(locals.services.household.searchDeps, viewer, q)
-		: { contacts: [], notes: [] };
+		: { contacts: [], notes: [], gifts: [] };
 	return { q, results };
 };

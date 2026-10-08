@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'bun:test';
 import { INTL_LOCALES } from '../i18n/locales';
 import { createTranslator } from '../i18n/translate';
-import { addedLabel, occasionLabel } from './labels';
+import { addedLabel, occasionLabel, stateLabel } from './labels';
 
 /*
  * An occasion as the reader reads it (docs/02 §2.25): a preset in their language, whoever
@@ -33,5 +33,24 @@ describe('addedLabel', () => {
 		const lateEveningInZurich = Date.parse('2026-10-03T22:30:00Z');
 		expect(addedLabel(en, lateEveningInZurich, 'UTC')).toBe('Added 3 October 2026');
 		expect(addedLabel(en, lateEveningInZurich, 'Europe/Zurich')).toBe('Added 4 October 2026');
+	});
+});
+
+describe('stateLabel', () => {
+	const en = { t: createTranslator('en'), intlLocale: INTL_LOCALES.en };
+	const de = { t: createTranslator('de'), intlLocale: INTL_LOCALES.de };
+
+	it('calls an idea an idea', () => {
+		expect(stateLabel(en, { state: 'idea', givenOn: null })).toBe('Idea');
+		expect(stateLabel(de, { state: 'idea', givenOn: null })).toBe('Idee');
+	});
+
+	it('says on which day a gift was given or received', () => {
+		expect(stateLabel(en, { state: 'given', givenOn: '2025-12-24' })).toBe(
+			'Given on 24 December 2025'
+		);
+		expect(stateLabel(de, { state: 'received', givenOn: '2025-12-24' })).toBe(
+			'Bekommen am 24. Dezember 2025'
+		);
 	});
 });
