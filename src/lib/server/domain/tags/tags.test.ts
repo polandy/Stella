@@ -1,6 +1,5 @@
 import { describe, expect, it } from 'bun:test';
-import type { Clock } from '../../clock';
-import type { IdGenerator } from '../../id';
+import { fixedClock, sequentialIds } from '../testing';
 import {
 	assignTagByName,
 	pruneOrphanTags,
@@ -31,10 +30,9 @@ describe('resolveTagColor', () => {
 	});
 });
 
-const NOW = 1_700_000_000_000;
-const clock: Clock = { now: () => NOW };
-const idGen = (v: string): IdGenerator => ({ next: () => v });
+const clock = fixedClock(1_700_000_000_000);
 
+/** The repository's writes, recorded in order: which calls were made is what these tests assert. */
 function fakeRepo(existing: Tag | null = null, assignmentsLeft = 0) {
 	const calls: string[] = [];
 	let inserted: NewTag | null = null;
@@ -44,7 +42,6 @@ function fakeRepo(existing: Tag | null = null, assignmentsLeft = 0) {
 			inserted = t;
 			calls.push('insert');
 		},
-		listByHousehold: async () => [],
 		assign: async (contactId, tagId) => {
 			calls.push(`assign:${contactId}:${tagId}`);
 		},
@@ -58,9 +55,7 @@ function fakeRepo(existing: Tag | null = null, assignmentsLeft = 0) {
 		},
 		deleteTag: async (householdId, tagId) => {
 			calls.push(`delete:${householdId}:${tagId}`);
-		},
-		listForContactVisibleTo: async () => [],
-		listContactsByTagVisibleTo: async () => []
+		}
 	};
 	return {
 		repo,
@@ -71,7 +66,7 @@ function fakeRepo(existing: Tag | null = null, assignmentsLeft = 0) {
 	};
 }
 
-const deps = (repo: TagRepository, id = 'tag-1') => ({ tags: repo, ids: idGen(id), clock });
+const deps = (repo: TagRepository, id = 'tag-1') => ({ tags: repo, ids: sequentialIds(id), clock });
 
 describe('assignTagByName', () => {
 	it('creates a new tag then assigns it', async () => {

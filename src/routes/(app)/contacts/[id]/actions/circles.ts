@@ -64,7 +64,7 @@ export const circleActions = {
 
 		// Only a member the viewer can see in that circle is re-roled; anyone else is left out.
 		await setMembersRole(
-			locals.services.circles.circleDeps,
+			locals.services.circles.memberRoleDeps,
 			viewer,
 			parsed.output.circleId,
 			[params.id],

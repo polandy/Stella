@@ -4,7 +4,7 @@ import {
 	listArchivedContacts,
 	listContacts
 } from '$lib/server/domain/contacts/directory';
-import { listContactsByTag, listTags } from '$lib/server/domain/tags/tags';
+import { listContactsByTag, listTags } from '$lib/server/domain/tags/tag-lists';
 import { readSurnameHelp } from '$lib/server/domain/contacts/last-names';
 import { lastNameActions } from '../_shared/last-names-actions';
 import type { Actions, PageServerLoad } from './$types';
@@ -27,12 +27,12 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 	// The archive's size is what the chip says — and a chip that leads to an empty room is
 	// worse than no chip — so it is counted either way; the list only when it is shown.
 	const [tags, archivedCount, contacts, touches, surnameHelp] = await Promise.all([
-		listTags(locals.services.records.tagDeps, viewer.householdId),
+		listTags(locals.services.records.tagListDeps, viewer.householdId),
 		countArchivedContacts(locals.services.people.contactDirectoryDeps, viewer),
 		showArchived
 			? listArchivedContacts(locals.services.people.contactDirectoryDeps, viewer)
 			: activeTag
-				? listContactsByTag(locals.services.records.tagDeps, viewer, activeTag)
+				? listContactsByTag(locals.services.records.tagListDeps, viewer, activeTag)
 				: listContacts(locals.services.people.contactDirectoryDeps, viewer),
 		locals.services.household.attention.listLastTouchedVisibleTo(viewer),
 		readSurnameHelp(locals.services.people.surnameReviewDeps, viewer, null)

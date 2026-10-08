@@ -1,60 +1,23 @@
-import { and, count, eq, inArray, sql } from 'drizzle-orm';
+import { and, eq, inArray, sql } from 'drizzle-orm';
 import type { BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
-import {
-	circleColumnsVisibleTo,
-	contactColumnsVisibleTo,
-	membershipVisibleTo
-} from '../access/query-scoping';
+import { circleColumnsVisibleTo } from '../access/query-scoping';
 import type { Viewer } from '../access/visibility';
-import {
-	CIRCLE_PREVIEW_SIZE,
-	type Circle,
-	type CircleColor,
-	type CircleRepository,
-	type CircleRoleUse,
-	type CircleWithCount,
-	type ContactCircleView,
-	type MemberPreview,
-	type MemberView,
-	type NewCircle,
-	type NewMembership,
-	type RoleRename
+import type {
+	Circle,
+	CircleRepository,
+	NewCircle,
+	NewMembership,
+	RoleRename
 } from '../domain/circles/circles';
+import { circleColumns, toCircle } from './circle-columns';
 import type * as schema from './schema';
-import { circle, circleMembership, contact, photo } from './schema';
+import { circle, circleMembership, photo } from './schema';
 
 /*
- * Drizzle adapter for the CircleRepository port (docs/08 §8.3). All reads are scoped centrally:
- * a circle via `circleColumnsVisibleTo`, a membership via `membershipVisibleTo` (circle AND
- * contact visible, §3.7). Member counts only include members the viewer may see — the contact
- * visibility lives in the JOIN condition so a circle with only hidden members still lists (as 0).
+ * Drizzle adapter for the CircleRepository port (docs/08 §8.3): a circle's writes and the
+ * one-circle reads they rest on, scoped centrally via `circleColumnsVisibleTo` (§3.7). The lists
+ * are read models of their own (`circle-directory-reads.ts`, `circle-membership-reads.ts`).
  */
-
-const circleCols = {
-	id: circle.id,
-	householdId: circle.householdId,
-	createdBy: circle.createdBy,
-	visibility: circle.visibility,
-	name: circle.name,
-	description: circle.description,
-	kind: circle.kind,
-	color: circle.color,
-	startDate: circle.startDate,
-	endDate: circle.endDate
-};
-
-const toCircle = (row: Record<string, unknown>): Circle => ({
-	id: row.id as string,
-	householdId: row.householdId as string,
-	createdBy: row.createdBy as string,
-	visibility: row.visibility as 'shared' | 'private',
-	name: row.name as string,
-	description: (row.description as string | null) ?? null,
-	kind: row.kind as Circle['kind'],
-	color: row.color as CircleColor,
-	startDate: (row.startDate as string | null) ?? null,
-	endDate: (row.endDate as string | null) ?? null
-});
 
 export function createDrizzleCircleRepository(
 	db: BunSQLiteDatabase<typeof schema>
@@ -82,7 +45,7 @@ export function createDrizzleCircleRepository(
 		// The SQL spelling of `circleNameKey` (src/lib/circles/name-key.ts) — keep the two in step.
 		async findByNameVisibleTo(viewer: Viewer, name: string): Promise<Circle | null> {
 			const row = db
-				.select(circleCols)
+				.select(circleColumns)
 				.from(circle)
 				.where(
 					and(
@@ -96,52 +59,11 @@ export function createDrizzleCircleRepository(
 
 		async getVisibleTo(viewer: Viewer, circleId: string): Promise<Circle | null> {
 			const row = db
-				.select(circleCols)
+				.select(circleColumns)
 				.from(circle)
 				.where(and(eq(circle.id, circleId), circleColumnsVisibleTo(viewer, circle)))
 				.get();
 			return row ? toCircle(row) : null;
-		},
-
-		async listVisibleTo(viewer: Viewer): Promise<CircleWithCount[]> {
-			const rows = db
-				.select({ ...circleCols, memberCount: count(contact.id) })
-				.from(circle)
-				.leftJoin(circleMembership, eq(circleMembership.circleId, circle.id))
-				.leftJoin(
-					contact,
-					and(eq(contact.id, circleMembership.contactId), contactColumnsVisibleTo(viewer, contact))
-				)
-				.where(circleColumnsVisibleTo(viewer, circle))
-				.groupBy(circle.id)
-				.orderBy(circle.name)
-				.all();
-			// The faces on each card: every visible membership once, cut per circle below.
-			const faces = db
-				.select({
-					circleId: circleMembership.circleId,
-					contactId: contact.id,
-					displayName: contact.displayName,
-					avatarPhotoId: contact.avatarPhotoId
-				})
-				.from(circleMembership)
-				.innerJoin(circle, eq(circleMembership.circleId, circle.id))
-				.innerJoin(contact, eq(circleMembership.contactId, contact.id))
-				.where(membershipVisibleTo(viewer, circle, contact))
-				.orderBy(contact.displayName)
-				.all();
-			const previews = new Map<string, MemberPreview[]>();
-			for (const { circleId, ...member } of faces) {
-				const list = previews.get(circleId) ?? [];
-				if (list.length < CIRCLE_PREVIEW_SIZE) list.push(member);
-				previews.set(circleId, list);
-			}
-
-			return rows.map((r) => ({
-				...toCircle(r),
-				memberCount: r.memberCount,
-				preview: previews.get(r.id as string) ?? []
-			}));
 		},
 
 		async addMemberships(memberships: readonly NewMembership[]): Promise<void> {
@@ -224,67 +146,6 @@ export function createDrizzleCircleRepository(
 						.run();
 				}
 			});
-		},
-
-		async listMembersVisibleTo(viewer: Viewer, circleId: string): Promise<MemberView[]> {
-			return db
-				.select({
-					membershipId: circleMembership.id,
-					contactId: contact.id,
-					displayName: contact.displayName,
-					avatarPhotoId: contact.avatarPhotoId,
-					role: circleMembership.role
-				})
-				.from(circleMembership)
-				.innerJoin(circle, eq(circleMembership.circleId, circle.id))
-				.innerJoin(contact, eq(circleMembership.contactId, contact.id))
-				.where(
-					and(eq(circleMembership.circleId, circleId), membershipVisibleTo(viewer, circle, contact))
-				)
-				.orderBy(contact.displayName)
-				.all();
-		},
-
-		async listForContactVisibleTo(viewer: Viewer, contactId: string): Promise<ContactCircleView[]> {
-			const rows = db
-				.select({
-					membershipId: circleMembership.id,
-					circleId: circle.id,
-					name: circle.name,
-					kind: circle.kind,
-					color: circle.color,
-					role: circleMembership.role
-				})
-				.from(circleMembership)
-				.innerJoin(circle, eq(circleMembership.circleId, circle.id))
-				.innerJoin(contact, eq(circleMembership.contactId, contact.id))
-				.where(
-					and(
-						eq(circleMembership.contactId, contactId),
-						membershipVisibleTo(viewer, circle, contact)
-					)
-				)
-				.orderBy(circle.name)
-				.all();
-			return rows.map((r) => ({
-				membershipId: r.membershipId,
-				circleId: r.circleId,
-				name: r.name,
-				kind: r.kind,
-				color: r.color as CircleColor,
-				role: r.role
-			}));
-		},
-
-		async listRoleUsesVisibleTo(viewer: Viewer): Promise<CircleRoleUse[]> {
-			return db
-				.select({ circleName: circle.name, role: circleMembership.role })
-				.from(circleMembership)
-				.innerJoin(circle, eq(circleMembership.circleId, circle.id))
-				.innerJoin(contact, eq(circleMembership.contactId, contact.id))
-				.where(membershipVisibleTo(viewer, circle, contact))
-				.orderBy(circle.name, circleMembership.role)
-				.all();
 		}
 	};
 }

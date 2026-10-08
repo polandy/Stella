@@ -16,3 +16,12 @@ export {
 	somebody,
 	type FakePerson
 } from './contacts';
+export {
+	circleRepositoryWith,
+	inMemoryCircleDirectory,
+	inMemoryCircleMemberships,
+	membership,
+	someCircle,
+	type FakeMembership
+} from './circles';
+export { inMemoryTagLists, someTag, type FakeTag } from './tags';

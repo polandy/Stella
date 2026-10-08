@@ -11,7 +11,8 @@ import * as schema from '../db/schema';
 import { addContactField, listContactFields } from '../domain/contact-fields/contact-fields';
 import { createContact } from '../domain/contacts/contacts';
 import { addImportantDate, listImportantDates } from '../domain/dates/important-dates';
-import { assignTagByName, listTagsForContact } from '../domain/tags/tags';
+import { listTagsForContact } from '../domain/tags/tag-lists';
+import { assignTagByName } from '../domain/tags/tags';
 import type { IdGenerator } from '../id';
 import { createServices } from './app-services';
 import type { AuthConfig } from './auth';
@@ -102,7 +103,7 @@ describe('createRecordServices', () => {
 		expect(fields.map((field) => field.id)).toEqual([fieldId]);
 		const dates = await listImportantDates(records.importantDateDeps, viewerOf(admin), anna);
 		expect(dates.map((date) => date.id)).toEqual([dateId]);
-		const tags = await listTagsForContact(records.tagDeps, viewerOf(admin), anna);
+		const tags = await listTagsForContact(records.tagListDeps, viewerOf(admin), anna);
 		expect(tags.map((tag) => tag.id)).toEqual([tagId]);
 	});
 });
