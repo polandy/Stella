@@ -237,8 +237,8 @@ describe('journal repository + upsert', () => {
 	});
 
 	it('deleteOwn takes the entry’s photos with it, and hands back their files', async () => {
-		// `photo.journal_entry_id` was added by a migration that never carried the cascade
-		// `schema.ts` declares, so the database refuses the delete instead: the rows go
+		// `photo.journal_entry_id` was added by a migration that never carried a cascade
+		// (schema/media.ts), so the database refuses the delete instead: the rows go
 		// explicitly, and their bytes come back so the caller can unlink them.
 		const repo = createDrizzleJournalRepository(db);
 		const id = await saveJournalEntry(deps(), author1, {

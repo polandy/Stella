@@ -86,7 +86,7 @@ One line per check; `references/full-tier.md` §1–§5 holds each in depth for 
 - `git fetch origin && git rev-list --count <head>..origin/<base>`.
 - If behind, **merge** `origin/<base>` in and push — never rebase (the PR is squash-merged; merging avoids a force-push and keeps comments anchored).
 - **Then re-run your tier's checks and §6**: the merge may bring a doc move, schema change or decision the PR now contradicts.
-- Git flags neither of these: **two migrations from the same schema baseline** (re-read the merged `schema.ts`, check `drizzle/` applies in order) and a **duplicate e2e case or fixture name**.
+- Git flags neither of these: **two migrations from the same schema baseline** (re-read the merged `db/schema/`, check `drizzle/` applies in order) and a **duplicate e2e case or fixture name**.
 
 ## 8. Verdict
 
