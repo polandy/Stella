@@ -1,10 +1,10 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
-	import Button from '$lib/components/Button.svelte';
-	import DateField from '$lib/components/DateField.svelte';
-	import FormError from '$lib/components/FormError.svelte';
-	import Icon from '$lib/components/Icon.svelte';
-	import RemoveButton from '$lib/components/RemoveButton.svelte';
+	import Button from '$lib/components/ui/Button.svelte';
+	import DateField from '$lib/components/ui/DateField.svelte';
+	import FormError from '$lib/components/ui/FormError.svelte';
+	import Icon from '$lib/components/ui/Icon.svelte';
+	import RemoveButton from '$lib/components/ui/RemoveButton.svelte';
 	import { dayLabel } from '$lib/dates/labels';
 	import { addedLabel, occasionLabel } from '$lib/gifts/labels';
 	import { useI18n } from '$lib/i18n/context.svelte';

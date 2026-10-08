@@ -1,4 +1,4 @@
-import type { MomentDraft } from '$lib/contacts/story-forms';
+import type { MomentDraft } from '$lib/people/story-forms';
 import { allowedForAudience } from '$lib/mentions/audience';
 import {
 	createHandleResolver,

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'bun:test';
 import { toCytoscapeElements } from './elements';
-import { avatarAccent } from '../../avatar';
+import { avatarAccent } from '../../people/avatar';
 import { groupByRole } from '../model/role-groups';
 import type { GraphModel } from '../model/types';
 import { nodeDiameter } from '../layout/legibility';

@@ -1,6 +1,6 @@
 <script lang="ts">
-	import Button from '$lib/components/Button.svelte';
-	import FormError from '$lib/components/FormError.svelte';
+	import Button from '$lib/components/ui/Button.svelte';
+	import FormError from '$lib/components/ui/FormError.svelte';
 	import { invalidateAll } from '$app/navigation';
 	import { useI18n } from '$lib/i18n/context.svelte';
 	import { submitAction } from '$lib/undo/submit-action';

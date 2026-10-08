@@ -1,12 +1,12 @@
 <script lang="ts">
-	import Button from '$lib/components/Button.svelte';
-	import Icon from '$lib/components/Icon.svelte';
-	import KeptItem from '$lib/components/KeptItem.svelte';
-	import MentionTextarea from '$lib/components/MentionTextarea.svelte';
-	import Section from '$lib/components/Section.svelte';
+	import Button from '$lib/components/ui/Button.svelte';
+	import Icon from '$lib/components/ui/Icon.svelte';
+	import KeptItem from '$lib/components/pwa/KeptItem.svelte';
+	import MentionTextarea from '$lib/components/stream/MentionTextarea.svelte';
+	import Section from '$lib/components/ui/Section.svelte';
 	import { enhance } from '$app/forms';
-	import { cardShape } from '$lib/contacts/empty-cards';
-	import { sectionAnchor } from '$lib/contacts/sections';
+	import { cardShape } from '$lib/people/empty-cards';
+	import { sectionAnchor } from '$lib/people/sections';
 	import { useI18n } from '$lib/i18n/context.svelte';
 	import { asTyped } from '$lib/mentions/picks';
 	import { keepable } from '$lib/pwa/keepable';

@@ -1,8 +1,8 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
 	import type { SubmitFunction } from '@sveltejs/kit';
-	import Avatar from '$lib/components/Avatar.svelte';
-	import LinkedNames from '$lib/components/LinkedNames.svelte';
+	import Avatar from '$lib/components/ui/Avatar.svelte';
+	import LinkedNames from '$lib/components/people/LinkedNames.svelte';
 	import { useTranslate } from '$lib/i18n/context.svelte';
 	import type { Segment } from '$lib/i18n/linked';
 	import type { SurnamePersonView } from './types';

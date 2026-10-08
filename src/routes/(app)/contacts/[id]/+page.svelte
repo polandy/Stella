@@ -8,7 +8,7 @@
 	import type { PhotoView } from '$lib/components/person/photo-card-state.svelte';
 	import RelationshipsSection from '$lib/components/person/RelationshipsSection.svelte';
 	import StorySection from '$lib/components/person/StorySection.svelte';
-	import { sectionAnchor } from '$lib/contacts/sections';
+	import { sectionAnchor } from '$lib/people/sections';
 	import { useI18n } from '$lib/i18n/context.svelte';
 	import { showOpenedForm } from '$lib/motion/motion.svelte';
 	import { tick } from 'svelte';

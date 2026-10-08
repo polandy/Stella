@@ -7,7 +7,7 @@ import { addPerson, appReady, recordAction, signIn } from './app';
  *
  * The suite runs on the demo household, so the first-run welcome card itself — shown only
  * while the household holds nobody but the member — is not reachable here; its rule is the
- * pure `src/lib/onboarding/welcome.ts`, unit-tested. What the demo can show is checked below.
+ * pure `src/lib/stream/welcome.ts`, unit-tested. What the demo can show is checked below.
  *
  * The Fennwicks are absent from the demo dataset, and each case names them under this
  * attempt's letters, so a retry against the same database finds no earlier attempt's person.

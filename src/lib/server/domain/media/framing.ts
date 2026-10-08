@@ -1,4 +1,4 @@
-import type { CropRect } from '../../../image/crop';
+import type { CropRect } from '../../../media/crop';
 import { phrase } from '../../../i18n/phrase';
 import type { Viewer } from '../../access/visibility';
 import type { Clock } from '../../clock';

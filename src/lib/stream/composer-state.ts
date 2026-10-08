@@ -15,7 +15,7 @@ import {
 	isKnownByMoreThanAFirstName,
 	splitTypedName
 } from '$lib/people/new-person';
-import type { MomentDraft } from '$lib/contacts/story-forms';
+import type { MomentDraft } from '$lib/people/story-forms';
 import type { KeptPhoto } from '$lib/pwa/outbox';
 import { cleared, draftOf } from './composer-reading';
 import { sendingAfter, type SendEvent } from './composer-send';

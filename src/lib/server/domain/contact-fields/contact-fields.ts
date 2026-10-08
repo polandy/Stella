@@ -1,4 +1,4 @@
-import { CONTACT_FIELD_KINDS, type ContactFieldKind } from '../../../contact-fields/kinds';
+import { CONTACT_FIELD_KINDS, type ContactFieldKind } from '../../../people/contact-fields';
 import type { Viewer } from '../../access/visibility';
 import type { Clock } from '../../clock';
 import type { IdGenerator } from '../../id';

@@ -1,4 +1,4 @@
-import { TranslatableError } from '../../../errors/translatable';
+import { TranslatableError } from '../../../i18n/translatable';
 import type { Phrase } from '../../../i18n/phrase';
 import { allowedForAudience } from '../../../mentions/audience';
 import {

@@ -1,5 +1,5 @@
 import type { Tag } from '../domain/tags/tags';
-import type { TagColor } from '../../tags/colors';
+import type { TagColor } from '../../design/tag-colors';
 import { tag } from './schema';
 
 /*

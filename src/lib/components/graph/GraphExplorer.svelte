@@ -1,8 +1,8 @@
 <script lang="ts">
 	import { onDestroy, onMount, tick, untrack } from 'svelte';
-	import Button from '$lib/components/Button.svelte';
-	import EmptyState from '$lib/components/EmptyState.svelte';
-	import { addRelationshipPath } from '$lib/contacts/sections';
+	import Button from '$lib/components/ui/Button.svelte';
+	import EmptyState from '$lib/components/ui/EmptyState.svelte';
+	import { addRelationshipPath } from '$lib/people/sections';
 	import { useTranslate } from '$lib/i18n/context.svelte';
 	import { kinshipLabel } from '$lib/kinship/labels';
 	import { relationshipRowLabel } from '$lib/relationships/labels';

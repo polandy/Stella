@@ -1,4 +1,4 @@
-import { SECTION_FOR_REFERENCE, contactSectionPath } from '$lib/contacts/sections';
+import { SECTION_FOR_REFERENCE, contactSectionPath } from '$lib/people/sections';
 import { segmentsOf } from '$lib/i18n/linked';
 import type { Translate } from '$lib/i18n/translate';
 import { mentionSnippet } from '$lib/mentions/snippet';

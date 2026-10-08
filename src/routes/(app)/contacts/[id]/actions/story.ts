@@ -9,7 +9,7 @@ import { requireViewer } from '$lib/server/auth/guards';
 import { getContact } from '$lib/server/domain/contacts/contacts';
 import { deleteInteraction } from '$lib/server/domain/interactions/interactions';
 import { deleteJournalEntry } from '$lib/server/domain/journal/journal';
-import { contactSectionPath } from '$lib/contacts/sections';
+import { contactSectionPath } from '$lib/people/sections';
 import { say, translator } from '$lib/server/i18n/say';
 import type { Actions } from '../$types';
 

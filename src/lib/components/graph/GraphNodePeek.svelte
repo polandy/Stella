@@ -1,6 +1,6 @@
 <script lang="ts">
-	import Avatar from '$lib/components/Avatar.svelte';
-	import Button from '$lib/components/Button.svelte';
+	import Avatar from '$lib/components/ui/Avatar.svelte';
+	import Button from '$lib/components/ui/Button.svelte';
 	import { useTranslate } from '$lib/i18n/context.svelte';
 	import type { CircleRole, CircleRoleOption } from '$lib/graph/model/ego-network';
 	import type { GraphNode } from '$lib/graph/model/types';

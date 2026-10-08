@@ -1,8 +1,8 @@
 <script lang="ts">
 	import { circleNameKey } from '$lib/circles/name-key';
-	import Button from '$lib/components/Button.svelte';
-	import FormError from '$lib/components/FormError.svelte';
-	import RemoveButton from '$lib/components/RemoveButton.svelte';
+	import Button from '$lib/components/ui/Button.svelte';
+	import FormError from '$lib/components/ui/FormError.svelte';
+	import RemoveButton from '$lib/components/ui/RemoveButton.svelte';
 	import { enhance } from '$app/forms';
 	import { accentDotStyle } from '$lib/design/tokens';
 	import { useI18n } from '$lib/i18n/context.svelte';

@@ -1,4 +1,4 @@
-import { TranslatableError } from '../../../../errors/translatable';
+import { TranslatableError } from '../../../../i18n/translatable';
 import { phrase, type Phrase } from '../../../../i18n/phrase';
 /*
  * A minimal reader for `mariadb-dump` / `mysqldump` output (docs/02 §2.16, "SQL dump").

@@ -1,4 +1,4 @@
-import type { CropRect } from '../../../image/crop';
+import type { CropRect } from '../../../media/crop';
 import type { Viewer, Visibility } from '../../access/visibility';
 import type { Clock } from '../../clock';
 import type { ContactLookup } from '../contacts/contacts';

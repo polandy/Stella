@@ -151,7 +151,7 @@ on a 915 px viewport): a phone's Home shows the search field, two birthdays, fou
 filters, and no household life. The filter is used rarely; the stream is what the page is for.
 
 **Proposal.** On a phone, replace the rows with **one *Filter* pill** carrying the active count
-and highlight — the pattern the graph toolbar already has (`GraphFilterMenu`, `src/lib/menu/`) —
+and highlight — the pattern the graph toolbar already has (`GraphFilterMenu`, `src/lib/ui/menu.ts`) —
 opening a sheet or menu with the *What* and *Who* groups as the same links. From `md` keep the
 rows as they are (desktop has the width). The chips stay links, so the URL contract
 (`?kind=`, `?by=`) and the no-JS path are unchanged; the pill is only how they are reached.
@@ -289,7 +289,7 @@ people to stop looking.
 - The jump bar's entries for cards at zero stay (they are where the add buttons are).
 
 **Touches.** `PhotosSection`, `NotesSection`, `MentionsSection`, `StorySection`,
-`src/lib/contacts/jump-bar.ts`; docs/05 §5.5. **Size.** M.
+`src/lib/people/jump-bar.ts`; docs/05 §5.5. **Size.** M.
 
 ### C3. Gender is a row that is neither a fact nor a disclosure
 
@@ -356,7 +356,7 @@ the pill row inside a quiet `--bg-sunken` track like the phone's — or (b) rend
 is sticky (fade in when the identity card's bottom passes the top), so it never stands between
 two cards at rest. (b) is truer to "chrome last".
 
-**Touches.** `JumpBar.svelte`, `src/lib/contacts/jump-bar.ts` (a pure `barVisible` rule if (b));
+**Touches.** `JumpBar.svelte`, `src/lib/people/jump-bar.ts` (a pure `barVisible` rule if (b));
 docs/05 §5.5. **Size.** S.
 
 ### C8. The desktop map is a third of the People card and shows unlabelled dots

@@ -1,4 +1,4 @@
-import { TranslatableError } from '../../../errors/translatable';
+import { TranslatableError } from '../../../i18n/translatable';
 import { phrase, type Phrase } from '../../../i18n/phrase';
 import type { KinshipGraph, Pair } from '../../../kinship/kinship';
 import { deriveKinship, type DerivedKin } from '../../../kinship/kinship';

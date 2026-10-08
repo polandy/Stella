@@ -1,10 +1,10 @@
 <script lang="ts">
 	import { reveal } from '$lib/motion/motion.svelte';
-	import FormError from '$lib/components/FormError.svelte';
-	import Avatar from '$lib/components/Avatar.svelte';
-	import Button from '$lib/components/Button.svelte';
-	import EmptyState from '$lib/components/EmptyState.svelte';
-	import Icon from '$lib/components/Icon.svelte';
+	import FormError from '$lib/components/ui/FormError.svelte';
+	import Avatar from '$lib/components/ui/Avatar.svelte';
+	import Button from '$lib/components/ui/Button.svelte';
+	import EmptyState from '$lib/components/ui/EmptyState.svelte';
+	import Icon from '$lib/components/ui/Icon.svelte';
 	import { ALL_KINDS, activeKind, filterCircles, kindChips } from '$lib/circles/browse';
 	import { circleKindLabel } from '$lib/circles/labels';
 	import { useTranslate } from '$lib/i18n/context.svelte';

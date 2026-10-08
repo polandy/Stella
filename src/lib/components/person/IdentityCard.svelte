@@ -1,13 +1,13 @@
 <script lang="ts">
 	import { reveal } from '$lib/motion/motion.svelte';
-	import AvatarUploader from '$lib/components/AvatarUploader.svelte';
-	import Button from '$lib/components/Button.svelte';
-	import FormError from '$lib/components/FormError.svelte';
-	import Icon from '$lib/components/Icon.svelte';
-	import { PENCIL_AT_VALUE_END, VALUE_WITH_PENCIL } from '$lib/components/edit-pencil';
-	import InlineEdit from '$lib/components/InlineEdit.svelte';
-	import MenuButton from '$lib/components/MenuButton.svelte';
-	import Section from '$lib/components/Section.svelte';
+	import AvatarUploader from '$lib/components/person/AvatarUploader.svelte';
+	import Button from '$lib/components/ui/Button.svelte';
+	import FormError from '$lib/components/ui/FormError.svelte';
+	import Icon from '$lib/components/ui/Icon.svelte';
+	import { PENCIL_AT_VALUE_END, VALUE_WITH_PENCIL } from '$lib/components/ui/edit-pencil';
+	import InlineEdit from '$lib/components/ui/InlineEdit.svelte';
+	import MenuButton from '$lib/components/ui/MenuButton.svelte';
+	import Section from '$lib/components/ui/Section.svelte';
 	import { page } from '$app/state';
 	import { reachability } from '$lib/pwa/reachability.svelte';
 	import { accentDotStyle } from '$lib/design/tokens';
@@ -27,12 +27,12 @@
 	import { hasMessage } from '$lib/i18n/translate';
 	import { useRemovals } from '$lib/undo/context.svelte';
 	import { removalKey } from '$lib/undo/keys';
-	import KeptChip from '$lib/components/KeptChip.svelte';
+	import KeptChip from '$lib/components/pwa/KeptChip.svelte';
 	import { isKept, type KeptOf } from '$lib/pwa/outbox';
 	import { outbox } from '$lib/pwa/outbox.svelte';
 	import { jobErrorFor, jobShortForm } from '$lib/people/job';
 	import { tick, untrack, type Snippet } from 'svelte';
-	import type { IconName } from '$lib/components/icons';
+	import type { IconName } from '$lib/components/ui/icons';
 	import AddressEditor from './AddressEditor.svelte';
 	import CirclesEditor from './CirclesEditor.svelte';
 	import ContactFieldsRow from './ContactFieldsRow.svelte';

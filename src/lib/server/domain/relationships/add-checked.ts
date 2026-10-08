@@ -1,4 +1,4 @@
-import { TranslatableError } from '../../../errors/translatable';
+import { TranslatableError } from '../../../i18n/translatable';
 import { phrase } from '../../../i18n/phrase';
 import { decodeRelationshipChoice, endpointsForSide } from '../../../relationships/type-options';
 import type { ContactLookup } from '../contacts/contacts';

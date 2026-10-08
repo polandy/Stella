@@ -39,7 +39,7 @@ function roleOptions(page: Page): Locator {
 }
 
 /**
- * The circle page's own "Add people" role field: a `Combobox` (`src/lib/components/Combobox.svelte`),
+ * The circle page's own "Add people" role field: a `Combobox` (`src/lib/components/ui/Combobox.svelte`),
  * not the `<datalist>` the person page's "Join a circle" role field still is. Opening it is what
  * mounts its listbox, so callers click it before reading `addRoleOptions`.
  */

@@ -1,6 +1,6 @@
 <script lang="ts">
-	import LanguagePicker from '$lib/components/LanguagePicker.svelte';
-	import Logo from '$lib/components/Logo.svelte';
+	import LanguagePicker from '$lib/components/shell/LanguagePicker.svelte';
+	import Logo from '$lib/components/shell/Logo.svelte';
 	import { useTranslate } from '$lib/i18n/context.svelte';
 	import type { Snippet } from 'svelte';
 

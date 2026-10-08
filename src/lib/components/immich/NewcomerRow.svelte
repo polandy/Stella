@@ -37,12 +37,12 @@
 	import { enhance } from '$app/forms';
 	import { untrack } from 'svelte';
 	import type { SubmitFunction } from '@sveltejs/kit';
-	import Avatar from '$lib/components/Avatar.svelte';
-	import Button from '$lib/components/Button.svelte';
-	import FormError from '$lib/components/FormError.svelte';
-	import Icon from '$lib/components/Icon.svelte';
-	import KnowThemBy from '$lib/components/KnowThemBy.svelte';
-	import PersonSearchSelect from '$lib/components/PersonSearchSelect.svelte';
+	import Avatar from '$lib/components/ui/Avatar.svelte';
+	import Button from '$lib/components/ui/Button.svelte';
+	import FormError from '$lib/components/ui/FormError.svelte';
+	import Icon from '$lib/components/ui/Icon.svelte';
+	import KnowThemBy from '$lib/components/people/KnowThemBy.svelte';
+	import PersonSearchSelect from '$lib/components/people/PersonSearchSelect.svelte';
 	import { newPersonFromImmichName } from '$lib/immich/newcomers';
 	import { useI18n } from '$lib/i18n/context.svelte';
 	import { reveal } from '$lib/motion/motion.svelte';

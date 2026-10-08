@@ -1,5 +1,5 @@
 import { roleKey } from '../../../circles/role-key';
-import { TranslatableError } from '../../../errors/translatable';
+import { TranslatableError } from '../../../i18n/translatable';
 import { phrase } from '../../../i18n/phrase';
 import type { Viewer } from '../../access/visibility';
 import type { Clock } from '../../clock';

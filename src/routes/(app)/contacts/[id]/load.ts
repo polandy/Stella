@@ -1,7 +1,7 @@
 import { error, redirect } from '@sveltejs/kit';
 import { requireUser, requireViewer } from '$lib/server/auth/guards';
-import { CONTACT_FIELD_KINDS } from '$lib/contact-fields/kinds';
-import { parseProposePairs } from '$lib/contacts/propose';
+import { CONTACT_FIELD_KINDS } from '$lib/people/contact-fields';
+import { parseProposePairs } from '$lib/people/propose';
 import { listContactFields } from '$lib/server/domain/contact-fields/contact-fields';
 import {
 	listCirclesForContact,
@@ -20,20 +20,20 @@ import { authorNames } from '$lib/server/domain/household/members';
 import { listStoryPage } from '$lib/server/domain/story/story';
 import { listGroupPhotosOf, listGroupPhotosToCut } from '$lib/server/domain/media/cuts';
 import { listGallery } from '$lib/server/domain/media/gallery';
-import { contactSectionPath, sectionForLegacyTab } from '$lib/contacts/sections';
+import { contactSectionPath, sectionForLegacyTab } from '$lib/people/sections';
 import { personMap } from '$lib/graph/model/person-map';
 import { listMentionedIn } from '$lib/server/domain/mentions/mentioned-in';
 import { listNotesForContact } from '$lib/server/domain/notes/notes';
 import { listGiftsForContact } from '$lib/server/domain/gifts/gifts';
 import { readFamilyOf } from '$lib/server/domain/relationships/family';
 import { listTagsForContact } from '$lib/server/domain/tags/tag-lists';
-import { TAG_COLORS } from '$lib/tags/colors';
+import { TAG_COLORS } from '$lib/design/tag-colors';
 import { readTogetherOffers } from '$lib/server/domain/immich/glimpse';
 import { readImmichLink, readLinkedPerson } from '$lib/server/domain/immich/links';
 import { togetherCandidates } from '$lib/immich/together';
 import type { Viewer } from '$lib/server/access/visibility';
 import { say, translator } from '$lib/server/i18n/say';
-import { allOf } from '$lib/async/all-of';
+import { allOf } from '$lib/../routes/(app)/contacts/[id]/all-of';
 import {
 	birthdayOf,
 	declinedBy,

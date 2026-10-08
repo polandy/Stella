@@ -1,5 +1,5 @@
 import type { PhotoPayload } from '../../../commands/commands';
-import { TranslatableError } from '../../../errors/translatable';
+import { TranslatableError } from '../../../i18n/translatable';
 import { phrase } from '../../../i18n/phrase';
 import { addCirclePhoto, type CirclePhotoDeps } from '../circles/circle-photos';
 import type { CircleRepository } from '../circles/circles';

@@ -1,10 +1,10 @@
 <script lang="ts">
-	import Button from '$lib/components/Button.svelte';
-	import KeptChip from '$lib/components/KeptChip.svelte';
-	import RemoveButton from '$lib/components/RemoveButton.svelte';
-	import Section from '$lib/components/Section.svelte';
+	import Button from '$lib/components/ui/Button.svelte';
+	import KeptChip from '$lib/components/pwa/KeptChip.svelte';
+	import RemoveButton from '$lib/components/ui/RemoveButton.svelte';
+	import Section from '$lib/components/ui/Section.svelte';
 	import { enhance } from '$app/forms';
-	import { isContactFieldKind } from '$lib/contact-fields/kinds';
+	import { isContactFieldKind } from '$lib/people/contact-fields';
 	import { useI18n } from '$lib/i18n/context.svelte';
 	import { hasMessage } from '$lib/i18n/translate';
 	import { keepable } from '$lib/pwa/keepable';

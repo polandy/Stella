@@ -1,7 +1,7 @@
 import * as v from 'valibot';
 import { FULL_DATE_SHAPE, isRealCalendarDay } from '$lib/dates/calendar';
 import { CIRCLE_KINDS } from '$lib/server/domain/circles/circles';
-import { CONTACT_FIELD_KINDS } from '$lib/contact-fields/kinds';
+import { CONTACT_FIELD_KINDS } from '$lib/people/contact-fields';
 import type {
 	ApiCircle,
 	ApiImportDocument,
