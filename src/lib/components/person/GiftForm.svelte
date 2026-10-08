@@ -4,7 +4,10 @@
 	import DateField from '$lib/components/ui/DateField.svelte';
 	import FormError from '$lib/components/ui/FormError.svelte';
 	import Icon from '$lib/components/ui/Icon.svelte';
+	import { dayLabel } from '$lib/dates/labels';
+	import { alreadyGiven, type GiftOnRecord } from '$lib/gifts/already-given';
 	import type { GiftState } from '$lib/gifts/gifts';
+	import { occasionLabel } from '$lib/gifts/labels';
 	import { useI18n } from '$lib/i18n/context.svelte';
 	import type { SubmitFunction } from '@sveltejs/kit';
 	import GiftOccasionField from './GiftOccasionField.svelte';
@@ -13,7 +16,8 @@
 	/*
 	 * Noting a gift, or rewriting one (docs/02 §2.25). An idea asks only for what it is — the note
 	 * and the link fold away until asked for; a given or received gift asks for its day and its
-	 * occasion too. Saving needs only the title, and the day where there is one.
+	 * occasion too. Saving needs only the title, and the day where there is one. A title that
+	 * looks like a gift already given to them says so underneath — a hint, never a block.
 	 */
 	interface Props {
 		/** What kind of gift this is, which decides whether it has a day. */
@@ -28,6 +32,8 @@
 			occasion: string | null;
 			visibility: 'shared' | 'private';
 		};
+		/** The person's gifts, for the *already given* hint. */
+		gifts?: readonly GiftOnRecord[];
 		/** Names the form: *Idea for Hilde*, *Given to Hilde*. */
 		heading: string;
 		action: string;
@@ -44,6 +50,7 @@
 	let {
 		kind,
 		gift,
+		gifts = [],
 		heading,
 		action,
 		submit,
@@ -53,7 +60,13 @@
 		onCancel
 	}: Props = $props();
 
-	const t = useI18n().t;
+	const i18n = useI18n();
+	const t = i18n.t;
+	// svelte-ignore state_referenced_locally
+	let title = $state(gift?.title ?? '');
+	// What was received came from them; only what the household gave can be given twice.
+	const twice = $derived(kind === 'received' ? null : alreadyGiven(title, gifts, gift?.id));
+	const hintId = $props.id();
 	// svelte-ignore state_referenced_locally
 	let showMore = $state(Boolean(gift?.note || gift?.url));
 	// svelte-ignore state_referenced_locally
@@ -74,16 +87,33 @@
 		<input type="hidden" name="state" value={kind} />
 	{/if}
 
-	<label class="flex flex-col gap-1">
-		<span class="text-xs font-medium text-fg-muted">{t('gifts.form.what')}</span>
-		<input
-			name="title"
-			required
-			value={gift?.title ?? ''}
-			placeholder={t('gifts.form.whatPlaceholder')}
-			class="{INPUT} w-full"
-		/>
-	</label>
+	<div class="flex flex-col">
+		<label class="flex flex-col gap-1">
+			<span class="text-xs font-medium text-fg-muted">{t('gifts.form.what')}</span>
+			<input
+				name="title"
+				required
+				bind:value={title}
+				aria-describedby={twice ? hintId : undefined}
+				placeholder={t('gifts.form.whatPlaceholder')}
+				class="{INPUT} w-full"
+			/>
+		</label>
+		<!-- Polite: it may change with every keystroke, and must not cut into the typing. The
+		     region stays in place empty, so a reader hears it when it fills. -->
+		<span id={hintId} aria-live="polite" class="text-xs text-fg-muted" data-testid="gift-twice">
+			{#if twice?.givenOn}
+				<span class="mt-1 block">
+					<Icon name="gift" size={12} class="mr-0.5 inline align-[-1px] text-[var(--kind-gift)]" />
+					{t('gifts.form.alreadyGiven', {
+						title: twice.title,
+						day: dayLabel(i18n, twice.givenOn),
+						occasion: twice.occasion ? occasionLabel(t, twice.occasion) : null
+					})}
+				</span>
+			{/if}
+		</span>
+	</div>
 
 	{#if kind !== 'idea'}
 		<div class="flex flex-col gap-1">

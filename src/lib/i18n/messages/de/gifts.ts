@@ -30,6 +30,8 @@ export const gifts: GiftsMessages = {
 	'gifts.form.on': 'Am',
 	'gifts.form.occasion': 'Anlass',
 	'gifts.form.otherOccasion': 'Welcher Anlass?',
+	'gifts.form.alreadyGiven': (p) =>
+		`Schon geschenkt: „${p.title}“ am ${p.day}${p.occasion ? ` (${p.occasion})` : ''}.`,
 
 	'gifts.occasion.birthday': 'Geburtstag',
 	'gifts.occasion.christmas': 'Weihnachten',

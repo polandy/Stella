@@ -24,6 +24,8 @@
 	 */
 	interface Props {
 		gift: PersonPageData['gifts'][number];
+		/** Every gift on the person, for the *already given* hint while it is rewritten. */
+		gifts: PersonPageData['gifts'];
 		/** The day *Mark as given* starts on. */
 		today: string;
 		/** The refusal of this row's last save, if any. */
@@ -31,7 +33,7 @@
 		/** The idea was given: the card shows where it went. */
 		onGiven: () => void;
 	}
-	let { gift, today, error, onGiven }: Props = $props();
+	let { gift, gifts, today, error, onGiven }: Props = $props();
 
 	const i18n = useI18n();
 	const t = i18n.t;
@@ -90,6 +92,7 @@
 				<GiftForm
 					kind={gift.state}
 					{gift}
+					{gifts}
 					heading={t('gifts.edit', { title: gift.title })}
 					action="?/editGift"
 					submit={savedEdit}

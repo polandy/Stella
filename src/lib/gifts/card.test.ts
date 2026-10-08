@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test';
-import { byYear, giftTabs } from './card';
+import { asksForGiftIdea, byYear, giftIdeaPath, giftTabs } from './card';
 
 /*
  * How the person page's Gifts card stands (docs/02 §2.25, docs/05 §5.5): which tabs it shows,
@@ -43,5 +43,17 @@ describe('byYear', () => {
 
 	it('has no year for nothing', () => {
 		expect(byYear([])).toEqual([]);
+	});
+});
+
+describe('giftIdeaPath', () => {
+	it('lands on the Gifts card with the idea form asked for, and reads back as asking', () => {
+		const path = giftIdeaPath('c1');
+		expect(path).toBe('/contacts/c1?gift=idea');
+		expect(asksForGiftIdea(new URL(path, 'https://stella.test'))).toBe(true);
+	});
+
+	it('is not asked for by a plain link to the person', () => {
+		expect(asksForGiftIdea(new URL('https://stella.test/contacts/c1#section-gifts'))).toBe(false);
 	});
 });

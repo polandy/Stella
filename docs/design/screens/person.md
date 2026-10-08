@@ -273,6 +273,12 @@ the person, and that never leaves the page. Keeping the record tidy (archive, me
   with *Note or link* folded away; *Given to Hilde* and *Received from Hilde* add the day
   (today) and the occasion chips *Birthday · Christmas · Anniversary · Other…* (a pressed chip
   pressed again lets go; *Other…* opens a field). Shared/Private radios, *Save*.
+- Under *What?* the *already given* hint (docs/02 §2.25.2): `text-xs`, `--fg-muted`, led by a
+  small gift icon in `--kind-gift`. Muted, not a warning colour, because it is a hint and
+  not a fault; a polite live region outside the label, so it neither renames the field nor
+  cuts into the typing. Not on *Received from*.
+- Arriving with `?gift=idea` (the palette's *Gift idea for …*) opens the idea form as if
+  *+ Idea* had been pressed — on a navigation, not on a reload of the page's data after a save.
 - *Mark as given…* opens a small sunken box under the idea: *“Teapot” given*, the day, the
   occasion chips, *Cancel* and the filled *Mark as given* (German *Als verschenkt eintragen*). The pencil rewrites the row in place with the
   add form's fields; only the author is offered Shared/Private.

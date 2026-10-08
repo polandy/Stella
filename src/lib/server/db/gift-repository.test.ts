@@ -124,6 +124,36 @@ describe('createDrizzleGiftRepository', () => {
 		expect(await repo.findVisibleTo(viewerU1, 'c-shared', 'g-1')).toBeNull();
 	});
 
+	describe('countOpenIdeasVisibleTo', () => {
+		it('counts the open ideas of each person asked about, leaving out who has none', async () => {
+			db.insert(schema.contact)
+				.values({ id: 'c-other', householdId: H, createdBy: U1, displayName: 'O' })
+				.run();
+			await repo.insert(gift({ id: 'i-1' }));
+			await repo.insert(gift({ id: 'i-2' }));
+			await repo.insert(gift({ id: 'given', state: 'given', givenOn: '2024-12-24' }));
+			await repo.insert(gift({ id: 'recv', state: 'received', givenOn: '2025-12-24' }));
+			await repo.insert(gift({ id: 'i-other', contactId: 'c-other' }));
+
+			const counts = await repo.countOpenIdeasVisibleTo(viewerU1, ['c-shared', 'c-priv']);
+			expect([...counts]).toEqual([['c-shared', 2]]);
+		});
+
+		it('counts only the ideas the viewer may see', async () => {
+			await repo.insert(gift({ id: 'i-shared' }));
+			await repo.insert(gift({ id: 'i-mine', visibility: 'private', createdBy: U2 }));
+			await repo.insert(gift({ id: 'i-theirs', visibility: 'private' }));
+			await repo.insert(gift({ id: 'i-hidden-person', contactId: 'c-priv' }));
+
+			const counts = await repo.countOpenIdeasVisibleTo(viewerU2, ['c-shared', 'c-priv']);
+			expect([...counts]).toEqual([['c-shared', 2]]);
+		});
+
+		it('asks nothing of the database for nobody', async () => {
+			expect((await repo.countOpenIdeasVisibleTo(viewerU1, [])).size).toBe(0);
+		});
+	});
+
 	describe('listStoryPageForContactVisibleTo', () => {
 		beforeEach(async () => {
 			await repo.insert(gift({ id: 'idea', createdAt: 99 }));

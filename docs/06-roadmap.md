@@ -48,8 +48,8 @@ Goal: the family "gets it" — shared awareness, history, and visualization.
   visibility-scoped household stream (moments, new people, new relationships).
 - **Activity feed** ("What's new") — shipped as the household stream (§2.11, §2.22.2);
   "notable edits" were dropped.
-- **Personal dashboard (Home):** the stream plus a rail with "Coming up" (§2.12); further
-  panels (gifts given) as their base features land.
+- **Personal dashboard (Home):** the stream plus a rail with "Coming up" (§2.12), which also
+  says who has open gift ideas (§2.25.5).
 - **Interactions timeline** + "last contacted", read as one **activity timeline** per person
   together with the journal (§2.23).
 - **Name-based suggestions** on contact entry — shipped (§2.2.1).
@@ -113,13 +113,10 @@ Goal: sand the edges and add the nice-to-haves.
   Open: which contact fields go out, whether a member picks circles to sync, and whether a
   plain subscribable `.ics` link suffices for the calendar instead of full CalDAV.
 - ~~**A person's photos from Immich**~~ — shipped (§2.24).
-- **Gift ideas and gifts given** — per person: ideas to give, what was given and when, so
-  the same present is not given twice. Shared by default, private per record (docs/02 §2.10).
-  Ideas, gifts given and gifts received per person. Decided in `docs/concepts/gifts.md`
-  (mockup alongside). **Slice 1 built** (§2.25): the `gift` record, the Gifts card and gifts
-  in the story. **Slice 2 built** (§2.25.4): the Monica gift notes and gift touchpoints became
-  gifts, the touchpoint kind *Gift* is gone, the importer writes gifts. Next: slice 3 (the
-  *Coming up* hint, the *already given* hint, the palette entry).
+- ~~**Gift ideas and gifts given**~~ — shipped (§2.25): ideas, gifts given and gifts received
+  per person on the Gifts card and in the story, the Monica gifts converted, the *already
+  given* hint, the *Coming up* hint and *Gift idea for …* in the palette. Later: a
+  household-wide idea list (§2.25.6).
 - **Email and social sync** — bring in what already knows about people: Google Contacts as a
   first source, then mail and social. Read-only import first, matched against existing people
   through a review list rather than merged silently, every write through the domain

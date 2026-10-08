@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { afterNavigate } from '$app/navigation';
 	import Button from '$lib/components/ui/Button.svelte';
 	import Icon from '$lib/components/ui/Icon.svelte';
 	import KeptItem from '$lib/components/pwa/KeptItem.svelte';
@@ -6,7 +7,7 @@
 	import Section from '$lib/components/ui/Section.svelte';
 	import { cardShape } from '$lib/people/empty-cards';
 	import { sectionAnchor } from '$lib/people/sections';
-	import { byYear, giftTabs, type GiftTab } from '$lib/gifts/card';
+	import { asksForGiftIdea, byYear, giftTabs, type GiftTab } from '$lib/gifts/card';
 	import { isGiftState, occasionFromForm, type GiftState } from '$lib/gifts/gifts';
 	import { useI18n } from '$lib/i18n/context.svelte';
 	import { keepable } from '$lib/pwa/keepable';
@@ -68,6 +69,11 @@
 		adding = kind;
 		open = true;
 	}
+	// The palette's *Gift idea for …* lands here with the idea form open (docs/05 §5.4). On a
+	// navigation, not on every load: a save reloads the page, and must not open it again.
+	afterNavigate(({ to }) => {
+		if (to && asksForGiftIdea(to.url)) startAdding('idea');
+	});
 	/** Where a gift just saved shows: its own tab. */
 	function showTabOf(kind: GiftState) {
 		tab = kind === 'idea' ? 'ideas' : kind;
@@ -236,7 +242,13 @@
 				{:else}
 					<ul class="flex flex-col" data-testid="gift-ideas">
 						{#each ideas as gift (gift.id)}
-							<GiftRow {gift} {today} error={rowError(gift.id)} onGiven={() => (tab = 'given')} />
+							<GiftRow
+								{gift}
+								gifts={shown}
+								{today}
+								error={rowError(gift.id)}
+								onGiven={() => (tab = 'given')}
+							/>
 						{/each}
 					</ul>
 				{/if}
@@ -253,7 +265,13 @@
 						</h3>
 						<ul class="flex flex-col" data-testid="gift-year">
 							{#each year.gifts as gift (gift.id)}
-								<GiftRow {gift} {today} error={rowError(gift.id)} onGiven={() => (tab = 'given')} />
+								<GiftRow
+									{gift}
+									gifts={shown}
+									{today}
+									error={rowError(gift.id)}
+									onGiven={() => (tab = 'given')}
+								/>
 							{/each}
 						</ul>
 					{/each}
@@ -267,6 +285,7 @@
 		{#key adding}
 			<GiftForm
 				kind={adding}
+				gifts={shown}
 				heading={t(HEADING[adding], { name: c.displayName })}
 				action="?/addGift"
 				submit={keepGift}

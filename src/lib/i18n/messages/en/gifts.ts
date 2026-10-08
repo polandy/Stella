@@ -31,6 +31,9 @@ export const gifts = {
 	'gifts.form.on': 'On',
 	'gifts.form.occasion': 'Occasion',
 	'gifts.form.otherOccasion': 'Which occasion?',
+	// Under the title while one typed looks like a gift already given (a hint, not a block).
+	'gifts.form.alreadyGiven': (p: { title: string; day: string; occasion: string | null }) =>
+		`Already given: “${p.title}” on ${p.day}${p.occasion ? ` (${p.occasion})` : ''}.`,
 
 	'gifts.occasion.birthday': 'Birthday',
 	'gifts.occasion.christmas': 'Christmas',

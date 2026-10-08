@@ -6,6 +6,7 @@ import {
 } from '$lib/server/domain/contacts/contact-names';
 import { listPeopleEnoughForFirstRun } from '$lib/server/domain/contacts/directory';
 import { hasImminentDate, upcomingDates } from '$lib/server/domain/dates/upcoming';
+import { countOpenIdeas } from '$lib/server/domain/gifts/gifts';
 import { dispatchCommand } from '$lib/server/domain/commands/dispatch';
 import { parsePhotoCommand, readCommand } from '$lib/server/commands/parse';
 import { fromFormData } from '$lib/commands/form-data';
@@ -78,7 +79,14 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 
 	// One reading of the clock, so the composer's day and the horizon cannot straddle midnight.
 	const day = todayFor(systemClock);
-	const upcoming = upcomingDates(dateSources, day);
+	const dates = upcomingDates(dateSources, day);
+	// A person coming up with open gift ideas says how many (docs/02 §2.13.3).
+	const ideas = await countOpenIdeas(
+		locals.services.gifts.giftDeps,
+		viewer,
+		dates.map((date) => date.contactId)
+	);
+	const upcoming = dates.map((date) => ({ ...date, giftIdeas: ideas.get(date.contactId) ?? 0 }));
 
 	return {
 		today: day,
