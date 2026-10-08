@@ -54,7 +54,13 @@ export function demoImmichLibrary(): FakeImmichLibrary {
 			face('d0000000-0000-4000-8000-00000000000f', 'Grosi Ursula', 420, '#40a02b'),
 			face('d0000000-0000-4000-8000-000000000010', 'Thomas W.', 12, '#df8e1d'),
 			face('d0000000-0000-4000-8000-000000000011', 'Andrea Meier', 77, '#8839ef'),
-			face('d0000000-0000-4000-8000-000000000012', 'Pius', 5, '#179299')
+			face('d0000000-0000-4000-8000-000000000012', 'Pius', 5, '#179299'),
+			// For the person page's suggestion (e2e/immich-person-match.spec.ts): faces of their own,
+			// named like nobody in the seed, so the cases there add their people and no other spec
+			// takes the face first. Quella's person has a double last name, which makes it a maybe.
+			face('d0000000-0000-4000-8000-000000000013', 'Quirin Vorschlag', 12, '#1e66f5'),
+			face('d0000000-0000-4000-8000-000000000014', 'Quilla Vorschlag', 7, '#ea76cb'),
+			face('d0000000-0000-4000-8000-000000000015', 'Quella Vorschlag', 4, '#40a02b')
 		]
 	};
 }
