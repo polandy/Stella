@@ -25,7 +25,6 @@ import {
 	restoreClaim
 } from '$lib/server/relationships/suggestion-answers';
 import { RelationshipsRefusedError } from '$lib/server/domain/relationships/add-many';
-import { getCommandDeps } from '$lib/server/services';
 import { say, translator } from '$lib/server/i18n/say';
 import { reviewPath } from '../review-path';
 import type { Actions } from '../$types';
@@ -67,7 +66,7 @@ export const relationshipActions = {
 			householdId: viewer.householdId,
 			locale: locals.locale
 		};
-		const outcome = await dispatchCommand(getCommandDeps(), author, command);
+		const outcome = await dispatchCommand(locals.services.offline.commandDeps, author, command);
 		if (outcome.status !== 'applied') {
 			return fail(outcome.status === 'refused' ? 409 : 400, {
 				error:
@@ -118,7 +117,7 @@ export const relationshipActions = {
 			householdId: viewer.householdId,
 			locale: locals.locale
 		};
-		const outcome = await dispatchCommand(getCommandDeps(), author, command);
+		const outcome = await dispatchCommand(locals.services.offline.commandDeps, author, command);
 		if (outcome.status === 'applied') return { relationshipIds: outcome.result.relationshipIds };
 		if (outcome.status !== 'refused') {
 			return fail(400, { error: say(locals, 'errors.relationship.couldNotAdd') });

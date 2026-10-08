@@ -4,7 +4,6 @@ import { systemClock } from '$lib/server/clock';
 import { parsePhotoCommand } from '$lib/server/commands/parse';
 import { answerFor } from '$lib/server/commands/receive';
 import { translator } from '$lib/server/i18n/say';
-import { getCommandDeps } from '$lib/server/services';
 import type { RequestHandler } from './$types';
 
 /*
@@ -46,7 +45,7 @@ export const POST: RequestHandler = async ({ locals, request }) => {
 	const named = typeof id === 'string' ? id : '';
 	const answer: CommandAnswer = command
 		? await answerFor(
-				getCommandDeps(),
+				locals.services.offline.commandDeps,
 				{ userId: user.id, householdId: user.householdId, locale: locals.locale },
 				t,
 				command

@@ -181,13 +181,11 @@ graph, so the answer it caches is still shared by every request; `updateCheck` i
 instance makes no check, as the factory was. The configuration it reads joins the wiring's
 `config` as `updateCheck` and `updateFeedUrl`, and the build's version joins the wiring as
 `version`. No command handler uses it; Settings reads it straight off the group.
-Remaining contexts — one PR each, grouped by the repositories their factories share in
-`services/index.ts`:
-1. **`offline`** — the command receipt repository and entry ownership; then the command
-   handler table moves to its own module over `AppServices` (item 4), and `index.ts` keeps
-   only `getServices()`.
-Each slice adds its `services/<context>.ts`, its key in `AppServices`, its factories to the
-boundary test's retired list, and moves its callers to `locals.services.<context>`.
+**`offline`** is grouped (#314; the command receipt repository and entry ownership, with the
+dispatcher's `commandDeps`) — `services/offline.ts` — and item 4 came with it: the command
+handler table is `server/commands/handlers.ts`, built by the group over the contexts its
+handlers call, with a test that it covers `COMMAND_TYPES`. `index.ts` keeps only
+`getServices()`; every context is grouped, and the series is done.
 
 ### AR-02 · The composition root leaks below the edge
 **Severity: medium · Effort: S**
@@ -545,7 +543,7 @@ rule. Each is one Conventional-Commit `refactor:`/`chore:`/`docs:` PR unless mar
 | 3 | AR-03 `requireViewer`, `todayFor(clock)`, `messageKey` | S | ☑ #266 | Removes 150 edit sites before AR-01 moves them again |
 | 4 | AR-07 glossary (docs/03 §3.0) + AR-18 regenerate §4.3 | S | ☑ #294 | Vocabulary before renames; cheapest high-leverage doc change |
 | 5 | AR-04 one schema per command, `fromFormData` | M | ☑ #295 | Shrinks every form action; prerequisite for AR-13 |
-| 6 | AR-01 `createServices()` + `locals.services` — **series**, one bounded context per PR, `auth` first | L | ◐ auth #296, people #298, relationships #299, circles #300, media #301, story #302, notes #304, records #305, household #306, archive #308, immich #311, release #312 | The central change; do after 3 and 5 so routes shrink while being touched |
+| 6 | AR-01 `createServices()` + `locals.services` — **series**, one bounded context per PR, `auth` first | L | ☑ auth #296, people #298, relationships #299, circles #300, media #301, story #302, notes #304, records #305, household #306, archive #308, immich #311, release #312, offline #314 | The central change; do after 3 and 5 so routes shrink while being touched |
 | 7 | AR-02 move shared actions under `routes/` taking deps | S | ☐ | Falls out of 6 |
 | 8 | AR-08 split read models off the three widest ports + AR-14 shared fakes | M | ☐ | Do together: the fakes are what makes the split pay |
 | 9 | AR-06 activity as a port; break `contacts ↔ relationships`; merge plan as data | M | ☐ | Needs 8's narrower ports |

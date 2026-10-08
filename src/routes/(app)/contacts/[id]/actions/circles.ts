@@ -9,7 +9,6 @@ import { requireViewer } from '$lib/server/auth/guards';
 import * as v from 'valibot';
 import { getContact } from '$lib/server/domain/contacts/contacts';
 import { removeMember, setMembersRole } from '$lib/server/domain/circles/circles';
-import { getCommandDeps } from '$lib/server/services';
 import { say, translator } from '$lib/server/i18n/say';
 import type { Actions } from '../$types';
 
@@ -39,7 +38,7 @@ export const circleActions = {
 			householdId: viewer.householdId,
 			locale: locals.locale
 		};
-		const outcome = await dispatchCommand(getCommandDeps(), author, command);
+		const outcome = await dispatchCommand(locals.services.offline.commandDeps, author, command);
 		if (outcome.status !== 'applied') {
 			return fail(400, {
 				circleError:
