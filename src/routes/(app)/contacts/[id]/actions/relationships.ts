@@ -19,11 +19,7 @@ import {
 	removeRelationships,
 	RelationshipExcludedError
 } from '$lib/server/domain/relationships/relationships';
-import {
-	acceptClaim,
-	declineClaim,
-	restoreClaim
-} from '$lib/server/relationships/suggestion-answers';
+import { acceptClaim, declineClaim, restoreClaim } from '../../../_shared/suggestion-answers';
 import { RelationshipsRefusedError } from '$lib/server/domain/relationships/add-many';
 import { say, translator } from '$lib/server/i18n/say';
 import { reviewPath } from '../review-path';
@@ -231,7 +227,7 @@ export const relationshipActions = {
 		const viewer = requireViewer(locals);
 
 		const form = await request.formData();
-		const refusal = await acceptClaim(locals, viewer, form);
+		const refusal = await acceptClaim(locals.services, viewer, form, translator(locals));
 		if (refusal) return fail(refusal.status, { error: refusal.message });
 
 		// The pointer the block hangs on, so confirming one row keeps the others on screen.
@@ -248,7 +244,12 @@ export const relationshipActions = {
 	dismissSuggestion: async ({ request, params, locals }) => {
 		const viewer = requireViewer(locals);
 
-		const refusal = await declineClaim(locals, viewer, await request.formData());
+		const refusal = await declineClaim(
+			locals.services,
+			viewer,
+			await request.formData(),
+			translator(locals)
+		);
 		if (refusal) return fail(refusal.status, { error: refusal.message });
 		throw redirect(303, reviewPath(params.id));
 	},
@@ -257,7 +258,12 @@ export const relationshipActions = {
 	restoreSuggestion: async ({ request, params, locals }) => {
 		const viewer = requireViewer(locals);
 
-		const refusal = await restoreClaim(locals, viewer, await request.formData());
+		const refusal = await restoreClaim(
+			locals.services,
+			viewer,
+			await request.formData(),
+			translator(locals)
+		);
 		if (refusal) return fail(refusal.status, { error: refusal.message });
 		throw redirect(303, reviewPath(params.id));
 	}

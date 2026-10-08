@@ -112,8 +112,10 @@ Layering and single responsibility:
    use-case's deps under its type's name (`sessionDeps: SessionDeps`). The command handler
    table (`lib/server/commands/handlers.ts`) constructs nothing: the `offline` group builds it
    over the other groups' deps (docs/04 §4.11.2). Only edge
-   code imports the module: the SvelteKit edge itself (`routes/`, `hooks.server.ts`) and
-   the few shared edge helpers named beside it in the tree (docs/04 §4.3).
+   code imports the module by value: the SvelteKit edge itself (`routes/`, `hooks.server.ts`).
+   An action several pages share lives under `routes/(app)/_shared/` and takes the slices it
+   reaches as arguments; anything else asks for a slice's type (`import type`) and is handed
+   the deps (docs/04 §4.3).
 
 ```ts
 // domain/contacts/contact-repository.ts — the DOMAIN owns this port

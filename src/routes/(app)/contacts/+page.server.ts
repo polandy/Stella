@@ -6,7 +6,7 @@ import {
 } from '$lib/server/domain/contacts/contacts';
 import { listContactsByTag, listTags } from '$lib/server/domain/tags/tags';
 import { readSurnameHelp } from '$lib/server/domain/contacts/last-names';
-import { lastNameActions } from '$lib/server/last-names-actions';
+import { lastNameActions } from '../_shared/last-names-actions';
 import type { Actions, PageServerLoad } from './$types';
 import { systemClock } from '$lib/server/clock';
 import { todayFor } from '$lib/dates/today';
