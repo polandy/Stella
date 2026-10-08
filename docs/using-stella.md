@@ -881,7 +881,11 @@ their connections: they appear around that person, and everyone already on the m
 where they were, so you never lose your place. *Arrange* puts the map in order when you want
 it: *Free* lets the connections pull it into shape, *Tree* shows the family as a family tree,
 one generation per row with the oldest at the top, and *By circle* gathers each circle's
-members around it. *Connection path* traces how two people are linked, and it always answers
+members around it. The tree looks like one drawn on paper: a couple joined by a short line, one
+line down from its middle to their children. Under every name it says who that person is to
+the one in the middle — *Father*, *Grandmother*, *Cousin*, *Friend* — so the lines themselves
+carry no names there (the *Labels* switch tells you so). Friends, colleagues and circles stand
+on a shelf beneath, under *Outside the family*. *Connection path* traces how two people are linked, and it always answers
 with the people in between rather than the worked-out shortcut — that is the point of asking.
 
 The map works from the keyboard too. *Tab* onto it and the arrow keys walk from person to

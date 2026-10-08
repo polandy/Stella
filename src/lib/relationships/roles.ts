@@ -85,8 +85,16 @@ export function relationshipRoleLabel(
 ): string {
 	const role = otherEndRole(row);
 	if (role === null) return otherSideLabel ?? row.label;
+	return roleTermLabel(t, role, variant) ?? row.label;
+}
+
+/**
+ * A role on its own in the viewer's language — the kinship engine's word where it has one, the
+ * tie's otherwise — or null when the catalogue has none, so a caller can fall back to its own.
+ */
+export function roleTermLabel(t: Translate, role: RoleTerm, variant: KinVariant): string | null {
 	const kinKey = `kinship.term.${role}.${variant}`;
 	if (hasMessage(kinKey)) return t(kinKey);
 	const tieKey = `relationships.role.${role}.${variant}`;
-	return hasMessage(tieKey) ? t(tieKey) : row.label;
+	return hasMessage(tieKey) ? t(tieKey) : null;
 }

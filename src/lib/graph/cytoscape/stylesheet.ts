@@ -15,6 +15,19 @@ export const CURSOR_CLASS = 'cursor';
 export const HOVERED_CLASS = 'hovered';
 /** The class a node carries while expanding it would bring more people in (`elements.ts`). */
 export const HAS_MORE_CLASS = 'has-more';
+/**
+ * The class a line drawn at right angles carries, and the data fields its bends and ends are
+ * read from (`segments.ts`); the controller sets them, this draws them.
+ */
+export const ROUTED_CLASS = 'routed';
+export const ROUTE_FIELDS = {
+	weights: 'segmentWeights',
+	distances: 'segmentDistances',
+	sourceEndpoint: 'sourceEndpoint',
+	targetEndpoint: 'targetEndpoint'
+} as const;
+/** The class of a caption the controller writes onto the canvas: words, not somebody to tap. */
+export const CAPTION_CLASS = 'caption';
 
 /*
  * Build the Cytoscape stylesheet from a resolved Palette (docs/05 §5.8). Pure: palette in,
@@ -38,6 +51,12 @@ export interface StylesheetOptions {
 	edgeLabels?: boolean;
 	/** The reader asked for less motion: a state change (selection, fading) is then instant. */
 	reducedMotion?: boolean;
+	/**
+	 * Drawn as the family tree around a person (docs/05 §5.8): each person's role towards the
+	 * centre is written under their name (the `role` the elements carry), the centre is lit
+	 * softly, and the right-angled family lines go unnamed — the roles say it instead.
+	 */
+	familyTree?: boolean;
 }
 
 /** The element accessor a function-valued style reads; Cytoscape hands it the element. */
@@ -60,6 +79,15 @@ export function buildStylesheet(p: Palette, options: StylesheetOptions = {}): Cy
 	};
 	// Each line is drawn in one colour, its arrowhead included (docs/05 §5.8).
 	const line = (hex: string) => ({ 'line-color': hex, 'target-arrow-color': hex });
+	const tree = options.familyTree === true;
+	// In the tree a person's role goes on a second line under the name ("Father").
+	const nameAndRole = (ele: StyledElement): string => {
+		const name = String(ele.data('label') ?? '');
+		const role = String(ele.data('role') ?? '');
+		return role ? `${name}\n${role}` : name;
+	};
+	// A routed line reads its bends and ends off its own data (`segments.ts`).
+	const field = (name: string) => (ele: StyledElement) => ele.data(name);
 
 	return [
 		// ── People ────────────────────────────────────────────────────────────
@@ -70,14 +98,15 @@ export function buildStylesheet(p: Palette, options: StylesheetOptions = {}): Cy
 				// The diameter the elements carry: a square-root scale of the lines on the map.
 				width: 'data(size)',
 				height: 'data(size)',
-				label: 'data(label)',
+				label: tree ? nameAndRole : 'data(label)',
 				color: p.fg,
 				'font-size': 11,
 				'font-family': p.fontSans,
 				'text-valign': 'bottom',
 				'text-margin-y': 6,
 				'text-max-width': `${NODE_LABEL_WIDTH}px`,
-				'text-wrap': 'ellipsis',
+				// Cutting short works on one line only; the name and its role are two.
+				'text-wrap': tree ? 'wrap' : 'ellipsis',
 				'min-zoomed-font-size': LABEL_MIN_ZOOMED_FONT_SIZE,
 				'border-width': 3,
 				'text-background-color': p.bg,
@@ -108,6 +137,21 @@ export function buildStylesheet(p: Palette, options: StylesheetOptions = {}): Cy
 			selector: 'node.center',
 			style: { 'border-color': p.primary, 'border-width': 4, 'font-weight': 600, 'z-index': 10 }
 		},
+		// The tree is read from its centre outwards: a soft glow around the ring finds it at once.
+		// Fainter than a selection's halo, which still wins when the centre is selected.
+		...(tree
+			? [
+					{
+						selector: 'node.center',
+						style: {
+							'underlay-color': p.primary,
+							'underlay-opacity': 0.15,
+							'underlay-padding': 10,
+							'underlay-shape': 'ellipse'
+						}
+					}
+				]
+			: []),
 		// Somebody who has died keeps their full weight on the map — a faded disc read as "not
 		// really there" — and is told apart by colour drained to the neutral grey and a double
 		// ring, so the mark holds without colour too.
@@ -266,6 +310,40 @@ export function buildStylesheet(p: Palette, options: StylesheetOptions = {}): Cy
 				'control-point-weights': 0.5
 			}
 		},
+		// A family line the tree draws at right angles (docs/05 §5.8): straight pieces through the
+		// bends the controller set, measured from the node centres. Up and down already say who is
+		// whose parent, so no arrowhead; its colour, dots and width stay those of its kind.
+		{
+			selector: `edge.${ROUTED_CLASS}`,
+			style: {
+				'curve-style': 'segments',
+				'edge-distances': 'node-position',
+				'segment-weights': field(ROUTE_FIELDS.weights),
+				'segment-distances': field(ROUTE_FIELDS.distances),
+				'source-endpoint': field(ROUTE_FIELDS.sourceEndpoint),
+				'target-endpoint': field(ROUTE_FIELDS.targetEndpoint),
+				'target-arrow-shape': 'none'
+			}
+		},
+		// ── A caption the controller writes onto the canvas ───────────────────
+		// "Outside the family" over the shelf beneath the tree: quiet words, nobody to tap.
+		{
+			selector: `node.${CAPTION_CLASS}`,
+			style: {
+				width: 1,
+				height: 1,
+				'background-opacity': 0,
+				'border-width': 0,
+				label: 'data(label)',
+				color: p.fgMuted,
+				'font-size': 11,
+				'font-family': p.fontSans,
+				'text-valign': 'center',
+				'text-halign': 'right',
+				'min-zoomed-font-size': LABEL_MIN_ZOOMED_FONT_SIZE,
+				events: 'no'
+			}
+		},
 		// ── Interaction states (toggled as classes by the controller) ─────────
 		{
 			selector: '.highlight',
@@ -276,6 +354,11 @@ export function buildStylesheet(p: Palette, options: StylesheetOptions = {}): Cy
 			selector: `edge.highlight, edge.onpath, edge.${HOVERED_CLASS}`,
 			style: { 'text-opacity': 1 }
 		},
+		// In the tree the role under each name says what the names on the lines would — "Friend"
+		// under Nicole rather than "Friend of" on her line — and a name on a family line that
+		// shares its drop with its siblings' would sit on all of them at once. So none is named,
+		// not even selected or pointed at.
+		...(tree ? [{ selector: 'edge', style: { 'text-opacity': 0 } }] : []),
 		// The selection is a filled halo around a solid ring; the keyboard's cursor (below) a
 		// dashed ring held off the node. Two shapes, so they never read as one — not even for
 		// someone who cannot tell their colours apart.

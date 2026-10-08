@@ -30,6 +30,11 @@ export interface GraphNode {
 	deceased?: boolean;
 	/** Person only: the avatar photo the node wears, when there is one (docs/05 §5.8). */
 	avatarPhotoId?: string | null;
+	/**
+	 * Person only: how a role word for this person is worded — gendered where a gender is on
+	 * record — so the family tree can call them Father rather than Parent (docs/05 §5.8).
+	 */
+	wording?: KinVariant;
 }
 
 export interface GraphEdge {

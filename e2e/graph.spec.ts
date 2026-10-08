@@ -4,6 +4,7 @@ import {
 	arrangeBy,
 	arrangement,
 	bowedLines,
+	routedLines,
 	circlesOnCanvas,
 	clickNode,
 	filterMenu,
@@ -147,7 +148,7 @@ test('draws the same map on every visit', async ({ page }) => {
 	expect(await visit()).toEqual(first);
 });
 
-test('Tree sets each generation on a row of its own and bends the lines that would cross somebody', async ({
+test('Tree sets each generation on a row of its own and draws the family lines at right angles', async ({
 	page
 }) => {
 	await page.goto('/graph?center=demo-c-hans');
@@ -165,13 +166,14 @@ test('Tree sets each generation on a row of its own and bends the lines that wou
 	expect(row('markus')).toBeGreaterThan(row('hans'));
 	expect(row('lena')).toBeGreaterThan(row('markus'));
 	expect(await overlappingNodes(page)).toEqual([]);
-	// The grandparent lines would run straight through the children's row.
-	expect(await bowedLines(page)).toBeGreaterThan(0);
+	// Parent lines drop to a bar over the children; the grandparent lines go round the row between.
+	expect(await routedLines(page)).toBeGreaterThan(0);
 
 	// Free draws every line straight again.
 	await arrangeBy(page, 'Free');
 	await settled(page);
 	expect(await bowedLines(page)).toBe(0);
+	expect(await routedLines(page)).toBe(0);
 });
 
 test('By circle stands Lena with one of her circles, the circles apart and nobody on top of anybody', async ({

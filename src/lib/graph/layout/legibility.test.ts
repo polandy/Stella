@@ -2,6 +2,7 @@ import { describe, expect, it } from 'bun:test';
 import {
 	EDGE_LABEL_LIMIT,
 	edgeLabelsFit,
+	labelsHint,
 	linesDrawn,
 	MAX_NODE_DIAMETER,
 	MIN_NODE_DIAMETER,
@@ -29,6 +30,27 @@ describe('edgeLabelsFit', () => {
 
 	it('sits around forty lines', () => {
 		expect(EDGE_LABEL_LIMIT).toBe(40);
+	});
+
+	it('names no line at all where the family tree writes roles under the names instead', () => {
+		expect(edgeLabelsFit(true, 1, true)).toBe(false);
+		expect(edgeLabelsFit(true, 1, false)).toBe(true);
+	});
+});
+
+describe('labelsHint', () => {
+	it('says what the switch does while the names fit', () => {
+		expect(labelsHint(true, true, false)).toBe('graph.labels.hint');
+		expect(labelsHint(false, false, false)).toBe('graph.labels.hint');
+	});
+
+	it('says why the names paused once there are too many', () => {
+		expect(labelsHint(true, false, false)).toBe('graph.labels.tooMany');
+	});
+
+	it('says the tree writes roles instead, whichever way the switch stands', () => {
+		expect(labelsHint(true, false, true)).toBe('graph.labels.inTree');
+		expect(labelsHint(false, false, true)).toBe('graph.labels.inTree');
 	});
 });
 

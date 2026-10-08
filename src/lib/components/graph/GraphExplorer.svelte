@@ -6,6 +6,9 @@
 	import { useTranslate } from '$lib/i18n/context.svelte';
 	import { kinshipLabel } from '$lib/kinship/labels';
 	import { relationshipRowLabel } from '$lib/relationships/labels';
+	import { roleTermLabel } from '$lib/relationships/roles';
+	import { rolesTowards } from '$lib/graph/model/tree-roles';
+	import { familyLinksAmong } from '$lib/graph/model/generations';
 	import { toCytoscapeElements } from '$lib/graph/cytoscape/elements';
 	import { createExplorer, type ExplorerController } from '$lib/graph/cytoscape/explorer';
 	import { buildStylesheet } from '$lib/graph/cytoscape/stylesheet';
@@ -222,6 +225,21 @@
 
 	/** The arrangement last chosen, which the Arrange pill names; free until one is picked (docs/05 §5.8). */
 	let arrangedBy = $state<ArrangementKey>('force');
+	/*
+	 * The family tree around a person says who everybody is to them under each name — Father,
+	 * Grandmother — instead of naming every line (docs/05 §5.8). Around a circle there is nobody
+	 * to be anybody's father, and the lines keep their names as in every other arrangement.
+	 */
+	const rolesInstead = $derived(
+		arrangedBy === 'tree' &&
+			centerId !== null &&
+			graph.nodes.some((n) => n.id === centerId && n.kind === 'person')
+	);
+	const roles = $derived(rolesInstead && centerId ? rolesTowards(graph, centerId) : null);
+	const roleOf = (id: string): string | undefined => {
+		const role = roles?.get(id);
+		return role ? (roleTermLabel(t, role.term, role.variant) ?? undefined) : undefined;
+	};
 
 	const visible = $derived(applyFilters(model, buildFilters()));
 	// Grouping reads what is shown, so the Circles chip off leaves no membership to group by;
@@ -236,16 +254,20 @@
 	/*
 	 * The map as drawn: what was opened up, plus the links of grouped people to anyone else on
 	 * it. Opening a circle brings its members without their links to each other, and a group is
-	 * about how its people belong together (docs/02 §2.7).
+	 * about how its people belong together (docs/02 §2.7). The family tree likewise draws the
+	 * family links among the people on it — the parents' marriage, both parents' lines to a
+	 * child — or a map grown from one person would be a star rather than a tree (docs/05 §5.8).
 	 */
-	const drawn = $derived(
-		grouped && grouped.size > 0
-			? mergeModels(model, {
-					nodes: [],
-					edges: linksOfGrouped(graph, new Set(model.nodes.map((n) => n.id)), grouped)
-				})
-			: model
-	);
+	const drawn = $derived.by(() => {
+		const onMap = () => new Set(model.nodes.map((n) => n.id));
+		if (grouped && grouped.size > 0) {
+			return mergeModels(model, { nodes: [], edges: linksOfGrouped(graph, onMap(), grouped) });
+		}
+		if (arrangedBy === 'tree') {
+			return mergeModels(model, { nodes: [], edges: familyLinksAmong(graph, onMap()) });
+		}
+		return model;
+	});
 	const drawnVisible = $derived(drawn === model ? visible : applyFilters(drawn, buildFilters()));
 	/*
 	 * The derived lines whose chain of entered links is on the map only repeat it, so they stay
@@ -271,7 +293,8 @@
 			centerId: centerId ?? undefined,
 			edgeLabel,
 			hiddenNeighbours: hidden,
-			grouping: grouping ? { grouping, groupLabel, bundleLabel } : undefined
+			grouping: grouping ? { grouping, groupLabel, bundleLabel } : undefined,
+			roleOf
 		});
 	/*
 	 * Every line is named only while the names fit (docs/05 §5.8); past that they pile up
@@ -285,7 +308,8 @@
 				drawnVisible.edges,
 				grouping ? [leftOff, grouping.tucked] : [leftOff],
 				grouping?.bundles.length ?? 0
-			)
+			),
+			rolesInstead
 		)
 	);
 	// The same lines, but the selected person's own are drawn: selecting names every line.
@@ -509,11 +533,13 @@
 			const size = canvas.sizeOf(id);
 			return size.width > 0 ? size : DEFAULT_NODE_SIZE;
 		};
-		canvas.arrangeAt(
-			key === 'tree'
-				? familyTreeLayout(visible, sizeOf)
-				: circleClustersLayout(drawn, sizeOf, grouping ?? undefined)
-		);
+		if (key === 'tree') {
+			canvas.arrangeAt(familyTreeLayout(drawnVisible, sizeOf), {
+				outsideFamily: t('graph.tree.outsideFamily')
+			});
+			return;
+		}
+		canvas.arrangeAt(circleClustersLayout(drawn, sizeOf, grouping ?? undefined));
 	}
 
 	function togglePath() {
@@ -563,7 +589,11 @@
 	// The one place a stylesheet is built: theme changes and the label toggle share it, so
 	// re-theming can never drop the toggle and vice versa.
 	function stylesheet() {
-		return buildStylesheet(paletteFromDom(), { edgeLabels: labelsFit, reducedMotion });
+		return buildStylesheet(paletteFromDom(), {
+			edgeLabels: labelsFit,
+			reducedMotion,
+			familyTree: rolesInstead
+		});
 	}
 
 	function retheme() {
@@ -757,6 +787,7 @@
 			{switches}
 			onSwitch={toggleSwitch}
 			{labelsFit}
+			{rolesInstead}
 			{density}
 			onChooseDensity={chooseDensity}
 			{savedViews}

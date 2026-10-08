@@ -4,7 +4,13 @@ import { explorerFromCore } from './explorer';
 import type { CyElement } from './elements';
 import { frameAround } from '../layout/group-blocks';
 import { spacingFor } from '../layout/density';
-import { HAS_MORE_CLASS, HOVERED_CLASS } from './stylesheet';
+import {
+	CAPTION_CLASS,
+	HAS_MORE_CLASS,
+	HOVERED_CLASS,
+	ROUTE_FIELDS,
+	ROUTED_CLASS
+} from './stylesheet';
 
 /*
  * The controller's lifecycle, exercised against a headless Cytoscape core — the same core the
@@ -337,6 +343,81 @@ describe('explorerFromCore', () => {
 		explorer.arrange();
 
 		expect(cy.$id('a-b').hasClass('bowed')).toBe(false);
+	});
+
+	it('draws a routed line at right angles, measured from where its people are going', () => {
+		const cy = linkedPair();
+		const explorer = controller(cy);
+		explorer.arrangeAt({ positions: new Map(), bows: new Map([['a-b', 80]]) });
+
+		explorer.arrangeAt({
+			positions: new Map([
+				['a', { x: 0, y: 0 }],
+				['b', { x: 200, y: 170 }]
+			]),
+			bows: new Map(),
+			routes: new Map([
+				[
+					'a-b',
+					{
+						waypoints: [
+							{ x: 0, y: 93.5 },
+							{ x: 200, y: 93.5 }
+						],
+						sourceEnd: { x: -60, y: 0 }
+					}
+				]
+			])
+		});
+
+		const line = cy.$id('a-b');
+		expect(line.hasClass(ROUTED_CLASS)).toBe(true);
+		expect(line.hasClass('bowed')).toBe(false);
+		expect(line.data(ROUTE_FIELDS.weights)).toHaveLength(2);
+		expect(line.data(ROUTE_FIELDS.sourceEndpoint)).toBe('-60px 0px');
+
+		explorer.arrange();
+		expect(line.hasClass(ROUTED_CLASS)).toBe(false);
+	});
+
+	it('names the shelf beneath the family tree, as words nobody can tap or walk to', () => {
+		const cy = linkedPair();
+		const explorer = controller(cy);
+		const shelf = { x: 0, y: 300 };
+
+		explorer.arrangeAt(
+			{ positions: new Map(), bows: new Map(), outsideFamily: shelf },
+			{ outsideFamily: 'Outside the family' }
+		);
+		const caption = cy.nodes(`.${CAPTION_CLASS}`).first();
+
+		expect(cy.nodes(`.${CAPTION_CLASS}`).length).toBe(1);
+		expect(caption.data('label')).toBe('Outside the family');
+		expect(caption.position().x).toBe(shelf.x);
+		expect(caption.position().y).toBeLessThan(shelf.y);
+		expect(caption.grabbable()).toBe(false);
+		// The keyboard walks people only, and filtering or a fresh element set leaves it be.
+		expect([...explorer.positions().keys()].sort()).toEqual(['a', 'b']);
+		explorer.setVisible(new Set(['a', 'b']), new Set(['a-b']));
+		explorer.setGraph([node('a'), node('b'), edge('a', 'b')]);
+		expect(caption.removed()).toBe(false);
+		expect(caption.hasClass('filtered-out')).toBe(false);
+
+		explorer.arrange();
+		expect(cy.nodes(`.${CAPTION_CLASS}`).length).toBe(0);
+	});
+
+	it('writes no caption for an arrangement without a shelf to name', () => {
+		const cy = linkedPair();
+		const explorer = controller(cy);
+
+		explorer.arrangeAt(
+			{ positions: new Map(), bows: new Map() },
+			{ outsideFamily: 'Outside the family' }
+		);
+
+		expect(cy.nodes().length).toBe(2);
+		expect(cy.nodes(`.${CAPTION_CLASS}`).length).toBe(0);
 	});
 
 	it('sets newcomers the edge length of the density it was given away', () => {

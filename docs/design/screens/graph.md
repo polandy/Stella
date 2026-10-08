@@ -17,6 +17,10 @@ card (§5.5.2); its styling is §5.8.
 - Below the kinds sit the switches that change how the map is read rather than what it holds:
   **Labels** (names every line at once), **All kinship lines** (while the Kinship kind is on)
   and the grouping by role.
+- **Tree** draws the family as a paper family tree (§5.8): partner bars, one drop per couple to
+  a bar over their children, right angles throughout, each person's role towards the centre
+  under their name instead of names on the lines (the Labels switch says so), the centre softly
+  lit, and everyone outside the family on a shelf beneath under a quiet *Outside the family*.
 - On a phone (below `sm`, tuned for a Pixel 9 Pro at 412 px) search, Filter and Arrange keep
   one row: the search field takes whatever the two menus leave, and the Arrange pill shows only
   the arrangement's name (its accessible name still reads *Arrange: …*). Full screen and the

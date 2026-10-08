@@ -355,6 +355,9 @@ async function askCore<T>(page: Page, query: CoreQuery<T>): Promise<T> {
 /** How many lines an arrangement has bent around somebody standing in their way. */
 export const bowedLines = (page: Page) => askCore(page, (cy) => cy.edges('.bowed').length);
 
+/** How many lines the family tree draws at right angles (docs/05 §5.8). */
+export const routedLines = (page: Page) => askCore(page, (cy) => cy.edges('.routed').length);
+
 /** The ids of the circles on the canvas. */
 export const circlesOnCanvas = (page: Page) =>
 	askCore(page, (cy) => cy.nodes('[kind = "circle"]').map((n) => n.id()));

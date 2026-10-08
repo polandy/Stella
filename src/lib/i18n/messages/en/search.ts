@@ -34,6 +34,7 @@ export const search = {
 	'graph.labels.hint': 'Name every line with its relationship',
 	'graph.labels.tooMany': (p: { count: number }) =>
 		`Paused while more than ${p.count} lines are shown — point at a line or select someone to read theirs`,
+	'graph.labels.inTree': 'Off in the tree: each person’s role stands under their name instead',
 	'graph.density': 'Spacing',
 	'graph.density.compact': 'Compact',
 	'graph.density.comfortable': 'Comfortable',
@@ -53,6 +54,7 @@ export const search = {
 	'graph.arrange.force.hint': 'Let the connections pull the map into shape',
 	'graph.arrange.tree': 'Tree',
 	'graph.arrange.tree.hint': 'One row per generation, the oldest at the top',
+	'graph.tree.outsideFamily': 'Outside the family',
 	'graph.arrange.circles': 'By circle',
 	'graph.arrange.circles.hint': 'Each circle with its members around it',
 	'graph.loading': 'Loading the graph…',

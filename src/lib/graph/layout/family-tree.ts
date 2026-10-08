@@ -10,6 +10,7 @@ import {
 	type Point,
 	type SizeOf
 } from './geometry';
+import { treeRoutes } from './tree-lines';
 
 /*
  * The family-tree arrangement (docs/02 §2.7, docs/05 §5.8). Pure: positions from the model, no
@@ -17,8 +18,9 @@ import {
  * a row is ordered so children sit under their parents, which keeps family lines from crossing.
  * Separate families stand side by side, and whoever has no family link — friends, colleagues,
  * circles — is shelved in rows beneath, rather than wedged into a generation they are not in.
- * Each node gets the room its name needs, and a line that would pass through somebody on its
- * way — a grandparent over the parent, a cousin past a sibling — bends around them.
+ * Each node gets the room its name needs. The family lines are drawn at right angles, as on a
+ * paper tree (`tree-lines.ts`); any other line that would pass through somebody on its way —
+ * a friend's line down to the shelf — bends around them.
  */
 
 /** Distances of the family tree, in model units. */
@@ -80,6 +82,7 @@ export function familyTreeLayout(model: GraphModel, sizeOf: SizeOf = defaultSize
 	rest.sort((a, b) => Number(b.kind === 'circle') - Number(a.kind === 'circle'));
 	const shelfTop = (deepest + 1) * TREE_SPACING.row + (deepest >= 0 ? TREE_SPACING.row / 2 : 0);
 	const width = Math.max(left - TREE_SPACING.family, SHELF_MIN_WIDTH);
+	const members = new Set(positions.keys());
 	shelve(
 		rest.map((n) => n.id),
 		{ x: 0, y: shelfTop },
@@ -88,7 +91,16 @@ export function familyTreeLayout(model: GraphModel, sizeOf: SizeOf = defaultSize
 		TREE_SPACING.gap,
 		TREE_SPACING.gap
 	).forEach((point, id) => positions.set(id, point));
-	return { positions, bows: bowsAround(positions, model.edges, sizeOf, LINE_CLEARANCE) };
+
+	const routes = treeRoutes(model.edges, positions, members, sizeOf, TREE_SPACING.row);
+	const straightOrBowed = model.edges.filter((e) => !routes.has(e.id));
+	return {
+		positions,
+		bows: bowsAround(positions, straightOrBowed, sizeOf, LINE_CLEARANCE),
+		routes,
+		// Named only beneath a family: on a map with none, everybody is on the shelf.
+		...(members.size > 0 && rest.length > 0 ? { outsideFamily: { x: 0, y: shelfTop } } : {})
+	};
 }
 
 /** Horizontal position of each member of one family, ordered row by row. */

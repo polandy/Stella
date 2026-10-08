@@ -39,10 +39,28 @@ export interface Line {
  * a node standing in their way — each with its bow, the sideways offset of the bend's control
  * point from the straight line, positive towards the left-hand normal (-dy, dx) of the line
  * travelled from source to target. Lines not listed are drawn straight.
+ *
+ * The family tree also draws its family lines at right angles (`routes`), and says where the
+ * people outside the family begin (`outsideFamily`), so that shelf can be named.
  */
 export interface Arrangement {
 	positions: Map<string, Point>;
 	bows: Map<string, number>;
+	/** Lines drawn as a run of straight pieces instead; a line is never both routed and bowed. */
+	routes?: Map<string, Route>;
+	/** The top left corner of the shelf of people outside the family, when there is one. */
+	outsideFamily?: Point;
+}
+
+/**
+ * A line drawn as straight pieces through `waypoints`, in model units, travelled from its source
+ * to its target. It leaves its source at `sourceEnd` when given — the middle of a partner bar
+ * rather than the person — and arrives at `targetEnd` likewise; otherwise at the node itself.
+ */
+export interface Route {
+	waypoints: Point[];
+	sourceEnd?: Point;
+	targetEnd?: Point;
 }
 
 /**

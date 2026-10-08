@@ -109,17 +109,61 @@ describe('familyTreeLayout', () => {
 		expect(gapBetween).toBeGreaterThanOrEqual(TREE_SPACING.gap);
 	});
 
-	it('bends a grandparent line around the parent standing in its way', () => {
+	it('draws the family lines at right angles, the grandparent line around the parent', () => {
 		// Otto, Hans and Lena stand in one column; the straight line from Otto to Lena would run
-		// through Hans and hide its name under him.
+		// through Hans. How it bends is `tree-lines.ts`'s; here, that the tree asks for it.
 		const grandparent = stored('otto', 'lena', 'grandparent_grandchild');
-		const { bows } = familyTreeLayout({
+		const { bows, routes } = familyTreeLayout({
 			nodes: ['otto', 'hans', 'lena'].map(person),
 			edges: [parentOf('otto', 'hans'), parentOf('hans', 'lena'), grandparent]
 		});
 
-		expect(bows.has(grandparent.id)).toBe(true);
-		expect(bows.size).toBe(1);
+		expect([...(routes?.keys() ?? [])].sort()).toEqual(
+			[grandparent.id, 'hans-parent_child-lena', 'otto-parent_child-hans'].sort()
+		);
+		expect(bows.size).toBe(0);
+	});
+
+	it('still bends a line to somebody outside the family around whoever is in its way', () => {
+		// Eva, Otto's friend, is shelved beneath; the line down to her would cross his son.
+		const friends = stored('otto', 'eva', 'friend');
+		const { bows, routes, positions } = familyTreeLayout({
+			nodes: ['otto', 'hans', 'eva'].map(person),
+			edges: [parentOf('otto', 'hans'), friends]
+		});
+
+		expect(routes?.has(friends.id)).toBe(false);
+		expect(positions.get('eva')!.y).toBeGreaterThan(positions.get('hans')!.y);
+		// The shelf starts at the tree's left edge, so Eva stands right under Hans.
+		expect(positions.get('eva')!.x).toBe(positions.get('hans')!.x);
+		expect(bows.has(friends.id)).toBe(true);
+	});
+
+	it('marks where the people outside the family begin, above the first of them', () => {
+		const { positions, outsideFamily } = familyTreeLayout({
+			nodes: ['anna', 'bert', 'ida'].map(person),
+			edges: [parentOf('anna', 'bert')]
+		});
+
+		expect(outsideFamily).toBeDefined();
+		expect(outsideFamily!.y).toBeGreaterThan(positions.get('bert')!.y);
+		expect(outsideFamily!.y).toBeLessThan(positions.get('ida')!.y);
+	});
+
+	it('names no shelf when everybody is family, nor when nobody is', () => {
+		const allFamily = familyTreeLayout({
+			nodes: ['anna', 'bert'].map(person),
+			edges: [parentOf('anna', 'bert')]
+		});
+		const noFamily = familyTreeLayout({
+			nodes: ['anna', 'eva'].map(person),
+			edges: [stored('anna', 'eva', 'friend')]
+		});
+
+		expect(allFamily.positions.size).toBe(2);
+		expect(allFamily.outsideFamily).toBeUndefined();
+		expect(noFamily.positions.size).toBe(2);
+		expect(noFamily.outsideFamily).toBeUndefined();
 	});
 
 	it('sets separate families side by side without overlapping', () => {

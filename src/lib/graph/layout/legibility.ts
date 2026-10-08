@@ -22,9 +22,25 @@ export const EDGE_LABEL_LIMIT = 40;
 /**
  * Whether every line is named, given the reader's Labels switch and how many lines are shown.
  * A highlighted, hovered or traced line is named regardless; this is only about naming all.
+ * Where the family tree writes each person's role under their name, `rolesInstead`, the roles
+ * say what the names on the lines would, and no line is named all at once.
  */
-export function edgeLabelsFit(switchedOn: boolean, visibleEdges: number): boolean {
-	return switchedOn && visibleEdges <= EDGE_LABEL_LIMIT;
+export function edgeLabelsFit(
+	switchedOn: boolean,
+	visibleEdges: number,
+	rolesInstead = false
+): boolean {
+	return switchedOn && !rolesInstead && visibleEdges <= EDGE_LABEL_LIMIT;
+}
+
+/** What the Labels switch says under its name: what it does, or why it does nothing now. */
+export function labelsHint(
+	switchedOn: boolean,
+	fit: boolean,
+	rolesInstead: boolean
+): 'graph.labels.hint' | 'graph.labels.tooMany' | 'graph.labels.inTree' {
+	if (rolesInstead) return 'graph.labels.inTree';
+	return switchedOn && !fit ? 'graph.labels.tooMany' : 'graph.labels.hint';
 }
 
 /**
