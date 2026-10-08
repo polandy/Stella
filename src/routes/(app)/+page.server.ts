@@ -16,23 +16,21 @@ import { systemClock } from '$lib/server/clock';
 import { renderMarkdownWithMentions } from '$lib/server/domain/notes/markdown';
 import { membersViewerFirst } from '$lib/server/domain/household/members';
 import { buildStream } from '$lib/server/domain/stream/stream';
-import { extractMentionIds, mentionToken } from '$lib/mentions/mentions';
+import { extractMentionIds } from '$lib/mentions/mentions';
 import { parseStreamFilter } from '$lib/stream/filter';
 import type { Actions, PageServerLoad } from './$types';
 import { say, translator } from '$lib/server/i18n/say';
 import type { MessageKey } from '$lib/i18n/translate';
-import { LINK_PARAM, linkHintHref } from '$lib/stream/link-hint';
+import { linkHintHref } from '$lib/stream/link-hint';
 import { welcomeSteps } from '$lib/stream/welcome';
 import { todayFor } from '$lib/dates/today';
+import { composerFor, linkSuggestionAmong, peopleNamedBy, photosPosted } from './home-view';
 
 /*
  * Home (docs/02 §2.22, §2.12): the "What happened?" capture field, the household stream, and
  * the rail beside it — what is coming up. Everything on it is a scoped query over existing
  * tables; capture is the moments use-case. The layout guard already ensures `locals.user`.
  */
-
-/** Query param that opens the composer pre-filled with one person's handle: `?about=<id>`. */
-const ABOUT_PARAM = 'about';
 
 export const load: PageServerLoad = async ({ locals, url }) => {
 	const user = requireUser(locals);
@@ -45,15 +43,12 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 		members.map((m) => m.id)
 	);
 
-	// The people the URL names: a link hint's pair, or the person a moment is about.
-	const [a, b] = (url.searchParams.get(LINK_PARAM) ?? '').split(',');
-	const aboutId = url.searchParams.get(ABOUT_PARAM);
-	const named = [a, b, aboutId].filter((id): id is string => Boolean(id));
+	const named = peopleNamedBy(url.searchParams);
 
 	const [items, onList, dateSources, firstPeople] = await Promise.all([
 		buildStream(locals.services.media.streamDeps, viewer, filter),
 		// Who the household can still act on — the browsing scope — among just those.
-		listBrowsableNamesAmong(locals.services.people.contactNameDeps, viewer, named),
+		listBrowsableNamesAmong(locals.services.people.contactNameDeps, viewer, named.ids),
 		locals.services.records.importantDates.listSourcesVisibleTo(viewer),
 		// Just enough of the household to tell whether it has begun (docs/02 §2.22.3).
 		listPeopleEnoughForFirstRun(locals.services.people.contactDirectoryDeps, viewer)
@@ -68,15 +63,6 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 	const nameById = new Map(names.map((c) => [c.id, c.displayName]));
 	const nameOf = (id: string) => nameById.get(id) ?? null;
 
-	// The hint only names people the viewer may see; anything else is silently dropped.
-	const nameOnList = new Map(onList.map((c) => [c.id, c.displayName]));
-	const [a2, b2] = [nameOnList.get(a), nameOnList.get(b)];
-	const linkSuggestion =
-		a && b && a2 && b2 ? { a: { id: a, name: a2 }, b: { id: b, name: b2 } } : null;
-
-	// "Write a moment" on an upcoming date opens the composer with that person already in it.
-	const about = onList.find((c) => c.id === aboutId);
-
 	// One reading of the clock, so the composer's day and the horizon cannot straddle midnight.
 	const day = todayFor(systemClock);
 	const dates = upcomingDates(dateSources, day);
@@ -90,13 +76,11 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 
 	return {
 		today: day,
-		compose: url.searchParams.has('compose') || about !== undefined,
-		// As stored, so the composer takes the person as picked — a namesake too (docs/02 §2.2.3).
-		draft: about ? `${mentionToken(about.id)} ` : null,
+		...composerFor(url.searchParams, named, onList),
 		upcoming,
 		// Below `lg` the rail only precedes the stream when a date is close (docs/05 §5.5).
 		railFirst: hasImminentDate(upcoming),
-		linkSuggestion,
+		linkSuggestion: linkSuggestionAmong(named, onList),
 		// The first-run card (docs/02 §2.22.3), or null once the household has begun.
 		welcome: welcomeSteps({
 			peopleIds: firstPeople,
@@ -163,24 +147,15 @@ export const actions: Actions = {
 
 		// Photos ride along as commands of their own, named by the composer, so a save whose
 		// answer was lost can send them again from the phone without doubling any.
-		const images = form.getAll('image');
-		const thumbs = form.getAll('thumb');
-		const widths = form.getAll('width');
-		const heights = form.getAll('height');
-		const photoIds = form.getAll('photoId');
-		for (let i = 0; i < images.length; i++) {
-			const image = images[i];
-			const thumb = thumbs[i];
-			if (!(image instanceof File) || !(thumb instanceof File)) continue;
-			const photoId = photoIds[i];
+		for (const posted of photosPosted(form)) {
 			const photo = parsePhotoCommand({
-				id: typeof photoId === 'string' && photoId ? photoId : ulidGenerator.next(),
+				id: posted.photoId ?? ulidGenerator.next(),
 				type: 'moment.photo',
 				parentId: command.id,
-				image: new Uint8Array(await image.arrayBuffer()),
-				thumb: new Uint8Array(await thumb.arrayBuffer()),
-				width: Number(widths[i]),
-				height: Number(heights[i]),
+				image: new Uint8Array(await posted.image.arrayBuffer()),
+				thumb: new Uint8Array(await posted.thumb.arrayBuffer()),
+				width: posted.width,
+				height: posted.height,
 				issuedAt: systemClock.now()
 			});
 			const attached = photo

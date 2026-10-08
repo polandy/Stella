@@ -1,6 +1,5 @@
 import { error, fail } from '@sveltejs/kit';
 import { requireUser, requireViewer } from '$lib/server/auth/guards';
-import * as v from 'valibot';
 import { TranslatableError } from '$lib/i18n/translatable';
 import type { MessageKey } from '$lib/i18n/translate';
 import type { ImmichFailure } from '$lib/server/domain/immich/gateway';
@@ -14,17 +13,14 @@ import {
 } from '$lib/server/domain/immich/add-from-immich';
 import { faceUrlFor } from '$lib/server/domain/immich/glimpse';
 import { ignoreMatch, proposeAgain } from '$lib/server/domain/immich/ignores';
-import {
-	ImmichLinkRefusedError,
-	linkMatches,
-	type ConfirmedMatch
-} from '$lib/server/domain/immich/links';
+import { ImmichLinkRefusedError, linkMatches } from '$lib/server/domain/immich/links';
 import { findImmichMatches } from '$lib/server/domain/immich/matching';
 import { ignoreNewcomer, proposeNewcomerAgain } from '$lib/server/domain/immich/name-ignores';
 import { say, translator } from '$lib/server/i18n/say';
 import type { Actions, PageServerLoad } from './$types';
 import { systemClock } from '$lib/server/clock';
 import { todayFor } from '$lib/dates/today';
+import { newcomerOf, newcomerToAdd, pairsOf, rowOf } from './immich-form';
 
 /*
  * *Settings → Immich → Find your people* (docs/02 §2.24.7): every
@@ -46,9 +42,6 @@ const FAILURE_MESSAGE: Record<ImmichFailure, MessageKey> = {
 	notFound: 'immich.error.unreachable',
 	unreachable: 'immich.error.unreachable'
 };
-
-/** More pairs than any list shows at once; a post with more is not from this page. */
-const MAX_PAIRS = 2000;
 
 export const load: PageServerLoad = async ({ locals }) => {
 	const user = requireUser(locals);
@@ -89,25 +82,6 @@ export const load: PageServerLoad = async ({ locals }) => {
 	};
 };
 
-/** The pairs a form posts: `contactId` and `immichPersonId`, repeated in step. */
-function pairsOf(form: FormData): ConfirmedMatch[] | null {
-	const contactIds = form.getAll('contactId');
-	const personIds = form.getAll('immichPersonId');
-	if (
-		contactIds.length === 0 ||
-		contactIds.length !== personIds.length ||
-		contactIds.length > MAX_PAIRS
-	)
-		return null;
-	const pairs: ConfirmedMatch[] = [];
-	for (const [at, contactId] of contactIds.entries()) {
-		const immichPersonId = personIds[at];
-		if (typeof contactId !== 'string' || typeof immichPersonId !== 'string') return null;
-		pairs.push({ contactId, immichPersonId });
-	}
-	return pairs;
-}
-
 /** One row's Link and *Link all likely* are the same action: a list of confirmed pairs. */
 const linking: Actions[string] = async ({ request, locals }) => {
 	const viewer = requireViewer(locals);
@@ -134,33 +108,6 @@ const linking: Actions[string] = async ({ request, locals }) => {
 function actorOf(locals: App.Locals) {
 	const viewer = requireViewer(locals);
 	return { userId: viewer.id, householdId: viewer.householdId };
-}
-
-const optionalText = v.optional(v.pipe(v.string(), v.trim()), '');
-
-/** What *Add and link* posts: the face, and the name the member settled on. */
-const AddNewcomerSchema = v.object({
-	immichPersonId: v.pipe(v.string(), v.minLength(1)),
-	firstName: optionalText,
-	lastName: optionalText,
-	nickname: optionalText,
-	description: optionalText,
-	usePhoto: v.optional(v.string())
-});
-
-/** The Immich person a newcomer form is about, or null when it posted none. */
-function newcomerOf(form: FormData): string | null {
-	const personId = form.get('immichPersonId');
-	return typeof personId === 'string' && personId !== '' ? personId : null;
-}
-
-/** One contact and the faces of its row, as the Ignore and Propose again forms post them. */
-function rowOf(form: FormData): { contactId: string; personIds: string[] } | null {
-	const contactId = form.get('contactId');
-	const personIds = form.getAll('immichPersonId');
-	if (typeof contactId !== 'string' || !personIds.every((id) => typeof id === 'string'))
-		return null;
-	return { contactId, personIds: personIds as string[] };
 }
 
 export const actions: Actions = {
@@ -246,9 +193,9 @@ export const actions: Actions = {
 		const actor = actorOf(locals);
 		const { immich } = locals.services;
 		if (!immich) throw error(404, say(locals, 'errors.notFound'));
-		const parsed = v.safeParse(AddNewcomerSchema, Object.fromEntries(await request.formData()));
-		if (!parsed.success) throw error(400, say(locals, 'errors.form.checkAndRetry'));
-		const { immichPersonId, usePhoto, ...name } = parsed.output;
+		const posted = newcomerToAdd(await request.formData());
+		if (!posted) throw error(400, say(locals, 'errors.form.checkAndRetry'));
+		const { immichPersonId, usePhoto, name } = posted;
 		let contactId: string;
 		try {
 			contactId = await addPersonFromImmich(

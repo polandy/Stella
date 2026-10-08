@@ -145,10 +145,11 @@ describe('contactRepositoryWith', () => {
 	});
 });
 
-describe('the testing folder', () => {
-	// It stays out of the build because nothing the app runs imports it: Vite bundles only
-	// what is reached from a route. A test is the only caller it may have.
-	const FOLDER = 'src/lib/server/domain/testing/';
+describe('the testing folders', () => {
+	// They stay out of the build because nothing the app runs imports them: Vite bundles only
+	// what is reached from a route. A test is the only caller they may have — the domain's fakes
+	// here, and the edge's fake request event in `lib/server/testing/`.
+	const FOLDERS = ['src/lib/server/domain/testing/', 'src/lib/server/testing/'];
 	const IMPORT = /\b(?:import|export)\s+(?:type\s+)?(?:[^;'"]*?\s+from\s+)?['"]([^'"]+)['"]/g;
 	const target = (importer: string, specifier: string) =>
 		specifier.startsWith('$lib/')
@@ -156,23 +157,29 @@ describe('the testing folder', () => {
 			: specifier.startsWith('.')
 				? posix.join(posix.dirname(importer), specifier)
 				: null;
+	const inFolder = (path: string) =>
+		FOLDERS.some((folder) => path === folder.slice(0, -1) || path.startsWith(folder));
 	const reachesTesting = (importer: string, code: string) =>
 		[...code.matchAll(IMPORT)].some(([, specifier]) => {
 			const path = target(importer, specifier!);
-			return path === FOLDER.slice(0, -1) || !!path?.startsWith(FOLDER);
+			return !!path && inFolder(path);
 		});
 
-	it('is imported by tests only', () => {
+	it('are imported by tests only', () => {
 		const importers = [...new Glob('src/**/*.{ts,svelte}').scanSync('.')]
-			.filter((path) => !path.endsWith('.test.ts') && !path.startsWith(FOLDER))
+			.filter((path) => !path.endsWith('.test.ts') && !inFolder(path))
 			.filter((path) => reachesTesting(path, readFileSync(path, 'utf8')));
 		expect(importers).toEqual([]);
 	});
 
-	it('catches the folder however it is reached', () => {
+	it('catch a folder however it is reached', () => {
 		const at = 'src/lib/server/domain/contacts/contacts.ts';
 		expect(reachesTesting(at, "import { fixedClock } from '../testing';")).toBe(true);
 		expect(reachesTesting(at, "import type { X } from '$lib/server/domain/testing/c';")).toBe(true);
 		expect(reachesTesting(at, "import { x } from './testing-notes';")).toBe(false);
+		expect(reachesTesting(at, "import { routeEvent } from '$lib/server/testing';")).toBe(true);
+		expect(reachesTesting('src/routes/x.ts', "import { x } from '../lib/server/testing/r';")).toBe(
+			true
+		);
 	});
 });

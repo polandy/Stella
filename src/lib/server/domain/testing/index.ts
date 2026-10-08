@@ -9,6 +9,7 @@
 
 export { fixedClock, type FixedClock } from './clock';
 export { sequentialIds } from './ids';
+export { commandDepsWith, inMemoryReceipts } from './commands';
 export {
 	contactRepositoryWith,
 	inMemoryContactDirectory,
