@@ -13,10 +13,16 @@
 	import { isKept, type KeptOf, type KeptPhoto } from '$lib/pwa/outbox';
 	import { outbox } from '$lib/pwa/outbox.svelte';
 	import { reachability } from '$lib/pwa/reachability.svelte';
+	import { asksForMatchHint, matchHintName, shownMatchHint } from '$lib/immich/match-hint';
+	import { useRemovals } from '$lib/undo/context.svelte';
+	import { deferredRemoval } from '$lib/undo/deferred-removal';
+	import { removalKey } from '$lib/undo/keys';
 	import { ulid } from 'ulid';
 	import GroupPhotos from './GroupPhotos.svelte';
 	import ImmichFacePicker from './ImmichFacePicker.svelte';
 	import ImmichLine from './ImmichLine.svelte';
+	import { ImmichMatchHint as MatchHint } from './immich-match-hint.svelte';
+	import ImmichMatchHint from './ImmichMatchHint.svelte';
 	import { INPUT } from './inputs';
 	import PhotoCardBody from './PhotoCardBody.svelte';
 	import { PhotoCardState, type PhotoView } from './photo-card-state.svelte';
@@ -114,8 +120,64 @@
 	);
 
 	/*
+	 * The suggestion for an unlinked person (docs/02 §2.24.7): the face *Find your people* would
+	 * link in one tap, asked for after the page has loaded. Nothing is reserved for it; it
+	 * arrives at the card's foot. *Ignore* is the list's lasting no, held for the undo window
+	 * like any removal (docs/02 §2.23) — the row goes at once and comes back on *Undo*.
+	 */
+	const removals = useRemovals();
+	const hintSituation = $derived({
+		immichOn: data.immich !== null,
+		online: reachability.reachable,
+		linked: data.immich?.linked === true
+	});
+	const hint = new MatchHint(() => ({ contactId: c.id, asks: asksForMatchHint(hintSituation) }));
+	const hintIgnoreKey = $derived(removalKey('immich-ignore', c.id));
+	const hintFace = $derived(
+		shownMatchHint({
+			...hintSituation,
+			answer: hint.answer,
+			ignored:
+				removals.isPending(hintIgnoreKey) ||
+				(hint.answer !== null && hint.ignoredPair === `${c.id}/${hint.answer.personId}`)
+		})
+	);
+	function ignoreHint(event: SubmitEvent) {
+		event.preventDefault();
+		const formEl = event.currentTarget as HTMLFormElement;
+		const pair = `${c.id}/${new FormData(formEl).get('immichPersonId')}`;
+		const removal = deferredRemoval(
+			{
+				kind: 'immich-ignore',
+				id: c.id,
+				label: t('immich.match.ignoredToast'),
+				// Absolute: the window may close after the reader has moved on to another page.
+				action: `/contacts/${encodeURIComponent(c.id)}?/ignoreImmichMatch`,
+				body: new FormData(formEl)
+			},
+			{ fetch, reload: invalidateAll }
+		);
+		removals.remove({
+			...removal,
+			// The store lets go of the key as the window closes, before the post: the row stays
+			// away meanwhile, and comes back only if the post fails.
+			commit: async () => {
+				hint.ignoredPair = pair;
+				try {
+					await removal.commit();
+				} catch (error) {
+					hint.ignoredPair = null;
+					throw error;
+				}
+			}
+		});
+	}
+
+	/*
 	 * No photo, none waiting to be sent, no group photo and no Immich line under them: the card
 	 * is one line (docs/05 §5.5). The Immich menu stays in that line, beside the add button.
+	 * The suggestion is not content: it arrives late, and a line turning into a card under the
+	 * reader's eyes would move its own header — so it hangs under the line instead (`footer`).
 	 */
 	const holdsSomething = $derived(
 		data.gallery.length > 0 ||
@@ -194,6 +256,18 @@
 	{#if showImmich}
 		<ImmichLine person={data.immichPerson} error={form?.immichError ?? null} />
 	{/if}
+
+	{#snippet footer()}
+		{#if hintFace}
+			<ImmichMatchHint
+				face={hintFace}
+				askName={matchHintName(c)}
+				contactName={c.displayName}
+				onchoose={() => (pickerOpen = true)}
+				onignore={ignoreHint}
+			/>
+		{/if}
+	{/snippet}
 
 	{#snippet editor()}
 		<form onsubmit={uploadPhotos} class="flex flex-wrap items-end gap-3">

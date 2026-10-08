@@ -350,7 +350,13 @@ it (see *Installation*), the Photos card has a small **Photo library** menu. **F
 faces Immich knows, searched by the person's name — change the search if Immich spells them
 differently — and a tap on the right face links the two. Each face belongs to one person: one already linked
 to someone else is greyed out and says to whom (or just *someone else*, if that person is
-private to another member). From then on their latest Immich photos
+private to another member). Often you need not search at all: when someone isn't linked yet
+and Immich has a face with their full name, the Photos card asks a moment after the page has
+opened — *Is this Lena? Immich has “Lena Brunner” with 1,764 photos.* — beside that face.
+**Link** links them there and then, **Choose another** opens the search, and **Ignore** says it
+is not them (with *Undo* for a few seconds; it then shows under **Ignored** in *Find your
+people*, below). Only a sure match is asked about this way; a first name alone is left to *Find
+your people*. From then on their latest Immich photos
 join the card: in **All** they are mixed with the photos added in Stella, newest first, each
 with a small *Immich* label, and the **Immich** tab shows only them, with **Show more** under
 them for twelve more. The card ends with a line like *In Immich · 1,284 photos*. Tap a photo to

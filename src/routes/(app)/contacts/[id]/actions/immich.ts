@@ -2,6 +2,7 @@ import { error, fail, redirect } from '@sveltejs/kit';
 import { requireViewer } from '$lib/server/auth/guards';
 import { contactSectionPath } from '$lib/contacts/sections';
 import { ContactGoneError } from '$lib/server/domain/contacts/require-visible';
+import { ignoreMatch } from '$lib/server/domain/immich/ignores';
 import {
 	ImmichLinkRefusedError,
 	linkToImmich,
@@ -16,6 +17,8 @@ import type { Actions } from '../$types';
  * The Photos card's Immich menu (docs/02 §2.24.2). Any member who can see the person
  * may link or unlink them; without Immich configured, neither exists. *Use as photo* in the
  * Immich viewer keeps a square of one of their photos as their own (docs/02 §2.24.6).
+ * *Ignore* on the card's suggestion is the matching list's lasting no (docs/02 §2.24.7), through
+ * the same use-case; its *Link* is `linkImmich`.
  */
 export const immichActions = {
 	linkImmich: async ({ request, params, locals }) => {
@@ -38,6 +41,29 @@ export const immichActions = {
 			throw err;
 		}
 		throw redirect(303, contactSectionPath(params.id, 'photos'));
+	},
+
+	/* Held for the undo window by the card first, like any removal (docs/02 §2.23). */
+	ignoreImmichMatch: async ({ request, params, locals }) => {
+		const viewer = requireViewer(locals);
+		const deps = locals.services.immich?.immichIgnoreDeps;
+		if (!deps) throw error(404, say(locals, 'errors.notFound'));
+
+		const personId = (await request.formData()).get('immichPersonId');
+		try {
+			await ignoreMatch(
+				deps,
+				{ userId: viewer.id, householdId: viewer.householdId },
+				params.id,
+				typeof personId === 'string' ? [personId] : []
+			);
+		} catch (err) {
+			if (err instanceof ContactGoneError) throw error(404, say(locals, 'errors.contact.notFound'));
+			if (err instanceof ImmichLinkRefusedError)
+				return fail(400, { immichError: err.phrase(translator(locals)) });
+			throw err;
+		}
+		return { ignoredImmichMatch: true };
 	},
 
 	unlinkImmich: async ({ params, locals }) => {

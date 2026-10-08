@@ -108,7 +108,7 @@ export type MatchingOutcome =
 	| { ok: false; failure: ImmichFailure };
 
 /** Every page of Immich's people; hidden ones are already left out by the gateway. */
-async function allPeople(
+export async function allPeople(
 	gateway: ImmichMatchingDeps['gateway']
 ): Promise<{ ok: true; value: ImmichPerson[] } | { ok: false; failure: ImmichFailure }> {
 	const people: ImmichPerson[] = [];
@@ -139,41 +139,62 @@ async function eachLimited<T, R>(
 	return results;
 }
 
-/** Both tabs of *Find your people* for this viewer, or why Immich gave none. */
-export async function findImmichMatches(
-	deps: ImmichMatchingDeps,
+/**
+ * The rows of *Matching* from one reading of Immich's people: who holds which face, which pairs
+ * were ignored, and the name matching over all of it. Shared by the list and the person page's
+ * suggestion (`person-match.ts`), so both propose exactly the same.
+ */
+export async function matchListed(
+	deps: Pick<ImmichMatchingDeps, 'links' | 'ignores'>,
 	viewer: Viewer,
-	day: MatchingDay
-): Promise<MatchingOutcome> {
-	const contacts = await deps.contacts.listVisibleTo(viewer);
-
-	const listed = await allPeople(deps.gateway);
-	if (!listed.ok) return listed;
-	const named = listed.value.filter((person) => !person.hidden && person.name !== '');
-
-	const [holders, linkedContactIds, ignores, nameIgnores] = await Promise.all([
+	read: {
+		contacts: readonly MatchableContact[];
+		linkedContactIds: ReadonlySet<string>;
+		listed: readonly ImmichPerson[];
+	}
+) {
+	const named = read.listed.filter((person) => !person.hidden && person.name !== '');
+	const [holders, ignores] = await Promise.all([
 		// Unscoped on the Immich side: a face held by someone the viewer cannot see is taken all
 		// the same, and is simply not offered (docs/04 ADR-096). Unnamed faces are asked about too:
 		// the comparison step shows the face a similar person is linked to, named or not.
 		deps.links.holdersOf(
 			viewer,
-			listed.value.map((person) => person.id)
+			read.listed.map((person) => person.id)
 		),
-		deps.links.linkedContactIdsVisibleTo(viewer),
-		deps.ignores.listVisibleTo(viewer),
-		deps.nameIgnores.listForHousehold(viewer)
+		deps.ignores.listVisibleTo(viewer)
 	]);
-
 	const matches = matchImmichPeople({
-		contacts,
+		contacts: read.contacts,
 		people: named,
-		linkedContactIds,
+		linkedContactIds: read.linkedContactIds,
 		linkedPersonIds: new Set(holders.keys()),
 		ignoredPairs: ignores.map(({ contactId, immichPersonId }) => ({
 			contactId,
 			personId: immichPersonId
 		}))
 	});
+	return { named, holders, ignores, matches };
+}
+
+/** Both tabs of *Find your people* for this viewer, or why Immich gave none. */
+export async function findImmichMatches(
+	deps: ImmichMatchingDeps,
+	viewer: Viewer,
+	day: MatchingDay
+): Promise<MatchingOutcome> {
+	const [contacts, linkedContactIds] = await Promise.all([
+		deps.contacts.listVisibleTo(viewer),
+		deps.links.linkedContactIdsVisibleTo(viewer)
+	]);
+
+	const listed = await allPeople(deps.gateway);
+	if (!listed.ok) return listed;
+
+	const [{ named, holders, ignores, matches }, nameIgnores] = await Promise.all([
+		matchListed(deps, viewer, { contacts, linkedContactIds, listed: listed.value }),
+		deps.nameIgnores.listForHousehold(viewer)
+	]);
 	const newcomers = immichNewcomers({
 		people: named,
 		heldPersonIds: new Set(holders.keys()),
