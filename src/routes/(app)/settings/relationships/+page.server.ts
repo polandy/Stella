@@ -30,9 +30,11 @@ import {
 	acceptClaim,
 	declineClaim,
 	restoreClaim,
+	type ClaimAnswerServices,
 	type RefusedAnswer
-} from '$lib/server/relationships/suggestion-answers';
+} from '../../_shared/suggestion-answers';
 import { translator } from '$lib/server/i18n/say';
+import type { Translate } from '$lib/i18n/translate';
 import type { Actions, PageServerLoad } from './$types';
 
 /*
@@ -181,9 +183,10 @@ export const load: PageServerLoad = async ({ locals, url }): Promise<ReviewData>
  * list stops being finishable.
  */
 type Answer = (
-	locals: App.Locals,
+	services: ClaimAnswerServices,
 	viewer: { id: string; householdId: string },
-	form: FormData
+	form: FormData,
+	t: Translate
 ) => Promise<RefusedAnswer | null>;
 
 /** One answer, applied and then returned from — the three differ only in which one they call. */
@@ -192,7 +195,7 @@ const answering =
 	async ({ request, locals }) => {
 		const viewer = requireViewer(locals);
 		const form = await request.formData();
-		const refusal = await answer(locals, viewer, form);
+		const refusal = await answer(locals.services, viewer, form, translator(locals));
 		if (refusal) return fail(refusal.status, { error: refusal.message });
 		// Only the degraded path reaches this: with JavaScript the answer never navigated.
 		// The anchor puts the reload back beside the row rather than at the top of the list.

@@ -17,7 +17,7 @@ import { listContactNamesAmong } from '$lib/server/domain/contacts/contacts';
 import { listCircleCuts } from '$lib/server/domain/media/cuts';
 import { readSurnameHelp } from '$lib/server/domain/contacts/last-names';
 import { photoActions } from './actions/photos';
-import { lastNameActions } from '$lib/server/last-names-actions';
+import { lastNameActions } from '../../_shared/last-names-actions';
 import type { Actions, PageServerLoad } from './$types';
 import { say, translator } from '$lib/server/i18n/say';
 

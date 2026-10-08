@@ -9,7 +9,7 @@ import {
 	reviewLastNames,
 	type SurnameListPerson
 } from '$lib/server/domain/contacts/last-names';
-import { lastNameActions } from '$lib/server/last-names-actions';
+import { lastNameActions } from '../../_shared/last-names-actions';
 import { say, translator } from '$lib/server/i18n/say';
 import type { Actions, PageServerLoad } from './$types';
 

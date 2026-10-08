@@ -15,10 +15,14 @@ const frameworkImports = [
 ];
 
 // `services/` wires concretes to use-cases; only the SvelteKit edge may reach for it, or a
-// use-case would end up depending on a concrete DB again (docs/08 §8.3).
+// use-case would end up depending on a concrete DB again (docs/08 §8.3). Any module inside the
+// folder counts, not just its index — `../services/app-services` hands out the same wiring —
+// while `import type` stays open: a slice's type is how a helper asks for narrow deps.
+// `boundary.test.ts` says the same under `bun test`, resolving relative paths exactly.
 const servicesImports = [
 	{
-		regex: '^(\\$lib/server/|\\.{1,2}/(.*/)?)services(\\.[jt]s)?$',
+		regex: '^(\\$lib/server/|(\\.{1,2}/)+([\\w-]+/)*)services(/.*)?$',
+		allowTypeImports: true,
 		message: 'Only routes and hooks.server.ts wire concretes; take a `deps` argument instead.'
 	}
 ];
@@ -57,11 +61,6 @@ const frameworkExceptions = [
 	'src/lib/pwa/install.svelte.ts',
 	'src/lib/pwa/reachability.svelte.ts'
 ];
-const servicesExceptions = [
-	// Shared form actions living under lib/server; AR-02 moves them under routes/.
-	'src/lib/server/last-names-actions.ts',
-	'src/lib/server/relationships/suggestion-answers.ts'
-];
 
 // A command's refusal is already an answer; anything it throws is ours, and must reach
 // `handleError` to be logged rather than turn into a form message (docs/04 §4.4).
@@ -95,9 +94,9 @@ const edgeBoilerplateSyntax = [
 	}
 ];
 
-// Server-side edge code: route modules (not components, which run in the browser too) and
-// the shared form actions that still live under lib/server until AR-02 moves them.
-const edgeFiles = ['src/routes/**/*.ts', ...servicesExceptions];
+// Server-side edge code: route modules, including the actions several pages share under
+// `routes/(app)/_shared/` — not components, which run in the browser too.
+const edgeFiles = ['src/routes/**/*.ts'];
 
 export default ts.config(
 	{
@@ -177,17 +176,18 @@ export default ts.config(
 		}
 	},
 	{
+		// Tests may wire the real thing: an integration test is the composition root's caller.
 		files: ['src/**'],
-		ignores: ['src/routes/**', 'src/hooks.server.ts', ...servicesExceptions],
+		ignores: ['src/routes/**', 'src/hooks.server.ts', 'src/lib/server/services/**', '**/*.test.ts'],
 		rules: {
-			'no-restricted-imports': ['error', { patterns: servicesImports }]
+			'@typescript-eslint/no-restricted-imports': ['error', { patterns: servicesImports }]
 		}
 	},
 	{
 		files: frameworkFreeFolders,
 		ignores: frameworkExceptions,
 		rules: {
-			'no-restricted-imports': ['error', { patterns: [...frameworkImports, ...servicesImports] }]
+			'no-restricted-imports': ['error', { patterns: frameworkImports }]
 		}
 	}
 );

@@ -191,6 +191,11 @@ export interface ContactDeps {
 	clock: Clock;
 }
 
+/** Looking one person up — all a caller that only checks visibility needs to hand in. */
+export interface ContactLookupDeps {
+	contacts: Pick<ContactRepository, 'findByIdVisibleTo'>;
+}
+
 /** Deleting a person also unlinks the bytes of their photos (docs/02 §2.2). */
 export interface DeleteContactDeps extends ContactDeps {
 	media: Pick<MediaStore, 'delete'>;
@@ -429,7 +434,7 @@ export async function describeContact(
 
 /** Fetch a contact the viewer may see, or null. */
 export async function getContact(
-	deps: Pick<ContactDeps, 'contacts'>,
+	deps: ContactLookupDeps,
 	viewer: Viewer,
 	id: string
 ): Promise<Contact | null> {
