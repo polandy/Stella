@@ -1,5 +1,5 @@
 import { PARENT_CHILD_TYPE_KEY } from '../../relationships/type-keys';
-import type { GraphModel } from '../model/types';
+import type { GraphEdge, GraphModel } from '../model/types';
 import type { SizeOf } from './geometry';
 import { barSpans, crossingBars } from './tree-lines';
 
@@ -114,7 +114,92 @@ export function arrangeFamily(
 	const counts = anyJoin ? joinsFamilies : () => true;
 	const asIs = husbandsLeft(rows, partners, wording, cost, counts);
 	const mirror = husbandsLeft(mirrored(rows), partners, wording, cost, counts);
-	return place(mirror.balance > asIs.balance ? mirror.rows : asIs.rows);
+	const chosen = mirror.balance > asIs.balance ? mirror.rows : asIs.rows;
+	return straightened(chosen, place(chosen), familyEdges, family, sizeOf, spacing, (x) =>
+		crossingBars(
+			barSpans(
+				familyEdges,
+				new Map(
+					[...family].map(([id, generation]) => [
+						id,
+						{ x: x.get(id)!, y: generation * spacing.row }
+					])
+				),
+				members
+			)
+		)
+	);
+}
+
+/**
+ * The positions with every only child's drop made one straight line: the child set right under
+ * the parents' drop, or — where the child's row has no room — a lone parent set right over the
+ * child. A move is kept only where it keeps every name its gap from its neighbours and adds no
+ * crossing; otherwise the drop keeps its small jog.
+ */
+function straightened(
+	rows: Rows,
+	start: Map<string, number>,
+	familyEdges: readonly GraphEdge[],
+	family: ReadonlyMap<string, number>,
+	sizeOf: SizeOf,
+	spacing: RowSpacing,
+	crossings: (x: ReadonlyMap<string, number>) => number
+): Map<string, number> {
+	const x = new Map(start);
+	const parentsOf = new Map<string, string[]>();
+	for (const e of familyEdges) {
+		if (e.typeKey !== PARENT_CHILD_TYPE_KEY) continue;
+		if (family.get(e.source) !== family.get(e.target)! - 1) continue;
+		parentsOf.set(e.target, [...(parentsOf.get(e.target) ?? []), e.source]);
+	}
+	const byDrop = new Map<string, string[]>();
+	for (const [child, parents] of parentsOf) {
+		const key = [...parents].sort().join('+');
+		byDrop.set(key, [...(byDrop.get(key) ?? []), child]);
+	}
+	const unitOf = (id: string) => rows.flat().find((unit) => unit.includes(id))!;
+	const rowOf = (id: string) => rows[family.get(id)!];
+	/** Whether moving `unit` by `delta` keeps it its gap clear of the units beside it. */
+	const fits = (unit: string[], delta: number) => {
+		const edges = (u: string[]) => ({
+			left: Math.min(...u.map((id) => x.get(id)! - sizeOf(id).width / 2)),
+			right: Math.max(...u.map((id) => x.get(id)! + sizeOf(id).width / 2))
+		});
+		const moved = edges(unit);
+		const [left, right] = [moved.left + delta, moved.right + delta];
+		return rowOf(unit[0])
+			.filter((other) => other !== unit)
+			.every((other) => {
+				const box = edges(other);
+				return box.right + spacing.gap <= left || right + spacing.gap <= box.left;
+			});
+	};
+	const move = (unit: string[], delta: number) => {
+		const before = crossings(x);
+		for (const id of unit) x.set(id, x.get(id)! + delta);
+		if (crossings(x) <= before) return true;
+		for (const id of unit) x.set(id, x.get(id)! - delta);
+		return false;
+	};
+
+	for (const [key, children] of byDrop) {
+		if (children.length !== 1) continue;
+		const parents = key.split('+');
+		const parentUnit = unitOf(parents[0]);
+		// One drop: a lone parent, or partners standing side by side in one unit.
+		if (!parents.every((p) => parentUnit.includes(p))) continue;
+		const dropX = parents.reduce((sum, p) => sum + x.get(p)!, 0) / parents.length;
+		const child = children[0];
+		const delta = dropX - x.get(child)!;
+		if (delta === 0) continue;
+		const childUnit = unitOf(child);
+		if (fits(childUnit, delta) && move(childUnit, delta)) continue;
+		if (parents.length === 1 && parentUnit.length === 1 && fits(parentUnit, -delta)) {
+			move(parentUnit, -delta);
+		}
+	}
+	return x;
 }
 
 /** Each row re-ordered under the one above and over the one below, a few times over. */

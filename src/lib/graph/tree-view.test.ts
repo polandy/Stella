@@ -1,5 +1,12 @@
 import { describe, expect, it } from 'bun:test';
-import { labelsAfterArranging, labelsOn, toggledLabels, type LabelsState } from './tree-labels';
+import {
+	labelsAfterArranging,
+	labelsOn,
+	selectionAsked,
+	treeRelaidFor,
+	toggledLabels,
+	type LabelsState
+} from './tree-view';
 
 /*
  * How the Labels switch reads in the family tree (docs/05 §5.8). Elsewhere it is the reader's
@@ -55,5 +62,34 @@ describe('labelsAfterArranging', () => {
 
 		expect(labelsOn(after, false)).toBe(false);
 		expect(after.habit).toBe(false);
+	});
+});
+
+describe('selectionAsked', () => {
+	it('counts a person the reader tapped or found as a question about their lines', () => {
+		expect(selectionAsked('tapped')).toBe(true);
+		expect(selectionAsked('found')).toBe(true);
+	});
+
+	it('counts nobody as asked once an expand has laid the tree out again', () => {
+		// The person just expanded is still selected, but their friends' and circles' lines would
+		// fan out across the new tree; they wait for the next tap, like the opening centre's.
+		expect(selectionAsked('treeRelaid')).toBe(false);
+		expect(selectionAsked('opened')).toBe(false);
+	});
+});
+
+describe('treeRelaidFor', () => {
+	const before = new Set(['lena', 'markus']);
+
+	it('lays the tree out again when somebody new comes onto it', () => {
+		expect(treeRelaidFor('tree', before, new Set(['lena', 'markus', 'peter']))).toBe(true);
+	});
+
+	it('moves nobody when nobody came, nor in the other arrangements', () => {
+		expect(treeRelaidFor('tree', before, new Set(['lena', 'markus']))).toBe(false);
+		expect(treeRelaidFor('tree', before, new Set(['lena']))).toBe(false);
+		expect(treeRelaidFor('force', before, new Set(['lena', 'markus', 'peter']))).toBe(false);
+		expect(treeRelaidFor('circles', before, new Set(['lena', 'markus', 'peter']))).toBe(false);
 	});
 });

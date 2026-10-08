@@ -25,7 +25,9 @@ card (§5.5.2); its styling is §5.8.
   Each family stands as one block — siblings together, a person's father's family left, their
   mother's right — so no couple's bar crosses another's. Only the tree's own lines are drawn:
   a grandparent, cousin or sibling line the bars already draw is left off, and friends,
-  colleagues and circles show their lines only around a person the reader selects. An expand
+  colleagues and circles show their lines only around a person the reader taps or finds — not
+  around the opening centre, nor the person just expanded once the tree is laid out again. An
+  only child hangs straight under their parents. An expand
   in the tree lays the whole tree out again; everybody glides to their new place.
 - On a phone (below `sm`, tuned for a Pixel 9 Pro at 412 px) search, Filter and Arrange keep
   one row: the search field takes whatever the two menus leave, and the Arrange pill shows only

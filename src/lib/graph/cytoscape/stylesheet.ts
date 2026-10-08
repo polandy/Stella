@@ -375,7 +375,7 @@ export function buildStylesheet(p: Palette, options: StylesheetOptions = {}): Cy
 		},
 		// In the tree the role under each name says what the names on the lines would — "Friend"
 		// under Nicole rather than "Friend of" on her line — so until the reader turns the Labels
-		// switch on there, no line is named, not even selected or pointed at (`tree-labels.ts`).
+		// switch on there, no line is named, not even selected or pointed at (`tree-view.ts`).
 		...(tree && !options.edgeLabels ? [{ selector: 'edge', style: { 'text-opacity': 0 } }] : []),
 		// The selection is a filled halo around a solid ring; the keyboard's cursor (below) a
 		// dashed ring held off the node. Two shapes, so they never read as one — not even for

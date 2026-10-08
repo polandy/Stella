@@ -244,6 +244,47 @@ describe('familyTreeLayout', () => {
 		}
 	});
 
+	describe('drops straight down to an only child', () => {
+		// Daniel's one son Timo on the row below: a bar with a jog in it would be a bar for one.
+		const measured: SizeOf = (id) => ({ width: 50 + 9 * id.length, height: 64 });
+		for (const [name, model] of Object.entries({
+			brunnerKeller,
+			brunnerKellerWidened,
+			twoFamilies
+		})) {
+			it(`in ${name}`, () => {
+				const { positions, routes } = familyTreeLayout(model, measured);
+				const members = new Set(positions.keys());
+				const spans = barSpans(model.edges, positions, members);
+				// Every drop to an only child is a single straight line: no bar at all.
+				const onlyChildren = model.edges.filter((e) => {
+					if (e.typeKey !== 'parent_child') return false;
+					const route = routes?.get(e.id);
+					return route !== undefined && new Set(route.waypoints.map((p) => p.x)).size > 1;
+				});
+				expect(onlyChildren.map((e) => e.id)).toEqual(
+					model.edges
+						.filter((e) => e.typeKey === 'parent_child')
+						.filter((e) => {
+							const siblings = model.edges.filter(
+								(f) => f.typeKey === 'parent_child' && f.source === e.source
+							);
+							return siblings.length > 1;
+						})
+						.map((e) => e.id)
+				);
+				// And straightening never buys a crossing.
+				expect(crossingBars(spans)).toBe(0);
+			});
+		}
+
+		it('puts Timo right under his father', () => {
+			const { positions } = familyTreeLayout(brunnerKeller, measured);
+
+			expect(positions.get('timo')!.x).toBe(positions.get('daniel')!.x);
+		});
+	});
+
 	it('sets siblings side by side, the father’s family on the left and the mother’s on the right', () => {
 		const { positions } = familyTreeLayout(brunnerKeller);
 		const x = (id: string) => positions.get(id)!.x;

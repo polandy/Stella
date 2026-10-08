@@ -10,7 +10,14 @@
 	import { rolesTowards } from '$lib/graph/model/tree-roles';
 	import { familyLinksAmong } from '$lib/graph/model/generations';
 	import { hiddenInTree } from '$lib/graph/model/tree-shown';
-	import { labelsAfterArranging, labelsOn, toggledLabels } from '$lib/graph/tree-labels';
+	import {
+		labelsAfterArranging,
+		labelsOn,
+		selectionAsked,
+		toggledLabels,
+		treeRelaidFor,
+		type SelectionCause
+	} from '$lib/graph/tree-view';
 	import { toCytoscapeElements } from '$lib/graph/cytoscape/elements';
 	import { createExplorer, type ExplorerController } from '$lib/graph/cytoscape/explorer';
 	import { buildStylesheet } from '$lib/graph/cytoscape/stylesheet';
@@ -167,8 +174,8 @@
 	 * header already names the person, so nothing is selected until a node is tapped.
 	 */
 	let selected = $state<string | null>(untrack(() => (compact ? null : centerId)));
-	/** Whether the selection is the reader's own rather than the centre the route opened with. */
-	let readerSelected = $state(false);
+	/** What last put somebody in the selection: only a tap or a search asks for their lines. */
+	let selectionCause = $state<SelectionCause>('opened');
 	const openingFilters = openingFilterKeys(untrack(() => compact));
 	let active = $state<Set<string>>(new Set(openingFilters));
 	let pathMode = $state(false);
@@ -308,7 +315,7 @@
 	/*
 	 * The Labels switch as it stands now: the reader's habit, or — in the tree around a person,
 	 * where the roles under the names say it — the tree's own choice, off each time the tree is
-	 * entered (`tree-labels.ts`, docs/05 §5.8).
+	 * entered (`tree-view.ts`, docs/05 §5.8).
 	 */
 	let treeLabels = $state(false);
 	const labelsState = $derived({ habit: switches.edgeLabels, inTree: treeLabels });
@@ -342,9 +349,10 @@
 			: impliedKinshipEdgeIds(drawnVisible, selected);
 		if (arrangedBy !== 'tree') return left;
 		const onPath = new Set(path?.model.edges.map((e) => e.id) ?? []);
-		// The centre the route opens with selected is not a question the reader asked: its
-		// friends and circles stay unlinked until somebody is tapped.
-		const asked = readerSelected ? selected : null;
+		// Neither the centre the route opens with nor the person an expand just laid the tree out
+		// around is a question the reader asked: their friends and circles stay unlinked until
+		// somebody is tapped (`tree-view.ts`).
+		const asked = selectionAsked(selectionCause) ? selected : null;
 		for (const id of hiddenInTree(drawnVisible, asked, onPath)) left.add(id);
 		return left;
 	});
@@ -466,20 +474,17 @@
 	$effect(() => {
 		const els = elements();
 		const groupOf = grouping?.groupOf ?? new Map<string, string>();
-		const tree = arrangedBy === 'tree';
+		const arranged = arrangedBy;
 		if (!ready || !controller) return;
 		const nodeIds = new Set(els.filter((e) => e.group === 'nodes').map((e) => e.data.id as string));
-		/*
-		 * In the family tree an expand lays the whole tree out again: a newcomer belongs in their
-		 * generation's row or on the shelf, not wherever there was room beside the person opened
-		 * (docs/05 §5.8). Free and By circle keep everybody where they stood.
-		 */
-		const arrival = tree && [...nodeIds].some((id) => !onCanvas.has(id));
+		// In the family tree an expand lays the whole tree out again (`tree-view.ts`).
+		const arrival = treeRelaidFor(arranged, onCanvas, nodeIds);
 		onCanvas = nodeIds;
 		controller.setGraph(els, { arrangedNext: arrival });
 		const joined = [...groupOf].some(([id, group]) => placedInGroups.get(id) !== group);
 		placedInGroups = groupOf;
 		if (joined) settledForGroups = true;
+		if (arrival) selectionCause = 'treeRelaid';
 		if (joined || arrival) untrack(() => arrangeNow(arrangedBy));
 	});
 	// Apply filtering as show/hide (no re-layout).
@@ -506,7 +511,7 @@
 	});
 
 	async function onTapNode(id: string) {
-		readerSelected = true;
+		selectionCause = 'tapped';
 		// A group is a way of drawing people, not somebody to trace a path to or open up.
 		if (grouping?.groups.some((g) => g.id === id)) {
 			if (!pathMode) selected = id;
@@ -548,7 +553,7 @@
 	}
 
 	async function reveal(id: string) {
-		readerSelected = true;
+		selectionCause = 'found';
 		if (!model.nodes.some((n) => n.id === id)) {
 			model = mergeModels(model, await buildEgoNetwork(source, id, 1));
 			expandedIds.add(id);

@@ -14,16 +14,12 @@ import { boxAround, frameAround, packGroups } from '../layout/group-blocks';
 import { placeNewcomers, type Placement, type Point } from './placement';
 import { frameBelow, widenToReveal, type Box } from './viewport';
 import { DEFAULT_DENSITY, spacingFor, type Spacing } from '../layout/density';
-import { segmentsOf } from './segments';
+import { bendLines, CAPTION_ID, writeCaption, type Captions } from './tree-canvas';
 import {
-	BOW_FIELD,
-	BOWED_CLASS,
 	CAPTION_CLASS,
 	CURSOR_CLASS,
 	HAS_MORE_CLASS,
 	HOVERED_CLASS,
-	ROUTE_FIELDS,
-	ROUTED_CLASS,
 	TUCKED_CLASS,
 	type CyStyle
 } from './stylesheet';
@@ -112,17 +108,6 @@ export interface ExplorerController {
 	/** Tear the canvas down. Idempotent, and every other method no-ops afterwards. */
 	destroy(): void;
 }
-
-/** The words an arrangement's caption reads, in the viewer's language. */
-export interface Captions {
-	/** Over the shelf of people outside the family, beneath the family tree. */
-	outsideFamily?: string;
-}
-
-/** The one caption on the canvas; it is the controller's, never one of the elements. */
-const CAPTION_ID = 'caption:outside-family';
-/** How far above the shelf its caption stands, in model units — clear of the first row. */
-const CAPTION_ABOVE = 16;
 
 /**
  * Written onto the container while a layout runs and when it has finished, so a caller can
@@ -383,68 +368,6 @@ export function explorerFromCore(cy: Core, opts: ControllerOptions): ExplorerCon
 		return { width: box.w, height: box.h };
 	};
 
-	/**
-	 * Bends exactly the lines in `bows`, routes exactly those in `routes`, and straightens every
-	 * other. A route's bends are measured from where its two people are going, not where they
-	 * stand mid-glide: they are only right once the glide has arrived.
-	 */
-	const bend = (
-		{ bows, routes }: Pick<Arrangement, 'bows' | 'routes'>,
-		placeOf: (node: NodeSingular) => Point
-	) => {
-		cy.batch(() => {
-			cy.edges().forEach((edge) => {
-				const route = routes?.get(edge.id());
-				if (route) {
-					const segments = segmentsOf(route, placeOf(edge.source()), placeOf(edge.target()));
-					edge.data({
-						[ROUTE_FIELDS.weights]: segments.weights,
-						[ROUTE_FIELDS.distances]: segments.distances,
-						[ROUTE_FIELDS.sourceEndpoint]: segments.sourceEndpoint,
-						[ROUTE_FIELDS.targetEndpoint]: segments.targetEndpoint,
-						[ROUTE_FIELDS.nameEnd]: route.nameEnd
-					});
-					edge.removeClass(BOWED_CLASS);
-					edge.addClass(ROUTED_CLASS);
-					return;
-				}
-				edge.removeClass(ROUTED_CLASS);
-				const bow = bows.get(edge.id());
-				if (bow === undefined) {
-					edge.removeClass(BOWED_CLASS);
-				} else {
-					edge.data(BOW_FIELD, bow);
-					edge.addClass(BOWED_CLASS);
-				}
-			});
-		});
-	};
-
-	/**
-	 * Writes the shelf's caption where `at` says the shelf begins, or takes it away. It is words
-	 * on the canvas, not somebody: no tap reaches it (`events: no`), nobody drags it, and the
-	 * keyboard, the framing and the filters all pass it by.
-	 */
-	const caption = (at: Point | undefined, words: string | undefined): Map<string, Point> => {
-		const existing = cy.$id(CAPTION_ID);
-		if (!at || !words) {
-			existing.remove();
-			return new Map();
-		}
-		const place = { x: at.x, y: at.y - CAPTION_ABOVE };
-		if (existing.empty()) {
-			cy.add({
-				group: 'nodes',
-				data: { id: CAPTION_ID, label: words },
-				classes: CAPTION_CLASS,
-				position: { ...place }
-			}).ungrabify();
-		} else {
-			existing.data('label', words);
-		}
-		return new Map([[CAPTION_ID, place]]);
-	};
-
 	// The first arrangement runs here rather than through the constructor's `layout` option,
 	// which lays out before there is anywhere to register `layoutstart` — and so before the
 	// running layout could be caught and stopped again. It is simply there: the map has no
@@ -521,15 +444,15 @@ export function explorerFromCore(cy: Core, opts: ControllerOptions): ExplorerCon
 
 		arrange() {
 			if (!alive()) return;
-			caption(undefined, undefined);
-			bend({ bows: new Map() }, (node) => node.position());
+			writeCaption(cy, undefined, undefined);
+			bendLines(cy, { bows: new Map() }, (node) => node.position());
 			glideTo(forcePositions(), !opts.reducedMotion);
 		},
 
 		arrangeAt({ positions, bows, routes, outsideFamily }, captions = {}) {
 			if (!alive()) return;
-			bend({ bows, routes }, (node) => positions.get(node.id()) ?? node.position());
-			const captioned = caption(outsideFamily, captions.outsideFamily);
+			bendLines(cy, { bows, routes }, (node) => positions.get(node.id()) ?? node.position());
+			const captioned = writeCaption(cy, outsideFamily, captions.outsideFamily);
 			glideTo(new Map([...positions, ...captioned]), !opts.reducedMotion);
 		},
 

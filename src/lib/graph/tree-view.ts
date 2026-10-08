@@ -1,7 +1,10 @@
 import type { ArrangementKey } from './layout/arrangements';
 
 /*
- * How the Labels switch reads in the family tree (docs/05 §5.8). Pure.
+ * What the family tree decides about how it is looked at (docs/05 §5.8), apart from the
+ * drawing itself. Pure.
+ *
+ * How the Labels switch reads in the tree:
  *
  * Elsewhere the switch is the reader's habit, kept per device (`view-switches.ts`). In the tree
  * around a person the roles under the names say what the line names would, so the tree starts
@@ -34,4 +37,30 @@ export function labelsAfterArranging(
 	to: ArrangementKey
 ): LabelsState {
 	return to === 'tree' && from !== 'tree' ? { ...state, inTree: false } : state;
+}
+
+/** What last put somebody in the selection. */
+export type SelectionCause = 'opened' | 'tapped' | 'found' | 'treeRelaid';
+
+/**
+ * Whether the selection is a question the reader asked, which the tree answers by drawing that
+ * person's friends' and circles' lines (`tree-shown.ts`). A tap or a search is; the centre the
+ * route opens with is not, and neither is the person just expanded once the expand has laid the
+ * tree out again — their lines would fan out across the new tree before anybody asked.
+ */
+export function selectionAsked(cause: SelectionCause): boolean {
+	return cause === 'tapped' || cause === 'found';
+}
+
+/**
+ * Whether an expand lays the whole map out again: in the family tree, as soon as somebody new
+ * is on it — a newcomer belongs in their generation's row or on the shelf, not wherever there
+ * was room beside the person opened. Free and By circle move nobody already there.
+ */
+export function treeRelaidFor(
+	arrangedBy: ArrangementKey,
+	before: ReadonlySet<string>,
+	after: ReadonlySet<string>
+): boolean {
+	return arrangedBy === 'tree' && [...after].some((id) => !before.has(id));
 }

@@ -22,7 +22,7 @@ export const EDGE_LABEL_LIMIT = 40;
 /**
  * Whether every line is named, given the reader's Labels switch and how many lines are shown.
  * A highlighted, hovered or traced line is named regardless; this is only about naming all.
- * In the family tree the switch is the tree's own (`tree-labels.ts`), not the reader's habit.
+ * In the family tree the switch is the tree's own (`tree-view.ts`), not the reader's habit.
  */
 export function edgeLabelsFit(switchedOn: boolean, visibleEdges: number): boolean {
 	return switchedOn && visibleEdges <= EDGE_LABEL_LIMIT;
