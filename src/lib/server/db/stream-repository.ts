@@ -3,6 +3,7 @@ import { and, desc, eq, inArray, or } from 'drizzle-orm';
 import { alias, type SQLiteColumn } from 'drizzle-orm/sqlite-core';
 import type { BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
 import {
+	activityVisibleTo,
 	childRecordVisibleTo,
 	circlePhotoVisibleTo,
 	contactBrowsableBy,
@@ -142,8 +143,7 @@ export function createDrizzleStreamRepository(
 			// deleted — outright, or by being merged into someone else — the log entry is all
 			// that is left of that name (docs/04 §4.9); an export never had a row at all
 			// (docs/02 §2.15), and the household is meant to see that one was taken. Scoped by
-			// hand because there is no contact to scope through — the row carries the visibility
-			// the affected record had (docs/03 §activity_log).
+			// the entry itself, through `activityVisibleTo` — there is no contact to scope through.
 			const rows = db
 				.select({
 					id: activityLog.id,
@@ -158,7 +158,7 @@ export function createDrizzleStreamRepository(
 				.innerJoin(user, eq(activityLog.actorId, user.id))
 				.where(
 					and(
-						eq(activityLog.householdId, viewer.householdId),
+						activityVisibleTo(viewer),
 						or(
 							inArray(activityLog.action, ['delete', 'merge', 'export', 'import']),
 							// The one update the household is told about: a batch of last names
@@ -168,7 +168,6 @@ export function createDrizzleStreamRepository(
 								inArray(activityLog.entityType, [LAST_NAMES_ENTITY, RENAME_ENTITY])
 							)
 						),
-						or(eq(activityLog.visibility, 'shared'), eq(activityLog.actorId, viewer.id)),
 						byMember(activityLog.actorId, memberId)
 					)
 				)

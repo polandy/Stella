@@ -3,41 +3,23 @@ import { Database } from 'bun:sqlite';
 import { eq } from 'drizzle-orm';
 import { drizzle, type BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
 import { migrate } from 'drizzle-orm/bun-sqlite/migrator';
-import { alias } from 'drizzle-orm/sqlite-core';
 import * as schema from '../db/schema';
-import { circle, contact, note, photo, relationship } from '../db/schema';
-import {
-	childRecordVisibleTo,
-	circlePhotoVisibleTo,
-	contactBrowsableBy,
-	contactVisibleTo,
-	relationshipVisibleTo
-} from './query-scoping';
-import {
-	canViewChildRecord,
-	canViewCirclePhoto,
-	canViewContact,
-	canViewRelationship,
-	type Viewer
-} from './visibility';
+import { contact } from '../db/schema';
+import { contactBrowsableBy, contactVisibleTo } from './query-scoping';
+import type { Viewer } from './visibility';
 
 /*
- * Integration spec for the query-scoping adapter (docs/03 §3.7, docs/08 §8.3).
- * The adapter turns the pure visibility rules into SQL WHERE conditions. Its
- * correctness property: for any viewer, the scoped query returns EXACTLY the rows the
- * pure canView* predicates would allow. We assert that equivalence against a real
- * in-memory SQLite seeded with a representative mix of records.
+ * The one condition of the query-scoping adapter with no twin in `visibility.ts`:
+ * `contactBrowsableBy` (docs/04 §4.9). Every other condition is held to its pure rule by
+ * `visibility-parity.test.ts`.
  */
 
 const H1 = 'household-1';
-const H2 = 'household-2';
 const U1 = 'user-1-owner';
 const U2 = 'user-2-member';
-const U3 = 'user-3-foreign';
 
 const viewerU1: Viewer = { id: U1, householdId: H1 };
 const viewerU2: Viewer = { id: U2, householdId: H1 };
-const viewerForeign: Viewer = { id: U3, householdId: H2 };
 
 let db: BunSQLiteDatabase<typeof schema>;
 
@@ -47,33 +29,13 @@ beforeAll(() => {
 	db = drizzle(sqlite, { schema });
 	migrate(db, { migrationsFolder: './drizzle' });
 
-	db.insert(schema.household)
-		.values([
-			{ id: H1, name: 'Household One' },
-			{ id: H2, name: 'Household Two' }
-		])
-		.run();
-
+	db.insert(schema.household).values({ id: H1, name: 'Household One' }).run();
 	db.insert(schema.user)
 		.values([
 			{ id: U1, householdId: H1, email: 'u1@example.test', name: 'Owner' },
-			{ id: U2, householdId: H1, email: 'u2@example.test', name: 'Member' },
-			{ id: U3, householdId: H2, email: 'u3@example.test', name: 'Foreign' }
+			{ id: U2, householdId: H1, email: 'u2@example.test', name: 'Member' }
 		])
 		.run();
-
-	db.insert(schema.relationshipType)
-		.values({
-			id: 'rt-friend',
-			key: 'friend',
-			forwardLabel: 'Friend',
-			reverseLabel: 'Friend',
-			category: 'social',
-			symmetric: 1
-		})
-		.run();
-
-	// Contacts covering every visibility/household/owner combination.
 	db.insert(contact)
 		.values([
 			{
@@ -83,149 +45,11 @@ beforeAll(() => {
 				visibility: 'shared',
 				displayName: 'Shared'
 			},
-			{
-				id: 'c-priv-u1',
-				householdId: H1,
-				createdBy: U1,
-				visibility: 'private',
-				displayName: 'Private of U1'
-			},
-			{
-				id: 'c-priv-u2',
-				householdId: H1,
-				createdBy: U2,
-				visibility: 'private',
-				displayName: 'Private of U2'
-			},
-			{
-				id: 'c-foreign',
-				householdId: H2,
-				createdBy: U3,
-				visibility: 'shared',
-				displayName: 'Foreign'
-			}
-		])
-		.run();
-
-	// Notes: shared/private children on a shared contact, plus a child on a private contact.
-	db.insert(note)
-		.values([
-			{
-				id: 'n-shared',
-				contactId: 'c-shared',
-				createdBy: U1,
-				visibility: 'shared',
-				body: 'shared note'
-			},
-			{
-				id: 'n-priv-u1',
-				contactId: 'c-shared',
-				createdBy: U1,
-				visibility: 'private',
-				body: 'u1 private'
-			},
-			{
-				id: 'n-priv-u2',
-				contactId: 'c-shared',
-				createdBy: U2,
-				visibility: 'private',
-				body: 'u2 private'
-			},
-			{
-				id: 'n-on-priv',
-				contactId: 'c-priv-u1',
-				createdBy: U1,
-				visibility: 'shared',
-				body: 'on private contact'
-			}
-		])
-		.run();
-
-	// Circles of every visibility, each with a shared photo and a private one of each member.
-	db.insert(circle)
-		.values([
-			{
-				id: 'k-shared',
-				householdId: H1,
-				createdBy: U1,
-				visibility: 'shared',
-				name: 'Shared circle'
-			},
-			{
-				id: 'k-priv-u1',
-				householdId: H1,
-				createdBy: U1,
-				visibility: 'private',
-				name: 'Private of U1'
-			},
-			{ id: 'k-foreign', householdId: H2, createdBy: U3, visibility: 'shared', name: 'Foreign' }
-		])
-		.run();
-	const circlePhoto = (
-		id: string,
-		circleId: string,
-		householdId: string,
-		createdBy: string,
-		visibility: 'shared' | 'private'
-	) => ({
-		id,
-		householdId,
-		circleId,
-		createdBy,
-		visibility,
-		filePath: `${id}.jpg`,
-		thumbPath: `${id}_t.jpg`,
-		mime: 'image/jpeg'
-	});
-	db.insert(photo)
-		.values([
-			circlePhoto('kp-shared', 'k-shared', H1, U1, 'shared'),
-			circlePhoto('kp-priv-u1', 'k-shared', H1, U1, 'private'),
-			circlePhoto('kp-priv-u2', 'k-shared', H1, U2, 'private'),
-			circlePhoto('kp-on-priv', 'k-priv-u1', H1, U2, 'shared'),
-			circlePhoto('kp-foreign', 'k-foreign', H2, U3, 'shared')
-		])
-		.run();
-
-	// Relationships: one with both endpoints visible to U2, one with a hidden endpoint.
-	db.insert(relationship)
-		.values([
-			{
-				id: 'r-both-visible',
-				householdId: H1,
-				fromContactId: 'c-shared',
-				toContactId: 'c-priv-u2',
-				typeId: 'rt-friend',
-				createdBy: U1
-			},
-			{
-				id: 'r-hidden-endpoint',
-				householdId: H1,
-				fromContactId: 'c-shared',
-				toContactId: 'c-priv-u1',
-				typeId: 'rt-friend',
-				createdBy: U1
-			}
+			{ id: 'c-priv-u1', householdId: H1, createdBy: U1, visibility: 'private', displayName: 'U1' },
+			{ id: 'c-priv-u2', householdId: H1, createdBy: U2, visibility: 'private', displayName: 'U2' }
 		])
 		.run();
 });
-
-/** Ids allowed by the pure contact predicate — the ground truth to match. */
-function expectedContactIds(viewer: Viewer): string[] {
-	return db
-		.select()
-		.from(contact)
-		.all()
-		.filter((c) =>
-			canViewContact(viewer, {
-				householdId: c.householdId,
-				ownerId: c.createdBy,
-				visibility: c.visibility
-			})
-		)
-		.map((c) => c.id)
-		.sort();
-}
 
 function scopedContactIds(viewer: Viewer): string[] {
 	return db
@@ -236,22 +60,6 @@ function scopedContactIds(viewer: Viewer): string[] {
 		.map((r) => r.id)
 		.sort();
 }
-
-describe('contactVisibleTo', () => {
-	it('matches the pure predicate for a normal household member', () => {
-		expect(scopedContactIds(viewerU2)).toEqual(expectedContactIds(viewerU2));
-		expect(scopedContactIds(viewerU2)).toEqual(['c-priv-u2', 'c-shared']);
-	});
-
-	it('matches the pure predicate for the owner of private contacts', () => {
-		expect(scopedContactIds(viewerU1)).toEqual(expectedContactIds(viewerU1));
-		expect(scopedContactIds(viewerU1)).toEqual(['c-priv-u1', 'c-shared']);
-	});
-
-	it('never leaks across households', () => {
-		expect(scopedContactIds(viewerForeign)).toEqual(['c-foreign']);
-	});
-});
 
 describe('contactBrowsableBy (visible and not archived)', () => {
 	function browsableContactIds(viewer: Viewer): string[] {
@@ -283,159 +91,5 @@ describe('contactBrowsableBy (visible and not archived)', () => {
 	it('is exactly visibility while nothing is archived', () => {
 		expect(browsableContactIds(viewerU1)).toEqual(scopedContactIds(viewerU1));
 		expect(browsableContactIds(viewerU2)).toEqual(scopedContactIds(viewerU2));
-	});
-});
-
-describe('childRecordVisibleTo (notes joined to their contact)', () => {
-	function scopedNoteIds(viewer: Viewer): string[] {
-		return db
-			.select({ id: note.id })
-			.from(note)
-			.innerJoin(contact, eq(note.contactId, contact.id))
-			.where(
-				childRecordVisibleTo(viewer, { visibility: note.visibility, createdBy: note.createdBy })
-			)
-			.all()
-			.map((r) => r.id)
-			.sort();
-	}
-
-	function expectedNoteIds(viewer: Viewer): string[] {
-		return db
-			.select()
-			.from(note)
-			.innerJoin(contact, eq(note.contactId, contact.id))
-			.all()
-			.filter((row) =>
-				canViewChildRecord(viewer, {
-					ownerId: row.note.createdBy,
-					visibility: row.note.visibility,
-					contact: {
-						householdId: row.contact.householdId,
-						ownerId: row.contact.createdBy,
-						visibility: row.contact.visibility
-					}
-				})
-			)
-			.map((row) => row.note.id)
-			.sort();
-	}
-
-	it('shows shared notes and the members own private notes, hiding others', () => {
-		expect(scopedNoteIds(viewerU2)).toEqual(expectedNoteIds(viewerU2));
-		// n-shared (shared), n-priv-u2 (owned). Not n-priv-u1, not n-on-priv (private parent).
-		expect(scopedNoteIds(viewerU2)).toEqual(['n-priv-u2', 'n-shared']);
-	});
-
-	it('lets the private-contact owner see notes under it', () => {
-		expect(scopedNoteIds(viewerU1)).toEqual(expectedNoteIds(viewerU1));
-		expect(scopedNoteIds(viewerU1)).toContain('n-on-priv');
-	});
-});
-
-describe('relationshipVisibleTo (both endpoints must be visible)', () => {
-	function scopedRelationshipIds(viewer: Viewer): string[] {
-		const fromContact = alias(contact, 'from_contact');
-		const toContact = alias(contact, 'to_contact');
-		return db
-			.select({ id: relationship.id })
-			.from(relationship)
-			.innerJoin(fromContact, eq(relationship.fromContactId, fromContact.id))
-			.innerJoin(toContact, eq(relationship.toContactId, toContact.id))
-			.where(relationshipVisibleTo(viewer, fromContact, toContact))
-			.all()
-			.map((r) => r.id)
-			.sort();
-	}
-
-	function expectedRelationshipIds(viewer: Viewer): string[] {
-		const fromContact = alias(contact, 'from_c');
-		const toContact = alias(contact, 'to_c');
-		return db
-			.select({ id: relationship.id, from: fromContact, to: toContact })
-			.from(relationship)
-			.innerJoin(fromContact, eq(relationship.fromContactId, fromContact.id))
-			.innerJoin(toContact, eq(relationship.toContactId, toContact.id))
-			.all()
-			.filter((row) =>
-				canViewRelationship(viewer, {
-					from: {
-						householdId: row.from.householdId,
-						ownerId: row.from.createdBy,
-						visibility: row.from.visibility
-					},
-					to: {
-						householdId: row.to.householdId,
-						ownerId: row.to.createdBy,
-						visibility: row.to.visibility
-					}
-				})
-			)
-			.map((row) => row.id)
-			.sort();
-	}
-
-	it('hides a relationship whose endpoint is a private contact the viewer cannot see', () => {
-		// U2 can see c-shared and owns c-priv-u2 → r-both-visible shown; r-hidden-endpoint
-		// touches U1's private c-priv-u1 → hidden.
-		expect(scopedRelationshipIds(viewerU2)).toEqual(expectedRelationshipIds(viewerU2));
-		expect(scopedRelationshipIds(viewerU2)).toEqual(['r-both-visible']);
-	});
-
-	it('shows only relationships whose every endpoint the viewer can see', () => {
-		// U1 owns c-priv-u1 (→ r-hidden-endpoint visible) but cannot see U2's private
-		// c-priv-u2 (→ r-both-visible hidden). Ownership of one contact is not blanket access.
-		expect(scopedRelationshipIds(viewerU1)).toEqual(expectedRelationshipIds(viewerU1));
-		expect(scopedRelationshipIds(viewerU1)).toEqual(['r-hidden-endpoint']);
-	});
-});
-
-describe('circlePhotoVisibleTo (photos joined to their circle)', () => {
-	function scopedPhotoIds(viewer: Viewer): string[] {
-		return db
-			.select({ id: photo.id })
-			.from(photo)
-			.innerJoin(circle, eq(photo.circleId, circle.id))
-			.where(
-				circlePhotoVisibleTo(viewer, { visibility: photo.visibility, createdBy: photo.createdBy })
-			)
-			.all()
-			.map((r) => r.id)
-			.sort();
-	}
-
-	function expectedPhotoIds(viewer: Viewer): string[] {
-		return db
-			.select()
-			.from(photo)
-			.innerJoin(circle, eq(photo.circleId, circle.id))
-			.all()
-			.filter((row) =>
-				canViewCirclePhoto(viewer, {
-					ownerId: row.photo.createdBy,
-					visibility: row.photo.visibility,
-					circle: {
-						householdId: row.circle.householdId,
-						ownerId: row.circle.createdBy,
-						visibility: row.circle.visibility
-					}
-				})
-			)
-			.map((row) => row.photo.id)
-			.sort();
-	}
-
-	it('shows shared photos and the members own private ones, never a hidden circle', () => {
-		expect(scopedPhotoIds(viewerU2)).toEqual(expectedPhotoIds(viewerU2));
-		expect(scopedPhotoIds(viewerU2)).toEqual(['kp-priv-u2', 'kp-shared']);
-	});
-
-	it('lets the private circle owner see the photos in it', () => {
-		expect(scopedPhotoIds(viewerU1)).toEqual(expectedPhotoIds(viewerU1));
-		expect(scopedPhotoIds(viewerU1)).toEqual(['kp-on-priv', 'kp-priv-u1', 'kp-shared']);
-	});
-
-	it('shows another household nothing of this one', () => {
-		expect(scopedPhotoIds(viewerForeign)).toEqual(['kp-foreign']);
 	});
 });
