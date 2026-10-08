@@ -5,7 +5,7 @@ import { photoTab } from './photo-card';
 /*
  * The Photos card's suggestion (docs/02 §2.24.7, docs/design/screens/person.md): an unlinked
  * person whose full name a face in Immich carries is asked about on their own page — *Is this
- * Quirin?* — with Link, Choose another and Ignore. Written after the owner tried #313 in the
+ * Waltraud?* — with Link, Choose another and Ignore. Written after the owner tried #313 in the
  * preview (docs/08 §8.4.1).
  *
  * The e2e server runs with `IMMICH_DEMO=true`. Every other demo face is linked by some spec at
@@ -32,26 +32,26 @@ const stillSameDocument = (page: Page) =>
 test('a likely match is asked about on the card; Choose another opens the picker, and Link brings the photos in without a reload', async ({
 	page
 }) => {
-	await addPerson(page, 'Quirin', 'Vorschlag');
+	await addPerson(page, 'Waltraud', 'Vorschlag');
 
 	// It arrives under the one-line card, which stays one line.
 	await expect(hint(page)).toContainText(
-		'Is this Quirin? Immich has “Quirin Vorschlag” with 12 photos.'
+		'Is this Waltraud? Immich has “Waltraud Vorschlag” with 12 photos.'
 	);
 	await expect(page.locator('#section-photos')).toHaveAttribute('data-empty-line', 'true');
 
 	await hint(page).getByRole('button', { name: 'Choose another' }).click();
-	const picker = page.getByRole('dialog', { name: 'Find Quirin Vorschlag in Immich' });
+	const picker = page.getByRole('dialog', { name: 'Find Waltraud Vorschlag in Immich' });
 	await expect(picker).toBeVisible();
 	await expect(
-		picker.getByRole('button', { name: 'Link Quirin Vorschlag to Quirin Vorschlag' })
+		picker.getByRole('button', { name: 'Link Waltraud Vorschlag to Waltraud Vorschlag' })
 	).toBeVisible();
 	await picker.getByRole('button', { name: 'Close' }).click();
 	await expect(picker).toBeHidden();
 
 	await markDocument(page);
 	await hint(page)
-		.getByRole('button', { name: 'Link Quirin Vorschlag to Quirin Vorschlag' })
+		.getByRole('button', { name: 'Link Waltraud Vorschlag to Waltraud Vorschlag' })
 		.click();
 
 	await expect(page.getByTestId('immich-count')).toHaveText('In Immich · 12 photos');
@@ -66,15 +66,15 @@ test('a likely match is asked about on the card; Choose another opens the picker
 test('Ignore takes the row away at once, Undo brings it back, and once sent the pair is under Ignored', async ({
 	page
 }) => {
-	await addPerson(page, 'Quilla', 'Vorschlag');
+	await addPerson(page, 'Wigbert', 'Vorschlag');
 	const personPage = page.url();
 	const ignore = hint(page).getByRole('button', {
-		name: 'Ignore the proposal for Quilla Vorschlag'
+		name: 'Ignore the proposal for Wigbert Vorschlag'
 	});
 	const toast = page.getByTestId('toast-undo');
-	const quilla = 'Quilla Vorschlag · In Immich: Quilla Vorschlag';
+	const quilla = 'Wigbert Vorschlag · In Immich: Wigbert Vorschlag';
 
-	await expect(hint(page)).toContainText('Is this Quilla?');
+	await expect(hint(page)).toContainText('Is this Wigbert?');
 	await ignore.click();
 	await expect(toast).toContainText('Proposal ignored');
 	await expect(hint(page)).toHaveCount(0);
@@ -98,7 +98,7 @@ test('Ignore takes the row away at once, Undo brings it back, and once sent the 
 	await expect(ignored).toContainText(quilla);
 
 	// Proposed again, so the household's ignores are as the other specs expect them.
-	await ignored.getByRole('button', { name: 'Propose again: Quilla Vorschlag' }).click();
+	await ignored.getByRole('button', { name: 'Propose again: Wigbert Vorschlag' }).click();
 	await expect(toast).toContainText('Proposed again');
 	const proposed = page.waitForResponse(
 		(response) =>
@@ -110,13 +110,13 @@ test('Ignore takes the row away at once, Undo brings it back, and once sent the 
 	// And the card asks again.
 	await page.goto(personPage);
 	await appReady(page);
-	await expect(hint(page)).toContainText('Is this Quilla?');
+	await expect(hint(page)).toContainText('Is this Wigbert?');
 });
 
 test('a maybe is not asked about on the card — it stays in Settings', async ({ page }) => {
 	// Half of a double last name agrees: a maybe, as in the list.
 	const asked = page.waitForResponse((response) => response.url().endsWith('/immich/match'));
-	await addPerson(page, 'Quella', 'Vorschlag-Probe');
+	await addPerson(page, 'Ortwin', 'Vorschlag-Probe');
 
 	// The answer is in, and it is "nothing to suggest"; the card is drawn.
 	expect(await (await asked).json()).toEqual({ match: null });
@@ -124,6 +124,6 @@ test('a maybe is not asked about on the card — it stays in Settings', async ({
 	await expect(hint(page)).toHaveCount(0);
 
 	await page.goto('/settings/immich');
-	const row = page.getByTestId('immich-match').filter({ hasText: 'Quella Vorschlag-Probe' });
+	const row = page.getByTestId('immich-match').filter({ hasText: 'Ortwin Vorschlag-Probe' });
 	await expect(row).toHaveAttribute('data-kind', 'maybe');
 });
