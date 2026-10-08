@@ -52,10 +52,10 @@ test('a title like a gift already given says so, and still saves', async ({ page
 	await expect(hint).toHaveText('');
 
 	// A hint, not a block: the second teapot can be on purpose.
-	await what.fill(`Teekanne ${letters}`);
+	await what.fill(`Gusseisen ${letters}`);
 	await expect(hint).toContainText('Already given');
 	await form.getByRole('button', { name: 'Save' }).click();
-	await expect(card.getByTestId('gift-ideas')).toContainText(`Teekanne ${letters}`);
+	await expect(card.getByTestId('gift-ideas')).toContainText(`Gusseisen ${letters}`);
 });
 
 test('a person coming up with open ideas says how many, linking to their gifts', async ({
@@ -122,7 +122,7 @@ test('the palette notes a gift idea for someone, from anywhere', async ({ page }
 	await page.keyboard.press('Enter');
 
 	// Their page, the idea form open with the cursor in it.
-	await expect(page.getByRole('heading', { name: `Kunigunde ${last}` })).toBeVisible();
+	await expect(page.getByRole('heading', { name: `Kunigunde ${last}`, exact: true })).toBeVisible();
 	const form = giftsCard(page).getByTestId('gift-form');
 	await expect(form.getByRole('heading', { name: `Idea for Kunigunde ${last}` })).toBeVisible();
 	await expect(form.getByLabel('What?')).toBeFocused();
