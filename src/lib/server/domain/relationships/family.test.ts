@@ -6,8 +6,9 @@ import type { KinshipGraph } from '$lib/kinship/kinship';
 import { pairKey, type Dismissal } from '$lib/suggestions/claims';
 import type { Viewer } from '../../access/visibility';
 import { readFamilyOf, type FamilyReadDeps } from './family';
-import { readExclusionFacts, readKinship, type RelationshipView } from './relationships';
+import { readExclusionFacts, readKinship } from './relationships';
 import { reviewPerson, type ProposedLink } from './suggestion-review';
+import { inMemoryKinshipGraph, inMemoryRelationshipTies, someTie } from '../testing';
 
 /*
  * The family cards of the person page, read once (docs/04 §4.11). What is pinned here is that
@@ -47,19 +48,8 @@ const drawing: GraphModel = {
 	edges: []
 };
 
-const tie = (id: string, otherContactId: string): RelationshipView => ({
-	id,
-	otherContactId,
-	otherDisplayName: otherContactId,
-	label: 'Spouse of',
-	typeId: 'spouse',
-	typeKey: 'spouse',
-	side: 'forward',
-	category: 'romantic',
-	description: null,
-	sinceDate: null,
-	status: 'current'
-});
+const tie = (id: string, otherContactId: string) =>
+	someTie(id, otherContactId, { label: 'Spouse of', typeKey: 'spouse', category: 'romantic' });
 
 /** Linda as Steve's sibling, declined once. */
 const declined: Dismissal[] = [
@@ -79,7 +69,7 @@ function deps() {
 				return { graph: drawing, kinship: graph };
 			}
 		},
-		relationships: {
+		ties: {
 			async listForContactVisibleTo(v, contactId) {
 				expect([v, contactId]).toEqual([viewer, 'andy']);
 				asked.ties++;
@@ -103,13 +93,10 @@ const said = (links: readonly ProposedLink[]) =>
 
 /** The same records behind the separate use-cases, as the page read them before. */
 function separately() {
-	const source = deps();
 	return {
-		relationships: {
-			loadKinshipGraphVisibleTo: async () => family(),
-			listForContactVisibleTo: source.relationships.listForContactVisibleTo
-		},
-		dismissals: source.dismissals
+		kinship: inMemoryKinshipGraph(family()),
+		ties: inMemoryRelationshipTies({ andy: [tie('r-spouse', 'mia')] }),
+		dismissals: deps().dismissals
 	};
 }
 

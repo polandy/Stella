@@ -71,8 +71,8 @@ export interface PeopleWiring {
 	ids: IdGenerator;
 	/** The auth context's repository: which contact a member is lives on their account. */
 	accounts: AccountRepository;
-	/** The kinship a surname proposal follows; the relationships context owns the repository. */
-	relationships: SurnameReviewDeps['relationships'];
+	/** The kinship a surname proposal follows; the relationships context owns the read model. */
+	kinship: SurnameReviewDeps['kinship'];
 	/** Where a deleted person's photo bytes are unlinked; the media context owns the store. */
 	media: DeleteContactDeps['media'];
 }
@@ -82,7 +82,7 @@ export function createPeopleServices({
 	clock,
 	ids,
 	accounts,
-	relationships,
+	kinship,
 	media
 }: PeopleWiring): PeopleServices {
 	const contacts = createDrizzleContactRepository(db);
@@ -107,7 +107,7 @@ export function createPeopleServices({
 		lastNameDeps: nameDeps,
 		surnameReviewDeps: {
 			surnames: createDrizzleSurnameFacts(db),
-			relationships,
+			kinship,
 			surnameDismissals
 		},
 		surnameDismissalDeps: { names: contacts, surnameDismissals, ids, clock },

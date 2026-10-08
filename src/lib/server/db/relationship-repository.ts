@@ -1,91 +1,23 @@
-import { and, count, eq, inArray, isNull, ne, or, sql } from 'drizzle-orm';
+import { and, eq, inArray, ne } from 'drizzle-orm';
 import type { BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
 import { alias } from 'drizzle-orm/sqlite-core';
-import type { KinshipGraph } from '../../kinship/kinship';
 import { relationshipVisibleTo } from '../access/query-scoping';
 import type { Viewer } from '../access/visibility';
-import { loadKinshipGraph } from './kinship-graph-read';
-import {
-	CURRENT_RELATIONSHIP_STATUS,
-	RELATIONSHIP_STATUSES,
-	type RelationshipStatus
-} from '../../relationships/status';
-import {
-	describeRelationshipFor,
-	type NewRelationship,
-	type RelationshipUpdate,
-	type RelationshipRepository,
-	type RelationshipType,
-	type RelationshipView
-} from '../domain/relationships/relationships';
 import type {
-	NewRelationshipType,
-	RelationshipTypeFields,
-	RelationshipTypeRepository
-} from '../domain/relationships/relationship-types';
+	NewRelationship,
+	RelationshipRepository,
+	RelationshipUpdate
+} from '../domain/relationships/relationships';
 import type * as schema from './schema';
-import { contact, relationship, relationshipType } from './schema';
+import { contact, relationship } from './schema';
 
 /*
- * Drizzle adapter for the RelationshipRepository port (docs/08 §8.3). Reads for a contact
- * are scoped through the central `relationshipVisibleTo` (both endpoints must be visible),
- * and per-row labels are resolved with the pure `describeRelationshipFor`.
+ * Drizzle adapter for the RelationshipRepository port (docs/08 §8.3): the links between people
+ * as they are written. Every write to a stored link asks `relationshipVisibleTo` first (both
+ * endpoints must be visible, docs/03 §3.7). What the pages list are read models of their own:
+ * `relationship-tie-reads.ts`, `kinship-graph-read.ts`, and the vocabulary with its usage,
+ * `relationship-type-repository.ts` and `relationship-type-usage-reads.ts`.
  */
-
-type TypeRow = {
-	id: string;
-	householdId: string | null;
-	key: string;
-	forwardLabel: string;
-	reverseLabel: string;
-	category: RelationshipType['category'];
-	symmetric: number;
-	sortOrder: number;
-};
-
-const toType = (row: TypeRow): RelationshipType => ({
-	id: row.id,
-	householdId: row.householdId,
-	key: row.key,
-	forwardLabel: row.forwardLabel,
-	reverseLabel: row.reverseLabel,
-	category: row.category,
-	symmetric: row.symmetric === 1,
-	sortOrder: row.sortOrder
-});
-
-/**
- * The column is plain text, so an import — or a hand-written archive — can put anything in it.
- * A link that is on record holds until someone ends it, so anything the domain does not know
- * reads as `current` rather than as a state of its own.
- */
-const toStatus = (value: string): RelationshipStatus =>
-	RELATIONSHIP_STATUSES.includes(value as RelationshipStatus)
-		? (value as RelationshipStatus)
-		: CURRENT_RELATIONSHIP_STATUS;
-
-/**
- * The types a household may use: the built-in set (`household_id` null, seeded globally) plus
- * the ones this household defined. Another household's custom type is not merely hidden from
- * the picker — it cannot be resolved by id either, so it can never be stored (docs/03 §3.6).
- */
-const typeUsableBy = (viewer: Viewer) =>
-	or(isNull(relationshipType.householdId), eq(relationshipType.householdId, viewer.householdId));
-
-/** One custom type of this household — never a built-in one, whose `household_id` is null. */
-const customTypeOf = (viewer: Viewer, typeId: string) =>
-	and(eq(relationshipType.id, typeId), eq(relationshipType.householdId, viewer.householdId));
-
-const typeColumns = {
-	id: relationshipType.id,
-	householdId: relationshipType.householdId,
-	key: relationshipType.key,
-	forwardLabel: relationshipType.forwardLabel,
-	reverseLabel: relationshipType.reverseLabel,
-	category: relationshipType.category,
-	symmetric: relationshipType.symmetric,
-	sortOrder: relationshipType.sortOrder
-};
 
 /**
  * Whether this viewer may see the relationship at all — both endpoints visible, per §3.7.
@@ -126,119 +58,8 @@ const toRow = (rel: NewRelationship) => ({
 
 export function createDrizzleRelationshipRepository(
 	db: BunSQLiteDatabase<typeof schema>
-): RelationshipRepository & RelationshipTypeRepository {
+): RelationshipRepository {
 	return {
-		async listTypes(viewer: Viewer) {
-			return db
-				.select(typeColumns)
-				.from(relationshipType)
-				.where(typeUsableBy(viewer))
-				.orderBy(relationshipType.sortOrder, relationshipType.forwardLabel)
-				.all()
-				.map(toType);
-		},
-
-		async getType(viewer: Viewer, typeId: string) {
-			const row = db
-				.select(typeColumns)
-				.from(relationshipType)
-				.where(and(eq(relationshipType.id, typeId), typeUsableBy(viewer)))
-				.get();
-			return row ? toType(row) : null;
-		},
-
-		async insertType(type: NewRelationshipType) {
-			db.insert(relationshipType)
-				.values({ ...type, symmetric: type.symmetric ? 1 : 0 })
-				.run();
-		},
-
-		async updateTypeVisibleTo(viewer: Viewer, typeId: string, fields: RelationshipTypeFields) {
-			// `householdId` in the predicate is what keeps the built-in set (household_id null)
-			// read-only here as well, not only in the use-case.
-			const changed = db
-				.update(relationshipType)
-				.set({ ...fields, symmetric: fields.symmetric ? 1 : 0 })
-				.where(customTypeOf(viewer, typeId))
-				.returning({ id: relationshipType.id })
-				.all();
-			return changed.length > 0;
-		},
-
-		async deleteTypeVisibleTo(viewer: Viewer, typeId: string) {
-			const changed = db
-				.delete(relationshipType)
-				.where(customTypeOf(viewer, typeId))
-				.returning({ id: relationshipType.id })
-				.all();
-			return changed.length > 0;
-		},
-
-		async mergeTypeInto(viewer: Viewer, fromId: string, intoId: string) {
-			return db.transaction((tx) => {
-				const from = tx
-					.select({ id: relationshipType.id })
-					.from(relationshipType)
-					.where(customTypeOf(viewer, fromId))
-					.get();
-				const into = tx
-					.select({ id: relationshipType.id })
-					.from(relationshipType)
-					.where(
-						and(
-							eq(relationshipType.id, intoId),
-							or(
-								isNull(relationshipType.householdId),
-								eq(relationshipType.householdId, viewer.householdId)
-							)
-						)
-					)
-					.get();
-				if (!from || !into) return false;
-				// Deliberately not scoped by visibility: the type is household vocabulary, and a row
-				// left on it would keep it from being deleted. `or ignore` leaves a pair the target
-				// already links where it was, so the delete below takes that duplicate with it —
-				// the same rule as merging two people (contact-merge.ts).
-				tx.run(
-					sql`update or ignore relationship set type_id = ${intoId} where type_id = ${fromId} and household_id = ${viewer.householdId}`
-				);
-				tx.delete(relationship)
-					.where(
-						and(eq(relationship.typeId, fromId), eq(relationship.householdId, viewer.householdId))
-					)
-					.run();
-				tx.delete(relationshipType).where(customTypeOf(viewer, fromId)).run();
-				return true;
-			});
-		},
-
-		async countRelationshipsOfType(viewer: Viewer, typeId: string) {
-			const fromC = alias(contact, 'from_c');
-			const toC = alias(contact, 'to_c');
-			const rows = db
-				.select({ id: relationship.id })
-				.from(relationship)
-				.innerJoin(fromC, eq(relationship.fromContactId, fromC.id))
-				.innerJoin(toC, eq(relationship.toContactId, toC.id))
-				.where(and(eq(relationship.typeId, typeId), relationshipVisibleTo(viewer, fromC, toC)))
-				.all();
-			return rows.length;
-		},
-
-		async countRelationshipsByType(viewer: Viewer) {
-			const fromC = alias(contact, 'from_c');
-			const toC = alias(contact, 'to_c');
-			const rows = db
-				.select({ typeId: relationship.typeId, n: count() })
-				.from(relationship)
-				.innerJoin(fromC, eq(relationship.fromContactId, fromC.id))
-				.innerJoin(toC, eq(relationship.toContactId, toC.id))
-				.where(relationshipVisibleTo(viewer, fromC, toC))
-				.groupBy(relationship.typeId)
-				.all();
-			return new Map(rows.map((r) => [r.typeId, r.n]));
-		},
-
 		async exists(fromContactId: string, toContactId: string, typeId: string, exceptId?: string) {
 			const row = db
 				.select({ id: relationship.id })
@@ -264,74 +85,6 @@ export function createDrizzleRelationshipRepository(
 			// One statement in one transaction: a row refused by the database takes the others with it.
 			db.transaction((tx) => {
 				tx.insert(relationship).values(rels.map(toRow)).run();
-			});
-		},
-
-		async listForContactVisibleTo(viewer: Viewer, contactId: string): Promise<RelationshipView[]> {
-			const fromC = alias(contact, 'from_c');
-			const toC = alias(contact, 'to_c');
-
-			const rows = db
-				.select({
-					id: relationship.id,
-					description: relationship.note,
-					sinceDate: relationship.sinceDate,
-					status: relationship.status,
-					fromContactId: relationship.fromContactId,
-					toContactId: relationship.toContactId,
-					fromName: fromC.displayName,
-					toName: toC.displayName,
-					typeId: relationshipType.id,
-					typeKey: relationshipType.key,
-					forwardLabel: relationshipType.forwardLabel,
-					reverseLabel: relationshipType.reverseLabel,
-					category: relationshipType.category,
-					symmetric: relationshipType.symmetric,
-					sortOrder: relationshipType.sortOrder
-				})
-				.from(relationship)
-				.innerJoin(relationshipType, eq(relationship.typeId, relationshipType.id))
-				.innerJoin(fromC, eq(relationship.fromContactId, fromC.id))
-				.innerJoin(toC, eq(relationship.toContactId, toC.id))
-				.where(
-					and(
-						or(eq(relationship.fromContactId, contactId), eq(relationship.toContactId, contactId)),
-						relationshipVisibleTo(viewer, fromC, toC)
-					)
-				)
-				.orderBy(relationshipType.sortOrder)
-				.all();
-
-			return rows.map((row) => {
-				const description = describeRelationshipFor(
-					contactId,
-					{ fromContactId: row.fromContactId, toContactId: row.toContactId },
-					{
-						id: '',
-						householdId: null,
-						key: row.typeKey,
-						forwardLabel: row.forwardLabel,
-						reverseLabel: row.reverseLabel,
-						category: row.category,
-						symmetric: row.symmetric === 1,
-						sortOrder: row.sortOrder
-					}
-				);
-				const otherDisplayName =
-					description.otherContactId === row.fromContactId ? row.fromName : row.toName;
-				return {
-					id: row.id,
-					sinceDate: row.sinceDate,
-					status: toStatus(row.status),
-					otherContactId: description.otherContactId,
-					otherDisplayName,
-					label: description.label,
-					typeId: row.typeId,
-					typeKey: row.typeKey,
-					side: description.side,
-					category: description.category,
-					description: row.description
-				};
 			});
 		},
 
@@ -390,10 +143,6 @@ export function createDrizzleRelationshipRepository(
 				tx.delete(relationship).where(inArray(relationship.id, unique)).run();
 				return true;
 			});
-		},
-
-		async loadKinshipGraphVisibleTo(viewer: Viewer): Promise<KinshipGraph> {
-			return loadKinshipGraph(db, viewer);
 		}
 	};
 }

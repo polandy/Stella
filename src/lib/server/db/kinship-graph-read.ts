@@ -5,12 +5,13 @@ import type { KinshipGraph, KinPerson } from '../../kinship/kinship';
 import { kinshipGraphOf } from '../../kinship/graph-of';
 import { contactVisibleTo, relationshipVisibleTo } from '../access/query-scoping';
 import type { Viewer } from '../access/visibility';
+import type { KinshipGraphReads } from '../domain/relationships/suggestion-review';
 import type * as schema from './schema';
 import { contact, relationship, relationshipType } from './schema';
 
 /*
  * The one read that feeds the pure kinship engine (docs/02 §2.4.1). Both the person page
- * (through the relationship repository) and the explorer (through the graph repository) infer
+ * (through `KinshipGraphReads` below) and the explorer (through the graph repository) infer
  * from exactly this snapshot, so the two can never disagree about who is related to whom.
  *
  * Scoping happens here, before inference: only contacts the viewer may see and only
@@ -49,4 +50,11 @@ export function loadKinshipGraph(
 		.all();
 
 	return kinshipGraphOf(people, rows);
+}
+
+/** Drizzle adapter for the `KinshipGraphReads` port (docs/08 §8.3): `loadKinshipGraph` itself. */
+export function createDrizzleKinshipGraphReads(
+	db: BunSQLiteDatabase<typeof schema>
+): KinshipGraphReads {
+	return { loadKinshipGraphVisibleTo: async (viewer: Viewer) => loadKinshipGraph(db, viewer) };
 }

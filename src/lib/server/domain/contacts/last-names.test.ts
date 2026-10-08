@@ -16,6 +16,7 @@ import {
 } from './last-names';
 import type { NameWrite } from './name-parts';
 import { lastNamesFacts } from '../../../stream/notices';
+import { inMemoryKinshipGraph } from '../testing';
 
 /*
  * Last names for several people at once (docs/02 §2.2.4.4): the reviewed
@@ -80,16 +81,10 @@ function fakeDeps(
 				}
 			},
 			surnames: { loadSurnameFactsVisibleTo: async () => ({ people, familyCircles: [] }) },
-			relationships: {
-				loadKinshipGraphVisibleTo: async (): Promise<KinshipGraph> => ({
-					people: people.map((p) => ({ id: p.id, displayName: p.displayName })),
-					parentEdges: [],
-					siblingEdges: [],
-					partnerEdges: [],
-					storedPairs: [],
-					...graph
-				})
-			},
+			kinship: inMemoryKinshipGraph({
+				people: people.map((p) => ({ id: p.id, displayName: p.displayName })),
+				...graph
+			}),
 			surnameDismissals: {
 				listForHousehold: async () =>
 					dismissed.map(({ contactId, folded }) => ({ contactId, folded })),

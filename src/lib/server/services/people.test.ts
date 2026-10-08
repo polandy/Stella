@@ -5,7 +5,7 @@ import { migrate } from 'drizzle-orm/bun-sqlite/migrator';
 import { registerFirstAdmin, type AuthUser } from '../auth/accounts';
 import type { Clock } from '../clock';
 import { createDrizzleAccountRepository } from '../db/account-repository';
-import { createDrizzleRelationshipRepository } from '../db/relationship-repository';
+import { createDrizzleKinshipGraphReads } from '../db/kinship-graph-read';
 import * as schema from '../db/schema';
 import { createContact, deleteContact } from '../domain/contacts/contacts';
 import { setSelfContact } from '../domain/household/self-contact';
@@ -59,7 +59,7 @@ beforeEach(async () => {
 		clock,
 		ids,
 		accounts,
-		relationships: createDrizzleRelationshipRepository(db),
+		kinship: createDrizzleKinshipGraphReads(db),
 		media
 	};
 });
@@ -117,7 +117,7 @@ describe('createPeopleServices', () => {
 		expect(people.surnameReviewDeps.surnameDismissals).toBe(
 			people.surnameDismissalDeps.surnameDismissals
 		);
-		expect(people.surnameReviewDeps.relationships).toBe(wiring.relationships);
+		expect(people.surnameReviewDeps.kinship).toBe(wiring.kinship);
 	});
 
 	it('reads a namesake’s context through the same reads as the person context', () => {

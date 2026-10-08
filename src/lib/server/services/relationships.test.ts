@@ -76,15 +76,13 @@ async function addPerson(firstName: string) {
 const NO_REQUEST = { proposeFor: [], reviewOpen: false };
 
 describe('createRelationshipServices', () => {
-	it('hands every use-case the one relationship repository the edge reads', async () => {
+	it('builds each port once and hands it to every use-case that reads it', async () => {
 		const relationships = createRelationshipServices(wiring);
-		// One Drizzle object serves both ports.
-		expect<unknown>(relationships.relationshipTypes).toBe(relationships.relationships);
-		expect(relationships.relationshipDeps.relationships).toBe(relationships.relationships);
 		expect(relationships.relationshipDeps.types).toBe(relationships.relationshipTypes);
 		expect(relationships.relationshipTypeDeps.types).toBe(relationships.relationshipTypes);
-		expect(relationships.suggestionReviewDeps.relationships).toBe(relationships.relationships);
-		expect(relationships.familyReadDeps.relationships).toBe(relationships.relationships);
+		expect(relationships.relationshipDeps.kinship).toBe(relationships.kinship);
+		expect(relationships.suggestionReviewDeps.kinship).toBe(relationships.kinship);
+		expect(relationships.familyReadDeps.ties).toBe(relationships.relationshipDeps.ties);
 
 		const anna = await addPerson('Anna');
 		const ben = await addPerson('Ben');
@@ -193,8 +191,6 @@ describe('createServices', () => {
 			ids,
 			version: '1.0.0'
 		});
-		expect(services.people.surnameReviewDeps.relationships).toBe(
-			services.relationships.relationships
-		);
+		expect(services.people.surnameReviewDeps.kinship).toBe(services.relationships.kinship);
 	});
 });

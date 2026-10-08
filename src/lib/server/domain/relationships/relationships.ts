@@ -6,7 +6,12 @@ import { evaluateAll } from '../../../suggestions/engine';
 import type { Dismissal } from '../../../suggestions/claims';
 import type { PrimaryLink, Trigger } from '../../../suggestions/types';
 import { buildView } from '../../../suggestions/view';
-import { nameProposals, type ProposedLink, type SuggestionReviewSource } from './suggestion-review';
+import {
+	nameProposals,
+	type KinshipGraphReads,
+	type ProposedLink,
+	type SuggestionReviewSource
+} from './suggestion-review';
 import type { Viewer } from '../../access/visibility';
 import type { RelationshipCategory } from '../../../relationships/categories';
 import type { Endpoints } from '../../../relationships/endpoints';
@@ -200,6 +205,11 @@ export interface RelationshipUpdate extends RelationshipDetails {
 	retype: Retype | null;
 }
 
+/**
+ * The links between people, as the store writes them, plus the one-record reads those writes
+ * rest on (docs/08 §8.3). What a screen lists is a read model: a person's ties
+ * (`RelationshipTieReads`), the kinship graph (`KinshipGraphReads`).
+ */
 export interface RelationshipRepository {
 	/**
 	 * Whether this exact direction of this type is stored between the two. `exceptId` leaves
@@ -214,7 +224,6 @@ export interface RelationshipRepository {
 	insert(relationship: NewRelationship): Promise<void>;
 	/** Stores every one of them or, should any fail, none: one transaction (docs/02 §2.4). */
 	insertAll(relationships: readonly NewRelationship[]): Promise<void>;
-	listForContactVisibleTo(viewer: Viewer, contactId: string): Promise<RelationshipView[]>;
 	/** The stored link, or null when the viewer may not see it (or it is not there). */
 	findVisibleTo(viewer: Viewer, id: string): Promise<StoredRelationship | null>;
 	/** Writes the update; false when the viewer may not see the relationship. */
@@ -231,12 +240,20 @@ export interface RelationshipRepository {
 	 * nothing deleted, when any one is not there or not visible to the viewer.
 	 */
 	removeAllVisibleTo(viewer: Viewer, ids: readonly string[]): Promise<boolean>;
-	/** The primary links the viewer may see, as the kinship engine wants them (docs/02 §2.4.1). */
-	loadKinshipGraphVisibleTo(viewer: Viewer): Promise<KinshipGraph>;
 }
 
+/** A person's links as their page lists them — the read model of the People card. */
+export interface RelationshipTieReads {
+	/** Every link of `contactId` whose far end the viewer may see, read from their side. */
+	listForContactVisibleTo(viewer: Viewer, contactId: string): Promise<RelationshipView[]>;
+}
+
+/** Everything creating, editing and removing a link reads and writes, as the edge hands it over. */
 export interface RelationshipDeps {
 	relationships: RelationshipRepository;
+	/** The household's graph and the subject's ties, which the exclusion rules judge against. */
+	kinship: KinshipGraphReads;
+	ties: RelationshipTieReads;
 	/** Only the type lookup: creating a link resolves its type, nothing more. */
 	types: Pick<RelationshipTypeRepository, 'getType'>;
 	ids: IdGenerator;
@@ -248,11 +265,8 @@ export interface RelationshipDeps {
  * put its own staging in front of the store and have every link judged against the links
  * picked before it (`add-many.ts`).
  */
-export interface CreateRelationshipDeps {
-	relationships: Pick<
-		RelationshipRepository,
-		'exists' | 'insert' | 'loadKinshipGraphVisibleTo' | 'listForContactVisibleTo'
-	>;
+export interface CreateRelationshipDeps extends ExclusionSource {
+	relationships: Pick<RelationshipRepository, 'exists' | 'insert'>;
 	types: Pick<RelationshipTypeRepository, 'getType'>;
 	ids: IdGenerator;
 	clock: Clock;
@@ -337,16 +351,14 @@ interface ExclusionCheck {
 }
 
 /** The two reads an exclusion check is made of. */
-type ExclusionSource = {
-	relationships: Pick<
-		RelationshipRepository,
-		'loadKinshipGraphVisibleTo' | 'listForContactVisibleTo'
-	>;
-};
+export interface ExclusionSource {
+	kinship: KinshipGraphReads;
+	ties: RelationshipTieReads;
+}
 
 /**
  * What the exclusion rules need to judge a claim made from `subjectId`'s profile, read from
- * the two snapshots the repository has already scoped to the viewer.
+ * the two read models, both already scoped to the viewer.
  */
 async function loadExclusionCheck(
 	deps: ExclusionSource,
@@ -354,8 +366,8 @@ async function loadExclusionCheck(
 	subjectId: string
 ): Promise<ExclusionCheck> {
 	const [graph, ties] = await Promise.all([
-		deps.relationships.loadKinshipGraphVisibleTo(viewer),
-		deps.relationships.listForContactVisibleTo(viewer, subjectId)
+		deps.kinship.loadKinshipGraphVisibleTo(viewer),
+		deps.ties.listForContactVisibleTo(viewer, subjectId)
 	]);
 	const names = new Map(graph.people.map((person) => [person.id, person.displayName]));
 	return {
@@ -503,7 +515,7 @@ export async function createRelationship(
  * `proposeFor`, one or a whole batch — the links that follow from them and are not stored yet.
  *
  * One port call serves both, because both read the same graph. Visibility is settled by the
- * repository, so neither a derived label nor a proposal can name someone the viewer may not see.
+ * read model, so neither a derived label nor a proposal can name someone the viewer may not see.
  */
 export type { ProposedLink };
 
@@ -519,7 +531,7 @@ export async function readKinship(
 	proposeFor: readonly Pair[] = []
 ): Promise<KinshipRead> {
 	const [graph, dismissals] = await Promise.all([
-		deps.relationships.loadKinshipGraphVisibleTo(viewer),
+		deps.kinship.loadKinshipGraphVisibleTo(viewer),
 		deps.dismissals.listForHousehold(viewer)
 	]);
 	return kinshipFrom(graph, dismissals, subjectId, proposeFor);
@@ -573,6 +585,13 @@ function primaryLinkBetween(graph: KinshipGraph, a: string, b: string): PrimaryL
 	return null;
 }
 
+/** What an edit reads and writes: the link itself, and what a retype is judged against. */
+export interface EditRelationshipDeps extends ExclusionSource {
+	relationships: Pick<RelationshipRepository, 'exists' | 'findVisibleTo' | 'updateVisibleTo'>;
+	types: Pick<RelationshipTypeRepository, 'getType'>;
+	clock: Clock;
+}
+
 /** One edit of a link that is already there: its specifics, and optionally its type. */
 export interface EditRelationshipInput extends RelationshipDetailsInput {
 	relationshipId: string;
@@ -601,7 +620,7 @@ function otherEndpointOf(link: StoredRelationship, contactId: string): string | 
  * generation as its own contradiction.
  */
 async function planRetype(
-	deps: RelationshipDeps,
+	deps: EditRelationshipDeps,
 	viewer: Viewer,
 	current: StoredRelationship,
 	perspectiveContactId: string,
@@ -655,7 +674,7 @@ async function planRetype(
  * that does not exist, so no one learns of a link through a private person by editing it.
  */
 export async function editRelationship(
-	deps: RelationshipDeps,
+	deps: EditRelationshipDeps,
 	viewer: Viewer,
 	input: EditRelationshipInput
 ): Promise<boolean> {
@@ -682,7 +701,7 @@ export async function editRelationship(
  * *Undo* removes them all or, when any is gone or out of sight, none.
  */
 export async function removeRelationships(
-	deps: RelationshipDeps,
+	deps: { relationships: Pick<RelationshipRepository, 'removeAllVisibleTo'> },
 	viewer: Viewer,
 	relationshipIds: readonly string[]
 ): Promise<boolean> {
@@ -692,7 +711,7 @@ export async function removeRelationships(
 
 /** Take back a link that was entered wrong. False when the viewer may not see it. */
 export async function removeRelationship(
-	deps: RelationshipDeps,
+	deps: { relationships: Pick<RelationshipRepository, 'removeVisibleTo'> },
 	viewer: Viewer,
 	relationshipId: string
 ): Promise<boolean> {

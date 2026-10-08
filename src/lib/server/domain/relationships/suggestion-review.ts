@@ -26,8 +26,11 @@ import type { IdGenerator } from '../../id';
  * to the pure engine and writes nothing the household did not ask for.
  */
 
-/** The one read a review needs: the primary links this viewer may see (docs/03 §3.7). */
-export interface KinshipGraphSource {
+/**
+ * The read model the kinship engine runs on: the primary links this viewer may see, with the
+ * people at their ends (docs/02 §2.4.1, docs/03 §3.7). A review needs nothing else.
+ */
+export interface KinshipGraphReads {
 	loadKinshipGraphVisibleTo(viewer: Viewer): Promise<KinshipGraph>;
 }
 
@@ -54,7 +57,7 @@ export interface SuggestionDismissalRepository {
  * could write a dismissal through.
  */
 export interface SuggestionReviewSource {
-	relationships: KinshipGraphSource;
+	kinship: KinshipGraphReads;
 	dismissals: Pick<SuggestionDismissalRepository, 'listForHousehold'>;
 }
 
@@ -101,7 +104,7 @@ export async function reviewPerson(
 	options: { includeDismissed?: boolean } = {}
 ): Promise<ProposedLink[]> {
 	const [graph, dismissals] = await Promise.all([
-		deps.relationships.loadKinshipGraphVisibleTo(viewer),
+		deps.kinship.loadKinshipGraphVisibleTo(viewer),
 		deps.dismissals.listForHousehold(viewer)
 	]);
 	return reviewPersonIn(graph, dismissals, subjectId, options);
@@ -136,7 +139,7 @@ export async function reviewHousehold(
 	options: { includeDismissed?: boolean } = {}
 ): Promise<ProposedLink[]> {
 	const [graph, dismissals] = await Promise.all([
-		deps.relationships.loadKinshipGraphVisibleTo(viewer),
+		deps.kinship.loadKinshipGraphVisibleTo(viewer),
 		deps.dismissals.listForHousehold(viewer)
 	]);
 	const view = buildView(graph, dismissals);
@@ -155,7 +158,7 @@ export async function dismissSuggestion(
 	viewer: Viewer,
 	claim: SuggestedClaim
 ): Promise<boolean> {
-	const view = buildView(await deps.relationships.loadKinshipGraphVisibleTo(viewer));
+	const view = buildView(await deps.kinship.loadKinshipGraphVisibleTo(viewer));
 	if (!view.has(claim.fromId) || !view.has(claim.toId)) return false;
 
 	await deps.dismissals.dismiss({

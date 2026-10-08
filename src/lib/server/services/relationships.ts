@@ -1,19 +1,24 @@
 import type { BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
 import type { Clock } from '../clock';
 import { createDrizzleGraphRepository, type GraphRepository } from '../db/graph-repository';
+import { createDrizzleKinshipGraphReads } from '../db/kinship-graph-read';
 import { createDrizzleRelationshipRepository } from '../db/relationship-repository';
+import { createDrizzleRelationshipTieReads } from '../db/relationship-tie-reads';
+import { createDrizzleRelationshipTypeRepository } from '../db/relationship-type-repository';
+import { createDrizzleRelationshipTypeUsageReads } from '../db/relationship-type-usage-reads';
 import type * as schema from '../db/schema';
 import { createDrizzleSuggestionDismissalRepository } from '../db/suggestion-dismissal-repository';
 import type { FamilyReadDeps } from '../domain/relationships/family';
 import type {
 	RelationshipTypeDeps,
-	RelationshipTypeRepository
+	RelationshipTypeRepository,
+	RelationshipTypeUsageReads
 } from '../domain/relationships/relationship-types';
+import type { RelationshipDeps } from '../domain/relationships/relationships';
 import type {
-	RelationshipDeps,
-	RelationshipRepository
-} from '../domain/relationships/relationships';
-import type { SuggestionReviewDeps } from '../domain/relationships/suggestion-review';
+	KinshipGraphReads,
+	SuggestionReviewDeps
+} from '../domain/relationships/suggestion-review';
 import type { IdGenerator } from '../id';
 
 /*
@@ -23,15 +28,17 @@ import type { IdGenerator } from '../id';
  * map. Built once per process by `createServices`; the edge reads it off
  * `locals.services.relationships`.
  *
- * A repository an edge — or another context — reads directly sits under its plural noun
- * (`relationships`); everything else is a use-case's `deps`, named after its type
+ * A port an edge — or another context — reads directly sits under its own name
+ * (`relationshipTypes`, `kinship`); everything else is a use-case's `deps`, named after its type
  * (`relationshipDeps` is a `RelationshipDeps`).
  */
 export interface RelationshipServices {
-	/** The one relationship repository: every use-case below, and the people context, read it. */
-	relationships: RelationshipRepository;
-	/** The relationship vocabulary (docs/02 §2.4) — the same Drizzle object as `relationships`. */
+	/** The relationship vocabulary (docs/02 §2.4): the person page's picker, the settings list. */
 	relationshipTypes: RelationshipTypeRepository;
+	/** How much each type is used, so the settings page offers *remove* only where it succeeds. */
+	relationshipTypeUsage: RelationshipTypeUsageReads;
+	/** The visible kinship graph: the people context's surname proposals follow it. */
+	kinship: KinshipGraphReads;
 	/** The visible graph the map loads in one go and the family cards read (docs/04 §4.11). */
 	graph: GraphRepository;
 	relationshipDeps: RelationshipDeps;
@@ -52,18 +59,21 @@ export function createRelationshipServices({
 	clock,
 	ids
 }: RelationshipWiring): RelationshipServices {
-	// One adapter serves both ports; each use-case sees only its own.
 	const relationships = createDrizzleRelationshipRepository(db);
+	const types = createDrizzleRelationshipTypeRepository(db);
+	const kinship = createDrizzleKinshipGraphReads(db);
+	const ties = createDrizzleRelationshipTieReads(db);
 	const graph = createDrizzleGraphRepository(db);
 	const dismissals = createDrizzleSuggestionDismissalRepository(db);
 
 	return {
-		relationships,
-		relationshipTypes: relationships,
+		relationshipTypes: types,
+		relationshipTypeUsage: createDrizzleRelationshipTypeUsageReads(db),
+		kinship,
 		graph,
-		relationshipDeps: { relationships, types: relationships, ids, clock },
-		relationshipTypeDeps: { types: relationships, ids },
-		suggestionReviewDeps: { relationships, dismissals, ids, clock },
-		familyReadDeps: { family: graph, relationships, dismissals }
+		relationshipDeps: { relationships, kinship, ties, types, ids, clock },
+		relationshipTypeDeps: { types, ids },
+		suggestionReviewDeps: { kinship, dismissals, ids, clock },
+		familyReadDeps: { family: graph, ties, dismissals }
 	};
 }

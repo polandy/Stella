@@ -52,8 +52,8 @@ export async function addRelationships(
 ): Promise<AddRelationshipsResult> {
 	if (input.links.length === 0) throw new NobodyPickedError();
 
-	const staging = stageRelationships(deps.relationships, deps.types);
-	const stagedDeps: AddCheckedDeps = { ...deps, relationships: staging.repository };
+	const staging = stageRelationships(deps, deps.types);
+	const stagedDeps: AddCheckedDeps = { ...deps, ...staging.deps };
 	const viewer = { id: author.userId, householdId: author.householdId };
 
 	const links: AddedRelationship[] = [];

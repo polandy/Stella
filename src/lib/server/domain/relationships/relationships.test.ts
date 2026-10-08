@@ -26,6 +26,8 @@ import {
 	RelationshipExcludedError,
 	type StoredRelationship
 } from './relationships';
+import type { KinshipGraphReads } from './suggestion-review';
+import { inMemoryKinshipGraph, someTie } from '../testing';
 
 /*
  * Pure relationship logic (docs/02 §2.4): canonical storage direction (symmetric links are
@@ -142,7 +144,7 @@ function fakeRepo(opts: {
 	/** What the subject already carries, for the exclusion rules (docs/02 §2.4). */
 	ties?: RelationshipView[];
 	/** What the household already carries, for the same rules. */
-	graph?: KinshipGraph;
+	graph?: Partial<KinshipGraph>;
 }) {
 	let inserted: NewRelationship | null = null;
 	const updates: { id: string; update: RelationshipUpdate; updatedAt: number }[] = [];
@@ -157,7 +159,6 @@ function fakeRepo(opts: {
 		insert: async (r) => {
 			inserted = r;
 		},
-		listForContactVisibleTo: async () => opts.ties ?? [],
 		findVisibleTo: async () => opts.stored ?? null,
 		updateVisibleTo: async (_viewer, id, update, updatedAt) => {
 			if (opts.visible === false) return false;
@@ -176,12 +177,18 @@ function fakeRepo(opts: {
 			if (opts.visible === false) return false;
 			removals.push(...ids);
 			return true;
-		},
-		loadKinshipGraphVisibleTo: async () => opts.graph ?? emptyKinshipGraph()
+		}
 	};
 	return {
 		repo,
 		types,
+		/** Everything a use-case reads it through: the store, the two read models, the types. */
+		deps: {
+			relationships: repo,
+			kinship: inMemoryKinshipGraph(opts.graph),
+			ties: { listForContactVisibleTo: async () => opts.ties ?? [] },
+			types
+		},
 		updates,
 		removals,
 		get inserted() {
@@ -197,7 +204,7 @@ describe('createRelationship', () => {
 	it('inserts a relationship for a valid type, returning the id', async () => {
 		const f = fakeRepo({ type: parentChild });
 		const id = await createRelationship(
-			{ relationships: f.repo, types: f.types, ids: idGen('rel-1'), clock },
+			{ ...f.deps, ids: idGen('rel-1'), clock },
 			{ id: 'user-1', householdId: 'household-1' },
 			{
 				fromContactId: 'hans',
@@ -221,7 +228,7 @@ describe('createRelationship', () => {
 	it('stores symmetric relationships in canonical order', async () => {
 		const f = fakeRepo({ type: sibling });
 		await createRelationship(
-			{ relationships: f.repo, types: f.types, ids: idGen('rel-2'), clock },
+			{ ...f.deps, ids: idGen('rel-2'), clock },
 			{ id: 'u', householdId: 'h' },
 			{
 				fromContactId: 'y',
@@ -236,7 +243,7 @@ describe('createRelationship', () => {
 		const f = fakeRepo({ type: null });
 		await expect(
 			createRelationship(
-				{ relationships: f.repo, types: f.types, ids: idGen('x'), clock },
+				{ ...f.deps, ids: idGen('x'), clock },
 				{ id: 'u', householdId: 'h' },
 				{
 					fromContactId: 'a',
@@ -251,7 +258,7 @@ describe('createRelationship', () => {
 		const f = fakeRepo({ type: parentChild, exists: true });
 		await expect(
 			createRelationship(
-				{ relationships: f.repo, types: f.types, ids: idGen('x'), clock },
+				{ ...f.deps, ids: idGen('x'), clock },
 				{ id: 'u', householdId: 'h' },
 				{
 					fromContactId: 'a',
@@ -280,7 +287,7 @@ describe('createRelationship', () => {
 			const f = withStoredPair(parentChild, 'a', 'b');
 			await expect(
 				createRelationship(
-					{ relationships: f.repo, types: f.types, ids: idGen('x'), clock },
+					{ ...f.deps, ids: idGen('x'), clock },
 					{ id: 'u', householdId: 'h' },
 					{
 						fromContactId: 'b',
@@ -296,7 +303,7 @@ describe('createRelationship', () => {
 			const f = withStoredPair(grandparent, 'a', 'b');
 			await expect(
 				createRelationship(
-					{ relationships: f.repo, types: f.types, ids: idGen('x'), clock },
+					{ ...f.deps, ids: idGen('x'), clock },
 					{ id: 'u', householdId: 'h' },
 					{
 						fromContactId: 'b',
@@ -312,7 +319,7 @@ describe('createRelationship', () => {
 		it('leaves a third person alone — only the two ends of the stored link are refused', async () => {
 			const f = withStoredPair(parentChild, 'a', 'b');
 			await createRelationship(
-				{ relationships: f.repo, types: f.types, ids: idGen('rel-9'), clock },
+				{ ...f.deps, ids: idGen('rel-9'), clock },
 				{ id: 'u', householdId: 'h' },
 				{
 					fromContactId: 'c',
@@ -330,7 +337,7 @@ describe('createRelationship', () => {
 		it("does not touch a household's own asymmetric type", async () => {
 			const f = withStoredPair(landlord, 'a', 'b');
 			await createRelationship(
-				{ relationships: f.repo, types: f.types, ids: idGen('rel-8'), clock },
+				{ ...f.deps, ids: idGen('rel-8'), clock },
 				{ id: 'u', householdId: 'h' },
 				{
 					fromContactId: 'b',
@@ -346,7 +353,7 @@ describe('createRelationship', () => {
 		const f = fakeRepo({ type: parentChild });
 		await expect(
 			createRelationship(
-				{ relationships: f.repo, types: f.types, ids: idGen('x'), clock },
+				{ ...f.deps, ids: idGen('x'), clock },
 				{ id: 'u', householdId: 'h' },
 				{
 					fromContactId: 'a',
@@ -372,11 +379,6 @@ describe('BUILT_IN_RELATIONSHIP_TYPES', () => {
 	});
 });
 
-/** A graph with no links — the shape the kinship port must always hand back. */
-function emptyKinshipGraph(): KinshipGraph {
-	return { people: [], parentEdges: [], siblingEdges: [], partnerEdges: [], storedPairs: [] };
-}
-
 describe('readKinship', () => {
 	/*
 	 * The use-case is a seam, not a rule: it asks the port for the graph *this viewer* may
@@ -393,7 +395,7 @@ describe('readKinship', () => {
 		} = {}
 	) {
 		const asked: Viewer[] = [];
-		const repo: Pick<RelationshipRepository, 'loadKinshipGraphVisibleTo'> = {
+		const repo: KinshipGraphReads = {
 			async loadKinshipGraphVisibleTo(v) {
 				asked.push(v);
 				return {
@@ -417,8 +419,8 @@ describe('readKinship', () => {
 	}
 
 	/** The two ports `readKinship` reads, with nothing declined yet (§6.4). */
-	const kinDeps = (repo: Pick<RelationshipRepository, 'loadKinshipGraphVisibleTo'>) => ({
-		relationships: repo,
+	const kinDeps = (repo: KinshipGraphReads) => ({
+		kinship: repo,
 		dismissals: { listForHousehold: async () => [] }
 	});
 
@@ -596,7 +598,7 @@ describe('createRelationship with details', () => {
 		const f = fakeRepo({ type: partner });
 
 		await createRelationship(
-			{ relationships: f.repo, types: f.types, ids: idGen('rel-2'), clock },
+			{ ...f.deps, ids: idGen('rel-2'), clock },
 			{ id: 'u1', householdId: 'h1' },
 			{
 				fromContactId: 'a',
@@ -620,7 +622,7 @@ describe('createRelationship with details', () => {
 
 		await expect(
 			createRelationship(
-				{ relationships: f.repo, types: f.types, ids: idGen('rel-3'), clock },
+				{ ...f.deps, ids: idGen('rel-3'), clock },
 				{ id: 'u1', householdId: 'h1' },
 				{
 					fromContactId: 'a',
@@ -636,12 +638,7 @@ describe('createRelationship with details', () => {
 
 describe('editRelationship', () => {
 	const viewer: Viewer = { id: 'u1', householdId: 'h1' };
-	const deps = (f: ReturnType<typeof fakeRepo>) => ({
-		relationships: f.repo,
-		types: f.types,
-		ids: idGen('unused'),
-		clock
-	});
+	const deps = (f: ReturnType<typeof fakeRepo>) => ({ ...f.deps, clock });
 
 	it('writes the checked details, stamped from the clock, leaving the type alone', async () => {
 		const f = fakeRepo({});
@@ -876,38 +873,21 @@ describe('removeRelationship', () => {
 	it('takes back the link it was given', async () => {
 		const f = fakeRepo({});
 
-		expect(
-			await removeRelationship(
-				{ relationships: f.repo, types: f.types, ids: idGen('unused'), clock },
-				viewer,
-				'rel-1'
-			)
-		).toBe(true);
+		expect(await removeRelationship(f.deps, viewer, 'rel-1')).toBe(true);
 		expect(f.removals).toEqual(['rel-1']);
 	});
 
 	it('reports false for one the viewer may not see, and removes nothing', async () => {
 		const f = fakeRepo({ visible: false });
 
-		expect(
-			await removeRelationship(
-				{ relationships: f.repo, types: f.types, ids: idGen('unused'), clock },
-				viewer,
-				'rel-x'
-			)
-		).toBe(false);
+		expect(await removeRelationship(f.deps, viewer, 'rel-x')).toBe(false);
 		expect(f.removals).toEqual([]);
 	});
 });
 
 describe('removeRelationships', () => {
 	const viewer: Viewer = { id: 'u1', householdId: 'h1' };
-	const deps = (f: ReturnType<typeof fakeRepo>) => ({
-		relationships: f.repo,
-		types: f.types,
-		ids: idGen('unused'),
-		clock
-	});
+	const deps = (f: ReturnType<typeof fakeRepo>) => ({ ...f.deps, clock });
 
 	it('takes back a whole batch in one step — the undo of links added together', async () => {
 		const f = fakeRepo({});
@@ -950,30 +930,13 @@ const tie = (
 	id: string,
 	otherContactId: string,
 	category: RelationshipType['category'],
-	named: { typeKey: string; side: 'forward' | 'reverse'; label: string } = {
-		typeKey: 'some_type',
-		side: 'forward',
-		label: 'Linked to'
-	}
-): RelationshipView => ({
-	id,
-	otherContactId,
-	otherDisplayName: otherContactId,
-	label: named.label,
-	typeId: named.typeKey,
-	typeKey: named.typeKey,
-	side: named.side,
-	category,
-	description: null,
-	sinceDate: null,
-	status: 'current'
-});
+	named?: { typeKey: string; side: 'forward' | 'reverse'; label: string }
+): RelationshipView => someTie(id, otherContactId, { category, ...named });
 
 const peopleNamed = (...ids: string[]) => ids.map((id) => ({ id, displayName: id }));
 
 describe('createRelationship — what is already on record', () => {
-	const married = (a: string, b: string, former = false): KinshipGraph => ({
-		...emptyKinshipGraph(),
+	const married = (a: string, b: string, former = false): Partial<KinshipGraph> => ({
 		people: peopleNamed(a, b),
 		partnerEdges: [{ a, b, former }]
 	});
@@ -981,7 +944,7 @@ describe('createRelationship — what is already on record', () => {
 	/** Entered from `from`'s profile, the way the person page posts it. */
 	const create = (f: ReturnType<typeof fakeRepo>, from: string, to: string, typeId: string) =>
 		createRelationship(
-			{ relationships: f.repo, types: f.types, ids: idGen('rel-x'), clock },
+			{ ...f.deps, ids: idGen('rel-x'), clock },
 			{ id: 'u', householdId: 'h' },
 			{ fromContactId: from, toContactId: to, typeId, perspectiveContactId: from }
 		);
@@ -1033,7 +996,6 @@ describe('createRelationship — what is already on record', () => {
 		const f = fakeRepo({
 			type: sibling,
 			graph: {
-				...emptyKinshipGraph(),
 				people: peopleNamed('anna', 'bert', 'carl', 'dora'),
 				parentEdges: [
 					{ parentId: 'carl', childId: 'anna' },
@@ -1051,7 +1013,6 @@ describe('createRelationship — what is already on record', () => {
 		const f = fakeRepo({
 			type: parentChild,
 			graph: {
-				...emptyKinshipGraph(),
 				people: peopleNamed('bert'),
 				parentEdges: [
 					{ parentId: 'carl', childId: 'bert' },
@@ -1081,7 +1042,6 @@ describe('createRelationship — what is already on record', () => {
 				})
 			],
 			graph: {
-				...emptyKinshipGraph(),
 				people: [{ id: 'bert', displayName: 'Bert Weber' }]
 			}
 		});
@@ -1106,7 +1066,6 @@ describe('createRelationship — what is already on record', () => {
 				})
 			],
 			graph: {
-				...emptyKinshipGraph(),
 				people: [{ id: 'bert', displayName: 'Bert' }]
 			}
 		});
@@ -1121,7 +1080,6 @@ describe('createRelationship — what is already on record', () => {
 		const f = fakeRepo({
 			type: spouse,
 			graph: {
-				...emptyKinshipGraph(),
 				people: [
 					{ id: 'anna', displayName: 'Anna' },
 					{ id: 'carl', displayName: 'Carl Meier' }
@@ -1142,7 +1100,7 @@ describe('createRelationship — what is already on record', () => {
 describe('editRelationship — what is already on record', () => {
 	const edit = (f: ReturnType<typeof fakeRepo>, typeId: string) =>
 		editRelationship(
-			{ relationships: f.repo, types: f.types, ids: idGen('x'), clock },
+			{ ...f.deps, clock },
 			{ id: 'u', householdId: 'h' },
 			{
 				relationshipId: 'r1',
@@ -1163,7 +1121,6 @@ describe('editRelationship — what is already on record', () => {
 				})
 			],
 			graph: {
-				...emptyKinshipGraph(),
 				people: peopleNamed('anna', 'bert'),
 				partnerEdges: [{ a: 'anna', b: 'bert' }]
 			}
@@ -1180,7 +1137,6 @@ describe('editRelationship — what is already on record', () => {
 			typesById: { spouse },
 			stored: { id: 'r1', fromContactId: 'anna', toContactId: 'bert', typeId: 'friend' },
 			graph: {
-				...emptyKinshipGraph(),
 				people: peopleNamed('anna', 'carl'),
 				partnerEdges: [{ a: 'anna', b: 'carl' }]
 			}
@@ -1210,7 +1166,6 @@ describe('createRelationship — the profile a refusal is read from', () => {
 				})
 			],
 			graph: {
-				...emptyKinshipGraph(),
 				people: [
 					{ id: 'bert', displayName: 'Bert Weber' },
 					{ id: 'nora', displayName: 'Nora' }
@@ -1220,7 +1175,7 @@ describe('createRelationship — the profile a refusal is read from', () => {
 
 	const enterFrom = (f: ReturnType<typeof fakeRepo>, profile: string, other: string) =>
 		createRelationship(
-			{ relationships: f.repo, types: f.types, ids: idGen('rel-x'), clock },
+			{ ...f.deps, ids: idGen('rel-x'), clock },
 			{ id: 'u', householdId: 'h' },
 			{
 				fromContactId: profile,

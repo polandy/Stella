@@ -46,7 +46,7 @@ export interface AppServices {
 /**
  * What the graph is built from; each context's wiring joins this as it moves in. A context
  * that reads another grouped context's repository gets it from here, not from the wiring
- * (`people` reads `auth`'s accounts, the relationships context's repository and `media`'s
+ * (`people` reads `auth`'s accounts, the relationships context's kinship graph and `media`'s
  * store; `circles` and `story` read `people`'s contacts and `media`'s store; `gifts` reads
  * `people`'s contacts and `story` reads `gifts`' repository; `archive` restores into `media`'s
  * store; `immich` reads `people`'s contacts and `media`'s avatar deps; `offline`'s command
@@ -55,7 +55,7 @@ export interface AppServices {
 export type ServicesWiring = AuthWiring &
 	RelationshipWiring &
 	MediaWiring &
-	Omit<PeopleWiring, 'accounts' | 'relationships' | 'media'> &
+	Omit<PeopleWiring, 'accounts' | 'kinship' | 'media'> &
 	Omit<CircleWiring, 'contacts' | 'media'> &
 	Omit<StoryWiring, 'contacts' | 'directory' | 'media' | 'gifts'> &
 	NoteWiring &
@@ -75,7 +75,7 @@ export function createServices(wiring: ServicesWiring): AppServices {
 	const people = createPeopleServices({
 		...wiring,
 		accounts: auth.accounts,
-		relationships: relationships.relationships,
+		kinship: relationships.kinship,
 		media: media.store
 	});
 	const circles = createCircleServices({

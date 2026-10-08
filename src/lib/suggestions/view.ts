@@ -11,7 +11,7 @@ import type { PrimaryLink } from './types';
  * that keep Stella from offering what is already known would each need their own scan. So the
  * lists are indexed once, here, and every rule asks the view.
  *
- * Pure, and built from a graph the repository has already scoped to one viewer: a rule cannot
+ * Pure, and built from a graph the read model has already scoped to one viewer: a rule cannot
  * reach a person the view was not given, so a suggestion can never name someone hidden.
  */
 

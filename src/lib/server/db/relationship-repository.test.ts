@@ -1,24 +1,23 @@
 import { beforeEach, describe, expect, it } from 'bun:test';
-import { and, eq } from 'drizzle-orm';
+import { eq } from 'drizzle-orm';
 import { Database } from 'bun:sqlite';
 import { drizzle, type BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
 import { migrate } from 'drizzle-orm/bun-sqlite/migrator';
 import type { Viewer } from '../access/visibility';
 import * as schema from './schema';
-import { createDrizzleRelationshipRepository } from './relationship-repository';
-import { CUSTOM_TYPE_SORT_ORDER } from '../domain/relationships/relationship-types';
 import { seedRelationshipTypes } from './seed';
-import { BUILT_IN_RELATIONSHIP_TYPES } from '../domain/relationships/built-in-types';
-import { deriveKinship } from '../../kinship/kinship';
-import {
-	CURRENT_RELATIONSHIP_STATUS,
-	FORMER_RELATIONSHIP_STATUS
-} from '../../relationships/status';
+import { CURRENT_RELATIONSHIP_STATUS } from '../../relationships/status';
+import { createDrizzleRelationshipRepository } from './relationship-repository';
+import { createDrizzleRelationshipTieReads } from './relationship-tie-reads';
+import type {
+	RelationshipRepository,
+	RelationshipTieReads
+} from '../domain/relationships/relationships';
 
 /*
- * Integration spec for the Drizzle RelationshipRepository: type seeding, duplicate checks,
- * perspective-aware labels, and visibility scoping (relationships need both endpoints
- * visible, docs/03 §3.7).
+ * Integration spec for the Drizzle RelationshipRepository: duplicate checks, the batch and its
+ * undo in one transaction, and writes scoped by visibility — a relationship needs both
+ * endpoints visible (docs/03 §3.7), and one out of sight cannot be changed or removed.
  */
 
 const H = 'household-1';
@@ -28,7 +27,8 @@ const viewerU1: Viewer = { id: U1, householdId: H };
 const viewerU2: Viewer = { id: U2, householdId: H };
 
 let db: BunSQLiteDatabase<typeof schema>;
-let repo: ReturnType<typeof createDrizzleRelationshipRepository>;
+let repo: RelationshipRepository;
+let ties: RelationshipTieReads;
 
 function newRelationship(id: string, fromContactId: string, toContactId: string, typeId: string) {
 	return {
@@ -71,275 +71,7 @@ beforeEach(() => {
 		])
 		.run();
 	repo = createDrizzleRelationshipRepository(db);
-});
-
-describe('relationship types', () => {
-	/** A custom type belonging to some other deployment's household. */
-	async function seedOwnType() {
-		await repo.insertType({
-			id: 'type-own',
-			householdId: H,
-			key: 'sings_with',
-			forwardLabel: 'Sings with',
-			reverseLabel: 'Sings with',
-			category: 'social',
-			symmetric: true,
-			sortOrder: CUSTOM_TYPE_SORT_ORDER
-		});
-	}
-
-	function seedForeignType() {
-		db.insert(schema.household).values({ id: 'household-2', name: 'Other' }).run();
-		db.insert(schema.relationshipType)
-			.values({
-				id: 'type-foreign',
-				householdId: 'household-2',
-				key: 'bridge_partner',
-				forwardLabel: 'Bridge partner of',
-				reverseLabel: 'Bridge partner of',
-				category: 'social',
-				symmetric: 1,
-				sortOrder: 100
-			})
-			.run();
-	}
-
-	it('seeds the built-in types (idempotently)', async () => {
-		seedRelationshipTypes(db); // second call must not duplicate
-		const types = await repo.listTypes(viewerU1);
-		expect(types.find((t) => t.id === 'parent_child')?.forwardLabel).toBe('Parent of');
-		expect(types.find((t) => t.id === 'sibling')?.symmetric).toBe(true);
-	});
-
-	it('brings an older install up to the current built-ins: new types added, the order redone', async () => {
-		// As an install seeded before the family types were added left it.
-		db.delete(schema.relationshipType).where(eq(schema.relationshipType.id, 'cousin')).run();
-		db.update(schema.relationshipType)
-			.set({ sortOrder: 5 })
-			.where(eq(schema.relationshipType.id, 'friend'))
-			.run();
-
-		seedRelationshipTypes(db);
-
-		const types = await repo.listTypes(viewerU1);
-		const expected = BUILT_IN_RELATIONSHIP_TYPES.find((t) => t.id === 'friend')!.sortOrder;
-		expect(types.find((t) => t.id === 'friend')?.sortOrder).toBe(expected);
-		expect(types.find((t) => t.id === 'cousin')?.symmetric).toBe(true);
-	});
-
-	it("lists the built-in types and this household's own, never another household's", async () => {
-		seedForeignType();
-		db.insert(schema.relationshipType)
-			.values({
-				id: 'type-own',
-				householdId: H,
-				key: 'choir_mate',
-				forwardLabel: 'Sings with',
-				reverseLabel: 'Sings with',
-				category: 'social',
-				symmetric: 1,
-				sortOrder: 100
-			})
-			.run();
-
-		const ids = (await repo.listTypes(viewerU1)).map((t) => t.id);
-		expect(ids).toContain('parent_child'); // built-in, household_id null
-		expect(ids).toContain('type-own');
-		expect(ids).not.toContain('type-foreign');
-	});
-
-	it("does not resolve another household's type by id", async () => {
-		seedForeignType();
-		expect(await repo.getType(viewerU1, 'parent_child')).not.toBeNull();
-		expect(await repo.getType(viewerU1, 'type-foreign')).toBeNull();
-	});
-
-	it('stores a custom type and offers it beside the built-in ones', async () => {
-		await repo.insertType({
-			id: 'type-own',
-			householdId: H,
-			key: 'godparent_of',
-			forwardLabel: 'Godparent of',
-			reverseLabel: 'Godchild of',
-			category: 'family',
-			symmetric: false,
-			sortOrder: CUSTOM_TYPE_SORT_ORDER
-		});
-		const stored = await repo.getType(viewerU1, 'type-own');
-		expect(stored).toEqual({
-			id: 'type-own',
-			householdId: H,
-			key: 'godparent_of',
-			forwardLabel: 'Godparent of',
-			reverseLabel: 'Godchild of',
-			category: 'family',
-			symmetric: false,
-			sortOrder: CUSTOM_TYPE_SORT_ORDER
-		});
-		// Custom types sort after every built-in one.
-		const listed = await repo.listTypes(viewerU1);
-		expect(listed[listed.length - 1]?.id).toBe('type-own');
-	});
-
-	it("rewrites and deletes this household's custom type", async () => {
-		await seedOwnType();
-		expect(
-			await repo.updateTypeVisibleTo(viewerU1, 'type-own', {
-				forwardLabel: 'Choir friend of',
-				reverseLabel: 'Choir friend of',
-				category: 'social',
-				symmetric: true
-			})
-		).toBe(true);
-		expect((await repo.getType(viewerU1, 'type-own'))?.forwardLabel).toBe('Choir friend of');
-
-		expect(await repo.deleteTypeVisibleTo(viewerU1, 'type-own')).toBe(true);
-		expect(await repo.getType(viewerU1, 'type-own')).toBeNull();
-	});
-
-	it('leaves a built-in type untouched, whatever is asked of it', async () => {
-		expect(
-			await repo.updateTypeVisibleTo(viewerU1, 'parent_child', {
-				forwardLabel: 'Progenitor of',
-				reverseLabel: 'Offspring of',
-				category: 'family',
-				symmetric: false
-			})
-		).toBe(false);
-		expect(await repo.deleteTypeVisibleTo(viewerU1, 'parent_child')).toBe(false);
-		expect((await repo.getType(viewerU1, 'parent_child'))?.forwardLabel).toBe('Parent of');
-	});
-
-	it("leaves another household's custom type untouched", async () => {
-		seedForeignType();
-		expect(
-			await repo.updateTypeVisibleTo(viewerU1, 'type-foreign', {
-				forwardLabel: 'Hijacked',
-				reverseLabel: 'Hijacked',
-				category: 'other',
-				symmetric: true
-			})
-		).toBe(false);
-		expect(await repo.deleteTypeVisibleTo(viewerU1, 'type-foreign')).toBe(false);
-		const row = db
-			.select()
-			.from(schema.relationshipType)
-			.where(eq(schema.relationshipType.id, 'type-foreign'))
-			.get();
-		expect(row?.forwardLabel).toBe('Bridge partner of');
-	});
-
-	it('counts only the relationships of that type the viewer may see', async () => {
-		await seedOwnType();
-		seedContact('mara', 'Mara', 'shared');
-		seedContact('jonas', 'Jonas', 'shared');
-		seedContact('secret', 'Secret', 'private', U2);
-		await repo.insert(newRelationship('rel-visible', 'mara', 'jonas', 'type-own'));
-		await repo.insert(newRelationship('rel-hidden', 'mara', 'secret', 'type-own'));
-
-		expect(await repo.countRelationshipsOfType(viewerU1, 'type-own')).toBe(1);
-		// The positive control: U2 owns the private contact and sees both.
-		expect(await repo.countRelationshipsOfType(viewerU2, 'type-own')).toBe(2);
-		expect(await repo.countRelationshipsOfType(viewerU1, 'parent_child')).toBe(0);
-	});
-
-	it('counts every type at once, the same as asking type by type', async () => {
-		await seedOwnType();
-		seedContact('mara', 'Mara', 'shared');
-		seedContact('jonas', 'Jonas', 'shared');
-		seedContact('lio', 'Lio', 'shared');
-		seedContact('secret', 'Secret', 'private', U2);
-		await repo.insert(newRelationship('rel-1', 'mara', 'jonas', 'type-own'));
-		await repo.insert(newRelationship('rel-2', 'jonas', 'lio', 'type-own'));
-		await repo.insert(newRelationship('rel-3', 'mara', 'secret', 'type-own'));
-		await repo.insert(newRelationship('rel-4', 'mara', 'lio', 'parent_child'));
-
-		for (const viewer of [viewerU1, viewerU2]) {
-			const counts = await repo.countRelationshipsByType(viewer);
-			for (const typeId of ['type-own', 'parent_child', 'sibling']) {
-				expect(counts.get(typeId) ?? 0).toBe(await repo.countRelationshipsOfType(viewer, typeId));
-			}
-		}
-		expect((await repo.countRelationshipsByType(viewerU1)).get('type-own')).toBe(2);
-	});
-});
-
-describe('mergeTypeInto', () => {
-	/** A symmetric custom *Cousin of* as an older Monica import created it. */
-	async function seedImportedCousin() {
-		await repo.insertType({
-			id: 'monica:reltype:cousin',
-			householdId: H,
-			key: 'cousin',
-			forwardLabel: 'Cousin of',
-			reverseLabel: 'Cousin of',
-			category: 'family',
-			symmetric: true,
-			sortOrder: CUSTOM_TYPE_SORT_ORDER
-		});
-	}
-
-	const typesOf = (from: string, to: string) =>
-		db
-			.select({ typeId: schema.relationship.typeId })
-			.from(schema.relationship)
-			.where(
-				and(eq(schema.relationship.fromContactId, from), eq(schema.relationship.toContactId, to))
-			)
-			.all()
-			.map((row) => row.typeId);
-
-	it('moves every relationship across, even between people the viewer cannot see, and deletes the type', async () => {
-		await seedImportedCousin();
-		seedContact('mara', 'Mara', 'shared');
-		seedContact('jonas', 'Jonas', 'shared');
-		seedContact('secret', 'Secret', 'private', U2);
-		await repo.insert(newRelationship('rel-visible', 'jonas', 'mara', 'monica:reltype:cousin'));
-		await repo.insert(newRelationship('rel-hidden', 'mara', 'secret', 'monica:reltype:cousin'));
-
-		expect(await repo.mergeTypeInto(viewerU1, 'monica:reltype:cousin', 'cousin')).toBe(true);
-
-		expect(typesOf('jonas', 'mara')).toEqual(['cousin']);
-		expect(typesOf('mara', 'secret')).toEqual(['cousin']);
-		expect(await repo.getType(viewerU1, 'monica:reltype:cousin')).toBeNull();
-	});
-
-	it('keeps the link a pair already has under the target, and drops the duplicate', async () => {
-		await seedImportedCousin();
-		seedContact('mara', 'Mara', 'shared');
-		seedContact('jonas', 'Jonas', 'shared');
-		await repo.insert(newRelationship('rel-built-in', 'jonas', 'mara', 'cousin'));
-		await repo.insert(newRelationship('rel-imported', 'jonas', 'mara', 'monica:reltype:cousin'));
-
-		expect(await repo.mergeTypeInto(viewerU1, 'monica:reltype:cousin', 'cousin')).toBe(true);
-
-		const rows = db.select({ id: schema.relationship.id }).from(schema.relationship).all();
-		expect(rows).toEqual([{ id: 'rel-built-in' }]);
-	});
-
-	it("refuses a built-in or another household's type as the one folded away, writing nothing", async () => {
-		db.insert(schema.household).values({ id: 'household-2', name: 'Other' }).run();
-		db.insert(schema.relationshipType)
-			.values({
-				id: 'type-foreign',
-				householdId: 'household-2',
-				key: 'bridge_partner',
-				forwardLabel: 'Bridge partner of',
-				reverseLabel: 'Bridge partner of',
-				category: 'social',
-				symmetric: 1,
-				sortOrder: CUSTOM_TYPE_SORT_ORDER
-			})
-			.run();
-		seedContact('mara', 'Mara', 'shared');
-		seedContact('jonas', 'Jonas', 'shared');
-		await repo.insert(newRelationship('rel-1', 'jonas', 'mara', 'cousin'));
-
-		expect(await repo.mergeTypeInto(viewerU1, 'cousin', 'friend')).toBe(false);
-		expect(await repo.mergeTypeInto(viewerU1, 'type-foreign', 'friend')).toBe(false);
-		expect(typesOf('jonas', 'mara')).toEqual(['cousin']);
-		expect(await repo.getType(viewerU1, 'cousin')).not.toBeNull();
-	});
+	ties = createDrizzleRelationshipTieReads(db);
 });
 
 describe('exists / insert', () => {
@@ -391,209 +123,6 @@ describe('exists / insert', () => {
 	});
 });
 
-describe('listForContactVisibleTo', () => {
-	beforeEach(async () => {
-		seedContact('hans', 'Hans', 'shared');
-		seedContact('bettina', 'Bettina', 'shared');
-		// Bettina is Hans's parent.
-		await repo.insert({
-			id: 'rel-pc',
-			householdId: H,
-			fromContactId: 'bettina',
-			toContactId: 'hans',
-			typeId: 'parent_child',
-			description: null,
-			sinceDate: null,
-			status: CURRENT_RELATIONSHIP_STATUS,
-			createdBy: U1,
-			createdAt: 0,
-			updatedAt: 0
-		});
-	});
-
-	it('shows the forward label from the parent perspective', async () => {
-		const forBettina = await repo.listForContactVisibleTo(viewerU1, 'bettina');
-		expect(forBettina).toHaveLength(1);
-		expect(forBettina[0]).toMatchObject({ otherDisplayName: 'Hans', label: 'Parent of' });
-	});
-
-	it('shows the reverse label from the child perspective', async () => {
-		const forHans = await repo.listForContactVisibleTo(viewerU1, 'hans');
-		expect(forHans[0]).toMatchObject({ otherDisplayName: 'Bettina', label: 'Child of' });
-	});
-
-	it('carries the specifics back out from both sides (docs/02 §2.4)', async () => {
-		seedContact('kurt', 'Kurt', 'shared');
-		await repo.insert({
-			id: 'rel-partner',
-			householdId: H,
-			fromContactId: 'bettina',
-			toContactId: 'kurt',
-			typeId: 'partner',
-			description: 'met at the ski course',
-			sinceDate: '2019-06-01',
-			status: 'former',
-			createdBy: U1,
-			createdAt: 0,
-			updatedAt: 0
-		});
-
-		for (const [who, other] of [
-			['bettina', 'Kurt'],
-			['kurt', 'Bettina']
-		]) {
-			const view = (await repo.listForContactVisibleTo(viewerU1, who)).find(
-				(r) => r.otherDisplayName === other
-			);
-			expect(view).toMatchObject({
-				description: 'met at the ski course',
-				sinceDate: '2019-06-01',
-				status: 'former'
-			});
-		}
-	});
-
-	it('reads a status the domain does not know as current', async () => {
-		// The column is plain text; an older row or an import can hold anything. A link that
-		// is on record holds until someone ends it, so anything but `former` reads as current.
-		db.update(schema.relationship)
-			.set({ status: 'complicated' })
-			.where(eq(schema.relationship.id, 'rel-pc'))
-			.run();
-
-		const [view] = await repo.listForContactVisibleTo(viewerU1, 'bettina');
-		expect(view.status).toBe('current');
-		// …and a status it does know still comes through, so this is not blanket blindness.
-		db.update(schema.relationship)
-			.set({ status: 'current' })
-			.where(eq(schema.relationship.id, 'rel-pc'))
-			.run();
-		expect((await repo.listForContactVisibleTo(viewerU1, 'bettina'))[0].status).toBe('current');
-	});
-
-	it('hides a relationship whose other endpoint the viewer cannot see', async () => {
-		seedContact('secret', 'Secret', 'private', U1); // owned by U1, private
-		await repo.insert({
-			id: 'rel-secret',
-			householdId: H,
-			fromContactId: 'hans',
-			toContactId: 'secret',
-			typeId: 'friend',
-			description: null,
-			sinceDate: null,
-			status: CURRENT_RELATIONSHIP_STATUS,
-			createdBy: U1,
-			createdAt: 0,
-			updatedAt: 0
-		});
-		// U2 sees only the parent relationship, not the one touching the private contact.
-		const forHansU2 = await repo.listForContactVisibleTo(viewerU2, 'hans');
-		expect(forHansU2.map((r) => r.id)).toEqual(['rel-pc']);
-		// U1 (owner) sees both.
-		const forHansU1 = await repo.listForContactVisibleTo(viewerU1, 'hans');
-		expect(forHansU1.map((r) => r.id).sort()).toEqual(['rel-pc', 'rel-secret']);
-	});
-});
-
-describe('loadKinshipGraphVisibleTo (docs/02 §2.4.1)', () => {
-	/** Bettina is Otto's child and Hans's parent; the private pair is only U2's to see. */
-	beforeEach(async () => {
-		seedContact('otto', 'Otto', 'shared');
-		seedContact('bettina', 'Bettina', 'shared');
-		seedContact('hans', 'Hans', 'shared');
-		seedContact('kurt', 'Kurt', 'shared');
-		seedContact('secret', 'Secret', 'private', U2);
-		db.update(schema.contact)
-			.set({ gender: 'female' })
-			.where(eq(schema.contact.id, 'bettina'))
-			.run();
-		const rel = (id: string, from: string, to: string, typeId: string) =>
-			repo.insert({
-				id,
-				householdId: H,
-				fromContactId: from,
-				toContactId: to,
-				typeId,
-				description: null,
-				sinceDate: null,
-				status: CURRENT_RELATIONSHIP_STATUS,
-				createdBy: U1,
-				createdAt: 1,
-				updatedAt: 1
-			});
-		await rel('r-1', 'otto', 'bettina', 'parent_child');
-		await rel('r-2', 'bettina', 'hans', 'parent_child');
-		await rel('r-3', 'bettina', 'kurt', 'partner');
-		await rel('r-4', 'otto', 'hans', 'friend'); // a stored pair that is not primary
-		await rel('r-5', 'secret', 'hans', 'parent_child'); // only U2 may see this one
-	});
-
-	it('classifies the primary links and carries gender, for the people the viewer may see', async () => {
-		const graph = await repo.loadKinshipGraphVisibleTo(viewerU1);
-		expect(graph.people.map((p) => p.id).sort()).toEqual(['bettina', 'hans', 'kurt', 'otto']);
-		expect(graph.people.find((p) => p.id === 'bettina')?.gender).toBe('female');
-		expect(graph.parentEdges).toEqual([
-			{ parentId: 'otto', childId: 'bettina' },
-			{ parentId: 'bettina', childId: 'hans' }
-		]);
-		expect(graph.partnerEdges).toEqual([
-			{ a: 'bettina', b: 'kurt', former: false, sinceDate: null }
-		]);
-		// Every visible pair is a stored pair, so nothing already linked is re-derived.
-		expect(graph.storedPairs).toContainEqual({ a: 'otto', b: 'hans' });
-	});
-
-	it('marks a former partnership, so nothing is derived through it', async () => {
-		// docs/02 §2.4: the link stays on record — it is the derivation that stops, so the
-		// ex-partner is never offered as a stepparent to the children again.
-		db.update(schema.relationship)
-			.set({ status: FORMER_RELATIONSHIP_STATUS })
-			.where(eq(schema.relationship.id, 'r-3'))
-			.run();
-
-		const graph = await repo.loadKinshipGraphVisibleTo(viewerU1);
-		expect(graph.partnerEdges).toEqual([
-			{ a: 'bettina', b: 'kurt', former: true, sinceDate: null }
-		]);
-		expect(graph.storedPairs).toContainEqual({ a: 'bettina', b: 'kurt' });
-		expect(deriveKinship(graph, 'hans').map((k) => k.personId)).not.toContain('kurt');
-	});
-
-	// Rule L3 tells a step-parent by these two dates (docs/02 §2.4.1).
-	it('carries the birth dates and the day a partnership began', async () => {
-		db.update(schema.contact)
-			.set({ birthDate: '2015-05-20' })
-			.where(eq(schema.contact.id, 'hans'))
-			.run();
-		db.update(schema.relationship)
-			.set({ sinceDate: '2009-06-13' })
-			.where(eq(schema.relationship.id, 'r-3'))
-			.run();
-
-		const graph = await repo.loadKinshipGraphVisibleTo(viewerU1);
-		expect(graph.people.find((p) => p.id === 'hans')?.birthDate).toBe('2015-05-20');
-		expect(graph.people.find((p) => p.id === 'otto')?.birthDate).toBeNull();
-		expect(graph.partnerEdges).toEqual([
-			{ a: 'bettina', b: 'kurt', former: false, sinceDate: '2009-06-13' }
-		]);
-	});
-
-	it('hides a private person’s links from everyone but their author', async () => {
-		const forU1 = await repo.loadKinshipGraphVisibleTo(viewerU1);
-		expect(forU1.people.map((p) => p.id)).not.toContain('secret');
-		expect(forU1.parentEdges).not.toContainEqual({ parentId: 'secret', childId: 'hans' });
-		// Positive control: the author sees both the person and the link.
-		const forU2 = await repo.loadKinshipGraphVisibleTo(viewerU2);
-		expect(forU2.people.map((p) => p.id)).toContain('secret');
-		expect(forU2.parentEdges).toContainEqual({ parentId: 'secret', childId: 'hans' });
-	});
-});
-
-/*
- * Correcting and taking back a link (docs/02 §2.4). Both are scoped through
- * `relationshipVisibleTo`, so a relationship touching someone the viewer cannot see is
- * indistinguishable from one that is not there — and neither writes anything in that case.
- */
 describe('insertAll (docs/02 §2.4, several people in one go)', () => {
 	const stored = () =>
 		db
@@ -616,7 +145,7 @@ describe('insertAll (docs/02 §2.4, several people in one go)', () => {
 		]);
 
 		expect(stored().sort()).toEqual(['rel-1', 'rel-2']);
-		expect(await repo.listForContactVisibleTo(viewerU1, 'anna')).toMatchObject([
+		expect(await ties.listForContactVisibleTo(viewerU1, 'anna')).toMatchObject([
 			{ id: 'rel-1', description: 'mum', sinceDate: '2015-04-12', label: 'Parent of' }
 		]);
 	});
@@ -744,7 +273,7 @@ describe('findVisibleTo / updateVisibleTo / removeVisibleTo', () => {
 	it('removes a link the viewer can see', async () => {
 		expect(await repo.removeVisibleTo(viewerU1, 'rel-open')).toBe(true);
 		expect(await detailsOf('rel-open')).toBeUndefined();
-		expect(await repo.listForContactVisibleTo(viewerU1, 'hans')).toEqual([]);
+		expect(await ties.listForContactVisibleTo(viewerU1, 'hans')).toEqual([]);
 	});
 
 	it('refuses to remove one it will not show, and leaves the row where it is', async () => {
