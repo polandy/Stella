@@ -23,6 +23,7 @@ export interface Leg {
 	x2: number;
 }
 
+/** Pieces with one key share a lane: one group in one gap. */
 export const laneKey = (leg: Leg) => `${leg.channel}|${leg.group}`;
 
 /**
