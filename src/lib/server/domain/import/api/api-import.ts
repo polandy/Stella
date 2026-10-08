@@ -69,7 +69,10 @@ export interface ApiImportActor {
 
 export interface ApiImportOptions {
 	dryRun: boolean;
-	/** The member's language: a nickname in a shown name takes its quote marks, and the log line is written in it. */
+	/**
+	 * The member's language: a nickname in a shown name takes its quote marks, and the log line
+	 * is written in it.
+	 */
 	locale: Locale;
 }
 
