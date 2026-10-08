@@ -197,7 +197,9 @@ read-model port (`inMemoryContactDirectory`, `inMemoryCircleMemberships`, `inMem
 fields)`, `someGalleryPhoto(id, fields)` or `someTie(id, otherContactId, fields)` rows) and
 `contactRepositoryWith({...})` / `circleRepositoryWith` / `photoRepositoryWith` /
 `relationshipRepositoryWith`,
-which answer with the methods a test hands them and fail loud on any other. Reach for these before writing a fake. A fake models no visibility — the people it
+which answer with the methods a test hands them and fail loud on any other, and for the
+dispatcher `inMemoryReceipts()` and `commandDepsWith({ 'moment.capture': … })` (a command whose
+handler the test did not name fails loud). Reach for these before writing a fake. A fake models no visibility — the people it
 holds are the ones the viewer may see; the adapter's scoping is covered against SQLite. Two
 kinds of fake stay in their test: one that **records the calls** it receives to assert on them
 (that is the behaviour under test), and one whose answers follow the test's own writes or
@@ -305,6 +307,21 @@ cross midnight the two collapse into the one day it always checked.
   `hooks.server.ts`, adapter/config wiring, Svelte components’ markup. These contain no
   branching business logic worth unit-testing; if they grow logic, extract it into the
   domain layer and test it there.
+- **Route edges with branching of their own** — the form read, each outcome or refusal turned
+  into a status and a sentence, where a success redirects — earn a `bun test` suite beside the
+  route, failure paths included (refused input, not found, not visible, each with its positive
+  control), so a branch Playwright cannot reach is still pinned:
+  - **Test the action as written** with `routeEvent({ services, form, params, user })` from
+    `src/lib/server/testing/` and read the answer with `answerOf(...)` (`data`, `fail`,
+    `redirect` or `error`). `services` holds only the slices the edge reads; any other fails
+    loud. Fake the use-case's ports, not the use-case: the fake throws the domain's refusal,
+    the test pins what the edge says to it.
+  - **Extract to a colocated plain module** (`home-view.ts`, `person-view.ts`,
+    `immich-form.ts`) a decision with no SvelteKit in it that is more than a line — a form
+    reader, what the address names — and anything that would read the clock, so its test
+    stays off the wall clock (§8.4.2). The action keeps calling it.
+  - `src/lib/server/testing/` speaks SvelteKit, so it sits apart from `domain/testing/`; the
+    same guard keeps both out of the build.
 
 ## 8.6 Naming & structure conventions
 
