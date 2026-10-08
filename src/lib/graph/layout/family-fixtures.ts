@@ -119,3 +119,25 @@ export const twoFamilies: GraphModel = {
 		...parentsOf('jan', 'beat')
 	]
 };
+
+/**
+ * One family over three generations: siblings Bert and Carl, each married with two children.
+ * Listed in an unhelpful order — partners apart, the right-hand couple's children first — so
+ * the arrangement has to do the ordering itself.
+ */
+export const twoHouseholds: GraphModel = {
+	nodes: ['otto', 'rosa', 'anna', 'dora', 'bert', 'carl', 'finn', 'gina', 'emil', 'hugo'].map(
+		(id) => person(id, undefined)
+	),
+	edges: [
+		stored('otto', 'rosa', 'spouse'),
+		...parentsOf('bert', 'otto'),
+		...parentsOf('carl', 'rosa'),
+		stored('anna', 'bert', 'spouse'),
+		stored('carl', 'dora', 'spouse'),
+		...parentsOf('finn', 'carl'),
+		...parentsOf('gina', 'dora'),
+		...parentsOf('emil', 'anna'),
+		...parentsOf('hugo', 'bert')
+	]
+};
