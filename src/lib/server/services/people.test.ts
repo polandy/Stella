@@ -31,6 +31,7 @@ const media: PeopleWiring['media'] = {
 	}
 };
 
+let sqlite: Database;
 let db: BunSQLiteDatabase<typeof schema>;
 let wiring: PeopleWiring;
 let admin: AuthUser;
@@ -38,7 +39,7 @@ let admin: AuthUser;
 beforeEach(async () => {
 	counter = 0;
 	deleted.length = 0;
-	const sqlite = new Database(':memory:');
+	sqlite = new Database(':memory:');
 	sqlite.exec('PRAGMA foreign_keys = ON;');
 	db = drizzle(sqlite, { schema });
 	migrate(db, { migrationsFolder: './drizzle' });
@@ -167,6 +168,7 @@ describe('createServices', () => {
 			// Nothing here touches a file: the media store is lazy on disk.
 			config: { ...config, mediaDir: '/nonexistent/stella-media' },
 			db,
+			sqlite,
 			clock,
 			ids
 		});

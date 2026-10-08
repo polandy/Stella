@@ -7,7 +7,6 @@ import {
 	serialiseDocument
 } from '$lib/server/domain/archive/archive';
 import { tarEntry, tarTrailer } from '$lib/archive/tar';
-import { getArchiveDeps } from '$lib/server/services';
 import type { RequestHandler } from './$types';
 import { say } from '$lib/server/i18n/say';
 
@@ -29,10 +28,13 @@ export const POST: RequestHandler = async ({ locals }) => {
 	// it (docs/02 §2.15). This is the authorisation; the repository scopes by household.
 	if (user.role !== 'admin') throw error(403, say(locals, 'errors.export.adminOnly'));
 
-	const { fileName, document, mediaPaths } = await exportHousehold(getArchiveDeps(), {
-		userId: user.id,
-		householdId: user.householdId
-	});
+	const { fileName, document, mediaPaths } = await exportHousehold(
+		locals.services.archive.archiveDeps,
+		{
+			userId: user.id,
+			householdId: user.householdId
+		}
+	);
 
 	// Named before anything is sent: a path the archive cannot carry must fail as an error,
 	// not as a truncated file that still looks like a backup.

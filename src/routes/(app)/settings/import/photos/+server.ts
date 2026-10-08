@@ -7,7 +7,6 @@ import { previewImport } from '$lib/server/domain/import/apply';
 import { attachImportedPhoto } from '$lib/server/domain/import/monica/photos';
 import { InvalidImageError } from '$lib/server/domain/media/journal-photos';
 import { readStagedDump } from '$lib/server/import/staging';
-import { getImportDeps } from '$lib/server/services';
 import type { RequestHandler } from './$types';
 import { importWording } from '$lib/server/i18n/import-wording';
 import { takenAtField } from '$lib/server/http/taken-at-field';
@@ -35,7 +34,7 @@ async function planFor(
 ) {
 	const text = await readStagedDump(getConfig().importDir, token);
 	if (text === null) throw error(410, say(locals, 'import.error.sessionOver'));
-	return previewImport(getImportDeps(), text, {
+	return previewImport(locals.services.archive.importDeps, text, {
 		householdId: user.householdId,
 		userId: user.id,
 		visibility,
