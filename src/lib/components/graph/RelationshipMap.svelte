@@ -3,8 +3,8 @@
 	import { MediaQuery } from 'svelte/reactivity';
 	import { prefersReducedMotion } from 'svelte/motion';
 	import { scrollBehavior } from '$lib/motion/motion';
-	import EgoGraph from '$lib/components/EgoGraph.svelte';
-	import Icon from '$lib/components/Icon.svelte';
+	import EgoGraph from '$lib/components/graph/EgoGraph.svelte';
+	import Icon from '$lib/components/ui/Icon.svelte';
 	import { useTranslate } from '$lib/i18n/context.svelte';
 	import { dismissesFullscreenOnDrag } from '$lib/ui/fullscreen';
 	import {

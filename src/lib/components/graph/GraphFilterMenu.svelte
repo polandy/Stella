@@ -1,5 +1,5 @@
 <script lang="ts">
-	import MenuButton from '$lib/components/MenuButton.svelte';
+	import MenuButton from '$lib/components/ui/MenuButton.svelte';
 	import { filterSummary } from '$lib/ui/menu';
 	import { categoryVar } from '$lib/design/tokens';
 	import { useTranslate } from '$lib/i18n/context.svelte';

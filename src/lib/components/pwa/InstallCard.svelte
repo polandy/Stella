@@ -1,8 +1,8 @@
 <script lang="ts">
 	import { useTranslate } from '$lib/i18n/context.svelte';
 	import { install } from '$lib/pwa/install.svelte';
-	import Button from './Button.svelte';
-	import Icon from './Icon.svelte';
+	import Button from '../ui/Button.svelte';
+	import Icon from '../ui/Icon.svelte';
 
 	/*
 	 * The standing offer to install Stella on this device (docs/02 §2.18).

@@ -3,7 +3,7 @@
 	import type { Snippet } from 'svelte';
 	import { useTranslate } from '$lib/i18n/context.svelte';
 	import { outbox } from '$lib/pwa/outbox.svelte';
-	import Button from './Button.svelte';
+	import Button from '../ui/Button.svelte';
 
 	/*
 	 * Signing out (docs/02 §2.18.1). A plain form post, as

@@ -1,7 +1,7 @@
 <script lang="ts">
-	import Avatar from '$lib/components/Avatar.svelte';
-	import NamesakeLine from '$lib/components/NamesakeLine.svelte';
-	import WhichNamesake from '$lib/components/WhichNamesake.svelte';
+	import Avatar from '$lib/components/ui/Avatar.svelte';
+	import NamesakeLine from '$lib/components/people/NamesakeLine.svelte';
+	import WhichNamesake from '$lib/components/people/WhichNamesake.svelte';
 	import { useTranslate } from '$lib/i18n/context.svelte';
 	import { allowedForAudience } from '$lib/mentions/audience';
 	import {
@@ -16,7 +16,7 @@
 	import { usePeopleContext } from '$lib/people/context.svelte';
 	import { tellApart } from '$lib/people/namesakes';
 	import { onMount, tick } from 'svelte';
-	import { BLUR_CLOSE_MS } from '$lib/components/blur-close';
+	import { BLUR_CLOSE_MS } from '$lib/components/ui/blur-close';
 
 	/*
 	 * A textarea that offers people while you type `@` (docs/02 §2.20.1). The picker is an

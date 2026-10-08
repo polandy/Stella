@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { nextMenuIndex } from '$lib/ui/menu';
 	import { filterSuggestions } from '$lib/ui/combobox';
-	import { BLUR_CLOSE_MS } from '$lib/components/blur-close';
+	import { BLUR_CLOSE_MS } from '$lib/components/ui/blur-close';
 
 	/*
 	 * A plain text field that suggests values already in use — a circle's roles, a household's

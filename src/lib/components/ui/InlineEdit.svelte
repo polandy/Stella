@@ -1,9 +1,9 @@
 <script lang="ts">
-	import FormError from '$lib/components/FormError.svelte';
+	import FormError from '$lib/components/ui/FormError.svelte';
 	import { enhance } from '$app/forms';
-	import Button from '$lib/components/Button.svelte';
-	import Icon from '$lib/components/Icon.svelte';
-	import { PENCIL_AT_VALUE_END, VALUE_WITH_PENCIL } from '$lib/components/edit-pencil';
+	import Button from '$lib/components/ui/Button.svelte';
+	import Icon from '$lib/components/ui/Icon.svelte';
+	import { PENCIL_AT_VALUE_END, VALUE_WITH_PENCIL } from '$lib/components/ui/edit-pencil';
 	import { useTranslate } from '$lib/i18n/context.svelte';
 	import { useRemovals } from '$lib/undo/context.svelte';
 	import { savedEnhance } from '$lib/undo/saved';

@@ -1,6 +1,6 @@
 <script lang="ts">
-	import Icon from '$lib/components/Icon.svelte';
-	import Section from '$lib/components/Section.svelte';
+	import Icon from '$lib/components/ui/Icon.svelte';
+	import Section from '$lib/components/ui/Section.svelte';
 	import { cardShape } from '$lib/people/empty-cards';
 	import { sectionAnchor } from '$lib/people/sections';
 	import { dayLabel } from '$lib/dates/labels';

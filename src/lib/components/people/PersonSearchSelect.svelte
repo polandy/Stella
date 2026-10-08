@@ -1,16 +1,16 @@
 <script lang="ts">
-	import FormerlyMark from '$lib/components/FormerlyMark.svelte';
-	import FoundByJobMark from '$lib/components/FoundByJobMark.svelte';
-	import JobLine from '$lib/components/JobLine.svelte';
+	import FormerlyMark from '$lib/components/people/FormerlyMark.svelte';
+	import FoundByJobMark from '$lib/components/people/FoundByJobMark.svelte';
+	import JobLine from '$lib/components/people/JobLine.svelte';
 	import { foundByJob } from '$lib/people/job';
 	import { foundByFormerName } from '$lib/people/former-name';
 	import { tick } from 'svelte';
-	import Avatar from '$lib/components/Avatar.svelte';
-	import Button from '$lib/components/Button.svelte';
-	import DateField from '$lib/components/DateField.svelte';
-	import Icon from '$lib/components/Icon.svelte';
-	import KnowThemBy from '$lib/components/KnowThemBy.svelte';
-	import NamesakeLine from '$lib/components/NamesakeLine.svelte';
+	import Avatar from '$lib/components/ui/Avatar.svelte';
+	import Button from '$lib/components/ui/Button.svelte';
+	import DateField from '$lib/components/ui/DateField.svelte';
+	import Icon from '$lib/components/ui/Icon.svelte';
+	import KnowThemBy from '$lib/components/people/KnowThemBy.svelte';
+	import NamesakeLine from '$lib/components/people/NamesakeLine.svelte';
 	import { useTranslate } from '$lib/i18n/context.svelte';
 	import { usePeopleContext } from '$lib/people/context.svelte';
 	import { tellApart } from '$lib/people/namesakes';
@@ -27,7 +27,7 @@
 		type SelectablePerson
 	} from '$lib/people/select';
 	import { useRemovals } from '$lib/undo/context.svelte';
-	import { BLUR_CLOSE_MS } from '$lib/components/blur-close';
+	import { BLUR_CLOSE_MS } from '$lib/components/ui/blur-close';
 
 	/*
 	 * A person picker that filters by name as you type, for any form field where someone chooses

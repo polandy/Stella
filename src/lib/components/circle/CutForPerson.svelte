@@ -1,10 +1,10 @@
 <script lang="ts">
 	import { invalidateAll } from '$app/navigation';
-	import Avatar from '$lib/components/Avatar.svelte';
-	import Button from '$lib/components/Button.svelte';
-	import FormError from '$lib/components/FormError.svelte';
-	import Icon from '$lib/components/Icon.svelte';
-	import PhotoCropper from '$lib/components/PhotoCropper.svelte';
+	import Avatar from '$lib/components/ui/Avatar.svelte';
+	import Button from '$lib/components/ui/Button.svelte';
+	import FormError from '$lib/components/ui/FormError.svelte';
+	import Icon from '$lib/components/ui/Icon.svelte';
+	import PhotoCropper from '$lib/components/ui/PhotoCropper.svelte';
 	import {
 		cutCandidates,
 		type CandidatePerson,

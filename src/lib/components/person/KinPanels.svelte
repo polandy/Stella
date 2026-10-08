@@ -1,8 +1,8 @@
 <script lang="ts">
-	import Avatar from '$lib/components/Avatar.svelte';
-	import Button from '$lib/components/Button.svelte';
-	import Icon from '$lib/components/Icon.svelte';
-	import KinSuggestions from '$lib/components/KinSuggestions.svelte';
+	import Avatar from '$lib/components/ui/Avatar.svelte';
+	import Button from '$lib/components/ui/Button.svelte';
+	import Icon from '$lib/components/ui/Icon.svelte';
+	import KinSuggestions from '$lib/components/people/KinSuggestions.svelte';
 	import { enhance } from '$app/forms';
 	import { invalidateAll } from '$app/navigation';
 	import { useI18n } from '$lib/i18n/context.svelte';

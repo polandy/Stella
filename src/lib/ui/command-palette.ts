@@ -1,6 +1,6 @@
 import { foundByFormerName } from '$lib/people/former-name';
 import { foundByJob, jobOf, type Job } from '$lib/people/job';
-import type { IconName } from '$lib/components/icons';
+import type { IconName } from '$lib/components/ui/icons';
 import { matchesQuery, startsWithQuery } from '$lib/people/directory';
 import type { PersonContext } from '$lib/people/context';
 import { tellApart, type Distinction } from '$lib/people/namesakes';

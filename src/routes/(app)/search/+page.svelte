@@ -1,10 +1,10 @@
 <script lang="ts">
-	import FormerlyMark from '$lib/components/FormerlyMark.svelte';
-	import FoundByJobMark from '$lib/components/FoundByJobMark.svelte';
-	import JobLine from '$lib/components/JobLine.svelte';
-	import Avatar from '$lib/components/Avatar.svelte';
-	import Button from '$lib/components/Button.svelte';
-	import EmptyState from '$lib/components/EmptyState.svelte';
+	import FormerlyMark from '$lib/components/people/FormerlyMark.svelte';
+	import FoundByJobMark from '$lib/components/people/FoundByJobMark.svelte';
+	import JobLine from '$lib/components/people/JobLine.svelte';
+	import Avatar from '$lib/components/ui/Avatar.svelte';
+	import Button from '$lib/components/ui/Button.svelte';
+	import EmptyState from '$lib/components/ui/EmptyState.svelte';
 	import { newPersonHref } from '$lib/people/new-person';
 	import { useTranslate } from '$lib/i18n/context.svelte';
 	import type { PageData } from './$types';

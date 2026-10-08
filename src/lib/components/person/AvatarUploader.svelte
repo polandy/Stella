@@ -1,5 +1,5 @@
 <script lang="ts">
-	import FormError from '$lib/components/FormError.svelte';
+	import FormError from '$lib/components/ui/FormError.svelte';
 	import { invalidateAll } from '$app/navigation';
 	import { avatarChoices } from '$lib/people/avatar-chooser';
 	import { useTranslate } from '$lib/i18n/context.svelte';
@@ -11,9 +11,9 @@
 	import { mediaUrl } from '$lib/media/urls';
 	import { useRemovals } from '$lib/undo/context.svelte';
 	import AvatarChooser, { type GroupPhotoChoice } from './AvatarChooser.svelte';
-	import Avatar from './Avatar.svelte';
-	import ImmichFacePicker from './person/ImmichFacePicker.svelte';
-	import PhotoCropper from './PhotoCropper.svelte';
+	import Avatar from '../ui/Avatar.svelte';
+	import ImmichFacePicker from './ImmichFacePicker.svelte';
+	import PhotoCropper from '../ui/PhotoCropper.svelte';
 
 	interface Props {
 		contactId: string;

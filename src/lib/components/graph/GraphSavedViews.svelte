@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { tick } from 'svelte';
-	import Icon from '$lib/components/Icon.svelte';
+	import Icon from '$lib/components/ui/Icon.svelte';
 	import { useTranslate } from '$lib/i18n/context.svelte';
 	import { savedViewNamed, type SavedView } from '$lib/graph/model/saved-views';
 	import { MENU_ITEM } from './menu-item';

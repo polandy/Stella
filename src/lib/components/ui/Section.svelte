@@ -1,5 +1,5 @@
 <script lang="ts">
-	import FormError from '$lib/components/FormError.svelte';
+	import FormError from '$lib/components/ui/FormError.svelte';
 	import { useTranslate } from '$lib/i18n/context.svelte';
 	import { tick, untrack, type Snippet } from 'svelte';
 	import Button from './Button.svelte';

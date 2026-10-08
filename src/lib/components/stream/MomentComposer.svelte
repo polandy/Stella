@@ -1,14 +1,14 @@
 <script lang="ts">
-	import FormError from '$lib/components/FormError.svelte';
+	import FormError from '$lib/components/ui/FormError.svelte';
 	import { browser } from '$app/environment';
 	import { goto } from '$app/navigation';
-	import Avatar from '$lib/components/Avatar.svelte';
-	import Button from '$lib/components/Button.svelte';
-	import DayPill from '$lib/components/DayPill.svelte';
-	import Icon from '$lib/components/Icon.svelte';
-	import KnowThemBy from '$lib/components/KnowThemBy.svelte';
-	import NamesakeLine from '$lib/components/NamesakeLine.svelte';
-	import WhichNamesake from '$lib/components/WhichNamesake.svelte';
+	import Avatar from '$lib/components/ui/Avatar.svelte';
+	import Button from '$lib/components/ui/Button.svelte';
+	import DayPill from '$lib/components/ui/DayPill.svelte';
+	import Icon from '$lib/components/ui/Icon.svelte';
+	import KnowThemBy from '$lib/components/people/KnowThemBy.svelte';
+	import NamesakeLine from '$lib/components/people/NamesakeLine.svelte';
+	import WhichNamesake from '$lib/components/people/WhichNamesake.svelte';
 	import { useTranslate } from '$lib/i18n/context.svelte';
 	import { processImage } from '$lib/media/process-image';
 	import { listPlacement, type ListPlacement } from '$lib/mentions/picker';

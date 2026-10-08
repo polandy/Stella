@@ -1,12 +1,12 @@
 <script lang="ts">
-	import FormError from '$lib/components/FormError.svelte';
+	import FormError from '$lib/components/ui/FormError.svelte';
 	import { invalidateAll } from '$app/navigation';
 	import { useTranslate } from '$lib/i18n/context.svelte';
 	import type { CropRect } from '$lib/media/crop';
 	import { processAvatar } from '$lib/media/process-avatar';
 	import { mediaUrl } from '$lib/media/urls';
-	import Button from './Button.svelte';
-	import PhotoCropper from './PhotoCropper.svelte';
+	import Button from '../ui/Button.svelte';
+	import PhotoCropper from '../ui/PhotoCropper.svelte';
 
 	/*
 	 * Wearing a gallery photo as the person's avatar through a chosen square (docs/02 §2.14).

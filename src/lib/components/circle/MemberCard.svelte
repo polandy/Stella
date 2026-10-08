@@ -1,6 +1,6 @@
 <script lang="ts">
-	import Avatar from '$lib/components/Avatar.svelte';
-	import RemoveButton from '$lib/components/RemoveButton.svelte';
+	import Avatar from '$lib/components/ui/Avatar.svelte';
+	import RemoveButton from '$lib/components/ui/RemoveButton.svelte';
 	import { useTranslate } from '$lib/i18n/context.svelte';
 	import type { CirclePageData } from './types';
 

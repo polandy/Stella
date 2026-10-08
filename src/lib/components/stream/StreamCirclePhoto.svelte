@@ -1,10 +1,10 @@
 <script lang="ts">
-	import Icon from '$lib/components/Icon.svelte';
-	import StreamWhen from '$lib/components/StreamWhen.svelte';
+	import Icon from '$lib/components/ui/Icon.svelte';
+	import StreamWhen from '$lib/components/stream/StreamWhen.svelte';
 	import type { StreamTime } from '$lib/stream/days';
 	import { useTranslate } from '$lib/i18n/context.svelte';
 	import { thumbnailUrl } from '$lib/media/urls';
-	import type { PageData } from '../../routes/(app)/$types';
+	import type { PageData } from '../../../routes/(app)/$types';
 
 	/** The stream item as Home's `load` hands it over. */
 	type CirclePhotoItem = Extract<PageData['stream'][number], { kind: 'circlePhoto' }>;

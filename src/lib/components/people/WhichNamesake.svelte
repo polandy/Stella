@@ -1,6 +1,6 @@
 <script lang="ts">
-	import Icon from '$lib/components/Icon.svelte';
-	import NamesakeLine from '$lib/components/NamesakeLine.svelte';
+	import Icon from '$lib/components/ui/Icon.svelte';
+	import NamesakeLine from '$lib/components/people/NamesakeLine.svelte';
 	import { useTranslate } from '$lib/i18n/context.svelte';
 	import type { UnclearHandle } from '$lib/mentions/unclear';
 

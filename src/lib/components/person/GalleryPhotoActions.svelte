@@ -1,5 +1,5 @@
 <script lang="ts">
-	import Button from '$lib/components/Button.svelte';
+	import Button from '$lib/components/ui/Button.svelte';
 	import { useI18n } from '$lib/i18n/context.svelte';
 	import { INPUT } from './inputs';
 	import type { PersonPageData } from './types';

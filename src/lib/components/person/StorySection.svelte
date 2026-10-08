@@ -1,11 +1,11 @@
 <script lang="ts">
-	import Button from '$lib/components/Button.svelte';
-	import DateField from '$lib/components/DateField.svelte';
-	import KeptItem from '$lib/components/KeptItem.svelte';
-	import MomentComposer from '$lib/components/MomentComposer.svelte';
-	import PersonSearchSelect from '$lib/components/PersonSearchSelect.svelte';
-	import Section from '$lib/components/Section.svelte';
-	import StoryTimeline from '$lib/components/StoryTimeline.svelte';
+	import Button from '$lib/components/ui/Button.svelte';
+	import DateField from '$lib/components/ui/DateField.svelte';
+	import KeptItem from '$lib/components/pwa/KeptItem.svelte';
+	import MomentComposer from '$lib/components/stream/MomentComposer.svelte';
+	import PersonSearchSelect from '$lib/components/people/PersonSearchSelect.svelte';
+	import Section from '$lib/components/ui/Section.svelte';
+	import StoryTimeline from '$lib/components/stream/StoryTimeline.svelte';
 	import { enhance } from '$app/forms';
 	import { goto, invalidateAll } from '$app/navigation';
 	import type { JsonCommand } from '$lib/commands/commands';

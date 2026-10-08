@@ -2,7 +2,7 @@
 	import { useI18n } from '$lib/i18n/context.svelte';
 	import { copyAge } from '$lib/pwa/copy-age';
 	import { reachability } from '$lib/pwa/reachability.svelte';
-	import Icon from './Icon.svelte';
+	import Icon from '../ui/Icon.svelte';
 
 	/*
 	 * Says when the page being read came off this device rather than from Stella (docs/02

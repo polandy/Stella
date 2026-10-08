@@ -1,5 +1,5 @@
 <script lang="ts">
-	import Icon from '$lib/components/Icon.svelte';
+	import Icon from '$lib/components/ui/Icon.svelte';
 	import { useTranslate } from '$lib/i18n/context.svelte';
 	import { jobShortForm } from '$lib/people/job';
 

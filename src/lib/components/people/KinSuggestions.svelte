@@ -1,8 +1,8 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
 	import { MediaQuery } from 'svelte/reactivity';
-	import Button from '$lib/components/Button.svelte';
-	import LinkedNames from '$lib/components/LinkedNames.svelte';
+	import Button from '$lib/components/ui/Button.svelte';
+	import LinkedNames from '$lib/components/people/LinkedNames.svelte';
 	import { dayLabel } from '$lib/dates/labels';
 	import { useI18n } from '$lib/i18n/context.svelte';
 	import { segmentsOf, textOf, type Segment } from '$lib/i18n/linked';

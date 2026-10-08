@@ -1,11 +1,11 @@
 <script lang="ts">
-	import FormerlyMark from '$lib/components/FormerlyMark.svelte';
-	import FoundByJobMark from '$lib/components/FoundByJobMark.svelte';
-	import JobLine from '$lib/components/JobLine.svelte';
+	import FormerlyMark from '$lib/components/people/FormerlyMark.svelte';
+	import FoundByJobMark from '$lib/components/people/FoundByJobMark.svelte';
+	import JobLine from '$lib/components/people/JobLine.svelte';
 	import { goto } from '$app/navigation';
-	import Avatar from '$lib/components/Avatar.svelte';
-	import Icon from '$lib/components/Icon.svelte';
-	import NamesakeLine from '$lib/components/NamesakeLine.svelte';
+	import Avatar from '$lib/components/ui/Avatar.svelte';
+	import Icon from '$lib/components/ui/Icon.svelte';
+	import NamesakeLine from '$lib/components/people/NamesakeLine.svelte';
 	import { useTranslate } from '$lib/i18n/context.svelte';
 	import { paletteRows, type PalettePerson } from '$lib/ui/command-palette';
 	import { usePeopleContext } from '$lib/people/context.svelte';

@@ -3,7 +3,7 @@
 	import type { MessageKey } from '$lib/i18n/translate';
 	import type { OutboxItem } from '$lib/pwa/outbox';
 	import { outbox } from '$lib/pwa/outbox.svelte';
-	import Icon from './Icon.svelte';
+	import Icon from '../ui/Icon.svelte';
 
 	/*
 	 * A tag or circle added while Stella was out of reach, kept on this device (docs/02 §2.18):

@@ -1,6 +1,6 @@
 <script lang="ts">
-	import FormError from '$lib/components/FormError.svelte';
-	import Button from '$lib/components/Button.svelte';
+	import FormError from '$lib/components/ui/FormError.svelte';
+	import Button from '$lib/components/ui/Button.svelte';
 	import { countLabel, summariseRestore, tableLabel } from '$lib/archive/labels';
 	import { useI18n } from '$lib/i18n/context.svelte';
 	import type { RestoreWarning } from '$lib/server/domain/archive/restore';

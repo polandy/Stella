@@ -1,8 +1,8 @@
 <script lang="ts">
 	import { tick } from 'svelte';
-	import DayCalendar from '$lib/components/DayCalendar.svelte';
-	import Icon from '$lib/components/Icon.svelte';
-	import MenuButton from '$lib/components/MenuButton.svelte';
+	import DayCalendar from '$lib/components/ui/DayCalendar.svelte';
+	import Icon from '$lib/components/ui/Icon.svelte';
+	import MenuButton from '$lib/components/ui/MenuButton.svelte';
 	import { pickedDayLabel, recentDays } from '$lib/dates/recent';
 	import { menuOpensUpward, menuShift } from '$lib/ui/menu';
 	import { useI18n } from '$lib/i18n/context.svelte';

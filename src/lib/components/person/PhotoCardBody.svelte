@@ -1,5 +1,5 @@
 <script lang="ts">
-	import Button from '$lib/components/Button.svelte';
+	import Button from '$lib/components/ui/Button.svelte';
 	import { GLANCE_TILES, photoKey, type PhotoTab } from '$lib/people/photo-card';
 	import { useI18n } from '$lib/i18n/context.svelte';
 	import type { StripView } from '$lib/immich/together';

@@ -15,8 +15,8 @@
 	import { dayLabel } from '$lib/dates/labels';
 	import type { GlimpsePhoto } from '$lib/immich/strip';
 	import { thumbnailUrl } from '$lib/media/urls';
-	import Button from './Button.svelte';
-	import { fetchGlimpse } from './person/immich-glimpse';
+	import Button from '../ui/Button.svelte';
+	import { fetchGlimpse } from './immich-glimpse';
 
 	/*
 	 * Where a person's new picture comes from (docs/02 §2.14, §2.24.6): a file, a group photo of

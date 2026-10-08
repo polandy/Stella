@@ -2,8 +2,8 @@
 	import { useTranslate } from '$lib/i18n/context.svelte';
 	import type { MessageKey } from '$lib/i18n/translate';
 	import type { WelcomeStep, WelcomeStepId } from '$lib/stream/welcome';
-	import Icon from './Icon.svelte';
-	import type { IconName } from './icons';
+	import Icon from '../ui/Icon.svelte';
+	import type { IconName } from '../ui/icons';
 
 	/*
 	 * The first-run card on Home (docs/02 §2.22.3, docs/05 §5.10). Which steps it offers and

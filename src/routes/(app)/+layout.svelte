@@ -9,17 +9,17 @@
 		pushState
 	} from '$app/navigation';
 	import { navigating, page } from '$app/state';
-	import Button from '$lib/components/Button.svelte';
-	import ActivityIndicator from '$lib/components/ActivityIndicator.svelte';
-	import CommandPalette from '$lib/components/CommandPalette.svelte';
-	import Icon from '$lib/components/Icon.svelte';
+	import Button from '$lib/components/ui/Button.svelte';
+	import ActivityIndicator from '$lib/components/ui/ActivityIndicator.svelte';
+	import CommandPalette from '$lib/components/shell/CommandPalette.svelte';
+	import Icon from '$lib/components/ui/Icon.svelte';
 	import { useTranslate } from '$lib/i18n/context.svelte';
-	import type { IconName } from '$lib/components/icons';
+	import type { IconName } from '$lib/components/ui/icons';
 	import type { MessageKey } from '$lib/i18n/translate';
-	import Logo from '$lib/components/Logo.svelte';
-	import OfflineBanner from '$lib/components/OfflineBanner.svelte';
-	import SignOutForm from '$lib/components/SignOutForm.svelte';
-	import Toast from '$lib/components/Toast.svelte';
+	import Logo from '$lib/components/shell/Logo.svelte';
+	import OfflineBanner from '$lib/components/pwa/OfflineBanner.svelte';
+	import SignOutForm from '$lib/components/shell/SignOutForm.svelte';
+	import Toast from '$lib/components/ui/Toast.svelte';
 	import { provideRemovals } from '$lib/undo/context.svelte';
 	import { navigationTurns } from '$lib/undo/navigation-turns';
 	import { providePending } from '$lib/sync/context.svelte';

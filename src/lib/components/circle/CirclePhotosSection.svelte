@@ -1,9 +1,9 @@
 <script lang="ts">
 	import { invalidateAll } from '$app/navigation';
-	import Button from '$lib/components/Button.svelte';
-	import Icon from '$lib/components/Icon.svelte';
-	import KeptItem from '$lib/components/KeptItem.svelte';
-	import Section from '$lib/components/Section.svelte';
+	import Button from '$lib/components/ui/Button.svelte';
+	import Icon from '$lib/components/ui/Icon.svelte';
+	import KeptItem from '$lib/components/pwa/KeptItem.svelte';
+	import Section from '$lib/components/ui/Section.svelte';
 	import { roleKey } from '$lib/circles/role-key';
 	import type { JsonCommand } from '$lib/commands/commands';
 	import { useI18n } from '$lib/i18n/context.svelte';

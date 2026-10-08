@@ -1,17 +1,17 @@
 <script lang="ts">
-	import Swap from '$lib/components/Swap.svelte';
+	import Swap from '$lib/components/ui/Swap.svelte';
 	import { reveal } from '$lib/motion/motion.svelte';
-	import FormError from '$lib/components/FormError.svelte';
+	import FormError from '$lib/components/ui/FormError.svelte';
 	import { deserialize, enhance } from '$app/forms';
 	import { invalidateAll } from '$app/navigation';
-	import Avatar from '$lib/components/Avatar.svelte';
-	import Button from '$lib/components/Button.svelte';
-	import DateField from '$lib/components/DateField.svelte';
-	import EmptyState from '$lib/components/EmptyState.svelte';
-	import Icon from '$lib/components/Icon.svelte';
-	import MentionTextarea from '$lib/components/MentionTextarea.svelte';
+	import Avatar from '$lib/components/ui/Avatar.svelte';
+	import Button from '$lib/components/ui/Button.svelte';
+	import DateField from '$lib/components/ui/DateField.svelte';
+	import EmptyState from '$lib/components/ui/EmptyState.svelte';
+	import Icon from '$lib/components/ui/Icon.svelte';
+	import MentionTextarea from '$lib/components/stream/MentionTextarea.svelte';
 	import { asTyped } from '$lib/mentions/picks';
-	import KeptItem from '$lib/components/KeptItem.svelte';
+	import KeptItem from '$lib/components/pwa/KeptItem.svelte';
 	import { processImage } from '$lib/media/process-image';
 	import { keepable } from '$lib/pwa/keepable';
 	import { isKept, type KeptOf, type KeptPhoto } from '$lib/pwa/outbox';

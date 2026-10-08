@@ -4,8 +4,8 @@
 	import type { MessageKey } from '$lib/i18n/translate';
 	import type { OutboxItem } from '$lib/pwa/outbox';
 	import { outbox } from '$lib/pwa/outbox.svelte';
-	import Button from './Button.svelte';
-	import Icon from './Icon.svelte';
+	import Button from '../ui/Button.svelte';
+	import Icon from '../ui/Icon.svelte';
 
 	/*
 	 * Something written while Stella was out of reach and kept on this device (docs/02 §2.18,

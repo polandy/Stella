@@ -19,7 +19,7 @@ import {
 
 const read = (path: string) => Bun.file(new URL(path, import.meta.url)).text();
 const appHtml = await read('../../app.html');
-const logoSvelte = await read('../components/Logo.svelte');
+const logoSvelte = await read('../components/shell/Logo.svelte');
 const logoSvg = await read('../../../static/logo.svg');
 
 const overlayMarkup = /<div id="stella-welcome"[\s\S]*?<\/svg>[\s\S]*?<\/div>/.exec(appHtml)?.[0];
