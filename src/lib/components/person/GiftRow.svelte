@@ -6,7 +6,7 @@
 	import Icon from '$lib/components/Icon.svelte';
 	import RemoveButton from '$lib/components/RemoveButton.svelte';
 	import { dayLabel } from '$lib/dates/labels';
-	import { occasionLabel } from '$lib/gifts/labels';
+	import { addedLabel, occasionLabel } from '$lib/gifts/labels';
 	import { useI18n } from '$lib/i18n/context.svelte';
 	import { reveal } from '$lib/motion/motion.svelte';
 	import { useRemovals } from '$lib/undo/context.svelte';
@@ -66,6 +66,12 @@
 					.join(' · ')
 			: null
 	);
+	/** When an idea was noted: *Added 3 October 2026*, in the reader's time zone. */
+	const added = $derived(
+		gift.state === 'idea'
+			? addedLabel(i18n, gift.createdAt, Intl.DateTimeFormat().resolvedOptions().timeZone)
+			: null
+	);
 </script>
 
 <li bind:this={row} class="flex gap-3 border-t border-border-subtle py-2.5 first:border-t-0">
@@ -98,6 +104,7 @@
 				<div class="min-w-0 flex-1">
 					<p class="font-medium break-words text-fg">{gift.title}</p>
 					{#if when}<p class="text-sm text-fg-muted">{when}</p>{/if}
+					{#if added}<p class="text-xs text-fg-muted" data-testid="gift-added">{added}</p>{/if}
 					{#if gift.note}
 						<p class="text-sm whitespace-pre-line text-fg-muted">{gift.note}</p>
 					{/if}

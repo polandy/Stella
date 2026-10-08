@@ -38,6 +38,8 @@ export const gifts: GiftsMessages = {
 	'gifts.markGiven': 'Als verschenkt eintragen',
 	'gifts.markGiven.open': 'Verschenkt …',
 	'gifts.markGiven.title': (p) => `„${p.title}“ verschenkt`,
+	// When an idea was noted, under its title.
+	'gifts.addedOn': (p) => `Notiert am ${p.day}`,
 	'gifts.notedBy': (p) => `notiert von ${p.name}`,
 	'gifts.notedByYou': 'notiert von dir',
 	'gifts.link': 'Link',

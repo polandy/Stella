@@ -254,7 +254,9 @@ the person, and that never leaves the page. Keeping the record tidy (archive, me
 - Three tabs in the segmented-pill look of the Immich page: *Ideas · n* (the open ideas,
   counted), *Given*, and *Received* only once there is one; arrow keys move between them.
 - A row: a square icon tile (a light bulb in `--accent-yellow` for an idea, the gift in
-  `--kind-gift` otherwise), the title, *day · occasion*, the note, then *noted by …* · *Link* ·
+  `--kind-gift` otherwise), the title, *day · occasion* — on an idea instead the quiet
+  *Added 3 October 2026* (`text-xs`, `--fg-muted`; the day named like every day on the page, in
+  the reader's time zone) — the note, then *noted by …* · *Link* ·
   *private* in the subtle line; the pencil and the remove cross on the right. An idea's
   *Mark as given…* (German *Verschenkt …*) stands under its text, so a phone keeps the title on
   one line — an outlined `secondary` button, since every idea carries one and a list of filled

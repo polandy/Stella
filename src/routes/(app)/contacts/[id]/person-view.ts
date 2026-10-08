@@ -96,7 +96,9 @@ export function giftView(gift: Gift, ctx: PersonViewContext) {
 		occasion: gift.occasion,
 		visibility: gift.visibility,
 		mine,
-		notedBy: mine ? null : authorLabel(false, ctx.nameOfAuthor(gift.createdBy))
+		notedBy: mine ? null : authorLabel(false, ctx.nameOfAuthor(gift.createdBy)),
+		/** When it was noted, shown on an idea; given and received gifts show their day. */
+		createdAt: gift.createdAt
 	};
 }
 

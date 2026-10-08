@@ -121,7 +121,8 @@ describe('giftView', () => {
 			occasion: null,
 			visibility: 'shared',
 			mine: false,
-			notedBy: 'Hans'
+			notedBy: 'Hans',
+			createdAt: 1
 		});
 	});
 

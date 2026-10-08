@@ -39,6 +39,8 @@ export const gifts = {
 	// The row button opens the form; the form's submit says the whole thing.
 	'gifts.markGiven.open': 'Mark as given…',
 	'gifts.markGiven.title': (p: { title: string }) => `“${p.title}” given`,
+	// When an idea was noted, under its title.
+	'gifts.addedOn': (p: { day: string }) => `Added ${p.day}`,
 	'gifts.notedBy': (p: { name: string }) => `noted by ${p.name}`,
 	'gifts.notedByYou': 'noted by you',
 	'gifts.link': 'Link',

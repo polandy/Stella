@@ -427,7 +427,8 @@ and a good idea is still there on the birthday it was meant for.
 
 - **+ Idea** notes an idea the moment it comes: just *what* — *Teapot, cast iron*. *Note or link*
   opens two more fields for the size or colour and the shop's web address. Ideas wait under the
-  **Ideas** tab, which counts them: *Ideas · 2*.
+  **Ideas** tab, which counts them: *Ideas · 2*. Each idea says when it was noted — *Added 3
+  October 2026* — so you can tell an old wish from a fresh one.
 - When you give it, press **Mark as given…** under the idea. Stella asks only for the day (today,
   unless you change it) and the occasion — *Birthday*, *Christmas*, *Anniversary*, or *Other…*
   in your own words. The idea moves to the **Given** tab, grouped by year, with its note and
