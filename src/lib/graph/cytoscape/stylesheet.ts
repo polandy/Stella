@@ -1,6 +1,11 @@
 import { mixHex } from '../../design/color';
 import { FRAME } from '../layout/group-blocks';
-import { LABEL_MIN_ZOOMED_FONT_SIZE, NODE_LABEL_WIDTH } from '../layout/legibility';
+import {
+	LABEL_MIN_ZOOMED_FONT_SIZE,
+	CIRCLE_LABEL_WIDTH,
+	NODE_LABEL_WIDTH,
+	SMALLEST_LABEL_FONT_SIZE
+} from '../layout/legibility';
 import { expandBadge } from './badge';
 import type { Palette } from './theme';
 
@@ -15,6 +20,26 @@ export const CURSOR_CLASS = 'cursor';
 export const HOVERED_CLASS = 'hovered';
 /** The class a node carries while expanding it would bring more people in (`elements.ts`). */
 export const HAS_MORE_CLASS = 'has-more';
+/**
+ * The class a line drawn at right angles carries, and the data fields its bends and ends are
+ * read from (`segments.ts`); the controller sets them, this draws them.
+ */
+export const ROUTED_CLASS = 'routed';
+export const ROUTE_FIELDS = {
+	weights: 'segmentWeights',
+	distances: 'segmentDistances',
+	sourceEndpoint: 'sourceEndpoint',
+	targetEndpoint: 'targetEndpoint',
+	nameEnd: 'nameEnd'
+} as const;
+/**
+ * How far up a routed line's name sits from the person its last drop comes down to, in model
+ * units: clear of the disc's rim below and of the bar above, which is never closer than about
+ * twice this (`tree-lines.ts`).
+ */
+const ROUTE_NAME_OFFSET = 22;
+/** The class of a caption the controller writes onto the canvas: words, not somebody to tap. */
+export const CAPTION_CLASS = 'caption';
 
 /*
  * Build the Cytoscape stylesheet from a resolved Palette (docs/05 §5.8). Pure: palette in,
@@ -38,6 +63,12 @@ export interface StylesheetOptions {
 	edgeLabels?: boolean;
 	/** The reader asked for less motion: a state change (selection, fading) is then instant. */
 	reducedMotion?: boolean;
+	/**
+	 * Drawn as the family tree around a person (docs/05 §5.8): each person's role towards the
+	 * centre is written under their name (the `role` the elements carry), the centre is lit
+	 * softly, and no line is named unless `edgeLabels` asks for it — the roles say it instead.
+	 */
+	familyTree?: boolean;
 }
 
 /** The element accessor a function-valued style reads; Cytoscape hands it the element. */
@@ -60,6 +91,17 @@ export function buildStylesheet(p: Palette, options: StylesheetOptions = {}): Cy
 	};
 	// Each line is drawn in one colour, its arrowhead included (docs/05 §5.8).
 	const line = (hex: string) => ({ 'line-color': hex, 'target-arrow-color': hex });
+	const tree = options.familyTree === true;
+	// In the tree a person's role goes on a second line under the name ("Father").
+	const nameAndRole = (ele: StyledElement): string => {
+		const name = String(ele.data('label') ?? '');
+		const role = String(ele.data('role') ?? '');
+		return role ? `${name}\n${role}` : name;
+	};
+	// A routed line reads its bends and ends off its own data (`segments.ts`).
+	const field = (name: string) => (ele: StyledElement) => ele.data(name);
+	const nameAt = (end: 'source' | 'target') => (ele: StyledElement) =>
+		ele.data(ROUTE_FIELDS.nameEnd) === end ? String(ele.data('label') ?? '') : '';
 
 	return [
 		// ── People ────────────────────────────────────────────────────────────
@@ -70,14 +112,15 @@ export function buildStylesheet(p: Palette, options: StylesheetOptions = {}): Cy
 				// The diameter the elements carry: a square-root scale of the lines on the map.
 				width: 'data(size)',
 				height: 'data(size)',
-				label: 'data(label)',
+				label: tree ? nameAndRole : 'data(label)',
 				color: p.fg,
 				'font-size': 11,
 				'font-family': p.fontSans,
 				'text-valign': 'bottom',
 				'text-margin-y': 6,
 				'text-max-width': `${NODE_LABEL_WIDTH}px`,
-				'text-wrap': 'ellipsis',
+				// Cutting short works on one line only; the name and its role are two.
+				'text-wrap': tree ? 'wrap' : 'ellipsis',
 				'min-zoomed-font-size': LABEL_MIN_ZOOMED_FONT_SIZE,
 				'border-width': 3,
 				'text-background-color': p.bg,
@@ -108,6 +151,21 @@ export function buildStylesheet(p: Palette, options: StylesheetOptions = {}): Cy
 			selector: 'node.center',
 			style: { 'border-color': p.primary, 'border-width': 4, 'font-weight': 600, 'z-index': 10 }
 		},
+		// The tree is read from its centre outwards: a soft glow around the ring finds it at once.
+		// Fainter than a selection's halo, which still wins when the centre is selected.
+		...(tree
+			? [
+					{
+						selector: 'node.center',
+						style: {
+							'underlay-color': p.primary,
+							'underlay-opacity': 0.15,
+							'underlay-padding': 10,
+							'underlay-shape': 'ellipse'
+						}
+					}
+				]
+			: []),
 		// Somebody who has died keeps their full weight on the map — a faded disc read as "not
 		// really there" — and is told apart by colour drained to the neutral grey and a double
 		// ring, so the mark holds without colour too.
@@ -131,9 +189,12 @@ export function buildStylesheet(p: Palette, options: StylesheetOptions = {}): Cy
 				'border-color': p.membership,
 				'border-width': 2,
 				width: 'label',
-				height: 28,
+				// In the tree a circle on the shelf says under its name who on the map is in it
+				// (`shelf-captions.ts`): two lines, so the pill grows to them.
+				height: tree ? 'label' : 28,
 				padding: '8px',
-				label: 'data(label)',
+				label: tree ? nameAndRole : 'data(label)',
+				...(tree ? { 'text-wrap': 'wrap', 'text-max-width': `${CIRCLE_LABEL_WIDTH}px` } : {}),
 				color: p.fg,
 				'font-size': 11,
 				'font-weight': 600,
@@ -221,7 +282,7 @@ export function buildStylesheet(p: Palette, options: StylesheetOptions = {}): Cy
 				'text-opacity': options.edgeLabels ? 1 : 0,
 				'min-zoomed-font-size': LABEL_MIN_ZOOMED_FONT_SIZE,
 				color: p.fgMuted,
-				'font-size': 10,
+				'font-size': SMALLEST_LABEL_FONT_SIZE,
 				'font-family': p.fontSans,
 				'text-background-color': p.bg,
 				'text-background-opacity': 0.8,
@@ -266,6 +327,50 @@ export function buildStylesheet(p: Palette, options: StylesheetOptions = {}): Cy
 				'control-point-weights': 0.5
 			}
 		},
+		// A family line the tree draws at right angles (docs/05 §5.8): straight pieces through the
+		// bends the controller set, measured from the node centres. Up and down already say who is
+		// whose parent, so no arrowhead; its colour, dots and width stay those of its kind.
+		{
+			selector: `edge.${ROUTED_CLASS}`,
+			style: {
+				'curve-style': 'segments',
+				'edge-distances': 'node-position',
+				'segment-weights': field(ROUTE_FIELDS.weights),
+				'segment-distances': field(ROUTE_FIELDS.distances),
+				'source-endpoint': field(ROUTE_FIELDS.sourceEndpoint),
+				'target-endpoint': field(ROUTE_FIELDS.targetEndpoint),
+				'target-arrow-shape': 'none',
+				// Named on its last drop, just over the person it comes down to — never in the
+				// middle, which may be a bar its siblings' lines share or a junction — and only
+				// once a drop: a child's two parents' lines run down the same one.
+				label: '',
+				'source-label': nameAt('source'),
+				'target-label': nameAt('target'),
+				'source-text-offset': ROUTE_NAME_OFFSET,
+				'target-text-offset': ROUTE_NAME_OFFSET,
+				'source-text-rotation': 'none',
+				'target-text-rotation': 'none'
+			}
+		},
+		// ── A caption the controller writes onto the canvas ───────────────────
+		// "Outside the family" over the shelf beneath the tree: quiet words, nobody to tap.
+		{
+			selector: `node.${CAPTION_CLASS}`,
+			style: {
+				width: 1,
+				height: 1,
+				'background-opacity': 0,
+				'border-width': 0,
+				label: 'data(label)',
+				color: p.fgMuted,
+				'font-size': 11,
+				'font-family': p.fontSans,
+				'text-valign': 'center',
+				'text-halign': 'right',
+				'min-zoomed-font-size': LABEL_MIN_ZOOMED_FONT_SIZE,
+				events: 'no'
+			}
+		},
 		// ── Interaction states (toggled as classes by the controller) ─────────
 		{
 			selector: '.highlight',
@@ -276,6 +381,10 @@ export function buildStylesheet(p: Palette, options: StylesheetOptions = {}): Cy
 			selector: `edge.highlight, edge.onpath, edge.${HOVERED_CLASS}`,
 			style: { 'text-opacity': 1 }
 		},
+		// In the tree the role under each name says what the names on the lines would — "Friend"
+		// under Nicole rather than "Friend of" on her line — so until the reader turns the Labels
+		// switch on there, no line is named, not even selected or pointed at (`tree-view.ts`).
+		...(tree && !options.edgeLabels ? [{ selector: 'edge', style: { 'text-opacity': 0 } }] : []),
 		// The selection is a filled halo around a solid ring; the keyboard's cursor (below) a
 		// dashed ring held off the node. Two shapes, so they never read as one — not even for
 		// someone who cannot tell their colours apart.

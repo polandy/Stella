@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'bun:test';
 import { createTranslator } from '$lib/i18n/translate';
-import { otherEndRole, relationshipRoleLabel } from './roles';
+import { otherEndRole, relationshipRoleLabel, roleTermLabel } from './roles';
 
 /*
  * Who somebody on a person's People card is *to that person* (docs/05 §5.5): Lena on her
@@ -90,5 +90,14 @@ describe('relationshipRoleLabel', () => {
 		expect(relationshipRoleLabel(en, godchild, 'female', 'Godchild of')).toBe('Godchild of');
 		// With nothing better to say, the row's own label is still the truth from the page's side.
 		expect(relationshipRoleLabel(en, godchild, 'female')).toBe('Godparent of');
+	});
+});
+
+describe('roleTermLabel', () => {
+	it('says a role on its own, in the kinship engine’s words where it shares them', () => {
+		expect(roleTermLabel(en, 'parent', 'male')).toBe('Father');
+		expect(roleTermLabel(de, 'grandparent', 'female')).toBe('Großmutter');
+		expect(roleTermLabel(en, 'aunt-uncle', 'male')).toBe('Uncle');
+		expect(roleTermLabel(de, 'friend', 'neutral')).not.toContain('.');
 	});
 });

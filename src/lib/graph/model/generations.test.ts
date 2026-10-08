@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test';
-import { familiesOf, generationsOf } from './generations';
+import { familiesOf, familyLinksAmong, generationsOf, isFamilyLink } from './generations';
 import type { GraphEdge, GraphModel, GraphNode } from './types';
 
 /*
@@ -173,5 +173,72 @@ describe('generationsOf', () => {
 
 		expect(generations.size).toBe(3);
 		expect(Math.min(...generations.values())).toBe(0);
+	});
+});
+
+describe('isFamilyLink', () => {
+	it('counts the entered and worked-out links that place somebody in a generation', () => {
+		expect(isFamilyLink(parentOf('otto', 'hans'))).toBe(true);
+		expect(isFamilyLink(stored('anna', 'bert', 'spouse'))).toBe(true);
+		expect(
+			isFamilyLink({
+				id: 'k',
+				source: 'otto',
+				target: 'lena',
+				kind: 'kinship',
+				kin: { term: 'grandparent', variant: 'male' },
+				derived: true
+			})
+		).toBe(true);
+	});
+
+	it('leaves out a friendship, a household’s own type and a membership', () => {
+		expect(isFamilyLink(stored('anna', 'eva', 'friend'))).toBe(false);
+		expect(isFamilyLink(stored('anna', 'eva', 'godparent_of'))).toBe(false);
+		expect(isFamilyLink({ id: 'm', source: 'ski', target: 'anna', kind: 'membership' })).toBe(
+			false
+		);
+	});
+});
+
+describe('familyLinksAmong', () => {
+	// The map around Sandra holds her parents and children, but only her own lines: the ones
+	// between them — her parents' marriage, her husband's children — are in the snapshot.
+	const snapshot: GraphModel = {
+		nodes: ['peter', 'ursula', 'sandra', 'markus', 'lena', 'vreni'].map(person),
+		edges: [
+			stored('peter', 'ursula', 'spouse'),
+			parentOf('peter', 'sandra'),
+			parentOf('markus', 'lena'),
+			stored('markus', 'vreni', 'colleague'),
+			stored('peter', 'lena', 'grandparent_grandchild'),
+			stored('sandra', 'markus', 'sibling_in_law'),
+			{
+				id: 'k',
+				source: 'peter',
+				target: 'lena',
+				kind: 'kinship',
+				kin: { term: 'grandparent', variant: 'male' },
+				derived: true
+			}
+		]
+	};
+
+	it('brings the parent and partner links between the people on the map', () => {
+		const links = familyLinksAmong(
+			snapshot,
+			new Set(['peter', 'ursula', 'sandra', 'markus', 'lena'])
+		);
+
+		expect(links.map((e) => e.id).sort()).toEqual(
+			['markus-parent_child-lena', 'peter-parent_child-sandra', 'peter-spouse-ursula'].sort()
+		);
+	});
+
+	it('brings none to somebody off the map, nor a friendship or a worked-out line', () => {
+		// Nor an entered grandparent or in-law: the tree's own lines already say it.
+		const links = familyLinksAmong(snapshot, new Set(['peter', 'markus', 'lena', 'vreni']));
+
+		expect(links.map((e) => e.id)).toEqual(['markus-parent_child-lena']);
 	});
 });

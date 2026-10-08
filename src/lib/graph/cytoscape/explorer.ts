@@ -12,11 +12,12 @@ import type { CyElement } from './elements';
 import { spreadCoincident, type Arrangement, type Size } from '../layout/geometry';
 import { boxAround, frameAround, packGroups } from '../layout/group-blocks';
 import { placeNewcomers, type Placement, type Point } from './placement';
-import { frameBelow, widenToReveal, type Box } from './viewport';
+import { frameLegibly, widenToReveal, type Box } from './viewport';
+import { legibleZoom } from '../layout/legibility';
 import { DEFAULT_DENSITY, spacingFor, type Spacing } from '../layout/density';
+import { bendLines, CAPTION_ID, writeCaption, type Captions } from './tree-canvas';
 import {
-	BOW_FIELD,
-	BOWED_CLASS,
+	CAPTION_CLASS,
 	CURSOR_CLASS,
 	HAS_MORE_CLASS,
 	HOVERED_CLASS,
@@ -44,6 +45,11 @@ export interface ControllerOptions extends ExplorerHandlers {
 	topInset?: number;
 	/** How far apart people are set, from the start — see `setSpacing`. */
 	spacing?: Spacing;
+	/**
+	 * The screen's device pixels per CSS pixel, which decides how far out the canvas still draws
+	 * the names (`legibleZoom`); framing never goes further. 1 when not given.
+	 */
+	pixelRatio?: number;
 }
 
 export interface ExplorerOptions extends ControllerOptions {
@@ -56,17 +62,21 @@ export interface ExplorerController {
 	/**
 	 * Reconcile the full (expanded) element set. Nodes already on the canvas stay where they
 	 * are; only the newcomers are placed, clear of everyone, and the view is left alone
-	 * unless it has to step back to show them.
+	 * unless it has to step back to show them. With `arrangedNext` the caller lays the whole map
+	 * out again straight after (the family tree, docs/05 §5.8): the newcomers are then set down
+	 * on the person they came from and travel with that arrangement, not on their own first.
 	 */
-	setGraph(elements: CyElement[]): void;
+	setGraph(elements: CyElement[], options?: { arrangedNext?: boolean }): void;
 	/** Arrange the whole map afresh by the forces between people, and frame it. */
 	arrange(): void;
 	/**
 	 * Glide the map into an arrangement worked out elsewhere (the family tree, the groups by
 	 * circle) and frame it. A node without a place in it stays where it is; the lines it says
-	 * to bend go around whoever stands in their way, and every other line is drawn straight.
+	 * to bend go around whoever stands in their way, the lines it routes run at right angles,
+	 * and every other line is drawn straight. Where it says a shelf of people outside the family
+	 * begins, `captions` names it.
 	 */
-	arrangeAt(arrangement: Arrangement): void;
+	arrangeAt(arrangement: Arrangement, captions?: Captions): void;
 	/** How much room a node takes on the canvas, its name included, in model units. */
 	sizeOf(nodeId: string): Size;
 	/**
@@ -74,6 +84,11 @@ export interface ExplorerController {
 	 * Framing the map, and stepping back to show newcomers, keep the map below them.
 	 */
 	setTopInset(pixels: number): void;
+	/**
+	 * How many screen pixels a panel covers at the right or along the foot of the canvas (the
+	 * peek panel). The next framing keeps the map clear of them; nothing moves by itself.
+	 */
+	setCovered(covered: { right: number; bottom: number }): void;
 	/**
 	 * How far apart people are set (docs/05 §5.8). Moves nobody by itself: the next expand and
 	 * the next free arrangement use it.
@@ -239,11 +254,16 @@ export function explorerFromCore(cy: Core, opts: ControllerOptions): ExplorerCon
 	 * Everything on the canvas but the frames of the groups by role: a frame stands wherever its
 	 * members do, so it is never placed, measured or put back by itself.
 	 */
-	const people = () => cy.nodes().filter((n) => n.data('kind') !== FRAME_KIND) as NodeCollection;
+	const people = () =>
+		cy
+			.nodes()
+			.filter((n) => n.data('kind') !== FRAME_KIND && !n.hasClass(CAPTION_CLASS)) as NodeCollection;
 	/** Nothing reaches a torn-down core: the calls still in flight at teardown fall away here. */
 	const alive = () => !cy.destroyed();
 	// Screen pixels at the top of the canvas the toolbar floats over; framing leaves them free.
 	let topInset = opts.topInset ?? 0;
+	// Screen pixels a panel covers at the right or along the foot; framing leaves them free.
+	let covered = { right: 0, bottom: 0 };
 	// How far apart people are set: the reader's density (docs/05 §5.8).
 	let spacing = opts.spacing ?? spacingFor(DEFAULT_DENSITY);
 
@@ -278,7 +298,11 @@ export function explorerFromCore(cy: Core, opts: ControllerOptions): ExplorerCon
 	 * at once under reduced motion or when there is nothing yet to glide from. A node without a
 	 * place stays where it is; a filtered-out node is left out of the frame.
 	 */
-	const glideTo = (positions: ReadonlyMap<string, Point>, glide: boolean) => {
+	const glideTo = (
+		positions: ReadonlyMap<string, Point>,
+		glide: boolean,
+		focusIds?: ReadonlySet<string>
+	) => {
 		const placeOf = (node: NodeSingular) => positions.get(node.id()) ?? { ...node.position() };
 		const shown = people().filter((n) => !n.hasClass('filtered-out')) as NodeCollection;
 		const boxOf = (nodes: NodeCollection) =>
@@ -287,14 +311,32 @@ export function explorerFromCore(cy: Core, opts: ControllerOptions): ExplorerCon
 		const frames = shown
 			.parents()
 			.map((frame) => frameAround(boxOf(frame.children().intersection(shown) as NodeCollection)));
+		// Should all of it fit only so far out that the names vanish, the family comes first.
+		const focused = focusIds ? (shown.filter((n) => focusIds.has(n.id())) as NodeCollection) : null;
+		const centre = focused?.filter('.center');
+		const focus =
+			focused && focused.nonempty()
+				? {
+						box: boxOf(focused),
+						...(centre && centre.nonempty()
+							? { point: placeOf(centre.first() as NodeSingular) }
+							: {})
+					}
+				: null;
 		const view =
 			shown.nonempty() && cy.width() > 0 && cy.height() > 0
-				? frameBelow(
+				? frameLegibly(
 						[boxOf(shown), ...frames].reduce(union),
+						focus,
 						{ width: cy.width(), height: cy.height() },
-						topInset,
+						{ top: topInset, ...covered },
 						FRAME_PADDING,
-						{ min: cy.minZoom(), max: cy.maxZoom() }
+						{
+							min: cy.minZoom(),
+							max: cy.maxZoom(),
+							// The family tree keeps its names drawn; Free and By circle frame as before.
+							legible: focus ? legibleZoom(opts.pixelRatio ?? 1) : 0
+						}
 					)
 				: null;
 		cy.layout(presetLayout(glide, placeOf) as Parameters<Core['layout']>[0]).run();
@@ -354,21 +396,6 @@ export function explorerFromCore(cy: Core, opts: ControllerOptions): ExplorerCon
 		return { width: box.w, height: box.h };
 	};
 
-	/** Bends exactly the lines in `bows`, and straightens every other. */
-	const bend = (bows: ReadonlyMap<string, number>) => {
-		cy.batch(() => {
-			cy.edges().forEach((edge) => {
-				const bow = bows.get(edge.id());
-				if (bow === undefined) {
-					edge.removeClass(BOWED_CLASS);
-				} else {
-					edge.data(BOW_FIELD, bow);
-					edge.addClass(BOWED_CLASS);
-				}
-			});
-		});
-	};
-
 	// The first arrangement runs here rather than through the constructor's `layout` option,
 	// which lays out before there is anywhere to register `layoutstart` — and so before the
 	// running layout could be caught and stopped again. It is simply there: the map has no
@@ -376,7 +403,7 @@ export function explorerFromCore(cy: Core, opts: ControllerOptions): ExplorerCon
 	glideTo(forcePositions(), false);
 
 	return {
-		setGraph(elements) {
+		setGraph(elements, { arrangedNext = false } = {}) {
 			if (!alive()) return;
 			const incoming = new Map(elements.map((e) => [e.data.id as string, e] as const));
 			const newcomers = new Set<string>();
@@ -400,7 +427,8 @@ export function explorerFromCore(cy: Core, opts: ControllerOptions): ExplorerCon
 				cy.elements().forEach((el) => {
 					const wanted = incoming.get(el.id());
 					if (!wanted) {
-						el.remove();
+						// The caption is the controller's own, never one of the elements.
+						if (el.id() !== CAPTION_ID) el.remove();
 						return;
 					}
 					// Switching the grouping keeps most elements, but tucks lines away or brings
@@ -425,7 +453,7 @@ export function explorerFromCore(cy: Core, opts: ControllerOptions): ExplorerCon
 					.map((e) => ({ source: e.data.source as string, target: e.data.target as string }));
 				placements = placeNewcomers(placed, [...newcomers], links, spacing.edgeLength);
 				// With motion, a newcomer starts on the person it was opened from and travels out.
-				const startAt = (p: Placement) => (duration === 0 ? p.at : p.from);
+				const startAt = (p: Placement) => (duration === 0 && !arrangedNext ? p.at : p.from);
 				cy.add(
 					toAdd.map((e) => {
 						const placement = placements.get(e.data.id as string);
@@ -439,19 +467,29 @@ export function explorerFromCore(cy: Core, opts: ControllerOptions): ExplorerCon
 			// to keep, and gets a full arrangement.
 			if (newcomers.size === 0) return;
 			if (wasEmpty) glideTo(forcePositions(), false);
-			else bringIn(placements);
+			else if (!arrangedNext) bringIn(placements);
 		},
 
 		arrange() {
 			if (!alive()) return;
-			bend(new Map());
+			writeCaption(cy, undefined, undefined);
+			bendLines(cy, { bows: new Map() }, (node) => node.position());
 			glideTo(forcePositions(), !opts.reducedMotion);
 		},
 
-		arrangeAt({ positions, bows }) {
+		arrangeAt({ positions, bows, routes, outsideFamily }, captions = {}) {
 			if (!alive()) return;
-			bend(bows);
-			glideTo(positions, !opts.reducedMotion);
+			bendLines(cy, { bows, routes }, (node) => positions.get(node.id()) ?? node.position());
+			const captioned = writeCaption(cy, outsideFamily, captions.outsideFamily);
+			// The family is what is framed first, should all of it not fit with its names drawn.
+			const family = captions.keepNamesDrawn
+				? new Set(
+						[...positions]
+							.filter(([, at]) => !outsideFamily || at.y < outsideFamily.y)
+							.map(([id]) => id)
+					)
+				: undefined;
+			glideTo(new Map([...positions, ...captioned]), !opts.reducedMotion, family);
 		},
 
 		sizeOf(nodeId) {
@@ -464,6 +502,10 @@ export function explorerFromCore(cy: Core, opts: ControllerOptions): ExplorerCon
 			topInset = pixels;
 		},
 
+		setCovered(next) {
+			covered = next;
+		},
+
 		setSpacing(next) {
 			spacing = next;
 		},
@@ -471,9 +513,12 @@ export function explorerFromCore(cy: Core, opts: ControllerOptions): ExplorerCon
 		setVisible(nodeIds, edgeIds) {
 			if (!alive()) return;
 			cy.batch(() => {
-				cy.nodes().forEach((n) => {
-					n.toggleClass('filtered-out', !nodeIds.has(n.id()));
-				});
+				// The caption is nobody to filter: it stands whatever is shown.
+				cy.nodes()
+					.filter((n) => !n.hasClass(CAPTION_CLASS))
+					.forEach((n) => {
+						n.toggleClass('filtered-out', !nodeIds.has(n.id()));
+					});
 				cy.edges().forEach((e) => {
 					e.toggleClass('filtered-out', !edgeIds.has(e.id()));
 				});
@@ -528,7 +573,9 @@ export function explorerFromCore(cy: Core, opts: ControllerOptions): ExplorerCon
 
 		positions() {
 			if (!alive()) return new Map();
-			const shown = cy.nodes().filter((n) => !n.hasClass('filtered-out')) as NodeCollection;
+			const shown = cy
+				.nodes()
+				.filter((n) => !n.hasClass('filtered-out') && !n.hasClass(CAPTION_CLASS)) as NodeCollection;
 			return new Map(shown.map((n) => [n.id(), { ...n.position() }] as const));
 		},
 
@@ -606,7 +653,11 @@ export async function createExplorer(opts: ExplorerOptions): Promise<ExplorerCon
 		});
 	}
 
-	const controller = explorerFromCore(cy, opts);
+	const controller = explorerFromCore(cy, {
+		...opts,
+		pixelRatio:
+			opts.pixelRatio ?? (typeof window === 'undefined' ? 1 : window.devicePixelRatio || 1)
+	});
 	return {
 		...controller,
 		destroy() {

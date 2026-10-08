@@ -39,16 +39,40 @@ export interface Line {
  * a node standing in their way — each with its bow, the sideways offset of the bend's control
  * point from the straight line, positive towards the left-hand normal (-dy, dx) of the line
  * travelled from source to target. Lines not listed are drawn straight.
+ *
+ * The family tree also draws its family lines at right angles (`routes`), and says where the
+ * people outside the family begin (`outsideFamily`), so that shelf can be named.
  */
 export interface Arrangement {
 	positions: Map<string, Point>;
 	bows: Map<string, number>;
+	/** Lines drawn as a run of straight pieces instead; a line is never both routed and bowed. */
+	routes?: Map<string, Route>;
+	/** The top left corner of the shelf of people outside the family, when there is one. */
+	outsideFamily?: Point;
 }
 
 /**
- * Rows of `ids`, left to right from `origin`, each node given its own width plus `gap`,
- * wrapping to a new row before `width` is passed. For whoever an arrangement has no better
- * place for.
+ * A line drawn as straight pieces through `waypoints`, in model units, travelled from its source
+ * to its target. It leaves its source at `sourceEnd` when given — the middle of a partner bar
+ * rather than the person — and arrives at `targetEnd` likewise; otherwise at the node itself.
+ */
+export interface Route {
+	waypoints: Point[];
+	/**
+	 * Which end's last drop carries the line's name — the lower person's, where the line comes
+	 * down to them — or null where another line already names that drop (a child's two parents).
+	 */
+	nameEnd: 'source' | 'target' | null;
+	sourceEnd?: Point;
+	targetEnd?: Point;
+}
+
+/**
+ * Rows of `ids`, left to right from `origin`, each node given its own width plus `gap`, never
+ * running past `width`. As few rows as that takes, and those rows as even as they can be — the
+ * narrowest width that still needs no more rows — so no last row holds one straggler. For
+ * whoever an arrangement has no better place for.
  */
 export function shelve(
 	ids: readonly string[],
@@ -58,20 +82,41 @@ export function shelve(
 	gap: number,
 	rowGap: number
 ): Map<string, Point> {
-	const positions = new Map<string, Point>();
-	let cursor = 0;
-	let top = origin.y;
-	let rowHeight = 0;
-	for (const id of ids) {
-		const size = sizeOf(id);
-		if (cursor > 0 && cursor + size.width > width) {
-			cursor = 0;
-			top += rowHeight + rowGap;
-			rowHeight = 0;
+	const rowsAt = (limit: number) => {
+		const rows: string[][] = [];
+		let cursor = 0;
+		for (const id of ids) {
+			const size = sizeOf(id).width;
+			if (rows.length === 0 || (cursor > 0 && cursor + size > limit)) {
+				rows.push([]);
+				cursor = 0;
+			}
+			rows[rows.length - 1].push(id);
+			cursor += size + gap;
 		}
-		positions.set(id, { x: origin.x + cursor + size.width / 2, y: top + size.height / 2 });
-		cursor += size.width + gap;
-		rowHeight = Math.max(rowHeight, size.height);
+		return rows;
+	};
+	const fewest = rowsAt(width).length;
+	// The narrowest limit that still needs no more rows than the full width does.
+	let [low, high] = [Math.max(0, ...ids.map((id) => sizeOf(id).width)), Math.max(width, 0)];
+	for (let step = 0; step < 32 && high - low > 1; step++) {
+		const middle = (low + high) / 2;
+		if (rowsAt(middle).length <= fewest) high = middle;
+		else low = middle;
+	}
+
+	const positions = new Map<string, Point>();
+	let top = origin.y;
+	for (const row of rowsAt(high)) {
+		let cursor = 0;
+		let rowHeight = 0;
+		for (const id of row) {
+			const size = sizeOf(id);
+			positions.set(id, { x: origin.x + cursor + size.width / 2, y: top + size.height / 2 });
+			cursor += size.width + gap;
+			rowHeight = Math.max(rowHeight, size.height);
+		}
+		top += rowHeight + rowGap;
 	}
 	return positions;
 }

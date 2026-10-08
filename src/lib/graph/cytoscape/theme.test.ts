@@ -1,10 +1,19 @@
 import { describe, expect, it, test } from 'bun:test';
 import { resolvePalette } from './theme';
-import { AA_LARGE, contrastRatio, mixHex } from '../../design/color';
+import { AA_LARGE, AA_TEXT, contrastRatio, mixHex } from '../../design/color';
 import { resolveColor, tokensFor, type Theme } from '../../design/css-tokens';
 import { RELATIONSHIP_CATEGORIES } from '../../relationships/categories';
-import { buildStylesheet, CURSOR_CLASS, HAS_MORE_CLASS, HOVERED_CLASS } from './stylesheet';
-import { LABEL_MIN_ZOOMED_FONT_SIZE } from '../layout/legibility';
+import {
+	buildStylesheet,
+	CAPTION_CLASS,
+	CURSOR_CLASS,
+	HAS_MORE_CLASS,
+	HOVERED_CLASS,
+	ROUTE_FIELDS,
+	ROUTED_CLASS,
+	type CyStyle
+} from './stylesheet';
+import { CIRCLE_LABEL_WIDTH, LABEL_MIN_ZOOMED_FONT_SIZE } from '../layout/legibility';
 
 /*
  * Palette resolution + stylesheet building (docs/05 §5.6/§5.8), tested with a fake token
@@ -134,7 +143,150 @@ describe('every explorer line clears 3:1 on the canvas', () => {
 				.map(([name]) => name);
 			expect(failing).toEqual([]);
 		});
+
+		/*
+		 * The family tree draws its lines at right angles, but in the same colours: a routed line
+		 * may change its shape, never its colour or its opacity, so the 3:1 above still holds.
+		 */
+		it(`keeps the family tree's lines and caption as readable as the rest, in ${theme}`, () => {
+			const sheet = buildStylesheet(p, { familyTree: true });
+			const routed = sheet.filter((s) => s.selector.includes(`edge.${ROUTED_CLASS}`));
+			const colours = ['line-color', 'target-arrow-color', 'opacity', 'line-style', 'width'];
+
+			expect(routed.length).toBeGreaterThan(0);
+			for (const rule of routed) {
+				expect(Object.keys(rule.style).filter((key) => colours.includes(key))).toEqual([]);
+			}
+			const caption = sheet.find((s) => s.selector === `node.${CAPTION_CLASS}`)!.style;
+			expect(contrastRatio(String(caption.color), p.bg)).toBeGreaterThanOrEqual(AA_TEXT);
+		});
 	}
+});
+
+describe('buildStylesheet as the family tree', () => {
+	const palette = resolvePalette(read);
+	const tree = buildStylesheet(palette, { familyTree: true });
+	const free = buildStylesheet(palette);
+	const rulesFor = (sheet: CyStyle[], selector: string) =>
+		sheet.filter((s) => s.selector === selector).map((s) => s.style);
+	const element = (data: Record<string, unknown>) => ({ data: (key: string) => data[key] });
+
+	it('writes each person’s role under their name, and the name alone without one', () => {
+		const label = rulesFor(tree, 'node.person')[0].label as (ele: unknown) => string;
+
+		expect(label(element({ label: 'Otto Brunner', role: 'Grandfather' }))).toBe(
+			'Otto Brunner\nGrandfather'
+		);
+		expect(label(element({ label: 'Eva Roth', role: '' }))).toBe('Eva Roth');
+		// Two lines need wrapping rather than cutting short; the 8 px floor stays.
+		expect(rulesFor(tree, 'node.person')[0]).toMatchObject({
+			'text-wrap': 'wrap',
+			'min-zoomed-font-size': LABEL_MIN_ZOOMED_FONT_SIZE
+		});
+	});
+
+	it('writes under a circle on the shelf who on the map is in it, the pill growing to fit', () => {
+		const circle = rulesFor(tree, 'node.circle')[0];
+		const label = circle.label as (ele: unknown) => string;
+
+		expect(label(element({ label: 'Turnverein', role: 'Lena, Noah +2' }))).toBe(
+			'Turnverein\nLena, Noah +2'
+		);
+		expect(circle).toMatchObject({
+			'text-wrap': 'wrap',
+			// The names wrap within a pill as wide as a long circle name, never wider.
+			'text-max-width': `${CIRCLE_LABEL_WIDTH}px`,
+			height: 'label',
+			'min-zoomed-font-size': LABEL_MIN_ZOOMED_FONT_SIZE
+		});
+		expect(rulesFor(free, 'node.circle')[0]).toMatchObject({ label: 'data(label)', height: 28 });
+	});
+
+	it('writes names alone in every other arrangement', () => {
+		expect(rulesFor(free, 'node.person')[0]).toMatchObject({
+			label: 'data(label)',
+			'text-wrap': 'ellipsis'
+		});
+	});
+
+	it('lights the centre softly, around its ring', () => {
+		const centre = Object.assign({}, ...rulesFor(tree, 'node.center'));
+
+		expect(centre).toMatchObject({
+			'border-color': palette.primary,
+			'underlay-color': palette.primary
+		});
+		expect(centre['underlay-opacity']).toBeGreaterThan(0);
+		expect(centre['underlay-opacity']).toBeLessThan(0.3);
+		expect(Object.assign({}, ...rulesFor(free, 'node.center'))['underlay-color']).toBeUndefined();
+	});
+
+	it('draws a routed line through the bends the controller set, from the node centres', () => {
+		const routed = Object.assign({}, ...rulesFor(free, `edge.${ROUTED_CLASS}`));
+		const edge = element({
+			[ROUTE_FIELDS.weights]: [0.2, 0.8],
+			[ROUTE_FIELDS.distances]: [10, -10],
+			[ROUTE_FIELDS.sourceEndpoint]: '-50px 0px',
+			[ROUTE_FIELDS.targetEndpoint]: 'outside-to-node'
+		});
+
+		expect(routed).toMatchObject({
+			'curve-style': 'segments',
+			'edge-distances': 'node-position',
+			'target-arrow-shape': 'none'
+		});
+		expect(routed['segment-weights'](edge)).toEqual([0.2, 0.8]);
+		expect(routed['segment-distances'](edge)).toEqual([10, -10]);
+		expect(routed['source-endpoint'](edge)).toBe('-50px 0px');
+		expect(routed['target-endpoint'](edge)).toBe('outside-to-node');
+	});
+
+	it('names a routed line on its last drop, just over the person, and only once a drop', () => {
+		const routed = Object.assign({}, ...rulesFor(free, `edge.${ROUTED_CLASS}`));
+		const line = (nameEnd: string | null) =>
+			element({ label: 'Parent of', [ROUTE_FIELDS.nameEnd]: nameEnd });
+
+		// Not in the middle of the line, which may be a bar its siblings' lines share.
+		expect(routed.label).toBe('');
+		expect(routed['target-label'](line('target'))).toBe('Parent of');
+		expect(routed['source-label'](line('target'))).toBe('');
+		expect(routed['source-label'](line('source'))).toBe('Parent of');
+		// The child's other parent's line runs down the same drop and says nothing more.
+		expect(routed['target-label'](line(null))).toBe('');
+		// Level, so it reads across the drop, and far enough up to clear the disc it ends on.
+		expect(routed).toMatchObject({
+			'source-text-rotation': 'none',
+			'target-text-rotation': 'none'
+		});
+		expect(routed['target-text-offset']).toBeGreaterThanOrEqual(20);
+	});
+
+	it('names no line in the tree until the Labels switch is turned on there', () => {
+		const lastWord = (sheet: CyStyle[]) => {
+			const named = sheet.findLastIndex((s) => s.selector.includes('edge.highlight'));
+			const silenced = sheet.findLastIndex(
+				(s) => s.selector === 'edge' && s.style['text-opacity'] === 0
+			);
+			return silenced > named;
+		};
+		const treeNamed = buildStylesheet(palette, { familyTree: true, edgeLabels: true });
+
+		expect(lastWord(tree)).toBe(true);
+		// Switched on in the tree, every line is named, its routed ones included.
+		expect(lastWord(treeNamed)).toBe(false);
+		expect(rulesFor(treeNamed, 'edge')[0]['text-opacity']).toBe(1);
+		// Without a centre to say roles towards, a line keeps its name as before.
+		expect(lastWord(free)).toBe(false);
+	});
+
+	it('writes a caption that taps fall through', () => {
+		expect(rulesFor(tree, `node.${CAPTION_CLASS}`)[0]).toMatchObject({
+			label: 'data(label)',
+			events: 'no',
+			'background-opacity': 0,
+			'border-width': 0
+		});
+	});
 });
 
 describe('buildStylesheet', () => {

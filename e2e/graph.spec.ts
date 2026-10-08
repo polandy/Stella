@@ -4,13 +4,18 @@ import {
 	arrangeBy,
 	arrangement,
 	bowedLines,
+	routedLines,
 	circlesOnCanvas,
 	clickNode,
 	filterMenu,
 	highlightedLabels,
 	kinshipLineId,
 	lineStateOf,
+	linesShownBetween,
+	namesNotDrawn,
+	nodeLabel,
 	overlappingNodes,
+	routedLineNames,
 	settled,
 	stateOf
 } from './graph-canvas';
@@ -97,7 +102,7 @@ test('expanding a person brings the connections of theirs the canvas did not hav
 	await settled(page);
 });
 
-test('expanding moves nobody already on the map, and arranging it freely re-arranges it', async ({
+test('in Free, expanding moves nobody already on the map, and arranging it freely re-arranges it', async ({
 	page
 }) => {
 	await page.goto('/graph?center=demo-c-hans');
@@ -114,7 +119,8 @@ test('expanding moves nobody already on the map, and arranging it freely re-arra
 	await expect(async () => expect(await stateOf(page, 'demo-c-peter')).toBe('drawn')).toPass();
 	await settled(page);
 
-	// Peter came in, and everyone who was already there stands exactly where they stood.
+	// Peter came in, and everyone who was already there stands exactly where they stood. (The
+	// map opens in Free; in the Tree an expand lays the whole tree out again, docs/05 §5.8.)
 	const grown = await arrangement(page);
 	expect(grown.has('demo-c-peter')).toBe(true);
 	for (const [id, point] of before) expect(grown.get(id), id).toEqual(point);
@@ -147,7 +153,7 @@ test('draws the same map on every visit', async ({ page }) => {
 	expect(await visit()).toEqual(first);
 });
 
-test('Tree sets each generation on a row of its own and bends the lines that would cross somebody', async ({
+test('Tree sets each generation on a row of its own and draws the family lines at right angles', async ({
 	page
 }) => {
 	await page.goto('/graph?center=demo-c-hans');
@@ -165,13 +171,102 @@ test('Tree sets each generation on a row of its own and bends the lines that wou
 	expect(row('markus')).toBeGreaterThan(row('hans'));
 	expect(row('lena')).toBeGreaterThan(row('markus'));
 	expect(await overlappingNodes(page)).toEqual([]);
-	// The grandparent lines would run straight through the children's row.
-	expect(await bowedLines(page)).toBeGreaterThan(0);
+	// Parent lines drop to a bar over the children; the grandparent lines go round the row between.
+	expect(await routedLines(page)).toBeGreaterThan(0);
 
 	// Free draws every line straight again.
 	await arrangeBy(page, 'Free');
 	await settled(page);
 	expect(await bowedLines(page)).toBe(0);
+	expect(await routedLines(page)).toBe(0);
+});
+
+/*
+ * The family tree around a person (docs/05 §5.8): roles under the names instead of names on
+ * the lines, an "Outside the family" shelf beneath that says who is who, and an expand that
+ * lays the tree out again. Written after the owner tried it on #310 (docs/08 §8.4.1).
+ */
+
+const LENA = 'demo-c-lena';
+const SANDRA = 'demo-c-sandra';
+/** Sandra's friend and nobody else's: she reaches the map only by expanding Sandra. */
+const NICOLE = 'demo-c-nicole';
+
+/** Lena's map, arranged as her family tree. */
+async function lenasTree(page: Page) {
+	await page.goto(`/graph?center=${LENA}`);
+	await expect(page.locator('canvas').first()).toBeVisible();
+	await settled(page);
+	await arrangeBy(page, 'Tree');
+	await settled(page);
+}
+
+test('the tree writes each relative’s role under their name, and its lines are named only on the Labels switch', async ({
+	page
+}) => {
+	await lenasTree(page);
+
+	await expect.poll(() => nodeLabel(page, 'demo-c-markus')).toMatch(/^Markus.*\nFather$/);
+	await expect.poll(() => nodeLabel(page, 'demo-c-rosa')).toMatch(/\nGrandmother$/);
+	// Right-angled lines, none of them named: the roles say it.
+	const quiet = await routedLineNames(page);
+	expect(quiet.routed).toBeGreaterThan(0);
+	expect(quiet.named).toBe(0);
+
+	const menu = await filterMenu(page);
+	const labels = menu.getByRole('menuitemcheckbox', { name: /^Labels/ });
+	await expect(labels).toHaveAttribute('aria-checked', 'false');
+	await labels.click();
+	await expect(labels).toHaveAttribute('aria-checked', 'true');
+	await expect.poll(async () => (await routedLineNames(page)).named).toBeGreaterThan(0);
+
+	await labels.click();
+	await expect(labels).toHaveAttribute('aria-checked', 'false');
+	await expect.poll(() => routedLineNames(page)).toMatchObject({ named: 0 });
+	expect((await routedLineNames(page)).routed).toBeGreaterThan(0);
+});
+
+test('a circle on the tree’s shelf names its people on the map', async ({ page }) => {
+	await lenasTree(page);
+
+	await expect.poll(() => nodeLabel(page, 'caption:outside-family')).toBe('Outside the family');
+	await expect
+		.poll(() => nodeLabel(page, 'demo-circle-turnverein'))
+		.toMatch(/^Turnverein Länggasse\n.*Lena/);
+});
+
+test('expanding in the tree lays it out again, every name still drawn, the expanded person’s friends unlinked until she is tapped', async ({
+	page
+}) => {
+	await lenasTree(page);
+	expect(await stateOf(page, NICOLE)).toBe('absent');
+
+	await page.getByLabel('Find a person').fill('Sandra');
+	await page.getByTestId('graph-suggestions').getByRole('button', { name: 'Sandra' }).click();
+	const peek = page.getByRole('complementary');
+	await expect(peek.getByText('Sandra Brunner-Keller')).toBeVisible();
+	await peek.getByRole('button', { name: 'Expand connections' }).click();
+	await expect.poll(() => stateOf(page, NICOLE)).toBe('drawn');
+	await settled(page);
+
+	// Still a tree, the newcomer on the shelf saying whose friend she is.
+	expect(await routedLines(page)).toBeGreaterThan(0);
+	await expect.poll(() => nodeLabel(page, NICOLE)).toMatch(/\nFriend of Sandra/);
+	// No name went missing in the framing that shows the bigger tree.
+	const names = await namesNotDrawn(page);
+	expect(names.named).toBeGreaterThan(20);
+	expect(names.undrawn).toEqual([]);
+
+	// Sandra was expanded, not asked about: her partner bar is drawn, her friendship is not.
+	expect(await linesShownBetween(page, SANDRA, 'demo-c-markus')).toBeGreaterThan(0);
+	expect(await linesShownBetween(page, SANDRA, NICOLE)).toBe(0);
+
+	await peek.getByRole('button', { name: 'Close' }).click();
+	await expect(peek.getByText('Sandra Brunner-Keller')).toHaveCount(0);
+	await settled(page);
+	await clickNode(page, SANDRA);
+	await expect(peek.getByText('Sandra Brunner-Keller')).toBeVisible();
+	await expect.poll(() => linesShownBetween(page, SANDRA, NICOLE)).toBe(1);
 });
 
 test('By circle stands Lena with one of her circles, the circles apart and nobody on top of anybody', async ({

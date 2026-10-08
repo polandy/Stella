@@ -56,6 +56,17 @@ describe('toCytoscapeElements', () => {
 		expect(node('mara')?.data.photo).toBeUndefined();
 	});
 
+	it('carries each person’s role as the caller words it, and an empty one otherwise', () => {
+		const roles = new Map([['walter', 'Grandfather']]);
+		const named = toCytoscapeElements(model, { centerId: 'mara', roleOf: (id) => roles.get(id) });
+		const data = (id: string) => named.find((e) => e.data.id === id)?.data;
+
+		expect(data('walter')?.role).toBe('Grandfather');
+		expect(data('mara')?.role).toBe('');
+		// Without a caller asking, nobody carries a role.
+		expect(node('walter')?.data.role).toBe('');
+	});
+
 	it('encodes edge kind, category, and direction', () => {
 		expect(edge('r1')?.data).toMatchObject({
 			kind: 'relationship',

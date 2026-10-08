@@ -896,10 +896,21 @@ Click a person to see who they are and jump to their page; the lines around them
 while they are selected, so you can read who is whose grandmother. A small **+3** on someone
 means three more people (or circles) would appear if you opened them up. Click again to pull in
 their connections: they appear around that person, and everyone already on the map stays
-where they were, so you never lose your place. *Arrange* puts the map in order when you want
+where they were, so you never lose your place (in the *Tree* the tree is laid out again instead). *Arrange* puts the map in order when you want
 it: *Free* lets the connections pull it into shape, *Tree* shows the family as a family tree,
 one generation per row with the oldest at the top, and *By circle* gathers each circle's
-members around it. *Connection path* traces how two people are linked, and it always answers
+members around it. The tree looks like one drawn on paper: a couple joined by a short line, one
+line down from its middle to their children. Under every name it says who that person is to
+the one in the middle — *Father*, *Grandmother*, *Cousin*, *Friend* — so the lines themselves
+carry no names there at first. Switch *Labels* on in the Filter menu to name them too — each
+child's line is named just above that child; leaving the tree brings back your usual setting. Friends, colleagues and circles stand
+on a shelf beneath, under *Outside the family*, without lines — tap someone to see theirs.
+Under each of them it says who they are: *Friend* for a friend of the person in the middle,
+*Friend of Sandra* for somebody's friend (with *+1* when they know more people on the map),
+and under a circle who on the map belongs to it (*Lena, Noah +2*).
+Each family stands together, the father's side on the left and the mother's on the right.
+Opening up someone's connections in the tree lays the whole tree out again, so the newcomers
+land in their own generation (or on the shelf) and everyone glides to their new place. *Connection path* traces how two people are linked, and it always answers
 with the people in between rather than the worked-out shortcut — that is the point of asking.
 
 The map works from the keyboard too. *Tab* onto it and the arrow keys walk from person to

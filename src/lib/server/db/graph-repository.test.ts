@@ -84,6 +84,29 @@ describe('loadVisibleGraph', () => {
 		expect(partner).toMatchObject({ category: 'romantic', directed: false });
 	});
 
+	it('words each person’s role by the gender on record, and neutrally without one', async () => {
+		db.update(schema.contact).set({ gender: 'female' }).where(eq(schema.contact.id, 'mara')).run();
+		db.update(schema.contact).set({ gender: 'Male ' }).where(eq(schema.contact.id, 'jonas')).run();
+
+		const graph = await createDrizzleGraphRepository(db).loadVisibleGraph(viewerU1);
+		const wording = Object.fromEntries(graph.nodes.map((n) => [n.id, n.wording]));
+
+		expect(wording).toEqual({ mara: 'female', jonas: 'male', lio: 'neutral' });
+	});
+
+	it('carries each person’s first name to name them by, and the full name without one', async () => {
+		db.update(schema.contact)
+			.set({ firstName: ' Mara ' })
+			.where(eq(schema.contact.id, 'mara'))
+			.run();
+		db.update(schema.contact).set({ firstName: '' }).where(eq(schema.contact.id, 'jonas')).run();
+
+		const graph = await createDrizzleGraphRepository(db).loadVisibleGraph(viewerU1);
+		const short = Object.fromEntries(graph.nodes.map((n) => [n.id, n.shortName]));
+
+		expect(short).toEqual({ mara: 'Mara', jonas: 'Jonas', lio: 'Lio' });
+	});
+
 	it('excludes contacts the viewer cannot see and edges touching them', async () => {
 		seedContact('secret', 'Secret', 'private', U1); // private, owned by U1
 		rel('r-secret', 'mara', 'secret', 'friend');

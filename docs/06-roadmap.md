@@ -143,6 +143,14 @@ Goal: sand the edges and add the nice-to-haves.
   settles how a former link reads on the map (muted or dashed line, a label, hidden behind a
   Filter switch?), whether layouts such as the family tree treat it differently, and
   whether the person page and the pickers set it apart the same way.
+- **Missing parents in the family tree** — *concept pending.* The tree (§2.7, docs/05 §5.8)
+  draws only the parents somebody has entered; where a person's parent pair — or one of two
+  parents — is missing, the row above simply has a gap. A dashed **"+" placeholder** in that
+  slot would show the gap and, tapped, open *Add relationship* preset to it (a parent of this
+  person, or the partner of the one parent there). The concept settles who gets a placeholder
+  (the centre only, every person on the map, only the centre's direct line?), how it reads to
+  a screen reader and the keyboard walk, whether it counts as a node for filters and the
+  "+N" badge, and how the map makes room for it without crowding a large family.
 
 **Exit:** a release-quality 1.0 the family enjoys using daily.
 

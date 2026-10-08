@@ -34,6 +34,16 @@ describe('shelve', () => {
 		expect(shelf.get('a')!.y).toBe(shelf.get('b')!.y);
 		expect(shelf.get('c')!.y).toBeGreaterThan(shelf.get('a')!.y);
 	});
+
+	it('balances its rows rather than leave one straggler on the last', () => {
+		// Four fit on a row; five on rows of four and one would leave one alone beneath.
+		const ids = ['a', 'b', 'c', 'd', 'e'];
+		const shelf = shelve(ids, { x: 0, y: 0 }, 4 * 60 + 3 * 20, () => box(60), 20, 80);
+		const rows = new Map<number, string[]>();
+		for (const id of ids) rows.set(shelf.get(id)!.y, [...(rows.get(shelf.get(id)!.y) ?? []), id]);
+
+		expect([...rows.values()].map((row) => row.length)).toEqual([3, 2]);
+	});
 });
 
 describe('bowsAround', () => {

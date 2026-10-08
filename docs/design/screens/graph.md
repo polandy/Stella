@@ -17,6 +17,22 @@ card (§5.5.2); its styling is §5.8.
 - Below the kinds sit the switches that change how the map is read rather than what it holds:
   **Labels** (names every line at once), **All kinship lines** (while the Kinship kind is on)
   and the grouping by role.
+- **Tree** draws the family as a paper family tree (§5.8): partner bars, one drop per couple to
+  a bar over their children, right angles throughout, each person's role towards the centre
+  under their name instead of names on the lines — Labels starts off in the tree and its switch
+  turns the names on there as anywhere, each on its child's own drop — the centre softly
+  lit, and everyone outside the family on a shelf beneath under a quiet *Outside the family*,
+  each with a caption: a friend of the centre's their role, anybody else whom on the map they
+  hang off (*Friend of Sandra +1*), a circle its people on the map (*Lena, Noah +2*).
+  Each family stands as one block — siblings together, a person's father's family left, their
+  mother's right — so no couple's bar crosses another's. Only the tree's own lines are drawn:
+  a grandparent, cousin or sibling line the bars already draw is left off, and friends,
+  colleagues and circles show their lines only around a person the reader taps or finds — not
+  around the opening centre, nor the person just expanded once the tree is laid out again. An
+  only child hangs straight under their parents. The map is never framed so far out that the
+  names vanish: a large tree is shown from its top at the smallest zoom that still draws them,
+  the shelf below reached by panning. An expand
+  in the tree lays the whole tree out again; everybody glides to their new place.
 - On a phone (below `sm`, tuned for a Pixel 9 Pro at 412 px) search, Filter and Arrange keep
   one row: the search field takes whatever the two menus leave, and the Arrange pill shows only
   the arrangement's name (its accessible name still reads *Arrange: …*). Full screen and the

@@ -107,6 +107,30 @@ const TERM_RANK: Record<KinTerm, number> = {
 /** Which wording a term takes for a person. */
 export type KinVariant = 'male' | 'female' | 'neutral';
 
+/** Each term read from the other end of the pair: Otto's grandchild has Otto as grandparent. */
+const RECIPROCAL: Readonly<Record<KinTerm, KinTerm>> = {
+	sibling: 'sibling',
+	'half-sibling': 'half-sibling',
+	grandparent: 'grandchild',
+	grandchild: 'grandparent',
+	'aunt-uncle': 'niece-nephew',
+	'niece-nephew': 'aunt-uncle',
+	'great-grandparent': 'great-grandchild',
+	'great-grandchild': 'great-grandparent',
+	cousin: 'cousin',
+	'step-parent': 'step-child',
+	'step-child': 'step-parent',
+	'step-sibling': 'step-sibling',
+	'parent-in-law': 'child-in-law',
+	'child-in-law': 'parent-in-law',
+	'sibling-in-law': 'sibling-in-law'
+};
+
+/** What the subject is to a relative who is `term` to them: a grandparent's grandchild. */
+export function reciprocalKinTerm(term: KinTerm): KinTerm {
+	return RECIPROCAL[term];
+}
+
 /** Half-sibling is only claimed when both sides have this many parents on record. */
 const PARENTS_FOR_HALF = 2;
 

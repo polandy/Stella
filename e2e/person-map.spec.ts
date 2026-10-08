@@ -1,10 +1,13 @@
 import { expect, test, type Page } from '@playwright/test';
 import { editPeople, enlargeMap, openPerson, pickPerson, signIn } from './app';
 import {
+	arrangeBy,
 	clickNode,
 	drawnNode,
 	firstClickableNode,
+	nodeLabel,
 	nodeOwners,
+	routedLines,
 	ringsOnCanvas,
 	filterMenu,
 	settled,
@@ -93,6 +96,16 @@ test.describe('on a person’s page', () => {
 		expect(menuBox!.y + menuBox!.height).toBeLessThanOrEqual(mapBox!.y + mapBox!.height);
 		expect(lastBox!.y).toBeGreaterThanOrEqual(menuBox!.y);
 		expect(lastBox!.y + lastBox!.height).toBeLessThanOrEqual(menuBox!.y + menuBox!.height);
+	});
+
+	test('arranged as a tree, it writes each relative’s role under their name', async ({ page }) => {
+		await expect(map(page).locator('canvas').first()).toBeVisible();
+		await settled(page);
+		await arrangeBy(map(page), 'Tree');
+		await settled(page);
+
+		await expect.poll(() => nodeLabel(page, MARKUS)).toMatch(/^Markus.*\nFather$/);
+		expect(await routedLines(page)).toBeGreaterThan(0);
 	});
 
 	test('a tap lands on the person under it after the page above the map has moved', async ({

@@ -12,6 +12,7 @@ import {
 import type { Viewer } from '../access/visibility';
 import type { VisibleFamily, VisibleFamilySource } from '../domain/relationships/family';
 import { kinshipGraphOf } from '../../kinship/graph-of';
+import { variantFor } from '../../kinship/kinship';
 import type * as schema from './schema';
 import { circle, circleMembership, contact, relationship, relationshipType } from './schema';
 
@@ -45,7 +46,8 @@ export function createDrizzleGraphRepository(
 				deceased: contact.isDeceased,
 				avatarPhotoId: contact.avatarPhotoId,
 				gender: contact.gender,
-				birthDate: contact.birthDate
+				birthDate: contact.birthDate,
+				firstName: contact.firstName
 			})
 			.from(contact)
 			.where(contactVisibleTo(viewer))
@@ -56,7 +58,10 @@ export function createDrizzleGraphRepository(
 			kind: 'person',
 			label: r.label,
 			deceased: r.deceased === 1,
-			avatarPhotoId: r.avatarPhotoId
+			avatarPhotoId: r.avatarPhotoId,
+			// Only how a role word is worded travels, not the gender as somebody typed it.
+			wording: variantFor(r),
+			shortName: r.firstName?.trim() || r.label
 		}));
 
 		const fromC = alias(contact, 'from_c');
