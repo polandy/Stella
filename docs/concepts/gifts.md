@@ -1,6 +1,7 @@
 # Concept — Gift ideas and gifts given
 
-Status: **decided, not built.** Written and decided with the maintainer on 2026-10-06 (§8). Mockup:
+Status: **decided, not built.** Written and decided with the maintainer on 2026-10-06 (§8);
+checked against `main` on 2026-10-08 (§9). Mockup:
 `docs/concepts/gifts.html`. Roadmap: docs/06 M3, *Gift ideas and gifts given*.
 
 ---
@@ -48,32 +49,36 @@ keeps up. The creator is shown as *noted by*.
 
 ### 3.1 The person page
 
-A new card **Gifts**, with its own anchor in the jump bar (`src/lib/contacts/sections.ts`),
-placed after *Notes*. Three tabs:
+A new card **Gifts** (*Geschenke*), a new entry `'gifts'` in `CONTACT_SECTIONS`
+(`src/lib/contacts/sections.ts`) between *Notes* and *Mentioned in*, so it gets its anchor and
+its jump-bar link the way the other cards do. Three tabs:
 
 - **Ideas** — open ideas, newest first. Each row: title, note preview, link icon, *Mark as
   given*. Empty state: *Got an idea for Hilde? Note it here so it is there on her birthday.*
 - **Given** — given gifts, newest first, grouped by year: *2025 · Birthday · Teapot*.
 - **Received** — what they gave us, the same way. The tab only shows once there is one.
 
-The tab count shows how many ideas are open: *Ideas · 3*.
+The tab count shows how many ideas are open: *Ideas · 3*. With no gift at all the card follows
+the empty-card rule (`src/lib/contacts/empty-cards.ts`, #293): one line — title, one sentence,
+*+ Idea* — and the jump bar links to it like to the other one-line cards.
 
-### 3.2 The story
+### 3.2 The story (*Activity*)
 
-A given or received gift appears in the person's story on its day, like a moment, with the gift icon and
+A given or received gift appears in the person's story — the card headed *Activity* — on its
+day, next to the journal entries and touchpoints, with the gift icon and
 accent the story already uses (`--kind-gift`). It is **read from the gift record**, not a
 copy, so editing or deleting the gift changes the story too. Ideas never appear in the story.
 
-The story already has a moment kind *Gift* (`interaction.kind = 'gift'`). It goes away (§8 Q2):
-each existing gift moment becomes a **given** gift on its person, its title or description
-as the gift's title, its day as the gift's day, its visibility and author kept. A gift moment
-with participants becomes one gift per participant (§8 Q3). The moment picker no longer offers
+The story already has a **touchpoint** kind *gift* (`interaction.kind = 'gift'`, offered by
+*Log contact* / *Kontakt festhalten*). It goes away (§8 Q2): each existing gift touchpoint
+becomes a **given** gift on its person, its title or description as the gift's title, its day
+as the gift's day, its visibility and author kept. A gift touchpoint with participants becomes
+one gift per participant (§8 Q3). *Log contact* no longer offers
 *Gift*; *+ Given* on the Gifts card takes its place.
 
 ### 3.3 Before an occasion
 
-Where Stella already lists upcoming birthdays and anniversaries (Home, docs/02 §2.13), a
-person with open ideas shows a small hint: *🎁 2 ideas* (with the gift icon, not an emoji),
+In the **Coming up** band of Home's rail (docs/02 §2.13.3), a person with open ideas shows a small hint: *🎁 2 ideas* (with the gift icon, not an emoji),
 linking to their Gifts card. Nothing new is sent or scheduled; it only shows where the
 occasion is already shown.
 
@@ -92,7 +97,8 @@ can be on purpose.
   needs only the title.
 - *+ Given* records a past gift directly, with day and occasion, for catching up.
 - *+ Received* (in the card's menu) records a present from them.
-- The command palette gets *Gift idea for …*, so an idea can be noted from anywhere.
+- The command palette gets *Gift idea for …* next to *Write a moment*, so an idea can be noted
+  from anywhere.
 - Every addition goes through the offline outbox like any other (docs/04 §4.11.2), so an idea
   typed on the train is kept.
 
@@ -140,7 +146,7 @@ gift *value* and *recipient relative* were not carried over.
 `offered` → given, `received` → received — and removes the note.
 A note that was edited since the import, or whose first line no longer parses, is left alone
 and named in the migration's log, so nothing written by hand is lost. The importer itself then
-writes gift records instead of notes. The same migration turns the gift moments into gifts
+writes gift records instead of notes. The same migration turns the gift touchpoints into gifts
 (§3.2) and drops `'gift'` from `interaction.kind`.
 
 ---
@@ -156,7 +162,33 @@ writes gift records instead of notes. The same migration turns the gift moments 
 
 1. **Gifts received** are kept as a third state with their own tab; Monica's `received` gifts
    move there.
-2. **The moment kind *Gift*** is converted into gift records and dropped — one place for gifts.
+2. **The touchpoint kind *gift*** is converted into gift records and dropped — one place for gifts.
 3. **One gift belongs to one person.** A couple's present is noted on each; a converted gift
-   moment with participants becomes one gift per person.
+   touchpoint with participants becomes one gift per person.
 4. **The household idea list** waits; the person page comes first.
+
+---
+
+## 9. Checked against `main` on 2026-10-08
+
+About 60 commits landed after the concept. What they change for it, already folded in above:
+
+- **Vocabulary** (#260, glossary docs/03 §3.0): *moment* now means a journal entry; the gift kind
+  is a **touchpoint** kind; the person's story is headed *Activity*; *activity* alone is the
+  household log. The build adds **gift** to the glossary: *a present for one person — an idea,
+  given or received* (`gift`, `domain/gifts/`, `lib/gifts/`), *not used:* present, wish.
+- **Person page** (#263, #290, #293): the card order is now People, Photos, Activity, Notes,
+  Mentioned in; Gifts goes after Notes. An empty Gifts card is one line, like Photos and Notes.
+- **Services** (AR-01, #296–#305): routes reach use-cases through `locals.services.<context>`;
+  gifts become their own group, `locals.services.gifts`, wired in
+  `src/lib/server/services/`.
+- **Commands** (AR-04, #295): every addition is a command with one payload schema in
+  `src/lib/commands/payloads.ts`, read by form actions through `fromFormData`, so the outbox
+  and the form share it — *addGift*, *editGift*, *markGiftGiven*, *removeGift*.
+- **Home** (#255, docs/02 §2.22.2): the quieter Home keeps the *Coming up* band in its rail;
+  docs/02 §2.22 already says the gifts panel returns with the gifts feature. The hint of §3.3
+  is that return, inside the band rather than a panel of its own.
+- **List dividers** are uppercase labels now (#292); the Given tab's year dividers use them.
+
+Nothing in the decisions of §8 changes.
+
