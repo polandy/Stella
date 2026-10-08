@@ -108,17 +108,18 @@
     <div class="kicker">Konzept · Mockup</div>
     <h1>Geschenke: Ideen merken, Geschenktes nachlesen</h1>
     <p class="lede">Auf der Seite einer Person gibt es eine neue Karte <b>Geschenke</b> mit drei Tabs: offene <b>Ideen</b>, was wir <b>geschenkt</b> haben und was wir <b>bekommen</b> haben.
-    Probier es aus: Notier eine Idee. Tipp „Teekanne“ ein, dann siehst du den Hinweis, dass sie schon geschenkt wurde. Markier eine Idee mit <i>Verschenkt</i>; danach steht sie auch in der Geschichte.</p>
+    Probier es aus: Notier eine Idee. Tipp „Teekanne“ ein, dann siehst du den Hinweis, dass sie schon geschenkt wurde. Markier eine Idee mit <i>Verschenkt</i>; danach steht sie auch unter <i>Aktivität</i>.</p>
   </header>
 
   <div class="row">
     <div class="col">
       <h2>1 · Personenseite</h2>
-      <p>Die Karte steht nach <i>Notizen</i> und bekommt einen eigenen Anker in der Sprungleiste.</p>
+      <p>Die Karte steht nach <i>Notizen</i> und vor <i>Erwähnt in</i> und hat einen eigenen Eintrag in der Sprungleiste. Ohne Geschenke ist sie nur eine Zeile, wie die anderen leeren Karten.</p>
       <div class="phone"><div class="screen" id="screen">
         <div class="topbar"><div class="avatar">H</div><div><div class="name">Oma Hilde</div><div class="sub">Geburtstag in 12 Tagen · wird 84</div></div></div>
-        <div class="jump"><span>Über</span><span>Familie</span><span>Notizen</span><span class="on">Geschenke</span><span>Geschichte</span><span>Fotos</span></div>
+        <div class="jump"><span>Menschen</span><span>Fotos</span><span>Aktivität</span><span>Notizen</span><span class="on">Geschenke</span></div>
         <div class="scroll">
+          <div class="card story"><div class="card-h"><h3>Aktivität</h3></div><div id="story"></div></div>
           <div class="card ghost"><div class="card-h"><h3>Notizen</h3></div><p>Mag keinen Kaffee mehr, nur noch Tee. Hört schlecht auf dem linken Ohr.</p></div>
 
           <div class="card" id="gifts">
@@ -127,8 +128,9 @@
             <div id="list"></div>
             <div class="adds"><button onclick="openAdd('idea')">+ Idee</button><button onclick="openAdd('given')">+ Geschenkt</button><button onclick="openAdd('received')">+ Bekommen</button></div>
           </div>
+          <div class="card ghost"><div class="card-h"><h3>Erwähnt in</h3></div><p>Im Moment von Julia, 3. Aug. 2025: „Mit Oma Hilde am See …“</p></div>
+          <div style="height:360px" aria-hidden="true"></div>
 
-          <div class="card story"><div class="card-h"><h3>Geschichte</h3></div><div id="story"></div></div>
         </div>
 
         <div class="sheet-bg" id="sheetAdd" onclick="if(event.target===this)close_()"><div class="sheet">
@@ -152,11 +154,11 @@
 
     <div class="col">
       <h2>2 · Vor dem Anlass</h2>
-      <p>Wo Stella bevorstehende Geburtstage schon zeigt, steht ein kleiner Hinweis, wenn es offene Ideen gibt. Es wird nichts verschickt.</p>
+      <p>Im Bereich <i>Kommt bald</i> der Startseite steht ein kleiner Hinweis, wenn es offene Ideen gibt. Es wird nichts verschickt.</p>
       <div class="phone"><div class="screen">
         <div class="topbar"><div><div class="name">Startseite</div><div class="sub">Dienstag, 6. Oktober</div></div></div>
         <div class="scroll">
-          <div class="card"><div class="card-h"><h3>Demnächst</h3></div>
+          <div class="card"><div class="card-h"><h3>Kommt bald</h3></div>
             <div class="bday"><div class="avatar">H</div><div class="grow"><div class="t">Oma Hilde · 84</div><div class="sub">Geburtstag am 18. Okt.</div><span class="gifthint" id="homeHint"></span></div></div>
             <div class="bday"><div class="avatar">P</div><div><div class="t">Peter</div><div class="sub">Geburtstag am 2. Nov.</div></div></div>
             <div class="bday"><div class="avatar">J</div><div><div class="t">Julia &amp; Tom</div><div class="sub">Hochzeitstag am 14. Nov.</div><span class="gifthint">1 Idee</span></div></div>
@@ -178,7 +180,7 @@ Teekanne
 12.10.2023
 Die schwarze aus dem Laden am Markt</pre>
       </div>
-      <p class="note-box">So wird umgesetzt: <code>idea</code> wird Idee, <code>offered</code> wird Geschenkt, und <code>received</code> wird Bekommen. Bisherige Momente der Art „Geschenk“ werden ebenfalls zu Geschenken. Eine Notiz, die du nach dem Import bearbeitet hast, bleibt unverändert.</p>
+      <p class="note-box">So wird umgesetzt: <code>idea</code> wird Idee, <code>offered</code> wird Geschenkt, und <code>received</code> wird Bekommen. Bisherige Kontakte der Art „Geschenk“ (<i>Kontakt festhalten</i>) werden ebenfalls zu Geschenken. Eine Notiz, die du nach dem Import bearbeitet hast, bleibt unverändert.</p>
     </div>
   </div>
 </div>
@@ -236,6 +238,8 @@ function openGive(id){state.giving=id;state.occasion='Geburtstag';const g=gifts.
 function give(){const g=gifts.find(x=>x.id===state.giving);g.state='given';g.on=gOn.value;g.occ=state.occasion;state.tab='given';close_();render()}
 function close_(){sheetAdd.classList.remove('open');sheetGive.classList.remove('open')}
 render();
+// Open where the jump bar points: the Gifts card, not the top of the page.
+const giftsCard=document.getElementById('gifts'); giftsCard.parentNode.scrollTop=giftsCard.offsetTop-giftsCard.parentNode.offsetTop-8;
 </script>
 </body>
 </html>

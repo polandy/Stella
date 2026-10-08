@@ -18,7 +18,7 @@ import { renderMarkdownWithMentions } from '$lib/server/domain/notes/markdown';
 import { extractMentionIds, mentionsOtherThan } from '$lib/mentions/mentions';
 import { resolveForAudience } from '$lib/server/domain/mentions/resolve-for-audience';
 import { withNamesakeContext } from '$lib/server/domain/mentions/namesake-context';
-import { getCommandDeps, getMemberDeps } from '$lib/server/services';
+import { getCommandDeps } from '$lib/server/services';
 import { parsePhotoCommand, readCommand } from '$lib/server/commands/parse';
 import { fromFormData } from '$lib/commands/form-data';
 import { JournalWriteSchema } from '$lib/commands/payloads';
@@ -62,7 +62,7 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 	const nameById = new Map(contactNames.map((c) => [c.id, c.displayName]));
 	const nameOf = (id: string) => nameById.get(id) ?? null;
 	// Who wrote each entry, named the same way the story names it (docs/02 §2.23).
-	const nameOfAuthor = await authorNames(getMemberDeps(), viewer.householdId);
+	const nameOfAuthor = await authorNames(locals.services.household.memberDeps, viewer.householdId);
 
 	return {
 		contact: {
