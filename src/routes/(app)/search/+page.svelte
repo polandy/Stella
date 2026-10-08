@@ -2,18 +2,24 @@
 	import FormerlyMark from '$lib/components/people/FormerlyMark.svelte';
 	import FoundByJobMark from '$lib/components/people/FoundByJobMark.svelte';
 	import JobLine from '$lib/components/people/JobLine.svelte';
+	import GiftStateMark from '$lib/components/person/GiftStateMark.svelte';
 	import Avatar from '$lib/components/ui/Avatar.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import EmptyState from '$lib/components/ui/EmptyState.svelte';
+	import { stateLabel } from '$lib/gifts/labels';
 	import { newPersonHref } from '$lib/people/new-person';
-	import { useTranslate } from '$lib/i18n/context.svelte';
+	import { contactSectionPath } from '$lib/people/sections';
+	import { useI18n } from '$lib/i18n/context.svelte';
 	import type { PageData } from './$types';
 
 	let { data }: { data: PageData } = $props();
 
-	const t = useTranslate();
+	const i18n = useI18n();
+	const t = i18n.t;
 	const hasQuery = $derived(data.q.length > 0);
-	const total = $derived(data.results.contacts.length + data.results.notes.length);
+	const total = $derived(
+		data.results.contacts.length + data.results.notes.length + data.results.gifts.length
+	);
 </script>
 
 <svelte:head><title>{t('common.pageTitle', { page: t('search.title') })}</title></svelte:head>
@@ -87,6 +93,28 @@
 								{/if}{t('search.noteOn', { name: n.contactName })}
 							</span>
 							<span class="truncate text-fg">{n.snippet}</span>
+						</a>
+					{/each}
+				</section>
+			{/if}
+
+			{#if data.results.gifts.length > 0}
+				<!-- A gift leads to the card it lives on, not just the person (docs/02 §2.25.5). -->
+				<section class="flex flex-col gap-1">
+					<h2 class="text-sm font-medium text-fg-muted">{t('search.gifts')}</h2>
+					{#each data.results.gifts as g (g.giftId)}
+						<a
+							href={contactSectionPath(g.contactId, 'gifts')}
+							class="flex items-center gap-3 rounded-app border border-transparent px-3 py-2 hover:border-border hover:bg-card"
+						>
+							<GiftStateMark state={g.state} />
+							<span class="flex min-w-0 flex-col">
+								<span class="break-words text-fg">{g.title}</span>
+								<!-- Wraps rather than truncates: the day it was given is the point. -->
+								<span class="text-sm text-fg-muted"
+									>{t('search.giftFor', { name: g.contactName })} · {stateLabel(i18n, g)}</span
+								>
+							</span>
 						</a>
 					{/each}
 				</section>

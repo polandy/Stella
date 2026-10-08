@@ -17,3 +17,8 @@ export const noteFts = sqliteTable('note_fts', {
 	contactId: text('contact_id'),
 	content: text('content')
 });
+
+export const giftFts = sqliteTable('gift_fts', {
+	giftId: text('gift_id'),
+	content: text('content')
+});

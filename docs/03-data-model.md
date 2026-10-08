@@ -476,6 +476,8 @@ Indexed on `(contact_id, state, given_on)`: the card's tabs and the story's page
 received gifts (newest `given_on`, then `created_at`) come from it. Exported and restored with
 the person (§2.15), repointed by a merge.
 
+FTS: `title, note` indexed (3.5).
+
 ### photo
 | column | type | notes |
 |---|---|---|
@@ -804,7 +806,7 @@ parity test.
 
 ## 3.5 Full-text search (FTS5)
 
-- Two FTS5 virtual tables: `contact_fts` and `note_fts`, each storing its own indexed text
+- Three FTS5 virtual tables: `contact_fts`, `note_fts` and `gift_fts`, each storing its own indexed text
   (not `content=`-linked to the base tables, since what is indexed is assembled rather than
   copied — see below), kept in sync via triggers on insert/update/delete.
 - A note's indexed content is **not** its raw body: the `@{contact:<id>}` tokens (§2.20.1) are
@@ -813,6 +815,12 @@ parity test.
   people's display names appended, so a mention stays findable by name and neither "contact"
   nor "monica" sits in every note that names someone. Triggers on `note_mention` and on a
   rename of a mentioned contact keep that current.
+- A gift's indexed content is its `title` and `note` — never `url` or `occasion` (docs/02
+  §2.25.5). Every write to a gift, the restore and the conversion of Monica gift notes included,
+  goes through the `gift` table, so its three triggers cover them all. A database migrated
+  only part of the way (no `gift` table yet — only a migration test builds one) gets the gift
+  part on the first start that has the table, since the fingerprint records whether it was
+  built.
 - What a trigger writes is fixed when the trigger is created, so the index carries a
   **fingerprint** of the definitions that built it (`search_index_meta`). A startup whose
   definitions hash differently re-creates the triggers and rebuilds the rows; an unchanged one

@@ -1,6 +1,6 @@
 import { dayLabel, type DateLanguage } from '../dates/labels';
 import type { Translate } from '../i18n/translate';
-import { isGiftOccasionPreset } from './gifts';
+import { isGiftOccasionPreset, type GiftState } from './gifts';
 
 /*
  * How a gift's occasion reads (docs/02 §2.25). A preset is stored as its key and worded in the
@@ -21,4 +21,16 @@ export function addedLabel(lang: DateLanguage, createdAt: number, timeZone: stri
 	// en-CA writes the calendar day as YYYY-MM-DD.
 	const day = new Date(createdAt).toLocaleDateString('en-CA', { timeZone });
 	return lang.t('gifts.addedOn', { day: dayLabel(lang, day) });
+}
+
+/**
+ * Where a gift stands, in one phrase: *Idea*, *Given on 24 December 2025*, *Received on …* —
+ * how a search hit says which of a person's gifts it is (docs/02 §2.9).
+ */
+export function stateLabel(
+	lang: DateLanguage,
+	gift: { state: GiftState; givenOn: string | null }
+): string {
+	if (gift.state === 'idea' || gift.givenOn === null) return lang.t('gifts.state.idea');
+	return lang.t(`gifts.state.${gift.state}`, { day: dayLabel(lang, gift.givenOn) });
 }

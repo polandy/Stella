@@ -58,7 +58,8 @@ describe('findPeople', () => {
 					}
 				];
 			},
-			searchNotes: async () => []
+			searchNotes: async () => [],
+			searchGifts: async () => []
 		};
 		expect(await findPeople({ search }, viewer, 'anna')).toEqual([
 			{ id: 'c-1', displayName: 'Anna Muster', description: null }
@@ -73,7 +74,8 @@ describe('findPeople', () => {
 				asked.push(fts);
 				return [];
 			},
-			searchNotes: async () => []
+			searchNotes: async () => [],
+			searchGifts: async () => []
 		};
 		expect(await findPeople({ search }, viewer, '   ')).toEqual([]);
 		expect(await findPeople({ search }, viewer, 'bert')).toEqual([]);

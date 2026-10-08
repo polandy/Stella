@@ -1,15 +1,17 @@
-/* Full search across people and notes (docs/02 §2.22), and the graph screen. */
+/* Full search across people, notes and gifts (docs/02 §2.9), and the graph screen. */
 
 export const search = {
 	'search.title': 'Search',
-	'search.placeholder': 'Search people and notes…',
+	'search.placeholder': 'Search people, notes and gifts…',
 	'search.noResults': (p: { query: string }) => `No results for “${p.query}”.`,
 	'search.noResultsHint':
-		'Nobody by that name, and no note that says it. If they are new, add them.',
-	'search.prompt': 'Type to search across people and notes.',
+		'Nobody by that name, and no note or gift that says it. If they are new, add them.',
+	'search.prompt': 'Type to search across people, notes and gifts.',
 	'search.people': 'People',
 	'search.notes': 'Notes',
 	'search.noteOn': (p: { name: string }) => `on ${p.name}`,
+	'search.gifts': 'Gifts',
+	'search.giftFor': (p: { name: string }) => `for ${p.name}`,
 	'graph.title': 'Graph · Stella',
 	'graph.hint': 'Click to focus · click again to expand · trace a connection path',
 	'graph.empty.title': 'Nothing to explore yet',
