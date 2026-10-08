@@ -1,7 +1,7 @@
 import type { CropRect } from '../../../image/crop';
 import type { Viewer, Visibility } from '../../access/visibility';
 import type { Clock } from '../../clock';
-import type { ContactRepository } from '../contacts/contacts';
+import type { ContactLookup } from '../contacts/contacts';
 import type { IdGenerator } from '../../id';
 import {
 	validateAvatarUpload,
@@ -163,7 +163,7 @@ export interface CutRepository {
 /** Ports for cutting a profile picture (docs/08 §8.3). */
 export interface CutDeps {
 	cuts: CutRepository;
-	contacts: Pick<ContactRepository, 'findByIdVisibleTo'>;
+	contacts: ContactLookup;
 	media: Pick<MediaStore, 'put' | 'delete'>;
 	ids: IdGenerator;
 	clock: Clock;

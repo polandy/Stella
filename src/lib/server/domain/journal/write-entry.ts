@@ -1,6 +1,6 @@
 import { mentionsOtherThan } from '../../../mentions/mentions';
 import type { Visibility } from '../../access/visibility';
-import type { ContactRepository } from '../contacts/contacts';
+import type { ContactLookup } from '../contacts/contacts';
 import type { ContactDirectoryReads } from '../contacts/directory';
 import { requireVisibleContact } from '../contacts/require-visible';
 import { resolveForAudience } from '../mentions/resolve-for-audience';
@@ -15,7 +15,7 @@ import { addToJournalDay, type JournalDayDeps } from './journal';
  */
 
 export interface WriteJournalEntryDeps extends JournalDayDeps {
-	contacts: Pick<ContactRepository, 'findByIdVisibleTo'>;
+	contacts: ContactLookup;
 	/** Whom an @-mention can name: the people the author sees. */
 	directory: Pick<ContactDirectoryReads, 'listVisibleTo'>;
 }

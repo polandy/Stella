@@ -2,10 +2,9 @@ import { TranslatableError } from '../../../errors/translatable';
 import { phrase } from '../../../i18n/phrase';
 import type { Visibility, Viewer } from '../../access/visibility';
 import type { Clock } from '../../clock';
-import { activityRecord, type ActivityOf } from '../activity/activity';
-import { mergeProfiles, type MergeableProfile } from './merge-profile';
+import type { ActivityOf } from '../activity/activity';
+import type { MergeableProfile } from './merge-profile';
 import type { NameRepository } from './name-parts';
-import type { MediaStore } from '../media/avatars';
 import type { IdGenerator } from '../../id';
 import { deriveDisplayName } from '../../../people/display-name';
 import { isKnownByMoreThanAFirstName } from '../../../people/new-person';
@@ -171,14 +170,15 @@ export interface ContactDeps {
 	clock: Clock;
 }
 
-/** Looking one person up — all a caller that only checks visibility needs to hand in. */
-export interface ContactLookupDeps {
-	contacts: Pick<ContactRepository, 'findByIdVisibleTo'>;
-}
+/**
+ * Looking one person up, visibility applied — the one port other contexts read contacts
+ * through, so none of them needs the repository's writes (AR-06, docs/08 §8.3).
+ */
+export type ContactLookup = Pick<ContactRepository, 'findByIdVisibleTo'>;
 
-/** Deleting a person also unlinks the bytes of their photos (docs/02 §2.2). */
-export interface DeleteContactDeps extends ContactDeps {
-	media: Pick<MediaStore, 'delete'>;
+/** All a caller that only checks visibility needs to hand in. */
+export interface ContactLookupDeps {
+	contacts: ContactLookup;
 }
 
 /** The two records a merge is about, with the names the log will have to remember. */
@@ -455,82 +455,4 @@ export async function restoreContact(
 	id: string
 ): Promise<boolean> {
 	return setArchived(deps, viewer, id, null);
-}
-
-/**
- * Delete a person and everything that hangs off them — notes, photos, dates, relationships,
- * journal — for good. The row and its log entry go in one transaction; the bytes follow,
- * because a file left behind is the harmless direction of that failure while a delete with
- * no trace is not (docs/02 §2.2).
- *
- * Returns false when the contact is not visible to the viewer, exactly as for one that is
- * not there. *Who* may delete is decided at the edge: this is admin-only (docs/02 §2.2).
- */
-export async function deleteContact(
-	deps: DeleteContactDeps,
-	viewer: Viewer,
-	id: string
-): Promise<boolean> {
-	const contact = await deps.contacts.findByIdVisibleTo(viewer, id);
-	if (contact === null) return false;
-
-	const files = await deps.contacts.deleteVisibleTo(
-		viewer,
-		id,
-		activityRecord(deps, viewer, {
-			kind: 'contact.deleted',
-			contactId: id,
-			displayName: contact.displayName,
-			visibility: contact.visibility
-		})
-	);
-	if (files === null) return false;
-
-	for (const file of files) {
-		await deps.media.delete(file.filePath);
-		await deps.media.delete(file.thumbPath);
-	}
-	return true;
-}
-
-/**
- * Merge one person into another: the survivor keeps their name and their visibility, gains
- * whatever the other record said that they did not (`mergeProfiles`), and takes over every
- * note, photo, date, link and journal entry. The emptied record is then deleted and the merge
- * written to the log — the only trace left of a name that used to exist (docs/02 §2.2).
- *
- * Returns false when either record is out of the viewer's reach, or when the two are the same.
- */
-export async function mergeContacts(
-	deps: Pick<ContactDeps, 'contacts' | 'ids' | 'clock'>,
-	viewer: Viewer,
-	keepId: string,
-	mergedId: string
-): Promise<boolean> {
-	if (keepId === mergedId) return false;
-
-	const pair = await deps.contacts.readForMerge(viewer, keepId, mergedId);
-	if (pair === null) return false;
-
-	const now = deps.clock.now();
-	return deps.contacts.mergeVisibleTo(
-		viewer,
-		keepId,
-		mergedId,
-		mergeProfiles(pair.keep.profile, pair.mergedAway.profile),
-		activityRecord(
-			deps,
-			viewer,
-			{
-				kind: 'contact.merged',
-				keepId,
-				mergedAwayId: mergedId,
-				keep: pair.keep.displayName,
-				mergedAway: pair.mergedAway.displayName,
-				visibility: pair.keep.visibility
-			},
-			now
-		),
-		now
-	);
 }

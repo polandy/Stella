@@ -1,6 +1,6 @@
 import { phrase } from '../../../i18n/phrase';
 import type { ContactNameReads } from '../contacts/contact-names';
-import type { ContactRepository } from '../contacts/contacts';
+import type { ContactLookup } from '../contacts/contacts';
 import { requireVisibleContact } from '../contacts/require-visible';
 import {
 	InvalidInteractionError,
@@ -18,7 +18,7 @@ import {
  */
 
 export interface LogCheckedDeps extends InteractionDeps {
-	contacts: Pick<ContactRepository, 'findByIdVisibleTo'>;
+	contacts: ContactLookup;
 	/** Who a participant can be: the people the author sees and the household still browses. */
 	contactNames: Pick<ContactNameReads, 'listBrowsableNamesAmong'>;
 }

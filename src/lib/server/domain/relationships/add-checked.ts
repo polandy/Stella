@@ -1,7 +1,7 @@
 import { TranslatableError } from '../../../errors/translatable';
 import { phrase } from '../../../i18n/phrase';
 import { decodeRelationshipChoice, endpointsForSide } from '../../../relationships/type-options';
-import type { ContactRepository } from '../contacts/contacts';
+import type { ContactLookup } from '../contacts/contacts';
 import { requireVisibleContact } from '../contacts/require-visible';
 import { createRelationship, type CreateRelationshipDeps } from './relationships';
 
@@ -21,7 +21,7 @@ export class UnknownRelationshipTypeError extends TranslatableError {
 }
 
 export interface AddCheckedDeps extends CreateRelationshipDeps {
-	contacts: Pick<ContactRepository, 'findByIdVisibleTo'>;
+	contacts: ContactLookup;
 }
 
 export interface AddRelationshipInput {

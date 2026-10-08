@@ -149,6 +149,15 @@ to (`deleteVisibleTo(viewer, id, audit)`), and the adapter turns it into the row
 that port records the event, so a test asserts on what happened rather than on a sentence;
 the sentence is `activity.test.ts`'s.
 
+**Contexts depend one way.** The folders under `domain/` are bounded contexts, and an import
+between two of them — `import type` included — runs in one direction only;
+`src/lib/server/domain/context-cycles.test.ts` refuses a cycle. A context that reads another
+asks for the narrow port that one exports (`ContactLookup` from `contacts`, not the
+`ContactRepository`). Where the read context would have to import back, it declares the port it
+needs itself and the other side's adapter fulfils it structurally: `contacts` reads the kinship
+graph through its own `SurnameKinshipSource`, and unlinks a deleted person's photo files
+through its own `PhotoFileCascade`, never through `relationships` or `media` (docs/04 ADR-121).
+
 **Repositories write, read models list.** A repository is an aggregate's write side plus the
 one-record reads its writes rest on (`insert`, `update…`, `findByIdVisibleTo`); what a screen
 lists or counts is a **read model** port of its own, named `…Reads` (`ContactDirectoryReads`,

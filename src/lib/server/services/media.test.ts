@@ -208,7 +208,7 @@ describe('createServices', () => {
 		});
 		const { store } = services.media;
 		expect(services.media.galleryDeps.media).toBe(store);
-		expect<unknown>(services.people.deleteContactDeps.media).toBe(store);
+		expect<unknown>(services.people.deleteContactDeps.photoFiles).toBe(store);
 		expect<unknown>(services.circles.circlePhotoDeps.media).toBe(store);
 		expect<unknown>(services.circles.cutDeps.media).toBe(store);
 	});

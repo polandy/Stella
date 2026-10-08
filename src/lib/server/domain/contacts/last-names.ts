@@ -16,7 +16,7 @@ import {
 import type { Viewer } from '../../access/visibility';
 import type { Locale } from '../../../i18n/locales';
 import type { IdGenerator } from '../../id';
-import type { KinshipGraphReads } from '../relationships/suggestion-review';
+import type { KinshipGraph } from '../../../kinship/kinship';
 import type { PassOnMap } from '../../../surnames/pass-on';
 import type { SurnameProposal } from '../../../suggestions/rules/surnames';
 import { activityRecord } from '../activity/activity';
@@ -46,6 +46,15 @@ export interface SurnameFactsSource {
 	}>;
 }
 
+/**
+ * The kinship graph the rules read a name along, as this viewer may see it (docs/03 §3.7).
+ * Declared here rather than borrowed from `relationships`, so the two contexts do not import
+ * each other: the relationships context's `KinshipGraphReads` adapter fulfils it as it is.
+ */
+export interface SurnameKinshipSource {
+	loadKinshipGraphVisibleTo(viewer: Viewer): Promise<KinshipGraph>;
+}
+
 /** A declined name on its way to storage (`suggestion_dismissal`, relation `last_name`). */
 export interface NewSurnameDismissal extends SurnameDismissal {
 	id: string;
@@ -65,7 +74,7 @@ export interface SurnameDismissalRepository {
 
 export interface SurnameReviewDeps {
 	surnames: SurnameFactsSource;
-	kinship: KinshipGraphReads;
+	kinship: SurnameKinshipSource;
 	surnameDismissals: Pick<SurnameDismissalRepository, 'listForHousehold'>;
 }
 

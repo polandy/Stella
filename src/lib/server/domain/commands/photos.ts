@@ -3,7 +3,7 @@ import { TranslatableError } from '../../../errors/translatable';
 import { phrase } from '../../../i18n/phrase';
 import { addCirclePhoto, type CirclePhotoDeps } from '../circles/circle-photos';
 import type { CircleRepository } from '../circles/circles';
-import type { ContactRepository } from '../contacts/contacts';
+import type { ContactLookup } from '../contacts/contacts';
 import { addGalleryPhoto, type GalleryUploadDeps } from '../media/gallery-upload';
 import { attachJournalPhoto, type JournalPhotoDeps } from '../media/journal-photos';
 import type {
@@ -90,7 +90,7 @@ export async function attachMomentPhoto(
 
 export interface GalleryPhotoDeps {
 	receipts: Pick<CommandReceiptRepository, 'find'>;
-	contacts: Pick<ContactRepository, 'findByIdVisibleTo'>;
+	contacts: ContactLookup;
 	photos: GalleryUploadDeps;
 }
 
