@@ -32,7 +32,6 @@ import {
 	restoreClaim,
 	type RefusedAnswer
 } from '$lib/server/relationships/suggestion-answers';
-import { getMemberDeps } from '$lib/server/services';
 import { translator } from '$lib/server/i18n/say';
 import type { Actions, PageServerLoad } from './$types';
 
@@ -129,7 +128,7 @@ export const load: PageServerLoad = async ({ locals, url }): Promise<ReviewData>
 		reviewHousehold(locals.services.relationships.suggestionReviewDeps, viewer, {
 			includeDismissed: true
 		}),
-		authorNames(getMemberDeps(), viewer.householdId)
+		authorNames(locals.services.household.memberDeps, viewer.householdId)
 	]);
 	// The reason arrives unsaid; here is where it becomes a sentence in the language this request
 	// is being read in — cut into words and people, because a closure cannot cross into `data`

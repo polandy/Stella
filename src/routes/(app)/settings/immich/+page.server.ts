@@ -27,8 +27,7 @@ import {
 	getImmichIgnoreDeps,
 	getImmichLinkDeps,
 	getImmichMatchingDeps,
-	getImmichNameIgnoreDeps,
-	getMemberDeps
+	getImmichNameIgnoreDeps
 } from '$lib/server/services';
 import { say, translator } from '$lib/server/i18n/say';
 import type { Actions, PageServerLoad } from './$types';
@@ -64,7 +63,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 	const deps = getImmichMatchingDeps();
 	if (!deps) throw error(404, say(locals, 'errors.notFound'));
 	const viewer = requireViewer(locals);
-	const nameOfMember = authorNames(getMemberDeps(), viewer.householdId);
+	const nameOfMember = authorNames(locals.services.household.memberDeps, viewer.householdId);
 	const day = {
 		selfContactId: user.selfContactId,
 		today: todayFor(systemClock)
