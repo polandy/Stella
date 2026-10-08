@@ -18,14 +18,6 @@ import ts from 'typescript';
 const INFRASTRUCTURE = new Glob('src/lib/server/**/*.ts');
 const OUTSIDE = ['src/lib/server/domain/', 'src/lib/server/access/'];
 
-/**
- * Adapters that still serve two ports. Each is a later cut of AR-08; the list only shrinks.
- */
-const NOT_SPLIT_YET = [
-	// The relationships cut, with AR-06.
-	'src/lib/server/db/relationship-repository.ts'
-];
-
 /** The type a function hands back, looking through `Promise<…>`. */
 function resolvedType(type: ts.TypeNode): ts.TypeNode {
 	if (
@@ -80,7 +72,7 @@ describe('an adapter factory', () => {
 		const offenders = files.filter(
 			(path) => intersectionFactories(readFileSync(path, 'utf8')).length > 0
 		);
-		expect(offenders).toEqual(NOT_SPLIT_YET);
+		expect(offenders).toEqual([]);
 	});
 
 	it('is read for its declared type, however it is written', () => {

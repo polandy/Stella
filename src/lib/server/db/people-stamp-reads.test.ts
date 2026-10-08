@@ -9,6 +9,7 @@ import { createDrizzleContactRepository } from './contact-repository';
 import { createDrizzlePeopleStampReads } from './people-stamp-reads';
 import { createDrizzlePhotoRepository } from './photo-repository';
 import { createDrizzleRelationshipRepository } from './relationship-repository';
+import { createDrizzleRelationshipTypeRepository } from './relationship-type-repository';
 import * as schema from './schema';
 
 /*
@@ -205,7 +206,7 @@ describe('the people stamp', () => {
 		[
 			"a household type's label changed",
 			() =>
-				createDrizzleRelationshipRepository(db).updateTypeVisibleTo(andy, 'own', {
+				createDrizzleRelationshipTypeRepository(db).updateTypeVisibleTo(andy, 'own', {
 					forwardLabel: 'Trainer of',
 					reverseLabel: 'Coached by',
 					category: 'social',

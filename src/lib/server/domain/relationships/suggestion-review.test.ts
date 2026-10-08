@@ -61,7 +61,7 @@ function deps(graph: KinshipGraph = family(), log: Dismissal[] = []) {
 		written: NewDismissal[];
 		restored: typeof restored;
 	} = {
-		relationships: {
+		kinship: {
 			async loadKinshipGraphVisibleTo(v) {
 				asked.push(v);
 				return graph;

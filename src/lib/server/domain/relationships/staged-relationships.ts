@@ -19,11 +19,12 @@ import {
  * stages; the batch writes `staged()` in one transaction once every link has passed.
  */
 
-type StageableRepository = CreateRelationshipDeps['relationships'];
+/** The store and the two read models a link is judged against — all three see the staging. */
+type Stageable = Pick<CreateRelationshipDeps, 'relationships' | 'kinship' | 'ties'>;
 
 export interface StagedRelationships {
-	/** The store with the staged links read into it; `insert` stages instead of writing. */
-	repository: StageableRepository;
+	/** The store and its reads with the staged links read into them; `insert` stages instead. */
+	deps: Stageable;
 	/** What passed, in the order it was staged. */
 	staged(): readonly NewRelationship[];
 	/** A person's display name as the viewer sees it, or '' for someone out of their sight. */
@@ -31,7 +32,7 @@ export interface StagedRelationships {
 }
 
 export function stageRelationships(
-	store: StageableRepository,
+	store: Stageable,
 	types: Pick<RelationshipTypeRepository, 'getType'>
 ): StagedRelationships {
 	const staged: NewRelationship[] = [];
@@ -41,7 +42,8 @@ export function stageRelationships(
 	const tiesOf = new Map<string, Promise<RelationshipView[]>>();
 	const typeById = new Map<string, Promise<RelationshipType | null>>();
 
-	const graphOf = (viewer: Viewer) => (household ??= store.loadKinshipGraphVisibleTo(viewer));
+	const graphOf = (viewer: Viewer) =>
+		(household ??= store.kinship.loadKinshipGraphVisibleTo(viewer));
 	const typeOf = async (viewer: Viewer, typeId: string): Promise<RelationshipType> => {
 		if (!typeById.has(typeId)) typeById.set(typeId, types.getType(viewer, typeId));
 		const type = await typeById.get(typeId);
@@ -52,7 +54,7 @@ export function stageRelationships(
 	const nameOf = async (viewer: Viewer, contactId: string) =>
 		(await graphOf(viewer)).people.find((person) => person.id === contactId)?.displayName ?? '';
 
-	const repository: StageableRepository = {
+	const relationships: Stageable['relationships'] = {
 		async exists(fromContactId, toContactId, typeId, exceptId) {
 			const isStaged = staged.some(
 				(link) =>
@@ -60,13 +62,15 @@ export function stageRelationships(
 					link.toContactId === toContactId &&
 					link.typeId === typeId
 			);
-			return isStaged || store.exists(fromContactId, toContactId, typeId, exceptId);
+			return isStaged || store.relationships.exists(fromContactId, toContactId, typeId, exceptId);
 		},
 
 		async insert(relationship) {
 			staged.push(relationship);
-		},
+		}
+	};
 
+	const kinship: Stageable['kinship'] = {
 		async loadKinshipGraphVisibleTo(viewer) {
 			const graph = await graphOf(viewer);
 			const rows = await Promise.all(
@@ -85,11 +89,13 @@ export function stageRelationships(
 				partnerEdges: [...graph.partnerEdges, ...added.partnerEdges],
 				storedPairs: [...graph.storedPairs, ...added.storedPairs]
 			};
-		},
+		}
+	};
 
+	const ties: Stageable['ties'] = {
 		async listForContactVisibleTo(viewer, contactId) {
 			if (!tiesOf.has(contactId))
-				tiesOf.set(contactId, store.listForContactVisibleTo(viewer, contactId));
+				tiesOf.set(contactId, store.ties.listForContactVisibleTo(viewer, contactId));
 			const onRecord = (await tiesOf.get(contactId)) ?? [];
 			const stagedTies = await Promise.all(
 				staged
@@ -116,5 +122,5 @@ export function stageRelationships(
 		}
 	};
 
-	return { repository, staged: () => [...staged], nameOf };
+	return { deps: { relationships, kinship, ties }, staged: () => [...staged], nameOf };
 }

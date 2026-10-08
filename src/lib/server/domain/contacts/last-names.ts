@@ -16,7 +16,7 @@ import {
 import type { Viewer } from '../../access/visibility';
 import type { Locale } from '../../../i18n/locales';
 import type { IdGenerator } from '../../id';
-import type { KinshipGraphSource } from '../relationships/suggestion-review';
+import type { KinshipGraphReads } from '../relationships/suggestion-review';
 import type { PassOnMap } from '../../../surnames/pass-on';
 import type { SurnameProposal } from '../../../suggestions/rules/surnames';
 import { lastNamesFacts } from '../../../stream/notices';
@@ -65,7 +65,7 @@ export interface SurnameDismissalRepository {
 
 export interface SurnameReviewDeps {
 	surnames: SurnameFactsSource;
-	relationships: KinshipGraphSource;
+	kinship: KinshipGraphReads;
 	surnameDismissals: Pick<SurnameDismissalRepository, 'listForHousehold'>;
 }
 
@@ -174,7 +174,7 @@ export async function reviewLastNames(
 ): Promise<LastNamesReview> {
 	const [facts, graph, dismissed] = await Promise.all([
 		deps.surnames.loadSurnameFactsVisibleTo(viewer),
-		deps.relationships.loadKinshipGraphVisibleTo(viewer),
+		deps.kinship.loadKinshipGraphVisibleTo(viewer),
 		deps.surnameDismissals.listForHousehold(viewer)
 	]);
 	const view = buildSurnameView({
@@ -224,7 +224,7 @@ export async function readSurnameHelp(
 ): Promise<SurnameHelp> {
 	const [facts, graph, dismissed] = await Promise.all([
 		deps.surnames.loadSurnameFactsVisibleTo(viewer),
-		deps.relationships.loadKinshipGraphVisibleTo(viewer),
+		deps.kinship.loadKinshipGraphVisibleTo(viewer),
 		deps.surnameDismissals.listForHousehold(viewer)
 	]);
 	const view = buildSurnameView({

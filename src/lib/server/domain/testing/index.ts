@@ -26,3 +26,9 @@ export {
 } from './circles';
 export { inMemoryTagLists, someTag, type FakeTag } from './tags';
 export { inMemoryGalleryPhotos, photoRepositoryWith, someGalleryPhoto } from './photos';
+export {
+	inMemoryKinshipGraph,
+	inMemoryRelationshipTies,
+	relationshipRepositoryWith,
+	someTie
+} from './relationships';

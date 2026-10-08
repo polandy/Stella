@@ -5,7 +5,6 @@ import { ContactGoneError } from '../contacts/require-visible';
 import {
 	DuplicateRelationshipError,
 	type NewRelationship,
-	type RelationshipRepository,
 	type RelationshipType
 } from './relationships';
 import {
@@ -14,6 +13,7 @@ import {
 	type AddCheckedDeps
 } from './add-checked';
 
+import { inMemoryKinshipGraph, inMemoryRelationshipTies } from '../testing';
 /*
  * Linking two people from one of their pages (docs/02 §2.4) as one use-case, so a link kept on
  * a phone (docs/02 §2.18.2) is judged exactly like one entered online:
@@ -39,23 +39,16 @@ function fakes(
 ) {
 	const inserted: NewRelationship[] = [];
 	const visible = opts.visible ?? ['anna', 'bert'];
-	const relationships = {
-		exists: async () => opts.exists ?? false,
-		insert: async (r: NewRelationship) => void inserted.push(r),
-		listForContactVisibleTo: async () => [],
-		loadKinshipGraphVisibleTo: async () => ({
-			people: [],
-			parentEdges: [],
-			siblingEdges: [],
-			partnerEdges: [],
-			storedPairs: []
-		})
-	} as unknown as RelationshipRepository;
 	const deps: AddCheckedDeps = {
 		contacts: {
 			findByIdVisibleTo: async (_v, id) => (visible.includes(id) ? ({ id } as Contact) : null)
 		},
-		relationships,
+		relationships: {
+			exists: async () => opts.exists ?? false,
+			insert: async (r) => void inserted.push(r)
+		},
+		kinship: inMemoryKinshipGraph(),
+		ties: inMemoryRelationshipTies(),
 		types: { getType: async () => (opts.type === undefined ? parentChild : opts.type) },
 		ids: { next: () => 'rel-1' },
 		clock: { now: () => 1 }

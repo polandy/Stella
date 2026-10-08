@@ -11,7 +11,7 @@ import {
 	exclusionFactsFrom,
 	kinshipFrom,
 	type KinshipRead,
-	type RelationshipRepository,
+	type RelationshipTieReads,
 	type RelationshipView
 } from './relationships';
 import {
@@ -41,7 +41,7 @@ export interface VisibleFamilySource {
 
 export interface FamilyReadDeps {
 	family: VisibleFamilySource;
-	relationships: Pick<RelationshipRepository, 'listForContactVisibleTo'>;
+	ties: RelationshipTieReads;
 	dismissals: Pick<SuggestionDismissalRepository, 'listForHousehold'>;
 }
 
@@ -76,7 +76,7 @@ export async function readFamilyOf(
 	const needsDismissals = request.proposeFor.length > 0 || request.reviewOpen;
 	const [family, ties, dismissals] = await Promise.all([
 		deps.family.loadVisibleGraphWithKinship(viewer),
-		deps.relationships.listForContactVisibleTo(viewer, subjectId),
+		deps.ties.listForContactVisibleTo(viewer, subjectId),
 		needsDismissals ? deps.dismissals.listForHousehold(viewer) : Promise.resolve([])
 	]);
 	return {

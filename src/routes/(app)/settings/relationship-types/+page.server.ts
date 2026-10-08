@@ -65,7 +65,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 	const viewer = requireViewer(locals);
 	const [types, usage] = await Promise.all([
 		locals.services.relationships.relationshipTypes.listTypes(viewer),
-		locals.services.relationships.relationshipTypes.countRelationshipsByType(viewer)
+		locals.services.relationships.relationshipTypeUsage.countRelationshipsByType(viewer)
 	]);
 
 	// A type still in use cannot be removed, so the page counts first and offers the button

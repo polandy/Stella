@@ -85,7 +85,9 @@ function household(rows: StoredRow[] = [], hidden: string[] = []) {
 						status: r.status
 					});
 				}
-			},
+			}
+		},
+		ties: {
 			listForContactVisibleTo: async (_viewer, contactId): Promise<RelationshipView[]> =>
 				stored
 					.filter((row) => row.from === contactId || row.to === contactId)
@@ -109,7 +111,9 @@ function household(rows: StoredRow[] = [], hidden: string[] = []) {
 							sinceDate: null,
 							status: CURRENT_RELATIONSHIP_STATUS
 						};
-					}),
+					})
+		},
+		kinship: {
 			loadKinshipGraphVisibleTo: async () =>
 				kinshipGraphOf(
 					Object.entries(NAMES)

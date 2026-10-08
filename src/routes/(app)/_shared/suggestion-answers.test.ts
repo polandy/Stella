@@ -1,12 +1,12 @@
 import { describe, expect, it } from 'bun:test';
 import { createTranslator } from '$lib/i18n/translate';
 import { PARENT_CHILD_TYPE_KEY } from '$lib/relationships/type-keys';
-import type { KinshipGraph } from '$lib/kinship/kinship';
 import type { Relation } from '$lib/suggestions/types';
 import type { Viewer } from '$lib/server/access/visibility';
 import type { Contact } from '$lib/server/domain/contacts/contacts';
 import type { RelationshipType } from '$lib/server/domain/relationships/relationships';
 import type { NewDismissal } from '$lib/server/domain/relationships/suggestion-review';
+import { inMemoryKinshipGraph, inMemoryRelationshipTies } from '$lib/server/domain/testing';
 import {
 	acceptClaim,
 	declineClaim,
@@ -39,16 +39,9 @@ const form = (fields: Record<string, string>) => {
 	return data;
 };
 
-const graph = (ids: string[]): KinshipGraph => ({
-	people: ids.map((id) => ({ id, displayName: id })),
-	parentEdges: [],
-	siblingEdges: [],
-	partnerEdges: [],
-	storedPairs: []
-});
-
 /** The household's visible people, its stored links and its log of declined claims. */
 function fakes(visible: string[], stored: [string, string, string][] = []) {
+	const kinship = inMemoryKinshipGraph({ people: visible.map((id) => ({ id, displayName: id })) });
 	const inserted: unknown[] = [];
 	const dismissed: NewDismissal[] = [];
 	const restored: string[] = [];
@@ -68,16 +61,16 @@ function fakes(visible: string[], stored: [string, string, string][] = []) {
 						stored.some(([f, tt, ty]) => f === from && tt === to && ty === typeId),
 					insert: async (row: unknown) => {
 						inserted.push(row);
-					},
-					loadKinshipGraphVisibleTo: async () => graph(visible),
-					listForContactVisibleTo: async () => []
+					}
 				},
+				kinship,
+				ties: inMemoryRelationshipTies(),
 				types: { getType: async (_v: Viewer, id: string) => (id === PARENT.id ? PARENT : null) },
 				ids: { next: () => 'id-1' },
 				clock: { now: () => 42 }
 			},
 			suggestionReviewDeps: {
-				relationships: { loadKinshipGraphVisibleTo: async () => graph(visible) },
+				kinship,
 				dismissals: {
 					listForHousehold: async () => [],
 					dismiss: async (entry: NewDismissal) => {
