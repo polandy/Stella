@@ -546,7 +546,7 @@ rule. Each is one Conventional-Commit `refactor:`/`chore:`/`docs:` PR unless mar
 | 6 | AR-01 `createServices()` + `locals.services` — **series**, one bounded context per PR, `auth` first | L | ☑ auth #296, people #298, relationships #299, circles #300, media #301, story #302, notes #304, records #305, household #306, archive #308, immich #311, release #312, offline #314 | The central change; do after 3 and 5 so routes shrink while being touched |
 | 7 | AR-02 move shared actions under `routes/` taking deps | S | ☑ #315 | Falls out of 6 |
 | 8 | AR-08 split read models off the three widest ports + AR-14 shared fakes — **series** | M | ☑ contacts #317, circles + tags #318, photo + media #319, relationships #320 | Do together: the fakes are what makes the split pay |
-| 9 | AR-06 activity as a port; break `contacts ↔ relationships`; merge plan as data — **series** | M | ◐ activity #321, cycles #322 | Needs 8's narrower ports |
+| 9 | AR-06 activity as a port; break `contacts ↔ relationships`; merge plan as data — **series** | M | ☑ activity #321, cycles #322, merge plan #323 | Needs 8's narrower ports |
 | 10 | AR-11 `GraphExplorer` state → pure module; then `MomentComposer` | M ×2 | ◐ explorer #327 | Independent of the server work; can run as the "second open PR" alongside 6–9 |
 | 11 | AR-10 lib taxonomy + AR-12 components split | M | ☐ | Last of the moves: after the renames the final layout is known |
 | 12 | AR-09 `PartialDate`, `RelationshipPair`; AR-17 schema split; AR-19 parity test; AR-16 route tests | S–M | ☐ | Opportunistic, when the area is touched anyway |
