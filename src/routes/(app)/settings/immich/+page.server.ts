@@ -21,14 +21,6 @@ import {
 } from '$lib/server/domain/immich/links';
 import { findImmichMatches } from '$lib/server/domain/immich/matching';
 import { ignoreNewcomer, proposeNewcomerAgain } from '$lib/server/domain/immich/name-ignores';
-import {
-	getAddFromImmichDeps,
-	getImmich,
-	getImmichIgnoreDeps,
-	getImmichLinkDeps,
-	getImmichMatchingDeps,
-	getImmichNameIgnoreDeps
-} from '$lib/server/services';
 import { say, translator } from '$lib/server/i18n/say';
 import type { Actions, PageServerLoad } from './$types';
 import { systemClock } from '$lib/server/clock';
@@ -60,7 +52,7 @@ const MAX_PAIRS = 2000;
 
 export const load: PageServerLoad = async ({ locals }) => {
 	const user = requireUser(locals);
-	const deps = getImmichMatchingDeps();
+	const deps = locals.services.immich?.immichMatchingDeps;
 	if (!deps) throw error(404, say(locals, 'errors.notFound'));
 	const viewer = requireViewer(locals);
 	const nameOfMember = authorNames(locals.services.household.memberDeps, viewer.householdId);
@@ -119,7 +111,7 @@ function pairsOf(form: FormData): ConfirmedMatch[] | null {
 /** One row's Link and *Link all likely* are the same action: a list of confirmed pairs. */
 const linking: Actions[string] = async ({ request, locals }) => {
 	const viewer = requireViewer(locals);
-	const deps = getImmichLinkDeps();
+	const deps = locals.services.immich?.immichLinkDeps;
 	if (!deps) throw error(404, say(locals, 'errors.notFound'));
 	const pairs = pairsOf(await request.formData());
 	if (!pairs) return fail(400, { linked: [], refused: [], error: say(locals, 'errors.notFound') });
@@ -178,7 +170,7 @@ export const actions: Actions = {
 	/* Ignore a row: the contact with every face the row showed (docs/02 §2.24.7). */
 	ignore: async ({ request, locals }) => {
 		const actor = actorOf(locals);
-		const deps = getImmichIgnoreDeps();
+		const deps = locals.services.immich?.immichIgnoreDeps;
 		if (!deps) throw error(404, say(locals, 'errors.notFound'));
 		const row = rowOf(await request.formData());
 		if (!row) return fail(400, { linked: [], refused: [], error: say(locals, 'errors.notFound') });
@@ -195,7 +187,7 @@ export const actions: Actions = {
 	/* Propose again: forget that a pair was ignored. Nothing to say when it already was. */
 	proposeAgain: async ({ request, locals }) => {
 		const actor = actorOf(locals);
-		const deps = getImmichIgnoreDeps();
+		const deps = locals.services.immich?.immichIgnoreDeps;
 		if (!deps) throw error(404, say(locals, 'errors.notFound'));
 		const row = rowOf(await request.formData());
 		if (!row || row.personIds.length !== 1)
@@ -216,7 +208,7 @@ export const actions: Actions = {
 	 */
 	assignNewcomer: async ({ request, locals }) => {
 		const actor = actorOf(locals);
-		const deps = getImmichLinkDeps();
+		const deps = locals.services.immich?.immichLinkDeps;
 		if (!deps) throw error(404, say(locals, 'errors.notFound'));
 		const form = await request.formData();
 		const personId = newcomerOf(form);
@@ -252,16 +244,15 @@ export const actions: Actions = {
 	 */
 	addNewcomer: async ({ request, locals }) => {
 		const actor = actorOf(locals);
-		const deps = getAddFromImmichDeps();
-		const signer = getImmich()?.signer;
-		if (!deps || !signer) throw error(404, say(locals, 'errors.notFound'));
+		const { immich } = locals.services;
+		if (!immich) throw error(404, say(locals, 'errors.notFound'));
 		const parsed = v.safeParse(AddNewcomerSchema, Object.fromEntries(await request.formData()));
 		if (!parsed.success) throw error(400, say(locals, 'errors.form.checkAndRetry'));
 		const { immichPersonId, usePhoto, ...name } = parsed.output;
 		let contactId: string;
 		try {
 			contactId = await addPersonFromImmich(
-				deps,
+				immich.addFromImmichDeps,
 				{ ...actor, locale: locals.locale },
 				immichPersonId,
 				name
@@ -286,7 +277,7 @@ export const actions: Actions = {
 				personId: immichPersonId,
 				contactId,
 				name: contact?.displayName ?? '',
-				faceUrl: usePhoto ? await faceUrlFor(signer, contactId, immichPersonId) : null
+				faceUrl: usePhoto ? await faceUrlFor(immich.signer, contactId, immichPersonId) : null
 			}
 		};
 	},
@@ -294,7 +285,7 @@ export const actions: Actions = {
 	/* Ignore a face of *New from Immich*, for the whole household (held for the undo window). */
 	ignoreNewcomer: async ({ request, locals }) => {
 		const actor = actorOf(locals);
-		const deps = getImmichNameIgnoreDeps();
+		const deps = locals.services.immich?.immichNameIgnoreDeps;
 		if (!deps) throw error(404, say(locals, 'errors.notFound'));
 		const personId = newcomerOf(await request.formData());
 		if (!personId) throw error(400, say(locals, 'errors.form.checkAndRetry'));
@@ -315,7 +306,7 @@ export const actions: Actions = {
 	/* Propose an ignored face again. Nothing to say when it already was. */
 	proposeNewcomerAgain: async ({ request, locals }) => {
 		const actor = actorOf(locals);
-		const deps = getImmichNameIgnoreDeps();
+		const deps = locals.services.immich?.immichNameIgnoreDeps;
 		if (!deps) throw error(404, say(locals, 'errors.notFound'));
 		const personId = newcomerOf(await request.formData());
 		if (!personId) throw error(400, say(locals, 'errors.form.checkAndRetry'));

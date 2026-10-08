@@ -185,7 +185,13 @@ describe('createServices', () => {
 				rpLogout: false
 			}
 		};
-		const services = createServices({ config: { ...config, mediaDir }, db, sqlite, clock, ids });
+		const services = createServices({
+			config: { ...config, immich: null, sessionSecret: 'a-session-secret', mediaDir },
+			db,
+			sqlite,
+			clock,
+			ids
+		});
 		const { store } = services.media;
 		expect(services.media.galleryDeps.media).toBe(store);
 		expect<unknown>(services.people.deleteContactDeps.media).toBe(store);

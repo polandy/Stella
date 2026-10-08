@@ -1,6 +1,5 @@
 import { error } from '@sveltejs/kit';
 import { answerGlimpse } from '$lib/server/immich/routes';
-import { getImmichGlimpseDeps } from '$lib/server/services';
 import { say } from '$lib/server/i18n/say';
 import type { RequestHandler } from './$types';
 
@@ -14,7 +13,7 @@ import type { RequestHandler } from './$types';
 export const GET: RequestHandler = async ({ locals, params, url }) => {
 	const viewer = locals.user ? { id: locals.user.id, householdId: locals.user.householdId } : null;
 	const answer = await answerGlimpse(
-		getImmichGlimpseDeps(),
+		locals.services.immich?.immichGlimpseDeps ?? null,
 		viewer,
 		params.id,
 		url.searchParams.get('cursor'),

@@ -4,7 +4,7 @@ import { say, translator } from '$lib/server/i18n/say';
 import { setSelfContact, UnknownSelfContactError } from '$lib/server/domain/household/self-contact';
 import { countKnownByAFirstNameOnly } from '$lib/server/domain/contacts/contacts';
 import { countLastNames } from '$lib/server/domain/contacts/last-names';
-import { getImmich, getUpdateCheck } from '$lib/server/services';
+import { getUpdateCheck } from '$lib/server/services';
 import { APP_VERSION } from '$lib/version';
 import type { Actions, PageServerLoad } from './$types';
 
@@ -33,7 +33,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 		update: check?.status() ?? null,
 		// Immich's line (docs/02 §2.24.1), streamed like the release check; null
 		// when this instance has no Immich, and then the section is not there at all.
-		immich: getImmich()?.connection.status() ?? null
+		immich: locals.services.immich?.connection.status() ?? null
 	};
 };
 
