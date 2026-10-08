@@ -3,7 +3,6 @@ import { APP_VERSION } from '../../version';
 import { systemClock } from '../clock';
 import { getConfig } from '../config';
 import { getDb, getSqlite } from '../db';
-import { createDrizzleAttentionRepository } from '../db/attention-repository';
 import { createDrizzleImportRepository } from '../db/import-repository';
 import { createGitHubReleaseFeed } from '../release/github-feed';
 import { createUpdateCheck, type UpdateCheck } from '../domain/release/update-check';
@@ -13,11 +12,6 @@ import { createDrizzleRestoreRepository } from '../db/restore-repository';
 import type { ArchiveDeps, ArchiveRepository } from '../domain/archive/archive';
 import type { ImportArchiveDeps, RestoreRepository } from '../domain/archive/import';
 import { withNamesakeContext } from '../domain/mentions/namesake-context';
-import { createDrizzleSearchRepository } from '../db/search-repository';
-import type { MemberDeps, MemberRepository } from '../domain/household/members';
-import { createDrizzleMemberRepository } from '../db/member-repository';
-import type { SearchDeps, SearchRepository } from '../domain/search/search';
-import type { AttentionRepository } from '../domain/attention/last-touched';
 import { prepareCirclePhotoUpload } from '../domain/circles/circle-photos';
 import { captureMoment } from '../domain/moments/moments';
 import type {
@@ -130,27 +124,6 @@ export function getImportDeps(): ImportDeps {
 		importer: (importRepository ??= createDrizzleImportRepository(getDb())),
 		clock: systemClock
 	};
-}
-
-let searchRepository: SearchRepository | null = null;
-
-export function getSearch(): SearchRepository {
-	return (searchRepository ??= createDrizzleSearchRepository(getDb()));
-}
-
-export function getSearchDeps(): SearchDeps {
-	return { search: getSearch() };
-}
-
-let memberRepository: MemberRepository | null = null;
-
-/** The household's members, for putting a name on what each of them wrote (docs/02 §2.23). */
-export function getMembers(): MemberRepository {
-	return (memberRepository ??= createDrizzleMemberRepository(getDb()));
-}
-
-export function getMemberDeps(): MemberDeps {
-	return { members: getMembers() };
 }
 
 let archiveRepository: ArchiveRepository | null = null;
@@ -289,12 +262,6 @@ export function getCommandDeps(): CommandDeps {
 			}
 		}
 	};
-}
-
-let attentionRepository: AttentionRepository | null = null;
-
-export function getAttention(): AttentionRepository {
-	return (attentionRepository ??= createDrizzleAttentionRepository(getDb()));
 }
 
 /** The household's Immich, once wired: how to ask it, whose it is, and where links point. */

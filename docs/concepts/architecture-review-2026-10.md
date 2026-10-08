@@ -159,16 +159,20 @@ from the wiring alone; the home page reads the important date repository's upcom
 sources straight off the group. The command handler table's `tag.assign`, `field.add` and
 `date.add` handlers read the group's deps off the graph, and keep checking the person through
 `people`'s contacts.
+**`household`** is grouped (#306; the member, search and attention repositories, with the
+member and search deps) — `services/household.ts`. It reads no other context and no command
+handler uses it, so `createServices` builds it from the wiring alone; the People list and the
+first-name-only settings read the attention repository straight off the group, the import
+API's people lookup shares the search deps with the search page.
 Remaining contexts — one PR each, grouped by the repositories their factories share in
 `services/index.ts`:
-1. **`household`** — the household-wide reads: members, search, the attention list.
-2. **`archive`** — moving a household in or out: the archive export, the archive restore
+1. **`archive`** — moving a household in or out: the archive export, the archive restore
    (over `media`'s store) and the Monica import.
-3. **`immich`** — the gateway, connection and signer, the link, ignore and name-ignore
+2. **`immich`** — the gateway, connection and signer, the link, ignore and name-ignore
    repositories and every Immich deps (over `people`'s contacts and `media`'s avatar deps);
    null without Immich, as today.
-4. **`release`** — the update check.
-5. **`offline`** — the command receipt repository and entry ownership; then the command
+3. **`release`** — the update check.
+4. **`offline`** — the command receipt repository and entry ownership; then the command
    handler table moves to its own module over `AppServices` (item 4), and `index.ts` keeps
    only `getServices()`.
 Each slice adds its `services/<context>.ts`, its key in `AppServices`, its factories to the
@@ -530,7 +534,7 @@ rule. Each is one Conventional-Commit `refactor:`/`chore:`/`docs:` PR unless mar
 | 3 | AR-03 `requireViewer`, `todayFor(clock)`, `messageKey` | S | ☑ #266 | Removes 150 edit sites before AR-01 moves them again |
 | 4 | AR-07 glossary (docs/03 §3.0) + AR-18 regenerate §4.3 | S | ☑ #294 | Vocabulary before renames; cheapest high-leverage doc change |
 | 5 | AR-04 one schema per command, `fromFormData` | M | ☑ #295 | Shrinks every form action; prerequisite for AR-13 |
-| 6 | AR-01 `createServices()` + `locals.services` — **series**, one bounded context per PR, `auth` first | L | ◐ auth #296, people #298, relationships #299, circles #300, media #301, story #302, notes #304, records #305 | The central change; do after 3 and 5 so routes shrink while being touched |
+| 6 | AR-01 `createServices()` + `locals.services` — **series**, one bounded context per PR, `auth` first | L | ◐ auth #296, people #298, relationships #299, circles #300, media #301, story #302, notes #304, records #305, household #306 | The central change; do after 3 and 5 so routes shrink while being touched |
 | 7 | AR-02 move shared actions under `routes/` taking deps | S | ☐ | Falls out of 6 |
 | 8 | AR-08 split read models off the three widest ports + AR-14 shared fakes | M | ☐ | Do together: the fakes are what makes the split pay |
 | 9 | AR-06 activity as a port; break `contacts ↔ relationships`; merge plan as data | M | ☐ | Needs 8's narrower ports |

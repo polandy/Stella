@@ -117,7 +117,13 @@ describe('the composition root', () => {
 			'ImportantDates',
 			'ImportantDateDeps',
 			'Tags',
-			'TagDeps'
+			'TagDeps',
+			// The household context (AR-01, ninth slice): read `locals.services.household`.
+			'Members',
+			'MemberDeps',
+			'Search',
+			'SearchDeps',
+			'Attention'
 		];
 		const retired = new RegExp(`\\bget(?:${factories.join('|')})\\b`);
 		expect(files.filter((path) => retired.test(source(path)))).toEqual([]);
