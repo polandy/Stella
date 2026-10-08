@@ -6,6 +6,7 @@ import { migrate } from 'drizzle-orm/bun-sqlite/migrator';
 import type { Viewer } from '../access/visibility';
 import type { StoredCirclePhoto } from '../domain/circles/circle-photos';
 import { createDrizzleCirclePhotoRepository } from './circle-photo-repository';
+import { createDrizzlePhotoFileReads } from './photo-file-reads';
 import { createDrizzlePhotoRepository } from './photo-repository';
 import * as schema from './schema';
 
@@ -165,18 +166,18 @@ describe('listCoverCandidates', () => {
 
 describe('beside the person photos', () => {
 	it('serves a circle photo’s file by the circle’s rules', async () => {
-		const photos = createDrizzlePhotoRepository(db);
+		const photoFiles = createDrizzlePhotoFileReads(db);
 		seedCircle('secret', 'private', U1);
 		await repo.insert(stored({ id: 'open' }));
 		await repo.insert(
 			stored({ id: 'hidden', circleId: 'secret', filePath: 'h.jpg', thumbPath: 'h_t.jpg' })
 		);
-		expect(await photos.getVisiblePhotoFile(u2, 'open', 'thumb')).toEqual({
+		expect(await photoFiles.getVisiblePhotoFile(u2, 'open', 'thumb')).toEqual({
 			path: 'p1_thumb.jpg',
 			mime: 'image/jpeg'
 		});
-		expect(await photos.getVisiblePhotoFile(u2, 'hidden', 'full')).toBeNull();
-		expect(await photos.getVisiblePhotoFile(u1, 'hidden', 'full')).toEqual({
+		expect(await photoFiles.getVisiblePhotoFile(u2, 'hidden', 'full')).toBeNull();
+		expect(await photoFiles.getVisiblePhotoFile(u1, 'hidden', 'full')).toEqual({
 			path: 'h.jpg',
 			mime: 'image/jpeg'
 		});

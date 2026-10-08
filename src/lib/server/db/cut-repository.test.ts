@@ -5,9 +5,14 @@ import { drizzle, type BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
 import { migrate } from 'drizzle-orm/bun-sqlite/migrator';
 import type { Viewer } from '../access/visibility';
 import type { StoredCirclePhoto } from '../domain/circles/circle-photos';
-import type { StoredFraming } from '../domain/media/framing';
+import type { PhotoFileReads, PhotoRepository } from '../domain/media/avatars';
+import type { FramingRepository, StoredFraming } from '../domain/media/framing';
+import type { GalleryPhotoReads } from '../domain/media/gallery';
 import { createDrizzleCirclePhotoRepository } from './circle-photo-repository';
 import { createDrizzleCutRepository } from './cut-repository';
+import { createDrizzleFramingRepository } from './framing-repository';
+import { createDrizzleGalleryPhotoReads } from './gallery-photo-reads';
+import { createDrizzlePhotoFileReads } from './photo-file-reads';
 import { createDrizzlePhotoRepository } from './photo-repository';
 import * as schema from './schema';
 
@@ -27,7 +32,10 @@ const u2: Viewer = { id: U2, householdId: H };
 let db: BunSQLiteDatabase<typeof schema>;
 let cuts: ReturnType<typeof createDrizzleCutRepository>;
 let circlePhotos: ReturnType<typeof createDrizzleCirclePhotoRepository>;
-let photos: ReturnType<typeof createDrizzlePhotoRepository>;
+let photos: PhotoRepository;
+let galleryReads: GalleryPhotoReads;
+let photoFiles: PhotoFileReads;
+let framings: FramingRepository;
 
 const groupPhoto = (over: Partial<StoredCirclePhoto> = {}): StoredCirclePhoto => ({
 	takenAt: null,
@@ -108,6 +116,9 @@ beforeEach(async () => {
 	cuts = createDrizzleCutRepository(db);
 	circlePhotos = createDrizzleCirclePhotoRepository(db);
 	photos = createDrizzlePhotoRepository(db);
+	galleryReads = createDrizzleGalleryPhotoReads(db);
+	photoFiles = createDrizzlePhotoFileReads(db);
+	framings = createDrizzleFramingRepository(db);
 	seedContact('anna');
 	seedContact('ben');
 	seedCircle('class', ['anna', 'ben']);
@@ -118,7 +129,7 @@ describe('cutting a picture for someone', () => {
 	it('stores the cut as a framing of the group photo, worn, and never in their gallery', async () => {
 		expect(await cuts.replaceCut(cutOf())).toEqual([]);
 		expect(avatarOf('anna')).toBe('cut-anna');
-		expect(await photos.listGalleryPhotos(u1, 'anna')).toEqual([]);
+		expect(await galleryReads.listGalleryPhotos(u1, 'anna')).toEqual([]);
 		expect(await cuts.listCutsOfCircle(u1, 'class')).toEqual([
 			{ groupPhotoId: 'class-photo', contactId: 'anna', crop: { x: 100, y: 200, size: 300 } }
 		]);
@@ -150,7 +161,7 @@ describe('cutting a picture for someone', () => {
 		expect(replaced).toEqual([{ filePath: 'cut-anna.jpg', thumbPath: 'cut-anna_thumb.jpg' }]);
 		expect(row('cut-anna')).toBeUndefined();
 		expect(avatarOf('anna')).toBe('cut-anna-2');
-		expect(await photos.listGalleryPhotos(u1, 'anna')).toEqual([]);
+		expect(await galleryReads.listGalleryPhotos(u1, 'anna')).toEqual([]);
 	});
 
 	it('finds a group photo by id only when the viewer may see it', async () => {
@@ -203,7 +214,7 @@ describe('switching away from a cut', () => {
 
 		expect(avatarOf('anna')).toBe('upload');
 		expect(row('cut-anna')).toMatchObject(asOwnPhoto);
-		const gallery = await photos.listGalleryPhotos(u1, 'anna');
+		const gallery = await galleryReads.listGalleryPhotos(u1, 'anna');
 		expect(gallery.map((p) => p.id)).toEqual(['upload', 'cut-anna']);
 		expect(gallery[1]!.cutFrom).toEqual({
 			photoId: 'class-photo',
@@ -230,7 +241,7 @@ describe('switching away from a cut', () => {
 			takenAt: null,
 			createdAt: 20_000
 		});
-		await photos.replaceFraming(
+		await framings.replaceFraming(
 			cutOf({
 				id: 'holiday-frame',
 				framingOf: 'holiday',
@@ -283,7 +294,7 @@ describe('a group photo that people wear going away', () => {
 		expect(avatarOf('ben')).toBe('cut-ben');
 		// Nothing is left pointing at a photo that is gone.
 		expect(row('cut-anna')).toMatchObject({ framingOf: null, cutFrom: null, createdAt: 1000 });
-		const gallery = await photos.listGalleryPhotos(u2, 'anna');
+		const gallery = await galleryReads.listGalleryPhotos(u2, 'anna');
 		expect(gallery.map((p) => [p.id, p.isAvatar, p.cutFrom])).toEqual([['cut-anna', true, null]]);
 	});
 
@@ -338,7 +349,7 @@ describe('a group photo that people wear going away', () => {
 		});
 		expect(avatarOf('anna')).toBe('cut-anna');
 		// The other member still sees the face, though no longer the group photo it came from.
-		const gallery = await photos.listGalleryPhotos(u2, 'anna');
+		const gallery = await galleryReads.listGalleryPhotos(u2, 'anna');
 		expect(gallery.map((p) => [p.id, p.cutFrom])).toEqual([['cut-anna', null]]);
 	});
 
@@ -495,15 +506,15 @@ describe('what the pages read', () => {
 		await circlePhotos.insert(
 			groupPhoto({ id: 'old', viewPath: null, filePath: 'old.jpg', thumbPath: 'old_t.jpg' })
 		);
-		expect(await photos.getVisiblePhotoFile(u2, 'class-photo', 'view')).toEqual({
+		expect(await photoFiles.getVisiblePhotoFile(u2, 'class-photo', 'view')).toEqual({
 			path: 'class_view.jpg',
 			mime: 'image/jpeg'
 		});
-		expect(await photos.getVisiblePhotoFile(u2, 'class-photo', 'full')).toEqual({
+		expect(await photoFiles.getVisiblePhotoFile(u2, 'class-photo', 'full')).toEqual({
 			path: 'class.jpg',
 			mime: 'image/jpeg'
 		});
-		expect(await photos.getVisiblePhotoFile(u2, 'old', 'view')).toEqual({
+		expect(await photoFiles.getVisiblePhotoFile(u2, 'old', 'view')).toEqual({
 			path: 'old.jpg',
 			mime: 'image/jpeg'
 		});

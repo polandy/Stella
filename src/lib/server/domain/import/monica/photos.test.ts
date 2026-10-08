@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'bun:test';
-import type { MediaStore, PhotoRepository, StoredPhoto } from '../../media/avatars';
+import type { StoredPhoto } from '../../media/avatars';
 import { InvalidImageError } from '../../media/journal-photos';
-import { attachImportedPhoto } from './photos';
+import { attachImportedPhoto, type ImportedPhotoDeps } from './photos';
 
 /*
  * Imported photos (docs/02 §2.16): the bytes arrive browser-resized like every other upload,
@@ -16,31 +16,19 @@ function fakes() {
 	const stored: StoredPhoto[] = [];
 	const avatars: { contactId: string; photoId: string }[] = [];
 	const files = new Map<string, Uint8Array>();
-	const photos: PhotoRepository = {
+	const photos: ImportedPhotoDeps['photos'] = {
 		insert: async (p) => {
 			stored.push(p);
 		},
 		exists: async (id) => stored.some((p) => p.id === id),
 		setContactAvatar: async (contactId, photoId) => {
 			avatars.push({ contactId, photoId });
-		},
-		getVisiblePhotoFile: async () => null,
-		listJournalPhotos: async () => [],
-		listJournalPhotosOfEntries: async () => [],
-		listGalleryPhotos: async () => [],
-		findVisibleGalleryPhoto: async () => null,
-		updateOwnGalleryPhoto: async () => false,
-		deleteOwnGalleryPhoto: async () => null,
-		setGalleryPhotoPin: async () => {}
+		}
 	};
-	const media: MediaStore = {
+	const media: ImportedPhotoDeps['media'] = {
 		put: async (key, bytes) => {
 			files.set(key, bytes);
 			return key;
-		},
-		read: async (path) => files.get(path) ?? null,
-		delete: async (path) => {
-			files.delete(path);
 		}
 	};
 	return {

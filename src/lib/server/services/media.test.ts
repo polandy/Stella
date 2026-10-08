@@ -75,7 +75,7 @@ async function addGalleryPhoto(
 	contactId: string
 ): Promise<string> {
 	const id = ids.next();
-	await media.photos.insert({
+	await media.galleryUploadDeps.photos.insert({
 		id,
 		householdId: admin.householdId,
 		contactId,
@@ -95,18 +95,20 @@ async function addGalleryPhoto(
 }
 
 describe('createMediaServices', () => {
-	it('hands every photo use-case the one photo repository the edge reads', () => {
+	it('hands every photo use-case the one photo repository, and the gallery the one read model', () => {
 		const media = createMediaServices(wiring);
+		const { photos } = media.galleryUploadDeps;
 		for (const deps of [
 			media.avatarDeps,
 			media.importedPhotoDeps,
 			media.galleryDeps,
-			media.galleryUploadDeps,
 			media.journalPhotoDeps
 		]) {
-			expect(deps.photos).toBe(media.photos);
+			expect<unknown>(deps.photos).toBe(photos);
 		}
-		expect<unknown>(media.framingDeps.framings).toBe(media.photos);
+		expect<unknown>(media.framingDeps.gallery).toBe(media.galleryDeps.gallery);
+		// One adapter per port: the framing writes are not the photo repository dressed up.
+		expect<unknown>(media.framingDeps.framings).not.toBe(photos);
 	});
 
 	it('hands every photo use-case the one media store the edge streams from', () => {
@@ -144,15 +146,19 @@ describe('createMediaServices', () => {
 		await media.store.put('photo.jpg', bytes);
 		expect(await Bun.file(join(mediaDir, 'photo.jpg')).bytes()).toEqual(bytes);
 		expect(await media.store.read('photo.jpg')).toEqual(bytes);
-		expect((await media.store.open('photo.jpg'))?.size).toBe(3);
+		expect((await media.streams.open('photo.jpg'))?.size).toBe(3);
 	});
 
-	it('lists in the gallery what the photo repository stored', async () => {
+	it('lists in the gallery what the photo repository stored, and serves its file', async () => {
 		const media = createMediaServices(wiring);
 		const anna = await addPerson('Anna');
 		const photoId = await addGalleryPhoto(media, anna);
 		const gallery = await listGallery(media.galleryDeps, viewerOf(admin), anna);
 		expect(gallery.map((photo) => photo.id)).toEqual([photoId]);
+		expect(await media.photoFiles.getVisiblePhotoFile(viewerOf(admin), photoId, 'thumb')).toEqual({
+			path: `${photoId}_thumb.jpg`,
+			mime: 'image/jpeg'
+		});
 	});
 
 	it('builds the home stream over the same database', async () => {

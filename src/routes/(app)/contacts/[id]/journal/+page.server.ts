@@ -37,7 +37,7 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 
 	const [entries, journalPhotos] = await Promise.all([
 		listJournalForContact(locals.services.story.journalDeps, viewer, params.id),
-		locals.services.media.photos.listJournalPhotos(viewer, params.id)
+		locals.services.media.journalPhotos.listJournalPhotos(viewer, params.id)
 	]);
 	// Names for the people the entries mention, not for the whole household.
 	const contactNames = await listContactNamesAmong(

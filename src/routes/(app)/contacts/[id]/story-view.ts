@@ -1,4 +1,4 @@
-import type { JournalPhotoRef } from '$lib/server/domain/media/avatars';
+import type { JournalPhotoRef } from '$lib/server/domain/media/journal-photos';
 import { renderMarkdownWithMentions } from '$lib/server/domain/notes/markdown';
 import type { StoryItem } from '$lib/server/domain/story/story';
 import { extractMentionIds } from '$lib/mentions/mentions';

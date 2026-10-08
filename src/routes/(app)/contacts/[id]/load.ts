@@ -96,7 +96,7 @@ export const load = (async ({ locals, params, url }) => {
 			: [];
 
 	// Only the photos of the entries on the story's first page; later pages bring their own.
-	const journalPhotos = await locals.services.media.photos.listJournalPhotosOfEntries(
+	const journalPhotos = await locals.services.media.journalPhotos.listJournalPhotosOfEntries(
 		viewer,
 		params.id,
 		entryIdsOf(read.storyPage.items)

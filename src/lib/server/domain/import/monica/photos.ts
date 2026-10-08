@@ -11,8 +11,8 @@ import { validateImageUpload, validateTakenAt, type ImageUpload } from '../../me
  */
 
 export interface ImportedPhotoDeps {
-	photos: PhotoRepository;
-	media: MediaStore;
+	photos: Pick<PhotoRepository, 'exists' | 'insert' | 'setContactAvatar'>;
+	media: Pick<MediaStore, 'put'>;
 	clock: Clock;
 }
 

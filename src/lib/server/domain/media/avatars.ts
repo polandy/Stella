@@ -176,39 +176,16 @@ export interface DeletedPhotoFiles {
 	thumbPath: string;
 }
 
-/** A journal photo reference resolved for rendering (media id + which entry it belongs to). */
-export interface JournalPhotoRef {
-	id: string;
-	journalEntryId: string;
-}
-
+/**
+ * The photo record's writes (docs/08 §8.3). What a screen reads of photos are read models of
+ * their own: `PhotoFileReads` below, `GalleryPhotoReads` (`./gallery`) and `JournalPhotoReads`
+ * (`./journal-photos`).
+ */
 export interface PhotoRepository {
 	insert(photo: StoredPhoto): Promise<void>;
 	/** Whether a photo with this id is already stored (imports use stable ids). */
 	exists(id: string): Promise<boolean>;
 	setContactAvatar(contactId: string, photoId: string): Promise<void>;
-	/** A photo's file in one of its sizes, only if the viewer may see it (docs/03 §3.7). */
-	getVisiblePhotoFile(
-		viewer: Viewer,
-		photoId: string,
-		variant: PhotoVariant
-	): Promise<PhotoFile | null>;
-	/** Journal photos on a contact the viewer may see, oldest first (docs/02 §2.20). */
-	listJournalPhotos(viewer: Viewer, contactId: string): Promise<JournalPhotoRef[]>;
-	/** `listJournalPhotos`, cut to these entries — the ones a story page shows. */
-	listJournalPhotosOfEntries(
-		viewer: Viewer,
-		contactId: string,
-		entryIds: readonly string[]
-	): Promise<JournalPhotoRef[]>;
-	/** Gallery photos on a contact the viewer may see, newest taken-or-added first (docs/02 §2.14). */
-	listGalleryPhotos(viewer: Viewer, contactId: string): Promise<GalleryPhoto[]>;
-	/** One gallery photo, only if it belongs to that contact and the viewer may see it. */
-	findVisibleGalleryPhoto(
-		viewer: Viewer,
-		contactId: string,
-		photoId: string
-	): Promise<GalleryPhoto | null>;
 	/**
 	 * Pin a gallery photo as a favourite at `pinnedAt`, or unpin it with null. Unscoped: the
 	 * use-case has already found the photo visible to whoever asked (`./gallery`).
@@ -232,6 +209,16 @@ export interface PhotoRepository {
 	}): Promise<DeletedPhotoFiles[] | null>;
 }
 
+/** Which stored file `/media/[id]` serves (docs/04 §4.6): a read model of its own. */
+export interface PhotoFileReads {
+	/** A photo's file in one of its sizes, only if the viewer may see it (docs/03 §3.7). */
+	getVisiblePhotoFile(
+		viewer: Viewer,
+		photoId: string,
+		variant: PhotoVariant
+	): Promise<PhotoFile | null>;
+}
+
 /** Byte storage under the media volume; paths returned are what the DB records. */
 export interface MediaStore {
 	put(key: string, bytes: Uint8Array): Promise<string>;
@@ -246,8 +233,8 @@ export interface MediaStreamSource {
 }
 
 export interface AvatarDeps {
-	photos: PhotoRepository;
-	media: MediaStore;
+	photos: Pick<PhotoRepository, 'insert' | 'setContactAvatar'>;
+	media: Pick<MediaStore, 'put'>;
 	ids: IdGenerator;
 	clock: Clock;
 }

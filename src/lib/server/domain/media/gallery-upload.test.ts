@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test';
-import type { PhotoRepository, StoredPhoto } from './avatars';
+import type { StoredPhoto } from './avatars';
 import { addGalleryPhoto, type GalleryUploadDeps } from './gallery-upload';
 import { InvalidImageError } from './journal-photos';
 
@@ -14,24 +14,19 @@ const upload = { image: JPEG, thumb: JPEG, width: 1600, height: 1200 };
 function deps() {
 	const stored: StoredPhoto[] = [];
 	const puts: string[] = [];
-	const photos: Partial<PhotoRepository> = {
-		async insert(p) {
-			stored.push(p);
-		}
-	};
 	const d: GalleryUploadDeps & { stored: StoredPhoto[]; puts: string[] } = {
 		stored,
 		puts,
-		photos: photos as PhotoRepository,
+		photos: {
+			async insert(p) {
+				stored.push(p);
+			}
+		},
 		media: {
 			async put(key, bytes) {
 				puts.push(`${key}:${bytes.byteLength}`);
 				return `/media/${key}`;
-			},
-			async read() {
-				return null;
-			},
-			async delete() {}
+			}
 		},
 		ids: (() => {
 			let n = 0;

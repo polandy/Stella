@@ -173,9 +173,10 @@ keeps the Playwright specs out of Bun's runner).
 
 **Shared test support** lives in `src/lib/server/domain/testing/`: `fixedClock(now)` (stands
 still until the test calls `advance`), `sequentialIds(...first)`, one in-memory fake per
-read-model port (`inMemoryContactDirectory`, `inMemoryCircleMemberships`, `inMemoryTagLists`, …
-over `somebody(id, name, fields)`, `membership(circleId, contactId, fields)` or
-`someTag(id, name, fields)` rows) and `contactRepositoryWith({...})` / `circleRepositoryWith`,
+read-model port (`inMemoryContactDirectory`, `inMemoryCircleMemberships`, `inMemoryTagLists`,
+`inMemoryGalleryPhotos`, … over `somebody(id, name, fields)`, `membership(circleId, contactId,
+fields)`, `someTag(id, name, fields)` or `someGalleryPhoto(id, fields)` rows) and
+`contactRepositoryWith({...})` / `circleRepositoryWith` / `photoRepositoryWith`,
 which answer with the methods a test hands them and fail loud on any other. Reach for these before writing a fake. A fake models no visibility — the people it
 holds are the ones the viewer may see; the adapter's scoping is covered against SQLite. Two
 kinds of fake stay in their test: one that **records the calls** it receives to assert on them

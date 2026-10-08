@@ -8,11 +8,11 @@ import {
 	validateAvatarUpload,
 	type AvatarUpload,
 	type DeletedPhotoFiles,
-	type GalleryPhoto,
 	type ImageMime,
 	type MediaStore,
 	type StoredPhoto
 } from './avatars';
+import type { GalleryPhotoReads } from './gallery';
 
 /*
  * Wearing a gallery photo as the avatar through a chosen square (docs/02 §2.14). The photo stays
@@ -37,14 +37,8 @@ export interface StoredFraming extends Omit<StoredPhoto, 'takenAt'> {
 	crop: CropRect;
 }
 
-/** What framing needs from storage; the Drizzle photo adapter implements it beside `PhotoRepository`. */
+/** A photo's framing as it is written; the photo it frames is read through `GalleryPhotoReads`. */
 export interface FramingRepository {
-	/** One gallery photo, only if it belongs to that contact and the viewer may see it. */
-	findVisibleGalleryPhoto(
-		viewer: Viewer,
-		contactId: string,
-		photoId: string
-	): Promise<GalleryPhoto | null>;
 	/**
 	 * In one transaction: drop the photo's previous framing, store this one and make it the
 	 * contact's avatar. Returns the files of the framing it replaced, so the bytes can go too.
@@ -54,8 +48,10 @@ export interface FramingRepository {
 
 /** Ports for `frameAsAvatar` (docs/08 §8.3). */
 export interface FramingDeps {
+	/** The photo to frame, found only on that person and only when the viewer may see it. */
+	gallery: Pick<GalleryPhotoReads, 'findVisibleGalleryPhoto'>;
 	framings: FramingRepository;
-	media: MediaStore;
+	media: Pick<MediaStore, 'put' | 'delete'>;
 	ids: IdGenerator;
 	clock: Clock;
 }
@@ -96,11 +92,7 @@ export async function frameAsAvatar(
 	viewer: Viewer,
 	input: FrameAsAvatarInput
 ): Promise<boolean> {
-	const source = await deps.framings.findVisibleGalleryPhoto(
-		viewer,
-		input.contactId,
-		input.photoId
-	);
+	const source = await deps.gallery.findVisibleGalleryPhoto(viewer, input.contactId, input.photoId);
 	if (!source) return false;
 	assertCropInside(input.crop, source);
 	const mime = validateAvatarUpload(input.upload);

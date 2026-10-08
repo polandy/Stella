@@ -1,6 +1,6 @@
 import { TranslatableError } from '../../../errors/translatable';
 import { phrase, type Phrase } from '../../../i18n/phrase';
-import type { Visibility } from '../../access/visibility';
+import type { Viewer, Visibility } from '../../access/visibility';
 import type { Clock } from '../../clock';
 import type { IdGenerator } from '../../id';
 import {
@@ -82,9 +82,27 @@ export function validateImageUpload(
 	return mime;
 }
 
+/** A journal photo reference resolved for rendering (media id + which entry it belongs to). */
+export interface JournalPhotoRef {
+	id: string;
+	journalEntryId: string;
+}
+
+/** The journal photos a story reads: a read model of the photo table (docs/08 §8.3). */
+export interface JournalPhotoReads {
+	/** Journal photos on a contact the viewer may see, oldest first (docs/02 §2.20). */
+	listJournalPhotos(viewer: Viewer, contactId: string): Promise<JournalPhotoRef[]>;
+	/** `listJournalPhotos`, cut to these entries — the ones a story page shows. */
+	listJournalPhotosOfEntries(
+		viewer: Viewer,
+		contactId: string,
+		entryIds: readonly string[]
+	): Promise<JournalPhotoRef[]>;
+}
+
 export interface JournalPhotoDeps {
-	photos: PhotoRepository;
-	media: MediaStore;
+	photos: Pick<PhotoRepository, 'insert'>;
+	media: Pick<MediaStore, 'put'>;
 	ids: IdGenerator;
 	clock: Clock;
 }
