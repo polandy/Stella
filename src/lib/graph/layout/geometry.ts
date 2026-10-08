@@ -59,6 +59,11 @@ export interface Arrangement {
  */
 export interface Route {
 	waypoints: Point[];
+	/**
+	 * Which end's last drop carries the line's name — the lower person's, where the line comes
+	 * down to them — or null where another line already names that drop (a child's two parents).
+	 */
+	nameEnd: 'source' | 'target' | null;
 	sourceEnd?: Point;
 	targetEnd?: Point;
 }

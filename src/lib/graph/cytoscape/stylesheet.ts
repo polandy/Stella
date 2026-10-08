@@ -24,8 +24,15 @@ export const ROUTE_FIELDS = {
 	weights: 'segmentWeights',
 	distances: 'segmentDistances',
 	sourceEndpoint: 'sourceEndpoint',
-	targetEndpoint: 'targetEndpoint'
+	targetEndpoint: 'targetEndpoint',
+	nameEnd: 'nameEnd'
 } as const;
+/**
+ * How far up a routed line's name sits from the person its last drop comes down to, in model
+ * units: clear of the disc's rim below and of the bar above, which is never closer than about
+ * twice this (`tree-lines.ts`).
+ */
+const ROUTE_NAME_OFFSET = 22;
 /** The class of a caption the controller writes onto the canvas: words, not somebody to tap. */
 export const CAPTION_CLASS = 'caption';
 
@@ -54,7 +61,7 @@ export interface StylesheetOptions {
 	/**
 	 * Drawn as the family tree around a person (docs/05 §5.8): each person's role towards the
 	 * centre is written under their name (the `role` the elements carry), the centre is lit
-	 * softly, and the right-angled family lines go unnamed — the roles say it instead.
+	 * softly, and no line is named unless `edgeLabels` asks for it — the roles say it instead.
 	 */
 	familyTree?: boolean;
 }
@@ -88,6 +95,8 @@ export function buildStylesheet(p: Palette, options: StylesheetOptions = {}): Cy
 	};
 	// A routed line reads its bends and ends off its own data (`segments.ts`).
 	const field = (name: string) => (ele: StyledElement) => ele.data(name);
+	const nameAt = (end: 'source' | 'target') => (ele: StyledElement) =>
+		ele.data(ROUTE_FIELDS.nameEnd) === end ? String(ele.data('label') ?? '') : '';
 
 	return [
 		// ── People ────────────────────────────────────────────────────────────
@@ -322,7 +331,17 @@ export function buildStylesheet(p: Palette, options: StylesheetOptions = {}): Cy
 				'segment-distances': field(ROUTE_FIELDS.distances),
 				'source-endpoint': field(ROUTE_FIELDS.sourceEndpoint),
 				'target-endpoint': field(ROUTE_FIELDS.targetEndpoint),
-				'target-arrow-shape': 'none'
+				'target-arrow-shape': 'none',
+				// Named on its last drop, just over the person it comes down to — never in the
+				// middle, which may be a bar its siblings' lines share or a junction — and only
+				// once a drop: a child's two parents' lines run down the same one.
+				label: '',
+				'source-label': nameAt('source'),
+				'target-label': nameAt('target'),
+				'source-text-offset': ROUTE_NAME_OFFSET,
+				'target-text-offset': ROUTE_NAME_OFFSET,
+				'source-text-rotation': 'none',
+				'target-text-rotation': 'none'
 			}
 		},
 		// ── A caption the controller writes onto the canvas ───────────────────
@@ -355,10 +374,9 @@ export function buildStylesheet(p: Palette, options: StylesheetOptions = {}): Cy
 			style: { 'text-opacity': 1 }
 		},
 		// In the tree the role under each name says what the names on the lines would — "Friend"
-		// under Nicole rather than "Friend of" on her line — and a name on a family line that
-		// shares its drop with its siblings' would sit on all of them at once. So none is named,
-		// not even selected or pointed at.
-		...(tree ? [{ selector: 'edge', style: { 'text-opacity': 0 } }] : []),
+		// under Nicole rather than "Friend of" on her line — so until the reader turns the Labels
+		// switch on there, no line is named, not even selected or pointed at (`tree-labels.ts`).
+		...(tree && !options.edgeLabels ? [{ selector: 'edge', style: { 'text-opacity': 0 } }] : []),
 		// The selection is a filled halo around a solid ring; the keyboard's cursor (below) a
 		// dashed ring held off the node. Two shapes, so they never read as one — not even for
 		// someone who cannot tell their colours apart.

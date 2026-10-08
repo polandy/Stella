@@ -10,6 +10,7 @@
 	import { rolesTowards } from '$lib/graph/model/tree-roles';
 	import { familyLinksAmong } from '$lib/graph/model/generations';
 	import { hiddenInTree } from '$lib/graph/model/tree-shown';
+	import { labelsAfterArranging, labelsOn, toggledLabels } from '$lib/graph/tree-labels';
 	import { toCytoscapeElements } from '$lib/graph/cytoscape/elements';
 	import { createExplorer, type ExplorerController } from '$lib/graph/cytoscape/explorer';
 	import { buildStylesheet } from '$lib/graph/cytoscape/stylesheet';
@@ -304,15 +305,32 @@
 	 * around a hub, and pointing at a line or selecting somebody names theirs. Counted without
 	 * the selection, so selecting somebody never switches every name on or off.
 	 */
+	/*
+	 * The Labels switch as it stands now: the reader's habit, or — in the tree around a person,
+	 * where the roles under the names say it — the tree's own choice, off each time the tree is
+	 * entered (`tree-labels.ts`, docs/05 §5.8).
+	 */
+	let treeLabels = $state(false);
+	const labelsState = $derived({ habit: switches.edgeLabels, inTree: treeLabels });
+	const labelsSwitch = $derived(labelsOn(labelsState, rolesInstead));
+	function flipSwitch(name: keyof ViewSwitches) {
+		if (name !== 'edgeLabels') return toggleSwitch(name);
+		const next = toggledLabels(labelsState, rolesInstead);
+		treeLabels = next.inTree;
+		if (next.habit !== switches.edgeLabels) toggleSwitch('edgeLabels');
+	}
+	// The lines the tree leaves off are no more drawn than the left-off kinship.
+	const treeLeftOff = $derived(
+		arrangedBy === 'tree' ? hiddenInTree(drawnVisible, null) : new Set<string>()
+	);
 	const labelsFit = $derived(
 		edgeLabelsFit(
-			switches.edgeLabels,
+			labelsSwitch,
 			linesDrawn(
 				drawnVisible.edges,
-				grouping ? [leftOff, grouping.tucked] : [leftOff],
+				grouping ? [leftOff, grouping.tucked, treeLeftOff] : [leftOff, treeLeftOff],
 				grouping?.bundles.length ?? 0
-			),
-			rolesInstead
+			)
 		)
 	);
 	// The same lines, but the selected person's own are drawn: selecting names every line. The
@@ -541,6 +559,7 @@
 	}
 
 	async function arrangeBy(key: ArrangementKey) {
+		treeLabels = labelsAfterArranging(labelsState, arrangedBy, key).inTree;
 		arrangedBy = key;
 		// Leaving the tree may bring the groups back; they settle the map themselves (see above).
 		settledForGroups = false;
@@ -838,8 +857,8 @@
 			{active}
 			{openingFilters}
 			onToggleFilter={toggleFilter}
-			{switches}
-			onSwitch={toggleSwitch}
+			switches={{ ...switches, edgeLabels: labelsSwitch }}
+			onSwitch={flipSwitch}
 			{labelsFit}
 			{rolesInstead}
 			{density}

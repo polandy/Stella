@@ -28,7 +28,7 @@ describe('segmentsOf', () => {
 	];
 
 	it('says every bend so that Cytoscape draws it where it was worked out', () => {
-		const { weights, distances } = segmentsOf({ waypoints }, parent, child);
+		const { weights, distances } = segmentsOf({ waypoints, nameEnd: null }, parent, child);
 
 		expect(weights).toHaveLength(2);
 		waypoints.forEach((point, i) => {
@@ -46,7 +46,7 @@ describe('segmentsOf', () => {
 				{ x: 300, y: 0 }
 			]
 		]) {
-			const { weights, distances } = segmentsOf({ waypoints }, from, to);
+			const { weights, distances } = segmentsOf({ waypoints, nameEnd: null }, from, to);
 			waypoints.forEach((point, i) => {
 				const at = placed(from, to, weights[i], distances[i]);
 				expect(at.x).toBeCloseTo(point.x, 9);
@@ -56,18 +56,26 @@ describe('segmentsOf', () => {
 	});
 
 	it('leaves a line from the middle of a partner bar there, not from the parent', () => {
-		const route = { waypoints, sourceEnd: { x: 50, y: 0 } };
+		const route = { waypoints, sourceEnd: { x: 50, y: 0 }, nameEnd: null };
 
 		expect(segmentsOf(route, parent, child).sourceEndpoint).toBe('-50px 0px');
 	});
 
 	it('starts a line below the name of the person it leaves downwards, and ends on the disc', () => {
-		const { sourceEndpoint, targetEndpoint } = segmentsOf({ waypoints }, parent, child);
+		const { sourceEndpoint, targetEndpoint } = segmentsOf(
+			{ waypoints, nameEnd: null },
+			parent,
+			child
+		);
 
 		expect(sourceEndpoint).toBe('outside-to-node-or-label');
 		expect(targetEndpoint).toBe('outside-to-node');
 		// Travelled upwards, the name under the person it reaches is the one to stop short of.
-		const upwards = segmentsOf({ waypoints: [...waypoints].reverse() }, child, parent);
+		const upwards = segmentsOf(
+			{ waypoints: [...waypoints].reverse(), nameEnd: null },
+			child,
+			parent
+		);
 		expect(upwards.sourceEndpoint).toBe('outside-to-node');
 		expect(upwards.targetEndpoint).toBe('outside-to-node-or-label');
 	});

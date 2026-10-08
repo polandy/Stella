@@ -34,7 +34,8 @@ export const search = {
 	'graph.labels.hint': 'Name every line with its relationship',
 	'graph.labels.tooMany': (p: { count: number }) =>
 		`Paused while more than ${p.count} lines are shown — point at a line or select someone to read theirs`,
-	'graph.labels.inTree': 'Off in the tree: each person’s role stands under their name instead',
+	'graph.labels.inTree':
+		'Off at first in the tree, where each person’s role stands under their name — switch on to name the lines too',
 	'graph.density': 'Spacing',
 	'graph.density.compact': 'Compact',
 	'graph.density.comfortable': 'Comfortable',

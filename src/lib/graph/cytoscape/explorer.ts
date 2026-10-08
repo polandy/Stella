@@ -401,7 +401,8 @@ export function explorerFromCore(cy: Core, opts: ControllerOptions): ExplorerCon
 						[ROUTE_FIELDS.weights]: segments.weights,
 						[ROUTE_FIELDS.distances]: segments.distances,
 						[ROUTE_FIELDS.sourceEndpoint]: segments.sourceEndpoint,
-						[ROUTE_FIELDS.targetEndpoint]: segments.targetEndpoint
+						[ROUTE_FIELDS.targetEndpoint]: segments.targetEndpoint,
+						[ROUTE_FIELDS.nameEnd]: route.nameEnd
 					});
 					edge.removeClass(BOWED_CLASS);
 					edge.addClass(ROUTED_CLASS);

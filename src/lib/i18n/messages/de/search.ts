@@ -35,7 +35,8 @@ export const search: SearchMessages = {
 	'graph.labels.hint': 'Jede Linie mit ihrer Beziehung benennen',
 	'graph.labels.tooMany': (p) =>
 		`Pausiert, solange mehr als ${p.count} Linien zu sehen sind — zeig auf eine Linie oder wähle jemanden aus, um seine zu lesen`,
-	'graph.labels.inTree': 'Im Stammbaum aus: Unter jedem Namen steht stattdessen die Rolle',
+	'graph.labels.inTree':
+		'Im Stammbaum zunächst aus, weil unter jedem Namen die Rolle steht — einschalten, um auch die Linien zu benennen',
 	'graph.density': 'Abstand',
 	'graph.density.compact': 'Kompakt',
 	'graph.density.comfortable': 'Ausgewogen',

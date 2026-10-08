@@ -135,6 +135,26 @@ describe('treeRoutes', () => {
 		expect(bars[0].bar.y).toBeGreaterThan(positions.get('otto')!.y);
 	});
 
+	it('names each child’s drop once, however many parents’ lines run down it', () => {
+		const { routes } = routed(family);
+		const named = (id: string) => routes.get(id)!.nameEnd !== null;
+
+		// Otto's and Rosa's lines to Bert share the drop above him: one of them carries the name.
+		expect([named('otto-parent_child-bert'), named('rosa-parent_child-bert')].sort()).toEqual([
+			false,
+			true
+		]);
+		expect([named('otto-parent_child-carl'), named('rosa-parent_child-carl')].sort()).toEqual([
+			false,
+			true
+		]);
+		// A lone parent's line and a line of its own are named as they are.
+		expect(named('carl-parent_child-finn')).toBe(true);
+		expect(named('otto-grandparent_grandchild-emil')).toBe(true);
+		// Named where the line arrives from above: over the child, clear of the shared bar.
+		expect(routes.get('carl-parent_child-finn')!.nameEnd).toBe('target');
+	});
+
 	it('drops a lone parent’s line from the parent', () => {
 		const { positions, routes } = routed(family);
 		const route = routes.get('carl-parent_child-finn')!;

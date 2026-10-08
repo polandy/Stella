@@ -19,7 +19,8 @@ card (§5.5.2); its styling is §5.8.
   and the grouping by role.
 - **Tree** draws the family as a paper family tree (§5.8): partner bars, one drop per couple to
   a bar over their children, right angles throughout, each person's role towards the centre
-  under their name instead of names on the lines (the Labels switch says so), the centre softly
+  under their name instead of names on the lines — Labels starts off in the tree and its switch
+  turns the names on there as anywhere, each on its child's own drop — the centre softly
   lit, and everyone outside the family on a shelf beneath under a quiet *Outside the family*.
   Each family stands as one block — siblings together, a person's father's family left, their
   mother's right — so no couple's bar crosses another's. Only the tree's own lines are drawn:

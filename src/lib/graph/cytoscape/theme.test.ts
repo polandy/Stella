@@ -224,7 +224,27 @@ describe('buildStylesheet as the family tree', () => {
 		expect(routed['target-endpoint'](edge)).toBe('outside-to-node');
 	});
 
-	it('names no line around a person, not even selected or pointed at — the roles say it', () => {
+	it('names a routed line on its last drop, just over the person, and only once a drop', () => {
+		const routed = Object.assign({}, ...rulesFor(free, `edge.${ROUTED_CLASS}`));
+		const line = (nameEnd: string | null) =>
+			element({ label: 'Parent of', [ROUTE_FIELDS.nameEnd]: nameEnd });
+
+		// Not in the middle of the line, which may be a bar its siblings' lines share.
+		expect(routed.label).toBe('');
+		expect(routed['target-label'](line('target'))).toBe('Parent of');
+		expect(routed['source-label'](line('target'))).toBe('');
+		expect(routed['source-label'](line('source'))).toBe('Parent of');
+		// The child's other parent's line runs down the same drop and says nothing more.
+		expect(routed['target-label'](line(null))).toBe('');
+		// Level, so it reads across the drop, and far enough up to clear the disc it ends on.
+		expect(routed).toMatchObject({
+			'source-text-rotation': 'none',
+			'target-text-rotation': 'none'
+		});
+		expect(routed['target-text-offset']).toBeGreaterThanOrEqual(20);
+	});
+
+	it('names no line in the tree until the Labels switch is turned on there', () => {
 		const lastWord = (sheet: CyStyle[]) => {
 			const named = sheet.findLastIndex((s) => s.selector.includes('edge.highlight'));
 			const silenced = sheet.findLastIndex(
@@ -232,8 +252,12 @@ describe('buildStylesheet as the family tree', () => {
 			);
 			return silenced > named;
 		};
+		const treeNamed = buildStylesheet(palette, { familyTree: true, edgeLabels: true });
 
 		expect(lastWord(tree)).toBe(true);
+		// Switched on in the tree, every line is named, its routed ones included.
+		expect(lastWord(treeNamed)).toBe(false);
+		expect(rulesFor(treeNamed, 'edge')[0]['text-opacity']).toBe(1);
 		// Without a centre to say roles towards, a line keeps its name as before.
 		expect(lastWord(free)).toBe(false);
 	});

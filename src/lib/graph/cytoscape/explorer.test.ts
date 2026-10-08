@@ -401,7 +401,8 @@ describe('explorerFromCore', () => {
 							{ x: 0, y: 93.5 },
 							{ x: 200, y: 93.5 }
 						],
-						sourceEnd: { x: -60, y: 0 }
+						sourceEnd: { x: -60, y: 0 },
+						nameEnd: 'target' as const
 					}
 				]
 			])
@@ -412,6 +413,8 @@ describe('explorerFromCore', () => {
 		expect(line.hasClass('bowed')).toBe(false);
 		expect(line.data(ROUTE_FIELDS.weights)).toHaveLength(2);
 		expect(line.data(ROUTE_FIELDS.sourceEndpoint)).toBe('-60px 0px');
+		// Its name goes on the drop down to the child, the end the route says.
+		expect(line.data(ROUTE_FIELDS.nameEnd)).toBe('target');
 
 		explorer.arrange();
 		expect(line.hasClass(ROUTED_CLASS)).toBe(false);

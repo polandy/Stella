@@ -31,11 +31,6 @@ describe('edgeLabelsFit', () => {
 	it('sits around forty lines', () => {
 		expect(EDGE_LABEL_LIMIT).toBe(40);
 	});
-
-	it('names no line at all where the family tree writes roles under the names instead', () => {
-		expect(edgeLabelsFit(true, 1, true)).toBe(false);
-		expect(edgeLabelsFit(true, 1, false)).toBe(true);
-	});
 });
 
 describe('labelsHint', () => {
@@ -48,9 +43,13 @@ describe('labelsHint', () => {
 		expect(labelsHint(true, false, false)).toBe('graph.labels.tooMany');
 	});
 
-	it('says the tree writes roles instead, whichever way the switch stands', () => {
-		expect(labelsHint(true, false, true)).toBe('graph.labels.inTree');
+	it('says in the tree why the names start off and that the switch brings them', () => {
 		expect(labelsHint(false, false, true)).toBe('graph.labels.inTree');
+		expect(labelsHint(true, true, true)).toBe('graph.labels.inTree');
+	});
+
+	it('says why the names paused in the tree too, once there are too many', () => {
+		expect(labelsHint(true, false, true)).toBe('graph.labels.tooMany');
 	});
 });
 

@@ -48,6 +48,10 @@ interface Plan {
 	points: (yOf: (leg: Leg) => number) => Point[];
 	/** Where it leaves the upper of its two people, when not from that person. */
 	start?: { at: Point; upper: string };
+	/** Lines with one key share their last drop, which only the first of them names. */
+	nameKey: string;
+	/** The person the last drop comes down to. */
+	lower: string;
 }
 
 /**
@@ -115,6 +119,8 @@ export function treeRoutes(
 			plans.push({
 				edge,
 				legs: [leg],
+				nameKey: edge.id,
+				lower: edge.target,
 				points: (yOf) => [
 					{ x: s.x, y: yOf(leg) },
 					{ x: t.x, y: yOf(leg) }
@@ -137,6 +143,8 @@ export function treeRoutes(
 				edge,
 				legs: [leg],
 				start,
+				nameKey: `${drop.group}|${lower}`,
+				lower,
 				points: (yOf) => [
 					{ x: drop.x, y: yOf(leg) },
 					{ x: l.x, y: yOf(leg) }
@@ -153,6 +161,8 @@ export function treeRoutes(
 			edge,
 			legs: [top, bottom],
 			start,
+			nameKey: edge.id,
+			lower,
 			points: (yOf) => [
 				{ x: drop.x, y: yOf(top) },
 				{ x: column, y: yOf(top) },
@@ -166,13 +176,20 @@ export function treeRoutes(
 	const yOf = (leg: Leg) => leg.channel + TREE_LINES.bar * row + offsetOf.get(laneKey(leg))!;
 
 	const routes = new Map<string, Route>();
+	const named = new Set<string>();
 	for (const plan of plans) {
 		const { edge } = plan;
+		const nameEnd = named.has(plan.nameKey)
+			? null
+			: plan.lower === edge.source
+				? ('source' as const)
+				: ('target' as const);
+		named.add(plan.nameKey);
 		const downward = withoutRepeats(plan.points(yOf));
 		// The points run from the upper person down; a line travelled upwards takes them reversed.
 		const fromUpper =
 			at(edge.source).y < at(edge.target).y || sameRow(at(edge.source), at(edge.target));
-		const route: Route = { waypoints: fromUpper ? downward : downward.reverse() };
+		const route: Route = { waypoints: fromUpper ? downward : downward.reverse(), nameEnd };
 		if (plan.start) {
 			if (plan.start.upper === edge.source) route.sourceEnd = plan.start.at;
 			else route.targetEnd = plan.start.at;
