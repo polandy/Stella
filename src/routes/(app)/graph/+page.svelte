@@ -33,7 +33,9 @@
 		<p class="hidden text-fg-subtle sm:block">{t('graph.hint')}</p>
 	</div>
 
-	<div class="relative flex-1">
+	<!-- `min-h-0`: the canvas Cytoscape draws has a fixed pixel height, which a flex item would
+	     otherwise keep as its minimum — after full screen the map stayed screen-tall. -->
+	<div class="relative min-h-0 flex-1">
 		{#if data.centerId}
 			<!-- Both ends decide what is drawn, so a link that only changes the far end still
 			     rebuilds the canvas. -->

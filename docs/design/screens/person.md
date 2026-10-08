@@ -218,7 +218,9 @@ the person, and that never leaves the page. Keeping the record tidy (archive, me
   and back to *Enlarge map* on shrinking. The reader stays on the person's page.
 - **Full screen** (the explorer's own icon, right of *Enlarge map*) is a link to the graph
   route. With script and full screen available it mounts the explorer and opens it full
-  screen in the same tap (§5.8, §5.5.5); leaving full screen brings the preview back. Which
+  screen in the same tap (§5.8, §5.5.5), framed for the full screen once its frame has grown;
+  leaving full screen brings the preview back. The enlarged map's own full-screen button frames
+  it afresh both ways, unless the reader has moved the view (§5.8). Which
   view follows which tap is `mapViewAfter` (`src/lib/graph/phone-map.ts`; every width runs it).
 
 #### Activity card
