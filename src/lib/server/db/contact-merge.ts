@@ -1,6 +1,7 @@
 import { and, eq, sql } from 'drizzle-orm';
 import type { BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
 import { activityEntry, type ActivityOf } from '../domain/activity/activity';
+import { MERGE_PLAN, type MergeSettlement, type MergeStep } from '../domain/contacts/merge-plan';
 import type { MergeableProfile } from '../domain/contacts/merge-profile';
 import type { Viewer } from '../access/visibility';
 import { contactVisibleTo } from '../access/query-scoping';
@@ -18,50 +19,31 @@ import {
 
 /*
  * Merging one contact into another (docs/02 §2.2), kept out of the repository file because
- * it is the one operation that has to know every table pointing at `contact`.
+ * it is the one operation that has to touch every table pointing at `contact`.
  *
- * Everything hanging off the record being merged away is repointed at the survivor inside a
- * single transaction. Most of it is a plain UPDATE; the interesting part is what happens
- * where a constraint says the survivor already has that row. `UPDATE OR IGNORE` settles those:
- * the colliding row is simply left pointing at the record being merged away, and goes with it
- * when that row is deleted at the end. So the survivor keeps the one it already had, and no
- * duplicate survives.
+ * Which tables, in which order, and what happens where the survivor already has the row are
+ * the domain's decisions (`domain/contacts/merge-plan.ts`); this runs that plan inside a single
+ * transaction and owns the SQL. `survivor-keeps` is `UPDATE OR IGNORE`: the colliding row is
+ * simply left pointing at the record being merged away, and goes with it when that row is
+ * deleted at the end. So the survivor keeps the one it already had, and no duplicate survives.
  */
 
 type Db = BunSQLiteDatabase<typeof schema>;
 
-/** Tables where the pair (survivor, thing) is a key, so a duplicate cannot be repointed. */
-const DEDUPED_BY_KEY: readonly { table: string; column: string }[] = [
-	{ table: 'note_mention', column: 'contact_id' },
-	{ table: 'journal_mention', column: 'contact_id' },
-	{ table: 'interaction_participant', column: 'contact_id' },
-	{ table: 'contact_tag', column: 'contact_id' },
-	// One Immich link per person: a survivor that has one keeps it (docs/02 §2.24.5).
-	{ table: 'immich_link', column: 'contact_id' },
-	// An ignored proposal follows the person; the survivor's own record of a pair wins.
-	{ table: 'immich_ignore', column: 'contact_id' }
-];
-
-/** Tables that simply follow the contact, with nothing that could collide. */
-const REPOINTED: readonly { table: string; column: string }[] = [
-	{ table: 'contact_field', column: 'contact_id' },
-	{ table: 'note', column: 'contact_id' },
-	{ table: 'interaction', column: 'contact_id' },
-	{ table: 'important_date', column: 'contact_id' },
-	{ table: 'gift', column: 'contact_id' },
-	{ table: 'photo', column: 'contact_id' },
-	{ table: 'activity_log', column: 'contact_id' },
-	// A member who said "I am this person" follows the record that survives the merge.
-	{ table: 'user', column: 'self_contact_id' }
-];
+/** What a settlement needs to know about the merge it runs in. */
+interface Merging {
+	keepId: string;
+	mergedId: string;
+	updatedAt: number;
+}
 
 /**
- * Move the journal across. An entry is unique per (contact, author, day, visibility), so two
- * entries written about the same day by the same member cannot both survive as rows: the one
- * being merged away is appended to the one that stays, with its photos and mentions, and only
- * then removed. Nothing anybody wrote is dropped.
+ * An entry is unique per (contact, author, day, visibility), so two entries written about the
+ * same day by the same member cannot both survive as rows: the one being merged away is
+ * appended to the one that stays, with its photos and mentions, and only then removed. Nothing
+ * anybody wrote is dropped; every entry left can move without colliding.
  */
-function mergeJournal(tx: Db, keepId: string, mergedId: string, updatedAt: number): void {
+function joinJournalDays(tx: Db, { keepId, mergedId, updatedAt }: Merging): void {
 	const colliding = tx
 		.select({
 			id: journalEntry.id,
@@ -87,7 +69,7 @@ function mergeJournal(tx: Db, keepId: string, mergedId: string, updatedAt: numbe
 				)
 			)
 			.get();
-		if (!survivor) continue; // the slot is free; the blanket UPDATE below moves it
+		if (!survivor) continue; // the slot is free; the plan's repoint moves it
 
 		tx.update(journalEntry)
 			.set({ body: `${survivor.body}\n\n${entry.body}`, updatedAt })
@@ -104,31 +86,19 @@ function mergeJournal(tx: Db, keepId: string, mergedId: string, updatedAt: numbe
 		tx.delete(journalMention).where(eq(journalMention.journalEntryId, entry.id)).run();
 		tx.delete(journalEntry).where(eq(journalEntry.id, entry.id)).run();
 	}
-
-	tx.update(journalEntry)
-		.set({ contactId: keepId })
-		.where(eq(journalEntry.contactId, mergedId))
-		.run();
 }
 
 /**
- * Move the relationships across. Both endpoints are repointed; a link that ran *between* the
- * two records becomes a link from someone to themselves and is dropped, and a link the
- * survivor already had of the same type is dropped as the duplicate it now is.
+ * Once both endpoints have moved, a link that ran *between* the two records is a link from
+ * someone to themselves; drop it. (A link the survivor already had of the same type was left
+ * behind by `survivor-keeps` and goes with the merged record.)
  */
-function mergeRelationships(tx: Db, keepId: string, mergedId: string): void {
-	tx.run(
-		sql`update or ignore relationship set from_contact_id = ${keepId} where from_contact_id = ${mergedId}`
-	);
-	tx.run(
-		sql`update or ignore relationship set to_contact_id = ${keepId} where to_contact_id = ${mergedId}`
-	);
-	// The two were linked to each other: that link now points at one person, twice.
+function dropSelfLinks(tx: Db): void {
 	tx.delete(relationship).where(eq(relationship.fromContactId, relationship.toContactId)).run();
 }
 
 /** Drop the merged record's membership of a circle the survivor is already in. */
-function mergeCircleMemberships(tx: Db, keepId: string, mergedId: string): void {
+function dropMembershipsSurvivorHas(tx: Db, { keepId, mergedId }: Merging): void {
 	const keepCircles = tx
 		.select({ circleId: circleMembership.circleId })
 		.from(circleMembership)
@@ -141,10 +111,25 @@ function mergeCircleMemberships(tx: Db, keepId: string, mergedId: string): void 
 			.where(and(eq(circleMembership.contactId, mergedId), eq(circleMembership.circleId, circleId)))
 			.run();
 	}
-	tx.update(circleMembership)
-		.set({ contactId: keepId })
-		.where(eq(circleMembership.contactId, mergedId))
-		.run();
+}
+
+/** The steps the plan names rather than describes, each implemented here. */
+const SETTLEMENTS: Record<MergeSettlement, (tx: Db, merging: Merging) => void> = {
+	'join-journal-days': joinJournalDays,
+	'drop-self-links': dropSelfLinks,
+	'drop-memberships-survivor-has': dropMembershipsSurvivorHas,
+	'turn-merged-cuts': (tx, { mergedId }) => keepUnwornCuts(tx, mergedId, { evenWorn: true })
+};
+
+/** Run one step of the plan. */
+function runStep(tx: Db, step: MergeStep, merging: Merging): void {
+	if (step.kind === 'settle') return SETTLEMENTS[step.settle](tx, merging);
+	const table = sql.identifier(step.table);
+	const column = sql.identifier(step.column);
+	const verb = step.onConflict === 'survivor-keeps' ? sql`update or ignore` : sql`update`;
+	tx.run(
+		sql`${verb} ${table} set ${column} = ${merging.keepId} where ${column} = ${merging.mergedId}`
+	);
 }
 
 /**
@@ -174,22 +159,7 @@ export function mergeContacts(
 			.all();
 		if (both.length !== 2) return false;
 
-		mergeJournal(tx, input.keepId, input.mergedId, input.updatedAt);
-		mergeRelationships(tx, input.keepId, input.mergedId);
-		mergeCircleMemberships(tx, input.keepId, input.mergedId);
-		// One cut per person and group photo: the merged record's cuts arrive as photos of their own.
-		keepUnwornCuts(tx, input.mergedId, { evenWorn: true });
-
-		for (const { table, column } of DEDUPED_BY_KEY) {
-			tx.run(
-				sql`update or ignore ${sql.identifier(table)} set ${sql.identifier(column)} = ${input.keepId} where ${sql.identifier(column)} = ${input.mergedId}`
-			);
-		}
-		for (const { table, column } of REPOINTED) {
-			tx.run(
-				sql`update ${sql.identifier(table)} set ${sql.identifier(column)} = ${input.keepId} where ${sql.identifier(column)} = ${input.mergedId}`
-			);
-		}
+		for (const step of MERGE_PLAN) runStep(tx, step, input);
 
 		tx.update(contact)
 			.set({
