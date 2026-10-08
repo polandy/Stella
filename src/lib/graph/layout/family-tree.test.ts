@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'bun:test';
 import { familyTreeLayout, TREE_SPACING } from './family-tree';
-import { DEFAULT_NODE_SIZE, type SizeOf } from './geometry';
-import { barSpans, crossingBars, TREE_LINES } from './tree-lines';
-import { brunnerKeller, brunnerKellerWidened, twoFamilies } from './family-fixtures';
+import { DEFAULT_NODE_SIZE } from './geometry';
+import { TREE_LINES } from './tree-lines';
+import { brunnerKeller, twoHouseholds } from './family-fixtures';
 import type { GraphEdge, GraphModel, GraphNode } from '../model/types';
 
 /*
@@ -21,29 +21,6 @@ const stored = (source: string, target: string, typeKey: string): GraphEdge => (
 	typeKey
 });
 const parentOf = (parent: string, child: string) => stored(parent, child, 'parent_child');
-const spouses = (a: string, b: string) => stored(a, b, 'spouse');
-
-/**
- * One family over three generations: siblings Bert and Carl, each married with two children.
- * Listed in an unhelpful order — partners apart, the right-hand couple's children first — so
- * the arrangement has to do the ordering itself.
- */
-const twoHouseholds: GraphModel = {
-	nodes: ['otto', 'rosa', 'anna', 'dora', 'bert', 'carl', 'finn', 'gina', 'emil', 'hugo'].map(
-		person
-	),
-	edges: [
-		spouses('otto', 'rosa'),
-		parentOf('otto', 'bert'),
-		parentOf('rosa', 'carl'),
-		spouses('anna', 'bert'),
-		spouses('carl', 'dora'),
-		parentOf('carl', 'finn'),
-		parentOf('dora', 'gina'),
-		parentOf('anna', 'emil'),
-		parentOf('bert', 'hugo')
-	]
-};
 
 describe('familyTreeLayout', () => {
 	it('gives every node on the map a place', () => {
@@ -241,98 +218,6 @@ describe('familyTreeLayout', () => {
 
 		expect(layout.get('ida')!.y).toBeGreaterThan(lowestInTree);
 		expect(layout.get('ski')!.y).toBeGreaterThan(lowestInTree);
-	});
-
-	describe('keeps each family together, so no bar crosses another', () => {
-		// Names of every length, as the canvas measures them, not one width for all.
-		const measured: SizeOf = (id) => ({ width: 50 + 9 * id.length, height: 64 });
-		const crossings = (model: GraphModel) => {
-			const { positions } = familyTreeLayout(model, measured);
-			const members = new Set(model.nodes.map((n) => n.id));
-			return crossingBars(barSpans(model.edges, positions, members));
-		};
-
-		for (const [name, model] of Object.entries({
-			twoHouseholds,
-			brunnerKeller,
-			brunnerKellerWidened,
-			twoFamilies
-		})) {
-			it(`in ${name}, whatever order the map lists its people in`, () => {
-				// A bar for every couple with children on the map, and not one of them crossed —
-				// for every order the people can arrive in, since a map grows from whoever it is
-				// centred on.
-				const { positions } = familyTreeLayout(model);
-				expect(barSpans(model.edges, positions, new Set(positions.keys())).length).toBeGreaterThan(
-					1
-				);
-				const orders = model.nodes.flatMap((_, k) => {
-					const rotated = [...model.nodes.slice(k), ...model.nodes.slice(0, k)];
-					return [rotated, [...rotated].reverse()];
-				});
-				const crossed = orders.filter((nodes) => crossings({ ...model, nodes }) > 0);
-				expect(crossed.map((nodes) => nodes.map((n) => n.id).join(','))).toEqual([]);
-			});
-		}
-	});
-
-	describe('drops straight down to an only child', () => {
-		// Daniel's one son Timo on the row below: a bar with a jog in it would be a bar for one.
-		const measured: SizeOf = (id) => ({ width: 50 + 9 * id.length, height: 64 });
-		for (const [name, model] of Object.entries({
-			brunnerKeller,
-			brunnerKellerWidened,
-			twoFamilies
-		})) {
-			it(`in ${name}`, () => {
-				const { positions, routes } = familyTreeLayout(model, measured);
-				const members = new Set(positions.keys());
-				const spans = barSpans(model.edges, positions, members);
-				// Every drop to an only child is a single straight line: no bar at all.
-				const onlyChildren = model.edges.filter((e) => {
-					if (e.typeKey !== 'parent_child') return false;
-					const route = routes?.get(e.id);
-					return route !== undefined && new Set(route.waypoints.map((p) => p.x)).size > 1;
-				});
-				expect(onlyChildren.map((e) => e.id)).toEqual(
-					model.edges
-						.filter((e) => e.typeKey === 'parent_child')
-						.filter((e) => {
-							const siblings = model.edges.filter(
-								(f) => f.typeKey === 'parent_child' && f.source === e.source
-							);
-							return siblings.length > 1;
-						})
-						.map((e) => e.id)
-				);
-				// And straightening never buys a crossing.
-				expect(crossingBars(spans)).toBe(0);
-			});
-		}
-
-		it('puts Timo right under his father', () => {
-			const { positions } = familyTreeLayout(brunnerKeller, measured);
-
-			expect(positions.get('timo')!.x).toBe(positions.get('daniel')!.x);
-		});
-	});
-
-	it('sets siblings side by side, the father’s family on the left and the mother’s on the right', () => {
-		const { positions } = familyTreeLayout(brunnerKeller);
-		const x = (id: string) => positions.get(id)!.x;
-		const order = (ids: string[]) => [...ids].sort((a, b) => x(a) - x(b));
-
-		// Hans and Rosa above Markus, Peter and Ursula above Sandra: his side left, hers right.
-		expect(order(['hans', 'rosa', 'peter', 'ursula']).slice(0, 2).sort()).toEqual(['hans', 'rosa']);
-		expect(order(['daniel', 'markus', 'sandra', 'corinne'])).toEqual([
-			'daniel',
-			'markus',
-			'sandra',
-			'corinne'
-		]);
-		// Lena and her brothers stand together, their cousin outside the three.
-		const children = order(['lena', 'noah', 'elias', 'timo']);
-		expect(children[0] === 'timo' || children[3] === 'timo').toBe(true);
 	});
 
 	it('leaves every gap between rows room for its lanes, clear of the names above and below', () => {

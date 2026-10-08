@@ -234,10 +234,11 @@ test('leaves the family tree ungrouped, and groups again on leaving it', async (
 		.poll(() => groupingOnCanvas(page))
 		.toMatchObject({
 			frame: false,
-			parents: { a: null, b: null }
+			parents: { a: null, b: null },
+			circleToMembers: 0
 		});
 	// The tree draws a circle's lines only around the person the reader selects (docs/05 §5.8):
-	// Sandra's to the club, not Franziska's.
+	// none before the tap, then Sandra's to the club, not Franziska's.
 	await clickNode(page, SANDRA);
 	await expect
 		.poll(async () => {

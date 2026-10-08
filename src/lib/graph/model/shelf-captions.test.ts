@@ -135,6 +135,26 @@ describe('shelfCaptions', () => {
 		for (const id of ['lena', 'markus', 'sandra', 'hans']) expect(captions.has(id), id).toBe(false);
 	});
 
+	it('centred on a circle, captions everybody by their ties and names a circle’s people by name', () => {
+		// Nobody has a role towards the Chor, so Lena's friend Mia says whose friend she is; the
+		// Chor itself is the centre, not on the shelf; and with no person at the centre to count
+		// from, the Turnverein names its people by name alone.
+		const aroundChor = shelfCaptions(map, map, 'chor');
+
+		expect(aroundChor.get('mia')).toEqual({
+			kind: 'tie',
+			role: { term: 'friend', variant: 'female' },
+			anchor: 'lena',
+			more: 0
+		});
+		expect(aroundChor.has('chor')).toBe(false);
+		expect(aroundChor.get('turnverein')).toEqual({
+			kind: 'members',
+			ids: ['hans', 'lena'],
+			more: 2
+		});
+	});
+
 	it('hangs a household’s own tie to the centre off the centre, before anybody else', () => {
 		const withGodchild = shelfCaptions(
 			{ nodes, edges: [...edges, tie('gerd', 'lena', 'godparent_of', 'Godparent of')] },
