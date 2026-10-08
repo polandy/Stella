@@ -3,14 +3,16 @@ import type { SearchMessages } from '../en/search';
 /** German for `messages/en/search.ts`. */
 export const search: SearchMessages = {
 	'search.title': 'Suche',
-	'search.placeholder': 'Menschen und Notizen durchsuchen…',
+	'search.placeholder': 'Menschen, Notizen und Geschenke durchsuchen…',
 	'search.noResults': (p) => `Keine Treffer für „${p.query}“.`,
 	'search.noResultsHint':
-		'Niemand mit diesem Namen und keine Notiz, in der es steht. Ist die Person neu, füge sie hinzu.',
-	'search.prompt': 'Tippe, um Menschen und Notizen zu durchsuchen.',
+		'Niemand mit diesem Namen und keine Notiz und kein Geschenk, in dem es steht. Ist die Person neu, füge sie hinzu.',
+	'search.prompt': 'Tippe, um Menschen, Notizen und Geschenke zu durchsuchen.',
 	'search.people': 'Menschen',
 	'search.notes': 'Notizen',
 	'search.noteOn': (p) => `zu ${p.name}`,
+	'search.gifts': 'Geschenke',
+	'search.giftFor': (p) => `für ${p.name}`,
 	'graph.title': 'Netz · Stella',
 	'graph.hint':
 		'Klicken zum Fokussieren · noch einmal klicken zum Aufklappen · einen Verbindungsweg verfolgen',

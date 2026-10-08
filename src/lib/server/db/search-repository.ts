@@ -3,9 +3,9 @@ import type { BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
 import { childRecordVisibleTo, contactBrowsableBy } from '../access/query-scoping';
 import type { Viewer } from '../access/visibility';
 import type { SearchRepository } from '../domain/search/search';
-import { contact, note } from './schema';
+import { contact, gift, note } from './schema';
 import type * as schema from './schema';
-import { contactFts, noteFts } from './search-schema';
+import { contactFts, giftFts, noteFts } from './search-schema';
 
 /*
  * Drizzle adapter for the SearchRepository port (docs/08 §8.3). Matches via the FTS5 tables,
@@ -55,6 +55,30 @@ export function createDrizzleSearchRepository(
 					)
 				)
 				.orderBy(sql`bm25(note_fts)`)
+				.limit(limit)
+				.all();
+		},
+
+		async searchGifts(viewer: Viewer, ftsQuery: string, limit: number) {
+			return db
+				.select({
+					giftId: gift.id,
+					title: gift.title,
+					state: gift.state,
+					givenOn: gift.givenOn,
+					contactId: contact.id,
+					contactName: contact.displayName
+				})
+				.from(giftFts)
+				.innerJoin(gift, eq(giftFts.giftId, gift.id))
+				.innerJoin(contact, eq(gift.contactId, contact.id))
+				.where(
+					and(
+						sql`gift_fts MATCH ${ftsQuery}`,
+						childRecordVisibleTo(viewer, { visibility: gift.visibility, createdBy: gift.createdBy })
+					)
+				)
+				.orderBy(sql`bm25(gift_fts)`)
 				.limit(limit)
 				.all();
 		}

@@ -54,6 +54,11 @@ export const gifts = {
 	'gifts.remove': (p: { title: string }) => `Remove “${p.title}”`,
 	'gifts.removed': 'Gift removed',
 
+	// Where a gift stands, as a search hit says it (docs/02 §2.9).
+	'gifts.state.idea': 'Idea',
+	'gifts.state.given': (p: { day: string }) => `Given on ${p.day}`,
+	'gifts.state.received': (p: { day: string }) => `Received on ${p.day}`,
+
 	// In the story (docs/02 §2.23): what happened on the day.
 	'gifts.story.given': 'Given',
 	'gifts.story.received': 'Received'

@@ -51,6 +51,10 @@ export const gifts: GiftsMessages = {
 	'gifts.remove': (p) => `„${p.title}“ entfernen`,
 	'gifts.removed': 'Geschenk entfernt',
 
+	'gifts.state.idea': 'Idee',
+	'gifts.state.given': (p) => `Geschenkt am ${p.day}`,
+	'gifts.state.received': (p) => `Bekommen am ${p.day}`,
+
 	'gifts.story.given': 'Geschenkt',
 	'gifts.story.received': 'Bekommen'
 };
