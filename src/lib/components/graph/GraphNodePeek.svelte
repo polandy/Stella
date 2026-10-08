@@ -14,7 +14,7 @@
 		/** Whether Expand is offered: within reach, and it would add a person or a line. */
 		expandable: boolean;
 		/** A circle's roles, once they have arrived; empty for a person. */
-		roleOptions: CircleRoleOption[];
+		roleOptions: readonly CircleRoleOption[];
 		/** Which of `roleOptions` the next expansion opens. */
 		chosenRoles: ReadonlySet<CircleRole>;
 		onToggleRole: (role: CircleRole) => void;
