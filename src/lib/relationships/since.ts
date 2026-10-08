@@ -1,4 +1,5 @@
-import { FULL_DATE_SHAPE, isRealCalendarDay } from '../dates/calendar';
+import { isWholeDay } from '../dates/calendar';
+import { comparePartialDates } from '../dates/partial-date';
 import type { RelationshipCategory } from './categories';
 import type { RelationshipSide } from './type-options';
 
@@ -29,7 +30,7 @@ export interface KinChoice {
 /** The value only if it names a whole day that happened; a since day has to be one. */
 function wholeDay(value: string | null | undefined): string | null {
 	if (!value) return null;
-	return FULL_DATE_SHAPE.test(value) && isRealCalendarDay(value) ? value : null;
+	return isWholeDay(value) ? value : null;
 }
 
 /**
@@ -51,8 +52,11 @@ function youngerOf(
 	const ours = wholeDay(self?.birthDate);
 	const theirs = wholeDay(target?.birthDate);
 	if (!ours || !theirs) return null;
-	// Both are full ISO days, which sort as text.
-	return ours > theirs ? ours : theirs;
+	const order = comparePartialDates(
+		{ value: ours, precision: 'full' },
+		{ value: theirs, precision: 'full' }
+	);
+	return order !== null && order > 0 ? ours : theirs;
 }
 
 /**

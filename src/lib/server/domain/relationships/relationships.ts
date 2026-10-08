@@ -30,7 +30,7 @@ import {
 	RELATIONSHIP_STATUSES,
 	type RelationshipStatus
 } from '../../../relationships/status';
-import { FULL_DATE_SHAPE, isRealCalendarDay } from '../../../dates/calendar';
+import { isWholeDay } from '../../../dates/calendar';
 import type { RelationshipTypeRepository } from './relationship-types';
 import type { Clock } from '../../clock';
 import type { IdGenerator } from '../../id';
@@ -141,7 +141,7 @@ const blankToNull = (value: string | null | undefined): string | null =>
  */
 export function parseRelationshipDetails(input: RelationshipDetailsInput): RelationshipDetails {
 	const sinceDate = blankToNull(input.sinceDate);
-	if (sinceDate && !(FULL_DATE_SHAPE.test(sinceDate) && isRealCalendarDay(sinceDate))) {
+	if (sinceDate && !isWholeDay(sinceDate)) {
 		throw new InvalidRelationshipDetailsError(
 			phrase('errors.relationship.noSuchDay', { day: sinceDate })
 		);

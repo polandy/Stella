@@ -11,6 +11,7 @@ import { isKnownByMoreThanAFirstName } from '../../../people/new-person';
 import { isGender, type Gender } from '../../../people/gender';
 import { JOB_FIELD_MAX_LENGTH, type Job } from '../../../people/job';
 import type { Locale } from '../../../i18n/locales';
+import { partialDateOfDay, type DatePrecision } from '../../../dates/partial-date';
 
 /*
  * Contact use-cases (docs/02 §2.2). Framework-agnostic orchestration over the
@@ -193,11 +194,8 @@ export interface DeletedContactMedia {
 	thumbPath: string;
 }
 
-/** How much of a birth date is actually known (docs/03 §3.2). */
-export type BirthDatePrecision = 'full' | 'month_day' | 'year' | 'age';
-
-/** A birth date is a full ISO day or a year-less `--MM-DD`. */
-const BIRTH_DATE = /^(\d{4}-\d{2}-\d{2}|--\d{2}-\d{2})$/;
+/** How much of a birth date is actually known (docs/03 §3.4). */
+export type BirthDatePrecision = DatePrecision;
 
 /** Thrown when a birth date is not a shape we can compute a birthday from. */
 export class InvalidBirthDateError extends TranslatableError {
@@ -213,11 +211,10 @@ function parseBirthDate(value?: string | null): {
 } {
 	const trimmed = (value ?? '').trim();
 	if (trimmed.length === 0) return { birthDate: null, birthDatePrecision: 'full' };
-	if (!BIRTH_DATE.test(trimmed)) throw new InvalidBirthDateError();
-	return {
-		birthDate: trimmed,
-		birthDatePrecision: trimmed.startsWith('--') ? 'month_day' : 'full'
-	};
+	// A birth date is entered as a full ISO day or a year-less `--MM-DD`.
+	const date = partialDateOfDay(trimmed);
+	if (!date) throw new InvalidBirthDateError();
+	return { birthDate: date.value, birthDatePrecision: date.precision };
 }
 
 const orNull = (value?: string | null): string | null => {

@@ -1,6 +1,7 @@
 import { index, integer, primaryKey, sqliteTable, text, unique } from 'drizzle-orm/sqlite-core';
 import { now, type Visibility } from './columns';
 import { household, user } from './household';
+import type { DatePrecision } from '../../../dates/partial-date';
 
 /* People and what is kept on each: fields, important dates, tags (docs/03 §3.3). */
 
@@ -28,7 +29,7 @@ export const contact = sqliteTable(
 		avatarPhotoId: text('avatar_photo_id'),
 		birthDate: text('birth_date'),
 		birthDatePrecision: text('birth_date_precision')
-			.$type<'full' | 'month_day' | 'year' | 'age'>()
+			.$type<DatePrecision>()
 			.notNull()
 			.default('full'),
 		isDeceased: integer('is_deceased').notNull().default(0),

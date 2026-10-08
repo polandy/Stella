@@ -4,6 +4,7 @@ import type { Translate } from '$lib/i18n/translate';
 import { mentionSnippet } from '$lib/mentions/snippet';
 import { fieldHref, type ContactField } from '$lib/server/domain/contact-fields/contact-fields';
 import type { Contact } from '$lib/server/domain/contacts/contacts';
+import { namesADay } from '$lib/dates/partial-date';
 import {
 	overridesDerivedBirthday,
 	type ImportantDate
@@ -32,10 +33,6 @@ export interface PersonViewContext {
 	/** Name of the household member behind a user id, or null once they are gone. */
 	nameOfAuthor: (userId: string) => string | null;
 }
-
-/** Whether a birth date precision (docs/03 §3.4) names an actual day rather than a year. */
-const namesADay = (precision: Contact['birthDatePrecision']) =>
-	precision === 'full' || precision === 'month_day';
 
 /**
  * The birthday derived from the profile, unless an entered birthday takes over (§2.13.2) or the

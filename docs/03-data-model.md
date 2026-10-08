@@ -18,6 +18,7 @@ Detail stays in the feature doc the term points to.
 | **household member** | Someone with an account in the household; everything they write carries their user id (docs/02 §2.1). | `user` table, `domain/household/members.ts` | user (in copy); *member* alone also names a circle's member |
 | **circle** | A named context people share — class, club, team, workplace, friend group; its people are its *members*, each with an optional role (docs/02 §2.4.2). | `circle`, `circle_membership`, `domain/circles/`, `lib/circles/`, `/circles` | group, context (for the record) |
 | **relationship** | A link someone entered between two people, with a type and a direction (docs/02 §2.4). | `relationship`, `relationship_type`, `domain/relationships/`, `lib/relationships/` | connection; *edge* only inside `lib/graph/` |
+| **partial date** | A date known only in part — a whole day, a day without its year, a year, or a year estimated from an age (§3.4). A birth date is one. | `birth_date` + `birth_date_precision` on `contact`, `PartialDate` in `lib/dates/partial-date.ts` | fuzzy date (in code), incomplete date |
 | **kin** | A relative nobody entered — grandparent, cousin, in-law — named from the relationships the viewer may see, for display only and never stored (docs/02 §2.4.1). | `lib/kinship/` | inferred relationship (as if it were stored) |
 | **journal entry** | A dated diary record about one person, by one author, for one day (docs/02 §2.20). The UI calls every journal entry a *moment*. | `journal_entry`, `journal_mention`, `domain/journal/`, `/contacts/[id]/journal` | diary entry, post |
 | **moment** | The UI's word for a journal entry; also Home's one-sentence capture (*What happened?*) that writes one, landing in the journal of the first person it @-mentions (docs/02 §2.22.1). | a `journal_entry` row; the capture is `domain/moments/` | — (not a table of its own) |
@@ -782,6 +783,20 @@ People often don't know a full birthdate. We store the ISO string plus a **preci
 
 The UI renders accordingly (e.g. age hidden when only month/day known). Reminders use
 `month_day`/`full`.
+
+In code a birth date is a **`PartialDate`** — `{ value, precision }`, `src/lib/dates/partial-date.ts`,
+pure and client-safe. The rules about it live there and nowhere else: `partialDateOfDay` takes
+the precision from a typed or imported day's shape, `namesADay` / `DAY_PRECISIONS` say which
+precisions a birthday and its reminder can fall on (the SQL filter reads the same list), and
+`comparePartialDates` orders two as far as both say — `null` for a year-less day against a dated
+one, and for two dates in one year when either knows only the year. Reading a day into its parts
+(`dayParts`), and asking whether it is a whole day that exists (`isWholeDay`, what a
+relationship's `since_date` must be), is `src/lib/dates/calendar.ts`. The storage keeps its two
+columns, and so do the contact rows the repository hands out; `dayLabel` stays the one formatter.
+
+A photo's `taken_at` is a moment, not a partial date: `src/lib/media/taken-at.ts` holds its rule,
+and the SQL that orders photos by it (`db/photo-dated-at.ts`) is held to the same answers by its
+parity test.
 
 ## 3.5 Full-text search (FTS5)
 

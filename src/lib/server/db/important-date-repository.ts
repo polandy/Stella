@@ -6,6 +6,7 @@ import type { ImportantDateRepository, NewImportantDate } from '../domain/dates/
 import type { UpcomingSource } from '../domain/dates/upcoming';
 import type * as schema from './schema';
 import { contact, importantDate } from './schema';
+import { DAY_PRECISIONS } from '../../dates/partial-date';
 
 /*
  * Drizzle adapter for the ImportantDateRepository port (docs/08 §8.3). Dates have no
@@ -18,9 +19,6 @@ import { contact, importantDate } from './schema';
  * estimated year (`age`/`year` precision, docs/03 §3.4) is a fact about the person, not a
  * date to look forward to.
  */
-
-/** The precisions under which `contact.birth_date` names an actual day. */
-const DAY_PRECISIONS = ['full', 'month_day'] as const;
 
 /** SQLite has no boolean; these columns are 0/1. */
 const asBool = (value: number) => value === 1;

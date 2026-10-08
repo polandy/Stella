@@ -16,6 +16,7 @@ import {
 import { resolveCircleColor, resolveCircleKind, type NewCircle } from '../../circles/circles';
 import type { NewContactField } from '../../contact-fields/contact-fields';
 import type { NewContact } from '../../contacts/contacts';
+import { partialDateOfDay } from '../../../../dates/partial-date';
 import { deriveDisplayName } from '../../../../people/display-name';
 import {
 	canonicalEndpoints,
@@ -280,7 +281,8 @@ function planPeople(
 			metDate: null,
 			metPlace: null,
 			birthDate,
-			birthDatePrecision: birthDate?.startsWith('--') ? 'month_day' : 'full',
+			// The document's shape check let only a day through; no birth date stores as `full`.
+			birthDatePrecision: (birthDate && partialDateOfDay(birthDate)?.precision) ?? 'full',
 			gender: null,
 			...stamps
 		};

@@ -5,6 +5,7 @@
  * than in its markup.
  */
 
+import { compareMonthDay, dayParts } from '$lib/dates/calendar';
 import type { Translate } from '$lib/i18n/translate';
 
 /** A fact the card states, in the order it states them. */
@@ -122,11 +123,10 @@ export function addMoreLabel(behind: readonly Missing[], t: Translate): string {
 
 /** Whole years from a `YYYY-MM-DD` birth day to `today`; null without a year or before birth. */
 export function ageOn(birthDate: string, today: string): number | null {
-	if (birthDate.startsWith('--')) return null;
-	const [birthYear, birthMonthDay] = [Number(birthDate.slice(0, 4)), birthDate.slice(5)];
-	const [year, monthDay] = [Number(today.slice(0, 4)), today.slice(5)];
-	// `MM-DD` strings compare as the calendar does.
-	const age = year - birthYear - (monthDay < birthMonthDay ? 1 : 0);
+	const birth = dayParts(birthDate);
+	const now = dayParts(today);
+	if (birth === null || birth.year === null || now === null || now.year === null) return null;
+	const age = now.year - birth.year - (compareMonthDay(now, birth) < 0 ? 1 : 0);
 	return age >= 0 ? age : null;
 }
 
