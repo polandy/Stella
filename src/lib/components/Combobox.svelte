@@ -1,6 +1,6 @@
 <script lang="ts">
-	import { nextMenuIndex } from '$lib/menu/menu';
-	import { filterSuggestions } from '$lib/combobox/suggestions';
+	import { nextMenuIndex } from '$lib/ui/menu';
+	import { filterSuggestions } from '$lib/ui/combobox';
 	import { BLUR_CLOSE_MS } from '$lib/components/blur-close';
 
 	/*

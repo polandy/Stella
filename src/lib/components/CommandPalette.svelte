@@ -7,7 +7,7 @@
 	import Icon from '$lib/components/Icon.svelte';
 	import NamesakeLine from '$lib/components/NamesakeLine.svelte';
 	import { useTranslate } from '$lib/i18n/context.svelte';
-	import { paletteRows, type PalettePerson } from '$lib/palette/palette';
+	import { paletteRows, type PalettePerson } from '$lib/ui/command-palette';
 	import { usePeopleContext } from '$lib/people/context.svelte';
 	import { tick } from 'svelte';
 

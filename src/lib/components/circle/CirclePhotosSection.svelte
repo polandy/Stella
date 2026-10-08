@@ -7,8 +7,8 @@
 	import { roleKey } from '$lib/circles/role-key';
 	import type { JsonCommand } from '$lib/commands/commands';
 	import { useI18n } from '$lib/i18n/context.svelte';
-	import { processGroupPhoto } from '$lib/image/process-image';
-	import type { Dated } from '$lib/image/taken-at';
+	import { processGroupPhoto } from '$lib/media/process-image';
+	import type { Dated } from '$lib/media/taken-at';
 	import { thumbnailUrl } from '$lib/media/urls';
 	import { isKept, type KeptOf, type KeptPhoto } from '$lib/pwa/outbox';
 	import { outbox } from '$lib/pwa/outbox.svelte';

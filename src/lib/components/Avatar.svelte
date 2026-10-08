@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { avatarAccent, initials } from '$lib/avatar';
+	import { avatarAccent, initials } from '$lib/people/avatar';
 	import { accentAvatarStyle } from '$lib/design/tokens';
 	import { thumbnailUrl } from '$lib/media/urls';
 

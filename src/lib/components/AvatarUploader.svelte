@@ -1,13 +1,13 @@
 <script lang="ts">
 	import FormError from '$lib/components/FormError.svelte';
 	import { invalidateAll } from '$app/navigation';
-	import { avatarChoices } from '$lib/contacts/avatar-chooser';
+	import { avatarChoices } from '$lib/people/avatar-chooser';
 	import { useTranslate } from '$lib/i18n/context.svelte';
 	import type { GlimpsePhoto } from '$lib/immich/strip';
-	import type { CropRect } from '$lib/image/crop';
-	import { processAvatar } from '$lib/image/process-avatar';
-	import { loadFullPicture, sendCut } from '$lib/image/send-cut';
-	import { sendImmichPhoto } from '$lib/image/send-immich-photo';
+	import type { CropRect } from '$lib/media/crop';
+	import { processAvatar } from '$lib/media/process-avatar';
+	import { loadFullPicture, sendCut } from '$lib/media/send-cut';
+	import { sendImmichPhoto } from '$lib/media/send-immich-photo';
 	import { mediaUrl } from '$lib/media/urls';
 	import { useRemovals } from '$lib/undo/context.svelte';
 	import AvatarChooser, { type GroupPhotoChoice } from './AvatarChooser.svelte';
@@ -55,7 +55,7 @@
 	let error = $state<string | null>(null);
 
 	/*
-	 * Where the picture comes from (`$lib/contacts/avatar-chooser`): a file at once when there is
+	 * Where the picture comes from (`$lib/people/avatar-chooser`): a file at once when there is
 	 * nothing else, else the chooser — a file, their group photos (docs/02 §2.14), their latest
 	 * Immich photos or *Find in Immich* (docs/02 §2.24.6). Every source opens the same cropper;
 	 * only how the square is sent differs.

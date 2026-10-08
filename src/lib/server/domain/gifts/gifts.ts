@@ -1,4 +1,4 @@
-import { TranslatableError } from '../../../errors/translatable';
+import { TranslatableError } from '../../../i18n/translatable';
 import { phrase, type Phrase } from '../../../i18n/phrase';
 import { FULL_DATE_SHAPE, isRealCalendarDay } from '../../../dates/calendar';
 import { giftLink, type GiftState } from '../../../gifts/gifts';

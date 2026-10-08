@@ -9,14 +9,14 @@
 	import { enhance } from '$app/forms';
 	import { goto, invalidateAll } from '$app/navigation';
 	import type { JsonCommand } from '$lib/commands/commands';
-	import { contactSectionPath, sectionAnchor } from '$lib/contacts/sections';
+	import { contactSectionPath, sectionAnchor } from '$lib/people/sections';
 	import {
 		draftWorthUndo,
 		withLogAsked,
 		withMomentAsked,
 		type MomentDraft,
 		type StoryForm
-	} from '$lib/contacts/story-forms';
+	} from '$lib/people/story-forms';
 	import { dayLabel } from '$lib/dates/labels';
 	import { useI18n } from '$lib/i18n/context.svelte';
 	import {
@@ -24,7 +24,7 @@
 		isInteractionKind,
 		KIND_PRESENTATION,
 		type InteractionKind
-	} from '$lib/interactions/kinds';
+	} from '$lib/story/interaction-kinds';
 	import { asTyped, newPeopleAsCandidates } from '$lib/mentions/picks';
 	import { reveal, settleOpenedForm, showOpenedForm } from '$lib/motion/motion.svelte';
 	import { openedFormGlide } from '$lib/motion/motion';

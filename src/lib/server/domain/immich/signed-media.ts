@@ -1,5 +1,5 @@
 import type { Clock } from '../../clock';
-import { isTakenAt } from '../../../image/taken-at';
+import { isTakenAt } from '../../../media/taken-at';
 import { isImmichId, type ImmichImageSize } from './gateway';
 
 /*

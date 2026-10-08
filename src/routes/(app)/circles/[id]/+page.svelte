@@ -17,7 +17,7 @@
 	import { circleKindLabel } from '$lib/circles/labels';
 	import { roleKey } from '$lib/circles/role-key';
 	import { dayLabel } from '$lib/dates/labels';
-	import { photoDay, type Dated } from '$lib/image/taken-at';
+	import { photoDay, type Dated } from '$lib/media/taken-at';
 	import { allChosen, toggleEveryone, toggleGroup, toggleMember } from '$lib/circles/selection';
 	import { accentDotStyle } from '$lib/design/tokens';
 	import { useI18n } from '$lib/i18n/context.svelte';

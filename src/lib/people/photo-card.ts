@@ -1,4 +1,4 @@
-import { datedAt, type Dated } from '../image/taken-at';
+import { datedAt, type Dated } from '../media/taken-at';
 
 /*
  * The person page's Photos card (docs/02 §2.14, §2.24.3, docs/design/screens/person.md): what

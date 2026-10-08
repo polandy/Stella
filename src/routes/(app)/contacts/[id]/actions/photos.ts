@@ -19,7 +19,7 @@ import {
 import { cutProfilePicture } from '$lib/server/domain/media/cuts';
 import { frameAsAvatar } from '$lib/server/domain/media/framing';
 import { readCutForm } from '$lib/server/http/cut-form';
-import { contactSectionPath } from '$lib/contacts/sections';
+import { contactSectionPath } from '$lib/people/sections';
 import { say, translator } from '$lib/server/i18n/say';
 import type { Actions } from '../$types';
 

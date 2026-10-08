@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test';
-import { filterSuggestions } from './suggestions';
+import { filterSuggestions } from './combobox';
 
 /*
  * A free-text field that offers a short list of existing values (a circle's roles, a household's

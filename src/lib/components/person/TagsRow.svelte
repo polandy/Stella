@@ -12,7 +12,7 @@
 	import { useRemovals } from '$lib/undo/context.svelte';
 	import { removalKey, type RemovalKind } from '$lib/undo/keys';
 	import { savedEnhance } from '$lib/undo/saved';
-	import type { TagColor } from '$lib/tags/colors';
+	import type { TagColor } from '$lib/design/tag-colors';
 	import { INPUT } from './inputs';
 	import type { PersonForm, PersonPageData } from './types';
 

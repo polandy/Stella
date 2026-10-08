@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'bun:test';
 import type { Command } from '../../../commands/commands';
-import { TranslatableError } from '../../../errors/translatable';
+import { TranslatableError } from '../../../i18n/translatable';
 import { phrase } from '../../../i18n/phrase';
 import { createTranslator } from '../../../i18n/translate';
 import type { CapturedMoment } from '../moments/moments';

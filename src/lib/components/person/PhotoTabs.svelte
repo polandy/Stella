@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { PhotoTab } from '$lib/contacts/photo-card';
+	import type { PhotoTab } from '$lib/people/photo-card';
 	import { useI18n } from '$lib/i18n/context.svelte';
 
 	/*

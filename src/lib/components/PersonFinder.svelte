@@ -7,10 +7,10 @@
 	import Icon from '$lib/components/Icon.svelte';
 	import NamesakeLine from '$lib/components/NamesakeLine.svelte';
 	import { useTranslate } from '$lib/i18n/context.svelte';
-	import { personSearchRows, type PalettePerson } from '$lib/palette/palette';
+	import { personSearchRows, type PalettePerson } from '$lib/ui/command-palette';
 	import { usePeopleContext } from '$lib/people/context.svelte';
 	import { BLUR_CLOSE_MS } from '$lib/components/blur-close';
-	import { nextMenuIndex } from '$lib/menu/menu';
+	import { nextMenuIndex } from '$lib/ui/menu';
 
 	/*
 	 * The home screen's search field (docs/02 §2.22.1, docs/05 §5.4): people matching the

@@ -3,11 +3,11 @@
 	import Avatar from '$lib/components/Avatar.svelte';
 	import Button from '$lib/components/Button.svelte';
 	import Icon from '$lib/components/Icon.svelte';
-	import { contactSectionPath } from '$lib/contacts/sections';
+	import { contactSectionPath } from '$lib/people/sections';
 	import { dayLabel } from '$lib/dates/labels';
 	import { occasionLabel } from '$lib/gifts/labels';
 	import { useI18n } from '$lib/i18n/context.svelte';
-	import { KIND_PRESENTATION } from '$lib/interactions/kinds';
+	import { KIND_PRESENTATION } from '$lib/story/interaction-kinds';
 	import { groupStoryByDay } from '$lib/story/grouping';
 	import type { StoryCursorView, StoryItemView, StoryPageView } from '$lib/story/item';
 	import { useRemovals } from '$lib/undo/context.svelte';

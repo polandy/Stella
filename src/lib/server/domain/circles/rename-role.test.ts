@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test';
-import { TranslatableError } from '../../../errors/translatable';
+import { TranslatableError } from '../../../i18n/translatable';
 import { fixedClock, inMemoryCircleMemberships, membership, type FakeMembership } from '../testing';
 import type { CirclePhoto } from './circle-photos';
 import type { RoleRename } from './circles';

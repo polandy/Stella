@@ -12,7 +12,7 @@
 	import MentionTextarea from '$lib/components/MentionTextarea.svelte';
 	import { asTyped } from '$lib/mentions/picks';
 	import KeptItem from '$lib/components/KeptItem.svelte';
-	import { processImage } from '$lib/image/process-image';
+	import { processImage } from '$lib/media/process-image';
 	import { keepable } from '$lib/pwa/keepable';
 	import { isKept, type KeptOf, type KeptPhoto } from '$lib/pwa/outbox';
 	import { outbox } from '$lib/pwa/outbox.svelte';

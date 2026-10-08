@@ -7,9 +7,9 @@ import { systemClock } from '$lib/server/clock';
 import { fail, redirect } from '@sveltejs/kit';
 import { requireViewer } from '$lib/server/auth/guards';
 import * as v from 'valibot';
-import { proposeHref } from '$lib/contacts/propose';
+import { proposeHref } from '$lib/people/propose';
 import { decodeRelationshipChoice } from '$lib/relationships/type-options';
-import { contactSectionPath } from '$lib/contacts/sections';
+import { contactSectionPath } from '$lib/people/sections';
 import {
 	ContradictoryRelationshipError,
 	DuplicateRelationshipError,

@@ -5,8 +5,8 @@
 	import Icon from '$lib/components/Icon.svelte';
 	import type { CandidatePerson } from '$lib/circles/cut-candidates';
 	import { useI18n } from '$lib/i18n/context.svelte';
-	import type { CropRect } from '$lib/image/crop';
-	import type { Dated } from '$lib/image/taken-at';
+	import type { CropRect } from '$lib/media/crop';
+	import type { Dated } from '$lib/media/taken-at';
 	import CutForPerson from './CutForPerson.svelte';
 	import { viewUrl } from '$lib/media/urls';
 	import type { CirclePagePhoto } from './types';

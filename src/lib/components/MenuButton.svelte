@@ -8,7 +8,7 @@
 		nextMenuIndex,
 		type Band,
 		type Span
-	} from '$lib/menu/menu';
+	} from '$lib/ui/menu';
 
 	/*
 	 * A pill that opens a small menu below it (docs/05 §5.8) — the graph toolbar's Filter and

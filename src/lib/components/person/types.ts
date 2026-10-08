@@ -1,4 +1,4 @@
-import type { CardPhoto } from '$lib/contacts/photo-card';
+import type { CardPhoto } from '$lib/people/photo-card';
 import type { GlimpsePhoto } from '$lib/immich/strip';
 import type { RelationshipCategory } from '$lib/relationships/categories';
 import type { Exclusion } from '$lib/relationships/exclusions';

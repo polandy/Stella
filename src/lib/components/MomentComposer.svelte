@@ -10,12 +10,12 @@
 	import NamesakeLine from '$lib/components/NamesakeLine.svelte';
 	import WhichNamesake from '$lib/components/WhichNamesake.svelte';
 	import { useTranslate } from '$lib/i18n/context.svelte';
-	import { processImage } from '$lib/image/process-image';
+	import { processImage } from '$lib/media/process-image';
 	import { listPlacement, type ListPlacement } from '$lib/mentions/picker';
 	import { usePeopleContext } from '$lib/people/context.svelte';
 	import { tellApart } from '$lib/people/namesakes';
 	import { isKnownByMoreThanAFirstName, wantsSomethingToKnowThemBy } from '$lib/people/new-person';
-	import type { MomentDraft } from '$lib/contacts/story-forms';
+	import type { MomentDraft } from '$lib/people/story-forms';
 	import type { KeptOf, KeptPhoto } from '$lib/pwa/outbox';
 	import { outbox } from '$lib/pwa/outbox.svelte';
 	import { reachability } from '$lib/pwa/reachability.svelte';

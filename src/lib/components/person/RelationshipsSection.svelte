@@ -5,7 +5,7 @@
 	import MenuButton from '$lib/components/MenuButton.svelte';
 	import PersonSearchSelect from '$lib/components/PersonSearchSelect.svelte';
 	import Section from '$lib/components/Section.svelte';
-	import { sectionAnchor } from '$lib/contacts/sections';
+	import { sectionAnchor } from '$lib/people/sections';
 	import { useI18n } from '$lib/i18n/context.svelte';
 	import { isKept, type KeptOf } from '$lib/pwa/outbox';
 	import { outbox } from '$lib/pwa/outbox.svelte';

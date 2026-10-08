@@ -15,13 +15,13 @@
 		type FingerPair,
 		type ImageSize,
 		type WindowPixel
-	} from '$lib/image/crop';
+	} from '$lib/media/crop';
 	import Button from './Button.svelte';
 
 	/*
 	 * Choosing which square of a picture becomes a person's photo (docs/02 §2.14). The picture
 	 * moves behind a fixed round window: drag it, pinch or scroll to zoom, or use the slider and
-	 * the arrow keys. All geometry lives in `$lib/image/crop`; this component only turns pointer
+	 * the arrow keys. All geometry lives in `$lib/media/crop`; this component only turns pointer
 	 * and key events into calls there and draws the result. A native <dialog> gives focus
 	 * trapping, Escape and the backdrop for free, as in the command palette. Keys stay inside it:
 	 * the gallery's lightbox walks its photos with the same arrows on `window`.

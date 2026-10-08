@@ -363,7 +363,7 @@ householdId }` built by hand 67 times; relationship endpoints are two strings th
 `canonicalEndpoints` must be remembered for (used in five modules plus the seed).
 
 Why it hurts: the rule lives wherever the string is handled. `photo-dated-at.ts` reimplements
-`takenAtMs` from `src/lib/image/taken-at.ts` in SQL and the comment says "the same rule" —
+`takenAtMs` from `src/lib/media/taken-at.ts` in SQL and the comment says "the same rule" —
 that is two places that must agree by discipline.
 
 Proposal: not a sweeping change. Introduce value types where a rule already exists in two

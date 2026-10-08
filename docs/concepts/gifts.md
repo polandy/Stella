@@ -52,7 +52,7 @@ keeps up. The creator is shown as *noted by*.
 ### 3.1 The person page
 
 A new card **Gifts** (*Geschenke*), a new entry `'gifts'` in `CONTACT_SECTIONS`
-(`src/lib/contacts/sections.ts`) between *Notes* and *Mentioned in*, so it gets its anchor and
+(`src/lib/people/sections.ts`) between *Notes* and *Mentioned in*, so it gets its anchor and
 its jump-bar link the way the other cards do. Three tabs:
 
 - **Ideas** — open ideas, newest first. Each row: title, note preview, link icon, *Mark as
@@ -61,7 +61,7 @@ its jump-bar link the way the other cards do. Three tabs:
 - **Received** — what they gave us, the same way. The tab only shows once there is one.
 
 The tab count shows how many ideas are open: *Ideas · 3*. With no gift at all the card follows
-the empty-card rule (`src/lib/contacts/empty-cards.ts`, #293): one line — title, one sentence,
+the empty-card rule (`src/lib/people/empty-cards.ts`, #293): one line — title, one sentence,
 *+ Idea* — and the jump bar links to it like to the other one-line cards.
 
 ### 3.2 The story (*Activity*)

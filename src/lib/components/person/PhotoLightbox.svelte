@@ -4,9 +4,9 @@
 	import Icon from '$lib/components/Icon.svelte';
 	import { dayLabel } from '$lib/dates/labels';
 	import { useI18n } from '$lib/i18n/context.svelte';
-	import { photoDay } from '$lib/image/taken-at';
+	import { photoDay } from '$lib/media/taken-at';
 	import { mediaUrl } from '$lib/media/urls';
-	import { photoAfterKey } from '$lib/ui/photo-walk';
+	import { photoAfterKey } from '$lib/media/photo-walk';
 	import GalleryPhotoActions from './GalleryPhotoActions.svelte';
 	import LightboxFrame from './LightboxFrame.svelte';
 	import UseImmichPhoto from './UseImmichPhoto.svelte';

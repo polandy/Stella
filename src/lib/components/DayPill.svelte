@@ -4,7 +4,7 @@
 	import Icon from '$lib/components/Icon.svelte';
 	import MenuButton from '$lib/components/MenuButton.svelte';
 	import { pickedDayLabel, recentDays } from '$lib/dates/recent';
-	import { menuOpensUpward, menuShift } from '$lib/menu/menu';
+	import { menuOpensUpward, menuShift } from '$lib/ui/menu';
 	import { useI18n } from '$lib/i18n/context.svelte';
 
 	/*

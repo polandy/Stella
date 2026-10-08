@@ -19,11 +19,11 @@
 	import { isKept, type KeptOf } from '$lib/pwa/outbox';
 	import KeptItem from '$lib/components/KeptItem.svelte';
 	import WelcomeCard from '$lib/components/WelcomeCard.svelte';
-	import { contactSectionPath } from '$lib/contacts/sections';
+	import { contactSectionPath } from '$lib/people/sections';
 	import { occasionLabel, whenLabel } from '$lib/dates/labels';
 	import { useI18n } from '$lib/i18n/context.svelte';
 	import { relationshipRowLabel } from '$lib/relationships/labels';
-	import { KIND_PRESENTATION } from '$lib/interactions/kinds';
+	import { KIND_PRESENTATION } from '$lib/story/interaction-kinds';
 	import type { MessageKey } from '$lib/i18n/translate';
 	import {
 		isNarrowed,

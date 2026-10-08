@@ -28,7 +28,7 @@
 	import { outbox } from '$lib/pwa/outbox.svelte';
 	import { reachability } from '$lib/pwa/reachability.svelte';
 	import { reportNavigation } from '$lib/sync/pending';
-	import { followScroll, SHOWN_TOP_BAR } from '$lib/shell/top-bar';
+	import { followScroll, SHOWN_TOP_BAR } from '$lib/ui/top-bar';
 	import { onMount, untrack, type Snippet } from 'svelte';
 	import type { LayoutData } from './$types';
 

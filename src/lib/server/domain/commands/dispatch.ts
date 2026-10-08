@@ -1,6 +1,6 @@
 import type { Locale } from '../../../i18n/locales';
 import type { Command, CommandPayloads, CommandType } from '../../../commands/commands';
-import { TranslatableError } from '../../../errors/translatable';
+import { TranslatableError } from '../../../i18n/translatable';
 import { phrase, type Phrase } from '../../../i18n/phrase';
 import type { Clock } from '../../clock';
 import type { CapturedMoment } from '../moments/moments';

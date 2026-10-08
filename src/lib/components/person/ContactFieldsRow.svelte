@@ -4,7 +4,7 @@
 	import RemoveButton from '$lib/components/RemoveButton.svelte';
 	import Section from '$lib/components/Section.svelte';
 	import { enhance } from '$app/forms';
-	import { isContactFieldKind } from '$lib/contact-fields/kinds';
+	import { isContactFieldKind } from '$lib/people/contact-fields';
 	import { useI18n } from '$lib/i18n/context.svelte';
 	import { hasMessage } from '$lib/i18n/translate';
 	import { keepable } from '$lib/pwa/keepable';

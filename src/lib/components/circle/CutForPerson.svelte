@@ -11,8 +11,8 @@
 		type CutCandidate
 	} from '$lib/circles/cut-candidates';
 	import { useI18n } from '$lib/i18n/context.svelte';
-	import type { CropRect } from '$lib/image/crop';
-	import { loadFullPicture, sendCut } from '$lib/image/send-cut';
+	import type { CropRect } from '$lib/media/crop';
+	import { loadFullPicture, sendCut } from '$lib/media/send-cut';
 	import { mediaUrl } from '$lib/media/urls';
 
 	/*

@@ -1,10 +1,10 @@
-import type { CropRect } from '../../../image/crop';
-import { TranslatableError } from '../../../errors/translatable';
+import type { CropRect } from '../../../media/crop';
+import { TranslatableError } from '../../../i18n/translatable';
 import { phrase, type Phrase } from '../../../i18n/phrase';
 import type { Viewer } from '../../access/visibility';
 import type { Clock } from '../../clock';
 import type { IdGenerator } from '../../id';
-import { isPlausibleTakenAt, isTakenAt } from '../../../image/taken-at';
+import { isPlausibleTakenAt, isTakenAt } from '../../../media/taken-at';
 
 /*
  * Avatar media domain (docs/02 §2.14, M1). Images are cropped/resized/EXIF-stripped in the

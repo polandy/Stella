@@ -5,7 +5,7 @@ import {
 	PALETTE_PEOPLE_LIMIT,
 	type PaletteLabels,
 	type PalettePerson
-} from './palette';
+} from './command-palette';
 
 /*
  * The command palette (docs/05 §5.4, docs/02 §2.22.1): what ⌘K offers for a given query.

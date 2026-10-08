@@ -1,5 +1,5 @@
 <script lang="ts" module>
-	import type { CropRect } from '$lib/image/crop';
+	import type { CropRect } from '$lib/media/crop';
 
 	/** A photo of one of the person's circles their picture can be cut from. */
 	export interface GroupPhotoChoice {
@@ -30,7 +30,7 @@
 		contactId: string;
 		name: string;
 		groupPhotos: readonly GroupPhotoChoice[];
-		/** The Immich section: their photos, the face picker, or none (`$lib/contacts/avatar-chooser`). */
+		/** The Immich section: their photos, the face picker, or none (`$lib/people/avatar-chooser`). */
 		immich: 'photos' | 'find' | null;
 		/** Bindable: set to open the dialog; the dialog clears it when it closes. */
 		open?: boolean;

@@ -2,8 +2,8 @@
 	import FormError from '$lib/components/FormError.svelte';
 	import { invalidateAll } from '$app/navigation';
 	import { useTranslate } from '$lib/i18n/context.svelte';
-	import type { CropRect } from '$lib/image/crop';
-	import { processAvatar } from '$lib/image/process-avatar';
+	import type { CropRect } from '$lib/media/crop';
+	import { processAvatar } from '$lib/media/process-avatar';
 	import { mediaUrl } from '$lib/media/urls';
 	import Button from './Button.svelte';
 	import PhotoCropper from './PhotoCropper.svelte';

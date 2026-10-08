@@ -1,4 +1,4 @@
-import { inEnglish, type Phrase } from '../i18n/phrase';
+import { inEnglish, type Phrase } from './phrase';
 
 /*
  * The base of every domain error whose message a person reads (docs/08 §8.3). The error

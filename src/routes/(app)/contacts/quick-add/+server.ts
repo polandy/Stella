@@ -2,7 +2,7 @@ import { error, json } from '@sveltejs/kit';
 import { requireViewer } from '$lib/server/auth/guards';
 import * as v from 'valibot';
 import type { SelectablePerson } from '$lib/people/select';
-import { TranslatableError } from '$lib/errors/translatable';
+import { TranslatableError } from '$lib/i18n/translatable';
 import { createContact, getContact } from '$lib/server/domain/contacts/contacts';
 import { say, translator } from '$lib/server/i18n/say';
 import type { RequestHandler } from './$types';

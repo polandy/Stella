@@ -3,7 +3,7 @@
 	import Button from '$lib/components/Button.svelte';
 	import { useTranslate } from '$lib/i18n/context.svelte';
 	import { hasMessage } from '$lib/i18n/translate';
-	import { processImage } from '$lib/image/process-image';
+	import { processImage } from '$lib/media/process-image';
 	import type { ActionData } from './$types';
 
 	/*

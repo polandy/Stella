@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'bun:test';
 import { avatarAccent, initials } from './avatar';
-import { AVATAR_ACCENTS } from './design/tokens';
+import { AVATAR_ACCENTS } from '../design/tokens';
 
 describe('initials', () => {
 	it('takes the first and last word initial', () => {

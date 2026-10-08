@@ -17,7 +17,7 @@ import {
 	accentVar,
 	categoryVar
 } from './tokens';
-import { INTERACTION_KINDS } from '../interactions/kinds';
+import { INTERACTION_KINDS } from '../story/interaction-kinds';
 
 /*
  * The design system lives in two files that TypeScript cannot tie together: the custom

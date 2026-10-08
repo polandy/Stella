@@ -7,7 +7,7 @@
 	import PersonSearchSelect from '$lib/components/PersonSearchSelect.svelte';
 	import { enhance } from '$app/forms';
 	import { goto } from '$app/navigation';
-	import { proposeHref } from '$lib/contacts/propose';
+	import { proposeHref } from '$lib/people/propose';
 	import { useI18n } from '$lib/i18n/context.svelte';
 	import type { SelectablePerson } from '$lib/people/select';
 	import { keepable } from '$lib/pwa/keepable';

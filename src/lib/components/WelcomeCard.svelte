@@ -1,13 +1,13 @@
 <script lang="ts">
 	import { useTranslate } from '$lib/i18n/context.svelte';
 	import type { MessageKey } from '$lib/i18n/translate';
-	import type { WelcomeStep, WelcomeStepId } from '$lib/onboarding/welcome';
+	import type { WelcomeStep, WelcomeStepId } from '$lib/stream/welcome';
 	import Icon from './Icon.svelte';
 	import type { IconName } from './icons';
 
 	/*
 	 * The first-run card on Home (docs/02 §2.22.3, docs/05 §5.10). Which steps it offers and
-	 * which are done is decided in `$lib/onboarding/welcome`; this only draws them. Each step is
+	 * which are done is decided in `$lib/stream/welcome`; this only draws them. Each step is
 	 * one link — the whole row, so a thumb on a phone cannot miss it — and a done step stays in
 	 * its place, ticked, so the list does not shift under the reader.
 	 */

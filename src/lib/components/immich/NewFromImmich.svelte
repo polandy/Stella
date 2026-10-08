@@ -13,7 +13,7 @@
 		type NewcomerView
 	} from '$lib/components/immich/NewcomerRow.svelte';
 	import { useI18n } from '$lib/i18n/context.svelte';
-	import { sendImmichFace } from '$lib/image/send-immich-face';
+	import { sendImmichFace } from '$lib/media/send-immich-face';
 	import { reveal } from '$lib/motion/motion.svelte';
 	import type { SelectablePerson } from '$lib/people/select';
 	import { useRemovals } from '$lib/undo/context.svelte';

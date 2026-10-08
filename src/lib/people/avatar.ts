@@ -1,4 +1,4 @@
-import { AVATAR_ACCENTS, type Accent } from './design/tokens';
+import { AVATAR_ACCENTS, type Accent } from '../design/tokens';
 
 /*
  * Avatar fallback helpers (docs/05 §5.10): when a contact has no photo, show their initials on

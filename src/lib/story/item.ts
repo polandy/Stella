@@ -1,4 +1,4 @@
-import type { InteractionKind } from '$lib/interactions/kinds';
+import type { InteractionKind } from '$lib/story/interaction-kinds';
 
 /*
  * What the story timeline renders (docs/02 §2.23). Client-safe: the type lives here so the

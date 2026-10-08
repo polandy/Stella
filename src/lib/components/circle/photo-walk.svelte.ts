@@ -1,12 +1,12 @@
 import { tick } from 'svelte';
-import { photoAfterKey } from '$lib/ui/photo-walk';
+import { photoAfterKey } from '$lib/media/photo-walk';
 
 /*
  * The walk the circle page's lightbox takes (docs/02 §2.4.2, concept §3.1): the cover, a role's
  * banner and the Photos section each open it on one photo among the ones it may step through —
  * one role's, or the grid as filtered. Kept as ids, so a save that reloads the page keeps the
  * same photo open, and the page closes it when that photo is gone. The arrow keys wrap as in a
- * person's gallery (`$lib/ui/photo-walk`); closing hands focus back where it belongs.
+ * person's gallery (`$lib/media/photo-walk`); closing hands focus back where it belongs.
  */
 export class PhotoWalk {
 	/** The photos being walked, and which one is open; null with the lightbox closed. */

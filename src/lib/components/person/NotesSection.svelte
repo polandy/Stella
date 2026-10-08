@@ -5,8 +5,8 @@
 	import MentionTextarea from '$lib/components/MentionTextarea.svelte';
 	import Section from '$lib/components/Section.svelte';
 	import { enhance } from '$app/forms';
-	import { cardShape } from '$lib/contacts/empty-cards';
-	import { sectionAnchor } from '$lib/contacts/sections';
+	import { cardShape } from '$lib/people/empty-cards';
+	import { sectionAnchor } from '$lib/people/sections';
 	import { useI18n } from '$lib/i18n/context.svelte';
 	import { asTyped } from '$lib/mentions/picks';
 	import { keepable } from '$lib/pwa/keepable';
