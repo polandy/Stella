@@ -109,10 +109,13 @@ Layering and single responsibility:
    to the edge as `locals.services`: a route reads `locals.services.auth.sessionDeps` rather
    than pulling from a registry, so a test can hand it an `AppServices` over fakes. In a
    group, a repository the edge reads directly sits under its plural noun (`accounts`), a
-   use-case's deps under its type's name (`sessionDeps: SessionDeps`). Contexts not grouped
-   yet keep their `get*()` factories (`getNoteDeps()`, …) until they move in. Only edge
-   code imports the module: the SvelteKit edge itself (`routes/`, `hooks.server.ts`) and
-   the few shared edge helpers named beside it in the tree (docs/04 §4.3).
+   use-case's deps under its type's name (`sessionDeps: SessionDeps`). The command handler
+   table (`lib/server/commands/handlers.ts`) constructs nothing: the `offline` group builds it
+   over the other groups' deps (docs/04 §4.11.2). Only edge
+   code imports the module by value: the SvelteKit edge itself (`routes/`, `hooks.server.ts`).
+   An action several pages share lives under `routes/(app)/_shared/` and takes the slices it
+   reaches as arguments; anything else asks for a slice's type (`import type`) and is handed
+   the deps (docs/04 §4.3).
 
 ```ts
 // domain/contacts/contact-repository.ts — the DOMAIN owns this port
@@ -139,6 +142,15 @@ const id = await createContact(input, locals.services.people.contactDeps);
 randomness/ids), never for plain values; always inject **narrow, domain-owned ports**;
 assemble concretes **only in the composition root**.
 
+**Repositories write, read models list.** A repository is an aggregate's write side plus the
+one-record reads its writes rest on (`insert`, `update…`, `findByIdVisibleTo`); what a screen
+lists or counts is a **read model** port of its own, named `…Reads` (`ContactDirectoryReads`,
+`ContactNameReads`, `PeopleStampReads`). A list a new screen needs widens a read model, never
+the repository. Each port has **one adapter** (`db/*-repository.ts`, `db/*-reads.ts`): a
+factory declared to return `A & B` is one object with two reasons to change, and
+`src/lib/server/adapter-ports.test.ts` refuses it. A use-case asks for exactly the methods it
+calls (`Pick<ContactDirectoryReads, 'listVisibleTo'>`), as its own field of `deps`.
+
 ## 8.4 The TDD loop in practice
 
 ```
@@ -158,6 +170,18 @@ assemble concretes **only in the composition root**.
 
 Test files are `*.test.ts`, colocated with the code under test (hence `bun test src`, which
 keeps the Playwright specs out of Bun's runner).
+
+**Shared test support** lives in `src/lib/server/domain/testing/`: `fixedClock(now)` (stands
+still until the test calls `advance`), `sequentialIds(...first)`, one in-memory fake per
+read-model port (`inMemoryContactDirectory`, `inMemoryCircleMemberships`, `inMemoryTagLists`, …
+over `somebody(id, name, fields)`, `membership(circleId, contactId, fields)` or
+`someTag(id, name, fields)` rows) and `contactRepositoryWith({...})` / `circleRepositoryWith`,
+which answer with the methods a test hands them and fail loud on any other. Reach for these before writing a fake. A fake models no visibility — the people it
+holds are the ones the viewer may see; the adapter's scoping is covered against SQLite. Two
+kinds of fake stay in their test: one that **records the calls** it receives to assert on them
+(that is the behaviour under test), and one whose answers follow the test's own writes or
+visibility rules. Only `*.test.ts` files import the folder (`testing.test.ts` holds that), so
+Vite never reaches it and it is not built.
 
 `bun run test:e2e` (`e2e/run.sh`) builds the app, starts it on `127.0.0.1:4173` against a
 **fresh** `./data/e2e` database with `SEED_DEMO=true`, and drives it from the pinned

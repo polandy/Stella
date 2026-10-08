@@ -2,7 +2,6 @@ import { json } from '@sveltejs/kit';
 import { MAX_COMMAND_BATCH } from '$lib/commands/commands';
 import { receiveQueued } from '$lib/server/commands/receive';
 import { translator } from '$lib/server/i18n/say';
-import { getCommandDeps } from '$lib/server/services';
 import type { RequestHandler } from './$types';
 
 /*
@@ -34,6 +33,11 @@ export const POST: RequestHandler = async ({ locals, request }) => {
 
 	const actor = { userId: user.id, householdId: user.householdId, locale: locals.locale };
 	return json({
-		answers: await receiveQueued(getCommandDeps(), actor, translator(locals), commands)
+		answers: await receiveQueued(
+			locals.services.offline.commandDeps,
+			actor,
+			translator(locals),
+			commands
+		)
 	});
 };

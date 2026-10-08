@@ -37,7 +37,9 @@ function fakes(visibleIds = ['oma', 'lena', 'noah']) {
 		contacts: {
 			async findByIdVisibleTo(_v: Viewer, id: string) {
 				return visibleIds.includes(id) ? (summary(id) as unknown as Contact) : null;
-			},
+			}
+		},
+		contactNames: {
 			async listBrowsableNamesAmong(_v: Viewer, ids: readonly string[]) {
 				asked.push([...ids]);
 				return visibleIds.filter((id) => ids.includes(id)).map((id) => ({ id, displayName: id }));

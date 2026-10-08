@@ -90,6 +90,7 @@ Goal: sand the edges and add the nice-to-haves.
 - ~~**A simpler day in the *What happened?* composer**~~ — shipped (§2.22.1).
 - ~~**Confirm a worked-out relationship to store it**~~ — shipped (§2.4.1).
 - ~~**Fold imported custom family types into the built-ins**~~ — shipped (§2.4).
+- ~~**Welcome animation**~~ — shipped (§2.18, docs/05 §5.11.4).
 - **Stella's people in the phone's address book and calendar (CardDAV / CalDAV)** — a
   member adds Stella as a CardDAV account on their phone or mail client and sees the people
   they are allowed to see as contacts (name, photo, phone, email, address, birthday), plus a

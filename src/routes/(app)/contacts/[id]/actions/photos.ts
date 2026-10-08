@@ -20,7 +20,6 @@ import { cutProfilePicture } from '$lib/server/domain/media/cuts';
 import { frameAsAvatar } from '$lib/server/domain/media/framing';
 import { readCutForm } from '$lib/server/http/cut-form';
 import { contactSectionPath } from '$lib/contacts/sections';
-import { getCommandDeps } from '$lib/server/services';
 import { say, translator } from '$lib/server/i18n/say';
 import type { Actions } from '../$types';
 
@@ -67,7 +66,9 @@ export const photoActions = {
 			payload: { ...fromFormData(GalleryAddSchema, form), contactId: params.id },
 			issuedAt: systemClock.now()
 		});
-		const added = upload ? await dispatchCommand(getCommandDeps(), author, upload) : null;
+		const added = upload
+			? await dispatchCommand(locals.services.offline.commandDeps, author, upload)
+			: null;
 		if (!upload || added?.status !== 'applied') return refusal(added);
 		for (const [index, image] of images.entries()) {
 			const photo = parsePhotoCommand({
@@ -80,7 +81,9 @@ export const photoActions = {
 				height: Number(heights[index]),
 				issuedAt: systemClock.now()
 			});
-			const stored = photo ? await dispatchCommand(getCommandDeps(), author, photo) : null;
+			const stored = photo
+				? await dispatchCommand(locals.services.offline.commandDeps, author, photo)
+				: null;
 			if (stored?.status !== 'applied') return refusal(stored);
 		}
 		throw redirect(303, contactSectionPath(params.id, 'photos'));

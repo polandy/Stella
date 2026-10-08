@@ -1,5 +1,4 @@
 import { describe, expect, it } from 'bun:test';
-import type { IdGenerator } from '../id';
 import { DEFAULT_LOCALE } from '../../i18n/locales';
 import {
 	authenticateLocal,
@@ -11,6 +10,7 @@ import {
 	type StoredCredentials,
 	UnsupportedLocaleError
 } from './accounts';
+import { sequentialIds } from '../domain/testing';
 
 /*
  * Account use-cases: first-run admin registration and local authentication. Pure logic
@@ -45,11 +45,6 @@ function fakeRepo(seed: { user: AuthUser; passwordHash: string | null }[] = []) 
 			return inserted;
 		}
 	};
-}
-
-function sequentialIds(...values: string[]): IdGenerator {
-	let i = 0;
-	return { next: () => values[i++] ?? `id-${i}` };
 }
 
 const deps = (repo: AccountRepository) => ({

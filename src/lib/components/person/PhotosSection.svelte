@@ -8,55 +8,56 @@
 	import type { JsonCommand } from '$lib/commands/commands';
 	import { cardShape } from '$lib/contacts/empty-cards';
 	import { sectionAnchor } from '$lib/contacts/sections';
-	import { dayLabel } from '$lib/dates/labels';
 	import { useI18n } from '$lib/i18n/context.svelte';
 	import { processImage } from '$lib/image/process-image';
-	import { photoDay, type Dated } from '$lib/image/taken-at';
-	import { thumbnailUrl } from '$lib/media/urls';
 	import { isKept, type KeptOf, type KeptPhoto } from '$lib/pwa/outbox';
 	import { outbox } from '$lib/pwa/outbox.svelte';
 	import { reachability } from '$lib/pwa/reachability.svelte';
-	import { photoAfterKey } from '$lib/ui/photo-walk';
-	import { tick } from 'svelte';
+	import { asksForMatchHint, matchHintName, shownMatchHint } from '$lib/immich/match-hint';
+	import { useRemovals } from '$lib/undo/context.svelte';
+	import { deferredRemoval } from '$lib/undo/deferred-removal';
+	import { removalKey } from '$lib/undo/keys';
 	import { ulid } from 'ulid';
+	import GroupPhotos from './GroupPhotos.svelte';
 	import ImmichFacePicker from './ImmichFacePicker.svelte';
 	import ImmichLine from './ImmichLine.svelte';
-	import ImmichStrip from './ImmichStrip.svelte';
-	import { stripViews, viewShown, type StripView } from '$lib/immich/together';
+	import { ImmichMatchHint as MatchHint } from './immich-match-hint.svelte';
+	import ImmichMatchHint from './ImmichMatchHint.svelte';
 	import { INPUT } from './inputs';
-	import PhotoLightbox from './PhotoLightbox.svelte';
+	import PhotoCardBody from './PhotoCardBody.svelte';
+	import { PhotoCardState, type PhotoView } from './photo-card-state.svelte';
+	import PhotoTabs from './PhotoTabs.svelte';
 	import type { PersonForm, PersonPageData } from './types';
 
-	// What was taken (docs/02 §2.14): the person page's gallery card and its lightbox.
+	// What was taken (docs/02 §2.14, §2.24.3): the person page's Photos card and its lightbox.
 	let {
 		data,
 		form,
-		together = $bindable({ askedByRow: null, shown: null })
+		view = $bindable({ tab: 'all', expanded: false, askedByRow: null, shown: null })
 	}: {
 		data: PersonPageData;
 		form: PersonForm;
-		/** Which pair a relationship row asked for, and which the strip shows (docs/02 §2.24.8). */
-		together?: { askedByRow: string | null; shown: string | null };
+		/**
+		 * Which tab the card shows, whether *All* was opened out, and which pair a relationship
+		 * row asked for and the Immich tab shows (docs/02 §2.24.8) — the page's, so a row's
+		 * *Together* can switch it and another person's page starts afresh.
+		 */
+		view?: PhotoView;
 	} = $props();
 
 	const i18n = useI18n();
 	const t = i18n.t;
 	const c = $derived(data.contact);
+	const card = new PhotoCardState(() => ({ data, view, online: reachability.reachable }));
+	const PANEL = 'photo-panel';
 
 	/*
-	 * The gallery (docs/02 §2.14). Photos are downscaled and EXIF-stripped in the browser
-	 * before upload, so nothing leaves the device carrying a location. The lightbox is one
-	 * overlay reused for whichever photo is open; `openPhoto` is an index into the grid so
-	 * the arrow keys can walk it.
+	 * The upload (docs/02 §2.14). Photos are downscaled and EXIF-stripped in the browser before
+	 * upload, so nothing leaves the device carrying a location.
 	 */
 	let picked = $state<File[]>([]);
 	let uploading = $state(false);
 	let uploadError = $state<string | null>(null);
-	let openPhoto = $state<number | null>(null);
-	const openedPhoto = $derived(openPhoto === null ? null : (data.gallery[openPhoto] ?? null));
-
-	/** When a gallery photo was taken, else added, in the viewer's language (docs/02 §2.14). */
-	const photoDate = (photo: Dated): string => dayLabel(i18n, photoDay(photo));
 
 	/*
 	 * An upload is saved through the outbox like every addition (docs/04 ADR-076):
@@ -107,93 +108,76 @@
 
 	/*
 	 * Immich (docs/02 §2.24.2, §2.24.3): a quiet menu on the card — *Find in Immich*, or
-	 * *Unlink* once linked — and, for a linked person, a line and a strip of their latest photos
-	 * under the gallery. None of it exists without Immich, and none offline, where nothing from
-	 * Immich is shown (docs/02 §2.24.3).
+	 * *Unlink* once linked — and, for a linked person, their latest photos in *All* and the
+	 * Immich tab, and a line under them. None of it exists without Immich, and none offline,
+	 * where nothing from Immich is shown (docs/02 §2.24.3).
 	 */
 	let pickerOpen = $state(false);
-	const showImmich = $derived(data.immich !== null && reachability.reachable);
+	const showImmich = $derived(card.showImmich);
 	/** The search the picker starts with: the name, without a nickname Immich would not know. */
 	const immichSearchName = $derived(
 		[c.firstName, c.lastName].filter(Boolean).join(' ') || c.displayName
 	);
 
 	/*
-	 * Photos together (docs/02 §2.24.8): chips over the strip — *All photos*, *You and Julia* when
-	 * the viewer's own person is linked too, and the pair a relationship row's *Together* asked for.
-	 * With only *All photos* there are no chips at all.
+	 * The suggestion for an unlinked person (docs/02 §2.24.7): the face *Find your people* would
+	 * link in one tap, asked for after the page has loaded. Nothing is reserved for it; it
+	 * arrives at the card's foot. *Ignore* is the list's lasting no, held for the undo window
+	 * like any removal (docs/02 §2.23) — the row goes at once and comes back on *Undo*.
 	 */
-	const stripChoices = $derived(
-		data.immich?.linked
-			? stripViews({
-					pageContactId: c.id,
-					selfContactId: data.user.selfContactId,
-					togetherWith: data.immich.togetherWith,
-					askedByRow: together.askedByRow
-				})
-			: []
-	);
-	const stripShown = $derived(viewShown(stripChoices, together.shown));
-	const ownFirstName = $derived(c.firstName || c.displayName);
-	const firstNameOf = (contactId: string) => {
-		const person = data.people.find((candidate) => candidate.id === contactId);
-		return person?.firstName || person?.displayName || '';
-	};
-	/** Whether the pair is the viewer and someone, said *you* rather than by name. */
-	const withViewer = (view: StripView & { contactId: string }) =>
-		view.kind === 'withYou' || c.id === data.user.selfContactId;
-	/** The other one of a pair: the page's person, when the page is the viewer's own. */
-	const otherOf = (view: StripView & { contactId: string }) =>
-		view.kind === 'withYou' ? ownFirstName : firstNameOf(view.contactId);
-	function chipLabel(view: StripView): string {
-		if (view.kind === 'own') return t('immich.together.own');
-		if (withViewer(view)) return t('immich.together.withYou', { name: otherOf(view) });
-		return t('immich.together.pair', { first: ownFirstName, second: firstNameOf(view.contactId) });
-	}
-	const stripTogether = $derived.by(() => {
-		const view = stripShown;
-		if (view.kind === 'own') return null;
-		const label = withViewer(view)
-			? t('immich.together.stripWithYou', { name: otherOf(view) })
-			: t('immich.together.stripPair', {
-					first: ownFirstName,
-					second: firstNameOf(view.contactId)
-				});
-		return { contactId: view.contactId, label };
+	const removals = useRemovals();
+	const hintSituation = $derived({
+		immichOn: data.immich !== null,
+		online: reachability.reachable,
+		linked: data.immich?.linked === true
 	});
-	const chooseView = (view: StripView) => {
-		together = { ...together, shown: view.kind === 'own' ? null : view.contactId };
-	};
-	const isShown = (view: StripView) =>
-		view.kind === stripShown.kind &&
-		(view.kind === 'own' || (stripShown.kind !== 'own' && view.contactId === stripShown.contactId));
-
-	// The grid's buttons, so closing the photo hands focus back to the one now showing.
-	const thumbnails: HTMLButtonElement[] = $state([]);
-
-	function onPhotoKeydown(event: KeyboardEvent) {
-		if (openPhoto === null) return;
-		const target = event.target as HTMLElement;
-		const typing = target.matches('input, textarea') || target.isContentEditable;
-		const next = photoAfterKey({
-			key: event.key,
-			at: openPhoto,
-			count: data.gallery.length,
-			typing
+	const hint = new MatchHint(() => ({ contactId: c.id, asks: asksForMatchHint(hintSituation) }));
+	const hintIgnoreKey = $derived(removalKey('immich-ignore', c.id));
+	const hintFace = $derived(
+		shownMatchHint({
+			...hintSituation,
+			answer: hint.answer,
+			ignored:
+				removals.isPending(hintIgnoreKey) ||
+				(hint.answer !== null && hint.ignoredPair === `${c.id}/${hint.answer.personId}`)
+		})
+	);
+	function ignoreHint(event: SubmitEvent) {
+		event.preventDefault();
+		const formEl = event.currentTarget as HTMLFormElement;
+		const pair = `${c.id}/${new FormData(formEl).get('immichPersonId')}`;
+		const removal = deferredRemoval(
+			{
+				kind: 'immich-ignore',
+				id: c.id,
+				label: t('immich.match.ignoredToast'),
+				// Absolute: the window may close after the reader has moved on to another page.
+				action: `/contacts/${encodeURIComponent(c.id)}?/ignoreImmichMatch`,
+				body: new FormData(formEl)
+			},
+			{ fetch, reload: invalidateAll }
+		);
+		removals.remove({
+			...removal,
+			// The store lets go of the key as the window closes, before the post: the row stays
+			// away meanwhile, and comes back only if the post fails.
+			commit: async () => {
+				hint.ignoredPair = pair;
+				try {
+					await removal.commit();
+				} catch (error) {
+					hint.ignoredPair = null;
+					throw error;
+				}
+			}
 		});
-		if (next !== null) openPhoto = next;
-	}
-
-	function closePhoto() {
-		const at = openPhoto;
-		openPhoto = null;
-		// After the dialog has gone: until then the grid is inert and cannot take focus.
-		if (at !== null) void tick().then(() => thumbnails[at]?.focus());
 	}
 
 	/*
 	 * No photo, none waiting to be sent, no group photo and no Immich line under them: the card
 	 * is one line (docs/05 §5.5). The Immich menu stays in that line, beside the add button.
+	 * The suggestion is not content: it arrives late, and a line turning into a card under the
+	 * reader's eyes would move its own header — so it hangs under the line instead (`footer`).
 	 */
 	const holdsSomething = $derived(
 		data.gallery.length > 0 ||
@@ -201,17 +185,30 @@
 			data.groupPhotos.length > 0 ||
 			(showImmich && (data.immich?.linked === true || Boolean(form?.immichError)))
 	);
+	/** The tabs, once there is a grid for them to choose: a gallery photo, or a linked person. */
+	const hasGrid = $derived(data.gallery.length > 0 || card.linked);
 </script>
 
 <Section
 	id={sectionAnchor('photos')}
 	title={t('contact.section.photos')}
-	count={data.gallery.length}
 	addLabel={t('contact.photos.add')}
 	empty={cardShape('photos', holdsSomething) === 'line' ? t('contact.photos.none') : undefined}
 	error={form?.photoError ?? uploadError}
 >
 	{#snippet action()}
+		{#if holdsSomething && hasGrid}
+			<PhotoTabs
+				tabs={card.tabs}
+				chosen={card.tab}
+				stellaCount={data.gallery.length}
+				immichCount={card.immichCount}
+				panel={PANEL}
+				onchoose={(tab) => (view = { ...view, tab })}
+			/>
+		{/if}
+	{/snippet}
+	{#snippet menu()}
 		{#if showImmich && data.immich}
 			<MenuButton label={t('immich.menu.label')} align="end">
 				{#snippet trigger()}{t('immich.menu.trigger')}{/snippet}
@@ -250,109 +247,27 @@
 			{/each}
 		</ul>
 	{/if}
-	{#if data.gallery.length > 0}
-		<ul class="grid grid-cols-3 gap-2 sm:grid-cols-4" data-testid="photo-grid">
-			{#each data.gallery as p, index (p.id)}
-				<li class="relative">
-					<button
-						type="button"
-						bind:this={thumbnails[index]}
-						onclick={() => (openPhoto = index)}
-						class="relative block w-full overflow-hidden rounded-control focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
-					>
-						<img
-							src={thumbnailUrl(p.id)}
-							alt={p.caption ?? t('contact.photos.of', { name: c.displayName })}
-							class="aspect-square w-full object-cover"
-							loading="lazy"
-						/>
-						{#if p.pinnedAt !== null}
-							<!-- A star, not a tint: the pin reads without colour (docs/05 §5.10). -->
-							<span
-								class="pointer-events-none absolute top-1 left-1 rounded-full bg-bg/80 p-1 text-primary"
-								data-testid="photo-favourite"
-							>
-								<Icon name="pinned" size={11} />
-							</span>
-							<span class="sr-only">{t('contact.photos.favourite')}</span>
-						{/if}
-						<span
-							class="pointer-events-none absolute inset-x-0 bottom-0 truncate bg-gradient-to-t from-black/65 to-transparent px-1.5 pt-3 pb-1 text-left text-[0.6875rem] font-medium text-white"
-							aria-hidden="true"
-						>
-							{photoDate(p)}
-						</span>
-					</button>
-					{#if p.visibility === 'private'}
-						<span
-							class="absolute top-1 right-1 rounded-full bg-bg/80 p-1 text-fg-muted"
-							title={t('contact.photos.privateHint')}
-						>
-							<Icon name="private" size={11} />
-						</span>
-					{/if}
-				</li>
-			{/each}
-		</ul>
+	{#if hasGrid}
+		<PhotoCardBody {data} {card} bind:view panel={PANEL} />
 	{/if}
 	{#if data.groupPhotos.length > 0}
-		<!-- Every group photo their picture was cut from, now and before (docs/02 §2.14). -->
-		<div class="mt-4 flex flex-col gap-2" data-testid="on-group-photos">
-			<h3 class="text-sm font-semibold text-fg">
-				{t('contact.photos.onGroupPhotos')}
-			</h3>
-			<ul class="flex gap-2 overflow-x-auto pb-1">
-				{#each data.groupPhotos as g (g.id)}
-					<li class="w-28 shrink-0">
-						<a
-							href="/circles/{g.circleId}"
-							class="flex flex-col gap-1 rounded-control focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
-						>
-							<img
-								src={thumbnailUrl(g.id)}
-								alt={t('contact.photos.groupPhotoOf', { circle: g.circleName })}
-								class="aspect-[4/3] w-full rounded-control bg-bg-sunken object-cover"
-								loading="lazy"
-							/>
-							<span class="truncate text-xs text-fg-muted">{g.circleName}</span>
-							<span class="truncate text-[0.6875rem] text-fg-subtle">{photoDate(g)}</span>
-						</a>
-					</li>
-				{/each}
-			</ul>
-		</div>
+		<GroupPhotos photos={data.groupPhotos} />
 	{/if}
-
 	{#if showImmich}
 		<ImmichLine person={data.immichPerson} error={form?.immichError ?? null} />
-		{#if data.immich?.linked}
-			{#if stripChoices.length > 1}
-				<div
-					class="mt-2 flex flex-wrap gap-1.5"
-					role="group"
-					aria-label={t('immich.together.label')}
-					data-testid="immich-together"
-				>
-					{#each stripChoices as view (view.kind === 'own' ? 'own' : view.contactId)}
-						<button
-							type="button"
-							aria-pressed={isShown(view)}
-							onclick={() => chooseView(view)}
-							class="rounded-full border border-border px-2.5 py-0.5 text-xs font-medium text-fg-muted transition-colors hover:border-primary hover:text-fg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary aria-pressed:border-primary aria-pressed:bg-primary-soft aria-pressed:text-fg"
-						>
-							{chipLabel(view)}
-						</button>
-					{/each}
-				</div>
-			{/if}
-			<ImmichStrip
-				contactId={c.id}
-				name={c.displayName}
-				hasPhoto={c.avatarPhotoId !== null}
-				together={stripTogether}
+	{/if}
+
+	{#snippet footer()}
+		{#if hintFace}
+			<ImmichMatchHint
+				face={hintFace}
+				askName={matchHintName(c)}
+				contactName={c.displayName}
+				onchoose={() => (pickerOpen = true)}
+				onignore={ignoreHint}
 			/>
 		{/if}
-	{/if}
+	{/snippet}
 
 	{#snippet editor()}
 		<form onsubmit={uploadPhotos} class="flex flex-wrap items-end gap-3">
@@ -394,5 +309,3 @@
 		bind:open={pickerOpen}
 	/>
 {/if}
-
-<PhotoLightbox {data} {openedPhoto} {photoDate} {closePhoto} {onPhotoKeydown} />

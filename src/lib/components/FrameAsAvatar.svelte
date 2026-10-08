@@ -77,7 +77,7 @@
 </script>
 
 <!-- Never disabled: a disabled button drops focus, and the dialog hands focus back to it on close. -->
-<Button variant="secondary" size="sm" onclick={open} aria-busy={busy}>
+<Button variant="primary" size="sm" onclick={open} aria-busy={busy}>
 	{isAvatar ? t('components.frame.change') : t('components.frame.use')}
 </Button>
 <FormError message={error} variant="inline" size="xs" />

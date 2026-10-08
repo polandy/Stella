@@ -1,11 +1,9 @@
 import { error, fail, redirect } from '@sveltejs/kit';
 import { requireViewer } from '$lib/server/auth/guards';
 import * as v from 'valibot';
-import {
-	getContact,
-	listContactNamesAmong,
-	listContacts
-} from '$lib/server/domain/contacts/contacts';
+import { getContact } from '$lib/server/domain/contacts/contacts';
+import { listContactNamesAmong } from '$lib/server/domain/contacts/contact-names';
+import { listContacts } from '$lib/server/domain/contacts/directory';
 import { authorNames } from '$lib/server/domain/household/members';
 import { authorLabel } from '$lib/story/author';
 import {
@@ -18,7 +16,6 @@ import { renderMarkdownWithMentions } from '$lib/server/domain/notes/markdown';
 import { extractMentionIds, mentionsOtherThan } from '$lib/mentions/mentions';
 import { resolveForAudience } from '$lib/server/domain/mentions/resolve-for-audience';
 import { withNamesakeContext } from '$lib/server/domain/mentions/namesake-context';
-import { getCommandDeps } from '$lib/server/services';
 import { parsePhotoCommand, readCommand } from '$lib/server/commands/parse';
 import { fromFormData } from '$lib/commands/form-data';
 import { JournalWriteSchema } from '$lib/commands/payloads';
@@ -44,7 +41,7 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 	]);
 	// Names for the people the entries mention, not for the whole household.
 	const contactNames = await listContactNamesAmong(
-		locals.services.people.contactDeps,
+		locals.services.people.contactNameDeps,
 		viewer,
 		entries.flatMap((e) => extractMentionIds(e.body))
 	);
@@ -138,7 +135,9 @@ export const actions: Actions = {
 						: say(locals, otherwise)
 			});
 		const command = reading.ok ? reading.command : null;
-		const written = command ? await dispatchCommand(getCommandDeps(), author, command) : null;
+		const written = command
+			? await dispatchCommand(locals.services.offline.commandDeps, author, command)
+			: null;
 		if (!command || written?.status !== 'applied')
 			return refusal(written, 'errors.journal.couldNotSave');
 
@@ -162,7 +161,9 @@ export const actions: Actions = {
 				height: Number(heights[i]),
 				issuedAt: systemClock.now()
 			});
-			const stored = photo ? await dispatchCommand(getCommandDeps(), author, photo) : null;
+			const stored = photo
+				? await dispatchCommand(locals.services.offline.commandDeps, author, photo)
+				: null;
 			if (stored?.status !== 'applied') return refusal(stored, 'errors.journal.photoFailed');
 		}
 
@@ -199,7 +200,7 @@ export const actions: Actions = {
 			return fail(404, { journalError: say(locals, 'errors.journal.editFailed') });
 		}
 
-		const contacts = await listContacts(locals.services.people.contactDeps, viewer);
+		const contacts = await listContacts(locals.services.people.contactDirectoryDeps, viewer);
 		const author = {
 			userId: viewer.id,
 			householdId: viewer.householdId,

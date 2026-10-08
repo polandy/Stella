@@ -3,12 +3,14 @@ import type { Clock } from '../clock';
 import { createDrizzleContactFieldRepository } from '../db/contact-field-repository';
 import { createDrizzleImportantDateRepository } from '../db/important-date-repository';
 import type * as schema from '../db/schema';
+import { createDrizzleTagListReads } from '../db/tag-list-reads';
 import { createDrizzleTagRepository } from '../db/tag-repository';
 import type {
 	ContactFieldDeps,
 	ContactFieldRepository
 } from '../domain/contact-fields/contact-fields';
 import type { ImportantDateDeps, ImportantDateRepository } from '../domain/dates/important-dates';
+import type { TagListDeps } from '../domain/tags/tag-lists';
 import type { TagDeps, TagRepository } from '../domain/tags/tags';
 import type { IdGenerator } from '../id';
 
@@ -19,18 +21,20 @@ import type { IdGenerator } from '../id';
  *
  * A repository an edge reads directly sits under its noun (`contactFields`, `importantDates`,
  * `tags`); everything else is a use-case's `deps`, named after its type (`tagDeps` is a
- * `TagDeps`).
+ * `TagDeps`). A tag's writes and its lists are separate ports with an adapter each (docs/08 §8.3).
  */
 export interface RecordServices {
 	/** The one contact field repository: adding, editing, listing and removing read it. */
 	contactFields: ContactFieldRepository;
 	/** The one important date repository, also the home page's source of upcoming dates. */
 	importantDates: ImportantDateRepository;
-	/** The one tag repository, household-wide: the chip row and each person's tags. */
+	/** The one tag repository, household-wide: naming, assigning and pruning tags. */
 	tags: TagRepository;
 	contactFieldDeps: ContactFieldDeps;
 	importantDateDeps: ImportantDateDeps;
 	tagDeps: TagDeps;
+	/** The chip row, each person's tags and the people a chip filters to. */
+	tagListDeps: TagListDeps;
 }
 
 export interface RecordWiring {
@@ -50,6 +54,7 @@ export function createRecordServices({ db, clock, ids }: RecordWiring): RecordSe
 		tags,
 		contactFieldDeps: { fields: contactFields, ids, clock },
 		importantDateDeps: { dates: importantDates, ids, clock },
-		tagDeps: { tags, ids, clock }
+		tagDeps: { tags, ids, clock },
+		tagListDeps: { tagLists: createDrizzleTagListReads(db) }
 	};
 }

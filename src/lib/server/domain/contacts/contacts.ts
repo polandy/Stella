@@ -8,6 +8,7 @@ import {
 	type NewActivityEntry
 } from '../activity/activity';
 import { mergeProfiles, type MergeableProfile } from './merge-profile';
+import type { NameRepository } from './name-parts';
 import type { MediaStore } from '../media/avatars';
 import type { IdGenerator } from '../../id';
 import { deriveDisplayName } from '../../../people/display-name';
@@ -15,7 +16,6 @@ import { isKnownByMoreThanAFirstName } from '../../../people/new-person';
 import { isGender, type Gender } from '../../../people/gender';
 import { JOB_FIELD_MAX_LENGTH, type Job } from '../../../people/job';
 import type { Locale } from '../../../i18n/locales';
-import { isKnownByAFirstNameOnly } from '../../../people/namesakes';
 
 /*
  * Contact use-cases (docs/02 §2.2). Framework-agnostic orchestration over the
@@ -126,31 +126,15 @@ export interface ProfilePatch {
 	updatedAt: number;
 }
 
-export interface ContactRepository {
+/**
+ * The contact record's writes, and the one-record reads they rest on (docs/08 §8.3). The lists
+ * are read models of their own: `ContactDirectoryReads` (directory.ts) and `ContactNameReads`
+ * (contact-names.ts). It writes names too, so it is the `NameRepository` the name use-cases
+ * take.
+ */
+export interface ContactRepository extends NameRepository {
 	insert(contact: NewContact): Promise<void>;
 	findByIdVisibleTo(viewer: Viewer, id: string): Promise<Contact | null>;
-	listVisibleTo(viewer: Viewer): Promise<ContactSummary[]>;
-	/** The archived ones, which every other list leaves out (docs/02 §2.2). */
-	listArchivedVisibleTo(viewer: Viewer): Promise<ContactSummary[]>;
-	/**
-	 * Id and name of every contact the viewer may see, **archived ones included** — for
-	 * resolving an @-mention already written. Archiving takes someone out of the lists, not
-	 * out of the sentences that name them (docs/02 §2.2).
-	 */
-	listNamesVisibleTo(viewer: Viewer): Promise<ContactName[]>;
-	/** `listNamesVisibleTo`, for just these ids: the ones the viewer may not see are left out. */
-	listNamesAmongVisibleTo(viewer: Viewer, ids: readonly string[]): Promise<ContactName[]>;
-	/** Id and name of those of these ids the household still browses — archived ones left out. */
-	listBrowsableNamesAmong(viewer: Viewer, ids: readonly string[]): Promise<ContactName[]>;
-	/**
-	 * Up to `limit` ids from the browsing scope, in no particular order — for a decision that
-	 * only needs to know whether there is anybody (else), not who (Home's first-run card).
-	 */
-	listSomeBrowsableIdsVisibleTo(viewer: Viewer, limit: number): Promise<string[]>;
-	/** How many `listArchivedVisibleTo` would list. */
-	countArchivedVisibleTo(viewer: Viewer): Promise<number>;
-	/** What tells each browsable person apart (docs/02 §2.2.3), without the rest of the record. */
-	listDistinguishableVisibleTo(viewer: Viewer): Promise<DistinguishableContact[]>;
 	/** Write the hero's own fields; the caller has already checked the contact is visible. */
 	updateProfile(id: string, patch: ProfilePatch): Promise<void>;
 	/** Record a gender, or none; the caller has already checked the contact is visible. */
@@ -189,6 +173,11 @@ export interface ContactDeps {
 	contacts: ContactRepository;
 	ids: IdGenerator;
 	clock: Clock;
+}
+
+/** Looking one person up — all a caller that only checks visibility needs to hand in. */
+export interface ContactLookupDeps {
+	contacts: Pick<ContactRepository, 'findByIdVisibleTo'>;
 }
 
 /** Deleting a person also unlinks the bytes of their photos (docs/02 §2.2). */
@@ -429,94 +418,11 @@ export async function describeContact(
 
 /** Fetch a contact the viewer may see, or null. */
 export async function getContact(
-	deps: Pick<ContactDeps, 'contacts'>,
+	deps: ContactLookupDeps,
 	viewer: Viewer,
 	id: string
 ): Promise<Contact | null> {
 	return deps.contacts.findByIdVisibleTo(viewer, id);
-}
-
-/** List the contacts visible to the viewer. */
-export async function listContacts(
-	deps: Pick<ContactDeps, 'contacts'>,
-	viewer: Viewer
-): Promise<ContactSummary[]> {
-	return deps.contacts.listVisibleTo(viewer);
-}
-
-/**
- * Resolve @-mentions written in a note, journal entry or moment. Uses the *visibility*
- * scope, not the browsing one: an archived person is out of the pickers, but a sentence
- * that already names them must keep naming them rather than reading "@unknown".
- */
-export async function listContactNames(
-	deps: Pick<ContactDeps, 'contacts'>,
-	viewer: Viewer
-): Promise<ContactName[]> {
-	return deps.contacts.listNamesVisibleTo(viewer);
-}
-
-/**
- * `listContactNames` for just the people a page is about to name — the mentions in the story
- * page it renders, say — rather than everyone in the household.
- */
-export async function listContactNamesAmong(
-	deps: Pick<ContactDeps, 'contacts'>,
-	viewer: Viewer,
-	ids: readonly string[]
-): Promise<ContactName[]> {
-	const unique = [...new Set(ids)];
-	return unique.length === 0 ? [] : deps.contacts.listNamesAmongVisibleTo(viewer, unique);
-}
-
-/** Those of `ids` the viewer may see and the household still browses, with their names. */
-export async function listBrowsableNamesAmong(
-	deps: Pick<ContactDeps, 'contacts'>,
-	viewer: Viewer,
-	ids: readonly string[]
-): Promise<ContactName[]> {
-	const unique = [...new Set(ids)];
-	return unique.length === 0 ? [] : deps.contacts.listBrowsableNamesAmong(viewer, unique);
-}
-
-/**
- * How many browsable people are known by a first name alone (docs/02 §2.2.3) — the number on
- * the Settings card — counted by the clean-up list's own rule over just the columns it reads.
- */
-export async function countKnownByAFirstNameOnly(
-	deps: Pick<ContactDeps, 'contacts'>,
-	viewer: Viewer
-): Promise<number> {
-	return (await deps.contacts.listDistinguishableVisibleTo(viewer)).filter(isKnownByAFirstNameOnly)
-		.length;
-}
-
-/**
- * Enough of the household's browsable people to tell whether it holds anybody besides the
- * viewer's own record: two ids, so one more than the self record can ever be. Home's first-run
- * card (docs/02 §2.22.3) asks this on every visit, so it must not read the whole household.
- */
-export async function listPeopleEnoughForFirstRun(
-	deps: Pick<ContactDeps, 'contacts'>,
-	viewer: Viewer
-): Promise<string[]> {
-	return deps.contacts.listSomeBrowsableIdsVisibleTo(viewer, 2);
-}
-
-/** How many archived people the viewer may see — what the archive chip says. */
-export async function countArchivedContacts(
-	deps: Pick<ContactDeps, 'contacts'>,
-	viewer: Viewer
-): Promise<number> {
-	return deps.contacts.countArchivedVisibleTo(viewer);
-}
-
-/** List the archived contacts — the only read that shows them as a list. */
-export async function listArchivedContacts(
-	deps: Pick<ContactDeps, 'contacts'>,
-	viewer: Viewer
-): Promise<ContactSummary[]> {
-	return deps.contacts.listArchivedVisibleTo(viewer);
 }
 
 /**

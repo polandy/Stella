@@ -4,7 +4,7 @@ import { addPerson, appReady, signIn } from './app';
 
 /*
  * A photo from Immich as the person's own photo (docs/02 §2.24.6):
- * *Use as photo* in the Immich viewer, and *From Immich* in the picture's chooser. Written after
+ * *Use as photo* in the lightbox on an Immich photo, and *From Immich* in the picture's chooser. Written after
  * the owner tried #245 in the preview (docs/08 §8.4.1).
  *
  * The e2e server runs with `IMMICH_DEMO=true`: Immich is the in-memory demo library, whose
@@ -27,8 +27,10 @@ const portrait = (page: Page) =>
 const worn = (page: Page) => portrait(page).locator('img');
 
 const cropper = (page: Page) => page.getByRole('dialog', { name: 'Frame the photo' });
-const viewer = (page: Page) => page.getByTestId('immich-viewer');
-const galleryPhotos = (page: Page) => page.getByTestId('photo-grid').locator('li img');
+const viewer = (page: Page) => page.getByTestId('photo-lightbox');
+/** The gallery's photos among the Photos card's *All*, which mixes them with Immich's. */
+const galleryPhotos = (page: Page) =>
+	page.getByTestId('photo-grid').locator('li[data-source="stella"] img');
 
 /** Opens the Photos card's Immich menu and picks one of its items. */
 async function immichMenu(
@@ -65,18 +67,21 @@ async function linkFace(page: Page, personName: string, faceName: string): Promi
 	await appReady(page);
 }
 
-/** The strip's photo at `index`, and the day it was taken as the page says it. */
+/** The Immich photo at `index` in the card's *All*, and the day it was taken as the page says it. */
 async function stripPhoto(page: Page, index: number): Promise<{ tile: Locator; day: string }> {
-	const strip = page.getByTestId('immich-strip');
-	await expect(strip).toHaveAttribute('data-phase', 'shown');
-	const tile = strip.getByRole('button').nth(index);
+	const tile = page
+		.getByTestId('photo-grid')
+		.locator('li[data-source="immich"]')
+		.nth(index)
+		.getByRole('button');
+	await expect(tile).toBeVisible();
 	const alt = await tile.locator('img').getAttribute('alt');
 	const day = /^Photo from (.+), in Immich$/.exec(alt ?? '')?.[1];
-	if (!day) throw new Error(`The strip's photo has no day in its description: ${alt}`);
+	if (!day) throw new Error(`The Immich photo has no day in its description: ${alt}`);
 	return { tile, day };
 }
 
-/** Opens the strip's newest photo in the viewer; the day it was taken. */
+/** Opens the newest Immich photo in the lightbox; the day it was taken. */
 async function openNewestInViewer(page: Page): Promise<string> {
 	const { tile, day } = await stripPhoto(page, 0);
 	await tile.click();
@@ -84,7 +89,7 @@ async function openNewestInViewer(page: Page): Promise<string> {
 	return day;
 }
 
-/** *Use as photo* in the viewer, up to the cropper ready on the preview. */
+/** *Use as photo* in the lightbox, up to the cropper ready on the preview. */
 async function cropFromViewer(page: Page): Promise<void> {
 	await viewer(page).getByRole('button', { name: 'Use as photo' }).click();
 	await expect(cropper(page).getByRole('button', { name: 'Use photo' })).toBeEnabled();
@@ -93,13 +98,17 @@ async function cropFromViewer(page: Page): Promise<void> {
 /** The gallery's only photo opened in the lightbox says it was taken on `day`. */
 async function expectOnlyGalleryPhotoTaken(page: Page, day: string): Promise<void> {
 	await expect(galleryPhotos(page)).toHaveCount(1);
-	await page.getByTestId('photo-grid').getByRole('button').first().click();
+	await page
+		.getByTestId('photo-grid')
+		.locator('li[data-source="stella"]')
+		.getByRole('button')
+		.click();
 	await expect(page.getByTestId('photo-lightbox').getByTestId('photo-date')).toHaveText(
 		`Taken ${day}`
 	);
 }
 
-test('Use as photo in the viewer keeps the crop as their picture, dated by Immich; a cancel keeps nothing', async ({
+test('Use as photo in the lightbox keeps the crop as their picture, dated by Immich; a cancel keeps nothing', async ({
 	page
 }) => {
 	await addPerson(page, 'Quirin', 'Fotomann');

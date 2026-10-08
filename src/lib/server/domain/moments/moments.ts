@@ -13,6 +13,7 @@ import {
 } from '../../../mentions/mentions';
 import { resolveForAudience } from '../mentions/resolve-for-audience';
 import { createContact, type ContactRepository } from '../contacts/contacts';
+import type { ContactDirectoryReads } from '../contacts/directory';
 import { requireVisibleContact } from '../contacts/require-visible';
 import { addToJournalDay, type JournalAuthor, type JournalRepository } from '../journal/journal';
 
@@ -46,6 +47,8 @@ export interface CaptureMomentInput {
 
 export interface CaptureMomentDeps {
 	contacts: ContactRepository;
+	/** Whom a handle can name — read again after the moment's new people are created. */
+	directory: Pick<ContactDirectoryReads, 'listVisibleTo'>;
 	journal: JournalRepository;
 	ids: IdGenerator;
 	clock: Clock;
@@ -87,7 +90,7 @@ export async function captureMoment(
 	// Checked before anyone is created, so a refused moment leaves the household as it was.
 	if (input.anchorId) await requireVisibleContact(deps.contacts, author, input.anchorId);
 
-	const visible = await deps.contacts.listVisibleTo(viewer);
+	const visible = await deps.directory.listVisibleTo(viewer);
 	// A handle that is two people is asked about before anyone is created: a refused moment
 	// must leave the household as it found it.
 	resolveForAudience(visible, input.visibility, body);
@@ -137,7 +140,7 @@ export async function captureMoment(
 	}
 
 	const resolved = resolveForAudience(
-		await deps.contacts.listVisibleTo(viewer),
+		await deps.directory.listVisibleTo(viewer),
 		input.visibility,
 		written
 	);

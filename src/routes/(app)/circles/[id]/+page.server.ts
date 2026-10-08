@@ -5,19 +5,19 @@ import {
 	addMembers,
 	getCircle,
 	groupMembersByRole,
-	listMembers,
 	removeMember,
 	setMembersRole,
 	suggestRoles
 } from '$lib/server/domain/circles/circles';
+import { listMembers } from '$lib/server/domain/circles/memberships';
 import { circlePhotoView, photoRoleOptions } from '$lib/server/domain/circles/circle-photo-view';
 import { listCirclePhotos } from '$lib/server/domain/circles/circle-photos';
 import { BlankRoleNameError, renameCircleRole } from '$lib/server/domain/circles/rename-role';
-import { listContactNamesAmong } from '$lib/server/domain/contacts/contacts';
+import { listContactNamesAmong } from '$lib/server/domain/contacts/contact-names';
 import { listCircleCuts } from '$lib/server/domain/media/cuts';
 import { readSurnameHelp } from '$lib/server/domain/contacts/last-names';
 import { photoActions } from './actions/photos';
-import { lastNameActions } from '$lib/server/last-names-actions';
+import { lastNameActions } from '../../_shared/last-names-actions';
 import type { Actions, PageServerLoad } from './$types';
 import { say, translator } from '$lib/server/i18n/say';
 
@@ -32,7 +32,7 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 	if (!circle) throw error(404, say(locals, 'errors.circle.notFound'));
 
 	const [members, photos, cuts, surnameHelp] = await Promise.all([
-		listMembers(locals.services.circles.circleDeps, viewer, params.id),
+		listMembers(locals.services.circles.circleMembershipDeps, viewer, params.id),
 		listCirclePhotos(locals.services.circles.circlePhotoDeps, viewer, params.id),
 		listCircleCuts(locals.services.circles.cutDeps, viewer, params.id),
 		readSurnameHelp(locals.services.people.surnameReviewDeps, viewer, null)
@@ -89,7 +89,7 @@ export const actions: Actions = {
 		// Every chosen person must be visible to the actor — one that is not fails the whole
 		// pick rather than being dropped silently from it (§3.7).
 		const chosen = new Set(parsed.output.contactIds);
-		const visible = await listContactNamesAmong(locals.services.people.contactDeps, viewer, [
+		const visible = await listContactNamesAmong(locals.services.people.contactNameDeps, viewer, [
 			...chosen
 		]);
 		if (visible.length !== chosen.size) {
@@ -121,7 +121,7 @@ export const actions: Actions = {
 		if (!parsed.success) return fail(400, { error: say(locals, 'errors.circle.choosePerson') });
 
 		await setMembersRole(
-			locals.services.circles.circleDeps,
+			locals.services.circles.memberRoleDeps,
 			viewer,
 			params.id,
 			parsed.output.contactIds,

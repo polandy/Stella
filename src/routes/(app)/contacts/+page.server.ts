@@ -3,10 +3,10 @@ import {
 	countArchivedContacts,
 	listArchivedContacts,
 	listContacts
-} from '$lib/server/domain/contacts/contacts';
-import { listContactsByTag, listTags } from '$lib/server/domain/tags/tags';
+} from '$lib/server/domain/contacts/directory';
+import { listContactsByTag, listTags } from '$lib/server/domain/tags/tag-lists';
 import { readSurnameHelp } from '$lib/server/domain/contacts/last-names';
-import { lastNameActions } from '$lib/server/last-names-actions';
+import { lastNameActions } from '../_shared/last-names-actions';
 import type { Actions, PageServerLoad } from './$types';
 import { systemClock } from '$lib/server/clock';
 import { todayFor } from '$lib/dates/today';
@@ -27,13 +27,13 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 	// The archive's size is what the chip says — and a chip that leads to an empty room is
 	// worse than no chip — so it is counted either way; the list only when it is shown.
 	const [tags, archivedCount, contacts, touches, surnameHelp] = await Promise.all([
-		listTags(locals.services.records.tagDeps, viewer.householdId),
-		countArchivedContacts(locals.services.people.contactDeps, viewer),
+		listTags(locals.services.records.tagListDeps, viewer.householdId),
+		countArchivedContacts(locals.services.people.contactDirectoryDeps, viewer),
 		showArchived
-			? listArchivedContacts(locals.services.people.contactDeps, viewer)
+			? listArchivedContacts(locals.services.people.contactDirectoryDeps, viewer)
 			: activeTag
-				? listContactsByTag(locals.services.records.tagDeps, viewer, activeTag)
-				: listContacts(locals.services.people.contactDeps, viewer),
+				? listContactsByTag(locals.services.records.tagListDeps, viewer, activeTag)
+				: listContacts(locals.services.people.contactDirectoryDeps, viewer),
 		locals.services.household.attention.listLastTouchedVisibleTo(viewer),
 		readSurnameHelp(locals.services.people.surnameReviewDeps, viewer, null)
 	]);

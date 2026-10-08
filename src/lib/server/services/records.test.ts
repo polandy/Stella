@@ -11,7 +11,8 @@ import * as schema from '../db/schema';
 import { addContactField, listContactFields } from '../domain/contact-fields/contact-fields';
 import { createContact } from '../domain/contacts/contacts';
 import { addImportantDate, listImportantDates } from '../domain/dates/important-dates';
-import { assignTagByName, listTagsForContact } from '../domain/tags/tags';
+import { listTagsForContact } from '../domain/tags/tag-lists';
+import { assignTagByName } from '../domain/tags/tags';
 import type { IdGenerator } from '../id';
 import { createServices } from './app-services';
 import type { AuthConfig } from './auth';
@@ -27,13 +28,14 @@ const clock: Clock = { now: () => Date.UTC(2026, 9, 8, 9) };
 let counter = 0;
 const ids: IdGenerator = { next: () => `id-${++counter}` };
 
+let sqlite: Database;
 let db: BunSQLiteDatabase<typeof schema>;
 let wiring: RecordWiring;
 let admin: AuthUser;
 
 beforeEach(async () => {
 	counter = 0;
-	const sqlite = new Database(':memory:');
+	sqlite = new Database(':memory:');
 	sqlite.exec('PRAGMA foreign_keys = ON;');
 	db = drizzle(sqlite, { schema });
 	migrate(db, { migrationsFolder: './drizzle' });
@@ -101,7 +103,7 @@ describe('createRecordServices', () => {
 		expect(fields.map((field) => field.id)).toEqual([fieldId]);
 		const dates = await listImportantDates(records.importantDateDeps, viewerOf(admin), anna);
 		expect(dates.map((date) => date.id)).toEqual([dateId]);
-		const tags = await listTagsForContact(records.tagDeps, viewerOf(admin), anna);
+		const tags = await listTagsForContact(records.tagListDeps, viewerOf(admin), anna);
 		expect(tags.map((tag) => tag.id)).toEqual([tagId]);
 	});
 });
@@ -130,10 +132,19 @@ describe('createServices', () => {
 		};
 		const services = createServices({
 			// Nothing here touches a file: the media store is lazy on disk.
-			config: { ...config, mediaDir: '/nonexistent/stella-media' },
+			config: {
+				...config,
+				immich: null,
+				sessionSecret: 'a-session-secret',
+				updateCheck: false,
+				updateFeedUrl: '',
+				mediaDir: '/nonexistent/stella-media'
+			},
 			db,
+			sqlite,
 			clock,
-			ids
+			ids,
+			version: '1.0.0'
 		});
 		expect(services.records.tagDeps.tags).toBe(services.records.tags);
 		expect(services.records.contactFieldDeps.clock).toBe(clock);

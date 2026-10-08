@@ -63,6 +63,13 @@ export const immich: ImmichMessages = {
 	'immich.match.done': 'Das sind für jetzt alle.',
 	'immich.match.doneHint': 'Benenne weitere Gesichter in Immich und schau dann noch einmal.',
 	'immich.match.again': 'Nochmals suchen',
+
+	'immich.hint.label': (p) => `Vorschlag aus Immich für ${p.name}`,
+	'immich.hint.question': (p) => `Ist das ${p.name}?`,
+	'immich.hint.has': (p) =>
+		`Immich kennt „${p.immichName}“ mit ${p.shown} ${p.count === 1 ? 'Foto' : 'Fotos'}.`,
+	'immich.hint.hasUncounted': (p) => `Immich kennt „${p.immichName}“.`,
+	'immich.hint.choose': 'Andere wählen',
 	'immich.tabs.label': 'Was durchsehen',
 	'immich.tabs.matching': 'Abgleich',
 	'immich.tabs.new': 'Neu aus Immich',
@@ -118,16 +125,12 @@ export const immich: ImmichMessages = {
 	'immich.strip.photo': (p) => `Foto vom ${p.date}, in Immich`,
 	'immich.strip.undated': 'Foto in Immich',
 	'immich.strip.showMore': 'Mehr zeigen',
-	'immich.viewer.dialog': 'Foto aus Immich',
-	'immich.viewer.position': (p) => `${p.at} von ${p.count}`,
-	'immich.viewer.previous': 'Vorheriges Foto',
-	'immich.viewer.next': 'Nächstes Foto',
 	'immich.viewer.use': 'Als Foto verwenden',
 	'immich.viewer.useFailed':
 		'Das Foto konnte nicht übernommen werden. Lade die Seite neu und versuche es noch einmal.',
 
 	'immich.together.label': 'Wessen Fotos',
-	'immich.together.own': 'Alle Fotos',
+	'immich.together.own': (p) => p.name,
 	'immich.together.withYou': (p) => `Du und ${p.name}`,
 	'immich.together.pair': (p) => `${p.first} und ${p.second}`,
 	'immich.together.stripWithYou': (p) => `Fotos von dir und ${p.name} zusammen, in Immich`,

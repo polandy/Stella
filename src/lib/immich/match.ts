@@ -194,3 +194,13 @@ export function matchImmichPeople(input: MatchInput): ImmichMatch[] {
 	);
 	return rows.map(({ contactId, kind, candidates }) => ({ contactId, kind, candidates }));
 }
+
+/**
+ * The face a person's row offers for one tap, or null: only a `likely` row has one — a maybe
+ * asks, so it stays in the settings list (docs/02 §2.24.7). Read off the whole list's rows, so
+ * a face two people share a full name with is a doubt here as it is there.
+ */
+export function likelyMatchFor(rows: readonly ImmichMatch[], contactId: string): string | null {
+	const row = rows.find((match) => match.contactId === contactId);
+	return row?.kind === 'likely' ? row.candidates[0].personId : null;
+}

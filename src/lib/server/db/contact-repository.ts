@@ -1,11 +1,6 @@
-import { and, count, eq, inArray, isNotNull, or, sql } from 'drizzle-orm';
-import { alias } from 'drizzle-orm/sqlite-core';
+import { and, eq, inArray, or } from 'drizzle-orm';
 import type { BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
-import {
-	contactBrowsableBy,
-	contactColumnsVisibleTo,
-	contactVisibleTo
-} from '../access/query-scoping';
+import { contactVisibleTo } from '../access/query-scoping';
 import type { Viewer } from '../access/visibility';
 import type {
 	Contact,
@@ -16,8 +11,7 @@ import type {
 import type { NewActivityEntry } from '../domain/activity/activity';
 import type { MergeableProfile } from '../domain/contacts/merge-profile';
 import { mergeContacts } from './contact-merge';
-import type { NameCandidate, NameCandidateSource } from '../domain/contacts/suggestions';
-import type { NameRepository, NameWrite } from '../domain/contacts/name-parts';
+import type { NameWrite } from '../domain/contacts/name-parts';
 import { readGender, type Gender } from '../../people/gender';
 import type { Job } from '../../people/job';
 import type * as schema from './schema';
@@ -26,32 +20,15 @@ import {
 	contact as contactTable,
 	journalEntry,
 	photo,
-	relationship,
 	user as userTable
 } from './schema';
 
 /*
- * Drizzle adapter for the ContactRepository port (docs/08 §8.3). Reads are scoped through
- * the central `contactVisibleTo` condition so access control is enforced in one place.
+ * Drizzle adapter for the ContactRepository port (docs/08 §8.3): the record's writes and the
+ * one-record reads they rest on. Reads are scoped through the central `contactVisibleTo`
+ * condition so access control is enforced in one place. The lists are read models of their
+ * own (`contact-directory-reads.ts`, `contact-name-reads.ts`, `name-candidate-reads.ts`).
  */
-
-/** What a list row shows; shared so the directory and the archive cannot drift apart. */
-const summaryColumns = {
-	id: contactTable.id,
-	displayName: contactTable.displayName,
-	firstName: contactTable.firstName,
-	lastName: contactTable.lastName,
-	nickname: contactTable.nickname,
-	formerName: contactTable.formerName,
-	description: contactTable.description,
-	metPlace: contactTable.metPlace,
-	metDate: contactTable.metDate,
-	visibility: contactTable.visibility,
-	avatarPhotoId: contactTable.avatarPhotoId,
-	birthDate: contactTable.birthDate,
-	jobTitle: contactTable.jobTitle,
-	company: contactTable.company
-};
 
 /** The profile columns a merge combines (docs/02 §2.2) — every one that can be empty. */
 const mergeableColumns = {
@@ -104,7 +81,7 @@ const contactColumns = {
 
 export function createDrizzleContactRepository(
 	db: BunSQLiteDatabase<typeof schema>
-): ContactRepository & NameCandidateSource & NameRepository {
+): ContactRepository {
 	return {
 		async insert(contact: NewContact) {
 			db.insert(contactTable).values(contact).run();
@@ -121,121 +98,6 @@ export function createDrizzleContactRepository(
 			return row
 				? { ...row, isDeceased: row.isDeceased === 1, gender: readGender(row.gender) }
 				: null;
-		},
-
-		async listVisibleTo(viewer: Viewer) {
-			return db
-				.select(summaryColumns)
-				.from(contactTable)
-				.where(contactBrowsableBy(viewer))
-				.orderBy(contactTable.displayName)
-				.all();
-		},
-
-		async listNameCandidatesVisibleTo(viewer: Viewer): Promise<NameCandidate[]> {
-			// Count only relationships whose other end the viewer may see, so a private
-			// person never shows up as "well connected" through someone else's link.
-			const other = alias(contactTable, 'other');
-			const visibleLinks = db
-				.select({ n: sql<number>`count(*)` })
-				.from(relationship)
-				.innerJoin(
-					other,
-					eq(
-						other.id,
-						sql`case when ${relationship.fromContactId} = ${contactTable.id} then ${relationship.toContactId} else ${relationship.fromContactId} end`
-					)
-				)
-				.where(
-					and(
-						or(
-							eq(relationship.fromContactId, contactTable.id),
-							eq(relationship.toContactId, contactTable.id)
-						),
-						contactColumnsVisibleTo(viewer, other)
-					)
-				);
-			return db
-				.select({
-					id: contactTable.id,
-					displayName: contactTable.displayName,
-					firstName: contactTable.firstName,
-					lastName: contactTable.lastName,
-					relationshipCount: sql<number>`(${visibleLinks})`.mapWith(Number)
-				})
-				.from(contactTable)
-				.where(contactBrowsableBy(viewer))
-				.orderBy(contactTable.displayName)
-				.all();
-		},
-
-		async listArchivedVisibleTo(viewer: Viewer) {
-			return db
-				.select(summaryColumns)
-				.from(contactTable)
-				.where(and(contactVisibleTo(viewer), isNotNull(contactTable.archivedAt)))
-				.orderBy(contactTable.displayName)
-				.all();
-		},
-
-		async listNamesAmongVisibleTo(viewer: Viewer, ids: readonly string[]) {
-			return db
-				.select({ id: contactTable.id, displayName: contactTable.displayName })
-				.from(contactTable)
-				.where(and(inArray(contactTable.id, [...ids]), contactVisibleTo(viewer)))
-				.all();
-		},
-
-		async listBrowsableNamesAmong(viewer: Viewer, ids: readonly string[]) {
-			return db
-				.select({ id: contactTable.id, displayName: contactTable.displayName })
-				.from(contactTable)
-				.where(and(inArray(contactTable.id, [...ids]), contactBrowsableBy(viewer)))
-				.all();
-		},
-
-		async listSomeBrowsableIdsVisibleTo(viewer: Viewer, limit: number) {
-			return db
-				.select({ id: contactTable.id })
-				.from(contactTable)
-				.where(contactBrowsableBy(viewer))
-				.limit(limit)
-				.all()
-				.map((row) => row.id);
-		},
-
-		async countArchivedVisibleTo(viewer: Viewer) {
-			const row = db
-				.select({ n: count() })
-				.from(contactTable)
-				.where(and(contactVisibleTo(viewer), isNotNull(contactTable.archivedAt)))
-				.get();
-			return row?.n ?? 0;
-		},
-
-		async listDistinguishableVisibleTo(viewer: Viewer) {
-			return db
-				.select({
-					id: contactTable.id,
-					displayName: contactTable.displayName,
-					lastName: contactTable.lastName,
-					description: contactTable.description,
-					metPlace: contactTable.metPlace,
-					metDate: contactTable.metDate
-				})
-				.from(contactTable)
-				.where(contactBrowsableBy(viewer))
-				.all();
-		},
-
-		async listNamesVisibleTo(viewer: Viewer) {
-			// `contactVisibleTo`, not `contactBrowsableBy`: a mention of an archived person still
-			// has to render their name (docs/02 §2.2).
-			return db
-				.select({ id: contactTable.id, displayName: contactTable.displayName })
-				.from(contactTable)
-				.where(contactVisibleTo(viewer))
-				.all();
 		},
 
 		async deleteVisibleTo(viewer: Viewer, id: string, audit: NewActivityEntry) {

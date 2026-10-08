@@ -2,9 +2,8 @@ import { fail } from '@sveltejs/kit';
 import { requireUser, requireViewer } from '$lib/server/auth/guards';
 import { say, translator } from '$lib/server/i18n/say';
 import { setSelfContact, UnknownSelfContactError } from '$lib/server/domain/household/self-contact';
-import { countKnownByAFirstNameOnly } from '$lib/server/domain/contacts/contacts';
+import { countKnownByAFirstNameOnly } from '$lib/server/domain/contacts/directory';
 import { countLastNames } from '$lib/server/domain/contacts/last-names';
-import { getImmich, getUpdateCheck } from '$lib/server/services';
 import { APP_VERSION } from '$lib/version';
 import type { Actions, PageServerLoad } from './$types';
 
@@ -18,11 +17,11 @@ import type { Actions, PageServerLoad } from './$types';
  */
 export const load: PageServerLoad = async ({ locals }) => {
 	const user = requireUser(locals);
-	const check = getUpdateCheck();
+	const check = locals.services.release.updateCheck;
 	const viewer = requireViewer(locals);
 	// How many are left to tidy up, so the card says whether opening it is worth it.
 	const [firstNameOnlyCount, lastNames] = await Promise.all([
-		countKnownByAFirstNameOnly(locals.services.people.contactDeps, viewer),
+		countKnownByAFirstNameOnly(locals.services.people.contactDirectoryDeps, viewer),
 		countLastNames(locals.services.people.surnameReviewDeps, viewer)
 	]);
 	return {
@@ -33,7 +32,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 		update: check?.status() ?? null,
 		// Immich's line (docs/02 §2.24.1), streamed like the release check; null
 		// when this instance has no Immich, and then the section is not there at all.
-		immich: getImmich()?.connection.status() ?? null
+		immich: locals.services.immich?.connection.status() ?? null
 	};
 };
 

@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'bun:test';
 import {
 	foldName,
+	likelyMatchFor,
 	matchImmichPeople,
 	type MatchableContact,
 	type MatchableImmichPerson
@@ -262,5 +263,37 @@ describe('matchImmichPeople', () => {
 		);
 
 		expect(rows.map((row) => row.contactId)).toEqual(['c2', 'c1', 'c4', 'c3']);
+	});
+});
+
+describe('likelyMatchFor', () => {
+	const lena = contact('c-lena', 'Lena', 'Brunner');
+	const timo = contact('c-timo', 'Timo', 'Brunner');
+
+	it('gives the one face a likely row proposes for that person', () => {
+		const rows = match([lena, timo], [person('p-lena', 'Lena Brunner'), person('p-timo', 'Timo')]);
+
+		expect(likelyMatchFor(rows, 'c-lena')).toBe('p-lena');
+	});
+
+	it('gives nothing for a maybe — the settings list asks about those', () => {
+		const rows = match([lena, timo], [person('p-lena', 'Lena Brunner'), person('p-timo', 'Timo')]);
+
+		expect(rows.some((row) => row.contactId === 'c-timo' && row.kind === 'maybe')).toBe(true);
+		expect(likelyMatchFor(rows, 'c-timo')).toBeNull();
+	});
+
+	it('gives nothing when two faces carry the full name, as the list makes that a maybe', () => {
+		const rows = match([lena], [person('p-1', 'Lena Brunner'), person('p-2', 'Lena Brunner')]);
+
+		expect(rows).toHaveLength(1);
+		expect(likelyMatchFor(rows, 'c-lena')).toBeNull();
+	});
+
+	it('gives nothing for a person no row is about', () => {
+		const rows = match([lena], [person('p-lena', 'Lena Brunner')]);
+
+		expect(likelyMatchFor(rows, 'c-lena')).toBe('p-lena');
+		expect(likelyMatchFor(rows, 'c-timo')).toBeNull();
 	});
 });

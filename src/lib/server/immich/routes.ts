@@ -10,12 +10,13 @@ import {
 	type ImmichMediaRefusal
 } from '../domain/immich/glimpse';
 import { findImmichFaces, type ImmichLinkDeps } from '../domain/immich/links';
+import { findLikelyMatchFor, type PersonMatchDeps } from '../domain/immich/person-match';
 import type { ImmichMediaSigner } from '../domain/immich/signed-media';
 
 /*
  * What the Immich routes answer (docs/02 §2.24.3, §2.24.4), decided here so
  * it can be tested without a server; `src/routes/media/immich/[token]` and
- * `src/routes/(app)/contacts/[id]/immich/{faces,photos}` only wire the services and say a
+ * `src/routes/(app)/contacts/[id]/immich/{faces,match,photos}` only wire the services and say a
  * refusal in the reader's language.
  *
  * Every image from Immich — a face in the picker, a photo in the strip or the viewer — comes
@@ -147,4 +148,23 @@ export async function answerFaceSearch(
 		}))
 	);
 	return Response.json({ faces, error: null });
+}
+
+/**
+ * `GET /contacts/{id}/immich/match`: the face the Photos card suggests for an unlinked person —
+ * the one *Find your people* would link in one tap (docs/02 §2.24.7) — or `null`. Only for a
+ * person the member can see. Immich not answering is no suggestion rather than an error: the
+ * card simply offers nothing, and *Find in Immich* says what is wrong when asked.
+ */
+export async function answerMatchHint(
+	deps: PersonMatchDeps | null,
+	viewer: Viewer | null,
+	contactId: string
+): Promise<Response | RouteRefusal> {
+	if (!viewer) return NOT_SIGNED_IN;
+	if (!deps) return NOT_FOUND;
+	const outcome = await findLikelyMatchFor(deps, viewer, contactId);
+	if (outcome.kind === 'notVisible') return { status: 404, message: 'errors.contact.notFound' };
+	const match = outcome.kind === 'answered' ? outcome.match : null;
+	return Response.json({ match }, { headers: { 'Cache-Control': IMMICH_MEDIA_CACHE_CONTROL } });
 }

@@ -1,6 +1,7 @@
 import { mentionsOtherThan } from '../../../mentions/mentions';
 import type { Visibility } from '../../access/visibility';
 import type { ContactRepository } from '../contacts/contacts';
+import type { ContactDirectoryReads } from '../contacts/directory';
 import { requireVisibleContact } from '../contacts/require-visible';
 import { resolveForAudience } from '../mentions/resolve-for-audience';
 import { addToJournalDay, type JournalDayDeps } from './journal';
@@ -14,7 +15,9 @@ import { addToJournalDay, type JournalDayDeps } from './journal';
  */
 
 export interface WriteJournalEntryDeps extends JournalDayDeps {
-	contacts: Pick<ContactRepository, 'findByIdVisibleTo' | 'listVisibleTo'>;
+	contacts: Pick<ContactRepository, 'findByIdVisibleTo'>;
+	/** Whom an @-mention can name: the people the author sees. */
+	directory: Pick<ContactDirectoryReads, 'listVisibleTo'>;
 }
 
 export interface WriteJournalEntryInput {
@@ -43,7 +46,7 @@ export async function writeJournalEntry(
 	await requireVisibleContact(deps.contacts, author, input.contactId);
 	const viewer = { id: author.userId, householdId: author.householdId };
 	const resolved = resolveForAudience(
-		await deps.contacts.listVisibleTo(viewer),
+		await deps.directory.listVisibleTo(viewer),
 		input.visibility,
 		input.body
 	);

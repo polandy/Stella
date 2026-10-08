@@ -331,6 +331,19 @@ export const contact = {
 	'contact.photos.cutFrom': (p: { circle: string }) => `From ${p.circle}`,
 	'contact.photos.onGroupPhotos': 'On group photos',
 	'contact.photos.groupPhotoOf': (p: { circle: string }) => `Group photo of ${p.circle}`,
+	// The card's tabs, its *All* tile, and the one lightbox for both sources (§2.14, §2.24.3).
+	'contact.photos.tabsLabel': 'Which photos',
+	'contact.photos.tabAll': 'All',
+	'contact.photos.tabStella': 'Stella',
+	'contact.photos.tabImmich': 'Immich',
+	'contact.photos.sourceStella': 'Stella',
+	'contact.photos.sourceImmich': 'Immich',
+	'contact.photos.allCount': (p: { count: number; shown: string }) =>
+		`All ${p.shown} ${p.count === 1 ? 'photo' : 'photos'}`,
+	'contact.photos.noneInStella': 'No photos added in Stella yet.',
+	'contact.photos.previous': 'Previous photo',
+	'contact.photos.next': 'Next photo',
+	'contact.photos.position': (p: { at: number; count: number }) => `${p.at} of ${p.count}`,
 
 	'contact.mentions.in': 'in',
 	'contact.mentions.notes': 'notes',

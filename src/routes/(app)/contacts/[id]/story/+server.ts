@@ -1,6 +1,7 @@
 import { error, json } from '@sveltejs/kit';
 import { requireViewer } from '$lib/server/auth/guards';
-import { getContact, listContactNamesAmong } from '$lib/server/domain/contacts/contacts';
+import { getContact } from '$lib/server/domain/contacts/contacts';
+import { listContactNamesAmong } from '$lib/server/domain/contacts/contact-names';
 import { authorNames } from '$lib/server/domain/household/members';
 import { listStoryPage } from '$lib/server/domain/story/story';
 import { parseStoryCursor } from '$lib/story/cursor';
@@ -47,7 +48,7 @@ export const POST: RequestHandler = async ({ locals, params, request }) => {
 			params.id,
 			entryIdsOf(page.items)
 		),
-		listContactNamesAmong(locals.services.people.contactDeps, viewer, mentionIdsOf(page.items)),
+		listContactNamesAmong(locals.services.people.contactNameDeps, viewer, mentionIdsOf(page.items)),
 		authorNames(locals.services.household.memberDeps, viewer.householdId)
 	]);
 	const context = {

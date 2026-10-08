@@ -10,6 +10,7 @@ import {
 	answerFaceSearch,
 	answerGlimpse,
 	answerImmichMedia,
+	answerMatchHint,
 	IMMICH_MEDIA_CACHE_CONTROL
 } from './routes';
 
@@ -335,5 +336,92 @@ describe('answerFaceSearch', () => {
 		const answer = await answerFaceSearch(d, viewer, 'c-bert', 'x');
 		if (!(answer instanceof Response)) throw new Error('refused');
 		expect(await answer.json()).toEqual({ faces: [], error: 'immich.error.keyRejected' });
+	});
+});
+
+describe('answerMatchHint', () => {
+	/** Bert and Carl Example are visible and nobody is linked; Bert's full name is a likely match. */
+	const deps = () => {
+		const gateway = createFakeImmichGateway(testLibrary());
+		const person = (id: string, firstName: string, lastName: string | null) => ({
+			id,
+			displayName: [firstName, lastName].filter(Boolean).join(' '),
+			firstName,
+			lastName,
+			nickname: null,
+			description: null,
+			avatarPhotoId: null
+		});
+		return {
+			gateway,
+			deps: {
+				gateway,
+				links: noLinks,
+				ignores: { listVisibleTo: async () => [] },
+				directory: {
+					listVisibleTo: async () => [
+						person('c-bert', 'Bert', 'Example'),
+						person('c-carl', 'Carl', null)
+					]
+				},
+				signer
+			}
+		};
+	};
+
+	it('answers the likely face as JSON, never to be kept', async () => {
+		const { deps: d } = deps();
+		const answer = await answerMatchHint(d, viewer, 'c-bert');
+		if (!(answer instanceof Response)) throw new Error(`refused with ${answer.status}`);
+		expect(answer.headers.get('cache-control')).toBe(IMMICH_MEDIA_CACHE_CONTROL);
+		expect(await answer.json()).toEqual({
+			match: {
+				personId: BERT_ID,
+				name: 'Bert Example',
+				photoCount: 1284,
+				faceUrl: await faceUrlFor(signer, 'c-bert', BERT_ID)
+			}
+		});
+	});
+
+	it('answers no match for a maybe', async () => {
+		const { deps: d } = deps();
+		const answer = await answerMatchHint(d, viewer, 'c-carl');
+		if (!(answer instanceof Response)) throw new Error(`refused with ${answer.status}`);
+		expect(await answer.json()).toEqual({ match: null });
+	});
+
+	it('answers no match, quietly, when Immich does not answer', async () => {
+		const { deps: d, gateway } = deps();
+		gateway.failing = { listPeople: 'unreachable' };
+		const answer = await answerMatchHint(d, viewer, 'c-bert');
+		if (!(answer instanceof Response)) throw new Error(`refused with ${answer.status}`);
+		expect(await answer.json()).toEqual({ match: null });
+		expect(gateway.calls).toContain('listPeople');
+	});
+
+	it('answers 401 to someone signed out, without asking Immich', async () => {
+		const { deps: d, gateway } = deps();
+		expect(await answerMatchHint(d, null, 'c-bert')).toEqual({
+			status: 401,
+			message: 'errors.notSignedIn'
+		});
+		expect(gateway.calls).toEqual([]);
+	});
+
+	it('answers 404 when this instance has no Immich', async () => {
+		expect(await answerMatchHint(null, viewer, 'c-bert')).toEqual({
+			status: 404,
+			message: 'errors.notFound'
+		});
+	});
+
+	it('answers 404 for a person the member cannot see, without asking Immich', async () => {
+		const { deps: d, gateway } = deps();
+		expect(await answerMatchHint(d, viewer, 'c-private')).toEqual({
+			status: 404,
+			message: 'errors.contact.notFound'
+		});
+		expect(gateway.calls).toEqual([]);
 	});
 });

@@ -480,6 +480,46 @@ test('a new profile picture keeps the old cut as their own photo, from the circl
 	await expect(page.getByRole('heading', { name: circle })).toBeVisible();
 });
 
+test('On group photos wraps into rows on a phone instead of scrolling sideways', async ({
+	page
+}) => {
+	const circle = 'Juniper Yard Band';
+	await circleWithRoles(page, circle, [['Wendelin', 'Gruppenbild', 'drums']]);
+	await addCirclePhotos(page, [
+		await groupPicture(page, 'band-1.png'),
+		await groupPicture(page, 'band-2.png'),
+		await groupPicture(page, 'band-3.png')
+	]);
+	const wendelinPage = await memberPage(page, 'Wendelin Gruppenbild');
+	// His picture cut from each of the three, one after another: all three are listed.
+	for (const index of [0, 1, 2]) {
+		await tiles(page).nth(index).click();
+		await lightbox(page).getByTestId('cut-open').click();
+		await cutFor(page, 'Wendelin Gruppenbild');
+		await cutDialog(page).getByRole('button', { name: 'Done' }).click();
+		await expect(cutDialog(page)).toBeHidden();
+		await page.keyboard.press('Escape');
+		await expect(lightbox(page)).toBeHidden();
+	}
+
+	await page.setViewportSize({ width: 412, height: 915 });
+	await page.goto(wendelinPage);
+	await appReady(page);
+	const list = page.getByTestId('on-group-photos').getByRole('list');
+	await expect(list.getByRole('link', { name: circle })).toHaveCount(3);
+	// Two to a row on a phone: three photos take two rows, and nothing reaches past the card.
+	const rows = await list
+		.getByRole('listitem')
+		.evaluateAll((items) => new Set(items.map((item) => item.getBoundingClientRect().top)).size);
+	expect(rows).toBe(2);
+	expect(await list.evaluate((ul) => ul.scrollWidth <= ul.clientWidth)).toBe(true);
+	expect(
+		await page.evaluate(
+			() => document.documentElement.scrollWidth <= document.documentElement.clientWidth
+		)
+	).toBe(true);
+});
+
 for (const [action, confirm, keeps, family] of [
 	['Remove', 'Remove anyway', 'They keep it as a photo of their own.', 'Kälin'],
 	['Make private', 'Make private anyway', 'They keep it as a shared photo of their own.', 'Gisler']

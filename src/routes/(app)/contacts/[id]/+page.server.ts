@@ -9,7 +9,7 @@ import { recordActions } from './actions/record';
 import { relationshipActions } from './actions/relationships';
 import { storyActions } from './actions/story';
 import { tagActions } from './actions/tags';
-import { lastNameActions } from '$lib/server/last-names-actions';
+import { lastNameActions } from '../../_shared/last-names-actions';
 import type { Actions } from './$types';
 
 /*

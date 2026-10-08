@@ -31,6 +31,7 @@ const media: PeopleWiring['media'] = {
 	}
 };
 
+let sqlite: Database;
 let db: BunSQLiteDatabase<typeof schema>;
 let wiring: PeopleWiring;
 let admin: AuthUser;
@@ -38,7 +39,7 @@ let admin: AuthUser;
 beforeEach(async () => {
 	counter = 0;
 	deleted.length = 0;
-	const sqlite = new Database(':memory:');
+	sqlite = new Database(':memory:');
 	sqlite.exec('PRAGMA foreign_keys = ON;');
 	db = drizzle(sqlite, { schema });
 	migrate(db, { migrationsFolder: './drizzle' });
@@ -79,15 +80,17 @@ async function addAnna(contactDeps: Parameters<typeof createContact>[0]) {
 }
 
 describe('createPeopleServices', () => {
-	it('hands every use-case the one contact repository the edge reads', async () => {
+	it('hands every use-case that writes a contact the one contact repository', async () => {
 		const people = createPeopleServices(wiring);
 		expect(people.contactDeps.contacts).toBe(people.contacts);
 		expect(people.nameDeps.names).toBe(people.contacts);
 		expect(people.lastNameDeps.names).toBe(people.contacts);
 		expect(people.surnameDismissalDeps.names).toBe(people.contacts);
 		expect(people.selfContactDeps.contacts).toBe(people.contacts);
-		expect(people.suggestionDeps.candidates).toBe(people.contacts);
 		expect(people.deleteContactDeps.contacts).toBe(people.contacts);
+		// The lists are read models apart, each handed on as the one instance.
+		expect(people.contactDirectoryDeps.directory).toBe(people.directory);
+		expect(people.contactNameDeps.contactNames).toBe(people.contactNames);
 
 		const id = await addAnna(people.contactDeps);
 		expect((await people.contacts.findByIdVisibleTo(viewerOf(admin), id))?.displayName).toBe(
@@ -165,10 +168,19 @@ describe('createServices', () => {
 		};
 		const services = createServices({
 			// Nothing here touches a file: the media store is lazy on disk.
-			config: { ...config, mediaDir: '/nonexistent/stella-media' },
+			config: {
+				...config,
+				immich: null,
+				sessionSecret: 'a-session-secret',
+				updateCheck: false,
+				updateFeedUrl: '',
+				mediaDir: '/nonexistent/stella-media'
+			},
 			db,
+			sqlite,
 			clock,
-			ids
+			ids,
+			version: '1.0.0'
 		});
 		expect(services.people.selfContactDeps.accounts).toBe(services.auth.accounts);
 	});

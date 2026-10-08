@@ -245,17 +245,50 @@ the person, and that never leaves the page. Keeping the record tidy (archive, me
 #### Notes, Photos, Mentioned in
 
 - **Notes** are pinned-first.
-- **Photos** (docs/02 §2.14) is a square grid at three columns, four from `sm`, with a lock
-  badge on a private photo and a star badge, top left, on a favourite; favourites come first.
-- A photo opens into a **lightbox**: a solid card over a blurred, dimmed backdrop that closes
-  on click, the caption above the picture and the actions in one row beneath it. The
-  destructive action sits last in that row, in the danger style.
+- **Photos** (docs/02 §2.14, §2.24.3) is the page's third priority, after the person and their
+  people. Its header holds the title, a segmented control — *All · Stella 5 · Immich 1,764*,
+  the Immich segment only for a linked person once Immich has answered — then *+ Add* and the
+  *Photo library ▾* menu. The control is ARIA tabs: the arrow keys move between segments.
+- Every view is a **grid of square tiles**, three columns on a phone and seven from `sm`; no
+  row scrolls sideways. *All* is a glance: one row of seven on a wide card, two rows of three on
+  a phone, the last tile *All 1,769 photos* once there are more than fit; that tile opens *All*
+  out in place, and *Show more* under it adds Immich's next twelve. *All* mixes the gallery
+  and the latest Immich photos (`mixPhotos`, `$lib/contacts/photo-card.ts`): favourites first,
+  then newest first by when each was taken; an Immich tile wears a small *Immich* badge there.
+  *Stella* is the whole gallery; *Immich* the loaded Immich photos, growing downward by twelve
+  with *Show more*.
+- A tile carries its day along its foot, a lock badge, top right, on a private photo and a star
+  badge, top left, on a favourite.
+- The Immich part loads after the page: until it answers, *All* and *Immich* hold placeholder
+  tiles of the size they will fill. When Immich is down, the person is unlinked or the key may
+  not read photos, the grid shows the gallery and the line under it says why. Offline nothing
+  from Immich is shown.
+- On the *Immich* tab a linked person with someone to be seen with gets a second row of chips —
+  *Julia · You and Julia · Julia and Bert* (docs/02 §2.24.8) — choosing whose Immich photos the
+  tab shows. A relationship row's *Together* switches the card to that tab and pair.
+- A photo opens into **one lightbox** for both sources: a solid card over a blurred, dimmed
+  backdrop that closes on click. Its top line says where the photo lives (*Stella* or
+  *Immich*), the caption, the day, and *3 of 12* between the previous and next buttons; the arrow
+  keys walk too, wrapping at either end, through the list the tile was opened from. The actions
+  sit in one row beneath the picture, *Use as photo* first and primary. A gallery photo adds the
+  pin, its caption, scope and removal — the destructive action last, in the danger style; an
+  Immich photo adds *Open in Immich*.
 - When the person's circles hold photos, tapping the portrait opens a chooser rather than the
   file picker: *Choose a picture…* and a grid of the group photos, each captioned with its
   circle.
-- The Photos card then ends with an *On group photos* row: a horizontally scrolling strip of
-  4:3 thumbnails with the circle's name and the date, each a link to the circle.
+- The Photos card then ends with an *On group photos* row: a wrapping grid of 4:3 tiles —
+  two columns on a phone, four from `sm`, five from `lg` — with the circle's name and the date,
+  each a link to the circle.
 - A photo that was a cut says *From Class 1B* under the picture in its lightbox.
+- An unlinked person with a likely Immich match (docs/02 §2.24.7) gets **one quiet suggestion
+  row** as the card's last thing (`Section`'s `footer`), set off by a hairline: the round Immich
+  face (40 px), *Is this Lena?* in the body colour and *Immich has “Lena Brunner” with 1,764
+  photos.* muted, then **Link** (primary, small), **Choose another** and **Ignore** (ghost). The
+  three buttons are one group that wraps under the sentence on a phone, never off the card.
+  Nothing is reserved for it: it is asked for after the page and appears inside the card already
+  drawn, below everything else in it, so nothing above it — not the card's own header — moves
+  when it arrives. *Ignore* takes it away at once, with *Undo*; *Link* turns the card into the
+  linked one in place.
 - **Mentioned in** (docs/02 §2.20.1) is one flat list of the notes and journal entries
   *elsewhere* that name this person, newest first. Each row is a single link: the source icon,
   *in <person>’s journal · by <author>*, the day on the right, and a one-line preview
@@ -270,7 +303,11 @@ the person, and that never leaves the page. Keeping the record tidy (archive, me
 - Pressing *+ Add* grows it into the card with its form open; *Cancel* shrinks it back, and
   the button pressed is the one that closes it.
 - Photos counts as empty only with no photo, none kept on the device, no group photo and no
-  Immich line.
+  Immich line. **The Immich suggestion is not content**: an empty Photos card with a likely
+  match stays one line, and the suggestion row hangs under that line inside the same card. It
+  arrives after the page, and a line turning into a full card then would move its own header
+  under the reader's eyes; *No photos yet.* also stays true until they are linked. Once *Link*
+  is pressed there are photos, and the card grows as for any photo.
 - An empty **Activity** keeps its card and a dashed box with one sentence (*Nothing written
   down yet — calls, visits and moments land here.*): *Log contact* is in its header already.
 - An empty **Mentioned in** is **not on the page**. People keeps its card, whose empty state
@@ -318,7 +355,12 @@ resizes. Enlarging is the reader's choice, so the canvas never pans by accident 
 the photos a screen away.
 
 The photo lightbox puts the destructive action last so it is never the button next to the one
-you meant. *Mentioned in* is a list of whole-row links because the only thing to do with a
+you meant. Photos are the third thing a page is opened for, so the card shows one row of them
+rather than everything, and the tile that ends it says how many more there are. Gallery and
+Immich photos share one grid and one lightbox because the reader is looking for a picture of
+the person, not for a source; the source is a badge and a tab for when it matters. The chips
+for photos together are a second row rather than more segments because whose photos is a
+question about Immich alone, and five segments do not fit a phone's card. *Mentioned in* is a list of whole-row links because the only thing to do with a
 passive item is go to where it is written; nothing there is editable, so there is no button to
 mistake for one.
 

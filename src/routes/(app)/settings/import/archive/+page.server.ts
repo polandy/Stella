@@ -7,7 +7,6 @@ import {
 	ArchiveVersionError,
 	ForeignHouseholdError
 } from '$lib/server/domain/archive/restore';
-import { getImportArchiveDeps } from '$lib/server/services';
 import type { Actions, PageServerLoad } from './$types';
 import { say, translator } from '$lib/server/i18n/say';
 
@@ -66,7 +65,7 @@ export const actions: Actions = {
 		try {
 			const archive = splitArchive(readTar(new Uint8Array(await file.arrayBuffer())));
 			const report = await importArchive(
-				getImportArchiveDeps(),
+				locals.services.archive.importArchiveDeps,
 				{ userId: user.id, householdId: user.householdId },
 				archive,
 				{

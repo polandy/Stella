@@ -6,6 +6,7 @@ import { registerFirstAdmin, type AuthUser } from '../auth/accounts';
 import { hashPassword, verifyPassword } from '../auth/password';
 import type { Clock } from '../clock';
 import { createDrizzleAccountRepository } from '../db/account-repository';
+import { createDrizzleContactDirectoryReads } from '../db/contact-directory-reads';
 import { createDrizzleContactRepository } from '../db/contact-repository';
 import * as schema from '../db/schema';
 import { createContact } from '../domain/contacts/contacts';
@@ -35,13 +36,14 @@ const media: MediaStore = {
 	delete: async () => {}
 };
 
+let sqlite: Database;
 let db: BunSQLiteDatabase<typeof schema>;
 let wiring: StoryWiring;
 let admin: AuthUser;
 
 beforeEach(async () => {
 	counter = 0;
-	const sqlite = new Database(':memory:');
+	sqlite = new Database(':memory:');
 	sqlite.exec('PRAGMA foreign_keys = ON;');
 	db = drizzle(sqlite, { schema });
 	migrate(db, { migrationsFolder: './drizzle' });
@@ -55,7 +57,14 @@ beforeEach(async () => {
 			locale: 'en'
 		}
 	);
-	wiring = { db, clock, ids, contacts: createDrizzleContactRepository(db), media };
+	wiring = {
+		db,
+		clock,
+		ids,
+		contacts: createDrizzleContactRepository(db),
+		directory: createDrizzleContactDirectoryReads(db),
+		media
+	};
 });
 
 const viewerOf = (user: AuthUser) => ({ id: user.id, householdId: user.householdId });
@@ -151,10 +160,19 @@ describe('createServices', () => {
 		};
 		const services = createServices({
 			// Nothing here touches a file: the media store is lazy on disk.
-			config: { ...config, mediaDir: '/nonexistent/stella-media' },
+			config: {
+				...config,
+				immich: null,
+				sessionSecret: 'a-session-secret',
+				updateCheck: false,
+				updateFeedUrl: '',
+				mediaDir: '/nonexistent/stella-media'
+			},
 			db,
+			sqlite,
 			clock,
-			ids
+			ids,
+			version: '1.0.0'
 		});
 		expect<unknown>(services.story.captureMomentDeps.contacts).toBe(services.people.contacts);
 		expect<unknown>(services.story.journalDeps.media).toBe(services.media.store);

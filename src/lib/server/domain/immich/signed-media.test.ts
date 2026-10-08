@@ -1,11 +1,11 @@
 import { describe, expect, it } from 'bun:test';
-import type { Clock } from '../../clock';
 import {
 	createImmichMediaSigner,
 	IMMICH_MEDIA_TTL_MS,
 	type SignableImmichMedia
 } from './signed-media';
 import { BERT_ID, CARL_ID } from './test-library';
+import { fixedClock } from '../testing';
 
 /*
  * The signature on every Immich image URL Stella hands out (docs/02 §2.24.4). What it
@@ -15,11 +15,6 @@ import { BERT_ID, CARL_ID } from './test-library';
 
 const SECRET = 'test-secret-not-a-real-one';
 const ASSET_ID = '00000000-4d5e-4f60-8a1b-2c3d4e5f6a70';
-
-function fakeClock(start = 1_700_000_000_000): Clock & { advance(ms: number): void } {
-	let now = start;
-	return { now: () => now, advance: (ms) => void (now += ms) };
-}
 
 const photo: SignableImmichMedia = {
 	kind: 'photo',
@@ -32,7 +27,7 @@ const face: SignableImmichMedia = { kind: 'face', contactId: 'c-bert', personId:
 
 describe('createImmichMediaSigner', () => {
 	it('reads back exactly what a photo token was signed for, with its expiry', async () => {
-		const clock = fakeClock();
+		const clock = fixedClock(1_700_000_000_000);
 		const signer = createImmichMediaSigner({ secret: SECRET, clock });
 		const token = await signer.sign(photo);
 		expect(await signer.verify(token)).toEqual({
@@ -42,7 +37,7 @@ describe('createImmichMediaSigner', () => {
 	});
 
 	it('reads back when a photo was taken, so *Use as photo* dates it by what Immich said', async () => {
-		const clock = fakeClock();
+		const clock = fixedClock(1_700_000_000_000);
 		const signer = createImmichMediaSigner({ secret: SECRET, clock });
 		for (const takenAt of ['2019-05-03T14:22:01', '2019-05-03T12:22:01Z']) {
 			const preview = { ...photo, size: 'preview', takenAt } as const;
@@ -54,14 +49,14 @@ describe('createImmichMediaSigner', () => {
 	});
 
 	it('refuses a signed capture date that does not read as one', async () => {
-		const clock = fakeClock();
+		const clock = fixedClock(1_700_000_000_000);
 		const signer = createImmichMediaSigner({ secret: SECRET, clock });
 		const token = await signer.sign({ ...photo, takenAt: '2019-02-30T10:00:00' });
 		expect(await signer.verify(token)).toEqual({ ok: false, reason: 'invalid' });
 	});
 
 	it('reads back a together photo, with the second person and their Immich person', async () => {
-		const clock = fakeClock();
+		const clock = fixedClock(1_700_000_000_000);
 		const signer = createImmichMediaSigner({ secret: SECRET, clock });
 		const together = { ...photo, together: { contactId: 'monica:contact:9', personId: CARL_ID } };
 		expect(await signer.verify(await signer.sign(together))).toEqual({
@@ -71,7 +66,7 @@ describe('createImmichMediaSigner', () => {
 	});
 
 	it('refuses a together photo whose second person is not one', async () => {
-		const clock = fakeClock();
+		const clock = fixedClock(1_700_000_000_000);
 		const signer = createImmichMediaSigner({ secret: SECRET, clock });
 		for (const together of [
 			{ contactId: '', personId: CARL_ID },
@@ -86,7 +81,7 @@ describe('createImmichMediaSigner', () => {
 	});
 
 	it('reads back a face token', async () => {
-		const clock = fakeClock();
+		const clock = fixedClock(1_700_000_000_000);
 		const signer = createImmichMediaSigner({ secret: SECRET, clock });
 		expect(await signer.verify(await signer.sign(face))).toEqual({
 			ok: true,
@@ -95,7 +90,7 @@ describe('createImmichMediaSigner', () => {
 	});
 
 	it('reads back the face of someone not in Stella yet, signed for the household', async () => {
-		const clock = fakeClock();
+		const clock = fixedClock(1_700_000_000_000);
 		const signer = createImmichMediaSigner({ secret: SECRET, clock });
 		const newcomer: SignableImmichMedia = {
 			kind: 'newcomer',
@@ -109,7 +104,7 @@ describe('createImmichMediaSigner', () => {
 	});
 
 	it('reads back a token for a contact whose id is not a ULID, as an imported one is', async () => {
-		const clock = fakeClock();
+		const clock = fixedClock(1_700_000_000_000);
 		const signer = createImmichMediaSigner({ secret: SECRET, clock });
 		for (const contactId of ['monica:contact:3', 'vcard:anna@example.org']) {
 			expect(await signer.verify(await signer.sign({ ...photo, contactId }))).toEqual({
@@ -120,12 +115,15 @@ describe('createImmichMediaSigner', () => {
 	});
 
 	it('keeps a token URL-safe, so it can travel as one path segment', async () => {
-		const signer = createImmichMediaSigner({ secret: SECRET, clock: fakeClock() });
+		const signer = createImmichMediaSigner({
+			secret: SECRET,
+			clock: fixedClock(1_700_000_000_000)
+		});
 		expect(await signer.sign(photo)).toMatch(/^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$/);
 	});
 
 	it('works until its expiry and not from that moment on', async () => {
-		const clock = fakeClock();
+		const clock = fixedClock(1_700_000_000_000);
 		const signer = createImmichMediaSigner({ secret: SECRET, clock });
 		const token = await signer.sign(photo);
 
@@ -136,21 +134,27 @@ describe('createImmichMediaSigner', () => {
 	});
 
 	it('refuses a token whose content was changed, even into a well-formed one', async () => {
-		const signer = createImmichMediaSigner({ secret: SECRET, clock: fakeClock() });
+		const signer = createImmichMediaSigner({
+			secret: SECRET,
+			clock: fixedClock(1_700_000_000_000)
+		});
 		const [, mac] = (await signer.sign(photo)).split('.');
 		const other = (await signer.sign({ ...photo, size: 'preview' })).split('.')[0];
 		expect(await signer.verify(`${other}.${mac}`)).toEqual({ ok: false, reason: 'invalid' });
 	});
 
 	it('refuses a token with a changed signature', async () => {
-		const signer = createImmichMediaSigner({ secret: SECRET, clock: fakeClock() });
+		const signer = createImmichMediaSigner({
+			secret: SECRET,
+			clock: fixedClock(1_700_000_000_000)
+		});
 		const token = await signer.sign(photo);
 		const flipped = token.slice(0, -1) + (token.endsWith('A') ? 'B' : 'A');
 		expect(await signer.verify(flipped)).toEqual({ ok: false, reason: 'invalid' });
 	});
 
 	it('refuses a token signed with another secret', async () => {
-		const clock = fakeClock();
+		const clock = fixedClock(1_700_000_000_000);
 		const elsewhere = createImmichMediaSigner({ secret: 'another-secret', clock });
 		const here = createImmichMediaSigner({ secret: SECRET, clock });
 		expect(await here.verify(await elsewhere.sign(photo))).toEqual({
@@ -160,7 +164,10 @@ describe('createImmichMediaSigner', () => {
 	});
 
 	it('refuses a signature over the same payload made without this use of the secret', async () => {
-		const signer = createImmichMediaSigner({ secret: SECRET, clock: fakeClock() });
+		const signer = createImmichMediaSigner({
+			secret: SECRET,
+			clock: fixedClock(1_700_000_000_000)
+		});
 		const [payload] = (await signer.sign(photo)).split('.');
 		const key = await crypto.subtle.importKey(
 			'raw',
@@ -175,7 +182,10 @@ describe('createImmichMediaSigner', () => {
 	});
 
 	it('refuses anything that is not a token, without reading it', async () => {
-		const signer = createImmichMediaSigner({ secret: SECRET, clock: fakeClock() });
+		const signer = createImmichMediaSigner({
+			secret: SECRET,
+			clock: fixedClock(1_700_000_000_000)
+		});
 		const token = await signer.sign(photo);
 		for (const raw of [
 			'',

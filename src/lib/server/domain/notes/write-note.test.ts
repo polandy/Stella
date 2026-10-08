@@ -45,7 +45,9 @@ function fakes(people = [person('julia'), person('marco'), person('sam', 'privat
 		contacts: {
 			async findByIdVisibleTo(v, id) {
 				return (visible(v).find((p) => p.id === id) as unknown as Contact) ?? null;
-			},
+			}
+		},
+		directory: {
 			async listVisibleTo(v) {
 				return visible(v);
 			}

@@ -10,7 +10,7 @@
 	import { useRemovals } from '$lib/undo/context.svelte';
 
 	/*
-	 * *Use as photo* in the Immich viewer (docs/02 §2.24.6): the one
+	 * *Use as photo* on an Immich photo in the lightbox (docs/02 §2.24.6): the one
 	 * way a photo from Immich becomes Stella's. The preview the viewer shows is fetched again
 	 * through Stella's signed proxy, the cropper cuts a square of it, and `sendImmichPhoto` keeps
 	 * it — as the picture's chooser does too. A deliberate copy, never a sync.
@@ -67,7 +67,7 @@
 
 <!-- Never disabled: a disabled button drops focus, and the cropper hands focus back to it on close. -->
 <Button
-	variant="secondary"
+	variant="primary"
 	size="sm"
 	icon="photo"
 	onclick={open}

@@ -6,6 +6,7 @@ import { NeedsSomethingToKnowThemByError } from '../contacts/contacts';
 import { AmbiguousMentionError } from '../mentions/resolve-for-audience';
 import { ContactGoneError } from '../contacts/require-visible';
 import { MomentNeedsPersonError, captureMoment, type CaptureMomentDeps } from './moments';
+import { contactRepositoryWith } from '../testing';
 
 /*
  * Moment capture (docs/02 §2.22.1). A moment is a journal entry anchored on the first person
@@ -67,49 +68,17 @@ function fakes(seedContacts: Partial<NewContact>[] = []) {
 		c.householdId === v.householdId && (c.visibility === 'shared' || c.createdBy === v.id);
 
 	const deps: CaptureMomentDeps = {
-		contacts: {
+		contacts: contactRepositoryWith({
 			async insert(c) {
 				contacts.push(c);
-			},
-			// The moment capture never edits a profile; present because the port requires it.
-			async updateProfile() {},
-			async setGender() {},
-			async setJob() {},
-			async setArchived() {},
-			async listArchivedVisibleTo() {
-				return [];
-			},
-			async listNamesVisibleTo() {
-				return [];
-			},
-			async listNamesAmongVisibleTo() {
-				return [];
-			},
-			async listBrowsableNamesAmong() {
-				return [];
-			},
-			async listSomeBrowsableIdsVisibleTo() {
-				return [];
-			},
-			async countArchivedVisibleTo() {
-				return 0;
-			},
-			async listDistinguishableVisibleTo() {
-				return [];
-			},
-			async deleteVisibleTo() {
-				return null;
-			},
-			async readForMerge() {
-				return null;
-			},
-			async mergeVisibleTo() {
-				return false;
 			},
 			async findByIdVisibleTo(v, id) {
 				const c = contacts.find((x) => x.id === id);
 				return c && visible(v, c) ? ({ ...c, avatarPhotoId: null } as Contact) : null;
-			},
+			}
+		}),
+		// Over the same list the inserts land in: a moment reads it again after creating people.
+		directory: {
 			async listVisibleTo(v) {
 				return contacts.filter((c) => visible(v, c)).map(summary);
 			}

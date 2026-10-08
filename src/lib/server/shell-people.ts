@@ -1,5 +1,5 @@
 import type { AuthUser } from './auth/accounts';
-import { listContacts } from './domain/contacts/contacts';
+import { listContacts } from './domain/contacts/directory';
 import { contextOfPeople } from './domain/contacts/person-context';
 import { peopleStampOf } from './domain/contacts/people-stamp';
 import { namesakesOn } from '../people/namesakes';
@@ -18,7 +18,7 @@ import { todayFor } from '$lib/dates/today';
 /** What the shell's people are read with; the edge hands in `locals.services.people`. */
 export type ShellPeopleDeps = Pick<
 	PeopleServices,
-	'contactDeps' | 'personContextDeps' | 'peopleStampDeps'
+	'contactDirectoryDeps' | 'personContextDeps' | 'peopleStampDeps'
 >;
 
 /** The shell's people as `user` may see them, and the stamp of exactly that. */
@@ -27,7 +27,7 @@ export async function readShellPeople(deps: ShellPeopleDeps, user: AuthUser) {
 	// One reading of the clock, so the context and its stamp are about the same day.
 	const today = todayFor(systemClock);
 	const [contacts, peopleStamp] = await Promise.all([
-		listContacts(deps.contactDeps, viewer),
+		listContacts(deps.contactDirectoryDeps, viewer),
 		stampFor(deps, user, today)
 	]);
 	// Only namesakes are ever given a second line, so only their links and circles are read.

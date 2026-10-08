@@ -2,9 +2,9 @@ import { fail, redirect } from '@sveltejs/kit';
 import { requireUser, requireViewer } from '$lib/server/auth/guards';
 import {
 	listBrowsableNamesAmong,
-	listContactNamesAmong,
-	listPeopleEnoughForFirstRun
-} from '$lib/server/domain/contacts/contacts';
+	listContactNamesAmong
+} from '$lib/server/domain/contacts/contact-names';
+import { listPeopleEnoughForFirstRun } from '$lib/server/domain/contacts/directory';
 import { hasImminentDate, upcomingDates } from '$lib/server/domain/dates/upcoming';
 import { dispatchCommand } from '$lib/server/domain/commands/dispatch';
 import { parsePhotoCommand, readCommand } from '$lib/server/commands/parse';
@@ -17,7 +17,6 @@ import { membersViewerFirst } from '$lib/server/domain/household/members';
 import { buildStream } from '$lib/server/domain/stream/stream';
 import { extractMentionIds, mentionToken } from '$lib/mentions/mentions';
 import { parseStreamFilter } from '$lib/stream/filter';
-import { getCommandDeps } from '$lib/server/services';
 import type { Actions, PageServerLoad } from './$types';
 import { say, translator } from '$lib/server/i18n/say';
 import type { MessageKey } from '$lib/i18n/translate';
@@ -53,15 +52,15 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 	const [items, onList, dateSources, firstPeople] = await Promise.all([
 		buildStream(locals.services.media.streamDeps, viewer, filter),
 		// Who the household can still act on — the browsing scope — among just those.
-		listBrowsableNamesAmong(locals.services.people.contactDeps, viewer, named),
+		listBrowsableNamesAmong(locals.services.people.contactNameDeps, viewer, named),
 		locals.services.records.importantDates.listSourcesVisibleTo(viewer),
 		// Just enough of the household to tell whether it has begun (docs/02 §2.22.3).
-		listPeopleEnoughForFirstRun(locals.services.people.contactDeps, viewer)
+		listPeopleEnoughForFirstRun(locals.services.people.contactDirectoryDeps, viewer)
 	]);
 	// What a mention already written is called (archived people included), for the moments
 	// on this page only.
 	const names = await listContactNamesAmong(
-		locals.services.people.contactDeps,
+		locals.services.people.contactNameDeps,
 		viewer,
 		items.flatMap((item) => (item.kind === 'moment' ? extractMentionIds(item.body) : []))
 	);
@@ -144,7 +143,7 @@ export const actions: Actions = {
 		const { command } = reading;
 
 		// A refusal is answered here; anything else is ours, and `handleError` logs it.
-		const outcome = await dispatchCommand(getCommandDeps(), author, command);
+		const outcome = await dispatchCommand(locals.services.offline.commandDeps, author, command);
 		if (outcome.status !== 'applied') {
 			const message =
 				outcome.status === 'refused'
@@ -176,7 +175,9 @@ export const actions: Actions = {
 				height: Number(heights[i]),
 				issuedAt: systemClock.now()
 			});
-			const attached = photo ? await dispatchCommand(getCommandDeps(), author, photo) : null;
+			const attached = photo
+				? await dispatchCommand(locals.services.offline.commandDeps, author, photo)
+				: null;
 			if (attached?.status !== 'applied') {
 				return fail(400, {
 					momentError: say(locals, 'errors.moment.photoFailed'),

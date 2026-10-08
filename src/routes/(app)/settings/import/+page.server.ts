@@ -16,7 +16,6 @@ import {
 } from '$lib/server/import/staging';
 import { importWording } from '$lib/server/i18n/import-wording';
 import { say, translator } from '$lib/server/i18n/say';
-import { getImportDeps } from '$lib/server/services';
 import type { Actions, PageServerLoad } from './$types';
 
 /*
@@ -81,7 +80,7 @@ export const actions: Actions = {
 		}
 		try {
 			const text = await dumpTextOf(file);
-			const plan = previewImport(getImportDeps(), text, {
+			const plan = previewImport(locals.services.archive.importDeps, text, {
 				householdId: user.householdId,
 				userId: user.id,
 				visibility,
@@ -127,7 +126,7 @@ export const actions: Actions = {
 				error: say(locals, 'import.error.sessionGone')
 			});
 
-		const { plan, outcome } = await applyImport(getImportDeps(), text, {
+		const { plan, outcome } = await applyImport(locals.services.archive.importDeps, text, {
 			householdId: user.householdId,
 			userId: user.id,
 			visibility: parsed.output.visibility,

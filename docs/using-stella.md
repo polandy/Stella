@@ -5,6 +5,11 @@ sentence about it. Everything else in the app exists to make that sentence usefu
 
 ## Your first visit
 
+Each time you open Stella — the app from your home screen, or a new browser tab — the logo
+draws itself and settles into its place at the top. It shows once per session and takes about a
+second; tap anywhere or press a key to skip it. If your device is set to reduce motion, you see
+the finished logo for a moment instead.
+
 A new Stella starts empty, so the first thing Home shows is a **Welcome to Stella** card with
 three ways in:
 
@@ -317,7 +322,13 @@ see it can make it the person's photo. Removing one deletes the file for good an
 go back to their initials. *Pin as favourite* moves a photo to the front of the grid, with a
 star on it; the one you pinned last comes first, and *Unpin favourite* puts it back in date
 order. Favourites are the household's, so everyone sees the same ones in front, and anyone who
-can see a photo can pin or unpin it. Escape closes the view and the arrow keys walk through the rest (not while you are typing a caption).
+can see a photo can pin or unpin it. Escape closes the view, and the arrows beside *3 of 12* —
+or the arrow keys — walk through the rest (not while you are typing a caption).
+
+The card opens on **All**: one row of photos (two short rows on a phone), the last tile saying
+*All 1,769 photos* when there are more — tap it to see them all. The switch at the top of the
+card picks **All**, **Stella** (only the photos added here) or, for someone linked to Immich,
+**Immich**.
 
 To give someone a new photo straight away, click the round picture at the top of their page and
 pick an image. Before anything is uploaded you choose the part that shows: drag the picture
@@ -339,10 +350,18 @@ it (see *Installation*), the Photos card has a small **Photo library** menu. **F
 faces Immich knows, searched by the person's name — change the search if Immich spells them
 differently — and a tap on the right face links the two. Each face belongs to one person: one already linked
 to someone else is greyed out and says to whom (or just *someone else*, if that person is
-private to another member). From then on the card ends with a line
-like *In Immich · 1,284 photos* and a strip of their latest twelve photos, newest first;
-**Show more** at its end adds twelve more. Tap a photo to see it larger, with the arrows (or
-the arrow keys) to step through the strip and **Open in Immich** to go to that photo there.
+private to another member). Often you need not search at all: when someone isn't linked yet
+and Immich has a face with their full name, the Photos card asks a moment after the page has
+opened — *Is this Lena? Immich has “Lena Brunner” with 1,764 photos.* — beside that face.
+**Link** links them there and then, **Choose another** opens the search, and **Ignore** says it
+is not them (with *Undo* for a few seconds; it then shows under **Ignored** in *Find your
+people*, below). Only a sure match is asked about this way; a first name alone is left to *Find
+your people*. From then on their latest Immich photos
+join the card: in **All** they are mixed with the photos added in Stella, newest first, each
+with a small *Immich* label, and the **Immich** tab shows only them, with **Show more** under
+them for twelve more. The card ends with a line like *In Immich · 1,284 photos*. Tap a photo to
+see it larger — in the same view as any photo — with the arrows (or the arrow keys) to step
+through, and **Open in Immich** to go to that photo there.
 **Use as photo** there opens the same square cutter as a new photo: the square you pick becomes
 the person's photo in Stella, dated as Immich dates it — a copy, which stays even if the photo
 later goes from Immich. The photo they had before stays in their gallery. Tapping the person's
@@ -353,15 +372,14 @@ appear.
 ### Photos together
 
 **Photos together.** Once you have said which person is you (*This is me*) and that person is
-linked to Immich too, the strip of anyone else who is linked gets small chips above it: **All
-photos** and **You and Julia** — the photos the two of you are in together. On the People card,
+linked to Immich too, the **Immich** tab of anyone else who is linked gets small chips: **Julia**
+and **You and Julia** — the photos the two of you are in together. On the People card,
 the row of a partner, spouse, parent or child who is in Immich too has a small photo button,
-**Together**: it takes you down to the strip and shows the photos of those two together, with a
-chip of its own to come back to. Tapping a photo, **Use as photo** and **Open in Immich** work
-there as on any strip.
-Anyone in the household sees the strip, whatever their own Immich account, because Stella
-fetches the photos; none of them is kept on your phone or computer, so offline the strip is
-not there. Anyone in the household can link or unlink a person, and the
+**Together**: it takes you down to the Immich tab and shows the photos of those two together,
+with a chip of its own to come back to. Tapping a photo, **Use as photo** and **Open in Immich**
+work there as on any photo.
+Anyone in the household sees these photos, whatever their own Immich account, because Stella
+fetches them; none of them is kept on your phone or computer, so offline they are not there. Anyone in the household can link or unlink a person, and the
 link is seen by everyone who can see that person. **Open in Immich** opens that person's page
 there in a new tab. It shows the photos only to whoever is signed into the Immich account
 Stella reads — usually the admin; anyone else lands on Immich's sign-in or an empty page. If

@@ -1,16 +1,18 @@
 import * as v from 'valibot';
+import type { Translate } from '$lib/i18n/translate';
 import type { Viewer } from '$lib/server/access/visibility';
-import { getContact } from '$lib/server/domain/contacts/contacts';
+import { getContact, type ContactLookupDeps } from '$lib/server/domain/contacts/contacts';
 import {
 	ContradictoryRelationshipError,
 	DuplicateRelationshipError,
-	createRelationship
+	createRelationship,
+	type CreateRelationshipDeps
 } from '$lib/server/domain/relationships/relationships';
 import {
 	dismissSuggestion,
-	restoreSuggestion
+	restoreSuggestion,
+	type SuggestionReviewDeps
 } from '$lib/server/domain/relationships/suggestion-review';
-import { say } from '$lib/server/i18n/say';
 import { RELATIONS } from '$lib/suggestions/types';
 
 /*
@@ -23,8 +25,22 @@ import { RELATIONS } from '$lib/suggestions/types';
  *
  * So the routes keep what differs — which page to go back to — and the answer itself lives
  * here. Each function returns `null` when it wrote what was asked, or a `RefusedAnswer`;
- * neither redirects, because where "back" is belongs to the screen.
+ * neither redirects, because where "back" is belongs to the screen. They take the slices of
+ * `locals.services` they reach and the request's translator as arguments, so a route hands
+ * them in and a test hands in fakes (docs/08 §8.3).
  */
+
+/**
+ * The part of `AppServices` the answers reach — its shape, narrowed to what they call, so a
+ * route passes `locals.services` as it is.
+ */
+export interface ClaimAnswerServices {
+	people: { contactDeps: ContactLookupDeps };
+	relationships: {
+		relationshipDeps: CreateRelationshipDeps;
+		suggestionReviewDeps: SuggestionReviewDeps;
+	};
+}
 
 /**
  * Why an answer was refused, and what to say about it. The `status` travels with the reason
@@ -64,21 +80,22 @@ const read = (form: AnswerForm, ...names: string[]) =>
  * member types.
  */
 export async function acceptClaim(
-	locals: App.Locals,
+	services: ClaimAnswerServices,
 	viewer: Viewer,
-	form: AnswerForm
+	form: AnswerForm,
+	t: Translate
 ): Promise<RefusedAnswer | null> {
 	const parsed = v.safeParse(AcceptSchema, read(form, 'fromId', 'toId', 'typeId'));
-	if (!parsed.success) return refused(say(locals, 'errors.relationship.badSuggestion'));
+	if (!parsed.success) return refused(t('errors.relationship.badSuggestion'));
 
 	const [from, to] = await Promise.all([
-		getContact(locals.services.people.contactDeps, viewer, parsed.output.fromId),
-		getContact(locals.services.people.contactDeps, viewer, parsed.output.toId)
+		getContact(services.people.contactDeps, viewer, parsed.output.fromId),
+		getContact(services.people.contactDeps, viewer, parsed.output.toId)
 	]);
-	if (!from || !to) return refused(say(locals, 'errors.person.notFound'));
+	if (!from || !to) return refused(t('errors.person.notFound'));
 
 	try {
-		await createRelationship(locals.services.relationships.relationshipDeps, viewer, {
+		await createRelationship(services.relationships.relationshipDeps, viewer, {
 			fromContactId: parsed.output.fromId,
 			toContactId: parsed.output.toId,
 			typeId: parsed.output.typeId,
@@ -88,10 +105,10 @@ export async function acceptClaim(
 		// A suggestion the household already contradicted says why; a duplicate is silent,
 		// since the link it offered is there either way.
 		if (err instanceof ContradictoryRelationshipError) {
-			return refused(say(locals, 'errors.relationship.contradiction'), 409);
+			return refused(t('errors.relationship.contradiction'), 409);
 		}
 		if (!(err instanceof DuplicateRelationshipError)) {
-			return refused(say(locals, 'errors.relationship.couldNotAdd'));
+			return refused(t('errors.relationship.couldNotAdd'));
 		}
 	}
 	return null;
@@ -102,36 +119,34 @@ export async function acceptClaim(
  * household decided, so the *no* holds for every member.
  */
 export async function declineClaim(
-	locals: App.Locals,
+	services: ClaimAnswerServices,
 	viewer: Viewer,
-	form: AnswerForm
+	form: AnswerForm,
+	t: Translate
 ): Promise<RefusedAnswer | null> {
 	const parsed = v.safeParse(ClaimSchema, read(form, 'relation', 'fromId', 'toId'));
-	if (!parsed.success) return refused(say(locals, 'errors.relationship.badSuggestion'));
+	if (!parsed.success) return refused(t('errors.relationship.badSuggestion'));
 
 	return (await dismissSuggestion(
-		locals.services.relationships.suggestionReviewDeps,
+		services.relationships.suggestionReviewDeps,
 		viewer,
 		parsed.output
 	))
 		? null
-		: refused(say(locals, 'errors.person.notFound'));
+		: refused(t('errors.person.notFound'));
 }
 
 /** Take a *no* back, so the claim is offered again on the next review (§6.5). */
 export async function restoreClaim(
-	locals: App.Locals,
+	services: ClaimAnswerServices,
 	viewer: Viewer,
-	form: AnswerForm
+	form: AnswerForm,
+	t: Translate
 ): Promise<RefusedAnswer | null> {
 	const parsed = v.safeParse(ClaimSchema, read(form, 'relation', 'fromId', 'toId'));
-	if (!parsed.success) return refused(say(locals, 'errors.relationship.badSuggestion'));
+	if (!parsed.success) return refused(t('errors.relationship.badSuggestion'));
 
 	// Nothing to take back is not a failure worth a message: the claim is offered either way.
-	await restoreSuggestion(
-		locals.services.relationships.suggestionReviewDeps,
-		viewer,
-		parsed.output
-	);
+	await restoreSuggestion(services.relationships.suggestionReviewDeps, viewer, parsed.output);
 	return null;
 }

@@ -33,13 +33,14 @@ const clock: Clock = { now: () => Date.UTC(2026, 9, 7, 9) };
 let counter = 0;
 const ids: IdGenerator = { next: () => `id-${++counter}` };
 
+let sqlite: Database;
 let db: BunSQLiteDatabase<typeof schema>;
 let wiring: RelationshipWiring;
 let admin: AuthUser;
 
 beforeEach(async () => {
 	counter = 0;
-	const sqlite = new Database(':memory:');
+	sqlite = new Database(':memory:');
 	sqlite.exec('PRAGMA foreign_keys = ON;');
 	db = drizzle(sqlite, { schema });
 	migrate(db, { migrationsFolder: './drizzle' });
@@ -178,10 +179,19 @@ describe('createServices', () => {
 		};
 		const services = createServices({
 			// Nothing here touches a file: the media store is lazy on disk.
-			config: { ...config, mediaDir: '/nonexistent/stella-media' },
+			config: {
+				...config,
+				immich: null,
+				sessionSecret: 'a-session-secret',
+				updateCheck: false,
+				updateFeedUrl: '',
+				mediaDir: '/nonexistent/stella-media'
+			},
 			db,
+			sqlite,
 			clock,
-			ids
+			ids,
+			version: '1.0.0'
 		});
 		expect(services.people.surnameReviewDeps.relationships).toBe(
 			services.relationships.relationships

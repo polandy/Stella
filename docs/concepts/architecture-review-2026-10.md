@@ -164,19 +164,28 @@ member and search deps) — `services/household.ts`. It reads no other context a
 handler uses it, so `createServices` builds it from the wiring alone; the People list and the
 first-name-only settings read the attention repository straight off the group, the import
 API's people lookup shares the search deps with the search page.
-Remaining contexts — one PR each, grouped by the repositories their factories share in
-`services/index.ts`:
-1. **`archive`** — moving a household in or out: the archive export, the archive restore
-   (over `media`'s store) and the Monica import.
-2. **`immich`** — the gateway, connection and signer, the link, ignore and name-ignore
-   repositories and every Immich deps (over `people`'s contacts and `media`'s avatar deps);
-   null without Immich, as today.
-3. **`release`** — the update check.
-4. **`offline`** — the command receipt repository and entry ownership; then the command
-   handler table moves to its own module over `AppServices` (item 4), and `index.ts` keeps
-   only `getServices()`.
-Each slice adds its `services/<context>.ts`, its key in `AppServices`, its factories to the
-boundary test's retired list, and moves its callers to `locals.services.<context>`.
+**`archive`** is grouped (#308; the archive, restore and Monica import deps) —
+`services/archive.ts`. The restore writes its images through `media`'s store, so
+`createServices` hands it that one; the export and the restore read the raw `bun:sqlite` handle,
+which joins the wiring as `sqlite`. No command handler uses it; the export, the restore and the
+import wizard read the deps straight off the group.
+**`immich`** is grouped (#311; the gateway, connection and signer, the link, ignore and
+name-ignore repositories and every Immich deps) — `services/immich.ts`. The whole group is
+`null` without a configured Immich, as the factories were, so the feature still appears
+nowhere; the edge reads `locals.services.immich?.…` where it read `get…()`. `createServices`
+hands it `people`'s contacts, contact deps and context reads and `media`'s avatar deps; the
+configuration it reads joins the wiring's `config` as `immich` and `sessionSecret`. No command
+handler uses it.
+**`release`** is grouped (#312; the update check) — `services/release.ts`. Built once with the
+graph, so the answer it caches is still shared by every request; `updateCheck` is null when the
+instance makes no check, as the factory was. The configuration it reads joins the wiring's
+`config` as `updateCheck` and `updateFeedUrl`, and the build's version joins the wiring as
+`version`. No command handler uses it; Settings reads it straight off the group.
+**`offline`** is grouped (#314; the command receipt repository and entry ownership, with the
+dispatcher's `commandDeps`) — `services/offline.ts` — and item 4 came with it: the command
+handler table is `server/commands/handlers.ts`, built by the group over the contexts its
+handlers call, with a test that it covers `COMMAND_TYPES`. `index.ts` keeps only
+`getServices()`; every context is grouped, and the series is done.
 
 ### AR-02 · The composition root leaks below the edge
 **Severity: medium · Effort: S**
@@ -534,9 +543,9 @@ rule. Each is one Conventional-Commit `refactor:`/`chore:`/`docs:` PR unless mar
 | 3 | AR-03 `requireViewer`, `todayFor(clock)`, `messageKey` | S | ☑ #266 | Removes 150 edit sites before AR-01 moves them again |
 | 4 | AR-07 glossary (docs/03 §3.0) + AR-18 regenerate §4.3 | S | ☑ #294 | Vocabulary before renames; cheapest high-leverage doc change |
 | 5 | AR-04 one schema per command, `fromFormData` | M | ☑ #295 | Shrinks every form action; prerequisite for AR-13 |
-| 6 | AR-01 `createServices()` + `locals.services` — **series**, one bounded context per PR, `auth` first | L | ◐ auth #296, people #298, relationships #299, circles #300, media #301, story #302, notes #304, records #305, household #306 | The central change; do after 3 and 5 so routes shrink while being touched |
-| 7 | AR-02 move shared actions under `routes/` taking deps | S | ☐ | Falls out of 6 |
-| 8 | AR-08 split read models off the three widest ports + AR-14 shared fakes | M | ☐ | Do together: the fakes are what makes the split pay |
+| 6 | AR-01 `createServices()` + `locals.services` — **series**, one bounded context per PR, `auth` first | L | ☑ auth #296, people #298, relationships #299, circles #300, media #301, story #302, notes #304, records #305, household #306, archive #308, immich #311, release #312, offline #314 | The central change; do after 3 and 5 so routes shrink while being touched |
+| 7 | AR-02 move shared actions under `routes/` taking deps | S | ☑ #315 | Falls out of 6 |
+| 8 | AR-08 split read models off the three widest ports + AR-14 shared fakes — **series** | M | ☐ contacts #317, circles + tags #318; next photo + media, relationships (with 9) | Do together: the fakes are what makes the split pay |
 | 9 | AR-06 activity as a port; break `contacts ↔ relationships`; merge plan as data | M | ☐ | Needs 8's narrower ports |
 | 10 | AR-11 `GraphExplorer` state → pure module; then `MomentComposer` | M ×2 | ☐ | Independent of the server work; can run as the "second open PR" alongside 6–9 |
 | 11 | AR-10 lib taxonomy + AR-12 components split | M | ☐ | Last of the moves: after the renames the final layout is known |

@@ -2,7 +2,8 @@ import { describe, expect, it } from 'bun:test';
 import type { Viewer } from '../../access/visibility';
 import { CaptionTooLongError, CAPTION_MAX_LENGTH } from '../media/gallery';
 import { InvalidImageError, JOURNAL_IMAGE_MAX_BYTES } from '../media/journal-photos';
-import type { Circle, MemberView } from './circles';
+import { inMemoryCircleMemberships, membership, type FakeMembership } from '../testing';
+import type { Circle } from './circles';
 import {
 	addCirclePhoto,
 	captionCirclePhoto,
@@ -43,13 +44,7 @@ const circle: Circle = {
 	endDate: null
 };
 
-const member = (contactId: string, role: string | null): MemberView => ({
-	membershipId: `m-${contactId}`,
-	contactId,
-	displayName: contactId,
-	avatarPhotoId: null,
-	role
-});
+const member = (contactId: string, role: string | null) => membership('k1', contactId, { role });
 
 const photo = (over: Partial<CirclePhoto> = {}): CirclePhoto => ({
 	takenAt: null,
@@ -70,7 +65,7 @@ const photo = (over: Partial<CirclePhoto> = {}): CirclePhoto => ({
 function deps(
 	over: {
 		photos?: CirclePhoto[];
-		members?: MemberView[];
+		members?: FakeMembership[];
 		circleVisible?: boolean;
 	} = {}
 ) {
@@ -120,11 +115,11 @@ function deps(
 		circles: {
 			async getVisibleTo() {
 				return over.circleVisible === false ? null : circle;
-			},
-			async listMembersVisibleTo() {
-				return over.members ?? [member('ann', 'Student'), member('bea', 'Teacher')];
 			}
 		},
+		memberships: inMemoryCircleMemberships(
+			over.members ?? [member('ann', 'Student'), member('bea', 'Teacher')]
+		),
 		media: {
 			async put(key, bytes) {
 				files[key] = bytes;
