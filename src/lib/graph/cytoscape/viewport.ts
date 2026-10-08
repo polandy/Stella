@@ -98,3 +98,44 @@ export function frameBelow(
 		}
 	};
 }
+
+/** What to keep in view when the whole map cannot be shown with its names drawn. */
+export interface Focus {
+	/** The part that matters most — the family tree. */
+	box: Box;
+	/** Where to centre when even that is too wide: the person the map is about. */
+	point?: { x: number; y: number };
+}
+
+/**
+ * Like {@link frameBelow}, but never zoomed out past `zoom.legible`, where the canvas would stop
+ * drawing the names (`legibleZoom`, docs/05 §5.8). When the whole map fits only further out, it
+ * is shown at the legible zoom instead: the `focus` (else the map) from its top edge down, centred
+ * across the free part — or, if wider than that, centred on its `point` — and whatever falls
+ * outside, the shelf beneath the tree, is left to pan to.
+ */
+export function frameLegibly(
+	map: Box,
+	focus: Focus | null,
+	screen: { width: number; height: number },
+	covered: Covered,
+	padding: number,
+	zoom: { min: number; max: number; legible: number }
+): Viewport {
+	const fitted = frameBelow(map, screen, covered, padding, { min: zoom.min, max: zoom.max });
+	if (fitted.zoom >= zoom.legible) return fitted;
+
+	const { top, right = 0 } = covered;
+	const z = Math.min(zoom.max, Math.max(zoom.min, zoom.legible));
+	const target = focus?.box ?? map;
+	const freeWidth = screen.width - right - 2 * padding;
+	const middle = (screen.width - right) / 2;
+	const x =
+		(target.x2 - target.x1) * z <= freeWidth
+			? (target.x1 + target.x2) / 2
+			: (focus?.point?.x ?? (target.x1 + target.x2) / 2);
+	return {
+		zoom: z,
+		pan: { x: middle - z * x, y: top + padding - z * target.y1 }
+	};
+}

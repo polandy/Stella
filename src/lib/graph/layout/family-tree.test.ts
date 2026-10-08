@@ -163,6 +163,38 @@ describe('familyTreeLayout', () => {
 		expect(outsideFamily!.y).toBeLessThan(positions.get('ida')!.y);
 	});
 
+	it('keeps the shelf no wider than the family above it, wrapping it into more rows', () => {
+		// Lena's family and eight friends with long captions beneath.
+		const friends = ['f1', 'f2', 'f3', 'f4', 'f5', 'f6', 'f7', 'f8'];
+		const model: GraphModel = {
+			nodes: [...brunnerKeller.nodes, ...friends.map(person)],
+			edges: brunnerKeller.edges
+		};
+		const sizeOf = (id: string) => ({ width: id.startsWith('f') ? 130 : 110, height: 70 });
+		const { positions } = familyTreeLayout(model, sizeOf);
+		const right = (ids: string[]) =>
+			Math.max(...ids.map((id) => positions.get(id)!.x + sizeOf(id).width / 2));
+		const left = (ids: string[]) =>
+			Math.min(...ids.map((id) => positions.get(id)!.x - sizeOf(id).width / 2));
+		const family = brunnerKeller.nodes.map((n) => n.id);
+
+		expect(right(friends)).toBeLessThanOrEqual(right(family));
+		expect(left(friends)).toBeGreaterThanOrEqual(left(family));
+		expect(new Set(friends.map((id) => positions.get(id)!.y)).size).toBeGreaterThan(1);
+
+		// A family of two is narrow: the shelf beneath it is no wider.
+		const small = familyTreeLayout(
+			{
+				nodes: ['anna', 'bert', ...friends].map(person),
+				edges: [parentOf('anna', 'bert'), parentOf('anna', 'bert')]
+			},
+			sizeOf
+		).positions;
+		const smallRight = (ids: string[]) =>
+			Math.max(...ids.map((id) => small.get(id)!.x + sizeOf(id).width / 2));
+		expect(smallRight(friends)).toBeLessThanOrEqual(Math.max(smallRight(['anna', 'bert']), 130));
+	});
+
 	it('names no shelf when everybody is family, nor when nobody is', () => {
 		const allFamily = familyTreeLayout({
 			nodes: ['anna', 'bert'].map(person),

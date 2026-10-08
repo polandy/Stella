@@ -334,6 +334,58 @@ describe('explorerFromCore', () => {
 		expect(middleAfterArranging(100)).toBeCloseTo(100 + 700 / 2);
 	});
 
+	it('never frames the map so far out that its names stop being drawn', () => {
+		// A family over two rows and a shelf far beneath it: all of it fits only far out.
+		const cy = cytoscape({
+			headless: true,
+			elements: [
+				{ data: { id: 'a' }, classes: 'person center' },
+				{ data: { id: 'b' }, classes: 'person' },
+				{ data: { id: 'shelf' }, classes: 'person' }
+			]
+		});
+		cy.width = () => 1000;
+		cy.height = () => 700;
+		const explorer = explorerFromCore(cy, {
+			reducedMotion: true,
+			pixelRatio: 1,
+			onTapNode: () => {},
+			onTapBackground: () => {}
+		});
+
+		explorer.arrangeAt(
+			{
+				positions: new Map([
+					['a', { x: 0, y: 0 }],
+					['b', { x: 300, y: 230 }],
+					['shelf', { x: 0, y: 4000 }]
+				]),
+				bows: new Map(),
+				outsideFamily: { x: 0, y: 3900 }
+			},
+			{ outsideFamily: 'Outside the family', keepNamesDrawn: true }
+		);
+
+		// Half zoom is where a desktop stops drawing names; the family is shown from the top.
+		expect(cy.zoom()).toBeGreaterThan(0.5);
+		const a = cy.$id('a').renderedPosition();
+		const b = cy.$id('b').renderedPosition();
+		expect(a.y).toBeGreaterThan(0);
+		expect(b.y).toBeLessThan(700);
+		expect(cy.$id('shelf').renderedPosition().y).toBeGreaterThan(700);
+
+		// Arranged otherwise, the whole map is framed, however far out that takes it.
+		explorer.arrangeAt({
+			positions: new Map([
+				['a', { x: 0, y: 0 }],
+				['b', { x: 300, y: 230 }],
+				['shelf', { x: 0, y: 4000 }]
+			]),
+			bows: new Map()
+		});
+		expect(cy.$id('shelf').renderedPosition().y).toBeLessThan(700);
+	});
+
 	it('frames the map clear of a panel over the right or the foot of the canvas', () => {
 		const cy = linkedPair();
 		cy.width = () => 1000;

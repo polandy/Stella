@@ -13,7 +13,7 @@ import {
 	ROUTED_CLASS,
 	type CyStyle
 } from './stylesheet';
-import { LABEL_MIN_ZOOMED_FONT_SIZE } from '../layout/legibility';
+import { CIRCLE_LABEL_WIDTH, LABEL_MIN_ZOOMED_FONT_SIZE } from '../layout/legibility';
 
 /*
  * Palette resolution + stylesheet building (docs/05 §5.6/§5.8), tested with a fake token
@@ -194,6 +194,8 @@ describe('buildStylesheet as the family tree', () => {
 		);
 		expect(circle).toMatchObject({
 			'text-wrap': 'wrap',
+			// The names wrap within a pill as wide as a long circle name, never wider.
+			'text-max-width': `${CIRCLE_LABEL_WIDTH}px`,
 			height: 'label',
 			'min-zoomed-font-size': LABEL_MIN_ZOOMED_FONT_SIZE
 		});

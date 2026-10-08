@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test';
-import { frameBelow, widenToReveal, type Box } from './viewport';
+import { frameBelow, frameLegibly, widenToReveal, type Box } from './viewport';
 
 /*
  * Bringing an expand's newcomers into view without losing the view the reader had: the frame
@@ -118,5 +118,72 @@ describe('frameBelow', () => {
 		expect(bottomRight.y).toBeLessThanOrEqual(SCREEN_WIDE.height - 150 - PADDING + 1e-9);
 		const middle = onScreen(500, 200, next);
 		expect(middle.x).toBeCloseTo((SCREEN_WIDE.width - 300) / 2);
+	});
+});
+
+describe('frameLegibly', () => {
+	const SCREEN = { width: 1000, height: 700 };
+	const covered = { top: 80 };
+	const zoom = { min: MIN_ZOOM, max: 2.5, legible: 0.51 };
+
+	it('frames like frameBelow while the whole map fits with its names drawn', () => {
+		const map = box(0, 0, 800, 500);
+
+		expect(frameLegibly(map, null, SCREEN, covered, PADDING, zoom)).toEqual(
+			frameBelow(map, SCREEN, covered, PADDING, zoom)
+		);
+	});
+
+	it('stops at the legible zoom and frames the family, the shelf beneath it left to pan to', () => {
+		// The tree fits at half zoom; with the shelf beneath, the whole map would need less.
+		const map = box(0, 0, 1200, 1600);
+		const tree = box(0, 0, 1200, 900);
+		const next = frameLegibly(
+			map,
+			{ box: tree, point: { x: 600, y: 450 } },
+			SCREEN,
+			covered,
+			PADDING,
+			zoom
+		);
+		const treeTop = onScreen(0, 0, next);
+		const treeBottom = onScreen(1200, 900, next);
+
+		expect(next.zoom).toBe(zoom.legible);
+		expect(treeTop.y).toBeCloseTo(covered.top + PADDING);
+		expect(treeTop.x).toBeGreaterThanOrEqual(PADDING - 1e-9);
+		expect(treeBottom.x).toBeLessThanOrEqual(SCREEN.width - PADDING + 1e-9);
+		expect(onScreen(0, 1600, next).y).toBeGreaterThan(SCREEN.height);
+	});
+
+	it('centres on the centre person when even the family is wider than the screen', () => {
+		const map = box(0, 0, 4000, 1600);
+		const tree = box(0, 0, 4000, 900);
+		const next = frameLegibly(
+			map,
+			{ box: tree, point: { x: 3000, y: 450 } },
+			SCREEN,
+			covered,
+			PADDING,
+			zoom
+		);
+
+		expect(next.zoom).toBe(zoom.legible);
+		expect(onScreen(3000, 0, next).x).toBeCloseTo(SCREEN.width / 2);
+		expect(onScreen(0, 0, next).y).toBeCloseTo(covered.top + PADDING);
+	});
+
+	it('keeps clear of a panel at the right when it centres', () => {
+		const map = box(0, 0, 4000, 1600);
+		const next = frameLegibly(
+			map,
+			{ box: map, point: { x: 2000, y: 0 } },
+			SCREEN,
+			{ top: 80, right: 300 },
+			PADDING,
+			zoom
+		);
+
+		expect(onScreen(2000, 0, next).x).toBeCloseTo((SCREEN.width - 300) / 2);
 	});
 });

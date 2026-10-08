@@ -3,6 +3,9 @@ import {
 	EDGE_LABEL_LIMIT,
 	edgeLabelsFit,
 	labelsHint,
+	labelsDrawnAt,
+	legibleZoom,
+	SMALLEST_LABEL_FONT_SIZE,
 	linesDrawn,
 	MAX_NODE_DIAMETER,
 	MIN_NODE_DIAMETER,
@@ -96,5 +99,29 @@ describe('nodeDiameter', () => {
 
 	it('treats a negative count as none rather than drawing a dot', () => {
 		expect(nodeDiameter(-3)).toBe(MIN_NODE_DIAMETER);
+	});
+});
+
+describe('labelsDrawnAt and legibleZoom', () => {
+	// Cytoscape draws a label from a texture at the next power of two of zoom × pixel ratio and
+	// drops it when the font is under the floor at that level — at a desktop's ratio of 1 that is
+	// everything below a zoom of one half.
+	it('drops the smallest names below half zoom on a desktop, and draws them above', () => {
+		expect(labelsDrawnAt(0.494, 1)).toBe(false);
+		expect(labelsDrawnAt(0.51, 1)).toBe(true);
+	});
+
+	it('draws them much further out on a phone’s denser screen', () => {
+		expect(labelsDrawnAt(0.35, 2.625)).toBe(true);
+		expect(labelsDrawnAt(0.18, 2.625)).toBe(false);
+	});
+
+	it('names the furthest zoom out at which every name is still drawn', () => {
+		for (const ratio of [1, 1.5, 2, 2.625, 3]) {
+			const zoom = legibleZoom(ratio);
+			expect(labelsDrawnAt(zoom, ratio)).toBe(true);
+			expect(labelsDrawnAt(zoom * 0.95, ratio)).toBe(false);
+		}
+		expect(SMALLEST_LABEL_FONT_SIZE).toBeLessThanOrEqual(11);
 	});
 });

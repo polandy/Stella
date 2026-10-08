@@ -37,7 +37,7 @@ export const TREE_SPACING = {
 	family: 120
 } as const;
 
-/** The narrowest the shelf beneath gets, so a map with no family still reads as rows. */
+/** How wide the shelf is laid out when there is no family above it to keep within. */
 const SHELF_MIN_WIDTH = 600;
 
 /** Every node of `model` arranged as a family tree, each given the room `sizeOf` says it takes. */
@@ -78,7 +78,9 @@ export function familyTreeLayout(model: GraphModel, sizeOf: SizeOf = defaultSize
 	rest.sort((a, b) => Number(b.kind === 'circle') - Number(a.kind === 'circle'));
 	// One row beneath the youngest generation: no line runs down to the shelf (docs/05 §5.8).
 	const shelfTop = (deepest + 1) * TREE_SPACING.row;
-	const width = Math.max(left - TREE_SPACING.family, SHELF_MIN_WIDTH);
+	// No wider than the family above it, so the shelf never sets how far out the map is framed;
+	// with no family at all it is laid out at a readable width of its own.
+	const width = deepest >= 0 ? left - TREE_SPACING.family : SHELF_MIN_WIDTH;
 	const members = new Set(positions.keys());
 	shelve(
 		rest.map((n) => n.id),

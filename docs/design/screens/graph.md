@@ -29,7 +29,9 @@ card (§5.5.2); its styling is §5.8.
   a grandparent, cousin or sibling line the bars already draw is left off, and friends,
   colleagues and circles show their lines only around a person the reader taps or finds — not
   around the opening centre, nor the person just expanded once the tree is laid out again. An
-  only child hangs straight under their parents. An expand
+  only child hangs straight under their parents. The map is never framed so far out that the
+  names vanish: a large tree is shown from its top at the smallest zoom that still draws them,
+  the shelf below reached by panning. An expand
   in the tree lays the whole tree out again; everybody glides to their new place.
 - On a phone (below `sm`, tuned for a Pixel 9 Pro at 412 px) search, Filter and Arrange keep
   one row: the search field takes whatever the two menus leave, and the Arrange pill shows only

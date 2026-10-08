@@ -596,7 +596,8 @@
 		};
 		if (key === 'tree') {
 			canvas.arrangeAt(familyTreeLayout(drawnVisible, sizeOf), {
-				outsideFamily: t('graph.tree.outsideFamily')
+				outsideFamily: t('graph.tree.outsideFamily'),
+				keepNamesDrawn: true
 			});
 			return;
 		}

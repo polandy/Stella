@@ -14,6 +14,11 @@ import { BOW_FIELD, BOWED_CLASS, CAPTION_CLASS, ROUTE_FIELDS, ROUTED_CLASS } fro
 export interface Captions {
 	/** Over the shelf of people outside the family, beneath the family tree. */
 	outsideFamily?: string;
+	/**
+	 * Never frame so far out that the names stop being drawn (`legibleZoom`): the family tree,
+	 * whose roles are what it is read by. The other arrangements frame the whole map.
+	 */
+	keepNamesDrawn?: boolean;
 }
 
 /** The one caption on the canvas; it is the controller's, never one of the elements. */

@@ -1,6 +1,11 @@
 import { mixHex } from '../../design/color';
 import { FRAME } from '../layout/group-blocks';
-import { LABEL_MIN_ZOOMED_FONT_SIZE, NODE_LABEL_WIDTH } from '../layout/legibility';
+import {
+	LABEL_MIN_ZOOMED_FONT_SIZE,
+	CIRCLE_LABEL_WIDTH,
+	NODE_LABEL_WIDTH,
+	SMALLEST_LABEL_FONT_SIZE
+} from '../layout/legibility';
 import { expandBadge } from './badge';
 import type { Palette } from './theme';
 
@@ -189,7 +194,7 @@ export function buildStylesheet(p: Palette, options: StylesheetOptions = {}): Cy
 				height: tree ? 'label' : 28,
 				padding: '8px',
 				label: tree ? nameAndRole : 'data(label)',
-				...(tree ? { 'text-wrap': 'wrap' } : {}),
+				...(tree ? { 'text-wrap': 'wrap', 'text-max-width': `${CIRCLE_LABEL_WIDTH}px` } : {}),
 				color: p.fg,
 				'font-size': 11,
 				'font-weight': 600,
@@ -277,7 +282,7 @@ export function buildStylesheet(p: Palette, options: StylesheetOptions = {}): Cy
 				'text-opacity': options.edgeLabels ? 1 : 0,
 				'min-zoomed-font-size': LABEL_MIN_ZOOMED_FONT_SIZE,
 				color: p.fgMuted,
-				'font-size': 10,
+				'font-size': SMALLEST_LABEL_FONT_SIZE,
 				'font-family': p.fontSans,
 				'text-background-color': p.bg,
 				'text-background-opacity': 0.8,

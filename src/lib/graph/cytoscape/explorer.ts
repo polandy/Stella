@@ -12,7 +12,8 @@ import type { CyElement } from './elements';
 import { spreadCoincident, type Arrangement, type Size } from '../layout/geometry';
 import { boxAround, frameAround, packGroups } from '../layout/group-blocks';
 import { placeNewcomers, type Placement, type Point } from './placement';
-import { frameBelow, widenToReveal, type Box } from './viewport';
+import { frameLegibly, widenToReveal, type Box } from './viewport';
+import { legibleZoom } from '../layout/legibility';
 import { DEFAULT_DENSITY, spacingFor, type Spacing } from '../layout/density';
 import { bendLines, CAPTION_ID, writeCaption, type Captions } from './tree-canvas';
 import {
@@ -44,6 +45,11 @@ export interface ControllerOptions extends ExplorerHandlers {
 	topInset?: number;
 	/** How far apart people are set, from the start — see `setSpacing`. */
 	spacing?: Spacing;
+	/**
+	 * The screen's device pixels per CSS pixel, which decides how far out the canvas still draws
+	 * the names (`legibleZoom`); framing never goes further. 1 when not given.
+	 */
+	pixelRatio?: number;
 }
 
 export interface ExplorerOptions extends ControllerOptions {
@@ -292,7 +298,11 @@ export function explorerFromCore(cy: Core, opts: ControllerOptions): ExplorerCon
 	 * at once under reduced motion or when there is nothing yet to glide from. A node without a
 	 * place stays where it is; a filtered-out node is left out of the frame.
 	 */
-	const glideTo = (positions: ReadonlyMap<string, Point>, glide: boolean) => {
+	const glideTo = (
+		positions: ReadonlyMap<string, Point>,
+		glide: boolean,
+		focusIds?: ReadonlySet<string>
+	) => {
 		const placeOf = (node: NodeSingular) => positions.get(node.id()) ?? { ...node.position() };
 		const shown = people().filter((n) => !n.hasClass('filtered-out')) as NodeCollection;
 		const boxOf = (nodes: NodeCollection) =>
@@ -301,14 +311,32 @@ export function explorerFromCore(cy: Core, opts: ControllerOptions): ExplorerCon
 		const frames = shown
 			.parents()
 			.map((frame) => frameAround(boxOf(frame.children().intersection(shown) as NodeCollection)));
+		// Should all of it fit only so far out that the names vanish, the family comes first.
+		const focused = focusIds ? (shown.filter((n) => focusIds.has(n.id())) as NodeCollection) : null;
+		const centre = focused?.filter('.center');
+		const focus =
+			focused && focused.nonempty()
+				? {
+						box: boxOf(focused),
+						...(centre && centre.nonempty()
+							? { point: placeOf(centre.first() as NodeSingular) }
+							: {})
+					}
+				: null;
 		const view =
 			shown.nonempty() && cy.width() > 0 && cy.height() > 0
-				? frameBelow(
+				? frameLegibly(
 						[boxOf(shown), ...frames].reduce(union),
+						focus,
 						{ width: cy.width(), height: cy.height() },
 						{ top: topInset, ...covered },
 						FRAME_PADDING,
-						{ min: cy.minZoom(), max: cy.maxZoom() }
+						{
+							min: cy.minZoom(),
+							max: cy.maxZoom(),
+							// The family tree keeps its names drawn; Free and By circle frame as before.
+							legible: focus ? legibleZoom(opts.pixelRatio ?? 1) : 0
+						}
 					)
 				: null;
 		cy.layout(presetLayout(glide, placeOf) as Parameters<Core['layout']>[0]).run();
@@ -453,7 +481,15 @@ export function explorerFromCore(cy: Core, opts: ControllerOptions): ExplorerCon
 			if (!alive()) return;
 			bendLines(cy, { bows, routes }, (node) => positions.get(node.id()) ?? node.position());
 			const captioned = writeCaption(cy, outsideFamily, captions.outsideFamily);
-			glideTo(new Map([...positions, ...captioned]), !opts.reducedMotion);
+			// The family is what is framed first, should all of it not fit with its names drawn.
+			const family = captions.keepNamesDrawn
+				? new Set(
+						[...positions]
+							.filter(([, at]) => !outsideFamily || at.y < outsideFamily.y)
+							.map(([id]) => id)
+					)
+				: undefined;
+			glideTo(new Map([...positions, ...captioned]), !opts.reducedMotion, family);
 		},
 
 		sizeOf(nodeId) {
@@ -617,7 +653,11 @@ export async function createExplorer(opts: ExplorerOptions): Promise<ExplorerCon
 		});
 	}
 
-	const controller = explorerFromCore(cy, opts);
+	const controller = explorerFromCore(cy, {
+		...opts,
+		pixelRatio:
+			opts.pixelRatio ?? (typeof window === 'undefined' ? 1 : window.devicePixelRatio || 1)
+	});
 	return {
 		...controller,
 		destroy() {
