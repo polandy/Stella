@@ -13,8 +13,8 @@ import type { ImmichLinkRepository, LinkVisibleContacts } from './links';
 import type { ImmichCompanion, ImmichMediaSigner, SignedImmichMedia } from './signed-media';
 
 /*
- * A glimpse of a linked person's photos (docs/02 §2.24.3, §2.24.4): the strip under the
- * gallery, and what the proxy serves for each picture in it. Every image URL handed out is
+ * A glimpse of a linked person's photos (docs/02 §2.24.3, §2.24.4): their photos on the
+ * Photos card, and what the proxy serves for each picture in it. Every image URL handed out is
  * signed, and only after the access layer let the viewer see the contact; the proxy checks the
  * signature, the viewer and the link again on every request, so a token outlives none of them.
  */

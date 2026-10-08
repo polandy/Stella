@@ -1,5 +1,5 @@
 /*
- * The strip of a linked person's latest photos from Immich (docs/02 §2.24.3), as the
+ * A page of a linked person's latest photos from Immich (docs/02 §2.24.3), as the
  * browser receives it from `/contacts/{id}/immich/photos`. Shared by the server, which builds it,
  * and the Photos card, which shows it; pure, so the one decision in it is tested without either.
  */

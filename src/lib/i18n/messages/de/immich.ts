@@ -118,16 +118,12 @@ export const immich: ImmichMessages = {
 	'immich.strip.photo': (p) => `Foto vom ${p.date}, in Immich`,
 	'immich.strip.undated': 'Foto in Immich',
 	'immich.strip.showMore': 'Mehr zeigen',
-	'immich.viewer.dialog': 'Foto aus Immich',
-	'immich.viewer.position': (p) => `${p.at} von ${p.count}`,
-	'immich.viewer.previous': 'Vorheriges Foto',
-	'immich.viewer.next': 'Nächstes Foto',
 	'immich.viewer.use': 'Als Foto verwenden',
 	'immich.viewer.useFailed':
 		'Das Foto konnte nicht übernommen werden. Lade die Seite neu und versuche es noch einmal.',
 
 	'immich.together.label': 'Wessen Fotos',
-	'immich.together.own': 'Alle Fotos',
+	'immich.together.own': (p) => p.name,
 	'immich.together.withYou': (p) => `Du und ${p.name}`,
 	'immich.together.pair': (p) => `${p.first} und ${p.second}`,
 	'immich.together.stripWithYou': (p) => `Fotos von dir und ${p.name} zusammen, in Immich`,
