@@ -1,11 +1,9 @@
 import { error, fail, redirect } from '@sveltejs/kit';
 import { requireViewer } from '$lib/server/auth/guards';
 import * as v from 'valibot';
-import {
-	getContact,
-	listContactNamesAmong,
-	listContacts
-} from '$lib/server/domain/contacts/contacts';
+import { getContact } from '$lib/server/domain/contacts/contacts';
+import { listContactNamesAmong } from '$lib/server/domain/contacts/contact-names';
+import { listContacts } from '$lib/server/domain/contacts/directory';
 import { authorNames } from '$lib/server/domain/household/members';
 import { authorLabel } from '$lib/story/author';
 import {
@@ -43,7 +41,7 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 	]);
 	// Names for the people the entries mention, not for the whole household.
 	const contactNames = await listContactNamesAmong(
-		locals.services.people.contactDeps,
+		locals.services.people.contactNameDeps,
 		viewer,
 		entries.flatMap((e) => extractMentionIds(e.body))
 	);
@@ -202,7 +200,7 @@ export const actions: Actions = {
 			return fail(404, { journalError: say(locals, 'errors.journal.editFailed') });
 		}
 
-		const contacts = await listContacts(locals.services.people.contactDeps, viewer);
+		const contacts = await listContacts(locals.services.people.contactDirectoryDeps, viewer);
 		const author = {
 			userId: viewer.id,
 			householdId: viewer.householdId,

@@ -50,7 +50,7 @@ export interface ImmichMatchingDeps {
 	ignores: Pick<ImmichIgnoreRepository, 'listVisibleTo'>;
 	nameIgnores: Pick<ImmichNameIgnoreRepository, 'listForHousehold'>;
 	/** The contacts the viewer sees, through the access layer. */
-	contacts: { listVisibleTo(viewer: Viewer): Promise<MatchingContact[]> };
+	directory: { listVisibleTo(viewer: Viewer): Promise<MatchingContact[]> };
 	/** Circles and relationships, read through the access layer, for the comparison step. */
 	contextReads: PersonContextReads;
 	signer: ImmichMediaSigner;
@@ -184,7 +184,7 @@ export async function findImmichMatches(
 	day: MatchingDay
 ): Promise<MatchingOutcome> {
 	const [contacts, linkedContactIds] = await Promise.all([
-		deps.contacts.listVisibleTo(viewer),
+		deps.directory.listVisibleTo(viewer),
 		deps.links.linkedContactIdsVisibleTo(viewer)
 	]);
 

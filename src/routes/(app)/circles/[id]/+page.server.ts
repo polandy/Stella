@@ -13,7 +13,7 @@ import {
 import { circlePhotoView, photoRoleOptions } from '$lib/server/domain/circles/circle-photo-view';
 import { listCirclePhotos } from '$lib/server/domain/circles/circle-photos';
 import { BlankRoleNameError, renameCircleRole } from '$lib/server/domain/circles/rename-role';
-import { listContactNamesAmong } from '$lib/server/domain/contacts/contacts';
+import { listContactNamesAmong } from '$lib/server/domain/contacts/contact-names';
 import { listCircleCuts } from '$lib/server/domain/media/cuts';
 import { readSurnameHelp } from '$lib/server/domain/contacts/last-names';
 import { photoActions } from './actions/photos';
@@ -89,7 +89,7 @@ export const actions: Actions = {
 		// Every chosen person must be visible to the actor — one that is not fails the whole
 		// pick rather than being dropped silently from it (§3.7).
 		const chosen = new Set(parsed.output.contactIds);
-		const visible = await listContactNamesAmong(locals.services.people.contactDeps, viewer, [
+		const visible = await listContactNamesAmong(locals.services.people.contactNameDeps, viewer, [
 			...chosen
 		]);
 		if (visible.length !== chosen.size) {

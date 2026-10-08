@@ -142,6 +142,15 @@ const id = await createContact(input, locals.services.people.contactDeps);
 randomness/ids), never for plain values; always inject **narrow, domain-owned ports**;
 assemble concretes **only in the composition root**.
 
+**Repositories write, read models list.** A repository is an aggregate's write side plus the
+one-record reads its writes rest on (`insert`, `update…`, `findByIdVisibleTo`); what a screen
+lists or counts is a **read model** port of its own, named `…Reads` (`ContactDirectoryReads`,
+`ContactNameReads`, `PeopleStampReads`). A list a new screen needs widens a read model, never
+the repository. Each port has **one adapter** (`db/*-repository.ts`, `db/*-reads.ts`): a
+factory declared to return `A & B` is one object with two reasons to change, and
+`src/lib/server/adapter-ports.test.ts` refuses it. A use-case asks for exactly the methods it
+calls (`Pick<ContactDirectoryReads, 'listVisibleTo'>`), as its own field of `deps`.
+
 ## 8.4 The TDD loop in practice
 
 ```
@@ -161,6 +170,17 @@ assemble concretes **only in the composition root**.
 
 Test files are `*.test.ts`, colocated with the code under test (hence `bun test src`, which
 keeps the Playwright specs out of Bun's runner).
+
+**Shared test support** lives in `src/lib/server/domain/testing/`: `fixedClock(now)` (stands
+still until the test calls `advance`), `sequentialIds(...first)`, one in-memory fake per
+read-model port (`inMemoryContactDirectory`, … over `somebody(id, name, fields)` rows) and
+`contactRepositoryWith({...})`, which answers with the methods a test hands it and fails loud on
+any other. Reach for these before writing a fake. A fake models no visibility — the people it
+holds are the ones the viewer may see; the adapter's scoping is covered against SQLite. Two
+kinds of fake stay in their test: one that **records the calls** it receives to assert on them
+(that is the behaviour under test), and one whose answers follow the test's own writes or
+visibility rules. Only `*.test.ts` files import the folder (`testing.test.ts` holds that), so
+Vite never reaches it and it is not built.
 
 `bun run test:e2e` (`e2e/run.sh`) builds the app, starts it on `127.0.0.1:4173` against a
 **fresh** `./data/e2e` database with `SEED_DEMO=true`, and drives it from the pinned

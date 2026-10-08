@@ -6,6 +6,7 @@ import { registerFirstAdmin, type AuthUser } from '../auth/accounts';
 import { hashPassword, verifyPassword } from '../auth/password';
 import type { Clock } from '../clock';
 import { createDrizzleAccountRepository } from '../db/account-repository';
+import { createDrizzleContactDirectoryReads } from '../db/contact-directory-reads';
 import { createDrizzleContactRepository } from '../db/contact-repository';
 import * as schema from '../db/schema';
 import { createContact } from '../domain/contacts/contacts';
@@ -56,7 +57,14 @@ beforeEach(async () => {
 			locale: 'en'
 		}
 	);
-	wiring = { db, clock, ids, contacts: createDrizzleContactRepository(db), media };
+	wiring = {
+		db,
+		clock,
+		ids,
+		contacts: createDrizzleContactRepository(db),
+		directory: createDrizzleContactDirectoryReads(db),
+		media
+	};
 });
 
 const viewerOf = (user: AuthUser) => ({ id: user.id, householdId: user.householdId });

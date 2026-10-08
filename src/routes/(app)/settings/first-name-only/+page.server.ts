@@ -1,11 +1,8 @@
 import { error, fail } from '@sveltejs/kit';
 import { requireUser, requireViewer } from '$lib/server/auth/guards';
 import * as v from 'valibot';
-import {
-	describeContact,
-	EmptyDescriptionError,
-	listContacts
-} from '$lib/server/domain/contacts/contacts';
+import { describeContact, EmptyDescriptionError } from '$lib/server/domain/contacts/contacts';
+import { listContacts } from '$lib/server/domain/contacts/directory';
 import { contextOfPeople } from '$lib/server/domain/contacts/person-context';
 import { say, translator } from '$lib/server/i18n/say';
 import { isKnownByAFirstNameOnly, suggestedDescription } from '$lib/people/namesakes';
@@ -25,7 +22,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 	const user = requireUser(locals);
 	const viewer = requireViewer(locals);
 	const [everyone, touches] = await Promise.all([
-		listContacts(locals.services.people.contactDeps, viewer),
+		listContacts(locals.services.people.contactDirectoryDeps, viewer),
 		locals.services.household.attention.listLastTouchedVisibleTo(viewer)
 	]);
 	const today = todayFor(systemClock);

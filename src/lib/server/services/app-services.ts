@@ -54,12 +54,12 @@ export type ServicesWiring = AuthWiring &
 	MediaWiring &
 	Omit<PeopleWiring, 'accounts' | 'relationships' | 'media'> &
 	Omit<CircleWiring, 'contacts' | 'media'> &
-	Omit<StoryWiring, 'contacts' | 'media'> &
+	Omit<StoryWiring, 'contacts' | 'directory' | 'media'> &
 	NoteWiring &
 	RecordWiring &
 	HouseholdWiring &
 	Omit<ArchiveWiring, 'media'> &
-	Omit<ImmichWiring, 'contacts' | 'contactDeps' | 'contextReads' | 'avatarDeps'> &
+	Omit<ImmichWiring, 'contacts' | 'directory' | 'contactDeps' | 'contextReads' | 'avatarDeps'> &
 	ReleaseWiring &
 	Omit<OfflineWiring, 'contexts'>;
 
@@ -82,6 +82,7 @@ export function createServices(wiring: ServicesWiring): AppServices {
 	const story = createStoryServices({
 		...wiring,
 		contacts: people.contacts,
+		directory: people.directory,
 		media: media.store
 	});
 	const notes = createNoteServices(wiring);
@@ -91,6 +92,7 @@ export function createServices(wiring: ServicesWiring): AppServices {
 	const immich = createImmichServices({
 		...wiring,
 		contacts: people.contacts,
+		directory: people.directory,
 		contactDeps: people.contactDeps,
 		contextReads: people.personContextDeps.contextReads,
 		avatarDeps: media.avatarDeps

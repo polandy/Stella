@@ -2,9 +2,9 @@ import { fail, redirect } from '@sveltejs/kit';
 import { requireUser, requireViewer } from '$lib/server/auth/guards';
 import {
 	listBrowsableNamesAmong,
-	listContactNamesAmong,
-	listPeopleEnoughForFirstRun
-} from '$lib/server/domain/contacts/contacts';
+	listContactNamesAmong
+} from '$lib/server/domain/contacts/contact-names';
+import { listPeopleEnoughForFirstRun } from '$lib/server/domain/contacts/directory';
 import { hasImminentDate, upcomingDates } from '$lib/server/domain/dates/upcoming';
 import { dispatchCommand } from '$lib/server/domain/commands/dispatch';
 import { parsePhotoCommand, readCommand } from '$lib/server/commands/parse';
@@ -52,15 +52,15 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 	const [items, onList, dateSources, firstPeople] = await Promise.all([
 		buildStream(locals.services.media.streamDeps, viewer, filter),
 		// Who the household can still act on — the browsing scope — among just those.
-		listBrowsableNamesAmong(locals.services.people.contactDeps, viewer, named),
+		listBrowsableNamesAmong(locals.services.people.contactNameDeps, viewer, named),
 		locals.services.records.importantDates.listSourcesVisibleTo(viewer),
 		// Just enough of the household to tell whether it has begun (docs/02 §2.22.3).
-		listPeopleEnoughForFirstRun(locals.services.people.contactDeps, viewer)
+		listPeopleEnoughForFirstRun(locals.services.people.contactDirectoryDeps, viewer)
 	]);
 	// What a mention already written is called (archived people included), for the moments
 	// on this page only.
 	const names = await listContactNamesAmong(
-		locals.services.people.contactDeps,
+		locals.services.people.contactNameDeps,
 		viewer,
 		items.flatMap((item) => (item.kind === 'moment' ? extractMentionIds(item.body) : []))
 	);

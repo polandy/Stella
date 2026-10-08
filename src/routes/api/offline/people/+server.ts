@@ -1,6 +1,6 @@
 import { json } from '@sveltejs/kit';
 import type { VisiblePerson } from '$lib/pwa/people-ahead';
-import { listContacts } from '$lib/server/domain/contacts/contacts';
+import { listContacts } from '$lib/server/domain/contacts/directory';
 import type { RequestHandler } from './$types';
 
 /*
@@ -15,7 +15,7 @@ export const GET: RequestHandler = async ({ locals }) => {
 
 	const viewer = { id: user.id, householdId: user.householdId };
 	const people: VisiblePerson[] = (
-		await listContacts(locals.services.people.contactDeps, viewer)
+		await listContacts(locals.services.people.contactDirectoryDeps, viewer)
 	).map(({ id, avatarPhotoId }) => ({
 		id,
 		avatarPhotoId

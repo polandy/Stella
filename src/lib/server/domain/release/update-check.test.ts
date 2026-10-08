@@ -1,14 +1,9 @@
 import { describe, expect, it } from 'bun:test';
-import type { Clock } from '../../clock';
 import type { LatestRelease, ReleaseFeed } from './feed';
 import { CHECK_INTERVAL_MS, createUpdateCheck, RETRY_INTERVAL_MS } from './update-check';
+import { fixedClock, type FixedClock } from '../testing';
 
 /** A clock the test moves by hand — nothing here waits on wall time. */
-function fakeClock(start = 1_000): Clock & { advance(ms: number): void } {
-	let now = start;
-	return { now: () => now, advance: (ms) => void (now += ms) };
-}
-
 /** A request the test holds open, so two callers are provably in flight at once. */
 function gate() {
 	let open!: () => void;
@@ -23,7 +18,7 @@ function gate() {
  */
 function fakeFeed(
 	release: LatestRelease | null = { tag: 'v0.0.11', url: null },
-	clock?: ReturnType<typeof fakeClock>
+	clock?: FixedClock
 ) {
 	const state = {
 		calls: 0,
@@ -46,7 +41,7 @@ function fakeFeed(
 
 describe('createUpdateCheck', () => {
 	it('says a newer release is available, and where to read about it', async () => {
-		const clock = fakeClock();
+		const clock = fixedClock(1_000);
 		const { feed } = fakeFeed(
 			{ tag: 'v0.0.11', url: 'https://github.com/polandy/Stella/releases/tag/v0.0.11' },
 			clock
@@ -65,14 +60,14 @@ describe('createUpdateCheck', () => {
 
 	it('says the instance is current when the newest release is the one running', async () => {
 		const { feed } = fakeFeed({ tag: 'v0.0.10', url: null });
-		const check = createUpdateCheck({ feed, clock: fakeClock(), currentVersion: '0.0.10' });
+		const check = createUpdateCheck({ feed, clock: fixedClock(1_000), currentVersion: '0.0.10' });
 
 		expect((await check.status()).state).toBe('current');
 	});
 
 	it('asks upstream once a day, however often the page is opened', async () => {
 		const { feed, state } = fakeFeed();
-		const clock = fakeClock();
+		const clock = fixedClock(1_000);
 		const check = createUpdateCheck({ feed, clock, currentVersion: '0.0.10' });
 
 		await check.status();
@@ -90,7 +85,7 @@ describe('createUpdateCheck', () => {
 		const { feed, state } = fakeFeed();
 		const held = gate();
 		state.held = held;
-		const check = createUpdateCheck({ feed, clock: fakeClock(), currentVersion: '0.0.10' });
+		const check = createUpdateCheck({ feed, clock: fixedClock(1_000), currentVersion: '0.0.10' });
 
 		const first = check.status();
 		const second = check.status();
@@ -101,7 +96,7 @@ describe('createUpdateCheck', () => {
 	});
 
 	it('tries again within the hour after a failure, rather than waiting out the day', async () => {
-		const clock = fakeClock();
+		const clock = fixedClock(1_000);
 		const { feed, state } = fakeFeed(undefined, clock);
 		state.fails = true;
 		const check = createUpdateCheck({ feed, clock, currentVersion: '0.0.10' });
@@ -122,7 +117,7 @@ describe('createUpdateCheck', () => {
 	it('reports unreachable when it has never got an answer', async () => {
 		const { feed, state } = fakeFeed();
 		state.fails = true;
-		const check = createUpdateCheck({ feed, clock: fakeClock(), currentVersion: '0.0.10' });
+		const check = createUpdateCheck({ feed, clock: fixedClock(1_000), currentVersion: '0.0.10' });
 
 		expect(await check.status()).toEqual({
 			state: 'unreachable',
@@ -136,7 +131,7 @@ describe('createUpdateCheck', () => {
 
 	it('keeps a release it already knows when a later check fails', async () => {
 		const { feed, state } = fakeFeed();
-		const clock = fakeClock();
+		const clock = fixedClock(1_000);
 		const check = createUpdateCheck({ feed, clock, currentVersion: '0.0.10' });
 		await check.status();
 		const firstCheckedAt = clock.now();
@@ -154,7 +149,7 @@ describe('createUpdateCheck', () => {
 	});
 
 	it('marks an answer stale once a later check fails, so its age can be shown', async () => {
-		const clock = fakeClock();
+		const clock = fixedClock(1_000);
 		const { feed, state } = fakeFeed({ tag: 'v0.0.10', url: null }, clock);
 		const check = createUpdateCheck({ feed, clock, currentVersion: '0.0.10' });
 		expect((await check.status()).stale).toBe(false);
@@ -172,14 +167,14 @@ describe('createUpdateCheck', () => {
 
 	it('reports current when the feed has no release at all', async () => {
 		const { feed } = fakeFeed(null);
-		const check = createUpdateCheck({ feed, clock: fakeClock(), currentVersion: '0.0.10' });
+		const check = createUpdateCheck({ feed, clock: fixedClock(1_000), currentVersion: '0.0.10' });
 
 		expect((await check.status()).state).toBe('current');
 	});
 
 	it('never turns a tag it cannot read into an update', async () => {
 		const { feed } = fakeFeed({ tag: 'nightly', url: null });
-		const check = createUpdateCheck({ feed, clock: fakeClock(), currentVersion: '0.0.10' });
+		const check = createUpdateCheck({ feed, clock: fixedClock(1_000), currentVersion: '0.0.10' });
 
 		const status = await check.status();
 		expect(status.state).toBe('current');

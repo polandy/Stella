@@ -42,7 +42,7 @@ function setup(
 	const gateway = createFakeImmichGateway(testLibrary());
 	const deps: PersonMatchDeps = {
 		gateway,
-		contacts: {
+		directory: {
 			listVisibleTo: async () =>
 				options.contacts ?? [contact('c-bert', 'Bert', 'Example'), contact('c-carl', 'Carl', null)]
 		},

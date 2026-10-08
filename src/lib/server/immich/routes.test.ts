@@ -358,7 +358,7 @@ describe('answerMatchHint', () => {
 				gateway,
 				links: noLinks,
 				ignores: { listVisibleTo: async () => [] },
-				contacts: {
+				directory: {
 					listVisibleTo: async () => [
 						person('c-bert', 'Bert', 'Example'),
 						person('c-carl', 'Carl', null)

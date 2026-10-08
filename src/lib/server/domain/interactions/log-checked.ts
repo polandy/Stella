@@ -1,4 +1,5 @@
 import { phrase } from '../../../i18n/phrase';
+import type { ContactNameReads } from '../contacts/contact-names';
 import type { ContactRepository } from '../contacts/contacts';
 import { requireVisibleContact } from '../contacts/require-visible';
 import {
@@ -17,7 +18,9 @@ import {
  */
 
 export interface LogCheckedDeps extends InteractionDeps {
-	contacts: Pick<ContactRepository, 'findByIdVisibleTo' | 'listBrowsableNamesAmong'>;
+	contacts: Pick<ContactRepository, 'findByIdVisibleTo'>;
+	/** Who a participant can be: the people the author sees and the household still browses. */
+	contactNames: Pick<ContactNameReads, 'listBrowsableNamesAmong'>;
 }
 
 /** Log a touchpoint on a person the author can see, with participants they can see. */
@@ -31,7 +34,7 @@ export async function logInteractionChecked(
 	// Only the people named are looked up, in the same browsing scope the picker offers.
 	const named = [...new Set(input.participantIds)];
 	const found =
-		named.length === 0 ? [] : await deps.contacts.listBrowsableNamesAmong(viewer, named);
+		named.length === 0 ? [] : await deps.contactNames.listBrowsableNamesAmong(viewer, named);
 	if (found.length !== named.length) {
 		throw new InvalidInteractionError(phrase('errors.interaction.participantNotFound'));
 	}

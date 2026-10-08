@@ -72,10 +72,9 @@ export interface ImmichWiring {
 	clock: Clock;
 	ids: IdGenerator;
 	/** Whom a face is linked to, matched with or ignored for; the people context owns it. */
-	contacts: ImmichLinkDeps['contacts'] &
-		ImmichMediaDeps['contacts'] &
-		ImmichMatchingDeps['contacts'] &
-		ImmichIgnoreDeps['contacts'];
+	contacts: ImmichLinkDeps['contacts'] & ImmichMediaDeps['contacts'] & ImmichIgnoreDeps['contacts'];
+	/** Whom *Find your people* compares the faces with; the people context owns it. */
+	directory: ImmichMatchingDeps['directory'];
 	/** How a person added from a face is added: the people context's, as by hand. */
 	contactDeps: ContactDeps;
 	/** Circles and relationships for the matching list's comparison step, from `people`. */
@@ -91,6 +90,7 @@ export function createImmichServices({
 	clock,
 	ids,
 	contacts,
+	directory,
 	contactDeps,
 	contextReads,
 	avatarDeps
@@ -123,7 +123,7 @@ export function createImmichServices({
 			links,
 			ignores,
 			nameIgnores,
-			contacts,
+			directory,
 			contextReads,
 			gateway,
 			signer,
