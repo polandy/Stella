@@ -95,13 +95,25 @@ describe('followView', () => {
 		expect(reframes).toEqual([false, false, true]);
 	});
 
-	it('reframes once per full-screen change, not on every later resize', () => {
+	it('reframes again when the canvas takes its new size in more than one step', () => {
+		// Leaving full screen, the width can settle before the height does.
+		const { reframes } = run([
+			{ kind: 'screenChanged', size: large },
+			{ kind: 'resized', size: { width: 1200, height: 1080 } },
+			{ kind: 'resized', size: { width: 1200, height: 595 } },
+			{ kind: 'resized', size: { width: 1200, height: 595 } }
+		]);
+		expect(reframes).toEqual([false, true, true, false]);
+	});
+
+	it('stops following the size once the reader has moved the view', () => {
 		const { reframes } = run([
 			{ kind: 'screenChanged', size: small },
 			{ kind: 'resized', size: large },
+			{ kind: 'navigated' },
 			{ kind: 'resized', size: small }
 		]);
-		expect(reframes).toEqual([false, true, false]);
+		expect(reframes).toEqual([false, true, false, false]);
 	});
 
 	it('never reframes on a resize that no full-screen change preceded', () => {

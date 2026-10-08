@@ -16,8 +16,9 @@ export interface ViewFollow {
 	/** The reader has panned or zoomed since the map last framed itself. */
 	navigated: boolean;
 	/**
-	 * The size the canvas had when full screen was last entered or left, while the reframe that
-	 * change asks for still waits for the canvas to take its new size; null when none waits.
+	 * The size the map was last framed for, once full screen has been entered or left and until
+	 * the reader moves the view: each new size the canvas settles at is framed for. Null while the
+	 * canvas size is not followed.
 	 */
 	reframeFrom: ViewSize | null;
 }
@@ -42,10 +43,11 @@ const sameSize = (a: ViewSize, b: ViewSize) => a.width === b.width && a.height =
 const empty = (size: ViewSize) => size.width <= 0 || size.height <= 0;
 
 /**
- * The state after `event`, and whether the map is to be framed afresh now. A full-screen change
- * reframes once, on the first resize that gives the canvas a new, non-empty size — the canvas
- * resizes after the change, not with it, and also reports resizes that changed nothing. The
- * reader moving the view first cancels it.
+ * The state after `event`, and whether the map is to be framed afresh now. After a full-screen
+ * change, every resize that gives the canvas a new, non-empty size reframes — the canvas resizes
+ * after the change, not with it, can take its new size in more than one step (the width before
+ * the height), and also reports resizes that changed nothing. The reader moving the view stops
+ * it until the next full-screen change.
  */
 export function followView(
 	state: ViewFollow,
@@ -66,7 +68,7 @@ export function followView(
 			if (!from || empty(event.size) || sameSize(from, event.size)) {
 				return { state, reframe: false };
 			}
-			return { state: { ...state, reframeFrom: null }, reframe: true };
+			return { state: { ...state, reframeFrom: event.size }, reframe: true };
 		}
 	}
 }
