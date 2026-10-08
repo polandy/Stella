@@ -457,3 +457,8 @@ Every new migration is generated with a name that says what it does —
 `drizzle/` folder is read as the schema's history, and drizzle-kit's random names
 (`0000_conscious_scream.sql` … `0019_volatile_wild_pack.sql`) say nothing; those twenty keep
 their names, since renaming a migration breaks the journal that records it as applied.
+
+A migration that only puts data right has no schema change to generate from:
+`bunx drizzle-kit generate --custom --name <what_it_does>` gives it an empty file with its
+journal entry. Its test runs the migrator up to the step before it, writes the rows the old
+code could leave, then migrates the rest — `db/symmetric-link-order-migration.test.ts`.
