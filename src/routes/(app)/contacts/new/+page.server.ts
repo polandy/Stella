@@ -7,7 +7,6 @@ import { ContactAddSchema } from '$lib/commands/payloads';
 import { systemClock } from '$lib/server/clock';
 import { dispatchCommand } from '$lib/server/domain/commands/dispatch';
 import { ulidGenerator } from '$lib/server/id';
-import { getCommandDeps } from '$lib/server/services';
 import { readNewPersonRequest } from '$lib/people/new-person';
 import type { Actions, PageServerLoad } from './$types';
 
@@ -58,7 +57,7 @@ export const actions: Actions = {
 			householdId: viewer.householdId,
 			locale: locals.locale
 		};
-		const outcome = await dispatchCommand(getCommandDeps(), author, command);
+		const outcome = await dispatchCommand(locals.services.offline.commandDeps, author, command);
 		if (outcome.status !== 'applied') {
 			return fail(400, {
 				error: outcome.status === 'refused' ? outcome.reason(t) : t('errors.contact.needAName')

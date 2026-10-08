@@ -17,7 +17,6 @@ import { membersViewerFirst } from '$lib/server/domain/household/members';
 import { buildStream } from '$lib/server/domain/stream/stream';
 import { extractMentionIds, mentionToken } from '$lib/mentions/mentions';
 import { parseStreamFilter } from '$lib/stream/filter';
-import { getCommandDeps } from '$lib/server/services';
 import type { Actions, PageServerLoad } from './$types';
 import { say, translator } from '$lib/server/i18n/say';
 import type { MessageKey } from '$lib/i18n/translate';
@@ -144,7 +143,7 @@ export const actions: Actions = {
 		const { command } = reading;
 
 		// A refusal is answered here; anything else is ours, and `handleError` logs it.
-		const outcome = await dispatchCommand(getCommandDeps(), author, command);
+		const outcome = await dispatchCommand(locals.services.offline.commandDeps, author, command);
 		if (outcome.status !== 'applied') {
 			const message =
 				outcome.status === 'refused'
@@ -176,7 +175,9 @@ export const actions: Actions = {
 				height: Number(heights[i]),
 				issuedAt: systemClock.now()
 			});
-			const attached = photo ? await dispatchCommand(getCommandDeps(), author, photo) : null;
+			const attached = photo
+				? await dispatchCommand(locals.services.offline.commandDeps, author, photo)
+				: null;
 			if (attached?.status !== 'applied') {
 				return fail(400, {
 					momentError: say(locals, 'errors.moment.photoFailed'),

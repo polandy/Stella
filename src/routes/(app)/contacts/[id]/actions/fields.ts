@@ -9,7 +9,6 @@ import { requireViewer } from '$lib/server/auth/guards';
 import * as v from 'valibot';
 import { editContactField } from '$lib/server/domain/contact-fields/contact-fields';
 import { getContact } from '$lib/server/domain/contacts/contacts';
-import { getCommandDeps } from '$lib/server/services';
 import { say, translator } from '$lib/server/i18n/say';
 import type { Actions } from '../$types';
 
@@ -41,7 +40,7 @@ export const fieldActions = {
 
 		const outcome = reading.ok
 			? await dispatchCommand(
-					getCommandDeps(),
+					locals.services.offline.commandDeps,
 					{ userId: viewer.id, householdId: viewer.householdId, locale: locals.locale },
 					reading.command
 				)

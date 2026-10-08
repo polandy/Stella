@@ -142,7 +142,9 @@ describe('the composition root', () => {
 			'UseImmichPhotoDeps',
 			'ImmichLinkDeps',
 			// The release context (AR-01, twelfth slice): read `locals.services.release`.
-			'UpdateCheck'
+			'UpdateCheck',
+			// The offline context (AR-01, last slice): read `locals.services.offline` instead.
+			'CommandDeps'
 		];
 		const retired = new RegExp(`\\bget(?:${factories.join('|')})\\b`);
 		expect(files.filter((path) => retired.test(source(path)))).toEqual([]);

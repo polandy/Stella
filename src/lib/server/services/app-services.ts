@@ -5,6 +5,7 @@ import { createHouseholdServices, type HouseholdServices, type HouseholdWiring }
 import { createImmichServices, type ImmichServices, type ImmichWiring } from './immich';
 import { createMediaServices, type MediaServices, type MediaWiring } from './media';
 import { createNoteServices, type NoteServices, type NoteWiring } from './notes';
+import { createOfflineServices, type OfflineServices, type OfflineWiring } from './offline';
 import { createPeopleServices, type PeopleServices, type PeopleWiring } from './people';
 import { createRecordServices, type RecordServices, type RecordWiring } from './records';
 import { createReleaseServices, type ReleaseServices, type ReleaseWiring } from './release';
@@ -20,9 +21,8 @@ import { createStoryServices, type StoryServices, type StoryWiring } from './sto
  * `hooks.server.ts` hands it to every request as `locals.services`; a route reads
  * `locals.services.auth.sessionDeps` instead of importing a factory.
  *
- * It is being built one context per change (docs/concepts/architecture-review-2026-10.md,
- * AR-01): the contexts not grouped here yet are still wired by the `get*()` factories in
- * `./index.ts`.
+ * Every context is grouped here (docs/concepts/architecture-review-2026-10.md, AR-01);
+ * `./index.ts` only builds this graph once per process.
  */
 export interface AppServices {
 	auth: AuthServices;
@@ -38,6 +38,7 @@ export interface AppServices {
 	/** Null when this instance has no Immich: the feature then appears nowhere. */
 	immich: ImmichServices | null;
 	release: ReleaseServices;
+	offline: OfflineServices;
 }
 
 /**
@@ -45,8 +46,8 @@ export interface AppServices {
  * that reads another grouped context's repository gets it from here, not from the wiring
  * (`people` reads `auth`'s accounts, the relationships context's repository and `media`'s
  * store; `circles` and `story` read `people`'s contacts and `media`'s store; `archive` restores
- * into `media`'s store; `immich` reads `people`'s contacts and `media`'s avatar deps), so each
- * repository exists once.
+ * into `media`'s store; `immich` reads `people`'s contacts and `media`'s avatar deps; `offline`'s
+ * command handlers read the contexts whose use-cases they call), so each repository exists once.
  */
 export type ServicesWiring = AuthWiring &
 	RelationshipWiring &
@@ -59,7 +60,8 @@ export type ServicesWiring = AuthWiring &
 	HouseholdWiring &
 	Omit<ArchiveWiring, 'media'> &
 	Omit<ImmichWiring, 'contacts' | 'contactDeps' | 'contextReads' | 'avatarDeps'> &
-	ReleaseWiring;
+	ReleaseWiring &
+	Omit<OfflineWiring, 'contexts'>;
 
 /** Wires every grouped context. Pure assembly: no I/O beyond what the adapters do when used. */
 export function createServices(wiring: ServicesWiring): AppServices {
@@ -94,6 +96,10 @@ export function createServices(wiring: ServicesWiring): AppServices {
 		avatarDeps: media.avatarDeps
 	});
 	const release = createReleaseServices(wiring);
+	const offline = createOfflineServices({
+		...wiring,
+		contexts: { auth, people, relationships, circles, media, story, notes, records }
+	});
 	return {
 		auth,
 		people,
@@ -106,6 +112,7 @@ export function createServices(wiring: ServicesWiring): AppServices {
 		household,
 		archive,
 		immich,
-		release
+		release,
+		offline
 	};
 }

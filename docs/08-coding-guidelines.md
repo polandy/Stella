@@ -109,8 +109,9 @@ Layering and single responsibility:
    to the edge as `locals.services`: a route reads `locals.services.auth.sessionDeps` rather
    than pulling from a registry, so a test can hand it an `AppServices` over fakes. In a
    group, a repository the edge reads directly sits under its plural noun (`accounts`), a
-   use-case's deps under its type's name (`sessionDeps: SessionDeps`). Contexts not grouped
-   yet keep their `get*()` factories (`getNoteDeps()`, …) until they move in. Only edge
+   use-case's deps under its type's name (`sessionDeps: SessionDeps`). The command handler
+   table (`lib/server/commands/handlers.ts`) constructs nothing: the `offline` group builds it
+   over the other groups' deps (docs/04 §4.11.2). Only edge
    code imports the module: the SvelteKit edge itself (`routes/`, `hooks.server.ts`) and
    the few shared edge helpers named beside it in the tree (docs/04 §4.3).
 
