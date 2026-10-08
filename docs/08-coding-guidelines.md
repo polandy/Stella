@@ -157,6 +157,8 @@ asks for the narrow port that one exports (`ContactLookup` from `contacts`, not 
 needs itself and the other side's adapter fulfils it structurally: `contacts` reads the kinship
 graph through its own `SurnameKinshipSource`, and unlinks a deleted person's photo files
 through its own `PhotoFileCascade`, never through `relationships` or `media` (docs/04 ADR-121).
+A new column pointing at a person is one line in `domain/contacts/merge-plan.ts` — moved by a
+merge, or left behind on purpose; `db/merge-plan-coverage.test.ts` fails until it is.
 
 **Repositories write, read models list.** A repository is an aggregate's write side plus the
 one-record reads its writes rest on (`insert`, `update…`, `findByIdVisibleTo`); what a screen
