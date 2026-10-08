@@ -4,7 +4,7 @@ import { say } from '$lib/server/i18n/say';
 
 /*
  * Authenticated media delivery (docs/04 §4.6). Media is never exposed as static files; every
- * request re-checks visibility through the PhotoRepository (contact visible + photo shared-or-
+ * request re-checks visibility through `PhotoFileReads` (contact visible + photo shared-or-
  * owned, §3.7) so private media can't leak. `?thumb` serves the small variant, `?view`
  * a group photo's 1600 px view. Files are
  * id-addressed and immutable, so they cache aggressively but privately.
@@ -18,11 +18,15 @@ export const GET: RequestHandler = async ({ locals, params, url }) => {
 			? 'view'
 			: 'full';
 
-	const file = await locals.services.media.photos.getVisiblePhotoFile(viewer, params.id, variant);
+	const file = await locals.services.media.photoFiles.getVisiblePhotoFile(
+		viewer,
+		params.id,
+		variant
+	);
 	if (!file) throw error(404, say(locals, 'errors.notFound'));
 
 	// Streamed from disk rather than read into memory first: a full-size photo is megabytes.
-	const opened = await locals.services.media.store.open(file.path);
+	const opened = await locals.services.media.streams.open(file.path);
 	if (!opened) throw error(404, say(locals, 'errors.notFound'));
 
 	return new Response(opened.body, {

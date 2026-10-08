@@ -25,3 +25,4 @@ export {
 	type FakeMembership
 } from './circles';
 export { inMemoryTagLists, someTag, type FakeTag } from './tags';
+export { inMemoryGalleryPhotos, photoRepositoryWith, someGalleryPhoto } from './photos';

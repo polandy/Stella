@@ -1,55 +1,20 @@
-import { and, asc, desc, eq, inArray, isNotNull, isNull, or, sql, type SQL } from 'drizzle-orm';
-import { alias } from 'drizzle-orm/sqlite-core';
+import { and, eq } from 'drizzle-orm';
 import type { BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
-import {
-	childRecordVisibleTo,
-	circlePhotoColumnsVisibleTo,
-	circlePhotoVisibleTo
-} from '../access/query-scoping';
-import type { Viewer } from '../access/visibility';
-import type {
-	DeletedPhotoFiles,
-	GalleryPhoto,
-	JournalPhotoRef,
-	PhotoFile,
-	PhotoRepository,
-	PhotoVariant,
-	StoredPhoto
-} from '../domain/media/avatars';
-import type { FramingRepository, StoredFraming } from '../domain/media/framing';
+import type { DeletedPhotoFiles, PhotoRepository, StoredPhoto } from '../domain/media/avatars';
 import { keepCutLeftBehind } from './cut-turning';
-import { photoDatedAt } from './photo-dated-at';
+import { isGalleryPhoto } from './gallery-photo-scope';
 import type * as schema from './schema';
-import { circle, contact, photo } from './schema';
+import { contact, photo } from './schema';
 
 /*
- * Drizzle adapter for the PhotoRepository port (docs/08 §8.3). Serving a photo file is scoped
- * through the central `childRecordVisibleTo`: the photo's contact must be visible and a private
- * photo only to its author (docs/03 §3.7) — so private media is never served to others. A
- * circle's photo has no contact; it is served by `circlePhotoVisibleTo`, its circle's rule.
+ * Drizzle adapter for the PhotoRepository port (docs/08 §8.3): the photo record's writes. A
+ * write to a gallery photo touches only a gallery photo (`isGalleryPhoto`) and only the
+ * author's own; the reads are read models of their own (`gallery-photo-reads.ts`,
+ * `journal-photo-reads.ts`, `photo-file-reads.ts`) and framings are `framing-repository.ts`.
  */
 export function createDrizzlePhotoRepository(
 	db: BunSQLiteDatabase<typeof schema>
-): PhotoRepository & FramingRepository {
-	/** A person's journal photos the viewer may see, oldest first, among the entries `entries` picks. */
-	function journalPhotosWhere(viewer: Viewer, contactId: string, entries: SQL): JournalPhotoRef[] {
-		const rows = db
-			.select({ id: photo.id, journalEntryId: photo.journalEntryId })
-			.from(photo)
-			.innerJoin(contact, eq(photo.contactId, contact.id))
-			.where(
-				and(
-					eq(photo.contactId, contactId),
-					entries,
-					childRecordVisibleTo(viewer, { visibility: photo.visibility, createdBy: photo.createdBy })
-				)
-			)
-			.orderBy(asc(photo.createdAt))
-			.all();
-		// journalEntryId is non-null here: both filters only pick photos of an entry.
-		return rows.map((r) => ({ id: r.id, journalEntryId: r.journalEntryId as string }));
-	}
-
+): PhotoRepository {
 	return {
 		async insert(p: StoredPhoto) {
 			db.insert(photo)
@@ -82,92 +47,6 @@ export function createDrizzlePhotoRepository(
 				keepCutLeftBehind(tx, contactId, { framingOf: null });
 				tx.update(contact).set({ avatarPhotoId: photoId }).where(eq(contact.id, contactId)).run();
 			});
-		},
-
-		async getVisiblePhotoFile(
-			viewer: Viewer,
-			photoId: string,
-			variant: PhotoVariant
-		): Promise<PhotoFile | null> {
-			const owner = { visibility: photo.visibility, createdBy: photo.createdBy };
-			const row = db
-				.select({
-					filePath: photo.filePath,
-					thumbPath: photo.thumbPath,
-					viewPath: photo.viewPath,
-					mime: photo.mime,
-					visibility: photo.visibility,
-					createdBy: photo.createdBy
-				})
-				.from(photo)
-				.leftJoin(contact, eq(photo.contactId, contact.id))
-				.leftJoin(circle, eq(photo.circleId, circle.id))
-				.where(
-					and(
-						eq(photo.id, photoId),
-						or(
-							and(isNotNull(photo.contactId), childRecordVisibleTo(viewer, owner)),
-							and(isNotNull(photo.circleId), circlePhotoVisibleTo(viewer, owner))
-						)
-					)
-				)
-				.get();
-			if (!row) return null;
-			// A photo stored before there was a view (or small enough not to need one) is its own view.
-			const path = { full: row.filePath, view: row.viewPath ?? row.filePath, thumb: row.thumbPath }[
-				variant
-			];
-			return { path, mime: row.mime };
-		},
-
-		async listJournalPhotos(viewer: Viewer, contactId: string): Promise<JournalPhotoRef[]> {
-			return journalPhotosWhere(viewer, contactId, isNotNull(photo.journalEntryId));
-		},
-
-		async listJournalPhotosOfEntries(
-			viewer: Viewer,
-			contactId: string,
-			entryIds: readonly string[]
-		): Promise<JournalPhotoRef[]> {
-			if (entryIds.length === 0) return [];
-			return journalPhotosWhere(viewer, contactId, inArray(photo.journalEntryId, [...entryIds]));
-		},
-
-		async listGalleryPhotos(viewer: Viewer, contactId: string): Promise<GalleryPhoto[]> {
-			return db
-				.select(GALLERY_COLUMNS)
-				.from(photo)
-				.innerJoin(contact, eq(photo.contactId, contact.id))
-				.leftJoin(framing, eq(framing.framingOf, photo.id))
-				.leftJoin(cutGroup, eq(cutGroup.id, photo.cutFrom))
-				.leftJoin(cutCircle, cutCircleVisible(viewer))
-				.where(and(eq(photo.contactId, contactId), isGalleryPhotoVisibleTo(viewer)))
-				.orderBy(desc(photoDatedAt(photo)))
-				.all()
-				.map(toGalleryPhoto);
-		},
-
-		async findVisibleGalleryPhoto(
-			viewer: Viewer,
-			contactId: string,
-			photoId: string
-		): Promise<GalleryPhoto | null> {
-			const row = db
-				.select(GALLERY_COLUMNS)
-				.from(photo)
-				.innerJoin(contact, eq(photo.contactId, contact.id))
-				.leftJoin(framing, eq(framing.framingOf, photo.id))
-				.leftJoin(cutGroup, eq(cutGroup.id, photo.cutFrom))
-				.leftJoin(cutCircle, cutCircleVisible(viewer))
-				.where(
-					and(
-						eq(photo.id, photoId),
-						eq(photo.contactId, contactId),
-						isGalleryPhotoVisibleTo(viewer)
-					)
-				)
-				.get();
-			return row ? toGalleryPhoto(row) : null;
 		},
 
 		async setGalleryPhotoPin(photoId: string, pinnedAt: number | null) {
@@ -239,138 +118,6 @@ export function createDrizzlePhotoRepository(
 					...framings.map(({ filePath, thumbPath }) => ({ filePath, thumbPath }))
 				];
 			});
-		},
-
-		async replaceFraming(f: StoredFraming): Promise<DeletedPhotoFiles[]> {
-			return db.transaction((tx) => {
-				// A profile picture cut from a group photo stays theirs as a photo (concept §5.2).
-				keepCutLeftBehind(tx, f.contactId, { framingOf: f.framingOf });
-				const replaced = tx
-					.delete(photo)
-					.where(eq(photo.framingOf, f.framingOf))
-					.returning({ filePath: photo.filePath, thumbPath: photo.thumbPath })
-					.all();
-				tx.insert(photo)
-					.values({
-						id: f.id,
-						householdId: f.householdId,
-						contactId: f.contactId,
-						journalEntryId: null,
-						framingOf: f.framingOf,
-						cropX: f.crop.x,
-						cropY: f.crop.y,
-						cropSize: f.crop.size,
-						createdBy: f.createdBy,
-						visibility: f.visibility,
-						filePath: f.filePath,
-						thumbPath: f.thumbPath,
-						mime: f.mime,
-						width: f.width,
-						height: f.height,
-						sizeBytes: f.sizeBytes,
-						createdAt: f.createdAt
-					})
-					.run();
-				tx.update(contact).set({ avatarPhotoId: f.id }).where(eq(contact.id, f.contactId)).run();
-				return replaced;
-			});
 		}
 	};
 }
-
-/*
- * A gallery photo is one that belongs to no journal entry (docs/02 §2.14 vs §2.20), to no
- * circle (§2.4.2), and is not the framing of another photo. Reads are scoped through the
- * central `childRecordVisibleTo`, so a private photo reaches only its author.
- */
-function isGalleryPhoto() {
-	return and(isNull(photo.journalEntryId), isNull(photo.framingOf), isNull(photo.circleId));
-}
-
-function isGalleryPhotoVisibleTo(viewer: Viewer) {
-	return and(
-		isGalleryPhoto(),
-		childRecordVisibleTo(viewer, { visibility: photo.visibility, createdBy: photo.createdBy })
-	);
-}
-
-/** A photo's framing, joined beside it; each photo has at most one. */
-const framing = alias(photo, 'framing');
-
-/** The group photo a gallery photo was cut from (concept §5.2), and its circle. */
-const cutGroup = alias(photo, 'cut_group');
-const cutCircle = alias(circle, 'cut_circle');
-
-/** The group photo's circle, joined only when the viewer may see that group photo. */
-function cutCircleVisible(viewer: Viewer) {
-	return and(
-		eq(cutCircle.id, cutGroup.circleId),
-		circlePhotoColumnsVisibleTo(viewer, cutCircle, {
-			visibility: cutGroup.visibility,
-			createdBy: cutGroup.createdBy
-		})
-	);
-}
-
-const GALLERY_COLUMNS = {
-	id: photo.id,
-	contactId: photo.contactId,
-	caption: photo.caption,
-	visibility: photo.visibility,
-	createdBy: photo.createdBy,
-	width: photo.width,
-	height: photo.height,
-	takenAt: photo.takenAt,
-	createdAt: photo.createdAt,
-	isAvatar: sql<number>`(${contact.avatarPhotoId} IN (${photo.id}, ${framing.id}))`,
-	cropX: framing.cropX,
-	cropY: framing.cropY,
-	cropSize: framing.cropSize,
-	pinnedAt: photo.pinnedAt,
-	cutFromId: cutGroup.id,
-	cutCircleId: cutCircle.id,
-	cutCircleName: cutCircle.name
-};
-
-type GalleryRow = {
-	id: string;
-	contactId: string | null;
-	caption: string | null;
-	visibility: 'shared' | 'private';
-	createdBy: string;
-	width: number | null;
-	height: number | null;
-	takenAt: string | null;
-	createdAt: number;
-	isAvatar: number | null;
-	cropX: number | null;
-	cropY: number | null;
-	cropSize: number | null;
-	pinnedAt: number | null;
-	cutFromId: string | null;
-	cutCircleId: string | null;
-	cutCircleName: string | null;
-};
-
-/** SQLite has no booleans; the avatar flag arrives as 0/1 and is mapped here, at the boundary. */
-const toGalleryPhoto = (row: GalleryRow): GalleryPhoto => ({
-	id: row.id,
-	contactId: row.contactId ?? '',
-	caption: row.caption,
-	visibility: row.visibility,
-	createdBy: row.createdBy,
-	width: row.width,
-	height: row.height,
-	takenAt: row.takenAt,
-	createdAt: row.createdAt,
-	isAvatar: row.isAvatar === 1,
-	framing:
-		row.cropX !== null && row.cropY !== null && row.cropSize !== null
-			? { x: row.cropX, y: row.cropY, size: row.cropSize }
-			: null,
-	pinnedAt: row.pinnedAt,
-	cutFrom:
-		row.cutFromId !== null && row.cutCircleId !== null && row.cutCircleName !== null
-			? { photoId: row.cutFromId, circleId: row.cutCircleId, circleName: row.cutCircleName }
-			: null
-});

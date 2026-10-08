@@ -13,6 +13,7 @@ import * as schema from '../db/schema';
 import type { AvatarDeps } from '../domain/media/avatars';
 import { addPersonFromImmich } from '../domain/immich/add-from-immich';
 import { readImmichLink } from '../domain/immich/links';
+import { photoRepositoryWith } from '../domain/testing';
 import type { IdGenerator } from '../id';
 import { DEMO_PUBLIC_URL } from '../immich/config';
 import { createServices } from './app-services';
@@ -33,7 +34,17 @@ const ids: IdGenerator = { next: () => `id-${++counter}` };
 /** The demo library's Markus Brunner (`demo-library.ts`). */
 const MARKUS = 'd0000000-0000-4000-8000-000000000001';
 
-const avatarDeps = { photos: {}, media: {}, ids, clock } as unknown as AvatarDeps;
+// Nothing here keeps an Immich photo as an avatar: a call to either port fails loud.
+const avatarDeps: AvatarDeps = {
+	photos: photoRepositoryWith({}),
+	media: {
+		put: async () => {
+			throw new Error('MediaStore.put was not expected in this test');
+		}
+	},
+	ids,
+	clock
+};
 
 let sqlite: Database;
 let db: BunSQLiteDatabase<typeof schema>;

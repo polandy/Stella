@@ -22,12 +22,8 @@ const OUTSIDE = ['src/lib/server/domain/', 'src/lib/server/access/'];
  * Adapters that still serve two ports. Each is a later cut of AR-08; the list only shrinks.
  */
 const NOT_SPLIT_YET = [
-	// The photo and media cut.
-	'src/lib/server/db/photo-repository.ts',
 	// The relationships cut, with AR-06.
-	'src/lib/server/db/relationship-repository.ts',
-	// The photo and media cut.
-	'src/lib/server/media/file-store.ts'
+	'src/lib/server/db/relationship-repository.ts'
 ];
 
 /** The type a function hands back, looking through `Promise<…>`. */

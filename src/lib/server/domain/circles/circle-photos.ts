@@ -110,7 +110,7 @@ export interface CirclePhotoDeps {
 	circles: Pick<CircleRepository, 'getVisibleTo'>;
 	/** Which roles a photo may carry: the ones the circle's members hold. */
 	memberships: Pick<CircleMembershipReads, 'listMembersVisibleTo'>;
-	media: MediaStore;
+	media: Pick<MediaStore, 'put' | 'delete'>;
 	ids: IdGenerator;
 	clock: Clock;
 }

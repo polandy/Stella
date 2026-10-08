@@ -1,6 +1,4 @@
 import { describe, expect, it } from 'bun:test';
-import type { Clock } from '../../clock';
-import type { IdGenerator } from '../../id';
 import {
 	AVATAR_MAX_BYTES,
 	InvalidAvatarError,
@@ -9,10 +7,9 @@ import {
 	validateAvatarUpload,
 	type AvatarDeps,
 	type AvatarUpload,
-	type MediaStore,
-	type PhotoRepository,
 	type StoredPhoto
 } from './avatars';
+import { fixedClock, sequentialIds } from '../testing';
 
 /*
  * Avatar validation + the setContactAvatar use-case (docs/02 §2.14). Pure and fake-driven —
@@ -68,39 +65,26 @@ describe('validateAvatarUpload', () => {
 });
 
 const NOW = 1_700_000_000_000;
-const clock: Clock = { now: () => NOW };
-const idGen: IdGenerator = { next: () => 'photo-1' };
 
 function fakeDeps() {
 	const store = new Map<string, Uint8Array>();
 	let inserted: StoredPhoto | null = null;
 	let avatarSet: { contactId: string; photoId: string } | null = null;
-	const media: MediaStore = {
+	const media: AvatarDeps['media'] = {
 		put: async (key, bytes) => {
 			store.set(key, bytes);
 			return `avatars/${key}`;
-		},
-		read: async (path) => store.get(path.replace('avatars/', '')) ?? null,
-		delete: async () => {}
+		}
 	};
-	const photos: PhotoRepository = {
+	const photos: AvatarDeps['photos'] = {
 		insert: async (p) => {
 			inserted = p;
 		},
-		exists: async () => false,
 		setContactAvatar: async (contactId, photoId) => {
 			avatarSet = { contactId, photoId };
-		},
-		getVisiblePhotoFile: async () => null,
-		listJournalPhotos: async () => [],
-		listJournalPhotosOfEntries: async () => [],
-		listGalleryPhotos: async () => [],
-		findVisibleGalleryPhoto: async () => null,
-		updateOwnGalleryPhoto: async () => false,
-		deleteOwnGalleryPhoto: async () => null,
-		setGalleryPhotoPin: async () => {}
+		}
 	};
-	const deps: AvatarDeps = { photos, media, ids: idGen, clock };
+	const deps: AvatarDeps = { photos, media, ids: sequentialIds('photo-1'), clock: fixedClock(NOW) };
 	return {
 		deps,
 		store,

@@ -125,9 +125,6 @@ function deps(
 				files[key] = bytes;
 				return key;
 			},
-			async read() {
-				return null;
-			},
 			async delete(path) {
 				deletedFiles.push(path);
 			}

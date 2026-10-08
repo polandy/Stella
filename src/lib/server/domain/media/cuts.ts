@@ -164,7 +164,7 @@ export interface CutRepository {
 export interface CutDeps {
 	cuts: CutRepository;
 	contacts: Pick<ContactRepository, 'findByIdVisibleTo'>;
-	media: MediaStore;
+	media: Pick<MediaStore, 'put' | 'delete'>;
 	ids: IdGenerator;
 	clock: Clock;
 }

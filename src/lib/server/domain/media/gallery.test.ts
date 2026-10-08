@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'bun:test';
 import type { Viewer } from '../../access/visibility';
-import type { GalleryPhoto, PhotoRepository } from './avatars';
+import { fixedClock, inMemoryGalleryPhotos, someGalleryPhoto } from '../testing';
+import type { GalleryPhoto } from './avatars';
 import {
 	captionGalleryPhoto,
 	CaptionTooLongError,
@@ -21,25 +22,7 @@ import {
 const viewer: Viewer = { id: 'u1', householdId: 'h1' };
 const NOW = 5_000;
 
-const photo = (over: Partial<GalleryPhoto> = {}): GalleryPhoto => ({
-	takenAt: null,
-	id: 'p1',
-	contactId: 'c1',
-	caption: null,
-	visibility: 'shared',
-	createdBy: 'u1',
-	width: 1600,
-	height: 1200,
-	createdAt: 1000,
-	isAvatar: false,
-	framing: null,
-	pinnedAt: null,
-	cutFrom: null,
-	...over
-});
-
-function deps(over: { photos?: GalleryPhoto[]; visible?: GalleryPhoto | null } = {}) {
-	const calls: string[] = [];
+function deps(over: { photos?: GalleryPhoto[] } = {}) {
 	const deleted: string[] = [];
 	const pins: { photoId: string; pinnedAt: number | null }[] = [];
 	const updates: {
@@ -49,15 +32,7 @@ function deps(over: { photos?: GalleryPhoto[]; visible?: GalleryPhoto | null } =
 		visibility?: 'shared' | 'private';
 	}[] = [];
 
-	const photos: Partial<PhotoRepository> = {
-		async listGalleryPhotos(v, contactId) {
-			calls.push(`list ${v.id} ${contactId}`);
-			return over.photos ?? [];
-		},
-		async findVisibleGalleryPhoto(v, contactId, photoId) {
-			calls.push(`find ${v.id} ${contactId} ${photoId}`);
-			return over.visible ?? null;
-		},
+	const photos: GalleryDeps['photos'] = {
 		async setGalleryPhotoPin(photoId, pinnedAt) {
 			pins.push({ photoId, pinnedAt });
 		},
@@ -80,26 +55,19 @@ function deps(over: { photos?: GalleryPhoto[]; visible?: GalleryPhoto | null } =
 	};
 	const removedFiles: string[] = [];
 	const d: GalleryDeps & {
-		calls: string[];
 		deleted: string[];
 		pins: typeof pins;
 		updates: typeof updates;
 		removedFiles: string[];
 	} = {
-		calls,
 		deleted,
 		pins,
 		updates,
 		removedFiles,
-		photos: photos as PhotoRepository,
-		clock: { now: () => NOW },
+		gallery: inMemoryGalleryPhotos(over.photos ?? []),
+		photos,
+		clock: fixedClock(NOW),
 		media: {
-			async put() {
-				return '';
-			},
-			async read() {
-				return null;
-			},
 			async delete(path: string) {
 				removedFiles.push(path);
 			}
@@ -109,18 +77,23 @@ function deps(over: { photos?: GalleryPhoto[]; visible?: GalleryPhoto | null } =
 }
 
 describe('listGallery', () => {
-	it('asks the repository for this viewer and this contact', async () => {
-		const d = deps({ photos: [photo(), photo({ id: 'p2' })] });
-		expect(await listGallery(d, viewer, 'c1')).toHaveLength(2);
-		expect(d.calls).toEqual(['list u1 c1']);
+	it('lists that person’s photos and no one else’s', async () => {
+		const d = deps({
+			photos: [
+				someGalleryPhoto('p1'),
+				someGalleryPhoto('p2'),
+				someGalleryPhoto('other', { contactId: 'c2' })
+			]
+		});
+		expect((await listGallery(d, viewer, 'c1')).map((p) => p.id).sort()).toEqual(['p1', 'p2']);
 	});
 
 	it('shows the favourites first, then the rest newest first', async () => {
 		const d = deps({
 			photos: [
-				photo({ id: 'new', createdAt: 3 }),
-				photo({ id: 'old', createdAt: 1, pinnedAt: 9 }),
-				photo({ id: 'mid', createdAt: 2 })
+				someGalleryPhoto('new', { createdAt: 3 }),
+				someGalleryPhoto('old', { createdAt: 1, pinnedAt: 9 }),
+				someGalleryPhoto('mid', { createdAt: 2 })
 			]
 		});
 		expect((await listGallery(d, viewer, 'c1')).map((p) => p.id)).toEqual(['old', 'new', 'mid']);
@@ -131,16 +104,15 @@ describe('pinGalleryPhoto', () => {
 	const someoneElse: Viewer = { id: 'u2', householdId: 'h1' };
 
 	it('pins a photo the viewer can see, at the time it was pinned', async () => {
-		const d = deps({ visible: photo() });
+		const d = deps({ photos: [someGalleryPhoto('p1')] });
 		expect(await pinGalleryPhoto(d, viewer, { contactId: 'c1', photoId: 'p1', pinned: true })).toBe(
 			true
 		);
-		expect(d.calls).toEqual(['find u1 c1 p1']);
 		expect(d.pins).toEqual([{ photoId: 'p1', pinnedAt: NOW }]);
 	});
 
 	it('lets any member who sees the photo pin it, not only who added it — a pin is the household’s', async () => {
-		const d = deps({ visible: photo({ createdBy: 'u1' }) });
+		const d = deps({ photos: [someGalleryPhoto('p1', { createdBy: 'u1' })] });
 		expect(
 			await pinGalleryPhoto(d, someoneElse, { contactId: 'c1', photoId: 'p1', pinned: true })
 		).toBe(true);
@@ -148,7 +120,7 @@ describe('pinGalleryPhoto', () => {
 	});
 
 	it('keeps the first pin’s time when a pinned photo is pinned again, so a replay changes nothing', async () => {
-		const d = deps({ visible: photo({ pinnedAt: 1_234 }) });
+		const d = deps({ photos: [someGalleryPhoto('p1', { pinnedAt: 1_234 })] });
 		expect(await pinGalleryPhoto(d, viewer, { contactId: 'c1', photoId: 'p1', pinned: true })).toBe(
 			true
 		);
@@ -156,7 +128,7 @@ describe('pinGalleryPhoto', () => {
 	});
 
 	it('unpins a pinned photo', async () => {
-		const d = deps({ visible: photo({ pinnedAt: 1_234 }) });
+		const d = deps({ photos: [someGalleryPhoto('p1', { pinnedAt: 1_234 })] });
 		expect(
 			await pinGalleryPhoto(d, viewer, { contactId: 'c1', photoId: 'p1', pinned: false })
 		).toBe(true);
@@ -164,15 +136,23 @@ describe('pinGalleryPhoto', () => {
 	});
 
 	it('writes nothing when unpinning a photo that is not pinned', async () => {
-		const d = deps({ visible: photo() });
+		const d = deps({ photos: [someGalleryPhoto('p1')] });
 		expect(
 			await pinGalleryPhoto(d, viewer, { contactId: 'c1', photoId: 'p1', pinned: false })
 		).toBe(true);
 		expect(d.pins).toEqual([]);
 	});
 
+	it('refuses a photo of another person, so a page pins only its own', async () => {
+		const d = deps({ photos: [someGalleryPhoto('p1', { contactId: 'c2' })] });
+		expect(await pinGalleryPhoto(d, viewer, { contactId: 'c1', photoId: 'p1', pinned: true })).toBe(
+			false
+		);
+		expect(d.pins).toEqual([]);
+	});
+
 	it('refuses a photo the viewer cannot see, without saying whether it exists', async () => {
-		const d = deps({ visible: null });
+		const d = deps({ photos: [] });
 		expect(await pinGalleryPhoto(d, viewer, { contactId: 'c1', photoId: 'p1', pinned: true })).toBe(
 			false
 		);

@@ -22,19 +22,35 @@ export class CaptionTooLongError extends TranslatableError {
 	}
 }
 
+/** The gallery as a person page reads it: a read model of the photo table (docs/08 §8.3). */
+export interface GalleryPhotoReads {
+	/** Gallery photos on a contact the viewer may see, newest taken-or-added first (docs/02 §2.14). */
+	listGalleryPhotos(viewer: Viewer, contactId: string): Promise<GalleryPhoto[]>;
+	/** One gallery photo, only if it belongs to that contact and the viewer may see it. */
+	findVisibleGalleryPhoto(
+		viewer: Viewer,
+		contactId: string,
+		photoId: string
+	): Promise<GalleryPhoto | null>;
+}
+
 export interface GalleryDeps {
-	photos: PhotoRepository;
-	media: MediaStore;
+	gallery: GalleryPhotoReads;
+	photos: Pick<
+		PhotoRepository,
+		'setGalleryPhotoPin' | 'updateOwnGalleryPhoto' | 'deleteOwnGalleryPhoto'
+	>;
+	media: Pick<MediaStore, 'delete'>;
 	clock: Clock;
 }
 
 /** The gallery photos of a contact that this viewer may see: favourites first, then newest first. */
 export async function listGallery(
-	deps: Pick<GalleryDeps, 'photos'>,
+	deps: Pick<GalleryDeps, 'gallery'>,
 	viewer: Viewer,
 	contactId: string
 ): Promise<GalleryPhoto[]> {
-	return orderGallery(await deps.photos.listGalleryPhotos(viewer, contactId));
+	return orderGallery(await deps.gallery.listGalleryPhotos(viewer, contactId));
 }
 
 /**
@@ -45,11 +61,11 @@ export async function listGallery(
  * see the photo — the same answer whether or not it exists.
  */
 export async function pinGalleryPhoto(
-	deps: Pick<GalleryDeps, 'photos' | 'clock'>,
+	deps: Pick<GalleryDeps, 'gallery' | 'photos' | 'clock'>,
 	viewer: Viewer,
 	input: { contactId: string; photoId: string; pinned: boolean }
 ): Promise<boolean> {
-	const photo = await deps.photos.findVisibleGalleryPhoto(viewer, input.contactId, input.photoId);
+	const photo = await deps.gallery.findVisibleGalleryPhoto(viewer, input.contactId, input.photoId);
 	if (!photo) return false;
 	if (input.pinned === (photo.pinnedAt !== null)) return true;
 	await deps.photos.setGalleryPhotoPin(photo.id, input.pinned ? deps.clock.now() : null);
@@ -90,7 +106,7 @@ export async function setGalleryPhotoVisibility(
  * already gone from every view, which is the harmless direction of that failure.
  */
 export async function removeGalleryPhoto(
-	deps: GalleryDeps,
+	deps: Pick<GalleryDeps, 'photos' | 'media'>,
 	viewer: Viewer,
 	photoId: string
 ): Promise<boolean> {

@@ -43,7 +43,7 @@ export const POST: RequestHandler = async ({ locals, params, request }) => {
 
 	// Only what this page shows: its entries' photos and the people its entries mention.
 	const [photos, names, nameOfAuthor] = await Promise.all([
-		locals.services.media.photos.listJournalPhotosOfEntries(
+		locals.services.media.journalPhotos.listJournalPhotosOfEntries(
 			viewer,
 			params.id,
 			entryIdsOf(page.items)

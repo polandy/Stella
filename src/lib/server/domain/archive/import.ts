@@ -54,7 +54,7 @@ export interface RestoreRepository {
 
 export interface ImportArchiveDeps {
 	restore: RestoreRepository;
-	media: MediaStore;
+	media: Pick<MediaStore, 'read' | 'put'>;
 	clock: Clock;
 	ids: IdGenerator;
 }

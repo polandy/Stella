@@ -3,17 +3,22 @@ import { mkdtemp, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { createFileMediaStore } from './file-store';
+import { createFileMediaStreamSource } from './file-stream-source';
 
 /*
  * File-store integration over a real temp directory: round-trips bytes, returns null for a
- * missing path, and deletes without throwing.
+ * missing path, deletes without throwing, and streams what was written.
  */
 
 const dirs: string[] = [];
-async function freshStore() {
+async function freshDir() {
 	const dir = await mkdtemp(join(tmpdir(), 'stella-media-'));
 	dirs.push(dir);
-	return createFileMediaStore(dir);
+	return dir;
+}
+
+async function freshStore() {
+	return createFileMediaStore(await freshDir());
 }
 
 afterAll(async () => {
@@ -41,18 +46,20 @@ describe('createFileMediaStore', () => {
 		expect(await store.read('b.jpg')).toBeNull();
 		await store.delete('b.jpg'); // must not throw
 	});
+});
 
-	it('opens a file to be streamed, without reading it into memory first', async () => {
-		const store = await freshStore();
+describe('createFileMediaStreamSource', () => {
+	it('opens a file the store wrote, to be streamed without reading it into memory first', async () => {
+		const dir = await freshDir();
 		const bytes = new Uint8Array([7, 8, 9]);
-		await store.put('c.jpg', bytes);
-		const opened = await store.open('c.jpg');
+		await createFileMediaStore(dir).put('c.jpg', bytes);
+		const opened = await createFileMediaStreamSource(dir).open('c.jpg');
 		expect(opened?.size).toBe(3);
 		expect(new Uint8Array(await new Response(opened!.body).arrayBuffer())).toEqual(bytes);
 	});
 
 	it('opens nothing for a missing file', async () => {
-		const store = await freshStore();
-		expect(await store.open('missing.jpg')).toBeNull();
+		const source = createFileMediaStreamSource(await freshDir());
+		expect(await source.open('missing.jpg')).toBeNull();
 	});
 });

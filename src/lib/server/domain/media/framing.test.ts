@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'bun:test';
 import type { Viewer } from '../../access/visibility';
-import type { AvatarUpload, GalleryPhoto, MediaStore } from './avatars';
+import { fixedClock, inMemoryGalleryPhotos, sequentialIds, someGalleryPhoto } from '../testing';
+import type { AvatarUpload, GalleryPhoto } from './avatars';
 import { InvalidAvatarError } from './avatars';
 import {
 	frameAsAvatar,
@@ -20,22 +21,7 @@ const viewer: Viewer = { id: 'u2', householdId: 'h1' };
 const JPEG = new Uint8Array([0xff, 0xd8, 0xff, 0xe0, 1, 2, 3]);
 const upload: AvatarUpload = { image: JPEG, thumb: JPEG, width: 512, height: 512 };
 
-const source = (over: Partial<GalleryPhoto> = {}): GalleryPhoto => ({
-	takenAt: null,
-	id: 'p1',
-	contactId: 'c1',
-	caption: null,
-	visibility: 'shared',
-	createdBy: 'u1',
-	width: 1600,
-	height: 1200,
-	createdAt: 1000,
-	isAvatar: false,
-	framing: null,
-	pinnedAt: null,
-	cutFrom: null,
-	...over
-});
+const source = (over: Partial<GalleryPhoto> = {}) => someGalleryPhoto('p1', over);
 
 function deps(
 	visible: GalleryPhoto | null,
@@ -44,31 +30,29 @@ function deps(
 	const stored: StoredFraming[] = [];
 	const put: string[] = [];
 	const deleted: string[] = [];
-	const lookups: string[] = [];
 	const framings: FramingRepository = {
-		async findVisibleGalleryPhoto(v, contactId, photoId) {
-			lookups.push(`${v.id} ${contactId} ${photoId}`);
-			return visible;
-		},
 		async replaceFraming(framing) {
 			stored.push(framing);
 			return replaced;
 		}
 	};
-	const media: MediaStore = {
+	const media: FramingDeps['media'] = {
 		async put(key) {
 			put.push(key);
 			return `media/${key}`;
-		},
-		async read() {
-			return null;
 		},
 		async delete(path) {
 			deleted.push(path);
 		}
 	};
-	const d: FramingDeps = { framings, media, ids: { next: () => 'f1' }, clock: { now: () => 5000 } };
-	return { d, stored, put, deleted, lookups };
+	const d: FramingDeps = {
+		gallery: inMemoryGalleryPhotos(visible ? [visible] : []),
+		framings,
+		media,
+		ids: sequentialIds('f1'),
+		clock: fixedClock(5000)
+	};
+	return { d, stored, put, deleted };
 }
 
 describe('framing a gallery photo as the avatar', () => {
@@ -127,8 +111,8 @@ describe('framing a gallery photo as the avatar', () => {
 		expect(deleted).toEqual(['media/old.jpg', 'media/old_thumb.jpg']);
 	});
 
-	it('refuses a photo the viewer cannot see on that contact, storing nothing', async () => {
-		const { d, stored, put, lookups } = deps(null);
+	it('refuses a photo the viewer cannot see, storing nothing', async () => {
+		const { d, stored, put } = deps(null);
 		expect(
 			await frameAsAvatar(d, viewer, {
 				contactId: 'c1',
@@ -137,10 +121,21 @@ describe('framing a gallery photo as the avatar', () => {
 				upload
 			})
 		).toBe(false);
-		// The lookup ran for this viewer and contact — the refusal is the answer, not a skipped check.
-		expect(lookups).toEqual(['u2 c1 p1']);
 		expect(stored).toEqual([]);
 		expect(put).toEqual([]);
+	});
+
+	it('refuses a photo of another person, so a page frames only its own', async () => {
+		const { d, stored } = deps(source({ contactId: 'c2' }));
+		expect(
+			await frameAsAvatar(d, viewer, {
+				contactId: 'c1',
+				photoId: 'p1',
+				crop: { x: 0, y: 0, size: 100 },
+				upload
+			})
+		).toBe(false);
+		expect(stored).toEqual([]);
 	});
 
 	it('refuses a square that reaches outside the picture, before storing anything', async () => {

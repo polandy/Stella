@@ -18,8 +18,8 @@ const EXT: Record<ImageMime, string> = {
 };
 
 export interface GalleryUploadDeps {
-	photos: PhotoRepository;
-	media: MediaStore;
+	photos: Pick<PhotoRepository, 'insert'>;
+	media: Pick<MediaStore, 'put'>;
 	ids: IdGenerator;
 	clock: Clock;
 }

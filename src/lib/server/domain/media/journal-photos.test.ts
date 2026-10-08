@@ -29,43 +29,13 @@ function deps() {
 		photos: {
 			async insert(p: StoredPhoto) {
 				stored.push(p);
-			},
-			async exists() {
-				return false;
-			},
-			async setContactAvatar() {},
-			async getVisiblePhotoFile() {
-				return null;
-			},
-			async listJournalPhotos() {
-				return [];
-			},
-			async listJournalPhotosOfEntries() {
-				return [];
-			},
-			async listGalleryPhotos() {
-				return [];
-			},
-			async findVisibleGalleryPhoto() {
-				return null;
-			},
-			async updateOwnGalleryPhoto() {
-				return false;
-			},
-			async deleteOwnGalleryPhoto() {
-				return null;
-			},
-			async setGalleryPhotoPin() {}
+			}
 		},
 		media: {
 			async put(key: string, _bytes: Uint8Array) {
 				puts.push(key);
 				return `/media-dir/${key}`;
-			},
-			async read() {
-				return null;
-			},
-			async delete() {}
+			}
 		},
 		ids: (() => {
 			let n = 0;
