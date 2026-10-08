@@ -1,5 +1,4 @@
 import { describe, expect, it } from 'bun:test';
-import type { Clock } from '../../clock';
 import { createFakeImmichGateway } from '../../immich/fake-gateway';
 import {
 	createImmichConnection,
@@ -8,15 +7,11 @@ import {
 	STATUS_INTERVAL_MS
 } from './connection';
 import { testLibrary } from './test-library';
-
-function fakeClock(start = 1_000): Clock & { advance(ms: number): void } {
-	let now = start;
-	return { now: () => now, advance: (ms) => void (now += ms) };
-}
+import { fixedClock } from '../testing';
 
 function connect() {
 	const gateway = createFakeImmichGateway(testLibrary());
-	const clock = fakeClock();
+	const clock = fixedClock(1_000);
 	return { gateway, clock, connection: createImmichConnection({ gateway, clock }) };
 }
 

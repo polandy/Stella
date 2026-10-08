@@ -9,7 +9,7 @@ import type { Clock } from '../clock';
 import { createDrizzleAccountRepository } from '../db/account-repository';
 import * as schema from '../db/schema';
 import { dispatchCommand, type CommandActor } from '../domain/commands/dispatch';
-import { listContacts } from '../domain/contacts/contacts';
+import { listContacts } from '../domain/contacts/directory';
 import type { IdGenerator } from '../id';
 import { createServices, type AppServices } from './app-services';
 import type { AuthConfig } from './auth';
@@ -139,7 +139,7 @@ describe('createServices', () => {
 		expect(first.repeated).toBe(false);
 		expect(again.repeated).toBe(true);
 		expect(again.result).toEqual(first.result);
-		const people = await listContacts(services.people.contactDeps, {
+		const people = await listContacts(services.people.contactDirectoryDeps, {
 			id: admin.id,
 			householdId: admin.householdId
 		});

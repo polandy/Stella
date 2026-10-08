@@ -2,7 +2,7 @@ import { fail } from '@sveltejs/kit';
 import { requireUser, requireViewer } from '$lib/server/auth/guards';
 import { say, translator } from '$lib/server/i18n/say';
 import { setSelfContact, UnknownSelfContactError } from '$lib/server/domain/household/self-contact';
-import { countKnownByAFirstNameOnly } from '$lib/server/domain/contacts/contacts';
+import { countKnownByAFirstNameOnly } from '$lib/server/domain/contacts/directory';
 import { countLastNames } from '$lib/server/domain/contacts/last-names';
 import { APP_VERSION } from '$lib/version';
 import type { Actions, PageServerLoad } from './$types';
@@ -21,7 +21,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 	const viewer = requireViewer(locals);
 	// How many are left to tidy up, so the card says whether opening it is worth it.
 	const [firstNameOnlyCount, lastNames] = await Promise.all([
-		countKnownByAFirstNameOnly(locals.services.people.contactDeps, viewer),
+		countKnownByAFirstNameOnly(locals.services.people.contactDirectoryDeps, viewer),
 		countLastNames(locals.services.people.surnameReviewDeps, viewer)
 	]);
 	return {

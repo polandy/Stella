@@ -17,7 +17,7 @@ import { allPeople, matchListed, type ImmichMatchingDeps } from './matching';
 
 export type PersonMatchDeps = Pick<
 	ImmichMatchingDeps,
-	'gateway' | 'links' | 'ignores' | 'contacts' | 'signer'
+	'gateway' | 'links' | 'ignores' | 'directory' | 'signer'
 >;
 
 /** The face proposed for the person, ready for the card. */
@@ -45,7 +45,7 @@ export async function findLikelyMatchFor(
 	contactId: string
 ): Promise<PersonMatchOutcome> {
 	const [contacts, linkedContactIds] = await Promise.all([
-		deps.contacts.listVisibleTo(viewer),
+		deps.directory.listVisibleTo(viewer),
 		deps.links.linkedContactIdsVisibleTo(viewer)
 	]);
 	if (!contacts.some((contact) => contact.id === contactId)) return { kind: 'notVisible' };

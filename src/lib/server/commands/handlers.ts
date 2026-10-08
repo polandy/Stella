@@ -53,7 +53,7 @@ export function createCommandHandlers(
 	{ auth, people, relationships, circles, media, story, notes, records }: HandlerContexts,
 	{ receipts, entries }: HandlerRepositories
 ): CommandHandlers {
-	const { contacts, contactDeps, namesakeContextDeps } = people;
+	const { contacts, directory, contactNames, contactDeps, namesakeContextDeps } = people;
 	const { captureMomentDeps, interactionDeps, journalDeps } = story;
 	const { contactFieldDeps, importantDateDeps, tagDeps } = records;
 	const relationshipDeps = { ...relationships.relationshipDeps, contacts };
@@ -100,16 +100,16 @@ export function createCommandHandlers(
 		'relationship.addMany': (actor, payload) =>
 			addRelationshipsOrRefuse(relationshipDeps, actor, payload),
 		'interaction.log': (actor, payload) =>
-			logInteractionChecked({ ...interactionDeps, contacts }, actor, payload),
+			logInteractionChecked({ ...interactionDeps, contacts, contactNames }, actor, payload),
 		'note.add': (actor, payload) =>
 			withNamesakeContext(namesakeContextDeps, viewerOf(actor), () =>
-				writeNote({ ...notes.noteDeps, contacts }, actor, payload)
+				writeNote({ ...notes.noteDeps, contacts, directory }, actor, payload)
 			),
 		'moment.photo': (actor, payload) =>
 			attachMomentPhoto({ receipts, entries, photos: media.journalPhotoDeps }, actor, payload),
 		'journal.write': (actor, payload) =>
 			withNamesakeContext(namesakeContextDeps, viewerOf(actor), () =>
-				writeJournalEntry({ ...journalDeps, contacts }, actor, payload)
+				writeJournalEntry({ ...journalDeps, contacts, directory }, actor, payload)
 			),
 		'field.add': onVisibleContact(contacts, async (_actor, payload) => ({
 			fieldId: await addContactField(contactFieldDeps, payload)

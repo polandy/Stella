@@ -3,7 +3,7 @@ import {
 	countArchivedContacts,
 	listArchivedContacts,
 	listContacts
-} from '$lib/server/domain/contacts/contacts';
+} from '$lib/server/domain/contacts/directory';
 import { listContactsByTag, listTags } from '$lib/server/domain/tags/tags';
 import { readSurnameHelp } from '$lib/server/domain/contacts/last-names';
 import { lastNameActions } from '../_shared/last-names-actions';
@@ -28,12 +28,12 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 	// worse than no chip — so it is counted either way; the list only when it is shown.
 	const [tags, archivedCount, contacts, touches, surnameHelp] = await Promise.all([
 		listTags(locals.services.records.tagDeps, viewer.householdId),
-		countArchivedContacts(locals.services.people.contactDeps, viewer),
+		countArchivedContacts(locals.services.people.contactDirectoryDeps, viewer),
 		showArchived
-			? listArchivedContacts(locals.services.people.contactDeps, viewer)
+			? listArchivedContacts(locals.services.people.contactDirectoryDeps, viewer)
 			: activeTag
 				? listContactsByTag(locals.services.records.tagDeps, viewer, activeTag)
-				: listContacts(locals.services.people.contactDeps, viewer),
+				: listContacts(locals.services.people.contactDirectoryDeps, viewer),
 		locals.services.household.attention.listLastTouchedVisibleTo(viewer),
 		readSurnameHelp(locals.services.people.surnameReviewDeps, viewer, null)
 	]);

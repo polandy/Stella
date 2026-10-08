@@ -80,15 +80,17 @@ async function addAnna(contactDeps: Parameters<typeof createContact>[0]) {
 }
 
 describe('createPeopleServices', () => {
-	it('hands every use-case the one contact repository the edge reads', async () => {
+	it('hands every use-case that writes a contact the one contact repository', async () => {
 		const people = createPeopleServices(wiring);
 		expect(people.contactDeps.contacts).toBe(people.contacts);
 		expect(people.nameDeps.names).toBe(people.contacts);
 		expect(people.lastNameDeps.names).toBe(people.contacts);
 		expect(people.surnameDismissalDeps.names).toBe(people.contacts);
 		expect(people.selfContactDeps.contacts).toBe(people.contacts);
-		expect(people.suggestionDeps.candidates).toBe(people.contacts);
 		expect(people.deleteContactDeps.contacts).toBe(people.contacts);
+		// The lists are read models apart, each handed on as the one instance.
+		expect(people.contactDirectoryDeps.directory).toBe(people.directory);
+		expect(people.contactNameDeps.contactNames).toBe(people.contactNames);
 
 		const id = await addAnna(people.contactDeps);
 		expect((await people.contacts.findByIdVisibleTo(viewerOf(admin), id))?.displayName).toBe(

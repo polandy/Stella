@@ -38,6 +38,8 @@ export interface StoryWiring {
 	ids: IdGenerator;
 	/** Whom a moment names, and whom it creates; the people context owns the repository. */
 	contacts: CaptureMomentDeps['contacts'];
+	/** Whom a moment's handles can name; the people context owns the read model. */
+	directory: CaptureMomentDeps['directory'];
 	/** Where a deleted entry's photo bytes are unlinked; the media context owns the store. */
 	media: JournalDeps['media'];
 }
@@ -47,6 +49,7 @@ export function createStoryServices({
 	clock,
 	ids,
 	contacts,
+	directory,
 	media
 }: StoryWiring): StoryServices {
 	const journal = createDrizzleJournalRepository(db);
@@ -57,7 +60,7 @@ export function createStoryServices({
 		interactions,
 		journalDeps: { journal, media, ids, clock },
 		interactionDeps: { interactions, ids, clock },
-		captureMomentDeps: { contacts, journal, ids, clock },
+		captureMomentDeps: { contacts, directory, journal, ids, clock },
 		storyDeps: { journal, interactions }
 	};
 }

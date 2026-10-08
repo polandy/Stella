@@ -1,6 +1,5 @@
 import { describe, expect, it } from 'bun:test';
 import type { Viewer } from '../../access/visibility';
-import type { Clock } from '../../clock';
 import { createFakeImmichGateway, fakeAssetId } from '../../immich/fake-gateway';
 import {
 	faceUrlFor,
@@ -19,6 +18,7 @@ import {
 	type ImmichMediaSigner
 } from './signed-media';
 import { BERT_AND_CARL_ID, BERT_ID, CARL_ID, DORA_ID, testLibrary } from './test-library';
+import { fixedClock } from '../testing';
 
 /*
  * The glimpse of a linked person's photos (docs/02 §2.24.3, §2.24.4): the strip's signed
@@ -29,11 +29,6 @@ import { BERT_AND_CARL_ID, BERT_ID, CARL_ID, DORA_ID, testLibrary } from './test
 const viewer: Viewer = { id: 'u-anna', householdId: 'h1' };
 const PUBLIC_URL = 'https://immich.example.com';
 const NOW = 1_700_000_000_000;
-
-function fakeClock(): Clock & { advance(ms: number): void } {
-	let now = NOW;
-	return { now: () => now, advance: (ms) => void (now += ms) };
-}
 
 /**
  * The household as the viewer sees it: Bert is linked to his Immich person and visible, Carl is
@@ -68,7 +63,7 @@ function household() {
 }
 
 function setup() {
-	const clock = fakeClock();
+	const clock = fixedClock(NOW);
 	const gateway = createFakeImmichGateway(testLibrary());
 	const signer = createImmichMediaSigner({ secret: 'test-secret', clock });
 	const home = household();

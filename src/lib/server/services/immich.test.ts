@@ -6,6 +6,7 @@ import { registerFirstAdmin, type AuthUser } from '../auth/accounts';
 import { hashPassword, verifyPassword } from '../auth/password';
 import type { Clock } from '../clock';
 import { createDrizzleAccountRepository } from '../db/account-repository';
+import { createDrizzleContactDirectoryReads } from '../db/contact-directory-reads';
 import { createDrizzleContactRepository } from '../db/contact-repository';
 import { createDrizzlePersonContextReads } from '../db/person-context-reads';
 import * as schema from '../db/schema';
@@ -65,6 +66,7 @@ beforeEach(async () => {
 		clock,
 		ids,
 		contacts,
+		directory: createDrizzleContactDirectoryReads(db),
 		contactDeps: { contacts, ids, clock },
 		contextReads: createDrizzlePersonContextReads(db),
 		avatarDeps
