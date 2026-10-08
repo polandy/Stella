@@ -123,7 +123,11 @@ describe('the composition root', () => {
 			'MemberDeps',
 			'Search',
 			'SearchDeps',
-			'Attention'
+			'Attention',
+			// The archive context (AR-01, tenth slice): read `locals.services.archive`.
+			'ArchiveDeps',
+			'ImportArchiveDeps',
+			'ImportDeps'
 		];
 		const retired = new RegExp(`\\bget(?:${factories.join('|')})\\b`);
 		expect(files.filter((path) => retired.test(source(path)))).toEqual([]);

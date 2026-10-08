@@ -35,13 +35,14 @@ const media: MediaStore = {
 	delete: async () => {}
 };
 
+let sqlite: Database;
 let db: BunSQLiteDatabase<typeof schema>;
 let wiring: StoryWiring;
 let admin: AuthUser;
 
 beforeEach(async () => {
 	counter = 0;
-	const sqlite = new Database(':memory:');
+	sqlite = new Database(':memory:');
 	sqlite.exec('PRAGMA foreign_keys = ON;');
 	db = drizzle(sqlite, { schema });
 	migrate(db, { migrationsFolder: './drizzle' });
@@ -153,6 +154,7 @@ describe('createServices', () => {
 			// Nothing here touches a file: the media store is lazy on disk.
 			config: { ...config, mediaDir: '/nonexistent/stella-media' },
 			db,
+			sqlite,
 			clock,
 			ids
 		});

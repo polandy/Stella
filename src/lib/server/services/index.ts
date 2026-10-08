@@ -3,14 +3,9 @@ import { APP_VERSION } from '../../version';
 import { systemClock } from '../clock';
 import { getConfig } from '../config';
 import { getDb, getSqlite } from '../db';
-import { createDrizzleImportRepository } from '../db/import-repository';
 import { createGitHubReleaseFeed } from '../release/github-feed';
 import { createUpdateCheck, type UpdateCheck } from '../domain/release/update-check';
 import { parseVersion } from '../domain/release/version';
-import { createDrizzleArchiveRepository } from '../db/archive-repository';
-import { createDrizzleRestoreRepository } from '../db/restore-repository';
-import type { ArchiveDeps, ArchiveRepository } from '../domain/archive/archive';
-import type { ImportArchiveDeps, RestoreRepository } from '../domain/archive/import';
 import { withNamesakeContext } from '../domain/mentions/namesake-context';
 import { prepareCirclePhotoUpload } from '../domain/circles/circle-photos';
 import { captureMoment } from '../domain/moments/moments';
@@ -39,7 +34,6 @@ import { addPerson } from '../domain/contacts/add-person';
 import { createContact } from '../domain/contacts/contacts';
 import { assignTagByName } from '../domain/tags/tags';
 import { joinCircleByName } from '../domain/circles/circles';
-import type { ImportDeps, ImportRepository } from '../domain/import/apply';
 import { setContactAvatar } from '../domain/media/avatars';
 import { ulidGenerator } from '../id';
 import { createDrizzleImmichIgnoreRepository } from '../db/immich-ignore-repository';
@@ -84,6 +78,7 @@ export function getServices(): AppServices {
 	return (services ??= createServices({
 		config: getConfig(),
 		db: getDb(),
+		sqlite: getSqlite(),
 		clock: systemClock,
 		ids: ulidGenerator
 	}));
@@ -114,37 +109,6 @@ export function getUpdateCheck(): UpdateCheck | null {
 		clock: systemClock,
 		currentVersion: APP_VERSION
 	}));
-}
-
-let importRepository: ImportRepository | null = null;
-
-/** Deps for the Monica import (docs/02 §2.16); the wizard is the only caller. */
-export function getImportDeps(): ImportDeps {
-	return {
-		importer: (importRepository ??= createDrizzleImportRepository(getDb())),
-		clock: systemClock
-	};
-}
-
-let archiveRepository: ArchiveRepository | null = null;
-
-/** Deps for exporting the household as one archive (docs/02 §2.15). */
-export function getArchiveDeps(): ArchiveDeps {
-	archiveRepository ??= createDrizzleArchiveRepository(getDb(), getSqlite());
-	return { archive: archiveRepository, ids: ulidGenerator, clock: systemClock };
-}
-
-let restoreRepository: RestoreRepository | null = null;
-
-/** Deps for restoring a household from an archive (docs/02 §2.15). */
-export function getImportArchiveDeps(): ImportArchiveDeps {
-	restoreRepository ??= createDrizzleRestoreRepository(getDb(), getSqlite());
-	return {
-		restore: restoreRepository,
-		media: media().store,
-		ids: ulidGenerator,
-		clock: systemClock
-	};
 }
 
 let commandReceiptRepository: CommandReceiptRepository | null = null;

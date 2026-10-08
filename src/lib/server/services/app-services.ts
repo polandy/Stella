@@ -1,3 +1,4 @@
+import { createArchiveServices, type ArchiveServices, type ArchiveWiring } from './archive';
 import { createAuthServices, type AuthServices, type AuthWiring } from './auth';
 import { createCircleServices, type CircleServices, type CircleWiring } from './circles';
 import { createHouseholdServices, type HouseholdServices, type HouseholdWiring } from './household';
@@ -31,13 +32,15 @@ export interface AppServices {
 	notes: NoteServices;
 	records: RecordServices;
 	household: HouseholdServices;
+	archive: ArchiveServices;
 }
 
 /**
  * What the graph is built from; each context's wiring joins this as it moves in. A context
  * that reads another grouped context's repository gets it from here, not from the wiring
  * (`people` reads `auth`'s accounts, the relationships context's repository and `media`'s
- * store; `circles` and `story` read `people`'s contacts and `media`'s store), so each
+ * store; `circles` and `story` read `people`'s contacts and `media`'s store; `archive` restores
+ * into `media`'s store), so each
  * repository exists once.
  */
 export type ServicesWiring = AuthWiring &
@@ -48,7 +51,8 @@ export type ServicesWiring = AuthWiring &
 	Omit<StoryWiring, 'contacts' | 'media'> &
 	NoteWiring &
 	RecordWiring &
-	HouseholdWiring;
+	HouseholdWiring &
+	Omit<ArchiveWiring, 'media'>;
 
 /** Wires every grouped context. Pure assembly: no I/O beyond what the adapters do when used. */
 export function createServices(wiring: ServicesWiring): AppServices {
@@ -74,5 +78,17 @@ export function createServices(wiring: ServicesWiring): AppServices {
 	const notes = createNoteServices(wiring);
 	const records = createRecordServices(wiring);
 	const household = createHouseholdServices(wiring);
-	return { auth, people, relationships, circles, media, story, notes, records, household };
+	const archive = createArchiveServices({ ...wiring, media: media.store });
+	return {
+		auth,
+		people,
+		relationships,
+		circles,
+		media,
+		story,
+		notes,
+		records,
+		household,
+		archive
+	};
 }

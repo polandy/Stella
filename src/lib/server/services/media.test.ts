@@ -30,6 +30,7 @@ const clock: Clock = { now: () => Date.UTC(2026, 9, 8, 9) };
 let counter = 0;
 const ids: IdGenerator = { next: () => `id-${++counter}` };
 
+let sqlite: Database;
 let db: BunSQLiteDatabase<typeof schema>;
 let mediaDir: string;
 let wiring: MediaWiring;
@@ -37,7 +38,7 @@ let admin: AuthUser;
 
 beforeEach(async () => {
 	counter = 0;
-	const sqlite = new Database(':memory:');
+	sqlite = new Database(':memory:');
 	sqlite.exec('PRAGMA foreign_keys = ON;');
 	db = drizzle(sqlite, { schema });
 	migrate(db, { migrationsFolder: './drizzle' });
@@ -184,7 +185,7 @@ describe('createServices', () => {
 				rpLogout: false
 			}
 		};
-		const services = createServices({ config: { ...config, mediaDir }, db, clock, ids });
+		const services = createServices({ config: { ...config, mediaDir }, db, sqlite, clock, ids });
 		const { store } = services.media;
 		expect(services.media.galleryDeps.media).toBe(store);
 		expect<unknown>(services.people.deleteContactDeps.media).toBe(store);
