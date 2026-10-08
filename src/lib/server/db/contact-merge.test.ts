@@ -4,7 +4,7 @@ import { eq } from 'drizzle-orm';
 import { drizzle, type BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
 import { migrate } from 'drizzle-orm/bun-sqlite/migrator';
 import type { Viewer } from '../access/visibility';
-import type { NewActivityEntry } from '../domain/activity/activity';
+import type { ActivityOf } from '../domain/activity/activity';
 import type { MergeableProfile } from '../domain/contacts/merge-profile';
 import { mergeContacts } from './contact-merge';
 import * as schema from './schema';
@@ -46,17 +46,19 @@ const PROFILE: MergeableProfile = {
 	metPlace: null
 };
 
-const audit: NewActivityEntry = {
+const audit: ActivityOf<'contact.merged'> = {
 	id: 'log-1',
 	householdId: H,
 	actorId: U1,
-	action: 'merge',
-	entityType: 'contact',
-	entityId: 'dup',
-	contactId: 'keep',
-	visibility: 'shared',
-	summary: 'merged Duplicate Hans into Hans Müller',
-	createdAt: 1_700_000_000_000
+	createdAt: 1_700_000_000_000,
+	event: {
+		kind: 'contact.merged',
+		keepId: 'keep',
+		mergedAwayId: 'dup',
+		keep: 'Hans Müller',
+		mergedAway: 'Duplicate Hans',
+		visibility: 'shared'
+	}
 };
 
 function seedContact(

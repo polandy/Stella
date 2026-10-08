@@ -4,7 +4,8 @@ import { Database } from 'bun:sqlite';
 import { drizzle, type BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
 import { migrate } from 'drizzle-orm/bun-sqlite/migrator';
 import type { Viewer } from '../access/visibility';
-import type { NewActivityEntry } from '../domain/activity/activity';
+import type { ActivityOf } from '../domain/activity/activity';
+import { lastNamesFacts } from '../../stream/notices';
 import type { NewContact } from '../domain/contacts/contacts';
 import * as schema from './schema';
 import { createDrizzleContactDirectoryReads } from './contact-directory-reads';
@@ -278,18 +279,20 @@ describe('archiving', () => {
  * the bytes to unlink come back, and the log entry is written in the same transaction.
  */
 describe('deleting a contact', () => {
-	const audit = (over: Partial<NewActivityEntry> = {}): NewActivityEntry => ({
+	const audit = (
+		over: Partial<ActivityOf<'contact.deleted'>['event']> = {}
+	): ActivityOf<'contact.deleted'> => ({
 		id: 'log-1',
 		householdId: H1,
 		actorId: U1,
-		action: 'delete',
-		entityType: 'contact',
-		entityId: 'c-gone',
-		contactId: null,
-		visibility: 'shared',
-		summary: 'removed Gone Person',
 		createdAt: 1_700_000_000_000,
-		...over
+		event: {
+			kind: 'contact.deleted',
+			contactId: 'c-gone',
+			displayName: 'Gone Person',
+			visibility: 'shared',
+			...over
+		}
 	});
 
 	beforeEach(async () => {
@@ -423,14 +426,14 @@ describe('deleting a contact', () => {
 		);
 
 		expect(
-			await repo.deleteVisibleTo(viewerU1, 'c-theirs', audit({ entityId: 'c-theirs' }))
+			await repo.deleteVisibleTo(viewerU1, 'c-theirs', audit({ contactId: 'c-theirs' }))
 		).toBeNull();
 		expect((await repo.findByIdVisibleTo(viewerU2, 'c-theirs'))?.displayName).toBe('Theirs');
 		expect(db.select().from(schema.activityLog).all()).toHaveLength(0);
 
 		// positive control: their owner can delete them, and that does write a log row.
 		expect(
-			await repo.deleteVisibleTo(viewerU2, 'c-theirs', audit({ entityId: 'c-theirs' }))
+			await repo.deleteVisibleTo(viewerU2, 'c-theirs', audit({ contactId: 'c-theirs' }))
 		).not.toBeNull();
 		expect(db.select().from(schema.activityLog).all()).toHaveLength(1);
 	});
@@ -454,17 +457,18 @@ describe('writeNames', () => {
 	it('writes every name of a batch and its log entry together', async () => {
 		await repo.insert(contactInput({ id: 'lea', displayName: 'Lea', firstName: 'Lea' }));
 		await repo.insert(contactInput({ id: 'max', displayName: 'Max', firstName: 'Max' }));
-		const audit: NewActivityEntry = {
+		const audit: ActivityOf<'lastNames.given'> = {
 			id: 'log-1',
 			householdId: H1,
 			actorId: U1,
-			action: 'update',
-			entityType: 'last_name',
-			entityId: 'lea',
-			contactId: null,
-			visibility: 'shared',
-			summary: 'set the last name Brunner on 2 people',
-			createdAt: NOW + 1
+			createdAt: NOW + 1,
+			event: {
+				kind: 'lastNames.given',
+				firstContactId: 'lea',
+				lastNames: 'Brunner',
+				count: 2,
+				visibility: 'shared'
+			}
 		};
 
 		await repo.writeNames(
@@ -483,7 +487,7 @@ describe('writeNames', () => {
 				.from(schema.activityLog)
 				.all()
 				.map((row) => row.summary)
-		).toEqual(['set the last name Brunner on 2 people']);
+		).toEqual([lastNamesFacts('Brunner', 2)]);
 	});
 
 	it('keeps a former name it is given', async () => {

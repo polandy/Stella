@@ -2,11 +2,7 @@ import { TranslatableError } from '../../../errors/translatable';
 import { phrase } from '../../../i18n/phrase';
 import type { Visibility, Viewer } from '../../access/visibility';
 import type { Clock } from '../../clock';
-import {
-	describeContactDeletion,
-	describeContactMerge,
-	type NewActivityEntry
-} from '../activity/activity';
+import { activityRecord, type ActivityOf } from '../activity/activity';
 import { mergeProfiles, type MergeableProfile } from './merge-profile';
 import type { NameRepository } from './name-parts';
 import type { MediaStore } from '../media/avatars';
@@ -151,7 +147,7 @@ export interface ContactRepository extends NameRepository {
 	deleteVisibleTo(
 		viewer: Viewer,
 		id: string,
-		audit: NewActivityEntry
+		audit: ActivityOf<'contact.deleted'>
 	): Promise<DeletedContactMedia[] | null>;
 	/** Both records as a merge needs them, or null when either is out of the viewer's reach. */
 	readForMerge(viewer: Viewer, keepId: string, mergedId: string): Promise<MergePair | null>;
@@ -164,7 +160,7 @@ export interface ContactRepository extends NameRepository {
 		keepId: string,
 		mergedId: string,
 		profile: MergeableProfile,
-		audit: NewActivityEntry,
+		audit: ActivityOf<'contact.merged'>,
 		updatedAt: number
 	): Promise<boolean>;
 }
@@ -478,19 +474,16 @@ export async function deleteContact(
 	const contact = await deps.contacts.findByIdVisibleTo(viewer, id);
 	if (contact === null) return false;
 
-	const files = await deps.contacts.deleteVisibleTo(viewer, id, {
-		id: deps.ids.next(),
-		householdId: viewer.householdId,
-		actorId: viewer.id,
-		action: 'delete',
-		entityType: 'contact',
-		entityId: id,
-		// The person this was "about" is the one being deleted, so there is nothing to link to.
-		contactId: null,
-		visibility: contact.visibility,
-		summary: describeContactDeletion(contact.displayName),
-		createdAt: deps.clock.now()
-	});
+	const files = await deps.contacts.deleteVisibleTo(
+		viewer,
+		id,
+		activityRecord(deps, viewer, {
+			kind: 'contact.deleted',
+			contactId: id,
+			displayName: contact.displayName,
+			visibility: contact.visibility
+		})
+	);
 	if (files === null) return false;
 
 	for (const file of files) {
@@ -525,19 +518,19 @@ export async function mergeContacts(
 		keepId,
 		mergedId,
 		mergeProfiles(pair.keep.profile, pair.mergedAway.profile),
-		{
-			id: deps.ids.next(),
-			householdId: viewer.householdId,
-			actorId: viewer.id,
-			action: 'merge',
-			entityType: 'contact',
-			entityId: mergedId,
-			// The survivor is what this is "about", and unlike a deletion they still have a page.
-			contactId: keepId,
-			visibility: pair.keep.visibility,
-			summary: describeContactMerge(pair.mergedAway.displayName, pair.keep.displayName),
-			createdAt: now
-		},
+		activityRecord(
+			deps,
+			viewer,
+			{
+				kind: 'contact.merged',
+				keepId,
+				mergedAwayId: mergedId,
+				keep: pair.keep.displayName,
+				mergedAway: pair.mergedAway.displayName,
+				visibility: pair.keep.visibility
+			},
+			now
+		),
 		now
 	);
 }

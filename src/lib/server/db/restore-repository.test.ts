@@ -1,3 +1,4 @@
+import { activityWording } from '../i18n/activity-wording';
 import { beforeEach, describe, expect, it } from 'bun:test';
 import { Database } from 'bun:sqlite';
 import { drizzle, type BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
@@ -146,7 +147,7 @@ beforeEach(async () => {
 		.insert(schema.user)
 		.values({ id: ADMIN, householdId: HERE, email: 'a@x.test', name: 'Andrea', role: 'admin' })
 		.run();
-	repo = createDrizzleRestoreRepository(here.db, here.sqlite);
+	repo = createDrizzleRestoreRepository(here.db, here.sqlite, activityWording);
 });
 
 /** The plan for this archive, against whatever the target holds right now. */
@@ -370,17 +371,16 @@ describe('recordImport', () => {
 			id: 'a-1',
 			householdId: HERE,
 			actorId: ADMIN,
-			action: 'import',
-			entityType: 'household',
-			entityId: HERE,
-			contactId: null,
-			visibility: 'shared',
-			summary: 'restored 2 people from an archive of Familie Brunner',
-			createdAt: NOW
+			createdAt: NOW,
+			event: { kind: 'archive.restored', people: 2, household: 'Familie Brunner', locale: 'en' }
 		});
 
 		const rows = here.db.select().from(schema.activityLog).all();
 		expect(rows).toHaveLength(1);
-		expect(rows[0]).toMatchObject({ action: 'import', actorId: ADMIN });
+		expect(rows[0]).toMatchObject({
+			action: 'import',
+			actorId: ADMIN,
+			summary: 'restored 2 people from an archive of Familie Brunner'
+		});
 	});
 });

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'bun:test';
 import type { KinshipGraph } from '../../../kinship/kinship';
-import type { NewActivityEntry } from '../activity/activity';
+import type { ActivityOf } from '../activity/activity';
 import type { Contact } from './contacts';
 import {
 	countLastNames,
@@ -15,7 +15,6 @@ import {
 	type SurnameListPerson
 } from './last-names';
 import type { NameWrite } from './name-parts';
-import { lastNamesFacts } from '../../../stream/notices';
 import { inMemoryKinshipGraph } from '../testing';
 
 /*
@@ -65,7 +64,10 @@ function fakeDeps(
 	people: SurnameListPerson[] = [],
 	graph: Partial<KinshipGraph> = {}
 ) {
-	const batches: { writes: readonly NameWrite[]; audit: NewActivityEntry | null }[] = [];
+	const batches: {
+		writes: readonly NameWrite[];
+		audit: ActivityOf<'contact.renamed' | 'lastNames.given'> | null;
+	}[] = [];
 	const dismissed: NewSurnameDismissal[] = [];
 	const restored: { contactId: string; folded: string }[] = [];
 	return {
@@ -76,7 +78,10 @@ function fakeDeps(
 			names: {
 				findByIdVisibleTo: async (_v: unknown, id: string) =>
 					visible.find((c) => c.id === id) ?? null,
-				writeNames: async (writes: readonly NameWrite[], audit: NewActivityEntry | null) => {
+				writeNames: async (
+					writes: readonly NameWrite[],
+					audit: ActivityOf<'contact.renamed' | 'lastNames.given'> | null
+				) => {
 					batches.push({ writes, audit });
 				}
 			},
@@ -126,12 +131,14 @@ describe('setLastNames', () => {
 			['max', 'Max Brunner', 'Brunner']
 		]);
 		expect(f.batches[0]?.audit).toMatchObject({
-			action: 'update',
-			entityType: 'last_name',
 			actorId: 'user-1',
-			visibility: 'shared',
-			// Facts, not prose: Home says it in each reader's language (docs/02 §2.11).
-			summary: lastNamesFacts('Brunner', 2)
+			event: {
+				kind: 'lastNames.given',
+				firstContactId: 'lea',
+				lastNames: 'Brunner',
+				count: 2,
+				visibility: 'shared'
+			}
 		});
 	});
 
@@ -148,7 +155,7 @@ describe('setLastNames', () => {
 			'de'
 		);
 
-		expect(f.batches[0]?.audit?.visibility).toBe('private');
+		expect(f.batches[0]?.audit?.event.visibility).toBe('private');
 	});
 
 	it('refuses an empty name and writes nothing', async () => {
@@ -217,7 +224,7 @@ describe('setLastNames', () => {
 
 		expect(written).toBe(1);
 		expect(f.batches[0]?.writes.map((w) => w.id)).toEqual(['lea']);
-		expect(f.batches[0]?.audit?.summary).toBe(lastNamesFacts('Brunner', 1));
+		expect(f.batches[0]?.audit?.event).toMatchObject({ lastNames: 'Brunner', count: 1 });
 	});
 
 	it('writes nothing at all when nobody needs the name', async () => {

@@ -162,13 +162,13 @@ describe('the people stamp', () => {
 					id: 'log-1',
 					householdId: H,
 					actorId: U1,
-					action: 'delete',
-					entityType: 'contact',
-					entityId: 'cleo',
-					contactId: null,
-					visibility: 'shared',
-					summary: 'removed cleo',
-					createdAt: tick()
+					createdAt: tick(),
+					event: {
+						kind: 'contact.deleted',
+						contactId: 'cleo',
+						displayName: 'cleo',
+						visibility: 'shared'
+					}
 				})
 		],
 		[

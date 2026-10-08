@@ -2,7 +2,7 @@ import { and, eq, inArray } from 'drizzle-orm';
 import type { BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
 import { contactVisibleTo } from '../access/query-scoping';
 import { canViewContact, type Viewer } from '../access/visibility';
-import type { NewActivityEntry } from '../domain/activity/activity';
+import { activityEntry, type ActivityOf } from '../domain/activity/activity';
 import type { ImmichHolder, ImmichLink, ImmichLinkRepository } from '../domain/immich/links';
 import type * as schema from './schema';
 import { activityLog, contact, immichLink } from './schema';
@@ -89,7 +89,7 @@ export function createDrizzleImmichLinkRepository(
 			return holders;
 		},
 
-		async save(link: ImmichLink, audit: NewActivityEntry): Promise<'saved' | 'taken'> {
+		async save(link: ImmichLink, audit: ActivityOf<'immich.linked'>): Promise<'saved' | 'taken'> {
 			try {
 				db.transaction((tx) => {
 					tx.insert(immichLink)
@@ -103,7 +103,7 @@ export function createDrizzleImmichLinkRepository(
 							}
 						})
 						.run();
-					tx.insert(activityLog).values(audit).run();
+					tx.insert(activityLog).values(activityEntry(audit)).run();
 				});
 				return 'saved';
 			} catch (error) {
@@ -112,7 +112,7 @@ export function createDrizzleImmichLinkRepository(
 			}
 		},
 
-		async remove(contactId: string, audit: NewActivityEntry): Promise<boolean> {
+		async remove(contactId: string, audit: ActivityOf<'immich.unlinked'>): Promise<boolean> {
 			return db.transaction((tx) => {
 				const removed = tx
 					.delete(immichLink)
@@ -120,7 +120,7 @@ export function createDrizzleImmichLinkRepository(
 					.returning({ contactId: immichLink.contactId })
 					.all();
 				if (removed.length === 0) return false;
-				tx.insert(activityLog).values(audit).run();
+				tx.insert(activityLog).values(activityEntry(audit)).run();
 				return true;
 			});
 		}

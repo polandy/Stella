@@ -1,6 +1,6 @@
 import { and, eq, sql } from 'drizzle-orm';
 import type { BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
-import type { NewActivityEntry } from '../domain/activity/activity';
+import { activityEntry, type ActivityOf } from '../domain/activity/activity';
 import type { MergeableProfile } from '../domain/contacts/merge-profile';
 import type { Viewer } from '../access/visibility';
 import { contactVisibleTo } from '../access/query-scoping';
@@ -158,7 +158,7 @@ export function mergeContacts(
 		keepId: string;
 		mergedId: string;
 		profile: MergeableProfile;
-		audit: NewActivityEntry;
+		audit: ActivityOf<'contact.merged'>;
 		updatedAt: number;
 	}
 ): boolean {
@@ -204,7 +204,7 @@ export function mergeContacts(
 
 		// The merged record is empty by now; deleting it can take nothing with it.
 		tx.delete(contact).where(eq(contact.id, input.mergedId)).run();
-		tx.insert(activityLog).values(input.audit).run();
+		tx.insert(activityLog).values(activityEntry(input.audit)).run();
 		return true;
 	});
 }

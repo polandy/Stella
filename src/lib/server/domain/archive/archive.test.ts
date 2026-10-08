@@ -1,12 +1,11 @@
 import { describe, expect, it } from 'bun:test';
 import type { Clock } from '../../clock';
 import type { IdGenerator } from '../../id';
-import type { NewActivityEntry } from '../activity/activity';
+import type { ActivityOf } from '../activity/activity';
 import {
 	UnsafeMediaPathError,
 	archiveEntries,
 	archiveFileName,
-	describeExport,
 	exportHousehold,
 	mediaEntryName,
 	planArchive,
@@ -38,7 +37,7 @@ function snapshot(over: Partial<HouseholdSnapshot> = {}): HouseholdSnapshot {
 }
 
 function fakeRepo(s: HouseholdSnapshot = snapshot()) {
-	let recorded: NewActivityEntry | null = null;
+	let recorded: ActivityOf<'archive.exported'> | null = null;
 	const repo: ArchiveRepository = {
 		readHousehold: async () => s,
 		recordExport: async (entry) => {
@@ -91,17 +90,6 @@ describe('archiveFileName', () => {
 	});
 });
 
-describe('describeExport', () => {
-	it('says how many people went into the archive', () => {
-		expect(describeExport({ contact: 12 })).toBe('exported the household archive (12 people)');
-		expect(describeExport({ contact: 1 })).toBe('exported the household archive (1 person)');
-	});
-
-	it('says none rather than undefined when nothing was there', () => {
-		expect(describeExport({})).toBe('exported the household archive (0 people)');
-	});
-});
-
 describe('exportHousehold', () => {
 	it('describes the archive and names the file', async () => {
 		const f = fakeRepo();
@@ -118,14 +106,15 @@ describe('exportHousehold', () => {
 			id: 'activity-1',
 			householdId: 'household-1',
 			actorId: 'user-1',
-			action: 'export',
-			entityType: 'household',
-			entityId: 'household-1',
-			contactId: null,
-			visibility: 'shared',
-			summary: 'exported the household archive (2 people)',
-			createdAt: NOW
+			createdAt: NOW,
+			event: { kind: 'archive.exported', people: 2 }
 		});
+	});
+
+	it('counts nobody rather than undefined when the household has no people', async () => {
+		const f = fakeRepo(snapshot({ tables: { note: [] } }));
+		await exportHousehold({ archive: f.repo, clock, ids }, actor);
+		expect(f.recorded?.event).toEqual({ kind: 'archive.exported', people: 0 });
 	});
 });
 

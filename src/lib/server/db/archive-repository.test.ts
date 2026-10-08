@@ -211,13 +211,8 @@ describe('recordExport', () => {
 			id: 'a-1',
 			householdId: H,
 			actorId: U,
-			action: 'export',
-			entityType: 'household',
-			entityId: H,
-			contactId: null,
-			visibility: 'shared',
-			summary: 'exported the household archive (2 people)',
-			createdAt: 1_700_000_000_000
+			createdAt: 1_700_000_000_000,
+			event: { kind: 'archive.exported', people: 2 }
 		});
 		const rows = db.select().from(schema.activityLog).all();
 		expect(rows).toHaveLength(1);

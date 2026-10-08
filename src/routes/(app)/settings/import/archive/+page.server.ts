@@ -68,13 +68,7 @@ export const actions: Actions = {
 				locals.services.archive.importArchiveDeps,
 				{ userId: user.id, householdId: user.householdId },
 				archive,
-				{
-					restored: (people, household) =>
-						say(locals, 'archive.restoredSummary', {
-							people: say(locals, 'archive.peopleCount', { count: people }),
-							household
-						})
-				}
+				locals.locale
 			);
 			return { report };
 		} catch (error) {

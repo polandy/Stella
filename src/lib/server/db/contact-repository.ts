@@ -8,7 +8,7 @@ import type {
 	NewContact,
 	ProfilePatch
 } from '../domain/contacts/contacts';
-import type { NewActivityEntry } from '../domain/activity/activity';
+import { activityEntry, type ActivityOf } from '../domain/activity/activity';
 import type { MergeableProfile } from '../domain/contacts/merge-profile';
 import { mergeContacts } from './contact-merge';
 import type { NameWrite } from '../domain/contacts/name-parts';
@@ -100,7 +100,7 @@ export function createDrizzleContactRepository(
 				: null;
 		},
 
-		async deleteVisibleTo(viewer: Viewer, id: string, audit: NewActivityEntry) {
+		async deleteVisibleTo(viewer: Viewer, id: string, audit: ActivityOf<'contact.deleted'>) {
 			return db.transaction((tx) => {
 				const found = tx
 					.select({ id: contactTable.id })
@@ -141,7 +141,7 @@ export function createDrizzleContactRepository(
 				tx.delete(contactTable).where(eq(contactTable.id, id)).run();
 				// Same transaction as the delete: a removal with no trace is the thing the log
 				// exists to prevent (docs/04 §4.9).
-				tx.insert(activityLog).values(audit).run();
+				tx.insert(activityLog).values(activityEntry(audit)).run();
 				return files;
 			});
 		},
@@ -199,7 +199,7 @@ export function createDrizzleContactRepository(
 			keepId: string,
 			mergedId: string,
 			profile: MergeableProfile,
-			audit: NewActivityEntry,
+			audit: ActivityOf<'contact.merged'>,
 			updatedAt: number
 		) {
 			return mergeContacts(db, viewer, { keepId, mergedId, profile, audit, updatedAt });
@@ -231,14 +231,17 @@ export function createDrizzleContactRepository(
 				.run();
 		},
 
-		async writeNames(writes: readonly NameWrite[], audit: NewActivityEntry | null) {
+		async writeNames(
+			writes: readonly NameWrite[],
+			audit: ActivityOf<'contact.renamed' | 'lastNames.given'> | null
+		) {
 			// One transaction: a batch of last names lands whole, with the line that tells the
 			// household about it, or not at all (docs/02 §2.2.4.4).
 			db.transaction((tx) => {
 				for (const { id, ...name } of writes) {
 					tx.update(contactTable).set(name).where(eq(contactTable.id, id)).run();
 				}
-				if (audit) tx.insert(activityLog).values(audit).run();
+				if (audit) tx.insert(activityLog).values(activityEntry(audit)).run();
 			});
 		}
 	};

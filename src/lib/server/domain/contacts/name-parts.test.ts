@@ -2,8 +2,7 @@ import { describe, expect, it } from 'bun:test';
 import type { Contact } from './contacts';
 import { editNameParts, type NameRepository, type NameWrite } from './name-parts';
 import { EmptyContactNameError } from './contacts';
-import { renameFacts } from '../../../stream/notices';
-import type { NewActivityEntry } from '../activity/activity';
+import type { ActivityOf } from '../activity/activity';
 
 /*
  * Editing a person's name parts on their profile (docs/02 §2.2, ADR-106): first
@@ -42,7 +41,10 @@ const thomas: Contact = {
 };
 
 function fakeNames(...visible: Contact[]) {
-	const batches: { writes: readonly NameWrite[]; audit: NewActivityEntry | null }[] = [];
+	const batches: {
+		writes: readonly NameWrite[];
+		audit: ActivityOf<'contact.renamed' | 'lastNames.given'> | null;
+	}[] = [];
 	const names: NameRepository = {
 		findByIdVisibleTo: async (_viewer, id) => visible.find((c) => c.id === id) ?? null,
 		writeNames: async (writes, audit) => {
@@ -89,13 +91,14 @@ describe('editNameParts', () => {
 					id: 'log-1',
 					householdId: 'household-1',
 					actorId: 'user-1',
-					action: 'update',
-					entityType: 'contact_name',
-					entityId: 'thomas',
-					contactId: 'thomas',
-					visibility: 'shared',
-					summary: renameFacts('Thomas', 'Thomas „Tom“ Brunner'),
-					createdAt: NOW
+					createdAt: NOW,
+					event: {
+						kind: 'contact.renamed',
+						contactId: 'thomas',
+						from: 'Thomas',
+						to: 'Thomas „Tom“ Brunner',
+						visibility: 'shared'
+					}
 				}
 			}
 		]);
@@ -389,10 +392,12 @@ describe('editNameParts', () => {
 			'de'
 		);
 
-		expect(f.batches[0]?.audit).toMatchObject({
-			visibility: 'private',
+		expect(f.batches[0]?.audit?.event).toEqual({
+			kind: 'contact.renamed',
 			contactId: 'thomas',
-			summary: renameFacts('Opa Hans', 'Opa Hans')
+			from: 'Opa Hans',
+			to: 'Opa Hans',
+			visibility: 'private'
 		});
 	});
 
@@ -484,6 +489,9 @@ describe('editNameParts', () => {
 			'de'
 		);
 
-		expect(f.batches[0]?.audit?.summary).toBe(renameFacts('Franziska Abab', 'Franziska Abab'));
+		expect(f.batches[0]?.audit?.event).toMatchObject({
+			from: 'Franziska Abab',
+			to: 'Franziska Abab'
+		});
 	});
 });

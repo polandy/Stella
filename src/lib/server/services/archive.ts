@@ -9,6 +9,7 @@ import type { ArchiveDeps } from '../domain/archive/archive';
 import type { ImportArchiveDeps } from '../domain/archive/import';
 import type { ImportDeps } from '../domain/import/apply';
 import type { MediaStore } from '../domain/media/avatars';
+import { activityWording } from '../i18n/activity-wording';
 import type { IdGenerator } from '../id';
 
 /*
@@ -52,7 +53,7 @@ export function createArchiveServices({
 	return {
 		archiveDeps: { archive: createDrizzleArchiveRepository(db, sqlite), ids, clock },
 		importArchiveDeps: {
-			restore: createDrizzleRestoreRepository(db, sqlite),
+			restore: createDrizzleRestoreRepository(db, sqlite, activityWording),
 			media,
 			ids,
 			clock

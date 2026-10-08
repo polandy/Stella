@@ -15,6 +15,7 @@ import { createDrizzleIdentityStore } from '../db/identity-store';
 import type * as schema from '../db/schema';
 import { createDrizzleSessionRepository } from '../db/session-repository';
 import type { ApiImportDeps } from '../domain/import/api/api-import';
+import { activityWording } from '../i18n/activity-wording';
 import type { IdGenerator } from '../id';
 
 /*
@@ -65,7 +66,7 @@ export function createAuthServices({ config, db, clock, ids }: AuthWiring): Auth
 		accountDeps: { accounts, ids, hashPassword, verifyPassword },
 		sessionDeps: { sessions: createDrizzleSessionRepository(db), clock },
 		apiTokenDeps: { tokens: createDrizzleApiTokenRepository(db), clock, ids },
-		apiImportDeps: { imports: createDrizzleApiImportRepository(db), clock, ids },
+		apiImportDeps: { imports: createDrizzleApiImportRepository(db, activityWording), clock, ids },
 		authorizationRequestDeps: {
 			provider,
 			config: { clientId: oidc.clientId, redirectUri: oidc.redirectUri, scopes: oidc.scopes }

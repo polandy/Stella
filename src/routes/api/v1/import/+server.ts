@@ -1,7 +1,6 @@
 import { json } from '@sveltejs/kit';
 import { badRequest, unauthorized } from '$lib/server/api/responses';
 import { importViaApi } from '$lib/server/domain/import/api/api-import';
-import { apiImportWording } from '$lib/server/i18n/import-wording';
 import { readApiImportDocument } from '$lib/server/import/api-document';
 import type { RequestHandler } from './$types';
 
@@ -41,7 +40,7 @@ export const POST: RequestHandler = async ({ locals, request, url }) => {
 		// A document that names no visibility is shared, like anything added in the app (§2.10).
 		{ userId: user.id, householdId: user.householdId, defaultVisibility: 'shared' },
 		reading.document,
-		{ dryRun, wording: apiImportWording(locals), locale: locals.locale }
+		{ dryRun, locale: locals.locale }
 	);
 	if (!result.ok) return json({ problems: result.problems }, { status: 422 });
 	return json({ dryRun: result.dryRun, added: result.added, ...result.report });
