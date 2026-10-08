@@ -277,6 +277,15 @@ the person, and that never leaves the page. Keeping the record tidy (archive, me
   two columns on a phone, four from `sm`, five from `lg` — with the circle's name and the date,
   each a link to the circle.
 - A photo that was a cut says *From Class 1B* under the picture in its lightbox.
+- An unlinked person with a likely Immich match (docs/02 §2.24.7) gets **one quiet suggestion
+  row** as the card's last thing (`Section`'s `footer`), set off by a hairline: the round Immich
+  face (40 px), *Is this Lena?* in the body colour and *Immich has “Lena Brunner” with 1,764
+  photos.* muted, then **Link** (primary, small), **Choose another** and **Ignore** (ghost). The
+  three buttons are one group that wraps under the sentence on a phone, never off the card.
+  Nothing is reserved for it: it is asked for after the page and appears inside the card already
+  drawn, below everything else in it, so nothing above it — not the card's own header — moves
+  when it arrives. *Ignore* takes it away at once, with *Undo*; *Link* turns the card into the
+  linked one in place.
 - **Mentioned in** (docs/02 §2.20.1) is one flat list of the notes and journal entries
   *elsewhere* that name this person, newest first. Each row is a single link: the source icon,
   *in <person>’s journal · by <author>*, the day on the right, and a one-line preview
@@ -291,7 +300,11 @@ the person, and that never leaves the page. Keeping the record tidy (archive, me
 - Pressing *+ Add* grows it into the card with its form open; *Cancel* shrinks it back, and
   the button pressed is the one that closes it.
 - Photos counts as empty only with no photo, none kept on the device, no group photo and no
-  Immich line.
+  Immich line. **The Immich suggestion is not content**: an empty Photos card with a likely
+  match stays one line, and the suggestion row hangs under that line inside the same card. It
+  arrives after the page, and a line turning into a full card then would move its own header
+  under the reader's eyes; *No photos yet.* also stays true until they are linked. Once *Link*
+  is pressed there are photos, and the card grows as for any photo.
 - An empty **Activity** keeps its card and a dashed box with one sentence (*Nothing written
   down yet — calls, visits and moments land here.*): *Log contact* is in its header already.
 - An empty **Mentioned in** is **not on the page**. People keeps its card, whose empty state

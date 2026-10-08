@@ -63,6 +63,13 @@ export const immich: ImmichMessages = {
 	'immich.match.done': 'Das sind für jetzt alle.',
 	'immich.match.doneHint': 'Benenne weitere Gesichter in Immich und schau dann noch einmal.',
 	'immich.match.again': 'Nochmals suchen',
+
+	'immich.hint.label': (p) => `Vorschlag aus Immich für ${p.name}`,
+	'immich.hint.question': (p) => `Ist das ${p.name}?`,
+	'immich.hint.has': (p) =>
+		`Immich kennt „${p.immichName}“ mit ${p.shown} ${p.count === 1 ? 'Foto' : 'Fotos'}.`,
+	'immich.hint.hasUncounted': (p) => `Immich kennt „${p.immichName}“.`,
+	'immich.hint.choose': 'Andere wählen',
 	'immich.tabs.label': 'Was durchsehen',
 	'immich.tabs.matching': 'Abgleich',
 	'immich.tabs.new': 'Neu aus Immich',

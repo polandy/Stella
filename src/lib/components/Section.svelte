@@ -71,6 +71,12 @@
 		 * form is opened (docs/05 §5.5). Cards only.
 		 */
 		empty?: string;
+		/**
+		 * Last in the card, in either shape — under a one-line card too, without making it a full
+		 * one: something that arrives after the page, like the Photos card's Immich suggestion,
+		 * must not reshape a card already read (docs/05 §5.5). Cards only.
+		 */
+		footer?: Snippet;
 	}
 	let {
 		title,
@@ -88,7 +94,8 @@
 		open = $bindable(false),
 		children,
 		editor,
-		empty
+		empty,
+		footer
 	}: Props = $props();
 
 	const t = useTranslate();
@@ -325,5 +332,6 @@
 		</header>
 
 		{#if !line}{@render body()}{/if}
+		{@render footer?.()}
 	</section>
 {/if}

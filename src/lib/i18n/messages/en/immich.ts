@@ -63,6 +63,14 @@ export const immich = {
 	'immich.match.done': 'That’s everyone for now.',
 	'immich.match.doneHint': 'Name more faces in Immich, then look again.',
 	'immich.match.again': 'Look again',
+
+	// The Photos card's suggestion for an unlinked person: the list's likely match (§2.24.7).
+	'immich.hint.label': (p: { name: string }) => `Suggestion from Immich for ${p.name}`,
+	'immich.hint.question': (p: { name: string }) => `Is this ${p.name}?`,
+	'immich.hint.has': (p: { immichName: string; count: number; shown: string }) =>
+		`Immich has “${p.immichName}” with ${p.shown} ${p.count === 1 ? 'photo' : 'photos'}.`,
+	'immich.hint.hasUncounted': (p: { immichName: string }) => `Immich has “${p.immichName}”.`,
+	'immich.hint.choose': 'Choose another',
 	// The second tab of Find your people: named faces nobody in Stella holds yet.
 	'immich.tabs.label': 'What to look through',
 	'immich.tabs.matching': 'Matching',
