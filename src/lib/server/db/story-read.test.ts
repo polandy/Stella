@@ -6,6 +6,7 @@ import type { Viewer } from '../access/visibility';
 import { logInteraction, type InteractionAuthor } from '../domain/interactions/interactions';
 import { saveJournalEntry, type JournalAuthor } from '../domain/journal/journal';
 import { listStoryPage, type StoryCursor } from '../domain/story/story';
+import { createDrizzleGiftRepository } from './gift-repository';
 import { createDrizzleInteractionRepository } from './interaction-repository';
 import { createDrizzleJournalRepository } from './journal-repository';
 import * as schema from './schema';
@@ -40,8 +41,27 @@ const tick = () => ({ now: () => 1_000 + sequence });
 function storyDeps() {
 	return {
 		journal: createDrizzleJournalRepository(db),
-		interactions: createDrizzleInteractionRepository(db)
+		interactions: createDrizzleInteractionRepository(db),
+		gifts: createDrizzleGiftRepository(db)
 	};
+}
+
+/** A gift for Oma, written straight to the table: the use-case is not what is under test. */
+async function giftForOma(id: string, state: 'idea' | 'given' | 'received', day: string | null) {
+	await createDrizzleGiftRepository(db).insert({
+		id,
+		contactId: 'oma',
+		createdBy: U1,
+		visibility: 'shared',
+		state,
+		title: id,
+		note: null,
+		url: null,
+		givenOn: day,
+		occasion: null,
+		createdAt: 1_000 + ++sequence,
+		updatedAt: 1_000 + sequence
+	});
 }
 
 function writeDeps() {
@@ -103,6 +123,49 @@ describe('story read', () => {
 			'journal:2026-08-01'
 		]);
 		expect(page.nextCursor).toBeNull();
+	});
+
+	it('reads given and received gifts on their day, and never an idea', async () => {
+		await logInteraction(writeDeps(), interactionAuthor, {
+			contactId: 'oma',
+			kind: 'call',
+			happenedAt: '2026-08-03'
+		});
+		await giftForOma('teapot', 'given', '2026-08-04');
+		await giftForOma('socks', 'received', '2026-08-01');
+		await giftForOma('player', 'idea', null);
+
+		const page = await listStoryPage(storyDeps(), viewerU1, 'oma', { limit: 10 });
+
+		expect(shape(page)).toEqual(['gift:2026-08-04', 'interaction:2026-08-03', 'gift:2026-08-01']);
+		expect(page.nextCursor).toBeNull();
+	});
+
+	it('pages through gifts as through the other sources', async () => {
+		for (const day of ['2026-08-01', '2026-08-03', '2026-08-05']) {
+			await giftForOma(`gift-${day}`, 'given', day);
+		}
+		await logInteraction(writeDeps(), interactionAuthor, {
+			contactId: 'oma',
+			kind: 'call',
+			happenedAt: '2026-08-04'
+		});
+
+		const seen: string[] = [];
+		let cursor: StoryCursor | undefined;
+		for (let guard = 0; guard < 10; guard++) {
+			const page = await listStoryPage(storyDeps(), viewerU1, 'oma', { limit: 2, cursor });
+			seen.push(...shape(page));
+			if (page.nextCursor === null) break;
+			cursor = page.nextCursor;
+		}
+
+		expect(seen).toEqual([
+			'gift:2026-08-05',
+			'interaction:2026-08-04',
+			'gift:2026-08-03',
+			'gift:2026-08-01'
+		]);
 	});
 
 	it('walks the whole story in pages, showing every item exactly once', async () => {

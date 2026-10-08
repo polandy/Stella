@@ -107,6 +107,7 @@ export function buildArchiveDocument(
 	const notes = groupBy(t('note'), 'contact_id');
 	const entries = groupBy(t('journal_entry'), 'contact_id');
 	const interactions = groupBy(t('interaction'), 'contact_id');
+	const gifts = groupBy(t('gift'), 'contact_id');
 	const galleryPhotos = groupBy(
 		t('photo').filter((p) => text(p, 'journal_entry_id') === null && text(p, 'circle_id') === null),
 		'contact_id'
@@ -268,6 +269,21 @@ export function buildArchiveDocument(
 					author: text(i, 'created_by'),
 					created_at: moment(i, 'created_at'),
 					participants: participants.get(id(i)) ?? null
+				})
+			),
+			// Ideas, and what was given to them or received from them (docs/02 §2.25).
+			gifts: (gifts.get(person) ?? []).map((g) =>
+				present({
+					id: id(g),
+					state: text(g, 'state'),
+					title: text(g, 'title'),
+					note: text(g, 'note'),
+					url: text(g, 'url'),
+					given_on: text(g, 'given_on'),
+					occasion: text(g, 'occasion'),
+					visibility: text(g, 'visibility'),
+					author: text(g, 'created_by'),
+					created_at: moment(g, 'created_at')
 				})
 			),
 			photos: (galleryPhotos.get(person) ?? []).map(photo)

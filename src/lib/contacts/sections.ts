@@ -12,10 +12,17 @@
 /**
  * Every addressable card, in the order the page shows them under the identity card: who they
  * belong with, what was taken, then the story and the notes (side by side on a wide screen),
- * and last where somebody else named them. The identity card itself is the page's top and
- * needs no anchor.
+ * the gifts (docs/02 §2.25), and last where somebody else named them. The identity card itself
+ * is the page's top and needs no anchor.
  */
-export const CONTACT_SECTIONS = ['relationships', 'photos', 'story', 'notes', 'mentions'] as const;
+export const CONTACT_SECTIONS = [
+	'relationships',
+	'photos',
+	'story',
+	'notes',
+	'gifts',
+	'mentions'
+] as const;
 
 export type ContactSection = (typeof CONTACT_SECTIONS)[number];
 

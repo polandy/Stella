@@ -245,12 +245,13 @@ related**, with a dashed ring and quieter text. The card's header holds **Edit**
 **⋯** holds *How are we connected?*, *Check relationships* and *Open in the graph*.
 
 After People come **Photos**, **Activity** and the **Notes** side by side (one under the other
-on a phone), and **Mentioned in** last. Nothing is behind a tab, so nothing has to be found
+on a phone), then **Gifts**, and **Mentioned in** last. Nothing is behind a tab, so nothing has to be found
 before it can be read; each card says how many things are in it. A card with nothing in it yet
-keeps out of the way: empty **Photos** and **Notes** are a single line with their **+ Add**
-button, an empty **Activity** says so in one sentence, and **Mentioned in** only appears once
+keeps out of the way: empty **Photos**, **Notes** and **Gifts** are a single line with their
+**+ Add** button, an empty **Activity** says so in one sentence, and **Mentioned in** only appears once
 somebody has mentioned the person. Once you scroll past the top
-card a **jump bar** fades in at the top of the screen — *People · Photos · Activity · Notes*,
+card a **jump bar** fades in at the top of the screen — *People · Photos · Activity · Notes ·
+Gifts*,
 with their counts — which marks the card you are reading and takes you to any of them with one
 tap. Scroll back to the top and it steps away again.
 
@@ -285,7 +286,8 @@ can see. The same picker is now in the journal too.
 **Activity** is everything that has happened with this person in one list: the moments
 someone wrote and the times someone was in touch, newest first, day by day. They used
 to be two separate lists and you had to merge them in your head. Older activity loads when you
-ask for it with *Show earlier*.
+ask for it with *Show earlier*. Gifts you gave them or received from them show here too, on
+their day (see *Gifts* below).
 
 **Write a moment** on a person's page does not take you away: the page glides down to their
 *Activity* card and the writing field opens at its top, with the cursor in it. A chip above the
@@ -417,6 +419,31 @@ pick them instead. The face then leaves the list, and a message says *… added*
 go to their page. A face that is nobody you want in Stella — the postman, a stranger in a holiday
 photo — can be **Ignore**d for the whole household, with *Undo* for a few seconds; ignored faces
 wait under **Ignored** at the end, with who ignored them and when, and **Propose again**.
+
+### Gifts
+
+The **Gifts** card keeps the presents around a person, so the same book does not arrive twice
+and a good idea is still there on the birthday it was meant for.
+
+- **+ Idea** notes an idea the moment it comes: just *what* — *Teapot, cast iron*. *Note or link*
+  opens two more fields for the size or colour and the shop's web address. Ideas wait under the
+  **Ideas** tab, which counts them: *Ideas · 2*.
+- When you give it, press **Mark as given** under the idea. Stella asks only for the day (today,
+  unless you change it) and the occasion — *Birthday*, *Christmas*, *Anniversary*, or *Other…*
+  in your own words. The idea moves to the **Given** tab, grouped by year, with its note and
+  link kept.
+- **+ Given** records something given earlier, for catching up. **+ Received**, in the card's
+  **⋯** menu, records a present *from* them; the **Received** tab appears once there is one.
+- Each gift says who noted it. The pencil changes it, the cross removes it (with *Undo* for a
+  few seconds). Anyone who can see a gift can change it or mark it given — only the person who
+  noted it can make it private.
+- Given and received gifts also appear under **Activity** on their day. Ideas never do.
+- Without a connection a new gift is kept on your device and shown on the card until it can be
+  sent; changing, giving or removing one needs Stella to be reachable.
+
+Gift *touchpoints* logged with *Log contact* before this card existed are still in Activity as
+they were; they will be moved into the Gifts card by a later update, together with the gifts a
+Monica import brought in as notes.
 
 ### Mentioned in
 

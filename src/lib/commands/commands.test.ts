@@ -41,6 +41,17 @@ describe('the command vocabulary', () => {
 		expect(photoCommandFor('relationship.addMany')).toBeNull();
 	});
 
+	it('lets a gift idea wait on a device, but not a change to one somebody may have seen', () => {
+		expect(kindOf('gift.add')).toBe('add');
+		expect(isQueueable('gift.add')).toBe(true);
+		expect(kindOf('gift.edit')).toBe('change');
+		expect(kindOf('gift.markGiven')).toBe('change');
+		expect(kindOf('gift.remove')).toBe('remove');
+		for (const type of ['gift.edit', 'gift.markGiven', 'gift.remove'] as const) {
+			expect(isQueueable(type)).toBe(false);
+		}
+	});
+
 	it('recognises its own types and nothing else', () => {
 		expect(isCommandType('moment.capture')).toBe(true);
 		expect(isCommandType('contact.delete')).toBe(false);

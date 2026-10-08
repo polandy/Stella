@@ -24,6 +24,7 @@ import { contactSectionPath, sectionForLegacyTab } from '$lib/contacts/sections'
 import { personMap } from '$lib/graph/model/person-map';
 import { listMentionedIn } from '$lib/server/domain/mentions/mentioned-in';
 import { listNotesForContact } from '$lib/server/domain/notes/notes';
+import { listGiftsForContact } from '$lib/server/domain/gifts/gifts';
 import { readFamilyOf } from '$lib/server/domain/relationships/family';
 import { listTagsForContact } from '$lib/server/domain/tags/tags';
 import { TAG_COLORS } from '$lib/tags/colors';
@@ -38,6 +39,7 @@ import {
 	declinedBy,
 	circleNamesIn,
 	fieldView,
+	giftView,
 	mentionedInView,
 	noteView,
 	peopleNamedIn,
@@ -137,6 +139,8 @@ export const load = (async ({ locals, params, url }) => {
 		// Of the touchpoints *this viewer* sees, so a private one never shows here.
 		lastContactedAt: read.lastContactedAt,
 		notes: read.notes.map((note) => noteView(note, ctx.nameOf)),
+		// Ideas, given and received gifts (docs/02 §2.25), already visibility-scoped.
+		gifts: read.gifts.map((gift) => giftView(gift, ctx)),
 		mentionedIn: read.mentionedIn.map((reference) => mentionedInView(reference, ctx)),
 		// The person's photo gallery (docs/02 §2.14), favourites first, already visibility-scoped.
 		gallery: read.gallery,
@@ -214,10 +218,19 @@ function readPersonPage(
 		story,
 		notes,
 		records,
-		household
+		household,
+		gifts
 	}: Pick<
 		AppServices,
-		'people' | 'relationships' | 'circles' | 'media' | 'story' | 'notes' | 'records' | 'household'
+		| 'people'
+		| 'relationships'
+		| 'circles'
+		| 'media'
+		| 'story'
+		| 'notes'
+		| 'records'
+		| 'household'
+		| 'gifts'
 	>,
 	viewer: Viewer,
 	contactId: string,
@@ -232,6 +245,7 @@ function readPersonPage(
 		storyPage: listStoryPage(story.storyDeps, viewer, contactId, { limit: STORY_PAGE_SIZE }),
 		lastContactedAt: lastContactedOn(story.interactionDeps, viewer, contactId),
 		notes: listNotesForContact(notes.noteDeps, viewer, contactId),
+		gifts: listGiftsForContact(gifts.giftDeps, viewer, contactId),
 		mentionedIn: listMentionedIn(notes.mentionedInDeps, viewer, contactId),
 		gallery: listGallery(media.galleryDeps, viewer, contactId),
 		groupPhotos: listGroupPhotosOf(circles.cutDeps, viewer, contactId),

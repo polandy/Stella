@@ -79,6 +79,23 @@ export function toStoryItem(item: StoryItem, ctx: StoryViewContext): StoryItemVi
 		};
 	}
 
+	if (item.kind === 'gift') {
+		const gift = item.gift;
+		const mine = gift.createdBy === ctx.userId;
+		return {
+			kind: 'gift',
+			id: gift.id,
+			day: item.day,
+			recordedAt: item.recordedAt,
+			visibility: gift.visibility,
+			mine,
+			author: authorLabel(mine, ctx.nameOfAuthor(gift.createdBy)),
+			giftState: gift.state,
+			title: gift.title,
+			occasion: gift.occasion
+		};
+	}
+
 	const interaction = item.interaction;
 	return {
 		kind: 'interaction',

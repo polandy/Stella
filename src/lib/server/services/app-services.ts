@@ -1,6 +1,7 @@
 import { createArchiveServices, type ArchiveServices, type ArchiveWiring } from './archive';
 import { createAuthServices, type AuthServices, type AuthWiring } from './auth';
 import { createCircleServices, type CircleServices, type CircleWiring } from './circles';
+import { createGiftServices, type GiftServices, type GiftWiring } from './gifts';
 import { createHouseholdServices, type HouseholdServices, type HouseholdWiring } from './household';
 import { createImmichServices, type ImmichServices, type ImmichWiring } from './immich';
 import { createMediaServices, type MediaServices, type MediaWiring } from './media';
@@ -39,29 +40,32 @@ export interface AppServices {
 	immich: ImmichServices | null;
 	release: ReleaseServices;
 	offline: OfflineServices;
+	gifts: GiftServices;
 }
 
 /**
  * What the graph is built from; each context's wiring joins this as it moves in. A context
  * that reads another grouped context's repository gets it from here, not from the wiring
  * (`people` reads `auth`'s accounts, the relationships context's repository and `media`'s
- * store; `circles` and `story` read `people`'s contacts and `media`'s store; `archive` restores
- * into `media`'s store; `immich` reads `people`'s contacts and `media`'s avatar deps; `offline`'s
- * command handlers read the contexts whose use-cases they call), so each repository exists once.
+ * store; `circles` and `story` read `people`'s contacts and `media`'s store; `gifts` reads
+ * `people`'s contacts and `story` reads `gifts`' repository; `archive` restores into `media`'s
+ * store; `immich` reads `people`'s contacts and `media`'s avatar deps; `offline`'s command
+ * handlers read the contexts whose use-cases they call), so each repository exists once.
  */
 export type ServicesWiring = AuthWiring &
 	RelationshipWiring &
 	MediaWiring &
 	Omit<PeopleWiring, 'accounts' | 'relationships' | 'media'> &
 	Omit<CircleWiring, 'contacts' | 'media'> &
-	Omit<StoryWiring, 'contacts' | 'directory' | 'media'> &
+	Omit<StoryWiring, 'contacts' | 'directory' | 'media' | 'gifts'> &
 	NoteWiring &
 	RecordWiring &
 	HouseholdWiring &
 	Omit<ArchiveWiring, 'media'> &
 	Omit<ImmichWiring, 'contacts' | 'directory' | 'contactDeps' | 'contextReads' | 'avatarDeps'> &
 	ReleaseWiring &
-	Omit<OfflineWiring, 'contexts'>;
+	Omit<OfflineWiring, 'contexts'> &
+	Omit<GiftWiring, 'contacts'>;
 
 /** Wires every grouped context. Pure assembly: no I/O beyond what the adapters do when used. */
 export function createServices(wiring: ServicesWiring): AppServices {
@@ -79,11 +83,13 @@ export function createServices(wiring: ServicesWiring): AppServices {
 		contacts: people.contacts,
 		media: media.store
 	});
+	const gifts = createGiftServices({ ...wiring, contacts: people.contacts });
 	const story = createStoryServices({
 		...wiring,
 		contacts: people.contacts,
 		directory: people.directory,
-		media: media.store
+		media: media.store,
+		gifts: gifts.gifts
 	});
 	const notes = createNoteServices(wiring);
 	const records = createRecordServices(wiring);
@@ -100,7 +106,7 @@ export function createServices(wiring: ServicesWiring): AppServices {
 	const release = createReleaseServices(wiring);
 	const offline = createOfflineServices({
 		...wiring,
-		contexts: { auth, people, relationships, circles, media, story, notes, records }
+		contexts: { auth, people, relationships, circles, media, story, notes, records, gifts }
 	});
 	return {
 		auth,
@@ -115,6 +121,7 @@ export function createServices(wiring: ServicesWiring): AppServices {
 		archive,
 		immich,
 		release,
-		offline
+		offline,
+		gifts
 	};
 }

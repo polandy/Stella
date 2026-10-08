@@ -38,6 +38,7 @@ export const archive: ArchiveMessages = {
 		p.count === 1 ? 'Tagebuch-Erwähnung' : 'Tagebuch-Erwähnungen',
 	'archive.table.interaction': (p) => (p.count === 1 ? 'Kontakt' : 'Kontakte'),
 	'archive.table.interaction_participant': (p) => (p.count === 1 ? 'Beteiligter' : 'Beteiligte'),
+	'archive.table.gift': (p) => (p.count === 1 ? 'Geschenk' : 'Geschenke'),
 	'archive.table.photo': (p) => (p.count === 1 ? 'Foto' : 'Fotos'),
 	'archive.table.tag': (p) => (p.count === 1 ? 'Schlagwort' : 'Schlagwörter'),
 	'archive.table.contact_tag': (p) =>
@@ -66,6 +67,8 @@ export const archive: ArchiveMessages = {
 	'archive.warning.journalEntryIncomplete':
 		'Ein Tagebucheintrag ohne Tag oder Text wurde ausgelassen.',
 	'archive.warning.touchpointIncomplete': 'Ein Kontakt ohne Art oder Datum wurde ausgelassen.',
+	'archive.warning.giftIncomplete':
+		'Ein Geschenk ohne Namen, ohne bekannten Stand oder – verschenkt oder bekommen – ohne Tag wurde ausgelassen.',
 	'archive.warning.tagWithoutName': 'Ein Schlagwort ohne Namen wurde ausgelassen.',
 	'archive.warning.tagsNotInList':
 		'Einige Schlagwörter an Menschen stehen nicht in der Schlagwortliste des Archivs und wurden ausgelassen.',

@@ -23,6 +23,8 @@ import {
 	House,
 	Image,
 	KeyRound,
+	Lightbulb,
+	Link,
 	ListFilter,
 	Lock,
 	LogOut,
@@ -127,6 +129,9 @@ export const ICONS = {
 	unlink: Unlink,
 	calendar: CalendarDays,
 	shared: UsersRound,
+	// A gift not given yet, and the shop page it may link to (docs/02 §2.25).
+	idea: Lightbulb,
+	link: Link,
 	// Interaction kinds (docs/02 §2.6)
 	met: Handshake,
 	call: Phone,

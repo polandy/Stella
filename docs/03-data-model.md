@@ -22,7 +22,8 @@ Detail stays in the feature doc the term points to.
 | **moment** | The UI's word for a journal entry; also Home's one-sentence capture (*What happened?*) that writes one, landing in the journal of the first person it @-mentions (docs/02 §2.22.1). | a `journal_entry` row; the capture is `domain/moments/` | — (not a table of its own) |
 | **note** | A reference fact about a person, pinnable, not dated by what it is about (docs/02 §2.5). Not a journal entry. | `note`, `note_mention`, `domain/notes/` | memo, comment |
 | **touchpoint** | A logged contact with a person — met, call, video, message, letter, gift — on a day, with optional participants (docs/02 §2.6). Buttons say *Log contact* / *Log interaction*. | `interaction`, `interaction_participant`, `domain/interactions/`, `lib/interactions/` | activity, event |
-| **story** | One person's timeline: their journal entries and touchpoints in one order (docs/02 §2.23). Its heading on the person page reads *Activity*. | `domain/story/`, `lib/story/`, `/contacts/[id]/story` | feed, history |
+| **gift** | A present for one person — an idea, given or received (docs/02 §2.25). An idea and the gift it became are one record. | `gift`, `domain/gifts/`, `lib/gifts/`, `components/person/Gift*.svelte` | present, wish |
+| **story** | One person's timeline: their journal entries, touchpoints and given or received gifts in one order (docs/02 §2.23). Its heading on the person page reads *Activity*. | `domain/story/`, `lib/story/`, `/contacts/[id]/story` | feed, history |
 | **stream** | The household's newest-first read of what the family did, on Home (docs/02 §2.22.2): a query over the tables that still exist, plus the activity rows for what no table can report. | `domain/stream/`, `lib/stream/`, `db/stream-repository.ts` | feed, *What's new* (the older name, docs/02 §2.11) |
 | **activity** | One row of the household's log, written only for what no remaining table can tell — deletions, merges, export and import, renames, last-name batches, Immich links (§3.3 `activity_log`). | `activity_log`, `domain/activity/` | event; the person page's *Activity* heading is the story, not this |
 | **attention** | The latest day the household recorded anything about a person, as the People list shows it — what was written down, not how often anyone met (docs/02 §2.2). | `domain/attention/`, `db/attention-repository.ts` | *last contacted* (the latest touchpoint, on the profile) |
@@ -66,6 +67,7 @@ contact   1───* note
 contact   1───* journal_entry    (per-person diary)      [M2]
 contact   1───* interaction
 contact   1───* important_date
+contact   1───* gift            (ideas, given and received)  [M3]
 contact   1───* photo
 contact   *───* tag             (contact_tag)
 contact   *───* circle          (circle_membership → derived shared-context links)
@@ -444,6 +446,30 @@ Birthdays are **derived** from `contact.birth_date`, never duplicated as a row. 
 is how a birthday is corrected without touching the profile, and how it is muted (an
 explicit row with `remind = 0`). See docs/02 §2.13.
 
+### gift  [M3]
+A present for one person (docs/02 §2.25): an idea, a gift the household gave, or one it
+received. An idea and the gift it became are one row — *Mark as given* sets `state`,
+`given_on` and `occasion`. Child record of a contact; visibility per §3.7. Any member who sees a gift
+may edit, give or remove it; only its author may change its visibility.
+
+| column | type | notes |
+|---|---|---|
+| id | text pk | |
+| contact_id | text fk → contact.id | cascade delete — who it is for |
+| created_by | text fk → user.id | who noted it (*noted by*); not who gave it |
+| visibility | text | `'shared' \| 'private'`, default `'shared'` |
+| state | text | `'idea' \| 'given' \| 'received'` |
+| title | text | required |
+| note | text null | |
+| url | text null | an `http(s)` address only |
+| given_on | text null | ISO `YYYY-MM-DD`; null while an idea, required for given and received |
+| occasion | text null | a preset key (`birthday`, `christmas`, `anniversary`) or free text |
+| created_at / updated_at | int | |
+
+Indexed on `(contact_id, state, given_on)`: the card's tabs and the story's page of given and
+received gifts (newest `given_on`, then `created_at`) come from it. Exported and restored with
+the person (§2.15), repointed by a merge.
+
 ### photo
 | column | type | notes |
 |---|---|---|
@@ -784,7 +810,7 @@ A viewer `u` may read a record `r` iff:
 2. `r.created_by = u.id` (owner always sees their own).
 
 Contact visibility is the root: a `private` contact is visible only to its creator; a
-`shared` contact is visible to the whole household. Child records (`note`, `photo`,
+`shared` contact is visible to the whole household. Child records (`note`, `photo`, `gift`,
 `interaction`) additionally hide when they are `private` and not owned by `u`, even on a
 shared contact. Relationships require **both** endpoints visible. A **circle** follows the
 same contact-like rule (shared to the household, or private to its owner); a

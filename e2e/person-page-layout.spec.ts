@@ -3,14 +3,15 @@ import { fillDate, openPerson, signIn } from './app';
 
 /*
  * The landing view of a person's page (docs/05 §5.5). The page is one column of cards in a
- * fixed order — the identity card, relationships, photos, then story and notes, then mentions —
+ * fixed order — the identity card, relationships, photos, then story and notes, gifts, then
+ * mentions —
  * with no tabs to open: what a reader came for is on the page when they arrive. Written after
  * the maintainer saw the reordered page live, on the family instance itself (docs/08 §8.4.1);
  * the identity card's cases were updated for its redesign.
  */
 
 /** The cards below the identity card, in the order the page stacks them. */
-const CARDS = ['relationships', 'photos', 'story', 'notes', 'mentions'] as const;
+const CARDS = ['relationships', 'photos', 'story', 'notes', 'gifts', 'mentions'] as const;
 
 test.beforeEach(async ({ page }) => {
 	await signIn(page);

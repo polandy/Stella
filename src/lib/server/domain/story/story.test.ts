@@ -9,6 +9,7 @@ import {
 } from './story';
 import type { JournalEntry } from '../journal/journal';
 import type { Interaction } from '../interactions/interactions';
+import type { DatedGift } from '../gifts/gifts';
 
 /*
  * The story timeline (docs/02 §2.23): one chronological read over two sources that are
@@ -46,6 +47,28 @@ function touchpoint(day: string, recordedAt: number, id = `i-${day}-${recordedAt
 	};
 }
 
+function present(
+	day: string,
+	recordedAt: number,
+	state: 'given' | 'received' = 'given',
+	id = `g-${day}-${recordedAt}`
+): DatedGift {
+	return {
+		id,
+		contactId: 'c1',
+		createdBy: 'u1',
+		visibility: 'shared',
+		state,
+		title: 'Teapot',
+		note: null,
+		url: null,
+		givenOn: day,
+		occasion: null,
+		createdAt: recordedAt,
+		updatedAt: recordedAt
+	};
+}
+
 /** A source that handed back everything it had. */
 function whole<T>(items: T[]): StorySource<T> {
 	return { items, exhausted: true, resumeFrom: 'top' };
@@ -56,14 +79,25 @@ function partial<T>(items: T[], resumeFrom: StoryResume = 'top'): StorySource<T>
 	return { items, exhausted: false, resumeFrom };
 }
 
+/** No gifts at all: most of the cases below are about the other two sources. */
+const NO_GIFTS = whole<DatedGift>([]);
+const NO_GIFTS_TOUCHPOINTS = whole<Interaction>([]);
+
 const ids = (page: StoryPage): string[] =>
-	page.items.map((item) => (item.kind === 'journal' ? item.entry.id : item.interaction.id));
+	page.items.map((item) =>
+		item.kind === 'journal'
+			? item.entry.id
+			: item.kind === 'interaction'
+				? item.interaction.id
+				: item.gift.id
+	);
 
 describe('mergeStory ordering', () => {
 	it('interleaves both sources newest day first', () => {
 		const page = mergeStory({
 			journal: whole([entry('2026-03-10', 10), entry('2026-03-01', 1)]),
 			interactions: whole([touchpoint('2026-03-05', 5)]),
+			gifts: NO_GIFTS,
 			limit: 10
 		});
 
@@ -74,6 +108,7 @@ describe('mergeStory ordering', () => {
 		const page = mergeStory({
 			journal: whole([entry('2026-03-10', 100)]),
 			interactions: whole([touchpoint('2026-03-10', 200)]),
+			gifts: NO_GIFTS,
 			limit: 10
 		});
 
@@ -84,6 +119,7 @@ describe('mergeStory ordering', () => {
 		const args = {
 			journal: whole([entry('2026-03-10', 100)]),
 			interactions: whole([touchpoint('2026-03-10', 100)]),
+			gifts: NO_GIFTS,
 			limit: 10
 		};
 
@@ -95,6 +131,7 @@ describe('mergeStory ordering', () => {
 		const page = mergeStory({
 			journal: whole([entry('2026-03-10', 10)]),
 			interactions: whole([touchpoint('2026-03-09', 9)]),
+			gifts: NO_GIFTS,
 			limit: 10
 		});
 
@@ -103,8 +140,30 @@ describe('mergeStory ordering', () => {
 		expect(page.items[1]).toMatchObject({ day: '2026-03-09', recordedAt: 9 });
 	});
 
+	it('reads a given or received gift on its day, beside entries and touchpoints', () => {
+		const page = mergeStory({
+			journal: whole([entry('2026-03-10', 10)]),
+			interactions: whole([touchpoint('2026-03-05', 5)]),
+			gifts: whole([present('2026-03-08', 8), present('2026-03-01', 1, 'received')]),
+			limit: 10
+		});
+
+		expect(ids(page)).toEqual([
+			'j-2026-03-10-10',
+			'g-2026-03-08-8',
+			'i-2026-03-05-5',
+			'g-2026-03-01-1'
+		]);
+		expect(page.items[1]).toMatchObject({ kind: 'gift', day: '2026-03-08', recordedAt: 8 });
+	});
+
 	it('is empty, and finished, for a person nothing is recorded about', () => {
-		const page = mergeStory({ journal: whole([]), interactions: whole([]), limit: 10 });
+		const page = mergeStory({
+			journal: whole([]),
+			interactions: whole([]),
+			gifts: NO_GIFTS,
+			limit: 10
+		});
 
 		expect(page.items).toEqual([]);
 		expect(page.nextCursor).toBeNull();
@@ -116,13 +175,15 @@ describe('mergeStory paging', () => {
 		const page = mergeStory({
 			journal: partial([entry('2026-03-10', 10), entry('2026-03-08', 8)]),
 			interactions: partial([touchpoint('2026-03-09', 9), touchpoint('2026-03-07', 7)]),
+			gifts: NO_GIFTS,
 			limit: 2
 		});
 
 		expect(ids(page)).toEqual(['j-2026-03-10-10', 'i-2026-03-09-9']);
 		expect(page.nextCursor).toEqual({
 			journal: { day: '2026-03-10', recordedAt: 10 },
-			interactions: { day: '2026-03-09', recordedAt: 9 }
+			interactions: { day: '2026-03-09', recordedAt: 9 },
+			gifts: 'finished'
 		});
 	});
 
@@ -131,6 +192,7 @@ describe('mergeStory paging', () => {
 		const page = mergeStory({
 			journal: partial([entry('2026-03-10', 10), entry('2026-03-09', 9)]),
 			interactions: partial([touchpoint('2026-01-01', 1)], readFrom),
+			gifts: NO_GIFTS,
 			limit: 2
 		});
 
@@ -144,6 +206,7 @@ describe('mergeStory paging', () => {
 		const page = mergeStory({
 			journal: whole([entry('2026-03-10', 10)]),
 			interactions: whole([touchpoint('2026-03-09', 9)]),
+			gifts: NO_GIFTS,
 			limit: 10
 		});
 
@@ -154,22 +217,41 @@ describe('mergeStory paging', () => {
 		const page = mergeStory({
 			journal: whole([entry('2026-03-10', 10), entry('2026-03-08', 8)]),
 			interactions: whole([touchpoint('2026-03-09', 9)]),
+			gifts: NO_GIFTS,
 			limit: 2
 		});
 
 		expect(ids(page)).toEqual(['j-2026-03-10-10', 'i-2026-03-09-9']);
 		expect(page.nextCursor).toEqual({
 			journal: { day: '2026-03-10', recordedAt: 10 },
-			interactions: 'finished'
+			interactions: 'finished',
+			gifts: 'finished'
+		});
+	});
+
+	it('resumes the gifts after the last one shown, like the other two sources', () => {
+		const page = mergeStory({
+			journal: whole([entry('2026-03-10', 10)]),
+			interactions: NO_GIFTS_TOUCHPOINTS,
+			gifts: partial([present('2026-03-09', 9), present('2026-03-01', 1)]),
+			limit: 2
+		});
+
+		expect(ids(page)).toEqual(['j-2026-03-10-10', 'g-2026-03-09-9']);
+		expect(page.nextCursor).toEqual({
+			journal: 'finished',
+			interactions: 'finished',
+			gifts: { day: '2026-03-09', recordedAt: 9 }
 		});
 	});
 
 	it('walks the whole story without repeating or dropping anything', () => {
-		// Two interleaved sources, read two at a time the way the page reads them.
+		// Three interleaved sources, read two at a time the way the page reads them.
 		const allJournal = ['2026-03-09', '2026-03-07', '2026-03-05'].map((d, i) => entry(d, 100 - i));
 		const allInteractions = ['2026-03-10', '2026-03-08', '2026-03-06'].map((d, i) =>
 			touchpoint(d, 200 - i)
 		);
+		const allGifts = ['2026-03-09', '2026-03-04'].map((d, i) => present(d, 150 - i));
 
 		/** Stands in for a keyset repository: rows strictly older than the cursor, newest first. */
 		function read<T>(
@@ -208,6 +290,12 @@ describe('mergeStory paging', () => {
 					cursor?.interactions ?? 'top',
 					2
 				),
+				gifts: read(
+					allGifts,
+					(g) => ({ day: g.givenOn, recordedAt: g.createdAt }),
+					cursor?.gifts ?? 'top',
+					2
+				),
 				limit: 2
 			});
 
@@ -218,11 +306,13 @@ describe('mergeStory paging', () => {
 
 		expect(seen).toEqual([
 			'i-2026-03-10-200',
+			'g-2026-03-09-150',
 			'j-2026-03-09-100',
 			'i-2026-03-08-199',
 			'j-2026-03-07-99',
 			'i-2026-03-06-198',
-			'j-2026-03-05-98'
+			'j-2026-03-05-98',
+			'g-2026-03-04-149'
 		]);
 		expect(new Set(seen).size).toBe(seen.length);
 	});

@@ -15,23 +15,32 @@ import { cardShape } from './empty-cards';
  */
 
 describe('jumpEntries', () => {
-	it('links People, Photos, Story and Notes in the page’s order', () => {
+	it('links People, Photos, Story, Notes and Gifts in the page’s order', () => {
 		const entries = jumpEntries({ relationships: 10, photos: 23, notes: 2 });
 		expect(entries.map((e) => e.section)).toEqual([...JUMP_SECTIONS]);
-		expect(entries.map((e) => e.section)).toEqual(['relationships', 'photos', 'story', 'notes']);
+		expect(entries.map((e) => e.section)).toEqual([
+			'relationships',
+			'photos',
+			'story',
+			'notes',
+			'gifts'
+		]);
 	});
 
-	it('carries each card’s count, but none for the story, which is paged', () => {
+	it('carries each card’s count, but none for the story, which is paged, or the gifts', () => {
+		// The Gifts card counts its open ideas on its tab, not in its header (docs/02 §2.25).
 		expect(jumpEntries({ relationships: 10, photos: 23, notes: 2 }).map((e) => e.count)).toEqual([
 			10,
 			23,
 			null,
-			2
+			2,
+			null
 		]);
 	});
 
 	it('drops a count of nothing: “Photos 0” only takes room', () => {
 		expect(jumpEntries({ relationships: 0, photos: 0, notes: 0 }).map((e) => e.count)).toEqual([
+			null,
 			null,
 			null,
 			null,
@@ -41,9 +50,12 @@ describe('jumpEntries', () => {
 });
 
 describe('currentSection', () => {
-	/** Tops measured from the top of the visible page, as the layout hands them over. */
+	/**
+	 * Tops measured from the top of the visible page, as the layout hands them over; a card a
+	 * case leaves out stands far below, as the Gifts card does under a long story.
+	 */
 	const cards = (tops: Record<string, number>) =>
-		JUMP_SECTIONS.map((section) => ({ section, top: tops[section] }));
+		JUMP_SECTIONS.map((section) => ({ section, top: tops[section] ?? 5000 }));
 	const view = { line: 60, height: 800, atBottom: false };
 
 	it('marks nothing while the reader is still above the first card', () => {

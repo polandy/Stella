@@ -3,8 +3,8 @@ import type { ContactSection } from './sections';
 /*
  * The person page's jump bar (docs/05 §5.5): under the identity card, sticking under the top
  * bar once that card has gone by, one link per card worth jumping to — People, Photos, Story,
- * Notes — and the card being read marked. *Mentioned in* is left out: it is the page's quiet
- * foot, reached by scrolling on, a fifth link does not fit a phone's width, and with nobody
+ * Notes, Gifts — and the card being read marked. *Mentioned in* is left out: it is the page's
+ * quiet foot, reached by scrolling on, a sixth link does not fit a phone's width, and with nobody
  * mentioning the person the card is not on the page at all (`cardShape`). Every card the bar
  * does link stands on the page even when empty — as one line, at the least — since that is
  * where its add button is; the tests hold the two rules together.
@@ -18,15 +18,24 @@ export const JUMP_SECTIONS = [
 	'relationships',
 	'photos',
 	'story',
-	'notes'
+	'notes',
+	'gifts'
 ] as const satisfies readonly ContactSection[];
 export type JumpSection = (typeof JUMP_SECTIONS)[number];
 
-/** The counts the cards carry in their own headers. The story is paged and has none. */
+/**
+ * The counts the cards carry in their own headers. The story is paged and has none; the Gifts
+ * card counts its open ideas on its *Ideas* tab instead (docs/02 §2.25).
+ */
 export interface JumpCounts {
 	relationships: number;
 	photos: number;
 	notes: number;
+}
+
+/** Whether a card's header carries a count, so its link can carry one too. */
+function isCounted(section: JumpSection): section is keyof JumpCounts {
+	return section !== 'story' && section !== 'gifts';
 }
 
 /** One link of the bar: the card, and its count where it has one worth saying. */
@@ -38,7 +47,7 @@ export interface JumpEntry {
 /** What the bar shows. A count of nothing is left off: "Photos 0" only takes room. */
 export function jumpEntries(counts: JumpCounts): JumpEntry[] {
 	return JUMP_SECTIONS.map((section) => {
-		const count = section === 'story' ? null : counts[section];
+		const count = isCounted(section) ? counts[section] : null;
 		return { section, count: count ? count : null };
 	});
 }

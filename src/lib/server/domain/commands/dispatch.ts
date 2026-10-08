@@ -46,6 +46,10 @@ export interface CommandResults {
 	'circleGallery.photo': string;
 	'note.add': { noteId: string };
 	'interaction.log': { interactionId: string };
+	'gift.add': { giftId: string };
+	'gift.edit': { giftId: string };
+	'gift.markGiven': { giftId: string };
+	'gift.remove': { giftId: string };
 	'tag.assign': { tagId: string };
 	'circle.join': { circleId: string };
 	'relationship.add': { relationshipId: string };
@@ -203,6 +207,14 @@ function apply(
 		case 'note.add':
 			return handlers[command.type](actor, command.payload);
 		case 'interaction.log':
+			return handlers[command.type](actor, command.payload);
+		case 'gift.add':
+			return handlers[command.type](actor, command.payload);
+		case 'gift.edit':
+			return handlers[command.type](actor, command.payload);
+		case 'gift.markGiven':
+			return handlers[command.type](actor, command.payload);
+		case 'gift.remove':
 			return handlers[command.type](actor, command.payload);
 		case 'tag.assign':
 			return handlers[command.type](actor, command.payload);

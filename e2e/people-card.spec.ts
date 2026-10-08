@@ -205,7 +205,8 @@ test.describe('the jump bar', () => {
 			/^People/,
 			/^Photos/,
 			/^Activity/,
-			/^Notes/
+			/^Notes/,
+			/^Gifts/
 		]);
 		// The bar shows only once the identity card has gone by (docs/05 §5.5).
 		await page

@@ -57,6 +57,8 @@ export const EXPORTED_TABLES: readonly Scoped[] = [
 		where: `t.interaction_id IN (SELECT i.id FROM interaction i JOIN contact c ON c.id = i.contact_id WHERE c.household_id = ?)`
 	},
 	{ table: 'important_date', where: viaContact() },
+	// Ideas, given and received gifts (docs/02 §2.25).
+	{ table: 'gift', where: viaContact() },
 	{ table: 'photo', where: 't.household_id = ?' },
 	{ table: 'tag', where: 't.household_id = ?' },
 	{ table: 'contact_tag', where: viaContact() },

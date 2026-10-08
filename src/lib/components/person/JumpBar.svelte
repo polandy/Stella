@@ -19,7 +19,7 @@
 	import type { PersonPageData } from './types';
 
 	/*
-	 * The person page's jump bar (docs/05 §5.5): People, Photos, Story, Notes, each with its
+	 * The person page's jump bar (docs/05 §5.5): People, Photos, Story, Notes, Gifts, each with its
 	 * card's count, the one being read marked. It shows only once it sticks — when the identity
 	 * card has scrolled by — and fades in there; at rest it sits in a zero-height slot, so nothing
 	 * stands between the identity card and the People card. `barVisible` and `currentSection`
@@ -41,7 +41,8 @@
 		relationships: 'contact.section.relationships',
 		photos: 'contact.section.photos',
 		story: 'contact.story.title',
-		notes: 'contact.section.notes'
+		notes: 'contact.section.notes',
+		gifts: 'gifts.title'
 	};
 
 	const entries = $derived(
@@ -167,7 +168,7 @@
 		class="absolute -inset-x-4 bottom-0 border-b border-border-subtle bg-bg/90 px-4 py-2 backdrop-blur transition-[opacity,translate] duration-(--motion-fade) ease-standard data-[visible=false]:pointer-events-none data-[visible=false]:-translate-y-1.5 data-[visible=false]:opacity-0 md:-inset-x-6 md:px-6"
 		data-testid="jump-bar"
 	>
-		<ul class="grid grid-cols-4 gap-1 sm:flex sm:flex-wrap">
+		<ul class="flex justify-between gap-0.5 sm:flex-wrap sm:justify-start sm:gap-1">
 			{#each entries as entry (entry.section)}
 				<li class="min-w-0">
 					<a

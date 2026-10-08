@@ -3,7 +3,9 @@
 	import Avatar from '$lib/components/Avatar.svelte';
 	import Button from '$lib/components/Button.svelte';
 	import Icon from '$lib/components/Icon.svelte';
+	import { contactSectionPath } from '$lib/contacts/sections';
 	import { dayLabel } from '$lib/dates/labels';
+	import { occasionLabel } from '$lib/gifts/labels';
 	import { useI18n } from '$lib/i18n/context.svelte';
 	import { KIND_PRESENTATION } from '$lib/interactions/kinds';
 	import { groupStoryByDay } from '$lib/story/grouping';
@@ -64,6 +66,16 @@
 	const shown = $derived(items.filter((item) => !removals.isPending(removalKey(item))));
 	const days = $derived(groupStoryByDay(shown));
 
+	/*
+	 * A given or received gift (docs/02 §2.25) reads like a touchpoint: the gift icon and the
+	 * accent the story already gives gifts, and what happened as its label. The touchpoint kind
+	 * *Gift* keeps its own label, *Gift*, so the two never read as one another.
+	 */
+	const GIFT_PRESENTATION = {
+		given: { label: 'gifts.story.given', icon: 'gift', accent: 'var(--kind-gift)' },
+		received: { label: 'gifts.story.received', icon: 'gift', accent: 'var(--kind-gift)' }
+	} as const;
+
 	/** The form action that removes an item, by what kind of thing it is. */
 	const removeAction = (item: StoryItemView) =>
 		item.kind === 'journal' ? '?/removeJournalEntry' : '?/removeInteraction';
@@ -105,7 +117,11 @@
 				<ol class="relative flex flex-col gap-4 border-l border-border-subtle pb-1 pl-4">
 					{#each group.items as item (item.kind + item.id)}
 						{@const kind =
-							item.kind === 'interaction' ? KIND_PRESENTATION[item.interactionKind] : null}
+							item.kind === 'interaction'
+								? KIND_PRESENTATION[item.interactionKind]
+								: item.kind === 'gift'
+									? GIFT_PRESENTATION[item.giftState]
+									: null}
 						<li data-story-item class="group/item relative">
 							<span
 								class="absolute top-1.5 -left-[1.3125rem] size-2.5 rounded-full ring-4 ring-card"
@@ -132,7 +148,8 @@
 										<Icon name="private" size={11} />{t('common.privateInline')}
 									</span>
 								{/if}
-								{#if item.mine}
+								<!-- A gift is changed and removed on the Gifts card, where it lives. -->
+								{#if item.mine && item.kind !== 'gift'}
 									<form
 										method="POST"
 										action={removeAction(item)}
@@ -180,6 +197,15 @@
 											</a>
 										{/each}
 									</div>
+								{/if}
+							{:else if item.kind === 'gift'}
+								<!-- Links to the card the gift lives on, where it is changed. -->
+								<a
+									href={contactSectionPath(contactId, 'gifts')}
+									class="mt-0.5 block font-medium text-fg hover:underline">{item.title}</a
+								>
+								{#if item.occasion}
+									<p class="text-sm text-fg-muted">{occasionLabel(t, item.occasion)}</p>
 								{/if}
 							{:else}
 								{#if item.title}<p class="mt-0.5 font-medium text-fg">{item.title}</p>{/if}

@@ -1,6 +1,7 @@
 import { circleActions } from './actions/circles';
 import { dateActions } from './actions/dates';
 import { fieldActions } from './actions/fields';
+import { giftActions } from './actions/gifts';
 import { immichActions } from './actions/immich';
 import { noteActions } from './actions/notes';
 import { photoActions } from './actions/photos';
@@ -24,6 +25,8 @@ export const actions = {
 	...recordActions,
 	...relationshipActions,
 	...noteActions,
+	// The Gifts card (docs/02 §2.25).
+	...giftActions,
 	...fieldActions,
 	...dateActions,
 	...storyActions,

@@ -1,11 +1,13 @@
 import { describe, expect, it } from 'bun:test';
 import type { GraphModel } from '$lib/graph/model/types';
 import type { MentionedIn } from '$lib/server/domain/mentions/mentioned-in';
+import type { Gift } from '$lib/server/domain/gifts/gifts';
 import type { Note } from '$lib/server/domain/notes/notes';
 import {
 	birthdayOf,
 	declinedBy,
 	fieldView,
+	giftView,
 	circleNamesIn,
 	mentionedInView,
 	noteView,
@@ -90,6 +92,43 @@ function note(overrides: Partial<Note> = {}): Note {
 		...overrides
 	};
 }
+
+describe('giftView', () => {
+	const gift = (overrides: Partial<Gift> = {}): Gift => ({
+		id: 'g-1',
+		contactId: 'c-hilde',
+		createdBy: 'user-2',
+		visibility: 'shared',
+		state: 'idea',
+		title: 'Teapot',
+		note: 'The black one',
+		url: 'https://shop.example',
+		givenOn: null,
+		occasion: null,
+		createdAt: 1,
+		updatedAt: 2,
+		...overrides
+	});
+
+	it('says what the card shows, and who noted it by first name', () => {
+		expect(giftView(gift(), context())).toEqual({
+			id: 'g-1',
+			state: 'idea',
+			title: 'Teapot',
+			note: 'The black one',
+			url: 'https://shop.example',
+			givenOn: null,
+			occasion: null,
+			visibility: 'shared',
+			mine: false,
+			notedBy: 'Hans'
+		});
+	});
+
+	it('marks the viewer’s own gift, which only they may make private', () => {
+		expect(giftView(gift({ createdBy: VIEWER }), context()).mine).toBe(true);
+	});
+});
 
 describe('noteView', () => {
 	it('renders the body with each mention read as the person’s current name', () => {

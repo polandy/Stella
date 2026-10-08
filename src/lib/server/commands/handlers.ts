@@ -16,6 +16,7 @@ import { addContactField } from '../domain/contact-fields/contact-fields';
 import { addPerson } from '../domain/contacts/add-person';
 import { onVisibleContact } from '../domain/contacts/require-visible';
 import { addImportantDate } from '../domain/dates/important-dates';
+import { addGift, editGift, markGiftGiven, removeGift } from '../domain/gifts/gifts';
 import { logInteractionChecked } from '../domain/interactions/log-checked';
 import { writeJournalEntry } from '../domain/journal/write-entry';
 import { withNamesakeContext } from '../domain/mentions/namesake-context';
@@ -36,7 +37,15 @@ import type { AppServices } from '../services/app-services';
 /** The contexts whose use-cases the handlers call. */
 export type HandlerContexts = Pick<
 	AppServices,
-	'auth' | 'people' | 'relationships' | 'circles' | 'media' | 'story' | 'notes' | 'records'
+	| 'auth'
+	| 'people'
+	| 'relationships'
+	| 'circles'
+	| 'media'
+	| 'story'
+	| 'notes'
+	| 'records'
+	| 'gifts'
 >;
 
 /** The offline context's own repositories a photo reads to find what it follows. */
@@ -50,7 +59,7 @@ function viewerOf(actor: CommandActor): Viewer {
 }
 
 export function createCommandHandlers(
-	{ auth, people, relationships, circles, media, story, notes, records }: HandlerContexts,
+	{ auth, people, relationships, circles, media, story, notes, records, gifts }: HandlerContexts,
 	{ receipts, entries }: HandlerRepositories
 ): CommandHandlers {
 	const { contacts, directory, contactNames, contactDeps, namesakeContextDeps } = people;
@@ -101,6 +110,11 @@ export function createCommandHandlers(
 			addRelationshipsOrRefuse(relationshipDeps, actor, payload),
 		'interaction.log': (actor, payload) =>
 			logInteractionChecked({ ...interactionDeps, contacts, contactNames }, actor, payload),
+		// A gift (docs/02 §2.25): noted on a phone or online alike; the rest wait for Stella.
+		'gift.add': (actor, payload) => addGift(gifts.giftDeps, actor, payload),
+		'gift.edit': (actor, payload) => editGift(gifts.giftDeps, actor, payload),
+		'gift.markGiven': (actor, payload) => markGiftGiven(gifts.giftDeps, actor, payload),
+		'gift.remove': (actor, payload) => removeGift(gifts.giftDeps, actor, payload),
 		'note.add': (actor, payload) =>
 			withNamesakeContext(namesakeContextDeps, viewerOf(actor), () =>
 				writeNote({ ...notes.noteDeps, contacts, directory }, actor, payload)
