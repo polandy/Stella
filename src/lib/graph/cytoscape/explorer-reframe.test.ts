@@ -63,6 +63,18 @@ describe('reframing on a full-screen change', () => {
 		expect(middle(cy).y).toBeCloseTo(500);
 	});
 
+	it('frames the map afresh at once when the canvas had resized before the change was heard', () => {
+		const { cy, explorer } = pairOn({ width: 1000, height: 400 });
+		resizeTo(cy, { width: 2000, height: 1000 });
+		cy.emit('resize');
+		expect(middle(cy).x).toBeCloseTo(500);
+
+		explorer.screenChanged();
+
+		expect(middle(cy).x).toBeCloseTo(1000);
+		expect(middle(cy).y).toBeCloseTo(500);
+	});
+
 	it('keeps the view the reader dragged to', () => {
 		const { cy, explorer } = pairOn({ width: 1000, height: 400 });
 		cy.panBy({ x: 120, y: 30 });

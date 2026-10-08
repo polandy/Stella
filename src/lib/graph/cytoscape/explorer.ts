@@ -341,7 +341,7 @@ export function explorerFromCore(cy: Core, opts: ControllerOptions): ExplorerCon
 		const view = frameFor(placeOf, focusIds);
 		cy.layout(presetLayout(glide, placeOf) as Parameters<Core['layout']>[0]).run();
 		if (!view) return;
-		follow({ kind: 'framed' });
+		follow({ kind: 'framed', size: { width: cy.width(), height: cy.height() } });
 		if (!glide) {
 			cy.viewport(view);
 			return;
@@ -411,7 +411,7 @@ export function explorerFromCore(cy: Core, opts: ControllerOptions): ExplorerCon
 		if (viewFollow.navigated) return;
 		const view = frameFor((node) => ({ ...node.position() }), framedFocus);
 		if (!view) return;
-		follow({ kind: 'framed' });
+		follow({ kind: 'framed', size: { width: cy.width(), height: cy.height() } });
 		cy.viewport(view);
 	};
 

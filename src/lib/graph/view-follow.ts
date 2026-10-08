@@ -15,38 +15,44 @@ export interface ViewSize {
 export interface ViewFollow {
 	/** The reader has panned or zoomed since the map last framed itself. */
 	navigated: boolean;
+	/** The canvas size the map last framed itself for; null before it has. */
+	framedFor: ViewSize | null;
 	/**
-	 * The size the map was last framed for, once full screen has been entered or left and until
-	 * the reader moves the view: each new size the canvas settles at is framed for. Null while the
-	 * canvas size is not followed.
+	 * Full screen has been entered or left since the reader last moved the view, so each new size
+	 * the canvas settles at is framed for.
 	 */
-	reframeFrom: ViewSize | null;
+	followingSize: boolean;
 }
 
 /**
  * What happened to the view:
- * - `framed`: the map framed itself — an arrangement, a tidy-up, a reframe.
+ * - `framed`: the map framed itself for a canvas of `size` — an arrangement, a tidy-up, a reframe.
  * - `navigated`: the reader moved the view — a drag, a pinch, the wheel, the keyboard.
- * - `screenChanged`: full screen was entered or left, the canvas still at `size`.
- * - `resized`: the canvas has taken `size`.
+ * - `screenChanged`: full screen was entered or left, the canvas last measured at `size`.
+ * - `resized`: the canvas has measured itself at `size`.
  */
 export type ViewEvent =
-	| { kind: 'framed' }
+	| { kind: 'framed'; size: ViewSize }
 	| { kind: 'navigated' }
 	| { kind: 'screenChanged'; size: ViewSize }
 	| { kind: 'resized'; size: ViewSize };
 
-/** A fresh canvas: its view is the one it framed itself, and nothing waits. */
-export const FOLLOWING: ViewFollow = { navigated: false, reframeFrom: null };
+/** A fresh canvas: nothing framed yet, and no size followed. */
+export const FOLLOWING: ViewFollow = { navigated: false, framedFor: null, followingSize: false };
 
 const sameSize = (a: ViewSize, b: ViewSize) => a.width === b.width && a.height === b.height;
 const empty = (size: ViewSize) => size.width <= 0 || size.height <= 0;
 
+/** Whether the map, framed for `state.framedFor`, now stands on a canvas of another size. */
+const outgrown = (state: ViewFollow, size: ViewSize) =>
+	state.framedFor !== null && !empty(size) && !sameSize(state.framedFor, size);
+
 /**
  * The state after `event`, and whether the map is to be framed afresh now. After a full-screen
- * change, every resize that gives the canvas a new, non-empty size reframes — the canvas resizes
- * after the change, not with it, can take its new size in more than one step (the width before
- * the height), and also reports resizes that changed nothing. The reader moving the view stops
+ * change, the map is framed for every size the canvas measures that it was not framed for —
+ * at once if the canvas measured its new size before the change was reported, else on the
+ * resize that follows. The canvas also reports resizes that changed nothing, and can take its
+ * new size in more than one step (the width before the height). The reader moving the view stops
  * it until the next full-screen change.
  */
 export function followView(
@@ -55,20 +61,14 @@ export function followView(
 ): { state: ViewFollow; reframe: boolean } {
 	switch (event.kind) {
 		case 'framed':
-			return { state: { ...state, navigated: false }, reframe: false };
+			return { state: { ...state, navigated: false, framedFor: event.size }, reframe: false };
 		case 'navigated':
-			return { state: { navigated: true, reframeFrom: null }, reframe: false };
-		case 'screenChanged':
-			return {
-				state: { ...state, reframeFrom: state.navigated ? null : event.size },
-				reframe: false
-			};
-		case 'resized': {
-			const from = state.reframeFrom;
-			if (!from || empty(event.size) || sameSize(from, event.size)) {
-				return { state, reframe: false };
-			}
-			return { state: { ...state, reframeFrom: event.size }, reframe: true };
+			return { state: { ...state, navigated: true, followingSize: false }, reframe: false };
+		case 'screenChanged': {
+			if (state.navigated) return { state: { ...state, followingSize: false }, reframe: false };
+			return { state: { ...state, followingSize: true }, reframe: outgrown(state, event.size) };
 		}
+		case 'resized':
+			return { state, reframe: state.followingSize && outgrown(state, event.size) };
 	}
 }
