@@ -21,7 +21,7 @@
 	/*
 	 * Where a person's new picture comes from (docs/02 §2.14, §2.24.6): a file, a group photo of
 	 * one of their circles (docs/02 §2.14), or — with Immich — one of their
-	 * latest Immich photos, the same signed list the strip under the gallery shows. A person not
+	 * latest Immich photos, the same signed list the Photos card shows. A person not
 	 * linked yet gets *Find in Immich* instead, the face picker; once linked, their photos are here.
 	 * Every pick hands back to `AvatarUploader`, which opens the cropper; this only lists.
 	 */

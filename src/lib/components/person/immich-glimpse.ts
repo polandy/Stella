@@ -1,8 +1,8 @@
 import type { ImmichGlimpse } from '$lib/immich/strip';
 
 /*
- * A page of a linked person's latest photos from Immich, with signed URLs, as the strip under the
- * gallery and the picture's chooser both ask for it (docs/02 §2.24.3, §2.24.6). Null when it
+ * A page of a linked person's latest photos from Immich, with signed URLs, as the Photos card
+ * and the picture's chooser both ask for it (docs/02 §2.24.3, §2.24.6). Null when it
  * could not be had, which both take quietly: the Photos card's line already says what is wrong.
  */
 export async function fetchGlimpse(

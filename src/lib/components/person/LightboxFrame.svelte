@@ -5,7 +5,7 @@
 	 * The person page's lightbox (docs/02 §2.14), without what is in it: a modal <dialog> over a
 	 * dimmed backdrop that closes on a click beside the picture or on Escape. Modal, so focus moves
 	 * in and stays there; whoever opened it hands focus back on the way out (docs/05 §5.9). The
-	 * gallery's photos and the Immich strip's open in the same frame.
+	 * gallery's photos and Immich's open in the same frame, one lightbox for both.
 	 */
 	interface Props {
 		/** The dialog's accessible name. */

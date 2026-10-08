@@ -1,3 +1,5 @@
+import type { CardPhoto } from '$lib/contacts/photo-card';
+import type { GlimpsePhoto } from '$lib/immich/strip';
 import type { RelationshipCategory } from '$lib/relationships/categories';
 import type { Exclusion } from '$lib/relationships/exclusions';
 import type { RelationshipTypeOption } from '$lib/relationships/type-options';
@@ -27,3 +29,6 @@ export type ExclusionOf = (
 	targetId: string | null | undefined,
 	exceptId?: string | null
 ) => Exclusion | null;
+
+/** A photo on the Photos card — a gallery photo or one from Immich — with where it lives. */
+export type CardEntry = CardPhoto<PersonPageData['gallery'][number], GlimpsePhoto>;
