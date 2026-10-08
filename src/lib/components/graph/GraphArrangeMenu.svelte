@@ -1,5 +1,5 @@
 <script lang="ts">
-	import MenuButton from '$lib/components/MenuButton.svelte';
+	import MenuButton from '$lib/components/ui/MenuButton.svelte';
 	import { useTranslate } from '$lib/i18n/context.svelte';
 	import { ARRANGEMENTS, type ArrangementKey } from '$lib/graph/layout/arrangements';
 	import { MENU_ITEM } from './menu-item';

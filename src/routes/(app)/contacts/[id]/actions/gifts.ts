@@ -9,7 +9,7 @@ import {
 } from '$lib/commands/payloads';
 import type { CommandType } from '$lib/commands/commands';
 import { occasionFromForm } from '$lib/gifts/gifts';
-import { contactSectionPath } from '$lib/contacts/sections';
+import { contactSectionPath } from '$lib/people/sections';
 import { ulidGenerator } from '$lib/server/id';
 import { systemClock } from '$lib/server/clock';
 import { fail, redirect, type RequestEvent } from '@sveltejs/kit';

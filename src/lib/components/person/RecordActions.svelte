@@ -1,7 +1,7 @@
 <script lang="ts">
-	import FormError from '$lib/components/FormError.svelte';
-	import Button from '$lib/components/Button.svelte';
-	import PersonSearchSelect from '$lib/components/PersonSearchSelect.svelte';
+	import FormError from '$lib/components/ui/FormError.svelte';
+	import Button from '$lib/components/ui/Button.svelte';
+	import PersonSearchSelect from '$lib/components/people/PersonSearchSelect.svelte';
 	import { enhance } from '$app/forms';
 	import { page } from '$app/state';
 	import { useI18n } from '$lib/i18n/context.svelte';

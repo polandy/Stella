@@ -1,6 +1,6 @@
 <script lang="ts">
-	import FormError from '$lib/components/FormError.svelte';
-	import Button from '$lib/components/Button.svelte';
+	import FormError from '$lib/components/ui/FormError.svelte';
+	import Button from '$lib/components/ui/Button.svelte';
 	import { useTranslate } from '$lib/i18n/context.svelte';
 	import type { ActionData } from './$types';
 

@@ -1,10 +1,10 @@
 <script lang="ts">
 	import { reveal } from '$lib/motion/motion.svelte';
 	import { enhance } from '$app/forms';
-	import Button from '$lib/components/Button.svelte';
-	import Icon from '$lib/components/Icon.svelte';
-	import RemoveButton from '$lib/components/RemoveButton.svelte';
-	import Section from '$lib/components/Section.svelte';
+	import Button from '$lib/components/ui/Button.svelte';
+	import Icon from '$lib/components/ui/Icon.svelte';
+	import RemoveButton from '$lib/components/ui/RemoveButton.svelte';
+	import Section from '$lib/components/ui/Section.svelte';
 	import { categoryVar } from '$lib/design/tokens';
 	import { useTranslate } from '$lib/i18n/context.svelte';
 	import { RELATIONSHIP_CATEGORIES } from '$lib/relationships/categories';

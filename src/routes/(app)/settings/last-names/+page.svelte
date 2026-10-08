@@ -1,8 +1,8 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
-	import Button from '$lib/components/Button.svelte';
-	import EmptyState from '$lib/components/EmptyState.svelte';
-	import Icon from '$lib/components/Icon.svelte';
+	import Button from '$lib/components/ui/Button.svelte';
+	import EmptyState from '$lib/components/ui/EmptyState.svelte';
+	import Icon from '$lib/components/ui/Icon.svelte';
 	import LastNameChoices from '$lib/components/surnames/LastNameChoices.svelte';
 	import LastNameFields from '$lib/components/surnames/LastNameFields.svelte';
 	import LastNameGroup from '$lib/components/surnames/LastNameGroup.svelte';

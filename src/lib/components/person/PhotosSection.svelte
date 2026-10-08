@@ -1,15 +1,15 @@
 <script lang="ts">
-	import Button from '$lib/components/Button.svelte';
-	import Icon from '$lib/components/Icon.svelte';
-	import KeptItem from '$lib/components/KeptItem.svelte';
-	import MenuButton from '$lib/components/MenuButton.svelte';
-	import Section from '$lib/components/Section.svelte';
+	import Button from '$lib/components/ui/Button.svelte';
+	import Icon from '$lib/components/ui/Icon.svelte';
+	import KeptItem from '$lib/components/pwa/KeptItem.svelte';
+	import MenuButton from '$lib/components/ui/MenuButton.svelte';
+	import Section from '$lib/components/ui/Section.svelte';
 	import { invalidateAll } from '$app/navigation';
 	import type { JsonCommand } from '$lib/commands/commands';
-	import { cardShape } from '$lib/contacts/empty-cards';
-	import { sectionAnchor } from '$lib/contacts/sections';
+	import { cardShape } from '$lib/people/empty-cards';
+	import { sectionAnchor } from '$lib/people/sections';
 	import { useI18n } from '$lib/i18n/context.svelte';
-	import { processImage } from '$lib/image/process-image';
+	import { processImage } from '$lib/media/process-image';
 	import { isKept, type KeptOf, type KeptPhoto } from '$lib/pwa/outbox';
 	import { outbox } from '$lib/pwa/outbox.svelte';
 	import { reachability } from '$lib/pwa/reachability.svelte';

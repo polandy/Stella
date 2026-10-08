@@ -1,16 +1,16 @@
 <script lang="ts">
 	import { reveal } from '$lib/motion/motion.svelte';
-	import FormError from '$lib/components/FormError.svelte';
+	import FormError from '$lib/components/ui/FormError.svelte';
 	import { enhance } from '$app/forms';
 	import { goto } from '$app/navigation';
-	import Button from '$lib/components/Button.svelte';
+	import Button from '$lib/components/ui/Button.svelte';
 	import { keepable } from '$lib/pwa/keepable';
-	import DateField from '$lib/components/DateField.svelte';
+	import DateField from '$lib/components/ui/DateField.svelte';
 	import { onMount, untrack } from 'svelte';
 	import type { ActionData, PageData } from './$types';
 
-	import Icon from '$lib/components/Icon.svelte';
-	import KnowThemBy from '$lib/components/KnowThemBy.svelte';
+	import Icon from '$lib/components/ui/Icon.svelte';
+	import KnowThemBy from '$lib/components/people/KnowThemBy.svelte';
 	import { useTranslate } from '$lib/i18n/context.svelte';
 	import type { MessageKey } from '$lib/i18n/translate';
 	import { wantsSomethingToKnowThemBy } from '$lib/people/new-person';

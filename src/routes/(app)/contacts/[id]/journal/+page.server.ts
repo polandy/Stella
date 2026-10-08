@@ -24,7 +24,7 @@ import { systemClock } from '$lib/server/clock';
 import { ulidGenerator } from '$lib/server/id';
 
 import type { Actions, PageServerLoad } from './$types';
-import { TranslatableError } from '$lib/errors/translatable';
+import { TranslatableError } from '$lib/i18n/translatable';
 import { say, translator } from '$lib/server/i18n/say';
 import type { MessageKey } from '$lib/i18n/translate';
 import { todayFor } from '$lib/dates/today';

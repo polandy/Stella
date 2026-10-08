@@ -1,12 +1,12 @@
 <script lang="ts">
-	import Button from '$lib/components/Button.svelte';
-	import FormError from '$lib/components/FormError.svelte';
-	import PhotoCropper from '$lib/components/PhotoCropper.svelte';
+	import Button from '$lib/components/ui/Button.svelte';
+	import FormError from '$lib/components/ui/FormError.svelte';
+	import PhotoCropper from '$lib/components/ui/PhotoCropper.svelte';
 	import { invalidateAll } from '$app/navigation';
 	import { useTranslate } from '$lib/i18n/context.svelte';
-	import type { CropRect } from '$lib/image/crop';
-	import { loadFullPicture } from '$lib/image/send-cut';
-	import { sendImmichPhoto } from '$lib/image/send-immich-photo';
+	import type { CropRect } from '$lib/media/crop';
+	import { loadFullPicture } from '$lib/media/send-cut';
+	import { sendImmichPhoto } from '$lib/media/send-immich-photo';
 	import { useRemovals } from '$lib/undo/context.svelte';
 
 	/*

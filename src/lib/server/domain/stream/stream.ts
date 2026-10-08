@@ -1,6 +1,6 @@
 import type { NoticeContent } from '../../../stream/notices';
 import type { Visibility, Viewer } from '../../access/visibility';
-import type { InteractionKind } from '../../../interactions/kinds';
+import type { InteractionKind } from '../../../story/interaction-kinds';
 import {
 	NO_FILTER,
 	STREAM_KINDS,

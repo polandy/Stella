@@ -1,9 +1,9 @@
 <script lang="ts">
-	import Button from '$lib/components/Button.svelte';
-	import DateField from '$lib/components/DateField.svelte';
-	import FormError from '$lib/components/FormError.svelte';
-	import KeptChip from '$lib/components/KeptChip.svelte';
-	import RemoveButton from '$lib/components/RemoveButton.svelte';
+	import Button from '$lib/components/ui/Button.svelte';
+	import DateField from '$lib/components/ui/DateField.svelte';
+	import FormError from '$lib/components/ui/FormError.svelte';
+	import KeptChip from '$lib/components/pwa/KeptChip.svelte';
+	import RemoveButton from '$lib/components/ui/RemoveButton.svelte';
 	import { enhance } from '$app/forms';
 	import { isImportantDateKind } from '$lib/dates/kinds';
 	import { dayLabel } from '$lib/dates/labels';

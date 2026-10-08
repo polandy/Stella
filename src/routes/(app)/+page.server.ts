@@ -22,7 +22,7 @@ import type { Actions, PageServerLoad } from './$types';
 import { say, translator } from '$lib/server/i18n/say';
 import type { MessageKey } from '$lib/i18n/translate';
 import { LINK_PARAM, linkHintHref } from '$lib/stream/link-hint';
-import { welcomeSteps } from '$lib/onboarding/welcome';
+import { welcomeSteps } from '$lib/stream/welcome';
 import { todayFor } from '$lib/dates/today';
 
 /*

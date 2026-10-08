@@ -53,7 +53,7 @@ first to find somebody, so there the page opens on the person search.
   nobody but the member — a heading, one line on what Stella is for, and up to three steps as
   full-width link rows (icon in `--primary-soft`, title, one-line hint, chevron).
 - A done step keeps its place, muted, with a tick in `--success`.
-- When the first-run card shows and which steps are done come from `$lib/onboarding/welcome`;
+- When the first-run card shows and which steps are done come from `$lib/stream/welcome`;
   `WelcomeCard` only draws it. It replaces the stream's own empty state rather than stacking
   on top of it.
 

@@ -1,12 +1,12 @@
 import * as v from 'valibot';
-import { CONTACT_FIELD_KINDS } from '../contact-fields/kinds';
+import { CONTACT_FIELD_KINDS } from '../people/contact-fields';
 import { IMPORTANT_DATE_KINDS } from '../dates/kinds';
 import { GIFT_STATES } from '../gifts/gifts';
-import { isTakenAt } from '../image/taken-at';
-import { INTERACTION_KINDS } from '../interactions/kinds';
+import { isTakenAt } from '../media/taken-at';
+import { INTERACTION_KINDS } from '../story/interaction-kinds';
 import { GENDERS } from '../people/gender';
 import { CURRENT_RELATIONSHIP_STATUS, RELATIONSHIP_STATUSES } from '../relationships/status';
-import { TAG_COLORS } from '../tags/colors';
+import { TAG_COLORS } from '../design/tag-colors';
 import type { CommandType } from './commands';
 
 /*

@@ -1,6 +1,6 @@
 import type { Clock } from '../../clock';
 import type { IdGenerator } from '../../id';
-import { TAG_COLORS, type TagColor } from '../../../tags/colors';
+import { TAG_COLORS, type TagColor } from '../../../design/tag-colors';
 
 /*
  * Tag use-cases (docs/02 §2.8). Tags are household-global labels; assignments to contacts

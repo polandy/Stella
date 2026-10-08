@@ -1,13 +1,13 @@
 <script lang="ts">
-	import Swap from '$lib/components/Swap.svelte';
-	import Avatar from '$lib/components/Avatar.svelte';
-	import Button from '$lib/components/Button.svelte';
-	import DateField from '$lib/components/DateField.svelte';
-	import Icon from '$lib/components/Icon.svelte';
-	import PersonSearchSelect from '$lib/components/PersonSearchSelect.svelte';
+	import Swap from '$lib/components/ui/Swap.svelte';
+	import Avatar from '$lib/components/ui/Avatar.svelte';
+	import Button from '$lib/components/ui/Button.svelte';
+	import DateField from '$lib/components/ui/DateField.svelte';
+	import Icon from '$lib/components/ui/Icon.svelte';
+	import PersonSearchSelect from '$lib/components/people/PersonSearchSelect.svelte';
 	import { enhance } from '$app/forms';
 	import { goto } from '$app/navigation';
-	import { proposeHref } from '$lib/contacts/propose';
+	import { proposeHref } from '$lib/people/propose';
 	import { useI18n } from '$lib/i18n/context.svelte';
 	import type { SelectablePerson } from '$lib/people/select';
 	import { keepable } from '$lib/pwa/keepable';

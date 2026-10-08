@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
-	import Button from '$lib/components/Button.svelte';
+	import Button from '$lib/components/ui/Button.svelte';
 	import { useI18n } from '$lib/i18n/context.svelte';
 	import { reachability } from '$lib/pwa/reachability.svelte';
 	import { useHeldNames } from '$lib/surnames/held-names.svelte';

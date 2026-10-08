@@ -1,4 +1,4 @@
-import { avatarAccent } from '../../avatar';
+import { avatarAccent } from '../../people/avatar';
 import { thumbnailUrl } from '../../media/urls';
 import type { EdgeBundle, RoleGroup, RoleGrouping } from '../model/role-groups';
 import { nodeDiameter } from '../layout/legibility';

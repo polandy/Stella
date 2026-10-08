@@ -1,6 +1,6 @@
 import { error, fail, redirect } from '@sveltejs/kit';
 import { requireViewer } from '$lib/server/auth/guards';
-import { contactSectionPath } from '$lib/contacts/sections';
+import { contactSectionPath } from '$lib/people/sections';
 import { ContactGoneError } from '$lib/server/domain/contacts/require-visible';
 import { ignoreMatch } from '$lib/server/domain/immich/ignores';
 import {

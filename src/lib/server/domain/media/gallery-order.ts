@@ -1,4 +1,4 @@
-import { datedAt } from '../../../image/taken-at';
+import { datedAt } from '../../../media/taken-at';
 
 /*
  * The order a person's photos are shown in (docs/02 §2.14) — one rule, so the gallery and

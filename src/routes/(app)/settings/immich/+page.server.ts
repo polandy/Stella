@@ -1,7 +1,7 @@
 import { error, fail } from '@sveltejs/kit';
 import { requireUser, requireViewer } from '$lib/server/auth/guards';
 import * as v from 'valibot';
-import { TranslatableError } from '$lib/errors/translatable';
+import { TranslatableError } from '$lib/i18n/translatable';
 import type { MessageKey } from '$lib/i18n/translate';
 import type { ImmichFailure } from '$lib/server/domain/immich/gateway';
 import { getContact } from '$lib/server/domain/contacts/contacts';

@@ -1,8 +1,8 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
 	import type { SubmitFunction } from '@sveltejs/kit';
-	import Button from '$lib/components/Button.svelte';
-	import Combobox from '$lib/components/Combobox.svelte';
+	import Button from '$lib/components/ui/Button.svelte';
+	import Combobox from '$lib/components/ui/Combobox.svelte';
 	import { useTranslate } from '$lib/i18n/context.svelte';
 	import { planLastName } from '$lib/surnames/plan';
 

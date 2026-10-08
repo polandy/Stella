@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { dayLabel } from '$lib/dates/labels';
 	import { useI18n } from '$lib/i18n/context.svelte';
-	import { photoDay } from '$lib/image/taken-at';
+	import { photoDay } from '$lib/media/taken-at';
 	import { thumbnailUrl } from '$lib/media/urls';
 	import type { PersonPageData } from './types';
 

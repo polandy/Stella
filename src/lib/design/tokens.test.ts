@@ -13,8 +13,8 @@ import {
 	TINT_PERCENT
 } from './tokens';
 import { CIRCLE_COLORS } from '../server/domain/circles/circles';
-import { TAG_COLORS } from '../tags/colors';
-import { INTERACTION_KINDS, KIND_PRESENTATION } from '../interactions/kinds';
+import { TAG_COLORS } from './tag-colors';
+import { INTERACTION_KINDS, KIND_PRESENTATION } from '../story/interaction-kinds';
 
 describe('accents', () => {
 	it('names each accent as its own semantic token', () => {

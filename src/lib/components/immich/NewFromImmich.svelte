@@ -5,15 +5,15 @@
 
 <script lang="ts">
 	import { invalidateAll } from '$app/navigation';
-	import Button from '$lib/components/Button.svelte';
-	import EmptyState from '$lib/components/EmptyState.svelte';
+	import Button from '$lib/components/ui/Button.svelte';
+	import EmptyState from '$lib/components/ui/EmptyState.svelte';
 	import NewcomerRow, {
 		type Added,
 		type Assigned,
 		type NewcomerView
 	} from '$lib/components/immich/NewcomerRow.svelte';
 	import { useI18n } from '$lib/i18n/context.svelte';
-	import { sendImmichFace } from '$lib/image/send-immich-face';
+	import { sendImmichFace } from '$lib/media/send-immich-face';
 	import { reveal } from '$lib/motion/motion.svelte';
 	import type { SelectablePerson } from '$lib/people/select';
 	import { useRemovals } from '$lib/undo/context.svelte';

@@ -5,7 +5,7 @@
  * is read by a pure parser below and anything that is not what it claims is refused.
  */
 
-import { isTakenAt } from '../../../image/taken-at';
+import { isTakenAt } from '../../../media/taken-at';
 
 /** A server version, as `GET /api/server/version` reports it. */
 export interface ImmichVersion {

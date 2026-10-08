@@ -1,9 +1,9 @@
-import { TranslatableError } from '../../../errors/translatable';
+import { TranslatableError } from '../../../i18n/translatable';
 import { phrase, type Phrase } from '../../../i18n/phrase';
 import type { Visibility, Viewer } from '../../access/visibility';
 import type { Clock } from '../../clock';
 import type { IdGenerator } from '../../id';
-import { INTERACTION_KINDS, type InteractionKind } from '../../../interactions/kinds';
+import { INTERACTION_KINDS, type InteractionKind } from '../../../story/interaction-kinds';
 import { FULL_DATE_SHAPE, isRealCalendarDay } from '../../../dates/calendar';
 
 /*
@@ -15,7 +15,7 @@ import { FULL_DATE_SHAPE, isRealCalendarDay } from '../../../dates/calendar';
  * to keep in sync.
  */
 
-/** The kinds a touchpoint can have; shared with the UI (see `$lib/interactions/kinds`). */
+/** The kinds a touchpoint can have; shared with the UI (see `$lib/story/interaction-kinds`). */
 export { INTERACTION_KINDS, type InteractionKind };
 
 /** The member logging an interaction, with the visibility their entries default to. */

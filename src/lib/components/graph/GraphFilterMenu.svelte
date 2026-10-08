@@ -1,6 +1,6 @@
 <script lang="ts">
-	import MenuButton from '$lib/components/MenuButton.svelte';
-	import { filterSummary } from '$lib/menu/menu';
+	import MenuButton from '$lib/components/ui/MenuButton.svelte';
+	import { filterSummary } from '$lib/ui/menu';
 	import { categoryVar } from '$lib/design/tokens';
 	import { useTranslate } from '$lib/i18n/context.svelte';
 	import { DENSITIES, type Density } from '$lib/graph/layout/density';

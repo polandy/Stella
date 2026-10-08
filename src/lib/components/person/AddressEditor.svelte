@@ -1,8 +1,8 @@
 <script lang="ts">
-	import Button from '$lib/components/Button.svelte';
-	import FormError from '$lib/components/FormError.svelte';
-	import KeptChip from '$lib/components/KeptChip.svelte';
-	import RemoveButton from '$lib/components/RemoveButton.svelte';
+	import Button from '$lib/components/ui/Button.svelte';
+	import FormError from '$lib/components/ui/FormError.svelte';
+	import KeptChip from '$lib/components/pwa/KeptChip.svelte';
+	import RemoveButton from '$lib/components/ui/RemoveButton.svelte';
 	import { enhance } from '$app/forms';
 	import { useI18n } from '$lib/i18n/context.svelte';
 	import { keepable } from '$lib/pwa/keepable';

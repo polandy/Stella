@@ -1,5 +1,5 @@
 import type { RelationshipAddManyPayload } from '../../../commands/commands';
-import { TranslatableError } from '../../../errors/translatable';
+import { TranslatableError } from '../../../i18n/translatable';
 import { phrase, type Phrase } from '../../../i18n/phrase';
 import { addRelationshipChecked, type AddCheckedDeps } from './add-checked';
 import type { RelationshipRepository } from './relationships';
