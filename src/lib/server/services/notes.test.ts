@@ -127,12 +127,15 @@ describe('createServices', () => {
 				...config,
 				immich: null,
 				sessionSecret: 'a-session-secret',
+				updateCheck: false,
+				updateFeedUrl: '',
 				mediaDir: '/nonexistent/stella-media'
 			},
 			db,
 			sqlite,
 			clock,
-			ids
+			ids,
+			version: '1.0.0'
 		});
 		expect(services.notes.noteDeps.notes).toBe(services.notes.notes);
 		expect(services.notes.noteDeps.clock).toBe(clock);

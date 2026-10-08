@@ -132,11 +132,19 @@ describe('createServices', () => {
 			}
 		};
 		const services = createServices({
-			config: { ...config, immich: null, sessionSecret: 'a-session-secret', mediaDir },
+			config: {
+				...config,
+				immich: null,
+				sessionSecret: 'a-session-secret',
+				updateCheck: false,
+				updateFeedUrl: '',
+				mediaDir
+			},
 			db,
 			sqlite,
 			clock,
-			ids
+			ids,
+			version: '1.0.0'
 		});
 		expect(services.archive.importArchiveDeps.media).toBe(services.media.store);
 		expect(services.archive.importDeps.clock).toBe(clock);

@@ -186,11 +186,19 @@ describe('createServices', () => {
 			}
 		};
 		const services = createServices({
-			config: { ...config, immich: null, sessionSecret: 'a-session-secret', mediaDir },
+			config: {
+				...config,
+				immich: null,
+				sessionSecret: 'a-session-secret',
+				updateCheck: false,
+				updateFeedUrl: '',
+				mediaDir
+			},
 			db,
 			sqlite,
 			clock,
-			ids
+			ids,
+			version: '1.0.0'
 		});
 		const { store } = services.media;
 		expect(services.media.galleryDeps.media).toBe(store);

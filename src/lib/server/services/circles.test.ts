@@ -196,12 +196,15 @@ describe('createServices', () => {
 				...config,
 				immich: null,
 				sessionSecret: 'a-session-secret',
+				updateCheck: false,
+				updateFeedUrl: '',
 				mediaDir: '/nonexistent/stella-media'
 			},
 			db,
 			sqlite,
 			clock,
-			ids
+			ids,
+			version: '1.0.0'
 		});
 		expect<unknown>(services.circles.cutDeps.contacts).toBe(services.people.contacts);
 		expect(services.circles.circlePhotoDeps.media).toBe(services.media.store);

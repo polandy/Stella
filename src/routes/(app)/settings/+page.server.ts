@@ -4,7 +4,6 @@ import { say, translator } from '$lib/server/i18n/say';
 import { setSelfContact, UnknownSelfContactError } from '$lib/server/domain/household/self-contact';
 import { countKnownByAFirstNameOnly } from '$lib/server/domain/contacts/contacts';
 import { countLastNames } from '$lib/server/domain/contacts/last-names';
-import { getUpdateCheck } from '$lib/server/services';
 import { APP_VERSION } from '$lib/version';
 import type { Actions, PageServerLoad } from './$types';
 
@@ -18,7 +17,7 @@ import type { Actions, PageServerLoad } from './$types';
  */
 export const load: PageServerLoad = async ({ locals }) => {
 	const user = requireUser(locals);
-	const check = getUpdateCheck();
+	const check = locals.services.release.updateCheck;
 	const viewer = requireViewer(locals);
 	// How many are left to tidy up, so the card says whether opening it is worth it.
 	const [firstNameOnlyCount, lastNames] = await Promise.all([

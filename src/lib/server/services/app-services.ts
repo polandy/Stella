@@ -7,6 +7,7 @@ import { createMediaServices, type MediaServices, type MediaWiring } from './med
 import { createNoteServices, type NoteServices, type NoteWiring } from './notes';
 import { createPeopleServices, type PeopleServices, type PeopleWiring } from './people';
 import { createRecordServices, type RecordServices, type RecordWiring } from './records';
+import { createReleaseServices, type ReleaseServices, type ReleaseWiring } from './release';
 import {
 	createRelationshipServices,
 	type RelationshipServices,
@@ -36,6 +37,7 @@ export interface AppServices {
 	archive: ArchiveServices;
 	/** Null when this instance has no Immich: the feature then appears nowhere. */
 	immich: ImmichServices | null;
+	release: ReleaseServices;
 }
 
 /**
@@ -56,7 +58,8 @@ export type ServicesWiring = AuthWiring &
 	RecordWiring &
 	HouseholdWiring &
 	Omit<ArchiveWiring, 'media'> &
-	Omit<ImmichWiring, 'contacts' | 'contactDeps' | 'contextReads' | 'avatarDeps'>;
+	Omit<ImmichWiring, 'contacts' | 'contactDeps' | 'contextReads' | 'avatarDeps'> &
+	ReleaseWiring;
 
 /** Wires every grouped context. Pure assembly: no I/O beyond what the adapters do when used. */
 export function createServices(wiring: ServicesWiring): AppServices {
@@ -90,6 +93,7 @@ export function createServices(wiring: ServicesWiring): AppServices {
 		contextReads: people.personContextDeps.contextReads,
 		avatarDeps: media.avatarDeps
 	});
+	const release = createReleaseServices(wiring);
 	return {
 		auth,
 		people,
@@ -101,6 +105,7 @@ export function createServices(wiring: ServicesWiring): AppServices {
 		records,
 		household,
 		archive,
-		immich
+		immich,
+		release
 	};
 }

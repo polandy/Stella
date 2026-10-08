@@ -140,7 +140,9 @@ describe('the composition root', () => {
 			'AddFromImmichDeps',
 			'ImmichIgnoreDeps',
 			'UseImmichPhotoDeps',
-			'ImmichLinkDeps'
+			'ImmichLinkDeps',
+			// The release context (AR-01, twelfth slice): read `locals.services.release`.
+			'UpdateCheck'
 		];
 		const retired = new RegExp(`\\bget(?:${factories.join('|')})\\b`);
 		expect(files.filter((path) => retired.test(source(path)))).toEqual([]);

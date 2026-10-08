@@ -122,12 +122,15 @@ describe('createServices', () => {
 				...config,
 				immich: null,
 				sessionSecret: 'a-session-secret',
+				updateCheck: false,
+				updateFeedUrl: '',
 				mediaDir: '/nonexistent/stella-media'
 			},
 			db,
 			sqlite,
 			clock,
-			ids
+			ids,
+			version: '1.0.0'
 		});
 		expect(services.household.memberDeps.members).toBe(services.household.members);
 		expect(services.household.searchDeps.search).toBe(services.household.search);
