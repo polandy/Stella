@@ -46,7 +46,8 @@ export function createDrizzleGraphRepository(
 				deceased: contact.isDeceased,
 				avatarPhotoId: contact.avatarPhotoId,
 				gender: contact.gender,
-				birthDate: contact.birthDate
+				birthDate: contact.birthDate,
+				firstName: contact.firstName
 			})
 			.from(contact)
 			.where(contactVisibleTo(viewer))
@@ -59,7 +60,8 @@ export function createDrizzleGraphRepository(
 			deceased: r.deceased === 1,
 			avatarPhotoId: r.avatarPhotoId,
 			// Only how a role word is worded travels, not the gender as somebody typed it.
-			wording: variantFor(r)
+			wording: variantFor(r),
+			shortName: r.firstName?.trim() || r.label
 		}));
 
 		const fromC = alias(contact, 'from_c');

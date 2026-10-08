@@ -21,7 +21,9 @@ card (§5.5.2); its styling is §5.8.
   a bar over their children, right angles throughout, each person's role towards the centre
   under their name instead of names on the lines — Labels starts off in the tree and its switch
   turns the names on there as anywhere, each on its child's own drop — the centre softly
-  lit, and everyone outside the family on a shelf beneath under a quiet *Outside the family*.
+  lit, and everyone outside the family on a shelf beneath under a quiet *Outside the family*,
+  each with a caption: a friend of the centre's their role, anybody else whom on the map they
+  hang off (*Friend of Sandra +1*), a circle its people on the map (*Lena, Noah +2*).
   Each family stands as one block — siblings together, a person's father's family left, their
   mother's right — so no couple's bar crosses another's. Only the tree's own lines are drawn:
   a grandparent, cousin or sibling line the bars already draw is left off, and friends,

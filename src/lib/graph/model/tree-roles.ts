@@ -24,8 +24,15 @@ function rank(edge: GraphEdge): number {
 	return 2;
 }
 
-/** What `otherId` is to the centre by this one line, or null when the line names nothing. */
-function roleBy(edge: GraphEdge, centerId: string, otherWording: KinVariant): TreeRole | null {
+/**
+ * What the far end of `edge` is to `centerId` by this one line, or null when the line names
+ * nothing: a worked-out term, or an entered built-in tie read from its far end.
+ */
+export function roleBy(
+	edge: GraphEdge,
+	centerId: string,
+	otherWording: KinVariant
+): TreeRole | null {
 	if (edge.kind === 'kinship' && edge.kin) {
 		// The line names its source's role towards its target (`kinship-edges.ts`).
 		return edge.source === centerId

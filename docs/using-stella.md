@@ -887,6 +887,9 @@ the one in the middle — *Father*, *Grandmother*, *Cousin*, *Friend* — so the
 carry no names there at first. Switch *Labels* on in the Filter menu to name them too — each
 child's line is named just above that child; leaving the tree brings back your usual setting. Friends, colleagues and circles stand
 on a shelf beneath, under *Outside the family*, without lines — tap someone to see theirs.
+Under each of them it says who they are: *Friend* for a friend of the person in the middle,
+*Friend of Sandra* for somebody's friend (with *+1* when they know more people on the map),
+and under a circle who on the map belongs to it (*Lena, Noah +2*).
 Each family stands together, the father's side on the left and the mother's on the right.
 Opening up someone's connections in the tree lays the whole tree out again, so the newcomers
 land in their own generation (or on the shelf) and everyone glides to their new place. *Connection path* traces how two people are linked, and it always answers

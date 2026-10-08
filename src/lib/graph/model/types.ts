@@ -35,6 +35,11 @@ export interface GraphNode {
 	 * record — so the family tree can call them Father rather than Parent (docs/05 §5.8).
 	 */
 	wording?: KinVariant;
+	/**
+	 * Person only: the first name a caption calls them by ("Friend of Sandra"), or the full
+	 * name where no first name is on record (docs/05 §5.8).
+	 */
+	shortName?: string;
 }
 
 export interface GraphEdge {

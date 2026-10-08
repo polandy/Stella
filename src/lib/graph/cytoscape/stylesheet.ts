@@ -184,9 +184,12 @@ export function buildStylesheet(p: Palette, options: StylesheetOptions = {}): Cy
 				'border-color': p.membership,
 				'border-width': 2,
 				width: 'label',
-				height: 28,
+				// In the tree a circle on the shelf says under its name who on the map is in it
+				// (`shelf-captions.ts`): two lines, so the pill grows to them.
+				height: tree ? 'label' : 28,
 				padding: '8px',
-				label: 'data(label)',
+				label: tree ? nameAndRole : 'data(label)',
+				...(tree ? { 'text-wrap': 'wrap' } : {}),
 				color: p.fg,
 				'font-size': 11,
 				'font-weight': 600,

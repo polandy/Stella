@@ -185,6 +185,21 @@ describe('buildStylesheet as the family tree', () => {
 		});
 	});
 
+	it('writes under a circle on the shelf who on the map is in it, the pill growing to fit', () => {
+		const circle = rulesFor(tree, 'node.circle')[0];
+		const label = circle.label as (ele: unknown) => string;
+
+		expect(label(element({ label: 'Turnverein', role: 'Lena, Noah +2' }))).toBe(
+			'Turnverein\nLena, Noah +2'
+		);
+		expect(circle).toMatchObject({
+			'text-wrap': 'wrap',
+			height: 'label',
+			'min-zoomed-font-size': LABEL_MIN_ZOOMED_FONT_SIZE
+		});
+		expect(rulesFor(free, 'node.circle')[0]).toMatchObject({ label: 'data(label)', height: 28 });
+	});
+
 	it('writes names alone in every other arrangement', () => {
 		expect(rulesFor(free, 'node.person')[0]).toMatchObject({
 			label: 'data(label)',

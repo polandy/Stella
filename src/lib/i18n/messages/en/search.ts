@@ -56,6 +56,12 @@ export const search = {
 	'graph.arrange.tree': 'Tree',
 	'graph.arrange.tree.hint': 'One row per generation, the oldest at the top',
 	'graph.tree.outsideFamily': 'Outside the family',
+	// Under somebody on the shelf: what they are to the person they hang off.
+	'graph.tree.tieOf': (p: { role: string; name: string }) => `${p.role} of ${p.name}`,
+	// A household's own type, by its own words ("Godparent of") and the person.
+	'graph.tree.ownWords': (p: { words: string; name: string }) => `${p.words} ${p.name}`,
+	'graph.tree.namePair': (p: { first: string; second: string }) => `${p.first}, ${p.second}`,
+	'graph.tree.andMore': (p: { text: string; count: number }) => `${p.text} +${p.count}`,
 	'graph.arrange.circles': 'By circle',
 	'graph.arrange.circles.hint': 'Each circle with its members around it',
 	'graph.loading': 'Loading the graph…',

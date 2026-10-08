@@ -8,6 +8,8 @@
 	import { relationshipRowLabel } from '$lib/relationships/labels';
 	import { roleTermLabel } from '$lib/relationships/roles';
 	import { rolesTowards } from '$lib/graph/model/tree-roles';
+	import { shelfCaptions } from '$lib/graph/model/shelf-captions';
+	import { captionWords } from '$lib/graph/caption-words';
 	import { familyLinksAmong } from '$lib/graph/model/generations';
 	import { hiddenInTree } from '$lib/graph/model/tree-shown';
 	import {
@@ -247,9 +249,15 @@
 			graph.nodes.some((n) => n.id === centerId && n.kind === 'person')
 	);
 	const roles = $derived(rolesInstead && centerId ? rolesTowards(graph, centerId) : null);
+	const shortNameOf = (id: string) => {
+		const node = graph.nodes.find((n) => n.id === id);
+		return node?.shortName ?? node?.label ?? id;
+	};
 	const roleOf = (id: string): string | undefined => {
 		const role = roles?.get(id);
-		return role ? (roleTermLabel(t, role.term, role.variant) ?? undefined) : undefined;
+		if (role) return roleTermLabel(t, role.term, role.variant) ?? undefined;
+		const caption = shelf?.get(id);
+		return caption ? captionWords(t, caption, shortNameOf) : undefined;
 	};
 
 	const visible = $derived(applyFilters(model, buildFilters()));
@@ -280,6 +288,10 @@
 		return model;
 	});
 	const drawnVisible = $derived(drawn === model ? visible : applyFilters(drawn, buildFilters()));
+	// The shelf beneath says who is who too: "Friend of Sandra", a circle's people on the map.
+	const shelf = $derived(
+		rolesInstead && centerId ? shelfCaptions(graph, drawnVisible, centerId) : null
+	);
 	/*
 	 * The derived lines whose chain of entered links is on the map only repeat it, so they stay
 	 * off unless the reader asks for every one of them (docs/02 §2.7). Read without the
