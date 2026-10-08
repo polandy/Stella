@@ -47,6 +47,7 @@ function contextOf(importer: string, specifier: string): string | null {
 function contextEdges(files: Record<string, string>): Map<string, string[]> {
 	const edges = new Map<string, string[]>();
 	for (const [path, code] of Object.entries(files)) {
+		// `.` is the importer's own folder, so this is the context the file belongs to.
 		const from = contextOf(path, '.');
 		if (from === null) continue;
 		for (const specifier of specifiers(code)) {

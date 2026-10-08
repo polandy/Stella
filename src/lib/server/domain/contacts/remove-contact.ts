@@ -20,6 +20,7 @@ export interface PhotoFileCascade {
 	delete(path: string): Promise<void>;
 }
 
+/** Deleting a person also unlinks the bytes of their photos (docs/02 §2.2). */
 export interface DeleteContactDeps {
 	contacts: Pick<ContactRepository, 'findByIdVisibleTo' | 'deleteVisibleTo'>;
 	photoFiles: PhotoFileCascade;
@@ -27,6 +28,7 @@ export interface DeleteContactDeps {
 	clock: Clock;
 }
 
+/** Merging reads both records, then moves and logs everything in the repository's one write. */
 export interface MergeContactDeps {
 	contacts: Pick<ContactRepository, 'readForMerge' | 'mergeVisibleTo'>;
 	ids: IdGenerator;
