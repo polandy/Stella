@@ -76,22 +76,33 @@ export function createDrizzleHeldGiftRepository(
 		},
 
 		async replaceNote(noteId, made) {
-			db.transaction((tx) => {
-				tx.insert(gift).values(made).onConflictDoNothing().run();
+			return db.transaction((tx) => {
+				const written = tx
+					.insert(gift)
+					.values(made)
+					.onConflictDoNothing()
+					.returning({ id: gift.id })
+					.all();
 				tx.delete(note).where(eq(note.id, noteId)).run();
+				return written.length;
 			});
 		},
 
 		async replaceTouchpoint(interactionId, made) {
-			db.transaction((tx) => {
-				if (made.length > 0)
-					tx.insert(gift)
-						.values([...made])
-						.onConflictDoNothing()
-						.run();
+			return db.transaction((tx) => {
+				const written =
+					made.length === 0
+						? []
+						: tx
+								.insert(gift)
+								.values([...made])
+								.onConflictDoNothing()
+								.returning({ id: gift.id })
+								.all();
 				tx.delete(interaction)
 					.where(and(eq(interaction.id, interactionId), eq(interaction.kind, GIFT_KIND)))
 					.run();
+				return written.length;
 			});
 		}
 	};

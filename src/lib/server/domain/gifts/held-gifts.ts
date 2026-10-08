@@ -47,10 +47,13 @@ export interface HeldGiftTouchpoint {
 export interface HeldGiftsPort {
 	giftNotes(): Promise<HeldGiftNote[]>;
 	giftTouchpoints(): Promise<HeldGiftTouchpoint[]>;
-	/** Writes the gift unless its id is already there, and removes the note — together. */
-	replaceNote(noteId: string, gift: Gift): Promise<void>;
+	/**
+	 * Writes the gift unless its id is already there, and removes the note — together. Answers
+	 * how many gifts it wrote: 0 when the gift was already there.
+	 */
+	replaceNote(noteId: string, gift: Gift): Promise<number>;
 	/** Writes the gifts whose ids are not there yet, and removes the touchpoint — together. */
-	replaceTouchpoint(interactionId: string, gifts: readonly Gift[]): Promise<void>;
+	replaceTouchpoint(interactionId: string, gifts: readonly Gift[]): Promise<number>;
 }
 
 export interface ConvertHeldGiftsDeps {
@@ -65,6 +68,7 @@ export interface HeldGiftsReport {
 	notesConverted: number;
 	notesLeft: number;
 	touchpointsConverted: number;
+	/** Gifts new to the database; one already there from an earlier run is not counted. */
 	giftsWritten: number;
 }
 
@@ -87,7 +91,7 @@ export async function convertHeldGifts(deps: ConvertHeldGiftsDeps): Promise<Held
 			);
 			continue;
 		}
-		await deps.held.replaceNote(note.id, {
+		report.giftsWritten += await deps.held.replaceNote(note.id, {
 			id: note.id,
 			contactId: note.contactId,
 			createdBy: note.createdBy,
@@ -98,7 +102,6 @@ export async function convertHeldGifts(deps: ConvertHeldGiftsDeps): Promise<Held
 			updatedAt: note.updatedAt
 		});
 		report.notesConverted++;
-		report.giftsWritten++;
 	}
 
 	for (const touch of await deps.held.giftTouchpoints()) {
@@ -114,9 +117,8 @@ export async function convertHeldGifts(deps: ConvertHeldGiftsDeps): Promise<Held
 				updatedAt: touch.updatedAt
 			})
 		);
-		await deps.held.replaceTouchpoint(touch.id, gifts);
+		report.giftsWritten += await deps.held.replaceTouchpoint(touch.id, gifts);
 		report.touchpointsConverted++;
-		report.giftsWritten += gifts.length;
 	}
 
 	if (report.notesConverted + report.touchpointsConverted > 0) {

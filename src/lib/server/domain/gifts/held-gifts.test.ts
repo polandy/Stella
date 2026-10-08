@@ -18,7 +18,9 @@ function fakePort(notes: HeldGiftNote[], touchpoints: HeldGiftTouchpoint[]) {
 	const gifts = new Map<string, Gift>();
 	const state = { notes: [...notes], touchpoints: [...touchpoints], gifts };
 	const write = (list: readonly Gift[]) => {
-		for (const g of list) if (!gifts.has(g.id)) gifts.set(g.id, g);
+		const fresh = list.filter((g) => !gifts.has(g.id));
+		for (const g of fresh) gifts.set(g.id, g);
+		return fresh.length;
 	};
 	const port: HeldGiftsPort = {
 		async giftNotes() {
@@ -28,12 +30,12 @@ function fakePort(notes: HeldGiftNote[], touchpoints: HeldGiftTouchpoint[]) {
 			return [...state.touchpoints];
 		},
 		async replaceNote(noteId, gift) {
-			write([gift]);
 			state.notes = state.notes.filter((n) => n.id !== noteId);
+			return write([gift]);
 		},
 		async replaceTouchpoint(interactionId, list) {
-			write(list);
 			state.touchpoints = state.touchpoints.filter((t) => t.id !== interactionId);
+			return write(list);
 		}
 	};
 	return { port, state };
@@ -168,8 +170,9 @@ describe('convertHeldGifts', () => {
 		state.notes.push(note());
 		state.touchpoints.push(touchpoint());
 
-		await run(port).report();
+		const again = await run(port).report();
 
+		expect(again).toMatchObject({ notesConverted: 1, touchpointsConverted: 1, giftsWritten: 0 });
 		expect(state.gifts.size).toBe(2);
 		expect(state.notes).toEqual([]);
 		expect(state.touchpoints).toEqual([]);

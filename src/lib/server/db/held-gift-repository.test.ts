@@ -119,8 +119,9 @@ describe('held-gift repository', () => {
 		db.update(schema.gift).set({ title: 'Teapot, cast iron' }).run();
 		db.insert(schema.note).values(noteRow('monica:gift:1', '🎁 **Teapot** — idea')).run();
 
-		await convert();
+		const { report } = await convert();
 
+		expect(report).toMatchObject({ notesConverted: 1, giftsWritten: 0 });
 		expect(db.select({ title: schema.gift.title }).from(schema.gift).all()).toEqual([
 			{ title: 'Teapot, cast iron' }
 		]);
