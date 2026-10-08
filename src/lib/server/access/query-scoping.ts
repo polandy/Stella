@@ -1,5 +1,5 @@
 import { and, eq, isNull, or, type AnyColumn, type SQL } from 'drizzle-orm';
-import { circle, contact } from '../db/schema';
+import { activityLog, circle, contact } from '../db/schema';
 import type { Viewer } from './visibility';
 
 /*
@@ -7,8 +7,8 @@ import type { Viewer } from './visibility';
  * (docs/03 §3.7, docs/08 §8.3). It produces Drizzle WHERE conditions so list queries
  * are filtered in the database instead of loading everything and filtering in memory.
  *
- * These builders are the *adapter*; `visibility.ts` is the domain rule. The integration
- * test asserts the two stay equivalent for every viewer.
+ * These builders are the *adapter*; `visibility.ts` is the domain rule.
+ * `visibility-parity.test.ts` asserts the two stay equivalent for every viewer.
  */
 
 /** The contact columns an access decision depends on (works for the base table or an alias). */
@@ -116,5 +116,16 @@ export function circlePhotoColumnsVisibleTo(
 	return and(
 		circleColumnsVisibleTo(viewer, circleColumns),
 		or(eq(record.visibility, 'shared'), eq(record.createdBy, viewer.id))
+	)!;
+}
+
+/**
+ * Condition for an `activity_log` entry being visible: same household, and either shared or
+ * the viewer's own action. The entry is scoped by itself — what it describes may be gone.
+ */
+export function activityVisibleTo(viewer: Viewer): SQL {
+	return and(
+		eq(activityLog.householdId, viewer.householdId),
+		or(eq(activityLog.visibility, 'shared'), eq(activityLog.actorId, viewer.id))
 	)!;
 }

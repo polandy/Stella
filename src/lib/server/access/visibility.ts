@@ -103,3 +103,21 @@ export function canViewCirclePhoto(viewer: Viewer, photo: CirclePhotoAccess): bo
 	if (!canViewCircle(viewer, photo.circle)) return false;
 	return photo.visibility === 'shared' || photo.ownerId === viewer.id;
 }
+
+/**
+ * An activity-log entry (docs/03 §activity_log). It outlives what it describes — a deleted or
+ * merged contact, an export that never had a row — so there is no record left to scope through;
+ * the entry carries the visibility the affected record had, and `actorId` is its author.
+ */
+export interface ActivityAccess {
+	householdId: HouseholdId;
+	/** `actor_id` — the household member who did it. */
+	actorId: UserId;
+	visibility: Visibility;
+}
+
+/** An activity entry is visible within its household when shared, else only to its actor. */
+export function canViewActivity(viewer: Viewer, entry: ActivityAccess): boolean {
+	if (entry.householdId !== viewer.householdId) return false;
+	return entry.visibility === 'shared' || entry.actorId === viewer.id;
+}
