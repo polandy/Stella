@@ -248,7 +248,8 @@ the person, and that never leaves the page. Keeping the record tidy (archive, me
 - Moments kept on the device while Stella is out of reach stand above the timeline, beside
   the kept logs.
 - A given or received **gift** (docs/02 §2.25) is an item of its own, read from the gift: the
-  gift icon and `--kind-gift` like the touchpoint kind *Gift*, but labelled *Given* or
+  gift icon and `--kind-gift` (theirs alone since the touchpoint kind *Gift* went, docs/02
+  §2.25.4), labelled *Given* or
   *Received*, its title a link to the Gifts card and its occasion beneath. It offers no
   remove button — a gift is changed and removed on its card.
 

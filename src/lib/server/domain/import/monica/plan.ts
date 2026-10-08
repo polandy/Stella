@@ -5,6 +5,8 @@ import type { BirthDatePrecision, NewContact } from '../../contacts/contacts';
 import { deriveDisplayName } from '../../../../people/display-name';
 import type { NewInteraction } from '../../interactions/interactions';
 import type { NewNote } from '../../notes/notes';
+import type { Gift } from '../../gifts/gifts';
+import { giftFromMonica } from '../../../../gifts/conversion';
 import type { RelationshipCategory } from '../../../../relationships/categories';
 import { CURRENT_RELATIONSHIP_STATUS } from '../../../../relationships/status';
 import type { NewRelationship } from '../../relationships/relationships';
@@ -98,6 +100,7 @@ export interface ImportCounts {
 	relationshipTypes: number;
 	contactFields: number;
 	notes: number;
+	gifts: number;
 	interactions: number;
 	tags: number;
 	photos: number;
@@ -157,6 +160,7 @@ export interface ImportPlan {
 	relationshipTypes: ImportedRelationshipType[];
 	relationships: NewRelationship[];
 	notes: NewNote[];
+	gifts: Gift[];
 	interactions: NewInteraction[];
 	tags: NewTag[];
 	contactTags: { contactId: string; tagId: string }[];
@@ -402,7 +406,32 @@ export function planMonicaImport(exp: SourceExport, opts: ImportOptions): Import
 	};
 	for (const n of exp.notes)
 		noteFor(`${prefix}:note:${n.id}`, n.contactId, null, n.body, n.isFavorited);
+	// A Monica gift becomes a gift record (docs/02 §2.25.4) under the id its note had, so a
+	// note left from an earlier import and its gift are one record. One the conversion refuses
+	// — given without a day, a status Monica does not have — stays the note it always was.
+	const gifts: Gift[] = [];
 	for (const g of exp.gifts) {
+		const made = giftFromMonica({
+			name: g.name,
+			status: g.status,
+			day: g.date,
+			comment: g.comment,
+			url: g.url
+		});
+		if (made.ok) {
+			if (!liveIds.has(g.contactId)) {
+				skip('gift', 'belongsToDeletedContact');
+				continue;
+			}
+			gifts.push({
+				id: `${prefix}:gift:${g.id}`,
+				contactId: contactId(g.contactId),
+				...stamp,
+				...made.gift,
+				occasion: null
+			});
+			continue;
+		}
 		const meta = [g.status, g.date ? wording.day(g.date) : null].filter(Boolean).join(', ');
 		const lines = [
 			`🎁 **${g.name}**${meta ? ` — ${meta}` : ''}`,
@@ -535,6 +564,7 @@ export function planMonicaImport(exp: SourceExport, opts: ImportOptions): Import
 		relationshipTypes,
 		relationships,
 		notes,
+		gifts,
 		interactions,
 		tags,
 		contactTags,
@@ -546,6 +576,7 @@ export function planMonicaImport(exp: SourceExport, opts: ImportOptions): Import
 				relationshipTypes: relationshipTypes.length,
 				contactFields: contactFields.length,
 				notes: notes.length,
+				gifts: gifts.length,
 				interactions: interactions.length,
 				tags: tags.length,
 				photos: photos.length

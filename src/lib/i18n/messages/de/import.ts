@@ -23,7 +23,7 @@ export const importer: ImportMessages = {
 	'import.startOver': 'Von vorn beginnen',
 	'import.importNow': 'Jetzt importieren',
 	'import.done': (p) =>
-		`${p.contacts} Menschen, ${p.relationships} Beziehungen, ${p.notes} Notizen, ${p.interactions} Kontakte und ${p.tags} Schlagwörter importiert.`,
+		`${p.contacts} Menschen, ${p.relationships} Beziehungen, ${p.notes} Notizen, ${p.gifts} Geschenke, ${p.interactions} Kontakte und ${p.tags} Schlagwörter importiert.`,
 	'import.nothingTwice': 'Alles war schon da, es wurde nichts doppelt geschrieben.',
 	'import.photos': (p) => `Fotos (${p.count})`,
 	'import.photos.embedded':
@@ -44,6 +44,7 @@ export const importer: ImportMessages = {
 	'import.count.contactFields': 'Kontaktangaben',
 	'import.count.relationships': 'Beziehungen',
 	'import.count.relationshipTypes': 'Beziehungsarten',
+	'import.count.gifts': 'Geschenke',
 	'import.count.notes': 'Notizen',
 	'import.count.interactions': 'Kontakte',
 	'import.count.tags': 'Schlagwörter',

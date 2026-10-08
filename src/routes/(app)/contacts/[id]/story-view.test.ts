@@ -132,7 +132,7 @@ describe('toStoryItem, touchpoints', () => {
 	it('carries the kind, title and participants the timeline draws', () => {
 		const view = toStoryItem(
 			interactionItem({
-				kind: 'gift',
+				kind: 'letter',
 				participants: [{ contactId: 'c2', displayName: 'Markus', avatarPhotoId: null }]
 			}),
 			context()
@@ -140,7 +140,7 @@ describe('toStoryItem, touchpoints', () => {
 
 		expect(view.kind).toBe('interaction');
 		if (view.kind !== 'interaction') throw new Error('expected an interaction item');
-		expect(view.interactionKind).toBe('gift');
+		expect(view.interactionKind).toBe('letter');
 		expect(view.title).toBe('Quick call');
 		expect(view.participants).toEqual([{ contactId: 'c2', displayName: 'Markus' }]);
 	});

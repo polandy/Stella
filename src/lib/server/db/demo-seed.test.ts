@@ -162,6 +162,38 @@ describe('seedDemoData', () => {
 		expect(db.select().from(schema.household).all()).toHaveLength(1);
 	});
 
+	it('notes the story’s gifts as gift records, not as touchpoints of a kind that is gone', () => {
+		seed(db);
+		const kinds = db.select({ kind: schema.interaction.kind }).from(schema.interaction).all();
+		expect(kinds.length).toBeGreaterThan(0);
+		expect(kinds.some((k) => (k.kind as string) === 'gift')).toBe(false);
+		const hans = db
+			.select({ title: schema.gift.title, state: schema.gift.state })
+			.from(schema.gift)
+			.where(eq(schema.gift.contactId, 'demo-c-hans'))
+			.all();
+		expect(hans).toEqual([{ title: 'Brought him the biography he mentioned', state: 'given' }]);
+	});
+
+	it('gives those gifts the ids their touchpoints had, so an older demo converted at start is not seeded twice', () => {
+		seed(db);
+		const ids = db
+			.select({ id: schema.gift.id })
+			.from(schema.gift)
+			.all()
+			.map((g) => g.id)
+			.filter((id) => id.startsWith('demo-touch-'));
+		// The ids an earlier seed gave its gift touchpoints: the index among the touchpoints.
+		expect(ids.sort()).toEqual(['demo-touch-hans-4', 'demo-touch-peter-9']);
+		expect(
+			db
+				.select({ id: schema.interaction.id })
+				.from(schema.interaction)
+				.all()
+				.some((i) => i.id === 'demo-touch-hans-5')
+		).toBe(true);
+	});
+
 	it('has people naming each other, so the demo shows a passive reference at all', () => {
 		seed(db);
 

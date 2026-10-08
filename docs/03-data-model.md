@@ -21,7 +21,7 @@ Detail stays in the feature doc the term points to.
 | **journal entry** | A dated diary record about one person, by one author, for one day (docs/02 §2.20). The UI calls every journal entry a *moment*. | `journal_entry`, `journal_mention`, `domain/journal/`, `/contacts/[id]/journal` | diary entry, post |
 | **moment** | The UI's word for a journal entry; also Home's one-sentence capture (*What happened?*) that writes one, landing in the journal of the first person it @-mentions (docs/02 §2.22.1). | a `journal_entry` row; the capture is `domain/moments/` | — (not a table of its own) |
 | **note** | A reference fact about a person, pinnable, not dated by what it is about (docs/02 §2.5). Not a journal entry. | `note`, `note_mention`, `domain/notes/` | memo, comment |
-| **touchpoint** | A logged contact with a person — met, call, video, message, letter, gift — on a day, with optional participants (docs/02 §2.6). Buttons say *Log contact* / *Log interaction*. | `interaction`, `interaction_participant`, `domain/interactions/`, `lib/story/interaction-kinds.ts` | activity, event |
+| **touchpoint** | A logged contact with a person — met, call, video, message, letter — on a day, with optional participants (docs/02 §2.6). Buttons say *Log contact* / *Log interaction*. | `interaction`, `interaction_participant`, `domain/interactions/`, `lib/story/interaction-kinds.ts` | activity, event |
 | **gift** | A present for one person — an idea, given or received (docs/02 §2.25). An idea and the gift it became are one record. | `gift`, `domain/gifts/`, `lib/gifts/`, `components/person/Gift*.svelte` | present, wish |
 | **story** | One person's timeline: their journal entries, touchpoints and given or received gifts in one order (docs/02 §2.23). Its heading on the person page reads *Activity*. | `domain/story/`, `lib/story/`, `/contacts/[id]/story` | feed, history |
 | **stream** | The household's newest-first read of what the family did, on Home (docs/02 §2.22.2): a query over the tables that still exist, plus the activity rows for what no table can report. | `domain/stream/`, `lib/stream/`, `db/stream-repository.ts` | feed, *What's new* (the older name, docs/02 §2.11) |
@@ -412,7 +412,7 @@ self-reference (`contact_id` = the entry's own `contact_id`) is **not** stored. 
 | contact_id | text fk → contact.id | the "subject" contact |
 | created_by | text fk → user.id | |
 | visibility | text | `'shared' \| 'private'` |
-| kind | text | `'met' \| 'call' \| 'video' \| 'message' \| 'letter' \| 'gift' \| 'other'` |
+| kind | text | `'met' \| 'call' \| 'video' \| 'message' \| 'letter' \| 'other'` — the former `'gift'` rows became `gift` records (docs/02 §2.25.4) |
 | title | text null | |
 | description | text null | |
 | happened_at | text | ISO date `YYYY-MM-DD` — the day it happened; the timeline orders by it, then `created_at` |

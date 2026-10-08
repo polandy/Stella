@@ -32,6 +32,8 @@
 				return t('archive.warning.circleMemberMissing', { name: warning.name });
 			case 'imagesMissing':
 				return t('archive.warning.imagesMissing', { count: warning.count });
+			case 'giftsConverted':
+				return t('archive.warning.giftsConverted', { count: warning.count });
 			default:
 				return t(`archive.warning.${warning.code}` as 'archive.warning.noteWithoutText');
 		}

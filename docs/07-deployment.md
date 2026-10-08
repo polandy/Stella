@@ -359,7 +359,23 @@ docker compose up -d
 ```
 
 Migrations run automatically on startup and are forward-only. Take a backup (7.9)
-before major version bumps. Check `docs/06-roadmap.md` / release notes for breaking
+before major version bumps.
+
+After the migrations, a start may convert data the new version reads differently, and says so
+in the server log (`docker compose logs stella`). The gift records (docs/02 §2.25.4) are such a
+step: the first start of a version with them turns Monica gift notes and gift touchpoints into
+gifts and logs one line —
+
+```
+gifts: converted 41 Monica gift notes and 3 gift touchpoints into 45 gifts; 2 notes left as they are
+```
+
+— plus one line per note it leaves alone, naming the note and the person
+(`gifts: left the Monica gift note monica:gift:17 on /contacts/<id> as it is (edited)`). Those
+notes stay notes; the reason is `edited` (written in since the import), `unparseable` (its first
+line no longer reads as the import wrote it), `noDay` (given or received without a day),
+`unknownStatus` or `noTitle`. They are named again at each start until somebody moves them onto
+the Gifts card by hand or removes them. Check `docs/06-roadmap.md` / release notes for breaking
 changes.
 
 ## 7.11 Running without SSO (local-only)

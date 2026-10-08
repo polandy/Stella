@@ -18,6 +18,7 @@ import type { IdGenerator } from '../id';
 import { createFileMediaStore } from '../media/file-store';
 import { createServices } from './app-services';
 import { createArchiveServices, type ArchiveWiring } from './archive';
+import { createGiftServices } from './gifts';
 import type { AuthConfig } from './auth';
 
 /*
@@ -54,7 +55,19 @@ beforeEach(async () => {
 			locale: 'en'
 		}
 	);
-	wiring = { db, sqlite, clock, ids, media: createFileMediaStore(mediaDir) };
+	wiring = {
+		db,
+		sqlite,
+		clock,
+		ids,
+		media: createFileMediaStore(mediaDir),
+		convertHeldGifts: createGiftServices({
+			db,
+			clock,
+			ids,
+			contacts: createDrizzleContactRepository(db)
+		}).convertHeldGifts
+	};
 });
 
 afterEach(async () => {
@@ -102,6 +115,87 @@ describe('createArchiveServices', () => {
 		expect(report.household).toBe('Pollari');
 		expect(report.skipped.contact).toBe(1);
 		expect(report.added.contact ?? 0).toBe(0);
+	});
+});
+
+describe('restoring an archive from before gift records', () => {
+	it('makes gifts of its gift notes and gift touchpoints, on their old days', async () => {
+		const archive = createArchiveServices(wiring);
+		const anna = await addPerson('Anna');
+		const ben = await addPerson('Ben');
+		db.insert(schema.note)
+			.values({
+				id: 'monica:gift:7',
+				contactId: anna,
+				createdBy: admin.id,
+				title: 'Gift',
+				body: '🎁 **Teapot** — offered, 12 October 2023\n\nCast iron',
+				createdAt: 1_000,
+				updatedAt: 1_000
+			})
+			.run();
+		db.insert(schema.interaction)
+			.values({
+				id: 'touch-1',
+				contactId: anna,
+				createdBy: admin.id,
+				kind: 'gift' as 'other',
+				title: 'Birthday wine',
+				happenedAt: '2024-05-02'
+			})
+			.run();
+		db.insert(schema.interactionParticipant)
+			.values({ interactionId: 'touch-1', contactId: ben })
+			.run();
+		const exported = await exportHousehold(archive.archiveDeps, actorOf(admin));
+		// The household lost them since; the older archive brings them back.
+		db.delete(schema.note).run();
+		db.delete(schema.interaction).run();
+
+		const report = await importArchive(
+			archive.importArchiveDeps,
+			actorOf(admin),
+			{ documentText: serialiseDocument(exported.document), media: new Map() },
+			'en'
+		);
+
+		expect(report.warnings).toContainEqual({ code: 'giftsConverted', count: 3 });
+		const gifts = db
+			.select({
+				id: schema.gift.id,
+				contactId: schema.gift.contactId,
+				state: schema.gift.state,
+				title: schema.gift.title,
+				givenOn: schema.gift.givenOn
+			})
+			.from(schema.gift)
+			.orderBy(schema.gift.id)
+			.all();
+		expect(gifts).toEqual([
+			{
+				id: 'monica:gift:7',
+				contactId: anna,
+				state: 'given',
+				title: 'Teapot',
+				givenOn: '2023-10-12'
+			},
+			{
+				id: 'touch-1',
+				contactId: anna,
+				state: 'given',
+				title: 'Birthday wine',
+				givenOn: '2024-05-02'
+			},
+			{
+				id: `touch-1:${ben}`,
+				contactId: ben,
+				state: 'given',
+				title: 'Birthday wine',
+				givenOn: '2024-05-02'
+			}
+		]);
+		expect(db.select().from(schema.note).all()).toEqual([]);
+		expect(db.select().from(schema.interaction).all()).toEqual([]);
 	});
 });
 

@@ -67,9 +67,9 @@
 	const days = $derived(groupStoryByDay(shown));
 
 	/*
-	 * A given or received gift (docs/02 §2.25) reads like a touchpoint: the gift icon and the
-	 * accent the story already gives gifts, and what happened as its label. The touchpoint kind
-	 * *Gift* keeps its own label, *Gift*, so the two never read as one another.
+	 * A given or received gift (docs/02 §2.25) reads like a touchpoint: the gift icon and
+	 * `--kind-gift` — the gift's alone since the touchpoint kind went (§2.25.4) — and what
+	 * happened as its label.
 	 */
 	const GIFT_PRESENTATION = {
 		given: { label: 'gifts.story.given', icon: 'gift', accent: 'var(--kind-gift)' },

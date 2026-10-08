@@ -605,6 +605,11 @@ const IMPORTANT_DATES: readonly ImportantDateSeed[] = [
 interface StorySeed {
 	person: string;
 	daysAgo: number;
+	/**
+	 * A touchpoint's kind, or `gift` for a gift given that day — once the touchpoint kind the
+	 * gift record replaced (docs/02 §2.25.4). It keeps its place in this list so every seeded
+	 * id stays what it was, and an older demo database converted at start is not seeded twice.
+	 */
 	kind?: 'met' | 'call' | 'video' | 'message' | 'letter' | 'gift';
 	text: string;
 	/** Written by the household's second member, so the story shows two names (docs/02 §2.23). */
@@ -956,18 +961,31 @@ export function seedDemoData(
 		db.insert(journalMention).values(journalMentions).onConflictDoNothing().run();
 	}
 
+	const dated = STORY.flatMap((s) => (s.kind === undefined ? [] : [{ ...s, kind: s.kind }])).map(
+		(s, i) => ({
+			id: `demo-touch-${s.person}-${i}`,
+			kind: s.kind,
+			contactId: cid(s.person),
+			createdBy: s.byMember ? memberId : authorId,
+			day: dayBefore(now, s.daysAgo),
+			title: s.text,
+			createdAt: now - s.daysAgo * DAY_MS,
+			updatedAt: now - s.daysAgo * DAY_MS
+		})
+	);
 	db.insert(interaction)
 		.values(
-			STORY.filter((s) => s.kind !== undefined).map((s, i) => ({
-				id: `demo-touch-${s.person}-${i}`,
-				contactId: cid(s.person),
-				createdBy: s.byMember ? memberId : authorId,
-				kind: s.kind!,
-				happenedAt: dayBefore(now, s.daysAgo),
-				title: s.text,
-				createdAt: now - s.daysAgo * DAY_MS,
-				updatedAt: now - s.daysAgo * DAY_MS
-			}))
+			dated.flatMap(({ kind, day, ...row }) =>
+				kind === 'gift' ? [] : [{ ...row, kind, happenedAt: day }]
+			)
+		)
+		.onConflictDoNothing()
+		.run();
+	db.insert(gift)
+		.values(
+			dated.flatMap(({ kind, day, ...row }) =>
+				kind === 'gift' ? [{ ...row, state: 'given' as const, givenOn: day }] : []
+			)
 		)
 		.onConflictDoNothing()
 		.run();

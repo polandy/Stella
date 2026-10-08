@@ -3,6 +3,7 @@ import type { Clock } from '../../clock';
 import type { IdGenerator } from '../../id';
 import { activityRecord, type ActivityOf } from '../activity/activity';
 import type { Locale } from '../../../i18n/locales';
+import type { HeldGiftsReport } from '../gifts/held-gifts';
 import type { MediaStore } from '../media/avatars';
 import { DOCUMENT_ENTRY, MEDIA_PREFIX, isSafeMediaPath } from './archive';
 import {
@@ -58,6 +59,11 @@ export interface ImportArchiveDeps {
 	media: Pick<MediaStore, 'read' | 'put'>;
 	clock: Clock;
 	ids: IdGenerator;
+	/**
+	 * Makes gift records of the gift notes and gift touchpoints an older archive brings back
+	 * (docs/02 §2.25.4) — the same conversion every start runs, so a restore and a start agree.
+	 */
+	convertHeldGifts: () => Promise<HeldGiftsReport>;
 }
 
 /** What the admin is told afterwards. Nothing here is guessed; it is what was written. */
@@ -125,6 +131,7 @@ export async function importArchive(
 	});
 
 	const counts = await deps.restore.applyRestore(plan);
+	const converted = await deps.convertHeldGifts();
 	const added: Record<string, number> = {};
 	const skipped: Record<string, number> = {};
 	for (const [table, outcome] of Object.entries(counts)) {
@@ -152,6 +159,9 @@ export async function importArchive(
 	}
 	if (media.missing > 0) {
 		warnings.push({ code: 'imagesMissing', count: media.missing });
+	}
+	if (converted.giftsWritten > 0) {
+		warnings.push({ code: 'giftsConverted', count: converted.giftsWritten });
 	}
 
 	await deps.restore.recordImport(

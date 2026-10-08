@@ -129,7 +129,8 @@ export const ICONS = {
 	unlink: Unlink,
 	calendar: CalendarDays,
 	shared: UsersRound,
-	// A gift not given yet, and the shop page it may link to (docs/02 §2.25).
+	// A gift — given, received, or not given yet — and the shop page it may link to (docs/02 §2.25).
+	gift: Gift,
 	idea: Lightbulb,
 	link: Link,
 	// Interaction kinds (docs/02 §2.6)
@@ -138,7 +139,6 @@ export const ICONS = {
 	video: Video,
 	message: MessageCircle,
 	letter: Mail,
-	gift: Gift,
 	other: CircleDot
 };
 

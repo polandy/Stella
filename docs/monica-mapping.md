@@ -74,7 +74,7 @@ A relationship whose end is a deleted contact is left out and reported.
 | other `contact_fields` | `contact_field` `custom` labelled with the type name |
 | `addresses` + `places` | `contact_field` `address`: "street, postal city, province, country" |
 | `notes` | `note`; `is_favorited` → pinned |
-| `gifts` | `note` titled *Gift*: "🎁 **name** — status, date", comment and URL below |
+| `gifts` | `gift` (docs/02 §2.25.4), id `<source>:gift:<id>`: `idea` → idea, `offered` → given, `received` → received; name → title, date → day, comment → note, URL → link when it is a web address (otherwise into the note). One that cannot be a gift — given or received without a date, an unknown status — stays a `note` titled *Gift*: "🎁 **name** — status, date", comment and URL below |
 | `life_events` | `note` titled *Life event*: "📅 **name** (type) — date", note below |
 | `pets` | `note` titled *Pet*: "🐾 **name**, category" |
 | `activities` + `activity_contact` | `interaction` of kind `met` on the first linked person, the others as participants; summary → title, description + "(Monica activity: type)" |

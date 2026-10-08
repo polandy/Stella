@@ -33,6 +33,9 @@ export const init: ServerInit = async () => {
 	// the server at start rather than on the first page somebody opens.
 	getConfig();
 	await Promise.all(LOCALES.map((locale) => loadCatalog(locale)));
+	// Gifts still held as Monica notes or gift touchpoints become gift records (docs/02
+	// §2.25.4) before anyone reads them; once nothing is left, this finds nothing and says nothing.
+	await getServices().gifts.convertHeldGifts();
 };
 
 export const handle: Handle = async ({ event, resolve }) => {

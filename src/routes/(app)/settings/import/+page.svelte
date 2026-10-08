@@ -251,6 +251,7 @@
 					contacts: form.inserted.contacts,
 					relationships: form.inserted.relationships,
 					notes: form.inserted.notes,
+					gifts: form.inserted.gifts,
 					interactions: form.inserted.interactions,
 					tags: form.inserted.tags
 				})}
