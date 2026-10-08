@@ -1,3 +1,4 @@
+import { dayParts, type DayParts } from '../../../dates/calendar';
 import type { ImportantDateKind } from '../../../dates/kinds';
 
 /*
@@ -58,26 +59,7 @@ export interface UpcomingOptions {
 	limit?: number;
 }
 
-interface Ymd {
-	/** Null when only the month and day are known (`--MM-DD`). */
-	year: number | null;
-	month: number;
-	day: number;
-}
-
 const DAY_MS = 86_400_000;
-const FULL_DATE = /^(\d{4})-(\d{2})-(\d{2})$/;
-const MONTH_DAY = /^--(\d{2})-(\d{2})$/;
-
-/** Parse `YYYY-MM-DD` or `--MM-DD`; anything else (a bare year, an age) has no day to land on. */
-function parseYmd(value: string): Ymd | null {
-	const full = FULL_DATE.exec(value);
-	if (full) return { year: Number(full[1]), month: Number(full[2]), day: Number(full[3]) };
-	const md = MONTH_DAY.exec(value);
-	if (md) return { year: null, month: Number(md[1]), day: Number(md[2]) };
-	return null;
-}
-
 const utc = (year: number, month: number, day: number) => Date.UTC(year, month - 1, day);
 
 const iso = (ms: number) => new Date(ms).toISOString().slice(0, 10);
@@ -86,7 +68,7 @@ const iso = (ms: number) => new Date(ms).toISOString().slice(0, 10);
  * The next occurrence of a recurring month/day on or after `from`. A 29 February date falls on
  * 1 March in a common year, so the anniversary is never silently skipped.
  */
-function nextRecurrence(source: Ymd, from: Ymd): { ms: number; year: number } {
+function nextRecurrence(source: DayParts, from: DayParts): { ms: number; year: number } {
 	for (let year = from.year!; ; year++) {
 		const ms = utc(year, source.month, source.day);
 		// `Date.UTC` rolls 29 February into 1 March in a common year, which is what we want.
@@ -106,7 +88,7 @@ export function upcomingDates(
 ): UpcomingDate[] {
 	const horizonDays = options.horizonDays ?? UPCOMING_HORIZON_DAYS;
 	const limit = options.limit ?? UPCOMING_LIMIT;
-	const from = parseYmd(today);
+	const from = dayParts(today);
 	if (!from || from.year === null) throw new Error(`Not a calendar day: ${today}`);
 	const todayMs = utc(from.year, from.month, from.day);
 
@@ -121,7 +103,7 @@ export function upcomingDates(
 		if (source.derived && source.kind === 'birthday' && explicitBirthdays.has(source.contactId)) {
 			continue;
 		}
-		const day = parseYmd(source.date);
+		const day = dayParts(source.date);
 		if (!day) continue;
 
 		let ms: number;

@@ -16,12 +16,10 @@ import {
 import { resolveCircleColor, resolveCircleKind, type NewCircle } from '../../circles/circles';
 import type { NewContactField } from '../../contact-fields/contact-fields';
 import type { NewContact } from '../../contacts/contacts';
+import { partialDateOfDay } from '../../../../dates/partial-date';
 import { deriveDisplayName } from '../../../../people/display-name';
-import {
-	canonicalEndpoints,
-	type NewRelationship,
-	type RelationshipType
-} from '../../relationships/relationships';
+import type { NewRelationship, RelationshipType } from '../../relationships/relationships';
+import { relationshipPair } from '../../../../relationships/endpoints';
 import {
 	circleIdFor,
 	fieldIdFor,
@@ -280,7 +278,9 @@ function planPeople(
 			metDate: null,
 			metPlace: null,
 			birthDate,
-			birthDatePrecision: birthDate?.startsWith('--') ? 'month_day' : 'full',
+			// The document's shape check let only a day through; no birth date stores as `full`.
+			birthDatePrecision:
+				(birthDate === null ? null : partialDateOfDay(birthDate)?.precision) ?? 'full',
 			gender: null,
 			...stamps
 		};
@@ -444,7 +444,7 @@ function planRelationships(
 			return;
 		}
 
-		const endpoints = canonicalEndpoints(from, to, type.symmetric);
+		const endpoints = relationshipPair(from, to, type.symmetric);
 		const stored = (link: Link) =>
 			sameDirection(link, endpoints.fromContactId, endpoints.toContactId, type.id);
 		if (accepted.some(stored)) {

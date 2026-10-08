@@ -1,5 +1,5 @@
 import * as v from 'valibot';
-import { FULL_DATE_SHAPE, isRealCalendarDay } from '$lib/dates/calendar';
+import { DATE_SHAPE, FULL_DATE_SHAPE, isRealCalendarDay } from '$lib/dates/calendar';
 import { CIRCLE_KINDS } from '$lib/server/domain/circles/circles';
 import { CONTACT_FIELD_KINDS } from '$lib/people/contact-fields';
 import type {
@@ -43,10 +43,7 @@ const realDay = (shape: RegExp, expected: string) =>
 		null
 	);
 const day = realDay(FULL_DATE_SHAPE, 'YYYY-MM-DD');
-const birthDate = realDay(
-	/^(\d{4}-\d{2}-\d{2}|--\d{2}-\d{2})$/,
-	'YYYY-MM-DD, or --MM-DD when the year is unknown'
-);
+const birthDate = realDay(DATE_SHAPE, 'YYYY-MM-DD, or --MM-DD when the year is unknown');
 
 const field = v.strictObject({
 	kind: v.picklist(CONTACT_FIELD_KINDS),
