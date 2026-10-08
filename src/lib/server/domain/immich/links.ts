@@ -4,7 +4,7 @@ import { immichPersonUrl } from '../../../immich/web-link';
 import type { Visibility, Viewer } from '../../access/visibility';
 import type { Clock } from '../../clock';
 import type { IdGenerator } from '../../id';
-import type { NewActivityEntry } from '../activity/activity';
+import { activityRecord, type ActivityOf } from '../activity/activity';
 import { ContactGoneError } from '../contacts/require-visible';
 import { isImmichId, type ImmichFailure, type ImmichGateway, type ImmichPerson } from './gateway';
 
@@ -14,9 +14,6 @@ import { isImmichId, type ImmichFailure, type ImmichGateway, type ImmichPerson }
  * it has no visibility of its own — whoever sees the contact sees the link. The repository
  * checks that through the access layer; this file decides what a link may point at.
  */
-
-/** The activity-log entity a link's changes are written under. */
-export const IMMICH_LINK_ENTITY = 'immich_link';
 
 /** The most faces the picker shows at once; a search narrows a longer list. */
 export const FACE_LIMIT = 60;
@@ -45,9 +42,9 @@ export interface ImmichLinkRepository {
 	 * Sets the contact's link, replacing one it had, and writes `audit` with it. `taken` when
 	 * the Immich person is already another contact's — then nothing is written at all.
 	 */
-	save(link: ImmichLink, audit: NewActivityEntry): Promise<'saved' | 'taken'>;
+	save(link: ImmichLink, audit: ActivityOf<'immich.linked'>): Promise<'saved' | 'taken'>;
 	/** Removes the contact's link and writes `audit`; false (and nothing written) when there was none. */
-	remove(contactId: string, audit: NewActivityEntry): Promise<boolean>;
+	remove(contactId: string, audit: ActivityOf<'immich.unlinked'>): Promise<boolean>;
 }
 
 /** The contact an Immich person is linked to; one person belongs to one contact. */
@@ -105,30 +102,15 @@ type Actor = { userId: string; householdId: string };
 
 const viewerOf = (actor: Actor): Viewer => ({ id: actor.userId, householdId: actor.householdId });
 
-/** What the log says; the precomputed line of docs/03 §activity_log. */
-function logEntry(
-	deps: Pick<ImmichLinkDeps, 'clock' | 'ids'>,
-	actor: Actor,
+/** Who the log says a link was made or removed for, as visible as they are. */
+const linkedPerson = (
 	contactId: string,
-	contact: { visibility: Visibility },
-	summary: string
-): NewActivityEntry {
-	return {
-		id: deps.ids.next(),
-		householdId: actor.householdId,
-		actorId: actor.userId,
-		// An update to the person, not a record of its own: the stream shows deletions, and a
-		// link removed is not a person removed (docs/02 §2.11).
-		action: 'update',
-		entityType: IMMICH_LINK_ENTITY,
-		entityId: contactId,
-		contactId,
-		// Mirrors the contact: the link of a private contact is as private as the contact.
-		visibility: contact.visibility,
-		summary,
-		createdAt: deps.clock.now()
-	};
-}
+	contact: { displayName: string; visibility: Visibility }
+) => ({
+	contactId,
+	displayName: contact.displayName,
+	visibility: contact.visibility
+});
 
 /**
  * Link a contact to an Immich person. One Immich person is one contact (docs/04 ADR-096): a
@@ -164,7 +146,7 @@ export async function linkToImmich(
 	const linkedAt = deps.clock.now();
 	const saved = await deps.links.save(
 		{ contactId, immichPersonId, linkedBy: actor.userId, linkedAt },
-		logEntry(deps, actor, contactId, contact, `linked ${contact.displayName} to Immich`)
+		activityRecord(deps, viewer, { kind: 'immich.linked', ...linkedPerson(contactId, contact) })
 	);
 	if (saved === 'taken') {
 		// Lost the race: whoever won holds the person now, and is named as above.
@@ -227,7 +209,10 @@ export async function unlinkFromImmich(
 	if (!contact) throw new ContactGoneError();
 	return deps.links.remove(
 		contactId,
-		logEntry(deps, actor, contactId, contact, `unlinked ${contact.displayName} from Immich`)
+		activityRecord(deps, viewerOf(actor), {
+			kind: 'immich.unlinked',
+			...linkedPerson(contactId, contact)
+		})
 	);
 }
 

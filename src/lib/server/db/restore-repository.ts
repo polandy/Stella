@@ -1,6 +1,10 @@
 import type { SQLQueryBindings } from 'bun:sqlite';
 import type { BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
-import type { NewActivityEntry } from '../domain/activity/activity';
+import {
+	localizedActivityEntry,
+	type ActivityOf,
+	type ActivityWording
+} from '../domain/activity/activity';
 import type { RestoreCounts, RestoreRepository } from '../domain/archive/import';
 import {
 	ForeignHouseholdError,
@@ -48,7 +52,8 @@ class UnknownColumnError extends Error {
 
 export function createDrizzleRestoreRepository(
 	db: BunSQLiteDatabase<typeof schema>,
-	sqlite: import('bun:sqlite').Database
+	sqlite: import('bun:sqlite').Database,
+	wording: ActivityWording
 ): RestoreRepository {
 	const columnsOf = (table: string): Set<string> =>
 		new Set(
@@ -177,8 +182,8 @@ export function createDrizzleRestoreRepository(
 			})();
 		},
 
-		async recordImport(entry: NewActivityEntry): Promise<void> {
-			db.insert(activityLog).values(entry).run();
+		async recordImport(entry: ActivityOf<'archive.restored'>): Promise<void> {
+			db.insert(activityLog).values(localizedActivityEntry(entry, wording)).run();
 		}
 	};
 }

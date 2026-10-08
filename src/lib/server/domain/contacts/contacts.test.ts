@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test';
-import type { NewActivityEntry } from '../activity/activity';
+import type { ActivityOf } from '../activity/activity';
 import {
 	archiveContact,
 	createContact,
@@ -528,7 +528,7 @@ describe('archiveContact / restoreContact', () => {
  */
 describe('deleteContact', () => {
 	function deletableRepo(found: Contact | null, media: DeletedContactMedia[] = []) {
-		const deleted: { id: string; audit: NewActivityEntry }[] = [];
+		const deleted: { id: string; audit: ActivityOf<'contact.deleted'> }[] = [];
 		const repo = contactRepositoryWith({
 			findByIdVisibleTo: async () => found,
 			deleteVisibleTo: async (_viewer, id, audit) => {
@@ -566,13 +566,13 @@ describe('deleteContact', () => {
 					id: 'log-1',
 					householdId: 'household-1',
 					actorId: 'user-1',
-					action: 'delete',
-					entityType: 'contact',
-					entityId: 'contact-1',
-					contactId: null,
-					visibility: 'shared',
-					summary: 'removed Hans Müller',
-					createdAt: NOW
+					createdAt: NOW,
+					event: {
+						kind: 'contact.deleted',
+						contactId: 'contact-1',
+						displayName: 'Hans Müller',
+						visibility: 'shared'
+					}
 				}
 			}
 		]);
@@ -587,7 +587,7 @@ describe('deleteContact', () => {
 			'contact-1'
 		);
 
-		expect(f.deleted[0].audit.visibility).toBe('private');
+		expect(f.deleted[0].audit.event.visibility).toBe('private');
 	});
 
 	it('removes the bytes of every photo that hung off them, after the row is gone', async () => {
@@ -640,7 +640,7 @@ describe('mergeContacts', () => {
 			keepId: string;
 			mergedId: string;
 			profile: unknown;
-			audit: NewActivityEntry;
+			audit: ActivityOf<'contact.merged'>;
 		}[] = [];
 		const repo = contactRepositoryWith({
 			readForMerge: async () => pair,
@@ -702,14 +702,15 @@ describe('mergeContacts', () => {
 			id: 'log-1',
 			householdId: 'household-1',
 			actorId: 'user-1',
-			action: 'merge',
-			entityType: 'contact',
-			entityId: 'dup',
-			// Unlike a deletion, the survivor still has a page for the item to link to.
-			contactId: 'keep',
-			visibility: 'shared',
-			summary: 'merged Hansueli M. into Hans Müller',
-			createdAt: NOW
+			createdAt: NOW,
+			event: {
+				kind: 'contact.merged',
+				keepId: 'keep',
+				mergedAwayId: 'dup',
+				keep: 'Hans Müller',
+				mergedAway: 'Hansueli M.',
+				visibility: 'shared'
+			}
 		});
 	});
 
@@ -718,7 +719,7 @@ describe('mergeContacts', () => {
 
 		await mergeContacts(deps(f.repo), viewer, 'keep', 'dup');
 
-		expect(f.merges[0].audit.visibility).toBe('private');
+		expect(f.merges[0].audit.event.visibility).toBe('private');
 	});
 
 	it('refuses a pair the viewer cannot reach, and merges nothing', async () => {

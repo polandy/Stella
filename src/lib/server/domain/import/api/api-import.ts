@@ -2,7 +2,7 @@ import type { Locale } from '../../../../i18n/locales';
 import type { Viewer, Visibility } from '../../../access/visibility';
 import type { Clock } from '../../../clock';
 import type { IdGenerator } from '../../../id';
-import type { NewActivityEntry } from '../../activity/activity';
+import { activityRecord, type ActivityOf } from '../../activity/activity';
 import type { ApiImportDocument } from './document';
 import {
 	idsNamedBy,
@@ -48,7 +48,10 @@ export interface ApiImportRepository {
 	 * unique key is already taken — so two sendings racing each other still add everything once.
 	 * Returns what was actually inserted.
 	 */
-	applyPlan(plan: ApiImportPlan, audit: NewActivityEntry | null): Promise<ApiImportCounts>;
+	applyPlan(
+		plan: ApiImportPlan,
+		audit: ActivityOf<'people.imported'> | null
+	): Promise<ApiImportCounts>;
 }
 
 export interface ApiImportDeps {
@@ -64,19 +67,9 @@ export interface ApiImportActor {
 	defaultVisibility: Visibility;
 }
 
-/**
- * The words the import writes into the household's log. The entry is data the household keeps,
- * so it is written in the language of the member whose token sent the document (docs/02 §2.19).
- */
-export interface ApiImportWording {
-	/** "imported 12 people from kindergarten-2023". */
-	imported: (people: number, source: string) => string;
-}
-
 export interface ApiImportOptions {
 	dryRun: boolean;
-	wording: ApiImportWording;
-	/** The member's language: a nickname in a shown name takes its quote marks. */
+	/** The member's language: a nickname in a shown name takes its quote marks, and the log line is written in it. */
 	locale: Locale;
 }
 
@@ -119,21 +112,20 @@ export async function importViaApi(
 	if (options.dryRun) return { ok: true, dryRun: true, added: wouldAdd, report: plan.report };
 
 	// A re-sent document adds nothing, and a log entry saying "imported 0 people" is noise.
-	const audit: NewActivityEntry | null = isEmpty(wouldAdd)
+	const audit = isEmpty(wouldAdd)
 		? null
-		: {
-				id: deps.ids.next(),
-				householdId: actor.householdId,
-				actorId: actor.userId,
-				action: 'import',
-				entityType: 'household',
-				entityId: actor.householdId,
-				contactId: null,
-				// Mirrors what was imported: a private batch is logged for its author alone.
-				visibility: document.visibility ?? actor.defaultVisibility,
-				summary: options.wording.imported(plan.contacts.length, document.source),
-				createdAt: now
-			};
+		: activityRecord(
+				deps,
+				viewer,
+				{
+					kind: 'people.imported',
+					people: plan.contacts.length,
+					source: document.source,
+					visibility: document.visibility ?? actor.defaultVisibility,
+					locale: options.locale
+				},
+				now
+			);
 	const added = await deps.imports.applyPlan(plan, audit);
 	return { ok: true, dryRun: false, added, report: plan.report };
 }

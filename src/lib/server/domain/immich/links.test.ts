@@ -1,11 +1,10 @@
 import { describe, expect, it } from 'bun:test';
 import type { Viewer } from '../../access/visibility';
-import type { NewActivityEntry } from '../activity/activity';
+import type { ActivityOf } from '../activity/activity';
 import { ContactGoneError } from '../contacts/require-visible';
 import { createFakeImmichGateway } from '../../immich/fake-gateway';
 import {
 	findImmichFaces,
-	IMMICH_LINK_ENTITY,
 	ImmichLinkRefusedError,
 	linkMatches,
 	linkToImmich,
@@ -46,7 +45,7 @@ const VISIBLE_NAMES: Record<string, string> = {
  */
 function memoryLinks() {
 	const rows = new Map<string, ImmichLink>();
-	const audit: NewActivityEntry[] = [];
+	const audit: ActivityOf<'immich.linked' | 'immich.unlinked'>[] = [];
 	const state = { raceWinner: null as ImmichLink | null };
 	const holderOf = (personId: string) =>
 		[...rows.values()].find((l) => l.immichPersonId === personId);
@@ -115,13 +114,13 @@ describe('linkToImmich', () => {
 				id: 'id-1',
 				householdId: HOUSEHOLD,
 				actorId: ANNA_USER,
-				action: 'update',
-				entityType: IMMICH_LINK_ENTITY,
-				entityId: 'c-bert',
-				contactId: 'c-bert',
-				visibility: 'shared',
-				summary: 'linked Bert Example to Immich',
-				createdAt: NOW
+				createdAt: NOW,
+				event: {
+					kind: 'immich.linked',
+					contactId: 'c-bert',
+					displayName: 'Bert Example',
+					visibility: 'shared'
+				}
 			}
 		]);
 	});
@@ -129,7 +128,7 @@ describe('linkToImmich', () => {
 	it('logs a private contact’s link as private, so the log leaks nothing', async () => {
 		const { deps, audit } = setup();
 		await linkToImmich(deps, actor, 'c-carl', CARL_ID);
-		expect(audit[0].visibility).toBe('private');
+		expect(audit[0]?.event.visibility).toBe('private');
 	});
 
 	it('replaces the link a contact already had', async () => {
@@ -308,11 +307,11 @@ describe('unlinkFromImmich', () => {
 		expect(await unlinkFromImmich(deps, actor, 'c-bert')).toBe(true);
 
 		expect(rows.size).toBe(0);
-		expect(audit[1]).toMatchObject({
-			action: 'update',
-			entityType: IMMICH_LINK_ENTITY,
+		expect(audit[1]?.event).toEqual({
+			kind: 'immich.unlinked',
 			contactId: 'c-bert',
-			summary: 'unlinked Bert Example from Immich'
+			displayName: 'Bert Example',
+			visibility: 'shared'
 		});
 	});
 

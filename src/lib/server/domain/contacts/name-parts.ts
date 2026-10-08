@@ -2,8 +2,7 @@ import type { Viewer } from '../../access/visibility';
 import type { Locale } from '../../../i18n/locales';
 import type { Clock } from '../../clock';
 import type { IdGenerator } from '../../id';
-import { renameFacts, RENAME_ENTITY } from '../../../stream/notices';
-import type { NewActivityEntry } from '../activity/activity';
+import { activityRecord, type ActivityOf } from '../activity/activity';
 import { withNameEdit, type StoredName } from '../../../people/display-name';
 import { EmptyContactNameError, type Contact } from './contacts';
 
@@ -27,7 +26,10 @@ export interface NameRepository {
 	 * Write every name of `writes` and, when given, the log entry, in **one** transaction — a
 	 * batch lands whole or not at all. The caller has already checked that each is visible.
 	 */
-	writeNames(writes: readonly NameWrite[], audit: NewActivityEntry | null): Promise<void>;
+	writeNames(
+		writes: readonly NameWrite[],
+		audit: ActivityOf<'contact.renamed' | 'lastNames.given'> | null
+	): Promise<void>;
 }
 
 export interface NameDeps {
@@ -81,19 +83,19 @@ export async function editNameParts(
 			(key) => (contact[key] ?? null) !== (next[key] ?? null)
 		) || (contact.formerName ?? null) !== formerName;
 	// One line on Home per save that changes the name, no more visible than the person is.
-	const audit: NewActivityEntry | null = changed
-		? {
-				id: deps.ids.next(),
-				householdId: viewer.householdId,
-				actorId: viewer.id,
-				action: 'update',
-				entityType: RENAME_ENTITY,
-				entityId: id,
-				contactId: id,
-				visibility: contact.visibility,
-				summary: renameFacts(contact.displayName, next.displayName),
-				createdAt: now
-			}
+	const audit = changed
+		? activityRecord(
+				deps,
+				viewer,
+				{
+					kind: 'contact.renamed',
+					contactId: id,
+					from: contact.displayName,
+					to: next.displayName,
+					visibility: contact.visibility
+				},
+				now
+			)
 		: null;
 	await deps.names.writeNames([{ id, ...next, formerName, updatedAt: now }], audit);
 	return true;

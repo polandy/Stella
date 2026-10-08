@@ -3,7 +3,7 @@ import { Database } from 'bun:sqlite';
 import { drizzle, type BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
 import { migrate } from 'drizzle-orm/bun-sqlite/migrator';
 import type { Viewer } from '../access/visibility';
-import type { NewActivityEntry } from '../domain/activity/activity';
+import type { ActivityOf } from '../domain/activity/activity';
 import * as schema from './schema';
 import { createDrizzleImmichLinkRepository } from './immich-link-repository';
 
@@ -27,17 +27,16 @@ const OTHER_PERSON = '0c2e3a4b-5d6e-4f70-9a2b-3c4d5e6f7a81';
 let db: BunSQLiteDatabase<typeof schema>;
 let repo: ReturnType<typeof createDrizzleImmichLinkRepository>;
 
-const entry = (id: string, contactId: string): NewActivityEntry => ({
-	id,
-	householdId: H,
-	actorId: ANNA,
-	action: 'update',
-	entityType: 'immich_link',
-	entityId: contactId,
-	contactId,
-	visibility: 'shared',
-	summary: 'linked',
-	createdAt: 5
+const stamp = (id: string) => ({ id, householdId: H, actorId: ANNA, createdAt: 5 });
+const person = (contactId: string) =>
+	({ contactId, displayName: 'Somebody', visibility: 'shared' }) as const;
+const entry = (id: string, contactId: string): ActivityOf<'immich.linked'> => ({
+	...stamp(id),
+	event: { kind: 'immich.linked', ...person(contactId) }
+});
+const unlinked = (id: string, contactId: string): ActivityOf<'immich.unlinked'> => ({
+	...stamp(id),
+	event: { kind: 'immich.unlinked', ...person(contactId) }
 });
 
 const link = (contactId: string, immichPersonId = PERSON) => ({
@@ -123,10 +122,10 @@ describe('createDrizzleImmichLinkRepository', () => {
 	it('removes a link with its log line, and reports a missing one without writing', async () => {
 		await repo.save(link('c-shared'), entry('a1', 'c-shared'));
 
-		expect(await repo.remove('c-shared', entry('a2', 'c-shared'))).toBe(true);
+		expect(await repo.remove('c-shared', unlinked('a2', 'c-shared'))).toBe(true);
 		expect(await repo.findForContactVisibleTo(asAnna, 'c-shared')).toBeNull();
 
-		expect(await repo.remove('c-shared', entry('a3', 'c-shared'))).toBe(false);
+		expect(await repo.remove('c-shared', unlinked('a3', 'c-shared'))).toBe(false);
 		expect(
 			db
 				.select()

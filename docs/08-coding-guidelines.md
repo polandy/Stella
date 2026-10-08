@@ -142,6 +142,13 @@ const id = await createContact(input, locals.services.people.contactDeps);
 randomness/ids), never for plain values; always inject **narrow, domain-owned ports**;
 assemble concretes **only in the composition root**.
 
+**A context reports, activity words.** A use-case that leaves a trail in the activity log does
+not phrase it: it hands an `ActivityEvent` — what happened, as data — to the write it belongs
+to (`deleteVisibleTo(viewer, id, audit)`), and the adapter turns it into the row with
+`activityEntry` from `domain/activity/`, in the same transaction (docs/04 ADR-120). A fake of
+that port records the event, so a test asserts on what happened rather than on a sentence;
+the sentence is `activity.test.ts`'s.
+
 **Repositories write, read models list.** A repository is an aggregate's write side plus the
 one-record reads its writes rest on (`insert`, `update…`, `findByIdVisibleTo`); what a screen
 lists or counts is a **read model** port of its own, named `…Reads` (`ContactDirectoryReads`,

@@ -1,5 +1,5 @@
 import type { BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
-import type { NewActivityEntry } from '../domain/activity/activity';
+import { activityEntry, type ActivityOf } from '../domain/activity/activity';
 import type { ArchiveRepository, HouseholdSnapshot, TableRows } from '../domain/archive/archive';
 import type * as schema from './schema';
 import { activityLog } from './schema';
@@ -141,8 +141,8 @@ export function createDrizzleArchiveRepository(
 			return { householdName, tables, mediaPaths: [...paths] };
 		},
 
-		async recordExport(entry: NewActivityEntry): Promise<void> {
-			db.insert(activityLog).values(entry).run();
+		async recordExport(entry: ActivityOf<'archive.exported'>): Promise<void> {
+			db.insert(activityLog).values(activityEntry(entry)).run();
 		}
 	};
 }

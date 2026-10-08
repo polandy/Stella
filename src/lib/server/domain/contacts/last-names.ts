@@ -19,7 +19,7 @@ import type { IdGenerator } from '../../id';
 import type { KinshipGraphReads } from '../relationships/suggestion-review';
 import type { PassOnMap } from '../../../surnames/pass-on';
 import type { SurnameProposal } from '../../../suggestions/rules/surnames';
-import { lastNamesFacts } from '../../../stream/notices';
+import { activityRecord } from '../activity/activity';
 import { withNameParts } from '../../../people/display-name';
 import type { NameDeps, NameWrite } from './name-parts';
 
@@ -139,20 +139,22 @@ export async function setLastNames(
 	if (writes.length === 0) return 0;
 
 	const names = [...new Set(writes.map((w) => w.lastName!))];
-	await deps.names.writeNames(writes, {
-		id: deps.ids.next(),
-		householdId: viewer.householdId,
-		actorId: viewer.id,
-		action: 'update',
-		entityType: 'last_name',
-		entityId: writes[0]!.id,
-		contactId: null,
-		// The line is no more visible than the least visible person it is about.
-		visibility: anyPrivate ? 'private' : 'shared',
-		// Facts, said at read time in each reader's language (docs/02 §2.11).
-		summary: lastNamesFacts(names.join(', '), writes.length),
-		createdAt: now
-	});
+	await deps.names.writeNames(
+		writes,
+		activityRecord(
+			deps,
+			viewer,
+			{
+				kind: 'lastNames.given',
+				firstContactId: writes[0]!.id,
+				lastNames: names.join(', '),
+				count: writes.length,
+				// The line is no more visible than the least visible person it is about.
+				visibility: anyPrivate ? 'private' : 'shared'
+			},
+			now
+		)
+	);
 	return writes.length;
 }
 

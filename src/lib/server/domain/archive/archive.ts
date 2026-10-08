@@ -1,6 +1,6 @@
 import type { Clock } from '../../clock';
 import type { IdGenerator } from '../../id';
-import type { NewActivityEntry } from '../activity/activity';
+import { activityRecord, type ActivityOf } from '../activity/activity';
 import { buildArchiveDocument, type ArchiveDocument } from './document';
 
 /*
@@ -95,7 +95,7 @@ export interface ArchiveRepository {
 	/** Every row the household owns, from every table the export covers. */
 	readHousehold(householdId: string): Promise<HouseholdSnapshot>;
 	/** Records that an export happened, so the household can see it in the stream. */
-	recordExport(entry: NewActivityEntry): Promise<void>;
+	recordExport(entry: ActivityOf<'archive.exported'>): Promise<void>;
 }
 
 export interface ArchiveDeps {
@@ -112,12 +112,6 @@ export interface ExportedArchive {
 	mediaPaths: string[];
 }
 
-/** What the log says about an export; there is no entity left over to name. */
-export function describeExport(counts: Record<string, number>): string {
-	const people = counts.contact ?? 0;
-	return `exported the household archive (${people} ${people === 1 ? 'person' : 'people'})`;
-}
-
 /**
  * Read the household and describe the archive to be written. The caller streams the bytes —
  * this decides what goes in, names the file, and leaves the trail.
@@ -130,19 +124,14 @@ export async function exportHousehold(
 	const exportedAt = deps.clock.now();
 	const document = buildArchiveDocument(snapshot, exportedAt);
 
-	await deps.archive.recordExport({
-		id: deps.ids.next(),
-		householdId: actor.householdId,
-		actorId: actor.userId,
-		action: 'export',
-		entityType: 'household',
-		entityId: actor.householdId,
-		contactId: null,
-		// The household is meant to see that an export happened; that is the point of it.
-		visibility: 'shared',
-		summary: describeExport(document.counts),
-		createdAt: exportedAt
-	});
+	await deps.archive.recordExport(
+		activityRecord(
+			deps,
+			{ id: actor.userId, householdId: actor.householdId },
+			{ kind: 'archive.exported', people: document.counts.contact ?? 0 },
+			exportedAt
+		)
+	);
 
 	return {
 		fileName: archiveFileName(snapshot.householdName, exportedAt),

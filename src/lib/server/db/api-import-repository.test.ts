@@ -1,3 +1,4 @@
+import type { ActivityWording } from '../domain/activity/activity';
 import { beforeEach, describe, expect, it } from 'bun:test';
 import { Database } from 'bun:sqlite';
 import { drizzle, type BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
@@ -19,8 +20,9 @@ const OTHER_H = 'household-2';
 const U1 = 'user-1';
 const U2 = 'user-2';
 const actor = { userId: U1, householdId: H, defaultVisibility: 'shared' as const };
-const wording = {
-	imported: (people: number, source: string) => `imported ${people} from ${source}`
+const wording: ActivityWording = {
+	restored: () => 'not an import',
+	imported: (locale, people, source) => `${locale}: imported ${people} from ${source}`
 };
 
 let db: BunSQLiteDatabase<typeof schema>;
@@ -53,7 +55,7 @@ beforeEach(() => {
 		.run();
 	let seq = 0;
 	deps = {
-		imports: createDrizzleApiImportRepository(db),
+		imports: createDrizzleApiImportRepository(db, wording),
 		clock: { now: () => 1_700_000_000_000 },
 		ids: { next: () => `log-${++seq}` }
 	};
@@ -101,7 +103,7 @@ const kindergarten: ApiImportDocument = {
 };
 
 const run = (document: ApiImportDocument, dryRun = false) =>
-	importViaApi(deps, actor, document, { dryRun, wording, locale: 'en' });
+	importViaApi(deps, actor, document, { dryRun, locale: 'en' });
 
 describe('the import API adapter', () => {
 	beforeEach(() => seedContact('c-carl', { displayName: 'Carl Muster' }));
@@ -143,7 +145,7 @@ describe('the import API adapter', () => {
 				.from(schema.activityLog)
 				.all()
 				.map((a) => a.summary)
-		).toEqual(['imported 2 from kg']);
+		).toEqual(['en: imported 2 from kg']);
 	});
 
 	it('adds nothing the second time, and says so', async () => {
@@ -355,7 +357,7 @@ describe('the import API adapter', () => {
 		db.insert(schema.circleMembership)
 			.values({ id: 'm-hand', circleId: 'ci-kg', contactId: 'c-carl', createdBy: U1 })
 			.run();
-		const added = await createDrizzleApiImportRepository(db).applyPlan(stale, null);
+		const added = await createDrizzleApiImportRepository(db, wording).applyPlan(stale, null);
 		expect(added.memberships).toBe(0);
 		expect(
 			db

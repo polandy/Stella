@@ -1,7 +1,8 @@
 import { phrase } from '../../../i18n/phrase';
 import type { Clock } from '../../clock';
 import type { IdGenerator } from '../../id';
-import type { NewActivityEntry } from '../activity/activity';
+import { activityRecord, type ActivityOf } from '../activity/activity';
+import type { Locale } from '../../../i18n/locales';
 import type { MediaStore } from '../media/avatars';
 import { DOCUMENT_ENTRY, MEDIA_PREFIX, isSafeMediaPath } from './archive';
 import {
@@ -49,7 +50,7 @@ export interface RestoreRepository {
 	readTarget(householdId: string): Promise<Omit<RestoreTarget, 'householdId' | 'actorId'>>;
 	applyRestore(plan: RestorePlan): Promise<RestoreCounts>;
 	/** Records that an import happened, so the household can see it in the stream. */
-	recordImport(entry: NewActivityEntry): Promise<void>;
+	recordImport(entry: ActivityOf<'archive.restored'>): Promise<void>;
 }
 
 export interface ImportArchiveDeps {
@@ -105,25 +106,6 @@ export function splitArchive(entries: readonly ArchiveEntry[]): ArchiveFile {
 	return { documentText, media };
 }
 
-/** What the log says about an import; there is no entity left over to name. */
-export function describeImport(
-	added: Record<string, number>,
-	household: string,
-	wording: ArchiveWording
-): string {
-	return wording.restored(added.contact ?? 0, household);
-}
-
-/**
- * The words a restore writes into the household's own record of it. The log entry is data
- * the household keeps, so it is written in the language of the member who ran the restore
- * (docs/02 §2.19).
- */
-export interface ArchiveWording {
-	/** "restored 12 people from an archive of Pollari". */
-	restored: (people: number, household: string) => string;
-}
-
 /**
  * Read an archive into the household: plan it against what is already here, write it in one
  * transaction, put the images that are missing beside it, and leave a trail.
@@ -132,7 +114,8 @@ export async function importArchive(
 	deps: ImportArchiveDeps,
 	actor: { userId: string; householdId: string },
 	file: ArchiveFile,
-	wording: ArchiveWording
+	/** The language of the member running the restore, which its log line is written in. */
+	locale: Locale
 ): Promise<ImportReport> {
 	const known = await deps.restore.readTarget(actor.householdId);
 	const plan = planRestore(deps, Bun.YAML.parse(file.documentText), {
@@ -171,19 +154,13 @@ export async function importArchive(
 		warnings.push({ code: 'imagesMissing', count: media.missing });
 	}
 
-	await deps.restore.recordImport({
-		id: deps.ids.next(),
-		householdId: actor.householdId,
-		actorId: actor.userId,
-		action: 'import',
-		entityType: 'household',
-		entityId: actor.householdId,
-		contactId: null,
-		// The household is meant to see that an import happened; that is the point of it.
-		visibility: 'shared',
-		summary: describeImport(added, plan.household, wording),
-		createdAt: deps.clock.now()
-	});
+	await deps.restore.recordImport(
+		activityRecord(
+			deps,
+			{ id: actor.userId, householdId: actor.householdId },
+			{ kind: 'archive.restored', people: added.contact ?? 0, household: plan.household, locale }
+		)
+	);
 
 	return {
 		household: plan.household,

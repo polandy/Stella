@@ -25,7 +25,7 @@ Detail stays in the feature doc the term points to.
 | **gift** | A present for one person — an idea, given or received (docs/02 §2.25). An idea and the gift it became are one record. | `gift`, `domain/gifts/`, `lib/gifts/`, `components/person/Gift*.svelte` | present, wish |
 | **story** | One person's timeline: their journal entries, touchpoints and given or received gifts in one order (docs/02 §2.23). Its heading on the person page reads *Activity*. | `domain/story/`, `lib/story/`, `/contacts/[id]/story` | feed, history |
 | **stream** | The household's newest-first read of what the family did, on Home (docs/02 §2.22.2): a query over the tables that still exist, plus the activity rows for what no table can report. | `domain/stream/`, `lib/stream/`, `db/stream-repository.ts` | feed, *What's new* (the older name, docs/02 §2.11) |
-| **activity** | One row of the household's log, written only for what no remaining table can tell — deletions, merges, export and import, renames, last-name batches, Immich links (§3.3 `activity_log`). | `activity_log`, `domain/activity/` | event; the person page's *Activity* heading is the story, not this |
+| **activity** | One row of the household's log, written only for what no remaining table can tell — deletions, merges, export and import, renames, last-name batches, Immich links (§3.3 `activity_log`). A context reports an `ActivityEvent` — what happened, as data — and `domain/activity/` turns it into the row and its line. | `activity_log`, `domain/activity/` | event for the row (an `ActivityEvent` is the report, not the row); the person page's *Activity* heading is the story, not this |
 | **attention** | The latest day the household recorded anything about a person, as the People list shows it — what was written down, not how often anyone met (docs/02 §2.2). | `domain/attention/`, `db/attention-repository.ts` | *last contacted* (the latest touchpoint, on the profile) |
 | **stamp** | A cheap marker of the people list the app shell carries — counts and latest change times, scoped to the viewer; a page asks for it to tell whether its copy is current (docs/04 ADR-091). | `domain/contacts/people-stamp.ts`, `db/people-stamp-reads.ts`, `/api/people/stamp` | version; *ETag* is a page's content tag (ADR-074) |
 | **framing** | A chosen square of a photo worn as a person's avatar, kept as a photo row of its own so its address never changes (docs/02 §2.14). | `photo` row with `framing_of` set, `domain/media/framing.ts` | crop (the square is the crop; the framing is the row) |
@@ -623,6 +623,12 @@ Feeds the "What's new" household feed and the "last edited by" trails.
 
 The feed query filters `visibility='shared' OR actor_id = :viewer` and excludes items
 whose subject contact the viewer cannot see.
+
+**Who writes a row.** No context outside `domain/activity/` builds one: a use-case reports an
+`ActivityEvent` (`{ kind: 'contact.deleted', … }`) with the write it belongs to, and the adapter
+turns it into the row — `action`, `entity_type`, `summary` and all — with `activityEntry`, in
+that write's transaction (docs/04 ADR-120). The two lines written in the member's language
+(a restore, an API import) come from the `ActivityWording` port the composition root fills.
 
 **In use for deletions and merges** (docs/04 §4.9): a contact's deletion writes one row, in
 the same transaction as the delete, and a merge writes one the same way — both end a name that

@@ -76,10 +76,6 @@ async function addPerson(firstName: string) {
 	);
 }
 
-const wording = {
-	restored: (people: number, household: string) => `restored ${people} from ${household}`
-};
-
 describe('createArchiveServices', () => {
 	it('restores into the media store it was handed', () => {
 		const archive = createArchiveServices(wiring);
@@ -99,7 +95,7 @@ describe('createArchiveServices', () => {
 				documentText: serialiseDocument(exported.document),
 				media: new Map([['restored/photo.jpg', new Uint8Array([1, 2, 3])]])
 			},
-			wording
+			'en'
 		);
 
 		// The same household again: Anna is already here, so nothing is written twice.

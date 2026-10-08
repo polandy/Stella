@@ -8,7 +8,11 @@ import {
 	relationshipVisibleTo
 } from '../access/query-scoping';
 import type { Viewer } from '../access/visibility';
-import type { NewActivityEntry } from '../domain/activity/activity';
+import {
+	localizedActivityEntry,
+	type ActivityOf,
+	type ActivityWording
+} from '../domain/activity/activity';
 import type {
 	ApiImportCounts,
 	ApiImportRepository,
@@ -53,7 +57,8 @@ function inBatches<T>(ids: readonly string[], read: (batch: string[]) => T[]): T
 
 /** Build the import API adapter over a Drizzle handle. */
 export function createDrizzleApiImportRepository(
-	db: BunSQLiteDatabase<typeof schema>
+	db: BunSQLiteDatabase<typeof schema>,
+	wording: ActivityWording
 ): ApiImportRepository {
 	return {
 		async readHousehold(viewer: Viewer, ids): Promise<HouseholdReading> {
@@ -169,7 +174,10 @@ export function createDrizzleApiImportRepository(
 			};
 		},
 
-		async applyPlan(plan: ApiImportPlan, audit: NewActivityEntry | null): Promise<ApiImportCounts> {
+		async applyPlan(
+			plan: ApiImportPlan,
+			audit: ActivityOf<'people.imported'> | null
+		): Promise<ApiImportCounts> {
 			return db.transaction((tx) => {
 				// The Bun driver types `run()` as void, so rows are counted through `returning()`.
 				const inserted = (rows: unknown[]) => rows.length;
@@ -231,7 +239,7 @@ export function createDrizzleApiImportRepository(
 							.all()
 					);
 				}
-				if (audit) tx.insert(activityLog).values(audit).run();
+				if (audit) tx.insert(activityLog).values(localizedActivityEntry(audit, wording)).run();
 				return { people, fields, relationships, circles, memberships };
 			});
 		}

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test';
-import type { NewActivityEntry } from '../../activity/activity';
+import type { ActivityOf } from '../../activity/activity';
 import { BUILT_IN_RELATIONSHIP_TYPES } from '../../relationships/built-in-types';
 import {
 	importViaApi,
@@ -23,9 +23,6 @@ const ACTOR = {
 	defaultVisibility: 'shared' as const
 };
 const NOW = 1_700_000_000_000;
-const wording = {
-	imported: (people: number, source: string) => `imported ${people} people from ${source}`
-};
 
 const EMPTY_READING: HouseholdReading = {
 	people: new Map(),
@@ -40,7 +37,7 @@ const EMPTY_READING: HouseholdReading = {
 function fakeRepository(inserted?: ApiImportCounts) {
 	const calls = {
 		read: [] as { contactIds: string[]; circleIds: string[] }[],
-		applied: [] as { plan: ApiImportPlan; audit: NewActivityEntry | null }[]
+		applied: [] as { plan: ApiImportPlan; audit: ActivityOf<'people.imported'> | null }[]
 	};
 	const repository: ApiImportRepository = {
 		async readHousehold(_viewer, ids) {
@@ -100,7 +97,7 @@ const document: ApiImportDocument = {
 describe('importViaApi', () => {
 	it('reads the household for exactly the ids the document names', async () => {
 		const { repository, calls } = fakeRepository();
-		await importViaApi(deps(repository), ACTOR, document, { dryRun: true, wording, locale: 'en' });
+		await importViaApi(deps(repository), ACTOR, document, { dryRun: true, locale: 'en' });
 		expect(calls.read).toEqual([
 			{ contactIds: ['api~kindergarten~p~anna', 'api~kindergarten~p~bert'], circleIds: [] }
 		]);
@@ -110,7 +107,6 @@ describe('importViaApi', () => {
 		const { repository, calls } = fakeRepository();
 		const result = await importViaApi(deps(repository), ACTOR, document, {
 			dryRun: true,
-			wording,
 			locale: 'en'
 		});
 		expect(calls.read).toHaveLength(1);
@@ -132,7 +128,6 @@ describe('importViaApi', () => {
 		});
 		const result = await importViaApi(deps(repository), ACTOR, document, {
 			dryRun: false,
-			wording,
 			locale: 'en'
 		});
 		expect(calls.applied).toHaveLength(1);
@@ -144,13 +139,14 @@ describe('importViaApi', () => {
 			id: 'log-1',
 			householdId: 'household-1',
 			actorId: 'user-1',
-			action: 'import',
-			entityType: 'household',
-			entityId: 'household-1',
-			contactId: null,
-			visibility: 'shared',
-			summary: 'imported 2 people from kindergarten',
-			createdAt: NOW
+			createdAt: NOW,
+			event: {
+				kind: 'people.imported',
+				people: 2,
+				source: 'kindergarten',
+				visibility: 'shared',
+				locale: 'en'
+			}
 		});
 		expect(result).toMatchObject({
 			ok: true,
@@ -165,9 +161,9 @@ describe('importViaApi', () => {
 			deps(repository),
 			ACTOR,
 			{ ...document, visibility: 'private' },
-			{ dryRun: false, wording, locale: 'en' }
+			{ dryRun: false, locale: 'en' }
 		);
-		expect(calls.applied[0].audit?.visibility).toBe('private');
+		expect(calls.applied[0].audit?.event.visibility).toBe('private');
 	});
 
 	it('leaves the log alone when a document has nothing new to write', async () => {
@@ -176,7 +172,7 @@ describe('importViaApi', () => {
 			deps(repository),
 			ACTOR,
 			{ ...document, people: [], relationships: [] },
-			{ dryRun: false, wording, locale: 'en' }
+			{ dryRun: false, locale: 'en' }
 		);
 		expect(calls.applied).toEqual([{ plan: expect.anything(), audit: null }]);
 	});
@@ -187,7 +183,7 @@ describe('importViaApi', () => {
 			deps(repository),
 			ACTOR,
 			{ ...document, relationships: [{ from: 'anna', to: 'zora', type: 'parent_child' }] },
-			{ dryRun: false, wording, locale: 'en' }
+			{ dryRun: false, locale: 'en' }
 		);
 		expect(calls.read).toHaveLength(1);
 		expect(calls.applied).toEqual([]);
