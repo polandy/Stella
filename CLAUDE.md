@@ -39,11 +39,11 @@ Bun · SvelteKit (Svelte 5, runes) · SQLite WAL + Drizzle · Tailwind v4 + Catp
 | `src/lib/server/access/` | **central** ACL / visibility (`docs/03` §3.7) — the *only* authz path |
 | `src/lib/server/domain/` | use-cases, test-first; `commands/` applies a command once |
 | `src/lib/server/{auth,immich,commands,…}/` | infrastructure and edge helpers: sessions + OIDC, the Immich gateway, the command wire edge, media store, HTTP helpers |
-| `src/lib/{commands,contacts,gifts,immich,kinship,menu,motion,onboarding,pwa,shell,stream,suggestions,surnames,sync}/` | **pure** decisions, test-first; a `*.svelte.ts` beside one is its browser adapter |
+| `src/lib/{commands,people,gifts,immich,kinship,motion,pwa,stream,suggestions,surnames,sync,ui}/` | **pure** decisions, test-first; a `*.svelte.ts` beside one is its browser adapter |
 | `src/lib/graph/` | pure `model/`, `layout/`, `keyboard.ts`, `phone-map.ts`; `cytoscape/` renders, no logic |
 | `src/routes/` | thin edges: `load` / form actions / `+server.ts`; big pages colocate `load.ts` + `actions/` |
-| `src/lib/{people,relationships,circles,dates,undo,…}/` | client-safe helpers per concept, not lint-guarded as pure |
-| `src/lib/components/` | design system; `graph/` the map, `person/` the person page's cards |
+| `src/lib/{relationships,circles,story,mentions,dates,media,undo,archive}/` | client-safe helpers per concept, not lint-guarded as pure |
+| `src/lib/components/` | `ui/` the design system, `<feature>/` the rest (`docs/05` §5.7) |
 | `src/lib/i18n/` | languages, catalogues `en` + `de`, translator — **all UI copy** (`docs/02` §2.19) |
 | `src/lib/design/tokens.ts`, `src/app.css` | the token table and its three layers — the only places that build a colour token |
 
