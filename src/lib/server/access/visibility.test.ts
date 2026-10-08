@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'bun:test';
 import {
+	canViewActivity,
 	canViewChildRecord,
 	canViewCirclePhoto,
 	canViewContact,
@@ -150,5 +151,27 @@ describe('canViewCirclePhoto', () => {
 		expect(
 			canViewCirclePhoto(viewerOwner, { ownerId: OWNER, visibility: 'shared', circle: foreign })
 		).toBe(false);
+	});
+});
+
+describe('canViewActivity', () => {
+	const entry = (visibility: 'shared' | 'private', householdId = HOUSEHOLD) => ({
+		householdId,
+		actorId: OWNER,
+		visibility
+	});
+
+	it('shows a shared entry to the whole household', () => {
+		expect(canViewActivity(viewerOther, entry('shared'))).toBe(true);
+	});
+
+	it('shows a private entry only to whoever did it', () => {
+		expect(canViewActivity(viewerOwner, entry('private'))).toBe(true);
+		expect(canViewActivity(viewerOther, entry('private'))).toBe(false);
+	});
+
+	it('never crosses households', () => {
+		expect(canViewActivity(viewerForeign, entry('shared'))).toBe(false);
+		expect(canViewActivity(viewerOwner, entry('shared', OTHER_HOUSEHOLD))).toBe(false);
 	});
 });

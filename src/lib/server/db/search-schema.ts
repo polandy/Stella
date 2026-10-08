@@ -2,7 +2,7 @@ import { sqliteTable, text } from 'drizzle-orm/sqlite-core';
 
 /*
  * Query-only definitions for the FTS5 virtual tables (docs/03 §3.5). These are NOT part of
- * the Drizzle-managed schema (drizzle.config points at schema.ts) — the virtual tables and
+ * the Drizzle-managed schema (drizzle.config points at schema/index.ts) — the virtual tables and
  * their sync triggers are created at startup by `ensureSearchIndex`. These defs exist only
  * so the search adapter can build joins/selects against them with the query builder.
  */

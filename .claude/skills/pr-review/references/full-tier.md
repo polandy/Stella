@@ -23,7 +23,7 @@ section file directly.
 | Anything an operator must do differently | `docs/07-deployment.md` **and** `docs/install.md` |
 | Anything a user does differently | `docs/using-stella.md`, and `README.md` if it is on the front page |
 
-- `src/lib/server/db/schema.ts` plus the generated `drizzle/` migration are the source of truth for the schema; `docs/03` describes it. Flag a schema change that ships without its migration, and a doc that redefines columns rather than describing them.
+- `src/lib/server/db/schema/` plus the generated `drizzle/` migration are the source of truth for the schema; `docs/03` describes it. Flag a schema change that ships without its migration or without a `--name` (docs/08 §8.11), and a doc that redefines columns rather than describing them.
 - Check the reverse too: no doc may still describe behaviour this PR removed or changed. A stale sentence is a finding.
 - **User docs are promises.** `docs/install.md` and `docs/using-stella.md` are read by someone deciding whether to trust the app. A PR that changes a shortcut, a default, an env var or a screen and leaves those files describing the old behaviour has published something untrue.
 - Doc comments on exported symbols must match actual behaviour, and every exported symbol has one (`CLAUDE.md`, §8.6).

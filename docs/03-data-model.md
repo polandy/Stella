@@ -1,8 +1,9 @@
 # 03 — Data Model
 
 Database: **SQLite** (WAL mode, foreign keys on) accessed via **Drizzle ORM**. This
-document is the conceptual schema; the Drizzle definitions in code are the
-implementation of record.
+document is the conceptual schema; the Drizzle definitions in
+`src/lib/server/db/schema/` — one file per bounded context (§3.0), re-exported by its
+`index.ts` — are the implementation of record.
 
 ## 3.0 Glossary
 
@@ -827,8 +828,12 @@ contact's place (`canViewCirclePhoto` / `circlePhotoVisibleTo`). A **journal_men
 passive "Mentioned in" item it drives) is visible only when its parent entry is visible to
 the viewer (child-record rule — a private entry ⇒ only its author) **and** the referenced
 contact is visible; a **shared** entry may reference only household-visible contacts, so a
-mention never widens access nor reveals a `private` contact's existence. Admins gain no special
+mention never widens access nor reveals a `private` contact's existence. An **activity_log**
+entry outlives what it describes, so it is scoped by itself: within its household, shared or the
+viewer's own action (`canViewActivity` / `activityVisibleTo`). Admins gain no special
 access to `private` records.
 
 These rules are enforced centrally in the data-access layer (see
-[04-architecture.md](04-architecture.md)), never ad hoc in UI code.
+[04-architecture.md](04-architecture.md)), never ad hoc in UI code. They are stated twice — as
+predicates in `access/visibility.ts` and as SQL conditions in `access/query-scoping.ts` — and
+`access/visibility-parity.test.ts` holds every pair to the same rows.
