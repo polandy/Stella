@@ -13,6 +13,7 @@ import {
 	createCircle,
 	groupMembersByRole,
 	joinCircleByName,
+	removeMember,
 	resolveCircleColor,
 	resolveCircleKind,
 	setMembersRole,
@@ -264,6 +265,34 @@ describe('setMembersRole', () => {
 		// Positive control: a visible member does get written on the same fake.
 		await setMembersRole(deps, viewer, 'circle-1', ['mara'], 'coach');
 		expect(f.roleChanges).toHaveLength(1);
+	});
+});
+
+describe('removeMember', () => {
+	/** The deps `removeMember` takes, with `visible` the members the viewer may see in circle-1. */
+	function removal(visible: string[]) {
+		const removed: [string, string][] = [];
+		const deps = {
+			circles: circleRepositoryWith({
+				removeMembership: async (circleId, contactId) => void removed.push([circleId, contactId])
+			}),
+			memberships: inMemoryCircleMemberships(visible.map((id) => membership('circle-1', id)))
+		};
+		return { deps, removed };
+	}
+
+	it('takes a member the viewer can see out of the circle, and says so', async () => {
+		const { deps, removed } = removal(['mara']);
+		expect(await removeMember(deps, viewer, 'circle-1', 'mara')).toBe(true);
+		expect(removed).toEqual([['circle-1', 'mara']]);
+	});
+
+	it('removes nothing the viewer cannot see in the circle, and says so', async () => {
+		// `ghost` is private to someone else, or not a member; circle-2 is not one the viewer sees.
+		const { deps, removed } = removal(['mara']);
+		expect(await removeMember(deps, viewer, 'circle-1', 'ghost')).toBe(false);
+		expect(await removeMember(deps, viewer, 'circle-2', 'mara')).toBe(false);
+		expect(removed).toEqual([]);
 	});
 });
 

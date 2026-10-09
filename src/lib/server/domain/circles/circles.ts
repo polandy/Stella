@@ -266,6 +266,12 @@ export interface MemberRoleDeps {
 	clock: Clock;
 }
 
+/** Taking someone out of a circle: who is in it, as the viewer sees it, decides whom it may touch. */
+export interface MemberRemovalDeps {
+	circles: Pick<CircleRepository, 'removeMembership'>;
+	memberships: Pick<CircleMembershipReads, 'listMembersVisibleTo'>;
+}
+
 export interface CircleCreator {
 	userId: string;
 	householdId: string;
@@ -400,12 +406,21 @@ export async function setMembersRole(
 	await deps.circles.setRoles(circleId, chosen, orNull(role), deps.clock.now());
 }
 
+/**
+ * Take one person out of a circle. Only a membership the viewer can see is touched — both its
+ * circle and its contact visible (§3.7) — so an id from elsewhere, or someone else's private
+ * contact, is left in place. Answers whether anyone was removed.
+ */
 export async function removeMember(
-	deps: Pick<CircleDeps, 'circles'>,
+	deps: MemberRemovalDeps,
+	viewer: Viewer,
 	circleId: string,
 	contactId: string
-): Promise<void> {
+): Promise<boolean> {
+	const members = await deps.memberships.listMembersVisibleTo(viewer, circleId);
+	if (!members.some((m) => m.contactId === contactId)) return false;
 	await deps.circles.removeMembership(circleId, contactId);
+	return true;
 }
 
 export async function getCircle(

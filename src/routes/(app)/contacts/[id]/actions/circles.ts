@@ -83,7 +83,9 @@ export const circleActions = {
 		const circleId = form.get('circleId');
 		if (typeof circleId !== 'string') return fail(400, {});
 
-		await removeMember(locals.services.circles.circleDeps, circleId, params.id);
+		// Only a membership the viewer can see is ended; a circle they cannot see is left alone,
+		// as re-roling leaves it (§3.7).
+		await removeMember(locals.services.circles.memberRemovalDeps, viewer, circleId, params.id);
 		throw redirect(303, `/contacts/${params.id}`);
 	}
 } satisfies Actions;

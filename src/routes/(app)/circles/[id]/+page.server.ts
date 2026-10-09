@@ -1,6 +1,5 @@
 import { error, fail, redirect } from '@sveltejs/kit';
 import { requireViewer } from '$lib/server/auth/guards';
-import * as v from 'valibot';
 import {
 	addMembers,
 	getCircle,
@@ -17,6 +16,7 @@ import { listContactNamesAmong } from '$lib/server/domain/contacts/contact-names
 import { listCircleCuts } from '$lib/server/domain/media/cuts';
 import { readSurnameHelp } from '$lib/server/domain/contacts/last-names';
 import { photoActions } from './actions/photos';
+import { readPeopleAndRole } from './people-form';
 import { lastNameActions } from '../../_shared/last-names-actions';
 import type { Actions, PageServerLoad } from './$types';
 import { say, translator } from '$lib/server/i18n/say';
@@ -63,11 +63,6 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 	};
 };
 
-const PeopleAndRoleSchema = v.object({
-	contactIds: v.pipe(v.array(v.pipe(v.string(), v.minLength(1))), v.minLength(1)),
-	role: v.optional(v.pipe(v.string(), v.trim()))
-});
-
 export const actions: Actions = {
 	...photoActions,
 	...lastNameActions,
@@ -79,16 +74,12 @@ export const actions: Actions = {
 		const circle = await getCircle(locals.services.circles.circleDeps, viewer, params.id);
 		if (!circle) throw error(404, say(locals, 'errors.circle.notFound'));
 
-		const form = await request.formData();
-		const parsed = v.safeParse(PeopleAndRoleSchema, {
-			contactIds: form.getAll('contactId'),
-			role: form.get('role') || undefined
-		});
-		if (!parsed.success) return fail(400, { error: say(locals, 'errors.circle.choosePerson') });
+		const pick = readPeopleAndRole(await request.formData());
+		if (!pick) return fail(400, { error: say(locals, 'errors.circle.choosePerson') });
 
 		// Every chosen person must be visible to the actor — one that is not fails the whole
 		// pick rather than being dropped silently from it (§3.7).
-		const chosen = new Set(parsed.output.contactIds);
+		const chosen = new Set(pick.contactIds);
 		const visible = await listContactNamesAmong(locals.services.people.contactNameDeps, viewer, [
 			...chosen
 		]);
@@ -100,8 +91,8 @@ export const actions: Actions = {
 			locals.services.circles.circleDeps,
 			{ userId: viewer.id },
 			params.id,
-			parsed.output.contactIds,
-			parsed.output.role
+			pick.contactIds,
+			pick.role
 		);
 		throw redirect(303, `/circles/${params.id}`);
 	},
@@ -113,19 +104,15 @@ export const actions: Actions = {
 		const circle = await getCircle(locals.services.circles.circleDeps, viewer, params.id);
 		if (!circle) throw error(404, say(locals, 'errors.circle.notFound'));
 
-		const form = await request.formData();
-		const parsed = v.safeParse(PeopleAndRoleSchema, {
-			contactIds: form.getAll('contactId'),
-			role: form.get('role') ?? undefined
-		});
-		if (!parsed.success) return fail(400, { error: say(locals, 'errors.circle.choosePerson') });
+		const pick = readPeopleAndRole(await request.formData());
+		if (!pick) return fail(400, { error: say(locals, 'errors.circle.choosePerson') });
 
 		await setMembersRole(
 			locals.services.circles.memberRoleDeps,
 			viewer,
 			params.id,
-			parsed.output.contactIds,
-			parsed.output.role
+			pick.contactIds,
+			pick.role
 		);
 		throw redirect(303, `/circles/${params.id}`);
 	},
@@ -168,7 +155,14 @@ export const actions: Actions = {
 		const contactId = form.get('contactId');
 		if (typeof contactId !== 'string') return fail(400, {});
 
-		await removeMember(locals.services.circles.circleDeps, params.id, contactId);
+		// Only a member the viewer can see in this circle is taken out (§3.7).
+		const removed = await removeMember(
+			locals.services.circles.memberRemovalDeps,
+			viewer,
+			params.id,
+			contactId
+		);
+		if (!removed) return fail(404, { error: say(locals, 'errors.person.notFound') });
 		throw redirect(303, `/circles/${params.id}`);
 	}
 };
