@@ -130,6 +130,8 @@ describe('setLastNames', () => {
 			['lea', 'Lea Brunner', 'Brunner'],
 			['max', 'Max Brunner', 'Brunner']
 		]);
+		// A given last name ends *no last name* (§2.2.4.2) in the same write.
+		expect(f.batches[0]?.writes.map((w) => w.withoutLastNameAt)).toEqual([null, null]);
 		expect(f.batches[0]?.audit).toMatchObject({
 			actorId: 'user-1',
 			event: {
@@ -259,6 +261,7 @@ describe('reviewLastNames', () => {
 		avatarPhotoId: null,
 		isDeceased: false,
 		archived: false,
+		withoutLastNameAt: null,
 		...over
 	});
 
@@ -296,6 +299,25 @@ describe('reviewLastNames', () => {
 		expect(review.declined).toEqual([{ contactId: 'lea', personName: 'Lea', name: 'Brunner' }]);
 		expect(review.list.none).toEqual(['lea']);
 	});
+
+	it('puts a person settled as having no last name in the drawer, off the list', async () => {
+		const f = fakeDeps(
+			[],
+			[
+				listed('peter', 'Peter', 'Brunner'),
+				listed('lea', 'Lea', null, { withoutLastNameAt: 5 }),
+				listed('tom', 'Tom', null)
+			],
+			{ parentEdges: [{ parentId: 'peter', childId: 'lea' }] }
+		);
+
+		const review = await reviewLastNames(f.deps, viewer);
+
+		expect(review.list.groups).toEqual([]);
+		expect(review.list.none).toEqual(['tom']);
+		expect(review.settled).toEqual([{ contactId: 'lea', personName: 'Lea' }]);
+		expect(Object.keys(review.people)).toEqual(['tom']);
+	});
 });
 
 describe('readSurnameHelp', () => {
@@ -313,6 +335,7 @@ describe('readSurnameHelp', () => {
 		avatarPhotoId: null,
 		isDeceased: false,
 		archived: false,
+		withoutLastNameAt: null,
 		...over
 	});
 
@@ -350,6 +373,32 @@ describe('readSurnameHelp', () => {
 		expect(help.proposal).toMatchObject({ kind: 'one', name: 'Brunner' });
 	});
 
+	it('offers a settled person nothing: no chip on their profile, no pass-on', async () => {
+		const f = fakeDeps(
+			[],
+			[
+				listed('peter', 'Brunner'),
+				listed('lea', null, { withoutLastNameAt: 5 }),
+				listed('max', null)
+			],
+			{
+				parentEdges: [
+					{ parentId: 'peter', childId: 'lea' },
+					{ parentId: 'peter', childId: 'max' }
+				]
+			}
+		);
+
+		const help = await readSurnameHelp(f.deps, viewer, 'lea');
+
+		expect(help.proposal).toEqual({ kind: 'none' });
+		expect(help.passOn['peter']?.map((k) => k.id)).toEqual(['max']);
+		expect((await readSurnameHelp(f.deps, viewer, 'max')).proposal).toMatchObject({
+			kind: 'one',
+			name: 'Brunner'
+		});
+	});
+
 	it('proposes nothing without a subject', async () => {
 		const f = fakeDeps([], [listed('lea', null)]);
 		expect((await readSurnameHelp(f.deps, viewer, null)).proposal).toEqual({ kind: 'none' });
@@ -367,13 +416,41 @@ describe('countLastNames', () => {
 			formerName: null,
 			avatarPhotoId: null,
 			isDeceased: false,
-			archived: false
+			archived: false,
+			withoutLastNameAt: null as number | null
 		});
 		const f = fakeDeps([], [person('peter', 'Brunner'), person('lea', null), person('tom', null)], {
 			parentEdges: [{ parentId: 'peter', childId: 'lea' }]
 		});
 
 		expect(await countLastNames(f.deps, viewer)).toEqual({ missing: 2, suggested: 1 });
+	});
+
+	it('leaves out everyone settled as having no last name', async () => {
+		const person = (id: string, last: string | null, withoutLastNameAt: number | null = null) => ({
+			id,
+			displayName: id,
+			firstName: id,
+			lastName: last,
+			nickname: null,
+			formerName: null,
+			avatarPhotoId: null,
+			isDeceased: false,
+			archived: false,
+			withoutLastNameAt
+		});
+		const f = fakeDeps(
+			[],
+			[
+				person('peter', 'Brunner'),
+				person('lea', null, 5),
+				person('tom', null),
+				person('ida', null, 6)
+			],
+			{ parentEdges: [{ parentId: 'peter', childId: 'lea' }] }
+		);
+
+		expect(await countLastNames(f.deps, viewer)).toEqual({ missing: 1, suggested: 0 });
 	});
 });
 

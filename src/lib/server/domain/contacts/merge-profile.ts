@@ -1,4 +1,5 @@
 import type { BirthDatePrecision } from './contacts';
+import { clearsNoLastName } from '../../../surnames/review';
 
 /*
  * Combining the two profiles when a household merges duplicates (docs/02 §2.2). Pure: it
@@ -31,6 +32,8 @@ export interface MergeableProfile {
 	howWeMet: string | null;
 	metDate: string | null;
 	metPlace: string | null;
+	/** When the household said they have no last name (docs/02 §2.2.4.2). */
+	withoutLastNameAt: number | null;
 }
 
 /** Columns where "the one that says something" wins, and the survivor says it first. */
@@ -63,6 +66,9 @@ const FILL_IF_EMPTY = [
  *   claim a day that nobody entered (docs/03 §3.4);
  * - **deceased is an OR, and the death date rides with it** — if either record says the person
  *   has died, the merged one does, and it keeps the day that was recorded with it.
+ *
+ * *No last name* fills a blank like the rest, but only while the merged person still has no
+ * last name: one brought by either record ends it, as any last name given does.
  */
 export function mergeProfiles(
 	keep: MergeableProfile,
@@ -84,6 +90,10 @@ export function mergeProfiles(
 	} else {
 		merged.deathDate ??= mergedAway.deathDate;
 	}
+
+	merged.withoutLastNameAt = clearsNoLastName(merged.lastName)
+		? null
+		: (keep.withoutLastNameAt ?? mergedAway.withoutLastNameAt);
 
 	return merged;
 }

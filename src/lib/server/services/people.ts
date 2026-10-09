@@ -19,6 +19,7 @@ import type {
 	SurnameReviewDeps
 } from '../domain/contacts/last-names';
 import type { NameDeps } from '../domain/contacts/name-parts';
+import type { WithoutLastNameDeps } from '../domain/contacts/without-last-name';
 import type { PeopleStampDeps } from '../domain/contacts/people-stamp';
 import type { DeleteContactDeps } from '../domain/contacts/remove-contact';
 import type { PersonContextDeps } from '../domain/contacts/person-context';
@@ -54,6 +55,7 @@ export interface PeopleServices {
 	lastNameDeps: LastNameDeps;
 	surnameReviewDeps: SurnameReviewDeps;
 	surnameDismissalDeps: SurnameDismissalDeps;
+	withoutLastNameDeps: WithoutLastNameDeps;
 	personContextDeps: PersonContextDeps;
 	/** What a refused `@Thomas` names each Thomas by, a namesake with nothing typed included. */
 	namesakeContextDeps: NamesakeContextDeps;
@@ -108,6 +110,7 @@ export function createPeopleServices({
 			surnameDismissals
 		},
 		surnameDismissalDeps: { names: contacts, surnameDismissals, ids, clock },
+		withoutLastNameDeps: { withoutLastName: contacts, clock },
 		personContextDeps,
 		namesakeContextDeps: {
 			...personContextDeps,

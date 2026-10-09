@@ -83,6 +83,7 @@ function fullHousehold(): HouseholdSnapshot {
 					how_we_met: 'at the market',
 					met_date: '2001-04-02',
 					met_place: 'Bern',
+					without_last_name_at: null,
 					archived_at: null,
 					created_at: EXPORTED
 				},
@@ -96,6 +97,8 @@ function fullHousehold(): HouseholdSnapshot {
 					display_name: 'Rosa Brunner',
 					birth_date_precision: 'full',
 					is_deceased: 0,
+					// Carried as stored; the list itself ignores a mark beside a last name.
+					without_last_name_at: EXPORTED - 1,
 					created_at: EXPORTED
 				}
 			],
@@ -456,6 +459,7 @@ describe('the round trip', () => {
 			'how_we_met',
 			'met_date',
 			'met_place',
+			'without_last_name_at',
 			'archived_at',
 			'created_at'
 		],

@@ -3,23 +3,25 @@
 	import type { SubmitFunction } from '@sveltejs/kit';
 	import Avatar from '$lib/components/ui/Avatar.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
-	import Icon from '$lib/components/ui/Icon.svelte';
 	import LinkedNames from '$lib/components/people/LinkedNames.svelte';
 	import { useTranslate } from '$lib/i18n/context.svelte';
 	import type { Segment } from '$lib/i18n/linked';
+	import type { LastNameAnswers } from '$lib/components/surnames/last-name-answers.svelte';
+	import LastNameRowMenu from './LastNameRowMenu.svelte';
 	import type { SurnamePersonView } from './types';
 
 	/*
 	 * One proposed last name and everyone it is proposed for (docs/02 §2.2.4.2).
 	 * Each row says why; rows from a sure rule start ticked, a partner's or a child's name starts
 	 * unticked. *Apply* gives the ticked people the name in one batch, with Undo. A row's menu
-	 * holds *Not this name*, which the household keeps, and the lower-ranked names, if any.
+	 * holds the lower-ranked names, if any, *Not this name* and *No last name*.
 	 */
 	let {
 		group,
 		hidden,
 		disabled,
-		held
+		held,
+		answers
 	}: {
 		group: {
 			name: string;
@@ -36,6 +38,8 @@
 		disabled: boolean;
 		/** The enhance of every form here that gives a name. */
 		held: SubmitFunction;
+		/** *Not this name* and *No last name*, saved at once with Undo. */
+		answers: LastNameAnswers;
 	} = $props();
 
 	const t = useTranslate();
@@ -96,34 +100,17 @@
 							</span>
 						</span>
 					</label>
-					<details class="relative shrink-0">
-						<summary
-							class="grid size-8 cursor-pointer list-none place-items-center rounded-control text-fg-subtle hover:bg-card-hover"
-							aria-label={t('surnames.rowMenu', { name: row.person.displayName })}
-						>
-							<Icon name="more" size={16} />
-						</summary>
-						<div
-							class="absolute right-0 z-10 mt-1 flex w-56 flex-col gap-1 rounded-app border border-border bg-card p-1.5 shadow-pop"
-						>
-							{#each row.alternatives as alternative (alternative)}
-								<form method="POST" action="?/setLastNames" use:enhance={held}>
-									<input type="hidden" name="lastName" value={alternative} />
-									<input type="hidden" name="contactId" value={row.person.id} />
-									<Button variant="ghost" size="sm" class="w-full justify-start" {disabled}>
-										{t('surnames.instead', { name: alternative })}
-									</Button>
-								</form>
-							{/each}
-							<form method="POST" action="?/dismissLastName" use:enhance>
-								<input type="hidden" name="lastName" value={group.name} />
+					<LastNameRowMenu person={row.person} declinable={[group.name]} {answers} {disabled}>
+						{#each row.alternatives as alternative (alternative)}
+							<form method="POST" action="?/setLastNames" use:enhance={held}>
+								<input type="hidden" name="lastName" value={alternative} />
 								<input type="hidden" name="contactId" value={row.person.id} />
 								<Button variant="ghost" size="sm" class="w-full justify-start" {disabled}>
-									{t('surnames.notThisName', { name: group.name })}
+									{t('surnames.instead', { name: alternative })}
 								</Button>
 							</form>
-						</div>
-					</details>
+						{/each}
+					</LastNameRowMenu>
 				</li>
 			{/each}
 		</ul>

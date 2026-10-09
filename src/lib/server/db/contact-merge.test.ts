@@ -45,7 +45,8 @@ const PROFILE: MergeableProfile = {
 	company: null,
 	howWeMet: null,
 	metDate: null,
-	metPlace: null
+	metPlace: null,
+	withoutLastNameAt: null
 };
 
 const audit: ActivityOf<'contact.merged'> = {

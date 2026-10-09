@@ -1,0 +1,1 @@
+ALTER TABLE `contact` ADD `without_last_name_at` integer;

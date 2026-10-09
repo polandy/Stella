@@ -184,7 +184,8 @@ field starts out with it, ready to keep or change. If one turns out to be someon
 merge, and if you will never meet them again, archive them.
 
 **Last names for a whole family.** People who came in as *Lea*, *Max* and *Sophie* can be given
-their surname together: **Settings → Data quality → Last names** lists everyone without one.
+their surname together: **Settings → Data quality → Last names** lists everyone without one (except those you have
+marked as having none, see below).
 Where Stella can tell — Lea is Peter Brunner's child, Sophie is in the *Family Brunner* circle,
 or the name they are shown by already says *Thomas Brunner* — it groups them under that name,
 says why on each row, and **Apply** gives the ticked ones the name. A partner's or a child's
@@ -198,8 +199,13 @@ it to their children and brothers and sisters who have none yet — *Brunner too
 generation at a time, so a daughter who married into another name simply ends the chain. On a
 person's page, a suggested name shows as a chip under their name (*Brunner?*): one tap gives it.
 *Not Brunner* in a row's menu tells Stella not to propose that name for that
-person again — *Offer again* at the foot of the page takes it back. You can undo for eight
-seconds, and if the new name matches someone already in Stella, the page asks whether it is the
+person again; they stay on the list, under the next name Stella has or with a field —
+*Offer again* at the foot of the page takes it back. Someone who simply has no last name — met
+once at a mountain hut, or *Oma Rösli* to everyone — gets **No last name** in the same menu:
+they leave the list, Stella stops proposing names for them, and **Without a last name** at the
+foot of the page lists them, each with **Ask again** to put them back. Giving them a last name
+later ends it too. Both answers are the household's, and both show a toast with **Undo**.
+You can undo a name for eight seconds, and if the new name matches someone already in Stella, the page asks whether it is the
 same person and leads you to the merge.
 
 As soon as you type a surname, Stella checks whether that person might already be here.

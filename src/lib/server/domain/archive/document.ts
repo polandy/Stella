@@ -203,6 +203,8 @@ export function buildArchiveDocument(
 			how_we_met: text(c, 'how_we_met'),
 			met_date: text(c, 'met_date'),
 			met_place: text(c, 'met_place'),
+			// The household's *no last name* (docs/02 §2.2.4.2), so a restore does not ask again.
+			without_last_name_at: moment(c, 'without_last_name_at'),
 			avatar: text(c, 'avatar_photo_id'),
 			visibility: text(c, 'visibility'),
 			author: text(c, 'created_by'),

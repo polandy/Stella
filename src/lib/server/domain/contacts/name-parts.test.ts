@@ -84,6 +84,8 @@ describe('editNameParts', () => {
 						lastName: 'Brunner',
 						nickname: 'Tom',
 						formerName: null,
+						// A last name ends *no last name* (docs/02 §2.2.4.2).
+						withoutLastNameAt: null,
 						updatedAt: NOW
 					}
 				],
@@ -212,6 +214,8 @@ describe('editNameParts', () => {
 			firstName: null,
 			lastName: null
 		});
+		// No last name given, so a *no last name* already there is left as it is.
+		expect(f.batches[0]?.writes[0]).not.toHaveProperty('withoutLastNameAt');
 	});
 
 	it('writes nothing for a person the viewer may not see', async () => {

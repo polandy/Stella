@@ -39,6 +39,9 @@ export const contact = sqliteTable(
 		howWeMet: text('how_we_met'),
 		metDate: text('met_date'),
 		metPlace: text('met_place'),
+		// When the household said this person has no last name (docs/02 §2.2.4.2); a last name
+		// given later clears it.
+		withoutLastNameAt: integer('without_last_name_at'),
 		archivedAt: integer('archived_at'),
 		createdAt: integer('created_at').notNull().default(now),
 		updatedAt: integer('updated_at').notNull().default(now)

@@ -5,23 +5,28 @@
 	import LinkedNames from '$lib/components/people/LinkedNames.svelte';
 	import { useTranslate } from '$lib/i18n/context.svelte';
 	import type { Segment } from '$lib/i18n/linked';
+	import type { LastNameAnswers } from '$lib/components/surnames/last-name-answers.svelte';
+	import LastNameRowMenu from './LastNameRowMenu.svelte';
 	import type { SurnamePersonView } from './types';
 
 	/*
 	 * *Choose one* (docs/02 §2.2.4.2): people whose sources disagree at the same
 	 * confidence — two parents with different names. Each name is a chip and a tap gives that
-	 * one; Stella never picks a winner for them.
+	 * one; Stella never picks a winner for them. The row's menu says no to either name, or
+	 * settles the person as having none.
 	 */
 	let {
 		rows,
 		hidden,
 		disabled,
-		held
+		held,
+		answers
 	}: {
 		rows: { person: SurnamePersonView; options: { name: string; reasons: Segment[][] }[] }[];
 		hidden: ReadonlySet<string>;
 		disabled: boolean;
 		held: SubmitFunction;
+		answers: LastNameAnswers;
 	} = $props();
 
 	const t = useTranslate();
@@ -73,6 +78,12 @@
 								/>{/each}
 						</p>
 					</div>
+					<LastNameRowMenu
+						person={row.person}
+						declinable={row.options.map((o) => o.name)}
+						{answers}
+						{disabled}
+					/>
 				</li>
 			{/each}
 		</ul>
