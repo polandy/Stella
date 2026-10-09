@@ -88,6 +88,10 @@ export const archive: ArchiveMessages = {
 		'Einige Beziehungen verbanden Menschen, die das Archiv nicht enthält, und wurden ausgelassen.',
 	'archive.warning.relationshipUnknownType':
 		'Einige Beziehungen waren von einer Art, die dieses Stella nicht kennt, und wurden ausgelassen. Lege die Beziehungsart an und importiere erneut.',
+	'archive.warning.relationshipTwinFolded':
+		'Das Archiv enthielt dieselbe Beziehung von beiden Seiten; sie wurde einmal wiederhergestellt.',
+	'archive.warning.relationshipToItself':
+		'Eine Beziehung, die eine Person mit sich selbst verband, wurde ausgelassen.',
 
 	'archive.warning.imagesMissing': (p) =>
 		p.count === 1

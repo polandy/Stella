@@ -29,28 +29,3 @@ export function linkAfterMerge(
 	if (moved(from) === moved(to)) return null;
 	return relationshipPair(moved(from), moved(to), symmetric);
 }
-
-/** What a link says beyond its two ends and type, as far as a fold can fill it. */
-export interface FoldableLinkDetails {
-	description: string | null;
-	sinceDate: string | null;
-}
-
-const blank = (value: string | null): boolean => value === null || value === '';
-
-/**
- * Where both records had the same link, the survivor's row stays — its status included — and
- * only what it left blank is filled from the merged copy, the rule the profile follows.
- * Returns just the fields to write.
- */
-export function foldedLinkDetails(
-	survivor: FoldableLinkDetails,
-	merged: FoldableLinkDetails
-): Partial<FoldableLinkDetails> {
-	const filled: Partial<FoldableLinkDetails> = {};
-	if (blank(survivor.description) && !blank(merged.description)) {
-		filled.description = merged.description;
-	}
-	if (blank(survivor.sinceDate) && !blank(merged.sinceDate)) filled.sinceDate = merged.sinceDate;
-	return filled;
-}

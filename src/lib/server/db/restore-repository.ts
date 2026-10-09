@@ -98,8 +98,10 @@ export function createDrizzleRestoreRepository(
 				.all(householdId) as { id: string }[];
 			// Both the built-in types (household_id is null) and the household's own.
 			const types = sqlite
-				.query('SELECT id FROM "relationship_type" WHERE household_id IS NULL OR household_id = ?')
-				.all(householdId) as { id: string }[];
+				.query(
+					'SELECT id, symmetric FROM "relationship_type" WHERE household_id IS NULL OR household_id = ?'
+				)
+				.all(householdId) as { id: string; symmetric: number }[];
 			const tags = sqlite
 				.query('SELECT id, name FROM "tag" WHERE household_id = ?')
 				.all(householdId) as { id: string; name: string }[];
@@ -107,6 +109,7 @@ export function createDrizzleRestoreRepository(
 			return {
 				memberIds: members.map((m) => m.id),
 				relationshipTypeIds: types.map((t) => t.id),
+				symmetricTypeIds: types.filter((t) => t.symmetric === 1).map((t) => t.id),
 				tags
 			};
 		},

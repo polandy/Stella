@@ -5,7 +5,7 @@ import { migrate } from 'drizzle-orm/bun-sqlite/migrator';
 import { cpSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { foldedLinkDetails } from '../domain/contacts/merge-links';
+import { foldedLinkDetails } from '../../relationships/fold';
 import * as schema from './schema';
 import { seedRelationshipTypes } from './seed';
 
