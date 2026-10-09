@@ -32,5 +32,6 @@ export {
 	inMemoryKinshipGraph,
 	inMemoryRelationshipTies,
 	relationshipRepositoryWith,
+	relationshipTypeRepositoryWith,
 	someTie
 } from './relationships';

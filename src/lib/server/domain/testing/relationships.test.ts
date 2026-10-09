@@ -3,6 +3,7 @@ import {
 	inMemoryKinshipGraph,
 	inMemoryRelationshipTies,
 	relationshipRepositoryWith,
+	relationshipTypeRepositoryWith,
 	someTie
 } from '.';
 
@@ -78,6 +79,20 @@ describe('relationshipRepositoryWith', () => {
 		const repo = relationshipRepositoryWith({});
 		await expect(repo.removeVisibleTo(viewer, 'r1')).rejects.toThrow(
 			'RelationshipRepository.removeVisibleTo was not expected in this test'
+		);
+	});
+});
+
+describe('relationshipTypeRepositoryWith', () => {
+	it('answers with what the test gave it', async () => {
+		const repo = relationshipTypeRepositoryWith({ countRelationshipsOfType: async () => 3 });
+		expect(await repo.countRelationshipsOfType(viewer, 't1')).toBe(3);
+	});
+
+	it('fails loud on a method the test did not expect to be called', async () => {
+		const repo = relationshipTypeRepositoryWith({});
+		await expect(repo.deleteTypeVisibleTo(viewer, 't1')).rejects.toThrow(
+			'RelationshipTypeRepository.deleteTypeVisibleTo was not expected in this test'
 		);
 	});
 });

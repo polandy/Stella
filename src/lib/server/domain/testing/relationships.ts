@@ -1,4 +1,5 @@
 import type { KinshipGraph } from '../../../kinship/kinship';
+import type { RelationshipTypeRepository } from '../relationships/relationship-types';
 import type {
 	RelationshipRepository,
 	RelationshipTieReads,
@@ -79,5 +80,29 @@ export function relationshipRepositoryWith(
 	const stubs = Object.fromEntries(
 		Object.keys(RELATIONSHIP_REPOSITORY_METHODS).map((name) => [name, unexpected(name)])
 	) as unknown as RelationshipRepository;
+	return { ...stubs, ...methods };
+}
+
+/** Every method of the vocabulary's port, for the same fail-loud stub. */
+const RELATIONSHIP_TYPE_REPOSITORY_METHODS: Record<keyof RelationshipTypeRepository, true> = {
+	listTypes: true,
+	getType: true,
+	insertType: true,
+	updateTypeVisibleTo: true,
+	deleteTypeVisibleTo: true,
+	countRelationshipsOfType: true,
+	mergeTypeInto: true
+};
+
+/** A `RelationshipTypeRepository` that does what the test hands it and fails loud on anything else. */
+export function relationshipTypeRepositoryWith(
+	methods: Partial<RelationshipTypeRepository>
+): RelationshipTypeRepository {
+	const unexpected = (name: string) => async () => {
+		throw new Error(`RelationshipTypeRepository.${name} was not expected in this test`);
+	};
+	const stubs = Object.fromEntries(
+		Object.keys(RELATIONSHIP_TYPE_REPOSITORY_METHODS).map((name) => [name, unexpected(name)])
+	) as unknown as RelationshipTypeRepository;
 	return { ...stubs, ...methods };
 }
