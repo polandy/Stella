@@ -1,13 +1,6 @@
-import { dispatchCommand } from '$lib/server/domain/commands/dispatch';
-import { parseCommand, parsePhotoCommand } from '$lib/server/commands/parse';
-import { fromFormData } from '$lib/commands/form-data';
-import { GalleryAddSchema } from '$lib/commands/payloads';
-import { ulidGenerator } from '$lib/server/id';
-import { systemClock } from '$lib/server/clock';
-import { error, fail, redirect } from '@sveltejs/kit';
+import { fail, redirect } from '@sveltejs/kit';
 import { requireViewer } from '$lib/server/auth/guards';
 import * as v from 'valibot';
-import { getContact } from '$lib/server/domain/contacts/contacts';
 import { InvalidAvatarError } from '$lib/server/domain/media/avatars';
 import {
 	captionGalleryPhoto,
@@ -36,59 +29,6 @@ const PhotoPinSchema = v.object({
 
 /** The gallery card and its lightbox (docs/02 §2.14). */
 export const photoActions = {
-	/** Add one or more photos to the gallery (docs/02 §2.14). */
-	addGalleryPhotos: async ({ request, params, locals }) => {
-		const viewer = requireViewer(locals);
-		const contact = await getContact(locals.services.people.contactDeps, viewer, params.id);
-		if (!contact) throw error(404, say(locals, 'errors.contact.notFound'));
-
-		const form = await request.formData();
-		const images = form.getAll('image').filter((f): f is File => f instanceof File);
-		const thumbs = form.getAll('thumb').filter((f): f is File => f instanceof File);
-		const widths = form.getAll('width');
-		const heights = form.getAll('height');
-		if (images.length === 0 || images.length !== thumbs.length) {
-			return fail(400, { photoError: say(locals, 'errors.image.chooseSome') });
-		}
-
-		// An upload is a command, and each photo one of its own following it (docs/04 §4.11.2).
-		const author = { userId: viewer.id, householdId: viewer.householdId, locale: locals.locale };
-		const refusal = (outcome: Awaited<ReturnType<typeof dispatchCommand>> | null) =>
-			fail(400, {
-				photoError:
-					outcome?.status === 'refused'
-						? outcome.reason(translator(locals))
-						: say(locals, 'errors.image.couldNotStore')
-			});
-		const upload = parseCommand({
-			id: form.get('commandId') || ulidGenerator.next(),
-			type: 'gallery.add',
-			payload: { ...fromFormData(GalleryAddSchema, form), contactId: params.id },
-			issuedAt: systemClock.now()
-		});
-		const added = upload
-			? await dispatchCommand(locals.services.offline.commandDeps, author, upload)
-			: null;
-		if (!upload || added?.status !== 'applied') return refusal(added);
-		for (const [index, image] of images.entries()) {
-			const photo = parsePhotoCommand({
-				id: ulidGenerator.next(),
-				type: 'gallery.photo',
-				parentId: upload.id,
-				image: new Uint8Array(await image.arrayBuffer()),
-				thumb: new Uint8Array(await thumbs[index]!.arrayBuffer()),
-				width: Number(widths[index]),
-				height: Number(heights[index]),
-				issuedAt: systemClock.now()
-			});
-			const stored = photo
-				? await dispatchCommand(locals.services.offline.commandDeps, author, photo)
-				: null;
-			if (stored?.status !== 'applied') return refusal(stored);
-		}
-		throw redirect(303, contactSectionPath(params.id, 'photos'));
-	},
-
 	/** Caption a gallery photo; blank clears it. Only its uploader may. */
 	captionPhoto: async ({ request, params, locals }) => {
 		const viewer = requireViewer(locals);
