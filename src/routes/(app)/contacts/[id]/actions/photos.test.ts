@@ -4,14 +4,16 @@ import { contactSectionPath } from '$lib/people/sections';
 import type { Contact } from '$lib/server/domain/contacts/contacts';
 import type { GalleryPhoto, PhotoRepository } from '$lib/server/domain/media/avatars';
 import { CAPTION_MAX_LENGTH } from '$lib/server/domain/media/gallery';
-import type { CutRepository, GroupPhoto } from '$lib/server/domain/media/cuts';
+import type { GroupPhoto } from '$lib/server/domain/media/cuts';
 import type { StoredFraming } from '$lib/server/domain/media/framing';
 import {
+	cutRepositoryWith,
 	fixedClock,
 	inMemoryGalleryPhotos,
 	photoRepositoryWith,
 	sequentialIds,
-	someGalleryPhoto
+	someGalleryPhoto,
+	someGroupPhoto
 } from '$lib/server/domain/testing';
 import {
 	answerOf,
@@ -283,32 +285,18 @@ describe('cutFromGroupPhoto', () => {
 		width: '1024',
 		height: '1024'
 	};
-	const choir: GroupPhoto = {
-		id: 'g1',
-		circleId: 'choir',
-		createdBy: 'u2',
-		visibility: 'shared',
-		width: 2000,
-		height: 1500
-	};
+	const choir = someGroupPhoto('g1', { circleId: 'choir' });
 
 	/** The circle photo and the person as the viewer sees them; the cuts kept are the test's. */
 	function cutting({ group = choir as GroupPhoto | null, person = true, put = keepFile } = {}) {
 		const cuts: StoredFraming[] = [];
-		const unexpected = async () => {
-			throw new Error('not expected in this test');
-		};
-		const repository: CutRepository = {
-			findVisibleGroupPhoto: async (_viewer, id) => (group?.id === id ? group : null),
-			replaceCut: async (c) => (cuts.push(c), []),
-			listCutsOfCircle: unexpected,
-			listGroupPhotosOf: unexpected,
-			listGroupPhotosToCut: unexpected
-		};
 		const services: FakeServices = {
 			circles: {
 				cutDeps: {
-					cuts: repository,
+					cuts: cutRepositoryWith({
+						findVisibleGroupPhoto: async (_viewer, id) => (group?.id === id ? group : null),
+						replaceCut: async (c) => (cuts.push(c), [])
+					}),
 					contacts: {
 						findByIdVisibleTo: async (_viewer, id) => (person ? ({ id } as Contact) : null)
 					},
