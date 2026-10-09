@@ -5,14 +5,10 @@ import {
 	foldSurname,
 	proposeSurname,
 	type FamilyCircle,
-	type SurnameDismissal,
-	type SurnamePerson
+	type SurnameDismissal
 } from '../../../suggestions/rules/surnames';
-import {
-	groupBySurname,
-	householdSpellings,
-	type SurnameList
-} from '../../../suggestions/surname-groups';
+import { householdSpellings, type SurnameList } from '../../../suggestions/surname-groups';
+import { awaitsLastName, reviewList, type ReviewPerson } from '../../../surnames/review';
 import type { Viewer } from '../../access/visibility';
 import type { Locale } from '../../../i18n/locales';
 import type { IdGenerator } from '../../id';
@@ -21,7 +17,7 @@ import type { PassOnMap } from '../../../surnames/pass-on';
 import type { SurnameProposal } from '../../../suggestions/rules/surnames';
 import { activityRecord } from '../activity/activity';
 import { withNameParts } from '../../../people/display-name';
-import type { NameDeps, NameWrite } from './name-parts';
+import { noLastNameAfter, type NameDeps, type NameWrite } from './name-parts';
 
 /*
  * Last names for several people at once (docs/02 §2.2.4.4). One write
@@ -31,11 +27,9 @@ import type { NameDeps, NameWrite } from './name-parts';
  */
 
 /** A person as the *Last names* list shows them, and as the rules read them. */
-export interface SurnameListPerson extends SurnamePerson {
+export interface SurnameListPerson extends ReviewPerson {
 	avatarPhotoId: string | null;
 	isDeceased: boolean;
-	/** Archived people are sources (a grandmother's name) but are not listed. */
-	archived: boolean;
 }
 
 /** What the rules read beyond the kinship graph, scoped to one viewer (docs/03 §3.7). */
@@ -141,6 +135,7 @@ export async function setLastNames(
 			id: contact.id,
 			...withNameParts(contact, { lastName: change.lastName }, locale),
 			formerName: contact.formerName,
+			...noLastNameAfter(change.lastName),
 			updatedAt: now
 		});
 		anyPrivate ||= contact.visibility === 'private';
@@ -176,6 +171,8 @@ export interface LastNamesReview {
 	knownSurnames: string[];
 	/** The names the household said no to, so a *no* can be taken back. */
 	declined: { contactId: string; personName: string; name: string }[];
+	/** The people settled as having no last name, newest first, so *Ask again* can find them. */
+	settled: { contactId: string; personName: string }[];
 }
 
 /** Everyone the viewer may see without a last name, with what Stella proposes for each. */
@@ -188,24 +185,23 @@ export async function reviewLastNames(
 		deps.kinship.loadKinshipGraphVisibleTo(viewer),
 		deps.surnameDismissals.listForHousehold(viewer)
 	]);
-	const view = buildSurnameView({
+	const review = reviewList({
 		people: facts.people,
 		graph,
 		familyCircles: facts.familyCircles,
 		dismissed
 	});
-	const listed = facts.people
-		.filter((p) => !p.archived && !(p.lastName ?? '').trim())
-		.sort((a, b) => a.displayName.localeCompare(b.displayName));
+	const listed = facts.people.filter(awaitsLastName);
 	const spellings = householdSpellings(facts.people.map((p) => p.lastName));
 	const byId = new Map(facts.people.map((p) => [p.id, p]));
 	return {
-		list: groupBySurname(
-			listed.map((p) => ({ personId: p.id, proposal: proposeSurname(view, p.id) })),
-			spellings
-		),
+		list: review.list,
 		people: Object.fromEntries(listed.map((p) => [p.id, p])),
 		knownSurnames: [...spellings.values()].sort((a, b) => a.localeCompare(b)),
+		settled: review.settled.map((id) => ({
+			contactId: id,
+			personName: byId.get(id)!.displayName
+		})),
 		declined: dismissed
 			.filter((d) => byId.has(d.contactId))
 			.map((d) => ({
@@ -226,7 +222,8 @@ export interface SurnameHelp {
 
 /**
  * Read once per page: whom a saved name can be passed on to, and what Stella proposes for the
- * person the page is about. Archived people are not offered a name, as they are not listed.
+ * person the page is about. Archived and settled people are not offered a name, as they are
+ * not listed.
  */
 export async function readSurnameHelp(
 	deps: SurnameReviewDeps,
@@ -244,9 +241,8 @@ export async function readSurnameHelp(
 		familyCircles: facts.familyCircles,
 		dismissed
 	});
-	const nameless = new Map(
-		facts.people.filter((p) => !p.archived && !(p.lastName ?? '').trim()).map((p) => [p.id, p])
-	);
+	// Settled people are offered nothing (§2.2.4.2): no pass-on, no chip.
+	const nameless = new Map(facts.people.filter(awaitsLastName).map((p) => [p.id, p]));
 	const declined = new Map<string, string[]>();
 	for (const d of dismissed)
 		declined.set(d.contactId, [...(declined.get(d.contactId) ?? []), d.folded]);
@@ -260,7 +256,11 @@ export async function readSurnameHelp(
 			.map((p) => ({ id: p.id, name: p.displayName, declined: declined.get(p.id) ?? [] }));
 		if (kin.length > 0) passOn[person.id] = kin;
 	}
-	return { passOn, proposal: subjectId ? proposeSurname(view, subjectId) : { kind: 'none' } };
+	const settled = facts.people.some((p) => p.id === subjectId && p.withoutLastNameAt !== null);
+	return {
+		passOn,
+		proposal: subjectId && !settled ? proposeSurname(view, subjectId) : { kind: 'none' }
+	};
 }
 
 /** What the Settings card says: how many have no last name, and for how many Stella has one. */

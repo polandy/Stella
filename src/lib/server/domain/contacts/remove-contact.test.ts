@@ -190,7 +190,8 @@ describe('mergeContacts', () => {
 		company: null,
 		howWeMet: null,
 		metDate: null,
-		metPlace: null
+		metPlace: null,
+		withoutLastNameAt: null
 	};
 
 	const pair: MergePair = {

@@ -50,7 +50,8 @@ const mergeableColumns = {
 	company: contactTable.company,
 	howWeMet: contactTable.howWeMet,
 	metDate: contactTable.metDate,
-	metPlace: contactTable.metPlace
+	metPlace: contactTable.metPlace,
+	withoutLastNameAt: contactTable.withoutLastNameAt
 };
 
 const contactColumns = {
@@ -181,7 +182,8 @@ export function createDrizzleContactRepository(
 				company: row.company,
 				howWeMet: row.howWeMet,
 				metDate: row.metDate,
-				metPlace: row.metPlace
+				metPlace: row.metPlace,
+				withoutLastNameAt: row.withoutLastNameAt
 			});
 
 			return {
@@ -243,6 +245,10 @@ export function createDrizzleContactRepository(
 				}
 				if (audit) tx.insert(activityLog).values(activityEntry(audit)).run();
 			});
+		},
+
+		async markWithoutLastName(id: string, at: number | null) {
+			db.update(contactTable).set({ withoutLastNameAt: at }).where(eq(contactTable.id, id)).run();
 		}
 	};
 }

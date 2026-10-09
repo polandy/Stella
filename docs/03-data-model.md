@@ -225,6 +225,7 @@ The central person entity.
 | how_we_met | text null | free text |
 | met_date | text null | |
 | met_place | text null | |
+| without_last_name_at | int null | set = the household said they have no last name (docs/02 §2.2.4.2): off the *Last names* list, offered no name; cleared by any write that gives a last name and by *Ask again*; a merge keeps it only while the survivor still has no last name; travels in the archive |
 | archived_at | int null | set = out of the browsing surfaces (§2.2); still readable by id |
 | created_at / updated_at | int | |
 

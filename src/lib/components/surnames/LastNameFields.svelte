@@ -5,6 +5,8 @@
 	import Button from '$lib/components/ui/Button.svelte';
 	import Combobox from '$lib/components/ui/Combobox.svelte';
 	import { useTranslate } from '$lib/i18n/context.svelte';
+	import type { LastNameAnswers } from '$lib/components/surnames/last-name-answers.svelte';
+	import LastNameRowMenu from './LastNameRowMenu.svelte';
 	import LastNameSelectionBar from './LastNameSelectionBar.svelte';
 	import type { SurnamePersonView } from './types';
 
@@ -12,7 +14,7 @@
 	 * *No suggestion* (docs/02 §2.2.4.2): a field per person, offering the
 	 * surnames the household already uses. *Select…* ticks several of them and opens the same
 	 * bar as the People directory, so five cousins with no link at all still get one name in
-	 * one step.
+	 * one step. A row's menu settles a person as having no last name.
 	 */
 	let {
 		people,
@@ -20,7 +22,8 @@
 		hidden,
 		disabled,
 		offlineLine,
-		held
+		held,
+		answers
 	}: {
 		people: SurnamePersonView[];
 		knownSurnames: readonly string[];
@@ -28,6 +31,7 @@
 		disabled: boolean;
 		offlineLine: string | null;
 		held: SubmitFunction;
+		answers: LastNameAnswers;
 	} = $props();
 
 	const t = useTranslate();
@@ -94,6 +98,10 @@
 							>{/if}
 					</a>
 					{#if !selecting}
+						<!-- Beside the name on a phone, where the field wraps below; after Save on a wide screen. -->
+						<div class="sm:order-last">
+							<LastNameRowMenu {person} declinable={[]} {answers} {disabled} />
+						</div>
 						<form
 							method="POST"
 							action="?/setLastNames"
@@ -101,9 +109,11 @@
 							class="flex w-full gap-2 sm:w-auto"
 						>
 							<input type="hidden" name="contactId" value={person.id} />
+							<!-- A field nobody typed in starts empty: Combobox's value has a fallback, and
+							     Svelte refuses to bind undefined to one (props_invalid_value). -->
 							<Combobox
 								name="lastName"
-								bind:value={drafts[person.id]}
+								bind:value={() => drafts[person.id] ?? '', (typed) => (drafts[person.id] = typed)}
 								options={knownSurnames}
 								placeholder={t('surnames.lastNamePlaceholder')}
 								class="min-w-0 flex-1 rounded-md border border-border-input bg-bg px-3 py-1.5 text-sm text-fg sm:w-44"

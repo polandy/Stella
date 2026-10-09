@@ -69,10 +69,13 @@ beforeEach(() => {
 	seedRelationshipTypes(db);
 	db.insert(schema.household).values({ id: H, name: 'H' }).run();
 	db.insert(schema.user).values({ id: U, householdId: H, email: 'u@x.test', name: 'U' }).run();
+	// Plain SQL: the schema as it is today names columns a later migration adds.
 	for (const id of ['anna', 'elias', 'keep', 'lena']) {
-		db.insert(schema.contact)
-			.values({ id, householdId: H, createdBy: U, visibility: 'shared', displayName: id })
-			.run();
+		sqlite
+			.query(
+				`INSERT INTO contact (id, household_id, created_by, visibility, display_name) VALUES (?, ?, ?, 'shared', ?)`
+			)
+			.run(id, H, U, id);
 	}
 });
 

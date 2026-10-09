@@ -15,6 +15,17 @@ reader comes here to work a list down, a few answers at a time, without losing t
   a suggestion) and *People known by a first name only* (§2.2.3; the `tidy` icon, with a count
   pill while anyone is left).
 - The checks live here, not in the People directory (§5.5.3).
+- *Last names* (docs/02 §2.2.4.2): every row, in every section, has a ⋯ menu holding the
+  lower-ranked names, *Not …* for each proposed name and, under a divider, **No last name** with
+  a one-line hint (*They have none, and that's fine. Stella stops asking.*). In *No suggestion*
+  the menu sits beside the name on a phone, where the field wraps below, and after *Save* on a
+  wide screen.
+- Both answers save at once and say so in an undoable toast; the person moves (to the next
+  name, to *No suggestion*, or off the list) when the list reloads.
+- Two `<details>` drawers close the page: *Names you said no to* with *Offer again*, then
+  *Without a last name* with a one-line intro and *Ask again* per person, its accessible name
+  carrying the person's name. The empty state reads *Everyone has a last name or is fine
+  without*.
 - The first-name list gives each row a one-line description field and a small *Save* under the
   name; a saved row leaves the list.
 - Its names link to the profile; the list offers neither merging nor archiving itself.
@@ -61,7 +72,10 @@ reader comes here to work a list down, a few answers at a time, without losing t
 ### Why
 
 Checks live in Settings so the People directory stays a place to find people rather than a
-to-do list. Merging and archiving stay on the profile, where they live in the ⋯ menu.
+to-do list. *No last name* exists so the *Last names* list can empty: some people simply have
+none the household will ever know, and a list that never empties stops being read. Its drawer
+sits on the same page, beside the declined names, because that is where a member looks for
+someone who has gone from the list. Merging and archiving stay on the profile, where they live in the ⋯ menu.
 
 The rule engine runs only when asked because it computes the whole household (docs/04 §4.9),
 and nothing it finds is dropped (docs/04 ADR-010) — so the screen folds instead. The header and

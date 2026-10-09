@@ -294,6 +294,7 @@ export function planRestore(
 			how_we_met: str(person, 'how_we_met'),
 			met_date: str(person, 'met_date'),
 			met_place: str(person, 'met_place'),
+			without_last_name_at: ms(person, 'without_last_name_at'),
 			archived_at: ms(person, 'archived_at'),
 			...stamps(person)
 		});

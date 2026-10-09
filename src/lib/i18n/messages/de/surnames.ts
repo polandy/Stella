@@ -24,7 +24,7 @@ export const surnames: SurnamesMessages = {
 	'surnames.page.title': 'Nachnamen',
 	'surnames.page.intro':
 		'Alle ohne Nachnamen. Wo eine Verbindung, ein Kreis oder ihr eigener Eintrag ihn verrät, schlägt Stella ihn vor — gespeichert wird erst, wenn du ihn übernimmst.',
-	'surnames.page.empty.title': 'Alle haben einen Nachnamen',
+	'surnames.page.empty.title': 'Alle haben einen Nachnamen oder brauchen keinen',
 	'surnames.page.empty.hint': 'Wer ohne Nachnamen hinzukommt, erscheint hier.',
 	'surnames.blurb': 'Personen ohne Nachnamen, und welche Stella herausfinden kann',
 	'surnames.applyTo': (p) => `Für ${p.count} übernehmen`,
@@ -39,6 +39,17 @@ export const surnames: SurnamesMessages = {
 	'surnames.declined': (p) => `Abgelehnte Namen (${p.count})`,
 	'surnames.declinedRow': (p) => `${p.person} — nicht ${p.name}`,
 	'surnames.offerAgain': 'Wieder vorschlagen',
+	'surnames.noLastName': 'Kein Nachname',
+	'surnames.noLastNameHint': 'Hat keinen, und das ist in Ordnung. Stella fragt nicht mehr.',
+	'surnames.settled': (p) => `Ohne Nachnamen (${p.count})`,
+	'surnames.settledIntro':
+		'Der Haushalt hat festgehalten, dass diese Personen keinen haben. Stella schlägt für sie nichts vor.',
+	'surnames.askAgain': 'Wieder fragen',
+	'surnames.askAgainFor': (p) => `Wieder nach ${p.name} fragen`,
+	'surnames.toast.declined': (p) => `${p.name} wird für ${p.person} nicht mehr vorgeschlagen.`,
+	'surnames.toast.settled': (p) => `${p.person} bleibt ohne Nachnamen.`,
+	'surnames.toast.answerFailed':
+		'Die Antwort konnte nicht gespeichert werden. Bitte nochmals versuchen.',
 	'surnames.setLastName': 'Nachnamen setzen',
 	'surnames.lastNamePlaceholder': 'Nachname…',
 	'surnames.next': 'Weiter',

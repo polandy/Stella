@@ -5,6 +5,7 @@ import type { IdGenerator } from '../../id';
 import { activityRecord, type ActivityOf } from '../activity/activity';
 import { withNameEdit, type StoredName } from '../../../people/display-name';
 import { EmptyContactNameError, type Contact } from './contacts';
+import { clearsNoLastName } from '../../../surnames/review';
 
 /*
  * Changing the parts of a person's name after they were added (docs/02 §2.2, §2.2.4.4,
@@ -16,7 +17,14 @@ import { EmptyContactNameError, type Contact } from './contacts';
 export interface NameWrite extends StoredName {
 	id: string;
 	formerName: string | null;
+	/** Null when the write gives a last name, which ends *no last name* (§2.2.4.2); else left out. */
+	withoutLastNameAt?: null;
 	updatedAt: number;
+}
+
+/** What a write giving `lastName` does to *no last name*: ends it, or leaves it alone. */
+export function noLastNameAfter(lastName: string | null): Pick<NameWrite, 'withoutLastNameAt'> {
+	return clearsNoLastName(lastName) ? { withoutLastNameAt: null } : {};
 }
 
 /** The port the name use-cases write through (docs/08 §8.3). */
@@ -97,6 +105,9 @@ export async function editNameParts(
 				now
 			)
 		: null;
-	await deps.names.writeNames([{ id, ...next, formerName, updatedAt: now }], audit);
+	await deps.names.writeNames(
+		[{ id, ...next, formerName, ...noLastNameAfter(next.lastName), updatedAt: now }],
+		audit
+	);
 	return true;
 }

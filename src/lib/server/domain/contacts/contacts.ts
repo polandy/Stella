@@ -5,6 +5,7 @@ import type { Clock } from '../../clock';
 import type { ActivityOf } from '../activity/activity';
 import type { MergeableProfile } from './merge-profile';
 import type { NameRepository } from './name-parts';
+import type { WithoutLastNameRepository } from './without-last-name';
 import type { IdGenerator } from '../../id';
 import { deriveDisplayName } from '../../../people/display-name';
 import { isKnownByMoreThanAFirstName } from '../../../people/new-person';
@@ -125,10 +126,10 @@ export interface ProfilePatch {
 /**
  * The contact record's writes, and the one-record reads they rest on (docs/08 §8.3). The lists
  * are read models of their own: `ContactDirectoryReads` (directory.ts) and `ContactNameReads`
- * (contact-names.ts). It writes names too, so it is the `NameRepository` the name use-cases
- * take.
+ * (contact-names.ts). It writes names and *no last name* too, so it is the `NameRepository` and
+ * the `WithoutLastNameRepository` the name use-cases take.
  */
-export interface ContactRepository extends NameRepository {
+export interface ContactRepository extends NameRepository, WithoutLastNameRepository {
 	insert(contact: NewContact): Promise<void>;
 	findByIdVisibleTo(viewer: Viewer, id: string): Promise<Contact | null>;
 	/** Write the hero's own fields; the caller has already checked the contact is visible. */

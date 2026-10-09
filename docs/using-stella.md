@@ -198,8 +198,13 @@ it to their children and brothers and sisters who have none yet — *Brunner too
 generation at a time, so a daughter who married into another name simply ends the chain. On a
 person's page, a suggested name shows as a chip under their name (*Brunner?*): one tap gives it.
 *Not Brunner* in a row's menu tells Stella not to propose that name for that
-person again — *Offer again* at the foot of the page takes it back. You can undo for eight
-seconds, and if the new name matches someone already in Stella, the page asks whether it is the
+person again; they stay on the list, under the next name Stella has or with a field —
+*Offer again* at the foot of the page takes it back. Someone who simply has no last name — met
+once at a mountain hut, or *Oma Rösli* to everyone — gets **No last name** in the same menu:
+they leave the list, Stella stops proposing names for them, and **Without a last name** at the
+foot of the page lists them, each with **Ask again** to put them back. Giving them a last name
+later ends it too. Both answers are the household's, and both show a toast with **Undo**.
+You can undo a name for eight seconds, and if the new name matches someone already in Stella, the page asks whether it is the
 same person and leads you to the merge.
 
 As soon as you type a surname, Stella checks whether that person might already be here.

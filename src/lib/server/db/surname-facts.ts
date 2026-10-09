@@ -33,7 +33,8 @@ export function createDrizzleSurnameFacts(
 					formerName: contact.formerName,
 					avatarPhotoId: contact.avatarPhotoId,
 					isDeceased: contact.isDeceased,
-					archivedAt: contact.archivedAt
+					archivedAt: contact.archivedAt,
+					withoutLastNameAt: contact.withoutLastNameAt
 				})
 				.from(contact)
 				.where(contactVisibleTo(viewer))

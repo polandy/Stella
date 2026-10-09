@@ -24,7 +24,7 @@ export const surnames = {
 	'surnames.page.title': 'Last names',
 	'surnames.page.intro':
 		'Everyone without a last name. Where a link, a circle or their own record says what it is, Stella proposes it — nothing is saved until you apply it.',
-	'surnames.page.empty.title': 'Everyone has a last name',
+	'surnames.page.empty.title': 'Everyone has a last name or is fine without',
 	'surnames.page.empty.hint': 'People added without one will show up here.',
 	'surnames.blurb': 'People without a last name, with the ones Stella can work out',
 	'surnames.applyTo': (p: { count: number }) => `Apply to ${p.count}`,
@@ -39,6 +39,18 @@ export const surnames = {
 	'surnames.declined': (p: { count: number }) => `Names you said no to (${p.count})`,
 	'surnames.declinedRow': (p: { person: string; name: string }) => `${p.person} — not ${p.name}`,
 	'surnames.offerAgain': 'Offer again',
+	// *No last name* and its drawer (docs/02 §2.2.4.2).
+	'surnames.noLastName': 'No last name',
+	'surnames.noLastNameHint': 'They have none, and that’s fine. Stella stops asking.',
+	'surnames.settled': (p: { count: number }) => `Without a last name (${p.count})`,
+	'surnames.settledIntro':
+		'The household said these people have none. Stella proposes nothing for them.',
+	'surnames.askAgain': 'Ask again',
+	'surnames.askAgainFor': (p: { name: string }) => `Ask again about ${p.name}`,
+	'surnames.toast.declined': (p: { name: string; person: string }) =>
+		`${p.name} won’t be proposed for ${p.person} again.`,
+	'surnames.toast.settled': (p: { person: string }) => `${p.person} is fine without a last name.`,
+	'surnames.toast.answerFailed': 'Could not save that answer. Please try again.',
 	'surnames.setLastName': 'Set last name',
 	'surnames.lastNamePlaceholder': 'Last name…',
 	'surnames.next': 'Next',

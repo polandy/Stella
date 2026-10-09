@@ -26,7 +26,8 @@ const empty: MergeableProfile = {
 	company: null,
 	howWeMet: null,
 	metDate: null,
-	metPlace: null
+	metPlace: null,
+	withoutLastNameAt: null
 };
 
 const profile = (over: Partial<MergeableProfile>): MergeableProfile => ({ ...empty, ...over });
@@ -88,6 +89,22 @@ describe('mergeProfiles', () => {
 		expect(mergeProfiles(profile({}), profile({ avatarPhotoId: 'p-other' })).avatarPhotoId).toBe(
 			'p-other'
 		);
+	});
+
+	it('keeps *no last name* when neither brings a last name, from either record', () => {
+		expect(mergeProfiles(profile({}), profile({ withoutLastNameAt: 5 })).withoutLastNameAt).toBe(5);
+		expect(mergeProfiles(profile({ withoutLastNameAt: 7 }), profile({})).withoutLastNameAt).toBe(7);
+		// The control: nobody settled either of them, so the merged person stays unmarked.
+		expect(mergeProfiles(profile({}), profile({})).withoutLastNameAt).toBeNull();
+	});
+
+	it('ends *no last name* when either record brings a last name', () => {
+		expect(
+			mergeProfiles(profile({ withoutLastNameAt: 7 }), profile({ lastName: 'Brunner' }))
+		).toMatchObject({ lastName: 'Brunner', withoutLastNameAt: null });
+		expect(
+			mergeProfiles(profile({ lastName: 'Brunner' }), profile({ withoutLastNameAt: 5 }))
+		).toMatchObject({ lastName: 'Brunner', withoutLastNameAt: null });
 	});
 
 	it('changes nothing when the record merged away says nothing at all', () => {

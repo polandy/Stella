@@ -88,6 +88,7 @@ const CONTACT_REPOSITORY_METHODS: Record<keyof ContactRepository, true> = {
 	setJob: true,
 	setArchived: true,
 	writeNames: true,
+	markWithoutLastName: true,
 	deleteVisibleTo: true,
 	readForMerge: true,
 	mergeVisibleTo: true

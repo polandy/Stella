@@ -87,6 +87,8 @@ describe('createPeopleServices', () => {
 		expect(people.nameDeps.names).toBe(people.contacts);
 		expect(people.lastNameDeps.names).toBe(people.contacts);
 		expect(people.surnameDismissalDeps.names).toBe(people.contacts);
+		expect(people.withoutLastNameDeps.withoutLastName).toBe(people.contacts);
+		expect(people.withoutLastNameDeps.clock).toBe(clock);
 		expect(people.selfContactDeps.contacts).toBe(people.contacts);
 		expect(people.deleteContactDeps.contacts).toBe(people.contacts);
 		// The lists are read models apart, each handed on as the one instance.

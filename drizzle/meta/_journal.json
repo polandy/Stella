@@ -183,6 +183,13 @@
       "when": 1791501856527,
       "tag": "0025_sort_symmetric_links",
       "breakpoints": true
+    },
+    {
+      "idx": 26,
+      "version": "6",
+      "when": 1791526335083,
+      "tag": "0026_without_last_name",
+      "breakpoints": true
     }
   ]
 }
