@@ -109,6 +109,53 @@ test('refuses a label that already names a type, and writes nothing', async ({ p
 	await expect(page.getByTestId('custom-types').locator('li')).toHaveCount(before);
 });
 
+test('refuses a label of nothing but spaces in a sentence, and writes nothing', async ({
+	page
+}) => {
+	// Spaces pass the field's `required`; the use-case is what refuses them. The German
+	// sentence is pinned by the route's own suite — this spec shares the demo account in English.
+	await openTypeSettings(page);
+	const before = await page.getByTestId('custom-types').locator('li').count();
+
+	await addType(page, { label: '   ', category: 'social' });
+
+	await expect(page.getByText('A relationship type needs a label.')).toBeVisible();
+	await expect(page.getByTestId('custom-types').locator('li')).toHaveCount(before);
+});
+
+test('says so when a type was already removed in another tab', async ({ page, context }) => {
+	await openTypeSettings(page);
+	await addType(page, { label: 'Bakes with', category: 'social' });
+	await expect(customRow(page, 'Bakes with')).toHaveCount(1);
+
+	// A second tab still lists it.
+	const other = await context.newPage();
+	await other.goto('/');
+	await appReady(other);
+	await openTypeSettings(other);
+	await expect(customRow(other, 'Bakes with')).toHaveCount(1);
+
+	// The first tab removes it for real: leaving the page commits the removal.
+	await customRow(page, 'Bakes with')
+		.getByRole('button', { name: 'Remove the type Bakes with' })
+		.click();
+	await expect(page.getByTestId('toast-undo')).toBeVisible();
+	await openTypeSettings(page);
+	await expect(customRow(page, 'Bakes with')).toHaveCount(0);
+
+	// The second tab's removal finds nothing left to remove, and says so instead of
+	// pretending it worked; the list it then reads no longer has the type.
+	await customRow(other, 'Bakes with')
+		.getByRole('button', { name: 'Remove the type Bakes with' })
+		.click();
+	await expect(other.getByTestId('toast-undo')).toBeVisible();
+	await openTypeSettings(other);
+	await expect(other.getByTestId('toast-notice')).toContainText(
+		'Could not remove it. It is back on the page.'
+	);
+	await expect(customRow(other, 'Bakes with')).toHaveCount(0);
+});
+
 test('leaves the built-in types alone', async ({ page }) => {
 	await openTypeSettings(page);
 	const builtIn = page.getByTestId('built-in-types');

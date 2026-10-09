@@ -1,6 +1,5 @@
 import { fail, redirect } from '@sveltejs/kit';
 import * as v from 'valibot';
-import { RELATIONSHIP_CATEGORIES } from '$lib/relationships/categories';
 import { requireAdmin, requireViewer } from '$lib/server/auth/guards';
 import {
 	BuiltInRelationshipTypeError,
@@ -21,10 +20,15 @@ import { say, translator } from '$lib/server/i18n/say';
  * everyone's pages, so renaming one rewrites what every member reads.
  */
 
+/*
+ * The form read only checks the shape the page posts. A blank label or a category Stella does
+ * not know is the use-case's to refuse, with its own sentence; a form the page would never
+ * post gets the general one.
+ */
 const TypeSchema = v.object({
-	forwardLabel: v.pipe(v.string(), v.trim(), v.minLength(1, 'A relationship type needs a label.')),
+	forwardLabel: v.string(),
 	reverseLabel: v.optional(v.string(), ''),
-	category: v.picklist(RELATIONSHIP_CATEGORIES),
+	category: v.string(),
 	symmetric: v.optional(v.literal('on'))
 });
 
@@ -88,7 +92,7 @@ export const actions: Actions = {
 	add: async ({ request, locals }) => {
 		const user = requireAdmin(locals);
 		const parsed = v.safeParse(TypeSchema, Object.fromEntries(await request.formData()));
-		if (!parsed.success) return fail(400, { error: parsed.issues[0].message });
+		if (!parsed.success) return fail(400, { error: say(locals, 'errors.form.checkAndRetry') });
 		try {
 			await createRelationshipType(
 				locals.services.relationships.relationshipTypeDeps,
@@ -106,7 +110,7 @@ export const actions: Actions = {
 	edit: async ({ request, locals }) => {
 		const user = requireAdmin(locals);
 		const parsed = v.safeParse(WithIdSchema, Object.fromEntries(await request.formData()));
-		if (!parsed.success) return fail(400, { error: parsed.issues[0].message });
+		if (!parsed.success) return fail(400, { error: say(locals, 'errors.form.checkAndRetry') });
 		try {
 			const changed = await editRelationshipType(
 				locals.services.relationships.relationshipTypeDeps,
@@ -126,7 +130,7 @@ export const actions: Actions = {
 	merge: async ({ request, locals }) => {
 		const user = requireAdmin(locals);
 		const parsed = v.safeParse(MergeSchema, Object.fromEntries(await request.formData()));
-		if (!parsed.success) return fail(400, { error: parsed.issues[0].message });
+		if (!parsed.success) return fail(400, { error: say(locals, 'errors.form.checkAndRetry') });
 		try {
 			const merged = await mergeRelationshipType(
 				locals.services.relationships.relationshipTypeDeps,
@@ -146,13 +150,14 @@ export const actions: Actions = {
 	remove: async ({ request, locals }) => {
 		const user = requireAdmin(locals);
 		const parsed = v.safeParse(IdOnlySchema, Object.fromEntries(await request.formData()));
-		if (!parsed.success) return fail(400, { error: parsed.issues[0].message });
+		if (!parsed.success) return fail(400, { error: say(locals, 'errors.form.checkAndRetry') });
 		try {
-			await removeRelationshipType(
+			const removed = await removeRelationshipType(
 				locals.services.relationships.relationshipTypeDeps,
 				{ id: user.id, householdId: user.householdId },
 				parsed.output.typeId
 			);
+			if (!removed) return fail(404, { error: say(locals, 'errors.relationshipType.gone') });
 		} catch (err) {
 			const message = messageOf(err, locals);
 			if (!message) throw err;

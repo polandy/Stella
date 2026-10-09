@@ -45,8 +45,9 @@ const refused = (status: number, error: unknown): EdgeAnswer => ({
 	data: { error }
 });
 
-/** A refusal of the form read itself; its sentence is Valibot's (see the PR's findings). */
-const unreadable = refused(400, expect.any(String));
+/** A refusal of a form the page would never post, in the reader's language. */
+const unreadable = (locale: Locale = 'en') =>
+	refused(400, createTranslator(locale)('errors.form.checkAndRetry'));
 
 const custom = (
 	id: string,
@@ -187,22 +188,37 @@ describe('add', () => {
 		).toEqual([{ reverseLabel: 'Coached by', symmetric: false }]);
 	});
 
-	it('refuses a blank label, and writes nothing', async () => {
+	it('refuses a blank label in the reader’s language, and writes nothing', async () => {
 		const { services, writes } = household();
 		const form = formOf({ ...choirMate, forwardLabel: '   ' });
 		expect(await post(actions.add, services, form)).toEqual(
-			refused(400, 'A relationship type needs a label.')
+			refused(400, en('errors.relationshipType.needsLabel'))
+		);
+		expect(await post(actions.add, services, form, 'de')).toEqual(
+			refused(400, de('errors.relationshipType.needsLabel'))
 		);
 		expect(writes.inserted).toEqual([]);
 	});
 
-	it('refuses a category or a checkbox it does not know', async () => {
+	it('refuses a category it does not know, in the reader’s language', async () => {
+		const form = formOf({ ...choirMate, category: 'enemy' });
+		for (const [locale, say] of [
+			['en', en],
+			['de', de]
+		] as const) {
+			expect(await post(actions.add, household().services, form, locale)).toEqual(
+				refused(400, say('errors.relationshipType.unknownCategory', { category: 'enemy' }))
+			);
+		}
+	});
+
+	it('refuses a checkbox it does not know, or a form without the label, in the reader’s language', async () => {
 		for (const form of [
-			formOf({ ...choirMate, category: 'enemy' }),
 			formOf({ ...choirMate, symmetric: 'yes' }),
 			formOf({ category: 'social' })
 		]) {
-			expect(await post(actions.add, household().services, form)).toEqual(unreadable);
+			expect(await post(actions.add, household().services, form)).toEqual(unreadable());
+			expect(await post(actions.add, household().services, form, 'de')).toEqual(unreadable('de'));
 		}
 	});
 
@@ -253,11 +269,16 @@ describe('edit', () => {
 	it('refuses a form without the type or the label', async () => {
 		const { typeId: _, ...noType } = rename;
 		for (const form of [formOf(noType), formOf({ ...rename, typeId: '' })]) {
-			expect(await post(actions.edit, household().services, form)).toEqual(unreadable);
+			expect(await post(actions.edit, household().services, form)).toEqual(unreadable());
+			expect(await post(actions.edit, household().services, form, 'de')).toEqual(unreadable('de'));
 		}
-		expect(
-			await post(actions.edit, household().services, formOf({ ...rename, forwardLabel: '' }))
-		).toEqual(refused(400, 'A relationship type needs a label.'));
+		const blank = formOf({ ...rename, forwardLabel: '' });
+		expect(await post(actions.edit, household().services, blank)).toEqual(
+			refused(400, en('errors.relationshipType.needsLabel'))
+		);
+		expect(await post(actions.edit, household().services, blank, 'de')).toEqual(
+			refused(400, de('errors.relationshipType.needsLabel'))
+		);
 	});
 
 	it('answers 404 for a type that is gone, or goes while it is rewritten', async () => {
@@ -321,7 +342,8 @@ describe('merge', () => {
 			formOf({ intoId: fold.intoId }),
 			formOf({ ...fold, intoId: '' })
 		]) {
-			expect(await post(actions.merge, household().services, form)).toEqual(unreadable);
+			expect(await post(actions.merge, household().services, form)).toEqual(unreadable());
+			expect(await post(actions.merge, household().services, form, 'de')).toEqual(unreadable('de'));
 		}
 	});
 
@@ -363,7 +385,10 @@ describe('remove', () => {
 
 	it('refuses a form without the type', async () => {
 		for (const form of [formOf({}), formOf({ typeId: '' })]) {
-			expect(await post(actions.remove, household().services, form)).toEqual(unreadable);
+			expect(await post(actions.remove, household().services, form)).toEqual(unreadable());
+			expect(await post(actions.remove, household().services, form, 'de')).toEqual(
+				unreadable('de')
+			);
 		}
 	});
 
@@ -378,10 +403,18 @@ describe('remove', () => {
 		expect(writes.deleted).toEqual([]);
 	});
 
-	it('goes back to the list for a type that is gone, as if it had removed it', async () => {
-		// Unlike edit and merge, which answer 404; pinned as it is, noted in the PR.
-		const { services, writes } = household();
-		expect(await post(actions.remove, services, formOf({ typeId: 'nope' }))).toEqual(BACK);
+	it('answers 404 for a type that is gone, or goes while it is removed', async () => {
+		const missing = formOf({ typeId: 'nope' });
+		expect(await post(actions.remove, household().services, missing)).toEqual(
+			refused(404, en('errors.relationshipType.gone'))
+		);
+		expect(await post(actions.remove, household().services, missing, 'de')).toEqual(
+			refused(404, de('errors.relationshipType.gone'))
+		);
+		const { services, writes } = household({ found: false });
+		expect(await post(actions.remove, services, formOf({ typeId: 'choir' }))).toEqual(
+			refused(404, en('errors.relationshipType.gone'))
+		);
 		expect(writes.deleted).toEqual([]);
 	});
 
