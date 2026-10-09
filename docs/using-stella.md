@@ -184,7 +184,8 @@ field starts out with it, ready to keep or change. If one turns out to be someon
 merge, and if you will never meet them again, archive them.
 
 **Last names for a whole family.** People who came in as *Lea*, *Max* and *Sophie* can be given
-their surname together: **Settings → Data quality → Last names** lists everyone without one.
+their surname together: **Settings → Data quality → Last names** lists everyone without one (except those you have
+marked as having none, see below).
 Where Stella can tell — Lea is Peter Brunner's child, Sophie is in the *Family Brunner* circle,
 or the name they are shown by already says *Thomas Brunner* — it groups them under that name,
 says why on each row, and **Apply** gives the ticked ones the name. A partner's or a child's
