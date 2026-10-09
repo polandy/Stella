@@ -46,10 +46,11 @@ describe('the merge plan', () => {
 		});
 	});
 
-	it('drops the link between the two only once both ends of every link have moved', () => {
+	it('drops the links between the two before either end is repointed, which would make them self links', () => {
+		// The table refuses a link from a person to themselves (docs/03 §relationship).
 		const from = repointOf('relationship', 'from_contact_id');
 		const to = repointOf('relationship', 'to_contact_id');
-		expect(settling('drop-self-links')).toBeGreaterThan(Math.max(from, to));
+		expect(settling('drop-links-between-the-two')).toBeLessThan(Math.min(from, to));
 		// A link the survivor already has of the same type stays the survivor's.
 		expect(MERGE_PLAN[from]).toMatchObject({ onConflict: 'survivor-keeps' });
 		expect(MERGE_PLAN[to]).toMatchObject({ onConflict: 'survivor-keeps' });

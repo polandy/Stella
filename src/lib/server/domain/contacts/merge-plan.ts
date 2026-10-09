@@ -29,8 +29,11 @@ export type MergeSettlement =
 	 * already has folds into theirs, a symmetric one is re-sorted.
 	 */
 	| 'move-links-in-stored-order'
-	/** A link that ran between the two now runs from the survivor to themselves. */
-	| 'drop-self-links'
+	/**
+	 * A link that ran between the two would run from the survivor to themselves, which the table
+	 * refuses; it goes before either end is repointed.
+	 */
+	| 'drop-links-between-the-two'
 	/** A membership of a circle the survivor is already in; nothing keys on it, so drop it. */
 	| 'drop-memberships-survivor-has';
 
@@ -54,11 +57,10 @@ const settle = (settlement: MergeSettlement, table: string): MergeStep => ({
 export const MERGE_PLAN: readonly MergeStep[] = [
 	settle('join-journal-days', 'journal_entry'),
 	repoint('journal_entry', 'contact_id', 'cannot-collide'),
-	// Only the links between the two are left for the repoints, and they become self links.
+	settle('drop-links-between-the-two', 'relationship'),
 	settle('move-links-in-stored-order', 'relationship'),
 	repoint('relationship', 'from_contact_id', 'survivor-keeps'),
 	repoint('relationship', 'to_contact_id', 'survivor-keeps'),
-	settle('drop-self-links', 'relationship'),
 	settle('drop-memberships-survivor-has', 'circle_membership'),
 	repoint('circle_membership', 'contact_id', 'cannot-collide'),
 	// One cut per person and group photo: the merged record's cuts arrive as photos of their own.

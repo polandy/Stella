@@ -291,6 +291,22 @@ describe('addRelationships', () => {
 		expect(h.writes).toHaveLength(0);
 	});
 
+	it('refuses the person themselves picked into their own batch, and only them', async () => {
+		const h = household();
+		const result = await addRelationships(
+			h.deps,
+			author,
+			batch('anna', 'friend', 'forward', ['bert', 'anna'])
+		);
+
+		expect(result.ok).toBe(false);
+		if (result.ok) return;
+		expect(result.refusals.map((r) => [r.targetId, r.reason(t)])).toEqual([
+			['anna', 'A person cannot be in a relationship with themselves.']
+		]);
+		expect(h.writes).toHaveLength(0);
+	});
+
 	it('refuses someone the author cannot see, without saying who they are', async () => {
 		const h = household([], ['carl']);
 		const result = await addRelationships(

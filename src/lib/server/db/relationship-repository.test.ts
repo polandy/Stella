@@ -121,6 +121,22 @@ describe('exists / insert', () => {
 		expect(await repo.exists('hans', 'bettina', 'friend', 'rel-1')).toBe(true);
 		expect(await repo.exists('hans', 'bettina', 'parent_child', 'rel-2')).toBe(true);
 	});
+
+	/*
+	 * The domain refuses a self link before it writes (`relationshipPair`); the table refuses it
+	 * too, so a writer that skips the constructor cannot store one (docs/03 §relationship).
+	 */
+	it('refuses a link from a person to themselves, and stores one between two people', async () => {
+		seedContact('hans', 'Hans', 'shared');
+		seedContact('bettina', 'Bettina', 'shared');
+		await repo.insert(newRelationship('rel-1', 'hans', 'bettina', 'friend'));
+
+		await expect(repo.insert(newRelationship('rel-2', 'hans', 'hans', 'friend'))).rejects.toThrow(
+			/CHECK constraint failed: relationship_not_to_self/
+		);
+		const stored = db.select({ id: schema.relationship.id }).from(schema.relationship).all();
+		expect(stored).toEqual([{ id: 'rel-1' }]);
+	});
 });
 
 describe('insertAll (docs/02 §2.4, several people in one go)', () => {

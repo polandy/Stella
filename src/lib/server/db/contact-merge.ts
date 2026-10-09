@@ -96,7 +96,7 @@ function joinJournalDays(tx: Db, { keepId, mergedId, updatedAt }: Merging): void
  * `linkAfterMerge`, so a symmetric one lands sorted rather than wherever a column-by-column
  * repoint would leave it. Where the survivor already has that link, it stays theirs and only
  * its blanks are filled from the merged copy, which then goes. The links between the two are
- * left for the repoints and `dropSelfLinks`.
+ * gone by then (`dropLinksBetweenTheTwo`).
  */
 function moveLinksInStoredOrder(tx: Db, { keepId, mergedId, updatedAt }: Merging): void {
 	const links = tx
@@ -153,12 +153,18 @@ function moveLinksInStoredOrder(tx: Db, { keepId, mergedId, updatedAt }: Merging
 }
 
 /**
- * Once both endpoints have moved, a link that ran *between* the two records is a link from
- * someone to themselves; drop it. (Two directed ones, one each way, collide on the way there:
- * `survivor-keeps` leaves the second behind and it goes with the merged record.)
+ * A link that runs between the two records would point at one person once either end moved, and
+ * the table refuses a link from someone to themselves; so it goes before anything is repointed.
  */
-function dropSelfLinks(tx: Db): void {
-	tx.delete(relationship).where(eq(relationship.fromContactId, relationship.toContactId)).run();
+function dropLinksBetweenTheTwo(tx: Db, { keepId, mergedId }: Merging): void {
+	tx.delete(relationship)
+		.where(
+			or(
+				and(eq(relationship.fromContactId, keepId), eq(relationship.toContactId, mergedId)),
+				and(eq(relationship.fromContactId, mergedId), eq(relationship.toContactId, keepId))
+			)
+		)
+		.run();
 }
 
 /** Drop the merged record's membership of a circle the survivor is already in. */
@@ -181,7 +187,7 @@ function dropMembershipsSurvivorHas(tx: Db, { keepId, mergedId }: Merging): void
 const SETTLEMENTS: Record<MergeSettlement, (tx: Db, merging: Merging) => void> = {
 	'join-journal-days': joinJournalDays,
 	'move-links-in-stored-order': moveLinksInStoredOrder,
-	'drop-self-links': dropSelfLinks,
+	'drop-links-between-the-two': dropLinksBetweenTheTwo,
 	'drop-memberships-survivor-has': dropMembershipsSurvivorHas,
 	'turn-merged-cuts': (tx, { mergedId }) => keepUnwornCuts(tx, mergedId, { evenWorn: true })
 };

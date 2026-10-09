@@ -22,6 +22,7 @@ export const errors = {
 	'errors.self.notFound': 'That person is not one you can pick as yourself.',
 	'errors.form.checkAndRetry': 'Please check the form and try again.',
 
+	'errors.relationship.toThemselves': 'A person cannot be in a relationship with themselves.',
 	'errors.relationship.duplicate': 'That relationship already exists.',
 	'errors.relationship.contradiction':
 		'These two are already linked the other way round, and that cannot hold in both directions. Remove the existing link first.',

@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'bun:test';
+import { SelfRelationshipError } from '../../../relationships/endpoints';
 import { encodeRelationshipChoice } from '../../../relationships/type-options';
 import type { Contact } from '../contacts/contacts';
 import { ContactGoneError } from '../contacts/require-visible';
@@ -99,5 +100,17 @@ describe('addRelationshipChecked', () => {
 			DuplicateRelationshipError
 		);
 		expect(f.inserted).toHaveLength(0);
+	});
+
+	/* A sentence, not a crash: a link kept on a phone is refused, never retried for ever. */
+	it('refuses a link from a person to themselves with a reason, and stores nothing', async () => {
+		const f = fakes();
+		await expect(
+			addRelationshipChecked(f.deps, author, { ...link(), targetId: 'anna' })
+		).rejects.toBeInstanceOf(SelfRelationshipError);
+		expect(f.inserted).toHaveLength(0);
+
+		await addRelationshipChecked(f.deps, author, link());
+		expect(f.inserted).toHaveLength(1);
 	});
 });

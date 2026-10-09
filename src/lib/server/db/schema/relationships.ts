@@ -1,4 +1,5 @@
-import { index, integer, sqliteTable, text, unique } from 'drizzle-orm/sqlite-core';
+import { sql } from 'drizzle-orm';
+import { check, index, integer, sqliteTable, text, unique } from 'drizzle-orm/sqlite-core';
 import { CURRENT_RELATIONSHIP_STATUS } from '../../../relationships/status';
 import { now } from './columns';
 import { household, user } from './household';
@@ -48,6 +49,8 @@ export const relationship = sqliteTable(
 	},
 	(t) => [
 		unique('relationship_unique').on(t.fromContactId, t.toContactId, t.typeId),
+		// A link from a person to themselves means nothing; `relationshipPair` refuses it first.
+		check('relationship_not_to_self', sql`${t.fromContactId} <> ${t.toContactId}`),
 		index('relationship_from_idx').on(t.fromContactId),
 		index('relationship_to_idx').on(t.toContactId),
 		index('relationship_type_idx').on(t.typeId),
