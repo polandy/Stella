@@ -158,6 +158,7 @@ export const errors = {
 	'errors.journal.couldNotSave': 'Could not save the moment.',
 	'errors.apiToken.emptyName': 'Please name the token, so you can tell later what it is for.',
 	'errors.journal.editFailed': 'Could not save the changes.',
+	'errors.journal.gone': 'This entry is no longer there.',
 	'errors.unexpected': (p: { requestId: string }) =>
 		`Something went wrong on our side. If it happens again, mention this reference: ${p.requestId}`
 };

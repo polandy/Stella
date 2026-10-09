@@ -64,11 +64,23 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 	};
 };
 
+/*
+ * The form read only checks the shape the page posts. Text that is only spaces is the
+ * use-case's to refuse, with its own sentence; a form the page would never post gets the
+ * general one.
+ */
 const EditSchema = v.object({
-	id: v.pipe(v.string(), v.minLength(1)),
+	id: v.string(),
 	title: v.optional(v.pipe(v.string(), v.trim())),
-	body: v.pipe(v.string(), v.trim(), v.minLength(1))
+	body: v.string()
 });
+
+/** What the journal says when the entry's field `field` did not read. */
+function writeProblem(field: string | null): MessageKey {
+	if (field === 'body') return 'errors.note.empty';
+	if (field === 'entryDate') return 'errors.journal.badDay';
+	return 'errors.journal.couldNotSave';
+}
 
 export const actions: Actions = {
 	save: async ({ request, params, locals }) => {
@@ -88,12 +100,7 @@ export const actions: Actions = {
 			issuedAt: systemClock.now()
 		});
 		if (!reading.ok && reading.part === 'payload') {
-			return fail(400, {
-				journalError: say(
-					locals,
-					reading.field === 'entryDate' ? 'errors.journal.badDay' : 'errors.note.empty'
-				)
-			});
+			return fail(400, { journalError: say(locals, writeProblem(reading.field)) });
 		}
 		const author = { userId: viewer.id, householdId: viewer.householdId, locale: locals.locale };
 		const refusal = (
@@ -152,12 +159,7 @@ export const actions: Actions = {
 			body: form.get('body')
 		});
 		if (!parsed.success) {
-			return fail(400, {
-				journalError: say(
-					locals,
-					(parsed.issues[0]?.message as MessageKey | undefined) ?? 'errors.note.empty'
-				)
-			});
+			return fail(400, { journalError: say(locals, 'errors.form.checkAndRetry') });
 		}
 
 		// Need the entry's own visibility to scope the @-picker candidates the same way `save`
@@ -195,12 +197,8 @@ export const actions: Actions = {
 				body: resolved.body
 			});
 		} catch (err) {
-			return fail(400, {
-				journalError:
-					err instanceof TranslatableError
-						? err.phrase(translator(locals))
-						: say(locals, 'errors.journal.editFailed')
-			});
+			if (!(err instanceof TranslatableError)) throw err;
+			return fail(400, { journalError: err.phrase(translator(locals)) });
 		}
 		if (!ok) {
 			return fail(404, { journalError: say(locals, 'errors.journal.editFailed') });
@@ -220,13 +218,17 @@ export const actions: Actions = {
 
 		const form = await request.formData();
 		const id = form.get('id');
-		if (typeof id !== 'string') return fail(400, {});
+		if (typeof id !== 'string') {
+			return fail(400, { journalError: say(locals, 'errors.form.checkAndRetry') });
+		}
 
-		await deleteJournalEntry(
+		const deleted = await deleteJournalEntry(
 			locals.services.story.journalDeps,
 			{ userId: viewer.id, householdId: viewer.householdId, defaultVisibility: 'shared' },
 			id
 		);
+		// Gone meanwhile or another member's: said alike, so a foreign id reveals nothing.
+		if (!deleted) return fail(404, { journalError: say(locals, 'errors.journal.gone') });
 		throw redirect(303, `/contacts/${params.id}/journal`);
 	}
 };

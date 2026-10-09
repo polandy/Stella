@@ -4,6 +4,7 @@ import type { DeletedPhotoFiles } from '../media/avatars';
 import {
 	deleteJournalEntry,
 	editJournalEntry,
+	EmptyJournalEntryError,
 	saveJournalEntry,
 	listJournalForContact,
 	type JournalAuthor,
@@ -289,7 +290,9 @@ describe('editJournalEntry', () => {
 				}
 			])
 		);
-		await expect(editJournalEntry(d, author, { id: 'e1', body: '   ' })).rejects.toThrow();
+		await expect(editJournalEntry(d, author, { id: 'e1', body: '   ' })).rejects.toBeInstanceOf(
+			EmptyJournalEntryError
+		);
 	});
 });
 
