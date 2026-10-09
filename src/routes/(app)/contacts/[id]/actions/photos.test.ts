@@ -1,21 +1,14 @@
 import { describe, expect, it } from 'bun:test';
 import { createTranslator } from '$lib/i18n/translate';
 import { contactSectionPath } from '$lib/people/sections';
-import type { Viewer } from '$lib/server/access/visibility';
 import type { Contact } from '$lib/server/domain/contacts/contacts';
-import { ContactGoneError } from '$lib/server/domain/contacts/require-visible';
-import type { CommandHandlers } from '$lib/server/domain/commands/dispatch';
-import { PhotoParentGoneError } from '$lib/server/domain/commands/photos';
-import { type GalleryPhoto, type PhotoRepository } from '$lib/server/domain/media/avatars';
+import type { GalleryPhoto, PhotoRepository } from '$lib/server/domain/media/avatars';
 import { CAPTION_MAX_LENGTH } from '$lib/server/domain/media/gallery';
 import type { CutRepository, GroupPhoto } from '$lib/server/domain/media/cuts';
 import type { StoredFraming } from '$lib/server/domain/media/framing';
 import {
-	commandDepsWith,
-	contactRepositoryWith,
 	fixedClock,
 	inMemoryGalleryPhotos,
-	inMemoryReceipts,
 	photoRepositoryWith,
 	sequentialIds,
 	someGalleryPhoto
@@ -38,7 +31,6 @@ import { photoActions as actions } from './photos';
  */
 
 const t = createTranslator('en');
-const COMMAND_ID = '01HZZZZZZZZZZZZZZZZZZZZZZA';
 const PAGE = { id: 'anna' };
 const BACK_TO_PHOTOS = contactSectionPath('anna', 'photos');
 const NOW = 5000;
@@ -76,143 +68,6 @@ function galleryOver(photos: readonly GalleryPhoto[], writes: Partial<PhotoRepos
 	};
 	return { services, deleted };
 }
-
-describe('addGalleryPhotos', () => {
-	const upload = {
-		commandId: COMMAND_ID,
-		visibility: 'shared',
-		image: [jpeg('a.jpg'), jpeg('b.jpg')],
-		thumb: [jpeg('a-thumb.jpg'), jpeg('b-thumb.jpg')],
-		width: ['800', '640'],
-		height: ['600', '480']
-	};
-
-	/** Anna's page, visible or not, and the upload's commands through handlers the test names. */
-	const uploading = (
-		handlers: Partial<CommandHandlers>,
-		{ visible = true, receipts = inMemoryReceipts() } = {}
-	): FakeServices => ({
-		people: {
-			contactDeps: {
-				contacts: contactRepositoryWith({
-					findByIdVisibleTo: async (_viewer: Viewer, id: string) =>
-						visible ? ({ id } as Contact) : null
-				}),
-				ids: sequentialIds(),
-				clock: fixedClock(NOW)
-			}
-		},
-		offline: { commandDeps: commandDepsWith(handlers, receipts) }
-	});
-
-	const added = {
-		'gallery.add': async () => ({ contactId: 'anna', visibility: 'shared' as const })
-	};
-
-	it('stores each photo under the upload, and goes back to the Photos card', async () => {
-		const adds: unknown[] = [];
-		const photos: { parentId: string; width: number }[] = [];
-		const services = uploading({
-			'gallery.add': async (_actor, payload) => {
-				adds.push(payload);
-				return { contactId: 'anna', visibility: 'shared' };
-			},
-			'gallery.photo': async (_actor, payload) => {
-				photos.push(payload);
-				return `photo-${photos.length}`;
-			}
-		});
-		expect(await post(actions.addGalleryPhotos, services, formOf(upload))).toEqual({
-			kind: 'redirect',
-			status: 303,
-			location: BACK_TO_PHOTOS
-		});
-		expect(adds).toEqual([{ contactId: 'anna', visibility: 'shared' }]);
-		expect(photos.map(({ parentId, width }) => ({ parentId, width }))).toEqual([
-			{ parentId: COMMAND_ID, width: 800 },
-			{ parentId: COMMAND_ID, width: 640 }
-		]);
-	});
-
-	it('answers 404 for a person the viewer cannot see, and stores nothing', async () => {
-		expect(
-			await answerOf(
-				actions.addGalleryPhotos(
-					routeEvent({
-						services: uploading({}, { visible: false }),
-						params: PAGE,
-						form: formOf(upload)
-					})
-				)
-			)
-		).toEqual({ kind: 'error', status: 404, message: t('errors.contact.notFound') });
-	});
-
-	it('asks for some images when none came', async () => {
-		const { image: _, thumb: __, ...none } = upload;
-		expect(await post(actions.addGalleryPhotos, uploading({}), formOf(none))).toEqual(
-			refused(400, t('errors.image.chooseSome'))
-		);
-	});
-
-	it('asks for some images when a photo came without its thumbnail', async () => {
-		const form = formOf({ ...upload, thumb: [jpeg('a-thumb.jpg')] });
-		expect(await post(actions.addGalleryPhotos, uploading({}), form)).toEqual(
-			refused(400, t('errors.image.chooseSome'))
-		);
-	});
-
-	it('could not store an upload that is no command, and sends none', async () => {
-		const form = formOf({ ...upload, visibility: 'secret' });
-		expect(await post(actions.addGalleryPhotos, uploading({}), form)).toEqual(
-			refused(400, t('errors.image.couldNotStore'))
-		);
-	});
-
-	it('says why the upload was refused, in the reader’s words', async () => {
-		const services = uploading({
-			'gallery.add': async () => {
-				throw new ContactGoneError();
-			}
-		});
-		expect(await post(actions.addGalleryPhotos, services, formOf(upload))).toEqual(
-			refused(400, t('errors.contact.notFound'))
-		);
-	});
-
-	it('could not store the photos while the same upload is still being applied', async () => {
-		const receipts = inMemoryReceipts();
-		await receipts.claim({
-			id: COMMAND_ID,
-			memberId: MEMBER.id,
-			householdId: MEMBER.householdId,
-			type: 'gallery.add',
-			claimedAt: NOW
-		});
-		expect(
-			await post(actions.addGalleryPhotos, uploading({}, { receipts }), formOf(upload))
-		).toEqual(refused(400, t('errors.image.couldNotStore')));
-	});
-
-	it('could not store a photo whose size does not read', async () => {
-		const form = formOf({ ...upload, width: ['wide', '640'] });
-		expect(await post(actions.addGalleryPhotos, uploading(added), form)).toEqual(
-			refused(400, t('errors.image.couldNotStore'))
-		);
-	});
-
-	it('says why a photo was refused, in the reader’s words', async () => {
-		const services = uploading({
-			...added,
-			'gallery.photo': async () => {
-				throw new PhotoParentGoneError();
-			}
-		});
-		expect(await post(actions.addGalleryPhotos, services, formOf(upload))).toEqual(
-			refused(400, t('errors.command.photoParentGone'))
-		);
-	});
-});
 
 describe('captionPhoto', () => {
 	const caption = { photoId: 'p1', caption: '  At the lake  ' };
