@@ -24,6 +24,11 @@ export type MergeSettlement =
 	| 'turn-merged-cuts'
 	/** Two entries by the same member about the same day become one, both bodies kept. */
 	| 'join-journal-days'
+	/**
+	 * A link to a third person lands in stored order (`merge-links.ts`): one the survivor
+	 * already has folds into theirs, a symmetric one is re-sorted.
+	 */
+	| 'move-links-in-stored-order'
 	/** A link that ran between the two now runs from the survivor to themselves. */
 	| 'drop-self-links'
 	/** A membership of a circle the survivor is already in; nothing keys on it, so drop it. */
@@ -49,6 +54,8 @@ const settle = (settlement: MergeSettlement, table: string): MergeStep => ({
 export const MERGE_PLAN: readonly MergeStep[] = [
 	settle('join-journal-days', 'journal_entry'),
 	repoint('journal_entry', 'contact_id', 'cannot-collide'),
+	// Only the links between the two are left for the repoints, and they become self links.
+	settle('move-links-in-stored-order', 'relationship'),
 	repoint('relationship', 'from_contact_id', 'survivor-keeps'),
 	repoint('relationship', 'to_contact_id', 'survivor-keeps'),
 	settle('drop-self-links', 'relationship'),

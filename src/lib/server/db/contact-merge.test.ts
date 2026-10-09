@@ -6,7 +6,9 @@ import { migrate } from 'drizzle-orm/bun-sqlite/migrator';
 import type { Viewer } from '../access/visibility';
 import type { ActivityOf } from '../domain/activity/activity';
 import type { MergeableProfile } from '../domain/contacts/merge-profile';
+import { relationshipPair } from '../../relationships/endpoints';
 import { mergeContacts } from './contact-merge';
+import { createDrizzleRelationshipRepository } from './relationship-repository';
 import * as schema from './schema';
 import { seedRelationshipTypes } from './seed';
 
@@ -395,6 +397,172 @@ describe('what would collide', () => {
 		expect(db.select().from(schema.noteMention).all()).toEqual([
 			{ noteId: 'n1', contactId: 'keep' }
 		]);
+	});
+});
+
+describe('links in their stored order (docs/03 §relationship)', () => {
+	// 'dup' < 'elias' < 'keep': a symmetric link of dup's to Elias is stored (dup, elias) and,
+	// moved by a plain repoint, would read (keep, elias) — the wrong way round for the index.
+	const link = (
+		id: string,
+		fromContactId: string,
+		toContactId: string,
+		typeId: string,
+		fields: Partial<typeof schema.relationship.$inferInsert> = {}
+	) =>
+		db
+			.insert(schema.relationship)
+			.values({ id, householdId: H, fromContactId, toContactId, typeId, createdBy: U1, ...fields })
+			.run();
+	const links = () =>
+		db
+			.select()
+			.from(schema.relationship)
+			.all()
+			.sort((a, b) => a.id.localeCompare(b.id));
+
+	beforeEach(() => {
+		seedContact('elias', 'Elias');
+		seedContact('lena', 'Lena');
+	});
+
+	it('stores a moved symmetric link sorted when the third person sorts between the two', async () => {
+		link('r-dup', 'dup', 'elias', 'friend');
+
+		expect(merge()).toBe(true);
+
+		expect(links()).toMatchObject([{ id: 'r-dup', fromContactId: 'elias', toContactId: 'keep' }]);
+		// The duplicate check asks for the sorted pair, so adding it again from Elias is refused.
+		const pair = relationshipPair('keep', 'elias', true);
+		expect(
+			await createDrizzleRelationshipRepository(db).exists(
+				pair.fromContactId,
+				pair.toContactId,
+				'friend'
+			)
+		).toBe(true);
+	});
+
+	it('sorts it when the survivor is the one that sorts first', () => {
+		link('r-keep-side', 'elias', 'keep', 'friend');
+
+		expect(merge(viewer, 'dup', 'keep')).toBe(true);
+
+		expect(links()).toMatchObject([
+			{ id: 'r-keep-side', fromContactId: 'dup', toContactId: 'elias' }
+		]);
+	});
+
+	it('folds a symmetric link the survivor already has into theirs, whatever order the move gave it', () => {
+		link('r-dup', 'dup', 'elias', 'friend', { note: 'met at uni', sinceDate: '2004-09-01' });
+		link('r-keep', 'elias', 'keep', 'friend');
+
+		expect(merge()).toBe(true);
+
+		expect(links()).toEqual([
+			expect.objectContaining({
+				id: 'r-keep',
+				fromContactId: 'elias',
+				toContactId: 'keep',
+				note: 'met at uni',
+				sinceDate: '2004-09-01'
+			})
+		]);
+	});
+
+	it('keeps the survivor’s own description, since date and status on a folded link', () => {
+		link('r-dup', 'dup', 'elias', 'friend', {
+			note: 'met at uni',
+			sinceDate: '2004-09-01',
+			status: 'current',
+			updatedAt: 1
+		});
+		link('r-keep', 'elias', 'keep', 'friend', {
+			note: 'neighbours',
+			sinceDate: '1999-01-01',
+			status: 'former',
+			updatedAt: 1
+		});
+
+		expect(merge()).toBe(true);
+
+		expect(links()).toEqual([
+			expect.objectContaining({
+				id: 'r-keep',
+				note: 'neighbours',
+				sinceDate: '1999-01-01',
+				status: 'former',
+				updatedAt: 1
+			})
+		]);
+	});
+
+	it('fills the survivor’s blanks on a directed link both records had', () => {
+		link('r-dup', 'dup', 'lena', 'parent_child', { note: 'adopted in 2010' });
+		link('r-keep', 'keep', 'lena', 'parent_child', { sinceDate: '2010-05-01', updatedAt: 1 });
+
+		expect(merge()).toBe(true);
+
+		expect(links()).toEqual([
+			expect.objectContaining({
+				id: 'r-keep',
+				fromContactId: 'keep',
+				toContactId: 'lena',
+				note: 'adopted in 2010',
+				sinceDate: '2010-05-01',
+				updatedAt: 999
+			})
+		]);
+	});
+
+	it('never re-sorts a directed link, whichever end the merged record was', () => {
+		// Positive control for the sorting: from stays the forward-label side even where the
+		// survivor's id sorts after the other end's.
+		link('r-parent', 'dup', 'elias', 'parent_child');
+		link('r-child', 'elias', 'dup', 'grandparent_grandchild');
+
+		expect(merge()).toBe(true);
+
+		expect(links()).toMatchObject([
+			{ id: 'r-child', fromContactId: 'elias', toContactId: 'keep' },
+			{ id: 'r-parent', fromContactId: 'keep', toContactId: 'elias' }
+		]);
+	});
+
+	it('moves every link unchanged where nothing collides', () => {
+		link('r-1', 'dup', 'lena', 'friend', { note: 'school', sinceDate: '1990-01-01', updatedAt: 1 });
+		link('r-2', 'dup', 'elias', 'colleague', { status: 'former', updatedAt: 1 });
+		link('r-3', 'lena', 'dup', 'parent_child', { updatedAt: 1 });
+		link('r-4', 'keep', 'lena', 'sibling', { updatedAt: 1 });
+
+		expect(merge()).toBe(true);
+
+		expect(links()).toMatchObject([
+			{ id: 'r-1', fromContactId: 'keep', toContactId: 'lena', note: 'school', updatedAt: 1 },
+			{ id: 'r-2', fromContactId: 'elias', toContactId: 'keep', status: 'former', updatedAt: 1 },
+			{ id: 'r-3', fromContactId: 'lena', toContactId: 'keep', updatedAt: 1 },
+			{ id: 'r-4', fromContactId: 'keep', toContactId: 'lena', updatedAt: 1 }
+		]);
+	});
+
+	it('drops every link between the two, symmetric or either way directed, and keeps the rest', () => {
+		link('r-sym', 'dup', 'keep', 'friend');
+		link('r-there', 'dup', 'keep', 'parent_child');
+		link('r-back', 'keep', 'dup', 'parent_child');
+		link('r-other', 'dup', 'elias', 'friend');
+
+		expect(merge()).toBe(true);
+
+		expect(links()).toMatchObject([{ id: 'r-other', fromContactId: 'elias', toContactId: 'keep' }]);
+	});
+
+	it('leaves every link as it was when the merge is refused', () => {
+		seedContact('theirs', 'Theirs', 'private', U2);
+		link('r-theirs', 'theirs', 'elias', 'friend');
+
+		expect(merge(viewer, 'keep', 'theirs')).toBe(false);
+
+		expect(links()).toMatchObject([{ id: 'r-theirs', fromContactId: 'theirs' }]);
 	});
 });
 

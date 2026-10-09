@@ -139,7 +139,8 @@ M. turn out to be one man. Open the page of the one you want to keep, and in its
 *Merge someone into this person* asks a single question — who else is them. Everything of the
 other record comes across: their phone number, the notes, the photos, the birthday, who they
 are related to, the circles they were in. Where both records said something, the one you kept
-wins; where yours was blank, theirs fills it in. Two moments about the same day end up
+wins; where yours was blank, theirs fills it in. A link both had to the same person — both
+were Lena's friend — ends up as one link. Two moments about the same day end up
 as one moment with both texts, so nothing anybody wrote is lost. Only an admin can do it, and
 it cannot be undone.
 

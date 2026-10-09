@@ -344,7 +344,10 @@ Direction is stored canonically for asymmetric types (from = forward-label side)
 symmetric link is stored with its ends sorted, so the unique index catches a duplicate entered
 from either end. Every writer — the use-cases, both import plans, the demo seed — gets the two
 ends from one constructor, `relationshipPair` (a **`RelationshipPair`**,
-`src/lib/relationships/endpoints.ts`), never by ordering them itself.
+`src/lib/relationships/endpoints.ts`), never by ordering them itself — a merge included, which
+takes a moved link's new ends from it rather than repointing one column at a time
+(`domain/contacts/merge-links.ts`). Migration `0025_sort_symmetric_links` sorted the symmetric
+links earlier merges had left the wrong way round, folding each into a twin it duplicated.
 Visibility is **derived** from the two endpoints (see 2.10), not stored.
 
 **Reciprocity is implicit — never a second row.** A relationship is stored once and

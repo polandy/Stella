@@ -55,6 +55,13 @@ describe('the merge plan', () => {
 		expect(MERGE_PLAN[to]).toMatchObject({ onConflict: 'survivor-keeps' });
 	});
 
+	it('moves the links to third people in stored order before the columns are repointed', () => {
+		// A plain repoint would leave a symmetric link unsorted (docs/03 §relationship).
+		expect(settling('move-links-in-stored-order')).toBeLessThan(
+			repointOf('relationship', 'from_contact_id')
+		);
+	});
+
 	it('settles each table in the plan that the settlement names', () => {
 		const tables = new Set(
 			MERGE_PLAN.flatMap((step) => (step.kind === 'repoint' ? [step.table] : []))

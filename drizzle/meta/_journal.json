@@ -176,6 +176,13 @@
       "when": 1791419369769,
       "tag": "0024_gift",
       "breakpoints": true
+    },
+    {
+      "idx": 25,
+      "version": "6",
+      "when": 1791501856527,
+      "tag": "0025_sort_symmetric_links",
+      "breakpoints": true
     }
   ]
 }

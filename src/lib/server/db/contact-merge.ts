@@ -1,6 +1,7 @@
-import { and, eq, sql } from 'drizzle-orm';
+import { and, eq, or, sql } from 'drizzle-orm';
 import type { BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
 import { activityEntry, type ActivityOf } from '../domain/activity/activity';
+import { foldedLinkDetails, linkAfterMerge } from '../domain/contacts/merge-links';
 import { MERGE_PLAN, type MergeSettlement, type MergeStep } from '../domain/contacts/merge-plan';
 import type { MergeableProfile } from '../domain/contacts/merge-profile';
 import type { Viewer } from '../access/visibility';
@@ -14,7 +15,8 @@ import {
 	journalEntry,
 	journalMention,
 	photo,
-	relationship
+	relationship,
+	relationshipType
 } from './schema';
 
 /*
@@ -89,9 +91,70 @@ function joinJournalDays(tx: Db, { keepId, mergedId, updatedAt }: Merging): void
 }
 
 /**
+ * Every link the merged record has with a third person gets its new ends from
+ * `linkAfterMerge`, so a symmetric one lands sorted rather than wherever a column-by-column
+ * repoint would leave it. Where the survivor already has that link, it stays theirs and only
+ * its blanks are filled from the merged copy, which then goes. The links between the two are
+ * left for the repoints and `dropSelfLinks`.
+ */
+function moveLinksInStoredOrder(tx: Db, { keepId, mergedId, updatedAt }: Merging): void {
+	const links = tx
+		.select({
+			id: relationship.id,
+			fromContactId: relationship.fromContactId,
+			toContactId: relationship.toContactId,
+			typeId: relationship.typeId,
+			description: relationship.note,
+			sinceDate: relationship.sinceDate,
+			symmetric: relationshipType.symmetric
+		})
+		.from(relationship)
+		.innerJoin(relationshipType, eq(relationshipType.id, relationship.typeId))
+		.where(or(eq(relationship.fromContactId, mergedId), eq(relationship.toContactId, mergedId)))
+		.all();
+
+	for (const link of links) {
+		const pair = linkAfterMerge(link, { keepId, mergedId }, link.symmetric === 1);
+		if (!pair) continue;
+
+		const theirs = tx
+			.select({
+				id: relationship.id,
+				description: relationship.note,
+				sinceDate: relationship.sinceDate
+			})
+			.from(relationship)
+			.where(
+				and(
+					eq(relationship.fromContactId, pair.fromContactId),
+					eq(relationship.toContactId, pair.toContactId),
+					eq(relationship.typeId, link.typeId)
+				)
+			)
+			.get();
+		if (!theirs) {
+			tx.update(relationship)
+				.set({ fromContactId: pair.fromContactId, toContactId: pair.toContactId })
+				.where(eq(relationship.id, link.id))
+				.run();
+			continue;
+		}
+
+		const { description, sinceDate } = foldedLinkDetails(theirs, link);
+		if (description !== undefined || sinceDate !== undefined) {
+			tx.update(relationship)
+				.set({ note: description, sinceDate, updatedAt })
+				.where(eq(relationship.id, theirs.id))
+				.run();
+		}
+		tx.delete(relationship).where(eq(relationship.id, link.id)).run();
+	}
+}
+
+/**
  * Once both endpoints have moved, a link that ran *between* the two records is a link from
- * someone to themselves; drop it. (A link the survivor already had of the same type was left
- * behind by `survivor-keeps` and goes with the merged record.)
+ * someone to themselves; drop it. (Two directed ones, one each way, collide on the way there:
+ * `survivor-keeps` leaves the second behind and it goes with the merged record.)
  */
 function dropSelfLinks(tx: Db): void {
 	tx.delete(relationship).where(eq(relationship.fromContactId, relationship.toContactId)).run();
@@ -116,6 +179,7 @@ function dropMembershipsSurvivorHas(tx: Db, { keepId, mergedId }: Merging): void
 /** The steps the plan names rather than describes, each implemented here. */
 const SETTLEMENTS: Record<MergeSettlement, (tx: Db, merging: Merging) => void> = {
 	'join-journal-days': joinJournalDays,
+	'move-links-in-stored-order': moveLinksInStoredOrder,
 	'drop-self-links': dropSelfLinks,
 	'drop-memberships-survivor-has': dropMembershipsSurvivorHas,
 	'turn-merged-cuts': (tx, { mergedId }) => keepUnwornCuts(tx, mergedId, { evenWorn: true })
