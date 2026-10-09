@@ -338,7 +338,13 @@ An instance connecting two contacts.
 A relationship can be deleted (a link entered by mistake); nothing else references the row,
 so the delete is plain and the graph and derived kinship follow on the next read.
 
-Constraints: `from != to`; unique on `(from_contact_id, to_contact_id, type_id)`.
+Constraints: `CHECK (from_contact_id <> to_contact_id)` (`relationship_not_to_self`); unique on
+`(from_contact_id, to_contact_id, type_id)`. The domain refuses a self link first —
+`relationshipPair` throws `SelfRelationshipError`, a sentence the member reads, so a link kept
+on a phone is refused rather than retried — and the table is the backstop for a writer that
+skips it. A merge drops the links between the two records before it repoints either end, since
+those would become self links. Migration `0027_relationship_not_to_self` added the CHECK by
+rebuilding the table and left any self link already stored behind, unreported.
 Indexed on `from_contact_id`, `to_contact_id`, `type_id`, and on `created_at` for the Home
 stream's newest links.
 Direction is stored canonically for asymmetric types (from = forward-label side); a

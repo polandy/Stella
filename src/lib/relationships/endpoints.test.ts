@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'bun:test';
-import { relationshipPair as brandedPair, type Endpoints } from './endpoints';
+import { TranslatableError } from '../i18n/translatable';
+import {
+	relationshipPair as brandedPair,
+	SelfRelationshipError,
+	type Endpoints
+} from './endpoints';
 
 /** The pair as its plain fields, so it compares against a literal. */
 const relationshipPair = (from: string, to: string, symmetric: boolean): Endpoints =>
@@ -33,8 +38,9 @@ describe('relationshipPair', () => {
 		});
 	});
 
-	it('refuses a link from someone to themselves, either kind', () => {
-		expect(() => relationshipPair('anna', 'anna', true)).toThrow();
-		expect(() => relationshipPair('anna', 'anna', false)).toThrow();
+	it('refuses a link from someone to themselves, either kind, with a sentence to show', () => {
+		expect(() => relationshipPair('anna', 'anna', true)).toThrow(SelfRelationshipError);
+		expect(() => relationshipPair('anna', 'anna', false)).toThrow(SelfRelationshipError);
+		expect(() => relationshipPair('anna', 'anna', false)).toThrow(TranslatableError);
 	});
 });

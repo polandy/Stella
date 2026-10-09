@@ -1,3 +1,6 @@
+import { phrase } from '../i18n/phrase';
+import { TranslatableError } from '../i18n/translatable';
+
 /*
  * The two ends of a relationship row. Shared vocabulary: the domain stores them, and the
  * picker decides which way round they go (`type-options.ts`), so the shape has one home.
@@ -7,6 +10,13 @@
 export interface Endpoints {
 	fromContactId: string;
 	toContactId: string;
+}
+
+/** A link from a person to themselves, which the table refuses too (docs/03 §relationship). */
+export class SelfRelationshipError extends TranslatableError {
+	constructor() {
+		super(phrase('errors.relationship.toThemselves'), 'SelfRelationshipError');
+	}
 }
 
 declare const canonical: unique symbol;
@@ -25,7 +35,7 @@ export function relationshipPair(
 	symmetric: boolean
 ): RelationshipPair {
 	if (fromId === toId) {
-		throw new Error('A contact cannot have a relationship with themselves.');
+		throw new SelfRelationshipError();
 	}
 	const [fromContactId, toContactId] = symmetric && toId < fromId ? [toId, fromId] : [fromId, toId];
 	return { fromContactId, toContactId } as RelationshipPair;
