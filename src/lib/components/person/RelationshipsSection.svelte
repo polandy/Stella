@@ -5,13 +5,14 @@
 	import MenuButton from '$lib/components/ui/MenuButton.svelte';
 	import PersonSearchSelect from '$lib/components/people/PersonSearchSelect.svelte';
 	import Section from '$lib/components/ui/Section.svelte';
-	import { sectionAnchor } from '$lib/people/sections';
+	import { contactSectionPath, sectionAnchor } from '$lib/people/sections';
 	import { useI18n } from '$lib/i18n/context.svelte';
 	import { isKept, type KeptOf } from '$lib/pwa/outbox';
 	import { outbox } from '$lib/pwa/outbox.svelte';
 	import { exclusionFor, type Exclusion } from '$lib/relationships/exclusions';
 	import type { RelationshipCategory } from '$lib/relationships/categories';
 	import { relationshipTypeLabel } from '$lib/relationships/labels';
+	import { REVIEW_PARAM } from '$lib/relationships/review-url';
 	import {
 		foldPeople,
 		groupPeople,
@@ -316,7 +317,11 @@
 						runs until it is chosen, and asking what else might be true is never what this
 						card is for — so it waits in the menu.
 					-->
-				<a role="menuitem" class={MENU_ITEM} href="/contacts/{c.id}?review#relationships">
+				<a
+					role="menuitem"
+					class={MENU_ITEM}
+					href={contactSectionPath(c.id, 'relationships', REVIEW_PARAM)}
+				>
 					<Icon name="search" size={14} />{data.review.open
 						? t('contact.relationships.reviewAgain')
 						: t('contact.relationships.review')}

@@ -12,7 +12,9 @@ const proposeOf = (href: string) => new URL(href, 'http://x').searchParams.get('
 
 describe('the propose pairs', () => {
 	it('comes back to the relationships card naming the new pair', () => {
-		expect(proposeHref('anna', ['bert'])).toBe('/contacts/anna?propose=anna:bert#relationships');
+		expect(proposeHref('anna', ['bert'])).toBe(
+			'/contacts/anna?propose=anna:bert#section-relationships'
+		);
 	});
 
 	it('reads back the pair it wrote', () => {
@@ -23,7 +25,7 @@ describe('the propose pairs', () => {
 
 	it('names every pair of a batch, and reads them back in order', () => {
 		const href = proposeHref('lio', ['anna', 'bert']);
-		expect(href).toBe('/contacts/lio?propose=lio:anna,lio:bert#relationships');
+		expect(href).toBe('/contacts/lio?propose=lio:anna,lio:bert#section-relationships');
 		expect(parseProposePairs(proposeOf(href))).toEqual([
 			{ a: 'lio', b: 'anna' },
 			{ a: 'lio', b: 'bert' }

@@ -488,7 +488,7 @@ describe('the answers to a suggestion', () => {
 		expect(await post(actions.addProposedRelationship, services, form)).toEqual({
 			kind: 'redirect',
 			status: 303,
-			location: '/contacts/anna?propose=anna~ben#relationships'
+			location: '/contacts/anna?propose=anna~ben#section-relationships'
 		});
 	});
 
@@ -496,7 +496,7 @@ describe('the answers to a suggestion', () => {
 		expect(await post(actions.addProposedRelationship, services, formOf(claim))).toEqual({
 			kind: 'redirect',
 			status: 303,
-			location: '/contacts/anna#relationships'
+			location: '/contacts/anna#section-relationships'
 		});
 	});
 
@@ -510,7 +510,7 @@ describe('the answers to a suggestion', () => {
 		expect(await post(actions.dismissSuggestion, services, formOf(answer))).toEqual({
 			kind: 'redirect',
 			status: 303,
-			location: '/contacts/anna?review#relationships'
+			location: '/contacts/anna?review#section-relationships'
 		});
 	});
 
@@ -524,7 +524,7 @@ describe('the answers to a suggestion', () => {
 		expect(await post(actions.restoreSuggestion, services, formOf(answer))).toEqual({
 			kind: 'redirect',
 			status: 303,
-			location: '/contacts/anna?review#relationships'
+			location: '/contacts/anna?review#section-relationships'
 		});
 	});
 

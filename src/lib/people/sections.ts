@@ -31,9 +31,18 @@ export function sectionAnchor(section: ContactSection): string {
 	return `section-${section}`;
 }
 
-/** A link to one card of a person's page — the one place this URL is spelled. */
-export function contactSectionPath(contactId: string, section: ContactSection): string {
-	return `/contacts/${contactId}#${sectionAnchor(section)}`;
+/**
+ * A link to one card of a person's page — the one place this URL is spelled. `query` (without
+ * its `?`) is what the page should open there — `review`, `propose=…`, `relate=…` — and is
+ * spelled as given, so the propose pairs keep their `:` and `,` readable.
+ */
+export function contactSectionPath(
+	contactId: string,
+	section: ContactSection,
+	query?: string
+): string {
+	const question = query === undefined ? '' : `?${query}`;
+	return `/contacts/${contactId}${question}#${sectionAnchor(section)}`;
 }
 
 /** Which card a passive reference opens: a note is read on Notes, an entry in the story. */
@@ -69,5 +78,5 @@ export function sectionForLegacyTab(value: string | null): ContactSection | null
  * left empty, it only opens the form.
  */
 export function addRelationshipPath(contactId: string): string {
-	return `/contacts/${contactId}?relate=#${sectionAnchor('relationships')}`;
+	return contactSectionPath(contactId, 'relationships', 'relate=');
 }

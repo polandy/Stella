@@ -1,3 +1,5 @@
+import { contactSectionPath } from '$lib/people/sections';
+
 /*
  * The on-demand review (docs/02 §2.4.1) hangs on the URL
  * rather than on component state: pressing *Check suggestions* is a page the household can
@@ -8,4 +10,4 @@ export const REVIEW_PARAM = 'review';
 
 /** The person page with the review panel open, back at the relationships card. */
 export const reviewPath = (contactId: string) =>
-	`/contacts/${contactId}?${REVIEW_PARAM}#relationships`;
+	contactSectionPath(contactId, 'relationships', REVIEW_PARAM);

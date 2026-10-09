@@ -185,7 +185,7 @@ test('the ⋯ menu asks how two people are connected, reviews, and opens the gra
 	await card(page).getByRole('button', { name: 'More for these relationships' }).click();
 	await expect(page.getByRole('menuitem', { name: 'Check relationships' })).toHaveAttribute(
 		'href',
-		`/contacts/${MARKUS}?review#relationships`
+		`/contacts/${MARKUS}?review#section-relationships`
 	);
 	await expect(page.getByRole('menuitem', { name: 'Open in the graph' })).toHaveAttribute(
 		'href',

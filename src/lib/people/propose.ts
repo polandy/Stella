@@ -6,13 +6,15 @@
  * hand-written value can never conjure a suggestion out of nothing.
  */
 
+import { contactSectionPath } from './sections';
+
 const PROPOSE_SEPARATOR = ':';
 const PAIR_SEPARATOR = ',';
 
 /** The person page after new links from `contactId` to each of `targetIds`, offering what they imply. */
 export function proposeHref(contactId: string, targetIds: readonly string[]): string {
 	const pairs = targetIds.map((targetId) => [contactId, targetId].join(PROPOSE_SEPARATOR));
-	return `/contacts/${contactId}?propose=${pairs.join(PAIR_SEPARATOR)}#relationships`;
+	return contactSectionPath(contactId, 'relationships', `propose=${pairs.join(PAIR_SEPARATOR)}`);
 }
 
 /** The pairs a `?propose=` value names, in order; a half pair is skipped. */

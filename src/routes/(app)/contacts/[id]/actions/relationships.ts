@@ -232,8 +232,8 @@ export const relationshipActions = {
 
 		// The pointer the block hangs on, so confirming one row keeps the others on screen.
 		const propose = form.get('propose');
-		const back = typeof propose === 'string' && propose ? `?propose=${propose}` : '';
-		throw redirect(303, `/contacts/${params.id}${back}#relationships`);
+		const back = typeof propose === 'string' && propose ? `propose=${propose}` : undefined;
+		throw redirect(303, contactSectionPath(params.id, 'relationships', back));
 	},
 
 	/**

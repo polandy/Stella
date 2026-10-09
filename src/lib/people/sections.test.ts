@@ -34,6 +34,25 @@ describe('contactSectionPath', () => {
 	test('points at the card on that person’s page', () => {
 		expect(contactSectionPath('c-1', 'photos')).toBe('/contacts/c-1#section-photos');
 	});
+
+	test('carries a question to the page ahead of the card', () => {
+		expect(contactSectionPath('c-1', 'relationships', 'review')).toBe(
+			'/contacts/c-1?review#section-relationships'
+		);
+		// Spelled as given: the propose pairs keep their `:` and `,` readable in the address.
+		expect(contactSectionPath('c-1', 'relationships', 'propose=c-1:c-2,c-1:c-3')).toBe(
+			'/contacts/c-1?propose=c-1:c-2,c-1:c-3#section-relationships'
+		);
+	});
+
+	test('lands on the id each card renders, with or without a question', () => {
+		for (const section of CONTACT_SECTIONS) {
+			for (const query of [undefined, 'review']) {
+				const url = new URL(contactSectionPath('c-1', section, query), 'http://stella.test');
+				expect(url.hash).toBe(`#${sectionAnchor(section)}`);
+			}
+		}
+	});
 });
 
 describe('addRelationshipPath', () => {
