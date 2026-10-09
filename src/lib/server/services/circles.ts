@@ -7,7 +7,12 @@ import { createDrizzleCircleRepository } from '../db/circle-repository';
 import { createDrizzleCutRepository } from '../db/cut-repository';
 import type * as schema from '../db/schema';
 import type { CirclePhotoDeps, CirclePhotoRepository } from '../domain/circles/circle-photos';
-import type { CircleDeps, CircleRepository, MemberRoleDeps } from '../domain/circles/circles';
+import type {
+	CircleDeps,
+	CircleRepository,
+	MemberRemovalDeps,
+	MemberRoleDeps
+} from '../domain/circles/circles';
 import type { CircleDirectoryDeps } from '../domain/circles/directory';
 import type { CircleMembershipDeps } from '../domain/circles/memberships';
 import type { RenameRoleDeps } from '../domain/circles/rename-role';
@@ -25,7 +30,7 @@ import type { IdGenerator } from '../id';
  * (`circles`); everything else is a use-case's `deps`, named after its type
  * (`circleDeps` is a `CircleDeps`). A circle's writes and its lists are separate ports with an
  * adapter each (docs/08 §8.3): the overview (`circleDirectoryDeps`) and who is in which circle
- * (`circleMembershipDeps`), which re-roling, renaming a role and the photos read too.
+ * (`circleMembershipDeps`), which re-roling, removing, renaming a role and the photos read too.
  */
 export interface CircleServices {
 	/** A circle's writes and one-circle reads: every use-case below, and the command handlers. */
@@ -38,6 +43,7 @@ export interface CircleServices {
 	circleDirectoryDeps: CircleDirectoryDeps;
 	circleMembershipDeps: CircleMembershipDeps;
 	memberRoleDeps: MemberRoleDeps;
+	memberRemovalDeps: MemberRemovalDeps;
 	circlePhotoDeps: CirclePhotoDeps;
 	/** Renaming a role touches the circle's members and its photos alike. */
 	renameRoleDeps: RenameRoleDeps;
@@ -74,6 +80,7 @@ export function createCircleServices({
 		circleDirectoryDeps: { directory: createDrizzleCircleDirectoryReads(db) },
 		circleMembershipDeps: { memberships },
 		memberRoleDeps: { circles, memberships, clock },
+		memberRemovalDeps: { circles, memberships },
 		circlePhotoDeps: { circlePhotos, circles, memberships, media, ids, clock },
 		renameRoleDeps: { circles, memberships, circlePhotos, clock },
 		cutDeps: { cuts, contacts, media, ids, clock }

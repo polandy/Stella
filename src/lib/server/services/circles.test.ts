@@ -108,6 +108,7 @@ describe('createCircleServices', () => {
 		expect<unknown>(circles.circlePhotoDeps.circles).toBe(circles.circles);
 		expect<unknown>(circles.renameRoleDeps.circles).toBe(circles.circles);
 		expect<unknown>(circles.memberRoleDeps.circles).toBe(circles.circles);
+		expect<unknown>(circles.memberRemovalDeps.circles).toBe(circles.circles);
 
 		const anna = await addPerson('Anna');
 		const circleId = await joinCircleByName(
@@ -127,6 +128,7 @@ describe('createCircleServices', () => {
 		const circles = createCircleServices(wiring);
 		const { memberships } = circles.circleMembershipDeps;
 		expect<unknown>(circles.memberRoleDeps.memberships).toBe(memberships);
+		expect<unknown>(circles.memberRemovalDeps.memberships).toBe(memberships);
 		expect<unknown>(circles.renameRoleDeps.memberships).toBe(memberships);
 		expect<unknown>(circles.circlePhotoDeps.memberships).toBe(memberships);
 	});
