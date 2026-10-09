@@ -5,14 +5,12 @@ import { getContact } from '$lib/server/domain/contacts/contacts';
 import { listContactNamesAmong } from '$lib/server/domain/contacts/contact-names';
 import { listContacts } from '$lib/server/domain/contacts/directory';
 import { authorNames } from '$lib/server/domain/household/members';
-import { authorLabel } from '$lib/story/author';
 import {
 	deleteJournalEntry,
 	editJournalEntry,
 	listJournalForContact,
 	setJournalMentions
 } from '$lib/server/domain/journal/journal';
-import { renderMarkdownWithMentions } from '$lib/server/domain/notes/markdown';
 import { extractMentionIds, mentionsOtherThan } from '$lib/mentions/mentions';
 import { resolveForAudience } from '$lib/server/domain/mentions/resolve-for-audience';
 import { withNamesakeContext } from '$lib/server/domain/mentions/namesake-context';
@@ -28,6 +26,7 @@ import { TranslatableError } from '$lib/i18n/translatable';
 import { say, translator } from '$lib/server/i18n/say';
 import type { MessageKey } from '$lib/i18n/translate';
 import { todayFor } from '$lib/dates/today';
+import { journalEntriesFor } from './journal-view';
 
 export const load: PageServerLoad = async ({ locals, params }) => {
 	const viewer = requireViewer(locals);
@@ -46,19 +45,6 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 		entries.flatMap((e) => extractMentionIds(e.body))
 	);
 
-	// Group visible photo ids by their entry so each entry renders its own gallery.
-	const photosByEntry = new Map<string, string[]>();
-	for (const p of journalPhotos) {
-		const list = photosByEntry.get(p.journalEntryId) ?? [];
-		list.push(p.id);
-		photosByEntry.set(p.journalEntryId, list);
-	}
-
-	// Name lookup for @-mention chips, scoped to what the viewer may see — archived people
-	// included, since a mention already written still names them (docs/02 §2.2).
-	const nameById = new Map(contactNames.map((c) => [c.id, c.displayName]));
-	const nameOf = (id: string) => nameById.get(id) ?? null;
-	// Who wrote each entry, named the same way the story names it (docs/02 §2.23).
 	const nameOfAuthor = await authorNames(locals.services.household.memberDeps, viewer.householdId);
 
 	return {
@@ -68,27 +54,13 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 			avatarPhotoId: contact.avatarPhotoId
 		},
 		today: todayFor(systemClock),
-		// render Markdown + @-mentions server-side; the output is already safe (docs/02 §2.5, §2.20.1)
-		entries: entries.map((e) => ({
-			id: e.id,
-			entryDate: e.entryDate,
-			title: e.title,
-			bodyHtml: renderMarkdownWithMentions(e.body, nameOf),
-			// the stored body for the edit form, which shows its tokens as handles and keeps whom
-			// each one names — including people the picker does not offer, such as the subject.
-			// Only an author edits an entry, so only their own carry it.
-			bodyForEdit: e.createdBy === viewer.id ? e.body : null,
-			mentionNames: Object.fromEntries(
-				extractMentionIds(e.body).flatMap((id) =>
-					nameById.has(id) ? [[id, nameById.get(id)!]] : []
-				)
-			),
-			visibility: e.visibility,
-			mine: e.createdBy === viewer.id,
-			author: authorLabel(e.createdBy === viewer.id, nameOfAuthor(e.createdBy)),
-			photos: photosByEntry.get(e.id) ?? [],
-			updatedAt: e.updatedAt
-		}))
+		entries: journalEntriesFor({
+			viewerId: viewer.id,
+			entries,
+			photos: journalPhotos,
+			names: contactNames,
+			nameOfAuthor
+		})
 	};
 };
 
