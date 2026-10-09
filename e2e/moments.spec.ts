@@ -56,7 +56,8 @@ test('creates the people it mentions and offers to link the first two', async ({
 	const hint = page.getByRole('status');
 	await expect(hint).toContainText('Link Zelda and Yorick?');
 	await hint.getByRole('link', { name: 'Link' }).click();
-	await expect(page).toHaveURL(/\/contacts\/[^/?]+\?relate=[^#]+#relationships/);
+	await expect(page).toHaveURL(/\/contacts\/[^/?]+\?relate=[^#]+#section-relationships$/);
+	await expect(page.locator('#section-relationships')).toBeInViewport();
 });
 
 test('keeps a private moment marked as private', async ({ page }) => {

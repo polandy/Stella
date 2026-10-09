@@ -377,8 +377,11 @@
 				<Button
 					variant="primary"
 					size="sm"
-					href="/contacts/{data.linkSuggestion.a.id}?relate={data.linkSuggestion.b
-						.id}#relationships"
+					href={contactSectionPath(
+						data.linkSuggestion.a.id,
+						'relationships',
+						`relate=${data.linkSuggestion.b.id}`
+					)}
 				>
 					{t('home.link.confirm')}
 				</Button>

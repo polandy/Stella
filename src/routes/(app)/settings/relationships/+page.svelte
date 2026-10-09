@@ -9,6 +9,7 @@
 	import { answerKey } from '$lib/relationships/answer-key';
 	import { allSent, answeredCount, type AnsweredClaims } from '$lib/relationships/answered';
 	import { REVIEW_PARAM, QUERY_PARAM, reviewHref } from '$lib/relationships/review-url';
+	import { contactSectionPath } from '$lib/people/sections';
 	import { PEOPLE_PER_PAGE } from '$lib/suggestions/paging';
 	import type { Relation } from '$lib/suggestions/types';
 	import type { ActionData, PageData } from './$types';
@@ -195,7 +196,7 @@
 			{#each data.groups.filter((g) => !finished(g)) as group (group.subjectId)}
 				<section class="flex flex-col gap-2 rounded-app bg-card p-4 shadow-card">
 					<a
-						href="/contacts/{group.subjectId}#relationships"
+						href={contactSectionPath(group.subjectId, 'relationships')}
 						class="flex items-center gap-3 text-fg hover:underline"
 					>
 						<Avatar name={group.subjectName} id={group.subjectId} size={32} />
@@ -222,7 +223,7 @@
 							<Button
 								variant="ghost"
 								size="sm"
-								href="/contacts/{group.subjectId}?review#relationships"
+								href={contactSectionPath(group.subjectId, 'relationships', REVIEW_PARAM)}
 								class="ml-auto"
 							>
 								{t('settings.relationships.openAll', { count: group.totalSuggestions })}
