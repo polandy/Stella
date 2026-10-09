@@ -353,14 +353,17 @@ describe('framePhotoAsAvatar', () => {
 	};
 
 	/** Anna's 1600×1200 photo p1, framed through ports that keep what they were handed. */
-	function framing(photos = [someGalleryPhoto('p1', { contactId: 'anna' })]) {
+	function framing({
+		photos = [someGalleryPhoto('p1', { contactId: 'anna' })],
+		put = keepFile
+	} = {}) {
 		const framed: StoredFraming[] = [];
 		const services: FakeServices = {
 			media: {
 				framingDeps: {
 					gallery: inMemoryGalleryPhotos(photos),
 					framings: { replaceFraming: async (f) => (framed.push(f), []) },
-					media: { put: keepFile, delete: async () => {} },
+					media: { put, delete: async () => {} },
 					ids: sequentialIds('f1'),
 					clock: fixedClock(NOW)
 				}
@@ -392,9 +395,9 @@ describe('framePhotoAsAvatar', () => {
 	});
 
 	it('answers 404 for a photo the viewer cannot see on this person', async () => {
-		expect(await post(actions.framePhotoAsAvatar, framing([]).services, formOf(square))).toEqual(
-			refused(404, t('errors.photo.notFound'))
-		);
+		expect(
+			await post(actions.framePhotoAsAvatar, framing({ photos: [] }).services, formOf(square))
+		).toEqual(refused(404, t('errors.photo.notFound')));
 	});
 
 	it('says why the square was refused, in the reader’s words', async () => {
@@ -405,23 +408,12 @@ describe('framePhotoAsAvatar', () => {
 	});
 
 	it('lets a breakage of ours through, for handleError to log', async () => {
-		const { services } = framing();
-		const broken: FakeServices = {
-			media: {
-				framingDeps: {
-					...services.media!.framingDeps!,
-					media: {
-						put: async () => {
-							throw new Error('disk full');
-						},
-						delete: async () => {}
-					}
-				}
-			}
+		const put = async (): Promise<string> => {
+			throw new Error('disk full');
 		};
-		await expect(post(actions.framePhotoAsAvatar, broken, formOf(square))).rejects.toThrow(
-			'disk full'
-		);
+		await expect(
+			post(actions.framePhotoAsAvatar, framing({ put }).services, formOf(square))
+		).rejects.toThrow('disk full');
 	});
 });
 
