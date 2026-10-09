@@ -96,6 +96,10 @@ export const archive = {
 		'Some relationships joined people the archive does not contain and were left out.',
 	'archive.warning.relationshipUnknownType':
 		'Some relationships were of a kind this Stella does not know and were left out. Add the relationship type, then import again.',
+	'archive.warning.relationshipTwinFolded':
+		'The archive held the same relationship from both ends; it was restored once.',
+	'archive.warning.relationshipToItself':
+		'A relationship joining a person to themselves was left out.',
 
 	'archive.warning.imagesMissing': (p: { count: number }) =>
 		p.count === 1

@@ -6,6 +6,8 @@ import { isSafeMediaPath } from './archive';
 import { isImmichId } from '../immich/gateway';
 import { ARCHIVE_FORMAT, ARCHIVE_VERSION } from './document';
 import { CURRENT_RELATIONSHIP_STATUS } from '../../../relationships/status';
+import { relationshipPair } from '../../../relationships/endpoints';
+import { foldedLinkDetails } from '../../../relationships/fold';
 import { giftLink, isGiftState } from '../../../gifts/gifts';
 import { FULL_DATE_SHAPE, isRealCalendarDay } from '../../../dates/calendar';
 
@@ -85,6 +87,9 @@ export type RestoreWarning =
 	| { code: 'relationshipMissingEnd' }
 	| { code: 'relationshipsMissingPeople' }
 	| { code: 'relationshipUnknownType' }
+	/** The same symmetric link from both ends, restored once (docs/03 §relationship). */
+	| { code: 'relationshipTwinFolded' }
+	| { code: 'relationshipToItself' }
 	| { code: 'imagesMissing'; count: number }
 	/** Gift notes or gift touchpoints the archive held, made gift records (docs/02 §2.25.4). */
 	| { code: 'giftsConverted'; count: number };
@@ -98,6 +103,8 @@ export interface RestoreTarget {
 	memberIds: readonly string[];
 	/** Relationship types that already exist: the built-ins, plus the household's own. */
 	relationshipTypeIds: readonly string[];
+	/** Those of them that are symmetric, which decides the order a link's ends are stored in. */
+	symmetricTypeIds: readonly string[];
 	/** Tags the household already has. A tag is unique by name, so it is matched by name. */
 	tags: readonly { id: string; name: string }[];
 }
@@ -622,6 +629,7 @@ export function planRestore(
 	// ── Relationship types and relationships ──────────────────────────────
 	const relationshipTypes: Row[] = [];
 	const knownTypes = new Set(target.relationshipTypeIds);
+	const symmetricTypes = new Set(target.symmetricTypeIds);
 	records(document, 'relationship_types').forEach((type, index) => {
 		const id = str(type, 'id');
 		const key = str(type, 'key');
@@ -630,6 +638,8 @@ export function planRestore(
 			warn({ code: 'relationshipTypeWithoutName' });
 			return;
 		}
+		// A type already here keeps its row, so its links are stored the way that row says.
+		if (!knownTypes.has(id) && bool(type, 'symmetric')) symmetricTypes.add(id);
 		knownTypes.add(id);
 		relationshipTypes.push({
 			id,
@@ -644,6 +654,23 @@ export function planRestore(
 	});
 
 	const relationships: Row[] = [];
+	/*
+	 * Each link takes its ends from `relationshipPair`, like every other writer's (docs/03
+	 * §relationship): an archive from before migration 0025, or one edited by hand, can hold a
+	 * symmetric link the wrong way round, and the unique index and the duplicate check would miss
+	 * it from the other end. The same link from both ends is restored once, as 0025 folded it:
+	 * the copy stored sorted keeps its row and takes only the blanks the other can fill. One the
+	 * household already has is left to the adapter, which keeps the household's row whole.
+	 */
+	const symmetricLinks = new Map<string, { row: Row; givenSorted: boolean }>();
+	const fold = (kept: Row, copy: Row) => {
+		const filled = foldedLinkDetails(
+			{ description: kept.note as string | null, sinceDate: kept.since_date as string | null },
+			{ description: copy.note as string | null, sinceDate: copy.since_date as string | null }
+		);
+		if (filled.description !== undefined) kept.note = filled.description;
+		if (filled.sinceDate !== undefined) kept.since_date = filled.sinceDate;
+	};
 	for (const link of records(document, 'relationships')) {
 		const from = str(link, 'from');
 		const to = str(link, 'to');
@@ -660,11 +687,17 @@ export function planRestore(
 			warn({ code: 'relationshipUnknownType' });
 			continue;
 		}
-		relationships.push({
+		if (from === to) {
+			warn({ code: 'relationshipToItself' });
+			continue;
+		}
+		const symmetric = symmetricTypes.has(type);
+		const pair = relationshipPair(from, to, symmetric);
+		const row: Row = {
 			id: str(link, 'id') ?? deps.ids.next(),
 			household_id: target.householdId,
-			from_contact_id: from,
-			to_contact_id: to,
+			from_contact_id: pair.fromContactId,
+			to_contact_id: pair.toContactId,
 			type_id: type,
 			note: str(link, 'description'),
 			since_date: str(link, 'since'),
@@ -673,7 +706,27 @@ export function planRestore(
 			status: str(link, 'status') ?? CURRENT_RELATIONSHIP_STATUS,
 			created_by: author(link),
 			...stamps(link)
-		});
+		};
+		if (!symmetric) {
+			relationships.push(row);
+			continue;
+		}
+		const key = JSON.stringify([pair.fromContactId, pair.toContactId, type]);
+		const givenSorted = from === pair.fromContactId;
+		const twin = symmetricLinks.get(key);
+		if (twin === undefined) {
+			symmetricLinks.set(key, { row, givenSorted });
+			relationships.push(row);
+			continue;
+		}
+		warn({ code: 'relationshipTwinFolded' });
+		if (twin.givenSorted || !givenSorted) {
+			fold(twin.row, row);
+			continue;
+		}
+		fold(row, twin.row);
+		relationships[relationships.indexOf(twin.row)] = row;
+		symmetricLinks.set(key, { row, givenSorted });
 	}
 
 	// ── The trail ─────────────────────────────────────────────────────────

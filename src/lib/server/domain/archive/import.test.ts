@@ -67,7 +67,12 @@ function fakeRestore(counts: RestoreCounts = { contact: { added: 1, skipped: 0 }
 	let applied: RestorePlan | null = null;
 	let recorded: ActivityOf<'archive.restored'> | null = null;
 	const repo: RestoreRepository = {
-		readTarget: async () => ({ memberIds: ['u-admin'], relationshipTypeIds: [], tags: [] }),
+		readTarget: async () => ({
+			memberIds: ['u-admin'],
+			relationshipTypeIds: [],
+			symmetricTypeIds: [],
+			tags: []
+		}),
 		applyRestore: async (plan) => {
 			applied = plan;
 			return counts;

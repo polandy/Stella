@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'bun:test';
 import type { Endpoints } from '../../../relationships/endpoints';
-import { foldedLinkDetails, linkAfterMerge } from './merge-links';
+import { linkAfterMerge } from './merge-links';
 
 /*
  * Where a link of the record merged away lands (docs/02 §2.2, docs/03 §relationship): in the
@@ -65,40 +65,5 @@ describe('where a link of the merged record lands', () => {
 		expect(() =>
 			linkAfterMerge({ fromContactId: 'lena', toContactId: 'elias' }, merging, true)
 		).toThrow();
-	});
-});
-
-describe('the details a folded link gives the survivor’s', () => {
-	it('fills the survivor’s blank description and since date from the merged copy', () => {
-		expect(
-			foldedLinkDetails(
-				{ description: null, sinceDate: null },
-				{ description: 'met at uni', sinceDate: '2004-09-01' }
-			)
-		).toEqual({ description: 'met at uni', sinceDate: '2004-09-01' });
-	});
-
-	it('treats an empty description as blank', () => {
-		expect(
-			foldedLinkDetails({ description: '', sinceDate: null }, { description: 'x', sinceDate: null })
-		).toEqual({ description: 'x' });
-	});
-
-	it('keeps what the survivor’s link already says', () => {
-		expect(
-			foldedLinkDetails(
-				{ description: 'neighbours', sinceDate: '1999-01-01' },
-				{ description: 'met at uni', sinceDate: '2004-09-01' }
-			)
-		).toEqual({});
-	});
-
-	it('has nothing to give where the merged copy is blank too', () => {
-		expect(
-			foldedLinkDetails(
-				{ description: null, sinceDate: null },
-				{ description: '', sinceDate: null }
-			)
-		).toEqual({});
 	});
 });

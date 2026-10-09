@@ -34,6 +34,7 @@ const target = (over: Partial<RestoreTarget> = {}): RestoreTarget => ({
 	actorId: 'u-admin',
 	memberIds: ['u-admin'],
 	relationshipTypeIds: ['parent_child'],
+	symmetricTypeIds: [],
 	tags: [],
 	...over
 });

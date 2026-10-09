@@ -878,7 +878,9 @@ interrupted can simply be run again.
 
 Afterwards you get a report: how many people, notes, photos and everything else were added, how
 many were already here, and anything the archive could not give back — a photo whose file was
-not in the folder, or a relationship of a kind this Stella does not know. Records that were
+not in the folder, or a relationship of a kind this Stella does not know. A relationship the
+archive holds twice, once from each end, comes back as one, and the report says so. One that
+links somebody to themselves is left out. Records that were
 written by somebody who does not have an account here arrive under your name, because an archive
 never carries accounts or passwords.
 

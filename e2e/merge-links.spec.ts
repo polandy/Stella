@@ -44,8 +44,8 @@ test('folds a link both records had into one, and refuses it again from either e
 	await seedHousehold(
 		page,
 		[survivor, merged, both, theirs],
-		// The restore writes the ends as given, so each symmetric link is seeded sorted, as the
-		// app stores it.
+		// Each symmetric link is seeded in the order the app stores it in, so the setting reads the
+		// same whether or not the restore would have turned it round.
 		[
 			{ from: both, to: survivor, type: LINK.friendOf },
 			{ from: merged, to: both, type: LINK.friendOf },

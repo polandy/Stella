@@ -1,7 +1,8 @@
 import { and, eq, or, sql } from 'drizzle-orm';
 import type { BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
 import { activityEntry, type ActivityOf } from '../domain/activity/activity';
-import { foldedLinkDetails, linkAfterMerge } from '../domain/contacts/merge-links';
+import { foldedLinkDetails } from '../../relationships/fold';
+import { linkAfterMerge } from '../domain/contacts/merge-links';
 import { MERGE_PLAN, type MergeSettlement, type MergeStep } from '../domain/contacts/merge-plan';
 import type { MergeableProfile } from '../domain/contacts/merge-profile';
 import type { Viewer } from '../access/visibility';

@@ -346,7 +346,9 @@ from either end. Every writer — the use-cases, both import plans, the demo see
 ends from one constructor, `relationshipPair` (a **`RelationshipPair`**,
 `src/lib/relationships/endpoints.ts`), never by ordering them itself — a merge included, which
 takes a moved link's new ends from it rather than repointing one column at a time
-(`domain/contacts/merge-links.ts`). Migration `0025_sort_symmetric_links` sorted the symmetric
+(`domain/contacts/merge-links.ts`), and the restore, which sorts what an older or hand-edited
+archive holds the wrong way round. Where two rows turn out to be one link, one keeps its row and
+fills only its blanks from the other (`foldedLinkDetails`, `src/lib/relationships/fold.ts`). Migration `0025_sort_symmetric_links` sorted the symmetric
 links earlier merges had left the wrong way round, folding each into a twin it duplicated.
 Visibility is **derived** from the two endpoints (see 2.10), not stored.
 
