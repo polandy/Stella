@@ -51,14 +51,23 @@ const peopleTab = (page: Page) => page.locator('a[href="/contacts"]:visible').fi
  */
 const homeTab = (page: Page) => page.locator('a[href="/"]:visible').last();
 
-/** Opens Lena Brunner's page the way a phone does: by tapping, never from the address bar. */
+/**
+ * Opens Lena Brunner's page the way a phone does: by tapping, never from the address bar, and
+ * returns once the device keeps it.
+ */
 async function tapToLena(page: Page): Promise<void> {
 	await peopleTab(page).click();
+	// Home links to Lena too: the tap is meant for the list, so the list has to be there.
+	await expect(page.getByRole('heading', { name: 'People', level: 1 })).toBeVisible();
 	await page
 		.getByRole('link', { name: /Lena Brunner/ })
 		.first()
 		.click();
 	await expect(page.getByRole('heading', { name: 'Lena Brunner' })).toBeVisible();
+	// A tap fetches only the page's data, which the worker keeps after handing it over: the page
+	// shows a moment before it is readable offline, and the cache holding it is the signal.
+	const lena = new URL(page.url()).pathname;
+	await expect.poll(() => isKept(page, `${lena}/__data.json`)).toBe(true);
 }
 
 test.beforeEach(async ({ page }) => {

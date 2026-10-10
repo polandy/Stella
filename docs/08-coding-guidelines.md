@@ -281,6 +281,12 @@ test may not race — not in `bun test`, not in Playwright.
   red. Break the behaviour it names — revert the fix, shift the value it renders — and watch
   that exact case go red and its neighbours stay green. A case that survives is not a test,
   whatever its name says. `e2e` rebuilds on every run, so a production-side edit is picked up.
+- **Wait for what the next step needs, not for what came just before it.** A page on screen is
+  not yet a page the worker keeps (`isKept` in `e2e/pwa-offline.spec.ts`), and a tap meant for
+  a list waits for the list, not for the tab that opens it. A click that keeps reporting that
+  something else "intercepts pointer events" may be the app's: Playwright scrolls its target
+  into view first, as keyboard focus does, and the jump bar's links once scrolled the page out
+  from under themselves that way (`docs/design/screens/person.md`).
 
 **Motion is waited on, never timed.** What opens or closes in place glides (docs/05 §5.11), so
 for a moment it is half there — and two alternatives crossing over each other are *both* there,

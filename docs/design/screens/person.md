@@ -113,7 +113,9 @@ the person, and that never leaves the page. Keeping the record tidy (archive, me
   is cut short; a left-aligned row from `sm`.
 - It sticks to the shell's scroller, so the phone's sliding top bar (§5.4) takes it along. The
   scroller's `scroll-padding-top` is the bar's height, so a jump, a `#section-…` link and
-  keyboard focus all stop below the bar.
+  keyboard focus all stop below the bar. The bar's own links sit in that strip, so each one's
+  scroll margin moves it down by the bar's height: the cursor arriving on one leaves the page
+  where it is, instead of scrolling it back to where the bar rests and hides.
 - A tap glides to the card by the rule an opened form follows (§5.11), hands the card the
   cursor (`tabindex="-1"`; the card is named by its heading) and writes its `#section-…` into
   the address without a second scroll.
