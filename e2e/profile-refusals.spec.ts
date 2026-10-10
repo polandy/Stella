@@ -46,7 +46,8 @@ test('refuses a gender it does not know, and keeps the name as it was', async ({
 	const person = new URL(page.url()).pathname;
 
 	// Posted straight at the action: the editor only ever offers the three and *Not on record*,
-	// so this is the guard against a hand-made form.
+	// so this is the guard against a hand-made form. Asking for a page, as a browser without
+	// JavaScript does: anything else gets SvelteKit's 200 with the outcome in its JSON.
 	const response = await page.request.post(`${person}?/editNameParts`, {
 		form: {
 			firstName: 'Renamed',
@@ -56,7 +57,7 @@ test('refuses a gender it does not know, and keeps the name as it was', async ({
 			formerName: '',
 			gender: 'other'
 		},
-		headers: { origin: baseURL! }
+		headers: { origin: baseURL!, accept: 'text/html' }
 	});
 	expect(response.status()).toBe(400);
 
