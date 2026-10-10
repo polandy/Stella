@@ -6,7 +6,6 @@ import { JOB_EDITOR_PLACES } from '$lib/people/job';
 import {
 	editProfile,
 	EmptyContactNameError,
-	InvalidGenderError,
 	JobFieldTooLongError,
 	setGender,
 	setJob,
@@ -18,8 +17,9 @@ import { takenAtField } from '$lib/server/http/taken-at-field';
 import { say, translator } from '$lib/server/i18n/say';
 import type { Actions } from '../$types';
 
+/** The description as the page posts it; trimming is the use-case's. */
 const EditProfileSchema = v.object({
-	description: v.optional(v.pipe(v.string(), v.trim()))
+	description: v.optional(v.string())
 });
 
 /**
@@ -34,6 +34,8 @@ const NamePartsSchema = v.object({
 	displayName: v.pipe(v.string(), v.trim()),
 	formerName: v.pipe(v.string(), v.trim()),
 	keepFormerName: v.boolean(),
+	// Checked here, not left to setGender: that runs after the name is written, so a gender
+	// it refused would leave half the edit saved.
 	gender: v.optional(v.union([v.picklist(GENDERS), v.literal('')]))
 });
 
@@ -57,7 +59,7 @@ export const profileActions = {
 		const parsed = v.safeParse(EditProfileSchema, {
 			description: form.get('description') || undefined
 		});
-		if (!parsed.success) throw error(400, say(locals, 'errors.contact.notFound'));
+		if (!parsed.success) throw error(400, say(locals, 'errors.form.checkAndRetry'));
 
 		const saved = await editProfile(locals.services.people.contactDeps, viewer, params.id, {
 			description: parsed.output.description ?? null
@@ -99,7 +101,7 @@ export const profileActions = {
 			if (gender !== undefined)
 				await setGender(locals.services.people.contactDeps, viewer, params.id, gender || null);
 		} catch (err) {
-			if (err instanceof EmptyContactNameError || err instanceof InvalidGenderError)
+			if (err instanceof EmptyContactNameError)
 				return fail(400, { namePartsError: err.phrase(translator(locals)) });
 			throw err;
 		}
@@ -169,7 +171,7 @@ export const profileActions = {
 		} catch (err) {
 			if (err instanceof InvalidAvatarError)
 				return fail(400, { avatarError: err.phrase(translator(locals)) });
-			return fail(400, { avatarError: say(locals, 'errors.image.couldNotSave') });
+			throw err;
 		}
 
 		throw redirect(303, `/contacts/${params.id}`);

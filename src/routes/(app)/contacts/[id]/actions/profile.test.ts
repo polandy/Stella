@@ -115,16 +115,20 @@ describe('editProfile', () => {
 		}
 	});
 
-	// Pinned as it is: a 400 that says the contact was not found (see the PR's findings).
-	it('answers 400 for a description that is not text, and writes nothing', async () => {
-		const { services, written } = describing();
-		const form = formOf({ description: new File(['x'], 'x.txt') });
-		expect(await post(actions.editProfile, services, form)).toEqual({
-			kind: 'error',
-			status: 400,
-			message: en('errors.contact.notFound')
-		});
-		expect(written).toEqual([]);
+	it('answers a description that is not text with “check the form”, in the reader’s words, and writes nothing', async () => {
+		for (const [locale, say] of [
+			['en', en],
+			['de', de]
+		] as const) {
+			const { services, written } = describing();
+			const form = formOf({ description: new File(['x'], 'x.txt') });
+			expect(await post(actions.editProfile, services, form, locale)).toEqual({
+				kind: 'error',
+				status: 400,
+				message: say('errors.form.checkAndRetry')
+			});
+			expect(written).toEqual([]);
+		}
 	});
 
 	it('answers 404 for a person the viewer cannot see', async () => {
@@ -216,6 +220,7 @@ describe('editNameParts', () => {
 		expect([names.length, genders]).toEqual([1, []]);
 	});
 
+	// The form read owns an unknown gender: the use-case would refuse it only after the name was written.
 	it('refuses a gender it does not know, or a part that is not text, and writes nothing', async () => {
 		for (const form of [
 			formOf({ ...name, gender: 'other' }),
@@ -420,14 +425,13 @@ describe('setAvatar', () => {
 		}
 	});
 
-	// Pinned as it is: a breakage of ours becomes a 400, never logged (see the PR's findings).
-	it('answers a failed save with “could not save”', async () => {
+	it('lets a breakage of ours through, for handleError to log', async () => {
 		const put = async (): Promise<string> => {
 			throw new Error('disk full');
 		};
-		expect(await post(actions.setAvatar, uploading({ put }).services, formOf(face))).toEqual(
-			refused(en('errors.image.couldNotSave'))
-		);
+		await expect(
+			post(actions.setAvatar, uploading({ put }).services, formOf(face))
+		).rejects.toThrow('disk full');
 	});
 });
 

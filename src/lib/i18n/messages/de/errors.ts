@@ -138,7 +138,6 @@ export const errors: ErrorsMessages = {
 	'errors.tag.couldNotAdd': 'Das Schlagwort konnte nicht hinzugefügt werden.',
 	'errors.image.chooseSome': 'Bitte wähle mindestens ein Bild.',
 	'errors.image.chooseOne': 'Bitte wähle ein Bild.',
-	'errors.image.couldNotSave': 'Das Foto konnte nicht gespeichert werden.',
 	'errors.caption.unreadable': 'Diese Bildunterschrift war nicht zu lesen.',
 	'errors.photo.onlyOwnerCaption': 'Nur wer ein Foto hinzugefügt hat, kann es beschriften.',
 	'errors.photo.onlyOwnerChange': 'Nur wer ein Foto hinzugefügt hat, kann es ändern.',
