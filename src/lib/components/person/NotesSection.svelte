@@ -183,7 +183,11 @@
 							</span>
 						{/if}
 						{#if note.title}<span class="font-medium text-fg">{note.title}</span>{/if}
-						{#if note.author}<span class="text-xs text-fg-subtle">· {note.author}</span>{/if}
+						{#if note.author}
+							<span class="text-xs text-fg-subtle"
+								>{note.title ? `· ${note.author}` : note.author}</span
+							>
+						{/if}
 						<span class="ml-auto inline-flex items-center gap-2">
 							{#if note.visibility === 'private'}
 								<span class="inline-flex items-center gap-1 text-xs text-fg-subtle">
