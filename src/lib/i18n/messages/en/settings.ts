@@ -36,17 +36,17 @@ export const settings = {
 	'settings.members.confirm.heading': (p: { name: string }) =>
 		`Remove ${p.name} from the household?`,
 	'settings.members.confirm.signOut': (p: { name: string }) =>
-		`${p.name} can no longer sign in. Every device signed in as ${p.name} is signed out now, and ${p.name}’s API tokens stop working.`,
+		`${p.name} can no longer sign in. Every device signed in as them is signed out now, and their API tokens stop working.`,
 	'settings.members.confirm.shared': (p: { name: string }) =>
-		`What ${p.name} shared stays, under ${p.name}’s name. You can still remove any of it.`,
+		`What ${p.name} shared stays, under their name. You can still remove any of it.`,
 	'settings.members.confirm.private': (p: { name: string; count: number }) =>
 		p.count === 1
-			? `${p.name}’s one private record stays sealed: nobody sees it, you included.`
-			: `${p.name}’s ${p.count} private records stay sealed: nobody sees them, you included.`,
+			? `Their one private record stays sealed: nobody sees it, you included.`
+			: `Their ${p.count} private records stay sealed: nobody sees them, you included.`,
 	'settings.members.confirm.sso': (p: { name: string }) =>
-		`${p.name} signs in through single sign-on. Stella turns ${p.name} away from now on. To be thorough, also remove ${p.name} from the group in your sign-in provider.`,
+		`${p.name} signs in through single sign-on. Stella turns them away from now on. To be thorough, also remove them from the group in your sign-in provider.`,
 	'settings.members.confirm.lastAdmin': (p: { name: string }) =>
-		`${p.name} is the only admin who can sign in with a password. Without ${p.name}, an outage of your sign-in provider locks everyone out.`,
+		`${p.name} is the only admin who can sign in with a password. Without them, an outage of your sign-in provider locks everyone out.`,
 	'settings.members.confirm.submit': (p: { name: string }) => `Remove ${p.name}`,
 	'settings.members.confirm.keep': (p: { name: string }) => `Keep ${p.name}`,
 	'settings.members.removed': (p: { name: string }) => `${p.name} removed`,

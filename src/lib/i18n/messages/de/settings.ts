@@ -36,15 +36,15 @@ export const settings: SettingsMessages = {
 	'settings.members.removeLabel': (p) => `${p.name} entfernen…`,
 	'settings.members.confirm.heading': (p) => `${p.name} aus dem Haushalt entfernen?`,
 	'settings.members.confirm.signOut': (p) =>
-		`${p.name} kann sich nicht mehr anmelden. Jedes Gerät, auf dem ${p.name} angemeldet ist, wird jetzt abgemeldet, und die API-Tokens von ${p.name} funktionieren nicht mehr.`,
+		`${p.name} kann sich nicht mehr anmelden. Jedes Gerät mit dieser Anmeldung wird jetzt abgemeldet, und die API-Tokens funktionieren nicht mehr.`,
 	'settings.members.confirm.shared': (p) =>
-		`Was ${p.name} geteilt hat, bleibt, unter dem Namen ${p.name}. Du kannst jedes Stück davon weiterhin entfernen.`,
+		`Was ${p.name} geteilt hat, bleibt, unter diesem Namen. Du kannst jedes Stück davon weiterhin entfernen.`,
 	'settings.members.confirm.private': (p) =>
 		p.count === 1
-			? `Der eine private Eintrag von ${p.name} bleibt versiegelt: Niemand sieht ihn, auch du nicht.`
-			: `Die ${p.count} privaten Einträge von ${p.name} bleiben versiegelt: Niemand sieht sie, auch du nicht.`,
+			? `Der eine private Eintrag bleibt versiegelt: Niemand sieht ihn, auch du nicht.`
+			: `Die ${p.count} privaten Einträge bleiben versiegelt: Niemand sieht sie, auch du nicht.`,
 	'settings.members.confirm.sso': (p) =>
-		`${p.name} meldet sich per Single Sign-on an. Stella weist ${p.name} ab jetzt ab. Entferne ${p.name} am besten auch aus der Gruppe bei deinem Anmeldedienst.`,
+		`${p.name} meldet sich per Single Sign-on an. Stella lässt diese Anmeldung ab jetzt nicht mehr zu. Entferne ${p.name} am besten auch aus der Gruppe bei deinem Anmeldedienst.`,
 	'settings.members.confirm.lastAdmin': (p) =>
 		`${p.name} ist die einzige Person in der Administration, die sich mit Passwort anmelden kann. Ohne ${p.name} sperrt ein Ausfall deines Anmeldedienstes alle aus.`,
 	'settings.members.confirm.submit': (p) => `${p.name} entfernen`,
