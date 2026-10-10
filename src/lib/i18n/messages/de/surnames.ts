@@ -58,6 +58,7 @@ export const surnames: SurnamesMessages = {
 	'surnames.confirm': (p) =>
 		p.count === 1 ? `${p.name} für 1 Person setzen.` : `${p.name} für ${p.count} Personen setzen.`,
 	'surnames.replace': (p) => `${p.person} hat schon den Nachnamen ${p.name} — ersetzen`,
+	'surnames.replaceAll': (p) => `Alle ${p.count} ersetzen`,
 	'surnames.count': (p) =>
 		`${p.missing === 1 ? '1 Person hat' : `${p.missing} Personen haben`} keinen Nachnamen · ${p.suggested} mit Vorschlag`,
 	'surnames.toast.passOn': (p) =>

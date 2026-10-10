@@ -60,6 +60,7 @@ export const surnames = {
 		p.count === 1 ? `Set ${p.name} for 1 person.` : `Set ${p.name} for ${p.count} people.`,
 	'surnames.replace': (p: { person: string; name: string }) =>
 		`${p.person} already has the last name ${p.name} — replace it`,
+	'surnames.replaceAll': (p: { count: number }) => `Replace all ${p.count}`,
 	'surnames.count': (p: { missing: number; suggested: number }) =>
 		`${p.missing === 1 ? '1 person has' : `${p.missing} people have`} no last name · ${p.suggested} with a suggestion`,
 	'surnames.toast.passOn': (p: { people: string; count: number; name: string }) =>
