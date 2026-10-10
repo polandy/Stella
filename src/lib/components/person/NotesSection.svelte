@@ -3,6 +3,7 @@
 	import Icon from '$lib/components/ui/Icon.svelte';
 	import KeptItem from '$lib/components/pwa/KeptItem.svelte';
 	import MentionTextarea from '$lib/components/stream/MentionTextarea.svelte';
+	import RemoveButton from '$lib/components/ui/RemoveButton.svelte';
 	import Section from '$lib/components/ui/Section.svelte';
 	import { enhance } from '$app/forms';
 	import { cardShape } from '$lib/people/empty-cards';
@@ -13,6 +14,7 @@
 	import { isKept, type KeptOf } from '$lib/pwa/outbox';
 	import { outbox } from '$lib/pwa/outbox.svelte';
 	import { useRemovals } from '$lib/undo/context.svelte';
+	import { removalKey } from '$lib/undo/keys';
 	import { savedEnhance } from '$lib/undo/saved';
 	import type { SubmitFunction } from '@sveltejs/kit';
 	import { ulid } from 'ulid';
@@ -140,14 +142,18 @@
 		input.cancel();
 		void saveKeptNote(editingNote);
 	};
+	// A note being removed leaves at once; the undo toast can bring it back (docs/02 §2.23).
+	const notes = $derived(
+		data.notes.filter((note) => !removals.isPending(removalKey('note', note.id)))
+	);
 	// Nothing noted and nothing waiting to be sent: the card is one line (docs/05 §5.5).
-	const holdsSomething = $derived(data.notes.length > 0 || keptNotes.length > 0);
+	const holdsSomething = $derived(notes.length > 0 || keptNotes.length > 0);
 </script>
 
 <Section
 	id={sectionAnchor('notes')}
 	title={t('contact.section.notes')}
-	count={data.notes.length}
+	count={notes.length}
 	addLabel={t('contact.notes.add')}
 	empty={cardShape('notes', holdsSomething) === 'line' ? t('contact.notes.none') : undefined}
 	error={form?.noteError ?? null}
@@ -166,9 +172,9 @@
 			{/each}
 		</ul>
 	{/if}
-	{#if data.notes.length > 0}
+	{#if notes.length > 0}
 		<ul class="flex flex-col gap-3">
-			{#each data.notes as note (note.id)}
+			{#each notes as note (note.id)}
 				<li class="rounded-control bg-bg-sunken p-3">
 					<div class="mb-1 flex items-center gap-2">
 						{#if note.isPinned}
@@ -177,11 +183,25 @@
 							</span>
 						{/if}
 						{#if note.title}<span class="font-medium text-fg">{note.title}</span>{/if}
-						{#if note.visibility === 'private'}
-							<span class="ml-auto inline-flex items-center gap-1 text-xs text-fg-subtle">
-								<Icon name="private" size={11} />{t('common.privateInline')}
-							</span>
-						{/if}
+						{#if note.author}<span class="text-xs text-fg-subtle">· {note.author}</span>{/if}
+						<span class="ml-auto inline-flex items-center gap-2">
+							{#if note.visibility === 'private'}
+								<span class="inline-flex items-center gap-1 text-xs text-fg-subtle">
+									<Icon name="private" size={11} />{t('common.privateInline')}
+								</span>
+							{/if}
+							<!-- Its author's, or an admin's on a shared one (docs/03 §3.7). Online only. -->
+							{#if note.removable}
+								<RemoveButton
+									kind="note"
+									id={note.id}
+									action="?/removeNote"
+									fields={{ id: note.id }}
+									label={t('contact.notes.remove')}
+									removed={t('contact.notes.removed')}
+								/>
+							{/if}
+						</span>
 					</div>
 					<!-- server-rendered, already-safe Markdown (docs/02 §2.5) -->
 					<div class="note-body text-fg">{@html note.bodyHtml}</div>

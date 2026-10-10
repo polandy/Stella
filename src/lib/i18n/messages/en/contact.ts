@@ -309,6 +309,8 @@ export const contact = {
 	'contact.notes.label': 'Note',
 	'contact.notes.placeholder': 'Write a note… (Markdown, @ to mention someone)',
 	'contact.notes.pin': 'Pin',
+	'contact.notes.remove': 'Remove note',
+	'contact.notes.removed': 'Note removed',
 
 	'contact.photos.add': 'Add photos',
 	'contact.photos.none': 'No photos yet.',

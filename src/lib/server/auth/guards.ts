@@ -1,5 +1,5 @@
 import { error, redirect } from '@sveltejs/kit';
-import type { Viewer } from '../access/visibility';
+import type { Remover, Viewer } from '../access/visibility';
 import { say } from '../i18n/say';
 import type { AuthUser } from './accounts';
 
@@ -22,6 +22,15 @@ export function requireUser(locals: Pick<App.Locals, 'user'>): AuthUser {
 export function requireViewer(locals: Pick<App.Locals, 'user'>): Viewer {
 	const { id, householdId } = requireUser(locals);
 	return { id, householdId };
+}
+
+/**
+ * Who is asking to remove something (docs/03 §3.7): the viewer, and whether they are an admin
+ * — the only rule in the access layer that looks at the role.
+ */
+export function requireRemover(locals: Pick<App.Locals, 'user'>): Remover {
+	const user = requireUser(locals);
+	return { id: user.id, householdId: user.householdId, isAdmin: user.role === 'admin' };
 }
 
 /** The signed-in admin, or a redirect to login / a 403 for members, in their language. */

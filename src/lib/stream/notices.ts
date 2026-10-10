@@ -13,14 +13,32 @@ export const LAST_NAMES_ENTITY = 'last_name';
 /** A name edited on the profile (docs/02 §2.2). */
 export const RENAME_ENTITY = 'contact_name';
 
+/**
+ * The authored records a member other than the author may remove (docs/03 §3.7). A removal of
+ * one is logged under its kind as entity type, with facts — never its text (docs/02 §2.11).
+ */
+export const REMOVED_RECORD_KINDS = ['note'] as const;
+export type RemovedRecordKind = (typeof REMOVED_RECORD_KINDS)[number];
+
 /** A notice as the stream renders it. */
 export type NoticeContent =
 	| { kind: 'text'; text: string }
 	| { kind: 'lastNames'; lastName: string; count: number }
-	| { kind: 'rename'; from: string; to: string; contactId: string | null };
+	| { kind: 'rename'; from: string; to: string; contactId: string | null }
+	| {
+			kind: 'removed';
+			recordKind: RemovedRecordKind;
+			/** The person the record was on, as they were named when it went. */
+			person: string;
+			contactId: string | null;
+			/** Whose record it was: the reader is told "your note" when it was theirs. */
+			authorId: string;
+			authorName: string;
+	  };
 
 const LastNamesFacts = v.object({ lastName: v.string(), count: v.number() });
 const RenameFacts = v.object({ from: v.string(), to: v.string() });
+const RemovalFacts = v.object({ person: v.string(), authorId: v.string(), authorName: v.string() });
 
 /** The facts of a last-names batch, as stored. */
 export const lastNamesFacts = (lastName: string, count: number): string =>
@@ -28,6 +46,13 @@ export const lastNamesFacts = (lastName: string, count: number): string =>
 
 /** The facts of a rename, as stored. */
 export const renameFacts = (from: string, to: string): string => JSON.stringify({ from, to });
+
+/** The facts of a record removed by someone other than its author, as stored. */
+export const removalFacts = (person: string, authorId: string, authorName: string): string =>
+	JSON.stringify({ person, authorId, authorName });
+
+const isRemovedRecordKind = (entityType: string): entityType is RemovedRecordKind =>
+	(REMOVED_RECORD_KINDS as readonly string[]).includes(entityType);
 
 /** The lines a batch stored as prose before it stored facts, in the giver's language. */
 const LEGACY_LAST_NAMES: readonly { pattern: RegExp; name: number; count: number }[] = [
@@ -66,6 +91,11 @@ export function noticeContentOf(row: {
 	if (row.entityType === RENAME_ENTITY) {
 		const facts = parsed(RenameFacts, row.summary);
 		if (facts) return { kind: 'rename', ...facts, contactId: row.contactId };
+	}
+	if (isRemovedRecordKind(row.entityType)) {
+		const facts = parsed(RemovalFacts, row.summary);
+		if (facts)
+			return { kind: 'removed', recordKind: row.entityType, ...facts, contactId: row.contactId };
 	}
 	return { kind: 'text', text: row.summary };
 }

@@ -2,6 +2,7 @@ import { describe, expect, it } from 'bun:test';
 import type { GraphModel } from '$lib/graph/model/types';
 import type { MentionedIn } from '$lib/server/domain/mentions/mentioned-in';
 import type { Gift } from '$lib/server/domain/gifts/gifts';
+import type { ContactAccess, Remover } from '$lib/server/access/visibility';
 import type { Note } from '$lib/server/domain/notes/notes';
 import {
 	birthdayOf,
@@ -132,8 +133,24 @@ describe('giftView', () => {
 });
 
 describe('noteView', () => {
+	const person: ContactAccess = { householdId: 'h1', ownerId: VIEWER, visibility: 'shared' };
+	const member: Remover = { id: VIEWER, householdId: 'h1', isAdmin: false };
+	const admin: Remover = { ...member, isAdmin: true };
+	const view = (n: Note, remover: Remover = member) => noteView(n, context(), remover, person);
+
 	it('renders the body with each mention read as the person’s current name', () => {
-		expect(noteView(note(), context().nameOf).bodyHtml).toContain('Anna Brunner');
+		expect(view(note()).bodyHtml).toContain('Anna Brunner');
+	});
+
+	it('offers Remove on the viewer’s own note, unnamed', () => {
+		expect(view(note())).toMatchObject({ removable: true, author: null });
+		expect(view(note({ visibility: 'private' })).removable).toBe(true);
+	});
+
+	it('names another member’s note, removable only by an admin', () => {
+		const theirs = note({ createdBy: 'user-2' });
+		expect(view(theirs)).toMatchObject({ removable: false, author: 'Hans' });
+		expect(view(theirs, admin).removable).toBe(true);
 	});
 });
 

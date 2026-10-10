@@ -56,7 +56,9 @@ function fakes(people = [person('julia'), person('marco'), person('sam', 'privat
 			insert: async (n) => void notes.push(n),
 			listForContactVisibleTo: async () => [],
 			replaceMentions: async (id, ids) => void mentions.set(id, ids),
-			listMentionedContactIds: async () => []
+			listMentionedContactIds: async () => [],
+			findRemovableBy: async () => null,
+			deleteRemovableBy: async () => false
 		},
 		ids: { next: () => 'n1' },
 		clock: { now: () => 9 }

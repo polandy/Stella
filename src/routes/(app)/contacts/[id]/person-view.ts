@@ -14,6 +14,7 @@ import type { Gift } from '$lib/server/domain/gifts/gifts';
 import type { MentionedIn } from '$lib/server/domain/mentions/mentioned-in';
 import { renderMarkdownWithMentions } from '$lib/server/domain/notes/markdown';
 import type { Note } from '$lib/server/domain/notes/notes';
+import { canRemoveAuthored, type ContactAccess, type Remover } from '$lib/server/access/visibility';
 import type { ProposedLink } from '$lib/server/domain/relationships/suggestion-review';
 import { authorLabel } from '$lib/story/author';
 import type { LinkSuggestion } from '$lib/suggestions/types';
@@ -99,12 +100,27 @@ export function giftView(gift: Gift, ctx: PersonViewContext) {
 	};
 }
 
-/** A note, rendered server-side; the output is already safe (docs/02 §2.5). */
-export function noteView(note: Note, nameOf: PersonViewContext['nameOf']) {
+/**
+ * A note, rendered server-side; the output is already safe (docs/02 §2.5). Someone else's is
+ * named, and *Remove* is offered as the access layer allows (docs/03 §3.7).
+ */
+export function noteView(
+	note: Note,
+	ctx: PersonViewContext,
+	remover: Remover,
+	person: ContactAccess
+) {
+	const mine = note.createdBy === ctx.viewerId;
 	return {
 		id: note.id,
 		title: note.title,
-		bodyHtml: renderMarkdownWithMentions(note.body, nameOf),
+		bodyHtml: renderMarkdownWithMentions(note.body, ctx.nameOf),
+		author: mine ? null : authorLabel(false, ctx.nameOfAuthor(note.createdBy)),
+		removable: canRemoveAuthored(remover, {
+			ownerId: note.createdBy,
+			visibility: note.visibility,
+			contact: person
+		}),
 		isPinned: note.isPinned,
 		visibility: note.visibility,
 		createdAt: note.createdAt

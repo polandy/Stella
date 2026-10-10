@@ -6,7 +6,9 @@ import {
 	LAST_NAMES_ENTITY,
 	lastNamesFacts,
 	RENAME_ENTITY,
-	renameFacts
+	removalFacts,
+	renameFacts,
+	type RemovedRecordKind
 } from '../../../stream/notices';
 
 /*
@@ -85,7 +87,20 @@ export type PlainActivityEvent =
 	  }
 	| ({ kind: 'immich.linked' } & LinkedPerson)
 	| ({ kind: 'immich.unlinked' } & LinkedPerson)
-	| { kind: 'archive.exported'; people: number };
+	| { kind: 'archive.exported'; people: number }
+	| {
+			/** An authored record removed by someone other than its author (docs/03 §3.7). */
+			kind: 'record.removed';
+			recordKind: RemovedRecordKind;
+			recordId: string;
+			contactId: string;
+			/** The person it was on, kept because the line outlives the record. */
+			person: string;
+			authorId: string;
+			authorName: string;
+			/** No more visible than the person it was on: the record itself was shared. */
+			visibility: Visibility;
+	  };
 
 /**
  * An event whose line is written in the language of the member who caused it, because the
@@ -195,6 +210,16 @@ function plainRow(event: PlainActivityEvent, householdId: string): Described {
 					event.kind === 'immich.linked'
 						? `linked ${event.displayName} to Immich`
 						: `unlinked ${event.displayName} from Immich`
+			};
+		case 'record.removed':
+			return {
+				action: 'delete',
+				entityType: event.recordKind,
+				entityId: event.recordId,
+				contactId: event.contactId,
+				visibility: event.visibility,
+				// Facts, said at read time; never the record's text — the log outlives it.
+				summary: removalFacts(event.person, event.authorId, event.authorName)
 			};
 		case 'archive.exported':
 			return {

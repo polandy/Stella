@@ -87,6 +87,9 @@ export const home = {
 	'home.stream.renamed': (p: { from: string }) => `renamed ${p.from} to`,
 	'home.stream.renamedAfter': '',
 	'home.stream.nameEdited': 'edited the name of',
+	// A note someone else removed: the author reads "your note"; nothing of its text (§2.11).
+	'home.stream.removedYourNote': 'removed your note on',
+	'home.stream.removedNoteOf': (p: { author: string }) => `removed ${p.author}’s note on`,
 	'home.stream.linked': 'linked',
 	'home.stream.linkedAfter': '',
 	'home.stream.relationship': 'Relationship',

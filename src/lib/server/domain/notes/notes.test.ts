@@ -29,7 +29,9 @@ function fakeRepo() {
 		replaceMentions: async (noteId, contactIds) => {
 			mentions = { noteId, contactIds };
 		},
-		listMentionedContactIds: async () => mentions?.contactIds ?? []
+		listMentionedContactIds: async () => mentions?.contactIds ?? [],
+		findRemovableBy: async () => null,
+		deleteRemovableBy: async () => false
 	};
 	return {
 		repo,
