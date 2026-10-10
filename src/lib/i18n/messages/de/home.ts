@@ -78,6 +78,10 @@ export const home: HomeMessages = {
 	'home.stream.renamed': (p) => `benannte ${p.from} in`,
 	'home.stream.renamedAfter': 'um',
 	'home.stream.nameEdited': 'bearbeitete den Namen von',
+	'home.stream.removedYourNote': 'entfernte deine Notiz zu',
+	// The genitive: „Ninas“, but „Klaus’“ after s, ß, x or z.
+	'home.stream.removedNoteOf': (p) =>
+		`entfernte ${/[sßxz]$/i.test(p.author) ? `${p.author}’` : `${p.author}s`} Notiz zu`,
 	'home.stream.linked': 'verknüpfte',
 	'home.stream.linkedAfter': '',
 	'home.stream.relationship': 'Beziehung',

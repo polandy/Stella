@@ -120,6 +120,7 @@ export const errors = {
 	'errors.relationship.badSuggestion': 'That suggestion could not be read.',
 	'errors.note.empty': 'Please write something before saving.',
 	'errors.note.couldNotSave': 'Could not save the note.',
+	'errors.note.gone': 'This note is no longer there.',
 	'errors.gift.needTitle': 'A gift needs a name.',
 	'errors.gift.badLink': 'The link must be a web address.',
 	'errors.gift.needDay': 'Please choose the day.',

@@ -14,7 +14,7 @@ import {
 	photo,
 	relationship
 } from '../db/schema';
-import type { Viewer, Visibility } from './visibility';
+import type { Remover, Viewer, Visibility } from './visibility';
 
 /*
  * The rows `visibility-parity.test.ts` filters both ways: two households, two members each,
@@ -34,6 +34,14 @@ export const VIEWERS: Record<string, Viewer> = {
 	u2: { id: U2, householdId: H1 },
 	u3: { id: U3, householdId: H2 },
 	u4: { id: U4, householdId: H2 }
+};
+
+/** The same members as removers (docs/03 §3.7): one admin and one member per household. */
+export const REMOVERS: Record<string, Remover> = {
+	u1Admin: { ...VIEWERS.u1, isAdmin: true },
+	u2: { ...VIEWERS.u2, isAdmin: false },
+	u3Admin: { ...VIEWERS.u3, isAdmin: true },
+	u4: { ...VIEWERS.u4, isAdmin: false }
 };
 
 /** Contacts: every household × owner × visibility the rules distinguish. */
@@ -63,6 +71,7 @@ const CHILDREN: { parent: string; suffix: string; createdBy: string; visibility:
 	{ parent: 'shared', suffix: 'shared', createdBy: U1, visibility: 'shared' },
 	{ parent: 'shared', suffix: 'priv-u1', createdBy: U1, visibility: 'private' },
 	{ parent: 'shared', suffix: 'priv-u2', createdBy: U2, visibility: 'private' },
+	{ parent: 'shared', suffix: 'shared-u2', createdBy: U2, visibility: 'shared' },
 	{ parent: 'priv-u1', suffix: 'on-priv-u1', createdBy: U2, visibility: 'shared' },
 	{ parent: 'priv-u2', suffix: 'on-priv-u2', createdBy: U2, visibility: 'shared' },
 	{ parent: 'foreign', suffix: 'foreign', createdBy: U3, visibility: 'shared' },
@@ -101,7 +110,10 @@ export function seedParityDb(): BunSQLiteDatabase<typeof schema> {
 				id: v.id,
 				householdId: v.householdId,
 				email: `${v.id}@example.test`,
-				name: v.id
+				name: v.id,
+				role: Object.values(REMOVERS).some((r) => r.id === v.id && r.isAdmin)
+					? ('admin' as const)
+					: ('member' as const)
 			}))
 		)
 		.run();

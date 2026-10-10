@@ -117,6 +117,7 @@ export const errors: ErrorsMessages = {
 	'errors.relationship.badSuggestion': 'Dieser Vorschlag war nicht zu lesen.',
 	'errors.note.empty': 'Bitte schreibe etwas, bevor du speicherst.',
 	'errors.note.couldNotSave': 'Die Notiz konnte nicht gespeichert werden.',
+	'errors.note.gone': 'Diese Notiz gibt es nicht mehr.',
 	'errors.gift.needTitle': 'Ein Geschenk braucht einen Namen.',
 	'errors.gift.badLink': 'Der Link muss eine Webadresse sein.',
 	'errors.gift.needDay': 'Bitte wähle den Tag.',

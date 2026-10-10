@@ -1,4 +1,5 @@
-import type { Visibility, Viewer } from '../../access/visibility';
+import type { Remover, Visibility, Viewer } from '../../access/visibility';
+import type { ActivityOf } from '../activity/activity';
 import type { Clock } from '../../clock';
 import type { IdGenerator } from '../../id';
 
@@ -28,6 +29,17 @@ export interface NewNote {
 /** A note as read back for display (the body is Markdown source). */
 export interface Note extends NewNote {}
 
+/** What a removal needs to know of a note it may remove (docs/03 §3.7). */
+export interface RemovableNote {
+	id: string;
+	contactId: string;
+	/** The person's name and visibility, for the activity entry an admin's removal writes. */
+	person: string;
+	personVisibility: Visibility;
+	authorId: string;
+	authorName: string;
+}
+
 export interface NoteRepository {
 	insert(note: NewNote): Promise<void>;
 	/** Notes on a contact the viewer may see, pinned first then newest. */
@@ -36,6 +48,17 @@ export interface NoteRepository {
 	replaceMentions(noteId: string, contactIds: string[]): Promise<void>;
 	/** The people a note references, for the reverse lookup. */
 	listMentionedContactIds(noteId: string): Promise<string[]>;
+	/** The note, when the remover may remove it (`authoredRemovableBy`); else null. */
+	findRemovableBy(remover: Remover, id: string): Promise<RemovableNote | null>;
+	/**
+	 * Delete the note when the remover may — checked again here, at the moment of removal —
+	 * with its mentions, and write `audit` in the same transaction if one went. Whether it did.
+	 */
+	deleteRemovableBy(
+		remover: Remover,
+		id: string,
+		audit: ActivityOf<'record.removed'> | null
+	): Promise<boolean>;
 }
 
 export interface NoteDeps {

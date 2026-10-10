@@ -5,8 +5,10 @@ import {
 	canViewCirclePhoto,
 	canViewContact,
 	canViewRelationship,
+	canRemoveAuthored,
 	type ChildRecordAccess,
 	type ContactAccess,
+	type Remover,
 	type Viewer
 } from './visibility';
 
@@ -173,5 +175,42 @@ describe('canViewActivity', () => {
 	it('never crosses households', () => {
 		expect(canViewActivity(viewerForeign, entry('shared'))).toBe(false);
 		expect(canViewActivity(viewerOwner, entry('shared', OTHER_HOUSEHOLD))).toBe(false);
+	});
+});
+
+describe('canRemoveAuthored (docs/03 §3.7: author always, admin on a shared record)', () => {
+	const author: Remover = { ...viewerOwner, isAdmin: false };
+	const admin: Remover = { ...viewerOther, isAdmin: true };
+	const member: Remover = { ...viewerOther, isAdmin: false };
+	const foreignAdmin: Remover = { ...viewerForeign, isAdmin: true };
+	const shared = childOn(contact());
+	const priv = childOn(contact(), { visibility: 'private' });
+
+	it('lets the author remove their record, shared or private', () => {
+		expect(canRemoveAuthored(author, shared)).toBe(true);
+		expect(canRemoveAuthored(author, priv)).toBe(true);
+	});
+
+	it("lets an admin remove another member's shared record", () => {
+		expect(canRemoveAuthored(admin, shared)).toBe(true);
+	});
+
+	it("gives an admin nothing on another member's private record", () => {
+		expect(canRemoveAuthored(admin, priv)).toBe(false);
+	});
+
+	it("refuses a member on someone else's shared record", () => {
+		expect(canRemoveAuthored(member, shared)).toBe(false);
+		expect(canRemoveAuthored(member, childOn(contact(), { ownerId: OTHER_MEMBER }))).toBe(true);
+	});
+
+	it('refuses an admin of another household', () => {
+		expect(canRemoveAuthored(foreignAdmin, shared)).toBe(false);
+	});
+
+	it('refuses an admin on a shared record under a contact they cannot see', () => {
+		const hidden = childOn(contact({ visibility: 'private' }));
+		expect(canRemoveAuthored(admin, hidden)).toBe(false);
+		expect(canRemoveAuthored(author, hidden)).toBe(true);
 	});
 });

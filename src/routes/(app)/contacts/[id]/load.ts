@@ -1,5 +1,5 @@
 import { error, redirect } from '@sveltejs/kit';
-import { requireUser, requireViewer } from '$lib/server/auth/guards';
+import { requireRemover, requireUser, requireViewer } from '$lib/server/auth/guards';
 import { CONTACT_FIELD_KINDS } from '$lib/people/contact-fields';
 import { parseProposePairs } from '$lib/people/propose';
 import { listContactFields } from '$lib/server/domain/contact-fields/contact-fields';
@@ -54,6 +54,8 @@ import type { AppServices } from '$lib/server/services/app-services';
 export const load = (async ({ locals, params, url }) => {
 	const user = requireUser(locals);
 	const viewer = requireViewer(locals);
+	// Whether *Remove* shows on someone else's note turns on the role (docs/03 §3.7).
+	const remover = requireRemover(locals);
 
 	/*
 	 * The page had tabs until its content became one column of cards (docs/05 §5.5). A
@@ -138,7 +140,13 @@ export const load = (async ({ locals, params, url }) => {
 		},
 		// Of the touchpoints *this viewer* sees, so a private one never shows here.
 		lastContactedAt: read.lastContactedAt,
-		notes: read.notes.map((note) => noteView(note, ctx.nameOf)),
+		notes: read.notes.map((note) =>
+			noteView(note, ctx, remover, {
+				householdId: contact.householdId,
+				ownerId: contact.createdBy,
+				visibility: contact.visibility
+			})
+		),
 		// Ideas, given and received gifts (docs/02 §2.25), already visibility-scoped.
 		gifts: read.gifts.map((gift) => giftView(gift, ctx)),
 		mentionedIn: read.mentionedIn.map((reference) => mentionedInView(reference, ctx)),

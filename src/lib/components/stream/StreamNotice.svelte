@@ -7,25 +7,31 @@
 
 	/*
 	 * A line of Home's stream that the activity log holds (docs/02 §2.11). A removal is shown as
-	 * written — nobody is left to link to. Last names given and a name edited are stored as facts
-	 * and said here, in the reader's language; a renamed person the reader can see is a link.
+	 * written — nobody is left to link to. Last names given, a name edited and a note someone
+	 * else removed are stored as facts and said here, in the reader's language; a person the
+	 * reader can see is a link.
 	 */
 	let {
 		content,
 		who,
 		time,
+		readerId,
 		canOpen
 	}: {
 		content: NoticeContent;
 		who: string;
 		/** When it happened, as the stream says it. */
 		time: StreamTime;
+		/** Who reads the stream: a removed note of theirs is "your note". */
+		readerId: string;
 		/** Whether the reader may open this person — someone they can see. */
 		canOpen: (contactId: string) => boolean;
 	} = $props();
 
 	const t = useTranslate();
-	const icon = $derived(content.kind === 'text' ? 'remove' : 'rename');
+	const icon = $derived(
+		content.kind === 'text' || content.kind === 'removed' ? 'remove' : 'rename'
+	);
 </script>
 
 <span
@@ -46,6 +52,19 @@
 			<span class="font-medium text-fg"
 				>{t('home.stream.lastNames', { name: content.lastName, count: content.count })}</span
 			>
+		{:else if content.kind === 'removed'}
+			<span
+				>{content.authorId === readerId
+					? t('home.stream.removedYourNote')
+					: t('home.stream.removedNoteOf', { author: content.authorName })}</span
+			>
+			{#if content.contactId && canOpen(content.contactId)}
+				<a href="/contacts/{content.contactId}" class="font-medium text-fg hover:underline"
+					>{content.person}</a
+				>
+			{:else}
+				<span class="font-medium text-fg">{content.person}</span>
+			{/if}
 		{:else if content.from === content.to}
 			<span>{t('home.stream.nameEdited')}</span>
 			{#if content.contactId && canOpen(content.contactId)}

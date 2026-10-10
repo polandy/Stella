@@ -1,6 +1,9 @@
 # Concept — Who may remove what
 
-Status: **concept** — decided with the maintainer on 2026-10-10 (§3, §5), nothing built yet.
+Status: **concept, slice 1 built** — decided with the maintainer on 2026-10-10 (§3, §5).
+Slice 1 (the rule, and removing a note) is built: its rules now live in docs/02 §2.5, §2.10,
+§2.11, §2.23 and docs/03 §3.7 and `activity_log`, and are not repeated here. Slices 2–4 are
+still to build.
 Roadmap: docs/06 M3, *Who may remove what*. When a slice is built, its rule moves into the
 feature docs (docs/02, docs/03 §3.7) and this file shrinks; once all slices are built it is
 folded in and deleted.
@@ -26,7 +29,7 @@ no role, so `access/` cannot express it. Only routes know about admins
 
 | Kind | Edit | Remove | Evidence |
 |---|---|---|---|
-| **Note** | nobody | nobody | `domain/notes/notes.ts:31` — the port has insert, list and mentions only |
+| **Note** | nobody | author; admin when shared — **built, slice 1** | `domain/notes/remove-note.ts` → `db/note-repository.ts` (`deleteRemovableBy`) |
 | **Moment / journal entry** | author (title and body) | author | `domain/journal/journal.ts:203,271` → `db/journal-repository.ts:82,152` (`updateOwn`, `deleteOwn`) |
 | **Touchpoint** (interaction) | nobody | author | `domain/interactions/interactions.ts:170` → `db/interaction-repository.ts:166` (`deleteOwn`) |
 | **Person photo** (gallery) | caption, visibility: author | author | `domain/media/gallery.ts:79,95,108` → `db/photo-repository.ts:59,89` |
@@ -45,7 +48,7 @@ important date (docs/02 §2.13).
 
 **Where the rule is missing or inconsistent:**
 
-- **Note:** the only authored kind with no way out at all, not even for its author.
+- **Note:** no way out at all, not even for its author — fixed by slice 1; editing is slice 2.
 - **Moment / journal entry:** author-only, consistent. An admin cannot clear a shared entry
   left by a member who has gone.
 - **Touchpoint:** can be removed but never corrected, so a typo means delete and log again.
@@ -63,8 +66,8 @@ important date (docs/02 §2.13).
 - **Person:** anyone who sees them may delete them. This is the one removal that writes an
   activity entry (`contact.deleted`).
 - **Undo** (docs/02 §2.23): journal entries, touchpoints, dates, fields, gifts, tags,
-  memberships and relationships go through the held 8-second window (`lib/undo/keys.ts:8`).
-  Notes are not on that list. Photos are removed at once, with no undo and no confirmation.
+  memberships and relationships go through the held 8-second window (`lib/undo/keys.ts:8`);
+  notes too since slice 1. Photos are removed at once, with no undo and no confirmation.
 - **Activity log** (docs/03 §activity_log): only deletions of a person, merges, renames,
   last-name batches, Immich links and exports write a row. Removing a child record leaves no
   trace.
@@ -97,13 +100,10 @@ there is nothing to offer. Every other member sees no *Remove* on someone else's
 Removing is the only thing an admin may do to another member's record. **Editing stays with
 the author** (§3.5): an admin may take someone's words away but never rewrite them.
 
-The rule lives in `access/`, in the same two forms as every visibility rule:
-
-- a predicate, e.g. `canRemoveAuthored(remover, record)`;
-- its SQL twin, e.g. `authoredRemovableBy(remover)`.
-
-`visibility-parity.test.ts` holds the pair to the same rows. `remover` is a `Viewer` plus
-whether they are an admin, filled by the route from `locals.user.role`.
+Built in slice 1 as `canRemoveAuthored` / `authoredRemovableBy`, described in docs/03 §3.7.
+Its parity test already covers journal entries, touchpoints and person photos, so slice 3
+only changes their repositories from `deleteOwn` to the shared rule; circle photos need a
+twin over the circle (`CirclePhotoAccess`).
 
 ### 3.3 How: delete, with the 8-second undo
 
@@ -183,15 +183,9 @@ Each slice is one PR. It is test-first in `access/` and `domain/`, carries its U
 languages (`en` and `de`) and its docs, and goes through the delivery loop (owner hand-test,
 then e2e on the branch).
 
-1. **The rule, and removing a note.**
-   - `canRemoveAuthored` and its SQL twin in `access/`, with parity tests.
-   - The remover descriptor (a `Viewer` plus admin) built in the route.
-   - `removeNote(deps, remover, id)` in `domain/notes/`, and `deleteRemovableBy` on the note
-     repository.
-   - The `record.removed` activity event and its line in both languages.
-   - A `note` removal kind for the undo window, and *Remove* on a note: the author's own,
-     plus an admin's on shared ones. Online only (§3.7).
-   - Docs: docs/02 §2.5, §2.11, §2.23; docs/03 §3.7 and `activity_log`; `using-stella.md`.
+1. **The rule, and removing a note.** — *built.* `record.removed` is an `ActivityEvent` with
+   `recordKind` (only `note` so far, `REMOVED_RECORD_KINDS` in `lib/stream/notices.ts`);
+   slice 3 adds its kinds there and to the line.
 2. **Editing a note.**
    - `editNote(deps, author, input)`: author only, title and body, mentions rebuilt, search
      reindexed.

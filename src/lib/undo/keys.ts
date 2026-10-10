@@ -8,6 +8,7 @@
 export const REMOVAL_KINDS = [
 	'journal',
 	'interaction',
+	'note',
 	'field',
 	'date',
 	'gift',

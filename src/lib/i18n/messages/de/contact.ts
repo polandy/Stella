@@ -264,6 +264,8 @@ export const contact: ContactMessages = {
 	'contact.notes.label': 'Notiz',
 	'contact.notes.placeholder': 'Notiz schreiben… (Markdown, @ zum Erwähnen)',
 	'contact.notes.pin': 'Anheften',
+	'contact.notes.remove': 'Notiz entfernen',
+	'contact.notes.removed': 'Notiz entfernt',
 
 	'contact.photos.add': 'Fotos hinzufügen',
 	'contact.photos.none': 'Noch keine Fotos.',

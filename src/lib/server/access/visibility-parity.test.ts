@@ -17,6 +17,7 @@ import {
 } from '../db/schema';
 import {
 	activityVisibleTo,
+	authoredRemovableBy,
 	childRecordVisibleTo,
 	circleColumnsVisibleTo,
 	circlePhotoVisibleTo,
@@ -24,8 +25,9 @@ import {
 	membershipVisibleTo,
 	relationshipVisibleTo
 } from './query-scoping';
-import { seedParityDb, U1, U2, U3, VIEWERS } from './visibility-parity.fixture';
+import { REMOVERS, seedParityDb, U1, U2, U3, VIEWERS } from './visibility-parity.fixture';
 import {
+	canRemoveAuthored,
 	canViewActivity,
 	canViewChildRecord,
 	canViewCircle,
@@ -35,6 +37,7 @@ import {
 	canViewRelationship,
 	type CircleAccess,
 	type ContactAccess,
+	type Remover,
 	type Viewer,
 	type Visibility
 } from './visibility';
@@ -387,4 +390,94 @@ describe('each hidden row has a visible control', () => {
 	it('pins a case to every pair', () => {
 		expect(PAIRS.filter((p) => !CASES[p.key]?.length).map((p) => p.key)).toEqual([]);
 	});
+});
+
+/*
+ * The removal rule (docs/03 §3.7) is no visibility rule but is stated twice the same way:
+ * `canRemoveAuthored` decides one record, `authoredRemovableBy` scopes a delete. Same rows,
+ * same answer — over every authored table, so the rule holds before the next kind uses it.
+ */
+const AUTHORED: [string, ChildTable][] = [
+	['note', { table: note, ...note }],
+	['journal entry', { table: journalEntry, ...journalEntry }],
+	['interaction', { table: interaction, ...interaction }],
+	['contact photo', { table: photo, ...photo }]
+];
+
+function removable(t: ChildTable) {
+	return {
+		ts: (remover: Remover) => {
+			const contacts = contactsById();
+			return ids(
+				db
+					.select({
+						id: t.id,
+						contactId: t.contactId,
+						createdBy: t.createdBy,
+						visibility: t.visibility
+					})
+					.from(t.table)
+					.all()
+					.filter((r) => r.contactId !== null)
+					.filter((r) =>
+						canRemoveAuthored(remover, {
+							ownerId: String(r.createdBy),
+							visibility: asVisibility(r.visibility),
+							contact: parentOf(contacts, String(r.contactId))
+						})
+					)
+			);
+		},
+		sql: (remover: Remover) =>
+			ids(
+				db
+					.select({ id: t.id })
+					.from(t.table)
+					.innerJoin(contact, eq(t.contactId, contact.id))
+					.where(authoredRemovableBy(remover, { visibility: t.visibility, createdBy: t.createdBy }))
+					.all()
+			)
+	};
+}
+
+describe('canRemoveAuthored and authoredRemovableBy pick the same rows', () => {
+	for (const [kind, table] of AUTHORED) {
+		const pair = removable(table);
+		for (const [name, remover] of Object.entries(REMOVERS)) {
+			it(`${kind}, remover ${name}`, () => {
+				expect(pair.sql(remover)).toEqual(pair.ts(remover));
+			});
+		}
+	}
+});
+
+/** [remover, the note it may not remove, a note it may, why]. */
+const REMOVAL_CASES: [remover: string, refused: string, control: string, why: string][] = [
+	['u1Admin', 'n-priv-u2', 'n-shared-u2', "an admin on another member's private note"],
+	['u2', 'n-shared', 'n-shared-u2', "a member on someone else's shared note"],
+	['u3Admin', 'n-shared', 'n-foreign', 'an admin of another household'],
+	['u1Admin', 'n-on-priv-u2', 'n-on-priv-u1', 'a shared note on a contact the admin cannot see']
+];
+
+describe('each refused removal has an allowed control', () => {
+	const pair = removable({ table: note, ...note });
+
+	it('the author removes their own note, shared and private', () => {
+		for (const side of [pair.ts(REMOVERS.u2), pair.sql(REMOVERS.u2)]) {
+			expect(side).toContain('n-shared-u2');
+			expect(side).toContain('n-priv-u2');
+		}
+	});
+
+	for (const [name, refused, control, why] of REMOVAL_CASES) {
+		it(`${name} may not remove ${refused} (${why}), may remove ${control}`, () => {
+			for (const side of [pair.ts(REMOVERS[name]), pair.sql(REMOVERS[name])]) {
+				expect(side).not.toContain(refused);
+				expect(side).toContain(control);
+			}
+			// A mistyped id would be refused for free: someone may remove the row.
+			const removableBySomeone = Object.values(REMOVERS).some((r) => pair.ts(r).includes(refused));
+			expect(removableBySomeone).toBe(true);
+		});
+	}
 });

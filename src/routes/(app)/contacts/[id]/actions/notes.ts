@@ -4,8 +4,10 @@ import { fromFormData } from '$lib/commands/form-data';
 import { NoteAddSchema } from '$lib/commands/payloads';
 import { ulidGenerator } from '$lib/server/id';
 import { systemClock } from '$lib/server/clock';
-import { fail, redirect } from '@sveltejs/kit';
-import { requireViewer } from '$lib/server/auth/guards';
+import { error, fail, redirect } from '@sveltejs/kit';
+import { requireRemover, requireViewer } from '$lib/server/auth/guards';
+import { getContact } from '$lib/server/domain/contacts/contacts';
+import { removeNote } from '$lib/server/domain/notes/remove-note';
 import { say, translator } from '$lib/server/i18n/say';
 import type { Actions } from '../$types';
 
@@ -47,6 +49,26 @@ export const noteActions = {
 			});
 		}
 
+		throw redirect(303, `/contacts/${params.id}`);
+	},
+
+	/*
+	 * Held for the undo window and posted when it closes (docs/02 §2.23). Not a command: it
+	 * waits for a connection, so the right to remove is checked at the moment it happens.
+	 */
+	removeNote: async ({ request, params, locals }) => {
+		const remover = requireRemover(locals);
+
+		const form = await request.formData();
+		const id = form.get('id');
+		if (typeof id !== 'string') return fail(400, {});
+
+		const contact = await getContact(locals.services.people.contactDeps, remover, params.id);
+		if (!contact) throw error(404, say(locals, 'errors.contact.notFound'));
+
+		const removed = await removeNote(locals.services.notes.noteDeps, remover, id);
+		// Gone meanwhile or not theirs to remove: said alike, so a foreign id reveals nothing.
+		if (!removed) return fail(404, { noteError: say(locals, 'errors.note.gone') });
 		throw redirect(303, `/contacts/${params.id}`);
 	}
 } satisfies Actions;

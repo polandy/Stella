@@ -676,6 +676,14 @@ the shown name, `action = 'update'`, `entity_type = 'contact_name'`, `entity_id`
 person's, `summary` a sentence (*linked Anna to Immich*). Written in the same transaction as the
 link; not shown in the stream, which reports deletions and renames, not links.
 
+**And for a note removed by someone other than its author** (docs/02 §2.5, §3.7 below): an
+admin removing a member's shared note writes one row in the delete's transaction,
+`action = 'delete'`, `entity_type = 'note'`, `entity_id` the note, `contact_id` the person,
+`visibility` the person's (the note was shared), and the facts
+`{"person":"Kurt","authorId":"…","authorName":"Nina"}` in `summary` — never the note's text.
+Home says it per reader: *your note* to its author, *Nina's note* to everyone else. An author
+removing their own note writes nothing.
+
 ### immich_link  [M3]
 Which person in the household's Immich library a contact is (docs/02 §2.24,
 docs/04 ADR-101). Only present when Immich is configured; the photos themselves
@@ -871,6 +879,17 @@ mention never widens access nor reveals a `private` contact's existence. An **ac
 entry outlives what it describes, so it is scoped by itself: within its household, shared or the
 viewer's own action (`canViewActivity` / `activityVisibleTo`). Admins gain no special
 access to `private` records.
+
+**Removing an authored record.** A **note** may be removed by its author, always, and by an
+admin of the household when it is `shared` — and either must see it first, so an admin gains
+nothing on a private note (`canRemoveAuthored` / `authoredRemovableBy`, held to the same rows
+by the parity test). The remover is a viewer plus `isAdmin`, which the route reads from the
+signed-in user's `role` (`requireRemover`); it is the only rule here that looks at the role.
+The delete is scoped by the SQL condition itself, so the right is checked when the removal
+reaches the server, not when *Remove* was pressed. Editing stays with the author. Journal
+entries, touchpoints and photos keep their author-only removal for now (docs/06 M3,
+*Who may remove what*); household facts — dates, fields, relationships,
+memberships, gifts, tags — stay open to anyone who sees them.
 
 These rules are enforced centrally in the data-access layer (see
 [04-architecture.md](04-architecture.md)), never ad hoc in UI code. They are stated twice — as

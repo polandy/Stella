@@ -604,6 +604,7 @@
 										content={item.content}
 										who={item.mine ? t('home.you') : item.actor.name}
 										time={stream.when(item.at)}
+										readerId={data.user.id}
 										canOpen={(id) => peopleIds.has(id)}
 									/>
 								{:else}

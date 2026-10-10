@@ -1,6 +1,6 @@
 import { and, eq, isNull, or, type AnyColumn, type SQL } from 'drizzle-orm';
 import { activityLog, circle, contact } from '../db/schema';
-import type { Viewer } from './visibility';
+import type { Remover, Viewer } from './visibility';
 
 /*
  * Query-scoping adapter — the SQL expression of the pure rules in `visibility.ts`
@@ -58,6 +58,22 @@ export function childRecordVisibleTo(
 	return and(
 		contactVisibleTo(viewer),
 		or(eq(record.visibility, 'shared'), eq(record.createdBy, viewer.id))
+	)!;
+}
+
+/**
+ * Condition for an authored record (note / journal entry / interaction / photo) being one the
+ * remover may remove — the SQL of `canRemoveAuthored`: visible, and their own or, for an
+ * admin, shared. The query must join `contact`.
+ */
+export function authoredRemovableBy(
+	remover: Remover,
+	record: { visibility: AnyColumn; createdBy: AnyColumn }
+): SQL {
+	const own = eq(record.createdBy, remover.id);
+	return and(
+		childRecordVisibleTo(remover, record),
+		remover.isAdmin ? or(own, eq(record.visibility, 'shared')) : own
 	)!;
 }
 

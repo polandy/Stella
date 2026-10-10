@@ -1,10 +1,11 @@
-import { and, desc, eq } from 'drizzle-orm';
+import { and, desc, eq, inArray } from 'drizzle-orm';
 import type { BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
-import { childRecordVisibleTo } from '../access/query-scoping';
-import type { Viewer } from '../access/visibility';
+import { authoredRemovableBy, childRecordVisibleTo } from '../access/query-scoping';
+import type { Remover, Viewer } from '../access/visibility';
+import { activityEntry, type ActivityOf } from '../domain/activity/activity';
 import type { NewNote, NoteRepository } from '../domain/notes/notes';
 import type * as schema from './schema';
-import { contact, note, noteMention } from './schema';
+import { activityLog, contact, note, noteMention, user } from './schema';
 
 /*
  * Drizzle adapter for the NoteRepository port (docs/08 §8.3). Reads join the parent contact
@@ -13,6 +14,9 @@ import { contact, note, noteMention } from './schema';
  */
 
 export function createDrizzleNoteRepository(db: BunSQLiteDatabase<typeof schema>): NoteRepository {
+	const removableBy = (remover: Remover) =>
+		authoredRemovableBy(remover, { visibility: note.visibility, createdBy: note.createdBy });
+
 	return {
 		async insert(n: NewNote) {
 			db.insert(note)
@@ -75,6 +79,48 @@ export function createDrizzleNoteRepository(db: BunSQLiteDatabase<typeof schema>
 				.where(eq(noteMention.noteId, noteId))
 				.all()
 				.map((r) => r.contactId);
+		},
+
+		async findRemovableBy(remover: Remover, id: string) {
+			const row = db
+				.select({
+					id: note.id,
+					contactId: note.contactId,
+					person: contact.displayName,
+					personVisibility: contact.visibility,
+					authorId: note.createdBy,
+					authorName: user.name
+				})
+				.from(note)
+				.innerJoin(contact, eq(note.contactId, contact.id))
+				.innerJoin(user, eq(note.createdBy, user.id))
+				.where(and(eq(note.id, id), removableBy(remover)))
+				.get();
+			return row ?? null;
+		},
+
+		async deleteRemovableBy(
+			remover: Remover,
+			id: string,
+			audit: ActivityOf<'record.removed'> | null
+		) {
+			// SQLite's DELETE takes no join, so the rule — which needs the contact — picks the id.
+			return db.transaction((tx) => {
+				const removable = tx
+					.select({ id: note.id })
+					.from(note)
+					.innerJoin(contact, eq(note.contactId, contact.id))
+					.where(and(eq(note.id, id), removableBy(remover)));
+				const removed = tx
+					.delete(note)
+					.where(inArray(note.id, removable))
+					.returning({ id: note.id })
+					.all();
+				if (removed.length === 0) return false;
+				// Mentions go by cascade, the search row by `note_fts_ad`; the log row stays.
+				if (audit) tx.insert(activityLog).values(activityEntry(audit)).run();
+				return true;
+			});
 		}
 	};
 }

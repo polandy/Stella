@@ -17,6 +17,14 @@ export interface Viewer {
 	householdId: HouseholdId;
 }
 
+/**
+ * Who is removing a record (docs/03 §3.7): a viewer, plus whether they are an admin of the
+ * household — the one thing about a member the visibility rules never look at.
+ */
+export interface Remover extends Viewer {
+	isAdmin: boolean;
+}
+
 /** Visibility descriptor of a contact — the root of every access decision. */
 export interface ContactAccess {
 	householdId: HouseholdId;
@@ -54,6 +62,17 @@ export function canViewChildRecord(viewer: Viewer, record: ChildRecordAccess): b
 	if (!canViewContact(viewer, record.contact)) return false;
 	if (record.visibility === 'private' && record.ownerId !== viewer.id) return false;
 	return true;
+}
+
+/**
+ * An authored record (note, journal entry, touchpoint, person photo) may be removed by its
+ * author, always, and by an admin when it is shared. Both must see it first: an admin gains
+ * nothing on a private record, which they cannot see (docs/02 §2.10).
+ */
+export function canRemoveAuthored(remover: Remover, record: ChildRecordAccess): boolean {
+	if (!canViewChildRecord(remover, record)) return false;
+	if (record.ownerId === remover.id) return true;
+	return remover.isAdmin && record.visibility === 'shared';
 }
 
 /** A relationship is visible only when the viewer can see both of its endpoints. */
