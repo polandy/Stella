@@ -100,8 +100,6 @@ export const errors: ErrorsMessages = {
 	'errors.moment.photoFailed':
 		'Der Moment wurde gespeichert, ein Foto ließ sich aber nicht hinzufügen.',
 	'errors.journal.badDay': 'Bitte wähle ein gültiges Datum.',
-	'errors.journal.photoFailed':
-		'Der Moment wurde gespeichert, ein Foto ließ sich aber nicht hinzufügen.',
 	'errors.circle.needCircleName': 'Bitte gib dem Kreis einen Namen.',
 	'errors.circle.choosePerson': 'Bitte wähle eine Person.',
 	'errors.circle.roleNameBlank': 'Gib der Rolle einen Namen – Rollen entfernst du über Auswählen.',
