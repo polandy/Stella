@@ -21,8 +21,9 @@ suite is the **source of truth**; this file only routes, and every coding agent 
 
 ## Commands
 
-`bun run test` (unit: `bun test src`) · `bun run test:e2e` (Playwright — CI runs it, agents
-don't) · `scripts/ci-failures.sh <PR>` (only the failures of a red run). The rest is in `package.json`.
+`bun run test` (unit: `bun test src`) · `bun run test:e2e` (Playwright — the whole suite
+only in CI; a new or changed spec runs alone locally first, `./e2e/run.sh e2e/<spec>.spec.ts`,
+and is pushed once green) · `scripts/ci-failures.sh <PR>` (only the failures of a red run). The rest is in `package.json`.
 
 ## Stack — `docs/04-architecture.md`
 
