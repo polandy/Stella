@@ -30,6 +30,7 @@ beforeEach(() => {
 		.values([
 			{ id: 'u1', householdId: H, email: 'u1@x.test', name: 'Markus Brunner' },
 			{ id: 'u2', householdId: H, email: 'u2@x.test', name: 'Lena Brunner' },
+			{ id: 'u3', householdId: H, email: 'u3@x.test', name: 'Nina Brunner', removedAt: 1 },
 			{ id: 'u9', householdId: OTHER, email: 'u9@x.test', name: 'Somebody Else' }
 		])
 		.run();
@@ -50,5 +51,15 @@ describe('members', () => {
 		// positive control: the other household has its own member, and it is not in ours
 		expect(await repo.listMembers(OTHER)).toEqual([{ id: 'u9', name: 'Somebody Else' }]);
 		expect(ours.map((m) => m.id)).not.toContain('u9');
+	});
+
+	it('lists a member an admin removed among the authors, never among the members', async () => {
+		expect((await repo.listMembers(H)).map((m) => m.id)).not.toContain('u3');
+		expect(await repo.listAuthors(H)).toEqual([
+			{ id: 'u2', name: 'Lena Brunner' },
+			{ id: 'u1', name: 'Markus Brunner' },
+			{ id: 'u3', name: 'Nina Brunner' }
+		]);
+		expect((await repo.listAuthors(H)).map((m) => m.id)).not.toContain('u9');
 	});
 });

@@ -212,7 +212,7 @@ describe('load', () => {
 			},
 			household: {
 				memberDeps: {
-					members: { listMembers: async () => [{ id: 'u2', name: 'Bea' }] }
+					members: { listAuthors: async () => [{ id: 'u2', name: 'Bea' }] }
 				}
 			}
 		} as unknown as FakeServices;

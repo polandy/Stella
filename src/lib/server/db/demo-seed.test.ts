@@ -4,7 +4,12 @@ import { drizzle, type BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
 import { migrate } from 'drizzle-orm/bun-sqlite/migrator';
 import { eq } from 'drizzle-orm';
 import { ARGON2ID_PREFIX } from '../auth/password';
-import { DEMO_ADMIN_PASSWORD, seedDemoData } from './demo-seed';
+import {
+	DEMO_ADMIN_PASSWORD,
+	DEMO_MEMBER_EMAIL,
+	DEMO_THIRD_MEMBER_EMAIL,
+	seedDemoData
+} from './demo-seed';
 import * as schema from './schema';
 import { seedRelationshipTypes } from './seed';
 
@@ -72,9 +77,9 @@ describe('seedDemoData', () => {
 		seed(db);
 
 		const members = db.select().from(schema.user).all();
-		expect(members.map((m) => m.role).sort()).toEqual(['admin', 'member']);
+		expect(members.map((m) => m.role).sort()).toEqual(['admin', 'member', 'member']);
 
-		const second = members.find((m) => m.role === 'member')!;
+		const second = members.find((m) => m.email === DEMO_MEMBER_EMAIL)!;
 		const written = db
 			.select()
 			.from(schema.journalEntry)
@@ -94,6 +99,19 @@ describe('seedDemoData', () => {
 			.where(eq(schema.journalEntry.createdBy, members.find((m) => m.role === 'admin')!.id))
 			.all();
 		expect(byAdmin.length).toBeGreaterThan(written.length);
+	});
+
+	it('gives a third member, Lukas, a shared and a private note, so removing him shows both', () => {
+		seed(db);
+
+		const lukas = db
+			.select()
+			.from(schema.user)
+			.where(eq(schema.user.email, DEMO_THIRD_MEMBER_EMAIL))
+			.get();
+		expect(lukas?.role).toBe('member');
+		const notes = db.select().from(schema.note).where(eq(schema.note.createdBy, lukas!.id)).all();
+		expect(notes.map((n) => n.visibility).sort()).toEqual(['private', 'shared']);
 	});
 
 	it('populates contacts, relationships, circles and memberships', () => {

@@ -1,4 +1,4 @@
-import { count, eq } from 'drizzle-orm';
+import { and, count, eq, isNull } from 'drizzle-orm';
 import type { BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
 import type { Locale } from '../../i18n/locales';
 import type { AccountRepository, AuthUser, StoredCredentials } from '../auth/accounts';
@@ -8,6 +8,8 @@ import { household as householdTable, user as userTable } from './schema';
 /*
  * Drizzle adapter implementing the auth AccountRepository port over the `user` and
  * `household` tables (docs/08 §8.3). Infrastructure only; the domain depends on the port.
+ * A removed member (docs/02 §2.1) is found on neither sign-in path: whatever session or token
+ * of theirs survived signs nobody in, and their password fails like a wrong one.
  */
 
 const toAuthUser = (row: {
@@ -50,7 +52,7 @@ export function createDrizzleAccountRepository(
 					passwordHash: userTable.passwordHash
 				})
 				.from(userTable)
-				.where(eq(userTable.email, email))
+				.where(and(eq(userTable.email, email), isNull(userTable.removedAt)))
 				.get();
 			if (!row) return null;
 			return { user: toAuthUser(row), passwordHash: row.passwordHash };
@@ -68,7 +70,7 @@ export function createDrizzleAccountRepository(
 					selfContactId: userTable.selfContactId
 				})
 				.from(userTable)
-				.where(eq(userTable.id, id))
+				.where(and(eq(userTable.id, id), isNull(userTable.removedAt)))
 				.get();
 			return row ? toAuthUser(row) : null;
 		},

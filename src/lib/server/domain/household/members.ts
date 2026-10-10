@@ -14,7 +14,13 @@ export interface HouseholdMember {
 
 /** Port: the members of one household. */
 export interface MemberRepository {
+	/** Who belongs to the household now. */
 	listMembers(householdId: string): Promise<HouseholdMember[]>;
+	/**
+	 * Everyone who ever wrote in the household: the members, and those an admin removed, whose
+	 * work keeps their name (docs/02 §2.1).
+	 */
+	listAuthors(householdId: string): Promise<HouseholdMember[]>;
 }
 
 export interface MemberDeps {
@@ -29,13 +35,13 @@ export async function authorNames(
 	deps: MemberDeps,
 	householdId: string
 ): Promise<(userId: string) => string | null> {
-	const members = await deps.members.listMembers(householdId);
-	const byId = new Map(members.map((member) => [member.id, member.name]));
+	const authors = await deps.members.listAuthors(householdId);
+	const byId = new Map(authors.map((author) => [author.id, author.name]));
 	return (userId) => byId.get(userId) ?? null;
 }
 
 /**
- * The viewer's household, the viewer first and the rest in the household's order — the order a
+ * The viewer's household as it is now (a removed member is no longer offered), the viewer first and the rest in the household's order — the order a
  * "who did it" choice reads in, with the viewer shown as "You" (docs/02 §2.22.2).
  */
 export async function membersViewerFirst(

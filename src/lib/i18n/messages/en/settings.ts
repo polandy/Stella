@@ -21,6 +21,37 @@ export const settings = {
 		'Nobody is in Stella yet, so there is no one to pick. Add yourself and you are linked at once.',
 	'settings.self.notListed': 'Not in the list yet?',
 	'settings.self.addYourself': 'Add yourself',
+	'settings.household.heading': 'Household',
+	'settings.members.title': 'Members',
+	'settings.members.blurb': 'Who signs in to Stella, and how',
+	'settings.members.intro': 'Everyone who signs in to Stella, and how.',
+	'settings.members.adminOnly': 'Only an admin can remove a member.',
+	'settings.members.you': 'You',
+	'settings.members.admin': 'Admin',
+	'settings.members.signIn.password': 'Password',
+	'settings.members.signIn.sso': 'Single sign-on',
+	'settings.members.signIn.both': 'Password and single sign-on',
+	'settings.members.remove': 'Remove…',
+	'settings.members.removeLabel': (p: { name: string }) => `Remove ${p.name}…`,
+	'settings.members.confirm.heading': (p: { name: string }) =>
+		`Remove ${p.name} from the household?`,
+	'settings.members.confirm.signOut': (p: { name: string }) =>
+		`${p.name} can no longer sign in. Every device signed in as them is signed out now, and their API tokens stop working.`,
+	'settings.members.confirm.shared': (p: { name: string }) =>
+		`What ${p.name} shared stays, under their name. You can still remove any of it.`,
+	'settings.members.confirm.private': (p: { name: string; count: number }) =>
+		p.count === 1
+			? `Their one private record stays sealed: nobody sees it, you included.`
+			: `Their ${p.count} private records stay sealed: nobody sees them, you included.`,
+	'settings.members.confirm.sso': (p: { name: string }) =>
+		`${p.name} signs in through single sign-on. Stella turns them away from now on. To be thorough, also remove them from the group in your sign-in provider.`,
+	'settings.members.confirm.lastAdmin': (p: { name: string }) =>
+		`${p.name} is the only admin who can sign in with a password. Without them, an outage of your sign-in provider locks everyone out.`,
+	'settings.members.confirm.submit': (p: { name: string }) => `Remove ${p.name}`,
+	'settings.members.confirm.keep': (p: { name: string }) => `Keep ${p.name}`,
+	'settings.members.removed': (p: { name: string }) => `${p.name} removed`,
+	'settings.members.former': 'Former members',
+	'settings.members.removedOn': (p: { date: string }) => `Removed on ${p.date}`,
 	'settings.data.heading': 'Data',
 	'settings.data.importPeople': 'Import people',
 	'settings.data.importPeopleBlurb':

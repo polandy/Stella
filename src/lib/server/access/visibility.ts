@@ -158,3 +158,24 @@ export function canViewActivity(viewer: Viewer, entry: ActivityAccess): boolean 
 	if (entry.householdId !== viewer.householdId) return false;
 	return entry.visibility === 'shared' || entry.actorId === viewer.id;
 }
+
+/** A household member, as far as removing them goes (docs/02 §2.1). */
+export interface MemberAccess {
+	id: UserId;
+	householdId: HouseholdId;
+	/** Whether an admin already removed them. */
+	removed: boolean;
+}
+
+/**
+ * An admin removes any other current member of their own household. Nobody removes themselves,
+ * which alone keeps an admin in the household: the remover is one, and stays.
+ */
+export function canRemoveMember(remover: Remover, member: MemberAccess): boolean {
+	return (
+		remover.isAdmin &&
+		member.householdId === remover.householdId &&
+		member.id !== remover.id &&
+		!member.removed
+	);
+}

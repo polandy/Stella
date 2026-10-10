@@ -14,6 +14,7 @@ are what it holds today. The household-wide checks are their own page (§5.5.8).
 
 - A **Data** section, a **You** section (docs/02 §2.1.3) and an **Account** section (sign out
   only so far), ending with the **About** card.
+- A **Household** section after *You* holds one link card, *Members* (docs/02 §2.1).
 - *You* is a labelled person search select; it marks the same person as the identity card's
   *This is me* (§5.5.2).
 - Settings links to *API tokens* under *API*.
@@ -21,6 +22,18 @@ are what it holds today. The household-wide checks are their own page (§5.5.8).
   line under it names the newest published release: a small `New` pill in soft primary, the
   version, and *Release notes* as an ordinary link, laid out to wrap on a narrow screen. Nothing
   to dismiss and nothing to act on in the app (docs/02 §2.17.1).
+
+#### Members
+
+- One card lists the current members, the viewer first: avatar, name with a *You* and an
+  *Admin* pill, email, and how they sign in in a small line.
+- For an admin, every other row ends in a ghost *Remove…* whose accessible name carries the
+  name. It opens the sunken confirm step under the row (the person page's, not a modal): a
+  heading, one line per consequence with its icon, the last-admin warning in `--danger`, and
+  **Remove Nina** (danger) beside **Keep Nina** (ghost, focused). Escape keeps.
+- A removal answers with a toast and no Undo; the row moves to *Former members*, a second card
+  of muted rows with *Removed on* and the day.
+- A member sees the same list without the buttons, and a line that only an admin removes.
 
 #### Import people
 
@@ -64,6 +77,9 @@ The built-in types are listed without actions so their absence from the editable
 deliberate.
 
 The release line is a notice, not a banner: it informs and asks nothing.
+
+Removing a member has no Undo window because sessions and tokens end at once, and an undo
+would have to bring them back; the confirm step stands in for it, as for deleting a person.
 
 A token is revoked because it may be in the wrong hands, and an undo grace period would be a
 window for exactly those hands. `private` is about who sees a record, so tokens get their own

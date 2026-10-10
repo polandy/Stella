@@ -20,17 +20,23 @@ export function planLogin(claims: OidcClaims, lookups: OidcLookups, policy: Oidc
 	const roleSync = policy.syncRoles ? role : null;
 	const profileSync = policy.syncProfile ? profileFrom(claims) : null;
 
-	if (lookups.existingUserId) {
+	// A member an admin removed is turned away before anything about them is synced, and their
+	// email links nobody new beside them: a restore is the way back (docs/02 §2.1).
+	if (lookups.existingUser?.removed || lookups.userByEmail?.removed) {
+		return { action: 'deny', reason: 'removed' };
+	}
+
+	if (lookups.existingUser) {
 		return {
 			action: 'use-existing',
-			userId: lookups.existingUserId,
+			userId: lookups.existingUser.id,
 			role: roleSync,
 			profile: profileSync
 		};
 	}
 
-	if (policy.linkByEmail && claims.emailVerified && lookups.userIdByEmail) {
-		return { action: 'link', userId: lookups.userIdByEmail, role: roleSync, profile: profileSync };
+	if (policy.linkByEmail && claims.emailVerified && lookups.userByEmail) {
+		return { action: 'link', userId: lookups.userByEmail.id, role: roleSync, profile: profileSync };
 	}
 
 	if (policy.jitProvision) {

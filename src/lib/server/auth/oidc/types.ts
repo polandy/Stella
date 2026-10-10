@@ -33,12 +33,18 @@ export interface OidcPolicy {
 	syncProfile: boolean;
 }
 
+/** A Stella user an incoming identity matched, and whether an admin removed them (§2.1). */
+export interface KnownUser {
+	id: string;
+	removed: boolean;
+}
+
 /** What the login planner found in the store for the incoming identity. */
 export interface OidcLookups {
-	/** An existing federated identity matching (issuer, subject). */
-	existingUserId: string | null;
-	/** An existing local user matching the claim email (for first-login linking). */
-	userIdByEmail: string | null;
+	/** The user of an existing federated identity matching (issuer, subject). */
+	existingUser: KnownUser | null;
+	/** An existing user matching the claim email (for first-login linking). */
+	userByEmail: KnownUser | null;
 }
 
 /** Optional profile fields to write when syncing. */
@@ -47,9 +53,12 @@ export interface ProfilePatch {
 	email: string;
 }
 
+/** Why a sign-in through the provider is turned away; the login page says it. */
+export type LoginDenial = 'not-authorized' | 'no-account' | 'removed';
+
 /** The decision the planner produces; the orchestrator carries it out. */
 export type LoginPlan =
-	| { action: 'deny'; reason: 'not-authorized' | 'no-account' }
+	| { action: 'deny'; reason: LoginDenial }
 	| { action: 'use-existing'; userId: string; role: Role | null; profile: ProfilePatch | null }
 	| { action: 'link'; userId: string; role: Role | null; profile: ProfilePatch | null }
 	| { action: 'provision'; role: Role; profile: ProfilePatch };

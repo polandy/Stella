@@ -1,5 +1,5 @@
-import { and, eq, isNull, or, type AnyColumn, type SQL } from 'drizzle-orm';
-import { activityLog, circle, contact } from '../db/schema';
+import { and, eq, isNull, ne, or, sql, type AnyColumn, type SQL } from 'drizzle-orm';
+import { activityLog, circle, contact, user } from '../db/schema';
 import type { Remover, Viewer } from './visibility';
 
 /*
@@ -169,5 +169,18 @@ export function activityVisibleTo(viewer: Viewer): SQL {
 	return and(
 		eq(activityLog.householdId, viewer.householdId),
 		or(eq(activityLog.visibility, 'shared'), eq(activityLog.actorId, viewer.id))
+	)!;
+}
+
+/**
+ * Condition for a `user` row being a member the remover may remove — the SQL of
+ * `canRemoveMember`: an admin, another current member of the same household.
+ */
+export function memberRemovableBy(remover: Remover): SQL {
+	if (!remover.isAdmin) return sql`0`;
+	return and(
+		eq(user.householdId, remover.householdId),
+		ne(user.id, remover.id),
+		isNull(user.removedAt)
 	)!;
 }

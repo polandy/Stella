@@ -45,6 +45,13 @@ export const DEMO_ADMIN_PASSWORD = 'stella-demo-1234';
 /** The demo household's second member, who wrote some of the story. Same password. */
 export const DEMO_MEMBER_EMAIL = 'nina@stella.local';
 
+/**
+ * A third member, Lukas, whom an admin may remove (docs/02 §2.1) without taking away the member
+ * the other specs sign in as. Same password; one shared and one private note of his own.
+ */
+export const DEMO_THIRD_MEMBER_EMAIL = 'lukas@stella.local';
+const DEMO_THIRD_MEMBER_ID = 'demo-user-lukas';
+
 type Gender = 'male' | 'female';
 
 interface Person {
@@ -932,6 +939,27 @@ export function seedDemoData(
 		isPinned: n.pinned ? 1 : 0
 	}));
 	db.insert(note).values(notes).onConflictDoNothing().run();
+	if (created) {
+		db.insert(note)
+			.values([
+				{
+					id: 'demo-note-lukas-shared',
+					contactId: cid('noah'),
+					createdBy: DEMO_THIRD_MEMBER_ID,
+					body: 'Noah will im Sommer mit ins Lager — Anmeldung bis Ende Mai.',
+					visibility: 'shared'
+				},
+				{
+					id: 'demo-note-lukas-private',
+					contactId: cid('noah'),
+					createdBy: DEMO_THIRD_MEMBER_ID,
+					body: 'Geschenkidee: das Buch über Vulkane.',
+					visibility: 'private'
+				}
+			])
+			.onConflictDoNothing()
+			.run();
+	}
 	const noteMentions = notes.flatMap((n) =>
 		mentionedBy(n).map((contactId) => ({ noteId: n.id, contactId }))
 	);
@@ -1067,6 +1095,17 @@ function resolveHouseholdAndAuthor(
 			householdId,
 			email: DEMO_MEMBER_EMAIL,
 			name: 'Nina Brunner',
+			passwordHash,
+			role: 'member'
+		})
+		.run();
+
+	db.insert(user)
+		.values({
+			id: DEMO_THIRD_MEMBER_ID,
+			householdId,
+			email: DEMO_THIRD_MEMBER_EMAIL,
+			name: 'Lukas Brunner',
 			passwordHash,
 			role: 'member'
 		})

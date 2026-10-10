@@ -5,6 +5,8 @@ import type { Locale } from '../../../i18n/locales';
 import {
 	LAST_NAMES_ENTITY,
 	lastNamesFacts,
+	MEMBER_ENTITY,
+	memberFacts,
 	RENAME_ENTITY,
 	removalFacts,
 	renameFacts,
@@ -88,6 +90,13 @@ export type PlainActivityEvent =
 	| ({ kind: 'immich.linked' } & LinkedPerson)
 	| ({ kind: 'immich.unlinked' } & LinkedPerson)
 	| { kind: 'archive.exported'; people: number }
+	| {
+			/** An admin removed a member from the household (docs/02 §2.1). */
+			kind: 'member.removed';
+			memberId: string;
+			/** Kept as written then, like every other line here. */
+			name: string;
+	  }
 	| {
 			/** An authored record removed by someone other than its author (docs/03 §3.7). */
 			kind: 'record.removed';
@@ -221,6 +230,16 @@ function plainRow(event: PlainActivityEvent, householdId: string): Described {
 				visibility: event.visibility,
 				// Facts, said at read time; never the record's text — the log outlives it.
 				summary: removalFacts(event.person, event.authorId, event.authorName)
+			};
+		case 'member.removed':
+			return {
+				action: 'delete',
+				entityType: MEMBER_ENTITY,
+				entityId: event.memberId,
+				contactId: null,
+				// The household is meant to know who no longer belongs to it.
+				visibility: 'shared',
+				summary: memberFacts(event.name)
 			};
 		case 'archive.exported':
 			return {
