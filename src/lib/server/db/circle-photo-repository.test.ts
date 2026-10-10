@@ -189,7 +189,9 @@ describe('beside the person photos', () => {
 		expect(await photos.updateOwnGalleryPhoto({ authorId: U1, photoId: 'p1', caption: 'x' })).toBe(
 			false
 		);
-		expect(await photos.deleteOwnGalleryPhoto({ authorId: U1, photoId: 'p1' })).toBeNull();
+		expect(
+			await photos.deleteRemovableGalleryPhoto({ ...u1, isAdmin: true }, 'p1', null)
+		).toBeNull();
 		await photos.setGalleryPhotoPin('p1', 5);
 		const photo = await repo.findVisible(u1, 'class', 'p1');
 		expect([photo?.caption, photo?.pinnedAt]).toEqual([null, null]);

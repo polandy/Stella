@@ -80,7 +80,7 @@ export function createMediaServices({ config, db, clock, ids }: MediaWiring): Me
 		streams: createFileMediaStreamSource(config.mediaDir),
 		avatarDeps: uploadDeps,
 		importedPhotoDeps: { photos, media: store, clock },
-		galleryDeps: { gallery, photos, media: store, clock },
+		galleryDeps: { gallery, photos, media: store, ids, clock },
 		framingDeps: {
 			gallery,
 			framings: createDrizzleFramingRepository(db),

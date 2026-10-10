@@ -64,6 +64,7 @@ function galleryOver(photos: readonly GalleryPhoto[], writes: Partial<PhotoRepos
 				gallery: inMemoryGalleryPhotos(photos),
 				photos: photoRepositoryWith(writes),
 				media: { delete: async (path) => void deleted.push(path) },
+				ids: sequentialIds('activity'),
 				clock: fixedClock(NOW)
 			}
 		}
@@ -363,7 +364,18 @@ describe('cutFromGroupPhoto', () => {
 describe('removePhoto', () => {
 	const removing = (theirs: boolean) =>
 		galleryOver([], {
-			deleteOwnGalleryPhoto: async () =>
+			findRemovableGalleryPhoto: async () =>
+				theirs
+					? {
+							id: 'p1',
+							contactId: 'c1',
+							person: 'Mara',
+							personVisibility: 'shared',
+							authorId: 'u1',
+							authorName: 'Ana'
+						}
+					: null,
+			deleteRemovableGalleryPhoto: async () =>
 				theirs ? [{ filePath: 'media/p1.jpg', thumbPath: 'media/p1_thumb.jpg' }] : null
 		});
 
