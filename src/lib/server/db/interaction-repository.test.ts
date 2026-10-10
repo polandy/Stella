@@ -2,6 +2,8 @@ import { beforeEach, describe, expect, it } from 'bun:test';
 import { Database } from 'bun:sqlite';
 import { drizzle, type BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
 import { migrate } from 'drizzle-orm/bun-sqlite/migrator';
+import { eq } from 'drizzle-orm';
+import { ADMIN, AUTHOR, MEMBER, removalDb } from '../domain/testing/removal-db';
 import type { Viewer } from '../access/visibility';
 import {
 	lastContactedOn,
@@ -275,4 +277,74 @@ describe('interaction repository', () => {
 			expect(await lastContactedOn(deps(), viewerU1, 'secret')).toBe('2026-08-01');
 		});
 	});
+});
+
+/*
+ * The edit rule is checked again when the write lands, not only by the use-case's `findOwn`:
+ * a touchpoint whose person turned private between the two, or a caller that skips the read,
+ * still cannot be rewritten (docs/03 §3.7).
+ */
+describe('updateOwn (the author only, while they see it)', () => {
+	const edit = {
+		id: 'i-1',
+		kind: 'call' as const,
+		happenedAt: '2026-10-09',
+		title: 'Phoned',
+		description: null,
+		participantIds: ['c-lea'],
+		updatedAt: 99
+	};
+	let t: ReturnType<typeof removalDb>;
+	let repo: ReturnType<typeof createDrizzleInteractionRepository>;
+
+	function seed(id: string, over: Partial<typeof schema.interaction.$inferInsert> = {}) {
+		t.db
+			.insert(schema.interaction)
+			.values({
+				id,
+				contactId: 'c-kurt',
+				createdBy: AUTHOR,
+				visibility: 'shared',
+				kind: 'met',
+				happenedAt: '2026-10-08',
+				title: 'Coffee',
+				...over
+			})
+			.run();
+	}
+	const titleOf = (id: string) =>
+		t.db.select().from(schema.interaction).where(eq(schema.interaction.id, id)).get()?.title;
+	const participantCount = () => t.db.select().from(schema.interactionParticipant).all().length;
+
+	beforeEach(() => {
+		t = removalDb();
+		repo = createDrizzleInteractionRepository(t.db);
+	});
+
+	it("rewrites the author's own touchpoint and its participants", async () => {
+		seed('i-1');
+		expect(await repo.updateOwn({ id: AUTHOR, householdId: H }, edit)).toBe(true);
+		expect(titleOf('i-1')).toBe('Phoned');
+		expect(participantCount()).toBe(1);
+	});
+
+	const refused: [string, Partial<typeof schema.interaction.$inferInsert>, string][] = [
+		["an admin on another member's shared touchpoint", {}, ADMIN],
+		["a member on someone else's shared touchpoint", {}, MEMBER],
+		['the author once the person is private to someone else', { contactId: 'c-secret' }, AUTHOR]
+	];
+
+	for (const [why, over, who] of refused) {
+		it(`refuses ${why}, leaving the row and its participants alone`, async () => {
+			seed('i-1', over);
+			expect(await repo.updateOwn({ id: who, householdId: H }, edit)).toBe(false);
+			expect(titleOf('i-1')).toBe('Coffee');
+			expect(participantCount()).toBe(0);
+			// The positive control: the same write on the editor's own touchpoint goes through.
+			seed('i-own', { createdBy: who });
+			expect(await repo.updateOwn({ id: who, householdId: H }, { ...edit, id: 'i-own' })).toBe(
+				true
+			);
+		});
+	}
 });
