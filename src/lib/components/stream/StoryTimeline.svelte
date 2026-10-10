@@ -3,12 +3,15 @@
 	import Avatar from '$lib/components/ui/Avatar.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import Icon from '$lib/components/ui/Icon.svelte';
+	import InteractionEditor from '$lib/components/person/InteractionEditor.svelte';
+	import Swap from '$lib/components/ui/Swap.svelte';
 	import { contactSectionPath } from '$lib/people/sections';
 	import { dayLabel } from '$lib/dates/labels';
 	import { occasionLabel } from '$lib/gifts/labels';
 	import { useI18n } from '$lib/i18n/context.svelte';
 	import { KIND_PRESENTATION } from '$lib/story/interaction-kinds';
 	import { groupStoryByDay } from '$lib/story/grouping';
+	import type { SelectablePerson } from '$lib/people/select';
 	import type { StoryCursorView, StoryItemView, StoryPageView } from '$lib/story/item';
 	import { useRemovals } from '$lib/undo/context.svelte';
 	import { removalKey as buildKey } from '$lib/undo/keys';
@@ -22,8 +25,10 @@
 	interface Props {
 		contactId: string;
 		initial: StoryPageView;
+		/** Whom else a touchpoint being corrected can name: everyone visible but this person. */
+		candidates: SelectablePerson[];
 	}
-	let { contactId, initial }: Props = $props();
+	let { contactId, initial, candidates }: Props = $props();
 
 	const i18n = useI18n();
 	const t = i18n.t;
@@ -75,6 +80,9 @@
 		given: { label: 'gifts.story.given', icon: 'gift', accent: 'var(--kind-gift)' },
 		received: { label: 'gifts.story.received', icon: 'gift', accent: 'var(--kind-gift)' }
 	} as const;
+
+	// One touchpoint is corrected at a time, in its place (docs/02 §2.6).
+	let editingId = $state<string | null>(null);
 
 	/** The form action that removes an item, by what kind of thing it is. */
 	const removeAction = (item: StoryItemView) =>
@@ -149,24 +157,46 @@
 									</span>
 								{/if}
 								<!-- A gift is changed and removed on the Gifts card, where it lives. -->
-								{#if item.removable}
-									<form
-										method="POST"
-										action={removeAction(item)}
-										class="ml-auto"
-										onsubmit={(event) => deferRemoval(event, item)}
+								{#if (item.kind === 'interaction' && item.editable) || item.removable}
+									<!-- On hover or focus — always on a touch screen, which has no hover, and
+									     while the item is being edited. -->
+									<span
+										class="ml-auto inline-flex items-center gap-1 transition-opacity {editingId ===
+										item.id
+											? 'opacity-100'
+											: 'opacity-0 group-hover/item:opacity-100 focus-within:opacity-100 pointer-coarse:opacity-100'}"
 									>
-										<input type="hidden" name="id" value={item.id} />
-										<Button
-											variant="danger"
-											size="sm"
-											icon="remove"
-											label={item.kind === 'journal'
-												? t('story.removeEntry')
-												: t('story.removeInteraction')}
-											class="opacity-0 transition-opacity group-hover/item:opacity-100 focus-visible:opacity-100"
-										/>
-									</form>
+										<!-- Its author's alone (docs/03 §3.7). Online only. -->
+										{#if item.kind === 'interaction' && item.editable}
+											<Button
+												variant="ghost"
+												size="sm"
+												type="button"
+												icon="write"
+												label={t('story.editInteraction')}
+												title={t('story.editInteraction')}
+												aria-expanded={editingId === item.id}
+												onclick={() => (editingId = editingId === item.id ? null : item.id)}
+											/>
+										{/if}
+										{#if item.removable}
+											<form
+												method="POST"
+												action={removeAction(item)}
+												onsubmit={(event) => deferRemoval(event, item)}
+											>
+												<input type="hidden" name="id" value={item.id} />
+												<Button
+													variant="danger"
+													size="sm"
+													icon="remove"
+													label={item.kind === 'journal'
+														? t('story.removeEntry')
+														: t('story.removeInteraction')}
+												/>
+											</form>
+										{/if}
+									</span>
 								{/if}
 							</div>
 
@@ -208,23 +238,36 @@
 									<p class="text-sm text-fg-muted">{occasionLabel(t, item.occasion)}</p>
 								{/if}
 							{:else}
-								{#if item.title}<p class="mt-0.5 font-medium text-fg">{item.title}</p>{/if}
-								{#if item.description}
-									<p class="mt-1 text-sm whitespace-pre-line text-fg-muted">{item.description}</p>
-								{/if}
-								{#if item.participants.length}
-									<div class="mt-2 flex flex-wrap gap-1.5">
-										{#each item.participants as person (person.contactId)}
-											<a
-												href="/contacts/{person.contactId}"
-												class="inline-flex items-center gap-1.5 rounded-full bg-bg-sunken py-0.5 pr-2.5 pl-1 text-xs text-fg-muted transition-colors hover:text-fg"
-											>
-												<Avatar id={person.contactId} name={person.displayName} size={18} />
-												{person.displayName}
-											</a>
-										{/each}
-									</div>
-								{/if}
+								<!-- The touchpoint and its editor glide into each other in place (docs/05 §5.11). -->
+								<Swap when={editingId === item.id}>
+									<InteractionEditor
+										{item}
+										{contactId}
+										{candidates}
+										onDone={() => (editingId = null)}
+									/>
+									{#snippet otherwise()}
+										{#if item.title}<p class="mt-0.5 font-medium text-fg">{item.title}</p>{/if}
+										{#if item.description}
+											<p class="mt-1 text-sm whitespace-pre-line text-fg-muted">
+												{item.description}
+											</p>
+										{/if}
+										{#if item.participants.length}
+											<div class="mt-2 flex flex-wrap gap-1.5">
+												{#each item.participants as person (person.contactId)}
+													<a
+														href="/contacts/{person.contactId}"
+														class="inline-flex items-center gap-1.5 rounded-full bg-bg-sunken py-0.5 pr-2.5 pl-1 text-xs text-fg-muted transition-colors hover:text-fg"
+													>
+														<Avatar id={person.contactId} name={person.displayName} size={18} />
+														{person.displayName}
+													</a>
+												{/each}
+											</div>
+										{/if}
+									{/snippet}
+								</Swap>
 							{/if}
 						</li>
 					{/each}

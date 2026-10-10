@@ -6,6 +6,8 @@ export const story: StoryMessages = {
 	'story.journal': 'Moment',
 	'story.removeEntry': 'Moment entfernen',
 	'story.removeInteraction': 'Kontakt entfernen',
+	'story.editInteraction': 'Kontakt bearbeiten',
+	'story.saveFailed': 'Änderungen konnten nicht gespeichert werden. Bitte nochmal versuchen.',
 	'story.entryRemoved': 'Moment entfernt',
 	'story.interactionRemoved': 'Kontakt entfernt',
 	'story.showEarlier': 'Frühere anzeigen',

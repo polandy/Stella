@@ -17,6 +17,7 @@ const item = (id: string, day: string): StoryItemView => ({
 	visibility: 'shared',
 	mine: true,
 	removable: true,
+	editable: true,
 	interactionKind: 'call',
 	title: null,
 	description: null,
