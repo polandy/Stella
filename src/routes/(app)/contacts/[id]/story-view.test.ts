@@ -261,6 +261,29 @@ describe('toStoryItem, who may remove what', () => {
 	});
 });
 
+describe('toStoryItem, who may edit a touchpoint', () => {
+	const editable = (item: StoryItem, ctx: StoryViewContext) => {
+		const view = toStoryItem(item, ctx);
+		if (view.kind !== 'interaction') throw new Error('expected an interaction item');
+		return view.editable;
+	};
+
+	it('offers Edit to the author, shared or private', () => {
+		expect(editable(interactionItem(), context())).toBe(true);
+		expect(editable(interactionItem({ visibility: 'private' }), context())).toBe(true);
+	});
+
+	it('offers an admin Remove on another member’s shared touchpoint, never Edit', () => {
+		const admin = context({ remover: { id: 'admin', householdId: 'h1', isAdmin: true } });
+		expect(toStoryItem(interactionItem(), admin).removable).toBe(true);
+		expect(editable(interactionItem(), admin)).toBe(false);
+	});
+
+	it('offers no Edit on someone else’s touchpoint', () => {
+		expect(editable(interactionItem({ createdBy: 'someone-else' }), context())).toBe(false);
+	});
+});
+
 describe('photosByEntry', () => {
 	it('groups the visible journal photos under their entry, in the order they came', () => {
 		const grouped = photosByEntry([

@@ -93,3 +93,107 @@ describe('removeJournalEntry', () => {
 		});
 	});
 });
+
+describe('editInteraction', () => {
+	/** Anna, whom the viewer sees; `own` is whether the store finds the touchpoint theirs. */
+	function editing(own: boolean) {
+		const edits: unknown[] = [];
+		const services: FakeServices = {
+			people: {
+				contactDeps: {
+					contacts: contactRepositoryWith({
+						findByIdVisibleTo: async (_viewer, id) => (id === 'anna' ? ({ id } as Contact) : null)
+					})
+				},
+				contactNames: {
+					listBrowsableNamesAmong: async (_viewer: unknown, ids: readonly string[]) =>
+						ids.filter((id) => id === 'lea').map((id) => ({ id, displayName: 'Lea' }))
+				}
+			} as never,
+			story: {
+				interactionDeps: {
+					interactions: {
+						findOwn: async () => (own ? { id: 'x1', contactId: 'anna', participantIds: [] } : null),
+						updateOwn: async (_author: unknown, edit: unknown) => {
+							edits.push(edit);
+							return true;
+						}
+					},
+					ids: sequentialIds('i'),
+					clock: fixedClock(7)
+				}
+			} as never
+		};
+		return { services, edits };
+	}
+
+	const fields = {
+		id: 'x1',
+		kind: 'call',
+		happenedAt: '2026-10-09',
+		title: ' Phoned ',
+		description: '',
+		participants: ['lea']
+	};
+	const send = (services: FakeServices, form: Record<string, string | string[]>, id = 'anna') =>
+		answerOf(actions.editInteraction(routeEvent({ services, params: { id }, form: formOf(form) })));
+
+	it('rewrites the touchpoint and returns to the story', async () => {
+		const { services, edits } = editing(true);
+		expect(await send(services, fields)).toEqual({
+			kind: 'redirect',
+			status: 303,
+			location: '/contacts/anna#section-story'
+		});
+		expect(edits).toEqual([
+			{
+				id: 'x1',
+				kind: 'call',
+				happenedAt: '2026-10-09',
+				title: 'Phoned',
+				description: null,
+				participantIds: ['lea'],
+				updatedAt: 7
+			}
+		]);
+	});
+
+	it('answers 404 for one that is gone or not theirs, alike', async () => {
+		const { services, edits } = editing(false);
+		expect(await send(services, fields)).toEqual({
+			kind: 'fail',
+			status: 404,
+			data: { interactionError: t('errors.interaction.gone') }
+		});
+		expect(edits).toEqual([]);
+	});
+
+	it('says why it refuses a participant it cannot find', async () => {
+		const { services, edits } = editing(true);
+		expect(await send(services, { ...fields, participants: ['nobody'] })).toEqual({
+			kind: 'fail',
+			status: 400,
+			data: { interactionError: t('errors.interaction.participantNotFound') }
+		});
+		expect(edits).toEqual([]);
+	});
+
+	it('asks for a kind and a day when either is missing', async () => {
+		const { services } = editing(true);
+		for (const missing of ['kind', 'happenedAt'] as const) {
+			const form: Record<string, string | string[]> = { ...fields };
+			delete form[missing];
+			expect(await send(services, form)).toEqual({
+				kind: 'fail',
+				status: 400,
+				data: { interactionError: t('errors.interaction.needKindAndDay') }
+			});
+		}
+	});
+
+	it('refuses a person the viewer cannot see', async () => {
+		const { services, edits } = editing(true);
+		expect(await send(services, fields, 'hidden')).toMatchObject({ kind: 'error', status: 404 });
+		expect(edits).toEqual([]);
+	});
+});

@@ -7,13 +7,16 @@ import { systemClock } from '$lib/server/clock';
 import { error, fail, redirect } from '@sveltejs/kit';
 import { requireRemover, requireViewer } from '$lib/server/auth/guards';
 import { getContact } from '$lib/server/domain/contacts/contacts';
+import { editInteraction } from '$lib/server/domain/interactions/edit-interaction';
 import { removeInteraction } from '$lib/server/domain/interactions/interactions';
+import { TranslatableError } from '$lib/i18n/translatable';
+import { isInteractionKind } from '$lib/story/interaction-kinds';
 import { removeJournalEntry } from '$lib/server/domain/journal/journal';
 import { contactSectionPath } from '$lib/people/sections';
 import { say, translator } from '$lib/server/i18n/say';
 import type { Actions } from '../$types';
 
-/** The story card: touchpoints logged, and entries taken back (docs/02 §2.23). */
+/** The story card: touchpoints logged and corrected, and entries taken back (docs/02 §2.23). */
 export const storyActions = {
 	logInteraction: async ({ request, params, locals }) => {
 		const viewer = requireViewer(locals);
@@ -53,6 +56,52 @@ export const storyActions = {
 
 		// The story timeline owns its paged list, so the page reloads to show the new item — and
 		// has to be told where it came from, or the reader lands back at the top.
+		throw redirect(303, contactSectionPath(params.id, 'story'));
+	},
+
+	/*
+	 * Not a command: editing waits for a connection, like removing, so the right to edit — its
+	 * author's alone — is checked when the edit lands. Gone and not-theirs are said alike.
+	 */
+	editInteraction: async ({ request, params, locals }) => {
+		const viewer = requireViewer(locals);
+
+		const form = await request.formData();
+		const id = form.get('id');
+		if (typeof id !== 'string') {
+			return fail(400, { interactionError: say(locals, 'errors.form.checkAndRetry') });
+		}
+		const kind = String(form.get('kind') ?? '');
+		const happenedAt = String(form.get('happenedAt') ?? '');
+		if (!isInteractionKind(kind) || !happenedAt) {
+			return fail(400, { interactionError: say(locals, 'errors.interaction.needKindAndDay') });
+		}
+
+		const contact = await getContact(locals.services.people.contactDeps, viewer, params.id);
+		if (!contact) throw error(404, say(locals, 'errors.contact.notFound'));
+
+		let edited: boolean;
+		try {
+			edited = await editInteraction(
+				{
+					...locals.services.story.interactionDeps,
+					contactNames: locals.services.people.contactNames
+				},
+				{ userId: viewer.id, householdId: viewer.householdId },
+				{
+					id,
+					kind,
+					happenedAt,
+					title: String(form.get('title') ?? ''),
+					description: String(form.get('description') ?? ''),
+					participantIds: form.getAll('participants').filter((p) => typeof p === 'string')
+				}
+			);
+		} catch (err) {
+			if (!(err instanceof TranslatableError)) throw err;
+			return fail(400, { interactionError: err.phrase(translator(locals)) });
+		}
+		if (!edited) return fail(404, { interactionError: say(locals, 'errors.interaction.gone') });
 		throw redirect(303, contactSectionPath(params.id, 'story'));
 	},
 
