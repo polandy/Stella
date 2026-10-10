@@ -134,14 +134,11 @@ Goal: sand the edges and add the nice-to-haves.
   without the text, online only. The author may edit their note and their touchpoint.
   Household facts (dates, fields, relationships, memberships, gifts) keep "anyone who sees
   it". Left over: a refactor, [concepts/removal-rights.md](concepts/removal-rights.md) §6.
-- **Deleting and renaming circles** — *concept pending.* Nobody can delete or rename a
-  circle today, only its role names. The concept settles:
-  - who may do it: the creator, an admin, or anyone who sees the circle;
-  - what happens to the circle's photos and memberships, and to profile pictures cut from
-    its photos (docs/02 §2.14);
-  - what happens to nested circles (docs/02 §2.4.2);
-  - whether a deletion leaves an activity entry and offers undo, as removing an authored
-    record does (§2.23, docs/03 §3.7).
+- **Deleting and renaming circles** — *concept decided, not built:*
+  [concepts/circle-delete-rename.md](concepts/circle-delete-rename.md). Anyone who sees a
+  circle edits its name and details. Its creator, or an admin on a shared one, deletes it
+  after a confirm step, with no Undo and a line in the stream. Worn cuts stay with their
+  wearers, and nested circles move up a level. Three slices.
 - **Removing a member** — *concept pending.* docs/02 §2.1 says an admin can remove a member,
   but nothing builds it. The concept settles:
   - what happens to the member's sign-in, sessions and API tokens;
