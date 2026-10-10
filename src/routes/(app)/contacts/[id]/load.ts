@@ -39,6 +39,7 @@ import {
 	declinedBy,
 	circleNamesIn,
 	fieldView,
+	galleryPhotoView,
 	giftView,
 	mentionedInView,
 	noteView,
@@ -112,14 +113,15 @@ export const load = (async ({ locals, params, url }) => {
 		nameOfAuthor: read.nameOfAuthor
 	};
 	const t = translator(locals);
+	const person = {
+		householdId: contact.householdId,
+		ownerId: contact.createdBy,
+		visibility: contact.visibility
+	};
 	const storyContext = {
 		...ctx,
 		remover,
-		person: {
-			householdId: contact.householdId,
-			ownerId: contact.createdBy,
-			visibility: contact.visibility
-		},
+		person,
 		photosByEntry: photosByEntry(journalPhotos)
 	};
 
@@ -160,7 +162,7 @@ export const load = (async ({ locals, params, url }) => {
 		gifts: read.gifts.map((gift) => giftView(gift, ctx)),
 		mentionedIn: read.mentionedIn.map((reference) => mentionedInView(reference, ctx)),
 		// The person's photo gallery (docs/02 §2.14), favourites first, already visibility-scoped.
-		gallery: read.gallery,
+		gallery: read.gallery.map((photo) => galleryPhotoView(photo, remover, person)),
 		/*
 		 * Immich (docs/02 §2.24.2): null when this instance has none, so the menu and
 		 * the line never appear. What Immich says about a linked person is a promise on purpose —

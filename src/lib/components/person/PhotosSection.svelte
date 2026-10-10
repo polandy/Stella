@@ -48,7 +48,13 @@
 	const i18n = useI18n();
 	const t = i18n.t;
 	const c = $derived(data.contact);
-	const card = new PhotoCardState(() => ({ data, view, online: reachability.reachable }));
+	const removals = useRemovals();
+	const card = new PhotoCardState(() => ({
+		data,
+		view,
+		online: reachability.reachable,
+		held: (photoId) => removals.isPending(removalKey('photo', photoId))
+	}));
 	const PANEL = 'photo-panel';
 
 	/*
@@ -125,7 +131,6 @@
 	 * arrives at the card's foot. *Ignore* is the list's lasting no, held for the undo window
 	 * like any removal (docs/02 §2.23) — the row goes at once and comes back on *Undo*.
 	 */
-	const removals = useRemovals();
 	const hintSituation = $derived({
 		immichOn: data.immich !== null,
 		online: reachability.reachable,
@@ -180,13 +185,13 @@
 	 * reader's eyes would move its own header — so it hangs under the line instead (`footer`).
 	 */
 	const holdsSomething = $derived(
-		data.gallery.length > 0 ||
+		card.gallery.length > 0 ||
 			keptGallery.length > 0 ||
 			data.groupPhotos.length > 0 ||
 			(showImmich && (data.immich?.linked === true || Boolean(form?.immichError)))
 	);
 	/** The tabs, once there is a grid for them to choose: a gallery photo, or a linked person. */
-	const hasGrid = $derived(data.gallery.length > 0 || card.linked);
+	const hasGrid = $derived(card.gallery.length > 0 || card.linked);
 </script>
 
 <Section
@@ -201,7 +206,7 @@
 			<PhotoTabs
 				tabs={card.tabs}
 				chosen={card.tab}
-				stellaCount={data.gallery.length}
+				stellaCount={card.gallery.length}
 				immichCount={card.immichCount}
 				panel={PANEL}
 				onchoose={(tab) => (view = { ...view, tab })}

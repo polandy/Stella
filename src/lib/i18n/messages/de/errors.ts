@@ -139,7 +139,8 @@ export const errors: ErrorsMessages = {
 	'errors.caption.unreadable': 'Diese Bildunterschrift war nicht zu lesen.',
 	'errors.photo.onlyOwnerCaption': 'Nur wer ein Foto hinzugefügt hat, kann es beschriften.',
 	'errors.photo.onlyOwnerChange': 'Nur wer ein Foto hinzugefügt hat, kann es ändern.',
-	'errors.photo.onlyOwnerRemove': 'Nur wer ein Foto hinzugefügt hat, kann es entfernen.',
+	'errors.photo.onlyOwnerRemove':
+		'Nur wer ein Foto hinzugefügt hat – oder ein Admin bei einem geteilten – kann es entfernen.',
 	'errors.photo.unreadable': 'Dieses Foto war nicht zu lesen.',
 	'errors.photo.notFound': 'Dieses Foto war nicht zu finden.',
 	'errors.photo.fromImmichGone':

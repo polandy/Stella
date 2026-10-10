@@ -1,20 +1,26 @@
 <script lang="ts">
 	import Button from '$lib/components/ui/Button.svelte';
+	import RemoveButton from '$lib/components/ui/RemoveButton.svelte';
 	import { useI18n } from '$lib/i18n/context.svelte';
 	import { INPUT } from './inputs';
 	import type { PersonPageData } from './types';
 
 	/*
 	 * What the lightbox offers on a gallery photo besides *Use as photo* (docs/02 §2.14): the pin,
-	 * which is the household's, and — only on a photo you added — its caption, its scope and its
-	 * removal, which sits last so it is never the button next to the one you meant.
+	 * which is the household's, and — only on a photo you added — its caption and its scope. Its
+	 * removal sits last so it is never the button next to the one you meant; an admin has it on a
+	 * shared photo too (docs/03 §3.7), held for a few seconds so it can be undone (§2.23).
 	 */
 	interface Props {
 		photo: PersonPageData['gallery'][number];
 		/** Who is looking: only the one who added a photo captions, re-scopes or removes it. */
 		viewerId: string;
+		/** Whose photos these are — the toast names them when the photo is their picture. */
+		name: string;
+		/** Closes the lightbox the photo is open in, as its removal is held. */
+		onclose: () => void;
 	}
-	let { photo, viewerId }: Props = $props();
+	let { photo, viewerId, name, onclose }: Props = $props();
 
 	const t = useI18n().t;
 </script>
@@ -51,8 +57,19 @@
 			{photo.visibility === 'private' ? t('contact.photos.share') : t('contact.photos.makePrivate')}
 		</Button>
 	</form>
-	<form method="POST" action="?/removePhoto" class="contents">
-		<input type="hidden" name="photoId" value={photo.id} />
-		<Button variant="danger" size="sm">{t('common.remove')}</Button>
-	</form>
+{/if}
+
+{#if photo.removable}
+	<RemoveButton
+		kind="photo"
+		id={photo.id}
+		action="?/removePhoto"
+		fields={{ photoId: photo.id }}
+		label={t('common.remove')}
+		removed={photo.isAvatar
+			? t('contact.photos.removedWorn', { name })
+			: t('contact.photos.removed')}
+		onremove={onclose}
+		class="contents"
+	/>
 {/if}
