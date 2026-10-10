@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'bun:test';
 import { isHttpError, isRedirect } from '@sveltejs/kit';
-import { DEFAULT_LOCALE } from '../../i18n/locales';
+import { DEFAULT_LOCALE, type Locale } from '../../i18n/locales';
+import { createTranslator } from '../../i18n/translate';
 import { requireAdmin, requireUser, requireViewer } from './guards';
 import type { AuthUser } from './accounts';
 
@@ -19,12 +20,13 @@ const user = (role: AuthUser['role']): AuthUser => ({
 	selfContactId: null
 });
 
-/** The guards read only `user` off a request's locals. */
-const locals = (user: AuthUser | null): Pick<App.Locals, 'user'> => ({ user });
+/** The guards read only `user` off a request's locals, and the language to refuse in. */
+type GuardLocals = Pick<App.Locals, 'user' | 'locale'>;
+const locals = (user: AuthUser | null, locale: Locale = 'en'): GuardLocals => ({ user, locale });
 
 function thrownBy(
-	locals: Pick<App.Locals, 'user'>,
-	guard: (locals: Pick<App.Locals, 'user'>) => unknown = requireAdmin
+	locals: GuardLocals,
+	guard: (locals: GuardLocals) => unknown = requireAdmin
 ): unknown {
 	try {
 		guard(locals);
@@ -45,10 +47,15 @@ describe('requireAdmin', () => {
 		expect(e).toMatchObject({ status: 302, location: '/login' });
 	});
 
-	it('answers a signed-in member with 403 instead of hiding the page', () => {
-		const e = thrownBy(locals(user('member')));
-		expect(isHttpError(e)).toBe(true);
-		expect(e).toMatchObject({ status: 403 });
+	it('answers a signed-in member with 403 in their language instead of hiding the page', () => {
+		for (const locale of ['en', 'de'] as const) {
+			const e = thrownBy(locals(user('member'), locale));
+			expect(isHttpError(e)).toBe(true);
+			expect(e).toMatchObject({
+				status: 403,
+				body: { message: createTranslator(locale)('errors.admin.only') }
+			});
+		}
 	});
 });
 

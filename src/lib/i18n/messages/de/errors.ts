@@ -150,6 +150,7 @@ export const errors: ErrorsMessages = {
 	'errors.circle.couldNotAdd': 'Der Kreis konnte nicht hinzugefügt werden.',
 	'errors.circle.notFound': 'Kreis nicht gefunden',
 	'errors.circlePhoto.unknownRole': 'Wähle eine der Rollen des Kreises oder keine Rolle.',
+	'errors.admin.only': 'Das kann nur die Haushalts-Administration.',
 	'errors.export.adminOnly': 'Nur die Haushalts-Administration kann exportieren.',
 	'errors.story.badCursor': 'Fehlerhafter Verlaufs-Cursor',
 	'errors.journal.couldNotSave': 'Der Moment konnte nicht gespeichert werden.',
