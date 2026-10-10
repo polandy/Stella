@@ -1,6 +1,6 @@
 # Concept — Who may remove what
 
-Status: **concept** — decided with the maintainer on 2026-10-10 (§3), nothing built yet.
+Status: **concept** — decided with the maintainer on 2026-10-10 (§3, §5), nothing built yet.
 Roadmap: docs/06 M3, *Who may remove what*. When a slice is built, its rule moves into the
 feature docs (docs/02, docs/03 §3.7) and this file shrinks; once all slices are built it is
 folded in and deleted.
@@ -64,7 +64,7 @@ important date (docs/02 §2.13).
   activity entry (`contact.deleted`).
 - **Undo** (docs/02 §2.23): journal entries, touchpoints, dates, fields, gifts, tags,
   memberships and relationships go through the held 8-second window (`lib/undo/keys.ts:8`).
-  Notes are not on that list.
+  Notes are not on that list. Photos are removed at once, with no undo and no confirmation.
 - **Activity log** (docs/03 §activity_log): only deletions of a person, merges, renames,
   last-name batches, Immich links and exports write a row. Removing a child record leaves no
   trace.
@@ -153,6 +153,28 @@ added the photo, and removal moves to §3.2. A person photo's caption stays auth
 because a person's gallery is closer to a journal than to a shared album. The difference is
 on purpose, and docs/02 §2.14 says so once slice 3 lands.
 
+### 3.7 Removing waits for a connection
+
+Removing an authored record is **not** a command in the offline outbox (docs/02 §2.18), though
+adding a note is one. It goes out when the undo window closes, as removing a journal entry
+does today. Without a connection the send fails, the record comes back and the toast says
+so. The server checks the right to remove at the moment of removal. An admin's removal of
+someone else's work never sits for hours in a phone's queue, past a change of role or
+visibility.
+
+### 3.8 A photo someone wears
+
+The author's rule today stays for everyone who may now remove (docs/02 §2.14):
+
+- **A person photo:** removing it takes its framing with it. If the person wore it, they
+  fall back to their initials.
+- **A circle photo:** every profile picture cut from it becomes that person's own photo and
+  stays worn.
+
+What is new is that removing a person photo the person wears **says so in the undo toast**,
+e.g. *"Photo removed — also Kurt's picture"*, while *Undo* is still on offer. No one should
+take a profile picture away without noticing.
+
 ---
 
 ## 4. Slices
@@ -168,7 +190,7 @@ then e2e on the branch).
      repository.
    - The `record.removed` activity event and its line in both languages.
    - A `note` removal kind for the undo window, and *Remove* on a note: the author's own,
-     plus an admin's on shared ones.
+     plus an admin's on shared ones. Online only (§3.7).
    - Docs: docs/02 §2.5, §2.11, §2.23; docs/03 §3.7 and `activity_log`; `using-stella.md`.
 2. **Editing a note.**
    - `editNote(deps, author, input)`: author only, title and body, mentions rebuilt, search
@@ -180,29 +202,39 @@ then e2e on the branch).
      `deleteOwn` to the shared rule.
    - Admins see *Remove* on other members' shared items: in Activity, on the journal page, in
      both galleries — wherever the author's *Remove* already shows.
-   - Each such removal writes `record.removed`.
-   - Docs: docs/02 §2.6, §2.14, §2.20, §2.22, §2.23; docs/03 §3.7.
+   - Photos get the held 8-second removal too: today they go at once, with no undo and no
+     confirmation (`GalleryPhotoActions.svelte:54`). A worn person photo says so in the toast
+     (§3.8).
+   - Each removal by someone other than the author writes `record.removed`.
+   - Docs: docs/02 §2.6, §2.14, §2.20, §2.22, §2.23; docs/03 §3.7. docs/02 §2.14 says photo
+     removal follows "the same rule notes follow". It does not today; the slice corrects it.
+4. **Editing a touchpoint.**
+   - `editInteraction(deps, author, input)`: author only, for day, kind, text and the
+     people who took part. Visibility stays out of the editor, as with a journal entry
+     (§3.5).
+   - *Edit* beside *Remove* on the author's touchpoints in Activity, reusing the editing
+     pattern of slice 2.
+   - Docs: docs/02 §2.6, §2.23; `using-stella.md`.
 
 The finding in §6 is not a slice here. It is a separate refactor PR.
 
 ---
 
-## 5. Open questions
+## 5. Settled on 2026-10-10, and what moved out
 
-- **Offline.** Notes are written through the command outbox (docs/02 §2.18). Is removing a
-  note a queued command, or does it wait for a connection like removing a journal entry?
-  The lean is to wait: an admin's removal of someone else's work should not sit in a phone's
-  queue.
-- **A photo that is someone's picture.** A circle photo or person photo can be the source of
-  a profile picture cut (`cutProfilePicture`, docs/02 §2.14). When an admin removes it, does
-  the cut stay? Today's author delete decides that already. Slice 3 checks that path and
-  writes it down.
-- **Touchpoint editing.** A touchpoint still cannot be corrected (§2). Is that a roadmap item
-  of its own?
-- **Circles.** Nobody can delete or rename a circle. Is that a separate roadmap item?
-- **Departed members.** A member who leaves keeps their `created_by`. Admin removal (§3.2)
-  covers their shared records. Should their private records be purged when the member is
-  removed? That belongs with account removal (docs/02 §2.1), not here.
+The open questions of the first draft were decided with the maintainer:
+
+- **Offline:** removing waits for a connection (§3.7).
+- **A photo someone wears:** the author's rule stays, and the toast names the picture (§3.8).
+- **Touchpoint editing:** becomes slice 4, author only.
+- **Circles:** nobody can delete or rename a circle today. This moved to its own roadmap
+  item, *Deleting and renaming circles* (docs/06 M3).
+- **Departed members:** removing a member from the household is promised in docs/02 §2.1
+  but not built. It moved to its own roadmap item, *Removing a member* (docs/06 M3). That
+  item settles what happens to the member's private records. Their shared ones are covered
+  here, since an admin may remove them (§3.2).
+
+No open questions are left for this concept.
 
 ---
 
