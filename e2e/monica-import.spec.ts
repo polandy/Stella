@@ -85,3 +85,18 @@ test('rejects a file that is not a Monica dump', async ({ page }) => {
 	await page.getByRole('button', { name: 'Preview' }).click();
 	await expect(page.getByText(/has no contacts table/)).toBeVisible();
 });
+
+test('leaves out a relationship from a person to themselves and previews the rest', async ({
+	page
+}) => {
+	// The mini dump plus one row linking Kaspar to himself; it used to fail the whole plan.
+	// Preview only, so this spec writes nothing the other tests count on.
+	await page.goto('/settings/import');
+	await page.locator('input[name=dump]').setInputFiles('e2e/fixtures/monica-self-link.sql');
+	await page.getByRole('button', { name: 'Preview' }).click();
+	const preview = page.getByTestId('import-preview');
+	await expect(preview.locator('div', { hasText: /^contacts/ })).toContainText('2');
+	await expect(preview.locator('div', { hasText: /^relationships/ })).toContainText('1');
+	await expect(page.getByText('1 relationship — links a person to themselves')).toBeVisible();
+	await expect(page.getByRole('button', { name: 'Import now' })).toBeEnabled();
+});

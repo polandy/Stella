@@ -810,7 +810,7 @@ records in its own way, so importing two of them would bring everybody in twice.
 
 Stella reads the file and shows what it found — how many people, relationships, notes and
 photos — together with a list of everything it will leave out and why (people deleted in
-Monica, reminders Stella works out itself). Nothing is written until you press *Import
+Monica, a relationship that links somebody to themselves, reminders Stella works out itself). Nothing is written until you press *Import
 now*, and it is all or nothing: if anything goes wrong half-way, nothing is kept.
 
 What lands where: people with their names, birthdays (an age-based one becomes "born
