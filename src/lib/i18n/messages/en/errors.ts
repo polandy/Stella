@@ -140,7 +140,6 @@ export const errors = {
 	'errors.tag.couldNotAdd': 'Could not add the tag.',
 	'errors.image.chooseSome': 'Please choose at least one image.',
 	'errors.image.chooseOne': 'Please choose an image.',
-	'errors.image.couldNotSave': 'Could not save the photo.',
 	'errors.caption.unreadable': 'Could not read that caption.',
 	'errors.photo.onlyOwnerCaption': 'Only the person who added a photo can caption it.',
 	'errors.photo.onlyOwnerChange': 'Only the person who added a photo can change it.',
