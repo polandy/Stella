@@ -268,8 +268,7 @@ describe('save', () => {
 		const refusals = [
 			['no text', { body: '' }, 'errors.note.empty'],
 			['a day that is no day', { entryDate: 'soon' }, 'errors.journal.badDay'],
-			// Said as missing text, though it is the audience that did not read (see the PR).
-			['a visibility it does not know', { visibility: 'secret' }, 'errors.note.empty'],
+			['a visibility it does not know', { visibility: 'secret' }, 'errors.journal.couldNotSave'],
 			['a command id that is not one', { commandId: 'nope' }, 'errors.journal.couldNotSave']
 		] as const;
 		for (const [what, change, key] of refusals) {
@@ -278,6 +277,15 @@ describe('save', () => {
 				expect(answer).toEqual(refused(400, en(key)));
 			});
 		}
+
+		it('says it in the reader’s language', async () => {
+			const { answer } = await save(
+				formOf({ ...entry, visibility: 'secret' }),
+				{},
+				{ locale: 'de' }
+			);
+			expect(answer).toEqual(refused(400, de('errors.journal.couldNotSave')));
+		});
 	});
 
 	it('says why the entry was refused, in the reader’s language', async () => {
@@ -405,7 +413,7 @@ describe('edit', () => {
 			}
 		});
 		const answer = await edit(formOf({ ...change, id: 'e2' }), journal);
-		expect(answer).toEqual(refused(404, en('errors.journal.editFailed')));
+		expect(answer).toEqual(refused(404, en('errors.journal.gone')));
 		expect(written).toEqual([]);
 	});
 
@@ -426,17 +434,17 @@ describe('edit', () => {
 		]);
 	});
 
-	it('refuses an entry that is not there', async () => {
-		const answer = await edit(formOf({ ...change, id: 'gone' }));
-		expect(answer).toEqual(refused(404, en('errors.journal.editFailed')));
+	it('answers an entry that is not there as gone, in the reader’s language', async () => {
+		const answer = await edit(formOf({ ...change, id: 'gone' }), journalOver(), { locale: 'de' });
+		expect(answer).toEqual(refused(404, de('errors.journal.gone')));
 	});
 
-	it('says it could not save an entry that went while it was edited', async () => {
+	it('answers an entry that went while it was edited as gone', async () => {
 		const answer = await edit(
 			formOf(change),
 			journalOver(undefined, { updateOwn: async () => false })
 		);
-		expect(answer).toEqual(refused(404, en('errors.journal.editFailed')));
+		expect(answer).toEqual(refused(404, en('errors.journal.gone')));
 	});
 
 	it('asks which one a typed namesake means, in the reader’s language', async () => {
@@ -456,9 +464,8 @@ describe('edit', () => {
 		expect(journal.edited).toEqual([]);
 	});
 
-	it('says it could not save when writing the entry breaks', async () => {
-		// A breakage of ours answered as a refusal, unlogged (see the PR).
-		const answer = await edit(
+	it('lets a breakage of ours through to the error handler, rather than calling it a refusal', async () => {
+		const answer = edit(
 			formOf(change),
 			journalOver(undefined, {
 				updateOwn: async () => {
@@ -466,19 +473,30 @@ describe('edit', () => {
 				}
 			})
 		);
-		expect(answer).toEqual(refused(400, en('errors.journal.editFailed')));
+		await expect(answer).rejects.toThrow('disk full');
 	});
 
 	describe('a form that does not read', () => {
-		// Valibot's English is handed to the translator as a key, which throws (see the PR).
-		const unreadable = [
-			['no entry', { title: 'Sunday', body: 'A walk' }],
-			['only spaces for text', { ...change, body: '   ' }]
-		] as const;
-		for (const [what, form] of unreadable) {
-			it(`breaks on ${what} rather than saying what is wrong`, async () => {
-				await expect(edit(formOf(form))).rejects.toThrow('Unknown message key');
+		for (const locale of ['en', 'de'] as const) {
+			const say = createTranslator(locale);
+			it(`asks for text when there are only spaces, in ${locale}, and writes nothing`, async () => {
+				const journal = journalOver();
+				const answer = await edit(formOf({ ...change, body: '   ' }), journal, { locale });
+				expect(answer).toEqual(refused(400, say('errors.note.empty')));
+				expect(journal.edited).toEqual([]);
 			});
+
+			// Forms the page never posts get the general sentence.
+			const unposted = [
+				['no entry', { title: 'Sunday', body: 'A walk' }],
+				['no text field', { id: 'e1', title: 'Sunday' }]
+			] as const;
+			for (const [what, form] of unposted) {
+				it(`asks to check a form with ${what}, in ${locale}`, async () => {
+					const answer = await edit(formOf(form), journalOver(), { locale });
+					expect(answer).toEqual(refused(400, say('errors.form.checkAndRetry')));
+				});
+			}
 		}
 	});
 
@@ -491,8 +509,8 @@ describe('edit', () => {
 });
 
 describe('delete', () => {
-	const remove = (form: FormData, journal = journalOver()) =>
-		post(actions.delete!, { story: { journalDeps: journal.journalDeps } }, form);
+	const remove = (form: FormData, journal = journalOver(), locale: Locale = 'en') =>
+		post(actions.delete!, { story: { journalDeps: journal.journalDeps } }, form, locale);
 
 	it('removes an own entry with the files of its photos, and goes back', async () => {
 		const journal = journalOver();
@@ -500,17 +518,22 @@ describe('delete', () => {
 		expect(journal.unlinked).toEqual(['e1.webp', 'e1-thumb.webp']);
 	});
 
-	it("goes back without a word when the entry is another member's or gone", async () => {
-		// A silent success on a record that was not removed (see the PR).
+	it("answers an entry that is gone, or another member's, as gone — never as removed", async () => {
 		const journal = journalOver();
-		expect(await remove(formOf({ id: 'e2' }), journal)).toEqual(BACK);
-		expect(await remove(formOf({ id: 'gone' }), journal)).toEqual(BACK);
+		expect(await remove(formOf({ id: 'e2' }), journal)).toEqual(
+			refused(404, en('errors.journal.gone'))
+		);
+		expect(await remove(formOf({ id: 'gone' }), journal, 'de')).toEqual(
+			refused(404, de('errors.journal.gone'))
+		);
 		expect(journal.unlinked).toEqual([]);
 	});
 
-	it('refuses a form that names no entry, without a sentence', async () => {
-		// A sentence-less 400 (see the PR).
-		expect(await remove(formOf({}))).toEqual({ kind: 'fail', status: 400, data: {} });
+	it('asks to check a form that names no entry, in the reader’s language', async () => {
+		expect(await remove(formOf({}))).toEqual(refused(400, en('errors.form.checkAndRetry')));
+		expect(await remove(formOf({}), journalOver(), 'de')).toEqual(
+			refused(400, de('errors.form.checkAndRetry'))
+		);
 	});
 
 	it('sends somebody not signed in to log in', async () => {

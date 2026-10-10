@@ -1,3 +1,5 @@
+import { TranslatableError } from '../../../i18n/translatable';
+import { phrase } from '../../../i18n/phrase';
 import type { Visibility, Viewer } from '../../access/visibility';
 import type { Clock } from '../../clock';
 import type { IdGenerator } from '../../id';
@@ -12,6 +14,13 @@ import type { DeletedPhotoFiles, MediaStore } from '../media/avatars';
  * while still allowing a member a separate private and shared entry for the same day.
  * Orchestration is pure; visibility-scoped reads live in the adapter.
  */
+
+/** An edit that would leave the entry without text; removing it is the delete's job. */
+export class EmptyJournalEntryError extends TranslatableError {
+	constructor() {
+		super(phrase('errors.note.empty'), 'EmptyJournalEntryError');
+	}
+}
 
 export interface JournalAuthor {
 	userId: string;
@@ -197,9 +206,7 @@ export async function editJournalEntry(
 	input: EditJournalEntryInput
 ): Promise<boolean> {
 	const body = input.body.trim();
-	if (body.length === 0) {
-		throw new Error('A journal entry needs some content.');
-	}
+	if (body.length === 0) throw new EmptyJournalEntryError();
 	const title = orNull(input.title);
 	return deps.journal.updateOwn({
 		authorId: author.userId,
