@@ -175,6 +175,25 @@ test.describe('the jump bar', () => {
 		await expect(page.locator('#section-photos')).toBeFocused();
 		await expect(bar.locator('[aria-current="location"]')).toHaveText(/^Photos/);
 	});
+
+	test('takes the cursor where it sticks, without the page jumping back to the top', async ({
+		page
+	}) => {
+		await page.goto('/contacts/demo-c-markus');
+		await appReady(page);
+		const bar = page.getByRole('navigation', { name: 'Parts of this page' });
+		await page
+			.locator('#section-relationships')
+			.evaluate((el) => el.scrollIntoView({ block: 'start' }));
+		await expect(bar).toHaveAttribute('data-visible', 'true');
+
+		// The stuck bar lies in the scroller's top padding, which the browser counts as out of
+		// sight: a cursor arriving there used to scroll the bar back to where it rests, hidden.
+		await bar.getByRole('link', { name: /^People/ }).focus();
+		await page.keyboard.press('Tab');
+		await expect(bar.getByRole('link', { name: /^Photos/ })).toBeFocused();
+		await expect(bar).toHaveAttribute('data-visible', 'true');
+	});
 });
 
 test.describe('on a phone whose address bar is showing', () => {
