@@ -33,6 +33,8 @@ function fakeRepo() {
 		listForContactVisibleTo: async () => [],
 		listPageForContactVisibleTo: async () => [],
 		lastHappenedOnVisibleTo: async () => null,
+		findOwn: async () => null,
+		updateOwn: async () => false,
 		findRemovableBy: async () => null,
 		deleteRemovableBy: async () => false
 	};

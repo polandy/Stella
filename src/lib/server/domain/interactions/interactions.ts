@@ -80,6 +80,20 @@ export interface InteractionRepository {
 	): Promise<Interaction[]>;
 	/** The latest day among the interactions on a contact the viewer may see, or null. */
 	lastHappenedOnVisibleTo(viewer: Viewer, contactId: string): Promise<string | null>;
+	/**
+	 * The author's own interaction they still see (`authoredEditableBy`), with the participants
+	 * they can see — archived ones included — or null.
+	 */
+	findOwn(
+		author: Viewer,
+		id: string
+	): Promise<{ id: string; contactId: string; participantIds: string[] } | null>;
+	/**
+	 * Rewrite the author's own interaction — checked again here — and, in the same transaction,
+	 * set the participants they can see to `participantIds`; one hidden from them stays. Whether
+	 * it did.
+	 */
+	updateOwn(author: Viewer, edit: InteractionEdit): Promise<boolean>;
 	/** The interaction, when the remover may remove it (`authoredRemovableBy`); else null. */
 	findRemovableBy(remover: Remover, id: string): Promise<RemovableRecord | null>;
 	/**
@@ -91,6 +105,18 @@ export interface InteractionRepository {
 		id: string,
 		audit: ActivityOf<'record.removed'> | null
 	): Promise<boolean>;
+}
+
+/** What an edit rewrites: everything but who wrote it, when, and who sees it. */
+export interface InteractionEdit {
+	id: string;
+	kind: InteractionKind;
+	happenedAt: string;
+	title: string | null;
+	description: string | null;
+	/** The participants the author chose, never the subject itself. */
+	participantIds: string[];
+	updatedAt: number;
 }
 
 /** Collaborators the use-cases need, injected by the composition root. */
@@ -118,21 +144,21 @@ export class InvalidInteractionError extends TranslatableError {
 	}
 }
 
-const orNull = (value?: string | null): string | null => {
+export const orNull = (value?: string | null): string | null => {
 	const trimmed = (value ?? '').trim();
 	return trimmed.length > 0 ? trimmed : null;
 };
 
 /**
- * Log an interaction with a contact. The caller must have verified the subject contact is
- * visible to the author; the adapter scopes participants the same way on read, so a
- * participant the author may not see simply never renders.
+ * The checks a touchpoint passes whether logged or edited: a known kind, a real day, and the
+ * subject not among its own participants — who are named once each.
  */
-export async function logInteraction(
-	deps: InteractionDeps,
-	author: InteractionAuthor,
-	input: LogInteractionInput
-): Promise<string> {
+export function checkedInteraction(input: {
+	contactId: string;
+	kind: InteractionKind;
+	happenedAt: string;
+	participantIds?: string[];
+}): { happenedAt: string; participantIds: string[] } {
 	if (!INTERACTION_KINDS.includes(input.kind)) {
 		throw new InvalidInteractionError(
 			phrase('errors.interaction.unknownKind', { kind: input.kind })
@@ -149,7 +175,20 @@ export async function logInteraction(
 	if (participantIds.includes(input.contactId)) {
 		throw new InvalidInteractionError(phrase('errors.interaction.selfParticipant'));
 	}
+	return { happenedAt, participantIds };
+}
 
+/**
+ * Log an interaction with a contact. The caller must have verified the subject contact is
+ * visible to the author; the adapter scopes participants the same way on read, so a
+ * participant the author may not see simply never renders.
+ */
+export async function logInteraction(
+	deps: InteractionDeps,
+	author: InteractionAuthor,
+	input: LogInteractionInput
+): Promise<string> {
+	const { happenedAt, participantIds } = checkedInteraction(input);
 	const now = deps.clock.now();
 	const id = deps.ids.next();
 	await deps.interactions.insert({

@@ -2,6 +2,7 @@ import { and, desc, eq, inArray, lt, max, or } from 'drizzle-orm';
 import { alias } from 'drizzle-orm/sqlite-core';
 import type { BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
 import {
+	authoredEditableBy,
 	authoredRemovableBy,
 	childRecordVisibleTo,
 	contactColumnsVisibleTo
@@ -11,6 +12,7 @@ import { activityEntry, type ActivityOf } from '../domain/activity/activity';
 import type {
 	Interaction,
 	InteractionCursor,
+	InteractionEdit,
 	InteractionParticipant,
 	InteractionRepository,
 	NewInteraction
@@ -46,6 +48,12 @@ export function createDrizzleInteractionRepository(
 	const participantContact = alias(contact, 'participant_contact');
 	const removableBy = (remover: Remover) =>
 		authoredRemovableBy(remover, {
+			visibility: interaction.visibility,
+			createdBy: interaction.createdBy
+		});
+
+	const editableBy = (author: Viewer) =>
+		authoredEditableBy(author, {
 			visibility: interaction.visibility,
 			createdBy: interaction.createdBy
 		});
@@ -171,6 +179,62 @@ export function createDrizzleInteractionRepository(
 				.where(and(eq(interaction.contactId, contactId), visibleToViewer(viewer)))
 				.get();
 			return row?.day ?? null;
+		},
+
+		async findOwn(author: Viewer, id: string) {
+			const row = db
+				.select({ id: interaction.id, contactId: interaction.contactId })
+				.from(interaction)
+				.innerJoin(contact, eq(interaction.contactId, contact.id))
+				.where(and(eq(interaction.id, id), editableBy(author)))
+				.get();
+			if (!row) return null;
+			const participants = participantsVisibleTo(author, [id]).get(id) ?? [];
+			return { ...row, participantIds: participants.map((p) => p.contactId) };
+		},
+
+		async updateOwn(author: Viewer, e: InteractionEdit): Promise<boolean> {
+			return db.transaction((tx) => {
+				// SQLite's UPDATE takes no join, so the rule — which needs the contact — picks the id.
+				const editable = tx
+					.select({ id: interaction.id })
+					.from(interaction)
+					.innerJoin(contact, eq(interaction.contactId, contact.id))
+					.where(and(eq(interaction.id, e.id), editableBy(author)));
+				const updated = tx
+					.update(interaction)
+					.set({
+						kind: e.kind,
+						happenedAt: e.happenedAt,
+						title: e.title,
+						description: e.description,
+						updatedAt: e.updatedAt
+					})
+					.where(inArray(interaction.id, editable))
+					.returning({ id: interaction.id })
+					.all();
+				if (updated.length === 0) return false;
+				// Only the participants the author can see are theirs to change; the rest stay.
+				const seen = tx
+					.select({ id: participantContact.id })
+					.from(participantContact)
+					.where(contactColumnsVisibleTo(author, participantContact));
+				tx.delete(interactionParticipant)
+					.where(
+						and(
+							eq(interactionParticipant.interactionId, e.id),
+							inArray(interactionParticipant.contactId, seen)
+						)
+					)
+					.run();
+				if (e.participantIds.length > 0) {
+					tx.insert(interactionParticipant)
+						.values(e.participantIds.map((contactId) => ({ interactionId: e.id, contactId })))
+						.onConflictDoNothing()
+						.run();
+				}
+				return true;
+			});
 		},
 
 		async findRemovableBy(remover: Remover, id: string) {
