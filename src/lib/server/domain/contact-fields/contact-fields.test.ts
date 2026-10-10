@@ -1,10 +1,13 @@
 import { describe, expect, it } from 'bun:test';
 import type { Clock } from '../../clock';
 import type { IdGenerator } from '../../id';
+import type { Contact } from '../contacts/contacts';
+import { ContactGoneError } from '../contacts/require-visible';
 import {
 	addContactField,
 	editContactField,
 	fieldHref,
+	removeContactField,
 	type ContactFieldRepository,
 	type NewContactField
 } from './contact-fields';
@@ -47,12 +50,15 @@ const idGen = (v: string): IdGenerator => ({ next: () => v });
 function fakeRepo() {
 	let inserted: NewContactField | null = null;
 	const updates: unknown[] = [];
+	const removed: { contactId: string; fieldId: string }[] = [];
 	const repo: ContactFieldRepository = {
 		insert: async (f) => {
 			inserted = f;
 		},
 		listForContactVisibleTo: async () => [],
-		remove: async () => {},
+		remove: async (contactId, fieldId) => {
+			removed.push({ contactId, fieldId });
+		},
 		update: async (contactId, fieldId, change) => {
 			updates.push({ contactId, fieldId, ...change });
 		}
@@ -62,11 +68,24 @@ function fakeRepo() {
 		get inserted() {
 			return inserted;
 		},
-		updates
+		updates,
+		removed
 	};
 }
 
-const deps = (repo: ContactFieldRepository) => ({ fields: repo, ids: idGen('field-1'), clock });
+/** Only `contact-1` is a person the viewer sees. */
+const contacts = {
+	findByIdVisibleTo: async (_viewer: unknown, id: string) =>
+		id === 'contact-1' ? ({ id } as Contact) : null
+};
+const viewer = { id: 'u1', householdId: 'h1' };
+
+const deps = (repo: ContactFieldRepository) => ({
+	fields: repo,
+	contacts,
+	ids: idGen('field-1'),
+	clock
+});
 
 describe('addContactField', () => {
 	it('persists a field with a normalised label and timestamps', async () => {
@@ -130,5 +149,21 @@ describe('editContactField', () => {
 			editContactField(deps(f.repo), { contactId: 'c', fieldId: 'f', label: null, value: ' ' })
 		).rejects.toThrow();
 		expect(f.updates).toEqual([]);
+	});
+});
+
+describe('removeContactField', () => {
+	it('scopes the delete to the contact it belongs to', async () => {
+		const f = fakeRepo();
+		await removeContactField(deps(f.repo), viewer, { contactId: 'contact-1', fieldId: 'field-1' });
+		expect(f.removed).toEqual([{ contactId: 'contact-1', fieldId: 'field-1' }]);
+	});
+
+	it('refuses a person the viewer does not see, removing nothing', async () => {
+		const f = fakeRepo();
+		await expect(
+			removeContactField(deps(f.repo), viewer, { contactId: 'hidden', fieldId: 'field-1' })
+		).rejects.toBeInstanceOf(ContactGoneError);
+		expect(f.removed).toEqual([]);
 	});
 });

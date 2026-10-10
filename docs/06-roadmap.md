@@ -133,7 +133,7 @@ Goal: sand the edges and add the nice-to-haves.
   undo, and a removal by someone other than the author leaves a shared activity entry
   without the text, online only. The author may edit their note and their touchpoint.
   Household facts (dates, fields, relationships, memberships, gifts) keep "anyone who sees
-  it". Left over: a refactor, [concepts/removal-rights.md](concepts/removal-rights.md) §6.
+  it".
 - **Deleting and renaming circles** — *concept pending.* Nobody can delete or rename a
   circle today, only its role names. The concept settles:
   - who may do it: the creator, an admin, or anyone who sees the circle;

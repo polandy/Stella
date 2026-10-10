@@ -2,6 +2,8 @@ import { CONTACT_FIELD_KINDS, type ContactFieldKind } from '../../../people/cont
 import type { Viewer } from '../../access/visibility';
 import type { Clock } from '../../clock';
 import type { IdGenerator } from '../../id';
+import type { ContactLookup } from '../contacts/contacts';
+import { ContactGoneError } from '../contacts/require-visible';
 
 /*
  * Contact field use-cases (docs/02 §2.3). Fields are child records of a contact and have
@@ -43,7 +45,7 @@ export interface ContactField extends NewContactField {}
 export interface ContactFieldRepository {
 	insert(field: NewContactField): Promise<void>;
 	listForContactVisibleTo(viewer: Viewer, contactId: string): Promise<ContactField[]>;
-	/** Remove a field, scoped to its contact (the caller ensures the contact is visible). */
+	/** Remove a field, scoped to its contact (`removeContactField` checked it is visible). */
 	remove(contactId: string, fieldId: string): Promise<void>;
 	/** Rewrite a field's label and value, scoped to its contact (the caller checked it is visible). */
 	update(
@@ -55,6 +57,7 @@ export interface ContactFieldRepository {
 
 export interface ContactFieldDeps {
 	fields: ContactFieldRepository;
+	contacts: ContactLookup;
 	ids: IdGenerator;
 	clock: Clock;
 }
@@ -119,6 +122,22 @@ export async function editContactField(
 		value,
 		updatedAt: deps.clock.now()
 	});
+}
+
+/**
+ * Remove a contact field. Anyone who sees the person may: a way to reach someone is a household
+ * fact, not anyone's authored record (docs/03 §3.7). A person the viewer does not see is refused
+ * with `ContactGoneError`; a field already gone is not an error, so a second tap changes nothing.
+ */
+export async function removeContactField(
+	deps: Pick<ContactFieldDeps, 'fields' | 'contacts'>,
+	viewer: Viewer,
+	input: { contactId: string; fieldId: string }
+): Promise<void> {
+	if (!(await deps.contacts.findByIdVisibleTo(viewer, input.contactId))) {
+		throw new ContactGoneError();
+	}
+	await deps.fields.remove(input.contactId, input.fieldId);
 }
 
 /** List the fields of a contact the viewer may see. */
