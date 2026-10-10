@@ -31,7 +31,7 @@ import { actions, load } from './+page.server';
 
 /*
  * A person's journal page (docs/02 §2.20) as the edge answers it: the entries of a person the
- * viewer may see, an entry written as a command with its photos following, an own entry edited
+ * viewer may see, an entry written as a command (its photos are the outbox's, never the form's), an own entry edited
  * or removed — each refusal said in the reader's language, each success back to the journal.
  * How each entry is shown (`journal-view.test.ts`), the journal use-cases and the dispatcher have
  * their own suites; the ports here only answer the way the case needs.
@@ -318,44 +318,23 @@ describe('save', () => {
 		expect(answer).toEqual(refused(400, en('errors.journal.couldNotSave')));
 	});
 
-	describe('with photos', () => {
-		it('stores each photo under the entry', async () => {
-			const parents: string[] = [];
-			const { answer } = await save(formOf({ ...entry, ...photo }), {
-				...writing(),
-				'moment.photo': async (_actor, payload) => {
-					parents.push(payload.parentId);
-					return 'stored-photo';
-				}
-			});
-			expect(answer).toEqual(BACK);
-			expect(parents).toEqual([ENTRY_ID]);
+	/*
+	 * Photos are never the form's: with JavaScript they follow the command through the outbox
+	 * (`/api/commands/photo`), and without it the file input has no name. Fields that look like
+	 * a photo are passed over, so a resent form cannot store them twice.
+	 */
+	it('writes the entry and adds no photo, when the form carries photo fields', async () => {
+		const photos: unknown[] = [];
+		const { answer, receipts } = await save(formOf({ ...entry, ...photo }), {
+			...writing(),
+			'moment.photo': async (_actor, payload) => {
+				photos.push(payload);
+				return 'stored-photo';
+			}
 		});
-
-		it('passes over a photo that came without its thumbnail', async () => {
-			const { thumb: _, ...withoutThumb } = photo;
-			const { answer } = await save(formOf({ ...entry, ...withoutThumb }), writing());
-			expect(answer).toEqual(BACK);
-		});
-
-		it('says the entry was saved but a photo was not, when a photo does not read', async () => {
-			const { answer, receipts } = await save(
-				formOf({ ...entry, ...photo, width: 'wide' }),
-				writing()
-			);
-			expect(answer).toEqual(refused(400, en('errors.journal.photoFailed')));
-			expect(await receipts.find(ENTRY_ID)).toMatchObject({ status: 'applied' });
-		});
-
-		it('says why a photo was refused', async () => {
-			const { answer } = await save(formOf({ ...entry, ...photo }), {
-				...writing(),
-				'moment.photo': async () => {
-					throw new TranslatableError(phrase('errors.image.empty'), 'Refused');
-				}
-			});
-			expect(answer).toEqual(refused(400, en('errors.image.empty')));
-		});
+		expect(answer).toEqual(BACK);
+		expect(await receipts.find(ENTRY_ID)).toMatchObject({ status: 'applied' });
+		expect(photos).toEqual([]);
 	});
 });
 

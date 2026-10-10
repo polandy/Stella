@@ -14,7 +14,7 @@ import {
 import { extractMentionIds, mentionsOtherThan } from '$lib/mentions/mentions';
 import { resolveForAudience } from '$lib/server/domain/mentions/resolve-for-audience';
 import { withNamesakeContext } from '$lib/server/domain/mentions/namesake-context';
-import { parsePhotoCommand, readCommand } from '$lib/server/commands/parse';
+import { readCommand } from '$lib/server/commands/parse';
 import { fromFormData } from '$lib/commands/form-data';
 import { JournalWriteSchema } from '$lib/commands/payloads';
 import { dispatchCommand } from '$lib/server/domain/commands/dispatch';
@@ -103,49 +103,21 @@ export const actions: Actions = {
 			return fail(400, { journalError: say(locals, writeProblem(reading.field)) });
 		}
 		const author = { userId: viewer.id, householdId: viewer.householdId, locale: locals.locale };
-		const refusal = (
-			outcome: Awaited<ReturnType<typeof dispatchCommand>> | null,
-			otherwise: MessageKey
-		) =>
-			fail(400, {
-				journalError:
-					outcome?.status === 'refused'
-						? outcome.reason(translator(locals))
-						: say(locals, otherwise)
-			});
 		const command = reading.ok ? reading.command : null;
 		const written = command
 			? await dispatchCommand(locals.services.offline.commandDeps, author, command)
 			: null;
-		if (!command || written?.status !== 'applied')
-			return refusal(written, 'errors.journal.couldNotSave');
-
-		// Browser-processed photos (parallel image/thumb/width/height arrays) follow as commands of
-		// their own, landing on the entry with its visibility (§2.20).
-		const images = form.getAll('image');
-		const thumbs = form.getAll('thumb');
-		const widths = form.getAll('width');
-		const heights = form.getAll('height');
-		for (let i = 0; i < images.length; i++) {
-			const image = images[i];
-			const thumb = thumbs[i];
-			if (!(image instanceof File) || !(thumb instanceof File)) continue;
-			const photo = parsePhotoCommand({
-				id: ulidGenerator.next(),
-				type: 'moment.photo',
-				parentId: command.id,
-				image: new Uint8Array(await image.arrayBuffer()),
-				thumb: new Uint8Array(await thumb.arrayBuffer()),
-				width: Number(widths[i]),
-				height: Number(heights[i]),
-				issuedAt: systemClock.now()
+		if (!command || written?.status !== 'applied') {
+			return fail(400, {
+				journalError:
+					written?.status === 'refused'
+						? written.reason(translator(locals))
+						: say(locals, 'errors.journal.couldNotSave')
 			});
-			const stored = photo
-				? await dispatchCommand(locals.services.offline.commandDeps, author, photo)
-				: null;
-			if (stored?.status !== 'applied') return refusal(stored, 'errors.journal.photoFailed');
 		}
 
+		// Photos are not the form's: with JavaScript they follow the command through the outbox
+		// (docs/04 §4.11.2); without it the page has none to send.
 		throw redirect(303, `/contacts/${params.id}/journal`);
 	},
 

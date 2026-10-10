@@ -103,7 +103,6 @@ export const errors = {
 	'errors.moment.badDay': 'Please pick a valid day.',
 	'errors.moment.photoFailed': 'The moment was saved, but a photo could not be added.',
 	'errors.journal.badDay': 'Please pick a valid date.',
-	'errors.journal.photoFailed': 'The moment was saved, but a photo could not be added.',
 	'errors.circle.needCircleName': 'Please name the circle.',
 	'errors.circle.choosePerson': 'Please choose a person.',
 	'errors.circle.roleNameBlank': 'Give the role a name — to take roles away, use Select.',
