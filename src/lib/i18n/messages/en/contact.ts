@@ -311,6 +311,9 @@ export const contact = {
 	'contact.notes.pin': 'Pin',
 	'contact.notes.remove': 'Remove note',
 	'contact.notes.removed': 'Note removed',
+	'contact.notes.edit': 'Edit note',
+	'contact.notes.titleOptional': 'Title (optional)',
+	'contact.notes.saveFailed': 'Could not save the changes. Try again.',
 
 	'contact.photos.add': 'Add photos',
 	'contact.photos.none': 'No photos yet.',
