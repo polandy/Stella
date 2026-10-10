@@ -292,6 +292,14 @@ way you do on Home: Stella suggests who you mean, the name becomes a link to the
 searching for that name finds the note. A shared note only offers people the whole household
 can see. The same picker is now in the journal too.
 
+To remove a note you wrote, press the cross on it. It disappears at once and *Undo* is on
+offer for eight seconds; after that it is gone for good. Removing needs a connection — it is
+not kept on the phone like a new note. Someone else's note shows who wrote it and has no
+cross, unless you are the household's admin and the note is shared: then you may remove it
+too, and the household sees *Andy removed Nina's note on Kurt* in *What's new* (Nina reads
+*your note*). The note's text is never repeated there. Nobody, admin or not, can touch
+someone else's private note.
+
 **Activity** is everything that has happened with this person in one list: the moments
 someone wrote and the times someone was in touch, newest first, day by day. They used
 to be two separate lists and you had to merge them in your head. Older activity loads when you

@@ -288,7 +288,11 @@ the person, and that never leaves the page. Keeping the record tidy (archive, me
 
 #### Notes, Photos, Mentioned in
 
-- **Notes** are pinned-first.
+- **Notes** are pinned-first. Someone else's note names its author after the title
+  (*· Nina*, `text-fg-subtle`). Its header ends with the private mark and the icon-only
+  *Remove* (`RemoveButton`, kind `note`), shown to the author and to an admin on a shared note
+  (`canRemoveAuthored`, docs/03 §3.7). Always visible, not on hover: a phone has none.
+  Removing follows the undo window of docs/02 §2.23.
 - **Photos** (docs/02 §2.14, §2.24.3) is the page's third priority, after the person and their
   people. Its header holds the title, a segmented control — *All · Stella 5 · Immich 1,764*,
   the Immich segment only for a linked person once Immich has answered — then *+ Add* and the
