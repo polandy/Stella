@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'bun:test';
-import { circlePhotoView, leadPhoto, matchRoleOption, photoRoleOptions } from './circle-photo-view';
+import {
+	circlePhotoRemovable,
+	circlePhotoView,
+	leadPhoto,
+	matchRoleOption,
+	photoRoleOptions
+} from './circle-photo-view';
 
 /*
  * What a circle's photos look like on its page (docs/02 §2.4.2): the cover, the banner over
@@ -131,5 +137,23 @@ describe('matchRoleOption', () => {
 
 	it('refuses a role that was not offered', () => {
 		expect(matchRoleOption('Coach', options)).toBeNull();
+	});
+});
+
+describe('circlePhotoRemovable', () => {
+	const circle = { householdId: 'h', createdBy: 'nina', visibility: 'shared' as const };
+	const member = { id: 'mia', householdId: 'h', isAdmin: false };
+	const admin = { id: 'andy', householdId: 'h', isAdmin: true };
+	const theirs = { createdBy: 'nina', visibility: 'shared' as const };
+
+	it('offers the uploader Remove, and an admin Remove on a shared photo only', () => {
+		expect(circlePhotoRemovable({ ...member, id: 'nina' }, circle, theirs)).toBe(true);
+		expect(circlePhotoRemovable(member, circle, theirs)).toBe(false);
+		expect(circlePhotoRemovable(admin, circle, theirs)).toBe(true);
+		expect(circlePhotoRemovable(admin, circle, { ...theirs, visibility: 'private' })).toBe(false);
+	});
+
+	it('offers nothing in a private circle the viewer does not own', () => {
+		expect(circlePhotoRemovable(admin, { ...circle, visibility: 'private' }, theirs)).toBe(false);
 	});
 });

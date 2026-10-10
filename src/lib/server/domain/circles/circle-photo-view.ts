@@ -1,3 +1,4 @@
+import { canRemoveCirclePhoto, type Remover } from '../../access/visibility';
 import { roleKey } from '../../../circles/role-key';
 import { orderGallery, type Orderable } from '../media/gallery-order';
 
@@ -127,4 +128,24 @@ export function matchRoleOption(
 	if (key === null) return { role: null };
 	const match = options.find((option) => roleKey(option) === key);
 	return match === undefined ? null : { role: match };
+}
+
+/**
+ * Whether the page offers Remove on a circle photo (docs/03 §3.7): its uploader, or an admin
+ * on a shared one — the same rule the action checks again when the held removal goes through.
+ */
+export function circlePhotoRemovable(
+	remover: Remover,
+	circle: { householdId: string; createdBy: string; visibility: 'shared' | 'private' },
+	photo: { createdBy: string; visibility: 'shared' | 'private' }
+): boolean {
+	return canRemoveCirclePhoto(remover, {
+		ownerId: photo.createdBy,
+		visibility: photo.visibility,
+		circle: {
+			householdId: circle.householdId,
+			ownerId: circle.createdBy,
+			visibility: circle.visibility
+		}
+	});
 }

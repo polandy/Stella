@@ -1,5 +1,5 @@
 import { error, fail, redirect } from '@sveltejs/kit';
-import { requireViewer } from '$lib/server/auth/guards';
+import { requireRemover, requireViewer } from '$lib/server/auth/guards';
 import {
 	addMembers,
 	getCircle,
@@ -9,7 +9,11 @@ import {
 	suggestRoles
 } from '$lib/server/domain/circles/circles';
 import { listMembers } from '$lib/server/domain/circles/memberships';
-import { circlePhotoView, photoRoleOptions } from '$lib/server/domain/circles/circle-photo-view';
+import {
+	circlePhotoRemovable,
+	circlePhotoView,
+	photoRoleOptions
+} from '$lib/server/domain/circles/circle-photo-view';
 import { listCirclePhotos } from '$lib/server/domain/circles/circle-photos';
 import { BlankRoleNameError, renameCircleRole } from '$lib/server/domain/circles/rename-role';
 import { listContactNamesAmong } from '$lib/server/domain/contacts/contact-names';
@@ -27,6 +31,7 @@ import { say, translator } from '$lib/server/i18n/say';
  */
 export const load: PageServerLoad = async ({ locals, params }) => {
 	const viewer = requireViewer(locals);
+	const remover = requireRemover(locals);
 
 	const circle = await getCircle(locals.services.circles.circleDeps, viewer, params.id);
 	if (!circle) throw error(404, say(locals, 'errors.circle.notFound'));
@@ -48,7 +53,11 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 		// The cover, the banner over each role group, and the Photos section (docs/02 §2.4.2).
 		photos: circlePhotoView(
 			// Each photo's role picker: the circle's roles, and its own once nobody has it (§4).
-			photos.map((p) => ({ ...p, roleOptions: photoRoleOptions(roles, p.role) })),
+			photos.map((p) => ({
+				...p,
+				roleOptions: photoRoleOptions(roles, p.role),
+				removable: circlePhotoRemovable(remover, circle, p)
+			})),
 			roles
 		),
 		// Who wears a profile picture cut from which photo (concept §5): marked in the person

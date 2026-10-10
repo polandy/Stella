@@ -3,6 +3,7 @@
 	import Button from '$lib/components/ui/Button.svelte';
 	import FormError from '$lib/components/ui/FormError.svelte';
 	import Icon from '$lib/components/ui/Icon.svelte';
+	import RemoveButton from '$lib/components/ui/RemoveButton.svelte';
 	import type { CandidatePerson } from '$lib/circles/cut-candidates';
 	import { useI18n } from '$lib/i18n/context.svelte';
 	import type { CropRect } from '$lib/media/crop';
@@ -76,6 +77,19 @@
 	apart below. Escape closes, the arrow keys and the two step buttons walk only the photos it was
 	opened among. A modal <dialog>, so focus stays inside and returns on the way out (docs/05 §5.9).
 -->
+{#snippet removeButton(label: string, className: string)}
+	<RemoveButton
+		kind="circle-photo"
+		id={photo.id}
+		action="?/removePhoto"
+		fields={{ photoId: photo.id }}
+		{label}
+		removed={t('contact.photos.removed')}
+		onremove={onclose}
+		class={className}
+	/>
+{/snippet}
+
 <dialog
 	{@attach (lightbox: HTMLDialogElement) => lightbox.showModal()}
 	oncancel={(event) => {
@@ -198,12 +212,14 @@
 			/>
 		</div>
 
-		{#if mine}
+		{#if photo.removable}
 			<div
 				class="flex flex-col gap-2 border-t border-dashed border-border pt-3"
 				data-testid="circle-photo-owner"
 			>
-				<span class="text-xs text-fg-subtle">{t('circles.photos.ownerOnly')}</span>
+				{#if mine}
+					<span class="text-xs text-fg-subtle">{t('circles.photos.ownerOnly')}</span>
+				{/if}
 				{#if confirming}
 					<!-- The question before a photo people wear goes away or turns private (§5.4). -->
 					<div
@@ -219,10 +235,7 @@
 						</p>
 						<div class="flex flex-wrap items-center gap-2">
 							{#if confirming === 'remove'}
-								<form method="POST" action="?/removePhoto" use:enhance={keepOpen} class="contents">
-									<input type="hidden" name="photoId" value={photo.id} />
-									<Button variant="danger" size="sm">{t('circles.cut.removeAnyway')}</Button>
-								</form>
+								{@render removeButton(t('circles.cut.removeAnyway'), 'contents')}
 							{:else}
 								<form
 									method="POST"
@@ -244,7 +257,9 @@
 					</div>
 				{:else}
 					<div class="flex flex-wrap items-center gap-2">
-						{#if photo.visibility === 'shared' && wornBy > 0}
+						{#if !mine}
+							<!-- An admin on someone else's shared photo: nothing of theirs to re-scope. -->
+						{:else if photo.visibility === 'shared' && wornBy > 0}
 							<Button
 								variant="ghost"
 								size="sm"
@@ -289,10 +304,7 @@
 								{t('common.remove')}
 							</Button>
 						{:else}
-							<form method="POST" action="?/removePhoto" use:enhance={keepOpen} class="ml-auto">
-								<input type="hidden" name="photoId" value={photo.id} />
-								<Button variant="danger" size="sm">{t('common.remove')}</Button>
-							</form>
+							{@render removeButton(t('common.remove'), 'ml-auto')}
 						{/if}
 					</div>
 				{/if}
