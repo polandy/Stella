@@ -144,15 +144,17 @@ test('counts a type already removed in another tab as removed', async ({ page, c
 	await expect(customRow(page, 'Bakes with')).toHaveCount(0);
 
 	// The second tab's removal finds nothing left to remove: what it asked for is done, so
-	// nothing failed and the type stays away. The layout sends the removal before it moves on,
-	// so a notice would be up by the time the list is read again.
+	// nothing failed and the type stays away. The layout holds the navigation until the
+	// removal is sent and answered, so a notice would be up by the time the address changes.
 	await customRow(other, 'Bakes with')
 		.getByRole('button', { name: 'Remove the type Bakes with' })
 		.click();
 	await expect(other.getByTestId('toast-undo')).toBeVisible();
+	await other.getByRole('link', { name: 'Settings' }).first().click();
+	await expect(other).not.toHaveURL(/relationship-types/);
+	await expect(other.getByTestId('toast-notice')).toHaveCount(0);
 	await openTypeSettings(other);
 	await expect(customRow(other, 'Bakes with')).toHaveCount(0);
-	await expect(other.getByTestId('toast-notice')).toHaveCount(0);
 });
 
 test('leaves the built-in types alone', async ({ page }) => {

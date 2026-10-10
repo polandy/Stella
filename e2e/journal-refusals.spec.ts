@@ -91,12 +91,12 @@ test('counts an entry already removed in another tab as removed', async ({ page,
 	await expect(page.getByRole('heading', { name: 'Settings' })).toBeVisible();
 
 	// The second tab's removal finds nothing left: what it asked for is done, so nothing failed.
-	// The layout sends the removal before it moves on, so a notice would be up by the time the
-	// next screen is.
+	// The layout holds the navigation until the removal is sent and answered, so a notice
+	// would be up by the time the address changes.
 	await other.getByRole('button', { name: 'Delete moment' }).click();
 	await expect(other.getByTestId('toast-undo')).toBeVisible();
 	await other.getByRole('link', { name: 'Settings' }).first().click();
-	await expect(other.getByRole('heading', { name: 'Settings' })).toBeVisible();
+	await expect(other).not.toHaveURL(journal);
 	await expect(other.getByTestId('toast-notice')).toHaveCount(0);
 
 	// Gone for real: the journal no longer lists it.
