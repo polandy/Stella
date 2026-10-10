@@ -132,6 +132,16 @@ export function canViewCirclePhoto(viewer: Viewer, photo: CirclePhotoAccess): bo
 }
 
 /**
+ * A circle photo may be removed by whoever added it, always, and by an admin when it is
+ * shared — `canRemoveAuthored` with the circle in the contact's place. Both must see it.
+ */
+export function canRemoveCirclePhoto(remover: Remover, photo: CirclePhotoAccess): boolean {
+	if (!canViewCirclePhoto(remover, photo)) return false;
+	if (photo.ownerId === remover.id) return true;
+	return remover.isAdmin && photo.visibility === 'shared';
+}
+
+/**
  * An activity-log entry (docs/03 §activity_log). It outlives what it describes — a deleted or
  * merged contact, an export that never had a row — so there is no record left to scope through;
  * the entry carries the visibility the affected record had, and `actorId` is its author.

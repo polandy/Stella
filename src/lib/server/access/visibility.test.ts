@@ -7,6 +7,7 @@ import {
 	canViewRelationship,
 	canEditAuthored,
 	canRemoveAuthored,
+	canRemoveCirclePhoto,
 	type ChildRecordAccess,
 	type ContactAccess,
 	type Remover,
@@ -213,6 +214,47 @@ describe('canRemoveAuthored (docs/03 §3.7: author always, admin on a shared rec
 		const hidden = childOn(contact({ visibility: 'private' }));
 		expect(canRemoveAuthored(admin, hidden)).toBe(false);
 		expect(canRemoveAuthored(author, hidden)).toBe(true);
+	});
+});
+
+describe('canRemoveCirclePhoto (docs/03 §3.7: author always, admin on a shared photo)', () => {
+	const author: Remover = { ...viewerOwner, isAdmin: false };
+	const admin: Remover = { ...viewerOther, isAdmin: true };
+	const member: Remover = { ...viewerOther, isAdmin: false };
+	const foreignAdmin: Remover = { ...viewerForeign, isAdmin: true };
+	const circle = (visibility: 'shared' | 'private', ownerId = OWNER) => ({
+		householdId: HOUSEHOLD,
+		ownerId,
+		visibility
+	});
+	const shared = { ownerId: OWNER, visibility: 'shared' as const, circle: circle('shared') };
+	const priv = { ...shared, visibility: 'private' as const };
+
+	it('lets whoever added the photo remove it, shared or private', () => {
+		expect(canRemoveCirclePhoto(author, shared)).toBe(true);
+		expect(canRemoveCirclePhoto(author, priv)).toBe(true);
+	});
+
+	it("lets an admin remove another member's shared photo", () => {
+		expect(canRemoveCirclePhoto(admin, shared)).toBe(true);
+	});
+
+	it("gives an admin nothing on another member's private photo", () => {
+		expect(canRemoveCirclePhoto(admin, priv)).toBe(false);
+	});
+
+	it("refuses a member on someone else's shared photo", () => {
+		expect(canRemoveCirclePhoto(member, shared)).toBe(false);
+	});
+
+	it('refuses an admin of another household', () => {
+		expect(canRemoveCirclePhoto(foreignAdmin, shared)).toBe(false);
+	});
+
+	it('refuses an admin on a shared photo of a private circle they cannot see', () => {
+		const hidden = { ...shared, circle: circle('private') };
+		expect(canRemoveCirclePhoto(admin, hidden)).toBe(false);
+		expect(canRemoveCirclePhoto(author, hidden)).toBe(true);
 	});
 });
 
