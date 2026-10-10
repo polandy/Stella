@@ -126,16 +126,31 @@ Goal: sand the edges and add the nice-to-haves.
 - ~~**Performance passes**~~ — shipped.
 - ~~**Empty-state and onboarding refinements**~~ — shipped (§2.22).
 - ~~**Accessibility audit**~~ — shipped (§2.19).
-- **Who may remove what** — *concept pending.* A note can today be neither edited nor
-  deleted, not even by its author (§2.5); a wrong or outdated note stays forever. Its
-  **author or an admin** should be able to delete it. Other records follow a mixed rule
-  today — journal entries, photos and touchpoints only by their author (§2.20, §2.14, §2.6),
-  relationships by anyone who sees them — so the concept settles one rule across record
-  kinds: which ones it covers (notes first; touchpoints, photos, journal entries,
-  relationships, dates, circles?), whether an admin may remove another member's *shared*
-  record (never a private one, §2.10), whether removal is undoable and leaves an audit entry,
-  whether editing a note belongs in the same step, and how the author learns their record
-  was removed.
+- **Who may remove what** — *concept decided, not built:*
+  [concepts/removal-rights.md](concepts/removal-rights.md). A note can today be neither
+  edited nor deleted, not even by its author (§2.5). Decided: authored records (notes,
+  moments, touchpoints, person and circle photos) may be removed by their author, or by an
+  admin when shared (never a private one, §2.10). Removal is a delete with the 8-second
+  undo, and a removal by someone other than the author leaves a shared activity entry
+  without the text, online only. The author may edit their note and their touchpoint.
+  Household facts (dates, fields, relationships, memberships, gifts) keep "anyone who sees
+  it". Four slices.
+- **Deleting and renaming circles** — *concept pending.* Nobody can delete or rename a
+  circle today, only its role names. The concept settles:
+  - who may do it: the creator, an admin, or anyone who sees the circle;
+  - what happens to the circle's photos and memberships, and to profile pictures cut from
+    its photos (docs/02 §2.14);
+  - what happens to nested circles (docs/02 §2.4.2);
+  - whether a deletion leaves an activity entry and offers undo, as in
+    [concepts/removal-rights.md](concepts/removal-rights.md).
+- **Removing a member** — *concept pending.* docs/02 §2.1 says an admin can remove a member,
+  but nothing builds it. The concept settles:
+  - what happens to the member's sign-in, sessions and API tokens;
+  - their **private** records, which nobody else can see or remove: purge them, hand them to
+    an admin, or keep them sealed. Their shared records an admin may already remove
+    ([concepts/removal-rights.md](concepts/removal-rights.md));
+  - how their name reads afterwards. The timeline already names nobody for an author who
+    has left (§2.23).
 - **Former relationships on the map** — *concept pending.* A link can be marked `former`
   (docs/03 §3.3, e.g. an ex-partner), which already stops kinship derivation through it
   (§2.4.1), but the relationship map (§2.7) still draws it like any current one. The concept
