@@ -429,13 +429,19 @@ describe('remove', () => {
 const edges: [string, Action][] = [['load', load as Action], ...Object.entries(actions)];
 
 describe('a member who is not an admin', () => {
-	it('is refused by the page and every action, before anything is read', async () => {
-		for (const [name, edge] of edges) {
-			const event = routeEvent<never>({ services: {}, user: MEMBER, form: formOf({}) });
-			expect({ name, answer: await answerOf(edge(event)) }).toEqual({
-				name,
-				answer: { kind: 'error', status: 403, message: 'Only an admin can do this.' }
-			});
+	it('is refused by the page and every action, in their language, before anything is read', async () => {
+		for (const [locale, say] of [
+			['en', en],
+			['de', de]
+		] as const) {
+			for (const [name, edge] of edges) {
+				const event = routeEvent<never>({ services: {}, user: MEMBER, form: formOf({}), locale });
+				expect({ name, locale, answer: await answerOf(edge(event)) }).toEqual({
+					name,
+					locale,
+					answer: { kind: 'error', status: 403, message: say('errors.admin.only') }
+				});
+			}
 		}
 	});
 });

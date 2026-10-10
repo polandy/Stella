@@ -14,7 +14,7 @@ import {
 
 /** `say(locals, 'errors.contact.notFound')` — one message, in the reader's language. */
 export function say<K extends MessageKey>(
-	locals: App.Locals,
+	locals: Pick<App.Locals, 'locale'>,
 	key: K,
 	...params: MessageParams<K>
 ): string {

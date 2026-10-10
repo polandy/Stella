@@ -1,5 +1,6 @@
 import { error, redirect } from '@sveltejs/kit';
 import type { Viewer } from '../access/visibility';
+import { say } from '../i18n/say';
 import type { AuthUser } from './accounts';
 
 /*
@@ -23,9 +24,9 @@ export function requireViewer(locals: Pick<App.Locals, 'user'>): Viewer {
 	return { id, householdId };
 }
 
-/** The signed-in admin, or a redirect to login / a 403 for members. */
-export function requireAdmin(locals: Pick<App.Locals, 'user'>): AuthUser {
+/** The signed-in admin, or a redirect to login / a 403 for members, in their language. */
+export function requireAdmin(locals: Pick<App.Locals, 'user' | 'locale'>): AuthUser {
 	const user = requireUser(locals);
-	if (user.role !== 'admin') throw error(403, 'Only an admin can do this.');
+	if (user.role !== 'admin') throw error(403, say(locals, 'errors.admin.only'));
 	return user;
 }
