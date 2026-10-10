@@ -3,7 +3,7 @@ import { Database } from 'bun:sqlite';
 import { eq } from 'drizzle-orm';
 import { drizzle, type BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
 import { migrate } from 'drizzle-orm/bun-sqlite/migrator';
-import type { Viewer } from '../access/visibility';
+import type { Remover, Viewer } from '../access/visibility';
 import type { StoredCirclePhoto } from '../domain/circles/circle-photos';
 import type { PhotoFileReads, PhotoRepository } from '../domain/media/avatars';
 import type { FramingRepository, StoredFraming } from '../domain/media/framing';
@@ -28,6 +28,8 @@ const U1 = 'user-1';
 const U2 = 'user-2';
 const u1: Viewer = { id: U1, householdId: H };
 const u2: Viewer = { id: U2, householdId: H };
+const removerU1: Remover = { ...u1, isAdmin: false };
+const removerU2: Remover = { ...u2, isAdmin: false };
 
 let db: BunSQLiteDatabase<typeof schema>;
 let cuts: ReturnType<typeof createDrizzleCutRepository>;
@@ -278,11 +280,11 @@ describe('a group photo that people wear going away', () => {
 			cutOf({ id: 'cut-ben', contactId: 'ben', filePath: 'b.jpg', thumbPath: 'b_t.jpg' })
 		);
 
-		const removed = await circlePhotos.deleteOwn({
-			authorId: U1,
-			circleId: 'class',
-			photoId: 'class-photo'
-		});
+		const removed = await circlePhotos.deleteRemovable(
+			removerU1,
+			{ circleId: 'class', photoId: 'class-photo' },
+			null
+		);
 
 		expect(removed).toEqual({
 			filePath: 'class.jpg',
@@ -317,14 +319,22 @@ describe('a group photo that people wear going away', () => {
 			createdAt: 20_000
 		});
 		await photos.setContactAvatar('anna', 'upload');
-		await circlePhotos.deleteOwn({ authorId: U1, circleId: 'class', photoId: 'class-photo' });
+		await circlePhotos.deleteRemovable(
+			removerU1,
+			{ circleId: 'class', photoId: 'class-photo' },
+			null
+		);
 		expect(row('cut-anna')).toMatchObject({ cutFrom: null });
 	});
 
 	it('turns no cut when someone else tries to remove the photo', async () => {
 		await cuts.replaceCut(cutOf());
 		expect(
-			await circlePhotos.deleteOwn({ authorId: U2, circleId: 'class', photoId: 'class-photo' })
+			await circlePhotos.deleteRemovable(
+				removerU2,
+				{ circleId: 'class', photoId: 'class-photo' },
+				null
+			)
 		).toBeNull();
 		expect(row('cut-anna')).toMatchObject({ framingOf: 'class-photo' });
 	});

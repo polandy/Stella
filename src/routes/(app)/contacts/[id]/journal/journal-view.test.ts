@@ -2,6 +2,7 @@ import { describe, expect, it } from 'bun:test';
 import { mentionToken } from '$lib/mentions/mentions';
 import type { JournalEntry } from '$lib/server/domain/journal/journal';
 import { someJournalEntry } from '$lib/server/domain/testing';
+import type { Remover } from '$lib/server/access/visibility';
 import { journalEntriesFor } from './journal-view';
 
 /*
@@ -24,14 +25,17 @@ function view(
 	entries: JournalEntry[],
 	{
 		photos = [],
-		names = []
+		names = [],
+		remover = { id: VIEWER, householdId: 'h1', isAdmin: false }
 	}: {
+		remover?: Remover;
 		photos?: { id: string; journalEntryId: string }[];
 		names?: { id: string; displayName: string }[];
 	} = {}
 ) {
 	return journalEntriesFor({
-		viewerId: VIEWER,
+		remover,
+		person: { householdId: 'h1', ownerId: 'u9', visibility: 'shared' },
 		entries,
 		photos,
 		names,
@@ -89,5 +93,24 @@ describe('journalEntriesFor', () => {
 		});
 		expect(shown!.mentionNames).toEqual({ ben: 'Ben Brunner' });
 		expect(shown!.bodyHtml).toContain('Ben Brunner');
+	});
+
+	it('offers Remove to an admin on another member’s shared entry, never on a private one', () => {
+		const admin: Remover = { id: 'u9', householdId: 'h1', isAdmin: true };
+		const entries = [
+			entry('shared', { createdBy: 'u2' }),
+			entry('private', { createdBy: 'u2', visibility: 'private' })
+		];
+		expect(view(entries, { remover: admin }).map((e) => [e.id, e.removable, e.mine])).toEqual([
+			['shared', true, false],
+			['private', false, false]
+		]);
+		expect(view(entries).map((e) => e.removable)).toEqual([false, false]);
+	});
+
+	it('never hands an admin the text to edit', () => {
+		const admin: Remover = { id: 'u9', householdId: 'h1', isAdmin: true };
+		const [shown] = view([entry('shared', { createdBy: 'u2' })], { remover: admin });
+		expect(shown?.bodyForEdit).toBeNull();
 	});
 });

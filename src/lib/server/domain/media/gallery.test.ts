@@ -1,13 +1,12 @@
 import { describe, expect, it } from 'bun:test';
 import type { Viewer } from '../../access/visibility';
-import { fixedClock, inMemoryGalleryPhotos, someGalleryPhoto } from '../testing';
+import { fixedClock, inMemoryGalleryPhotos, sequentialIds, someGalleryPhoto } from '../testing';
 import type { GalleryPhoto } from './avatars';
 import {
 	captionGalleryPhoto,
 	CaptionTooLongError,
 	listGallery,
 	pinGalleryPhoto,
-	removeGalleryPhoto,
 	setGalleryPhotoVisibility,
 	CAPTION_MAX_LENGTH,
 	type GalleryDeps
@@ -23,7 +22,6 @@ const viewer: Viewer = { id: 'u1', householdId: 'h1' };
 const NOW = 5_000;
 
 function deps(over: { photos?: GalleryPhoto[] } = {}) {
-	const deleted: string[] = [];
 	const pins: { photoId: string; pinnedAt: number | null }[] = [];
 	const updates: {
 		authorId: string;
@@ -40,32 +38,25 @@ function deps(over: { photos?: GalleryPhoto[] } = {}) {
 			updates.push(input);
 			return input.authorId === 'u1'; // only the author's own updates land
 		},
-		async deleteOwnGalleryPhoto(input) {
-			if (input.authorId !== 'u1') return null;
-			deleted.push(input.photoId);
-			// The photo's own files, then its framing's (docs/02 §2.14).
-			return [
-				{ filePath: `/m/${input.photoId}.jpg`, thumbPath: `/m/${input.photoId}_t.jpg` },
-				{
-					filePath: `/m/${input.photoId}-framing.jpg`,
-					thumbPath: `/m/${input.photoId}-framing_t.jpg`
-				}
-			];
+		async findRemovableGalleryPhoto() {
+			throw new Error('removal is tested against the real adapter (remove-gallery-photo.test.ts)');
+		},
+		async deleteRemovableGalleryPhoto() {
+			throw new Error('removal is tested against the real adapter (remove-gallery-photo.test.ts)');
 		}
 	};
 	const removedFiles: string[] = [];
 	const d: GalleryDeps & {
-		deleted: string[];
 		pins: typeof pins;
 		updates: typeof updates;
 		removedFiles: string[];
 	} = {
-		deleted,
 		pins,
 		updates,
 		removedFiles,
 		gallery: inMemoryGalleryPhotos(over.photos ?? []),
 		photos,
+		ids: sequentialIds('activity'),
 		clock: fixedClock(NOW),
 		media: {
 			async delete(path: string) {
@@ -201,25 +192,5 @@ describe('setGalleryPhotoVisibility', () => {
 		expect(
 			await setGalleryPhotoVisibility(d, { id: 'u2', householdId: 'h1' }, 'p1', 'private')
 		).toBe(false);
-	});
-});
-
-describe('removeGalleryPhoto', () => {
-	it('removes the row first, then both files of the photo and of its framing', async () => {
-		const d = deps();
-		expect(await removeGalleryPhoto(d, viewer, 'p1')).toBe(true);
-		expect(d.deleted).toEqual(['p1']);
-		expect(d.removedFiles).toEqual([
-			'/m/p1.jpg',
-			'/m/p1_t.jpg',
-			'/m/p1-framing.jpg',
-			'/m/p1-framing_t.jpg'
-		]);
-	});
-
-	it('touches no file when the row was not the caller’s to remove', async () => {
-		const d = deps();
-		expect(await removeGalleryPhoto(d, { id: 'u2', householdId: 'h1' }, 'p1')).toBe(false);
-		expect(d.removedFiles).toEqual([]);
 	});
 });

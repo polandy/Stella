@@ -1,5 +1,5 @@
 import type { Remover } from '../../access/visibility';
-import { activityRecord } from '../activity/activity';
+import { removalAudit } from '../activity/removal';
 import type { NoteDeps } from './notes';
 
 /*
@@ -16,19 +16,6 @@ export async function removeNote(deps: NoteDeps, remover: Remover, id: string): 
 	const found = await deps.notes.findRemovableBy(remover, id);
 	if (!found) return false;
 
-	const audit =
-		found.authorId === remover.id
-			? null
-			: activityRecord(deps, remover, {
-					kind: 'record.removed',
-					recordKind: 'note',
-					recordId: found.id,
-					contactId: found.contactId,
-					person: found.person,
-					authorId: found.authorId,
-					authorName: found.authorName,
-					// The note was shared, or the remover could not be removing it; the person may not be.
-					visibility: found.personVisibility
-				});
+	const audit = removalAudit(deps, remover, 'note', found);
 	return deps.notes.deleteRemovableBy(remover, id, audit);
 }

@@ -4,7 +4,6 @@ import { drizzle, type BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
 import { migrate } from 'drizzle-orm/bun-sqlite/migrator';
 import type { Viewer } from '../access/visibility';
 import {
-	deleteInteraction,
 	lastContactedOn,
 	listInteractions,
 	logInteraction,
@@ -219,23 +218,6 @@ describe('interaction repository', () => {
 
 		const asAuthor = await listInteractions(deps(), viewerU1, 'oma');
 		expect(asAuthor[0]!.participants.map((p) => p.contactId).sort()).toEqual(['opa', 'secret']);
-	});
-
-	it('deleting removes only the author’s own interaction and cascades its participants', async () => {
-		const id = await logInteraction(deps(), author1, {
-			contactId: 'oma',
-			kind: 'met',
-			happenedAt: '2026-08-01',
-			participantIds: ['opa']
-		});
-		const author2: InteractionAuthor = { userId: U2, householdId: H, defaultVisibility: 'shared' };
-
-		expect(await deleteInteraction(deps(), author2, id)).toBe(false);
-		expect(await listInteractions(deps(), viewerU1, 'oma')).toHaveLength(1);
-
-		expect(await deleteInteraction(deps(), author1, id)).toBe(true);
-		expect(await listInteractions(deps(), viewerU1, 'oma')).toHaveLength(0);
-		expect(db.select().from(schema.interactionParticipant).all()).toHaveLength(0);
 	});
 
 	describe('the day they were last in touch', () => {

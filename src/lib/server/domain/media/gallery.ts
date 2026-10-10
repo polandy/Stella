@@ -1,7 +1,9 @@
 import { TranslatableError } from '../../../i18n/translatable';
 import { phrase } from '../../../i18n/phrase';
-import type { Viewer, Visibility } from '../../access/visibility';
+import type { Remover, Viewer, Visibility } from '../../access/visibility';
 import type { Clock } from '../../clock';
+import type { IdGenerator } from '../../id';
+import { removalAudit } from '../activity/removal';
 import type { GalleryPhoto, MediaStore, PhotoRepository } from './avatars';
 import { orderGallery } from './gallery-order';
 
@@ -9,8 +11,8 @@ import { orderGallery } from './gallery-order';
  * The photo gallery on a person (docs/02 §2.14).
  *
  * Reading is scoped by the repository through the central visibility rules; writing is
- * scoped here to the person who uploaded the photo, the same rule notes and journal entries
- * follow (§2.10). Use-cases over the ports, so every rule is testable without a route.
+ * editing is the uploader's alone, removing is the uploader's or an admin's on a shared photo
+ * (§2.14, docs/03 §3.7). Use-cases over the ports, so every rule is testable without a route.
  */
 
 /** Longest caption accepted; a caption is a line under a photo, not a note. */
@@ -38,9 +40,13 @@ export interface GalleryDeps {
 	gallery: GalleryPhotoReads;
 	photos: Pick<
 		PhotoRepository,
-		'setGalleryPhotoPin' | 'updateOwnGalleryPhoto' | 'deleteOwnGalleryPhoto'
+		| 'setGalleryPhotoPin'
+		| 'updateOwnGalleryPhoto'
+		| 'findRemovableGalleryPhoto'
+		| 'deleteRemovableGalleryPhoto'
 	>;
 	media: Pick<MediaStore, 'delete'>;
+	ids: IdGenerator;
 	clock: Clock;
 }
 
@@ -102,15 +108,20 @@ export async function setGalleryPhotoVisibility(
 }
 
 /**
- * Delete a photo and its files. The row goes first: if removing the bytes fails, the photo is
- * already gone from every view, which is the harmless direction of that failure.
+ * Delete a photo and its files — the one who added it, or an admin on a shared one. The row
+ * goes first: if removing the bytes fails, the photo is already gone from every view, which is
+ * the harmless direction of that failure. A removal by someone other than the author is told
+ * to the household in the delete's own transaction.
  */
 export async function removeGalleryPhoto(
-	deps: Pick<GalleryDeps, 'photos' | 'media'>,
-	viewer: Viewer,
+	deps: Pick<GalleryDeps, 'photos' | 'media' | 'ids' | 'clock'>,
+	remover: Remover,
 	photoId: string
 ): Promise<boolean> {
-	const removed = await deps.photos.deleteOwnGalleryPhoto({ authorId: viewer.id, photoId });
+	const found = await deps.photos.findRemovableGalleryPhoto(remover, photoId);
+	if (!found) return false;
+	const audit = removalAudit(deps, remover, 'photo', found);
+	const removed = await deps.photos.deleteRemovableGalleryPhoto(remover, photoId, audit);
 	if (!removed) return false;
 	for (const files of removed) {
 		await deps.media.delete(files.filePath);

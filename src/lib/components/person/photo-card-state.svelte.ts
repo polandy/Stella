@@ -34,7 +34,13 @@ export class PhotoCardState {
 
 	/** `input` reads the page's data, the reader's choices and whether Stella is online. */
 	constructor(
-		private readonly input: () => { data: PersonPageData; view: PhotoView; online: boolean }
+		private readonly input: () => {
+			data: PersonPageData;
+			view: PhotoView;
+			online: boolean;
+			/** Whether a photo's removal is held for the undo window: it is out of every list. */
+			held: (photoId: string) => boolean;
+		}
 	) {
 		let seenFor: string | null = null;
 		$effect(() => {
@@ -106,12 +112,15 @@ export class PhotoCardState {
 	/** The Immich list the Immich tab shows. */
 	readonly immich = $derived(this.pairWith === null ? this.own : this.pair);
 
+	/** The gallery without the photos being removed. */
+	readonly gallery = $derived(this.now.data.gallery.filter((photo) => !this.now.held(photo.id)));
+
 	readonly stella = $derived<CardEntry[]>(
-		this.now.data.gallery.map((photo) => ({ source: 'stella', photo }))
+		this.gallery.map((photo) => ({ source: 'stella', photo }))
 	);
 	readonly mixed = $derived<CardEntry[]>(
 		mixPhotos({
-			stella: this.now.data.gallery,
+			stella: this.gallery,
 			immich: this.linked ? this.own.photos : [],
 			immichComplete: !this.linked || this.own.complete
 		})
@@ -121,7 +130,7 @@ export class PhotoCardState {
 	);
 	/** Every photo there is of the person, as *All 1,769 photos* says it. */
 	readonly total = $derived(
-		this.now.data.gallery.length + (this.linked ? (this.immichCount ?? this.own.photos.length) : 0)
+		this.gallery.length + (this.linked ? (this.immichCount ?? this.own.photos.length) : 0)
 	);
 	/** *All* waits for Immich's first page, holding its row, rather than reshuffling under a tap. */
 	readonly allLoading = $derived(this.linked && this.own.phase === 'loading');

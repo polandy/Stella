@@ -2,7 +2,6 @@ import { describe, expect, it } from 'bun:test';
 import type { Clock } from '../../clock';
 import type { IdGenerator } from '../../id';
 import {
-	deleteInteraction,
 	InvalidInteractionError,
 	logInteraction,
 	type InteractionAuthor,
@@ -27,7 +26,6 @@ const author: InteractionAuthor = {
 
 function fakeRepo() {
 	let inserted: NewInteraction | null = null;
-	const deleted: { authorId: string; id: string }[] = [];
 	const repo: InteractionRepository = {
 		insert: async (i) => {
 			inserted = i;
@@ -35,14 +33,11 @@ function fakeRepo() {
 		listForContactVisibleTo: async () => [],
 		listPageForContactVisibleTo: async () => [],
 		lastHappenedOnVisibleTo: async () => null,
-		deleteOwn: async (params) => {
-			deleted.push(params);
-			return true;
-		}
+		findRemovableBy: async () => null,
+		deleteRemovableBy: async () => false
 	};
 	return {
 		repo,
-		deleted,
 		get inserted() {
 			return inserted;
 		}
@@ -147,13 +142,4 @@ describe('logInteraction', () => {
 			expect(f.inserted).toBeNull();
 		}
 	);
-});
-
-describe('deleteInteraction', () => {
-	it('only ever deletes as the author', async () => {
-		const f = fakeRepo();
-		const removed = await deleteInteraction(deps(f.repo), author, 'int-9');
-		expect(removed).toBe(true);
-		expect(f.deleted).toEqual([{ authorId: 'u1', id: 'int-9' }]);
-	});
 });

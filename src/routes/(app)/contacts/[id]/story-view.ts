@@ -1,3 +1,4 @@
+import { canRemoveAuthored, type ContactAccess, type Remover } from '$lib/server/access/visibility';
 import type { JournalPhotoRef } from '$lib/server/domain/media/journal-photos';
 import { renderMarkdownWithMentions } from '$lib/server/domain/notes/markdown';
 import type { StoryItem } from '$lib/server/domain/story/story';
@@ -52,14 +53,28 @@ export function nameLookup(
 }
 
 export interface StoryViewContext {
-	/** The signed-in user, to decide what they may remove and who counts as "you". */
-	userId: string;
+	/** The signed-in member, to decide what they may remove and who counts as "you". */
+	remover: Remover;
+	/** The person the story is of: a private one hides what is on it from the rule's admin half. */
+	person: ContactAccess;
 	/** Name of the household member behind a user id, or null once they are gone. */
 	nameOfAuthor: (userId: string) => string | null;
 	/** Visible journal photo ids, keyed by entry id. */
 	photosByEntry: Map<string, string[]>;
 	/** Display name for an @-mention target the viewer may see, or null. */
 	nameOf: (contactId: string) => string | null;
+}
+
+/** Whether *Remove* is drawn: the access layer's rule, so the button is never one that fails. */
+function removable(
+	ctx: StoryViewContext,
+	record: { createdBy: string; visibility: 'shared' | 'private' }
+): boolean {
+	return canRemoveAuthored(ctx.remover, {
+		ownerId: record.createdBy,
+		visibility: record.visibility,
+		contact: ctx.person
+	});
 }
 
 export function toStoryItem(item: StoryItem, ctx: StoryViewContext): StoryItemView {
@@ -71,8 +86,9 @@ export function toStoryItem(item: StoryItem, ctx: StoryViewContext): StoryItemVi
 			day: item.day,
 			recordedAt: item.recordedAt,
 			visibility: entry.visibility,
-			mine: entry.createdBy === ctx.userId,
-			author: authorLabel(entry.createdBy === ctx.userId, ctx.nameOfAuthor(entry.createdBy)),
+			mine: entry.createdBy === ctx.remover.id,
+			removable: removable(ctx, entry),
+			author: authorLabel(entry.createdBy === ctx.remover.id, ctx.nameOfAuthor(entry.createdBy)),
 			title: entry.title,
 			bodyHtml: renderMarkdownWithMentions(entry.body, ctx.nameOf),
 			photos: ctx.photosByEntry.get(entry.id) ?? []
@@ -81,7 +97,7 @@ export function toStoryItem(item: StoryItem, ctx: StoryViewContext): StoryItemVi
 
 	if (item.kind === 'gift') {
 		const gift = item.gift;
-		const mine = gift.createdBy === ctx.userId;
+		const mine = gift.createdBy === ctx.remover.id;
 		return {
 			kind: 'gift',
 			id: gift.id,
@@ -89,6 +105,8 @@ export function toStoryItem(item: StoryItem, ctx: StoryViewContext): StoryItemVi
 			recordedAt: item.recordedAt,
 			visibility: gift.visibility,
 			mine,
+			// A gift is removed on the Gifts card, not from the story.
+			removable: false,
 			author: authorLabel(mine, ctx.nameOfAuthor(gift.createdBy)),
 			giftState: gift.state,
 			title: gift.title,
@@ -103,9 +121,10 @@ export function toStoryItem(item: StoryItem, ctx: StoryViewContext): StoryItemVi
 		day: item.day,
 		recordedAt: item.recordedAt,
 		visibility: interaction.visibility,
-		mine: interaction.createdBy === ctx.userId,
+		mine: interaction.createdBy === ctx.remover.id,
+		removable: removable(ctx, interaction),
 		author: authorLabel(
-			interaction.createdBy === ctx.userId,
+			interaction.createdBy === ctx.remover.id,
 			ctx.nameOfAuthor(interaction.createdBy)
 		),
 		interactionKind: interaction.kind,

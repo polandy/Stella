@@ -1,8 +1,10 @@
 import { TranslatableError } from '../../../i18n/translatable';
 import { phrase, type Phrase } from '../../../i18n/phrase';
-import type { Visibility, Viewer } from '../../access/visibility';
+import type { Remover, Visibility, Viewer } from '../../access/visibility';
 import type { Clock } from '../../clock';
 import type { IdGenerator } from '../../id';
+import type { ActivityOf } from '../activity/activity';
+import { removalAudit, type RemovableRecord } from '../activity/removal';
 import { INTERACTION_KINDS, type InteractionKind } from '../../../story/interaction-kinds';
 import { FULL_DATE_SHAPE, isRealCalendarDay } from '../../../dates/calendar';
 
@@ -78,8 +80,17 @@ export interface InteractionRepository {
 	): Promise<Interaction[]>;
 	/** The latest day among the interactions on a contact the viewer may see, or null. */
 	lastHappenedOnVisibleTo(viewer: Viewer, contactId: string): Promise<string | null>;
-	/** Delete an interaction the viewer authored; returns whether a row was removed. */
-	deleteOwn(params: { authorId: string; id: string }): Promise<boolean>;
+	/** The interaction, when the remover may remove it (`authoredRemovableBy`); else null. */
+	findRemovableBy(remover: Remover, id: string): Promise<RemovableRecord | null>;
+	/**
+	 * Delete the interaction when the remover may — checked again here, at the moment of
+	 * removal — and write `audit` in the same transaction if one went. Whether it did.
+	 */
+	deleteRemovableBy(
+		remover: Remover,
+		id: string,
+		audit: ActivityOf<'record.removed'> | null
+	): Promise<boolean>;
 }
 
 /** Collaborators the use-cases need, injected by the composition root. */
@@ -166,13 +177,20 @@ export async function listInteractions(
 	return deps.interactions.listForContactVisibleTo(viewer, contactId);
 }
 
-/** Delete one of the author's own interactions; returns whether one was removed. */
-export async function deleteInteraction(
-	deps: Pick<InteractionDeps, 'interactions'>,
-	author: InteractionAuthor,
+/**
+ * Remove a touchpoint — its author's always, an admin's when it is shared (docs/03 §3.7). A
+ * removal by someone other than the author is told to the household in the delete's own
+ * transaction. Whether it went; one that is gone and one the remover may not touch answer alike.
+ */
+export async function removeInteraction(
+	deps: Pick<InteractionDeps, 'interactions' | 'ids' | 'clock'>,
+	remover: Remover,
 	id: string
 ): Promise<boolean> {
-	return deps.interactions.deleteOwn({ authorId: author.userId, id });
+	const found = await deps.interactions.findRemovableBy(remover, id);
+	if (!found) return false;
+	const audit = removalAudit(deps, remover, 'interaction', found);
+	return deps.interactions.deleteRemovableBy(remover, id, audit);
 }
 
 /**

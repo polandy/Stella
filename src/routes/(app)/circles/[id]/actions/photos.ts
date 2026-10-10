@@ -1,5 +1,5 @@
 import { error, fail, type RequestEvent } from '@sveltejs/kit';
-import { requireViewer } from '$lib/server/auth/guards';
+import { requireRemover, requireViewer } from '$lib/server/auth/guards';
 import * as v from 'valibot';
 import {
 	captionCirclePhoto,
@@ -159,15 +159,17 @@ export const photoActions = {
 		return { cutFor: input.contactId };
 	},
 
+	/** The one who added it, or an admin on a shared one; the page holds it for the undo. */
 	removePhoto: async (event) => {
-		const { viewer, circleId } = await circleOf(event);
+		const remover = requireRemover(event.locals);
+		const { circleId } = await circleOf(event);
 		const form = await event.request.formData();
 		const photoId = form.get('photoId');
 		if (typeof photoId !== 'string' || photoId === '') {
 			return fail(400, { photoError: say(event.locals, 'errors.photo.unreadable') });
 		}
 		if (
-			!(await removeCirclePhoto(event.locals.services.circles.circlePhotoDeps, viewer, {
+			!(await removeCirclePhoto(event.locals.services.circles.circlePhotoDeps, remover, {
 				circleId,
 				photoId
 			}))

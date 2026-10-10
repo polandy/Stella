@@ -126,12 +126,12 @@ Goal: sand the edges and add the nice-to-haves.
 - ~~**Performance passes**~~ — shipped.
 - ~~**Empty-state and onboarding refinements**~~ — shipped (§2.22).
 - ~~**Accessibility audit**~~ — shipped (§2.19).
-- **Who may remove what** — *slice 2 of 4 built (removing and editing a
-  note, §2.5):* [concepts/removal-rights.md](concepts/removal-rights.md). Decided: authored records (notes,
+- **Who may remove what** — *slice 3 of 4 built (removing and editing a
+  note, §2.5; removing every other authored kind, §2.6, §2.14, §2.20):* [concepts/removal-rights.md](concepts/removal-rights.md). Decided: authored records (notes,
   moments, touchpoints, person and circle photos) may be removed by their author, or by an
   admin when shared (never a private one, §2.10). Removal is a delete with the 8-second
   undo, and a removal by someone other than the author leaves a shared activity entry
-  without the text, online only. The author may edit their note and their touchpoint.
+  without the text, online only. The author may edit their note (built) and their touchpoint (slice 4).
   Household facts (dates, fields, relationships, memberships, gifts) keep "anyone who sees
   it". Four slices.
 - **Deleting and renaming circles** — *concept pending.* Nobody can delete or rename a

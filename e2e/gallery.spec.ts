@@ -130,10 +130,31 @@ test('wears a gallery photo as the avatar, and gives it back when the photo is r
 
 	// Removing the photo takes the face with it rather than leaving a broken one.
 	await lightbox.getByRole('button', { name: 'Remove' }).click();
-	// Empty again, the card is one line, without a count (docs/05 §5.5).
-	await expect(page.locator('#section-photos')).toHaveAttribute('data-empty-line', 'true');
-	await expect(page.getByText('No photos yet.')).toBeVisible();
-	await expect(avatar).toHaveCount(0);
+	// The photo is gone from the grid at once, with Undo on offer; the page settles when the
+	// 8-second window closes (docs/02 §2.23).
+	await expect(lightbox).toBeHidden();
+	await expect(grid.getByRole('button')).toHaveCount(0);
+	await expect(page.getByRole('button', { name: 'Undo' })).toBeVisible();
+	// Once the window closes the photo is really gone: the face with it, and no count left.
+	await expect(avatar).toHaveCount(0, { timeout: 20_000 });
+	await expect(page.locator('#section-photos > header')).not.toContainText('1');
+});
+
+test('a removed gallery photo leaves the grid at once and comes back with Undo', async ({
+	page
+}) => {
+	await openPhotos(page, UNPHOTOGRAPHED);
+	await addPhotos(page, [file('undo.png')]);
+	const grid = page.getByTestId('photo-grid');
+	await expect(grid.getByRole('button')).toHaveCount(1);
+
+	await grid.getByRole('button').first().click();
+	await page.getByTestId('photo-lightbox').getByRole('button', { name: 'Remove' }).click();
+	await expect(page.getByTestId('photo-lightbox')).toBeHidden();
+	await expect(grid.getByRole('button')).toHaveCount(0);
+
+	await page.getByRole('button', { name: 'Undo' }).click();
+	await expect(grid.getByRole('button')).toHaveCount(1);
 });
 
 test('dates a gallery photo, on its tile and in the lightbox', async ({ page }) => {

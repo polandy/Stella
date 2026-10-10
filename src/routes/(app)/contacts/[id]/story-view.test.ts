@@ -19,7 +19,8 @@ const VIEWER = 'user-1';
 
 function context(overrides: Partial<StoryViewContext> = {}): StoryViewContext {
 	return {
-		userId: VIEWER,
+		remover: { id: VIEWER, householdId: 'h1', isAdmin: false },
+		person: { householdId: 'h1', ownerId: 'someone', visibility: 'shared' },
 		photosByEntry: new Map(),
 		nameOf: () => null,
 		nameOfAuthor: () => null,
@@ -168,6 +169,11 @@ describe('toStoryItem, gifts', () => {
 		}
 	});
 
+	it('leaves a gift to the Gifts card', () => {
+		const admin = context({ remover: { id: 'admin', householdId: 'h1', isAdmin: true } });
+		expect(toStoryItem(giftItem(), admin).removable).toBe(false);
+	});
+
 	it('says what was given or received, and on which occasion', () => {
 		const view = toStoryItem(giftItem(), context({ nameOfAuthor: () => 'Lena Brunner' }));
 
@@ -178,6 +184,7 @@ describe('toStoryItem, gifts', () => {
 			recordedAt: 300,
 			visibility: 'shared',
 			mine: false,
+			removable: false,
 			author: 'Lena',
 			giftState: 'received',
 			title: 'Knitted socks',
@@ -231,6 +238,17 @@ describe('toStoryItem, who may remove what', () => {
 		expect(toStoryItem(journalItem({ createdBy: 'someone-else' }), context()).mine).toBe(false);
 		expect(toStoryItem(interactionItem(), context()).mine).toBe(true);
 		expect(toStoryItem(interactionItem({ createdBy: 'someone-else' }), context()).mine).toBe(false);
+	});
+
+	it('offers Remove to an admin on another member’s shared items only', () => {
+		const admin = context({ remover: { id: 'admin', householdId: 'h1', isAdmin: true } });
+		const member = context({ remover: { id: 'member', householdId: 'h1', isAdmin: false } });
+		for (const make of [journalItem, interactionItem]) {
+			expect(toStoryItem(make(), admin).removable).toBe(true);
+			expect(toStoryItem(make(), member).removable).toBe(false);
+			expect(toStoryItem(make({ visibility: 'private' }), admin).removable).toBe(false);
+			expect(toStoryItem(make({ visibility: 'private' }), context()).removable).toBe(true);
+		}
 	});
 
 	it('carries visibility through, so a private item can be marked as one', () => {

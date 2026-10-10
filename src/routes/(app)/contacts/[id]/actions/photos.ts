@@ -1,5 +1,5 @@
 import { fail, redirect } from '@sveltejs/kit';
-import { requireViewer } from '$lib/server/auth/guards';
+import { requireRemover, requireViewer } from '$lib/server/auth/guards';
 import * as v from 'valibot';
 import { InvalidAvatarError } from '$lib/server/domain/media/avatars';
 import {
@@ -159,14 +159,18 @@ export const photoActions = {
 		throw redirect(303, `/contacts/${params.id}`);
 	},
 
-	/** Delete a gallery photo and its files. Only its uploader may. */
+	/**
+	 * Delete a gallery photo and its files: its uploader may, and an admin on a shared one. The
+	 * page holds the removal for a few seconds so it can be undone; the right is checked again
+	 * at the moment it happens.
+	 */
 	removePhoto: async ({ request, params, locals }) => {
-		const viewer = requireViewer(locals);
+		const remover = requireRemover(locals);
 		const form = await request.formData();
 		const photoId = form.get('photoId');
 		if (typeof photoId !== 'string')
 			return fail(400, { photoError: say(locals, 'errors.photo.unreadable') });
-		if (!(await removeGalleryPhoto(locals.services.media.galleryDeps, viewer, photoId))) {
+		if (!(await removeGalleryPhoto(locals.services.media.galleryDeps, remover, photoId))) {
 			return fail(403, { photoError: say(locals, 'errors.photo.onlyOwnerRemove') });
 		}
 		throw redirect(303, contactSectionPath(params.id, 'photos'));

@@ -93,8 +93,9 @@ export type PlainActivityEvent =
 			kind: 'record.removed';
 			recordKind: RemovedRecordKind;
 			recordId: string;
-			contactId: string;
-			/** The person it was on, kept because the line outlives the record. */
+			/** Null for a photo of a circle. */
+			contactId: string | null;
+			/** The person it was on (or the circle), kept because the line outlives the record. */
 			person: string;
 			authorId: string;
 			authorName: string;

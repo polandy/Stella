@@ -1,8 +1,10 @@
 import { TranslatableError } from '../../../i18n/translatable';
 import { phrase } from '../../../i18n/phrase';
-import type { Visibility, Viewer } from '../../access/visibility';
+import type { Remover, Visibility, Viewer } from '../../access/visibility';
 import type { Clock } from '../../clock';
 import type { IdGenerator } from '../../id';
+import type { ActivityOf } from '../activity/activity';
+import { removalAudit, type RemovableRecord } from '../activity/removal';
 import type { DeletedPhotoFiles, MediaStore } from '../media/avatars';
 
 /*
@@ -83,11 +85,18 @@ export interface JournalRepository {
 		contactId: string,
 		opts: { limit: number; before?: JournalCursor }
 	): Promise<JournalEntry[]>;
+	/** The entry, when the remover may remove it (`authoredRemovableBy`); else null. */
+	findRemovableBy(remover: Remover, id: string): Promise<RemovableRecord | null>;
 	/**
-	 * Delete an entry the viewer authored, with the photos it carries. Returns their files to
-	 * unlink, or null when there was no such entry of theirs.
+	 * Delete the entry when the remover may — checked again here, at the moment of removal —
+	 * with the photos it carries, and write `audit` in the same transaction if one went.
+	 * Returns their files to unlink, or null when there was no such entry to remove.
 	 */
-	deleteOwn(params: { authorId: string; id: string }): Promise<DeletedPhotoFiles[] | null>;
+	deleteRemovableBy(
+		remover: Remover,
+		id: string,
+		audit: ActivityOf<'record.removed'> | null
+	): Promise<DeletedPhotoFiles[] | null>;
 	/** Replace an entry's @-mention links with exactly these contact ids (docs/02 §2.20.1). */
 	replaceMentions(journalEntryId: string, contactIds: string[]): Promise<void>;
 	/** Contact ids an entry mentions. */
@@ -265,15 +274,20 @@ export async function setJournalMentions(
 }
 
 /**
- * Delete one of the viewer's own journal entries, and the bytes of the photos inside it. The
- * rows go first: a file left behind is the harmless direction of that failure.
+ * Remove a journal entry — its author's always, an admin's when it is shared (docs/03 §3.7) —
+ * and the bytes of the photos inside it. The rows go first: a file left behind is the harmless
+ * direction of that failure. A removal by someone other than the author is told to the
+ * household in the delete's own transaction.
  */
-export async function deleteJournalEntry(
-	deps: Pick<JournalDeps, 'journal' | 'media'>,
-	author: JournalAuthor,
+export async function removeJournalEntry(
+	deps: Pick<JournalDeps, 'journal' | 'media' | 'ids' | 'clock'>,
+	remover: Remover,
 	id: string
 ): Promise<boolean> {
-	const files = await deps.journal.deleteOwn({ authorId: author.userId, id });
+	const found = await deps.journal.findRemovableBy(remover, id);
+	if (!found) return false;
+	const audit = removalAudit(deps, remover, 'journal_entry', found);
+	const files = await deps.journal.deleteRemovableBy(remover, id, audit);
 	if (files === null) return false;
 	for (const file of files) {
 		await deps.media.delete(file.filePath);

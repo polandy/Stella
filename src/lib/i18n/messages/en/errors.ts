@@ -142,7 +142,8 @@ export const errors = {
 	'errors.caption.unreadable': 'Could not read that caption.',
 	'errors.photo.onlyOwnerCaption': 'Only the person who added a photo can caption it.',
 	'errors.photo.onlyOwnerChange': 'Only the person who added a photo can change it.',
-	'errors.photo.onlyOwnerRemove': 'Only the person who added a photo can remove it.',
+	'errors.photo.onlyOwnerRemove':
+		'Only the person who added a photo, or an admin on a shared one, can remove it.',
 	'errors.photo.unreadable': 'Could not read that photo.',
 	'errors.photo.notFound': 'That photo could not be found.',
 	'errors.photo.fromImmichGone':

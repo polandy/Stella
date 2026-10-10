@@ -35,6 +35,8 @@
 		 * way to the server yet (docs/05 §5.7).
 		 */
 		pending?: PendingSink;
+		/** Runs as the removal is held, e.g. to close a lightbox the removed thing was open in. */
+		onremove?: () => void;
 		class?: string;
 	}
 	let {
@@ -46,6 +48,7 @@
 		removed,
 		bare = false,
 		pending,
+		onremove,
 		class: className = ''
 	}: Props = $props();
 
@@ -67,6 +70,7 @@
 				{ fetch, reload: invalidateAll, pending }
 			)
 		);
+		onremove?.();
 		if (handOff) void tick().then(handOff);
 	}
 

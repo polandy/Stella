@@ -5,10 +5,10 @@ import { InteractionLogSchema } from '$lib/commands/payloads';
 import { ulidGenerator } from '$lib/server/id';
 import { systemClock } from '$lib/server/clock';
 import { error, fail, redirect } from '@sveltejs/kit';
-import { requireViewer } from '$lib/server/auth/guards';
+import { requireRemover, requireViewer } from '$lib/server/auth/guards';
 import { getContact } from '$lib/server/domain/contacts/contacts';
-import { deleteInteraction } from '$lib/server/domain/interactions/interactions';
-import { deleteJournalEntry } from '$lib/server/domain/journal/journal';
+import { removeInteraction } from '$lib/server/domain/interactions/interactions';
+import { removeJournalEntry } from '$lib/server/domain/journal/journal';
 import { contactSectionPath } from '$lib/people/sections';
 import { say, translator } from '$lib/server/i18n/say';
 import type { Actions } from '../$types';
@@ -57,28 +57,22 @@ export const storyActions = {
 	},
 
 	removeInteraction: async ({ request, params, locals }) => {
-		const viewer = requireViewer(locals);
+		const remover = requireRemover(locals);
 
 		const form = await request.formData();
 		const interactionId = form.get('id');
 		if (typeof interactionId !== 'string') return fail(400, {});
 
-		const contact = await getContact(locals.services.people.contactDeps, viewer, params.id);
+		const contact = await getContact(locals.services.people.contactDeps, remover, params.id);
 		if (!contact) throw error(404, say(locals, 'errors.contact.notFound'));
 
-		const author = {
-			userId: viewer.id,
-			householdId: viewer.householdId,
-			locale: locals.locale,
-			defaultVisibility: 'shared' as const
-		};
-		const removed = await deleteInteraction(
+		const removed = await removeInteraction(
 			locals.services.story.interactionDeps,
-			author,
+			remover,
 			interactionId
 		);
-		// Gone meanwhile or another member's: said alike, so a foreign id reveals nothing. A 404
-		// is what a held remove reads as done (docs/02 §2.23).
+		// Gone meanwhile or not theirs to remove: said alike, so a foreign id reveals nothing. A
+		// 404 is what a held remove reads as done (docs/02 §2.23).
 		if (!removed) return fail(404, { interactionError: say(locals, 'errors.interaction.gone') });
 		throw redirect(303, `/contacts/${params.id}`);
 	},
@@ -88,21 +82,16 @@ export const storyActions = {
 	 * possible from here too — previously only the full journal page could.
 	 */
 	removeJournalEntry: async ({ request, params, locals }) => {
-		const viewer = requireViewer(locals);
+		const remover = requireRemover(locals);
 
 		const form = await request.formData();
 		const id = form.get('id');
 		if (typeof id !== 'string') return fail(400, {});
 
-		const contact = await getContact(locals.services.people.contactDeps, viewer, params.id);
+		const contact = await getContact(locals.services.people.contactDeps, remover, params.id);
 		if (!contact) throw error(404, say(locals, 'errors.contact.notFound'));
 
-		const author = {
-			userId: viewer.id,
-			householdId: viewer.householdId,
-			defaultVisibility: 'shared' as const
-		};
-		const removed = await deleteJournalEntry(locals.services.story.journalDeps, author, id);
+		const removed = await removeJournalEntry(locals.services.story.journalDeps, remover, id);
 		if (!removed) return fail(404, { interactionError: say(locals, 'errors.journal.gone') });
 		throw redirect(303, `/contacts/${params.id}`);
 	}

@@ -12,6 +12,8 @@
 	import { thumbnailUrl } from '$lib/media/urls';
 	import { isKept, type KeptOf, type KeptPhoto } from '$lib/pwa/outbox';
 	import { outbox } from '$lib/pwa/outbox.svelte';
+	import { useRemovals } from '$lib/undo/context.svelte';
+	import { removalKey } from '$lib/undo/keys';
 	import { reachability } from '$lib/pwa/reachability.svelte';
 	import { ulid } from 'ulid';
 	import type { CirclePageData, OpenPhotos } from './types';
@@ -44,8 +46,14 @@
 	// whose last photo went away falls back to *All*.
 	let chosen = $state<string | null | undefined>(undefined);
 	const active = $derived(view.chips.some((c) => c.key === chosen) ? chosen : undefined);
+	// A photo whose removal is held (docs/02 §2.23) is already gone from the grid.
+	const removals = useRemovals();
 	const shown = $derived(
-		active === undefined ? view.photos : view.photos.filter((p) => p.roleKey === active)
+		view.photos.filter(
+			(p) =>
+				(active === undefined || p.roleKey === active) &&
+				!removals.isPending(removalKey('circle-photo', p.id))
+		)
 	);
 
 	let open = $state(false);

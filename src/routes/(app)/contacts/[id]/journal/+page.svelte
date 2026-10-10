@@ -344,8 +344,8 @@
 										<Icon name="private" size={11} />{t('common.privateInline')}
 									</span>
 								{/if}
-								{#if entry.mine}
-									<div class="ml-auto flex items-center gap-2">
+								<div class="ml-auto flex items-center gap-2">
+									{#if entry.mine}
 										<button
 											type="button"
 											class="text-fg-subtle hover:text-fg"
@@ -355,6 +355,8 @@
 										>
 											<Icon name="write" size={15} />
 										</button>
+									{/if}
+									{#if entry.removable}
 										<form
 											method="POST"
 											action="?/delete"
@@ -369,8 +371,8 @@
 												<Icon name="remove" size={15} />
 											</button>
 										</form>
-									</div>
-								{/if}
+									{/if}
+								</div>
 							</div>
 							<!-- The entry and its editor glide into each other in place (docs/05 §5.11). -->
 							<Swap when={editingId === entry.id}>

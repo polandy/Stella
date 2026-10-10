@@ -11,7 +11,6 @@ import {
 	listCircleCovers,
 	pinCirclePhoto,
 	prepareCirclePhotoUpload,
-	removeCirclePhoto,
 	setCirclePhotoRole,
 	setCirclePhotoVisibility,
 	UnknownPhotoRoleError,
@@ -96,14 +95,11 @@ function deps(
 			rescoped.push(input);
 			return true;
 		},
-		async deleteOwn(input) {
-			const found = photos.find((p) => p.id === input.photoId && p.circleId === input.circleId);
-			if (!found || found.createdBy !== input.authorId) return null;
-			return {
-				filePath: `${input.photoId}.jpg`,
-				thumbPath: `${input.photoId}_thumb.jpg`,
-				viewPath: `${input.photoId}_view.jpg`
-			};
+		async findRemovable() {
+			throw new Error('removal is tested against the real adapter (remove-circle-photo.test.ts)');
+		},
+		async deleteRemovable() {
+			throw new Error('removal is tested against the real adapter (remove-circle-photo.test.ts)');
 		},
 		async listCoverCandidates() {
 			return photos;
@@ -420,20 +416,6 @@ describe('setCirclePhotoVisibility', () => {
 			})
 		).toBe(false);
 		expect(rescoped).toEqual([]);
-	});
-});
-
-describe('removeCirclePhoto', () => {
-	it('lets the uploader remove it, files included', async () => {
-		const { deps: d, deletedFiles } = deps();
-		expect(await removeCirclePhoto(d, viewer, { circleId: 'k1', photoId: 'p1' })).toBe(true);
-		expect(deletedFiles).toEqual(['p1.jpg', 'p1_thumb.jpg', 'p1_view.jpg']);
-	});
-
-	it('is the uploader’s alone', async () => {
-		const { deps: d, deletedFiles } = deps();
-		expect(await removeCirclePhoto(d, other, { circleId: 'k1', photoId: 'p1' })).toBe(false);
-		expect(deletedFiles).toEqual([]);
 	});
 });
 

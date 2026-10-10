@@ -3,7 +3,7 @@ import { Database } from 'bun:sqlite';
 import { eq } from 'drizzle-orm';
 import { drizzle, type BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
 import { migrate } from 'drizzle-orm/bun-sqlite/migrator';
-import type { Viewer } from '../access/visibility';
+import type { Remover, Viewer } from '../access/visibility';
 import type { PhotoFileReads, PhotoRepository, StoredPhoto } from '../domain/media/avatars';
 import type { FramingRepository, StoredFraming } from '../domain/media/framing';
 import { pinGalleryPhoto, type GalleryPhotoReads } from '../domain/media/gallery';
@@ -24,6 +24,8 @@ const U1 = 'user-1';
 const U2 = 'user-2';
 const viewerU1: Viewer = { id: U1, householdId: H };
 const viewerU2: Viewer = { id: U2, householdId: H };
+const removerU1: Remover = { ...viewerU1, isAdmin: false };
+const removerU2: Remover = { ...viewerU2, isAdmin: false };
 
 let db: BunSQLiteDatabase<typeof schema>;
 let repo: PhotoRepository;
@@ -188,8 +190,8 @@ describe('the gallery (docs/02 §2.14)', () => {
 	});
 
 	it('deletes only the author’s own photo and hands back its files', async () => {
-		expect(await repo.deleteOwnGalleryPhoto({ authorId: U2, photoId: 'g-shared' })).toBeNull();
-		expect(await repo.deleteOwnGalleryPhoto({ authorId: U1, photoId: 'g-shared' })).toEqual([
+		expect(await repo.deleteRemovableGalleryPhoto(removerU2, 'g-shared', null)).toBeNull();
+		expect(await repo.deleteRemovableGalleryPhoto(removerU1, 'g-shared', null)).toEqual([
 			{ filePath: 'p1.jpg', thumbPath: 'p1_thumb.jpg' }
 		]);
 		expect(
@@ -199,7 +201,7 @@ describe('the gallery (docs/02 §2.14)', () => {
 
 	it('takes the avatar off the contact when the photo it points at is deleted', async () => {
 		await repo.setContactAvatar('mara', 'g-shared');
-		await repo.deleteOwnGalleryPhoto({ authorId: U1, photoId: 'g-shared' });
+		await repo.deleteRemovableGalleryPhoto(removerU1, 'g-shared', null);
 		const row = db.select().from(schema.contact).where(eq(schema.contact.id, 'mara')).get();
 		expect(row?.avatarPhotoId).toBeNull();
 	});
@@ -287,7 +289,7 @@ describe('framings (docs/02 §2.14)', () => {
 		expect(await repo.updateOwnGalleryPhoto({ authorId: U1, photoId: 'f1', caption: 'x' })).toBe(
 			false
 		);
-		expect(await repo.deleteOwnGalleryPhoto({ authorId: U1, photoId: 'f1' })).toBeNull();
+		expect(await repo.deleteRemovableGalleryPhoto(removerU1, 'f1', null)).toBeNull();
 		// Positive control: the photo it frames is all of those things.
 		expect(await gallery.findVisibleGalleryPhoto(viewerU1, 'mara', 'g-shared')).toMatchObject({
 			id: 'g-shared'
@@ -303,7 +305,7 @@ describe('framings (docs/02 §2.14)', () => {
 
 	it('goes with its photo, files and avatar included', async () => {
 		await framings.replaceFraming(framing());
-		expect(await repo.deleteOwnGalleryPhoto({ authorId: U1, photoId: 'g-shared' })).toEqual([
+		expect(await repo.deleteRemovableGalleryPhoto(removerU1, 'g-shared', null)).toEqual([
 			{ filePath: 'p1.jpg', thumbPath: 'p1_thumb.jpg' },
 			{ filePath: 'f1.jpg', thumbPath: 'f1_thumb.jpg' }
 		]);

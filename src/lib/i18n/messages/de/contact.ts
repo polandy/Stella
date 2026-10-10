@@ -284,6 +284,8 @@ export const contact: ContactMessages = {
 	'contact.photos.caption': 'Bildunterschrift',
 	'contact.photos.share': 'Mit dem Haushalt teilen',
 	'contact.photos.makePrivate': 'Privat machen',
+	'contact.photos.removed': 'Foto entfernt',
+	'contact.photos.removedWorn': (p) => `Foto entfernt — auch das Bild von ${p.name}`,
 	'contact.photos.favourite': 'Favorit',
 	'contact.photos.takenOn': (p) => `Aufgenommen am ${p.date}`,
 	'contact.photos.pin': 'Als Favorit anheften',

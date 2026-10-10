@@ -1,6 +1,5 @@
 import { beforeEach, describe, expect, it } from 'bun:test';
 import { Database } from 'bun:sqlite';
-import { eq } from 'drizzle-orm';
 import { drizzle, type BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
 import { migrate } from 'drizzle-orm/bun-sqlite/migrator';
 import type { Viewer } from '../access/visibility';
@@ -120,7 +119,7 @@ describe('describe', () => {
 	});
 });
 
-describe('setOwnVisibility / deleteOwn', () => {
+describe('setOwnVisibility', () => {
 	it('lets only the uploader re-scope a photo', async () => {
 		await repo.insert(stored());
 		expect(
@@ -140,17 +139,6 @@ describe('setOwnVisibility / deleteOwn', () => {
 			})
 		).toBe(true);
 		expect(await repo.listVisible(u2, 'class')).toEqual([]);
-	});
-
-	it('lets only the uploader remove a photo, and hands back its files', async () => {
-		await repo.insert(stored());
-		expect(await repo.deleteOwn({ authorId: U2, circleId: 'class', photoId: 'p1' })).toBeNull();
-		expect(await repo.deleteOwn({ authorId: U1, circleId: 'class', photoId: 'p1' })).toEqual({
-			filePath: 'p1.jpg',
-			thumbPath: 'p1_thumb.jpg',
-			viewPath: 'p1_view.jpg'
-		});
-		expect(db.select().from(schema.photo).where(eq(schema.photo.id, 'p1')).all()).toEqual([]);
 	});
 });
 
@@ -189,7 +177,9 @@ describe('beside the person photos', () => {
 		expect(await photos.updateOwnGalleryPhoto({ authorId: U1, photoId: 'p1', caption: 'x' })).toBe(
 			false
 		);
-		expect(await photos.deleteOwnGalleryPhoto({ authorId: U1, photoId: 'p1' })).toBeNull();
+		expect(
+			await photos.deleteRemovableGalleryPhoto({ ...u1, isAdmin: true }, 'p1', null)
+		).toBeNull();
 		await photos.setGalleryPhotoPin('p1', 5);
 		const photo = await repo.findVisible(u1, 'class', 'p1');
 		expect([photo?.caption, photo?.pinnedAt]).toEqual([null, null]);

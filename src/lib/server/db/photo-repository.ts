@@ -1,10 +1,13 @@
 import { and, eq } from 'drizzle-orm';
 import type { BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
+import { authoredRemovableBy } from '../access/query-scoping';
+import type { Remover } from '../access/visibility';
+import { activityEntry, type ActivityOf } from '../domain/activity/activity';
 import type { DeletedPhotoFiles, PhotoRepository, StoredPhoto } from '../domain/media/avatars';
 import { keepCutLeftBehind } from './cut-turning';
 import { isGalleryPhoto } from './gallery-photo-scope';
 import type * as schema from './schema';
-import { contact, photo } from './schema';
+import { activityLog, contact, photo, user } from './schema';
 
 /*
  * Drizzle adapter for the PhotoRepository port (docs/08 §8.3): the photo record's writes. A
@@ -15,6 +18,9 @@ import { contact, photo } from './schema';
 export function createDrizzlePhotoRepository(
 	db: BunSQLiteDatabase<typeof schema>
 ): PhotoRepository {
+	const removableBy = (remover: Remover) =>
+		authoredRemovableBy(remover, { visibility: photo.visibility, createdBy: photo.createdBy });
+
 	return {
 		async insert(p: StoredPhoto) {
 			db.insert(photo)
@@ -86,33 +92,58 @@ export function createDrizzlePhotoRepository(
 			});
 		},
 
-		async deleteOwnGalleryPhoto(input: {
-			authorId: string;
-			photoId: string;
-		}): Promise<DeletedPhotoFiles[] | null> {
+		async findRemovableGalleryPhoto(remover: Remover, photoId: string) {
+			const row = db
+				.select({
+					id: photo.id,
+					contactId: photo.contactId,
+					person: contact.displayName,
+					personVisibility: contact.visibility,
+					authorId: photo.createdBy,
+					authorName: user.name
+				})
+				.from(photo)
+				.innerJoin(contact, eq(photo.contactId, contact.id))
+				.innerJoin(user, eq(photo.createdBy, user.id))
+				.where(and(eq(photo.id, photoId), isGalleryPhoto(), removableBy(remover)))
+				.get();
+			return row ?? null;
+		},
+
+		async deleteRemovableGalleryPhoto(
+			remover: Remover,
+			photoId: string,
+			audit: ActivityOf<'record.removed'> | null
+		): Promise<DeletedPhotoFiles[] | null> {
 			return db.transaction((tx) => {
+				// SQLite's DELETE takes no join, so the rule — which needs the contact — picks the id.
+				const removable = tx
+					.select({ id: photo.id })
+					.from(photo)
+					.innerJoin(contact, eq(photo.contactId, contact.id))
+					.where(and(eq(photo.id, photoId), isGalleryPhoto(), removableBy(remover)))
+					.get();
+				if (!removable) return null;
 				const removed = tx
 					.delete(photo)
-					.where(
-						and(eq(photo.id, input.photoId), eq(photo.createdBy, input.authorId), isGalleryPhoto())
-					)
+					.where(eq(photo.id, photoId))
 					.returning({ filePath: photo.filePath, thumbPath: photo.thumbPath })
 					.all();
-				if (removed.length === 0) return null;
 				const framings = tx
 					.delete(photo)
-					.where(eq(photo.framingOf, input.photoId))
+					.where(eq(photo.framingOf, photoId))
 					.returning({ id: photo.id, filePath: photo.filePath, thumbPath: photo.thumbPath })
 					.all();
 				// The avatar column carries no foreign key, so a contact would otherwise keep
 				// pointing at bytes that no longer exist — the photo's own, or its framing's.
-				const worn = [input.photoId, ...framings.map((f) => f.id)];
+				const worn = [photoId, ...framings.map((f) => f.id)];
 				for (const id of worn) {
 					tx.update(contact)
 						.set({ avatarPhotoId: null })
 						.where(eq(contact.avatarPhotoId, id))
 						.run();
 				}
+				if (audit) tx.insert(activityLog).values(activityEntry(audit)).run();
 				return [
 					...removed,
 					...framings.map(({ filePath, thumbPath }) => ({ filePath, thumbPath }))

@@ -14,6 +14,7 @@ import type { GraphModel } from '$lib/graph/model/types';
 import type { Gift } from '$lib/server/domain/gifts/gifts';
 import type { MentionedIn } from '$lib/server/domain/mentions/mentioned-in';
 import { renderMarkdownWithMentions } from '$lib/server/domain/notes/markdown';
+import type { GalleryPhoto } from '$lib/server/domain/media/avatars';
 import type { Note } from '$lib/server/domain/notes/notes';
 import {
 	canEditAuthored,
@@ -103,6 +104,21 @@ export function giftView(gift: Gift, ctx: PersonViewContext) {
 		notedBy: mine ? null : authorLabel(false, ctx.nameOfAuthor(gift.createdBy)),
 		/** When it was noted, shown on an idea; given and received gifts show their day. */
 		createdAt: gift.createdAt
+	};
+}
+
+/**
+ * A gallery photo as the page shows it: *Remove* is offered as the access layer allows
+ * (docs/03 §3.7) — its uploader, or an admin on a shared one — never one that would fail.
+ */
+export function galleryPhotoView(photo: GalleryPhoto, remover: Remover, person: ContactAccess) {
+	return {
+		...photo,
+		removable: canRemoveAuthored(remover, {
+			ownerId: photo.createdBy,
+			visibility: photo.visibility,
+			contact: person
+		})
 	};
 }
 

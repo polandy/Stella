@@ -9,6 +9,9 @@ export const REMOVAL_KINDS = [
 	'journal',
 	'interaction',
 	'note',
+	/* A photo of a person's gallery, or of a circle's. */
+	'photo',
+	'circle-photo',
 	'field',
 	'date',
 	'gift',

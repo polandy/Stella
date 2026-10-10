@@ -33,8 +33,8 @@ describe('journalRepositoryWith', () => {
 
 	it('fails loud on a method the test did not expect to be called', async () => {
 		const repo = journalRepositoryWith({});
-		await expect(repo.deleteOwn({ authorId: 'u', id: 'e1' })).rejects.toThrow(
-			'JournalRepository.deleteOwn was not expected in this test'
-		);
+		await expect(
+			repo.findRemovableBy({ id: 'u', householdId: 'h', isAdmin: false }, 'e1')
+		).rejects.toThrow('JournalRepository.findRemovableBy was not expected in this test');
 	});
 });

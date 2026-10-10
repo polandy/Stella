@@ -1,5 +1,5 @@
 import { error, json } from '@sveltejs/kit';
-import { requireViewer } from '$lib/server/auth/guards';
+import { requireRemover } from '$lib/server/auth/guards';
 import { getContact } from '$lib/server/domain/contacts/contacts';
 import { listContactNamesAmong } from '$lib/server/domain/contacts/contact-names';
 import { authorNames } from '$lib/server/domain/household/members';
@@ -27,7 +27,8 @@ import { say } from '$lib/server/i18n/say';
  */
 
 export const POST: RequestHandler = async ({ locals, params, request }) => {
-	const viewer = requireViewer(locals);
+	const remover = requireRemover(locals);
+	const viewer = remover;
 
 	const contact = await getContact(locals.services.people.contactDeps, viewer, params.id);
 	if (!contact) throw error(404, say(locals, 'errors.contact.notFound')); // never reveal existence
@@ -52,7 +53,12 @@ export const POST: RequestHandler = async ({ locals, params, request }) => {
 		authorNames(locals.services.household.memberDeps, viewer.householdId)
 	]);
 	const context = {
-		userId: viewer.id,
+		remover,
+		person: {
+			householdId: contact.householdId,
+			ownerId: contact.createdBy,
+			visibility: contact.visibility
+		},
 		photosByEntry: photosByEntry(photos),
 		nameOf: nameLookup(names),
 		nameOfAuthor

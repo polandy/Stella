@@ -1,3 +1,4 @@
+import { canRemoveAuthored, type ContactAccess, type Remover } from '$lib/server/access/visibility';
 import { extractMentionIds } from '$lib/mentions/mentions';
 import type { JournalEntry } from '$lib/server/domain/journal/journal';
 import type { JournalPhotoRef } from '$lib/server/domain/media/journal-photos';
@@ -11,7 +12,9 @@ import { authorLabel } from '$lib/story/author';
  */
 
 export interface JournalViewInput {
-	viewerId: string;
+	remover: Remover;
+	/** The person the journal is of; a private one is no place for an admin to remove from. */
+	person: ContactAccess;
 	entries: readonly JournalEntry[];
 	/** The visible photos on the contact, oldest first. */
 	photos: readonly JournalPhotoRef[];
@@ -23,12 +26,14 @@ export interface JournalViewInput {
 
 /** Each entry rendered for the page, with only what its reader may have. */
 export function journalEntriesFor({
-	viewerId,
+	remover,
+	person,
 	entries,
 	photos,
 	names,
 	nameOfAuthor
 }: JournalViewInput) {
+	const viewerId = remover.id;
 	// Group visible photo ids by their entry so each entry renders its own gallery.
 	const photosByEntry = new Map<string, string[]>();
 	for (const p of photos) {
@@ -57,6 +62,11 @@ export function journalEntriesFor({
 		),
 		visibility: e.visibility,
 		mine: e.createdBy === viewerId,
+		removable: canRemoveAuthored(remover, {
+			ownerId: e.createdBy,
+			visibility: e.visibility,
+			contact: person
+		}),
 		// Who wrote each entry, named the same way the story names it (docs/02 §2.23).
 		author: authorLabel(e.createdBy === viewerId, nameOfAuthor(e.createdBy)),
 		photos: photosByEntry.get(e.id) ?? [],

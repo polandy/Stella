@@ -328,6 +328,8 @@ export const contact = {
 	'contact.photos.caption': 'Caption',
 	'contact.photos.share': 'Share with the household',
 	'contact.photos.makePrivate': 'Make private',
+	'contact.photos.removed': 'Photo removed',
+	'contact.photos.removedWorn': (p: { name: string }) => `Photo removed — also ${p.name}’s picture`,
 	'contact.photos.favourite': 'Favourite',
 	'contact.photos.takenOn': (p: { date: string }) => `Taken ${p.date}`,
 	'contact.photos.pin': 'Pin as favourite',

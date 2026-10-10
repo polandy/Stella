@@ -1,7 +1,8 @@
 import { and, eq, isNotNull } from 'drizzle-orm';
 import type { BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
-import { circlePhotoVisibleTo } from '../access/query-scoping';
-import type { Viewer } from '../access/visibility';
+import { circlePhotoRemovableBy, circlePhotoVisibleTo } from '../access/query-scoping';
+import type { Remover, Viewer } from '../access/visibility';
+import { activityEntry, type ActivityOf } from '../domain/activity/activity';
 import type {
 	CirclePhoto,
 	CirclePhotoDescription,
@@ -10,7 +11,7 @@ import type {
 } from '../domain/circles/circle-photos';
 import { turnCutsOfGroupPhotos } from './cut-turning';
 import type * as schema from './schema';
-import { circle, photo, user } from './schema';
+import { activityLog, circle, photo, user } from './schema';
 
 /*
  * Drizzle adapter for the circle photo port (docs/02 §2.4.2, docs/08 §8.3). Every read joins the
@@ -23,6 +24,9 @@ export function createDrizzleCirclePhotoRepository(
 ): CirclePhotoRepository {
 	const visibleTo = (viewer: Viewer) =>
 		circlePhotoVisibleTo(viewer, { visibility: photo.visibility, createdBy: photo.createdBy });
+
+	const removableBy = (remover: Remover) =>
+		circlePhotoRemovableBy(remover, { visibility: photo.visibility, createdBy: photo.createdBy });
 
 	const select = () =>
 		db
@@ -104,21 +108,53 @@ export function createDrizzleCirclePhotoRepository(
 			});
 		},
 
-		async deleteOwn(input) {
+		async findRemovable(remover: Remover, ref: { circleId: string; photoId: string }) {
+			const row = db
+				.select({
+					id: photo.id,
+					person: circle.name,
+					personVisibility: circle.visibility,
+					authorId: photo.createdBy,
+					authorName: user.name
+				})
+				.from(photo)
+				.innerJoin(circle, eq(photo.circleId, circle.id))
+				.innerJoin(user, eq(photo.createdBy, user.id))
+				.where(
+					and(eq(photo.id, ref.photoId), eq(photo.circleId, ref.circleId), removableBy(remover))
+				)
+				.get();
+			return row ? { ...row, contactId: null } : null;
+		},
+
+		async deleteRemovable(
+			remover: Remover,
+			ref: { circleId: string; photoId: string },
+			audit: ActivityOf<'record.removed'> | null
+		) {
 			return db.transaction((tx) => {
-				const own = tx.select({ id: photo.id }).from(photo).where(ownPhoto(input)).get();
-				if (!own) return null;
+				// SQLite's DELETE takes no join, so the rule — which needs the circle — picks the id.
+				const removable = tx
+					.select({ id: photo.id })
+					.from(photo)
+					.innerJoin(circle, eq(photo.circleId, circle.id))
+					.where(
+						and(eq(photo.id, ref.photoId), eq(photo.circleId, ref.circleId), removableBy(remover))
+					)
+					.get();
+				if (!removable) return null;
 				// Nobody's face goes with the group photo: the cuts become their own first (§5.4).
-				turnCutsOfGroupPhotos(tx, [own.id], 'groupPhotoRemoved');
+				turnCutsOfGroupPhotos(tx, [removable.id], 'groupPhotoRemoved');
 				const removed = tx
 					.delete(photo)
-					.where(eq(photo.id, own.id))
+					.where(eq(photo.id, removable.id))
 					.returning({
 						filePath: photo.filePath,
 						thumbPath: photo.thumbPath,
 						viewPath: photo.viewPath
 					})
 					.all();
+				if (audit) tx.insert(activityLog).values(activityEntry(audit)).run();
 				return removed[0] ?? null;
 			});
 		},

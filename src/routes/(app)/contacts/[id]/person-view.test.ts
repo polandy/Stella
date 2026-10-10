@@ -4,10 +4,12 @@ import type { MentionedIn } from '$lib/server/domain/mentions/mentioned-in';
 import type { Gift } from '$lib/server/domain/gifts/gifts';
 import type { ContactAccess, Remover } from '$lib/server/access/visibility';
 import type { Note } from '$lib/server/domain/notes/notes';
+import { someGalleryPhoto } from '$lib/server/domain/testing';
 import {
 	birthdayOf,
 	declinedBy,
 	fieldView,
+	galleryPhotoView,
 	giftView,
 	circleNamesIn,
 	mentionedInView,
@@ -251,5 +253,24 @@ describe('names out of the visible graph', () => {
 	it("lists the circles' names in the order the database sorts them", () => {
 		// SQLite's default collation compares bytes, so an umlaut sorts after every ASCII letter.
 		expect(circleNamesIn(graph)).toEqual(['Chor', 'Schule', 'Ärzte']);
+	});
+});
+
+describe('galleryPhotoView', () => {
+	const person: ContactAccess = { householdId: 'h1', ownerId: VIEWER, visibility: 'shared' };
+	const member: Remover = { id: VIEWER, householdId: 'h1', isAdmin: false };
+	const admin: Remover = { id: 'user-9', householdId: 'h1', isAdmin: true };
+	const mine = someGalleryPhoto('p1', { createdBy: VIEWER });
+	const theirs = someGalleryPhoto('p2', { createdBy: 'user-2' });
+
+	it('offers Remove on the viewer’s own photo, and on a shared one to an admin only', () => {
+		expect(galleryPhotoView(mine, member, person).removable).toBe(true);
+		expect(galleryPhotoView(theirs, member, person).removable).toBe(false);
+		expect(galleryPhotoView(theirs, admin, person).removable).toBe(true);
+	});
+
+	it('never offers an admin Remove on another member’s private photo', () => {
+		const secret = someGalleryPhoto('p3', { createdBy: 'user-2', visibility: 'private' });
+		expect(galleryPhotoView(secret, admin, person).removable).toBe(false);
 	});
 });

@@ -89,6 +89,13 @@ export const home = {
 	'home.stream.nameEdited': 'edited the name of',
 	// A note someone else removed: the author reads "your note"; nothing of its text (§2.11).
 	'home.stream.removedYourNote': 'removed your note on',
+	'home.stream.removedYourEntry': 'removed your journal entry on',
+	'home.stream.removedEntryOf': (p: { author: string }) => `removed ${p.author}’s journal entry on`,
+	'home.stream.removedYourTouchpoint': 'removed your touchpoint with',
+	'home.stream.removedTouchpointOf': (p: { author: string }) =>
+		`removed ${p.author}’s touchpoint with`,
+	'home.stream.removedYourPhoto': 'removed your photo of',
+	'home.stream.removedPhotoOf': (p: { author: string }) => `removed ${p.author}’s photo of`,
 	'home.stream.removedNoteOf': (p: { author: string }) => `removed ${p.author}’s note on`,
 	'home.stream.linked': 'linked',
 	'home.stream.linkedAfter': '',

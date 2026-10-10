@@ -51,7 +51,8 @@ const PHOTO_REPOSITORY_METHODS: Record<keyof PhotoRepository, true> = {
 	setContactAvatar: true,
 	setGalleryPhotoPin: true,
 	updateOwnGalleryPhoto: true,
-	deleteOwnGalleryPhoto: true
+	findRemovableGalleryPhoto: true,
+	deleteRemovableGalleryPhoto: true
 };
 
 /**

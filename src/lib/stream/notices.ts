@@ -17,7 +17,13 @@ export const RENAME_ENTITY = 'contact_name';
  * The authored records a member other than the author may remove (docs/03 §3.7). A removal of
  * one is logged under its kind as entity type, with facts — never its text (docs/02 §2.11).
  */
-export const REMOVED_RECORD_KINDS = ['note'] as const;
+export const REMOVED_RECORD_KINDS = [
+	'note',
+	'journal_entry',
+	'interaction',
+	'photo',
+	'circle_photo'
+] as const;
 export type RemovedRecordKind = (typeof REMOVED_RECORD_KINDS)[number];
 
 /** A notice as the stream renders it. */

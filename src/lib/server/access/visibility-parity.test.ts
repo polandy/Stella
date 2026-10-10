@@ -19,6 +19,7 @@ import {
 	activityVisibleTo,
 	authoredEditableBy,
 	authoredRemovableBy,
+	circlePhotoRemovableBy,
 	childRecordVisibleTo,
 	circleColumnsVisibleTo,
 	circlePhotoVisibleTo,
@@ -30,6 +31,7 @@ import { REMOVERS, seedParityDb, U1, U2, U3, VIEWERS } from './visibility-parity
 import {
 	canEditAuthored,
 	canRemoveAuthored,
+	canRemoveCirclePhoto,
 	canViewActivity,
 	canViewChildRecord,
 	canViewCircle,
@@ -451,6 +453,76 @@ describe('canRemoveAuthored and authoredRemovableBy pick the same rows', () => {
 			});
 		}
 	}
+});
+
+/** The circle twin: `canRemoveCirclePhoto` and `circlePhotoRemovableBy` over a circle's gallery. */
+const circlePhotoRemovable = {
+	ts: (remover: Remover) => {
+		const circles = circlesById();
+		return ids(
+			db
+				.select()
+				.from(photo)
+				.all()
+				.filter((p) => p.circleId !== null)
+				.filter((p) =>
+					canRemoveCirclePhoto(remover, {
+						ownerId: p.createdBy,
+						visibility: p.visibility,
+						circle: parentOf(circles, String(p.circleId))
+					})
+				)
+		);
+	},
+	sql: (remover: Remover) =>
+		ids(
+			db
+				.select({ id: photo.id })
+				.from(photo)
+				.innerJoin(circle, eq(photo.circleId, circle.id))
+				.where(
+					circlePhotoRemovableBy(remover, {
+						visibility: photo.visibility,
+						createdBy: photo.createdBy
+					})
+				)
+				.all()
+		)
+};
+
+describe('canRemoveCirclePhoto and circlePhotoRemovableBy pick the same rows', () => {
+	for (const [name, remover] of Object.entries(REMOVERS)) {
+		it(`circle photo, remover ${name}`, () => {
+			expect(circlePhotoRemovable.sql(remover)).toEqual(circlePhotoRemovable.ts(remover));
+		});
+	}
+
+	it("an admin removes another member's shared photo, never a private one", () => {
+		for (const side of [
+			circlePhotoRemovable.ts(REMOVERS.u1Admin),
+			circlePhotoRemovable.sql(REMOVERS.u1Admin)
+		]) {
+			expect(side).toContain('kp-shared-u2');
+			expect(side).not.toContain('kp-priv-u2');
+		}
+	});
+
+	it("a member never removes someone else's, and an admin of another household neither", () => {
+		for (const side of [
+			circlePhotoRemovable.ts(REMOVERS.u2),
+			circlePhotoRemovable.sql(REMOVERS.u2)
+		]) {
+			expect(side).toContain('kp-priv-u2');
+			expect(side).not.toContain('kp-shared');
+		}
+		for (const side of [
+			circlePhotoRemovable.ts(REMOVERS.u3Admin),
+			circlePhotoRemovable.sql(REMOVERS.u3Admin)
+		]) {
+			expect(side).not.toContain('kp-shared-u2');
+			expect(side).toContain('kp-foreign');
+		}
+	});
 });
 
 /** [remover, the note it may not remove, a note it may, why]. */

@@ -880,17 +880,16 @@ entry outlives what it describes, so it is scoped by itself: within its househol
 viewer's own action (`canViewActivity` / `activityVisibleTo`). Admins gain no special
 access to `private` records.
 
-**Removing an authored record.** A **note** may be removed by its author, always, and by an
+**Removing an authored record.** A **note**, **journal entry**, **touchpoint**, **person photo** or **circle photo** may be removed by its author, always, and by an
 admin of the household when it is `shared` — and either must see it first, so an admin gains
-nothing on a private note (`canRemoveAuthored` / `authoredRemovableBy`, held to the same rows
+nothing on a private one (`canRemoveAuthored` / `authoredRemovableBy`, and `canRemoveCirclePhoto` / `circlePhotoRemovableBy` with the circle in the contact's place, held to the same rows
 by the parity test). The remover is a viewer plus `isAdmin`, which the route reads from the
 signed-in user's `role` (`requireRemover`); it is the only rule here that looks at the role.
 The delete is scoped by the SQL condition itself, so the right is checked when the removal
 reaches the server, not when *Remove* was pressed. **Editing** a note is the author's alone, and
 only while they still see it (`canEditAuthored` / `authoredEditableBy`, held to the same rows by
-the same parity test): an admin removes, never edits. Journal
-entries, touchpoints and photos keep their author-only removal for now (docs/06 M3,
-*Who may remove what*); household facts — dates, fields, relationships,
+the same parity test): an admin removes, never edits. A removal
+by someone other than the author is logged as `record.removed`, in the delete's transaction (`activity_log`). Household facts — dates, fields, relationships,
 memberships, gifts, tags — stay open to anyone who sees them.
 
 These rules are enforced centrally in the data-access layer (see

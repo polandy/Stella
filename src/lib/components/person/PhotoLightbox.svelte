@@ -152,7 +152,12 @@
 						framing={entry.photo.framing}
 					/>
 				{/key}
-				<GalleryPhotoActions photo={entry.photo} viewerId={data.viewerId} />
+				<GalleryPhotoActions
+					photo={entry.photo}
+					viewerId={data.viewerId}
+					name={c.displayName}
+					{onclose}
+				/>
 			{:else}
 				{#key entry.photo.id}
 					<UseImmichPhoto

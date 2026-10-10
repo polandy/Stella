@@ -1,12 +1,12 @@
 import { error, fail, redirect } from '@sveltejs/kit';
-import { requireViewer } from '$lib/server/auth/guards';
+import { requireRemover, requireViewer } from '$lib/server/auth/guards';
 import * as v from 'valibot';
 import { getContact } from '$lib/server/domain/contacts/contacts';
 import { listContactNamesAmong } from '$lib/server/domain/contacts/contact-names';
 import { listContacts } from '$lib/server/domain/contacts/directory';
 import { authorNames } from '$lib/server/domain/household/members';
 import {
-	deleteJournalEntry,
+	removeJournalEntry,
 	editJournalEntry,
 	listJournalForContact,
 	setJournalMentions
@@ -30,6 +30,8 @@ import { journalEntriesFor } from './journal-view';
 
 export const load: PageServerLoad = async ({ locals, params }) => {
 	const viewer = requireViewer(locals);
+	// Whether *Remove* shows on someone else's entry turns on the role (docs/03 §3.7).
+	const remover = requireRemover(locals);
 
 	const contact = await getContact(locals.services.people.contactDeps, viewer, params.id);
 	if (!contact) throw error(404, say(locals, 'errors.contact.notFound')); // never reveal existence
@@ -55,7 +57,12 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 		},
 		today: todayFor(systemClock),
 		entries: journalEntriesFor({
-			viewerId: viewer.id,
+			remover,
+			person: {
+				householdId: contact.householdId,
+				ownerId: contact.createdBy,
+				visibility: contact.visibility
+			},
 			entries,
 			photos: journalPhotos,
 			names: contactNames,
@@ -186,7 +193,7 @@ export const actions: Actions = {
 	},
 
 	delete: async ({ request, params, locals }) => {
-		const viewer = requireViewer(locals);
+		const remover = requireRemover(locals);
 
 		const form = await request.formData();
 		const id = form.get('id');
@@ -194,12 +201,8 @@ export const actions: Actions = {
 			return fail(400, { journalError: say(locals, 'errors.form.checkAndRetry') });
 		}
 
-		const deleted = await deleteJournalEntry(
-			locals.services.story.journalDeps,
-			{ userId: viewer.id, householdId: viewer.householdId, defaultVisibility: 'shared' },
-			id
-		);
-		// Gone meanwhile or another member's: said alike, so a foreign id reveals nothing.
+		const deleted = await removeJournalEntry(locals.services.story.journalDeps, remover, id);
+		// Gone meanwhile or not theirs to remove: said alike, so a foreign id reveals nothing.
 		if (!deleted) return fail(404, { journalError: say(locals, 'errors.journal.gone') });
 		throw redirect(303, `/contacts/${params.id}/journal`);
 	}

@@ -1,9 +1,9 @@
 # Concept — Who may remove what
 
-Status: **concept, slices 1–2 built** — decided with the maintainer on 2026-10-10 (§3, §5).
-Slices 1 (the rule, and removing a note) and 2 (editing a note) are built: their rules now live
-in docs/02 §2.5, §2.10, §2.11, §2.23 and docs/03 §3.7 and `activity_log`, and are not repeated
-here. Slices 3–4 are still to build.
+Status: **concept, slices 1–3 built** — decided with the maintainer on 2026-10-10 (§3, §5).
+Slices 1 (the rule, and removing a note), 2 (editing a note) and 3 (removing the other authored
+kinds) are built: their rules now live in docs/02 §2.5, §2.6, §2.10, §2.11, §2.14, §2.20, §2.23
+and docs/03 §3.7 and `activity_log`, and are not repeated here. Slice 4 is still to build.
 Roadmap: docs/06 M3, *Who may remove what*. When a slice is built, its rule moves into the
 feature docs (docs/02, docs/03 §3.7) and this file shrinks; once all slices are built it is
 folded in and deleted.
@@ -30,10 +30,10 @@ no role, so `access/` cannot express it. Only routes know about admins
 | Kind | Edit | Remove | Evidence |
 |---|---|---|---|
 | **Note** | author (title and body) — **built, slice 2** | author; admin when shared — **built, slice 1** | `domain/notes/remove-note.ts` → `db/note-repository.ts` (`deleteRemovableBy`) |
-| **Moment / journal entry** | author (title and body) | author | `domain/journal/journal.ts:203,271` → `db/journal-repository.ts:82,152` (`updateOwn`, `deleteOwn`) |
-| **Touchpoint** (interaction) | nobody | author | `domain/interactions/interactions.ts:170` → `db/interaction-repository.ts:166` (`deleteOwn`) |
-| **Person photo** (gallery) | caption, visibility: author | author | `domain/media/gallery.ts:79,95,108` → `db/photo-repository.ts:59,89` |
-| **Circle photo** | caption, role, pin: anyone who sees it; visibility: author | author | `domain/circles/circle-photos.ts:258,306,318` |
+| **Moment / journal entry** | author (title and body) | author; admin when shared — **built, slice 3** | `domain/journal/journal.ts` → `db/journal-repository.ts` (`updateOwn`, `deleteRemovableBy`) |
+| **Touchpoint** (interaction) | nobody | author; admin when shared — **built, slice 3** | `domain/interactions/interactions.ts` → `db/interaction-repository.ts` (`deleteRemovableBy`) |
+| **Person photo** (gallery) | caption, visibility: author | author; admin when shared — **built, slice 3** | `domain/media/gallery.ts` → `db/photo-repository.ts` (`removableBy`) |
+| **Circle photo** | caption, role, pin: anyone who sees it; visibility: author | author; admin when shared — **built, slice 3** | `domain/circles/circle-photos.ts` (`deleteRemovable`) |
 | **Gift** | anyone who sees it; visibility: author | anyone who sees it | `domain/gifts/gifts.ts:227,261` |
 | **Important date** (and its reminder) | — | anyone who sees the person | `routes/(app)/contacts/[id]/actions/dates.ts:63` |
 | **Contact field** | anyone who sees the person | anyone who sees the person | `routes/(app)/contacts/[id]/actions/fields.ts:78,96` |
@@ -67,7 +67,7 @@ important date (docs/02 §2.13).
   activity entry (`contact.deleted`).
 - **Undo** (docs/02 §2.23): journal entries, touchpoints, dates, fields, gifts, tags,
   memberships and relationships go through the held 8-second window (`lib/undo/keys.ts:8`);
-  notes too since slice 1. Photos are removed at once, with no undo and no confirmation.
+  notes since slice 1 and photos since slice 3 (they went at once before).
 - **Activity log** (docs/03 §activity_log): only deletions of a person, merges, renames,
   last-name batches, Immich links and exports write a row. Removing a child record leaves no
   trace.
@@ -179,20 +179,11 @@ languages (`en` and `de`) and its docs, and goes through the delivery loop (owne
 then e2e on the branch).
 
 1. **The rule, and removing a note.** — *built.* `record.removed` is an `ActivityEvent` with
-   `recordKind` (only `note` so far, `REMOVED_RECORD_KINDS` in `lib/stream/notices.ts`);
-   slice 3 adds its kinds there and to the line.
+   `recordKind` (`REMOVED_RECORD_KINDS` in `lib/stream/notices.ts`).
 2. **Editing a note.** — *built;* see docs/02 §2.5, *Editing*.
-3. **The other authored kinds.**
-   - Journal entries and moments, touchpoints, person photos and circle photos move from
-     `deleteOwn` to the shared rule.
-   - Admins see *Remove* on other members' shared items: in Activity, on the journal page, in
-     both galleries — wherever the author's *Remove* already shows.
-   - Photos get the held 8-second removal too: today they go at once, with no undo and no
-     confirmation (`GalleryPhotoActions.svelte:54`). A worn person photo says so in the toast
-     (§3.8).
-   - Each removal by someone other than the author writes `record.removed`.
-   - Docs: docs/02 §2.6, §2.14, §2.20, §2.22, §2.23; docs/03 §3.7. docs/02 §2.14 says photo
-     removal follows "the same rule notes follow". It does not today; the slice corrects it.
+3. **The other authored kinds.** — *built.* `REMOVED_RECORD_KINDS` holds all five kinds;
+   journal entries, touchpoints, person and circle photos remove by the shared rule
+   (circle photos through `canRemoveCirclePhoto`), photos through the held window.
 4. **Editing a touchpoint.**
    - `editInteraction(deps, author, input)`: author only, for day, kind, text and the
      people who took part. Visibility stays out of the editor, as with a journal entry

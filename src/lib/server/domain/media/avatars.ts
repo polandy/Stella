@@ -1,7 +1,9 @@
 import type { CropRect } from '../../../media/crop';
 import { TranslatableError } from '../../../i18n/translatable';
 import { phrase, type Phrase } from '../../../i18n/phrase';
-import type { Viewer } from '../../access/visibility';
+import type { Remover, Viewer } from '../../access/visibility';
+import type { ActivityOf } from '../activity/activity';
+import type { RemovableRecord } from '../activity/removal';
 import type { Clock } from '../../clock';
 import type { IdGenerator } from '../../id';
 import { isPlausibleTakenAt, isTakenAt } from '../../../media/taken-at';
@@ -198,15 +200,20 @@ export interface PhotoRepository {
 		caption?: string | null;
 		visibility?: 'shared' | 'private';
 	}): Promise<boolean>;
+	/** The gallery photo, when the remover may remove it (`authoredRemovableBy`); else null. */
+	findRemovableGalleryPhoto(remover: Remover, photoId: string): Promise<RemovableRecord | null>;
 	/**
-	 * Remove a gallery photo the author uploaded, with its framing, and return their files.
-	 * Clearing the avatar that pointed at either happens in the same transaction, so a deleted
-	 * photo can never leave a contact wearing a face that no longer exists.
+	 * Remove a gallery photo the remover may — checked again here, at the moment of removal —
+	 * with its framing, and return their files; null when it was not theirs to remove. Clearing
+	 * the avatar that pointed at either, and writing `audit` if there is one, happen in the same
+	 * transaction, so a deleted photo can never leave a contact wearing a face that no longer
+	 * exists.
 	 */
-	deleteOwnGalleryPhoto(input: {
-		authorId: string;
-		photoId: string;
-	}): Promise<DeletedPhotoFiles[] | null>;
+	deleteRemovableGalleryPhoto(
+		remover: Remover,
+		photoId: string,
+		audit: ActivityOf<'record.removed'> | null
+	): Promise<DeletedPhotoFiles[] | null>;
 }
 
 /** Which stored file `/media/[id]` serves (docs/04 §4.6): a read model of its own. */

@@ -147,6 +147,21 @@ export function circlePhotoColumnsVisibleTo(
 }
 
 /**
+ * The SQL of `canRemoveCirclePhoto`: visible, and the remover's own or, for an admin, shared.
+ * The query must join `circle`.
+ */
+export function circlePhotoRemovableBy(
+	remover: Remover,
+	record: { visibility: AnyColumn; createdBy: AnyColumn }
+): SQL {
+	const own = eq(record.createdBy, remover.id);
+	return and(
+		circlePhotoVisibleTo(remover, record),
+		remover.isAdmin ? or(own, eq(record.visibility, 'shared')) : own
+	)!;
+}
+
+/**
  * Condition for an `activity_log` entry being visible: same household, and either shared or
  * the viewer's own action. The entry is scoped by itself — what it describes may be gone.
  */

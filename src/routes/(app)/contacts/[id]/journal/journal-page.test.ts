@@ -125,8 +125,19 @@ function journalOver(
 			return own;
 		},
 		replaceMentions: async (id, ids) => void mentioned.push([id, ids]),
-		deleteOwn: async ({ authorId, id }) =>
-			entries.some((e) => e.id === id && e.createdBy === authorId)
+		findRemovableBy: async (remover, id) =>
+			entries.some((e) => e.id === id && e.createdBy === remover.id)
+				? {
+						id,
+						contactId: 'c1',
+						person: 'Mara',
+						personVisibility: 'shared',
+						authorId: remover.id,
+						authorName: 'Ana'
+					}
+				: null,
+		deleteRemovableBy: async (remover, id) =>
+			entries.some((e) => e.id === id && e.createdBy === remover.id)
 				? [{ filePath: `${id}.webp`, thumbPath: `${id}-thumb.webp` }]
 				: null,
 		...writes
