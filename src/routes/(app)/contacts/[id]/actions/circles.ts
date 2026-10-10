@@ -60,7 +60,9 @@ export const circleActions = {
 			circleId: form.get('circleId'),
 			role: form.get('role') ?? ''
 		});
-		if (!parsed.success) return fail(400, {});
+		if (!parsed.success) {
+			return fail(400, { circleError: say(locals, 'errors.form.checkAndRetry') });
+		}
 
 		// Only a member the viewer can see in that circle is re-roled; anyone else is left out.
 		await setMembersRole(
@@ -81,7 +83,9 @@ export const circleActions = {
 
 		const form = await request.formData();
 		const circleId = form.get('circleId');
-		if (typeof circleId !== 'string') return fail(400, {});
+		if (typeof circleId !== 'string') {
+			return fail(400, { circleError: say(locals, 'errors.form.checkAndRetry') });
+		}
 
 		// Only a membership the viewer can see is ended; a circle they cannot see is left alone,
 		// as re-roling leaves it (§3.7).

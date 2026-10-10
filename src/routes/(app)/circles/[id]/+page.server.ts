@@ -78,7 +78,9 @@ export const actions: Actions = {
 		if (!pick) return fail(400, { error: say(locals, 'errors.circle.choosePerson') });
 
 		// Every chosen person must be visible to the actor — one that is not fails the whole
-		// pick rather than being dropped silently from it (§3.7).
+		// pick rather than being dropped silently from it (§3.7). Visible, not browsable: the
+		// picker leaves archived people out, but archiving tidies the lists, it does not hide
+		// (docs/02 §2.2), so someone archived while the pick was made still joins.
 		const chosen = new Set(pick.contactIds);
 		const visible = await listContactNamesAmong(locals.services.people.contactNameDeps, viewer, [
 			...chosen
@@ -127,7 +129,10 @@ export const actions: Actions = {
 		const form = await request.formData();
 		const from = form.get('from');
 		const to = form.get('role');
-		if (typeof from !== 'string' || typeof to !== 'string') return fail(400, {});
+		// The page always posts both; a form without them was not made by it.
+		if (typeof from !== 'string' || typeof to !== 'string') {
+			return fail(400, { error: say(locals, 'errors.form.checkAndRetry') });
+		}
 
 		try {
 			await renameCircleRole(locals.services.circles.renameRoleDeps, viewer, {
@@ -153,7 +158,9 @@ export const actions: Actions = {
 
 		const form = await request.formData();
 		const contactId = form.get('contactId');
-		if (typeof contactId !== 'string') return fail(400, {});
+		if (typeof contactId !== 'string') {
+			return fail(400, { error: say(locals, 'errors.form.checkAndRetry') });
+		}
 
 		// Only a member the viewer can see in this circle is taken out (§3.7).
 		const removed = await removeMember(
