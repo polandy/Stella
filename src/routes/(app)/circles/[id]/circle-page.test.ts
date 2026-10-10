@@ -94,6 +94,8 @@ interface Household {
 	circle?: boolean;
 	/** Whom the viewer can see in the household, members or not. */
 	people?: string[];
+	/** Of those, whom the household has archived: seen, but out of the lists it browses. */
+	archived?: string[];
 	renameRole?: (change: RoleRename) => Promise<void>;
 }
 
@@ -101,6 +103,7 @@ interface Household {
 function household({
 	circle = true,
 	people = ['anna', 'ben', 'cleo', 'dora', 'emil'],
+	archived = [],
 	renameRole
 }: Household = {}) {
 	const added: NewMembership[] = [];
@@ -138,9 +141,10 @@ function household({
 				contactNames: {
 					listNamesAmongVisibleTo: async (_viewer, ids) =>
 						ids.filter((id) => people.includes(id)).map((id) => ({ id, displayName: id })),
-					listBrowsableNamesAmong: async () => {
-						throw new Error('not expected in this test');
-					}
+					listBrowsableNamesAmong: async (_viewer, ids) =>
+						ids
+							.filter((id) => people.includes(id) && !archived.includes(id))
+							.map((id) => ({ id, displayName: id }))
 				}
 			},
 			surnameReviewDeps: {
@@ -228,6 +232,12 @@ describe('addMembers', () => {
 		);
 		expect(added).toEqual([]);
 	});
+
+	it('adds someone archived as well: archiving tidies the lists, it does not hide', async () => {
+		const { services, added } = household({ archived: ['emil'] });
+		expect(await post(actions.addMembers, services, formOf({ contactId: 'emil' }))).toEqual(BACK);
+		expect(added.map((m) => m.contactId)).toEqual(['emil']);
+	});
 });
 
 describe('setRole', () => {
@@ -272,14 +282,17 @@ describe('renameRole', () => {
 		]);
 	});
 
-	it('answers 400 without a sentence when the form lacks the role or its new name', async () => {
+	it('asks to check the form when it lacks the role or its new name, in the reader’s words', async () => {
 		const { services, renamed } = household();
-		for (const form of [formOf({ role: 'Mezzo' }), formOf({ from: 'Alto' })]) {
-			expect(await post(actions.renameRole, services, form)).toEqual({
-				kind: 'fail',
-				status: 400,
-				data: {}
-			});
+		for (const [locale, t] of [
+			['en', en],
+			['de', de]
+		] as const) {
+			for (const form of [formOf({ role: 'Mezzo' }), formOf({ from: 'Alto' })]) {
+				expect(await post(actions.renameRole, services, form, locale)).toEqual(
+					refused(400, t('errors.form.checkAndRetry'))
+				);
+			}
 		}
 		expect(renamed).toEqual([]);
 	});
@@ -319,13 +332,16 @@ describe('removeMember', () => {
 		expect(removed).toEqual(['cleo']);
 	});
 
-	it('answers 400 without a sentence when the form names nobody', async () => {
+	it('asks to check the form when it names nobody, in the reader’s words', async () => {
 		const { services, removed } = household();
-		expect(await post(actions.removeMember, services, formOf({}))).toEqual({
-			kind: 'fail',
-			status: 400,
-			data: {}
-		});
+		for (const [locale, t] of [
+			['en', en],
+			['de', de]
+		] as const) {
+			expect(await post(actions.removeMember, services, formOf({}), locale)).toEqual(
+				refused(400, t('errors.form.checkAndRetry'))
+			);
+		}
 		expect(removed).toEqual([]);
 	});
 
