@@ -112,7 +112,16 @@ export const load = (async ({ locals, params, url }) => {
 		nameOfAuthor: read.nameOfAuthor
 	};
 	const t = translator(locals);
-	const storyContext = { ...ctx, userId: viewer.id, photosByEntry: photosByEntry(journalPhotos) };
+	const storyContext = {
+		...ctx,
+		remover,
+		person: {
+			householdId: contact.householdId,
+			ownerId: contact.createdBy,
+			visibility: contact.visibility
+		},
+		photosByEntry: photosByEntry(journalPhotos)
+	};
 
 	return {
 		// Who they are.

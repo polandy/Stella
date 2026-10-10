@@ -30,6 +30,8 @@ import { journalEntriesFor } from './journal-view';
 
 export const load: PageServerLoad = async ({ locals, params }) => {
 	const viewer = requireViewer(locals);
+	// Whether *Remove* shows on someone else's entry turns on the role (docs/03 §3.7).
+	const remover = requireRemover(locals);
 
 	const contact = await getContact(locals.services.people.contactDeps, viewer, params.id);
 	if (!contact) throw error(404, say(locals, 'errors.contact.notFound')); // never reveal existence
@@ -55,7 +57,12 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 		},
 		today: todayFor(systemClock),
 		entries: journalEntriesFor({
-			viewerId: viewer.id,
+			remover,
+			person: {
+				householdId: contact.householdId,
+				ownerId: contact.createdBy,
+				visibility: contact.visibility
+			},
 			entries,
 			photos: journalPhotos,
 			names: contactNames,

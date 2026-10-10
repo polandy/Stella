@@ -149,7 +149,7 @@
 									</span>
 								{/if}
 								<!-- A gift is changed and removed on the Gifts card, where it lives. -->
-								{#if item.mine && item.kind !== 'gift'}
+								{#if item.removable}
 									<form
 										method="POST"
 										action={removeAction(item)}

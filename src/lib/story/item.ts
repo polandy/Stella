@@ -13,8 +13,10 @@ interface StoryItemBase {
 	day: string;
 	recordedAt: number;
 	visibility: 'shared' | 'private';
-	/** Whether the viewer wrote it — only then is removing it offered. */
+	/** Whether the viewer wrote it. */
 	mine: boolean;
+	/** Whether *Remove* is offered: the author, or an admin on a shared item (docs/03 §3.7). */
+	removable: boolean;
 	/** Who wrote it: "you", a member's first name, or null when nobody can be named. */
 	author: string | null;
 }
