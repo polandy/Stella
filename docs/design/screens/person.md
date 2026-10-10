@@ -296,6 +296,10 @@ the person, and that never leaves the page. Keeping the record tidy (archive, me
   note glides into its editor in place (`Swap`) — an optional title and the body with the
   @-picker, narrowed by the note's audience; visibility and pin stay out — and *Save* closes it
   with *Saved*. One note is open at a time. Online only. Removing follows the undo window of docs/02 §2.23.
+- A gallery photo's *Remove* in the lightbox is a `RemoveButton` (kind `photo`), last in the row,
+  shown to its author and to an admin on a shared photo (`canRemoveAuthored`); the photo leaves
+  the grid and the lightbox closes while *Undo* is on offer, and the toast names the picture
+  when the person wears it. Caption and scope stay the author's.
 - **Photos** (docs/02 §2.14, §2.24.3) is the page's third priority, after the person and their
   people. Its header holds the title, a segmented control — *All · Stella 5 · Immich 1,764*,
   the Immich segment only for a linked person once Immich has answered — then *+ Add* and the

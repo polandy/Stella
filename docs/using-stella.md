@@ -341,9 +341,11 @@ said when. From there you can give it a
 caption, make it the person's photo, switch it between shared and private, or remove it.
 *Use as photo* first lets you choose the part that shows, as below; the photo stays one photo in
 the gallery, and choosing again — *Change framing* on the one they wear — starts from the part
-you chose last time. Only whoever added a photo can caption or remove it, but anyone who can
-see it can make it the person's photo. Removing one deletes the file for good and, if the person was wearing it, they
-go back to their initials. *Pin as favourite* moves a photo to the front of the grid, with a
+you chose last time. Only whoever added a photo can caption it, but anyone who can
+see it can make it the person's photo. Removing is for whoever added it, or the household's
+admin when it is shared: the photo disappears at once and *Undo* is on offer for eight
+seconds (it says so if the person wears it: *Photo removed — also Kurt's picture*). After that
+the file is gone for good and, if the person was wearing it, they go back to their initials. *Pin as favourite* moves a photo to the front of the grid, with a
 star on it; the one you pinned last comes first, and *Unpin favourite* puts it back in date
 order. Favourites are the household's, so everyone sees the same ones in front, and anyone who
 can see a photo can pin or unpin it. Escape closes the view, and the arrows beside *3 of 12* —
@@ -525,7 +527,9 @@ The most recent of these shows up under the person's name as **Last contact**, s
 to "when did we last speak?" is right there without scrolling. Logged interactions also appear
 on Home, so the rest of the household sees that you were in touch. As everywhere in Stella,
 an interaction marked *private* stays yours alone, and only the person who logged one — or
-wrote it — can remove it from Activity. Each item says who wrote it, so in a household of
+wrote it — can remove it from Activity; so can the household's admin, when it is shared (the
+item then has a cross for them, and the household sees *Andy removed Nina's moment on Kurt*
+in *What's new* — never its text). Nobody can touch someone else's private item. Each item says who wrote it, so in a household of
 several people you can see at a glance that Nina logged the call and you wrote the moment.
 Removing asks no "are you sure?": the item disappears
 and a small **Undo** appears at the bottom of the screen for a few seconds, in case it was
@@ -753,7 +757,7 @@ people, so *Student* reads as the class photo and then the children in it. When 
 several, the one you pinned last leads, otherwise the newest. Tap the cover or a banner to
 look through that role's photos; the chips above the grid (*All*, *No role*, each role) show
 one group at a time. In the open photo anyone who can see it can caption it, change its role
-or pin it as a favourite; making it private and removing it are for whoever added it. A photo
+or pin it as a favourite; making it private is for whoever added it, and removing it for them or the household's admin (with *Undo* for eight seconds). A photo
 whose role nobody in the circle has any more keeps that role and stays in the grid; its banner
 comes back with the role.
 

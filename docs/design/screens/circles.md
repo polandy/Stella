@@ -44,7 +44,9 @@ its photos, and lets the household manage members in bulk.
   them?* as pill radios, and the submit naming how many photos it adds.
 - The lightbox is the person gallery's dialog (§5.9), with a step back and forward for touch,
   the role as a select, *Use as profile picture for …*, and the uploader's actions below a
-  dashed rule.
+  dashed rule. *Remove* is a `RemoveButton` (kind `circle-photo`): the uploader has it, and an
+  admin on a shared photo — who then sees only *Remove* in that area. The photo leaves the grid
+  and the lightbox closes while *Undo* is on offer.
 - On a photo people wear, *Make private* and *Remove* first turn that area into a short warning
   — how many people wear it, and that they keep it — with the confirming button and *Cancel*.
 - *Use as profile picture for …* opens a dialog: a search field; the members of the photo's
