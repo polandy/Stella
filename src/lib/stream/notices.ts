@@ -12,6 +12,8 @@ import * as v from 'valibot';
 export const LAST_NAMES_ENTITY = 'last_name';
 /** A name edited on the profile (docs/02 §2.2). */
 export const RENAME_ENTITY = 'contact_name';
+/** A member removed from the household (docs/02 §2.1). */
+export const MEMBER_ENTITY = 'member';
 
 /**
  * The authored records a member other than the author may remove (docs/03 §3.7). A removal of
@@ -31,6 +33,8 @@ export type NoticeContent =
 	| { kind: 'text'; text: string }
 	| { kind: 'lastNames'; lastName: string; count: number }
 	| { kind: 'rename'; from: string; to: string; contactId: string | null }
+	/** A member an admin removed: their name, which they still go by on what they wrote. */
+	| { kind: 'memberRemoved'; name: string }
 	| {
 			kind: 'removed';
 			recordKind: RemovedRecordKind;
@@ -45,6 +49,7 @@ export type NoticeContent =
 const LastNamesFacts = v.object({ lastName: v.string(), count: v.number() });
 const RenameFacts = v.object({ from: v.string(), to: v.string() });
 const RemovalFacts = v.object({ person: v.string(), authorId: v.string(), authorName: v.string() });
+const MemberFacts = v.object({ name: v.string() });
 
 /** The facts of a last-names batch, as stored. */
 export const lastNamesFacts = (lastName: string, count: number): string =>
@@ -56,6 +61,9 @@ export const renameFacts = (from: string, to: string): string => JSON.stringify(
 /** The facts of a record removed by someone other than its author, as stored. */
 export const removalFacts = (person: string, authorId: string, authorName: string): string =>
 	JSON.stringify({ person, authorId, authorName });
+
+/** The facts of a member removed from the household, as stored. */
+export const memberFacts = (name: string): string => JSON.stringify({ name });
 
 const isRemovedRecordKind = (entityType: string): entityType is RemovedRecordKind =>
 	(REMOVED_RECORD_KINDS as readonly string[]).includes(entityType);
@@ -102,6 +110,10 @@ export function noticeContentOf(row: {
 		const facts = parsed(RemovalFacts, row.summary);
 		if (facts)
 			return { kind: 'removed', recordKind: row.entityType, ...facts, contactId: row.contactId };
+	}
+	if (row.entityType === MEMBER_ENTITY) {
+		const facts = parsed(MemberFacts, row.summary);
+		if (facts) return { kind: 'memberRemoved', ...facts };
 	}
 	return { kind: 'text', text: row.summary };
 }

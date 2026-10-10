@@ -22,6 +22,36 @@ export const settings: SettingsMessages = {
 		'Noch ist niemand in Stella, also gibt es niemanden zum Auswählen. Füge dich selbst hinzu, dann bist du sofort verknüpft.',
 	'settings.self.notListed': 'Noch nicht in der Liste?',
 	'settings.self.addYourself': 'Dich selbst hinzufügen',
+	'settings.household.heading': 'Haushalt',
+	'settings.members.title': 'Mitglieder',
+	'settings.members.blurb': 'Wer sich bei Stella anmeldet, und wie',
+	'settings.members.intro': 'Alle, die sich bei Stella anmelden, und wie.',
+	'settings.members.adminOnly': 'Nur die Haushalts-Administration kann jemanden entfernen.',
+	'settings.members.you': 'Du',
+	'settings.members.admin': 'Admin',
+	'settings.members.signIn.password': 'Passwort',
+	'settings.members.signIn.sso': 'Single Sign-on',
+	'settings.members.signIn.both': 'Passwort und Single Sign-on',
+	'settings.members.remove': 'Entfernen…',
+	'settings.members.removeLabel': (p) => `${p.name} entfernen…`,
+	'settings.members.confirm.heading': (p) => `${p.name} aus dem Haushalt entfernen?`,
+	'settings.members.confirm.signOut': (p) =>
+		`${p.name} kann sich nicht mehr anmelden. Jedes Gerät, auf dem ${p.name} angemeldet ist, wird jetzt abgemeldet, und die API-Tokens von ${p.name} funktionieren nicht mehr.`,
+	'settings.members.confirm.shared': (p) =>
+		`Was ${p.name} geteilt hat, bleibt, unter dem Namen ${p.name}. Du kannst jedes Stück davon weiterhin entfernen.`,
+	'settings.members.confirm.private': (p) =>
+		p.count === 1
+			? `Der eine private Eintrag von ${p.name} bleibt versiegelt: Niemand sieht ihn, auch du nicht.`
+			: `Die ${p.count} privaten Einträge von ${p.name} bleiben versiegelt: Niemand sieht sie, auch du nicht.`,
+	'settings.members.confirm.sso': (p) =>
+		`${p.name} meldet sich per Single Sign-on an. Stella weist ${p.name} ab jetzt ab. Entferne ${p.name} am besten auch aus der Gruppe bei deinem Anmeldedienst.`,
+	'settings.members.confirm.lastAdmin': (p) =>
+		`${p.name} ist die einzige Person in der Administration, die sich mit Passwort anmelden kann. Ohne ${p.name} sperrt ein Ausfall deines Anmeldedienstes alle aus.`,
+	'settings.members.confirm.submit': (p) => `${p.name} entfernen`,
+	'settings.members.confirm.keep': (p) => `${p.name} behalten`,
+	'settings.members.removed': (p) => `${p.name} entfernt`,
+	'settings.members.former': 'Ehemalige Mitglieder',
+	'settings.members.removedOn': (p) => `Entfernt am ${p.date}`,
 	'settings.data.heading': 'Daten',
 	'settings.data.importPeople': 'Menschen importieren',
 	'settings.data.importPeopleBlurb':

@@ -35,6 +35,9 @@ export const user = sqliteTable('user', {
 	themePref: text('theme_pref').$type<'system' | 'light' | 'dark'>().notNull().default('system'),
 	accentPref: text('accent_pref').notNull().default('mauve'),
 	totpSecret: text('totp_secret'),
+	// When an admin removed this member, or null while they belong (docs/02 §2.1). The row stays:
+	// everything they wrote keeps its author, and a removed member signs nobody in.
+	removedAt: integer('removed_at'),
 	createdAt: integer('created_at').notNull().default(now),
 	updatedAt: integer('updated_at').notNull().default(now)
 });

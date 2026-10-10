@@ -1006,6 +1006,16 @@ become one line with a count, and a link to somebody outside still runs to the r
 Click a group to see who is in it, or *Show individually* to take just that one apart. Your
 browser remembers the switch.
 
+## Who is in the household
+
+**Settings → Household → Members** lists everyone who signs in to Stella, and how. An admin
+can remove someone there: *Remove…* on their row says what happens before anything does.
+They can no longer sign in, and every device they were signed in on is signed out. What
+they shared stays, under their name; what they kept private stays private, and nobody —
+not even the admin — can see it. Home tells the household in one line. If they signed in
+through single sign-on, also take them out of the group there. Nobody can remove
+themselves, so there is always an admin left.
+
 ## Signing out
 
 *Sign out* in the account menu ends your Stella session immediately. If your household

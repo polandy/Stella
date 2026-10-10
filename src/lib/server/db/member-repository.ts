@@ -1,4 +1,4 @@
-import { asc, eq } from 'drizzle-orm';
+import { and, asc, eq, isNull } from 'drizzle-orm';
 import type { BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
 import type { MemberRepository } from '../domain/household/members';
 import { user } from './schema';
@@ -14,6 +14,15 @@ export function createDrizzleMemberRepository(
 ): MemberRepository {
 	return {
 		async listMembers(householdId: string) {
+			return db
+				.select({ id: user.id, name: user.name })
+				.from(user)
+				.where(and(eq(user.householdId, householdId), isNull(user.removedAt)))
+				.orderBy(asc(user.name))
+				.all();
+		},
+
+		async listAuthors(householdId: string) {
 			return db
 				.select({ id: user.id, name: user.name })
 				.from(user)

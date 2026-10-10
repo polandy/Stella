@@ -22,22 +22,23 @@ export function createDrizzleIdentityStore(
 	provider: string
 ): IdentityStore {
 	return {
-		async findUserIdByIssuerSubject(issuer, subject) {
+		async findUserByIssuerSubject(issuer, subject) {
 			const row = db
-				.select({ userId: identityTable.userId })
+				.select({ id: userTable.id, removedAt: userTable.removedAt })
 				.from(identityTable)
+				.innerJoin(userTable, eq(identityTable.userId, userTable.id))
 				.where(and(eq(identityTable.issuer, issuer), eq(identityTable.subject, subject)))
 				.get();
-			return row?.userId ?? null;
+			return row ? { id: row.id, removed: row.removedAt !== null } : null;
 		},
 
-		async findUserIdByEmail(email) {
+		async findUserByEmail(email) {
 			const row = db
-				.select({ id: userTable.id })
+				.select({ id: userTable.id, removedAt: userTable.removedAt })
 				.from(userTable)
 				.where(eq(userTable.email, email))
 				.get();
-			return row?.id ?? null;
+			return row ? { id: row.id, removed: row.removedAt !== null } : null;
 		},
 
 		async provision({ issuer, subject, email, name, role }) {

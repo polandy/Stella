@@ -8,8 +8,8 @@
 	/*
 	 * A line of Home's stream that the activity log holds (docs/02 §2.11). A removal is shown as
 	 * written — nobody is left to link to. Last names given, a name edited and a note someone
-	 * else removed are stored as facts and said here, in the reader's language; a person the
-	 * reader can see is a link.
+	 * else removed and a member removed from the household are stored as facts and said here, in
+	 * the reader's language; a person the reader can see is a link.
 	 */
 	let {
 		content,
@@ -30,7 +30,9 @@
 
 	const t = useTranslate();
 	const icon = $derived(
-		content.kind === 'text' || content.kind === 'removed' ? 'remove' : 'rename'
+		content.kind === 'text' || content.kind === 'removed' || content.kind === 'memberRemoved'
+			? 'remove'
+			: 'rename'
 	);
 
 	/** Who removed what of whom, by kind: "removed your note on", "removed Nina’s photo of". */
@@ -75,6 +77,8 @@
 			<span class="font-medium text-fg"
 				>{t('home.stream.lastNames', { name: content.lastName, count: content.count })}</span
 			>
+		{:else if content.kind === 'memberRemoved'}
+			<span>{t('home.stream.memberRemoved', { name: content.name })}</span>
 		{:else if content.kind === 'removed'}
 			<span
 				>{removedLine(content.recordKind, content.authorId === readerId, content.authorName)}</span

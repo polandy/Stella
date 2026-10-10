@@ -12,22 +12,31 @@ import {
  * is the boundary — only the viewer's own household is ever read.
  */
 
-function repositoryOf(members: Record<string, HouseholdMember[]>): MemberRepository {
+function repositoryOf(
+	members: Record<string, HouseholdMember[]>,
+	former: Record<string, HouseholdMember[]> = {}
+): MemberRepository {
 	return {
 		async listMembers(householdId) {
 			return members[householdId] ?? [];
+		},
+		async listAuthors(householdId) {
+			return [...(members[householdId] ?? []), ...(former[householdId] ?? [])];
 		}
 	};
 }
 
 const deps = {
-	members: repositoryOf({
-		h1: [
-			{ id: 'u1', name: 'Markus Brunner' },
-			{ id: 'u2', name: 'Lena Brunner' }
-		],
-		h2: [{ id: 'u9', name: 'Somebody Else' }]
-	})
+	members: repositoryOf(
+		{
+			h1: [
+				{ id: 'u1', name: 'Markus Brunner' },
+				{ id: 'u2', name: 'Lena Brunner' }
+			],
+			h2: [{ id: 'u9', name: 'Somebody Else' }]
+		},
+		{ h1: [{ id: 'u3', name: 'Nina Brunner' }] }
+	)
 };
 
 describe('authorNames', () => {
@@ -46,6 +55,12 @@ describe('authorNames', () => {
 		expect(nameOf('u9')).toBeNull();
 	});
 
+	it('still names a member an admin removed, on what they wrote (docs/02 §2.1)', async () => {
+		const nameOf = await authorNames(deps, 'h1');
+
+		expect(nameOf('u3')).toBe('Nina Brunner');
+	});
+
 	it('answers null for an id nobody has, rather than throwing on a deleted member', async () => {
 		const nameOf = await authorNames(deps, 'h1');
 
@@ -58,6 +73,12 @@ describe('membersViewerFirst', () => {
 		const members = await membersViewerFirst(deps, { id: 'u2', householdId: 'h1' });
 
 		expect(members.map((m) => m.id)).toEqual(['u2', 'u1']);
+	});
+
+	it('no longer offers a member an admin removed', async () => {
+		const members = await membersViewerFirst(deps, { id: 'u1', householdId: 'h1' });
+
+		expect(members.map((m) => m.id)).not.toContain('u3');
 	});
 
 	it('lists only the viewer\u2019s own household', async () => {

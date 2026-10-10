@@ -150,6 +150,9 @@ export const errors: ErrorsMessages = {
 	'errors.circle.notFound': 'Kreis nicht gefunden',
 	'errors.circlePhoto.unknownRole': 'Wähle eine der Rollen des Kreises oder keine Rolle.',
 	'errors.admin.only': 'Das kann nur die Haushalts-Administration.',
+	'errors.member.notYourself':
+		'Dich selbst kannst du nicht entfernen. Das kann eine andere Person aus der Administration.',
+	'errors.member.gone': 'Diese Person gehört nicht mehr zum Haushalt.',
 	'errors.export.adminOnly': 'Nur die Haushalts-Administration kann exportieren.',
 	'errors.story.badCursor': 'Fehlerhafter Verlaufs-Cursor',
 	'errors.journal.couldNotSave': 'Der Moment konnte nicht gespeichert werden.',

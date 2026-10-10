@@ -181,7 +181,8 @@ describe('load', () => {
 			household: {
 				memberDeps: {
 					members: {
-						listMembers: async () => [
+						listMembers: async () => [],
+						listAuthors: async () => [
 							{ id: MEMBER.id, name: MEMBER.name },
 							{ id: 'u2', name: 'Ben Brunner' }
 						]

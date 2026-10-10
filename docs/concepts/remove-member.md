@@ -102,8 +102,9 @@ Decided without asking. Each is open to a change in the PR:
   shows the avatar, the name, a *You* badge on one's own row, the email, an *Admin* pill
   for admins, and how they sign in: *Password*, *Single sign-on* or *Password and single
   sign-on*.
-- For an admin, every row except their own ends in a ghost **Remove…** button in danger
-  colour, whose accessible name carries the member's name (*Remove Nina…*).
+- For an admin, every row except their own ends in a ghost **Remove…** button with the remove
+  icon, whose accessible name carries the member's name (*Remove Nina…*). The danger colour
+  is kept for the confirm step's own button.
 - Under the list, once anyone has been removed: **Former members**, the same rows muted,
   with *removed on 10 Oct 2026* in place of the sign-in method. Slice 1 shows them read-only.
   Slice 2 adds *Restore*.
@@ -124,8 +125,9 @@ Decided without asking. Each is open to a change in the PR:
   - when the member is the last admin with a password: *Nina is the only admin who can sign
     in with a password. Without Nina, an outage of your sign-in provider locks everyone out.*
   - the buttons: **Remove Nina** (danger) and **Keep Nina** (ghost, focused).
-- The counts come from `memberRemovalPreview(deps, remover, memberId)`, loaded when the step
-  opens, like `circleDeletionPreview`.
+- The counts come from `memberRemovalPreview(deps, remover, memberId)`. The page's `load` reads
+  one for every member the admin may remove: a household has a handful, so the step needs no
+  second request.
 - **The removal runs in one transaction** (`removeMember(deps, remover, memberId)`):
   1. the remover must be an admin (`NotAdminError`, 403) and not the member
      (`CannotRemoveYourselfError`, 400, with a `Phrase`);

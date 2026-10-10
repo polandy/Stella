@@ -110,6 +110,25 @@
 		</div>
 	</section>
 
+	<!-- Every member's: who signs in is no secret in a household; removing is an admin's (§2.1). -->
+	<section class="flex flex-col gap-3">
+		<h2 class="text-sm font-medium text-fg-muted">{t('settings.household.heading')}</h2>
+		<a
+			href="/settings/members"
+			class="flex items-center gap-4 rounded-app bg-card p-4 shadow-card transition-colors hover:bg-card-hover"
+		>
+			<span
+				class="grid size-10 shrink-0 place-items-center rounded-full bg-primary-soft text-primary"
+				aria-hidden="true"><Icon name="people" size={18} /></span
+			>
+			<span class="min-w-0 flex-1">
+				<span class="block font-medium text-fg">{t('settings.members.title')}</span>
+				<span class="block text-sm text-fg-muted">{t('settings.members.blurb')}</span>
+			</span>
+			<span class="text-fg-subtle" aria-hidden="true"><Icon name="forward" size={16} /></span>
+		</a>
+	</section>
+
 	<!--
 		Checks over what the household has entered: the relationship review (docs/02 §2.4.1) and
 		the people known by a first name only (§2.2.3). Their own section rather than part of Data,

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'bun:test';
 import { fixedClock, sequentialIds } from '../testing';
-import { lastNamesFacts, renameFacts } from '../../../stream/notices';
+import { lastNamesFacts, memberFacts, MEMBER_ENTITY, renameFacts } from '../../../stream/notices';
 import {
 	activityEntry,
 	activityRecord,
@@ -136,6 +136,21 @@ describe('activityEntry', () => {
 		} as const;
 		expect(linked).toEqual({ ...row, summary: 'linked Hans to Immich' });
 		expect(unlinked).toEqual({ ...row, summary: 'unlinked Hans from Immich' });
+	});
+
+	it('logs a member removed under the member, for the whole household, with their name', () => {
+		const entry = activityEntry(
+			recorded({ kind: 'member.removed', memberId: 'u-nina', name: 'Nina Brunner' })
+		);
+		expect(entry).toEqual({
+			...stamp,
+			action: 'delete',
+			entityType: MEMBER_ENTITY,
+			entityId: 'u-nina',
+			contactId: null,
+			visibility: 'shared',
+			summary: memberFacts('Nina Brunner')
+		});
 	});
 
 	it('logs an export under the household, for the household to see', () => {

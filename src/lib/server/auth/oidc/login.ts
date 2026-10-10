@@ -4,7 +4,7 @@ import { isAuthorized } from './authorization';
 import { buildAuthorizationUrl } from './authorize-url';
 import { deriveCodeChallenge, generateCodeVerifier, generateNonce, generateState } from './pkce';
 import { planLogin } from './login-planner';
-import type { OidcClaims, OidcPolicy, ProfilePatch } from './types';
+import type { KnownUser, LoginDenial, OidcClaims, OidcPolicy, ProfilePatch } from './types';
 
 /*
  * OIDC relying-party orchestration (docs/04 §4.4). Composes the pure pieces (authorization,
@@ -34,8 +34,8 @@ export interface OidcProvider {
 
 /** Identity-store port: maps OIDC identities to Stella users and provisions/links them. */
 export interface IdentityStore {
-	findUserIdByIssuerSubject(issuer: string, subject: string): Promise<string | null>;
-	findUserIdByEmail(email: string): Promise<string | null>;
+	findUserByIssuerSubject(issuer: string, subject: string): Promise<KnownUser | null>;
+	findUserByEmail(email: string): Promise<KnownUser | null>;
 	/** Create a user (bootstrapping the household if none exists) and its federated identity. */
 	provision(data: {
 		issuer: string;
@@ -113,8 +113,7 @@ export interface CompleteLoginDeps {
 }
 
 export type OidcLoginResult =
-	| { ok: true; userId: string; idToken: string }
-	| { ok: false; reason: 'not-authorized' | 'no-account' };
+	{ ok: true; userId: string; idToken: string } | { ok: false; reason: LoginDenial };
 
 /** Handle the callback: verify, authorize, resolve/provision the account, report the user. */
 export async function completeOidcLogin(
@@ -128,8 +127,8 @@ export async function completeOidcLogin(
 	}
 
 	const lookups = {
-		existingUserId: await deps.identities.findUserIdByIssuerSubject(claims.issuer, claims.subject),
-		userIdByEmail: claims.email ? await deps.identities.findUserIdByEmail(claims.email) : null
+		existingUser: await deps.identities.findUserByIssuerSubject(claims.issuer, claims.subject),
+		userByEmail: claims.email ? await deps.identities.findUserByEmail(claims.email) : null
 	};
 
 	const plan = planLogin(claims, lookups, deps.policy);

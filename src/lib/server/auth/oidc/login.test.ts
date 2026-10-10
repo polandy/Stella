@@ -40,11 +40,14 @@ function fakeProvider(resolved: OidcClaims): OidcProvider {
 	};
 }
 
-function fakeStore(seed: Partial<Record<'bySub' | 'byEmail', string>> = {}) {
+function fakeStore(
+	seed: Partial<Record<'bySub' | 'byEmail', string>> & { removed?: boolean } = {}
+) {
 	const calls: string[] = [];
+	const known = (id: string | undefined) => (id ? { id, removed: seed.removed ?? false } : null);
 	const store: IdentityStore = {
-		findUserIdByIssuerSubject: async () => seed.bySub ?? null,
-		findUserIdByEmail: async () => seed.byEmail ?? null,
+		findUserByIssuerSubject: async () => known(seed.bySub),
+		findUserByEmail: async () => known(seed.byEmail),
 		provision: async () => {
 			calls.push('provision');
 			return 'new-user';
@@ -77,6 +80,17 @@ describe('completeOidcLogin', () => {
 			{ code: 'c', codeVerifier: 'v', expectedNonce: 'n' }
 		);
 		expect(result).toEqual({ ok: false, reason: 'not-authorized' });
+		expect(f.calls).toEqual([]);
+	});
+
+	it('turns away a removed member, syncing and touching nothing', async () => {
+		const f = fakeStore({ bySub: 'user-9', removed: true });
+		const result = await completeOidcLogin(deps(fakeProvider(claims), f.store), {
+			code: 'c',
+			codeVerifier: 'v',
+			expectedNonce: 'n'
+		});
+		expect(result).toEqual({ ok: false, reason: 'removed' });
 		expect(f.calls).toEqual([]);
 	});
 

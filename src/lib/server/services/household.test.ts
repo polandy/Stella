@@ -11,6 +11,7 @@ import * as schema from '../db/schema';
 import { ensureSearchIndex } from '../db/search-index';
 import { createContact } from '../domain/contacts/contacts';
 import { authorNames, membersViewerFirst } from '../domain/household/members';
+import { listMemberAccounts, removeMember } from '../domain/household/remove-member';
 import { search } from '../domain/search/search';
 import type { IdGenerator } from '../id';
 import { createServices } from './app-services';
@@ -49,7 +50,7 @@ beforeEach(async () => {
 			locale: 'en'
 		}
 	);
-	wiring = { db };
+	wiring = { db, ids, clock };
 });
 
 const viewerOf = (user: AuthUser) => ({ id: user.id, householdId: user.householdId });
@@ -81,6 +82,25 @@ describe('createHouseholdServices', () => {
 		expect(members.map((member) => member.name)).toEqual(['Andy']);
 		const nameOf = await authorNames(household.memberDeps, admin.householdId);
 		expect(nameOf(admin.id)).toBe('Andy');
+	});
+
+	it('removes a member through the wiring, who keeps their name as an author', async () => {
+		const household = createHouseholdServices(wiring);
+		db.insert(schema.user)
+			.values({ id: 'u-nina', householdId: admin.householdId, email: 'n@x.test', name: 'Nina' })
+			.run();
+
+		await removeMember(
+			household.memberAccountDeps,
+			{ ...viewerOf(admin), isAdmin: true },
+			'u-nina'
+		);
+
+		const { former } = await listMemberAccounts(household.memberAccountDeps, viewerOf(admin));
+		expect(former.map((m) => m.name)).toEqual(['Nina']);
+		const members = await membersViewerFirst(household.memberDeps, viewerOf(admin));
+		expect(members.map((member) => member.name)).toEqual(['Andy']);
+		expect((await authorNames(household.memberDeps, admin.householdId))('u-nina')).toBe('Nina');
 	});
 
 	it('finds a person through the search and lists them for attention', async () => {

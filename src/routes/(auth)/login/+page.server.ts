@@ -24,7 +24,8 @@ const LoginSchema = v.object({
 const SSO_ERRORS: Record<string, MessageKey> = {
 	sso: 'auth.sso.failed',
 	'not-authorized': 'auth.sso.notAuthorized',
-	'no-account': 'auth.sso.noAccount'
+	'no-account': 'auth.sso.noAccount',
+	removed: 'auth.sso.removed'
 };
 
 export const load: PageServerLoad = async ({ locals, url }) => {

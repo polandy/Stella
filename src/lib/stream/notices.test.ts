@@ -1,5 +1,12 @@
 import { describe, expect, it } from 'bun:test';
-import { lastNamesFacts, noticeContentOf, removalFacts, renameFacts } from './notices';
+import {
+	lastNamesFacts,
+	memberFacts,
+	MEMBER_ENTITY,
+	noticeContentOf,
+	removalFacts,
+	renameFacts
+} from './notices';
 
 /*
  * What a stream notice says (docs/02 §2.11). A line about something that still exists is stored
@@ -109,5 +116,15 @@ describe('noticeContentOf', () => {
 			person: 'Class 3b',
 			contactId: null
 		});
+	});
+
+	it('reads a member removed from the household as their name', () => {
+		expect(
+			noticeContentOf({
+				entityType: MEMBER_ENTITY,
+				summary: memberFacts('Nina Brunner'),
+				contactId: null
+			})
+		).toEqual({ kind: 'memberRemoved', name: 'Nina Brunner' });
 	});
 });

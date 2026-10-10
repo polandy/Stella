@@ -62,6 +62,16 @@ describe('createDrizzleAccountRepository', () => {
 		});
 	});
 
+	it('finds a removed member on neither path, so they sign nobody in (docs/02 §2.1)', async () => {
+		await seedAdmin();
+		db.update(schema.user).set({ removedAt: 1 }).run();
+
+		expect(await repo.findById(admin.id)).toBeNull();
+		expect(await repo.findCredentialsByEmail(admin.email)).toBeNull();
+		// Still a household that was set up: the first-run page stays shut.
+		expect(await repo.countUsers()).toBe(1);
+	});
+
 	it('returns null for an unknown email', async () => {
 		expect(await repo.findCredentialsByEmail('nobody@example.test')).toBeNull();
 	});

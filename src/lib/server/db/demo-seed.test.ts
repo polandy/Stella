@@ -4,7 +4,7 @@ import { drizzle, type BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
 import { migrate } from 'drizzle-orm/bun-sqlite/migrator';
 import { eq } from 'drizzle-orm';
 import { ARGON2ID_PREFIX } from '../auth/password';
-import { DEMO_ADMIN_PASSWORD, seedDemoData } from './demo-seed';
+import { DEMO_ADMIN_PASSWORD, DEMO_MEMBER_EMAIL, seedDemoData } from './demo-seed';
 import * as schema from './schema';
 import { seedRelationshipTypes } from './seed';
 
@@ -72,9 +72,9 @@ describe('seedDemoData', () => {
 		seed(db);
 
 		const members = db.select().from(schema.user).all();
-		expect(members.map((m) => m.role).sort()).toEqual(['admin', 'member']);
+		expect(members.map((m) => m.role).sort()).toEqual(['admin', 'member', 'member']);
 
-		const second = members.find((m) => m.role === 'member')!;
+		const second = members.find((m) => m.email === DEMO_MEMBER_EMAIL)!;
 		const written = db
 			.select()
 			.from(schema.journalEntry)

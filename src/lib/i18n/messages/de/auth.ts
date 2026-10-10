@@ -15,6 +15,8 @@ export const auth: AuthMessages = {
 	'auth.invalidCredentials': 'E-Mail-Adresse oder Passwort stimmt nicht.',
 	'auth.sso.failed': 'Die Single-Sign-on-Anmeldung ist fehlgeschlagen. Bitte versuche es erneut.',
 	'auth.sso.notAuthorized': 'Dein Konto darf sich hier nicht anmelden.',
+	'auth.sso.removed':
+		'Dein Zugang zu diesem Haushalt wurde entfernt. Frag jemanden aus der Haushalts-Administration.',
 	'auth.sso.noAccount':
 		'Für dich gibt es noch kein Konto. Bitte eine Administratorin oder einen Administrator um eine Einladung.',
 	'auth.shell.tagline': 'Die Menschen in deinem Leben — gemeinsam in Erinnerung behalten.',

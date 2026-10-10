@@ -153,6 +153,8 @@ export const errors = {
 	'errors.circle.notFound': 'Circle not found',
 	'errors.circlePhoto.unknownRole': 'Pick one of the circle’s roles, or no role.',
 	'errors.admin.only': 'Only an admin can do this.',
+	'errors.member.notYourself': 'You can’t remove yourself. Another admin can.',
+	'errors.member.gone': 'This member is no longer in the household.',
 	'errors.export.adminOnly': 'Only the household admin can export.',
 	'errors.story.badCursor': 'Malformed activity cursor',
 	'errors.journal.couldNotSave': 'Could not save the moment.',

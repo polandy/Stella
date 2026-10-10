@@ -14,6 +14,7 @@ export const auth = {
 	'auth.invalidCredentials': 'Invalid email or password.',
 	'auth.sso.failed': 'Single sign-on failed. Please try again.',
 	'auth.sso.notAuthorized': 'Your account is not permitted to sign in here.',
+	'auth.sso.removed': 'Your access to this household was removed. Ask one of its admins.',
 	'auth.sso.noAccount': 'No account exists for you yet. Ask an admin to invite you.',
 	'auth.shell.tagline': 'The people in your life, remembered — together.',
 	'auth.shell.blurb':

@@ -68,8 +68,10 @@ beforeEach(() => {
 	migrate(db, { migrationsFolder: migrationsBefore(TAG) });
 	seedRelationshipTypes(db);
 	db.insert(schema.household).values({ id: H, name: 'H' }).run();
-	db.insert(schema.user).values({ id: U, householdId: H, email: 'u@x.test', name: 'U' }).run();
 	// Plain SQL: the schema as it is today names columns a later migration adds.
+	sqlite
+		.query(`INSERT INTO user (id, household_id, email, name) VALUES (?, ?, 'u@x.test', 'U')`)
+		.run(U, H);
 	for (const id of ['anna', 'elias', 'keep', 'lena']) {
 		sqlite
 			.query(
