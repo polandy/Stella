@@ -523,6 +523,13 @@ other — a present goes on the **Gifts** card, with *+ Given*), the day, and if
 too and the entry links to each of them. It lands in Activity alongside the moments, marked
 with its own colour.
 
+Got the day wrong, or forgot who else was there? Press the pencil on an interaction you logged:
+it turns back into its fields — what it was, the day, the line about it and who else was there —
+and *Save* puts it back, moved to its new day if you changed it. Shared or private stays as it
+was. Like removing, correcting needs a connection. Someone else's interaction has no pencil,
+even for the household's admin. On a phone the pencil and the cross are always shown; with a
+mouse they appear when you point at the item.
+
 The most recent of these shows up under the person's name as **Last contact**, so the answer
 to "when did we last speak?" is right there without scrolling. Logged interactions also appear
 on Home, so the rest of the household sees that you were in touch. As everywhere in Stella,

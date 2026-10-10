@@ -34,6 +34,8 @@ export interface StoryJournalItem extends StoryItemBase {
 export interface StoryInteractionItem extends StoryItemBase {
 	kind: 'interaction';
 	interactionKind: InteractionKind;
+	/** Whether *Edit* is offered: the author alone (docs/03 §3.7). */
+	editable: boolean;
 	title: string | null;
 	description: string | null;
 	participants: { contactId: string; displayName: string }[];

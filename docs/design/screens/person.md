@@ -254,6 +254,12 @@ the person, and that never leaves the page. Keeping the record tidy (archive, me
   §2.25.4), labelled *Given* or
   *Received*, its title a link to the Gifts card and its occasion beneath. It offers no
   remove button — a gift is changed and removed on its card.
+- An item's ghost icon *Edit* (pencil) and *Remove* (cross) sit at the end of its kind line,
+  shown on hover or keyboard focus and always on a touch screen (`pointer: coarse`), which
+  has no hover. *Edit* is a touchpoint's, for its author alone (`canEditAuthored`, docs/03
+  §3.7): the touchpoint glides into the log form's fields in place (`Swap`,
+  `InteractionEditor`) — kind, day, title, details and *Who else was there?*; visibility stays
+  out — and *Save* closes it with *Saved*. One touchpoint is open at a time. Online only.
 
 #### Gifts card
 

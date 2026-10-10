@@ -1,4 +1,9 @@
-import { canRemoveAuthored, type ContactAccess, type Remover } from '$lib/server/access/visibility';
+import {
+	canEditAuthored,
+	canRemoveAuthored,
+	type ContactAccess,
+	type Remover
+} from '$lib/server/access/visibility';
 import type { JournalPhotoRef } from '$lib/server/domain/media/journal-photos';
 import { renderMarkdownWithMentions } from '$lib/server/domain/notes/markdown';
 import type { StoryItem } from '$lib/server/domain/story/story';
@@ -123,6 +128,11 @@ export function toStoryItem(item: StoryItem, ctx: StoryViewContext): StoryItemVi
 		visibility: interaction.visibility,
 		mine: interaction.createdBy === ctx.remover.id,
 		removable: removable(ctx, interaction),
+		editable: canEditAuthored(ctx.remover, {
+			ownerId: interaction.createdBy,
+			visibility: interaction.visibility,
+			contact: ctx.person
+		}),
 		author: authorLabel(
 			interaction.createdBy === ctx.remover.id,
 			ctx.nameOfAuthor(interaction.createdBy)
