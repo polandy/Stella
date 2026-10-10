@@ -1,12 +1,12 @@
 import { error, fail, redirect } from '@sveltejs/kit';
-import { requireViewer } from '$lib/server/auth/guards';
+import { requireRemover, requireViewer } from '$lib/server/auth/guards';
 import * as v from 'valibot';
 import { getContact } from '$lib/server/domain/contacts/contacts';
 import { listContactNamesAmong } from '$lib/server/domain/contacts/contact-names';
 import { listContacts } from '$lib/server/domain/contacts/directory';
 import { authorNames } from '$lib/server/domain/household/members';
 import {
-	deleteJournalEntry,
+	removeJournalEntry,
 	editJournalEntry,
 	listJournalForContact,
 	setJournalMentions
@@ -186,7 +186,7 @@ export const actions: Actions = {
 	},
 
 	delete: async ({ request, params, locals }) => {
-		const viewer = requireViewer(locals);
+		const remover = requireRemover(locals);
 
 		const form = await request.formData();
 		const id = form.get('id');
@@ -194,12 +194,8 @@ export const actions: Actions = {
 			return fail(400, { journalError: say(locals, 'errors.form.checkAndRetry') });
 		}
 
-		const deleted = await deleteJournalEntry(
-			locals.services.story.journalDeps,
-			{ userId: viewer.id, householdId: viewer.householdId, defaultVisibility: 'shared' },
-			id
-		);
-		// Gone meanwhile or another member's: said alike, so a foreign id reveals nothing.
+		const deleted = await removeJournalEntry(locals.services.story.journalDeps, remover, id);
+		// Gone meanwhile or not theirs to remove: said alike, so a foreign id reveals nothing.
 		if (!deleted) return fail(404, { journalError: say(locals, 'errors.journal.gone') });
 		throw redirect(303, `/contacts/${params.id}/journal`);
 	}

@@ -120,7 +120,7 @@ describe('describe', () => {
 	});
 });
 
-describe('setOwnVisibility / deleteOwn', () => {
+describe('setOwnVisibility', () => {
 	it('lets only the uploader re-scope a photo', async () => {
 		await repo.insert(stored());
 		expect(
@@ -140,17 +140,6 @@ describe('setOwnVisibility / deleteOwn', () => {
 			})
 		).toBe(true);
 		expect(await repo.listVisible(u2, 'class')).toEqual([]);
-	});
-
-	it('lets only the uploader remove a photo, and hands back its files', async () => {
-		await repo.insert(stored());
-		expect(await repo.deleteOwn({ authorId: U2, circleId: 'class', photoId: 'p1' })).toBeNull();
-		expect(await repo.deleteOwn({ authorId: U1, circleId: 'class', photoId: 'p1' })).toEqual({
-			filePath: 'p1.jpg',
-			thumbPath: 'p1_thumb.jpg',
-			viewPath: 'p1_view.jpg'
-		});
-		expect(db.select().from(schema.photo).where(eq(schema.photo.id, 'p1')).all()).toEqual([]);
 	});
 });
 

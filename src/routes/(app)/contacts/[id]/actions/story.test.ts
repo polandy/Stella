@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'bun:test';
 import { createTranslator } from '$lib/i18n/translate';
 import type { Contact } from '$lib/server/domain/contacts/contacts';
-import { contactRepositoryWith } from '$lib/server/domain/testing';
+import { contactRepositoryWith, fixedClock, sequentialIds } from '$lib/server/domain/testing';
 import {
 	answerOf,
 	formOf,
@@ -15,7 +15,7 @@ import { storyActions as actions } from './story';
  * Removing a touchpoint or a journal entry from the story (docs/02 §2.20). The remove is held
  * for the undo window and posted later; a 404 tells that post the item is already gone, which
  * counts as removed (docs/02 §2.23). Gone and someone else's are said alike, as on the journal
- * page, so a foreign id reveals nothing — and the story offers Remove only on the viewer's own.
+ * page, so a foreign id reveals nothing — and the story offers Remove only where the rule allows it.
  */
 
 const t = createTranslator('en');
@@ -23,6 +23,16 @@ const BACK: EdgeAnswer = { kind: 'redirect', status: 303, location: '/contacts/a
 
 /** Anna, whom the viewer sees; `deleted` is what the store reports for the removal. */
 function story(deleted: boolean): FakeServices {
+	const found = deleted
+		? {
+				id: 'x1',
+				contactId: 'anna',
+				person: 'Anna',
+				personVisibility: 'shared' as const,
+				authorId: 'u1',
+				authorName: 'Ana'
+			}
+		: null;
 	return {
 		people: {
 			contactDeps: {
@@ -32,10 +42,22 @@ function story(deleted: boolean): FakeServices {
 			}
 		} as never,
 		story: {
-			interactionDeps: { interactions: { deleteOwn: async () => deleted } },
+			interactionDeps: {
+				interactions: {
+					findRemovableBy: async () => found,
+					deleteRemovableBy: async () => deleted
+				},
+				ids: sequentialIds('activity'),
+				clock: fixedClock(0)
+			},
 			journalDeps: {
-				journal: { deleteOwn: async () => (deleted ? [] : null) },
-				media: { delete: async () => {} }
+				journal: {
+					findRemovableBy: async () => found,
+					deleteRemovableBy: async () => (deleted ? [] : null)
+				},
+				media: { delete: async () => {} },
+				ids: sequentialIds('activity'),
+				clock: fixedClock(0)
 			}
 		} as never
 	};

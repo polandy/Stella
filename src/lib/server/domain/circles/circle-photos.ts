@@ -1,8 +1,10 @@
 import { TranslatableError } from '../../../i18n/translatable';
 import { phrase } from '../../../i18n/phrase';
-import type { Viewer, Visibility } from '../../access/visibility';
+import type { Remover, Viewer, Visibility } from '../../access/visibility';
 import type { Clock } from '../../clock';
 import type { IdGenerator } from '../../id';
+import type { ActivityOf } from '../activity/activity';
+import { removalAudit, type RemovableRecord } from '../activity/removal';
 import type { DeletedPhotoFiles, ImageMime, MediaStore } from '../media/avatars';
 import { CAPTION_MAX_LENGTH, CaptionTooLongError } from '../media/gallery';
 import {
@@ -91,16 +93,19 @@ export interface CirclePhotoRepository {
 		photoId: string;
 		visibility: Visibility;
 	}): Promise<boolean>;
+	/** The photo of that circle, when the remover may remove it (`circlePhotoRemovableBy`); else null. */
+	findRemovable(remover: Remover, ref: PhotoRef): Promise<RemovableRecord | null>;
 	/**
-	 * Remove a photo of that circle the author added and return its files; null when not theirs.
-	 * Profile pictures cut from it become their people's own photos first, in the same
-	 * transaction (concept §5.4) — as they do when it is made private (`setOwnVisibility`).
+	 * Remove a photo of that circle the remover may — checked again here, at the moment of
+	 * removal — and return its files; null when it was not theirs to remove. Profile pictures cut
+	 * from it become their people's own photos first, and `audit` (if any) is written, in the same
+	 * transaction (concept §5.4) — as the cuts do when it is made private (`setOwnVisibility`).
 	 */
-	deleteOwn(input: {
-		authorId: string;
-		circleId: string;
-		photoId: string;
-	}): Promise<(DeletedPhotoFiles & { viewPath: string | null }) | null>;
+	deleteRemovable(
+		remover: Remover,
+		ref: PhotoRef,
+		audit: ActivityOf<'record.removed'> | null
+	): Promise<(DeletedPhotoFiles & { viewPath: string | null }) | null>;
 	/** Every photo the viewer may see in every circle they may see — what covers are chosen from. */
 	listCoverCandidates(viewer: Viewer): Promise<CirclePhoto[]>;
 }
@@ -312,15 +317,20 @@ export async function setCirclePhotoVisibility(
 }
 
 /**
- * Remove a photo and its files. Only whoever added it may. The row goes first: if removing the
- * bytes fails, the photo is already gone from every view, the harmless direction of that failure.
+ * Remove a photo and its files: whoever added it, or an admin on a shared one. The row goes
+ * first: if removing the bytes fails, the photo is already gone from every view, the harmless
+ * direction of that failure. A removal by someone other than the author is told to the
+ * household in the delete's own transaction.
  */
 export async function removeCirclePhoto(
-	deps: Pick<CirclePhotoDeps, 'circlePhotos' | 'media'>,
-	viewer: Viewer,
-	input: PhotoRef
+	deps: Pick<CirclePhotoDeps, 'circlePhotos' | 'media' | 'ids' | 'clock'>,
+	remover: Remover,
+	ref: PhotoRef
 ): Promise<boolean> {
-	const removed = await deps.circlePhotos.deleteOwn({ authorId: viewer.id, ...input });
+	const found = await deps.circlePhotos.findRemovable(remover, ref);
+	if (!found) return false;
+	const audit = removalAudit(deps, remover, 'circle_photo', found);
+	const removed = await deps.circlePhotos.deleteRemovable(remover, ref, audit);
 	if (!removed) return false;
 	await deps.media.delete(removed.filePath);
 	await deps.media.delete(removed.thumbPath);

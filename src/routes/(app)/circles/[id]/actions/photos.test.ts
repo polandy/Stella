@@ -122,8 +122,19 @@ function household({
 		findVisible: async (_viewer, circleId, photoId) => seen(circleId, photoId) ?? null,
 		describe: describe ?? (async (id, changes) => void described.push([id, changes])),
 		setOwnVisibility: async (input) => own(input) && (rescoped.push(input.photoId), true),
-		deleteOwn: async (input) =>
-			own(input)
+		findRemovable: async (remover, ref) =>
+			own({ authorId: remover.id, ...ref })
+				? {
+						id: ref.photoId,
+						contactId: null,
+						person: 'Choir',
+						personVisibility: 'shared',
+						authorId: 'u1',
+						authorName: 'Ana'
+					}
+				: null,
+		deleteRemovable: async (remover, input) =>
+			own({ authorId: remover.id, ...input })
 				? {
 						filePath: `media/${input.photoId}.jpg`,
 						thumbPath: `media/${input.photoId}_thumb.jpg`,
