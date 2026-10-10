@@ -47,8 +47,8 @@ export interface AppServices {
  * What the graph is built from; each context's wiring joins this as it moves in. A context
  * that reads another grouped context's repository gets it from here, not from the wiring
  * (`people` reads `auth`'s accounts, the relationships context's kinship graph and `media`'s
- * store; `circles` and `story` read `people`'s contacts and `media`'s store; `gifts` reads
- * `people`'s contacts and `story` reads `gifts`' repository; `archive` restores into `media`'s
+ * store; `circles` and `story` read `people`'s contacts and `media`'s store; `gifts` and
+ * `records` read `people`'s contacts and `story` reads `gifts`' repository; `archive` restores into `media`'s
  * store and hands what it restored to `gifts`' conversion; `immich` reads `people`'s contacts and `media`'s avatar deps; `offline`'s command
  * handlers read the contexts whose use-cases they call), so each repository exists once.
  */
@@ -59,7 +59,7 @@ export type ServicesWiring = AuthWiring &
 	Omit<CircleWiring, 'contacts' | 'media'> &
 	Omit<StoryWiring, 'contacts' | 'directory' | 'media' | 'gifts'> &
 	NoteWiring &
-	RecordWiring &
+	Omit<RecordWiring, 'contacts'> &
 	HouseholdWiring &
 	Omit<ArchiveWiring, 'media' | 'convertHeldGifts'> &
 	Omit<ImmichWiring, 'contacts' | 'directory' | 'contactDeps' | 'contextReads' | 'avatarDeps'> &
@@ -92,7 +92,7 @@ export function createServices(wiring: ServicesWiring): AppServices {
 		gifts: gifts.gifts
 	});
 	const notes = createNoteServices(wiring);
-	const records = createRecordServices(wiring);
+	const records = createRecordServices({ ...wiring, contacts: people.contacts });
 	const household = createHouseholdServices(wiring);
 	const archive = createArchiveServices({
 		...wiring,

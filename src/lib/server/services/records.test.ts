@@ -8,9 +8,17 @@ import type { Clock } from '../clock';
 import { createDrizzleAccountRepository } from '../db/account-repository';
 import { createDrizzleContactRepository } from '../db/contact-repository';
 import * as schema from '../db/schema';
-import { addContactField, listContactFields } from '../domain/contact-fields/contact-fields';
+import {
+	addContactField,
+	listContactFields,
+	removeContactField
+} from '../domain/contact-fields/contact-fields';
 import { createContact } from '../domain/contacts/contacts';
-import { addImportantDate, listImportantDates } from '../domain/dates/important-dates';
+import {
+	addImportantDate,
+	listImportantDates,
+	removeImportantDate
+} from '../domain/dates/important-dates';
 import { listTagsForContact } from '../domain/tags/tag-lists';
 import { assignTagByName } from '../domain/tags/tags';
 import type { IdGenerator } from '../id';
@@ -49,7 +57,7 @@ beforeEach(async () => {
 			locale: 'en'
 		}
 	);
-	wiring = { db, clock, ids };
+	wiring = { db, clock, ids, contacts: createDrizzleContactRepository(db) };
 });
 
 const viewerOf = (user: AuthUser) => ({ id: user.id, householdId: user.householdId });
@@ -70,7 +78,6 @@ async function addPerson(firstName: string) {
 describe('createRecordServices', () => {
 	it('hands each record use-case the one repository the edge reads', () => {
 		const records = createRecordServices(wiring);
-		expect(records.contactFieldDeps.fields).toBe(records.contactFields);
 		expect(records.importantDateDeps.dates).toBe(records.importantDates);
 		expect(records.tagDeps.tags).toBe(records.tags);
 	});
@@ -105,6 +112,35 @@ describe('createRecordServices', () => {
 		expect(dates.map((date) => date.id)).toEqual([dateId]);
 		const tags = await listTagsForContact(records.tagListDeps, viewerOf(admin), anna);
 		expect(tags.map((tag) => tag.id)).toEqual([tagId]);
+	});
+
+	it('removes a field and a date through the group, checking the person against the lookup', async () => {
+		const records = createRecordServices(wiring);
+		expect(records.contactFieldDeps.contacts).toBe(wiring.contacts);
+		expect(records.importantDateDeps.contacts).toBe(wiring.contacts);
+		const anna = await addPerson('Anna');
+		const fieldId = await addContactField(records.contactFieldDeps, {
+			contactId: anna,
+			kind: 'email',
+			value: 'anna@example.test'
+		});
+		const dateId = await addImportantDate(records.importantDateDeps, {
+			contactId: anna,
+			kind: 'anniversary',
+			date: '2010-06-12'
+		});
+
+		await removeContactField(records.contactFieldDeps, viewerOf(admin), {
+			contactId: anna,
+			fieldId
+		});
+		await removeImportantDate(records.importantDateDeps, viewerOf(admin), {
+			contactId: anna,
+			dateId
+		});
+
+		expect(await listContactFields(records.contactFieldDeps, viewerOf(admin), anna)).toEqual([]);
+		expect(await listImportantDates(records.importantDateDeps, viewerOf(admin), anna)).toEqual([]);
 	});
 });
 
@@ -148,5 +184,7 @@ describe('createServices', () => {
 		});
 		expect(services.records.tagDeps.tags).toBe(services.records.tags);
 		expect(services.records.contactFieldDeps.clock).toBe(clock);
+		expect(services.records.contactFieldDeps.contacts).toBe(services.people.contacts);
+		expect(services.records.importantDateDeps.contacts).toBe(services.people.contacts);
 	});
 });

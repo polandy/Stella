@@ -3,6 +3,8 @@ import { phrase, type Phrase } from '../../../i18n/phrase';
 import type { Viewer } from '../../access/visibility';
 import type { Clock } from '../../clock';
 import type { IdGenerator } from '../../id';
+import type { ContactLookup } from '../contacts/contacts';
+import { ContactGoneError } from '../contacts/require-visible';
 import { DATE_SHAPE, isRealCalendarDay } from '../../../dates/calendar';
 import { IMPORTANT_DATE_KINDS, type ImportantDateKind } from '../../../dates/kinds';
 import type { UpcomingSource } from './upcoming';
@@ -32,7 +34,7 @@ export interface ImportantDate extends NewImportantDate {}
 export interface ImportantDateRepository {
 	insert(date: NewImportantDate): Promise<void>;
 	listForContactVisibleTo(viewer: Viewer, contactId: string): Promise<ImportantDate[]>;
-	/** Remove a date, scoped to its contact (the caller ensures the contact is visible). */
+	/** Remove a date, scoped to its contact (`removeImportantDate` checked it is visible). */
 	remove(contactId: string, dateId: string): Promise<void>;
 	/** Every date the viewer may see, explicit rows and derived birthdays alike. */
 	listSourcesVisibleTo(viewer: Viewer): Promise<UpcomingSource[]>;
@@ -40,6 +42,7 @@ export interface ImportantDateRepository {
 
 export interface ImportantDateDeps {
 	dates: ImportantDateRepository;
+	contacts: ContactLookup;
 	ids: IdGenerator;
 	clock: Clock;
 }
@@ -122,11 +125,18 @@ export function overridesDerivedBirthday(dates: readonly Pick<ImportantDate, 'ki
 	return dates.some((d) => d.kind === 'birthday');
 }
 
-/** Remove an important date from a contact the viewer may see. */
+/**
+ * Remove an important date. Anyone who sees the person may: a date is a household fact, not
+ * anyone's authored record (docs/03 §3.7). A person the viewer does not see is refused with
+ * `ContactGoneError`; a date already gone is not an error, so a second tap changes nothing.
+ */
 export async function removeImportantDate(
-	deps: Pick<ImportantDateDeps, 'dates'>,
-	contactId: string,
-	dateId: string
+	deps: Pick<ImportantDateDeps, 'dates' | 'contacts'>,
+	viewer: Viewer,
+	input: { contactId: string; dateId: string }
 ): Promise<void> {
-	await deps.dates.remove(contactId, dateId);
+	if (!(await deps.contacts.findByIdVisibleTo(viewer, input.contactId))) {
+		throw new ContactGoneError();
+	}
+	await deps.dates.remove(input.contactId, input.dateId);
 }

@@ -7,6 +7,8 @@ import { systemClock } from '$lib/server/clock';
 import { error, fail, redirect } from '@sveltejs/kit';
 import { requireViewer } from '$lib/server/auth/guards';
 import { getContact } from '$lib/server/domain/contacts/contacts';
+import { ContactGoneError } from '$lib/server/domain/contacts/require-visible';
+import { removeImportantDate } from '$lib/server/domain/dates/important-dates';
 import { say, translator } from '$lib/server/i18n/say';
 import type { Actions } from '../$types';
 
@@ -57,10 +59,15 @@ export const dateActions = {
 		const dateId = form.get('dateId');
 		if (typeof dateId !== 'string') return fail(400, {});
 
-		const contact = await getContact(locals.services.people.contactDeps, viewer, params.id);
-		if (!contact) throw error(404, say(locals, 'errors.contact.notFound'));
-
-		await locals.services.records.importantDates.remove(params.id, dateId);
+		try {
+			await removeImportantDate(locals.services.records.importantDateDeps, viewer, {
+				contactId: params.id,
+				dateId
+			});
+		} catch (err) {
+			if (err instanceof ContactGoneError) throw error(404, say(locals, 'errors.contact.notFound'));
+			throw err;
+		}
 		throw redirect(303, `/contacts/${params.id}`);
 	}
 } satisfies Actions;

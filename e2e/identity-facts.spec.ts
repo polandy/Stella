@@ -1,5 +1,5 @@
 import { expect, test, type Locator, type Page } from '@playwright/test';
-import { appReady, fillDate, openPerson, signIn } from './app';
+import { appReady, fillDate, openPerson, profileRow, signIn } from './app';
 import { seedHousehold } from './seed';
 
 /*
@@ -172,6 +172,42 @@ test('the address is added through its slot, edited and saved, joined by another
 	await expect(blocks).toHaveCount(1);
 	await undoToast(page).getByRole('button', { name: 'Undo' }).click();
 	await expect(blocks).toHaveCount(2);
+});
+
+test('a removed date and a removed phone number are gone once the page is left', async ({
+	page
+}) => {
+	await openOwnPerson(page, 'Dorotea Facettli', { birth: '1991-05-03' });
+	const personUrl = page.url();
+
+	await facts(page).locator('[data-fact="birthday"]').getByRole('button').click();
+	const editor = editorOf(page, 'dates');
+	await editor.getByRole('button', { name: 'Add a date' }).click();
+	await editor.getByLabel('Kind').selectOption({ label: 'Anniversary' });
+	await fillDate(editor, 'Day', '2016-07-14');
+	await editor.getByRole('button', { name: 'Add', exact: true }).click();
+	await expect(page.getByTestId('toast-notice')).toContainText('Saved');
+	await editor.getByRole('button', { name: 'Remove Anniversary' }).click();
+	await expect(undoToast(page)).toContainText('Date removed');
+	await editor.getByRole('button', { name: 'Done' }).click();
+
+	const contact = await profileRow(page, 'Contact');
+	await contact.getByRole('button', { name: 'Add' }).click();
+	await contact.getByLabel('Kind').selectOption({ label: 'Phone' });
+	await contact.getByPlaceholder('Label (optional)').fill('Atelier');
+	await contact.getByPlaceholder('Value').fill('+41 79 555 72 14');
+	await contact.getByRole('button', { name: 'Add', exact: true }).last().click();
+	await expect(contact).toContainText('+41 79 555 72 14');
+	await contact.getByRole('button', { name: 'Remove Atelier' }).click();
+	await expect(undoToast(page).filter({ hasText: 'Contact detail removed' })).toBeVisible();
+
+	// Leaving through Home sends both held removals before Home loads (docs/02 §2.23).
+	await page.getByRole('link', { name: 'Home', exact: true }).first().click();
+	await expect(page.getByRole('heading', { name: 'What happened?' })).toBeVisible();
+	await page.goto(personUrl);
+	await appReady(page);
+	await expect(facts(page)).not.toContainText('Anniversary');
+	await expect(card(page)).not.toContainText('+41 79 555 72 14');
 });
 
 test('the circles editor changes a role, leaves with undo, and joins with a role', async ({

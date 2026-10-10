@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'bun:test';
 import type { Clock } from '../../clock';
 import type { IdGenerator } from '../../id';
+import type { Contact } from '../contacts/contacts';
+import { ContactGoneError } from '../contacts/require-visible';
 import {
 	addImportantDate,
 	InvalidImportantDateError,
@@ -41,7 +43,14 @@ function fakeRepo() {
 	};
 }
 
-const deps = (repo: ImportantDateRepository) => ({ dates: repo, ids, clock });
+/** Only `c1` is a person the viewer sees. */
+const contacts = {
+	findByIdVisibleTo: async (_viewer: unknown, id: string) =>
+		id === 'c1' ? ({ id } as Contact) : null
+};
+const viewer = { id: 'u1', householdId: 'h1' };
+
+const deps = (repo: ImportantDateRepository) => ({ dates: repo, contacts, ids, clock });
 
 describe('addImportantDate', () => {
 	it('stores an anniversary, recurring and reminding by default', async () => {
@@ -129,8 +138,16 @@ describe('addImportantDate', () => {
 describe('removeImportantDate', () => {
 	it('scopes the delete to the contact it belongs to', async () => {
 		const f = fakeRepo();
-		await removeImportantDate(deps(f.repo), 'c1', 'date-1');
+		await removeImportantDate(deps(f.repo), viewer, { contactId: 'c1', dateId: 'date-1' });
 		expect(f.removed).toEqual([{ contactId: 'c1', dateId: 'date-1' }]);
+	});
+
+	it('refuses a person the viewer does not see, removing nothing', async () => {
+		const f = fakeRepo();
+		await expect(
+			removeImportantDate(deps(f.repo), viewer, { contactId: 'hidden', dateId: 'date-1' })
+		).rejects.toBeInstanceOf(ContactGoneError);
+		expect(f.removed).toEqual([]);
 	});
 });
 

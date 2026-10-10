@@ -7,8 +7,12 @@ import { systemClock } from '$lib/server/clock';
 import { error, fail, redirect } from '@sveltejs/kit';
 import { requireViewer } from '$lib/server/auth/guards';
 import * as v from 'valibot';
-import { editContactField } from '$lib/server/domain/contact-fields/contact-fields';
+import {
+	editContactField,
+	removeContactField
+} from '$lib/server/domain/contact-fields/contact-fields';
 import { getContact } from '$lib/server/domain/contacts/contacts';
+import { ContactGoneError } from '$lib/server/domain/contacts/require-visible';
 import { say, translator } from '$lib/server/i18n/say';
 import type { Actions } from '../$types';
 
@@ -91,10 +95,15 @@ export const fieldActions = {
 		const fieldId = form.get('fieldId');
 		if (typeof fieldId !== 'string') return fail(400, {});
 
-		const contact = await getContact(locals.services.people.contactDeps, viewer, params.id);
-		if (!contact) throw error(404, say(locals, 'errors.contact.notFound'));
-
-		await locals.services.records.contactFields.remove(params.id, fieldId);
+		try {
+			await removeContactField(locals.services.records.contactFieldDeps, viewer, {
+				contactId: params.id,
+				fieldId
+			});
+		} catch (err) {
+			if (err instanceof ContactGoneError) throw error(404, say(locals, 'errors.contact.notFound'));
+			throw err;
+		}
 		throw redirect(303, `/contacts/${params.id}`);
 	}
 } satisfies Actions;
