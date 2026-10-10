@@ -75,6 +75,14 @@ export function canRemoveAuthored(remover: Remover, record: ChildRecordAccess): 
 	return remover.isAdmin && record.visibility === 'shared';
 }
 
+/**
+ * An authored record may be edited by its author alone, and only while they still see it: an
+ * admin removes another member's shared record but never rewrites it (docs/02 §2.5).
+ */
+export function canEditAuthored(viewer: Viewer, record: ChildRecordAccess): boolean {
+	return canViewChildRecord(viewer, record) && record.ownerId === viewer.id;
+}
+
 /** A relationship is visible only when the viewer can see both of its endpoints. */
 export function canViewRelationship(
 	viewer: Viewer,
