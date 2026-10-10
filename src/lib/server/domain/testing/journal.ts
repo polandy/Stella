@@ -33,7 +33,8 @@ const JOURNAL_REPOSITORY_METHODS: Record<keyof JournalRepository, true> = {
 	updateOwn: true,
 	listForContactVisibleTo: true,
 	listPageForContactVisibleTo: true,
-	deleteOwn: true,
+	findRemovableBy: true,
+	deleteRemovableBy: true,
 	replaceMentions: true,
 	listMentionedContactIds: true
 };

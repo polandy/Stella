@@ -1,8 +1,9 @@
 import { and, desc, eq, lt, or } from 'drizzle-orm';
 import type { BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
-import { childRecordVisibleTo } from '../access/query-scoping';
+import { authoredRemovableBy, childRecordVisibleTo } from '../access/query-scoping';
 import type { DeletedPhotoFiles } from '../domain/media/avatars';
-import type { Visibility, Viewer } from '../access/visibility';
+import type { Remover, Visibility, Viewer } from '../access/visibility';
+import { activityEntry, type ActivityOf } from '../domain/activity/activity';
 import type {
 	JournalCursor,
 	JournalEntry,
@@ -10,7 +11,7 @@ import type {
 	NewJournalEntry
 } from '../domain/journal/journal';
 import type * as schema from './schema';
-import { contact, journalEntry, journalMention, photo } from './schema';
+import { activityLog, contact, journalEntry, journalMention, photo, user } from './schema';
 
 /*
  * Drizzle adapter for the JournalRepository port (docs/08 §8.3). Reads join the parent contact
@@ -34,6 +35,12 @@ const columns = {
 export function createDrizzleJournalRepository(
 	db: BunSQLiteDatabase<typeof schema>
 ): JournalRepository {
+	const removableBy = (remover: Remover) =>
+		authoredRemovableBy(remover, {
+			visibility: journalEntry.visibility,
+			createdBy: journalEntry.createdBy
+		});
+
 	return {
 		async findDay(p: {
 			authorId: string;
@@ -149,14 +156,38 @@ export function createDrizzleJournalRepository(
 				.all();
 		},
 
-		async deleteOwn(p: { authorId: string; id: string }): Promise<DeletedPhotoFiles[] | null> {
+		async findRemovableBy(remover: Remover, id: string) {
+			const row = db
+				.select({
+					id: journalEntry.id,
+					contactId: journalEntry.contactId,
+					person: contact.displayName,
+					personVisibility: contact.visibility,
+					authorId: journalEntry.createdBy,
+					authorName: user.name
+				})
+				.from(journalEntry)
+				.innerJoin(contact, eq(journalEntry.contactId, contact.id))
+				.innerJoin(user, eq(journalEntry.createdBy, user.id))
+				.where(and(eq(journalEntry.id, id), removableBy(remover)))
+				.get();
+			return row ?? null;
+		},
+
+		async deleteRemovableBy(
+			remover: Remover,
+			id: string,
+			audit: ActivityOf<'record.removed'> | null
+		): Promise<DeletedPhotoFiles[] | null> {
 			return db.transaction((tx) => {
-				const own = tx
+				// SQLite's DELETE takes no join, so the rule — which needs the contact — picks the id.
+				const removable = tx
 					.select({ id: journalEntry.id })
 					.from(journalEntry)
-					.where(and(eq(journalEntry.id, p.id), eq(journalEntry.createdBy, p.authorId)))
+					.innerJoin(contact, eq(journalEntry.contactId, contact.id))
+					.where(and(eq(journalEntry.id, id), removableBy(remover)))
 					.get();
-				if (!own) return null;
+				if (!removable) return null;
 
 				// The photos go first and explicitly: the migration that added
 				// `photo.journal_entry_id` never carried a cascade (schema/media.ts), so
@@ -164,10 +195,11 @@ export function createDrizzleJournalRepository(
 				// Their bytes go back to the caller to unlink.
 				const files = tx
 					.delete(photo)
-					.where(eq(photo.journalEntryId, p.id))
+					.where(eq(photo.journalEntryId, id))
 					.returning({ filePath: photo.filePath, thumbPath: photo.thumbPath })
 					.all();
-				tx.delete(journalEntry).where(eq(journalEntry.id, p.id)).run();
+				tx.delete(journalEntry).where(eq(journalEntry.id, id)).run();
+				if (audit) tx.insert(activityLog).values(activityEntry(audit)).run();
 				return files;
 			});
 		},

@@ -2,6 +2,7 @@ import { TranslatableError } from '../../../i18n/translatable';
 import { phrase } from '../../../i18n/phrase';
 import type { Remover, Visibility, Viewer } from '../../access/visibility';
 import type { ActivityOf } from '../activity/activity';
+import type { RemovableRecord } from '../activity/removal';
 import type { Clock } from '../../clock';
 import type { IdGenerator } from '../../id';
 
@@ -38,17 +39,6 @@ export interface NewNote {
 /** A note as read back for display (the body is Markdown source). */
 export interface Note extends NewNote {}
 
-/** What a removal needs to know of a note it may remove (docs/03 §3.7). */
-export interface RemovableNote {
-	id: string;
-	contactId: string;
-	/** The person's name and visibility, for the activity entry an admin's removal writes. */
-	person: string;
-	personVisibility: Visibility;
-	authorId: string;
-	authorName: string;
-}
-
 /** What an edit needs to know of a note its author may edit (docs/03 §3.7). */
 export interface EditableNote {
 	id: string;
@@ -75,7 +65,7 @@ export interface NoteRepository {
 		p: { id: string; title: string | null; body: string; updatedAt: number }
 	): Promise<boolean>;
 	/** The note, when the remover may remove it (`authoredRemovableBy`); else null. */
-	findRemovableBy(remover: Remover, id: string): Promise<RemovableNote | null>;
+	findRemovableBy(remover: Remover, id: string): Promise<RemovableRecord | null>;
 	/**
 	 * Delete the note when the remover may — checked again here, at the moment of removal —
 	 * with its mentions, and write `audit` in the same transaction if one went. Whether it did.

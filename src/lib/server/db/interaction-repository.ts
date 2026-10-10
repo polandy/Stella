@@ -1,8 +1,13 @@
 import { and, desc, eq, inArray, lt, max, or } from 'drizzle-orm';
 import { alias } from 'drizzle-orm/sqlite-core';
 import type { BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
-import { childRecordVisibleTo, contactColumnsVisibleTo } from '../access/query-scoping';
-import type { Viewer } from '../access/visibility';
+import {
+	authoredRemovableBy,
+	childRecordVisibleTo,
+	contactColumnsVisibleTo
+} from '../access/query-scoping';
+import type { Remover, Viewer } from '../access/visibility';
+import { activityEntry, type ActivityOf } from '../domain/activity/activity';
 import type {
 	Interaction,
 	InteractionCursor,
@@ -11,7 +16,7 @@ import type {
 	NewInteraction
 } from '../domain/interactions/interactions';
 import type * as schema from './schema';
-import { contact, interaction, interactionParticipant } from './schema';
+import { activityLog, contact, interaction, interactionParticipant, user } from './schema';
 
 /*
  * Drizzle adapter for the InteractionRepository port (docs/08 §8.3). Reads join the subject
@@ -39,6 +44,11 @@ export function createDrizzleInteractionRepository(
 	db: BunSQLiteDatabase<typeof schema>
 ): InteractionRepository {
 	const participantContact = alias(contact, 'participant_contact');
+	const removableBy = (remover: Remover) =>
+		authoredRemovableBy(remover, {
+			visibility: interaction.visibility,
+			createdBy: interaction.createdBy
+		});
 
 	function participantsVisibleTo(
 		viewer: Viewer,
@@ -163,13 +173,46 @@ export function createDrizzleInteractionRepository(
 			return row?.day ?? null;
 		},
 
-		async deleteOwn(p: { authorId: string; id: string }): Promise<boolean> {
-			const removed = db
-				.delete(interaction)
-				.where(and(eq(interaction.id, p.id), eq(interaction.createdBy, p.authorId)))
-				.returning({ id: interaction.id })
-				.all();
-			return removed.length > 0;
+		async findRemovableBy(remover: Remover, id: string) {
+			const row = db
+				.select({
+					id: interaction.id,
+					contactId: interaction.contactId,
+					person: contact.displayName,
+					personVisibility: contact.visibility,
+					authorId: interaction.createdBy,
+					authorName: user.name
+				})
+				.from(interaction)
+				.innerJoin(contact, eq(interaction.contactId, contact.id))
+				.innerJoin(user, eq(interaction.createdBy, user.id))
+				.where(and(eq(interaction.id, id), removableBy(remover)))
+				.get();
+			return row ?? null;
+		},
+
+		async deleteRemovableBy(
+			remover: Remover,
+			id: string,
+			audit: ActivityOf<'record.removed'> | null
+		): Promise<boolean> {
+			// SQLite's DELETE takes no join, so the rule — which needs the contact — picks the id.
+			return db.transaction((tx) => {
+				const removable = tx
+					.select({ id: interaction.id })
+					.from(interaction)
+					.innerJoin(contact, eq(interaction.contactId, contact.id))
+					.where(and(eq(interaction.id, id), removableBy(remover)));
+				const removed = tx
+					.delete(interaction)
+					.where(inArray(interaction.id, removable))
+					.returning({ id: interaction.id })
+					.all();
+				if (removed.length === 0) return false;
+				// Participants go by cascade; the log row stays.
+				if (audit) tx.insert(activityLog).values(activityEntry(audit)).run();
+				return true;
+			});
 		}
 	};
 }

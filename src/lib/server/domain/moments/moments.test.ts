@@ -117,7 +117,10 @@ function fakes(seedContacts: Partial<NewContact>[] = []) {
 			async listPageForContactVisibleTo() {
 				return [];
 			},
-			async deleteOwn() {
+			async findRemovableBy() {
+				return null;
+			},
+			async deleteRemovableBy() {
 				return null;
 			},
 			async replaceMentions(id, ids) {
