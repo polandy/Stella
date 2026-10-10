@@ -148,7 +148,7 @@ export async function listNotesForContact(
  * collapse to one link.
  */
 export async function setNoteMentions(
-	deps: Pick<NoteDeps, 'notes'>,
+	deps: { notes: Pick<NoteRepository, 'replaceMentions'> },
 	noteId: string,
 	contactIds: string[]
 ): Promise<void> {
