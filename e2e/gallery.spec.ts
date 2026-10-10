@@ -143,18 +143,18 @@ test('wears a gallery photo as the avatar, and gives it back when the photo is r
 test('a removed gallery photo leaves the grid at once and comes back with Undo', async ({
 	page
 }) => {
-	await openPhotos(page, PHOTOGRAPHED);
+	await openPhotos(page, UNPHOTOGRAPHED);
 	await addPhotos(page, [file('undo.png')]);
 	const grid = page.getByTestId('photo-grid');
-	const before = await grid.getByRole('button').count();
+	await expect(grid.getByRole('button')).toHaveCount(1);
 
 	await grid.getByRole('button').first().click();
 	await page.getByTestId('photo-lightbox').getByRole('button', { name: 'Remove' }).click();
 	await expect(page.getByTestId('photo-lightbox')).toBeHidden();
-	await expect(grid.getByRole('button')).toHaveCount(before - 1);
+	await expect(grid.getByRole('button')).toHaveCount(0);
 
 	await page.getByRole('button', { name: 'Undo' }).click();
-	await expect(grid.getByRole('button')).toHaveCount(before);
+	await expect(grid.getByRole('button')).toHaveCount(1);
 });
 
 test('dates a gallery photo, on its tile and in the lightbox', async ({ page }) => {
