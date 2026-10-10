@@ -1,3 +1,5 @@
+import { TranslatableError } from '../../../i18n/translatable';
+import { phrase } from '../../../i18n/phrase';
 import type { Remover, Visibility, Viewer } from '../../access/visibility';
 import type { ActivityOf } from '../activity/activity';
 import type { Clock } from '../../clock';
@@ -7,6 +9,13 @@ import type { IdGenerator } from '../../id';
  * Note use-cases (docs/02 §2.5). Notes are child records of a contact; their visibility is
  * enforced through the central access scoping in the adapter. Orchestration is pure.
  */
+
+/** An edit that would leave the note without text; removing it is the delete's job. */
+export class EmptyNoteError extends TranslatableError {
+	constructor() {
+		super(phrase('errors.note.empty'), 'EmptyNoteError');
+	}
+}
 
 export interface NoteCreator {
 	userId: string;
@@ -40,6 +49,13 @@ export interface RemovableNote {
 	authorName: string;
 }
 
+/** What an edit needs to know of a note its author may edit (docs/03 §3.7). */
+export interface EditableNote {
+	id: string;
+	contactId: string;
+	visibility: Visibility;
+}
+
 export interface NoteRepository {
 	insert(note: NewNote): Promise<void>;
 	/** Notes on a contact the viewer may see, pinned first then newest. */
@@ -48,6 +64,16 @@ export interface NoteRepository {
 	replaceMentions(noteId: string, contactIds: string[]): Promise<void>;
 	/** The people a note references, for the reverse lookup. */
 	listMentionedContactIds(noteId: string): Promise<string[]>;
+	/** The author's note, while they may edit it (`authoredEditableBy`); else null. */
+	findOwn(author: Viewer, id: string): Promise<EditableNote | null>;
+	/**
+	 * Rewrite the title and body of a note the author may edit — checked again here, at the
+	 * moment of the write. Whether it did.
+	 */
+	updateOwn(
+		author: Viewer,
+		p: { id: string; title: string | null; body: string; updatedAt: number }
+	): Promise<boolean>;
 	/** The note, when the remover may remove it (`authoredRemovableBy`); else null. */
 	findRemovableBy(remover: Remover, id: string): Promise<RemovableNote | null>;
 	/**
@@ -75,7 +101,7 @@ export interface CreateNoteInput {
 	isPinned?: boolean;
 }
 
-const orNull = (value?: string | null): string | null => {
+export const orNull = (value?: string | null): string | null => {
 	const trimmed = (value ?? '').trim();
 	return trimmed.length > 0 ? trimmed : null;
 };

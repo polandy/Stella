@@ -125,3 +125,87 @@ describe('note mentions', () => {
 		expect(await repo.listMentionedContactIds('n-1')).toEqual([]);
 	});
 });
+
+describe('updateOwn / findOwn (docs/03 §3.7: the author only, while they see it)', () => {
+	const U3 = 'user-3';
+	const viewerU3: Viewer = { id: U3, householdId: 'household-2' };
+	const edit = { title: 'New title', body: 'new body', updatedAt: 99 };
+
+	const row = (id: string) => db.select().from(schema.note).where(eq(schema.note.id, id)).get();
+
+	beforeEach(() => {
+		db.insert(schema.household).values({ id: 'household-2', name: 'H2' }).run();
+		db.insert(schema.user)
+			.values({ id: U3, householdId: 'household-2', email: 'u3@x.test', name: 'Three' })
+			.run();
+		db.insert(schema.contact)
+			.values({
+				id: 'c-u2-priv',
+				householdId: H,
+				createdBy: U2,
+				visibility: 'private',
+				displayName: 'Two private'
+			})
+			.run();
+	});
+
+	it("rewrites the author's own note's title, body and time — and nothing else", async () => {
+		await repo.insert(
+			note({
+				id: 'n',
+				title: 'Old',
+				body: 'old',
+				isPinned: true,
+				visibility: 'private',
+				createdAt: 5
+			})
+		);
+
+		expect(await repo.findOwn(viewerU1, 'n')).toEqual({
+			id: 'n',
+			contactId: 'c-shared',
+			visibility: 'private'
+		});
+		expect(await repo.updateOwn(viewerU1, { id: 'n', ...edit })).toBe(true);
+
+		expect(row('n')).toMatchObject({
+			title: 'New title',
+			body: 'new body',
+			updatedAt: 99,
+			isPinned: 1,
+			visibility: 'private',
+			createdAt: 5,
+			createdBy: U1
+		});
+	});
+
+	const refused: [string, () => Promise<NewNote>, Viewer][] = [
+		["another member's shared note", async () => note({ id: 'x' }), viewerU2],
+		["someone else's private note", async () => note({ id: 'x', visibility: 'private' }), viewerU2],
+		['another household', async () => note({ id: 'x' }), viewerU3],
+		[
+			"the author's note on a contact made private by someone else",
+			async () => note({ id: 'x', contactId: 'c-u2-priv' }),
+			viewerU1
+		]
+	];
+
+	for (const [why, make, who] of refused) {
+		it(`refuses ${why}, leaving the row alone`, async () => {
+			// The positive control: the same kind of write by the author goes through.
+			await repo.insert(note({ id: 'control' }));
+			expect(await repo.updateOwn(viewerU1, { id: 'control', ...edit })).toBe(true);
+
+			await repo.insert(await make());
+			const before = row('x');
+			expect(await repo.findOwn(who, 'x')).toBeNull();
+			expect(await repo.updateOwn(who, { id: 'x', ...edit })).toBe(false);
+			expect(row('x')).toEqual(before);
+		});
+	}
+
+	it('answers a gone id like a refusal', async () => {
+		expect(await repo.findOwn(viewerU1, 'never')).toBeNull();
+		expect(await repo.updateOwn(viewerU1, { id: 'never', ...edit })).toBe(false);
+	});
+});
