@@ -230,14 +230,19 @@
 				</h2>
 				<ul class="flex flex-col gap-1.5">
 					{#each suggestions as s (s.id)}
-						<li class="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">
-							<a href="/contacts/{s.id}" class="font-medium text-fg hover:underline"
-								>{s.displayName}</a
-							>
-							<span class="text-fg-muted">{t(REASON_LABEL[s.reason])}</span>
-							<label class="ml-auto flex items-center gap-1.5 text-fg-muted">
+						<!-- Two columns, not one wrapping line: a long reason wraps beside the name, so
+						     the radio keeps its own column and lines up with the other rows'. -->
+						<li class="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-x-3 text-sm">
+							<span class="flex flex-wrap items-baseline gap-x-3">
+								<a href="/contacts/{s.id}" class="font-medium text-fg hover:underline"
+									>{s.displayName}</a
+								>
+								<span class="text-fg-muted">{t(REASON_LABEL[s.reason])}</span>
+							</span>
+							<label class="flex items-center gap-1.5 text-fg-muted">
 								<input type="radio" name="relateTo" value={s.id} bind:group={relateTo} />
-								{t('contacts.new.linkAsRelative')}
+								<!-- Capped, so a long label (German) wraps itself rather than squeeze the name. -->
+								<span class="max-w-32">{t('contacts.new.linkAsRelative')}</span>
 							</label>
 						</li>
 					{/each}
