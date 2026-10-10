@@ -277,6 +277,29 @@ describe('planMonicaImport — relationships', () => {
 			why: 'refersToDeletedContact'
 		});
 	});
+
+	it('leaves out a relationship from a contact to themselves and imports the rest', () => {
+		const exp = emptyExport();
+		exp.contacts = [contact(1, 'A', null), contact(2, 'B', null)];
+		exp.relationships = [
+			{ id: 1, typeId: 10, contactIs: 1, ofContact: 1, createdAt: null },
+			{ id: 2, typeId: 10, contactIs: 1, ofContact: 2, createdAt: null }
+		];
+		const plan = planMonicaImport(exp, opts);
+		expect(plan.contacts.map((c) => c.id)).toEqual(['monica:contact:1', 'monica:contact:2']);
+		expect(plan.relationships).toHaveLength(1);
+		expect(plan.relationships[0]).toMatchObject({
+			id: 'monica:relationship:2',
+			fromContactId: 'monica:contact:1',
+			toContactId: 'monica:contact:2'
+		});
+		expect(plan.report.counts.relationships).toBe(1);
+		expect(plan.report.skipped).toContainEqual({
+			what: 'relationship',
+			count: 1,
+			why: 'linksPersonToThemselves'
+		});
+	});
 });
 
 describe('planMonicaImport — fields, notes, tags', () => {

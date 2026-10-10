@@ -125,6 +125,7 @@ export type SkippedKind =
 export type SkippedReason =
 	| 'deletedInMonica'
 	| 'refersToDeletedContact'
+	| 'linksPersonToThemselves'
 	| 'belongsToDeletedContact'
 	| 'empty'
 	| 'linkedToNoPerson'
@@ -281,6 +282,12 @@ export function planMonicaImport(exp: SourceExport, opts: ImportOptions): Import
 	for (const r of exp.relationships) {
 		if (!liveIds.has(r.contactIs) || !liveIds.has(r.ofContact)) {
 			skip('relationship', 'refersToDeletedContact');
+			continue;
+		}
+		// Monica lets a row name one contact at both ends; Stella refuses such a link
+		// (`relationshipPair`), so the row is left out rather than failing the whole import.
+		if (r.contactIs === r.ofContact) {
+			skip('relationship', 'linksPersonToThemselves');
 			continue;
 		}
 		const name = typeNames.get(r.typeId) ?? `type ${r.typeId}`;

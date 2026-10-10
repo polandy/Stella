@@ -65,6 +65,7 @@ export const importer: ImportMessages = {
 
 	'import.why.deletedInMonica': 'in Monica gelöscht',
 	'import.why.refersToDeletedContact': 'verweist auf einen gelöschten Kontakt',
+	'import.why.linksPersonToThemselves': 'verbindet eine Person mit sich selbst',
 	'import.why.belongsToDeletedContact': 'gehört zu einem gelöschten Kontakt',
 	'import.why.empty': 'leer',
 	'import.why.linkedToNoPerson': 'mit niemandem verknüpft',

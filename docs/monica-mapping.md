@@ -62,7 +62,8 @@ Stella stores one row whose type carries both labels, so mirrored pairs collapse
 | any user-defined name | custom symmetric type named after it (category *other*), with a warning |
 
 Custom types are created once per household (`monica:reltype:<key>`) and only when used.
-A relationship whose end is a deleted contact is left out and reported.
+A relationship whose end is a deleted contact is left out and reported, and so is one that links a
+contact to themselves (Monica allows that row; Stella refuses such a link) — the rest imports.
 
 ## Fields, notes and the rest
 

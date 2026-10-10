@@ -92,6 +92,7 @@ export const importer = {
 
 	'import.why.deletedInMonica': 'deleted in Monica',
 	'import.why.refersToDeletedContact': 'refers to a deleted contact',
+	'import.why.linksPersonToThemselves': 'links a person to themselves',
 	'import.why.belongsToDeletedContact': 'belongs to a deleted contact',
 	'import.why.empty': 'empty',
 	'import.why.linkedToNoPerson': 'linked to no person',
