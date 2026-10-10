@@ -1,6 +1,7 @@
 import { SECTION_FOR_REFERENCE, contactSectionPath } from '$lib/people/sections';
 import { segmentsOf } from '$lib/i18n/linked';
 import type { Translate } from '$lib/i18n/translate';
+import { extractMentionIds } from '$lib/mentions/mentions';
 import { mentionSnippet } from '$lib/mentions/snippet';
 import { fieldHref, type ContactField } from '$lib/server/domain/contact-fields/contact-fields';
 import type { Contact } from '$lib/server/domain/contacts/contacts';
@@ -14,7 +15,12 @@ import type { Gift } from '$lib/server/domain/gifts/gifts';
 import type { MentionedIn } from '$lib/server/domain/mentions/mentioned-in';
 import { renderMarkdownWithMentions } from '$lib/server/domain/notes/markdown';
 import type { Note } from '$lib/server/domain/notes/notes';
-import { canRemoveAuthored, type ContactAccess, type Remover } from '$lib/server/access/visibility';
+import {
+	canEditAuthored,
+	canRemoveAuthored,
+	type ContactAccess,
+	type Remover
+} from '$lib/server/access/visibility';
 import type { ProposedLink } from '$lib/server/domain/relationships/suggestion-review';
 import { authorLabel } from '$lib/story/author';
 import type { LinkSuggestion } from '$lib/suggestions/types';
@@ -111,16 +117,25 @@ export function noteView(
 	person: ContactAccess
 ) {
 	const mine = note.createdBy === ctx.viewerId;
+	const access = { ownerId: note.createdBy, visibility: note.visibility, contact: person };
+	const editable = canEditAuthored(remover, access);
 	return {
 		id: note.id,
 		title: note.title,
 		bodyHtml: renderMarkdownWithMentions(note.body, ctx.nameOf),
 		author: mine ? null : authorLabel(false, ctx.nameOfAuthor(note.createdBy)),
-		removable: canRemoveAuthored(remover, {
-			ownerId: note.createdBy,
-			visibility: note.visibility,
-			contact: person
-		}),
+		removable: canRemoveAuthored(remover, access),
+		editable,
+		// The stored source, tokens and all, for the editor; only an author edits (docs/03 §3.7).
+		bodyForEdit: editable ? note.body : null,
+		// What each token in the body reads as — including people the @-picker does not offer,
+		// such as the note's own subject.
+		mentionNames: Object.fromEntries(
+			extractMentionIds(note.body).flatMap((id) => {
+				const name = ctx.nameOf(id);
+				return name === null ? [] : [[id, name]];
+			})
+		),
 		isPinned: note.isPinned,
 		visibility: note.visibility,
 		createdAt: note.createdAt

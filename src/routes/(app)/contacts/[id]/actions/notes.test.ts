@@ -82,3 +82,74 @@ describe('removeNote', () => {
 		expect(asked.map((r) => r.isAdmin)).toEqual([false, true]);
 	});
 });
+
+/*
+ * Editing a note (docs/02 §2.5): the author's alone, online only. Gone and not-yours are said
+ * alike with a 404; the route only reads the form and says who is asking.
+ */
+function editable(written: { id: string; title: string | null; body: string }[]): FakeServices {
+	const repo: Pick<NoteRepository, 'findOwn' | 'updateOwn' | 'replaceMentions'> = {
+		findOwn: async (_author, id) =>
+			id === 'n1' ? { id, contactId: 'anna', visibility: 'shared' } : null,
+		updateOwn: async (_author, p) => {
+			written.push({ id: p.id, title: p.title, body: p.body });
+			return true;
+		},
+		replaceMentions: async () => {}
+	};
+	return {
+		people: {
+			contactDeps: {
+				contacts: contactRepositoryWith({
+					findByIdVisibleTo: async (_viewer, id) => (id === 'anna' ? ({ id } as Contact) : null)
+				})
+			},
+			directory: { listVisibleTo: async () => [] },
+			namesakeContextDeps: {}
+		} as never,
+		notes: {
+			noteDeps: { notes: repo, ids: { next: () => 'a1' }, clock: { now: () => 1 } }
+		} as never
+	};
+}
+
+const edit = (services: FakeServices, fields: Record<string, string>, contact = 'anna') =>
+	answerOf(
+		actions.editNote(
+			routeEvent({ services, user: MEMBER, params: { id: contact }, form: formOf(fields) }) as never
+		)
+	);
+
+describe('editNote', () => {
+	it('rewrites the note and returns to the profile', async () => {
+		const written: { id: string; title: string | null; body: string }[] = [];
+		expect(await edit(editable(written), { id: 'n1', title: ' T ', body: 'new' })).toEqual(BACK);
+		expect(written).toEqual([{ id: 'n1', title: 'T', body: 'new' }]);
+	});
+
+	it('answers 404 for a note gone or not the viewer’s to edit', async () => {
+		const written: { id: string; title: string | null; body: string }[] = [];
+		expect(await edit(editable(written), { id: 'other', body: 'new' })).toEqual({
+			kind: 'fail',
+			status: 404,
+			data: { noteError: t('errors.note.gone') }
+		});
+		expect(written).toEqual([]);
+	});
+
+	it('answers 404 for a person the viewer cannot see', async () => {
+		expect(await edit(editable([]), { id: 'n1', body: 'new' }, 'hidden')).toEqual({
+			kind: 'error',
+			status: 404,
+			message: t('errors.contact.notFound')
+		});
+	});
+
+	it('says why an empty body is refused', async () => {
+		expect(await edit(editable([]), { id: 'n1', body: '  ' })).toEqual({
+			kind: 'fail',
+			status: 400,
+			data: { noteError: t('errors.note.empty') }
+		});
+	});
+});

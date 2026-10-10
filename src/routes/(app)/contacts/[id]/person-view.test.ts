@@ -152,6 +152,29 @@ describe('noteView', () => {
 		expect(view(theirs)).toMatchObject({ removable: false, author: 'Hans' });
 		expect(view(theirs, admin).removable).toBe(true);
 	});
+
+	it('hands the author the stored source to edit, and the names its tokens read as', () => {
+		const mine = view(note());
+		expect(mine.editable).toBe(true);
+		expect(mine.bodyForEdit).toBe(note().body);
+		expect(mine.mentionNames).toEqual({ 'c-anna': 'Anna Brunner' });
+	});
+
+	it('gives an admin Remove but never Edit on another member’s shared note', () => {
+		expect(view(note({ createdBy: 'user-2' }), admin)).toMatchObject({
+			removable: true,
+			editable: false,
+			bodyForEdit: null
+		});
+	});
+
+	it('gives a member neither on someone else’s note', () => {
+		expect(view(note({ createdBy: 'user-2' }))).toMatchObject({
+			removable: false,
+			editable: false,
+			bodyForEdit: null
+		});
+	});
 });
 
 function reference(overrides: Partial<MentionedIn> = {}): MentionedIn {

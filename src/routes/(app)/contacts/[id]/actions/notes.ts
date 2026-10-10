@@ -7,6 +7,9 @@ import { systemClock } from '$lib/server/clock';
 import { error, fail, redirect } from '@sveltejs/kit';
 import { requireRemover, requireViewer } from '$lib/server/auth/guards';
 import { getContact } from '$lib/server/domain/contacts/contacts';
+import { TranslatableError } from '$lib/i18n/translatable';
+import { withNamesakeContext } from '$lib/server/domain/mentions/namesake-context';
+import { editNote } from '$lib/server/domain/notes/edit-note';
 import { removeNote } from '$lib/server/domain/notes/remove-note';
 import { say, translator } from '$lib/server/i18n/say';
 import type { Actions } from '../$types';
@@ -49,6 +52,48 @@ export const noteActions = {
 			});
 		}
 
+		throw redirect(303, `/contacts/${params.id}`);
+	},
+
+	/*
+	 * Not a command: editing waits for a connection, like removing, so the right to edit — its
+	 * author's alone — is checked when the edit lands. Gone and not-theirs are said alike.
+	 */
+	editNote: async ({ request, params, locals }) => {
+		const viewer = requireViewer(locals);
+
+		const form = await request.formData();
+		const id = form.get('id');
+		if (typeof id !== 'string') {
+			return fail(400, { noteError: say(locals, 'errors.form.checkAndRetry') });
+		}
+		const title = form.get('title');
+		const body = form.get('body');
+		if (typeof body !== 'string') {
+			return fail(400, { noteError: say(locals, 'errors.form.checkAndRetry') });
+		}
+
+		const contact = await getContact(locals.services.people.contactDeps, viewer, params.id);
+		if (!contact) throw error(404, say(locals, 'errors.contact.notFound'));
+
+		let edited: boolean;
+		try {
+			// A handle that could be several people is asked about, not dropped (docs/02 §2.2.3).
+			edited = await withNamesakeContext(locals.services.people.namesakeContextDeps, viewer, () =>
+				editNote(
+					{
+						...locals.services.notes.noteDeps,
+						directory: locals.services.people.directory
+					},
+					{ userId: viewer.id, householdId: viewer.householdId },
+					{ id, title: typeof title === 'string' ? title : null, body }
+				)
+			);
+		} catch (err) {
+			if (!(err instanceof TranslatableError)) throw err;
+			return fail(400, { noteError: err.phrase(translator(locals)) });
+		}
+		if (!edited) return fail(404, { noteError: say(locals, 'errors.note.gone') });
 		throw redirect(303, `/contacts/${params.id}`);
 	},
 
