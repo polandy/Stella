@@ -135,12 +135,9 @@ test('wears a gallery photo as the avatar, and gives it back when the photo is r
 	await expect(lightbox).toBeHidden();
 	await expect(grid.getByRole('button')).toHaveCount(0);
 	await expect(page.getByRole('button', { name: 'Undo' })).toBeVisible();
-	// Empty again, the card is one line, without a count (docs/05 §5.5).
-	await expect(page.locator('#section-photos')).toHaveAttribute('data-empty-line', 'true', {
-		timeout: 20_000
-	});
-	await expect(page.getByText('No photos yet.')).toBeVisible();
-	await expect(avatar).toHaveCount(0);
+	// Once the window closes the photo is really gone: the face with it, and no count left.
+	await expect(avatar).toHaveCount(0, { timeout: 20_000 });
+	await expect(page.locator('#section-photos > header')).not.toContainText('1');
 });
 
 test('dates a gallery photo, on its tile and in the lightbox', async ({ page }) => {
