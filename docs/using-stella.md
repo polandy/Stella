@@ -292,6 +292,11 @@ way you do on Home: Stella suggests who you mean, the name becomes a link to the
 searching for that name finds the note. A shared note only offers people the whole household
 can see. The same picker is now in the journal too.
 
+To correct a note you wrote, press the pencil on it: the note turns into its title and text,
+ready to change, and *Save* puts it back. Pin and shared-or-private stay as they were; people
+you name with `@` follow what you write. Like removing, editing needs a connection. Someone
+else's note has no pencil, even for the household's admin.
+
 To remove a note you wrote, press the cross on it. It disappears at once and *Undo* is on
 offer for eight seconds; after that it is gone for good. Removing needs a connection — it is
 not kept on the phone like a new note. Someone else's note shows who wrote it and has no

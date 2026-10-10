@@ -126,9 +126,8 @@ Goal: sand the edges and add the nice-to-haves.
 - ~~**Performance passes**~~ — shipped.
 - ~~**Empty-state and onboarding refinements**~~ — shipped (§2.22).
 - ~~**Accessibility audit**~~ — shipped (§2.19).
-- **Who may remove what** — *slice 1 of 4 built (removing a note, §2.5):*
-  [concepts/removal-rights.md](concepts/removal-rights.md). A note cannot yet be edited, not
-  even by its author (§2.5). Decided: authored records (notes,
+- **Who may remove what** — *slice 2 of 4 built (removing and editing a
+  note, §2.5):* [concepts/removal-rights.md](concepts/removal-rights.md). Decided: authored records (notes,
   moments, touchpoints, person and circle photos) may be removed by their author, or by an
   admin when shared (never a private one, §2.10). Removal is a delete with the 8-second
   undo, and a removal by someone other than the author leaves a shared activity entry

@@ -108,7 +108,7 @@ export function giftView(gift: Gift, ctx: PersonViewContext) {
 
 /**
  * A note, rendered server-side; the output is already safe (docs/02 §2.5). Someone else's is
- * named, and *Remove* is offered as the access layer allows (docs/03 §3.7).
+ * named, and *Remove* and *Edit* are offered as the access layer allows (docs/03 §3.7).
  */
 export function noteView(
 	note: Note,
