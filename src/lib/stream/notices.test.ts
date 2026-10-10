@@ -86,4 +86,28 @@ describe('noticeContentOf', () => {
 			authorName: 'Nina'
 		});
 	});
+
+	it('reads every other removable kind the same way, a circle photo with no person to open', () => {
+		for (const kind of ['journal_entry', 'interaction', 'photo'] as const) {
+			expect(
+				noticeContentOf({
+					entityType: kind,
+					summary: removalFacts('Kurt', 'user-nina', 'Nina'),
+					contactId: 'kurt'
+				})
+			).toMatchObject({ kind: 'removed', recordKind: kind, contactId: 'kurt' });
+		}
+		expect(
+			noticeContentOf({
+				entityType: 'circle_photo',
+				summary: removalFacts('Class 3b', 'user-nina', 'Nina'),
+				contactId: null
+			})
+		).toMatchObject({
+			kind: 'removed',
+			recordKind: 'circle_photo',
+			person: 'Class 3b',
+			contactId: null
+		});
+	});
 });

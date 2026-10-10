@@ -150,6 +150,19 @@ describe('the line for a note someone else removed (docs/02 §2.11)', () => {
 		expect(sayDe('home.stream.removedNoteOf', { author: 'Max' })).toBe('entfernte Max’ Notiz zu');
 	});
 
+	it('has a line for each other kind, with the same genitive', () => {
+		const sayDe = createTranslator('de');
+		expect(sayDe('home.stream.removedPhotoOf', { author: 'Klaus' })).toBe(
+			'entfernte Klaus’ Foto von'
+		);
+		expect(sayDe('home.stream.removedEntryOf', { author: 'Nina' })).toBe(
+			'entfernte Ninas Tagebucheintrag zu'
+		);
+		expect(createTranslator('en')('home.stream.removedTouchpointOf', { author: 'Nina' })).toBe(
+			'removed Nina’s touchpoint with'
+		);
+	});
+
 	it('says it in English with the possessive', () => {
 		expect(createTranslator('en')('home.stream.removedNoteOf', { author: 'Nina' })).toBe(
 			'removed Nina’s note on'

@@ -1,6 +1,5 @@
 import { beforeEach, describe, expect, it } from 'bun:test';
 import { Database } from 'bun:sqlite';
-import { eq } from 'drizzle-orm';
 import { drizzle, type BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
 import { migrate } from 'drizzle-orm/bun-sqlite/migrator';
 import type { Viewer } from '../access/visibility';

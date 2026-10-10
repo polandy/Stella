@@ -3,7 +3,7 @@
 	import StreamWhen from '$lib/components/stream/StreamWhen.svelte';
 	import type { StreamTime } from '$lib/stream/days';
 	import { useTranslate } from '$lib/i18n/context.svelte';
-	import type { NoticeContent } from '$lib/stream/notices';
+	import type { NoticeContent, RemovedRecordKind } from '$lib/stream/notices';
 
 	/*
 	 * A line of Home's stream that the activity log holds (docs/02 §2.11). A removal is shown as
@@ -32,6 +32,29 @@
 	const icon = $derived(
 		content.kind === 'text' || content.kind === 'removed' ? 'remove' : 'rename'
 	);
+
+	/** Who removed what of whom, by kind: "removed your note on", "removed Nina’s photo of". */
+	function removedLine(kind: RemovedRecordKind, yours: boolean, author: string): string {
+		switch (kind) {
+			case 'note':
+				return yours
+					? t('home.stream.removedYourNote')
+					: t('home.stream.removedNoteOf', { author });
+			case 'journal_entry':
+				return yours
+					? t('home.stream.removedYourEntry')
+					: t('home.stream.removedEntryOf', { author });
+			case 'interaction':
+				return yours
+					? t('home.stream.removedYourTouchpoint')
+					: t('home.stream.removedTouchpointOf', { author });
+			case 'photo':
+			case 'circle_photo':
+				return yours
+					? t('home.stream.removedYourPhoto')
+					: t('home.stream.removedPhotoOf', { author });
+		}
+	}
 </script>
 
 <span
@@ -54,9 +77,7 @@
 			>
 		{:else if content.kind === 'removed'}
 			<span
-				>{content.authorId === readerId
-					? t('home.stream.removedYourNote')
-					: t('home.stream.removedNoteOf', { author: content.authorName })}</span
+				>{removedLine(content.recordKind, content.authorId === readerId, content.authorName)}</span
 			>
 			{#if content.contactId && canOpen(content.contactId)}
 				<a href="/contacts/{content.contactId}" class="font-medium text-fg hover:underline"

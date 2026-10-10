@@ -1,5 +1,8 @@
 import type { HomeMessages } from '../en/home';
 
+/** The genitive: „Ninas“, but „Klaus’“ after s, ß, x or z. */
+const genitive = (name: string): string => (/[sßxz]$/i.test(name) ? `${name}’` : `${name}s`);
+
 /** German for `messages/en/home.ts`. */
 export const home: HomeMessages = {
 	'home.title': 'Start · Stella',
@@ -79,9 +82,14 @@ export const home: HomeMessages = {
 	'home.stream.renamedAfter': 'um',
 	'home.stream.nameEdited': 'bearbeitete den Namen von',
 	'home.stream.removedYourNote': 'entfernte deine Notiz zu',
-	// The genitive: „Ninas“, but „Klaus’“ after s, ß, x or z.
-	'home.stream.removedNoteOf': (p) =>
-		`entfernte ${/[sßxz]$/i.test(p.author) ? `${p.author}’` : `${p.author}s`} Notiz zu`,
+	'home.stream.removedNoteOf': (p) => `entfernte ${genitive(p.author)} Notiz zu`,
+	'home.stream.removedYourEntry': 'entfernte deinen Tagebucheintrag zu',
+	'home.stream.removedEntryOf': (p) => `entfernte ${genitive(p.author)} Tagebucheintrag zu`,
+	'home.stream.removedYourTouchpoint': 'entfernte deinen Kontakt mit',
+	'home.stream.removedTouchpointOf': (p) => `entfernte ${genitive(p.author)} Kontakt mit`,
+	'home.stream.removedYourPhoto': 'entfernte dein Foto von',
+	'home.stream.removedPhotoOf': (p) => `entfernte ${genitive(p.author)} Foto von`,
+
 	'home.stream.linked': 'verknüpfte',
 	'home.stream.linkedAfter': '',
 	'home.stream.relationship': 'Beziehung',

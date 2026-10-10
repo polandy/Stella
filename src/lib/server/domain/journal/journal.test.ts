@@ -1,6 +1,5 @@
 import { describe, expect, it } from 'bun:test';
 import type { Viewer } from '../../access/visibility';
-import type { DeletedPhotoFiles } from '../media/avatars';
 import {
 	editJournalEntry,
 	EmptyJournalEntryError,
