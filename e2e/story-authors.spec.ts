@@ -28,12 +28,13 @@ test('names the member who wrote each item, and calls the viewer you', async ({ 
 	await expect(mine).not.toContainText('Nina');
 });
 
-test('offers to remove only the items the viewer wrote', async ({ page }) => {
+test('offers the admin to remove a shared item another member wrote', async ({ page }) => {
 	const mine = page.locator('[data-story-item]', { hasText: MY_ENTRY });
 	const hers = page.locator('[data-story-item]', { hasText: NINA_ENTRY });
 
+	// Nina's moment is shared and the viewer is the household's admin (docs/03 §3.7).
 	await expect(mine.getByRole('button', { name: 'Remove moment' })).toHaveCount(1);
-	await expect(hers.getByRole('button', { name: 'Remove moment' })).toHaveCount(0);
+	await expect(hers.getByRole('button', { name: 'Remove moment' })).toHaveCount(1);
 });
 
 test('says the same on the journal page, where there is no kind beside it', async ({ page }) => {
