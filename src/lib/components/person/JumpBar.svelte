@@ -28,8 +28,12 @@
 	 * It sticks to the top of the shell's scroller, which starts under the top bar wherever that
 	 * bar is, so a phone's sliding bar (docs/05 §5.4) takes it along by itself. The scroller is
 	 * told the bar's height as its scroll padding: a jump, an anchor in a link, or the cursor
-	 * moving down the page stops below the bar rather than behind it. While it is hidden it is
-	 * inert: out of the tab order and the accessibility tree, as it is out of sight.
+	 * moving down the page stops below the bar rather than behind it. That padding is the strip
+	 * the stuck bar itself sits in, so the browser counts the bar's own links as out of sight
+	 * there: the cursor arriving on one would scroll the page back to where the bar rests, and
+	 * the bar would hide under it. Each link's scroll margin moves its box down by the bar's
+	 * height, out of that strip, so the browser finds it already in view. While it is hidden it
+	 * is inert: out of the tab order and the accessibility tree, as it is out of sight.
 	 */
 	let { data }: { data: PersonPageData } = $props();
 
@@ -175,6 +179,8 @@
 						href="#{sectionAnchor(entry.section)}"
 						aria-current={marked === entry.section ? 'location' : undefined}
 						onclick={(event) => jump(event, entry.section)}
+						style:scroll-margin-top="{-barHeight}px"
+						style:scroll-margin-bottom="{barHeight}px"
 						class="flex h-8 min-w-0 items-center justify-center gap-1 rounded-full px-2 text-[0.8125rem] font-medium whitespace-nowrap text-fg-muted transition-colors hover:text-fg aria-[current=location]:bg-card aria-[current=location]:text-fg aria-[current=location]:shadow-card sm:px-3"
 					>
 						<span class="truncate">{t(TITLE[entry.section])}</span>
