@@ -1,6 +1,10 @@
 import { and, desc, eq, inArray } from 'drizzle-orm';
 import type { BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
-import { authoredRemovableBy, childRecordVisibleTo } from '../access/query-scoping';
+import {
+	authoredEditableBy,
+	authoredRemovableBy,
+	childRecordVisibleTo
+} from '../access/query-scoping';
 import type { Remover, Viewer } from '../access/visibility';
 import { activityEntry, type ActivityOf } from '../domain/activity/activity';
 import type { NewNote, NoteRepository } from '../domain/notes/notes';
@@ -16,6 +20,9 @@ import { activityLog, contact, note, noteMention, user } from './schema';
 export function createDrizzleNoteRepository(db: BunSQLiteDatabase<typeof schema>): NoteRepository {
 	const removableBy = (remover: Remover) =>
 		authoredRemovableBy(remover, { visibility: note.visibility, createdBy: note.createdBy });
+
+	const editableBy = (author: Viewer) =>
+		authoredEditableBy(author, { visibility: note.visibility, createdBy: note.createdBy });
 
 	return {
 		async insert(n: NewNote) {
@@ -79,6 +86,35 @@ export function createDrizzleNoteRepository(db: BunSQLiteDatabase<typeof schema>
 				.where(eq(noteMention.noteId, noteId))
 				.all()
 				.map((r) => r.contactId);
+		},
+
+		async findOwn(author: Viewer, id: string) {
+			const row = db
+				.select({ id: note.id, contactId: note.contactId, visibility: note.visibility })
+				.from(note)
+				.innerJoin(contact, eq(note.contactId, contact.id))
+				.where(and(eq(note.id, id), editableBy(author)))
+				.get();
+			return row ?? null;
+		},
+
+		async updateOwn(
+			author: Viewer,
+			p: { id: string; title: string | null; body: string; updatedAt: number }
+		) {
+			// SQLite's UPDATE takes no join, so the rule — which needs the contact — picks the id.
+			const editable = db
+				.select({ id: note.id })
+				.from(note)
+				.innerJoin(contact, eq(note.contactId, contact.id))
+				.where(and(eq(note.id, p.id), editableBy(author)));
+			const updated = db
+				.update(note)
+				.set({ title: p.title, body: p.body, updatedAt: p.updatedAt })
+				.where(inArray(note.id, editable))
+				.returning({ id: note.id })
+				.all();
+			return updated.length > 0;
 		},
 
 		async findRemovableBy(remover: Remover, id: string) {

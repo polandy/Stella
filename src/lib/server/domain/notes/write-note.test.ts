@@ -57,6 +57,8 @@ function fakes(people = [person('julia'), person('marco'), person('sam', 'privat
 			listForContactVisibleTo: async () => [],
 			replaceMentions: async (id, ids) => void mentions.set(id, ids),
 			listMentionedContactIds: async () => [],
+			findOwn: async () => null,
+			updateOwn: async () => false,
 			findRemovableBy: async () => null,
 			deleteRemovableBy: async () => false
 		},

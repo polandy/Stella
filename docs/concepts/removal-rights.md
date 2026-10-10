@@ -1,9 +1,9 @@
 # Concept — Who may remove what
 
-Status: **concept, slice 1 built** — decided with the maintainer on 2026-10-10 (§3, §5).
-Slice 1 (the rule, and removing a note) is built: its rules now live in docs/02 §2.5, §2.10,
-§2.11, §2.23 and docs/03 §3.7 and `activity_log`, and are not repeated here. Slices 2–4 are
-still to build.
+Status: **concept, slices 1–2 built** — decided with the maintainer on 2026-10-10 (§3, §5).
+Slices 1 (the rule, and removing a note) and 2 (editing a note) are built: their rules now live
+in docs/02 §2.5, §2.10, §2.11, §2.23 and docs/03 §3.7 and `activity_log`, and are not repeated
+here. Slices 3–4 are still to build.
 Roadmap: docs/06 M3, *Who may remove what*. When a slice is built, its rule moves into the
 feature docs (docs/02, docs/03 §3.7) and this file shrinks; once all slices are built it is
 folded in and deleted.
@@ -12,8 +12,8 @@ folded in and deleted.
 
 ## 1. Why
 
-A note can be neither edited nor deleted today — not even by whoever wrote it (docs/02 §2.5).
-A wrong or outdated note stays on a person's page forever. Its **author or an admin** should
+A note could be neither edited nor deleted — not even by whoever wrote it (docs/02 §2.5).
+A wrong or outdated note stayed on a person's page forever. Its **author or an admin** should
 be able to remove it. Looking at every kind of record turned up a mixed set of rules (§2).
 The concept settles one rule for the records that have an author and writes down on purpose
 where the household-wide rule stays.
@@ -29,7 +29,7 @@ no role, so `access/` cannot express it. Only routes know about admins
 
 | Kind | Edit | Remove | Evidence |
 |---|---|---|---|
-| **Note** | nobody | author; admin when shared — **built, slice 1** | `domain/notes/remove-note.ts` → `db/note-repository.ts` (`deleteRemovableBy`) |
+| **Note** | author (title and body) — **built, slice 2** | author; admin when shared — **built, slice 1** | `domain/notes/remove-note.ts` → `db/note-repository.ts` (`deleteRemovableBy`) |
 | **Moment / journal entry** | author (title and body) | author | `domain/journal/journal.ts:203,271` → `db/journal-repository.ts:82,152` (`updateOwn`, `deleteOwn`) |
 | **Touchpoint** (interaction) | nobody | author | `domain/interactions/interactions.ts:170` → `db/interaction-repository.ts:166` (`deleteOwn`) |
 | **Person photo** (gallery) | caption, visibility: author | author | `domain/media/gallery.ts:79,95,108` → `db/photo-repository.ts:59,89` |
@@ -48,7 +48,7 @@ important date (docs/02 §2.13).
 
 **Where the rule is missing or inconsistent:**
 
-- **Note:** no way out at all, not even for its author — fixed by slice 1; editing is slice 2.
+- **Note:** no way out and no correction, not even for its author — fixed by slices 1 and 2.
 - **Moment / journal entry:** author-only, consistent. An admin cannot clear a shared entry
   left by a member who has gone.
 - **Touchpoint:** can be removed but never corrected, so a typo means delete and log again.
@@ -137,13 +137,8 @@ record the remover may not touch.
 
 ### 3.5 Note editing comes with it, author only
 
-The author may edit a note's title and body in place, as the journal's *Edit* does
-(docs/02 §2.20). The rules that follow from that:
-
-- Mentions are rebuilt and the search index is refreshed.
-- Visibility is part of the record, not the text. Changing it stays out of the editor here,
-  as with a journal entry.
-- An admin gets *Remove* on another member's shared note, never *Edit*.
+**Built, slice 2** — docs/02 §2.5, *Editing*. The author alone, title and body in place; an
+admin gets *Remove* on another member's shared note, never *Edit*.
 
 ### 3.6 Circle photos keep their shared curation
 
@@ -186,11 +181,7 @@ then e2e on the branch).
 1. **The rule, and removing a note.** — *built.* `record.removed` is an `ActivityEvent` with
    `recordKind` (only `note` so far, `REMOVED_RECORD_KINDS` in `lib/stream/notices.ts`);
    slice 3 adds its kinds there and to the line.
-2. **Editing a note.**
-   - `editNote(deps, author, input)`: author only, title and body, mentions rebuilt, search
-     reindexed.
-   - The note's *Edit* on the person page.
-   - Docs: docs/02 §2.5, `using-stella.md`.
+2. **Editing a note.** — *built;* see docs/02 §2.5, *Editing*.
 3. **The other authored kinds.**
    - Journal entries and moments, touchpoints, person photos and circle photos move from
      `deleteOwn` to the shared rule.

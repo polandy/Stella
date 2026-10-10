@@ -5,6 +5,7 @@ import {
 	canViewCirclePhoto,
 	canViewContact,
 	canViewRelationship,
+	canEditAuthored,
 	canRemoveAuthored,
 	type ChildRecordAccess,
 	type ContactAccess,
@@ -212,5 +213,36 @@ describe('canRemoveAuthored (docs/03 §3.7: author always, admin on a shared rec
 		const hidden = childOn(contact({ visibility: 'private' }));
 		expect(canRemoveAuthored(admin, hidden)).toBe(false);
 		expect(canRemoveAuthored(author, hidden)).toBe(true);
+	});
+});
+
+describe('canEditAuthored (docs/03 §3.7: the author only)', () => {
+	const author: Viewer = viewerOwner;
+	const admin: Remover = { ...viewerOther, isAdmin: true };
+	const shared = childOn(contact());
+	const priv = childOn(contact(), { visibility: 'private' });
+
+	it('lets the author edit their record, shared or private', () => {
+		expect(canEditAuthored(author, shared)).toBe(true);
+		expect(canEditAuthored(author, priv)).toBe(true);
+	});
+
+	it("refuses an admin on another member's shared record: an admin removes, never edits", () => {
+		expect(canEditAuthored(admin, shared)).toBe(false);
+		expect(canRemoveAuthored(admin, shared)).toBe(true);
+	});
+
+	it("refuses a member on someone else's shared record", () => {
+		expect(canEditAuthored(viewerOther, shared)).toBe(false);
+	});
+
+	it('refuses a user of another household', () => {
+		expect(canEditAuthored(viewerForeign, shared)).toBe(false);
+	});
+
+	it("refuses the author once the record's contact is private to someone else", () => {
+		const ownContact = contact({ ownerId: OTHER_MEMBER, visibility: 'private' });
+		expect(canEditAuthored(viewerOther, childOn(ownContact, { ownerId: OTHER_MEMBER }))).toBe(true);
+		expect(canEditAuthored(viewerOwner, childOn(ownContact))).toBe(false);
 	});
 });

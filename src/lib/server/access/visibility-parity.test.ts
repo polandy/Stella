@@ -17,6 +17,7 @@ import {
 } from '../db/schema';
 import {
 	activityVisibleTo,
+	authoredEditableBy,
 	authoredRemovableBy,
 	childRecordVisibleTo,
 	circleColumnsVisibleTo,
@@ -27,6 +28,7 @@ import {
 } from './query-scoping';
 import { REMOVERS, seedParityDb, U1, U2, U3, VIEWERS } from './visibility-parity.fixture';
 import {
+	canEditAuthored,
 	canRemoveAuthored,
 	canViewActivity,
 	canViewChildRecord,
@@ -480,4 +482,87 @@ describe('each refused removal has an allowed control', () => {
 			expect(removableBySomeone).toBe(true);
 		});
 	}
+});
+
+/*
+ * The edit rule is the author's alone, and still needs to see the record: `canEditAuthored` and
+ * `authoredEditableBy` over the same authored tables.
+ */
+function editable(t: ChildTable) {
+	return {
+		ts: (viewer: Viewer) => {
+			const contacts = contactsById();
+			return ids(
+				db
+					.select({
+						id: t.id,
+						contactId: t.contactId,
+						createdBy: t.createdBy,
+						visibility: t.visibility
+					})
+					.from(t.table)
+					.all()
+					.filter((r) => r.contactId !== null)
+					.filter((r) =>
+						canEditAuthored(viewer, {
+							ownerId: String(r.createdBy),
+							visibility: asVisibility(r.visibility),
+							contact: parentOf(contacts, String(r.contactId))
+						})
+					)
+			);
+		},
+		sql: (viewer: Viewer) =>
+			ids(
+				db
+					.select({ id: t.id })
+					.from(t.table)
+					.innerJoin(contact, eq(t.contactId, contact.id))
+					.where(authoredEditableBy(viewer, { visibility: t.visibility, createdBy: t.createdBy }))
+					.all()
+			)
+	};
+}
+
+describe('canEditAuthored and authoredEditableBy pick the same rows', () => {
+	for (const [kind, table] of AUTHORED) {
+		const pair = editable(table);
+		for (const [name, remover] of Object.entries(REMOVERS)) {
+			it(`${kind}, user ${name}`, () => {
+				expect(pair.sql(remover)).toEqual(pair.ts(remover));
+			});
+		}
+	}
+});
+
+/** [user, the note they may not edit, a note they may, why]. */
+const EDIT_CASES: [user: string, refused: string, control: string, why: string][] = [
+	['u1Admin', 'n-shared-u2', 'n-shared', "an admin on another member's shared note"],
+	['u2', 'n-shared', 'n-shared-u2', "a member on someone else's shared note"],
+	['u3Admin', 'n-shared', 'n-foreign', 'a user of another household'],
+	['u1Admin', 'n-priv-u2', 'n-priv-u1', "someone else's private note"],
+	['u3Admin', 'n-shared-u2', 'n-foreign', 'a note of another household']
+];
+
+describe('each refused edit has an allowed control', () => {
+	const pair = editable({ table: note, ...note });
+
+	for (const [name, refused, control, why] of EDIT_CASES) {
+		it(`${name} may not edit ${refused} (${why}), may edit ${control}`, () => {
+			for (const side of [pair.ts(REMOVERS[name]), pair.sql(REMOVERS[name])]) {
+				expect(side).not.toContain(refused);
+				expect(side).toContain(control);
+			}
+			const editableBySomeone = Object.values(REMOVERS).some((r) => pair.ts(r).includes(refused));
+			expect(editableBySomeone).toBe(true);
+		});
+	}
+
+	it('the author may not edit their shared note on a contact private to someone else', () => {
+		// u2 wrote n-on-priv-u1 on u1's private contact; control: u2's own note on u2's private one.
+		for (const side of [pair.ts(REMOVERS.u2), pair.sql(REMOVERS.u2)]) {
+			expect(side).not.toContain('n-on-priv-u1');
+			expect(side).toContain('n-on-priv-u2');
+		}
+	});
 });

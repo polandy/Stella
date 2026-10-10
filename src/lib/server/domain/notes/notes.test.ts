@@ -30,6 +30,8 @@ function fakeRepo() {
 			mentions = { noteId, contactIds };
 		},
 		listMentionedContactIds: async () => mentions?.contactIds ?? [],
+		findOwn: async () => null,
+		updateOwn: async () => false,
 		findRemovableBy: async () => null,
 		deleteRemovableBy: async () => false
 	};

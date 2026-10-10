@@ -886,7 +886,9 @@ nothing on a private note (`canRemoveAuthored` / `authoredRemovableBy`, held to 
 by the parity test). The remover is a viewer plus `isAdmin`, which the route reads from the
 signed-in user's `role` (`requireRemover`); it is the only rule here that looks at the role.
 The delete is scoped by the SQL condition itself, so the right is checked when the removal
-reaches the server, not when *Remove* was pressed. Editing stays with the author. Journal
+reaches the server, not when *Remove* was pressed. **Editing** a note is the author's alone, and
+only while they still see it (`canEditAuthored` / `authoredEditableBy`, held to the same rows by
+the same parity test): an admin removes, never edits. Journal
 entries, touchpoints and photos keep their author-only removal for now (docs/06 M3,
 *Who may remove what*); household facts — dates, fields, relationships,
 memberships, gifts, tags — stay open to anyone who sees them.

@@ -292,7 +292,10 @@ the person, and that never leaves the page. Keeping the record tidy (archive, me
   (*· Nina*, `text-fg-subtle`). Its header ends with the private mark and the icon-only
   *Remove* (`RemoveButton`, kind `note`), shown to the author and to an admin on a shared note
   (`canRemoveAuthored`, docs/03 §3.7). Always visible, not on hover: a phone has none.
-  Removing follows the undo window of docs/02 §2.23.
+  Before *Remove*, the author alone has a ghost icon *Edit* (pencil, `canEditAuthored`): the
+  note glides into its editor in place (`Swap`) — an optional title and the body with the
+  @-picker, narrowed by the note's audience; visibility and pin stay out — and *Save* closes it
+  with *Saved*. One note is open at a time. Online only. Removing follows the undo window of docs/02 §2.23.
 - **Photos** (docs/02 §2.14, §2.24.3) is the page's third priority, after the person and their
   people. Its header holds the title, a segmented control — *All · Stella 5 · Immich 1,764*,
   the Immich segment only for a linked person once Immich has answered — then *+ Add* and the

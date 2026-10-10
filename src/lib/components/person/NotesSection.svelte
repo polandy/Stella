@@ -1,9 +1,8 @@
 <script lang="ts">
 	import Button from '$lib/components/ui/Button.svelte';
-	import Icon from '$lib/components/ui/Icon.svelte';
 	import KeptItem from '$lib/components/pwa/KeptItem.svelte';
 	import MentionTextarea from '$lib/components/stream/MentionTextarea.svelte';
-	import RemoveButton from '$lib/components/ui/RemoveButton.svelte';
+	import NoteItem from './NoteItem.svelte';
 	import Section from '$lib/components/ui/Section.svelte';
 	import { enhance } from '$app/forms';
 	import { cardShape } from '$lib/people/empty-cards';
@@ -49,6 +48,8 @@
 	let notePinned = $state(false);
 	// A typed @Thomas that could be several people keeps saving off until one is picked.
 	let noteUnclear = $state(false);
+	// Only one note is open for editing at a time.
+	let editingNoteId = $state<string | null>(null);
 
 	/*
 	 * Notes written here while Stella was out of reach (docs/02 §2.18): kept on the device and
@@ -175,41 +176,14 @@
 	{#if notes.length > 0}
 		<ul class="flex flex-col gap-3">
 			{#each notes as note (note.id)}
-				<li class="rounded-control bg-bg-sunken p-3">
-					<div class="mb-1 flex items-center gap-2">
-						{#if note.isPinned}
-							<span class="inline-flex items-center gap-1 text-xs font-medium text-primary">
-								<Icon name="pinned" size={12} />{t('contact.notes.pinned')}
-							</span>
-						{/if}
-						{#if note.title}<span class="font-medium text-fg">{note.title}</span>{/if}
-						{#if note.author}
-							<span class="text-xs text-fg-subtle"
-								>{note.title ? `· ${note.author}` : note.author}</span
-							>
-						{/if}
-						<span class="ml-auto inline-flex items-center gap-2">
-							{#if note.visibility === 'private'}
-								<span class="inline-flex items-center gap-1 text-xs text-fg-subtle">
-									<Icon name="private" size={11} />{t('common.privateInline')}
-								</span>
-							{/if}
-							<!-- Its author's, or an admin's on a shared one (docs/03 §3.7). Online only. -->
-							{#if note.removable}
-								<RemoveButton
-									kind="note"
-									id={note.id}
-									action="?/removeNote"
-									fields={{ id: note.id }}
-									label={t('contact.notes.remove')}
-									removed={t('contact.notes.removed')}
-								/>
-							{/if}
-						</span>
-					</div>
-					<!-- server-rendered, already-safe Markdown (docs/02 §2.5) -->
-					<div class="note-body text-fg">{@html note.bodyHtml}</div>
-				</li>
+				<NoteItem
+					{note}
+					contactId={data.contact.id}
+					candidates={otherContacts}
+					editing={editingNoteId === note.id}
+					onEdit={() => (editingNoteId = note.id)}
+					onDone={() => (editingNoteId = null)}
+				/>
 			{/each}
 		</ul>
 	{/if}

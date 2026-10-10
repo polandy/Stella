@@ -78,6 +78,17 @@ export function authoredRemovableBy(
 }
 
 /**
+ * Condition for an authored record being one the viewer may edit — the SQL of
+ * `canEditAuthored`: visible, and their own. The query must join `contact`.
+ */
+export function authoredEditableBy(
+	viewer: Viewer,
+	record: { visibility: AnyColumn; createdBy: AnyColumn }
+): SQL {
+	return and(childRecordVisibleTo(viewer, record), eq(record.createdBy, viewer.id))!;
+}
+
+/**
  * Condition for a relationship being visible: both endpoints must be visible. Pass the
  * two aliased contact tables the query joins on.
  */
