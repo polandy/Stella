@@ -157,7 +157,6 @@ export const errors: ErrorsMessages = {
 	'errors.apiToken.emptyName':
 		'Bitte gib dem Token einen Namen, damit du später weißt, wofür er ist.',
 	'errors.journal.gone': 'Diesen Eintrag gibt es nicht mehr.',
-	'errors.journal.editFailed': 'Die Änderungen konnten nicht gespeichert werden.',
 	'errors.unexpected': (p) =>
 		`Bei uns ist etwas schiefgegangen. Passiert es wieder, nenne diese Kennung: ${p.requestId}`
 };

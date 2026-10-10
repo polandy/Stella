@@ -413,7 +413,7 @@ describe('edit', () => {
 			}
 		});
 		const answer = await edit(formOf({ ...change, id: 'e2' }), journal);
-		expect(answer).toEqual(refused(404, en('errors.journal.editFailed')));
+		expect(answer).toEqual(refused(404, en('errors.journal.gone')));
 		expect(written).toEqual([]);
 	});
 
@@ -434,17 +434,17 @@ describe('edit', () => {
 		]);
 	});
 
-	it('refuses an entry that is not there', async () => {
-		const answer = await edit(formOf({ ...change, id: 'gone' }));
-		expect(answer).toEqual(refused(404, en('errors.journal.editFailed')));
+	it('answers an entry that is not there as gone, in the reader’s language', async () => {
+		const answer = await edit(formOf({ ...change, id: 'gone' }), journalOver(), { locale: 'de' });
+		expect(answer).toEqual(refused(404, de('errors.journal.gone')));
 	});
 
-	it('says it could not save an entry that went while it was edited', async () => {
+	it('answers an entry that went while it was edited as gone', async () => {
 		const answer = await edit(
 			formOf(change),
 			journalOver(undefined, { updateOwn: async () => false })
 		);
-		expect(answer).toEqual(refused(404, en('errors.journal.editFailed')));
+		expect(answer).toEqual(refused(404, en('errors.journal.gone')));
 	});
 
 	it('asks which one a typed namesake means, in the reader’s language', async () => {

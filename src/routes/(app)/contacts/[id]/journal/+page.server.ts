@@ -171,7 +171,7 @@ export const actions: Actions = {
 		);
 		const entry = entries.find((e) => e.id === parsed.output.id);
 		if (!entry || entry.createdBy !== viewer.id) {
-			return fail(404, { journalError: say(locals, 'errors.journal.editFailed') });
+			return fail(404, { journalError: say(locals, 'errors.journal.gone') });
 		}
 
 		const contacts = await listContacts(locals.services.people.contactDirectoryDeps, viewer);
@@ -201,7 +201,7 @@ export const actions: Actions = {
 			return fail(400, { journalError: err.phrase(translator(locals)) });
 		}
 		if (!ok) {
-			return fail(404, { journalError: say(locals, 'errors.journal.editFailed') });
+			return fail(404, { journalError: say(locals, 'errors.journal.gone') });
 		}
 
 		await setJournalMentions(
