@@ -1,5 +1,5 @@
 import { expect, test, type Browser, type Locator, type Page } from '@playwright/test';
-import { addPerson, appReady, signIn } from './app';
+import { addPerson, appReady, openPeople, signIn } from './app';
 import { DEMO_ADMIN_PASSWORD, DEMO_MEMBER_EMAIL } from '../src/lib/server/db/demo-seed';
 
 /*
@@ -140,6 +140,44 @@ test('a removed gift comes back with Undo', async ({ page }) => {
 	await expect(row).toHaveCount(1);
 	await page.reload();
 	await expect(ideaRow(page, book)).toHaveCount(1);
+});
+
+test('a gift already removed in another tab counts as removed', async ({ page, context }) => {
+	const letters = await addGiftlessPerson(page);
+	const book = `Book ${letters}`;
+	await addIdea(page, book);
+	await expect(ideaRow(page, book)).toHaveCount(1);
+	const personPage = page.url();
+
+	// A second tab still lists it.
+	const other = await context.newPage();
+	await other.goto(personPage);
+	await appReady(other);
+	await expect(ideaRow(other, book)).toHaveCount(1);
+
+	// The first tab removes it for real: leaving through the app commits the removal first.
+	await ideaRow(page, book)
+		.getByRole('button', { name: `Remove “${book}”` })
+		.click();
+	await expect(page.getByTestId('toast-undo')).toBeVisible();
+	await openPeople(page);
+
+	// The second tab's removal finds nothing left: what it asked for is done, so nothing failed.
+	// The layout holds the navigation until the removal is sent and answered, so a notice
+	// would be up by the time the address changes — the heading is no proof, as the person
+	// page has a People card of its own.
+	await ideaRow(other, book)
+		.getByRole('button', { name: `Remove “${book}”` })
+		.click();
+	await expect(other.getByTestId('toast-undo')).toBeVisible();
+	await other.getByRole('link', { name: 'People' }).first().click();
+	await expect(other).not.toHaveURL(personPage);
+	await expect(other.getByTestId('toast-notice')).toHaveCount(0);
+
+	// Gone for real, in both.
+	await other.goto(personPage);
+	await appReady(other);
+	await expect(ideaRow(other, book)).toHaveCount(0);
 });
 
 test('a gift received opens the Received tab', async ({ page }) => {

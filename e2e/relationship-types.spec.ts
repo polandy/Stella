@@ -123,7 +123,7 @@ test('refuses a label of nothing but spaces in a sentence, and writes nothing', 
 	await expect(page.getByTestId('custom-types').locator('li')).toHaveCount(before);
 });
 
-test('says so when a type was already removed in another tab', async ({ page, context }) => {
+test('counts a type already removed in another tab as removed', async ({ page, context }) => {
 	await openTypeSettings(page);
 	await addType(page, { label: 'Bakes with', category: 'social' });
 	await expect(customRow(page, 'Bakes with')).toHaveCount(1);
@@ -143,16 +143,17 @@ test('says so when a type was already removed in another tab', async ({ page, co
 	await openTypeSettings(page);
 	await expect(customRow(page, 'Bakes with')).toHaveCount(0);
 
-	// The second tab's removal finds nothing left to remove, and says so instead of
-	// pretending it worked; the list it then reads no longer has the type.
+	// The second tab's removal finds nothing left to remove: what it asked for is done, so
+	// nothing failed and the type stays away. The layout holds the navigation until the
+	// removal is sent and answered, so a notice would be up by the time the address changes.
 	await customRow(other, 'Bakes with')
 		.getByRole('button', { name: 'Remove the type Bakes with' })
 		.click();
 	await expect(other.getByTestId('toast-undo')).toBeVisible();
+	await other.getByRole('link', { name: 'Settings' }).first().click();
+	await expect(other).not.toHaveURL(/relationship-types/);
+	await expect(other.getByTestId('toast-notice')).toHaveCount(0);
 	await openTypeSettings(other);
-	await expect(other.getByTestId('toast-notice')).toContainText(
-		'Could not remove it. It is back on the page.'
-	);
 	await expect(customRow(other, 'Bakes with')).toHaveCount(0);
 });
 

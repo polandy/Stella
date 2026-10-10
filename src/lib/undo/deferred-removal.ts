@@ -2,7 +2,7 @@ import type { PendingSink } from '../sync/pending-work';
 import { whilePending } from '../sync/pending';
 import { removalKey, type RemovalKind } from './keys';
 import type { Removal } from './pending-removals';
-import { submitAction, type ActionFetch } from './submit-action';
+import { ActionFailedError, submitAction, type ActionFetch } from './submit-action';
 
 /*
  * What a RemoveButton hands to the undo store (docs/02 §2.23): the item's key, what the toast
@@ -38,6 +38,25 @@ export interface DeferredRemovalDeps {
 }
 
 /**
+ * Posts one held removal to its form action. A 404 means the item is already gone — another
+ * tab or another member removed it first — so the goal is reached: it resolves, the screen is
+ * reloaded, and the reader is not told something failed (docs/02 §2.23). Every other refusal
+ * rejects, and the undo store brings the row back.
+ */
+export async function removeThroughAction(
+	fetch: ActionFetch,
+	action: string,
+	body: FormData
+): Promise<void> {
+	try {
+		await submitAction(fetch, action, body);
+	} catch (error) {
+		if (error instanceof ActionFailedError && error.status === 404) return;
+		throw error;
+	}
+}
+
+/**
  * The removal to hold for one undo window. Nothing happens until `commit` is called, which the
  * store does when the window closes or the page is left; a commit that fails rejects, and the
  * store brings the row back.
@@ -45,7 +64,7 @@ export interface DeferredRemovalDeps {
 export function deferredRemoval(request: RemovalRequest, deps: DeferredRemovalDeps): Removal {
 	const { fetch, reload, pending } = deps;
 	const remove = async () => {
-		await submitAction(fetch, request.action, request.body);
+		await removeThroughAction(fetch, request.action, request.body);
 		await reload();
 	};
 	return {

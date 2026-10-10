@@ -517,7 +517,8 @@ Removing asks no "are you sure?": the item disappears
 and a small **Undo** appears at the bottom of the screen for a few seconds, in case it was
 the wrong one. While your pointer rests on it, or you have tabbed to it, the clock stops — it
 starts again from the beginning once you move away. That goes for everything you can remove — a phone number, a date, a tag, a
-circle you leave — and saving something says *Saved* in the same corner. When a change takes
+circle you leave. If someone else removed it first — in another tab, or another member of the
+household — it simply stays gone. Saving something says *Saved* in the same corner. When a change takes
 a moment to work through — a relationship, say, with the map beside it to redraw — a small
 *Updating…* appears at the top of the window until it is done. Nothing is greyed out or locked
 while it is there: what is on the screen still stands, it is simply not the new answer yet.
