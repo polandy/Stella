@@ -433,9 +433,10 @@ magic literals, no timing-based tests) apply on top of this.
 - **Agents**: implementation goes to the `stella-implementer` agent, reviews to
   `stella-reviewer` (`.claude/agents/`), which carry these rules so a brief only states scope,
   tier and decisions. Agents read doc *sections*, not whole docs; never run the whole
-  `bun run test:e2e` (CI does, on every push) — but a PR that edits an existing
-  `e2e/*.spec.ts` runs just the specs `.claude/skills/feature-review/affected-specs.sh` lists
-  before the push; and read a red run with `scripts/ci-failures.sh <PR>` before reaching for
+  `bun run test:e2e` (CI does, on every push) — but a PR that adds or edits an
+  `e2e/*.spec.ts` runs that spec alone locally (`./e2e/run.sh e2e/<spec>.spec.ts`), plus the
+  specs `.claude/skills/feature-review/affected-specs.sh` lists, and pushes once they are green,
+  so a fresh spec does not cost a CI round-trip to find out whether it works; and read a red run with `scripts/ci-failures.sh <PR>` before reaching for
   the full log.
 - **Model by tier.** The implementer inherits its model; the orchestrator picks it per brief
   with the Agent tool's `model` parameter, using the review's tiers: `opus` for **Full** (a

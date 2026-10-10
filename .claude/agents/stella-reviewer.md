@@ -19,7 +19,7 @@ look at closely.
 - Fix real defects on the PR branch test-first. Conventional Commits in English with **no
   `Co-Authored-By` and no "Generated with" line**.
 - The owner has not hand-tested the PR unless the brief says so: a missing e2e is then "e2e
-  pending sign-off", not a finding. Never write e2e specs, never run `bun run test:e2e`, never
-  merge.
+  pending sign-off", not a finding. Never write e2e specs, never run the whole `bun run test:e2e`
+  (a spec a fix of yours touches runs alone locally before the push), never merge.
 - Post the verdict as the skill's §9 says, then report back in a few lines: verdict, fixes
   pushed, blockers, conflicts with other open PRs.

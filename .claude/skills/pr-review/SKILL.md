@@ -35,8 +35,10 @@ In both tiers:
   heading, then read that range), never a whole `docs/` file.
 - **Red CI**: read `scripts/ci-failures.sh <PR>` first — failure annotations only. Reach for
   `gh run view --log-failed` only when that is not enough.
-- **Never run `bun run test:e2e` locally** — CI runs it on every push. Render with a throwaway
-  script only when a claim is about pixels.
+- **Never run the whole `bun run test:e2e` locally** — CI runs it on every push. A spec the PR
+  adds or changes, or one a fix of yours touches, runs alone locally first
+  (`./e2e/run.sh e2e/<spec>.spec.ts`) and is pushed once green. Render with a throwaway script
+  only when a claim is about pixels.
 
 ## 0. Gather context
 
