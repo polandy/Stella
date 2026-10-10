@@ -139,3 +139,20 @@ describe('messageKey', () => {
 		expect(messageKey('auth.setup.needName')).toBe('auth.setup.needName');
 	});
 });
+
+describe('the line for a note someone else removed (docs/02 §2.11)', () => {
+	it('puts the author in the German genitive, with an apostrophe after s, ß, x or z', () => {
+		const sayDe = createTranslator('de');
+		expect(sayDe('home.stream.removedNoteOf', { author: 'Nina' })).toBe('entfernte Ninas Notiz zu');
+		expect(sayDe('home.stream.removedNoteOf', { author: 'Klaus' })).toBe(
+			'entfernte Klaus’ Notiz zu'
+		);
+		expect(sayDe('home.stream.removedNoteOf', { author: 'Max' })).toBe('entfernte Max’ Notiz zu');
+	});
+
+	it('says it in English with the possessive', () => {
+		expect(createTranslator('en')('home.stream.removedNoteOf', { author: 'Nina' })).toBe(
+			'removed Nina’s note on'
+		);
+	});
+});
