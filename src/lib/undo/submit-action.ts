@@ -3,7 +3,11 @@ export type ActionFetch = (url: string, init?: RequestInit) => Promise<Response>
 
 /** Thrown when the action did not remove the item — the caller brings it back on screen. */
 export class ActionFailedError extends Error {
-	constructor(action: string, status: number) {
+	constructor(
+		action: string,
+		/** The action's own status — a `fail(404)` arrives as HTTP 200 and still reads 404 here. */
+		readonly status: number
+	) {
 		super(`${action} answered ${status}`);
 		this.name = 'ActionFailedError';
 	}

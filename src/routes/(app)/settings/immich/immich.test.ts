@@ -310,11 +310,12 @@ describe('ignore', () => {
 		});
 	});
 
-	it('says so when the person is gone or out of sight', async () => {
+	// 404, which a held Ignore reads as done: the row is for nobody any more (docs/02 §2.23).
+	it('answers 404 when the person is gone or out of sight', async () => {
 		const h = household({});
 		expect(await post('ignore', h.services, row)).toEqual({
 			kind: 'fail',
-			status: 400,
+			status: 404,
 			data: { linked: [], refused: [], error: t('errors.contact.notFound') }
 		});
 		expect(h.ignored).toEqual([]);

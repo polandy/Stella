@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'bun:test';
-import { deferredRemoval } from './deferred-removal';
+import { deferredRemoval, removeThroughAction } from './deferred-removal';
+import { createPendingRemovals, type Scheduler } from './pending-removals';
 import type { ActionFetch } from './submit-action';
 import type { PendingSink } from '../sync/pending-work';
 
@@ -32,6 +33,36 @@ function trail(): {
 		},
 		reload: async () => void calls.push('reload')
 	};
+}
+
+/** A fetch that answers every post the same way, and counts the posts. */
+function answering(status: number, result: unknown) {
+	const posts: string[] = [];
+	const fetch: ActionFetch = async (url) => {
+		posts.push(url);
+		return new Response(JSON.stringify(result), {
+			status,
+			headers: { 'content-type': 'application/json' }
+		});
+	};
+	return { posts, fetch };
+}
+
+/** How SvelteKit answers an action that threw `error(404)`, and one that returned `fail(404)`. */
+const thrownNotFound = () => answering(404, { type: 'error', error: { message: 'Not found' } });
+const failedNotFound = () => answering(200, { type: 'failure', status: 404, data: '[]' });
+
+/** A timer that never fires: these windows close only by `flush`, as when the page is left. */
+const stillClock: Scheduler = { setTimeout: () => 0, clearTimeout: () => {} };
+
+/** The undo store as the app shell builds it, with each reported failure written down. */
+function store() {
+	const failures: string[] = [];
+	const removals = createPendingRemovals({
+		scheduler: stillClock,
+		onCommitFailed: (removal) => failures.push(removal.key)
+	});
+	return { removals, failures };
 }
 
 const request = (body = new FormData()) => ({
@@ -109,5 +140,73 @@ describe('deferredRemoval', () => {
 		// The failure must reach the store, which brings the row back — and the count must not
 		// be left standing, or the indicator would never go again.
 		expect(calls).toEqual(['begin', 'post', 'end']);
+	});
+
+	it('counts an item already gone as removed: the screen catches up and nothing failed', async () => {
+		for (const { fetch } of [thrownNotFound(), failedNotFound()]) {
+			const calls: string[] = [];
+			const { removals, failures } = store();
+			removals.remove(
+				deferredRemoval(request(), { fetch, reload: async () => void calls.push('reload') })
+			);
+
+			await removals.flush();
+
+			// Another tab removed it first: the goal is reached, so the row stays away and the
+			// reload drops it for good — no "could not remove it", which is what brings it back.
+			expect(failures).toEqual([]);
+			expect(calls).toEqual(['reload']);
+			expect(removals.isPending('date:date-1')).toBe(false);
+		}
+	});
+
+	it('still brings the row back and says so when the server failed', async () => {
+		const reloads: string[] = [];
+		const broken = answering(500, { type: 'error', error: { message: 'Internal Error' } });
+		const offline: ActionFetch = async () => {
+			throw new TypeError('Failed to fetch');
+		};
+
+		for (const fetch of [broken.fetch, offline]) {
+			const { removals, failures } = store();
+			removals.remove(
+				deferredRemoval(request(), { fetch, reload: async () => void reloads.push('reload') })
+			);
+			await removals.flush();
+			expect(failures).toEqual(['date:date-1']);
+		}
+		expect(reloads).toEqual([]);
+	});
+
+	it('sends nothing for a removal taken back before its window closed', async () => {
+		const { posts, fetch } = thrownNotFound();
+		const { removals, failures } = store();
+		removals.remove(deferredRemoval(request(), { fetch, reload: async () => {} }));
+
+		removals.undo('date:date-1');
+		await removals.flush();
+
+		expect(posts).toEqual([]);
+		expect(failures).toEqual([]);
+		expect(removals.isPending('date:date-1')).toBe(false);
+	});
+});
+
+describe('removeThroughAction', () => {
+	it('resolves when the action removed the item, or found it already gone', async () => {
+		const removed = answering(200, { type: 'redirect', status: 303, location: '/contacts/x' });
+		for (const { fetch } of [removed, thrownNotFound(), failedNotFound()]) {
+			await expect(removeThroughAction(fetch, '?/remove', new FormData())).resolves.toBe(undefined);
+		}
+	});
+
+	it('rejects any other refusal, so the row comes back', async () => {
+		for (const { fetch } of [
+			answering(200, { type: 'failure', status: 403 }),
+			answering(200, { type: 'failure', status: 400 }),
+			answering(500, {})
+		]) {
+			await expect(removeThroughAction(fetch, '?/remove', new FormData())).rejects.toThrow();
+		}
 	});
 });

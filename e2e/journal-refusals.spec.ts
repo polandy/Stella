@@ -75,7 +75,7 @@ test.describe('in German', () => {
 	});
 });
 
-test('says so when the entry was already removed in another tab', async ({ page, context }) => {
+test('counts an entry already removed in another tab as removed', async ({ page, context }) => {
 	const journal = await journalWith(page, 'Fed the ducks at the Aare');
 
 	// A second tab still shows it.
@@ -90,13 +90,14 @@ test('says so when the entry was already removed in another tab', async ({ page,
 	await page.getByRole('link', { name: 'Settings' }).first().click();
 	await expect(page.getByRole('heading', { name: 'Settings' })).toBeVisible();
 
-	// The second tab's removal finds nothing left, and says so instead of pretending it worked.
+	// The second tab's removal finds nothing left: what it asked for is done, so nothing failed.
+	// The layout sends the removal before it moves on, so a notice would be up by the time the
+	// next screen is.
 	await other.getByRole('button', { name: 'Delete moment' }).click();
 	await expect(other.getByTestId('toast-undo')).toBeVisible();
 	await other.getByRole('link', { name: 'Settings' }).first().click();
-	await expect(other.getByTestId('toast-notice')).toContainText(
-		'Could not remove it. It is back on the page.'
-	);
+	await expect(other.getByRole('heading', { name: 'Settings' })).toBeVisible();
+	await expect(other.getByTestId('toast-notice')).toHaveCount(0);
 
 	// Gone for real: the journal no longer lists it.
 	await other.goto(journal);

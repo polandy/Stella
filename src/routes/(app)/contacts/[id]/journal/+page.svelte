@@ -19,7 +19,7 @@
 	import { ulid } from 'ulid';
 	import { useRemovals } from '$lib/undo/context.svelte';
 	import { removalKey as buildKey } from '$lib/undo/keys';
-	import { submitAction } from '$lib/undo/submit-action';
+	import { removeThroughAction } from '$lib/undo/deferred-removal';
 	import type { ActionData, PageData } from './$types';
 	import { useI18n } from '$lib/i18n/context.svelte';
 
@@ -119,7 +119,7 @@
 			key: removalKey(entry),
 			label: t('journal.entryRemoved'),
 			commit: async () => {
-				await submitAction(fetch, '?/delete', body);
+				await removeThroughAction(fetch, '?/delete', body);
 				await invalidateAll();
 			}
 		});

@@ -9,6 +9,7 @@ import {
 } from '$lib/commands/payloads';
 import type { CommandType } from '$lib/commands/commands';
 import { occasionFromForm } from '$lib/gifts/gifts';
+import { GiftGoneError } from '$lib/server/domain/gifts/gifts';
 import { contactSectionPath } from '$lib/people/sections';
 import { ulidGenerator } from '$lib/server/id';
 import { systemClock } from '$lib/server/clock';
@@ -49,9 +50,9 @@ async function applyGiftCommand(
 	const viewer = requireViewer(locals);
 	const giftId = textOf(form, 'giftId');
 	// A row's error is shown on its row, so it says which gift it is about.
-	const failure = (message: string) =>
+	const failure = (message: string, status = 400) =>
 		fail(
-			400,
+			status,
 			errorKey === 'giftRowError' ? { giftRowError: { giftId, message } } : { giftError: message }
 		);
 
@@ -80,13 +81,12 @@ async function applyGiftCommand(
 		actor,
 		reading.command
 	);
-	if (outcome.status !== 'applied') {
-		return failure(
-			outcome.status === 'refused'
-				? outcome.reason(translator(locals))
-				: say(locals, 'errors.gift.couldNotSave')
-		);
+	if (outcome.status === 'refused') {
+		// A gift already gone answers 404: a held remove reads that as done (docs/02 §2.23).
+		const gone = outcome.error instanceof GiftGoneError;
+		return failure(outcome.reason(translator(locals)), gone ? 404 : 400);
 	}
+	if (outcome.status !== 'applied') return failure(say(locals, 'errors.gift.couldNotSave'));
 	throw redirect(303, contactSectionPath(params.id, 'gifts'));
 }
 

@@ -124,7 +124,10 @@ export const actions: Actions = {
 		try {
 			await ignoreMatch(deps, actor, row.contactId, row.personIds);
 		} catch (err) {
-			if (err instanceof ContactGoneError || err instanceof ImmichLinkRefusedError)
+			// A person gone meanwhile answers 404, which the held Ignore reads as done (§2.23).
+			if (err instanceof ContactGoneError)
+				return fail(404, { linked: [], refused: [], error: err.phrase(translator(locals)) });
+			if (err instanceof ImmichLinkRefusedError)
 				return fail(400, { linked: [], refused: [], error: err.phrase(translator(locals)) });
 			throw err;
 		}

@@ -77,8 +77,9 @@ export const storyActions = {
 			author,
 			interactionId
 		);
-		if (!removed)
-			return fail(403, { interactionError: say(locals, 'errors.interaction.onlyLogger') });
+		// Gone meanwhile or another member's: said alike, so a foreign id reveals nothing. A 404
+		// is what a held remove reads as done (docs/02 §2.23).
+		if (!removed) return fail(404, { interactionError: say(locals, 'errors.interaction.gone') });
 		throw redirect(303, `/contacts/${params.id}`);
 	},
 
@@ -102,7 +103,7 @@ export const storyActions = {
 			defaultVisibility: 'shared' as const
 		};
 		const removed = await deleteJournalEntry(locals.services.story.journalDeps, author, id);
-		if (!removed) return fail(403, { interactionError: say(locals, 'errors.journal.onlyAuthor') });
+		if (!removed) return fail(404, { interactionError: say(locals, 'errors.journal.gone') });
 		throw redirect(303, `/contacts/${params.id}`);
 	}
 } satisfies Actions;

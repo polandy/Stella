@@ -12,7 +12,7 @@
 	import type { StoryCursorView, StoryItemView, StoryPageView } from '$lib/story/item';
 	import { useRemovals } from '$lib/undo/context.svelte';
 	import { removalKey as buildKey } from '$lib/undo/keys';
-	import { submitAction } from '$lib/undo/submit-action';
+	import { removeThroughAction } from '$lib/undo/deferred-removal';
 
 	/*
 	 * A person's story (docs/02 §2.23): what people wrote about them and the times they were in
@@ -88,7 +88,7 @@
 			key,
 			label: item.kind === 'journal' ? t('story.entryRemoved') : t('story.interactionRemoved'),
 			commit: async () => {
-				await submitAction(fetch, removeAction(item), body);
+				await removeThroughAction(fetch, removeAction(item), body);
 				items = items.filter((other) => removalKey(other) !== key);
 				// the hero's "last contact" and the tab counts are the page's, not ours
 				await invalidateAll();
