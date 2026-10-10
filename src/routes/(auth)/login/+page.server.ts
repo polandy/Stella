@@ -5,6 +5,7 @@ import { authenticateLocal } from '$lib/server/auth/accounts';
 import { setSessionCookie } from '$lib/server/auth/cookies';
 import { createSession } from '$lib/server/auth/session';
 import { getConfig } from '$lib/server/config';
+import type { LoginDenial } from '$lib/server/auth/oidc/types';
 import { DEMO_ADMIN_EMAIL, DEMO_ADMIN_PASSWORD } from '$lib/server/db/demo-seed';
 import type { Actions, PageServerLoad } from './$types';
 
@@ -19,14 +20,17 @@ const LoginSchema = v.object({
 
 /*
  * The provider's failure reasons, as message keys: the page renders them in the visitor's
- * language, which is settled per request rather than when this module is loaded.
+ * language, which is settled per request rather than when this module is loaded. Keyed by
+ * every denial the planner can give, so a new one cannot reach the page without its sentence.
  */
-const SSO_ERRORS: Record<string, MessageKey> = {
+const SSO_ERRORS: Record<LoginDenial | 'sso', MessageKey> = {
 	sso: 'auth.sso.failed',
 	'not-authorized': 'auth.sso.notAuthorized',
 	'no-account': 'auth.sso.noAccount',
 	removed: 'auth.sso.removed'
 };
+
+const isSsoError = (key: string): key is keyof typeof SSO_ERRORS => Object.hasOwn(SSO_ERRORS, key);
 
 export const load: PageServerLoad = async ({ locals, url }) => {
 	const t = createTranslator(locals.locale);
@@ -42,7 +46,7 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 			config.seedDemo && config.auth.local
 				? { email: DEMO_ADMIN_EMAIL, password: DEMO_ADMIN_PASSWORD }
 				: null,
-		ssoError: errorKey ? t(SSO_ERRORS[errorKey] ?? SSO_ERRORS.sso) : null,
+		ssoError: errorKey ? t(SSO_ERRORS[isSsoError(errorKey) ? errorKey : 'sso']) : null,
 		// Set by the sign-out redirect, directly or on the way back from the provider.
 		signedOut: url.searchParams.has('signedOut')
 	};
