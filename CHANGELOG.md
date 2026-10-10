@@ -1,5 +1,53 @@
 # Changelog
 
+## [0.0.24](https://github.com/polandy/Stella/compare/v0.0.23...v0.0.24) (2026-10-10)
+
+
+### Features
+
+* **contacts:** the People card's map as a strip on every width, a fold that says what it hides (C8, C9) ([#284](https://github.com/polandy/Stella/issues/284)) ([aaafa97](https://github.com/polandy/Stella/commit/aaafa9752b322eb869d28602dbff60ca1fcccfcf))
+* **contacts:** write a moment inline on the person page (C6) ([#274](https://github.com/polandy/Stella/issues/274)) ([04e72c8](https://github.com/polandy/Stella/commit/04e72c8218e4328962efa3aaba933d0b0ff4ea28))
+* **copy:** one vocabulary — Write a moment, Activity ([#260](https://github.com/polandy/Stella/issues/260)) ([6688258](https://github.com/polandy/Stella/commit/66882586f31b554afce06beb5d9bb16583c3fd7f))
+* **gifts:** already-given hint, ideas in Coming up, gift idea from the palette ([#332](https://github.com/polandy/Stella/issues/332)) ([8020b2b](https://github.com/polandy/Stella/commit/8020b2bbf861b0c20576762d38f4ca6d2f57d436))
+* **gifts:** note gift ideas, gifts given and gifts received on the person page ([#316](https://github.com/polandy/Stella/issues/316)) ([4e4613d](https://github.com/polandy/Stella/commit/4e4613d802aa26434f0907bea39f72d762fd8ad2))
+* **gifts:** turn Monica gift notes and gift touchpoints into gift records ([#329](https://github.com/polandy/Stella/issues/329)) ([45a79b6](https://github.com/polandy/Stella/commit/45a79b6042f23875aff81d87fdef07d91f4259e4))
+* **graph:** draw the Tree arrangement as a family tree with roles under the names ([#310](https://github.com/polandy/Stella/issues/310)) ([8ae30d1](https://github.com/polandy/Stella/commit/8ae30d113d32ad739ee4c3687beb5bea98f535c0))
+* **graph:** frame the map afresh on entering or leaving full screen ([#324](https://github.com/polandy/Stella/issues/324)) ([3d1b105](https://github.com/polandy/Stella/commit/3d1b105cbf683fcb384b497aebc9b68361c5639e))
+* **home:** a quieter phone Home — Filter pill, one search, secondary Add person ([#255](https://github.com/polandy/Stella/issues/255)) ([63a5e8f](https://github.com/polandy/Stella/commit/63a5e8fb786c1402a566a7d647eaae2aaf6e484b))
+* **immich:** suggest the likely Immich face on the person page ([#313](https://github.com/polandy/Stella/issues/313)) ([ba72ba7](https://github.com/polandy/Stella/commit/ba72ba7f499826fc119ee8322e4634b3873feb70))
+* **last-names:** not this name keeps the person, no last name settles them ([#339](https://github.com/polandy/Stella/issues/339)) ([21c8cec](https://github.com/polandy/Stella/commit/21c8cecd18dd477eab190d1fc1acf8a55110f633))
+* **members:** removing a member — concept and slice 1 ([#367](https://github.com/polandy/Stella/issues/367)) ([81bee0d](https://github.com/polandy/Stella/commit/81bee0d4bdcc185d8c45beabe3e13360b7344c00))
+* **notes:** its author edits a note's title and body in place ([#361](https://github.com/polandy/Stella/issues/361)) ([897e540](https://github.com/polandy/Stella/commit/897e540f5760ba4f37289c7fa326b9cead07212f))
+* **notes:** its author, or an admin on a shared one, removes a note ([#360](https://github.com/polandy/Stella/issues/360)) ([8cc9cc4](https://github.com/polandy/Stella/commit/8cc9cc4b40729f16a00a4dce8a89a34e8948a83b))
+* **person:** the identity card says each thing once ([#263](https://github.com/polandy/Stella/issues/263)) ([019cb58](https://github.com/polandy/Stella/commit/019cb58847997079e5ac6e23f7717554c3988c84))
+* **photos:** one photo grid and one lightbox for Stella and Immich on the person page ([#309](https://github.com/polandy/Stella/issues/309)) ([a3038bd](https://github.com/polandy/Stella/commit/a3038bdbe2b78901bee497bf78d5eb3b6477fa8c))
+* polish the jump bar, edit affordance, stream times and composer controls (C7, C12, B3, B4, B5, C4, C10) ([#290](https://github.com/polandy/Stella/issues/290)) ([ebd15b5](https://github.com/polandy/Stella/commit/ebd15b53fa95333d21bacd58c8a513d0e02a0798))
+* **removal:** who may remove what, slice 3 — the other authored kinds ([#362](https://github.com/polandy/Stella/issues/362)) ([45ff8c1](https://github.com/polandy/Stella/commit/45ff8c1ecf16898b8facc9fb4fcf88156516e124))
+* **removal:** who may remove what, slice 4 — editing a touchpoint ([#363](https://github.com/polandy/Stella/issues/363)) ([62b39a3](https://github.com/polandy/Stella/commit/62b39a3cb8eac19c19f7536b41f3b0acf44182fe))
+* **search:** gifts in the full search, by title and note ([#335](https://github.com/polandy/Stella/issues/335)) ([bb16a52](https://github.com/polandy/Stella/commit/bb16a52d41182f488fd3771403b8a44b1b2e547b))
+* **shell:** welcome animation on start ([#303](https://github.com/polandy/Stella/issues/303)) ([a5a89a5](https://github.com/polandy/Stella/commit/a5a89a5314eac5841f661827813938200dff0eaa))
+* shrink empty person cards to one line and leave out an empty Mentioned in (C2) ([#293](https://github.com/polandy/Stella/issues/293)) ([6036475](https://github.com/polandy/Stella/commit/603647534712445b64cb8b9bc09cdbc2fc5dae90))
+* uppercase labels for list dividers, Mocha tints, a full-width stream, stream actors and the photo-library label (A4, A5, B6, B7, C11) ([#292](https://github.com/polandy/Stella/issues/292)) ([1ec2eb9](https://github.com/polandy/Stella/commit/1ec2eb92d3daa12a4477605474702d158ef9cdd6))
+
+
+### Bug Fixes
+
+* **auth:** requireAdmin's 403 in the reader's language ([#353](https://github.com/polandy/Stella/issues/353)) ([995d95f](https://github.com/polandy/Stella/commit/995d95f7e7ef73c4868aab314678a2d33c69d2a8))
+* **circles:** remove only a membership the viewer can see; route-edge tests for the circle page ([#347](https://github.com/polandy/Stella/issues/347)) ([0d95b16](https://github.com/polandy/Stella/commit/0d95b16f2b04ee9ccc26ef9ebd688c40e46d8dd2))
+* **circles:** the circle page's refusals say something; an archived pick is kept on purpose ([#352](https://github.com/polandy/Stella/issues/352)) ([fa0289e](https://github.com/polandy/Stella/commit/fa0289eea7a9a9bea384a13ad1422981e3272574))
+* **import:** a Monica row linking a contact to themselves is left out, not fatal ([#355](https://github.com/polandy/Stella/issues/355)) ([6fb50d2](https://github.com/polandy/Stella/commit/6fb50d2f4a6f11778b5fcf070e34c782f6871b59))
+* **journal:** drop the save action's dead photo step ([#354](https://github.com/polandy/Stella/issues/354)) ([78a5132](https://github.com/polandy/Stella/commit/78a5132cb6d76e9a2861410fc284c57000a226dc))
+* **journal:** refusals of the journal page in the reader's language; delete of a gone entry answers 404 ([#350](https://github.com/polandy/Stella/issues/350)) ([13f773e](https://github.com/polandy/Stella/commit/13f773e18795d43b3c159b13f2de03aa649bfdc8))
+* **merge:** keep a merged link in stored order and fold a duplicate ([#337](https://github.com/polandy/Stella/issues/337)) ([9be6422](https://github.com/polandy/Stella/commit/9be642236f51defe69ea52f0a79765eab6f7771b))
+* **people:** quick-add radios line up; bulk last name asks only when a name would be replaced ([#358](https://github.com/polandy/Stella/issues/358)) ([3271403](https://github.com/polandy/Stella/commit/3271403652dc448ad79c87d94b36a90769585c0d))
+* **person:** links to the Relationships card land on it ([#344](https://github.com/polandy/Stella/issues/344)) ([5cca70b](https://github.com/polandy/Stella/commit/5cca70b2e86a24b7688076427f602033ded2b3af))
+* **person:** profile actions refuse in the right sentence; a breakage of ours reaches handleError ([#351](https://github.com/polandy/Stella/issues/351)) ([6059f76](https://github.com/polandy/Stella/commit/6059f76c7cfbcd217b19c17dc975fa6d293be07c))
+* **person:** the jump bar keeps its place when the cursor lands on one of its links ([#357](https://github.com/polandy/Stella/issues/357)) ([6089a61](https://github.com/polandy/Stella/commit/6089a617482c104bff17a8123afd4feefce1431d))
+* **relationship-types:** form refusals in the reader's language; remove of a gone type answers 404 ([#349](https://github.com/polandy/Stella/issues/349)) ([d1fffe6](https://github.com/polandy/Stella/commit/d1fffe6c519710ad177c68f3db4d494be7eaedf8))
+* **relationships:** the table refuses a self link too ([#340](https://github.com/polandy/Stella/issues/340)) ([b72668f](https://github.com/polandy/Stella/commit/b72668fc13c9e6cc93f74af6690c376b589ea742))
+* **restore:** store a restored symmetric link sorted and fold a twin ([#338](https://github.com/polandy/Stella/issues/338)) ([5f3295b](https://github.com/polandy/Stella/commit/5f3295bb093fa38c22b47089399142764347e5aa))
+* **undo:** removing an item already gone counts as removed ([#356](https://github.com/polandy/Stella/issues/356)) ([8b1f0c6](https://github.com/polandy/Stella/commit/8b1f0c627d0696e9efc4eff82def827761f66e99))
+
 ## [0.0.23](https://github.com/polandy/Stella/compare/v0.0.22...v0.0.23) (2026-10-06)
 
 
