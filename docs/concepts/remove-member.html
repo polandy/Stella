@@ -1,0 +1,300 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Removing a member (interactive mockup)</title>
+<style>
+  /* Catppuccin tokens as src/app.css maps them: flavour → surfaces → semantic (Latte / Mocha). */
+  :root, :root[data-theme='latte'] {
+    --bg:#e6e9ef; --bg-sunken:#dce0e8; --card:#ffffff; --card-hover:#f4f5f9;
+    --border:#ccd0da; --border-subtle:#e7e9f0; --border-input:#bcc0cc;
+    --fg:#4c4f69; --fg-muted:#5c5f77; --fg-subtle:#6c6f85;
+    --primary:#853ae8; --primary-fg:#ffffff; --danger:#d20f39; --danger-fg:#ffffff; --success:#40a02b;
+    --avatar-fg:#4c4f69; --av-pink:#f4dcdc; --av-blue:#d3e2fb; --av-teal:#cdeceb; --av-peach:#fbe2cf; --av-mauve:#e7dbfb; --av-sky:#cfeefa;
+    --a-blue:#1e66f5; --a-green:#40a02b; --a-peach:#fe640b; --a-mauve:#8839ef; --a-teal:#179299; --a-pink:#ea76cb; --a-yellow:#df8e1d; --a-red:#d20f39;
+    --shadow-card:0 1px 2px rgba(76,79,105,.07), 0 2px 8px rgba(76,79,105,.06);
+    --shadow-pop:0 6px 24px rgba(76,79,105,.18);
+    --page:#eff1f5; --photo-a:#a6c8f0; --photo-b:#e8c9a0;
+  }
+  :root[data-theme='mocha'] {
+    --bg:#181825; --bg-sunken:#11111b; --card:#232334; --card-hover:#2a2a3d;
+    --border:#313244; --border-subtle:#292939; --border-input:#45475a;
+    --fg:#cdd6f4; --fg-muted:#bac2de; --fg-subtle:#a6adc8;
+    --primary:#cba6f7; --primary-fg:#1e1e2e; --danger:#f38ba8; --danger-fg:#1e1e2e; --success:#a6e3a1;
+    --avatar-fg:#cdd6f4; --av-pink:#45384a; --av-blue:#2f3a55; --av-teal:#2c4446; --av-peach:#4a3a33; --av-mauve:#3d3355; --av-sky:#2b4252;
+    --a-blue:#89b4fa; --a-green:#a6e3a1; --a-peach:#fab387; --a-mauve:#cba6f7; --a-teal:#94e2d5; --a-pink:#f5c2e7; --a-yellow:#f9e2af; --a-red:#f38ba8;
+    --shadow-card:0 1px 2px rgba(0,0,0,.3); --shadow-pop:0 8px 28px rgba(0,0,0,.5);
+    --page:#1e1e2e; --photo-a:#3b4f6e; --photo-b:#5a4a38;
+  }
+  :root { --primary-soft:color-mix(in srgb, var(--primary) 14%, transparent);
+    --sans:'Instrument Sans Variable','Instrument Sans',ui-sans-serif,system-ui,-apple-system,'Segoe UI',Roboto,sans-serif; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--page); color:var(--fg); font-family:var(--sans); line-height:1.5; -webkit-font-smoothing:antialiased; }
+  button, input, select, textarea { font:inherit; color:inherit; }
+  :focus-visible { outline:2px solid var(--primary); outline-offset:2px; border-radius:8px; }
+  svg.i { width:18px; height:18px; fill:none; stroke:currentColor; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; flex:none; }
+
+  .wrap { margin:0 auto; padding:28px 24px 80px; max-width:1640px; }
+  .kicker { font-size:12px; font-weight:600; letter-spacing:.14em; text-transform:uppercase; color:var(--primary); }
+  h1.doc { font-size:26px; font-weight:650; margin:4px 0 6px; letter-spacing:-.01em; }
+  .lede { color:var(--fg-muted); margin:0 0 18px; max-width:92ch; }
+  .controls { display:flex; flex-wrap:wrap; gap:12px 18px; align-items:center; margin-bottom:22px; }
+  .ctl { display:flex; align-items:center; gap:8px; }
+  .seg { display:flex; gap:3px; background:var(--bg-sunken); border-radius:999px; padding:3px; }
+  .seg button { border:0; background:transparent; padding:5px 12px; border-radius:999px; font-size:13px; color:var(--fg-muted); cursor:pointer; white-space:nowrap; }
+  .seg button[aria-pressed='true'] { background:var(--card); color:var(--fg); font-weight:600; box-shadow:var(--shadow-card); }
+  .seg-label { font-size:11px; font-weight:600; letter-spacing:.1em; text-transform:uppercase; color:var(--fg-subtle); }
+  .stage { display:flex; flex-wrap:wrap; gap:28px; align-items:flex-start; }
+  .legend { flex:1 1 100%; columns:2 420px; column-gap:40px; }
+  .legend h2 { font-size:13px; font-weight:600; letter-spacing:.08em; text-transform:uppercase; color:var(--fg-subtle); margin:0 0 10px; }
+  .legend ol { padding-left:20px; margin:0 0 18px; display:flex; flex-direction:column; gap:9px; font-size:14px; color:var(--fg-muted); break-inside:avoid; }
+  .legend b { color:var(--fg); font-weight:600; }
+
+  /* Desktop: a 1440 × 900 window, scaled to fit. */
+  .browser-fit { flex:none; width:var(--fit-w); height:var(--fit-h); }
+  .browser { width:1440px; height:900px; transform-origin:0 0; transform:scale(var(--fit)); border-radius:12px; overflow:hidden; box-shadow:0 20px 60px rgba(0,0,0,.2); display:flex; flex-direction:column; background:var(--bg); }
+  .chrome { height:36px; flex:none; background:var(--bg-sunken); display:flex; align-items:center; gap:7px; padding:0 14px; border-bottom:1px solid var(--border); }
+  .chrome i { width:11px; height:11px; border-radius:50%; background:var(--border); display:block; }
+  .chrome .url { margin-left:18px; font-size:12px; color:var(--fg-subtle); background:var(--card); padding:3px 14px; border-radius:6px; width:420px; }
+  .app { flex:1; display:flex; min-height:0; position:relative; }
+  .side { width:240px; flex:none; background:var(--bg-sunken); padding:12px; display:flex; flex-direction:column; gap:4px; }
+  .logo { font-weight:600; font-size:21px; padding:6px 10px 14px; }
+  .logo span { color:var(--primary); }
+  .side a { display:flex; align-items:center; gap:10px; padding:8px 12px; border-radius:10px; font-size:14px; color:var(--fg-muted); }
+  .side a.on { background:var(--card); color:var(--fg); font-weight:600; box-shadow:var(--shadow-card); }
+  .scroller { flex:1; overflow-y:auto; scrollbar-width:none; }
+  .dpage { max-width:1060px; margin:0 auto; padding:24px 24px 60px; display:flex; flex-direction:column; gap:20px; }
+
+  /* Phone: Pixel 9 Pro, 412 × 915 CSS px. */
+  .device { padding:10px; background:#0b0b12; border-radius:46px; box-shadow:0 20px 60px rgba(0,0,0,.25); flex:none; }
+  .screen { width:412px; height:915px; border-radius:36px; overflow:hidden; position:relative; background:var(--bg); display:flex; flex-direction:column; }
+  .status { height:30px; flex:none; display:flex; align-items:center; justify-content:space-between; padding:6px 26px 0; font-size:13px; font-weight:600; }
+  .pscroll { flex:1; overflow-y:auto; scrollbar-width:none; }
+  .ppage { padding:8px 12px 110px; display:flex; flex-direction:column; gap:14px; }
+  .tabbar { position:absolute; inset:auto 0 0 0; display:flex; border-top:1px solid var(--border-subtle); background:var(--card); padding-bottom:14px; }
+  .tab { flex:1; display:flex; flex-direction:column; align-items:center; gap:2px; padding:10px 0 4px; font-size:11px; font-weight:500; color:var(--fg-subtle); }
+  .tab.on { color:var(--primary); font-weight:600; }
+
+  /* Buttons and the confirm step, as in the circle mockup. */
+  .btn { display:inline-flex; align-items:center; justify-content:center; gap:6px; border-radius:10px; padding:6px 12px; font-size:14px; font-weight:500; border:1px solid var(--border); cursor:pointer; white-space:nowrap; background:var(--card); color:var(--fg); }
+  .btn.sm { padding:4px 10px; font-size:13px; }
+  .btn.danger { background:var(--danger); color:var(--danger-fg); border-color:transparent; }
+  .btn.ghost { background:transparent; border-color:transparent; color:var(--fg-muted); }
+  .btn.ghost:hover { background:var(--card-hover); }
+  .btn.ghost.warn { color:var(--danger); }
+  .btn svg.i { width:16px; height:16px; }
+  .confirm { background:var(--bg-sunken); border-radius:14px; padding:14px; display:flex; flex-direction:column; gap:8px; font-size:14px; margin:4px 0 8px; }
+  .confirm p { margin:0; }
+  .confirm h4 { margin:0; font-size:15px; font-weight:600; }
+  .confirm .row { display:flex; gap:8px; flex-wrap:wrap; margin-top:4px; }
+  .confirm .keep { display:flex; gap:8px; align-items:flex-start; color:var(--fg-muted); font-size:13px; }
+  .confirm .keep svg.i { width:16px; height:16px; margin-top:2px; }
+  .confirm .keep.alert { color:var(--danger); }
+
+  /* Settings. */
+  h1.page { margin:0; font-size:24px; font-weight:600; }
+  .back { display:inline-flex; align-items:center; gap:6px; font-size:14px; color:var(--fg-muted); }
+  .sect { display:flex; flex-direction:column; gap:10px; }
+  .sect h2 { margin:0; font-size:14px; font-weight:500; color:var(--fg-muted); }
+  .linkcard { background:var(--card); border-radius:16px; box-shadow:var(--shadow-card); padding:14px 16px; display:flex; gap:12px; align-items:center; cursor:pointer; }
+  .linkcard .t { font-weight:600; } .linkcard .s { font-size:13px; color:var(--fg-muted); }
+  .linkcard .chev { margin-left:auto; color:var(--fg-subtle); }
+  .linkcard.dim { opacity:.75; cursor:default; }
+  .lead { margin:0; color:var(--fg-muted); font-size:14px; }
+
+  .list { background:var(--card); border-radius:16px; box-shadow:var(--shadow-card); padding:6px 16px; }
+  .mrow { display:flex; align-items:center; gap:12px; padding:12px 0; border-bottom:1px solid var(--border-subtle); }
+  .mblock:last-child .mrow { border-bottom:0; }
+  .av { border-radius:50%; display:grid; place-items:center; font-weight:600; color:var(--avatar-fg); width:40px; height:40px; font-size:14px; flex:none; }
+  .who { min-width:0; flex:1; }
+  .who .n { display:flex; align-items:center; gap:6px; flex-wrap:wrap; font-weight:600; }
+  .who .e { font-size:13px; color:var(--fg-muted); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .who .h { font-size:12px; color:var(--fg-subtle); display:flex; align-items:center; gap:4px; }
+  .who .h svg.i { width:13px; height:13px; }
+  .pill { font-size:11px; font-weight:600; padding:1px 8px; border-radius:999px; background:var(--primary-soft); color:var(--primary); }
+  .pill.you { background:var(--bg-sunken); color:var(--fg-muted); }
+  .former .mrow { opacity:.7; }
+  .toast { position:absolute; left:50%; transform:translateX(-50%); bottom:24px; background:var(--fg); color:var(--bg); border-radius:12px; padding:10px 16px; font-size:14px; white-space:nowrap; box-shadow:var(--shadow-pop); }
+  .p .toast { bottom:96px; }
+  .card { background:var(--card); border-radius:16px; box-shadow:var(--shadow-card); padding:16px; }
+  .stream { display:flex; gap:10px; align-items:center; font-size:14px; color:var(--fg-muted); }
+  .stream .av { width:32px; height:32px; font-size:12px; }
+  .stream b { color:var(--fg); }
+  .stream time { margin-left:auto; font-size:12px; color:var(--fg-subtle); }
+  .login { max-width:380px; margin:40px auto 0; display:flex; flex-direction:column; gap:12px; }
+  .login .msg { background:color-mix(in srgb,var(--danger) 12%,transparent); color:var(--fg); border-radius:12px; padding:10px 12px; font-size:14px; }
+  .login .btn { justify-content:center; padding:10px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="kicker">Concept · docs/concepts/remove-member.md</div>
+  <h1 class="doc">Removing a member</h1>
+  <p class="lede">Settings gets a <i>Household</i> section with a <i>Members</i> page. An admin removes any other member there, after an inline confirm step. The member can't sign in any more, their shared work keeps their name, their private records stay sealed, and the household gets one stream line. Every control works: open <i>Remove…</i>, keep or remove. The switches pick the state, and the URL keeps it, so every PNG is a link.</p>
+  <div class="controls" id="controls"></div>
+  <div class="stage">
+    <div class="device"><div class="screen p" id="phone"></div></div>
+    <div class="browser-fit" id="dfit"><div class="browser d" id="desk"></div></div>
+    <div class="legend">
+      <div>
+        <h2>What to look at</h2>
+        <ol>
+          <li><b>Settings</b> gets a <i>Household</i> section after <i>You</i>, with one link card: <i>Members</i>.</li>
+          <li><b>The Members page</b> lists everyone who signs in: you first, then by name, with the email, an <i>Admin</i> pill and how they sign in. Signed in as Nina (a member), there is nothing to press.</li>
+          <li><b>Remove…</b> is on every row but your own. It opens the sunken confirm step under the row. Focus starts on <i>Keep Lukas</i>. Switch the member to see the lines that only appear sometimes: SSO, and the last admin with a password.</li>
+          <li><b>After the removal</b> the row moves to <i>Former members</i>, with a toast and no Undo. Home gets one line that links nowhere. A removed member who signs in through SSO is turned away with a clear message.</li>
+        </ol>
+      </div>
+      <div>
+        <h2>Decided (2026-10-10)</h2>
+        <ol>
+          <li>The account is marked removed, not deleted. Sessions and API tokens go; the SSO identity and the password hash stay, never checked while removed.</li>
+          <li>Private records stay sealed: nobody sees them, admins included.</li>
+          <li>Their name stays on everything they wrote. They leave the lists of current members.</li>
+          <li>Confirmed and logged, no Undo toast. <i>Restore</i> on <i>Former members</i> comes in slice 2.</li>
+        </ol>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+const ICON = {
+  back:'<path d="m15 6-6 6 6 6"/>', chev:'<path d="m9 6 6 6-6 6"/>',
+  people:'<circle cx="9" cy="8" r="3.2"/><path d="M3 20c.5-3.4 3-5.4 6-5.4s5.5 2 6 5.4"/><path d="M16 4.5a3 3 0 0 1 0 6M18 14.8c1.7.7 2.8 2.4 3 5.2"/>',
+  key:'<circle cx="8" cy="15" r="4"/><path d="m11 12 8-8M16 7l3 3"/>', sso:'<path d="M12 3 4 6v6c0 4.5 3.4 8.2 8 9 4.6-.8 8-4.5 8-9V6z"/>',
+  lock:'<rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>', user:'<circle cx="12" cy="8" r="3.5"/><path d="M5 20c.6-3.6 3.4-5.6 7-5.6s6.4 2 7 5.6"/>',
+  out:'<path d="M14 4h5v16h-5M10 8l-4 4 4 4M6 12h10"/>', alert:'<path d="M12 4 2.5 20h19z"/><path d="M12 10v4M12 17v.5"/>',
+  share:'<circle cx="6" cy="12" r="2.5"/><circle cx="18" cy="6" r="2.5"/><circle cx="18" cy="18" r="2.5"/><path d="m8.2 11 7.6-3.8M8.2 13l7.6 3.8"/>',
+  home:'<path d="M4 11 12 4l8 7v9H4z"/>', circles:'<circle cx="9" cy="12" r="5.5"/><circle cx="15" cy="12" r="5.5"/>',
+  write:'<path d="M12 20h8"/><path d="M15.5 4.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4Z"/>', settings:'<circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M5 19l2-2M17 7l2-2"/>',
+};
+const ic = (n) => `<svg class="i" viewBox="0 0 24 24" aria-hidden="true">${ICON[n]}</svg>`;
+const esc = (s) => String(s).replace(/[&<>"]/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;' }[c]));
+const AVS = ['av-pink','av-blue','av-teal','av-peach','av-mauve','av-sky'];
+const avOf = (n) => AVS[[...n].reduce((h, ch) => (h * 31 + ch.charCodeAt(0)) >>> 0, 7) % AVS.length];
+const ini = (n) => n.split(' ').map(w => w[0]).slice(0, 2).join('');
+
+const MEMBERS = [
+  { id:'andy', name:'Andy Brunner', email:'andy@brunner.ch', admin:true, password:true, sso:true },
+  { id:'ruth', name:'Ruth Brunner', email:'ruth@brunner.ch', admin:true, password:false, sso:true, privates:3 },
+  { id:'lukas', name:'Lukas Brunner', email:'lukas@brunner.ch', admin:false, password:false, sso:true, privates:14 },
+  { id:'nina', name:'Nina Brunner', email:'nina@brunner.ch', admin:false, password:true, sso:false, privates:0 },
+];
+const FORMER = [{ name:'Kurt Aebi', email:'kurt@aebi.ch', when:'3 Mar 2026' }];
+const first = (m) => m.name.split(' ')[0];
+
+const q = new URLSearchParams(location.search);
+const S = { theme:q.get('theme') || 'latte', who:q.get('who') || 'andy', target:q.get('target') || 'lukas', step:q.get('step') || 'confirm' };
+const CONTROLS = [
+  ['theme','Theme',[['latte','Latte'],['mocha','Mocha']]],
+  ['who','Signed in as',[['andy','Andy (admin, password + SSO)'],['ruth','Ruth (admin, SSO only)'],['nina','Nina (member)']]],
+  ['target','Remove',[['lukas','Lukas (SSO, 14 private)'],['nina','Nina (password, none private)'],['andy','Andy (last admin with a password)']]],
+  ['step','Step',[['settings','Settings'],['page','Members'],['confirm','Confirm'],['after','After'],['login','Lukas signs in']]],
+];
+function fix() {
+  if (S.target === S.who) S.target = MEMBERS.find(m => m.id !== S.who && m.id !== 'andy').id;
+  if (S.who === 'nina' && (S.step === 'confirm' || S.step === 'after')) S.step = 'page';
+}
+function sync() {
+  fix();
+  document.documentElement.dataset.theme = S.theme;
+  history.replaceState(null, '', '?' + new URLSearchParams(S));
+  document.getElementById('controls').innerHTML = CONTROLS.map(([k, label, opts]) =>
+    `<div class="ctl"><span class="seg-label">${label}</span><div class="seg">${opts.map(([v, l]) =>
+      `<button data-k="${k}" data-v="${v}" aria-pressed="${S[k] === v}">${l}</button>`).join('')}</div></div>`).join('');
+  render();
+}
+document.addEventListener('click', (e) => {
+  const c = e.target.closest('[data-k]');
+  if (c) { S[c.dataset.k] = c.dataset.v; return sync(); }
+  const a = e.target.closest('[data-act]');
+  if (!a) return;
+  const act = a.dataset.act;
+  if (act === 'open') S.step = 'page';
+  if (act === 'remove') { S.target = a.dataset.id; S.step = 'confirm'; }
+  if (act === 'keep') S.step = 'page';
+  if (act === 'confirm') S.step = 'after';
+  if (act === 'back') S.step = 'settings';
+  sync();
+});
+
+const me = () => MEMBERS.find(m => m.id === S.who);
+const signIn = (m) => m.password && m.sso ? ['key','Password and single sign-on'] : m.sso ? ['sso','Single sign-on'] : ['key','Password'];
+function row(m) {
+  const mine = m.id === S.who;
+  const [hi, how] = signIn(m);
+  const may = me().admin && !mine;
+  return `<div class="mblock"><div class="mrow">
+    <div class="av" style="background:var(--${avOf(m.name)})">${ini(m.name)}</div>
+    <div class="who"><div class="n">${esc(m.name)}${mine ? '<span class="pill you">You</span>' : ''}${m.admin ? '<span class="pill">Admin</span>' : ''}</div>
+      <div class="e">${esc(m.email)}</div><div class="h">${ic(hi)}${how}</div></div>
+    ${may ? `<button class="btn ghost warn sm" data-act="remove" data-id="${m.id}" aria-label="Remove ${esc(first(m))}…">Remove…</button>` : ''}
+  </div>${S.step === 'confirm' && S.target === m.id && may ? confirmStep(m) : ''}</div>`;
+}
+function confirmStep(m) {
+  const n = esc(first(m));
+  const lastPw = m.admin && m.password && !MEMBERS.some(o => o !== m && o.admin && o.password);
+  return `<div class="confirm" role="group" aria-label="Remove ${n}">
+    <h4>Remove ${n} from the household?</h4>
+    <div class="keep">${ic('out')}<span>${n} can no longer sign in. Every device signed in as ${n} is signed out now, and ${n}'s API tokens stop working.</span></div>
+    <div class="keep">${ic('share')}<span>What ${n} shared stays, under ${n}'s name. You can still remove any of it.</span></div>
+    ${m.privates ? `<div class="keep">${ic('lock')}<span>${n}'s ${m.privates} private records stay sealed: nobody sees them, you included.</span></div>` : ''}
+    ${m.sso ? `<div class="keep">${ic('sso')}<span>${n} signs in through single sign-on. Stella turns ${n} away from now on. To be thorough, also remove ${n} from the group in your sign-in provider.</span></div>` : ''}
+    ${lastPw ? `<div class="keep alert">${ic('alert')}<span>${n} is the only admin who can sign in with a password. Without ${n}, an outage of your sign-in provider locks everyone out.</span></div>` : ''}
+    <div class="row"><button class="btn danger sm" data-act="confirm">Remove ${n}</button><button class="btn ghost sm" data-act="keep" autofocus>Keep ${n}</button></div>
+  </div>`;
+}
+function membersPage() {
+  const removed = S.step === 'after' ? MEMBERS.find(m => m.id === S.target) : null;
+  const current = MEMBERS.filter(m => m !== removed);
+  const ordered = [...current.filter(m => m.id === S.who), ...current.filter(m => m.id !== S.who)];
+  const former = [...(removed ? [{ name:removed.name, email:removed.email, when:'10 Oct 2026' }] : []), ...FORMER];
+  return `<a class="back" data-act="back">${ic('back')}Settings</a>
+    <h1 class="page">Members</h1>
+    <p class="lead">Everyone who signs in to Stella, and how.${me().admin ? '' : ' Only an admin can remove a member.'}</p>
+    <div class="list">${ordered.map(row).join('')}</div>
+    <section class="sect"><h2>Former members</h2>
+      <div class="list former">${former.map(f => `<div class="mblock"><div class="mrow"><div class="av" style="background:var(--${avOf(f.name)})">${ini(f.name)}</div>
+        <div class="who"><div class="n">${esc(f.name)}</div><div class="e">${esc(f.email)}</div><div class="h">Removed on ${f.when}</div></div></div></div>`).join('')}</div>
+    </section>
+    ${removed ? `<section class="card"><div class="sect"><h2>Home, later: the stream line</h2>
+      <div class="stream"><div class="av" style="background:var(--${avOf(me().name)})">${ini(me().name)}</div><span><b>${esc(first(me()))}</b> removed <b>${esc(first(removed))}</b> from the household</span><time>just now</time></div></div></section>` : ''}`;
+}
+function settingsPage() {
+  return `<h1 class="page">Settings</h1>
+    <section class="sect"><h2>You</h2><div class="linkcard dim">${ic('user')}<div><div class="t">${esc(me().name)}</div><div class="s">This is me</div></div></div></section>
+    <section class="sect"><h2>Household</h2><div class="linkcard" data-act="open">${ic('people')}<div><div class="t">Members</div><div class="s">Who signs in to Stella, and how</div></div><span class="chev">${ic('chev')}</span></div></section>
+    <section class="sect"><h2>Data quality</h2><div class="linkcard dim">${ic('settings')}<div><div class="t">Relationships</div><div class="s">…</div></div></div></section>`;
+}
+function loginPage() {
+  return `<div class="login"><h1 class="page" style="text-align:center">Stella</h1>
+    <div class="msg" role="alert">Your access to this household was removed. Ask one of its admins.</div>
+    <button class="btn">${ic('sso')}Sign in with single sign-on</button></div>`;
+}
+function render() {
+  const body = S.step === 'settings' ? settingsPage() : S.step === 'login' ? loginPage() : membersPage();
+  const removed = MEMBERS.find(m => m.id === S.target);
+  const toast = S.step === 'after' ? `<div class="toast">${esc(first(removed))} removed</div>` : '';
+  const url = S.step === 'login' ? 'stella.home/login?error=removed' : S.step === 'settings' ? 'stella.home/settings' : 'stella.home/settings/members';
+  const chromeless = S.step === 'login';
+  document.getElementById('phone').innerHTML = `<div class="status"><span>9:41</span><span>▮▮ 82%</span></div>
+    <div class="pscroll"><div class="ppage">${body}</div></div>${toast}
+    ${chromeless ? '' : `<nav class="tabbar">${[['home','Home'],['people','People'],['write','Write'],['circles','Circles']].map(([i, l]) => `<div class="tab">${ic(i)}${l}</div>`).join('')}</nav>`}`;
+  document.getElementById('desk').innerHTML = `<div class="chrome"><i></i><i></i><i></i><span class="url">${url}</span></div>
+    <div class="app">${chromeless ? '' : `<nav class="side"><div class="logo">Stella</div>${[['home','Home'],['people','People'],['circles','Circles'],['settings','Settings']].map(([i, l]) => `<a class="${i === 'settings' ? 'on' : ''}">${ic(i)}${l}</a>`).join('')}</nav>`}
+    <div class="scroller"><div class="dpage" style="max-width:760px">${body}</div></div>${toast}</div>`;
+  const auto = document.querySelector('#desk [autofocus]'); if (auto) auto.focus({ preventScroll:true });
+}
+function fit() {
+  const room = Math.min(1440, document.querySelector('.stage').clientWidth - 452 - 28);
+  const f = Math.max(.45, Math.min(1, room / 1440));
+  const d = document.getElementById('dfit');
+  d.style.setProperty('--fit', f); d.style.setProperty('--fit-w', 1440 * f + 'px'); d.style.setProperty('--fit-h', 900 * f + 'px');
+  document.getElementById('desk').style.setProperty('--fit', f);
+}
+addEventListener('resize', fit);
+sync(); fit();
+</script>
+</body>
+</html>
