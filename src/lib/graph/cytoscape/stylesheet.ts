@@ -389,6 +389,9 @@ export function buildStylesheet(p: Palette, options: StylesheetOptions = {}): Cy
 			style: { opacity: 1, width: 2.6, 'border-color': p.focusRing, 'z-index': 20 }
 		},
 		{ selector: `edge.${HOVERED_CLASS}`, style: { width: 2.6, 'z-index': 25 } },
+		// A former line lifts too, but stays thinner than a current one beside it, so touching
+		// the selected person does not make it read as current (its dash is kept as is).
+		{ selector: `edge.former.highlight, edge.former.${HOVERED_CLASS}`, style: { width: 1.8 } },
 		{
 			selector: `edge.highlight, edge.onpath, edge.${HOVERED_CLASS}`,
 			style: { 'text-opacity': 1 }

@@ -22,7 +22,8 @@ export const search: SearchMessages = {
 	'graph.find': 'Person finden',
 	'graph.findPlaceholder': 'Person finden…',
 	'graph.filter': 'Filter',
-	'graph.filter.summary': (p) => `Filter: ${p.shown} von ${p.total} Linienarten sichtbar`,
+	'graph.filter.summary': (p) =>
+		`Filter: ${p.shown} von ${p.total} Linienarten sichtbar${p.formerHidden ? ', ehemalige Beziehungen ausgeblendet' : ''}`,
 	'graph.filter.circles': 'Kreise',
 	'graph.filter.kinship': 'Verwandtschaft',
 	'graph.views': 'Gespeicherte Ansichten',

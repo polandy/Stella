@@ -28,6 +28,8 @@
 		category: string;
 		/** A face where there is one, so this reads like the interactive map it precedes. */
 		avatarPhotoId?: string | null;
+		/** Joined to the centre by former links alone, so its line is dashed, as on the map. */
+		former?: boolean;
 	}
 	let {
 		centerName,
@@ -129,7 +131,15 @@
 
 	<!-- edges first so nodes sit on top -->
 	{#each placed as n (n.id)}
-		<line x1={c.x} y1={c.y} x2={n.x} y2={n.y} stroke="var(--border)" stroke-width="2" />
+		<line
+			x1={c.x}
+			y1={c.y}
+			x2={n.x}
+			y2={n.y}
+			stroke="var(--border)"
+			stroke-width={n.former ? 1.2 : 2}
+			stroke-dasharray={n.former ? '6 3' : undefined}
+		/>
 	{/each}
 
 	<circle cx={c.x} cy={c.y} r={c.r} fill="var(--primary)" />

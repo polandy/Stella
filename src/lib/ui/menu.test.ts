@@ -36,9 +36,14 @@ describe('filterSummary', () => {
 	});
 
 	it('calls a map narrowed while a switch hides lines, such as the former links', () => {
-		const summary = filterSummary(new Set(all), all, new Set(all), { hidesLines: true });
+		const summary = filterSummary(new Set(all), all, new Set(all), { hidesFormer: true });
 
-		expect(summary).toEqual({ shown: 6, total: 6, narrowed: true });
+		// Says so too: "6 of 6 shown" alone would read as if nothing were hidden.
+		expect(summary).toEqual({ shown: 6, total: 6, narrowed: true, formerHidden: true });
+	});
+
+	it('does not call the former links hidden while they are shown', () => {
+		expect(filterSummary(new Set(all), all, new Set(all)).formerHidden).toBe(false);
 	});
 
 	it('calls a map narrowed that shows the same number but different kinds', () => {

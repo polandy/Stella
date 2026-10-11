@@ -19,8 +19,9 @@ card (§5.5.2); its styling is §5.8.
   **Former links** (on by default; its row starts with the former line's dashed stroke) and
   the grouping by role.
 - A link marked former is a thinner, longer-dashed line in a muted shade of its category, and
-  its name ends in *· former*; with *Former links* off it leaves the map and the Filter pill
-  stands out as narrowed.
+  its name ends in *· former*; selected or hovered it stays thinner than a current line. With
+  *Former links* off it leaves the map and the Filter pill stands out as narrowed, its name
+  ending in *former links hidden*.
 - **Tree** draws the family as a paper family tree (§5.8): partner bars, one drop per couple to
   a bar over their children — a former couple stays side by side on a dashed bar, but each
   parent drops on their own, and the role under the name says *Wife · former* — right angles throughout, each person's role towards the centre

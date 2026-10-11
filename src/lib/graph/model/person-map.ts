@@ -24,3 +24,19 @@ export const PERSON_MAP_RINGS = 2;
 export function personMap(graph: GraphModel, centerId: string): Promise<GraphModel> {
 	return buildEgoNetwork(inMemoryGraphSource(graph), centerId, PERSON_MAP_RINGS);
 }
+
+/**
+ * The people `centerId` is joined to by former links alone — an ex-partner with no tie left
+ * that is current. The People card's preview draws their line dashed, as the map does
+ * (docs/05 §5.8); a person with a current link beside a former one keeps a solid line.
+ */
+export function formerOnlyNeighbours(graph: GraphModel, centerId: string): Set<string> {
+	const former = new Set<string>();
+	const current = new Set<string>();
+	for (const e of graph.edges) {
+		if (e.kind !== 'relationship') continue;
+		const other = e.source === centerId ? e.target : e.target === centerId ? e.source : null;
+		if (other) (e.former ? former : current).add(other);
+	}
+	return new Set([...former].filter((id) => !current.has(id)));
+}

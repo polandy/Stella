@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'bun:test';
 import { familyEdges, familyNodes } from './fixtures';
-import { personMap, PERSON_MAP_RINGS } from './person-map';
+import { formerOnlyNeighbours, personMap, PERSON_MAP_RINGS } from './person-map';
 import { ringsFrom } from './rings';
 import type { GraphModel } from './types';
 
@@ -47,5 +47,35 @@ describe('personMap', () => {
 		const map = await personMap(family, 'not-visible-to-me');
 		expect(map.nodes).toEqual([]);
 		expect(map.edges).toEqual([]);
+	});
+});
+
+describe('formerOnlyNeighbours', () => {
+	const node = (id: string) => ({ id, kind: 'person' as const, label: id });
+	const tie = (id: string, target: string, former?: true) => ({
+		id,
+		source: 'mara',
+		target,
+		kind: 'relationship' as const,
+		category: 'romantic' as const,
+		...(former ? { former } : {})
+	});
+	const graph: GraphModel = {
+		nodes: ['mara', 'ex', 'partner', 'both', 'kin'].map(node),
+		edges: [
+			tie('r1', 'ex', true),
+			tie('r2', 'partner'),
+			tie('r3', 'both', true),
+			tie('r4', 'both'),
+			{ id: 'k1', source: 'mara', target: 'kin', kind: 'kinship' }
+		]
+	};
+
+	test('names the people the centre is joined to by former links alone', () => {
+		expect([...formerOnlyNeighbours(graph, 'mara')]).toEqual(['ex']);
+	});
+
+	test('leaves out somebody with a current link beside a former one', () => {
+		expect(formerOnlyNeighbours(graph, 'mara').has('both')).toBe(false);
 	});
 });

@@ -327,6 +327,28 @@ describe('buildStylesheet', () => {
 		expect(p.lines.former.family).not.toBe(p.lines.categories.family);
 	});
 
+	it('keeps a former link thinner than a current one when it is highlighted or hovered', () => {
+		// The cascade's last word on width for a former line that is selected or pointed at.
+		const widthOf = (state: string) => {
+			let width: unknown;
+			for (const s of styles) {
+				const parts = s.selector.split(',').map((x) => x.trim());
+				const hits = parts.some((x) =>
+					[state, `edge${state}`, `edge.former${state}`, 'edge.former'].includes(x)
+				);
+				if (hits && s.style.width !== undefined) width = s.style.width;
+			}
+			return Number(width);
+		};
+		const lit = Number(styles.find((s) => s.selector === '.highlight')?.style.width);
+		expect(widthOf('.highlight')).toBeLessThan(lit);
+		expect(widthOf(`.${HOVERED_CLASS}`)).toBeLessThan(lit);
+		// Still lifted above its resting width, so the selection shows on it too.
+		expect(widthOf('.highlight')).toBeGreaterThan(
+			Number(styles.find((s) => s.selector === 'edge.former')?.style.width)
+		);
+	});
+
 	it('keeps edge labels hidden until the edge is highlighted, hovered or on a path', () => {
 		const edge = styles.find((s) => s.selector === 'edge');
 		expect(edge?.style).toMatchObject({ label: 'data(label)', 'text-opacity': 0 });

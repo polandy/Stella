@@ -977,7 +977,8 @@ until you zoom back in. *Spacing* at the bottom of the menu sets how far apart p
 *Compact*, *Comfortable* or *Spacious* — and your browser remembers it.
 
 A relationship you have marked as **former** — an ex-partner, a former colleague — stays on the
-map as a thinner, dashed line in a paler colour, and its name ends in *· former*. If you would
+map as a thinner, dashed line in a paler colour, and its name ends in *· former*; the small
+map on the person's page draws it dashed too. If you would
 rather see only what holds today, switch off *Former links* in the Filter menu; the Filter
 button then stands out so you don't forget it is off. In the *Tree*, a couple who have
 separated still stand side by side, but their children's lines come down from each parent on

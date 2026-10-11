@@ -20,8 +20,8 @@ export const search = {
 	'graph.find': 'Find a person',
 	'graph.findPlaceholder': 'Find a person…',
 	'graph.filter': 'Filter',
-	'graph.filter.summary': (p: { shown: number; total: number }) =>
-		`Filter: ${p.shown} of ${p.total} kinds of line shown`,
+	'graph.filter.summary': (p: { shown: number; total: number; formerHidden: boolean }) =>
+		`Filter: ${p.shown} of ${p.total} kinds of line shown${p.formerHidden ? ', former links hidden' : ''}`,
 	'graph.filter.circles': 'Circles',
 	'graph.filter.kinship': 'Kinship',
 	'graph.views': 'Saved views',

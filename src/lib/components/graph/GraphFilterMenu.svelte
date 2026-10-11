@@ -100,7 +100,7 @@
 			active,
 			FILTERS.map((f) => f.key),
 			openingFilters,
-			{ hidesLines: !switches.formerLinks }
+			{ hidesFormer: !switches.formerLinks }
 		)
 	);
 </script>
