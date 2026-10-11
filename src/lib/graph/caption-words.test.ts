@@ -30,6 +30,18 @@ describe('captionWords', () => {
 		expect(captionWords(de, friend, nameOf)).toBe('Freundin von Sandra');
 	});
 
+	it('says a tie that has ended is former', () => {
+		const exFriend = {
+			kind: 'tie' as const,
+			role: { term: 'friend' as const, variant: 'female' as const, former: true as const },
+			anchor: 'sandra',
+			more: 0
+		};
+
+		expect(captionWords(en, exFriend, nameOf)).toBe('Friend of Sandra · former');
+		expect(captionWords(de, exFriend, nameOf)).toBe('Freundin von Sandra · ehemalig');
+	});
+
 	it('counts the others they hang off as well', () => {
 		const neighbour = {
 			kind: 'tie' as const,

@@ -26,12 +26,13 @@ const blocked: PreferenceStorage = {
 };
 
 describe('viewSwitchPreference', () => {
-	it('starts with line names and inner links on, grouping and every kinship line off', () => {
+	it('starts with line names, inner links and former links on, grouping and every kinship line off', () => {
 		expect(DEFAULT_VIEW_SWITCHES).toEqual({
 			edgeLabels: true,
 			groupRoles: false,
 			innerLinks: true,
-			allKinship: false
+			allKinship: false,
+			formerLinks: true
 		});
 		expect(viewSwitchPreference(memoryStorage()).load()).toEqual(DEFAULT_VIEW_SWITCHES);
 	});
@@ -43,17 +44,20 @@ describe('viewSwitchPreference', () => {
 		store.save('groupRoles', true);
 		store.save('innerLinks', false);
 		store.save('allKinship', true);
+		store.save('formerLinks', false);
 		expect(Object.fromEntries(storage.entries)).toEqual({
 			'stella.graph.edgeLabels': 'off',
 			'stella.graph.groupByRole': 'on',
 			'stella.graph.innerLinks': 'off',
-			'stella.graph.allKinship': 'on'
+			'stella.graph.allKinship': 'on',
+			'stella.graph.formerLinks': 'off'
 		});
 		expect(store.load()).toEqual({
 			edgeLabels: false,
 			groupRoles: true,
 			innerLinks: false,
-			allKinship: true
+			allKinship: true,
+			formerLinks: false
 		});
 	});
 

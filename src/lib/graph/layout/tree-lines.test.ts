@@ -118,6 +118,28 @@ describe('treeRoutes', () => {
 		}
 	});
 
+	it('hangs the children of a former couple from each parent, never from their bar', () => {
+		const exes: GraphModel = {
+			nodes: ['otto', 'rosa', 'bert'].map(person),
+			edges: [
+				{ ...spouses('otto', 'rosa'), former: true },
+				parentOf('otto', 'bert'),
+				parentOf('rosa', 'bert')
+			]
+		};
+		const { positions, routes } = routed(exes);
+
+		// Still a link: they stand side by side on one row, the bar between them drawn straight.
+		expect(positions.get('otto')!.y).toBe(positions.get('rosa')!.y);
+		expect(routes.has('otto-spouse-rosa')).toBe(false);
+		// But not a parent pair: each line leaves from its own parent.
+		for (const parent of ['otto', 'rosa']) {
+			const route = routes.get(`${parent}-parent_child-bert`)!;
+			expect(route.sourceEnd).toBeUndefined();
+			expect(route.waypoints[0].x).toBe(positions.get(parent)!.x);
+		}
+	});
+
 	it('joins a couple’s children on one bar, with a short drop to each', () => {
 		const { positions, routes } = routed(family);
 		const bars = ['bert', 'carl'].map((child) => {

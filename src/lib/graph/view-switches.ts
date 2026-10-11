@@ -19,13 +19,19 @@ export interface ViewSwitches {
 	innerLinks: boolean;
 	/** Every derived line, including those whose chain is already drawn — for reading the whole family. */
 	allKinship: boolean;
+	/**
+	 * The links marked former (docs/02 §2.7). On by default: an ex-partner is still part of how
+	 * a family hangs together; the switch is for reading only what holds today.
+	 */
+	formerLinks: boolean;
 }
 
 export const DEFAULT_VIEW_SWITCHES: Readonly<ViewSwitches> = {
 	edgeLabels: true,
 	groupRoles: false,
 	innerLinks: true,
-	allKinship: false
+	allKinship: false,
+	formerLinks: true
 };
 
 /** Where each switch has always been kept; changing one forgets every reader's choice. */
@@ -33,7 +39,8 @@ const KEYS: Record<keyof ViewSwitches, string> = {
 	edgeLabels: 'stella.graph.edgeLabels',
 	groupRoles: 'stella.graph.groupByRole',
 	innerLinks: 'stella.graph.innerLinks',
-	allKinship: 'stella.graph.allKinship'
+	allKinship: 'stella.graph.allKinship',
+	formerLinks: 'stella.graph.formerLinks'
 };
 
 export interface ViewSwitchPreference {
@@ -54,7 +61,8 @@ export function viewSwitchPreference(storage: PreferenceStorage): ViewSwitchPref
 					groupRoles: read('groupRoles'),
 					innerLinks: read('innerLinks'),
 					allKinship: read('allKinship'),
-					edgeLabels: read('edgeLabels')
+					edgeLabels: read('edgeLabels'),
+					formerLinks: read('formerLinks')
 				};
 			} catch {
 				// Storage can be blocked; the defaults stand.

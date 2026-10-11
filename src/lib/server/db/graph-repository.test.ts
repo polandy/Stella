@@ -84,6 +84,18 @@ describe('loadVisibleGraph', () => {
 		expect(partner).toMatchObject({ category: 'romantic', directed: false });
 	});
 
+	it('marks a link that has ended as former, and leaves a current one unmarked', async () => {
+		db.update(schema.relationship)
+			.set({ status: 'former' })
+			.where(eq(schema.relationship.id, 'r-partner'))
+			.run();
+
+		const graph = await createDrizzleGraphRepository(db).loadVisibleGraph(viewerU1);
+
+		expect(graph.edges.find((e) => e.id === 'r-partner')?.former).toBe(true);
+		expect(graph.edges.find((e) => e.id === 'r-child')).not.toHaveProperty('former');
+	});
+
 	it('words each person’s role by the gender on record, and neutrally without one', async () => {
 		db.update(schema.contact).set({ gender: 'female' }).where(eq(schema.contact.id, 'mara')).run();
 		db.update(schema.contact).set({ gender: 'Male ' }).where(eq(schema.contact.id, 'jonas')).run();

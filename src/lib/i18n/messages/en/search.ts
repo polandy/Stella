@@ -20,8 +20,8 @@ export const search = {
 	'graph.find': 'Find a person',
 	'graph.findPlaceholder': 'Find a person…',
 	'graph.filter': 'Filter',
-	'graph.filter.summary': (p: { shown: number; total: number }) =>
-		`Filter: ${p.shown} of ${p.total} kinds of line shown`,
+	'graph.filter.summary': (p: { shown: number; total: number; formerHidden: boolean }) =>
+		`Filter: ${p.shown} of ${p.total} kinds of line shown${p.formerHidden ? ', former links hidden' : ''}`,
 	'graph.filter.circles': 'Circles',
 	'graph.filter.kinship': 'Kinship',
 	'graph.views': 'Saved views',
@@ -44,6 +44,9 @@ export const search = {
 	'graph.density.spacious': 'Spacious',
 	'graph.allKinship': 'All kinship lines',
 	'graph.allKinship.hint': 'Also the ones the entered links already explain',
+	'graph.formerLinks': 'Former links',
+	'graph.formerLinks.hint': 'Ties that have ended, such as an ex-partner, drawn dashed',
+	'graph.former': (p: { words: string }) => `${p.words} · former`,
 	'graph.groupByRole': 'Group by role',
 	'graph.groupByRole.hint':
 		'Everyone with the same role in a circle stands in one group, on one line to the circle',

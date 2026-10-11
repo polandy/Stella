@@ -1,5 +1,6 @@
 <script lang="ts">
 	import RelationshipMap from '$lib/components/graph/RelationshipMap.svelte';
+	import { formerOnlyNeighbours } from '$lib/graph/model/person-map';
 	import { withoutRelationships } from '$lib/graph/model/without-pending';
 	import { groupPeople } from '$lib/relationships/people-groups';
 	import { otherEndRole } from '$lib/relationships/roles';
@@ -42,6 +43,7 @@
 		)
 	);
 	const visibleGraph = $derived(withoutRelationships(data.graph, pendingRelationships, c.id));
+	const formerOnly = $derived(formerOnlyNeighbours(visibleGraph, c.id));
 	const egoNodes = $derived.by(() => {
 		const seen = new Set<string>();
 		const out: {
@@ -50,6 +52,7 @@
 			firstName: string;
 			category: string;
 			avatarPhotoId: string | null;
+			former: boolean;
 		}[] = [];
 		// In the list's order — family first, the closest tie first — so the strip's innermost
 		// faces are the ones the list starts with.
@@ -67,7 +70,8 @@
 				// The strip names each face; a record without a first name gives its first word.
 				firstName: firstNameById.get(r.otherContactId) || r.otherDisplayName.split(/\s+/)[0],
 				category: r.category,
-				avatarPhotoId: photoById.get(r.otherContactId) ?? null
+				avatarPhotoId: photoById.get(r.otherContactId) ?? null,
+				former: formerOnly.has(r.otherContactId)
 			});
 		}
 		return out;

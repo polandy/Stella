@@ -76,6 +76,20 @@ describe('toCytoscapeElements', () => {
 		expect(edge('m1')?.data).toMatchObject({ kind: 'membership', directed: 0 });
 	});
 
+	it('classes a former link so it is drawn muted, and leaves a current one plain', () => {
+		const withEx: GraphModel = {
+			nodes: model.nodes,
+			edges: [
+				{ id: 'ex', source: 'mara', target: 'walter', kind: 'relationship', former: true },
+				{ id: 'now', source: 'mara', target: 'walter', kind: 'relationship' }
+			]
+		};
+		const out = toCytoscapeElements(withEx);
+		const of = (id: string) => out.find((e) => e.data.id === id);
+		expect(of('ex')?.classes.split(' ')).toContain('former');
+		expect(of('now')?.classes.split(' ')).not.toContain('former');
+	});
+
 	it('drops edges whose endpoint is not a present node', () => {
 		expect(edge('dangling')).toBeUndefined();
 	});

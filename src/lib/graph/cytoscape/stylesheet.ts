@@ -6,6 +6,7 @@ import {
 	NODE_LABEL_WIDTH,
 	SMALLEST_LABEL_FONT_SIZE
 } from '../layout/legibility';
+import { RELATIONSHIP_CATEGORIES } from '../../relationships/categories';
 import { expandBadge } from './badge';
 import type { Palette } from './theme';
 
@@ -307,6 +308,17 @@ export function buildStylesheet(p: Palette, options: StylesheetOptions = {}): Cy
 			selector: 'edge[kind = "kinship"]',
 			style: { ...line(p.lines.kinship), 'line-style': 'dotted', width: 1.2 }
 		},
+		// A link marked former (docs/02 §2.7): still a link, so still in its category's hue, but
+		// muted toward the grey, thinner, and dashed longer than a circle's line so the two never
+		// read alike. Its name says "former" too, so the mark holds without colour.
+		{
+			selector: 'edge.former',
+			style: { width: 1.2, 'line-style': 'dashed', 'line-dash-pattern': [9, 4] }
+		},
+		...RELATIONSHIP_CATEGORIES.map((c) => ({
+			selector: `edge.former[category = "${c}"]`,
+			style: line(p.lines.former[c])
+		})),
 		{
 			selector: 'edge[directed = 1]',
 			style: { 'target-arrow-shape': 'triangle', 'arrow-scale': 0.8 }
@@ -377,6 +389,9 @@ export function buildStylesheet(p: Palette, options: StylesheetOptions = {}): Cy
 			style: { opacity: 1, width: 2.6, 'border-color': p.focusRing, 'z-index': 20 }
 		},
 		{ selector: `edge.${HOVERED_CLASS}`, style: { width: 2.6, 'z-index': 25 } },
+		// A former line lifts too, but stays thinner than a current one beside it, so touching
+		// the selected person does not make it read as current (its dash is kept as is).
+		{ selector: `edge.former.highlight, edge.former.${HOVERED_CLASS}`, style: { width: 1.8 } },
 		{
 			selector: `edge.highlight, edge.onpath, edge.${HOVERED_CLASS}`,
 			style: { 'text-opacity': 1 }

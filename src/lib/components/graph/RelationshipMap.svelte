@@ -51,6 +51,8 @@
 			firstName: string;
 			category: string;
 			avatarPhotoId: string | null;
+			/** Joined to the centre by former links alone: the preview dashes their line. */
+			former?: boolean;
 		}[];
 		/** Where a node at the edge of the map leads, when the reader wants to go further. */
 		fullGraphHref: (nodeId: string) => string;

@@ -104,23 +104,22 @@ test.describe('on a phone', () => {
 		const menu = await filterMenu(page);
 		const box = await menu.boundingBox();
 		if (!box) throw new Error('the Filter menu has no layout');
-		const x = box.x + box.width / 2;
-		const below = box.y + box.height;
-		const viewport = page.viewportSize();
-		if (!viewport || below + 120 > viewport.height)
-			throw new Error('no room below the Filter menu to tap');
+		// Beside the menu rather than below it: on a phone the menu reaches nearly to the foot of
+		// the screen, and it opens from the pills at the right, so the map's room is on its left.
+		const y = box.y + box.height / 2;
+		if (box.x < 120) throw new Error('no room beside the Filter menu to tap');
 
 		// A thumb that missed the edge: the menu stays. Toggling a chip afterwards is the positive
 		// signal — taps are handled in order, so the near miss was handled before it. 12px out
 		// rather than a hair: Chromium's own touch adjustment already snaps a tap a few pixels
 		// off the edge onto the menu, so a closer tap would pass without the menu's help.
-		await page.touchscreen.tap(x, below + 12);
+		await page.touchscreen.tap(box.x - 12, y);
 		await chip(menu, 'Family').tap();
 		await expect(chip(menu, 'Family')).toHaveAttribute('aria-checked', 'false');
 		await expect(menu).toBeVisible();
 
 		// Well outside, it closes.
-		await page.touchscreen.tap(x, below + 100);
+		await page.touchscreen.tap(box.x - 100, y);
 		await expect(page.getByRole('menu', { name: /^Filter/ })).toHaveCount(0);
 	});
 

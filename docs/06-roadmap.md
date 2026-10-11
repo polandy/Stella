@@ -139,12 +139,10 @@ Goal: sand the edges and add the nice-to-haves.
   each its own entry if ever asked for: changing a member's role (with SSO role sync it has its
   own questions), leaving a household on one's own, purging a former member's private records,
   and deleting an account row for good (every authored record would need a new author first).
-- **Former relationships on the map** — *concept pending.* A link can be marked `former`
-  (docs/03 §3.3, e.g. an ex-partner), which already stops kinship derivation through it
-  (§2.4.1), but the relationship map (§2.7) still draws it like any current one. The concept
-  settles how a former link reads on the map (muted or dashed line, a label, hidden behind a
-  Filter switch?), whether layouts such as the family tree treat it differently, and
-  whether the person page and the pickers set it apart the same way.
+- ~~**Former relationships on the map**~~ — *shipped (§2.7).* A link marked `former` is a
+  dashed, muted line named *· former*, shown by default and hidden by the Filter menu's
+  *Former links* switch; the family tree keeps a former partnership as a link but never as
+  the couple the children hang from. The person page and the pickers already set it apart.
 - **Missing parents in the family tree** — *concept pending.* The tree (§2.7, docs/05 §5.8)
   draws only the parents somebody has entered; where a person's parent pair — or one of two
   parents — is missing, the row above simply has a gap. A dashed **"+" placeholder** in that

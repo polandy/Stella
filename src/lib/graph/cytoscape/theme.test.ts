@@ -113,7 +113,8 @@ describe('every explorer line clears 3:1 on the canvas', () => {
 				...RELATIONSHIP_CATEGORIES.map((c) => [c, p.lines.categories[c]] as const),
 				['membership', p.lines.membership] as const,
 				['kinship', p.lines.kinship] as const,
-				['path', p.lines.path] as const
+				['path', p.lines.path] as const,
+				...RELATIONSHIP_CATEGORIES.map((c) => [`former ${c}`, p.lines.former[c]] as const)
 			];
 			const failing = lines.filter(([, hex]) => contrastRatio(hex, p.bg) < AA_LARGE);
 			expect(failing).toEqual([]);
@@ -136,6 +137,14 @@ describe('every explorer line clears 3:1 on the canvas', () => {
 				['membership', p.lines.membership, base] as const,
 				['kinship', p.lines.kinship, Math.min(base, opacityOf('edge[kind = "kinship"]'))] as const,
 				['bundle', p.lines.categories.family, Math.min(base, opacityOf('edge.bundle'))] as const,
+				...RELATIONSHIP_CATEGORIES.map(
+					(c) =>
+						[
+							`former ${c}`,
+							p.lines.former[c],
+							Math.min(base, opacityOf('edge.former'), opacityOf(`edge.former[category = "${c}"]`))
+						] as const
+				),
 				['unknown category', String(rule('edge')['line-color']), base] as const
 			];
 			const failing = cases
@@ -299,6 +308,45 @@ describe('buildStylesheet', () => {
 		expect(has('edge[kind = "kinship"]')).toBe(true);
 		expect(has('node.circle')).toBe(true);
 		expect(has('node.center')).toBe(true);
+	});
+
+	it('draws a former link dashed, thinner and in a muted shade of its category', () => {
+		const p = resolvePalette(read);
+		const rule = (selector: string) => styles.find((s) => s.selector === selector)?.style;
+		const former = rule('edge.former');
+		expect(former).toMatchObject({ 'line-style': 'dashed' });
+		expect(Number(former?.width)).toBeLessThan(Number(rule('edge')?.width));
+		// A longer dash than a circle's line, so the two never read alike.
+		expect(former?.['line-dash-pattern']).not.toEqual(
+			rule('edge[kind = "membership"]')?.['line-dash-pattern']
+		);
+		for (const c of RELATIONSHIP_CATEGORIES) {
+			expect(rule(`edge.former[category = "${c}"]`)?.['line-color']).toBe(p.lines.former[c]);
+		}
+		// Muted: the family green moves toward the subtle grey rather than staying itself.
+		expect(p.lines.former.family).not.toBe(p.lines.categories.family);
+	});
+
+	it('keeps a former link thinner than a current one when it is highlighted or hovered', () => {
+		// The cascade's last word on width for a former line that is selected or pointed at.
+		const widthOf = (state: string) => {
+			let width: unknown;
+			for (const s of styles) {
+				const parts = s.selector.split(',').map((x) => x.trim());
+				const hits = parts.some((x) =>
+					[state, `edge${state}`, `edge.former${state}`, 'edge.former'].includes(x)
+				);
+				if (hits && s.style.width !== undefined) width = s.style.width;
+			}
+			return Number(width);
+		};
+		const lit = Number(styles.find((s) => s.selector === '.highlight')?.style.width);
+		expect(widthOf('.highlight')).toBeLessThan(lit);
+		expect(widthOf(`.${HOVERED_CLASS}`)).toBeLessThan(lit);
+		// Still lifted above its resting width, so the selection shows on it too.
+		expect(widthOf('.highlight')).toBeGreaterThan(
+			Number(styles.find((s) => s.selector === 'edge.former')?.style.width)
+		);
 	});
 
 	it('keeps edge labels hidden until the edge is highlighted, hovered or on a path', () => {

@@ -976,6 +976,14 @@ when that is happening. Zoomed far out, names that would be too small to read ar
 until you zoom back in. *Spacing* at the bottom of the menu sets how far apart people stand —
 *Compact*, *Comfortable* or *Spacious* — and your browser remembers it.
 
+A relationship you have marked as **former** — an ex-partner, a former colleague — stays on the
+map as a thinner, dashed line in a paler colour, and its name ends in *· former*; the small
+map on the person's page draws it dashed too. If you would
+rather see only what holds today, switch off *Former links* in the Filter menu; the Filter
+button then stands out so you don't forget it is off. In the *Tree*, a couple who have
+separated still stand side by side, but their children's lines come down from each parent on
+their own rather than from the line between them.
+
 If you often look at the map the same way — only family, say, or circles grouped by role —
 set the menu up once and tap *Save this view…* at its top to give that setup a name. Next time
 one tap on the name brings it back; the cross beside it deletes it, and saving again under the

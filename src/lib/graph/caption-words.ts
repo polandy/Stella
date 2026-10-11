@@ -26,5 +26,7 @@ export function captionWords(
 					role: roleTermLabel(t, caption.role.term, caption.role.variant) ?? caption.role.term,
 					name
 				});
-	return caption.more > 0 ? t('graph.tree.andMore', { text: said, count: caption.more }) : said;
+	const ended = 'former' in caption.role && caption.role.former;
+	const words = ended ? t('graph.former', { words: said }) : said;
+	return caption.more > 0 ? t('graph.tree.andMore', { text: words, count: caption.more }) : words;
 }

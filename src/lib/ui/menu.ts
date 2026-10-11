@@ -14,17 +14,23 @@ export interface FilterSummary {
 	 * so the button only stands out once there is something the reader might have forgotten.
 	 */
 	narrowed: boolean;
+	/** Whether the *Former links* switch takes those lines off the map, which the count misses. */
+	formerHidden: boolean;
 }
 
-/** Summarises `active` out of `all`, measured against what the map opened with. */
+/**
+ * Summarises `active` out of `all`, measured against what the map opened with. A switch that
+ * takes lines off the map — *Former links* off — narrows it too: it is as easy to forget.
+ */
 export function filterSummary(
 	active: ReadonlySet<string>,
 	all: readonly string[],
-	opening: ReadonlySet<string>
+	opening: ReadonlySet<string>,
+	{ hidesFormer = false }: { hidesFormer?: boolean } = {}
 ): FilterSummary {
 	const shown = all.filter((key) => active.has(key)).length;
-	const narrowed = all.some((key) => active.has(key) !== opening.has(key));
-	return { shown, total: all.length, narrowed };
+	const narrowed = hidesFormer || all.some((key) => active.has(key) !== opening.has(key));
+	return { shown, total: all.length, narrowed, formerHidden: hidesFormer };
 }
 
 /** Keys that move focus inside an open menu. */

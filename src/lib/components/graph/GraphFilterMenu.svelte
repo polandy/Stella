@@ -99,7 +99,8 @@
 		filterSummary(
 			active,
 			FILTERS.map((f) => f.key),
-			openingFilters
+			openingFilters,
+			{ hidesFormer: !switches.formerLinks }
 		)
 	);
 </script>
@@ -199,6 +200,24 @@
 				{@render toggle(switches.allKinship)}
 			</button>
 		{/if}
+		<!-- Drawn in the former line's own dash, so the switch is its legend too (docs/05 §5.8). -->
+		<button
+			type="button"
+			role="menuitemcheckbox"
+			aria-checked={switches.formerLinks}
+			onclick={() => onSwitch('formerLinks')}
+			class={MENU_ITEM}
+		>
+			<span
+				class="inline-block w-4 shrink-0 border-t-2 border-dashed border-fg-subtle"
+				aria-hidden="true"
+			></span>
+			<span class="flex-1">
+				{t('graph.formerLinks')}
+				<span class="block text-[11px] text-fg-subtle">{t('graph.formerLinks.hint')}</span>
+			</span>
+			{@render toggle(switches.formerLinks)}
+		</button>
 		<button
 			type="button"
 			role="menuitemcheckbox"

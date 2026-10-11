@@ -4,9 +4,7 @@
 	import EmptyState from '$lib/components/ui/EmptyState.svelte';
 	import { addRelationshipPath } from '$lib/people/sections';
 	import { useTranslate } from '$lib/i18n/context.svelte';
-	import { kinshipLabel } from '$lib/kinship/labels';
-	import { relationshipRowLabel } from '$lib/relationships/labels';
-	import { roleTermLabel } from '$lib/relationships/roles';
+	import { edgeWords, treeRoleWords } from '$lib/graph/edge-words';
 	import { rolesTowards } from '$lib/graph/model/tree-roles';
 	import { shelfCaptions } from '$lib/graph/model/shelf-captions';
 	import { captionWords } from '$lib/graph/caption-words';
@@ -139,14 +137,9 @@
 
 	const t = useTranslate();
 
-	// A built-in relationship type reads in the viewer's language; a household's own type
-	// reads as somebody typed it (docs/02 §2.19).
-	const edgeLabel = (edge: GraphEdge): string => {
-		if (edge.kin) return kinshipLabel(t, edge.kin);
-		if (edge.typeKey)
-			return relationshipRowLabel(t, { typeKey: edge.typeKey, label: edge.label ?? '' });
-		return edge.label ?? '';
-	};
+	// A built-in relationship type reads in the viewer's language, a household's own type as
+	// somebody typed it, and a former link says so (docs/02 §2.19, §2.7).
+	const edgeLabel = (edge: GraphEdge): string => edgeWords(t, edge);
 
 	// All exploration runs against this in-memory source — no further requests to the server.
 	// The snapshot is a prop, not a constant: a person's page hands a fresh one over after a
@@ -246,7 +239,7 @@
 	}
 
 	function buildFilters(): GraphFilters {
-		return graphFiltersFor(active, centerId);
+		return graphFiltersFor(active, centerId, switches);
 	}
 
 	/*
@@ -266,7 +259,7 @@
 	};
 	const roleOf = (id: string): string | undefined => {
 		const role = roles?.get(id);
-		if (role) return roleTermLabel(t, role.term, role.variant) ?? undefined;
+		if (role) return treeRoleWords(t, role);
 		const caption = shelf?.get(id);
 		return caption ? captionWords(t, caption, shortNameOf) : undefined;
 	};

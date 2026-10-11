@@ -22,7 +22,8 @@ export const search: SearchMessages = {
 	'graph.find': 'Person finden',
 	'graph.findPlaceholder': 'Person finden…',
 	'graph.filter': 'Filter',
-	'graph.filter.summary': (p) => `Filter: ${p.shown} von ${p.total} Linienarten sichtbar`,
+	'graph.filter.summary': (p) =>
+		`Filter: ${p.shown} von ${p.total} Linienarten sichtbar${p.formerHidden ? ', ehemalige Beziehungen ausgeblendet' : ''}`,
 	'graph.filter.circles': 'Kreise',
 	'graph.filter.kinship': 'Verwandtschaft',
 	'graph.views': 'Gespeicherte Ansichten',
@@ -45,6 +46,9 @@ export const search: SearchMessages = {
 	'graph.density.spacious': 'Großzügig',
 	'graph.allKinship': 'Alle Verwandtschaftslinien',
 	'graph.allKinship.hint': 'Auch die, die sich aus den eingetragenen Linien ergeben',
+	'graph.formerLinks': 'Ehemalige Beziehungen',
+	'graph.formerLinks.hint': 'Beendete Verbindungen, etwa zu Ex-Partnern, gestrichelt',
+	'graph.former': (p) => `${p.words} · ehemalig`,
 	'graph.groupByRole': 'Kreise nach Rolle bündeln',
 	'graph.groupByRole.hint':
 		'Wer im Kreis dieselbe Rolle hat, steht als eine Gruppe beisammen — mit einer Linie zum Kreis',
