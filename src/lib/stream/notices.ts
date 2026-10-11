@@ -14,6 +14,8 @@ export const LAST_NAMES_ENTITY = 'last_name';
 export const RENAME_ENTITY = 'contact_name';
 /** A member removed from the household (`delete`), or restored to it (`update`) (docs/02 §2.1). */
 export const MEMBER_ENTITY = 'member';
+/** A circle deleted, with everything in it (docs/03 §activity_log). */
+export const CIRCLE_ENTITY = 'circle';
 
 /**
  * The authored records a member other than the author may remove (docs/03 §3.7). A removal of
@@ -37,6 +39,8 @@ export type NoticeContent =
 	| { kind: 'memberRemoved'; name: string }
 	/** A former member an admin restored. */
 	| { kind: 'memberRestored'; name: string }
+	/** A circle deleted: its name as it was, linking nowhere — the circle is gone. */
+	| { kind: 'circleDeleted'; name: string }
 	| {
 			kind: 'removed';
 			recordKind: RemovedRecordKind;
@@ -52,6 +56,7 @@ const LastNamesFacts = v.object({ lastName: v.string(), count: v.number() });
 const RenameFacts = v.object({ from: v.string(), to: v.string() });
 const RemovalFacts = v.object({ person: v.string(), authorId: v.string(), authorName: v.string() });
 const MemberFacts = v.object({ name: v.string() });
+const CircleFacts = v.object({ name: v.string() });
 
 /** The facts of a last-names batch, as stored. */
 export const lastNamesFacts = (lastName: string, count: number): string =>
@@ -66,6 +71,9 @@ export const removalFacts = (person: string, authorId: string, authorName: strin
 
 /** The facts of a member removed from or restored to the household, as stored. */
 export const memberFacts = (name: string): string => JSON.stringify({ name });
+
+/** The facts of a circle deleted, as stored. */
+export const circleFacts = (name: string): string => JSON.stringify({ name });
 
 const isRemovedRecordKind = (entityType: string): entityType is RemovedRecordKind =>
 	(REMOVED_RECORD_KINDS as readonly string[]).includes(entityType);
@@ -119,6 +127,10 @@ export function noticeContentOf(row: {
 		const facts = parsed(MemberFacts, row.summary);
 		if (facts)
 			return { kind: row.action === 'update' ? 'memberRestored' : 'memberRemoved', ...facts };
+	}
+	if (row.entityType === CIRCLE_ENTITY) {
+		const facts = parsed(CircleFacts, row.summary);
+		if (facts) return { kind: 'circleDeleted', ...facts };
 	}
 	return { kind: 'text', text: row.summary };
 }

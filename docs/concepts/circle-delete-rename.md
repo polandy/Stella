@@ -1,7 +1,8 @@
 # Concept: deleting and renaming circles
 
 Status: **decided with the maintainer on 2026-10-10; slice 1 (editing) built, now in docs/02
-§2.4.2 and `screens/circles.md`; slices 2–3 not built.** Source: docs/06 *Deleting and
+§2.4.2 and `screens/circles.md`; slice 2 (deleting: access and domain) built, now in docs/03
+`circle`, `photo`, `activity_log` and §3.7; slice 3 (the screen) not built.** Source: docs/06 *Deleting and
 renaming circles*. Mockup: [circle-delete-rename.html](circle-delete-rename.html). Once all
 slices are built, the rules move into docs/02 §2.4.2, docs/03 and docs/05, and this file is
 deleted.

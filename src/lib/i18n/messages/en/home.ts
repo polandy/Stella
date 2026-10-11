@@ -90,6 +90,8 @@ export const home = {
 	// A note someone else removed: the author reads "your note"; nothing of its text (§2.11).
 	'home.stream.memberRemoved': (p: { name: string }) => `removed ${p.name} from the household`,
 	'home.stream.memberRestored': (p: { name: string }) => `restored ${p.name} to the household`,
+	// Followed by the circle's name; the circle is gone, so it links nowhere.
+	'home.stream.circleDeleted': 'removed the circle',
 	'home.stream.removedYourNote': 'removed your note on',
 	'home.stream.removedYourEntry': 'removed your journal entry on',
 	'home.stream.removedEntryOf': (p: { author: string }) => `removed ${p.author}’s journal entry on`,

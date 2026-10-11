@@ -162,6 +162,18 @@ export function circlePhotoRemovableBy(
 }
 
 /**
+ * Condition for a `circle` row being one the remover may delete — the SQL of `canDeleteCircle`:
+ * visible, and their own or, for an admin, shared.
+ */
+export function circleDeletableBy(remover: Remover): SQL {
+	const own = eq(circle.createdBy, remover.id);
+	return and(
+		circleColumnsVisibleTo(remover, circle),
+		remover.isAdmin ? or(own, eq(circle.visibility, 'shared')) : own
+	)!;
+}
+
+/**
  * Condition for an `activity_log` entry being visible: same household, and either shared or
  * the viewer's own action. The entry is scoped by itself — what it describes may be gone.
  */

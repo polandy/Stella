@@ -3,6 +3,8 @@ import type { Clock } from '../../clock';
 import type { IdGenerator } from '../../id';
 import type { Locale } from '../../../i18n/locales';
 import {
+	CIRCLE_ENTITY,
+	circleFacts,
 	LAST_NAMES_ENTITY,
 	lastNamesFacts,
 	MEMBER_ENTITY,
@@ -102,6 +104,15 @@ export type PlainActivityEvent =
 			kind: 'member.restored';
 			memberId: string;
 			name: string;
+	  }
+	| {
+			/** A circle deleted, with its memberships and photos (docs/02 §2.4.2). */
+			kind: 'circle.deleted';
+			circleId: string;
+			/** Kept because the row it names is not. */
+			name: string;
+			/** The circle's: a private circle's deletion is its creator's alone to see. */
+			visibility: Visibility;
 	  }
 	| {
 			/** An authored record removed by someone other than its author (docs/03 §3.7). */
@@ -246,6 +257,17 @@ function plainRow(event: PlainActivityEvent, householdId: string): Described {
 				// The household is meant to know who no longer belongs to it.
 				visibility: 'shared',
 				summary: memberFacts(event.name)
+			};
+		case 'circle.deleted':
+			return {
+				action: 'delete',
+				entityType: CIRCLE_ENTITY,
+				entityId: event.circleId,
+				// A circle is no person, and it is gone: the line links nowhere.
+				contactId: null,
+				visibility: event.visibility,
+				// Facts, said at read time in each reader's language (docs/02 §2.11).
+				summary: circleFacts(event.name)
 			};
 		case 'member.restored':
 			return {
