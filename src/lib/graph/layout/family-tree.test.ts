@@ -276,5 +276,25 @@ describe('familyTreeLayout', () => {
 
 			expect(layout.get('jan')!.x).toBe(couple);
 		});
+
+		it('stands each lone slot exactly over its child, both partners of a couple included', () => {
+			// Lena's grandparents have no parents on record: one slot over each of them. Names of
+			// different widths, as on the map, so the couple's drops cannot both line up by chance.
+			const slots = missingParentSlots(brunnerKeller, brunnerKeller, 'lena');
+			const named = (id: string) => ({
+				width: id.startsWith('slot:') ? 44 : id.length * 9 + 20,
+				height: 40
+			});
+			const layout = familyTreeLayout(withParentSlots(brunnerKeller, slots), named).positions;
+			const lone = slots.filter((s) => s.besideParentId === undefined);
+
+			expect(lone.map((s) => s.childId).sort()).toEqual(['hans', 'peter', 'rosa', 'ursula']);
+			for (const slot of lone) {
+				expect({ slot: slot.id, x: layout.get(slot.id)!.x }).toEqual({
+					slot: slot.id,
+					x: layout.get(slot.childId)!.x
+				});
+			}
+		});
 	});
 });
