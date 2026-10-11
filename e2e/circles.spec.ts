@@ -85,3 +85,31 @@ test('a new circle starts with an invitation rather than an empty list', async (
 	await expect(page.getByText('Nobody in this circle yet')).toBeVisible();
 	await expect(page.getByRole('button', { name: 'Add people' })).toBeVisible();
 });
+
+test('edits a circle’s name and kind from its ⋯ menu, and the list shows both', async ({
+	page
+}) => {
+	// A circle of its own, so no other case's seed circle changes under it.
+	await page.goto('/circles');
+	await appReady(page);
+	await page.getByRole('button', { name: 'New circle' }).click();
+	await page.getByLabel('Name').fill('Harbour Rowers');
+	await page.getByRole('button', { name: 'Create circle' }).click();
+	await expect(page.getByRole('heading', { name: 'Harbour Rowers' })).toBeVisible();
+
+	await page.getByRole('button', { name: 'More actions' }).click();
+	await page.getByRole('menuitem', { name: 'Edit circle' }).click();
+	const form = page.getByRole('form', { name: 'Edit Harbour Rowers' });
+	await form.getByLabel('Name').fill('Harbour Rowing Club');
+	await form.getByLabel('Kind').selectOption({ label: 'Club' });
+	await form.getByRole('button', { name: 'Save' }).click();
+
+	await expect(page.getByRole('heading', { name: 'Harbour Rowing Club' })).toBeVisible();
+	await expect(page.getByTestId('circle-facts')).toContainText('Club');
+
+	await page.goto('/circles');
+	const cards = page.getByTestId('circle-cards');
+	const card = cards.getByRole('link', { name: /Harbour Rowing Club/ });
+	await expect(card).toContainText('Club');
+	await expect(cards.getByRole('link', { name: /Harbour Rowers/ })).toHaveCount(0);
+});

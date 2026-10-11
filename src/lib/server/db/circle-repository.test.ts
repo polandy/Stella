@@ -326,3 +326,48 @@ describe('renameRole', () => {
 		expect(photoRole('club-photo')).toBe('Teacher');
 	});
 });
+
+describe('update', () => {
+	const details = {
+		name: 'Class 2B',
+		description: 'Primarschule Längenfeld',
+		kind: 'class' as const,
+		color: 'mauve' as const,
+		startDate: '2026-08-17',
+		endDate: '2027-07-02'
+	};
+
+	it('changes every detail and the stamp, and keeps who made it and who sees it', async () => {
+		const id = await createCircle(deps, creatorU1, { name: 'Class 1B', kind: 'school' });
+		expect(await deps.circles.update(viewerU2, id, details, NOW + 5)).toBe(true);
+		expect(await deps.circles.getVisibleTo(viewerU1, id)).toEqual({
+			id,
+			householdId: H,
+			createdBy: U1,
+			visibility: 'shared',
+			...details
+		});
+		const [row] = db
+			.select({ updatedAt: schema.circle.updatedAt })
+			.from(schema.circle)
+			.where(eq(schema.circle.id, id))
+			.all();
+		expect(row.updatedAt).toBe(NOW + 5);
+	});
+
+	it('leaves a circle the viewer cannot see alone, and says so', async () => {
+		const id = await createCircle(
+			deps,
+			{ ...creatorU1, defaultVisibility: 'private' },
+			{
+				name: 'Secret'
+			}
+		);
+		expect(await deps.circles.update(viewerU2, id, details, NOW + 5)).toBe(false);
+		expect((await deps.circles.getVisibleTo(viewerU1, id))?.name).toBe('Secret');
+	});
+
+	it('answers false for a circle that is not there', async () => {
+		expect(await deps.circles.update(viewerU1, 'gone', details, NOW)).toBe(false);
+	});
+});

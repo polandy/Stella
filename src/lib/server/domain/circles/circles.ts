@@ -2,6 +2,14 @@ import { roleKey } from '../../../circles/role-key';
 import type { Viewer } from '../../access/visibility';
 import type { Clock } from '../../clock';
 import type { IdGenerator } from '../../id';
+import {
+	CIRCLE_COLORS,
+	readCircleDetails,
+	type CircleColor,
+	type CircleDetails,
+	type CircleDetailsInput,
+	type CircleKind
+} from './circle-details';
 import type { CircleMembershipReads } from './memberships';
 
 /*
@@ -13,51 +21,18 @@ import type { CircleMembershipReads } from './memberships';
  * which circle (`memberships.ts`).
  */
 
-export const CIRCLE_KINDS = [
-	'friends',
-	'family',
-	'school',
-	'class',
-	'course',
-	'club',
-	'team',
-	'work',
-	'neighborhood',
-	'other'
-] as const;
-export type CircleKind = (typeof CIRCLE_KINDS)[number];
-
-export const CIRCLE_COLORS = [
-	'rosewater',
-	'flamingo',
-	'pink',
-	'mauve',
-	'red',
-	'maroon',
-	'peach',
-	'yellow',
-	'green',
-	'teal',
-	'sky',
-	'sapphire',
-	'blue',
-	'lavender'
-] as const;
-export type CircleColor = (typeof CIRCLE_COLORS)[number];
-
-export function resolveCircleKind(kind: string | null | undefined): CircleKind {
-	const trimmed = (kind ?? '').trim();
-	if (trimmed === '') return 'other';
-	if ((CIRCLE_KINDS as readonly string[]).includes(trimmed)) return trimmed as CircleKind;
-	throw new Error(`Unknown circle kind: ${trimmed}`);
-}
-
-export function resolveCircleColor(color: string | null | undefined): CircleColor {
-	const trimmed = (color ?? '').trim();
-	if (trimmed === '') return 'blue';
-	if ((CIRCLE_COLORS as readonly string[]).includes(trimmed)) return trimmed as CircleColor;
-	throw new Error(`Unknown circle colour: ${trimmed}`);
-}
+// The vocabularies and their checks live with the rest of a circle's details; re-exported here
+// because most callers think of them as the circle's.
+export {
+	CIRCLE_COLORS,
+	CIRCLE_KINDS,
+	resolveCircleColor,
+	resolveCircleKind,
+	type CircleColor,
+	type CircleDetails,
+	type CircleDetailsInput,
+	type CircleKind
+} from './circle-details';
 
 /**
  * Suggest a colour to pre-select when creating a circle: a random one **not yet used** by
@@ -137,17 +112,11 @@ export function groupMembersByRole<T extends { role: string | null }>(
 
 // ── Value shapes ──────────────────────────────────────────────────────────
 
-export interface Circle {
+export interface Circle extends CircleDetails {
 	id: string;
 	householdId: string;
 	createdBy: string;
 	visibility: 'shared' | 'private';
-	name: string;
-	description: string | null;
-	kind: CircleKind;
-	color: CircleColor;
-	startDate: string | null;
-	endDate: string | null;
 }
 
 export interface NewCircle extends Circle {
@@ -251,6 +220,16 @@ export interface CircleRepository {
 	 * old. Rows of other circles are never touched, whatever ids are passed.
 	 */
 	renameRole(change: RoleRename): Promise<void>;
+	/**
+	 * Give the circle `details`, if `viewer` sees it — the visibility rule is the write's own
+	 * condition. Answers whether a circle was changed: false means not visible, or gone.
+	 */
+	update(
+		viewer: Viewer,
+		circleId: string,
+		details: CircleDetails,
+		updatedAt: number
+	): Promise<boolean>;
 }
 
 export interface CircleDeps {
@@ -278,13 +257,7 @@ export interface CircleCreator {
 	defaultVisibility: 'shared' | 'private';
 }
 
-export interface CreateCircleInput {
-	name: string;
-	kind?: string | null;
-	color?: string | null;
-	description?: string | null;
-	startDate?: string | null;
-	endDate?: string | null;
+export interface CreateCircleInput extends CircleDetailsInput {
 	visibility?: 'shared' | 'private';
 }
 
@@ -295,16 +268,16 @@ const orNull = (value?: string | null): string | null => {
 	return trimmed.length > 0 ? trimmed : null;
 };
 
-/** Create a circle. Validates name/kind/colour; defaults visibility to the creator's default. */
+/**
+ * Create a circle. Its details are checked as editing checks them (`readCircleDetails`);
+ * visibility defaults to the creator's default.
+ */
 export async function createCircle(
 	deps: CircleDeps,
 	creator: CircleCreator,
 	input: CreateCircleInput
 ): Promise<string> {
-	const name = input.name.trim();
-	if (name === '') throw new Error('A circle needs a name.');
-	const kind = resolveCircleKind(input.kind);
-	const color = resolveCircleColor(input.color);
+	const details = readCircleDetails(input);
 
 	const now = deps.clock.now();
 	const id = deps.ids.next();
@@ -313,12 +286,7 @@ export async function createCircle(
 		householdId: creator.householdId,
 		createdBy: creator.userId,
 		visibility: input.visibility ?? creator.defaultVisibility,
-		name,
-		description: orNull(input.description),
-		kind,
-		color,
-		startDate: orNull(input.startDate),
-		endDate: orNull(input.endDate),
+		...details,
 		createdAt: now,
 		updatedAt: now
 	});

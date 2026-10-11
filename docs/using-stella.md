@@ -750,6 +750,13 @@ To rename a role, tap its heading (the name with the pencil), type the new name 
 of that role; other circles keep theirs. Fixing only the spelling ("teacher" → "Teacher") works
 the same way, and renaming a role to one the circle already has puts both groups together.
 
+To change a circle itself — its name, kind, description or colour — open the **⋯** at the top
+of its page and choose **Edit circle**. The same form sets the circle's **period**, when it
+starts and ends (a school year, a season); the page then shows it under the name, as in
+*Class · Aug 2025 – Jul 2026*. Press *Save*, or *Cancel* (or Escape) to leave it as it was.
+Everyone who can see a circle can edit it, and the new name shows everywhere at once. Whether
+the circle is shared or private stays as it was created.
+
 A circle can have photos: the class photo of each school year, the team on the pitch, the
 teachers at the summer party. Press **Add photos** in the *Photos* card below the members and
 pick several at once; say who is in them — one of the circle's roles, or *No role* when the

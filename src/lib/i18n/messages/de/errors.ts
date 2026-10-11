@@ -148,6 +148,7 @@ export const errors: ErrorsMessages = {
 	'errors.circle.needName': 'Bitte gib einen Namen für den Kreis ein.',
 	'errors.circle.couldNotAdd': 'Der Kreis konnte nicht hinzugefügt werden.',
 	'errors.circle.notFound': 'Kreis nicht gefunden',
+	'errors.circle.periodBackwards': 'Der Zeitraum kann nicht enden, bevor er beginnt.',
 	'errors.circlePhoto.unknownRole': 'Wähle eine der Rollen des Kreises oder keine Rolle.',
 	'errors.admin.only': 'Das kann nur die Haushalts-Administration.',
 	'errors.member.notYourself':
