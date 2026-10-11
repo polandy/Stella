@@ -1,4 +1,4 @@
-import { and, eq, isNull, ne, or, sql, type AnyColumn, type SQL } from 'drizzle-orm';
+import { and, eq, isNotNull, isNull, ne, or, sql, type AnyColumn, type SQL } from 'drizzle-orm';
 import { activityLog, circle, contact, user } from '../db/schema';
 import type { Remover, Viewer } from './visibility';
 
@@ -182,5 +182,18 @@ export function memberRemovableBy(remover: Remover): SQL {
 		eq(user.householdId, remover.householdId),
 		ne(user.id, remover.id),
 		isNull(user.removedAt)
+	)!;
+}
+
+/**
+ * Condition for a `user` row being a member the remover may restore — the SQL of
+ * `canRestoreMember`: an admin, a former member of the same household.
+ */
+export function memberRestorableBy(remover: Remover): SQL {
+	if (!remover.isAdmin) return sql`0`;
+	return and(
+		eq(user.householdId, remover.householdId),
+		ne(user.id, remover.id),
+		isNotNull(user.removedAt)
 	)!;
 }

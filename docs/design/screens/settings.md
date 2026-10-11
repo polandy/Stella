@@ -33,7 +33,13 @@ are what it holds today. The household-wide checks are their own page (§5.5.8).
   **Remove Nina** (danger) beside **Keep Nina** (ghost, focused). Escape keeps.
 - A removal answers with a toast and no Undo; the row moves to *Former members*, a second card
   of muted rows with *Removed on* and the day.
-- A member sees the same list without the buttons, and a line that only an admin removes.
+- For an admin, each former row ends in a ghost *Restore…* (the `addPerson` icon), its
+  accessible name carrying the name. It opens the same sunken confirm step: how they sign in
+  again, that devices stay signed out, what of theirs comes back, and **Restore Nina**
+  (primary) beside **Cancel** (ghost, focused). Escape cancels. A restore answers with a toast
+  and the row moves back to the main card.
+- A member sees the same lists without the buttons, and a line that only an admin removes or
+  restores.
 
 #### Import people
 
@@ -80,6 +86,11 @@ The release line is a notice, not a banner: it informs and asks nothing.
 
 Removing a member has no Undo window because sessions and tokens end at once, and an undo
 would have to bring them back; the confirm step stands in for it, as for deleting a person.
+*Restore* is the way back instead, a deliberate step of its own.
+
+Restoring is confirmed too, though nothing is lost by it: it opens the door to the household
+again, so it is weighed like the removal that closed it. Its submit is primary, not danger,
+because nothing is removed.
 
 A token is revoked because it may be in the wrong hands, and an undo grace period would be a
 window for exactly those hands. `private` is about who sees a record, so tokens get their own

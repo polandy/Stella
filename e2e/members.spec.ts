@@ -7,9 +7,10 @@ import {
 import { appReady, openPerson, signIn } from './app';
 
 /*
- * Removing a member from the household (docs/02 §2.1, §2.22): an admin removes one from
- * Settings → Members; every device signed in as them is signed out, Home tells it, and what
- * they shared keeps their name. A member who is no admin sees the list without *Remove…*.
+ * Removing a member from the household and restoring them (docs/02 §2.1, §2.22): an admin
+ * removes one from Settings → Members; every device signed in as them is signed out, Home
+ * tells it, and what they shared keeps their name. Restored from *Former members*, they sign in
+ * again with their old password. A member who is no admin sees the list without *Remove…*.
  * Written after the flow was verified in the running app (docs/08 §8.4.1).
  *
  * The member removed is Lukas Brunner, whom the seed adds for this spec alone: no other spec
@@ -50,12 +51,12 @@ test('a member who is no admin sees the members without Remove…', async ({ bro
 	// The rows are there, so the missing buttons are missing, not unrendered.
 	await expect(memberRow(nina, LUKAS)).toBeVisible();
 	await expect(memberRow(nina, 'Demo Admin')).toBeVisible();
-	await expect(nina.getByText('Only an admin can remove a member.')).toBeVisible();
+	await expect(nina.getByText('Only an admin can remove or restore a member.')).toBeVisible();
 	await expect(nina.getByRole('button', { name: /^Remove/ })).toHaveCount(0);
 	await nina.context().close();
 });
 
-test('an admin removes a member: signed out everywhere, told on Home, still named on their note', async ({
+test('an admin removes a member: signed out everywhere, told on Home, still named on their note; restored, they sign in again', async ({
 	page,
 	browser
 }) => {
@@ -94,4 +95,24 @@ test('an admin removes a member: signed out everywhere, told on Home, still name
 	await expect(
 		page.locator('#section-notes').locator('li', { hasText: LUKAS_SHARED_NOTE })
 	).toContainText('Lukas');
+
+	// Restored from Former members, he signs in again with his old password.
+	await openMembers(page);
+	await page
+		.getByTestId('former-members')
+		.getByRole('button', { name: `Restore ${LUKAS}…` })
+		.click();
+	const restore = page.getByTestId('restore-member-confirm');
+	await expect(restore).toContainText(`Restore ${LUKAS} to the household?`);
+	await expect(restore).toContainText('Their one private record is theirs to see again.');
+	await restore.getByRole('button', { name: `Restore ${LUKAS}`, exact: true }).click();
+	await expect(page.getByText(`${LUKAS} restored`)).toBeVisible();
+	await expect(page.getByTestId('former-members')).toHaveCount(0);
+	await expect(memberRow(page, LUKAS)).toBeVisible();
+
+	const lukasAgain = await signInAs(browser, DEMO_THIRD_MEMBER_EMAIL);
+	await expect(
+		lukasAgain.getByTestId('stream-notice').filter({ hasText: 'to the household' })
+	).toHaveText(new RegExp(`Demo Admin\\s*restored ${LUKAS} to the household`));
+	await lukasAgain.context().close();
 });

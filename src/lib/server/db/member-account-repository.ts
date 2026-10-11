@@ -1,7 +1,7 @@
 import { and, asc, count, eq, isNull } from 'drizzle-orm';
 import type { BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
 import type { SQLiteColumn, SQLiteTable } from 'drizzle-orm/sqlite-core';
-import { memberRemovableBy } from '../access/query-scoping';
+import { memberRemovableBy, memberRestorableBy } from '../access/query-scoping';
 import { activityEntry } from '../domain/activity/activity';
 import type { MemberAccountRepository } from '../domain/household/remove-member';
 import type * as schema from './schema';
@@ -25,7 +25,7 @@ import {
  * Drizzle adapter for the MemberAccountRepository port (docs/02 §2.1, docs/08 §8.3). A removal
  * stamps `removed_at` and keeps the row: every `created_by` still names a real author, the
  * identity lets the next SSO sign-in be turned away, and the password hash waits, unchecked,
- * for a restore.
+ * for a restore, which clears the stamp again.
  */
 
 /** Every table a member's private records live in. */
@@ -105,6 +105,29 @@ export function createDrizzleMemberAccountRepository(
 				tx.delete(invitation)
 					.where(and(eq(invitation.createdBy, memberId), isNull(invitation.acceptedAt)))
 					.run();
+				tx.insert(activityLog).values(activityEntry(audit)).run();
+				return true;
+			});
+		},
+
+		async findRestorableBy(restorer, memberId) {
+			const row = db
+				.select({ id: user.id, name: user.name })
+				.from(user)
+				.where(and(eq(user.id, memberId), memberRestorableBy(restorer)))
+				.get();
+			return row ?? null;
+		},
+
+		async restoreRestorableBy(restorer, memberId, at, audit) {
+			return db.transaction((tx) => {
+				const restored = tx
+					.update(user)
+					.set({ removedAt: null, updatedAt: at })
+					.where(and(eq(user.id, memberId), memberRestorableBy(restorer)))
+					.returning({ id: user.id })
+					.all();
+				if (restored.length === 0) return false;
 				tx.insert(activityLog).values(activityEntry(audit)).run();
 				return true;
 			});

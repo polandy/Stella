@@ -98,6 +98,12 @@ export type PlainActivityEvent =
 			name: string;
 	  }
 	| {
+			/** An admin restored a former member to the household (docs/02 §2.1). */
+			kind: 'member.restored';
+			memberId: string;
+			name: string;
+	  }
+	| {
 			/** An authored record removed by someone other than its author (docs/03 §3.7). */
 			kind: 'record.removed';
 			recordKind: RemovedRecordKind;
@@ -238,6 +244,15 @@ function plainRow(event: PlainActivityEvent, householdId: string): Described {
 				entityId: event.memberId,
 				contactId: null,
 				// The household is meant to know who no longer belongs to it.
+				visibility: 'shared',
+				summary: memberFacts(event.name)
+			};
+		case 'member.restored':
+			return {
+				action: 'update',
+				entityType: MEMBER_ENTITY,
+				entityId: event.memberId,
+				contactId: null,
 				visibility: 'shared',
 				summary: memberFacts(event.name)
 			};

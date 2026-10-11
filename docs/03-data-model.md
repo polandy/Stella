@@ -122,7 +122,7 @@ A family member with an account.
 | theme_pref | text | `'system' \| 'light' \| 'dark'` |
 | accent_pref | text | Catppuccin accent name, e.g. `'mauve'` |
 | totp_secret | text null | reserved for local 2FA [later] |
-| removed_at | int null | when an admin removed the member (§2.1); null while they belong. The row stays, so every `created_by` / `actor_id` keeps its author. A removed member signs nobody in: sessions and API tokens are deleted by the removal, the identity and the password hash are kept but never checked. Migration `0028_member_removed_at` |
+| removed_at | int null | when an admin removed the member (§2.1); null while they belong. The row stays, so every `created_by` / `actor_id` keeps its author. A removed member signs nobody in: sessions and API tokens are deleted by the removal, the identity and the password hash are kept but never checked. Restoring the member clears it, and they sign in again with that password or identity. Migration `0028_member_removed_at` |
 | created_at / updated_at | int | |
 
 ### session
@@ -691,7 +691,9 @@ removing their own note writes nothing.
 **And for a member removed** (docs/02 §2.1): `action = 'delete'`, `entity_type = 'member'`,
 `entity_id` the member, `contact_id` null, `visibility` shared, and the facts `{"name":"Nina"}`
 in `summary`, said per reader (*Andy removed Nina from the household*). Written in the same
-transaction as the removal.
+transaction as the removal. **A member restored** writes the same row with `action = 'update'`
+(*Andy restored Nina to the household*), in the restore's transaction; the action alone tells
+the two lines apart.
 
 ### immich_link  [M3]
 Which person in the household's Immich library a contact is (docs/02 §2.24,
@@ -894,8 +896,9 @@ admin of the household when it is `shared` — and either must see it first, so 
 nothing on a private one (`canRemoveAuthored` / `authoredRemovableBy`, and `canRemoveCirclePhoto` / `circlePhotoRemovableBy` with the circle in the contact's place, held to the same rows
 by the parity test). The remover is a viewer plus `isAdmin`, which the route reads from the
 signed-in user's `role` (`requireRemover`); it is the only rule here that looks at the role, beside who removes a **member**: an admin, any
-other current member of their own household (`canRemoveMember` / `memberRemovableBy`, its own
-parity test).
+other current member of their own household (`canRemoveMember` / `memberRemovableBy`), and
+who restores one: an admin, any former member of their own household (`canRestoreMember` /
+`memberRestorableBy`), both held by their own parity test.
 The delete is scoped by the SQL condition itself, so the right is checked when the removal
 reaches the server, not when *Remove* was pressed. **Editing** a note or a touchpoint is the author's alone, and
 only while they still see it (`canEditAuthored` / `authoredEditableBy`, held to the same rows by

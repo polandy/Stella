@@ -12,7 +12,7 @@ import * as v from 'valibot';
 export const LAST_NAMES_ENTITY = 'last_name';
 /** A name edited on the profile (docs/02 §2.2). */
 export const RENAME_ENTITY = 'contact_name';
-/** A member removed from the household (docs/02 §2.1). */
+/** A member removed from the household (`delete`), or restored to it (`update`) (docs/02 §2.1). */
 export const MEMBER_ENTITY = 'member';
 
 /**
@@ -35,6 +35,8 @@ export type NoticeContent =
 	| { kind: 'rename'; from: string; to: string; contactId: string | null }
 	/** A member an admin removed: their name, which they still go by on what they wrote. */
 	| { kind: 'memberRemoved'; name: string }
+	/** A former member an admin restored. */
+	| { kind: 'memberRestored'; name: string }
 	| {
 			kind: 'removed';
 			recordKind: RemovedRecordKind;
@@ -62,7 +64,7 @@ export const renameFacts = (from: string, to: string): string => JSON.stringify(
 export const removalFacts = (person: string, authorId: string, authorName: string): string =>
 	JSON.stringify({ person, authorId, authorName });
 
-/** The facts of a member removed from the household, as stored. */
+/** The facts of a member removed from or restored to the household, as stored. */
 export const memberFacts = (name: string): string => JSON.stringify({ name });
 
 const isRemovedRecordKind = (entityType: string): entityType is RemovedRecordKind =>
@@ -85,6 +87,8 @@ function parsed<T>(schema: v.GenericSchema<unknown, T>, text: string): T | null 
 
 /** What a logged line says, from its entity type and stored summary. */
 export function noticeContentOf(row: {
+	/** Tells a member restored (`update`) from one removed. */
+	action: string;
 	entityType: string;
 	summary: string;
 	contactId: string | null;
@@ -113,7 +117,8 @@ export function noticeContentOf(row: {
 	}
 	if (row.entityType === MEMBER_ENTITY) {
 		const facts = parsed(MemberFacts, row.summary);
-		if (facts) return { kind: 'memberRemoved', ...facts };
+		if (facts)
+			return { kind: row.action === 'update' ? 'memberRestored' : 'memberRemoved', ...facts };
 	}
 	return { kind: 'text', text: row.summary };
 }

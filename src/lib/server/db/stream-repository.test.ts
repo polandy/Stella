@@ -1,4 +1,4 @@
-import { lastNamesFacts, renameFacts } from '../../stream/notices';
+import { lastNamesFacts, memberFacts, MEMBER_ENTITY, renameFacts } from '../../stream/notices';
 import { beforeEach, describe, expect, it } from 'bun:test';
 import { eq } from 'drizzle-orm';
 import { Database } from 'bun:sqlite';
@@ -394,6 +394,32 @@ describe('recentNotices', () => {
 			{ kind: 'rename', from: 'Sandra Brunner-Keller', to: 'Sandra Jdjdh', contactId: 'c-open' }
 		]);
 		expect(forActor.map((r) => r.id)).toEqual(['hidden', 'open']);
+	});
+
+	it('reports a member removed and restored, each as its own line', async () => {
+		const memberLine = (id: string, action: 'delete' | 'update', at: number) =>
+			db
+				.insert(schema.activityLog)
+				.values({
+					id,
+					householdId: H,
+					actorId: U1,
+					action,
+					entityType: MEMBER_ENTITY,
+					entityId: U2,
+					contactId: null,
+					visibility: 'shared',
+					summary: memberFacts('Nina'),
+					createdAt: at
+				})
+				.run();
+		memberLine('removed', 'delete', 700);
+		memberLine('restored', 'update', 710);
+
+		expect((await repo.recentNotices(asU2, EVERYONE)).map((r) => r.content)).toEqual([
+			{ kind: 'memberRestored', name: 'Nina' },
+			{ kind: 'memberRemoved', name: 'Nina' }
+		]);
 	});
 
 	it('keeps a private person private, even in the record of their deletion', async () => {

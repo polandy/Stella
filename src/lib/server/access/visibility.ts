@@ -179,3 +179,16 @@ export function canRemoveMember(remover: Remover, member: MemberAccess): boolean
 		!member.removed
 	);
 }
+
+/**
+ * An admin restores any former member of their own household. Restoring oneself never comes up:
+ * a removed member signs nobody in.
+ */
+export function canRestoreMember(remover: Remover, member: MemberAccess): boolean {
+	return (
+		remover.isAdmin &&
+		member.householdId === remover.householdId &&
+		member.id !== remover.id &&
+		member.removed
+	);
+}

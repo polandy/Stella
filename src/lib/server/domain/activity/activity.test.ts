@@ -153,6 +153,21 @@ describe('activityEntry', () => {
 		});
 	});
 
+	it('logs a member restored under the member, as an update, for the whole household', () => {
+		const entry = activityEntry(
+			recorded({ kind: 'member.restored', memberId: 'u-nina', name: 'Nina Brunner' })
+		);
+		expect(entry).toEqual({
+			...stamp,
+			action: 'update',
+			entityType: MEMBER_ENTITY,
+			entityId: 'u-nina',
+			contactId: null,
+			visibility: 'shared',
+			summary: memberFacts('Nina Brunner')
+		});
+	});
+
 	it('logs an export under the household, for the household to see', () => {
 		expect(activityEntry(recorded({ kind: 'archive.exported', people: 12 }))).toEqual({
 			...stamp,

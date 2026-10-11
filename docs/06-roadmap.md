@@ -139,9 +139,11 @@ Goal: sand the edges and add the nice-to-haves.
   circle edits its name and details. Its creator, or an admin on a shared one, deletes it
   after a confirm step, with no Undo and a line in the stream. Worn cuts stay with their
   wearers, and nested circles move up a level. Three slices.
-- **Removing a member** — *slice 1 built, slice 2 left:*
-  [concepts/remove-member.md](concepts/remove-member.md). An admin removes any other member
-  from the *Members* page in Settings (docs/02 §2.1). Left: *Restore* on *Former members*.
+- ~~**Removing a member**~~ — *shipped, both slices (§2.1).* An admin removes any other member
+  from the *Members* page in Settings, and restores a former one there. Left out on purpose,
+  each its own entry if ever asked for: changing a member's role (with SSO role sync it has its
+  own questions), leaving a household on one's own, purging a former member's private records,
+  and deleting an account row for good (every authored record would need a new author first).
 - **Former relationships on the map** — *concept pending.* A link can be marked `former`
   (docs/03 §3.3, e.g. an ex-partner), which already stops kinship derivation through it
   (§2.4.1), but the relationship map (§2.7) still draws it like any current one. The concept
