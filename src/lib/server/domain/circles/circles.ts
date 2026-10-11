@@ -1,7 +1,8 @@
 import { roleKey } from '../../../circles/role-key';
-import type { Viewer } from '../../access/visibility';
+import type { Remover, Viewer } from '../../access/visibility';
 import type { Clock } from '../../clock';
 import type { IdGenerator } from '../../id';
+import type { ActivityOf } from '../activity/activity';
 import {
 	CIRCLE_COLORS,
 	readCircleDetails,
@@ -10,6 +11,7 @@ import {
 	type CircleDetailsInput,
 	type CircleKind
 } from './circle-details';
+import type { CircleDeletionFacts, DeletedCirclePhotoFiles } from './delete-circle';
 import type { CircleMembershipReads } from './memberships';
 
 /*
@@ -230,6 +232,23 @@ export interface CircleRepository {
 		details: CircleDetails,
 		updatedAt: number
 	): Promise<boolean>;
+	/**
+	 * What deleting the circle would take, if `remover` may delete it (`circleDeletableBy`), else
+	 * null. Counts what the remover cannot see too, since the deletion takes it.
+	 */
+	readDeletion(remover: Remover, circleId: string): Promise<CircleDeletionFacts | null>;
+	/**
+	 * Delete the circle in **one** transaction, if `remover` may — the rule is the `DELETE`'s own
+	 * condition: the cuts of its photos are turned first, its photos (framings included) go, its
+	 * memberships cascade and its children lose their parent; `audit` is logged with it. Answers
+	 * the files of the deleted photos, to unlink after the commit, or null when nothing was
+	 * deleted.
+	 */
+	deleteDeletable(
+		remover: Remover,
+		circleId: string,
+		audit: ActivityOf<'circle.deleted'>
+	): Promise<DeletedCirclePhotoFiles[] | null>;
 }
 
 export interface CircleDeps {

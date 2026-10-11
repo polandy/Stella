@@ -58,6 +58,8 @@ const CIRCLES = [
 	{ id: 'k-shared', householdId: H1, createdBy: U1, visibility: 'shared' },
 	{ id: 'k-priv-u1', householdId: H1, createdBy: U1, visibility: 'private' },
 	{ id: 'k-priv-u2', householdId: H1, createdBy: U2, visibility: 'private' },
+	// Another member's shared circle: the one an admin may delete without having created it.
+	{ id: 'k-shared-u2', householdId: H1, createdBy: U2, visibility: 'shared' },
 	{ id: 'k-foreign', householdId: H2, createdBy: U3, visibility: 'shared' },
 	{ id: 'k-foreign-priv', householdId: H2, createdBy: U3, visibility: 'private' }
 ] as const;

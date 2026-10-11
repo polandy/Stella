@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'bun:test';
 import {
+	CIRCLE_ENTITY,
+	circleFacts,
 	lastNamesFacts,
 	memberFacts,
 	MEMBER_ENTITY,
@@ -155,5 +157,16 @@ describe('noticeContentOf', () => {
 				contactId: null
 			})
 		).toEqual({ kind: 'memberRestored', name: 'Nina Brunner' });
+	});
+
+	it('reads a circle deleted as its name', () => {
+		expect(
+			noticeContentOf({
+				action: 'delete',
+				entityType: CIRCLE_ENTITY,
+				summary: circleFacts('Class 1B'),
+				contactId: null
+			})
+		).toEqual({ kind: 'circleDeleted', name: 'Class 1B' });
 	});
 });

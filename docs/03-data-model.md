@@ -541,9 +541,10 @@ circle: visible when the circle is, and shared or the viewer's own (§3.7). Its 
 stored as it was picked from the circle's roles and matched to the members' roles by the
 members list's folding (trimmed, case-folded), so a role nobody has any more keeps its photos.
 `circle_id` carries no foreign key for the reason `journal_entry_id` has no cascade (below): the
-repository removes a circle's photos, and their files, with the circle. Nothing deletes a circle
-yet; the rule is for the day something does: it turns the cuts of all the circle's photos
-(below) first, as removing one photo does. Archiving a circle keeps its photos.
+repository removes a circle's photos, and their files, with the circle: deleting a circle
+(`circle` below) turns the cuts of all its photos (below) first, as removing one photo does,
+then deletes every photo of the circle — the deleter's or not — and unlinks the files after the
+commit. Archiving a circle keeps its photos.
 
 **A profile picture can be cut from a group photo** (docs/02 §2.14, ADR-116). A
 *cut* is a framing of a circle photo with `contact_id` set to the person who wears it: one per
@@ -609,6 +610,18 @@ friend group). See [02-features.md §2.4.2](02-features.md).
 | end_date | text null | not before `start_date`, compared at the coarser precision of the two (`circle-details.ts`) |
 | archived_at | int null | |
 | created_at / updated_at | int | |
+
+**Deleting a circle** (docs/02 §2.4.2) is the circle's creator's, always, and an admin's when it
+is shared (§3.7). It runs in one transaction (`circle-deletion.ts`): the `DELETE` of the circle
+row carries `circleDeletableBy` as its own condition, so nothing is deleted for anyone else and
+the use-case answers `CircleGoneError`; `circle_membership` rows cascade, and a nested circle
+keeps everything of its own and only loses its parent (`parent_circle_id` `ON DELETE SET NULL`).
+The circle's photos go in the same transaction, after their cuts are turned (`photo`), and the
+deletion is logged (`activity_log`). It takes what the deleter cannot see as well — other
+members' private photos, the memberships of people private to someone else — as deleting a
+person takes others' private notes; the confirm step's counts (`circleDeletionPreview`) include
+those photos and their wearers, but only the members the deleter sees, and they name only the
+children the deleter sees.
 
 ### circle_membership  [M2]
 A contact's time-bounded membership in a circle. The same two contacts sharing a circle
@@ -694,6 +707,12 @@ in `summary`, said per reader (*Andy removed Nina from the household*). Written 
 transaction as the removal. **A member restored** writes the same row with `action = 'update'`
 (*Andy restored Nina to the household*), in the restore's transaction; the action alone tells
 the two lines apart.
+
+**And for a circle deleted** (`circle` above): `action = 'delete'`, `entity_type = 'circle'`,
+`entity_id` the circle, `contact_id` null, `visibility` the circle's (so a private circle's
+deletion is seen only by its creator, the only one who could delete it), and the facts
+`{"name":"Class 1B"}` in `summary`, said per reader (*Andy removed the circle Class 1B*) and
+linking nowhere. Written in the same transaction as the deletion.
 
 ### immich_link  [M3]
 Which person in the household's Immich library a contact is (docs/02 §2.24,
@@ -894,7 +913,10 @@ access to `private` records.
 **Removing an authored record.** A **note**, **journal entry**, **touchpoint**, **person photo** or **circle photo** may be removed by its author, always, and by an
 admin of the household when it is `shared` — and either must see it first, so an admin gains
 nothing on a private one (`canRemoveAuthored` / `authoredRemovableBy`, and `canRemoveCirclePhoto` / `circlePhotoRemovableBy` with the circle in the contact's place, held to the same rows
-by the parity test). The remover is a viewer plus `isAdmin`, which the route reads from the
+by the parity test). A **circle** is deleted by the same rule with the circle as the record: its
+creator, always, and an admin when it is shared — both must see it, so a private circle is its
+creator's alone (`canDeleteCircle` / `circleDeletableBy`, held to the same rows by the parity
+test). The remover is a viewer plus `isAdmin`, which the route reads from the
 signed-in user's `role` (`requireRemover`); it is the only rule here that looks at the role, beside who removes a **member**: an admin, any
 other current member of their own household (`canRemoveMember` / `memberRemovableBy`), and
 who restores one: an admin, any former member of their own household (`canRestoreMember` /

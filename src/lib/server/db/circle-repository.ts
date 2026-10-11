@@ -1,7 +1,8 @@
 import { and, eq, inArray, sql } from 'drizzle-orm';
 import type { BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
 import { circleColumnsVisibleTo } from '../access/query-scoping';
-import type { Viewer } from '../access/visibility';
+import type { Remover, Viewer } from '../access/visibility';
+import type { ActivityOf } from '../domain/activity/activity';
 import type {
 	Circle,
 	CircleDetails,
@@ -11,13 +12,15 @@ import type {
 	RoleRename
 } from '../domain/circles/circles';
 import { circleColumns, toCircle } from './circle-columns';
+import { deleteDeletableCircle, readCircleDeletion } from './circle-deletion';
 import type * as schema from './schema';
 import { circle, circleMembership, photo } from './schema';
 
 /*
  * Drizzle adapter for the CircleRepository port (docs/08 §8.3): a circle's writes and the
  * one-circle reads they rest on, scoped centrally via `circleColumnsVisibleTo` (§3.7). The lists
- * are read models of their own (`circle-directory-reads.ts`, `circle-membership-reads.ts`).
+ * are read models of their own (`circle-directory-reads.ts`, `circle-membership-reads.ts`);
+ * deleting a circle lives in `circle-deletion.ts`.
  */
 
 export function createDrizzleCircleRepository(
@@ -133,6 +136,14 @@ export function createDrizzleCircleRepository(
 				.returning({ id: circle.id })
 				.all();
 			return changed.length > 0;
+		},
+
+		async readDeletion(remover: Remover, circleId: string) {
+			return readCircleDeletion(db, remover, circleId);
+		},
+
+		async deleteDeletable(remover: Remover, circleId: string, audit: ActivityOf<'circle.deleted'>) {
+			return deleteDeletableCircle(db, remover, circleId, audit);
 		},
 
 		// The photos are `photo` rows of this circle (docs/03 §photo): a role lives on both

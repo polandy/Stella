@@ -1,6 +1,13 @@
 import { describe, expect, it } from 'bun:test';
 import { fixedClock, sequentialIds } from '../testing';
-import { lastNamesFacts, memberFacts, MEMBER_ENTITY, renameFacts } from '../../../stream/notices';
+import {
+	CIRCLE_ENTITY,
+	circleFacts,
+	lastNamesFacts,
+	memberFacts,
+	MEMBER_ENTITY,
+	renameFacts
+} from '../../../stream/notices';
 import {
 	activityEntry,
 	activityRecord,
@@ -166,6 +173,28 @@ describe('activityEntry', () => {
 			visibility: 'shared',
 			summary: memberFacts('Nina Brunner')
 		});
+	});
+
+	it('logs a circle deleted under the circle, as visible as it was, with its name', () => {
+		const entry = activityEntry(
+			recorded({
+				kind: 'circle.deleted',
+				circleId: 'k-1b',
+				name: 'Class 1B',
+				visibility: 'private'
+			})
+		);
+		expect(entry).toEqual({
+			...stamp,
+			action: 'delete',
+			entityType: CIRCLE_ENTITY,
+			entityId: 'k-1b',
+			// A circle is no person, and it is gone: nothing to link to.
+			contactId: null,
+			visibility: 'private',
+			summary: circleFacts('Class 1B')
+		});
+		expect(JSON.parse(entry.summary)).toEqual({ name: 'Class 1B' });
 	});
 
 	it('logs an export under the household, for the household to see', () => {

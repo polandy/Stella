@@ -142,6 +142,17 @@ export function canRemoveCirclePhoto(remover: Remover, photo: CirclePhotoAccess)
 }
 
 /**
+ * A circle may be deleted by its creator, always, and by an admin when it is shared — the
+ * authored-record rule with the circle as the record. Both must see it, so a private circle is
+ * its creator's alone (docs/03 §3.7).
+ */
+export function canDeleteCircle(remover: Remover, circle: CircleAccess): boolean {
+	if (!canViewCircle(remover, circle)) return false;
+	if (circle.ownerId === remover.id) return true;
+	return remover.isAdmin && circle.visibility === 'shared';
+}
+
+/**
  * An activity-log entry (docs/03 §activity_log). It outlives what it describes — a deleted or
  * merged contact, an export that never had a row — so there is no record left to scope through;
  * the entry carries the visibility the affected record had, and `actorId` is its author.

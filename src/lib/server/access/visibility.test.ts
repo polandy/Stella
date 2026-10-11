@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'bun:test';
 import {
+	canDeleteCircle,
 	canViewActivity,
 	canViewChildRecord,
 	canViewCirclePhoto,
@@ -255,6 +256,36 @@ describe('canRemoveCirclePhoto (docs/03 §3.7: author always, admin on a shared 
 		const hidden = { ...shared, circle: circle('private') };
 		expect(canRemoveCirclePhoto(admin, hidden)).toBe(false);
 		expect(canRemoveCirclePhoto(author, hidden)).toBe(true);
+	});
+});
+
+describe('canDeleteCircle (docs/03 §3.7: creator always, admin on a shared circle)', () => {
+	const creator: Remover = { ...viewerOwner, isAdmin: false };
+	const admin: Remover = { ...viewerOther, isAdmin: true };
+	const member: Remover = { ...viewerOther, isAdmin: false };
+	const foreignAdmin: Remover = { ...viewerForeign, isAdmin: true };
+	const shared = { householdId: HOUSEHOLD, ownerId: OWNER, visibility: 'shared' as const };
+	const priv = { ...shared, visibility: 'private' as const };
+
+	it('lets its creator delete it, shared or private', () => {
+		expect(canDeleteCircle(creator, shared)).toBe(true);
+		expect(canDeleteCircle(creator, priv)).toBe(true);
+	});
+
+	it("lets an admin delete another member's shared circle", () => {
+		expect(canDeleteCircle(admin, shared)).toBe(true);
+	});
+
+	it("gives an admin nothing on another member's private circle", () => {
+		expect(canDeleteCircle(admin, priv)).toBe(false);
+	});
+
+	it("refuses a member on someone else's shared circle", () => {
+		expect(canDeleteCircle(member, shared)).toBe(false);
+	});
+
+	it('refuses an admin of another household', () => {
+		expect(canDeleteCircle(foreignAdmin, shared)).toBe(false);
 	});
 });
 

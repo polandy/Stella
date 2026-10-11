@@ -19,6 +19,7 @@ import {
 	activityVisibleTo,
 	authoredEditableBy,
 	authoredRemovableBy,
+	circleDeletableBy,
 	circlePhotoRemovableBy,
 	childRecordVisibleTo,
 	circleColumnsVisibleTo,
@@ -29,6 +30,7 @@ import {
 } from './query-scoping';
 import { REMOVERS, seedParityDb, U1, U2, U3, VIEWERS } from './visibility-parity.fixture';
 import {
+	canDeleteCircle,
 	canEditAuthored,
 	canRemoveAuthored,
 	canRemoveCirclePhoto,
@@ -523,6 +525,66 @@ describe('canRemoveCirclePhoto and circlePhotoRemovableBy pick the same rows', (
 			expect(side).toContain('kp-foreign');
 		}
 	});
+});
+
+/*
+ * Deleting a circle is the authored-record rule with the circle as the record:
+ * `canDeleteCircle` decides one circle, `circleDeletableBy` scopes the delete.
+ */
+const circleDeletable = {
+	ts: (remover: Remover) =>
+		ids([...circlesById()].filter(([, k]) => canDeleteCircle(remover, k)).map(([id]) => ({ id }))),
+	sql: (remover: Remover) =>
+		ids(db.select({ id: circle.id }).from(circle).where(circleDeletableBy(remover)).all())
+};
+
+/** [remover, the circle it may not delete, a circle it may, why]. */
+const CIRCLE_DELETION_CASES: [remover: string, refused: string, control: string, why: string][] = [
+	['u1Admin', 'k-priv-u2', 'k-shared-u2', "an admin on another member's private circle"],
+	['u2', 'k-shared', 'k-shared-u2', "a member on someone else's shared circle"],
+	['u2', 'k-priv-u1', 'k-priv-u2', 'a circle the member cannot see'],
+	['u3Admin', 'k-shared', 'k-foreign', 'an admin of another household']
+];
+
+describe('canDeleteCircle and circleDeletableBy pick the same rows', () => {
+	for (const [name, remover] of Object.entries(REMOVERS)) {
+		it(`circle, remover ${name}`, () => {
+			expect(circleDeletable.sql(remover)).toEqual(circleDeletable.ts(remover));
+		});
+	}
+
+	it('the creator deletes their own circle, shared and private', () => {
+		for (const side of [circleDeletable.ts(REMOVERS.u2), circleDeletable.sql(REMOVERS.u2)]) {
+			expect(side).toContain('k-shared-u2');
+			expect(side).toContain('k-priv-u2');
+		}
+	});
+
+	it("an admin deletes another member's shared circle", () => {
+		for (const side of [
+			circleDeletable.ts(REMOVERS.u1Admin),
+			circleDeletable.sql(REMOVERS.u1Admin)
+		]) {
+			expect(side).toContain('k-shared-u2');
+		}
+	});
+
+	for (const [name, refused, control, why] of CIRCLE_DELETION_CASES) {
+		it(`${name} may not delete ${refused} (${why}), may delete ${control}`, () => {
+			for (const side of [
+				circleDeletable.ts(REMOVERS[name]),
+				circleDeletable.sql(REMOVERS[name])
+			]) {
+				expect(side).not.toContain(refused);
+				expect(side).toContain(control);
+			}
+			// A mistyped id would be refused for free: someone may delete the circle.
+			const deletableBySomeone = Object.values(REMOVERS).some((r) =>
+				circleDeletable.ts(r).includes(refused)
+			);
+			expect(deletableBySomeone).toBe(true);
+		});
+	}
 });
 
 /** [remover, the note it may not remove, a note it may, why]. */

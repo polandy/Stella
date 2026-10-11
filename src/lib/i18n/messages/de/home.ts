@@ -83,6 +83,7 @@ export const home: HomeMessages = {
 	'home.stream.nameEdited': 'bearbeitete den Namen von',
 	'home.stream.memberRemoved': (p) => `entfernte ${p.name} aus dem Haushalt`,
 	'home.stream.memberRestored': (p) => `holte ${p.name} in den Haushalt zurück`,
+	'home.stream.circleDeleted': 'entfernte den Kreis',
 	'home.stream.removedYourNote': 'entfernte deine Notiz zu',
 	'home.stream.removedNoteOf': (p) => `entfernte ${genitive(p.author)} Notiz zu`,
 	'home.stream.removedYourEntry': 'entfernte deinen Tagebucheintrag zu',
