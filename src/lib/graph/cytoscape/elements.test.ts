@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test';
-import { toCytoscapeElements } from './elements';
+import { slotElements, toCytoscapeElements } from './elements';
 import { avatarAccent } from '../../people/avatar';
 import { groupByRole } from '../model/role-groups';
 import type { GraphModel } from '../model/types';
@@ -164,5 +164,36 @@ describe('toCytoscapeElements with the circles grouped by role', () => {
 	it('tucks away the lines a bundle stands for, and leaves the rest', () => {
 		expect(byId('m-lena')?.classes).toContain('tucked');
 		expect(byId('father')?.classes).not.toContain('tucked');
+	});
+});
+
+describe('slotElements', () => {
+	const elements = slotElements(
+		[
+			{ id: 'slot:parent-of:lena', childId: 'lena' },
+			{ id: 'slot:parent-of:peter', childId: 'peter', besideParentId: 'georg' }
+		],
+		(slot) => `Add a parent of ${slot.childId}`
+	);
+	const byId = (id: string) => elements.find((e) => e.data.id === id);
+
+	it('draws each slot as a plus that says what tapping it adds', () => {
+		const slot = byId('slot:parent-of:lena');
+
+		expect(slot?.classes).toBe('slot');
+		expect(slot?.data.label).toBe('+');
+		expect(slot?.data.name).toBe('Add a parent of lena');
+	});
+
+	it('draws one dashed line a slot: down to the child, or the bar beside the parent', () => {
+		expect(byId('slot:parent-of:lena:line')?.data).toMatchObject({
+			source: 'slot:parent-of:lena',
+			target: 'lena'
+		});
+		expect(byId('slot:parent-of:peter:bar')?.data.target).toBe('georg');
+		expect(byId('slot:parent-of:peter:line')).toBeUndefined();
+		expect(elements.filter((e) => e.group === 'edges').every((e) => e.classes === 'slot')).toBe(
+			true
+		);
 	});
 });

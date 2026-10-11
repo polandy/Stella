@@ -68,6 +68,8 @@ export const search: SearchMessages = {
 	'graph.tree.ownWords': (p) => `${p.words} ${p.name}`,
 	'graph.tree.namePair': (p) => `${p.first}, ${p.second}`,
 	'graph.tree.andMore': (p) => `${p.text} +${p.count}`,
+	'graph.tree.addParent': (p) => `Ein Elternteil von ${p.name} hinzufügen`,
+	'graph.tree.addOtherParent': (p) => `Den anderen Elternteil von ${p.name} hinzufügen`,
 	'graph.arrange.circles': 'Nach Kreisen',
 	'graph.arrange.circles.hint': 'Jeder Kreis mit seinen Mitgliedern darum',
 	'graph.loading': 'Der Graph lädt…',
@@ -75,6 +77,7 @@ export const search: SearchMessages = {
 	'graph.keyboard.hint':
 		'Mit den Pfeiltasten von Person zu Person. Enter wählt aus und klappt beim zweiten Mal die Verbindungen auf. Pos1 führt zurück zur ausgewählten Person oder zur Mitte, Escape hebt die Auswahl auf.',
 	'graph.keyboard.selected': (p) => `${p.name}, ausgewählt`,
+	'graph.keyboard.button': (p) => `${p.name}, Schaltfläche`,
 	'graph.keyboard.more': (p) => `${p.name}, ${p.count} weitere zum Aufklappen`,
 	'graph.path.none': 'Zwischen diesen beiden ist keine Verbindung zu finden.',
 	'graph.path.pickSecond': 'Wähle jetzt die zweite Person…',

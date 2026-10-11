@@ -77,6 +77,17 @@ export function relationshipTypeOptions<T extends SelectableType>(
 }
 
 /**
+ * The entry a link asked the picker to stand on (`?as=`, docs/02 §2.7), when the picker offers
+ * it; otherwise none, and the picker stands on its first entry as usual.
+ */
+export function offeredChoice<T extends SelectableType>(
+	options: readonly RelationshipTypeOption<T>[],
+	asked: string | null
+): string {
+	return asked !== null && options.some((option) => option.value === asked) ? asked : '';
+}
+
+/**
  * Whether a picker entry is the one a stored link already reads as — what the edit form
  * preselects. A symmetric type is offered **once**, from its forward side, while a link
  * carrying it reads as `reverse` on the endpoint it is stored second: matching the side

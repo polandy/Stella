@@ -179,7 +179,15 @@ function straightened(
 		return false;
 	};
 
-	for (const [key, children] of byDrop) {
+	// From the top down: straightening a drop may move its parents' unit, so the drop over them
+	// is straightened first, or the one beneath would be left pointing where they used to stand.
+	const generationOf = (key: string) => family.get(key.split('+')[0])!;
+	const topDown = [...byDrop].sort(([a], [b]) => generationOf(a) - generationOf(b));
+	// The units a straight drop already rests on: moving one again would bend that drop — a
+	// couple whose partners each hang from a lone parent of their own would line up under the
+	// second and leave the first askew.
+	const settled = new Set<string[]>();
+	for (const [key, children] of topDown) {
 		if (children.length !== 1) continue;
 		const parents = key.split('+');
 		const parentUnit = unitOf(parents[0]);
@@ -188,11 +196,18 @@ function straightened(
 		const dropX = parents.reduce((sum, p) => sum + x.get(p)!, 0) / parents.length;
 		const child = children[0];
 		const delta = dropX - x.get(child)!;
-		if (delta === 0) continue;
 		const childUnit = unitOf(child);
-		if (fits(childUnit, delta) && move(childUnit, delta)) continue;
-		if (parents.length === 1 && parentUnit.length === 1 && fits(parentUnit, -delta)) {
-			move(parentUnit, -delta);
+		const straight =
+			delta === 0 ||
+			(!settled.has(childUnit) && fits(childUnit, delta) && move(childUnit, delta)) ||
+			(parents.length === 1 &&
+				parentUnit.length === 1 &&
+				!settled.has(parentUnit) &&
+				fits(parentUnit, -delta) &&
+				move(parentUnit, -delta));
+		if (straight) {
+			settled.add(childUnit);
+			settled.add(parentUnit);
 		}
 	}
 	return x;

@@ -1,4 +1,6 @@
 import { requireUser, requireViewer } from '$lib/server/auth/guards';
+import { canAddRelationshipTo } from '$lib/server/access/visibility';
+import { getContact } from '$lib/server/domain/contacts/contacts';
 import { chooseCenter, chosenPathTarget, wayBackTo } from './center';
 import type { PageServerLoad } from './$types';
 
@@ -31,5 +33,23 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 	 */
 	const pathTo = chosenPathTarget(graph.nodes, url.searchParams.get('path'), center.id);
 
-	return { graph, centerId: center.id, cameFrom, pathTo };
+	/*
+	 * The family tree around a person offers a slot for each missing parent up their line, and
+	 * tapping one adds a relationship (docs/02 §2.7) — so only for a viewer who may add one to
+	 * the centre. A circle has no parents to offer, and costs no read.
+	 */
+	const centrePerson = graph.nodes.some((n) => n.id === center.id && n.kind === 'person');
+	const centreContact =
+		centrePerson && center.id
+			? await getContact(locals.services.people.contactDeps, viewer, center.id)
+			: null;
+	const mayAddRelationships = centreContact
+		? canAddRelationshipTo(viewer, {
+				householdId: centreContact.householdId,
+				ownerId: centreContact.createdBy,
+				visibility: centreContact.visibility
+			})
+		: false;
+
+	return { graph, centerId: center.id, cameFrom, pathTo, mayAddRelationships };
 };

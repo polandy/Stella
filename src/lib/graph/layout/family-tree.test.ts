@@ -3,6 +3,7 @@ import { familyTreeLayout, TREE_SPACING } from './family-tree';
 import { DEFAULT_NODE_SIZE } from './geometry';
 import { TREE_LINES } from './tree-lines';
 import { brunnerKeller, twoHouseholds } from './family-fixtures';
+import { missingParentSlots, withParentSlots } from '../model/missing-parents';
 import type { GraphEdge, GraphModel, GraphNode } from '../model/types';
 
 /*
@@ -229,5 +230,71 @@ describe('familyTreeLayout', () => {
 		expect(lastLane).toBeLessThan(TREE_SPACING.row - 40 - TREE_LINES.lane);
 		// Lanes far enough apart to read as separate lines even on a phone.
 		expect(TREE_LINES.lane).toBeGreaterThanOrEqual(14);
+	});
+
+	describe('with the slots of missing parents (docs/05 §5.8)', () => {
+		const laidOut = (model: GraphModel, centre: string) =>
+			familyTreeLayout(withParentSlots(model, missingParentSlots(model, model, centre))).positions;
+
+		it('stands the slot over a child nobody entered a parent for', () => {
+			const layout = laidOut({ nodes: [person('lena')], edges: [] }, 'lena');
+			const slot = layout.get('slot:parent-of:lena')!;
+
+			expect(slot.y).toBeLessThan(layout.get('lena')!.y);
+			expect(slot.x).toBe(layout.get('lena')!.x);
+		});
+
+		it('stands the other parent’s slot on the parent’s row, right beside them', () => {
+			const model: GraphModel = {
+				nodes: [person('lena'), person('peter'), person('noah')],
+				edges: [parentOf('peter', 'lena'), parentOf('peter', 'noah')]
+			};
+			const layout = laidOut(model, 'lena');
+			const slot = layout.get('slot:parent-of:lena')!;
+			const peter = layout.get('peter')!;
+
+			expect(slot.y).toBe(peter.y);
+			const gap = Math.abs(slot.x - peter.x) - DEFAULT_NODE_SIZE.width;
+			expect(gap).toBe(TREE_SPACING.gap);
+		});
+
+		it('hangs an only child straight under the couple a slot makes, slots above them too', () => {
+			// Jan, whose one parent has no parents on record either: two drops, one over the other.
+			const model: GraphModel = {
+				nodes: [person('jan'), person('beat')],
+				edges: [parentOf('beat', 'jan')]
+			};
+			const wide = (id: string) => ({
+				width: id === 'beat' ? 80 : id === 'jan' ? 70 : 24,
+				height: 40
+			});
+			const layout = familyTreeLayout(
+				withParentSlots(model, missingParentSlots(model, model, 'jan')),
+				wide
+			).positions;
+			const couple = (layout.get('beat')!.x + layout.get('slot:parent-of:jan')!.x) / 2;
+
+			expect(layout.get('jan')!.x).toBe(couple);
+		});
+
+		it('stands each lone slot exactly over its child, both partners of a couple included', () => {
+			// Lena's grandparents have no parents on record: one slot over each of them. Names of
+			// different widths, as on the map, so the couple's drops cannot both line up by chance.
+			const slots = missingParentSlots(brunnerKeller, brunnerKeller, 'lena');
+			const named = (id: string) => ({
+				width: id.startsWith('slot:') ? 44 : id.length * 9 + 20,
+				height: 40
+			});
+			const layout = familyTreeLayout(withParentSlots(brunnerKeller, slots), named).positions;
+			const lone = slots.filter((s) => s.besideParentId === undefined);
+
+			expect(lone.map((s) => s.childId).sort()).toEqual(['hans', 'peter', 'rosa', 'ursula']);
+			for (const slot of lone) {
+				expect({ slot: slot.id, x: layout.get(slot.id)!.x }).toEqual({
+					slot: slot.id,
+					x: layout.get(slot.childId)!.x
+				});
+			}
+		});
 	});
 });

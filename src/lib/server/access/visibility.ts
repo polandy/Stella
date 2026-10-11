@@ -91,6 +91,16 @@ export function canViewRelationship(
 	return canViewContact(viewer, endpoints.from) && canViewContact(viewer, endpoints.to);
 }
 
+/**
+ * Whether the viewer may add a relationship to this person — from their page, or from a slot
+ * the family tree offers for a missing parent (docs/02 §2.4, §2.7). Seeing them is enough:
+ * there is no read-only member, and the other end must be visible too, which the picker only
+ * ever offers and `addRelationshipChecked` refuses otherwise.
+ */
+export function canAddRelationshipTo(viewer: Viewer, contact: ContactAccess): boolean {
+	return canViewContact(viewer, contact);
+}
+
 /** A circle (shared context) is a first-class shareable record, scoped like a contact. */
 export interface CircleAccess {
 	householdId: HouseholdId;

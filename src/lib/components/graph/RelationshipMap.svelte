@@ -56,8 +56,18 @@
 		}[];
 		/** Where a node at the edge of the map leads, when the reader wants to go further. */
 		fullGraphHref: (nodeId: string) => string;
+		/** The reader may add a relationship here: the family tree offers missing parents. */
+		mayAddParents?: boolean;
 	}
-	let { centerId, centerName, centerPhotoId, graph, nodes, fullGraphHref }: Props = $props();
+	let {
+		centerId,
+		centerName,
+		centerPhotoId,
+		graph,
+		nodes,
+		fullGraphHref,
+		mayAddParents = false
+	}: Props = $props();
 
 	const t = useTranslate();
 
@@ -67,6 +77,7 @@
 		compact?: boolean;
 		maxRings?: number;
 		fullGraphHref?: (nodeId: string) => string;
+		mayAddParents?: boolean;
 		startFullscreen?: boolean;
 		onFullscreenExit?: () => void;
 		onShrink?: () => void;
@@ -169,6 +180,7 @@
 			compact
 			maxRings={PERSON_MAP_RINGS}
 			{fullGraphHref}
+			{mayAddParents}
 			startFullscreen={view === 'fullscreen'}
 			onFullscreenExit={() => go('leftFullscreen')}
 		/>
@@ -206,6 +218,7 @@
 					compact
 					maxRings={PERSON_MAP_RINGS}
 					{fullGraphHref}
+					{mayAddParents}
 					onShrink={shrink}
 					onReady={() => go('drawn')}
 				/>
