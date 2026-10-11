@@ -1,5 +1,6 @@
 import { expect, test, type Browser, type Page } from '@playwright/test';
 import { appReady, signIn } from './app';
+import { circleIdOf, seedHousehold } from './seed';
 import { DEMO_ADMIN_PASSWORD, DEMO_MEMBER_EMAIL } from '../src/lib/server/db/demo-seed';
 
 /*
@@ -11,58 +12,31 @@ import { DEMO_ADMIN_PASSWORD, DEMO_MEMBER_EMAIL } from '../src/lib/server/db/dem
  *
  * The suite shares one database and runs serially, so the case brings in a circle of its own,
  * with a child, out of people it invents. Nesting has no form (it is import-only), so they come
- * through the import API with a token of the demo account, which makes it the circles' creator.
+ * through the archive restore as the signed-in demo account, which makes it the circles' creator.
  */
 
 const PARENT = 'Larch Hill School';
 const CHILD = 'Larch Hill School Choir';
 const AURELIA = 'Aurelia Tschopp';
+const BENNO = 'Benno Tschopp';
 
 test.beforeEach(async ({ page }) => {
 	await signIn(page);
 });
 
-/** Imports the two people and the circle with its child; answers the parent circle's address. */
-async function importNestedCircles(page: Page): Promise<string> {
-	await page.goto('/settings');
-	await page.getByRole('link', { name: /API tokens/ }).click();
-	await page.getByLabel('What is it for?').fill('Circle deletion check');
-	await page.getByRole('button', { name: 'Create token' }).click();
-	const token = (await page.getByTestId('new-token').locator('code').first().textContent()) ?? '';
-	expect(token).toMatch(/^stella_[0-9a-f]{48}$/);
-
-	const imported = await page.request.post('/api/v1/import', {
-		headers: { Authorization: `Bearer ${token}` },
-		data: {
-			source: 'e2e-circle-delete',
-			people: [
-				{ ref: 'aurelia', firstName: 'Aurelia', lastName: 'Tschopp' },
-				{ ref: 'benno', firstName: 'Benno', lastName: 'Tschopp' }
-			],
-			circles: [
-				{
-					ref: 'school',
-					name: PARENT,
-					kind: 'school',
-					members: [
-						{ person: 'aurelia', role: 'pupil' },
-						{ person: 'benno', role: 'pupil' }
-					]
-				},
-				{
-					ref: 'choir',
-					name: CHILD,
-					kind: 'club',
-					parent: 'school',
-					members: [{ person: 'aurelia', role: 'alto' }]
-				}
+/** Seeds the two people and the circle with its child; answers the parent circle's address. */
+async function seedNestedCircles(page: Page): Promise<string> {
+	await seedHousehold(page, [AURELIA, BENNO], [], {}, [
+		{
+			name: PARENT,
+			members: [
+				{ person: AURELIA, role: 'pupil' },
+				{ person: BENNO, role: 'pupil' }
 			]
-		}
-	});
-	const answer = await imported.json();
-	expect(answer).toMatchObject({ added: { people: 2, circles: 2, memberships: 3 } });
-	const school = answer.circles.find((c: { ref: string }) => c.ref === 'school');
-	return `/circles/${school.id}`;
+		},
+		{ name: CHILD, parent: PARENT, members: [{ person: AURELIA, role: 'alto' }] }
+	]);
+	return `/circles/${circleIdOf(PARENT)}`;
 }
 
 /** A 1200×800 group photo drawn in the browser, large enough for the cropper. */
@@ -160,7 +134,7 @@ test('the creator deletes a circle: the wearer keeps the picture, the nested cir
 	page,
 	browser
 }) => {
-	const circlePage = await importNestedCircles(page);
+	const circlePage = await seedNestedCircles(page);
 	await page.goto(circlePage);
 	await appReady(page);
 	await expect(page.getByRole('heading', { name: PARENT, level: 1 })).toBeVisible();

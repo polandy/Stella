@@ -50,6 +50,48 @@ class UnknownColumnError extends Error {
 	}
 }
 
+type Row = Record<string, unknown>;
+
+/** A foreign key of a table onto one of its own columns. */
+interface SelfLink {
+	column: string;
+	parentColumn: string;
+}
+
+/**
+ * The rows of a table that points at itself, ordered so a row comes after every row of the
+ * batch it points at. A row pointing outside the batch has nothing to wait for — the database
+ * decides on it. Rows that only point at each other (a cycle) are kept, last and in their own
+ * order: their parents are never written, so the check before the insert skips them.
+ */
+function parentsFirst(rows: Row[], selfLinks: SelfLink[]): Row[] {
+	if (selfLinks.length === 0) return rows;
+
+	const batchValues = new Map(
+		selfLinks.map((link) => [link, new Set(rows.map((row) => row[link.parentColumn]))])
+	);
+	const placedValues = new Map(selfLinks.map((link) => [link, new Set<unknown>()]));
+	const ready = (row: Row): boolean =>
+		selfLinks.every((link) => {
+			const value = row[link.column];
+			if (value === null || value === undefined) return true;
+			return placedValues.get(link)!.has(value) || !batchValues.get(link)!.has(value);
+		});
+
+	const ordered: Row[] = [];
+	let waiting = rows;
+	while (waiting.length > 0) {
+		const next = new Set(waiting.filter(ready));
+		if (next.size === 0) break;
+		for (const row of next) {
+			ordered.push(row);
+			for (const link of selfLinks) placedValues.get(link)!.add(row[link.parentColumn]);
+		}
+		waiting = waiting.filter((row) => !next.has(row));
+	}
+	return [...ordered, ...waiting];
+}
+
 export function createDrizzleRestoreRepository(
 	db: BunSQLiteDatabase<typeof schema>,
 	sqlite: import('bun:sqlite').Database,
@@ -150,6 +192,10 @@ export function createDrizzleRestoreRepository(
 					 * One statement per foreign key per row — thousands of indexed lookups inside
 					 * one in-process transaction, which is cheaper than the alternative of hand-
 					 * maintaining a dependency map that would drift from the schema.
+					 *
+					 * The check runs row by row, just before each insert, so a table that points at
+					 * itself (a circle nested in another) sees the parents written earlier in the
+					 * same batch; `parentsFirst` puts them earlier whatever order the archive has.
 					 */
 					const links = linksOf(table).filter((link) => columns.includes(link.column));
 					const exists = new Map(
@@ -160,13 +206,12 @@ export function createDrizzleRestoreRepository(
 							)
 						])
 					);
-					const writable = rows.filter((row) =>
+					const isWritable = (row: Row): boolean =>
 						links.every((link) => {
 							const value = row[link.column];
 							if (value === null || value === undefined) return true;
 							return exists.get(link.column)!.get(value as SQLQueryBindings) !== null;
-						})
-					);
+						});
 
 					const before = countOf(table);
 					// "Or ignore": a row that is already here — by its id, or by a uniqueness rule
@@ -174,7 +219,9 @@ export function createDrizzleRestoreRepository(
 					const insert = sqlite.query(
 						`INSERT OR IGNORE INTO "${table}" (${columns.map((c) => `"${c}"`).join(',')}) VALUES (${columns.map(() => '?').join(',')})`
 					);
-					for (const row of writable) {
+					const selfLinks = links.filter((link) => link.parent === table);
+					for (const row of parentsFirst(rows, selfLinks)) {
+						if (!isWritable(row)) continue;
 						insert.run(...(columns.map((column) => row[column]) as SQLQueryBindings[]));
 					}
 					const added = countOf(table) - before;

@@ -59,6 +59,8 @@ export interface SeedCircle {
 	/** The circle's id on the map is `circleIdOf(name)`. */
 	name: string;
 	members: readonly { person: string; role: string }[];
+	/** The name of the seeded circle this one is nested in. */
+	parent?: string;
 }
 
 /** Restore is add-only and keyed by id, so an id that is a function of the name is idempotent. */
@@ -131,6 +133,7 @@ export async function seedHousehold(
 		circles: circles.map((circle) => ({
 			id: circleIdOf(circle.name),
 			name: circle.name,
+			parent: circle.parent === undefined ? null : circleIdOf(circle.parent),
 			members: circle.members.map((member) => ({
 				id: idOf(`${circle.name} ${member.person}`),
 				person: idOf(member.person),
