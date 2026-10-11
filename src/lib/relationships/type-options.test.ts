@@ -4,6 +4,7 @@ import {
 	encodeRelationshipChoice,
 	isChoiceOfLink,
 	endpointsForSide,
+	offeredChoice,
 	relationshipTypeOptions
 } from './type-options';
 
@@ -121,5 +122,22 @@ describe('endpointsForSide', () => {
 			fromContactId: 'other',
 			toContactId: 'self'
 		});
+	});
+});
+
+describe('offeredChoice', () => {
+	const options = relationshipTypeOptions([
+		{ id: 'parent_child', symmetric: false },
+		{ id: 'friend', symmetric: true }
+	]);
+
+	it('keeps a preset the picker offers', () => {
+		expect(offeredChoice(options, 'reverse:parent_child')).toBe('reverse:parent_child');
+	});
+
+	it('drops one it does not, or none asked, leaving the picker on its first entry', () => {
+		expect(offeredChoice(options, 'reverse:friend')).toBe('');
+		expect(offeredChoice(options, 'nonsense')).toBe('');
+		expect(offeredChoice(options, null)).toBe('');
 	});
 });

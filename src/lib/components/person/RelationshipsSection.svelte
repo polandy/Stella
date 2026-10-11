@@ -20,7 +20,7 @@
 		type HiddenGroup
 	} from '$lib/relationships/people-groups';
 	import { otherEndRole } from '$lib/relationships/roles';
-	import { relationshipTypeOptions } from '$lib/relationships/type-options';
+	import { offeredChoice, relationshipTypeOptions } from '$lib/relationships/type-options';
 	import type { SelectablePerson } from '$lib/people/select';
 	import { useRemovals } from '$lib/undo/context.svelte';
 	import { removalKey, type RemovalKind } from '$lib/undo/keys';
@@ -162,8 +162,29 @@
 		);
 		return option ? `${relationshipTypeLabel(t, option.type, option.side)} ${names}` : names;
 	}
-	/** Empty until the picker is touched, which means it stands on its first entry. */
-	let relationshipChoice = $state('');
+	/**
+	 * Empty until the picker is touched, which means it stands on its first entry — unless the
+	 * page was asked for a type (`?as=`, the family tree's slot for a missing parent, §2.7).
+	 */
+	let relationshipChoice = $state(untrack(() => offeredChoice(relationshipChoices, data.relateAs)));
+	/*
+	 * Asked again while the page is already open — the map on this page offering this person's
+	 * missing parent — the form opens as on arrival. Only a new ask does: the same one, as the
+	 * page reloads its data after a save, must not open the form the save just closed.
+	 */
+	let lastAsk = untrack(() => `${data.relateTo}|${data.relateAs}`);
+	$effect(() => {
+		const ask = `${data.relateTo}|${data.relateAs}`;
+		if (ask === lastAsk) return;
+		lastAsk = ask;
+		const target = data.relateTo;
+		if (target === null) return;
+		untrack(() => {
+			relateOpen = true;
+			relationshipTargetId = target ? [target] : [];
+			relationshipChoice = offeredChoice(relationshipChoices, data.relateAs);
+		});
+	});
 	/** People named through the picker itself are not in `otherContacts` yet (docs/02 §2.2.2). */
 	let pickedTargets = $state<SelectablePerson[]>([]);
 	/*

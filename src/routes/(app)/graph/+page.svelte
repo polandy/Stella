@@ -40,7 +40,12 @@
 			<!-- Both ends decide what is drawn, so a link that only changes the far end still
 			     rebuilds the canvas. -->
 			{#key `${data.centerId}:${data.pathTo}`}
-				<GraphExplorer graph={data.graph} centerId={data.centerId} tracePathTo={data.pathTo} />
+				<GraphExplorer
+					graph={data.graph}
+					centerId={data.centerId}
+					tracePathTo={data.pathTo}
+					mayAddParents={data.mayAddRelationships}
+				/>
 			{/key}
 		{:else}
 			<div class="grid h-full place-items-center p-6">

@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'bun:test';
 import {
+	canAddRelationshipTo,
 	canDeleteCircle,
 	canViewActivity,
 	canViewChildRecord,
@@ -317,5 +318,22 @@ describe('canEditAuthored (docs/03 §3.7: the author only)', () => {
 		const ownContact = contact({ ownerId: OTHER_MEMBER, visibility: 'private' });
 		expect(canEditAuthored(viewerOther, childOn(ownContact, { ownerId: OTHER_MEMBER }))).toBe(true);
 		expect(canEditAuthored(viewerOwner, childOn(ownContact))).toBe(false);
+	});
+});
+
+describe('canAddRelationshipTo (docs/02 §2.4: every member links the people they see)', () => {
+	it('lets any household member add a relationship to a shared person', () => {
+		expect(canAddRelationshipTo(viewerOwner, contact())).toBe(true);
+		expect(canAddRelationshipTo(viewerOther, contact())).toBe(true);
+	});
+
+	it('lets only the owner add one to their private person', () => {
+		const priv = contact({ visibility: 'private', ownerId: OWNER });
+		expect(canAddRelationshipTo(viewerOwner, priv)).toBe(true);
+		expect(canAddRelationshipTo(viewerOther, priv)).toBe(false);
+	});
+
+	it('never crosses households', () => {
+		expect(canAddRelationshipTo(viewerForeign, contact())).toBe(false);
 	});
 });

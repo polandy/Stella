@@ -1,3 +1,6 @@
+import { PARENT_CHILD_TYPE_KEY } from '../relationships/type-keys';
+import { encodeRelationshipChoice } from '../relationships/type-options';
+
 /*
  * The cards a person's page can be pointed at (docs/05 §5.5). Here rather than in the page
  * component because the ids are a shared vocabulary: a form action redirects back to the card
@@ -79,4 +82,17 @@ export function sectionForLegacyTab(value: string | null): ContactSection | null
  */
 export function addRelationshipPath(contactId: string): string {
 	return contactSectionPath(contactId, 'relationships', 'relate=');
+}
+
+/** The query that presets the relationship form's type (`?as=`, a `encodeRelationshipChoice`). */
+export const RELATE_AS_PARAM = 'as';
+
+/**
+ * The relationship form on a person's page with the type preset to *Child of*, so whoever is
+ * picked or created becomes their parent — where the family tree's slot for a missing parent
+ * leads (docs/02 §2.7).
+ */
+export function addParentPath(contactId: string): string {
+	const childOf = encodeRelationshipChoice(PARENT_CHILD_TYPE_KEY, 'reverse');
+	return contactSectionPath(contactId, 'relationships', `relate=&${RELATE_AS_PARAM}=${childOf}`);
 }

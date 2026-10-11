@@ -67,6 +67,9 @@ export const search = {
 	'graph.tree.ownWords': (p: { words: string; name: string }) => `${p.words} ${p.name}`,
 	'graph.tree.namePair': (p: { first: string; second: string }) => `${p.first}, ${p.second}`,
 	'graph.tree.andMore': (p: { text: string; count: number }) => `${p.text} +${p.count}`,
+	// A slot for a missing parent in the tree (docs/02 §2.7): what tapping it adds.
+	'graph.tree.addParent': (p: { name: string }) => `Add a parent of ${p.name}`,
+	'graph.tree.addOtherParent': (p: { name: string }) => `Add ${p.name}’s other parent`,
 	'graph.arrange.circles': 'By circle',
 	'graph.arrange.circles.hint': 'Each circle with its members around it',
 	'graph.loading': 'Loading the graph…',
@@ -75,6 +78,7 @@ export const search = {
 	'graph.keyboard.hint':
 		'Arrow keys move between people. Enter selects, and pressed again opens up their connections. Home goes back to the selected person or the centre, Escape lets go.',
 	'graph.keyboard.selected': (p: { name: string }) => `${p.name}, selected`,
+	'graph.keyboard.button': (p: { name: string }) => `${p.name}, button`,
 	'graph.keyboard.more': (p: { name: string; count: number }) =>
 		`${p.name}, ${p.count} more to open up`,
 	'graph.path.none': 'No connection found between those two.',

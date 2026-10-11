@@ -20,7 +20,7 @@ import { authorNames } from '$lib/server/domain/household/members';
 import { listStoryPage } from '$lib/server/domain/story/story';
 import { listGroupPhotosOf, listGroupPhotosToCut } from '$lib/server/domain/media/cuts';
 import { listGallery } from '$lib/server/domain/media/gallery';
-import { contactSectionPath, sectionForLegacyTab } from '$lib/people/sections';
+import { contactSectionPath, RELATE_AS_PARAM, sectionForLegacyTab } from '$lib/people/sections';
 import { personMap } from '$lib/graph/model/person-map';
 import { listMentionedIn } from '$lib/server/domain/mentions/mentioned-in';
 import { listNotesForContact } from '$lib/server/domain/notes/notes';
@@ -31,7 +31,7 @@ import { TAG_COLORS } from '$lib/design/tag-colors';
 import { readTogetherOffers } from '$lib/server/domain/immich/glimpse';
 import { readImmichLink, readLinkedPerson } from '$lib/server/domain/immich/links';
 import { togetherCandidates } from '$lib/immich/together';
-import type { Viewer } from '$lib/server/access/visibility';
+import { canAddRelationshipTo, type Viewer } from '$lib/server/access/visibility';
 import { say, translator } from '$lib/server/i18n/say';
 import { allOf } from '$lib/../routes/(app)/contacts/[id]/all-of';
 import {
@@ -209,6 +209,10 @@ export const load = (async ({ locals, params, url }) => {
 		relationshipTypes: read.relationshipTypes,
 		// `?relate=<id>` pre-selects a person in the relationship form (the stream's link hint, §2.22.1).
 		relateTo: url.searchParams.get('relate'),
+		// `?as=<choice>` presets its type — the family tree's slot for a missing parent (§2.7).
+		relateAs: url.searchParams.get(RELATE_AS_PARAM),
+		// The map's slots for missing parents add a relationship, so only for who may (§2.7).
+		mayAddRelationships: canAddRelationshipTo(viewer, person),
 		circleNames: circleNamesIn(read.family.graph),
 		// Roles already used per circle, so joining one offers what that circle calls its people.
 		circleRolesByName: read.circleRolesByName,

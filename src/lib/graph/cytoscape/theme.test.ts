@@ -11,6 +11,7 @@ import {
 	HOVERED_CLASS,
 	ROUTE_FIELDS,
 	ROUTED_CLASS,
+	SLOT_CLASS,
 	type CyStyle
 } from './stylesheet';
 import { CIRCLE_LABEL_WIDTH, LABEL_MIN_ZOOMED_FONT_SIZE } from '../layout/legibility';
@@ -286,6 +287,18 @@ describe('buildStylesheet as the family tree', () => {
 		expect(rulesFor(treeNamed, 'edge')[0]['text-opacity']).toBe(1);
 		// Without a centre to say roles towards, a line keeps its name as before.
 		expect(lastWord(free)).toBe(false);
+	});
+
+	it('draws a missing parent’s slot as a plus in a dashed ring, its line dashed', () => {
+		const ring = rulesFor(tree, `node.${SLOT_CLASS}`)[0];
+		const line = rulesFor(tree, `edge.${SLOT_CLASS}`)[0];
+
+		expect(ring).toMatchObject({ label: 'data(label)', 'border-style': 'dashed' });
+		expect(ring['background-opacity']).toBe(0);
+		expect(contrastRatio(String(ring['border-color']), palette.bg)).toBeGreaterThanOrEqual(3);
+		expect(contrastRatio(String(ring.color), palette.bg)).toBeGreaterThanOrEqual(3);
+		expect(line['line-style']).toBe('dashed');
+		expect(contrastRatio(String(line['line-color']), palette.bg)).toBeGreaterThanOrEqual(3);
 	});
 
 	it('writes a caption that taps fall through', () => {

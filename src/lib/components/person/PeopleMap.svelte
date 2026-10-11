@@ -92,6 +92,7 @@
 			graph={visibleGraph}
 			nodes={egoNodes}
 			fullGraphHref={(nodeId) => `/graph?center=${nodeId}`}
+			mayAddParents={data.mayAddRelationships}
 		/>
 	{/key}
 {/if}

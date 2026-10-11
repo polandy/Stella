@@ -1,8 +1,9 @@
 <script lang="ts">
 	import { onDestroy, onMount, tick, untrack } from 'svelte';
+	import { goto } from '$app/navigation';
 	import Button from '$lib/components/ui/Button.svelte';
 	import EmptyState from '$lib/components/ui/EmptyState.svelte';
-	import { addRelationshipPath } from '$lib/people/sections';
+	import { addParentPath, addRelationshipPath } from '$lib/people/sections';
 	import { useTranslate } from '$lib/i18n/context.svelte';
 	import { edgeWords, treeRoleWords } from '$lib/graph/edge-words';
 	import { rolesTowards } from '$lib/graph/model/tree-roles';
@@ -19,7 +20,7 @@
 		type KeptPreferences
 	} from '$lib/graph/explorer-state';
 	import { currentViewOf, groupingApplies, labelsSwitchOf } from '$lib/graph/explorer-look';
-	import { toCytoscapeElements } from '$lib/graph/cytoscape/elements';
+	import { slotElements, toCytoscapeElements } from '$lib/graph/cytoscape/elements';
 	import { createExplorer, type ExplorerController } from '$lib/graph/cytoscape/explorer';
 	import { buildStylesheet } from '$lib/graph/cytoscape/stylesheet';
 	import { paletteFromDom } from '$lib/graph/cytoscape/theme';
@@ -49,6 +50,13 @@
 		type RoleGroup
 	} from '$lib/graph/model/role-groups';
 	import { shownOnCanvas } from '$lib/graph/model/shown-on-canvas';
+	import {
+		drawnSlotLine,
+		isParentSlot,
+		missingParentSlots,
+		withParentSlots,
+		type ParentSlot
+	} from '$lib/graph/model/missing-parents';
 	import { graphFiltersFor, openingFilterKeys } from '$lib/graph/model/view-filters';
 	import {
 		savedViewsPreference,
@@ -121,6 +129,12 @@
 		onShrink?: () => void;
 		/** Told once the canvas has drawn itself, so a picture standing in for it can fade out. */
 		onReady?: () => void;
+		/**
+		 * The reader may add a relationship (the access layer's `canAddRelationshipTo`, decided by
+		 * the page): the family tree around a person then offers a slot for each missing parent
+		 * up their line (docs/02 §2.7).
+		 */
+		mayAddParents?: boolean;
 	}
 	let {
 		graph,
@@ -132,7 +146,8 @@
 		startFullscreen = false,
 		onFullscreenExit,
 		onShrink,
-		onReady
+		onReady,
+		mayAddParents = false
 	}: Props = $props();
 
 	const t = useTranslate();
@@ -315,14 +330,16 @@
 	// The line to a group needs no count: the group's own name carries it.
 	const bundleLabel = (b: EdgeBundle) =>
 		b.kind === 'membership' ? '' : t('graph.bundle.count', { count: b.edgeIds.length });
-	const elements = () =>
-		toCytoscapeElements(drawn, {
+	const elements = () => [
+		...toCytoscapeElements(drawn, {
 			centerId: centerId ?? undefined,
 			edgeLabel,
 			hiddenNeighbours: hidden,
 			grouping: grouping ? { grouping, groupLabel, bundleLabel } : undefined,
 			roleOf
-		});
+		}),
+		...slotElements(slots, slotName)
+	];
 	/*
 	 * Every line is named only while the names fit (docs/05 §5.8); past that they pile up
 	 * around a hub, and pointing at a line or selecting somebody names theirs. Counted without
@@ -367,14 +384,40 @@
 		return left;
 	});
 	/** What the canvas shows: the filtered map, plus the frames and bundles grouping adds. */
-	const shownIds = () => shownOnCanvas(drawnVisible, implied, grouping);
+	const shownIds = () => {
+		const shown = shownOnCanvas(drawnVisible, implied, grouping);
+		for (const slot of slots) {
+			shown.nodes.add(slot.id);
+			shown.edges.add(drawnSlotLine(slot).id);
+		}
+		return shown;
+	};
 	const peekGroup = $derived(
 		selected ? (grouping?.groups.find((g) => g.id === selected) ?? null) : null
 	);
 	const nameOf = (id: string) => model.nodes.find((n) => n.id === id)?.label ?? id;
+	/** What the keyboard walk reads out: a slot by what it adds, as the button it acts as. */
+	const canvasNameOf = (id: string) => {
+		const slot = isParentSlot(id) ? slots.find((s) => s.id === id) : undefined;
+		return slot ? t('graph.keyboard.button', { name: slotName(slot) }) : nameOf(id);
+	};
 	const peekNode = $derived(selected ? (model.nodes.find((n) => n.id === selected) ?? null) : null);
 	// How far each node sits from the centre, so the embedded map stops where it promises to.
 	const rings = $derived(centerId ? ringsFrom(model, centerId) : new Map<string, number>());
+	/*
+	 * The slots for missing parents up the centre's line, while the tree writes roles around a
+	 * person (docs/02 §2.7). Never part of `model`: no filter, "+N" or path counts them. A
+	 * person's page carries two hops, so whose parents it holds is whoever an expand could open.
+	 */
+	const slots = $derived(
+		rolesInstead && mayAddParents && centerId
+			? missingParentSlots(graph, drawnVisible, centerId, (id) => canExpand(rings, id, maxRings))
+			: []
+	);
+	const slotName = (slot: ParentSlot) =>
+		t(slot.besideParentId ? 'graph.tree.addOtherParent' : 'graph.tree.addParent', {
+			name: shortNameOf(slot.childId)
+		});
 	// Inside the map's reach, and with something left to open — Expand on somebody whose every
 	// link is drawn already, or who has none, was a button that did nothing (docs/02 §2.7).
 	const peekWithinReach = $derived(
@@ -469,15 +512,18 @@
 		const arranged = arrangedBy;
 		if (!ready || !controller) return;
 		const nodeIds = new Set(els.filter((e) => e.group === 'nodes').map((e) => e.data.id as string));
-		// In the family tree an expand lays the whole tree out again (`tree-view.ts`).
-		const arrival = treeRelaidFor(arranged, onCanvas, nodeIds);
+		// In the family tree an expand lays the whole tree out again (`tree-view.ts`). A slot is
+		// nobody arriving: it relays the tree, but leaves the selection as the reader left it.
+		const people = new Set([...nodeIds].filter((id) => !isParentSlot(id)));
+		const arrival = treeRelaidFor(arranged, onCanvas, people);
+		const slotsCame = [...nodeIds].some((id) => isParentSlot(id) && !onCanvas.has(id));
 		onCanvas = nodeIds;
-		controller.setGraph(els, { arrangedNext: arrival });
+		controller.setGraph(els, { arrangedNext: arrival || slotsCame });
 		const joined = [...groupOf].some(([id, group]) => placedInGroups.get(id) !== group);
 		placedInGroups = groupOf;
-		if (joined) settledForGroups = true;
+		if (joined || slotsCame) settledForGroups = true;
 		if (arrival) void dispatch({ type: 'treeRelaid' });
-		if (joined || arrival) untrack(() => arrangeNow(arrangedBy));
+		if (joined || arrival || slotsCame) untrack(() => arrangeNow(arrangedBy));
 	});
 	// Apply filtering as show/hide (no re-layout).
 	$effect(() => {
@@ -504,7 +550,24 @@
 	});
 
 	const onTapNode = (id: string) =>
-		dispatch({ type: 'tapped', id, isGroup: grouping?.groups.some((g) => g.id === id) ?? false });
+		isParentSlot(id)
+			? openSlot(id)
+			: dispatch({
+					type: 'tapped',
+					id,
+					isGroup: grouping?.groups.some((g) => g.id === id) ?? false
+				});
+
+	/*
+	 * A slot opens the child's page with the relationship form on *Child of* (docs/02 §2.7).
+	 * Full screen is left first, or the form would open underneath the map.
+	 */
+	async function openSlot(id: string) {
+		const slot = slots.find((s) => s.id === id);
+		if (!slot) return;
+		if (screen.on) await screen.toggle();
+		await goto(addParentPath(slot.childId));
+	}
 	const onTapBackground = () => dispatch({ type: 'tappedBackground' });
 
 	async function expand(id: string) {
@@ -543,7 +606,8 @@
 			return size.width > 0 ? size : DEFAULT_NODE_SIZE;
 		};
 		if (key === 'tree') {
-			canvas.arrangeAt(familyTreeLayout(drawnVisible, sizeOf), {
+			// The slots stand in as parents, so their generation's row makes room for them.
+			canvas.arrangeAt(familyTreeLayout(withParentSlots(drawnVisible, slots), sizeOf), {
 				outsideFamily: t('graph.tree.outsideFamily'),
 				keepNamesDrawn: true
 			});
@@ -717,7 +781,7 @@
 		{centerId}
 		{grouping}
 		{groupLabel}
-		{nameOf}
+		nameOf={canvasNameOf}
 		{hidden}
 		positions={() => controller?.positions() ?? new Map()}
 		markCursor={(id) => controller?.markCursor(id)}

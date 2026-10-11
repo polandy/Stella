@@ -41,6 +41,8 @@ export const ROUTE_FIELDS = {
 const ROUTE_NAME_OFFSET = 22;
 /** The class of a caption the controller writes onto the canvas: words, not somebody to tap. */
 export const CAPTION_CLASS = 'caption';
+/** The class of a missing parent's slot in the family tree, and of its line (`elements.ts`). */
+export const SLOT_CLASS = 'slot';
 
 /*
  * Build the Cytoscape stylesheet from a resolved Palette (docs/05 §5.8). Pure: palette in,
@@ -362,6 +364,37 @@ export function buildStylesheet(p: Palette, options: StylesheetOptions = {}): Cy
 				'target-text-offset': ROUTE_NAME_OFFSET,
 				'source-text-rotation': 'none',
 				'target-text-rotation': 'none'
+			}
+		},
+		// ── A missing parent's slot in the family tree (docs/05 §5.8) ─────────
+		// Room for somebody not entered yet: a plus in a dashed ring, hollow so it never reads as
+		// a person, and one dashed line tying it in. Muted, yet at 3:1 like every other line.
+		{
+			selector: `node.${SLOT_CLASS}`,
+			style: {
+				width: 'data(size)',
+				height: 'data(size)',
+				'background-opacity': 0,
+				'border-width': 2,
+				'border-style': 'dashed',
+				'border-color': p.fgMuted,
+				label: 'data(label)',
+				color: p.fgMuted,
+				'font-size': 20,
+				'font-family': p.fontSans,
+				'text-valign': 'center',
+				'text-halign': 'center',
+				'min-zoomed-font-size': LABEL_MIN_ZOOMED_FONT_SIZE
+			}
+		},
+		{
+			selector: `edge.${SLOT_CLASS}`,
+			style: {
+				...line(p.fgMuted),
+				width: 1.2,
+				'line-style': 'dashed',
+				'line-dash-pattern': [4, 4],
+				'target-arrow-shape': 'none'
 			}
 		},
 		// ── A caption the controller writes onto the canvas ───────────────────

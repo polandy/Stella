@@ -1,6 +1,7 @@
 import { describe, expect, test } from 'bun:test';
 import {
 	CONTACT_SECTIONS,
+	addParentPath,
 	addRelationshipPath,
 	contactSectionPath,
 	SECTION_FOR_LEGACY_TAB,
@@ -62,6 +63,18 @@ describe('addRelationshipPath', () => {
 		expect(url.pathname).toBe('/contacts/c-1');
 		// The page opens its form for any `relate`, and names the other end only when it is set.
 		expect(url.searchParams.get('relate')).toBe('');
+		expect(url.hash).toBe('#section-relationships');
+	});
+});
+
+describe('addParentPath', () => {
+	test('opens the relationship form with the type set to make the one picked their parent', () => {
+		const url = new URL(addParentPath('c-1'), 'http://stella.test');
+
+		expect(url.pathname).toBe('/contacts/c-1');
+		expect(url.searchParams.get('relate')).toBe('');
+		// "Child of" read from their page: whoever is picked is stored as the parent.
+		expect(url.searchParams.get('as')).toBe('reverse:parent_child');
 		expect(url.hash).toBe('#section-relationships');
 	});
 });

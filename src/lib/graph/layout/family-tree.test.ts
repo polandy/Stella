@@ -3,6 +3,7 @@ import { familyTreeLayout, TREE_SPACING } from './family-tree';
 import { DEFAULT_NODE_SIZE } from './geometry';
 import { TREE_LINES } from './tree-lines';
 import { brunnerKeller, twoHouseholds } from './family-fixtures';
+import { missingParentSlots, withParentSlots } from '../model/missing-parents';
 import type { GraphEdge, GraphModel, GraphNode } from '../model/types';
 
 /*
@@ -229,5 +230,32 @@ describe('familyTreeLayout', () => {
 		expect(lastLane).toBeLessThan(TREE_SPACING.row - 40 - TREE_LINES.lane);
 		// Lanes far enough apart to read as separate lines even on a phone.
 		expect(TREE_LINES.lane).toBeGreaterThanOrEqual(14);
+	});
+
+	describe('with the slots of missing parents (docs/05 §5.8)', () => {
+		const laidOut = (model: GraphModel, centre: string) =>
+			familyTreeLayout(withParentSlots(model, missingParentSlots(model, model, centre))).positions;
+
+		it('stands the slot over a child nobody entered a parent for', () => {
+			const layout = laidOut({ nodes: [person('lena')], edges: [] }, 'lena');
+			const slot = layout.get('slot:parent-of:lena')!;
+
+			expect(slot.y).toBeLessThan(layout.get('lena')!.y);
+			expect(slot.x).toBe(layout.get('lena')!.x);
+		});
+
+		it('stands the other parent’s slot on the parent’s row, right beside them', () => {
+			const model: GraphModel = {
+				nodes: [person('lena'), person('peter'), person('noah')],
+				edges: [parentOf('peter', 'lena'), parentOf('peter', 'noah')]
+			};
+			const layout = laidOut(model, 'lena');
+			const slot = layout.get('slot:parent-of:lena')!;
+			const peter = layout.get('peter')!;
+
+			expect(slot.y).toBe(peter.y);
+			const gap = Math.abs(slot.x - peter.x) - DEFAULT_NODE_SIZE.width;
+			expect(gap).toBe(TREE_SPACING.gap);
+		});
 	});
 });
