@@ -1016,6 +1016,13 @@ not even the admin — can see it. Home tells the household in one line. If they
 through single sign-on, also take them out of the group there. Nobody can remove
 themselves, so there is always an admin left.
 
+Removed someone by mistake, or they are back? They are listed under *Former members* on the
+same page, and *Restore…* on their row brings them back. They can sign in again at once with
+their old password or through single sign-on (if you took them out of the group there, add
+them back too), and they find everything as they left it, their private records included.
+Devices they were signed in on stay signed out, so they simply sign in again. Home tells the
+household in one line.
+
 ## Signing out
 
 *Sign out* in the account menu ends your Stella session immediately. If your household
