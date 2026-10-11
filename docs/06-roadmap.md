@@ -134,11 +134,6 @@ Goal: sand the edges and add the nice-to-haves.
   without the text, online only. The author may edit their note and their touchpoint.
   Household facts (dates, fields, relationships, memberships, gifts) keep "anyone who sees
   it".
-- **Deleting and renaming circles** — *concept decided; slice 1 (editing) shipped (§2.4.2):*
-  [concepts/circle-delete-rename.md](concepts/circle-delete-rename.md). Anyone who sees a
-  circle edits its name and details. Its creator, or an admin on a shared one, deletes it
-  after a confirm step, with no Undo and a line in the stream. Worn cuts stay with their
-  wearers, and nested circles move up a level. Three slices.
 - ~~**Removing a member**~~ — *shipped, both slices (§2.1).* An admin removes any other member
   from the *Members* page in Settings, and restores a former one there. Left out on purpose,
   each its own entry if ever asked for: changing a member's role (with SSO role sync it has its

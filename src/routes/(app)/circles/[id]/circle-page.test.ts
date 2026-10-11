@@ -97,6 +97,8 @@ interface Household {
 	/** Of those, whom the household has archived: seen, but out of the lists it browses. */
 	archived?: string[];
 	renameRole?: (change: RoleRename) => Promise<void>;
+	/** Who created circle k1; someone else in another household unless named. */
+	createdBy?: string;
 }
 
 /** The circle page's ports over what the viewer sees; the writes are kept for the test. */
@@ -104,14 +106,18 @@ function household({
 	circle = true,
 	people = ['anna', 'ben', 'cleo', 'dora', 'emil'],
 	archived = [],
-	renameRole
+	renameRole,
+	createdBy
 }: Household = {}) {
 	const added: NewMembership[] = [];
 	const reroled: [string[], string | null][] = [];
 	const renamed: RoleRename[] = [];
 	const removed: string[] = [];
 	const circles = circleRepositoryWith({
-		getVisibleTo: async (_viewer, id) => (circle && id === 'k1' ? someCircle('k1', 'Choir') : null),
+		getVisibleTo: async (_viewer, id) =>
+			circle && id === 'k1'
+				? someCircle('k1', 'Choir', createdBy ? { householdId: MEMBER.householdId, createdBy } : {})
+				: null,
 		addMemberships: async (batch) => void added.push(...batch),
 		setRoles: async (_circleId, ids, role) => void reroled.push([[...ids], role]),
 		renameRole: renameRole ?? (async (change) => void renamed.push(change)),
@@ -192,6 +198,19 @@ describe('load', () => {
 		});
 		expect(data.cuts).toEqual({ p1: { people: 2, wearers: [{ contactId: 'anna', crop: null }] } });
 		expect(data.passOn).toEqual({ markus: [{ id: 'ben', name: 'ben', declined: [] }] });
+		expect(data.canDelete).toBe(false);
+	});
+
+	it('offers *Delete circle…* to the circle’s creator', async () => {
+		const answer = await open(household({ createdBy: MEMBER.id }).services);
+		if (answer.kind !== 'data') throw new Error(`answered ${answer.kind}`);
+		expect((answer.data as PageServerData).canDelete).toBe(true);
+	});
+
+	it('does not offer it to a member who did not create the circle', async () => {
+		const answer = await open(household({ createdBy: 'u2' }).services);
+		if (answer.kind !== 'data') throw new Error(`answered ${answer.kind}`);
+		expect((answer.data as PageServerData).canDelete).toBe(false);
 	});
 });
 

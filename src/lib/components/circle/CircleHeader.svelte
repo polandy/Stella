@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { tick } from 'svelte';
 	import { enhance } from '$app/forms';
+	import CircleDeleteStep from '$lib/components/circle/CircleDeleteStep.svelte';
 	import ColourSwatches from '$lib/components/circle/ColourSwatches.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import DateField from '$lib/components/ui/DateField.svelte';
@@ -19,7 +20,9 @@
 	 * The circle page's header (docs/02 §2.4.2, docs/design/screens/circles.md): its colour, name
 	 * and one line of facts, *Open in the graph*, and a ⋯ menu. *Edit circle* turns the header
 	 * into a form in place with the create form's fields plus the period, which only editing
-	 * sets. Anyone who sees the circle may edit it, so everyone gets the menu.
+	 * sets. Anyone who sees the circle may edit it, so everyone gets the menu; *Delete circle…*
+	 * is in it only for whoever may delete (its creator, an admin on a shared one), and opens
+	 * the confirm step under the header.
 	 */
 	interface Props {
 		circle: {
@@ -34,17 +37,20 @@
 		};
 		kinds: readonly string[];
 		colors: readonly Accent[];
+		/** Whether the reader may delete the circle (`canDeleteCircle`). */
+		canDelete: boolean;
 		/** The refusal of the last save, said under the form, which then stays open. */
 		error: string | null;
 	}
 
-	let { circle, kinds, colors, error }: Props = $props();
+	let { circle, kinds, colors, canDelete, error }: Props = $props();
 
 	const i18n = useI18n();
 	const t = i18n.t;
 	const removals = useRemovals();
 
 	let editing = $state(false);
+	let deleting = $state(false);
 	let root = $state<HTMLElement>();
 	let nameInput = $state<HTMLInputElement>();
 	// A refused save keeps the form open, so the error has somewhere to be read.
@@ -53,6 +59,7 @@
 	const period = $derived(circlePeriodLabel(i18n, circle.startDate, circle.endDate));
 
 	async function openEditor() {
+		deleting = false;
 		editing = true;
 		await tick();
 		nameInput?.focus();
@@ -62,6 +69,15 @@
 	async function closeEditor() {
 		editing = false;
 		error = null;
+		await backToMenu();
+	}
+
+	async function closeDeletion() {
+		deleting = false;
+		await backToMenu();
+	}
+
+	async function backToMenu() {
 		await tick();
 		root?.querySelector<HTMLElement>('[aria-haspopup="menu"]')?.focus();
 	}
@@ -82,8 +98,11 @@
 	const isDay = (value: string | null) => value === null || /^\d{4}-\d{2}-\d{2}$/.test(value);
 
 	const INPUT = 'rounded-control border border-border-input bg-bg px-3 py-2 text-fg';
-	const ITEM =
-		'flex w-full items-center gap-2 rounded-control px-2.5 py-1.5 text-left text-sm text-fg hover:bg-primary-soft focus-visible:bg-primary-soft';
+	const ITEM_SHAPE =
+		'flex w-full items-center gap-2 rounded-control px-2.5 py-1.5 text-left text-sm hover:bg-primary-soft focus-visible:bg-primary-soft';
+	const ITEM = `${ITEM_SHAPE} text-fg`;
+	/** The one that cannot be undone, in the danger colour, as on the person page. */
+	const DANGER_ITEM = `${ITEM_SHAPE} text-danger`;
 </script>
 
 <div bind:this={root} data-testid="circle-header">
@@ -201,9 +220,24 @@
 						>
 							<Icon name="rename" size={14} />{t('circles.edit.open')}
 						</button>
+						{#if canDelete}
+							<button
+								type="button"
+								role="menuitem"
+								class={DANGER_ITEM}
+								onclick={() => (close(), (deleting = true))}
+							>
+								<Icon name="remove" size={14} />{t('circles.delete.open')}
+							</button>
+						{/if}
 					{/snippet}
 				</MenuButton>
 			</div>
 		</header>
+		{#if deleting && canDelete}
+			<div class="mt-3">
+				<CircleDeleteStep {circle} onclose={closeDeletion} />
+			</div>
+		{/if}
 	{/if}
 </div>

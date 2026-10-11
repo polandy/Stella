@@ -605,10 +605,10 @@ friend group). See [02-features.md §2.4.2](02-features.md).
 | description | text null | |
 | kind | text | `'friends' \| 'family' \| 'school' \| 'class' \| 'course' \| 'club' \| 'team' \| 'work' \| 'neighborhood' \| 'other'` |
 | color | text | Catppuccin accent name |
-| parent_circle_id | text fk → circle.id null | optional nesting (School › Class) |
+| parent_circle_id | text fk → circle.id null | optional nesting (School › Class); written only by the API import and the demo seed — no screen sets it |
 | start_date | text null | the context's own period, e.g. school year: an ISO day as the circle page's edit form sets it; an API import may stop at the month or the year |
 | end_date | text null | not before `start_date`, compared at the coarser precision of the two (`circle-details.ts`) |
-| archived_at | int null | |
+| archived_at | int null | no use-case or screen yet |
 | created_at / updated_at | int | |
 
 **Deleting a circle** (docs/02 §2.4.2) is the circle's creator's, always, and an admin's when it
