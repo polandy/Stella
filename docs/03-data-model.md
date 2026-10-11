@@ -910,6 +910,12 @@ entry outlives what it describes, so it is scoped by itself: within its househol
 viewer's own action (`canViewActivity` / `activityVisibleTo`). Admins gain no special
 access to `private` records.
 
+**Adding a relationship.** Every member may link two people they both see — there is no
+read-only member — so the right to add one to a person is seeing them (`canAddRelationshipTo`,
+which the person page and the explorer read before the family tree offers its slots for
+missing parents, docs/02 §2.7); the other end is checked when it is chosen, and the use-case
+refuses a person the author no longer sees.
+
 **Removing an authored record.** A **note**, **journal entry**, **touchpoint**, **person photo** or **circle photo** may be removed by its author, always, and by an
 admin of the household when it is `shared` — and either must see it first, so an admin gains
 nothing on a private one (`canRemoveAuthored` / `authoredRemovableBy`, and `canRemoveCirclePhoto` / `circlePhotoRemovableBy` with the circle in the contact's place, held to the same rows

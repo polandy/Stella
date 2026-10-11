@@ -39,6 +39,12 @@ card (§5.5.2); its styling is §5.8.
   names vanish: a large tree is shown from its top at the smallest zoom that still draws them,
   the shelf below reached by panning. An expand
   in the tree lays the whole tree out again; everybody glides to their new place.
+- In the tree around a person, a reader who may add a relationship sees a dashed **plus slot**
+  where a parent is missing up the centre's own line (centre, parents, grandparents): over a
+  child with no parent on record, or beside the one parent there on a dashed bar. It is no
+  person — no filter, badge or path counts it — but the keyboard walk steps onto it and reads it
+  as a button (*Add a parent of Lena*, *Add Lena's other parent*); tapping it or Enter opens the
+  child's page with *Add relationship* open on *Child of*, leaving full screen first.
 - On a phone (below `sm`, tuned for a Pixel 9 Pro at 412 px) search, Filter and Arrange keep
   one row: the search field takes whatever the two menus leave, and the Arrange pill shows only
   the arrangement's name (its accessible name still reads *Arrange: …*). Full screen and the
@@ -71,6 +77,11 @@ default because an ex-partner is still part of how a family hangs together, and 
 children hang from would say the two are still a couple. On a phone both menu pills stand at the right, so a menu opening
 from there would run off the screen unless it moves. The peek panel has no room beside the map
 on a phone, hence the bottom strip.
+
+The slots for missing parents keep to the centre's own line because that is the question a tree
+around one person asks, and three generations cap a large family at seven plus signs. They are
+left out of the model so nothing that counts people — filters, "+N", the path — has to learn to
+skip them; and a slot a reader may not use would be a button that only refuses.
 
 Esc leaving the native full screen is fine: nobody presses Esc mid-drag. iPadOS/iOS Safari reads
 a downward drag on a Fullscreen-API element as "swipe to dismiss" — the gesture that closes a

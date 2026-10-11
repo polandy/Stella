@@ -257,5 +257,24 @@ describe('familyTreeLayout', () => {
 			const gap = Math.abs(slot.x - peter.x) - DEFAULT_NODE_SIZE.width;
 			expect(gap).toBe(TREE_SPACING.gap);
 		});
+
+		it('hangs an only child straight under the couple a slot makes, slots above them too', () => {
+			// Jan, whose one parent has no parents on record either: two drops, one over the other.
+			const model: GraphModel = {
+				nodes: [person('jan'), person('beat')],
+				edges: [parentOf('beat', 'jan')]
+			};
+			const wide = (id: string) => ({
+				width: id === 'beat' ? 80 : id === 'jan' ? 70 : 24,
+				height: 40
+			});
+			const layout = familyTreeLayout(
+				withParentSlots(model, missingParentSlots(model, model, 'jan')),
+				wide
+			).positions;
+			const couple = (layout.get('beat')!.x + layout.get('slot:parent-of:jan')!.x) / 2;
+
+			expect(layout.get('jan')!.x).toBe(couple);
+		});
 	});
 });

@@ -179,7 +179,11 @@ function straightened(
 		return false;
 	};
 
-	for (const [key, children] of byDrop) {
+	// From the top down: straightening a drop may move its parents' unit, so the drop over them
+	// is straightened first, or the one beneath would be left pointing where they used to stand.
+	const generationOf = (key: string) => family.get(key.split('+')[0])!;
+	const topDown = [...byDrop].sort(([a], [b]) => generationOf(a) - generationOf(b));
+	for (const [key, children] of topDown) {
 		if (children.length !== 1) continue;
 		const parents = key.split('+');
 		const parentUnit = unitOf(parents[0]);
