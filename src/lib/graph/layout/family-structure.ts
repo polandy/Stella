@@ -45,7 +45,9 @@ export function familyStructure(
 		map.get(a)!.add(b);
 	};
 	for (const e of familyLines) {
-		if (isPartnerLine(e)) {
+		// A former partnership is still a line, but never the couple a child hangs from: their
+		// children drop from each parent, not from a bar saying the two are together (docs/02 §2.7).
+		if (isPartnerLine(e) && !e.former) {
 			link(partners, e.source, e.target);
 			link(partners, e.target, e.source);
 		}

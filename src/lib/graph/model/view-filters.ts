@@ -27,10 +27,14 @@ export function openingFilterKeys(compact: boolean): ReadonlySet<string> {
 	return new Set(FILTER_KEYS.filter((key) => !(compact && key === 'circles')));
 }
 
-/** What `applyFilters` keeps for the kinds switched on in `active`, never dropping the centre. */
+/**
+ * What `applyFilters` keeps for the kinds switched on in `active`, never dropping the centre.
+ * Former links are shown unless their switch is off (docs/02 §2.7).
+ */
 export function graphFiltersFor(
 	active: ReadonlySet<string>,
-	centerId: string | null
+	centerId: string | null,
+	switches: { formerLinks: boolean } = { formerLinks: true }
 ): GraphFilters {
 	const categories = (['family', 'romantic', 'social', 'professional'] as const).filter((c) =>
 		active.has(c)
@@ -39,5 +43,10 @@ export function graphFiltersFor(
 	if (categories.length) edgeKinds.push('relationship');
 	if (active.has('circles')) edgeKinds.push('membership');
 	if (active.has('kinship')) edgeKinds.push('kinship');
-	return { edgeKinds, categories, keepNodeId: centerId ?? undefined };
+	return {
+		edgeKinds,
+		categories,
+		hideFormer: !switches.formerLinks,
+		keepNodeId: centerId ?? undefined
+	};
 }

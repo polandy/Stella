@@ -16,14 +16,18 @@ export interface FilterSummary {
 	narrowed: boolean;
 }
 
-/** Summarises `active` out of `all`, measured against what the map opened with. */
+/**
+ * Summarises `active` out of `all`, measured against what the map opened with. A switch that
+ * takes lines off the map — *Former links* off — narrows it too: it is as easy to forget.
+ */
 export function filterSummary(
 	active: ReadonlySet<string>,
 	all: readonly string[],
-	opening: ReadonlySet<string>
+	opening: ReadonlySet<string>,
+	{ hidesLines = false }: { hidesLines?: boolean } = {}
 ): FilterSummary {
 	const shown = all.filter((key) => active.has(key)).length;
-	const narrowed = all.some((key) => active.has(key) !== opening.has(key));
+	const narrowed = hidesLines || all.some((key) => active.has(key) !== opening.has(key));
 	return { shown, total: all.length, narrowed };
 }
 

@@ -100,6 +100,27 @@ describe('applyFilters', () => {
 		expect(nodeIds(familyOnly).has('kegel')).toBe(true);
 	});
 
+	it('drops former links, and whoever only they reached, when asked to hide them', () => {
+		const model: GraphModel = {
+			nodes: [
+				{ id: 'mara', kind: 'person', label: 'Mara' },
+				{ id: 'jonas', kind: 'person', label: 'Jonas' },
+				{ id: 'lio', kind: 'person', label: 'Lio' }
+			],
+			edges: [
+				{ id: 'ex', source: 'mara', target: 'jonas', kind: 'relationship', former: true },
+				{ id: 'child', source: 'mara', target: 'lio', kind: 'relationship' }
+			]
+		};
+
+		const hidden = applyFilters(model, { hideFormer: true, keepNodeId: 'mara' });
+		expect([...edgeIds(hidden)]).toEqual(['child']);
+		expect(nodeIds(hidden).has('jonas')).toBe(false);
+
+		const shown = applyFilters(model, { keepNodeId: 'mara' });
+		expect(edgeIds(shown)).toEqual(new Set(['ex', 'child']));
+	});
+
 	it('never drops the kept centre even if it ends up isolated', () => {
 		const model: GraphModel = {
 			nodes: [

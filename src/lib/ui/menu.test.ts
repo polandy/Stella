@@ -35,6 +35,12 @@ describe('filterSummary', () => {
 		expect(filterSummary(new Set(opening), all, opening).shown).toBe(5);
 	});
 
+	it('calls a map narrowed while a switch hides lines, such as the former links', () => {
+		const summary = filterSummary(new Set(all), all, new Set(all), { hidesLines: true });
+
+		expect(summary).toEqual({ shown: 6, total: 6, narrowed: true });
+	});
+
 	it('calls a map narrowed that shows the same number but different kinds', () => {
 		const opening = new Set(all.filter((k) => k !== 'circles'));
 		const swapped = new Set(all.filter((k) => k !== 'kinship'));

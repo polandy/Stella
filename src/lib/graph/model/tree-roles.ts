@@ -14,14 +14,24 @@ import type { GraphEdge, GraphModel } from './types';
 export interface TreeRole {
 	term: RoleTerm;
 	variant: KinVariant;
+	/** The tie it is read from is marked former: "Wife · former" (docs/02 §2.7). */
+	former?: true;
 }
 
-/** Which of several lines to one person names them: family first, worked-out last. */
+/** How many ranks a current line spans, so every former one ranks after all of them. */
+const KINDS_OF_RANK = 4;
+
+/**
+ * Which of several lines to one person names them: family first, worked-out last, and any tie
+ * that still holds before one that has ended — a former wife who is still a colleague is a
+ * colleague today.
+ */
 function rank(edge: GraphEdge): number {
+	const ended = edge.former ? KINDS_OF_RANK : 0;
 	if (edge.kind === 'kinship') return 3;
-	if (edge.category === 'family') return 0;
-	if (edge.category === 'romantic') return 1;
-	return 2;
+	if (edge.category === 'family') return ended + 0;
+	if (edge.category === 'romantic') return ended + 1;
+	return ended + 2;
 }
 
 /**
@@ -42,7 +52,10 @@ export function roleBy(
 	if (edge.kind !== 'relationship' || edge.typeKey === undefined) return null;
 	const side = edge.source === centerId ? 'forward' : 'reverse';
 	const term = otherEndRole({ typeKey: edge.typeKey, side });
-	return term === null ? null : { term, variant: otherWording };
+	if (term === null) return null;
+	return edge.former
+		? { term, variant: otherWording, former: true }
+		: { term, variant: otherWording };
 }
 
 /** The role of everybody tied to `centerId` by a line of their own, keyed by their id. */

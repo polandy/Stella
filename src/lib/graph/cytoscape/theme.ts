@@ -1,6 +1,6 @@
-import { AA_LARGE, ensureContrast } from '../../design/color';
+import { AA_LARGE, ensureContrast, mixHex } from '../../design/color';
 import { ACCENTS, categoryVar } from '../../design/tokens';
-import type { RelationshipCategory } from '../../relationships/categories';
+import { RELATIONSHIP_CATEGORIES, type RelationshipCategory } from '../../relationships/categories';
 
 /*
  * Resolve the semantic design tokens (docs/05) into concrete hex values for the Cytoscape
@@ -35,8 +35,16 @@ export interface Palette {
 		kinship: string;
 		/** A traced connection path: the yellow accent, deepened like the rest. */
 		path: string;
+		/**
+		 * A link marked former, per category: its colour taken halfway to `--fg-subtle`, then
+		 * deepened to the same floor — muted, the hue still there (docs/05 §5.8).
+		 */
+		former: Record<RelationshipCategory, string>;
 	};
 }
+
+/** How much of its category's hue a former link keeps; the rest is the subtle grey. */
+const FORMER_HUE_PERCENT = 50;
 
 /** Reads one custom property's resolved value; the DOM helper and the tests each supply one. */
 export type TokenReader = (cssVariable: string) => string;
@@ -71,12 +79,19 @@ export function resolvePalette(read: TokenReader): Palette {
 	const membership = read('--edge-membership'); // circle edges
 	const kinship = read('--edge-kinship'); // derived kinship: neutral, clearly inferred
 	const onCanvas = (hex: string) => ensureContrast(hex, bg, fg, AA_LARGE);
+	const fgSubtle = read('--fg-subtle');
+	const former = Object.fromEntries(
+		RELATIONSHIP_CATEGORIES.map((c) => [
+			c,
+			onCanvas(mixHex(categories[c], FORMER_HUE_PERCENT, fgSubtle))
+		])
+	) as Record<RelationshipCategory, string>;
 
 	return {
 		fontSans: read('--font-sans'),
 		fg,
 		fgMuted: read('--fg-muted'),
-		fgSubtle: read('--fg-subtle'),
+		fgSubtle,
 		bg,
 		bgSunken: read('--bg-sunken'),
 		card: read('--card'),
@@ -100,7 +115,8 @@ export function resolvePalette(read: TokenReader): Palette {
 			kinship: onCanvas(kinship),
 			// Latte's yellow sits near 2:1 on the page ground; the traced chain is the one thing
 			// the reader asked to see, so it is held to the same floor as every other line.
-			path: onCanvas(accents.yellow)
+			path: onCanvas(accents.yellow),
+			former
 		}
 	};
 }

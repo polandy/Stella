@@ -86,6 +86,7 @@ export function applyFilters(model: GraphModel, filters: GraphFilters): GraphMod
 
 	const edges = model.edges.filter((e) => {
 		if (kinds && !kinds.has(e.kind)) return false;
+		if (filters.hideFormer && e.former) return false;
 		if (categories && e.kind === 'relationship') {
 			return e.category !== undefined && categories.has(e.category);
 		}

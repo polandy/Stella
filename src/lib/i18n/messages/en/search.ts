@@ -44,6 +44,9 @@ export const search = {
 	'graph.density.spacious': 'Spacious',
 	'graph.allKinship': 'All kinship lines',
 	'graph.allKinship.hint': 'Also the ones the entered links already explain',
+	'graph.formerLinks': 'Former links',
+	'graph.formerLinks.hint': 'Ties that have ended, such as an ex-partner, drawn dashed',
+	'graph.former': (p: { words: string }) => `${p.words} · former`,
 	'graph.groupByRole': 'Group by role',
 	'graph.groupByRole.hint':
 		'Everyone with the same role in a circle stands in one group, on one line to the circle',

@@ -100,6 +100,7 @@ export function toCytoscapeElements(model: GraphModel, options: ElementOptions =
 			},
 			classes: [
 				e.derived ? 'derived' : '',
+				e.former ? 'former' : '',
 				options.grouping?.grouping.tucked.has(e.id) ? TUCKED_CLASS : ''
 			]
 				.filter(Boolean)

@@ -13,6 +13,7 @@ import type { Viewer } from '../access/visibility';
 import type { VisibleFamily, VisibleFamilySource } from '../domain/relationships/family';
 import { kinshipGraphOf } from '../../kinship/graph-of';
 import { variantFor } from '../../kinship/kinship';
+import { FORMER_RELATIONSHIP_STATUS } from '../../relationships/status';
 import type * as schema from './schema';
 import { circle, circleMembership, contact, relationship, relationshipType } from './schema';
 
@@ -93,7 +94,8 @@ export function createDrizzleGraphRepository(
 			category: r.category,
 			label: r.forwardLabel,
 			typeKey: r.typeKey,
-			directed: r.symmetric !== 1
+			directed: r.symmetric !== 1,
+			...(r.status === FORMER_RELATIONSHIP_STATUS ? { former: true as const } : {})
 		}));
 
 		// Circles (shared contexts) become their own node kind; memberships become edges

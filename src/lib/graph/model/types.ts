@@ -60,6 +60,11 @@ export interface GraphEdge {
 	derived?: boolean;
 	/** `true` when direction is meaningful (asymmetric relationship, source → target). */
 	directed?: boolean;
+	/**
+	 * `true` for an entered link marked former — an ex-partner, a former colleague (docs/03
+	 * §3.3). Still a link, drawn muted and dashed; absent on every current one.
+	 */
+	former?: true;
 }
 
 export interface GraphModel {
@@ -92,6 +97,8 @@ export interface GraphFilters {
 	edgeKinds?: EdgeKind[];
 	/** For `relationship` edges, keep only these categories (other kinds are unaffected). */
 	categories?: RelationshipCategory[];
+	/** Drop the links marked former (the Filter menu's *Former links* switch off). */
+	hideFormer?: boolean;
 	/** A node never dropped as an orphan — typically the ego centre. */
 	keepNodeId?: string;
 	/** Remove nodes left unreachable from `keepNodeId` (or edgeless when it's absent). Default true. */

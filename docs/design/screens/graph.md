@@ -15,10 +15,15 @@ card (§5.5.2); its styling is §5.8.
   (solid per category, dashed for circles, dotted for kinship) in its token. There is no
   second legend box.
 - Below the kinds sit the switches that change how the map is read rather than what it holds:
-  **Labels** (names every line at once), **All kinship lines** (while the Kinship kind is on)
-  and the grouping by role.
+  **Labels** (names every line at once), **All kinship lines** (while the Kinship kind is on),
+  **Former links** (on by default; its row starts with the former line's dashed stroke) and
+  the grouping by role.
+- A link marked former is a thinner, longer-dashed line in a muted shade of its category, and
+  its name ends in *· former*; with *Former links* off it leaves the map and the Filter pill
+  stands out as narrowed.
 - **Tree** draws the family as a paper family tree (§5.8): partner bars, one drop per couple to
-  a bar over their children, right angles throughout, each person's role towards the centre
+  a bar over their children — a former couple stays side by side on a dashed bar, but each
+  parent drops on their own, and the role under the name says *Wife · former* — right angles throughout, each person's role towards the centre
   under their name instead of names on the lines — Labels starts off in the tree and its switch
   turns the names on there as anywhere, each on its child's own drop — the centre softly
   lit, and everyone outside the family on a shelf beneath under a quiet *Outside the family*,
@@ -59,7 +64,10 @@ card (§5.5.2); its styling is §5.8.
 ### Why
 
 A legend that *is* the filter can never disagree with the lines it toggles, and there is no
-second box to keep in sync. On a phone both menu pills stand at the right, so a menu opening
+second box to keep in sync. Former links are a switch rather than a seventh chip because a
+former link already has a kind and a category; the switch cuts across them. They are shown by
+default because an ex-partner is still part of how a family hangs together, and a bar the
+children hang from would say the two are still a couple. On a phone both menu pills stand at the right, so a menu opening
 from there would run off the screen unless it moves. The peek panel has no room beside the map
 on a phone, hence the bottom strip.
 

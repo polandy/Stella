@@ -48,6 +48,13 @@ describe('graphFiltersFor', () => {
 		expect(graphFiltersFor(new Set(), 'mara').edgeKinds).toEqual([]);
 	});
 
+	test('hides former links only while their switch is off', () => {
+		const all = new Set(FILTER_KEYS);
+		expect(graphFiltersFor(all, 'mara', { formerLinks: false }).hideFormer).toBe(true);
+		expect(graphFiltersFor(all, 'mara', { formerLinks: true }).hideFormer).toBe(false);
+		expect(graphFiltersFor(all, 'mara').hideFormer).toBe(false);
+	});
+
 	test('never drops the centre, and keeps nobody in particular without one', () => {
 		expect(graphFiltersFor(new Set(FILTER_KEYS), 'mara').keepNodeId).toBe('mara');
 		expect(graphFiltersFor(new Set(FILTER_KEYS), null).keepNodeId).toBeUndefined();

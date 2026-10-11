@@ -107,6 +107,25 @@ describe('rolesTowards', () => {
 		expect(rolesTowards(graph, 'lena').get('jan')?.term).toBe('cousin');
 	});
 
+	it('marks the role a former tie gives, and lets a current tie name the person first', () => {
+		const ex = { ...tie('lena', 'jan', 'spouse', 'romantic'), former: true as const };
+		const alone: GraphModel = { nodes: [person('lena'), person('jan', 'male')], edges: [ex] };
+		expect(rolesTowards(alone, 'lena').get('jan')).toEqual({
+			term: 'spouse',
+			variant: 'male',
+			former: true
+		});
+
+		const stillColleagues: GraphModel = {
+			...alone,
+			edges: [ex, tie('lena', 'jan', 'colleague', 'professional')]
+		};
+		expect(rolesTowards(stillColleagues, 'lena').get('jan')).toEqual({
+			term: 'colleague',
+			variant: 'male'
+		});
+	});
+
 	it('gives no role to somebody tied to the centre only through others, nor to a circle', () => {
 		const graph: GraphModel = {
 			nodes: [
