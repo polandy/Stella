@@ -13,6 +13,7 @@ import type {
 	MemberRemovalDeps,
 	MemberRoleDeps
 } from '../domain/circles/circles';
+import type { CircleDeletionPreviewDeps, DeleteCircleDeps } from '../domain/circles/delete-circle';
 import type { CircleDirectoryDeps } from '../domain/circles/directory';
 import type { CircleMembershipDeps } from '../domain/circles/memberships';
 import type { RenameRoleDeps } from '../domain/circles/rename-role';
@@ -48,6 +49,10 @@ export interface CircleServices {
 	/** Renaming a role touches the circle's members and its photos alike. */
 	renameRoleDeps: RenameRoleDeps;
 	cutDeps: CutDeps;
+	/** What deleting a circle would take, read when its confirm step opens. */
+	circleDeletionDeps: CircleDeletionPreviewDeps;
+	/** Deleting a circle unlinks its photos' files once the write has committed. */
+	deleteCircleDeps: DeleteCircleDeps;
 }
 
 export interface CircleWiring {
@@ -83,6 +88,8 @@ export function createCircleServices({
 		memberRemovalDeps: { circles, memberships },
 		circlePhotoDeps: { circlePhotos, circles, memberships, media, ids, clock },
 		renameRoleDeps: { circles, memberships, circlePhotos, clock },
-		cutDeps: { cuts, contacts, media, ids, clock }
+		cutDeps: { cuts, contacts, media, ids, clock },
+		circleDeletionDeps: { circles },
+		deleteCircleDeps: { circles, media, ids, clock }
 	};
 }

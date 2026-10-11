@@ -757,6 +757,14 @@ starts and ends (a school year, a season); the page then shows it under the name
 Everyone who can see a circle can edit it, and the new name shows everywhere at once. Whether
 the circle is shared or private stays as it was created.
 
+To delete a circle, open the same **⋯** and choose **Delete circle…**. Only whoever created the
+circle sees it there — and an admin, when the circle is shared. Stella first says what goes and
+what stays: how many members leave it and how many photos are deleted, how many people wear a
+profile picture cut from one of those photos (they keep it, as a photo of their own), and which
+circles nested in it stay, now without a parent. The cursor starts on **Keep it**; press
+**Delete …** to go ahead. There is no Undo — the photos are gone for good — so you land on the
+Circles page, and Home tells the household *Andy removed the circle Class 1B*.
+
 A circle can have photos: the class photo of each school year, the team on the pitch, the
 teachers at the summer party. Press **Add photos** in the *Photos* card below the members and
 pick several at once; say who is in them — one of the circle's roles, or *No role* when the

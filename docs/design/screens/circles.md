@@ -30,12 +30,22 @@ its photos, and lets the household manage members in bulk.
 - The header carries *Open in the graph*; the explorer offers *Back to the <name> circle* in
   return (docs/02 §2.7).
 - Beside it a **⋯ menu** (*More actions*), the person page's `MenuButton` with the `button`
-  look, holds *Edit circle* for everyone who sees the circle.
+  look, holds *Edit circle* for everyone who sees the circle, and *Delete circle…* in the danger
+  colour below it for whoever may delete (its creator, an admin on a shared one) — nobody else
+  sees the item.
 - *Edit circle* swaps the header for a card-coloured **form in place** with the cursor in the
   name: name, kind and description, the colour swatches the create form uses
   (`ColourSwatches`), and the period as two `DateField`s side by side (stacked on a phone),
   then *Save* (primary) and *Cancel* (ghost). Escape is *Cancel*; either hands the cursor back
   to the ⋯. A refused save keeps the form open with the error above the name.
+- *Delete circle…* opens the person page's **sunken confirm box** under the header, not a
+  modal: one to three short sentences — what goes (*This deletes Class 1B: 24 members leave it
+  and its 7 photos are deleted. It cannot be undone.*), whose profile picture stays theirs, which
+  nested circles stay without a parent — then *Delete Class 1B* (danger) and *Keep it* (ghost),
+  with the cursor on *Keep it*. Until the counts arrive the box says *Counting what goes…*;
+  if they cannot be read, a sentence without numbers stands in, and the button still works.
+  Escape and *Keep it* close it and hand the cursor back to the ⋯. After the deletion the reader
+  lands on the list with a toast, *Class 1B deleted*.
 - The header's line under the name reads kind · period · description · *private*; the period
   in short months (*Aug 2025 – Jul 2026*).
 
@@ -73,4 +83,7 @@ because a plain input's suggestions do not show on Mobile Safari. *Open in the g
 way out a person's People card offers (there in its ⋯), because a circle is a node like any
 other. Editing sits in a ⋯ rather than behind a pencil on the name because the circle's later
 actions (deleting) join it there, as on the person page; it turns the header itself into the
-form so the reader edits what they were just reading. Strips have a fixed height on a wide screen so the members stay in view.
+form so the reader edits what they were just reading. Deleting has no Undo — the files go and
+so does the page — so its step says what it takes before anything happens and starts on *Keep
+it*, so a second Enter never deletes; the counts are read only when the step opens, so the
+page's load does not count photos for a step most visits never open. Strips have a fixed height on a wide screen so the members stay in view.

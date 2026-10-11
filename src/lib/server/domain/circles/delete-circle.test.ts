@@ -5,6 +5,7 @@ import { circleRepositoryWith, fixedClock, sequentialIds } from '../testing';
 import { CircleGoneError } from './circle-details';
 import type { Circle } from './circles';
 import {
+	circleDeletable,
 	circleDeletionPreview,
 	deleteCircle,
 	type CircleDeletionFacts,
@@ -179,5 +180,19 @@ describe('deleteCircle', () => {
 
 		await expect(deleteCircle(deps, remover, 'k1')).rejects.toBeInstanceOf(CircleGoneError);
 		expect(events).toEqual(['delete']);
+	});
+});
+
+describe('circleDeletable', () => {
+	it('offers the deletion to the creator, and to an admin on a shared circle only', () => {
+		const admin: Remover = { id: 'u2', householdId: 'h1', isAdmin: true };
+		const member: Remover = { id: 'u3', householdId: 'h1', isAdmin: false };
+		const shared = { ...class1b, visibility: 'shared' as const };
+
+		expect(circleDeletable(remover, class1b)).toBe(true);
+		expect(circleDeletable(admin, shared)).toBe(true);
+		expect(circleDeletable(member, shared)).toBe(false);
+		// A private circle is its creator's alone: an admin does not even see it.
+		expect(circleDeletable(admin, class1b)).toBe(false);
 	});
 });

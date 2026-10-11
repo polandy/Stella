@@ -30,6 +30,44 @@ export const circles = {
 	'circles.edit.period': 'Period (optional)',
 	'circles.edit.start': 'Starts',
 	'circles.edit.end': 'Ends',
+	// Deleting a circle: the ⋯ menu's item and its confirm step (docs/02 §2.4.2).
+	'circles.delete.open': 'Delete circle…',
+	'circles.delete.label': (p: { name: string }) => `Delete ${p.name}?`,
+	'circles.delete.counting': 'Counting what goes…',
+	'circles.delete.explain': (p: { name: string; members: number; photos: number }) => {
+		const goes = [
+			p.members === 0
+				? null
+				: p.members === 1
+					? '1 member leaves it'
+					: `${p.members} members leave it`,
+			p.photos === 0
+				? null
+				: p.photos === 1
+					? 'its photo is deleted'
+					: `its ${p.photos} photos are deleted`
+		].filter((part) => part !== null);
+		return goes.length === 0
+			? `This deletes ${p.name}. It cannot be undone.`
+			: `This deletes ${p.name}: ${goes.join(' and ')}. It cannot be undone.`;
+	},
+	'circles.delete.unknown': (p: { name: string }) =>
+		`This deletes ${p.name}: everyone leaves it and its photos are deleted. It cannot be undone.`,
+	'circles.delete.worn': (p: { photos: number; people: number }) =>
+		`${p.photos === 1 ? '1 of its photos is' : `${p.photos} of its photos are`} the profile picture of ${p.people === 1 ? '1 person' : `${p.people} people`}. They keep it as a photo of their own.`,
+	'circles.delete.children': (p: { list: string; count: number }) =>
+		`${p.list} ${p.count === 1 ? 'stays' : 'stay'}, without a parent circle.`,
+	'circles.delete.unnamedChildren': (p: { count: number; more: boolean }) =>
+		p.more
+			? p.count === 1
+				? '1 more circle'
+				: `${p.count} more circles`
+			: p.count === 1
+				? '1 circle nested in it'
+				: `${p.count} circles nested in it`,
+	'circles.delete.submit': (p: { name: string }) => `Delete ${p.name}`,
+	'circles.delete.keep': 'Keep it',
+	'circles.delete.done': (p: { name: string }) => `${p.name} deleted`,
 	'circles.period.range': (p: { start: string; end: string }) => `${p.start} – ${p.end}`,
 	'circles.period.from': (p: { start: string }) => `from ${p.start}`,
 	'circles.period.until': (p: { end: string }) => `until ${p.end}`,

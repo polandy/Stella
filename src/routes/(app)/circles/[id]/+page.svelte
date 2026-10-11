@@ -199,6 +199,7 @@
 		{circle}
 		kinds={data.kinds}
 		colors={data.colors}
+		canDelete={data.canDelete}
 		error={form && 'detailsError' in form ? (form.detailsError ?? null) : null}
 	/>
 

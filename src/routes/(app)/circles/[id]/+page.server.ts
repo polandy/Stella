@@ -17,10 +17,12 @@ import {
 	photoRoleOptions
 } from '$lib/server/domain/circles/circle-photo-view';
 import { listCirclePhotos } from '$lib/server/domain/circles/circle-photos';
+import { circleDeletable } from '$lib/server/domain/circles/delete-circle';
 import { BlankRoleNameError, renameCircleRole } from '$lib/server/domain/circles/rename-role';
 import { listContactNamesAmong } from '$lib/server/domain/contacts/contact-names';
 import { listCircleCuts } from '$lib/server/domain/media/cuts';
 import { readSurnameHelp } from '$lib/server/domain/contacts/last-names';
+import { deleteActions } from './actions/delete';
 import { detailsActions } from './actions/details';
 import { photoActions } from './actions/photos';
 import { readPeopleAndRole } from './people-form';
@@ -52,6 +54,8 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 		// What the header's edit form offers (docs/02 §2.4.2), as the create form does.
 		kinds: CIRCLE_KINDS,
 		colors: CIRCLE_COLORS,
+		// *Delete circle…* is only in the ⋯ menu of whoever may: its creator, an admin on a shared one.
+		canDelete: circleDeletable(remover, circle),
 		// People are shown under their role, so a class reads as its teachers and its pupils.
 		memberGroups: groupMembersByRole(members),
 		// What this circle already calls its people, offered while adding the next one.
@@ -80,6 +84,7 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 
 export const actions: Actions = {
 	...detailsActions,
+	...deleteActions,
 	...photoActions,
 	...lastNameActions,
 

@@ -1,11 +1,11 @@
-import type { Remover } from '../../access/visibility';
+import { canDeleteCircle, type Remover } from '../../access/visibility';
 import type { Clock } from '../../clock';
 import type { IdGenerator } from '../../id';
 import { activityRecord } from '../activity/activity';
 import type { DeletedPhotoFiles, MediaStore } from '../media/avatars';
 import { cutsToTurn, type Cut } from '../media/cuts';
 import { CircleGoneError } from './circle-details';
-import type { CircleRepository } from './circles';
+import type { Circle, CircleRepository } from './circles';
 
 /*
  * Deleting a circle (docs/02 §2.4.2): its creator always, an admin when it is shared — the
@@ -56,6 +56,21 @@ export interface DeleteCircleDeps {
 	media: Pick<MediaStore, 'delete'>;
 	ids: IdGenerator;
 	clock: Clock;
+}
+
+/**
+ * Whether the circle page offers *Delete circle…* (docs/02 §2.4.2) — the same rule the write
+ * checks again in its own condition (`circleDeletableBy`).
+ */
+export function circleDeletable(
+	remover: Remover,
+	circle: Pick<Circle, 'householdId' | 'createdBy' | 'visibility'>
+): boolean {
+	return canDeleteCircle(remover, {
+		householdId: circle.householdId,
+		ownerId: circle.createdBy,
+		visibility: circle.visibility
+	});
 }
 
 /**

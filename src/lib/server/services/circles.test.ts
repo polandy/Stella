@@ -109,6 +109,8 @@ describe('createCircleServices', () => {
 		expect<unknown>(circles.renameRoleDeps.circles).toBe(circles.circles);
 		expect<unknown>(circles.memberRoleDeps.circles).toBe(circles.circles);
 		expect<unknown>(circles.memberRemovalDeps.circles).toBe(circles.circles);
+		expect<unknown>(circles.circleDeletionDeps.circles).toBe(circles.circles);
+		expect<unknown>(circles.deleteCircleDeps.circles).toBe(circles.circles);
 
 		const anna = await addPerson('Anna');
 		const circleId = await joinCircleByName(
@@ -144,12 +146,18 @@ describe('createCircleServices', () => {
 		const circles = createCircleServices(wiring);
 		expect(circles.circlePhotoDeps.media).toBe(media);
 		expect(circles.cutDeps.media).toBe(media);
+		expect<unknown>(circles.deleteCircleDeps.media).toBe(media);
 		expect<unknown>(circles.cutDeps.contacts).toBe(wiring.contacts);
 	});
 
 	it('hands the injected clock and ids to the use-cases that write', () => {
 		const circles = createCircleServices(wiring);
-		for (const deps of [circles.circleDeps, circles.circlePhotoDeps, circles.cutDeps]) {
+		for (const deps of [
+			circles.circleDeps,
+			circles.circlePhotoDeps,
+			circles.cutDeps,
+			circles.deleteCircleDeps
+		]) {
 			expect(deps.clock).toBe(clock);
 			expect(deps.ids).toBe(ids);
 		}

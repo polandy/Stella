@@ -32,6 +32,44 @@ export const circles: CirclesMessages = {
 	'circles.edit.period': 'Zeitraum (optional)',
 	'circles.edit.start': 'Beginnt',
 	'circles.edit.end': 'Endet',
+	// Einen Kreis löschen: der Eintrag im ⋯-Menü und sein Bestätigungsschritt (docs/02 §2.4.2).
+	'circles.delete.open': 'Kreis löschen…',
+	'circles.delete.label': (p) => `${p.name} löschen?`,
+	'circles.delete.counting': 'Zähle, was wegfällt…',
+	'circles.delete.explain': (p) => {
+		const goes = [
+			p.members === 0
+				? null
+				: p.members === 1
+					? '1 Mitglied verlässt ihn'
+					: `${p.members} Mitglieder verlassen ihn`,
+			p.photos === 0
+				? null
+				: p.photos === 1
+					? 'sein Foto wird gelöscht'
+					: `seine ${p.photos} Fotos werden gelöscht`
+		].filter((part) => part !== null);
+		return goes.length === 0
+			? `Damit wird ${p.name} gelöscht. Das lässt sich nicht rückgängig machen.`
+			: `Damit wird ${p.name} gelöscht: ${goes.join(' und ')}. Das lässt sich nicht rückgängig machen.`;
+	},
+	'circles.delete.unknown': (p) =>
+		`Damit wird ${p.name} gelöscht: Alle verlassen ihn und seine Fotos werden gelöscht. Das lässt sich nicht rückgängig machen.`,
+	'circles.delete.worn': (p) =>
+		`${p.photos === 1 ? '1 seiner Fotos ist' : `${p.photos} seiner Fotos sind`} das Profilbild von ${p.people === 1 ? '1 Person' : `${p.people} Personen`}. Sie behalten es als eigenes Foto.`,
+	'circles.delete.children': (p) =>
+		`${p.list} ${p.count === 1 ? 'bleibt' : 'bleiben'}, ohne übergeordneten Kreis.`,
+	'circles.delete.unnamedChildren': (p) =>
+		p.more
+			? p.count === 1
+				? '1 weiterer Kreis'
+				: `${p.count} weitere Kreise`
+			: p.count === 1
+				? '1 Kreis darin'
+				: `${p.count} Kreise darin`,
+	'circles.delete.submit': (p) => `${p.name} löschen`,
+	'circles.delete.keep': 'Doch behalten',
+	'circles.delete.done': (p) => `${p.name} gelöscht`,
 	'circles.period.range': (p) => `${p.start} – ${p.end}`,
 	'circles.period.from': (p) => `ab ${p.start}`,
 	'circles.period.until': (p) => `bis ${p.end}`,
