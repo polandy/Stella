@@ -163,42 +163,47 @@
 			</div>
 		</form>
 	{:else}
-		<header class="flex items-center gap-4">
-			<span
-				class="grid size-12 shrink-0 place-items-center rounded-full"
-				style={accentDotStyle(circle.color)}
-			>
-				<span class="size-4 rounded-full bg-card/70"></span>
-			</span>
-			<div class="min-w-0 flex-1">
-				<h1 class="truncate text-2xl font-semibold text-fg">{circle.name}</h1>
-				<p class="text-sm text-fg-muted" data-testid="circle-facts">
-					<span>{circleKindLabel(t, circle.kind)}</span>
-					{#if period}
-						· {period}{/if}
-					{#if circle.description}
-						· {circle.description}{/if}
-					{#if circle.visibility === 'private'}
-						· {t('circles.private')}{/if}
-				</p>
+		<!-- The name keeps its width: on a phone the actions drop to a row of their own. -->
+		<header class="flex flex-wrap items-center gap-x-4 gap-y-3">
+			<div class="flex min-w-64 flex-1 items-center gap-4">
+				<span
+					class="grid size-12 shrink-0 place-items-center rounded-full"
+					style={accentDotStyle(circle.color)}
+				>
+					<span class="size-4 rounded-full bg-card/70"></span>
+				</span>
+				<div class="min-w-0 flex-1">
+					<h1 class="truncate text-2xl font-semibold text-fg">{circle.name}</h1>
+					<p class="text-sm text-fg-muted" data-testid="circle-facts">
+						<span>{circleKindLabel(t, circle.kind)}</span>
+						{#if period}
+							· {period}{/if}
+						{#if circle.description}
+							· {circle.description}{/if}
+						{#if circle.visibility === 'private'}
+							· {t('circles.private')}{/if}
+					</p>
+				</div>
 			</div>
-			<!-- The circle is a node of the graph, so it opens there like a person does (docs/02 §2.7). -->
-			<Button size="sm" icon="graph" href="/graph?center={circle.id}"
-				>{t('graph.openInGraph')}</Button
-			>
-			<MenuButton label={t('circles.menu')} align="end" look="button">
-				{#snippet trigger()}<Icon name="more" size={18} />{/snippet}
-				{#snippet children({ close })}
-					<button
-						type="button"
-						role="menuitem"
-						class={ITEM}
-						onclick={() => (close(), void openEditor())}
-					>
-						<Icon name="rename" size={14} />{t('circles.edit.open')}
-					</button>
-				{/snippet}
-			</MenuButton>
+			<div class="ml-auto flex items-center gap-2">
+				<!-- The circle is a node of the graph, so it opens there like a person does (docs/02 §2.7). -->
+				<Button size="sm" icon="graph" href="/graph?center={circle.id}"
+					>{t('graph.openInGraph')}</Button
+				>
+				<MenuButton label={t('circles.menu')} align="end" look="button">
+					{#snippet trigger()}<Icon name="more" size={18} />{/snippet}
+					{#snippet children({ close })}
+						<button
+							type="button"
+							role="menuitem"
+							class={ITEM}
+							onclick={() => (close(), void openEditor())}
+						>
+							<Icon name="rename" size={14} />{t('circles.edit.open')}
+						</button>
+					{/snippet}
+				</MenuButton>
+			</div>
 		</header>
 	{/if}
 </div>
