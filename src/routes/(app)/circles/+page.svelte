@@ -3,6 +3,7 @@
 	import FormError from '$lib/components/ui/FormError.svelte';
 	import Avatar from '$lib/components/ui/Avatar.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
+	import ColourSwatches from '$lib/components/circle/ColourSwatches.svelte';
 	import EmptyState from '$lib/components/ui/EmptyState.svelte';
 	import Icon from '$lib/components/ui/Icon.svelte';
 	import { ALL_KINDS, activeKind, filterCircles, kindChips } from '$lib/circles/browse';
@@ -93,30 +94,7 @@
 				</label>
 			</div>
 
-			<!-- Each swatch is named for a screen reader, and shows a focus ring of its own: the
-			     radio under it is visually hidden, so it cannot show one (WCAG 1.1.1, 2.4.7). -->
-			<fieldset class="flex flex-col gap-2">
-				<legend class="mb-2 text-sm text-fg-muted">{t('circles.colour')}</legend>
-				<div class="flex flex-wrap gap-2">
-					{#each data.colors as color (color)}
-						<label class="cursor-pointer" title={t(`components.colour.${color}`)}>
-							<input
-								type="radio"
-								name="color"
-								value={color}
-								checked={color === data.suggestedColor}
-								class="peer sr-only"
-							/>
-							<span
-								class="block size-7 rounded-full ring-offset-2 ring-offset-[var(--card)] transition-all peer-checked:ring-2 peer-checked:ring-[var(--fg)] peer-focus-visible:outline-2 peer-focus-visible:outline-offset-4 peer-focus-visible:outline-focus-ring hover:scale-110"
-								style={accentDotStyle(color)}
-								aria-hidden="true"
-							></span>
-							<span class="sr-only">{t(`components.colour.${color}`)}</span>
-						</label>
-					{/each}
-				</div>
-			</fieldset>
+			<ColourSwatches colors={data.colors} selected={data.suggestedColor} />
 
 			<Button variant="primary" class="self-start">{t('circles.create')}</Button>
 		</form>

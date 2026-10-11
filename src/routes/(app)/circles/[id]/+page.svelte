@@ -3,6 +3,7 @@
 	import { enhance } from '$app/forms';
 	import { invalidateAll } from '$app/navigation';
 	import Button from '$lib/components/ui/Button.svelte';
+	import CircleHeader from '$lib/components/circle/CircleHeader.svelte';
 	import CirclePhotoLightbox from '$lib/components/circle/CirclePhotoLightbox.svelte';
 	import CirclePhotosSection from '$lib/components/circle/CirclePhotosSection.svelte';
 	import MemberCard from '$lib/components/circle/MemberCard.svelte';
@@ -14,12 +15,10 @@
 	import InlineEdit from '$lib/components/ui/InlineEdit.svelte';
 	import PersonSearchSelect from '$lib/components/people/PersonSearchSelect.svelte';
 	import Section from '$lib/components/ui/Section.svelte';
-	import { circleKindLabel } from '$lib/circles/labels';
 	import { roleKey } from '$lib/circles/role-key';
 	import { dayLabel } from '$lib/dates/labels';
 	import { photoDay, type Dated } from '$lib/media/taken-at';
 	import { allChosen, toggleEveryone, toggleGroup, toggleMember } from '$lib/circles/selection';
-	import { accentDotStyle } from '$lib/design/tokens';
 	import { useI18n } from '$lib/i18n/context.svelte';
 	import { newPersonHref } from '$lib/people/new-person';
 	import { reachability } from '$lib/pwa/reachability.svelte';
@@ -196,27 +195,12 @@
 			onopen={(opener) => openPhotos(ids, 0, opener)}
 		/>
 	{/if}
-	<header class="flex items-center gap-4">
-		<span
-			class="grid size-12 shrink-0 place-items-center rounded-full"
-			style={accentDotStyle(circle.color)}
-		>
-			<span class="size-4 rounded-full bg-card/70"></span>
-		</span>
-		<div class="min-w-0 flex-1">
-			<h1 class="truncate text-2xl font-semibold text-fg">{circle.name}</h1>
-			<p class="text-sm text-fg-muted">
-				<span>{circleKindLabel(t, circle.kind)}</span>
-				{#if circle.description}
-					· {circle.description}{/if}
-				{#if circle.visibility === 'private'}
-					· {t('circles.private')}{/if}
-			</p>
-		</div>
-		<!-- The circle is a node of the graph, so it opens there like a person does (docs/02 §2.7). -->
-		<Button size="sm" icon="graph" href="/graph?center={circle.id}">{t('graph.openInGraph')}</Button
-		>
-	</header>
+	<CircleHeader
+		{circle}
+		kinds={data.kinds}
+		colors={data.colors}
+		error={form && 'detailsError' in form ? (form.detailsError ?? null) : null}
+	/>
 
 	<Section
 		title={t('circles.members')}

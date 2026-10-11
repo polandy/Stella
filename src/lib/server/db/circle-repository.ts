@@ -4,6 +4,7 @@ import { circleColumnsVisibleTo } from '../access/query-scoping';
 import type { Viewer } from '../access/visibility';
 import type {
 	Circle,
+	CircleDetails,
 	CircleRepository,
 	NewCircle,
 	NewMembership,
@@ -120,6 +121,18 @@ export function createDrizzleCircleRepository(
 					)
 				)
 				.run();
+		},
+
+		// Scoped by the visibility rule in the write itself, so nothing slips between a read and it.
+		// The Bun driver types `run()` as void, so the changed row is counted through `returning()`.
+		async update(viewer: Viewer, circleId: string, details: CircleDetails, updatedAt: number) {
+			const changed = db
+				.update(circle)
+				.set({ ...details, updatedAt })
+				.where(and(eq(circle.id, circleId), circleColumnsVisibleTo(viewer, circle)))
+				.returning({ id: circle.id })
+				.all();
+			return changed.length > 0;
 		},
 
 		// The photos are `photo` rows of this circle (docs/03 §photo): a role lives on both

@@ -29,6 +29,15 @@ its photos, and lets the household manage members in bulk.
 - The role field is a **Combobox** (§5.7), not a plain input.
 - The header carries *Open in the graph*; the explorer offers *Back to the <name> circle* in
   return (docs/02 §2.7).
+- Beside it a **⋯ menu** (*More actions*), the person page's `MenuButton` with the `button`
+  look, holds *Edit circle* for everyone who sees the circle.
+- *Edit circle* swaps the header for a card-coloured **form in place** with the cursor in the
+  name: name, kind and description, the colour swatches the create form uses
+  (`ColourSwatches`), and the period as two `DateField`s side by side (stacked on a phone),
+  then *Save* (primary) and *Cancel* (ghost). Escape is *Cancel*; either hands the cursor back
+  to the ⋯. A refused save keeps the form open with the error above the name.
+- The header's line under the name reads kind · period · description · *private*; the period
+  in short months (*Aug 2025 – Jul 2026*).
 
 #### Photos
 
@@ -62,4 +71,6 @@ selection bar is fixed rather than in the card so it stays in reach in a long ci
 place on a phone means neither it nor a toast ever hides the other. The role field is a Combobox
 because a plain input's suggestions do not show on Mobile Safari. *Open in the graph* is the same
 way out a person's People card offers (there in its ⋯), because a circle is a node like any
-other. Strips have a fixed height on a wide screen so the members stay in view.
+other. Editing sits in a ⋯ rather than behind a pencil on the name because the circle's later
+actions (deleting) join it there, as on the person page; it turns the header itself into the
+form so the reader edits what they were just reading. Strips have a fixed height on a wide screen so the members stay in view.

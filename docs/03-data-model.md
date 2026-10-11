@@ -605,8 +605,8 @@ friend group). See [02-features.md §2.4.2](02-features.md).
 | kind | text | `'friends' \| 'family' \| 'school' \| 'class' \| 'course' \| 'club' \| 'team' \| 'work' \| 'neighborhood' \| 'other'` |
 | color | text | Catppuccin accent name |
 | parent_circle_id | text fk → circle.id null | optional nesting (School › Class) |
-| start_date | text null | the context's own period, e.g. school year |
-| end_date | text null | |
+| start_date | text null | the context's own period, e.g. school year: an ISO day as the circle page's edit form sets it; an API import may stop at the month or the year |
+| end_date | text null | not before `start_date`, compared at the coarser precision of the two (`circle-details.ts`) |
 | archived_at | int null | |
 | created_at / updated_at | int | |
 

@@ -2,6 +2,8 @@ import { error, fail, redirect } from '@sveltejs/kit';
 import { requireRemover, requireViewer } from '$lib/server/auth/guards';
 import {
 	addMembers,
+	CIRCLE_COLORS,
+	CIRCLE_KINDS,
 	getCircle,
 	groupMembersByRole,
 	removeMember,
@@ -19,6 +21,7 @@ import { BlankRoleNameError, renameCircleRole } from '$lib/server/domain/circles
 import { listContactNamesAmong } from '$lib/server/domain/contacts/contact-names';
 import { listCircleCuts } from '$lib/server/domain/media/cuts';
 import { readSurnameHelp } from '$lib/server/domain/contacts/last-names';
+import { detailsActions } from './actions/details';
 import { photoActions } from './actions/photos';
 import { readPeopleAndRole } from './people-form';
 import { lastNameActions } from '../../_shared/last-names-actions';
@@ -46,6 +49,9 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 
 	return {
 		circle,
+		// What the header's edit form offers (docs/02 §2.4.2), as the create form does.
+		kinds: CIRCLE_KINDS,
+		colors: CIRCLE_COLORS,
 		// People are shown under their role, so a class reads as its teachers and its pupils.
 		memberGroups: groupMembersByRole(members),
 		// What this circle already calls its people, offered while adding the next one.
@@ -73,6 +79,7 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 };
 
 export const actions: Actions = {
+	...detailsActions,
 	...photoActions,
 	...lastNameActions,
 

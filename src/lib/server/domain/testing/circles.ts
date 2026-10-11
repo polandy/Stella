@@ -123,7 +123,8 @@ const CIRCLE_REPOSITORY_METHODS: Record<keyof CircleRepository, true> = {
 	addMemberships: true,
 	removeMembership: true,
 	setRoles: true,
-	renameRole: true
+	renameRole: true,
+	update: true
 };
 
 /**
