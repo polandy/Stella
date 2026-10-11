@@ -1,5 +1,6 @@
 <script lang="ts">
 	import RemoveMemberStep from '$lib/components/members/RemoveMemberStep.svelte';
+	import RestoreMemberStep from '$lib/components/members/RestoreMemberStep.svelte';
 	import Avatar from '$lib/components/ui/Avatar.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import Icon from '$lib/components/ui/Icon.svelte';
@@ -10,7 +11,8 @@
 	/*
 	 * The household's members (docs/02 §2.1): who signs in, and how. An admin removes any other
 	 * member from their row, after the confirm step; the member then moves to *Former members*,
-	 * and the toast has no Undo — a removal is confirmed, not held back (docs/05 §5.7).
+	 * and the toast has no Undo — a removal is confirmed, not held back (docs/05 §5.7). There,
+	 * *Restore…* brings a former member back, after a confirm step of its own.
 	 */
 	let { data }: { data: PageData } = $props();
 	const i18n = useI18n();
@@ -21,6 +23,7 @@
 
 	/** The one row whose confirm step is open. */
 	let removing = $state<string | null>(null);
+	let restoring = $state<string | null>(null);
 
 	const signInOf = (m: Member) =>
 		m.signIn.password && m.signIn.sso
@@ -103,17 +106,41 @@
 			<h2 class="text-sm font-medium text-fg-muted">{t('settings.members.former')}</h2>
 			<ul class="flex flex-col rounded-app bg-card px-4 shadow-card" data-testid="former-members">
 				{#each data.former as member (member.id)}
-					<li class="flex items-center gap-3 border-b border-border-subtle py-3 last:border-b-0">
-						<span class="opacity-70"><Avatar id={member.id} name={member.name} size={40} /></span>
-						<div class="min-w-0 flex-1">
-							<p class="font-medium text-fg-muted">{member.name}</p>
-							<p class="truncate text-sm text-fg-subtle">{member.email}</p>
-							{#if member.removedAt !== null}
-								<p class="text-xs text-fg-subtle">
-									{t('settings.members.removedOn', { date: day(member.removedAt) })}
-								</p>
+					{@const preview = data.restorePreviews[member.id]}
+					<li class="border-b border-border-subtle last:border-b-0">
+						<div class="flex items-center gap-3 py-3">
+							<span class="opacity-70"><Avatar id={member.id} name={member.name} size={40} /></span>
+							<div class="min-w-0 flex-1">
+								<p class="font-medium text-fg-muted">{member.name}</p>
+								<p class="truncate text-sm text-fg-subtle">{member.email}</p>
+								{#if member.removedAt !== null}
+									<p class="text-xs text-fg-subtle">
+										{t('settings.members.removedOn', { date: day(member.removedAt) })}
+									</p>
+								{/if}
+							</div>
+							{#if preview}
+								<Button
+									variant="ghost"
+									size="sm"
+									icon="addPerson"
+									label={t('settings.members.restoreLabel', { name: member.name })}
+									aria-expanded={restoring === member.id}
+									onclick={() => (restoring = restoring === member.id ? null : member.id)}
+									>{t('settings.members.restore')}</Button
+								>
 							{/if}
 						</div>
+						{#if preview && restoring === member.id}
+							<RestoreMemberStep
+								{preview}
+								onkeep={() => (restoring = null)}
+								onrestored={() => {
+									restoring = null;
+									removals.notify(t('settings.members.restored', { name: preview.name }));
+								}}
+							/>
+						{/if}
 					</li>
 				{/each}
 			</ul>

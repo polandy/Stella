@@ -18,6 +18,7 @@ describe('noticeContentOf', () => {
 	it('reads a last-names batch from its facts', () => {
 		expect(
 			noticeContentOf({
+				action: 'update',
 				entityType: 'last_name',
 				summary: lastNamesFacts('Widmer', 3),
 				contactId: null
@@ -32,6 +33,7 @@ describe('noticeContentOf', () => {
 	it('reads the lines stored as prose before, in either language', () => {
 		expect(
 			noticeContentOf({
+				action: 'update',
 				entityType: 'last_name',
 				summary: 'set the last name Brunner on 4 people',
 				contactId: null
@@ -39,6 +41,7 @@ describe('noticeContentOf', () => {
 		).toEqual({ kind: 'lastNames', lastName: 'Brunner', count: 4 });
 		expect(
 			noticeContentOf({
+				action: 'update',
 				entityType: 'last_name',
 				summary: 'hat 1 Person den Nachnamen Widmer gegeben',
 				contactId: null
@@ -49,6 +52,7 @@ describe('noticeContentOf', () => {
 	it('reads a rename, with the person it is about', () => {
 		expect(
 			noticeContentOf({
+				action: 'update',
 				entityType: 'contact_name',
 				summary: renameFacts('Sandra Brunner-Keller', 'Sandra Jdjdh'),
 				contactId: 'sandra'
@@ -63,14 +67,24 @@ describe('noticeContentOf', () => {
 
 	it('keeps any other line as the text it was written with', () => {
 		expect(
-			noticeContentOf({ entityType: 'contact', summary: 'removed Hans', contactId: null })
+			noticeContentOf({
+				action: 'delete',
+				entityType: 'contact',
+				summary: 'removed Hans',
+				contactId: null
+			})
 		).toEqual({
 			kind: 'text',
 			text: 'removed Hans'
 		});
 		// A line it cannot read is shown as written rather than dropped.
 		expect(
-			noticeContentOf({ entityType: 'last_name', summary: 'something else', contactId: null })
+			noticeContentOf({
+				action: 'update',
+				entityType: 'last_name',
+				summary: 'something else',
+				contactId: null
+			})
 		).toEqual({
 			kind: 'text',
 			text: 'something else'
@@ -80,6 +94,7 @@ describe('noticeContentOf', () => {
 	it('reads a note removed by someone else as its facts', () => {
 		expect(
 			noticeContentOf({
+				action: 'delete',
 				entityType: 'note',
 				summary: removalFacts('Kurt', 'user-nina', 'Nina'),
 				contactId: 'kurt'
@@ -98,6 +113,7 @@ describe('noticeContentOf', () => {
 		for (const kind of ['journal_entry', 'interaction', 'photo'] as const) {
 			expect(
 				noticeContentOf({
+					action: 'delete',
 					entityType: kind,
 					summary: removalFacts('Kurt', 'user-nina', 'Nina'),
 					contactId: 'kurt'
@@ -106,6 +122,7 @@ describe('noticeContentOf', () => {
 		}
 		expect(
 			noticeContentOf({
+				action: 'delete',
 				entityType: 'circle_photo',
 				summary: removalFacts('Class 3b', 'user-nina', 'Nina'),
 				contactId: null
@@ -121,10 +138,22 @@ describe('noticeContentOf', () => {
 	it('reads a member removed from the household as their name', () => {
 		expect(
 			noticeContentOf({
+				action: 'delete',
 				entityType: MEMBER_ENTITY,
 				summary: memberFacts('Nina Brunner'),
 				contactId: null
 			})
 		).toEqual({ kind: 'memberRemoved', name: 'Nina Brunner' });
+	});
+
+	it('reads a member restored to the household as their name, apart from a removal', () => {
+		expect(
+			noticeContentOf({
+				action: 'update',
+				entityType: MEMBER_ENTITY,
+				summary: memberFacts('Nina Brunner'),
+				contactId: null
+			})
+		).toEqual({ kind: 'memberRestored', name: 'Nina Brunner' });
 	});
 });

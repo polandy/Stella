@@ -1,4 +1,9 @@
-import { LAST_NAMES_ENTITY, noticeContentOf, RENAME_ENTITY } from '../../stream/notices';
+import {
+	LAST_NAMES_ENTITY,
+	MEMBER_ENTITY,
+	noticeContentOf,
+	RENAME_ENTITY
+} from '../../stream/notices';
 import { and, desc, eq, inArray, or } from 'drizzle-orm';
 import { alias, type SQLiteColumn } from 'drizzle-orm/sqlite-core';
 import type { BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
@@ -151,6 +156,7 @@ export function createDrizzleStreamRepository(
 					actorId: user.id,
 					actorName: user.name,
 					summary: activityLog.summary,
+					action: activityLog.action,
 					entityType: activityLog.entityType,
 					contactId: activityLog.contactId
 				})
@@ -161,11 +167,12 @@ export function createDrizzleStreamRepository(
 						activityVisibleTo(viewer),
 						or(
 							inArray(activityLog.action, ['delete', 'merge', 'export', 'import']),
-							// The one update the household is told about: a batch of last names
-							// changes how several people read at once (docs/02 §2.2.4.4).
+							// The updates the household is told about: a batch of last names changes
+							// how several people read at once (docs/02 §2.2.4.4), a rename, and a
+							// member restored (docs/02 §2.1).
 							and(
 								eq(activityLog.action, 'update'),
-								inArray(activityLog.entityType, [LAST_NAMES_ENTITY, RENAME_ENTITY])
+								inArray(activityLog.entityType, [LAST_NAMES_ENTITY, RENAME_ENTITY, MEMBER_ENTITY])
 							)
 						),
 						byMember(activityLog.actorId, memberId)

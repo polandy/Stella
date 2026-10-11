@@ -153,6 +153,7 @@ export const errors: ErrorsMessages = {
 	'errors.member.notYourself':
 		'Dich selbst kannst du nicht entfernen. Das kann eine andere Person aus der Administration.',
 	'errors.member.gone': 'Diese Person gehört nicht mehr zum Haushalt.',
+	'errors.member.notFormer': 'Diese Person gehört bereits zum Haushalt.',
 	'errors.export.adminOnly': 'Nur die Haushalts-Administration kann exportieren.',
 	'errors.story.badCursor': 'Fehlerhafter Verlaufs-Cursor',
 	'errors.journal.couldNotSave': 'Der Moment konnte nicht gespeichert werden.',

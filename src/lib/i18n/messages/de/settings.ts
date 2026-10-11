@@ -26,7 +26,8 @@ export const settings: SettingsMessages = {
 	'settings.members.title': 'Mitglieder',
 	'settings.members.blurb': 'Wer sich bei Stella anmeldet, und wie',
 	'settings.members.intro': 'Alle, die sich bei Stella anmelden, und wie.',
-	'settings.members.adminOnly': 'Nur die Haushalts-Administration kann jemanden entfernen.',
+	'settings.members.adminOnly':
+		'Nur die Haushalts-Administration kann jemanden entfernen oder zurückholen.',
 	'settings.members.you': 'Du',
 	'settings.members.admin': 'Admin',
 	'settings.members.signIn.password': 'Passwort',
@@ -41,8 +42,8 @@ export const settings: SettingsMessages = {
 		`Was ${p.name} geteilt hat, bleibt, unter diesem Namen. Du kannst jedes Stück davon weiterhin entfernen.`,
 	'settings.members.confirm.private': (p) =>
 		p.count === 1
-			? `Der eine private Eintrag bleibt versiegelt: Niemand sieht ihn, auch du nicht.`
-			: `Die ${p.count} privaten Einträge bleiben versiegelt: Niemand sieht sie, auch du nicht.`,
+			? `Der eine private Eintrag bleibt versiegelt: Niemand sieht ihn, auch du nicht. Holst du ${p.name} zurück, ist er wieder da.`
+			: `Die ${p.count} privaten Einträge bleiben versiegelt: Niemand sieht sie, auch du nicht. Holst du ${p.name} zurück, sind sie wieder da.`,
 	'settings.members.confirm.sso': (p) =>
 		`${p.name} meldet sich per Single Sign-on an. Stella lässt diese Anmeldung ab jetzt nicht mehr zu. Entferne ${p.name} am besten auch aus der Gruppe bei deinem Anmeldedienst.`,
 	'settings.members.confirm.lastAdmin': (p) =>
@@ -52,6 +53,27 @@ export const settings: SettingsMessages = {
 	'settings.members.removed': (p) => `${p.name} entfernt`,
 	'settings.members.former': 'Ehemalige Mitglieder',
 	'settings.members.removedOn': (p) => `Entfernt am ${p.date}`,
+	'settings.members.restore': 'Zurückholen…',
+	'settings.members.restoreLabel': (p) => `${p.name} zurückholen…`,
+	'settings.members.restoreConfirm.heading': (p) => `${p.name} in den Haushalt zurückholen?`,
+	'settings.members.restoreConfirm.signIn.password': (p) =>
+		`${p.name} kann sich sofort wieder anmelden, mit dem bisherigen Passwort.`,
+	'settings.members.restoreConfirm.signIn.sso': (p) =>
+		`${p.name} kann sich sofort wieder anmelden, per Single Sign-on.`,
+	'settings.members.restoreConfirm.signIn.both': (p) =>
+		`${p.name} kann sich sofort wieder anmelden, mit dem bisherigen Passwort oder per Single Sign-on.`,
+	'settings.members.restoreConfirm.signIn.none': (p) =>
+		`${p.name} kann sich sofort wieder anmelden.`,
+	'settings.members.restoreConfirm.fresh':
+		'Die Geräte bleiben abgemeldet, und die alten API-Tokens bleiben ungültig.',
+	'settings.members.restoreConfirm.private': (p) =>
+		p.count === 1
+			? `Der eine private Eintrag ist für ${p.name} wieder sichtbar.`
+			: `Die ${p.count} privaten Einträge sind für ${p.name} wieder sichtbar.`,
+	'settings.members.restoreConfirm.sso': (p) =>
+		`Falls du ${p.name} bei deinem Anmeldedienst aus der Gruppe entfernt hast, nimm ${p.name} dort wieder auf.`,
+	'settings.members.restoreConfirm.submit': (p) => `${p.name} zurückholen`,
+	'settings.members.restored': (p) => `${p.name} zurückgeholt`,
 	'settings.data.heading': 'Daten',
 	'settings.data.importPeople': 'Menschen importieren',
 	'settings.data.importPeopleBlurb':

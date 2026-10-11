@@ -23,12 +23,15 @@ import {
 	memberRemovalPreview,
 	MemberGoneError,
 	NotAnAdminError,
+	memberRestorePreview,
+	MemberNotFormerError,
 	removeMember,
+	restoreMember,
 	type MemberAccountDeps
 } from './remove-member';
 
 /*
- * Removing a member (docs/02 §2.1, concept remove-member §3). Wired to the real Drizzle adapter
+ * Removing and restoring a member (docs/02 §2.1). Wired to the real Drizzle adapter
  * on an in-memory database, because what a removal ends and what it keeps — sessions, tokens,
  * the identity, the password hash, every record — lives there. In the household, Nina is the
  * member removed, Andy the admin removing her, Mia a plain member.
@@ -43,7 +46,7 @@ beforeEach(() => {
 	t = removalDb();
 	deps = {
 		accounts: createDrizzleMemberAccountRepository(t.db),
-		ids: sequentialIds('log-1', 'log-2'),
+		ids: sequentialIds('log-1', 'log-2', 'log-3'),
 		clock: fixedClock(NOW)
 	};
 	t.db
@@ -278,5 +281,100 @@ describe('listMemberAccounts', () => {
 			['Mia', { password: false, sso: false }],
 			['Nina', { password: true, sso: true }]
 		]);
+	});
+});
+
+describe('restoreMember', () => {
+	it('clears the mark, so the member belongs again with all they had', async () => {
+		await removeMember(deps, admin, AUTHOR);
+
+		await restoreMember(deps, admin, AUTHOR);
+
+		const nina = userRow(AUTHOR);
+		expect(nina?.removedAt).toBeNull();
+		expect(nina?.passwordHash).toBe('hash-nina');
+		expect(ids(t.db.select().from(schema.identity).all())).toEqual(['i-nina']);
+		const { current, former } = await listMemberAccounts(deps, admin);
+		expect(current.map((m) => m.id)).toContain(AUTHOR);
+		expect(former).toEqual([]);
+	});
+
+	it('brings back no session or API token: the member signs in afresh', async () => {
+		await removeMember(deps, admin, AUTHOR);
+		await restoreMember(deps, admin, AUTHOR);
+
+		expect(ids(t.db.select().from(schema.session).all())).toEqual(['s-andy']);
+		expect(ids(t.db.select().from(schema.apiToken).all())).toEqual(['t-andy']);
+	});
+
+	it('tells the household in the same write, under the member, with their name', async () => {
+		await removeMember(deps, admin, AUTHOR);
+		await restoreMember(deps, admin, AUTHOR);
+
+		expect(
+			t.db.select().from(schema.activityLog).where(eq(schema.activityLog.id, 'log-2')).get()
+		).toEqual({
+			id: 'log-2',
+			householdId: H,
+			actorId: ADMIN,
+			action: 'update',
+			entityType: MEMBER_ENTITY,
+			entityId: AUTHOR,
+			contactId: null,
+			visibility: 'shared',
+			summary: memberFacts('Nina'),
+			createdAt: NOW
+		});
+	});
+
+	it('refuses a member who is not an admin, and changes nothing', async () => {
+		await removeMember(deps, admin, AUTHOR);
+		const mia: Remover = { id: MEMBER, householdId: H, isAdmin: false };
+
+		await expect(restoreMember(deps, mia, AUTHOR)).rejects.toBeInstanceOf(NotAnAdminError);
+		expect(userRow(AUTHOR)?.removedAt).toBe(NOW);
+	});
+
+	it('answers a current, unknown or foreign member as not one to restore, writing nothing', async () => {
+		await expect(restoreMember(deps, admin, MEMBER)).rejects.toBeInstanceOf(MemberNotFormerError);
+		await expect(restoreMember(deps, admin, ADMIN)).rejects.toBeInstanceOf(MemberNotFormerError);
+		await expect(restoreMember(deps, admin, 'user-nobody')).rejects.toBeInstanceOf(
+			MemberNotFormerError
+		);
+		await removeMember(deps, admin, AUTHOR);
+		await expect(restoreMember(deps, foreignAdmin, AUTHOR)).rejects.toBeInstanceOf(
+			MemberNotFormerError
+		);
+		// A second tap on Restore: already back, read as done.
+		await restoreMember(deps, admin, AUTHOR);
+		await expect(restoreMember(deps, admin, AUTHOR)).rejects.toBeInstanceOf(MemberNotFormerError);
+		// One removal and one restore, two lines: the refusals wrote nothing.
+		expect(t.db.select().from(schema.activityLog).all()).toHaveLength(2);
+	});
+});
+
+describe('memberRestorePreview', () => {
+	it('says how the member signs in again and what of theirs comes back', async () => {
+		await removeMember(deps, admin, AUTHOR);
+
+		expect(await memberRestorePreview(deps, admin, AUTHOR)).toEqual({
+			memberId: AUTHOR,
+			name: 'Nina',
+			privateRecords: 2,
+			signIn: { password: true, sso: true }
+		});
+	});
+
+	it('refuses what the restore itself would refuse', async () => {
+		await removeMember(deps, admin, AUTHOR);
+		await expect(memberRestorePreview(deps, author, AUTHOR)).rejects.toBeInstanceOf(
+			NotAnAdminError
+		);
+		await expect(memberRestorePreview(deps, admin, MEMBER)).rejects.toBeInstanceOf(
+			MemberNotFormerError
+		);
+		await expect(memberRestorePreview(deps, foreignAdmin, AUTHOR)).rejects.toBeInstanceOf(
+			MemberNotFormerError
+		);
 	});
 });

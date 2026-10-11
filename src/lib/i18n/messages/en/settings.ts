@@ -25,7 +25,7 @@ export const settings = {
 	'settings.members.title': 'Members',
 	'settings.members.blurb': 'Who signs in to Stella, and how',
 	'settings.members.intro': 'Everyone who signs in to Stella, and how.',
-	'settings.members.adminOnly': 'Only an admin can remove a member.',
+	'settings.members.adminOnly': 'Only an admin can remove or restore a member.',
 	'settings.members.you': 'You',
 	'settings.members.admin': 'Admin',
 	'settings.members.signIn.password': 'Password',
@@ -41,8 +41,8 @@ export const settings = {
 		`What ${p.name} shared stays, under their name. You can still remove any of it.`,
 	'settings.members.confirm.private': (p: { name: string; count: number }) =>
 		p.count === 1
-			? `Their one private record stays sealed: nobody sees it, you included.`
-			: `Their ${p.count} private records stay sealed: nobody sees them, you included.`,
+			? `Their one private record stays sealed: nobody sees it, you included. If you restore ${p.name}, it comes back.`
+			: `Their ${p.count} private records stay sealed: nobody sees them, you included. If you restore ${p.name}, they come back.`,
 	'settings.members.confirm.sso': (p: { name: string }) =>
 		`${p.name} signs in through single sign-on. Stella turns them away from now on. To be thorough, also remove them from the group in your sign-in provider.`,
 	'settings.members.confirm.lastAdmin': (p: { name: string }) =>
@@ -52,6 +52,28 @@ export const settings = {
 	'settings.members.removed': (p: { name: string }) => `${p.name} removed`,
 	'settings.members.former': 'Former members',
 	'settings.members.removedOn': (p: { date: string }) => `Removed on ${p.date}`,
+	'settings.members.restore': 'Restore…',
+	'settings.members.restoreLabel': (p: { name: string }) => `Restore ${p.name}…`,
+	'settings.members.restoreConfirm.heading': (p: { name: string }) =>
+		`Restore ${p.name} to the household?`,
+	'settings.members.restoreConfirm.signIn.password': (p: { name: string }) =>
+		`${p.name} can sign in again at once, with their old password.`,
+	'settings.members.restoreConfirm.signIn.sso': (p: { name: string }) =>
+		`${p.name} can sign in again at once, through single sign-on.`,
+	'settings.members.restoreConfirm.signIn.both': (p: { name: string }) =>
+		`${p.name} can sign in again at once, with their old password or through single sign-on.`,
+	'settings.members.restoreConfirm.signIn.none': (p: { name: string }) =>
+		`${p.name} can sign in again at once.`,
+	'settings.members.restoreConfirm.fresh':
+		'Their devices stay signed out, and their old API tokens stay gone.',
+	'settings.members.restoreConfirm.private': (p: { name: string; count: number }) =>
+		p.count === 1
+			? `Their one private record is theirs to see again.`
+			: `Their ${p.count} private records are theirs to see again.`,
+	'settings.members.restoreConfirm.sso': (p: { name: string }) =>
+		`If you removed ${p.name} from the group in your sign-in provider, add them back there too.`,
+	'settings.members.restoreConfirm.submit': (p: { name: string }) => `Restore ${p.name}`,
+	'settings.members.restored': (p: { name: string }) => `${p.name} restored`,
 	'settings.data.heading': 'Data',
 	'settings.data.importPeople': 'Import people',
 	'settings.data.importPeopleBlurb':

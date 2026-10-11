@@ -7,10 +7,11 @@ import type { IdGenerator } from '../../id';
 import { activityRecord, type ActivityOf } from '../activity/activity';
 
 /*
- * The household's members as accounts, and removing one (docs/02 §2.1). A removed member is
- * marked, not deleted: everything they wrote keeps its author, their private records stay
- * sealed, and they sign nobody in. Who may remove whom is `canRemoveMember` /
- * `memberRemovableBy` (access/), checked by the write itself.
+ * The household's members as accounts, and removing and restoring one (docs/02 §2.1). A
+ * removed member is marked, not deleted: everything they wrote keeps its author, their private
+ * records stay sealed, and they sign nobody in until an admin restores them. Who may remove or
+ * restore whom is `canRemoveMember` / `canRestoreMember` and their SQL (access/), checked by the
+ * write itself.
  */
 
 /** A member as the Members page shows them. */
@@ -36,6 +37,16 @@ export interface MemberRemovalPreview {
 	onlyAdminWithPassword: boolean;
 }
 
+/** What the confirm step says about restoring one former member. */
+export interface MemberRestorePreview {
+	memberId: string;
+	name: string;
+	/** Their records marked private, which are theirs to see again. */
+	privateRecords: number;
+	/** How they sign in again: the password and the identity were kept through the removal. */
+	signIn: { password: boolean; sso: boolean };
+}
+
 /** Port: the household's accounts, as far as membership goes. */
 export interface MemberAccountRepository {
 	/** Every account of the household, current and former, by name. */
@@ -56,6 +67,18 @@ export interface MemberAccountRepository {
 		memberId: string,
 		at: number,
 		audit: ActivityOf<'member.removed'>
+	): Promise<boolean>;
+	/** The former member, when the restorer may restore them (`memberRestorableBy`). */
+	findRestorableBy(
+		restorer: Remover,
+		memberId: string
+	): Promise<{ id: string; name: string } | null>;
+	/** Clear the member's removal, with the activity entry, in one write; whether it still could. */
+	restoreRestorableBy(
+		restorer: Remover,
+		memberId: string,
+		at: number,
+		audit: ActivityOf<'member.restored'>
 	): Promise<boolean>;
 }
 
@@ -86,6 +109,16 @@ export class CannotRemoveYourselfError extends TranslatableError {
 export class MemberGoneError extends TranslatableError {
 	constructor() {
 		super(phrase('errors.member.gone'), 'MemberGoneError');
+	}
+}
+
+/**
+ * The member is no former member the restorer may restore: back already, never removed, or
+ * never in their household. Answered alike, so a second tap on *Restore* reads as done.
+ */
+export class MemberNotFormerError extends TranslatableError {
+	constructor() {
+		super(phrase('errors.member.notFormer'), 'MemberNotFormerError');
 	}
 }
 
@@ -156,5 +189,49 @@ export async function removeMember(
 	);
 	if (!(await deps.accounts.removeRemovableBy(remover, memberId, at, audit))) {
 		throw new MemberGoneError();
+	}
+}
+
+/** What restoring this former member brings back, for the confirm step. */
+export async function memberRestorePreview(
+	deps: Pick<MemberAccountDeps, 'accounts'>,
+	restorer: Remover,
+	memberId: string
+): Promise<MemberRestorePreview> {
+	if (!restorer.isAdmin) throw new NotAnAdminError();
+	if (!(await deps.accounts.findRestorableBy(restorer, memberId))) throw new MemberNotFormerError();
+	const accounts = await deps.accounts.listAccounts(restorer.householdId);
+	const member = accounts.find((a) => a.id === memberId);
+	if (!member) throw new MemberNotFormerError();
+	return {
+		memberId,
+		name: member.name,
+		privateRecords: await deps.accounts.countPrivateRecords(memberId),
+		signIn: member.signIn
+	};
+}
+
+/**
+ * Restore a former member to the household, and tell the household. They sign in again at once,
+ * with the password or the identity the removal kept; no session or token comes back.
+ */
+export async function restoreMember(
+	deps: MemberAccountDeps,
+	restorer: Remover,
+	memberId: string
+): Promise<void> {
+	if (!restorer.isAdmin) throw new NotAnAdminError();
+	const found = await deps.accounts.findRestorableBy(restorer, memberId);
+	if (!found) throw new MemberNotFormerError();
+
+	const at = deps.clock.now();
+	const audit = activityRecord(
+		deps,
+		restorer,
+		{ kind: 'member.restored', memberId, name: found.name },
+		at
+	);
+	if (!(await deps.accounts.restoreRestorableBy(restorer, memberId, at, audit))) {
+		throw new MemberNotFormerError();
 	}
 }
