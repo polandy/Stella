@@ -386,10 +386,16 @@
 		{/if}
 	</div>
 </dialog>
-<!-- Outside the dialog, so it opens over it and *Cancel* comes back to the photos. -->
-<PhotoCropper
-	file={picked?.picture ?? null}
-	initial={null}
-	onconfirm={keep}
-	oncancel={() => (picked = null)}
-/>
+<!--
+	Outside the dialog, so it opens over it and *Cancel* comes back to the photos. Mounted only
+	while a photo is picked: the person page holds two pickers, and each already has a cropper
+	beside it.
+-->
+{#if picked}
+	<PhotoCropper
+		file={picked.picture}
+		initial={null}
+		onconfirm={keep}
+		oncancel={() => (picked = null)}
+	/>
+{/if}
