@@ -36,6 +36,13 @@ export type SignableImmichMedia =
 			 * served only while the viewer sees both and both links still hold.
 			 */
 			together?: ImmichCompanion;
+			/**
+			 * For a photo of someone else, browsed from a face they hold in *Find in Immich* (docs/02
+			 * §2.24.2): the contact whose Immich person `personId` is. `contactId` is still the person
+			 * the photo was listed for — the one *Use as photo* gives it to, linked or not. Served only
+			 * while the viewer sees both and `heldBy` is still linked to `personId`.
+			 */
+			heldBy?: string;
 	  }
 	| {
 			/** A face the picker offers while linking `contactId`. */
@@ -113,7 +120,7 @@ function readPayload(payload: string): SignedImmichMedia | null {
 		return null;
 	}
 	if (typeof body !== 'object' || body === null || Array.isArray(body)) return null;
-	const { k, c, h, p, a, s, e, t, w, q } = body as Record<string, unknown>;
+	const { k, c, h, p, a, s, e, t, w, q, o } = body as Record<string, unknown>;
 	if (!isImmichId(p)) return null;
 	if (typeof e !== 'number' || !Number.isSafeInteger(e)) return null;
 	// The one kind that names a household rather than a contact.
@@ -127,6 +134,8 @@ function readPayload(payload: string): SignedImmichMedia | null {
 	if (t !== undefined && (typeof t !== 'string' || !isTakenAt(t))) return null;
 	if ((w !== undefined || q !== undefined) && (!isSignedContactId(w) || !isImmichId(q)))
 		return null;
+	// A photo is one person's, two people's together, or someone else's — never two of these.
+	if (o !== undefined && (!isSignedContactId(o) || w !== undefined)) return null;
 	return {
 		kind: 'photo',
 		contactId: c,
@@ -135,6 +144,7 @@ function readPayload(payload: string): SignedImmichMedia | null {
 		size: s as ImmichImageSize,
 		...(t === undefined ? {} : { takenAt: t }),
 		...(w === undefined ? {} : { together: { contactId: w as string, personId: q as string } }),
+		...(o === undefined ? {} : { heldBy: o as string }),
 		expiresAt: e
 	};
 }
@@ -155,6 +165,7 @@ function writePayload(media: SignedImmichMedia): string {
 						t: media.takenAt,
 						w: media.together?.contactId,
 						q: media.together?.personId,
+						o: media.heldBy,
 						e: media.expiresAt
 					};
 	return toBase64Url(encoder.encode(JSON.stringify(fields)));

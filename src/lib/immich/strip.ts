@@ -18,6 +18,13 @@ export interface GlimpsePhoto {
 	openUrl: string;
 }
 
+/**
+ * Whose photos a page of the strip lists, besides the person's own: those they are in together
+ * with someone else (`with`, docs/02 §2.24.8), or someone else's own, browsed from a face that
+ * person holds in *Find in Immich* (`of`, §2.24.2). Null for the person's own photos.
+ */
+export type GlimpseScope = { with: string } | { of: string } | null;
+
 /** A page of the strip, or why there is none. */
 export type ImmichGlimpse =
 	| { state: 'photos'; photos: GlimpsePhoto[]; nextCursor: string | null }

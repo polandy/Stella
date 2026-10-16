@@ -6,7 +6,8 @@ import type { RequestHandler } from './$types';
 /*
  * A page of the strip of a linked person's latest photos from Immich (docs/02
  * §2.24.3), from `?cursor=` on — or, with `?with=`, of the photos they are in
- * together with that other person (§2.24.8). Fetched after the page, so a slow Immich never
+ * together with that other person (§2.24.8); or, with `?of=`, another linked person's photos for
+ * *Find in Immich* to offer as this person's picture (§2.24.2). Fetched after the page, so a slow Immich never
  * holds the page up. What it answers is decided and tested in `$lib/server/immich/routes.ts`;
  * this only wires it.
  */
@@ -17,7 +18,7 @@ export const GET: RequestHandler = async ({ locals, params, url }) => {
 		viewer,
 		params.id,
 		url.searchParams.get('cursor'),
-		url.searchParams.get('with')
+		{ with: url.searchParams.get('with'), of: url.searchParams.get('of') }
 	);
 	if (answer instanceof Response) return answer;
 	throw error(answer.status, say(locals, answer.message));

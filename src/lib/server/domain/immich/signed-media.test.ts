@@ -80,6 +80,36 @@ describe('createImmichMediaSigner', () => {
 		}
 	});
 
+	it('reads back a photo of someone else, naming whose Immich person it was listed from', async () => {
+		const clock = fixedClock(1_700_000_000_000);
+		const signer = createImmichMediaSigner({ secret: SECRET, clock });
+		const borrowed: SignableImmichMedia = {
+			...photo,
+			personId: CARL_ID,
+			heldBy: 'monica:contact:9'
+		};
+		expect(await signer.verify(await signer.sign(borrowed))).toEqual({
+			ok: true,
+			media: { ...borrowed, expiresAt: clock.now() + IMMICH_MEDIA_TTL_MS }
+		});
+	});
+
+	it('refuses a photo of someone else whose holder is not one, or that is a together photo too', async () => {
+		const clock = fixedClock(1_700_000_000_000);
+		const signer = createImmichMediaSigner({ secret: SECRET, clock });
+		const together = { contactId: 'c-cleo', personId: CARL_ID };
+		for (const odd of [
+			{ heldBy: '' },
+			{ heldBy: 'x'.repeat(129) },
+			{ heldBy: 'c-carl', together }
+		]) {
+			expect(await signer.verify(await signer.sign({ ...photo, ...odd }))).toEqual({
+				ok: false,
+				reason: 'invalid'
+			});
+		}
+	});
+
 	it('reads back a face token', async () => {
 		const clock = fixedClock(1_700_000_000_000);
 		const signer = createImmichMediaSigner({ secret: SECRET, clock });

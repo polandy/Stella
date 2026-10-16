@@ -375,8 +375,11 @@ changes over the years, a child especially: their old photos stay right here to 
 it (see *Installation*), the Photos card has a small **Photo library** menu. **Find in Immich** shows the
 faces Immich knows, searched by the person's name — change the search if Immich spells them
 differently — and a tap on the right face links the two. Each face belongs to one person: one already linked
-to someone else is greyed out and says to whom (or just *someone else*, if that person is
-private to another member). Often you need not search at all: when someone isn't linked yet
+to someone else says to whom, and tapping it shows that person's photos instead — handy for
+group photos when Immich hasn't linked or named the person you're looking for. Tap one of those
+photos, choose the square, and it becomes the picture of the person you opened the search for;
+**Back to faces** returns to the search. A face linked to someone private to another member is
+greyed out with *Linked to someone else* and does nothing. Often you need not search at all: when someone isn't linked yet
 and Immich has a face with their full name, the Photos card asks a moment after the page has
 opened — *Is this Lena? Immich has “Lena Brunner” with 1,764 photos.* — beside that face.
 **Link** links them there and then, **Choose another** opens the search, and **Ignore** says it

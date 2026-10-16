@@ -141,6 +141,79 @@ describe('useImmichPhoto', () => {
 		expect([...gone.worn, ...unlinked.worn]).toEqual([]);
 	});
 
+	/*
+	 * A photo of someone else, browsed from a taken face in *Find in Immich* (docs/02 §2.24.2):
+	 * Ella is visible and not linked; the photo was listed from Cleo's Immich person, for Ella.
+	 */
+	const fromCleoForElla = { contactId: 'c-ella', personId: CARL_ID, heldBy: 'c-cleo' };
+
+	it('takes a photo listed from another person’s Immich person as the picture of the one it was listed for', async () => {
+		const { deps, worn, preview, visible } = setup();
+		visible.add('c-ella');
+		const token = await preview(fromCleoForElla);
+		expect(
+			await useImmichPhoto(deps, viewer, { contactId: 'c-ella', token, upload: square })
+		).toEqual({ ok: true, photoId: 'photo-1' });
+		expect(worn.map((w) => [w.contactId, w.upload.takenAt])).toEqual([['c-ella', TAKEN_AT]]);
+	});
+
+	it('refuses a photo of someone else on any page but the one it was listed for', async () => {
+		const { deps, worn, preview, visible } = setup();
+		visible.add('c-ella');
+		const token = await preview(fromCleoForElla);
+		for (const contactId of ['c-cleo', 'c-bert']) {
+			expect(await useImmichPhoto(deps, viewer, { contactId, token, upload: square })).toEqual({
+				ok: false,
+				refusal: 'invalid'
+			});
+		}
+		expect(worn).toEqual([]);
+	});
+
+	it('refuses a photo of someone else once they are out of reach, unlinked or relinked, storing nothing', async () => {
+		const gone = setup();
+		gone.visible.add('c-ella');
+		const goneToken = await gone.preview(fromCleoForElla);
+		gone.visible.delete('c-cleo');
+		expect(
+			await useImmichPhoto(gone.deps, viewer, {
+				contactId: 'c-ella',
+				token: goneToken,
+				upload: square
+			})
+		).toEqual({ ok: false, refusal: 'notVisible' });
+
+		const unlinked = setup();
+		unlinked.visible.add('c-ella');
+		const unlinkedToken = await unlinked.preview(fromCleoForElla);
+		unlinked.links.delete('c-cleo');
+		expect(
+			await useImmichPhoto(unlinked.deps, viewer, {
+				contactId: 'c-ella',
+				token: unlinkedToken,
+				upload: square
+			})
+		).toEqual({ ok: false, refusal: 'notLinked' });
+
+		const relinked = setup();
+		relinked.visible.add('c-ella');
+		const relinkedToken = await relinked.preview(fromCleoForElla);
+		relinked.links.set('c-cleo', {
+			contactId: 'c-cleo',
+			immichPersonId: DORA_ID,
+			linkedBy: 'u-anna',
+			linkedAt: NOW
+		});
+		expect(
+			await useImmichPhoto(relinked.deps, viewer, {
+				contactId: 'c-ella',
+				token: relinkedToken,
+				upload: square
+			})
+		).toEqual({ ok: false, refusal: 'notLinked' });
+		expect([...gone.worn, ...unlinked.worn, ...relinked.worn]).toEqual([]);
+	});
+
 	it('stores it undated when Immich did not say when it was taken', async () => {
 		const { deps, worn, preview } = setup();
 		const token = await preview({ takenAt: undefined });

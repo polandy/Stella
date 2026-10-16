@@ -148,5 +148,11 @@ export const immich: ImmichMessages = {
 	'immich.picker.hint': 'Wähle das Gesicht, das diese Person ist.',
 	'immich.picker.linkedTo': (p) => `Mit ${p.name} verknüpft`,
 	'immich.picker.linkedElsewhere': 'Mit jemand anderem verknüpft',
-	'immich.picker.link': (p) => `${p.immichName} mit ${p.name} verknüpfen`
+	'immich.picker.link': (p) => `${p.immichName} mit ${p.name} verknüpfen`,
+	'immich.picker.browse': (p) => `Fotos von ${p.name} zeigen`,
+	'immich.picker.photosOf': (p) => `Fotos von ${p.name}`,
+	'immich.picker.photosHint': (p) =>
+		`Wähle ein Foto, auf dem ${p.name} zu sehen ist – es wird das Bild dieser Person.`,
+	'immich.picker.photosNone': (p) => `Keine Fotos von ${p.name} aus Immich zu zeigen.`,
+	'immich.picker.backToFaces': 'Zurück zu den Gesichtern'
 };

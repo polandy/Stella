@@ -1,4 +1,5 @@
 import type { MessageKey } from '../../i18n/translate';
+import type { GlimpseScope } from '../../immich/strip';
 import type { Viewer } from '../access/visibility';
 import { isServableImageType, type ImmichFailure } from '../domain/immich/gateway';
 import {
@@ -82,23 +83,42 @@ export async function answerImmichMedia(
 	});
 }
 
+/** The strip's `?with=` and `?of=`, as the request names them; at most one may be given. */
+export interface GlimpseQuery {
+	with: string | null;
+	of: string | null;
+}
+
+const OWN_PHOTOS: GlimpseQuery = { with: null, of: null };
+
+/** Whose photos a query asks for, or `invalid` for one that asks two questions at once. */
+function glimpseScope(query: GlimpseQuery): GlimpseScope | 'invalid' {
+	if (query.with !== null && query.of !== null) return 'invalid';
+	if (query.with !== null) return { with: query.with };
+	if (query.of !== null) return { of: query.of };
+	return null;
+}
+
 /**
- * `GET /contacts/{id}/immich/photos?cursor=&with=`: a page of the strip under a linked person's
- * gallery, with signed URLs — with `with`, of the photos they are in together with that other
- * person (docs/02 §2.24.8). Only for people the member can see and who are linked; a failure in
- * Immich is said in the body — the strip then quietly is not there — rather than failing the
- * request.
+ * `GET /contacts/{id}/immich/photos?cursor=&with=&of=`: a page of the strip under a linked
+ * person's gallery, with signed URLs — with `with`, of the photos they are in together with that
+ * other person (docs/02 §2.24.8); with `of`, of that other, linked person's own photos, listed
+ * for this person's page so one can become their picture (§2.24.2). Only for people the member
+ * can see and who are linked as the case needs; a failure in Immich is said in the body — the
+ * strip then quietly is not there — rather than failing the request.
  */
 export async function answerGlimpse(
 	deps: ImmichGlimpseDeps | null,
 	viewer: Viewer | null,
 	contactId: string,
 	cursor: string | null,
-	togetherWith: string | null = null
+	query: GlimpseQuery = OWN_PHOTOS
 ): Promise<Response | RouteRefusal> {
 	if (!viewer) return NOT_SIGNED_IN;
 	if (!deps) return NOT_FOUND;
-	const glimpse = await readImmichGlimpse(deps, viewer, contactId, cursor, togetherWith);
+	const scope = glimpseScope(query);
+	if (scope === 'invalid') return NOT_FOUND;
+	const glimpse = await readImmichGlimpse(deps, viewer, contactId, cursor, scope);
 	if (!glimpse) return NOT_FOUND;
 	return Response.json(glimpse, { headers: { 'Cache-Control': IMMICH_MEDIA_CACHE_CONTROL } });
 }

@@ -427,7 +427,7 @@ describe('findImmichFaces', () => {
 		expect(gateway.calls).toEqual(['searchPeople', 'searchPeople']);
 	});
 
-	it('marks a face already linked to someone, naming them only when the viewer sees them', async () => {
+	it('marks a face already linked to someone, naming them — and which contact they are — only when the viewer sees them', async () => {
 		const gateway = createFakeImmichGateway(testLibrary());
 		const { links, rows } = memoryLinks();
 		rows.set('c-carl', {
@@ -445,8 +445,13 @@ describe('findImmichFaces', () => {
 		expect(await findImmichFaces({ gateway, links }, viewer, 'example')).toEqual({
 			ok: true,
 			faces: [
-				{ id: BERT_ID, name: 'Bert Example', linkedTo: { name: 'Carl Example' } },
-				{ id: CARL_ID, name: 'Carl Example', linkedTo: { name: null } }
+				{
+					id: BERT_ID,
+					name: 'Bert Example',
+					linkedTo: { contactId: 'c-carl', name: 'Carl Example' }
+				},
+				// Out of reach: that someone holds it, and nothing about who — not even an id.
+				{ id: CARL_ID, name: 'Carl Example', linkedTo: { contactId: null, name: null } }
 			]
 		});
 	});

@@ -311,6 +311,7 @@
 		contactId={c.id}
 		name={c.displayName}
 		searchName={immichSearchName}
+		hasPhoto={c.avatarPhotoId !== null}
 		bind:open={pickerOpen}
 	/>
 {/if}

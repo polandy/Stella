@@ -1,5 +1,6 @@
 import { TranslatableError } from '../../../i18n/translatable';
 import { phrase } from '../../../i18n/phrase';
+import type { FaceHolder } from '../../../immich/face-pick';
 import { immichPersonUrl } from '../../../immich/web-link';
 import type { Visibility, Viewer } from '../../access/visibility';
 import type { Clock } from '../../clock';
@@ -276,8 +277,11 @@ export async function readLinkedPerson(
 export interface ImmichFace {
 	id: string;
 	name: string;
-	/** Already another contact's: the picker shows it, but it cannot be picked. */
-	linkedTo: { name: string | null } | null;
+	/**
+	 * Already another contact's: the picker shows it, but it cannot be linked. Which contact, and
+	 * their name, only when the viewer sees them — the picker then offers their photos.
+	 */
+	linkedTo: FaceHolder | null;
 }
 
 export type FacesOutcome =
@@ -319,7 +323,12 @@ export async function findImmichFaces(
 		ok: true,
 		faces: shown.map(({ id, name }) => {
 			const holder = holders.get(id);
-			return { id, name, linkedTo: holder ? { name: holder.name } : null };
+			if (!holder) return { id, name, linkedTo: null };
+			const linkedTo: FaceHolder =
+				holder.name === null
+					? { contactId: null, name: null }
+					: { contactId: holder.contactId, name: holder.name };
+			return { id, name, linkedTo };
 		})
 	};
 }
