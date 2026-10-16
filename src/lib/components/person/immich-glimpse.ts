@@ -1,19 +1,20 @@
-import type { ImmichGlimpse } from '$lib/immich/strip';
+import type { GlimpseScope, ImmichGlimpse } from '$lib/immich/strip';
 
 /*
- * A page of a linked person's latest photos from Immich, with signed URLs, as the Photos card
- * and the picture's chooser both ask for it (docs/02 §2.24.3, §2.24.6). Null when it
+ * A page of a linked person's latest photos from Immich, with signed URLs, as the Photos card,
+ * the picture's chooser and *Find in Immich* ask for it (docs/02 §2.24.2, §2.24.3, §2.24.6). Null when it
  * could not be had, which both take quietly: the Photos card's line already says what is wrong.
  */
 export async function fetchGlimpse(
 	contactId: string,
 	cursor: string | null,
-	/** The other person, for the photos of the two together (§2.24.8). */
-	togetherWith: string | null = null
+	/** Their photos together with someone (§2.24.8), or someone else's for their picture (§2.24.2). */
+	scope: GlimpseScope = null
 ): Promise<ImmichGlimpse | null> {
 	const params = new URLSearchParams();
 	if (cursor !== null) params.set('cursor', cursor);
-	if (togetherWith !== null) params.set('with', togetherWith);
+	if (scope !== null && 'with' in scope) params.set('with', scope.with);
+	if (scope !== null && 'of' in scope) params.set('of', scope.of);
 	const query = params.size === 0 ? '' : `?${params}`;
 	try {
 		const response = await fetch(

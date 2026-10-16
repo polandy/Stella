@@ -117,7 +117,7 @@ export function createImmichServices({
 		connection: createImmichConnection({ gateway, clock }),
 		publicUrl,
 		signer,
-		immichGlimpseDeps: { links, gateway, signer, publicUrl },
+		immichGlimpseDeps: { links, contacts, gateway, signer, publicUrl },
 		immichMediaDeps: { links, contacts, gateway, signer },
 		immichMatchingDeps: {
 			links,

@@ -160,7 +160,15 @@ export const immich = {
 	'immich.picker.linkedTo': (p: { name: string }) => `Linked to ${p.name}`,
 	'immich.picker.linkedElsewhere': 'Linked to someone else',
 	'immich.picker.link': (p: { immichName: string; name: string }) =>
-		`Link ${p.immichName} to ${p.name}`
+		`Link ${p.immichName} to ${p.name}`,
+	// A face someone else holds, opened to look through their photos (§2.24.2).
+	'immich.picker.browse': (p: { name: string }) => `Show photos of ${p.name}`,
+	'immich.picker.photosOf': (p: { name: string }) => `Photos of ${p.name}`,
+	'immich.picker.photosHint': (p: { name: string }) =>
+		`Pick a photo ${p.name} is in to make it their picture.`,
+	'immich.picker.photosNone': (p: { name: string }) =>
+		`No photos of ${p.name} to show from Immich.`,
+	'immich.picker.backToFaces': 'Back to faces'
 };
 
 /** The key set every translation of this area has to provide. */

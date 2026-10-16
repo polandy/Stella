@@ -68,7 +68,7 @@ export class PhotoCardState {
 		$effect(() => {
 			const pairWith = this.pairWith;
 			if (!this.linked || pairWith === null) return;
-			return this.pair.load(this.contactId, pairWith);
+			return this.pair.load(this.contactId, { with: pairWith });
 		});
 	}
 

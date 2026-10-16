@@ -206,6 +206,7 @@
 			{contactId}
 			{name}
 			searchName={immichSearchName}
+			hasPhoto={avatarPhotoId !== null}
 			bind:open={pickerOpen}
 			onlinked={() => (chooserOpen = true)}
 		/>

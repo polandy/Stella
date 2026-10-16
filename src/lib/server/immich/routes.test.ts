@@ -172,7 +172,13 @@ describe('answerGlimpse', () => {
 		const gateway = createFakeImmichGateway(testLibrary());
 		return {
 			gateway,
-			deps: { links: bertLinked, gateway, signer, publicUrl: 'https://immich.example.com' }
+			deps: {
+				links: bertLinked,
+				contacts: visibleContacts,
+				gateway,
+				signer,
+				publicUrl: 'https://immich.example.com'
+			}
 		};
 	}
 
@@ -203,7 +209,7 @@ describe('answerGlimpse', () => {
 
 	it('answers the photos two linked people are in together, and 404 for a pair it may not show', async () => {
 		const { deps: d, gateway } = glimpseDeps();
-		expect(await answerGlimpse(d, viewer, 'c-bert', null, 'c-carl')).toEqual({
+		expect(await answerGlimpse(d, viewer, 'c-bert', null, { with: 'c-carl', of: null })).toEqual({
 			status: 404,
 			message: 'errors.notFound'
 		});
@@ -223,11 +229,43 @@ describe('answerGlimpse', () => {
 						: null
 			}
 		};
-		const answer = await answerGlimpse(bothLinked, viewer, 'c-bert', null, 'c-carl');
+		const answer = await answerGlimpse(bothLinked, viewer, 'c-bert', null, {
+			with: 'c-carl',
+			of: null
+		});
 		if (!(answer instanceof Response)) throw new Error(`refused with ${answer.status}`);
 		expect(answer.headers.get('cache-control')).toBe(IMMICH_MEDIA_CACHE_CONTROL);
 		const body = await answer.json();
 		expect(body.photos[0].id).toBe(fakeAssetId(BERT_AND_CARL_ID, 0));
+	});
+
+	it('answers a linked person’s photos on the page of someone unlinked, for *Find in Immich*', async () => {
+		const { deps: d } = glimpseDeps();
+		const answer = await answerGlimpse(d, viewer, 'c-carl', null, { with: null, of: 'c-bert' });
+		if (!(answer instanceof Response)) throw new Error(`refused with ${answer.status}`);
+		expect(answer.headers.get('cache-control')).toBe(IMMICH_MEDIA_CACHE_CONTROL);
+		const body = await answer.json();
+		expect(body.photos[0].id).toBe(fakeAssetId(BERT_ID, 0));
+	});
+
+	it('answers 404 for someone else it may not show, or for both questions at once, without asking Immich', async () => {
+		const { deps: d, gateway } = glimpseDeps();
+		for (const [contactId, query] of [
+			// The other person is out of the member's reach.
+			['c-carl', { with: null, of: 'c-dora' }],
+			// The other person is not linked.
+			['c-bert', { with: null, of: 'c-carl' }],
+			// The page's own person is out of reach.
+			['c-dora', { with: null, of: 'c-bert' }],
+			// Together and someone else's at once is neither.
+			['c-carl', { with: 'c-bert', of: 'c-bert' }]
+		] as const) {
+			expect(await answerGlimpse(d, viewer, contactId, null, query)).toEqual({
+				status: 404,
+				message: 'errors.notFound'
+			});
+		}
+		expect(gateway.calls).toEqual([]);
 	});
 
 	it('answers 404 when this instance has no Immich', async () => {

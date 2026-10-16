@@ -1,9 +1,10 @@
-import { withPage, type GlimpsePhoto } from '$lib/immich/strip';
+import { withPage, type GlimpsePhoto, type GlimpseScope } from '$lib/immich/strip';
 import { fetchGlimpse } from './immich-glimpse';
 
 /*
  * One list of a linked person's photos from Immich, as the Photos card shows it (docs/02
- * §2.24.3, §2.24.8): their own latest, or those of them with someone else, twelve at a time.
+ * §2.24.3, §2.24.8): their own latest, or those of them with someone else, twelve at a time — or,
+ * in *Find in Immich*, someone else's for their picture (§2.24.2).
  * Asked for after the page has loaded, so a slow Immich never holds the page up; nothing of it is
  * kept on the device.
  *
@@ -19,7 +20,7 @@ export class ImmichPhotos {
 	 */
 	phase = $state<'idle' | 'loading' | 'shown' | 'none' | 'noneTogether'>('idle');
 	loadingMore = $state(false);
-	#asked: { contactId: string; togetherWith: string | null } | null = null;
+	#asked: { contactId: string; scope: GlimpseScope } | null = null;
 
 	/** Whether every photo there is has been loaded — or none ever will be. */
 	get complete(): boolean {
@@ -27,16 +28,16 @@ export class ImmichPhotos {
 	}
 
 	/**
-	 * Asks for the first page of `contactId`'s photos, or theirs with `togetherWith`. Returns
+	 * Asks for the first page of `contactId`'s photos, or those `scope` names. Returns
 	 * the cleanup for an `$effect`: an answer for a person or pair no longer asked about is dropped.
 	 */
-	load(contactId: string, togetherWith: string | null): () => void {
-		const asked = { contactId, togetherWith };
+	load(contactId: string, scope: GlimpseScope): () => void {
+		const asked = { contactId, scope };
 		this.#asked = asked;
 		this.phase = 'loading';
 		this.photos = [];
 		this.nextCursor = null;
-		void fetchGlimpse(contactId, null, togetherWith).then((page) => {
+		void fetchGlimpse(contactId, null, scope).then((page) => {
 			if (this.#asked !== asked) return;
 			if (page?.state === 'photos' && page.photos.length > 0) {
 				this.photos = page.photos;
@@ -44,7 +45,8 @@ export class ImmichPhotos {
 				this.phase = 'shown';
 			} else {
 				// Two people with no photo together are said so; anything else the line says.
-				this.phase = togetherWith !== null && page?.state === 'photos' ? 'noneTogether' : 'none';
+				this.phase =
+					scope !== null && 'with' in scope && page?.state === 'photos' ? 'noneTogether' : 'none';
 			}
 		});
 		return () => {
@@ -57,7 +59,7 @@ export class ImmichPhotos {
 		const asked = this.#asked;
 		if (asked === null || this.nextCursor === null || this.loadingMore) return;
 		this.loadingMore = true;
-		const page = await fetchGlimpse(asked.contactId, this.nextCursor, asked.togetherWith);
+		const page = await fetchGlimpse(asked.contactId, this.nextCursor, asked.scope);
 		this.loadingMore = false;
 		if (this.#asked !== asked) return;
 		if (page?.state === 'photos') {
