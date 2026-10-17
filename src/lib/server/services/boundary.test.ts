@@ -4,7 +4,7 @@ import { readFileSync } from 'node:fs';
 import { posix } from 'node:path';
 
 /*
- * AR-01's guardrail (docs/concepts/architecture-review-2026-10.md §6): the composition root is
+ * AR-01's guardrail: the composition root is
  * handed to the edge as `locals.services`, not pulled from a registry. The `eslint` rule in
  * `eslint.config.js` says the same for imports; this one runs under `bun test` and also pins
  * what each slice of AR-01 has already moved. Since AR-02 there is no exception left: the

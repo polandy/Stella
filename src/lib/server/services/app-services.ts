@@ -22,7 +22,7 @@ import { createStoryServices, type StoryServices, type StoryWiring } from './sto
  * `hooks.server.ts` hands it to every request as `locals.services`; a route reads
  * `locals.services.auth.sessionDeps` instead of importing a factory.
  *
- * Every context is grouped here (docs/concepts/architecture-review-2026-10.md, AR-01);
+ * Every context is grouped here (AR-01);
  * `./index.ts` only builds this graph once per process.
  */
 export interface AppServices {
