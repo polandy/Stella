@@ -57,12 +57,12 @@ export interface NoteRepository {
 	/** The author's note, while they may edit it (`authoredEditableBy`); else null. */
 	findOwn(author: Viewer, id: string): Promise<EditableNote | null>;
 	/**
-	 * Rewrite the title and body of a note the author may edit — checked again here, at the
-	 * moment of the write. Whether it did.
+	 * Rewrite the title, body and visibility of a note the author may edit — checked again here,
+	 * at the moment of the write. Whether it did.
 	 */
 	updateOwn(
 		author: Viewer,
-		p: { id: string; title: string | null; body: string; updatedAt: number }
+		p: { id: string; title: string | null; body: string; visibility: Visibility; updatedAt: number }
 	): Promise<boolean>;
 	/** The note, when the remover may remove it (`authoredRemovableBy`); else null. */
 	findRemovableBy(remover: Remover, id: string): Promise<RemovableRecord | null>;

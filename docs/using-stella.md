@@ -315,8 +315,10 @@ searching for that name finds the note. A shared note only offers people the who
 can see. The same picker is now in the journal too.
 
 To correct a note you wrote, press the pencil on it: the note turns into its title and text,
-ready to change, and *Save* puts it back. Pin and shared-or-private stay as they were; people
-you name with `@` follow what you write. Like removing, editing needs a connection. Someone
+ready to change, and *Save* puts it back. Below the text you can switch it between
+**Shared** and **Private** — a note you once wrote for everyone can become yours alone, and
+back. The pin stays as it was; people you name with `@` follow what you write, and a note made
+shared stops linking people only you can see. Like removing, editing needs a connection. Someone
 else's note has no pencil, even for the household's admin.
 
 To remove a note you wrote, press the cross on it. It disappears at once and *Undo* is on

@@ -129,7 +129,12 @@ describe('note mentions', () => {
 describe('updateOwn / findOwn (docs/03 §3.7: the author only, while they see it)', () => {
 	const U3 = 'user-3';
 	const viewerU3: Viewer = { id: U3, householdId: 'household-2' };
-	const edit = { title: 'New title', body: 'new body', updatedAt: 99 };
+	const edit = {
+		title: 'New title',
+		body: 'new body',
+		visibility: 'shared' as const,
+		updatedAt: 99
+	};
 
 	const row = (id: string) => db.select().from(schema.note).where(eq(schema.note.id, id)).get();
 
@@ -149,7 +154,7 @@ describe('updateOwn / findOwn (docs/03 §3.7: the author only, while they see it
 			.run();
 	});
 
-	it("rewrites the author's own note's title, body and time — and nothing else", async () => {
+	it("rewrites the author's own note's title, body, visibility and time — and nothing else", async () => {
 		await repo.insert(
 			note({
 				id: 'n',
@@ -173,7 +178,7 @@ describe('updateOwn / findOwn (docs/03 §3.7: the author only, while they see it
 			body: 'new body',
 			updatedAt: 99,
 			isPinned: 1,
-			visibility: 'private',
+			visibility: 'shared',
 			createdAt: 5,
 			createdBy: U1
 		});

@@ -53,6 +53,8 @@
 
 	let title = $state('');
 	let body = $state('');
+	// Shared or private can change afterwards too (docs/02 §2.5); the @-picker follows it.
+	let visibility = $state<'shared' | 'private'>('shared');
 	let saving = $state(false);
 	// A typed @Thomas that could be several people keeps saving off until one is picked.
 	let unclear = $state(false);
@@ -112,6 +114,7 @@
 		if (editing) return onDone();
 		title = note.title ?? '';
 		body = note.bodyForEdit ?? '';
+		visibility = note.visibility;
 		error = null;
 		if (isPrivate) veil.revealForEdit(veilId);
 		onEdit();
@@ -233,9 +236,20 @@
 				bind:unclear
 				names={note.mentionNames}
 				{candidates}
-				visibility={note.visibility}
+				{visibility}
 				class="{INPUT} w-full"
 			/>
+			<fieldset class="flex flex-wrap items-center gap-4 text-sm">
+				<legend class="sr-only">{t('common.visibility')}</legend>
+				<label class="flex items-center gap-1.5">
+					<input type="radio" name="visibility" value="shared" bind:group={visibility} />
+					{t('common.shared')}
+				</label>
+				<label class="flex items-center gap-1.5">
+					<input type="radio" name="visibility" value="private" bind:group={visibility} />
+					{t('common.private')}
+				</label>
+			</fieldset>
 			<div class="flex flex-wrap items-center gap-3">
 				<Button variant="primary" size="sm" disabled={saving || unclear}>
 					{saving ? t('common.saving') : t('common.save')}
