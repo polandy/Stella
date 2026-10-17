@@ -161,10 +161,12 @@
 				>{createdLabel(i18n, note.createdAt, Date.now(), timeZone)}</button
 			>
 			{#if dateOpen}
+				<!-- border-fg-subtle, not border-border: on bg-sunken, border nearly vanishes in
+				     dark theme (same fix as LinkedNames' underline). -->
 				<span
 					bind:this={bubble}
 					role="status"
-					class="absolute left-0 z-30 rounded-control border border-border bg-card px-2 py-1 text-xs whitespace-nowrap text-fg shadow-pop"
+					class="absolute left-0 z-30 rounded-control border border-fg-subtle bg-card px-2 py-1 text-xs whitespace-nowrap text-fg shadow-pop"
 					class:top-full={!bubbleUpward}
 					class:mt-1={!bubbleUpward}
 					class:bottom-full={bubbleUpward}
