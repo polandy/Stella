@@ -8,7 +8,7 @@
 
 	/*
 	 * A private entry's content, blurred on its author's screen until they ask for it
-	 * (docs/02 §2.10.1, docs/05 §5.2.4). While veiled the real words are not on the page: a
+	 * (docs/02 §2.10.1, docs/05 §5.7). While veiled the real words are not on the page: a
 	 * stand-in of the same shape is blurred instead, so find-in-page cannot land on them and a
 	 * screen reader hears only the button. A photo is blurred itself — there are no words to find.
 	 *

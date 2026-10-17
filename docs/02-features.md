@@ -23,7 +23,7 @@ resolves by opening the matching file below).
 - [2.7 Relationship & context explorer](features/2.7-relationship-context-explorer.md) **[M1 basic / M2 rich]** — core feature
 - [2.8 Tags](features/2.8-tags.md) **[M1]**
 - [2.9 Search](features/2.9-search.md) **[M1]**
-- [2.10 Privacy model (shared vs. private)](features/2.10-privacy-model.md) **[M1]**
+- [2.10 Privacy model (shared vs. private)](features/2.10-privacy-model.md) **[M1]** — 2.10.1 private entries veiled on screen **[M3]**
 - [2.11 Household activity feed ("What's new")](features/2.11-household-activity-feed.md) **[M2]**
 - [2.12 Personal dashboard (Home)](features/2.12-personal-dashboard.md) **[M2]**
 - [2.13 Important dates & reminders](features/2.13-important-dates-reminders.md) **[M2]**
