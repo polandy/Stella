@@ -168,8 +168,8 @@
     <span class="seg-label">Reveal</span>
     <div class="seg" id="variant">
       <button data-set="variant" data-val="a">A · Tap each entry</button>
-      <button data-set="variant" data-val="b">B · Tap, or show all (recommended)</button>
-      <button data-set="variant" data-val="c">C · Device unlock (passkey)</button>
+      <button data-set="variant" data-val="b">B · Tap, or show all (fallback without passkey)</button>
+      <button data-set="variant" data-val="c">C · Device unlock (chosen)</button>
     </div>
     <span class="seg-label">Theme</span>
     <div class="seg">
@@ -251,7 +251,7 @@ const STORY = [
 const PRIVATE_COUNT = NOTES.filter(n => n.priv).length + STORY.filter(s => s.priv).length;
 
 const params = new URLSearchParams(location.search);
-const S = { variant: params.get('variant') || 'b', theme: params.get('theme') || 'latte',
+const S = { variant: params.get('variant') || 'c', theme: params.get('theme') || 'latte',
   shown: new Set(), until: 0, fresh: null, sheet: false, pendingId: null, toast: '' };
 let toastTimer;
 

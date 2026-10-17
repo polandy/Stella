@@ -1,6 +1,6 @@
 # Concept: private entries veiled on screen
 
-Status: **proposal, waiting for the maintainer's choices (§6).** Mockup:
+Status: **decided with the maintainer on 2026-10-17 (§6); nothing built yet.** Mockup:
 [private-blur.html](private-blur.html) (variants A/B/C, Latte/Mocha, phone and desktop; URL
 params `?variant=a|b|c&theme=latte|mocha`). Once built, the rules move into docs/02 §2.10,
 docs/05 and the screen files, and this file is deleted.
@@ -27,7 +27,7 @@ docs/05 and the screen files, and this file is deleted.
   the page; a determined person at the unlocked device could still read it. That is accepted:
   the threat is a glance, not an attacker.
 
-## 3. Proposal
+## 3. The design
 
 1. **What is veiled:** the **title, text and picture** of every record that carries the
    *Private* mark: notes, moments (journal entries), touchpoints and photos. The **kind, day,
@@ -36,13 +36,16 @@ docs/05 and the screen files, and this file is deleted.
 2. **Not veiled:** a private **person's or circle's name** (you need it to find them; their
    page's private children are veiled like any other), gift rows (no visibility of their own),
    and everything shared.
-3. **Reveal: variant B (recommended).** Tapping a veil shows that one entry; a *Hide* next to
-   its mark blurs it again. The page header's lock (*3 private*) shows every private entry, on
-   every page, for **five minutes**; meanwhile it reads *Private shown · 4:59* and a tap locks
-   again. A tap's reveal lasts until you leave the page.
-   - *A* is B without the header lock: lightest, but tedious on a page with many.
-   - *C* asks for the device's unlock (WebAuthn passkey: fingerprint, face, PIN) before any
-     reveal, then shows everything for five minutes. See §5.
+3. **Reveal: device unlock (variant C), checked on the device.** Tapping a veil, or the page
+   header's lock (*3 private*), asks for the device's own unlock (a WebAuthn passkey:
+   fingerprint, face or PIN). Once confirmed, every private entry on every page is shown for
+   **five minutes**; meanwhile the lock reads *Private shown · 4:59* and a tap locks again.
+   The check stays on the device (§5), so it works offline.
+   - **Without a passkey** on this device, or in a browser that can't do one, it behaves as
+     variant B: tapping a veil shows that one entry until you leave the page (a *Hide* next
+     to its mark blurs it again), and the header lock shows all for five minutes without a
+     prompt. Settings suggests *Set up device unlock*.
+   - Not chosen: *A* (tap each entry only) and *B* as the main way.
 4. **It locks itself.** Stella going to the background (`visibilitychange` → hidden) blurs
    everything again at once, whatever was shown. Nothing stays open for whoever picks up the
    phone next.
@@ -55,49 +58,62 @@ docs/05 and the screen files, and this file is deleted.
    veiled words, the veiled text is a placeholder of the same length, and the real text is
    swapped in on reveal. The unveil animation (blur fading out, 250 ms) follows reduced motion
    (docs/05 §5.11).
-8. **Offline:** A and B are pure client state, so they work offline unchanged. Nothing is
-   stored; the five-minute window lives in memory for the tab.
-9. **A per-member switch?** Proposed: a *Blur my private entries* switch in Settings, **on by
-   default**, for a member who keeps Stella on a device nobody else sees. (This is a display
-   preference, not a default visibility, so it doesn't touch *shared by default*.)
+8. **Offline:** the veil, the window and the device check are all client-side, so they work
+   offline unchanged. The five-minute window lives in memory for the tab, never stored.
+9. **A per-member switch:** *Blur my private entries* in Settings, **on by default**, for a
+   member who keeps Stella on a device nobody else sees. (This is a display preference, not a
+   default visibility, so it doesn't touch *shared by default*.)
 
 ## 4. Shape of the build
 
-- **Pure decision** `src/lib/privacy/veil.ts`: given the record's visibility, the per-tap
-  reveals, the window's end and *now*, say whether it is veiled. Test-first, no clock of its
-  own (now is passed in).
+- **Pure decision** `src/lib/privacy/veil.ts`: given the record's visibility, the member's
+  switch, the per-tap reveals, the window's end and *now*, say whether it is veiled, and
+  whether a reveal needs the device check first. Test-first, no clock of its own (now is
+  passed in).
 - **Browser adapter** `veil.svelte.ts`: the runes state (tapped ids, window end), the
   `visibilitychange` listener, the timer that ends the window; one instance per app shell,
   read through context.
+- **Device unlock adapter** `device-unlock.svelte.ts` behind a small port (`isSetUp`,
+  `setUp`, `verify`), so the decision and the components are tested with a fake:
+  - *Set up* (Settings): `navigator.credentials.create` with a platform authenticator,
+    `userVerification: 'required'`, the member's id as the user handle; the credential id is
+    kept in `localStorage`, because being set up is a fact about this device.
+  - *Verify*: `navigator.credentials.get` with that credential, a locally generated random
+    challenge and `userVerification: 'required'`; success opens the window, a cancel or an
+    error leaves everything veiled and says so.
+  - *Forget on this device* in Settings drops the stored id (the passkey itself stays in the
+    phone's password manager, where the member may delete it).
 - **One component** `ui/Veil.svelte` wrapping the content; `NoteItem`, `StoryTimeline`, the
   journal page, `PhotoGrid`/lightbox, `MentionsSection`, the home stream and search use it.
   The header lock lives in the app shell's page header, shown only when the page holds a
   veiled entry.
-- **No data model change** for A/B, apart from the Settings switch (one boolean on the member's
-  preferences, docs/03). C adds a `passkey` table (credential id, public key, member, device
-  label) and register/verify endpoints.
-- **Slices:** (1) the veil and tap-to-reveal on the person page, journal and stream; (2) the
-  header lock and the five-minute window; (3) search, palette, photos and the lightbox; (4)
-  the Settings switch. C, if wanted, is its own later slice.
+- **Data model:** one boolean on the member's preferences for the switch (docs/03). No
+  passkey table: nothing is verified on the server.
+- **Slices:** (1) the veil with tap-to-reveal (the no-passkey behaviour) on the person page,
+  journal and stream; (2) the header lock and the five-minute window; (3) device unlock: set up
+  in Settings, the prompt before a reveal; (4) search, palette, photos and the lightbox, and
+  the Settings switch.
 
-## 5. Variant C, honestly
+## 5. Device unlock, honestly
 
-- **Needs a passkey per device**, set up in Settings, because Stella signs in through
-  Authelia and has no WebAuthn of its own yet. A device without one falls back to B.
-- **Two ways to build it, neither free.** *On-device only:* the browser prompts for the
-  fingerprint against a locally generated challenge; works offline, but the text is already in
-  the page, so it guards the screen exactly as much as B does, with more friction. *Server
-  verified:* private text is sent only after a fresh assertion, so it is real protection; then
-  a private entry can't be read offline (docs/02 §2.18) and every page with private entries
-  needs a second request.
-- So C is worth it only if the aim moves from *shoulder-surfing* to *someone holding my
-  unlocked phone*. Recommendation: build B now and keep C written down.
+- **It guards the screen, not the data.** The private text is already in the page, as in
+  every variant; the fingerprint only decides whether the blur lifts. That is what was chosen:
+  the threat is a glance or a phone handed round, not someone who takes the unlocked phone and
+  opens the developer tools.
+- **Why not server-verified:** sending private text only after a fresh assertion would be
+  real protection, but a private entry could then not be read offline (docs/02 §2.18), every
+  page with private entries would need a second request, and Stella would need a passkey
+  table and verify endpoints beside Authelia. Kept written down here in case the aim changes.
+- **WebAuthn needs a secure context:** production (https) is fine; the http preview
+  (`preview` skill) needs the browser flag or falls back to tap-to-reveal.
 
-## 6. Open for the maintainer
+## 6. Decisions
 
-1. **Reveal variant:** A, B (recommended) or C?
-2. **Titles:** blur them with the text (recommended — *The loan* already says a lot), or keep
-   them readable as a hint?
-3. **Settings switch** to turn the veil off for a member (recommended, on by default), or
-   always on?
-4. **Photos:** veil private photos too (recommended), or text only?
+Asked and answered on 2026-10-17:
+
+1. **Reveal:** device unlock (C), checked **on the device only** (§5).
+2. **Without a passkey:** behave as B (tap one, or show all for five minutes), with a hint in
+   Settings to set one up.
+3. **Titles** are veiled with the text.
+4. **Settings switch** *Blur my private entries*, on by default.
+5. **Photos** are veiled too: grid, story, lightbox.
