@@ -94,7 +94,7 @@ test.describe('the photo viewer', () => {
 			.setInputFiles([file('one.png'), file('two.png'), file('three.png')]);
 		await form.getByRole('button', { name: 'Add', exact: true }).click();
 
-		const thumbnails = page.getByTestId('photo-grid').locator('li > button');
+		const thumbnails = page.getByTestId('photo-grid').locator('li[data-source] button');
 		await expect(thumbnails).toHaveCount(3);
 		const ids = await thumbnails
 			.locator('img')

@@ -30,6 +30,9 @@ async function addCaptionedPhoto(
 	if (visibility === 'private') await form.getByText('Private', { exact: true }).click();
 	await form.getByRole('button', { name: 'Add', exact: true }).click();
 	await expect(grid.locator('img')).toHaveCount(before + 1);
+	// A private photo is blurred on its owner's screen until asked for (docs/02 §2.10.1).
+	if (visibility === 'private')
+		await grid.getByRole('button', { name: 'Private photo, hidden. Show' }).click();
 
 	// Nothing is pinned while the photos go in, so the newest one leads the grid.
 	await grid.getByRole('button').first().click();
@@ -37,6 +40,9 @@ async function addCaptionedPhoto(
 	await expect(lightbox).toContainText('No caption');
 	await lightbox.getByLabel('Caption').fill(caption);
 	await lightbox.getByRole('button', { name: 'Save' }).click();
+	// Saving reloads the page, and a reload starts blurred again.
+	if (visibility === 'private')
+		await grid.getByRole('button', { name: 'Private photo, hidden. Show' }).click();
 	await expect(grid.getByRole('img', { name: caption, exact: true })).toHaveCount(1);
 }
 
@@ -122,6 +128,11 @@ test('shows the other member the same favourites first, lets them unpin, and hid
 	await addCaptionedPhoto(page, 'Shared plain');
 	await addCaptionedPhoto(page, 'Private pin', 'private');
 	await togglePin(page, 'Shared pin', 'Pin as favourite');
+	// Pinning reloaded the page, which blurs the private photo again (docs/02 §2.10.1).
+	await page
+		.getByTestId('photo-grid')
+		.getByRole('button', { name: 'Private photo, hidden. Show' })
+		.click();
 	await togglePin(page, 'Private pin', 'Pin as favourite');
 	const order = (on: Page) => () =>
 		shownOrder(on).evaluateAll((imgs) => imgs.map((img) => img.getAttribute('alt')));

@@ -1,5 +1,5 @@
 import { expect, test, type Browser, type Locator, type Page } from '@playwright/test';
-import { addPerson, appReady, signIn } from './app';
+import { addPerson, appReady, showPrivate, signIn } from './app';
 import { DEMO_ADMIN_PASSWORD, DEMO_MEMBER_EMAIL } from '../src/lib/server/db/demo-seed';
 
 /*
@@ -41,6 +41,8 @@ async function writeNote(page: Page, body: string, visibility: 'Shared' | 'Priva
 	await page.getByRole('textbox', { name: 'Note' }).fill(body);
 	await notesCard(page).getByText(visibility, { exact: true }).click();
 	await notesCard(page).getByRole('button', { name: 'Add note' }).click();
+	// Blurred on its author's screen until asked for (docs/02 §2.10.1).
+	if (visibility === 'Private') await showPrivate(page);
 	await expect(note(page, body)).toHaveCount(1);
 }
 
@@ -104,7 +106,9 @@ test('an author removes their note, an admin a shared one of someone else’s, n
 	await nina.goto('/');
 	await expect(notices(nina)).toContainText(`removed your note on ${PERSON}`);
 	await nina.goto(personUrl);
+	await appReady(nina);
 	await expect(note(nina, NINAS)).toHaveCount(0);
+	await showPrivate(nina);
 	await expect(note(nina, NINAS_PRIVATE)).toHaveCount(1);
 
 	// An author removing their own note leaves no line.
@@ -112,7 +116,10 @@ test('an author removes their note, an admin a shared one of someone else’s, n
 	await expect(nina.getByTestId('toast-undo')).toBeVisible();
 	await leaveForHome(nina);
 	await nina.goto(personUrl);
+	await appReady(nina);
 	await expect(note(nina, NINAS_PRIVATE)).toHaveCount(0);
+	// Not merely blurred: nothing private is left on the page to show.
+	await expect(nina.getByTestId('veil-lock')).toHaveCount(0);
 	await nina.goto('/');
 	await expect(notices(nina)).toHaveCount(1);
 	await nina.context().close();

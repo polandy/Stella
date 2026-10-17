@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
-import { appReady, openPerson, signIn } from './app';
+import { appReady, openPerson, showPrivate, signIn } from './app';
 import { dayLabel, type DateLanguage } from '../src/lib/dates/labels';
 import { INTL_LOCALES } from '../src/lib/i18n/locales';
 import { createTranslator } from '../src/lib/i18n/translate';
@@ -99,6 +99,8 @@ async function writeEntry(
 		await page.getByRole('radio', { name: /Private/ }).check();
 	}
 	await page.getByRole('button', { name: 'Save moment' }).click();
+	// Blurred on its author's screen until asked for (docs/02 §2.10.1).
+	if (visibility === 'private') await showPrivate(page);
 	await expect(page.getByText(text)).toBeVisible();
 }
 

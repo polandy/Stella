@@ -100,6 +100,8 @@ test('marks a private photo in the grid and lets its owner share it', async ({ p
 	const grid = page.getByTestId('photo-grid');
 	await expect(grid.getByTitle('Private — only you can see this')).toHaveCount(1);
 
+	// Blurred on its owner's screen until asked for (docs/02 §2.10.1).
+	await grid.getByRole('button', { name: 'Private photo, hidden. Show' }).click();
 	await grid.getByRole('button').first().click();
 	const lightbox = page.getByTestId('photo-lightbox');
 	await expect(lightbox).toContainText('private');

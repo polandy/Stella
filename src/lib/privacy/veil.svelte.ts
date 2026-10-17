@@ -1,4 +1,4 @@
-import { getContext, onMount, setContext } from 'svelte';
+import { getContext, onMount, setContext, untrack } from 'svelte';
 import { SvelteMap } from 'svelte/reactivity';
 import type { DeviceUnlock } from './device-unlock';
 import {
@@ -135,13 +135,16 @@ export function provideVeil(options: {
 		get holdsAny() {
 			return onScreen.size > 0;
 		},
+		// Called from a veil's effect: reading the map there would make that effect depend on
+		// it, and its own write would run it again, for ever.
 		register(id) {
-			onScreen.set(id, (onScreen.get(id) ?? 0) + 1);
-			return () => {
-				const left = (onScreen.get(id) ?? 1) - 1;
-				if (left > 0) onScreen.set(id, left);
-				else onScreen.delete(id);
-			};
+			untrack(() => onScreen.set(id, (onScreen.get(id) ?? 0) + 1));
+			return () =>
+				untrack(() => {
+					const left = (onScreen.get(id) ?? 1) - 1;
+					if (left > 0) onScreen.set(id, left);
+					else onScreen.delete(id);
+				});
 		},
 		leftPage() {
 			state = leavePage(state);
