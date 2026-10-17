@@ -11,7 +11,7 @@ import { MERGE_LEAVES_BEHIND, MERGE_PLAN, type MergeStep } from '../domain/conta
 import * as schema from './schema';
 
 /*
- * AR-06's guardrail for merging (docs/concepts/architecture-review-2026-10.md §6): every column
+ * AR-06's guardrail for merging: every column
  * in the schema that points at a person is either moved by the merge plan or listed as left
  * behind, so a new table cannot be forgotten by a merge. Read from the Drizzle schema itself —
  * a foreign key onto `contact`, or a column named like one where SQLite could not add the key

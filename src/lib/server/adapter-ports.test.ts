@@ -4,7 +4,7 @@ import { readFileSync } from 'node:fs';
 import ts from 'typescript';
 
 /*
- * AR-08's guardrail (docs/concepts/architecture-review-2026-10.md §6): one adapter per port. A
+ * AR-08's guardrail: one adapter per port. A
  * factory declared to return `A & B` is one object with two reasons to change, and every fake
  * of it has to implement both — the way `ContactRepository & NameCandidateSource &
  * NameRepository` grew. Infrastructure under `src/lib/server/` (the domain and the access layer
