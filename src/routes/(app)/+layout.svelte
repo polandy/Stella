@@ -18,12 +18,15 @@
 	import type { MessageKey } from '$lib/i18n/translate';
 	import Logo from '$lib/components/shell/Logo.svelte';
 	import OfflineBanner from '$lib/components/pwa/OfflineBanner.svelte';
+	import VeilLock from '$lib/components/shell/VeilLock.svelte';
 	import SignOutForm from '$lib/components/shell/SignOutForm.svelte';
 	import Toast from '$lib/components/ui/Toast.svelte';
 	import { provideRemovals } from '$lib/undo/context.svelte';
 	import { navigationTurns } from '$lib/undo/navigation-turns';
 	import { providePending } from '$lib/sync/context.svelte';
 	import { providePeopleContext } from '$lib/people/context.svelte';
+	import { createDeviceUnlock } from '$lib/privacy/device-unlock.svelte';
+	import { provideVeil } from '$lib/privacy/veil.svelte';
 	import { refreshPeopleIfChanged, shellReloads } from '$lib/sync/people-freshness';
 	import { outbox } from '$lib/pwa/outbox.svelte';
 	import { reachability } from '$lib/pwa/reachability.svelte';
@@ -153,6 +156,16 @@
 	// sends them with keepalive alongside and hopes for the best.
 	const removals = provideRemovals();
 	providePeopleContext(() => data.peopleContext);
+	// The member's private entries stay blurred until asked for (docs/02 §2.10.1). A tap shows
+	// one until the page is left; a new page starts blurred again, the five-minute window aside.
+	const veil = provideVeil({
+		enabled: () => data.user.blurPrivate,
+		device: createDeviceUnlock(untrack(() => data.user)),
+		onUnlockFailed: () => removals.notify(t('privacy.unlock.failed'))
+	});
+	afterNavigate(({ from, to }) => {
+		if (from?.url.pathname !== to?.url.pathname) veil.leftPage();
+	});
 	/*
 	 * The people every picker reads come with the shell, which a client-side navigation keeps,
 	 * and so does a tab left open while someone else adds a person. After a navigation, and
@@ -425,6 +438,7 @@
 			{/if}
 
 			<div class="ml-auto flex items-center gap-2">
+				<VeilLock />
 				<!-- On a phone's Home the *Find a person* field under the bar is the search, so a second
 				     door to the same list would only have to be learned as the same (docs/05 §5.4).
 				     ⌘K still opens the palette there. -->

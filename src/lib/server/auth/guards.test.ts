@@ -17,7 +17,8 @@ const user = (role: AuthUser['role']): AuthUser => ({
 	name: 'P',
 	role,
 	locale: DEFAULT_LOCALE,
-	selfContactId: null
+	selfContactId: null,
+	blurPrivate: true
 });
 
 /** The guards read only `user` off a request's locals, and the language to refuse in. */

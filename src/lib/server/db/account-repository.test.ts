@@ -30,7 +30,8 @@ const admin: AuthUser = {
 	name: 'Andy',
 	role: 'admin',
 	locale: 'en',
-	selfContactId: null
+	selfContactId: null,
+	blurPrivate: true
 };
 
 async function seedAdmin(
@@ -118,6 +119,18 @@ describe('createDrizzleAccountRepository', () => {
 		await repo.updateSelfContact('user-1', null);
 
 		expect((await repo.findById('user-1'))?.selfContactId).toBeNull();
+	});
+
+	it('blurs private entries until the member turns it off, on either sign-in path', async () => {
+		await seedAdmin();
+		expect((await repo.findById('user-1'))?.blurPrivate).toBe(true);
+
+		await repo.updateBlurPrivate('user-1', false);
+
+		expect((await repo.findById('user-1'))?.blurPrivate).toBe(false);
+		expect((await repo.findCredentialsByEmail(admin.email))?.user.blurPrivate).toBe(false);
+		await repo.updateBlurPrivate('user-1', true);
+		expect((await repo.findById('user-1'))?.blurPrivate).toBe(true);
 	});
 
 	it('leaves the language unset until somebody picks one, so the browser still decides', async () => {

@@ -11,7 +11,8 @@ export const MEMBER: AuthUser = {
 	name: 'Member',
 	role: 'member',
 	locale: null,
-	selfContactId: null
+	selfContactId: null,
+	blurPrivate: true
 };
 
 /**

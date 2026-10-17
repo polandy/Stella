@@ -20,6 +20,7 @@ import { interactions } from './interactions';
 import { journal } from './journal';
 import { kinship } from './kinship';
 import { nav } from './nav';
+import { privacy } from './privacy';
 import { pwa } from './pwa';
 import { relationships } from './relationships';
 import { search } from './search';
@@ -46,6 +47,7 @@ export const de = {
 	...journal,
 	...kinship,
 	...nav,
+	...privacy,
 	...pwa,
 	...relationships,
 	...search,

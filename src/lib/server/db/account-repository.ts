@@ -20,6 +20,7 @@ const toAuthUser = (row: {
 	role: 'admin' | 'member';
 	localePref: Locale | null;
 	selfContactId: string | null;
+	blurPrivate: number;
 }): AuthUser => ({
 	id: row.id,
 	householdId: row.householdId,
@@ -27,7 +28,8 @@ const toAuthUser = (row: {
 	name: row.name,
 	role: row.role,
 	locale: row.localePref,
-	selfContactId: row.selfContactId
+	selfContactId: row.selfContactId,
+	blurPrivate: row.blurPrivate !== 0
 });
 
 export function createDrizzleAccountRepository(
@@ -49,6 +51,7 @@ export function createDrizzleAccountRepository(
 					role: userTable.role,
 					localePref: userTable.localePref,
 					selfContactId: userTable.selfContactId,
+					blurPrivate: userTable.blurPrivate,
 					passwordHash: userTable.passwordHash
 				})
 				.from(userTable)
@@ -67,7 +70,8 @@ export function createDrizzleAccountRepository(
 					name: userTable.name,
 					role: userTable.role,
 					localePref: userTable.localePref,
-					selfContactId: userTable.selfContactId
+					selfContactId: userTable.selfContactId,
+					blurPrivate: userTable.blurPrivate
 				})
 				.from(userTable)
 				.where(and(eq(userTable.id, id), isNull(userTable.removedAt)))
@@ -101,6 +105,13 @@ export function createDrizzleAccountRepository(
 
 		async updateSelfContact(userId: string, contactId: string | null) {
 			db.update(userTable).set({ selfContactId: contactId }).where(eq(userTable.id, userId)).run();
+		},
+
+		async updateBlurPrivate(userId: string, on: boolean) {
+			db.update(userTable)
+				.set({ blurPrivate: on ? 1 : 0 })
+				.where(eq(userTable.id, userId))
+				.run();
 		}
 	};
 }

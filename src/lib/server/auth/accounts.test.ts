@@ -2,6 +2,7 @@ import { describe, expect, it } from 'bun:test';
 import { DEFAULT_LOCALE } from '../../i18n/locales';
 import {
 	authenticateLocal,
+	changeBlurPrivate,
 	changeLocale,
 	registerFirstAdmin,
 	type AccountRepository,
@@ -22,6 +23,7 @@ function fakeRepo(seed: { user: AuthUser; passwordHash: string | null }[] = []) 
 	const users = [...seed];
 	let inserted: NewAdmin | null = null;
 	const localeWrites: { userId: string; locale: string }[] = [];
+	const blurWrites: { userId: string; on: boolean }[] = [];
 	const repo: AccountRepository = {
 		countUsers: async () => users.length,
 		findCredentialsByEmail: async (email): Promise<StoredCredentials | null> => {
@@ -36,11 +38,15 @@ function fakeRepo(seed: { user: AuthUser; passwordHash: string | null }[] = []) 
 		updateLocale: async (userId, locale) => {
 			localeWrites.push({ userId, locale });
 		},
-		updateSelfContact: async () => {}
+		updateSelfContact: async () => {},
+		updateBlurPrivate: async (userId, on) => {
+			blurWrites.push({ userId, on });
+		}
 	};
 	return {
 		repo,
 		localeWrites,
+		blurWrites,
 		get inserted() {
 			return inserted;
 		}
@@ -72,7 +78,8 @@ describe('registerFirstAdmin', () => {
 			name: 'Andy',
 			role: 'admin',
 			locale: 'de',
-			selfContactId: null
+			selfContactId: null,
+			blurPrivate: true
 		});
 		expect(f.inserted?.household).toEqual({ id: 'household-id', name: 'Pollari' });
 		expect(f.inserted?.user.passwordHash).toBe('hashed:a-good-passphrase');
@@ -88,7 +95,8 @@ describe('registerFirstAdmin', () => {
 			name: 'X',
 			role: 'admin',
 			locale: DEFAULT_LOCALE,
-			selfContactId: null
+			selfContactId: null,
+			blurPrivate: true
 		};
 		const f = fakeRepo([{ user: existing, passwordHash: 'hashed:x' }]);
 		await expect(
@@ -111,7 +119,8 @@ describe('authenticateLocal', () => {
 		name: 'Andy',
 		role: 'admin',
 		locale: DEFAULT_LOCALE,
-		selfContactId: null
+		selfContactId: null,
+		blurPrivate: true
 	};
 
 	it('returns the user for correct credentials', async () => {
@@ -151,7 +160,8 @@ describe('changeLocale', () => {
 		name: 'Andy',
 		role: 'admin',
 		locale: 'en',
-		selfContactId: null
+		selfContactId: null,
+		blurPrivate: true
 	};
 
 	it('stores a supported language and reports it back', async () => {
@@ -166,5 +176,17 @@ describe('changeLocale', () => {
 			UnsupportedLocaleError
 		);
 		expect(f.localeWrites).toEqual([]);
+	});
+});
+
+describe('changeBlurPrivate', () => {
+	it('stores the member’s choice either way and reports it back', async () => {
+		const f = fakeRepo();
+		expect(await changeBlurPrivate({ accounts: f.repo }, 'u1', false)).toBe(false);
+		expect(await changeBlurPrivate({ accounts: f.repo }, 'u1', true)).toBe(true);
+		expect(f.blurWrites).toEqual([
+			{ userId: 'u1', on: false },
+			{ userId: 'u1', on: true }
+		]);
 	});
 });

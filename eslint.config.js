@@ -40,6 +40,7 @@ const frameworkFreeFolders = [
 	'src/lib/motion/**',
 	'src/lib/stream/**',
 	'src/lib/pwa/**',
+	'src/lib/privacy/**',
 	'src/lib/commands/**',
 	'src/lib/immich/**',
 	'src/lib/graph/model/**',
@@ -61,7 +62,8 @@ const frameworkExceptions = [
 	'src/lib/pwa/keepable.ts',
 	// Browser adapters beside the pure policy (CLAUDE.md): they read `browser` from $app.
 	'src/lib/pwa/install.svelte.ts',
-	'src/lib/pwa/reachability.svelte.ts'
+	'src/lib/pwa/reachability.svelte.ts',
+	'src/lib/privacy/device-unlock.svelte.ts'
 ];
 
 // A command's refusal is already an answer; anything it throws is ours, and must reach

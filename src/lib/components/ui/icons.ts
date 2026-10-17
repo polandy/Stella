@@ -18,6 +18,8 @@ import {
 	Ellipsis,
 	Expand,
 	ExternalLink,
+	EyeOff,
+	Fingerprint,
 	Gift,
 	Handshake,
 	House,
@@ -27,6 +29,7 @@ import {
 	Link,
 	ListFilter,
 	Lock,
+	LockOpen,
 	LogOut,
 	Maximize,
 	Mail,
@@ -113,6 +116,11 @@ export const ICONS = {
 	apiToken: KeyRound,
 	// States
 	private: Lock,
+	// The private-entry veil (docs/02 §2.10.1): everything shown for a while, the device's own
+	// check before it, and blurring one entry again.
+	unveiled: LockOpen,
+	deviceUnlock: Fingerprint,
+	veilAgain: EyeOff,
 	// The network is gone, not the data (docs/02 §2.18).
 	offline: CloudOff,
 	// Adding Stella to a home screen (docs/02 §2.18) — not `import`, which is about data.
