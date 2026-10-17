@@ -63,6 +63,16 @@ docs/05 and the screen files, and this file is deleted.
 9. **A per-member switch:** *Blur my private entries* in Settings, **on by default**, for a
    member who keeps Stella on a device nobody else sees. (This is a display preference, not a
    default visibility, so it doesn't touch *shared by default*.)
+10. **Settings · Privacy**, a new section after *You* (mockup: *Screen → Settings*): the switch
+    with one line on what it does, and below it, only while the switch is on, *Device unlock on
+    this device*:
+    - *not set up*: one line (a tap shows an entry for now) and a secondary *Set up device
+      unlock*, which opens the device's own passkey prompt; done, a toast;
+    - *set up*: a green *Set up* mark, where and since when, and a ghost *Forget on this
+      device…* opening the sunken confirm step (docs/05): private entries stay blurred and a
+      tap shows them here again, the passkey stays in the phone's password manager, other
+      devices keep theirs; **Forget** beside **Keep it** (focused), Escape keeps;
+    - *browser can't*: one line saying so; nothing to press.
 
 ## 4. Shape of the build
 
