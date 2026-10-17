@@ -35,6 +35,7 @@ import {
 	Mail,
 	MessageCircle,
 	Minimize,
+	MonitorSmartphone,
 	Pencil,
 	Phone,
 	Plus,
@@ -121,6 +122,9 @@ export const ICONS = {
 	unveiled: LockOpen,
 	deviceUnlock: Fingerprint,
 	veilAgain: EyeOff,
+	// Forgetting device unlock: the passkey stays in the password manager, other devices keep theirs.
+	passkey: KeyRound,
+	otherDevices: MonitorSmartphone,
 	// The network is gone, not the data (docs/02 §2.18).
 	offline: CloudOff,
 	// Adding Stella to a home screen (docs/02 §2.18) — not `import`, which is about data.

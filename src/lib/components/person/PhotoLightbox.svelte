@@ -2,6 +2,9 @@
 	import Button from '$lib/components/ui/Button.svelte';
 	import FrameAsAvatar from '$lib/components/person/FrameAsAvatar.svelte';
 	import Icon from '$lib/components/ui/Icon.svelte';
+	import PrivateMark from '$lib/components/ui/PrivateMark.svelte';
+	import Veil from '$lib/components/ui/Veil.svelte';
+	import { useVeil } from '$lib/privacy/veil.svelte';
 	import { dayLabel } from '$lib/dates/labels';
 	import { useI18n } from '$lib/i18n/context.svelte';
 	import { photoDay } from '$lib/media/taken-at';
@@ -37,6 +40,12 @@
 	const t = i18n.t;
 	const c = $derived(data.contact);
 	const entry = $derived(photos[at]);
+	// A private photo's picture and caption stay blurred until asked for (docs/02 §2.10.1); the
+	// grid's tile and this view share the veil, so a tap on either shows both.
+	const veil = useVeil();
+	const isPrivate = $derived(entry?.source === 'stella' && entry.photo.visibility === 'private');
+	const veilId = $derived(entry?.source === 'stella' ? `photo:${entry.photo.id}` : '');
+	const hidden = $derived(isPrivate && veil.isVeiled(veilId));
 
 	/** The day the photo shows: taken when known, else (for the gallery) added. */
 	const shownDay = $derived.by(() => {
@@ -84,7 +93,7 @@
 						? t('contact.photos.sourceStella')
 						: t('contact.photos.sourceImmich')}
 				</span>
-				{#if entry.source === 'stella'}
+				{#if entry.source === 'stella' && !hidden}
 					<span class="truncate">{entry.photo.caption ?? t('contact.photos.noCaption')}</span>
 				{/if}
 				<span class="text-xs text-fg-subtle" data-testid="photo-date">{shownDay}</span>
@@ -94,9 +103,7 @@
 					</span>
 				{/if}
 				{#if entry.source === 'stella' && entry.photo.visibility === 'private'}
-					<span class="inline-flex items-center gap-1 text-xs text-fg-subtle">
-						<Icon name="private" size={11} />{t('common.privateInline')}
-					</span>
+					<PrivateMark {veilId} class="text-xs" />
 				{/if}
 			</p>
 			<div class="flex items-center gap-1">
@@ -123,12 +130,14 @@
 			</div>
 		</div>
 
-		<img
-			src={entry.source === 'stella' ? mediaUrl(entry.photo.id) : entry.photo.previewUrl}
-			{alt}
-			class="max-h-[65vh] w-full rounded-control bg-bg-sunken object-contain"
-			data-testid="lightbox-photo"
-		/>
+		<Veil id={veilId} {isPrivate} label={t('privacy.veil.photo')} photo>
+			<img
+				src={entry.source === 'stella' ? mediaUrl(entry.photo.id) : entry.photo.previewUrl}
+				{alt}
+				class="max-h-[65vh] w-full rounded-control bg-bg-sunken object-contain"
+				data-testid="lightbox-photo"
+			/>
+		</Veil>
 		{#if entry.source === 'stella' && entry.photo.cutFrom}
 			<!-- A profile picture cut from a group photo, kept as a photo of their own (docs/02 §2.14). -->
 			<a
@@ -142,41 +151,44 @@
 			</a>
 		{/if}
 
-		<div class="flex flex-wrap items-center gap-2">
-			{#if entry.source === 'stella'}
-				{#key entry.photo.id}
-					<FrameAsAvatar
-						contactId={c.id}
-						photoId={entry.photo.id}
-						isAvatar={entry.photo.isAvatar}
-						framing={entry.photo.framing}
+		<!-- The caption field shows the caption: it waits for the photo to be shown. -->
+		{#if !hidden}
+			<div class="flex flex-wrap items-center gap-2">
+				{#if entry.source === 'stella'}
+					{#key entry.photo.id}
+						<FrameAsAvatar
+							contactId={c.id}
+							photoId={entry.photo.id}
+							isAvatar={entry.photo.isAvatar}
+							framing={entry.photo.framing}
+						/>
+					{/key}
+					<GalleryPhotoActions
+						photo={entry.photo}
+						viewerId={data.viewerId}
+						name={c.displayName}
+						{onclose}
 					/>
-				{/key}
-				<GalleryPhotoActions
-					photo={entry.photo}
-					viewerId={data.viewerId}
-					name={c.displayName}
-					{onclose}
-				/>
-			{:else}
-				{#key entry.photo.id}
-					<UseImmichPhoto
-						contactId={c.id}
-						previewUrl={entry.photo.previewUrl}
-						hasPhoto={c.avatarPhotoId !== null}
-						ondone={onclose}
-					/>
-				{/key}
-				<a
-					href={entry.photo.openUrl}
-					target="_blank"
-					rel="noopener noreferrer"
-					class="ml-auto inline-flex items-center gap-1 text-sm font-medium text-link hover:underline"
-					data-testid="immich-viewer-open"
-				>
-					{t('immich.row.open')}<Icon name="openElsewhere" size={13} />
-				</a>
-			{/if}
-		</div>
+				{:else}
+					{#key entry.photo.id}
+						<UseImmichPhoto
+							contactId={c.id}
+							previewUrl={entry.photo.previewUrl}
+							hasPhoto={c.avatarPhotoId !== null}
+							ondone={onclose}
+						/>
+					{/key}
+					<a
+						href={entry.photo.openUrl}
+						target="_blank"
+						rel="noopener noreferrer"
+						class="ml-auto inline-flex items-center gap-1 text-sm font-medium text-link hover:underline"
+						data-testid="immich-viewer-open"
+					>
+						{t('immich.row.open')}<Icon name="openElsewhere" size={13} />
+					</a>
+				{/if}
+			</div>
+		{/if}
 	</LightboxFrame>
 {/if}

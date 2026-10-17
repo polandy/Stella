@@ -1,5 +1,6 @@
 <script lang="ts">
 	import Icon from '$lib/components/ui/Icon.svelte';
+	import Veil from '$lib/components/ui/Veil.svelte';
 	import { glanceTiles, photoKey } from '$lib/people/photo-card';
 	import { dayLabel } from '$lib/dates/labels';
 	import { useI18n } from '$lib/i18n/context.svelte';
@@ -91,44 +92,53 @@
 		{#each shown as entry, index (photoKey(entry))}
 			{@const day = dayOf(entry)}
 			<li class="relative {narrowHidden(index) ? 'max-sm:hidden' : ''}" data-source={entry.source}>
-				<button
-					type="button"
-					onclick={() => onopen(index)}
-					data-photo-key={photoKey(entry)}
-					class="relative block w-full overflow-hidden rounded-control focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+				<!-- A private photo stays blurred until asked for (docs/02 §2.10.1); a tap shows it, the next opens it. -->
+				<Veil
+					id="photo:{entry.source === 'stella' ? entry.photo.id : ''}"
+					isPrivate={entry.source === 'stella' && entry.photo.visibility === 'private'}
+					label={t('privacy.veil.photo')}
+					photo
+					compact
 				>
-					<img
-						src={entry.source === 'stella'
-							? thumbnailUrl(entry.photo.id)
-							: entry.photo.thumbnailUrl}
-						alt={describe(entry)}
-						class="aspect-square w-full bg-bg-sunken object-cover"
-						loading="lazy"
-					/>
-					{#if entry.source === 'stella' && entry.photo.pinnedAt !== null}
-						<!-- A star, not a tint: the pin reads without colour (docs/05 §5.10). -->
-						<span class="{BADGE} top-1 left-1 text-primary" data-testid="photo-favourite">
-							<Icon name="pinned" size={11} />
-						</span>
-						<span class="sr-only">{t('contact.photos.favourite')}</span>
-					{/if}
-					{#if entry.source === 'immich' && badges}
-						<span
-							class="pointer-events-none absolute top-1 right-1 rounded-full bg-bg/80 px-1.5 py-0.5 text-[0.625rem] font-semibold text-fg-muted"
-							data-testid="photo-immich-badge"
-						>
-							{t('contact.photos.sourceImmich')}
-						</span>
-					{/if}
-					{#if day !== null}
-						<span
-							class="pointer-events-none absolute inset-x-0 bottom-0 truncate bg-gradient-to-t from-black/65 to-transparent px-1.5 pt-3 pb-1 text-left text-[0.6875rem] font-medium text-white"
-							aria-hidden="true"
-						>
-							{day}
-						</span>
-					{/if}
-				</button>
+					<button
+						type="button"
+						onclick={() => onopen(index)}
+						data-photo-key={photoKey(entry)}
+						class="relative block w-full overflow-hidden rounded-control focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+					>
+						<img
+							src={entry.source === 'stella'
+								? thumbnailUrl(entry.photo.id)
+								: entry.photo.thumbnailUrl}
+							alt={describe(entry)}
+							class="aspect-square w-full bg-bg-sunken object-cover"
+							loading="lazy"
+						/>
+						{#if entry.source === 'stella' && entry.photo.pinnedAt !== null}
+							<!-- A star, not a tint: the pin reads without colour (docs/05 §5.10). -->
+							<span class="{BADGE} top-1 left-1 text-primary" data-testid="photo-favourite">
+								<Icon name="pinned" size={11} />
+							</span>
+							<span class="sr-only">{t('contact.photos.favourite')}</span>
+						{/if}
+						{#if entry.source === 'immich' && badges}
+							<span
+								class="pointer-events-none absolute top-1 right-1 rounded-full bg-bg/80 px-1.5 py-0.5 text-[0.625rem] font-semibold text-fg-muted"
+								data-testid="photo-immich-badge"
+							>
+								{t('contact.photos.sourceImmich')}
+							</span>
+						{/if}
+						{#if day !== null}
+							<span
+								class="pointer-events-none absolute inset-x-0 bottom-0 truncate bg-gradient-to-t from-black/65 to-transparent px-1.5 pt-3 pb-1 text-left text-[0.6875rem] font-medium text-white"
+								aria-hidden="true"
+							>
+								{day}
+							</span>
+						{/if}
+					</button>
+				</Veil>
 				{#if entry.source === 'stella' && entry.photo.visibility === 'private'}
 					<span class="{BADGE} top-1 right-1 text-fg-muted" title={t('contact.photos.privateHint')}>
 						<Icon name="private" size={11} />

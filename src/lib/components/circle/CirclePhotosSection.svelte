@@ -4,6 +4,7 @@
 	import Icon from '$lib/components/ui/Icon.svelte';
 	import KeptItem from '$lib/components/pwa/KeptItem.svelte';
 	import Section from '$lib/components/ui/Section.svelte';
+	import Veil from '$lib/components/ui/Veil.svelte';
 	import { roleKey } from '$lib/circles/role-key';
 	import type { JsonCommand } from '$lib/commands/commands';
 	import { useI18n } from '$lib/i18n/context.svelte';
@@ -163,43 +164,51 @@
 		<ul class="grid grid-cols-3 gap-1.5 sm:grid-cols-5 sm:gap-2" data-testid="circle-photo-grid">
 			{#each shown as p, index (p.id)}
 				<li class="relative">
-					<button
-						type="button"
-						data-photo-tile={p.id}
-						onclick={(event) =>
-							onopen(
-								shown.map((s) => s.id),
-								index,
-								event.currentTarget
-							)}
-						class="relative block w-full overflow-hidden rounded-control focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+					<Veil
+						id="circlePhoto:{p.id}"
+						isPrivate={p.visibility === 'private'}
+						label={t('privacy.veil.photo')}
+						photo
+						compact
 					>
-						<img
-							src={thumbnailUrl(p.id)}
-							alt={p.caption ??
-								(p.roleLabel
-									? t('circles.photos.ofRole', { name: circle.name, role: p.roleLabel })
-									: t('circles.photos.of', { name: circle.name }))}
-							class="aspect-square w-full object-cover"
-							loading="lazy"
-						/>
-						{#if p.pinnedAt !== null}
-							<!-- A star, not a tint: the pin reads without colour (docs/05 §5.10). -->
-							<span
-								class="pointer-events-none absolute top-1 left-1 rounded-full bg-bg/80 p-1 text-primary"
-							>
-								<Icon name="pinned" size={11} />
-							</span>
-							<span class="sr-only">{t('contact.photos.favourite')}</span>
-						{/if}
-						<span
-							class="pointer-events-none absolute inset-x-0 bottom-0 flex flex-col bg-gradient-to-t from-black/65 to-transparent px-1.5 pt-3 pb-1 text-left text-[0.6875rem] font-medium text-white"
-							aria-hidden="true"
+						<button
+							type="button"
+							data-photo-tile={p.id}
+							onclick={(event) =>
+								onopen(
+									shown.map((s) => s.id),
+									index,
+									event.currentTarget
+								)}
+							class="relative block w-full overflow-hidden rounded-control focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
 						>
-							{#if p.roleLabel}<span class="truncate">{p.roleLabel}</span>{/if}
-							<span class="truncate">{photoDate(p)}</span>
-						</span>
-					</button>
+							<img
+								src={thumbnailUrl(p.id)}
+								alt={p.caption ??
+									(p.roleLabel
+										? t('circles.photos.ofRole', { name: circle.name, role: p.roleLabel })
+										: t('circles.photos.of', { name: circle.name }))}
+								class="aspect-square w-full object-cover"
+								loading="lazy"
+							/>
+							{#if p.pinnedAt !== null}
+								<!-- A star, not a tint: the pin reads without colour (docs/05 §5.10). -->
+								<span
+									class="pointer-events-none absolute top-1 left-1 rounded-full bg-bg/80 p-1 text-primary"
+								>
+									<Icon name="pinned" size={11} />
+								</span>
+								<span class="sr-only">{t('contact.photos.favourite')}</span>
+							{/if}
+							<span
+								class="pointer-events-none absolute inset-x-0 bottom-0 flex flex-col bg-gradient-to-t from-black/65 to-transparent px-1.5 pt-3 pb-1 text-left text-[0.6875rem] font-medium text-white"
+								aria-hidden="true"
+							>
+								{#if p.roleLabel}<span class="truncate">{p.roleLabel}</span>{/if}
+								<span class="truncate">{photoDate(p)}</span>
+							</span>
+						</button>
+					</Veil>
 					{#if p.visibility === 'private'}
 						<span
 							class="absolute top-1 right-1 rounded-full bg-bg/80 p-1 text-fg-muted"

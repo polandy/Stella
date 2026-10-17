@@ -134,6 +134,14 @@ describe('searchNotes', () => {
 		expect(hits.find((h) => h.noteId === 'n-shared')?.contactName).toBe('Hans Müller');
 	});
 
+	it('says which hits are private, so their snippets can stay blurred', async () => {
+		const hits = await repo.searchNotes(viewerU1, toFtsQuery('lake'), 20);
+		expect(Object.fromEntries(hits.map((h) => [h.noteId, h.visibility]))).toEqual({
+			'n-priv': 'private',
+			'n-shared': 'shared'
+		});
+	});
+
 	it('hides a private note from other members', async () => {
 		const hits = await repo.searchNotes(viewerU2, toFtsQuery('lake'), 20);
 		expect(hits.map((h) => h.noteId)).toEqual(['n-shared']);
