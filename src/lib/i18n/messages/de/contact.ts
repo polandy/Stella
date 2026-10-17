@@ -270,6 +270,7 @@ export const contact: ContactMessages = {
 	'contact.notes.titleOptional': 'Titel (optional)',
 	'contact.notes.saveFailed':
 		'Änderungen konnten nicht gespeichert werden. Bitte nochmal versuchen.',
+	'contact.notes.createdOn': (p) => `Erstellt am ${p.day}`,
 
 	'contact.photos.add': 'Fotos hinzufügen',
 	'contact.photos.none': 'Noch keine Fotos.',

@@ -120,3 +120,35 @@ export function sinceLabel(
 	if (days === 1) return lang.t('common.yesterday');
 	return agoLabel(lang, days);
 }
+
+/** The calendar day an exact moment falls on, in `timeZone` — `en-CA` always writes `YYYY-MM-DD`. */
+function dayInZone(atMs: number, timeZone: string): string {
+	return new Date(atMs).toLocaleDateString('en-CA', { timeZone });
+}
+
+/**
+ * When an exact moment was, worded as a point in the past — a note's *vor 3 Tagen* — using the
+ * same today/yesterday/coarse-unit ladder as `sinceLabel`, but from two timestamps rather than
+ * two calendar days, so a note made minutes ago still reads as today in the viewer's own zone
+ * rather than the server's.
+ */
+export function createdLabel(
+	lang: DateLanguage,
+	createdAt: number,
+	now: number,
+	timeZone: string
+): string {
+	const days = Math.round(
+		(Date.parse(`${dayInZone(now, timeZone)}T00:00:00Z`) -
+			Date.parse(`${dayInZone(createdAt, timeZone)}T00:00:00Z`)) /
+			DAY_MS
+	);
+	if (days <= 0) return lang.t('common.today');
+	if (days === 1) return lang.t('common.yesterday');
+	return agoLabel(lang, days);
+}
+
+/** The exact day a moment was, named the way any day on the page is (`dayLabel`), not a guess. */
+export function createdOnLabel(lang: DateLanguage, createdAt: number, timeZone: string): string {
+	return dayLabel(lang, dayInZone(createdAt, timeZone));
+}
