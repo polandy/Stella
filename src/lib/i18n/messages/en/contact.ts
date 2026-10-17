@@ -314,6 +314,7 @@ export const contact = {
 	'contact.notes.edit': 'Edit note',
 	'contact.notes.titleOptional': 'Title (optional)',
 	'contact.notes.saveFailed': 'Could not save the changes. Try again.',
+	'contact.notes.createdOn': (p: { day: string }) => `Created ${p.day}`,
 
 	'contact.photos.add': 'Add photos',
 	'contact.photos.none': 'No photos yet.',
