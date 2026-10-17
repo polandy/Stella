@@ -5,7 +5,7 @@ import { posix } from 'node:path';
 import ts from 'typescript';
 
 /*
- * AR-06's guardrail (docs/concepts/architecture-review-2026-10.md §6): the bounded contexts
+ * AR-06's guardrail: the bounded contexts
  * under `domain/` depend on each other one way only. A cycle — `contacts` reading a port of
  * `relationships` while `relationships` reads one of `contacts` — means neither can be read or
  * changed without the other. A type-only import counts as much as a value one: it is the same
