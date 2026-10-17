@@ -297,9 +297,15 @@ the person, and that never leaves the page. Keeping the record tidy (archive, me
 #### Notes, Photos, Mentioned in
 
 - **Notes** are pinned-first. Someone else's note names its author after the title
-  (*· Nina*, `text-fg-subtle`). Its header ends with the private mark and the icon-only
-  *Remove* (`RemoveButton`, kind `note`), shown to the author and to an admin on a shared note
-  (`canRemoveAuthored`, docs/03 §3.7). Always visible, not on hover: a phone has none.
+  (*· Nina*, `text-fg-subtle`). The header ends that same subtle chain with when it was
+  written — *vor 3 Tagen*, worded by `createdLabel` — pinned and unpinned alike, in the
+  viewer's own time zone. Tapping it opens a small bubble (`shadow-pop`, dismissed like a
+  menu — outside tap, Escape) with the exact day (`createdOnLabel`), above the date rather than
+  over the note's own text — below only for a note with no room above it. Its button already
+  carries that day as its accessible name, so a screen reader needs no tap to learn it. Its header ends
+  with the private mark and the icon-only *Remove* (`RemoveButton`, kind `note`), shown to the
+  author and to an admin on a shared note (`canRemoveAuthored`, docs/03 §3.7). Always visible,
+  not on hover: a phone has none.
   Before *Remove*, the author alone has a ghost icon *Edit* (pencil, `canEditAuthored`): the
   note glides into its editor in place (`Swap`) — an optional title and the body with the
   @-picker, narrowed by the note's audience; visibility and pin stay out — and *Save* closes it

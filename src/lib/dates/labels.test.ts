@@ -1,7 +1,15 @@
 import { describe, expect, test } from 'bun:test';
 import { INTL_LOCALES } from '$lib/i18n/locales';
 import { createTranslator } from '$lib/i18n/translate';
-import { dayLabel, occasionLabel, sinceLabel, whenLabel, type DateLanguage } from './labels';
+import {
+	createdLabel,
+	createdOnLabel,
+	dayLabel,
+	occasionLabel,
+	sinceLabel,
+	whenLabel,
+	type DateLanguage
+} from './labels';
 
 /** The real catalogues, so a wording change has to be made in both places at once. */
 const en: DateLanguage = { t: createTranslator('en'), intlLocale: INTL_LOCALES.en };
@@ -79,6 +87,38 @@ describe('sinceLabel', () => {
 	});
 });
 
+const DAY_MS = 86_400_000;
+
+describe('createdLabel', () => {
+	const noon = Date.parse('2026-09-10T12:00:00Z');
+
+	test('names today and yesterday, then falls back to the coarse unit', () => {
+		expect(createdLabel(en, noon, noon, 'UTC')).toBe('today');
+		expect(createdLabel(en, noon - DAY_MS, noon, 'UTC')).toBe('yesterday');
+		expect(createdLabel(en, noon - 10 * DAY_MS, noon, 'UTC')).toBe('10 days ago');
+	});
+
+	test("reads the calendar day in the viewer's own time zone, not the runtime's", () => {
+		// 23:50 UTC on the 9th is already the 10th in Tokyo but still the 9th in Honolulu.
+		const atMs = Date.parse('2026-09-09T23:50:00Z');
+		const nowMs = Date.parse('2026-09-10T00:10:00Z');
+		expect(createdLabel(en, atMs, nowMs, 'UTC')).toBe('yesterday');
+		expect(createdLabel(en, atMs, nowMs, 'Pacific/Honolulu')).toBe('today');
+	});
+});
+
+describe('createdOnLabel', () => {
+	test('names the exact calendar day, the way any day on the page is named', () => {
+		expect(createdOnLabel(en, Date.parse('2026-09-08T10:00:00Z'), 'UTC')).toBe('8 September 2026');
+	});
+
+	test("reads the calendar day in the viewer's own time zone", () => {
+		const atMs = Date.parse('2026-09-09T23:50:00Z');
+		expect(createdOnLabel(en, atMs, 'UTC')).toBe('9 September 2026');
+		expect(createdOnLabel(en, atMs, 'Asia/Tokyo')).toBe('10 September 2026');
+	});
+});
+
 describe('in German', () => {
 	test("counts down and names the occasion in the viewer's language", () => {
 		expect(whenLabel(de, 0, '2026-09-04')).toBe('heute');
@@ -95,5 +135,11 @@ describe('in German', () => {
 
 	test('words a silence the way it is said in German', () => {
 		expect(sinceLabel(de, '2026-08-26', '2026-09-05')).toBe('vor 10 Tagen');
+	});
+
+	test('words a note creation the same way', () => {
+		const noon = Date.parse('2026-09-10T12:00:00Z');
+		expect(createdLabel(de, noon - DAY_MS, noon, 'UTC')).toBe('gestern');
+		expect(createdOnLabel(de, Date.parse('2017-09-08T10:00:00Z'), 'UTC')).toBe('8. September 2017');
 	});
 });
