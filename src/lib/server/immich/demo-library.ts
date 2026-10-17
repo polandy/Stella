@@ -61,7 +61,14 @@ export function demoImmichLibrary(): FakeImmichLibrary {
 			// person has a double last name, which makes it a maybe.
 			face('d0000000-0000-4000-8000-000000000013', 'Waltraud Vorschlag', 12, '#1e66f5'),
 			face('d0000000-0000-4000-8000-000000000014', 'Wigbert Vorschlag', 7, '#ea76cb'),
-			face('d0000000-0000-4000-8000-000000000015', 'Ortwin Vorschlag', 4, '#40a02b')
+			face('d0000000-0000-4000-8000-000000000015', 'Ortwin Vorschlag', 4, '#40a02b'),
+			// For browsing a taken face's photos in *Find in Immich* (e2e/immich-face-photos.spec.ts):
+			// faces named like nobody in the seed or another spec, held only by the people that spec
+			// adds. Gisbert has more than one page of photos, so *Show more* has something to load.
+			face('d0000000-0000-4000-8000-000000000016', 'Gisbert Bilderbogen', 20, '#8839ef'),
+			face('d0000000-0000-4000-8000-000000000017', 'Gertrud Bilderbogen', 3, '#04a5e5'),
+			face('d0000000-0000-4000-8000-000000000018', 'Konrad Schattenwurf', 2, '#d20f39'),
+			face('d0000000-0000-4000-8000-000000000019', 'Lorenz Schattenwurf', 2, '#209fb5')
 		]
 	};
 }
