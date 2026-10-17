@@ -69,6 +69,7 @@ export const noteActions = {
 		}
 		const title = form.get('title');
 		const body = form.get('body');
+		const visibility = form.get('visibility');
 		if (typeof body !== 'string') {
 			return fail(400, { noteError: say(locals, 'errors.form.checkAndRetry') });
 		}
@@ -86,7 +87,13 @@ export const noteActions = {
 						directory: locals.services.people.directory
 					},
 					{ userId: viewer.id, householdId: viewer.householdId },
-					{ id, title: typeof title === 'string' ? title : null, body }
+					{
+						id,
+						title: typeof title === 'string' ? title : null,
+						body,
+						// An older page without the choice leaves the note as it is.
+						visibility: visibility === 'private' || visibility === 'shared' ? visibility : undefined
+					}
 				)
 			);
 		} catch (err) {

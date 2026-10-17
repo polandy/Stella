@@ -1,5 +1,8 @@
 <script lang="ts">
 	import Icon from '$lib/components/ui/Icon.svelte';
+	import PrivateMark from '$lib/components/ui/PrivateMark.svelte';
+	import Veil from '$lib/components/ui/Veil.svelte';
+	import { useVeil } from '$lib/privacy/veil.svelte';
 	import StreamWhen from '$lib/components/stream/StreamWhen.svelte';
 	import type { StreamTime } from '$lib/stream/days';
 	import { useTranslate } from '$lib/i18n/context.svelte';
@@ -31,15 +34,30 @@
 	/** How many thumbnails fit beside each other before the rest is a number. */
 	const SHOWN = 4;
 	const href = $derived(`/circles/${item.circle.id}#photos`);
+
+	// Private photos stay blurred until asked for (docs/02 §2.10.1), the face beside the line too.
+	const veil = useVeil();
+	const veilId = $derived(`circlePhoto:${item.id}`);
+	const isPrivate = $derived(item.visibility === 'private');
+	const faceHidden = $derived(isPrivate && veil.isVeiled(veilId));
 </script>
 
 <a
 	{href}
-	class="block size-8 overflow-hidden rounded-md bg-bg-sunken"
+	class="grid size-8 place-items-center overflow-hidden rounded-md bg-bg-sunken text-fg-subtle"
 	tabindex="-1"
 	aria-hidden="true"
 >
-	<img src={thumbnailUrl(item.photoIds[0]!)} alt="" class="size-full object-cover" loading="lazy" />
+	{#if faceHidden}
+		<Icon name="private" size={14} />
+	{:else}
+		<img
+			src={thumbnailUrl(item.photoIds[0]!)}
+			alt=""
+			class="size-full object-cover"
+			loading="lazy"
+		/>
+	{/if}
 </a>
 <div class="min-w-0">
 	<div class="flex flex-wrap items-baseline gap-x-1.5 text-[13px] text-fg-muted">
@@ -49,30 +67,28 @@
 		{#if t('home.stream.addedPhotoToAfter', { count })}<span
 				>{t('home.stream.addedPhotoToAfter', { count })}</span
 			>{/if}
-		{#if item.visibility === 'private'}<span
-				class="inline-flex items-center gap-1 text-[11px] text-fg-subtle"
-				title={t('common.onlyYouSee')}
-				><Icon name="private" size={11} />{t('common.privateInline')}</span
-			>{/if}
+		{#if isPrivate}<PrivateMark {veilId} class="text-[11px]" />{/if}
 		<StreamWhen {time} />
 	</div>
 	{#if item.role}<p class="mt-0.5 text-xs text-fg-subtle">{item.role}</p>{/if}
-	<div class="mt-2 flex gap-1.5">
-		{#each item.photoIds.slice(0, SHOWN) as photoId (photoId)}
-			<a
-				{href}
-				class="block overflow-hidden rounded-md border border-border"
-				tabindex="-1"
-				aria-hidden="true"
-			>
-				<img src={thumbnailUrl(photoId)} alt="" loading="lazy" class="size-16 object-cover" />
-			</a>
-		{/each}
-		{#if count > SHOWN}
-			<span
-				class="grid size-16 place-items-center rounded-md bg-bg-sunken text-sm font-semibold text-fg-muted"
-				>+{count - SHOWN}</span
-			>
-		{/if}
-	</div>
+	<Veil id={veilId} {isPrivate} label={t('privacy.veil.photo')} photo class="mt-2 w-fit">
+		<div class="flex gap-1.5">
+			{#each item.photoIds.slice(0, SHOWN) as photoId (photoId)}
+				<a
+					{href}
+					class="block overflow-hidden rounded-md border border-border"
+					tabindex="-1"
+					aria-hidden="true"
+				>
+					<img src={thumbnailUrl(photoId)} alt="" loading="lazy" class="size-16 object-cover" />
+				</a>
+			{/each}
+			{#if count > SHOWN}
+				<span
+					class="grid size-16 place-items-center rounded-md bg-bg-sunken text-sm font-semibold text-fg-muted"
+					>+{count - SHOWN}</span
+				>
+			{/if}
+		</div>
+	</Veil>
 </div>

@@ -34,6 +34,8 @@ export const user = sqliteTable('user', {
 	localePref: text('locale_pref').$type<Locale>(),
 	themePref: text('theme_pref').$type<'system' | 'light' | 'dark'>().notNull().default('system'),
 	accentPref: text('accent_pref').notNull().default('mauve'),
+	// *Blur my private entries* (docs/02 §2.10.1): 1 until the member turns it off.
+	blurPrivate: integer('blur_private').notNull().default(1),
 	totpSecret: text('totp_secret'),
 	// When an admin removed this member, or null while they belong (docs/02 §2.1). The row stays:
 	// everything they wrote keeps its author, and a removed member signs nobody in.

@@ -1,7 +1,7 @@
 import type { GiftState } from '../../../gifts/gifts';
 import { foundByFormerName } from '../../../people/former-name';
 import { foundByJob } from '../../../people/job';
-import type { Viewer } from '../../access/visibility';
+import type { Viewer, Visibility } from '../../access/visibility';
 import { toFtsQuery } from './query';
 
 /*
@@ -36,6 +36,8 @@ export interface NoteHit {
 	noteId: string;
 	title: string | null;
 	snippet: string;
+	/** A private one's snippet stays blurred on its author's screen (docs/02 §2.10.1). */
+	visibility: Visibility;
 	contactId: string;
 	contactName: string;
 }

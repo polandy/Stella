@@ -10,6 +10,10 @@
 	import EmptyState from '$lib/components/ui/EmptyState.svelte';
 	import Icon from '$lib/components/ui/Icon.svelte';
 	import MentionTextarea from '$lib/components/stream/MentionTextarea.svelte';
+	import PrivateMark from '$lib/components/ui/PrivateMark.svelte';
+	import Veil from '$lib/components/ui/Veil.svelte';
+	import { placeholderFor } from '$lib/privacy/veil';
+	import { useVeil } from '$lib/privacy/veil.svelte';
 	import { asTyped } from '$lib/mentions/picks';
 	import KeptItem from '$lib/components/pwa/KeptItem.svelte';
 	import { processImage } from '$lib/media/process-image';
@@ -133,7 +137,14 @@
 	let editUnclear = $state(false);
 	let editError = $state<string | null>(null);
 
+	// A private entry's title, text and photos stay blurred until asked for (docs/02 §2.10.1).
+	const veil = useVeil();
+	const veilId = (entry: PageData['entries'][number]) => `journal:${entry.id}`;
+	const titleShown = (entry: PageData['entries'][number]) =>
+		entry.visibility !== 'private' || !veil.isVeiled(veilId(entry));
+
 	function startEdit(entry: PageData['entries'][number]) {
+		if (entry.visibility === 'private') veil.revealForEdit(veilId(entry));
 		editingId = entry.id;
 		editTitle = entry.title ?? '';
 		editBody = entry.bodyForEdit ?? '';
@@ -330,7 +341,9 @@
 					{#each day.items as entry (entry.id)}
 						<article class="rounded-app bg-card p-5 shadow-card">
 							<div class="mb-2 flex items-center gap-2">
-								{#if entry.title}<h3 class="font-medium text-fg">{entry.title}</h3>{/if}
+								{#if entry.title && titleShown(entry)}
+									<h3 class="font-medium text-fg">{entry.title}</h3>
+								{/if}
 								<!-- No kind chip here to hang the name off, so it says "by" and reads on its own. -->
 								{#if entry.author}
 									<span class="text-xs text-fg-subtle">
@@ -338,11 +351,7 @@
 									</span>
 								{/if}
 								{#if entry.visibility === 'private'}
-									<span
-										class="inline-flex items-center gap-1 rounded-full bg-primary-soft px-2 py-0.5 text-xs font-medium text-primary"
-									>
-										<Icon name="private" size={11} />{t('common.privateInline')}
-									</span>
+									<PrivateMark veilId={veilId(entry)} tone="pill" />
 								{/if}
 								<div class="ml-auto flex items-center gap-2">
 									{#if entry.mine}
@@ -416,29 +425,50 @@
 									</div>
 								</form>
 								{#snippet otherwise()}
-									<!-- server-rendered, already-safe Markdown (docs/02 §2.5) -->
-									<div class="note-body text-fg">{@html entry.bodyHtml}</div>
+									<Veil
+										id={veilId(entry)}
+										isPrivate={entry.visibility === 'private'}
+										label={t('privacy.veil.moment')}
+									>
+										{#snippet standIn()}
+											{#if entry.title}
+												<p class="mb-2 font-medium text-fg">{placeholderFor(entry.title)}</p>
+											{/if}
+											<p class="whitespace-pre-line text-fg">{placeholderFor(entry.bodyHtml)}</p>
+										{/snippet}
+										<!-- server-rendered, already-safe Markdown (docs/02 §2.5) -->
+										<div class="note-body text-fg">{@html entry.bodyHtml}</div>
+									</Veil>
 								{/snippet}
 							</Swap>
 
 							{#if entry.photos.length}
-								<div class="mt-3 flex flex-wrap gap-2">
-									{#each entry.photos as photoId (photoId)}
-										<a
-											href="/media/{photoId}"
-											target="_blank"
-											rel="noreferrer"
-											class="block overflow-hidden rounded-app border border-border"
-										>
-											<img
-												src="/media/{photoId}?thumb"
-												alt={t('journal.photoAlt', { name: c.displayName, day: day.date })}
-												loading="lazy"
-												class="h-28 w-28 object-cover transition-transform hover:scale-105"
-											/>
-										</a>
-									{/each}
-								</div>
+								<!-- The same veil as the text: one tap shows both. -->
+								<Veil
+									id={veilId(entry)}
+									isPrivate={entry.visibility === 'private'}
+									label={t('privacy.veil.photo')}
+									photo
+									class="mt-3 w-fit"
+								>
+									<div class="flex flex-wrap gap-2">
+										{#each entry.photos as photoId (photoId)}
+											<a
+												href="/media/{photoId}"
+												target="_blank"
+												rel="noreferrer"
+												class="block overflow-hidden rounded-app border border-border"
+											>
+												<img
+													src="/media/{photoId}?thumb"
+													alt={t('journal.photoAlt', { name: c.displayName, day: day.date })}
+													loading="lazy"
+													class="h-28 w-28 object-cover transition-transform hover:scale-105"
+												/>
+											</a>
+										{/each}
+									</div>
+								</Veil>
 							{/if}
 						</article>
 					{/each}

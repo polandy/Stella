@@ -297,3 +297,15 @@ export function settleOpenedForm(
 	}
 	if (form) scrollToShow(form, 'nearest');
 }
+
+/**
+ * A veiled private entry shown (docs/02 §2.10.1): its blur clears rather than the text popping
+ * in over the stand-in. With reduced motion it is simply there.
+ */
+export function unveil(_node: Element): TransitionConfig {
+	return {
+		duration: fadeMs(prefersReducedMotion.current),
+		easing: standardEasing,
+		css: (t) => `filter: blur(${((1 - t) * 7).toFixed(2)}px)`
+	};
+}

@@ -11,6 +11,8 @@
 	import PersonFinder from '$lib/components/people/PersonFinder.svelte';
 	import StreamNotice from '$lib/components/stream/StreamNotice.svelte';
 	import StreamCirclePhoto from '$lib/components/stream/StreamCirclePhoto.svelte';
+	import PrivateMark from '$lib/components/ui/PrivateMark.svelte';
+	import Veil from '$lib/components/ui/Veil.svelte';
 	import { asTyped, newPeopleAsCandidates } from '$lib/mentions/picks';
 	import { dayLabel as calendarDayLabel } from '$lib/dates/labels';
 	import { streamDays, streamTime } from '$lib/stream/days';
@@ -483,37 +485,55 @@
 													class="font-medium text-fg hover:underline">{item.anchor.name}</a
 												>{t('home.stream.wroteInJournal')}</span
 											>
-											{#if item.visibility === 'private'}<span
-													class="inline-flex items-center gap-1 text-[11px] text-fg-subtle"
-													title={t('common.onlyYouSee')}
-													><Icon name="private" size={11} />{t('common.privateInline')}</span
-												>{/if}
+											{#if item.visibility === 'private'}<PrivateMark
+													veilId="journal:{item.id}"
+													class="text-[11px]"
+												/>{/if}
 											<StreamWhen time={stream.when(item.at)} />
 										</div>
 										<!-- A full-width stream would run a line past 1000 px; ~72 characters
 										     keep it readable. -->
-										<div class="note-body mt-1 max-w-[72ch] text-fg">{@html item.bodyHtml}</div>
+										<!-- A private moment's words and photos stay blurred until asked for
+										     (docs/02 §2.10.1); one veil id, so a tap shows both. -->
+										<Veil
+											id="journal:{item.id}"
+											isPrivate={item.visibility === 'private'}
+											label={t('privacy.veil.moment')}
+											text={item.bodyHtml}
+											class="mt-1 max-w-[72ch]"
+											textClass="text-fg"
+										>
+											<div class="note-body text-fg">{@html item.bodyHtml}</div>
+										</Veil>
 										{#if item.photoIds.length}
-											<div class="mt-2 flex gap-1.5">
-												{#each item.photoIds as photoId, index (photoId)}
-													<a
-														href="/media/{photoId}"
-														target="_blank"
-														rel="noreferrer"
-														class="block overflow-hidden rounded-md border border-border"
-													>
-														<img
-															src="/media/{photoId}?thumb"
-															alt={t('components.photo.open', {
-																n: index + 1,
-																count: item.photoIds.length
-															})}
-															loading="lazy"
-															class="size-16 object-cover"
-														/>
-													</a>
-												{/each}
-											</div>
+											<Veil
+												id="journal:{item.id}"
+												isPrivate={item.visibility === 'private'}
+												label={t('privacy.veil.photo')}
+												photo
+												class="mt-2 w-fit"
+											>
+												<div class="flex gap-1.5">
+													{#each item.photoIds as photoId, index (photoId)}
+														<a
+															href="/media/{photoId}"
+															target="_blank"
+															rel="noreferrer"
+															class="block overflow-hidden rounded-md border border-border"
+														>
+															<img
+																src="/media/{photoId}?thumb"
+																alt={t('components.photo.open', {
+																	n: index + 1,
+																	count: item.photoIds.length
+																})}
+																loading="lazy"
+																class="size-16 object-cover"
+															/>
+														</a>
+													{/each}
+												</div>
+											</Veil>
 										{/if}
 										<!-- The people a moment mentions are chips in its body already; only an
 										     interaction, whose participants the text does not name, lists them. -->
@@ -536,11 +556,7 @@
 												class="rounded bg-success/16 px-1.5 text-[10px] font-semibold tracking-wide text-fg uppercase"
 												>{t('home.stream.newPerson')}</span
 											>
-											{#if item.visibility === 'private'}<span
-													class="inline-flex items-center gap-1 text-[11px] text-fg-subtle"
-													title={t('common.onlyYouSee')}
-													><Icon name="private" size={11} />{t('common.privateInline')}</span
-												>{/if}
+											{#if item.visibility === 'private'}<PrivateMark class="text-[11px]" />{/if}
 											<StreamWhen time={stream.when(item.at)} />
 										</div>
 										{#if item.description}<p class="mt-0.5 text-sm text-fg-muted">
@@ -567,14 +583,24 @@
 											>
 											{#if t('home.stream.loggedAfter')}<span>{t('home.stream.loggedAfter')}</span
 												>{/if}
-											{#if item.visibility === 'private'}<span
-													class="inline-flex items-center gap-1 text-[11px] text-fg-subtle"
-													title={t('common.onlyYouSee')}
-													><Icon name="private" size={11} />{t('common.privateInline')}</span
-												>{/if}
+											{#if item.visibility === 'private'}<PrivateMark
+													veilId="interaction:{item.id}"
+													class="text-[11px]"
+												/>{/if}
 											<StreamWhen time={stream.when(item.at)} />
 										</div>
-										{#if item.title}<p class="mt-0.5 text-sm text-fg">{item.title}</p>{/if}
+										{#if item.title}
+											<Veil
+												id="interaction:{item.id}"
+												isPrivate={item.visibility === 'private'}
+												label={t('privacy.veil.interaction')}
+												text={item.title}
+												class="mt-0.5"
+												textClass="text-sm text-fg"
+											>
+												<p class="text-sm text-fg">{item.title}</p>
+											</Veil>
+										{/if}
 										{#if item.participants.length}
 											<div class="mt-1.5 flex flex-wrap gap-1.5">
 												{#each item.participants as m (m.id)}

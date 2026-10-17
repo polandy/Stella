@@ -107,6 +107,28 @@ in the stream and on other people's pages.
 Mentioning someone never widens access. A shared moment can only mention people the
 household can already see.
 
+### Private entries stay blurred on your screen
+
+Nobody else can see your private entries, but someone looking over your shoulder could. So
+the title, text and photo of your private notes, moments, touchpoints and photos are blurred
+until you ask for them. What kind of entry it is, its day and its *Private* mark stay readable.
+
+- **Tap the blur** to show that one entry until you leave the page; *Hide* beside its mark
+  blurs it again.
+- **The lock in the top bar** (*3 private*) shows everything for five minutes, then it blurs
+  itself again. Tap it while it counts down to blur everything at once.
+- **Switching away** from Stella — another app, the phone locked, another tab — blurs
+  everything straight away.
+- **Editing** a private entry shows it; you are writing it anyway.
+- **Search** still finds your private notes; their snippet is blurred.
+
+**Device unlock.** In **Settings → Privacy** you can set up device unlock on each phone or
+computer: showing private entries then asks for your fingerprint, face or PIN first, and shows
+them all for five minutes. It is a passkey kept on that device; *Forget on this device…* undoes
+it there. A browser that can't use a passkey (or Stella opened over plain http) uses the tap.
+
+Don't want the blur at all? Turn off *Blur my private entries* in **Settings → Privacy**.
+
 ### "Link these two?"
 
 When a moment brings two people together for the first time, Stella asks afterwards
@@ -293,8 +315,10 @@ searching for that name finds the note. A shared note only offers people the who
 can see. The same picker is now in the journal too.
 
 To correct a note you wrote, press the pencil on it: the note turns into its title and text,
-ready to change, and *Save* puts it back. Pin and shared-or-private stay as they were; people
-you name with `@` follow what you write. Like removing, editing needs a connection. Someone
+ready to change, and *Save* puts it back. Below the text you can switch it between
+**Shared** and **Private** — a note you once wrote for everyone can become yours alone, and
+back. The pin stays as it was; people you name with `@` follow what you write, and a note made
+shared stops linking people only you can see. Like removing, editing needs a connection. Someone
 else's note has no pencil, even for the household's admin.
 
 To remove a note you wrote, press the cross on it. It disappears at once and *Undo* is on
@@ -944,6 +968,8 @@ no per-person permission matrix to maintain. Anything can be made private, and p
 means only its author — never "hidden but discoverable". People, moments, notes and photos
 each carry their own setting, and the rule is enforced in one place in the code rather
 than screen by screen, so there is no corner of the app where it silently doesn't apply.
+On your own screen private entries are blurred until you show them (see *Private entries stay
+blurred on your screen*).
 
 ## Which of these people is you
 

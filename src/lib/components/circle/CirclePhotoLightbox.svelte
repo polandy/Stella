@@ -3,6 +3,9 @@
 	import Button from '$lib/components/ui/Button.svelte';
 	import FormError from '$lib/components/ui/FormError.svelte';
 	import Icon from '$lib/components/ui/Icon.svelte';
+	import PrivateMark from '$lib/components/ui/PrivateMark.svelte';
+	import Veil from '$lib/components/ui/Veil.svelte';
+	import { useVeil } from '$lib/privacy/veil.svelte';
 	import RemoveButton from '$lib/components/ui/RemoveButton.svelte';
 	import type { CandidatePerson } from '$lib/circles/cut-candidates';
 	import { useI18n } from '$lib/i18n/context.svelte';
@@ -53,6 +56,11 @@
 
 	const i18n = useI18n();
 	const t = i18n.t;
+	// A private photo and its caption stay blurred until asked for (docs/02 §2.10.1), shared
+	// with the grid's tile.
+	const veil = useVeil();
+	const veilId = $derived(`circlePhoto:${photo.id}`);
+	const hidden = $derived(photo.visibility === 'private' && veil.isVeiled(veilId));
 	const mine = $derived(photo.createdBy === viewerId);
 	// Removing or making private a photo people wear asks first (concept §5.4); the cuts are
 	// turned into their own photos either way, so the question is about knowing, not losing.
@@ -129,11 +137,18 @@
 			</div>
 		</div>
 
-		<img
-			src={viewUrl(photo.id)}
-			alt={photo.caption ?? t('circles.photos.of', { name: circleName })}
-			class="max-h-[60vh] w-full rounded-control bg-bg-sunken object-contain"
-		/>
+		<Veil
+			id={veilId}
+			isPrivate={photo.visibility === 'private'}
+			label={t('privacy.veil.photo')}
+			photo
+		>
+			<img
+				src={viewUrl(photo.id)}
+				alt={photo.caption ?? t('circles.photos.of', { name: circleName })}
+				class="max-h-[60vh] w-full rounded-control bg-bg-sunken object-contain"
+			/>
+		</Veil>
 
 		<p class="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-fg-subtle">
 			{#if photo.takenAt !== null}
@@ -151,30 +166,31 @@
 				</span>
 			{/if}
 			{#if photo.visibility === 'private'}
-				<span class="inline-flex items-center gap-1"
-					><Icon name="private" size={11} />{t('common.privateInline')}</span
-				>
+				<PrivateMark {veilId} />
 			{/if}
 		</p>
 
 		<FormError message={error} />
 
-		<form
-			method="POST"
-			action="?/captionPhoto"
-			use:enhance={keepOpen}
-			class="flex items-center gap-2"
-		>
-			<input type="hidden" name="photoId" value={photo.id} />
-			<input
-				name="caption"
-				value={photo.caption ?? ''}
-				placeholder={t('contact.photos.captionPlaceholder')}
-				aria-label={t('contact.photos.caption')}
-				class="min-w-0 flex-1 {INPUT}"
-			/>
-			<Button variant="secondary" size="sm">{t('common.save')}</Button>
-		</form>
+		<!-- The caption field shows the caption: it waits for the photo to be shown. -->
+		{#if !hidden}
+			<form
+				method="POST"
+				action="?/captionPhoto"
+				use:enhance={keepOpen}
+				class="flex items-center gap-2"
+			>
+				<input type="hidden" name="photoId" value={photo.id} />
+				<input
+					name="caption"
+					value={photo.caption ?? ''}
+					placeholder={t('contact.photos.captionPlaceholder')}
+					aria-label={t('contact.photos.caption')}
+					class="min-w-0 flex-1 {INPUT}"
+				/>
+				<Button variant="secondary" size="sm">{t('common.save')}</Button>
+			</form>
+		{/if}
 
 		<div class="flex flex-wrap items-center gap-2">
 			<form

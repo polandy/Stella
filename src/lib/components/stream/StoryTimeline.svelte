@@ -4,7 +4,9 @@
 	import Button from '$lib/components/ui/Button.svelte';
 	import Icon from '$lib/components/ui/Icon.svelte';
 	import InteractionEditor from '$lib/components/person/InteractionEditor.svelte';
+	import PrivateMark from '$lib/components/ui/PrivateMark.svelte';
 	import Swap from '$lib/components/ui/Swap.svelte';
+	import Veil from '$lib/components/ui/Veil.svelte';
 	import { contactSectionPath } from '$lib/people/sections';
 	import { dayLabel } from '$lib/dates/labels';
 	import { occasionLabel } from '$lib/gifts/labels';
@@ -13,6 +15,8 @@
 	import { groupStoryByDay } from '$lib/story/grouping';
 	import type { SelectablePerson } from '$lib/people/select';
 	import type { StoryCursorView, StoryItemView, StoryPageView } from '$lib/story/item';
+	import { placeholderFor } from '$lib/privacy/veil';
+	import { useVeil } from '$lib/privacy/veil.svelte';
 	import { useRemovals } from '$lib/undo/context.svelte';
 	import { removalKey as buildKey } from '$lib/undo/keys';
 	import { removeThroughAction } from '$lib/undo/deferred-removal';
@@ -84,6 +88,20 @@
 	// One touchpoint is corrected at a time, in its place (docs/02 §2.6).
 	let editingId = $state<string | null>(null);
 
+	// A private item's words and photos stay blurred until asked for (docs/02 §2.10.1); its
+	// kind, author and day stay readable, so the story still reads in order.
+	const veil = useVeil();
+	const veilId = (item: StoryItemView) => `${item.kind}:${item.id}`;
+
+	function toggleEditor(item: StoryItemView) {
+		if (editingId === item.id) {
+			editingId = null;
+			return;
+		}
+		if (item.visibility === 'private') veil.revealForEdit(veilId(item));
+		editingId = item.id;
+	}
+
 	/** The form action that removes an item, by what kind of thing it is. */
 	const removeAction = (item: StoryItemView) =>
 		item.kind === 'journal' ? '?/removeJournalEntry' : '?/removeInteraction';
@@ -149,12 +167,7 @@
 								{/if}
 								{#if item.author}<span class="text-fg-subtle">· {item.author}</span>{/if}
 								{#if item.visibility === 'private'}
-									<span
-										class="inline-flex items-center gap-1 text-fg-subtle"
-										title={t('common.onlyYouSee')}
-									>
-										<Icon name="private" size={11} />{t('common.privateInline')}
-									</span>
+									<PrivateMark veilId={item.kind === 'gift' ? undefined : veilId(item)} />
 								{/if}
 								<!-- A gift is changed and removed on the Gifts card, where it lives. -->
 								{#if (item.kind === 'interaction' && item.editable) || item.removable}
@@ -176,7 +189,7 @@
 												label={t('story.editInteraction')}
 												title={t('story.editInteraction')}
 												aria-expanded={editingId === item.id}
-												onclick={() => (editingId = editingId === item.id ? null : item.id)}
+												onclick={() => toggleEditor(item)}
 											/>
 										{/if}
 										{#if item.removable}
@@ -201,33 +214,54 @@
 							</div>
 
 							{#if item.kind === 'journal'}
-								{#if item.title}
-									<h4 class="mt-1 font-semibold text-fg">{item.title}</h4>
-								{/if}
-								<!-- server-rendered, already-safe Markdown (docs/02 §2.5) -->
-								<div class="note-body mt-0.5 max-w-[65ch] text-fg">{@html item.bodyHtml}</div>
-								{#if item.photos.length}
-									<div class="mt-3 flex flex-wrap gap-2">
-										{#each item.photos as photoId, index (photoId)}
-											<a
-												href="/media/{photoId}"
-												target="_blank"
-												rel="noreferrer"
-												class="block overflow-hidden rounded-control"
-											>
-												<img
-													src="/media/{photoId}?thumb"
-													alt={t('components.photo.open', {
-														n: index + 1,
-														count: item.photos.length
-													})}
-													loading="lazy"
-													class="size-20 object-cover"
-												/>
-											</a>
-										{/each}
-									</div>
-								{/if}
+								<Veil
+									id={veilId(item)}
+									isPrivate={item.visibility === 'private'}
+									label={t('privacy.veil.moment')}
+								>
+									{#snippet standIn()}
+										{#if item.title}
+											<p class="mt-1 font-semibold text-fg">{placeholderFor(item.title)}</p>
+										{/if}
+										<p class="mt-0.5 max-w-[65ch] whitespace-pre-line text-fg">
+											{placeholderFor(item.bodyHtml)}
+										</p>
+										{#if item.photos.length}
+											<div class="mt-3 flex flex-wrap gap-2">
+												{#each item.photos as photoId (photoId)}
+													<span class="size-20 rounded-control bg-fg-subtle/40"></span>
+												{/each}
+											</div>
+										{/if}
+									{/snippet}
+									{#if item.title}
+										<h4 class="mt-1 font-semibold text-fg">{item.title}</h4>
+									{/if}
+									<!-- server-rendered, already-safe Markdown (docs/02 §2.5) -->
+									<div class="note-body mt-0.5 max-w-[65ch] text-fg">{@html item.bodyHtml}</div>
+									{#if item.photos.length}
+										<div class="mt-3 flex flex-wrap gap-2">
+											{#each item.photos as photoId, index (photoId)}
+												<a
+													href="/media/{photoId}"
+													target="_blank"
+													rel="noreferrer"
+													class="block overflow-hidden rounded-control"
+												>
+													<img
+														src="/media/{photoId}?thumb"
+														alt={t('components.photo.open', {
+															n: index + 1,
+															count: item.photos.length
+														})}
+														loading="lazy"
+														class="size-20 object-cover"
+													/>
+												</a>
+											{/each}
+										</div>
+									{/if}
+								</Veil>
 							{:else if item.kind === 'gift'}
 								<!-- Links to the card the gift lives on, where it is changed. -->
 								<a
@@ -247,12 +281,29 @@
 										onDone={() => (editingId = null)}
 									/>
 									{#snippet otherwise()}
-										{#if item.title}<p class="mt-0.5 font-medium text-fg">{item.title}</p>{/if}
-										{#if item.description}
-											<p class="mt-1 text-sm whitespace-pre-line text-fg-muted">
-												{item.description}
-											</p>
-										{/if}
+										<Veil
+											id={veilId(item)}
+											isPrivate={item.visibility === 'private' &&
+												Boolean(item.title || item.description)}
+											label={t('privacy.veil.interaction')}
+										>
+											{#snippet standIn()}
+												{#if item.title}
+													<p class="mt-0.5 font-medium text-fg">{placeholderFor(item.title)}</p>
+												{/if}
+												{#if item.description}
+													<p class="mt-1 text-sm whitespace-pre-line text-fg-muted">
+														{placeholderFor(item.description)}
+													</p>
+												{/if}
+											{/snippet}
+											{#if item.title}<p class="mt-0.5 font-medium text-fg">{item.title}</p>{/if}
+											{#if item.description}
+												<p class="mt-1 text-sm whitespace-pre-line text-fg-muted">
+													{item.description}
+												</p>
+											{/if}
+										</Veil>
 										{#if item.participants.length}
 											<div class="mt-2 flex flex-wrap gap-1.5">
 												{#each item.participants as person (person.contactId)}

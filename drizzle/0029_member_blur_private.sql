@@ -1,0 +1,1 @@
+ALTER TABLE `user` ADD `blur_private` integer DEFAULT 1 NOT NULL;

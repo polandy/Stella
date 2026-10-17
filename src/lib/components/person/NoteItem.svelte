@@ -4,12 +4,16 @@
 	import FormError from '$lib/components/ui/FormError.svelte';
 	import Icon from '$lib/components/ui/Icon.svelte';
 	import MentionTextarea from '$lib/components/stream/MentionTextarea.svelte';
+	import PrivateMark from '$lib/components/ui/PrivateMark.svelte';
 	import RemoveButton from '$lib/components/ui/RemoveButton.svelte';
 	import Swap from '$lib/components/ui/Swap.svelte';
+	import Veil from '$lib/components/ui/Veil.svelte';
 	import { deserialize } from '$app/forms';
 	import { invalidateAll } from '$app/navigation';
 	import { createdLabel, createdOnLabel } from '$lib/dates/labels';
 	import { useI18n } from '$lib/i18n/context.svelte';
+	import { placeholderFor } from '$lib/privacy/veil';
+	import { useVeil } from '$lib/privacy/veil.svelte';
 	import { useRemovals } from '$lib/undo/context.svelte';
 	import { menuShift, nearMiss } from '$lib/ui/menu';
 	import { INPUT } from './inputs';
@@ -38,10 +42,19 @@
 	const i18n = useI18n();
 	const t = i18n.t;
 	const removals = useRemovals();
+	const veil = useVeil();
 	const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+
+	// A private note's title and text stay blurred until asked for (docs/02 §2.10.1); while
+	// they are, the title moves under the veil with the text instead of sitting in the line.
+	const isPrivate = $derived(note.visibility === 'private');
+	const veilId = $derived(`note:${note.id}`);
+	const shownTitle = $derived(isPrivate && veil.isVeiled(veilId) ? null : note.title);
 
 	let title = $state('');
 	let body = $state('');
+	// Shared or private can change afterwards too (docs/02 §2.5); the @-picker follows it.
+	let visibility = $state<'shared' | 'private'>('shared');
 	let saving = $state(false);
 	// A typed @Thomas that could be several people keeps saving off until one is picked.
 	let unclear = $state(false);
@@ -101,7 +114,9 @@
 		if (editing) return onDone();
 		title = note.title ?? '';
 		body = note.bodyForEdit ?? '';
+		visibility = note.visibility;
 		error = null;
+		if (isPrivate) veil.revealForEdit(veilId);
 		onEdit();
 	}
 
@@ -143,12 +158,12 @@
 				<Icon name="pinned" size={12} />{t('contact.notes.pinned')}
 			</span>
 		{/if}
-		{#if note.title}<span class="font-medium text-fg">{note.title}</span>{/if}
+		{#if shownTitle}<span class="font-medium text-fg">{shownTitle}</span>{/if}
 		{#if note.author}
-			<span class="text-xs text-fg-subtle">{note.title ? `· ${note.author}` : note.author}</span>
+			<span class="text-xs text-fg-subtle">{shownTitle ? `· ${note.author}` : note.author}</span>
 		{/if}
 		<span class="relative text-xs text-fg-subtle">
-			{note.title || note.author ? '· ' : ''}<button
+			{shownTitle || note.author ? '· ' : ''}<button
 				bind:this={dateBtn}
 				type="button"
 				aria-expanded={dateOpen}
@@ -177,11 +192,7 @@
 			{/if}
 		</span>
 		<span class="ml-auto inline-flex items-center gap-2">
-			{#if note.visibility === 'private'}
-				<span class="inline-flex items-center gap-1 text-xs text-fg-subtle">
-					<Icon name="private" size={11} />{t('common.privateInline')}
-				</span>
-			{/if}
+			{#if isPrivate}<PrivateMark {veilId} class="text-xs" />{/if}
 			<!-- Its author's alone (docs/03 §3.7). Online only. -->
 			{#if note.editable}
 				<Button
@@ -225,9 +236,20 @@
 				bind:unclear
 				names={note.mentionNames}
 				{candidates}
-				visibility={note.visibility}
+				{visibility}
 				class="{INPUT} w-full"
 			/>
+			<fieldset class="flex flex-wrap items-center gap-4 text-sm">
+				<legend class="sr-only">{t('common.visibility')}</legend>
+				<label class="flex items-center gap-1.5">
+					<input type="radio" name="visibility" value="shared" bind:group={visibility} />
+					{t('common.shared')}
+				</label>
+				<label class="flex items-center gap-1.5">
+					<input type="radio" name="visibility" value="private" bind:group={visibility} />
+					{t('common.private')}
+				</label>
+			</fieldset>
 			<div class="flex flex-wrap items-center gap-3">
 				<Button variant="primary" size="sm" disabled={saving || unclear}>
 					{saving ? t('common.saving') : t('common.save')}
@@ -238,8 +260,14 @@
 			</div>
 		</form>
 		{#snippet otherwise()}
-			<!-- server-rendered, already-safe Markdown (docs/02 §2.5) -->
-			<div class="note-body text-fg">{@html note.bodyHtml}</div>
+			<Veil id={veilId} {isPrivate} label={t('privacy.veil.note')}>
+				{#snippet standIn()}
+					{#if note.title}<p class="font-medium text-fg">{placeholderFor(note.title)}</p>{/if}
+					<p class="whitespace-pre-line text-fg">{placeholderFor(note.bodyHtml)}</p>
+				{/snippet}
+				<!-- server-rendered, already-safe Markdown (docs/02 §2.5) -->
+				<div class="note-body text-fg">{@html note.bodyHtml}</div>
+			</Veil>
 		{/snippet}
 	</Swap>
 </li>

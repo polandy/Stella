@@ -71,8 +71,11 @@ test('keeps a private moment marked as private', async ({ page }) => {
 	await composerSave(page).click();
 
 	const moment = page.locator('article').first();
-	await expect(moment).toContainText('about the surprise party');
 	await expect(moment).toContainText('private');
+	// Blurred on its author's screen, the words not on the page, until asked for (§2.10.1).
+	await expect(moment).not.toContainText('about the surprise party');
+	await moment.getByRole('button', { name: 'Private moment, hidden. Show' }).click();
+	await expect(moment).toContainText('about the surprise party');
 });
 
 test('refuses to save a moment that mentions nobody', async ({ page }) => {

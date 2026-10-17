@@ -5,7 +5,7 @@ import {
 	authoredRemovableBy,
 	childRecordVisibleTo
 } from '../access/query-scoping';
-import type { Remover, Viewer } from '../access/visibility';
+import type { Remover, Viewer, Visibility } from '../access/visibility';
 import { activityEntry, type ActivityOf } from '../domain/activity/activity';
 import type { NewNote, NoteRepository } from '../domain/notes/notes';
 import type * as schema from './schema';
@@ -100,7 +100,13 @@ export function createDrizzleNoteRepository(db: BunSQLiteDatabase<typeof schema>
 
 		async updateOwn(
 			author: Viewer,
-			p: { id: string; title: string | null; body: string; updatedAt: number }
+			p: {
+				id: string;
+				title: string | null;
+				body: string;
+				visibility: Visibility;
+				updatedAt: number;
+			}
 		) {
 			// SQLite's UPDATE takes no join, so the rule — which needs the contact — picks the id.
 			const editable = db
@@ -110,7 +116,7 @@ export function createDrizzleNoteRepository(db: BunSQLiteDatabase<typeof schema>
 				.where(and(eq(note.id, p.id), editableBy(author)));
 			const updated = db
 				.update(note)
-				.set({ title: p.title, body: p.body, updatedAt: p.updatedAt })
+				.set({ title: p.title, body: p.body, visibility: p.visibility, updatedAt: p.updatedAt })
 				.where(inArray(note.id, editable))
 				.returning({ id: note.id })
 				.all();

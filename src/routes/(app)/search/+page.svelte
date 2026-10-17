@@ -6,16 +6,20 @@
 	import Avatar from '$lib/components/ui/Avatar.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import EmptyState from '$lib/components/ui/EmptyState.svelte';
+	import PrivateMark from '$lib/components/ui/PrivateMark.svelte';
+	import Veil from '$lib/components/ui/Veil.svelte';
 	import { stateLabel } from '$lib/gifts/labels';
 	import { newPersonHref } from '$lib/people/new-person';
 	import { contactSectionPath } from '$lib/people/sections';
 	import { useI18n } from '$lib/i18n/context.svelte';
+	import { useVeil } from '$lib/privacy/veil.svelte';
 	import type { PageData } from './$types';
 
 	let { data }: { data: PageData } = $props();
 
 	const i18n = useI18n();
 	const t = i18n.t;
+	const veil = useVeil();
 	const hasQuery = $derived(data.q.length > 0);
 	const total = $derived(
 		data.results.contacts.length + data.results.notes.length + data.results.gifts.length
@@ -88,11 +92,25 @@
 							href="/contacts/{n.contactId}"
 							class="flex flex-col rounded-app border border-transparent px-3 py-2 hover:border-border hover:bg-card"
 						>
-							<span class="text-sm text-fg-muted">
-								{#if n.title}{n.title} ·
-								{/if}{t('search.noteOn', { name: n.contactName })}
+							<span class="flex flex-wrap items-center gap-x-2 text-sm text-fg-muted">
+								<span
+									>{#if n.title && !(n.visibility === 'private' && veil.isVeiled(`note:${n.noteId}`))}{n.title}
+										·
+									{/if}{t('search.noteOn', { name: n.contactName })}</span
+								>
+								{#if n.visibility === 'private'}<PrivateMark class="text-xs" />{/if}
 							</span>
-							<span class="truncate text-fg">{n.snippet}</span>
+							<!-- Search finds private words, it is the author's search; they stay blurred (docs/02 §2.10.1). -->
+							<Veil
+								id="note:{n.noteId}"
+								isPrivate={n.visibility === 'private'}
+								label={t('privacy.veil.note')}
+								text={n.snippet}
+								textClass="truncate text-fg"
+								passive
+							>
+								<span class="block truncate text-fg">{n.snippet}</span>
+							</Veil>
 						</a>
 					{/each}
 				</section>

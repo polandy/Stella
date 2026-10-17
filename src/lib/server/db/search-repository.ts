@@ -42,6 +42,7 @@ export function createDrizzleSearchRepository(
 					noteId: note.id,
 					title: note.title,
 					snippet: sql<string>`snippet(note_fts, 2, '', '', '…', 12)`,
+					visibility: note.visibility,
 					contactId: contact.id,
 					contactName: contact.displayName
 				})

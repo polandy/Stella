@@ -121,6 +121,7 @@ A family member with an account.
 | self_contact_id | text null | the contact this member **is** (§2.1.3). No FK on purpose: SQLite cannot add one with an `ON DELETE` action through `ALTER TABLE`, and a plain reference would refuse to delete that person. Deleting the contact clears it, merging repoints it. Set from Settings, from the person's page, or by adding yourself (`contact.add` with `isSelf`), which creates the contact and sets it in one step |
 | theme_pref | text | `'system' \| 'light' \| 'dark'` |
 | accent_pref | text | Catppuccin accent name, e.g. `'mauve'` |
+| blur_private | int | 0/1, default 1: *Blur my private entries* (§2.10.1), the member's own display preference; it changes nothing anyone else sees. Migration `0029_member_blur_private` |
 | totp_secret | text null | reserved for local 2FA [later] |
 | removed_at | int null | when an admin removed the member (§2.1); null while they belong. The row stays, so every `created_by` / `actor_id` keeps its author. A removed member signs nobody in: sessions and API tokens are deleted by the removal, the identity and the password hash are kept but never checked. Restoring the member clears it, and they sign in again with that password or identity. Migration `0028_member_removed_at` |
 | created_at / updated_at | int | |

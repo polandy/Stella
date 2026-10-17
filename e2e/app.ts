@@ -46,6 +46,18 @@ export async function appReady(page: Page): Promise<void> {
 }
 
 /**
+ * Shows every private entry on the page for the veil's window (docs/02 §2.10.1), through the
+ * header lock: a member's own private text is blurred on their screen until asked for.
+ */
+export async function showPrivate(page: Page): Promise<void> {
+	await page
+		.getByTestId('top-bar')
+		.getByRole('button', { name: /^Show \d+ private entr/ })
+		.click();
+	await expect(page.getByTestId('veil-lock')).toContainText(/\d:\d\d/);
+}
+
+/**
  * Opens the people directory through the app's own nav link.
  *
  * Client-side on purpose, where a spec has just removed something: the layout cancels such a

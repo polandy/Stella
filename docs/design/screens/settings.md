@@ -14,6 +14,14 @@ are what it holds today. The household-wide checks are their own page (§5.5.8).
 
 - A **Data** section, a **You** section (docs/02 §2.1.3) and an **Account** section (sign out
   only so far), ending with the **About** card.
+- A **Privacy** section after *You* (docs/02 §2.10.1): the switch *Blur my private entries*
+  with its hint, saved as it is flipped and confirmed in a toast. While it is on, *Device
+  unlock* below it in one of three states: **set up** — a green *Set up* mark, *Set up here
+  since …*, and a ghost *Forget on this device…* that opens a sunken confirm step in place
+  (what stays private, that the passkey stays in the password manager, that other devices keep
+  theirs; *Forget* in danger, *Keep it* focused, Escape keeps); **not set up** — a line on
+  what it does and *Set up device unlock*; **not possible here** — one line saying a tap shows
+  an entry instead.
 - A **Household** section after *You* holds one link card, *Members* (docs/02 §2.1).
 - *You* is a labelled person search select; it marks the same person as the identity card's
   *This is me* (§5.5.2).
@@ -81,6 +89,10 @@ are still on the Monica server, while a JSON export or a vCard carries them insi
 
 The built-in types are listed without actions so their absence from the editable set reads as
 deliberate.
+
+Device unlock is a fact about this device, so it is shown and forgotten here, never listed
+for other devices: Stella does not know them. Forgetting asks first because setting it up
+again means the device's prompt once more; it removes nothing else.
 
 The release line is a notice, not a banner: it informs and asks nothing.
 

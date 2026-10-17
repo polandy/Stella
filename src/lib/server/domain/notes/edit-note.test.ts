@@ -151,6 +151,43 @@ describe('editNote: title and body', () => {
 	});
 });
 
+describe('editNote: shared or private', () => {
+	it('makes a shared note private, and a private one shared again', async () => {
+		addNote('n');
+
+		expect(await editNote(deps, nina, { id: 'n', body: 'text', visibility: 'private' })).toBe(true);
+		expect(rowOf('n')).toMatchObject({ visibility: 'private', updatedAt: NOW });
+
+		await editNote(deps, nina, { id: 'n', body: 'text', visibility: 'shared' });
+		expect(rowOf('n')!.visibility).toBe('shared');
+	});
+
+	it('keeps the visibility when none is given', async () => {
+		addNote('n', { visibility: 'private' });
+		await editNote(deps, nina, { id: 'n', body: 'text' });
+		expect(rowOf('n')!.visibility).toBe('private');
+	});
+
+	it('resolves the mentions against the new audience', async () => {
+		addNote('to-private');
+		addNote('to-shared', { visibility: 'private' });
+		const body = 'with @{contact:c-secret} and @{contact:c-anna}';
+
+		await editNote(deps, nina, { id: 'to-private', body, visibility: 'private' });
+		await editNote(deps, nina, { id: 'to-shared', body, visibility: 'shared' });
+
+		expect((await mentioned('to-private')).sort()).toEqual(['c-anna', 'c-secret']);
+		expect(await mentioned('to-shared')).toEqual(['c-anna']);
+	});
+
+	it("does not let another member change the author's note", async () => {
+		addNote('n');
+		const member = { userId: MEMBER, householdId: H };
+		expect(await editNote(deps, member, { id: 'n', body: 'x', visibility: 'private' })).toBe(false);
+		expect(rowOf('n')!.visibility).toBe('shared');
+	});
+});
+
 describe('editNote: who may', () => {
 	it("refuses another member, and an admin, on the author's shared note", async () => {
 		addNote('n');

@@ -1,5 +1,8 @@
 <script lang="ts">
 	import Icon from '$lib/components/ui/Icon.svelte';
+	import PrivateMark from '$lib/components/ui/PrivateMark.svelte';
+	import Veil from '$lib/components/ui/Veil.svelte';
+	import { placeholderFor } from '$lib/privacy/veil';
 	import Section from '$lib/components/ui/Section.svelte';
 	import { cardShape } from '$lib/people/empty-cards';
 	import { sectionAnchor } from '$lib/people/sections';
@@ -47,9 +50,7 @@
 									})}{/if}
 							</span>
 							{#if reference.visibility === 'private'}
-								<span class="ml-auto inline-flex items-center gap-1 text-xs text-fg-subtle">
-									<Icon name="private" size={11} />{t('common.privateInline')}
-								</span>
+								<PrivateMark class="ml-auto text-xs" />
 							{/if}
 							<span
 								class="text-xs text-fg-subtle"
@@ -58,12 +59,26 @@
 								{dayLabel(i18n, reference.day)}
 							</span>
 						</div>
-						{#if reference.title}
-							<p class="text-sm font-medium text-fg">{reference.title}</p>
-						{/if}
-						{#if reference.snippet}
-							<p class="text-sm text-fg-muted">{reference.snippet}</p>
-						{/if}
+						<!-- A private entry's words stay blurred here too (docs/02 §2.10.1); the link opens it. -->
+						<Veil
+							id="mention:{reference.kind}:{reference.entryId}"
+							isPrivate={reference.visibility === 'private'}
+							label={t('privacy.veil.text')}
+							passive
+						>
+							{#snippet standIn()}
+								{#if reference.title}
+									<p class="text-sm font-medium text-fg">{placeholderFor(reference.title)}</p>
+								{/if}
+								<p class="text-sm text-fg-muted">{placeholderFor(reference.snippet)}</p>
+							{/snippet}
+							{#if reference.title}
+								<p class="text-sm font-medium text-fg">{reference.title}</p>
+							{/if}
+							{#if reference.snippet}
+								<p class="text-sm text-fg-muted">{reference.snippet}</p>
+							{/if}
+						</Veil>
 					</a>
 				</li>
 			{/each}

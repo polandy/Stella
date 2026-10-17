@@ -7,6 +7,7 @@
 	import InstallCard from '$lib/components/pwa/InstallCard.svelte';
 	import LanguagePicker from '$lib/components/shell/LanguagePicker.svelte';
 	import PersonSearchSelect from '$lib/components/people/PersonSearchSelect.svelte';
+	import PrivacySettings from '$lib/components/privacy/PrivacySettings.svelte';
 	import { useI18n } from '$lib/i18n/context.svelte';
 	import { newPersonHref } from '$lib/people/new-person';
 	import type { ActionData, PageData } from './$types';
@@ -109,6 +110,8 @@
 			{/if}
 		</div>
 	</section>
+
+	<PrivacySettings blurPrivate={data.user.blurPrivate} />
 
 	<!-- Every member's: who signs in is no secret in a household; removing is an admin's (§2.1). -->
 	<section class="flex flex-col gap-3">

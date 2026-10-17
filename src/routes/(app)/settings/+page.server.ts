@@ -1,4 +1,5 @@
 import { fail } from '@sveltejs/kit';
+import { changeBlurPrivate } from '$lib/server/auth/accounts';
 import { requireUser, requireViewer } from '$lib/server/auth/guards';
 import { say, translator } from '$lib/server/i18n/say';
 import { setSelfContact, UnknownSelfContactError } from '$lib/server/domain/household/self-contact';
@@ -8,8 +9,8 @@ import { APP_VERSION } from '$lib/version';
 import type { Actions, PageServerLoad } from './$types';
 
 /**
- * Settings landing (docs/02 §2.17): the language, who you are, the data-quality checks, the
- * admin "Data" section, Immich when it is configured, and the "About" line.
+ * Settings landing (docs/02 §2.17): the language, who you are, privacy, the data-quality checks,
+ * the admin "Data" section, Immich when it is configured, and the "About" line.
  *
  * The release check is handed over as a promise on purpose (docs/02 §2.17.1): the page is
  * rendered and sent at once, and the line about a newer version fills itself in when GitHub
@@ -59,5 +60,15 @@ export const actions: Actions = {
 		}
 
 		return { selfSaved: say(locals, 'settings.self.saved') };
+	},
+
+	/* *Blur my private entries* (docs/02 §2.10.1), the member's own. The switch posts `on` or nothing. */
+	setBlur: async ({ request, locals }) => {
+		const user = requireUser(locals);
+		const on = (await request.formData()).get('blur') === 'on';
+		const saved = await changeBlurPrivate(locals.services.auth.accountDeps, user.id, on);
+		// The layout re-runs inside this request off the hook's `locals`, as for `setSelf`.
+		locals.user = { ...user, blurPrivate: saved };
+		return { blurSaved: saved };
 	}
 };

@@ -27,7 +27,8 @@ const asUser = (id: string, name: string, role: AuthUser['role']): AuthUser => (
 	name,
 	role,
 	locale: null,
-	selfContactId: null
+	selfContactId: null,
+	blurPrivate: true
 });
 const andy = asUser(ADMIN, 'Andy', 'admin');
 const mia = asUser(MIA, 'Mia', 'member');
