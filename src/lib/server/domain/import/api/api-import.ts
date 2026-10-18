@@ -123,6 +123,8 @@ export async function importViaApi(
 				{
 					kind: 'people.imported',
 					people: plan.contacts.length,
+					completed: plan.report.people.filter((p) => p.status === 'existing' && p.fieldsAdded > 0)
+						.length,
 					source: document.source,
 					visibility: document.visibility ?? actor.defaultVisibility,
 					locale: options.locale

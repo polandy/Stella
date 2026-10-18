@@ -26,6 +26,7 @@ const NOW = 1_700_000_000_000;
 
 const EMPTY_READING: HouseholdReading = {
 	people: new Map(),
+	fieldsOf: new Map(),
 	hiddenIds: new Set(),
 	circles: new Map(),
 	types: BUILT_IN_RELATIONSHIP_TYPES,
@@ -143,6 +144,7 @@ describe('importViaApi', () => {
 			event: {
 				kind: 'people.imported',
 				people: 2,
+				completed: 0,
 				source: 'kindergarten',
 				visibility: 'shared',
 				locale: 'en'

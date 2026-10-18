@@ -917,7 +917,9 @@ the links between them (who is whose parent) and the circle they share.
 
 A good script asks first: it sends the list with `?dryRun=true`, and Stella answers with what
 it *would* add — and with anyone on the list whose name is already in Stella, so they can be
-linked to the person who is here instead of being added twice. Sending the same list again
+linked to the person who is here instead of being added twice. Someone who is here already can
+be completed too: the address the list has and they lack is added, and nothing they have is
+changed or removed. Sending the same list again
 adds nothing new. When the job is done, revoke the token under **Settings → API tokens**; it
 stops working at once. The details for whoever writes the script are in the features spec,
 §2.16.1.

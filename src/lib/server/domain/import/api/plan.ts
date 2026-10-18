@@ -14,6 +14,7 @@ import {
 	SIBLING_TYPE_KEY
 } from '../../../../relationships/type-keys';
 import { resolveCircleColor, resolveCircleKind, type NewCircle } from '../../circles/circles';
+import type { ContactFieldKind } from '../../../../people/contact-fields';
 import type { NewContactField } from '../../contact-fields/contact-fields';
 import type { NewContact } from '../../contacts/contacts';
 import { partialDateOfDay } from '../../../../dates/partial-date';
@@ -28,6 +29,7 @@ import {
 	membershipIdFor,
 	personIdFor,
 	relationshipIdFor,
+	type ApiContactField,
 	type ApiImportDocument
 } from './document';
 
@@ -57,6 +59,14 @@ export interface KnownPerson {
 	birthDate: string | null;
 }
 
+/** One of the contact fields somebody named by id already has. */
+export interface KnownField {
+	id: string;
+	kind: ContactFieldKind;
+	value: string;
+	sortOrder: number;
+}
+
 /** A circle the member may see, with who is in it already. */
 export interface KnownCircle {
 	id: string;
@@ -84,6 +94,8 @@ export interface ApiImportContext {
 	locale: Locale;
 	/** Of the contact ids the document names or would create, those the member may see. */
 	people: ReadonlyMap<string, KnownPerson>;
+	/** The contact fields of each person in `people`, so a document only adds what is missing. */
+	fieldsOf: ReadonlyMap<string, readonly KnownField[]>;
 	/** Of those ids, the ones taken by a record the member may not see. */
 	hiddenIds: ReadonlySet<string>;
 	/** Of the circle ids the document names or would create, those the member may see. */
@@ -120,12 +132,19 @@ export type ApiImportStatus = 'new' | 'imported' | 'existing';
 
 /** What the caller is told about the plan — the same shape whether or not it was written. */
 export interface ApiImportReport {
-	people: { ref: string; id: string; displayName: string; status: ApiImportStatus }[];
+	people: {
+		ref: string;
+		id: string;
+		displayName: string;
+		status: ApiImportStatus;
+		/** How many contact fields this sending gives them. */
+		fieldsAdded: number;
+	}[];
 	circles: { ref: string; id: string; name: string; status: ApiImportStatus }[];
 	/** New people whose name somebody in the household already has. */
 	possibleDuplicates: { ref: string; candidates: KnownPerson[] }[];
-	/** Links and memberships left out because the household already has them. */
-	alreadyThere: { relationships: number; memberships: number };
+	/** Fields, links and memberships left out because the household already has them. */
+	alreadyThere: { fields: number; relationships: number; memberships: number };
 }
 
 /** A circle as the import writes it — with the parent the create form does not offer. */
@@ -197,6 +216,7 @@ export function planApiImport(
 				circles: circles.report,
 				possibleDuplicates: possibleDuplicates(people.created, context),
 				alreadyThere: {
+					fields: people.fieldsAlreadyThere,
 					relationships: relationships.alreadyThere,
 					memberships: circles.alreadyThere
 				}
@@ -226,6 +246,16 @@ function planPeople(
 	const report: ApiImportReport['people'] = [];
 	/** The people this sending creates, for the look-alike check. */
 	const created: { ref: string; contact: NewContact }[] = [];
+	let fieldsAlreadyThere = 0;
+	const fieldRow = (ref: string, contactId: string, field: ApiContactField, position: number) => ({
+		id: fieldIdFor(source, ref, position),
+		contactId,
+		kind: field.kind,
+		label: orNull(field.label),
+		value: field.value.trim(),
+		meta: null,
+		...stamps
+	});
 
 	document.people.forEach((entry, index) => {
 		const at = `people[${index}]`;
@@ -241,11 +271,23 @@ function planPeople(
 				return;
 			}
 			idByRef.set(entry.ref, known.id);
+			const completing = missingFields(entry.fields, context.fieldsOf.get(known.id) ?? [], (at) =>
+				fieldIdFor(source, entry.ref, at)
+			);
+			fieldsAlreadyThere += entry.fields.length - completing.length;
+			const after = Math.max(-1, ...(context.fieldsOf.get(known.id) ?? []).map((f) => f.sortOrder));
+			completing.forEach(({ field, position }, k) => {
+				fields.push({
+					...fieldRow(entry.ref, known.id, field, position),
+					sortOrder: after + 1 + k
+				});
+			});
 			report.push({
 				ref: entry.ref,
 				id: known.id,
 				displayName: known.displayName,
-				status: 'existing'
+				status: 'existing',
+				fieldsAdded: completing.length
 			});
 			return;
 		}
@@ -259,7 +301,13 @@ function planPeople(
 
 		const sentBefore = context.people.get(id);
 		if (sentBefore) {
-			report.push({ ref: entry.ref, id, displayName: sentBefore.displayName, status: 'imported' });
+			report.push({
+				ref: entry.ref,
+				id,
+				displayName: sentBefore.displayName,
+				status: 'imported',
+				fieldsAdded: 0
+			});
 			return;
 		}
 
@@ -286,22 +334,43 @@ function planPeople(
 		};
 		contacts.push(contact);
 		created.push({ ref: entry.ref, contact });
-		report.push({ ref: entry.ref, id, displayName: contact.displayName, status: 'new' });
+		report.push({
+			ref: entry.ref,
+			id,
+			displayName: contact.displayName,
+			status: 'new',
+			fieldsAdded: entry.fields.length
+		});
 		entry.fields.forEach((field, position) => {
-			fields.push({
-				id: fieldIdFor(source, entry.ref, position),
-				contactId: id,
-				kind: field.kind,
-				label: orNull(field.label),
-				value: field.value.trim(),
-				meta: null,
-				sortOrder: position,
-				...stamps
-			});
+			fields.push({ ...fieldRow(entry.ref, id, field, position), sortOrder: position });
 		});
 	});
 
-	return { idByRef, contacts, fields, report, created };
+	return { idByRef, contacts, fields, report, created, fieldsAlreadyThere };
+}
+
+/** A value as two spellings of it share it: no case, single spaces. */
+const fieldKey = (kind: ContactFieldKind, value: string) =>
+	`${kind}:${value.trim().replace(/\s+/g, ' ').toLowerCase()}`;
+
+/**
+ * The fields a document hands someone already in Stella that they do not have yet, each with
+ * its position in the entry (its id). A field this document added before is there under its
+ * id even if the value was corrected by hand since, so re-sending never brings the old one back.
+ */
+function missingFields(
+	sent: readonly ApiContactField[],
+	held: readonly KnownField[],
+	idAt: (position: number) => string
+): { field: ApiContactField; position: number }[] {
+	const heldIds = new Set(held.map((f) => f.id));
+	const seen = new Set(held.map((f) => fieldKey(f.kind, f.value)));
+	return sent.flatMap((field, position) => {
+		const key = fieldKey(field.kind, field.value);
+		if (heldIds.has(idAt(position)) || seen.has(key)) return [];
+		seen.add(key);
+		return [{ field, position }];
+	});
 }
 
 /** A name reduced to what two spellings of it share: no case, no accents, any word order. */

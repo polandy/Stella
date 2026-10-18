@@ -11,9 +11,19 @@ describe('activityWording', () => {
 	});
 
 	it('writes an API import in the language of the member whose token sent it', () => {
-		expect(activityWording.imported('en', 2, 'kindergarten')).toContain('kindergarten');
-		expect(activityWording.imported('de', 2, 'kindergarten')).toBe(
+		const only = { people: 2, completed: 0 };
+		expect(activityWording.imported('en', only, 'kindergarten')).toContain('kindergarten');
+		expect(activityWording.imported('de', only, 'kindergarten')).toBe(
 			'2 Menschen über die API importiert (kindergarten)'
+		);
+	});
+
+	it('names the people an API import completed, with or without new ones', () => {
+		expect(activityWording.imported('en', { people: 0, completed: 3 }, 'class')).toBe(
+			'added contact details to 3 people through the API (class)'
+		);
+		expect(activityWording.imported('de', { people: 18, completed: 1 }, 'class')).toBe(
+			'18 Menschen über die API importiert und Kontaktdaten von 1 Person ergänzt (class)'
 		);
 	});
 });

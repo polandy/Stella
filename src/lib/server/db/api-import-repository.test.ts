@@ -22,7 +22,8 @@ const U2 = 'user-2';
 const actor = { userId: U1, householdId: H, defaultVisibility: 'shared' as const };
 const wording: ActivityWording = {
 	restored: () => 'not an import',
-	imported: (locale, people, source) => `${locale}: imported ${people} from ${source}`
+	imported: (locale, { people, completed }, source) =>
+		`${locale}: imported ${people}${completed > 0 ? `, completed ${completed}` : ''} from ${source}`
 };
 
 let db: BunSQLiteDatabase<typeof schema>;
@@ -78,7 +79,7 @@ const kindergarten: ApiImportDocument = {
 	people: [
 		newPerson('anna', 'Anna'),
 		newPerson('bert', 'Bert'),
-		{ ref: 'carl', existingId: 'c-carl' }
+		{ ref: 'carl', existingId: 'c-carl', fields: [] }
 	],
 	relationships: [
 		{ from: 'anna', to: 'carl', type: 'parent_child' },
@@ -157,7 +158,7 @@ describe('the import API adapter', () => {
 		});
 		if (!again.ok) throw new Error('refused');
 		expect(again.report.people.map((p) => p.status)).toEqual(['imported', 'imported', 'existing']);
-		expect(again.report.alreadyThere).toEqual({ relationships: 3, memberships: 2 });
+		expect(again.report.alreadyThere).toEqual({ fields: 0, relationships: 3, memberships: 2 });
 		expect(db.select().from(schema.contact).all()).toHaveLength(3);
 		expect(db.select().from(schema.activityLog).all()).toHaveLength(1);
 	});
@@ -179,6 +180,53 @@ describe('the import API adapter', () => {
 		expect(db.select().from(schema.activityLog).all()).toEqual([]);
 	});
 
+	it('completes someone already there with the fields they lack, once', async () => {
+		db.insert(schema.contactField)
+			.values({ id: 'f-phone', contactId: 'c-carl', kind: 'phone', value: '+41 79', sortOrder: 2 })
+			.run();
+		const completing: ApiImportDocument = {
+			source: 'class',
+			visibility: null,
+			people: [
+				{
+					ref: 'carl',
+					existingId: 'c-carl',
+					fields: [
+						{ kind: 'phone', value: '+41 79', label: null },
+						{ kind: 'address', value: 'Werdtweg 5, 3007 Bern', label: null }
+					]
+				}
+			],
+			relationships: [],
+			circles: []
+		};
+		const first = await run(completing);
+		expect(first).toMatchObject({ ok: true, added: { people: 0, fields: 1 } });
+		expect(
+			db
+				.select()
+				.from(schema.contactField)
+				.all()
+				.map((f) => [f.contactId, f.kind, f.value, f.sortOrder])
+		).toEqual([
+			['c-carl', 'phone', '+41 79', 2],
+			['c-carl', 'address', 'Werdtweg 5, 3007 Bern', 3]
+		]);
+		expect(
+			db
+				.select()
+				.from(schema.activityLog)
+				.all()
+				.map((a) => a.summary)
+		).toEqual(['en: imported 0, completed 1 from class']);
+
+		const again = await run(completing);
+		expect(again).toMatchObject({ ok: true, added: { fields: 0 } });
+		if (!again.ok) throw new Error('refused');
+		expect(again.report.alreadyThere.fields).toBe(2);
+		expect(db.select().from(schema.activityLog).all()).toHaveLength(1);
+	});
+
 	it('does not let a document reach a person the member may not see', async () => {
 		seedContact('c-private', { createdBy: U2, visibility: 'private' });
 		db.insert(schema.contact)
@@ -192,8 +240,8 @@ describe('the import API adapter', () => {
 		const result = await run({
 			...kindergarten,
 			people: [
-				{ ref: 'p', existingId: 'c-private' },
-				{ ref: 'f', existingId: 'c-foreign' }
+				{ ref: 'p', existingId: 'c-private', fields: [] },
+				{ ref: 'f', existingId: 'c-foreign', fields: [] }
 			],
 			relationships: [],
 			circles: []
@@ -279,8 +327,8 @@ describe('the import API adapter', () => {
 		const result = await run({
 			...kindergarten,
 			people: [
-				{ ref: 'carl', existingId: 'c-carl' },
-				{ ref: 'dora', existingId: 'c-dora' }
+				{ ref: 'carl', existingId: 'c-carl', fields: [] },
+				{ ref: 'dora', existingId: 'c-dora', fields: [] }
 			],
 			relationships: [{ from: 'dora', to: 'carl', type: 'friend' }],
 			circles: []
@@ -350,7 +398,7 @@ describe('the import API adapter', () => {
 				people: [],
 				circles: [],
 				possibleDuplicates: [],
-				alreadyThere: { relationships: 0, memberships: 0 }
+				alreadyThere: { fields: 0, relationships: 0, memberships: 0 }
 			}
 		};
 		// … and added by hand before the plan was written.

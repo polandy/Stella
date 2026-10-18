@@ -34,10 +34,15 @@ export interface ApiNewPerson {
 	fields: ApiContactField[];
 }
 
-/** A person already in Stella, given a ref so the document can link to them. */
+/**
+ * A person already in Stella, given a ref so the document can link to them. Their `fields` only
+ * ever add to what the person has — a class list completing a child's address — and never
+ * change or remove a field.
+ */
 export interface ApiExistingPerson {
 	ref: string;
 	existingId: string;
+	fields: ApiContactField[];
 }
 
 export type ApiPerson = ApiNewPerson | ApiExistingPerson;

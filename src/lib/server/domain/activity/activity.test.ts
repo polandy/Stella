@@ -27,7 +27,7 @@ const recorded = <E extends PlainActivityEvent | LocalizedActivityEvent>(
 
 const wording: ActivityWording = {
 	restored: (locale, people, household) => `${locale}: restored ${people} from ${household}`,
-	imported: (locale, people, source) => `${locale}: imported ${people} from ${source}`
+	imported: (locale, { people }, source) => `${locale}: imported ${people} from ${source}`
 };
 
 describe('activityRecord', () => {
@@ -240,6 +240,7 @@ describe('localizedActivityEntry', () => {
 		const event = {
 			kind: 'people.imported',
 			people: 4,
+			completed: 0,
 			source: 'kindergarten',
 			visibility: 'private',
 			locale: 'en'

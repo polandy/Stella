@@ -26,6 +26,7 @@ export function context(over: Partial<ApiImportContext> = {}): ApiImportContext 
 		now: NOW,
 		locale: 'en',
 		people: new Map(),
+		fieldsOf: new Map(),
 		hiddenIds: new Set(),
 		circles: new Map(),
 		types: BUILT_IN_RELATIONSHIP_TYPES,

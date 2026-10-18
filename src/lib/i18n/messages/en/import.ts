@@ -119,6 +119,14 @@ export const importer = {
 
 	'import.api.loggedSummary': (p: { people: string; source: string }) =>
 		`imported ${p.people} through the API (${p.source})`,
+	'import.api.loggedCompleted': (p: { people: string; source: string }) =>
+		`added contact details to ${p.people} through the API (${p.source})`,
+	'import.api.loggedSummaryAndCompleted': (p: {
+		people: string;
+		completed: string;
+		source: string;
+	}) =>
+		`imported ${p.people} and added contact details to ${p.completed} through the API (${p.source})`,
 
 	'import.error.chooseFile': 'Please choose the Monica export or vCard file to import.',
 	'import.error.sessionMissing': 'The import session is missing. Please upload the dump again.',

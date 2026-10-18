@@ -138,6 +138,8 @@ export type LocalizedActivityEvent =
 	| {
 			kind: 'people.imported';
 			people: number;
+			/** People already in the household the import gave contact details they lacked. */
+			completed: number;
 			source: string;
 			/** Mirrors what was imported: a private batch is logged for its author alone. */
 			visibility: Visibility;
@@ -165,8 +167,8 @@ export type ActivityOf<K extends ActivityEvent['kind']> = ActivityRecord<
 export interface ActivityWording {
 	/** "restored 12 people from an archive of Pollari". */
 	restored(locale: Locale, people: number, household: string): string;
-	/** "imported 12 people from kindergarten-2023". */
-	imported(locale: Locale, people: number, source: string): string;
+	/** "imported 12 people through the API (kindergarten-2023)", with the people it completed. */
+	imported(locale: Locale, counts: { people: number; completed: number }, source: string): string;
 }
 
 /** Stamp an event with the member who caused it, a fresh id and the moment (`at`, or now). */
@@ -314,7 +316,11 @@ function localizedRow(
 				entityId: householdId,
 				contactId: null,
 				visibility: event.visibility,
-				summary: wording.imported(event.locale, event.people, event.source)
+				summary: wording.imported(
+					event.locale,
+					{ people: event.people, completed: event.completed },
+					event.source
+				)
 			};
 	}
 }
