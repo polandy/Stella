@@ -4,8 +4,9 @@ import { signIn } from './app';
 /*
  * API tokens and the import API (docs/02 §2.16.1), end to end: a token is made on its settings
  * page, shown once, signs the API in, and stops the moment it is revoked; and what a script
- * sends through it lands in the household as a person with a page and a circle. Written after
- * the flow was verified in the running app (docs/08 §8.4.1).
+ * sends through it lands in the household as a person with a page and a circle, or completes a
+ * person already there with the details they lack, once. Written after the flow
+ * was verified in the running app (docs/08 §8.4.1).
  *
  * Every refusal is paired with the same thing succeeding first — the token answering before it
  * is revoked, the page being signed in while its cookie is refused by the API — so no case can
@@ -116,4 +117,75 @@ test('people sent through the import API get a page and a circle', async ({ page
 	expect(await again.json()).toMatchObject({
 		added: { people: 0, relationships: 0, circles: 0, memberships: 0 }
 	});
+});
+
+test('the import API adds what a person already in Stella lacks, and only once', async ({
+	page
+}) => {
+	await signIn(page);
+	const token = await createToken(page, 'Okafor completion check');
+	// Kemi enters the household first, from an earlier list, with only a phone number.
+	const earlier = await page.request.post('/api/v1/import', {
+		headers: bearer(token),
+		data: {
+			source: 'e2e-okafor-earlier',
+			people: [
+				{
+					ref: 'kemi',
+					firstName: 'Kemi',
+					lastName: 'Okafor',
+					fields: [{ kind: 'phone', value: '+41 79 555 03 04' }]
+				}
+			]
+		}
+	});
+	const kemiId: string = (await earlier.json()).people[0].id;
+
+	// A later list knows her too: the same phone, spelled differently, and an address.
+	const address = 'Okaforweg 7, 3007 Bern';
+	const document = {
+		source: 'e2e-okafor-class-list',
+		people: [
+			{
+				ref: 'kemi',
+				existingId: kemiId,
+				fields: [
+					{ kind: 'phone', value: '+41  79 555 03 04 ' },
+					{ kind: 'address', value: address }
+				]
+			}
+		]
+	};
+	const kemiIn = (answer: { people: { ref: string }[] }) =>
+		answer.people.find((p) => p.ref === 'kemi');
+
+	const dryRun = await (
+		await page.request.post('/api/v1/import?dryRun=true', {
+			headers: bearer(token),
+			data: document
+		})
+	).json();
+	expect(dryRun).toMatchObject({ dryRun: true, added: { people: 0, fields: 1 } });
+	expect(kemiIn(dryRun)).toMatchObject({ id: kemiId, status: 'existing', fieldsAdded: 1 });
+
+	// The dry run wrote nothing: her page has no address yet.
+	await page.goto(`/contacts/${kemiId}`);
+	await expect(page.getByRole('heading', { name: 'Kemi Okafor' })).toBeVisible();
+	await expect(page.getByText(address)).toHaveCount(0);
+
+	const imported = await (
+		await page.request.post('/api/v1/import', { headers: bearer(token), data: document })
+	).json();
+	expect(imported).toMatchObject({ dryRun: false, added: { people: 0, fields: 1 } });
+	expect(kemiIn(imported)).toMatchObject({ fieldsAdded: 1 });
+
+	await page.reload();
+	await expect(page.getByText(address)).toBeVisible();
+	await expect(page.getByText('+41 79 555 03 04')).toHaveCount(1);
+
+	const again = await (
+		await page.request.post('/api/v1/import', { headers: bearer(token), data: document })
+	).json();
+	expect(again).toMatchObject({ added: { fields: 0 }, alreadyThere: { fields: 2 } });
+	expect(kemiIn(again)).toMatchObject({ fieldsAdded: 0 });
 });
