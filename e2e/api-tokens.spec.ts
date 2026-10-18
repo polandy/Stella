@@ -202,12 +202,13 @@ test('the import API renames circles already in Stella and nests them, never in 
 			headers: bearer(token),
 			data
 		});
-	// A class and a kindergarten year enter the household first, from earlier lists.
+	// A class and a kindergarten year enter the household first, from earlier lists. No name
+	// here contains `kl`: circles-browse.spec.ts counts what that query leaves.
 	const earlier = await (
 		await send({
 			source: 'e2e-okafor-years',
 			circles: [
-				{ ref: 'class', name: 'Okafor Klasse', kind: 'school' },
+				{ ref: 'class', name: 'Okafor Year One', kind: 'school' },
 				{ ref: 'kg', name: 'Okafor Kindergarten 2023', kind: 'class' }
 			]
 		})
@@ -224,7 +225,7 @@ test('the import API renames circles already in Stella and nests them, never in 
 			{
 				ref: 'class',
 				existingId: classId,
-				name: 'Okafor Klasse 1-2D 26/27',
+				name: 'Okafor Class 1-2D 26/27',
 				kind: 'class',
 				startDate: '2026-08-01',
 				parent: 'school'
@@ -239,9 +240,9 @@ test('the import API renames circles already in Stella and nests them, never in 
 	expect(dryRun).toMatchObject({ dryRun: true, added: { circles: 1 }, changed: { circles: 2 } });
 	expect(classIn(dryRun)).toMatchObject({
 		status: 'existing',
-		name: 'Okafor Klasse 1-2D 26/27',
+		name: 'Okafor Class 1-2D 26/27',
 		changes: {
-			name: { from: 'Okafor Klasse', to: 'Okafor Klasse 1-2D 26/27' },
+			name: { from: 'Okafor Year One', to: 'Okafor Class 1-2D 26/27' },
 			kind: { from: 'school', to: 'class' },
 			startDate: { from: null, to: '2026-08-01' },
 			parent: { from: null, to: { name: 'Okafor Schule' } }
@@ -250,14 +251,14 @@ test('the import API renames circles already in Stella and nests them, never in 
 
 	// The dry run wrote nothing: the class keeps its old name.
 	await page.goto(`/circles/${classId}`);
-	await expect(page.getByRole('heading', { name: 'Okafor Klasse', level: 1 })).toBeVisible();
+	await expect(page.getByRole('heading', { name: 'Okafor Year One', level: 1 })).toBeVisible();
 
 	const imported = await (await send(career)).json();
 	expect(imported).toMatchObject({ dryRun: false, added: { circles: 1 }, changed: { circles: 2 } });
 
 	await page.reload();
 	await expect(
-		page.getByRole('heading', { name: 'Okafor Klasse 1-2D 26/27', level: 1 })
+		page.getByRole('heading', { name: 'Okafor Class 1-2D 26/27', level: 1 })
 	).toBeVisible();
 
 	expect(await (await send(career)).json()).toMatchObject({
