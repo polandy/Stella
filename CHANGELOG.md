@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.0.26](https://github.com/polandy/Stella/compare/v0.0.25...v0.0.26) (2026-10-18)
+
+
+### Features
+
+* **import:** let the import API rename existing circles, set their details and nest them ([#385](https://github.com/polandy/Stella/issues/385)) ([7e4103b](https://github.com/polandy/Stella/commit/7e4103b8ffa115b252c8328b298b1579c799f37f))
+
 ## [0.0.25](https://github.com/polandy/Stella/compare/v0.0.24...v0.0.25) (2026-10-18)
 
 
