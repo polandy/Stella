@@ -35,9 +35,11 @@ import {
  * Drizzle adapter for the import API's port (docs/02 §2.16.1).
  *
  * Reading: every row the planner is shown passes the central scoping (docs/03 §3.7), so a
- * document can neither link to nor be told about somebody the member may not see. The one
- * thing read past that scope is whether an id is *taken* — only ever as a yes, never with what
- * holds it — so a new record is refused rather than colliding with a hidden one.
+ * document can neither link to nor be told about somebody the member may not see. Two things are
+ * read past that scope, each only ever answering yes or no and never shown: whether an id is
+ * *taken*, so a new record is refused rather than colliding with a hidden one, and the
+ * household's circle nesting as bare ids, so a move cannot close a loop through a hidden circle
+ * (ADR-125).
  *
  * Writing: one transaction, every insert "do nothing on conflict". That makes the plan's own
  * `alreadyThere` a courtesy and this the guarantee: two sendings racing each other still add
