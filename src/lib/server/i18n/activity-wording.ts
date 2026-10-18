@@ -14,10 +14,14 @@ export const activityWording: ActivityWording = {
 			household
 		});
 	},
-	imported: (locale, people, source) => {
+	imported: (locale, { people, completed }, source) => {
 		const t = createTranslator(locale);
-		return t('import.api.loggedSummary', {
-			people: t('archive.peopleCount', { count: people }),
+		const count = (n: number) => t('archive.peopleCount', { count: n });
+		if (completed === 0) return t('import.api.loggedSummary', { people: count(people), source });
+		if (people === 0) return t('import.api.loggedCompleted', { people: count(completed), source });
+		return t('import.api.loggedSummaryAndCompleted', {
+			people: count(people),
+			completed: count(completed),
 			source
 		});
 	}

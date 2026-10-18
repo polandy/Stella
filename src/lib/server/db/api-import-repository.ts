@@ -18,7 +18,7 @@ import type {
 	ApiImportRepository,
 	HouseholdReading
 } from '../domain/import/api/api-import';
-import type { ApiImportPlan, KnownPerson } from '../domain/import/api/plan';
+import type { ApiImportPlan, KnownField, KnownPerson } from '../domain/import/api/plan';
 import { loadKinshipGraph } from './kinship-graph-read';
 import type * as schema from './schema';
 import {
@@ -74,6 +74,23 @@ export function createDrizzleApiImportRepository(
 					return known ? [[id, known] as const] : [];
 				})
 			);
+			const fieldRows = inBatches([...people.keys()], (batch) =>
+				db
+					.select({
+						contactId: contactField.contactId,
+						id: contactField.id,
+						kind: contactField.kind,
+						value: contactField.value,
+						sortOrder: contactField.sortOrder
+					})
+					.from(contactField)
+					.where(inArray(contactField.contactId, batch))
+					.all()
+			);
+			const fieldsOf = new Map<string, KnownField[]>();
+			for (const { contactId, ...field } of fieldRows) {
+				fieldsOf.set(contactId, [...(fieldsOf.get(contactId) ?? []), field]);
+			}
 			const takenContacts = inBatches(ids.contactIds, (batch) =>
 				db.select({ id: contact.id }).from(contact).where(inArray(contact.id, batch)).all()
 			);
@@ -165,6 +182,7 @@ export function createDrizzleApiImportRepository(
 
 			return {
 				people,
+				fieldsOf,
 				hiddenIds,
 				circles,
 				types,

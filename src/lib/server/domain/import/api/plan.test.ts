@@ -1,86 +1,27 @@
 import { describe, expect, it } from 'bun:test';
 import type { KinshipGraph } from '../../../../kinship/kinship';
 import { BUILT_IN_RELATIONSHIP_TYPES } from '../../relationships/built-in-types';
-import type {
-	ApiCircle,
-	ApiImportDocument,
-	ApiNewPerson,
-	ApiPerson,
-	ApiRelationship
-} from './document';
-import { idsNamedBy, planApiImport, type ApiImportContext, type ApiImportProblem } from './plan';
+import type { ApiCircle, ApiPerson } from './document';
+import { idsNamedBy } from './plan';
+import {
+	context,
+	EMPTY_GRAPH,
+	doc,
+	H,
+	idOf,
+	link,
+	ME,
+	NOW,
+	person,
+	planned,
+	refused,
+	SOURCE
+} from './plan.fixture';
 
 /*
  * The import API's planner (docs/02 §2.16.1): a document plus what the household already has,
  * in; the rows to write and what to say about them, out. Pure, so every case here is a value.
  */
-
-const H = 'household-1';
-const ME = 'user-1';
-const NOW = 1_700_000_000_000;
-const SOURCE = 'kindergarten';
-
-const EMPTY_GRAPH: KinshipGraph = {
-	people: [],
-	parentEdges: [],
-	siblingEdges: [],
-	partnerEdges: [],
-	storedPairs: []
-};
-
-function context(over: Partial<ApiImportContext> = {}): ApiImportContext {
-	return {
-		householdId: H,
-		actorId: ME,
-		defaultVisibility: 'shared',
-		now: NOW,
-		locale: 'en',
-		people: new Map(),
-		hiddenIds: new Set(),
-		circles: new Map(),
-		types: BUILT_IN_RELATIONSHIP_TYPES,
-		links: [],
-		graph: EMPTY_GRAPH,
-		directory: [],
-		...over
-	};
-}
-
-function person(ref: string, over: Partial<ApiNewPerson> = {}): ApiNewPerson {
-	return {
-		ref,
-		displayName: null,
-		firstName: ref[0].toUpperCase() + ref.slice(1),
-		lastName: 'Muster',
-		nickname: null,
-		description: null,
-		birthDate: null,
-		fields: [],
-		...over
-	};
-}
-
-function doc(over: Partial<ApiImportDocument> = {}): ApiImportDocument {
-	return { source: SOURCE, visibility: null, people: [], relationships: [], circles: [], ...over };
-}
-
-const link = (from: string, type: string, to: string): ApiRelationship => ({ from, to, type });
-
-const idOf = (ref: string) => `api~${SOURCE}~p~${ref}`;
-
-/** The plan, failing the test with the problems when the planner refused. */
-function planned(document: ApiImportDocument, ctx = context()) {
-	const result = planApiImport(document, ctx);
-	if (!result.ok) throw new Error(`refused: ${JSON.stringify(result.problems)}`);
-	return result.plan;
-}
-
-/** The problems, failing the test when the planner accepted. */
-function refused(document: ApiImportDocument, ctx = context()): ApiImportProblem[] {
-	const result = planApiImport(document, ctx);
-	if (result.ok) throw new Error('expected the document to be refused');
-	return result.problems;
-}
 
 describe('people', () => {
 	it('creates each new person under an id made of the source and their ref', () => {
@@ -107,7 +48,7 @@ describe('people', () => {
 			}
 		]);
 		expect(plan.report.people).toEqual([
-			{ ref: 'anna', id: idOf('anna'), displayName: 'Anna Muster', status: 'new' }
+			{ ref: 'anna', id: idOf('anna'), displayName: 'Anna Muster', status: 'new', fieldsAdded: 0 }
 		]);
 	});
 
@@ -176,21 +117,21 @@ describe('people', () => {
 
 	it('names someone already in Stella by id and creates nothing for them', () => {
 		const plan = planned(
-			doc({ people: [{ ref: 'carl', existingId: 'c-carl' }] }),
+			doc({ people: [{ ref: 'carl', existingId: 'c-carl', fields: [] }] }),
 			context({
 				people: new Map([['c-carl', { id: 'c-carl', displayName: 'Carl', birthDate: null }]])
 			})
 		);
 		expect(plan.contacts).toEqual([]);
 		expect(plan.report.people).toEqual([
-			{ ref: 'carl', id: 'c-carl', displayName: 'Carl', status: 'existing' }
+			{ ref: 'carl', id: 'c-carl', displayName: 'Carl', status: 'existing', fieldsAdded: 0 }
 		]);
 	});
 
 	it('refuses an existing id the member cannot see', () => {
-		expect(refused(doc({ people: [{ ref: 'carl', existingId: 'c-nobody' }] }))).toEqual([
-			{ code: 'personNotFound', path: 'people[0].existingId', id: 'c-nobody' }
-		]);
+		expect(refused(doc({ people: [{ ref: 'carl', existingId: 'c-nobody', fields: [] }] }))).toEqual(
+			[{ code: 'personNotFound', path: 'people[0].existingId', id: 'c-nobody' }]
+		);
 	});
 
 	it('leaves a person sent before alone, fields included, and says so', () => {
@@ -290,7 +231,7 @@ describe('relationships', () => {
 	it('links a new person to someone already in Stella', () => {
 		const plan = planned(
 			doc({
-				people: [person('anna'), { ref: 'dora', existingId: 'c-dora' }],
+				people: [person('anna'), { ref: 'dora', existingId: 'c-dora', fields: [] }],
 				relationships: [link('anna', 'friend', 'dora')]
 			}),
 			context({
@@ -329,8 +270,8 @@ describe('relationships', () => {
 		const plan = planned(
 			doc({
 				people: [
-					{ ref: 'anna', existingId: 'c-anna' },
-					{ ref: 'carl', existingId: 'c-carl' }
+					{ ref: 'anna', existingId: 'c-anna', fields: [] },
+					{ ref: 'carl', existingId: 'c-carl', fields: [] }
 				],
 				relationships: [link('anna', 'parent_child', 'carl')]
 			}),
@@ -348,7 +289,7 @@ describe('relationships', () => {
 			})
 		);
 		expect(plan.relationships).toEqual([]);
-		expect(plan.report.alreadyThere).toEqual({ relationships: 1, memberships: 0 });
+		expect(plan.report.alreadyThere).toEqual({ fields: 0, relationships: 1, memberships: 0 });
 	});
 
 	it('names every link it cannot store, and stores none of them', () => {
@@ -394,8 +335,8 @@ describe('relationships', () => {
 			refused(
 				doc({
 					people: [
-						{ ref: 'anna', existingId: 'c-anna' },
-						{ ref: 'carl', existingId: 'c-carl' }
+						{ ref: 'anna', existingId: 'c-anna', fields: [] },
+						{ ref: 'carl', existingId: 'c-carl', fields: [] }
 					],
 					relationships: [link('carl', 'parent_child', 'anna')]
 				}),
@@ -424,7 +365,11 @@ describe('relationships', () => {
 		expect(
 			refused(
 				doc({
-					people: [person('anna'), person('bert'), { ref: 'carl', existingId: 'c-carl' }],
+					people: [
+						person('anna'),
+						person('bert'),
+						{ ref: 'carl', existingId: 'c-carl', fields: [] }
+					],
 					relationships: [
 						link('anna', 'parent_child', 'carl'),
 						link('bert', 'parent_child', 'carl')
@@ -445,7 +390,7 @@ describe('relationships', () => {
 	it('refuses a partner for someone whose partnership still holds, and allows one that is over', () => {
 		const people = new Map([['c-dora', { id: 'c-dora', displayName: 'Dora', birthDate: null }]]);
 		const document = doc({
-			people: [person('anna'), { ref: 'dora', existingId: 'c-dora' }],
+			people: [person('anna'), { ref: 'dora', existingId: 'c-dora', fields: [] }],
 			relationships: [link('anna', 'partner', 'dora')]
 		});
 		const holding: KinshipGraph = { ...EMPTY_GRAPH, partnerEdges: [{ a: 'c-dora', b: 'c-x' }] };
@@ -608,7 +553,7 @@ describe('circles', () => {
 	it('adds only those not yet in a circle that is already in Stella', () => {
 		const plan = planned(
 			doc({
-				people: [person('anna'), { ref: 'carl', existingId: 'c-carl' }],
+				people: [person('anna'), { ref: 'carl', existingId: 'c-carl', fields: [] }],
 				circles: [
 					{
 						ref: 'kg',
@@ -629,7 +574,7 @@ describe('circles', () => {
 		expect(plan.memberships.map((m) => [m.circleId, m.contactId])).toEqual([
 			['ci-kg', idOf('anna')]
 		]);
-		expect(plan.report.alreadyThere).toEqual({ relationships: 0, memberships: 1 });
+		expect(plan.report.alreadyThere).toEqual({ fields: 0, relationships: 0, memberships: 1 });
 		expect(plan.report.circles).toEqual([
 			{ ref: 'kg', id: 'ci-kg', name: 'Kindergarten', status: 'existing' }
 		]);
@@ -684,7 +629,7 @@ describe('idsNamedBy', () => {
 		expect(
 			idsNamedBy(
 				doc({
-					people: [person('anna'), { ref: 'carl', existingId: 'c-carl' }],
+					people: [person('anna'), { ref: 'carl', existingId: 'c-carl', fields: [] }],
 					circles: [
 						{
 							ref: 'kg',

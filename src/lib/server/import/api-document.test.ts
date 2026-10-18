@@ -70,7 +70,7 @@ describe('readApiImportDocument', () => {
 		expect(document.people[0]).toMatchObject({
 			fields: [{ kind: 'phone', value: '+41 79 000 00 00', label: null }]
 		});
-		expect(document.people[1]).toEqual({ ref: 'carl', existingId: '01HX' });
+		expect(document.people[1]).toEqual({ ref: 'carl', existingId: '01HX', fields: [] });
 		expect(document.circles[0]).toEqual({
 			ref: 'kg',
 			name: 'Kindergarten',
@@ -124,6 +124,33 @@ describe('readApiImportDocument', () => {
 		expect(problems({ source: 'kg', people: [{ ...person, existingId: '01HX' }] })).toEqual([
 			'people[0].firstName'
 		]);
+	});
+
+	it('reads the fields that complete someone already there', () => {
+		const document = read({
+			source: 'kg',
+			people: [
+				{
+					ref: 'carl',
+					existingId: '01HX',
+					fields: [{ kind: 'address', value: ' Werdtweg 5, 3007 Bern ' }]
+				}
+			]
+		});
+		expect(document.people[0]).toEqual({
+			ref: 'carl',
+			existingId: '01HX',
+			fields: [{ kind: 'address', value: 'Werdtweg 5, 3007 Bern', label: null }]
+		});
+	});
+
+	it('refuses a field kind it does not know on someone already there', () => {
+		expect(
+			problems({
+				source: 'kg',
+				people: [{ ref: 'carl', existingId: '01HX', fields: [{ kind: 'fax', value: '1' }] }]
+			})
+		).toEqual(['people[0].fields[0].kind']);
 	});
 
 	it('refuses a document larger than one import is meant to be', () => {

@@ -61,6 +61,8 @@ interface NameFields {
 const hasAName = (p: NameFields) =>
 	[p.displayName, p.firstName, p.lastName, p.nickname].some((name) => (name ?? '').trim() !== '');
 
+const fields = v.optional(v.pipe(v.array(field), v.maxLength(MAX_FIELDS_PER_PERSON)), []);
+
 const newPerson = v.pipe(
 	v.strictObject({
 		ref: handle,
@@ -70,7 +72,7 @@ const newPerson = v.pipe(
 		nickname: text,
 		description: text,
 		birthDate,
-		fields: v.optional(v.pipe(v.array(field), v.maxLength(MAX_FIELDS_PER_PERSON)), [])
+		fields
 	}),
 	v.check(
 		(person) => hasAName(person),
@@ -78,7 +80,7 @@ const newPerson = v.pipe(
 	)
 );
 
-const existingPerson = v.strictObject({ ref: handle, existingId: recordId });
+const existingPerson = v.strictObject({ ref: handle, existingId: recordId, fields });
 
 const membership = v.strictObject({
 	person: handle,
