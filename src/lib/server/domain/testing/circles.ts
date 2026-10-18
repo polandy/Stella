@@ -6,6 +6,8 @@ import type {
 } from '../circles/circles';
 import type { CircleDirectoryReads } from '../circles/directory';
 import type { CircleMembershipReads } from '../circles/memberships';
+import type { CircleTreeReads } from '../circles/tree';
+import type { TreeCircle } from '../../../circles/tree';
 
 /*
  * In-memory read models of the household's circles. Like the people fakes (`contacts.ts`), the
@@ -41,6 +43,33 @@ const byName = (a: { name: string }, b: { name: string }) => a.name.localeCompar
 /** `CircleDirectoryReads` over a fixed list of circles. */
 export function inMemoryCircleDirectory(circles: readonly CircleWithCount[]): CircleDirectoryReads {
 	return { listVisibleTo: async () => [...circles].sort(byName) };
+}
+
+/** A circle of the nesting under `parentId`, named after its id, with nobody in it. */
+export function treeNode(
+	id: string,
+	parentId: string | null,
+	fields: Partial<TreeCircle> = {}
+): TreeCircle {
+	return {
+		id,
+		parentId,
+		name: id,
+		description: null,
+		kind: 'other',
+		color: 'blue',
+		startDate: null,
+		endDate: null,
+		visibility: 'shared',
+		memberCount: 0,
+		hiddenChildCount: 0,
+		...fields
+	};
+}
+
+/** `CircleTreeReads` over the nesting as the viewer sees it. */
+export function inMemoryCircleTree(circles: readonly TreeCircle[]): CircleTreeReads {
+	return { treeVisibleTo: async () => [...circles].sort(byName) };
 }
 
 /** One person in one circle, as every membership list reads it. */

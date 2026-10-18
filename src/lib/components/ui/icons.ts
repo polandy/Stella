@@ -13,6 +13,7 @@ import {
 	ChevronUp,
 	CircleDot,
 	CloudOff,
+	CornerDownRight,
 	DownloadCloud,
 	Download,
 	Ellipsis,
@@ -151,7 +152,9 @@ export const ICONS = {
 	video: Video,
 	message: MessageCircle,
 	letter: Mail,
-	other: CircleDot
+	other: CircleDot,
+	// A sub-circle's row inside its parent's card (docs/02 §2.4.2).
+	subCircle: CornerDownRight
 };
 
 /** One of `ICONS`. */

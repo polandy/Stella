@@ -16,6 +16,22 @@ function monthOrYear(lang: DateLanguage, value: string): string {
 	});
 }
 
+/**
+ * The period as a sub-circle's row says it: a school year as *23/24*, a single year once, and
+ * an open end with its month (*from Aug 2025*). Null when the circle has none.
+ */
+export function circleShortPeriodLabel(
+	lang: DateLanguage,
+	startDate: string | null,
+	endDate: string | null
+): string | null {
+	if (startDate && endDate) {
+		const [from, to] = [startDate.slice(0, 4), endDate.slice(0, 4)];
+		return from === to ? from : `${from.slice(2)}/${to.slice(2)}`;
+	}
+	return circlePeriodLabel(lang, startDate, endDate);
+}
+
 /** The period in the reader's language, or null when the circle has none. */
 export function circlePeriodLabel(
 	lang: DateLanguage,

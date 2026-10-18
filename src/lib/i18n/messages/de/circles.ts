@@ -175,5 +175,20 @@ export const circles: CirclesMessages = {
 			? 'Keine Kreise gefunden'
 			: p.count === 1
 				? '1 Kreis gefunden'
-				: `${p.count} Kreise gefunden`
+				: `${p.count} Kreise gefunden`,
+	'circles.sub.count': (p) => (p.count === 1 ? '1 Unterkreis' : `${p.count} Unterkreise`),
+	'circles.sub.inside': (p) => `+${p.count} darin`,
+	'circles.sub.more': (p) => `+${p.count} weitere`,
+	'circles.sub.showPast': (p) =>
+		p.count === 1 ? '1 vergangenen anzeigen' : `${p.count} vergangene anzeigen`,
+	'circles.sub.hidePast': 'Vergangene ausblenden',
+	'circles.sub.heading': 'Unterkreise',
+	'circles.sub.noPeriod': 'ohne Zeitraum',
+	'circles.sub.today': 'heute',
+	'circles.sub.path': 'Pfad des Kreises',
+	'circles.sub.siblings': 'Benachbarte Kreise',
+	'circles.sub.previous': (p) => `Vorheriger: ${p.name}`,
+	'circles.sub.next': (p) => `Nächster: ${p.name}`,
+	'circles.sub.directlyNobody': (p) =>
+		`Direkt gehört niemand zu ${p.name} — die Personen sind in den Unterkreisen.`
 };

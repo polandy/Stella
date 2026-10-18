@@ -4,6 +4,7 @@ import { createDrizzleCircleDirectoryReads } from '../db/circle-directory-reads'
 import { createDrizzleCircleMembershipReads } from '../db/circle-membership-reads';
 import { createDrizzleCirclePhotoRepository } from '../db/circle-photo-repository';
 import { createDrizzleCircleRepository } from '../db/circle-repository';
+import { createDrizzleCircleTreeReads } from '../db/circle-tree-reads';
 import { createDrizzleCutRepository } from '../db/cut-repository';
 import type * as schema from '../db/schema';
 import type { CirclePhotoDeps, CirclePhotoRepository } from '../domain/circles/circle-photos';
@@ -17,6 +18,7 @@ import type { CircleDeletionPreviewDeps, DeleteCircleDeps } from '../domain/circ
 import type { CircleDirectoryDeps } from '../domain/circles/directory';
 import type { CircleMembershipDeps } from '../domain/circles/memberships';
 import type { RenameRoleDeps } from '../domain/circles/rename-role';
+import type { CircleTreeDeps } from '../domain/circles/tree';
 import type { MediaStore } from '../domain/media/avatars';
 import type { CutDeps, CutRepository } from '../domain/media/cuts';
 import type { IdGenerator } from '../id';
@@ -42,6 +44,8 @@ export interface CircleServices {
 	cuts: CutRepository;
 	circleDeps: CircleDeps;
 	circleDirectoryDeps: CircleDirectoryDeps;
+	/** The nesting the Circles list and a circle's page show (docs/02 §2.4.2). */
+	circleTreeDeps: CircleTreeDeps;
 	circleMembershipDeps: CircleMembershipDeps;
 	memberRoleDeps: MemberRoleDeps;
 	memberRemovalDeps: MemberRemovalDeps;
@@ -83,6 +87,7 @@ export function createCircleServices({
 		cuts,
 		circleDeps: { circles, ids, clock },
 		circleDirectoryDeps: { directory: createDrizzleCircleDirectoryReads(db) },
+		circleTreeDeps: { tree: createDrizzleCircleTreeReads(db) },
 		circleMembershipDeps: { memberships },
 		memberRoleDeps: { circles, memberships, clock },
 		memberRemovalDeps: { circles, memberships },
