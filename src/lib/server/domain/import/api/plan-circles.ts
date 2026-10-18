@@ -102,9 +102,14 @@ export function planCircles(
 				moves ? parentCircleId : undefined,
 				nameById
 			);
-			const start = 'startDate' in set ? (set.startDate ?? null) : known.startDate;
-			const end = 'endDate' in set ? (set.endDate ?? null) : known.endDate;
-			checkPeriod(start, end, `${at}.${'endDate' in entry.details ? 'endDate' : 'startDate'}`);
+			// The period is checked whole — the half the entry keeps included — but only when the
+			// entry sends a date: a rename is no reason to refuse what is already stored.
+			const datesSent = 'startDate' in entry.details || 'endDate' in entry.details;
+			if (datesSent) {
+				const start = 'startDate' in set ? (set.startDate ?? null) : known.startDate;
+				const end = 'endDate' in set ? (set.endDate ?? null) : known.endDate;
+				checkPeriod(start, end, `${at}.${'endDate' in entry.details ? 'endDate' : 'startDate'}`);
+			}
 			if (Object.keys(set).length > 0) {
 				circleChanges.push({ id, set, updatedAt: context.now });
 			}

@@ -18,7 +18,7 @@ export const activityWording: ActivityWording = {
 	imported: (locale, { people, completed, circlesChanged }, source) => {
 		const t = createTranslator(locale);
 		const count = (n: number) => t('archive.peopleCount', { count: n });
-		// A plain import still names its people, even none: "imported 0 people" never gets this far.
+		// The people imported are named whenever nothing else is (an entry adding nothing is never logged).
 		const clauses = [
 			...(people > 0 || (completed === 0 && circlesChanged === 0)
 				? [t('import.api.loggedImported', { people: count(people) })]

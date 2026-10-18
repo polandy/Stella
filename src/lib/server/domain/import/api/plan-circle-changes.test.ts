@@ -248,6 +248,15 @@ describe('what a change may not do', () => {
 		]);
 	});
 
+	it('renames a circle whose stored period is off, as long as no date is sent', () => {
+		const odd = { ...KG, startDate: '2024-08-01', endDate: '2024-07-31' };
+		const plan = planned(
+			doc({ circles: [existing('kg', odd.id, { name: 'KG' })] }),
+			household([odd])
+		);
+		expect(plan.circleChanges).toEqual([{ id: odd.id, set: { name: 'KG' }, updatedAt: NOW }]);
+	});
+
 	it('refuses a period that ends before it starts, the kept half included', () => {
 		expect(
 			refused(
