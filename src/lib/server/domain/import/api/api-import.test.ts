@@ -29,13 +29,14 @@ const EMPTY_READING: HouseholdReading = {
 	fieldsOf: new Map(),
 	hiddenIds: new Set(),
 	circles: new Map(),
+	circleParents: new Map(),
 	types: BUILT_IN_RELATIONSHIP_TYPES,
 	links: [],
 	graph: { people: [], parentEdges: [], siblingEdges: [], partnerEdges: [], storedPairs: [] },
 	directory: []
 };
 
-function fakeRepository(inserted?: ApiImportCounts) {
+function fakeRepository(inserted?: ApiImportCounts, reading = EMPTY_READING) {
 	const calls = {
 		read: [] as { contactIds: string[]; circleIds: string[] }[],
 		applied: [] as { plan: ApiImportPlan; audit: ActivityOf<'people.imported'> | null }[]
@@ -43,19 +44,20 @@ function fakeRepository(inserted?: ApiImportCounts) {
 	const repository: ApiImportRepository = {
 		async readHousehold(_viewer, ids) {
 			calls.read.push(ids);
-			return EMPTY_READING;
+			return reading;
 		},
-		async applyPlan(plan, audit) {
+		async applyPlan(_viewer, plan, audit) {
 			calls.applied.push({ plan, audit });
-			return (
-				inserted ?? {
+			return {
+				added: inserted ?? {
 					people: plan.contacts.length,
 					fields: plan.fields.length,
 					relationships: plan.relationships.length,
 					circles: plan.circles.length,
 					memberships: plan.memberships.length
-				}
-			);
+				},
+				changed: { circles: plan.circleChanges.length }
+			};
 		}
 	};
 	return { repository, calls };
@@ -145,6 +147,7 @@ describe('importViaApi', () => {
 				kind: 'people.imported',
 				people: 2,
 				completed: 0,
+				circlesChanged: 0,
 				source: 'kindergarten',
 				visibility: 'shared',
 				locale: 'en'
@@ -177,6 +180,57 @@ describe('importViaApi', () => {
 			{ dryRun: false, locale: 'en' }
 		);
 		expect(calls.applied).toEqual([{ plan: expect.anything(), audit: null }]);
+	});
+
+	describe('changing a circle already in Stella', () => {
+		const withKindergarten: HouseholdReading = {
+			...EMPTY_READING,
+			circles: new Map([
+				[
+					'ci-kg',
+					{
+						id: 'ci-kg',
+						name: 'Kindergarten',
+						kind: 'class',
+						description: null,
+						startDate: null,
+						endDate: null,
+						parent: null,
+						memberIds: []
+					}
+				]
+			]),
+			circleParents: new Map([['ci-kg', null]])
+		};
+		const rename: ApiImportDocument = {
+			...document,
+			people: [],
+			relationships: [],
+			circles: [
+				{ ref: 'kg', existingId: 'ci-kg', members: [], details: { name: 'Kindergarten 23/24' } }
+			]
+		};
+
+		it('reports the change on a dry run and writes nothing', async () => {
+			const { repository, calls } = fakeRepository(undefined, withKindergarten);
+			const result = await importViaApi(deps(repository), ACTOR, rename, {
+				dryRun: true,
+				locale: 'en'
+			});
+			expect(calls.applied).toEqual([]);
+			expect(result).toMatchObject({ ok: true, dryRun: true, changed: { circles: 1 } });
+		});
+
+		it('logs an import that only changes circles', async () => {
+			const { repository, calls } = fakeRepository(undefined, withKindergarten);
+			const result = await importViaApi(deps(repository), ACTOR, rename, {
+				dryRun: false,
+				locale: 'en'
+			});
+			expect(calls.applied[0].plan.circleChanges).toHaveLength(1);
+			expect(calls.applied[0].audit?.event).toMatchObject({ people: 0, circlesChanged: 1 });
+			expect(result).toMatchObject({ ok: true, dryRun: false, changed: { circles: 1 } });
+		});
 	});
 
 	it('refuses a document with problems and writes nothing', async () => {

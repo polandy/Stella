@@ -13,7 +13,12 @@ import {
 	PARTNER_TYPE_KEYS,
 	SIBLING_TYPE_KEY
 } from '../../../../relationships/type-keys';
-import { resolveCircleColor, resolveCircleKind, type NewCircle } from '../../circles/circles';
+import {
+	resolveCircleColor,
+	resolveCircleKind,
+	type CircleKind,
+	type NewCircle
+} from '../../circles/circles';
 import type { ContactFieldKind } from '../../../../people/contact-fields';
 import type { NewContactField } from '../../contact-fields/contact-fields';
 import type { NewContact } from '../../contacts/contacts';
@@ -67,10 +72,16 @@ export interface KnownField {
 	sortOrder: number;
 }
 
-/** A circle the member may see, with who is in it already. */
+/** A circle the member may see, with its details and who is in it already. */
 export interface KnownCircle {
 	id: string;
 	name: string;
+	kind: CircleKind;
+	description: string | null;
+	startDate: string | null;
+	endDate: string | null;
+	/** The circle it sits inside; `name` is null when the member may not see that one. */
+	parent: { id: string; name: string | null } | null;
 	memberIds: readonly string[];
 }
 
@@ -100,6 +111,11 @@ export interface ApiImportContext {
 	hiddenIds: ReadonlySet<string>;
 	/** Of the circle ids the document names or would create, those the member may see. */
 	circles: ReadonlyMap<string, KnownCircle>;
+	/**
+	 * The parent of **every** circle in the household, those the member may not see included, so
+	 * a move cannot close a loop through a hidden one. Only ever answers whether it would.
+	 */
+	circleParents: ReadonlyMap<string, string | null>;
 	/** Every relationship type the member may use: the built-ins and the household's own. */
 	types: readonly RelationshipType[];
 	/** Stored links touching any of `people`. */
@@ -122,7 +138,9 @@ export type ApiImportProblem =
 	| { code: 'duplicateRelationship'; path: string }
 	| { code: 'relationshipContradiction'; path: string }
 	| { code: 'relationshipExcluded'; path: string; reason: ExclusionReason; personId: string }
-	| { code: 'duplicateMember'; path: string; ref: string };
+	| { code: 'duplicateMember'; path: string; ref: string }
+	| { code: 'circleCycle'; path: string; ref: string }
+	| { code: 'periodBackwards'; path: string };
 
 /**
  * Whether an entry is created by this document, was created by an earlier sending of it, or
@@ -140,11 +158,46 @@ export interface ApiImportReport {
 		/** How many contact fields this sending gives them. */
 		fieldsAdded: number;
 	}[];
-	circles: { ref: string; id: string; name: string; status: ApiImportStatus }[];
+	circles: {
+		ref: string;
+		id: string;
+		/** As it is after this sending. */
+		name: string;
+		status: ApiImportStatus;
+		changes: ApiCircleChanges;
+	}[];
 	/** New people whose name somebody in the household already has. */
 	possibleDuplicates: { ref: string; candidates: KnownPerson[] }[];
 	/** Fields, links and memberships left out because the household already has them. */
 	alreadyThere: { fields: number; relationships: number; memberships: number };
+}
+
+/** A parent as the report names it; one the member may not see is only said to be there. */
+export type ReportedParent = { id: string; name: string } | { hidden: true };
+
+/** One detail's old and new value. */
+export interface Change<T> {
+	from: T;
+	to: T;
+}
+
+/** The details a sending changes on a circle already in Stella, each old → new. */
+export interface ApiCircleChanges {
+	name?: Change<string>;
+	kind?: Change<CircleKind>;
+	description?: Change<string | null>;
+	startDate?: Change<string | null>;
+	endDate?: Change<string | null>;
+	parent?: Change<ReportedParent | null>;
+}
+
+/** The columns a change writes on a circle already in Stella — only those that change. */
+export interface PlannedCircleChange {
+	id: string;
+	set: Partial<
+		Pick<PlannedCircle, 'name' | 'kind' | 'description' | 'startDate' | 'endDate' | 'parentCircleId'>
+	>;
+	updatedAt: number;
 }
 
 /** A circle as the import writes it — with the parent the create form does not offer. */
@@ -171,6 +224,8 @@ export interface ApiImportPlan {
 	fields: NewContactField[];
 	relationships: NewRelationship[];
 	circles: PlannedCircle[];
+	/** After the new circles, so a circle can move inside one this document creates. */
+	circleChanges: PlannedCircleChange[];
 	memberships: PlannedMembership[];
 	report: ApiImportReport;
 }

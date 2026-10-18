@@ -77,11 +77,27 @@ export interface ApiNewCircle {
 	members: ApiMembership[];
 }
 
-/** A circle already in Stella, so the document can add members to it. */
+/** What a circle says about itself, as a document may set it on one already in Stella. */
+export interface ApiCircleDetails {
+	name: string;
+	kind: CircleKind;
+	description: string | null;
+	startDate: string | null;
+	endDate: string | null;
+	/** The ref of a circle listed **earlier** in the document; `null` puts it at the top. */
+	parent: string | null;
+}
+
+/**
+ * A circle already in Stella, so the document can add members to it and change its details.
+ * `details` holds only what the entry names — a detail left out stays as it is, and `null`
+ * clears one that may be empty.
+ */
 export interface ApiExistingCircle {
 	ref: string;
 	existingId: string;
 	members: ApiMembership[];
+	details: Partial<ApiCircleDetails>;
 }
 
 export type ApiCircle = ApiNewCircle | ApiExistingCircle;

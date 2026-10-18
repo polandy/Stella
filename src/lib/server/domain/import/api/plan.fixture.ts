@@ -1,7 +1,12 @@
 import type { KinshipGraph } from '../../../../kinship/kinship';
 import { BUILT_IN_RELATIONSHIP_TYPES } from '../../relationships/built-in-types';
 import type { ApiImportDocument, ApiNewPerson, ApiRelationship } from './document';
-import { planApiImport, type ApiImportContext, type ApiImportProblem } from './plan';
+import {
+	planApiImport,
+	type ApiImportContext,
+	type ApiImportProblem,
+	type KnownCircle
+} from './plan';
 
 /* What every planner test builds on: an empty household, a document, and the plan or refusal. */
 
@@ -29,6 +34,7 @@ export function context(over: Partial<ApiImportContext> = {}): ApiImportContext 
 		fieldsOf: new Map(),
 		hiddenIds: new Set(),
 		circles: new Map(),
+		circleParents: new Map(),
 		types: BUILT_IN_RELATIONSHIP_TYPES,
 		links: [],
 		graph: EMPTY_GRAPH,
@@ -76,3 +82,16 @@ export function refused(document: ApiImportDocument, ctx = context()): ApiImport
 	if (result.ok) throw new Error('expected the document to be refused');
 	return result.problems;
 }
+
+/** A circle the member sees, at the top and empty unless `over` says otherwise. */
+export const knownCircle = (
+	over: Partial<KnownCircle> & Pick<KnownCircle, 'id' | 'name'>
+): KnownCircle => ({
+	kind: 'other',
+	description: null,
+	startDate: null,
+	endDate: null,
+	parent: null,
+	memberIds: [],
+	...over
+});

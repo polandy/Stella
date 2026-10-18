@@ -241,6 +241,7 @@ describe('localizedActivityEntry', () => {
 			kind: 'people.imported',
 			people: 4,
 			completed: 0,
+			circlesChanged: 0,
 			source: 'kindergarten',
 			visibility: 'private',
 			locale: 'en'

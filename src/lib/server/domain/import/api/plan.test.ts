@@ -9,6 +9,7 @@ import {
 	doc,
 	H,
 	idOf,
+	knownCircle,
 	link,
 	ME,
 	NOW,
@@ -561,13 +562,16 @@ describe('circles', () => {
 						members: [
 							{ person: 'anna', role: null, startDate: null, endDate: null },
 							{ person: 'carl', role: null, startDate: null, endDate: null }
-						]
+						],
+						details: {}
 					}
 				]
 			}),
 			context({
 				people: new Map([['c-carl', { id: 'c-carl', displayName: 'Carl', birthDate: null }]]),
-				circles: new Map([['ci-kg', { id: 'ci-kg', name: 'Kindergarten', memberIds: ['c-carl'] }]])
+				circles: new Map([
+					['ci-kg', knownCircle({ id: 'ci-kg', name: 'Kindergarten', memberIds: ['c-carl'] })]
+				])
 			})
 		);
 		expect(plan.circles).toEqual([]);
@@ -576,7 +580,7 @@ describe('circles', () => {
 		]);
 		expect(plan.report.alreadyThere).toEqual({ fields: 0, relationships: 0, memberships: 1 });
 		expect(plan.report.circles).toEqual([
-			{ ref: 'kg', id: 'ci-kg', name: 'Kindergarten', status: 'existing' }
+			{ ref: 'kg', id: 'ci-kg', name: 'Kindergarten', status: 'existing', changes: {} }
 		]);
 	});
 
@@ -586,7 +590,10 @@ describe('circles', () => {
 			doc({ people: [person('anna'), person('bert')], circles: [kindergarten()] }),
 			context({
 				circles: new Map([
-					[id, { id, name: 'Kindergarten 2023/24', memberIds: [idOf('anna'), idOf('bert')] }]
+					[
+						id,
+						knownCircle({ id, name: 'Kindergarten 2023/24', memberIds: [idOf('anna'), idOf('bert')] })
+					]
 				])
 			})
 		);
@@ -609,7 +616,7 @@ describe('circles', () => {
 								{ person: 'zora', role: null, startDate: null, endDate: null }
 							]
 						}),
-						{ ref: 'gone', existingId: 'ci-gone', members: [] }
+						{ ref: 'gone', existingId: 'ci-gone', members: [], details: {} }
 					]
 				}),
 				context({ hiddenIds: new Set([`api~${SOURCE}~c~kg`]) })
@@ -641,7 +648,7 @@ describe('idsNamedBy', () => {
 							parent: null,
 							members: []
 						},
-						{ ref: 'old', existingId: 'ci-old', members: [] }
+						{ ref: 'old', existingId: 'ci-old', members: [], details: {} }
 					]
 				})
 			)
