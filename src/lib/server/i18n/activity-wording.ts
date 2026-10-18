@@ -1,3 +1,4 @@
+import { INTL_LOCALES } from '$lib/i18n/locales';
 import { createTranslator } from '$lib/i18n/translate';
 import type { ActivityWording } from '$lib/server/domain/activity/activity';
 
@@ -14,15 +15,24 @@ export const activityWording: ActivityWording = {
 			household
 		});
 	},
-	imported: (locale, { people, completed }, source) => {
+	imported: (locale, { people, completed, circlesChanged }, source) => {
 		const t = createTranslator(locale);
 		const count = (n: number) => t('archive.peopleCount', { count: n });
-		if (completed === 0) return t('import.api.loggedSummary', { people: count(people), source });
-		if (people === 0) return t('import.api.loggedCompleted', { people: count(completed), source });
-		return t('import.api.loggedSummaryAndCompleted', {
-			people: count(people),
-			completed: count(completed),
-			source
-		});
+		// A plain import still names its people, even none: "imported 0 people" never gets this far.
+		const clauses = [
+			...(people > 0 || (completed === 0 && circlesChanged === 0)
+				? [t('import.api.loggedImported', { people: count(people) })]
+				: []),
+			...(completed > 0 ? [t('import.api.loggedCompleted', { people: count(completed) })] : []),
+			...(circlesChanged > 0
+				? [
+						t('import.api.loggedCirclesChanged', {
+							circles: t('import.api.circleCount', { count: circlesChanged })
+						})
+					]
+				: [])
+		];
+		const list = new Intl.ListFormat(INTL_LOCALES[locale], { type: 'conjunction' }).format(clauses);
+		return t('import.api.loggedSummary', { list, source });
 	}
 };

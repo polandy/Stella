@@ -37,6 +37,17 @@ export interface ApiImportCounts {
 	memberships: number;
 }
 
+/** How many records already in Stella were changed (or, in a dry run, would be). */
+export interface ApiImportChanges {
+	circles: number;
+}
+
+/** What one write actually did. */
+export interface ApiImportWritten {
+	added: ApiImportCounts;
+	changed: ApiImportChanges;
+}
+
 /** Port the domain owns; the adapter reads with the member's scope and writes in one go. */
 export interface ApiImportRepository {
 	readHousehold(
@@ -46,12 +57,14 @@ export interface ApiImportRepository {
 	/**
 	 * Write the plan and the log entry in **one** transaction, leaving out any row whose id or
 	 * unique key is already taken — so two sendings racing each other still add everything once.
-	 * Returns what was actually inserted.
+	 * A circle change is written scoped to what `viewer` may see then, so a circle that turned
+	 * private to someone else meanwhile is left alone. Returns what was actually written.
 	 */
 	applyPlan(
+		viewer: Viewer,
 		plan: ApiImportPlan,
 		audit: ActivityOf<'people.imported'> | null
-	): Promise<ApiImportCounts>;
+	): Promise<ApiImportWritten>;
 }
 
 export interface ApiImportDeps {
@@ -77,7 +90,13 @@ export interface ApiImportOptions {
 }
 
 export type ApiImportResult =
-	| { ok: true; dryRun: boolean; added: ApiImportCounts; report: ApiImportReport }
+	| {
+			ok: true;
+			dryRun: boolean;
+			added: ApiImportCounts;
+			changed: ApiImportChanges;
+			report: ApiImportReport;
+	  }
 	| { ok: false; problems: ApiImportProblem[] };
 
 const countsOf = (plan: ApiImportPlan): ApiImportCounts => ({
@@ -112,25 +131,31 @@ export async function importViaApi(
 	const { plan } = planned;
 
 	const wouldAdd = countsOf(plan);
-	if (options.dryRun) return { ok: true, dryRun: true, added: wouldAdd, report: plan.report };
+	const wouldChange: ApiImportChanges = { circles: plan.circleChanges.length };
+	if (options.dryRun) {
+		return { ok: true, dryRun: true, added: wouldAdd, changed: wouldChange, report: plan.report };
+	}
 
-	// A re-sent document adds nothing, and a log entry saying "imported 0 people" is noise.
-	const audit = isEmpty(wouldAdd)
-		? null
-		: activityRecord(
-				deps,
-				viewer,
-				{
-					kind: 'people.imported',
-					people: plan.contacts.length,
-					completed: plan.report.people.filter((p) => p.status === 'existing' && p.fieldsAdded > 0)
-						.length,
-					source: document.source,
-					visibility: document.visibility ?? actor.defaultVisibility,
-					locale: options.locale
-				},
-				now
-			);
-	const added = await deps.imports.applyPlan(plan, audit);
-	return { ok: true, dryRun: false, added, report: plan.report };
+	// A re-sent document adds and changes nothing, and a log entry saying "imported 0 people" is noise.
+	const audit =
+		isEmpty(wouldAdd) && wouldChange.circles === 0
+			? null
+			: activityRecord(
+					deps,
+					viewer,
+					{
+						kind: 'people.imported',
+						people: plan.contacts.length,
+						completed: plan.report.people.filter(
+							(p) => p.status === 'existing' && p.fieldsAdded > 0
+						).length,
+						circlesChanged: wouldChange.circles,
+						source: document.source,
+						visibility: document.visibility ?? actor.defaultVisibility,
+						locale: options.locale
+					},
+					now
+				);
+	const { added, changed } = await deps.imports.applyPlan(viewer, plan, audit);
+	return { ok: true, dryRun: false, added, changed, report: plan.report };
 }

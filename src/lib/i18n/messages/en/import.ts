@@ -117,16 +117,14 @@ export const importer = {
 	'import.metThrough': (p: { name: string }) => `Through ${p.name}`,
 	'import.metThroughInfo': (p: { info: string; name: string }) => `${p.info} (through ${p.name})`,
 
-	'import.api.loggedSummary': (p: { people: string; source: string }) =>
-		`imported ${p.people} through the API (${p.source})`,
-	'import.api.loggedCompleted': (p: { people: string; source: string }) =>
-		`added contact details to ${p.people} through the API (${p.source})`,
-	'import.api.loggedSummaryAndCompleted': (p: {
-		people: string;
-		completed: string;
-		source: string;
-	}) =>
-		`imported ${p.people} and added contact details to ${p.completed} through the API (${p.source})`,
+	// The activity line of an API import: its clauses, joined as a list, then where it came from.
+	'import.api.loggedImported': (p: { people: string }) => `imported ${p.people}`,
+	'import.api.loggedCompleted': (p: { people: string }) => `added contact details to ${p.people}`,
+	'import.api.loggedCirclesChanged': (p: { circles: string }) => `changed ${p.circles}`,
+	'import.api.loggedSummary': (p: { list: string; source: string }) =>
+		`${p.list} through the API (${p.source})`,
+	'import.api.circleCount': (p: { count: number }): string =>
+		p.count === 1 ? '1 circle' : `${p.count} circles`,
 
 	'import.error.chooseFile': 'Please choose the Monica export or vCard file to import.',
 	'import.error.sessionMissing': 'The import session is missing. Please upload the dump again.',

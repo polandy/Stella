@@ -148,6 +148,10 @@ Goal: sand the edges and add the nice-to-haves.
   (centre, parents, grandparents); tapping it, or Enter in the keyboard walk, opens *Add
   relationship* on that person preset to *Child of*. No node for filters or the "+N", and only
   for a reader who may add a relationship.
+- **Nested circles on the circle page** — a circle's parent and its sub-circles shown on its
+  page, and the edit sheet able to set the parent (a school › its classes, a club › its teams).
+  Today only the import API and the demo seed nest circles (§2.16.1, docs/03 §circle); the
+  loop check and the visibility rule the API applies carry over.
 
 **Exit:** a release-quality 1.0 the family enjoys using daily.
 

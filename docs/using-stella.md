@@ -919,8 +919,10 @@ A good script asks first: it sends the list with `?dryRun=true`, and Stella answ
 it *would* add — and with anyone on the list whose name is already in Stella, so they can be
 linked to the person who is here instead of being added twice. Someone who is here already can
 be completed too: the address the list has and they lack is added, and nothing they have is
-changed or removed. Sending the same list again
-adds nothing new. When the job is done, revoke the token under **Settings → API tokens**; it
+changed or removed. A script can also tidy up circles you already have: rename one, give it
+its period, or put it inside another — a child's kindergarten years and school classes, say,
+all inside one circle for their school career. Sending the same list again
+adds and changes nothing. When the job is done, revoke the token under **Settings → API tokens**; it
 stops working at once. The details for whoever writes the script are in the features spec,
 §2.16.1.
 

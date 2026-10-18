@@ -76,7 +76,10 @@ describe('changing a circle already in Stella', () => {
 				name: 'Kindergarten Munzi II 23/24',
 				status: 'existing',
 				changes: {
-					name: { from: 'Kindergarten Munzingerstrasse 2023/24', to: 'Kindergarten Munzi II 23/24' },
+					name: {
+						from: 'Kindergarten Munzingerstrasse 2023/24',
+						to: 'Kindergarten Munzi II 23/24'
+					},
 					kind: { from: 'class', to: 'school' },
 					endDate: { from: null, to: '2024-07-31' }
 				}
@@ -179,10 +182,16 @@ describe('changing a circle already in Stella', () => {
 describe('what a change may not do', () => {
 	it('refuses a move inside a circle nested in it, through one the member cannot see', () => {
 		// Klasse sits in a hidden circle, which sits in KG: KG cannot move inside Klasse.
-		const klasse = knownCircle({ id: 'ci-klasse', name: 'Klasse', parent: { id: 'ci-hidden', name: null } });
+		const klasse = knownCircle({
+			id: 'ci-klasse',
+			name: 'Klasse',
+			parent: { id: 'ci-hidden', name: null }
+		});
 		expect(
 			refused(
-				doc({ circles: [existing('klasse', klasse.id), existing('kg', KG.id, { parent: 'klasse' })] }),
+				doc({
+					circles: [existing('klasse', klasse.id), existing('kg', KG.id, { parent: 'klasse' })]
+				}),
 				household([klasse, KG], [['ci-hidden', KG.id]])
 			)
 		).toEqual([{ code: 'circleCycle', path: 'circles[1].parent', ref: 'klasse' }]);
@@ -227,11 +236,16 @@ describe('what a change may not do', () => {
 		expect(
 			refused(
 				doc({
-					circles: [existing('elsewhere', 'ci-other-household'), existing('kg', KG.id, { parent: 'elsewhere' })]
+					circles: [
+						existing('elsewhere', 'ci-other-household'),
+						existing('kg', KG.id, { parent: 'elsewhere' })
+					]
 				}),
 				household([KG])
 			)
-		).toEqual([{ code: 'circleNotFound', path: 'circles[0].existingId', id: 'ci-other-household' }]);
+		).toEqual([
+			{ code: 'circleNotFound', path: 'circles[0].existingId', id: 'ci-other-household' }
+		]);
 	});
 
 	it('refuses a period that ends before it starts, the kept half included', () => {

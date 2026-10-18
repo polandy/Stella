@@ -90,11 +90,11 @@ export const importer: ImportMessages = {
 	'import.metThrough': (p) => `Über ${p.name}`,
 	'import.metThroughInfo': (p) => `${p.info} (über ${p.name})`,
 
-	'import.api.loggedSummary': (p) => `${p.people} über die API importiert (${p.source})`,
-	'import.api.loggedCompleted': (p) =>
-		`Kontaktdaten von ${p.people} über die API ergänzt (${p.source})`,
-	'import.api.loggedSummaryAndCompleted': (p) =>
-		`${p.people} über die API importiert und Kontaktdaten von ${p.completed} ergänzt (${p.source})`,
+	'import.api.loggedImported': (p) => `${p.people} importiert`,
+	'import.api.loggedCompleted': (p) => `Kontaktdaten von ${p.people} ergänzt`,
+	'import.api.loggedCirclesChanged': (p) => `${p.circles} geändert`,
+	'import.api.loggedSummary': (p) => `${p.list} (über die API, ${p.source})`,
+	'import.api.circleCount': (p) => (p.count === 1 ? '1 Kreis' : `${p.count} Kreise`),
 
 	'import.error.chooseFile': 'Bitte wähle die Monica-Export- oder vCard-Datei zum Importieren.',
 	'import.error.sessionMissing': 'Die Import-Sitzung fehlt. Bitte lade den Dump erneut hoch.',

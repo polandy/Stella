@@ -592,7 +592,11 @@ describe('circles', () => {
 				circles: new Map([
 					[
 						id,
-						knownCircle({ id, name: 'Kindergarten 2023/24', memberIds: [idOf('anna'), idOf('bert')] })
+						knownCircle({
+							id,
+							name: 'Kindergarten 2023/24',
+							memberIds: [idOf('anna'), idOf('bert')]
+						})
 					]
 				])
 			})

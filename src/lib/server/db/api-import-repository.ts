@@ -14,8 +14,8 @@ import {
 	type ActivityWording
 } from '../domain/activity/activity';
 import type {
-	ApiImportCounts,
 	ApiImportRepository,
+	ApiImportWritten,
 	HouseholdReading
 } from '../domain/import/api/api-import';
 import type { ApiImportPlan, KnownField, KnownPerson } from '../domain/import/api/plan';
@@ -97,10 +97,41 @@ export function createDrizzleApiImportRepository(
 
 			const visibleCircles = inBatches(ids.circleIds, (batch) =>
 				db
-					.select({ id: circle.id, name: circle.name })
+					.select({
+						id: circle.id,
+						name: circle.name,
+						kind: circle.kind,
+						description: circle.description,
+						startDate: circle.startDate,
+						endDate: circle.endDate,
+						parentCircleId: circle.parentCircleId
+					})
 					.from(circle)
 					.where(and(inArray(circle.id, batch), circleColumnsVisibleTo(viewer, circle)))
 					.all()
+			);
+			// A parent's name only where the member may see it; otherwise it is only said to be there.
+			const parentIds = [
+				...new Set(visibleCircles.flatMap((c) => (c.parentCircleId ? [c.parentCircleId] : [])))
+			];
+			const parentNames = new Map(
+				inBatches(parentIds, (batch) =>
+					db
+						.select({ id: circle.id, name: circle.name })
+						.from(circle)
+						.where(and(inArray(circle.id, batch), circleColumnsVisibleTo(viewer, circle)))
+						.all()
+				).map((p) => [p.id, p.name])
+			);
+			// Read past the scope on purpose: the whole nesting, ids only, so a move cannot close a
+			// loop through a circle the member may not see. It never reaches the caller.
+			const circleParents = new Map(
+				db
+					.select({ id: circle.id, parentCircleId: circle.parentCircleId })
+					.from(circle)
+					.where(eq(circle.householdId, viewer.householdId))
+					.all()
+					.map((c) => [c.id, c.parentCircleId])
 			);
 			const memberRows = inBatches(
 				visibleCircles.map((c) => c.id),
@@ -117,6 +148,13 @@ export function createDrizzleApiImportRepository(
 					{
 						id: c.id,
 						name: c.name,
+						kind: c.kind,
+						description: c.description,
+						startDate: c.startDate,
+						endDate: c.endDate,
+						parent: c.parentCircleId
+							? { id: c.parentCircleId, name: parentNames.get(c.parentCircleId) ?? null }
+							: null,
 						memberIds: memberRows.filter((m) => m.circleId === c.id).map((m) => m.contactId)
 					}
 				])
@@ -185,6 +223,7 @@ export function createDrizzleApiImportRepository(
 				fieldsOf,
 				hiddenIds,
 				circles,
+				circleParents,
 				types,
 				links: uniqueLinks,
 				graph: loadKinshipGraph(db, viewer),
@@ -193,21 +232,22 @@ export function createDrizzleApiImportRepository(
 		},
 
 		async applyPlan(
+			viewer: Viewer,
 			plan: ApiImportPlan,
 			audit: ActivityOf<'people.imported'> | null
-		): Promise<ApiImportCounts> {
+		): Promise<ApiImportWritten> {
 			return db.transaction((tx) => {
 				// The Bun driver types `run()` as void, so rows are counted through `returning()`.
-				const inserted = (rows: unknown[]) => rows.length;
+				const written = (rows: unknown[]) => rows.length;
 				let people = 0;
 				for (const row of plan.contacts) {
-					people += inserted(
+					people += written(
 						tx.insert(contact).values(row).onConflictDoNothing().returning({ id: contact.id }).all()
 					);
 				}
 				let fields = 0;
 				for (const row of plan.fields) {
-					fields += inserted(
+					fields += written(
 						tx
 							.insert(contactField)
 							.values(row)
@@ -218,7 +258,7 @@ export function createDrizzleApiImportRepository(
 				}
 				let relationships = 0;
 				for (const { description, ...row } of plan.relationships) {
-					relationships += inserted(
+					relationships += written(
 						tx
 							.insert(relationship)
 							.values({ ...row, note: description })
@@ -229,8 +269,21 @@ export function createDrizzleApiImportRepository(
 				}
 				let circles = 0;
 				for (const row of plan.circles) {
-					circles += inserted(
+					circles += written(
 						tx.insert(circle).values(row).onConflictDoNothing().returning({ id: circle.id }).all()
+					);
+				}
+				// After the new circles, so a circle can move inside one this sending creates; scoped
+				// as the circle's edit form writes it, so one that turned private meanwhile is skipped.
+				let circlesChanged = 0;
+				for (const change of plan.circleChanges) {
+					circlesChanged += written(
+						tx
+							.update(circle)
+							.set({ ...change.set, updatedAt: change.updatedAt })
+							.where(and(eq(circle.id, change.id), circleColumnsVisibleTo(viewer, circle)))
+							.returning({ id: circle.id })
+							.all()
 					);
 				}
 				let memberships = 0;
@@ -248,7 +301,7 @@ export function createDrizzleApiImportRepository(
 						)
 						.get();
 					if (member) continue;
-					memberships += inserted(
+					memberships += written(
 						tx
 							.insert(circleMembership)
 							.values(row)
@@ -258,7 +311,10 @@ export function createDrizzleApiImportRepository(
 					);
 				}
 				if (audit) tx.insert(activityLog).values(localizedActivityEntry(audit, wording)).run();
-				return { people, fields, relationships, circles, memberships };
+				return {
+					added: { people, fields, relationships, circles, memberships },
+					changed: { circles: circlesChanged }
+				};
 			});
 		}
 	};
