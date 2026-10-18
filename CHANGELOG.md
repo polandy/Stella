@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.0.25](https://github.com/polandy/Stella/compare/v0.0.24...v0.0.25) (2026-10-18)
+
+
+### Features
+
+* **contact:** show when a note was written, with the exact day on tap ([#380](https://github.com/polandy/Stella/issues/380)) ([3ee83c1](https://github.com/polandy/Stella/commit/3ee83c1c72d2c6f98bc972ef85d26befbacd07e6))
+* **immich:** browse a linked face's photos in Find in Immich to pick a picture ([#377](https://github.com/polandy/Stella/issues/377)) ([802bdd2](https://github.com/polandy/Stella/commit/802bdd24857c756977c13d69b5b625f15aab5294))
+* **import:** let the import API complete people already in Stella with the fields they lack ([#383](https://github.com/polandy/Stella/issues/383)) ([88e770c](https://github.com/polandy/Stella/commit/88e770c4e4a2432663a481eaa217d626756e242f))
+* **privacy:** blur private entries on their author's screen until asked for ([#382](https://github.com/polandy/Stella/issues/382)) ([f543f9e](https://github.com/polandy/Stella/commit/f543f9e9a4461240c4243bfaac4d3f52edc82e46))
+
 ## [0.0.24](https://github.com/polandy/Stella/compare/v0.0.23...v0.0.24) (2026-10-11)
 
 
