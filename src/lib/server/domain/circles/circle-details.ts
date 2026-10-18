@@ -104,7 +104,7 @@ const orNull = (value?: string | null): string | null => {
  * month or the year (docs/03 `circle`), so they are compared at the coarser of the two
  * precisions: `2025` does not end before `2025-08-18`.
  */
-function endsBeforeItStarts(start: string, end: string): boolean {
+export function endsBeforeItStarts(start: string, end: string): boolean {
 	const precision = Math.min(start.length, end.length);
 	return end.slice(0, precision) < start.slice(0, precision);
 }

@@ -140,6 +140,8 @@ export type LocalizedActivityEvent =
 			people: number;
 			/** People already in the household the import gave contact details they lacked. */
 			completed: number;
+			/** Circles already in Stella it renamed, moved or otherwise changed. */
+			circlesChanged: number;
 			source: string;
 			/** Mirrors what was imported: a private batch is logged for its author alone. */
 			visibility: Visibility;
@@ -167,8 +169,15 @@ export type ActivityOf<K extends ActivityEvent['kind']> = ActivityRecord<
 export interface ActivityWording {
 	/** "restored 12 people from an archive of Pollari". */
 	restored(locale: Locale, people: number, household: string): string;
-	/** "imported 12 people through the API (kindergarten-2023)", with the people it completed. */
-	imported(locale: Locale, counts: { people: number; completed: number }, source: string): string;
+	/**
+	 * "imported 12 people through the API (kindergarten-2023)", with the people it completed and
+	 * the circles it changed.
+	 */
+	imported(
+		locale: Locale,
+		counts: { people: number; completed: number; circlesChanged: number },
+		source: string
+	): string;
 }
 
 /** Stamp an event with the member who caused it, a fresh id and the moment (`at`, or now). */
@@ -318,7 +327,11 @@ function localizedRow(
 				visibility: event.visibility,
 				summary: wording.imported(
 					event.locale,
-					{ people: event.people, completed: event.completed },
+					{
+						people: event.people,
+						completed: event.completed,
+						circlesChanged: event.circlesChanged
+					},
 					event.source
 				)
 			};

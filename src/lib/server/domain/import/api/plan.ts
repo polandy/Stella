@@ -13,7 +13,7 @@ import {
 	PARTNER_TYPE_KEYS,
 	SIBLING_TYPE_KEY
 } from '../../../../relationships/type-keys';
-import { resolveCircleColor, resolveCircleKind, type NewCircle } from '../../circles/circles';
+import type { CircleKind, NewCircle } from '../../circles/circles';
 import type { ContactFieldKind } from '../../../../people/contact-fields';
 import type { NewContactField } from '../../contact-fields/contact-fields';
 import type { NewContact } from '../../contacts/contacts';
@@ -26,12 +26,13 @@ import {
 	fieldIdFor,
 	isExistingCircle,
 	isExistingPerson,
-	membershipIdFor,
 	personIdFor,
 	relationshipIdFor,
 	type ApiContactField,
 	type ApiImportDocument
 } from './document';
+import { planCircles } from './plan-circles';
+import { orNull } from './text';
 
 /*
  * Planning an API import (docs/02 §2.16.1). Pure: the document, plus what the household already
@@ -67,10 +68,16 @@ export interface KnownField {
 	sortOrder: number;
 }
 
-/** A circle the member may see, with who is in it already. */
+/** A circle the member may see, with its details and who is in it already. */
 export interface KnownCircle {
 	id: string;
 	name: string;
+	kind: CircleKind;
+	description: string | null;
+	startDate: string | null;
+	endDate: string | null;
+	/** The circle it sits inside; `name` is null when the member may not see that one. */
+	parent: { id: string; name: string | null } | null;
 	memberIds: readonly string[];
 }
 
@@ -100,6 +107,11 @@ export interface ApiImportContext {
 	hiddenIds: ReadonlySet<string>;
 	/** Of the circle ids the document names or would create, those the member may see. */
 	circles: ReadonlyMap<string, KnownCircle>;
+	/**
+	 * The parent of **every** circle in the household, those the member may not see included, so
+	 * a move cannot close a loop through a hidden one. Only ever answers whether it would.
+	 */
+	circleParents: ReadonlyMap<string, string | null>;
 	/** Every relationship type the member may use: the built-ins and the household's own. */
 	types: readonly RelationshipType[];
 	/** Stored links touching any of `people`. */
@@ -122,7 +134,9 @@ export type ApiImportProblem =
 	| { code: 'duplicateRelationship'; path: string }
 	| { code: 'relationshipContradiction'; path: string }
 	| { code: 'relationshipExcluded'; path: string; reason: ExclusionReason; personId: string }
-	| { code: 'duplicateMember'; path: string; ref: string };
+	| { code: 'duplicateMember'; path: string; ref: string }
+	| { code: 'circleCycle'; path: string; ref: string }
+	| { code: 'periodBackwards'; path: string };
 
 /**
  * Whether an entry is created by this document, was created by an earlier sending of it, or
@@ -140,11 +154,49 @@ export interface ApiImportReport {
 		/** How many contact fields this sending gives them. */
 		fieldsAdded: number;
 	}[];
-	circles: { ref: string; id: string; name: string; status: ApiImportStatus }[];
+	circles: {
+		ref: string;
+		id: string;
+		/** As it is after this sending. */
+		name: string;
+		status: ApiImportStatus;
+		changes: ApiCircleChanges;
+	}[];
 	/** New people whose name somebody in the household already has. */
 	possibleDuplicates: { ref: string; candidates: KnownPerson[] }[];
 	/** Fields, links and memberships left out because the household already has them. */
 	alreadyThere: { fields: number; relationships: number; memberships: number };
+}
+
+/** A parent as the report names it; one the member may not see is only said to be there. */
+export type ReportedParent = { id: string; name: string } | { hidden: true };
+
+/** One detail's old and new value. */
+export interface Change<T> {
+	from: T;
+	to: T;
+}
+
+/** The details a sending changes on a circle already in Stella, each old → new. */
+export interface ApiCircleChanges {
+	name?: Change<string>;
+	kind?: Change<CircleKind>;
+	description?: Change<string | null>;
+	startDate?: Change<string | null>;
+	endDate?: Change<string | null>;
+	parent?: Change<ReportedParent | null>;
+}
+
+/** The columns a change writes on a circle already in Stella — only those that change. */
+export interface PlannedCircleChange {
+	id: string;
+	set: Partial<
+		Pick<
+			PlannedCircle,
+			'name' | 'kind' | 'description' | 'startDate' | 'endDate' | 'parentCircleId'
+		>
+	>;
+	updatedAt: number;
 }
 
 /** A circle as the import writes it — with the parent the create form does not offer. */
@@ -171,6 +223,8 @@ export interface ApiImportPlan {
 	fields: NewContactField[];
 	relationships: NewRelationship[];
 	circles: PlannedCircle[];
+	/** After the new circles, so a circle can move inside one this document creates. */
+	circleChanges: PlannedCircleChange[];
 	memberships: PlannedMembership[];
 	report: ApiImportReport;
 }
@@ -210,6 +264,7 @@ export function planApiImport(
 			fields: people.fields,
 			relationships: relationships.rows,
 			circles: circles.rows,
+			circleChanges: circles.circleChanges,
 			memberships: circles.memberships,
 			report: {
 				people: people.report,
@@ -226,11 +281,6 @@ export function planApiImport(
 }
 
 // ── People ────────────────────────────────────────────────────────────────
-
-const orNull = (value: string | null): string | null => {
-	const trimmed = (value ?? '').trim();
-	return trimmed.length > 0 ? trimmed : null;
-};
 
 function planPeople(
 	document: ApiImportDocument,
@@ -580,108 +630,4 @@ function planRelationships(
 	});
 
 	return { rows, alreadyThere };
-}
-
-// ── Circles ───────────────────────────────────────────────────────────────
-
-function planCircles(
-	document: ApiImportDocument,
-	context: ApiImportContext,
-	personIdByRef: ReadonlyMap<string, string>,
-	problems: ApiImportProblem[]
-) {
-	const { source } = document;
-	const visibility = document.visibility ?? context.defaultVisibility;
-	const stamps = { createdAt: context.now, updatedAt: context.now };
-	const circleIdByRef = new Map<string, string>();
-	const rows: PlannedCircle[] = [];
-	const memberships: PlannedMembership[] = [];
-	const report: ApiImportReport['circles'] = [];
-	let alreadyThere = 0;
-
-	document.circles.forEach((entry, index) => {
-		const at = `circles[${index}]`;
-		if (circleIdByRef.has(entry.ref)) {
-			problems.push({ code: 'duplicateRef', path: `${at}.ref`, ref: entry.ref });
-			return;
-		}
-		const id = isExistingCircle(entry) ? entry.existingId : circleIdFor(source, entry.ref);
-		// A parent is named before the circles inside it — read before this circle's own ref is
-		// known — which rules out a cycle, a circle inside itself included, and lets the rows be
-		// written in document order without a parent's key dangling.
-		const parentCircleId =
-			isExistingCircle(entry) || entry.parent === null
-				? null
-				: (circleIdByRef.get(entry.parent) ?? null);
-		circleIdByRef.set(entry.ref, id);
-		const known = context.circles.get(id);
-
-		if (isExistingCircle(entry)) {
-			if (!known) {
-				problems.push({ code: 'circleNotFound', path: `${at}.existingId`, id: entry.existingId });
-				return;
-			}
-			report.push({ ref: entry.ref, id, name: known.name, status: 'existing' });
-		} else if (context.hiddenIds.has(id)) {
-			problems.push({ code: 'idTaken', path: `${at}.ref`, ref: entry.ref });
-		} else if (known) {
-			report.push({ ref: entry.ref, id, name: known.name, status: 'imported' });
-		} else {
-			report.push({ ref: entry.ref, id, name: entry.name.trim(), status: 'new' });
-		}
-
-		if (!isExistingCircle(entry)) {
-			if (entry.parent !== null && parentCircleId === null) {
-				problems.push({ code: 'unknownRef', path: `${at}.parent`, ref: entry.parent });
-			}
-			if (!known) {
-				rows.push({
-					id,
-					householdId: context.householdId,
-					createdBy: context.actorId,
-					visibility,
-					name: entry.name.trim(),
-					description: orNull(entry.description),
-					kind: resolveCircleKind(entry.kind),
-					color: resolveCircleColor(null),
-					parentCircleId,
-					startDate: orNull(entry.startDate),
-					endDate: orNull(entry.endDate),
-					...stamps
-				});
-			}
-		}
-
-		const members = new Set(known?.memberIds ?? []);
-		const named = new Set<string>();
-		entry.members.forEach((member, position) => {
-			const memberAt = `${at}.members[${position}]`;
-			if (named.has(member.person)) {
-				problems.push({ code: 'duplicateMember', path: memberAt, ref: member.person });
-				return;
-			}
-			named.add(member.person);
-			const contactId = personIdByRef.get(member.person);
-			if (contactId === undefined) {
-				problems.push({ code: 'unknownRef', path: `${memberAt}.person`, ref: member.person });
-				return;
-			}
-			if (members.has(contactId)) {
-				alreadyThere++;
-				return;
-			}
-			memberships.push({
-				id: membershipIdFor(source, entry.ref, member.person),
-				circleId: id,
-				contactId,
-				role: orNull(member.role),
-				startDate: orNull(member.startDate),
-				endDate: orNull(member.endDate),
-				createdBy: context.actorId,
-				...stamps
-			});
-		});
-	});
-
-	return { rows, memberships, report, alreadyThere };
 }

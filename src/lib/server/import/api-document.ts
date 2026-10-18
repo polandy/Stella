@@ -4,6 +4,7 @@ import { CIRCLE_KINDS } from '$lib/server/domain/circles/circles';
 import { CONTACT_FIELD_KINDS } from '$lib/people/contact-fields';
 import type {
 	ApiCircle,
+	ApiExistingCircle,
 	ApiImportDocument,
 	ApiPerson
 } from '$lib/server/domain/import/api/document';
@@ -31,17 +32,15 @@ const MAX_ID = 128;
 const handle = v.pipe(v.string(), v.regex(HANDLE, 'Use 1–64 letters, digits, "-" or "_".'));
 const text = v.optional(v.nullable(v.pipe(v.string(), v.maxLength(MAX_TEXT))), null);
 const recordId = v.pipe(v.string(), v.minLength(1), v.maxLength(MAX_ID));
-const realDay = (shape: RegExp, expected: string) =>
-	v.optional(
-		v.nullable(
-			v.pipe(
-				v.string(),
-				v.regex(shape, `Expected ${expected}.`),
-				v.check(isRealCalendarDay, 'That day does not exist.')
-			)
-		),
-		null
+const realDayOf = (shape: RegExp, expected: string) =>
+	v.pipe(
+		v.string(),
+		v.regex(shape, `Expected ${expected}.`),
+		v.check(isRealCalendarDay, 'That day does not exist.')
 	);
+const realDay = (shape: RegExp, expected: string) =>
+	v.optional(v.nullable(realDayOf(shape, expected)), null);
+const fullDay = realDayOf(FULL_DATE_SHAPE, 'YYYY-MM-DD');
 const day = realDay(FULL_DATE_SHAPE, 'YYYY-MM-DD');
 const birthDate = realDay(DATE_SHAPE, 'YYYY-MM-DD, or --MM-DD when the year is unknown');
 
@@ -90,9 +89,11 @@ const membership = v.strictObject({
 });
 const members = v.optional(v.pipe(v.array(membership), v.maxLength(MAX_PEOPLE)), []);
 
+const circleName = v.pipe(v.string(), v.trim(), v.minLength(1), v.maxLength(MAX_TEXT));
+
 const newCircle = v.strictObject({
 	ref: handle,
-	name: v.pipe(v.string(), v.trim(), v.minLength(1), v.maxLength(MAX_TEXT)),
+	name: circleName,
 	kind: v.optional(v.nullable(v.picklist(CIRCLE_KINDS)), null),
 	description: text,
 	startDate: day,
@@ -101,7 +102,40 @@ const newCircle = v.strictObject({
 	members
 });
 
-const existingCircle = v.strictObject({ ref: handle, existingId: recordId, members });
+/*
+ * On a circle already in Stella a detail is *set*, so a missing key and `null` mean different
+ * things: left out keeps what is there, `null` clears it. Nothing here has a default, and only
+ * the keys the entry names reach `details`. A name and a kind cannot be cleared.
+ */
+const existingCircle = v.pipe(
+	v.strictObject({
+		ref: handle,
+		existingId: recordId,
+		members,
+		name: v.optional(circleName),
+		kind: v.optional(v.picklist(CIRCLE_KINDS)),
+		description: v.optional(
+			v.nullable(
+				v.pipe(
+					v.string(),
+					v.maxLength(MAX_TEXT),
+					v.transform((text) => text.trim() || null)
+				)
+			)
+		),
+		startDate: v.optional(v.nullable(fullDay)),
+		endDate: v.optional(v.nullable(fullDay)),
+		parent: v.optional(v.nullable(handle))
+	}),
+	v.transform(({ ref, existingId, members, ...details }): ApiExistingCircle => ({
+		ref,
+		existingId,
+		members,
+		details: Object.fromEntries(
+			Object.entries(details).filter(([, value]) => value !== undefined)
+		) as ApiExistingCircle['details']
+	}))
+);
 
 /*
  * People and circles come in two shapes told apart by `existingId`. Picking the shape by that

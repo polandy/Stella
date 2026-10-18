@@ -11,19 +11,35 @@ describe('activityWording', () => {
 	});
 
 	it('writes an API import in the language of the member whose token sent it', () => {
-		const only = { people: 2, completed: 0 };
-		expect(activityWording.imported('en', only, 'kindergarten')).toContain('kindergarten');
+		const only = { people: 2, completed: 0, circlesChanged: 0 };
+		expect(activityWording.imported('en', only, 'kindergarten')).toBe(
+			'imported 2 people through the API (kindergarten)'
+		);
 		expect(activityWording.imported('de', only, 'kindergarten')).toBe(
-			'2 Menschen über die API importiert (kindergarten)'
+			'2 Menschen importiert (über die API, kindergarten)'
 		);
 	});
 
 	it('names the people an API import completed, with or without new ones', () => {
-		expect(activityWording.imported('en', { people: 0, completed: 3 }, 'class')).toBe(
-			'added contact details to 3 people through the API (class)'
+		expect(
+			activityWording.imported('en', { people: 0, completed: 3, circlesChanged: 0 }, 'class')
+		).toBe('added contact details to 3 people through the API (class)');
+		expect(
+			activityWording.imported('de', { people: 18, completed: 1, circlesChanged: 0 }, 'class')
+		).toBe('18 Menschen importiert und Kontaktdaten von 1 Person ergänzt (über die API, class)');
+	});
+
+	it('names the circles an API import changed, alone or with the rest', () => {
+		expect(
+			activityWording.imported('en', { people: 0, completed: 0, circlesChanged: 1 }, 'school')
+		).toBe('changed 1 circle through the API (school)');
+		expect(
+			activityWording.imported('en', { people: 1, completed: 2, circlesChanged: 3 }, 'school')
+		).toBe(
+			'imported 1 person, added contact details to 2 people and changed 3 circles through the API (school)'
 		);
-		expect(activityWording.imported('de', { people: 18, completed: 1 }, 'class')).toBe(
-			'18 Menschen über die API importiert und Kontaktdaten von 1 Person ergänzt (class)'
-		);
+		expect(
+			activityWording.imported('de', { people: 0, completed: 0, circlesChanged: 3 }, 'school')
+		).toBe('3 Kreise geändert (über die API, school)');
 	});
 });

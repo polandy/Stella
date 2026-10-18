@@ -43,5 +43,10 @@ export const POST: RequestHandler = async ({ locals, request, url }) => {
 		{ dryRun, locale: locals.locale }
 	);
 	if (!result.ok) return json({ problems: result.problems }, { status: 422 });
-	return json({ dryRun: result.dryRun, added: result.added, ...result.report });
+	return json({
+		dryRun: result.dryRun,
+		added: result.added,
+		changed: result.changed,
+		...result.report
+	});
 };

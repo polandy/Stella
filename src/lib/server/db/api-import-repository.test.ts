@@ -22,8 +22,10 @@ const U2 = 'user-2';
 const actor = { userId: U1, householdId: H, defaultVisibility: 'shared' as const };
 const wording: ActivityWording = {
 	restored: () => 'not an import',
-	imported: (locale, { people, completed }, source) =>
-		`${locale}: imported ${people}${completed > 0 ? `, completed ${completed}` : ''} from ${source}`
+	imported: (locale, { people, completed, circlesChanged }, source) =>
+		`${locale}: imported ${people}${completed > 0 ? `, completed ${completed}` : ''}${
+			circlesChanged > 0 ? `, changed ${circlesChanged} circles` : ''
+		} from ${source}`
 };
 
 let db: BunSQLiteDatabase<typeof schema>;
@@ -357,7 +359,8 @@ describe('the import API adapter', () => {
 					members: [
 						{ person: 'carl', role: null, startDate: null, endDate: null },
 						{ person: 'anna', role: null, startDate: null, endDate: null }
-					]
+					],
+					details: {}
 				}
 			]
 		});
@@ -382,6 +385,7 @@ describe('the import API adapter', () => {
 			fields: [],
 			relationships: [],
 			circles: [],
+			circleChanges: [],
 			// Planned while Carl was not in the circle yet …
 			memberships: [
 				{
@@ -405,8 +409,12 @@ describe('the import API adapter', () => {
 		db.insert(schema.circleMembership)
 			.values({ id: 'm-hand', circleId: 'ci-kg', contactId: 'c-carl', createdBy: U1 })
 			.run();
-		const added = await createDrizzleApiImportRepository(db, wording).applyPlan(stale, null);
-		expect(added.memberships).toBe(0);
+		const written = await createDrizzleApiImportRepository(db, wording).applyPlan(
+			{ id: U1, householdId: H },
+			stale,
+			null
+		);
+		expect(written.added.memberships).toBe(0);
 		expect(
 			db
 				.select()

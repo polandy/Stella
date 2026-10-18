@@ -4,8 +4,9 @@ import { signIn } from './app';
 /*
  * API tokens and the import API (docs/02 §2.16.1), end to end: a token is made on its settings
  * page, shown once, signs the API in, and stops the moment it is revoked; and what a script
- * sends through it lands in the household as a person with a page and a circle, or completes a
- * person already there with the details they lack, once. Written after the flow
+ * sends through it lands in the household as a person with a page and a circle, completes a
+ * person already there with the details they lack, once, or renames and nests circles already
+ * there. Written after the flow
  * was verified in the running app (docs/08 §8.4.1).
  *
  * Every refusal is paired with the same thing succeeding first — the token answering before it
@@ -18,6 +19,7 @@ import { signIn } from './app';
 
 const UNAUTHORIZED = 401;
 const OK = 200;
+const UNPROCESSABLE = 422;
 
 /** Makes a token on the settings page and returns the secret it shows. */
 async function createToken(page: Page, name: string): Promise<string> {
@@ -188,4 +190,92 @@ test('the import API adds what a person already in Stella lacks, and only once',
 	).json();
 	expect(again).toMatchObject({ added: { fields: 0 }, alreadyThere: { fields: 2 } });
 	expect(kemiIn(again)).toMatchObject({ fieldsAdded: 0 });
+});
+
+test('the import API renames circles already in Stella and nests them, never in a loop', async ({
+	page
+}) => {
+	await signIn(page);
+	const token = await createToken(page, 'Okafor circles check');
+	const send = async (data: object, dryRun = false) =>
+		page.request.post(`/api/v1/import${dryRun ? '?dryRun=true' : ''}`, {
+			headers: bearer(token),
+			data
+		});
+	// A class and a kindergarten year enter the household first, from earlier lists. No name
+	// here contains `kl`: circles-browse.spec.ts counts what that query leaves.
+	const earlier = await (
+		await send({
+			source: 'e2e-okafor-years',
+			circles: [
+				{ ref: 'class', name: 'Okafor Year One', kind: 'school' },
+				{ ref: 'kg', name: 'Okafor Kindergarten 2023', kind: 'class' }
+			]
+		})
+	).json();
+	const idOf = (ref: string): string =>
+		earlier.circles.find((c: { ref: string }) => c.ref === ref).id;
+	const classId = idOf('class');
+
+	// Later, one script puts the career in order: a school circle, both years inside it.
+	const career = {
+		source: 'e2e-okafor-career',
+		circles: [
+			{ ref: 'school', name: 'Okafor Schule', kind: 'school' },
+			{
+				ref: 'class',
+				existingId: classId,
+				name: 'Okafor Class 1-2D 26/27',
+				kind: 'class',
+				startDate: '2026-08-01',
+				parent: 'school'
+			},
+			{ ref: 'kg', existingId: idOf('kg'), name: 'Okafor Kindergarten 23/24', parent: 'school' }
+		]
+	};
+	const classIn = (answer: { circles: { ref: string }[] }) =>
+		answer.circles.find((c) => c.ref === 'class');
+
+	const dryRun = await (await send(career, true)).json();
+	expect(dryRun).toMatchObject({ dryRun: true, added: { circles: 1 }, changed: { circles: 2 } });
+	expect(classIn(dryRun)).toMatchObject({
+		status: 'existing',
+		name: 'Okafor Class 1-2D 26/27',
+		changes: {
+			name: { from: 'Okafor Year One', to: 'Okafor Class 1-2D 26/27' },
+			kind: { from: 'school', to: 'class' },
+			startDate: { from: null, to: '2026-08-01' },
+			parent: { from: null, to: { name: 'Okafor Schule' } }
+		}
+	});
+
+	// The dry run wrote nothing: the class keeps its old name.
+	await page.goto(`/circles/${classId}`);
+	await expect(page.getByRole('heading', { name: 'Okafor Year One', level: 1 })).toBeVisible();
+
+	const imported = await (await send(career)).json();
+	expect(imported).toMatchObject({ dryRun: false, added: { circles: 1 }, changed: { circles: 2 } });
+
+	await page.reload();
+	await expect(
+		page.getByRole('heading', { name: 'Okafor Class 1-2D 26/27', level: 1 })
+	).toBeVisible();
+
+	expect(await (await send(career)).json()).toMatchObject({
+		added: { circles: 0 },
+		changed: { circles: 0 }
+	});
+
+	// The school cannot go inside the class that now sits inside it.
+	const loop = await send({
+		source: 'e2e-okafor-loop',
+		circles: [
+			{ ref: 'class', existingId: classId },
+			{ ref: 'school', existingId: imported.circles[0].id, parent: 'class' }
+		]
+	});
+	expect(loop.status()).toBe(UNPROCESSABLE);
+	expect(await loop.json()).toEqual({
+		problems: [{ code: 'circleCycle', path: 'circles[1].parent', ref: 'class' }]
+	});
 });

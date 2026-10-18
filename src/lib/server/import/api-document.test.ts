@@ -81,7 +81,12 @@ describe('readApiImportDocument', () => {
 			parent: null,
 			members: [{ person: 'carl', role: 'Child', startDate: null, endDate: null }]
 		});
-		expect(document.circles[1]).toEqual({ ref: 'old', existingId: '01HY', members: [] });
+		expect(document.circles[1]).toEqual({
+			ref: 'old',
+			existingId: '01HY',
+			members: [],
+			details: {}
+		});
 	});
 
 	it('refuses what is not a document at all', () => {
@@ -151,6 +156,50 @@ describe('readApiImportDocument', () => {
 				people: [{ ref: 'carl', existingId: '01HX', fields: [{ kind: 'fax', value: '1' }] }]
 			})
 		).toEqual(['people[0].fields[0].kind']);
+	});
+
+	it('reads only the details an existing circle names, null clearing one', () => {
+		const document = read({
+			source: 'kg',
+			circles: [
+				{ ref: 'school', name: 'Leonardo Schule' },
+				{
+					ref: 'klasse',
+					existingId: '01HY',
+					name: ' Klasse 1-2D 26/27 ',
+					kind: 'class',
+					description: '',
+					endDate: null,
+					parent: 'school'
+				}
+			]
+		});
+		expect(document.circles[1]).toEqual({
+			ref: 'klasse',
+			existingId: '01HY',
+			members: [],
+			details: {
+				name: 'Klasse 1-2D 26/27',
+				kind: 'class',
+				description: null,
+				endDate: null,
+				parent: 'school'
+			}
+		});
+	});
+
+	it('refuses an existing circle without a name or a kind, and with a detail it does not know', () => {
+		expect(
+			problems({
+				source: 'kg',
+				circles: [
+					{ ref: 'a', existingId: '01HY', name: null },
+					{ ref: 'b', existingId: '01HZ', name: '  ' },
+					{ ref: 'c', existingId: '01HW', kind: null },
+					{ ref: 'd', existingId: '01HV', color: 'red' }
+				]
+			})
+		).toEqual(['circles[0].name', 'circles[1].name', 'circles[2].kind', 'circles[3].color']);
 	});
 
 	it('refuses a document larger than one import is meant to be', () => {
