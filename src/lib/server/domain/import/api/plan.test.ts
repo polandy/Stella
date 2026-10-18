@@ -1,86 +1,27 @@
 import { describe, expect, it } from 'bun:test';
 import type { KinshipGraph } from '../../../../kinship/kinship';
 import { BUILT_IN_RELATIONSHIP_TYPES } from '../../relationships/built-in-types';
-import type {
-	ApiCircle,
-	ApiImportDocument,
-	ApiNewPerson,
-	ApiPerson,
-	ApiRelationship
-} from './document';
-import { idsNamedBy, planApiImport, type ApiImportContext, type ApiImportProblem } from './plan';
+import type { ApiCircle, ApiPerson } from './document';
+import { idsNamedBy, planApiImport } from './plan';
+import {
+	context,
+	EMPTY_GRAPH,
+	doc,
+	H,
+	idOf,
+	link,
+	ME,
+	NOW,
+	person,
+	planned,
+	refused,
+	SOURCE
+} from './plan.fixture';
 
 /*
  * The import API's planner (docs/02 §2.16.1): a document plus what the household already has,
  * in; the rows to write and what to say about them, out. Pure, so every case here is a value.
  */
-
-const H = 'household-1';
-const ME = 'user-1';
-const NOW = 1_700_000_000_000;
-const SOURCE = 'kindergarten';
-
-const EMPTY_GRAPH: KinshipGraph = {
-	people: [],
-	parentEdges: [],
-	siblingEdges: [],
-	partnerEdges: [],
-	storedPairs: []
-};
-
-function context(over: Partial<ApiImportContext> = {}): ApiImportContext {
-	return {
-		householdId: H,
-		actorId: ME,
-		defaultVisibility: 'shared',
-		now: NOW,
-		locale: 'en',
-		people: new Map(),
-		hiddenIds: new Set(),
-		circles: new Map(),
-		types: BUILT_IN_RELATIONSHIP_TYPES,
-		links: [],
-		graph: EMPTY_GRAPH,
-		directory: [],
-		...over
-	};
-}
-
-function person(ref: string, over: Partial<ApiNewPerson> = {}): ApiNewPerson {
-	return {
-		ref,
-		displayName: null,
-		firstName: ref[0].toUpperCase() + ref.slice(1),
-		lastName: 'Muster',
-		nickname: null,
-		description: null,
-		birthDate: null,
-		fields: [],
-		...over
-	};
-}
-
-function doc(over: Partial<ApiImportDocument> = {}): ApiImportDocument {
-	return { source: SOURCE, visibility: null, people: [], relationships: [], circles: [], ...over };
-}
-
-const link = (from: string, type: string, to: string): ApiRelationship => ({ from, to, type });
-
-const idOf = (ref: string) => `api~${SOURCE}~p~${ref}`;
-
-/** The plan, failing the test with the problems when the planner refused. */
-function planned(document: ApiImportDocument, ctx = context()) {
-	const result = planApiImport(document, ctx);
-	if (!result.ok) throw new Error(`refused: ${JSON.stringify(result.problems)}`);
-	return result.plan;
-}
-
-/** The problems, failing the test when the planner accepted. */
-function refused(document: ApiImportDocument, ctx = context()): ApiImportProblem[] {
-	const result = planApiImport(document, ctx);
-	if (result.ok) throw new Error('expected the document to be refused');
-	return result.problems;
-}
 
 describe('people', () => {
 	it('creates each new person under an id made of the source and their ref', () => {
