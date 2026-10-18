@@ -271,11 +271,12 @@ function planPeople(
 				return;
 			}
 			idByRef.set(entry.ref, known.id);
-			const completing = missingFields(entry.fields, context.fieldsOf.get(known.id) ?? [], (at) =>
+			const held = context.fieldsOf.get(known.id) ?? [];
+			const completing = missingFields(entry.fields, held, (at) =>
 				fieldIdFor(source, entry.ref, at)
 			);
 			fieldsAlreadyThere += entry.fields.length - completing.length;
-			const after = Math.max(-1, ...(context.fieldsOf.get(known.id) ?? []).map((f) => f.sortOrder));
+			const after = Math.max(-1, ...held.map((f) => f.sortOrder));
 			completing.forEach(({ field, position }, k) => {
 				fields.push({
 					...fieldRow(entry.ref, known.id, field, position),
