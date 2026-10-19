@@ -7,10 +7,12 @@ import {
 	readSurnameHelp,
 	dismissLastName,
 	EmptyLastNameError,
+	LastNameChangedError,
 	LastNameWouldOverwriteError,
 	restoreLastName,
 	reviewLastNames,
 	setLastNames,
+	takeBackLastName,
 	type NewSurnameDismissal,
 	type SurnameListPerson
 } from './last-names';
@@ -241,6 +243,94 @@ describe('setLastNames', () => {
 				'de'
 			)
 		).toBe(0);
+		expect(f.batches).toEqual([]);
+	});
+});
+
+describe('takeBackLastName', () => {
+	/** Anna as she stood before the chip: only a shown name, no parts (§2.2.4.6). */
+	const before = { displayName: 'Anna', firstName: null };
+	/** What giving *Brunner* made of her: the shown word became her first name. */
+	const given = contact('anna', 'Anna', 'Brunner');
+
+	it('puts the name back exactly as it was before the last name was given', async () => {
+		const f = fakeDeps([given]);
+
+		expect(
+			await takeBackLastName(
+				f.deps,
+				viewer,
+				{ contactId: 'anna', lastName: 'Brunner', before },
+				'de'
+			)
+		).toBe(true);
+
+		expect(f.batches).toHaveLength(1);
+		expect(f.batches[0]?.writes).toEqual([
+			{
+				id: 'anna',
+				displayName: 'Anna',
+				firstName: null,
+				lastName: null,
+				nickname: null,
+				formerName: null,
+				updatedAt: NOW
+			}
+		]);
+		expect(f.batches[0]?.audit).toMatchObject({
+			event: { kind: 'contact.renamed', contactId: 'anna', from: 'Anna Brunner', to: 'Anna' }
+		});
+	});
+
+	it('restores a first name that was there all along', async () => {
+		const f = fakeDeps([contact('bert', 'Bert', 'Brunner')]);
+
+		await takeBackLastName(
+			f.deps,
+			viewer,
+			{
+				contactId: 'bert',
+				lastName: 'Brunner',
+				before: { displayName: 'Bert', firstName: 'Bert' }
+			},
+			'de'
+		);
+
+		expect(f.batches[0]?.writes.map((w) => [w.displayName, w.firstName, w.lastName])).toEqual([
+			['Bert', 'Bert', null]
+		]);
+	});
+
+	it('refuses, and writes nothing, when the last name was changed meanwhile', async () => {
+		const f = fakeDeps([contact('anna', 'Anna', 'Meier')]);
+
+		await expect(
+			takeBackLastName(f.deps, viewer, { contactId: 'anna', lastName: 'Brunner', before }, 'de')
+		).rejects.toThrow(LastNameChangedError);
+		expect(f.batches).toEqual([]);
+	});
+
+	it('refuses when the rest of the name was changed meanwhile', async () => {
+		const renamed = contact('anna', 'Annie', 'Brunner');
+		const f = fakeDeps([renamed]);
+
+		await expect(
+			takeBackLastName(f.deps, viewer, { contactId: 'anna', lastName: 'Brunner', before }, 'de')
+		).rejects.toThrow(LastNameChangedError);
+		expect(f.batches).toEqual([]);
+	});
+
+	it('writes nothing for a person the viewer may not see', async () => {
+		const f = fakeDeps([given]);
+
+		expect(
+			await takeBackLastName(
+				f.deps,
+				viewer,
+				{ contactId: 'dora', lastName: 'Brunner', before },
+				'de'
+			)
+		).toBe(false);
 		expect(f.batches).toEqual([]);
 	});
 });

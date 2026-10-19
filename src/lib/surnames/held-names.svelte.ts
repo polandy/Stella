@@ -1,6 +1,8 @@
 import type { SubmitFunction } from '@sveltejs/kit';
 import { invalidateAll } from '$app/navigation';
 import { useI18n } from '$lib/i18n/context.svelte';
+import { whilePending } from '$lib/sync/pending';
+import { usePending } from '$lib/sync/context.svelte';
 import { useRemovals } from '$lib/undo/context.svelte';
 import { submitAction } from '$lib/undo/submit-action';
 import { held, hiddenIds, sending, settle, takenBack, type Batches } from './batches';
@@ -10,7 +12,9 @@ import { passOnOffer, type PassOnMap } from './pass-on';
  * Giving last names with an undo window (docs/02 §2.2.4.4, §2.2.4.5, §2.23):
  * the adapter between a page's forms and the removals store. The form is not posted when it is
  * submitted; its people leave the lists at once, a toast offers *Undo* for eight seconds, and the
- * batch goes out only when that window closes or the page is left.
+ * batch goes out only when that window closes or the page is left — under the shell's activity
+ * indicator until the page has reloaded. The profile's chip saves at once instead
+ * (`chip-give.ts`); the pass-on offer it leads to is a batch like any other.
  *
  * When the people given a name had none before and have children or siblings who still have
  * none, the same toast offers it to them — *Brunner too? [Yes]* — and *Yes* is a batch of its
@@ -37,6 +41,7 @@ export interface HeldNames {
  */
 export function useHeldNames(passOn: () => PassOnMap = () => ({})): HeldNames {
 	const removals = useRemovals();
+	const pending = usePending();
 	const i18n = useI18n();
 	const t = i18n.t;
 	let batches = $state.raw<Batches>({});
@@ -89,20 +94,23 @@ export function useHeldNames(passOn: () => PassOnMap = () => ({})): HeldNames {
 						}
 					}
 				: undefined,
-			commit: async () => {
-				batches = sending(batches, key);
-				try {
-					await submitAction(fetch, actionUrl, formData);
-				} catch {
-					// Its own words rather than the store's "could not remove": nothing was removed.
-					batches = settle(batches, key, 'failed');
-					for (const id of ids) namedThisVisit.delete(id);
-					removals.notify(t('surnames.toast.failed'));
-					return;
-				}
-				batches = settle(batches, key, 'sent');
-				await invalidateAll();
-			}
+			// The shell's activity indicator shows from the send until the reload has landed.
+			commit: () =>
+				whilePending(pending, async () => {
+					batches = sending(batches, key);
+					try {
+						await submitAction(fetch, actionUrl, formData);
+					} catch (error) {
+						// Its own words rather than the store's "could not remove": nothing was removed.
+						console.error('Could not give the held last names:', error);
+						batches = settle(batches, key, 'failed');
+						for (const id of ids) namedThisVisit.delete(id);
+						removals.notify(t('surnames.toast.failed'));
+						return;
+					}
+					batches = settle(batches, key, 'sent');
+					await invalidateAll();
+				})
 		});
 	}
 

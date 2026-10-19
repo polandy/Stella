@@ -4,7 +4,12 @@ import { createTranslator } from '$lib/i18n/translate';
 import type { Viewer } from '$lib/server/access/visibility';
 import type { Contact } from '$lib/server/domain/contacts/contacts';
 import type { NameWrite } from '$lib/server/domain/contacts/name-parts';
-import { setLastNamesFromForm, type LastNameServices } from './last-names-actions';
+import { LAST_NAME_CHANGED_STATUS } from '$lib/surnames/chip-give';
+import {
+	setLastNamesFromForm,
+	takeBackLastNameFromForm,
+	type LastNameServices
+} from './last-names-actions';
 
 /*
  * The one action behind every path that gives several people a last name (docs/02 §2.2.4).
@@ -103,5 +108,58 @@ describe('setLastNamesFromForm', () => {
 		).catch((err: unknown) => err);
 		expect(isHttpError(thrown, 404)).toBe(true);
 		expect(f.written).toEqual([]);
+	});
+});
+
+describe('takeBackLastNameFromForm', () => {
+	/** Anna after the chip gave her *Brunner*; before, she was only *Anna*. */
+	const anna = { ...person('anna', 'Anna', 'Brunner'), displayName: 'Anna Brunner' } as Contact;
+
+	const takeBack = (lastName: string, beforeFirstName = '') => {
+		const data = new FormData();
+		data.set('contactId', 'anna');
+		data.set('lastName', lastName);
+		data.set('beforeDisplayName', 'Anna');
+		data.set('beforeFirstName', beforeFirstName);
+		return data;
+	};
+
+	it('puts the name back as it was, a blank first name read as none', async () => {
+		const f = fakes([anna]);
+		const result = await takeBackLastNameFromForm(f.people, viewer, takeBack('Brunner'), 'en', t);
+		expect(result).toEqual({ lastNameTakenBack: true });
+		expect(f.written[0]?.map((w) => [w.displayName, w.firstName, w.lastName])).toEqual([
+			['Anna', null, null]
+		]);
+	});
+
+	it('refuses as a conflict, writing nothing, when the name changed meanwhile', async () => {
+		const f = fakes([anna]);
+		const result = await takeBackLastNameFromForm(f.people, viewer, takeBack('Meier'), 'en', t);
+		expect(result).toEqual(
+			fail(LAST_NAME_CHANGED_STATUS, {
+				lastNamesError: t('errors.contact.lastNameChanged', { name: 'Anna Brunner' })
+			})
+		);
+		expect(f.written).toEqual([]);
+	});
+
+	it('refuses a form without the name it takes back', async () => {
+		const f = fakes([anna]);
+		const result = await takeBackLastNameFromForm(f.people, viewer, takeBack(' '), 'en', t);
+		expect(isActionFailure(result) && result.status).toBe(400);
+		expect(f.written).toEqual([]);
+	});
+
+	it('answers 404 for a person the viewer may not see', async () => {
+		const f = fakes([]);
+		const thrown = await takeBackLastNameFromForm(
+			f.people,
+			viewer,
+			takeBack('Brunner'),
+			'en',
+			t
+		).catch((err: unknown) => err);
+		expect(isHttpError(thrown, 404)).toBe(true);
 	});
 });

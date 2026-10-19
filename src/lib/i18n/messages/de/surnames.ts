@@ -66,6 +66,10 @@ export const surnames: SurnamesMessages = {
 	'surnames.toast.yes': 'Ja',
 	'surnames.chip': (p) => `${p.name}?`,
 	'surnames.chipHint': (p) => `Nachnamen ${p.name} geben`,
+	'surnames.chipGiven': (p) => `Nachname ${p.name} für ${p.person} gesetzt`,
+	'surnames.chipFailed': 'Der Nachname konnte nicht gespeichert werden. Bitte nochmal versuchen.',
+	'surnames.chipUndoFailed':
+		'Der Nachname konnte nicht zurückgenommen werden. Bitte nochmal versuchen.',
 	'surnames.passOnPrompt': (p) =>
 		`${p.people} ${p.count === 1 ? 'hat' : 'haben'} noch keinen Nachnamen — auch ${p.name}?`,
 	'surnames.no': 'Nein'

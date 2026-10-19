@@ -30,7 +30,9 @@ the person, and that never leaves the page. Keeping the record tidy (archive, me
 - Then the name and the description, both editable in place. The description wraps to two
   lines on a phone and shows in full from `md`; it is never cut off at one line.
 - A former name and the last-name chips sit under the name; the **You**, **Private** and
-  **Archived** markers beneath them.
+  **Archived** markers beneath them. A tapped chip saves at once under the shell's activity
+  indicator and steps aside until the reloaded name replaces it; its toast carries **Undo**,
+  and the *Brunner too?* offer appears in its place (docs/02 §2.2.4.6).
 - The **You** chip is `--primary-soft` on `--primary`; *Archived* is a quiet chip beside
   *Private*.
 - Then a small labelled grid of **facts**: four across from `md`, two on a phone. It is the
@@ -438,3 +440,9 @@ Most people in a household are reference records, and a page of boxes that each 
 teaches the reader to stop looking — the rule *Coming up* follows. So an empty card shrinks to
 the line that still holds its *+ Add*. An empty *Mentioned in* goes entirely because it is
 passive: there is nothing to add there.
+
+The last-name chip saves at once rather than holding its name for the undo window, as the bulk
+paths do: on the profile the name under the reader's eyes is the thing the tap is about, and a
+chip that only vanished for eight seconds while the name stayed the same read as a tap that had
+not taken. The activity indicator covers the wait, the new name is the answer, and *Undo* stays
+one tap away in the toast.

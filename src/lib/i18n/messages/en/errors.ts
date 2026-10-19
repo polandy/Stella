@@ -10,6 +10,8 @@ export const errors = {
 	'errors.contact.emptyLastName': 'A last name cannot be empty.',
 	'errors.contact.lastNameWouldOverwrite': (p: { name: string }) =>
 		`${p.name} already has a different last name. Tick them to replace it.`,
+	'errors.contact.lastNameChanged': (p: { name: string }) =>
+		`${p.name}’s name has changed since — nothing was taken back.`,
 	'errors.contact.emptyName': 'A name cannot be empty.',
 	'errors.contact.invalidGender': 'Choose female, male or diverse.',
 	'errors.contact.jobFieldTooLong': (p: { max: number }) =>

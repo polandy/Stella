@@ -16,7 +16,7 @@ import type { KinshipGraph } from '../../../kinship/kinship';
 import type { PassOnMap } from '../../../surnames/pass-on';
 import type { SurnameProposal } from '../../../suggestions/rules/surnames';
 import { activityRecord } from '../activity/activity';
-import { withNameParts } from '../../../people/display-name';
+import { withNameParts, type StoredName } from '../../../people/display-name';
 import { noLastNameAfter, type NameDeps, type NameWrite } from './name-parts';
 
 /*
@@ -160,6 +160,74 @@ export async function setLastNames(
 		)
 	);
 	return writes.length;
+}
+
+/**
+ * Thrown when *Undo* on a given last name finds the name changed since it was given — someone
+ * edited it meanwhile, so taking it back would overwrite their change (§2.2.4.6).
+ */
+export class LastNameChangedError extends TranslatableError {
+	constructor(name: string) {
+		super(phrase('errors.contact.lastNameChanged', { name }), 'LastNameChangedError');
+	}
+}
+
+/** *Undo* on the profile chip: the name given, and the person's name as it stood before. */
+export interface LastNameTakeBack {
+	contactId: string;
+	/** The last name the chip gave. */
+	lastName: string;
+	/** The shown name and first name before — giving a last name may have changed both. */
+	before: Pick<StoredName, 'displayName' | 'firstName'>;
+}
+
+/**
+ * Take a last name given from the profile chip back (§2.2.4.6): the person's name exactly as
+ * it was before. Only while the name is still what giving `lastName` to `before` made of it —
+ * otherwise it was changed meanwhile and `LastNameChangedError` refuses, writing nothing; that
+ * same check means `before` can only restore a name that really led here. *No last name* is
+ * left alone: a chip is never offered to someone settled as having none. Returns false when
+ * the person is not visible to the viewer.
+ */
+export async function takeBackLastName(
+	deps: LastNameDeps,
+	viewer: Viewer,
+	takeBack: LastNameTakeBack,
+	/** The giver's language, as `setLastNames` had it, so the given name is made again alike. */
+	locale: Locale
+): Promise<boolean> {
+	const contact = await deps.names.findByIdVisibleTo(viewer, takeBack.contactId);
+	if (contact === null) return false;
+
+	const before: StoredName = {
+		displayName: takeBack.before.displayName,
+		firstName: takeBack.before.firstName,
+		lastName: null,
+		nickname: contact.nickname
+	};
+	const given = withNameParts(before, { lastName: takeBack.lastName.trim() }, locale);
+	const unchanged = (['displayName', 'firstName', 'lastName'] as const).every(
+		(key) => (contact[key] ?? null) === (given[key] ?? null)
+	);
+	if (!unchanged) throw new LastNameChangedError(contact.displayName);
+
+	const now = deps.clock.now();
+	await deps.names.writeNames(
+		[{ id: contact.id, ...before, formerName: contact.formerName, updatedAt: now }],
+		activityRecord(
+			deps,
+			viewer,
+			{
+				kind: 'contact.renamed',
+				contactId: contact.id,
+				from: contact.displayName,
+				to: before.displayName,
+				visibility: contact.visibility
+			},
+			now
+		)
+	);
+	return true;
 }
 
 /** The *Last names* list for one viewer (§3.1). */

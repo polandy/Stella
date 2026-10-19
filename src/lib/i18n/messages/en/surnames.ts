@@ -69,6 +69,10 @@ export const surnames = {
 	// The profile's chip (docs/02 §2.2).
 	'surnames.chip': (p: { name: string }) => `${p.name}?`,
 	'surnames.chipHint': (p: { name: string }) => `Give the last name ${p.name}`,
+	'surnames.chipGiven': (p: { name: string; person: string }) =>
+		`Last name ${p.name} given to ${p.person}`,
+	'surnames.chipFailed': 'Could not save the last name. Please try again.',
+	'surnames.chipUndoFailed': 'Could not take the last name back. Please try again.',
 	'surnames.passOnPrompt': (p: { people: string; count: number; name: string }) =>
 		`${p.people} ${p.count === 1 ? 'has' : 'have'} no last name yet — ${p.name} too?`,
 	'surnames.no': 'No'

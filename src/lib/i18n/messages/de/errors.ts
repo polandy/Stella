@@ -9,6 +9,8 @@ export const errors: ErrorsMessages = {
 	'errors.contact.emptyLastName': 'Ein Nachname darf nicht leer sein.',
 	'errors.contact.lastNameWouldOverwrite': (p) =>
 		`${p.name} hat schon einen anderen Nachnamen. Zum Ersetzen die Person ankreuzen.`,
+	'errors.contact.lastNameChanged': (p) =>
+		`Der Name von ${p.name} wurde inzwischen geändert – nichts wurde zurückgenommen.`,
 	'errors.contact.emptyName': 'Ein Name darf nicht leer sein.',
 	'errors.contact.invalidGender': 'Bitte weiblich, männlich oder divers wählen.',
 	'errors.contact.jobFieldTooLong': (p) =>
