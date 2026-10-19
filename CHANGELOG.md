@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.0.27](https://github.com/polandy/Stella/compare/v0.0.26...v0.0.27) (2026-10-19)
+
+
+### Features
+
+* **circles:** show sub-circles on the list and the circle page ([#387](https://github.com/polandy/Stella/issues/387)) ([2f03f25](https://github.com/polandy/Stella/commit/2f03f254684b506c50c445c41fbe21b4dffcfb93))
+
 ## [0.0.26](https://github.com/polandy/Stella/compare/v0.0.25...v0.0.26) (2026-10-18)
 
 
