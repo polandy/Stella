@@ -241,7 +241,7 @@ describe('load: the nesting', () => {
 		expect(nesting.next?.name).toBe('Tenor');
 	});
 
-	it('lists its direct sub-circles in order, with what is inside each and the hidden ones counted', async () => {
+	it('lists its direct sub-circles newest first, with what is inside each and the hidden ones counted', async () => {
 		const nesting = await nestingOf([
 			treeNode('k1', null, { name: 'Choir', hiddenChildCount: 1 }),
 			treeNode('late', 'k1', { name: 'Late', startDate: '2026-08', memberCount: 3 }),
@@ -249,8 +249,8 @@ describe('load: the nesting', () => {
 			treeNode('deep', 'early', { name: 'Deep' })
 		]);
 		expect(nesting.children.map((c) => [c.name, c.memberCount, c.descendantCount])).toEqual([
-			['Early', 0, 1],
-			['Late', 3, 0]
+			['Late', 3, 0],
+			['Early', 0, 1]
 		]);
 		expect(nesting.hiddenChildCount).toBe(1);
 		expect(nesting.ancestors).toEqual([]);

@@ -209,7 +209,7 @@
 	/>
 
 	{#if nesting.previous || nesting.next}
-		<!-- The circles beside this one under the same parent, in sibling order. -->
+		<!-- The circles beside this one under the same parent, in chronological order. -->
 		<nav
 			aria-label={t('circles.sub.siblings')}
 			class="flex items-center justify-between gap-3 text-sm"

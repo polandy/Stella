@@ -22,7 +22,9 @@ its photos, and lets the household manage members in bulk.
   counted, never listed. On a narrow card (a phone, or two cards side by side) that meta drops
   to a small second line under the name, so the name gets the row's full width; a card of at
   least 24 rem keeps it beside the name.
-- Rows run in **sibling order** everywhere: by period start, undated last, then by name.
+- Rows run **newest first** everywhere — the card's rows, its past ones once unfolded, and the
+  timeline's rows on a circle's page: by period start descending, on the same start the later
+  end first (an open end counting as the latest), then by name; undated rows come last, by name.
   Current and future rows stand open; **past** ones (ended before today) wait behind *Show 2
   past*, a button inside the card that does not open it. Private sub-circles the reader cannot
   see are a closing *+1 more*, without a name or a link.
@@ -38,7 +40,9 @@ its photos, and lets the household manage members in bulk.
 - A sub-circle's path is the **top bar's trail** (§5.4), not a second one on the page: *Home /
   Circles / School / Class 5*, each visible ancestor a link. On a phone the back link is the
   direct parent (*‹ School*); a top-level circle keeps *‹ Circles*.
-- Below the header a sub-circle with siblings offers *‹ previous* and *next ›* in sibling order.
+- Below the header a sub-circle with siblings offers *‹ previous* and *next ›* in
+  **chronological** order — previous is the earlier circle, next the later one, as on the time
+  axis (by period start, undated last, then by name).
 - A circle with sub-circles shows a **Sub-circles · N** card between the header and the
   members: a **timeline** with one row per direct child — the dot and the name, *period · N
   members* as text, and a track (`--border`, which holds on Mocha's card where `--bg-sunken`

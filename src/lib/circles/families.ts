@@ -37,7 +37,7 @@ export interface FamilyFilter {
 	today: string;
 }
 
-/** The cards for `filter`, in sibling order; a family nothing in matches is left out. */
+/** The cards for `filter`, in chronological order; a family nothing in matches is left out. */
 export function circleFamilies<T extends TreeCircle>(
 	tree: CircleTree<T>,
 	filter: FamilyFilter
