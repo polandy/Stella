@@ -32,6 +32,7 @@
 	import { reachability } from '$lib/pwa/reachability.svelte';
 	import { reportNavigation } from '$lib/sync/pending';
 	import { followScroll, SHOWN_TOP_BAR } from '$lib/ui/top-bar';
+	import { breadcrumbs, type CrumbData } from '$lib/ui/breadcrumbs';
 	import { onMount, untrack, type Snippet } from 'svelte';
 	import type { LayoutData } from './$types';
 
@@ -69,40 +70,10 @@
 	// rarely opened and moves to the top bar there.
 	const tabBar = nav.filter((item) => item.href !== '/settings');
 
-	// Breadcrumbs derived from the route id + merged page data (contact/circle names).
-	type Crumb = { label: string; href?: string };
 	/** Home itself, where a phone's search is the field on the page rather than the top bar's. */
 	const onHome = $derived(page.route.id === '/(app)');
-	const crumbs = $derived.by((): Crumb[] => {
-		const id = page.route.id ?? '';
-		const d = page.data as { contact?: { displayName?: string }; circle?: { name?: string } };
-		const trail: Crumb[] = [{ label: t('nav.home'), href: '/' }];
-		if (id === '/(app)') return [{ label: t('nav.home') }];
-
-		if (id.startsWith('/(app)/contacts')) {
-			trail.push({ label: t('nav.people'), href: '/contacts' });
-			if (id === '/(app)/contacts/new') trail.push({ label: t('nav.newPerson') });
-			else if (id.startsWith('/(app)/contacts/[id]')) {
-				const name = d.contact?.displayName ?? t('nav.contact');
-				if (id.endsWith('/journal')) {
-					trail.push({ label: name, href: `/contacts/${page.params.id}` });
-					trail.push({ label: t('nav.journal') });
-				} else trail.push({ label: name });
-			}
-		} else if (id.startsWith('/(app)/circles')) {
-			trail.push({ label: t('nav.circles'), href: '/circles' });
-			if (id.startsWith('/(app)/circles/[id]'))
-				trail.push({ label: d.circle?.name ?? t('nav.circle') });
-		} else if (id.startsWith('/(app)/graph')) {
-			trail.push({ label: t('nav.graph') });
-		} else if (id.startsWith('/(app)/search')) {
-			trail.push({ label: t('nav.search') });
-		} else if (id.startsWith('/(app)/settings')) {
-			trail.push({ label: t('nav.settings'), href: '/settings' });
-			if (id.startsWith('/(app)/settings/import')) trail.push({ label: t('nav.importPeople') });
-		}
-		return trail;
-	});
+	// The trail from the route id + merged page data (contact/circle names, a circle's ancestors).
+	const crumbs = $derived(breadcrumbs(page.route.id ?? '', page.data as CrumbData, page.params, t));
 
 	// ⌘K / Ctrl+K opens the palette from anywhere (docs/05 §5.4); its first row is the
 	// capture field, so the old "jump to What happened?" is still two keystrokes away.

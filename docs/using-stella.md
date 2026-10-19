@@ -842,8 +842,9 @@ behind **Show 2 past** on the card. A search or a kind also finds sub-circles: t
 shows just the rows that match. A private sub-circle of someone else is never named — the card
 only says *+1 more*.
 
-A sub-circle's page starts with its path, *Circles › School › Class 5b*, and offers the circles
-beside it under the same parent as ‹ previous and next ›. A circle with sub-circles shows them
+On a sub-circle's page the top bar shows its path, *Home / Circles / School / Class 5b*, each
+step a link; on a phone the back link takes you to the parent, *‹ School*. The page offers the
+circles beside it under the same parent as ‹ previous and next ›. A circle with sub-circles shows them
 in a *Sub-circles* card between its name and its members, each on a timeline of its period with
 a mark for today; tap a row to open it. Counts are always the circle's own people: a school
 whose pupils all sit in its classes says that nobody belongs to it directly, and that the people

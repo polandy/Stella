@@ -180,7 +180,6 @@ export const circles = {
 	'circles.sub.heading': 'Sub-circles',
 	'circles.sub.noPeriod': 'no period',
 	'circles.sub.today': 'today',
-	'circles.sub.path': 'Circle path',
 	'circles.sub.siblings': 'Neighbouring circles',
 	'circles.sub.previous': (p: { name: string }) => `Previous: ${p.name}`,
 	'circles.sub.next': (p: { name: string }) => `Next: ${p.name}`,

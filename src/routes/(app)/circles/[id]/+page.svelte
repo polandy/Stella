@@ -11,7 +11,6 @@
 	import PhotoStrip from '$lib/components/circle/PhotoStrip.svelte';
 	import SubCircles from '$lib/components/circle/SubCircles.svelte';
 	import Icon from '$lib/components/ui/Icon.svelte';
-	import { accentDotStyle } from '$lib/design/tokens';
 	import { PhotoWalk } from '$lib/components/circle/photo-walk.svelte';
 	import Combobox from '$lib/components/ui/Combobox.svelte';
 	import EmptyState from '$lib/components/ui/EmptyState.svelte';
@@ -190,26 +189,7 @@
 <svelte:head><title>{t('circles.detail.title', { name: circle.name })}</title></svelte:head>
 
 <main class="mx-auto flex w-full max-w-4xl flex-col gap-6 px-4 py-6 md:px-6 md:py-10">
-	{#if nesting.ancestors.length > 0}
-		<!-- Where a sub-circle sits (docs/02 §2.4.2); a top-level circle needs no path. -->
-		<nav aria-label={t('circles.sub.path')} data-testid="circle-path">
-			<ol class="flex flex-wrap items-center gap-x-1.5 gap-y-1 text-sm text-fg-muted">
-				<li><a href="/circles" class="text-link hover:underline">{t('circles.heading')}</a></li>
-				{#each nesting.ancestors as ancestor (ancestor.id)}
-					<li class="flex items-center gap-1.5">
-						<span aria-hidden="true" class="text-fg-subtle">›</span>
-						<a
-							href="/circles/{ancestor.id}"
-							class="flex items-center gap-1.5 text-link hover:underline"
-						>
-							<span class="size-2 rounded-full" style={accentDotStyle(ancestor.color)}></span>
-							{ancestor.name}
-						</a>
-					</li>
-				{/each}
-			</ol>
-		</nav>
-	{/if}
+	<!-- A sub-circle's path is the top bar's trail (docs/05 §5.4), so the page repeats none. -->
 	{#if photos.cover}
 		{@const ids = ofRole(null)}
 		<PhotoStrip

@@ -185,7 +185,6 @@ export const circles: CirclesMessages = {
 	'circles.sub.heading': 'Unterkreise',
 	'circles.sub.noPeriod': 'ohne Zeitraum',
 	'circles.sub.today': 'heute',
-	'circles.sub.path': 'Pfad des Kreises',
 	'circles.sub.siblings': 'Benachbarte Kreise',
 	'circles.sub.previous': (p) => `Vorheriger: ${p.name}`,
 	'circles.sub.next': (p) => `Nächster: ${p.name}`,

@@ -33,8 +33,9 @@ its photos, and lets the household manage members in bulk.
 
 #### A circle's page
 
-- A sub-circle opens with a **breadcrumb** above everything else: *Circles › School › Class 5*,
-  each ancestor a link with its colour dot, wrapping on a phone. A top-level circle has none.
+- A sub-circle's path is the **top bar's trail** (§5.4), not a second one on the page: *Home /
+  Circles / School / Class 5*, each visible ancestor a link. On a phone the back link is the
+  direct parent (*‹ School*); a top-level circle keeps *‹ Circles*.
 - Below the header a sub-circle with siblings offers *‹ previous* and *next ›* in sibling order.
 - A circle with sub-circles shows a **Sub-circles · N** card between the header and the
   members: a **timeline** with one row per direct child — the dot and the name, *period · N

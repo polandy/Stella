@@ -152,9 +152,17 @@ test('a sub-circle’s page leads up to its parent and across to its siblings', 
 	await rows(cardOf(page, 'Schule Breitenrain')).filter({ hasText: 'Klasse 5b' }).click();
 	await expect(page.getByRole('heading', { level: 1, name: 'Klasse 5b' })).toBeVisible();
 
-	const path = page.getByRole('navigation', { name: 'Circle path' });
-	await expect(path.getByRole('link', { name: 'Circles' })).toHaveAttribute('href', '/circles');
-	await expect(path.getByRole('link', { name: 'Schule Breitenrain' })).toBeVisible();
+	// The path is the top bar's trail, the parent a step of it; the page carries no second one.
+	const trail = page.getByTestId('top-bar').getByRole('navigation', { name: 'Breadcrumb' });
+	await expect(trail.getByRole('link')).toHaveText(['Home', 'Circles', 'Schule Breitenrain']);
+	await expect(trail.getByRole('link', { name: 'Circles' })).toHaveAttribute('href', '/circles');
+	await expect(trail.locator('[aria-current="page"]')).toHaveText('Klasse 5b');
+	await expect(page.getByRole('navigation', { name: 'Circle path' })).toHaveCount(0);
+
+	// A phone keeps only the way back, and that is the direct parent, not the list.
+	await page.setViewportSize({ width: 390, height: 844 });
+	await expect(trail.getByTestId('back-crumb')).toHaveText('Schule Breitenrain');
+	await page.setViewportSize({ width: 1280, height: 900 });
 
 	// Both classes start the same day, so the name orders them: 3a, then 5b.
 	const siblings = page.getByRole('navigation', { name: 'Neighbouring circles' });
@@ -163,7 +171,7 @@ test('a sub-circle’s page leads up to its parent and across to its siblings', 
 	await siblings.getByRole('link', { name: 'Next: Klasse 5b' }).click();
 	await expect(page.getByRole('heading', { level: 1, name: 'Klasse 5b' })).toBeVisible();
 
-	await path.getByRole('link', { name: 'Schule Breitenrain' }).click();
+	await trail.getByRole('link', { name: 'Schule Breitenrain' }).click();
 	await expect(page.getByRole('heading', { level: 1, name: 'Schule Breitenrain' })).toBeVisible();
 });
 
