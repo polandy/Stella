@@ -64,7 +64,8 @@
 					</span>
 				</span>
 				{#if timeline}
-					<span class="relative block h-[18px] rounded-full bg-bg-sunken" aria-hidden="true">
+					<!-- The border token, not bg-sunken: on Mocha's card the sunken ground all but vanishes. -->
+					<span class="relative block h-[18px] rounded-full bg-border" aria-hidden="true">
 						{#if bar}
 							<span
 								class="absolute inset-y-[3px] {bar.open ? 'rounded-l-full' : 'rounded-full'}"

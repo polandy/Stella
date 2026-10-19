@@ -41,7 +41,8 @@ its photos, and lets the household manage members in bulk.
 - Below the header a sub-circle with siblings offers *‹ previous* and *next ›* in sibling order.
 - A circle with sub-circles shows a **Sub-circles · N** card between the header and the
   members: a **timeline** with one row per direct child — the dot and the name, *period · N
-  members* as text, and a track with a bar over the period. An open-ended bar has a square
+  members* as text, and a track (`--border`, which holds on Mocha's card where `--bg-sunken`
+  fades) with a bar over the period. An open-ended bar has a square
   right edge and runs to the axis's end; a line marks today and the years stand below the
   tracks. On a wide screen the label sits left of the track, on a phone above it. An undated
   child gets no bar; without any dated child the card is a plain list. Each row is a link; the
