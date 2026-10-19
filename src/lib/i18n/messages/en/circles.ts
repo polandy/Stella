@@ -169,7 +169,22 @@ export const circles = {
 			? 'No circles found'
 			: p.count === 1
 				? '1 circle found'
-				: `${p.count} circles found`
+				: `${p.count} circles found`,
+	// Sub-circles: a circle inside another (docs/02 §2.4.2).
+	'circles.sub.count': (p: { count: number }) =>
+		p.count === 1 ? '1 sub-circle' : `${p.count} sub-circles`,
+	'circles.sub.inside': (p: { count: number }) => `+${p.count} inside`,
+	'circles.sub.more': (p: { count: number }) => `+${p.count} more`,
+	'circles.sub.showPast': (p: { count: number }) => `Show ${p.count} past`,
+	'circles.sub.hidePast': 'Hide past',
+	'circles.sub.heading': 'Sub-circles',
+	'circles.sub.noPeriod': 'no period',
+	'circles.sub.today': 'today',
+	'circles.sub.siblings': 'Neighbouring circles',
+	'circles.sub.previous': (p: { name: string }) => `Previous: ${p.name}`,
+	'circles.sub.next': (p: { name: string }) => `Next: ${p.name}`,
+	'circles.sub.directlyNobody': (p: { name: string }) =>
+		`Directly, nobody belongs to ${p.name} — the people are in its sub-circles.`
 };
 
 /** The key set every translation of this area has to provide. */

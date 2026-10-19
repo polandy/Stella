@@ -40,6 +40,11 @@ function matchesQuery(circle: BrowsableCircle, folded: string): boolean {
 	return fold(circle.name).includes(folded) || fold(circle.description ?? '').includes(folded);
 }
 
+/** Whether a typed query finds `circle`, by name or description, ignoring case and accents. */
+export function matchesCircleQuery(circle: BrowsableCircle, query: string): boolean {
+	return matchesQuery(circle, fold(query.trim()));
+}
+
 /** The circles a query and a kind leave, in the order they came in. */
 export function filterCircles<T extends BrowsableCircle>(
 	circles: T[],

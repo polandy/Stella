@@ -25,8 +25,10 @@ test('narrows the list as you type, over the description as well as the name', a
 
 	await page.getByRole('searchbox', { name: 'Find a circle' }).fill('kl');
 
-	// Two classes by name, and the music school by its description ("Klavierunterricht").
-	await expect(cards).toHaveCount(3);
+	// Two classes by name, and the music school by its description ("Klavierunterricht"). The
+	// classes are sub-circles of Schule Breitenrain: rows on its card, not cards of their own.
+	await expect(cards).toHaveCount(2);
+	await expect(cards.filter({ hasText: 'Schule Breitenrain' })).toHaveCount(1);
 	await expect(cards.filter({ hasText: 'Klasse 3a' })).toHaveCount(1);
 	await expect(cards.filter({ hasText: 'Musikschule' })).toHaveCount(1);
 	await expect(cards.filter({ hasText: 'Frauenchor Bern' })).toHaveCount(0);
@@ -45,7 +47,9 @@ test('counts each kind after the query, so no chip leads to an empty page', asyn
 	await klass.click();
 	await expect(klass).toHaveAttribute('aria-pressed', 'true');
 	const cards = page.getByTestId('circle-cards').getByRole('listitem');
-	await expect(cards).toHaveCount(2);
+	// Both classes sit on the one school card.
+	await expect(cards).toHaveCount(1);
+	await expect(cards.filter({ hasText: 'Klasse 5b' })).toHaveCount(1);
 	await expect(cards.filter({ hasText: 'Musikschule' })).toHaveCount(0);
 });
 

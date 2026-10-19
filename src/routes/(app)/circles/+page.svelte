@@ -6,15 +6,19 @@
 	import ColourSwatches from '$lib/components/circle/ColourSwatches.svelte';
 	import EmptyState from '$lib/components/ui/EmptyState.svelte';
 	import Icon from '$lib/components/ui/Icon.svelte';
-	import { ALL_KINDS, activeKind, filterCircles, kindChips } from '$lib/circles/browse';
+	import { ALL_KINDS, activeKind, kindChips } from '$lib/circles/browse';
+	import { circleFamilies } from '$lib/circles/families';
 	import { circleKindLabel } from '$lib/circles/labels';
-	import { useTranslate } from '$lib/i18n/context.svelte';
+	import { circleShortPeriodLabel } from '$lib/circles/period';
+	import { circleTree, isPastCircle } from '$lib/circles/tree';
+	import { useI18n, useTranslate } from '$lib/i18n/context.svelte';
 	import { accentDotStyle } from '$lib/design/tokens';
 	import { thumbnailUrl } from '$lib/media/urls';
 	import type { ActionData, PageData } from './$types';
 
 	let { data, form }: { data: PageData; form: ActionData } = $props();
 
+	const lang = useI18n();
 	const t = useTranslate();
 
 	let wantForm = $state(false);
@@ -27,14 +31,24 @@
 	// circles that a round trip per keystroke would only add latency.
 	let query = $state('');
 	let chosenKind = $state<string>(ALL_KINDS);
+	// The chips count every circle the reader sees, sub-circles included.
 	const chips = $derived(
-		kindChips(data.circles, query, {
+		kindChips(data.tree, query, {
 			all: t('circles.kind.all'),
 			kind: (kind) => circleKindLabel(t, kind)
 		})
 	);
 	const kind = $derived(activeKind(chips, chosenKind));
-	const shown = $derived(filterCircles(data.circles, { query, kind }));
+	// What the live region announces: the circles found, sub-circles counted like cards.
+	const found = $derived(chips.find((chip) => chip.kind === kind)?.count ?? 0);
+
+	// A card per top-level circle, its sub-circles as rows (docs/02 §2.4.2).
+	const tree = $derived(circleTree(data.tree));
+	const shown = $derived(circleFamilies(tree, { query, kind, today: data.today }));
+	// The faces on a card come from the overview's read, by circle.
+	const cards = $derived(new Map(data.circles.map((c) => [c.id, c])));
+	// Families whose past sub-circles are unfolded.
+	let pastOpen = $state<Record<string, boolean>>({});
 </script>
 
 <svelte:head><title>{t('circles.title')}</title></svelte:head>
@@ -116,9 +130,7 @@
 		</label>
 		<!-- Always in the page, so a screen reader is listening before the first keystroke. -->
 		<p class="sr-only" aria-live="polite" data-testid="circle-match-count">
-			{query.trim() !== '' || kind !== ALL_KINDS
-				? t('circles.matchCount', { count: shown.length })
-				: ''}
+			{query.trim() !== '' || kind !== ALL_KINDS ? t('circles.matchCount', { count: found }) : ''}
 		</p>
 
 		{#if chips.length > 1}
@@ -163,12 +175,18 @@
 		</EmptyState>
 	{:else}
 		<ul class="grid gap-3 sm:grid-cols-2" data-testid="circle-cards">
-			{#each shown as circle (circle.id)}
+			{#each shown as family (family.circle.id)}
+				{@const circle = family.circle}
 				{@const cover = data.covers[circle.id]}
-				<li>
+				{@const preview = cards.get(circle.id)?.preview ?? []}
+				{@const rows = pastOpen[circle.id] ? [...family.rows, ...family.pastRows] : family.rows}
+				<li
+					class="flex h-full flex-col overflow-hidden rounded-app bg-card shadow-card"
+					data-testid="circle-card"
+				>
 					<a
 						href="/circles/{circle.id}"
-						class="flex h-full flex-col overflow-hidden rounded-app bg-card shadow-card transition-colors hover:bg-card-hover"
+						class="flex flex-1 flex-col transition-colors hover:bg-card-hover"
 					>
 						{#if cover}
 							<!-- The cover as a flat strip, filled from the centre (docs/05 §5.5); decoration, the name says it. -->
@@ -190,7 +208,11 @@
 									<span class="block truncate font-semibold text-fg">{circle.name}</span>
 									<span class="block text-xs text-fg-subtle">
 										<span>{circleKindLabel(t, circle.kind)}</span>
-										· {t('circles.memberCount', { count: circle.memberCount })}
+										<!-- A circle made of sub-circles alone does not say "0 members". -->
+										{#if circle.memberCount > 0 || family.childCount === 0}
+											· {t('circles.memberCount', { count: circle.memberCount })}{/if}
+										{#if family.childCount > 0}
+											· {t('circles.sub.count', { count: family.childCount })}{/if}
 										{#if circle.visibility === 'private'}
 											· {t('circles.private')}{/if}
 									</span>
@@ -200,7 +222,7 @@
 								<p class="line-clamp-2 text-sm text-fg-muted">{circle.description}</p>
 							{/if}
 							<div class="mt-auto flex items-center">
-								{#each circle.preview as member, i (member.contactId)}
+								{#each preview as member, i (member.contactId)}
 									<span class="rounded-full ring-2 ring-card" class:-ml-1={i > 0}>
 										<Avatar
 											id={member.contactId}
@@ -210,19 +232,75 @@
 										/>
 									</span>
 								{/each}
-								{#if circle.memberCount > circle.preview.length}
+								{#if circle.memberCount > preview.length}
 									<span
 										class="-ml-1 grid size-7 place-items-center rounded-full bg-bg-sunken text-[11px] font-semibold text-fg-muted ring-2 ring-card"
 									>
-										+{circle.memberCount - circle.preview.length}
+										+{circle.memberCount - preview.length}
 									</span>
 								{/if}
-								{#if circle.memberCount === 0}
+								{#if circle.memberCount === 0 && family.childCount === 0}
 									<span class="text-xs text-fg-subtle">{t('circles.nobodyYet')}</span>
 								{/if}
 							</div>
 						</div>
 					</a>
+					{#if rows.length > 0 || family.pastRows.length > 0 || family.hiddenCount > 0}
+						<!-- Outside the card's link, so a row opens its own circle and the toggle opens nothing. -->
+						<div
+							class="@container mx-3 mb-3 flex flex-col border-t border-border-subtle pt-1"
+							data-testid="circle-subrows"
+						>
+							<!-- A narrow card (a phone, or two cards side by side) puts the meta on a small
+							     second line, so the name keeps the row's full width. -->
+							{#each rows as row (row.circle.id)}
+								{@const sub = row.circle}
+								{@const period = circleShortPeriodLabel(lang, sub.startDate, sub.endDate)}
+								<a
+									href="/circles/{sub.id}"
+									class="grid grid-cols-[14px_10px_minmax(0,1fr)] items-center gap-x-2 rounded-control px-1 py-1.5 text-sm transition-colors hover:bg-bg-sunken @sm:grid-cols-[14px_10px_minmax(0,1fr)_auto] {isPastCircle(
+										sub,
+										data.today
+									)
+										? 'text-fg-subtle'
+										: 'text-fg'}"
+									data-testid="circle-subrow"
+								>
+									<Icon name="subCircle" size={14} class="text-fg-subtle" />
+									<span class="size-2.5 rounded-full" style={accentDotStyle(sub.color)}></span>
+									<span class="truncate">{sub.name}</span>
+									<span class="col-start-3 truncate text-xs text-fg-subtle @sm:col-start-auto">
+										{[
+											period,
+											t('circles.memberCount', { count: sub.memberCount }),
+											row.descendantCount > 0
+												? t('circles.sub.inside', { count: row.descendantCount })
+												: null
+										]
+											.filter(Boolean)
+											.join(' · ')}
+									</span>
+								</a>
+							{/each}
+							{#if family.pastRows.length > 0}
+								<button
+									type="button"
+									class="self-start rounded-control px-1 py-1 text-sm text-link hover:underline"
+									aria-expanded={pastOpen[circle.id] === true}
+									onclick={() => (pastOpen[circle.id] = !pastOpen[circle.id])}
+								>
+									{pastOpen[circle.id]
+										? t('circles.sub.hidePast')
+										: t('circles.sub.showPast', { count: family.pastRows.length })}
+								</button>
+							{/if}
+							{#if family.hiddenCount > 0}
+								<span class="px-1 py-1 text-xs text-fg-subtle">
+									{t('circles.sub.more', { count: family.hiddenCount })}
+								</span>
+							{/if}
+						</div>
+					{/if}
 				</li>
 			{/each}
 		</ul>

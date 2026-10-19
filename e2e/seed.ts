@@ -61,6 +61,11 @@ export interface SeedCircle {
 	members: readonly { person: string; role: string }[];
 	/** The name of the seeded circle this one is nested in. */
 	parent?: string;
+	/** The circle's period, ISO dates; open on a side left out. */
+	start?: string;
+	end?: string;
+	/** Private makes it the signed-in account's own: the household's other member cannot see it. */
+	visibility?: 'shared' | 'private';
 }
 
 /** Restore is add-only and keyed by id, so an id that is a function of the name is idempotent. */
@@ -134,6 +139,9 @@ export async function seedHousehold(
 			id: circleIdOf(circle.name),
 			name: circle.name,
 			parent: circle.parent === undefined ? null : circleIdOf(circle.parent),
+			start: circle.start ?? null,
+			end: circle.end ?? null,
+			visibility: circle.visibility ?? 'shared',
 			members: circle.members.map((member) => ({
 				id: idOf(`${circle.name} ${member.person}`),
 				person: idOf(member.person),

@@ -14,9 +14,42 @@ its photos, and lets the household manage members in bulk.
   filled from the centre, decorative), then the colour dot, name, kind and member count, the
   description, and a stack of the first four faces with *+n* for the rest.
 - A query that matches nothing gets the empty state (§5.5.10), not a blank page.
+- **Families, not levels.** Only a top-level circle gets a card — one without a parent, or whose
+  parent the reader cannot see. A sub-circle never has a card of its own: it is a compact
+  **row** inside its parent's card, below the meta line — a corner arrow, the colour dot, the
+  name, a short period (*23/24*, or *from Aug 2025* when it has no end) and its direct member
+  count. A row whose circle has circles of its own adds *+2 inside*; deeper levels are only
+  counted, never listed. On a narrow card (a phone, or two cards side by side) that meta drops
+  to a small second line under the name, so the name gets the row's full width; a card of at
+  least 24 rem keeps it beside the name.
+- Rows run in **sibling order** everywhere: by period start, undated last, then by name.
+  Current and future rows stand open; **past** ones (ended before today) wait behind *Show 2
+  past*, a button inside the card that does not open it. Private sub-circles the reader cannot
+  see are a closing *+1 more*, without a name or a link.
+- The card's meta line adds *4 sub-circles*; a circle with sub-circles but no direct members
+  drops *0 members* and the *Nobody in it yet* line.
+- The search reaches into the families: a sub-circle at any depth that matches brings its
+  top-level card, showing only the matching rows when the top-level circle does not match
+  itself. A matching past row is shown without the toggle. A kind chip keeps a card whose own
+  kind or any descendant's matches; the chips still count every circle of their kind.
 
 #### A circle's page
 
+- A sub-circle's path is the **top bar's trail** (§5.4), not a second one on the page: *Home /
+  Circles / School / Class 5*, each visible ancestor a link. On a phone the back link is the
+  direct parent (*‹ School*); a top-level circle keeps *‹ Circles*.
+- Below the header a sub-circle with siblings offers *‹ previous* and *next ›* in sibling order.
+- A circle with sub-circles shows a **Sub-circles · N** card between the header and the
+  members: a **timeline** with one row per direct child — the dot and the name, *period · N
+  members* as text, and a track (`--border`, which holds on Mocha's card where `--bg-sunken`
+  fades) with a bar over the period. An open-ended bar has a square
+  right edge and runs to the axis's end; a line marks today and the years stand below the
+  tracks. On a wide screen the label sits left of the track, on a phone above it. An undated
+  child gets no bar; without any dated child the card is a plain list. Each row is a link; the
+  bars are decoration (`aria-hidden`), the period is always in the text. Hidden private ones
+  close it as *+1 more*.
+- A circle with sub-circles but no direct members says so where the members would be:
+  *Directly, nobody belongs to School — the people are in its sub-circles.*
 - The members stand in **grids** of avatar cards, one per role under a small uppercase heading
   with its count; no headings when nobody has a role.
 - *Add member* is the card's one disclosure.
@@ -87,3 +120,12 @@ form so the reader edits what they were just reading. Deleting has no Undo — t
 so does the page — so its step says what it takes before anything happens and starts on *Keep
 it*, so a second Enter never deletes; the counts are read only when the step opens, so the
 page's load does not count photos for a step most visits never open. Strips have a fixed height on a wide screen so the members stay in view.
+
+The list shows families rather than levels because a school with eight classes would otherwise
+bury everything else under nine equal cards; a row is enough to find a class, and its page has
+the rest. Past rows fold away because a family grows a year at a time and the current year is
+what a reader looks for, while the search still finds the old ones. One level down is the limit
+on every screen: nesting has no depth limit, and a page that unfolded all of it would stop being
+readable. Sub-circles are a timeline on their parent's page because a school's or a club's
+children are mostly years and seasons, and their order in time is the point; the period stays
+in the text, so the bars carry nothing a screen reader misses.

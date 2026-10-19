@@ -9,6 +9,8 @@
 	import MemberCard from '$lib/components/circle/MemberCard.svelte';
 	import MemberSelectionBar from '$lib/components/circle/MemberSelectionBar.svelte';
 	import PhotoStrip from '$lib/components/circle/PhotoStrip.svelte';
+	import SubCircles from '$lib/components/circle/SubCircles.svelte';
+	import Icon from '$lib/components/ui/Icon.svelte';
 	import { PhotoWalk } from '$lib/components/circle/photo-walk.svelte';
 	import Combobox from '$lib/components/ui/Combobox.svelte';
 	import EmptyState from '$lib/components/ui/EmptyState.svelte';
@@ -39,6 +41,8 @@
 	const i18n = useI18n();
 	const t = i18n.t;
 	const circle = $derived(data.circle);
+	// Where the circle sits among the others (docs/02 §2.4.2).
+	const nesting = $derived(data.nesting);
 
 	/*
 	 * The circle's photos (docs/02 §2.4.2): the cover, a banner over each role group and the
@@ -185,6 +189,7 @@
 <svelte:head><title>{t('circles.detail.title', { name: circle.name })}</title></svelte:head>
 
 <main class="mx-auto flex w-full max-w-4xl flex-col gap-6 px-4 py-6 md:px-6 md:py-10">
+	<!-- A sub-circle's path is the top bar's trail (docs/05 §5.4), so the page repeats none. -->
 	{#if photos.cover}
 		{@const ids = ofRole(null)}
 		<PhotoStrip
@@ -202,6 +207,46 @@
 		canDelete={data.canDelete}
 		error={form && 'detailsError' in form ? (form.detailsError ?? null) : null}
 	/>
+
+	{#if nesting.previous || nesting.next}
+		<!-- The circles beside this one under the same parent, in sibling order. -->
+		<nav
+			aria-label={t('circles.sub.siblings')}
+			class="flex items-center justify-between gap-3 text-sm"
+			data-testid="circle-siblings"
+		>
+			{#if nesting.previous}
+				<a
+					href="/circles/{nesting.previous.id}"
+					aria-label={t('circles.sub.previous', { name: nesting.previous.name })}
+					class="flex min-w-0 items-center gap-1 text-link hover:underline"
+				>
+					<Icon name="back" size={16} />
+					<span class="truncate">{nesting.previous.name}</span>
+				</a>
+			{:else}
+				<span></span>
+			{/if}
+			{#if nesting.next}
+				<a
+					href="/circles/{nesting.next.id}"
+					aria-label={t('circles.sub.next', { name: nesting.next.name })}
+					class="flex min-w-0 items-center gap-1 text-link hover:underline"
+				>
+					<span class="truncate">{nesting.next.name}</span>
+					<Icon name="forward" size={16} />
+				</a>
+			{/if}
+		</nav>
+	{/if}
+
+	{#if nesting.children.length > 0 || nesting.hiddenChildCount > 0}
+		<SubCircles
+			circles={nesting.children}
+			hiddenCount={nesting.hiddenChildCount}
+			today={data.today}
+		/>
+	{/if}
 
 	<Section
 		title={t('circles.members')}
@@ -286,6 +331,11 @@
 					</section>
 				{/each}
 			</div>
+		{:else if nesting.children.length > 0}
+			<!-- A circle made of sub-circles: say where the people are instead of asking for them. -->
+			<p class="text-sm text-fg-muted" data-testid="circle-directly-nobody">
+				{t('circles.sub.directlyNobody', { name: circle.name })}
+			</p>
 		{:else}
 			<EmptyState
 				icon="people"

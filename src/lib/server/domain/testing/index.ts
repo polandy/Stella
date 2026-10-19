@@ -21,8 +21,10 @@ export {
 	circleRepositoryWith,
 	inMemoryCircleDirectory,
 	inMemoryCircleMemberships,
+	inMemoryCircleTree,
 	membership,
 	someCircle,
+	treeNode,
 	type FakeMembership
 } from './circles';
 export { inMemoryTagLists, someTag, type FakeTag } from './tags';

@@ -9,7 +9,9 @@ import type { CircleMembershipReads } from '../domain/circles/memberships';
 import { createDrizzleCircleDirectoryReads } from './circle-directory-reads';
 import { createDrizzleCircleMembershipReads } from './circle-membership-reads';
 import { createDrizzleCircleRepository } from './circle-repository';
+import { createDrizzleCircleTreeReads } from './circle-tree-reads';
 import * as schema from './schema';
+import { eq } from 'drizzle-orm';
 
 /*
  * Integration spec for the circles' read models: the overview with its member counts and
@@ -172,5 +174,61 @@ describe('role uses', () => {
 		expect(await memberships.listRoleUsesVisibleTo(viewerU1)).toEqual([
 			{ circleName: 'Secret Club', role: 'captain' }
 		]);
+	});
+});
+
+describe('the nesting', () => {
+	const nest = (id: string, parentId: string) =>
+		db
+			.update(schema.circle)
+			.set({ parentCircleId: parentId })
+			.where(eq(schema.circle.id, id))
+			.run();
+
+	it('reads every visible circle once, with its parent and its own visible members', async () => {
+		seedContact('anna');
+		seedContact('secret', 'private', U1);
+		const school = await createCircle(deps, creatorU1, { name: 'School', kind: 'school' });
+		const year = await createCircle(deps, creatorU1, {
+			name: 'Class 5b',
+			kind: 'class',
+			startDate: '2025-08',
+			endDate: '2026-07'
+		});
+		nest(year, school);
+		await addMember(deps, creatorU1, year, 'anna');
+		await addMember(deps, creatorU1, year, 'secret');
+
+		const tree = await createDrizzleCircleTreeReads(db).treeVisibleTo(viewerU2);
+		// By name, as stored; the tree puts them in sibling order.
+		expect(tree).toEqual([
+			expect.objectContaining({
+				id: year,
+				parentId: school,
+				name: 'Class 5b',
+				startDate: '2025-08',
+				endDate: '2026-07',
+				// Only the member U2 may see counts, as on the cards.
+				memberCount: 1,
+				hiddenChildCount: 0
+			}),
+			expect.objectContaining({ id: school, parentId: null, memberCount: 0, kind: 'school' })
+		]);
+	});
+
+	it('counts a private sub-circle the reader may not see, and names it nowhere', async () => {
+		const club = await createCircle(deps, creatorU1, { name: 'Club' });
+		const secret = await createCircle(
+			deps,
+			{ ...creatorU1, defaultVisibility: 'private' },
+			{ name: 'Secret squad' }
+		);
+		nest(secret, club);
+
+		const forU2 = await createDrizzleCircleTreeReads(db).treeVisibleTo(viewerU2);
+		expect(forU2.map((c) => [c.id, c.hiddenChildCount])).toEqual([[club, 1]]);
+
+		const forU1 = await createDrizzleCircleTreeReads(db).treeVisibleTo(viewerU1);
+		expect(forU1.find((c) => c.id === secret)?.parentId).toBe(club);
 	});
 });

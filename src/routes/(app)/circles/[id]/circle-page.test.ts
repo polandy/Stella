@@ -9,11 +9,14 @@ import {
 	cutRepositoryWith,
 	fixedClock,
 	inMemoryCircleMemberships,
+	inMemoryCircleTree,
 	inMemoryKinshipGraph,
 	membership,
 	sequentialIds,
-	someCircle
+	someCircle,
+	treeNode
 } from '$lib/server/domain/testing';
+import type { TreeCircle } from '$lib/circles/tree';
 import type { Locale } from '$lib/i18n/locales';
 import {
 	answerOf,
@@ -99,6 +102,8 @@ interface Household {
 	renameRole?: (change: RoleRename) => Promise<void>;
 	/** Who created circle k1; someone else in another household unless named. */
 	createdBy?: string;
+	/** The nesting the viewer sees; the choir alone on top unless given. */
+	tree?: TreeCircle[];
 }
 
 /** The circle page's ports over what the viewer sees; the writes are kept for the test. */
@@ -107,7 +112,8 @@ function household({
 	people = ['anna', 'ben', 'cleo', 'dora', 'emil'],
 	archived = [],
 	renameRole,
-	createdBy
+	createdBy,
+	tree = [treeNode('k1', null, { name: 'Choir' })]
 }: Household = {}) {
 	const added: NewMembership[] = [];
 	const reroled: [string[], string | null][] = [];
@@ -136,6 +142,7 @@ function household({
 		circles: {
 			circleDeps: { circles, ids: sequentialIds(), clock },
 			circleMembershipDeps: { memberships },
+			circleTreeDeps: { tree: inMemoryCircleTree(tree) },
 			circlePhotoDeps: { circlePhotos } as never,
 			cutDeps: { cuts: cutRepositoryWith({ listCutsOfCircle: async () => cutRows }) } as never,
 			memberRoleDeps: { circles, memberships, clock },
@@ -211,6 +218,43 @@ describe('load', () => {
 		const answer = await open(household({ createdBy: 'u2' }).services);
 		if (answer.kind !== 'data') throw new Error(`answered ${answer.kind}`);
 		expect((answer.data as PageServerData).canDelete).toBe(false);
+	});
+});
+
+describe('load: the nesting', () => {
+	const nestingOf = async (tree: TreeCircle[]) => {
+		const answer = await open(household({ tree }).services);
+		if (answer.kind !== 'data') throw new Error(`answered ${answer.kind}`);
+		return (answer.data as PageServerData).nesting;
+	};
+
+	it('leads the way up from the top, and steps to the siblings on either side', async () => {
+		const nesting = await nestingOf([
+			treeNode('school', null, { name: 'School' }),
+			treeNode('class', 'school', { name: 'Class 5b' }),
+			treeNode('alto', 'class', { name: 'Alto', startDate: '2024-08' }),
+			treeNode('k1', 'class', { name: 'Choir', startDate: '2025-08' }),
+			treeNode('tenor', 'class', { name: 'Tenor', startDate: '2026-08' })
+		]);
+		expect(nesting.ancestors.map((c) => c.name)).toEqual(['School', 'Class 5b']);
+		expect(nesting.previous?.name).toBe('Alto');
+		expect(nesting.next?.name).toBe('Tenor');
+	});
+
+	it('lists its direct sub-circles in order, with what is inside each and the hidden ones counted', async () => {
+		const nesting = await nestingOf([
+			treeNode('k1', null, { name: 'Choir', hiddenChildCount: 1 }),
+			treeNode('late', 'k1', { name: 'Late', startDate: '2026-08', memberCount: 3 }),
+			treeNode('early', 'k1', { name: 'Early', startDate: '2024-08' }),
+			treeNode('deep', 'early', { name: 'Deep' })
+		]);
+		expect(nesting.children.map((c) => [c.name, c.memberCount, c.descendantCount])).toEqual([
+			['Early', 0, 1],
+			['Late', 3, 0]
+		]);
+		expect(nesting.hiddenChildCount).toBe(1);
+		expect(nesting.ancestors).toEqual([]);
+		expect(nesting.previous).toBeNull();
 	});
 });
 

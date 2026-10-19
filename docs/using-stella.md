@@ -834,6 +834,22 @@ Once there are more than a handful, start typing on the Circles page to narrow t
 name or description, or tap a kind — *Class*, *Club*, *Team* — to see only those. The number
 beside each kind says how many are left after what you typed.
 
+A circle can sit inside another: the classes inside a school, the junior team inside a club.
+On the Circles page such a sub-circle is not a card of its own but a row on its parent's card,
+with its colour, its period (*24/25*, *from Aug 2025*), how many people belong to it directly
+and, when it holds circles of its own, *+2 inside*. Sub-circles whose period is over wait
+behind **Show 2 past** on the card. A search or a kind also finds sub-circles: the card then
+shows just the rows that match. A private sub-circle of someone else is never named — the card
+only says *+1 more*.
+
+On a sub-circle's page the top bar shows its path, *Home / Circles / School / Class 5b*, each
+step a link; on a phone the back link takes you to the parent, *‹ School*. The page offers the
+circles beside it under the same parent as ‹ previous and next ›. A circle with sub-circles shows them
+in a *Sub-circles* card between its name and its members, each on a timeline of its period with
+a mark for today; tap a row to open it. Counts are always the circle's own people: a school
+whose pupils all sit in its classes says that nobody belongs to it directly, and that the people
+are in its sub-circles.
+
 ## Tags
 
 A tag is a label you make up on the spot — *Kegelclub*, *Nachbarn*, *Weihnachtskarte* — by
