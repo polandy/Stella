@@ -36,15 +36,15 @@ export interface Neighbours<T> {
 /** The nesting, asked by id. Unknown ids answer as a circle without relatives. */
 export interface CircleTree<T extends TreeCircle> {
 	get(id: string): T | undefined;
-	/** The circles without a (visible) parent, in sibling order. */
+	/** The circles without a (visible) parent, in chronological order. */
 	topLevel(): T[];
-	/** The direct sub-circles the reader sees, in sibling order. */
+	/** The direct sub-circles the reader sees, newest first (display order). */
 	children(id: string): T[];
-	/** Every sub-circle below, at any depth, each family in sibling order (depth first). */
+	/** Every sub-circle below, at any depth, each family newest first (depth first). */
 	descendants(id: string): T[];
 	/** The way up, from the top-level circle down to the parent. */
 	ancestors(id: string): T[];
-	/** The siblings before and after it; none for a top-level circle. */
+	/** The siblings before and after it in chronological order; none for a top-level circle. */
 	neighbours(id: string): Neighbours<T>;
 	/** Its direct sub-circles, the hidden ones included. */
 	childCount(id: string): number;
@@ -63,16 +63,38 @@ function endKey(date: string): string {
 	return `${year}-${month}-${day}`;
 }
 
-/** Sibling order: by period start, undated last, then by name. */
-export function compareSiblings(
-	a: Pick<TreeCircle, 'name' | 'startDate'>,
-	b: Pick<TreeCircle, 'name' | 'startDate'>
-): number {
+type Ordered = Pick<TreeCircle, 'name' | 'startDate' | 'endDate'>;
+
+/**
+ * Chronological order: by period start, undated last, then by name. The top level runs in it,
+ * and so do a sub-circle's *previous* and *next* steps, which follow the time axis.
+ */
+export function compareChronological(a: Ordered, b: Ordered): number {
 	if (a.startDate !== b.startDate) {
 		if (a.startDate === null) return 1;
 		if (b.startDate === null) return -1;
 		const byStart = startKey(a.startDate).localeCompare(startKey(b.startDate));
 		if (byStart !== 0) return byStart;
+	}
+	return a.name.localeCompare(b.name);
+}
+
+/**
+ * Display order of a list of sub-circles: the newest period first — by start, then by the later
+ * end, a period without an end counting as the latest — undated last, ties by name.
+ */
+export function compareNewestFirst(a: Ordered, b: Ordered): number {
+	if (a.startDate !== b.startDate) {
+		if (a.startDate === null) return 1;
+		if (b.startDate === null) return -1;
+		const byStart = startKey(b.startDate).localeCompare(startKey(a.startDate));
+		if (byStart !== 0) return byStart;
+	}
+	if (a.endDate !== b.endDate) {
+		if (a.endDate === null) return -1;
+		if (b.endDate === null) return 1;
+		const byEnd = endKey(b.endDate).localeCompare(endKey(a.endDate));
+		if (byEnd !== 0) return byEnd;
 	}
 	return a.name.localeCompare(b.name);
 }
@@ -120,8 +142,8 @@ export function circleTree<T extends TreeCircle>(circles: readonly T[]): CircleT
 		if (parentId === undefined) roots.push(c);
 		else childrenOf.set(parentId, [...(childrenOf.get(parentId) ?? []), c]);
 	}
-	roots.sort(compareSiblings);
-	for (const list of childrenOf.values()) list.sort(compareSiblings);
+	roots.sort(compareChronological);
+	for (const list of childrenOf.values()) list.sort(compareNewestFirst);
 
 	const children = (id: string): T[] => childrenOf.get(id) ?? [];
 
@@ -159,7 +181,7 @@ export function circleTree<T extends TreeCircle>(circles: readonly T[]): CircleT
 		neighbours(id) {
 			const parentId = parents.get(id);
 			if (parentId === undefined) return { previous: null, next: null };
-			const siblings = children(parentId);
+			const siblings = children(parentId).toSorted(compareChronological);
 			const at = siblings.findIndex((c) => c.id === id);
 			return { previous: siblings[at - 1] ?? null, next: siblings[at + 1] ?? null };
 		},

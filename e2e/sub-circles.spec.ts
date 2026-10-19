@@ -23,13 +23,14 @@ function academyOf(school: string) {
 	return {
 		academy: `${school} Academy`,
 		current: `${school} Year 6`,
+		next: `${school} Year 7`,
 		past: `${school} Year 1`,
 		staff: `${school} Staff Room`
 	};
 }
 
 /**
- * Brings in the academy with a current year, a year long over and a staff room private to its
+ * Brings in the academy with two open years, a year long over and a staff room private to its
  * creator. The restore is add-only by id, so each case seeds an academy of its own name.
  */
 async function seedAcademy(page: Page, school: string): Promise<ReturnType<typeof academyOf>> {
@@ -37,6 +38,7 @@ async function seedAcademy(page: Page, school: string): Promise<ReturnType<typeo
 	await seedHousehold(page, [], [], {}, [
 		{ name: names.academy, members: [] },
 		{ name: names.current, parent: names.academy, start: '2025-08-01', members: [] },
+		{ name: names.next, parent: names.academy, start: '2026-08-01', members: [] },
 		{
 			name: names.past,
 			parent: names.academy,
@@ -114,18 +116,39 @@ test('a sub-circle whose period is over waits behind its toggle, which opens not
 	const academy = cardOf(page, names.academy);
 	await expect(rows(academy).filter({ hasText: names.current })).toBeVisible();
 	await expect(rows(academy).filter({ hasText: names.past })).toHaveCount(0);
+	// The newest year on top, the undated staff room last.
+	await expect(rows(academy)).toHaveText([
+		new RegExp(names.next),
+		new RegExp(names.current),
+		new RegExp(names.staff)
+	]);
 
 	const toggle = academy.getByRole('button', { name: 'Show 1 past' });
 	await expect(toggle).toHaveAttribute('aria-expanded', 'false');
 	await toggle.click();
 
-	// Unfolded in place: the row is there and the page is still the list.
-	await expect(rows(academy).filter({ hasText: names.past })).toBeVisible();
+	// Unfolded in place: the row is there, below the open ones, and the page is still the list.
+	await expect(rows(academy)).toHaveText([
+		new RegExp(names.next),
+		new RegExp(names.current),
+		new RegExp(names.staff),
+		new RegExp(names.past)
+	]);
 	await expect(academy.getByRole('button', { name: 'Hide past' })).toHaveAttribute(
 		'aria-expanded',
 		'true'
 	);
 	await expect(page).toHaveURL(/\/circles$/);
+
+	// The timeline on the academy's page runs newest first too, undated last.
+	await academy.locator(':scope > a').click();
+	await expect(page.getByRole('heading', { level: 1, name: names.academy })).toBeVisible();
+	await expect(page.getByTestId('sub-circles').getByRole('link')).toHaveText([
+		new RegExp(names.next),
+		new RegExp(names.current),
+		new RegExp(names.past),
+		new RegExp(names.staff)
+	]);
 });
 
 test('a search keeps the family and shows only the rows that match', async ({ page }) => {

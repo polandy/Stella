@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'bun:test';
-import { circleTree, compareSiblings, isPastCircle, type TreeCircle } from './tree';
+import {
+	circleTree,
+	compareChronological,
+	compareNewestFirst,
+	isPastCircle,
+	type TreeCircle
+} from './tree';
 
 /*
  * The nesting of circles as every screen reads it (docs/02 §2.4.2): who is whose child, in
@@ -41,21 +47,76 @@ const SCHOOL = [
 	node('pairs', 'reading', { name: 'Reading pairs' })
 ];
 
-describe('sibling order', () => {
-	it('runs by period start, undated last, then by name', () => {
+describe('the order sub-circles are listed in', () => {
+	it('puts the newest period first and the undated ones last', () => {
 		const tree = circleTree(SCHOOL);
-		expect(ids(tree.children('school'))).toEqual(['4b', '5b', '6b', 'choir']);
+		expect(ids(tree.children('school'))).toEqual(['6b', '5b', '4b', 'choir']);
 	});
 
-	it('breaks a tie on the start by name, and reads a year alone as its January', () => {
+	it('runs a family of school years newest first, as the list and the timeline show it', () => {
+		const years = [
+			node('school', null, { name: 'Leonardo Schule' }),
+			node('k23', 'school', {
+				name: 'Kindergarten Munzi II 23/24',
+				startDate: '2023-08-01',
+				endDate: '2024-07-31'
+			}),
+			node('k24', 'school', {
+				name: 'Kindergarten Munzi II 24/25',
+				startDate: '2024-08',
+				endDate: '2025-07'
+			}),
+			node('c25', 'school', {
+				name: 'Klasse 1-2D 25/26',
+				startDate: '2025-08',
+				endDate: '2026-07'
+			}),
+			node('c26', 'school', { name: 'Klasse 1-2D 26/27', startDate: '2026-08', endDate: '2027-07' })
+		];
+		expect(ids(circleTree(years).children('school'))).toEqual(['c26', 'c25', 'k24', 'k23']);
+	});
+
+	it('breaks a tie on the start by the later end, then by name, and reads a year alone as its January', () => {
+		const short = node('s', null, { name: 'Short', startDate: '2024-08', endDate: '2024-12' });
+		const long = node('l', null, { name: 'Long', startDate: '2024-08', endDate: '2025-07' });
+		const beta = node('b', null, { name: 'Beta', startDate: '2024-08', endDate: '2025-07' });
+		const year = node('y', null, { name: 'Year', startDate: '2024' });
+		const undatedB = node('ub', null, { name: 'Zoo' });
+		const undatedA = node('ua', null, { name: 'Ants' });
+		expect(
+			[undatedB, year, short, beta, undatedA, long].sort(compareNewestFirst).map((c) => c.name)
+		).toEqual(['Beta', 'Long', 'Short', 'Year', 'Ants', 'Zoo']);
+	});
+
+	it('puts a period without an end before one that has ended, on the same start', () => {
+		const open = node('o', null, { name: 'Open', startDate: '2024-08' });
+		const closed = node('c', null, { name: 'Closed', startDate: '2024-08', endDate: '2025-07' });
+		expect([closed, open].sort(compareNewestFirst).map((c) => c.name)).toEqual(['Open', 'Closed']);
+	});
+});
+
+describe('the chronological order the sibling steps follow', () => {
+	it('runs by period start, undated last, then by name', () => {
 		const a = node('a', null, { name: 'Beta', startDate: '2024-08' });
 		const b = node('b', null, { name: 'Alpha', startDate: '2024-08' });
+		const later = node('l', null, { name: 'Later', startDate: '2025-08' });
 		const year = node('y', null, { name: 'Zeta', startDate: '2024' });
-		expect([a, b, year].sort(compareSiblings).map((c) => c.name)).toEqual([
+		const undated = node('u', null, { name: 'Aardvark' });
+		expect([undated, later, a, b, year].sort(compareChronological).map((c) => c.name)).toEqual([
 			'Zeta',
 			'Alpha',
-			'Beta'
+			'Beta',
+			'Later',
+			'Aardvark'
 		]);
+	});
+
+	it('keeps top-level circles in it', () => {
+		const tops = [
+			node('new', null, { startDate: '2025' }),
+			node('old', null, { startDate: '2020' })
+		];
+		expect(ids(circleTree(tops).topLevel())).toEqual(['old', 'new']);
 	});
 });
 
@@ -70,11 +131,20 @@ describe('the levels', () => {
 			['4b', '5b', '6b', 'choir', 'pairs', 'reading'].sort()
 		);
 		expect(ids(tree.descendants('5b'))).toEqual(['reading', 'pairs']);
+		// Each family newest first, depth first: a year's own circles follow it.
+		expect(ids(tree.descendants('school'))).toEqual([
+			'6b',
+			'5b',
+			'reading',
+			'pairs',
+			'4b',
+			'choir'
+		]);
 		expect(ids(tree.ancestors('pairs'))).toEqual(['school', '5b', 'reading']);
 		expect(tree.ancestors('school')).toEqual([]);
 	});
 
-	it('names the previous and the next sibling, and none past either end', () => {
+	it('steps to the earlier sibling as previous and the later one as next, none past either end', () => {
 		const tree = circleTree(SCHOOL);
 		expect(tree.neighbours('5b')).toMatchObject({ previous: { id: '4b' }, next: { id: '6b' } });
 		expect(tree.neighbours('4b')).toMatchObject({ previous: null, next: { id: '5b' } });

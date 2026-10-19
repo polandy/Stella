@@ -13,7 +13,7 @@
 	import { useI18n } from '$lib/i18n/context.svelte';
 
 	interface Props {
-		/** The direct sub-circles in sibling order, each with how many circles lie further inside. */
+		/** The direct sub-circles newest first, each with how many circles lie further inside. */
 		circles: (TreeCircle & { descendantCount: number })[];
 		/** Direct sub-circles the reader may not see: counted, never named. */
 		hiddenCount: number;

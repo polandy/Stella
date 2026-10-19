@@ -200,7 +200,7 @@ describe('the nesting', () => {
 		await addMember(deps, creatorU1, year, 'secret');
 
 		const tree = await createDrizzleCircleTreeReads(db).treeVisibleTo(viewerU2);
-		// By name, as stored; the tree puts them in sibling order.
+		// By name, as stored; the tree orders them.
 		expect(tree).toEqual([
 			expect.objectContaining({
 				id: year,

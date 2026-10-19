@@ -54,8 +54,9 @@ describe('circleFamilies', () => {
 		expect(families.map(shape)).toEqual([
 			// Positive signal: Class 5b is a row inside School's card, not a card of its own.
 			['Club', ['Juniors'], []],
-			['School', ['Class 5b', 'Class 6b'], ['Class 3a']]
+			['School', ['Class 6b', 'Class 5b'], ['Class 3a']]
 		]);
+		// Newest first, the shown rows and the past ones alike.
 		expect(families.map((f) => f.circle.id)).not.toContain('Class 5b');
 	});
 
@@ -64,8 +65,8 @@ describe('circleFamilies', () => {
 		expect(school.childCount).toBe(4);
 		expect(school.hiddenCount).toBe(1);
 		expect(school.rows.map((r) => [r.circle.id, r.descendantCount])).toEqual([
-			['Class 5b', 0],
-			['Class 6b', 1]
+			['Class 6b', 1],
+			['Class 5b', 0]
 		]);
 	});
 
@@ -82,12 +83,12 @@ describe('circleFamilies', () => {
 
 	it('keeps the whole family when the parent itself matches', () => {
 		const families = circleFamilies(household, { ...everything, query: 'school' });
-		expect(families.map(shape)).toEqual([['School', ['Class 5b', 'Class 6b'], ['Class 3a']]]);
+		expect(families.map(shape)).toEqual([['School', ['Class 6b', 'Class 5b'], ['Class 3a']]]);
 	});
 
 	it('keeps a card whose kind does not match when a sub-circle’s does', () => {
 		expect(circleFamilies(household, { ...everything, kind: 'class' }).map(shape)).toEqual([
-			['School', ['Class 5b', 'Class 6b'], ['Class 3a']]
+			['School', ['Class 6b', 'Class 5b'], ['Class 3a']]
 		]);
 		// Choir 6b is a club two levels down: School stays, next to the club itself.
 		expect(
