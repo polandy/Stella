@@ -19,7 +19,9 @@ its photos, and lets the household manage members in bulk.
   **row** inside its parent's card, below the meta line — a corner arrow, the colour dot, the
   name, a short period (*23/24*, or *from Aug 2025* when it has no end) and its direct member
   count. A row whose circle has circles of its own adds *+2 inside*; deeper levels are only
-  counted, never listed.
+  counted, never listed. On a narrow card (a phone, or two cards side by side) that meta drops
+  to a small second line under the name, so the name gets the row's full width; a card of at
+  least 24 rem keeps it beside the name.
 - Rows run in **sibling order** everywhere: by period start, undated last, then by name.
   Current and future rows stand open; **past** ones (ended before today) wait behind *Show 2
   past*, a button inside the card that does not open it. Private sub-circles the reader cannot

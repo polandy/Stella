@@ -248,15 +248,17 @@
 					{#if rows.length > 0 || family.pastRows.length > 0 || family.hiddenCount > 0}
 						<!-- Outside the card's link, so a row opens its own circle and the toggle opens nothing. -->
 						<div
-							class="mx-3 mb-3 flex flex-col border-t border-border-subtle pt-1"
+							class="@container mx-3 mb-3 flex flex-col border-t border-border-subtle pt-1"
 							data-testid="circle-subrows"
 						>
+							<!-- A narrow card (a phone, or two cards side by side) puts the meta on a small
+							     second line, so the name keeps the row's full width. -->
 							{#each rows as row (row.circle.id)}
 								{@const sub = row.circle}
 								{@const period = circleShortPeriodLabel(lang, sub.startDate, sub.endDate)}
 								<a
 									href="/circles/{sub.id}"
-									class="grid grid-cols-[14px_10px_minmax(0,1fr)_auto] items-center gap-2 rounded-control px-1 py-1.5 text-sm transition-colors hover:bg-bg-sunken {isPastCircle(
+									class="grid grid-cols-[14px_10px_minmax(0,1fr)] items-center gap-x-2 rounded-control px-1 py-1.5 text-sm transition-colors hover:bg-bg-sunken @sm:grid-cols-[14px_10px_minmax(0,1fr)_auto] {isPastCircle(
 										sub,
 										data.today
 									)
@@ -267,7 +269,7 @@
 									<Icon name="subCircle" size={14} class="text-fg-subtle" />
 									<span class="size-2.5 rounded-full" style={accentDotStyle(sub.color)}></span>
 									<span class="truncate">{sub.name}</span>
-									<span class="text-xs whitespace-nowrap text-fg-subtle">
+									<span class="col-start-3 truncate text-xs text-fg-subtle @sm:col-start-auto">
 										{[
 											period,
 											t('circles.memberCount', { count: sub.memberCount }),
