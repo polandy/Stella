@@ -19,18 +19,26 @@ const ANNA = `Anna ${SURNAME}`;
 const DORA = 'Dora';
 const CARL = 'Carl';
 
-/** Holds the next form post until the returned `release` is called, then stops holding. */
-async function holdNextSave(page: Page): Promise<() => Promise<void>> {
-	let release!: () => void;
-	const held = new Promise<void>((resolve) => (release = resolve));
-	const hold = async (route: Route) => {
-		if (route.request().method() === 'POST') await held;
+/**
+ * A gate on the page's form posts, installed once: `hold()` keeps every post from going out
+ * until the `release` it returns is called. One route for the whole case, so no handler is
+ * removed while a request it holds is still on its way.
+ */
+async function saveGate(page: Page): Promise<{ hold: () => () => void }> {
+	let held: Promise<void> | null = null;
+	await page.route('**/contacts/**', async (route: Route) => {
+		if (route.request().method() === 'POST' && held) await held;
 		await route.continue();
-	};
-	await page.route('**/contacts/**', hold);
-	return async () => {
-		release();
-		await page.unroute('**/contacts/**', hold);
+	});
+	return {
+		hold() {
+			let release!: () => void;
+			held = new Promise<void>((resolve) => (release = resolve));
+			return () => {
+				held = null;
+				release();
+			};
+		}
 	};
 }
 
@@ -54,10 +62,11 @@ test('a tapped chip saves at once, offers the name on, and Undo puts the name ba
 	const chip = page.getByTestId('last-name-chip').filter({ hasText: `${SURNAME}?` });
 
 	// The tap: the indicator stands while the save is out, and the name follows the answer.
-	const releaseGive = await holdNextSave(page);
+	const gate = await saveGate(page);
+	const releaseGive = gate.hold();
 	await chip.click();
 	await expect(indicator).toBeVisible();
-	await releaseGive();
+	releaseGive();
 	await expect(
 		page.getByRole('heading', { name: `${DORA} ${SURNAME}`, exact: true })
 	).toBeVisible();
@@ -73,10 +82,10 @@ test('a tapped chip saves at once, offers the name on, and Undo puts the name ba
 	await expect(passOn).toContainText(`${CARL} has no last name yet — ${SURNAME} too?`);
 
 	// *Undo*: under the indicator again, and the name is back as it was.
-	const releaseTakeBack = await holdNextSave(page);
+	const releaseTakeBack = gate.hold();
 	await toast.getByRole('button', { name: 'Undo' }).click();
 	await expect(indicator).toBeVisible();
-	await releaseTakeBack();
+	releaseTakeBack();
 	await expect(page.getByRole('heading', { name: DORA, exact: true })).toBeVisible();
 	await expect(chip).toBeVisible();
 	await expect(indicator).toHaveCount(0);
