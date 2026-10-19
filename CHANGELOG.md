@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.0.28](https://github.com/polandy/Stella/compare/v0.0.27...v0.0.28) (2026-10-19)
+
+
+### Features
+
+* **circles:** list sub-circles newest first ([#389](https://github.com/polandy/Stella/issues/389)) ([9f5a166](https://github.com/polandy/Stella/commit/9f5a16619681a8944d4bca5069af4255200cc566))
+
 ## [0.0.27](https://github.com/polandy/Stella/compare/v0.0.26...v0.0.27) (2026-10-19)
 
 
