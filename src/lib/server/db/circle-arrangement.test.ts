@@ -276,6 +276,24 @@ describe('revert', () => {
 		expect(restored?.createdBy).toBe(U2);
 	});
 
+	it('does not delete a membership a forged receipt claims in another circle or for another person', async () => {
+		seedContact('lena');
+		seedContact('mia');
+		// Everything but the circle / the person matches the stored row (updatedAt 20, no role).
+		seedMembership('m1', 'class', 'lena');
+
+		const outcome = await revert({
+			added: [
+				{ id: 'm1', circleId: 'school', contactId: 'lena', role: null, updatedAt: 20 },
+				{ id: 'm1', circleId: 'class', contactId: 'mia', role: null, updatedAt: 20 }
+			],
+			removed: []
+		});
+
+		expect(outcome).toEqual({ removed: 0, kept: 2, restored: 0, conflicts: 0 });
+		expect(rows()).toEqual(['class/lena']);
+	});
+
 	it('restores nothing into a circle of another household', async () => {
 		seedContact('lena');
 		db.insert(schema.circle)

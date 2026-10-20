@@ -54,6 +54,7 @@ test('the circle page offers Arrange people only when it has sub-circles', async
 	await expect(page.getByTestId('arrange-card')).toHaveCount(2);
 
 	await page.goto(`/circles/${circleIdOf(s.child)}`);
+	await appReady(page);
 	await expect(page.getByRole('link', { name: 'Arrange people' })).toHaveCount(0);
 });
 
