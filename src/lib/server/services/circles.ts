@@ -2,6 +2,7 @@ import type { BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
 import type { Clock } from '../clock';
 import { createDrizzleCircleDirectoryReads } from '../db/circle-directory-reads';
 import { createDrizzleCircleMembershipReads } from '../db/circle-membership-reads';
+import { createDrizzleCircleNestingReads } from '../db/circle-nesting-reads';
 import { createDrizzleCirclePhotoRepository } from '../db/circle-photo-repository';
 import { createDrizzleCircleRepository } from '../db/circle-repository';
 import { createDrizzleCircleTreeReads } from '../db/circle-tree-reads';
@@ -17,8 +18,10 @@ import type {
 import type { CircleDeletionPreviewDeps, DeleteCircleDeps } from '../domain/circles/delete-circle';
 import type { CircleDirectoryDeps } from '../domain/circles/directory';
 import type { CircleMembershipDeps } from '../domain/circles/memberships';
+import type { CircleNestingDeps } from '../domain/circles/nesting';
 import type { RenameRoleDeps } from '../domain/circles/rename-role';
 import type { CircleTreeDeps } from '../domain/circles/tree';
+import type { UpdateCircleDeps } from '../domain/circles/update-circle';
 import type { MediaStore } from '../domain/media/avatars';
 import type { CutDeps, CutRepository } from '../domain/media/cuts';
 import type { IdGenerator } from '../id';
@@ -46,6 +49,10 @@ export interface CircleServices {
 	circleDirectoryDeps: CircleDirectoryDeps;
 	/** The nesting the Circles list and a circle's page show (docs/02 §2.4.2). */
 	circleTreeDeps: CircleTreeDeps;
+	/** Moving a circle under another or out on its own, and every Undo of it (docs/02 §2.4.2). */
+	circleNestingDeps: CircleNestingDeps;
+	/** The edit form: its details and the circle it belongs to, checked as every move is. */
+	updateCircleDeps: UpdateCircleDeps;
 	circleMembershipDeps: CircleMembershipDeps;
 	memberRoleDeps: MemberRoleDeps;
 	memberRemovalDeps: MemberRemovalDeps;
@@ -80,6 +87,7 @@ export function createCircleServices({
 	const memberships = createDrizzleCircleMembershipReads(db);
 	const circlePhotos = createDrizzleCirclePhotoRepository(db);
 	const cuts = createDrizzleCutRepository(db);
+	const nesting = createDrizzleCircleNestingReads(db);
 
 	return {
 		circles,
@@ -88,6 +96,8 @@ export function createCircleServices({
 		circleDeps: { circles, ids, clock },
 		circleDirectoryDeps: { directory: createDrizzleCircleDirectoryReads(db) },
 		circleTreeDeps: { tree: createDrizzleCircleTreeReads(db) },
+		circleNestingDeps: { circles, nesting, clock },
+		updateCircleDeps: { circles, nesting, clock },
 		circleMembershipDeps: { memberships },
 		memberRoleDeps: { circles, memberships, clock },
 		memberRemovalDeps: { circles, memberships },

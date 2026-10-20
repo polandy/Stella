@@ -184,7 +184,46 @@ export const circles = {
 	'circles.sub.previous': (p: { name: string }) => `Previous: ${p.name}`,
 	'circles.sub.next': (p: { name: string }) => `Next: ${p.name}`,
 	'circles.sub.directlyNobody': (p: { name: string }) =>
-		`Directly, nobody belongs to ${p.name} — the people are in its sub-circles.`
+		`Directly, nobody belongs to ${p.name} — the people are in its sub-circles.`,
+	'circles.sub.empty': 'No sub-circles yet.',
+	'circles.sub.create': 'New sub-circle',
+	'circles.sub.createLabel': (p: { name: string }) => `New sub-circle of ${p.name}`,
+	'circles.sub.addExisting': 'Add existing',
+	'circles.sub.actions': (p: { name: string }) => `Actions for ${p.name}`,
+	'circles.sub.detach': (p: { parent: string }) => `Detach from ${p.parent}`,
+	'circles.sub.detached': (p: { name: string }) => `${p.name} now stands on its own`,
+	'circles.sub.added': (p: { name: string; parent: string }) => `${p.name} is now in ${p.parent}`,
+	'circles.sub.undoFailed': 'Could not take the move back. The circle stays where it is now.',
+	// The name field's example, fitting the kind a new sub-circle is likely to be.
+	'circles.sub.placeholder.class': 'e.g. Class 3a',
+	'circles.sub.placeholder.team': 'e.g. Under-12s',
+	// *Belongs to*: the one place a circle's parent is set (docs/02 §2.4.2).
+	'circles.parent.label': 'Belongs to',
+	'circles.parent.labelOptional': 'Belongs to (optional)',
+	'circles.parent.none': 'None',
+	'circles.parent.standsAlone': 'stands on its own',
+	'circles.parent.path': (p: { path: string }) => `in ${p.path}`,
+	'circles.parent.choose': (p: { current: string }) => `Belongs to: ${p.current}. Choose another`,
+	'circles.parent.help': 'Say, a class to its school. Members and photos stay where they are.',
+	'circles.parent.detach': 'Detach',
+	'circles.parent.privateNote': (p: { parent: string; name: string }) =>
+		`${p.parent} is private. Everyone else keeps seeing ${p.name} as a circle of its own.`,
+	'circles.parent.savedInside': (p: { parent: string }) => `Saved · now in ${p.parent}`,
+	'circles.parent.savedAlone': 'Saved · now stands on its own',
+	// The circle picker, a sheet from the bottom.
+	'circles.picker.parentTitle': 'Belongs to',
+	'circles.picker.parentSubtitle': (p: { name: string }) => `Where does ${p.name} belong?`,
+	'circles.picker.parentSubtitleNew': 'Where does the new circle belong?',
+	'circles.picker.addTitle': 'Add an existing circle',
+	'circles.picker.addSubtitle': (p: { name: string }) => `Which circle goes into ${p.name}?`,
+	'circles.picker.search': 'Search circles',
+	'circles.picker.noMatch': 'No circle matches.',
+	'circles.picker.self': 'this circle',
+	'circles.picker.inside': (p: { name: string }) => `inside ${p.name}`,
+	'circles.picker.contains': (p: { name: string }) => `contains ${p.name}`,
+	'circles.picker.alreadyIn': 'already in it',
+	'circles.picker.movesFrom': (p: { name: string }) => `now in ${p.name} – will be moved`,
+	'circles.picker.footer': 'A circle can’t sit inside itself or one of its sub-circles.'
 };
 
 /** The key set every translation of this area has to provide. */

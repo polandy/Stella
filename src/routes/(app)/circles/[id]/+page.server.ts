@@ -8,6 +8,7 @@ import {
 	groupMembersByRole,
 	removeMember,
 	setMembersRole,
+	suggestCircleColor,
 	suggestRoles
 } from '$lib/server/domain/circles/circles';
 import { listMembers } from '$lib/server/domain/circles/memberships';
@@ -27,6 +28,7 @@ import { listCircleCuts } from '$lib/server/domain/media/cuts';
 import { readSurnameHelp } from '$lib/server/domain/contacts/last-names';
 import { deleteActions } from './actions/delete';
 import { detailsActions } from './actions/details';
+import { nestingActions } from './actions/nesting';
 import { photoActions } from './actions/photos';
 import { readPeopleAndRole } from './people-form';
 import { lastNameActions } from '../../_shared/last-names-actions';
@@ -68,6 +70,12 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 				.map((c) => ({ ...c, descendantCount: tree.descendants(c.id).length })),
 			hiddenChildCount: tree.get(circle.id)?.hiddenChildCount ?? 0
 		},
+		// Every circle the reader sees, for the circle picker of *Belongs to* and *Add existing*.
+		tree: flat,
+		// What *Belongs to* shows: the circle it sits directly inside, null for none.
+		parentId: tree.ancestors(circle.id).at(-1)?.id ?? null,
+		// The colour *New sub-circle* starts on, as the list's *New circle* does.
+		suggestedColor: suggestCircleColor(flat.map((c) => c.color)),
 		// Where the timeline's today marker stands, on the server's clock.
 		today: todayFor(locals.services.circles.circleDeps.clock),
 		// What the header's edit form offers (docs/02 §2.4.2), as the create form does.
@@ -103,6 +111,7 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 
 export const actions: Actions = {
 	...detailsActions,
+	...nestingActions,
 	...deleteActions,
 	...photoActions,
 	...lastNameActions,

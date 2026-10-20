@@ -38,6 +38,7 @@ export function createDrizzleCircleRepository(
 					description: c.description,
 					kind: c.kind,
 					color: c.color,
+					parentCircleId: c.parentCircleId,
 					startDate: c.startDate,
 					endDate: c.endDate,
 					createdAt: c.createdAt,
@@ -132,6 +133,17 @@ export function createDrizzleCircleRepository(
 			const changed = db
 				.update(circle)
 				.set({ ...details, updatedAt })
+				.where(and(eq(circle.id, circleId), circleColumnsVisibleTo(viewer, circle)))
+				.returning({ id: circle.id })
+				.all();
+			return changed.length > 0;
+		},
+
+		// Scoped like `update`: the move itself is checked by `planCircleMove` before it is asked for.
+		async setParent(viewer: Viewer, circleId: string, parentId: string | null, updatedAt: number) {
+			const changed = db
+				.update(circle)
+				.set({ parentCircleId: parentId, updatedAt })
 				.where(and(eq(circle.id, circleId), circleColumnsVisibleTo(viewer, circle)))
 				.returning({ id: circle.id })
 				.all();

@@ -21,6 +21,7 @@ export {
 	circleRepositoryWith,
 	inMemoryCircleDirectory,
 	inMemoryCircleMemberships,
+	inMemoryCircleNesting,
 	inMemoryCircleTree,
 	membership,
 	someCircle,

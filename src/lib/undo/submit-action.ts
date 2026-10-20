@@ -14,7 +14,7 @@ export class ActionFailedError extends Error {
 }
 
 /** The header SvelteKit reads to answer a form action with a JSON result instead of a page. */
-const ACTION_HEADER = 'x-sveltekit-action';
+export const ACTION_HEADER = 'x-sveltekit-action';
 
 /**
  * Sends `body` to a form action the way the browser would have, minus the navigation.

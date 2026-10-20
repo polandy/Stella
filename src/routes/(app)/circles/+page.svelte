@@ -4,6 +4,7 @@
 	import Avatar from '$lib/components/ui/Avatar.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import ColourSwatches from '$lib/components/circle/ColourSwatches.svelte';
+	import ParentField from '$lib/components/circle/ParentField.svelte';
 	import EmptyState from '$lib/components/ui/EmptyState.svelte';
 	import Icon from '$lib/components/ui/Icon.svelte';
 	import { ALL_KINDS, activeKind, kindChips } from '$lib/circles/browse';
@@ -24,6 +25,8 @@
 	let wantForm = $state(false);
 	// What the new circle is called to begin with: a search that found nothing hands its query over.
 	let newName = $state('');
+	// *Belongs to* of the new circle: none until a parent is chosen.
+	let newParent = $state<string | null>(null);
 	// A failed submit keeps the form open, so the error has somewhere to be read.
 	const showForm = $derived(wantForm || form?.error !== undefined);
 
@@ -109,6 +112,16 @@
 			</div>
 
 			<ColourSwatches colors={data.colors} selected={data.suggestedColor} />
+
+			<ParentField
+				circles={data.tree}
+				subjectId={null}
+				subjectName={null}
+				shared
+				bind:value={newParent}
+				optional
+				idPrefix="circle-new"
+			/>
 
 			<Button variant="primary" class="self-start">{t('circles.create')}</Button>
 		</form>

@@ -1,29 +1,43 @@
 import { describe, expect, it } from 'bun:test';
 import { createTranslator } from '$lib/i18n/translate';
 import type { CircleDetails } from '$lib/server/domain/circles/circles';
-import { circleRepositoryWith, fixedClock, sequentialIds } from '$lib/server/domain/testing';
+import {
+	circleRepositoryWith,
+	fixedClock,
+	inMemoryCircleNesting,
+	someCircle
+} from '$lib/server/domain/testing';
 import { answerOf, formOf, routeEvent, type FakeServices } from '$lib/server/testing';
 import { detailsActions as actions } from './details';
 
 /*
  * Editing a circle's details from its header (docs/02 §2.4.2) as the edge answers it: the save,
- * a refusal said in the reader's language under the form, a circle that is gone, and a form the
- * page did not make. `updateCircle` has its own suite; the port here only answers as the case needs.
+ * the circle it belongs to, a refusal said in the reader's language under the form, a circle that
+ * is gone, and a form the page did not make. `updateCircle` and `moveCircle` have their own
+ * suites; the ports here only answer as the case needs.
  */
 
 const t = createTranslator('en');
 const NOW = 5000;
 
-/** The circle page's ports, with `k1` the one circle the viewer sees; the writes are kept. */
+/**
+ * The circle page's ports: the viewer sees `k1`, its sub-circle `group` and `school`, but not
+ * `hidden`. The detail writes and the parent writes are kept.
+ */
 function household() {
+	const visible = ['k1', 'school', 'group'];
 	const written: CircleDetails[] = [];
+	const parents: { circleId: string; parentId: string | null }[] = [];
 	const circles = circleRepositoryWith({
-		update: async (_viewer, id, details) => id === 'k1' && (written.push(details), true)
+		getVisibleTo: async (_viewer, id) => (visible.includes(id) ? someCircle(id, id) : null),
+		update: async (_viewer, id, details) => visible.includes(id) && (written.push(details), true),
+		setParent: async (_viewer, circleId, parentId) => (parents.push({ circleId, parentId }), true)
 	});
+	const nesting = inMemoryCircleNesting({ k1: null, school: null, group: 'k1' });
 	const services: FakeServices = {
-		circles: { circleDeps: { circles, ids: sequentialIds(), clock: fixedClock(NOW) } }
+		circles: { updateCircleDeps: { circles, nesting, clock: fixedClock(NOW) } }
 	};
-	return { services, written };
+	return { services, written, parents };
 }
 
 const post = (services: FakeServices, form: FormData, id = 'k1') =>
@@ -77,6 +91,44 @@ describe('updateCircle', () => {
 			status: 400,
 			data: { detailsError: t('errors.circle.periodBackwards') }
 		});
+	});
+
+	it('puts the circle where Belongs to says, and takes it out with an empty one', async () => {
+		const { services, parents } = household();
+		expect(await post(services, formOf({ ...FULL, parent: 'school' }))).toMatchObject({
+			kind: 'redirect'
+		});
+		expect(parents).toEqual([{ circleId: 'k1', parentId: 'school' }]);
+
+		await post(services, formOf({ ...FULL, parent: '' }), 'group');
+		expect(parents.at(-1)).toEqual({ circleId: 'group', parentId: null });
+	});
+
+	it('leaves the parent alone when the form sends none', async () => {
+		const { services, parents } = household();
+		await post(services, formOf(FULL));
+		expect(parents).toEqual([]);
+	});
+
+	it('refuses a parent inside the circle itself under the field, saving nothing', async () => {
+		const { services, written, parents } = household();
+		expect(await post(services, formOf({ ...FULL, parent: 'group' }))).toEqual({
+			kind: 'fail',
+			status: 400,
+			data: { parentError: t('errors.circle.loop', { name: 'k1' }) }
+		});
+		expect(written).toEqual([]);
+		expect(parents).toEqual([]);
+	});
+
+	it('refuses a parent the viewer cannot see under the field', async () => {
+		const { services, written } = household();
+		expect(await post(services, formOf({ ...FULL, parent: 'hidden' }))).toEqual({
+			kind: 'fail',
+			status: 400,
+			data: { parentError: t('errors.circle.parentNotFound') }
+		});
+		expect(written).toEqual([]);
 	});
 
 	it('answers 404 for a circle the viewer cannot see, or one that is gone', async () => {

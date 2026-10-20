@@ -154,6 +154,9 @@ export const errors = {
 	'errors.circle.couldNotAdd': 'Could not add the circle.',
 	'errors.circle.notFound': 'Circle not found',
 	'errors.circle.periodBackwards': 'The period can’t end before it starts.',
+	'errors.circle.loop': (p: { name: string }) =>
+		`That won’t work: ${p.name} would end up inside itself. Please choose another circle.`,
+	'errors.circle.parentNotFound': 'That circle isn’t there (any more). Please choose another one.',
 	'errors.circlePhoto.unknownRole': 'Pick one of the circle’s roles, or no role.',
 	'errors.admin.only': 'Only an admin can do this.',
 	'errors.member.notYourself': 'You can’t remove yourself. Another admin can.',
