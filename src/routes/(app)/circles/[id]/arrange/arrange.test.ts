@@ -30,7 +30,10 @@ const member = (
 	contactId,
 	displayName: contactId,
 	avatarPhotoId: null,
-	role
+	role,
+	startDate: null,
+	endDate: null,
+	note: null
 });
 
 /** The viewer sees `school` and `class` (inside it); `hidden` is not theirs. */
@@ -204,7 +207,18 @@ describe('arrange', () => {
 describe('undo', () => {
 	const receipt = (circleId = 'class') =>
 		JSON.stringify({
-			added: [{ id: 'a1', circleId: 'school', contactId: 'lena', role: null, updatedAt: 1 }],
+			added: [
+				{
+					id: 'a1',
+					circleId: 'school',
+					contactId: 'lena',
+					role: null,
+					startDate: null,
+					endDate: null,
+					note: null,
+					updatedAt: 1
+				}
+			],
 			removed: [
 				{
 					id: 'r1',

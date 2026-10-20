@@ -47,6 +47,9 @@ export function createDrizzleCircleArrangementRepository(
 						circleId: a.circleId,
 						contactId: a.contactId,
 						role: a.role,
+						startDate: a.startDate,
+						endDate: a.endDate,
+						note: a.note,
 						updatedAt: a.updatedAt
 					});
 				}
@@ -66,9 +69,9 @@ export function createDrizzleCircleArrangementRepository(
 						row.contactId === a.contactId &&
 						row.role === a.role &&
 						row.updatedAt === a.updatedAt &&
-						row.startDate === null &&
-						row.endDate === null &&
-						row.note === null;
+						row.startDate === a.startDate &&
+						row.endDate === a.endDate &&
+						row.note === a.note;
 					if (!pristine) {
 						outcome.kept += 1;
 						continue;

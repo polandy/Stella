@@ -26,8 +26,18 @@ const viewer = { id: 'u1', householdId: 'h1' };
 const member = (
 	circleId: string,
 	contactId: string,
-	role: string | null = null
-): ArrangeMember => ({ circleId, contactId, displayName: contactId, avatarPhotoId: null, role });
+	role: string | null = null,
+	stay: { startDate?: string; endDate?: string; note?: string } = {}
+): ArrangeMember => ({
+	circleId,
+	contactId,
+	displayName: contactId,
+	avatarPhotoId: null,
+	role,
+	startDate: stay.startDate ?? null,
+	endDate: stay.endDate ?? null,
+	note: stay.note ?? null
+});
 
 /**
  * School › Class 1b › Football, the viewer sees all three; `Hidden` is a circle they do not see
@@ -45,6 +55,9 @@ function household(members: ArrangeMember[], visibleContacts?: string[]) {
 					circleId: a.circleId,
 					contactId: a.contactId,
 					role: a.role,
+					startDate: a.startDate,
+					endDate: a.endDate,
+					note: a.note,
 					updatedAt: a.updatedAt
 				})),
 				removed: plan.removals.map((r) => ({
@@ -149,6 +162,9 @@ describe('arrangePeople', () => {
 						circleId: 'school',
 						contactId: 'lena',
 						role: 'Pupil',
+						startDate: null,
+						endDate: null,
+						note: null,
 						createdBy: 'u1',
 						createdAt: NOW,
 						updatedAt: NOW
@@ -165,6 +181,45 @@ describe('arrangePeople', () => {
 			alreadyThereCount: 0
 		});
 		expect(result.change.removed.map((r) => r.circleId)).toEqual(['class']);
+	});
+
+	it('carries the period and the note on a move, and only the role on a copy', async () => {
+		const stay = { startDate: '2025-08', endDate: '2026-06', note: 'new in August' };
+		const stayed = [member('class', 'mia', 'Pupil', stay)];
+		const moved = household(stayed);
+		await arrangePeople(moved.deps, viewer, request('move', 'school', [['class', 'mia']]));
+		expect(moved.plans[0].adds[0]).toMatchObject({ role: 'Pupil', ...stay });
+
+		const copied = household(stayed);
+		await arrangePeople(copied.deps, viewer, request('copy', 'school', [['class', 'mia']]));
+		expect(copied.plans[0].adds[0]).toMatchObject({
+			role: 'Pupil',
+			startDate: null,
+			endDate: null,
+			note: null
+		});
+	});
+
+	it('takes everything from the first pick when a move names one person in two circles', async () => {
+		const both = [
+			member('class', 'lena', 'Pupil', { note: 'from the class' }),
+			member('football', 'lena', 'Captain', { startDate: '2025-01', note: 'from football' })
+		];
+		const first = household(both);
+		await arrangePeople(
+			first.deps,
+			viewer,
+			request('move', 'school', [
+				['football', 'lena'],
+				['class', 'lena']
+			])
+		);
+		expect(first.plans[0].adds).toHaveLength(1);
+		expect(first.plans[0].adds[0]).toMatchObject({
+			role: 'Captain',
+			startDate: '2025-01',
+			note: 'from football'
+		});
 	});
 
 	it('copies a person and leaves the old membership alone', async () => {
@@ -274,7 +329,18 @@ describe('arrangePeople', () => {
 
 describe('undoArrangement', () => {
 	const change: ArrangementChange = {
-		added: [{ id: 'a1', circleId: 'school', contactId: 'lena', role: 'Pupil', updatedAt: NOW }],
+		added: [
+			{
+				id: 'a1',
+				circleId: 'school',
+				contactId: 'lena',
+				role: 'Pupil',
+				startDate: null,
+				endDate: null,
+				note: null,
+				updatedAt: NOW
+			}
+		],
 		removed: [
 			{
 				id: 'r1',

@@ -14,7 +14,9 @@ import type { CircleTreeReads } from './tree';
  *
  * - *Move* gives the person a membership in the target and **deletes** the one at the source (no
  *   end date). *Copy* leaves the source alone.
- * - What the new membership carries over is the role, nothing else: period and note stay empty.
+ * - A copy's new membership carries the role only: period and note stay empty. A move's carries
+ *   the role, the period and the note, since the same stay continues in the new circle. A person
+ *   picked in several source circles of one move takes everything from the first pick.
  * - A person already in the target gets no second membership; a move still takes them out of
  *   the source.
  * - Memberships stay direct (no inheritance): a sub-circle's people are not the parent's.
@@ -33,6 +35,9 @@ export interface ArrangeMember {
 	displayName: string;
 	avatarPhotoId: string | null;
 	role: string | null;
+	startDate: string | null;
+	endDate: string | null;
+	note: string | null;
 }
 
 /** A membership row exactly as stored, so a deleted one can be put back. */
@@ -55,6 +60,10 @@ export interface AddedMembership {
 	circleId: string;
 	contactId: string;
 	role: string | null;
+	/** Period and note: empty on a copy, the source's on a move. */
+	startDate: string | null;
+	endDate: string | null;
+	note: string | null;
 	updatedAt: number;
 }
 
@@ -64,10 +73,17 @@ export interface ArrangementChange {
 	removed: MembershipSnapshot[];
 }
 
+/** A membership to create: a copy carries the role, a move also the period and the note. */
+export interface ArrangeAdd extends NewMembership {
+	startDate: string | null;
+	endDate: string | null;
+	note: string | null;
+}
+
 /** One planned write batch, decided by the use-case and executed whole by the adapter. */
 export interface ArrangementPlan {
 	/** One new membership per person to give the target. */
-	adds: NewMembership[];
+	adds: ArrangeAdd[];
 	/** Memberships to delete (move only). */
 	removals: { circleId: string; contactId: string }[];
 }
@@ -230,7 +246,7 @@ export async function readArrangement(
 /**
  * Decide the writes of one arrangement from the members as the viewer sees them. Pure: a pick
  * from the target itself is no change, a person in two source circles gets one new membership
- * (with the role of the first), and one already in the target gets none.
+ * (with the data of the first pick, in request order), and one already in the target gets none.
  */
 export function planArrangement(
 	request: Pick<ArrangeRequest, 'mode' | 'targetId' | 'picks'>,
@@ -271,6 +287,9 @@ export function planArrangement(
 				circleId: request.targetId,
 				contactId: m.contactId,
 				role: m.role,
+				startDate: request.mode === 'move' ? m.startDate : null,
+				endDate: request.mode === 'move' ? m.endDate : null,
+				note: request.mode === 'move' ? m.note : null,
 				createdBy: creator.userId,
 				createdAt: now,
 				updatedAt: now

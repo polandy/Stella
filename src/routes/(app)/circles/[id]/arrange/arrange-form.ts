@@ -30,6 +30,9 @@ const ChangeSchema = v.object({
 			circleId: Id,
 			contactId: Id,
 			role: OptionalText,
+			startDate: OptionalText,
+			endDate: OptionalText,
+			note: OptionalText,
 			updatedAt: v.number()
 		})
 	),

@@ -66,6 +66,9 @@ const add = (id: string, circleId: string, contactId: string, role: string | nul
 	circleId,
 	contactId,
 	role,
+	startDate: null,
+	endDate: null,
+	note: null,
 	createdBy: U1,
 	createdAt: NOW,
 	updatedAt: NOW
@@ -111,7 +114,16 @@ describe('arrange', () => {
 
 		expect(rows()).toEqual(['school/lena']);
 		expect(outcome.added).toEqual([
-			{ id: 'n1', circleId: 'school', contactId: 'lena', role: 'Pupil', updatedAt: NOW }
+			{
+				id: 'n1',
+				circleId: 'school',
+				contactId: 'lena',
+				role: 'Pupil',
+				startDate: null,
+				endDate: null,
+				note: null,
+				updatedAt: NOW
+			}
 		]);
 		expect(outcome.removed).toEqual([
 			{
@@ -162,6 +174,37 @@ describe('arrange', () => {
 		).rejects.toThrow();
 
 		expect(rows()).toEqual(['class/lena']);
+	});
+});
+
+describe('revert of a move that carried period and note', () => {
+	const carried = { startDate: '2025-08', endDate: '2026-07', note: 'new in August' };
+	const movedWithStay = async () => {
+		seedContact('lena');
+		seedMembership('m1', 'class', 'lena', { role: 'Pupil', ...carried });
+		return repo.arrange({
+			adds: [{ ...add('n1', 'school', 'lena', 'Pupil'), ...carried }],
+			removals: [{ circleId: 'class', contactId: 'lena' }]
+		});
+	};
+
+	it('records the carried period and note and removes the unchanged row again', async () => {
+		const change = await movedWithStay();
+		expect(change.added[0]).toMatchObject(carried);
+		const outcome = await repo.revert({ ...change, householdId: H, restoredBy: U1 });
+		expect(outcome).toEqual({ removed: 1, kept: 0, restored: 1, conflicts: 0 });
+		expect(rows()).toEqual(['class/lena']);
+	});
+
+	it.each([
+		['note', { note: 'edited' }],
+		['period', { endDate: '2027-01' }]
+	])('keeps the moved row when its %s was edited since', async (_name, edit) => {
+		const change = await movedWithStay();
+		db.update(schema.circleMembership).set(edit).where(eq(schema.circleMembership.id, 'n1')).run();
+		const outcome = await repo.revert({ ...change, householdId: H, restoredBy: U1 });
+		expect(outcome).toMatchObject({ removed: 0, kept: 1 });
+		expect(rows()).toContain('school/lena');
 	});
 });
 
@@ -284,8 +327,26 @@ describe('revert', () => {
 
 		const outcome = await revert({
 			added: [
-				{ id: 'm1', circleId: 'school', contactId: 'lena', role: null, updatedAt: 20 },
-				{ id: 'm1', circleId: 'class', contactId: 'mia', role: null, updatedAt: 20 }
+				{
+					id: 'm1',
+					circleId: 'school',
+					contactId: 'lena',
+					role: null,
+					startDate: null,
+					endDate: null,
+					note: null,
+					updatedAt: 20
+				},
+				{
+					id: 'm1',
+					circleId: 'class',
+					contactId: 'mia',
+					role: null,
+					startDate: null,
+					endDate: null,
+					note: null,
+					updatedAt: 20
+				}
 			],
 			removed: []
 		});

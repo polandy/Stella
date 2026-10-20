@@ -807,8 +807,8 @@ person to another card to **move** them, or switch the toggle at the top to **Co
 where they were (holding Alt while you drop does the other one just for that drop). To move
 several at once, tap people to select them and drag one of them — or pick **Move to…** or **Copy
 to…** in the bar at the bottom and tap the card they should go to; this also works with the
-keyboard and on a phone. Moving takes the person out of the old circle; either way the new
-membership has the same role and no dates or note. Someone already in the target is not added
+keyboard and on a phone. Moving takes the person out of the old circle and carries their role,
+dates and note to the new one; copying keeps them where they were and carries the role only. Someone already in the target is not added
 twice. A message says what happened, and its **Undo** puts everything back as it was.
 
 To delete a circle, open the same **⋯** and choose **Delete circle…**. Only whoever created the
