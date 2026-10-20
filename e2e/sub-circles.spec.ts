@@ -11,7 +11,7 @@ import { DEMO_ADMIN_PASSWORD, DEMO_MEMBER_EMAIL } from '../src/lib/server/db/dem
  *
  * The demo's Schule Breitenrain with Klasse 5b and Klasse 3a is read as it is. What the demo has
  * no example of — a sub-circle whose period is over, one private to its creator — comes from a
- * family of the case's own, brought in through the archive restore (nesting has no form yet).
+ * family of the case's own, brought in through the archive restore.
  */
 
 test.beforeEach(async ({ page }) => {
@@ -204,7 +204,8 @@ test('a circle’s page lists its sub-circles as links', async ({ page }) => {
 	await expect(page.getByRole('heading', { level: 1, name: 'Schule Breitenrain' })).toBeVisible();
 
 	const card = page.locator('section', { has: page.getByRole('heading', { name: 'Sub-circles' }) });
-	await expect(card.locator('header')).toHaveText(/^\s*Sub-circles\s*2\s*$/);
+	// The header also holds the card's actions (New sub-circle, Add existing) since they exist.
+	await expect(card.locator('header')).toHaveText(/^\s*Sub-circles\s*2\b/);
 	const links = page.getByTestId('sub-circles').getByRole('link');
 	await expect(links).toHaveCount(2);
 	await links.filter({ hasText: 'Klasse 3a' }).click();

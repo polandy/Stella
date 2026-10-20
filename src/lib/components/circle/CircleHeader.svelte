@@ -3,6 +3,8 @@
 	import { enhance } from '$app/forms';
 	import CircleDeleteStep from '$lib/components/circle/CircleDeleteStep.svelte';
 	import ColourSwatches from '$lib/components/circle/ColourSwatches.svelte';
+	import ParentField from '$lib/components/circle/ParentField.svelte';
+	import { offerUndo } from '$lib/components/circle/circle-moves';
 	import Button from '$lib/components/ui/Button.svelte';
 	import DateField from '$lib/components/ui/DateField.svelte';
 	import FormError from '$lib/components/ui/FormError.svelte';
@@ -10,17 +12,19 @@
 	import MenuButton from '$lib/components/ui/MenuButton.svelte';
 	import { circleKindLabel } from '$lib/circles/labels';
 	import { circlePeriodLabel } from '$lib/circles/period';
+	import type { TreeCircle } from '$lib/circles/tree';
 	import { accentDotStyle, type Accent } from '$lib/design/tokens';
 	import { useI18n } from '$lib/i18n/context.svelte';
 	import { reveal } from '$lib/motion/motion.svelte';
 	import { useRemovals } from '$lib/undo/context.svelte';
-	import { savedEnhance } from '$lib/undo/saved';
+	import type { SubmitFunction } from '@sveltejs/kit';
 
 	/*
 	 * The circle page's header (docs/02 §2.4.2, docs/design/screens/circles.md): its colour, name
 	 * and one line of facts, *Open in the graph*, and a ⋯ menu. *Edit circle* turns the header
 	 * into a form in place with the create form's fields plus the period, which only editing
-	 * sets. Anyone who sees the circle may edit it, so everyone gets the menu; *Delete circle…*
+	 * sets, and *Belongs to* — the one place a circle's parent is chosen. A changed parent is said
+	 * in the toast with *Undo* (ADR-126). Anyone who sees the circle may edit it, so everyone gets the menu; *Delete circle…*
 	 * is in it only for whoever may delete (its creator, an admin on a shared one), and opens
 	 * the confirm step under the header.
 	 */
@@ -39,11 +43,17 @@
 		colors: readonly Accent[];
 		/** Whether the reader may delete the circle (`canDeleteCircle`). */
 		canDelete: boolean;
+		/** Every circle the reader sees, flat, for *Belongs to*'s picker. */
+		circles: readonly TreeCircle[];
+		/** The circle it belongs to as the reader sees it; null when it stands for itself. */
+		parentId: string | null;
 		/** The refusal of the last save, said under the form, which then stays open. */
 		error: string | null;
+		/** The refusal of the parent, said under *Belongs to*. */
+		parentError: string | null;
 	}
 
-	let { circle, kinds, colors, canDelete, error }: Props = $props();
+	let { circle, kinds, colors, canDelete, circles, parentId, error, parentError }: Props = $props();
 
 	const i18n = useI18n();
 	const t = i18n.t;
@@ -53,13 +63,17 @@
 	let deleting = $state(false);
 	let root = $state<HTMLElement>();
 	let nameInput = $state<HTMLInputElement>();
+	// What *Belongs to* holds while the form is open; it is posted, never saved on its own, and
+	// starts from where the circle sits whenever that changes.
+	let chosenParent = $derived(parentId);
 	// A refused save keeps the form open, so the error has somewhere to be read.
-	const showForm = $derived(editing || error !== null);
+	const showForm = $derived(editing || error !== null || parentError !== null);
 
 	const period = $derived(circlePeriodLabel(i18n, circle.startDate, circle.endDate));
 
 	async function openEditor() {
 		deleting = false;
+		chosenParent = parentId;
 		editing = true;
 		await tick();
 		nameInput?.focus();
@@ -69,6 +83,7 @@
 	async function closeEditor() {
 		editing = false;
 		error = null;
+		parentError = null;
 		await backToMenu();
 	}
 
@@ -82,7 +97,32 @@
 		root?.querySelector<HTMLElement>('[aria-haspopup="menu"]')?.focus();
 	}
 
-	const saved = savedEnhance(removals, t('components.saved'), closeEditor);
+	const circleName = (id: string | null) => circles.find((c) => c.id === id)?.name ?? '';
+
+	/**
+	 * Saves as every in-place editor does, then says *Saved* — or, when the parent changed, where
+	 * the circle is now, with *Undo* putting it back where it was (docs/02 §2.4.2).
+	 */
+	const saved: SubmitFunction = ({ formData }) => {
+		const before = parentId;
+		const after = (formData.get('parent') as string | null) || null;
+		const name = circleName(after);
+		return async ({ result, update }) => {
+			await update();
+			if (result.type !== 'success' && result.type !== 'redirect') return;
+			if (before === after) removals.notify(t('components.saved'));
+			else
+				offerUndo(
+					{ pageId: circle.id, removals, t },
+					after === null
+						? t('circles.parent.savedAlone')
+						: t('circles.parent.savedInside', { parent: name }),
+					circle.id,
+					before
+				);
+			await closeEditor();
+		};
+	};
 
 	function onFormKeydown(event: KeyboardEvent) {
 		if (event.key !== 'Escape') return;
@@ -152,6 +192,16 @@
 			</div>
 
 			<ColourSwatches {colors} selected={circle.color} />
+
+			<ParentField
+				{circles}
+				subjectId={circle.id}
+				subjectName={circle.name}
+				shared={circle.visibility === 'shared'}
+				bind:value={chosenParent}
+				error={parentError}
+				idPrefix="circle-edit"
+			/>
 
 			<fieldset class="flex flex-col gap-2">
 				<legend class="mb-2 text-sm text-fg-muted">{t('circles.edit.period')}</legend>

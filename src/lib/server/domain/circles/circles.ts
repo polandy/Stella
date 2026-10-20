@@ -13,6 +13,7 @@ import {
 } from './circle-details';
 import type { CircleDeletionFacts, DeletedCirclePhotoFiles } from './delete-circle';
 import type { CircleMembershipReads } from './memberships';
+import { CircleParentGoneError } from './nesting';
 
 /*
  * Circles = shared contexts (docs/02 §2.4.2): a named group contacts belong to over a period
@@ -122,6 +123,8 @@ export interface Circle extends CircleDetails {
 }
 
 export interface NewCircle extends Circle {
+	/** The circle it belongs to (docs/02 §2.4.2); null stands on its own. */
+	parentCircleId: string | null;
 	createdAt: number;
 	updatedAt: number;
 }
@@ -233,6 +236,17 @@ export interface CircleRepository {
 		updatedAt: number
 	): Promise<boolean>;
 	/**
+	 * Put the circle under `parentId` (null: on its own), if `viewer` sees it — the visibility
+	 * rule is the write's own condition; whether the move is allowed is `planCircleMove`'s.
+	 * Answers whether a circle was changed: false means not visible, or gone.
+	 */
+	setParent(
+		viewer: Viewer,
+		circleId: string,
+		parentId: string | null,
+		updatedAt: number
+	): Promise<boolean>;
+	/**
 	 * What deleting the circle would take, if `remover` may delete it (`circleDeletableBy`), else
 	 * null. Counts what the remover cannot see too, since the deletion takes it.
 	 */
@@ -278,6 +292,8 @@ export interface CircleCreator {
 
 export interface CreateCircleInput extends CircleDetailsInput {
 	visibility?: 'shared' | 'private';
+	/** The circle the new one belongs to, which the creator must see; none when left out. */
+	parentId?: string | null;
 }
 
 // ── Use-cases ───────────────────────────────────────────────────────────────
@@ -289,7 +305,8 @@ const orNull = (value?: string | null): string | null => {
 
 /**
  * Create a circle. Its details are checked as editing checks them (`readCircleDetails`);
- * visibility defaults to the creator's default.
+ * visibility defaults to the creator's default. A parent must be one the creator sees — a new
+ * circle has nothing inside it yet, so it cannot close a loop.
  */
 export async function createCircle(
 	deps: CircleDeps,
@@ -297,6 +314,13 @@ export async function createCircle(
 	input: CreateCircleInput
 ): Promise<string> {
 	const details = readCircleDetails(input);
+	const parentCircleId = input.parentId ?? null;
+	if (parentCircleId !== null) {
+		const viewer = { id: creator.userId, householdId: creator.householdId };
+		if (!(await deps.circles.getVisibleTo(viewer, parentCircleId))) {
+			throw new CircleParentGoneError();
+		}
+	}
 
 	const now = deps.clock.now();
 	const id = deps.ids.next();
@@ -306,6 +330,7 @@ export async function createCircle(
 		createdBy: creator.userId,
 		visibility: input.visibility ?? creator.defaultVisibility,
 		...details,
+		parentCircleId,
 		createdAt: now,
 		updatedAt: now
 	});

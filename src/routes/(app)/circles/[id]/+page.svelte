@@ -206,6 +206,9 @@
 		colors={data.colors}
 		canDelete={data.canDelete}
 		error={form && 'detailsError' in form ? (form.detailsError ?? null) : null}
+		circles={data.tree}
+		parentId={data.parentId}
+		parentError={form && 'parentError' in form ? (form.parentError ?? null) : null}
 	/>
 
 	{#if nesting.previous || nesting.next}
@@ -240,13 +243,21 @@
 		</nav>
 	{/if}
 
-	{#if nesting.children.length > 0 || nesting.hiddenChildCount > 0}
+	<!-- Keyed: *New sub-circle* lands on the new circle's page, which must not open with the
+	     form still unfolded from the parent's. -->
+	{#key circle.id}
 		<SubCircles
+			parent={circle}
+			all={data.tree}
+			kinds={data.kinds}
+			colors={data.colors}
+			suggestedColor={data.suggestedColor}
+			createError={form && 'createError' in form ? (form.createError ?? null) : null}
 			circles={nesting.children}
 			hiddenCount={nesting.hiddenChildCount}
 			today={data.today}
 		/>
-	{/if}
+	{/key}
 
 	<Section
 		title={t('circles.members')}

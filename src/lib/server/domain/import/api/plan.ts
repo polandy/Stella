@@ -199,10 +199,8 @@ export interface PlannedCircleChange {
 	updatedAt: number;
 }
 
-/** A circle as the import writes it — with the parent the create form does not offer. */
-export interface PlannedCircle extends NewCircle {
-	parentCircleId: string | null;
-}
+/** A circle as the import writes it. */
+export type PlannedCircle = NewCircle;
 
 /** A membership as the import writes it — with the dates the add-member form does not offer. */
 export interface PlannedMembership {

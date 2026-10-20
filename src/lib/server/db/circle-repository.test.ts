@@ -13,6 +13,7 @@ import {
 } from '../domain/circles/circles';
 import type { CircleMembershipReads } from '../domain/circles/memberships';
 import { createDrizzleCircleMembershipReads } from './circle-membership-reads';
+import { createDrizzleCircleNestingReads } from './circle-nesting-reads';
 import { createDrizzleCircleRepository } from './circle-repository';
 import * as schema from './schema';
 
@@ -369,5 +370,57 @@ describe('update', () => {
 
 	it('answers false for a circle that is not there', async () => {
 		expect(await deps.circles.update(viewerU1, 'gone', details, NOW)).toBe(false);
+	});
+});
+
+describe('setParent + the nesting read', () => {
+	const parentOf = (id: string) =>
+		db
+			.select({ parent: schema.circle.parentCircleId, updatedAt: schema.circle.updatedAt })
+			.from(schema.circle)
+			.where(eq(schema.circle.id, id))
+			.get();
+
+	it('creates a circle under its parent, and moves it out and back', async () => {
+		const school = await createCircle(deps, creatorU1, { name: 'School' });
+		const klass = await createCircle(deps, creatorU1, { name: 'Class', parentId: school });
+		expect(parentOf(klass)?.parent).toBe(school);
+
+		expect(await deps.circles.setParent(viewerU2, klass, null, NOW + 5)).toBe(true);
+		expect(parentOf(klass)).toEqual({ parent: null, updatedAt: NOW + 5 });
+		expect(await deps.circles.setParent(viewerU2, klass, school, NOW + 6)).toBe(true);
+		expect(parentOf(klass)?.parent).toBe(school);
+	});
+
+	it('leaves a circle the viewer cannot see alone, and says so', async () => {
+		const school = await createCircle(deps, creatorU1, { name: 'School' });
+		const secret = await createCircle(
+			deps,
+			{ ...creatorU1, defaultVisibility: 'private' },
+			{ name: 'Secret' }
+		);
+		expect(await deps.circles.setParent(viewerU2, secret, school, NOW + 5)).toBe(false);
+		expect(parentOf(secret)?.parent).toBeNull();
+		expect(await deps.circles.setParent(viewerU1, 'gone', school, NOW)).toBe(false);
+	});
+
+	it('reads the whole household nesting, private circles of others included', async () => {
+		const school = await createCircle(deps, creatorU1, { name: 'School' });
+		const secret = await createCircle(
+			deps,
+			{ ...creatorU1, defaultVisibility: 'private' },
+			{ name: 'Secret', parentId: school }
+		);
+		const inner = await createCircle(deps, creatorU1, { name: 'Inner', parentId: secret });
+		const nesting = createDrizzleCircleNestingReads(db);
+		expect(await nesting.parentsInHouseholdOf(viewerU2)).toEqual(
+			new Map([
+				[school, null],
+				[secret, school],
+				[inner, secret]
+			])
+		);
+		// Another household's circles are no part of it.
+		expect(await nesting.parentsInHouseholdOf({ id: U2, householdId: 'other' })).toEqual(new Map());
 	});
 });

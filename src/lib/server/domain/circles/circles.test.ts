@@ -4,8 +4,10 @@ import {
 	fixedClock,
 	inMemoryCircleMemberships,
 	membership,
-	sequentialIds
+	sequentialIds,
+	someCircle
 } from '../testing';
+import { CircleParentGoneError } from './nesting';
 import {
 	addMember,
 	addMembers,
@@ -115,6 +117,37 @@ describe('createCircle', () => {
 		const f = fakeRepo();
 		const deps: CircleDeps = { circles: f.repo, ids: sequentialIds('x'), clock };
 		await expect(createCircle(deps, creator, { name: '   ' })).rejects.toThrow();
+	});
+
+	it('stands on its own unless a parent is chosen', async () => {
+		const f = fakeRepo();
+		const deps: CircleDeps = { circles: f.repo, ids: sequentialIds('circle-1'), clock };
+		await createCircle(deps, creator, { name: 'Choir' });
+		expect(f.inserted[0].parentCircleId).toBeNull();
+	});
+
+	it('goes under a parent the creator sees', async () => {
+		const inserted: NewCircle[] = [];
+		const circles = circleRepositoryWith({
+			getVisibleTo: async (_viewer, id) => (id === 'school' ? someCircle(id, 'School') : null),
+			insert: async (c) => void inserted.push(c)
+		});
+		const deps: CircleDeps = { circles, ids: sequentialIds('class'), clock };
+		await createCircle(deps, creator, { name: 'Class 3a', kind: 'class', parentId: 'school' });
+		expect(inserted[0]).toMatchObject({ id: 'class', parentCircleId: 'school' });
+	});
+
+	it('refuses a parent the creator cannot see, inserting nothing', async () => {
+		const inserted: NewCircle[] = [];
+		const circles = circleRepositoryWith({
+			getVisibleTo: async () => null,
+			insert: async (c) => void inserted.push(c)
+		});
+		const deps: CircleDeps = { circles, ids: sequentialIds('class'), clock };
+		await expect(
+			createCircle(deps, creator, { name: 'Class 3a', parentId: 'secret' })
+		).rejects.toThrow(CircleParentGoneError);
+		expect(inserted).toEqual([]);
 	});
 });
 

@@ -1,10 +1,8 @@
 import { fail, redirect } from '@sveltejs/kit';
 import { requireViewer } from '$lib/server/auth/guards';
-import * as v from 'valibot';
 import {
 	CIRCLE_COLORS,
 	CIRCLE_KINDS,
-	createCircle,
 	suggestCircleColor
 } from '$lib/server/domain/circles/circles';
 import { listCircles } from '$lib/server/domain/circles/directory';
@@ -12,7 +10,7 @@ import { listCircleCovers } from '$lib/server/domain/circles/circle-photos';
 import { readCircleTree } from '$lib/server/domain/circles/tree';
 import { todayFor } from '$lib/dates/today';
 import type { Actions, PageServerLoad } from './$types';
-import { say } from '$lib/server/i18n/say';
+import { createCircleFromForm } from './create-circle-form';
 
 /*
  * Circles overview (docs/02 §2.4.2, docs/05 §5.5): all visible circles with member counts and
@@ -42,31 +40,12 @@ export const load: PageServerLoad = async ({ locals }) => {
 	};
 };
 
-const CreateSchema = v.object({
-	name: v.pipe(v.string(), v.trim(), v.minLength(1)),
-	kind: v.optional(v.picklist(CIRCLE_KINDS)),
-	color: v.optional(v.picklist(CIRCLE_COLORS)),
-	description: v.optional(v.pipe(v.string(), v.trim()))
-});
-
 export const actions: Actions = {
+	// *New circle*, standing for itself or inside the circle *Belongs to* names.
 	create: async ({ request, locals }) => {
 		const viewer = requireViewer(locals);
-
-		const form = await request.formData();
-		const parsed = v.safeParse(CreateSchema, {
-			name: form.get('name'),
-			kind: form.get('kind') || undefined,
-			color: form.get('color') || undefined,
-			description: form.get('description') || undefined
-		});
-		if (!parsed.success) return fail(400, { error: say(locals, 'errors.circle.needCircleName') });
-
-		const id = await createCircle(
-			locals.services.circles.circleDeps,
-			{ userId: viewer.id, householdId: viewer.householdId, defaultVisibility: 'shared' },
-			parsed.output
-		);
-		throw redirect(303, `/circles/${id}`);
+		const created = await createCircleFromForm(locals, viewer, await request.formData());
+		if ('error' in created) return fail(400, { error: created.error });
+		throw redirect(303, `/circles/${created.id}`);
 	}
 };

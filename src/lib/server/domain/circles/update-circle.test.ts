@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test';
-import { circleRepositoryWith, fixedClock } from '../testing';
+import { circleRepositoryWith, fixedClock, inMemoryCircleNesting, someCircle } from '../testing';
 import {
 	BlankCircleNameError,
 	CircleGoneError,
@@ -7,6 +7,7 @@ import {
 	readCircleDetails
 } from './circle-details';
 import type { CircleDetails } from './circles';
+import { CircleLoopError, CircleParentGoneError } from './nesting';
 import { updateCircle } from './update-circle';
 
 /*
@@ -17,17 +18,31 @@ import { updateCircle } from './update-circle';
 const NOW = 1_700_000_000_000;
 const viewer = { id: 'u1', householdId: 'h1' };
 
-/** A repository whose `update` records what it was asked and finds `visible` circles only. */
-function recordingRepo(visible: string[] = ['k1']) {
+/**
+ * A repository whose writes record what they were asked and find `visible` circles only, over a
+ * household nested as `parents` (hidden circles included).
+ */
+function recordingRepo(visible: string[] = ['k1'], parents: Record<string, string | null> = {}) {
 	const writes: { viewer: unknown; circleId: string; details: CircleDetails; at: number }[] = [];
+	const moves: { circleId: string; parentId: string | null }[] = [];
 	const circles = circleRepositoryWith({
 		update: async (who, circleId, details, at) => {
 			if (!visible.includes(circleId)) return false;
 			writes.push({ viewer: who, circleId, details, at });
 			return true;
+		},
+		getVisibleTo: async (_who, id) =>
+			visible.includes(id) ? someCircle(id, `Circle ${id}`) : null,
+		setParent: async (_who, circleId, parentId) => {
+			moves.push({ circleId, parentId });
+			return visible.includes(circleId);
 		}
 	});
-	return { deps: { circles, clock: fixedClock(NOW) }, writes };
+	return {
+		deps: { circles, nesting: inMemoryCircleNesting(parents), clock: fixedClock(NOW) },
+		writes,
+		moves
+	};
 }
 
 describe('readCircleDetails', () => {
@@ -138,5 +153,58 @@ describe('updateCircle', () => {
 		await expect(updateCircle(deps, viewer, 'k2', { name: 'Choir' })).rejects.toThrow(
 			CircleGoneError
 		);
+	});
+
+	it('leaves the parent alone when the form does not send one', async () => {
+		const { deps, moves } = recordingRepo(['k1'], { k1: 'school' });
+		expect(await updateCircle(deps, viewer, 'k1', { name: 'Choir' })).toBeNull();
+		expect(moves).toEqual([]);
+	});
+
+	it('moves the circle under the parent the form chose, and says where from', async () => {
+		const { deps, writes, moves } = recordingRepo(['k1', 'school'], { k1: null, school: null });
+		expect(await updateCircle(deps, viewer, 'k1', { name: 'Class', parentId: 'school' })).toEqual({
+			circleId: 'k1',
+			name: 'Circle k1',
+			from: null,
+			to: 'school'
+		});
+		expect(writes).toHaveLength(1);
+		expect(moves).toEqual([{ circleId: 'k1', parentId: 'school' }]);
+	});
+
+	it('takes the circle out to stand for itself', async () => {
+		const { deps, moves } = recordingRepo(['k1', 'school'], { k1: 'school', school: null });
+		await updateCircle(deps, viewer, 'k1', { name: 'Class', parentId: null });
+		expect(moves).toEqual([{ circleId: 'k1', parentId: null }]);
+	});
+
+	it('writes no move when the form sends the parent the circle has', async () => {
+		const { deps, moves } = recordingRepo(['k1', 'school'], { k1: 'school', school: null });
+		expect(
+			await updateCircle(deps, viewer, 'k1', { name: 'Class', parentId: 'school' })
+		).toMatchObject({ from: 'school', to: 'school' });
+		expect(moves).toEqual([]);
+	});
+
+	it('refuses a loop — through a hidden circle too — before writing anything', async () => {
+		const { deps, writes, moves } = recordingRepo(['k1', 'inner'], {
+			k1: null,
+			hidden: 'k1',
+			inner: 'hidden'
+		});
+		await expect(
+			updateCircle(deps, viewer, 'k1', { name: 'School', parentId: 'inner' })
+		).rejects.toThrow(CircleLoopError);
+		expect(writes).toEqual([]);
+		expect(moves).toEqual([]);
+	});
+
+	it('refuses a parent the viewer cannot see before writing anything', async () => {
+		const { deps, writes } = recordingRepo(['k1'], { k1: null, secret: null });
+		await expect(
+			updateCircle(deps, viewer, 'k1', { name: 'Class', parentId: 'secret' })
+		).rejects.toThrow(CircleParentGoneError);
+		expect(writes).toEqual([]);
 	});
 });

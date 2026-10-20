@@ -43,15 +43,37 @@ its photos, and lets the household manage members in bulk.
 - Below the header a sub-circle with siblings offers *‹ previous* and *next ›* in
   **chronological** order — previous is the earlier circle, next the later one, as on the time
   axis (by period start, undated last, then by name).
-- A circle with sub-circles shows a **Sub-circles · N** card between the header and the
-  members: a **timeline** with one row per direct child — the dot and the name, *period · N
+- Every circle shows a **Sub-circles · N** card between the header and the members — empty too,
+  as one line, *No sub-circles yet.*, because it is where sub-circles are made. Its header holds
+  *New sub-circle* (the card's disclosure, opening the create form in the card) and *Add
+  existing* (secondary, opening the circle picker). With children it is a **timeline** with one row per direct child — the dot and the name, *period · N
   members* as text, and a track (`--border`, which holds on Mocha's card where `--bg-sunken`
   fades) with a bar over the period. An open-ended bar has a square
   right edge and runs to the axis's end; a line marks today and the years stand below the
   tracks. On a wide screen the label sits left of the track, on a phone above it. An undated
   child gets no bar; without any dated child the card is a plain list. Each row is a link; the
   bars are decoration (`aria-hidden`), the period is always in the text. Hidden private ones
-  close it as *+1 more*.
+  close it as *+1 more*. Each row ends in a ⋯ icon button (*Actions for Class 5*,
+  `aria-expanded`) that unfolds a strip under the row: *Detach from School* (secondary, at once)
+  and *Open*. One strip is open at a time.
+- The create form in the card: *Name* with a placeholder fitting the suggested kind (*e.g.
+  Class 3a* under a school), *Kind* suggested from the parent's, *Belongs to* already on this
+  circle, the colour swatches; *Create circle* opens the new circle.
+- **Belongs to** in the header's edit form (and, optional, in the list's *New circle*): a
+  button as wide as the inputs with the parent's dot, its name and below it the path (*in
+  School › Class 5*), or *None* · *stands on its own* with an empty ring; a small *Detach* link
+  beside the label while a parent is set; a help line under it. A refusal stands under the
+  field as the form's error; a private parent of a shared circle adds a quiet line saying what
+  the others see.
+- The **circle picker** is a `<dialog>` sheet from the bottom on a phone and centred on a wide
+  screen: title, subtitle, *Close*, a search field focused on open, then the circles indented
+  1.25 rem a level. While searching it is a flat list, each row with its path. *None – stands on
+  its own* leads when choosing a parent. Rows that cannot be chosen stay, disabled, in
+  `--fg-subtle` with their reason; the current choice (or a sub-circle already there) carries a
+  check. Its foot says the one rule: a circle cannot sit inside itself or one of its
+  sub-circles.
+- Moves answer in a toast with *Undo* (§5.7, *Toasts*), never a confirm step: *Saved · now in School*,
+  *Class 5 now stands on its own*.
 - A circle with sub-circles but no direct members says so where the members would be:
   *Directly, nobody belongs to School — the people are in its sub-circles.*
 - The members stand in **grids** of avatar cards, one per role under a small uppercase heading
@@ -133,3 +155,13 @@ on every screen: nesting has no depth limit, and a page that unfolded all of it 
 readable. Sub-circles are a timeline on their parent's page because a school's or a club's
 children are mostly years and seasons, and their order in time is the point; the period stays
 in the text, so the bars carry nothing a screen reader misses.
+
+The parent is set in one field, the edit form's *Belongs to*, because a circle's place is one of
+its details like its kind; the card's *New sub-circle* and *Add existing* are shortcuts for the
+direction a reader thinks in on the parent's page, and *Detach* is the one thing a row needs
+most. The card stays when it is empty because otherwise a circle without children would have no
+way to get one but the edit form of each future child. Moves have *Undo* rather than a
+confirmation because nothing is lost by one — members, photos and the moved circle's own
+sub-circles go along — and a question before every move would be asked of the common case to
+guard the rare one (ADR-126). Blocked rows stay in the picker, saying why, so a circle that is
+missing never looks like a bug.

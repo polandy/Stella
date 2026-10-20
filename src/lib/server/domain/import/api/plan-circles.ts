@@ -1,5 +1,6 @@
 import { endsBeforeItStarts } from '../../circles/circle-details';
 import { resolveCircleColor, resolveCircleKind } from '../../circles/circles';
+import { closesLoop } from '../../circles/nesting';
 import {
 	circleIdFor,
 	isExistingCircle,
@@ -29,7 +30,8 @@ import { orNull } from './text';
  * A parent is always a ref listed **earlier**, read before the entry's own ref is known. For a
  * new circle that alone rules out a loop; a circle already in Stella can sit above others, so a
  * move is walked up the household's whole nesting — hidden circles included, as `circleParents`
- * carries them — with every earlier move of the same document applied.
+ * carries them — with every earlier move of the same document applied. The walk is the one the
+ * circle page's moves use (`closesLoop`, ADR-126).
  */
 
 type ChangedColumns = PlannedCircleChange['set'];
@@ -182,22 +184,6 @@ export function planCircles(
 	});
 
 	return { rows, circleChanges, memberships, report, alreadyThere };
-}
-
-/** Whether putting `id` inside `parentId` would make it its own ancestor. */
-function closesLoop(
-	id: string,
-	parentId: string,
-	parentOf: ReadonlyMap<string, string | null>
-): boolean {
-	const seen = new Set<string>();
-	for (let at: string | null = parentId; at !== null; at = parentOf.get(at) ?? null) {
-		if (at === id) return true;
-		// The stored nesting has no loop; this only keeps a broken one from hanging the import.
-		if (seen.has(at)) return false;
-		seen.add(at);
-	}
-	return false;
 }
 
 /**

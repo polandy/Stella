@@ -6,6 +6,7 @@ import type {
 } from '../circles/circles';
 import type { CircleDirectoryReads } from '../circles/directory';
 import type { CircleMembershipReads } from '../circles/memberships';
+import type { CircleNestingReads } from '../circles/nesting';
 import type { CircleTreeReads } from '../circles/tree';
 import type { TreeCircle } from '../../../circles/tree';
 
@@ -70,6 +71,17 @@ export function treeNode(
 /** `CircleTreeReads` over the nesting as the viewer sees it. */
 export function inMemoryCircleTree(circles: readonly TreeCircle[]): CircleTreeReads {
 	return { treeVisibleTo: async () => [...circles].sort(byName) };
+}
+
+/**
+ * `CircleNestingReads` over `parents` — the household's whole nesting, hidden circles included,
+ * as the adapter reads it. Read at each call, so a test that moves a circle in its own fake sees
+ * the move.
+ */
+export function inMemoryCircleNesting(
+	parents: Readonly<Record<string, string | null>>
+): CircleNestingReads {
+	return { parentsInHouseholdOf: async () => new Map(Object.entries(parents)) };
 }
 
 /** One person in one circle, as every membership list reads it. */
@@ -154,6 +166,7 @@ const CIRCLE_REPOSITORY_METHODS: Record<keyof CircleRepository, true> = {
 	setRoles: true,
 	renameRole: true,
 	update: true,
+	setParent: true,
 	readDeletion: true,
 	deleteDeletable: true
 };

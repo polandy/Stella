@@ -223,6 +223,7 @@ describe('the people stamp', () => {
 					visibility: 'shared',
 					name: 'School',
 					description: null,
+					parentCircleId: null,
 					kind: 'school',
 					color: 'blue',
 					startDate: null,

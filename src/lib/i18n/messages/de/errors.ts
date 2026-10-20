@@ -151,6 +151,9 @@ export const errors: ErrorsMessages = {
 	'errors.circle.couldNotAdd': 'Der Kreis konnte nicht hinzugefügt werden.',
 	'errors.circle.notFound': 'Kreis nicht gefunden',
 	'errors.circle.periodBackwards': 'Der Zeitraum kann nicht enden, bevor er beginnt.',
+	'errors.circle.loop': (p) =>
+		`Das geht nicht: ${p.name} läge sonst in sich selbst. Bitte einen anderen Kreis wählen.`,
+	'errors.circle.parentNotFound': 'Diesen Kreis gibt es nicht (mehr). Bitte einen anderen wählen.',
 	'errors.circlePhoto.unknownRole': 'Wähle eine der Rollen des Kreises oder keine Rolle.',
 	'errors.admin.only': 'Das kann nur die Haushalts-Administration.',
 	'errors.member.notYourself':

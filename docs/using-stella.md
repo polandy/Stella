@@ -787,6 +787,20 @@ starts and ends (a school year, a season); the page then shows it under the name
 Everyone who can see a circle can edit it, and the new name shows everywhere at once. Whether
 the circle is shared or private stays as it was created.
 
+Circles can sit inside one another — a class inside its school, a team inside its club. Where a
+circle belongs is the **Belongs to** field in that same form: tap it, pick the parent from the
+list (type to search), and press *Save*. *Detach* next to the field makes it stand on its own
+again. Circles that cannot be chosen stay in the list and say why — a circle cannot sit inside
+itself or one of its own sub-circles. Members, photos and the circle's own sub-circles always
+move along; nothing else changes. *New circle* on the Circles page has the same field, if you
+already know where the new one belongs.
+
+On a circle's page the **Sub-circles** card is the quick way from the other side. **New
+sub-circle** makes one right there — under a school it suggests a class, under a club a team —
+and opens it. **Add existing** puts a circle you already have inside this one. The **⋯** at the
+end of each sub-circle offers **Detach from School** and *Open*. None of these asks first: a
+message says what happened, and its **Undo** puts the circle back where it was.
+
 To delete a circle, open the same **⋯** and choose **Delete circle…**. Only whoever created the
 circle sees it there — and an admin, when the circle is shared. Stella first says what goes and
 what stays: how many members leave it and how many photos are deleted, how many people wear a
