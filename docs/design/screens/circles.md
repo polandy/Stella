@@ -131,6 +131,12 @@ its photos, and lets the household manage members in bulk.
   bar does, below the toast): *2 selected*, *Move to …*, *Copy to …*, *Clear selection*. After
   *Move to …* the bar says *Tap a target: where to move them?* with *Cancel* (Escape also
   cancels), and every card shows a *Move here* button or its reason.
+- Focus follows the steps, so the keyboard never loses its place: *Move to …* / *Copy to …* moves
+  focus to the first card's *Move here* / *Copy here* button (to *Cancel* when no card can take
+  the people); *Cancel* or Escape returns it to the button that began the step (else the first
+  selected person); after a pick it goes to the toast's *Undo*.
+- A move gives the new membership the role, period and note of the old one; a copy gives it the
+  role only.
 - Each change is made at once. The toast says *2 people moved to School · 1 already there* (a
   move that added nobody: *1 person already in School, taken out of the old place*) and offers
   *Undo*; a partial undo says how many were left because they changed since.

@@ -112,13 +112,16 @@ test('copies with the keyboard alone and keeps the person where they were', asyn
 	await expect(personIn(sub, s.mia).getByRole('button')).toHaveAttribute('aria-pressed', 'true');
 	await page.getByTestId('arrange-copy-to').focus();
 	await page.keyboard.press('Enter');
-	await own.getByTestId('arrange-here').focus();
+	// Focus lands on the first card that can take the person, so Enter alone completes the pick.
+	await expect(own.getByTestId('arrange-here')).toBeFocused();
 	await page.keyboard.press('Enter');
 
 	await expect(personIn(own, s.mia)).toBeVisible();
 	await expect(personIn(sub, s.mia)).toBeVisible();
 	await expect(personIn(own, s.mia)).toContainText(`also in ${s.child}`);
 	await expect(page.getByText(`1 person copied to ${s.parent}`)).toBeVisible();
+	// After a pick focus goes to the toast's Undo, so the keyboard can take it back at once.
+	await expect(page.getByTestId('toast-undo').getByRole('button', { name: 'Undo' })).toBeFocused();
 });
 
 test('Escape leaves the target step without changing anything', async ({ page }) => {
@@ -129,7 +132,33 @@ test('Escape leaves the target step without changing anything', async ({ page })
 	await expect(page.getByTestId('arrange-pick-prompt')).toBeVisible();
 	await page.keyboard.press('Escape');
 	await expect(page.getByTestId('arrange-pick-prompt')).toHaveCount(0);
-	await expect(page.getByTestId('arrange-move-to')).toBeVisible();
+	await expect(page.getByTestId('arrange-move-to')).toBeFocused();
+});
+
+test('Cancel hands focus back to the button that began the step', async ({ page }) => {
+	const s = await seedSchool(page, 'Back');
+	await openArrange(page, s.parent);
+	await personIn(cardOf(page, s.child), s.mia).getByRole('button').click();
+	await page.getByTestId('arrange-copy-to').click();
+	await expect(page.getByTestId('arrange-here').first()).toBeFocused();
+	await page.getByTestId('arrange-cancel').click();
+	await expect(page.getByTestId('arrange-copy-to')).toBeFocused();
+});
+
+test('focus goes to Cancel when no card can take the people', async ({ page }) => {
+	const school = 'Stuck';
+	const lena = `Lena ${school}`;
+	const parent = `${school} School`;
+	const child = `${school} Class`;
+	await seedHousehold(page, [lena], [], {}, [
+		{ name: parent, members: [{ person: lena }] },
+		{ name: child, parent, members: [{ person: lena }] }
+	]);
+	await openArrange(page, parent);
+	await personIn(cardOf(page, child), lena).getByRole('button').click();
+	await page.getByTestId('arrange-copy-to').click();
+	await expect(page.getByTestId('arrange-here')).toHaveCount(0);
+	await expect(page.getByTestId('arrange-cancel')).toBeFocused();
 });
 
 test('says everyone is already there when all picked are in the target', async ({ page }) => {

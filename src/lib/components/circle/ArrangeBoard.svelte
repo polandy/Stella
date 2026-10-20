@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { invalidateAll } from '$app/navigation';
+	import { tick } from 'svelte';
 	import { postArrange, postUndo } from '$lib/components/circle/arrange-post';
 	import Avatar from '$lib/components/ui/Avatar.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
@@ -128,6 +129,7 @@
 				}
 			}
 			say(text, () => takeBack(value.change));
+			await focusUndo();
 		} catch (error) {
 			console.error('Could not arrange the people:', error);
 			say(t('errors.form.checkAndRetry'));
@@ -182,9 +184,39 @@
 		void run(how, circleId, picks);
 	}
 
-	function choose(how: ArrangeMode) {
-		choosing = how;
+	/** Focus the first element matching `selector`; false when there is none. */
+	function focusFirst(selector: string): boolean {
+		const element = document.querySelector<HTMLElement>(selector);
+		element?.focus();
+		return !!element;
 	}
+
+	/*
+	 * Focus follows the target step, after the DOM has changed (`tick`, never a timer): into the
+	 * first card that can take the people, else to Cancel; back to the button that began the step
+	 * (or, with that gone, the first selected person); and after a pick to the toast's Undo.
+	 */
+	async function choose(how: ArrangeMode) {
+		choosing = how;
+		await tick();
+		if (!focusFirst('[data-testid="arrange-here"]')) focusFirst('[data-testid="arrange-cancel"]');
+	}
+	async function stopChoosing() {
+		const was = choosing;
+		if (!was) return;
+		choosing = null;
+		await tick();
+		if (!focusFirst(`[data-testid="arrange-${was}-to"]`)) {
+			focusFirst('[data-testid="arrange-person"] button[aria-pressed="true"]');
+		}
+	}
+	async function focusUndo() {
+		await tick();
+		if (!focusFirst('[data-testid="toasts"] [data-testid="toast-undo"]:last-of-type button')) {
+			focusFirst('[data-testid="arrange-person"] button');
+		}
+	}
+
 	function clear() {
 		selection = [];
 		choosing = null;
@@ -198,7 +230,7 @@
 
 <svelte:window
 	onkeydown={(e) => {
-		if (e.key === 'Escape' && choosing) choosing = null;
+		if (e.key === 'Escape' && choosing) void stopChoosing();
 	}}
 />
 
@@ -374,14 +406,29 @@
 				<span class="text-sm text-fg-muted" data-testid="arrange-pick-prompt">
 					{t(choosing === 'copy' ? 'circles.arrange.pickCopy' : 'circles.arrange.pickMove')}
 				</span>
-				<Button size="sm" class="ml-auto" onclick={() => (choosing = null)}>
+				<Button
+					size="sm"
+					class="ml-auto"
+					data-testid="arrange-cancel"
+					onclick={() => void stopChoosing()}
+				>
 					{t('circles.arrange.cancel')}
 				</Button>
 			{:else}
-				<Button size="sm" icon="move" data-testid="arrange-move-to" onclick={() => choose('move')}>
+				<Button
+					size="sm"
+					icon="move"
+					data-testid="arrange-move-to"
+					onclick={() => void choose('move')}
+				>
 					{t('circles.arrange.moveTo')}
 				</Button>
-				<Button size="sm" icon="copy" data-testid="arrange-copy-to" onclick={() => choose('copy')}>
+				<Button
+					size="sm"
+					icon="copy"
+					data-testid="arrange-copy-to"
+					onclick={() => void choose('copy')}
+				>
 					{t('circles.arrange.copyTo')}
 				</Button>
 				<Button size="sm" variant="ghost" class="ml-auto" onclick={clear}>
