@@ -152,6 +152,9 @@ Goal: sand the edges and add the nice-to-haves.
   edit form and the list's *New circle*, the always-there Sub-circles card with *New
   sub-circle*, *Add existing* and *Detach*, each move undoable from its toast and checked for
   loops as the import API is.
+- ~~**Arranging people between a circle and its sub-circles**~~ — *shipped (§2.4.2, ADR-127).*
+  *Arrange people* on a circle with sub-circles: a card per circle, move or copy by dragging or
+  by tapping, one batch in one transaction, *Undo* restores the deleted memberships exactly.
 
 **Exit:** a release-quality 1.0 the family enjoys using daily.
 

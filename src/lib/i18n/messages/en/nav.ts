@@ -11,6 +11,7 @@ export const nav = {
 	'nav.newPerson': 'New person',
 	'nav.contact': 'Contact',
 	'nav.circle': 'Circle',
+	'nav.arrangePeople': 'Arrange people',
 	'nav.importPeople': 'Import people',
 	'nav.stellaHome': 'Stella home',
 	'nav.breadcrumb': 'Breadcrumb',

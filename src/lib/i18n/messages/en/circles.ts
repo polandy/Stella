@@ -223,7 +223,56 @@ export const circles = {
 	'circles.picker.contains': (p: { name: string }) => `contains ${p.name}`,
 	'circles.picker.alreadyIn': 'already in it',
 	'circles.picker.movesFrom': (p: { name: string }) => `now in ${p.name} – will be moved`,
-	'circles.picker.footer': 'A circle can’t sit inside itself or one of its sub-circles.'
+	'circles.picker.footer': 'A circle can’t sit inside itself or one of its sub-circles.',
+	// Arrange people: move or copy people between a circle and its sub-circles (docs/02 §2.4.2).
+	'circles.arrange.open': 'Arrange people',
+	'circles.arrange.title': (p: { name: string }) => `Arrange people · ${p.name}`,
+	'circles.arrange.heading': 'Arrange people',
+	'circles.arrange.back': (p: { name: string }) => `Back to ${p.name}`,
+	'circles.arrange.summary': (p: { name: string; subCircles: number; people: number }) =>
+		`${p.name} and ${p.subCircles === 1 ? '1 sub-circle' : `${p.subCircles} sub-circles`} · ${
+			p.people === 1 ? '1 person' : `${p.people} people`
+		}`,
+	'circles.arrange.cards': 'Circles and the people directly in them',
+	'circles.arrange.modeLabel': 'When dragging',
+	'circles.arrange.move': 'Move',
+	'circles.arrange.copy': 'Copy',
+	'circles.arrange.hintMove':
+		'Drag or tap people and pick a target · Alt while dropping: copy instead',
+	'circles.arrange.hintCopy':
+		'Drag or tap people and pick a target · Alt while dropping: move instead',
+	'circles.arrange.direct': (p: { name: string }) => `Directly in ${p.name}`,
+	'circles.arrange.itself': 'The circle itself',
+	'circles.arrange.count': (p: { count: number }) =>
+		p.count === 1 ? '1 person' : `${p.count} people`,
+	'circles.arrange.empty': 'Nobody yet. Drag people here.',
+	'circles.arrange.alsoIn': (p: { names: string }) => `also in ${p.names}`,
+	'circles.arrange.dropMove': (p: { count: number }) =>
+		`Move here · ${p.count === 1 ? '1 person' : `${p.count} people`}`,
+	'circles.arrange.dropCopy': (p: { count: number }) =>
+		`Copy here · ${p.count === 1 ? '1 person' : `${p.count} people`}`,
+	'circles.arrange.alreadyHere': 'Already here',
+	'circles.arrange.alreadyAllHere': 'Everyone is already here',
+	'circles.arrange.selected': (p: { count: number }) => `${p.count} selected`,
+	'circles.arrange.moveTo': 'Move to …',
+	'circles.arrange.copyTo': 'Copy to …',
+	'circles.arrange.clear': 'Clear selection',
+	'circles.arrange.pickMove': 'Tap a target: where to move them?',
+	'circles.arrange.pickCopy': 'Tap a target: where to copy them?',
+	'circles.arrange.cancel': 'Cancel',
+	'circles.arrange.hereMove': 'Move here',
+	'circles.arrange.hereCopy': 'Copy here',
+	'circles.arrange.moved': (p: { count: number; target: string }) =>
+		`${p.count === 1 ? '1 person' : `${p.count} people`} moved to ${p.target}`,
+	'circles.arrange.copied': (p: { count: number; target: string }) =>
+		`${p.count === 1 ? '1 person' : `${p.count} people`} copied to ${p.target}`,
+	'circles.arrange.alreadyThere': (p: { count: number }) => `${p.count} already there`,
+	'circles.arrange.onlyRemoved': (p: { count: number; target: string }) =>
+		`${p.count === 1 ? '1 person' : `${p.count} people`} already in ${p.target}, taken out of the old place`,
+	'circles.arrange.undone': 'Taken back',
+	'circles.arrange.undonePartly': (p: { count: number }) =>
+		`Taken back · ${p.count} left as they are because they changed since`,
+	'circles.arrange.undoFailed': 'Could not take that back. Nothing was changed.'
 };
 
 /** The key set every translation of this area has to provide. */

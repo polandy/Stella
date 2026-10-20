@@ -12,6 +12,7 @@ export const nav: NavMessages = {
 	'nav.newPerson': 'Neue Person',
 	'nav.contact': 'Kontakt',
 	'nav.circle': 'Kreis',
+	'nav.arrangePeople': 'Personen ordnen',
 	'nav.importPeople': 'Menschen importieren',
 	'nav.stellaHome': 'Stella-Startseite',
 	'nav.main': 'Hauptnavigation',

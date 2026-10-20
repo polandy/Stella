@@ -801,6 +801,16 @@ and opens it. **Add existing** puts a circle you already have inside this one. T
 end of each sub-circle offers **Detach from School** and *Open*. None of these asks first: a
 message says what happened, and its **Undo** puts the circle back where it was.
 
+When a circle has sub-circles, **Arrange people** in its Members section opens a view with a card
+for the circle itself and one for each sub-circle, each showing the people directly in it. Drag a
+person to another card to **move** them, or switch the toggle at the top to **Copy** to keep them
+where they were (holding Alt while you drop does the other one just for that drop). To move
+several at once, tap people to select them and drag one of them — or pick **Move to…** or **Copy
+to…** in the bar at the bottom and tap the card they should go to; this also works with the
+keyboard and on a phone. Moving takes the person out of the old circle; either way the new
+membership has the same role and no dates or note. Someone already in the target is not added
+twice. A message says what happened, and its **Undo** puts everything back as it was.
+
 To delete a circle, open the same **⋯** and choose **Delete circle…**. Only whoever created the
 circle sees it there — and an admin, when the circle is shared. Stella first says what goes and
 what stays: how many members leave it and how many photos are deleted, how many people wear a

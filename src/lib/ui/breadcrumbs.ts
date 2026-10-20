@@ -40,7 +40,11 @@ export function breadcrumbs(
 		if (routeId.startsWith('/(app)/circles/[id]')) {
 			for (const ancestor of data.nesting?.ancestors ?? [])
 				trail.push({ label: ancestor.name, href: `/circles/${ancestor.id}` });
-			trail.push({ label: data.circle?.name ?? t('nav.circle') });
+			const name = data.circle?.name ?? t('nav.circle');
+			if (routeId.endsWith('/arrange')) {
+				trail.push({ label: name, href: `/circles/${params.id}` });
+				trail.push({ label: t('nav.arrangePeople') });
+			} else trail.push({ label: name });
 		}
 	} else if (routeId.startsWith('/(app)/graph')) {
 		trail.push({ label: t('nav.graph') });

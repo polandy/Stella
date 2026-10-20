@@ -1,5 +1,10 @@
 import {
 	Upload,
+	ArrowDown,
+	ArrowRight,
+	ArrowRightLeft,
+	Ban,
+	Copy,
 	Archive,
 	Blend,
 	BookmarkPlus,
@@ -134,6 +139,12 @@ export const ICONS = {
 	self: UserRound,
 	// A step already taken, on the first-run card (docs/02 §2.22.3).
 	done: Check,
+	// Arranging people between a circle and its sub-circles (docs/02 §2.4.2).
+	arrange: ArrowRightLeft,
+	move: ArrowRight,
+	copy: Copy,
+	dropHere: ArrowDown,
+	blocked: Ban,
 	// What someone does and where (docs/02 §2.2).
 	work: Briefcase,
 	// Leaving Stella for another app — *Open in Immich* (docs/02 §2.24.3).

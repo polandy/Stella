@@ -108,6 +108,33 @@ its photos, and lets the household manage members in bulk.
 - The header's line under the name reads kind · period · description · *private*; the period
   in short months (*Aug 2025 – Jul 2026*).
 
+#### Arrange people
+
+- Reached from the **Arrange people** button in the Members section of a circle that has
+  sub-circles (not shown otherwise). Its own view with a back link to the circle (the top bar's
+  trail is *… › Circle › Arrange people*), a heading, and a line *School and 2 sub-circles · 14
+  people*.
+- A toggle *When dragging: Move | Copy* (two `aria-pressed` buttons in a group, Move by default)
+  with a hint line; Alt while dropping flips the mode for that drop.
+- One **card per circle** in a grid of `repeat(auto-fill, minmax(240px, 1fr))`, one column on a
+  phone: first *Directly in <circle>* (subtitle *The circle itself*), then each sub-circle at any
+  depth, newest first, with its path (*Class 5b › Choir*). The header carries a count pill
+  (*3 people*); an empty card is a dashed box, *Nobody yet. Drag people here.*
+- A person is a chip: avatar, name, and *also in …* naming the other cards that hold them. A
+  selected chip is filled with the primary colour and a check mark. A chip is a button
+  (`aria-pressed`), so Space and Enter select it; its row can also be dragged.
+- While dragging, cards that can take the people have a dashed primary border; the one under the
+  pointer is filled and shows *Move here · 2 people* (*Copy here* in copy mode); a card that
+  cannot take them shows its reason (*Already here*, or *Everyone is already here* for several)
+  and refuses the drop. Dragging a selected person carries the whole selection.
+- Without dragging, a selection raises the **bar** above the tab bar (as the member selection
+  bar does, below the toast): *2 selected*, *Move to …*, *Copy to …*, *Clear selection*. After
+  *Move to …* the bar says *Tap a target: where to move them?* with *Cancel* (Escape also
+  cancels), and every card shows a *Move here* button or its reason.
+- Each change is made at once. The toast says *2 people moved to School · 1 already there* (a
+  move that added nobody: *1 person already in School, taken out of the old place*) and offers
+  *Undo*; a partial undo says how many were left because they changed since.
+
 #### Photos
 
 - A circle with a cover opens with it as a wide **strip** above the header; a role with a lead

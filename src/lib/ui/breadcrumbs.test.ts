@@ -60,4 +60,20 @@ describe('breadcrumbs', () => {
 		// What a phone's back link takes: the direct parent, not the list.
 		expect(trail.at(-2)).toEqual({ label: 'Class 6b', href: '/circles/c' });
 	});
+
+	it('puts the circle before Arrange people, so a phone goes back to the circle', () => {
+		const trail = breadcrumbs(
+			`${CIRCLE}/arrange`,
+			{ circle: { name: 'School' }, nesting: { ancestors: [{ id: 'u', name: 'Campus' }] } },
+			{ id: 's' },
+			t
+		);
+		expect(trail).toEqual([
+			{ label: 'Home', href: '/' },
+			{ label: 'Circles', href: '/circles' },
+			{ label: 'Campus', href: '/circles/u' },
+			{ label: 'School', href: '/circles/s' },
+			{ label: 'Arrange people' }
+		]);
+	});
 });

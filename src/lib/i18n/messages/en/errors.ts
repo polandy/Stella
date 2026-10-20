@@ -157,6 +157,10 @@ export const errors = {
 	'errors.circle.loop': (p: { name: string }) =>
 		`That won’t work: ${p.name} would end up inside itself. Please choose another circle.`,
 	'errors.circle.parentNotFound': 'That circle isn’t there (any more). Please choose another one.',
+	'errors.circle.arrangeGone': 'That circle isn’t there (any more). Please reload the page.',
+	'errors.circle.arrangeStale':
+		'The circles changed in the meantime. Please check the page and try again.',
+	'errors.circle.arrangeNothing': 'Nothing to change: everyone is already there.',
 	'errors.circlePhoto.unknownRole': 'Pick one of the circle’s roles, or no role.',
 	'errors.admin.only': 'Only an admin can do this.',
 	'errors.member.notYourself': 'You can’t remove yourself. Another admin can.',
