@@ -10,7 +10,7 @@ import { recordActions } from './actions/record';
 import { relationshipActions } from './actions/relationships';
 import { storyActions } from './actions/story';
 import { tagActions } from './actions/tags';
-import { lastNameActions } from '../../_shared/last-names-actions';
+import { lastNameActions, lastNameTakeBackActions } from '../../_shared/last-names-actions';
 import type { Actions } from './$types';
 
 /*
@@ -35,6 +35,7 @@ export const actions = {
 	...circleActions,
 	// Which Immich person they are (docs/02 §2.24.2).
 	...immichActions,
-	// The chip under the name and passing a name on (docs/02 §2.2.4.5, §2.2.4.6).
-	...lastNameActions
+	// The chip under the name, its *Undo*, and passing a name on (docs/02 §2.2.4.5, §2.2.4.6).
+	...lastNameActions,
+	...lastNameTakeBackActions
 } satisfies Actions;

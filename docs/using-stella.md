@@ -220,7 +220,8 @@ it will name and lists them, each with a box to tick if you really mean to repla
 **Replace all** ticks them together; nobody's name is replaced unless you tick it. When someone gets their first last name, Stella offers
 it to their children and brothers and sisters who have none yet — *Brunner too?* — one
 generation at a time, so a daughter who married into another name simply ends the chain. On a
-person's page, a suggested name shows as a chip under their name (*Brunner?*): one tap gives it.
+person's page, a suggested name shows as a chip under their name (*Brunner?*): one tap saves it
+straight away, and the note that follows has **Undo** to take it back.
 *Not Brunner* in a row's menu tells Stella not to propose that name for that
 person again; they stay on the list, under the next name Stella has or with a field —
 *Offer again* at the foot of the page takes it back. Someone who simply has no last name — met
@@ -303,7 +304,9 @@ offers to keep the old one as their former name. The former name has a field of 
 same editor, shows under the name as *formerly Widmer*, and finds the person: searching
 *Widmer* finds Franziska Abab, in the search, ⌘K and the People list. A person cannot be left with no name at all,
 and Stella says so rather than quietly keeping the old one. When Stella can guess a missing
-last name, it shows it under the name as a chip — *Brunner?* — and one tap gives it.
+last name, it shows it under the name as a chip — *Brunner?* — and one tap gives it at once;
+**Undo** in the note that follows puts the name back as it was, unless someone changed it in
+the meantime.
 
 ### Notes, Activity and the journal
 

@@ -1,18 +1,25 @@
 <script lang="ts">
+	import type { SubmitFunction } from '@sveltejs/kit';
 	import { enhance } from '$app/forms';
+	import { invalidateAll } from '$app/navigation';
 	import Button from '$lib/components/ui/Button.svelte';
 	import { useI18n } from '$lib/i18n/context.svelte';
 	import { reachability } from '$lib/pwa/reachability.svelte';
+	import { giveFromChip, type ChipGiveDeps } from '$lib/surnames/chip-give';
 	import { useHeldNames } from '$lib/surnames/held-names.svelte';
 	import { passOnOffer } from '$lib/surnames/pass-on';
+	import { usePending } from '$lib/sync/context.svelte';
+	import { useRemovals } from '$lib/undo/context.svelte';
+	import { submitAction } from '$lib/undo/submit-action';
 	import type { PersonPageData } from './types';
 
 	/*
 	 * Under the shown name (docs/02 §2.2, §2.2.4.5, §2.2.4.6): Stella's
-	 * proposal for a missing last name as a chip (*Brunner?*), which a tap gives with the usual
-	 * undo. When the name editor gives someone their first last name, their children and siblings
-	 * who still have none are offered it right here; a chip's own toast offers it instead. Sized
-	 * for a finger on a coarse pointer (docs/05 §5.9).
+	 * proposal for a missing last name as a chip (*Brunner?*). A tap saves it at once under the
+	 * shell's activity indicator; once the page has reloaded with the new name, a toast offers
+	 * *Undo* (`chip-give.ts`). When someone is given their first last name — by the chip or the
+	 * name editor — their children and siblings who still have none are offered it right here,
+	 * as a batch with the usual undo window. Sized for a finger on a coarse pointer (docs/05 §5.9).
 	 */
 	let { data }: { data: PersonPageData } = $props();
 
@@ -23,18 +30,39 @@
 	const held = names.submit();
 	const disabled = $derived(!reachability.reachable);
 
+	const chipDeps: ChipGiveDeps = {
+		send: (action, body) => submitAction(fetch, action, body, { keepalive: false }),
+		refresh: invalidateAll,
+		pending: usePending(),
+		notify: useRemovals().notify,
+		t
+	};
+	/** A chip's name on its way: the chips step aside, and come back if the save fails. */
+	let giving = $state(false);
+	const giveChip: SubmitFunction = ({ action, formData, cancel }) => {
+		cancel();
+		giving = true;
+		void giveFromChip(chipDeps, {
+			page: action.pathname,
+			contactId: c.id,
+			lastName: String(formData.get('lastName') ?? ''),
+			before: { displayName: c.displayName, firstName: c.firstName }
+		}).finally(() => (giving = false));
+	};
+
 	/*
-	 * A first last name given through the fields: seen as the blank turning into a name once the
-	 * page has reloaded. A chip's batch is left out — its toast has offered the name on already.
+	 * A first last name given to this person: seen as the blank turning into a name once the
+	 * page has reloaded. A name taken back (*Undo*) withdraws the offer with it.
 	 */
 	// svelte-ignore state_referenced_locally
-	let before = c.lastName;
+	let before = { id: c.id, lastName: c.lastName };
 	let passOn = $state<{ lastName: string; people: { id: string; name: string }[] } | null>(null);
 	$effect(() => {
-		const now = c.lastName;
-		if (!before && now && !names.hidden.has(c.id)) {
-			const people = passOnOffer(data.lastNameHelp.passOn, [c.id], now, new Set());
-			passOn = people.length ? { lastName: now, people } : null;
+		const now = { id: c.id, lastName: c.lastName };
+		if (now.id !== before.id || !now.lastName) passOn = null;
+		else if (!before.lastName) {
+			const people = passOnOffer(data.lastNameHelp.passOn, [c.id], now.lastName, new Set());
+			passOn = people.length ? { lastName: now.lastName, people } : null;
 		}
 		before = now;
 	});
@@ -42,10 +70,10 @@
 		new Intl.ListFormat(i18n.intlLocale, { type: 'conjunction' }).format(people.map((p) => p.name));
 </script>
 
-{#if !c.lastName && !names.hidden.has(c.id) && data.lastNameHelp.chips.length > 0}
+{#if !c.lastName && !giving && data.lastNameHelp.chips.length > 0}
 	<div class="mt-1 flex flex-wrap items-center gap-2 text-xs pointer-coarse:gap-3">
 		{#each data.lastNameHelp.chips as chip (chip.name)}
-			<form method="POST" action="?/setLastNames" use:enhance={held}>
+			<form method="POST" action="?/setLastNames" use:enhance={giveChip}>
 				<input type="hidden" name="lastName" value={chip.name} />
 				<input type="hidden" name="contactId" value={c.id} />
 				<button
