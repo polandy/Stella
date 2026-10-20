@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.0.29](https://github.com/polandy/Stella/compare/v0.0.28...v0.0.29) (2026-10-20)
+
+
+### Features
+
+* **circles:** arrange people between a circle and its sub-circles ([#394](https://github.com/polandy/Stella/issues/394)) ([dcbf6c2](https://github.com/polandy/Stella/commit/dcbf6c2a8b25e9618732b3a737b283ef87214ccc))
+* **circles:** set and manage sub-circles from the circle page ([#393](https://github.com/polandy/Stella/issues/393)) ([3bbf1cf](https://github.com/polandy/Stella/commit/3bbf1cf63328e71329f2de233fde2f79cf306708))
+
+
+### Bug Fixes
+
+* **surnames:** save the profile's last-name chip at once, with Undo ([#391](https://github.com/polandy/Stella/issues/391)) ([49160a5](https://github.com/polandy/Stella/commit/49160a56fed0d5a2606b895385b757925a436046))
+
 ## [0.0.28](https://github.com/polandy/Stella/compare/v0.0.27...v0.0.28) (2026-10-19)
 
 
