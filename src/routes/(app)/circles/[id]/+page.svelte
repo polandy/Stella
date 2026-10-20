@@ -267,6 +267,11 @@
 		bind:open={addOpen}
 	>
 		{#snippet action()}
+			{#if data.nesting.children.length}
+				<Button size="sm" icon="arrange" href="/circles/{circle.id}/arrange">
+					{t('circles.arrange.open')}
+				</Button>
+			{/if}
 			{#if visibleCount > 1}
 				<Button
 					size="sm"

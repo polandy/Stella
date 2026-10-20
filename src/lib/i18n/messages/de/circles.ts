@@ -227,5 +227,52 @@ export const circles: CirclesMessages = {
 	'circles.picker.alreadyIn': 'schon darin',
 	'circles.picker.movesFrom': (p) => `jetzt in ${p.name} – wird verschoben`,
 	'circles.picker.footer':
-		'Ein Kreis kann nicht in sich selbst oder einem seiner Unterkreise liegen.'
+		'Ein Kreis kann nicht in sich selbst oder einem seiner Unterkreise liegen.',
+	'circles.arrange.open': 'Personen ordnen',
+	'circles.arrange.title': (p) => `Personen ordnen · ${p.name}`,
+	'circles.arrange.heading': 'Personen ordnen',
+	'circles.arrange.back': (p) => `Zurück zu ${p.name}`,
+	'circles.arrange.summary': (p) =>
+		`${p.name} und ${p.subCircles === 1 ? '1 Unterkreis' : `${p.subCircles} Unterkreise`} · ${
+			p.people === 1 ? '1 Person' : `${p.people} Personen`
+		}`,
+	'circles.arrange.cards': 'Kreise und die Personen, die direkt darin sind',
+	'circles.arrange.modeLabel': 'Beim Ziehen',
+	'circles.arrange.move': 'Verschieben',
+	'circles.arrange.copy': 'Kopieren',
+	'circles.arrange.hintMove':
+		'Personen ziehen oder antippen und ein Ziel wählen · Alt beim Ablegen: stattdessen kopieren',
+	'circles.arrange.hintCopy':
+		'Personen ziehen oder antippen und ein Ziel wählen · Alt beim Ablegen: stattdessen verschieben',
+	'circles.arrange.direct': (p) => `Direkt in ${p.name}`,
+	'circles.arrange.itself': 'Der Kreis selbst',
+	'circles.arrange.count': (p) => (p.count === 1 ? '1 Person' : `${p.count} Personen`),
+	'circles.arrange.empty': 'Noch niemand. Personen hierher ziehen.',
+	'circles.arrange.alsoIn': (p) => `auch in ${p.names}`,
+	'circles.arrange.dropMove': (p) =>
+		`Hierher verschieben · ${p.count === 1 ? '1 Person' : `${p.count} Personen`}`,
+	'circles.arrange.dropCopy': (p) =>
+		`Hierher kopieren · ${p.count === 1 ? '1 Person' : `${p.count} Personen`}`,
+	'circles.arrange.alreadyHere': 'Schon hier',
+	'circles.arrange.alreadyAllHere': 'Schon alle hier',
+	'circles.arrange.selected': (p) => `${p.count} ausgewählt`,
+	'circles.arrange.moveTo': 'Verschieben nach …',
+	'circles.arrange.copyTo': 'Kopieren nach …',
+	'circles.arrange.clear': 'Auswahl aufheben',
+	'circles.arrange.pickMove': 'Ziel antippen: wohin verschieben?',
+	'circles.arrange.pickCopy': 'Ziel antippen: wohin kopieren?',
+	'circles.arrange.cancel': 'Abbrechen',
+	'circles.arrange.hereMove': 'Hierher verschieben',
+	'circles.arrange.hereCopy': 'Hierher kopieren',
+	'circles.arrange.moved': (p) =>
+		`${p.count === 1 ? '1 Person' : `${p.count} Personen`} nach ${p.target} verschoben`,
+	'circles.arrange.copied': (p) =>
+		`${p.count === 1 ? '1 Person' : `${p.count} Personen`} nach ${p.target} kopiert`,
+	'circles.arrange.alreadyThere': (p) => `${p.count} schon dort`,
+	'circles.arrange.onlyRemoved': (p) =>
+		`${p.count === 1 ? '1 Person' : `${p.count} Personen`} schon in ${p.target}, am alten Ort entfernt`,
+	'circles.arrange.undone': 'Rückgängig gemacht',
+	'circles.arrange.undonePartly': (p) =>
+		`Rückgängig gemacht · ${p.count} unverändert gelassen, weil sie sich inzwischen geändert haben`,
+	'circles.arrange.undoFailed': 'Das ließ sich nicht rückgängig machen. Nichts wurde geändert.'
 };

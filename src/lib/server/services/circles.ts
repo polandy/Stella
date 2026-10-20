@@ -1,5 +1,7 @@
 import type { BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
 import type { Clock } from '../clock';
+import { createDrizzleCircleArrangementReads } from '../db/circle-arrangement-reads';
+import { createDrizzleCircleArrangementRepository } from '../db/circle-arrangement-repository';
 import { createDrizzleCircleDirectoryReads } from '../db/circle-directory-reads';
 import { createDrizzleCircleMembershipReads } from '../db/circle-membership-reads';
 import { createDrizzleCircleNestingReads } from '../db/circle-nesting-reads';
@@ -8,6 +10,7 @@ import { createDrizzleCircleRepository } from '../db/circle-repository';
 import { createDrizzleCircleTreeReads } from '../db/circle-tree-reads';
 import { createDrizzleCutRepository } from '../db/cut-repository';
 import type * as schema from '../db/schema';
+import type { ArrangePeopleDeps } from '../domain/circles/arrange-people';
 import type { CirclePhotoDeps, CirclePhotoRepository } from '../domain/circles/circle-photos';
 import type {
 	CircleDeps,
@@ -53,6 +56,8 @@ export interface CircleServices {
 	circleNestingDeps: CircleNestingDeps;
 	/** The edit form: its details and the circle it belongs to, checked as every move is. */
 	updateCircleDeps: UpdateCircleDeps;
+	/** Moving or copying people between a circle and its sub-circles, and the Undo of it (ADR-127). */
+	arrangePeopleDeps: ArrangePeopleDeps;
 	circleMembershipDeps: CircleMembershipDeps;
 	memberRoleDeps: MemberRoleDeps;
 	memberRemovalDeps: MemberRemovalDeps;
@@ -88,6 +93,7 @@ export function createCircleServices({
 	const circlePhotos = createDrizzleCirclePhotoRepository(db);
 	const cuts = createDrizzleCutRepository(db);
 	const nesting = createDrizzleCircleNestingReads(db);
+	const tree = createDrizzleCircleTreeReads(db);
 
 	return {
 		circles,
@@ -95,7 +101,14 @@ export function createCircleServices({
 		cuts,
 		circleDeps: { circles, ids, clock },
 		circleDirectoryDeps: { directory: createDrizzleCircleDirectoryReads(db) },
-		circleTreeDeps: { tree: createDrizzleCircleTreeReads(db) },
+		circleTreeDeps: { tree },
+		arrangePeopleDeps: {
+			tree,
+			arrangement: createDrizzleCircleArrangementReads(db),
+			circles: createDrizzleCircleArrangementRepository(db),
+			ids,
+			clock
+		},
 		circleNestingDeps: { circles, nesting, clock },
 		updateCircleDeps: { circles, nesting, clock },
 		circleMembershipDeps: { memberships },

@@ -154,6 +154,10 @@ export const errors: ErrorsMessages = {
 	'errors.circle.loop': (p) =>
 		`Das geht nicht: ${p.name} läge sonst in sich selbst. Bitte einen anderen Kreis wählen.`,
 	'errors.circle.parentNotFound': 'Diesen Kreis gibt es nicht (mehr). Bitte einen anderen wählen.',
+	'errors.circle.arrangeGone': 'Diesen Kreis gibt es nicht (mehr). Bitte die Seite neu laden.',
+	'errors.circle.arrangeStale':
+		'Die Kreise haben sich inzwischen geändert. Bitte die Seite prüfen und es erneut versuchen.',
+	'errors.circle.arrangeNothing': 'Nichts zu ändern: Alle sind schon dort.',
 	'errors.circlePhoto.unknownRole': 'Wähle eine der Rollen des Kreises oder keine Rolle.',
 	'errors.admin.only': 'Das kann nur die Haushalts-Administration.',
 	'errors.member.notYourself':
