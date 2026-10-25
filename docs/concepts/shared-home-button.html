@@ -1,0 +1,260 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Wohnt auch hier – Platzierung (interaktives Mockup)</title>
+<style>
+  /* Catppuccin tokens as src/app.css maps them (Latte / Mocha). */
+  :root, :root[data-theme='latte'] {
+    --bg:#e6e9ef; --bg-sunken:#dce0e8; --card:#ffffff; --border:#ccd0da; --border-subtle:#e7e9f0;
+    --fg:#4c4f69; --fg-muted:#5c5f77; --fg-subtle:#6c6f85; --primary:#853ae8; --primary-fg:#ffffff;
+    --input:#e6e9ef; --page:#eff1f5; --toast-bg:#ffffff; --toast-fg:#4c4f69;
+    --shadow-card:0 1px 2px rgba(76,79,105,.07), 0 2px 8px rgba(76,79,105,.06);
+    --av:#d3e2fb;
+  }
+  :root[data-theme='mocha'] {
+    --bg:#181825; --bg-sunken:#11111b; --card:#232334; --border:#313244; --border-subtle:#292939;
+    --fg:#cdd6f4; --fg-muted:#bac2de; --fg-subtle:#a6adc8; --primary:#cba6f7; --primary-fg:#1e1e2e;
+    --input:#1e1e2e; --page:#1e1e2e; --toast-bg:#313244; --toast-fg:#cdd6f4;
+    --shadow-card:0 1px 2px rgba(0,0,0,.3); --av:#2f3a55;
+  }
+  :root { --primary-soft:color-mix(in srgb, var(--primary) 14%, transparent);
+    --sans:'Instrument Sans',ui-sans-serif,system-ui,-apple-system,'Segoe UI',Roboto,sans-serif; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--page); color:var(--fg); font-family:var(--sans); line-height:1.5; -webkit-font-smoothing:antialiased; }
+  button, input, textarea { font:inherit; color:inherit; }
+  :focus-visible { outline:2px solid var(--primary); outline-offset:2px; }
+  svg.i { width:16px; height:16px; fill:none; stroke:currentColor; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; flex:none; }
+
+  .wrap { margin:0 auto; padding:24px 16px 80px; max-width:1100px; }
+  .kicker { font-size:12px; font-weight:600; letter-spacing:.14em; text-transform:uppercase; color:var(--primary); }
+  h1 { font-size:24px; font-weight:650; margin:4px 0 6px; }
+  .lede { color:var(--fg-muted); margin:0 0 16px; max-width:80ch; }
+  .controls { display:flex; flex-wrap:wrap; gap:10px 16px; align-items:center; margin-bottom:16px; }
+  .seg { display:flex; flex-wrap:wrap; gap:3px; background:var(--bg-sunken); border-radius:18px; padding:3px; }
+  .seg button { border:0; background:transparent; padding:6px 12px; border-radius:999px; font-size:13px; color:var(--fg-muted); cursor:pointer; }
+  .seg button[aria-pressed='true'] { background:var(--card); color:var(--fg); font-weight:600; box-shadow:var(--shadow-card); }
+  .stage { display:flex; flex-wrap:wrap; gap:28px; align-items:flex-start; }
+  .legend { flex:1; min-width:260px; max-width:420px; background:var(--card); box-shadow:var(--shadow-card); border-radius:14px; padding:14px 16px; font-size:14px; color:var(--fg-muted); }
+  .legend b { color:var(--fg); }
+  .legend p { margin:0 0 8px; }
+  .legend .tag { display:inline-block; font-size:11px; font-weight:600; letter-spacing:.08em; text-transform:uppercase; color:var(--primary); margin-bottom:4px; }
+
+  .device { padding:10px; background:#0b0b12; border-radius:46px; box-shadow:0 20px 60px rgba(0,0,0,.25); flex:none; max-width:100%; }
+  .screen { width:392px; max-width:calc(100vw - 52px); height:820px; border-radius:36px; overflow:hidden; position:relative; background:var(--bg); display:flex; flex-direction:column; }
+  .scroller { flex:1; overflow-y:auto; padding:18px 12px 120px; scrollbar-width:none; }
+  .card { background:var(--card); border-radius:18px; padding:16px; box-shadow:var(--shadow-card); }
+  .who { display:flex; gap:14px; align-items:center; margin-bottom:14px; }
+  .avatar { width:64px; height:64px; border-radius:18px; background:#f5dcdc; color:#4c4f69; display:grid; place-items:center; font-weight:700; font-size:24px; }
+  .who h2 { margin:0; font-size:24px; font-weight:650; line-height:1.15; }
+  .facthead { display:flex; align-items:center; gap:6px; font-size:13px; color:var(--fg-muted); margin:10px 0 6px; }
+
+  .editor { border:1.5px solid var(--primary); border-radius:12px; padding:12px; display:flex; flex-direction:column; gap:8px; }
+  .input { background:var(--input); border:1px solid var(--border); border-radius:8px; padding:7px 10px; width:100%; font-size:15px; }
+  .label { max-width:60%; }
+  textarea.input { resize:vertical; min-height:56px; }
+  .row { display:flex; flex-wrap:wrap; align-items:center; gap:8px; }
+  .muted { font-size:12px; color:var(--fg-muted); }
+  .btn { display:inline-flex; align-items:center; gap:6px; border:0; background:transparent; border-radius:8px; padding:5px 10px; font-size:14px; cursor:pointer; color:var(--fg); }
+  .btn:hover { background:var(--bg-sunken); }
+  .btn.primary { background:var(--primary); color:var(--primary-fg); font-weight:600; padding:6px 14px; }
+  .btn.primary:disabled { opacity:.45; cursor:default; }
+  .ml-auto { margin-left:auto; }
+  .center { align-self:center; }
+  .chips { display:flex; flex-wrap:wrap; gap:6px; list-style:none; padding:0; margin:0; }
+  .chip { display:inline-flex; align-items:center; gap:4px; border:1px solid var(--border); border-radius:999px; padding:2px 4px 2px 10px; font-size:14px; }
+  .chip .x { border:0; background:transparent; width:24px; height:24px; border-radius:50%; display:grid; place-items:center; color:var(--fg-muted); cursor:pointer; }
+  .chip.dashed { border-style:dashed; color:var(--fg-muted); padding:2px 10px; cursor:pointer; background:transparent; }
+  .chip.dashed:hover { color:var(--fg); border-color:var(--fg-subtle); }
+  .plus-round { width:30px; height:30px; padding:0; justify-content:center; }
+  .sep { height:1px; background:var(--border-subtle); margin:4px 0; }
+
+  .picker { display:flex; flex-direction:column; gap:6px; background:var(--bg-sunken); border-radius:10px; padding:10px; }
+  .picker .field { display:flex; flex-wrap:wrap; gap:6px; align-items:center; background:var(--input); border:1px solid var(--border); border-radius:8px; padding:5px 8px; }
+  .picker .field input { border:0; background:transparent; flex:1; min-width:90px; outline:none; font-size:14px; }
+  .opts { list-style:none; margin:0; padding:4px; background:var(--card); border:1px solid var(--border); border-radius:10px; max-height:190px; overflow:auto; }
+  .opts li button { width:100%; display:flex; align-items:center; gap:10px; border:0; background:transparent; padding:6px 8px; border-radius:8px; cursor:pointer; text-align:left; font-size:14px; }
+  .opts li button:hover { background:var(--primary-soft); }
+  .mini { width:24px; height:24px; border-radius:50%; background:var(--av); display:grid; place-items:center; font-size:10px; font-weight:600; }
+  .group { font-size:11px; font-weight:600; letter-spacing:.08em; text-transform:uppercase; color:var(--fg-subtle); padding:4px 8px 0; }
+
+  .read { font-size:15px; }
+  .read a { color:inherit; }
+  .toast { position:absolute; left:16px; right:16px; bottom:96px; background:var(--toast-bg); color:var(--toast-fg); border:1px solid var(--border); border-radius:12px; padding:10px 14px; box-shadow:0 8px 24px rgba(0,0,0,.15); font-size:14px; display:none; }
+  .toast.on { display:block; }
+  .tabbar { position:absolute; inset:auto 0 0 0; display:flex; border-top:1px solid var(--border-subtle); background:var(--card); padding:10px 0 16px; justify-content:space-around; font-size:11px; color:var(--fg-subtle); }
+  .tabbar .on { color:var(--primary); font-weight:600; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="kicker">Stella · geteilte Anschrift</div>
+  <h1 data-t="title"></h1>
+  <p class="lede" data-t="lede"></p>
+
+  <div class="controls">
+    <div class="seg" id="seg-v"></div>
+    <div class="seg" id="seg-start"></div>
+    <div class="seg" id="seg-lang"></div>
+    <div class="seg" id="seg-theme"></div>
+  </div>
+
+  <div class="stage">
+    <div class="device"><div class="screen">
+      <div class="scroller"><div class="card">
+        <div class="who"><div class="avatar">MB</div><div><h2>Markus Brunner</h2><div class="muted">Familienvater</div></div></div>
+        <div class="facthead"><svg class="i" viewBox="0 0 24 24"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"/></svg><span data-t="address"></span></div>
+        <div id="fact"></div>
+      </div></div>
+      <div class="toast" id="toast"></div>
+      <div class="tabbar"><span>Home</span><span class="on">People</span><span>Circles</span><span>Graph</span></div>
+    </div></div>
+
+    <div class="legend" id="legend"></div>
+  </div>
+</div>
+
+<script>
+const ic = {
+  plus: '<svg class="i" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>',
+  addPerson: '<svg class="i" viewBox="0 0 24 24"><circle cx="9" cy="8" r="4"/><path d="M2 21a7 7 0 0 1 14 0M19 8v6M16 11h6"/></svg>',
+  x: '<svg class="i" viewBox="0 0 24 24" style="width:13px;height:13px"><path d="M6 6l12 12M18 6L6 18"/></svg>',
+  out: '<svg class="i" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>',
+};
+const T = {
+  de: {
+    title: 'Wo sitzt „Wohnt auch hier …“?', lede: 'Der Adress-Editor auf Markus’ Seite. Wähle oben eine Variante und die Ausgangslage, tippe auf den Knopf, wähle jemanden und „Hinzufügen“. Die Karte im Telefon ist echt klickbar.',
+    address: 'Anschrift', label: 'Bezeichnung (optional)', shared: n => `Geteilt · ${n} Personen`, movedOut: 'Ausgezogen', save: 'Speichern',
+    another: 'Weitere Anschrift hinzufügen', cancel: 'Abbrechen', remove: 'Anschrift entfernen', also: 'Wohnt auch hier …', alsoShort: 'Wohnt auch hier',
+    who: 'Wer wohnt auch dort', search: 'Personen suchen …', add: 'Hinzufügen', family: 'Familie', others: 'Alle anderen',
+    livesWith: n => `wohnt mit ${n} zusammen`, toast: n => `${n} wohnt jetzt hier`, and: ' und ', reset: 'Zurücksetzen',
+    start: { home: 'Schon geteilt', own: 'Nur eigene Anschrift' },
+    v: { A: 'A · Heute', B: 'B · „+“ hinter den Chips', C: 'C · Untere Zeile', D: 'D · Gestrichelter Chip' },
+    legend: {
+      A: ['So ist es gebaut', 'Ein Geister-Knopf mit Icon, zentriert, in einer eigenen Zeile zwischen der Adresse und „Weitere Anschrift hinzufügen“. Er gehört zu keinem Block — darum wirkt er verloren.'],
+      B: ['Wie beim „+“ der Kreise', 'Ein runder, gestrichelter „+“-Chip hinter den Mitbewohnern — genau wie „+ Kreis beitreten“ hinter den Kreis-Chips. Wer hier wohnt und wer dazukommt, steht an einer Stelle. Ohne Mitbewohner steht der „+“ allein unter der Adresse, beschriftet.'],
+      C: ['Bei den anderen Aktionen', 'Links in der unteren Zeile, über „Weitere Anschrift hinzufügen“ — dieselbe Art Knopf, dieselbe Ausrichtung. Ruhig und konsistent, aber weit weg von den Mitbewohnern.'],
+      D: ['Wie die leeren Fakten', 'Ein gestrichelter Chip mit Text am Ende der Mitbewohner-Chips — wie die gestrichelten Plätze „Anschrift · + Hinzufügen“ auf der Karte. Lesbarer als der runde „+“, nimmt aber mehr Platz.'],
+    },
+  },
+  en: {
+    title: 'Where does “Also lives here …” go?', lede: 'The address editor on Markus’s page. Pick a variant and a starting point above, tap the button, pick someone and “Add”. The phone card is really clickable.',
+    address: 'Address', label: 'Label (optional)', shared: n => `Shared · ${n} people`, movedOut: 'Moved out', save: 'Save',
+    another: 'Add another address', cancel: 'Cancel', remove: 'Remove address', also: 'Also lives here …', alsoShort: 'Also lives here',
+    who: 'Who lives there too', search: 'Search people…', add: 'Add', family: 'Family', others: 'Everyone else',
+    livesWith: n => `lives with ${n}`, toast: n => `${n} now lives here`, and: ' and ', reset: 'Reset',
+    start: { home: 'Already shared', own: 'Own address only' },
+    v: { A: 'A · Today', B: 'B · “+” after the chips', C: 'C · Bottom row', D: 'D · Dashed chip' },
+    legend: {
+      A: ['As built', 'A ghost button with an icon, centred, on a line of its own between the address and “Add another address”. It belongs to no block — so it looks lost.'],
+      B: ['Like the circles’ “+”', 'A round dashed “+” chip after the housemates — just like “+ Join a circle” after the circle chips. Who lives here and who joins sit in one place. With no housemates yet, the “+” stands under the address, labelled.'],
+      C: ['With the other actions', 'Left in the bottom row, above “Add another address” — the same kind of button, the same alignment. Calm and consistent, but far from the housemates.'],
+      D: ['Like the empty facts', 'A dashed chip with text at the end of the housemate chips — like the dashed “Address · + Add” slots on the card. Easier to read than the round “+”, but wider.'],
+    },
+  },
+};
+const PEOPLE = {
+  sandra: { name: 'Sandra Brunner-Keller', ini: 'SB', fam: true }, lena: { name: 'Lena Brunner', ini: 'LB', fam: true },
+  noah: { name: 'Noah Brunner', ini: 'NB', fam: true }, elias: { name: 'Elias Brunner', ini: 'EB', fam: true },
+  hans: { name: 'Hans Brunner', ini: 'HB', fam: false }, rosa: { name: 'Rosa Brunner-Aebi', ini: 'RB', fam: false },
+  beat: { name: 'Beat Steiner', ini: 'BS', fam: false },
+};
+const q = new URLSearchParams(location.search);
+const S = { v: q.get('v') || 'B', start: q.get('start') || 'home', lang: q.get('lang') || 'de', theme: q.get('theme') || 'latte' };
+let M;
+function reset() { M = { mates: S.start === 'home' ? ['sandra'] : [], picking: false, picks: [], query: '' }; }
+reset();
+const t = () => T[S.lang];
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
+const list = names => names.length < 2 ? names.join('') : names.slice(0, -1).join(', ') + t().and + names.at(-1);
+
+function seg(id, key, opts) {
+  const el = document.getElementById(id);
+  el.innerHTML = Object.entries(opts).map(([k, label]) => `<button aria-pressed="${S[key] === k}" data-k="${k}">${esc(label)}</button>`).join('');
+  el.onclick = e => { const b = e.target.closest('button'); if (!b) return; S[key] = b.dataset.k; if (key === 'start' || key === 'v') reset(); sync(); };
+}
+
+function picker() {
+  if (!M.picking) return '';
+  const taken = new Set([...M.mates, ...M.picks]);
+  const match = id => PEOPLE[id].name.toLowerCase().includes(M.query.toLowerCase());
+  const ids = Object.keys(PEOPLE).filter(id => !taken.has(id) && match(id));
+  const fam = ids.filter(id => PEOPLE[id].fam), rest = ids.filter(id => !PEOPLE[id].fam);
+  const opt = id => `<li><button data-pick="${id}"><span class="mini">${PEOPLE[id].ini}</span>${esc(PEOPLE[id].name)}</button></li>`;
+  return `<div class="picker">
+    <span class="muted">${t().who}</span>
+    <div class="field">${M.picks.map(id => `<span class="chip">${esc(PEOPLE[id].name)}<button class="x" data-unpick="${id}">${ic.x}</button></span>`).join('')}
+      <input id="q" placeholder="${t().search}" value="${esc(M.query)}" /></div>
+    <ul class="opts">${fam.length ? `<li class="group">${t().family}</li>` + fam.map(opt).join('') : ''}${rest.length ? `<li class="group">${t().others}</li>` + rest.map(opt).join('') : ''}</ul>
+    <div class="row"><button class="btn" data-act="close">${t().cancel}</button><button class="btn primary ml-auto" data-act="add" ${M.picks.length ? '' : 'disabled'}>${t().add}</button></div>
+  </div>`;
+}
+
+function render() {
+  const x = t(), v = S.v, hasHome = M.mates.length > 0;
+  const trigger = {
+    A: `<button class="btn center" data-act="open">${ic.addPerson}${x.also}</button>`,
+    B: `<button class="chip dashed ${hasHome ? 'plus-round' : ''}" data-act="open" aria-label="${x.also}" title="${x.also}">${ic.plus}${hasHome ? '' : x.also}</button>`,
+    C: `<button class="btn" data-act="open">${ic.addPerson}${x.also}</button>`,
+    D: `<button class="chip dashed" data-act="open">${ic.plus}${x.alsoShort}</button>`,
+  }[v];
+  const chips = M.mates.map(id => `<li class="chip">${esc(PEOPLE[id].name)}<button class="x" data-out="${id}" aria-label="${x.movedOut}">${ic.x}</button></li>`).join('');
+  const chipRow = (v === 'B' || v === 'D')
+    ? (hasHome || !M.picking ? `<ul class="chips">${chips}${M.picking ? '' : `<li>${trigger}</li>`}</ul>` : '')
+    : (hasHome ? `<ul class="chips">${chips}</ul>` : '');
+  const homeBlock = `
+    <div class="row"><input class="input label" value="Zuhause" aria-label="${x.label}" />${hasHome ? `<span class="muted">${x.shared(M.mates.length + 1)}</span>` : ''}</div>
+    <textarea class="input" rows="2">Spitalackerstrasse 22, 3013 Bern</textarea>
+    ${chipRow}
+    ${(v === 'B' || v === 'D') ? picker() : ''}
+    <div class="row">${hasHome
+      ? `<button class="btn">${ic.out}${x.movedOut}</button>`
+      : `<button class="btn" aria-label="${x.remove}" title="${x.remove}">${ic.x}</button>`}
+      <button class="btn primary ml-auto">${x.save}</button></div>`;
+  const middle = v === 'A' ? (M.picking ? picker() : trigger) : '';
+  const bottom = v === 'C'
+    ? `${M.picking ? picker() : `<div class="row">${trigger}</div>`}
+       <div class="row"><button class="btn">${ic.plus}${x.another}</button><button class="btn ml-auto" data-act="done">${x.cancel}</button></div>`
+    : `<div class="row"><button class="btn">${ic.plus}${x.another}</button><button class="btn ml-auto" data-act="done">${x.cancel}</button></div>`;
+  return `<div class="editor">${homeBlock}${middle ? `<div class="sep"></div>${middle}` : ''}${v === 'C' ? '<div class="sep"></div>' : ''}${bottom}</div>
+    <div class="read muted" style="margin-top:10px">${hasHome ? x.livesWith(list(M.mates.map(id => PEOPLE[id].name))) : ''}</div>`;
+}
+
+function toast(text) {
+  const el = document.getElementById('toast');
+  el.textContent = text; el.classList.add('on');
+  clearTimeout(toast.h); toast.h = setTimeout(() => el.classList.remove('on'), 2600);
+}
+
+function sync() {
+  document.documentElement.lang = S.lang;
+  document.documentElement.dataset.theme = S.theme;
+  document.querySelectorAll('[data-t]').forEach(el => { el.textContent = t()[el.dataset.t]; });
+  seg('seg-v', 'v', t().v);
+  seg('seg-start', 'start', t().start);
+  seg('seg-lang', 'lang', { de: 'Deutsch', en: 'English' });
+  seg('seg-theme', 'theme', { latte: 'Latte', mocha: 'Mocha' });
+  const [head, body] = t().legend[S.v];
+  document.getElementById('legend').innerHTML = `<span class="tag">${esc(t().v[S.v])}</span><p><b>${esc(head)}</b></p><p>${esc(body)}</p><p><button class="btn" data-act="reset" style="padding-left:0">↺ ${t().reset}</button></p>`;
+  document.getElementById('fact').innerHTML = render();
+  const qi = document.getElementById('q');
+  if (qi) { qi.oninput = e => { M.query = e.target.value; const pos = e.target.selectionStart; draw(); const n = document.getElementById('q'); n.focus(); n.setSelectionRange(pos, pos); }; }
+  history.replaceState(null, '', '?' + new URLSearchParams(S));
+}
+function draw() { document.getElementById('fact').innerHTML = render(); const qi = document.getElementById('q'); if (qi) qi.oninput = e => { M.query = e.target.value; const pos = e.target.selectionStart; draw(); const n = document.getElementById('q'); n.focus(); n.setSelectionRange(pos, pos); }; }
+
+document.addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return;
+  if (b.dataset.act === 'open') { M.picking = true; M.picks = []; M.query = ''; draw(); document.getElementById('q')?.focus(); }
+  else if (b.dataset.act === 'close') { M.picking = false; draw(); }
+  else if (b.dataset.act === 'add') { const names = list(M.picks.map(id => PEOPLE[id].name)); M.mates.push(...M.picks); M.picking = false; M.picks = []; draw(); toast(t().toast(names)); }
+  else if (b.dataset.act === 'reset') { reset(); draw(); }
+  else if (b.dataset.pick) { M.picks.push(b.dataset.pick); M.query = ''; draw(); document.getElementById('q')?.focus(); }
+  else if (b.dataset.unpick) { M.picks = M.picks.filter(id => id !== b.dataset.unpick); draw(); }
+  else if (b.dataset.out) { M.mates = M.mates.filter(id => id !== b.dataset.out); draw(); }
+});
+sync();
+</script>
+</body>
+</html>
