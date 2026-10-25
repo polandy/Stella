@@ -1,6 +1,6 @@
 # Concept: a shared home address
 
-**Status:** proposal, waiting for the owner's choices. Mockup: [`shared-home.html`](shared-home.html).
+**Status:** agreed 2026-10-25 (§6); slice 1 in progress. Mockup: [`shared-home.html`](shared-home.html).
 
 ## 1. The problem
 
@@ -25,16 +25,16 @@ after the move. The household wants to enter an address once for everyone who li
 ```
 home         id · household_id · label (default *Home*) · value (formatted line) · meta (JSON parts)
              · created_by · created_at · updated_at
-home_member  home_id → home (cascade) · contact_id → contact (cascade) · since? · until?
-             · created_by · created_at        unique (home_id, contact_id) while until is null
+home_member  home_id → home (cascade) · contact_id → contact (cascade)
+             · created_by · created_at        primary key (home_id, contact_id)
 ```
 
 - **No visibility column on `home`.** A home is only ever reached through a member the viewer
   may see (§3.7), so it inherits that person's visibility; it has no surface of its own.
 - A person's addresses are *own address fields* + *every home they currently belong to*. The
   resolution is one access-layer read, used by the profile, search and export.
-- A home with no members left is deleted with the last one (variant A) or kept as the former
-  address of everyone who lived there (variant B, see §6 Q1).
+- No history (§6 Q1): moving out deletes the membership, and a home is deleted with its last
+  member.
 
 ## 4. Behaviour
 
@@ -49,8 +49,9 @@ home_member  home_id → home (cascade) · contact_id → contact (cascade) · s
    box: *For everyone here — Anna, Peter and Tim* (default) or *Only for Tim* — which moves Tim
    out of the home and gives him the new line as his own address. Toast: *Address changed for
    3 people · Undo*.
-4. **Moving out.** *Moved out …* in the editor: an optional month and an optional new address.
-   The membership ends (`until`); the rest of the home is untouched.
+4. **Moving out.** *Moved out …* in the editor, with an optional new address that becomes the
+   person's own. The membership is deleted (with undo); the rest of the home is untouched. The
+   × on another member's chip does the same for them.
 5. **New people.** Adding a child or partner of someone with a home (relationship quick-add,
    §2.4) offers *Lives at Lindenweg 4 with Anna and Peter* as a ticked box. This replaces the
    copying prefill F4 in docs/02 §2.4.1 (*the value copied, the rows never linked*), which is
@@ -72,13 +73,19 @@ home_member  home_id → home (cascade) · contact_id → contact (cascade) · s
 A map of homes, a "same household" relationship suggestion (L7 stays not built), postal
 validation, and any home without a person in it.
 
-## 6. Open questions — the mockup shows each choice
+## 6. Decisions (owner, 2026-10-25)
 
-- **Q1 — history.** A: moving out simply removes the person from the home (undo for a while),
-  no former addresses. B: the membership keeps `until`, and the address editor lists
-  *Before: Lindenweg 4 · until Aug 2026*. *Recommendation: A* — Stella has no address history
-  today and nobody asked for one; B can follow without a migration since `until` exists.
-- **Q2 — the default on a changed line.** *For everyone* (recommended — the common case is a typo
-  or the family moved) or no default, forcing a choice each time.
-- **Q3 — the data-quality check.** Exact match after folding only (recommended), or also
-  near-matches (*Lindenweg 4* vs *Lindenweg 4a*), shown as *maybe*.
+- **Q1 — no history.** Moving out removes the person from the home, undo for a while; no former
+  addresses (the mockup's variant B is not built).
+- **Q2 — *For everyone here*** is preselected when a home's line changes.
+- **Q3 — exact only.** The duplicate check matches lines equal after folding case, spaces and
+  punctuation; no near-matches.
+
+## 7. Slices
+
+1. **The home itself** — schema + migration, the access-layer resolution, the *Address* fact
+   (*lives with*), the editor (share, change line with the confirm, moved out, remove a member),
+   search and export/backup.
+2. **Getting homes in** — the new-child/partner offer (F4 rewritten), *Data quality → Same
+   address*, and `home` in the import API. This concept then folds into docs/02, 03 and 05 and is
+   deleted.
