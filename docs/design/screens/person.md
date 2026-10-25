@@ -57,9 +57,9 @@ the person, and that never leaves the page. Keeping the record tidy (archive, me
   line, the housemates as chips whose × moves that person out (with undo), and *Moved out* —
   spelled out beside its icon, since a lone × would read as *remove the address*. A changed
   line opens the sunken box under the field with *Everyone here — …* preselected and *Only for
-  …*, so the one consequential choice is made where it is caused, not in a dialog. *Share with
-  …* sits under the addresses and asks about a different own address in the same sunken box,
-  after the first *Share*, rather than on every chip while picking.
+  …*, so the one consequential choice is made where it is caused, not in a dialog. *Also lives
+  here …* sits under the addresses and asks about a different own address in the same sunken box,
+  after the first *Add*, rather than on every chip while picking.
 - The dates editor holds each date's kind, day, *year unknown*, whether it repeats and whether
   it shows on Home. A birthday derived from the profile is listed there too, marked *from the
   profile* and not deletable; an explicit birthday row replaces it (docs/02 §2.13.2). There is

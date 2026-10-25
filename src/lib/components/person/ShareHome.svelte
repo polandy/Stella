@@ -9,7 +9,7 @@
 	import type { PersonForm, PersonPageData } from './types';
 
 	/*
-	 * *Share with …* (docs/02 §2.2, *A shared home*): the people picked come to live at one of
+	 * *Also lives here …* (docs/02 §2.2, *A shared home*): the people picked come to live at one of
 	 * this person's addresses, family and partners offered first. Someone with an own address
 	 * that differs is asked about once — kept as a second address unless *replace* is ticked.
 	 */
@@ -121,7 +121,7 @@
 		</div>
 	</form>
 {:else if addresses.length > 0}
-	<Button variant="ghost" size="sm" icon="shared" type="button" onclick={() => (open = true)}>
+	<Button variant="ghost" size="sm" icon="addPerson" type="button" onclick={() => (open = true)}>
 		{t('contact.home.shareWith')}
 	</Button>
 {/if}

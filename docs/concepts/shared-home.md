@@ -92,12 +92,15 @@ validation, and any home without a person in it.
 
 ## 8. Slice 1 as built — where it differs
 
+- **Named *Also lives here …*** (*Wohnt auch hier …*), not *Share with …* — the owner's
+  choice after the hand test; its button says *Add*.
+
 - **Search left out.** Contact fields are not in the search index at all (§2.9), so a home's
   line is not either; searching by address is its own change, for every address at once.
-- **No undo on *Share* or a changed line.** Both wait for a connection like editing a field;
+- **No undo on *Add* or a changed line.** Both wait for a connection like editing a field;
   a share is taken back with *Moved out*, a line by saving it again. *Moved out* and the × on a
   chip have undo (§2.23).
-- **The different address is asked about after *Share*,** in the sunken box, rather than named
+- **The different address is asked about after *Add*,** in the sunken box, rather than named
   on each chip while picking — the picker stays the one every page uses.
 - ***Moved out* takes no new address;** *Add another address* gives them one.
 
