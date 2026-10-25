@@ -264,6 +264,11 @@ export const contact = {
 	'contact.relationships.secondParentAdd': (p: { name: string }) =>
 		`Add ${p.name} as the other parent`,
 	'contact.relationships.secondParentWhy': (p: { name: string }) => `${p.name}’s partner`,
+	// A new child or partner offered the address of the person whose page it is (docs/02 §2.4).
+	'contact.relationships.livesAt': (p: { line: string }) => `Lives at ${p.line}`,
+	'contact.relationships.livesAtWith': (p: { names: string }) => `with ${p.names}`,
+	'contact.relationships.livesAtFailed':
+		'The link is saved, but the address could not be shared — use “Also lives here …” on the address.',
 	/*
 	 * *Add all* on the *Also true?* block: the claims one batch can store, said as the link
 	 * they become, and stored in one step with one *Undo*.

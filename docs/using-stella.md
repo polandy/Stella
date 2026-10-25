@@ -319,7 +319,10 @@ on Markus's page reads *Spitalackerstrasse 22, 3013 Bern — lives with Sandra B
 everyone here* (they moved, or it was mistyped) or *only for Markus*, who then gets his own new
 address. When someone leaves, tap the × on their name, or **Moved out** on their own page — the
 others keep the home, and **Undo** brings them back. People you cannot see are never named or
-moved. Searching by a shared address does not find anyone yet.
+moved. Searching by a shared address does not find anyone yet. Adding Sandra's new baby from
+her page — *Parent of*, then a new name in the picker — offers **Lives at Spitalackerstrasse
+22 … with Sandra and Markus**, already ticked: *Add* moves the baby in along with the link.
+Untick it if the child lives elsewhere.
 
 ### Notes, Activity and the journal
 

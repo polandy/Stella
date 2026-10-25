@@ -115,3 +115,10 @@ validation, and any home without a person in it.
   `existingId`. The holder needs exactly one address (a home, else one own address, which becomes
   a home); two are refused, as is a holder who lives with somebody else in turn. Written up in
   docs/02 §2.16.1.
+- **The offer (F4 rewritten), mockup B:** a ticked dashed box under the person picker, applied
+  on *Add* with the links, like the second-parent offer — the create panel stays the same
+  everywhere. Same holder rule as the import: one home, else one own address, which becomes a
+  home. Only for people created in the picker during that form. The move-in is the existing
+  `?/shareAddress` posted after the command is applied, so the offline command path is
+  untouched; a kept command drops it, and *Undo* does not move anyone out. Written up in docs/02
+  §2.4.1.

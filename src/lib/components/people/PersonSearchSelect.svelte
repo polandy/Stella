@@ -68,6 +68,8 @@
 		suggestedDescription?: string;
 		/** Called with the person a pick lands on, for a form that reads more off them than the id. */
 		onPick?: (person: SelectablePerson) => void;
+		/** Called with someone the create panel just made, before the pick lands on them. */
+		onCreate?: (person: SelectablePerson) => void;
 		/**
 		 * With `multiple`: the most people the field takes, or null for no limit. At the limit the
 		 * search closes and says `fullPlaceholder`; chips beyond it stay, for the form to explain.
@@ -95,6 +97,7 @@
 		allowCreate = false,
 		suggestedDescription = '',
 		onPick,
+		onCreate,
 		max = null,
 		fullPlaceholder,
 		markedIds = [],
@@ -261,6 +264,7 @@
 			const person: SelectablePerson = await response.json();
 			addedHere = [...addedHere, person];
 			creating = false;
+			onCreate?.(person);
 			choose(person);
 			// The name typed was this person's; kept, it would offer creating them a second time.
 			query = '';

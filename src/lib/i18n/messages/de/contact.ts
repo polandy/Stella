@@ -240,6 +240,10 @@ export const contact: ContactMessages = {
 	'contact.relationships.secondParentAlso': 'Auch',
 	'contact.relationships.secondParentAdd': (p) => `${p.name} als zweites Elternteil hinzufügen`,
 	'contact.relationships.secondParentWhy': (p) => `Partner von ${p.name}`,
+	'contact.relationships.livesAt': (p) => `Wohnt auch hier: ${p.line}`,
+	'contact.relationships.livesAtWith': (p) => `mit ${p.names}`,
+	'contact.relationships.livesAtFailed':
+		'Die Beziehung ist gespeichert, die Anschrift aber nicht geteilt — „Wohnt auch hier …“ bei der Anschrift nutzen.',
 	'contact.relationships.addAllParentsOf': (p) => `${p.parents} als Eltern von ${p.child}`,
 	'contact.relationships.addAllChildrenOf': (p) => `${p.parent} als Elternteil von ${p.children}`,
 	'contact.relationships.addAll': (p) => `Alle ${p.count} hinzufügen`,
