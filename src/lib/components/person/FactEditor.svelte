@@ -36,7 +36,8 @@
 	});
 
 	function onKeydown(event: KeyboardEvent) {
-		if (event.key !== 'Escape') return;
+		// An Escape a picker inside already used to close its list leaves the editor open.
+		if (event.key !== 'Escape' || event.defaultPrevented) return;
 		event.preventDefault();
 		onclose();
 	}
