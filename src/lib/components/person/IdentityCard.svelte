@@ -135,6 +135,7 @@
 	const addresses = $derived(addressLines(fields));
 	// The addresses they share with others (docs/02 §2.2), read beside their own.
 	const homes = $derived(homesShown(data.homes, c.id, removals.isPending));
+	const sharedHomes = $derived(homes.filter((home) => home.livesWith.length > 0));
 	/** "Teacher at Primarschule Muri" (docs/02 §2.2). */
 	const jobLine = $derived(jobShortForm(c, (parts) => t('contact.job.at', parts)));
 	/** The day it happened, for the marker's tooltip. */
@@ -267,7 +268,8 @@
 	icon: IconName,
 	name: string,
 	value: Snippet,
-	edit?: { what: string; open: () => void; key: string }
+	edit?: { what: string; open: () => void; key: string },
+	links?: Snippet
 )}
 	<div
 		class="relative -mx-1.5 flex min-w-0 flex-col gap-0.5 rounded-control px-1.5 py-0.5 has-[button:hover]:bg-card-hover"
@@ -294,6 +296,11 @@
 				</button>
 			{:else}
 				{@render value()}
+			{/if}
+			{#if links}
+				<!-- Ways to other people: outside the button, a link in it is never reached, and
+				     positioned, so the tap lands on them rather than on the fact's overlay. -->
+				<div class="relative w-fit max-w-full">{@render links()}</div>
 			{/if}
 		</dd>
 	</div>
@@ -561,17 +568,29 @@
 							<!-- Lines broken inline rather than as blocks, so the pencil can follow the last. -->
 							{#each addresses as address, i (address.id)}{#if i > 0}<br
 									/>{/if}{address.line}{/each}{#each homes as home, i (home.id)}{#if i > 0 || addresses.length > 0}<br
-									/>{/if}<span data-home={home.id}
-									>{oneLine(home.value)}{#if home.livesWith.length > 0}<br /><LivesWith
-											housemates={home.livesWith}
-										/>{/if}</span
-								>{/each}
+									/>{/if}<span data-home={home.id}>{oneLine(home.value)}</span>{/each}
 						{/snippet}
-						{@render fact(t('contact.fieldKind.address'), 'home', 'address', addressValue, {
-							what: t('contact.facts.editAddress'),
-							open: () => openEditor('address'),
-							key: 'address'
-						})}
+						{#snippet livesWith()}
+							{#each sharedHomes as home (home.id)}
+								<span class="block" data-lives-with={home.id}
+									>{#if sharedHomes.length > 1}<span class="text-xs text-fg-muted"
+											>{home.label ?? oneLine(home.value)}:
+										</span>{/if}<LivesWith housemates={home.livesWith} /></span
+								>
+							{/each}
+						{/snippet}
+						{@render fact(
+							t('contact.fieldKind.address'),
+							'home',
+							'address',
+							addressValue,
+							{
+								what: t('contact.facts.editAddress'),
+								open: () => openEditor('address'),
+								key: 'address'
+							},
+							sharedHomes.length > 0 ? livesWith : undefined
+						)}
 					{/if}
 				{:else if entry.name === 'job'}
 					<!-- Edited where it is read, like the name (docs/02 §2.2); empty, a slot opens it. -->
