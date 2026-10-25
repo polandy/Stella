@@ -249,7 +249,8 @@ wraps onto a second line instead of being cut off. **Tap a fact to change it, ri
 is** — everything you can change this way ends in a faint pencil, always visible on a phone or
 tablet and appearing when you point at it with a mouse: any date opens all their dates — remove one, or *Add a date*, then
 *Done*; the address opens its label and text to *Save*, *Remove address* or *Add another
-address*; the **+** after the circles lists their circles to change a role or *Leave*, and
+address*, and **Share with …** to enter one address for a whole family — see *A shared home*
+below; the **+** after the circles lists their circles to change a role or *Leave*, and
 joins another. Under the facts are only the things that have no fact — phone and email, tags,
 how you met — each a row you can open and add to. Whatever the record does not hold yet waits
 behind one quiet button that says what it is, such as **Add address, phone, email …**; press
@@ -307,6 +308,17 @@ and Stella says so rather than quietly keeping the old one. When Stella can gues
 last name, it shows it under the name as a chip — *Brunner?* — and one tap gives it at once;
 **Undo** in the note that follows puts the name back as it was, unless someone changed it in
 the meantime.
+
+**A shared home.** A family living together needs its address only once. Open the address on
+Markus's page, choose **Share with …**, pick Sandra and the children — family comes first in the
+list — and *Share*. Whoever already had exactly that address simply moves in; if someone has a
+different one, Stella asks once whether to replace it or keep it as a second address. From then
+on Markus's page reads *Spitalackerstrasse 22, 3013 Bern — lives with Sandra Brunner-Keller and
+…*, and so does everyone else's. Change the line once and Stella asks whether it is *for
+everyone here* (they moved, or it was mistyped) or *only for Markus*, who then gets his own new
+address. When someone leaves, tap the × on their name, or **Moved out** on their own page — the
+others keep the home, and **Undo** brings them back. People you cannot see are never named or
+moved. Searching by a shared address does not find anyone yet.
 
 ### Notes, Activity and the journal
 

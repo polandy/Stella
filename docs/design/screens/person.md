@@ -41,7 +41,8 @@ the person, and that never leaves the page. Keeping the record tidy (archive, me
     estimated year);
   - **every other date** as a fact of its own with the years since (*Hochzeitstag · 13 June
     2009 · 17 years*);
-  - the addresses among the contact details, one line each;
+  - the addresses among the contact details, one line each, and each shared home's line with
+    *lives with …* under it in the small muted type, every name a link;
   - the job's short form;
   - the last contact, **only when there is one**; it follows the Activity card and is read
     only;
@@ -52,6 +53,13 @@ the person, and that never leaves the page. Keeping the record tidy (archive, me
   opens its editor in its place across the grid's width (§5.7, *Fact editors*): any date the
   one dates editor, the address its editor, the job its two fields, the **+** chip the circles
   editor under the chips.
+- The address editor puts a **shared home** first: its label beside *Shared · 3 people*, the
+  line, the housemates as chips whose × moves that person out (with undo), and *Moved out* —
+  spelled out beside its icon, since a lone × would read as *remove the address*. A changed
+  line opens the sunken box under the field with *Everyone here — …* preselected and *Only for
+  …*, so the one consequential choice is made where it is caused, not in a dialog. *Share with
+  …* sits under the addresses and asks about a different own address in the same sunken box,
+  after the first *Share*, rather than on every chip while picking.
 - The dates editor holds each date's kind, day, *year unknown*, whether it repeats and whether
   it shows on Home. A birthday derived from the profile is listed there too, marked *from the
   profile* and not deletable; an explicit birthday row replaces it (docs/02 §2.13.2). There is
