@@ -133,6 +133,8 @@
 			id="{home.id}/{person.id}"
 			action="?/leaveHome"
 			fields={{ homeId: home.id }}
+			spelled
+			icon="signOut"
 			label={t('contact.home.movedOut')}
 			removed={t('contact.home.movedOutDone', { name: person.displayName })}
 			class="mr-auto"
