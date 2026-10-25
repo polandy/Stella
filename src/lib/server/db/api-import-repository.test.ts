@@ -115,7 +115,15 @@ describe('the import API adapter', () => {
 		const result = await run(kindergarten);
 		expect(result).toMatchObject({
 			ok: true,
-			added: { people: 2, fields: 2, relationships: 3, circles: 1, memberships: 2 }
+			added: {
+				people: 2,
+				fields: 2,
+				relationships: 3,
+				circles: 1,
+				memberships: 2,
+				homes: 0,
+				residents: 0
+			}
 		});
 		expect(
 			db
@@ -156,11 +164,24 @@ describe('the import API adapter', () => {
 		const again = await run(kindergarten);
 		expect(again).toMatchObject({
 			ok: true,
-			added: { people: 0, fields: 0, relationships: 0, circles: 0, memberships: 0 }
+			added: {
+				people: 0,
+				fields: 0,
+				relationships: 0,
+				circles: 0,
+				memberships: 0,
+				homes: 0,
+				residents: 0
+			}
 		});
 		if (!again.ok) throw new Error('refused');
 		expect(again.report.people.map((p) => p.status)).toEqual(['imported', 'imported', 'existing']);
-		expect(again.report.alreadyThere).toEqual({ fields: 0, relationships: 3, memberships: 2 });
+		expect(again.report.alreadyThere).toEqual({
+			fields: 0,
+			relationships: 3,
+			memberships: 2,
+			residents: 0
+		});
 		expect(db.select().from(schema.contact).all()).toHaveLength(3);
 		expect(db.select().from(schema.activityLog).all()).toHaveLength(1);
 	});
@@ -383,6 +404,9 @@ describe('the import API adapter', () => {
 		const stale = {
 			contacts: [],
 			fields: [],
+			homes: [],
+			droppedFields: [],
+			residents: [],
 			relationships: [],
 			circles: [],
 			circleChanges: [],
@@ -402,7 +426,7 @@ describe('the import API adapter', () => {
 				people: [],
 				circles: [],
 				possibleDuplicates: [],
-				alreadyThere: { fields: 0, relationships: 0, memberships: 0 }
+				alreadyThere: { fields: 0, relationships: 0, memberships: 0, residents: 0 }
 			}
 		};
 		// … and added by hand before the plan was written.

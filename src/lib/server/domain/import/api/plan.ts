@@ -31,7 +31,9 @@ import {
 	type ApiContactField,
 	type ApiImportDocument
 } from './document';
+import type { NewHome } from '../../homes/homes';
 import { planCircles } from './plan-circles';
+import { planHomes } from './plan-homes';
 import { orNull } from './text';
 
 /*
@@ -65,7 +67,17 @@ export interface KnownField {
 	id: string;
 	kind: ContactFieldKind;
 	value: string;
+	label: string | null;
+	/** The address's parts as JSON, kept when the address becomes a home. */
+	meta: string | null;
 	sortOrder: number;
+}
+
+/** A home somebody the document names lives in. */
+export interface KnownHome {
+	id: string;
+	label: string | null;
+	value: string;
 }
 
 /** A circle the member may see, with its details and who is in it already. */
@@ -103,6 +115,8 @@ export interface ApiImportContext {
 	people: ReadonlyMap<string, KnownPerson>;
 	/** The contact fields of each person in `people`, so a document only adds what is missing. */
 	fieldsOf: ReadonlyMap<string, readonly KnownField[]>;
+	/** The homes each person in `people` lives in. */
+	homesOf: ReadonlyMap<string, readonly KnownHome[]>;
 	/** Of those ids, the ones taken by a record the member may not see. */
 	hiddenIds: ReadonlySet<string>;
 	/** Of the circle ids the document names or would create, those the member may see. */
@@ -136,7 +150,11 @@ export type ApiImportProblem =
 	| { code: 'relationshipExcluded'; path: string; reason: ExclusionReason; personId: string }
 	| { code: 'duplicateMember'; path: string; ref: string }
 	| { code: 'circleCycle'; path: string; ref: string }
-	| { code: 'periodBackwards'; path: string };
+	| { code: 'periodBackwards'; path: string }
+	| { code: 'homeSelf'; path: string; ref: string }
+	| { code: 'homeChain'; path: string; ref: string }
+	| { code: 'homeNoAddress'; path: string; ref: string }
+	| { code: 'homeAmbiguous'; path: string; ref: string };
 
 /**
  * Whether an entry is created by this document, was created by an earlier sending of it, or
@@ -164,8 +182,8 @@ export interface ApiImportReport {
 	}[];
 	/** New people whose name somebody in the household already has. */
 	possibleDuplicates: { ref: string; candidates: KnownPerson[] }[];
-	/** Fields, links and memberships left out because the household already has them. */
-	alreadyThere: { fields: number; relationships: number; memberships: number };
+	/** Fields, links, memberships and residents left out because the household already has them. */
+	alreadyThere: { fields: number; relationships: number; memberships: number; residents: number };
 }
 
 /** A parent as the report names it; one the member may not see is only said to be there. */
@@ -215,10 +233,24 @@ export interface PlannedMembership {
 	updatedAt: number;
 }
 
+/** Someone moving into a home. */
+export interface PlannedResident {
+	homeId: string;
+	contactId: string;
+	createdBy: string;
+	createdAt: number;
+}
+
 /** Every row the import writes, in the order it has to write them. */
 export interface ApiImportPlan {
 	contacts: NewContact[];
 	fields: NewContactField[];
+	/** Made of somebody's one address, after the fields so nothing else has to wait for them. */
+	homes: NewHome[];
+	/** Own addresses that became a home or give way to one, as on a person page. */
+	droppedFields: { contactId: string; fieldId: string }[];
+	/** Who moves into a home: after the homes and the new people. */
+	residents: PlannedResident[];
 	relationships: NewRelationship[];
 	circles: PlannedCircle[];
 	/** After the new circles, so a circle can move inside one this document creates. */
@@ -252,6 +284,7 @@ export function planApiImport(
 ): ApiImportPlanResult {
 	const problems: ApiImportProblem[] = [];
 	const people = planPeople(document, context, problems);
+	const homes = planHomes(document, context, people, problems);
 	const relationships = planRelationships(document, context, people.idByRef, problems);
 	const circles = planCircles(document, context, people.idByRef, problems);
 	if (problems.length > 0) return { ok: false, problems };
@@ -259,19 +292,23 @@ export function planApiImport(
 		ok: true,
 		plan: {
 			contacts: people.contacts,
-			fields: people.fields,
+			fields: homes.fields,
+			homes: homes.homes,
+			droppedFields: homes.droppedFields,
+			residents: homes.residents,
 			relationships: relationships.rows,
 			circles: circles.rows,
 			circleChanges: circles.circleChanges,
 			memberships: circles.memberships,
 			report: {
-				people: people.report,
+				people: homes.report,
 				circles: circles.report,
 				possibleDuplicates: possibleDuplicates(people.created, context),
 				alreadyThere: {
-					fields: people.fieldsAlreadyThere,
+					fields: people.fieldsAlreadyThere + homes.fieldsAlreadyThere,
 					relationships: relationships.alreadyThere,
-					memberships: circles.alreadyThere
+					memberships: circles.alreadyThere,
+					residents: homes.residentsAlreadyThere
 				}
 			}
 		}

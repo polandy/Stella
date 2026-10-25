@@ -30,6 +30,8 @@ const withCarl = (fields: KnownField[] = []) =>
 const known = (over: Partial<KnownField> & Pick<KnownField, 'id'>): KnownField => ({
 	kind: 'address',
 	value: 'Somewhere 1, 3000 Bern',
+	label: null,
+	meta: null,
 	sortOrder: 0,
 	...over
 });

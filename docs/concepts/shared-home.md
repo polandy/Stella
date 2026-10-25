@@ -1,6 +1,6 @@
 # Concept: a shared home address
 
-**Status:** agreed 2026-10-25 (§6); slice 1 built (§8), slice 2 open. Mockup: [`shared-home.html`](shared-home.html).
+**Status:** agreed 2026-10-25 (§6); slice 1 built (§8), slice 2 in progress (§9). Mockup: [`shared-home.html`](shared-home.html).
 
 ## 1. The problem
 
@@ -107,3 +107,11 @@ validation, and any home without a person in it.
   on each chip while picking — the picker stays the one every page uses.
 - ***Moved out* takes no new address;** *Add another address* gives them one.
 
+
+## 9. Slice 2 as built so far
+
+- **Import API:** `home: { with: <ref> }` names another entry of the document — a ref, like a
+  relationship's ends, not a bare person id; someone already in Stella gets one through
+  `existingId`. The holder needs exactly one address (a home, else one own address, which becomes
+  a home); two are refused, as is a holder who lives with somebody else in turn. Written up in
+  docs/02 §2.16.1.

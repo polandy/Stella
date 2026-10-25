@@ -61,6 +61,8 @@ const hasAName = (p: NameFields) =>
 	[p.displayName, p.firstName, p.lastName, p.nickname].some((name) => (name ?? '').trim() !== '');
 
 const fields = v.optional(v.pipe(v.array(field), v.maxLength(MAX_FIELDS_PER_PERSON)), []);
+/** Whom the person lives with, by ref; left out, they live wherever their fields say. */
+const home = v.optional(v.strictObject({ with: handle }));
 
 const newPerson = v.pipe(
 	v.strictObject({
@@ -71,7 +73,8 @@ const newPerson = v.pipe(
 		nickname: text,
 		description: text,
 		birthDate,
-		fields
+		fields,
+		home
 	}),
 	v.check(
 		(person) => hasAName(person),
@@ -79,7 +82,7 @@ const newPerson = v.pipe(
 	)
 );
 
-const existingPerson = v.strictObject({ ref: handle, existingId: recordId, fields });
+const existingPerson = v.strictObject({ ref: handle, existingId: recordId, fields, home });
 
 const membership = v.strictObject({
 	person: handle,

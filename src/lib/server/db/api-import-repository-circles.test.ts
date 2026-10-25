@@ -201,6 +201,9 @@ describe('changing circles through the import API', () => {
 			{
 				contacts: [],
 				fields: [],
+				homes: [],
+				droppedFields: [],
+				residents: [],
 				relationships: [],
 				circles: [],
 				circleChanges: [{ id: 'ci-private', set: { name: 'Mine now' }, updatedAt: NOW }],
@@ -209,7 +212,7 @@ describe('changing circles through the import API', () => {
 					people: [],
 					circles: [],
 					possibleDuplicates: [],
-					alreadyThere: { fields: 0, relationships: 0, memberships: 0 }
+					alreadyThere: { fields: 0, relationships: 0, memberships: 0, residents: 0 }
 				}
 			},
 			null
