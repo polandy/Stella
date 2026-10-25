@@ -7,6 +7,7 @@ import {
 	listCirclesForContact,
 	listRoleSuggestionsByCircleName
 } from '$lib/server/domain/circles/memberships';
+import { listHomesOf } from '$lib/server/domain/homes/homes';
 import { getContact } from '$lib/server/domain/contacts/contacts';
 import { shownNameIsChosen } from '$lib/people/display-name';
 import { readSurnameHelp } from '$lib/server/domain/contacts/last-names';
@@ -141,6 +142,8 @@ export const load = (async ({ locals, params, url }) => {
 		...birthdayOf(contact, read.dates),
 		dates: read.dates,
 		fields: read.fields.map(fieldView),
+		// The addresses they share with others, and whom with (docs/02 §2.2).
+		homes: read.homes,
 		tags: read.tags,
 		circles: read.contactCircles,
 
@@ -263,6 +266,7 @@ function readPersonPage(
 		// The person's own records.
 		dates: listImportantDates(records.importantDateDeps, viewer, contactId),
 		fields: listContactFields(records.contactFieldDeps, viewer, contactId),
+		homes: listHomesOf(records.homeListDeps, viewer, contactId),
 		tags: listTagsForContact(records.tagListDeps, viewer, contactId),
 		contactCircles: listCirclesForContact(circles.circleMembershipDeps, viewer, contactId),
 		storyPage: listStoryPage(story.storyDeps, viewer, contactId, { limit: STORY_PAGE_SIZE }),

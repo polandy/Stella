@@ -65,7 +65,9 @@ beforeEach(() => {
 		.values({ id: 'home-1', householdId: H, label: 'Home', value: 'Lindenweg 4', createdBy: U1 })
 		.run();
 	db.insert(schema.homeMember)
-		.values(['tim', 'anna', 'lena'].map((contactId) => ({ homeId: 'home-1', contactId, createdBy: U1 })))
+		.values(
+			['tim', 'anna', 'lena'].map((contactId) => ({ homeId: 'home-1', contactId, createdBy: U1 }))
+		)
 		.run();
 	db.insert(schema.contactField)
 		.values({ id: 'f-anna', contactId: 'anna', kind: 'address', label: 'Work', value: 'Seeweg 9' })
@@ -121,8 +123,22 @@ describe('HomeRepository', () => {
 
 	it('lists every address someone has, own fields and homes', async () => {
 		expect(await repo.addressesOf(['anna'])).toEqual([
-			{ contactId: 'anna', source: 'field', id: 'f-anna', label: 'Work', value: 'Seeweg 9', meta: null },
-			{ contactId: 'anna', source: 'home', id: 'home-1', label: 'Home', value: 'Lindenweg 4', meta: null }
+			{
+				contactId: 'anna',
+				source: 'field',
+				id: 'f-anna',
+				label: 'Work',
+				value: 'Seeweg 9',
+				meta: null
+			},
+			{
+				contactId: 'anna',
+				source: 'home',
+				id: 'home-1',
+				label: 'Home',
+				value: 'Lindenweg 4',
+				meta: null
+			}
 		]);
 	});
 

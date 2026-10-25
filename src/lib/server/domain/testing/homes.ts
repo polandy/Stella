@@ -11,7 +11,9 @@ import type { HeldAddress, HomeChange, HomeRepository, NewHome } from '../homes/
 export interface HomeWorld {
 	homes: NewHome[];
 	members: { homeId: string; contactId: string }[];
-	fields: Pick<NewContactField, 'id' | 'contactId' | 'kind' | 'label' | 'value' | 'meta'>[];
+	// Seeded with the columns that matter; what the change adds is held whole.
+	fields: (Pick<NewContactField, 'id' | 'contactId' | 'kind' | 'label' | 'value' | 'meta'> &
+		Partial<NewContactField>)[];
 }
 
 export function homeRepositoryWith(
@@ -45,7 +47,16 @@ export function homeRepositoryWith(
 				.flatMap((m) => {
 					const home = world.homes.find((h) => h.id === m.homeId);
 					return home
-						? [{ contactId: m.contactId, source: 'home' as const, id: home.id, label: home.label, value: home.value, meta: home.meta }]
+						? [
+								{
+									contactId: m.contactId,
+									source: 'home' as const,
+									id: home.id,
+									label: home.label,
+									value: home.value,
+									meta: home.meta
+								}
+							]
 						: [];
 				});
 			return [...own, ...homes];
@@ -57,7 +68,9 @@ export function homeRepositoryWith(
 				world.homes = world.homes.map((h) => (h.id === id ? { ...h, label, value } : h));
 			}
 			for (const drop of change.dropFields) {
-				world.fields = world.fields.filter((f) => !(f.id === drop.fieldId && f.contactId === drop.contactId));
+				world.fields = world.fields.filter(
+					(f) => !(f.id === drop.fieldId && f.contactId === drop.contactId)
+				);
 			}
 			world.fields.push(...change.addFields);
 			world.members.push(...change.join.map(({ homeId, contactId }) => ({ homeId, contactId })));

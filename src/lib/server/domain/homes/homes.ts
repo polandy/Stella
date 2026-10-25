@@ -72,7 +72,11 @@ export interface HomeChange {
 
 export interface HomeRepository {
 	/** The home, when `contactId` lives in it and the viewer may see `contactId`. */
-	findForMemberVisibleTo(viewer: Viewer, homeId: string, contactId: string): Promise<HomeState | null>;
+	findForMemberVisibleTo(
+		viewer: Viewer,
+		homeId: string,
+		contactId: string
+	): Promise<HomeState | null>;
 	/** Every address the given people have, own fields and homes; the caller checked they are seen. */
 	addressesOf(contactIds: readonly string[]): Promise<HeldAddress[]>;
 	apply(change: HomeChange): Promise<void>;
@@ -81,6 +85,10 @@ export interface HomeRepository {
 export interface HomeReads {
 	/** The homes someone the viewer may see lives in, oldest first. */
 	listForContactVisibleTo(viewer: Viewer, contactId: string): Promise<HomeOf[]>;
+}
+
+export interface HomeListDeps {
+	homeReads: HomeReads;
 }
 
 export interface HomeDeps {
@@ -163,9 +171,17 @@ export async function shareAddress(
 	let home: { id: string; value: string; memberIds: Set<string> };
 
 	if ('home' in input.address) {
-		const found = await deps.homes.findForMemberVisibleTo(viewer, input.address.home, input.contactId);
+		const found = await deps.homes.findForMemberVisibleTo(
+			viewer,
+			input.address.home,
+			input.contactId
+		);
 		if (!found) throw new HomeGoneError();
-		home = { id: found.id, value: found.value, memberIds: new Set(found.members.map((m) => m.contactId)) };
+		home = {
+			id: found.id,
+			value: found.value,
+			memberIds: new Set(found.members.map((m) => m.contactId))
+		};
 	} else {
 		const fieldId = input.address.field;
 		const [own] = (await deps.homes.addressesOf([input.contactId])).filter(
@@ -184,7 +200,12 @@ export async function shareAddress(
 			updatedAt: now
 		};
 		change.dropFields.push({ contactId: input.contactId, fieldId });
-		change.join.push({ homeId: id, contactId: input.contactId, createdBy: viewer.id, createdAt: now });
+		change.join.push({
+			homeId: id,
+			contactId: input.contactId,
+			createdBy: viewer.id,
+			createdAt: now
+		});
 		home = { id, value: own.value, memberIds: new Set([input.contactId]) };
 	}
 
@@ -304,7 +325,7 @@ export async function leaveHome(
 
 /** The homes someone lives in, as the viewer may see them. */
 export async function listHomesOf(
-	deps: { homeReads: HomeReads },
+	deps: HomeListDeps,
 	viewer: Viewer,
 	contactId: string
 ): Promise<HomeOf[]> {

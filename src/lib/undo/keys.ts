@@ -17,6 +17,8 @@ export const REMOVAL_KINDS = [
 	'gift',
 	'tag',
 	'membership',
+	/* Someone moving out of a shared home; its id is `home/contact`. */
+	'home-member',
 	'relationship',
 	'relationship-type',
 	/* A suggestion answered on a review screen; its id is the claim's, never the rule's. */

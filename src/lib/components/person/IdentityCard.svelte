@@ -31,6 +31,7 @@
 	import { isKept, type KeptOf } from '$lib/pwa/outbox';
 	import { outbox } from '$lib/pwa/outbox.svelte';
 	import { jobErrorFor, jobShortForm } from '$lib/people/job';
+	import { homesShown, oneLine } from '$lib/people/home';
 	import { tick, untrack, type Snippet } from 'svelte';
 	import type { IconName } from '$lib/components/ui/icons';
 	import AddressEditor from './AddressEditor.svelte';
@@ -39,6 +40,7 @@
 	import DatesEditor from './DatesEditor.svelte';
 	import JobEdit from './JobEdit.svelte';
 	import LastNameHelp from './LastNameHelp.svelte';
+	import LivesWith from './LivesWith.svelte';
 	import NameEditor from './NameEditor.svelte';
 	import RecordActions from './RecordActions.svelte';
 	import TagsRow from './TagsRow.svelte';
@@ -131,6 +133,8 @@
 	);
 	const otherDates = $derived(otherDateFacts(dates, today));
 	const addresses = $derived(addressLines(fields));
+	// The addresses they share with others (docs/02 §2.2), read beside their own.
+	const homes = $derived(homesShown(data.homes, c.id, removals.isPending));
 	/** "Teacher at Primarschule Muri" (docs/02 §2.2). */
 	const jobLine = $derived(jobShortForm(c, (parts) => t('contact.job.at', parts)));
 	/** The day it happened, for the marker's tooltip. */
@@ -170,7 +174,7 @@
 			{
 				birthday: birthday !== null,
 				otherDates: otherDates.length > 0,
-				address: addresses.length > 0,
+				address: addresses.length > 0 || homes.length > 0,
 				job: jobLine !== null,
 				lastContact: data.lastContactedAt !== null,
 				circles: circles.length > 0 || keptCircles.length > 0,
@@ -556,7 +560,12 @@
 						{#snippet addressValue()}
 							<!-- Lines broken inline rather than as blocks, so the pencil can follow the last. -->
 							{#each addresses as address, i (address.id)}{#if i > 0}<br
-									/>{/if}{address.line}{/each}
+									/>{/if}{address.line}{/each}{#each homes as home, i (home.id)}{#if i > 0 || addresses.length > 0}<br
+									/>{/if}<span data-home={home.id}
+									>{oneLine(home.value)}{#if home.livesWith.length > 0}<br /><LivesWith
+											housemates={home.livesWith}
+										/>{/if}</span
+								>{/each}
 						{/snippet}
 						{@render fact(t('contact.fieldKind.address'), 'home', 'address', addressValue, {
 							what: t('contact.facts.editAddress'),

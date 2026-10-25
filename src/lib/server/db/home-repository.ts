@@ -89,7 +89,9 @@ export function createDrizzleHomeRepository(db: BunSQLiteDatabase<typeof schema>
 				}
 				for (const drop of change.dropFields) {
 					tx.delete(contactField)
-						.where(and(eq(contactField.id, drop.fieldId), eq(contactField.contactId, drop.contactId)))
+						.where(
+							and(eq(contactField.id, drop.fieldId), eq(contactField.contactId, drop.contactId))
+						)
 						.run();
 				}
 				if (change.addFields.length > 0) tx.insert(contactField).values(change.addFields).run();

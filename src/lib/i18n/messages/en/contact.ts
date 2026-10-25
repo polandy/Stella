@@ -89,6 +89,27 @@ export const contact = {
 	'contact.address.removed': 'Address removed',
 	'contact.address.another': 'Add another address',
 
+	// A home shared by everyone who lives there (docs/02 §2.2, *A shared home*).
+	'contact.home.livesWith': (p: { names: string }) => `lives with ${p.names}`,
+	'contact.home.shared': (p: { count: number }) => `Shared · ${p.count} people`,
+	'contact.home.everyone': (p: { names: string }) => `Everyone here — ${p.names}`,
+	'contact.home.everyoneHint': 'They moved, or the line was wrong.',
+	'contact.home.only': (p: { name: string }) => `Only for ${p.name}`,
+	'contact.home.onlyHint': 'Moves them out and keeps the new line as their own address.',
+	'contact.home.changedFor': (p: { count: number }) =>
+		p.count === 1 ? 'Address changed' : `Address changed for ${p.count} people`,
+	'contact.home.movedOut': 'Moved out',
+	'contact.home.movedOutDone': (p: { name: string }) => `${p.name} moved out`,
+	'contact.home.moveOut': (p: { name: string }) => `Mark ${p.name} as moved out`,
+	'contact.home.shareWith': 'Share with …',
+	'contact.home.which': 'Which address',
+	'contact.home.who': 'Who lives there too',
+	'contact.home.share': 'Share',
+	'contact.home.decide': 'Some of them have an address of their own.',
+	'contact.home.has': (p: { name: string; line: string }) => `${p.name} has ${p.line}`,
+	'contact.home.replaceOwn': 'Replace their own address',
+	'contact.home.keepsOwn': 'Otherwise they keep it as a second address.',
+
 	'contact.section.dates': 'Dates',
 	'contact.dates.add': 'Add a date',
 	'contact.dates.another': 'Another date',

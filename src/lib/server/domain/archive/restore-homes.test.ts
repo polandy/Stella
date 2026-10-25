@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'bun:test';
 import type { Clock } from '../../clock';
 import type { IdGenerator } from '../../id';
+import type { HouseholdSnapshot } from './archive';
 import { buildArchiveDocument } from './document';
 import { planRestore, type RestoreTarget } from './restore';
 
@@ -26,8 +27,9 @@ const target: RestoreTarget = {
 	tags: []
 };
 
-const snapshot = {
+const snapshot: HouseholdSnapshot = {
 	householdName: 'Familie Brunner',
+	mediaPaths: [],
 	tables: {
 		contact: ['tim', 'anna'].map((id) => ({ id, display_name: id, created_by: 'u-1' })),
 		home: [

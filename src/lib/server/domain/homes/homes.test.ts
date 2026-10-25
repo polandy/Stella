@@ -1,16 +1,10 @@
 import { describe, expect, it } from 'bun:test';
 import type { Viewer } from '../../access/visibility';
-import type { Contact } from '../../db/schema';
+import type { Contact } from '../contacts/contacts';
 import { ContactGoneError } from '../contacts/require-visible';
 import { fixedClock, sequentialIds } from '../testing';
 import { homeRepositoryWith, type HomeWorld } from '../testing/homes';
-import {
-	changeHomeLine,
-	HomeGoneError,
-	leaveHome,
-	shareAddress,
-	type HomeDeps
-} from './homes';
+import { changeHomeLine, HomeGoneError, leaveHome, shareAddress, type HomeDeps } from './homes';
 
 /*
  * The shared home (docs/02 §2.2, *A shared home*): sharing an address, rewriting it for
@@ -22,10 +16,7 @@ const viewer: Viewer = { id: 'u-1', householdId: 'h-1' };
 const NOW = 1_000;
 
 function depsOver(world: Partial<HomeWorld>, seen: string[] = ['tim', 'anna', 'peter', 'ruth']) {
-	const homes = homeRepositoryWith(
-		{ homes: [], members: [], fields: [], ...world },
-		new Set(seen)
-	);
+	const homes = homeRepositoryWith({ homes: [], members: [], fields: [], ...world }, new Set(seen));
 	const deps: HomeDeps = {
 		homes,
 		contacts: {
@@ -111,10 +102,7 @@ describe('shareAddress', () => {
 		const { deps, world } = depsOver({
 			homes: [aHome('home-ruth', 'Seestrasse 1')],
 			members: livesIn('home-ruth', 'ruth'),
-			fields: [
-				address('f-tim', 'tim', 'Lindenweg 4'),
-				address('f-ruth', 'ruth', 'Dorfstrasse 12')
-			]
+			fields: [address('f-tim', 'tim', 'Lindenweg 4'), address('f-ruth', 'ruth', 'Dorfstrasse 12')]
 		});
 
 		const outcome = await shareAddress(deps, viewer, {
@@ -139,10 +127,7 @@ describe('shareAddress', () => {
 		const { deps, world } = depsOver({
 			homes: [aHome('home-ruth', 'Seestrasse 1')],
 			members: livesIn('home-ruth', 'ruth'),
-			fields: [
-				address('f-tim', 'tim', 'Lindenweg 4'),
-				address('f-ruth', 'ruth', 'Dorfstrasse 12')
-			]
+			fields: [address('f-tim', 'tim', 'Lindenweg 4'), address('f-ruth', 'ruth', 'Dorfstrasse 12')]
 		});
 
 		await shareAddress(deps, viewer, {
@@ -268,7 +253,10 @@ describe('changeHomeLine', () => {
 
 	it('leaves a member the viewer may not see on the old line, as their own address', async () => {
 		const { deps, world: after } = depsOver(
-			{ homes: [aHome('home-1', 'Lindenweg 4', 'Home')], members: livesIn('home-1', 'tim', 'anna', 'lena') },
+			{
+				homes: [aHome('home-1', 'Lindenweg 4', 'Home')],
+				members: livesIn('home-1', 'tim', 'anna', 'lena')
+			},
 			['tim', 'anna']
 		);
 

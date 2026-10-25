@@ -13,7 +13,10 @@
 	import { removalKey } from '$lib/undo/keys';
 	import { savedEnhance } from '$lib/undo/saved';
 	import { tick } from 'svelte';
+	import { homesShown, shareableAddresses } from '$lib/people/home';
 	import FactEditor from './FactEditor.svelte';
+	import HomeEditor from './HomeEditor.svelte';
+	import ShareHome from './ShareHome.svelte';
 	import { INPUT } from './inputs';
 	import type { PersonForm, PersonPageData } from './types';
 
@@ -22,6 +25,7 @@
 	 * label and the address itself, saved or removed in place, and a new one added here — the
 	 * *Contact* row no longer holds addresses. Editing is not kept on the phone like adding
 	 * (docs/02 §2.18), so Save waits for a connection; adding one is kept like any other field.
+	 * A home shared with others comes first, edited for everyone who lives there.
 	 */
 	let { data, form, onclose }: { data: PersonPageData; form: PersonForm; onclose: () => void } =
 		$props();
@@ -37,6 +41,8 @@
 			(field) => field.kind === 'address' && !removals.isPending(removalKey('field', field.id))
 		)
 	);
+	const homes = $derived(homesShown(data.homes, c.id, removals.isPending));
+	const housemateIds = $derived(homes.flatMap((home) => home.livesWith.map((mate) => mate.id)));
 	const keptAddresses = $derived(
 		outbox.mine.filter(
 			(item): item is KeptOf<'field.add'> =>
@@ -48,7 +54,9 @@
 	const offline = $derived(!reachability.reachable);
 
 	let adding = $state(false);
-	const addOpen = $derived(adding || (addresses.length === 0 && keptAddresses.length === 0));
+	const addOpen = $derived(
+		adding || (addresses.length === 0 && homes.length === 0 && keptAddresses.length === 0)
+	);
 	let addForm = $state<HTMLFormElement>();
 	async function startAdding() {
 		adding = true;
@@ -97,6 +105,9 @@
 			{/each}
 		</ul>
 	{/if}
+	{#each homes as home (home.id)}
+		<HomeEditor {home} person={c} {offline} {onclose} />
+	{/each}
 	{#each addresses as address (address.id)}
 		<div class="flex flex-col gap-2" data-address={address.id}>
 			<form
@@ -139,9 +150,18 @@
 			</div>
 		</div>
 	{/each}
-	{#if offline && addresses.length > 0}
+	{#if offline && (addresses.length > 0 || homes.length > 0)}
 		<p class="text-xs text-fg-muted">{t('surnames.offline')}</p>
 	{/if}
+
+	<ShareHome
+		{data}
+		{form}
+		addresses={shareableAddresses(addresses, homes)}
+		{housemateIds}
+		{offline}
+		{onclose}
+	/>
 
 	{#if addOpen}
 		<form
@@ -184,4 +204,5 @@
 		</div>
 	{/if}
 	<FormError message={form?.fieldError} variant="inline" />
+	<FormError message={form?.homeError} variant="inline" />
 </FactEditor>
