@@ -118,39 +118,34 @@
 <script>
 const ic = {
   plus: '<svg class="i" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>',
-  addPerson: '<svg class="i" viewBox="0 0 24 24"><circle cx="9" cy="8" r="4"/><path d="M2 21a7 7 0 0 1 14 0M19 8v6M16 11h6"/></svg>',
   x: '<svg class="i" viewBox="0 0 24 24" style="width:13px;height:13px"><path d="M6 6l12 12M18 6L6 18"/></svg>',
   out: '<svg class="i" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>',
 };
 const T = {
   de: {
-    title: 'Wo sitzt „Wohnt auch hier …“?', lede: 'Der Adress-Editor auf Markus’ Seite. Wähle oben eine Variante und die Ausgangslage, tippe auf den Knopf, wähle jemanden und „Hinzufügen“. Die Karte im Telefon ist echt klickbar.',
+    title: '„Wohnt auch hier“ – Variante B, ein Rahmen pro Anschrift', lede: 'Der Adress-Editor auf Markus’ Seite. Der Rahmen steht jetzt für eine Anschrift: alles, was zu ihr gehört, liegt darin – „Weitere Anschrift hinzufügen“ und „Abbrechen“ stehen darunter. Tippe auf „+“, wähle jemanden, „Hinzufügen“.',
     address: 'Anschrift', label: 'Bezeichnung (optional)', shared: n => `Geteilt · ${n} Personen`, movedOut: 'Ausgezogen', save: 'Speichern',
-    another: 'Weitere Anschrift hinzufügen', cancel: 'Abbrechen', remove: 'Anschrift entfernen', also: 'Wohnt auch hier …', alsoShort: 'Wohnt auch hier',
+    another: 'Weitere Anschrift hinzufügen', cancel: 'Abbrechen', remove: 'Anschrift entfernen', also: 'Wohnt auch hier …',
     who: 'Wer wohnt auch dort', search: 'Personen suchen …', add: 'Hinzufügen', family: 'Familie', others: 'Alle anderen',
     livesWith: n => `wohnt mit ${n} zusammen`, toast: n => `${n} wohnt jetzt hier`, and: ' und ', reset: 'Zurücksetzen',
-    start: { home: 'Schon geteilt', own: 'Nur eigene Anschrift' },
-    v: { A: 'A · Heute', B: 'B · „+“ hinter den Chips', C: 'C · Untere Zeile', D: 'D · Gestrichelter Chip' },
+    start: { home: 'Schon geteilt', own: 'Nur eigene Anschrift', two: 'Zwei Anschriften' },
+    v: { E: 'B · ein Rahmen pro Anschrift', B: 'B · ein Rahmen um alles (vorher)' },
     legend: {
-      A: ['So ist es gebaut', 'Ein Geister-Knopf mit Icon, zentriert, in einer eigenen Zeile zwischen der Adresse und „Weitere Anschrift hinzufügen“. Er gehört zu keinem Block — darum wirkt er verloren.'],
-      B: ['Wie beim „+“ der Kreise', 'Ein runder, gestrichelter „+“-Chip hinter den Mitbewohnern — genau wie „+ Kreis beitreten“ hinter den Kreis-Chips. Wer hier wohnt und wer dazukommt, steht an einer Stelle. Ohne Mitbewohner steht der „+“ allein unter der Adresse, beschriftet.'],
-      C: ['Bei den anderen Aktionen', 'Links in der unteren Zeile, über „Weitere Anschrift hinzufügen“ — dieselbe Art Knopf, dieselbe Ausrichtung. Ruhig und konsistent, aber weit weg von den Mitbewohnern.'],
-      D: ['Wie die leeren Fakten', 'Ein gestrichelter Chip mit Text am Ende der Mitbewohner-Chips — wie die gestrichelten Plätze „Anschrift · + Hinzufügen“ auf der Karte. Lesbarer als der runde „+“, nimmt aber mehr Platz.'],
+      E: ['Der Rahmen ist die Anschrift', 'Jede Anschrift hat ihren eigenen Rahmen mit Bezeichnung, Zeile, Mitbewohnern, „+“ und ihren Knöpfen. Was die ganze Liste betrifft – eine weitere hinzufügen, Abbrechen – steht ausserhalb. Bei zwei Anschriften sitzt „+“ in der, um die es geht; die Auswahl „welche Anschrift?“ fällt weg.'],
+      B: ['Zum Vergleich', 'Variante B wie im ersten Mockup: ein Rahmen um den ganzen Editor, „Weitere Anschrift hinzufügen“ mit drin.'],
     },
   },
   en: {
-    title: 'Where does “Also lives here …” go?', lede: 'The address editor on Markus’s page. Pick a variant and a starting point above, tap the button, pick someone and “Add”. The phone card is really clickable.',
+    title: '“Also lives here” – variant B, one frame per address', lede: 'The address editor on Markus’s page. The frame now stands for one address: everything that belongs to it is inside — “Add another address” and “Cancel” sit below. Tap “+”, pick someone, “Add”.',
     address: 'Address', label: 'Label (optional)', shared: n => `Shared · ${n} people`, movedOut: 'Moved out', save: 'Save',
-    another: 'Add another address', cancel: 'Cancel', remove: 'Remove address', also: 'Also lives here …', alsoShort: 'Also lives here',
+    another: 'Add another address', cancel: 'Cancel', remove: 'Remove address', also: 'Also lives here …',
     who: 'Who lives there too', search: 'Search people…', add: 'Add', family: 'Family', others: 'Everyone else',
     livesWith: n => `lives with ${n}`, toast: n => `${n} now lives here`, and: ' and ', reset: 'Reset',
-    start: { home: 'Already shared', own: 'Own address only' },
-    v: { A: 'A · Today', B: 'B · “+” after the chips', C: 'C · Bottom row', D: 'D · Dashed chip' },
+    start: { home: 'Already shared', own: 'Own address only', two: 'Two addresses' },
+    v: { E: 'B · one frame per address', B: 'B · one frame around all (before)' },
     legend: {
-      A: ['As built', 'A ghost button with an icon, centred, on a line of its own between the address and “Add another address”. It belongs to no block — so it looks lost.'],
-      B: ['Like the circles’ “+”', 'A round dashed “+” chip after the housemates — just like “+ Join a circle” after the circle chips. Who lives here and who joins sit in one place. With no housemates yet, the “+” stands under the address, labelled.'],
-      C: ['With the other actions', 'Left in the bottom row, above “Add another address” — the same kind of button, the same alignment. Calm and consistent, but far from the housemates.'],
-      D: ['Like the empty facts', 'A dashed chip with text at the end of the housemate chips — like the dashed “Address · + Add” slots on the card. Easier to read than the round “+”, but wider.'],
+      E: ['The frame is the address', 'Each address has its own frame with label, line, housemates, “+” and its buttons. What concerns the whole list — adding another, Cancel — sits outside. With two addresses, “+” sits in the one it is about; the “which address?” choice goes away.'],
+      B: ['For comparison', 'Variant B as in the first mockup: one frame around the whole editor, “Add another address” inside it.'],
     },
   },
 };
@@ -161,9 +156,13 @@ const PEOPLE = {
   beat: { name: 'Beat Steiner', ini: 'BS', fam: false },
 };
 const q = new URLSearchParams(location.search);
-const S = { v: q.get('v') || 'B', start: q.get('start') || 'home', lang: q.get('lang') || 'de', theme: q.get('theme') || 'latte' };
+const S = { v: q.get('v') || 'E', start: q.get('start') || 'home', lang: q.get('lang') || 'de', theme: q.get('theme') || 'latte' };
 let M;
-function reset() { M = { mates: S.start === 'home' ? ['sandra'] : [], picking: false, picks: [], query: '' }; }
+function reset() {
+  const home = { id: 'home', label: 'Zuhause', value: 'Spitalackerstrasse 22, 3013 Bern', mates: S.start === 'own' ? [] : ['sandra'] };
+  const work = { id: 'work', label: 'Ferienwohnung', value: 'Dorfstrasse 5, 3818 Grindelwald', mates: [] };
+  M = { addrs: S.start === 'two' ? [home, work] : [home], picking: null, picks: [], query: '' };
+}
 reset();
 const t = () => T[S.lang];
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
@@ -172,12 +171,11 @@ const list = names => names.length < 2 ? names.join('') : names.slice(0, -1).joi
 function seg(id, key, opts) {
   const el = document.getElementById(id);
   el.innerHTML = Object.entries(opts).map(([k, label]) => `<button aria-pressed="${S[key] === k}" data-k="${k}">${esc(label)}</button>`).join('');
-  el.onclick = e => { const b = e.target.closest('button'); if (!b) return; S[key] = b.dataset.k; if (key === 'start' || key === 'v') reset(); sync(); };
+  el.onclick = e => { const b = e.target.closest('button'); if (!b) return; S[key] = b.dataset.k; if (key !== 'lang' && key !== 'theme') reset(); sync(); };
 }
 
-function picker() {
-  if (!M.picking) return '';
-  const taken = new Set([...M.mates, ...M.picks]);
+function picker(a) {
+  const taken = new Set([...M.addrs.flatMap(x => x.mates), ...M.picks]);
   const match = id => PEOPLE[id].name.toLowerCase().includes(M.query.toLowerCase());
   const ids = Object.keys(PEOPLE).filter(id => !taken.has(id) && match(id));
   const fam = ids.filter(id => PEOPLE[id].fam), rest = ids.filter(id => !PEOPLE[id].fam);
@@ -191,40 +189,42 @@ function picker() {
   </div>`;
 }
 
-function render() {
-  const x = t(), v = S.v, hasHome = M.mates.length > 0;
-  const trigger = {
-    A: `<button class="btn center" data-act="open">${ic.addPerson}${x.also}</button>`,
-    B: `<button class="chip dashed ${hasHome ? 'plus-round' : ''}" data-act="open" aria-label="${x.also}" title="${x.also}">${ic.plus}${hasHome ? '' : x.also}</button>`,
-    C: `<button class="btn" data-act="open">${ic.addPerson}${x.also}</button>`,
-    D: `<button class="chip dashed" data-act="open">${ic.plus}${x.alsoShort}</button>`,
-  }[v];
-  const chips = M.mates.map(id => `<li class="chip">${esc(PEOPLE[id].name)}<button class="x" data-out="${id}" aria-label="${x.movedOut}">${ic.x}</button></li>`).join('');
-  const chipRow = (v === 'B' || v === 'D')
-    ? (hasHome || !M.picking ? `<ul class="chips">${chips}${M.picking ? '' : `<li>${trigger}</li>`}</ul>` : '')
-    : (hasHome ? `<ul class="chips">${chips}</ul>` : '');
-  const homeBlock = `
-    <div class="row"><input class="input label" value="Zuhause" aria-label="${x.label}" />${hasHome ? `<span class="muted">${x.shared(M.mates.length + 1)}</span>` : ''}</div>
-    <textarea class="input" rows="2">Spitalackerstrasse 22, 3013 Bern</textarea>
+function address(a) {
+  const x = t(), shared = a.mates.length > 0, picking = M.picking === a.id;
+  const trigger = `<button class="chip dashed ${shared ? 'plus-round' : ''}" data-open="${a.id}" aria-label="${x.also}" title="${x.also}">${ic.plus}${shared ? '' : x.also}</button>`;
+  const chips = a.mates.map(id => `<li class="chip">${esc(PEOPLE[id].name)}<button class="x" data-out="${a.id}:${id}" aria-label="${x.movedOut}">${ic.x}</button></li>`).join('');
+  const chipRow = shared || !picking ? `<ul class="chips">${chips}${picking ? '' : `<li>${trigger}</li>`}</ul>` : '';
+  return `
+    <div class="row"><input class="input label" value="${esc(a.label)}" aria-label="${x.label}" />${shared ? `<span class="muted">${x.shared(a.mates.length + 1)}</span>` : ''}</div>
+    <textarea class="input" rows="2">${esc(a.value)}</textarea>
     ${chipRow}
-    ${(v === 'B' || v === 'D') ? picker() : ''}
-    <div class="row">${hasHome
+    ${picking ? picker(a) : ''}
+    <div class="row">${shared
       ? `<button class="btn">${ic.out}${x.movedOut}</button>`
       : `<button class="btn" aria-label="${x.remove}" title="${x.remove}">${ic.x}</button>`}
       <button class="btn primary ml-auto">${x.save}</button></div>`;
-  const middle = v === 'A' ? (M.picking ? picker() : trigger) : '';
-  const bottom = v === 'C'
-    ? `${M.picking ? picker() : `<div class="row">${trigger}</div>`}
-       <div class="row"><button class="btn">${ic.plus}${x.another}</button><button class="btn ml-auto" data-act="done">${x.cancel}</button></div>`
-    : `<div class="row"><button class="btn">${ic.plus}${x.another}</button><button class="btn ml-auto" data-act="done">${x.cancel}</button></div>`;
-  return `<div class="editor">${homeBlock}${middle ? `<div class="sep"></div>${middle}` : ''}${v === 'C' ? '<div class="sep"></div>' : ''}${bottom}</div>
-    <div class="read muted" style="margin-top:10px">${hasHome ? x.livesWith(list(M.mates.map(id => PEOPLE[id].name))) : ''}</div>`;
+}
+
+function render() {
+  const x = t();
+  const actions = `<div class="row"><button class="btn">${ic.plus}${x.another}</button><button class="btn ml-auto">${x.cancel}</button></div>`;
+  const reading = M.addrs.filter(a => a.mates.length).map(a => `<div class="read muted">${esc(a.label)}: ${x.livesWith(list(a.mates.map(id => PEOPLE[id].name)))}</div>`).join('');
+  const body = S.v === 'E'
+    ? `<div style="display:flex;flex-direction:column;gap:10px">${M.addrs.map(a => `<div class="editor">${address(a)}</div>`).join('')}${actions}</div>`
+    : `<div class="editor">${M.addrs.map(address).join('<div class="sep"></div>')}${actions}</div>`;
+  return `${body}<div style="margin-top:10px">${reading}</div>`;
 }
 
 function toast(text) {
   const el = document.getElementById('toast');
   el.textContent = text; el.classList.add('on');
   clearTimeout(toast.h); toast.h = setTimeout(() => el.classList.remove('on'), 2600);
+}
+
+function draw() {
+  document.getElementById('fact').innerHTML = render();
+  const qi = document.getElementById('q');
+  if (qi) qi.oninput = e => { M.query = e.target.value; const pos = e.target.selectionStart; draw(); const n = document.getElementById('q'); n.focus(); n.setSelectionRange(pos, pos); };
 }
 
 function sync() {
@@ -237,22 +237,23 @@ function sync() {
   seg('seg-theme', 'theme', { latte: 'Latte', mocha: 'Mocha' });
   const [head, body] = t().legend[S.v];
   document.getElementById('legend').innerHTML = `<span class="tag">${esc(t().v[S.v])}</span><p><b>${esc(head)}</b></p><p>${esc(body)}</p><p><button class="btn" data-act="reset" style="padding-left:0">↺ ${t().reset}</button></p>`;
-  document.getElementById('fact').innerHTML = render();
-  const qi = document.getElementById('q');
-  if (qi) { qi.oninput = e => { M.query = e.target.value; const pos = e.target.selectionStart; draw(); const n = document.getElementById('q'); n.focus(); n.setSelectionRange(pos, pos); }; }
+  draw();
   history.replaceState(null, '', '?' + new URLSearchParams(S));
 }
-function draw() { document.getElementById('fact').innerHTML = render(); const qi = document.getElementById('q'); if (qi) qi.oninput = e => { M.query = e.target.value; const pos = e.target.selectionStart; draw(); const n = document.getElementById('q'); n.focus(); n.setSelectionRange(pos, pos); }; }
 
 document.addEventListener('click', e => {
   const b = e.target.closest('button'); if (!b) return;
-  if (b.dataset.act === 'open') { M.picking = true; M.picks = []; M.query = ''; draw(); document.getElementById('q')?.focus(); }
-  else if (b.dataset.act === 'close') { M.picking = false; draw(); }
-  else if (b.dataset.act === 'add') { const names = list(M.picks.map(id => PEOPLE[id].name)); M.mates.push(...M.picks); M.picking = false; M.picks = []; draw(); toast(t().toast(names)); }
+  if (b.dataset.open) { M.picking = b.dataset.open; M.picks = []; M.query = ''; draw(); document.getElementById('q')?.focus(); }
+  else if (b.dataset.act === 'close') { M.picking = null; draw(); }
+  else if (b.dataset.act === 'add') {
+    const names = list(M.picks.map(id => PEOPLE[id].name));
+    M.addrs.find(a => a.id === M.picking).mates.push(...M.picks);
+    M.picking = null; M.picks = []; draw(); toast(t().toast(names));
+  }
   else if (b.dataset.act === 'reset') { reset(); draw(); }
   else if (b.dataset.pick) { M.picks.push(b.dataset.pick); M.query = ''; draw(); document.getElementById('q')?.focus(); }
   else if (b.dataset.unpick) { M.picks = M.picks.filter(id => id !== b.dataset.unpick); draw(); }
-  else if (b.dataset.out) { M.mates = M.mates.filter(id => id !== b.dataset.out); draw(); }
+  else if (b.dataset.out) { const [aid, id] = b.dataset.out.split(':'); const a = M.addrs.find(x => x.id === aid); a.mates = a.mates.filter(m => m !== id); draw(); }
 });
 sync();
 </script>
