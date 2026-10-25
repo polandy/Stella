@@ -35,6 +35,10 @@ export interface ApiImportCounts {
 	relationships: number;
 	circles: number;
 	memberships: number;
+	/** Homes made of somebody's one address. */
+	homes: number;
+	/** People moved into a home, those whose address became it included. */
+	residents: number;
 }
 
 /** How many records already in Stella were changed (or, in a dry run, would be). */
@@ -104,7 +108,9 @@ const countsOf = (plan: ApiImportPlan): ApiImportCounts => ({
 	fields: plan.fields.length,
 	relationships: plan.relationships.length,
 	circles: plan.circles.length,
-	memberships: plan.memberships.length
+	memberships: plan.memberships.length,
+	homes: plan.homes.length,
+	residents: plan.residents.length
 });
 
 const isEmpty = (counts: ApiImportCounts) => Object.values(counts).every((n) => n === 0);
@@ -131,6 +137,7 @@ export async function importViaApi(
 	const { plan } = planned;
 
 	const wouldAdd = countsOf(plan);
+	const movedIn = new Set(plan.residents.map((r) => r.contactId));
 	const wouldChange: ApiImportChanges = { circles: plan.circleChanges.length };
 	if (options.dryRun) {
 		return { ok: true, dryRun: true, added: wouldAdd, changed: wouldChange, report: plan.report };
@@ -146,8 +153,9 @@ export async function importViaApi(
 					{
 						kind: 'people.imported',
 						people: plan.contacts.length,
+						// An address given as a home completes someone as much as one given as a field.
 						completed: plan.report.people.filter(
-							(p) => p.status === 'existing' && p.fieldsAdded > 0
+							(p) => p.status === 'existing' && (p.fieldsAdded > 0 || movedIn.has(p.id))
 						).length,
 						circlesChanged: wouldChange.circles,
 						source: document.source,

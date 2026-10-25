@@ -32,6 +32,7 @@ export function context(over: Partial<ApiImportContext> = {}): ApiImportContext 
 		locale: 'en',
 		people: new Map(),
 		fieldsOf: new Map(),
+		homesOf: new Map(),
 		hiddenIds: new Set(),
 		circles: new Map(),
 		circleParents: new Map(),

@@ -1,0 +1,431 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Shared home – slice 2 (interactive mockup)</title>
+<style>
+  /* Catppuccin tokens as src/app.css maps them (Latte / Mocha). */
+  :root, :root[data-theme='latte'] {
+    --bg:#e6e9ef; --bg-sunken:#dce0e8; --card:#ffffff; --border:#ccd0da; --border-subtle:#e7e9f0;
+    --fg:#4c4f69; --fg-muted:#5c5f77; --fg-subtle:#6c6f85; --primary:#853ae8; --primary-fg:#ffffff;
+    --input:#eff1f5; --page:#eff1f5; --toast-bg:#ffffff; --toast-fg:#4c4f69; --link:#1e66f5; --danger:#d20f39;
+    --shadow-card:0 1px 2px rgba(76,79,105,.07), 0 2px 8px rgba(76,79,105,.06);
+    --av1:#d3e2fb; --av2:#f5dcdc; --av3:#d9f0d3; --av4:#f7e7c6;
+  }
+  :root[data-theme='mocha'] {
+    --bg:#181825; --bg-sunken:#11111b; --card:#232334; --border:#313244; --border-subtle:#292939;
+    --fg:#cdd6f4; --fg-muted:#bac2de; --fg-subtle:#a6adc8; --primary:#cba6f7; --primary-fg:#1e1e2e;
+    --input:#1e1e2e; --page:#1e1e2e; --toast-bg:#313244; --toast-fg:#cdd6f4; --link:#89b4fa; --danger:#f38ba8;
+    --shadow-card:0 1px 2px rgba(0,0,0,.3); --av1:#2f3a55; --av2:#4a2f3a; --av3:#2f4a35; --av4:#4a422f;
+  }
+  :root { --primary-soft:color-mix(in srgb, var(--primary) 14%, transparent);
+    --sans:'Instrument Sans',ui-sans-serif,system-ui,-apple-system,'Segoe UI',Roboto,sans-serif; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--page); color:var(--fg); font-family:var(--sans); line-height:1.5; -webkit-font-smoothing:antialiased; }
+  button, input, select { font:inherit; color:inherit; }
+  :focus-visible { outline:2px solid var(--primary); outline-offset:2px; }
+  svg.i { width:16px; height:16px; fill:none; stroke:currentColor; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; flex:none; }
+  svg.i.s12 { width:12px; height:12px; } svg.i.s14 { width:14px; height:14px; } svg.i.s18 { width:18px; height:18px; } svg.i.s28 { width:28px; height:28px; }
+
+  .wrap { margin:0 auto; padding:24px 16px 80px; max-width:1100px; }
+  .kicker { font-size:12px; font-weight:600; letter-spacing:.14em; text-transform:uppercase; color:var(--primary); }
+  h1.t { font-size:24px; font-weight:650; margin:4px 0 6px; }
+  .lede { color:var(--fg-muted); margin:0 0 16px; max-width:80ch; }
+  .controls { display:flex; flex-wrap:wrap; gap:10px 16px; align-items:center; margin-bottom:16px; }
+  .seg { display:flex; flex-wrap:wrap; gap:3px; background:var(--bg-sunken); border-radius:18px; padding:3px; }
+  .seg button { border:0; background:transparent; padding:6px 12px; border-radius:999px; font-size:13px; color:var(--fg-muted); cursor:pointer; }
+  .seg button[aria-pressed='true'] { background:var(--card); color:var(--fg); font-weight:600; box-shadow:var(--shadow-card); }
+  .seg[hidden] { display:none; }
+  .stage { display:flex; flex-wrap:wrap; gap:28px; align-items:flex-start; }
+  .legend { flex:1; min-width:260px; max-width:440px; background:var(--card); box-shadow:var(--shadow-card); border-radius:14px; padding:14px 16px; font-size:14px; color:var(--fg-muted); }
+  .legend b { color:var(--fg); } .legend p { margin:0 0 8px; } .legend ul { margin:0 0 8px; padding-left:18px; }
+  .legend .tag { display:inline-block; font-size:11px; font-weight:600; letter-spacing:.08em; text-transform:uppercase; color:var(--primary); margin-bottom:4px; }
+
+  .device { padding:10px; background:#0b0b12; border-radius:46px; box-shadow:0 20px 60px rgba(0,0,0,.25); flex:none; max-width:100%; }
+  .screen { width:392px; max-width:calc(100vw - 52px); height:820px; border-radius:36px; overflow:hidden; position:relative; background:var(--bg); display:flex; flex-direction:column; }
+  .scroller { flex:1; overflow-y:auto; padding:18px 12px 130px; scrollbar-width:none; }
+  .card { background:var(--card); border-radius:18px; padding:16px; box-shadow:var(--shadow-card); margin-bottom:12px; }
+  .who { display:flex; gap:14px; align-items:center; }
+  .avatar { width:56px; height:56px; border-radius:16px; background:var(--av2); display:grid; place-items:center; font-weight:700; font-size:20px; }
+  .who h2 { margin:0; font-size:22px; font-weight:650; line-height:1.15; }
+  .muted { font-size:13px; color:var(--fg-muted); } .subtle { font-size:12px; color:var(--fg-subtle); }
+  .sechead { font-size:15px; font-weight:600; margin:0 0 10px; display:flex; align-items:center; gap:6px; }
+  .fact { display:flex; gap:8px; align-items:flex-start; font-size:14px; }
+
+  .form { display:flex; flex-direction:column; gap:10px; border-top:1px solid var(--border-subtle); padding-top:12px; margin-top:8px; }
+  .lab { display:flex; flex-direction:column; gap:4px; font-size:14px; }
+  .lab > span { color:var(--fg-muted); }
+  .inp { background:var(--input); border:1px solid var(--border); border-radius:8px; padding:6px 10px; width:100%; font-size:14px; }
+  .pick { display:flex; flex-wrap:wrap; gap:6px; align-items:center; background:var(--input); border:1px solid var(--border); border-radius:8px; padding:4px 6px; min-height:36px; }
+  .pick input { border:0; background:transparent; flex:1; min-width:80px; outline:none; font-size:14px; }
+  .chip { display:inline-flex; align-items:center; gap:6px; border:1px solid var(--border); background:var(--card); border-radius:999px; padding:1px 4px 1px 2px; font-size:13px; }
+  .chip .x { border:0; background:transparent; width:20px; height:20px; border-radius:50%; display:grid; place-items:center; color:var(--fg-muted); cursor:pointer; }
+  .mini { width:22px; height:22px; border-radius:50%; background:var(--av1); display:grid; place-items:center; font-size:10px; font-weight:600; flex:none; }
+  .mini.b { background:var(--av3); } .mini.c { background:var(--av4); } .mini.d { background:var(--av2); }
+  .panel { border:1px solid var(--border); border-radius:12px; background:var(--card); box-shadow:0 8px 24px rgba(0,0,0,.12); padding:12px; display:flex; flex-direction:column; gap:10px; }
+  .grid2 { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+  .lab.xs { font-size:12px; }
+  .vis { display:flex; gap:6px; }
+  .vis button { display:inline-flex; align-items:center; gap:4px; border:1px solid var(--border); border-radius:999px; padding:3px 10px; font-size:12px; color:var(--fg-muted); background:transparent; cursor:pointer; }
+  .vis button[aria-pressed='true'] { border-color:var(--primary); background:var(--primary-soft); color:var(--fg); }
+  .row { display:flex; flex-wrap:wrap; align-items:center; gap:8px; }
+  .end { justify-content:flex-end; }
+  .btn { display:inline-flex; align-items:center; gap:6px; border:1px solid var(--border); background:var(--card); border-radius:8px; padding:5px 12px; font-size:14px; cursor:pointer; color:var(--fg); }
+  .btn.ghost { border-color:transparent; background:transparent; }
+  .btn.ghost:hover { background:var(--bg-sunken); }
+  .btn.primary { background:var(--primary); border-color:var(--primary); color:var(--primary-fg); font-weight:600; }
+  .btn.sm { padding:4px 10px; font-size:13px; }
+  .btn.full { width:100%; justify-content:center; }
+
+  /* The offer: a ticked box, like the second-parent offer's dashed frame. */
+  .offer { display:flex; gap:10px; align-items:flex-start; border:1px dashed var(--primary); border-radius:8px; padding:8px 10px; font-size:14px; cursor:pointer; }
+  .offer.inpanel { border-style:solid; border-color:var(--border-subtle); background:var(--bg-sunken); }
+  .offer input { width:18px; height:18px; margin:2px 0 0; accent-color:var(--primary); flex:none; }
+  .offer .who2 { display:flex; align-items:center; gap:4px; margin-top:4px; }
+  .offer .who2 .mini { margin-left:-6px; border:2px solid var(--card); } .offer .who2 .mini:first-child { margin-left:0; }
+
+  /* Data-quality page */
+  .back { display:flex; align-items:center; gap:4px; font-size:13px; color:var(--link); text-decoration:none; }
+  h1.p { font-size:22px; font-weight:650; margin:4px 0 4px; }
+  .empty { display:flex; flex-direction:column; align-items:center; text-align:center; gap:8px; padding:28px 16px; border:1px dashed var(--border); border-radius:16px; }
+  .empty .ico { width:52px; height:52px; border-radius:50%; background:var(--primary-soft); color:var(--primary); display:grid; place-items:center; }
+  .group { background:var(--card); border-radius:16px; box-shadow:var(--shadow-card); padding:12px 14px; margin-bottom:10px; display:flex; flex-direction:column; gap:8px; transition:opacity .2s; }
+  .group .addr { display:flex; gap:8px; align-items:flex-start; font-weight:600; font-size:15px; }
+  .group .addr .subtle { font-weight:400; }
+  .people { list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:4px; }
+  .people li { display:flex; align-items:center; gap:8px; font-size:14px; }
+  .people li .line { margin-left:auto; font-size:12px; color:var(--fg-subtle); max-width:48%; text-align:right; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .homebadge { display:inline-flex; align-items:center; gap:4px; font-size:11px; font-weight:600; color:var(--primary); background:var(--primary-soft); border-radius:999px; padding:1px 8px; }
+  .drawer { margin-top:14px; font-size:13px; color:var(--fg-muted); }
+  .drawer summary { cursor:pointer; }
+  .drawer li { display:flex; gap:8px; align-items:center; padding:4px 0; }
+  .qcard { display:flex; align-items:center; gap:12px; background:var(--card); border-radius:14px; box-shadow:var(--shadow-card); padding:12px; margin-bottom:8px; cursor:pointer; }
+  .qcard .ic { width:36px; height:36px; border-radius:50%; background:var(--primary-soft); color:var(--primary); display:grid; place-items:center; flex:none; }
+  .count { border-radius:999px; background:var(--primary-soft); color:var(--primary); font-size:12px; font-weight:600; padding:1px 8px; }
+
+  .toast { position:absolute; left:16px; right:16px; bottom:92px; background:var(--toast-bg); color:var(--toast-fg); border:1px solid var(--border); border-radius:12px; padding:10px 14px; box-shadow:0 8px 24px rgba(0,0,0,.15); font-size:14px; display:none; align-items:center; gap:10px; }
+  .toast.on { display:flex; }
+  .toast button { margin-left:auto; border:0; background:transparent; color:var(--link); font-weight:600; cursor:pointer; }
+  .tabbar { position:absolute; inset:auto 0 0 0; display:flex; border-top:1px solid var(--border-subtle); background:var(--card); padding:10px 0 16px; justify-content:space-around; font-size:11px; color:var(--fg-subtle); }
+  .tabbar .on { color:var(--primary); font-weight:600; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="kicker">Stella · shared home · slice 2</div>
+  <h1 class="t" data-t="title"></h1>
+  <p class="lede" data-t="lede"></p>
+
+  <div class="controls">
+    <div class="seg" id="seg-view"></div>
+    <div class="seg" id="seg-v"></div>
+    <div class="seg" id="seg-lang"></div>
+    <div class="seg" id="seg-theme"></div>
+    <button class="btn sm" id="reset"></button>
+  </div>
+
+  <div class="stage">
+    <div class="device"><div class="screen">
+      <div class="scroller" id="screen"></div>
+      <div class="toast" id="toast"><span id="toast-text"></span><button id="toast-undo"></button></div>
+      <div class="tabbar" id="tabbar"></div>
+    </div></div>
+    <div class="legend" id="legend"></div>
+  </div>
+</div>
+
+<script>
+const ic = {
+  home: '<svg class="i" viewBox="0 0 24 24"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"/></svg>',
+  x: '<svg class="i s12" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>',
+  back: '<svg class="i s12" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg>',
+  search: '<svg class="i" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6"/><path d="M20 20l-4.5-4.5"/></svg>',
+  people: '<svg class="i" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0M16 4.5a3.5 3.5 0 0 1 0 7M18 14.5a6.5 6.5 0 0 1 3.5 5.5"/></svg>',
+  shared: '<svg class="i s12" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0"/></svg>',
+  private: '<svg class="i s12" viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>',
+  fwd: '<svg class="i s14" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg>',
+  tidy: '<svg class="i s18" viewBox="0 0 24 24"><path d="M4 7h16M4 12h10M4 17h6"/></svg>',
+  rename: '<svg class="i s18" viewBox="0 0 24 24"><path d="M4 20h4l10-10-4-4L4 16z"/></svg>'
+};
+
+const T = {
+  en: {
+    title: 'Shared home — slice 2: new people and the Same address check',
+    lede: 'Two screens to choose from before building. Tap through: add a child to Anna, or run the check under Settings → Data quality. The switch on top picks where the "Lives at" box sits.',
+    views: ['Add a child', 'Same address check', 'Settings'],
+    variants: ['A · In the create panel', 'B · Under the picker'],
+    reset: 'Start over',
+    tabs: ['Home', 'People', 'Circles', 'Map'],
+    desc: 'Mother of Tim',
+    addressHead: 'Address', homeWith: 'Lives here with Peter and Tim',
+    relHead: 'Relationships',
+    isOf: 'Anna is …', parent: 'parent of', partner: 'partner of', person: 'Person',
+    search: 'Search or create someone…', createTitle: 'New person', first: 'First name', last: 'Last name',
+    description: 'Something to know them by', more: 'More', shared: 'Shared', private: 'Private',
+    cancel: 'Cancel', create: 'Create', add: 'Add',
+    howConnect: 'How they know each other (optional)',
+    livesAt: 'Lives at Lindenweg 4, 8800 Thalwil', livesWith: 'with Anna, Peter and Tim',
+    livesAtPartner: 'Lives at Lindenweg 4, 8800 Thalwil', livesWithPartner: 'with Anna, Peter and Tim',
+    newChip: 'Mia Brunner',
+    savedHome: 'Saved — Mia lives at Lindenweg 4 with Anna, Peter and Tim.', savedNoHome: 'Saved.', undo: 'Undo',
+    qHeading: 'Data quality', qSame: 'Same address', qSameBlurb: 'People who live at the same address but are not one home yet',
+    qRel: 'Relationships to check', qRelBlurb: 'Who might be family', qLast: 'Last names', qLastBlurb: '3 people without one',
+    qFirst: 'Known by a first name only', qFirstBlurb: 'Give them something to know them by',
+    settings: 'Settings',
+    intro: 'People whose own address lines say the same, after spelling is ignored. One home keeps one address for all of them — a move changes it once.',
+    idle: 'Nothing checked yet', idleHint: 'The check compares everyone’s address lines. It changes nothing by itself.',
+    check: 'Check addresses', open: (n) => `${n} open`,
+    makeHome: 'Make one home', notSame: 'Not the same', joinHome: 'Join the home',
+    homeOf: (names) => `Home of ${names}`, ownLine: 'own line',
+    joinWhy: (name) => `${name} has this address as an own line`,
+    done: 'All checked', doneHint: 'Every address that says the same is one home now, or marked as not the same.',
+    madeHome: (names) => `${names} live at one home now.`, joined: (name) => `${name} joined the home.`,
+    kept: 'Marked as not the same — the check won’t ask again.',
+    declined: (n) => `Not the same (${n})`, askAgain: 'Ask again',
+    legend: {
+      add: `<span class="tag">Adding a child or partner</span>
+        <p>On Anna’s page, <b>Relationships → parent of → create “Mia”</b>. Anna lives in a home, so the new person is offered the same address — <b>ticked by default</b>, because a new child or partner almost always lives there.</p>
+        <ul><li>Only for a <b>new</b> person: someone already in Stella may live elsewhere; their page has <i>Also lives here …</i> for that.</li>
+        <li>Only <b>child</b> and <b>partner</b>, and only when the subject has exactly one home.</li>
+        <li>Unticking it simply creates Mia without an address.</li></ul>`,
+      A: `<p><b>A — inside the create panel.</b> The box belongs to the new person: it sits with name and visibility and applies on <b>Create</b>. Visible only for child/partner; other places that create people never show it.</p>`,
+      B: `<p><b>B — under the picker</b>, like the existing <i>second parent</i> offer. Mia is created first as a chip; the dashed box applies on <b>Add</b>, together with the link. Keeps the create panel the same everywhere.</p><p><b>Recommendation: B</b> — it follows a pattern the form already has, and the address is decided together with the relationship it comes from.</p>`,
+      quality: `<span class="tag">Settings → Data quality → Same address</span>
+        <p>Runs only when asked (<b>Check addresses</b>), like the relationship check. It groups people whose <b>own</b> address lines are equal after folding (case, spaces, punctuation).</p>
+        <ul><li><b>Make one home</b> — their equal lines become one home; they all live in it. Undo in the toast.</li>
+        <li><b>Join the home</b> — when one of them already lives in a home with that address, the others move in and their own line goes.</li>
+        <li><b>Not the same</b> — remembered for that group; listed in the drawer at the bottom with <i>Ask again</i>.</li></ul>
+        <p>The settings card shows the open count once a check has run.</p>`
+    }
+  },
+  de: {
+    title: 'Gemeinsames Zuhause — Teil 2: neue Personen und die Prüfung «Gleiche Adresse»',
+    lede: 'Zwei Screens zur Auswahl vor dem Bauen. Durchklicken: Anna ein Kind hinzufügen oder die Prüfung unter Einstellungen → Datenqualität laufen lassen. Der Schalter oben wählt, wo das Kästchen «Wohnt an» sitzt.',
+    views: ['Kind hinzufügen', 'Prüfung Gleiche Adresse', 'Einstellungen'],
+    variants: ['A · Im Neu-Panel', 'B · Unter der Auswahl'],
+    reset: 'Neu starten',
+    tabs: ['Start', 'Personen', 'Kreise', 'Karte'],
+    desc: 'Mutter von Tim',
+    addressHead: 'Adresse', homeWith: 'Wohnt hier mit Peter und Tim',
+    relHead: 'Beziehungen',
+    isOf: 'Anna ist …', parent: 'Elternteil von', partner: 'Partnerin von', person: 'Person',
+    search: 'Suchen oder neu erfassen…', createTitle: 'Neue Person', first: 'Vorname', last: 'Nachname',
+    description: 'Woran man sie erkennt', more: 'Mehr', shared: 'Geteilt', private: 'Privat',
+    cancel: 'Abbrechen', create: 'Erfassen', add: 'Hinzufügen',
+    howConnect: 'Woher sie sich kennen (optional)',
+    livesAt: 'Wohnt an der Lindenweg 4, 8800 Thalwil', livesWith: 'mit Anna, Peter und Tim',
+    livesAtPartner: 'Wohnt an der Lindenweg 4, 8800 Thalwil', livesWithPartner: 'mit Anna, Peter und Tim',
+    newChip: 'Mia Brunner',
+    savedHome: 'Gespeichert — Mia wohnt an der Lindenweg 4 mit Anna, Peter und Tim.', savedNoHome: 'Gespeichert.', undo: 'Rückgängig',
+    qHeading: 'Datenqualität', qSame: 'Gleiche Adresse', qSameBlurb: 'Wer an derselben Adresse wohnt, aber noch kein gemeinsames Zuhause hat',
+    qRel: 'Beziehungen prüfen', qRelBlurb: 'Wer zur Familie gehören könnte', qLast: 'Nachnamen', qLastBlurb: '3 Personen ohne',
+    qFirst: 'Nur mit Vornamen bekannt', qFirstBlurb: 'Etwas angeben, woran man sie erkennt',
+    settings: 'Einstellungen',
+    intro: 'Personen, deren eigene Adresszeilen dasselbe sagen, Schreibweise ausgenommen. Ein Zuhause hält eine Adresse für alle — ein Umzug ändert sie einmal.',
+    idle: 'Noch nichts geprüft', idleHint: 'Die Prüfung vergleicht die Adresszeilen aller. Von sich aus ändert sie nichts.',
+    check: 'Adressen prüfen', open: (n) => `${n} offen`,
+    makeHome: 'Ein Zuhause machen', notSame: 'Nicht dieselbe', joinHome: 'Einziehen',
+    homeOf: (names) => `Zuhause von ${names}`, ownLine: 'eigene Zeile',
+    joinWhy: (name) => `${name} hat diese Adresse als eigene Zeile`,
+    done: 'Alles geprüft', doneHint: 'Jede gleiche Adresse ist jetzt ein Zuhause oder als nicht dieselbe markiert.',
+    madeHome: (names) => `${names} wohnen jetzt in einem Zuhause.`, joined: (name) => `${name} ist eingezogen.`,
+    kept: 'Als nicht dieselbe markiert — die Prüfung fragt nicht mehr.',
+    declined: (n) => `Nicht dieselbe (${n})`, askAgain: 'Wieder fragen',
+    legend: {
+      add: `<span class="tag">Kind oder Partner:in hinzufügen</span>
+        <p>Auf Annas Seite <b>Beziehungen → Elternteil von → «Mia» neu erfassen</b>. Anna wohnt in einem Zuhause, also wird die Adresse angeboten — <b>vorausgewählt</b>, weil ein neues Kind oder eine neue Partnerin fast immer dort wohnt.</p>
+        <ul><li>Nur für <b>neue</b> Personen: wer schon in Stella ist, wohnt vielleicht woanders; dafür gibt es auf der Seite <i>Wohnt auch hier …</i>.</li>
+        <li>Nur bei <b>Kind</b> und <b>Partner:in</b>, und nur wenn die Person genau ein Zuhause hat.</li>
+        <li>Abgewählt wird Mia einfach ohne Adresse erfasst.</li></ul>`,
+      A: `<p><b>A — im Neu-Panel.</b> Das Kästchen gehört zur neuen Person: es steht bei Name und Sichtbarkeit und gilt mit <b>Erfassen</b>. Nur bei Kind/Partner:in sichtbar; andere Orte, die Personen erfassen, zeigen es nie.</p>`,
+      B: `<p><b>B — unter der Auswahl</b>, wie das bestehende Angebot <i>zweiter Elternteil</i>. Mia wird zuerst als Chip erfasst; der gestrichelte Kasten gilt mit <b>Hinzufügen</b>, zusammen mit der Beziehung. Das Neu-Panel bleibt überall gleich.</p><p><b>Empfehlung: B</b> — folgt einem Muster, das das Formular schon hat, und die Adresse wird zusammen mit der Beziehung entschieden, aus der sie kommt.</p>`,
+      quality: `<span class="tag">Einstellungen → Datenqualität → Gleiche Adresse</span>
+        <p>Läuft nur auf Wunsch (<b>Adressen prüfen</b>), wie die Beziehungsprüfung. Sie gruppiert Personen, deren <b>eigene</b> Adresszeilen nach dem Falten gleich sind (Gross/klein, Leerzeichen, Satzzeichen).</p>
+        <ul><li><b>Ein Zuhause machen</b> — die gleichen Zeilen werden ein Zuhause; alle wohnen darin. Rückgängig im Toast.</li>
+        <li><b>Einziehen</b> — wohnt jemand schon in einem Zuhause mit dieser Adresse, ziehen die anderen ein und ihre eigene Zeile verschwindet.</li>
+        <li><b>Nicht dieselbe</b> — für diese Gruppe gemerkt; unten in der Schublade mit <i>Wieder fragen</i>.</li></ul>
+        <p>Die Karte in den Einstellungen zeigt die offene Zahl, sobald einmal geprüft wurde.</p>`
+    }
+  }
+};
+
+const GROUPS = [
+  { id: 'g1', kind: 'make', addr: 'Seestrasse 12, 8002 Zürich', people: [
+      ['LW', 'Lea Widmer', 'Seestrasse 12, 8002 Zürich', ''], ['RW', 'Reto Widmer', 'seestrasse 12 · 8002 zürich', 'b']] },
+  { id: 'g2', kind: 'join', addr: 'Lindenweg 4, 8800 Thalwil', holders: 'Anna, Peter', people: [
+      ['JB', 'Jonas Brunner', 'Lindenweg 4, 8800 Thalwil', 'c']] },
+  { id: 'g3', kind: 'make', addr: 'Dorfstrasse 3, 6300 Zug', people: [
+      ['MS', 'Marco Steiner', 'Dorfstrasse 3, 6300 Zug', 'd'], ['CS', 'Clara Steiner', 'Dorfstrasse 3, 6300 Zug', ''], ['NS', 'Nina Steiner', 'Dorfstr. 3, 6300 Zug', 'b']] }
+];
+
+const state = { view: 'add', v: 'B', lang: 'en', theme: 'latte', step: 'form', ticked: true, checked: false, resolved: {}, declined: [] };
+let toastTimer = null; let undoFn = null;
+const L = () => T[state.lang];
+
+function seg(id, items, key, values) {
+  const el = document.getElementById(id);
+  el.innerHTML = items.map((label, i) => `<button aria-pressed="${state[key] === values[i]}" data-v="${values[i]}">${label}</button>`).join('');
+  el.querySelectorAll('button').forEach((b) => b.onclick = () => { state[key] = b.dataset.v; render(); });
+}
+
+function toast(text, undo) {
+  const t = document.getElementById('toast');
+  document.getElementById('toast-text').textContent = text;
+  const u = document.getElementById('toast-undo'); u.textContent = L().undo; u.style.display = undo ? '' : 'none';
+  undoFn = undo; t.classList.add('on'); clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('on'), 5000);
+}
+document.getElementById('toast-undo').onclick = () => { document.getElementById('toast').classList.remove('on'); if (undoFn) { undoFn(); render(); } };
+
+function offer(inPanel) {
+  const l = L();
+  return `<label class="offer ${inPanel ? 'inpanel' : ''}" data-testid="lives-at-offer">
+    <input type="checkbox" id="lives" ${state.ticked ? 'checked' : ''} />
+    <span><span style="display:flex;gap:6px;align-items:center">${ic.home}<b style="font-weight:600">${l.livesAt}</b></span>
+      <span class="who2"><span class="mini d">AB</span><span class="mini">PB</span><span class="mini b">TB</span><span class="subtle" style="margin-left:6px">${l.livesWith}</span></span></span>
+  </label>`;
+}
+
+function addView() {
+  const l = L();
+  const created = state.step !== 'form' && state.step !== 'panel';
+  let picker;
+  if (state.step === 'panel') {
+    picker = `<div class="pick"><input value="Mia" /></div>
+      <div class="panel">
+        <div style="font-weight:600;font-size:14px">${l.createTitle}</div>
+        <div class="grid2"><label class="lab xs"><span>${l.first}</span><input class="inp" value="Mia" /></label>
+          <label class="lab xs"><span>${l.last}</span><input class="inp" value="Brunner" /></label></div>
+        <label class="lab xs"><span>${l.description}</span><input class="inp" placeholder="…" /></label>
+        <div class="subtle">▸ ${l.more}</div>
+        ${state.v === 'A' ? offer(true) : ''}
+        <div class="vis"><button aria-pressed="true">${ic.shared} ${l.shared}</button><button aria-pressed="false">${ic.private} ${l.private}</button></div>
+        <div class="row end"><button class="btn ghost sm" id="cancel">${l.cancel}</button><button class="btn primary sm" id="create">${l.create}</button></div>
+      </div>`;
+  } else if (created) {
+    picker = `<div class="pick"><span class="chip"><span class="mini c">MB</span>${l.newChip}<button class="x" id="unpick">${ic.x}</button></span><input placeholder="" /></div>
+      ${state.v === 'B' && state.step === 'chip' ? offer(false) : ''}`;
+  } else {
+    picker = `<div class="pick"><input id="search" placeholder="${l.search}" /></div>`;
+  }
+  const saved = state.step === 'saved';
+  return `
+    <div class="card"><div class="who"><div class="avatar">AB</div><div><h2>Anna Brunner</h2><div class="muted">${l.desc}</div></div></div></div>
+    <div class="card"><div class="sechead">${ic.home} ${l.addressHead}</div>
+      <div class="fact"><div><div>Lindenweg 4, 8800 Thalwil</div><div class="subtle">${saved && state.homeTaken ? l.homeWith.replace(/Tim/, 'Tim, Mia').replace(/ und Tim/, ', Tim und Mia').replace(/ and Tim/, ', Tim and Mia') : l.homeWith}</div></div></div></div>
+    <div class="card"><div class="sechead">${ic.people} ${l.relHead}</div>
+      <div class="muted">${l.parent} <b>Tim Brunner</b>${saved ? ', <b>Mia Brunner</b>' : ''} · ${l.partner} <b>Peter Brunner</b></div>
+      ${saved ? '' : `<div class="form">
+        <label class="lab"><span>${l.isOf}</span><select class="inp"><option>${l.parent}</option><option>${l.partner}</option></select></label>
+        <div class="lab"><span>${l.person}</span>${picker}</div>
+        ${state.step === 'panel' ? '' : `<label class="lab"><span>${l.howConnect}</span><input class="inp" /></label>
+        <button class="btn primary full" id="add" ${created ? '' : 'disabled style="opacity:.45"'}>${l.add}</button>`}
+      </div>`}
+    </div>`;
+}
+
+function qualityView() {
+  const l = L();
+  const open = GROUPS.filter((g) => !state.resolved[g.id]);
+  let body;
+  if (!state.checked) {
+    body = `<div class="empty"><div class="ico">${ic.home.replace('class="i"', 'class="i s28"')}</div>
+      <div style="font-weight:600">${l.idle}</div><div class="muted">${l.idleHint}</div>
+      <button class="btn primary" id="check">${ic.search} ${l.check}</button></div>`;
+  } else if (open.length === 0) {
+    body = `<div class="empty"><div class="ico">${ic.home.replace('class="i"', 'class="i s28"')}</div>
+      <div style="font-weight:600">${l.done}</div><div class="muted">${l.doneHint}</div></div>`;
+  } else {
+    body = `<p class="muted" role="status" style="margin:0 0 8px">${l.open(open.length)}</p>` + open.map((g) => {
+      const rows = g.people.map(([ini, name, line, c]) => `<li><span class="mini ${c}">${ini}</span>${name}<span class="line" title="${line}">${line}</span></li>`).join('');
+      const join = g.kind === 'join';
+      return `<section class="group" data-g="${g.id}">
+        <div class="addr">${ic.home}<div>${g.addr}${join ? `<div><span class="homebadge">${ic.home.replace('class="i"', 'class="i s12"')} ${l.homeOf(g.holders)}</span></div>` : ''}</div></div>
+        <ul class="people">${rows}</ul>
+        ${join ? `<div class="subtle">${l.joinWhy(g.people[0][1])}</div>` : ''}
+        <div class="row end"><button class="btn ghost sm" data-no="${g.id}">${l.notSame}</button>
+          <button class="btn primary sm" data-yes="${g.id}">${join ? l.joinHome : l.makeHome}</button></div>
+      </section>`;
+    }).join('');
+  }
+  const drawer = state.declined.length ? `<details class="drawer"><summary>${l.declined(state.declined.length)}</summary><ul style="list-style:none;padding:0;margin:6px 0 0">${
+    state.declined.map((id) => { const g = GROUPS.find((x) => x.id === id); return `<li>${ic.home}<span>${g.addr}</span><button class="btn ghost sm" style="margin-left:auto" data-again="${id}">${l.askAgain}</button></li>`; }).join('')}</ul></details>` : '';
+  return `<a class="back" href="#" id="toSettings">${ic.back}${l.settings}</a>
+    <h1 class="p">${l.qSame}</h1><p class="muted" style="margin:0 0 14px">${l.intro}</p>${body}${drawer}`;
+}
+
+function settingsView() {
+  const l = L();
+  const open = GROUPS.filter((g) => !state.resolved[g.id]).length;
+  const card = (icon, title, blurb, extra = '', id = '') => `<div class="qcard" ${id ? `id="${id}"` : ''}><span class="ic">${icon}</span><span style="flex:1;min-width:0"><b style="font-weight:600;display:block">${title}</b><span class="muted">${blurb}</span></span>${extra}${ic.fwd}</div>`;
+  return `<h1 class="p">${l.settings}</h1><div class="muted" style="font-weight:500;margin:12px 0 8px">${l.qHeading}</div>
+    ${card(ic.search.replace('class="i"', 'class="i s18"'), l.qRel, l.qRelBlurb)}
+    ${card(ic.home.replace('class="i"', 'class="i s18"'), l.qSame, l.qSameBlurb, state.checked && open ? `<span class="count">${open}</span>` : '', 'toQuality')}
+    ${card(ic.rename, l.qLast, l.qLastBlurb)}
+    ${card(ic.tidy, l.qFirst, l.qFirstBlurb)}`;
+}
+
+function wire() {
+  const $ = (id) => document.getElementById(id);
+  const on = (id, fn) => { const el = $(id); if (el) el.onclick = (e) => { e.preventDefault(); fn(); render(); }; };
+  if ($('search')) $('search').onfocus = () => { state.step = 'panel'; render(); };
+  on('cancel', () => state.step = 'form');
+  on('create', () => { state.homeTaken = state.v === 'A' ? state.ticked : undefined; state.step = 'chip'; });
+  on('unpick', () => state.step = 'form');
+  on('add', () => {
+    if (state.v === 'B') state.homeTaken = state.ticked;
+    state.step = 'saved';
+    toast(state.homeTaken ? L().savedHome : L().savedNoHome, () => { state.step = 'chip'; });
+  });
+  if ($('lives')) $('lives').onchange = (e) => { state.ticked = e.target.checked; };
+  on('check', () => state.checked = true);
+  on('toSettings', () => state.view = 'settings');
+  on('toQuality', () => state.view = 'quality');
+  document.querySelectorAll('[data-yes]').forEach((b) => b.onclick = () => {
+    const g = GROUPS.find((x) => x.id === b.dataset.yes); state.resolved[g.id] = 'yes';
+    const names = g.people.map((p) => p[1].split(' ')[0]).join(', ');
+    toast(g.kind === 'join' ? L().joined(g.people[0][1]) : L().madeHome(names), () => { delete state.resolved[g.id]; });
+    render();
+  });
+  document.querySelectorAll('[data-no]').forEach((b) => b.onclick = () => {
+    const id = b.dataset.no; state.resolved[id] = 'no'; state.declined.push(id);
+    toast(L().kept, () => { delete state.resolved[id]; state.declined = state.declined.filter((x) => x !== id); });
+    render();
+  });
+  document.querySelectorAll('[data-again]').forEach((b) => b.onclick = () => {
+    const id = b.dataset.again; delete state.resolved[id]; state.declined = state.declined.filter((x) => x !== id); render();
+  });
+}
+
+function render() {
+  const l = L();
+  document.documentElement.dataset.theme = state.theme;
+  document.documentElement.lang = state.lang;
+  document.querySelectorAll('[data-t]').forEach((el) => el.textContent = l[el.dataset.t]);
+  seg('seg-view', l.views, 'view', ['add', 'quality', 'settings']);
+  seg('seg-v', l.variants, 'v', ['A', 'B']);
+  document.getElementById('seg-v').hidden = state.view !== 'add';
+  seg('seg-lang', ['English', 'Deutsch'], 'lang', ['en', 'de']);
+  seg('seg-theme', ['Latte', 'Mocha'], 'theme', ['latte', 'mocha']);
+  document.getElementById('reset').textContent = l.reset;
+  const screen = document.getElementById('screen');
+  screen.innerHTML = state.view === 'add' ? addView() : state.view === 'quality' ? qualityView() : settingsView();
+  const tab = state.view === 'add' ? 1 : -1;
+  document.getElementById('tabbar').innerHTML = l.tabs.map((x, i) => `<span class="${i === tab ? 'on' : ''}">${x}</span>`).join('');
+  document.getElementById('legend').innerHTML = state.view === 'add' ? l.legend.add + l.legend[state.v] : l.legend.quality;
+  wire();
+}
+document.getElementById('reset').onclick = () => {
+  Object.assign(state, { step: 'form', ticked: true, checked: false, resolved: {}, declined: [], homeTaken: undefined });
+  render();
+};
+
+// ?view=add&v=A&step=panel&lang=de&theme=mocha — for the screenshots.
+const q = new URLSearchParams(location.search);
+for (const k of ['view', 'v', 'lang', 'theme', 'step']) if (q.get(k)) state[k] = q.get(k);
+if (q.get('checked')) state.checked = true;
+render();
+</script>
+</body>
+</html>

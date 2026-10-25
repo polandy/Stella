@@ -27,6 +27,7 @@ const NOW = 1_700_000_000_000;
 const EMPTY_READING: HouseholdReading = {
 	people: new Map(),
 	fieldsOf: new Map(),
+	homesOf: new Map(),
 	hiddenIds: new Set(),
 	circles: new Map(),
 	circleParents: new Map(),
@@ -54,7 +55,9 @@ function fakeRepository(inserted?: ApiImportCounts, reading = EMPTY_READING) {
 					fields: plan.fields.length,
 					relationships: plan.relationships.length,
 					circles: plan.circles.length,
-					memberships: plan.memberships.length
+					memberships: plan.memberships.length,
+					homes: plan.homes.length,
+					residents: plan.residents.length
 				},
 				changed: { circles: plan.circleChanges.length }
 			};
@@ -117,7 +120,15 @@ describe('importViaApi', () => {
 		expect(result).toMatchObject({
 			ok: true,
 			dryRun: true,
-			added: { people: 2, fields: 0, relationships: 1, circles: 0, memberships: 0 }
+			added: {
+				people: 2,
+				fields: 0,
+				relationships: 1,
+				circles: 0,
+				memberships: 0,
+				homes: 0,
+				residents: 0
+			}
 		});
 	});
 
@@ -127,7 +138,9 @@ describe('importViaApi', () => {
 			fields: 0,
 			relationships: 1,
 			circles: 0,
-			memberships: 0
+			memberships: 0,
+			homes: 0,
+			residents: 0
 		});
 		const result = await importViaApi(deps(repository), ACTOR, document, {
 			dryRun: false,
@@ -180,6 +193,37 @@ describe('importViaApi', () => {
 			{ dryRun: false, locale: 'en' }
 		);
 		expect(calls.applied).toEqual([{ plan: expect.anything(), audit: null }]);
+	});
+
+	it('logs moving someone already in Stella into a home as completing them', async () => {
+		const known = (id: string) => ({ id, displayName: id, birthDate: null });
+		const lindenweg = { id: 'h-1', label: null, value: 'Lindenweg 4' };
+		const { repository, calls } = fakeRepository(undefined, {
+			...EMPTY_READING,
+			people: new Map([
+				['c-anna', known('c-anna')],
+				['c-tim', known('c-tim')]
+			]),
+			homesOf: new Map([['c-anna', [lindenweg]]])
+		});
+		const result = await importViaApi(
+			deps(repository),
+			ACTOR,
+			{
+				...document,
+				people: [
+					{ ref: 'anna', existingId: 'c-anna', fields: [] },
+					{ ref: 'tim', existingId: 'c-tim', fields: [], home: { with: 'anna' } }
+				],
+				relationships: []
+			},
+			{ dryRun: false, locale: 'en' }
+		);
+		expect(calls.applied[0].plan.residents).toEqual([
+			{ homeId: 'h-1', contactId: 'c-tim', createdBy: 'user-1', createdAt: NOW }
+		]);
+		expect(calls.applied[0].audit?.event).toMatchObject({ people: 0, completed: 1 });
+		expect(result).toMatchObject({ ok: true, added: { homes: 0, residents: 1 } });
 	});
 
 	describe('changing a circle already in Stella', () => {

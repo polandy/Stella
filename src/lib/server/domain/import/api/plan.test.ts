@@ -290,7 +290,12 @@ describe('relationships', () => {
 			})
 		);
 		expect(plan.relationships).toEqual([]);
-		expect(plan.report.alreadyThere).toEqual({ fields: 0, relationships: 1, memberships: 0 });
+		expect(plan.report.alreadyThere).toEqual({
+			fields: 0,
+			relationships: 1,
+			memberships: 0,
+			residents: 0
+		});
 	});
 
 	it('names every link it cannot store, and stores none of them', () => {
@@ -578,7 +583,12 @@ describe('circles', () => {
 		expect(plan.memberships.map((m) => [m.circleId, m.contactId])).toEqual([
 			['ci-kg', idOf('anna')]
 		]);
-		expect(plan.report.alreadyThere).toEqual({ fields: 0, relationships: 0, memberships: 1 });
+		expect(plan.report.alreadyThere).toEqual({
+			fields: 0,
+			relationships: 0,
+			memberships: 1,
+			residents: 0
+		});
 		expect(plan.report.circles).toEqual([
 			{ ref: 'kg', id: 'ci-kg', name: 'Kindergarten', status: 'existing', changes: {} }
 		]);

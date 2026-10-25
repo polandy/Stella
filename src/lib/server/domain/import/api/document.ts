@@ -21,6 +21,14 @@ export interface ApiContactField {
 	label: string | null;
 }
 
+/**
+ * Living with somebody else the document names, by their ref: in place of typing their address
+ * again, the person moves into their home (docs/02 §2.2, *A shared home*).
+ */
+export interface ApiHome {
+	with: string;
+}
+
 /** A person the document introduces. */
 export interface ApiNewPerson {
 	ref: string;
@@ -32,6 +40,7 @@ export interface ApiNewPerson {
 	/** `YYYY-MM-DD`, or `--MM-DD` when the year is unknown. */
 	birthDate: string | null;
 	fields: ApiContactField[];
+	home?: ApiHome;
 }
 
 /**
@@ -43,6 +52,7 @@ export interface ApiExistingPerson {
 	ref: string;
 	existingId: string;
 	fields: ApiContactField[];
+	home?: ApiHome;
 }
 
 export type ApiPerson = ApiNewPerson | ApiExistingPerson;
@@ -140,6 +150,9 @@ export const fieldIdFor = (source: string, ref: string, index: number) =>
 
 /** The stable id of a circle the document introduces. */
 export const circleIdFor = (source: string, ref: string) => idOf(source, 'c', ref);
+
+/** The stable id of the home a document makes of somebody's one address. */
+export const homeIdFor = (source: string, ref: string) => idOf(source, 'h', ref);
 
 /** The stable id of a membership, one per person and circle. */
 export const membershipIdFor = (source: string, circleRef: string, personRef: string) =>

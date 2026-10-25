@@ -149,6 +149,35 @@ describe('readApiImportDocument', () => {
 		});
 	});
 
+	it('reads whom a new or existing person lives with', () => {
+		const document = read({
+			source: 'kg',
+			people: [
+				person,
+				{ ref: 'tim', firstName: 'Tim', home: { with: 'anna' } },
+				{ ref: 'leo', existingId: 'c-leo', home: { with: 'anna' } }
+			]
+		});
+		expect(document.people.map((p) => p.home)).toEqual([
+			undefined,
+			{ with: 'anna' },
+			{ with: 'anna' }
+		]);
+	});
+
+	it('refuses a home that is not a ref to live with', () => {
+		expect(
+			problems({
+				source: 'kg',
+				people: [
+					{ ...person, home: { with: 'a b' } },
+					{ ...person, ref: 'tim', home: { with: 'anna', address: 'Lindenweg 4' } },
+					{ ...person, ref: 'mia', home: 'anna' }
+				]
+			})
+		).toEqual(['people[0].home.with', 'people[1].home.address', 'people[2].home']);
+	});
+
 	it('refuses a field kind it does not know on someone already there', () => {
 		expect(
 			problems({

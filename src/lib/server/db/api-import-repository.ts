@@ -18,7 +18,7 @@ import type {
 	ApiImportWritten,
 	HouseholdReading
 } from '../domain/import/api/api-import';
-import type { ApiImportPlan, KnownField, KnownPerson } from '../domain/import/api/plan';
+import type { ApiImportPlan, KnownField, KnownHome, KnownPerson } from '../domain/import/api/plan';
 import { loadKinshipGraph } from './kinship-graph-read';
 import type * as schema from './schema';
 import {
@@ -27,6 +27,8 @@ import {
 	circleMembership,
 	contact,
 	contactField,
+	home,
+	homeMember,
 	relationship,
 	relationshipType
 } from './schema';
@@ -83,6 +85,8 @@ export function createDrizzleApiImportRepository(
 						id: contactField.id,
 						kind: contactField.kind,
 						value: contactField.value,
+						label: contactField.label,
+						meta: contactField.meta,
 						sortOrder: contactField.sortOrder
 					})
 					.from(contactField)
@@ -92,6 +96,24 @@ export function createDrizzleApiImportRepository(
 			const fieldsOf = new Map<string, KnownField[]>();
 			for (const { contactId, ...field } of fieldRows) {
 				fieldsOf.set(contactId, [...(fieldsOf.get(contactId) ?? []), field]);
+			}
+			// A home is reached only through a member the member may see: these people are.
+			const homeRows = inBatches([...people.keys()], (batch) =>
+				db
+					.select({
+						contactId: homeMember.contactId,
+						id: home.id,
+						label: home.label,
+						value: home.value
+					})
+					.from(homeMember)
+					.innerJoin(home, eq(home.id, homeMember.homeId))
+					.where(inArray(homeMember.contactId, batch))
+					.all()
+			);
+			const homesOf = new Map<string, KnownHome[]>();
+			for (const { contactId, ...lived } of homeRows) {
+				homesOf.set(contactId, [...(homesOf.get(contactId) ?? []), lived]);
 			}
 			const takenContacts = inBatches(ids.contactIds, (batch) =>
 				db.select({ id: contact.id }).from(contact).where(inArray(contact.id, batch)).all()
@@ -223,6 +245,7 @@ export function createDrizzleApiImportRepository(
 			return {
 				people,
 				fieldsOf,
+				homesOf,
 				hiddenIds,
 				circles,
 				circleParents,
@@ -255,6 +278,30 @@ export function createDrizzleApiImportRepository(
 							.values(row)
 							.onConflictDoNothing()
 							.returning({ id: contactField.id })
+							.all()
+					);
+				}
+				let homes = 0;
+				for (const row of plan.homes) {
+					homes += written(
+						tx.insert(home).values(row).onConflictDoNothing().returning({ id: home.id }).all()
+					);
+				}
+				for (const drop of plan.droppedFields) {
+					tx.delete(contactField)
+						.where(
+							and(eq(contactField.id, drop.fieldId), eq(contactField.contactId, drop.contactId))
+						)
+						.run();
+				}
+				let residents = 0;
+				for (const row of plan.residents) {
+					residents += written(
+						tx
+							.insert(homeMember)
+							.values(row)
+							.onConflictDoNothing()
+							.returning({ homeId: homeMember.homeId })
 							.all()
 					);
 				}
@@ -314,7 +361,7 @@ export function createDrizzleApiImportRepository(
 				}
 				if (audit) tx.insert(activityLog).values(localizedActivityEntry(audit, wording)).run();
 				return {
-					added: { people, fields, relationships, circles, memberships },
+					added: { people, fields, relationships, circles, memberships, homes, residents },
 					changed: { circles: circlesChanged }
 				};
 			});
