@@ -73,6 +73,50 @@ export const contactField = sqliteTable(
 	(t) => [index('contact_field_contact_idx').on(t.contactId)]
 );
 
+/*
+ * One address shared by everyone who lives there (docs/03 §3.3). It has no visibility of its
+ * own: it is only ever reached through a member the viewer may see, and it goes with its last
+ * member.
+ */
+export const home = sqliteTable(
+	'home',
+	{
+		id: text('id').primaryKey(),
+		householdId: text('household_id')
+			.notNull()
+			.references(() => household.id, { onDelete: 'cascade' }),
+		label: text('label'),
+		value: text('value').notNull(),
+		meta: text('meta'), // JSON, as on a contact field
+		createdBy: text('created_by')
+			.notNull()
+			.references(() => user.id),
+		createdAt: integer('created_at').notNull().default(now),
+		updatedAt: integer('updated_at').notNull().default(now)
+	},
+	(t) => [index('home_household_idx').on(t.householdId)]
+);
+
+export const homeMember = sqliteTable(
+	'home_member',
+	{
+		homeId: text('home_id')
+			.notNull()
+			.references(() => home.id, { onDelete: 'cascade' }),
+		contactId: text('contact_id')
+			.notNull()
+			.references(() => contact.id, { onDelete: 'cascade' }),
+		createdBy: text('created_by')
+			.notNull()
+			.references(() => user.id),
+		createdAt: integer('created_at').notNull().default(now)
+	},
+	(t) => [
+		primaryKey({ columns: [t.homeId, t.contactId] }),
+		index('home_member_contact_idx').on(t.contactId)
+	]
+);
+
 export const importantDate = sqliteTable(
 	'important_date',
 	{

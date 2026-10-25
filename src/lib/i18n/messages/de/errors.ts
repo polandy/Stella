@@ -110,6 +110,7 @@ export const errors: ErrorsMessages = {
 	'errors.notSignedIn': 'Nicht angemeldet',
 	'errors.person.notFound': 'Diese Person war nicht zu finden.',
 	'errors.contact.notFound': 'Kontakt nicht gefunden',
+	'errors.home.notFound': 'Diese Adresse hat sich inzwischen geändert. Bitte schau nochmals nach.',
 	'errors.merge.choose': 'Wähle, wer zusammengeführt werden soll.',
 	'errors.merge.failed': 'Diese Person konnte nicht zusammengeführt werden.',
 	'errors.relationship.needPersonAndType': 'Bitte wähle eine Person und eine Beziehungsart.',

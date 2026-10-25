@@ -113,6 +113,7 @@ export const errors = {
 	'errors.notSignedIn': 'Not signed in',
 	'errors.person.notFound': 'That person could not be found.',
 	'errors.contact.notFound': 'Contact not found',
+	'errors.home.notFound': 'That address has changed in the meantime. Please look again.',
 	'errors.merge.choose': 'Choose who to merge in.',
 	'errors.merge.failed': 'That person could not be merged in.',
 	'errors.relationship.needPersonAndType': 'Please choose a person and a relationship type.',

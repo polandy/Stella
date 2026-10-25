@@ -40,6 +40,8 @@ export const EXPORTED_TABLES: readonly Scoped[] = [
 	{ table: 'relationship_type', where: 't.household_id = ?' },
 	{ table: 'contact', where: 't.household_id = ?' },
 	{ table: 'contact_field', where: viaContact() },
+	{ table: 'home', where: 't.household_id = ?' },
+	{ table: 'home_member', where: viaContact() },
 	{ table: 'relationship', where: 't.household_id = ?' },
 	{ table: 'note', where: viaContact() },
 	{

@@ -83,6 +83,9 @@ export type RestoreWarning =
 	| { code: 'circleWithoutName' }
 	| { code: 'circleMissingParent'; name: string }
 	| { code: 'circleMemberMissing'; name: string }
+	/** A shared address without its line, or with nobody of the archive living there. */
+	| { code: 'homeIncomplete' }
+	| { code: 'homeMembersMissing' }
 	| { code: 'relationshipTypeWithoutName' }
 	| { code: 'relationshipMissingEnd' }
 	| { code: 'relationshipsMissingPeople' }
@@ -627,6 +630,40 @@ export function planRestore(
 		}
 	}
 
+	// ── Shared homes ──────────────────────────────────────────────────────
+	// A home is only ever reached through who lives there (docs/03 §3.3): one with nobody of
+	// this archive in it would be an address nobody could see or remove, so it is left out.
+	const homes: Row[] = [];
+	const homeMembers: Row[] = [];
+	for (const home of records(document, 'homes')) {
+		const id = str(home, 'id');
+		const value = str(home, 'value');
+		const livesThere = ids(home, 'members');
+		const known = livesThere.filter((person) => knownPeople.has(person));
+		if (known.length < livesThere.length) warn({ code: 'homeMembersMissing' });
+		if (id === null || value === null || known.length === 0) {
+			warn({ code: 'homeIncomplete' });
+			continue;
+		}
+		homes.push({
+			id,
+			household_id: target.householdId,
+			label: str(home, 'label'),
+			value,
+			meta: str(home, 'meta'),
+			created_by: author(home),
+			...stamps(home)
+		});
+		for (const person of new Set(known)) {
+			homeMembers.push({
+				home_id: id,
+				contact_id: person,
+				created_by: author(home),
+				created_at: ms(home, 'created_at') ?? now
+			});
+		}
+	}
+
 	// ── Relationship types and relationships ──────────────────────────────
 	const relationshipTypes: Row[] = [];
 	const knownTypes = new Set(target.relationshipTypeIds);
@@ -796,6 +833,8 @@ export function planRestore(
 			{ table: 'relationship_type', rows: relationshipTypes },
 			{ table: 'contact', rows: contacts },
 			{ table: 'contact_field', rows: contactFields },
+			{ table: 'home', rows: homes },
+			{ table: 'home_member', rows: homeMembers },
 			{ table: 'important_date', rows: importantDates },
 			{ table: 'tag', rows: tags },
 			{ table: 'contact_tag', rows: contactTags },
