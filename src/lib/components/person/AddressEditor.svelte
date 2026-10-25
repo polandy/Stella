@@ -13,11 +13,11 @@
 	import { removalKey } from '$lib/undo/keys';
 	import { savedEnhance } from '$lib/undo/saved';
 	import { tick } from 'svelte';
-	import { homesShown, shareableAddresses } from '$lib/people/home';
+	import { homesShown } from '$lib/people/home';
 	import FactEditor from './FactEditor.svelte';
 	import HomeEditor from './HomeEditor.svelte';
 	import ShareHome from './ShareHome.svelte';
-	import { INPUT } from './inputs';
+	import { EDIT_FRAME, INPUT } from './inputs';
 	import type { PersonForm, PersonPageData } from './types';
 
 	/*
@@ -25,7 +25,8 @@
 	 * label and the address itself, saved or removed in place, and a new one added here — the
 	 * *Contact* row no longer holds addresses. Editing is not kept on the phone like adding
 	 * (docs/02 §2.18), so Save waits for a connection; adding one is kept like any other field.
-	 * A home shared with others comes first, edited for everyone who lives there.
+	 * A home shared with others comes first, edited for everyone who lives there. Each address
+	 * stands in a frame of its own; adding another and *Cancel* concern the list, so sit below.
 	 */
 	let { data, form, onclose }: { data: PersonPageData; form: PersonForm; onclose: () => void } =
 		$props();
@@ -97,7 +98,13 @@
 	);
 </script>
 
-<FactEditor icon="home" label={t('contact.fieldKind.address')} name="address" {onclose}>
+<FactEditor
+	icon="home"
+	label={t('contact.fieldKind.address')}
+	name="address"
+	framed={false}
+	{onclose}
+>
 	{#if keptAddresses.length > 0}
 		<ul class="flex flex-wrap gap-1.5" data-testid="kept-addresses">
 			{#each keptAddresses as item (item.command.id)}
@@ -106,10 +113,10 @@
 		</ul>
 	{/if}
 	{#each homes as home (home.id)}
-		<HomeEditor {home} person={c} {offline} {onclose} />
+		<HomeEditor {data} {form} {home} person={c} {housemateIds} {offline} {onclose} />
 	{/each}
 	{#each addresses as address (address.id)}
-		<div class="flex flex-col gap-2" data-address={address.id}>
+		<div class={EDIT_FRAME} data-address={address.id}>
 			<form
 				id="{uid}-{address.id}"
 				method="POST"
@@ -134,6 +141,7 @@
 					class={INPUT}>{address.value}</textarea
 				>
 			</form>
+			<ShareHome {data} {form} address="field:{address.id}" {housemateIds} {offline} {onclose} />
 			<div class="flex flex-wrap items-center gap-2">
 				<RemoveButton
 					kind="field"
@@ -154,22 +162,13 @@
 		<p class="text-xs text-fg-muted">{t('surnames.offline')}</p>
 	{/if}
 
-	<ShareHome
-		{data}
-		{form}
-		addresses={shareableAddresses(addresses, homes)}
-		{housemateIds}
-		{offline}
-		{onclose}
-	/>
-
 	{#if addOpen}
 		<form
 			bind:this={addForm}
 			method="POST"
 			action="?/addField"
 			use:enhance={addForm$}
-			class="flex flex-col gap-2"
+			class={EDIT_FRAME}
 			data-testid="add-address"
 		>
 			<input type="hidden" name="kind" value="address" />

@@ -74,8 +74,10 @@ export const homeActions = {
 		}).catch((err: unknown) => gone(locals, err));
 
 		if (outcome.status === 'decide') {
-			// Nothing was written: the editor asks which of these to replace, then sends again.
-			return fail(409, { homeDecide: { withIds, addresses: outcome.addresses } });
+			// Nothing was written: the address's editor asks which of these to replace, then sends again.
+			return fail(409, {
+				homeDecide: { address: String(form.get('address')), withIds, addresses: outcome.addresses }
+			});
 		}
 		throw redirect(303, `/contacts/${params.id}`);
 	},

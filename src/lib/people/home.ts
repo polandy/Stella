@@ -54,34 +54,6 @@ export function homesShown<H extends { id: string; livesWith: readonly Housemate
 		}));
 }
 
-/** An address that can be shared, as the editor's choice names it: `field:<id>` or `home:<id>`. */
-export interface ShareableAddress {
-	key: string;
-	label: string | null;
-	line: string;
-}
-
-/** Every address the person has — their own and the homes they live in — on one line each. */
-export function shareableAddresses(
-	fields: readonly { id: string; kind: string; label: string | null; value: string }[],
-	homes: readonly { id: string; label: string | null; value: string }[]
-): ShareableAddress[] {
-	return [
-		...fields
-			.filter((field) => field.kind === 'address')
-			.map((field) => ({
-				key: `field:${field.id}`,
-				label: field.label,
-				line: oneLine(field.value)
-			})),
-		...homes.map((home) => ({
-			key: `home:${home.id}`,
-			label: home.label,
-			line: oneLine(home.value)
-		}))
-	];
-}
-
 /** An address of several lines as one, the way the card reads it. */
 export function oneLine(value: string): string {
 	return value

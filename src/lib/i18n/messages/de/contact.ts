@@ -98,7 +98,6 @@ export const contact: ContactMessages = {
 	'contact.home.movedOutDone': (p) => `${p.name} ist ausgezogen`,
 	'contact.home.moveOut': (p) => `${p.name} als ausgezogen markieren`,
 	'contact.home.shareWith': 'Wohnt auch hier …',
-	'contact.home.which': 'Welche Anschrift',
 	'contact.home.who': 'Wer wohnt auch dort',
 	'contact.home.share': 'Hinzufügen',
 	'contact.home.decide': 'Einige haben schon eine eigene Anschrift.',

@@ -1,12 +1,6 @@
 import { describe, expect, it } from 'bun:test';
 import { segmentsOf, textOf } from '$lib/i18n/linked';
-import {
-	homesShown,
-	livesWithSentence,
-	movingOutKey,
-	shareableAddresses,
-	sharingCandidates
-} from './home';
+import { homesShown, livesWithSentence, movingOutKey, sharingCandidates } from './home';
 
 describe('livesWithSentence', () => {
 	const list = (names: string[]) =>
@@ -32,23 +26,6 @@ describe('livesWithSentence', () => {
 			{ person: { id: 'peter', name: 'Peter Brunner' } },
 			{ text: ', and ' },
 			{ person: { id: 'ruth', name: 'Ruth' } }
-		]);
-	});
-});
-
-describe('shareableAddresses', () => {
-	it('offers own addresses, then homes, each on one line', () => {
-		expect(
-			shareableAddresses(
-				[
-					{ id: 'f-1', kind: 'address', label: 'Work', value: 'Seeweg 9\n 8800 Thalwil ' },
-					{ id: 'f-2', kind: 'phone', label: null, value: '044' }
-				],
-				[{ id: 'h-1', label: null, value: 'Lindenweg 4' }]
-			)
-		).toEqual([
-			{ key: 'field:f-1', label: 'Work', line: 'Seeweg 9, 8800 Thalwil' },
-			{ key: 'home:h-1', label: null, line: 'Lindenweg 4' }
 		]);
 	});
 });

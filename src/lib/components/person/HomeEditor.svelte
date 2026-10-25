@@ -6,21 +6,30 @@
 	import type { Housemate } from '$lib/people/home';
 	import { useRemovals } from '$lib/undo/context.svelte';
 	import type { SubmitFunction } from '@sveltejs/kit';
-	import { INPUT } from './inputs';
+	import ShareHome from './ShareHome.svelte';
+	import { EDIT_FRAME, INPUT } from './inputs';
+	import type { PersonForm, PersonPageData } from './types';
 
 	/*
-	 * One home in the address editor (docs/02 §2.2, *A shared home*): its line for everyone who
-	 * lives there, who they are — the × on a chip moves that person out — and *Moved out* for this
-	 * person. A changed line asks once whom it is for, *Everyone here* preselected.
+	 * One home in the address editor, in a frame of its own (docs/02 §2.2, *A shared home*): its
+	 * line for everyone who lives there, who they are — the × on a chip moves that person out, the
+	 * “+” after them adds someone — and *Moved out* for this person. A changed line asks once whom
+	 * it is for, *Everyone here* preselected.
 	 */
 	let {
+		data,
+		form,
 		home,
 		person,
+		housemateIds,
 		offline,
 		onclose
 	}: {
+		data: PersonPageData;
+		form: PersonForm;
 		home: { id: string; label: string | null; value: string; livesWith: readonly Housemate[] };
 		person: Housemate;
+		housemateIds: readonly string[];
 		offline: boolean;
 		onclose: () => void;
 	} = $props();
@@ -57,7 +66,7 @@
 	};
 </script>
 
-<div class="flex flex-col gap-2" data-home={home.id}>
+<div class={EDIT_FRAME} data-home={home.id}>
 	<form
 		id="{uid}-line"
 		method="POST"
@@ -107,26 +116,33 @@
 			</fieldset>
 		{/if}
 	</form>
-	{#if home.livesWith.length > 0}
-		<ul class="flex flex-wrap gap-1.5" aria-label={t('contact.home.who')}>
-			{#each home.livesWith as mate (mate.id)}
-				<li
-					class="flex items-center gap-1 rounded-full border border-border py-0.5 pr-1 pl-2.5 text-sm"
-				>
-					<a href="/contacts/{mate.id}" class="hover:underline">{mate.displayName}</a>
-					<RemoveButton
-						bare
-						kind="home-member"
-						id="{home.id}/{mate.id}"
-						action="?/leaveHome"
-						fields={{ homeId: home.id, contactId: mate.id }}
-						label={t('contact.home.moveOut', { name: mate.displayName })}
-						removed={t('contact.home.movedOutDone', { name: mate.displayName })}
-					/>
-				</li>
-			{/each}
-		</ul>
-	{/if}
+	{#snippet housemates()}
+		{#each home.livesWith as mate (mate.id)}
+			<li
+				class="flex items-center gap-1 rounded-full border border-border py-0.5 pr-1 pl-2.5 text-sm"
+			>
+				<a href="/contacts/{mate.id}" class="hover:underline">{mate.displayName}</a>
+				<RemoveButton
+					bare
+					kind="home-member"
+					id="{home.id}/{mate.id}"
+					action="?/leaveHome"
+					fields={{ homeId: home.id, contactId: mate.id }}
+					label={t('contact.home.moveOut', { name: mate.displayName })}
+					removed={t('contact.home.movedOutDone', { name: mate.displayName })}
+				/>
+			</li>
+		{/each}
+	{/snippet}
+	<ShareHome
+		{data}
+		{form}
+		address="home:{home.id}"
+		{housemateIds}
+		{offline}
+		{onclose}
+		children={home.livesWith.length > 0 ? housemates : undefined}
+	/>
 	<div class="flex flex-wrap items-center gap-2">
 		<RemoveButton
 			kind="home-member"

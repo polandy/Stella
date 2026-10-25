@@ -102,7 +102,6 @@ export const contact = {
 	'contact.home.movedOutDone': (p: { name: string }) => `${p.name} moved out`,
 	'contact.home.moveOut': (p: { name: string }) => `Mark ${p.name} as moved out`,
 	'contact.home.shareWith': 'Also lives here …',
-	'contact.home.which': 'Which address',
 	'contact.home.who': 'Who lives there too',
 	'contact.home.share': 'Add',
 	'contact.home.decide': 'Some of them have an address of their own.',

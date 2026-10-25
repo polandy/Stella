@@ -94,6 +94,9 @@ validation, and any home without a person in it.
 
 - **Named *Also lives here …*** (*Wohnt auch hier …*), not *Share with …* — the owner's
   choice after the hand test; its button says *Add*.
+- **A dashed + in each address's frame**, not one button under all of them — chosen from the
+  mockup `shared-home-button.html`. The frame is the address: *Add another address* and
+  *Cancel* moved out of it, and the *which address?* select went away.
 
 - **Search left out.** Contact fields are not in the search index at all (§2.9), so a home's
   line is not either; searching by address is its own change, for every address at once.
