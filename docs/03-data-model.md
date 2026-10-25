@@ -65,6 +65,7 @@ user      1───* invitation (created_by)
 
 contact   *───1 user            (created_by)
 contact   1───* contact_field
+contact   *───* home            (via home_member: a shared address)
 contact   1───* note
 contact   1───* journal_entry    (per-person diary)      [M2]
 contact   1───* interaction
@@ -260,6 +261,33 @@ Repeatable contact methods.
 | meta | text null | JSON: structured parts (address components, social network, etc.) |
 | sort_order | int | |
 | created_at / updated_at | int | |
+
+### home
+One address shared by everyone who lives there (docs/02 §2.2, *A shared home*) — entered once
+for a family instead of copied onto each person's `contact_field`. A home has no visibility of
+its own: it is only ever reached through a member the viewer may see (`contactVisibleTo`), and
+only those members are named. A trigger deletes it when its last `home_member` goes. In code it
+is *home*; *household* is the tenant.
+
+| column | type | notes |
+|---|---|---|
+| id | text pk | |
+| household_id | text fk → household.id | cascade delete |
+| label | text null | "Home", as on a contact field |
+| value | text | the address, as on a contact field |
+| meta | text null | JSON, as on a contact field |
+| created_by | text fk → user.id | |
+| created_at / updated_at | int | |
+
+### home_member
+Who lives at a home. A person may live at more than one (a weekend place).
+
+| column | type | notes |
+|---|---|---|
+| home_id | text fk → home.id | cascade delete; pk with contact_id |
+| contact_id | text fk → contact.id | cascade delete; indexed |
+| created_by | text fk → user.id | |
+| created_at | int | |
 
 ### relationship_type
 Defines a directional, reciprocal relationship kind.

@@ -1,12 +1,14 @@
 import type { BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
 import type { Clock } from '../clock';
 import { createDrizzleContactFieldRepository } from '../db/contact-field-repository';
+import { createDrizzleHomeReads, createDrizzleHomeRepository } from '../db/home-repository';
 import { createDrizzleImportantDateRepository } from '../db/important-date-repository';
 import type * as schema from '../db/schema';
 import { createDrizzleTagListReads } from '../db/tag-list-reads';
 import { createDrizzleTagRepository } from '../db/tag-repository';
 import type { ContactFieldDeps } from '../domain/contact-fields/contact-fields';
 import type { ContactLookup } from '../domain/contacts/contacts';
+import type { HomeDeps, HomeListDeps } from '../domain/homes/homes';
 import type { ImportantDateDeps, ImportantDateRepository } from '../domain/dates/important-dates';
 import type { TagListDeps } from '../domain/tags/tag-lists';
 import type { TagDeps, TagRepository } from '../domain/tags/tags';
@@ -14,7 +16,7 @@ import type { IdGenerator } from '../id';
 
 /*
  * The `records` bounded context of the composition root (docs/08 §8.3): what a person's page
- * keeps about them besides their story — contact fields, important dates and tags. Built once
+ * keeps about them besides their story — contact fields, shared homes, important dates and tags. Built once
  * per process by `createServices`; the edge reads it off `locals.services.records`.
  *
  * A repository an edge reads directly sits under its noun (`importantDates`, `tags`);
@@ -27,6 +29,9 @@ export interface RecordServices {
 	/** The one tag repository, household-wide: naming, assigning and pruning tags. */
 	tags: TagRepository;
 	contactFieldDeps: ContactFieldDeps;
+	/** Sharing an address, rewriting it, moving out (docs/02 §2.2). */
+	homeDeps: HomeDeps;
+	homeListDeps: HomeListDeps;
 	importantDateDeps: ImportantDateDeps;
 	tagDeps: TagDeps;
 	/** The chip row, each person's tags and the people a chip filters to. */
@@ -50,6 +55,8 @@ export function createRecordServices({ db, clock, ids, contacts }: RecordWiring)
 		importantDates,
 		tags,
 		contactFieldDeps: { fields: contactFields, contacts, ids, clock },
+		homeDeps: { homes: createDrizzleHomeRepository(db), contacts, ids, clock },
+		homeListDeps: { homeReads: createDrizzleHomeReads(db) },
 		importantDateDeps: { dates: importantDates, contacts, ids, clock },
 		tagDeps: { tags, ids, clock },
 		tagListDeps: { tagLists: createDrizzleTagListReads(db) }

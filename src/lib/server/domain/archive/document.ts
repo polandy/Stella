@@ -91,6 +91,8 @@ export interface ArchiveDocument {
 	relationship_types: Record<string, unknown>[];
 	tags: Record<string, unknown>[];
 	circles: Record<string, unknown>[];
+	/** Addresses several people share (docs/02 §2.2), each with whoever lives there. */
+	homes: Record<string, unknown>[];
 	people: Record<string, unknown>[];
 	relationships: Record<string, unknown>[];
 	activity: Record<string, unknown>[];
@@ -126,6 +128,7 @@ export function buildArchiveDocument(
 	const participants = linksBy(t('interaction_participant'), 'interaction_id', 'contact_id');
 	const contactTags = linksBy(t('contact_tag'), 'contact_id', 'tag_id');
 	const circleMembers = groupBy(t('circle_membership'), 'circle_id');
+	const homeMembers = linksBy(t('home_member'), 'home_id', 'contact_id');
 	// One per person at most: the table's key is the contact (docs/03 §immich_link).
 	const immichLinks = new Map(t('immich_link').map((row) => [id(row, 'contact_id'), row]));
 	// The Immich faces a member said this person is not (docs/02 §2.24.7), oldest first.
@@ -358,6 +361,17 @@ export function buildArchiveDocument(
 					})
 				),
 				photos: (circlePhotos.get(id(c)) ?? []).map(photo)
+			})
+		),
+		homes: t('home').map((h) =>
+			present({
+				id: id(h),
+				label: text(h, 'label'),
+				value: text(h, 'value'),
+				meta: text(h, 'meta'),
+				author: text(h, 'created_by'),
+				created_at: moment(h, 'created_at'),
+				members: homeMembers.get(id(h)) ?? []
 			})
 		),
 		relationships: t('relationship').map((r) =>

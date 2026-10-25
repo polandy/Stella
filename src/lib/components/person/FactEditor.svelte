@@ -3,6 +3,7 @@
 	import type { IconName } from '$lib/components/ui/icons';
 	import { FIELD_SELECTOR, firstField } from '$lib/components/ui/first-field';
 	import { onMount, type Snippet } from 'svelte';
+	import { EDIT_FRAME } from './inputs';
 
 	/*
 	 * A fact of the identity card being edited where it is read (docs/05 §5.5): its label over
@@ -16,9 +17,11 @@
 		/** Which fact this edits, for the card's reading and for tests. */
 		name: string;
 		onclose: () => void;
+		/** Off where each item frames itself, as each address does, and the list's actions sit below. */
+		framed?: boolean;
 		children: Snippet;
 	}
-	let { icon, label, name, onclose, children }: Props = $props();
+	let { icon, label, name, onclose, framed = true, children }: Props = $props();
 
 	let frame = $state<HTMLDivElement>();
 	onMount(() => {
@@ -33,7 +36,8 @@
 	});
 
 	function onKeydown(event: KeyboardEvent) {
-		if (event.key !== 'Escape') return;
+		// An Escape a picker inside already used to close its list leaves the editor open.
+		if (event.key !== 'Escape' || event.defaultPrevented) return;
 		event.preventDefault();
 		onclose();
 	}
@@ -51,7 +55,7 @@
 	<span class="flex items-center gap-1.5 text-xs text-fg-subtle">
 		<Icon name={icon} size={12} />{label}
 	</span>
-	<div class="flex flex-col gap-3 rounded-control border border-primary bg-card p-3">
+	<div class={framed ? EDIT_FRAME : 'flex flex-col gap-3'}>
 		{@render children()}
 	</div>
 </div>

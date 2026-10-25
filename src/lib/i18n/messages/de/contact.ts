@@ -85,6 +85,26 @@ export const contact: ContactMessages = {
 	'contact.address.removed': 'Anschrift entfernt',
 	'contact.address.another': 'Weitere Anschrift hinzufügen',
 
+	// Eine Anschrift, die alle teilen, die dort wohnen (docs/02 §2.2, *A shared home*).
+	'contact.home.livesWith': (p) => `wohnt mit ${p.names} zusammen`,
+	'contact.home.shared': (p) => `Geteilt · ${p.count} Personen`,
+	'contact.home.everyone': (p) => `Alle hier — ${p.names}`,
+	'contact.home.everyoneHint': 'Sie sind umgezogen, oder die Anschrift war falsch.',
+	'contact.home.only': (p) => `Nur für ${p.name}`,
+	'contact.home.onlyHint': 'Zieht hier aus und behält die neue Anschrift als eigene.',
+	'contact.home.changedFor': (p) =>
+		p.count === 1 ? 'Anschrift geändert' : `Anschrift für ${p.count} Personen geändert`,
+	'contact.home.movedOut': 'Ausgezogen',
+	'contact.home.movedOutDone': (p) => `${p.name} ist ausgezogen`,
+	'contact.home.moveOut': (p) => `${p.name} als ausgezogen markieren`,
+	'contact.home.shareWith': 'Wohnt auch hier …',
+	'contact.home.who': 'Wer wohnt auch dort',
+	'contact.home.share': 'Hinzufügen',
+	'contact.home.decide': 'Einige haben schon eine eigene Anschrift.',
+	'contact.home.has': (p) => `${p.name} hat ${p.line}`,
+	'contact.home.replaceOwn': 'Eigene Anschrift ersetzen',
+	'contact.home.keepsOwn': 'Sonst bleibt sie als zweite Anschrift.',
+
 	'contact.section.dates': 'Daten',
 	'contact.dates.add': 'Datum hinzufügen',
 	'contact.dates.another': 'Weiteres Datum',

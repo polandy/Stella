@@ -81,6 +81,10 @@ export const archive: ArchiveMessages = {
 		`„${p.name}“ lag in einem Kreis, den das Archiv nicht enthält; er wird für sich allein wiederhergestellt.`,
 	'archive.warning.circleMemberMissing': (p) =>
 		`Ein Mitglied von „${p.name}“ ist nicht im Archiv und wurde ausgelassen.`,
+	'archive.warning.homeIncomplete':
+		'Eine gemeinsame Adresse ohne Angabe oder ohne jemanden aus dem Archiv, der dort wohnt, wurde ausgelassen.',
+	'archive.warning.homeMembersMissing':
+		'Einige Menschen mit gemeinsamer Adresse sind nicht im Archiv; die Adresse wurde ohne sie wiederhergestellt.',
 	'archive.warning.relationshipTypeWithoutName': 'Eine Beziehungsart ohne Namen wurde ausgelassen.',
 	'archive.warning.relationshipMissingEnd':
 		'Eine Beziehung, der ein Ende fehlt, wurde ausgelassen.',

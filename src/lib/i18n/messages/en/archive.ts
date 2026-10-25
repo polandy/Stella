@@ -90,6 +90,10 @@ export const archive = {
 		`“${p.name}” sat inside a circle the archive does not contain; it is restored on its own.`,
 	'archive.warning.circleMemberMissing': (p: { name: string }) =>
 		`A member of “${p.name}” is not in the archive and was left out.`,
+	'archive.warning.homeIncomplete':
+		'A shared address without its line, or with nobody from the archive living there, was left out.',
+	'archive.warning.homeMembersMissing':
+		'Some people sharing an address are not in the archive; the address was restored without them.',
 	'archive.warning.relationshipTypeWithoutName': 'A relationship type without a name was left out.',
 	'archive.warning.relationshipMissingEnd': 'A relationship missing one of its ends was left out.',
 	'archive.warning.relationshipsMissingPeople':

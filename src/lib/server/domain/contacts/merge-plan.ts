@@ -70,6 +70,8 @@ export const MERGE_PLAN: readonly MergeStep[] = [
 	repoint('journal_mention', 'contact_id', 'survivor-keeps'),
 	repoint('interaction_participant', 'contact_id', 'survivor-keeps'),
 	repoint('contact_tag', 'contact_id', 'survivor-keeps'),
+	// A home both lived in keeps the survivor; the merged record's homes become theirs.
+	repoint('home_member', 'contact_id', 'survivor-keeps'),
 	// One Immich link per person: a survivor that has one keeps it (docs/02 §2.24.5).
 	repoint('immich_link', 'contact_id', 'survivor-keeps'),
 	// An ignored proposal follows the person; the survivor's own record of a pair wins.

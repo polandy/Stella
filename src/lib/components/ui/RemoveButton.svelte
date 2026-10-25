@@ -2,6 +2,7 @@
 	import { invalidateAll } from '$app/navigation';
 	import Button from '$lib/components/ui/Button.svelte';
 	import Icon from '$lib/components/ui/Icon.svelte';
+	import type { IconName } from '$lib/components/ui/icons';
 	import { useRemovals } from '$lib/undo/context.svelte';
 	import { deferredRemoval } from '$lib/undo/deferred-removal';
 	import { removalKey, type RemovalKind } from '$lib/undo/keys';
@@ -29,6 +30,10 @@
 		removed: string;
 		/** A bare icon for a chip, where a bordered button would be too much. */
 		bare?: boolean;
+		/** Says the label in words beside the icon, where a lone × would read as *remove*. */
+		spelled?: boolean;
+		/** The spelled-out button's icon, where leaving is not removing — e.g. *Moved out*. */
+		icon?: IconName;
 		/**
 		 * Counts the commit — the real request plus the reload behind it — for a section that
 		 * shows how long it is taking. The undo window itself is not counted: nothing is on its
@@ -47,6 +52,8 @@
 		label,
 		removed,
 		bare = false,
+		spelled = false,
+		icon = 'remove',
 		pending,
 		onremove,
 		class: className = ''
@@ -120,6 +127,8 @@
 		>
 			<Icon name="remove" size={13} />
 		</button>
+	{:else if spelled}
+		<Button variant="ghost" size="sm" {icon}>{label}</Button>
 	{:else}
 		<Button variant="danger" size="sm" icon="remove" {label} title={label} />
 	{/if}

@@ -211,6 +211,20 @@
       "when": 1792259693694,
       "tag": "0029_member_blur_private",
       "breakpoints": true
+    },
+    {
+      "idx": 30,
+      "version": "6",
+      "when": 1792948185703,
+      "tag": "0030_home",
+      "breakpoints": true
+    },
+    {
+      "idx": 31,
+      "version": "6",
+      "when": 1792948354456,
+      "tag": "0031_home_goes_with_its_last_member",
+      "breakpoints": true
     }
   ]
 }
