@@ -5,7 +5,7 @@ import { removalKey } from '$lib/undo/keys';
 
 /*
  * A shared home as the person page shows and edits it (docs/02 §2.2, *A shared home*): whom
- * someone lives with, which of their addresses can be shared, and whom sharing offers first.
+ * someone lives with, who is moving out right now, and whom *Also lives here …* offers first.
  */
 
 /** One of the people someone lives with, as the page reads them. */
@@ -67,7 +67,7 @@ export function oneLine(value: string): string {
 const LIVES_TOGETHER: readonly RelationshipCategory[] = ['family', 'romantic'];
 
 /**
- * Whom *Share with …* offers, the person's current family and partners first and everyone
+ * Whom *Also lives here …* offers, the person's current family and partners first and everyone
  * else after, never the person themselves or anyone who already lives there.
  */
 export function sharingCandidates<P extends { id: string }>(
