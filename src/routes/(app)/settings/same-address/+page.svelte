@@ -153,11 +153,13 @@
 						{#each finding.people as person (person.id)}
 							<li class="flex items-center gap-3 text-sm">
 								<Avatar id={person.id} name={person.displayName} size={28} />
-								<a
-									href="/contacts/{person.id}"
-									class="min-w-0 flex-1 truncate text-fg hover:underline">{person.displayName}</a
-								>
-								<span class="max-w-[50%] truncate text-xs text-fg-subtle">{person.line}</span>
+								<!-- The spelling under the name: beside it, a phone cut the name short. -->
+								<span class="min-w-0 flex-1">
+									<a href="/contacts/{person.id}" class="block truncate text-fg hover:underline"
+										>{person.displayName}</a
+									>
+									<span class="block truncate text-xs text-fg-subtle">{person.line}</span>
+								</span>
 							</li>
 						{/each}
 					</ul>

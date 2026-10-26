@@ -57,8 +57,8 @@ reader comes here to work a list down, a few answers at a time, without losing t
   addresses*, which opens `?check`; nothing is read before.
 - Asked, it is *N open* and one card per finding: the `home` icon and the line in bold; when a
   home already has it, *Home of Anna and Peter* and a one-line hint that the others move in;
-  then each person with the line — avatar, name linking to the profile, their own spelling
-  right-aligned and truncated; then *Not the same* (ghost) and *Make one home* / *Join the home*
+  then each person with the line — avatar, name linking to the profile, and their own spelling
+  under the name in small type (beside it, a phone cut the name short); then *Not the same* (ghost) and *Make one home* / *Join the home*
   (primary, `home` icon), right-aligned and wrapping on a phone.
 - Both answers leave at once and are held in the toast for the undo window (`heldAnswer`, as
   below); once sent, the page reloads its data.
