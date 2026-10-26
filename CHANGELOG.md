@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.0.30](https://github.com/polandy/Stella/compare/v0.0.29...v0.0.30) (2026-10-26)
+
+
+### Features
+
+* **homes:** offer a new child or partner the home they move into ([#398](https://github.com/polandy/Stella/issues/398)) ([a20c8b7](https://github.com/polandy/Stella/commit/a20c8b7513da02738d6f028a1390518ef575773e))
+* **homes:** one shared address for everyone who lives together ([#395](https://github.com/polandy/Stella/issues/395)) ([6d6eb1f](https://github.com/polandy/Stella/commit/6d6eb1f153bb3afa8797af151a5b784f0c8bd8d7))
+* **homes:** Same address under Data quality ([#399](https://github.com/polandy/Stella/issues/399)) ([3b6e4f5](https://github.com/polandy/Stella/commit/3b6e4f5954ad0f6ecf3f997613fd7d7bc6e7f2e4))
+* **import:** move people into a shared home through the import API ([#397](https://github.com/polandy/Stella/issues/397)) ([0435422](https://github.com/polandy/Stella/commit/0435422f92afdef246d040ae8ec1d7654caa793b))
+
 ## [0.0.29](https://github.com/polandy/Stella/compare/v0.0.28...v0.0.29) (2026-10-20)
 
 
