@@ -322,7 +322,13 @@ others keep the home, and **Undo** brings them back. People you cannot see are n
 moved. Searching by a shared address does not find anyone yet. Adding Sandra's new baby from
 her page — *Parent of*, then a new name in the picker — offers **Lives at Spitalackerstrasse
 22 … with Sandra and Markus**, already ticked: *Add* moves the baby in along with the link.
-Untick it if the child lives elsewhere.
+Untick it if the child lives elsewhere. For addresses typed before homes existed, **Settings →
+Data quality → Same address** → **Check addresses** lists everyone whose own address says the
+same (upper and lower case, spaces and punctuation aside — *Dorfstr.* and *Dorfstrasse* are not
+the same). **Make one home** moves them in together; if one of them already lives in a home
+with that address, the button says **Join the home**. **Not the same** — two flats in one
+building, say — is remembered and listed at the bottom with **Ask again**. Both answers can be
+undone from the note that follows.
 
 ### Notes, Activity and the journal
 

@@ -3,7 +3,8 @@
 ### Intent
 
 The household-wide checks, gathered under Settings → *Data quality*: relationships Stella can
-work out but nobody entered, people without a last name, people known by a first name only. A
+work out but nobody entered, people without a last name, people known by a first name only,
+people at the same address who are not one home yet. A
 reader comes here to work a list down, a few answers at a time, without losing their place.
 
 ### Rules
@@ -12,8 +13,9 @@ reader comes here to work a list down, a few answers at a time, without losing t
 
 - Each check is a card like the rest of Settings: *Check relationships* (docs/02 §2.4.1),
   *Last names* (§2.2.4; the `rename` icon, its line saying how many have none and how many have
-  a suggestion) and *People known by a first name only* (§2.2.3; the `tidy` icon, with a count
-  pill while anyone is left).
+  a suggestion), *People known by a first name only* (§2.2.3; the `tidy` icon, with a count
+  pill while anyone is left) and *Same address* (§2.2, *A shared home*; the `home` icon, no
+  count, since nothing is checked until asked).
 - The checks live here, not in the People directory (§5.5.3).
 - *Last names* (docs/02 §2.2.4.2): every row, in every section, has a ⋯ menu holding the
   lower-ranked names, *Not …* for each proposed name and, under a divider, **No last name** with
@@ -49,6 +51,21 @@ reader comes here to work a list down, a few answers at a time, without losing t
   both is underlined, in `fg-subtle` (not `border`), and leads to that person. Names are not in
   the link colour.
 
+#### Same address
+
+- Closed, like *Check relationships*: an `EmptyState` (*Nothing checked yet*) with *Check
+  addresses*, which opens `?check`; nothing is read before.
+- Asked, it is *N open* and one card per finding: the `home` icon and the line in bold; when a
+  home already has it, *Home of Anna and Peter* and a one-line hint that the others move in;
+  then each person with the line — avatar, name linking to the profile, their own spelling
+  right-aligned and truncated; then *Not the same* (ghost) and *Make one home* / *Join the home*
+  (primary, `home` icon), right-aligned and wrapping on a phone.
+- Both answers leave at once and are held in the toast for the undo window (`heldAnswer`, as
+  below); once sent, the page reloads its data.
+- The empty state reads *All checked*; a `<details>` drawer *Not the same (n)* closes the page,
+  each row the line, the names under it and *Ask again*.
+- Offline, a line says answers wait for a connection and the buttons are disabled.
+
 #### Answering a row (here and on a person's page)
 
 - **An answered row goes at once**: it fades as it closes, over 200ms, and while it closes the
@@ -76,6 +93,11 @@ to-do list. *No last name* exists so the *Last names* list can empty: some peopl
 none the household will ever know, and a list that never empties stops being read. Its drawer
 sits on the same page, beside the declined names, because that is where a member looks for
 someone who has gone from the list. Merging and archiving stay on the profile, where they live in the ⋯ menu.
+
+*Same address* is a card per line, not per person, because the answer is about a line: one
+tap moves everyone shown. Each person's own spelling stays visible so the reader can see why
+they match before saying yes. It runs on request like the relationship check, because it reads
+every address the viewer may see.
 
 The rule engine runs only when asked because it computes the whole household (docs/04 §4.9),
 and nothing it finds is dropped (docs/04 ADR-010) — so the screen folds instead. The header and

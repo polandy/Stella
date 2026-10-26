@@ -807,8 +807,8 @@ The claims the household has declined, so a suggestion answered once is not offe
 |---|---|---|
 | id | text pk | |
 | household_id | text fk | the household decided, not the member who clicked |
-| relation | text | `'parent' \| 'sibling'` — what the claim would have stored — or `'last_name'` |
-| pair_key | text | the two contact ids, sorted and space-separated; for `last_name`, the contact id, a space and the folded surname |
+| relation | text | `'parent' \| 'sibling'` — what the claim would have stored — `'last_name'` or `'same_address'` |
+| pair_key | text | the two contact ids, sorted and space-separated; for `last_name`, the contact id, a space and the folded surname; for `same_address`, the contact ids sorted and comma-joined, a space and the folded line |
 | dismissed_by | text fk → user.id | who answered, for the trail |
 | dismissed_at | int | |
 
@@ -828,6 +828,12 @@ rather than adding one: `relation = 'last_name'`, keyed by the person and the su
 the §2.2.1 way, so *Brünner* and *brunner* are one answer and a different name can still be
 proposed. The column is text, so this needed no migration; the relationship log reads only
 the other relations, and the *Last names* page lists these with *Offer again*.
+
+**Not the same address** (docs/02 §2.2, *A shared home*) does the same with
+`relation = 'same_address'`: the people shown and their line folded like the home editor folds
+it. A finding counts as answered while everyone at the line is among the people named, so
+someone new at it asks again and someone gone leaves the answer standing. *Ask again* deletes
+only a row that holds back a finding the viewer can see.
 
 ### command_receipt  [M3]
 A command id that has been claimed or applied (docs/04 §4.11.2), so a
