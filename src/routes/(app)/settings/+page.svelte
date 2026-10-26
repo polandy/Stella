@@ -192,6 +192,20 @@
 			{/if}
 			<span class="text-fg-subtle" aria-hidden="true"><Icon name="forward" size={16} /></span>
 		</a>
+		<a
+			href="/settings/same-address"
+			class="flex items-center gap-4 rounded-app bg-card p-4 shadow-card transition-colors hover:bg-card-hover"
+		>
+			<span
+				class="grid size-10 shrink-0 place-items-center rounded-full bg-primary-soft text-primary"
+				aria-hidden="true"><Icon name="home" size={18} /></span
+			>
+			<span class="min-w-0 flex-1">
+				<span class="block font-medium text-fg">{t('settings.sameAddress.title')}</span>
+				<span class="block text-sm text-fg-muted">{t('settings.sameAddress.blurb')}</span>
+			</span>
+			<span class="text-fg-subtle" aria-hidden="true"><Icon name="forward" size={16} /></span>
+		</a>
 	</section>
 
 	<!-- Every member's, not only the admin's: a token acts as whoever made it (docs/02 §2.16.1). -->

@@ -102,6 +102,31 @@ export const settings = {
 	'settings.firstNameOnly.knowThemBy': (p: { name: string }) => `What will you know ${p.name} by?`,
 	'settings.firstNameOnly.empty.title': 'Everyone can be told apart',
 	'settings.firstNameOnly.empty.hint': 'Nobody left with a first name only and nothing else.',
+	// *Same address* (docs/02 §2.17): people at one address made one home, on a tap.
+	'settings.sameAddress.pageTitle': 'Same address · Stella',
+	'settings.sameAddress.title': 'Same address',
+	'settings.sameAddress.blurb': 'People who live at the same address but are not one home yet.',
+	'settings.sameAddress.intro':
+		'People whose own address lines say the same, ignoring case, spaces and punctuation. One home keeps one address for all of them — a move changes it once.',
+	'settings.sameAddress.idle': 'Nothing checked yet',
+	'settings.sameAddress.idleHint':
+		'The check compares everyone’s address lines. It changes nothing by itself.',
+	'settings.sameAddress.check': 'Check addresses',
+	'settings.sameAddress.openCount': (p: { count: number }) => `${p.count} open`,
+	'settings.sameAddress.homeOf': (p: { names: string }) => `Home of ${p.names}`,
+	'settings.sameAddress.joinHint': 'They move in, and their own copy of the line goes.',
+	'settings.sameAddress.makeHome': 'Make one home',
+	'settings.sameAddress.joinHome': 'Join the home',
+	'settings.sameAddress.notSame': 'Not the same',
+	'settings.sameAddress.madeHome': (p: { names: string }) => `${p.names} live in one home now`,
+	'settings.sameAddress.joined': (p: { names: string }) => `${p.names} moved into the home`,
+	'settings.sameAddress.notSameDone': 'Not the same — the check won’t ask again',
+	'settings.sameAddress.done': 'All checked',
+	'settings.sameAddress.doneHint':
+		'Every address that says the same is one home now, or marked as not the same.',
+	'settings.sameAddress.declined': (p: { count: number }) => `Not the same (${p.count})`,
+	'settings.sameAddress.askAgain': 'Ask again',
+	'settings.sameAddress.offline': 'Offline — answers wait for a connection.',
 	'settings.relationships.title': 'Check relationships',
 	'settings.relationships.intro':
 		'Stella works through everyone you can see and lists the family links that follow from what is already entered. Nothing is stored until you accept it.',
