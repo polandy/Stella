@@ -99,6 +99,31 @@ export const settings: SettingsMessages = {
 	'settings.firstNameOnly.knowThemBy': (p) => `Woran erkennst du ${p.name}?`,
 	'settings.firstNameOnly.empty.title': 'Alle sind unterscheidbar',
 	'settings.firstNameOnly.empty.hint': 'Niemand mehr, von dem nur der Vorname bekannt ist.',
+	'settings.sameAddress.pageTitle': 'Gleiche Adresse · Stella',
+	'settings.sameAddress.title': 'Gleiche Adresse',
+	'settings.sameAddress.blurb':
+		'Wer an derselben Adresse wohnt, aber noch kein gemeinsames Zuhause hat.',
+	'settings.sameAddress.intro':
+		'Personen, deren eigene Adresszeilen dasselbe sagen — Gross- und Kleinschreibung, Leer- und Satzzeichen ausgenommen. Ein Zuhause hält eine Adresse für alle — ein Umzug ändert sie einmal.',
+	'settings.sameAddress.idle': 'Noch nichts geprüft',
+	'settings.sameAddress.idleHint':
+		'Die Prüfung vergleicht die Adresszeilen aller. Von sich aus ändert sie nichts.',
+	'settings.sameAddress.check': 'Adressen prüfen',
+	'settings.sameAddress.openCount': (p) => `${p.count} offen`,
+	'settings.sameAddress.homeOf': (p) => `Zuhause von ${p.names}`,
+	'settings.sameAddress.joinHint': 'Sie ziehen ein, und ihre eigene Kopie der Zeile verschwindet.',
+	'settings.sameAddress.makeHome': 'Ein Zuhause machen',
+	'settings.sameAddress.joinHome': 'Einziehen',
+	'settings.sameAddress.notSame': 'Nicht dieselbe',
+	'settings.sameAddress.madeHome': (p) => `${p.names} wohnen jetzt in einem Zuhause`,
+	'settings.sameAddress.joined': (p) => `${p.names} eingezogen`,
+	'settings.sameAddress.notSameDone': 'Nicht dieselbe — die Prüfung fragt nicht mehr',
+	'settings.sameAddress.done': 'Alles geprüft',
+	'settings.sameAddress.doneHint':
+		'Jede gleiche Adresse ist jetzt ein Zuhause oder als nicht dieselbe markiert.',
+	'settings.sameAddress.declined': (p) => `Nicht dieselbe (${p.count})`,
+	'settings.sameAddress.askAgain': 'Wieder fragen',
+	'settings.sameAddress.offline': 'Offline — Antworten warten auf eine Verbindung.',
 	'settings.relationships.title': 'Beziehungen prüfen',
 	'settings.relationships.intro':
 		'Stella geht alle Personen durch, die du sehen kannst, und zeigt die Familienverbindungen, die sich aus dem Eingetragenen ergeben. Gespeichert wird erst, was du übernimmst.',

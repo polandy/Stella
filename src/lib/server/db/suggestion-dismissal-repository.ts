@@ -1,4 +1,4 @@
-import { and, eq, ne } from 'drizzle-orm';
+import { and, eq, notInArray } from 'drizzle-orm';
 import type { BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
 import type { Dismissal } from '../../suggestions/claims';
 import type { Relation } from '../../suggestions/types';
@@ -12,6 +12,7 @@ import type {
 	SurnameDismissalRepository
 } from '../domain/contacts/last-names';
 import type { SurnameDismissal } from '../../suggestions/rules/surnames';
+import type { SameAddressDismissalRepository } from '../domain/homes/same-address';
 import type * as schema from './schema';
 import { suggestionDismissal } from './schema';
 
@@ -49,8 +50,8 @@ export function createDrizzleSuggestionDismissalRepository(
 				.where(
 					and(
 						eq(suggestionDismissal.householdId, viewer.householdId),
-						// The last-name answers share the table, not the vocabulary.
-						ne(suggestionDismissal.relation, LAST_NAME)
+						// The last-name and same-address answers share the table, not the vocabulary.
+						notInArray(suggestionDismissal.relation, [LAST_NAME, SAME_ADDRESS])
 					)
 				)
 				.all() as Dismissal[];
@@ -130,6 +131,58 @@ export function createDrizzleSurnameDismissalRepository(
 			const gone = db
 				.delete(suggestionDismissal)
 				.where(theAnswer(viewer, surnameKey(contactId, folded)))
+				.returning({ id: suggestionDismissal.id })
+				.all();
+			return gone.length > 0;
+		}
+	};
+}
+
+/** The relation a *Not the same* is stored under (docs/03 §3.9). */
+const SAME_ADDRESS = 'same_address';
+
+/*
+ * Drizzle adapter for the household's *Not the same* (docs/02 §2.17, *Same address*): the same
+ * log again, under `same_address`, keyed by `sameAddressKey`. Scoped to the household; the
+ * use-case has checked every person in a key is visible before writing or taking one back.
+ */
+export function createDrizzleSameAddressDismissalRepository(
+	db: BunSQLiteDatabase<typeof schema>
+): SameAddressDismissalRepository {
+	const ofHousehold = (viewer: Viewer) =>
+		and(
+			eq(suggestionDismissal.householdId, viewer.householdId),
+			eq(suggestionDismissal.relation, SAME_ADDRESS)
+		);
+
+	return {
+		async listForHousehold(viewer) {
+			return db
+				.select({ key: suggestionDismissal.pairKey })
+				.from(suggestionDismissal)
+				.where(ofHousehold(viewer))
+				.all()
+				.map(({ key }) => key);
+		},
+
+		async dismiss(entry) {
+			db.insert(suggestionDismissal)
+				.values({
+					id: entry.id,
+					householdId: entry.householdId,
+					relation: SAME_ADDRESS,
+					pairKey: entry.key,
+					dismissedBy: entry.dismissedBy,
+					dismissedAt: entry.dismissedAt
+				})
+				.onConflictDoNothing()
+				.run();
+		},
+
+		async restore(viewer, key) {
+			const gone = db
+				.delete(suggestionDismissal)
+				.where(and(ofHousehold(viewer), eq(suggestionDismissal.pairKey, key)))
 				.returning({ id: suggestionDismissal.id })
 				.all();
 			return gone.length > 0;
