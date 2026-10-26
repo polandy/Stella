@@ -29,6 +29,7 @@
 		sincePerPair,
 		type ServerRefusal
 	} from '$lib/relationships/multi-pick';
+	import { livesAtOffer } from '$lib/relationships/lives-at';
 	import { firstPickable, groupByExclusion } from '$lib/relationships/picker-groups';
 	import { sinceDateFromBirth } from '$lib/relationships/since';
 	import { PARENT_CHILD_TYPE_KEY, PARTNER_TYPE_KEYS } from '$lib/relationships/type-keys';
@@ -38,6 +39,7 @@
 	import { useRemovals } from '$lib/undo/context.svelte';
 	import { savedEnhance } from '$lib/undo/saved';
 	import { INPUT } from './inputs';
+	import { postLivesAt } from './lives-at-post';
 	import { announceSavedBatch, relationshipIdsOf } from './saved-batch';
 	import type { ExclusionOf, PersonForm, PersonPageData, RelationshipChoices } from './types';
 
@@ -98,6 +100,24 @@
 	/** The type choice the last batch was sent with: a refusal it brought back is about that type. */
 	let submittedChoice = $state<string | null>(null);
 
+	/** The people the picker created while this form is open: only they are offered the address. */
+	let createdIds = $state<string[]>([]);
+	/** *Lives at …* (docs/02 §2.4): ticked, so a new child moves in unless told otherwise. */
+	let livesAtTaken = $state(true);
+	/**
+	 * The move-in the last submit asked for, made once its links are saved. Kept offline, it is
+	 * dropped: a share waits for a connection like *Also lives here …*, which is still there.
+	 */
+	let movingIn: { address: string; ids: string[] } | null = null;
+
+	/** Moves the new people in, answering whether that failed. */
+	async function moveInNewcomers(): Promise<boolean> {
+		const move = movingIn;
+		movingIn = null;
+		if (!move) return false;
+		return !(await postLivesAt(c.id, move.address, move.ids));
+	}
+
 	const savedRelationship = trackPending(
 		graphPending,
 		savedEnhance(removals, t('components.saved'), () => closeRelate())
@@ -109,6 +129,8 @@
 					const targetIds = fields.getAll('targetId').map(String).filter(Boolean);
 					const typeChoice = String(fields.get('typeChoice') ?? '');
 					if (targetIds.length === 0 || !typeChoice) return null;
+					movingIn =
+						livesAt && livesAtTaken ? { address: livesAt.address, ids: livesAt.newIds } : null;
 					const text = (value: FormDataEntryValue | null) => String(value ?? '').trim() || null;
 					if (targetIds.length === 1) {
 						return {
@@ -151,6 +173,8 @@
 				errorKey: 'error',
 				pending: graphPending,
 				onApplied: async (result, command) => {
+					// Before the way back, so the card it lands on already shows them living there.
+					const moveInFailed = await moveInNewcomers();
 					if (command.type === 'relationship.addMany') {
 						announceSavedBatch(
 							{ contactId: c.id, removals, pending: graphPending, t },
@@ -166,21 +190,25 @@
 							),
 							{ noScroll: true, keepFocus: true }
 						);
-						return;
+					} else {
+						removals.notify(t('components.saved'));
+						closeRelate();
+						if (command.type === 'relationship.add') {
+							// Back on the card naming the new pair, so what it implies is offered (§2.4.1).
+							// keepFocus: the closed form hands focus back to its button (Section), and a
+							// navigation's own focus reset would drop it on the page again.
+							await goto(proposeHref(c.id, [command.payload.targetId]), {
+								noScroll: true,
+								keepFocus: true
+							});
+						}
 					}
-					removals.notify(t('components.saved'));
-					closeRelate();
-					if (command.type === 'relationship.add') {
-						// Back on the card naming the new pair, so what it implies is offered (§2.4.1).
-						// keepFocus: the closed form hands focus back to its button (Section), and a
-						// navigation's own focus reset would drop it on the page again.
-						await goto(proposeHref(c.id, [command.payload.targetId]), {
-							noScroll: true,
-							keepFocus: true
-						});
-					}
+					if (moveInFailed) removals.notify(t('contact.relationships.livesAtFailed'));
 				},
-				onKept: closeRelate
+				onKept: () => {
+					movingIn = null;
+					closeRelate();
+				}
 			},
 			savedRelationship
 		)
@@ -279,6 +307,20 @@
 		const partner = offer && otherContacts.find((person) => person.id === offer.partnerId);
 		return offer && partner ? { partner, parentName: nameOfPicked(offer.parentId) } : null;
 	});
+	/** *Lives at …*: the address offered to the new children or partner (docs/02 §2.4). */
+	const livesAt = $derived(
+		livesAtOffer({
+			choice: chosen,
+			pickedIds: picked,
+			createdIds,
+			homes: data.homes,
+			fields: data.fields
+		})
+	);
+	/** Everyone the new people would live with: this person first, then the rest of the home. */
+	const housemates = $derived(
+		livesAt ? [{ id: c.id, displayName: c.displayName }, ...livesAt.livesWith] : []
+	);
 	const hintsId = $props.id();
 	const hasHints = $derived(capHint !== null || overCapLine !== null || refusals.length > 0);
 
@@ -376,6 +418,7 @@
 				markedLabel={t('contact.relationships.chipRefused')}
 				describedBy={hasHints ? hintsId : undefined}
 				bind:selectedIds={relationshipTargetId}
+				onCreate={(person) => (createdIds = [...createdIds, person.id])}
 				onPick={(person) => {
 					if (!pickedTargets.some((known) => known.id === person.id))
 						pickedTargets = [...pickedTargets, person];
@@ -429,6 +472,32 @@
 						{t('contact.relationships.secondParentWhy', { name: coParent.parentName })}
 					</span>
 				</div>
+			{/if}
+			{#if livesAt}
+				<label
+					class="flex items-start gap-2 rounded-control border border-dashed border-primary bg-card px-2 py-1.5 text-sm"
+					data-testid="lives-at-offer"
+				>
+					<input type="checkbox" bind:checked={livesAtTaken} class="mt-0.5" />
+					<span class="flex min-w-0 flex-col gap-1">
+						<span class="flex items-center gap-1.5 font-medium text-fg">
+							<Icon name="home" size={14} />
+							{t('contact.relationships.livesAt', { line: livesAt.line })}
+						</span>
+						<span class="flex flex-wrap items-center gap-1 text-xs text-fg-muted">
+							{#each housemates as housemate (housemate.id)}
+								<Avatar id={housemate.id} name={housemate.displayName} size={20} />
+							{/each}
+							<span class="ml-1">
+								{t('contact.relationships.livesAtWith', {
+									names: new Intl.ListFormat(i18n.intlLocale, { type: 'conjunction' }).format(
+										housemates.map((housemate) => housemate.displayName)
+									)
+								})}
+							</span>
+						</span>
+					</span>
+				</label>
 			{/if}
 		</div>
 		<label class="flex w-full flex-col gap-1 text-sm">
