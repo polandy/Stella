@@ -6,6 +6,7 @@ import type { Viewer } from '../access/visibility';
 import type { NewDismissal } from '../domain/relationships/suggestion-review';
 import * as schema from './schema';
 import {
+	createDrizzleSameAddressDismissalRepository,
 	createDrizzleSuggestionDismissalRepository,
 	createDrizzleSurnameDismissalRepository
 } from './suggestion-dismissal-repository';
@@ -140,5 +141,38 @@ describe('the last-name dismissals', () => {
 		await surnames().dismiss(entry);
 		expect(await surnames().restore(viewer, 'lea', 'van der berg')).toBe(true);
 		expect(await surnames().listForHousehold(viewer)).toEqual([]);
+	});
+});
+
+/* *Not the same* (docs/02 §2.17, *Same address*): the same log, under `same_address`. */
+describe('the same-address dismissals', () => {
+	const sameAddress = () => createDrizzleSameAddressDismissalRepository(db);
+	const entry = {
+		id: 'a-1',
+		householdId: H,
+		key: 'lea,reto seestrasse 12',
+		dismissedBy: U1,
+		dismissedAt: 4_000
+	};
+
+	it('reads back an answer, once however often it is given, and takes it back', async () => {
+		await sameAddress().dismiss(entry);
+		await sameAddress().dismiss({ ...entry, id: 'a-2' });
+		expect(await sameAddress().listForHousehold(viewer)).toEqual(['lea,reto seestrasse 12']);
+		expect(await sameAddress().restore(viewer, entry.key)).toBe(true);
+		expect(await sameAddress().restore(viewer, entry.key)).toBe(false);
+	});
+
+	it('stays out of the relationship and last-name logs', async () => {
+		await repo.dismiss(dismissal());
+		await sameAddress().dismiss(entry);
+		expect((await repo.listForHousehold(viewer)).map((d) => d.relation)).toEqual(['parent']);
+		expect(await createDrizzleSurnameDismissalRepository(db).listForHousehold(viewer)).toEqual([]);
+	});
+
+	it('never crosses a household', async () => {
+		await sameAddress().dismiss(entry);
+		expect(await sameAddress().listForHousehold(otherViewer)).toEqual([]);
+		expect(await sameAddress().restore(otherViewer, entry.key)).toBe(false);
 	});
 });

@@ -3,12 +3,15 @@ import type { Clock } from '../clock';
 import { createDrizzleContactFieldRepository } from '../db/contact-field-repository';
 import { createDrizzleHomeReads, createDrizzleHomeRepository } from '../db/home-repository';
 import { createDrizzleImportantDateRepository } from '../db/important-date-repository';
+import { createDrizzleSameAddressSource } from '../db/same-address-reads';
+import { createDrizzleSameAddressDismissalRepository } from '../db/suggestion-dismissal-repository';
 import type * as schema from '../db/schema';
 import { createDrizzleTagListReads } from '../db/tag-list-reads';
 import { createDrizzleTagRepository } from '../db/tag-repository';
 import type { ContactFieldDeps } from '../domain/contact-fields/contact-fields';
 import type { ContactLookup } from '../domain/contacts/contacts';
 import type { HomeDeps, HomeListDeps } from '../domain/homes/homes';
+import type { SameAddressDeps } from '../domain/homes/same-address';
 import type { ImportantDateDeps, ImportantDateRepository } from '../domain/dates/important-dates';
 import type { TagListDeps } from '../domain/tags/tag-lists';
 import type { TagDeps, TagRepository } from '../domain/tags/tags';
@@ -32,6 +35,8 @@ export interface RecordServices {
 	/** Sharing an address, rewriting it, moving out (docs/02 §2.2). */
 	homeDeps: HomeDeps;
 	homeListDeps: HomeListDeps;
+	/** *Data quality → Same address*: the check, *Make one home*, *Not the same* (docs/02 §2.17). */
+	sameAddressDeps: SameAddressDeps;
 	importantDateDeps: ImportantDateDeps;
 	tagDeps: TagDeps;
 	/** The chip row, each person's tags and the people a chip filters to. */
@@ -50,13 +55,21 @@ export function createRecordServices({ db, clock, ids, contacts }: RecordWiring)
 	const contactFields = createDrizzleContactFieldRepository(db);
 	const importantDates = createDrizzleImportantDateRepository(db);
 	const tags = createDrizzleTagRepository(db);
+	const homes = createDrizzleHomeRepository(db);
 
 	return {
 		importantDates,
 		tags,
 		contactFieldDeps: { fields: contactFields, contacts, ids, clock },
-		homeDeps: { homes: createDrizzleHomeRepository(db), contacts, ids, clock },
+		homeDeps: { homes, contacts, ids, clock },
 		homeListDeps: { homeReads: createDrizzleHomeReads(db) },
+		sameAddressDeps: {
+			sameAddress: createDrizzleSameAddressSource(db),
+			dismissals: createDrizzleSameAddressDismissalRepository(db),
+			homes,
+			ids,
+			clock
+		},
 		importantDateDeps: { dates: importantDates, contacts, ids, clock },
 		tagDeps: { tags, ids, clock },
 		tagListDeps: { tagLists: createDrizzleTagListReads(db) }
