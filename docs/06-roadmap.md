@@ -91,7 +91,10 @@ Goal: sand the edges and add the nice-to-haves.
 - ~~**Confirm a worked-out relationship to store it**~~ — shipped (§2.4.1).
 - ~~**Fold imported custom family types into the built-ins**~~ — shipped (§2.4).
 - ~~**Welcome animation**~~ — shipped (§2.18, docs/05 §5.11.4).
-- **Stella's people in the phone's address book and calendar (CardDAV / CalDAV)** — a
+- **Stella's people in the phone's address book and calendar (CardDAV / CalDAV)** — *deferred:
+  the family's phones already sync their contacts with Nextcloud, and the two-way Nextcloud link
+  (*Email and social sync* below) brings those into Stella without a second server for phones to
+  talk to. Kept as written in case that changes.* A
   member adds Stella as a CardDAV account on their phone or mail client and sees the people
   they are allowed to see as contacts (name, photo, phone, email, address, birthday), plus a
   CalDAV calendar of their birthdays and anniversaries. **Two-way** for contacts: a person
@@ -117,10 +120,17 @@ Goal: sand the edges and add the nice-to-haves.
   per person on the Gifts card and in the story, the Monica gifts converted, the *already
   given* hint, the *Coming up* hint and *Gift idea for …* in the palette. Later: a
   household-wide idea list (§2.25.6).
-- **Email and social sync** — bring in what already knows about people: Google Contacts as a
-  first source, then mail and social. Read-only import first, matched against existing people
-  through a review list rather than merged silently, every write through the domain
-  use-cases and access layer. Sources, matching rules and credentials handling are open.
+- **Email and social sync** — bring in what already knows about people, matched against the
+  people already in Stella through a review list rather than merged silently, every write
+  through the domain use-cases and access layer (`docs/concepts/contact-sources.md`):
+  - **Google Contacts via its export**: a `.vcf` from Contacts or Takeout through the import
+    wizard's matching review. The answers are remembered, so a re-run asks only about new or
+    changed cards. *Stage 1, decided.*
+  - **Nextcloud via a two-way link**: name, phones, emails, addresses, birthday and photo kept in
+    step with the address book the phones sync with. Private people never go out, and a delete
+    in Nextcloud only unlinks. *Stage 2, decided; sync cadence, conflicts, credentials and photo
+    direction open.*
+  - Mail and social later.
 - **Native mobile apps** — beyond the PWA (§2.18), for what a PWA cannot do on a phone. Open:
   which platforms, and whether a wrapper around the PWA is enough before a true native app.
 - ~~**Performance passes**~~ — shipped.
