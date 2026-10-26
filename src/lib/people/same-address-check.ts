@@ -65,6 +65,15 @@ export function parseSameAddressKey(key: string): { folded: string; contactIds: 
 	return { folded: key.slice(at + 1), contactIds: key.slice(0, at).split(',') };
 }
 
+/**
+ * Who *Join the home* moves in: those shown who do not live there yet. Empty when everyone shown
+ * already does and only their own copy of the line goes; empty too without a home.
+ */
+export const movingIn = (finding: SameAddressFinding): SameAddressPerson[] =>
+	finding.home
+		? finding.people.filter((p) => !finding.home!.livesHere.some((h) => h.id === p.id))
+		: [];
+
 const byName = (a: SameAddressPerson, b: SameAddressPerson) =>
 	a.displayName.localeCompare(b.displayName) || a.id.localeCompare(b.id);
 

@@ -1,6 +1,7 @@
 import { foldAddress } from '../../../people/same-address';
 import {
 	findSameAddresses,
+	movingIn,
 	parseSameAddressKey,
 	sameAddressKey,
 	type HomeAtLine,
@@ -127,8 +128,8 @@ export async function makeOneHome(
 	let joining = moving;
 	if (finding.home) {
 		homeId = finding.home.id;
-		const already = new Set(finding.home.livesHere.map((p) => p.id));
-		joining = moving.filter((p) => !already.has(p.id));
+		const newcomers = new Set(movingIn(finding).map((p) => p.id));
+		joining = moving.filter((p) => newcomers.has(p.id));
 	} else {
 		// The first person's own spelling, label and parts become the home's.
 		const from = lines.find((l) => l.contactId === moving[0]!.id)!;

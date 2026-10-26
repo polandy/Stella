@@ -1,6 +1,7 @@
 import { describe, expect, test } from 'bun:test';
 import {
 	findSameAddresses,
+	movingIn,
 	parseSameAddressKey,
 	sameAddressKey,
 	type SameAddressInput
@@ -165,6 +166,19 @@ describe('a home already at that address', () => {
 			})
 		);
 		expect(found.open[0]!.home!.id).toBe('h1');
+	});
+
+	test('moving in are those who do not live there yet — nobody when all of them already do', () => {
+		const at = (ids: string[]) =>
+			findSameAddresses(
+				input({
+					people,
+					ownLines: ids.map((id) => ({ contactId: id, fieldId: `f-${id}`, value: home.value })),
+					homes: [home]
+				})
+			).open[0]!;
+		expect(movingIn(at(['anna', 'jonas'])).map((p) => p.id)).toEqual(['jonas']);
+		expect(movingIn(at(['anna']))).toEqual([]);
 	});
 
 	test('a home nobody else has the line of is no finding', () => {

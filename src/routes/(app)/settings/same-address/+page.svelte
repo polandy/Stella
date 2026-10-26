@@ -6,7 +6,7 @@
 	import EmptyState from '$lib/components/ui/EmptyState.svelte';
 	import Icon from '$lib/components/ui/Icon.svelte';
 	import { useI18n } from '$lib/i18n/context.svelte';
-	import type { SameAddressFinding } from '$lib/people/same-address-check';
+	import { movingIn, type SameAddressFinding } from '$lib/people/same-address-check';
 	import { reachability } from '$lib/pwa/reachability.svelte';
 	import { wasTakenBack, type AnsweredClaims, type AnswerState } from '$lib/relationships/answered';
 	import { useRemovals } from '$lib/undo/context.svelte';
@@ -52,14 +52,12 @@
 
 	function notice(f: SameAddressFinding, answer: 'accept' | 'decline'): string {
 		if (answer === 'decline') return t('settings.sameAddress.notSameDone');
-		return f.home
-			? t('settings.sameAddress.joined', { names: names(movingIn(f)) })
+		const newcomers = movingIn(f);
+		// Everyone shown already living there only loses a copy: they live in one home now.
+		return newcomers.length > 0
+			? t('settings.sameAddress.joined', { names: names(newcomers) })
 			: t('settings.sameAddress.madeHome', { names: names(f.people) });
 	}
-
-	/** Who moves into the home: those with the line who do not live there yet. */
-	const movingIn = (f: SameAddressFinding) =>
-		f.people.filter((p) => !f.home?.livesHere.some((h) => h.id === p.id));
 
 	/** Hands one answer to the undo window instead of posting it (`heldAnswer`). */
 	function hold(f: SameAddressFinding, answer: 'accept' | 'decline') {
