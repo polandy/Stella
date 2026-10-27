@@ -8,10 +8,32 @@ import type { ContactFieldKind } from '../people/contact-fields';
  */
 
 /**
- * The address book an export came from, read from the file itself (docs/02 §2.16). Here, not
- * beside the reader, because the activity log and the review step name it too.
+ * The address book a card came from: an exported file, read from the file itself (docs/02
+ * §2.16), or the household's linked Nextcloud book (§2.16.3). Here, not beside the reader,
+ * because the activity log and the review step name it too.
  */
-export type ContactSource = 'vcard:google' | 'vcard:nextcloud' | 'vcard:other';
+export type ContactSource = VCardFileSource | NextcloudSource;
+
+/** An exported file, by what it says it came from. */
+export type VCardFileSource = 'vcard:google' | 'vcard:nextcloud' | 'vcard:other';
+
+/** The household's linked Nextcloud address book, by the book's name. */
+export type NextcloudSource = `nextcloud:${string}`;
+
+export const isNextcloudSource = (source: ContactSource): source is NextcloudSource =>
+	source.startsWith('nextcloud:');
+
+/** A source as the catalogue words it (`import.review.source.<word>`): the linked book is one. */
+export type SourceWord = 'google' | 'nextcloud' | 'other' | 'linked';
+
+const FILE_WORD: Record<VCardFileSource, SourceWord> = {
+	'vcard:google': 'google',
+	'vcard:nextcloud': 'nextcloud',
+	'vcard:other': 'other'
+};
+
+export const sourceWord = (source: ContactSource): SourceWord =>
+	isNextcloudSource(source) ? 'linked' : FILE_WORD[source];
 
 /** A label every address book writes the same way; worded in the member's language on writing. */
 export type KnownLabel = 'home' | 'work' | 'mobile';

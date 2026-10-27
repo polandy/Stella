@@ -167,6 +167,7 @@ describe('createServices', () => {
 				...config,
 				mediaDir: '/nonexistent/stella-media',
 				immich: wiring.config.immich,
+				nextcloud: null,
 				sessionSecret: wiring.config.sessionSecret,
 				updateCheck: false,
 				updateFeedUrl: ''
@@ -203,6 +204,7 @@ describe('createServices', () => {
 				...config,
 				mediaDir: '/nonexistent/stella-media',
 				immich: null,
+				nextcloud: null,
 				sessionSecret: wiring.config.sessionSecret,
 				updateCheck: false,
 				updateFeedUrl: ''

@@ -1,5 +1,6 @@
 import { and, eq } from 'drizzle-orm';
 import type { BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
+import { isMemberAccount } from '../access/query-scoping';
 import type { Role } from '../auth/accounts';
 import type { IdentityStore } from '../auth/oidc/login';
 import type { IdGenerator } from '../id';
@@ -36,7 +37,7 @@ export function createDrizzleIdentityStore(
 			const row = db
 				.select({ id: userTable.id, removedAt: userTable.removedAt })
 				.from(userTable)
-				.where(eq(userTable.email, email))
+				.where(and(eq(userTable.email, email), isMemberAccount()))
 				.get();
 			return row ? { id: row.id, removed: row.removedAt !== null } : null;
 		},

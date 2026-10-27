@@ -998,6 +998,29 @@ when it changes; to be asked again, find it under **Skipped contacts** on the im
 press *Ask again*. Google keeps some pictures only as links, which are not in the file: the
 review says how many.
 
+### Keeping Stella and Nextcloud in step
+
+When whoever runs Stella has linked the household's Nextcloud address book (see the install
+guide), you no longer export anything: Stella and the address book your phones sync with keep
+each other up to date — names, phone numbers, emails, addresses, birthdays and photos.
+
+- **When**: each time anyone opens Stella, if the last sync is more than ten minutes ago, and
+  whenever an admin presses **Sync now** on **Import people**.
+- **New contacts** from Nextcloud are not added on their own: the import page tells an admin
+  *N new cards to review*, and **Review** asks who is who exactly like a file does.
+- **Changed contacts** fill in what Stella is missing. When a card and Stella disagree about a
+  first name, last name, birthday or photo, Stella keeps its own and asks under **Settings →
+  Data quality → Nextcloud differences**: tap the side you want. Until you answer, that
+  person's card is left alone.
+- **Your changes** to a linked person go to their card at the next sync, the photo included —
+  a photo chosen from Immich too.
+- **Private people never leave Stella.** A person who becomes private is unlinked at the next
+  sync, and their card stays in Nextcloud as it was.
+- **Deleting a contact in Nextcloud** only unlinks the person; nobody is deleted in Stella.
+  People only in Stella, or only in Nextcloud, stay where they are.
+
+What a sync changed shows in the activity log as done by *Nextcloud*.
+
 ### Letting a script add people for you
 
 A class list, a club roster, the guests of a wedding: when people arrive as a list, a script

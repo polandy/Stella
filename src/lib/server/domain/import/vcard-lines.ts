@@ -41,7 +41,7 @@ export interface Property {
  * folds a second way — a quoted-printable value breaks with a trailing `=` and continues on a
  * line of its own — so that is joined here too, before anything reads the value.
  */
-function unfold(text: string): string[] {
+export function unfold(text: string): string[] {
 	const lines: string[] = [];
 	const last = () => lines[lines.length - 1] ?? '';
 	for (const line of text.replace(/\r\n/g, '\n').replace(/\r/g, '\n').split('\n')) {
@@ -120,7 +120,7 @@ export function unescape(value: string): string {
 }
 
 /** Parse one content line into group, name, parameters and the still-escaped value. */
-function parseLine(line: string): Property | null {
+export function parseLine(line: string): Property | null {
 	let colon = -1;
 	let quoted = false;
 	for (let i = 0; i < line.length; i++) {

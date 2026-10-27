@@ -13,5 +13,6 @@ export * from './circles';
 export * from './suggestions';
 export * from './immich';
 export * from './sources';
+export * from './nextcloud';
 export * from './commands';
 export * from './activity';

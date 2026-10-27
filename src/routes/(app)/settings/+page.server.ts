@@ -5,6 +5,7 @@ import { say, translator } from '$lib/server/i18n/say';
 import { setSelfContact, UnknownSelfContactError } from '$lib/server/domain/household/self-contact';
 import { countKnownByAFirstNameOnly } from '$lib/server/domain/contacts/directory';
 import { countLastNames } from '$lib/server/domain/contacts/last-names';
+import { waitingConflicts } from '$lib/server/domain/nextcloud/conflicts';
 import { APP_VERSION } from '$lib/version';
 import type { Actions, PageServerLoad } from './$types';
 
@@ -21,14 +22,18 @@ export const load: PageServerLoad = async ({ locals }) => {
 	const check = locals.services.release.updateCheck;
 	const viewer = requireViewer(locals);
 	// How many are left to tidy up, so the card says whether opening it is worth it.
-	const [firstNameOnlyCount, lastNames] = await Promise.all([
+	const nextcloud = locals.services.nextcloud;
+	const [firstNameOnlyCount, lastNames, nextcloudConflicts] = await Promise.all([
 		countKnownByAFirstNameOnly(locals.services.people.contactDirectoryDeps, viewer),
-		countLastNames(locals.services.people.surnameReviewDeps, viewer)
+		countLastNames(locals.services.people.surnameReviewDeps, viewer),
+		// Null without a linked Nextcloud book, and then its card is not there at all.
+		nextcloud ? waitingConflicts(nextcloud.conflictAnswerDeps, viewer).then((c) => c.length) : null
 	]);
 	return {
 		isAdmin: user.role === 'admin',
 		firstNameOnlyCount,
 		lastNames,
+		nextcloudConflicts,
 		version: APP_VERSION,
 		update: check?.status() ?? null,
 		// Immich's line (docs/02 §2.24.1), streamed like the release check; null

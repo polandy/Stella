@@ -1,7 +1,7 @@
 import { and, asc, count, eq, isNull } from 'drizzle-orm';
 import type { BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
 import type { SQLiteColumn, SQLiteTable } from 'drizzle-orm/sqlite-core';
-import { memberRemovableBy, memberRestorableBy } from '../access/query-scoping';
+import { isMemberAccount, memberRemovableBy, memberRestorableBy } from '../access/query-scoping';
 import { activityEntry } from '../domain/activity/activity';
 import type { MemberAccountRepository } from '../domain/household/remove-member';
 import type * as schema from './schema';
@@ -60,7 +60,7 @@ export function createDrizzleMemberAccountRepository(
 					removedAt: user.removedAt
 				})
 				.from(user)
-				.where(eq(user.householdId, householdId))
+				.where(and(eq(user.householdId, householdId), isMemberAccount()))
 				.orderBy(asc(user.name))
 				.all()
 				.map(({ passwordHash, ...account }) => ({

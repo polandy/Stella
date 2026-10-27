@@ -1,7 +1,7 @@
 import { INTL_LOCALES } from '$lib/i18n/locales';
 import { createTranslator } from '$lib/i18n/translate';
 import type { ActivityWording } from '$lib/server/domain/activity/activity';
-import type { ContactSource } from '$lib/import-match/card';
+import { sourceWord } from '$lib/import-match/card';
 
 /*
  * The activity log's localized lines (docs/02 §2.19), from the catalogues. The entry is data the
@@ -49,14 +49,7 @@ export const activityWording: ActivityWording = {
 		const list = new Intl.ListFormat(INTL_LOCALES[locale], { type: 'conjunction' }).format(clauses);
 		return t('import.review.loggedSummary', {
 			list,
-			source: t(`import.review.source.${SOURCE_WORD[source]}`)
+			source: t(`import.review.source.${sourceWord(source)}`)
 		});
 	}
 };
-
-/** Where an export came from, as its catalogue word. */
-const SOURCE_WORD = {
-	'vcard:google': 'google',
-	'vcard:nextcloud': 'nextcloud',
-	'vcard:other': 'other'
-} as const satisfies Record<ContactSource, string>;

@@ -18,6 +18,7 @@ import {
 import { importWording } from '$lib/server/i18n/import-wording';
 import { say, translator } from '$lib/server/i18n/say';
 import type { Actions, PageServerLoad } from './$types';
+import { nextcloudActions, nextcloudPanel } from './actions/nextcloud';
 import { reviewActions, reviewStep } from './actions/review';
 import { photoManifest, stagedStep, VisibilitySchema } from './actions/staged';
 
@@ -26,7 +27,8 @@ import { photoManifest, stagedStep, VisibilitySchema } from './actions/staged';
  * exports is accepted — the SQL dump or the JSON file — and a vCard besides, and which one it
  * is comes from the file itself. A vCard is reviewed against the people already here instead
  * of confirmed (`actions/review.ts`). It is staged on disk between steps; every step re-plans from it, so
- * the preview and the import can never disagree. Admin only.
+ * the preview and the import can never disagree. The linked Nextcloud book's new cards take the
+ * same review (`actions/nextcloud.ts`). Admin only.
  */
 
 /** The errors that mean "this file is not an export I can read", whichever format it claimed. */
@@ -45,7 +47,8 @@ export const load: PageServerLoad = async ({ locals }) => {
 		skipped: await skippedContacts(locals.services.archive.reviewViewDeps, {
 			id: user.id,
 			householdId: user.householdId
-		})
+		}),
+		nextcloud: await nextcloudPanel(locals)
 	};
 };
 
@@ -60,6 +63,7 @@ async function dumpTextOf(file: File): Promise<string> {
 
 export const actions = {
 	...reviewActions,
+	...nextcloudActions,
 
 	preview: async ({ request, locals }) => {
 		const user = requireAdmin(locals);

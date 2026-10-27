@@ -100,6 +100,7 @@ export const importer: ImportMessages = {
 	'import.review.source.google': 'einem Google-Export',
 	'import.review.source.nextcloud': 'einem Nextcloud-Export',
 	'import.review.source.other': 'einer vCard-Datei',
+	'import.review.source.linked': 'dem Nextcloud-Adressbuch',
 	'import.review.label.home': 'Privat',
 	'import.review.label.work': 'Arbeit',
 	'import.review.label.mobile': 'Mobil',

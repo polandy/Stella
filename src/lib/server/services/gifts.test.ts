@@ -120,6 +120,7 @@ describe('createServices', () => {
 			config: {
 				...SERVICES_CONFIG,
 				immich: null,
+				nextcloud: null,
 				sessionSecret: 'a-session-secret',
 				updateCheck: false,
 				updateFeedUrl: '',

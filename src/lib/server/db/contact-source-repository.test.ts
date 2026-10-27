@@ -136,6 +136,12 @@ describe('createDrizzleContactSourceRepository', () => {
 		});
 	});
 
+	it('matches the linked book’s cards against shared people only, not even one’s own private', async () => {
+		const people = await repo.matchablePeople(asAnna, { sharedOnly: true });
+
+		expect(people.map((p) => p.id).sort()).toEqual(['c-anna', 'c-bruno']);
+	});
+
 	it('remembers answers per household and source, the latest one winning', async () => {
 		writeSourceLinks(db, H, [linked('k1', 'c-anna'), skipped('k2')]);
 		writeSourceLinks(db, H, [linked('k1', 'c-bruno', { cardHash: 'newer' })]);

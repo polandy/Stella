@@ -50,15 +50,30 @@ export interface SkippedCard {
 	answeredAt: number;
 }
 
+/** Whom a card may be matched against. */
+export interface MatchOptions {
+	/** Only shared people (docs/02 §2.16.3: a private person is never linked to the book). */
+	sharedOnly?: boolean;
+}
+
+/**
+ * How a review reads its cards when they are not an uploaded file's: the source they are
+ * remembered under, instead of the one read from the file, and whom they may be matched with.
+ */
+export interface ReviewScope extends MatchOptions {
+	source?: ContactSource;
+}
+
 /** Where the answers are kept, and the people a card may be matched against. */
 export interface ContactSourceRepository {
 	/** Every answer the household gave for this source, by card key. */
 	answersFor(viewer: Viewer, source: ContactSource): Promise<Map<string, RememberedAnswer>>;
 	/**
 	 * The people a card may be matched against: those the member may browse — never a private
-	 * person of someone else, never one archived — with what the merge plan compares.
+	 * person of someone else, never one archived — with what the merge plan compares. With
+	 * `sharedOnly`, no private person at all: the linked address book's cards are matched so.
 	 */
-	matchablePeople(viewer: Viewer): Promise<StellaPerson[]>;
+	matchablePeople(viewer: Viewer, options?: MatchOptions): Promise<StellaPerson[]>;
 	/** The household's skipped cards, newest answer first. */
 	skippedFor(viewer: Viewer): Promise<SkippedCard[]>;
 	/** Forgets a skip, so the card is asked about next time; false when there was none. */

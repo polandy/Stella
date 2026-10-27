@@ -5,7 +5,7 @@
 	import Icon from '$lib/components/ui/Icon.svelte';
 	import { useI18n } from '$lib/i18n/context.svelte';
 	import { cardFacts } from '$lib/import-match/card-facts';
-	import type { ContactSource } from '$lib/import-match/card';
+	import { sourceWord, type ContactSource, type SourceWord } from '$lib/import-match/card';
 	import type { Conflict } from '$lib/import-match/merge-plan';
 	import type { ReviewAnswer, ReviewCandidate, ReviewCard } from '$lib/import-match/review';
 	import ConflictChoice from './ConflictChoice.svelte';
@@ -38,11 +38,11 @@
 		several: 'bg-warning-soft text-fg',
 		none: 'bg-primary-soft text-fg'
 	};
-	const FROM = {
-		'vcard:google': 'google',
-		'vcard:nextcloud': 'nextcloud',
-		'vcard:other': 'other'
-	} as const satisfies Record<ContactSource, string>;
+	/** A card of the linked book is from Nextcloud as much as one of its export. */
+	const from = $derived.by((): Exclude<SourceWord, 'linked'> => {
+		const word = sourceWord(source);
+		return word === 'linked' ? 'nextcloud' : word;
+	});
 
 	const i18n = useI18n();
 	const t = i18n.t;
@@ -124,7 +124,7 @@
 		<div class="grid gap-4 sm:grid-cols-2">
 			<section class="flex min-w-0 flex-col gap-2">
 				<h3 class="text-xs tracking-wide text-fg-subtle uppercase">
-					{t(`import.review.from.${FROM[source]}`)}
+					{t(`import.review.from.${from}`)}
 				</h3>
 				<p class="flex items-center gap-2 font-medium text-fg">
 					<Avatar id={key} name={item.card.displayName} size={28} />

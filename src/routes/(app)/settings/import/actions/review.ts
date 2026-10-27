@@ -1,6 +1,6 @@
 import { fail, type RequestEvent } from '@sveltejs/kit';
 import * as v from 'valibot';
-import type { Visibility } from '$lib/server/access/visibility';
+import type { NextcloudSource } from '$lib/import-match/card';
 import { requireAdmin } from '$lib/server/auth/guards';
 import {
 	applyContactReview,
@@ -8,15 +8,18 @@ import {
 } from '$lib/server/domain/import/contact-review';
 import { ContactGoneError } from '$lib/server/domain/contacts/require-visible';
 import { askAgain, prepareContactReview } from '$lib/server/domain/import/review-view';
+import { applyBookReview, prepareBookReview } from '$lib/server/domain/nextcloud/review';
 import { importWording } from '$lib/server/i18n/import-wording';
 import { say, translator } from '$lib/server/i18n/say';
 import { parseAnswers } from './answers';
-import { photoManifest, stagedStep } from './staged';
+import { photoManifest, stagedStep, type StagedStep } from './staged';
 
 /*
  * The vCard wizard's review step (docs/02 §2.16): who each incoming contact is, answered by
  * the member, then written as one. The answers live in the browser until *Import*; the server
  * re-reads the staged file and re-checks every answer against who the member may browse.
+ * The linked Nextcloud book's new cards take the same step (docs/02 §2.16.3), matched against
+ * shared people only, and need no photo step: a card's picture is stored by the server.
  */
 
 const viewerOf = (locals: App.Locals) => {
@@ -25,24 +28,25 @@ const viewerOf = (locals: App.Locals) => {
 };
 
 const AskAgainSchema = v.object({
-	source: v.picklist(['vcard:google', 'vcard:nextcloud', 'vcard:other']),
+	source: v.union([
+		v.picklist(['vcard:google', 'vcard:nextcloud', 'vcard:other']),
+		v.custom<NextcloudSource>((s) => typeof s === 'string' && s.startsWith('nextcloud:'))
+	]),
 	uid: v.pipe(v.string(), v.minLength(1))
 });
 
 /** The review step for a staged vCard. */
-export async function reviewStep(
-	locals: App.Locals,
-	step: { token: string; visibility: Visibility; text: string }
-) {
+export async function reviewStep(locals: App.Locals, step: StagedStep) {
+	const viewer = viewerOf(locals);
+	const { nextcloud } = locals.services;
 	return {
 		step: 'review' as const,
 		token: step.token,
 		visibility: step.visibility,
-		review: await prepareContactReview(
-			locals.services.archive.reviewViewDeps,
-			viewerOf(locals),
-			step.text
-		)
+		review:
+			step.book && nextcloud
+				? await prepareBookReview(nextcloud.bookReviewDeps, viewer, step.book)
+				: await prepareContactReview(locals.services.archive.reviewViewDeps, viewer, step.text)
 	};
 }
 
@@ -65,6 +69,26 @@ export const reviewActions = {
 		if (answers === null) return refused(say(locals, 'import.review.error.unanswered'));
 
 		try {
+			const { nextcloud } = locals.services;
+			if (step.book && nextcloud) {
+				const outcome = await applyBookReview(nextcloud.bookReviewDeps, {
+					viewer,
+					source: step.book,
+					answers,
+					wording: importWording(locals),
+					locale: locals.locale
+				});
+				return {
+					step: 'reviewed' as const,
+					token: step.token,
+					visibility: step.visibility,
+					added: outcome.added,
+					completed: outcome.completed,
+					skipped: outcome.skipped,
+					linkPhotos: 0,
+					photos: []
+				};
+			}
 			const outcome = await applyContactReview(locals.services.archive.contactReviewDeps, {
 				viewer,
 				text: step.text,

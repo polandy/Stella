@@ -14,7 +14,7 @@ import {
 	type ImportWording
 } from './monica/plan';
 import { cardsToReview, completionOf, isCompleting, type PersonCompletion } from './review-cards';
-import type { ContactSourceRepository, SourceLink } from './source-links';
+import type { ContactSourceRepository, ReviewScope, SourceLink } from './source-links';
 import { readReviewExport } from './review-export';
 
 /*
@@ -75,6 +75,8 @@ export interface ContactReviewRequest {
 	visibility: Visibility;
 	wording: ImportWording;
 	locale: Locale;
+	/** Set when the cards are the linked book's rather than an uploaded file's. */
+	scope?: ReviewScope;
 }
 
 export interface ContactReviewOutcome {
@@ -113,13 +115,15 @@ export async function applyContactReview(
 	deps: ContactReviewDeps,
 	request: ContactReviewRequest
 ): Promise<ContactReviewOutcome> {
-	const { viewer } = request;
+	const { viewer, scope = {} } = request;
 	const now = deps.clock.now();
-	const { source, cards, linkPhotos, exp, planIdOf } = readReviewExport(request.text);
+	const read = readReviewExport(request.text);
+	const { cards, linkPhotos, exp, planIdOf } = read;
+	const source = scope.source ?? read.source;
 
 	const [remembered, people] = await Promise.all([
 		deps.sources.answersFor(viewer, source),
-		deps.sources.matchablePeople(viewer)
+		deps.sources.matchablePeople(viewer, scope)
 	]);
 	const review = cardsToReview(cards, remembered, people);
 	const byId = new Map(people.map((p) => [p.id, p]));

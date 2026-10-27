@@ -47,7 +47,7 @@ const GOOGLE_CONTACT_ID = /googleusercontent\.com\/contacts\/([^/?#=]+)/i;
 const STAMPS = ['REV', 'PRODID'];
 
 /** A custom label (`itemN.X-ABLabel`) wins; else the first type Stella has a label for. */
-function labelOf(property: Property, card: Property[]): CardLabel | null {
+export function labelOf(property: Property, card: Property[]): CardLabel | null {
 	if (property.group !== null) {
 		const typed = card.find((p) => p.group === property.group && p.name === 'X-ABLABEL');
 		const text = orNull(unescape(typed?.raw ?? ''));
@@ -63,7 +63,7 @@ function labelOf(property: Property, card: Property[]): CardLabel | null {
 }
 
 /** The line Stella stores an address as, the same join the mapping makes (`plan.ts`). */
-function addressLine(property: Property): string | null {
+export function addressLine(property: Property): string | null {
 	const a = readAddress(property);
 	const cityLine = orNull([a.postalCode, a.city].filter(Boolean).join(' '));
 	return orNull([a.street, cityLine, a.province, a.country].filter(Boolean).join(', '));
@@ -72,6 +72,11 @@ function addressLine(property: Property): string | null {
 function birthdayOf(property: Property | undefined): PartialDate | null {
 	const day = property ? parseDay(unescape(property.raw)) : null;
 	if (!day) return null;
+	// vCard 3.0 cannot leave out a year, so Apple and DAVx5 write a stand-in one and name it.
+	const omitted = property?.params.get('X-APPLE-OMIT-YEAR')?.[0];
+	if (omitted !== undefined && day.date.startsWith(`${omitted}-`)) {
+		return partialDateOfDay(`--${day.date.slice(5)}`);
+	}
 	return partialDateOfDay(day.isYearUnknown ? `--${day.date.slice(5)}` : day.date);
 }
 

@@ -47,6 +47,15 @@ export function contactBrowsableBy(viewer: Viewer): SQL {
 }
 
 /**
+ * Condition for a person the linked address book may hold (docs/02 §2.16.3): one `viewer` may
+ * browse, and shared — a private person never reaches the book, not even through the member
+ * who made them.
+ */
+export function contactInBookFor(viewer: Viewer): SQL {
+	return and(contactBrowsableBy(viewer), eq(contact.visibility, 'shared'))!;
+}
+
+/**
  * Condition for a child record (note / photo / interaction) being visible: its parent
  * contact must be visible (the query must join `contact`), and a private child is only
  * visible to its author.
@@ -185,6 +194,14 @@ export function activityVisibleTo(viewer: Viewer): SQL {
 }
 
 /**
+ * Condition for a `user` row being a member — someone who signs in — and not the system actor
+ * the activity log names for the linked address book (docs/02 §2.16.3).
+ */
+export function isMemberAccount(): SQL {
+	return eq(user.kind, 'member');
+}
+
+/**
  * Condition for a `user` row being a member the remover may remove — the SQL of
  * `canRemoveMember`: an admin, another current member of the same household.
  */
@@ -193,7 +210,8 @@ export function memberRemovableBy(remover: Remover): SQL {
 	return and(
 		eq(user.householdId, remover.householdId),
 		ne(user.id, remover.id),
-		isNull(user.removedAt)
+		isNull(user.removedAt),
+		isMemberAccount()
 	)!;
 }
 
@@ -206,6 +224,7 @@ export function memberRestorableBy(remover: Remover): SQL {
 	return and(
 		eq(user.householdId, remover.householdId),
 		ne(user.id, remover.id),
-		isNotNull(user.removedAt)
+		isNotNull(user.removedAt),
+		isMemberAccount()
 	)!;
 }
