@@ -10,9 +10,10 @@ import { appReady, openPerson, signIn } from './app';
  * (`src/lib/server/nextcloud/demo-book.ts`): once Stella has written Markus's card, a "phone"
  * changes it a single time — a home email and a birthday a day off Stella's. The book lives as
  * long as the server, so this is the one spec that answers its review, and it links Markus alone:
- * Thomas and Petra stay out of Stella for the specs that use them as they are. A sync on opening
- * Stella may land between two *Sync now*s, so the cases read where the sync leaves Stella, not
- * the counts of one particular run.
+ * Thomas and Petra stay out of Stella for the specs that use them as they are. Once answered the
+ * review does not come back, so the case runs once per server (no `--repeat-each`). A sync on
+ * opening Stella may land between two *Sync now*s, so the case reads where the syncs leave
+ * Stella, not the counts of one particular run.
  */
 
 const DRIFT_EMAIL = 'markus@familie-brunner.ch';
