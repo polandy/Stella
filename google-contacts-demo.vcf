@@ -1,0 +1,82 @@
+BEGIN:VCARD
+VERSION:3.0
+FN:Markus Brunner
+N:Brunner;Markus;;;
+EMAIL;TYPE=INTERNET;TYPE=HOME:markus.brunner@bluewin.ch
+item1.TEL:+41 31 555 20 10
+item1.X-ABLabel:Büro
+BDAY:1983-03-14
+ORG:Swisscom
+CATEGORIES:myContacts,starred,Familie
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+FN:Thomas Widmer
+N:Widmer;Thomas;;;
+TEL;TYPE=CELL:+41 79 330 87 41
+EMAIL;TYPE=INTERNET:thomas.widmer@gmx.ch
+BDAY:1982-04-15
+CATEGORIES:myContacts,Familie
+PHOTO:https://lh3.googleusercontent.com/contacts/AbCdEf123
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+FN:Sandra Brunner-Keller
+N:Brunner-Keller;Sandra;;;
+EMAIL;TYPE=INTERNET:markus.brunner@bluewin.ch
+CATEGORIES:myContacts
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+FN:Heidi Lehmann
+N:Lehmann;Heidi;;;
+EMAIL;TYPE=INTERNET:heidi.lehmann@sunrise.ch
+ADR;TYPE=HOME:;;Rosenweg 4;Thun;;3600;Schweiz
+CATEGORIES:myContacts
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+FN:Anna Meier
+N:Meier;Anna;;Dr.;
+TEL;TYPE=WORK:+41 31 300 44 00
+ORG:Praxis am Bahnhof
+CATEGORIES:myContacts
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+FN:Pizzeria Da Mario
+ORG:Pizzeria Da Mario
+TEL;TYPE=WORK:+41 31 312 77 88
+CATEGORIES:myContacts
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+FN:Jonas Huber
+N:Huber;Jonas;;;
+TEL;TYPE=CELL:+41 76 410 22 93
+EMAIL;TYPE=INTERNET:jonas.huber@proton.me
+CATEGORIES:myContacts,Jassrunde
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+FN:Garage Frei
+ORG:Garage Frei AG
+TEL;TYPE=WORK:+41 31 819 05 05
+CATEGORIES:myContacts
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+FN:Lisa Gerber
+N:Gerber;Lisa;;;
+TEL;TYPE=CELL:+41 79 882 14 07
+item1.EMAIL:lisa@coiffeur-lisa.ch
+item1.X-ABLabel:Salon
+CATEGORIES:myContacts
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+FN:Bäckerei Moser
+ORG:Bäckerei Moser
+TEL;TYPE=WORK:+41 31 951 11 20
+CATEGORIES:myContacts
+END:VCARD
