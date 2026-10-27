@@ -1,6 +1,5 @@
-import type { StellaPerson } from '../../../import-match/card';
+import type { ContactSource, StellaPerson } from '../../../import-match/card';
 import type { Viewer } from '../../access/visibility';
-import type { VCardSource } from './vcard-source';
 
 /*
  * The answers the household gave for the cards of another address book (docs/02 §2.16, the
@@ -12,7 +11,7 @@ import type { VCardSource } from './vcard-source';
  * not see, or someone archived, is only said to be taken care of — never who it is.
  */
 
-export type ContactSource = VCardSource;
+export type { ContactSource };
 
 export type SourceLinkState = 'linked' | 'skipped';
 

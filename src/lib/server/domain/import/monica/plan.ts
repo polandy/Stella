@@ -17,6 +17,7 @@ import type { MonicaContact, SourceExport, MonicaId, MonicaSpecialDate } from '.
 import { mapRelationshipType } from './relationship-types';
 import { sourcePrefix } from '../source';
 import type { Gender } from '../../../../people/gender';
+import type { KnownLabel } from '../../../../import-match/card';
 
 /*
  * The Monica → Stella mapping (docs/02 §2.16; the table is docs/monica-mapping.md). Pure:
@@ -55,6 +56,8 @@ export interface ImportWording {
 	metThroughInfo: (info: string, name: string) => string;
 	/** One day, spelled out. */
 	day: (isoDay: string) => string;
+	/** A label every address book writes the same way (*Home*), for a field the review adds. */
+	fieldLabel: (label: KnownLabel) => string;
 }
 
 /** A contact row as the import writes it — the profile fields Stella's create form lacks included. */

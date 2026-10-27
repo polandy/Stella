@@ -42,4 +42,16 @@ describe('activityWording', () => {
 			activityWording.imported('de', { people: 0, completed: 0, circlesChanged: 3 }, 'school')
 		).toBe('3 Kreise geändert (über die API, school)');
 	});
+
+	it('writes a matching review with the address book it came from', () => {
+		expect(activityWording.reviewed('en', { people: 4, completed: 11 }, 'vcard:google')).toBe(
+			'imported 4 people and added contact details to 11 people from a Google export'
+		);
+		expect(activityWording.reviewed('en', { people: 0, completed: 1 }, 'vcard:other')).toBe(
+			'added contact details to 1 person from a vCard file'
+		);
+		expect(activityWording.reviewed('de', { people: 1, completed: 0 }, 'vcard:nextcloud')).toBe(
+			'1 Person importiert (aus einem Nextcloud-Export)'
+		);
+	});
 });

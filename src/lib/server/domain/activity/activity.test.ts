@@ -27,7 +27,9 @@ const recorded = <E extends PlainActivityEvent | LocalizedActivityEvent>(
 
 const wording: ActivityWording = {
 	restored: (locale, people, household) => `${locale}: restored ${people} from ${household}`,
-	imported: (locale, { people }, source) => `${locale}: imported ${people} from ${source}`
+	imported: (locale, { people }, source) => `${locale}: imported ${people} from ${source}`,
+	reviewed: (locale, { people, completed }, source) =>
+		`${locale}: imported ${people}, completed ${completed} from ${source}`
 };
 
 describe('activityRecord', () => {
@@ -254,6 +256,26 @@ describe('localizedActivityEntry', () => {
 			contactId: null,
 			visibility: 'private',
 			summary: 'en: imported 4 from kindergarten'
+		});
+	});
+
+	it('logs a matching review in the member’s language, as visible as what it imported', () => {
+		const event = {
+			kind: 'contacts.reviewed',
+			people: 2,
+			completed: 5,
+			source: 'vcard:google',
+			visibility: 'shared',
+			locale: 'de'
+		} as const;
+		expect(localizedActivityEntry(recorded(event), wording)).toEqual({
+			...stamp,
+			action: 'import',
+			entityType: 'household',
+			entityId: 'h-1',
+			contactId: null,
+			visibility: 'shared',
+			summary: 'de: imported 2, completed 5 from vcard:google'
 		});
 	});
 });

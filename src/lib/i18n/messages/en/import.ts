@@ -126,6 +126,19 @@ export const importer = {
 	'import.api.circleCount': (p: { count: number }): string =>
 		p.count === 1 ? '1 circle' : `${p.count} circles`,
 
+	// The matching review of a vCard (docs/02 §2.16): the activity line names where it came from.
+	'import.review.loggedSummary': (p: { list: string; source: string }) =>
+		`${p.list} from ${p.source}`,
+	'import.review.source.google': 'a Google export',
+	'import.review.source.nextcloud': 'a Nextcloud export',
+	'import.review.source.other': 'a vCard file',
+	// The labels an added field carries, written into the data in the member's language.
+	'import.review.label.home': 'Home',
+	'import.review.label.work': 'Work',
+	'import.review.label.mobile': 'Mobile',
+	'import.review.error.unanswered':
+		'Some contacts still need an answer. Go back to the review and answer them.',
+
 	'import.error.chooseFile': 'Please choose the Monica export or vCard file to import.',
 	'import.error.sessionMissing': 'The import session is missing. Please upload the dump again.',
 	'import.error.sessionGone': 'The uploaded dump is no longer available. Please upload it again.',

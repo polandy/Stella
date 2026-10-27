@@ -7,6 +7,12 @@ import type { ContactFieldKind } from '../people/contact-fields';
  * server, the review step in the browser and the use-case all share them.
  */
 
+/**
+ * The address book an export came from, read from the file itself (docs/02 §2.16). Here, not
+ * beside the reader, because the activity log and the review step name it too.
+ */
+export type ContactSource = 'vcard:google' | 'vcard:nextcloud' | 'vcard:other';
+
 /** A label every address book writes the same way; worded in the member's language on writing. */
 export type KnownLabel = 'home' | 'work' | 'mobile';
 

@@ -20,6 +20,7 @@ export function importWording(locals: App.Locals): ImportWording {
 		monicaActivity: (kind) => t('import.note.monicaActivity', { kind }),
 		metThrough: (name) => t('import.metThrough', { name }),
 		metThroughInfo: (info, name) => t('import.metThroughInfo', { info, name }),
-		day: (isoDay) => dayLabel(lang, isoDay)
+		day: (isoDay) => dayLabel(lang, isoDay),
+		fieldLabel: (label) => t(`import.review.label.${label}`)
 	};
 }

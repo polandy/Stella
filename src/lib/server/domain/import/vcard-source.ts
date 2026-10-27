@@ -1,7 +1,8 @@
+import type { ContactSource } from '../../../import-match/card';
 import { readCategories, type Property } from './vcard-lines';
 
 /** Where a file comes from, read from the file itself (docs/concepts/contact-sources.md §1.4). */
-export type VCardSource = 'vcard:google' | 'vcard:nextcloud' | 'vcard:other';
+export type VCardSource = ContactSource;
 
 /** Google's own groups: every contact is in `myContacts`, a starred one also in `starred`. */
 const GOOGLE_GROUPS = ['myContacts', 'starred'];
