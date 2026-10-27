@@ -70,11 +70,13 @@ never named, never counted.
 A phone is normalised to digits with a leading `+`: `0041 79 …` and `+41 79 …` are one number.
 A national `079 …` has no country, so it is compared by its last nine digits against the
 numbers Stella holds. That is enough to make someone a *candidate*, never a strong match on its
-own. Stella has no household country yet; open: whether to add one so `079 …` reads as
-`+41 79 …`.
+own. Decided: no household country — a household setting for one rule is not worth it, and
+the tail is enough for a candidate.
 
-Pure, in `src/lib/import-match/` (step 1): `normaliseEmail`, `normalisePhone`, `foldName`,
-`candidatesFor(card, people) → { person, strength, reasons[] }[]`.
+Pure, in `src/lib/import-match/` (step 1): `normaliseEmail`, `normalisePhone`, `samePhone`,
+`foldName`, `matchCard(card, people)` → strong / weak (one candidate), several, or none, each
+candidate with its reasons; `mergePlan(card, person)` → facts to add, conflicts, and what is
+kept out.
 
 ### 1.3 What *Same person* writes
 
