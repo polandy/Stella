@@ -47,6 +47,7 @@ import {
 	Plus,
 	Route,
 	Search,
+	RefreshCw,
 	Settings,
 	Shrink,
 	SkipForward,
@@ -170,7 +171,8 @@ export const ICONS = {
 	subCircle: CornerDownRight,
 	// The import review (docs/02 §2.16): a card left out, and where card and person disagree.
 	skip: SkipForward,
-	conflict: TriangleAlert
+	conflict: TriangleAlert,
+	sync: RefreshCw
 };
 
 /** One of `ICONS`. */

@@ -5,6 +5,7 @@
 	import { hasMessage } from '$lib/i18n/translate';
 	import ContactReview from '$lib/components/import/ContactReview.svelte';
 	import ImportPhotos from '$lib/components/import/ImportPhotos.svelte';
+	import NextcloudPanel from '$lib/components/import/NextcloudPanel.svelte';
 	import SkippedContacts from '$lib/components/import/SkippedContacts.svelte';
 	import type { ActionData, PageData } from './$types';
 
@@ -72,13 +73,20 @@
 	</ol>
 
 	{#if step === 'upload'}
+		{#if data.nextcloud}
+			<NextcloudPanel
+				status={data.nextcloud}
+				synced={form?.synced ?? null}
+				error={form?.nextcloudError ?? null}
+			/>
+		{/if}
 		<form
 			method="POST"
 			action="?/preview"
 			enctype="multipart/form-data"
 			class="flex flex-col gap-4 rounded-app bg-card p-5 shadow-card"
 		>
-			<FormError message={form?.step === 'upload' ? form.error : null} />
+			<FormError message={form?.step === 'upload' ? (form.error ?? null) : null} />
 			<label class="flex flex-col gap-1 text-sm text-fg-muted">
 				<span>{t('import.fileLabel')}</span>
 				<input

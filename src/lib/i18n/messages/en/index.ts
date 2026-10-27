@@ -21,6 +21,7 @@ import { interactions } from './interactions';
 import { journal } from './journal';
 import { kinship } from './kinship';
 import { nav } from './nav';
+import { nextcloud } from './nextcloud';
 import { privacy } from './privacy';
 import { pwa } from './pwa';
 import { relationships } from './relationships';
@@ -49,6 +50,7 @@ export const en = {
 	...journal,
 	...kinship,
 	...nav,
+	...nextcloud,
 	...privacy,
 	...pwa,
 	...relationships,
