@@ -130,7 +130,9 @@ NEXTCLOUD_APP_PASSWORD=                       # an app password of that user (Se
                                               # Never logged, never in the database or the archive. The three are
                                               # set together; one or two alone stop the server at start.
 NEXTCLOUD_DEMO=false                          # true → an in-memory book for the demo household (needs SEED_DEMO=true;
-                                              # the e2e server uses it). Never beside a real book.
+                                              # the e2e server uses it). Once Stella has written Markus's card, the
+                                              # next sync finds it changed by a "phone": a new email, a birthday a
+                                              # day off — one fill-in, one difference. Never beside a real book.
 
 # --- Test phase (leave off for real use) ---
 SEED_DEMO=false                               # true → seed the Brunner demo dataset on startup (idempotent);

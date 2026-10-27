@@ -13,8 +13,7 @@ import { createNextcloudLink, type NextcloudLink } from '../domain/nextcloud/lin
 import type { BookReviewDeps } from '../domain/nextcloud/review';
 import { activityWording } from '../i18n/activity-wording';
 import type { IdGenerator } from '../id';
-import { demoAddressBook } from '../nextcloud/demo-book';
-import { createFakeAddressBook } from '../nextcloud/fake-gateway';
+import { createDemoAddressBook } from '../nextcloud/demo-book';
 import { createHttpAddressBookGateway } from '../nextcloud/http-gateway';
 
 /*
@@ -62,7 +61,7 @@ export function createNextcloudServices({
 	// The demo server gets the in-memory stand-in, so the link can be tried without a Nextcloud.
 	const book =
 		nextcloud.mode === 'demo'
-			? createFakeAddressBook(demoAddressBook())
+			? createDemoAddressBook()
 			: createHttpAddressBookGateway({
 					url: nextcloud.url,
 					user: nextcloud.user,
