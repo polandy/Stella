@@ -1,5 +1,6 @@
 import { and, asc, eq, isNull } from 'drizzle-orm';
 import type { BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
+import { isMemberAccount } from '../access/query-scoping';
 import type { MemberRepository } from '../domain/household/members';
 import { user } from './schema';
 import type * as schema from './schema';
@@ -17,7 +18,7 @@ export function createDrizzleMemberRepository(
 			return db
 				.select({ id: user.id, name: user.name })
 				.from(user)
-				.where(and(eq(user.householdId, householdId), isNull(user.removedAt)))
+				.where(and(eq(user.householdId, householdId), isNull(user.removedAt), isMemberAccount()))
 				.orderBy(asc(user.name))
 				.all();
 		},

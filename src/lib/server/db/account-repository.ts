@@ -1,6 +1,7 @@
 import { and, count, eq, isNull } from 'drizzle-orm';
 import type { BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
 import type { Locale } from '../../i18n/locales';
+import { isMemberAccount } from '../access/query-scoping';
 import type { AccountRepository, AuthUser, StoredCredentials } from '../auth/accounts';
 import type * as schema from './schema';
 import { household as householdTable, user as userTable } from './schema';
@@ -37,7 +38,7 @@ export function createDrizzleAccountRepository(
 ): AccountRepository {
 	return {
 		async countUsers() {
-			const row = db.select({ value: count() }).from(userTable).get();
+			const row = db.select({ value: count() }).from(userTable).where(isMemberAccount()).get();
 			return row?.value ?? 0;
 		},
 
@@ -55,7 +56,7 @@ export function createDrizzleAccountRepository(
 					passwordHash: userTable.passwordHash
 				})
 				.from(userTable)
-				.where(and(eq(userTable.email, email), isNull(userTable.removedAt)))
+				.where(and(eq(userTable.email, email), isNull(userTable.removedAt), isMemberAccount()))
 				.get();
 			if (!row) return null;
 			return { user: toAuthUser(row), passwordHash: row.passwordHash };
@@ -74,7 +75,7 @@ export function createDrizzleAccountRepository(
 					blurPrivate: userTable.blurPrivate
 				})
 				.from(userTable)
-				.where(and(eq(userTable.id, id), isNull(userTable.removedAt)))
+				.where(and(eq(userTable.id, id), isNull(userTable.removedAt), isMemberAccount()))
 				.get();
 			return row ? toAuthUser(row) : null;
 		},

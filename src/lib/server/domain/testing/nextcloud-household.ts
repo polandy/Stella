@@ -4,7 +4,12 @@ import type { ActivityRecord } from '../activity/activity';
 import type { ContactReviewWriter } from '../import/contact-review';
 import type { ContactSourceRepository, RememberedAnswer } from '../import/source-links';
 import type { MediaStore } from '../media/avatars';
-import type { LinkedPerson, MirroredCard, NextcloudStore, StoredConflict } from './store';
+import type {
+	LinkedPerson,
+	MirroredCard,
+	NextcloudStore,
+	StoredConflict
+} from '../nextcloud/store';
 
 /*
  * A household in memory for the sync's tests: people, the answers linking them to cards, and

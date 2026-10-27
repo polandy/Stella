@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'bun:test';
-import { anna, b64, cardOf, JPEG, linkedAnna, setup, vcf } from './test-book';
-import { BOOK, person, SYSTEM } from './test-household';
+import { anna, b64, cardOf, JPEG, linkedAnna, setup, vcf } from '../testing/nextcloud-book';
+import { BOOK, person, SYSTEM } from '../testing/nextcloud-household';
 
 /*
  * The sync both ways (docs/02 §2.16.3), driven through a book in memory whose `phone` edits it

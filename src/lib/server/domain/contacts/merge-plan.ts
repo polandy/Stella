@@ -101,5 +101,10 @@ export const MERGE_LEAVES_BEHIND: readonly { table: string; column: string; why:
 		table: 'suggestion_dismissal',
 		column: 'pair_key',
 		why: 'a declined suggestion names the pair it was declined for; the survivor makes a different pair and is asked afresh'
+	},
+	{
+		table: 'nextcloud_conflict',
+		column: 'contact_id',
+		why: 'a waiting sync conflict compared the card with the merged record; the survivor is written onto the card at the next sync, and a card still saying otherwise asks again'
 	}
 ];

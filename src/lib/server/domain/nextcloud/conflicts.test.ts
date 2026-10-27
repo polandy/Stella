@@ -2,7 +2,7 @@ import { describe, expect, it } from 'bun:test';
 import type { Viewer } from '../../access/visibility';
 import { fixedClock, sequentialIds } from '../testing';
 import { answerConflict, type ConflictAnswer } from './conflicts';
-import { anna, b64, cardOf, JPEG, linkedAnna, wording } from './test-book';
+import { anna, b64, cardOf, JPEG, linkedAnna, wording } from '../testing/nextcloud-book';
 
 /*
  * Answering what a linked card said otherwise (docs/02 §2.16.3): Stella's side stays, or the

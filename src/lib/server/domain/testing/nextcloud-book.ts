@@ -1,8 +1,9 @@
 import type { KnownLabel } from '../../../import-match/card';
 import { createFakeAddressBook, type FakeAddressBook } from '../../nextcloud/fake-gateway';
-import { fixedClock, sequentialIds } from '../testing';
-import { syncNextcloud, type NextcloudSyncDeps } from './sync';
-import { BOOK, person, SYSTEM, testHousehold } from './test-household';
+import { fixedClock } from './clock';
+import { sequentialIds } from './ids';
+import { syncNextcloud, type NextcloudSyncDeps } from '../nextcloud/sync';
+import { BOOK, person, SYSTEM, testHousehold } from './nextcloud-household';
 
 /* A book in memory beside a household in memory, for the sync's and the conflicts' tests. */
 

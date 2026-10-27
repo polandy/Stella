@@ -98,7 +98,12 @@ export const EXCLUDED_TABLES: Readonly<Record<string, string>> = {
 		'a pending invite is a live token, not household memory — and its hash has no business in a file that gets copied around',
 	identity: 'the link to the identity provider, which belongs to that provider and not to us',
 	api_token:
-		'a live credential, like a session: a restored archive must not hand a script its way back in'
+		'a live credential, like a session: a restored archive must not hand a script its way back in',
+	nextcloud_sync:
+		'where the last sync of the linked Nextcloud book stopped; a restored household reads the book afresh',
+	nextcloud_card:
+		'a copy of the linked Nextcloud book, which stays the place those cards live; the next sync reads them again',
+	nextcloud_conflict: 'what a sync asked about, which the next sync asks again from the book itself'
 };
 
 /** Columns that never leave the server, whatever table they are on. */
