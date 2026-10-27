@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.0.31](https://github.com/polandy/Stella/compare/v0.0.30...v0.0.31) (2026-10-27)
+
+
+### Features
+
+* **import:** match another address book's contacts in a review before importing ([#400](https://github.com/polandy/Stella/issues/400)) ([02488da](https://github.com/polandy/Stella/commit/02488dab89b029c88f2cabfcc2cc5acafb246b6e))
+* **nextcloud:** link Stella and the household's Nextcloud address book both ways ([#402](https://github.com/polandy/Stella/issues/402)) ([874f373](https://github.com/polandy/Stella/commit/874f3739678ae2b1d0562f2173429e66d3040908))
+
 ## [0.0.30](https://github.com/polandy/Stella/compare/v0.0.29...v0.0.30) (2026-10-26)
 
 
