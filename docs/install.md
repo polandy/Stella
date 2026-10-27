@@ -172,6 +172,37 @@ person in Stella, and gets *Open in Immich*. Stella fetches those photos itself 
 of them, on the server or on anyone's device. That link shows the photos only to you, signed into your own Immich account;
 everyone else lands on Immich's sign-in or an empty page.
 
+## Linking the household's Nextcloud address book
+
+If the family's phones sync their contacts with Nextcloud, Stella can keep that address book
+and itself in step — names, phone numbers, emails, addresses, birthdays and photos, both ways
+(*Keeping Stella and Nextcloud in step* in the user guide). It is optional; without these
+values nothing of it appears. Stella links **one** address book for the whole household.
+
+1. **Create an app password** for the Nextcloud user whose address book it is (or who it is
+   shared with, with write access): *Personal settings → Security → Create new app password*.
+2. **Copy the book's address**: in Nextcloud's Contacts, *Settings* → the book's ⋯ menu →
+   *Copy link*. It looks like
+   `https://cloud.example.com/remote.php/dav/addressbooks/users/family/contacts/`.
+3. **Add three lines to `.env`:**
+
+   ```
+   NEXTCLOUD_ADDRESS_BOOK_URL=https://cloud.example.com/remote.php/dav/addressbooks/users/family/contacts/
+   NEXTCLOUD_USER=family
+   NEXTCLOUD_APP_PASSWORD=the-app-password
+   ```
+
+   The three go together: with one or two alone, Stella refuses to start and says so. The app
+   password stays in `.env` — Stella never logs it, never shows it and never puts it in the
+   database or a backup.
+4. Run `./deploy.sh` again, then open **Settings → Import people** and press **Sync now**. The
+   first sync offers every card as one review: answer it once and, from then on, only new
+   cards are asked about.
+
+Private people never go to Nextcloud, and deleting a contact there never deletes anyone in
+Stella. To unlink the book, remove the three lines and deploy again; the address book keeps
+everything Stella wrote to it.
+
 ## Backups
 
 Everything Stella knows lives in one place: the `/data` volume, holding the database file

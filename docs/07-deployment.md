@@ -121,6 +121,17 @@ IMMICH_API_KEY=                               # created in the admin's own Immic
 IMMICH_DEMO=false                             # true → an in-memory Immich for the demo household (needs SEED_DEMO=true;
                                               # the e2e server uses it). Never beside IMMICH_URL.
 
+# --- Nextcloud address book (optional; docs/02 §2.16.3, install.md) ---
+NEXTCLOUD_ADDRESS_BOOK_URL=                   # empty: no link, and it appears nowhere. Otherwise the household
+                                              # book's CardDAV address, e.g.
+                                              # https://cloud.example.com/remote.php/dav/addressbooks/users/family/contacts/
+NEXTCLOUD_USER=                               # the Nextcloud user that owns (or was shared) that book
+NEXTCLOUD_APP_PASSWORD=                       # an app password of that user (Settings → Security in Nextcloud).
+                                              # Never logged, never in the database or the archive. The three are
+                                              # set together; one or two alone stop the server at start.
+NEXTCLOUD_DEMO=false                          # true → an in-memory book for the demo household (needs SEED_DEMO=true;
+                                              # the e2e server uses it). Never beside a real book.
+
 # --- Test phase (leave off for real use) ---
 SEED_DEMO=false                               # true → seed the Brunner demo dataset on startup (idempotent);
                                               # on a fresh DB also creates admin demo@stella.local / stella-demo-1234

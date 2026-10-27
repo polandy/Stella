@@ -81,6 +81,9 @@ contact   1───* immich_ignore   (Immich faces they were said not to be)  [
 household 1───* immich_name_ignore (Immich faces said to be nobody to add) [M3]
 household 1───* contact_source_link (which card of another address book is whom, or skipped) [M3]
 contact   1───* contact_source_link (contact_id, when linked)
+household 1───* nextcloud_card  (the linked Nextcloud book's cards as last seen) [M3]
+household 1───* nextcloud_sync  (where the last sync of that book left off) [M3]
+contact   1───* nextcloud_conflict (a fact the card and Stella disagree on) [M3]
 
 relationship_type 1───* relationship
 interaction   *───* contact     (interaction_participant)
@@ -118,6 +121,7 @@ A family member with an account.
 | name | text | display name |
 | password_hash | text null | Argon2id; **null** for SSO-only users |
 | role | text | `'admin' \| 'member'` |
+| kind | text | `'member' \| 'system'`, default `'member'`. A `system` user is no one who signs in but what the activity log names for work nobody clicked — the *Nextcloud* actor of a sync (§2.16.3). No password, no identity, no session, never listed among members; its email ends in `.invalid`. Migration `0033_nextcloud_link` |
 | role_locked | int | 0/1; if 1, IdP group-sync will not override the role (protects break-glass admin) |
 | locale_pref | text | interface language: `'en' \| 'de'`, default `'en'` (§2.19) |
 | avatar_photo_id | text fk → photo.id null | |
@@ -826,6 +830,57 @@ said to be taken care of, never who it is, and is left alone. Written by the rev
 transaction that writes the people. A merge carries the merged person's links to the survivor
 (a card key names one person, so they cannot collide). The backup reads the table but the archive
 document does not carry it yet: a restored household is asked about those cards again.
+
+### nextcloud_card  [M3]
+The linked Nextcloud book's cards as the last sync saw them (docs/02 §2.16.3): the base of the
+three-way comparison, so a sync tells what the card changed from what Stella changed. Which
+person a card is stays in `contact_source_link` (`source = nextcloud:<book>`, keyed by the UID).
+
+| column | type | notes |
+|---|---|---|
+| household_id | text fk → household.id | cascade |
+| source | text | `nextcloud:<address book>` |
+| href | text | the card's path in the book |
+| uid | text | the card's UID; unique per `(household_id, source)` |
+| etag | text | the card's ETag, sent as `If-Match` when Stella writes it |
+| vcard | text | the card as last read or written |
+| stella_hash | text? | the person's kept fields when last in step; null means *write them out at the next sync* — set by a conflict's answer and for a card Stella has never written |
+
+Primary key `(household_id, source, href)`. A card deleted in Nextcloud drops its row and its
+link, never the person. Not in the archive: a restored household reads the book afresh.
+
+### nextcloud_sync  [M3]
+Where the last sync of the linked book left off.
+
+| column | type | notes |
+|---|---|---|
+| household_id | text fk → household.id | cascade |
+| source | text | `nextcloud:<address book>` |
+| sync_token | text? | the book's `sync-collection` token; null asks for every card |
+| synced_at | int | when the last sync finished; a sync on opening Stella waits ten minutes after it |
+
+Primary key `(household_id, source)`. The token is saved last, so a sync cut short is run again
+from the same place.
+
+### nextcloud_conflict  [M3]
+A fact a linked card changed while Stella changed it too (docs/02 §2.16.3), waiting under
+*Data quality* for a member's answer. Until then Stella keeps its side and the person's card is
+not written.
+
+| column | type | notes |
+|---|---|---|
+| contact_id | text fk → contact.id | cascade: goes with the person |
+| kind | text | `firstName` · `lastName` · `birthday` · `photo` |
+| household_id | text fk → household.id | cascade |
+| source | text | `nextcloud:<address book>` |
+| stella_value | text | Stella's side as found, as JSON; `null` for a photo, whose pictures are read when shown |
+| card_value | text | the card's side as found, as JSON; `null` for a photo |
+| found_at | int | |
+
+Primary key `(contact_id, kind)`: a later sync replaces the waiting one. Read only about people
+the member may browse. Answering takes one side and clears the person's `stella_hash`. A merge
+drops the merged person's conflicts: the survivor is written onto the card, and a card still
+saying otherwise asks again. Not in the archive.
 
 ### suggestion_dismissal  [M2]
 The claims the household has declined, so a suggestion answered once is not offered again

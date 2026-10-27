@@ -4,7 +4,8 @@
 
 The household-wide checks, gathered under Settings → *Data quality*: relationships Stella can
 work out but nobody entered, people without a last name, people known by a first name only,
-people at the same address who are not one home yet. A
+people at the same address who are not one home yet, and — with a linked Nextcloud book — the
+facts a card and Stella disagree on. A
 reader comes here to work a list down, a few answers at a time, without losing their place.
 
 ### Rules
@@ -15,7 +16,8 @@ reader comes here to work a list down, a few answers at a time, without losing t
   *Last names* (§2.2.4; the `rename` icon, its line saying how many have none and how many have
   a suggestion), *People known by a first name only* (§2.2.3; the `tidy` icon, with a count
   pill while anyone is left) and *Same address* (§2.2, *A shared home*; the `home` icon, no
-  count, since nothing is checked until asked).
+  count, since nothing is checked until asked), and, only with a linked Nextcloud book,
+  *Nextcloud differences* (§2.16.3; the `sync` icon, with a count pill while any wait).
 - The checks live here, not in the People directory (§5.5.3).
 - *Last names* (docs/02 §2.2.4.2): every row, in every section, has a ⋯ menu holding the
   lower-ranked names, *Not …* for each proposed name and, under a divider, **No last name** with
@@ -66,6 +68,16 @@ reader comes here to work a list down, a few answers at a time, without losing t
   each row the line, the names under it and *Ask again*.
 - Offline, a line says answers wait for a connection and the buttons are disabled.
 
+#### Nextcloud differences
+
+- A line says that Stella keeps its side and leaves the card alone until answered.
+- One card per difference: the avatar, the name linking to the profile, and the fact under it
+  with a small `--warning` icon (*First name*, *Last name*, *Birthday*, *Photo differs*).
+- Below, the two sides as two buttons side by side — *Keep Stella's* and *Take the card's*, each
+  showing its value (a date in the reader's language; for a photo, both pictures, or *no
+  photo*). One tap answers; the row leaves when the list reloads.
+- The empty state reads *Nothing to answer*. Without a linked book the page does not exist.
+
 #### Answering a row (here and on a person's page)
 
 - **An answered row goes at once**: it fades as it closes, over 200ms, and while it closes the
@@ -98,6 +110,9 @@ someone who has gone from the list. Merging and archiving stay on the profile, w
 tap moves everyone shown. Each person's own spelling stays visible so the reader can see why
 they match before saying yes. It runs on request like the relationship check, because it reads
 every address the viewer may see.
+
+*Nextcloud differences* puts each side on its button because the answer *is* the value: reading
+and choosing are one look and one tap, and there is no separate confirm to miss.
 
 The rule engine runs only when asked because it computes the whole household (docs/04 §4.9),
 and nothing it finds is dropped (docs/04 ADR-010) — so the screen folds instead. The header and

@@ -24,13 +24,12 @@ export const nextcloud = {
 	'nextcloud.conflicts.title': 'Nextcloud differences',
 	'nextcloud.conflicts.blurb': 'Where a linked card and Stella disagree.',
 	'nextcloud.conflicts.intro':
-		'A sync found a linked card that says something else than Stella. Until you answer, Stella’s side stays and is written back to the card.',
+		'A sync found a linked card that says something else than Stella. Until you answer, Stella keeps its side and leaves that person’s card as it is.',
 	'nextcloud.conflicts.empty.title': 'Nothing to answer',
 	'nextcloud.conflicts.empty.hint': 'Every linked card agrees with Stella.',
 	'nextcloud.conflicts.photo': 'Photo differs',
 	'nextcloud.conflicts.noPhoto': 'no photo',
 	'nextcloud.conflicts.keepStella': 'Keep Stella’s',
 	'nextcloud.conflicts.takeCard': 'Take the card’s',
-	'nextcloud.conflicts.answered': (p: { name: string }) => `Answered for ${p.name}`,
 	'nextcloud.conflicts.gone': 'That difference is no longer waiting.'
 };

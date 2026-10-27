@@ -8,8 +8,8 @@ import type { Actions, PageServerLoad } from './$types';
 
 /*
  * The differences a sync of the linked Nextcloud book found (docs/02 §2.16.3), under Data
- * quality: until a member answers one, Stella's side stays and goes out to the card. Without a
- * linked book the page does not exist.
+ * quality: until a member answers one, Stella keeps its side and the person's card is left as it
+ * is. Without a linked book the page does not exist.
  */
 
 function nextcloudOf(locals: App.Locals) {

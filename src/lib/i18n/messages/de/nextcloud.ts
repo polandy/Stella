@@ -24,13 +24,12 @@ export const nextcloud = {
 	'nextcloud.conflicts.title': 'Nextcloud-Abweichungen',
 	'nextcloud.conflicts.blurb': 'Wo eine verknüpfte Karte und Stella sich widersprechen.',
 	'nextcloud.conflicts.intro':
-		'Ein Abgleich hat eine verknüpfte Karte gefunden, die etwas anderes sagt als Stella. Bis du antwortest, bleibt Stellas Seite und wird auf die Karte zurückgeschrieben.',
+		'Ein Abgleich hat eine verknüpfte Karte gefunden, die etwas anderes sagt als Stella. Bis du antwortest, behält Stella ihre Seite und lässt die Karte dieser Person, wie sie ist.',
 	'nextcloud.conflicts.empty.title': 'Nichts zu beantworten',
 	'nextcloud.conflicts.empty.hint': 'Jede verknüpfte Karte stimmt mit Stella überein.',
 	'nextcloud.conflicts.photo': 'Foto weicht ab',
 	'nextcloud.conflicts.noPhoto': 'kein Foto',
 	'nextcloud.conflicts.keepStella': 'Stellas behalten',
 	'nextcloud.conflicts.takeCard': 'Die der Karte nehmen',
-	'nextcloud.conflicts.answered': (p: { name: string }) => `Beantwortet für ${p.name}`,
 	'nextcloud.conflicts.gone': 'Diese Abweichung wartet nicht mehr.'
 };

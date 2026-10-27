@@ -71,6 +71,12 @@ are what it holds today. The household-wide checks are their own page (§5.5.8).
 - A sticky footer counts what is unanswered; *Import* stays disabled until it is none.
 - On the upload step, *Skipped contacts* lists every skipped card (name, address book, day)
   with a ghost *Ask again*.
+- With a linked Nextcloud book (docs/02 §2.16.3), the upload step opens with its panel: the
+  `sync` icon and *Nextcloud address book*, one line on what is kept in step, *Last synced …*
+  (or *Not synced yet*; a `--warning` line when the last try failed), and a secondary *Sync
+  now* whose icon spins while it runs. A sync's result is one line under it. While new cards
+  wait, *N new cards to review* with a primary *Review* opens the same review as a file; while
+  differences wait, a link names how many.
 
 #### Relationship types
 
@@ -106,6 +112,10 @@ The review asks before it writes because a name is not an identity: a wrong *Sam
 would mix two people's facts. Most of an address book is people the family does not keep, so
 the unmatched ones start unticked — adding is the choice, not skipping. A skip is for good, so
 its way back sits where the next import starts.
+
+The Nextcloud panel sits on the import page because a new card is reviewed exactly like a
+file's; *Sync now* is there for someone who just added a contact on their phone and wants it
+now rather than at the next opening.
 
 The built-in types are listed without actions so their absence from the editable set reads as
 deliberate.
