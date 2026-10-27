@@ -2,6 +2,7 @@ import * as v from 'valibot';
 import { dirname, join } from 'node:path';
 import { env } from '$env/dynamic/private';
 import { readImmichConfig } from './immich/config';
+import { readNextcloudConfig } from './nextcloud/config';
 
 /**
  * Central, validated runtime configuration. Parsed once at startup.
@@ -58,6 +59,14 @@ const RawSchema = v.object({
 	IMMICH_API_KEY: v.optional(v.string(), ''),
 	IMMICH_DEMO: boolFrom(false),
 
+	// The household's Nextcloud address book, linked both ways (docs/02 §2.16.3). All three or
+	// none; the app password stays here, out of the database. NEXTCLOUD_DEMO wires an in-memory
+	// book for the demo/e2e server instead (SEED_DEMO only).
+	NEXTCLOUD_ADDRESS_BOOK_URL: v.optional(v.string(), ''),
+	NEXTCLOUD_USER: v.optional(v.string(), ''),
+	NEXTCLOUD_APP_PASSWORD: v.optional(v.string(), ''),
+	NEXTCLOUD_DEMO: boolFrom(false),
+
 	OIDC_ISSUER: v.optional(v.string(), ''),
 	OIDC_CLIENT_ID: v.optional(v.string(), ''),
 	OIDC_CLIENT_SECRET: v.optional(v.string(), ''),
@@ -106,6 +115,7 @@ function build() {
 		updateCheck: raw.UPDATE_CHECK,
 		updateFeedUrl: raw.UPDATE_FEED_URL,
 		immich: readImmichConfig(raw),
+		nextcloud: readNextcloudConfig(raw),
 		auth: {
 			local: raw.AUTH_LOCAL_ENABLED,
 			oidc: raw.AUTH_OIDC_ENABLED

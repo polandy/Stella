@@ -22,6 +22,10 @@ export const user = sqliteTable('user', {
 	name: text('name').notNull(),
 	passwordHash: text('password_hash'), // null for SSO-only users
 	role: text('role').$type<Role>().notNull().default('member'),
+	// `system` is no one who signs in but what the activity log names when a change came from
+	// elsewhere — the linked Nextcloud book (docs/02 §2.16.3). No password, no session, never
+	// listed among the members; its email is under `.invalid`, so no sign-in can reach it.
+	kind: text('kind').$type<'member' | 'system'>().notNull().default('member'),
 	roleLocked: integer('role_locked').notNull().default(0),
 	avatarPhotoId: text('avatar_photo_id'),
 	// The contact this member *is*, or null while they have not said (docs/02 §2.1.3).

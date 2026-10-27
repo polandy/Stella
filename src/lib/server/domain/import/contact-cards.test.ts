@@ -100,6 +100,14 @@ describe('readContactCards', () => {
 		expect(cards[0]!.tags).toEqual(['starred']);
 	});
 
+	it('reads the stand-in year a phone writes for a birthday without one', () => {
+		const { cards } = readContactCards(
+			card('UID:u1', 'FN:Anna Example', 'N:Example;Anna;;;', 'BDAY;X-APPLE-OMIT-YEAR=1604:1604-04-07')
+		);
+
+		expect(cards[0]!.birthday).toEqual({ value: '--04-07', precision: 'month_day' });
+	});
+
 	it('keeps the hash when only the revision stamp moves, and changes it with a fact', () => {
 		const base = ['UID:u1', 'FN:Anna Example', 'N:Example;Anna;;;', 'TEL:+41 79 000 00 01'];
 		const hash = (...lines: string[]) => readContactCards(card(...lines)).cards[0]!.hash;
