@@ -22,6 +22,7 @@ const U2 = 'user-2';
 const actor = { userId: U1, householdId: H, defaultVisibility: 'shared' as const };
 const wording: ActivityWording = {
 	restored: () => 'not an import',
+	reviewed: () => 'not an API import',
 	imported: (locale, { people, completed, circlesChanged }, source) =>
 		`${locale}: imported ${people}${completed > 0 ? `, completed ${completed}` : ''}${
 			circlesChanged > 0 ? `, changed ${circlesChanged} circles` : ''

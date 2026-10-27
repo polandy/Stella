@@ -1,7 +1,7 @@
 import { and, eq } from 'drizzle-orm';
 import type { BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
 import type { ImportOutcome, ImportRepository } from '../domain/import/apply';
-import type { ImportPlan } from '../domain/import/monica/plan';
+import type { ImportCounts, ImportPlan } from '../domain/import/monica/plan';
 import type * as schema from './schema';
 import {
 	contact,
@@ -24,158 +24,162 @@ import {
  * household already has is reused and the plan's links are re-pointed at it.
  */
 
+type Db = BunSQLiteDatabase<typeof schema>;
+
 /** Build the ImportRepository adapter over a Drizzle handle. */
-export function createDrizzleImportRepository(
-	db: BunSQLiteDatabase<typeof schema>
-): ImportRepository {
+export function createDrizzleImportRepository(db: Db): ImportRepository {
 	return {
 		async applyPlan(plan: ImportPlan): Promise<ImportOutcome> {
-			return db.transaction((tx) => {
-				// The Bun driver types `run()` as void, so rows are counted through `returning()`.
-				const inserted = (rows: { id: string }[]) => rows.length;
-				let relationshipTypes = 0;
-				for (const t of plan.relationshipTypes) {
-					relationshipTypes += inserted(
-						tx
-							.insert(relationshipType)
-							.values({ ...t, symmetric: t.symmetric ? 1 : 0, sortOrder: 100 })
-							.onConflictDoNothing()
-							.returning({ id: relationshipType.id })
-							.all()
-					);
-				}
-
-				let contacts = 0;
-				for (const c of plan.contacts) {
-					contacts += inserted(
-						tx
-							.insert(contact)
-							.values({ ...c, isDeceased: c.isDeceased ? 1 : 0 })
-							.onConflictDoNothing()
-							.returning({ id: contact.id })
-							.all()
-					);
-				}
-
-				let contactFields = 0;
-				for (const f of plan.contactFields) {
-					contactFields += inserted(
-						tx
-							.insert(contactField)
-							.values(f)
-							.onConflictDoNothing()
-							.returning({ id: contactField.id })
-							.all()
-					);
-				}
-
-				let relationships = 0;
-				for (const r of plan.relationships) {
-					relationships += inserted(
-						tx
-							.insert(relationship)
-							.values({
-								id: r.id,
-								householdId: r.householdId,
-								fromContactId: r.fromContactId,
-								toContactId: r.toContactId,
-								typeId: r.typeId,
-								note: r.description,
-								createdBy: r.createdBy,
-								createdAt: r.createdAt,
-								updatedAt: r.updatedAt
-							})
-							.onConflictDoNothing()
-							.returning({ id: relationship.id })
-							.all()
-					);
-				}
-
-				let notes = 0;
-				for (const n of plan.notes) {
-					notes += inserted(
-						tx
-							.insert(note)
-							.values({ ...n, isPinned: n.isPinned ? 1 : 0 })
-							.onConflictDoNothing()
-							.returning({ id: note.id })
-							.all()
-					);
-				}
-
-				// A gift whose note an earlier import wrote, and that was left a note because someone
-				// wrote in it (docs/02 §2.25.4), shares its id: it is already here, as that note.
-				let gifts = 0;
-				for (const g of plan.gifts) {
-					const keptAsNote = tx.select({ id: note.id }).from(note).where(eq(note.id, g.id)).get();
-					if (keptAsNote) continue;
-					gifts += inserted(
-						tx.insert(gift).values(g).onConflictDoNothing().returning({ id: gift.id }).all()
-					);
-				}
-
-				let interactions = 0;
-				for (const i of plan.interactions) {
-					const { participantIds, ...row } = i;
-					const wrote = inserted(
-						tx
-							.insert(interaction)
-							.values(row)
-							.onConflictDoNothing()
-							.returning({ id: interaction.id })
-							.all()
-					);
-					interactions += wrote;
-					if (wrote > 0 && participantIds.length > 0) {
-						tx.insert(interactionParticipant)
-							.values(participantIds.map((contactId) => ({ interactionId: i.id, contactId })))
-							.onConflictDoNothing()
-							.run();
-					}
-				}
-
-				let tags = 0;
-				const tagIdByPlanId = new Map<string, string>();
-				for (const t of plan.tags) {
-					const existing = tx
-						.select({ id: tag.id })
-						.from(tag)
-						.where(and(eq(tag.householdId, t.householdId), eq(tag.name, t.name)))
-						.get();
-					if (existing) {
-						tagIdByPlanId.set(t.id, existing.id);
-						continue;
-					}
-					tags += inserted(
-						tx.insert(tag).values(t).onConflictDoNothing().returning({ id: tag.id }).all()
-					);
-					tagIdByPlanId.set(t.id, t.id);
-				}
-				for (const link of plan.contactTags) {
-					tx.insert(contactTag)
-						.values({
-							contactId: link.contactId,
-							tagId: tagIdByPlanId.get(link.tagId) ?? link.tagId
-						})
-						.onConflictDoNothing()
-						.run();
-				}
-
-				return {
-					inserted: {
-						contacts,
-						relationships,
-						relationshipTypes,
-						contactFields,
-						notes,
-						gifts,
-						interactions,
-						tags,
-						// Photos are copied in a second step by the wizard (browser-side resize).
-						photos: 0
-					}
-				};
-			});
+			return { inserted: db.transaction((tx) => writeImportPlan(tx, plan)) };
 		}
+	};
+}
+
+/**
+ * Write a plan inside the handle it is given — the import's own transaction, or the matching
+ * review's, which writes its new people the same way (docs/02 §2.16).
+ */
+export function writeImportPlan(tx: Db, plan: ImportPlan): ImportCounts {
+	// The Bun driver types `run()` as void, so rows are counted through `returning()`.
+	const inserted = (rows: { id: string }[]) => rows.length;
+	let relationshipTypes = 0;
+	for (const t of plan.relationshipTypes) {
+		relationshipTypes += inserted(
+			tx
+				.insert(relationshipType)
+				.values({ ...t, symmetric: t.symmetric ? 1 : 0, sortOrder: 100 })
+				.onConflictDoNothing()
+				.returning({ id: relationshipType.id })
+				.all()
+		);
+	}
+
+	let contacts = 0;
+	for (const c of plan.contacts) {
+		contacts += inserted(
+			tx
+				.insert(contact)
+				.values({ ...c, isDeceased: c.isDeceased ? 1 : 0 })
+				.onConflictDoNothing()
+				.returning({ id: contact.id })
+				.all()
+		);
+	}
+
+	let contactFields = 0;
+	for (const f of plan.contactFields) {
+		contactFields += inserted(
+			tx
+				.insert(contactField)
+				.values(f)
+				.onConflictDoNothing()
+				.returning({ id: contactField.id })
+				.all()
+		);
+	}
+
+	let relationships = 0;
+	for (const r of plan.relationships) {
+		relationships += inserted(
+			tx
+				.insert(relationship)
+				.values({
+					id: r.id,
+					householdId: r.householdId,
+					fromContactId: r.fromContactId,
+					toContactId: r.toContactId,
+					typeId: r.typeId,
+					note: r.description,
+					createdBy: r.createdBy,
+					createdAt: r.createdAt,
+					updatedAt: r.updatedAt
+				})
+				.onConflictDoNothing()
+				.returning({ id: relationship.id })
+				.all()
+		);
+	}
+
+	let notes = 0;
+	for (const n of plan.notes) {
+		notes += inserted(
+			tx
+				.insert(note)
+				.values({ ...n, isPinned: n.isPinned ? 1 : 0 })
+				.onConflictDoNothing()
+				.returning({ id: note.id })
+				.all()
+		);
+	}
+
+	// A gift whose note an earlier import wrote, and that was left a note because someone
+	// wrote in it (docs/02 §2.25.4), shares its id: it is already here, as that note.
+	let gifts = 0;
+	for (const g of plan.gifts) {
+		const keptAsNote = tx.select({ id: note.id }).from(note).where(eq(note.id, g.id)).get();
+		if (keptAsNote) continue;
+		gifts += inserted(
+			tx.insert(gift).values(g).onConflictDoNothing().returning({ id: gift.id }).all()
+		);
+	}
+
+	let interactions = 0;
+	for (const i of plan.interactions) {
+		const { participantIds, ...row } = i;
+		const wrote = inserted(
+			tx
+				.insert(interaction)
+				.values(row)
+				.onConflictDoNothing()
+				.returning({ id: interaction.id })
+				.all()
+		);
+		interactions += wrote;
+		if (wrote > 0 && participantIds.length > 0) {
+			tx.insert(interactionParticipant)
+				.values(participantIds.map((contactId) => ({ interactionId: i.id, contactId })))
+				.onConflictDoNothing()
+				.run();
+		}
+	}
+
+	let tags = 0;
+	const tagIdByPlanId = new Map<string, string>();
+	for (const t of plan.tags) {
+		const existing = tx
+			.select({ id: tag.id })
+			.from(tag)
+			.where(and(eq(tag.householdId, t.householdId), eq(tag.name, t.name)))
+			.get();
+		if (existing) {
+			tagIdByPlanId.set(t.id, existing.id);
+			continue;
+		}
+		tags += inserted(
+			tx.insert(tag).values(t).onConflictDoNothing().returning({ id: tag.id }).all()
+		);
+		tagIdByPlanId.set(t.id, t.id);
+	}
+	for (const link of plan.contactTags) {
+		tx.insert(contactTag)
+			.values({
+				contactId: link.contactId,
+				tagId: tagIdByPlanId.get(link.tagId) ?? link.tagId
+			})
+			.onConflictDoNothing()
+			.run();
+	}
+
+	return {
+		contacts,
+		relationships,
+		relationshipTypes,
+		contactFields,
+		notes,
+		gifts,
+		interactions,
+		tags,
+		// Photos are copied in a second step by the wizard (browser-side resize).
+		photos: 0
 	};
 }

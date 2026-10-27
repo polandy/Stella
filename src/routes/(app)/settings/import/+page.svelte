@@ -3,108 +3,33 @@
 	import Button from '$lib/components/ui/Button.svelte';
 	import { useTranslate } from '$lib/i18n/context.svelte';
 	import { hasMessage } from '$lib/i18n/translate';
-	import { processImage } from '$lib/media/process-image';
-	import type { ActionData } from './$types';
+	import ContactReview from '$lib/components/import/ContactReview.svelte';
+	import ImportPhotos from '$lib/components/import/ImportPhotos.svelte';
+	import SkippedContacts from '$lib/components/import/SkippedContacts.svelte';
+	import type { ActionData, PageData } from './$types';
 
 	/*
-	 * The import wizard (docs/02 §2.16), which takes either Monica export or a vCard. Steps 1–3
-	 * are plain form posts; step 4 runs in the browser: the pictures come either from the file
-	 * itself or from Monica's `photos` folder, and each is downscaled here (no native image
-	 * library on the server) and sent one at a time.
+	 * The import wizard (docs/02 §2.16), which takes either Monica export or a vCard. The steps
+	 * are plain form posts, a vCard's with a review of who each contact is; the photos are
+	 * stored from the browser (`ImportPhotos`).
 	 */
-	let { form }: { form: ActionData } = $props();
+	let { data, form }: { data: PageData; form: ActionData } = $props();
 
 	const t = useTranslate();
 
 	const step = $derived(form?.step ?? 'upload');
-
-	interface PhotoProgress {
-		total: number;
-		done: number;
-		stored: number;
-		already: number;
-		missing: number;
-		failed: number;
-	}
-	let progress = $state<PhotoProgress | null>(null);
-	let uploading = $state(false);
-
-	/**
-	 * Store one picture: downscale it here (the server has no image library) and post both
-	 * renditions with the staging token. The server decides whose photo it is.
-	 */
-	async function storePhoto(id: string, file: Blob, token: string): Promise<'stored' | 'already'> {
-		const { image, thumb, width, height, takenAt } = await processImage(file);
-		const body = new FormData();
-		body.append('token', token);
-		body.append('photoId', id);
-		body.append('image', image, 'image.jpg');
-		body.append('thumb', thumb, 'thumb.jpg');
-		body.append('width', String(width));
-		body.append('height', String(height));
-		// Monica kept the files as they were uploaded, so their EXIF still says when they were taken.
-		if (takenAt) body.append('takenAt', takenAt);
-		const res = await fetch('/settings/import/photos', { method: 'POST', body });
-		if (!res.ok) throw new Error(`The server refused this photo (${res.status}).`);
-		return ((await res.json()) as { status: 'stored' | 'already' }).status;
-	}
-
-	/**
-	 * Walk the planned photos, asking `pictureFor` where each one's bytes come from — a file
-	 * the admin picked out of Monica's folder, or the export itself. Returning null means the
-	 * picture is not there, which is counted rather than failed.
-	 */
-	async function storeAll(
-		pictureFor: (photo: { id: string; file: string }) => Promise<Blob | null>
-	) {
-		if (form?.step !== 'photos') return;
-		uploading = true;
-		const p: PhotoProgress = {
-			total: form.photos.length,
-			done: 0,
-			stored: 0,
-			already: 0,
-			missing: 0,
-			failed: 0
-		};
-		progress = p;
-		for (const expected of form.photos) {
-			try {
-				const picture = await pictureFor(expected);
-				if (picture === null) p.missing++;
-				else if ((await storePhoto(expected.id, picture, form.token)) === 'stored') p.stored++;
-				else p.already++;
-			} catch {
-				p.failed++;
-			}
-			p.done++;
-			progress = { ...p };
-		}
-		uploading = false;
-	}
-
-	/** A SQL dump only names its files; the admin points at the folder and they are matched by name. */
-	async function onPhotosPicked(event: Event) {
-		const files = (event.currentTarget as HTMLInputElement).files;
-		if (!files) return;
-		const byName = new Map<string, File>();
-		for (const f of files) byName.set(f.name, f);
-		await storeAll(async (photo) => byName.get(photo.file) ?? null);
-	}
-
-	/** A JSON export and a vCard carry their pictures; the server hands each one back out. */
-	async function fetchEmbeddedPhotos() {
-		if (form?.step !== 'photos') return;
-		const token = form.token;
-		await storeAll(async (photo) => {
-			const res = await fetch(
-				`/settings/import/photos?token=${encodeURIComponent(token)}&photoId=${encodeURIComponent(photo.id)}`
-			);
-			if (res.status === 404 || res.status === 409) return null;
-			if (!res.ok) throw new Error(`The picture could not be read (${res.status}).`);
-			return await res.blob();
-		});
-	}
+	/** A vCard's wizard has a review step, and its import ends in the photos. */
+	const isVCard = $derived(
+		form?.step === 'review' ||
+			form?.step === 'reviewed' ||
+			(form?.step === 'preview' && form.isVCard)
+	);
+	const steps = $derived(
+		isVCard
+			? (['upload', 'preview', 'review', 'photos'] as const)
+			: (['upload', 'preview', 'photos'] as const)
+	);
+	const current = $derived(step === 'reviewed' ? 'photos' : step);
 
 	/** "1 address", "4 addresses", "2 notes" — the plan names the kind, the catalogue counts it. */
 	const thing = (what: string, count: number): string => {
@@ -134,18 +59,14 @@
 		class="flex gap-2 text-xs tracking-wide text-fg-subtle uppercase"
 		aria-label={t('import.steps')}
 	>
-		{#each ['upload', 'preview', 'photos'] as name, i (name)}
-			<li class="flex items-center gap-2" aria-current={step === name ? 'step' : undefined}>
+		{#each steps as name, i (name)}
+			<li class="flex items-center gap-2" aria-current={current === name ? 'step' : undefined}>
 				<span
 					class="grid size-5 place-items-center rounded-full border border-border text-[11px]"
-					class:bg-primary={step === name}
-					class:text-primary-fg={step === name}>{i + 1}</span
+					class:bg-primary={current === name}
+					class:text-primary-fg={current === name}>{i + 1}</span
 				>
-				{name === 'photos'
-					? t('import.step.photos')
-					: name === 'upload'
-						? t('import.step.upload')
-						: t('import.step.preview')}
+				{t(`import.step.${name}`)}
 			</li>
 		{/each}
 	</ol>
@@ -188,6 +109,9 @@
 			</fieldset>
 			<Button variant="primary" class="self-end">{t('import.preview')}</Button>
 		</form>
+		{#if data.skipped.length > 0}
+			<SkippedContacts skipped={data.skipped} />
+		{/if}
 	{:else if form?.step === 'preview'}
 		<section class="flex flex-col gap-4">
 			<h2 class="text-sm font-medium text-fg-muted">{t('import.whatWillBeImported')}</h2>
@@ -237,15 +161,42 @@
 								: t('import.warning.jsonNoHowWeMet')}
 				</p>
 			{/each}
-			<form method="POST" action="?/confirm" class="flex items-center justify-end gap-3">
+			<form
+				method="POST"
+				action={form.isVCard ? '?/review' : '?/confirm'}
+				class="flex items-center justify-end gap-3"
+			>
 				<input type="hidden" name="token" value={form.token} />
 				<input type="hidden" name="visibility" value={form.visibility} />
 				<Button variant="ghost" href="/settings/import">{t('import.startOver')}</Button>
-				<Button variant="primary">{t('import.importNow')}</Button>
+				<Button variant="primary"
+					>{form.isVCard ? t('import.reviewContacts') : t('import.importNow')}</Button
+				>
 			</form>
 		</section>
+	{:else if form?.step === 'review'}
+		<!-- A review handed back after a refusal starts afresh, as it now stands. -->
+		{#key form}
+			<ContactReview
+				review={form.review}
+				token={form.token}
+				visibility={form.visibility}
+				error={'error' in form ? form.error : null}
+			/>
+		{/key}
+	{:else if form?.step === 'reviewed'}
+		<ImportPhotos token={form.token} photos={form.photos} embedded>
+			<p class="rounded-md bg-success/10 px-3 py-2 text-sm text-fg" data-testid="import-done">
+				{t('import.review.done', form)}
+			</p>
+			{#if form.linkPhotos > 0}
+				<p class="text-sm text-fg-muted">
+					{t('import.review.linkPhotos', { count: form.linkPhotos })}
+				</p>
+			{/if}
+		</ImportPhotos>
 	{:else if form?.step === 'photos'}
-		<section class="flex flex-col gap-4">
+		<ImportPhotos token={form.token} photos={form.photos} embedded={form.photosAreEmbedded}>
 			<p class="rounded-md bg-success/10 px-3 py-2 text-sm text-fg" data-testid="import-done">
 				{t('import.done', {
 					contacts: form.inserted.contacts,
@@ -259,42 +210,6 @@
 						'import.nothingTwice'
 					)}{/if}
 			</p>
-
-			{#if form.photos.length > 0}
-				<h2 class="text-sm font-medium text-fg-muted">
-					{t('import.photos', { count: form.photos.length })}
-				</h2>
-				{#if form.photosAreEmbedded}
-					<p class="text-sm text-fg-muted">{t('import.photos.embedded')}</p>
-					<!-- The count is in the heading right above; the button says what it does. -->
-					<Button variant="primary" onclick={fetchEmbeddedPhotos} disabled={uploading}>
-						{uploading ? t('import.photos.storing') : t('import.photos.store')}
-					</Button>
-				{:else}
-					<p class="text-sm text-fg-muted">{t('import.photos.folder')}</p>
-					<input
-						type="file"
-						webkitdirectory
-						multiple
-						accept="image/*"
-						onchange={onPhotosPicked}
-						disabled={uploading}
-						class={fieldClass}
-						aria-label={t('import.photos.folderLabel')}
-					/>
-				{/if}
-				{#if progress}
-					<div class="flex flex-col gap-1" data-testid="photo-progress">
-						<progress max={progress.total} value={progress.done} class="w-full"></progress>
-						<p class="text-sm text-fg-muted">{t('import.progress', progress)}</p>
-					</div>
-				{/if}
-			{/if}
-
-			<form method="POST" action="?/finish" class="flex justify-end">
-				<input type="hidden" name="token" value={form.token} />
-				<Button variant="primary" disabled={uploading}>{t('import.finish')}</Button>
-			</form>
-		</section>
+		</ImportPhotos>
 	{/if}
 </main>

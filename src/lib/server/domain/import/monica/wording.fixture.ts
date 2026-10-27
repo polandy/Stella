@@ -12,5 +12,10 @@ export const englishWording: ImportWording = {
 	metThrough: (name) => `Through ${name}`,
 	metThroughInfo: (info, name) => `${info} (through ${name})`,
 	day: (isoDay) =>
-		new Date(isoDay).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })
+		new Date(isoDay).toLocaleDateString('en-GB', {
+			day: 'numeric',
+			month: 'long',
+			year: 'numeric'
+		}),
+	fieldLabel: (label) => ({ home: 'Home', work: 'Work', mobile: 'Mobile' })[label]
 };

@@ -1,0 +1,17 @@
+BEGIN:VCARD
+VERSION:4.0
+UID:urn:uuid:5e2a7c10-4444-4b8f-9d22-000000000001
+FN:Odile Trachsel
+N:Trachsel;Odile;Margrit;;
+NICKNAME:Odi
+EMAIL;TYPE=home:odile@example.ch
+TEL;TYPE=work:+41 33 222 77 88
+BDAY:19850519
+END:VCARD
+BEGIN:VCARD
+VERSION:4.0
+UID:urn:uuid:5e2a7c10-4444-4b8f-9d22-000000000002
+FN:Beat Schläfli
+N:Schläfli;Beat;;;
+EMAIL:beat@example.ch
+END:VCARD

@@ -2,6 +2,7 @@ import type { Visibility, Viewer } from '../../access/visibility';
 import type { Clock } from '../../clock';
 import type { IdGenerator } from '../../id';
 import type { Locale } from '../../../i18n/locales';
+import type { ContactSource } from '../../../import-match/card';
 import {
 	CIRCLE_ENTITY,
 	circleFacts,
@@ -146,6 +147,16 @@ export type LocalizedActivityEvent =
 			/** Mirrors what was imported: a private batch is logged for its author alone. */
 			visibility: Visibility;
 			locale: Locale;
+	  }
+	| {
+			/** The matching review of another address book's export (docs/02 §2.16). */
+			kind: 'contacts.reviewed';
+			people: number;
+			/** People already in Stella a card was said to be, who gained what they lacked. */
+			completed: number;
+			source: ContactSource;
+			visibility: Visibility;
+			locale: Locale;
 	  };
 
 /** An event with who, where and when — what a port that logs is handed. */
@@ -177,6 +188,12 @@ export interface ActivityWording {
 		locale: Locale,
 		counts: { people: number; completed: number; circlesChanged: number },
 		source: string
+	): string;
+	/** "imported 4 people and added contact details to 11 people from a Google export". */
+	reviewed(
+		locale: Locale,
+		counts: { people: number; completed: number },
+		source: ContactSource
 	): string;
 }
 
@@ -332,6 +349,19 @@ function localizedRow(
 						completed: event.completed,
 						circlesChanged: event.circlesChanged
 					},
+					event.source
+				)
+			};
+		case 'contacts.reviewed':
+			return {
+				action: 'import',
+				entityType: 'household',
+				entityId: householdId,
+				contactId: null,
+				visibility: event.visibility,
+				summary: wording.reviewed(
+					event.locale,
+					{ people: event.people, completed: event.completed },
 					event.source
 				)
 			};

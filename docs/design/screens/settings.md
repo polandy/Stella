@@ -56,6 +56,21 @@ are what it holds today. The household-wide checks are their own page (§5.5.8).
   under one progress bar.
 - The photo step has two ways in: a folder picker for a Monica dump, and a single *Store photos*
   button for a JSON export or a vCard.
+- A vCard gets a fourth step, **review** (docs/02 §2.16.2), between preview and import. A
+  summary card first: how many contacts the file holds, count chips per kind, *Confirm all N
+  strong matches* (primary) and *Skip the rest* (ghost).
+- Then one card per contact to answer: a badge (green for a strong or changed match, amber for
+  name only or several, plain for new) and why, the incoming contact beside the Stella person,
+  *Would add* in `--success-text`, a conflict as a slim row — a small `--warning` icon
+  with what differs, then *Stella* and *On the card* as two chips side by side, the picked one
+  in `--primary-soft` with a `--primary` border; no box, so three conflicts stay short — and the four answers in a row. An answer folds the card to one
+  line with *Change*; folded cards sink below the open ones.
+- The contacts nobody matches are one checklist between the open and the folded cards: a row per
+  contact (name, first email or phone), *Select all* / *Select none*, nothing ticked, and one
+  button that adds the ticked ones and skips the rest.
+- A sticky footer counts what is unanswered; *Import* stays disabled until it is none.
+- On the upload step, *Skipped contacts* lists every skipped card (name, address book, day)
+  with a ghost *Ask again*.
 
 #### Relationship types
 
@@ -86,6 +101,11 @@ are what it holds today. The household-wide checks are their own page (§5.5.8).
 
 The import's photo step differs by source because the formats differ: a Monica dump's pictures
 are still on the Monica server, while a JSON export or a vCard carries them inside the file.
+
+The review asks before it writes because a name is not an identity: a wrong *Same person*
+would mix two people's facts. Most of an address book is people the family does not keep, so
+the unmatched ones start unticked — adding is the choice, not skipping. A skip is for good, so
+its way back sits where the next import starts.
 
 The built-in types are listed without actions so their absence from the editable set reads as
 deliberate.

@@ -1,0 +1,31 @@
+BEGIN:VCARD
+VERSION:3.0
+FN:Anna Example
+N:Example;Anna;;;
+NICKNAME:Anni
+EMAIL;TYPE=INTERNET;TYPE=HOME:anna.example@example.org
+EMAIL;TYPE=INTERNET;TYPE=WORK:Anna.Example@Work.Example.COM
+item1.EMAIL;TYPE=INTERNET:anni@example.net
+item1.X-ABLabel:Old school
+TEL;TYPE=CELL:+41 79 000 00 01
+TEL;TYPE=HOME:031 000 00 02
+item2.TEL:079 000 00 03
+item2.X-ABLabel:Signal
+ADR;TYPE=HOME:;;Examplestrasse 1;Bern;;3007;Switzerland
+item3.ADR:;;Musterweg 9;Thun;;3600;CH
+item3.X-ABLabel:
+ORG:Example AG;Research
+TITLE:Engineer
+BDAY:--0407
+PHOTO:https://lh3.googleusercontent.com/contacts/AOq4LdaEXAMPLE0000000000000000000000000000000000000000
+CATEGORIES:myContacts,starred,Family,Kindergarten 2023
+NOTE:Met at the class picnic.
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+FN:Bruno Beispiel
+N:Beispiel;Bruno;;;
+TEL;TYPE=CELL:+41790000004
+BDAY:1980-02-29
+CATEGORIES:myContacts
+END:VCARD

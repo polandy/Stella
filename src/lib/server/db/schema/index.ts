@@ -12,5 +12,6 @@ export * from './media';
 export * from './circles';
 export * from './suggestions';
 export * from './immich';
+export * from './sources';
 export * from './commands';
 export * from './activity';

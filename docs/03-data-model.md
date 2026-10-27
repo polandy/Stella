@@ -79,6 +79,8 @@ contact   *───* contact         (relationship, via from/to + type)
 contact   1───? immich_link     (which Immich person they are)  [M3]
 contact   1───* immich_ignore   (Immich faces they were said not to be)  [M3]
 household 1───* immich_name_ignore (Immich faces said to be nobody to add) [M3]
+household 1───* contact_source_link (which card of another address book is whom, or skipped) [M3]
+contact   1───* contact_source_link (contact_id, when linked)
 
 relationship_type 1───* relationship
 interaction   *───* contact     (interaction_participant)
@@ -798,6 +800,32 @@ the first record. Every read and removal (*Propose again*) is held to the viewer
 is no contact visibility to check, so every member sees every row. Not written to the activity
 log. Like `suggestion_dismissal`, the backup reads the table but the archive document does not
 carry it yet: a restored household is offered those faces again.
+
+### contact_source_link  [M3]
+The household's answer for one card of another address book in the matching review (docs/02
+§2.16): this card *is* that person, or it was skipped. Read the same export again and only new
+and changed cards are asked about; a skipped card stays skipped until someone asks again.
+
+| column | type | notes |
+|---|---|---|
+| household_id | text fk → household.id | cascade: deleted with the household |
+| source | text | `vcard:google` · `vcard:nextcloud` · `vcard:other`, read from the file itself |
+| external_uid | text | the card's key there: its UID, else Google's contact id from its photo URL, else its folded name and first email or number |
+| contact_id | text? fk → contact.id | the person the card is; null for a skip. Cascade: the answer goes with its person |
+| state | text | `linked` · `skipped`; a check holds `linked` ⇔ `contact_id` set |
+| card_name | text | the card's name when answered, so *Skipped contacts* lists it without the file |
+| card_hash | text | the card as answered (stamps like `REV` left out); a different hash is a changed card |
+| answered_by | text fk → user.id | |
+| answered_at | int | |
+
+Primary key `(household_id, source, external_uid)`; the latest answer for a card replaces the one
+before. Like a declined suggestion, an answer belongs to the household, and anyone may take a skip
+back. What a read may *say* follows the person it names: a card linked to someone the member may
+not browse (`contactBrowsableBy` — someone else's private person, or someone archived) is only
+said to be taken care of, never who it is, and is left alone. Written by the review's apply in the
+transaction that writes the people. A merge carries the merged person's links to the survivor
+(a card key names one person, so they cannot collide). The backup reads the table but the archive
+document does not carry it yet: a restored household is asked about those cards again.
 
 ### suggestion_dismissal  [M2]
 The claims the household has declined, so a suggestion answered once is not offered again

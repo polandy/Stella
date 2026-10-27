@@ -4,6 +4,8 @@ import type { Visibility } from '$lib/server/access/visibility';
 import { requireAdmin } from '$lib/server/auth/guards';
 import { getConfig } from '$lib/server/config';
 import { previewImport } from '$lib/server/domain/import/apply';
+import { detectImportFormat } from '$lib/server/domain/import/read';
+import { reviewedPhotoTarget } from '$lib/server/domain/import/review-view';
 import { attachImportedPhoto } from '$lib/server/domain/import/monica/photos';
 import { InvalidImageError } from '$lib/server/domain/media/journal-photos';
 import { readStagedDump } from '$lib/server/import/staging';
@@ -15,7 +17,9 @@ import { say, translator } from '$lib/server/i18n/say';
 /*
  * One imported photo per request (docs/02 §2.16). The plan is re-derived from the staged
  * export on every request, so the photo id decides which contact it belongs to and whether it
- * becomes the avatar — the browser cannot choose that.
+ * becomes the avatar — the browser cannot choose that. A vCard was reviewed first, so its
+ * picture goes where the remembered answer says: to the new person, or as the photo of the
+ * person the card was linked to.
  *
  * POST takes the finished renditions: the browser found the picture (in Monica's storage
  * folder for a dump, or from GET below for a JSON export) and downscaled it, because the
@@ -25,7 +29,7 @@ import { say, translator } from '$lib/server/i18n/say';
  * the file, so there is no folder for the admin to point at.
  */
 
-/** The plan behind a staging token, or the HTTP error that says why there is none. */
+/** The plan behind a staging token with its export, or the HTTP error that says why there is none. */
 async function planFor(
 	token: string,
 	user: { householdId: string; id: string },
@@ -34,13 +38,14 @@ async function planFor(
 ) {
 	const text = await readStagedDump(getConfig().importDir, token);
 	if (text === null) throw error(410, say(locals, 'import.error.sessionOver'));
-	return previewImport(locals.services.archive.importDeps, text, {
+	const plan = previewImport(locals.services.archive.importDeps, text, {
 		householdId: user.householdId,
 		userId: user.id,
 		visibility,
 		wording: importWording(locals),
 		locale: locals.locale
 	});
+	return { plan, text };
 }
 
 export const GET: RequestHandler = async ({ url, locals }) => {
@@ -51,7 +56,7 @@ export const GET: RequestHandler = async ({ url, locals }) => {
 
 	// Nothing about a picture depends on the visibility the admin chose, so reading one asks
 	// for the household default rather than carrying a setting through the URL.
-	const planned = (await planFor(token, user, 'shared', locals)).photos.find(
+	const planned = (await planFor(token, user, 'shared', locals)).plan.photos.find(
 		(p) => p.id === photoId
 	);
 	if (!planned) throw error(404, say(locals, 'import.error.photoNotInImport'));
@@ -81,18 +86,28 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 		throw error(400, say(locals, 'import.error.missingPhotoFields'));
 	}
 
-	const plan = await planFor(token, user, visibility, locals);
+	const { plan, text } = await planFor(token, user, visibility, locals);
 	const planned = plan.photos.find((p) => p.id === photoId);
 	if (!planned) throw error(404, say(locals, 'import.error.photoNotInImport'));
+	const target =
+		detectImportFormat(text) === 'vcard'
+			? await reviewedPhotoTarget(
+					locals.services.archive.reviewViewDeps,
+					{ id: user.id, householdId: user.householdId },
+					text,
+					planned
+				)
+			: planned;
+	if (!target) throw error(404, say(locals, 'import.error.photoNotInImport'));
 
 	try {
 		const status = await attachImportedPhoto(locals.services.media.importedPhotoDeps, {
 			photoId: planned.id,
-			contactId: planned.contactId,
+			contactId: target.contactId,
 			householdId: user.householdId,
 			userId: user.id,
 			visibility,
-			isAvatar: planned.isAvatar,
+			isAvatar: target.isAvatar,
 			upload: {
 				image: new Uint8Array(await image.arrayBuffer()),
 				thumb: new Uint8Array(await thumb.arrayBuffer()),

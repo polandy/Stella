@@ -1,5 +1,7 @@
 import { fail, redirect } from '@sveltejs/kit';
 import * as v from 'valibot';
+import { detectImportFormat } from '$lib/server/domain/import/read';
+import { skippedContacts } from '$lib/server/domain/import/review-view';
 import { phrase } from '$lib/i18n/phrase';
 import { requireAdmin } from '$lib/server/auth/guards';
 import { getConfig } from '$lib/server/config';
@@ -10,18 +12,20 @@ import { VCardError } from '$lib/server/domain/import/vcard';
 import {
 	discardStagedDump,
 	pruneStagedDumps,
-	readStagedDump,
 	stageDump,
 	STAGED_DUMP_MAX_AGE_MS
 } from '$lib/server/import/staging';
 import { importWording } from '$lib/server/i18n/import-wording';
 import { say, translator } from '$lib/server/i18n/say';
 import type { Actions, PageServerLoad } from './$types';
+import { reviewActions, reviewStep } from './actions/review';
+import { photoManifest, stagedStep, VisibilitySchema } from './actions/staged';
 
 /*
  * The import wizard (docs/02 §2.16): upload → preview → confirm → photos. Either of Monica's
  * exports is accepted — the SQL dump or the JSON file — and a vCard besides, and which one it
- * is comes from the file itself. It is staged on disk between steps; every step re-plans from it, so
+ * is comes from the file itself. A vCard is reviewed against the people already here instead
+ * of confirmed (`actions/review.ts`). It is staged on disk between steps; every step re-plans from it, so
  * the preview and the import can never disagree. Admin only.
  */
 
@@ -36,15 +40,14 @@ const DUMP_MAX_BYTES = 200 * 1024 * 1024;
 const GZIP_MAGIC = [0x1f, 0x8b];
 
 export const load: PageServerLoad = async ({ locals }) => {
-	requireAdmin(locals);
-	return {};
+	const user = requireAdmin(locals);
+	return {
+		skipped: await skippedContacts(locals.services.archive.reviewViewDeps, {
+			id: user.id,
+			householdId: user.householdId
+		})
+	};
 };
-
-const VisibilitySchema = v.optional(v.picklist(['shared', 'private']), 'shared');
-const StepSchema = v.object({
-	token: v.pipe(v.string(), v.minLength(1)),
-	visibility: VisibilitySchema
-});
 
 /** The export as text, whether it arrived plain or gzipped. */
 async function dumpTextOf(file: File): Promise<string> {
@@ -55,18 +58,9 @@ async function dumpTextOf(file: File): Promise<string> {
 	return new TextDecoder().decode(plain);
 }
 
-/** The photo list the browser needs to match files in Monica's storage folder. */
-function photoManifest(plan: ReturnType<typeof previewImport>) {
-	const names = new Map(plan.contacts.map((c) => [c.id, c.displayName]));
-	return plan.photos.map((p) => ({
-		id: p.id,
-		file: p.sourcePath.split('/').pop() ?? p.sourcePath,
-		contactName: names.get(p.contactId) ?? '',
-		isAvatar: p.isAvatar
-	}));
-}
+export const actions = {
+	...reviewActions,
 
-export const actions: Actions = {
 	preview: async ({ request, locals }) => {
 		const user = requireAdmin(locals);
 		const form = await request.formData();
@@ -93,6 +87,7 @@ export const actions: Actions = {
 				step: 'preview' as const,
 				token,
 				visibility,
+				isVCard: detectImportFormat(text) === 'vcard',
 				report: plan.report,
 				customTypes: plan.relationshipTypes.map((t) => ({
 					forwardLabel: t.forwardLabel,
@@ -109,36 +104,24 @@ export const actions: Actions = {
 
 	confirm: async ({ request, locals }) => {
 		const user = requireAdmin(locals);
-		const form = await request.formData();
-		const parsed = v.safeParse(StepSchema, {
-			token: form.get('token'),
-			visibility: form.get('visibility') || undefined
-		});
-		if (!parsed.success)
-			return fail(400, {
-				step: 'upload' as const,
-				error: say(locals, 'import.error.sessionMissing')
-			});
-		const text = await readStagedDump(getConfig().importDir, parsed.output.token);
-		if (text === null)
-			return fail(410, {
-				step: 'upload' as const,
-				error: say(locals, 'import.error.sessionGone')
-			});
+		const step = await stagedStep(await request.formData(), locals);
+		if ('failure' in step) return step.failure;
+		// A vCard is never imported unreviewed: the review decides who each card is.
+		if (detectImportFormat(step.text) === 'vcard') return reviewStep(locals, step);
 
-		const { plan, outcome } = await applyImport(locals.services.archive.importDeps, text, {
+		const { plan, outcome } = await applyImport(locals.services.archive.importDeps, step.text, {
 			householdId: user.householdId,
 			userId: user.id,
-			visibility: parsed.output.visibility,
+			visibility: step.visibility,
 			wording: importWording(locals),
 			locale: locals.locale
 		});
 		return {
 			step: 'photos' as const,
-			token: parsed.output.token,
+			token: step.token,
 			report: plan.report,
 			inserted: outcome.inserted,
-			photos: photoManifest(plan),
+			photos: photoManifest(plan.photos),
 			// A JSON export carries its pictures; a dump only names them, and the admin has to
 			// point at Monica's folder. The step reads differently for each (docs/02 §2.16).
 			photosAreEmbedded: plan.photos.some((p) => p.dataUrl !== null)
@@ -152,4 +135,4 @@ export const actions: Actions = {
 		if (typeof token === 'string') await discardStagedDump(getConfig().importDir, token);
 		throw redirect(303, '/contacts');
 	}
-};
+} satisfies Actions;

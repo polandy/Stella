@@ -91,7 +91,10 @@ Goal: sand the edges and add the nice-to-haves.
 - ~~**Confirm a worked-out relationship to store it**~~ — shipped (§2.4.1).
 - ~~**Fold imported custom family types into the built-ins**~~ — shipped (§2.4).
 - ~~**Welcome animation**~~ — shipped (§2.18, docs/05 §5.11.4).
-- **Stella's people in the phone's address book and calendar (CardDAV / CalDAV)** — a
+- **Stella's people in the phone's address book and calendar (CardDAV / CalDAV)** — *deferred:
+  the family's phones already sync their contacts with Nextcloud, and the two-way Nextcloud link
+  (*Email and social sync* below) brings those into Stella without a second server for phones to
+  talk to. Kept as written in case that changes.* A
   member adds Stella as a CardDAV account on their phone or mail client and sees the people
   they are allowed to see as contacts (name, photo, phone, email, address, birthday), plus a
   CalDAV calendar of their birthdays and anniversaries. **Two-way** for contacts: a person
@@ -117,10 +120,26 @@ Goal: sand the edges and add the nice-to-haves.
   per person on the Gifts card and in the story, the Monica gifts converted, the *already
   given* hint, the *Coming up* hint and *Gift idea for …* in the palette. Later: a
   household-wide idea list (§2.25.6).
-- **Email and social sync** — bring in what already knows about people: Google Contacts as a
-  first source, then mail and social. Read-only import first, matched against existing people
-  through a review list rather than merged silently, every write through the domain
-  use-cases and access layer. Sources, matching rules and credentials handling are open.
+- **Email and social sync** — bring in what already knows about people, matched against the
+  people already in Stella through a review list rather than merged silently, every write
+  through the domain use-cases and access layer:
+  - ~~**Google Contacts via its export**~~ — shipped (§2.16.2): any `.vcf`, Google's and
+    Nextcloud's included, goes through the import wizard's matching review, and the answers are
+    remembered.
+  - **Nextcloud via a two-way link**: name, phones, emails, addresses (a shared home's line
+    included), birthday and photo kept in step with the address book the phones sync with,
+    reusing `contact_source_link` with `source = nextcloud:<address book>` and the review for
+    every card it has not met. In: a changed card adds missing facts and asks about a conflict,
+    a new card is a review card, a deleted card unlinks. Out: a change to a linked, **shared**
+    person is written to their card; a private person never, and making a linked person private
+    unlinks them first, after a confirm. *Decided* (§2.16.2). Open: change detection
+    (`sync-collection` or `getctag`, how often — a schedule, on opening Stella, or *Sync now*);
+    where a sync's conflict waits for its answer (*Data quality*, or the import page) and who
+    wins until then; credentials (env config or entered in Settings; env keeps the app password
+    out of the database and the archive); the activity-log actor (*Nextcloud*, or the member
+    whose app password it is); the photo direction, and what an Immich avatar sends; one
+    household address book or every member's own.
+  - Mail and social later.
 - **Native mobile apps** — beyond the PWA (§2.18), for what a PWA cannot do on a phone. Open:
   which platforms, and whether a wrapper around the PWA is enough before a true native app.
 - ~~**Performance passes**~~ — shipped.

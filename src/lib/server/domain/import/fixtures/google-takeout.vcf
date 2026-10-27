@@ -1,0 +1,11 @@
+BEGIN:VCARD
+VERSION:3.0
+FN:Anna Example
+N:Example;Anna;;;
+EMAIL;TYPE=INTERNET;TYPE=HOME:anna.example@example.org
+TEL;TYPE=CELL:+41 79 000 00 01
+ORG:Example AG
+BDAY:--04-07
+PHOTO:https://lh3.googleusercontent.com/contacts/AOq4LdaEXAMPLE
+CATEGORIES:myContacts,Family
+END:VCARD

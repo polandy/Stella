@@ -71,6 +71,9 @@ export const EXPORTED_TABLES: readonly Scoped[] = [
 	// The Immich faces the household said are nobody to add (*New from Immich*); like the
 	// declined suggestions below, the table is read but the document does not carry it yet.
 	{ table: 'immich_name_ignore', where: 't.household_id = ?' },
+	// Which card of another address book is whom, and which were skipped (docs/02 §2.16); read
+	// like the faces above, but the document does not carry it yet.
+	{ table: 'contact_source_link', where: 't.household_id = ?' },
 	{ table: 'circle', where: 't.household_id = ?' },
 	{
 		table: 'circle_membership',

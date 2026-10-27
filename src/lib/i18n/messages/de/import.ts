@@ -96,6 +96,16 @@ export const importer: ImportMessages = {
 	'import.api.loggedSummary': (p) => `${p.list} (über die API, ${p.source})`,
 	'import.api.circleCount': (p) => (p.count === 1 ? '1 Kreis' : `${p.count} Kreise`),
 
+	'import.review.loggedSummary': (p) => `${p.list} (aus ${p.source})`,
+	'import.review.source.google': 'einem Google-Export',
+	'import.review.source.nextcloud': 'einem Nextcloud-Export',
+	'import.review.source.other': 'einer vCard-Datei',
+	'import.review.label.home': 'Privat',
+	'import.review.label.work': 'Arbeit',
+	'import.review.label.mobile': 'Mobil',
+	'import.review.error.unanswered':
+		'Einige Kontakte brauchen noch eine Antwort. Geh zurück zur Prüfung und beantworte sie.',
+
 	'import.error.chooseFile': 'Bitte wähle die Monica-Export- oder vCard-Datei zum Importieren.',
 	'import.error.sessionMissing': 'Die Import-Sitzung fehlt. Bitte lade den Dump erneut hoch.',
 	'import.error.sessionGone':

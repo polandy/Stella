@@ -76,6 +76,9 @@ export const MERGE_PLAN: readonly MergeStep[] = [
 	repoint('immich_link', 'contact_id', 'survivor-keeps'),
 	// An ignored proposal follows the person; the survivor's own record of a pair wins.
 	repoint('immich_ignore', 'contact_id', 'survivor-keeps'),
+	// A card of another address book that was this person is the survivor now; cards are keyed
+	// by their source, so the survivor's own links never collide with these.
+	repoint('contact_source_link', 'contact_id', 'cannot-collide'),
 
 	repoint('contact_field', 'contact_id', 'cannot-collide'),
 	repoint('note', 'contact_id', 'cannot-collide'),

@@ -22,6 +22,7 @@ const NOW = 1_700_000_000_000;
 const actor = { userId: U1, householdId: H, defaultVisibility: 'shared' as const };
 const wording: ActivityWording = {
 	restored: () => 'not an import',
+	reviewed: () => 'not an API import',
 	imported: (_locale, { people, completed }) => `imported ${people}, completed ${completed}`
 };
 
