@@ -44,6 +44,9 @@ export interface LinkedPerson {
 /** A conflict as it waits, with the person it is about. */
 export interface StoredConflict {
 	contactId: string;
+	/** Their name, as the list of waiting conflicts shows it. */
+	displayName: string;
+	source: NextcloudSource;
 	conflict: SyncConflict;
 	foundAt: number;
 }
@@ -82,6 +85,11 @@ export interface NextcloudStore {
 	/** Forget every link of the book that names a private person, and their conflicts. */
 	unlinkPrivate(householdId: string, source: NextcloudSource): Promise<number>;
 
+	/** The card a person `viewer` may browse is linked to, in whichever book; null when none. */
+	linkedCard(
+		viewer: Viewer,
+		contactId: string
+	): Promise<{ source: NextcloudSource; card: MirroredCard } | null>;
 	/** The people `viewer` may browse that are linked to a card of the book, by card key. */
 	linkedPeople(viewer: Viewer, source: NextcloudSource): Promise<Map<string, LinkedPerson>>;
 

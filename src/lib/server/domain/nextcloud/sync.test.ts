@@ -1,71 +1,11 @@
 import { describe, expect, it } from 'bun:test';
-import type { KnownLabel } from '../../../import-match/card';
-import { createFakeAddressBook, type FakeAddressBook } from '../../nextcloud/fake-gateway';
-import { fixedClock, sequentialIds } from '../testing';
-import { syncNextcloud, type NextcloudSyncDeps } from './sync';
-import { BOOK, person, SYSTEM, testHousehold } from './test-household';
+import { anna, b64, cardOf, JPEG, linkedAnna, setup, vcf } from './test-book';
+import { BOOK, person, SYSTEM } from './test-household';
 
 /*
  * The sync both ways (docs/02 §2.16.3), driven through a book in memory whose `phone` edits it
  * from aside, as the household's phones would.
  */
-
-const WORDS: Record<KnownLabel, string> = { home: 'Home', work: 'Work', mobile: 'Mobile' };
-const wording = {
-	fieldLabel: (label: KnownLabel) => WORDS[label],
-	knownLabel: (text: string) =>
-		(Object.keys(WORDS) as KnownLabel[]).find((k) => WORDS[k] === text) ?? null
-};
-
-const vcf = (uid: string, ...lines: string[]) =>
-	['BEGIN:VCARD', 'VERSION:3.0', `UID:${uid}`, ...lines, 'END:VCARD', ''].join('\r\n');
-
-const anna = (...more: string[]) =>
-	vcf('anna', 'FN:Anna Muster', 'N:Muster;Anna;;;', 'TEL;TYPE=CELL:+41 79 111 22 33', ...more);
-
-// prettier-ignore
-const JPEG = new Uint8Array([
-	0xff, 0xd8, 0xff, 0xc0, 0x00, 0x11, 0x08, 0x00, 0x40, 0x00, 0x40, 0x03, 0x00, 0x00, 0x00
-]);
-const b64 = (bytes: Uint8Array) => Buffer.from(bytes).toString('base64');
-
-function setup(initial: Record<string, string> = { 'anna.vcf': anna() }) {
-	const house = testHousehold();
-	const book = createFakeAddressBook(initial);
-	const deps: NextcloudSyncDeps = {
-		book,
-		store: house.store,
-		sources: house.sources,
-		writer: house.writer,
-		media: house.media,
-		setAvatar: house.setAvatar,
-		clock: fixedClock(1_000),
-		ids: sequentialIds()
-	};
-	const sync = () => syncNextcloud(deps, { system: SYSTEM, source: BOOK, wording, locale: 'en' });
-	return { house, book, sync };
-}
-
-/** Anna in Stella, linked to her card after a first sync, in step with it. */
-async function linkedAnna(over: Parameters<typeof person>[1] = {}) {
-	const world = setup();
-	await world.sync();
-	world.house.add(
-		person('p-anna', {
-			firstName: 'Anna',
-			lastName: 'Muster',
-			displayName: 'Anna Muster',
-			fields: [{ kind: 'phone', value: '+41 79 111 22 33', label: 'Mobile' }],
-			...over
-		})
-	);
-	world.house.links.set('anna', 'p-anna');
-	await world.sync();
-	return world;
-}
-
-const cardOf = (book: FakeAddressBook, uid: string) =>
-	book.cards().find((c) => c.vcard.includes(`UID:${uid}\r\n`))!.vcard;
 
 describe('a first sync', () => {
 	it('holds every card and leaves the new ones to the review', async () => {
@@ -200,6 +140,20 @@ describe('pictures', () => {
 
 		expect(await sync()).toMatchObject({ conflicts: 1 });
 		expect(house.conflicts.map((c) => c.conflict)).toEqual([{ kind: 'photo' }]);
+	});
+
+	it('one Stella could not store is not asked about', async () => {
+		const { house, book, sync } = await linkedAnna({
+			hasPhoto: true,
+			avatar: { photoId: 'mine', path: 'mine.jpg', mime: 'image/jpeg' }
+		});
+		house.files.set('mine.jpg', JPEG);
+		await sync();
+		// A GIF: Stella keeps only JPEG and PNG pictures it can size without a browser.
+		book.phone.save('anna.vcf', anna('PHOTO;ENCODING=b;TYPE=GIF:R0lGODlhAQABAAAAACw='));
+
+		expect(await sync()).toMatchObject({ conflicts: 0 });
+		expect(house.conflicts).toEqual([]);
 	});
 
 	it('Stella’s goes onto a card that has none', async () => {

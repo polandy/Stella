@@ -95,6 +95,12 @@ export function testHousehold() {
 			}
 			return dropped;
 		},
+		linkedCard: async (_v, contactId) => {
+			if (!linkable(people.get(contactId))) return null;
+			const uid = [...links].find(([, id]) => id === contactId)?.[0];
+			const card = [...mirror.values()].find((c) => c.uid === uid);
+			return card ? { source: BOOK, card: { ...card } } : null;
+		},
 		linkedPeople: async () => {
 			const linked = new Map<string, LinkedPerson>();
 			for (const [uid, contactId] of links) {
@@ -109,7 +115,8 @@ export function testHousehold() {
 					(c) => c.contactId === contactId && c.conflict.kind === conflict.kind
 				);
 				if (i !== -1) conflicts.splice(i, 1);
-				conflicts.push({ contactId, conflict, foundAt: at });
+				const { displayName } = people.get(contactId)!;
+				conflicts.push({ contactId, displayName, source: BOOK, conflict, foundAt: at });
 			}
 		},
 		conflicts: async () => conflicts.filter((c) => linkable(people.get(c.contactId))),

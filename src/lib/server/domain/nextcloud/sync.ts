@@ -5,17 +5,16 @@ import type { Clock } from '../../clock';
 import type { IdGenerator } from '../../id';
 import { activityRecord } from '../activity/activity';
 import type { ContactReviewWriter } from '../import/contact-review';
-import { readContactCards } from '../import/contact-cards';
-import type { ImportPlan, ImportWording } from '../import/monica/plan';
+import type { ImportWording } from '../import/monica/plan';
 import { completionOf, isCompleting, type PersonCompletion } from '../import/review-cards';
 import type { ContactSourceRepository } from '../import/source-links';
-import { VCardError } from '../import/vcard-lines';
 import type { AvatarUpload, MediaStore } from '../media/avatars';
 import type { AddressBookGateway, RemoteCard } from './address-book';
 import { stellaHash, writeCard, type CardPicture } from './card-out';
 import { cardPicture, pictureOfFile, storablePicture } from './card-photo';
+import { factsOf, NOBODY_NEW, printOf, readCard } from './card-read';
 import { asStellaPerson, cardAvatar, onCard, type KnownLabelOf } from './linked-person';
-import { changedOnCard, photoPrint, syncConflicts, type PhotoPrints } from './sync-plan';
+import { changedOnCard, syncConflicts, type PhotoPrints } from './sync-plan';
 import type { LinkedPerson, MirroredCard, NextcloudStore } from './store';
 
 /*
@@ -59,63 +58,6 @@ export interface NextcloudSyncOutcome {
 	conflicts: number;
 	/** Links dropped: a card deleted, or a person made private. */
 	unlinked: number;
-}
-
-/** The review writer's new people, of which a sync makes none. */
-const NOBODY_NEW: ImportPlan = {
-	contacts: [],
-	contactFields: [],
-	relationshipTypes: [],
-	relationships: [],
-	notes: [],
-	gifts: [],
-	interactions: [],
-	tags: [],
-	contactTags: [],
-	photos: [],
-	report: {
-		counts: {
-			contacts: 0,
-			relationships: 0,
-			relationshipTypes: 0,
-			contactFields: 0,
-			notes: 0,
-			gifts: 0,
-			interactions: 0,
-			tags: 0,
-			photos: 0
-		},
-		warnings: [],
-		skipped: []
-	}
-};
-
-/** One card as the review reads it; null when it does not read (it is then left alone). */
-function readCard(vcard: string): IncomingCard | null {
-	try {
-		return readContactCards(vcard).cards[0] ?? null;
-	} catch (error) {
-		if (error instanceof VCardError) return null;
-		throw error;
-	}
-}
-
-const printOf = (picture: CardPicture | null) => (picture ? photoPrint(picture.base64) : null);
-
-/** The facts a card holds of a person, to tell whether a rewrite changes anything. */
-function factsOf(vcard: string): string | null {
-	const card = readCard(vcard);
-	if (!card) return null;
-	const { firstName, lastName, birthday, phones, emails, addresses } = card;
-	return JSON.stringify([
-		firstName,
-		lastName,
-		birthday,
-		phones,
-		emails,
-		addresses,
-		printOf(cardPicture(vcard))
-	]);
 }
 
 export async function syncNextcloud(
@@ -274,7 +216,10 @@ async function bringIn(
 
 	const changed = changedOnCard(base ? readCard(base.vcard) : null, card, photos);
 	const stella = asStellaPerson(person);
-	const conflicts = syncConflicts(changed, stella, photos);
+	// A picture Stella could not store is not asked about: taking it could not be done.
+	const conflicts = syncConflicts(changed, stella, photos).filter(
+		(c) => c.kind !== 'photo' || (picture !== null && storablePicture(picture) !== null)
+	);
 	if (conflicts.length > 0) {
 		await deps.store.putConflicts(
 			request.system.householdId,
