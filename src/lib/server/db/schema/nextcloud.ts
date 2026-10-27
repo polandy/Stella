@@ -1,4 +1,11 @@
-import { index, integer, primaryKey, sqliteTable, text, uniqueIndex } from 'drizzle-orm/sqlite-core';
+import {
+	index,
+	integer,
+	primaryKey,
+	sqliteTable,
+	text,
+	uniqueIndex
+} from 'drizzle-orm/sqlite-core';
 import type { NextcloudSource } from '../../../import-match/card';
 import type { SyncConflictKind } from '../../domain/nextcloud/sync-plan';
 import { household } from './household';

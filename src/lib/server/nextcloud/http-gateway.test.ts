@@ -31,15 +31,19 @@ function fakeFetch(answers: (Response | ((seen: Seen) => Response))[]) {
 }
 
 const multistatus = (body: string) =>
-	new Response(`<?xml version="1.0"?><d:multistatus xmlns:d="DAV:" xmlns:card="urn:ietf:params:xml:ns:carddav">${body}</d:multistatus>`, {
-		status: 207,
-		headers: { 'content-type': 'application/xml; charset=utf-8' }
-	});
+	new Response(
+		`<?xml version="1.0"?><d:multistatus xmlns:d="DAV:" xmlns:card="urn:ietf:params:xml:ns:carddav">${body}</d:multistatus>`,
+		{
+			status: 207,
+			headers: { 'content-type': 'application/xml; charset=utf-8' }
+		}
+	);
 
 const changedEntry = (name: string, etag: string) =>
 	`<d:response><d:href>${PATH}${name}</d:href><d:propstat><d:prop><d:getetag>&quot;${etag}&quot;</d:getetag></d:prop><d:status>HTTP/1.1 200 OK</d:status></d:propstat></d:response>`;
 
-const card = (name: string) => `BEGIN:VCARD\r\nVERSION:3.0\r\nUID:${name}\r\nFN:${name} &amp; Co\r\nN:;${name};;;\r\nEND:VCARD\r\n`;
+const card = (name: string) =>
+	`BEGIN:VCARD\r\nVERSION:3.0\r\nUID:${name}\r\nFN:${name} &amp; Co\r\nN:;${name};;;\r\nEND:VCARD\r\n`;
 
 const gateway = (fetch: typeof globalThis.fetch) =>
 	createHttpAddressBookGateway({

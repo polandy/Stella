@@ -35,7 +35,11 @@ describe('readNextcloudConfig', () => {
 
 	it('refuses a half-made configuration without echoing the password', () => {
 		const half = () =>
-			readNextcloudConfig({ ...off, NEXTCLOUD_ADDRESS_BOOK_URL: book, NEXTCLOUD_APP_PASSWORD: 'x' });
+			readNextcloudConfig({
+				...off,
+				NEXTCLOUD_ADDRESS_BOOK_URL: book,
+				NEXTCLOUD_APP_PASSWORD: 'x'
+			});
 		expect(half).toThrow('NEXTCLOUD_ADDRESS_BOOK_URL, NEXTCLOUD_USER and NEXTCLOUD_APP_PASSWORD');
 	});
 
