@@ -63,9 +63,10 @@ export function changedOnCard(
 	photos: PhotoPrints
 ): IncomingCard {
 	const plan = base ? mergePlan(card, asPerson(base)) : null;
+	const onCard = { email: card.emails, phone: card.phones, address: card.addresses };
 	const added = (kind: 'email' | 'phone' | 'address') =>
 		plan === null
-			? card[`${kind}s`]
+			? onCard[kind]
 			: plan.add.flatMap((f) => (f.kind === kind ? [{ value: f.value, label: f.label }] : []));
 	const changed = <T>(now: T, same: boolean): T | null => (base && same ? null : now);
 

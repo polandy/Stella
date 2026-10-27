@@ -132,6 +132,7 @@ export const importer = {
 	'import.review.source.google': 'a Google export',
 	'import.review.source.nextcloud': 'a Nextcloud export',
 	'import.review.source.other': 'a vCard file',
+	'import.review.source.linked': 'the Nextcloud address book',
 	// The labels an added field carries, written into the data in the member's language.
 	'import.review.label.home': 'Home',
 	'import.review.label.work': 'Work',

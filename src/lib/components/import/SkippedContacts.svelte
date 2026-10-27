@@ -1,7 +1,7 @@
 <script lang="ts">
 	import Button from '$lib/components/ui/Button.svelte';
 	import { useI18n } from '$lib/i18n/context.svelte';
-	import type { ContactSource } from '$lib/import-match/card';
+	import { sourceWord, type ContactSource } from '$lib/import-match/card';
 
 	/*
 	 * *Skipped contacts* on the import page (docs/02 §2.16): a skip is for good, so this is the
@@ -14,12 +14,6 @@
 
 	const i18n = useI18n();
 	const t = i18n.t;
-
-	const SOURCE = {
-		'vcard:google': 'import.review.source.google',
-		'vcard:nextcloud': 'import.review.source.nextcloud',
-		'vcard:other': 'import.review.source.other'
-	} as const satisfies Record<ContactSource, string>;
 
 	const day = (at: number) =>
 		new Date(at).toLocaleDateString(i18n.intlLocale, {
@@ -37,7 +31,9 @@
 			<li class="flex items-center gap-3 py-2">
 				<div class="min-w-0 flex-1">
 					<p class="truncate text-sm text-fg">{card.cardName}</p>
-					<p class="text-xs text-fg-subtle">{t(SOURCE[card.source])} · {day(card.answeredAt)}</p>
+					<p class="text-xs text-fg-subtle">
+						{t(`import.review.source.${sourceWord(card.source)}`)} · {day(card.answeredAt)}
+					</p>
 				</div>
 				<form method="POST" action="?/askAgain">
 					<input type="hidden" name="source" value={card.source} />

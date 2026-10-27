@@ -73,9 +73,14 @@ describe('what changed on a linked card', () => {
 	});
 
 	it('is the whole card when Stella has not seen it before', () => {
-		const changed = changedOnCard(null, card({ photo: 'inline' }), { ...noPhotos, card: 'c' });
+		const address = { value: 'Dorfstrasse 1, 8000 Zürich', label: null };
+		const changed = changedOnCard(null, card({ photo: 'inline', addresses: [address] }), {
+			...noPhotos,
+			card: 'c'
+		});
 		expect(changed.firstName).toBe('Anna');
 		expect(changed.phones).toHaveLength(1);
+		expect(changed.addresses).toEqual([address]);
 		expect(changed.photo).toBe('inline');
 	});
 

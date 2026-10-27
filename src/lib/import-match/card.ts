@@ -23,6 +23,18 @@ export type NextcloudSource = `nextcloud:${string}`;
 export const isNextcloudSource = (source: ContactSource): source is NextcloudSource =>
 	source.startsWith('nextcloud:');
 
+/** A source as the catalogue words it (`import.review.source.<word>`): the linked book is one. */
+export type SourceWord = 'google' | 'nextcloud' | 'other' | 'linked';
+
+const FILE_WORD: Record<VCardFileSource, SourceWord> = {
+	'vcard:google': 'google',
+	'vcard:nextcloud': 'nextcloud',
+	'vcard:other': 'other'
+};
+
+export const sourceWord = (source: ContactSource): SourceWord =>
+	isNextcloudSource(source) ? 'linked' : FILE_WORD[source];
+
 /** A label every address book writes the same way; worded in the member's language on writing. */
 export type KnownLabel = 'home' | 'work' | 'mobile';
 

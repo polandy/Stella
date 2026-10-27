@@ -3,6 +3,7 @@
 	import Button from '$lib/components/ui/Button.svelte';
 	import FormError from '$lib/components/ui/FormError.svelte';
 	import { useTranslate } from '$lib/i18n/context.svelte';
+	import { sourceWord } from '$lib/import-match/card';
 	import {
 		answer,
 		answerNew,
@@ -49,15 +50,7 @@
 			.map((kind) => ({ kind, n: review.cards.filter((c) => c.kind === kind).length }))
 			.filter((c) => c.n > 0)
 	);
-	const sourceName = $derived(
-		t(
-			review.source === 'vcard:google'
-				? 'import.review.source.google'
-				: review.source === 'vcard:nextcloud'
-					? 'import.review.source.nextcloud'
-					: 'import.review.source.other'
-		)
-	);
+	const sourceName = $derived(t(`import.review.source.${sourceWord(review.source)}`));
 </script>
 
 <section class="flex flex-col gap-4" data-testid="contact-review">
