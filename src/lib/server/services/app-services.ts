@@ -5,6 +5,7 @@ import { createGiftServices, type GiftServices, type GiftWiring } from './gifts'
 import { createHouseholdServices, type HouseholdServices, type HouseholdWiring } from './household';
 import { createImmichServices, type ImmichServices, type ImmichWiring } from './immich';
 import { createMediaServices, type MediaServices, type MediaWiring } from './media';
+import { createNextcloudServices, type NextcloudServices, type NextcloudWiring } from './nextcloud';
 import { createNoteServices, type NoteServices, type NoteWiring } from './notes';
 import { createOfflineServices, type OfflineServices, type OfflineWiring } from './offline';
 import { createPeopleServices, type PeopleServices, type PeopleWiring } from './people';
@@ -38,6 +39,8 @@ export interface AppServices {
 	archive: ArchiveServices;
 	/** Null when this instance has no Immich: the feature then appears nowhere. */
 	immich: ImmichServices | null;
+	/** Null when this instance has no Nextcloud address book: the link then appears nowhere. */
+	nextcloud: NextcloudServices | null;
 	release: ReleaseServices;
 	offline: OfflineServices;
 	gifts: GiftServices;
@@ -49,7 +52,7 @@ export interface AppServices {
  * (`people` reads `auth`'s accounts, the relationships context's kinship graph and `media`'s
  * store; `circles` and `story` read `people`'s contacts and `media`'s store; `gifts` and
  * `records` read `people`'s contacts and `story` reads `gifts`' repository; `archive` restores into `media`'s
- * store and hands what it restored to `gifts`' conversion; `immich` reads `people`'s contacts and `media`'s avatar deps; `offline`'s command
+ * store and hands what it restored to `gifts`' conversion; `immich` reads `people`'s contacts and `media`'s avatar deps; `nextcloud` reads `media`'s store and avatar deps; `offline`'s command
  * handlers read the contexts whose use-cases they call), so each repository exists once.
  */
 export type ServicesWiring = AuthWiring &
@@ -63,6 +66,7 @@ export type ServicesWiring = AuthWiring &
 	HouseholdWiring &
 	Omit<ArchiveWiring, 'media' | 'convertHeldGifts'> &
 	Omit<ImmichWiring, 'contacts' | 'directory' | 'contactDeps' | 'contextReads' | 'avatarDeps'> &
+	Omit<NextcloudWiring, 'media' | 'avatarDeps'> &
 	ReleaseWiring &
 	Omit<OfflineWiring, 'contexts'> &
 	Omit<GiftWiring, 'contacts'>;
@@ -107,6 +111,11 @@ export function createServices(wiring: ServicesWiring): AppServices {
 		contextReads: people.personContextDeps.contextReads,
 		avatarDeps: media.avatarDeps
 	});
+	const nextcloud = createNextcloudServices({
+		...wiring,
+		media: media.store,
+		avatarDeps: media.avatarDeps
+	});
 	const release = createReleaseServices(wiring);
 	const offline = createOfflineServices({
 		...wiring,
@@ -124,6 +133,7 @@ export function createServices(wiring: ServicesWiring): AppServices {
 		household,
 		archive,
 		immich,
+		nextcloud,
 		release,
 		offline,
 		gifts

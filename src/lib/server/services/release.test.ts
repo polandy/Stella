@@ -82,6 +82,7 @@ describe('createServices', () => {
 			config: {
 				...config,
 				immich: null,
+				nextcloud: null,
 				sessionSecret: 'a-session-secret',
 				mediaDir: '/nonexistent/stella-media',
 				...wiring.config
