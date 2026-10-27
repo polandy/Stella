@@ -3,7 +3,7 @@ import { matchCard } from './candidates';
 import type { IncomingCard, MatchablePerson } from './card';
 
 /*
- * Who a card may be (docs/concepts/contact-sources.md §1.2): a shared email or phone is strong,
+ * Who a card may be (docs/02 §2.16.2): a shared email or phone is strong,
  * a shared name alone is weak, more than one person is the member's pick, and nobody is new.
  * The people handed in are already the ones the member may see and browse.
  */

@@ -2,7 +2,7 @@ import { describe, expect, it } from 'bun:test';
 import { foldName, normaliseEmail, normalisePhone, samePhone } from './normalise';
 
 /*
- * The spellings two address books share (docs/concepts/contact-sources.md §1.2): an email in
+ * The spellings two address books share (docs/02 §2.16.2): an email in
  * any case, a phone in any grouping, a name in any order and with or without its accents.
  */
 

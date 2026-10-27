@@ -1,5 +1,5 @@
 /*
- * The spellings two address books share (docs/concepts/contact-sources.md §1.2). Matching
+ * The spellings two address books share (docs/02 §2.16.2). Matching
  * compares these and nothing looser: a near-match taken for the same person would write one
  * person's facts onto another without anyone noticing.
  */

@@ -4,7 +4,7 @@ import { join } from 'node:path';
 import { readContactCards } from './contact-cards';
 
 /*
- * The cards the matching review compares (docs/concepts/contact-sources.md §1.1–1.4), read
+ * The cards the matching review compares (docs/02 §2.16.2), read
  * from real-shaped exports: Google's two and Nextcloud's, each with its own quirks.
  */
 

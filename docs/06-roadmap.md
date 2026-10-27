@@ -122,14 +122,23 @@ Goal: sand the edges and add the nice-to-haves.
   household-wide idea list (§2.25.6).
 - **Email and social sync** — bring in what already knows about people, matched against the
   people already in Stella through a review list rather than merged silently, every write
-  through the domain use-cases and access layer (`docs/concepts/contact-sources.md`):
-  - **Google Contacts via its export**: a `.vcf` from Contacts or Takeout through the import
-    wizard's matching review. The answers are remembered, so a re-run asks only about new or
-    changed cards. *Stage 1, decided.*
-  - **Nextcloud via a two-way link**: name, phones, emails, addresses, birthday and photo kept in
-    step with the address book the phones sync with. Private people never go out, and a delete
-    in Nextcloud only unlinks. *Stage 2, decided; sync cadence, conflicts, credentials and photo
-    direction open.*
+  through the domain use-cases and access layer:
+  - ~~**Google Contacts via its export**~~ — shipped (§2.16.2): any `.vcf`, Google's and
+    Nextcloud's included, goes through the import wizard's matching review, and the answers are
+    remembered.
+  - **Nextcloud via a two-way link**: name, phones, emails, addresses (a shared home's line
+    included), birthday and photo kept in step with the address book the phones sync with,
+    reusing `contact_source_link` with `source = nextcloud:<address book>` and the review for
+    every card it has not met. In: a changed card adds missing facts and asks about a conflict,
+    a new card is a review card, a deleted card unlinks. Out: a change to a linked, **shared**
+    person is written to their card; a private person never, and making a linked person private
+    unlinks them first, after a confirm. *Decided* (§2.16.2). Open: change detection
+    (`sync-collection` or `getctag`, how often — a schedule, on opening Stella, or *Sync now*);
+    where a sync's conflict waits for its answer (*Data quality*, or the import page) and who
+    wins until then; credentials (env config or entered in Settings; env keeps the app password
+    out of the database and the archive); the activity-log actor (*Nextcloud*, or the member
+    whose app password it is); the photo direction, and what an Immich avatar sends; one
+    household address book or every member's own.
   - Mail and social later.
 - **Native mobile apps** — beyond the PWA (§2.18), for what a PWA cannot do on a phone. Open:
   which platforms, and whether a wrapper around the PWA is enough before a true native app.

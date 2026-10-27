@@ -3,7 +3,7 @@ import { mergePlan } from './merge-plan';
 import type { IncomingCard, StellaPerson } from './card';
 
 /*
- * What *Same person* writes (docs/concepts/contact-sources.md §1.3): only what the person is
+ * What *Same person* writes (docs/02 §2.16.2): only what the person is
  * missing, never a change without asking — a differing birthday or name is a conflict, a
  * differing company, job or nickname stays out and is said to.
  */

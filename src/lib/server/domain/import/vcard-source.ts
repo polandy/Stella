@@ -1,7 +1,7 @@
 import type { ContactSource } from '../../../import-match/card';
 import { readCategories, type Property } from './vcard-lines';
 
-/** Where a file comes from, read from the file itself (docs/concepts/contact-sources.md §1.4). */
+/** Where a file comes from, read from the file itself (docs/02 §2.16.2). */
 export type VCardSource = ContactSource;
 
 /** Google's own groups: every contact is in `myContacts`, a starred one also in `starred`. */

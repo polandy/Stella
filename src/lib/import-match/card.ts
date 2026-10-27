@@ -2,7 +2,7 @@ import type { PartialDate } from '../dates/partial-date';
 import type { ContactFieldKind } from '../people/contact-fields';
 
 /*
- * The two sides of a matching review (docs/concepts/contact-sources.md §1): a contact from
+ * The two sides of a matching review (docs/02 §2.16.2): a contact from
  * another address book, and a person already in Stella. Plain values, so the reader on the
  * server, the review step in the browser and the use-case all share them.
  */

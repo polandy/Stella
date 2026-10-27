@@ -935,13 +935,16 @@ it works out which one you gave it, so there is nothing to choose:
   docker exec monica-db sh -c 'mariadb-dump -u"$MYSQL_USER" "$MYSQL_DATABASE"' | gzip > monica.sql.gz
   ```
 
-- **A vCard** (`.vcf`), if your people are in a phone, a mail client or Google Contacts rather
-  than in Monica. It brings the people themselves — names, birthdays, phone numbers, addresses,
-  notes, categories and their pictures — but nothing about how they are connected, because a
-  vCard does not record that. You can add the relationships afterwards.
+- **A vCard** (`.vcf`), if your people are in a phone, a mail client, Google Contacts or
+  Nextcloud rather than in Monica. It brings the people themselves — names, birthdays, phone
+  numbers, addresses, notes, categories and their pictures — but nothing about how they are
+  connected, because a vCard does not record that. You can add the relationships afterwards.
+  Many of them are probably in Stella already, so a vCard is matched first — see
+  [below](#contacts-from-google-or-nextcloud).
 
-Gzipped is fine for any of them. Whichever you pick, **stay with it**: each file names its
-records in its own way, so importing two of them would bring everybody in twice.
+Gzipped is fine for any of them. Of Monica's two files, pick one and **stay with it**: each
+names its records in its own way, so importing both would bring everybody in twice. A vCard is
+different — it is matched against the people already here, whoever brought them in.
 
 Stella reads the file and shows what it found — how many people, relationships, notes and
 photos — together with a list of everything it will leave out and why (people deleted in
@@ -968,6 +971,32 @@ the dump.
 
 Importing the same export a second time changes nothing — every imported record remembers
 where it came from — so a retry after a hiccup is safe.
+
+### Contacts from Google or Nextcloud
+
+Export the address book as a vCard — in Google Contacts *Export → vCard (for iOS Contacts)*,
+or Google Takeout; in Nextcloud's Contacts, *Download* on the address book — and hand it to
+**Import people** like any other file. Stella notices whose address book it is.
+
+Before anything is written, Stella asks who is who. Each contact that may be somebody already
+here gets a card: the contact on one side, the person in Stella on the other, with what would
+be added and why Stella thinks they are the same — *same email …*, *same phone …*, or *same
+name, nothing else agrees*. You answer **Same person**, **Pick someone else**, **New person**
+or **Skip**. When the email or phone agrees, *Same person* is already chosen, and **Confirm
+all strong matches** settles all of those at once. The contacts nobody here matches come as one
+list: tick the ones you want as new people, and the others are skipped. *Import* waits until
+every contact has an answer.
+
+*Same person* only fills in what is missing — an email, a phone number, an address, a
+birthday, the picture — and never changes what is there. Only when the first name, last name
+or birthday differs does Stella ask which one to keep; Stella's is chosen unless you take the
+card's. Only people you may see are offered, never anyone's private person.
+
+Stella remembers your answers. Import the same address book again in a few months and it asks
+only about contacts that are new or have changed. A **skipped** contact stays skipped, even
+when it changes; to be asked again, find it under **Skipped contacts** on the import page and
+press *Ask again*. Google keeps some pictures only as links, which are not in the file: the
+review says how many.
 
 ### Letting a script add people for you
 

@@ -2,7 +2,7 @@ import { fullName, type IncomingCard, type MatchablePerson } from './card';
 import { foldName, normaliseEmail, normalisePhone, samePhone } from './normalise';
 
 /*
- * Who a card may be (docs/concepts/contact-sources.md §1.2). The people handed in are already
+ * Who a card may be (docs/02 §2.16.2). The people handed in are already
  * the ones the member may see and who are not archived; the access layer chose them, so a
  * private person of someone else is never a candidate, never named and never counted.
  */

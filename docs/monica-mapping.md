@@ -106,13 +106,17 @@ sparsely. `src/lib/server/domain/import/vcard.ts` reads it; unknown properties a
 | `EMAIL`, `TEL`, `URL` | `contact_field` `email` / `phone` / `url` |
 | `ADR` | `contact_field` `address`, labelled with its `TYPE` |
 | `NOTE` | `note` |
-| `CATEGORIES` | `tag`, shared across every card that names it; keyed by the name, so two address books never swap each other's tags |
-| `PHOTO` with `ENCODING=b` or a `data:` URL | `photo`, and the person's avatar |
-| `PHOTO` that is only a URI | left out — the picture is not in the file |
+| `CATEGORIES` | `tag`, shared across every card that names it; keyed by the name, so two address books never swap each other's tags. Google's own `myContacts` and `starred` are left out |
+| `PHOTO` with `ENCODING=b` or a `data:` URL | `photo`, and the person's avatar; Nextcloud's escaped `base64\,` is read as the comma it means |
+| `PHOTO` that is only a URI | left out — the picture is not in the file; the review counts them |
 | `RELATED`, and everything else | not read; the report says a vCard carries no relationships |
 
 vCard 2.1's `ENCODING=QUOTED-PRINTABLE` is decoded, soft line breaks included, so a name like
 `Ren=C3=A9` arrives as *René* rather than as itself.
+
+This is what a card brings as a **new person**. Every vCard is first matched against the
+people already in the household; a card answered *Same person* only completes that person
+(docs/02 §2.16.2).
 
 A card with neither `FN` nor `N` is refused rather than imported as a nameless person, and so
 is a file with no `BEGIN:VCARD` or a card that is never closed.
