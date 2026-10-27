@@ -47,6 +47,15 @@ export function contactBrowsableBy(viewer: Viewer): SQL {
 }
 
 /**
+ * Condition for a person the linked address book may hold (docs/02 §2.16.3): one `viewer` may
+ * browse, and shared — a private person never reaches the book, not even through the member
+ * who made them.
+ */
+export function contactInBookFor(viewer: Viewer): SQL {
+	return and(contactBrowsableBy(viewer), eq(contact.visibility, 'shared'))!;
+}
+
+/**
  * Condition for a child record (note / photo / interaction) being visible: its parent
  * contact must be visible (the query must join `contact`), and a private child is only
  * visible to its author.
