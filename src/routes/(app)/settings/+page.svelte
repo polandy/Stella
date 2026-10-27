@@ -1,6 +1,7 @@
 <script lang="ts">
 	import FormError from '$lib/components/ui/FormError.svelte';
 	import SignOutForm from '$lib/components/shell/SignOutForm.svelte';
+	import SettingsLink from '$lib/components/settings/SettingsLink.svelte';
 	import { untrack } from 'svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import Icon from '$lib/components/ui/Icon.svelte';
@@ -116,20 +117,12 @@
 	<!-- Every member's: who signs in is no secret in a household; removing is an admin's (§2.1). -->
 	<section class="flex flex-col gap-3">
 		<h2 class="text-sm font-medium text-fg-muted">{t('settings.household.heading')}</h2>
-		<a
+		<SettingsLink
 			href="/settings/members"
-			class="flex items-center gap-4 rounded-app bg-card p-4 shadow-card transition-colors hover:bg-card-hover"
-		>
-			<span
-				class="grid size-10 shrink-0 place-items-center rounded-full bg-primary-soft text-primary"
-				aria-hidden="true"><Icon name="people" size={18} /></span
-			>
-			<span class="min-w-0 flex-1">
-				<span class="block font-medium text-fg">{t('settings.members.title')}</span>
-				<span class="block text-sm text-fg-muted">{t('settings.members.blurb')}</span>
-			</span>
-			<span class="text-fg-subtle" aria-hidden="true"><Icon name="forward" size={16} /></span>
-		</a>
+			icon="people"
+			title={t('settings.members.title')}
+			blurb={t('settings.members.blurb')}
+		/>
 	</section>
 
 	<!--
@@ -140,134 +133,65 @@
 	-->
 	<section class="flex flex-col gap-3">
 		<h2 class="text-sm font-medium text-fg-muted">{t('settings.quality.heading')}</h2>
-		<a
+		<SettingsLink
 			href="/settings/relationships"
-			class="flex items-center gap-4 rounded-app bg-card p-4 shadow-card transition-colors hover:bg-card-hover"
-		>
-			<span
-				class="grid size-10 shrink-0 place-items-center rounded-full bg-primary-soft text-primary"
-				aria-hidden="true"><Icon name="search" size={18} /></span
-			>
-			<span class="min-w-0 flex-1">
-				<span class="block font-medium text-fg">{t('settings.relationships.title')}</span>
-				<span class="block text-sm text-fg-muted">{t('settings.relationships.blurb')}</span>
-			</span>
-			<span class="text-fg-subtle" aria-hidden="true"><Icon name="forward" size={16} /></span>
-		</a>
-		<a
-			href="/settings/last-names"
-			class="flex items-center gap-4 rounded-app bg-card p-4 shadow-card transition-colors hover:bg-card-hover"
-		>
-			<span
-				class="grid size-10 shrink-0 place-items-center rounded-full bg-primary-soft text-primary"
-				aria-hidden="true"><Icon name="rename" size={18} /></span
-			>
-			<span class="min-w-0 flex-1">
-				<span class="block font-medium text-fg">{t('surnames.page.title')}</span>
+			icon="search"
+			title={t('settings.relationships.title')}
+			blurb={t('settings.relationships.blurb')}
+		/>
+		<SettingsLink href="/settings/last-names" icon="rename" title={t('surnames.page.title')}>
+			{#snippet blurb()}
 				<span class="block text-sm text-fg-muted" data-testid="last-names-count">
 					{data.lastNames.missing > 0 ? t('surnames.count', data.lastNames) : t('surnames.blurb')}
 				</span>
-			</span>
-			<span class="text-fg-subtle" aria-hidden="true"><Icon name="forward" size={16} /></span>
-		</a>
-		<a
+			{/snippet}
+		</SettingsLink>
+		<SettingsLink
 			href="/settings/first-name-only"
-			class="flex items-center gap-4 rounded-app bg-card p-4 shadow-card transition-colors hover:bg-card-hover"
-		>
-			<span
-				class="grid size-10 shrink-0 place-items-center rounded-full bg-primary-soft text-primary"
-				aria-hidden="true"><Icon name="tidy" size={18} /></span
-			>
-			<span class="min-w-0 flex-1">
-				<span class="block font-medium text-fg">{t('settings.firstNameOnly.title')}</span>
-				<span class="block text-sm text-fg-muted">{t('settings.firstNameOnly.blurb')}</span>
-			</span>
-			{#if data.firstNameOnlyCount > 0}
-				<span
-					class="rounded-full bg-primary-soft px-2 py-0.5 text-xs font-medium text-primary tabular-nums"
-					data-testid="first-name-only-count"
-				>
-					{data.firstNameOnlyCount}
-				</span>
-			{/if}
-			<span class="text-fg-subtle" aria-hidden="true"><Icon name="forward" size={16} /></span>
-		</a>
-		<a
+			icon="tidy"
+			title={t('settings.firstNameOnly.title')}
+			blurb={t('settings.firstNameOnly.blurb')}
+			count={data.firstNameOnlyCount}
+			countTestId="first-name-only-count"
+		/>
+		<SettingsLink
 			href="/settings/same-address"
-			class="flex items-center gap-4 rounded-app bg-card p-4 shadow-card transition-colors hover:bg-card-hover"
-		>
-			<span
-				class="grid size-10 shrink-0 place-items-center rounded-full bg-primary-soft text-primary"
-				aria-hidden="true"><Icon name="home" size={18} /></span
-			>
-			<span class="min-w-0 flex-1">
-				<span class="block font-medium text-fg">{t('settings.sameAddress.title')}</span>
-				<span class="block text-sm text-fg-muted">{t('settings.sameAddress.blurb')}</span>
-			</span>
-			<span class="text-fg-subtle" aria-hidden="true"><Icon name="forward" size={16} /></span>
-		</a>
+			icon="home"
+			title={t('settings.sameAddress.title')}
+			blurb={t('settings.sameAddress.blurb')}
+		/>
 		{#if data.nextcloudConflicts !== null}
-			<a
+			<SettingsLink
 				href="/settings/nextcloud-conflicts"
-				class="flex items-center gap-4 rounded-app bg-card p-4 shadow-card transition-colors hover:bg-card-hover"
-			>
-				<span
-					class="grid size-10 shrink-0 place-items-center rounded-full bg-primary-soft text-primary"
-					aria-hidden="true"><Icon name="sync" size={18} /></span
-				>
-				<span class="min-w-0 flex-1">
-					<span class="block font-medium text-fg">{t('nextcloud.conflicts.title')}</span>
-					<span class="block text-sm text-fg-muted">{t('nextcloud.conflicts.blurb')}</span>
-				</span>
-				{#if data.nextcloudConflicts > 0}
-					<span
-						class="rounded-full bg-primary-soft px-2 py-0.5 text-xs font-medium text-primary tabular-nums"
-						data-testid="nextcloud-conflicts-count"
-					>
-						{data.nextcloudConflicts}
-					</span>
-				{/if}
-				<span class="text-fg-subtle" aria-hidden="true"><Icon name="forward" size={16} /></span>
-			</a>
+				icon="sync"
+				title={t('nextcloud.conflicts.title')}
+				blurb={t('nextcloud.conflicts.blurb')}
+				count={data.nextcloudConflicts}
+				countTestId="nextcloud-conflicts-count"
+			/>
 		{/if}
 	</section>
 
 	<!-- Every member's, not only the admin's: a token acts as whoever made it (docs/02 §2.16.1). -->
 	<section class="flex flex-col gap-3">
 		<h2 class="text-sm font-medium text-fg-muted">{t('settings.api.heading')}</h2>
-		<a
+		<SettingsLink
 			href="/settings/api-tokens"
-			class="flex items-center gap-4 rounded-app bg-card p-4 shadow-card transition-colors hover:bg-card-hover"
-		>
-			<span
-				class="grid size-10 shrink-0 place-items-center rounded-full bg-primary-soft text-primary"
-				aria-hidden="true"><Icon name="apiToken" size={18} /></span
-			>
-			<span class="min-w-0 flex-1">
-				<span class="block font-medium text-fg">{t('settings.api.title')}</span>
-				<span class="block text-sm text-fg-muted">{t('settings.api.blurb')}</span>
-			</span>
-			<span class="text-fg-subtle" aria-hidden="true"><Icon name="forward" size={16} /></span>
-		</a>
+			icon="apiToken"
+			title={t('settings.api.title')}
+			blurb={t('settings.api.blurb')}
+		/>
 	</section>
 
 	<section class="flex flex-col gap-3">
 		<h2 class="text-sm font-medium text-fg-muted">{t('settings.data.heading')}</h2>
 		{#if data.isAdmin}
-			<a
+			<SettingsLink
 				href="/settings/import"
-				class="flex items-center gap-4 rounded-app bg-card p-4 shadow-card transition-colors hover:bg-card-hover"
-			>
-				<span
-					class="grid size-10 shrink-0 place-items-center rounded-full bg-primary-soft text-primary"
-					aria-hidden="true"><Icon name="import" size={18} /></span
-				>
-				<span class="min-w-0 flex-1">
-					<span class="block font-medium text-fg">{t('settings.data.importPeople')}</span>
-					<span class="block text-sm text-fg-muted">{t('settings.data.importPeopleBlurb')}</span>
-				</span>
-				<span class="text-fg-subtle" aria-hidden="true"><Icon name="forward" size={16} /></span>
-			</a>
+				icon="import"
+				title={t('settings.data.importPeople')}
+				blurb={t('settings.data.importPeopleBlurb')}
+			/>
 			<form method="POST" action="/settings/export" class="contents">
 				<button
 					type="submit"
@@ -284,36 +208,18 @@
 					<span class="text-fg-subtle" aria-hidden="true"><Icon name="forward" size={16} /></span>
 				</button>
 			</form>
-			<a
+			<SettingsLink
 				href="/settings/import/archive"
-				class="flex items-center gap-4 rounded-app bg-card p-4 shadow-card transition-colors hover:bg-card-hover"
-			>
-				<span
-					class="grid size-10 shrink-0 place-items-center rounded-full bg-primary-soft text-primary"
-					aria-hidden="true"><Icon name="archive" size={18} /></span
-				>
-				<span class="min-w-0 flex-1">
-					<span class="block font-medium text-fg">{t('settings.data.restore')}</span>
-					<span class="block text-sm text-fg-muted">{t('settings.data.restoreBlurb')}</span>
-				</span>
-				<span class="text-fg-subtle" aria-hidden="true"><Icon name="forward" size={16} /></span>
-			</a>
-			<a
+				icon="archive"
+				title={t('settings.data.restore')}
+				blurb={t('settings.data.restoreBlurb')}
+			/>
+			<SettingsLink
 				href="/settings/relationship-types"
-				class="flex items-center gap-4 rounded-app bg-card p-4 shadow-card transition-colors hover:bg-card-hover"
-			>
-				<span
-					class="grid size-10 shrink-0 place-items-center rounded-full bg-primary-soft text-primary"
-					aria-hidden="true"><Icon name="people" size={18} /></span
-				>
-				<span class="min-w-0 flex-1">
-					<span class="block font-medium text-fg">{t('settings.data.relationshipTypes')}</span>
-					<span class="block text-sm text-fg-muted"
-						>{t('settings.data.relationshipTypesBlurb')}</span
-					>
-				</span>
-				<span class="text-fg-subtle" aria-hidden="true"><Icon name="forward" size={16} /></span>
-			</a>
+				icon="people"
+				title={t('settings.data.relationshipTypes')}
+				blurb={t('settings.data.relationshipTypesBlurb')}
+			/>
 		{:else}
 			<p class="text-sm text-fg-subtle">{t('settings.data.adminOnly')}</p>
 		{/if}
@@ -359,20 +265,12 @@
 					{/if}
 				</div>
 			</div>
-			<a
+			<SettingsLink
 				href="/settings/immich"
-				class="flex items-center gap-4 rounded-app bg-card p-4 shadow-card transition-colors hover:bg-card-hover"
-			>
-				<span
-					class="grid size-10 shrink-0 place-items-center rounded-full bg-primary-soft text-primary"
-					aria-hidden="true"><Icon name="people" size={18} /></span
-				>
-				<span class="min-w-0 flex-1">
-					<span class="block font-medium text-fg">{t('immich.match.title')}</span>
-					<span class="block text-sm text-fg-muted">{t('immich.match.blurb')}</span>
-				</span>
-				<span class="text-fg-subtle" aria-hidden="true"><Icon name="forward" size={16} /></span>
-			</a>
+				icon="people"
+				title={t('immich.match.title')}
+				blurb={t('immich.match.blurb')}
+			/>
 		</section>
 	{/if}
 
