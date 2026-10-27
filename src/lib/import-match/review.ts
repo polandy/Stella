@@ -141,8 +141,35 @@ export function skipRest(state: ReviewState, cards: readonly ReviewCard[]): Revi
 	return next;
 }
 
-/** Open cards first, in the server's order, then the folded ones. */
-export const inShowingOrder = (state: ReviewState, cards: readonly ReviewCard[]): ReviewCard[] => [
-	...cards.filter((c) => !state.closed[c.card.key]),
-	...cards.filter((c) => state.closed[c.card.key])
-];
+/**
+ * The cards nobody in Stella matches and that have no answer yet: the checklist, where the
+ * member picks the ones to add instead of answering each card.
+ */
+export const openNew = (state: ReviewState, cards: readonly ReviewCard[]): ReviewCard[] =>
+	cards.filter((c) => c.kind === 'none' && !state.answers[c.card.key]);
+
+/** Answer the checklist: the picked ones *New person*, the other ones *Skip*. */
+export function answerNew(
+	state: ReviewState,
+	cards: readonly ReviewCard[],
+	picked: ReadonlySet<string>
+): ReviewState {
+	let next = state;
+	for (const c of openNew(state, cards)) {
+		next = answer(next, c.card.key, picked.has(c.card.key) ? { kind: 'new' } : { kind: 'skip' });
+	}
+	return next;
+}
+
+/**
+ * The cards shown one by one: the open ones first, in the server's order, then the folded
+ * ones. The checklist's cards are not among them until they have an answer.
+ */
+export function inShowingOrder(state: ReviewState, cards: readonly ReviewCard[]): ReviewCard[] {
+	const listed = new Set(openNew(state, cards).map((c) => c.card.key));
+	const shown = cards.filter((c) => !listed.has(c.card.key));
+	return [
+		...shown.filter((c) => !state.closed[c.card.key]),
+		...shown.filter((c) => state.closed[c.card.key])
+	];
+}

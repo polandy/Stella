@@ -2,9 +2,11 @@ import { describe, expect, it } from 'bun:test';
 import type { ReviewCard, ReviewKind } from './review';
 import {
 	answer,
+	answerNew,
 	confirmSure,
 	initialReview,
 	inShowingOrder,
+	openNew,
 	openSure,
 	reopen,
 	skipRest,
@@ -51,7 +53,9 @@ const CARDS = [
 	reviewCard('bruno', 'linked', ['p-bruno']),
 	reviewCard('david', 'weak', ['p-david']),
 	reviewCard('eva', 'several', ['p-eva1', 'p-eva2']),
-	reviewCard('felix', 'none')
+	reviewCard('felix', 'none'),
+	reviewCard('gina', 'none'),
+	reviewCard('hugo', 'none')
 ];
 
 describe('the review state', () => {
@@ -63,7 +67,13 @@ describe('the review state', () => {
 			bruno: { kind: 'same', personId: 'p-bruno', takeCard: [] }
 		});
 		expect(state.closed).toEqual({});
-		expect(unanswered(state, CARDS).map((c) => c.card.key)).toEqual(['david', 'eva', 'felix']);
+		expect(unanswered(state, CARDS).map((c) => c.card.key)).toEqual([
+			'david',
+			'eva',
+			'felix',
+			'gina',
+			'hugo'
+		]);
 	});
 
 	it('folds all sure matches in one go, leaving a changed one alone', () => {
@@ -76,11 +86,11 @@ describe('the review state', () => {
 
 		expect(state.closed).toEqual({ anna: true });
 		expect(openSure(state, CARDS)).toEqual([]);
+		// The unanswered new ones are the checklist, not cards.
 		expect(inShowingOrder(state, CARDS).map((c) => c.card.key)).toEqual([
 			'bruno',
 			'david',
 			'eva',
-			'felix',
 			'anna'
 		]);
 	});
@@ -95,6 +105,22 @@ describe('the review state', () => {
 		expect(state.answers.david).toEqual({ kind: 'skip' });
 		expect(state.answers.anna?.kind).toBe('same');
 		expect(state.closed).toMatchObject({ david: true, eva: true, felix: true });
+	});
+
+	it('adds the picked new contacts and skips the other new ones, nothing else', () => {
+		let state = answer(initialReview(CARDS), 'hugo', { kind: 'skip' });
+		state = reopen(state, 'hugo');
+
+		expect(openNew(state, CARDS).map((c) => c.card.key)).toEqual(['felix', 'gina']);
+		state = answerNew(state, CARDS, new Set(['gina']));
+
+		expect(state.answers.felix).toEqual({ kind: 'skip' });
+		expect(state.answers.gina).toEqual({ kind: 'new' });
+		expect(state.closed).toMatchObject({ felix: true, gina: true });
+		// An answered new card was looked at one by one and stays as it is.
+		expect(state.closed.hugo).toBeUndefined();
+		expect(unanswered(state, CARDS).map((c) => c.card.key)).toEqual(['david', 'eva']);
+		expect(openNew(state, CARDS)).toEqual([]);
 	});
 
 	it('takes the card’s side of a conflict and gives it back', () => {

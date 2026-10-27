@@ -74,6 +74,22 @@ export const importReview: ImportReviewMessages = {
 	'import.review.answered.new': 'Neue Person',
 	'import.review.answered.skip': 'Übersprungen',
 	'import.review.change': 'Ändern',
+	'import.review.newList.title': (p) =>
+		p.count === 1 ? '1 Kontakt nicht in Stella' : `${p.count} Kontakte nicht in Stella`,
+	'import.review.newList.intro':
+		'Die ankreuzen, die als neue Personen dazukommen. Die anderen werden übersprungen und nicht wieder gefragt.',
+	'import.review.newList.all': 'Alle wählen',
+	'import.review.newList.none': 'Keine wählen',
+	'import.review.newList.answer': (p) =>
+		p.picked === 0
+			? p.others === 1
+				? 'Überspringen'
+				: `Alle ${p.others} überspringen`
+			: p.others === 0
+				? p.picked === 1
+					? 'Als neu hinzufügen'
+					: `Alle ${p.picked} als neu hinzufügen`
+				: `${p.picked} als neu hinzufügen, ${p.others} überspringen`,
 	'import.review.search': 'Person suchen',
 	'import.review.searchHint': 'Mindestens zwei Buchstaben eines Namens eingeben.',
 	'import.review.searchNone': 'Niemand mit diesem Namen.',

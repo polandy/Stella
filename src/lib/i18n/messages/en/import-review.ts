@@ -72,6 +72,20 @@ export const importReview = {
 	'import.review.answered.new': 'New person',
 	'import.review.answered.skip': 'Skipped',
 	'import.review.change': 'Change',
+	'import.review.newList.title': (p: { count: number }) =>
+		p.count === 1 ? '1 contact not in Stella' : `${p.count} contacts not in Stella`,
+	'import.review.newList.intro':
+		'Tick the ones to add as new people. The others are skipped and not asked about again.',
+	'import.review.newList.all': 'Select all',
+	'import.review.newList.none': 'Select none',
+	'import.review.newList.answer': (p: { picked: number; others: number }) =>
+		p.picked === 0
+			? p.others === 1
+				? 'Skip it'
+				: `Skip all ${p.others}`
+			: p.others === 0
+				? `Add ${p.picked === 1 ? 'it' : `all ${p.picked}`} as new`
+				: `Add ${p.picked} as new, skip ${p.others}`,
 	'import.review.search': 'Find a person',
 	'import.review.searchHint': 'Type at least two letters of a name.',
 	'import.review.searchNone': 'Nobody by that name.',

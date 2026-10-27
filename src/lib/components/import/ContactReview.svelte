@@ -5,9 +5,11 @@
 	import { useTranslate } from '$lib/i18n/context.svelte';
 	import {
 		answer,
+		answerNew,
 		confirmSure,
 		initialReview,
 		inShowingOrder,
+		openNew,
 		openSure,
 		reopen,
 		skipRest,
@@ -16,6 +18,7 @@
 		type ContactReview,
 		type ReviewKind
 	} from '$lib/import-match/review';
+	import NewContacts from './NewContacts.svelte';
 	import ReviewCard from './ReviewCard.svelte';
 
 	/*
@@ -37,6 +40,7 @@
 	let reviewState = $state(untrack(() => initialReview(review.cards)));
 
 	const shown = $derived(inShowingOrder(reviewState, review.cards));
+	const listed = $derived(openNew(reviewState, review.cards));
 	const sure = $derived(openSure(reviewState, review.cards).length);
 	const left = $derived(unanswered(reviewState, review.cards).length);
 	const answered = $derived(review.cards.length - left);
@@ -115,7 +119,7 @@
 		{/if}
 	</div>
 
-	{#each shown as item (item.card.key)}
+	{#snippet card(item: (typeof shown)[number])}
 		<ReviewCard
 			{item}
 			{token}
@@ -126,6 +130,20 @@
 			onreopen={() => (reviewState = reopen(reviewState, item.card.key))}
 			ontake={(kind, take) => (reviewState = takeCardSide(reviewState, item.card.key, kind, take))}
 		/>
+	{/snippet}
+
+	<!-- The matched cards to look at first, then the checklist of new ones, then the answered. -->
+	{#each shown.filter((c) => !reviewState.closed[c.card.key]) as item (item.card.key)}
+		{@render card(item)}
+	{/each}
+	{#if listed.length > 0}
+		<NewContacts
+			cards={listed}
+			onanswer={(picked) => (reviewState = answerNew(reviewState, review.cards, picked))}
+		/>
+	{/if}
+	{#each shown.filter((c) => reviewState.closed[c.card.key]) as item (item.card.key)}
+		{@render card(item)}
 	{/each}
 
 	<form
