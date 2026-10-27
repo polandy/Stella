@@ -1004,10 +1004,10 @@ When whoever runs Stella has linked the household's Nextcloud address book (see 
 guide), you no longer export anything: Stella and the address book your phones sync with keep
 each other up to date — names, phone numbers, emails, addresses, birthdays and photos.
 
-- **When**: each time you open Stella, if the last sync is more than ten minutes ago, and
-  whenever you press **Sync now** on **Import people**.
-- **New contacts** from Nextcloud are not added on their own: the import page says *N new
-  cards to review*, and **Review** asks who is who exactly like a file does.
+- **When**: each time anyone opens Stella, if the last sync is more than ten minutes ago, and
+  whenever an admin presses **Sync now** on **Import people**.
+- **New contacts** from Nextcloud are not added on their own: the import page tells an admin
+  *N new cards to review*, and **Review** asks who is who exactly like a file does.
 - **Changed contacts** fill in what Stella is missing. When a card and Stella disagree about a
   first name, last name, birthday or photo, Stella keeps its own and asks under **Settings →
   Data quality → Nextcloud differences**: tap the side you want. Until you answer, that
