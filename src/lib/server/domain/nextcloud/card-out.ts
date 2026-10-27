@@ -18,11 +18,10 @@ import {
  * tied to it. Pure: the person comes in as plain values, the card goes out as text.
  */
 
-/** The picture Stella sends: its avatar file, and a fingerprint of the bytes for the hash. */
-export interface CardPhotoOut {
+/** A picture as a card carries it. */
+export interface CardPicture {
 	mime: string;
 	base64: string;
-	fingerprint: string;
 }
 
 /** A linked person, as far as their card holds them. Addresses include their homes' lines. */
@@ -34,8 +33,11 @@ export interface PersonOnCard {
 	phones: CardField[];
 	emails: CardField[];
 	addresses: CardField[];
-	/** Null leaves the card's picture as it is: Stella has none to send. */
-	photo: CardPhotoOut | null;
+	/**
+	 * The avatar's photo id: a new avatar is a new id, so the hash moves without the file being
+	 * read. Null while Stella has none, which leaves the card's picture as it is.
+	 */
+	photoId: string | null;
 }
 
 /**
@@ -51,7 +53,7 @@ export function stellaHash(person: PersonOnCard): string {
 			person.phones,
 			person.emails,
 			person.addresses,
-			person.photo?.fingerprint ?? null
+			person.photoId
 		])
 	);
 }
@@ -69,11 +71,7 @@ const FOLD_AT = 75;
 
 /** Escape a text value (RFC 6350 §3.4). */
 const escapeText = (value: string) =>
-	value
-		.replace(/\\/g, '\\\\')
-		.replace(/\r?\n/g, '\\n')
-		.replace(/,/g, '\\,')
-		.replace(/;/g, '\\;');
+	value.replace(/\\/g, '\\\\').replace(/\r?\n/g, '\\n').replace(/,/g, '\\,').replace(/;/g, '\\;');
 
 interface Line {
 	text: string;
@@ -115,14 +113,17 @@ function birthdayValue(birthday: PartialDate | null, v4: boolean): string | null
 	return null;
 }
 
-function photoLine({ mime, base64 }: CardPhotoOut, v4: boolean): string {
+function photoLine({ mime, base64 }: CardPicture, v4: boolean): string {
 	if (v4) return `PHOTO:data:${mime};base64,${base64}`;
 	const type = (mime.split('/')[1] ?? 'jpeg').toUpperCase();
 	return `PHOTO;ENCODING=b;TYPE=${type}:${base64}`;
 }
 
-/** Rebuild `base` — the card as the book last gave it — to hold `person`. */
-export function writeCard(base: string, person: PersonOnCard): string {
+/**
+ * Rebuild `base` — the card as the book last gave it — to hold `person`, with `photo` (their
+ * avatar's file) as its picture, or the card's own left in place when null.
+ */
+export function writeCard(base: string, person: PersonOnCard, photo: CardPicture | null): string {
 	const lines: Line[] = unfold(base).flatMap((text) => {
 		const property = parseLine(text);
 		return property && property.name !== 'BEGIN' && property.name !== 'END'
@@ -136,7 +137,7 @@ export function writeCard(base: string, person: PersonOnCard): string {
 
 	const written = new Set(WRITTEN);
 	if (bday !== null) written.add('BDAY');
-	if (person.photo) written.add('PHOTO');
+	if (photo) written.add('PHOTO');
 
 	// A phone ties a label (and Apple an address's country) to its value by a group; those lines
 	// belong to the value, and go or stay with it.
@@ -166,8 +167,7 @@ export function writeCard(base: string, person: PersonOnCard): string {
 		return fields.flatMap((field) => {
 			const same = free.findIndex(
 				(l) =>
-					valueOf(l.property) === field.value &&
-					sameLabel(labelOf(l.property, props), field.label)
+					valueOf(l.property) === field.value && sameLabel(labelOf(l.property, props), field.label)
 			);
 			if (same !== -1) {
 				const [line] = free.splice(same, 1);
@@ -180,7 +180,10 @@ export function writeCard(base: string, person: PersonOnCard): string {
 			const label = field.label;
 			if (label && 'typed' in label) {
 				const group = freshGroup();
-				return [`${group}.${name}:${write(field.value)}`, `${group}.X-ABLABEL:${escapeText(label.typed)}`];
+				return [
+					`${group}.${name}:${write(field.value)}`,
+					`${group}.X-ABLABEL:${escapeText(label.typed)}`
+				];
 			}
 			const type = label ? `;TYPE=${TYPE_OF[label.known]}` : '';
 			return [`${name}${type}:${write(field.value)}`];
@@ -208,7 +211,7 @@ export function writeCard(base: string, person: PersonOnCard): string {
 		// A home is one line in Stella; it goes out as the street, which reads back as that line.
 		...fieldLines('ADR', person.addresses, addressLine, (v) => `;;${escapeText(v)};;;;`),
 		...(bday === null ? [] : [`BDAY:${bday}`]),
-		...(person.photo ? [photoLine(person.photo, v4)] : []),
+		...(photo ? [photoLine(photo, v4)] : []),
 		'END:VCARD'
 	];
 	return out.map(fold).join('\r\n') + '\r\n';

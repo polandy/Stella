@@ -29,14 +29,14 @@ const anna: PersonOnCard = {
 	phones: [{ value: '+41 79 111 22 33', label: { typed: 'Grosi' } }],
 	emails: [{ value: 'anna@example.com', label: { known: 'home' } }],
 	addresses: [],
-	photo: null
+	photoId: null
 };
 
 const read = (vcard: string) => readContactCards(vcard).cards[0]!;
 
 describe('writing a person onto their card', () => {
 	it('keeps what Stella does not hold and the lines it agrees with', () => {
-		const out = writeCard(base, anna);
+		const out = writeCard(base, anna, null);
 		expect(out).toContain('UID:anna-1\r\n');
 		expect(out).toContain('NOTE:Likes tea\\, not coffee\r\n');
 		expect(out).toContain('CATEGORIES:Family\r\n');
@@ -49,15 +49,19 @@ describe('writing a person onto their card', () => {
 	});
 
 	it('reads back as the person it was written from', () => {
-		const out = writeCard(base, {
-			...anna,
-			firstName: 'Anna-Lena',
-			lastName: 'Muster; Meier',
-			birthday: { value: '--04-07', precision: 'month_day' },
-			phones: [...anna.phones, { value: '+41 79 999 00 00', label: { known: 'mobile' } }],
-			emails: [{ value: 'neu@example.com', label: { typed: 'Verein, Chor' } }],
-			addresses: [{ value: 'Dorfstrasse 1, 8000 Zürich', label: { known: 'home' } }]
-		});
+		const out = writeCard(
+			base,
+			{
+				...anna,
+				firstName: 'Anna-Lena',
+				lastName: 'Muster; Meier',
+				birthday: { value: '--04-07', precision: 'month_day' },
+				phones: [...anna.phones, { value: '+41 79 999 00 00', label: { known: 'mobile' } }],
+				emails: [{ value: 'neu@example.com', label: { typed: 'Verein, Chor' } }],
+				addresses: [{ value: 'Dorfstrasse 1, 8000 Zürich', label: { known: 'home' } }]
+			},
+			null
+		);
 		const card = read(out);
 		expect(card.firstName).toBe('Anna-Lena');
 		expect(card.lastName).toBe('Muster; Meier');
@@ -74,39 +78,47 @@ describe('writing a person onto their card', () => {
 	});
 
 	it('gives a new typed label a group no other line uses', () => {
-		const out = writeCard(base, {
-			...anna,
-			emails: [{ value: 'x@example.com', label: { typed: 'Chor' } }]
-		});
+		const out = writeCard(
+			base,
+			{
+				...anna,
+				emails: [{ value: 'x@example.com', label: { typed: 'Chor' } }]
+			},
+			null
+		);
 		expect(out).toContain('item2.EMAIL:x@example.com\r\nitem2.X-ABLABEL:Chor\r\n');
 	});
 
 	it('leaves a birthday Stella knows only by its year as the card has it', () => {
-		const out = writeCard(base, { ...anna, birthday: { value: '1950', precision: 'year' } });
+		const out = writeCard(base, { ...anna, birthday: { value: '1950', precision: 'year' } }, null);
 		expect(out).toContain('BDAY:1950-04-07\r\n');
-		expect(writeCard(base, { ...anna, birthday: null })).toContain('BDAY:1950-04-07\r\n');
+		expect(writeCard(base, { ...anna, birthday: null }, null)).toContain('BDAY:1950-04-07\r\n');
 	});
 
 	it('sends the photo in the syntax of the card’s version, folded', () => {
-		const photo = { mime: 'image/jpeg', base64: 'A'.repeat(200), fingerprint: 'p1' };
-		const v3 = writeCard(base, { ...anna, photo });
+		const photo = { mime: 'image/jpeg', base64: 'A'.repeat(200) };
+		const v3 = writeCard(base, { ...anna, photoId: 'p1' }, photo);
 		expect(v3).toContain('PHOTO;ENCODING=b;TYPE=JPEG:AAAA');
 		expect(v3.split('\r\n').every((l) => new TextEncoder().encode(l).length <= 75)).toBe(true);
 		expect(read(v3).photo).toBe('inline');
 
-		const v4 = writeCard(base.replace('VERSION:3.0', 'VERSION:4.0'), { ...anna, photo });
+		const v4 = writeCard(
+			base.replace('VERSION:3.0', 'VERSION:4.0'),
+			{ ...anna, photoId: 'p1' },
+			photo
+		);
 		expect(v4).toContain('PHOTO:data:image/jpeg;base64,AAAA');
 		expect(read(v4).photo).toBe('inline');
 	});
 
 	it('keeps the card’s photo while Stella has none', () => {
 		const withPhoto = base.replace('END:VCARD', 'PHOTO;ENCODING=b;TYPE=PNG:iVBOR\r\nEND:VCARD');
-		expect(writeCard(withPhoto, anna)).toContain('PHOTO;ENCODING=b;TYPE=PNG:iVBOR\r\n');
+		expect(writeCard(withPhoto, anna, null)).toContain('PHOTO;ENCODING=b;TYPE=PNG:iVBOR\r\n');
 	});
 
 	it('folds without breaking a character in two', () => {
 		const long = 'Ä'.repeat(60);
-		const out = writeCard(base, { ...anna, firstName: long });
+		const out = writeCard(base, { ...anna, firstName: long }, null);
 		expect(out.split('\r\n').every((l) => new TextEncoder().encode(l).length <= 75)).toBe(true);
 		expect(read(out).firstName).toBe(long);
 	});
@@ -119,8 +131,6 @@ describe("a person's kept-in-step facts", () => {
 		expect(stellaHash({ ...anna, displayName: 'Grosi' })).toBe(h);
 		expect(stellaHash({ ...anna, lastName: 'Meier' })).not.toBe(h);
 		expect(stellaHash({ ...anna, phones: [] })).not.toBe(h);
-		expect(
-			stellaHash({ ...anna, photo: { mime: 'image/jpeg', base64: 'AA', fingerprint: 'p' } })
-		).not.toBe(h);
+		expect(stellaHash({ ...anna, photoId: 'p' })).not.toBe(h);
 	});
 });
