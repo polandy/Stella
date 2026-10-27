@@ -4,6 +4,7 @@ import type { ActivityRecord } from '../activity/activity';
 import type { ContactReviewWriter } from '../import/contact-review';
 import type { ContactSourceRepository, RememberedAnswer } from '../import/source-links';
 import type { MediaStore } from '../media/avatars';
+import { asStellaPerson } from '../nextcloud/linked-person';
 import type {
 	LinkedPerson,
 	MirroredCard,
@@ -133,7 +134,13 @@ export function testHousehold() {
 		}
 	};
 
-	const sources: Pick<ContactSourceRepository, 'answersFor'> = {
+	const sources: ContactSourceRepository = {
+		matchablePeople: async (_v, options = {}) =>
+			[...people.values()]
+				.filter((p) => !p.archived && (!options.sharedOnly || p.visibility === 'shared'))
+				.map(asStellaPerson),
+		skippedFor: async () => [],
+		askAgain: async () => false,
 		answersFor: async () =>
 			new Map(
 				[...links].map(([uid, contactId]): [string, RememberedAnswer] => [
@@ -149,6 +156,11 @@ export function testHousehold() {
 
 	const writer: ContactReviewWriter = {
 		async applyReview(_viewer, write, audit) {
+			for (const c of write.newPeople.contacts) {
+				const { id, firstName, lastName, displayName, visibility } = c;
+				people.set(id, person(id, { firstName, lastName, displayName, visibility }));
+			}
+			for (const link of write.links) links.set(link.externalUid, link.contactId);
 			for (const completion of write.completions) {
 				const p = people.get(completion.personId)!;
 				const { birthDate, birthDatePrecision, ...names } = completion.set;
@@ -162,7 +174,7 @@ export function testHousehold() {
 				}
 			}
 			if (audit) audits.push(audit);
-			return { people: 0, completed: write.completions.length };
+			return { people: write.newPeople.contacts.length, completed: write.completions.length };
 		}
 	};
 

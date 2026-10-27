@@ -7,7 +7,12 @@ import type { Viewer } from '../../access/visibility';
 import { readContactCards } from './contact-cards';
 import { readReviewExport } from './review-export';
 import { cardsToReview, type CardToReview } from './review-cards';
-import type { ContactSource, ContactSourceRepository, SkippedCard } from './source-links';
+import type {
+	ContactSource,
+	ContactSourceRepository,
+	ReviewScope,
+	SkippedCard
+} from './source-links';
 
 /*
  * What the wizard's review step reads (docs/02 §2.16): the cards that need an answer with who
@@ -57,12 +62,15 @@ function reviewCardOf(
 export async function prepareContactReview(
 	deps: ReviewViewDeps,
 	viewer: Viewer,
-	text: string
+	text: string,
+	scope: ReviewScope = {}
 ): Promise<ContactReview> {
-	const { source, cards, linkPhotos } = readContactCards(text);
+	const read = readContactCards(text);
+	const { cards, linkPhotos } = read;
+	const source = scope.source ?? read.source;
 	const [remembered, people] = await Promise.all([
 		deps.sources.answersFor(viewer, source),
-		deps.sources.matchablePeople(viewer)
+		deps.sources.matchablePeople(viewer, scope)
 	]);
 	const byId = new Map(people.map((p) => [p.id, p]));
 	const asked = cardsToReview(cards, remembered, people);
@@ -82,13 +90,14 @@ export async function findForReview(
 	deps: ReviewViewDeps,
 	viewer: Viewer,
 	text: string,
-	request: { key: string; query: string }
+	request: { key: string; query: string },
+	scope: ReviewScope = {}
 ): Promise<ReviewCandidate[]> {
 	const wanted = foldName(request.query);
 	if (wanted.length < 2) return [];
 	const card = readContactCards(text).cards.find((c) => c.key === request.key);
 	if (!card) return [];
-	const people = await deps.sources.matchablePeople(viewer);
+	const people = await deps.sources.matchablePeople(viewer, scope);
 	return people
 		.filter((p) =>
 			[fullName(p), p.displayName, p.nickname ?? ''].some((n) => foldName(n).includes(wanted))

@@ -1,7 +1,7 @@
 import { and, asc, desc, eq, sql } from 'drizzle-orm';
 import type { BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
 import type { StellaPerson } from '../../import-match/card';
-import { contactBrowsableBy } from '../access/query-scoping';
+import { contactBrowsableBy, contactInBookFor } from '../access/query-scoping';
 import type {
 	ContactSourceRepository,
 	RememberedAnswer,
@@ -99,8 +99,8 @@ export function createDrizzleContactSourceRepository(db: Db): ContactSourceRepos
 			);
 		},
 
-		async matchablePeople(viewer) {
-			const browsable = contactBrowsableBy(viewer);
+		async matchablePeople(viewer, options = {}) {
+			const browsable = options.sharedOnly ? contactInBookFor(viewer) : contactBrowsableBy(viewer);
 			const people = db
 				.select({
 					id: contact.id,
