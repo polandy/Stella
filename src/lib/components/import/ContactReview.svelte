@@ -82,28 +82,27 @@
 		{:else}
 			<p class="text-sm text-fg">{t('import.review.nothingToAsk')}</p>
 		{/if}
-		{#if sure > 0 || left > 0}
-			<div class="flex flex-wrap gap-2">
-				{#if sure > 0}
-					<Button
-						variant="primary"
-						size="sm"
-						icon="done"
-						onclick={() => (reviewState = confirmSure(reviewState, review.cards))}
-						>{t('import.review.confirmSure', { count: sure })}</Button
-					>
-				{/if}
-				{#if left > 0}
-					<Button
-						variant="ghost"
-						size="sm"
-						icon="skip"
-						onclick={() => (reviewState = skipRest(reviewState, review.cards))}
-						>{t('import.review.skipRest')}</Button
-					>
-				{/if}
-			</div>
-		{/if}
+		<div class="flex flex-wrap gap-2">
+			{#if sure > 0}
+				<Button
+					variant="primary"
+					size="sm"
+					icon="done"
+					onclick={() => (reviewState = confirmSure(reviewState, review.cards))}
+					>{t('import.review.confirmSure', { count: sure })}</Button
+				>
+			{/if}
+			{#if left > 0}
+				<Button
+					variant="ghost"
+					size="sm"
+					icon="skip"
+					onclick={() => (reviewState = skipRest(reviewState, review.cards))}
+					>{t('import.review.skipRest')}</Button
+				>
+			{/if}
+			<Button variant="ghost" size="sm" href="/settings/import">{t('import.startOver')}</Button>
+		</div>
 		{#if review.skippedBefore > 0}
 			<p class="text-xs text-fg-subtle">
 				{t('import.review.skippedBefore', { count: review.skippedBefore })}
@@ -159,7 +158,6 @@
 		<p class="mr-auto text-sm text-fg-muted" aria-live="polite">
 			{t('import.review.left', { count: left })}
 		</p>
-		<Button variant="ghost" href="/settings/import">{t('import.startOver')}</Button>
 		<Button variant="primary" disabled={left > 0}
 			>{t('import.review.import', { count: answered })}</Button
 		>

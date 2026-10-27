@@ -164,6 +164,7 @@
 							<label class="flex items-center gap-2">
 								<input
 									type="radio"
+									class="accent-primary"
 									name="{key}-{conflict.kind}"
 									checked={!takeCard.includes(conflict.kind)}
 									onchange={() => take(conflict.kind, false)}
@@ -173,6 +174,7 @@
 							<label class="flex items-center gap-2">
 								<input
 									type="radio"
+									class="accent-primary"
 									name="{key}-{conflict.kind}"
 									checked={takeCard.includes(conflict.kind)}
 									onchange={() => take(conflict.kind, true)}

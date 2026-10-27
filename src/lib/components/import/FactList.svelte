@@ -46,7 +46,7 @@
 	{#each rows as row, i (i)}
 		<div class="flex min-w-0 flex-col">
 			<dt class="text-xs text-fg-subtle">
-				{row.label}{#if row.tag}<span> · {row.tag}</span>{/if}
+				{row.label}{#if row.tag}<span>{' · '}{row.tag}</span>{/if}
 			</dt>
 			<dd class="break-words" class:text-fg={!adding} class:text-success-text={adding}>
 				{row.value}

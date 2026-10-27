@@ -53,6 +53,7 @@
 				<label class="flex items-center gap-3 py-2">
 					<input
 						type="checkbox"
+						class="size-5 shrink-0 accent-primary"
 						checked={picked.has(item.card.key)}
 						onchange={(e) => toggle(item.card.key, e.currentTarget.checked)}
 					/>
