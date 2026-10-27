@@ -238,5 +238,8 @@ describe('createServices', () => {
 		});
 		expect(services.archive.importArchiveDeps.media).toBe(services.media.store);
 		expect(services.archive.importDeps.clock).toBe(clock);
+		expect(services.archive.contactReviewDeps.sources).toBe(
+			services.archive.reviewViewDeps.sources
+		);
 	});
 });

@@ -1,13 +1,12 @@
 import type { Locale } from '../../../i18n/locales';
 import { phrase } from '../../../i18n/phrase';
 import { TranslatableError } from '../../../i18n/translatable';
-import type { Conflict } from '../../../import-match/merge-plan';
+import type { ReviewAnswer } from '../../../import-match/review';
 import type { Viewer, Visibility } from '../../access/visibility';
 import type { Clock } from '../../clock';
 import type { IdGenerator } from '../../id';
 import { activityRecord, type ActivityOf } from '../activity/activity';
 import { ContactGoneError } from '../contacts/require-visible';
-import { readContactCards } from './contact-cards';
 import {
 	planMonicaImport,
 	type ImportedPhoto,
@@ -16,7 +15,7 @@ import {
 } from './monica/plan';
 import { cardsToReview, completionOf, isCompleting, type PersonCompletion } from './review-cards';
 import type { ContactSourceRepository, SourceLink } from './source-links';
-import { readVCard } from './vcard';
+import { readReviewExport } from './review-export';
 
 /*
  * Applying the matching review of another address book's export (docs/02 §2.16). The member
@@ -26,16 +25,8 @@ import { readVCard } from './vcard';
  * remember, so the next run of the same export asks only about what is new or changed.
  */
 
-/** The member's answer for one card. */
-export type CardAnswer =
-	| {
-			kind: 'same';
-			personId: string;
-			/** The conflicts where the card's side is taken; Stella's stays for the rest. */
-			takeCard: readonly Conflict['kind'][];
-	  }
-	| { kind: 'new' }
-	| { kind: 'skip' };
+/** The member's answer for one card; the review step's own shape. */
+export type CardAnswer = ReviewAnswer;
 
 /** Some card the review asked about came back without an answer. */
 export class ReviewUnansweredError extends TranslatableError {
@@ -124,15 +115,7 @@ export async function applyContactReview(
 ): Promise<ContactReviewOutcome> {
 	const { viewer } = request;
 	const now = deps.clock.now();
-	const { source, cards, linkPhotos } = readContactCards(request.text);
-	const exp = readVCard(request.text);
-	// Both readers walk the same cards in order; card i is the i-th contact of the mapping.
-	if (exp.contacts.length !== cards.length) {
-		throw new Error(
-			`vCard readers disagree: ${cards.length} cards, ${exp.contacts.length} contacts`
-		);
-	}
-	const planIdOf = new Map(cards.map((c, i) => [c.key, `vcard:contact:${exp.contacts[i]!.id}`]));
+	const { source, cards, linkPhotos, exp, planIdOf } = readReviewExport(request.text);
 
 	const [remembered, people] = await Promise.all([
 		deps.sources.answersFor(viewer, source),

@@ -49,6 +49,7 @@ import {
 	Search,
 	Settings,
 	Shrink,
+	SkipForward,
 	SquarePen,
 	Star,
 	UserPlus,
@@ -57,6 +58,7 @@ import {
 	UserRoundPen,
 	UsersRound,
 	Video,
+	TriangleAlert,
 	Unlink,
 	Waypoints,
 	X
@@ -165,7 +167,10 @@ export const ICONS = {
 	letter: Mail,
 	other: CircleDot,
 	// A sub-circle's row inside its parent's card (docs/02 §2.4.2).
-	subCircle: CornerDownRight
+	subCircle: CornerDownRight,
+	// The import review (docs/02 §2.16): a card left out, and where card and person disagree.
+	skip: SkipForward,
+	conflict: TriangleAlert
 };
 
 /** One of `ICONS`. */

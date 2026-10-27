@@ -2,20 +2,24 @@ import type { Database } from 'bun:sqlite';
 import type { BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
 import type { Clock } from '../clock';
 import { createDrizzleArchiveRepository } from '../db/archive-repository';
+import { createDrizzleContactReviewWriter } from '../db/contact-review-writer';
+import { createDrizzleContactSourceRepository } from '../db/contact-source-repository';
 import { createDrizzleImportRepository } from '../db/import-repository';
 import { createDrizzleRestoreRepository } from '../db/restore-repository';
 import type * as schema from '../db/schema';
 import type { ArchiveDeps } from '../domain/archive/archive';
 import type { ImportArchiveDeps } from '../domain/archive/import';
 import type { ImportDeps } from '../domain/import/apply';
+import type { ContactReviewDeps } from '../domain/import/contact-review';
+import type { ReviewViewDeps } from '../domain/import/review-view';
 import type { MediaStore } from '../domain/media/avatars';
 import { activityWording } from '../i18n/activity-wording';
 import type { IdGenerator } from '../id';
 
 /*
  * The `archive` bounded context of the composition root (docs/08 §8.3): moving a household in
- * or out — the archive export, the archive restore and the Monica import (docs/02 §2.15,
- * §2.16). Built once per process by `createServices`; the edge reads it off
+ * or out — the archive export, the archive restore, the Monica import and the matching
+ * review of another address book (docs/02 §2.15, §2.16). Built once per process by `createServices`; the edge reads it off
  * `locals.services.archive`.
  *
  * No edge reads a repository of it directly, so it holds only use-cases' `deps`, each named
@@ -28,6 +32,10 @@ export interface ArchiveServices {
 	importArchiveDeps: ImportArchiveDeps;
 	/** The Monica import (docs/02 §2.16); the wizard is the only caller. */
 	importDeps: ImportDeps;
+	/** The matching review of another address book's vCard: what it asks (docs/02 §2.16). */
+	reviewViewDeps: ReviewViewDeps;
+	/** … and applying the answers. */
+	contactReviewDeps: ContactReviewDeps;
 }
 
 export interface ArchiveWiring {
@@ -53,6 +61,7 @@ export function createArchiveServices({
 	media,
 	convertHeldGifts
 }: ArchiveWiring): ArchiveServices {
+	const sources = createDrizzleContactSourceRepository(db);
 	return {
 		archiveDeps: { archive: createDrizzleArchiveRepository(db, sqlite), ids, clock },
 		importArchiveDeps: {
@@ -62,6 +71,13 @@ export function createArchiveServices({
 			clock,
 			convertHeldGifts
 		},
-		importDeps: { importer: createDrizzleImportRepository(db), clock }
+		importDeps: { importer: createDrizzleImportRepository(db), clock },
+		reviewViewDeps: { sources },
+		contactReviewDeps: {
+			sources,
+			writer: createDrizzleContactReviewWriter(db, activityWording),
+			clock,
+			ids
+		}
 	};
 }

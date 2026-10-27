@@ -16,6 +16,7 @@ import { gifts } from './gifts';
 import { home } from './home';
 import { immich } from './immich';
 import { importer } from './import';
+import { importReview } from './import-review';
 import { interactions } from './interactions';
 import { journal } from './journal';
 import { kinship } from './kinship';
@@ -43,6 +44,7 @@ export const en = {
 	...home,
 	...immich,
 	...importer,
+	...importReview,
 	...interactions,
 	...journal,
 	...kinship,
