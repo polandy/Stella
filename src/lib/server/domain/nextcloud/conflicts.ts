@@ -13,7 +13,7 @@ import { cardPicture, storablePicture } from './card-photo';
 import { NOBODY_NEW } from './card-read';
 import { asStellaPerson } from './linked-person';
 import type { NextcloudStore, StoredConflict } from './store';
-import type { SyncConflictKind } from './sync-plan';
+import type { SyncConflict, SyncConflictKind } from './sync-plan';
 
 /*
  * The conflicts a sync found, waiting under *Data quality* (docs/02 §2.16.3), and their answer:
@@ -43,6 +43,42 @@ export const waitingConflicts = (
 	deps: Pick<ConflictAnswerDeps, 'store'>,
 	viewer: Viewer
 ): Promise<StoredConflict[]> => deps.store.conflicts(viewer);
+
+/** A waiting conflict as its page shows it; a picture conflict with both pictures. */
+export interface ConflictToShow {
+	contactId: string;
+	displayName: string;
+	conflict: SyncConflict;
+	/** Stella's picture of them, for a picture conflict. */
+	stellaPhotoId: string | null;
+	/** The card's picture as a data URL, for a picture conflict: it is only on the card. */
+	cardPicture: string | null;
+}
+
+/** The conflicts waiting about people `viewer` may browse, ready to be shown, oldest first. */
+export async function conflictsToShow(
+	deps: Pick<ConflictAnswerDeps, 'store'>,
+	viewer: Viewer
+): Promise<ConflictToShow[]> {
+	const shown: ConflictToShow[] = [];
+	for (const { contactId, displayName, conflict } of await deps.store.conflicts(viewer)) {
+		const row = { contactId, displayName, conflict, stellaPhotoId: null, cardPicture: null };
+		const linked =
+			conflict.kind === 'photo' ? await deps.store.linkedCard(viewer, contactId) : null;
+		if (!linked) {
+			shown.push(row);
+			continue;
+		}
+		const picture = cardPicture(linked.card.vcard);
+		const person = (await deps.store.linkedPeople(viewer, linked.source)).get(linked.card.uid);
+		shown.push({
+			...row,
+			stellaPhotoId: person?.avatar?.photoId ?? null,
+			cardPicture: picture ? `data:${picture.mime};base64,${picture.base64}` : null
+		});
+	}
+	return shown;
+}
 
 /** A card saying what the person holds but for the conflict's fact, which it says the card's way. */
 function cardSaying(person: StellaPerson, conflict: Conflict): IncomingCard {

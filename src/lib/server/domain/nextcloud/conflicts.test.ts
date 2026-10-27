@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'bun:test';
 import type { Viewer } from '../../access/visibility';
 import { fixedClock, sequentialIds } from '../testing';
-import { answerConflict, type ConflictAnswer } from './conflicts';
+import { answerConflict, conflictsToShow, type ConflictAnswer } from './conflicts';
 import { anna, b64, cardOf, JPEG, linkedAnna, wording } from '../testing/nextcloud-book';
 
 /*
@@ -108,5 +108,41 @@ describe('a conflict answered', () => {
 
 		expect(await answer('card')).toBe(false);
 		expect(house.people.get('p-anna')!.lastName).toBe('Muster');
+	});
+});
+
+describe('the conflicts shown', () => {
+	it('show a picture conflict with both pictures, Stella’s by photo and the card’s inline', async () => {
+		const { house } = await waitingOn(
+			({ book, house }) => {
+				house.files.set('mine.jpg', new Uint8Array([...JPEG, 1]));
+				book.phone.save('anna.vcf', anna(`PHOTO;ENCODING=b;TYPE=JPEG:${b64(JPEG)}`));
+			},
+			{ hasPhoto: true, avatar: { photoId: 'mine', path: 'mine.jpg', mime: 'image/jpeg' } }
+		);
+
+		expect(await conflictsToShow({ store: house.store }, BERT)).toEqual([
+			{
+				contactId: 'p-anna',
+				displayName: 'Anna Muster',
+				conflict: { kind: 'photo' },
+				stellaPhotoId: 'mine',
+				cardPicture: `data:image/jpeg;base64,${b64(JPEG)}`
+			}
+		]);
+	});
+
+	it('carry no picture for any other fact', async () => {
+		const { house } = await waitingOn(renamed);
+
+		expect(await conflictsToShow({ store: house.store }, BERT)).toEqual([
+			{
+				contactId: 'p-anna',
+				displayName: 'Anna Muster',
+				conflict: { kind: 'lastName', stella: 'Muster', card: 'Meier' },
+				stellaPhotoId: null,
+				cardPicture: null
+			}
+		]);
 	});
 });
