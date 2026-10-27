@@ -188,8 +188,10 @@ describe('createDrizzleNextcloudStore', () => {
 		link('private', 'c-private');
 		link('archived', 'c-archived');
 		link('anna', 'c-anna', 'vcard:google');
+		link('anna-book', 'c-anna');
 
-		expect([...(await store.linkedPeople(asSystem, BOOK)).keys()]).toEqual([]);
+		// Anna, shared, is read for the book — under its own link only, never another source's.
+		expect([...(await store.linkedPeople(asSystem, BOOK)).keys()]).toEqual(['anna-book']);
 		expect((await store.linkedPeople(asDora, BOOK)).size).toBe(0);
 	});
 

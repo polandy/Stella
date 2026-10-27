@@ -194,10 +194,6 @@ export function activityVisibleTo(viewer: Viewer): SQL {
 }
 
 /**
- * Condition for a `user` row being a member the remover may remove — the SQL of
- * `canRemoveMember`: an admin, another current member of the same household.
- */
-/**
  * Condition for a `user` row being a member — someone who signs in — and not the system actor
  * the activity log names for the linked address book (docs/02 §2.16.3).
  */
@@ -205,6 +201,10 @@ export function isMemberAccount(): SQL {
 	return eq(user.kind, 'member');
 }
 
+/**
+ * Condition for a `user` row being a member the remover may remove — the SQL of
+ * `canRemoveMember`: an admin, another current member of the same household.
+ */
 export function memberRemovableBy(remover: Remover): SQL {
 	if (!remover.isAdmin) return sql`0`;
 	return and(
