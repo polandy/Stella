@@ -8,6 +8,7 @@
 	import type { ContactSource } from '$lib/import-match/card';
 	import type { Conflict } from '$lib/import-match/merge-plan';
 	import type { ReviewAnswer, ReviewCandidate, ReviewCard } from '$lib/import-match/review';
+	import ConflictChoice from './ConflictChoice.svelte';
 	import FactList from './FactList.svelte';
 	import PersonPicker from './PersonPicker.svelte';
 	import { dateText, factValue } from './review-text';
@@ -157,31 +158,14 @@
 						<p class="text-sm text-fg-muted">{t('import.review.nothingNew')}</p>
 					{/if}
 					{#each person.plan.conflicts as conflict (conflict.kind)}
-						<fieldset class="flex flex-col gap-1 rounded-md bg-warning-soft p-3 text-sm text-fg">
-							<legend class="flex items-center gap-1.5 font-medium">
-								<Icon name="conflict" />{t(`import.review.conflict.${conflict.kind}`)}
-							</legend>
-							<label class="flex items-center gap-2">
-								<input
-									type="radio"
-									class="accent-primary"
-									name="{key}-{conflict.kind}"
-									checked={!takeCard.includes(conflict.kind)}
-									onchange={() => take(conflict.kind, false)}
-								/>
-								{t('import.review.keepStella')}: {conflictSide(conflict, 'stella')}
-							</label>
-							<label class="flex items-center gap-2">
-								<input
-									type="radio"
-									class="accent-primary"
-									name="{key}-{conflict.kind}"
-									checked={takeCard.includes(conflict.kind)}
-									onchange={() => take(conflict.kind, true)}
-								/>
-								{t('import.review.takeCard')}: {conflictSide(conflict, 'card')}
-							</label>
-						</fieldset>
+						<ConflictChoice
+							name="{key}-{conflict.kind}"
+							kind={conflict.kind}
+							stella={conflictSide(conflict, 'stella')}
+							card={conflictSide(conflict, 'card')}
+							takeCard={takeCard.includes(conflict.kind)}
+							ontake={(card) => take(conflict.kind, card)}
+						/>
 					{/each}
 					{#if person.plan.kept.length > 0}
 						<p class="text-xs text-fg-subtle">

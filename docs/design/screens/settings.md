@@ -61,8 +61,9 @@ are what it holds today. The household-wide checks are their own page (§5.5.8).
   strong matches* (primary) and *Skip the rest* (ghost).
 - Then one card per contact to answer: a badge (green for a strong or changed match, amber for
   name only or several, plain for new) and why, the incoming contact beside the Stella person,
-  *Would add* in `--success-text`, a conflict as a `--warning-soft` fieldset with *Keep
-  Stella's* / *Take the card's*, and the four answers in a row. An answer folds the card to one
+  *Would add* in `--success-text`, a conflict as a slim row — a small `--warning` icon
+  with what differs, then *Stella* and *On the card* as two chips side by side, the picked one
+  in `--primary-soft` with a `--primary` border; no box, so three conflicts stay short — and the four answers in a row. An answer folds the card to one
   line with *Change*; folded cards sink below the open ones.
 - The contacts nobody matches are one checklist between the open and the folded cards: a row per
   contact (name, first email or phone), *Select all* / *Select none*, nothing ticked, and one
