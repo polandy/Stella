@@ -179,6 +179,20 @@ describe('readVCard', () => {
 		});
 	});
 
+	it('reads the data URL Nextcloud writes with its comma escaped', () => {
+		const exp = readVCard(
+			card('UID:u1', 'FN:Severin', 'PHOTO;VALUE=URI:data:image/jpeg;base64\\,AAECAw==')
+		);
+
+		expect(exp.photos[0]?.dataUrl).toBe('data:image/jpeg;base64,AAECAw==');
+	});
+
+	it('makes no tag of the groups Google puts every contact in', () => {
+		const exp = readVCard(card('FN:Severin', 'CATEGORIES:myContacts,starred,Jassrunde'));
+
+		expect(exp.tags.map((t) => t.name)).toEqual(['Jassrunde']);
+	});
+
 	it('leaves out a picture the card only links to, since the file is not in it', () => {
 		const exp = readVCard(
 			card('UID:u1', 'FN:Severin', 'PHOTO;VALUE=uri:https://example.ch/severin.jpg')
