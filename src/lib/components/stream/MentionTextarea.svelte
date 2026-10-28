@@ -1,8 +1,10 @@
 <script lang="ts">
-	import Avatar from '$lib/components/ui/Avatar.svelte';
-	import NamesakeLine from '$lib/components/people/NamesakeLine.svelte';
+	import MentionListbox from '$lib/components/stream/MentionListbox.svelte';
+	import TagListbox from '$lib/components/journal/TagListbox.svelte';
+	import TagsLine from '$lib/components/journal/TagsLine.svelte';
+	import type { KnownTag } from '$lib/hashtags/picker';
+	import { TagPicker } from '$lib/hashtags/tag-picker.svelte';
 	import WhichNamesake from '$lib/components/people/WhichNamesake.svelte';
-	import { useTranslate } from '$lib/i18n/context.svelte';
 	import { allowedForAudience } from '$lib/mentions/audience';
 	import {
 		activeHandle,
@@ -29,6 +31,10 @@
 	 * readable `@Thomas` and remembers the pick against it (`picks.ts`); posting the form sends
 	 * the stored form, and without JavaScript the typed text goes and the server asks about any
 	 * handle that could be more than one person.
+	 *
+	 * Given `tags`, the field offers the household's tags while you type `#` as well, and says
+	 * under it what the text will be filed under (docs/02 §2.20.2) — a journal entry has tags, a
+	 * note does not.
 	 */
 
 	interface Candidate {
@@ -60,6 +66,8 @@
 		class?: string;
 		/** Set while a typed handle could be several people; the form keeps saving off meanwhile. */
 		unclear?: boolean;
+		/** The tags the viewer can see, for the `#` list; without them `#` is only text. */
+		tags?: readonly KnownTag[];
 	}
 	let {
 		candidates,
@@ -73,13 +81,16 @@
 		label,
 		class: className = '',
 		// eslint-disable-next-line @typescript-eslint/no-unused-vars -- written for the parent's bind:unclear
-		unclear = $bindable(false)
+		unclear = $bindable(false),
+		tags
 	}: Props = $props();
 
-	const t = useTranslate();
 	const uid = $props.id();
 	const listboxId = `${uid}-people`;
 	const optionId = (i: number) => `${uid}-person-${i}`;
+	const tagListId = `${uid}-tags`;
+	const tagOptionId = (i: number) => `${uid}-tag-${i}`;
+	const tagPicker = new TagPicker(() => tags ?? []);
 
 	let textarea: HTMLTextAreaElement | undefined = $state();
 	let active = $state<ActiveHandle | null>(null);
@@ -136,8 +147,8 @@
 	 */
 	function onKeyup(event: KeyboardEvent) {
 		if (!event.key.startsWith('Arrow')) return;
-		if ((event.key === 'ArrowUp' || event.key === 'ArrowDown') && active && people.length > 0)
-			return;
+		const listOpen = (active && people.length > 0) || tagPicker.open;
+		if ((event.key === 'ArrowUp' || event.key === 'ArrowDown') && listOpen) return;
 		refreshPicker();
 	}
 
@@ -145,6 +156,7 @@
 		if (!textarea) return;
 		active = activeHandle(text, textarea.selectionStart);
 		selected = 0;
+		if (tags) tagPicker.follow(text, textarea.selectionStart);
 	}
 
 	function onInput(event: Event) {
@@ -159,6 +171,16 @@
 		const r = insertHandle(text, active, textarea.selectionStart, handle);
 		changeText(r.text, { start: active.start, end: active.start + handle.length, id: person.id });
 		active = null;
+		await tick();
+		textarea.focus();
+		textarea.setSelectionRange(r.caret, r.caret);
+	}
+
+	async function chooseTag(index: number) {
+		if (!textarea) return;
+		const r = tagPicker.choose(text, textarea.selectionStart, index);
+		if (!r) return;
+		changeText(r.text);
 		await tick();
 		textarea.focus();
 		textarea.setSelectionRange(r.caret, r.caret);
@@ -182,9 +204,11 @@
 	function closeIfFocusLeft() {
 		if (document.activeElement === textarea) return;
 		active = null;
+		tagPicker.close();
 	}
 
 	function onKeydown(event: KeyboardEvent) {
+		if (tagPicker.key(event, (i) => void chooseTag(i))) return;
 		if (!active || people.length === 0) return;
 		if (event.key === 'ArrowDown') {
 			event.preventDefault();
@@ -214,8 +238,12 @@
 		{placeholder}
 		aria-label={label}
 		aria-autocomplete="list"
-		aria-controls={listboxId}
-		aria-activedescendant={active && people[selected] ? optionId(selected) : undefined}
+		aria-controls={tagPicker.open ? tagListId : listboxId}
+		aria-activedescendant={tagPicker.open
+			? tagOptionId(tagPicker.highlighted)
+			: active && people[selected]
+				? optionId(selected)
+				: undefined}
 		onkeydown={onKeydown}
 		oninput={onInput}
 		onclick={refreshPicker}
@@ -224,47 +252,29 @@
 		class={className}></textarea>
 
 	{#if active && people.length > 0}
-		<!-- A textarea cannot take the combobox role, so it points at the list with
-		     aria-controls and at the highlighted person with aria-activedescendant. -->
-		<ul
+		<MentionListbox
 			id={listboxId}
-			role="listbox"
-			aria-label={t('composer.people')}
-			data-testid="mention-picker"
-			class="absolute top-full left-2 z-10 -mt-1 w-[min(320px,calc(100%-1rem))] rounded-app border border-border bg-card p-1 shadow-pop"
-		>
-			{#each people as person, i (person.id)}
-				<!-- The li is only the list's own markup: a listbox may contain options, not items. -->
-				<li role="none">
-					<button
-						type="button"
-						role="option"
-						id={optionId(i)}
-						tabindex="-1"
-						aria-selected={i === selected}
-						onmousedown={(e) => {
-							e.preventDefault();
-							void choose(i);
-						}}
-						onmouseenter={() => (selected = i)}
-						class="flex w-full items-center gap-2.5 rounded-control px-2.5 py-1.5 text-left text-sm text-fg aria-selected:bg-primary-soft"
-					>
-						<Avatar
-							id={person.id}
-							name={person.displayName}
-							avatarPhotoId={person.avatarPhotoId}
-							size={22}
-						/>
-						<span class="min-w-0">
-							<span class="block truncate">{person.displayName}</span>
-							{#if namesakes.get(person.id)}<NamesakeLine
-									distinction={namesakes.get(person.id)!}
-								/>{/if}
-						</span>
-					</button>
-				</li>
-			{/each}
-		</ul>
+			{people}
+			highlighted={selected}
+			{optionId}
+			{namesakes}
+			onchoose={(i) => void choose(i)}
+			onhighlight={(i) => (selected = i)}
+		/>
+	{/if}
+	{#if tagPicker.open}
+		<TagListbox
+			id={tagListId}
+			rows={tagPicker.rows}
+			highlighted={tagPicker.highlighted}
+			optionId={tagOptionId}
+			onchoose={(i) => void chooseTag(i)}
+			onhighlight={(i) => (tagPicker.highlighted = i)}
+			class="top-full left-2 -mt-1"
+		/>
+	{/if}
+	{#if tags}
+		<div class="mt-1.5"><TagsLine body={value} known={tags} /></div>
 	{/if}
 	{#if unclearNow.length}
 		<div class="mt-2"><WhichNamesake unclear={unclearNow} /></div>

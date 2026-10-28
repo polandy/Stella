@@ -267,6 +267,7 @@
 				rows={5}
 				required
 				{candidates}
+				tags={data.entryTags}
 				visibility={entryVisibility}
 				bind:unclear={entryUnclear}
 				placeholder={t('journal.bodyPlaceholder')}
@@ -414,6 +415,7 @@
 										bind:unclear={editUnclear}
 										names={entry.mentionNames}
 										{candidates}
+										tags={data.entryTags}
 										visibility={entry.visibility}
 										placeholder={t('journal.bodyPlaceholder')}
 										class="w-full rounded-md border border-border-input bg-bg px-3 py-2 text-fg"

@@ -7,6 +7,10 @@
 	import DayPill from '$lib/components/ui/DayPill.svelte';
 	import Icon from '$lib/components/ui/Icon.svelte';
 	import KnowThemBy from '$lib/components/people/KnowThemBy.svelte';
+	import TagListbox from '$lib/components/journal/TagListbox.svelte';
+	import TagsLine from '$lib/components/journal/TagsLine.svelte';
+	import type { KnownTag } from '$lib/hashtags/picker';
+	import { TagPicker } from '$lib/hashtags/tag-picker.svelte';
 	import NamesakeLine from '$lib/components/people/NamesakeLine.svelte';
 	import WhichNamesake from '$lib/components/people/WhichNamesake.svelte';
 	import { useTranslate } from '$lib/i18n/context.svelte';
@@ -58,6 +62,9 @@
 	 * belongs to them without an `@`, shown as a chip above the field, and `@` offers everyone
 	 * else. There it saves in place (`onSaved`), can be cancelled (`onCancel`) and reports what
 	 * is typed (`onDraft`), so the page can keep a draft while the spot holds another form.
+	 *
+	 * `#` offers the household's tags (docs/02 §2.20.2) from a list of its own beside the state
+	 * below: a chosen tag comes back as typed text, so the transitions never learn about tags.
 	 */
 
 	interface Props {
@@ -85,6 +92,8 @@
 		onCancel?: (draft: MomentDraft) => void;
 		/** What is typed, as it changes. */
 		onDraft?: (draft: MomentDraft) => void;
+		/** The tags the author can see, for the `#` list. */
+		tags?: readonly KnownTag[];
 	}
 	interface Anchor {
 		id: string;
@@ -106,7 +115,8 @@
 		held = null,
 		onSaved,
 		onCancel,
-		onDraft
+		onDraft,
+		tags = []
 	}: Props = $props();
 
 	const t = useTranslate();
@@ -114,6 +124,9 @@
 	const errorId = `${uid}-error`;
 	const listboxId = `${uid}-people`;
 	const optionId = (i: number) => `${uid}-person-${i}`;
+	const tagListId = `${uid}-tags`;
+	const tagOptionId = (i: number) => `${uid}-tag-${i}`;
+	const tagPicker = new TagPicker(() => tags);
 
 	/*
 	 * What the composer is doing — the text and its picks, the @-list, a person being created,
@@ -279,22 +292,38 @@
 	// save would otherwise close the picker under whoever is already typing the next moment.
 	let closingPicker: ReturnType<typeof setTimeout> | undefined;
 	function closePickerSoon() {
-		closingPicker = setTimeout(() => void dispatch({ type: 'pickerClosed' }), 120);
+		closingPicker = setTimeout(() => {
+			tagPicker.close();
+			void dispatch({ type: 'pickerClosed' });
+		}, 120);
 	}
 
 	function onInput(event: Event) {
 		const field = event.currentTarget as HTMLTextAreaElement;
 		clearTimeout(closingPicker);
 		void dispatch({ type: 'typed', text: field.value, caret: field.selectionStart });
+		tagPicker.follow(field.value, field.selectionStart);
 	}
 
 	function onKeyup(event: KeyboardEvent) {
-		if (keyupAsksPicker(event.key, listOpen)) refreshPicker();
+		if (keyupAsksPicker(event.key, listOpen || tagPicker.open)) refreshPicker();
 	}
 
 	function refreshPicker() {
 		clearTimeout(closingPicker);
-		if (textarea) void dispatch({ type: 'caretMoved', caret: textarea.selectionStart });
+		if (!textarea) return;
+		void dispatch({ type: 'caretMoved', caret: textarea.selectionStart });
+		tagPicker.follow(textarea.value, textarea.selectionStart);
+	}
+
+	async function chooseTag(index: number) {
+		if (!textarea) return;
+		const r = tagPicker.choose(textarea.value, textarea.selectionStart, index);
+		if (!r) return;
+		await dispatch({ type: 'typed', text: r.text, caret: r.caret });
+		await tick();
+		textarea.focus();
+		textarea.setSelectionRange(r.caret, r.caret);
 	}
 
 	function choose(index: number) {
@@ -318,6 +347,7 @@
 	}
 
 	function onKeydown(event: KeyboardEvent) {
+		if (tagPicker.key(event, (i) => void chooseTag(i))) return;
 		const key = textKey(
 			{ key: event.key, mod: event.metaKey || event.ctrlKey },
 			{ listOpen, cancellable: onCancel !== undefined, canSave }
@@ -451,8 +481,12 @@
 					})
 				: t('composer.label')}
 			aria-autocomplete="list"
-			aria-controls={listboxId}
-			aria-activedescendant={!creating && active && rows[selected] ? optionId(selected) : undefined}
+			aria-controls={tagPicker.open ? tagListId : listboxId}
+			aria-activedescendant={tagPicker.open
+				? tagOptionId(tagPicker.highlighted)
+				: !creating && active && rows[selected]
+					? optionId(selected)
+					: undefined}
 			aria-describedby={(error ?? localError) ? errorId : undefined}
 			onkeydown={onKeydown}
 			oninput={onInput}
@@ -463,6 +497,11 @@
 			class="min-h-14 flex-1 resize-y bg-transparent font-serif text-[17px] leading-relaxed text-fg outline-none placeholder:text-fg-subtle"
 		></textarea>
 	</div>
+	{#if body.trim()}
+		<div class="px-3 pb-2 {anchorPerson ? '' : 'pl-16'}">
+			<TagsLine {body} known={tags} />
+		</div>
+	{/if}
 
 	{#if creating}
 		<!-- Plain inputs, not a nested form: the panel lives inside the moment's form. It takes
@@ -532,6 +571,16 @@
 				</Button>
 			</div>
 		</div>
+	{:else if tagPicker.open}
+		<TagListbox
+			id={tagListId}
+			rows={tagPicker.rows}
+			highlighted={tagPicker.highlighted}
+			optionId={tagOptionId}
+			onchoose={(i) => void chooseTag(i)}
+			onhighlight={(i) => (tagPicker.highlighted = i)}
+			class="top-16 left-14 w-[min(320px,calc(100%-4rem))]"
+		/>
 	{:else if active && rows.length > 0}
 		<ul
 			id={listboxId}

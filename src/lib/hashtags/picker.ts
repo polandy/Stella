@@ -60,6 +60,55 @@ export function suggestTags<T extends KnownTag>(
 	return { tags, create };
 }
 
+/** A row of the `#` list: a tag the household has, or the typed name as a new one, last. */
+export type TagRow<T extends KnownTag = KnownTag> =
+	{ kind: 'tag'; tag: T } | { kind: 'new'; name: string };
+
+export function tagRows<T extends KnownTag>(suggestions: TagSuggestions<T>): TagRow<T>[] {
+	const rows: TagRow<T>[] = suggestions.tags.map((tag) => ({ kind: 'tag', tag }));
+	if (suggestions.create) rows.push({ kind: 'new', name: suggestions.create });
+	return rows;
+}
+
+/** The `#` list as a host holds it: the tag being typed, and which row is highlighted. */
+export interface TagListState {
+	active: ActiveHashtag | null;
+	highlighted: number;
+}
+
+export const TAG_LIST_CLOSED: TagListState = { active: null, highlighted: 0 };
+
+/** The list after the caret moved or the text changed: the highlight back on the first row. */
+export function followCaret(text: string, caret: number): TagListState {
+	return { active: activeHashtag(text, caret), highlighted: 0 };
+}
+
+/** The highlight moved by one, round the rows. */
+export function moveHighlight(state: TagListState, by: 1 | -1, rows: number): TagListState {
+	if (rows === 0) return state;
+	return { ...state, highlighted: (state.highlighted + by + rows) % rows };
+}
+
+/** The text with the row written in and where the caret goes, or null with nothing to choose. */
+export function chooseRow(
+	text: string,
+	caret: number,
+	state: TagListState,
+	row: TagRow | undefined
+): { text: string; caret: number } | null {
+	if (!row || !state.active) return null;
+	return insertHashtag(text, state.active, caret, row.kind === 'tag' ? row.tag.name : row.name);
+}
+
+/** What a key does while the `#` list is open; null leaves it to the field. */
+export function tagListKey(key: string): 'next' | 'previous' | 'choose' | 'close' | null {
+	if (key === 'ArrowDown') return 'next';
+	if (key === 'ArrowUp') return 'previous';
+	if (key === 'Enter' || key === 'Tab') return 'choose';
+	if (key === 'Escape') return 'close';
+	return null;
+}
+
 /** Replace the active tag with `name` plus a trailing space; returns the new text and caret. */
 export function insertHashtag(
 	text: string,
