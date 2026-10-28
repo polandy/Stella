@@ -60,10 +60,7 @@ export function sweepEntryTags(tx: Db, householdId: string): void {
 		.where(
 			and(
 				eq(entryTag.householdId, householdId),
-				notInArray(
-					entryTag.id,
-					tx.select({ id: journalEntryTag.entryTagId }).from(journalEntryTag)
-				)
+				notInArray(entryTag.id, tx.select({ id: journalEntryTag.entryTagId }).from(journalEntryTag))
 			)
 		)
 		.run();

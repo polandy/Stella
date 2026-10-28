@@ -334,8 +334,20 @@ describe('what would collide', () => {
 	it('keeps the tags of both entries when it joins their day', () => {
 		db.insert(schema.journalEntry)
 			.values([
-				{ id: 'j-keep', contactId: 'keep', createdBy: U1, entryDate: '2026-05-01', body: '#market' },
-				{ id: 'j-dup', contactId: 'dup', createdBy: U1, entryDate: '2026-05-01', body: '#market #pears' }
+				{
+					id: 'j-keep',
+					contactId: 'keep',
+					createdBy: U1,
+					entryDate: '2026-05-01',
+					body: '#market'
+				},
+				{
+					id: 'j-dup',
+					contactId: 'dup',
+					createdBy: U1,
+					entryDate: '2026-05-01',
+					body: '#market #pears'
+				}
 			])
 			.run();
 		db.insert(schema.entryTag)

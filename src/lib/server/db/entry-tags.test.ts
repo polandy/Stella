@@ -42,8 +42,11 @@ const deps = () => ({
 });
 const reads = () => createDrizzleEntryTagReads(db);
 
-const write = (author: JournalAuthor, body: string, more: Partial<{ contactId: string; entryDate: string; visibility: 'shared' | 'private' }> = {}) =>
-	saveJournalEntry(deps(), author, { contactId: 'kid', entryDate: '2026-07-11', body, ...more });
+const write = (
+	author: JournalAuthor,
+	body: string,
+	more: Partial<{ contactId: string; entryDate: string; visibility: 'shared' | 'private' }> = {}
+) => saveJournalEntry(deps(), author, { contactId: 'kid', entryDate: '2026-07-11', body, ...more });
 
 const tagRows = () =>
 	db.select({ name: schema.entryTag.name, key: schema.entryTag.key }).from(schema.entryTag).all();
@@ -70,7 +73,13 @@ beforeEach(() => {
 		.values([
 			{ id: 'kid', householdId: H, createdBy: U1, visibility: 'shared', displayName: 'Kid' },
 			{ id: 'mine', householdId: H, createdBy: U1, visibility: 'private', displayName: 'Mine' },
-			{ id: 'far', householdId: OTHER, createdBy: 'stranger', visibility: 'shared', displayName: 'Far' }
+			{
+				id: 'far',
+				householdId: OTHER,
+				createdBy: 'stranger',
+				visibility: 'shared',
+				displayName: 'Far'
+			}
 		])
 		.run();
 	n = 0;
@@ -104,12 +113,20 @@ describe('the household’s tag set', () => {
 
 	it('keeps households apart: the same word is a tag in each', async () => {
 		await write(one, '#lake');
-		await saveJournalEntry(deps(), { userId: 'stranger', householdId: OTHER, defaultVisibility: 'shared' }, {
-			contactId: 'far',
-			entryDate: '2026-07-11',
-			body: '#Lake'
-		});
-		expect(tagRows().map((t) => t.name).sort()).toEqual(['Lake', 'lake']);
+		await saveJournalEntry(
+			deps(),
+			{ userId: 'stranger', householdId: OTHER, defaultVisibility: 'shared' },
+			{
+				contactId: 'far',
+				entryDate: '2026-07-11',
+				body: '#Lake'
+			}
+		);
+		expect(
+			tagRows()
+				.map((t) => t.name)
+				.sort()
+		).toEqual(['Lake', 'lake']);
 	});
 });
 
@@ -167,7 +184,13 @@ describe('who sees a tag', () => {
 describe('entries written before tags existed', () => {
 	it('are read once on the first start, and not again', async () => {
 		db.insert(schema.journalEntry)
-			.values({ id: 'old', contactId: 'kid', createdBy: U1, entryDate: '2026-01-01', body: 'An old #Trip' })
+			.values({
+				id: 'old',
+				contactId: 'kid',
+				createdBy: U1,
+				entryDate: '2026-01-01',
+				body: 'An old #Trip'
+			})
 			.run();
 		readEntryTagsOnce(db, ids);
 		expect(tagRows()).toEqual([{ name: 'Trip', key: 'trip' }]);
