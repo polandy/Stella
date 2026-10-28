@@ -55,8 +55,10 @@
 		</ul>
 		{#if active}
 			<p class="text-sm text-fg-muted" aria-live="polite">
-				{t('journal.tags.filtered', { count: shown, name: active.name })} ·
-				<a href="?" class="text-link underline">{t('journal.tags.showAll')}</a>
+				{t('journal.tags.filtered', { count: shown, name: active.name })}<span
+					class="mx-1.5"
+					aria-hidden="true">·</span
+				><a href="?" class="text-link underline">{t('journal.tags.showAll')}</a>
 			</p>
 		{/if}
 	</nav>
