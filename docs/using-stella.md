@@ -96,6 +96,12 @@ A few things worth knowing:
   the last week is right there, *Another day…* opens a calendar for any earlier one.
 - **Two moments about the same person on the same day** end up in one journal entry, one
   paragraph each. The second one is added; nothing you wrote earlier is replaced.
+- **Tags.** Write `#hike` or `#Geburtstag` anywhere in a moment to give it a topic. Typing `#`
+  suggests the tags your household already uses; a line under the field shows which tags the
+  moment gets. `#Hike` and `#hike` are the same tag. A tag reads as a coloured chip; tap it to
+  see only that person's moments with it, or use the chips above their journal. Search for
+  `#hike` to find every moment with it, across everyone. A tag that only your private moments
+  carry is yours alone, shown with a lock. Write `\#` for a plain `#`.
 
 ### Shared or private
 
