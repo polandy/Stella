@@ -233,10 +233,14 @@ export function createDrizzleRestoreRepository(
 				}
 
 				// An entry's tags are its text's (docs/02 §2.20.2), so the archive carries no tag
-				// rows: each entry is read again here — a skipped one is not there, and gets none.
+				// rows: each entry is read again here, from the text it has now — one already here by
+				// its id keeps its own, and one skipped for a taken day slot is not there at all.
 				const entries = plan.tables.find((t) => t.table === 'journal_entry')?.rows ?? [];
+				const bodyOf = sqlite.query('SELECT body FROM journal_entry WHERE id = ?');
 				for (const entry of entries) {
-					writeEntryTags(db, ids, String(entry.id), hashtagsIn(String(entry.body ?? '')));
+					const id = String(entry.id);
+					const row = bodyOf.get(id) as { body: string } | null;
+					if (row) writeEntryTags(db, ids, id, hashtagsIn(row.body));
 				}
 
 				return counts;

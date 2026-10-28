@@ -272,6 +272,31 @@ describe('applyRestore', () => {
 		]);
 	});
 
+	it('reads an entry already here from its own text, not the archive’s', async () => {
+		// The archive's j-1 says #Hike; the one here has been edited since and says nothing.
+		here.db
+			.insert(schema.contact)
+			.values({ id: 'c-hans', householdId: HERE, createdBy: ADMIN, displayName: 'Hans Brunner' })
+			.run();
+		here.db
+			.insert(schema.journalEntry)
+			.values({
+				id: 'j-1',
+				contactId: 'c-hans',
+				createdBy: ADMIN,
+				visibility: 'shared',
+				entryDate: '2026-07-01',
+				body: 'hiked the Gurten'
+			})
+			.run();
+
+		const counts = await repo.applyRestore(await plan());
+
+		expect(counts.journal_entry).toEqual({ added: 0, skipped: 1 });
+		expect(here.db.select().from(schema.journalEntryTag).all()).toEqual([]);
+		expect(here.db.select().from(schema.entryTag).all()).toEqual([]);
+	});
+
 	it('skips a journal entry whose day is taken here, and keeps the rest of the archive', async () => {
 		/*
 		 * A journal entry is unique on (person, author, day, visibility). If this household has
