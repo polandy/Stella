@@ -10,19 +10,20 @@ import { contact, entryTag, journalEntry, journalEntryTag } from './schema';
 /*
  * Drizzle adapter for the EntryTagReads port (docs/08 §8.3). A tag is counted over the entries
  * carrying it that the viewer may read — the central `childRecordVisibleTo` — so a tag on no
- * such entry is not returned at all, and one only the viewer's own private entries carry is marked.
+ * such entry is not returned at all. The private mark is read from those same entries, anywhere
+ * in the household: an entry the viewer cannot read never changes it, or it would tell them that
+ * someone else's private entry carries the tag.
  */
 
 export function createDrizzleEntryTagReads(db: BunSQLiteDatabase<typeof schema>): EntryTagReads {
 	const count = sql<number>`count(*)`;
-	const visibleTags = (viewer: Viewer, contactId?: string): KnownTag[] =>
+	const visibleTags = (viewer: Viewer, contactId?: string) =>
 		db
 			.select({
 				name: entryTag.name,
 				key: entryTag.key,
 				count,
-				// Anyone else sees it once an entry not private to the viewer carries it, anywhere.
-				onlyPrivate: sql<number>`not exists (select 1 from journal_entry_tag jt join journal_entry j on j.id = jt.journal_entry_id where jt.entry_tag_id = ${entryTag.id} and (j.visibility = 'shared' or j.created_by != ${viewer.id}))`
+				shared: sql<number>`max(${journalEntry.visibility} = 'shared')`
 			})
 			.from(entryTag)
 			.innerJoin(journalEntryTag, eq(journalEntryTag.entryTagId, entryTag.id))
@@ -40,15 +41,27 @@ export function createDrizzleEntryTagReads(db: BunSQLiteDatabase<typeof schema>)
 			)
 			.groupBy(entryTag.id)
 			.orderBy(desc(count), entryTag.key)
-			.all()
-			.map((t) => ({ ...t, onlyPrivate: t.onlyPrivate === 1 }));
+			.all();
+
+	const household = (viewer: Viewer): KnownTag[] =>
+		visibleTags(viewer).map(({ shared, ...t }) => ({ ...t, onlyPrivate: shared === 0 }));
 
 	return {
 		async listVisibleTo(viewer) {
-			return visibleTags(viewer);
+			return household(viewer);
 		},
 		async listOnContactVisibleTo(viewer, contactId) {
-			return visibleTags(viewer, contactId);
+			const sharedSomewhere = new Set(
+				household(viewer)
+					.filter((t) => !t.onlyPrivate)
+					.map((t) => t.key)
+			);
+			return visibleTags(viewer, contactId).map(({ name, key, count }) => ({
+				name,
+				key,
+				count,
+				onlyPrivate: !sharedSomewhere.has(key)
+			}));
 		}
 	};
 }

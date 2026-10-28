@@ -156,6 +156,19 @@ describe('who sees a tag', () => {
 		]);
 	});
 
+	it('keeps the mark when entries the viewer cannot read carry the tag too', async () => {
+		await write(one, '#surprise', { visibility: 'private' });
+		// Two's private entry, and One's shared one on a person only One can see: each on its own day.
+		await write(two, '#surprise', { visibility: 'private', entryDate: '2026-07-12' });
+		await write(one, '#surprise', { contactId: 'mine', entryDate: '2026-07-13' });
+		expect(await reads().listVisibleTo(viewerTwo)).toEqual([
+			{ name: 'surprise', key: 'surprise', count: 1, onlyPrivate: true }
+		]);
+		expect(await reads().listOnContactVisibleTo(viewerTwo, 'kid')).toEqual([
+			{ name: 'surprise', key: 'surprise', count: 1, onlyPrivate: true }
+		]);
+	});
+
 	it('hides the tags on a person private to someone else', async () => {
 		await write(one, '#hidden', { contactId: 'mine' });
 		expect(await reads().listVisibleTo(viewerTwo)).toEqual([]);
