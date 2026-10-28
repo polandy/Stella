@@ -55,3 +55,8 @@ export function tagAccent(name: string): (typeof AVATAR_ACCENTS)[number] {
 	for (let i = 0; i < key.length; i++) hash = (hash * 31 + key.charCodeAt(i)) >>> 0;
 	return AVATAR_ACCENTS[hash % AVATAR_ACCENTS.length];
 }
+
+/** Where a tag chip on one person's entry leads: their journal, filtered by the tag. */
+export function journalTagHref(contactId: string): (key: string) => string {
+	return (key) => `/contacts/${contactId}/journal?tag=${encodeURIComponent(key)}`;
+}

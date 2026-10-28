@@ -1,10 +1,12 @@
 import type { BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
 import type { Clock } from '../clock';
+import { createDrizzleEntryTagReads } from '../db/entry-tag-reads';
 import { createDrizzleInteractionRepository } from '../db/interaction-repository';
 import { createDrizzleJournalRepository } from '../db/journal-repository';
 import type * as schema from '../db/schema';
 import type { InteractionDeps, InteractionRepository } from '../domain/interactions/interactions';
 import type { JournalDeps, JournalRepository } from '../domain/journal/journal';
+import type { EntryTagReads } from '../domain/journal/tags';
 import type { CaptureMomentDeps } from '../domain/moments/moments';
 import type { StoryDeps } from '../domain/story/story';
 import type { IdGenerator } from '../id';
@@ -24,6 +26,8 @@ export interface StoryServices {
 	journal: JournalRepository;
 	/** The one interaction repository: logging, removing and the timeline read it. */
 	interactions: InteractionRepository;
+	/** The tags on entries, as a viewer may see them: the `#` picker and the journal filter. */
+	entryTags: EntryTagReads;
 	journalDeps: JournalDeps;
 	interactionDeps: InteractionDeps;
 	/** Capturing a moment writes a journal entry, creating anyone it names on the way. */
@@ -61,6 +65,7 @@ export function createStoryServices({
 	return {
 		journal,
 		interactions,
+		entryTags: createDrizzleEntryTagReads(db),
 		journalDeps: { journal, media, ids, clock },
 		interactionDeps: { interactions, ids, clock },
 		captureMomentDeps: { contacts, directory, journal, ids, clock },

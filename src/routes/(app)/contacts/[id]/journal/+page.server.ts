@@ -26,9 +26,9 @@ import { TranslatableError } from '$lib/i18n/translatable';
 import { say, translator } from '$lib/server/i18n/say';
 import type { MessageKey } from '$lib/i18n/translate';
 import { todayFor } from '$lib/dates/today';
-import { journalEntriesFor } from './journal-view';
+import { activeTagFor, journalEntriesFor } from './journal-view';
 
-export const load: PageServerLoad = async ({ locals, params }) => {
+export const load: PageServerLoad = async ({ locals, params, url }) => {
 	const viewer = requireViewer(locals);
 	// Whether *Remove* shows on someone else's entry turns on the role (docs/03 §3.7).
 	const remover = requireRemover(locals);
@@ -36,10 +36,13 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 	const contact = await getContact(locals.services.people.contactDeps, viewer, params.id);
 	if (!contact) throw error(404, say(locals, 'errors.contact.notFound')); // never reveal existence
 
-	const [entries, journalPhotos] = await Promise.all([
+	const [entries, journalPhotos, tags] = await Promise.all([
 		listJournalForContact(locals.services.story.journalDeps, viewer, params.id),
-		locals.services.media.journalPhotos.listJournalPhotos(viewer, params.id)
+		locals.services.media.journalPhotos.listJournalPhotos(viewer, params.id),
+		locals.services.story.entryTags.listOnContactVisibleTo(viewer, params.id)
 	]);
+	// The filter lives in the address, so a tag chip is a link and Back undoes it (docs/02 §2.20.2).
+	const activeTag = activeTagFor(url.searchParams.get('tag'), tags);
 	// Names for the people the entries mention, not for the whole household.
 	const contactNames = await listContactNamesAmong(
 		locals.services.people.contactNameDeps,
@@ -56,8 +59,11 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 			avatarPhotoId: contact.avatarPhotoId
 		},
 		today: todayFor(systemClock),
+		tags,
+		activeTag,
 		entries: journalEntriesFor({
 			remover,
+			contactId: contact.id,
 			person: {
 				householdId: contact.householdId,
 				ownerId: contact.createdBy,
@@ -66,7 +72,8 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 			entries,
 			photos: journalPhotos,
 			names: contactNames,
-			nameOfAuthor
+			nameOfAuthor,
+			tag: activeTag?.key ?? null
 		})
 	};
 };

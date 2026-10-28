@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test';
-import { hashtagAt, hashtagsIn, tagAccent, tagKey } from './hashtags';
+import { hashtagAt, hashtagsIn, journalTagHref, tagAccent, tagKey } from './hashtags';
 import { AVATAR_ACCENTS } from '../design/tokens';
 
 describe('hashtagsIn', () => {
@@ -68,5 +68,13 @@ describe('tagAccent', () => {
 	it('gives one spelling and another the same avatar-safe accent', () => {
 		expect(tagAccent('Holiday')).toBe(tagAccent('holiday'));
 		expect(AVATAR_ACCENTS).toContain(tagAccent('holiday'));
+	});
+});
+
+describe('journalTagHref', () => {
+	it("leads to the person's journal filtered by the key, encoded", () => {
+		expect(journalTagHref('c1')('ausflug-zürich')).toBe(
+			`/contacts/c1/journal?tag=${encodeURIComponent('ausflug-zürich')}`
+		);
 	});
 });
