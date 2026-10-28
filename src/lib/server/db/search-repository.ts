@@ -1,11 +1,11 @@
-import { and, eq, sql } from 'drizzle-orm';
+import { and, eq, inArray, sql, type SQL } from 'drizzle-orm';
 import type { BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
 import { childRecordVisibleTo, contactBrowsableBy } from '../access/query-scoping';
 import type { Viewer } from '../access/visibility';
 import type { SearchRepository } from '../domain/search/search';
-import { contact, gift, note } from './schema';
+import { contact, entryTag, gift, journalEntry, journalEntryTag, note } from './schema';
 import type * as schema from './schema';
-import { contactFts, giftFts, noteFts } from './search-schema';
+import { contactFts, giftFts, journalFts, noteFts } from './search-schema';
 
 /*
  * Drizzle adapter for the SearchRepository port (docs/08 §8.3). Matches via the FTS5 tables,
@@ -16,6 +16,35 @@ import { contactFts, giftFts, noteFts } from './search-schema';
 export function createDrizzleSearchRepository(
 	db: BunSQLiteDatabase<typeof schema>
 ): SearchRepository {
+	/** The moments matching `ftsQuery`, narrowed by `where`, best first. */
+	const moments = (viewer: Viewer, ftsQuery: string, where: SQL | undefined, limit: number) =>
+		db
+			.select({
+				entryId: journalEntry.id,
+				title: journalEntry.title,
+				snippet: sql<string>`snippet(journal_fts, 2, '', '', '…', 12)`,
+				visibility: journalEntry.visibility,
+				entryDate: journalEntry.entryDate,
+				contactId: contact.id,
+				contactName: contact.displayName
+			})
+			.from(journalFts)
+			.innerJoin(journalEntry, eq(journalFts.entryId, journalEntry.id))
+			.innerJoin(contact, eq(journalEntry.contactId, contact.id))
+			.where(
+				and(
+					sql`journal_fts MATCH ${ftsQuery}`,
+					where,
+					childRecordVisibleTo(viewer, {
+						visibility: journalEntry.visibility,
+						createdBy: journalEntry.createdBy
+					})
+				)
+			)
+			.orderBy(sql`bm25(journal_fts)`)
+			.limit(limit)
+			.all();
+
 	return {
 		async searchContacts(viewer: Viewer, ftsQuery: string, limit: number) {
 			return db
@@ -82,6 +111,24 @@ export function createDrizzleSearchRepository(
 				.orderBy(sql`bm25(gift_fts)`)
 				.limit(limit)
 				.all();
+		},
+
+		async searchMoments(viewer: Viewer, ftsQuery: string, limit: number) {
+			return moments(viewer, ftsQuery, undefined, limit);
+		},
+
+		// Matched by the tag itself; the tag's word as a phrase is matched too only so the snippet
+		// is cut around it — every entry carrying the tag has that word in its body.
+		async searchMomentsByTag(viewer: Viewer, tagKey: string, limit: number) {
+			const carriesTag = inArray(
+				journalEntry.id,
+				db
+					.select({ id: journalEntryTag.journalEntryId })
+					.from(journalEntryTag)
+					.innerJoin(entryTag, eq(entryTag.id, journalEntryTag.entryTagId))
+					.where(and(eq(entryTag.householdId, viewer.householdId), eq(entryTag.key, tagKey)))
+			);
+			return moments(viewer, `"${tagKey.replaceAll('"', '')}"`, carriesTag, limit);
 		}
 	};
 }

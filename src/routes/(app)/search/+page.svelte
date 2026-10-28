@@ -9,6 +9,7 @@
 	import PrivateMark from '$lib/components/ui/PrivateMark.svelte';
 	import Veil from '$lib/components/ui/Veil.svelte';
 	import { stateLabel } from '$lib/gifts/labels';
+	import { journalTagHref } from '$lib/hashtags/hashtags';
 	import { newPersonHref } from '$lib/people/new-person';
 	import { contactSectionPath } from '$lib/people/sections';
 	import { useI18n } from '$lib/i18n/context.svelte';
@@ -22,8 +23,26 @@
 	const veil = useVeil();
 	const hasQuery = $derived(data.q.length > 0);
 	const total = $derived(
-		data.results.contacts.length + data.results.notes.length + data.results.gifts.length
+		data.results.contacts.length +
+			data.results.notes.length +
+			data.results.gifts.length +
+			data.results.moments.length
 	);
+
+	/** A moment found by its tag opens its journal filtered by that tag (docs/02 §2.20.2). */
+	function momentHref(contactId: string): string {
+		const tag = data.results.tag;
+		return tag ? journalTagHref(contactId)(tag) : `/contacts/${contactId}/journal`;
+	}
+
+	function shortDate(iso: string): string {
+		const [y, m, d] = iso.split('-').map(Number);
+		return new Date(y, m - 1, d).toLocaleDateString(i18n.intlLocale, {
+			day: 'numeric',
+			month: 'short',
+			year: 'numeric'
+		});
+	}
 </script>
 
 <svelte:head><title>{t('common.pageTitle', { page: t('search.title') })}</title></svelte:head>
@@ -44,7 +63,13 @@
 	</form>
 
 	{#if hasQuery}
-		{#if total === 0}
+		{#if total === 0 && data.results.tag}
+			<EmptyState
+				icon="search"
+				title={t('search.tagNone', { tag: data.q.trim().slice(1) })}
+				hint={t('search.tagNoneHint')}
+			/>
+		{:else if total === 0}
 			<!-- Nobody found is usually somebody new: the query is already their name. -->
 			<EmptyState
 				icon="search"
@@ -133,6 +158,41 @@
 									>{t('search.giftFor', { name: g.contactName })} · {stateLabel(i18n, g)}</span
 								>
 							</span>
+						</a>
+					{/each}
+				</section>
+			{/if}
+
+			{#if data.results.moments.length > 0}
+				<section class="flex flex-col gap-1">
+					<h2 class="text-sm font-medium text-fg-muted">{t('search.moments')}</h2>
+					{#each data.results.moments as m (m.entryId)}
+						<a
+							href={momentHref(m.contactId)}
+							class="flex flex-col rounded-app border border-transparent px-3 py-2 hover:border-border hover:bg-card"
+						>
+							<span class="flex flex-wrap items-center gap-x-2 text-sm text-fg-muted">
+								<span
+									>{#if m.title && !(m.visibility === 'private' && veil.isVeiled(`journal:${m.entryId}`))}{m.title}
+										·
+									{/if}{t('search.momentOn', {
+										date: shortDate(m.entryDate),
+										name: m.contactName
+									})}</span
+								>
+								{#if m.visibility === 'private'}<PrivateMark class="text-xs" />{/if}
+							</span>
+							<!-- Private words stay blurred on the author's own search, as a note's do. -->
+							<Veil
+								id="journal:{m.entryId}"
+								isPrivate={m.visibility === 'private'}
+								label={t('privacy.veil.moment')}
+								text={m.snippet}
+								textClass="truncate text-fg"
+								passive
+							>
+								<span class="block truncate text-fg">{m.snippet}</span>
+							</Veil>
 						</a>
 					{/each}
 				</section>

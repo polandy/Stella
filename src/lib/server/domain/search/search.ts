@@ -2,12 +2,13 @@ import type { GiftState } from '../../../gifts/gifts';
 import { foundByFormerName } from '../../../people/former-name';
 import { foundByJob } from '../../../people/job';
 import type { Viewer, Visibility } from '../../access/visibility';
-import { toFtsQuery } from './query';
+import { searchedTag, toFtsQuery } from './query';
 
 /*
  * Global search (docs/02 §2.9). Turns input into a safe FTS query and delegates to the
  * repository port, which applies the central visibility scoping. Results are grouped by type:
- * people, notes and gifts.
+ * people, notes, gifts and moments. A query that is one `#tag` asks for that tag alone, so it
+ * finds only the moments carrying it (docs/02 §2.20.2).
  */
 
 export interface ContactHit {
@@ -53,16 +54,35 @@ export interface GiftHit {
 	contactName: string;
 }
 
+/** A moment found by its words or its tag, with the person it is on (docs/02 §2.20.2). */
+export interface MomentHit {
+	entryId: string;
+	title: string | null;
+	snippet: string;
+	/** A private one's snippet stays blurred on its author's screen, as a note's does. */
+	visibility: Visibility;
+	/** ISO YYYY-MM-DD. */
+	entryDate: string;
+	contactId: string;
+	contactName: string;
+}
+
 export interface SearchResults {
 	contacts: FoundContact[];
 	notes: NoteHit[];
 	gifts: GiftHit[];
+	moments: MomentHit[];
+	/** The tag key when the query was one `#tag`: then only the moments carrying it are found. */
+	tag: string | null;
 }
 
 export interface SearchRepository {
 	searchContacts(viewer: Viewer, ftsQuery: string, limit: number): Promise<ContactHit[]>;
 	searchNotes(viewer: Viewer, ftsQuery: string, limit: number): Promise<NoteHit[]>;
 	searchGifts(viewer: Viewer, ftsQuery: string, limit: number): Promise<GiftHit[]>;
+	searchMoments(viewer: Viewer, ftsQuery: string, limit: number): Promise<MomentHit[]>;
+	/** The moments carrying the tag of this key — matched by the tag, not the word. */
+	searchMomentsByTag(viewer: Viewer, tagKey: string, limit: number): Promise<MomentHit[]>;
 }
 
 export interface SearchDeps {
@@ -71,20 +91,32 @@ export interface SearchDeps {
 
 const RESULT_LIMIT = 20;
 
+export const NOTHING_FOUND: SearchResults = {
+	contacts: [],
+	notes: [],
+	gifts: [],
+	moments: [],
+	tag: null
+};
+
 export async function search(
 	deps: SearchDeps,
 	viewer: Viewer,
 	input: string
 ): Promise<SearchResults> {
-	const ftsQuery = toFtsQuery(input);
-	if (ftsQuery === '') {
-		return { contacts: [], notes: [], gifts: [] };
+	const tag = searchedTag(input);
+	if (tag !== null) {
+		const moments = await deps.search.searchMomentsByTag(viewer, tag, RESULT_LIMIT);
+		return { ...NOTHING_FOUND, moments, tag };
 	}
+	const ftsQuery = toFtsQuery(input);
+	if (ftsQuery === '') return NOTHING_FOUND;
 
-	const [contacts, notes, gifts] = await Promise.all([
+	const [contacts, notes, gifts, moments] = await Promise.all([
 		deps.search.searchContacts(viewer, ftsQuery, RESULT_LIMIT),
 		deps.search.searchNotes(viewer, ftsQuery, RESULT_LIMIT),
-		deps.search.searchGifts(viewer, ftsQuery, RESULT_LIMIT)
+		deps.search.searchGifts(viewer, ftsQuery, RESULT_LIMIT),
+		deps.search.searchMoments(viewer, ftsQuery, RESULT_LIMIT)
 	]);
 	return {
 		contacts: contacts.map((hit) => ({
@@ -93,6 +125,8 @@ export async function search(
 			foundByJob: foundByJob(hit, input)
 		})),
 		notes,
-		gifts
+		gifts,
+		moments,
+		tag: null
 	};
 }

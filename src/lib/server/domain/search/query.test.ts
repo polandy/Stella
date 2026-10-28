@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test';
-import { toFtsQuery } from './query';
+import { searchedTag, toFtsQuery } from './query';
 
 /*
  * Turn free user input into a safe FTS5 MATCH expression (docs/02 §2.9): per-token prefix
@@ -19,5 +19,20 @@ describe('toFtsQuery', () => {
 	it('returns an empty string for blank input', () => {
 		expect(toFtsQuery('   ')).toBe('');
 		expect(toFtsQuery('!!! ??? ')).toBe('');
+	});
+});
+
+describe('searchedTag', () => {
+	it('reads an input that is one #tag as the tag’s key', () => {
+		expect(searchedTag('#Hike')).toBe('hike');
+		expect(searchedTag('  #Bärg-Tour ')).toBe('bärg-tour');
+	});
+
+	it('is null for words, several tags, or a # that is no tag', () => {
+		expect(searchedTag('hike')).toBeNull();
+		expect(searchedTag('#hike #lake')).toBeNull();
+		expect(searchedTag('#hike lake')).toBeNull();
+		expect(searchedTag('#2024')).toBeNull();
+		expect(searchedTag('#')).toBeNull();
 	});
 });

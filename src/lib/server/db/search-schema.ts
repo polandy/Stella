@@ -22,3 +22,9 @@ export const giftFts = sqliteTable('gift_fts', {
 	giftId: text('gift_id'),
 	content: text('content')
 });
+
+export const journalFts = sqliteTable('journal_fts', {
+	entryId: text('entry_id'),
+	contactId: text('contact_id'),
+	content: text('content')
+});
