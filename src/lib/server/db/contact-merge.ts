@@ -43,7 +43,7 @@ interface Merging {
 /**
  * An entry is unique per (contact, author, day, visibility), so two entries written about the
  * same day by the same member cannot both survive as rows: the one being merged away is
- * appended to the one that stays, with its photos and mentions, and only then removed. Nothing
+ * appended to the one that stays, with its photos, mentions and tags, and only then removed. Nothing
  * anybody wrote is dropped; every entry left can move without colliding.
  */
 function joinJournalDays(tx: Db, { keepId, mergedId, updatedAt }: Merging): void {
@@ -87,6 +87,10 @@ function joinJournalDays(tx: Db, { keepId, mergedId, updatedAt }: Merging): void
 			sql`update or ignore journal_mention set journal_entry_id = ${survivor.id} where journal_entry_id = ${entry.id}`
 		);
 		tx.delete(journalMention).where(eq(journalMention.journalEntryId, entry.id)).run();
+		// The joined text carries both entries' tags (docs/02 §2.20.2); the same move gives them.
+		tx.run(
+			sql`update or ignore journal_entry_tag set journal_entry_id = ${survivor.id} where journal_entry_id = ${entry.id}`
+		);
 		tx.delete(journalEntry).where(eq(journalEntry.id, entry.id)).run();
 	}
 }

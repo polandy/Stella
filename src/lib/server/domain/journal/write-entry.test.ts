@@ -78,6 +78,7 @@ function fakes(people = [person('julia'), person('marco'), person('sam', 'privat
 			async replaceMentions(id, ids) {
 				mentions.set(id, ids);
 			},
+			async replaceTags() {},
 			async listMentionedContactIds(id) {
 				return mentions.get(id) ?? [];
 			}

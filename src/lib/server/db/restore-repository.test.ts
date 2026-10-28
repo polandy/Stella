@@ -95,7 +95,7 @@ function fillSource(db: BunSQLiteDatabase<typeof schema>): void {
 			createdBy: SOURCE_USER,
 			visibility: 'shared',
 			entryDate: '2026-07-12',
-			body: 'hiked the Gurten',
+			body: 'hiked the Gurten #Hike',
 			createdAt: EXPORTED
 		})
 		.run();
@@ -147,7 +147,7 @@ beforeEach(async () => {
 		.insert(schema.user)
 		.values({ id: ADMIN, householdId: HERE, email: 'a@x.test', name: 'Andrea', role: 'admin' })
 		.run();
-	repo = createDrizzleRestoreRepository(here.db, here.sqlite, activityWording);
+	repo = createDrizzleRestoreRepository(here.db, here.sqlite, activityWording, idGen());
 });
 
 /** The plan for this archive, against whatever the target holds right now. */
@@ -262,6 +262,16 @@ describe('applyRestore', () => {
 		expect(hits.map((h) => h.note_id)).toEqual(['n-1']);
 	});
 
+	it('reads the tags of a restored journal entry from its text', async () => {
+		await repo.applyRestore(await plan());
+
+		const tags = here.db.select().from(schema.entryTag).all();
+		expect(tags.map((t) => [t.householdId, t.name])).toEqual([[HERE, 'Hike']]);
+		expect(here.db.select().from(schema.journalEntryTag).all()).toEqual([
+			{ journalEntryId: 'j-1', entryTagId: tags[0].id }
+		]);
+	});
+
 	it('skips a journal entry whose day is taken here, and keeps the rest of the archive', async () => {
 		/*
 		 * A journal entry is unique on (person, author, day, visibility). If this household has
@@ -289,6 +299,7 @@ describe('applyRestore', () => {
 
 		expect(counts.journal_entry).toEqual({ added: 0, skipped: 1 });
 		expect(counts.journal_mention).toEqual({ added: 0, skipped: 1 });
+		expect(here.db.select().from(schema.entryTag).all()).toEqual([]);
 		// The day we already had is untouched, and the rest of the archive still arrived.
 		expect(
 			here.db

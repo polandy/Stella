@@ -55,7 +55,7 @@ beforeEach(() => {
 	t = removalDb();
 	files = [];
 	deps = {
-		journal: createDrizzleJournalRepository(t.db),
+		journal: createDrizzleJournalRepository(t.db, sequentialIds('tag')),
 		media: { delete: async (path) => void files.push(path) },
 		ids: sequentialIds('activity'),
 		clock: fixedClock(NOW)

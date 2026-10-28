@@ -125,6 +125,7 @@ function journalOver(
 			return own;
 		},
 		replaceMentions: async (id, ids) => void mentioned.push([id, ids]),
+		replaceTags: async () => {},
 		findRemovableBy: async (remover, id) =>
 			entries.some((e) => e.id === id && e.createdBy === remover.id)
 				? {

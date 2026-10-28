@@ -55,7 +55,7 @@ export function createStoryServices({
 	media,
 	gifts
 }: StoryWiring): StoryServices {
-	const journal = createDrizzleJournalRepository(db);
+	const journal = createDrizzleJournalRepository(db, ids);
 	const interactions = createDrizzleInteractionRepository(db);
 
 	return {

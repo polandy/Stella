@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'bun:test';
 import type { Viewer } from '../../access/visibility';
+import { someJournalEntry } from '../testing/journal';
 import {
+	addToJournalDay,
 	editJournalEntry,
 	EmptyJournalEntryError,
 	saveJournalEntry,
@@ -27,8 +29,10 @@ const viewer: Viewer = { id: 'u1', householdId: 'h1' };
 function fakeRepo(seed: JournalEntry[] = []) {
 	const rows = [...seed];
 	const mentions = new Map<string, string[]>();
+	const tags = new Map<string, string[]>();
 	const repo = {
 		rows,
+		tags,
 		async findDay(p: {
 			authorId: string;
 			contactId: string;
@@ -102,6 +106,9 @@ function fakeRepo(seed: JournalEntry[] = []) {
 		},
 		async listMentionedContactIds(journalEntryId: string) {
 			return mentions.get(journalEntryId) ?? [];
+		},
+		async replaceTags(journalEntryId: string, names: string[]) {
+			tags.set(journalEntryId, [...names]);
 		}
 	};
 	return repo;
@@ -196,6 +203,57 @@ describe('saveJournalEntry', () => {
 		await expect(
 			saveJournalEntry(d, author, { contactId: 'c1', entryDate: '11.07.2026', body: 'x' })
 		).rejects.toThrow();
+	});
+});
+
+/*
+ * An entry's tags are what its text says (docs/02 §2.20.2): every write reads them from the
+ * body it leaves behind and hands them to the port, which keeps the household's tag set.
+ */
+describe('tags from the text', () => {
+	it('saves the tags a new entry is written with', async () => {
+		const d = deps();
+		const id = await saveJournalEntry(d, author, {
+			contactId: 'c1',
+			entryDate: '2026-07-11',
+			body: 'Swim in the #lake, a #Holiday and more #holiday'
+		});
+		expect(d.repo.tags.get(id)).toEqual(['lake', 'Holiday']);
+	});
+
+	it('reads them again when the same slot is written over', async () => {
+		const d = deps();
+		const input = { contactId: 'c1', entryDate: '2026-07-11', body: '#lake' };
+		const id = await saveJournalEntry(d, author, input);
+		await saveJournalEntry(d, author, { ...input, body: 'no tags now' });
+		expect(d.repo.tags.get(id)).toEqual([]);
+	});
+
+	it('takes the whole day when a moment is added to it', async () => {
+		const d = deps();
+		const addition = {
+			contactId: 'c1',
+			entryDate: '2026-07-11',
+			visibility: 'shared' as const,
+			title: null,
+			mentionIds: []
+		};
+		const id = await addToJournalDay(d, author, { ...addition, body: 'Morning #walk' });
+		await addToJournalDay(d, author, { ...addition, body: 'Evening #lake' });
+		expect(d.repo.tags.get(id)).toEqual(['walk', 'lake']);
+	});
+
+	it('rebuilds them from an edit of an own entry, and leaves another’s alone', async () => {
+		const d = deps(
+			fakeRepo([
+				someJournalEntry('e1', { createdBy: 'u1', body: '#lake' }),
+				someJournalEntry('e2', { createdBy: 'u2', body: '#lake' })
+			])
+		);
+		await editJournalEntry(d, author, { id: 'e1', body: 'Now a #hike' });
+		await editJournalEntry(d, author, { id: 'e2', body: 'Now a #hike' });
+		expect(d.repo.tags.get('e1')).toEqual(['hike']);
+		expect(d.repo.tags.has('e2')).toBe(false);
 	});
 });
 

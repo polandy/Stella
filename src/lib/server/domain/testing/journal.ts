@@ -36,7 +36,8 @@ const JOURNAL_REPOSITORY_METHODS: Record<keyof JournalRepository, true> = {
 	findRemovableBy: true,
 	deleteRemovableBy: true,
 	replaceMentions: true,
-	listMentionedContactIds: true
+	listMentionedContactIds: true,
+	replaceTags: true
 };
 
 /**

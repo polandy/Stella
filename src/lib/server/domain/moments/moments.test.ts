@@ -126,6 +126,7 @@ function fakes(seedContacts: Partial<NewContact>[] = []) {
 			async replaceMentions(id, ids) {
 				mentions.set(id, ids);
 			},
+			async replaceTags() {},
 			async listMentionedContactIds(id) {
 				return mentions.get(id) ?? [];
 			}

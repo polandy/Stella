@@ -12,6 +12,9 @@ import {
 	type RestoreTarget
 } from '../domain/archive/restore';
 import { EXPORTED_TABLES } from './archive-repository';
+import { hashtagsIn } from '../../hashtags/hashtags';
+import type { IdGenerator } from '../id';
+import { writeEntryTags } from './entry-tags';
 import type * as schema from './schema';
 import { activityLog } from './schema';
 
@@ -95,7 +98,8 @@ function parentsFirst(rows: Row[], selfLinks: SelfLink[]): Row[] {
 export function createDrizzleRestoreRepository(
 	db: BunSQLiteDatabase<typeof schema>,
 	sqlite: import('bun:sqlite').Database,
-	wording: ActivityWording
+	wording: ActivityWording,
+	ids: IdGenerator
 ): RestoreRepository {
 	const columnsOf = (table: string): Set<string> =>
 		new Set(
@@ -226,6 +230,13 @@ export function createDrizzleRestoreRepository(
 					}
 					const added = countOf(table) - before;
 					counts[table] = { added, skipped: rows.length - added };
+				}
+
+				// An entry's tags are its text's (docs/02 §2.20.2), so the archive carries no tag
+				// rows: each entry is read again here — a skipped one is not there, and gets none.
+				const entries = plan.tables.find((t) => t.table === 'journal_entry')?.rows ?? [];
+				for (const entry of entries) {
+					writeEntryTags(db, ids, String(entry.id), hashtagsIn(String(entry.body ?? '')));
 				}
 
 				return counts;
