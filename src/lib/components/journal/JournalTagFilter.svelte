@@ -42,7 +42,11 @@
 						aria-current={current ? 'page' : undefined}
 						title={tag.onlyPrivate ? t('journal.tags.onlyYou') : undefined}
 					>
-						{#if tag.onlyPrivate}<Icon name="private" size={11} label={t('journal.tags.onlyYou')} />{/if}
+						{#if tag.onlyPrivate}<Icon
+								name="private"
+								size={11}
+								label={t('journal.tags.onlyYou')}
+							/>{/if}
 						#{tag.name}
 						<span class="text-xs text-fg-muted">{tag.count}</span>
 					</a>
