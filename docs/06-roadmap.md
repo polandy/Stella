@@ -116,6 +116,19 @@ Goal: sand the edges and add the nice-to-haves.
   Open: which contact fields go out, whether a member picks circles to sync, and whether a
   plain subscribable `.ics` link suffices for the calendar instead of full CalDAV.
 - ~~**A person's photos from Immich**~~ — shipped (§2.24).
+- **Photos from Immich wherever a photo can be added** — today only a person's picture can come
+  from Immich (*Use as photo*, §2.24.6); everywhere else takes a file from the device. Every
+  place that adds a photo gets *From Immich* beside the upload: a journal entry (§2.20), a
+  moment (§2.22.1), a person's and a circle's photo gallery (§2.14). Like *Use as photo*, the
+  chosen photo is **copied** into Stella's media pipeline (downscaled, EXIF/GPS stripped), so
+  the entry keeps it when Immich is down or the link is removed; nothing appears without
+  `IMMICH_URL`, and nothing of it offline. Open: what the picker offers first (the photos of the
+  person the entry is about, of the people it mentions, or of the entry's day), whether a
+  search across the whole library is needed, and several photos at once.
+- **Tags on journal entries** — an entry (§2.20) can carry tags, to find and filter a person's
+  journal by topic. Open: the same household tags as on people (§2.8) or a set of their own;
+  whether a private entry's tag shows in the household's tag list; where tagged entries are
+  filtered (the person's journal, the full search, a tag's page); moments too.
 - ~~**Gift ideas and gifts given**~~ — shipped (§2.25): ideas, gifts given and gifts received
   per person on the Gifts card and in the story, the Monica gifts converted, the *already
   given* hint, the *Coming up* hint and *Gift idea for …* in the palette. Later: a
