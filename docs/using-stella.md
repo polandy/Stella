@@ -544,6 +544,11 @@ and a good idea is still there on the birthday it was meant for.
 - Given and received gifts also appear under **Activity** on their day. Ideas never do.
 - An idea can be noted from anywhere: `⌘K` / `Ctrl-K`, **Gift idea for …**, then the person's
   name and `Enter`. Their Gifts card opens with the idea form ready.
+- **All gift ideas** — in the `⌘K` / `Ctrl-K` palette, or in the Gifts card's **⋯** menu —
+  lists every open idea of the household on one page, for the shopping trip: one card per
+  person, whoever's birthday or Christmas comes first on top, with how far off it is. **Mark as
+  given…** works right there; the idea leaves the list, and *Undo* in the message brings it
+  back for a few seconds.
 - When their birthday or another date comes up on Home, the number of open ideas is right
   there under their name.
 - **Search everything** finds a gift by what it is or by its note — *Fotobuch* finds the photo

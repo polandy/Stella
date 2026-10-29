@@ -116,23 +116,15 @@ Goal: sand the edges and add the nice-to-haves.
   Open: which contact fields go out, whether a member picks circles to sync, and whether a
   plain subscribable `.ics` link suffices for the calendar instead of full CalDAV.
 - ~~**A person's photos from Immich**~~ — shipped (§2.24).
-- **Photos from Immich wherever a photo can be added** — today only a person's picture can come
-  from Immich (*Use as photo*, §2.24.6); everywhere else takes a file from the device. Every
-  place that adds a photo gets *From Immich* beside the upload: a journal entry (§2.20), a
-  moment (§2.22.1), a person's and a circle's photo gallery (§2.14). Like *Use as photo*, the
-  chosen photo is **copied** into Stella's media pipeline (downscaled, EXIF/GPS stripped), so
-  the entry keeps it when Immich is down or the link is removed; nothing appears without
-  `IMMICH_URL`, and nothing of it offline. Open: what the picker offers first (the photos of the
-  person the entry is about, of the people it mentions, or of the entry's day), whether a
-  search across the whole library is needed, and several photos at once.
+- ~~**Photos from Immich wherever a photo can be added**~~ — shipped (§2.24, #407).
 - ~~**Tags on journal entries**~~ — shipped (§2.20.2): a household set of their own, written
   as `#word` with a `#` list, chips that filter a person's journal, the full search by word and
   by `#tag`, a page per tag (`/tags/{key}`), the list of all tags and a *Tags* filter on Home's
   stream.
 - ~~**Gift ideas and gifts given**~~ — shipped (§2.25): ideas, gifts given and gifts received
   per person on the Gifts card and in the story, the Monica gifts converted, the *already
-  given* hint, the *Coming up* hint and *Gift idea for …* in the palette. Later: a
-  household-wide idea list (§2.25.6).
+  given* hint, the *Coming up* hint and *Gift idea for …* in the palette, and the household's list of every open idea, by whose
+  occasion comes next (`/gifts`, §2.25.6).
 - **Email and social sync** — bring in what already knows about people, matched against the
   people already in Stella through a review list rather than merged silently, every write
   through the domain use-cases and access layer:
