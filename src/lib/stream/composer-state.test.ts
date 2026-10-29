@@ -248,6 +248,27 @@ describe('photos', () => {
 		expect(added.photos).toHaveLength(2);
 		expect(run(added, { type: 'photosPicked', files: [] }).state.photos).toEqual([]);
 	});
+
+	it('adds photos from Immich to the ones before, and a new pick from the device keeps them', () => {
+		const once = run(opened(), { type: 'immichPhotosAdded', files: [photo] }).state;
+		const twice = run(once, { type: 'immichPhotosAdded', files: [photo, photo] }).state;
+		expect(twice.immichPhotos).toHaveLength(3);
+		const picked = run(twice, { type: 'photosPicked', files: [photo] }).state;
+		expect(picked.photos).toHaveLength(1);
+		expect(picked.immichPhotos).toHaveLength(3);
+	});
+
+	it('prepares the device’s photos and Immich’s together when the moment is saved', () => {
+		let state = run(opened(), { type: 'photosPicked', files: [photo] }).state;
+		state = run(state, { type: 'immichPhotosAdded', files: [photo] }).state;
+		state = run(state, typed('Saw Lena')).state;
+		const { commands } = run(state, {
+			type: 'submitted',
+			entryDate: '2026-10-26',
+			editing: null
+		});
+		expect(commands).toContainEqual({ kind: 'preparePhotos', files: [photo, photo] });
+	});
 });
 
 describe('the day', () => {

@@ -2,6 +2,8 @@
 	import Button from '$lib/components/ui/Button.svelte';
 	import Icon from '$lib/components/ui/Icon.svelte';
 	import KeptItem from '$lib/components/pwa/KeptItem.svelte';
+	import FromImmich from '$lib/components/immich/FromImmich.svelte';
+	import type { ImmichCopy } from '$lib/media/copy-immich-photo';
 	import MenuButton from '$lib/components/ui/MenuButton.svelte';
 	import Section from '$lib/components/ui/Section.svelte';
 	import { invalidateAll } from '$app/navigation';
@@ -62,6 +64,8 @@
 	 * upload, so nothing leaves the device carrying a location.
 	 */
 	let picked = $state<File[]>([]);
+	/** Copied from Immich (docs/02 §2.24.9), each with the token that dates it on the server. */
+	let fromImmich = $state<ImmichCopy[]>([]);
 	let uploading = $state(false);
 	let uploadError = $state<string | null>(null);
 
@@ -79,12 +83,15 @@
 	async function uploadPhotos(event: SubmitEvent) {
 		event.preventDefault();
 		const formEl = event.currentTarget as HTMLFormElement;
-		if (picked.length === 0) return;
+		if (picked.length + fromImmich.length === 0) return;
 		uploading = true;
 		uploadError = null;
 		try {
 			const photos: KeptPhoto[] = [];
 			for (const file of picked) photos.push({ id: ulid(), ...(await processImage(file)) });
+			for (const { file, immichToken } of fromImmich) {
+				photos.push({ id: ulid(), ...(await processImage(file)), immichToken });
+			}
 			const visibility =
 				new FormData(formEl).get('visibility') === 'private' ? 'private' : 'shared';
 			const command: JsonCommand = {
@@ -104,6 +111,7 @@
 				if (delivery.status === 'applied') await invalidateAll();
 			}
 			picked = [];
+			fromImmich = [];
 			formEl.reset();
 		} catch {
 			uploadError = t('contact.photos.uploadFailed');
@@ -283,11 +291,17 @@
 					type="file"
 					accept="image/*"
 					multiple
-					required
+					required={fromImmich.length === 0}
 					onchange={(e) => (picked = Array.from(e.currentTarget.files ?? []))}
 					class={INPUT}
 				/>
 			</label>
+			{#if data.immichLibrary}
+				<FromImmich
+					count={fromImmich.length}
+					onadd={(copies) => (fromImmich = [...fromImmich, ...copies])}
+				/>
+			{/if}
 			<fieldset class="flex items-center gap-3 text-sm">
 				<legend class="sr-only">{t('common.visibility')}</legend>
 				<label class="flex items-center gap-1.5">

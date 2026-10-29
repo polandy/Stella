@@ -47,7 +47,8 @@ function submitted(state: ComposerState, entryDate: string, editing: string | nu
 	const sending = { ...state, sending: payload, error: null };
 	if (editing) return only(sending, [{ kind: 'revise', id: editing, payload }]);
 	// Processed once per save, so a save that ends up kept sends the very same photos.
-	return only(sending, [{ kind: 'preparePhotos', files: state.photos }]);
+	const files = [...state.photos, ...state.immichPhotos];
+	return only(sending, [{ kind: 'preparePhotos', files }]);
 }
 
 function answered(state: ComposerState, event: Extract<SendEvent, { type: 'answered' }>) {

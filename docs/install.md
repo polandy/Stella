@@ -171,6 +171,10 @@ many photos of a linked person it holds and their latest photos, following who m
 person in Stella, and gets *Open in Immich*. Stella fetches those photos itself and keeps none
 of them, on the server or on anyone's device. That link shows the photos only to you, signed into your own Immich account;
 everyone else lands on Immich's sign-in or an empty page.
+Beyond the linked people, every member can browse **your whole library** by day and search it
+when they add a photo to a moment, a journal entry or a gallery, and copy the photos they pick
+into Stella. Archived, locked and trashed photos never show. If that is more than you want to
+share, leave Immich unconnected.
 
 ## Linking the household's Nextcloud address book
 

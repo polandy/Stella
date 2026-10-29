@@ -3,6 +3,8 @@
 	import Button from '$lib/components/ui/Button.svelte';
 	import Icon from '$lib/components/ui/Icon.svelte';
 	import KeptItem from '$lib/components/pwa/KeptItem.svelte';
+	import FromImmich from '$lib/components/immich/FromImmich.svelte';
+	import type { ImmichCopy } from '$lib/media/copy-immich-photo';
 	import Section from '$lib/components/ui/Section.svelte';
 	import Veil from '$lib/components/ui/Veil.svelte';
 	import { roleKey } from '$lib/circles/role-key';
@@ -59,6 +61,8 @@
 
 	let open = $state(false);
 	let picked = $state<File[]>([]);
+	/** Copied from Immich (docs/02 §2.24.9), each with the token that dates it on the server. */
+	let fromImmich = $state<ImmichCopy[]>([]);
 	let uploadRole = $state('');
 	let uploading = $state(false);
 	let uploadError = $state<string | null>(null);
@@ -80,12 +84,15 @@
 	async function upload(event: SubmitEvent) {
 		event.preventDefault();
 		const formEl = event.currentTarget as HTMLFormElement;
-		if (picked.length === 0) return;
+		if (picked.length + fromImmich.length === 0) return;
 		uploading = true;
 		uploadError = null;
 		try {
 			const photos: KeptPhoto[] = [];
 			for (const file of picked) photos.push({ id: ulid(), ...(await processGroupPhoto(file)) });
+			for (const { file, immichToken } of fromImmich) {
+				photos.push({ id: ulid(), ...(await processGroupPhoto(file)), immichToken });
+			}
 			const visibility =
 				new FormData(formEl).get('visibility') === 'private' ? 'private' : 'shared';
 			const command: JsonCommand = {
@@ -105,6 +112,7 @@
 				if (delivery.status === 'applied') await invalidateAll();
 			}
 			picked = [];
+			fromImmich = [];
 			formEl.reset();
 			open = false;
 		} catch {
@@ -231,11 +239,17 @@
 					type="file"
 					accept="image/*"
 					multiple
-					required
+					required={fromImmich.length === 0}
 					onchange={(e) => (picked = Array.from(e.currentTarget.files ?? []))}
 					class="rounded-md border border-border-input bg-bg px-3 py-2 text-fg"
 				/>
 			</label>
+			{#if data.immichLibrary}
+				<FromImmich
+					count={fromImmich.length}
+					onadd={(copies) => (fromImmich = [...fromImmich, ...copies])}
+				/>
+			{/if}
 			{#if data.roleSuggestions.length > 0}
 				<fieldset class="flex flex-col gap-2">
 					<legend class="mb-2 text-sm text-fg-muted">{t('circles.photos.whoIsIn')}</legend>
@@ -288,7 +302,7 @@
 			<Button variant="primary" size="sm" disabled={uploading} class="self-start">
 				{uploading
 					? t('circles.photos.adding')
-					: t('circles.photos.addCount', { count: picked.length })}
+					: t('circles.photos.addCount', { count: picked.length + fromImmich.length })}
 			</Button>
 		</form>
 	{/snippet}

@@ -31,7 +31,7 @@ export const immich: ImmichMessages = {
 	'immich.settings.tooOld': (p) =>
 		`Dieses Immich hat Version ${p.version}. Stella braucht Immich 3.2 oder neuer.`,
 	'immich.settings.sharing':
-		'Alle im Haushalt sehen die Fotos der Personen, die mit dieser Bibliothek verknüpft sind.',
+		'Alle im Haushalt sehen in Stella jedes Foto dieser Bibliothek: Wer einem Moment, einem Tagebucheintrag oder einer Galerie ein Foto hinzufügt, kann sie nach Tagen durchblättern und durchsuchen. Archivierte, gesperrte und gelöschte Fotos erscheinen nie.',
 	'immich.settings.howToLink': 'Verknüpfe eine Person im Menü der Fotos-Karte auf ihrer Seite.',
 
 	'immich.match.title': 'Deine Leute finden',
@@ -154,5 +154,44 @@ export const immich: ImmichMessages = {
 	'immich.picker.photosHint': (p) =>
 		`Wähle ein Foto, auf dem ${p.name} zu sehen ist – es wird das Bild dieser Person.`,
 	'immich.picker.photosNone': (p) => `Keine Fotos von ${p.name} aus Immich zu zeigen.`,
-	'immich.picker.backToFaces': 'Zurück zu den Gesichtern'
+	'immich.picker.backToFaces': 'Zurück zu den Gesichtern',
+
+	'immich.library.fromDevice': 'Von diesem Gerät',
+	'immich.library.fromImmich': 'Aus Immich',
+	'immich.library.addPhotos': 'Fotos hinzufügen',
+	'immich.library.or': 'oder',
+	'immich.library.needsConnection': 'Braucht eine Verbindung',
+	'immich.library.search': 'In Immich suchen – Strand, Geburtstagskuchen…',
+	'immich.library.clearSearch': 'Suche leeren',
+	'immich.library.earlier': 'Ein früherer Tag mit Fotos',
+	'immich.library.later': 'Ein späterer Tag mit Fotos',
+	'immich.library.photoCount': (p) => (p.count === 1 ? '1 Foto' : `${p.count} Fotos`),
+	'immich.library.noneOnDay': (p) => `Keine Fotos vom ${p.day} in Immich.`,
+	'immich.library.arrowsSkip': 'Die Pfeile springen zum nächsten Tag mit Fotos.',
+	'immich.library.bestMatches': (p) => `Beste Treffer für „${p.query}“`,
+	'immich.library.noMatch': (p) => `Nichts in Immich passt zu „${p.query}“.`,
+	'immich.library.searchOff':
+		'Die intelligente Suche ist auf diesem Immich-Server ausgeschaltet, deshalb kann Stella nicht darin suchen. Blättere stattdessen nach Tagen.',
+	'immich.library.unreachable': 'Immich hat nicht geantwortet.',
+	'immich.library.unreachableHint':
+		'Versuch es gleich noch einmal. Unter Einstellungen → Immich steht, was nicht stimmt.',
+	'immich.library.tryAgain': 'Noch einmal versuchen',
+	'immich.library.tapToTick': 'Tippe Fotos an, um sie auszuwählen',
+	'immich.library.ticked': (p) => `${p.count} ausgewählt`,
+	'immich.library.clear': 'Leeren',
+	'immich.library.atMost': (p) => `Höchstens ${p.count} auf einmal`,
+	'immich.library.add': (p) =>
+		p.count === 1 ? '1 Foto hinzufügen' : `${p.count} Fotos hinzufügen`,
+	'immich.library.copying': (p) =>
+		p.count === 1
+			? 'Das Foto wird aus Immich kopiert…'
+			: `${p.done} von ${p.count} Fotos werden aus Immich kopiert…`,
+	'immich.library.copyFailed':
+		'Ein Foto ließ sich nicht aus Immich kopieren. Versuch es noch einmal.',
+	'immich.library.added': (p) =>
+		p.count === 1 ? '1 Foto aus Immich hinzugefügt' : `${p.count} Fotos aus Immich hinzugefügt`,
+	'immich.library.ready': (p) =>
+		p.count === 1 ? '1 Foto aus Immich' : `${p.count} Fotos aus Immich`,
+	'immich.library.photo': (p) => `Foto, ${p.when}`,
+	'immich.library.photoUndated': 'Foto'
 };

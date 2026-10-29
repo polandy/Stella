@@ -104,6 +104,7 @@ export function cleared(state: ComposerState, nextCommandId: string): ComposerSt
 		body: '',
 		picks: [],
 		photos: [],
+		immichPhotos: [],
 		newPeople: [],
 		fresh: state.fresh + 1,
 		commandId: nextCommandId

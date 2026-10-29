@@ -6,6 +6,8 @@
 	import Button from '$lib/components/ui/Button.svelte';
 	import DayPill from '$lib/components/ui/DayPill.svelte';
 	import Icon from '$lib/components/ui/Icon.svelte';
+	import ImmichLibraryPicker from '$lib/components/immich/ImmichLibraryPicker.svelte';
+	import PhotoSourceMenu from '$lib/components/immich/PhotoSourceMenu.svelte';
 	import KnowThemBy from '$lib/components/people/KnowThemBy.svelte';
 	import TagListbox from '$lib/components/journal/TagListbox.svelte';
 	import TagsLine from '$lib/components/journal/TagsLine.svelte';
@@ -94,6 +96,8 @@
 		onDraft?: (draft: MomentDraft) => void;
 		/** The tags the author can see, for the `#` list. */
 		tags?: readonly KnownTag[];
+		/** Immich is on the instance: the photo button offers *From Immich* (docs/02 §2.24.9). */
+		immichLibrary?: boolean;
 	}
 	interface Anchor {
 		id: string;
@@ -116,7 +120,8 @@
 		onSaved,
 		onCancel,
 		onDraft,
-		tags = []
+		tags = [],
+		immichLibrary = false
 	}: Props = $props();
 
 	const t = useTranslate();
@@ -155,7 +160,17 @@
 	const visibility = $derived(ui.visibility);
 	const anchorId = $derived(ui.anchorId);
 	const fresh = $derived(ui.fresh);
-	const photos = $derived(ui.photos);
+	const photoCount = $derived(ui.photos.length + ui.immichPhotos.length);
+	/*
+	 * *From Immich* opens on the moment's day as the day field says it now (docs/02 §2.24.9).
+	 */
+	let libraryOpen = $state(false);
+	let libraryDay = $state('');
+	function openLibrary() {
+		const entryDate = composer ? new FormData(composer).get('entryDate') : null;
+		libraryDay = typeof entryDate === 'string' && entryDate !== '' ? entryDate : day;
+		libraryOpen = true;
+	}
 	const active = $derived(ui.active);
 	const selected = $derived(ui.highlighted);
 	const creating = $derived(ui.creating);
@@ -697,29 +712,42 @@
 				<!-- An icon button, as it acts at once (docs/05 §5.7); the badge counts what was picked.
 				     `sr-only`, not `hidden`: a hidden input is out of the tab order, and the photo
 				     button with it (WCAG 2.1.1). The button shows where focus is instead. -->
-				<label
-					title={t('composer.addPhotos')}
-					class="relative grid size-8 cursor-pointer place-items-center rounded-full text-fg-muted transition-colors hover:bg-card-hover hover:text-fg has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-focus-ring"
-				>
+				{#snippet photoBadge()}
 					<Icon name="photo" size={17} />
-					{#if photos.length}<span
+					{#if photoCount}<span
 							class="absolute -top-0.5 -right-1 grid h-4 min-w-4 place-items-center rounded-full bg-primary px-1 text-[10px] font-bold text-primary-fg tabular-nums"
 							aria-hidden="true"
-							data-testid="photo-count">{photos.length}</span
+							data-testid="photo-count">{photoCount}</span
 						>{/if}
-					<input
-						type="file"
-						accept="image/*"
-						multiple
-						aria-label={t('composer.addPhotos')}
-						onchange={(e) =>
-							dispatch({
-								type: 'photosPicked',
-								files: Array.from((e.currentTarget as HTMLInputElement).files ?? [])
-							})}
-						class="sr-only"
+				{/snippet}
+				{#if immichLibrary}
+					<PhotoSourceMenu
+						label={t('composer.addPhotos')}
+						trigger={photoBadge}
+						look="icon"
+						onfiles={(files) => dispatch({ type: 'photosPicked', files })}
+						onimmich={openLibrary}
 					/>
-				</label>
+				{:else}
+					<label
+						title={t('composer.addPhotos')}
+						class="relative grid size-8 cursor-pointer place-items-center rounded-full text-fg-muted transition-colors hover:bg-card-hover hover:text-fg has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-focus-ring"
+					>
+						{@render photoBadge()}
+						<input
+							type="file"
+							accept="image/*"
+							multiple
+							aria-label={t('composer.addPhotos')}
+							onchange={(e) =>
+								dispatch({
+									type: 'photosPicked',
+									files: Array.from((e.currentTarget as HTMLInputElement).files ?? [])
+								})}
+							class="sr-only"
+						/>
+					</label>
+				{/if}
 			{/if}
 			<DayPill name="entryDate" value={kept?.entryDate ?? day} today={day} />
 		{/key}
@@ -762,3 +790,11 @@
 		</div>
 	</div>
 </form>
+
+{#if immichLibrary}
+	<ImmichLibraryPicker
+		bind:open={libraryOpen}
+		day={libraryDay}
+		onadd={(copies) => dispatch({ type: 'immichPhotosAdded', files: copies.map((c) => c.file) })}
+	/>
+{/if}
