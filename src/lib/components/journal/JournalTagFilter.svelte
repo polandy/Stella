@@ -1,7 +1,5 @@
 <script lang="ts">
-	import Icon from '$lib/components/ui/Icon.svelte';
-	import { accentChipStyle } from '$lib/design/tokens';
-	import { tagAccent } from '$lib/hashtags/hashtags';
+	import TagChip from '$lib/components/journal/TagChip.svelte';
 	import type { KnownTag } from '$lib/hashtags/picker';
 	import { useI18n } from '$lib/i18n/context.svelte';
 
@@ -33,23 +31,12 @@
 				>
 			</li>
 			{#each tags as tag (tag.key)}
-				{@const current = active?.key === tag.key}
 				<li>
-					<a
+					<TagChip
+						{tag}
 						href="?tag={encodeURIComponent(tag.key)}"
-						class="{chip} {current ? 'ring-2 ring-focus-ring' : ''}"
-						style={accentChipStyle(tagAccent(tag.name), { active: current })}
-						aria-current={current ? 'page' : undefined}
-						title={tag.onlyPrivate ? t('journal.tags.onlyYou') : undefined}
-					>
-						{#if tag.onlyPrivate}<Icon
-								name="private"
-								size={11}
-								label={t('journal.tags.onlyYou')}
-							/>{/if}
-						#{tag.name}
-						<span class="text-xs text-fg-muted">{tag.count}</span>
-					</a>
+						current={active?.key === tag.key}
+					/>
 				</li>
 			{/each}
 		</ul>

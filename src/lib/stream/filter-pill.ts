@@ -1,14 +1,16 @@
 import type { StreamFilter, StreamKind } from './filter';
 
 /*
- * What Home's *Filter* pill says on a phone (docs/02 §2.22.2, docs/05 §5.5), where the What and
- * Who chip rows fold into one pill and a sheet. Pure, so the count and the highlight are decided
+ * What Home's *Filter* pill says on a phone (docs/02 §2.22.2, docs/05 §5.5), where the What, Who
+ * and Tags chip rows fold into one pill and a sheet. Pure, so the count and the highlight are decided
  * once and tested without a browser; the component only translates what it is handed.
  */
 
 /** One axis the stream is narrowed on, in the order the sheet lists the groups. */
 export type NarrowedAxis =
-	{ axis: 'kind'; kind: StreamKind } | { axis: 'member'; memberId: string };
+	| { axis: 'kind'; kind: StreamKind }
+	| { axis: 'member'; memberId: string }
+	| { axis: 'tag'; tag: string };
 
 /** The pill's state. */
 export interface FilterPill {
@@ -25,5 +27,6 @@ export function filterPill(filter: StreamFilter): FilterPill {
 	const narrowedTo: NarrowedAxis[] = [];
 	if (filter.kind !== null) narrowedTo.push({ axis: 'kind', kind: filter.kind });
 	if (filter.memberId !== null) narrowedTo.push({ axis: 'member', memberId: filter.memberId });
+	if (filter.tag !== null) narrowedTo.push({ axis: 'tag', tag: filter.tag });
 	return { count: narrowedTo.length, highlighted: narrowedTo.length > 0, narrowedTo };
 }

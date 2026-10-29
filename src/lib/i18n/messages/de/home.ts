@@ -102,6 +102,7 @@ export const home: HomeMessages = {
 	'home.filter.label': 'Verlauf filtern',
 	'home.filter.kind': 'Was',
 	'home.filter.member': 'Wer',
+	'home.filter.tag': 'Tags',
 	'home.filter.kind.all': 'Alles',
 	'home.filter.kind.moment': 'Momente',
 	'home.filter.kind.interaction': 'Anrufe & Treffen',

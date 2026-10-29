@@ -1,5 +1,13 @@
 import { describe, expect, it } from 'bun:test';
-import { hashtagAt, hashtagsIn, journalTagHref, tagAccent, tagKey } from './hashtags';
+import {
+	hashtagAt,
+	hashtagsIn,
+	journalTagHref,
+	tagAccent,
+	tagKey,
+	tagPageHref,
+	TAGS_PAGE
+} from './hashtags';
 import { AVATAR_ACCENTS } from '../design/tokens';
 
 describe('hashtagsIn', () => {
@@ -76,5 +84,14 @@ describe('journalTagHref', () => {
 		expect(journalTagHref('c1')('ausflug-zürich')).toBe(
 			`/contacts/c1/journal?tag=${encodeURIComponent('ausflug-zürich')}`
 		);
+	});
+});
+
+describe('tagPageHref', () => {
+	it("leads to the tag's own page across the household, encoded", () => {
+		expect(tagPageHref('ausflug-zürich')).toBe(
+			`${TAGS_PAGE}/${encodeURIComponent('ausflug-zürich')}`
+		);
+		expect(TAGS_PAGE).toBe('/tags');
 	});
 });

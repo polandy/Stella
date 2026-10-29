@@ -11,8 +11,15 @@ first to find somebody, so there the page opens on the person search.
 - The capture field sits over the household stream (docs/02 §2.22). On a phone the top is the
   person search instead: the *What happened?* heading is left to screen readers, and the
   composer is a **sheet** opened from the tab-bar pencil.
-- From `md` the stream carries two rows of filter chips, *What* and *Who*, in the Circles chip
+- From `md` the stream carries rows of filter chips, *What* and *Who*, in the Circles chip
   style: links with `aria-current`, wrapping onto a second line, never scrolling sideways.
+- A third row, *Tags*, follows while the household has a tag: *All*, the **eight** most used
+  tags as `TagChip`s in their own colours with their counts, and an *All tags* link to `/tags`.
+  A tag chosen from beyond the eight joins the row so the row always shows what is chosen
+  (`homeTagChips`, `src/lib/hashtags/tag-pages.ts`). Narrowed by a tag, a line over the stream
+  says *5 moments with #crafts · Show all*; the pill's summary names it as *#crafts*.
+- The rows, pill and sheet are one component, `StreamFilter`; a moment's row is `StreamMoment`,
+  shared with a tag's page (§5.5.11).
 - Below `md` the rows fold into one **Filter pill**: the filter icon, *Filter*, the number of
   narrowed groups in a `--primary` badge, the pill tinted `--primary-soft` while narrowed, and
   the narrowed-to names beside it. What the pill says is the pure `filterPill`
@@ -59,7 +66,11 @@ first to find somebody, so there the page opens on the person search.
 
 ### Why
 
-On a phone the two chip rows would take four lines and push the stream past the fold, so they
+Eight tags fill about one line beside *All* and *All tags*; the rest are a tap away, and a
+household's long tail of once-used tags would otherwise bury the row. Choosing a tag narrows to
+moments because nothing else carries one, so a tag beside *Calls & visits* could only be empty.
+
+On a phone the chip rows would take several lines and push the stream past the fold, so they
 fold into the pill; the sheet holds the same links so the filter is one thing in two shapes.
 Nothing scrolls sideways because what lies off the right edge of a phone is not read.
 

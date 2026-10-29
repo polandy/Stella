@@ -8,6 +8,7 @@ import type { Viewer } from '../access/visibility';
 import { buildStream, type StreamQuery } from '../domain/stream/stream';
 import * as schema from './schema';
 import { createDrizzleStreamRepository } from './stream-repository';
+import { writeEntryTags } from './entry-tags';
 
 /*
  * Integration spec for the Drizzle StreamRepository (docs/02 §2.22.2): each source is
@@ -486,6 +487,56 @@ describe('narrowed to one member (docs/02 §2.22.2)', () => {
 
 		const rows = await repo.recentMoments(asU2, { limit: 2, memberId: U1 });
 		expect(rows.map((r) => r.id)).toEqual(['one-old']);
+	});
+});
+
+describe('narrowed to one tag (docs/02 §2.20.2)', () => {
+	let n = 0;
+	const ids = { next: () => `tag-${++n}` };
+	const tag = (entryId: string, ...names: string[]) => writeEntryTags(db, ids, entryId, names);
+
+	it('returns only the moments carrying the tag, on every person, newest first', async () => {
+		seedContact('julia', 1);
+		seedContact('marco', 2);
+		seedEntry('walk-julia', 'julia', 100);
+		seedEntry('walk-marco', 'marco', 200, 'shared', U2);
+		seedEntry('other', 'julia', 300);
+		tag('walk-julia', 'Walk');
+		tag('walk-marco', 'walk', 'lake');
+		tag('other', 'lake');
+
+		const rows = await repo.recentMoments(asU2, { ...EVERYONE, tag: 'walk' });
+		expect(rows.map((r) => r.id)).toEqual(['walk-marco', 'walk-julia']);
+		// positive control: without the tag every moment is there.
+		expect(await repo.recentMoments(asU2, EVERYONE)).toHaveLength(3);
+	});
+
+	it('never widens what the viewer may see, and keeps to the member it is narrowed to', async () => {
+		seedContact('julia', 1);
+		seedEntry('open', 'julia', 100, 'shared', U1);
+		seedEntry('secret', 'julia', 200, 'private', U1);
+		seedEntry('theirs', 'julia', 300, 'shared', U2);
+		for (const id of ['open', 'secret', 'theirs']) tag(id, 'walk');
+
+		const walk = { ...EVERYONE, tag: 'walk' };
+		expect((await repo.recentMoments(asU2, walk)).map((r) => r.id)).toEqual(['theirs', 'open']);
+		expect((await repo.recentMoments(asU1, walk)).map((r) => r.id)).toEqual([
+			'theirs',
+			'secret',
+			'open'
+		]);
+		expect((await repo.recentMoments(asU1, { ...walk, memberId: U1 })).map((r) => r.id)).toEqual([
+			'secret',
+			'open'
+		]);
+	});
+
+	it('finds nothing for a tag no moment carries', async () => {
+		seedContact('julia', 1);
+		seedEntry('open', 'julia', 100);
+		tag('open', 'walk');
+
+		expect(await repo.recentMoments(asU2, { ...EVERYONE, tag: 'nowhere' })).toEqual([]);
 	});
 });
 

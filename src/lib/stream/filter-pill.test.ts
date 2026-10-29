@@ -3,7 +3,7 @@ import { NO_FILTER } from './filter';
 import { filterPill } from './filter-pill';
 
 /*
- * On a phone Home folds the What and Who chip rows into one *Filter* pill (docs/02 §2.22.2,
+ * On a phone Home folds the What, Who and Tags chip rows into one *Filter* pill (docs/02 §2.22.2,
  * docs/05 §5.5). The pill has to say whether the stream is narrowed — a narrowed stream must
  * never pass for a quiet household — and by what, without opening the sheet.
  */
@@ -14,7 +14,7 @@ describe('filterPill', () => {
 	});
 
 	it('counts one for a kind and names it', () => {
-		expect(filterPill({ kind: 'moment', memberId: null })).toEqual({
+		expect(filterPill({ kind: 'moment', memberId: null, tag: null })).toEqual({
 			count: 1,
 			highlighted: true,
 			narrowedTo: [{ axis: 'kind', kind: 'moment' }]
@@ -22,7 +22,7 @@ describe('filterPill', () => {
 	});
 
 	it('counts one for a member and names them', () => {
-		expect(filterPill({ kind: null, memberId: 'u2' })).toEqual({
+		expect(filterPill({ kind: null, memberId: 'u2', tag: null })).toEqual({
 			count: 1,
 			highlighted: true,
 			narrowedTo: [{ axis: 'member', memberId: 'u2' }]
@@ -30,13 +30,24 @@ describe('filterPill', () => {
 	});
 
 	it('counts both axes, the kind first as the sheet lists it', () => {
-		const pill = filterPill({ kind: 'interaction', memberId: 'u1' });
+		const pill = filterPill({ kind: 'interaction', memberId: 'u1', tag: null });
 
 		expect(pill.count).toBe(2);
 		expect(pill.highlighted).toBe(true);
 		expect(pill.narrowedTo).toEqual([
 			{ axis: 'kind', kind: 'interaction' },
 			{ axis: 'member', memberId: 'u1' }
+		]);
+	});
+
+	it('counts a tag on top of the moments it narrows to, after the member', () => {
+		const pill = filterPill({ kind: 'moment', memberId: 'u1', tag: 'walk' });
+
+		expect(pill.count).toBe(3);
+		expect(pill.narrowedTo).toEqual([
+			{ axis: 'kind', kind: 'moment' },
+			{ axis: 'member', memberId: 'u1' },
+			{ axis: 'tag', tag: 'walk' }
 		]);
 	});
 });

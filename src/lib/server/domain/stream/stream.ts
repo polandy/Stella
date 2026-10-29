@@ -171,6 +171,12 @@ export interface StreamQuery {
 	memberId: string | null;
 }
 
+/** A read of moments, which alone can be narrowed to the ones carrying a tag (§2.20.2). */
+export interface MomentQuery extends StreamQuery {
+	/** The tag's key; absent or null for every moment. */
+	tag?: string | null;
+}
+
 export type StreamItem =
 	| ({ kind: 'moment'; mine: boolean } & MomentRow)
 	| ({ kind: 'person'; mine: boolean } & PersonRow)
@@ -180,7 +186,7 @@ export type StreamItem =
 	| ({ kind: 'circlePhoto'; mine: boolean } & CirclePhotoRow);
 
 export interface StreamRepository {
-	recentMoments(viewer: Viewer, query: StreamQuery): Promise<MomentRow[]>;
+	recentMoments(viewer: Viewer, query: MomentQuery): Promise<MomentRow[]>;
 	recentPeople(viewer: Viewer, query: StreamQuery): Promise<PersonRow[]>;
 	recentRelationships(viewer: Viewer, query: StreamQuery): Promise<RelationshipRow[]>;
 	recentInteractions(viewer: Viewer, query: StreamQuery): Promise<InteractionRow[]>;
@@ -239,7 +245,7 @@ export function assembleStream(
 
 /**
  * Fetch the scoped sources and build the viewer's stream, narrowed to `filter`. A source whose
- * kind the filter leaves out is not read at all.
+ * kind the filter leaves out is not read at all; a tag leaves out everything but moments.
  */
 export async function buildStream(
 	deps: StreamDeps,
@@ -248,11 +254,12 @@ export async function buildStream(
 	limit = STREAM_LIMIT
 ): Promise<StreamItem[]> {
 	const query: StreamQuery = { limit, memberId: filter.memberId };
+	const kindRead = filter.tag ? 'moment' : filter.kind;
 	const read = <T>(kind: StreamKind, source: () => Promise<T[]>): Promise<T[]> =>
-		filter.kind === null || filter.kind === kind ? source() : Promise.resolve([]);
+		kindRead === null || kindRead === kind ? source() : Promise.resolve([]);
 	const { stream } = deps;
 	const [moments, people, relationships, interactions, notices, circlePhotos] = await Promise.all([
-		read('moment', () => stream.recentMoments(viewer, query)),
+		read('moment', () => stream.recentMoments(viewer, { ...query, tag: filter.tag })),
 		read('person', () => stream.recentPeople(viewer, query)),
 		read('relationship', () => stream.recentRelationships(viewer, query)),
 		read('interaction', () => stream.recentInteractions(viewer, query)),

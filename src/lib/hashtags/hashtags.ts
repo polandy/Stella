@@ -60,3 +60,14 @@ export function tagAccent(name: string): (typeof AVATAR_ACCENTS)[number] {
 export function journalTagHref(contactId: string): (key: string) => string {
 	return (key) => `/contacts/${contactId}/journal?tag=${encodeURIComponent(key)}`;
 }
+
+/** The list of every tag the viewer can see (docs/02 §2.20.2). */
+export const TAGS_PAGE = '/tags';
+
+/**
+ * Where a tag chip leads outside one person's journal — on Home, a person's Activity, search:
+ * the tag's own page, its moments across the household.
+ */
+export function tagPageHref(key: string): string {
+	return `${TAGS_PAGE}/${encodeURIComponent(key)}`;
+}

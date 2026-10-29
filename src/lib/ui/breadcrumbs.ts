@@ -9,6 +9,8 @@ export type CrumbData = {
 	circle?: { name?: string };
 	/** A circle page's enclosing circles the viewer may see, outermost first. */
 	nesting?: { ancestors?: { id: string; name: string }[] };
+	/** A tag's page names its tag (docs/02 §2.20.2). */
+	tag?: { name?: string };
 };
 
 /**
@@ -48,6 +50,11 @@ export function breadcrumbs(
 		}
 	} else if (routeId.startsWith('/(app)/graph')) {
 		trail.push({ label: t('nav.graph') });
+	} else if (routeId.startsWith('/(app)/tags')) {
+		if (routeId === '/(app)/tags/[key]') {
+			trail.push({ label: t('nav.tags'), href: '/tags' });
+			trail.push({ label: `#${data.tag?.name ?? params.key ?? ''}` });
+		} else trail.push({ label: t('nav.tags') });
 	} else if (routeId.startsWith('/(app)/search')) {
 		trail.push({ label: t('nav.search') });
 	} else if (routeId.startsWith('/(app)/settings')) {

@@ -37,5 +37,14 @@ export const journal: JournalMessages = {
 		p.count === 1 ? `1 Moment mit #${p.name}` : `${p.count} Momente mit #${p.name}`,
 	'journal.tags.showAll': 'Alle zeigen',
 	'journal.tags.none': 'Keine Momente mit diesem Tag.',
-	'journal.tags.noneHint': 'Ein Tag ist ein #Wort im Text eines Moments.'
+	'journal.tags.noneHint': 'Ein Tag ist ein #Wort im Text eines Moments.',
+	'journal.tags.allTags': 'Alle Tags',
+	'journal.tags.listTitle': 'Tags',
+	'journal.tags.listIntro': 'Worunter euer Haushalt seine Momente ablegt, die häufigsten zuerst.',
+	'journal.tags.listHint':
+		'Schreib #Wort in einen Moment, um ihn zu taggen. Ein Tag mit Schloss steht nur in deinen privaten Momenten.',
+	'journal.tags.listEmpty': 'Noch keine Tags',
+	'journal.tags.summary': (p) =>
+		`${p.moments === 1 ? '1 Moment' : `${p.moments} Momente`} über ${p.people === 1 ? '1 Person' : `${p.people} Personen`}`,
+	'journal.tags.unknown': (p) => `Keine Momente mit #${p.name}`
 };

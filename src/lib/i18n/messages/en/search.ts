@@ -19,6 +19,8 @@ export const search = {
 	'search.tagNone': (p: { tag: string }) => `No moment carries #${p.tag}.`,
 	'search.tagNoneHint':
 		'A tag lives in the text of a moment: write #word into one, and it is found here.',
+	'search.tagAll': (p: { count: number; tag: string }) =>
+		p.count === 1 ? `The moment with #${p.tag}` : `All ${p.count} moments with #${p.tag}`,
 	'graph.title': 'Graph · Stella',
 	'graph.hint': 'Click to focus · click again to expand · trace a connection path',
 	'graph.empty.title': 'Nothing to explore yet',

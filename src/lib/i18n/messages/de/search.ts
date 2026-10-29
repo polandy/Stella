@@ -19,6 +19,8 @@ export const search: SearchMessages = {
 	'search.tagNone': (p) => `Kein Moment trägt #${p.tag}.`,
 	'search.tagNoneHint':
 		'Ein Tag steht im Text eines Moments: Schreib #Wort hinein, dann findest du ihn hier.',
+	'search.tagAll': (p) =>
+		p.count === 1 ? `Der Moment mit #${p.tag}` : `Alle ${p.count} Momente mit #${p.tag}`,
 	'graph.title': 'Netz · Stella',
 	'graph.hint':
 		'Klicken zum Fokussieren · noch einmal klicken zum Aufklappen · einen Verbindungsweg verfolgen',
