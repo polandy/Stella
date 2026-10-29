@@ -4,6 +4,7 @@ import { createFakeImmichGateway, fakeAssetId } from '../../immich/fake-gateway'
 import type { ImmichAsset, ImmichGateway } from './gateway';
 import {
 	libraryCopyTakenAt,
+	photoTakenAt,
 	readLibraryDay,
 	searchLibrary,
 	type ImmichLibraryDeps
@@ -212,5 +213,48 @@ describe('libraryCopyTakenAt', () => {
 			'x.y'
 		])
 			expect(await libraryCopyTakenAt(signer, viewer, token)).toBeNull();
+	});
+});
+
+describe('photoTakenAt', () => {
+	const preview = {
+		kind: 'library',
+		householdId: 'h1',
+		assetId: fakeAssetId(BERT_ID, 0),
+		size: 'preview',
+		takenAt: '2026-09-01T15:30:00'
+	} as const;
+
+	it('takes the date the browser read from EXIF when the photo is not from Immich', async () => {
+		const { signer } = setup();
+		expect(
+			await photoTakenAt(signer, viewer, { immichToken: null, takenAt: '2024-05-01T10:00:00' })
+		).toBe('2024-05-01T10:00:00');
+	});
+
+	it('dates a copy from Immich by its token, never by what the browser sends beside it', async () => {
+		const { signer } = setup();
+		const immichToken = await signer.sign(preview);
+		expect(
+			await photoTakenAt(signer, viewer, { immichToken, takenAt: '1999-01-01T00:00:00' })
+		).toBe('2026-09-01T15:30:00');
+		expect(
+			await photoTakenAt(
+				signer,
+				{ ...viewer, householdId: 'h2' },
+				{
+					immichToken,
+					takenAt: '1999-01-01T00:00:00'
+				}
+			)
+		).toBeNull();
+	});
+
+	it('dates nothing by a token on an instance without Immich', async () => {
+		const { signer } = setup();
+		const immichToken = await signer.sign(preview);
+		expect(
+			await photoTakenAt(null, viewer, { immichToken, takenAt: '1999-01-01T00:00:00' })
+		).toBeNull();
 	});
 });

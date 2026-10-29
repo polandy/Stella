@@ -114,6 +114,20 @@ export async function libraryCopyTakenAt(
 	return media.size === 'preview' ? (media.takenAt ?? null) : null;
 }
 
+/**
+ * When an uploaded photo was taken: for a copy from Immich, what its signed preview says
+ * (`libraryCopyTakenAt`), whatever the browser sent beside it, and nothing without Immich on the
+ * instance; otherwise `takenAt` as the browser read it from EXIF, for the command to check.
+ */
+export async function photoTakenAt<T>(
+	signer: ImmichMediaSigner | null,
+	viewer: Viewer,
+	sent: { immichToken: unknown; takenAt: T }
+): Promise<T | string | null> {
+	if (typeof sent.immichToken !== 'string') return sent.takenAt;
+	return signer ? libraryCopyTakenAt(signer, viewer, sent.immichToken) : null;
+}
+
 /** The day a photo was taken on the camera's clock, or null when Immich does not say. */
 const dayOf = (asset: ImmichAsset) => asset.takenAt?.slice(0, 10) ?? null;
 

@@ -13,10 +13,13 @@ export interface ImmichCopy {
 }
 
 /** Fetch the preview behind `previewUrl`; throws when it is not the proxy's or did not come. */
-export async function copyImmichPhoto(previewUrl: string): Promise<ImmichCopy> {
+export async function copyImmichPhoto(
+	previewUrl: string,
+	fetchPreview: (url: string) => Promise<Response> = fetch
+): Promise<ImmichCopy> {
 	const immichToken = immichMediaToken(previewUrl);
 	if (immichToken === null) throw new Error('Not a picture from Stella’s Immich proxy.');
-	const response = await fetch(previewUrl);
+	const response = await fetchPreview(previewUrl);
 	if (!response.ok) throw new Error(`The Immich proxy answered ${response.status}.`);
 	const blob = await response.blob();
 	if (!blob.type.startsWith('image/')) throw new Error('The Immich proxy sent no picture.');

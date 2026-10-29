@@ -2,7 +2,7 @@ import { json } from '@sveltejs/kit';
 import type { CommandAnswer } from '$lib/commands/commands';
 import { systemClock } from '$lib/server/clock';
 import { parsePhotoCommand } from '$lib/server/commands/parse';
-import { libraryCopyTakenAt } from '$lib/server/domain/immich/library';
+import { photoTakenAt } from '$lib/server/domain/immich/library';
 import { answerFor } from '$lib/server/commands/receive';
 import { translator } from '$lib/server/i18n/say';
 import type { RequestHandler } from './$types';
@@ -31,16 +31,11 @@ export const POST: RequestHandler = async ({ locals, request }) => {
 		return file instanceof File ? new Uint8Array(await file.arrayBuffer()) : null;
 	};
 	const id = form.get('id');
-	// A copy from Immich is dated by what Immich said, signed into the preview it was made from
-	// (docs/02 §2.24.9), not by what the browser sends.
-	const immichToken = form.get('immichToken');
-	const immich = locals.services.immich;
-	const takenAt =
-		typeof immichToken === 'string'
-			? immich
-				? await libraryCopyTakenAt(immich.signer, user, immichToken)
-				: null
-			: form.get('takenAt');
+	// A copy from Immich is dated by its signed preview, not by the browser (docs/02 §2.24.9).
+	const takenAt = await photoTakenAt(locals.services.immich?.signer ?? null, user, {
+		immichToken: form.get('immichToken'),
+		takenAt: form.get('takenAt')
+	});
 	const command = parsePhotoCommand({
 		id,
 		type: form.get('type'),
