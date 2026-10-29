@@ -32,8 +32,10 @@ export const journal = {
 	'journal.tags.filter': 'Filter by tag',
 	'journal.tags.all': 'All',
 	'journal.tags.onlyYou': 'Only you see this tag: it is only on your private moments',
-	'journal.tags.filtered': (p: { count: number; name: string }) =>
-		p.count === 1 ? `1 moment with #${p.name}` : `${p.count} moments with #${p.name}`,
+	'journal.tags.filtered': (p: { count: number; names: readonly string[] }) => {
+		const tags = p.names.map((name) => `#${name}`).join(' + ');
+		return p.count === 1 ? `1 moment with ${tags}` : `${p.count} moments with ${tags}`;
+	},
 	'journal.tags.showAll': 'Show all',
 	'journal.tags.none': 'No moments with this tag.',
 	'journal.tags.noneHint': 'A tag is a #word in a moment’s text.',

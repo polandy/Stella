@@ -25,18 +25,22 @@ export interface JournalViewInput {
 	names: readonly { id: string; displayName: string }[];
 	/** Who wrote an entry, by member id; null for someone no longer in the household. */
 	nameOfAuthor: (userId: string) => string | null;
-	/** The key of the tag the journal is filtered by (`?tag=`), or null for every entry. */
-	tag: string | null;
+	/** The keys of the tags an entry must all carry (`?tag=`, once each); empty for every entry. */
+	tags: readonly string[];
 }
 
-/** The tag `?tag=` asks for, named as the household spells it; null for no filter. */
-export function activeTagFor(
-	tag: string | null,
+/** The tags `?tag=` asks for, each once in the order chosen, named as the household spells them. */
+export function activeTagsFor(
+	asked: readonly string[],
 	known: readonly KnownTag[]
-): { key: string; name: string } | null {
-	if (!tag) return null;
-	const key = tagKey(tag);
-	return { key, name: known.find((k) => k.key === key)?.name ?? tag };
+): { key: string; name: string }[] {
+	const active = new Map<string, string>();
+	for (const raw of asked) {
+		const tag = raw.trim();
+		const key = tag && tagKey(tag);
+		if (key && !active.has(key)) active.set(key, known.find((k) => k.key === key)?.name ?? tag);
+	}
+	return [...active].map(([key, name]) => ({ key, name }));
 }
 
 /** Each entry rendered for the page, with only what its reader may have. */
@@ -48,7 +52,7 @@ export function journalEntriesFor({
 	photos,
 	names,
 	nameOfAuthor,
-	tag
+	tags
 }: JournalViewInput) {
 	const viewerId = remover.id;
 	// Group visible photo ids by their entry so each entry renders its own gallery.
@@ -65,10 +69,11 @@ export function journalEntriesFor({
 	const nameOf = (id: string) => nameById.get(id) ?? null;
 
 	// An entry carries a tag when its text does — the same reading that filed it (docs/02 §2.20.2).
-	const key = tag ? tagKey(tag) : null;
-	const shown = key
-		? entries.filter((e) => hashtagsIn(e.body).some((n) => tagKey(n) === key))
-		: entries;
+	const keys = tags.map(tagKey);
+	const shown = entries.filter((e) => {
+		const carried = new Set(hashtagsIn(e.body).map(tagKey));
+		return keys.every((key) => carried.has(key));
+	});
 	const tagHref = journalTagHref(contactId);
 
 	// render Markdown, @-mentions and #tags server-side; the output is already safe

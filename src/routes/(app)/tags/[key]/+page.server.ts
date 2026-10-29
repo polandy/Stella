@@ -21,7 +21,7 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 		buildStream(
 			locals.services.media.streamDeps,
 			viewer,
-			{ kind: 'moment', memberId: null, tag: key },
+			{ kind: 'moment', memberId: null, tags: [key] },
 			TAG_PAGE_LIMIT
 		),
 		locals.services.story.entryTags.listVisibleTo(viewer)

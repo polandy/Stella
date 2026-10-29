@@ -33,8 +33,10 @@ export const journal: JournalMessages = {
 	'journal.tags.filter': 'Nach Tag filtern',
 	'journal.tags.all': 'Alle',
 	'journal.tags.onlyYou': 'Nur du siehst diesen Tag: Er steht nur in deinen privaten Momenten',
-	'journal.tags.filtered': (p) =>
-		p.count === 1 ? `1 Moment mit #${p.name}` : `${p.count} Momente mit #${p.name}`,
+	'journal.tags.filtered': (p) => {
+		const tags = p.names.map((name) => `#${name}`).join(' + ');
+		return p.count === 1 ? `1 Moment mit ${tags}` : `${p.count} Momente mit ${tags}`;
+	},
 	'journal.tags.showAll': 'Alle zeigen',
 	'journal.tags.none': 'Keine Momente mit diesem Tag.',
 	'journal.tags.noneHint': 'Ein Tag ist ein #Wort im Text eines Moments.',

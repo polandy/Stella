@@ -4,7 +4,7 @@
 	import TagChip from '$lib/components/journal/TagChip.svelte';
 	import { TAGS_PAGE } from '$lib/hashtags/hashtags';
 	import type { KnownTag } from '$lib/hashtags/picker';
-	import type { TagNarrowing } from '$lib/hashtags/tag-pages';
+	import type { TagsNarrowing } from '$lib/hashtags/tag-pages';
 	import { useI18n } from '$lib/i18n/context.svelte';
 	import type { MessageKey } from '$lib/i18n/translate';
 	import {
@@ -13,8 +13,9 @@
 		offersMemberChoice,
 		STREAM_KINDS,
 		streamFilterHref,
+		toggleTag,
 		withKind,
-		withTag,
+		withoutTags,
 		type StreamFilter,
 		type StreamKind
 	} from '$lib/stream/filter';
@@ -22,8 +23,8 @@
 
 	/*
 	 * Home's stream filter (docs/02 §2.22.2, docs/design/screens/home.md): What, Who and Tags as
-	 * chip rows, folded into one pill and a sheet on a phone, and the line that says what a tag
-	 * narrowed the stream to. The chips are plain links, so a filter survives a reload, the back
+	 * chip rows, folded into one pill and a sheet on a phone, and the line that says what the tags
+	 * narrowed the stream to. Tag chips toggle: a moment must carry every chosen tag. The chips are plain links, so a filter survives a reload, the back
 	 * button undoes it, and it works before the page has hydrated.
 	 */
 	interface Props {
@@ -33,8 +34,8 @@
 		userId: string;
 		/** The Tags row's chips, most used first (`homeTagChips`); no row without any. */
 		tagChips: readonly KnownTag[];
-		/** What a tag narrowed the stream to, or null. */
-		tagLine: TagNarrowing | null;
+		/** What the chosen tags narrowed the stream to, or null. */
+		tagLine: TagsNarrowing | null;
 	}
 	let { filter, members, userId, tagChips, tagLine }: Props = $props();
 
@@ -55,7 +56,10 @@
 		pill.narrowedTo
 			.map((narrowed) => {
 				if (narrowed.axis === 'kind') return t(KIND_LABEL[narrowed.kind]);
-				if (narrowed.axis === 'tag') return `#${tagLine?.name ?? narrowed.tag}`;
+				if (narrowed.axis === 'tag') {
+					const i = filter.tags.indexOf(narrowed.tag);
+					return `#${tagLine?.names[i] ?? narrowed.tag}`;
+				}
 				return narrowed.memberId === userId
 					? t('home.you')
 					: (members.find((member) => member.id === narrowed.memberId)?.name ?? '');
@@ -143,11 +147,11 @@
 </nav>
 {#if tagLine}
 	<p class="text-sm text-fg-muted" aria-live="polite" data-testid="stream-tag-line">
-		{t('journal.tags.filtered', { count: tagLine.count, name: tagLine.name })}<span
+		{t('journal.tags.filtered', { count: tagLine.count, names: tagLine.names })}<span
 			class="mx-1.5"
 			aria-hidden="true">·</span
 		><a
-			href={streamFilterHref(withTag(filter, null))}
+			href={streamFilterHref(withoutTags(filter))}
 			class="text-link underline"
 			data-sveltekit-noscroll>{t('journal.tags.showAll')}</a
 		>
@@ -180,15 +184,16 @@
 		</div>
 	{/if}
 	{#if tagChips.length}
-		<!-- Choosing a tag narrows to moments, the only kind that carries one (docs/02 §2.20.2). -->
+		<!-- Choosing a tag narrows to moments, the only kind that carries one; each further tag
+		     narrows again, to the moments carrying them all (docs/02 §2.20.2). -->
 		<div class="{CHIP_ROW} gap-y-1.5" data-testid="stream-filter-tags">
 			<span class={CHIP_ROW_LABEL}>{t('home.filter.tag')}</span>
-			{@render chip(t('journal.tags.all'), withTag(filter, null), filter.tag === null)}
+			{@render chip(t('journal.tags.all'), withoutTags(filter), filter.tags.length === 0)}
 			{#each tagChips as tag (tag.key)}
 				<TagChip
 					{tag}
-					href={streamFilterHref(withTag(filter, tag.key))}
-					current={filter.tag === tag.key}
+					href={streamFilterHref(toggleTag(filter, tag.key))}
+					current={filter.tags.includes(tag.key)}
 				/>
 			{/each}
 			<a href={TAGS_PAGE} class="px-2 text-sm font-medium text-link hover:underline"

@@ -16,41 +16,51 @@ export const HOME_TAG_LIMIT = 8;
 export const TAG_PAGE_LIMIT = 1000;
 
 /**
- * Home's Tags row: the most used tags, and the chosen one too when it is not among them, so the
- * row always shows what the stream is narrowed to.
+ * Home's Tags row: the most used tags, and the chosen ones too when they are not among them, so
+ * the row always shows what the stream is narrowed to.
  */
-export function homeTagChips(tags: readonly KnownTag[], chosen: string | null): KnownTag[] {
+export function homeTagChips(tags: readonly KnownTag[], chosen: readonly string[]): KnownTag[] {
 	const top = tags.slice(0, HOME_TAG_LIMIT);
-	const extra = chosen && !top.some((t) => t.key === chosen) && tags.find((t) => t.key === chosen);
-	return extra ? [...top, extra] : top;
+	const extra = chosen.flatMap((key) =>
+		top.some((t) => t.key === key) ? [] : tags.filter((t) => t.key === key)
+	);
+	return [...top, ...extra];
 }
 
-/** What Home's stream is narrowed to by tag, for the line above it. */
-export interface TagNarrowing {
-	key: string;
-	/** The household's spelling; the key itself when the viewer has no moment carrying it. */
-	name: string;
+/** What Home's stream is narrowed to by tags, for the line above it. */
+export interface TagsNarrowing {
+	/** The chosen tags as the household spells them; a key when the viewer has no moment of it. */
+	names: string[];
 	/** How many moments the narrowed stream holds. */
 	count: number;
 }
 
 /**
- * The line over Home's stream narrowed to `key`. The tag's count is every moment the viewer can
- * read that carries it; narrowed to a member as well, it is the moments shown instead.
+ * The line over Home's stream narrowed to `keys`. One tag's count is every moment the viewer can
+ * read that carries it; several tags, or a member as well, count the moments shown instead.
  */
 export function tagNarrowing(
-	key: string | null,
+	keys: readonly string[],
 	memberId: string | null,
 	tags: readonly KnownTag[],
 	momentsShown: number
-): TagNarrowing | null {
-	if (!key) return null;
-	const known = tags.find((t) => t.key === key);
+): TagsNarrowing | null {
+	if (keys.length === 0) return null;
+	const known = keys.map((key) => tags.find((t) => t.key === key));
+	const [only] = known;
 	return {
-		key,
-		name: known?.name ?? key,
-		count: memberId === null ? (known?.count ?? 0) : momentsShown
+		names: keys.map((key, i) => known[i]?.name ?? key),
+		count: keys.length === 1 && memberId === null ? (only?.count ?? 0) : momentsShown
 	};
+}
+
+/** One tag as the search head names it. */
+export interface TagNarrowing {
+	key: string;
+	/** The household's spelling; the key itself when the viewer has no moment carrying it. */
+	name: string;
+	/** How many moments carry it. */
+	count: number;
 }
 
 /** The head of a tag's page. */

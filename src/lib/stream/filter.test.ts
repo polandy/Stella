@@ -5,14 +5,15 @@ import {
 	offersMemberChoice,
 	parseStreamFilter,
 	streamFilterHref,
+	toggleTag,
 	withKind,
-	withTag
+	withoutTags
 } from './filter';
 
 /*
  * The stream filter as the URL carries it (docs/02 §2.22.2): `?kind=` narrows to one kind of
- * item, `?by=` to one member, `?tag=` to the moments carrying one tag (§2.20.2). Anything the viewer could not have picked from the chips is
- * dropped rather than trusted, so a stale or hand-edited link falls back to the whole stream.
+ * item, `?by=` to one member, `?tag=` (once per tag) to the moments carrying
+ * every one of them (§2.20.2). Anything the viewer could not have picked from the chips is dropped rather than trusted, so a stale or hand-edited link falls back to the whole stream.
  */
 
 const members = ['u1', 'u2'];
@@ -27,7 +28,7 @@ describe('parseStreamFilter', () => {
 		expect(parseStreamFilter(params('kind=moment&by=u2'), members)).toEqual({
 			kind: 'moment',
 			memberId: 'u2',
-			tag: null
+			tags: []
 		});
 	});
 
@@ -35,7 +36,7 @@ describe('parseStreamFilter', () => {
 		expect(parseStreamFilter(params('kind=edit&by=u1'), members)).toEqual({
 			kind: null,
 			memberId: 'u1',
-			tag: null
+			tags: []
 		});
 	});
 
@@ -43,7 +44,7 @@ describe('parseStreamFilter', () => {
 		expect(parseStreamFilter(params('kind=person&by=stranger'), members)).toEqual({
 			kind: 'person',
 			memberId: null,
-			tag: null
+			tags: []
 		});
 	});
 
@@ -51,18 +52,26 @@ describe('parseStreamFilter', () => {
 		expect(parseStreamFilter(params('tag=Gurten&by=u1'), members)).toEqual({
 			kind: 'moment',
 			memberId: 'u1',
-			tag: 'gurten'
+			tags: ['gurten']
 		});
-		expect(parseStreamFilter(params('kind=moment&tag=%23Walk'), members).tag).toBe('walk');
+		expect(parseStreamFilter(params('kind=moment&tag=%23Walk'), members).tags).toEqual(['walk']);
+	});
+
+	it('reads several tags in the order chosen, each once', () => {
+		expect(parseStreamFilter(params('tag=Walk&tag=lake&tag=%23WALK'), members).tags).toEqual([
+			'walk',
+			'lake'
+		]);
 	});
 
 	it('drops a tag beside a kind that carries none, and an empty one', () => {
-		expect(parseStreamFilter(params('kind=interaction&tag=walk'), members)).toEqual({
+		expect(parseStreamFilter(params('kind=interaction&tag=walk&tag=lake'), members)).toEqual({
 			kind: 'interaction',
 			memberId: null,
-			tag: null
+			tags: []
 		});
 		expect(parseStreamFilter(params('tag=%20'), members)).toEqual(NO_FILTER);
+		expect(parseStreamFilter(params('tag=%20&tag=walk'), members).tags).toEqual(['walk']);
 	});
 });
 
@@ -72,40 +81,55 @@ describe('streamFilterHref', () => {
 	});
 
 	it('carries only the parts that are set, and reads back to the same filter', () => {
-		const filter = { kind: 'interaction', memberId: 'u2', tag: null } as const;
+		const filter = { kind: 'interaction', memberId: 'u2', tags: [] } as const;
 		const href = streamFilterHref(filter);
 		expect(href).toBe('/?kind=interaction&by=u2');
 		expect(parseStreamFilter(new URL(href, 'http://x').searchParams, members)).toEqual(filter);
-		expect(streamFilterHref({ kind: null, memberId: 'u1', tag: null })).toBe('/?by=u1');
+		expect(streamFilterHref({ kind: null, memberId: 'u1', tags: [] })).toBe('/?by=u1');
 	});
 
-	it('carries a tag with the moments it narrows to, and reads back to the same filter', () => {
-		const filter = { kind: 'moment', memberId: null, tag: 'ausflug-zürich' } as const;
+	it('carries each tag with the moments it narrows to, and reads back to the same filter', () => {
+		const filter = { kind: 'moment', memberId: null, tags: ['ausflug-zürich', 'walk'] } as const;
 		const href = streamFilterHref(filter);
-		expect(href).toBe('/?kind=moment&tag=ausflug-z%C3%BCrich');
+		expect(href).toBe('/?kind=moment&tag=ausflug-z%C3%BCrich&tag=walk');
 		expect(parseStreamFilter(new URL(href, 'http://x').searchParams, members)).toEqual(filter);
 	});
 });
 
-describe('withTag and withKind', () => {
-	const byOne = { kind: null, memberId: 'u1', tag: null };
+describe('toggleTag, withoutTags and withKind', () => {
+	const byOne = { kind: null, memberId: 'u1', tags: [] };
 
 	it('choosing a tag narrows to moments and keeps the member', () => {
-		expect(withTag(byOne, 'walk')).toEqual({ kind: 'moment', memberId: 'u1', tag: 'walk' });
+		expect(toggleTag(byOne, 'walk')).toEqual({ kind: 'moment', memberId: 'u1', tags: ['walk'] });
 	});
 
-	it('taking the tag off keeps the moments', () => {
-		expect(withTag({ kind: 'moment', memberId: null, tag: 'walk' }, null)).toEqual({
+	it('choosing another tag adds it, so the moments must carry both', () => {
+		const walk = { kind: 'moment', memberId: null, tags: ['walk'] } as const;
+		expect(toggleTag(walk, 'lake').tags).toEqual(['walk', 'lake']);
+	});
+
+	it('choosing a chosen tag again takes only that one off, and the last one keeps the moments', () => {
+		const both = { kind: 'moment', memberId: null, tags: ['walk', 'lake'] } as const;
+		expect(toggleTag(both, 'walk').tags).toEqual(['lake']);
+		expect(toggleTag(toggleTag(both, 'walk'), 'lake')).toEqual({
 			kind: 'moment',
 			memberId: null,
-			tag: null
+			tags: []
 		});
 	});
 
-	it('choosing another kind, or every kind, takes the tag off; moments keep it', () => {
-		const tagged = { kind: 'moment', memberId: 'u1', tag: 'walk' } as const;
-		expect(withKind(tagged, 'person')).toEqual({ kind: 'person', memberId: 'u1', tag: null });
-		expect(withKind(tagged, null)).toEqual({ kind: null, memberId: 'u1', tag: null });
+	it('taking the tags off keeps the moments', () => {
+		expect(withoutTags({ kind: 'moment', memberId: null, tags: ['walk', 'lake'] })).toEqual({
+			kind: 'moment',
+			memberId: null,
+			tags: []
+		});
+	});
+
+	it('choosing another kind, or every kind, takes the tags off; moments keep them', () => {
+		const tagged = { kind: 'moment', memberId: 'u1', tags: ['walk'] } as const;
+		expect(withKind(tagged, 'person')).toEqual({ kind: 'person', memberId: 'u1', tags: [] });
+		expect(withKind(tagged, null)).toEqual({ kind: null, memberId: 'u1', tags: [] });
 		expect(withKind(tagged, 'moment')).toEqual(tagged);
 	});
 });
@@ -113,8 +137,8 @@ describe('withTag and withKind', () => {
 describe('isNarrowed', () => {
 	it('is false for the whole stream and true once either axis is set', () => {
 		expect(isNarrowed(NO_FILTER)).toBe(false);
-		expect(isNarrowed({ kind: 'notice', memberId: null, tag: null })).toBe(true);
-		expect(isNarrowed({ kind: null, memberId: 'u1', tag: null })).toBe(true);
+		expect(isNarrowed({ kind: 'notice', memberId: null, tags: [] })).toBe(true);
+		expect(isNarrowed({ kind: null, memberId: 'u1', tags: [] })).toBe(true);
 	});
 });
 

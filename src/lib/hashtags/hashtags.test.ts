@@ -3,6 +3,7 @@ import {
 	hashtagAt,
 	hashtagsIn,
 	journalTagHref,
+	journalTagToggle,
 	tagAccent,
 	tagKey,
 	tagPageHref,
@@ -84,6 +85,20 @@ describe('journalTagHref', () => {
 		expect(journalTagHref('c1')('ausflug-zürich')).toBe(
 			`/contacts/c1/journal?tag=${encodeURIComponent('ausflug-zürich')}`
 		);
+	});
+});
+
+describe('journalTagToggle', () => {
+	it('adds an unchosen tag to the chosen ones', () => {
+		expect(journalTagToggle(['walk'], 'ausflug-zürich')).toBe('?tag=walk&tag=ausflug-z%C3%BCrich');
+	});
+
+	it('takes a chosen tag off and keeps the rest', () => {
+		expect(journalTagToggle(['walk', 'lake'], 'walk')).toBe('?tag=lake');
+	});
+
+	it('is the unfiltered journal once the last tag is off', () => {
+		expect(journalTagToggle(['walk'], 'walk')).toBe('?');
 	});
 });
 

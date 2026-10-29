@@ -490,7 +490,7 @@ describe('narrowed to one member (docs/02 §2.22.2)', () => {
 	});
 });
 
-describe('narrowed to one tag (docs/02 §2.20.2)', () => {
+describe('narrowed to tags (docs/02 §2.20.2)', () => {
 	let n = 0;
 	const ids = { next: () => `tag-${++n}` };
 	const tag = (entryId: string, ...names: string[]) => writeEntryTags(db, ids, entryId, names);
@@ -505,10 +505,25 @@ describe('narrowed to one tag (docs/02 §2.20.2)', () => {
 		tag('walk-marco', 'walk', 'lake');
 		tag('other', 'lake');
 
-		const rows = await repo.recentMoments(asU2, { ...EVERYONE, tag: 'walk' });
+		const rows = await repo.recentMoments(asU2, { ...EVERYONE, tags: ['walk'] });
 		expect(rows.map((r) => r.id)).toEqual(['walk-marco', 'walk-julia']);
 		// positive control: without the tag every moment is there.
 		expect(await repo.recentMoments(asU2, EVERYONE)).toHaveLength(3);
+	});
+
+	it('returns only the moments carrying every chosen tag', async () => {
+		seedContact('julia', 1);
+		seedEntry('walk-only', 'julia', 100);
+		seedEntry('walk-and-lake', 'julia', 200);
+		seedEntry('lake-only', 'julia', 300);
+		tag('walk-only', 'walk');
+		tag('walk-and-lake', 'Walk', 'Lake');
+		tag('lake-only', 'lake');
+
+		const both = await repo.recentMoments(asU2, { ...EVERYONE, tags: ['walk', 'lake'] });
+		expect(both.map((r) => r.id)).toEqual(['walk-and-lake']);
+		// positive control: one of the two alone finds more.
+		expect(await repo.recentMoments(asU2, { ...EVERYONE, tags: ['lake'] })).toHaveLength(2);
 	});
 
 	it('never widens what the viewer may see, and keeps to the member it is narrowed to', async () => {
@@ -518,7 +533,7 @@ describe('narrowed to one tag (docs/02 §2.20.2)', () => {
 		seedEntry('theirs', 'julia', 300, 'shared', U2);
 		for (const id of ['open', 'secret', 'theirs']) tag(id, 'walk');
 
-		const walk = { ...EVERYONE, tag: 'walk' };
+		const walk = { ...EVERYONE, tags: ['walk'] };
 		expect((await repo.recentMoments(asU2, walk)).map((r) => r.id)).toEqual(['theirs', 'open']);
 		expect((await repo.recentMoments(asU1, walk)).map((r) => r.id)).toEqual([
 			'theirs',
@@ -536,7 +551,7 @@ describe('narrowed to one tag (docs/02 §2.20.2)', () => {
 		seedEntry('open', 'julia', 100);
 		tag('open', 'walk');
 
-		expect(await repo.recentMoments(asU2, { ...EVERYONE, tag: 'nowhere' })).toEqual([]);
+		expect(await repo.recentMoments(asU2, { ...EVERYONE, tags: ['nowhere'] })).toEqual([]);
 	});
 });
 

@@ -101,7 +101,9 @@ A few things worth knowing:
   moment gets. `#Hike` and `#hike` are the same tag. A tag reads as a coloured chip. In a
   person's journal, tap it — or the chips above the journal — to see only their moments with
   it; anywhere else it opens the tag's own page, with every moment carrying it across everyone.
-  On Home, the *Tags* row narrows the stream to one tag, and *All tags* lists every tag your
+  On Home, the *Tags* row narrows the stream to a tag. Above a journal and on Home you can tap
+  several tags: you then see the moments that carry all of them; tap a chosen tag again to
+  take it off. *All tags* lists every tag your
   household uses, most used first. Searching `#hike` lists its moments with a link to its page.
   A tag that only your private moments carry is yours alone, shown with a lock. Write `\#` for
   a plain `#`.

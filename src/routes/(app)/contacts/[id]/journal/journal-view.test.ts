@@ -3,7 +3,7 @@ import { mentionToken } from '$lib/mentions/mentions';
 import type { JournalEntry } from '$lib/server/domain/journal/journal';
 import { someJournalEntry } from '$lib/server/domain/testing';
 import type { Remover } from '$lib/server/access/visibility';
-import { activeTagFor, journalEntriesFor } from './journal-view';
+import { activeTagsFor, journalEntriesFor } from './journal-view';
 
 /*
  * The journal's entries as the page shows them (docs/02 §2.20): what only the author gets, who
@@ -27,10 +27,10 @@ function view(
 		photos = [],
 		names = [],
 		remover = { id: VIEWER, householdId: 'h1', isAdmin: false },
-		tag = null
+		tags = []
 	}: {
 		remover?: Remover;
-		tag?: string | null;
+		tags?: readonly string[];
 		photos?: { id: string; journalEntryId: string }[];
 		names?: { id: string; displayName: string }[];
 	} = {}
@@ -39,7 +39,7 @@ function view(
 		remover,
 		contactId: 'c1',
 		person: { householdId: 'h1', ownerId: 'u9', visibility: 'shared' },
-		tag,
+		tags,
 		entries,
 		photos,
 		names,
@@ -120,10 +120,10 @@ describe('journalEntriesFor', () => {
 });
 
 /*
- * The journal filtered by a tag (docs/02 §2.20.2): `?tag=` carries the key, so any spelling of
- * the tag finds the entry, and an entry's own chips link back to the same filter.
+ * The journal filtered by tags (docs/02 §2.20.2): `?tag=` carries a key, once per chosen tag, so
+ * any spelling of the tag finds the entry, and an entry's own chips link back to the filter.
  */
-describe('journalEntriesFor with a tag', () => {
+describe('journalEntriesFor with tags', () => {
 	const entries = [
 		entry('e1', { body: 'Up the #Gurten' }),
 		entry('e2', { body: 'Plum cake #recipes' }),
@@ -131,7 +131,12 @@ describe('journalEntriesFor with a tag', () => {
 	];
 
 	it('shows only the entries that carry the tag, whatever their spelling', () => {
-		expect(view(entries, { tag: 'gurten' }).map((e) => e.id)).toEqual(['e1', 'e3']);
+		expect(view(entries, { tags: ['gurten'] }).map((e) => e.id)).toEqual(['e1', 'e3']);
+	});
+
+	it('shows only the entries that carry every chosen tag', () => {
+		const more = [...entries, entry('e4', { body: 'Cake on the #GURTEN #Recipes' })];
+		expect(view(more, { tags: ['gurten', 'recipes'] }).map((e) => e.id)).toEqual(['e4']);
 	});
 
 	it('shows every entry without a tag', () => {
@@ -139,7 +144,7 @@ describe('journalEntriesFor with a tag', () => {
 	});
 
 	it('shows nothing for a tag no entry carries', () => {
-		expect(view(entries, { tag: 'nowhere' })).toEqual([]);
+		expect(view(entries, { tags: ['nowhere'] })).toEqual([]);
 	});
 
 	it("links an entry's tag to this person's journal filtered by it", () => {
@@ -148,23 +153,33 @@ describe('journalEntriesFor with a tag', () => {
 	});
 });
 
-describe('activeTagFor', () => {
-	const tags = [{ name: 'Gurten', key: 'gurten', count: 2, onlyPrivate: false }];
+describe('activeTagsFor', () => {
+	const tags = [
+		{ name: 'Gurten', key: 'gurten', count: 2, onlyPrivate: false },
+		{ name: 'Recipes', key: 'recipes', count: 1, onlyPrivate: false }
+	];
 
 	it('names the filter in the household spelling', () => {
-		expect(activeTagFor('gurten', tags)).toEqual({ key: 'gurten', name: 'Gurten' });
+		expect(activeTagsFor(['gurten'], tags)).toEqual([{ key: 'gurten', name: 'Gurten' }]);
 	});
 
 	it('folds the key from the address, so a typed spelling still filters', () => {
-		expect(activeTagFor('GURTEN', tags)).toEqual({ key: 'gurten', name: 'Gurten' });
+		expect(activeTagsFor(['GURTEN'], tags)).toEqual([{ key: 'gurten', name: 'Gurten' }]);
+	});
+
+	it('keeps several tags in the order chosen, each once', () => {
+		expect(activeTagsFor(['recipes', 'gurten', 'Recipes'], tags)).toEqual([
+			{ key: 'recipes', name: 'Recipes' },
+			{ key: 'gurten', name: 'Gurten' }
+		]);
 	});
 
 	it('names a tag the viewer has no entries for by what was asked', () => {
-		expect(activeTagFor('nowhere', tags)).toEqual({ key: 'nowhere', name: 'nowhere' });
+		expect(activeTagsFor(['nowhere'], tags)).toEqual([{ key: 'nowhere', name: 'nowhere' }]);
 	});
 
 	it('is no filter without a tag', () => {
-		expect(activeTagFor(null, tags)).toBeNull();
-		expect(activeTagFor('', tags)).toBeNull();
+		expect(activeTagsFor([], tags)).toEqual([]);
+		expect(activeTagsFor(['', ' '], tags)).toEqual([]);
 	});
 });

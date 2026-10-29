@@ -14,7 +14,7 @@ export type NarrowedAxis =
 
 /** The pill's state. */
 export interface FilterPill {
-	/** How many axes are narrowed — the number on the pill, absent at zero. */
+	/** How many narrowings are chosen, each tag one — the number on the pill, absent at zero. */
 	count: number;
 	/** Whether the pill stands out, so a narrowed stream is never read as a quiet household. */
 	highlighted: boolean;
@@ -27,6 +27,6 @@ export function filterPill(filter: StreamFilter): FilterPill {
 	const narrowedTo: NarrowedAxis[] = [];
 	if (filter.kind !== null) narrowedTo.push({ axis: 'kind', kind: filter.kind });
 	if (filter.memberId !== null) narrowedTo.push({ axis: 'member', memberId: filter.memberId });
-	if (filter.tag !== null) narrowedTo.push({ axis: 'tag', tag: filter.tag });
+	for (const tag of filter.tags) narrowedTo.push({ axis: 'tag', tag });
 	return { count: narrowedTo.length, highlighted: narrowedTo.length > 0, narrowedTo };
 }

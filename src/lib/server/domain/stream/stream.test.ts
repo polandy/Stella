@@ -273,7 +273,7 @@ describe('buildStream', () => {
 		const { stream, asked } = recordingRepository();
 		const items = await buildStream({ stream }, viewer, NO_FILTER, 7);
 		expect(asked.map((a) => a.query)).toEqual([
-			{ limit: 7, memberId: null, tag: null },
+			{ limit: 7, memberId: null, tags: [] },
 			...Array(5).fill({ limit: 7, memberId: null })
 		]);
 		expect(items.map((i) => i.id)).toEqual(['x', 'i', 'm', 'p', 'k']);
@@ -284,7 +284,7 @@ describe('buildStream', () => {
 		const items = await buildStream({ stream }, viewer, {
 			kind: 'interaction',
 			memberId: null,
-			tag: null
+			tags: []
 		});
 		expect(asked.map((a) => a.source)).toEqual(['interactions']);
 		expect(items.map((i) => i.id)).toEqual(['i']);
@@ -292,7 +292,7 @@ describe('buildStream', () => {
 
 	it('hands the chosen member to every source it asks', async () => {
 		const { stream, asked } = recordingRepository();
-		await buildStream({ stream }, viewer, { kind: null, memberId: 'u2', tag: null }, 7);
+		await buildStream({ stream }, viewer, { kind: null, memberId: 'u2', tags: [] }, 7);
 		expect(asked.map((a) => [a.source, a.query.memberId])).toEqual([
 			['moments', 'u2'],
 			['people', 'u2'],
@@ -303,15 +303,18 @@ describe('buildStream', () => {
 		]);
 	});
 
-	it('asks only for the moments carrying a tag, with the member', async () => {
+	it('asks only for the moments carrying every chosen tag, with the member', async () => {
 		const { stream, asked } = recordingRepository();
 		const items = await buildStream({ stream }, viewer, {
 			kind: 'moment',
 			memberId: 'u2',
-			tag: 'walk'
+			tags: ['walk', 'lake']
 		});
 		expect(asked).toEqual([
-			{ source: 'moments', query: { limit: STREAM_LIMIT, memberId: 'u2', tag: 'walk' } }
+			{
+				source: 'moments',
+				query: { limit: STREAM_LIMIT, memberId: 'u2', tags: ['walk', 'lake'] }
+			}
 		]);
 		expect(items.map((i) => i.id)).toEqual(['m']);
 	});

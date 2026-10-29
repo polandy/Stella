@@ -49,7 +49,7 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 		locals.services.records.importantDates.listSourcesVisibleTo(viewer),
 		// Just enough of the household to tell whether it has begun (docs/02 §2.22.3).
 		listPeopleEnoughForFirstRun(locals.services.people.contactDirectoryDeps, viewer),
-		// For the Tags row and the line over a stream narrowed by tag (docs/02 §2.20.2).
+		// For the Tags row and the line over a stream narrowed by tags (docs/02 §2.20.2).
 		locals.services.story.entryTags.listVisibleTo(viewer)
 	]);
 	const stream = await streamForView(locals.services.people.contactNameDeps, viewer, items);
@@ -80,8 +80,8 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 		}),
 		filter,
 		members,
-		tagChips: homeTagChips(entryTags, filter.tag),
-		tagLine: tagNarrowing(filter.tag, filter.memberId, entryTags, items.length),
+		tagChips: homeTagChips(entryTags, filter.tags),
+		tagLine: tagNarrowing(filter.tags, filter.memberId, entryTags, items.length),
 		stream
 	};
 };

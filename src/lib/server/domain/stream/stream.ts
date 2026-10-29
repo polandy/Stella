@@ -171,10 +171,10 @@ export interface StreamQuery {
 	memberId: string | null;
 }
 
-/** A read of moments, which alone can be narrowed to the ones carrying a tag (§2.20.2). */
+/** A read of moments, which alone can be narrowed to the ones carrying tags (§2.20.2). */
 export interface MomentQuery extends StreamQuery {
-	/** The tag's key; absent or null for every moment. */
-	tag?: string | null;
+	/** The keys of the tags a moment must all carry; absent or empty for every moment. */
+	tags?: readonly string[];
 }
 
 export type StreamItem =
@@ -245,7 +245,7 @@ export function assembleStream(
 
 /**
  * Fetch the scoped sources and build the viewer's stream, narrowed to `filter`. A source whose
- * kind the filter leaves out is not read at all; a tag leaves out everything but moments.
+ * kind the filter leaves out is not read at all; tags leave out everything but moments.
  */
 export async function buildStream(
 	deps: StreamDeps,
@@ -254,12 +254,12 @@ export async function buildStream(
 	limit = STREAM_LIMIT
 ): Promise<StreamItem[]> {
 	const query: StreamQuery = { limit, memberId: filter.memberId };
-	const kindRead = filter.tag ? 'moment' : filter.kind;
+	const kindRead = filter.tags.length ? 'moment' : filter.kind;
 	const read = <T>(kind: StreamKind, source: () => Promise<T[]>): Promise<T[]> =>
 		kindRead === null || kindRead === kind ? source() : Promise.resolve([]);
 	const { stream } = deps;
 	const [moments, people, relationships, interactions, notices, circlePhotos] = await Promise.all([
-		read('moment', () => stream.recentMoments(viewer, { ...query, tag: filter.tag })),
+		read('moment', () => stream.recentMoments(viewer, { ...query, tags: filter.tags })),
 		read('person', () => stream.recentPeople(viewer, query)),
 		read('relationship', () => stream.recentRelationships(viewer, query)),
 		read('interaction', () => stream.recentInteractions(viewer, query)),

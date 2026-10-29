@@ -18,44 +18,49 @@ const tags = Array.from({ length: 10 }, (_, i) => tag(`T${i}`, 20 - i));
 
 describe('homeTagChips', () => {
 	it('offers the most used tags, up to the limit, in the order they come', () => {
-		expect(homeTagChips(tags, null).map((t) => t.name)).toEqual(
+		expect(homeTagChips(tags, []).map((t) => t.name)).toEqual(
 			tags.slice(0, HOME_TAG_LIMIT).map((t) => t.name)
 		);
 		expect(HOME_TAG_LIMIT).toBe(8);
 	});
 
-	it('keeps the chosen tag in the row even when it is not among the most used', () => {
-		const chips = homeTagChips(tags, 't9');
-		expect(chips).toHaveLength(HOME_TAG_LIMIT + 1);
-		expect(chips.at(-1)?.key).toBe('t9');
+	it('keeps the chosen tags in the row even when they are not among the most used', () => {
+		const chips = homeTagChips(tags, ['t9', 't1', 't8']);
+		expect(chips).toHaveLength(HOME_TAG_LIMIT + 2);
+		expect(chips.slice(-2).map((c) => c.key)).toEqual(['t9', 't8']);
 	});
 
 	it('offers nothing while the household has no tags', () => {
-		expect(homeTagChips([], null)).toEqual([]);
+		expect(homeTagChips([], [])).toEqual([]);
 	});
 });
 
 describe('tagNarrowing', () => {
 	const walk = tag('Walk', 5);
 
+	const lake = tag('Lake', 4);
+
 	it("names the chosen tag in the household's spelling, with how many moments carry it", () => {
-		expect(tagNarrowing('walk', null, [walk], 3)).toEqual({ key: 'walk', name: 'Walk', count: 5 });
+		expect(tagNarrowing(['walk'], null, [walk], 3)).toEqual({ names: ['Walk'], count: 5 });
 	});
 
 	it('counts the moments shown once the stream is also narrowed to a member', () => {
-		expect(tagNarrowing('walk', 'u1', [walk], 3)?.count).toBe(3);
+		expect(tagNarrowing(['walk'], 'u1', [walk], 3)?.count).toBe(3);
 	});
 
-	it('reads a tag the viewer cannot see as none of their moments, under its key', () => {
-		expect(tagNarrowing('nowhere', null, [walk], 0)).toEqual({
-			key: 'nowhere',
-			name: 'nowhere',
-			count: 0
+	it('names every chosen tag in order and counts the moments carrying them all', () => {
+		expect(tagNarrowing(['lake', 'walk'], null, [walk, lake], 2)).toEqual({
+			names: ['Lake', 'Walk'],
+			count: 2
 		});
 	});
 
+	it('reads a tag the viewer cannot see as none of their moments, under its key', () => {
+		expect(tagNarrowing(['nowhere'], null, [walk], 0)).toEqual({ names: ['nowhere'], count: 0 });
+	});
+
 	it('is null without a tag', () => {
-		expect(tagNarrowing(null, null, [walk], 0)).toBeNull();
+		expect(tagNarrowing([], null, [walk], 0)).toBeNull();
 	});
 });
 
