@@ -9,7 +9,7 @@ export const journal = {
 	'journal.titleOptional': 'Title (optional)',
 	'journal.titlePlaceholder': 'e.g. First steps',
 	'journal.entry': 'Moment',
-	'journal.bodyPlaceholder': 'What happened today? (Markdown, @ to mention someone)',
+	'journal.bodyPlaceholder': 'What happened today? (Markdown, @ to mention someone, # for a tag)',
 	'journal.addPhotos': 'Add photos',
 	'journal.photosReady': (p: { count: number }) =>
 		p.count === 1 ? '1 photo ready' : `${p.count} photos ready`,
@@ -28,7 +28,15 @@ export const journal = {
 	'journal.empty.hint': (p: { name: string }) =>
 		`Capture ${p.name}’s first moment — a milestone, a funny quote, a good day.`,
 	'journal.empty.write': 'Write the first moment',
-	'journal.uploadFailed': 'Could not save. Try standard JPEG or PNG images.'
+	'journal.uploadFailed': 'Could not save. Try standard JPEG or PNG images.',
+	'journal.tags.filter': 'Filter by tag',
+	'journal.tags.all': 'All',
+	'journal.tags.onlyYou': 'Only you see this tag: it is only on your private moments',
+	'journal.tags.filtered': (p: { count: number; name: string }) =>
+		p.count === 1 ? `1 moment with #${p.name}` : `${p.count} moments with #${p.name}`,
+	'journal.tags.showAll': 'Show all',
+	'journal.tags.none': 'No moments with this tag.',
+	'journal.tags.noneHint': 'A tag is a #word in a moment’s text.'
 };
 
 /** The key set every translation of this area has to provide. */

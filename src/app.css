@@ -361,6 +361,20 @@ body {
 	color: var(--fg-subtle);
 	background: color-mix(in srgb, var(--fg-subtle) 12%, transparent);
 }
+/* #tag chips (docs/02 §2.20.2): the accent and label come inline from accentChipStyle, so a
+   tag looks the same in the text, the journal's filter and search. */
+.note-body a.hashtag {
+	font-family: var(--font-sans);
+	font-size: 0.9em;
+	border-radius: 9999px;
+	padding: 0 0.45rem;
+	text-decoration: none;
+	font-weight: 500;
+	white-space: nowrap;
+}
+.note-body a.hashtag:hover {
+	text-decoration: underline;
+}
 .note-body ul,
 .note-body ol {
 	margin: 0 0 0.5rem;

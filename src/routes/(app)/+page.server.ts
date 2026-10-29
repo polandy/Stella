@@ -14,6 +14,7 @@ import { MomentCaptureSchema } from '$lib/commands/payloads';
 import { ulidGenerator } from '$lib/server/id';
 import { systemClock } from '$lib/server/clock';
 import { renderMarkdownWithMentions } from '$lib/server/domain/notes/markdown';
+import { journalTagHref } from '$lib/hashtags/hashtags';
 import { membersViewerFirst } from '$lib/server/domain/household/members';
 import { buildStream } from '$lib/server/domain/stream/stream';
 import { extractMentionIds } from '$lib/mentions/mentions';
@@ -91,7 +92,13 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 		members,
 		stream: items.map((item) =>
 			item.kind === 'moment'
-				? { ...item, body: undefined, bodyHtml: renderMarkdownWithMentions(item.body, nameOf) }
+				? {
+						...item,
+						body: undefined,
+						bodyHtml: renderMarkdownWithMentions(item.body, nameOf, {
+							tagHref: journalTagHref(item.anchor.id)
+						})
+					}
 				: item
 		)
 	};

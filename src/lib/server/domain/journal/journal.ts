@@ -1,5 +1,6 @@
 import { TranslatableError } from '../../../i18n/translatable';
 import { phrase } from '../../../i18n/phrase';
+import { hashtagsIn } from '../../../hashtags/hashtags';
 import type { Remover, Visibility, Viewer } from '../../access/visibility';
 import type { Clock } from '../../clock';
 import type { IdGenerator } from '../../id';
@@ -101,6 +102,11 @@ export interface JournalRepository {
 	replaceMentions(journalEntryId: string, contactIds: string[]): Promise<void>;
 	/** Contact ids an entry mentions. */
 	listMentionedContactIds(journalEntryId: string): Promise<string[]>;
+	/**
+	 * Give an entry exactly these tags (docs/02 §2.20.2): each found in the household's set by
+	 * its key, or added to it in this spelling; a tag no entry carries any more is swept.
+	 */
+	replaceTags(journalEntryId: string, names: string[]): Promise<void>;
 }
 
 /** Opaque-ish cursor: the (entryDate, createdAt) of the last entry a client has seen. */
@@ -127,7 +133,12 @@ export interface JournalDeps {
 export interface JournalDayDeps {
 	journal: Pick<
 		JournalRepository,
-		'findDay' | 'insert' | 'updateBody' | 'replaceMentions' | 'listMentionedContactIds'
+		| 'findDay'
+		| 'insert'
+		| 'updateBody'
+		| 'replaceMentions'
+		| 'listMentionedContactIds'
+		| 'replaceTags'
 	>;
 	ids: IdGenerator;
 	clock: Clock;
@@ -179,6 +190,7 @@ export async function saveJournalEntry(
 	});
 	if (existing) {
 		await deps.journal.updateBody({ id: existing.id, title, body, updatedAt: now });
+		await deps.journal.replaceTags(existing.id, hashtagsIn(body));
 		return existing.id;
 	}
 
@@ -194,6 +206,7 @@ export async function saveJournalEntry(
 		createdAt: now,
 		updatedAt: now
 	});
+	await deps.journal.replaceTags(id, hashtagsIn(body));
 	return id;
 }
 
@@ -217,13 +230,15 @@ export async function editJournalEntry(
 	const body = input.body.trim();
 	if (body.length === 0) throw new EmptyJournalEntryError();
 	const title = orNull(input.title);
-	return deps.journal.updateOwn({
+	const own = await deps.journal.updateOwn({
 		authorId: author.userId,
 		id: input.id,
 		title,
 		body,
 		updatedAt: deps.clock.now()
 	});
+	if (own) await deps.journal.replaceTags(input.id, hashtagsIn(body));
+	return own;
 }
 
 /** List the journal entries on a contact that the viewer may see (newest day first). */
@@ -331,12 +346,14 @@ export async function addToJournalDay(
 		await setJournalMentions(deps, entryId, addition.mentionIds);
 		return entryId;
 	}
+	const day = `${sameDay.body}\n\n${body}`;
 	await deps.journal.updateBody({
 		id: sameDay.id,
 		title: sameDay.title ?? addition.title,
-		body: `${sameDay.body}\n\n${body}`,
+		body: day,
 		updatedAt: deps.clock.now()
 	});
+	await deps.journal.replaceTags(sameDay.id, hashtagsIn(day));
 	await setJournalMentions(deps, sameDay.id, [
 		...(await deps.journal.listMentionedContactIds(sameDay.id)),
 		...addition.mentionIds

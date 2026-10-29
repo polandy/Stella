@@ -40,7 +40,7 @@ const tick = () => ({ now: () => 1_000 + sequence });
 
 function storyDeps() {
 	return {
-		journal: createDrizzleJournalRepository(db),
+		journal: createDrizzleJournalRepository(db, { next: nextId }),
 		interactions: createDrizzleInteractionRepository(db),
 		gifts: createDrizzleGiftRepository(db)
 	};
@@ -66,7 +66,7 @@ async function giftForOma(id: string, state: 'idea' | 'given' | 'received', day:
 
 function writeDeps() {
 	return {
-		journal: createDrizzleJournalRepository(db),
+		journal: createDrizzleJournalRepository(db, { next: nextId }),
 		interactions: createDrizzleInteractionRepository(db),
 		ids: { next: nextId },
 		clock: tick()

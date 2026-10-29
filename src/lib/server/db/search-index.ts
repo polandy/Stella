@@ -3,7 +3,7 @@ import { MENTION_TOKEN_PREFIX } from '../../mentions/mentions';
 
 /*
  * Full-text search index (docs/03 §3.5). Creates the FTS5 virtual tables and the triggers that
- * keep them in sync with `contact`, `note` and `gift`, and builds the rows for everything already
+ * keep them in sync with `contact`, `note`, `gift` and `journal_entry`, and builds the rows for everything already
  * stored. Runs on every startup and does nothing when the index on disk was built from the
  * same definitions — see `fingerprint`. Kept as raw SQL because FTS5 virtual tables are
  * outside Drizzle's schema management.
@@ -44,13 +44,27 @@ const noteContent = (t: string) =>
  */
 const giftContent = (t: string) => `coalesce(${t}.title,'')||' '||coalesce(${t}.note,'')`;
 
+/*
+ * What of a moment is searchable: the same as a note — its title, its body without the mention
+ * tokens, and the mentioned people's current names. Its `#tags` are words of the body, so a tag
+ * is found by its plain word too (docs/02 §2.20.2).
+ */
+const journalContent = (t: string) =>
+	`coalesce(${t}.title,'')||' '||${strippedBody(t)}||' '||coalesce((SELECT group_concat(c.display_name,' ') FROM journal_mention m JOIN contact c ON c.id = m.contact_id WHERE m.journal_entry_id = ${t}.id),'')`;
+
+/** Rebuild the index rows for the moments selected by `where`, evaluated against `journal_entry j`. */
+const reindexMoments = (where: string) => `
+			DELETE FROM journal_fts WHERE entry_id IN (SELECT j.id FROM journal_entry j WHERE ${where});
+			INSERT INTO journal_fts(entry_id, contact_id, content)
+				SELECT j.id, j.contact_id, ${journalContent('j')} FROM journal_entry j WHERE ${where};`;
+
 /** Rebuild the index rows for the notes selected by `where`, evaluated against `note n`. */
 const reindexNotes = (where: string) => `
 			DELETE FROM note_fts WHERE note_id IN (SELECT n.id FROM note n WHERE ${where});
 			INSERT INTO note_fts(note_id, contact_id, content)
 				SELECT n.id, n.contact_id, ${noteContent('n')} FROM note n WHERE ${where};`;
 
-/** The triggers that keep the index in step with `contact`, `note`, `note_mention` and `gift`. */
+/** The triggers that keep the index in step with `contact`, `note`, `note_mention` and the journal. */
 const TRIGGERS: Record<string, string> = {
 	contact_fts_ai: `AFTER INSERT ON contact BEGIN
 			INSERT INTO contact_fts(contact_id, content) VALUES (new.id, ${contactContent('new')});
@@ -83,6 +97,25 @@ const TRIGGERS: Record<string, string> = {
 	note_fts_contact_au: `AFTER UPDATE OF display_name ON contact BEGIN${reindexNotes(
 		'n.id IN (SELECT note_id FROM note_mention WHERE contact_id = new.id)'
 	)}
+		END`,
+	// A moment follows its row, its mentions and a mentioned person's rename, as a note does.
+	journal_fts_ai: `AFTER INSERT ON journal_entry BEGIN
+			INSERT INTO journal_fts(entry_id, contact_id, content) VALUES (new.id, new.contact_id, ${journalContent('new')});
+		END`,
+	journal_fts_ad: `AFTER DELETE ON journal_entry BEGIN
+			DELETE FROM journal_fts WHERE entry_id = old.id;
+		END`,
+	journal_fts_au: `AFTER UPDATE ON journal_entry BEGIN
+			DELETE FROM journal_fts WHERE entry_id = old.id;
+			INSERT INTO journal_fts(entry_id, contact_id, content) VALUES (new.id, new.contact_id, ${journalContent('new')});
+		END`,
+	journal_fts_mention_ai: `AFTER INSERT ON journal_mention BEGIN${reindexMoments('j.id = new.journal_entry_id')}
+		END`,
+	journal_fts_mention_ad: `AFTER DELETE ON journal_mention BEGIN${reindexMoments('j.id = old.journal_entry_id')}
+		END`,
+	journal_fts_contact_au: `AFTER UPDATE OF display_name ON contact BEGIN${reindexMoments(
+		'j.id IN (SELECT journal_entry_id FROM journal_mention WHERE contact_id = new.id)'
+	)}
 		END`
 };
 
@@ -114,6 +147,9 @@ const TABLES = `
 		);
 		CREATE VIRTUAL TABLE IF NOT EXISTS gift_fts USING fts5(
 			gift_id UNINDEXED, content, tokenize='unicode61 remove_diacritics 2'
+		);
+		CREATE VIRTUAL TABLE IF NOT EXISTS journal_fts USING fts5(
+			entry_id UNINDEXED, contact_id UNINDEXED, content, tokenize='unicode61 remove_diacritics 2'
 		);`;
 
 /*
@@ -139,6 +175,7 @@ const definition = (withGifts: boolean): string =>
 		.join('') +
 	contactContent('contact') +
 	noteContent('note') +
+	journalContent('journal_entry') +
 	(withGifts ? giftContent('gift') : '');
 
 /**
@@ -178,6 +215,8 @@ function rebuild(sqlite: Database, withGifts: boolean): void {
 		INSERT INTO contact_fts(contact_id, content) SELECT id, ${contactContent('contact')} FROM contact;
 		DELETE FROM note_fts;
 		INSERT INTO note_fts(note_id, contact_id, content) SELECT id, contact_id, ${noteContent('note')} FROM note;
+		DELETE FROM journal_fts;
+		INSERT INTO journal_fts(entry_id, contact_id, content) SELECT id, contact_id, ${journalContent('journal_entry')} FROM journal_entry;
 		DELETE FROM gift_fts;`);
 	if (withGifts) {
 		sqlite.exec(

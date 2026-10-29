@@ -12,6 +12,7 @@ import type { LayoutServerLoad } from './$types';
  * (docs/05 §5.4): one scoped read, a few hundred rows at most in a household, and it is what
  * makes a picker answer on the first keystroke instead of after a round trip. A client-side
  * navigation keeps it; `app:people` is what the shell reloads when its stamp has gone stale.
+ * The tags the viewer can see ride along for the `#` list (docs/02 §2.20.2), for the same reason.
  *
  * Opening Stella also syncs the linked Nextcloud book when it is due (docs/02 §2.16.3), without
  * the page waiting for it.
@@ -33,5 +34,9 @@ export const load: LayoutServerLoad = async ({ locals, depends }) => {
 			locale: locals.locale
 		});
 	}
-	return { user: locals.user, ...(await readShellPeople(locals.services.people, locals.user)) };
+	const [people, entryTags] = await Promise.all([
+		readShellPeople(locals.services.people, locals.user),
+		locals.services.story.entryTags.listVisibleTo(locals.user)
+	]);
+	return { user: locals.user, ...people, entryTags };
 };

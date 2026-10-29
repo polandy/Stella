@@ -634,7 +634,7 @@ const STORY: readonly StorySeed[] = [
 	{
 		person: 'hans',
 		daysAgo: 8,
-		text: 'Opa Hans told the story about the 1972 flood again, this time with the photo of the bridge.'
+		text: 'Opa Hans told the story about the 1972 flood again, this time with the photo of the bridge. #family-history'
 	},
 	{ person: 'hans', daysAgo: 30, kind: 'met', text: 'Lunch at the Bären' },
 	{
@@ -647,7 +647,7 @@ const STORY: readonly StorySeed[] = [
 	{
 		person: 'hans',
 		daysAgo: 75,
-		text: 'Hans found his old carpentry ledger from 1969. Every chair in the village is in it.'
+		text: 'Hans found his old carpentry ledger from 1969. Every chair in the village is in it. #family-history #crafts'
 	},
 	{ person: 'hans', daysAgo: 90, kind: 'video', byMember: true, text: 'Video call with the kids' },
 	{
@@ -660,13 +660,13 @@ const STORY: readonly StorySeed[] = [
 	{
 		person: 'hans',
 		daysAgo: 150,
-		text: 'Hans taught @{person:noah} how to whittle a whistle. It even works.'
+		text: 'Hans taught @{person:noah} how to whittle a whistle. It even works. #crafts'
 	},
 	{ person: 'hans', daysAgo: 170, kind: 'letter', text: 'Postcard from the Engadin' },
 	{
 		person: 'hans',
 		daysAgo: 190,
-		text: 'Hans mended the sled runner the night before the first snow.'
+		text: 'Hans mended the sled runner the night before the first snow. #crafts #winter'
 	},
 	{ person: 'hans', daysAgo: 210, kind: 'met', text: 'Sunday roast at theirs' },
 	{
@@ -684,7 +684,7 @@ const STORY: readonly StorySeed[] = [
 	{
 		person: 'rosa',
 		daysAgo: 100,
-		text: 'Rosa sent the recipe for the plum cake. Written on the back of an envelope, of course.'
+		text: 'Rosa sent the recipe for the plum cake. Written on the back of an envelope, of course. #recipes'
 	},
 	{ person: 'peter', daysAgo: 95, kind: 'gift', text: 'Birthday wine' },
 	{ person: 'vreni', daysAgo: 200, text: 'Vreni turned 80. The whole choir came.' },

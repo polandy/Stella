@@ -40,6 +40,7 @@ const frameworkFreeFolders = [
 	'src/lib/surnames/**',
 	'src/lib/motion/**',
 	'src/lib/stream/**',
+	'src/lib/hashtags/**',
 	'src/lib/pwa/**',
 	'src/lib/privacy/**',
 	'src/lib/commands/**',

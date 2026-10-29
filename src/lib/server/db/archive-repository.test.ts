@@ -108,8 +108,10 @@ describe('the table list', () => {
 		// An invitation is a live token with a hash in it, not something a household remembers.
 		expect(Object.keys(EXCLUDED_TABLES).sort()).toEqual([
 			'api_token',
+			'entry_tag',
 			'identity',
 			'invitation',
+			'journal_entry_tag',
 			'nextcloud_card',
 			'nextcloud_conflict',
 			'nextcloud_sync',

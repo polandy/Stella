@@ -125,6 +125,7 @@ function journalOver(
 			return own;
 		},
 		replaceMentions: async (id, ids) => void mentioned.push([id, ids]),
+		replaceTags: async () => {},
 		findRemovableBy: async (remover, id) =>
 			entries.some((e) => e.id === id && e.createdBy === remover.id)
 				? {
@@ -162,7 +163,7 @@ const post = (
 describe('load', () => {
 	function services(visible = true): FakeServices {
 		const { journalDeps } = journalOver([
-			someJournalEntry('e1', { body: `Met ${mentionToken('ben')}` }),
+			someJournalEntry('e1', { body: `Met ${mentionToken('ben')} #Hike` }),
 			someJournalEntry('e2', { createdBy: 'u2' }),
 			someJournalEntry('elsewhere', { contactId: 'ben' })
 		]);
@@ -171,7 +172,16 @@ describe('load', () => {
 				...people(visible),
 				contactNameDeps: { contactNames: inMemoryContactNames(PEOPLE) }
 			},
-			story: { journalDeps },
+			story: {
+				journalDeps,
+				entryTags: {
+					listVisibleTo: async () => [],
+					listOnContactVisibleTo: async (_viewer, contactId) =>
+						contactId === 'anna'
+							? [{ name: 'Hike', key: 'hike', count: 1, onlyPrivate: false }]
+							: []
+				}
+			},
 			media: {
 				journalPhotos: {
 					listJournalPhotos: async () => [{ id: 'p1', journalEntryId: 'e2' }],
@@ -207,6 +217,16 @@ describe('load', () => {
 			}),
 			expect.objectContaining({ id: 'e2', author: 'Ben', mine: false, photos: ['p1'] })
 		]);
+	});
+
+	it("offers the person's tags and filters the entries by the one the address names", async () => {
+		const url = '/contacts/anna/journal?tag=HIKE';
+		const answer = await answerOf(load(routeEvent({ services: services(), params: PAGE, url })));
+		const data = (answer as { data: { tags: unknown; activeTag: unknown; entries: unknown[] } })
+			.data;
+		expect(data.tags).toEqual([{ name: 'Hike', key: 'hike', count: 1, onlyPrivate: false }]);
+		expect(data.activeTag).toEqual({ key: 'hike', name: 'Hike' });
+		expect(data.entries).toEqual([expect.objectContaining({ id: 'e1' })]);
 	});
 
 	it('answers a person the viewer may not see as not there', async () => {

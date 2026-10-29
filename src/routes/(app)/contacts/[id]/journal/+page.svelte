@@ -10,6 +10,7 @@
 	import EmptyState from '$lib/components/ui/EmptyState.svelte';
 	import Icon from '$lib/components/ui/Icon.svelte';
 	import MentionTextarea from '$lib/components/stream/MentionTextarea.svelte';
+	import JournalTagFilter from '$lib/components/journal/JournalTagFilter.svelte';
 	import PrivateMark from '$lib/components/ui/PrivateMark.svelte';
 	import Veil from '$lib/components/ui/Veil.svelte';
 	import { placeholderFor } from '$lib/privacy/veil';
@@ -266,6 +267,7 @@
 				rows={5}
 				required
 				{candidates}
+				tags={data.entryTags}
 				visibility={entryVisibility}
 				bind:unclear={entryUnclear}
 				placeholder={t('journal.bodyPlaceholder')}
@@ -326,6 +328,8 @@
 			{/each}
 		</ul>
 	{/if}
+
+	<JournalTagFilter tags={data.tags} active={data.activeTag} shown={data.entries.length} />
 
 	{#if days.length}
 		<ol class="flex flex-col gap-8">
@@ -411,6 +415,7 @@
 										bind:unclear={editUnclear}
 										names={entry.mentionNames}
 										{candidates}
+										tags={data.entryTags}
 										visibility={entry.visibility}
 										placeholder={t('journal.bodyPlaceholder')}
 										class="w-full rounded-md border border-border-input bg-bg px-3 py-2 text-fg"
@@ -475,6 +480,8 @@
 				</li>
 			{/each}
 		</ol>
+	{:else if data.activeTag}
+		<EmptyState icon="filter" title={t('journal.tags.none')} hint={t('journal.tags.noneHint')} />
 	{:else}
 		<EmptyState
 			icon="journal"

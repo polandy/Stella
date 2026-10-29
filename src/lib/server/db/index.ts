@@ -6,6 +6,8 @@ import { getConfig } from '../config';
 import * as schema from './schema';
 import { seedDemoData } from './demo-seed';
 import { ensureSearchIndex } from './search-index';
+import { readEntryTagsOnce } from './entry-tags';
+import { ulidGenerator } from '../id';
 import { seedRelationshipTypes } from './seed';
 
 /*
@@ -67,6 +69,8 @@ export function getDb(): BunSQLiteDatabase<typeof schema> {
 	if (config.seedDemo) {
 		seedDemoData(instance);
 	}
+	// After the seed, so a fresh demo household's entries are read with everything else.
+	readEntryTagsOnce(instance, ulidGenerator);
 
 	return instance;
 }

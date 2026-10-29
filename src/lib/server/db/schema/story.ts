@@ -1,6 +1,6 @@
 import { index, integer, primaryKey, sqliteTable, text, unique } from 'drizzle-orm/sqlite-core';
 import { now, type Visibility } from './columns';
-import { user } from './household';
+import { household, user } from './household';
 import { contact } from './people';
 
 /* What makes up a person's story: journal entries, touchpoints and gifts (docs/03 §3.0). */
@@ -34,6 +34,44 @@ export const journalEntry = sqliteTable(
 		index('journal_contact_day_idx').on(t.contactId, t.entryDate, t.createdAt),
 		index('journal_updated_idx').on(t.updatedAt),
 		unique('journal_day_slot').on(t.contactId, t.createdBy, t.entryDate, t.visibility)
+	]
+);
+
+/*
+ * A tag written into journal entries as `#word` (docs/02 §2.20.2) — the household's own set,
+ * apart from the people tags. `key` is the name with case and composition folded, so `#Lake`
+ * and `#lake` are one tag; `name` keeps the spelling it was first written in. No colour is
+ * stored: it is derived from the key. Read from the entry bodies, never edited on its own; a
+ * tag no entry carries any more is swept with the write that dropped it.
+ */
+export const entryTag = sqliteTable(
+	'entry_tag',
+	{
+		id: text('id').primaryKey(),
+		householdId: text('household_id')
+			.notNull()
+			.references(() => household.id, { onDelete: 'cascade' }),
+		name: text('name').notNull(),
+		key: text('key').notNull(),
+		createdAt: integer('created_at').notNull().default(now)
+	},
+	(t) => [unique('entry_tag_household_key').on(t.householdId, t.key)]
+);
+
+/* Which tags an entry carries; rebuilt from the body on each save, gone with either side. */
+export const journalEntryTag = sqliteTable(
+	'journal_entry_tag',
+	{
+		journalEntryId: text('journal_entry_id')
+			.notNull()
+			.references(() => journalEntry.id, { onDelete: 'cascade' }),
+		entryTagId: text('entry_tag_id')
+			.notNull()
+			.references(() => entryTag.id, { onDelete: 'cascade' })
+	},
+	(t) => [
+		primaryKey({ columns: [t.journalEntryId, t.entryTagId] }),
+		index('journal_entry_tag_tag_idx').on(t.entryTagId)
 	]
 );
 

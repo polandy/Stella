@@ -65,7 +65,7 @@ export function createArchiveServices({
 	return {
 		archiveDeps: { archive: createDrizzleArchiveRepository(db, sqlite), ids, clock },
 		importArchiveDeps: {
-			restore: createDrizzleRestoreRepository(db, sqlite, activityWording),
+			restore: createDrizzleRestoreRepository(db, sqlite, activityWording, ids),
 			media,
 			ids,
 			clock,

@@ -331,6 +331,48 @@ describe('what would collide', () => {
 		expect(db.select().from(schema.photo).all()[0].journalEntryId).toBe('j-keep');
 	});
 
+	it('keeps the tags of both entries when it joins their day', () => {
+		db.insert(schema.journalEntry)
+			.values([
+				{
+					id: 'j-keep',
+					contactId: 'keep',
+					createdBy: U1,
+					entryDate: '2026-05-01',
+					body: '#market'
+				},
+				{
+					id: 'j-dup',
+					contactId: 'dup',
+					createdBy: U1,
+					entryDate: '2026-05-01',
+					body: '#market #pears'
+				}
+			])
+			.run();
+		db.insert(schema.entryTag)
+			.values([
+				{ id: 't-market', householdId: H, name: 'market', key: 'market' },
+				{ id: 't-pears', householdId: H, name: 'pears', key: 'pears' }
+			])
+			.run();
+		db.insert(schema.journalEntryTag)
+			.values([
+				{ journalEntryId: 'j-keep', entryTagId: 't-market' },
+				{ journalEntryId: 'j-dup', entryTagId: 't-market' },
+				{ journalEntryId: 'j-dup', entryTagId: 't-pears' }
+			])
+			.run();
+
+		expect(merge()).toBe(true);
+
+		const carried = db.select().from(schema.journalEntryTag).all();
+		expect(carried.map((t) => [t.journalEntryId, t.entryTagId]).sort()).toEqual([
+			['j-keep', 't-market'],
+			['j-keep', 't-pears']
+		]);
+	});
+
 	it('moves a journal entry whose day the survivor has nothing in', () => {
 		db.insert(schema.journalEntry)
 			.values([

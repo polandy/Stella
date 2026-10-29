@@ -35,7 +35,9 @@ beforeEach(() => {
 	db.insert(schema.user)
 		.values({ id: ADMIN, householdId: HERE, email: 'a@x.test', name: 'Andrea', role: 'admin' })
 		.run();
-	repo = createDrizzleRestoreRepository(db, sqlite, activityWording);
+	repo = createDrizzleRestoreRepository(db, sqlite, activityWording, {
+		next: () => crypto.randomUUID()
+	});
 });
 
 /** A circle row as the plan hands it over; `parent` null makes it top-level. */

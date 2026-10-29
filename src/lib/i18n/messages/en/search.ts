@@ -1,17 +1,24 @@
-/* Full search across people, notes and gifts (docs/02 §2.9), and the graph screen. */
+/* Full search across people, notes, gifts and moments (docs/02 §2.9), and the graph screen. */
 
 export const search = {
 	'search.title': 'Search',
-	'search.placeholder': 'Search people, notes and gifts…',
+	'search.placeholder': 'Search people, notes, gifts and moments…',
 	'search.noResults': (p: { query: string }) => `No results for “${p.query}”.`,
 	'search.noResultsHint':
-		'Nobody by that name, and no note or gift that says it. If they are new, add them.',
-	'search.prompt': 'Type to search across people, notes and gifts.',
+		'Nobody by that name, and no note, gift or moment that says it. If they are new, add them.',
+	'search.prompt':
+		'Type to search across people, notes, gifts and moments — or a #tag for the moments carrying it.',
 	'search.people': 'People',
 	'search.notes': 'Notes',
 	'search.noteOn': (p: { name: string }) => `on ${p.name}`,
 	'search.gifts': 'Gifts',
 	'search.giftFor': (p: { name: string }) => `for ${p.name}`,
+	'search.moments': 'Moments',
+	'search.momentOn': (p: { date: string; name: string }) => `${p.date} · on ${p.name}`,
+	// A `#tag` query finds the moments carrying the tag and nothing else (docs/02 §2.20.2).
+	'search.tagNone': (p: { tag: string }) => `No moment carries #${p.tag}.`,
+	'search.tagNoneHint':
+		'A tag lives in the text of a moment: write #word into one, and it is found here.',
 	'graph.title': 'Graph · Stella',
 	'graph.hint': 'Click to focus · click again to expand · trace a connection path',
 	'graph.empty.title': 'Nothing to explore yet',

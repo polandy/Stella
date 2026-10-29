@@ -10,6 +10,8 @@ import type {
 	JournalRepository,
 	NewJournalEntry
 } from '../domain/journal/journal';
+import type { IdGenerator } from '../id';
+import { sweepEntryTags, writeEntryTags } from './entry-tags';
 import type * as schema from './schema';
 import { activityLog, contact, journalEntry, journalMention, photo, user } from './schema';
 
@@ -33,7 +35,8 @@ const columns = {
 };
 
 export function createDrizzleJournalRepository(
-	db: BunSQLiteDatabase<typeof schema>
+	db: BunSQLiteDatabase<typeof schema>,
+	ids: IdGenerator
 ): JournalRepository {
 	const removableBy = (remover: Remover) =>
 		authoredRemovableBy(remover, {
@@ -182,7 +185,7 @@ export function createDrizzleJournalRepository(
 			return db.transaction((tx) => {
 				// SQLite's DELETE takes no join, so the rule — which needs the contact — picks the id.
 				const removable = tx
-					.select({ id: journalEntry.id })
+					.select({ id: journalEntry.id, householdId: contact.householdId })
 					.from(journalEntry)
 					.innerJoin(contact, eq(journalEntry.contactId, contact.id))
 					.where(and(eq(journalEntry.id, id), removableBy(remover)))
@@ -199,6 +202,7 @@ export function createDrizzleJournalRepository(
 					.returning({ filePath: photo.filePath, thumbPath: photo.thumbPath })
 					.all();
 				tx.delete(journalEntry).where(eq(journalEntry.id, id)).run();
+				sweepEntryTags(tx, removable.householdId);
 				if (audit) tx.insert(activityLog).values(activityEntry(audit)).run();
 				return files;
 			});
@@ -222,6 +226,10 @@ export function createDrizzleJournalRepository(
 				.where(eq(journalMention.journalEntryId, journalEntryId))
 				.all()
 				.map((r) => r.contactId);
+		},
+
+		async replaceTags(journalEntryId: string, names: string[]): Promise<void> {
+			db.transaction((tx) => writeEntryTags(tx, ids, journalEntryId, names));
 		}
 	};
 }

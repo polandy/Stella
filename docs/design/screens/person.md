@@ -268,6 +268,10 @@ the person, and that never leaves the page. Keeping the record tidy (archive, me
 - While the composer is open for somebody with no activity yet, the empty state steps aside.
 - Moments kept on the device while Stella is out of reach stand above the timeline, beside
   the kept logs.
+- A moment's `#tags` read as small chips in their colour, each leading to this person's journal
+  filtered by it (docs/02 §2.20.2). The journal page carries the filter itself: a row of chips
+  — *All* and each tag on this person's moments with its count — above the timeline, the active
+  one filled, a line *3 moments with #hike · Show all* while it filters.
 - A given or received **gift** (docs/02 §2.25) is an item of its own, read from the gift: the
   gift icon and `--kind-gift` (theirs alone since the touchpoint kind *Gift* went, docs/02
   §2.25.4), labelled *Given* or

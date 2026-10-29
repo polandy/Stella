@@ -31,7 +31,7 @@ let db: BunSQLiteDatabase<typeof schema>;
 let ids: { next: () => string };
 
 function deps() {
-	return { journal: createDrizzleJournalRepository(db), ids, clock: systemClock };
+	return { journal: createDrizzleJournalRepository(db, ids), ids, clock: systemClock };
 }
 
 beforeEach(() => {
@@ -197,7 +197,7 @@ describe('journal repository + upsert', () => {
 				{ id: 'bo', householdId: H, createdBy: U1, visibility: 'shared', displayName: 'Bo' }
 			])
 			.run();
-		const repo = createDrizzleJournalRepository(db);
+		const repo = createDrizzleJournalRepository(db, ids);
 		const id = await saveJournalEntry(deps(), author1, {
 			contactId: 'kid',
 			entryDate: '2026-07-11',
@@ -215,7 +215,7 @@ describe('journal repository + upsert', () => {
 	});
 
 	it('updateOwn edits only the author’s own entry, leaving day/visibility untouched', async () => {
-		const repo = createDrizzleJournalRepository(db);
+		const repo = createDrizzleJournalRepository(db, ids);
 		const id = await saveJournalEntry(deps(), author1, {
 			contactId: 'kid',
 			entryDate: '2026-07-11',

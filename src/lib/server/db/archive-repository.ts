@@ -103,7 +103,12 @@ export const EXCLUDED_TABLES: Readonly<Record<string, string>> = {
 		'where the last sync of the linked Nextcloud book stopped; a restored household reads the book afresh',
 	nextcloud_card:
 		'a copy of the linked Nextcloud book, which stays the place those cards live; the next sync reads them again',
-	nextcloud_conflict: 'what a sync asked about, which the next sync asks again from the book itself'
+	nextcloud_conflict:
+		'what a sync asked about, which the next sync asks again from the book itself',
+	entry_tag:
+		'the tags on journal entries are read from their text, which the archive carries; a restore reads them again',
+	journal_entry_tag:
+		'which entry carries which tag, read again from the text like the tags themselves'
 };
 
 /** Columns that never leave the server, whatever table they are on. */

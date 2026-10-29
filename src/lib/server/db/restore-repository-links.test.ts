@@ -54,7 +54,7 @@ beforeEach(() => {
 	db.insert(schema.user)
 		.values({ id: ADMIN, householdId: HERE, email: 'a@x.test', name: 'Andrea', role: 'admin' })
 		.run();
-	repo = createDrizzleRestoreRepository(db, sqlite, activityWording);
+	repo = createDrizzleRestoreRepository(db, sqlite, activityWording, idGen());
 });
 
 async function restore(links: Link[]) {

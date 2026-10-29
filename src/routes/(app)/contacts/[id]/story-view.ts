@@ -6,6 +6,7 @@ import {
 } from '$lib/server/access/visibility';
 import type { JournalPhotoRef } from '$lib/server/domain/media/journal-photos';
 import { renderMarkdownWithMentions } from '$lib/server/domain/notes/markdown';
+import { journalTagHref } from '$lib/hashtags/hashtags';
 import type { StoryItem } from '$lib/server/domain/story/story';
 import { extractMentionIds } from '$lib/mentions/mentions';
 import { authorLabel } from '$lib/story/author';
@@ -95,7 +96,9 @@ export function toStoryItem(item: StoryItem, ctx: StoryViewContext): StoryItemVi
 			removable: removable(ctx, entry),
 			author: authorLabel(entry.createdBy === ctx.remover.id, ctx.nameOfAuthor(entry.createdBy)),
 			title: entry.title,
-			bodyHtml: renderMarkdownWithMentions(entry.body, ctx.nameOf),
+			bodyHtml: renderMarkdownWithMentions(entry.body, ctx.nameOf, {
+				tagHref: journalTagHref(entry.contactId)
+			}),
 			photos: ctx.photosByEntry.get(entry.id) ?? []
 		};
 	}

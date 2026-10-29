@@ -125,10 +125,10 @@ Goal: sand the edges and add the nice-to-haves.
   `IMMICH_URL`, and nothing of it offline. Open: what the picker offers first (the photos of the
   person the entry is about, of the people it mentions, or of the entry's day), whether a
   search across the whole library is needed, and several photos at once.
-- **Tags on journal entries** — an entry (§2.20) can carry tags, to find and filter a person's
-  journal by topic. Open: the same household tags as on people (§2.8) or a set of their own;
-  whether a private entry's tag shows in the household's tag list; where tagged entries are
-  filtered (the person's journal, the full search, a tag's page); moments too.
+- **Tags on journal entries** — slice 1 shipped (§2.20.2): a household set of their own,
+  written as `#word` with a `#` list, chips that filter a person's journal, and the full search
+  by word and by `#tag`. Next: a page per tag (`/tags/{name}`) and a tag filter on Home's
+  stream.
 - ~~**Gift ideas and gifts given**~~ — shipped (§2.25): ideas, gifts given and gifts received
   per person on the Gifts card and in the story, the Monica gifts converted, the *already
   given* hint, the *Coming up* hint and *Gift idea for …* in the palette. Later: a

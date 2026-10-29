@@ -89,6 +89,8 @@ relationship_type 1───* relationship
 interaction   *───* contact     (interaction_participant)
 note          *───* contact     (note_mention)          [M2]
 journal_entry *───* contact     (journal_mention → passive @-references) [M2]
+journal_entry *───* entry_tag   (journal_entry_tag → #tags in the text)  [M3]
+household     1───* entry_tag
 
 activity_log *───1 user
 activity_log  ───? (entity_type, entity_id)  polymorphic reference
@@ -461,6 +463,36 @@ Indexed on `contact_id` for the reverse lookup. The **source** person (whose jou
 **author** are read from the parent `journal_entry`, so they are not duplicated here. A
 self-reference (`contact_id` = the entry's own `contact_id`) is **not** stored. Mirrors
 `note_mention`; both should be produced by one shared mention parser/resolver (§2.20.1).
+
+### entry_tag  [M3]
+A tag written into journal entries as `#word` (docs/02 §2.20.2) — the household's own set,
+apart from `tag` on people. Never edited on its own: read from the entry bodies.
+
+| column | type | notes |
+|---|---|---|
+| id | text pk | |
+| household_id | text fk → household.id | cascade delete |
+| name | text | the spelling it was first written in |
+| key | text | the name with case and composition folded (`lower(NFC)`) |
+| created_at | int | |
+
+Unique `(household_id, key)`. No colour column: the colour is derived from the name. A tag no
+`journal_entry_tag` row points at is swept in the same transaction as the write that dropped it.
+
+### journal_entry_tag  [M3]
+Which tags an entry carries; rebuilt from the body on every write of the entry — save, edit,
+the day's append, restore, merge.
+
+| column | type | notes |
+|---|---|---|
+| journal_entry_id | text fk → journal_entry.id | cascade delete |
+| entry_tag_id | text fk → entry_tag.id | cascade delete |
+| pk (journal_entry_id, entry_tag_id) | | |
+
+Indexed on `entry_tag_id` for a tag's entries. Neither table travels in the archive: the tags
+are read again from the restored bodies. Entries written before migration `0034` are read once
+at startup (`readEntryTagsOnce`), which marks its run in the tiny `entry_tag_backfill` table,
+outside Drizzle like `search_index_meta`.
 
 ### interaction  [M2]
 | column | type | notes |
@@ -974,7 +1006,7 @@ parity test.
 
 ## 3.5 Full-text search (FTS5)
 
-- Three FTS5 virtual tables: `contact_fts`, `note_fts` and `gift_fts`, each storing its own indexed text
+- Four FTS5 virtual tables: `contact_fts`, `note_fts`, `gift_fts` and `journal_fts`, each storing its own indexed text
   (not `content=`-linked to the base tables, since what is indexed is assembled rather than
   copied — see below), kept in sync via triggers on insert/update/delete.
 - A note's indexed content is **not** its raw body: the `@{contact:<id>}` tokens (§2.20.1) are
@@ -983,6 +1015,11 @@ parity test.
   people's display names appended, so a mention stays findable by name and neither "contact"
   nor "monica" sits in every note that names someone. Triggers on `note_mention` and on a
   rename of a mentioned contact keep that current.
+- A journal entry's indexed content is built like a note's — title, body with the mention
+  tokens cut out, the mentioned people's current names — with triggers on `journal_entry`,
+  `journal_mention` and a mentioned contact's rename. Its `#tags` stay in the body, so a tag is
+  a word of the index too; a one-`#tag` query instead joins `journal_entry_tag` and matches the
+  tag's word as a phrase only to cut the snippet around it (docs/02 §2.20.2).
 - A gift's indexed content is its `title` and `note` — never `url` or `occasion` (docs/02
   §2.25.5). Every write to a gift, the restore and the conversion of Monica gift notes included,
   goes through the `gift` table, so its three triggers cover them all. A database migrated

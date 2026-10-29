@@ -3,7 +3,7 @@ import { mentionToken } from '$lib/mentions/mentions';
 import type { JournalEntry } from '$lib/server/domain/journal/journal';
 import { someJournalEntry } from '$lib/server/domain/testing';
 import type { Remover } from '$lib/server/access/visibility';
-import { journalEntriesFor } from './journal-view';
+import { activeTagFor, journalEntriesFor } from './journal-view';
 
 /*
  * The journal's entries as the page shows them (docs/02 §2.20): what only the author gets, who
@@ -26,16 +26,20 @@ function view(
 	{
 		photos = [],
 		names = [],
-		remover = { id: VIEWER, householdId: 'h1', isAdmin: false }
+		remover = { id: VIEWER, householdId: 'h1', isAdmin: false },
+		tag = null
 	}: {
 		remover?: Remover;
+		tag?: string | null;
 		photos?: { id: string; journalEntryId: string }[];
 		names?: { id: string; displayName: string }[];
 	} = {}
 ) {
 	return journalEntriesFor({
 		remover,
+		contactId: 'c1',
 		person: { householdId: 'h1', ownerId: 'u9', visibility: 'shared' },
+		tag,
 		entries,
 		photos,
 		names,
@@ -112,5 +116,55 @@ describe('journalEntriesFor', () => {
 		const admin: Remover = { id: 'u9', householdId: 'h1', isAdmin: true };
 		const [shown] = view([entry('shared', { createdBy: 'u2' })], { remover: admin });
 		expect(shown?.bodyForEdit).toBeNull();
+	});
+});
+
+/*
+ * The journal filtered by a tag (docs/02 §2.20.2): `?tag=` carries the key, so any spelling of
+ * the tag finds the entry, and an entry's own chips link back to the same filter.
+ */
+describe('journalEntriesFor with a tag', () => {
+	const entries = [
+		entry('e1', { body: 'Up the #Gurten' }),
+		entry('e2', { body: 'Plum cake #recipes' }),
+		entry('e3', { body: 'Again #gurten, in rain' })
+	];
+
+	it('shows only the entries that carry the tag, whatever their spelling', () => {
+		expect(view(entries, { tag: 'gurten' }).map((e) => e.id)).toEqual(['e1', 'e3']);
+	});
+
+	it('shows every entry without a tag', () => {
+		expect(view(entries).map((e) => e.id)).toEqual(['e1', 'e2', 'e3']);
+	});
+
+	it('shows nothing for a tag no entry carries', () => {
+		expect(view(entries, { tag: 'nowhere' })).toEqual([]);
+	});
+
+	it("links an entry's tag to this person's journal filtered by it", () => {
+		const [shown] = view(entries);
+		expect(shown!.bodyHtml).toContain('href="/contacts/c1/journal?tag=gurten"');
+	});
+});
+
+describe('activeTagFor', () => {
+	const tags = [{ name: 'Gurten', key: 'gurten', count: 2, onlyPrivate: false }];
+
+	it('names the filter in the household spelling', () => {
+		expect(activeTagFor('gurten', tags)).toEqual({ key: 'gurten', name: 'Gurten' });
+	});
+
+	it('folds the key from the address, so a typed spelling still filters', () => {
+		expect(activeTagFor('GURTEN', tags)).toEqual({ key: 'gurten', name: 'Gurten' });
+	});
+
+	it('names a tag the viewer has no entries for by what was asked', () => {
+		expect(activeTagFor('nowhere', tags)).toEqual({ key: 'nowhere', name: 'nowhere' });
+	});
+
+	it('is no filter without a tag', () => {
+		expect(activeTagFor(null, tags)).toBeNull();
+		expect(activeTagFor('', tags)).toBeNull();
 	});
 });

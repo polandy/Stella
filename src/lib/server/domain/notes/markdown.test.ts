@@ -75,3 +75,42 @@ describe('renderMarkdownWithMentions', () => {
 		expect(out).toContain('&lt;img');
 	});
 });
+
+/*
+ * The tag half (docs/02 §2.20.2): a `#word` the parser reads as a tag becomes a chip linking to
+ * the journal filtered by it — the same words `hashtagsIn` stores, so what shows as a chip is
+ * what the entry is filed under. Only a caller that says where a tag leads gets chips; a note
+ * keeps its `#` as text.
+ */
+describe('renderMarkdownWithMentions with tags', () => {
+	const nameOf = () => null;
+	const tagHref = (key: string) => `/contacts/c-anna/journal?tag=${encodeURIComponent(key)}`;
+
+	it('renders a tag as a chip in the spelling written, linking by its key', () => {
+		const out = renderMarkdownWithMentions('a long #Hike today', nameOf, { tagHref });
+		expect(out).toContain('href="/contacts/c-anna/journal?tag=hike"');
+		expect(out).toContain('>#Hike</a>');
+		expect(out).toContain('class="hashtag"');
+		expect(out).toContain('style="background:color-mix(');
+	});
+
+	it('keeps an umlaut tag whole, its key encoded in the link', () => {
+		const out = renderMarkdownWithMentions('#Ausflug-Zürich', nameOf, { tagHref });
+		expect(out).toContain(`?tag=${encodeURIComponent('ausflug-zürich')}"`);
+		expect(out).toContain('>#Ausflug-Zürich</a>');
+	});
+
+	it('leaves what the parser does not read as a tag as text', () => {
+		for (const text of ['mail#x', '\\#notatag', '`#code`', '#2024', 'see [#x](https://a.test)']) {
+			expect(renderMarkdownWithMentions(text, nameOf, { tagHref })).not.toContain('hashtag');
+		}
+	});
+
+	it('does not touch a heading', () => {
+		expect(renderMarkdownWithMentions('# Title', nameOf, { tagHref })).toContain('<h1>Title</h1>');
+	});
+
+	it('renders no chip for a caller without tags, such as a note', () => {
+		expect(renderMarkdownWithMentions('a #Hike', nameOf)).not.toContain('hashtag');
+	});
+});

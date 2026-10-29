@@ -174,6 +174,7 @@
 	{#key `${data.draft}:${editing?.command.id ?? ''}`}
 		<MomentComposer
 			candidates={data.people}
+			tags={data.entryTags}
 			me={{ id: data.user.id, name: data.user.name }}
 			today={data.today}
 			error={editing ? null : (form?.momentError ?? null)}
