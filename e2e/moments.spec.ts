@@ -85,6 +85,35 @@ test('refuses to save a moment that mentions nobody', async ({ page }) => {
 	await expect(composerSave(page)).toBeDisabled();
 });
 
+test('says why Save is off when there are photos but no words, then no person', async ({
+	page
+}) => {
+	const saveHint = page.getByTestId('save-hint');
+	// An empty field needs no telling.
+	await expect(saveHint).toHaveCount(0);
+
+	// Immich is on in this suite, so *Add photos* is a menu (docs/02 §2.24.9).
+	await page.getByRole('button', { name: 'Add photos' }).click();
+	const chooser = page.waitForEvent('filechooser');
+	await page.getByRole('menuitem', { name: 'From this device' }).click();
+	await (
+		await chooser
+	).setFiles({ name: 'lake.png', mimeType: 'image/png', buffer: Buffer.from('not decoded here') });
+	await expect(page.getByTestId('photo-count')).toHaveText('1');
+
+	await expect(saveHint).toHaveText('Write what happened first');
+	await expect(composerSave(page)).toBeDisabled();
+
+	await page.getByLabel('What happened?').pressSequentially('Nice day at the lake with ');
+	await expect(saveHint).toHaveText('Mention at least one person with @');
+	await expect(composerSave(page)).toBeDisabled();
+
+	await mention(page, 'Lena', /Lena Brunner/);
+	await expect(saveHint).toHaveCount(0);
+	await expect(page.getByText('Goes to Lena Brunner’s journal')).toBeVisible();
+	await expect(composerSave(page)).toBeEnabled();
+});
+
 test('adds a second moment about the same person that day to the first, keeping both', async ({
 	page
 }) => {
