@@ -107,18 +107,19 @@ test('finds the moments carrying one #tag in search, and the tag as a plain word
 	page
 }) => {
 	await page.goto(`/search?q=${encodeURIComponent(`#${RIDE.toLowerCase()}`)}`);
-	const moments = page.locator('section', {
-		has: page.getByRole('heading', { name: 'Moments' })
-	});
-	await expect(moments.getByRole('link')).toHaveCount(1);
-	await expect(moments.getByRole('link')).toContainText(PERSON);
+	// The moment rows, not the head row that leads to the tag's page.
+	const moments = page
+		.locator('section', { has: page.getByRole('heading', { name: 'Moments' }) })
+		.locator('a:not([data-testid="search-tag-page"])');
+	await expect(moments).toHaveCount(1);
+	await expect(moments).toContainText(PERSON);
 
-	await moments.getByRole('link').click();
+	await moments.click();
 	await expect(page).toHaveURL(/\/journal\?tag=velotour$/);
 	await expect(filter(page)).toContainText(`1 moment with #${RIDE}`);
 
 	await page.goto(`/search?q=${SWIM}`);
-	await expect(moments.getByRole('link')).toHaveCount(2);
+	await expect(moments).toHaveCount(2);
 
 	await page.goto(`/search?q=${encodeURIComponent('#Nirgendwotag')}`);
 	await expect(page.getByText('No moment carries #Nirgendwotag.')).toBeVisible();
