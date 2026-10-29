@@ -259,7 +259,8 @@ function seg() {
   document.documentElement.dataset.theme = S.theme;
   document.getElementById('device').className = 'device' + (S.device === 'desk' ? ' desk' : '');
   const u = new URLSearchParams({ place:S.place, state:S.state, device:S.device, theme:S.theme });
-  history.replaceState(null, '', '?' + u);
+  // htmlpreview.github.io sets a cross-origin <base>, so the URL can't be rewritten there.
+  try { history.replaceState(null, '', location.pathname + '?' + u); } catch { /* keep the URL */ }
 }
 
 function chrome(inner) {
