@@ -167,3 +167,24 @@ test('drops the Immich tab offline and keeps the gallery', async ({ page, contex
 		await unlinkFace(page, href);
 	}
 });
+
+test('greys out From Immich offline, and offers it again once back', async ({ page, context }) => {
+	// Nothing from Immich is kept for later (docs/02 §2.24.9): the item stays, saying why it waits.
+	await page.locator('nav a[aria-label="Write a moment"]').click();
+	const sheet = page.getByTestId('compose-sheet');
+	await expect(sheet).toBeVisible();
+	try {
+		await context.setOffline(true);
+		await sheet.getByRole('button', { name: 'Add photos' }).click();
+		const fromImmich = page.getByRole('menuitem', { name: /^From Immich/ });
+		await expect(fromImmich).toHaveAttribute('aria-disabled', 'true');
+		await expect(fromImmich).toContainText('Needs a connection');
+		await expect(page.getByRole('menuitem', { name: 'From this device' })).toBeVisible();
+
+		await context.setOffline(false);
+		await expect(fromImmich).toHaveAttribute('aria-disabled', 'false');
+		await expect(fromImmich).not.toContainText('Needs a connection');
+	} finally {
+		await context.setOffline(false);
+	}
+});
