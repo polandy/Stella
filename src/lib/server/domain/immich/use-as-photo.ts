@@ -50,7 +50,7 @@ export async function useImmichPhoto(
 	const admitted = await admitImmichMedia(deps, viewer, copy.token);
 	if (!admitted.ok) return admitted;
 	const { media } = admitted;
-	if (media.kind === 'newcomer' || media.contactId !== copy.contactId)
+	if (media.kind === 'newcomer' || media.kind === 'library' || media.contactId !== copy.contactId)
 		return { ok: false, refusal: 'invalid' };
 	if (media.kind === 'face') {
 		// The face Immich shows of them, as a person added from *New from Immich* starts with

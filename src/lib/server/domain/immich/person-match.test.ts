@@ -27,7 +27,7 @@ const contact = (id: string, firstName: string, lastName: string | null): Matchi
 
 const plainSigner: ImmichMediaSigner = {
 	sign: async (media) =>
-		`${media.kind}~${'contactId' in media ? media.contactId : media.householdId}~${media.personId}`,
+		`${media.kind}~${'contactId' in media ? media.contactId : media.householdId}~${'personId' in media ? media.personId : media.assetId}`,
 	verify: async () => ({ ok: false, reason: 'invalid' })
 };
 

@@ -49,6 +49,9 @@ export interface HttpImmichGatewayOptions {
 	log?: (message: string) => void;
 }
 
+/** What every photo search asks for: images in the timeline, never the archive or the locked folder. */
+const TIMELINE_IMAGES = { type: { eq: 'IMAGE' }, visibility: { eq: 'timeline' } } as const;
+
 const failed = (failure: ImmichFailure): { ok: false; failure: ImmichFailure } => ({
 	ok: false,
 	failure
@@ -171,13 +174,39 @@ export function createHttpImmichGateway({
 			return ask('/api/search/metadata', json(readAssetPage), true, {
 				filter: {
 					personIds: { [match]: [...personIds] },
-					type: { eq: 'IMAGE' },
-					visibility: { eq: 'timeline' }
+					...TIMELINE_IMAGES
 				},
 				orderBy: { field: 'fileCreatedAt', direction: 'desc' },
 				size: limit,
 				...(cursor === null ? {} : { cursor })
 			});
+		},
+		takenAssets: ({ from, before }, order, limit, cursor) =>
+			// Anyone's photos, in the timeline only, like a person's (docs/02 §2.24.9). Immich's
+			// `takenAt` is the file's instant; the order is the camera's clock, so a day reads in turn.
+			ask('/api/search/metadata', json(readAssetPage), false, {
+				filter: {
+					...TIMELINE_IMAGES,
+					takenAt: {
+						...(from === null ? {} : { gte: from }),
+						...(before === null ? {} : { lt: before })
+					}
+				},
+				orderBy: { field: 'localDateTime', direction: order === 'oldest' ? 'asc' : 'desc' },
+				size: limit,
+				...(cursor === null ? {} : { cursor })
+			}),
+		smartSearch: async (query, limit) => {
+			const found = await ask('/api/search/smart', json(readAssetPage), true, {
+				query,
+				filter: TIMELINE_IMAGES,
+				size: limit
+			});
+			if (found.ok) return { ok: true, value: { enabled: true, assets: found.value.assets } };
+			// Immich answers a well-formed smart search with 400 only when machine learning is off.
+			return found.failure === 'notFound'
+				? { ok: true, value: { enabled: false } }
+				: failed(found.failure);
 		},
 		assetImage: (assetId: string, size: ImmichImageSize) => {
 			if (!isImmichId(assetId)) return Promise.resolve(failed('notFound'));

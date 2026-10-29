@@ -236,8 +236,16 @@ describe('useImmichPhoto', () => {
 			householdId: 'h1',
 			personId: BERT_ID
 		});
+		// A photo of the whole library is for an upload's copy, never someone's photo (docs/02 §2.24.9).
+		const library = await deps.signer.sign({
+			kind: 'library',
+			householdId: 'h1',
+			assetId: fakeAssetId(BERT_ID, 0),
+			size: 'preview'
+		});
 		const forBertOnCarlsPage = await preview();
 		for (const [contactId, token] of [
+			['c-bert', library],
 			['c-bert', thumbnail],
 			['c-cleo', faceOnCleosPage],
 			['c-bert', newcomer],

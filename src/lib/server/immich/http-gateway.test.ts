@@ -286,6 +286,102 @@ describe('createHttpImmichGateway', () => {
 		});
 	});
 
+	it('asks for every photo taken in a window, in the order of the camera’s clock', async () => {
+		const { gateway, calls } = stub(() =>
+			json({
+				assets: {
+					items: [
+						{
+							id: ASSET,
+							type: 'IMAGE',
+							visibility: 'timeline',
+							localDateTime: '2026-08-14T18:30:00.000Z'
+						},
+						{ id: OTHER, type: 'VIDEO', visibility: 'timeline' }
+					],
+					nextCursor: 'c2'
+				}
+			})
+		);
+		const window = { from: '2026-08-13T10:00:00.000Z', before: '2026-08-15T14:00:00.000Z' };
+		expect(await gateway.takenAssets(window, 'oldest', 200, null)).toEqual({
+			ok: true,
+			value: { assets: [{ id: ASSET, takenAt: '2026-08-14T18:30:00' }], nextCursor: 'c2' }
+		});
+		expect(calls[0].url).toBe(`${BASE}/api/search/metadata`);
+		expect(calls[0].body).toEqual({
+			filter: {
+				type: { eq: 'IMAGE' },
+				visibility: { eq: 'timeline' },
+				takenAt: { gte: window.from, lt: window.before }
+			},
+			orderBy: { field: 'localDateTime', direction: 'asc' },
+			size: 200
+		});
+	});
+
+	it('leaves an open end of the window out, and passes the cursor on', async () => {
+		const { gateway, calls } = stub(() => json({ assets: { items: [], nextCursor: null } }));
+		await gateway.takenAssets(
+			{ from: null, before: '2026-08-15T14:00:00.000Z' },
+			'newest',
+			50,
+			'c1'
+		);
+		expect(calls[0].body).toEqual({
+			filter: {
+				type: { eq: 'IMAGE' },
+				visibility: { eq: 'timeline' },
+				takenAt: { lt: '2026-08-15T14:00:00.000Z' }
+			},
+			orderBy: { field: 'localDateTime', direction: 'desc' },
+			size: 50,
+			cursor: 'c1'
+		});
+	});
+
+	it('searches the timeline by a description, best match first', async () => {
+		const { gateway, calls } = stub(() =>
+			json({
+				assets: {
+					items: [
+						{
+							id: ASSET,
+							type: 'IMAGE',
+							visibility: 'timeline',
+							fileCreatedAt: '2026-08-14T16:30:00.000Z'
+						},
+						{ id: OTHER, type: 'IMAGE', visibility: 'archive' }
+					],
+					nextCursor: null
+				}
+			})
+		);
+		expect(await gateway.smartSearch('beach at sunset', 60)).toEqual({
+			ok: true,
+			value: { enabled: true, assets: [{ id: ASSET, takenAt: '2026-08-14T16:30:00Z' }] }
+		});
+		expect(calls[0].url).toBe(`${BASE}/api/search/smart`);
+		expect(calls[0].body).toEqual({
+			query: 'beach at sunset',
+			filter: { type: { eq: 'IMAGE' }, visibility: { eq: 'timeline' } },
+			size: 60
+		});
+	});
+
+	it('reads Immich’s 400 to a smart search as smart search switched off', async () => {
+		expect(
+			await stub(() => json({ message: 'Smart search is not enabled' }, 400)).gateway.smartSearch(
+				'beach',
+				60
+			)
+		).toEqual({ ok: true, value: { enabled: false } });
+		expect(await stub(() => json({}, 403)).gateway.smartSearch('beach', 60)).toEqual({
+			ok: false,
+			failure: 'forbidden'
+		});
+	});
+
 	it('never asks Immich about a photo or a person whose id is not an Immich id', async () => {
 		const { gateway, calls } = stub(() => json({}));
 		expect(await gateway.assetImage('../users/me', 'preview')).toEqual({

@@ -85,3 +85,63 @@ describe('createFakeImmichGateway latestAssets', () => {
 			expect(faceSuffixes.has(group.id.slice(8))).toBe(false);
 	});
 });
+
+describe('createFakeImmichGateway takenAssets', () => {
+	const window = (from: string | null, before: string | null) => ({ from, before });
+
+	it('lists everyone’s photos of a window, a person’s and the shared ones, by the camera’s clock', async () => {
+		const gateway = createFakeImmichGateway(testLibrary());
+		// The newest photo of every source was taken on 1 September, the next one a day before.
+		const page = await gateway.takenAssets(
+			window('2026-09-01T00:00:00.000Z', '2026-09-02T00:00:00.000Z'),
+			'oldest',
+			50,
+			null
+		);
+		expect(ids(page)).toEqual(
+			[BERT_ID, CARL_ID, DORA_ID, BERT_AND_CARL_ID].map((id) => fakeAssetId(id, 0)).sort()
+		);
+		expect(page.ok && page.value.assets[0].takenAt).toBe('2026-09-01T15:30:00');
+	});
+
+	it('pages newest first through an open window', async () => {
+		const gateway = createFakeImmichGateway(testLibrary());
+		const first = await gateway.takenAssets(
+			window(null, '2026-08-31T00:00:00.000Z'),
+			'newest',
+			3,
+			null
+		);
+		const days = (outcome: typeof first) =>
+			outcome.ok ? outcome.value.assets.map((asset) => asset.takenAt?.slice(0, 10)) : [];
+		expect(days(first)).toEqual(['2026-08-30', '2026-08-30', '2026-08-30']);
+		if (!first.ok || first.value.nextCursor === null) throw new Error('no second page');
+		const second = await gateway.takenAssets(
+			window(null, '2026-08-31T00:00:00.000Z'),
+			'newest',
+			3,
+			first.value.nextCursor
+		);
+		expect(days(second)[0]).toBe('2026-08-30');
+	});
+});
+
+describe('createFakeImmichGateway smartSearch', () => {
+	it('finds the photos of a person a word of the query names, newest first', async () => {
+		const gateway = createFakeImmichGateway(testLibrary());
+		const found = await gateway.smartSearch('carl at the lake', 60);
+		expect(found.ok && found.value.enabled && found.value.assets.map((asset) => asset.id)).toEqual(
+			Array.from({ length: 7 }, (_, index) => fakeAssetId(CARL_ID, index))
+		);
+	});
+
+	it('finds nothing for a description that names nobody, and says when smart search is off', async () => {
+		const gateway = createFakeImmichGateway(testLibrary());
+		expect(await gateway.smartSearch('sunset', 60)).toEqual({
+			ok: true,
+			value: { enabled: true, assets: [] }
+		});
+		gateway.library.smartSearch = false;
+		expect(await gateway.smartSearch('carl', 60)).toEqual({ ok: true, value: { enabled: false } });
+	});
+});

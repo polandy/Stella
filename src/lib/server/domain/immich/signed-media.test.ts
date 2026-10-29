@@ -133,6 +133,27 @@ describe('createImmichMediaSigner', () => {
 		});
 	});
 
+	it('reads back a photo of the whole library, signed for the household, with when it was taken', async () => {
+		const clock = fixedClock(1_700_000_000_000);
+		const signer = createImmichMediaSigner({ secret: SECRET, clock });
+		const library: SignableImmichMedia = {
+			kind: 'library',
+			householdId: 'h-1',
+			assetId: ASSET_ID,
+			size: 'preview',
+			takenAt: '2026-08-14T18:30:00'
+		};
+		expect(await signer.verify(await signer.sign(library))).toEqual({
+			ok: true,
+			media: { ...library, expiresAt: clock.now() + IMMICH_MEDIA_TTL_MS }
+		});
+		const { takenAt: _, ...thumbnail } = { ...library, size: 'thumbnail' as const };
+		expect(await signer.verify(await signer.sign(thumbnail))).toEqual({
+			ok: true,
+			media: { ...thumbnail, expiresAt: clock.now() + IMMICH_MEDIA_TTL_MS }
+		});
+	});
+
 	it('reads back a token for a contact whose id is not a ULID, as an imported one is', async () => {
 		const clock = fixedClock(1_700_000_000_000);
 		const signer = createImmichMediaSigner({ secret: SECRET, clock });

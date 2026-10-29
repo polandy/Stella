@@ -59,6 +59,19 @@ export type SignableImmichMedia =
 			kind: 'newcomer';
 			householdId: string;
 			personId: string;
+	  }
+	| {
+			/**
+			 * A photo of the whole library, from the picker beside a photo upload (docs/02 §2.24.9):
+			 * any member may browse every photo in it, so it is signed for the member's household,
+			 * whoever is in it. `takenAt` as on a `photo`: signed into a preview, so a gallery copy is
+			 * dated by what Immich said.
+			 */
+			kind: 'library';
+			householdId: string;
+			assetId: string;
+			size: ImmichImageSize;
+			takenAt?: string;
 	  };
 
 /** The second person of a together photo. */
@@ -121,8 +134,21 @@ function readPayload(payload: string): SignedImmichMedia | null {
 	}
 	if (typeof body !== 'object' || body === null || Array.isArray(body)) return null;
 	const { k, c, h, p, a, s, e, t, w, q, o } = body as Record<string, unknown>;
-	if (!isImmichId(p)) return null;
 	if (typeof e !== 'number' || !Number.isSafeInteger(e)) return null;
+	if (t !== undefined && (typeof t !== 'string' || !isTakenAt(t))) return null;
+	// The one kind that names no Immich person: any photo of the library, for a household.
+	if (k === 'l')
+		return isSignedContactId(h) && isImmichId(a) && typeof s === 'string' && IMAGE_SIZES.has(s)
+			? {
+					kind: 'library',
+					householdId: h,
+					assetId: a,
+					size: s as ImmichImageSize,
+					...(t === undefined ? {} : { takenAt: t }),
+					expiresAt: e
+				}
+			: null;
+	if (!isImmichId(p)) return null;
 	// The one kind that names a household rather than a contact.
 	if (k === 'n')
 		return isSignedContactId(h)
@@ -131,7 +157,6 @@ function readPayload(payload: string): SignedImmichMedia | null {
 	if (!isSignedContactId(c)) return null;
 	if (k === 'f') return { kind: 'face', contactId: c, personId: p, expiresAt: e };
 	if (k !== 'p' || !isImmichId(a) || typeof s !== 'string' || !IMAGE_SIZES.has(s)) return null;
-	if (t !== undefined && (typeof t !== 'string' || !isTakenAt(t))) return null;
 	if ((w !== undefined || q !== undefined) && (!isSignedContactId(w) || !isImmichId(q)))
 		return null;
 	// A photo is one person's, two people's together, or someone else's — never two of these.
@@ -152,22 +177,31 @@ function readPayload(payload: string): SignedImmichMedia | null {
 /** The payload's JSON: short keys, because it travels in every image URL. */
 function writePayload(media: SignedImmichMedia): string {
 	const fields =
-		media.kind === 'newcomer'
-			? { k: 'n', h: media.householdId, p: media.personId, e: media.expiresAt }
-			: media.kind === 'face'
-				? { k: 'f', c: media.contactId, p: media.personId, e: media.expiresAt }
-				: {
-						k: 'p',
-						c: media.contactId,
-						p: media.personId,
-						a: media.assetId,
-						s: media.size,
-						t: media.takenAt,
-						w: media.together?.contactId,
-						q: media.together?.personId,
-						o: media.heldBy,
-						e: media.expiresAt
-					};
+		media.kind === 'library'
+			? {
+					k: 'l',
+					h: media.householdId,
+					a: media.assetId,
+					s: media.size,
+					t: media.takenAt,
+					e: media.expiresAt
+				}
+			: media.kind === 'newcomer'
+				? { k: 'n', h: media.householdId, p: media.personId, e: media.expiresAt }
+				: media.kind === 'face'
+					? { k: 'f', c: media.contactId, p: media.personId, e: media.expiresAt }
+					: {
+							k: 'p',
+							c: media.contactId,
+							p: media.personId,
+							a: media.assetId,
+							s: media.size,
+							t: media.takenAt,
+							w: media.together?.contactId,
+							q: media.together?.personId,
+							o: media.heldBy,
+							e: media.expiresAt
+						};
 	return toBase64Url(encoder.encode(JSON.stringify(fields)));
 }
 

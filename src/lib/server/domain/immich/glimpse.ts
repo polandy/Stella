@@ -204,7 +204,8 @@ export async function openImmichMedia(
 	const admitted = await admitImmichMedia(deps, viewer, token);
 	if (!admitted.ok) return admitted;
 	const { media } = admitted;
-	if (media.kind !== 'photo') return served(await deps.gateway.personThumbnail(media.personId));
+	if (media.kind === 'face' || media.kind === 'newcomer')
+		return served(await deps.gateway.personThumbnail(media.personId));
 	return served(await deps.gateway.assetImage(media.assetId, media.size));
 }
 
@@ -229,6 +230,12 @@ export async function admitImmichMedia(
 	if (!verified.ok) return { ok: false, refusal: verified.reason };
 	const { media } = verified;
 
+	// Any member browses the whole library (docs/02 §2.24.9, docs/04 ADR-129): the household is
+	// the only question.
+	if (media.kind === 'library')
+		return media.householdId === viewer.householdId
+			? { ok: true, media }
+			: { ok: false, refusal: 'notVisible' };
 	if (media.kind === 'newcomer') {
 		// Not the viewer's household, or someone holds the face now — then it is that person's face,
 		// shown through them to whoever sees them, and no longer anybody's to add.

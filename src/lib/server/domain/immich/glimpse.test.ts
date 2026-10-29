@@ -616,4 +616,32 @@ describe('openImmichMedia', () => {
 		});
 		expect(gateway.calls).toEqual([]);
 	});
+
+	it('serves any photo of the library to a member of the household it was signed for', async () => {
+		const { mediaDeps, signer, gateway } = setup();
+		const token = await signer.sign({
+			kind: 'library',
+			householdId: 'h1',
+			assetId: fakeAssetId(DORA_ID, 0),
+			size: 'preview'
+		});
+		const outcome = await openImmichMedia(mediaDeps, viewer, token);
+		expect(outcome.ok).toBe(true);
+		expect(gateway.calls).toEqual(['assetImage']);
+	});
+
+	it('refuses a photo of the library to another household, without asking Immich', async () => {
+		const { mediaDeps, signer, gateway } = setup();
+		const token = await signer.sign({
+			kind: 'library',
+			householdId: 'h2',
+			assetId: fakeAssetId(BERT_ID, 0),
+			size: 'thumbnail'
+		});
+		expect(await openImmichMedia(mediaDeps, viewer, token)).toEqual({
+			ok: false,
+			refusal: 'notVisible'
+		});
+		expect(gateway.calls).toEqual([]);
+	});
 });

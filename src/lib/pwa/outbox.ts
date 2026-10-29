@@ -66,6 +66,11 @@ export interface KeptPhoto {
 	 * photo kept for later still sorts where it belongs. Absent on photos kept by an older build.
 	 */
 	takenAt?: string | null;
+	/**
+	 * For a copy of a photo from Immich (docs/02 §2.24.9): the signed token of the preview it was
+	 * made from, by which the server dates it as Immich did — `takenAt` is then not read.
+	 */
+	immichToken?: string;
 }
 
 /** One thing a member added while Stella could not be reached. */
