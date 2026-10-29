@@ -82,3 +82,18 @@ export function tagSummary(
 		people: new Set(moments.map((m) => m.anchor.id)).size
 	};
 }
+
+/**
+ * The head row of a search for one `#tag`, leading to the tag's page (docs/02 §2.9): the count
+ * is the household's, which the search's own limit may cut short. Null when the query was no
+ * tag or found nothing.
+ */
+export function searchTagHead(
+	key: string | null,
+	tags: readonly KnownTag[],
+	found: number
+): TagNarrowing | null {
+	if (!key || found === 0) return null;
+	const known = tags.find((t) => t.key === key);
+	return { key, name: known?.name ?? key, count: known?.count ?? found };
+}

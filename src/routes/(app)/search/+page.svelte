@@ -11,6 +11,7 @@
 	import Veil from '$lib/components/ui/Veil.svelte';
 	import { stateLabel } from '$lib/gifts/labels';
 	import { journalTagHref, tagPageHref } from '$lib/hashtags/hashtags';
+	import { searchTagHead } from '$lib/hashtags/tag-pages';
 	import { newPersonHref } from '$lib/people/new-person';
 	import { contactSectionPath } from '$lib/people/sections';
 	import { useI18n } from '$lib/i18n/context.svelte';
@@ -36,20 +37,10 @@
 		return tag ? journalTagHref(contactId)(tag) : `/contacts/${contactId}/journal`;
 	}
 
-	/**
-	 * A `#tag` query heads its moments with the tag's own page (docs/02 §2.9): the count is the
-	 * household's, which the search's own limit may not show in full.
-	 */
-	const tagHead = $derived.by(() => {
-		const key = data.results.tag;
-		if (!key || data.results.moments.length === 0) return null;
-		const known = data.entryTags.find((tag) => tag.key === key);
-		return {
-			href: tagPageHref(key),
-			count: known?.count ?? data.results.moments.length,
-			name: known?.name ?? key
-		};
-	});
+	/** A `#tag` query's moments head with the tag's own page (docs/02 §2.9). */
+	const tagHead = $derived(
+		searchTagHead(data.results.tag, data.entryTags, data.results.moments.length)
+	);
 
 	function shortDate(iso: string): string {
 		const [y, m, d] = iso.split('-').map(Number);
@@ -184,7 +175,7 @@
 					<h2 class="text-sm font-medium text-fg-muted">{t('search.moments')}</h2>
 					{#if tagHead}
 						<a
-							href={tagHead.href}
+							href={tagPageHref(tagHead.key)}
 							class="flex items-center justify-between gap-2 rounded-app border border-border bg-card px-3 py-2 text-sm font-medium text-fg hover:border-primary/45"
 							data-testid="search-tag-page"
 						>

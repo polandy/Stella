@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'bun:test';
 import type { KnownTag } from './picker';
-import { HOME_TAG_LIMIT, homeTagChips, tagNarrowing, tagSummary } from './tag-pages';
+import { HOME_TAG_LIMIT, homeTagChips, searchTagHead, tagNarrowing, tagSummary } from './tag-pages';
 
 /*
  * Where a tag is read across the household (docs/02 §2.20.2): Home's Tags row and the line under
@@ -85,5 +85,20 @@ describe('tagSummary', () => {
 
 	it('is null for a tag the viewer has no moment of — unknown, or on others’ private moments', () => {
 		expect(tagSummary('walk', [], [])).toBeNull();
+	});
+});
+
+describe('searchTagHead', () => {
+	it('heads a #tag search with the household count, past what the search listed', () => {
+		expect(searchTagHead('t1', tags, 3)).toEqual({ key: 't1', name: 'T1', count: 19 });
+	});
+
+	it('has no head when the query was no #tag, or nothing carries it', () => {
+		expect(searchTagHead(null, tags, 3)).toBeNull();
+		expect(searchTagHead('t1', tags, 0)).toBeNull();
+	});
+
+	it('falls back to the moments found when the tag list does not know the tag', () => {
+		expect(searchTagHead('gone', tags, 2)).toEqual({ key: 'gone', name: 'gone', count: 2 });
 	});
 });
