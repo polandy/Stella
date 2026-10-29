@@ -150,6 +150,7 @@ export const home: HomeMessages = {
 	'composer.goesTo': 'Kommt in',
 	'composer.goesToJournal': 's Tagebuch',
 	'composer.alsoMentions': (p) => `, erwähnt ${p.count}`,
+	'composer.needText': 'Schreib zuerst, was passiert ist',
 	'composer.needMention': 'Erwähne mit @ mindestens eine Person',
 	'composer.saveFailed':
 		'Konnte nicht gespeichert werden. Versuche es mit üblichen JPEG- oder PNG-Bildern.',

@@ -203,11 +203,19 @@
 			: false
 	);
 	const reading = $derived(
-		composerReading({ body, picks, anchorId, sending }, known, peopleContext())
+		composerReading(
+			{ body, picks, anchorId, sending, photos: ui.photos, immichPhotos: ui.immichPhotos },
+			known,
+			peopleContext()
+		)
 	);
 	const referenced = $derived(reading.referenced);
 	const unclear = $derived(reading.unclear);
 	const canSave = $derived(reading.canSave);
+	const SAVE_HINTS = {
+		writeWhatHappened: 'composer.needText',
+		mentionSomeone: 'composer.needMention'
+	} as const;
 
 	const ERRORS = {
 		couldNotKeep: 'composer.couldNotKeep',
@@ -752,7 +760,10 @@
 			<DayPill name="entryDate" value={kept?.entryDate ?? day} today={day} />
 		{/key}
 		<span class="text-xs text-fg-subtle" aria-live="polite">
-			{#if unclear.length}
+			<!-- Why Save is off comes first, a shade stronger: it is what stands in the way. -->
+			{#if reading.saveHint}
+				<span class="text-fg-muted" data-testid="save-hint">{t(SAVE_HINTS[reading.saveHint])}</span>
+			{:else if unclear.length}
 				<!-- The box above asks which one. -->
 			{:else if anchorId}
 				{t('composer.mentionsSomeoneElse')}
@@ -763,8 +774,6 @@
 				)}{referenced.length > 1
 					? t('composer.alsoMentions', { count: referenced.length - 1 })
 					: ''}
-			{:else if body.trim()}
-				{t('composer.needMention')}
 			{/if}
 		</span>
 		<div class="ml-auto flex items-center gap-2">

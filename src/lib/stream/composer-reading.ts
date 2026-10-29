@@ -52,16 +52,28 @@ export function pickerRows(
 	];
 }
 
+/**
+ * Why Save is off, in the order the writer meets it: a moment on its way, no words yet, a
+ * namesake left open, nobody to file it under — the page's own person or an @mention.
+ */
+export type SaveBlock = 'sending' | 'noText' | 'unclear' | 'noPerson';
+
+/** The line beside a disabled Save; a namesake and a moment on its way have their own words. */
+export type SaveHint = 'writeWhatHappened' | 'mentionSomeone';
+
 export interface ComposerReading {
 	/** For the "goes to …'s journal" line: picks by id, anything typed by name. */
 	referenced: MentionCandidate[];
 	/** A namesake nobody picked, as a question rather than a guess. */
 	unclear: UnclearHandle<MentionCandidate>[];
+	blocked: SaveBlock | null;
 	canSave: boolean;
+	/** Only once something is typed or a photo added: an empty field needs no telling. */
+	saveHint: SaveHint | null;
 }
 
 export function composerReading(
-	state: Pick<ComposerState, 'body' | 'picks' | 'anchorId' | 'sending'>,
+	state: Pick<ComposerState, 'body' | 'picks' | 'anchorId' | 'sending' | 'photos' | 'immichPhotos'>,
 	known: readonly MentionCandidate[],
 	contexts: ReadonlyMap<string, PersonContext>
 ): ComposerReading {
@@ -69,12 +81,26 @@ export function composerReading(
 	const resolved = resolveMentions(stored, createHandleResolver([...known]));
 	const referenced = resolved.ids.flatMap((id) => known.filter((c) => c.id === id));
 	const unclear = unclearHandles(stored, known, contexts);
-	const canSave =
-		state.body.trim().length > 0 &&
-		(state.anchorId !== null || referenced.length > 0) &&
-		unclear.length === 0 &&
-		state.sending === null;
-	return { referenced, unclear, canSave };
+	const hasText = state.body.trim().length > 0;
+	const blocked: SaveBlock | null =
+		state.sending !== null
+			? 'sending'
+			: !hasText
+				? 'noText'
+				: unclear.length > 0
+					? 'unclear'
+					: state.anchorId === null && referenced.length === 0
+						? 'noPerson'
+						: null;
+	const started = hasText || state.photos.length + state.immichPhotos.length > 0;
+	const saveHint: SaveHint | null = !started
+		? null
+		: blocked === 'noText'
+			? 'writeWhatHappened'
+			: blocked === 'noPerson'
+				? 'mentionSomeone'
+				: null;
+	return { referenced, unclear, blocked, canSave: blocked === null, saveHint };
 }
 
 /**

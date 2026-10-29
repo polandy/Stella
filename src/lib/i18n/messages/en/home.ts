@@ -158,6 +158,7 @@ export const home = {
 	'composer.goesTo': 'Goes to',
 	'composer.goesToJournal': '’s journal',
 	'composer.alsoMentions': (p: { count: number }) => `, mentions ${p.count}`,
+	'composer.needText': 'Write what happened first',
 	'composer.needMention': 'Mention at least one person with @',
 	'composer.saveFailed': 'Could not save. Try standard JPEG or PNG images.',
 	'composer.shareWithHousehold': 'Share with household'
