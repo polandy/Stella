@@ -59,6 +59,20 @@ export interface ImmichAssetPage {
 }
 
 /**
+ * A stretch of time photos were taken in, as instants in UTC (`…Z`): from `from` on, and before
+ * `before`; null leaves that end open. Immich filters on when the file was made, an instant — not
+ * on the camera's clock — so a caller after one day on that clock widens the window and reads
+ * each photo's `takenAt` (docs/02 §2.24.9).
+ */
+export interface ImmichTakenWindow {
+	from: string | null;
+	before: string | null;
+}
+
+/** A smart search's answer: the photos that match best, or that the library has it switched off. */
+export type ImmichSmartSearch = { enabled: true; assets: ImmichAsset[] } | { enabled: false };
+
+/**
  * Whose photos a listing asks for: the photos any of these people is in, or — the together-view
  * of docs/02 §2.24.8 — only those all of them are in (Immich's `personIds.any` / `personIds.all`).
  */
@@ -115,6 +129,23 @@ export interface ImmichGateway {
 		limit: number,
 		cursor: string | null
 	): Promise<ImmichOutcome<ImmichAssetPage>>;
+	/**
+	 * Every photo in the timeline taken within `window`, whoever is in it (`asset.read`), in the
+	 * order of the camera's clock — `oldest` or `newest` first — `limit` of them from `cursor` on.
+	 * Archived, locked and trashed photos never come.
+	 */
+	takenAssets(
+		window: ImmichTakenWindow,
+		order: 'oldest' | 'newest',
+		limit: number,
+		cursor: string | null
+	): Promise<ImmichOutcome<ImmichAssetPage>>;
+	/**
+	 * The photos in the timeline that best match a description, best first (`asset.read`): Immich's
+	 * smart search (CLIP). One page only — Immich pages it no further. `enabled: false` when the
+	 * library runs without machine learning.
+	 */
+	smartSearch(query: string, limit: number): Promise<ImmichOutcome<ImmichSmartSearch>>;
 	/** One photo, at one of the sizes Immich renders (`asset.view`). */
 	assetImage(assetId: string, size: ImmichImageSize): Promise<ImmichOutcome<ImmichImage>>;
 }

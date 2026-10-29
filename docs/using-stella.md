@@ -458,6 +458,17 @@ picture at the top of their page offers the same: under **From Immich** pick one
 Immich photos — or, if they are not linked yet, **Find in Immich** first, and their photos
 appear.
 
+**Any photo from Immich.** Wherever you add a photo — a moment, a journal entry, a person's or a
+circle's photos — you can take it from Immich too. On a moment or an entry, the photo button
+asks **From this device** or **From Immich**; on the Photos card, **From Immich** sits beside
+the file field. Immich opens on the day of what you're writing (today for a gallery), with every
+photo of that day; **‹** and **›** jump to the nearest day that has photos. Or type in the search
+— *beach*, *birthday cake* — and Immich finds matching photos across the whole library. Tap the
+ones you want; they are numbered in the order you tap them, up to 20 at a time. **Add N photos**
+copies them into Stella, so they stay even if they are later deleted in Immich. A photo added to
+someone's gallery this way keeps the date Immich has for it. You need a connection for this:
+offline, **From Immich** is greyed out.
+
 ### Photos together
 
 **Photos together.** Once you have said which person is you (*This is me*) and that person is

@@ -12,6 +12,7 @@ import { createImmichConnection, type ImmichConnection } from '../domain/immich/
 import type { ImmichGateway } from '../domain/immich/gateway';
 import type { ImmichGlimpseDeps, ImmichMediaDeps } from '../domain/immich/glimpse';
 import type { ImmichIgnoreDeps } from '../domain/immich/ignores';
+import type { ImmichLibraryDeps } from '../domain/immich/library';
 import type { ImmichLinkDeps } from '../domain/immich/links';
 import type { ImmichMatchingDeps } from '../domain/immich/matching';
 import type { ImmichNameIgnoreDeps } from '../domain/immich/name-ignores';
@@ -44,6 +45,8 @@ export interface ImmichServices {
 	signer: ImmichMediaSigner;
 	/** The strip of a linked person's photos. */
 	immichGlimpseDeps: ImmichGlimpseDeps;
+	/** The whole library, for the picker beside a photo upload (docs/02 §2.24.9). */
+	immichLibraryDeps: ImmichLibraryDeps;
 	/** The signed proxy that serves every image from Immich. */
 	immichMediaDeps: ImmichMediaDeps;
 	/** *Find your people* — both tabs, from one reading of Immich. */
@@ -118,6 +121,7 @@ export function createImmichServices({
 		publicUrl,
 		signer,
 		immichGlimpseDeps: { links, contacts, gateway, signer, publicUrl },
+		immichLibraryDeps: { gateway, signer },
 		immichMediaDeps: { links, contacts, gateway, signer },
 		immichMatchingDeps: {
 			links,

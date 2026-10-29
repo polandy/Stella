@@ -23,6 +23,10 @@ import { solidPng } from './png';
  * Photos of people together (`together`) are numbered the same way under the group's own id.
  * They come back only for a listing of everyone in them (`match: 'all'`), so one person's strip
  * stays exactly their own count, and a test of it is not disturbed by whom they share photos with.
+ *
+ * The whole library (`takenAssets`) is every person's photos and every group's, hidden faces
+ * included — hiding a face does not hide a photo. Its smart search has no model: a word of the
+ * query that is in a person's name finds their own photos, and nothing else finds anything.
  */
 
 /** A person in the fake library, with the photo count their statistics report. */
@@ -49,6 +53,8 @@ export interface FakeImmichLibrary {
 	people: FakeImmichPerson[];
 	/** Photos people share; none when left out. */
 	together?: FakeImmichGroupPhotos[];
+	/** False for a library without machine learning, whose smart search answers that it is off. */
+	smartSearch?: boolean;
 }
 
 /** Which calls fail, and how; the test (or nobody, on the demo server) sets it. */
@@ -134,6 +140,38 @@ export function createFakeImmichGateway(library: FakeImmichLibrary): FakeImmichG
 				},
 				true
 			),
+		takenAssets: ({ from, before }, order, limit, cursor) =>
+			answer('takenAssets', () => {
+				// Every photo's instant is its clock time read as UTC, so the clock's order is the instant's.
+				const listed = [...library.people, ...(library.together ?? [])]
+					.flatMap((source) =>
+						Array.from({ length: source.assets }, (_, index) => photo(source.id, index))
+					)
+					.filter(({ takenAt }) => {
+						const instant = `${takenAt}.000Z`;
+						return (from === null || instant >= from) && (before === null || instant < before);
+					})
+					.sort((a, b) => a.takenAt.localeCompare(b.takenAt) || a.id.localeCompare(b.id));
+				if (order === 'newest') listed.reverse();
+				return paged(listed, limit, cursor);
+			}),
+		smartSearch: (query, limit) =>
+			answer('smartSearch', () => {
+				if (library.smartSearch === false) return { enabled: false as const };
+				const words = query
+					.toLowerCase()
+					.split(/\s+/)
+					.filter((word) => word.length > 1);
+				const named = library.people.filter((person) =>
+					words.some((word) => person.name.toLowerCase().split(' ').includes(word))
+				);
+				const assets = named
+					.flatMap((person) =>
+						Array.from({ length: person.assets }, (_, index) => photo(person.id, index))
+					)
+					.slice(0, limit);
+				return { enabled: true as const, assets };
+			}),
 		latestAssets: ({ personIds, match }, limit, cursor) =>
 			answer(
 				'latestAssets',
@@ -153,14 +191,11 @@ export function createFakeImmichGateway(library: FakeImmichLibrary): FakeImmichG
 							Array.from({ length: source.assets }, (_, index) => ({ source: source.id, index }))
 						)
 						.sort((a, b) => a.index - b.index);
-					const from = cursor === null ? 0 : Number.parseInt(cursor, 10) || 0;
-					const to = Math.min(from + limit, listed.length);
-					const assets: ImmichAsset[] = listed.slice(from, to).map(({ source, index }) => {
-						const day = new Date(NEWEST_PHOTO_DAY - index * DAY_MS).toISOString().slice(0, 10);
-						// An afternoon on the camera's clock, as Immich's `localDateTime` gives it.
-						return { id: fakeAssetId(source, index), takenAt: `${day}T15:30:00` };
-					});
-					return { assets, nextCursor: to < listed.length ? String(to) : null };
+					return paged(
+						listed.map(({ source, index }) => photo(source, index)),
+						limit,
+						cursor
+					);
 				},
 				true
 			),
@@ -182,6 +217,13 @@ export function createFakeImmichGateway(library: FakeImmichLibrary): FakeImmichG
 			)
 	};
 
+	/** One page of a listing; the cursor is where the next page starts. */
+	function paged(listed: ImmichAsset[], limit: number, cursor: string | null) {
+		const from = cursor === null ? 0 : Number.parseInt(cursor, 10) || 0;
+		const to = Math.min(from + limit, listed.length);
+		return { assets: listed.slice(from, to), nextCursor: to < listed.length ? String(to) : null };
+	}
+
 	function found(id: string): FakeImmichPerson | null {
 		return library.people.find((p) => p.id === id) ?? null;
 	}
@@ -200,6 +242,12 @@ export function createFakeImmichGateway(library: FakeImmichLibrary): FakeImmichG
 	}
 
 	return fake;
+}
+
+/** A source's `index`-th photo: an afternoon on the camera's clock, as Immich's `localDateTime` gives it. */
+function photo(source: string, index: number): ImmichAsset & { takenAt: string } {
+	const day = new Date(NEWEST_PHOTO_DAY - index * DAY_MS).toISOString().slice(0, 10);
+	return { id: fakeAssetId(source, index), takenAt: `${day}T15:30:00` };
 }
 
 function asPerson({ id, name, hidden }: FakeImmichPerson): ImmichPerson {

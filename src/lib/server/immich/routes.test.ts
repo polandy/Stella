@@ -10,6 +10,7 @@ import {
 	answerFaceSearch,
 	answerGlimpse,
 	answerImmichMedia,
+	answerLibrary,
 	answerMatchHint,
 	IMMICH_MEDIA_CACHE_CONTROL
 } from './routes';
@@ -460,6 +461,52 @@ describe('answerMatchHint', () => {
 			status: 404,
 			message: 'errors.contact.notFound'
 		});
+		expect(gateway.calls).toEqual([]);
+	});
+});
+
+describe('answerLibrary', () => {
+	const libraryDeps = () => {
+		const gateway = createFakeImmichGateway(testLibrary());
+		return { gateway, deps: { gateway, signer } };
+	};
+
+	it('answers a day of the library as JSON that no cache keeps', async () => {
+		const { deps } = libraryDeps();
+		const answer = await answerLibrary(deps, viewer, { day: '2026-09-01', q: null });
+		if (!(answer instanceof Response)) throw new Error(`refused with ${answer.status}`);
+		expect(answer.headers.get('cache-control')).toBe(IMMICH_MEDIA_CACHE_CONTROL);
+		const body = await answer.json();
+		expect([body.state, body.photos.length, body.earlier]).toEqual(['day', 4, '2026-08-31']);
+	});
+
+	it('answers a search by description', async () => {
+		const { deps } = libraryDeps();
+		const answer = await answerLibrary(deps, viewer, { day: null, q: 'Carl' });
+		if (!(answer instanceof Response)) throw new Error(`refused with ${answer.status}`);
+		expect((await answer.json()).state).toBe('found');
+	});
+
+	it('refuses a visitor who is not signed in, an instance without Immich, and a day that is none', async () => {
+		const { deps, gateway } = libraryDeps();
+		expect(await answerLibrary(deps, null, { day: '2026-09-01', q: null })).toEqual({
+			status: 401,
+			message: 'errors.notSignedIn'
+		});
+		expect(await answerLibrary(null, viewer, { day: '2026-09-01', q: null })).toEqual({
+			status: 404,
+			message: 'errors.notFound'
+		});
+		for (const query of [
+			{ day: '2026-02-30', q: null },
+			{ day: '01.09.2026', q: null },
+			{ day: null, q: null },
+			{ day: '2026-09-01', q: 'both' }
+		])
+			expect(await answerLibrary(deps, viewer, query)).toEqual({
+				status: 404,
+				message: 'errors.notFound'
+			});
 		expect(gateway.calls).toEqual([]);
 	});
 });

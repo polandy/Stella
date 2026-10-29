@@ -306,12 +306,18 @@ test.describe('the composer’s controls', () => {
 		await expect(share(page)).toBeChecked();
 		await expect(page.getByText('Shared', { exact: true })).toBeVisible();
 
-		// The photo control acts at once, so it is a button; its badge counts what was picked.
+		// The photo control is a button — with Immich on, a menu of where the photos come from
+		// (docs/02 §2.24.9); its badge counts what was picked.
 		const photos = page.getByRole('button', { name: 'Add photos' });
 		await expect(photos).toBeVisible();
 		await expect(page.getByTestId('photo-count')).toHaveCount(0);
 		const png = { mimeType: 'image/png', buffer: Buffer.from('not decoded here') };
-		await photos.setInputFiles([
+		await photos.click();
+		const chooser = page.waitForEvent('filechooser');
+		await page.getByRole('menuitem', { name: 'From this device' }).click();
+		await (
+			await chooser
+		).setFiles([
 			{ name: 'one.png', ...png },
 			{ name: 'two.png', ...png }
 		]);

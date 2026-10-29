@@ -71,7 +71,10 @@ export interface ComposerState {
 	 * empties the date field's parts instead of returning them to the default day.
 	 */
 	fresh: number;
+	/** Picked on the device; a new pick there replaces them. */
 	photos: readonly File[];
+	/** Copied from Immich (docs/02 §2.24.9); each pick adds to them. */
+	immichPhotos: readonly File[];
 	/** The handle under the caret, while the list is open for it. */
 	active: ActiveHandle | null;
 	highlighted: number;
@@ -100,6 +103,7 @@ export type ComposerEvent =
 	| { type: 'createCancelled' }
 	| { type: 'visibilitySet'; visibility: MentionAudience }
 	| { type: 'photosPicked'; files: readonly File[] }
+	| { type: 'immichPhotosAdded'; files: readonly File[] }
 	| { type: 'cancelled'; nextCommandId: string }
 	| SendEvent;
 
@@ -158,6 +162,7 @@ export function composerAtOpen(at: ComposerOpening): ComposerState {
 		commandId: at.commandId,
 		fresh: 0,
 		photos: [],
+		immichPhotos: [],
 		active: null,
 		highlighted: 0,
 		creating: null,
@@ -290,6 +295,8 @@ export function composerAfter(state: ComposerState, event: ComposerEvent): Compo
 			return only({ ...state, visibility: event.visibility });
 		case 'photosPicked':
 			return only({ ...state, photos: [...event.files] });
+		case 'immichPhotosAdded':
+			return only({ ...state, immichPhotos: [...state.immichPhotos, ...event.files] });
 		case 'cancelled':
 			return only(cleared(state, event.nextCommandId), [
 				{ kind: 'onCancel', draft: draftOf(state) }

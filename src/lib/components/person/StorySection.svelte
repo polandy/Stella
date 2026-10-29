@@ -315,6 +315,7 @@
 				<MomentComposer
 					candidates={otherContacts}
 					tags={data.entryTags}
+					immichLibrary={data.immichLibrary}
 					me={{ id: data.user.id, name: data.user.name }}
 					{today}
 					anchor={c}

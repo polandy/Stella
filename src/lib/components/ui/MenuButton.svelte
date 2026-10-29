@@ -32,9 +32,11 @@
 		/**
 		 * `pill` is the small rounded toggle of a toolbar; `button` frames the trigger like a
 		 * secondary button and drops the chevron, for a ⋯ beside a screen's own actions — the
-		 * person page's identity card (docs/05 §5.5).
+		 * person page's identity card (docs/05 §5.5). `icon` is a bare round icon button, and
+		 * `outline` a bordered one with a word beside the icon — the photo button of a moment and
+		 * of a journal entry, which open *From this device* / *From Immich* (docs/02 §2.24.9).
 		 */
-		look?: 'pill' | 'button';
+		look?: 'pill' | 'button' | 'icon' | 'outline';
 	}
 
 	let {
@@ -153,12 +155,20 @@
 		if (menu && nearMiss(menu.getBoundingClientRect(), tap, NEAR_MISS)) return;
 		close(false);
 	}
+
+	const FRAMED = {
+		button:
+			'grid size-9 place-items-center rounded-control border border-border bg-card text-fg shadow-card transition-colors hover:bg-card-hover',
+		icon: 'relative grid size-8 place-items-center rounded-full text-fg-muted transition-colors hover:bg-card-hover hover:text-fg',
+		outline:
+			'inline-flex items-center gap-2 rounded-app border border-border px-3 py-2 text-sm text-fg-muted transition-colors hover:text-fg'
+	};
 </script>
 
 <svelte:window onpointerdown={onWindowPointerdown} />
 
 <div bind:this={root} class="pointer-events-auto relative">
-	{#if look === 'button'}
+	{#if look !== 'pill'}
 		<button
 			bind:this={pill}
 			type="button"
@@ -168,7 +178,7 @@
 			title={label}
 			onclick={() => (open ? close() : void show())}
 			onkeydown={onPillKeydown}
-			class="grid size-9 place-items-center rounded-control border border-border bg-card text-fg shadow-card transition-colors hover:bg-card-hover"
+			class={FRAMED[look]}
 		>
 			{@render trigger()}
 		</button>

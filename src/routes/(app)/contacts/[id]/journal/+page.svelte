@@ -9,6 +9,8 @@
 	import DateField from '$lib/components/ui/DateField.svelte';
 	import EmptyState from '$lib/components/ui/EmptyState.svelte';
 	import Icon from '$lib/components/ui/Icon.svelte';
+	import ImmichLibraryPicker from '$lib/components/immich/ImmichLibraryPicker.svelte';
+	import PhotoSourceMenu from '$lib/components/immich/PhotoSourceMenu.svelte';
 	import MentionTextarea from '$lib/components/stream/MentionTextarea.svelte';
 	import JournalTagFilter from '$lib/components/journal/JournalTagFilter.svelte';
 	import PrivateMark from '$lib/components/ui/PrivateMark.svelte';
@@ -54,6 +56,19 @@
 	}
 
 	/*
+	 * Photos copied from Immich (docs/02 §2.24.9) add to the entry's, and a new pick on the device
+	 * keeps them. The picker opens on the day the entry's field says.
+	 */
+	let fromImmich = $state<File[]>([]);
+	let libraryOpen = $state(false);
+	let libraryDay = $state('');
+	function openLibrary() {
+		const entryDate = composeForm ? new FormData(composeForm).get('entryDate') : null;
+		libraryDay = typeof entryDate === 'string' && entryDate !== '' ? entryDate : data.today;
+		libraryOpen = true;
+	}
+
+	/*
 	 * An entry is saved as a command through the outbox, in reach or not (docs/02 §2.18.1, docs/04
 	 * ADR-076): its photos are processed first (downscaled, location
 	 * stripped) and follow it. Kept on the device when Stella cannot take it, it shows above the
@@ -68,6 +83,7 @@
 	function doneComposing() {
 		composeForm?.reset();
 		picked = [];
+		fromImmich = [];
 		entryVisibility = 'shared';
 		composing = false;
 	}
@@ -98,7 +114,8 @@
 					uploadError = null;
 					try {
 						const photos: KeptPhoto[] = [];
-						for (const file of picked) photos.push({ id: ulid(), ...(await processImage(file)) });
+						for (const file of [...picked, ...fromImmich])
+							photos.push({ id: ulid(), ...(await processImage(file)) });
 						return photos;
 					} catch {
 						uploadError = t('journal.uploadFailed');
@@ -274,18 +291,29 @@
 				class="w-full rounded-md border border-border-input bg-bg px-3 py-2 text-fg"
 			/>
 			<div class="flex flex-wrap items-center gap-3">
-				<!-- `sr-only`, not `hidden`: a hidden input is out of the tab order, and the button
-				     with it (WCAG 2.1.1). The label shows where focus is instead. -->
-				<label
-					class="inline-flex cursor-pointer items-center gap-2 rounded-app border border-border px-3 py-2 text-sm text-fg-muted hover:text-fg has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-focus-ring"
-				>
-					<Icon name="photo" size={15} />
-					{t('journal.addPhotos')}
-					<input type="file" accept="image/*" multiple onchange={onFiles} class="sr-only" />
-				</label>
-				{#if picked.length}
+				{#if data.immichLibrary}
+					<PhotoSourceMenu
+						label={t('journal.addPhotos')}
+						look="outline"
+						onfiles={(files) => (picked = files)}
+						onimmich={openLibrary}
+					>
+						{#snippet trigger()}<Icon name="photo" size={15} />{t('journal.addPhotos')}{/snippet}
+					</PhotoSourceMenu>
+				{:else}
+					<!-- `sr-only`, not `hidden`: a hidden input is out of the tab order, and the button
+					     with it (WCAG 2.1.1). The label shows where focus is instead. -->
+					<label
+						class="inline-flex cursor-pointer items-center gap-2 rounded-app border border-border px-3 py-2 text-sm text-fg-muted hover:text-fg has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-focus-ring"
+					>
+						<Icon name="photo" size={15} />
+						{t('journal.addPhotos')}
+						<input type="file" accept="image/*" multiple onchange={onFiles} class="sr-only" />
+					</label>
+				{/if}
+				{#if picked.length + fromImmich.length}
 					<span class="text-sm text-fg-subtle">
-						{t('journal.photosReady', { count: picked.length })}
+						{t('journal.photosReady', { count: picked.length + fromImmich.length })}
 					</span>
 				{/if}
 			</div>
@@ -497,3 +525,11 @@
 		</EmptyState>
 	{/if}
 </main>
+
+{#if data.immichLibrary}
+	<ImmichLibraryPicker
+		bind:open={libraryOpen}
+		day={libraryDay}
+		onadd={(copies) => (fromImmich = [...fromImmich, ...copies.map((copy) => copy.file)])}
+	/>
+{/if}

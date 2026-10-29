@@ -95,7 +95,11 @@ test('keeps a journal entry offline above the timeline, and sends it with its ph
 	await openJournal(page);
 	await context.setOffline(true);
 
-	await page.getByLabel('Add photos').setInputFiles([dot('kept-entry.png')]);
+	// With Immich on, the photo button is a menu (docs/02 §2.24.9); the device needs no connection.
+	await page.getByRole('button', { name: 'Add photos' }).click();
+	const chooser = page.waitForEvent('filechooser');
+	await page.getByRole('menuitem', { name: 'From this device' }).click();
+	await (await chooser).setFiles([dot('kept-entry.png')]);
 	await expect(page.getByText('1 photo ready')).toBeVisible();
 	await writeEntry(page, 'a kept entry from the mountain hut');
 	const kept = page.getByTestId('kept-entries').locator('li');

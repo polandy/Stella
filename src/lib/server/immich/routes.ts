@@ -1,3 +1,4 @@
+import { isWholeDay } from '../../dates/calendar';
 import type { MessageKey } from '../../i18n/translate';
 import type { GlimpseScope } from '../../immich/strip';
 import type { Viewer } from '../access/visibility';
@@ -10,6 +11,7 @@ import {
 	type ImmichMediaDeps,
 	type ImmichMediaRefusal
 } from '../domain/immich/glimpse';
+import { readLibraryDay, searchLibrary, type ImmichLibraryDeps } from '../domain/immich/library';
 import { findImmichFaces, type ImmichLinkDeps } from '../domain/immich/links';
 import { findLikelyMatchFor, type PersonMatchDeps } from '../domain/immich/person-match';
 import type { ImmichMediaSigner } from '../domain/immich/signed-media';
@@ -121,6 +123,33 @@ export async function answerGlimpse(
 	const glimpse = await readImmichGlimpse(deps, viewer, contactId, cursor, scope);
 	if (!glimpse) return NOT_FOUND;
 	return Response.json(glimpse, { headers: { 'Cache-Control': IMMICH_MEDIA_CACHE_CONTROL } });
+}
+
+/** The library picker's `?day=` and `?q=`: exactly one is given. */
+export interface LibraryQuery {
+	day: string | null;
+	q: string | null;
+}
+
+/**
+ * `GET /immich/library?day=` or `?q=`: a day of the whole library, or a search of it, for the
+ * picker beside a photo upload (docs/02 §2.24.9) — for any member, every photo signed for their
+ * household. A failure in Immich is said in the body; the picker shows it.
+ */
+export async function answerLibrary(
+	deps: ImmichLibraryDeps | null,
+	viewer: Viewer | null,
+	query: LibraryQuery
+): Promise<Response | RouteRefusal> {
+	if (!viewer) return NOT_SIGNED_IN;
+	if (!deps) return NOT_FOUND;
+	if ((query.day === null) === (query.q === null)) return NOT_FOUND;
+	if (query.day !== null && !isWholeDay(query.day)) return NOT_FOUND;
+	const view =
+		query.day !== null
+			? await readLibraryDay(deps, viewer, query.day)
+			: await searchLibrary(deps, viewer, query.q ?? '');
+	return Response.json(view, { headers: { 'Cache-Control': IMMICH_MEDIA_CACHE_CONTROL } });
 }
 
 /** What the picker says when Immich did not give it faces. */

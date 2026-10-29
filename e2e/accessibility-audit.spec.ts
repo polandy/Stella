@@ -75,9 +75,10 @@ test.describe('the moment composer', () => {
 		await page.keyboard.press('Space');
 		await expect(shared).toBeChecked();
 
-		// The photo button is a real stop in the tab order, not a hidden input behind a label.
+		// The photo button is a real stop in the tab order — with Immich on, the menu of where the
+		// photos come from (docs/02 §2.24.9), whose hidden file field takes no stop of its own.
 		await page.keyboard.press('Tab');
-		await expect(page.locator('input[type="file"]').first()).toBeFocused();
+		await expect(page.getByRole('button', { name: 'Add photos' })).toBeFocused();
 	});
 
 	test('the @-list moves its highlight over real options while the cursor stays in the text', async ({

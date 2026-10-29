@@ -28,7 +28,7 @@ export const immich = {
 	'immich.settings.tooOld': (p: { version: string }) =>
 		`This Immich is version ${p.version}. Stella needs Immich 3.2 or newer.`,
 	'immich.settings.sharing':
-		'Everyone in the household can see the photos of the people linked from this library.',
+		'Everyone in the household can see every photo in this library from Stella: when they add a photo to a moment, a journal entry or a gallery, they can browse it by day and search it. Archived, locked and trashed photos are never shown.',
 	'immich.settings.howToLink': 'Link a person from the menu of the Photos card on their page.',
 
 	// Settings → Immich → Find your people: the matching list (§2.24.7).
@@ -168,7 +168,46 @@ export const immich = {
 		`Pick a photo ${p.name} is in to make it their picture.`,
 	'immich.picker.photosNone': (p: { name: string }) =>
 		`No photos of ${p.name} to show from Immich.`,
-	'immich.picker.backToFaces': 'Back to faces'
+	'immich.picker.backToFaces': 'Back to faces',
+
+	// A photo from the whole library, beside every upload (§2.24.9).
+	'immich.library.fromDevice': 'From this device',
+	'immich.library.fromImmich': 'From Immich',
+	'immich.library.addPhotos': 'Add photos',
+	'immich.library.or': 'or',
+	'immich.library.needsConnection': 'Needs a connection',
+	'immich.library.search': 'Search Immich — beach, birthday cake…',
+	'immich.library.clearSearch': 'Clear the search',
+	'immich.library.earlier': 'An earlier day with photos',
+	'immich.library.later': 'A later day with photos',
+	'immich.library.photoCount': (p: { count: number }) =>
+		p.count === 1 ? '1 photo' : `${p.count} photos`,
+	'immich.library.noneOnDay': (p: { day: string }) => `No photos from ${p.day} in Immich.`,
+	'immich.library.arrowsSkip': 'The arrows skip to the nearest day that has some.',
+	'immich.library.bestMatches': (p: { query: string }) => `Best matches for “${p.query}”`,
+	'immich.library.noMatch': (p: { query: string }) => `Nothing in Immich matches “${p.query}”.`,
+	'immich.library.searchOff':
+		'Smart search is switched off on this Immich server, so Stella cannot search it. Browse by day instead.',
+	'immich.library.unreachable': 'Immich didn’t answer.',
+	'immich.library.unreachableHint': 'Try again in a moment. Settings → Immich says what is wrong.',
+	'immich.library.tryAgain': 'Try again',
+	'immich.library.tapToTick': 'Tap photos to tick them',
+	'immich.library.ticked': (p: { count: number }) => `${p.count} ticked`,
+	'immich.library.clear': 'Clear',
+	'immich.library.atMost': (p: { count: number }) => `At most ${p.count} at a time`,
+	'immich.library.add': (p: { count: number }) =>
+		p.count === 1 ? 'Add 1 photo' : `Add ${p.count} photos`,
+	'immich.library.copying': (p: { done: number; count: number }) =>
+		p.count === 1
+			? 'Copying the photo from Immich…'
+			: `Copying ${p.done} of ${p.count} photos from Immich…`,
+	'immich.library.copyFailed': 'A photo could not be copied from Immich. Try again.',
+	'immich.library.added': (p: { count: number }) =>
+		p.count === 1 ? '1 photo from Immich added' : `${p.count} photos from Immich added`,
+	'immich.library.ready': (p: { count: number }) =>
+		p.count === 1 ? '1 photo from Immich' : `${p.count} photos from Immich`,
+	'immich.library.photo': (p: { when: string }) => `Photo, ${p.when}`,
+	'immich.library.photoUndated': 'Photo'
 };
 
 /** The key set every translation of this area has to provide. */

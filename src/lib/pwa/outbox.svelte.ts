@@ -276,6 +276,7 @@ async function sendPhotos(member: string): Promise<void> {
 		form.set('width', String(next.photo.width));
 		form.set('height', String(next.photo.height));
 		if (next.photo.takenAt) form.set('takenAt', next.photo.takenAt);
+		if (next.photo.immichToken) form.set('immichToken', next.photo.immichToken);
 		let answer: CommandAnswer | null = null;
 		try {
 			const response = await fetch('/api/commands/photo', {
