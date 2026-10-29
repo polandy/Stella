@@ -364,7 +364,7 @@ function picker() {
   const n = S.ticked.size;
   const daynav = searching || st === 'down' ? '' : `<div class="daynav">
       <button class="iconbtn" aria-label="An earlier day with photos" data-day="${Math.min(S.day + 1, 2)}">${icon('left')}</button>
-      <div class="day">${dated || S.day ? d.label : 'Wednesday, 29 October 2026'}<small>${st === 'emptyday' ? 'the moment’s day · nothing yet' : dated ? (S.day ? d.sub : ctx[S.place].what + ' · ' + d.n + ' photos') : 'today · newest first'}</small></div>
+      <div class="day">${dated || S.day ? d.label : 'Wednesday, 29 October 2026'}<small>${st === 'emptyday' ? 'the moment’s day · nothing yet' : dated ? (S.day ? d.sub : ctx[S.place].what + ' · ' + d.n + ' photos') : 'today · 14 photos'}</small></div>
       <button class="iconbtn" aria-label="A later day with photos" data-day="${Math.max(S.day - 1, 0)}" ${S.day ? '' : 'disabled style="opacity:.35"'}>${icon('right')}</button>
     </div>`;
   let foot;
