@@ -51,6 +51,16 @@ export const gifts: GiftsMessages = {
 	'gifts.remove': (p) => `„${p.title}“ entfernen`,
 	'gifts.removed': 'Geschenk entfernt',
 
+	'gifts.allIdeas': 'Alle Geschenkideen',
+	'gifts.list.title': 'Geschenkideen',
+	'gifts.list.intro':
+		'Alle offenen Ideen im Haushalt. Wessen Geburtstag oder Weihnachten als Nächstes kommt, steht oben.',
+	'gifts.list.open': (p) => `${p.count} offen`,
+	'gifts.list.ideas': (p) => (p.count === 1 ? '1 Idee' : `${p.count} Ideen`),
+	'gifts.list.next': (p) => `${p.occasion} ${p.when} · ${p.day}`,
+	'gifts.list.empty': 'Keine offenen Geschenkideen.',
+	'gifts.list.emptyHint': 'Notiere eine auf der Geschenke-Karte einer Person, dann steht sie hier.',
+
 	'gifts.state.idea': 'Idee',
 	'gifts.state.given': (p) => `Geschenkt am ${p.day}`,
 	'gifts.state.received': (p) => `Bekommen am ${p.day}`,

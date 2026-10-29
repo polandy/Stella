@@ -74,6 +74,8 @@ export const PALETTE_PEOPLE_LIMIT = 6;
 export interface PaletteLabels {
 	write: string;
 	giftIdea: string;
+	/** The household's list of every open idea (docs/02 §2.25.6). */
+	giftIdeas: string;
 	addPerson: string;
 	/** The last row of a non-empty query: "Search everything for …". */
 	searchEverything: (query: string) => string;
@@ -87,6 +89,7 @@ const ACTIONS: readonly ({ id: string; label: ActionLabel; icon: IconName } & (
 ))[] = [
 	{ id: 'write', label: 'write', icon: 'write', href: '/?compose' },
 	{ id: 'gift-idea', label: 'giftIdea', icon: 'gift', step: 'giftIdea' },
+	{ id: 'gift-ideas', label: 'giftIdeas', icon: 'idea', href: '/gifts' },
 	{ id: 'add-person', label: 'addPerson', icon: 'add', href: '/contacts/new' }
 ];
 

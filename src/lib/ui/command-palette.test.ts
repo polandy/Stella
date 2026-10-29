@@ -33,6 +33,7 @@ function person(
 const labels: PaletteLabels = {
 	write: 'Write a moment',
 	giftIdea: 'Gift idea for …',
+	giftIdeas: 'All gift ideas',
 	addPerson: 'Add person',
 	searchEverything: (query) => `Search everything for “${query}”`
 };
@@ -90,6 +91,7 @@ describe('paletteRows', () => {
 		expect(rows[0]).toMatchObject({ kind: 'action', id: 'write', href: '/?compose' });
 		expect(rows.filter((r) => r.kind === 'action').map((r) => r.id)).toEqual([
 			'write',
+			'gift-ideas',
 			'add-person'
 		]);
 	});
@@ -153,6 +155,7 @@ describe('paletteRows', () => {
 		const german: PaletteLabels = {
 			write: 'Moment festhalten',
 			giftIdea: 'Geschenkidee für …',
+			giftIdeas: 'Alle Geschenkideen',
 			addPerson: 'Person hinzufügen',
 			searchEverything: (query) => `Überall nach „${query}“ suchen`
 		};
@@ -187,12 +190,25 @@ describe('a gift idea from the palette (docs/02 §2.25.2)', () => {
 	it('sits next to writing a moment, and leads to a second step rather than a page', () => {
 		const rows = paletteRows('', people, labels);
 
-		expect(rows.slice(0, 3).map((r) => r.id)).toEqual(['write', 'gift-idea', 'add-person']);
+		expect(rows.slice(0, 4).map((r) => r.id)).toEqual([
+			'write',
+			'gift-idea',
+			'gift-ideas',
+			'add-person'
+		]);
 		expect(rows[1]).toMatchObject({ kind: 'step', step: 'giftIdea', label: 'Gift idea for …' });
 	});
 
 	it('is found by what it does', () => {
 		expect(paletteRows('gift', people, labels).map((r) => r.id)).toContain('gift-idea');
+	});
+
+	it('opens the household’s list of every open idea (docs/02 §2.25.6)', () => {
+		expect(paletteRows('ideas', people, labels)[0]).toMatchObject({
+			kind: 'action',
+			id: 'gift-ideas',
+			href: '/gifts'
+		});
 	});
 
 	it('then asks only whom it is for: people, each landing on their idea form', () => {

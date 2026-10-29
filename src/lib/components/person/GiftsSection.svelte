@@ -191,6 +191,10 @@
 				>
 					<Icon name="add" size={14} />{t('gifts.addReceived')}
 				</button>
+				<!-- Every idea of the household on one page (docs/02 §2.25.6). -->
+				<a href="/gifts" role="menuitem" class={MENU_ITEM} onclick={close}>
+					<Icon name="idea" size={14} />{t('gifts.allIdeas')}
+				</a>
 			{/snippet}
 		</MenuButton>
 	{/snippet}
