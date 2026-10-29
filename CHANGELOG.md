@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.0.32](https://github.com/polandy/Stella/compare/v0.0.31...v0.0.32) (2026-10-29)
+
+
+### Features
+
+* **composer:** say why Save is off once the writer has started ([#408](https://github.com/polandy/Stella/issues/408)) ([0173e30](https://github.com/polandy/Stella/commit/0173e303ab42f941df2808bed3a5a8046743db89))
+* **immich:** photos from Immich wherever a photo can be added ([#407](https://github.com/polandy/Stella/issues/407)) ([d961152](https://github.com/polandy/Stella/commit/d9611521618cdfd008b6050495b1729c107f16d3))
+* **journal:** a page per tag, the list of all tags, and a Tags filter on Home's stream ([#406](https://github.com/polandy/Stella/issues/406)) ([4f1f216](https://github.com/polandy/Stella/commit/4f1f21601ea4b3c284f1f21001fc9272d68c5210))
+* **journal:** tag moments with #words, filter a journal by tag, find them in search ([#404](https://github.com/polandy/Stella/issues/404)) ([08c66b3](https://github.com/polandy/Stella/commit/08c66b3e512829e469c63d01cd8f68aefca9f851))
+
 ## [0.0.31](https://github.com/polandy/Stella/compare/v0.0.30...v0.0.31) (2026-10-27)
 
 
