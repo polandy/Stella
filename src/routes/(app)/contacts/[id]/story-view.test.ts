@@ -81,6 +81,13 @@ describe('toStoryItem, journal entries', () => {
 		expect(view.bodyHtml).not.toContain('<script');
 	});
 
+	it("links a #tag to the tag's page across the household (docs/02 §2.20.2)", () => {
+		const view = toStoryItem(journalItem({ body: 'Up the #Gurten again.' }), context());
+
+		if (view.kind !== 'journal') throw new Error('expected a journal item');
+		expect(view.bodyHtml).toContain('href="/tags/gurten"');
+	});
+
 	it('resolves an @-mention token to the name the viewer is allowed to see', () => {
 		const view = toStoryItem(
 			journalItem({ body: 'Went with @{contact:lena} to the lake.' }),

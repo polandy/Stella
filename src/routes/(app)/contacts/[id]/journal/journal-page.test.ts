@@ -222,10 +222,10 @@ describe('load', () => {
 	it("offers the person's tags and filters the entries by the one the address names", async () => {
 		const url = '/contacts/anna/journal?tag=HIKE';
 		const answer = await answerOf(load(routeEvent({ services: services(), params: PAGE, url })));
-		const data = (answer as { data: { tags: unknown; activeTag: unknown; entries: unknown[] } })
+		const data = (answer as { data: { tags: unknown; activeTags: unknown; entries: unknown[] } })
 			.data;
 		expect(data.tags).toEqual([{ name: 'Hike', key: 'hike', count: 1, onlyPrivate: false }]);
-		expect(data.activeTag).toEqual({ key: 'hike', name: 'Hike' });
+		expect(data.activeTags).toEqual([{ key: 'hike', name: 'Hike' }]);
 		expect(data.entries).toEqual([expect.objectContaining({ id: 'e1' })]);
 	});
 

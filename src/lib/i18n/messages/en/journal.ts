@@ -32,11 +32,23 @@ export const journal = {
 	'journal.tags.filter': 'Filter by tag',
 	'journal.tags.all': 'All',
 	'journal.tags.onlyYou': 'Only you see this tag: it is only on your private moments',
-	'journal.tags.filtered': (p: { count: number; name: string }) =>
-		p.count === 1 ? `1 moment with #${p.name}` : `${p.count} moments with #${p.name}`,
+	'journal.tags.filtered': (p: { count: number; names: readonly string[] }) => {
+		const tags = p.names.map((name) => `#${name}`).join(' + ');
+		return p.count === 1 ? `1 moment with ${tags}` : `${p.count} moments with ${tags}`;
+	},
 	'journal.tags.showAll': 'Show all',
 	'journal.tags.none': 'No moments with this tag.',
-	'journal.tags.noneHint': 'A tag is a #word in a moment’s text.'
+	'journal.tags.noneHint': 'A tag is a #word in a moment’s text.',
+	// The tags list and a tag's own page (docs/02 §2.20.2).
+	'journal.tags.allTags': 'All tags',
+	'journal.tags.listTitle': 'Tags',
+	'journal.tags.listIntro': 'What your household files its moments under, most used first.',
+	'journal.tags.listHint':
+		'Write #word in a moment to tag it. A tag with a lock is on your private moments only.',
+	'journal.tags.listEmpty': 'No tags yet',
+	'journal.tags.summary': (p: { moments: number; people: number }) =>
+		`${p.moments === 1 ? '1 moment' : `${p.moments} moments`} about ${p.people === 1 ? '1 person' : `${p.people} people`}`,
+	'journal.tags.unknown': (p: { name: string }) => `No moments with #${p.name}`
 };
 
 /** The key set every translation of this area has to provide. */

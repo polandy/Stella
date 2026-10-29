@@ -17,6 +17,9 @@
 	import { dayLabel as calendarDayLabel } from '$lib/dates/labels';
 	import { streamDays, streamTime } from '$lib/stream/days';
 	import StreamWhen from '$lib/components/stream/StreamWhen.svelte';
+	import StreamFace from '$lib/components/stream/StreamFace.svelte';
+	import StreamMoment from '$lib/components/stream/StreamMoment.svelte';
+	import StreamFilter from '$lib/components/stream/StreamFilter.svelte';
 	import { outbox } from '$lib/pwa/outbox.svelte';
 	import { isKept, type KeptOf } from '$lib/pwa/outbox';
 	import KeptItem from '$lib/components/pwa/KeptItem.svelte';
@@ -26,17 +29,7 @@
 	import { useI18n } from '$lib/i18n/context.svelte';
 	import { relationshipRowLabel } from '$lib/relationships/labels';
 	import { KIND_PRESENTATION } from '$lib/story/interaction-kinds';
-	import type { MessageKey } from '$lib/i18n/translate';
-	import {
-		isNarrowed,
-		NO_FILTER,
-		offersMemberChoice,
-		STREAM_KINDS,
-		streamFilterHref,
-		type StreamKind
-	} from '$lib/stream/filter';
-	import { filterPill } from '$lib/stream/filter-pill';
-	import { showsActorBadge } from '$lib/stream/actor-badge';
+	import { isNarrowed, NO_FILTER, streamFilterHref } from '$lib/stream/filter';
 	import type { ActionData, PageData } from './$types';
 
 	let { data, form }: { data: PageData; form: ActionData } = $props();
@@ -58,45 +51,7 @@
 
 	let hintDismissed = $state(false);
 
-	// The filter chips (docs/02 §2.22.2) are plain links, so a filter survives a reload, the
-	// back button undoes it, and it works before the page has hydrated.
-	const KIND_LABEL: Record<StreamKind, MessageKey> = {
-		moment: 'home.filter.kind.moment',
-		interaction: 'home.filter.kind.interaction',
-		relationship: 'home.filter.kind.relationship',
-		person: 'home.filter.kind.person',
-		circlePhoto: 'home.filter.kind.circlePhoto',
-		notice: 'home.filter.kind.notice'
-	};
 	const filtered = $derived(isNarrowed(data.filter));
-	// The phone's pill: its count, highlight and the short summary beside it (docs/05 §5.5).
-	const pill = $derived(filterPill(data.filter));
-	const pillSummary = $derived(
-		pill.narrowedTo
-			.map((narrowed) =>
-				narrowed.axis === 'kind'
-					? t(KIND_LABEL[narrowed.kind])
-					: narrowed.memberId === data.user.id
-						? t('home.you')
-						: (data.members.find((member) => member.id === narrowed.memberId)?.name ?? '')
-			)
-			.join(' · ')
-	);
-	const FILTER_SHEET = 'stream-filter-sheet';
-	// Colour, border and weight come whole from one of the two looks, never a static utility
-	// beside a conditional one on the same property — stylesheet order would pick the winner.
-	const PILL =
-		'inline-flex shrink-0 items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm transition-colors';
-	const PILL_OFF = 'border-border bg-card font-medium text-fg-muted hover:text-fg';
-	const PILL_ON = 'border-primary/45 bg-primary-soft font-semibold text-fg';
-	const CHIP_ROW = 'flex flex-wrap items-center gap-1';
-	const CHIP =
-		'rounded-full px-3 py-1 text-sm font-medium text-fg-muted transition-colors hover:text-fg aria-[current=true]:bg-primary-soft aria-[current=true]:font-semibold aria-[current=true]:text-fg';
-	// Words on a tint, and labels that carry content, are written in --fg / --fg-muted: in Latte
-	// --primary on its own tint and --fg-subtle on the page ground both fall below AA (docs/05 §5.6).
-	// The row's label is quiet sentence case, part of the control: the uppercase label is kept
-	// for dividers inside a list (docs/05 §5.3).
-	const CHIP_ROW_LABEL = 'mr-1 min-w-10 text-sm font-medium text-fg-muted';
 
 	// The rail's rows: one vertical list at every width — beside the stream from lg, above or
 	// below it on a phone. Nothing scrolls sideways, so nothing hides off the right edge.
@@ -395,68 +350,13 @@
 		{/if}
 
 		{#if days.length || filtered}
-			<!-- Below md the two rows would wrap to four lines and push the stream past the fold, so
-		     they fold into one pill and a sheet (docs/05 §5.5). The sheet is a native popover:
-		     the pill opens it, a tap outside, Escape or *Done* closes it, all without JavaScript,
-		     and the chips inside stay the same links. -->
-			<div class="flex min-w-0 items-center gap-2.5 md:hidden" data-testid="stream-filter-pill">
-				<button
-					type="button"
-					popovertarget={FILTER_SHEET}
-					aria-label={t('home.filter.pillLabel', { count: pill.count })}
-					class="{PILL} {pill.highlighted ? PILL_ON : PILL_OFF}"
-				>
-					<Icon name="filter" size={15} />
-					{t('home.filter.pill')}
-					{#if pill.count}
-						<span
-							class="grid h-[18px] min-w-[18px] place-items-center rounded-full bg-primary px-1 text-[11px] font-bold text-primary-fg tabular-nums"
-							>{pill.count}</span
-						>
-					{/if}
-				</button>
-				{#if pill.narrowedTo.length}
-					<span class="min-w-0 truncate text-[13px] text-fg-muted">{pillSummary}</span>
-				{/if}
-			</div>
-			<div
-				id={FILTER_SHEET}
-				popover="auto"
-				role="dialog"
-				aria-labelledby="{FILTER_SHEET}-title"
-				data-sveltekit-noscroll
-				class="inset-x-0 top-auto bottom-0 m-0 max-h-[85dvh] w-full max-w-none overflow-y-auto rounded-t-[20px] bg-bg px-4 pt-4 pb-[calc(1.5rem+env(safe-area-inset-bottom))] text-fg shadow-pop backdrop:bg-bg-sunken/70 backdrop:backdrop-blur-[3px] md:hidden"
-			>
-				<h2 id="{FILTER_SHEET}-title" class="mb-3 text-base font-semibold">
-					{t('home.filter.label')}
-				</h2>
-				<div class="flex flex-col gap-3">
-					{@render filterRows()}
-				</div>
-				<div class="mt-4 flex items-center justify-between">
-					{#if filtered}
-						<a href={streamFilterHref(NO_FILTER)} class="text-sm text-link hover:underline"
-							>{t('home.filter.clear')}</a
-						>
-					{/if}
-					<Button
-						variant="secondary"
-						class="ml-auto"
-						popovertarget={FILTER_SHEET}
-						popovertargetaction="hide"
-					>
-						{t('home.filter.done')}
-					</Button>
-				</div>
-			</div>
-			<nav
-				class="flex flex-col gap-1.5 max-md:hidden"
-				aria-label={t('home.filter.label')}
-				data-testid="stream-filter"
-				data-sveltekit-noscroll
-			>
-				{@render filterRows()}
-			</nav>
+			<StreamFilter
+				filter={data.filter}
+				members={data.members}
+				userId={data.user.id}
+				tagChips={data.tagChips}
+				tagLine={data.tagLine}
+			/>
 		{/if}
 
 		{#if days.length}
@@ -473,74 +373,9 @@
 								class="group grid grid-cols-[32px_1fr] gap-3 rounded-app px-2.5 py-2.5 transition-colors hover:bg-card"
 							>
 								{#if item.kind === 'moment'}
-									{@render face(item.anchor, item)}
-									<div class="min-w-0">
-										<div class="flex flex-wrap items-baseline gap-x-1.5 text-[13px] text-fg-muted">
-											<b class="font-semibold text-fg"
-												>{item.mine ? t('home.you') : item.actor.name}</b
-											>
-											<span>{t('home.stream.wroteIn')}</span>
-											<span
-												><a
-													href="/contacts/{item.anchor.id}/journal"
-													class="font-medium text-fg hover:underline">{item.anchor.name}</a
-												>{t('home.stream.wroteInJournal')}</span
-											>
-											{#if item.visibility === 'private'}<PrivateMark
-													veilId="journal:{item.id}"
-													class="text-[11px]"
-												/>{/if}
-											<StreamWhen time={stream.when(item.at)} />
-										</div>
-										<!-- A full-width stream would run a line past 1000 px; ~72 characters
-										     keep it readable. -->
-										<!-- A private moment's words and photos stay blurred until asked for
-										     (docs/02 §2.10.1); one veil id, so a tap shows both. -->
-										<Veil
-											id="journal:{item.id}"
-											isPrivate={item.visibility === 'private'}
-											label={t('privacy.veil.moment')}
-											text={item.bodyHtml}
-											class="mt-1 max-w-[72ch]"
-											textClass="text-fg"
-										>
-											<div class="note-body text-fg">{@html item.bodyHtml}</div>
-										</Veil>
-										{#if item.photoIds.length}
-											<Veil
-												id="journal:{item.id}"
-												isPrivate={item.visibility === 'private'}
-												label={t('privacy.veil.photo')}
-												photo
-												class="mt-2 w-fit"
-											>
-												<div class="flex gap-1.5">
-													{#each item.photoIds as photoId, index (photoId)}
-														<a
-															href="/media/{photoId}"
-															target="_blank"
-															rel="noreferrer"
-															class="block overflow-hidden rounded-md border border-border"
-														>
-															<img
-																src="/media/{photoId}?thumb"
-																alt={t('components.photo.open', {
-																	n: index + 1,
-																	count: item.photoIds.length
-																})}
-																loading="lazy"
-																class="size-16 object-cover"
-															/>
-														</a>
-													{/each}
-												</div>
-											</Veil>
-										{/if}
-										<!-- The people a moment mentions are chips in its body already; only an
-										     interaction, whose participants the text does not name, lists them. -->
-									</div>
+									<StreamMoment {item} members={data.members} when={stream.when(item.at)} />
 								{:else if item.kind === 'person'}
-									{@render face(item.person, item)}
+									<StreamFace person={item.person} row={item} members={data.members} />
 									<div class="min-w-0">
 										<div class="flex flex-wrap items-baseline gap-x-1.5 text-[13px] text-fg-muted">
 											<b class="font-semibold text-fg"
@@ -566,7 +401,7 @@
 									</div>
 								{:else if item.kind === 'interaction'}
 									{@const kind = KIND_PRESENTATION[item.interactionKind]}
-									{@render face(item.subject, item)}
+									<StreamFace person={item.subject} row={item} members={data.members} />
 									<div class="min-w-0">
 										<div class="flex flex-wrap items-baseline gap-x-1.5 text-[13px] text-fg-muted">
 											<b class="font-semibold text-fg"
@@ -635,7 +470,7 @@
 										canOpen={(id) => peopleIds.has(id)}
 									/>
 								{:else}
-									{@render face(item.from, item)}
+									<StreamFace person={item.from} row={item} members={data.members} />
 									<div class="min-w-0">
 										<div class="flex flex-wrap items-baseline gap-x-1.5 text-[13px] text-fg-muted">
 											<b class="font-semibold text-fg"
@@ -679,64 +514,6 @@
 			<EmptyState icon="write" title={t('home.empty.title')} hint={t('home.empty.hint')} />
 		{/if}
 	</div>
-
-	<!-- A row leads with its subject's face; on a row another member wrote, their own small face
-	     sits on its corner (docs/05 §5.5). The sentence names them already, so it is decorative.
-	     Its ring is the row's ground, and follows the row's hover tint. -->
-	{#snippet face(
-		person: { id: string; name: string; avatarPhotoId: string | null },
-		row: { mine: boolean; actor: { id: string; name: string } }
-	)}
-		<span class="relative size-8">
-			<Avatar id={person.id} name={person.name} avatarPhotoId={person.avatarPhotoId} size={32} />
-			{#if showsActorBadge(row, data.members)}
-				<span
-					class="absolute -right-1 -bottom-1 rounded-full ring-2 ring-bg transition-shadow group-hover:ring-card"
-					aria-hidden="true"
-					data-testid="actor-badge"
-				>
-					<Avatar id={row.actor.id} name={row.actor.name} size={16} />
-				</span>
-			{/if}
-		</span>
-	{/snippet}
-
-	{#snippet filterRows()}
-		<div class={CHIP_ROW}>
-			<span class={CHIP_ROW_LABEL}>{t('home.filter.kind')}</span>
-			{@render chip(
-				t('home.filter.kind.all'),
-				{ ...data.filter, kind: null },
-				data.filter.kind === null
-			)}
-			{#each STREAM_KINDS as kind (kind)}
-				{@render chip(t(KIND_LABEL[kind]), { ...data.filter, kind }, data.filter.kind === kind)}
-			{/each}
-		</div>
-		{#if offersMemberChoice(data.members)}
-			<div class={CHIP_ROW}>
-				<span class={CHIP_ROW_LABEL}>{t('home.filter.member')}</span>
-				{@render chip(
-					t('home.filter.member.all'),
-					{ ...data.filter, memberId: null },
-					data.filter.memberId === null
-				)}
-				{#each data.members as member (member.id)}
-					{@render chip(
-						member.id === data.user.id ? t('home.you') : member.name,
-						{ ...data.filter, memberId: member.id },
-						data.filter.memberId === member.id
-					)}
-				{/each}
-			</div>
-		{/if}
-	{/snippet}
-
-	{#snippet chip(label: string, target: typeof data.filter, current: boolean)}
-		<a href={streamFilterHref(target)} class={CHIP} aria-current={current ? 'true' : undefined}
-			>{label}</a
-		>
-	{/snippet}
 
 	{#snippet showAll(total: number, reveal: () => void)}
 		<button

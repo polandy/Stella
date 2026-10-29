@@ -26,7 +26,7 @@ import { TranslatableError } from '$lib/i18n/translatable';
 import { say, translator } from '$lib/server/i18n/say';
 import type { MessageKey } from '$lib/i18n/translate';
 import { todayFor } from '$lib/dates/today';
-import { activeTagFor, journalEntriesFor } from './journal-view';
+import { activeTagsFor, journalEntriesFor } from './journal-view';
 
 export const load: PageServerLoad = async ({ locals, params, url }) => {
 	const viewer = requireViewer(locals);
@@ -42,7 +42,7 @@ export const load: PageServerLoad = async ({ locals, params, url }) => {
 		locals.services.story.entryTags.listOnContactVisibleTo(viewer, params.id)
 	]);
 	// The filter lives in the address, so a tag chip is a link and Back undoes it (docs/02 §2.20.2).
-	const activeTag = activeTagFor(url.searchParams.get('tag'), tags);
+	const activeTags = activeTagsFor(url.searchParams.getAll('tag'), tags);
 	// Names for the people the entries mention, not for the whole household.
 	const contactNames = await listContactNamesAmong(
 		locals.services.people.contactNameDeps,
@@ -60,7 +60,7 @@ export const load: PageServerLoad = async ({ locals, params, url }) => {
 		},
 		today: todayFor(systemClock),
 		tags,
-		activeTag,
+		activeTags,
 		entries: journalEntriesFor({
 			remover,
 			contactId: contact.id,
@@ -73,7 +73,7 @@ export const load: PageServerLoad = async ({ locals, params, url }) => {
 			photos: journalPhotos,
 			names: contactNames,
 			nameOfAuthor,
-			tag: activeTag?.key ?? null
+			tags: activeTags.map((tag) => tag.key)
 		})
 	};
 };

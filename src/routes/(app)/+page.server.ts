@@ -1,9 +1,6 @@
 import { fail, redirect } from '@sveltejs/kit';
 import { requireUser, requireViewer } from '$lib/server/auth/guards';
-import {
-	listBrowsableNamesAmong,
-	listContactNamesAmong
-} from '$lib/server/domain/contacts/contact-names';
+import { listBrowsableNamesAmong } from '$lib/server/domain/contacts/contact-names';
 import { listPeopleEnoughForFirstRun } from '$lib/server/domain/contacts/directory';
 import { hasImminentDate, upcomingDates } from '$lib/server/domain/dates/upcoming';
 import { countOpenIdeas } from '$lib/server/domain/gifts/gifts';
@@ -13,12 +10,10 @@ import { fromFormData } from '$lib/commands/form-data';
 import { MomentCaptureSchema } from '$lib/commands/payloads';
 import { ulidGenerator } from '$lib/server/id';
 import { systemClock } from '$lib/server/clock';
-import { renderMarkdownWithMentions } from '$lib/server/domain/notes/markdown';
-import { journalTagHref } from '$lib/hashtags/hashtags';
 import { membersViewerFirst } from '$lib/server/domain/household/members';
 import { buildStream } from '$lib/server/domain/stream/stream';
-import { extractMentionIds } from '$lib/mentions/mentions';
 import { parseStreamFilter } from '$lib/stream/filter';
+import { homeTagChips, tagNarrowing } from '$lib/hashtags/tag-pages';
 import type { Actions, PageServerLoad } from './$types';
 import { say, translator } from '$lib/server/i18n/say';
 import type { MessageKey } from '$lib/i18n/translate';
@@ -26,6 +21,7 @@ import { linkHintHref } from '$lib/stream/link-hint';
 import { welcomeSteps } from '$lib/stream/welcome';
 import { todayFor } from '$lib/dates/today';
 import { composerFor, linkSuggestionAmong, peopleNamedBy, photosPosted } from './home-view';
+import { streamForView } from './_shared/stream-view';
 
 /*
  * Home (docs/02 §2.22, §2.12): the "What happened?" capture field, the household stream, and
@@ -46,23 +42,17 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 
 	const named = peopleNamedBy(url.searchParams);
 
-	const [items, onList, dateSources, firstPeople] = await Promise.all([
+	const [items, onList, dateSources, firstPeople, entryTags] = await Promise.all([
 		buildStream(locals.services.media.streamDeps, viewer, filter),
 		// Who the household can still act on — the browsing scope — among just those.
 		listBrowsableNamesAmong(locals.services.people.contactNameDeps, viewer, named.ids),
 		locals.services.records.importantDates.listSourcesVisibleTo(viewer),
 		// Just enough of the household to tell whether it has begun (docs/02 §2.22.3).
-		listPeopleEnoughForFirstRun(locals.services.people.contactDirectoryDeps, viewer)
+		listPeopleEnoughForFirstRun(locals.services.people.contactDirectoryDeps, viewer),
+		// For the Tags row and the line over a stream narrowed by tags (docs/02 §2.20.2).
+		locals.services.story.entryTags.listVisibleTo(viewer)
 	]);
-	// What a mention already written is called (archived people included), for the moments
-	// on this page only.
-	const names = await listContactNamesAmong(
-		locals.services.people.contactNameDeps,
-		viewer,
-		items.flatMap((item) => (item.kind === 'moment' ? extractMentionIds(item.body) : []))
-	);
-	const nameById = new Map(names.map((c) => [c.id, c.displayName]));
-	const nameOf = (id: string) => nameById.get(id) ?? null;
+	const stream = await streamForView(locals.services.people.contactNameDeps, viewer, items);
 
 	// One reading of the clock, so the composer's day and the horizon cannot straddle midnight.
 	const day = todayFor(systemClock);
@@ -90,17 +80,9 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 		}),
 		filter,
 		members,
-		stream: items.map((item) =>
-			item.kind === 'moment'
-				? {
-						...item,
-						body: undefined,
-						bodyHtml: renderMarkdownWithMentions(item.body, nameOf, {
-							tagHref: journalTagHref(item.anchor.id)
-						})
-					}
-				: item
-		)
+		tagChips: homeTagChips(entryTags, filter.tags),
+		tagLine: tagNarrowing(filter.tags, filter.memberId, entryTags, items.length),
+		stream
 	};
 };
 

@@ -60,3 +60,23 @@ export function tagAccent(name: string): (typeof AVATAR_ACCENTS)[number] {
 export function journalTagHref(contactId: string): (key: string) => string {
 	return (key) => `/contacts/${contactId}/journal?tag=${encodeURIComponent(key)}`;
 }
+
+/**
+ * Where a tag chip in a journal's filter row leads, relative to the journal: an unchosen tag joins
+ * the chosen ones — an entry must then carry them all — and a chosen one is taken off.
+ */
+export function journalTagToggle(chosen: readonly string[], key: string): string {
+	const keys = chosen.includes(key) ? chosen.filter((k) => k !== key) : [...chosen, key];
+	return `?${new URLSearchParams(keys.map((k) => ['tag', k]))}`;
+}
+
+/** The list of every tag the viewer can see (docs/02 §2.20.2). */
+export const TAGS_PAGE = '/tags';
+
+/**
+ * Where a tag chip leads outside one person's journal — on Home, a person's Activity, search:
+ * the tag's own page, its moments across the household.
+ */
+export function tagPageHref(key: string): string {
+	return `${TAGS_PAGE}/${encodeURIComponent(key)}`;
+}

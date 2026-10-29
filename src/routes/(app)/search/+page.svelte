@@ -6,10 +6,12 @@
 	import Avatar from '$lib/components/ui/Avatar.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import EmptyState from '$lib/components/ui/EmptyState.svelte';
+	import Icon from '$lib/components/ui/Icon.svelte';
 	import PrivateMark from '$lib/components/ui/PrivateMark.svelte';
 	import Veil from '$lib/components/ui/Veil.svelte';
 	import { stateLabel } from '$lib/gifts/labels';
-	import { journalTagHref } from '$lib/hashtags/hashtags';
+	import { journalTagHref, tagPageHref } from '$lib/hashtags/hashtags';
+	import { searchTagHead } from '$lib/hashtags/tag-pages';
 	import { newPersonHref } from '$lib/people/new-person';
 	import { contactSectionPath } from '$lib/people/sections';
 	import { useI18n } from '$lib/i18n/context.svelte';
@@ -34,6 +36,11 @@
 		const tag = data.results.tag;
 		return tag ? journalTagHref(contactId)(tag) : `/contacts/${contactId}/journal`;
 	}
+
+	/** A `#tag` query's moments head with the tag's own page (docs/02 §2.9). */
+	const tagHead = $derived(
+		searchTagHead(data.results.tag, data.entryTags, data.results.moments.length)
+	);
 
 	function shortDate(iso: string): string {
 		const [y, m, d] = iso.split('-').map(Number);
@@ -166,6 +173,16 @@
 			{#if data.results.moments.length > 0}
 				<section class="flex flex-col gap-1">
 					<h2 class="text-sm font-medium text-fg-muted">{t('search.moments')}</h2>
+					{#if tagHead}
+						<a
+							href={tagPageHref(tagHead.key)}
+							class="flex items-center justify-between gap-2 rounded-app border border-border bg-card px-3 py-2 text-sm font-medium text-fg hover:border-primary/45"
+							data-testid="search-tag-page"
+						>
+							{t('search.tagAll', { count: tagHead.count, tag: tagHead.name })}
+							<Icon name="forward" size={16} />
+						</a>
+					{/if}
 					{#each data.results.moments as m (m.entryId)}
 						<a
 							href={momentHref(m.contactId)}

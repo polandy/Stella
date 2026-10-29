@@ -110,6 +110,7 @@ export const home = {
 	'home.filter.label': 'Filter the stream',
 	'home.filter.kind': 'What',
 	'home.filter.member': 'Who',
+	'home.filter.tag': 'Tags',
 	'home.filter.kind.all': 'Everything',
 	'home.filter.kind.moment': 'Moments',
 	'home.filter.kind.interaction': 'Calls & visits',

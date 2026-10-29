@@ -98,10 +98,15 @@ A few things worth knowing:
   paragraph each. The second one is added; nothing you wrote earlier is replaced.
 - **Tags.** Write `#hike` or `#Geburtstag` anywhere in a moment to give it a topic. Typing `#`
   suggests the tags your household already uses; a line under the field shows which tags the
-  moment gets. `#Hike` and `#hike` are the same tag. A tag reads as a coloured chip; tap it to
-  see only that person's moments with it, or use the chips above their journal. Search for
-  `#hike` to find every moment with it, across everyone. A tag that only your private moments
-  carry is yours alone, shown with a lock. Write `\#` for a plain `#`.
+  moment gets. `#Hike` and `#hike` are the same tag. A tag reads as a coloured chip. In a
+  person's journal, tap it — or the chips above the journal — to see only their moments with
+  it; anywhere else it opens the tag's own page, with every moment carrying it across everyone.
+  On Home, the *Tags* row narrows the stream to a tag. Above a journal and on Home you can tap
+  several tags: you then see the moments that carry all of them; tap a chosen tag again to
+  take it off. *All tags* lists every tag your
+  household uses, most used first. Searching `#hike` lists its moments with a link to its page.
+  A tag that only your private moments carry is yours alone, shown with a lock. Write `\#` for
+  a plain `#`.
 
 ### Shared or private
 

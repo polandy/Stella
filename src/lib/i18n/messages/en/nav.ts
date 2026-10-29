@@ -7,6 +7,7 @@ export const nav = {
 	'nav.graph': 'Graph',
 	'nav.settings': 'Settings',
 	'nav.search': 'Search',
+	'nav.tags': 'Tags',
 	'nav.journal': 'Journal',
 	'nav.newPerson': 'New person',
 	'nav.contact': 'Contact',

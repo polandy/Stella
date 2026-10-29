@@ -23,6 +23,7 @@ import type {
 	PersonRow,
 	RelationshipRow,
 	NoticeRow,
+	MomentQuery,
 	StreamPerson,
 	StreamQuery,
 	StreamRepository
@@ -32,9 +33,11 @@ import {
 	activityLog,
 	circle,
 	contact,
+	entryTag,
 	interaction,
 	interactionParticipant,
 	journalEntry,
+	journalEntryTag,
 	journalMention,
 	photo,
 	relationship,
@@ -50,7 +53,7 @@ import {
  * subject, circle photos via `circlePhotoVisibleTo` (circle visible + shared-or-own photo). A
  * moment's mention chips and an interaction's participants are limited to people
  * the viewer may see, so neither ever widens access. A read narrowed to one member adds that
- * member as the author on top of the scope.
+ * member as the author on top of the scope; moments narrowed to tags add each tag the same way.
  */
 /**
  * The member narrowing (docs/02 §2.22.2): only rows `memberId` wrote, or no condition at all.
@@ -64,7 +67,22 @@ export function createDrizzleStreamRepository(
 	db: BunSQLiteDatabase<typeof schema>
 ): StreamRepository {
 	return {
-		async recentMoments(viewer: Viewer, { limit, memberId }: StreamQuery): Promise<MomentRow[]> {
+		async recentMoments(
+			viewer: Viewer,
+			{ limit, memberId, tags = [] }: MomentQuery
+		): Promise<MomentRow[]> {
+			// One condition per tag, so a moment must carry them all; each the household's tag of
+			// this key, never another household's of the same spelling.
+			const carryingTags = tags.map((key) =>
+				inArray(
+					journalEntry.id,
+					db
+						.select({ id: journalEntryTag.journalEntryId })
+						.from(journalEntryTag)
+						.innerJoin(entryTag, eq(entryTag.id, journalEntryTag.entryTagId))
+						.where(and(eq(entryTag.householdId, viewer.householdId), eq(entryTag.key, key)))
+				)
+			);
 			const rows = db
 				.select({
 					id: journalEntry.id,
@@ -89,7 +107,8 @@ export function createDrizzleStreamRepository(
 							visibility: journalEntry.visibility,
 							createdBy: journalEntry.createdBy
 						}),
-						byMember(journalEntry.createdBy, memberId)
+						byMember(journalEntry.createdBy, memberId),
+						...carryingTags
 					)
 				)
 				.orderBy(desc(journalEntry.updatedAt))

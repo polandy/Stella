@@ -25,6 +25,24 @@ describe('breadcrumbs', () => {
 		]);
 	});
 
+	it("puts a tag's page under Tags, named with its #", () => {
+		expect(breadcrumbs('/(app)/tags', {}, {}, t)).toEqual([
+			{ label: 'Home', href: '/' },
+			{ label: 'Tags' }
+		]);
+		expect(
+			breadcrumbs('/(app)/tags/[key]', { tag: { name: 'Gurten' } }, { key: 'gurten' }, t)
+		).toEqual([
+			{ label: 'Home', href: '/' },
+			{ label: 'Tags', href: '/tags' },
+			{ label: '#Gurten' }
+		]);
+		// An unknown tag still names what was asked for.
+		expect(breadcrumbs('/(app)/tags/[key]', {}, { key: 'nowhere' }, t).at(-1)).toEqual({
+			label: '#nowhere'
+		});
+	});
+
 	it('puts a top-level circle straight under Circles', () => {
 		expect(
 			breadcrumbs(CIRCLE, { circle: { name: 'Choir' }, nesting: { ancestors: [] } }, { id: 'k' }, t)

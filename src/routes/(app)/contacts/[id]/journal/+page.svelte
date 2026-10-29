@@ -329,7 +329,7 @@
 		</ul>
 	{/if}
 
-	<JournalTagFilter tags={data.tags} active={data.activeTag} shown={data.entries.length} />
+	<JournalTagFilter tags={data.tags} active={data.activeTags} shown={data.entries.length} />
 
 	{#if days.length}
 		<ol class="flex flex-col gap-8">
@@ -480,7 +480,7 @@
 				</li>
 			{/each}
 		</ol>
-	{:else if data.activeTag}
+	{:else if data.activeTags.length}
 		<EmptyState icon="filter" title={t('journal.tags.none')} hint={t('journal.tags.noneHint')} />
 	{:else}
 		<EmptyState
