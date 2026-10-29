@@ -1,6 +1,6 @@
 import { and, asc, count, desc, eq, inArray, lt, or, sql } from 'drizzle-orm';
 import type { BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
-import { childRecordVisibleTo } from '../access/query-scoping';
+import { childRecordVisibleTo, contactBrowsableBy } from '../access/query-scoping';
 import type { Viewer } from '../access/visibility';
 import type { DatedGift, Gift, GiftRepository } from '../domain/gifts/gifts';
 import type * as schema from './schema';
@@ -101,6 +101,30 @@ export function createDrizzleGiftRepository(db: BunSQLiteDatabase<typeof schema>
 				.groupBy(gift.contactId)
 				.all();
 			return new Map(rows.map((row) => [row.contactId, row.ideas]));
+		},
+
+		async listOpenIdeasVisibleTo(viewer) {
+			return db
+				.select({
+					...columns,
+					contactName: contact.displayName,
+					avatarPhotoId: contact.avatarPhotoId
+				})
+				.from(gift)
+				.innerJoin(contact, eq(gift.contactId, contact.id))
+				.where(
+					and(
+						eq(gift.state, 'idea'),
+						childRecordVisibleTo(viewer, {
+							visibility: gift.visibility,
+							createdBy: gift.createdBy
+						}),
+						// A list to act on is a browsing surface: an archived person is out (docs/04 §4.9).
+						contactBrowsableBy(viewer)
+					)
+				)
+				.orderBy(desc(gift.createdAt))
+				.all();
 		},
 
 		async listStoryPageForContactVisibleTo(viewer, contactId, opts) {
