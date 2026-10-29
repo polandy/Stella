@@ -67,7 +67,9 @@ Type what happened and mention the people in it with `@`:
 As you type `@`, Stella suggests people you already know. **A moment has to mention at
 least one person**, because the person is what makes it findable a year from now. It lands
 in the journal of the first person mentioned; everyone else is attached to it as a
-mention, and it shows up on their page too.
+mention, and it shows up on their page too. Until a moment has its words and its person,
+**Save** stays greyed out and the line beside it says what is missing — *Write what happened
+first* if you have only added photos, *Mention at least one person with @* if nobody is named.
 
 A few things worth knowing:
 
