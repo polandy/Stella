@@ -1,0 +1,306 @@
+<title>Stella Tag Pages</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400..700&family=Newsreader:opsz,wght@6..72,400..600&display=swap">
+<style>
+/* Layout: Stella's own shell (sidebar + centred 624px column), a mockup toolbar on top. Tokens are Catppuccin Latte / Mocha as in src/app.css. */
+:root {
+  --bg: #e6e9ef; --bg-sunken: #dce0e8; --card: #ffffff; --border: #ccd0da;
+  --fg: #4c4f69; --fg-muted: #5c5f77; --fg-subtle: #6c6f85;
+  --primary: #853ae8; --primary-fg: #ffffff; --link: #2761d9; --focus: #1e66f5;
+  --primary-soft: color-mix(in srgb, var(--primary) 14%, transparent);
+  --tint: 16%; --tint-on: 28%;
+  --a-pink: #ea76cb; --a-blue: #1e66f5; --a-mauve: #8839ef; --a-teal: #179299;
+  --a-peach: #fe640b; --a-green: #40a02b; --a-yellow: #df8e1d; --a-sky: #04a5e5; --a-lavender: #7287fd; --a-flamingo: #dd7878;
+  --shadow-card: 0 1px 2px rgb(76 79 105 / .06), 0 6px 20px -8px rgb(76 79 105 / .2);
+  --shadow-pop: 0 2px 4px rgb(76 79 105 / .06), 0 12px 32px -12px rgb(76 79 105 / .28);
+  --sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif;
+  --serif: 'Newsreader', Georgia, serif;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #181825; --bg-sunken: #11111b; --card: #232334; --border: #313244;
+  --fg: #cdd6f4; --fg-muted: #bac2de; --fg-subtle: #a6adc8;
+  --primary: #cba6f7; --primary-fg: #1e1e2e; --link: #89b4fa; --focus: #b4befe;
+  --tint: 22%; --tint-on: 28%;
+  --a-pink: #f5c2e7; --a-blue: #89b4fa; --a-mauve: #cba6f7; --a-teal: #94e2d5;
+  --a-peach: #fab387; --a-green: #a6e3a1; --a-yellow: #f9e2af; --a-sky: #89dceb; --a-lavender: #b4befe; --a-flamingo: #f2cdcd;
+  --shadow-card: 0 1px 2px rgb(0 0 0 / .35), 0 8px 24px -10px rgb(0 0 0 / .65);
+  --shadow-pop: 0 2px 6px rgb(0 0 0 / .4), 0 16px 40px -14px rgb(0 0 0 / .75);
+  color-scheme: dark; } }
+:root[data-theme="dark"] {
+  --bg: #181825; --bg-sunken: #11111b; --card: #232334; --border: #313244;
+  --fg: #cdd6f4; --fg-muted: #bac2de; --fg-subtle: #a6adc8;
+  --primary: #cba6f7; --primary-fg: #1e1e2e; --link: #89b4fa; --focus: #b4befe;
+  --tint: 22%; --tint-on: 28%;
+  --a-pink: #f5c2e7; --a-blue: #89b4fa; --a-mauve: #cba6f7; --a-teal: #94e2d5;
+  --a-peach: #fab387; --a-green: #a6e3a1; --a-yellow: #f9e2af; --a-sky: #89dceb; --a-lavender: #b4befe; --a-flamingo: #f2cdcd;
+  --shadow-card: 0 1px 2px rgb(0 0 0 / .35), 0 8px 24px -10px rgb(0 0 0 / .65);
+  --shadow-pop: 0 2px 6px rgb(0 0 0 / .4), 0 16px 40px -14px rgb(0 0 0 / .75);
+  color-scheme: dark; }
+
+* { box-sizing: border-box; }
+body { background: var(--bg-sunken); color: var(--fg); font-family: var(--sans); font-size: 14px; }
+a { color: inherit; text-decoration: none; }
+button { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+
+.toolbar { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: center; padding-block: 12px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+.toolbar h1 { font-size: 15px; margin: 0 8px 0 0; font-weight: 650; }
+.seg { display: inline-flex; background: var(--bg); border: 1px solid var(--border); border-radius: 999px; padding: 2px; }
+.seg button { border: 0; background: none; padding: 5px 12px; border-radius: 999px; cursor: pointer; color: var(--fg-muted); font-weight: 500; }
+.seg button[aria-pressed="true"] { background: var(--card); color: var(--fg); box-shadow: var(--shadow-card); font-weight: 600; }
+.note { width: 100%; color: var(--fg-subtle); font-size: 13px; margin: 0; max-width: 80ch; }
+
+.stage { display: flex; justify-content: center; padding-block: 0 32px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+.frame { background: var(--bg); border-radius: 14px; box-shadow: var(--shadow-pop); overflow: hidden; width: 100%; max-width: 1180px; display: grid; grid-template-columns: 200px 1fr; min-height: 640px; }
+.frame.phone { max-width: 400px; grid-template-columns: 1fr; border-radius: 28px; border: 8px solid var(--bg-sunken); }
+.side { background: var(--bg-sunken); padding: 16px 10px; display: flex; flex-direction: column; gap: 2px; }
+.side .logo { font-size: 20px; font-weight: 650; padding: 0 10px 14px; }
+.side a { padding: 8px 10px; border-radius: 8px; color: var(--fg-muted); font-weight: 500; }
+.side a.on { background: var(--card); color: var(--fg); box-shadow: var(--shadow-card); }
+.phone .side { display: none; }
+.main { min-width: 0; padding: 18px 24px 40px; }
+.phone .main { padding: 14px 14px 80px; }
+.crumbs { color: var(--fg-muted); font-size: 13px; display: flex; gap: 6px; flex-wrap: wrap; }
+.crumbs b { color: var(--fg); }
+.col { max-width: 624px; margin: 28px auto 0; display: flex; flex-direction: column; gap: 14px; }
+.phone .col { margin-top: 14px; }
+.wide { max-width: 860px; }
+
+.head { display: flex; align-items: flex-start; gap: 12px; justify-content: space-between; flex-wrap: wrap; }
+.head h2 { margin: 0; font-size: 26px; font-weight: 650; text-wrap: balance; display: flex; align-items: center; gap: 10px; }
+.head p { margin: 2px 0 0; color: var(--fg-muted); }
+.link { color: var(--link); font-weight: 500; font-size: 13px; }
+.link:hover { text-decoration: underline; }
+
+.tag { display: inline-flex; align-items: center; gap: 4px; border-radius: 999px; padding: 4px 10px; font-weight: 500; font-size: 14px; color: var(--fg);
+  background: color-mix(in srgb, var(--acc) var(--tint), transparent); cursor: pointer; }
+.tag[aria-current] { background: color-mix(in srgb, var(--acc) var(--tint-on), var(--card)); box-shadow: 0 0 0 2px var(--focus); }
+.tag small { color: var(--fg-muted); font-size: 12px; }
+.tag.big { font-size: 24px; padding: 2px 14px 4px; font-weight: 650; cursor: default; }
+.inline-tag { display: inline; border-radius: 6px; padding: 0 5px; font-family: var(--sans); font-size: .9em; color: var(--fg); background: color-mix(in srgb, var(--acc) var(--tint), transparent); cursor: pointer; }
+.inline-tag:hover { text-decoration: underline; }
+.lock { width: 11px; height: 11px; }
+
+.day { display: flex; align-items: center; gap: 12px; padding: 14px 0 4px; font-size: 12px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--fg-subtle); }
+.day::after { content: ""; height: 1px; flex: 1; background: var(--border); }
+.row { display: grid; grid-template-columns: 32px 1fr; gap: 12px; padding: 10px; border-radius: 10px; }
+.row:hover { background: var(--card); }
+.av { width: 32px; height: 32px; border-radius: 50%; display: grid; place-items: center; font-size: 12px; font-weight: 600; color: var(--fg); background: color-mix(in srgb, var(--acc) 24%, var(--card)); }
+.meta { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0 6px; font-size: 13px; color: var(--fg-muted); }
+.meta b { color: var(--fg); font-weight: 600; }
+.meta a { color: var(--fg); font-weight: 500; }
+.meta a:hover { text-decoration: underline; }
+.meta .t { margin-left: auto; color: var(--fg-subtle); font-size: 12px; font-variant-numeric: tabular-nums; }
+.pm { font-size: 11px; color: var(--fg-subtle); display: inline-flex; gap: 3px; align-items: center; }
+.body { font-family: var(--serif); font-size: 17px; line-height: 1.5; margin-top: 3px; max-width: 72ch; }
+.veil { filter: blur(6px); user-select: none; cursor: pointer; }
+.veil-wrap { position: relative; }
+.veil-btn { position: absolute; inset: 0; display: grid; place-items: center; background: none; border: 0; cursor: pointer; font-size: 13px; font-weight: 600; color: var(--fg); }
+.veil-btn span { background: var(--card); border-radius: 999px; padding: 4px 10px; box-shadow: var(--shadow-card); }
+
+.chips { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.filter-rows { display: flex; flex-direction: column; gap: 6px; }
+.frow { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; }
+.frow > .lbl { min-width: 40px; margin-right: 4px; font-size: 14px; font-weight: 500; color: var(--fg-muted); }
+.fchip { border-radius: 999px; padding: 4px 12px; font-size: 14px; font-weight: 500; color: var(--fg-muted); cursor: pointer; }
+.fchip:hover { color: var(--fg); }
+.fchip[aria-current] { background: var(--primary-soft); color: var(--fg); font-weight: 600; }
+.frow .tag { font-size: 13px; padding: 3px 10px; }
+.frow .more { font-size: 13px; color: var(--link); font-weight: 500; padding: 3px 6px; }
+.status { font-size: 14px; color: var(--fg-muted); }
+.status a { color: var(--link); text-decoration: underline; }
+
+.pill { display: inline-flex; align-items: center; gap: 6px; border-radius: 999px; border: 1px solid var(--border); background: var(--card); padding: 6px 12px; font-weight: 500; color: var(--fg-muted); cursor: pointer; }
+.pill.on { border-color: color-mix(in srgb, var(--primary) 45%, transparent); background: var(--primary-soft); color: var(--fg); font-weight: 600; }
+.pill .n { min-width: 18px; height: 18px; border-radius: 999px; background: var(--primary); color: var(--primary-fg); font-size: 11px; font-weight: 700; display: grid; place-items: center; padding: 0 4px; }
+.pillbar { display: flex; gap: 10px; align-items: center; min-width: 0; }
+.pillbar .sum { font-size: 13px; color: var(--fg-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sheet { background: var(--bg); border-radius: 20px 20px 0 0; box-shadow: var(--shadow-pop); padding: 16px; margin: 0 -14px; border-top: 1px solid var(--border); }
+.sheet h3 { margin: 0 0 12px; font-size: 16px; }
+.sheet .foot { display: flex; justify-content: space-between; align-items: center; margin-top: 16px; }
+.btn { border: 1px solid var(--border); background: var(--card); border-radius: 8px; padding: 7px 14px; font-weight: 600; cursor: pointer; }
+
+.empty { text-align: center; padding: 48px 16px; display: flex; flex-direction: column; align-items: center; gap: 8px; }
+.empty h3 { margin: 0; font-size: 17px; }
+.empty p { margin: 0; color: var(--fg-muted); max-width: 40ch; }
+
+.all-list { display: flex; flex-wrap: wrap; gap: 8px; }
+.all-list .tag { font-size: 15px; padding: 6px 12px; }
+.hint { font-size: 13px; color: var(--fg-subtle); margin: 0; }
+.phone .head h2 { font-size: 22px; }
+.phone .tag.big { font-size: 20px; }
+</style>
+
+<div class="toolbar">
+  <h1>Tag pages · mockup</h1>
+  <div class="seg" role="group" aria-label="Screen">
+    <button id="s-tag" data-screen="tag">#tag page</button>
+    <button id="s-all" data-screen="all">All tags</button>
+    <button id="s-home" data-screen="home">Home filter</button>
+  </div>
+  <div class="seg" role="group" aria-label="Width">
+    <button id="w-d" data-width="desktop">Desktop</button>
+    <button id="w-p" data-width="phone">Phone</button>
+  </div>
+  <div class="seg" role="group" aria-label="Theme">
+    <button id="t-l" data-theme-set="light">Latte</button>
+    <button id="t-d" data-theme-set="dark">Mocha</button>
+  </div>
+  <p class="note" id="note"></p>
+</div>
+<div class="stage"><div class="frame" id="frame"></div></div>
+
+<script>
+const TAGS = [
+  { key: 'crafts', name: 'crafts', count: 5, acc: 'pink' },
+  { key: 'family-history', name: 'family-history', count: 4, acc: 'blue' },
+  { key: 'hike', name: 'hike', count: 4, acc: 'teal' },
+  { key: 'winter', name: 'winter', count: 3, acc: 'mauve' },
+  { key: 'school', name: 'school', count: 3, acc: 'peach' },
+  { key: 'geburtstag', name: 'Geburtstag', count: 2, acc: 'yellow' },
+  { key: 'garden', name: 'garden', count: 2, acc: 'green' },
+  { key: 'recipes', name: 'recipes', count: 2, acc: 'sky' },
+  { key: 'surprise', name: 'surprise', count: 1, acc: 'flamingo', onlyYou: true },
+  { key: 'football', name: 'football', count: 1, acc: 'lavender' }
+];
+const tagOf = (k) => TAGS.find((t) => t.key === k);
+const MOMENTS = [
+  { id: 1, day: 'Today', time: '14:20', who: 'You', person: 'Hans Brunner', ini: 'HB', acc: 'sky', text: 'Hans showed me the dovetail joint on the old chest again, slower this time. #crafts' },
+  { id: 2, day: 'Yesterday', time: '19:05', who: 'Lena', person: 'Noah Brunner', ini: 'NB', acc: 'green', text: 'Noah carved his first spoon at the workshop. Wonky handle, proud face. #crafts #school' },
+  { id: 3, day: 'Friday, 14 August 2026', time: '10:12', who: 'You', person: 'Hans Brunner', ini: 'HB', acc: 'sky', text: 'Hans found his old carpentry ledger from 1969. Every chair in the village is in it. #family-history #crafts' },
+  { id: 4, day: 'Friday, 14 August 2026', time: '08:40', who: 'You', person: 'Hilde Meier', ini: 'HM', acc: 'peach', text: 'Knitting a scarf for Lena without her noticing. Blue, her colour. #crafts #surprise', private: true },
+  { id: 5, day: 'Tuesday, 21 April 2026', time: '21:30', who: 'Lena', person: 'Hans Brunner', ini: 'HB', acc: 'sky', text: 'Hans mended the sled runner the night before the first snow. #crafts #winter' },
+  { id: 6, day: 'Sunday, 31 May 2026', time: '16:00', who: 'You', person: 'Noah Brunner', ini: 'NB', acc: 'green', text: 'Up the Pilatus trail with Noah, who did not complain once. #hike' }
+];
+const OTHER_STREAM = [
+  { day: 'Today', html: '<b>Lena</b> called <a href="#">Hilde Meier</a>', ini: 'HM', acc: 'peach', time: '11:02' },
+  { day: 'Yesterday', html: '<b>You</b> added <a href="#">Marco Rossi</a>', ini: 'MR', acc: 'mauve', time: '09:15' }
+];
+const LOCK = '<svg class="lock" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="3" y="7" width="10" height="7" rx="1.5"/><path d="M5.5 7V5a2.5 2.5 0 0 1 5 0v2"/></svg>';
+
+const state = { screen: 'tag', width: 'desktop', tag: 'crafts', home: { tag: null, kind: null }, sheet: false, unveiled: new Set() };
+try { const s = JSON.parse(localStorage.getItem('tagmock') || '{}'); if (s.screen) state.screen = s.screen; if (s.width) state.width = s.width; } catch (e) {}
+
+const esc = (s) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;');
+function chipHtml(t, opts = {}) {
+  const cur = opts.current ? ' aria-current="page"' : '';
+  const lock = t.onlyYou ? LOCK : '';
+  const title = t.onlyYou ? ' title="Only you see this tag"' : '';
+  const count = opts.count === false ? '' : ` <small>${t.count}</small>`;
+  return `<a class="tag" style="--acc:var(--a-${t.acc})" data-go-tag="${t.key}"${cur}${title}>${lock}#${esc(t.name)}${count}</a>`;
+}
+function bodyHtml(text) {
+  return esc(text).replace(/#([\p{L}\p{N}_-]+)/gu, (m, n) => {
+    const t = tagOf(n.toLowerCase());
+    return t ? `<a class="inline-tag" style="--acc:var(--a-${t.acc})" data-go-tag="${t.key}" title="Every moment with #${t.name}">#${n}</a>` : m;
+  });
+}
+function momentRow(m, opts = {}) {
+  const veiled = m.private && !state.unveiled.has(m.id);
+  const journal = opts.tagLink ? `journal?tag=${opts.tagLink}` : 'journal';
+  const body = veiled
+    ? `<div class="veil-wrap"><div class="body veil" aria-hidden="true">${esc(m.text)}</div><button class="veil-btn" data-unveil="${m.id}"><span>Private moment · show</span></button></div>`
+    : `<div class="body">${bodyHtml(m.text)}</div>`;
+  return `<article class="row"><span class="av" style="--acc:var(--a-${m.acc})">${m.ini}</span><div style="min-width:0">
+    <div class="meta"><b>${m.who}</b><span>wrote in</span><span><a href="#" title="/contacts/…/${journal}">${m.person}</a>’s journal</span>${m.private ? `<span class="pm">${LOCK}Private</span>` : ''}<span class="t">${m.time}</span></div>
+    ${body}</div></article>`;
+}
+function grouped(items, render) {
+  const days = [];
+  for (const it of items) { let d = days.find((x) => x.day === it.day); if (!d) days.push(d = { day: it.day, items: [] }); d.items.push(it); }
+  return days.map((d) => `<div class="day">${d.day}</div>${d.items.map(render).join('')}`).join('');
+}
+const sidebar = (on) => `<nav class="side"><div class="logo">Stella</div>${['Home','People','Circles','Graph','Settings'].map((n) => `<a href="#" class="${n === on ? 'on' : ''}">${n}</a>`).join('')}</nav>`;
+
+function tagPage() {
+  const t = tagOf(state.tag);
+  if (!t) return `<div class="crumbs"><span>Home</span>/<span>Tags</span>/<b>#${esc(state.tag)}</b></div><div class="col"><div class="empty"><h3>No moment carries #${esc(state.tag)}</h3><p>Perhaps it was renamed in the text, or every moment with it was removed.</p><a class="link" data-screen-go="all">All tags</a></div></div>`;
+  const ms = MOMENTS.filter((m) => m.text.toLowerCase().includes('#' + t.key));
+  const people = new Set(ms.map((m) => m.person)).size;
+  return `<div class="crumbs"><span>Home</span>/<span data-screen-go="all" style="cursor:pointer">Tags</span>/<b>#${esc(t.name)}</b></div>
+  <div class="col">
+    <div class="head"><div><h2><span class="tag big" style="--acc:var(--a-${t.acc})">${t.onlyYou ? LOCK : ''}#${esc(t.name)}</span></h2>
+      <p>${ms.length} ${ms.length === 1 ? 'moment' : 'moments'} about ${people} ${people === 1 ? 'person' : 'people'}${t.onlyYou ? ' · Only you see this tag' : ''}</p></div>
+      <a class="link" data-screen-go="all">All tags</a></div>
+    <ol style="list-style:none;margin:0;padding:0">${grouped(ms, (m) => momentRow(m, { tagLink: t.key }))}</ol>
+  </div>`;
+}
+function allPage() {
+  return `<div class="crumbs"><span>Home</span>/<b>Tags</b></div>
+  <div class="col">
+    <div class="head"><div><h2>Tags</h2><p>What your household files its moments under, most used first.</p></div></div>
+    <div class="all-list">${TAGS.map((t) => chipHtml(t)).join('')}</div>
+    <p class="hint">Write #word in a moment to tag it. A tag with a lock is on your private moments only.</p>
+  </div>`;
+}
+const KINDS = [['moment','Moments'],['interaction','Interactions'],['relationship','Relationships'],['person','People'],['circlePhoto','Circle photos'],['notice','Notices']];
+const TOP = 8;
+function filterRows() {
+  const h = state.home;
+  const k = (val, label) => `<a class="fchip" data-kind="${val ?? ''}"${(h.kind ?? null) === val ? ' aria-current="true"' : ''}>${label}</a>`;
+  return `<div class="filter-rows">
+    <div class="frow"><span class="lbl">What</span>${k(null,'All')}${KINDS.map(([v,l]) => k(v,l)).join('')}</div>
+    <div class="frow"><span class="lbl">Who</span><a class="fchip" aria-current="true">Everyone</a><a class="fchip">You</a><a class="fchip">Lena</a></div>
+    <div class="frow"><span class="lbl">Tags</span><a class="fchip" data-home-tag=""${h.tag ? '' : ' aria-current="true"'}>All</a>${TAGS.slice(0, TOP).map((t) => chipHtml(t, { current: h.tag === t.key }).replace('data-go-tag', 'data-home-tag')).join('')}${TAGS.length > TOP ? `<a class="more" data-screen-go="all">All tags</a>` : ''}</div>
+  </div>`;
+}
+function homePage() {
+  const h = state.home, phone = state.width === 'phone';
+  const t = h.tag && tagOf(h.tag);
+  let items;
+  if (t) items = MOMENTS.filter((m) => m.text.toLowerCase().includes('#' + t.key));
+  else if (h.kind === 'moment' || !h.kind) items = MOMENTS;
+  else items = [];
+  const rows = grouped([...(h.kind || t ? [] : OTHER_STREAM.map((o) => ({ ...o, other: true }))), ...items], (it) => it.other
+    ? `<article class="row"><span class="av" style="--acc:var(--a-${it.acc})">${it.ini}</span><div class="meta" style="align-self:center">${it.html}<span class="t">${it.time}</span></div></article>`
+    : momentRow(it));
+  const status = t ? `<p class="status" aria-live="polite">${items.length} moments with #${esc(t.name)}<span style="margin:0 6px">·</span><a data-home-clear>Show all</a></p>` : '';
+  const narrowed = [h.kind && KINDS.find(([v]) => v === h.kind)[1], t && '#' + t.name].filter(Boolean);
+  const filters = phone
+    ? `<div class="pillbar"><button class="pill ${narrowed.length ? 'on' : ''}" data-sheet>Filter${narrowed.length ? `<span class="n">${narrowed.length}</span>` : ''}</button>${narrowed.length ? `<span class="sum">${narrowed.join(' · ')}</span>` : ''}</div>
+       ${state.sheet ? `<div class="sheet"><h3>Filter the stream</h3>${filterRows()}<div class="foot">${narrowed.length ? '<a class="link" data-home-clear>Show everything</a>' : '<span></span>'}<button class="btn" data-sheet>Done</button></div></div>` : ''}`
+    : filterRows();
+  return `${phone ? '' : '<div class="crumbs"><b>Home</b></div>'}
+  <div class="col">
+    ${filters}${status}
+    <ol style="list-style:none;margin:0;padding:0">${rows}</ol>
+  </div>`;
+}
+const NOTES = {
+  tag: 'Every moment carrying the tag, across everyone you may see, newest first. Each row names its person; the name opens their journal filtered by the tag. A private moment stays veiled. Tags in the text lead to their own page.',
+  all: '/tags: every tag you may see, most used first, with counts. A lock marks a tag only on your own private moments. Reached from "All tags" on a tag page and on Home\'s Tags row; no navigation entry.',
+  home: 'Home gets a third row, Tags: the 8 most used, then "All tags". Choosing a tag sets What to Moments (a tag lives only on moments); choosing another What clears it. A line says how many moments are left, with Show all. On a phone it folds into the Filter pill (tap it).'
+};
+function render() {
+  const f = document.getElementById('frame');
+  f.className = 'frame' + (state.width === 'phone' ? ' phone' : '');
+  const content = state.screen === 'tag' ? tagPage() : state.screen === 'all' ? allPage() : homePage();
+  f.innerHTML = sidebar(state.screen === 'home' ? 'Home' : '') + `<main class="main">${content}</main>`;
+  document.getElementById('note').textContent = NOTES[state.screen];
+  document.querySelectorAll('[data-screen]').forEach((b) => b.setAttribute('aria-pressed', b.dataset.screen === state.screen));
+  document.querySelectorAll('[data-width]').forEach((b) => b.setAttribute('aria-pressed', b.dataset.width === state.width));
+  const dark = document.documentElement.dataset.theme === 'dark' || (!document.documentElement.dataset.theme && matchMedia('(prefers-color-scheme: dark)').matches);
+  document.querySelectorAll('[data-theme-set]').forEach((b) => b.setAttribute('aria-pressed', (b.dataset.themeSet === 'dark') === dark));
+  try { localStorage.setItem('tagmock', JSON.stringify({ screen: state.screen, width: state.width })); } catch (e) {}
+}
+document.addEventListener('click', (e) => {
+  const el = e.target.closest('button, a'); if (!el) return;
+  const d = el.dataset;
+  if (el.tagName === 'A') e.preventDefault();
+  if (d.screen) state.screen = d.screen;
+  else if (d.width) { state.width = d.width; state.sheet = false; }
+  else if (d.themeSet) document.documentElement.dataset.theme = d.themeSet;
+  else if (d.screenGo) state.screen = d.screenGo;
+  else if (d.goTag !== undefined) { state.screen = 'tag'; state.tag = d.goTag; }
+  else if (d.homeTag !== undefined) { state.home = d.homeTag ? { tag: d.homeTag, kind: 'moment' } : { ...state.home, tag: null }; }
+  else if (d.kind !== undefined) { state.home = { kind: d.kind || null, tag: d.kind === 'moment' ? state.home.tag : null }; }
+  else if (d.homeClear !== undefined) { state.home = { tag: null, kind: null }; state.sheet = false; }
+  else if (d.sheet !== undefined) state.sheet = !state.sheet;
+  else if (d.unveil) state.unveiled.add(Number(d.unveil));
+  else return;
+  render();
+});
+render();
+</script>
