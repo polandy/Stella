@@ -27,7 +27,7 @@ const PREFIX = 'data:';
  * for a data-URL header (`([^;,]*)(;[^,]*)*`) can be made to backtrack exponentially, so a
  * crafted export would hang the request. Two index lookups cannot.
  */
-export function decodeDataUrl(value: string): { bytes: Uint8Array; mime: string } {
+export function decodeDataUrl(value: string): { bytes: Uint8Array<ArrayBuffer>; mime: string } {
 	const comma = value.indexOf(',');
 	if (!value.startsWith(PREFIX) || comma === -1) {
 		throw new DataUrlError('This is not a base64 data URL.');
