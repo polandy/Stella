@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.0.33](https://github.com/polandy/Stella/compare/v0.0.32...v0.0.33) (2026-10-30)
+
+
+### Features
+
+* **gifts:** every open gift idea of the household on one page ([#409](https://github.com/polandy/Stella/issues/409)) ([9d00223](https://github.com/polandy/Stella/commit/9d0022307de9be8cae1ca4a766e95d2d1835fff8))
+
+
+### Bug Fixes
+
+* **media:** encode JPEGs synchronously so saving a picture never waits on browser idle time ([#411](https://github.com/polandy/Stella/issues/411)) ([594b6f5](https://github.com/polandy/Stella/commit/594b6f57b97765f06f025c4cdaa21718e3874fd5))
+
 ## [0.0.32](https://github.com/polandy/Stella/compare/v0.0.31...v0.0.32) (2026-10-29)
 
 
