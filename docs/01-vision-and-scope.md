@@ -85,9 +85,9 @@ multi-tenant SaaS use.
   The data model leaves the door open, but v1 assumes one household per deployment.
 - **Email / social-media sync.** Not in v1. M3 brought contacts in: a `.vcf` export through
   the import review (Google Contacts, docs/02 §2.16.2) and a two-way Nextcloud link
-  (§2.16.3); mail and social stay open (docs/06). A CardDAV address book and CalDAV birthday
+  (§2.16.3); mail and social wait in docs/06 *After 1.0*. A CardDAV address book and CalDAV birthday
   calendar served by Stella itself are deferred, since the phones already sync with Nextcloud.
-- **Native mobile apps.** PWA covers mobile in v1; native apps are planned for M3 (docs/06).
+- **Native mobile apps.** PWA covers mobile in v1; native apps wait in docs/06 *After 1.0*.
 - **AI features** (auto-summaries, enrichment). Not a v1 concern.
 - **Financial tracking and task modules** à la Monica. Kept out to preserve focus; may be
   reconsidered individually later. Gift ideas and gifts given came back in M3 (docs/02 §2.25).
