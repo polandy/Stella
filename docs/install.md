@@ -241,6 +241,11 @@ the server log says what it moved and what it left as it was (`./deploy.sh logs`
 `docker compose logs stella`;
 details in docs/07 §7.10).
 
+Since 1.0 the version number says how careful to be. A patch or minor step (1.2.3 → 1.2.4 or
+1.3.0) is safe to take as above. A **major** step (1.x → 2.0) means something you rely on
+changes — read its entry in the changelog (`CHANGELOG.md`, or the release page on GitHub)
+before you update, because it says what to do first.
+
 ### Being told when there is something to update to
 
 Stella does this on its own: **Settings → About** names the newest published release beside
