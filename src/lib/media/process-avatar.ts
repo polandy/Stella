@@ -1,4 +1,5 @@
 import type { CropRect } from './crop';
+import { encodeJpeg } from './encode-jpeg';
 import { readCaptureDate } from './process-image';
 
 /*
@@ -34,7 +35,7 @@ function toSquareJpeg(
 	sx: number,
 	sy: number,
 	crop: number
-): Promise<Blob> {
+): Blob {
 	const canvas = document.createElement('canvas');
 	canvas.width = size;
 	canvas.height = size;
@@ -42,13 +43,7 @@ function toSquareJpeg(
 	if (!ctx) throw new Error('Canvas is not available.');
 	ctx.imageSmoothingQuality = 'high';
 	ctx.drawImage(bitmap, sx, sy, crop, crop, 0, 0, size, size);
-	return new Promise((resolve, reject) => {
-		canvas.toBlob(
-			(blob) => (blob ? resolve(blob) : reject(new Error('Could not encode the image.'))),
-			'image/jpeg',
-			QUALITY
-		);
-	});
+	return encodeJpeg(canvas, QUALITY);
 }
 
 /**
@@ -63,10 +58,8 @@ export async function processAvatar(
 	const takenAt = await readCaptureDate(file);
 	const bitmap = await createImageBitmap(file, { imageOrientation: 'from-image' });
 	try {
-		const [image, thumb] = await Promise.all([
-			toSquareJpeg(bitmap, size, crop.x, crop.y, crop.size),
-			toSquareJpeg(bitmap, THUMB_SIZE, crop.x, crop.y, crop.size)
-		]);
+		const image = toSquareJpeg(bitmap, size, crop.x, crop.y, crop.size);
+		const thumb = toSquareJpeg(bitmap, THUMB_SIZE, crop.x, crop.y, crop.size);
 		return { image, thumb, width: size, height: size, takenAt };
 	} finally {
 		bitmap.close();

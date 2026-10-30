@@ -1,3 +1,4 @@
+import { encodeJpeg } from './encode-jpeg';
 import { readExifCaptureDate } from './exif-date';
 import {
 	groupPhotoRenditions,
@@ -45,7 +46,7 @@ export interface ProcessedImage {
 	takenAt: string | null;
 }
 
-function toJpeg(bitmap: ImageBitmap, size: PixelSize): Promise<Blob> {
+function toJpeg(bitmap: ImageBitmap, size: PixelSize): Blob {
 	const canvas = document.createElement('canvas');
 	canvas.width = size.width;
 	canvas.height = size.height;
@@ -53,13 +54,7 @@ function toJpeg(bitmap: ImageBitmap, size: PixelSize): Promise<Blob> {
 	if (!ctx) throw new Error('Canvas is not available.');
 	ctx.imageSmoothingQuality = 'high';
 	ctx.drawImage(bitmap, 0, 0, size.width, size.height);
-	return new Promise((resolve, reject) => {
-		canvas.toBlob(
-			(blob) => (blob ? resolve(blob) : reject(new Error('Could not encode the image.'))),
-			'image/jpeg',
-			QUALITY
-		);
-	});
+	return encodeJpeg(canvas, QUALITY);
 }
 
 async function render(
@@ -70,11 +65,9 @@ async function render(
 	const bitmap = await createImageBitmap(file, { imageOrientation: 'from-image' });
 	try {
 		const { full, view, thumb } = sizes({ width: bitmap.width, height: bitmap.height });
-		const [image, thumbBlob, viewBlob] = await Promise.all([
-			toJpeg(bitmap, full),
-			toJpeg(bitmap, thumb),
-			view ? toJpeg(bitmap, view) : null
-		]);
+		const image = toJpeg(bitmap, full);
+		const thumbBlob = toJpeg(bitmap, thumb);
+		const viewBlob = view ? toJpeg(bitmap, view) : null;
 		return {
 			image,
 			thumb: thumbBlob,
