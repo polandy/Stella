@@ -47,6 +47,9 @@ export interface Gift {
 /** A given or received gift: one with a day, as the story shows it. */
 export type DatedGift = Gift & { state: 'given' | 'received'; givenOn: string };
 
+/** An open idea with the person it is for, as the household's list shows it (docs/02 §2.25.6). */
+export type OpenIdea = Gift & { contactName: string; avatarPhotoId: string | null };
+
 /** Where a page of the story's gifts resumes: strictly older than this. */
 export interface GiftStoryCursor {
 	givenOn: string;
@@ -75,6 +78,11 @@ export interface GiftRepository {
 		viewer: Viewer,
 		contactIds: readonly string[]
 	): Promise<Map<string, number>>;
+	/**
+	 * Every open idea the viewer may see, newest noted first, on the people the household still
+	 * browses — an archived person's ideas stay on their page only (docs/02 §2.25.6).
+	 */
+	listOpenIdeasVisibleTo(viewer: Viewer): Promise<OpenIdea[]>;
 	/**
 	 * One keyset page of the person's given and received gifts, newest day first, then latest
 	 * noted — the story's order (docs/02 §2.23). Ideas are never in it.
@@ -284,4 +292,12 @@ export async function countOpenIdeas(
 	contactIds: readonly string[]
 ): Promise<Map<string, number>> {
 	return deps.gifts.countOpenIdeasVisibleTo(viewer, [...new Set(contactIds)]);
+}
+
+/** Every open idea the viewer may see, with whom it is for — the household's list (§2.25.6). */
+export async function listOpenIdeas(
+	deps: Pick<GiftDeps, 'gifts'>,
+	viewer: Viewer
+): Promise<OpenIdea[]> {
+	return deps.gifts.listOpenIdeasVisibleTo(viewer);
 }

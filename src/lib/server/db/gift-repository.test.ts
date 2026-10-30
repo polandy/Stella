@@ -154,6 +154,55 @@ describe('createDrizzleGiftRepository', () => {
 		});
 	});
 
+	describe('listOpenIdeasVisibleTo', () => {
+		it('reads every open idea with whom it is for, newest noted first', async () => {
+			db.insert(schema.contact)
+				.values({
+					id: 'c-other',
+					householdId: H,
+					createdBy: U1,
+					displayName: 'O',
+					avatarPhotoId: 'photo-o'
+				})
+				.run();
+			await repo.insert(gift({ id: 'old', createdAt: 1 }));
+			await repo.insert(gift({ id: 'new', contactId: 'c-other', createdAt: 2 }));
+			await repo.insert(gift({ id: 'given', state: 'given', givenOn: '2024-12-24' }));
+			await repo.insert(gift({ id: 'recv', state: 'received', givenOn: '2025-12-24' }));
+
+			const ideas = await repo.listOpenIdeasVisibleTo(viewerU1);
+			expect(ideas.map((i) => [i.id, i.contactName, i.avatarPhotoId])).toEqual([
+				['new', 'O', 'photo-o'],
+				['old', 'S', null]
+			]);
+			expect(ideas[1]).toEqual({
+				...gift({ id: 'old', createdAt: 1 }),
+				contactName: 'S',
+				avatarPhotoId: null
+			});
+		});
+
+		it('reads only the ideas the viewer may see', async () => {
+			await repo.insert(gift({ id: 'i-shared', createdAt: 2 }));
+			await repo.insert(gift({ id: 'i-mine', visibility: 'private', createdBy: U2, createdAt: 1 }));
+			await repo.insert(gift({ id: 'i-theirs', visibility: 'private' }));
+			await repo.insert(gift({ id: 'i-hidden-person', contactId: 'c-priv' }));
+
+			expect((await repo.listOpenIdeasVisibleTo(viewerU2)).map((i) => i.id)).toEqual([
+				'i-shared',
+				'i-mine'
+			]);
+		});
+
+		it('leaves out the ideas of an archived person', async () => {
+			db.insert(schema.contact)
+				.values({ id: 'c-gone', householdId: H, createdBy: U1, displayName: 'G', archivedAt: 5 })
+				.run();
+			await repo.insert(gift({ id: 'i-gone', contactId: 'c-gone' }));
+			expect(await repo.listOpenIdeasVisibleTo(viewerU1)).toEqual([]);
+		});
+	});
+
 	describe('listStoryPageForContactVisibleTo', () => {
 		beforeEach(async () => {
 			await repo.insert(gift({ id: 'idea', createdAt: 99 }));

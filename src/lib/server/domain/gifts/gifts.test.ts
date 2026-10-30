@@ -9,6 +9,7 @@ import {
 	GiftGoneError,
 	InvalidGiftError,
 	listGiftsForContact,
+	listOpenIdeas,
 	markGiftGiven,
 	removeGift,
 	type Gift,
@@ -60,6 +61,11 @@ function fakeGifts(): GiftRepository & { rows: Map<string, Gift> } {
 				counts.set(g.contactId, (counts.get(g.contactId) ?? 0) + 1);
 			}
 			return counts;
+		},
+		async listOpenIdeasVisibleTo(viewer) {
+			return [...rows.values()]
+				.filter((g) => g.state === 'idea' && visible(viewer, g))
+				.map((g) => ({ ...g, contactName: g.contactId, avatarPhotoId: null }));
 		}
 	};
 }
@@ -348,5 +354,22 @@ describe('countOpenIdeas', () => {
 		const counts = await countOpenIdeas(deps, { id: 'andy', householdId: 'h1' }, [HILDE, HILDE]);
 		expect([...counts]).toEqual([[HILDE, 2]]);
 		expect(asked).toEqual([HILDE]);
+	});
+});
+
+describe('listOpenIdeas', () => {
+	it('lists the open ideas the viewer may see, never a gift already given', async () => {
+		await addGift(deps, ANDY, idea('Teapot'));
+		await addGift(deps, JULIA, { ...idea('Hers'), visibility: 'private' });
+		const given = await addGift(deps, ANDY, idea('Book'));
+		await markGiftGiven(deps, ANDY, {
+			contactId: HILDE,
+			giftId: given.giftId,
+			givenOn: '2026-10-01',
+			occasion: null
+		});
+
+		const listed = await listOpenIdeas(deps, { id: 'andy', householdId: 'h1' });
+		expect(listed.map((g) => [g.title, g.contactName])).toEqual([['Teapot', HILDE]]);
 	});
 });

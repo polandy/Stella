@@ -54,6 +54,19 @@ export const gifts = {
 	'gifts.remove': (p: { title: string }) => `Remove “${p.title}”`,
 	'gifts.removed': 'Gift removed',
 
+	// The household's list of every open idea (docs/02 §2.25.6).
+	'gifts.allIdeas': 'All gift ideas',
+	'gifts.list.title': 'Gift ideas',
+	'gifts.list.intro':
+		'Every open idea in the household. Whoever’s birthday or Christmas comes next is on top.',
+	'gifts.list.open': (p: { count: number }) => `${p.count} open`,
+	'gifts.list.ideas': (p: { count: number }) => (p.count === 1 ? '1 idea' : `${p.count} ideas`),
+	// Under the person's name: *Birthday in 12 days · 11 Nov*.
+	'gifts.list.next': (p: { occasion: string; when: string; day: string }) =>
+		`${p.occasion} ${p.when} · ${p.day}`,
+	'gifts.list.empty': 'No open gift ideas.',
+	'gifts.list.emptyHint': 'Note one on a person’s Gifts card, and it shows up here.',
+
 	// Where a gift stands, as a search hit says it (docs/02 §2.9).
 	'gifts.state.idea': 'Idea',
 	'gifts.state.given': (p: { day: string }) => `Given on ${p.day}`,

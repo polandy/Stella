@@ -48,6 +48,7 @@
 			{
 				write: t('components.palette.write'),
 				giftIdea: t('components.palette.giftIdea'),
+				giftIdeas: t('components.palette.giftIdeas'),
 				addPerson: t('components.palette.addPerson'),
 				searchEverything: (q) => t('components.palette.searchEverything', { query: q })
 			},

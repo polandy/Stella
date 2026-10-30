@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'bun:test';
 import { INTL_LOCALES } from '../i18n/locales';
 import { createTranslator } from '../i18n/translate';
-import { addedLabel, occasionLabel, stateLabel } from './labels';
+import { addedLabel, nextOccasionLabel, occasionLabel, stateLabel } from './labels';
 
 /*
  * An occasion as the reader reads it (docs/02 §2.25): a preset in their language, whoever
@@ -51,6 +51,26 @@ describe('stateLabel', () => {
 		);
 		expect(stateLabel(de, { state: 'received', givenOn: '2025-12-24' })).toBe(
 			'Bekommen am 24. Dezember 2025'
+		);
+	});
+});
+
+describe('nextOccasionLabel', () => {
+	const en = { t: createTranslator('en'), intlLocale: INTL_LOCALES.en };
+	const de = { t: createTranslator('de'), intlLocale: INTL_LOCALES.de };
+
+	it('says which occasion, how far off and the day', () => {
+		const birthday = { kind: 'birthday', date: '2026-11-11', daysUntil: 12 } as const;
+		expect(nextOccasionLabel(en, birthday)).toBe('Birthday in 12 days · 11 Nov');
+		expect(nextOccasionLabel(de, birthday)).toBe('Geburtstag in 12 Tagen · 11. Nov.');
+	});
+
+	it('says today and tomorrow out loud', () => {
+		expect(nextOccasionLabel(en, { kind: 'christmas', date: '2026-12-24', daysUntil: 0 })).toBe(
+			'Christmas today · 24 Dec'
+		);
+		expect(nextOccasionLabel(de, { kind: 'christmas', date: '2026-12-24', daysUntil: 1 })).toBe(
+			'Weihnachten morgen · 24. Dez.'
 		);
 	});
 });

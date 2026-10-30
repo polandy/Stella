@@ -35,6 +35,7 @@ export const components = {
 	'components.palette.placeholder': 'Jump to a person, or do something…',
 	'components.palette.empty': 'Nobody by that name.',
 	'components.palette.write': 'Write a moment',
+	'components.palette.giftIdeas': 'All gift ideas',
 	'components.palette.addPerson': 'Add person',
 	'components.palette.giftIdea': 'Gift idea for …',
 	// The palette's second step after *Gift idea for …*: whom the idea is for.
