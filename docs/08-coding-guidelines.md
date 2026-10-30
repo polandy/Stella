@@ -393,7 +393,7 @@ A change is done when:
   It watches the default branch, opens/maintains a release PR that bumps the version in
   `package.json` and updates `CHANGELOG.md` from the commit history, and tags a release when
   that PR is merged. So the commit type drives the version bump:
-  - `fix:` → patch, `feat:` → minor, breaking → major (pre-1.0: minor, per config).
+  - `fix:` → patch, `feat:` → minor, breaking → major — plain semver since 1.0.0.
   - Non-release types (`docs`, `chore`, `test`, `ci`, …) still appear in the changelog
     where relevant but don't force a release on their own.
 - **Practical rule:** write the commit type to match the change's user-facing impact — the
