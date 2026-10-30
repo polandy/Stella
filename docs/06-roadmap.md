@@ -91,30 +91,6 @@ Goal: sand the edges and add the nice-to-haves.
 - ~~**Confirm a worked-out relationship to store it**~~ — shipped (§2.4.1).
 - ~~**Fold imported custom family types into the built-ins**~~ — shipped (§2.4).
 - ~~**Welcome animation**~~ — shipped (§2.18, docs/05 §5.11.4).
-- **Stella's people in the phone's address book and calendar (CardDAV / CalDAV)** — *deferred:
-  the family's phones already sync their contacts with Nextcloud, and the two-way Nextcloud link
-  (*Email and social sync* below) brings those into Stella without a second server for phones to
-  talk to. Kept as written in case that changes.* A
-  member adds Stella as a CardDAV account on their phone or mail client and sees the people
-  they are allowed to see as contacts (name, photo, phone, email, address, birthday), plus a
-  CalDAV calendar of their birthdays and anniversaries. **Two-way** for contacts: a person
-  added, changed or removed in the address book arrives in Stella. As in the app, every
-  member may change every person they can see; each write goes through the same domain
-  use-cases and access layer (docs/03 §3.7) and is written to `activity_log` as that member,
-  so the household sees who changed what and when. A private person stays in their owner's
-  address book only. Concurrent edits are caught with ETags (`If-Match`): a stale
-  write is refused and the client fetches the current card. This departs from the app's
-  last-write-wins (docs/01 §1.6) on purpose: a phone's copy can be days old, and writing it
-  back blindly would undo what others changed since.
-  Deleting a contact on the phone archives the person rather than deleting them; a contact
-  created there is shared, like one added in the app (§2.10). vCard
-  properties Stella does not model are kept on the card and written back unchanged, so a
-  round-trip loses nothing. The calendar stays derived: a birthday is changed on the contact, not the
-  event. DAV clients cannot sign in through SSO, so each member creates a revocable **app
-  password** for it in Settings. A per-person change stamp (shared with offline reading)
-  keeps each sync to what changed.
-  Open: which contact fields go out, whether a member picks circles to sync, and whether a
-  plain subscribable `.ics` link suffices for the calendar instead of full CalDAV.
 - ~~**A person's photos from Immich**~~ — shipped (§2.24).
 - ~~**Photos from Immich wherever a photo can be added**~~ — shipped (§2.24, #407).
 - ~~**Tags on journal entries**~~ — shipped (§2.20.2): a household set of their own, written
@@ -125,7 +101,8 @@ Goal: sand the edges and add the nice-to-haves.
   per person on the Gifts card and in the story, the Monica gifts converted, the *already
   given* hint, the *Coming up* hint and *Gift idea for …* in the palette, and the household's list of every open idea, by whose
   occasion comes next (`/gifts`, §2.25.6).
-- **Email and social sync** — bring in what already knows about people, matched against the
+- ~~**Email and social sync**~~ — *address books shipped; mail and social moved to After 1.0.*
+  Bring in what already knows about people, matched against the
   people already in Stella through a review list rather than merged silently, every write
   through the domain use-cases and access layer:
   - ~~**Google Contacts via its export**~~ — shipped (§2.16.2): any `.vcf`, Google's and
@@ -136,9 +113,6 @@ Goal: sand the edges and add the nice-to-haves.
     emails, addresses, birthday and photo both ways; new cards through the review, conflicts
     under *Data quality* with Stella's side kept until answered; private people never go out;
     the *Nextcloud* actor in the activity log.
-  - Mail and social later.
-- **Native mobile apps** — beyond the PWA (§2.18), for what a PWA cannot do on a phone. Open:
-  which platforms, and whether a wrapper around the PWA is enough before a true native app.
 - ~~**Performance passes**~~ — shipped.
 - ~~**Empty-state and onboarding refinements**~~ — shipped (§2.22).
 - ~~**Accessibility audit**~~ — shipped (§2.19).
@@ -172,7 +146,43 @@ Goal: sand the edges and add the nice-to-haves.
   *Arrange people* on a circle with sub-circles: a card per circle, move or copy by dragging or
   by tapping, one batch in one transaction, *Undo* restores the deleted memberships exactly.
 
-**Exit:** a release-quality 1.0 the family enjoys using daily.
+**Exit:** a release-quality 1.0 the family enjoys using daily. *Feature-complete 2026-10-30;
+1.0.0 is cut once the owner's outstanding hand tests are through.*
+
+## After 1.0
+
+Written down, not scheduled: each needs the owner's decisions (or a change in how the family
+works) before it is specified in docs/02. Nothing here is a candidate for the next task by
+itself.
+
+- **Stella's people in the phone's address book and calendar (CardDAV / CalDAV)** — *the
+  family's phones already sync their contacts with Nextcloud, and the two-way Nextcloud link
+  (§2.16.3, shipped in M3) brings those into Stella without a second server for phones to
+  talk to. Kept as written in case that changes.* A
+  member adds Stella as a CardDAV account on their phone or mail client and sees the people
+  they are allowed to see as contacts (name, photo, phone, email, address, birthday), plus a
+  CalDAV calendar of their birthdays and anniversaries. **Two-way** for contacts: a person
+  added, changed or removed in the address book arrives in Stella. As in the app, every
+  member may change every person they can see; each write goes through the same domain
+  use-cases and access layer (docs/03 §3.7) and is written to `activity_log` as that member,
+  so the household sees who changed what and when. A private person stays in their owner's
+  address book only. Concurrent edits are caught with ETags (`If-Match`): a stale
+  write is refused and the client fetches the current card. This departs from the app's
+  last-write-wins (docs/01 §1.6) on purpose: a phone's copy can be days old, and writing it
+  back blindly would undo what others changed since.
+  Deleting a contact on the phone archives the person rather than deleting them; a contact
+  created there is shared, like one added in the app (§2.10). vCard
+  properties Stella does not model are kept on the card and written back unchanged, so a
+  round-trip loses nothing. The calendar stays derived: a birthday is changed on the contact, not the
+  event. DAV clients cannot sign in through SSO, so each member creates a revocable **app
+  password** for it in Settings. A per-person change stamp (shared with offline reading)
+  keeps each sync to what changed.
+  Open: which contact fields go out, whether a member picks circles to sync, and whether a
+  plain subscribable `.ics` link suffices for the calendar instead of full CalDAV.
+- **Mail and social sync** — people from mail and social accounts, matched in the same review
+  as the address books (§2.16.2). Open: which sources, and what is read from each.
+- **Native mobile apps** — beyond the PWA (§2.18), for what a PWA cannot do on a phone. Open:
+  which platforms, and whether a wrapper around the PWA is enough before a true native app.
 
 ## Cross-cutting (every milestone)
 
@@ -186,7 +196,7 @@ Goal: sand the edges and add the nice-to-haves.
 ## Explicitly later / maybe-never
 
 Multi-tenant SaaS, AI enrichment, finance/task modules, real-time collaborative
-editing. (Gifts, email/social sync and native apps moved up into M3.) Revisit only if the core
+editing. (Gifts and address-book sync moved up into M3 and shipped; the rest waits in *After 1.0*.) Revisit only if the core
 stays simple. (See [01-vision-and-scope.md §1.6](01-vision-and-scope.md).)
 
 - **Local 2FA** (TOTP) for accounts without SSO, and opt-in email reminders — deprioritized:
