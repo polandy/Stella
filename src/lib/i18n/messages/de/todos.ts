@@ -19,6 +19,8 @@ export const todos: TodosMessages = {
 	'todos.remove': (p) => `Entfernen: ${p.title}`,
 	'todos.done': (p) => `Erledigt: ${p.title}`,
 	'todos.removed': 'Todo entfernt',
+	'todos.recallTick': (p) => `Abhaken rückgängig: ${p.title}`,
+	'todos.tickOnItsWay': 'Schon gesendet: unter Aktivität lässt es sich wieder öffnen.',
 	'todos.story.done': 'Erledigt',
 	'todos.story.reopen': (p) => `Doch nicht erledigt: ${p.title}`,
 	'todos.story.reopened': (p) => `Wieder offen: ${p.title}`

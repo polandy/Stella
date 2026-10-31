@@ -2,7 +2,7 @@
 	import type { Snippet } from 'svelte';
 	import { useTranslate } from '$lib/i18n/context.svelte';
 	import type { MessageKey } from '$lib/i18n/translate';
-	import type { OutboxItem } from '$lib/pwa/outbox';
+	import { recallable, type OutboxItem } from '$lib/pwa/outbox';
 	import { outbox } from '$lib/pwa/outbox.svelte';
 	import Button from '../ui/Button.svelte';
 	import Icon from '../ui/Icon.svelte';
@@ -83,7 +83,7 @@
 		</div>
 		{@render children?.()}
 		{#if item.reason}<p class="mt-1 text-sm text-danger">{item.reason}</p>{/if}
-		{#if item.state === 'pending' || item.state === 'refused'}
+		{#if recallable(item)}
 			<div class="mt-1.5 flex flex-wrap gap-1.5">
 				{#if confirming}
 					<span class="self-center text-xs text-fg-muted">{t('home.outbox.discardQuestion')}</span>

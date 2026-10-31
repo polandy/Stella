@@ -4,7 +4,7 @@ import { addPerson, appReady, fillDate, signIn } from './app';
 /*
  * The To do card on the person page (docs/02 §2.26): noting a to-do with or without a day,
  * ticking it by its line, rewriting and removing it, the card moving to the top once something
- * is open, *To do for …* in the palette, and noting and ticking while Stella is out of reach;
+ * is open, *To-do for …* in the palette, and noting and ticking while Stella is out of reach;
  * a ticked one in the person's Activity (§2.23), unticked or removed from there. Written after
  * the owner tried the card and the Activity row in the app (docs/08 §8.4.1).
  *
@@ -99,7 +99,10 @@ test('tapping the line ticks it, and Undo opens it again', async ({ page }) => {
 
 	await todoRow(page, title).getByText(title).click();
 	await expect(page.getByText(`Done: ${title}`)).toBeVisible();
-	await expect(todoRow(page, title)).toHaveCount(0);
+	// It stays where it stood, struck through, while the toast does: the card does not jump.
+	await expect(
+		todoRow(page, title).getByRole('checkbox', { name: `Done: ${title}` })
+	).toBeChecked();
 
 	await undo(page).click();
 	const row = todoRow(page, title);
@@ -132,7 +135,7 @@ test('a to-do is rewritten in place, and removed with Undo', async ({ page }) =>
 	await expect(todoRow(page, after)).toHaveCount(1);
 });
 
-test('To do for … in the palette opens the person with the form ready', async ({ page }) => {
+test('To-do for … in the palette opens the person with the form ready', async ({ page }) => {
 	const letters = runLetters();
 	const last = `Ambühl${letters}`;
 	await addPerson(page, 'Todolin', last);
@@ -142,7 +145,7 @@ test('To do for … in the palette opens the person with the form ready', async 
 	await page.keyboard.press('Control+k');
 	const palette = page.getByRole('dialog', { name: 'Jump to' });
 	await palette.getByRole('combobox').fill('to do');
-	await palette.getByRole('option', { name: /^To do for …/ }).click();
+	await palette.getByRole('option', { name: /^To-do for …/ }).click();
 	await expect(palette.getByRole('combobox', { name: 'A to-do for whom?' })).toBeFocused();
 	await page.keyboard.type(last);
 	await expect(palette.getByRole('option')).toHaveCount(1);
@@ -150,7 +153,7 @@ test('To do for … in the palette opens the person with the form ready', async 
 
 	await expect(page.getByRole('heading', { name: `Todolin ${last}`, exact: true })).toBeVisible();
 	const form = todoCard(page).getByTestId('todo-form');
-	await expect(form.getByRole('heading', { name: `To do for Todolin ${last}` })).toBeVisible();
+	await expect(form.getByRole('heading', { name: `To-do for Todolin ${last}` })).toBeVisible();
 	await form.getByLabel('What is still to do?').fill(`Bring the photos ${letters}`);
 	await form.getByRole('button', { name: 'Save' }).click();
 	await expect(todoRow(page, `Bring the photos ${letters}`)).toHaveCount(1);
@@ -185,6 +188,44 @@ test('noting and ticking are kept offline, and sent once back', async ({ page, c
 	await expect(todoRow(page, ticked)).toHaveCount(0);
 });
 
+test('a tick kept offline is taken back with the row’s Undo, and never sent', async ({
+	page,
+	context
+}) => {
+	const letters = runLetters();
+	await addPerson(page, 'Todolin', `Imfeld${letters}`);
+	const ticked = `Bring the ladder back ${letters}`;
+	await addTodo(page, ticked);
+
+	await context.setOffline(true);
+	const row = todoRow(page, ticked);
+	await row.getByText(ticked).click();
+	await expect(row.getByRole('checkbox', { name: `Done: ${ticked}` })).toBeChecked();
+	await expect(row).toContainText('Not sent yet');
+
+	await row.getByRole('button', { name: `Undo tick: ${ticked}` }).click();
+	await expect(row.getByRole('checkbox', { name: `Done: ${ticked}` })).not.toBeChecked();
+	await expect(row).not.toContainText('Not sent yet');
+
+	// Something else kept meanwhile: once it is sent, the outbox has been through, so the tick
+	// would have gone with it had Undo not dropped it.
+	const card = todoCard(page);
+	const noted = `Water the plants ${letters}`;
+	await card.getByRole('button', { name: 'Add', exact: true }).click();
+	const form = card.getByTestId('todo-form');
+	await form.getByLabel('What is still to do?').fill(noted);
+	await form.getByRole('button', { name: 'Save' }).click();
+	await expect(page.getByTestId('kept-todos').locator('li')).toContainText(noted);
+
+	await context.setOffline(false);
+	await expect(page.getByTestId('kept-todos')).toHaveCount(0);
+	await page.reload();
+	await expect(todoRow(page, noted)).toHaveCount(1);
+	await expect(
+		todoRow(page, ticked).getByRole('checkbox', { name: `Done: ${ticked}` })
+	).not.toBeChecked();
+});
+
 test('a ticked to-do shows in Activity, and unticking it there opens it again', async ({
 	page
 }) => {
@@ -194,7 +235,6 @@ test('a ticked to-do shows in Activity, and unticking it there opens it again', 
 	await addTodo(page, title);
 
 	await todoRow(page, title).getByText(title).click();
-	await expect(todoRow(page, title)).toHaveCount(0);
 	const item = storyTodo(page, title);
 	await expect(item).toContainText('Done');
 	const box = item.getByRole('checkbox', { name: `Not done yet: ${title}` });

@@ -74,8 +74,9 @@ export interface PendingRemovals {
 	 * Shows a message for one window. With `takeBack`, the message carries *Undo*: the thing it
 	 * announces is already done, so nothing happens when the window closes, and pressing it
 	 * runs `takeBack` — which reports its own failure, since only it knows what went wrong.
+	 * Returns the notice's id, so a list can keep what it announces in view while it stands.
 	 */
-	notify(text: string, takeBack?: () => void): void;
+	notify(text: string, takeBack?: () => void): number;
 	/** Shows a message for one window with a link to what it announces, which was just made. */
 	notifyWithLink(text: string, link: NoticeLink): void;
 	/** *Undo* on an undoable notice: drops it and runs its `takeBack`, once. Otherwise a no-op. */
@@ -157,10 +158,11 @@ export function createPendingRemovals(deps: PendingRemovalsDeps): PendingRemoval
 		changed();
 	}
 
-	function show(shown: ShownNotice): void {
+	function show(shown: ShownNotice): number {
 		armNotice(shown);
 		notices.push(shown);
 		changed();
+		return shown.notice.id;
 	}
 
 	return {
@@ -197,14 +199,14 @@ export function createPendingRemovals(deps: PendingRemovalsDeps): PendingRemoval
 		},
 		isPending: (key) => pending.has(key),
 		notify(text, takeBack) {
-			show({
+			return show({
 				notice: { id: nextNoticeId++, text, undoable: takeBack !== undefined, link: null },
 				timer: undefined,
 				takeBack
 			});
 		},
 		notifyWithLink(text, link) {
-			show({ notice: { id: nextNoticeId++, text, undoable: false, link }, timer: undefined });
+			void show({ notice: { id: nextNoticeId++, text, undoable: false, link }, timer: undefined });
 		},
 		takeBack(noticeId) {
 			const shown = notices.find((candidate) => candidate.notice.id === noticeId);

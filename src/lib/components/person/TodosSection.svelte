@@ -8,6 +8,8 @@
 	import { sectionAnchor } from '$lib/people/sections';
 	import { keepable } from '$lib/pwa/keepable';
 	import { isKept, type KeptOf } from '$lib/pwa/outbox';
+	import type { JustDoneTodos } from '$lib/todos/just-done.svelte';
+	import type { CardTodo } from '$lib/todos/todos';
 	import { outbox } from '$lib/pwa/outbox.svelte';
 	import { asksForNewTodo } from '$lib/todos/todos';
 	import { useRemovals } from '$lib/undo/context.svelte';
@@ -24,7 +26,15 @@
 	 * one line, while nothing is (docs/05 §5.5) — so a to-do is the first thing read about
 	 * somebody exactly as long as there is one.
 	 */
-	let { data, form }: { data: PersonPageData; form: PersonForm } = $props();
+	type Todo = PersonPageData['todos'][number];
+	interface Props {
+		data: PersonPageData;
+		form: PersonForm;
+		/** The open to-dos and those just ticked, from the page, which places the card by them. */
+		rows: CardTodo<Todo>[];
+		justDone: JustDoneTodos<Todo>;
+	}
+	let { data, form, rows, justDone }: Props = $props();
 
 	const i18n = useI18n();
 	const t = i18n.t;
@@ -33,7 +43,7 @@
 
 	// A to-do on its way out (docs/02 §2.23) is gone from the card while its undo window is open.
 	const shown = $derived(
-		data.todos.filter((todo) => !removals.isPending(removalKey('todo', todo.id)))
+		rows.filter((row) => !removals.isPending(removalKey('todo', row.todo.id)))
 	);
 
 	/** To-dos noted here while Stella was out of reach (docs/02 §2.18), until they are sent. */
@@ -45,16 +55,16 @@
 	);
 	/** The to-dos ticked here while out of reach: struck through until the tick is sent. */
 	const keptTicks = $derived(
-		new Set(
+		new Map(
 			outbox.mine
 				.filter((item): item is KeptOf<'todo.tick'> => isKept(item, 'todo.tick'))
-				.map((item) => item.command.payload.todoId)
+				.map((item) => [item.command.payload.todoId, item])
 		)
 	);
 	const line = $derived(cardShape('todos', shown.length > 0 || kept.length > 0) === 'line');
 
 	let open = $state(false);
-	// The palette's *To do for …* lands here with the form open (docs/05 §5.4). On a navigation,
+	// The palette's *To-do for …* lands here with the form open (docs/05 §5.4). On a navigation,
 	// not on every load: a save reloads the page, and must not open it again.
 	afterNavigate(({ to }) => {
 		if (to && asksForNewTodo(to.url)) open = true;
@@ -135,12 +145,14 @@
 
 	{#if shown.length > 0}
 		<ul class="flex flex-col" data-testid="todos">
-			{#each shown as todo (todo.id)}
+			{#each shown as { todo, done } (todo.id)}
 				<TodoRow
 					{todo}
+					{done}
+					{justDone}
 					contactId={c.id}
 					today={data.today}
-					keptTick={keptTicks.has(todo.id)}
+					keptTick={keptTicks.get(todo.id) ?? null}
 					error={rowError(todo.id)}
 				/>
 			{/each}

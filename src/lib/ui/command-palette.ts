@@ -13,13 +13,16 @@ import { tellApart, type Distinction } from '$lib/people/namesakes';
  * ⌘K then Enter lands in the capture field — while letting the same keys reach a person or
  * an action. Notes are not searched here; a typed query always ends in the full search.
  *
- * Most rows go somewhere. *Gift idea for …* and *To do for …* ask something first: each turns
+ * Most rows go somewhere. *Gift idea for …* and *To-do for …* ask something first: each turns
  * the palette into a second step, `giftIdea` or `todo`, which lists only people, each leading to
  * their idea form or their To do card's form (docs/02 §2.26).
  *
  * The wording arrives as `PaletteLabels` rather than being written here: this module is
  * pure and language-free, and the component hands it the viewer's language (docs/02 §2.19).
  */
+
+/** An action's label as typed: *to do*, *to-do* and *todo* all find *To-do for …*. */
+const foldAction = (text: string): string => text.toLowerCase().replace(/[\s-]+/g, '');
 
 /**
  * A person as the palette needs them: names to match on, an avatar to draw, and what tells
@@ -84,7 +87,7 @@ export interface PaletteLabels {
 	giftIdea: string;
 	/** The household's list of every open idea (docs/02 §2.25.6). */
 	giftIdeas: string;
-	/** *To do for …*, a to-do on a person (docs/02 §2.26). */
+	/** *To-do for …*, a to-do on a person (docs/02 §2.26). */
 	todoFor: string;
 	addPerson: string;
 	/** The last row of a non-empty query: "Search everything for …". */
@@ -127,7 +130,7 @@ export function paletteRows(
 	const rows: PaletteRow[] = [];
 	for (const action of ACTIONS) {
 		const label = labels[action.label];
-		if (q !== '' && !label.toLowerCase().includes(q.toLowerCase())) continue;
+		if (q !== '' && !foldAction(label).includes(foldAction(q))) continue;
 		const { id, icon } = action;
 		rows.push(
 			'href' in action

@@ -9,6 +9,7 @@ import {
 	isKept,
 	photoAnswer,
 	queue,
+	recallable,
 	recover,
 	release,
 	revise,
@@ -384,5 +385,20 @@ describe('photoAnswer', () => {
 	it('leaves any other failure waiting, since it may pass on the next try', () => {
 		expect(photoAnswer('p1', 502, null, TOO_LARGE)).toBeNull();
 		expect(photoAnswer('p1', 500, null, TOO_LARGE)).toBeNull();
+	});
+});
+
+describe('recallable', () => {
+	it('is what can still be taken back on this device: waiting or refused, not on its way', () => {
+		const items = add(add([], 'a'), 'b');
+		const { items: sending } = takeBatch(items.slice(0, 1), 'u1', 1);
+		const refused = settle(takeBatch(add([], 'c'), 'u1', 1).items, [
+			{ id: 'c', status: 'refused', reason: 'no' }
+		]);
+
+		expect(recallable(items[1]!)).toBe(true);
+		expect(recallable(sending[0]!)).toBe(false);
+		expect(recallable(refused[0]!)).toBe(true);
+		expect(recallable(hold(add([], 'd'), 'd')![0]!)).toBe(false);
 	});
 });

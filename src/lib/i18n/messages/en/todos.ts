@@ -5,7 +5,7 @@ export const todos = {
 	// The card as one line, with nothing open (docs/05 §5.5).
 	'todos.none': 'Nothing open.',
 	'todos.add': 'Add',
-	'todos.form.for': (p: { name: string }) => `To do for ${p.name}`,
+	'todos.form.for': (p: { name: string }) => `To-do for ${p.name}`,
 	'todos.form.what': 'What is still to do?',
 	'todos.form.whatPlaceholder': 'e.g. give the book back',
 	'todos.form.by': 'By',
@@ -21,6 +21,10 @@ export const todos = {
 	// The toasts, with *Undo* beside them.
 	'todos.done': (p: { title: string }) => `Done: ${p.title}`,
 	'todos.removed': 'To-do removed',
+	// *Undo* on a row whose tick is kept on the device; it names its to-do, and says *Undo*.
+	'todos.recallTick': (p: { title: string }) => `Undo tick: ${p.title}`,
+	// *Undo* on a tick kept on the device came too late: it had just gone out.
+	'todos.tickOnItsWay': 'Already sent: it can be opened again from Activity.',
 	// A done one in the person's Activity (docs/02 §2.23): its label, and unchecking it.
 	'todos.story.done': 'Done',
 	'todos.story.reopen': (p: { title: string }) => `Not done yet: ${p.title}`,

@@ -292,6 +292,11 @@ export function settlePhoto(
 	return next;
 }
 
+/** Whether the member can still take it back here: waiting or refused, not on its way or open. */
+export function recallable(item: OutboxItem): boolean {
+	return item.state === 'pending' || item.state === 'refused';
+}
+
 /** The member does not want it any more. Null when it is on its way and cannot be recalled. */
 export function discard(items: readonly OutboxItem[], id: string): OutboxItem[] | null {
 	const item = items.find((i) => i.command.id === id);

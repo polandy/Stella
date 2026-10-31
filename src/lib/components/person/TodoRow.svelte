@@ -9,6 +9,9 @@
 	import { useI18n } from '$lib/i18n/context.svelte';
 	import { reveal } from '$lib/motion/motion.svelte';
 	import { keepable } from '$lib/pwa/keepable';
+	import { recallable, type KeptOf } from '$lib/pwa/outbox';
+	import { outbox } from '$lib/pwa/outbox.svelte';
+	import type { JustDoneTodos } from '$lib/todos/just-done.svelte';
 	import { dueLabel, dueStanding } from '$lib/todos/todos';
 	import { useRemovals } from '$lib/undo/context.svelte';
 	import { savedEnhance } from '$lib/undo/saved';
@@ -21,8 +24,10 @@
 	/*
 	 * One open to-do on the To do card (docs/02 §2.26): a checkbox, the line, its day, who noted
 	 * it. Ticking saves at once through the outbox, so it works on a phone out of reach too, and
-	 * the toast offers *Undo*, which opens it again. The pencil rewrites it in place; removing it
-	 * has the undo every removal has (docs/02 §2.23).
+	 * the toast offers *Undo*, which opens it again; the row stays, struck through, while the
+	 * toast does. A tick kept on the device offers *Undo* on the row itself until it is on its
+	 * way. The pencil rewrites it in place; removing it has the undo every removal has (docs/02
+	 * §2.23).
 	 */
 	interface Props {
 		todo: PersonPageData['todos'][number];
@@ -30,12 +35,16 @@
 		contactId: string;
 		/** The household's day, which *overdue* is read against. */
 		today: string;
+		/** Just ticked: struck through while its toast stands (`cardTodos`). */
+		done: boolean;
+		/** Where a tick is announced, so the row stays while its toast does. */
+		justDone: JustDoneTodos<PersonPageData['todos'][number]>;
 		/** Ticked on this device while Stella was out of reach, and not sent yet. */
-		keptTick: boolean;
+		keptTick: KeptOf<'todo.tick'> | null;
 		/** The refusal of this row's last save, if any. */
 		error: string | null;
 	}
-	let { todo, contactId, today, keptTick, error }: Props = $props();
+	let { todo, done, justDone, contactId, today, keptTick, error }: Props = $props();
 
 	const i18n = useI18n();
 	const t = i18n.t;
@@ -45,7 +54,7 @@
 	let row = $state<HTMLElement>();
 	// Checked from the tap until Stella has answered; a refusal unchecks it again.
 	let ticking = $state(false);
-	const ticked = $derived(ticking || keptTick);
+	const ticked = $derived(ticking || done || keptTick !== null);
 	const checkboxId = $derived(`todo-tick-${todo.id}`);
 
 	const standing = $derived(dueStanding(todo.dueOn, today));
@@ -70,6 +79,7 @@
 
 	/** *Undo* on the toast: the to-do opens again, where it stood. */
 	async function reopen() {
+		justDone.reopening(todo.id);
 		const body = new FormData();
 		body.set('todoId', todo.id);
 		try {
@@ -78,6 +88,15 @@
 			removals.notify(t('errors.todo.couldNotSave'));
 		}
 		await invalidateAll();
+		justDone.reopened(todo.id);
+	}
+
+	/** *Undo* for a tick still on this device: it is dropped there, and never sent. */
+	function recallTick(commandId: string) {
+		void outbox.discard(commandId).then((recalled) => {
+			// Gone out meanwhile, it is Stella's: it is opened again from Activity, as the toast says.
+			if (!recalled) removals.notify(t('todos.tickOnItsWay'));
+		});
 	}
 
 	// A tick saves through the outbox, kept when Stella cannot take it (docs/02 §2.18).
@@ -93,15 +112,23 @@
 				// Shown on Home while it waits: the tick names nothing but its to-do.
 				about: todo.title,
 				errorKey: 'todoTickError',
-				onApplied: () => removals.notify(t('todos.done', { title: todo.title }), reopen),
-				onKept: () => {}
+				onApplied: () =>
+					justDone.announced(
+						todo.id,
+						removals.notify(t('todos.done', { title: todo.title }), reopen)
+					),
+				onKept: (command) => {
+					removals.notify(t('todos.done', { title: todo.title }), () => recallTick(command.id));
+				}
 			},
 			() => {}
 		)
 	);
 	const submitTick: SubmitFunction = async (input) => {
+		justDone.saving(todo);
 		await keepTick(input);
-		// Applied, the row is gone with the reload; kept, `keptTick` holds it; refused, it is open.
+		// Applied, `done` holds the row; kept, `keptTick` does; refused, it is open again.
+		justDone.unsaved(todo.id);
 		ticking = false;
 	};
 </script>
@@ -169,7 +196,18 @@
 				</p>
 				<FormError message={error} variant="inline" />
 			</div>
-			{#if !ticked}
+			{#if keptTick && recallable(keptTick)}
+				<div class="flex shrink-0 items-center" data-todo-actions>
+					<Button
+						variant="ghost"
+						size="sm"
+						type="button"
+						label={t('todos.recallTick', { title: todo.title })}
+						onclick={() => recallTick(keptTick.command.id)}
+						data-testid="todo-recall">{t('common.undo')}</Button
+					>
+				</div>
+			{:else if !ticked}
 				<div class="flex shrink-0 items-center gap-1" data-todo-actions>
 					<Button
 						variant="ghost"

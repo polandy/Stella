@@ -34,7 +34,7 @@ const labels: PaletteLabels = {
 	write: 'Write a moment',
 	giftIdea: 'Gift idea for …',
 	giftIdeas: 'All gift ideas',
-	todoFor: 'To do for …',
+	todoFor: 'To-do for …',
 	addPerson: 'Add person',
 	searchEverything: (query) => `Search everything for “${query}”`
 };
@@ -234,6 +234,11 @@ describe('a to-do from the palette (docs/02 §2.26)', () => {
 		const rows = paletteRows('to do', people, labels);
 
 		expect(rows[0]).toMatchObject({ kind: 'step', id: 'todo', step: 'todo' });
+	});
+
+	it('is found however the word is typed: *to do*, *to-do* or *todo*', () => {
+		for (const typed of ['to do', 'to-do', 'todo', 'To-do f'])
+			expect(paletteRows(typed, people, labels)[0]).toMatchObject({ id: 'todo' });
 	});
 
 	it('then asks only whom it is for: people, each landing on their To do card’s form', () => {

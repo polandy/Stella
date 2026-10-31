@@ -35,8 +35,8 @@ export interface Keepable {
 	photos?(data: FormData): Promise<KeptPhoto[] | null>;
 	/** Stella took `command` (the page is already read again): close the form, act on `result`. */
 	onApplied(result: unknown, command: JsonCommand): void | Promise<void>;
-	/** It was kept rather than sent: close the form, say so. */
-	onKept(): void;
+	/** `command` was kept rather than sent: close the form, say so. */
+	onKept(command: JsonCommand): void;
 	/** Counts the save while it is on its way, for the shell's activity indicator. */
 	pending?: PendingSink;
 }
@@ -55,7 +55,7 @@ export function keepable(keep: Keepable, invalid: SubmitFunction): SubmitFunctio
 		const about = typeof keep.about === 'string' ? keep.about : keep.about(input.formData);
 		if (!reachability.reachable) {
 			await outbox.add(command, photos, about);
-			keep.onKept();
+			keep.onKept(command);
 			return;
 		}
 		await whilePending(keep.pending ?? NOTHING_PENDING, async () => {
@@ -69,7 +69,7 @@ export function keepable(keep: Keepable, invalid: SubmitFunction): SubmitFunctio
 					data: { [keep.errorKey]: delivery.reason, ...refusals }
 				});
 			} else if (delivery.status === 'kept') {
-				keep.onKept();
+				keep.onKept(command);
 			} else {
 				// Clears an error an earlier try left on the form, as a successful action would.
 				await applyAction({ type: 'success', status: 200 });
