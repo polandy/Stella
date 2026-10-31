@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.0.35](https://github.com/polandy/Stella/compare/v0.0.34...v0.0.35) (2026-10-31)
+
+
+### Features
+
+* **todos:** done to-dos in the person's Activity (slice 2) ([#418](https://github.com/polandy/Stella/issues/418)) ([52efb8c](https://github.com/polandy/Stella/commit/52efb8c3ae5fcb1544efbc5a58dd8dc1af69f819))
+
+
+### Bug Fixes
+
+* **todos:** to-do casing, no card jump on the last tick, undo a kept offline tick ([#420](https://github.com/polandy/Stella/issues/420)) ([060d587](https://github.com/polandy/Stella/commit/060d5872c6f2c1972c5af85d441f981fb6991b97))
+
 ## [0.0.34](https://github.com/polandy/Stella/compare/v0.0.33...v0.0.34) (2026-10-31)
 
 
