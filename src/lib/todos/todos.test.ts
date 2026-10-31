@@ -61,7 +61,13 @@ describe('orderOpenTodos', () => {
 			todo('soon', '2026-11-02', 3),
 			todo('overdue', '2026-10-20', 4)
 		]);
-		expect(ordered.map((t) => t.id)).toEqual(['overdue', 'soon', 'late', 'new-no-day', 'old-no-day']);
+		expect(ordered.map((t) => t.id)).toEqual([
+			'overdue',
+			'soon',
+			'late',
+			'new-no-day',
+			'old-no-day'
+		]);
 	});
 
 	it('leaves its input alone', () => {

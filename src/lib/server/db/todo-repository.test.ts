@@ -95,7 +95,14 @@ describe('createDrizzleTodoRepository', () => {
 	it('stores a tick, a rewrite and a removal', async () => {
 		await repo.insert(todo({ id: 't-1' }));
 		await repo.update(
-			todo({ id: 't-1', title: 'Cookbook', dueOn: '2026-11-08', doneAt: 9, doneBy: U2, updatedAt: 9 })
+			todo({
+				id: 't-1',
+				title: 'Cookbook',
+				dueOn: '2026-11-08',
+				doneAt: 9,
+				doneBy: U2,
+				updatedAt: 9
+			})
 		);
 		expect(await repo.findVisibleTo(viewerU1, 'c-shared', 't-1')).toMatchObject({
 			title: 'Cookbook',

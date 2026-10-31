@@ -516,16 +516,7 @@ describe('the round trip', () => {
 			'occasion',
 			'created_at'
 		],
-		todo: [
-			'id',
-			'contact_id',
-			'visibility',
-			'title',
-			'due_on',
-			'done_at',
-			'done_by',
-			'created_at'
-		],
+		todo: ['id', 'contact_id', 'visibility', 'title', 'due_on', 'done_at', 'done_by', 'created_at'],
 		photo: [
 			'id',
 			'contact_id',

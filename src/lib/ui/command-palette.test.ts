@@ -34,6 +34,7 @@ const labels: PaletteLabels = {
 	write: 'Write a moment',
 	giftIdea: 'Gift idea for …',
 	giftIdeas: 'All gift ideas',
+	todoFor: 'To do for …',
 	addPerson: 'Add person',
 	searchEverything: (query) => `Search everything for “${query}”`
 };
@@ -156,6 +157,7 @@ describe('paletteRows', () => {
 			write: 'Moment festhalten',
 			giftIdea: 'Geschenkidee für …',
 			giftIdeas: 'Alle Geschenkideen',
+			todoFor: 'Offener Punkt für …',
 			addPerson: 'Person hinzufügen',
 			searchEverything: (query) => `Überall nach „${query}“ suchen`
 		};
@@ -190,9 +192,10 @@ describe('a gift idea from the palette (docs/02 §2.25.2)', () => {
 	it('sits next to writing a moment, and leads to a second step rather than a page', () => {
 		const rows = paletteRows('', people, labels);
 
-		expect(rows.slice(0, 4).map((r) => r.id)).toEqual([
+		expect(rows.slice(0, 5).map((r) => r.id)).toEqual([
 			'write',
 			'gift-idea',
+			'todo',
 			'gift-ideas',
 			'add-person'
 		]);
@@ -223,6 +226,23 @@ describe('a gift idea from the palette (docs/02 §2.25.2)', () => {
 		const rows = paletteRows('oma', people, labels, new Map(), 'giftIdea');
 
 		expect(rows.map((r) => r.id)).toEqual(['oma']);
+	});
+});
+
+describe('a to-do from the palette (docs/02 §2.26)', () => {
+	it('sits beside the gift idea, and leads to a second step rather than a page', () => {
+		const rows = paletteRows('to do', people, labels);
+
+		expect(rows[0]).toMatchObject({ kind: 'step', id: 'todo', step: 'todo' });
+	});
+
+	it('then asks only whom it is for: people, each landing on their To do card’s form', () => {
+		const rows = paletteRows('ma', people, labels, new Map(), 'todo');
+
+		expect(rows.every((r) => r.kind === 'person')).toBe(true);
+		expect(rows.find((r) => r.id === 'markus')).toMatchObject({
+			href: '/contacts/markus?todo=new'
+		});
 	});
 });
 

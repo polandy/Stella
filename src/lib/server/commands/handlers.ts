@@ -61,7 +61,18 @@ function viewerOf(actor: CommandActor): Viewer {
 }
 
 export function createCommandHandlers(
-	{ auth, people, relationships, circles, media, story, notes, records, gifts, todos }: HandlerContexts,
+	{
+		auth,
+		people,
+		relationships,
+		circles,
+		media,
+		story,
+		notes,
+		records,
+		gifts,
+		todos
+	}: HandlerContexts,
 	{ receipts, entries }: HandlerRepositories
 ): CommandHandlers {
 	const { contacts, directory, contactNames, contactDeps, namesakeContextDeps } = people;

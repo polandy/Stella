@@ -51,6 +51,9 @@ export const home = {
 	'home.outbox.photosOf': (p: { name: string }) => `· photos of ${p.name}`,
 	'home.outbox.photosFor': (p: { name: string }) => `· photos for ${p.name}`,
 	'home.outbox.giftFor': (p: { name: string }) => `· gift for ${p.name}`,
+	'home.outbox.todoFor': (p: { name: string }) => `· to-do for ${p.name}`,
+	// A tick kept on the device; it names the to-do, since the tick says nothing else.
+	'home.outbox.todoDone': '· to-do ticked',
 	// The first-run card (docs/02 §2.22.3).
 	'home.welcome.label': 'Getting started',
 	'home.welcome.title': 'Welcome to Stella',

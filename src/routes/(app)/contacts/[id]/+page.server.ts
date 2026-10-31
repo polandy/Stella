@@ -2,6 +2,7 @@ import { circleActions } from './actions/circles';
 import { dateActions } from './actions/dates';
 import { fieldActions } from './actions/fields';
 import { giftActions } from './actions/gifts';
+import { todoActions } from './actions/todos';
 import { homeActions } from './actions/homes';
 import { immichActions } from './actions/immich';
 import { noteActions } from './actions/notes';
@@ -28,6 +29,8 @@ export const actions = {
 	...noteActions,
 	// The Gifts card (docs/02 §2.25).
 	...giftActions,
+	// The To do card (docs/02 §2.26).
+	...todoActions,
 	...fieldActions,
 	// A shared home: share, rewrite, move out (docs/02 §2.2).
 	...homeActions,

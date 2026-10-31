@@ -49,6 +49,7 @@
 				write: t('components.palette.write'),
 				giftIdea: t('components.palette.giftIdea'),
 				giftIdeas: t('components.palette.giftIdeas'),
+				todoFor: t('components.palette.todoFor'),
 				addPerson: t('components.palette.addPerson'),
 				searchEverything: (q) => t('components.palette.searchEverything', { query: q })
 			},
@@ -56,6 +57,12 @@
 			step
 		)
 	);
+
+	// A second step asks only whom it is for (docs/05 §5.4).
+	const STEP_QUESTION = $derived({
+		giftIdea: t('components.palette.giftIdeaFor'),
+		todo: t('components.palette.todoForWhom')
+	});
 
 	$effect(() => {
 		if (!dialog) return;
@@ -134,12 +141,8 @@
 			role="combobox"
 			aria-expanded={rows.length > 0}
 			aria-autocomplete="list"
-			placeholder={step === 'giftIdea'
-				? t('components.palette.giftIdeaFor')
-				: t('components.palette.placeholder')}
-			aria-label={step === 'giftIdea'
-				? t('components.palette.giftIdeaFor')
-				: t('components.palette.jumpTo')}
+			placeholder={step === 'start' ? t('components.palette.placeholder') : STEP_QUESTION[step]}
+			aria-label={step === 'start' ? t('components.palette.jumpTo') : STEP_QUESTION[step]}
 			aria-controls="palette-rows"
 			aria-activedescendant={rows[selected]
 				? `palette-${rows[selected].kind}-${rows[selected].id}`

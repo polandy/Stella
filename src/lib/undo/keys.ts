@@ -15,6 +15,7 @@ export const REMOVAL_KINDS = [
 	'field',
 	'date',
 	'gift',
+	'todo',
 	'tag',
 	'membership',
 	/* Someone moving out of a shared home; its id is `home/contact`. */

@@ -2,6 +2,7 @@ import { describe, expect, it } from 'bun:test';
 import type { GraphModel } from '$lib/graph/model/types';
 import type { MentionedIn } from '$lib/server/domain/mentions/mentioned-in';
 import type { Gift } from '$lib/server/domain/gifts/gifts';
+import type { Todo } from '$lib/server/domain/todos/todos';
 import type { ContactAccess, Remover } from '$lib/server/access/visibility';
 import type { Note } from '$lib/server/domain/notes/notes';
 import { someGalleryPhoto } from '$lib/server/domain/testing';
@@ -11,6 +12,7 @@ import {
 	fieldView,
 	galleryPhotoView,
 	giftView,
+	todoView,
 	circleNamesIn,
 	mentionedInView,
 	noteView,
@@ -131,6 +133,40 @@ describe('giftView', () => {
 
 	it('marks the viewer’s own gift, which only they may make private', () => {
 		expect(giftView(gift({ createdBy: VIEWER }), context()).mine).toBe(true);
+	});
+});
+
+describe('todoView', () => {
+	const todo = (overrides: Partial<Todo> = {}): Todo => ({
+		id: 't-1',
+		contactId: 'c-hilde',
+		createdBy: 'user-2',
+		visibility: 'shared',
+		title: 'Give the book back',
+		dueOn: '2026-11-08',
+		doneAt: null,
+		doneBy: null,
+		createdAt: 1,
+		updatedAt: 2,
+		...overrides
+	});
+
+	it('says what the card shows, and who noted it by first name', () => {
+		expect(todoView(todo(), context())).toEqual({
+			id: 't-1',
+			title: 'Give the book back',
+			dueOn: '2026-11-08',
+			visibility: 'shared',
+			mine: false,
+			notedBy: 'Hans',
+			createdAt: 1
+		});
+	});
+
+	it('marks the viewer’s own to-do, which only they may make private, and names nobody', () => {
+		const mine = todoView(todo({ createdBy: VIEWER }), context());
+		expect(mine.mine).toBe(true);
+		expect(mine.notedBy).toBeNull();
 	});
 });
 

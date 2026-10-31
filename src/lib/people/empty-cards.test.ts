@@ -13,10 +13,11 @@ describe('cardShape', () => {
 		for (const section of CONTACT_SECTIONS) expect(cardShape(section, true)).toBe('card');
 	});
 
-	it('shrinks empty Photos, Notes and Gifts to one line: title, a sentence, the add button', () => {
+	it('shrinks empty Photos, Notes, Gifts and To do to one line: title, a sentence, the add button', () => {
 		expect(cardShape('photos', false)).toBe('line');
 		expect(cardShape('notes', false)).toBe('line');
 		expect(cardShape('gifts', false)).toBe('line');
+		expect(cardShape('todos', false)).toBe('line');
 	});
 
 	it('leaves out an empty Mentioned in: it is passive, there is nothing to add there', () => {

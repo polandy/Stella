@@ -26,6 +26,10 @@ import { personMap } from '$lib/graph/model/person-map';
 import { listMentionedIn } from '$lib/server/domain/mentions/mentioned-in';
 import { listNotesForContact } from '$lib/server/domain/notes/notes';
 import { listGiftsForContact } from '$lib/server/domain/gifts/gifts';
+import { listOpenTodosForContact } from '$lib/server/domain/todos/todos';
+import { orderOpenTodos } from '$lib/todos/todos';
+import { todayFor } from '$lib/dates/today';
+import { systemClock } from '$lib/server/clock';
 import { readFamilyOf } from '$lib/server/domain/relationships/family';
 import { listTagsForContact } from '$lib/server/domain/tags/tag-lists';
 import { TAG_COLORS } from '$lib/design/tag-colors';
@@ -42,6 +46,7 @@ import {
 	fieldView,
 	galleryPhotoView,
 	giftView,
+	todoView,
 	mentionedInView,
 	noteView,
 	peopleNamedIn,
@@ -163,6 +168,10 @@ export const load = (async ({ locals, params, url }) => {
 		),
 		// Ideas, given and received gifts (docs/02 §2.25), already visibility-scoped.
 		gifts: read.gifts.map((gift) => giftView(gift, ctx)),
+		// What is still to do for them (docs/02 §2.26): open ones, those with a day first.
+		todos: orderOpenTodos(read.todos).map((todo) => todoView(todo, ctx)),
+		// The household's day, which the card's *overdue* and *by Fri 6 Nov* are read against.
+		today: todayFor(systemClock),
 		mentionedIn: read.mentionedIn.map((reference) => mentionedInView(reference, ctx)),
 		// The person's photo gallery (docs/02 §2.14), favourites first, already visibility-scoped.
 		gallery: read.gallery.map((photo) => galleryPhotoView(photo, remover, person)),
@@ -245,7 +254,8 @@ function readPersonPage(
 		notes,
 		records,
 		household,
-		gifts
+		gifts,
+		todos
 	}: Pick<
 		AppServices,
 		| 'people'
@@ -257,6 +267,7 @@ function readPersonPage(
 		| 'records'
 		| 'household'
 		| 'gifts'
+		| 'todos'
 	>,
 	viewer: Viewer,
 	contactId: string,
@@ -273,6 +284,7 @@ function readPersonPage(
 		lastContactedAt: lastContactedOn(story.interactionDeps, viewer, contactId),
 		notes: listNotesForContact(notes.noteDeps, viewer, contactId),
 		gifts: listGiftsForContact(gifts.giftDeps, viewer, contactId),
+		todos: listOpenTodosForContact(todos.todoDeps, viewer, contactId),
 		mentionedIn: listMentionedIn(notes.mentionedInDeps, viewer, contactId),
 		gallery: listGallery(media.galleryDeps, viewer, contactId),
 		groupPhotos: listGroupPhotosOf(circles.cutDeps, viewer, contactId),

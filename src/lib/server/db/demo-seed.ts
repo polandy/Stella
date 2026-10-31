@@ -18,6 +18,7 @@ import {
 	note,
 	noteMention,
 	relationship,
+	todo,
 	user
 } from './schema';
 
@@ -723,6 +724,26 @@ const SYMMETRIC_TYPES = new Set([
 const withMentions = (text: string) =>
 	text.replace(/@\{person:([a-z]+)\}/g, (_match, key: string) => mentionToken(cid(key)));
 
+/**
+ * What is still owed Peter, Grosi’s husband (docs/02 §2.26): one overdue, one due this week, one with no
+ * day, one private and one already done, so the To do card stands at the top of his page and
+ * shows every standing. `dueIn` counts days from today, negative for past ones.
+ */
+const TODOS: readonly {
+	key: string;
+	title: string;
+	dueIn: number | null;
+	byMember?: boolean;
+	private?: boolean;
+	doneDaysAgo?: number;
+}[] = [
+	{ key: 'book', title: 'Give back the book about the Gotthard', dueIn: -4 },
+	{ key: 'surgery', title: 'Ask how the knee check-up went', dueIn: 3, byMember: true },
+	{ key: 'recipe', title: 'Send him Grosi’s plum cake recipe', dueIn: null },
+	{ key: 'visit', title: 'Plan a visit before Christmas', dueIn: 40, private: true },
+	{ key: 'photos', title: 'Print the photos of his birthday', dueIn: null, doneDaysAgo: 6 }
+];
+
 /** The people a seeded body names, minus the person it is already about. */
 const mentionedBy = (row: { contactId: string; body: string }) =>
 	mentionsOtherThan(extractMentionIds(row.body), row.contactId);
@@ -1028,6 +1049,24 @@ export function seedDemoData(
 				occasion: g.occasion ?? null,
 				createdAt: now - g.daysAgo * DAY_MS,
 				updatedAt: now - g.daysAgo * DAY_MS
+			}))
+		)
+		.onConflictDoNothing()
+		.run();
+
+	db.insert(todo)
+		.values(
+			TODOS.map((t) => ({
+				id: `demo-todo-${t.key}`,
+				contactId: cid('peter'),
+				createdBy: t.byMember ? memberId : authorId,
+				visibility: t.private ? ('private' as const) : ('shared' as const),
+				title: t.title,
+				dueOn: t.dueIn === null ? null : dayBefore(now, -t.dueIn),
+				doneAt: t.doneDaysAgo === undefined ? null : now - t.doneDaysAgo * DAY_MS,
+				doneBy: t.doneDaysAgo === undefined ? null : authorId,
+				createdAt: now - 20 * DAY_MS,
+				updatedAt: now - 20 * DAY_MS
 			}))
 		)
 		.onConflictDoNothing()

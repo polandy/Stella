@@ -291,7 +291,8 @@ related**, with a dashed ring and quieter text. The card's header holds **Edit**
 **⋯** holds *How are we connected?*, *Check relationships* and *Open in the graph*.
 
 After People come **Photos**, **Activity** and the **Notes** side by side (one under the other
-on a phone), then **Gifts**, and **Mentioned in** last. Nothing is behind a tab, so nothing has to be found
+on a phone), then **Gifts**, and **Mentioned in** last. **To do** moves: it stands right under
+the name while something is open, and at the end otherwise. Nothing is behind a tab, so nothing has to be found
 before it can be read; each card says how many things are in it. A card with nothing in it yet
 keeps out of the way: empty **Photos**, **Notes** and **Gifts** are a single line with their
 **+ Add** button, an empty **Activity** says so in one sentence, and **Mentioned in** only appears once
@@ -561,6 +562,23 @@ Gifts noted before this card existed have moved into it: a *Gift* logged with *L
 now a given gift on its day (one on each person it was logged with), and the gifts a Monica
 import brought in as notes are now ideas, given or received gifts. A gift note somebody had
 written in since the import stays a note, so nothing you wrote is lost.
+
+### To do
+
+The **To do** card holds what you still owe someone — *give the book back*, *ask how the
+surgery went*. While something is open it stands right under their name, so it is the first
+thing you read about them; with nothing open it is a single line at the end of the page.
+
+- **+ To do** asks only *what*. **By a day** adds a day if there is one; most things have none.
+  Those with a day come first, soonest on top; one whose day has passed says *overdue since …*
+  in red.
+- **Tick the box** when it is done. The line is struck through, and *Undo* in the message opens
+  it again; then it leaves the card.
+- Anyone who can see a to-do may tick, change or remove it — often whoever did it is not the
+  one who wrote it down. It says who noted it; only that person can make it private.
+- From anywhere: `⌘K` / `Ctrl-K`, **To do for …**, then the person's name and `Enter`.
+- Without a connection, noting and ticking a to-do are kept on your device and sent later;
+  changing or removing one needs Stella to be reachable.
 
 ### Mentioned in
 
@@ -943,7 +961,7 @@ your removing it never quietly takes it off someone else's private contact.
 ## Finding things
 
 `⌘K` / `Ctrl-K` — or the search button at the top — opens a palette that jumps straight to a
-person as you type, and offers *Write a moment*, *Gift idea for …* and *Add person* as its
+person as you type, and offers *Write a moment*, *Gift idea for …*, *To do for …* and *Add person* as its
 first rows. Notes are
 not in it; the last row, *Search everything*, opens the full search, which looks through
 people, notes and gifts at once, matches partial words, and only ever returns what you are
