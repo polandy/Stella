@@ -26,6 +26,7 @@ like "docs/05 §5.8" resolves by opening the matching file below.
   - [5.5.11 Tags](design/screens/tags.md)
   - [5.5.12 Photos from the Immich library](design/screens/immich-library.md)
   - [5.5.13 Gift ideas](design/screens/gift-list.md)
+  - [5.5.14 To-dos](design/screens/todos.md)
 - [5.6 Color semantics (categories → accents)](design/5.6-color-semantics.md)
 - [5.7 Components (design-system inventory)](design/5.7-components.md)
 - [5.8 Relationship & context explorer styling](design/5.8-explorer-styling.md)

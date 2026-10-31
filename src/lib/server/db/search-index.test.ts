@@ -199,6 +199,19 @@ describe('ensureSearchIndex backfill', () => {
 		expect(row?.content).not.toContain('christmas');
 	});
 
+	it('backfills the to-dos by their title, so a to-do is findable after the upgrade', () => {
+		db.insert(schema.todo)
+			.values({ id: 't-1', contactId: 'c-beat', createdBy: U, title: 'Fotobuch abholen' })
+			.run();
+
+		ensureSearchIndex(sqlite);
+
+		const hits = sqlite
+			.query("SELECT todo_id FROM todo_fts WHERE todo_fts MATCH 'fotobuch'")
+			.all() as { todo_id: string }[];
+		expect(hits.map((h) => h.todo_id)).toEqual(['t-1']);
+	});
+
 	it('backfills the contacts too, so people are findable after the upgrade', () => {
 		ensureSearchIndex(sqlite);
 
@@ -279,6 +292,26 @@ describe('ensureSearchIndex upgrade', () => {
 			.query("SELECT gift_id FROM gift_fts WHERE gift_fts MATCH 'fotobuch'")
 			.all() as { gift_id: string }[];
 		expect(hits.map((h) => h.gift_id)).toEqual(['g-1']);
+	});
+
+	it('builds the to-do part on the first start whose database has the todo table', () => {
+		sqlite.exec('ALTER TABLE todo RENAME TO todo_not_yet');
+		ensureSearchIndex(sqlite);
+		sqlite.exec('ALTER TABLE todo_not_yet RENAME TO todo');
+
+		ensureSearchIndex(sqlite);
+		db.insert(schema.todo)
+			.values({ id: 't-1', contactId: 'c-beat', createdBy: U, title: 'Reifen wechseln' })
+			.run();
+		db.update(schema.todo)
+			.set({ title: 'Winterreifen wechseln' })
+			.where(eq(schema.todo.id, 't-1'))
+			.run();
+
+		const hits = sqlite
+			.query("SELECT todo_id FROM todo_fts WHERE todo_fts MATCH 'winterreifen'")
+			.all() as { todo_id: string }[];
+		expect(hits.map((h) => h.todo_id)).toEqual(['t-1']);
 	});
 
 	it('leaves an unchanged definition alone, so a restart is not a rebuild', () => {

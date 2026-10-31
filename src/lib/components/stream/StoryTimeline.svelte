@@ -321,28 +321,29 @@
 									<p class="text-sm text-fg-muted">{occasionLabel(t, item.occasion)}</p>
 								{/if}
 							{:else if item.kind === 'todo'}
-								<div class="mt-0.5 flex items-center gap-2">
-									<!-- Still checked: unchecking it opens the to-do again, as on the card. -->
+								<div class="mt-0.5 flex items-start gap-2">
+									<!-- Still checked: unchecking it opens the to-do again, as on the card. The box
+									     stands on the right, under the thumb (docs/05 §5.1). -->
 									<label
-										class="flex min-w-0 flex-1 cursor-pointer items-start gap-2 font-medium text-fg"
+										for="story-todo-{item.id}"
+										class="min-w-0 flex-1 cursor-pointer font-medium text-fg">{item.title}</label
 									>
-										<input
-											type="checkbox"
-											checked
-											disabled={reopeningId === item.id}
-											aria-label={t('todos.story.reopen', { title: item.title })}
-											onchange={() => reopen(item)}
-											class="mt-0.5 size-4 shrink-0 accent-primary"
-											data-testid="story-todo-reopen"
-										/>
-										<span class="min-w-0">{item.title}</span>
-									</label>
 									<!-- On hover or focus, always on a touch screen — as in the kind line. -->
 									<span
 										class="shrink-0 opacity-0 transition-opacity group-hover/item:opacity-100 focus-within:opacity-100 pointer-coarse:opacity-100"
 									>
 										{@render removeForm(item)}
 									</span>
+									<input
+										id="story-todo-{item.id}"
+										type="checkbox"
+										checked
+										disabled={reopeningId === item.id}
+										aria-label={t('todos.story.reopen', { title: item.title })}
+										onchange={() => reopen(item)}
+										class="mt-0.5 size-4 shrink-0 accent-primary"
+										data-testid="story-todo-reopen"
+									/>
 								</div>
 							{:else}
 								<!-- The touchpoint and its editor glide into each other in place (docs/05 §5.11). -->

@@ -71,6 +71,19 @@ function fakeRepo() {
 				}
 			];
 		},
+		searchTodos: async (_v, q) => {
+			calls.push(`todos:${q}`);
+			return [
+				{
+					todoId: 't1',
+					title: 'Reifen',
+					done: false,
+					doneOn: null,
+					contactId: 'c1',
+					contactName: 'Hans'
+				}
+			];
+		},
 		searchMoments: async (_v, q) => {
 			calls.push(`moments:${q}`);
 			return [moment];
@@ -91,10 +104,17 @@ describe('search', () => {
 		expect(f.calls).toEqual([]);
 	});
 
-	it('queries contacts, notes, gifts and moments with the derived FTS query', async () => {
+	it('queries contacts, notes, gifts, moments and to-dos with the derived FTS query', async () => {
 		const f = fakeRepo();
 		const results = await search({ search: f.repo }, viewer, 'Hans');
-		expect(f.calls).toEqual(['contacts:hans*', 'notes:hans*', 'gifts:hans*', 'moments:hans*']);
+		expect(f.calls).toEqual([
+			'contacts:hans*',
+			'notes:hans*',
+			'gifts:hans*',
+			'moments:hans*',
+			'todos:hans*'
+		]);
+		expect(results.todos.map((t) => t.todoId)).toEqual(['t1']);
 		expect(results.contacts[0]?.displayName).toBe('Hans');
 		expect(results.gifts.map((g) => g.giftId)).toEqual(['g1']);
 		expect(results.moments.map((m) => m.entryId)).toEqual(['j1']);

@@ -23,5 +23,15 @@ export const todos: TodosMessages = {
 	'todos.tickOnItsWay': 'Schon gesendet: unter Aktivität lässt es sich wieder öffnen.',
 	'todos.story.done': 'Erledigt',
 	'todos.story.reopen': (p) => `Doch nicht erledigt: ${p.title}`,
-	'todos.story.reopened': (p) => `Wieder offen: ${p.title}`
+	'todos.story.reopened': (p) => `Wieder offen: ${p.title}`,
+	'todos.band.title': 'Todos',
+	'todos.list.title': 'Todos',
+	'todos.list.intro': 'Alles, was noch zu tun ist, für alle, das Dringendste zuerst.',
+	'todos.list.open': (p) => `${p.count} offen`,
+	'todos.list.overdue': 'Überfällig',
+	'todos.list.thisWeek': 'Diese Woche',
+	'todos.list.later': 'Später',
+	'todos.list.noDay': 'Ohne Tag',
+	'todos.list.empty': 'Nichts offen.',
+	'todos.list.emptyHint': 'Notiere ein Todo auf der Seite einer Person, dann steht es hier.'
 };

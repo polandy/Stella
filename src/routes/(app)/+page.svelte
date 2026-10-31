@@ -24,6 +24,11 @@
 	import { isKept, type KeptOf } from '$lib/pwa/outbox';
 	import KeptItem from '$lib/components/pwa/KeptItem.svelte';
 	import WelcomeCard from '$lib/components/stream/WelcomeCard.svelte';
+	import TodoBand from '$lib/components/todos/TodoBand.svelte';
+	import { todoBand } from '$lib/todos/household';
+	import { JustDoneTodos } from '$lib/todos/just-done.svelte';
+	import { keptTicks } from '$lib/todos/kept-ticks.svelte';
+	import { useRemovals } from '$lib/undo/context.svelte';
 	import { contactSectionPath } from '$lib/people/sections';
 	import { occasionLabel, whenLabel } from '$lib/dates/labels';
 	import { useI18n } from '$lib/i18n/context.svelte';
@@ -72,6 +77,14 @@
 	const railOrder = $derived(data.railFirst ? RAIL_BEFORE_STREAM : RAIL_AFTER_STREAM);
 
 	let showAllUpcoming = $state(false);
+
+	// The *To do* band (docs/02 §2.26.6): a row just ticked stays, struck through, while its
+	// toast stands, as on the person's card.
+	const justDone = new JustDoneTodos<PageData['todos'][number]>(useRemovals());
+	const band = $derived(todoBand(justDone.rows(data.todos), data.today));
+	const ticksKept = $derived(keptTicks());
+	/** The rail stands while a date or a to-do is close; without either it is absent. */
+	const hasRail = $derived(data.upcoming.length > 0 || band.rows.length > 0);
 
 	// On a phone the composer is a sheet over the stream, opened by the pencil in the tab bar
 	// (`/?compose`) and closed by handing the URL back — so the open state lives in the URL
@@ -143,11 +156,10 @@
 	{/key}
 {/snippet}
 
-<!-- From lg the rail's 17 rem column is there only while a date is close; otherwise the stream
+<!-- From lg the rail's 17 rem column is there only while a date or a to-do is close; otherwise the stream
      takes the width (docs/05 §5.5). One class either way, never a static and a toggled one. -->
 <main
-	class="mx-auto grid w-full max-w-6xl gap-x-10 gap-y-6 px-4 py-6 md:px-6 md:py-10 lg:grid-rows-[auto_auto_1fr] {data
-		.upcoming.length
+	class="mx-auto grid w-full max-w-6xl gap-x-10 gap-y-6 px-4 py-6 md:px-6 md:py-10 lg:grid-rows-[auto_auto_1fr] {hasRail
 		? 'lg:grid-cols-[minmax(0,1fr)_17rem]'
 		: 'lg:grid-cols-[minmax(0,1fr)]'}"
 >
@@ -538,63 +550,74 @@
 		</button>
 	{/snippet}
 
-	<!-- The rail: what is coming up. It is absent when nothing is, because a box that is
-     permanently empty teaches people to stop looking at it; from lg its column goes with it,
-     and the stream takes the width rather than leave a quarter of the screen blank. -->
-	{#if data.upcoming.length}
+	<!-- The rail: what is to do and what is coming up. It is absent when nothing is, because a box
+     that is permanently empty teaches people to stop looking at it; from lg its column goes with
+     it, and the stream takes the width rather than leave a quarter of the screen blank. -->
+	{#if hasRail}
 		<aside
-			class="flex min-w-0 flex-col lg:col-start-2 lg:row-span-3 lg:row-start-1 lg:self-start {railOrder}"
+			class="flex min-w-0 flex-col gap-6 lg:col-start-2 lg:row-span-3 lg:row-start-1 lg:self-start {railOrder}"
 			aria-label={t('home.atAGlance')}
 		>
-			<section data-testid="coming-up">
-				<h2 class="flex items-center gap-2 pb-2 text-sm font-semibold text-fg">
-					<Icon name="calendar" size={13} />{t('home.comingUp')}
-				</h2>
-				<!-- *Show all* opens the rest of the list in place (docs/05 §5.11). -->
-				<ul class={RAIL_LIST} use:glide={{ key: showAllUpcoming }}>
-					{#each data.upcoming as item, i (item.contactId + item.date + item.kind)}
-						<li class="{RAIL_ROW} {i >= RAIL_CAP && !showAllUpcoming ? RAIL_OVERFLOW : ''}">
-							<Avatar
-								id={item.contactId}
-								name={item.contactName}
-								avatarPhotoId={item.avatarPhotoId}
-								size={28}
-							/>
-							<div class="min-w-0 text-[13px] leading-snug text-fg-muted">
-								<a href="/contacts/{item.contactId}" class="font-semibold text-fg hover:underline"
-									>{item.contactName}</a
-								>
-								<span>{occasionLabel(i18n, item)}</span>
-								<span class="block text-xs text-fg-subtle">
-									{whenLabel(i18n, item.daysUntil, item.date)}
-									<span aria-hidden="true">·</span>
-									<a href="/?about={item.contactId}" class="text-link hover:underline"
-										>{t('home.writeMoment')}</a
+			{#if band.rows.length}
+				<TodoBand
+					{band}
+					today={data.today}
+					{justDone}
+					{ticksKept}
+					error={form && 'todoTickError' in form ? (form.todoTickError ?? null) : null}
+				/>
+			{/if}
+			{#if data.upcoming.length}
+				<section data-testid="coming-up">
+					<h2 class="flex items-center gap-2 pb-2 text-sm font-semibold text-fg">
+						<Icon name="calendar" size={13} />{t('home.comingUp')}
+					</h2>
+					<!-- *Show all* opens the rest of the list in place (docs/05 §5.11). -->
+					<ul class={RAIL_LIST} use:glide={{ key: showAllUpcoming }}>
+						{#each data.upcoming as item, i (item.contactId + item.date + item.kind)}
+							<li class="{RAIL_ROW} {i >= RAIL_CAP && !showAllUpcoming ? RAIL_OVERFLOW : ''}">
+								<Avatar
+									id={item.contactId}
+									name={item.contactName}
+									avatarPhotoId={item.avatarPhotoId}
+									size={28}
+								/>
+								<div class="min-w-0 text-[13px] leading-snug text-fg-muted">
+									<a href="/contacts/{item.contactId}" class="font-semibold text-fg hover:underline"
+										>{item.contactName}</a
 									>
-								</span>
-								{#if item.giftIdeas > 0}
-									<!-- The occasion is the moment an idea was noted for (docs/02 §2.13.3). -->
-									<a
-										href={contactSectionPath(item.contactId, 'gifts')}
-										class="mt-0.5 inline-flex items-center gap-1 text-xs text-link hover:underline"
-										aria-label={t('home.giftIdeasFor', {
-											count: item.giftIdeas,
-											name: item.contactName
-										})}
-										data-testid="coming-up-gift-ideas"
-										><Icon name="gift" size={12} />{t('home.giftIdeas', {
-											count: item.giftIdeas
-										})}</a
-									>
-								{/if}
-							</div>
-						</li>
-					{/each}
-				</ul>
-				{#if data.upcoming.length > RAIL_CAP && !showAllUpcoming}
-					{@render showAll(data.upcoming.length, () => (showAllUpcoming = true))}
-				{/if}
-			</section>
+									<span>{occasionLabel(i18n, item)}</span>
+									<span class="block text-xs text-fg-subtle">
+										{whenLabel(i18n, item.daysUntil, item.date)}
+										<span aria-hidden="true">·</span>
+										<a href="/?about={item.contactId}" class="text-link hover:underline"
+											>{t('home.writeMoment')}</a
+										>
+									</span>
+									{#if item.giftIdeas > 0}
+										<!-- The occasion is the moment an idea was noted for (docs/02 §2.13.3). -->
+										<a
+											href={contactSectionPath(item.contactId, 'gifts')}
+											class="mt-0.5 inline-flex items-center gap-1 text-xs text-link hover:underline"
+											aria-label={t('home.giftIdeasFor', {
+												count: item.giftIdeas,
+												name: item.contactName
+											})}
+											data-testid="coming-up-gift-ideas"
+											><Icon name="gift" size={12} />{t('home.giftIdeas', {
+												count: item.giftIdeas
+											})}</a
+										>
+									{/if}
+								</div>
+							</li>
+						{/each}
+					</ul>
+					{#if data.upcoming.length > RAIL_CAP && !showAllUpcoming}
+						{@render showAll(data.upcoming.length, () => (showAllUpcoming = true))}
+					{/if}
+				</section>
+			{/if}
 		</aside>
 	{/if}
 </main>

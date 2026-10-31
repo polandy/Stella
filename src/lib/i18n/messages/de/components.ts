@@ -35,6 +35,7 @@ export const components: ComponentsMessages = {
 	'components.palette.empty': 'Niemand mit diesem Namen.',
 	'components.palette.write': 'Moment festhalten',
 	'components.palette.giftIdeas': 'Alle Geschenkideen',
+	'components.palette.allTodos': 'Alle Todos',
 	'components.palette.addPerson': 'Person hinzufügen',
 	'components.palette.giftIdea': 'Geschenkidee für …',
 	'components.palette.giftIdeaFor': 'Geschenkidee für wen?',

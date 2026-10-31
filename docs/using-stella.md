@@ -58,6 +58,14 @@ nothing to say, and on a wide screen the stream then takes its room. On a phone 
 above it only while something is due within a fortnight, which is when it is worth the top
 of the screen. It shows three people there, with *Show all* underneath when there are more.
 
+Above it stands **To do**: up to three to-dos, for anyone, that are overdue or due within the
+week, each with the person's face, whom it is for and when. Tick the box on the right when it
+is done, just as on their page. *Show all* opens **To-dos**, every open to-do of the
+household on one page, grouped into *Overdue*, *This week*, *Later* and *No day*; you can tick
+them off there too. Changing or removing one is done on the person's page. The band is only
+there while something is due that soon, and on a phone it moves above the stream once
+something is overdue or due today.
+
 ### Writing a moment
 
 Type what happened and mention the people in it with `@`:
@@ -571,13 +579,14 @@ thing you read about them; with nothing open it is a single line at the end of t
 
 - **+ Add** asks only *what*. **By when?** adds a day if there is one; most things have none.
   Those with a day come first, soonest on top; one whose day has passed says *was due …*.
-- **Tap the line** (or its box) when it is done. The line is struck through and stays while the message
+- **Tap the line** (or its box, on the right) when it is done. The line is struck through and stays while the message
   does; *Undo* in the message opens it again. Then it leaves the card and shows under **Activity** as *Done*, on the day it was
   ticked, with who ticked it. Done too soon? Untick its box there and it is open on the card
   again. Removing it there (or on the card) deletes it — it is gone from Activity as well.
 - Anyone who can see a to-do may tick, change or remove it — often whoever did it is not the
   one who wrote it down. It says who noted it; only that person can make it private.
 - From anywhere: `⌘K` / `Ctrl-K`, **To-do for …**, then the person's name and `Enter`.
+  **All to-dos** there opens the household's list of every open one.
 - Without a connection, noting and ticking a to-do are kept on your device and sent later;
   changing or removing one needs Stella to be reachable. Ticked one by mistake while offline?
   **Undo** on its row takes the tick back until it has been sent.
@@ -963,10 +972,10 @@ your removing it never quietly takes it off someone else's private contact.
 ## Finding things
 
 `⌘K` / `Ctrl-K` — or the search button at the top — opens a palette that jumps straight to a
-person as you type, and offers *Write a moment*, *Gift idea for …*, *To-do for …* and *Add person* as its
-first rows. Notes are
+person as you type, and offers *Write a moment*, *Gift idea for …*, *To-do for …*, *All gift ideas*, *All to-dos* and *Add person*
+as its first rows. Notes are
 not in it; the last row, *Search everything*, opens the full search, which looks through
-people, notes and gifts at once, matches partial words, and only ever returns what you are
+people, notes, gifts, to-dos and moments at once — a done to-do too, marked as done — matches partial words, and only ever returns what you are
 allowed to see — a private gift only to whoever noted it. When it finds nothing it offers *Add "…"*, which opens *Add person* with what you typed
 already filled in as the name — and so does the filter on the People page.
 

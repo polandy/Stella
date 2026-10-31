@@ -43,6 +43,9 @@ export interface Todo {
 /** A ticked to-do, as the person's story reads it (docs/02 §2.26). */
 export type DoneTodo = Todo & { doneAt: number; doneOn: string };
 
+/** An open to-do with whom it is about — Home's band and `/todos` (docs/02 §2.26.6). */
+export type HouseholdTodo = Todo & { contactName: string; avatarPhotoId: string | null };
+
 /** Port the domain owns; the Drizzle adapter implements it with visibility-scoped reads. */
 export interface TodoRepository {
 	insert(todo: Todo): Promise<void>;
@@ -54,6 +57,11 @@ export interface TodoRepository {
 	remove(todoId: string): Promise<void>;
 	/** Every open to-do on a person the viewer may see, in no particular order. */
 	listOpenForContactVisibleTo(viewer: Viewer, contactId: string): Promise<Todo[]>;
+	/**
+	 * Every open to-do the viewer may see, in no particular order, on the people the household
+	 * still browses — an archived person's stay on their page only (docs/04 §4.9).
+	 */
+	listOpenVisibleTo(viewer: Viewer): Promise<HouseholdTodo[]>;
 	/**
 	 * One page of a person's done to-dos the viewer may see, newest first by (`doneOn`, `doneAt`),
 	 * strictly older than `before` when given — the story's fourth source (docs/02 §2.23).
@@ -247,4 +255,12 @@ export async function listOpenTodosForContact(
 	contactId: string
 ): Promise<Todo[]> {
 	return deps.todos.listOpenForContactVisibleTo(viewer, contactId);
+}
+
+/** Every open to-do the viewer may see, with whom it is about — Home's band and `/todos`. */
+export async function listOpenTodos(
+	deps: Pick<TodoDeps, 'todos'>,
+	viewer: Viewer
+): Promise<HouseholdTodo[]> {
+	return deps.todos.listOpenVisibleTo(viewer);
 }

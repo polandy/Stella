@@ -28,7 +28,19 @@ export const todos = {
 	// A done one in the person's Activity (docs/02 §2.23): its label, and unchecking it.
 	'todos.story.done': 'Done',
 	'todos.story.reopen': (p: { title: string }) => `Not done yet: ${p.title}`,
-	'todos.story.reopened': (p: { title: string }) => `Open again: ${p.title}`
+	'todos.story.reopened': (p: { title: string }) => `Open again: ${p.title}`,
+	// Home's band (docs/02 §2.26.6): what is overdue or due within the week.
+	'todos.band.title': 'To do',
+	// `/todos`: every open to-do of the household, grouped by its day.
+	'todos.list.title': 'To-dos',
+	'todos.list.intro': 'Everything still to do, for everyone, the most pressing first.',
+	'todos.list.open': (p: { count: number }) => `${p.count} open`,
+	'todos.list.overdue': 'Overdue',
+	'todos.list.thisWeek': 'This week',
+	'todos.list.later': 'Later',
+	'todos.list.noDay': 'No day',
+	'todos.list.empty': 'Nothing open.',
+	'todos.list.emptyHint': 'Note a to-do on a person’s page, and it shows up here.'
 };
 
 /** The key set every translation of this area has to provide. */

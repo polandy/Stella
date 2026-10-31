@@ -119,6 +119,39 @@ describe('createDrizzleTodoRepository', () => {
 		expect(await repo.findVisibleTo(viewerU1, 'c-shared', 't-1')).toBeNull();
 	});
 
+	describe('the household’s open to-dos', () => {
+		it('lists every open one the viewer may see, with the person’s name and face', async () => {
+			await repo.insert(todo({ id: 'open' }));
+			await repo.insert(todo({ id: 'done', doneAt: 9, doneOn: '2026-10-30', doneBy: U2 }));
+			const open = await repo.listOpenVisibleTo(viewerU1);
+			expect(open).toEqual([{ ...todo({ id: 'open' }), contactName: 'S', avatarPhotoId: null }]);
+		});
+
+		it('keeps a private one to its author and a private person’s to its creator', async () => {
+			await repo.insert(todo({ id: 'mine', visibility: 'private' }));
+			await repo.insert(todo({ id: 'hidden', contactId: 'c-priv' }));
+			expect(await repo.listOpenVisibleTo(viewerU2)).toEqual([]);
+			expect((await repo.listOpenVisibleTo(viewerU1)).map((t) => t.id).sort()).toEqual([
+				'hidden',
+				'mine'
+			]);
+		});
+
+		it('leaves out an archived person’s, which stay on their page (docs/04 §4.9)', async () => {
+			db.insert(schema.contact)
+				.values({ id: 'c-gone', householdId: H, createdBy: U1, displayName: 'G', archivedAt: 5 })
+				.run();
+			await repo.insert(todo({ id: 'archived', contactId: 'c-gone' }));
+			expect(await repo.listOpenVisibleTo(viewerU1)).toEqual([]);
+			expect(await repo.listOpenForContactVisibleTo(viewerU1, 'c-gone')).toHaveLength(1);
+		});
+
+		it('never reaches into another household', async () => {
+			await repo.insert(todo({ id: 'open' }));
+			expect(await repo.listOpenVisibleTo({ id: U1, householdId: 'elsewhere' })).toEqual([]);
+		});
+	});
+
 	describe('the story page', () => {
 		const done = (id: string, doneOn: string, doneAt: number, over: Partial<Todo> = {}) =>
 			todo({ id, doneOn, doneAt, doneBy: U2, ...over });

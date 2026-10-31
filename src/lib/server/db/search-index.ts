@@ -3,7 +3,7 @@ import { MENTION_TOKEN_PREFIX } from '../../mentions/mentions';
 
 /*
  * Full-text search index (docs/03 §3.5). Creates the FTS5 virtual tables and the triggers that
- * keep them in sync with `contact`, `note`, `gift` and `journal_entry`, and builds the rows for everything already
+ * keep them in sync with `contact`, `note`, `gift`, `journal_entry` and `todo`, and builds the rows for everything already
  * stored. Runs on every startup and does nothing when the index on disk was built from the
  * same definitions — see `fingerprint`. Kept as raw SQL because FTS5 virtual tables are
  * outside Drizzle's schema management.
@@ -120,22 +120,64 @@ const TRIGGERS: Record<string, string> = {
 };
 
 /*
- * The triggers that keep the gift index in step with `gift`. A gift is added, edited, marked
- * given and removed through that table alone — and restored, merged and converted from a
- * Monica note the same way — so these three cover every path.
+ * What of a to-do is searchable: its title, the only words it has (docs/02 §2.26). Done ones
+ * stay in the index; the search marks them done.
  */
-const GIFT_TRIGGERS: Record<string, string> = {
-	gift_fts_ai: `AFTER INSERT ON gift BEGIN
+const todoContent = (t: string) => `coalesce(${t}.title,'')`;
+
+/*
+ * A part of the index over a table a database migrated only part of the way may not have yet
+ * — which only a migration test builds, since startup runs every migration first. Such a part
+ * is left out there, and the fingerprint says so, so the start that has the table builds it.
+ */
+interface OptionalPart {
+	table: string;
+	triggers: Record<string, string>;
+	content: string;
+	backfill: string;
+}
+
+/*
+ * A gift is added, edited, marked given and removed through `gift` alone — and restored,
+ * merged and converted from a Monica note the same way — so its three triggers cover every
+ * path. A to-do is written, ticked, reopened and removed through `todo` alone, likewise.
+ */
+const OPTIONAL_PARTS: readonly OptionalPart[] = [
+	{
+		table: 'gift',
+		triggers: {
+			gift_fts_ai: `AFTER INSERT ON gift BEGIN
 			INSERT INTO gift_fts(gift_id, content) VALUES (new.id, ${giftContent('new')});
 		END`,
-	gift_fts_ad: `AFTER DELETE ON gift BEGIN
+			gift_fts_ad: `AFTER DELETE ON gift BEGIN
 			DELETE FROM gift_fts WHERE gift_id = old.id;
 		END`,
-	gift_fts_au: `AFTER UPDATE ON gift BEGIN
+			gift_fts_au: `AFTER UPDATE ON gift BEGIN
 			DELETE FROM gift_fts WHERE gift_id = old.id;
 			INSERT INTO gift_fts(gift_id, content) VALUES (new.id, ${giftContent('new')});
 		END`
-};
+		},
+		content: giftContent('gift'),
+		backfill: `INSERT INTO gift_fts(gift_id, content) SELECT id, ${giftContent('gift')} FROM gift;`
+	},
+	{
+		table: 'todo',
+		triggers: {
+			todo_fts_ai: `AFTER INSERT ON todo BEGIN
+			INSERT INTO todo_fts(todo_id, content) VALUES (new.id, ${todoContent('new')});
+		END`,
+			todo_fts_ad: `AFTER DELETE ON todo BEGIN
+			DELETE FROM todo_fts WHERE todo_id = old.id;
+		END`,
+			todo_fts_au: `AFTER UPDATE OF title ON todo BEGIN
+			DELETE FROM todo_fts WHERE todo_id = old.id;
+			INSERT INTO todo_fts(todo_id, content) VALUES (new.id, ${todoContent('new')});
+		END`
+		},
+		content: todoContent('todo'),
+		backfill: `INSERT INTO todo_fts(todo_id, content) SELECT id, ${todoContent('todo')} FROM todo;`
+	}
+];
 
 /** The FTS5 virtual tables. Outside Drizzle's schema management, hence the raw DDL. */
 const TABLES = `
@@ -150,33 +192,30 @@ const TABLES = `
 		);
 		CREATE VIRTUAL TABLE IF NOT EXISTS journal_fts USING fts5(
 			entry_id UNINDEXED, contact_id UNINDEXED, content, tokenize='unicode61 remove_diacritics 2'
+		);
+		CREATE VIRTUAL TABLE IF NOT EXISTS todo_fts USING fts5(
+			todo_id UNINDEXED, content, tokenize='unicode61 remove_diacritics 2'
 		);`;
 
-/*
- * A database migrated only part of the way — which only a migration test builds, since startup
- * runs every migration first — has no `gift` table to hang a trigger on. The gift part is left
- * out there, and the fingerprint says so, so the start that has the table builds it.
- */
-function hasGiftTable(sqlite: Database): boolean {
-	return (
-		sqlite.query("SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = 'gift'").get() !==
-		null
-	);
+/** The optional parts whose table this database has. */
+function presentParts(sqlite: Database): OptionalPart[] {
+	const has = sqlite.query("SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = ?");
+	return OPTIONAL_PARTS.filter((part) => has.get(part.table) !== null);
 }
 
-const triggersFor = (withGifts: boolean): Record<string, string> =>
-	withGifts ? { ...TRIGGERS, ...GIFT_TRIGGERS } : TRIGGERS;
+const triggersFor = (parts: readonly OptionalPart[]): Record<string, string> =>
+	Object.assign({}, TRIGGERS, ...parts.map((part) => part.triggers));
 
 /** Everything the index is made of, as one string — the input to the fingerprint. */
-const definition = (withGifts: boolean): string =>
+const definition = (parts: readonly OptionalPart[]): string =>
 	TABLES +
-	Object.entries(triggersFor(withGifts))
+	Object.entries(triggersFor(parts))
 		.map(([name, body]) => `CREATE TRIGGER ${name} ${body};`)
 		.join('') +
 	contactContent('contact') +
 	noteContent('note') +
 	journalContent('journal_entry') +
-	(withGifts ? giftContent('gift') : '');
+	parts.map((part) => part.content).join('');
 
 /**
  * A content-addressed stamp of the definitions above. Stored beside the index so a startup can
@@ -185,8 +224,8 @@ const definition = (withGifts: boolean): string =>
  * the triggers are replaced and the rows rebuilt. Any edit to the SQL above moves the stamp and
  * upgrades every existing database on its next start — there is no version number to remember.
  */
-function fingerprint(withGifts: boolean): string {
-	return new Bun.CryptoHasher('sha256').update(definition(withGifts)).digest('hex');
+function fingerprint(parts: readonly OptionalPart[]): string {
+	return new Bun.CryptoHasher('sha256').update(definition(parts)).digest('hex');
 }
 
 /** Where that stamp lives. Its own tiny table, like the FTS tables outside Drizzle. */
@@ -200,16 +239,16 @@ function storedFingerprint(sqlite: Database): string | null {
 }
 
 /** Drop and re-create every trigger, so they carry the current definition. */
-function recreateTriggers(sqlite: Database, withGifts: boolean): void {
+function recreateTriggers(sqlite: Database, parts: readonly OptionalPart[]): void {
 	sqlite.exec(
-		Object.entries(triggersFor(withGifts))
+		Object.entries(triggersFor(parts))
 			.map(([name, body]) => `DROP TRIGGER IF EXISTS ${name};CREATE TRIGGER ${name} ${body};`)
 			.join('\n')
 	);
 }
 
 /** Throw away the index and build it from the tables of record. */
-function rebuild(sqlite: Database, withGifts: boolean): void {
+function rebuild(sqlite: Database, parts: readonly OptionalPart[]): void {
 	sqlite.exec(`
 		DELETE FROM contact_fts;
 		INSERT INTO contact_fts(contact_id, content) SELECT id, ${contactContent('contact')} FROM contact;
@@ -217,12 +256,9 @@ function rebuild(sqlite: Database, withGifts: boolean): void {
 		INSERT INTO note_fts(note_id, contact_id, content) SELECT id, contact_id, ${noteContent('note')} FROM note;
 		DELETE FROM journal_fts;
 		INSERT INTO journal_fts(entry_id, contact_id, content) SELECT id, contact_id, ${journalContent('journal_entry')} FROM journal_entry;
-		DELETE FROM gift_fts;`);
-	if (withGifts) {
-		sqlite.exec(
-			`INSERT INTO gift_fts(gift_id, content) SELECT id, ${giftContent('gift')} FROM gift;`
-		);
-	}
+		DELETE FROM gift_fts;
+		DELETE FROM todo_fts;`);
+	for (const part of parts) sqlite.exec(part.backfill);
 }
 
 /**
@@ -234,12 +270,12 @@ export function ensureSearchIndex(sqlite: Database): void {
 	sqlite.exec(TABLES);
 	sqlite.exec(`CREATE TABLE IF NOT EXISTS ${META_TABLE} (fingerprint TEXT NOT NULL);`);
 
-	const withGifts = hasGiftTable(sqlite);
-	const current = fingerprint(withGifts);
+	const parts = presentParts(sqlite);
+	const current = fingerprint(parts);
 	if (storedFingerprint(sqlite) === current) return;
 
-	recreateTriggers(sqlite, withGifts);
-	rebuild(sqlite, withGifts);
+	recreateTriggers(sqlite, parts);
+	rebuild(sqlite, parts);
 	sqlite.exec(`DELETE FROM ${META_TABLE};`);
 	sqlite.query(`INSERT INTO ${META_TABLE}(fingerprint) VALUES (?)`).run(current);
 }
