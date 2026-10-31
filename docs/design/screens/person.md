@@ -289,7 +289,8 @@ the person, and that never leaves the page. Keeping the record tidy (archive, me
   checkbox (`accent-primary`) inside the `<label>` of its line. Unticking disables the box until
   Stella answers, then the item leaves with *Open again: …*; a refusal keeps it ticked and the
   toast says so. *Remove* is
-  offered to whoever sees it; there is no *Edit* — it is rewritten on the card once open.
+  offered to whoever sees it, and its cross stands beside the line, centred on it, as on the
+  card — not in the kind line; there is no *Edit* — it is rewritten on the card once open.
 - An item's ghost icon *Edit* (pencil) and *Remove* (cross) sit at the end of its kind line,
   shown on hover or keyboard focus and always on a touch screen (`pointer: coarse`), which
   has no hover. *Edit* is a touchpoint's, for its author alone (`canEditAuthored`, docs/03

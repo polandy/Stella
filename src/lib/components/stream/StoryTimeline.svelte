@@ -173,6 +173,14 @@
 	}
 </script>
 
+{#snippet removeForm(item: StoryItemView)}
+	<form method="POST" action={removeAction(item)} onsubmit={(event) => deferRemoval(event, item)}>
+		<!-- The to-do actions name their record as the card's do. -->
+		<input type="hidden" name={item.kind === 'todo' ? 'todoId' : 'id'} value={item.id} />
+		<Button variant="danger" size="sm" icon="remove" label={removeLabel(item)} />
+	</form>
+{/snippet}
+
 {#if items.length === 0}
 	<!-- One sentence: *Log contact* is already in the card's header (docs/05 §5.5). -->
 	<p
@@ -223,8 +231,9 @@
 										veilId={item.kind === 'gift' || item.kind === 'todo' ? undefined : veilId(item)}
 									/>
 								{/if}
-								<!-- A gift is changed and removed on the Gifts card, where it lives. -->
-								{#if (item.kind === 'interaction' && item.editable) || item.removable}
+								<!-- A gift is changed and removed on the Gifts card, where it lives; a done to-do's cross
+								     stands beside its line, as on the card. -->
+								{#if (item.kind === 'interaction' && item.editable) || (item.removable && item.kind !== 'todo')}
 									<!-- On hover or focus — always on a touch screen, which has no hover, and
 									     while the item is being edited. -->
 									<span
@@ -247,24 +256,7 @@
 											/>
 										{/if}
 										{#if item.removable}
-											<form
-												method="POST"
-												action={removeAction(item)}
-												onsubmit={(event) => deferRemoval(event, item)}
-											>
-												<!-- The to-do actions name their record as the card's do. -->
-												<input
-													type="hidden"
-													name={item.kind === 'todo' ? 'todoId' : 'id'}
-													value={item.id}
-												/>
-												<Button
-													variant="danger"
-													size="sm"
-													icon="remove"
-													label={removeLabel(item)}
-												/>
-											</form>
+											{@render removeForm(item)}
 										{/if}
 									</span>
 								{/if}
@@ -329,19 +321,29 @@
 									<p class="text-sm text-fg-muted">{occasionLabel(t, item.occasion)}</p>
 								{/if}
 							{:else if item.kind === 'todo'}
-								<!-- Still checked: unchecking it opens the to-do again, as on the card. -->
-								<label class="mt-0.5 flex cursor-pointer items-start gap-2 font-medium text-fg">
-									<input
-										type="checkbox"
-										checked
-										disabled={reopeningId === item.id}
-										aria-label={t('todos.story.reopen', { title: item.title })}
-										onchange={() => reopen(item)}
-										class="mt-0.5 size-4 shrink-0 accent-primary"
-										data-testid="story-todo-reopen"
-									/>
-									<span class="min-w-0">{item.title}</span>
-								</label>
+								<div class="mt-0.5 flex items-center gap-2">
+									<!-- Still checked: unchecking it opens the to-do again, as on the card. -->
+									<label
+										class="flex min-w-0 flex-1 cursor-pointer items-start gap-2 font-medium text-fg"
+									>
+										<input
+											type="checkbox"
+											checked
+											disabled={reopeningId === item.id}
+											aria-label={t('todos.story.reopen', { title: item.title })}
+											onchange={() => reopen(item)}
+											class="mt-0.5 size-4 shrink-0 accent-primary"
+											data-testid="story-todo-reopen"
+										/>
+										<span class="min-w-0">{item.title}</span>
+									</label>
+									<!-- On hover or focus, always on a touch screen — as in the kind line. -->
+									<span
+										class="shrink-0 opacity-0 transition-opacity group-hover/item:opacity-100 focus-within:opacity-100 pointer-coarse:opacity-100"
+									>
+										{@render removeForm(item)}
+									</span>
+								</div>
 							{:else}
 								<!-- The touchpoint and its editor glide into each other in place (docs/05 §5.11). -->
 								<Swap when={editingId === item.id}>
