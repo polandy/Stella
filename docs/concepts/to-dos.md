@@ -1,7 +1,7 @@
 # Concept: to-dos per person
 
 Status: **decided 2026-10-31 (§7), ready to build in slices (§6).** Mockup: the claude.ai canvas
-*Stella · Offene Punkte* (https://claude.ai/artifact/Ko3TazkhgPMvQswMHuZ2Bn; person page and Home, phone, Latte). Once built, the rules move into
+*Stella · Todos* (https://claude.ai/artifact/Ko3TazkhgPMvQswMHuZ2Bn; person page and Home, phone, Latte). Once built, the rules move into
 a new docs/02 §2.26, docs/03, docs/05 and the screen files `person.md` and `home.md`, and this
 file is deleted.
 

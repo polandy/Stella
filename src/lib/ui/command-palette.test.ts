@@ -157,7 +157,7 @@ describe('paletteRows', () => {
 			write: 'Moment festhalten',
 			giftIdea: 'Geschenkidee für …',
 			giftIdeas: 'Alle Geschenkideen',
-			todoFor: 'Offener Punkt für …',
+			todoFor: 'Todo für …',
 			addPerson: 'Person hinzufügen',
 			searchEverything: (query) => `Überall nach „${query}“ suchen`
 		};

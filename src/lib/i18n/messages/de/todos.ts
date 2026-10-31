@@ -2,10 +2,10 @@ import type { TodosMessages } from '../en/todos';
 
 /** German for `messages/en/todos.ts`. */
 export const todos: TodosMessages = {
-	'todos.title': 'Offene Punkte',
+	'todos.title': 'Todos',
 	'todos.none': 'Nichts offen.',
-	'todos.add': 'Offener Punkt',
-	'todos.form.for': (p) => `Offener Punkt für ${p.name}`,
+	'todos.add': 'Todo',
+	'todos.form.for': (p) => `Todo für ${p.name}`,
 	'todos.form.what': 'Was ist noch zu tun?',
 	'todos.form.whatPlaceholder': 'z. B. das Buch zurückgeben',
 	'todos.form.by': 'Bis',
@@ -18,5 +18,5 @@ export const todos: TodosMessages = {
 	'todos.edit': (p) => `Ändern: ${p.title}`,
 	'todos.remove': (p) => `Entfernen: ${p.title}`,
 	'todos.done': (p) => `Erledigt: ${p.title}`,
-	'todos.removed': 'Offener Punkt entfernt'
+	'todos.removed': 'Todo entfernt'
 };

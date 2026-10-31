@@ -46,7 +46,7 @@ export const home: HomeMessages = {
 	'home.outbox.photosOf': (p: { name: string }) => `· Fotos von ${p.name}`,
 	'home.outbox.photosFor': (p: { name: string }) => `· Fotos für ${p.name}`,
 	'home.outbox.giftFor': (p: { name: string }) => `· Geschenk für ${p.name}`,
-	'home.outbox.todoFor': (p: { name: string }) => `· offener Punkt für ${p.name}`,
+	'home.outbox.todoFor': (p: { name: string }) => `· Todo für ${p.name}`,
 	'home.outbox.todoDone': '· als erledigt abgehakt',
 	'home.welcome.label': 'Erste Schritte',
 	'home.welcome.title': 'Willkommen bei Stella',
