@@ -17,7 +17,8 @@ import type {
 	MonicaPhoto,
 	MonicaRelationship,
 	MonicaRelationshipType,
-	MonicaSpecialDate
+	MonicaSpecialDate,
+	MonicaTask
 } from './monica-export';
 
 /*
@@ -145,6 +146,7 @@ export function readMonicaJsonExport(parsed: unknown): SourceExport {
 	const addresses: MonicaAddress[] = [];
 	const notes: MonicaNote[] = [];
 	const gifts: MonicaGift[] = [];
+	const tasks: MonicaTask[] = [];
 	const lifeEvents: MonicaLifeEvent[] = [];
 	const pets: MonicaPet[] = [];
 	// Tags are names on a person, not records of their own, so the name is the key.
@@ -242,6 +244,20 @@ export function readMonicaJsonExport(parsed: unknown): SourceExport {
 				url: str(g.url),
 				status: str(g.status),
 				date: dayOf(g.date)
+			});
+		}
+
+		for (const task of bucket(record, 'task')) {
+			const t = props(task);
+			tasks.push({
+				id: uuidOf(task, 'task'),
+				contactId: id,
+				title: str(t.title),
+				description: str(t.description),
+				completed: bool(t.completed),
+				completedAt: str(t.completed_at),
+				createdAt: str(obj(task).created_at),
+				updatedAt: str(obj(task).updated_at)
 			});
 		}
 
@@ -358,6 +374,7 @@ export function readMonicaJsonExport(parsed: unknown): SourceExport {
 		tags,
 		photos,
 		gifts,
+		tasks,
 		lifeEvents,
 		pets,
 		journalEntries,

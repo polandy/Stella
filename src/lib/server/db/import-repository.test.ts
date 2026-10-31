@@ -104,6 +104,18 @@ function fixture(): SourceExport {
 				date: '2023-10-12'
 			}
 		],
+		tasks: [
+			{
+				id: 1,
+				contactId: 3,
+				title: 'Return the book',
+				description: null,
+				completed: true,
+				completedAt: '2024-05-06 22:30:00',
+				createdAt: null,
+				updatedAt: null
+			}
+		],
 		lifeEvents: [],
 		pets: [],
 		journalEntries: [],
@@ -145,6 +157,7 @@ describe('import repository', () => {
 			contactFields: 1,
 			notes: 1,
 			gifts: 1,
+			todos: 1,
 			interactions: 1,
 			tags: 1,
 			photos: 0
@@ -185,12 +198,27 @@ describe('import repository', () => {
 			contactFields: 0,
 			notes: 0,
 			gifts: 0,
+			todos: 0,
 			interactions: 0,
 			tags: 0,
 			photos: 0
 		});
 		expect(rows(schema.contact)).toBe(3);
 		expect(rows(schema.interactionParticipant)).toBe(1);
+		expect(rows(schema.todo)).toBe(1);
+	});
+
+	it('writes a completed Monica task as a to-do done on its day', async () => {
+		await repo.applyPlan(plan());
+		expect(db.select().from(schema.todo).all()).toMatchObject([
+			{
+				id: 'monica:task:1',
+				contactId: 'monica:contact:3',
+				title: 'Return the book',
+				doneOn: '2024-05-06',
+				doneBy: U1
+			}
+		]);
 	});
 
 	it('writes a Monica gift as a gift record under the id its note had', async () => {

@@ -54,6 +54,48 @@ describe('readImportFile', () => {
 		expect(readImportFile(SQL_DUMP).source).toBe('sql');
 	});
 
+	test('reads a dump’s tasks, a task on no person included', () => {
+		const dump =
+			SQL_DUMP +
+			`CREATE TABLE \`tasks\` (
+  \`id\` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  \`uuid\` char(36) DEFAULT NULL,
+  \`account_id\` int(10) unsigned NOT NULL,
+  \`contact_id\` int(10) unsigned DEFAULT NULL,
+  \`title\` varchar(255) NOT NULL,
+  \`description\` longtext DEFAULT NULL,
+  \`completed\` tinyint(1) NOT NULL DEFAULT 0,
+  \`completed_at\` datetime DEFAULT NULL,
+  \`created_at\` timestamp NULL DEFAULT NULL,
+  \`updated_at\` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (\`id\`)
+) ENGINE=InnoDB;
+INSERT INTO \`tasks\` VALUES (4,'u-4',1,1,'Buch zurückgeben','das rote',1,'2024-05-06 22:30:00','2023-01-02 08:00:00','2024-05-06 22:30:00'),(5,'u-5',1,NULL,'Steuern',NULL,0,NULL,NULL,NULL);
+`;
+		expect(readImportFile(dump).tasks).toEqual([
+			{
+				id: 4,
+				contactId: 1,
+				title: 'Buch zurückgeben',
+				description: 'das rote',
+				completed: true,
+				completedAt: '2024-05-06 22:30:00',
+				createdAt: '2023-01-02 08:00:00',
+				updatedAt: '2024-05-06 22:30:00'
+			},
+			{
+				id: 5,
+				contactId: null,
+				title: 'Steuern',
+				description: null,
+				completed: false,
+				completedAt: null,
+				createdAt: null,
+				updatedAt: null
+			}
+		]);
+	});
+
 	test('refuses a file that opens like JSON but is not', () => {
 		expect(() => readImportFile('{ not json at all')).toThrow(MonicaJsonError);
 	});

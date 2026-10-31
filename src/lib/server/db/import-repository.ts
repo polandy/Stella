@@ -13,7 +13,8 @@ import {
 	note,
 	relationship,
 	relationshipType,
-	tag
+	tag,
+	todo
 } from './schema';
 
 /*
@@ -123,6 +124,13 @@ export function writeImportPlan(tx: Db, plan: ImportPlan): ImportCounts {
 		);
 	}
 
+	let todos = 0;
+	for (const t of plan.todos) {
+		todos += inserted(
+			tx.insert(todo).values(t).onConflictDoNothing().returning({ id: todo.id }).all()
+		);
+	}
+
 	let interactions = 0;
 	for (const i of plan.interactions) {
 		const { participantIds, ...row } = i;
@@ -177,6 +185,7 @@ export function writeImportPlan(tx: Db, plan: ImportPlan): ImportCounts {
 		contactFields,
 		notes,
 		gifts,
+		todos,
 		interactions,
 		tags,
 		// Photos are copied in a second step by the wizard (browser-side resize).

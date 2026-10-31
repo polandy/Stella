@@ -23,7 +23,7 @@ export const importer: ImportMessages = {
 	'import.startOver': 'Von vorn beginnen',
 	'import.importNow': 'Jetzt importieren',
 	'import.done': (p) =>
-		`${p.contacts} Menschen, ${p.relationships} Beziehungen, ${p.notes} Notizen, ${p.gifts} Geschenke, ${p.interactions} Kontakte und ${p.tags} Schlagwörter importiert.`,
+		`${p.contacts} Menschen, ${p.relationships} Beziehungen, ${p.notes} Notizen, ${p.gifts} Geschenke, ${p.todos} Todos, ${p.interactions} Kontakte und ${p.tags} Schlagwörter importiert.`,
 	'import.nothingTwice': 'Alles war schon da, es wurde nichts doppelt geschrieben.',
 	'import.photos': (p) => `Fotos (${p.count})`,
 	'import.photos.embedded':
@@ -45,6 +45,7 @@ export const importer: ImportMessages = {
 	'import.count.relationships': 'Beziehungen',
 	'import.count.relationshipTypes': 'Beziehungsarten',
 	'import.count.gifts': 'Geschenke',
+	'import.count.todos': 'Todos',
 	'import.count.notes': 'Notizen',
 	'import.count.interactions': 'Kontakte',
 	'import.count.tags': 'Schlagwörter',
@@ -56,6 +57,7 @@ export const importer: ImportMessages = {
 	'import.thing.address': (p) => (p.count === 1 ? 'Anschrift' : 'Anschriften'),
 	'import.thing.note': (p) => (p.count === 1 ? 'Notiz' : 'Notizen'),
 	'import.thing.gift': (p) => (p.count === 1 ? 'Geschenk' : 'Geschenke'),
+	'import.thing.task': (p) => (p.count === 1 ? 'Aufgabe' : 'Aufgaben'),
 	'import.thing.lifeEvent': (p) => (p.count === 1 ? 'Lebensereignis' : 'Lebensereignisse'),
 	'import.thing.pet': (p) => (p.count === 1 ? 'Haustier' : 'Haustiere'),
 	'import.thing.activity': (p) => (p.count === 1 ? 'Aktivität' : 'Aktivitäten'),

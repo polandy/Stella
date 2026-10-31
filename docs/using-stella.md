@@ -1012,7 +1012,8 @@ now*, and it is all or nothing: if anything goes wrong half-way, nothing is kept
 What lands where: people with their names, birthdays (an age-based one becomes "born
 around 2016"), job and how you met; relationships, with Monica's kinds that Stella lacks
 (cousin, godparent, best friend, …) added as new kinds rather than dropped; notes;
-activities as **interactions**; Monica's gifts onto the **Gifts** card; tags; and life events
+activities as **interactions**; Monica's gifts onto the **Gifts** card; Monica's tasks onto the
+**To do** card — finished ones as *Done* in Activity on the day they were finished; tags; and life events
 and pets as clearly labelled notes on the person, so nothing quietly disappears. The full table is in
 [monica-mapping.md](monica-mapping.md).
 

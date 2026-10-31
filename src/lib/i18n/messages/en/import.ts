@@ -32,10 +32,11 @@ export const importer = {
 		relationships: number;
 		notes: number;
 		gifts: number;
+		todos: number;
 		interactions: number;
 		tags: number;
 	}) =>
-		`Imported ${p.contacts} people, ${p.relationships} relationships, ${p.notes} notes, ${p.gifts} gifts, ${p.interactions} interactions and ${p.tags} tags.`,
+		`Imported ${p.contacts} people, ${p.relationships} relationships, ${p.notes} notes, ${p.gifts} gifts, ${p.todos} to-dos, ${p.interactions} interactions and ${p.tags} tags.`,
 	'import.nothingTwice': 'Everything was already there, so nothing was written twice.',
 	'import.photos': (p: { count: number }) => `Photos (${p.count})`,
 	'import.photos.embedded':
@@ -64,6 +65,7 @@ export const importer = {
 	'import.count.relationships': 'relationships',
 	'import.count.relationshipTypes': 'relationship types',
 	'import.count.gifts': 'gifts',
+	'import.count.todos': 'to-dos',
 	'import.count.notes': 'notes',
 	'import.count.interactions': 'interactions',
 	'import.count.tags': 'tags',
@@ -79,6 +81,7 @@ export const importer = {
 		p.count === 1 ? 'address' : 'addresses',
 	'import.thing.note': (p: { count: number }): string => (p.count === 1 ? 'note' : 'notes'),
 	'import.thing.gift': (p: { count: number }): string => (p.count === 1 ? 'gift' : 'gifts'),
+	'import.thing.task': (p: { count: number }): string => (p.count === 1 ? 'task' : 'tasks'),
 	'import.thing.lifeEvent': (p: { count: number }): string =>
 		p.count === 1 ? 'life event' : 'life events',
 	'import.thing.pet': (p: { count: number }): string => (p.count === 1 ? 'pet' : 'pets'),

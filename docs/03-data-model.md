@@ -580,12 +580,13 @@ to-do may tick, untick, rewrite or remove it; only its author may change its vis
 | created_at / updated_at | int | |
 
 Indexed on `(contact_id, done_at)` for a person's open to-dos and on `(done_at, due_on)` for the
-household's by day (Home's band, slice 3), and on `(contact_id, done_on, done_at)` for the
+household's by day (Home's band, `/todos`), and on `(contact_id, done_on, done_at)` for the
 story's page of done ones. Removing a to-do deletes the row, so a done one leaves Activity
 with it. Exported and restored with the person (§2.15),
-repointed by a merge.
+repointed by a merge. A Monica task arrives as one (docs/02 §2.26.8) with the id
+`monica:task:<id>`, so importing again writes it once.
 
-FTS: `title, note` indexed (3.5).
+FTS: `title` indexed (3.5).
 
 ### photo
 | column | type | notes |

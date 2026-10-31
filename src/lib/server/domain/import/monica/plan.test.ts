@@ -1,97 +1,12 @@
 import { describe, expect, it } from 'bun:test';
-import type { SourceExport } from './monica-export';
-import { planMonicaImport, type ImportOptions } from './plan';
-import { englishWording } from './wording.fixture';
+import { planMonicaImport } from './plan';
+import { NOW, contact, emptyExport, opts } from './plan.fixture';
 
 /*
  * Monica → Stella mapping (docs/02 §2.16, docs/monica-mapping.md). The plan is pure: given
  * the typed export it decides every row the import will write, with stable source ids so
  * running it twice cannot duplicate, and a report of what was approximated or left out.
  */
-
-const NOW = 1_700_000_000_000;
-const opts: ImportOptions = {
-	householdId: 'h1',
-	userId: 'u1',
-	visibility: 'shared',
-	now: NOW,
-	locale: 'en',
-	wording: englishWording
-};
-
-function emptyExport(): SourceExport {
-	return {
-		source: 'sql',
-		contacts: [],
-		genders: [
-			{ id: 1, type: 'M', name: 'Männlich' },
-			{ id: 2, type: 'F', name: 'Weiblich' },
-			{ id: 3, type: 'O', name: 'Möchte ich nicht angeben' }
-		],
-		specialDates: [],
-		relationshipTypes: [
-			{ id: 8, name: 'parent', nameReverse: 'child' },
-			{ id: 9, name: 'child', nameReverse: 'parent' },
-			{ id: 10, name: 'sibling', nameReverse: 'sibling' },
-			{ id: 15, name: 'cousin', nameReverse: 'cousin' },
-			{ id: 13, name: 'uncle', nameReverse: 'nephew' },
-			{ id: 14, name: 'nephew', nameReverse: 'uncle' },
-			{ id: 16, name: 'godfather', nameReverse: 'godson' },
-			{ id: 17, name: 'godson', nameReverse: 'godfather' },
-			{ id: 20, name: 'bestfriend', nameReverse: 'bestfriend' },
-			{ id: 99, name: 'Skipartner', nameReverse: 'Skipartner' }
-		],
-		relationships: [],
-		contactFieldTypes: [
-			{ id: 1, name: 'Email', type: 'email', protocol: 'mailto:' },
-			{ id: 2, name: 'Phone', type: 'phone', protocol: 'tel:' },
-			{ id: 5, name: 'Whatsapp', type: null, protocol: 'https://wa.me/' },
-			{ id: 6, name: 'Adresse', type: null, protocol: null }
-		],
-		contactFields: [],
-		addresses: [],
-		notes: [],
-		activities: [],
-		tags: [],
-		photos: [],
-		gifts: [],
-		lifeEvents: [],
-		pets: [],
-		journalEntries: [],
-		userCount: 2,
-		derivedReminderCount: 0
-	};
-}
-
-const contact = (
-	id: number,
-	first: string,
-	last: string | null,
-	extra: Partial<SourceExport['contacts'][0]> = {}
-) => ({
-	id,
-	firstName: first,
-	middleName: null,
-	lastName: last,
-	nickname: null,
-	genderId: 1,
-	description: null,
-	isPartial: false,
-	isDead: false,
-	deceasedSpecialDateId: null,
-	birthdaySpecialDateId: null,
-	firstMetSpecialDateId: null,
-	firstMetThroughContactId: null,
-	firstMetWhere: null,
-	firstMetAdditionalInfo: null,
-	job: null,
-	company: null,
-	avatarSource: 'default',
-	avatarPhotoId: null,
-	deletedAt: null,
-	createdAt: '2023-06-14 22:24:24',
-	...extra
-});
 
 describe('planMonicaImport — contacts', () => {
 	it('maps names, gender, job and description with a stable source id and the chosen visibility', () => {
@@ -613,6 +528,7 @@ describe('planMonicaImport — activities, photos, leftovers', () => {
 			contactFields: 0,
 			notes: 1,
 			gifts: 0,
+			todos: 0,
 			interactions: 0,
 			tags: 0,
 			photos: 0

@@ -62,6 +62,34 @@
 								]
 							},
 							{
+								"count": 2,
+								"type": "task",
+								"values": [
+									{
+										"uuid": "3b7c1e40-3333-4d6e-9a11-0000000000t1",
+										"created_at": "2024-03-02T10:00:00.000000Z",
+										"updated_at": "2024-03-02T10:00:00.000000Z",
+										"properties": {
+											"title": "Buch zurückgeben",
+											"description": "das rote, von Weihnachten",
+											"completed": false,
+											"completed_at": null
+										}
+									},
+									{
+										"uuid": "3b7c1e40-3333-4d6e-9a11-0000000000t2",
+										"created_at": "2024-04-01T09:00:00.000000Z",
+										"updated_at": "2024-05-06T18:30:00.000000Z",
+										"properties": {
+											"title": "Rezept schicken",
+											"description": null,
+											"completed": true,
+											"completed_at": "2024-05-06T18:30:00.000000Z"
+										}
+									}
+								]
+							},
+							{
 								"count": 1,
 								"type": "photo",
 								"values": ["9f0d5c2a-1111-4a5b-8c3d-0000000000p1"]

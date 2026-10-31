@@ -16,6 +16,17 @@ import { signIn } from './app';
 const EXPORT = 'e2e/fixtures/monica-mini.json';
 const PHOTO_ID = 'monica:photo:9f0d5c2a-1111-4a5b-8c3d-0000000000p1';
 
+/** An open to-do on the person's To do card. */
+const todoRow = (page: Page, title: string) =>
+	page.getByTestId('todos').locator('li', { hasText: title });
+
+/** A done to-do in the person's Activity, under the day it was done. */
+const doneOn = (page: Page, day: string, title: string) =>
+	page
+		.getByTestId('story-timeline')
+		.locator(':scope > li', { has: page.getByRole('heading', { name: day, exact: true }) })
+		.locator('[data-story-item]', { hasText: title });
+
 // The second case reads what the first one wrote.
 test.describe.configure({ mode: 'serial' });
 
@@ -40,11 +51,13 @@ test('imports a JSON export, stores the pictures it carries and shows the people
 	await expect(preview.locator('div', { hasText: /^relationships/ })).toContainText('1');
 	await expect(preview.locator('div', { hasText: /^tags/ })).toContainText('1');
 	await expect(preview.locator('div', { hasText: /^photos/ })).toContainText('1');
+	await expect(preview.locator('div', { hasText: /^to-dos/ })).toContainText('2');
 	// What the JSON format cannot carry is said out loud, not silently dropped.
 	await expect(page.getByText(/does not carry “how you met”/)).toBeVisible();
 
 	await page.getByRole('button', { name: 'Import now' }).click();
 	await expect(page.getByTestId('import-done')).toContainText('Imported 2 people, 1 relationship');
+	await expect(page.getByTestId('import-done')).toContainText('2 to-dos');
 
 	// The pictures are in the file, so there is nothing to point at — and the button that
 	// replaces the folder picker is the positive control for that absence.
@@ -66,6 +79,10 @@ test('imports a JSON export, stores the pictures it carries and shows the people
 	// The link names its type in words only, and still found Stella's built-in type.
 	await expect(page.getByRole('link', { name: 'Marlis Hauenstein', exact: true })).toBeVisible();
 	await expect(page.getByText('Bringt an Silvester immer die Rösti mit.')).toBeVisible();
+	// Monica's tasks (docs/02 §2.26.8): the open one on the card, the description after its
+	// title; the completed one done in Activity on the day Monica completed it.
+	await expect(todoRow(page, 'Buch zurückgeben — das rote, von Weihnachten')).toHaveCount(1);
+	await expect(doneOn(page, '6 May 2024', 'Rezept schicken')).toContainText('Done');
 	// The embedded picture went through the browser's resize pipeline and became the avatar.
 	await expect(page.locator('img[alt="Severin Hauenstein"]')).toHaveAttribute(
 		'src',
@@ -83,6 +100,8 @@ test('a second run of the same export writes nothing twice', async ({ page }) =>
 	await expect(page.getByText('1 of 1 · 0 stored, 1 already there')).toBeVisible();
 	await page.goto('/contacts');
 	await expect(page.getByRole('link', { name: /Severin Hauenstein/ })).toHaveCount(1);
+	await page.getByRole('link', { name: /Severin Hauenstein/ }).click();
+	await expect(todoRow(page, 'Buch zurückgeben')).toHaveCount(1);
 });
 
 test('rejects JSON that is not a Monica export', async ({ page }) => {

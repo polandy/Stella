@@ -16,6 +16,7 @@ export const NOBODY_NEW: ImportPlan = {
 	relationships: [],
 	notes: [],
 	gifts: [],
+	todos: [],
 	interactions: [],
 	tags: [],
 	contactTags: [],
@@ -28,6 +29,7 @@ export const NOBODY_NEW: ImportPlan = {
 			contactFields: 0,
 			notes: 0,
 			gifts: 0,
+			todos: 0,
 			interactions: 0,
 			tags: 0,
 			photos: 0

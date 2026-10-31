@@ -6,6 +6,8 @@ import { deriveDisplayName } from '../../../../people/display-name';
 import type { NewInteraction } from '../../interactions/interactions';
 import type { NewNote } from '../../notes/notes';
 import type { Gift } from '../../gifts/gifts';
+import type { Todo } from '../../todos/todos';
+import { taskDone, taskLine } from './tasks';
 import { giftFromMonica } from '../../../../gifts/conversion';
 import type { RelationshipCategory } from '../../../../relationships/categories';
 import { CURRENT_RELATIONSHIP_STATUS } from '../../../../relationships/status';
@@ -104,6 +106,7 @@ export interface ImportCounts {
 	contactFields: number;
 	notes: number;
 	gifts: number;
+	todos: number;
 	interactions: number;
 	tags: number;
 	photos: number;
@@ -117,6 +120,7 @@ export type SkippedKind =
 	| 'address'
 	| 'note'
 	| 'gift'
+	| 'task'
 	| 'lifeEvent'
 	| 'pet'
 	| 'activity'
@@ -165,6 +169,7 @@ export interface ImportPlan {
 	relationships: NewRelationship[];
 	notes: NewNote[];
 	gifts: Gift[];
+	todos: Todo[];
 	interactions: NewInteraction[];
 	tags: NewTag[];
 	contactTags: { contactId: string; tagId: string }[];
@@ -450,6 +455,36 @@ export function planMonicaImport(exp: SourceExport, opts: ImportOptions): Import
 		].filter(Boolean);
 		noteFor(`${prefix}:gift:${g.id}`, g.contactId, wording.gift, lines.join('\n\n'), false, 'gift');
 	}
+	// ── Tasks → to-dos (docs/02 §2.26.8) ───────────────────────────────────
+	const todos: Todo[] = [];
+	for (const t of exp.tasks) {
+		if (t.contactId === null) {
+			skip('task', 'attachedToNoPerson');
+			continue;
+		}
+		if (!liveIds.has(t.contactId)) {
+			skip('task', 'belongsToDeletedContact');
+			continue;
+		}
+		const title = taskLine(t);
+		if (title === null) {
+			skip('task', 'empty');
+			continue;
+		}
+		const done = taskDone(t, opts.now);
+		todos.push({
+			id: `${prefix}:task:${t.id}`,
+			contactId: contactId(t.contactId),
+			...stamp,
+			title,
+			dueOn: null,
+			doneAt: done?.doneAt ?? null,
+			doneOn: done?.doneOn ?? null,
+			// Monica does not say who ticked it; the import is the importing member's word.
+			doneBy: done ? opts.userId : null
+		});
+	}
+
 	for (const e of exp.lifeEvents) {
 		const head = `📅 **${e.name ?? (e.typeKey ? humanise(e.typeKey) : wording.lifeEvent)}**${e.typeKey && e.name ? ` (${humanise(e.typeKey)})` : ''}`;
 		const when = e.happenedAt ? ` — ${wording.day(e.happenedAt)}` : '';
@@ -575,6 +610,7 @@ export function planMonicaImport(exp: SourceExport, opts: ImportOptions): Import
 		relationships,
 		notes,
 		gifts,
+		todos,
 		interactions,
 		tags,
 		contactTags,
@@ -587,6 +623,7 @@ export function planMonicaImport(exp: SourceExport, opts: ImportOptions): Import
 				contactFields: contactFields.length,
 				notes: notes.length,
 				gifts: gifts.length,
+				todos: todos.length,
 				interactions: interactions.length,
 				tags: tags.length,
 				photos: photos.length
