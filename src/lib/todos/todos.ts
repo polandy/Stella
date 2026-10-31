@@ -23,18 +23,23 @@ export function dueStanding(dueOn: string | null, today: string): DueStanding | 
 	return dueOn <= addDays(today, SOON_DAYS) ? 'soon' : 'later';
 }
 
-/** The day as a row shows it: *Fri 6 Nov*, with the year only when it is another one. */
+/**
+ * The day as a row shows it: *Fri, 6 Nov*, with the year only when it is another one. Weekday
+ * and date are formatted apart and joined here: ICU versions differ on the comma between them.
+ */
 function shortDay(lang: DateLanguage, day: string, today: string): string {
-	return new Date(`${day}T00:00:00Z`).toLocaleDateString(lang.intlLocale, {
-		weekday: 'short',
+	const date = new Date(`${day}T00:00:00Z`);
+	const weekday = date.toLocaleDateString(lang.intlLocale, { weekday: 'short', timeZone: 'UTC' });
+	const dayMonth = date.toLocaleDateString(lang.intlLocale, {
 		day: 'numeric',
 		month: 'short',
 		...(day.slice(0, 4) === today.slice(0, 4) ? {} : { year: 'numeric' }),
 		timeZone: 'UTC'
 	});
+	return `${weekday}, ${dayMonth}`;
 }
 
-/** What a row says about its day: *today*, *tomorrow*, *by Fri 6 Nov*, *overdue since …*. */
+/** What a row says about its day: *today*, *tomorrow*, *by Fri, 6 Nov*, *overdue since …*. */
 export function dueLabel(lang: DateLanguage, dueOn: string | null, today: string): string | null {
 	if (dueOn === null) return null;
 	if (dueOn === today) return lang.t('common.today');

@@ -170,7 +170,7 @@ export const load = (async ({ locals, params, url }) => {
 		gifts: read.gifts.map((gift) => giftView(gift, ctx)),
 		// What is still to do for them (docs/02 §2.26): open ones, those with a day first.
 		todos: orderOpenTodos(read.todos).map((todo) => todoView(todo, ctx)),
-		// The household's day, which the card's *overdue* and *by Fri 6 Nov* are read against.
+		// The household's day, which the card's *overdue* and *by Fri, 6 Nov* are read against.
 		today: todayFor(systemClock),
 		mentionedIn: read.mentionedIn.map((reference) => mentionedInView(reference, ctx)),
 		// The person's photo gallery (docs/02 §2.14), favourites first, already visibility-scoped.
