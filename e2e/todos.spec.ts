@@ -4,8 +4,9 @@ import { addPerson, appReady, fillDate, signIn } from './app';
 /*
  * The To do card on the person page (docs/02 §2.26): noting a to-do with or without a day,
  * ticking it by its line, rewriting and removing it, the card moving to the top once something
- * is open, *To do for …* in the palette, and noting and ticking while Stella is out of reach.
- * Written after the owner tried the card in the app (docs/08 §8.4.1).
+ * is open, *To do for …* in the palette, and noting and ticking while Stella is out of reach;
+ * a ticked one in the person's Activity (§2.23), unticked or removed from there. Written after
+ * the owner tried the card and the Activity row in the app (docs/08 §8.4.1).
  *
  * The suite shares one database, so every case works on a person of its own, named with letters
  * no other attempt shares. The days are fixed far from today, so no case reads the clock.
@@ -42,6 +43,10 @@ function cardPlace(page: Page): Promise<number> {
 		.locator('section[id^="section-"]')
 		.evaluateAll((sections) => sections.findIndex((section) => section.id === 'section-todos'));
 }
+
+/** A done to-do in the person's Activity. */
+const storyTodo = (page: Page, title: string) =>
+	page.getByTestId('story-timeline').locator('[data-story-item]', { hasText: title });
 
 const undo = (page: Page) => page.getByTestId('toast-undo').getByRole('button', { name: 'Undo' });
 
@@ -178,4 +183,55 @@ test('noting and ticking are kept offline, and sent once back', async ({ page, c
 	await page.reload();
 	await expect(todoRow(page, noted)).toHaveCount(1);
 	await expect(todoRow(page, ticked)).toHaveCount(0);
+});
+
+test('a ticked to-do shows in Activity, and unticking it there opens it again', async ({
+	page
+}) => {
+	const letters = runLetters();
+	await addPerson(page, 'Todolin', `Gisler${letters}`);
+	const title = `Give back the ladder ${letters}`;
+	await addTodo(page, title);
+
+	await todoRow(page, title).getByText(title).click();
+	await expect(todoRow(page, title)).toHaveCount(0);
+	const item = storyTodo(page, title);
+	await expect(item).toContainText('Done');
+	const box = item.getByRole('checkbox', { name: `Not done yet: ${title}` });
+	await expect(box).toBeChecked();
+
+	await box.uncheck();
+	await expect(page.getByText(`Open again: ${title}`)).toBeVisible();
+	await expect(storyTodo(page, title)).toHaveCount(0);
+	const row = todoRow(page, title);
+	await expect(row).toHaveCount(1);
+	await expect(row.getByRole('checkbox', { name: `Done: ${title}` })).not.toBeChecked();
+	await page.reload();
+	await expect(todoRow(page, title)).toHaveCount(1);
+	await expect(storyTodo(page, title)).toHaveCount(0);
+});
+
+test('a done to-do removed from Activity is gone for good', async ({ page }) => {
+	const letters = runLetters();
+	await addPerson(page, 'Todolin', `Arnold${letters}`);
+	const title = `Return the cake tin ${letters}`;
+	await addTodo(page, title);
+	await todoRow(page, title).getByText(title).click();
+	await expect(storyTodo(page, title)).toHaveCount(1);
+
+	await storyTodo(page, title)
+		.getByRole('button', { name: `Remove: ${title}` })
+		.click();
+	await expect(page.getByText('To-do removed')).toBeVisible();
+	await expect(storyTodo(page, title)).toHaveCount(0);
+	// Leaving through a link sends the held removal; back, it is neither in Activity nor on the card.
+	await page.getByRole('link', { name: 'Home', exact: true }).first().click();
+	await page.waitForURL('/');
+	await page.goBack();
+	await expect(
+		page.getByRole('heading', { name: `Todolin Arnold${letters}`, exact: true })
+	).toBeVisible();
+	await page.reload();
+	await expect(storyTodo(page, title)).toHaveCount(0);
+	await expect(todoRow(page, title)).toHaveCount(0);
 });
