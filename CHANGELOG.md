@@ -1,5 +1,22 @@
 # Changelog
 
+## [0.0.34](https://github.com/polandy/Stella/compare/v0.0.33...v0.0.34) (2026-10-31)
+
+
+### Features
+
+* **todos:** to-dos per person, slice 1 — the To do card, palette, offline ([#417](https://github.com/polandy/Stella/issues/417)) ([73bf354](https://github.com/polandy/Stella/commit/73bf3544d9ecd9c191de2541a99d8362e1a4c8c7))
+
+
+### Reverts
+
+* stay pre-1.0 for now ([#416](https://github.com/polandy/Stella/issues/416)) ([1bc874a](https://github.com/polandy/Stella/commit/1bc874a5f4b427c6581d67be97f9e40d0f8fd7e0))
+
+
+### Miscellaneous Chores
+
+* **release:** release 1.0.0 ([#414](https://github.com/polandy/Stella/issues/414)) ([30919eb](https://github.com/polandy/Stella/commit/30919eb4d0fde5c7241a0549fd13a51a018ff7a6))
+
 ## [0.0.33](https://github.com/polandy/Stella/compare/v0.0.32...v0.0.33) (2026-10-30)
 
 
