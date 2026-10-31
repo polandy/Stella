@@ -200,6 +200,54 @@ describe('toStoryItem, gifts', () => {
 	});
 });
 
+describe('toStoryItem, done to-dos', () => {
+	const todoItem = (overrides: Record<string, unknown> = {}): StoryItem => ({
+		kind: 'todo',
+		day: '2026-10-30',
+		recordedAt: 700,
+		todo: {
+			id: 't1',
+			contactId: 'c1',
+			createdBy: 'user-2',
+			visibility: 'shared',
+			title: 'Give the book back',
+			dueOn: '2026-11-08',
+			doneAt: 700,
+			doneOn: '2026-10-30',
+			doneBy: VIEWER,
+			createdAt: 100,
+			updatedAt: 700,
+			...overrides
+		}
+	});
+
+	it('says what was done, and names who ticked it rather than who noted it', () => {
+		expect(toStoryItem(todoItem(), context())).toEqual({
+			kind: 'todo',
+			id: 't1',
+			day: '2026-10-30',
+			recordedAt: 700,
+			visibility: 'shared',
+			mine: false,
+			removable: true,
+			author: 'you',
+			title: 'Give the book back'
+		});
+	});
+
+	it('names the member who ticked it by first name', () => {
+		const view = toStoryItem(
+			todoItem({ doneBy: 'user-2' }),
+			context({ nameOfAuthor: (id) => (id === 'user-2' ? 'Lena Brunner' : null) })
+		);
+		expect(view.author).toBe('Lena');
+	});
+
+	it('lets whoever sees it remove it, not only its author or an admin', () => {
+		expect(toStoryItem(todoItem({ createdBy: 'user-3' }), context()).removable).toBe(true);
+	});
+});
+
 describe('toStoryItem, who wrote it', () => {
 	it('names the viewer "you" on their own entry', () => {
 		const view = toStoryItem(journalItem(), context({ nameOfAuthor: () => 'Markus Brunner' }));

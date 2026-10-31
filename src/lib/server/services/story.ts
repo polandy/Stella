@@ -14,7 +14,7 @@ import type { IdGenerator } from '../id';
 /*
  * The `story` bounded context of the composition root (docs/08 §8.3): what happened with a
  * person — journal entries and the moments that write them, logged touchpoints, and the story
- * timeline that shows both. Built once per process by `createServices`; the edge reads it off
+ * timeline that shows them beside the gifts and done to-dos other contexts own. Built once per process by `createServices`; the edge reads it off
  * `locals.services.story`.
  *
  * A repository an edge — or the command handler table — reads directly sits under its noun
@@ -48,6 +48,8 @@ export interface StoryWiring {
 	media: JournalDeps['media'];
 	/** The given and received gifts the story shows; the gifts context owns the repository. */
 	gifts: StoryDeps['gifts'];
+	/** The done to-dos the story shows; the todos context owns the repository. */
+	todos: StoryDeps['todos'];
 }
 
 export function createStoryServices({
@@ -57,7 +59,8 @@ export function createStoryServices({
 	contacts,
 	directory,
 	media,
-	gifts
+	gifts,
+	todos
 }: StoryWiring): StoryServices {
 	const journal = createDrizzleJournalRepository(db, ids);
 	const interactions = createDrizzleInteractionRepository(db);
@@ -69,6 +72,6 @@ export function createStoryServices({
 		journalDeps: { journal, media, ids, clock },
 		interactionDeps: { interactions, ids, clock },
 		captureMomentDeps: { contacts, directory, journal, ids, clock },
-		storyDeps: { journal, interactions, gifts }
+		storyDeps: { journal, interactions, gifts, todos }
 	};
 }

@@ -9,10 +9,11 @@ import { listStoryPage, type StoryCursor } from '../domain/story/story';
 import { createDrizzleGiftRepository } from './gift-repository';
 import { createDrizzleInteractionRepository } from './interaction-repository';
 import { createDrizzleJournalRepository } from './journal-repository';
+import { createDrizzleTodoRepository } from './todo-repository';
 import * as schema from './schema';
 
 /*
- * Integration spec for the story read (docs/02 §2.23) over both adapters. `mergeStory` is
+ * Integration spec for the story read (docs/02 §2.23) over its adapters. `mergeStory` is
  * unit-tested on its own; what needs a database is the half in between — translating one story
  * cursor into two keyset cursors of different shapes, and keeping the merged page scoped to
  * what the viewer may see. Getting that wrong repeats or swallows entries, which is invisible
@@ -42,7 +43,8 @@ function storyDeps() {
 	return {
 		journal: createDrizzleJournalRepository(db, { next: nextId }),
 		interactions: createDrizzleInteractionRepository(db),
-		gifts: createDrizzleGiftRepository(db)
+		gifts: createDrizzleGiftRepository(db),
+		todos: createDrizzleTodoRepository(db)
 	};
 }
 
@@ -61,6 +63,28 @@ async function giftForOma(id: string, state: 'idea' | 'given' | 'received', day:
 		occasion: null,
 		createdAt: 1_000 + ++sequence,
 		updatedAt: 1_000 + sequence
+	});
+}
+
+/** A to-do for Oma, ticked on `day` (or open with null), straight to the table. */
+async function todoForOma(
+	id: string,
+	day: string | null,
+	visibility: 'shared' | 'private' = 'shared'
+) {
+	const at = 1_000 + ++sequence;
+	await createDrizzleTodoRepository(db).insert({
+		id,
+		contactId: 'oma',
+		createdBy: U1,
+		visibility,
+		title: id,
+		dueOn: null,
+		doneAt: day === null ? null : at,
+		doneOn: day,
+		doneBy: day === null ? null : U1,
+		createdAt: at,
+		updatedAt: at
 	});
 }
 
@@ -139,6 +163,53 @@ describe('story read', () => {
 
 		expect(shape(page)).toEqual(['gift:2026-08-04', 'interaction:2026-08-03', 'gift:2026-08-01']);
 		expect(page.nextCursor).toBeNull();
+	});
+
+	it('reads a done to-do on the day it was ticked, and never an open one', async () => {
+		await logInteraction(writeDeps(), interactionAuthor, {
+			contactId: 'oma',
+			kind: 'call',
+			happenedAt: '2026-08-03'
+		});
+		await todoForOma('book', '2026-08-04');
+		await todoForOma('recipe', null);
+
+		const page = await listStoryPage(storyDeps(), viewerU1, 'oma', { limit: 10 });
+
+		expect(shape(page)).toEqual(['todo:2026-08-04', 'interaction:2026-08-03']);
+		expect(page.nextCursor).toBeNull();
+	});
+
+	it('keeps a private done to-do to its author', async () => {
+		await todoForOma('secret', '2026-08-04', 'private');
+
+		expect(shape(await listStoryPage(storyDeps(), viewerU1, 'oma', { limit: 10 }))).toEqual([
+			'todo:2026-08-04'
+		]);
+		expect(shape(await listStoryPage(storyDeps(), viewerU2, 'oma', { limit: 10 }))).toEqual([]);
+	});
+
+	it('pages through done to-dos as through the other sources', async () => {
+		for (const day of ['2026-08-01', '2026-08-03', '2026-08-05']) {
+			await todoForOma(`todo-${day}`, day);
+		}
+		await giftForOma('teapot', 'given', '2026-08-04');
+
+		const seen: string[] = [];
+		let cursor: StoryCursor | undefined;
+		for (let guard = 0; guard < 10; guard++) {
+			const page = await listStoryPage(storyDeps(), viewerU1, 'oma', { limit: 2, cursor });
+			seen.push(...shape(page));
+			if (page.nextCursor === null) break;
+			cursor = page.nextCursor;
+		}
+
+		expect(seen).toEqual([
+			'todo:2026-08-05',
+			'gift:2026-08-04',
+			'todo:2026-08-03',
+			'todo:2026-08-01'
+		]);
 	});
 
 	it('pages through gifts as through the other sources', async () => {

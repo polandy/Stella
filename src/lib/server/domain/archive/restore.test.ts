@@ -201,6 +201,7 @@ function fullHousehold(): HouseholdSnapshot {
 					title: 'Give the book back',
 					due_on: '2026-11-08',
 					done_at: null,
+					done_on: null,
 					done_by: null,
 					created_at: EXPORTED
 				},
@@ -212,6 +213,7 @@ function fullHousehold(): HouseholdSnapshot {
 					title: 'Ask about the knee',
 					due_on: null,
 					done_at: EXPORTED,
+					done_on: '2026-09-07',
 					done_by: 'u-1',
 					created_at: EXPORTED
 				}
@@ -516,7 +518,17 @@ describe('the round trip', () => {
 			'occasion',
 			'created_at'
 		],
-		todo: ['id', 'contact_id', 'visibility', 'title', 'due_on', 'done_at', 'done_by', 'created_at'],
+		todo: [
+			'id',
+			'contact_id',
+			'visibility',
+			'title',
+			'due_on',
+			'done_at',
+			'done_on',
+			'done_by',
+			'created_at'
+		],
 		photo: [
 			'id',
 			'contact_id',
@@ -916,6 +928,20 @@ describe('an archive that does not add up', () => {
 		expect([...byId.keys()].sort()).toEqual(['t-done', 't-no-day', 't-open']);
 		expect(byId.get('t-no-day')?.due_on).toBeNull();
 		expect(plan.warnings).toContainEqual({ code: 'todoIncomplete' });
+	});
+
+	it('gives a tick from an archive that has no day for it the day it was made', () => {
+		const plan = planRestore(
+			deps(),
+			archived(
+				bent((s) => {
+					delete s.tables.todo[1]!.done_on;
+				})
+			),
+			target()
+		);
+		const done = rowsOf(plan, 'todo').find((t) => t.id === 't-done');
+		expect(done?.done_on).toBe('2026-09-07');
 	});
 
 	it('keeps a tick by a member this installation never had, as ticked by nobody it knows', () => {

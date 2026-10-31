@@ -62,7 +62,7 @@ export type ServicesWiring = AuthWiring &
 	MediaWiring &
 	Omit<PeopleWiring, 'accounts' | 'kinship' | 'media'> &
 	Omit<CircleWiring, 'contacts' | 'media'> &
-	Omit<StoryWiring, 'contacts' | 'directory' | 'media' | 'gifts'> &
+	Omit<StoryWiring, 'contacts' | 'directory' | 'media' | 'gifts' | 'todos'> &
 	NoteWiring &
 	Omit<RecordWiring, 'contacts'> &
 	HouseholdWiring &
@@ -97,7 +97,8 @@ export function createServices(wiring: ServicesWiring): AppServices {
 		contacts: people.contacts,
 		directory: people.directory,
 		media: media.store,
-		gifts: gifts.gifts
+		gifts: gifts.gifts,
+		todos: todos.todoDeps.todos
 	});
 	const notes = createNoteServices(wiring);
 	const records = createRecordServices({ ...wiring, contacts: people.contacts });

@@ -53,7 +53,17 @@ export interface StoryGiftItem extends StoryItemBase {
 	occasion: string | null;
 }
 
-export type StoryItemView = StoryJournalItem | StoryInteractionItem | StoryGiftItem;
+/**
+ * A to-do ticked off for this person (docs/02 §2.26), on the day it was ticked and read from the
+ * to-do itself: unticking it here opens it again on the card, and removing it erases it. Whoever
+ * may see it may do either; the author named is the member who ticked it.
+ */
+export interface StoryTodoItem extends StoryItemBase {
+	kind: 'todo';
+	title: string;
+}
+
+export type StoryItemView = StoryJournalItem | StoryInteractionItem | StoryGiftItem | StoryTodoItem;
 
 /** Where each source resumes; mirrors the domain's `StoryResume` across the wire. */
 export type StoryResumeView = { day: string; recordedAt: number } | 'top' | 'finished';
@@ -62,6 +72,7 @@ export interface StoryCursorView {
 	journal: StoryResumeView;
 	interactions: StoryResumeView;
 	gifts: StoryResumeView;
+	todos: StoryResumeView;
 }
 
 export interface StoryPageView {

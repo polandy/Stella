@@ -2,11 +2,12 @@ import type { Viewer } from '../../access/visibility';
 import type { DatedGift, GiftRepository } from '../gifts/gifts';
 import type { Interaction, InteractionRepository } from '../interactions/interactions';
 import type { JournalEntry, JournalRepository } from '../journal/journal';
+import type { DoneTodo, TodoRepository } from '../todos/todos';
 
 /*
  * The story of a person (docs/02 §2.23): the journal someone wrote about them, the
- * touchpoints someone had with them and the gifts given to them or received from them (docs/02
- * §2.25), read as one thing in one order — because that is how it happened. Lists side by side
+ * touchpoints someone had with them, the gifts given to them or received from them (docs/02
+ * §2.25) and the to-dos ticked off for them (§2.26), read as one thing in one order — because that is how it happened. Lists side by side
  * made the reader do the merging.
  *
  * The sources are stored and paginated separately, so `mergeStory` is a pure merge over one
@@ -27,7 +28,9 @@ export type StoryItem =
 	| ({ kind: 'journal'; entry: JournalEntry } & StoryPoint)
 	| ({ kind: 'interaction'; interaction: Interaction } & StoryPoint)
 	/** Read from the gift itself, never a copy, so an edit or a removal shows here too. */
-	| ({ kind: 'gift'; gift: DatedGift } & StoryPoint);
+	| ({ kind: 'gift'; gift: DatedGift } & StoryPoint)
+	/** Read from the to-do itself, so unticking or removing it takes it out of the story. */
+	| ({ kind: 'todo'; todo: DoneTodo } & StoryPoint);
 
 /**
  * Where one source picks up: at the top, strictly older than a point, or nowhere because it
@@ -46,11 +49,12 @@ export interface StorySource<T> {
 	resumeFrom: StoryResume;
 }
 
-/** Where each source resumes; a cursor with both halves finished is not returned at all. */
+/** Where each source resumes; a cursor with every source finished is not returned at all. */
 export interface StoryCursor {
 	journal: StoryResume;
 	interactions: StoryResume;
 	gifts: StoryResume;
+	todos: StoryResume;
 }
 
 export interface StoryPage {
@@ -63,6 +67,7 @@ export interface StoryDeps {
 	journal: Pick<JournalRepository, 'listPageForContactVisibleTo'>;
 	interactions: Pick<InteractionRepository, 'listPageForContactVisibleTo'>;
 	gifts: Pick<GiftRepository, 'listStoryPageForContactVisibleTo'>;
+	todos: Pick<TodoRepository, 'listStoryPageForContactVisibleTo'>;
 }
 
 /** Most recent first: later day wins, then later recording, then a fixed order for a dead heat. */
@@ -91,6 +96,7 @@ export function mergeStory(input: {
 	journal: StorySource<JournalEntry>;
 	interactions: StorySource<Interaction>;
 	gifts: StorySource<DatedGift>;
+	todos: StorySource<DoneTodo>;
 	limit: number;
 }): StoryPage {
 	const journalItems: StoryItem[] = input.journal.items.map((entry) => ({
@@ -113,7 +119,15 @@ export function mergeStory(input: {
 		recordedAt: gift.createdAt
 	}));
 
-	const items = [...journalItems, ...interactionItems, ...giftItems]
+	// A to-do stands on the day it was ticked, recorded at the tick.
+	const todoItems: StoryItem[] = input.todos.items.map((todo) => ({
+		kind: 'todo',
+		todo,
+		day: todo.doneOn,
+		recordedAt: todo.doneAt
+	}));
+
+	const items = [...journalItems, ...interactionItems, ...giftItems, ...todoItems]
 		.sort(newestFirst)
 		.slice(0, Math.max(0, Math.trunc(input.limit)));
 
@@ -131,8 +145,17 @@ export function mergeStory(input: {
 		items.filter((i) => i.kind === 'gift')
 	);
 
-	const finished = journal === 'finished' && interactions === 'finished' && gifts === 'finished';
-	return { items, nextCursor: finished ? null : { journal, interactions, gifts } };
+	const todos = resume(
+		input.todos,
+		items.filter((i) => i.kind === 'todo')
+	);
+
+	const finished =
+		journal === 'finished' &&
+		interactions === 'finished' &&
+		gifts === 'finished' &&
+		todos === 'finished';
+	return { items, nextCursor: finished ? null : { journal, interactions, gifts, todos } };
 }
 
 /**
@@ -153,13 +176,15 @@ export async function listStoryPage(
 	const journalFrom: StoryResume = opts.cursor?.journal ?? 'top';
 	const interactionsFrom: StoryResume = opts.cursor?.interactions ?? 'top';
 	const giftsFrom: StoryResume = opts.cursor?.gifts ?? 'top';
+	const todosFrom: StoryResume = opts.cursor?.todos ?? 'top';
 
 	// A finished source is never read again.
 	const wantJournal = journalFrom !== 'finished';
 	const wantInteractions = interactionsFrom !== 'finished';
 	const wantGifts = giftsFrom !== 'finished';
+	const wantTodos = todosFrom !== 'finished';
 
-	const [journalRows, interactionRows, giftRows] = await Promise.all([
+	const [journalRows, interactionRows, giftRows, todoRows] = await Promise.all([
 		wantJournal
 			? deps.journal.listPageForContactVisibleTo(viewer, contactId, {
 					limit: perSource + 1,
@@ -186,6 +211,15 @@ export async function listStoryPage(
 							? undefined
 							: { givenOn: giftsFrom.day, createdAt: giftsFrom.recordedAt }
 				})
+			: Promise.resolve([]),
+		wantTodos
+			? deps.todos.listStoryPageForContactVisibleTo(viewer, contactId, {
+					limit: perSource + 1,
+					before:
+						todosFrom === 'top'
+							? undefined
+							: { doneOn: todosFrom.day, doneAt: todosFrom.recordedAt }
+				})
 			: Promise.resolve([])
 	]);
 
@@ -193,6 +227,7 @@ export async function listStoryPage(
 	const journalHasMore = journalRows.length > perSource;
 	const interactionsHaveMore = interactionRows.length > perSource;
 	const giftsHaveMore = giftRows.length > perSource;
+	const todosHaveMore = todoRows.length > perSource;
 
 	return mergeStory({
 		journal: {
@@ -209,6 +244,11 @@ export async function listStoryPage(
 			items: giftsHaveMore ? giftRows.slice(0, perSource) : giftRows,
 			exhausted: !giftsHaveMore,
 			resumeFrom: giftsFrom
+		},
+		todos: {
+			items: todosHaveMore ? todoRows.slice(0, perSource) : todoRows,
+			exhausted: !todosHaveMore,
+			resumeFrom: todosFrom
 		},
 		limit
 	});

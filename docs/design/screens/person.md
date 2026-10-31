@@ -251,7 +251,8 @@ the person, and that never leaves the page. Keeping the record tidy (archive, me
 
 #### Activity card
 
-- **Activity** is the merged timeline of docs/02 §2.23: journal entries and touchpoints in one
+- **Activity** is the merged timeline of docs/02 §2.23: journal entries, touchpoints, gifts and
+  done to-dos in one
   order, a rail with a dot per item coloured by kind (§5.6), the author's name beside the kind
   (*you* on your own items), and *Show earlier* paging back through both sources. It is paged,
   so it carries no count.
@@ -283,6 +284,13 @@ the person, and that never leaves the page. Keeping the record tidy (archive, me
   §2.25.4), labelled *Given* or
   *Received*, its title a link to the Gifts card and its occasion beneath. It offers no
   remove button — a gift is changed and removed on its card.
+- A **done to-do** (docs/02 §2.26.5) is an item of its own on its tick day: the check icon in
+  `--success`, labelled *Done* with the member who ticked it, and beneath a ticked native
+  checkbox (`accent-primary`) inside the `<label>` of its line. Unticking disables the box until
+  Stella answers, then the item leaves with *Open again: …*; a refusal keeps it ticked and the
+  toast says so. *Remove* is
+  offered to whoever sees it, and its cross stands beside the line, centred on it, as on the
+  card — not in the kind line; there is no *Edit* — it is rewritten on the card once open.
 - An item's ghost icon *Edit* (pencil) and *Remove* (cross) sit at the end of its kind line,
   shown on hover or keyboard focus and always on a touch screen (`pointer: coarse`), which
   has no hover. *Edit* is a touchpoint's, for its author alone (`canEditAuthored`, docs/03

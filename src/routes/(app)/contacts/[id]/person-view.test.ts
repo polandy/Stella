@@ -145,6 +145,7 @@ describe('todoView', () => {
 		title: 'Give the book back',
 		dueOn: '2026-11-08',
 		doneAt: null,
+		doneOn: null,
 		doneBy: null,
 		createdAt: 1,
 		updatedAt: 2,

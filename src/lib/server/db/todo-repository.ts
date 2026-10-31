@@ -1,8 +1,8 @@
-import { and, eq, isNull } from 'drizzle-orm';
+import { and, desc, eq, isNotNull, isNull, lt, or } from 'drizzle-orm';
 import type { BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
 import { childRecordVisibleTo } from '../access/query-scoping';
 import type { Viewer } from '../access/visibility';
-import type { Todo, TodoRepository } from '../domain/todos/todos';
+import type { DoneTodo, Todo, TodoRepository } from '../domain/todos/todos';
 import type * as schema from './schema';
 import { contact, todo } from './schema';
 
@@ -21,6 +21,7 @@ const columns = {
 	title: todo.title,
 	dueOn: todo.dueOn,
 	doneAt: todo.doneAt,
+	doneOn: todo.doneOn,
 	doneBy: todo.doneBy,
 	createdAt: todo.createdAt,
 	updatedAt: todo.updatedAt
@@ -55,6 +56,7 @@ export function createDrizzleTodoRepository(db: BunSQLiteDatabase<typeof schema>
 					title: t.title,
 					dueOn: t.dueOn,
 					doneAt: t.doneAt,
+					doneOn: t.doneOn,
 					doneBy: t.doneBy,
 					updatedAt: t.updatedAt
 				})
@@ -74,6 +76,27 @@ export function createDrizzleTodoRepository(db: BunSQLiteDatabase<typeof schema>
 				.innerJoin(contact, eq(todo.contactId, contact.id))
 				.where(and(visibleOn(viewer, contactId), isNull(todo.doneAt)))
 				.all();
+		},
+
+		async listStoryPageForContactVisibleTo(viewer, contactId, opts) {
+			const conditions = [visibleOn(viewer, contactId), isNotNull(todo.doneOn)];
+			if (opts.before) {
+				const { doneOn, doneAt } = opts.before;
+				// Keyset: strictly older than the cursor in (doneOn, doneAt) order.
+				conditions.push(
+					or(lt(todo.doneOn, doneOn), and(eq(todo.doneOn, doneOn), lt(todo.doneAt, doneAt)))!
+				);
+			}
+			const rows = db
+				.select(columns)
+				.from(todo)
+				.innerJoin(contact, eq(todo.contactId, contact.id))
+				.where(and(...conditions))
+				.orderBy(desc(todo.doneOn), desc(todo.doneAt))
+				.limit(opts.limit)
+				.all();
+			// A tick sets both (`domain/todos`); the filter says so to the type.
+			return rows.filter((row): row is DoneTodo => row.doneOn !== null && row.doneAt !== null);
 		}
 	};
 }

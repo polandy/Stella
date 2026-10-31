@@ -1064,6 +1064,7 @@ export function seedDemoData(
 				title: t.title,
 				dueOn: t.dueIn === null ? null : dayBefore(now, -t.dueIn),
 				doneAt: t.doneDaysAgo === undefined ? null : now - t.doneDaysAgo * DAY_MS,
+				doneOn: t.doneDaysAgo === undefined ? null : dayBefore(now, t.doneDaysAgo),
 				doneBy: t.doneDaysAgo === undefined ? null : authorId,
 				createdAt: now - 20 * DAY_MS,
 				updatedAt: now - 20 * DAY_MS

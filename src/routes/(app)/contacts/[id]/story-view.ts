@@ -121,6 +121,24 @@ export function toStoryItem(item: StoryItem, ctx: StoryViewContext): StoryItemVi
 		};
 	}
 
+	if (item.kind === 'todo') {
+		const todo = item.todo;
+		const tickedByMe = todo.doneBy === ctx.remover.id;
+		return {
+			kind: 'todo',
+			id: todo.id,
+			day: item.day,
+			recordedAt: item.recordedAt,
+			visibility: todo.visibility,
+			mine: todo.createdBy === ctx.remover.id,
+			// Whoever may see a to-do may remove it (docs/02 §2.26): the read already decided that.
+			removable: true,
+			// Who ticked it: the story is about what was done, and by whom.
+			author: todo.doneBy === null ? null : authorLabel(tickedByMe, ctx.nameOfAuthor(todo.doneBy)),
+			title: todo.title
+		};
+	}
+
 	const interaction = item.interaction;
 	return {
 		kind: 'interaction',

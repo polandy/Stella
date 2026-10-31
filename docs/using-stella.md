@@ -372,7 +372,7 @@ someone else's private note.
 someone wrote and the times someone was in touch, newest first, day by day. They used
 to be two separate lists and you had to merge them in your head. Older activity loads when you
 ask for it with *Show earlier*. Gifts you gave them or received from them show here too, on
-their day (see *Gifts* below).
+their day (see *Gifts* below), and so does each to-do once it is done (see *To do*).
 
 **Write a moment** on a person's page does not take you away: the page glides down to their
 *Activity* card and the writing field opens at its top, with the cursor in it. A chip above the
@@ -572,7 +572,9 @@ thing you read about them; with nothing open it is a single line at the end of t
 - **+ Add** asks only *what*. **By when?** adds a day if there is one; most things have none.
   Those with a day come first, soonest on top; one whose day has passed says *was due …*.
 - **Tap the line** (or its box) when it is done. The line is struck through, and *Undo* in the message opens
-  it again; then it leaves the card.
+  it again; then it leaves the card and shows under **Activity** as *Done*, on the day it was
+  ticked, with who ticked it. Done too soon? Untick its box there and it is open on the card
+  again. Removing it there (or on the card) deletes it — it is gone from Activity as well.
 - Anyone who can see a to-do may tick, change or remove it — often whoever did it is not the
   one who wrote it down. It says who noted it; only that person can make it private.
 - From anywhere: `⌘K` / `Ctrl-K`, **To do for …**, then the person's name and `Enter`.

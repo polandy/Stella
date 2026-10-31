@@ -18,5 +18,8 @@ export const todos: TodosMessages = {
 	'todos.edit': (p) => `Ändern: ${p.title}`,
 	'todos.remove': (p) => `Entfernen: ${p.title}`,
 	'todos.done': (p) => `Erledigt: ${p.title}`,
-	'todos.removed': 'Todo entfernt'
+	'todos.removed': 'Todo entfernt',
+	'todos.story.done': 'Erledigt',
+	'todos.story.reopen': (p) => `Doch nicht erledigt: ${p.title}`,
+	'todos.story.reopened': (p) => `Wieder offen: ${p.title}`
 };

@@ -9,6 +9,7 @@ import { createDrizzleAccountRepository } from '../db/account-repository';
 import { createDrizzleContactDirectoryReads } from '../db/contact-directory-reads';
 import { createDrizzleContactRepository } from '../db/contact-repository';
 import { createDrizzleGiftRepository } from '../db/gift-repository';
+import { createDrizzleTodoRepository } from '../db/todo-repository';
 import * as schema from '../db/schema';
 import { createContact } from '../domain/contacts/contacts';
 import { lastContactedOn, logInteraction } from '../domain/interactions/interactions';
@@ -65,7 +66,8 @@ beforeEach(async () => {
 		contacts: createDrizzleContactRepository(db),
 		directory: createDrizzleContactDirectoryReads(db),
 		media,
-		gifts: createDrizzleGiftRepository(db)
+		gifts: createDrizzleGiftRepository(db),
+		todos: createDrizzleTodoRepository(db)
 	};
 });
 
@@ -135,7 +137,9 @@ describe('createStoryServices', () => {
 					? item.entry.id
 					: item.kind === 'interaction'
 						? item.interaction.id
-						: item.gift.id
+						: item.kind === 'gift'
+							? item.gift.id
+							: item.todo.id
 			)
 		).toEqual([interactionId, moment.entryId]);
 		const journal = await listJournalForContact(story.journalDeps, viewerOf(admin), anna);
