@@ -12,6 +12,17 @@ import { factEditor, signIn } from './app';
 const DUMP = 'e2e/fixtures/monica-mini.sql';
 const PHOTO_FOLDER = 'e2e/fixtures/monica-photos';
 
+/** An open to-do on the person's To do card. */
+const todoRow = (page: Page, title: string) =>
+	page.getByTestId('todos').locator('li', { hasText: title });
+
+/** A done to-do in the person's Activity, under the day it was done. */
+const doneOn = (page: Page, day: string, title: string) =>
+	page
+		.getByTestId('story-timeline')
+		.locator(':scope > li', { has: page.getByRole('heading', { name: day, exact: true }) })
+		.locator('[data-story-item]', { hasText: title });
+
 /** Upload → preview: returns once the preview is on screen. */
 async function previewDump(page: Page): Promise<void> {
 	await page.goto('/settings/import');
@@ -32,12 +43,17 @@ test('previews the dump, imports it, attaches the photos and shows the people in
 	await expect(preview.locator('div', { hasText: /^contacts/ })).toContainText('2');
 	await expect(preview.locator('div', { hasText: /^relationships/ })).toContainText('1');
 	await expect(preview.locator('div', { hasText: /^photos/ })).toContainText('1');
+	await expect(preview.locator('div', { hasText: /^to-dos/ })).toContainText('2');
 	// The deleted person is named as left out, with the reason.
 	await expect(page.getByText('Left out, and why')).toBeVisible();
 	await expect(page.getByText(/1 contact/)).toBeVisible();
+	// So are the task on that person and the one Monica kept on nobody.
+	await expect(page.getByText('1 task — belongs to a deleted contact')).toBeVisible();
+	await expect(page.getByText('1 task — attached to no person')).toBeVisible();
 
 	await page.getByRole('button', { name: 'Import now' }).click();
 	await expect(page.getByTestId('import-done')).toContainText('Imported 2 people, 1 relationship');
+	await expect(page.getByTestId('import-done')).toContainText('2 to-dos');
 
 	await page.getByLabel('Monica photo folder').setInputFiles(PHOTO_FOLDER);
 	await expect(page.getByText('1 of 1 · 1 stored')).toBeVisible();
@@ -56,6 +72,10 @@ test('previews the dump, imports it, attaches the photos and shows the people in
 	// The mirrored Monica rows became one relationship, listed under the People tab.
 	await expect(page.getByRole('link', { name: 'Kaspar Vogelsang', exact: true })).toBeVisible();
 	await expect(page.getByText('Prefers the harbour walk in Tallinn.')).toBeVisible();
+	// Monica's tasks (docs/02 §2.26.8): the open one on the card, the description after its
+	// title; the completed one done in Activity on the day Monica completed it.
+	await expect(todoRow(page, 'Buch zurückgeben — das rote, von Weihnachten')).toHaveCount(1);
+	await expect(doneOn(page, '6 May 2024', 'Rezept schicken')).toContainText('Done');
 	await expect(page.locator('img[alt="Ottilie Vogelsang"]')).toHaveAttribute(
 		'src',
 		/monica:photo:1/
@@ -70,9 +90,11 @@ test('a second run of the same dump writes nothing twice', async ({ page }) => {
 	await expect(done).toContainText('Everything was already there, so nothing was written twice.');
 	await page.getByLabel('Monica photo folder').setInputFiles(PHOTO_FOLDER);
 	await expect(page.getByText('1 of 1 · 0 stored, 1 already there')).toBeVisible();
-	// Still exactly one Ottilie in the list.
+	// Still exactly one Ottilie in the list, with her task on the card once.
 	await page.goto('/contacts');
 	await expect(page.getByRole('link', { name: /Ottilie Vogelsang/ })).toHaveCount(1);
+	await page.getByRole('link', { name: /Ottilie Vogelsang/ }).click();
+	await expect(todoRow(page, 'Buch zurückgeben')).toHaveCount(1);
 });
 
 test('rejects a file that is not a Monica dump', async ({ page }) => {
