@@ -43,13 +43,13 @@ function shortDay(lang: DateLanguage, day: string, today: string): string {
 	return `${parts[at]?.value ?? ''}, ${date}`;
 }
 
-/** What a row says about its day: *today*, *tomorrow*, *by Fri, 6 Nov*, *overdue since …*. */
+/** What a row says about its day: *today*, *tomorrow*, *by Fri, 6 Nov*, *was due Wed, 28 Oct*. */
 export function dueLabel(lang: DateLanguage, dueOn: string | null, today: string): string | null {
 	if (dueOn === null) return null;
 	if (dueOn === today) return lang.t('common.today');
 	if (dueOn === addDays(today, 1)) return lang.t('common.tomorrow');
 	const day = shortDay(lang, dueOn, today);
-	return dueOn < today ? lang.t('todos.overdueSince', { day }) : lang.t('todos.dueBy', { day });
+	return dueOn < today ? lang.t('todos.wasDue', { day }) : lang.t('todos.dueBy', { day });
 }
 
 /**

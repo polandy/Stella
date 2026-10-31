@@ -46,11 +46,12 @@
 	// Checked from the tap until Stella has answered; a refusal unchecks it again.
 	let ticking = $state(false);
 	const ticked = $derived(ticking || keptTick);
+	const checkboxId = $derived(`todo-tick-${todo.id}`);
 
 	const standing = $derived(dueStanding(todo.dueOn, today));
 	const due = $derived(dueLabel(i18n, todo.dueOn, today));
 	const DUE_TONE = {
-		overdue: 'font-medium text-danger',
+		overdue: 'font-medium text-fg',
 		today: 'font-medium text-fg',
 		soon: 'font-medium text-fg',
 		later: 'text-fg-muted'
@@ -123,6 +124,7 @@
 		<form method="POST" action="?/tickTodo" use:enhance={submitTick} class="flex pt-0.5">
 			<input type="hidden" name="todoId" value={todo.id} />
 			<input
+				id={checkboxId}
 				type="checkbox"
 				checked={ticked}
 				disabled={ticked}
@@ -137,9 +139,15 @@
 		</form>
 		<div class="flex min-w-0 flex-1 flex-wrap items-start gap-x-2 gap-y-1">
 			<div class="min-w-0 flex-1">
-				<p class="break-words {ticked ? 'text-fg-muted line-through' : 'text-fg'}">
+				<!-- The whole line ticks: a 20 px box alone is too small a target on a phone. -->
+				<label
+					for={checkboxId}
+					class="block break-words {ticked
+						? 'text-fg-muted line-through'
+						: 'cursor-pointer text-fg'}"
+				>
 					{todo.title}
-				</p>
+				</label>
 				<p class="mt-0.5 flex flex-wrap items-center gap-x-1.5 text-xs text-fg-subtle">
 					{#if keptTick}
 						<span class="inline-flex items-center gap-1">

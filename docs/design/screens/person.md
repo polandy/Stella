@@ -324,13 +324,13 @@ the person, and that never leaves the page. Keeping the record tidy (archive, me
 #### To do card
 
 - Rows in `orderOpenTodos`'s order (docs/02 §2.26.2), each a native checkbox (`accent-primary`,
-  20 px) beside the line, then one subtle `text-xs` line: the day — overdue in
-  `font-medium text-danger`, today and the coming week in `font-medium text-fg`, later
-  `text-fg-muted` — *noted by …* · *private*; the pencil and the remove cross on the right.
+  20 px) beside the line, which is its `<label>` so the whole line is the tap target; then one
+  subtle `text-xs` line: the day — overdue (*was due …*), today and the coming week in
+  `font-medium text-fg`, never `--danger` (no nudges), later `text-fg-muted` — *noted by …* · *private*; the pencil and the remove cross on the right.
 - A tick checks the box and strikes the line through at once (`text-fg-muted line-through`),
   without waiting for Stella; the row has no pencil or cross while it waits. A refusal unchecks
   it and says why at the card's top, not in the add form.
-- The add form opens at the card's top: *To do for Hilde*, *What?*, a quiet *By a day* link
+- The add form opens at the card's top: *To do for Hilde*, *What?*, a quiet *By when?* link
   with the calendar icon that turns into the date field and *No day*; Shared/Private radios,
   *Save*. The pencil rewrites the row in place with the same fields; only the author is
   offered Shared/Private.

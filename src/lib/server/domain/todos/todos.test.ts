@@ -120,7 +120,7 @@ describe('addTodo', () => {
 	});
 
 	it('refuses an empty line and a day that does not exist', async () => {
-		expect(await refusal(addTodo(deps, ANDY, book('   ')))).toBe('A to-do needs a line.');
+		expect(await refusal(addTodo(deps, ANDY, book('   ')))).toBe('Write what needs doing.');
 		expect(await refusal(addTodo(deps, ANDY, { ...book(), dueOn: '2026-02-30' }))).toBe(
 			'There is no 2026-02-30.'
 		);

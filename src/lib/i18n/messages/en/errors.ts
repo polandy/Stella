@@ -132,7 +132,7 @@ export const errors = {
 	'errors.gift.alreadyGiven': 'This gift was already given.',
 	'errors.gift.gone': 'This gift is no longer there.',
 	'errors.gift.couldNotSave': 'Could not save the gift.',
-	'errors.todo.needTitle': 'A to-do needs a line.',
+	'errors.todo.needTitle': 'Write what needs doing.',
 	'errors.todo.needDay': 'Please choose the day.',
 	'errors.todo.noSuchDay': (p: { day: string }) => `There is no ${p.day}.`,
 	'errors.todo.gone': 'This to-do is no longer there.',

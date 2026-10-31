@@ -45,8 +45,8 @@ describe('dueLabel', () => {
 	});
 
 	it('says since when one is overdue', () => {
-		expect(dueLabel(en, '2026-10-28', TODAY)).toBe('overdue since Wed, 28 Oct');
-		expect(dueLabel(de, '2026-10-28', TODAY)).toBe('überfällig seit Mi., 28. Okt.');
+		expect(dueLabel(en, '2026-10-28', TODAY)).toBe('was due Wed, 28 Oct');
+		expect(dueLabel(de, '2026-10-28', TODAY)).toBe('war fällig am Mi., 28. Okt.');
 	});
 });
 

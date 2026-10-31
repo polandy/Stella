@@ -4,15 +4,15 @@ export const todos = {
 	'todos.title': 'To do',
 	// The card as one line, with nothing open (docs/05 §5.5).
 	'todos.none': 'Nothing open.',
-	'todos.add': 'To do',
+	'todos.add': 'Add',
 	'todos.form.for': (p: { name: string }) => `To do for ${p.name}`,
 	'todos.form.what': 'What is still to do?',
 	'todos.form.whatPlaceholder': 'e.g. give the book back',
 	'todos.form.by': 'By',
-	'todos.form.addDay': 'By a day',
+	'todos.form.addDay': 'By when?',
 	'todos.form.noDay': 'No day',
 	'todos.dueBy': (p: { day: string }) => `by ${p.day}`,
-	'todos.overdueSince': (p: { day: string }) => `overdue since ${p.day}`,
+	'todos.wasDue': (p: { day: string }) => `was due ${p.day}`,
 	'todos.notedBy': (p: { name: string }) => `noted by ${p.name}`,
 	// The checkbox's name: what ticking it does.
 	'todos.tick': (p: { title: string }) => `Done: ${p.title}`,

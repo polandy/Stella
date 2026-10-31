@@ -569,10 +569,9 @@ The **To do** card holds what you still owe someone — *give the book back*, *a
 surgery went*. While something is open it stands right under their name, so it is the first
 thing you read about them; with nothing open it is a single line at the end of the page.
 
-- **+ To do** asks only *what*. **By a day** adds a day if there is one; most things have none.
-  Those with a day come first, soonest on top; one whose day has passed says *overdue since …*
-  in red.
-- **Tick the box** when it is done. The line is struck through, and *Undo* in the message opens
+- **+ Add** asks only *what*. **By when?** adds a day if there is one; most things have none.
+  Those with a day come first, soonest on top; one whose day has passed says *was due …*.
+- **Tap the line** (or its box) when it is done. The line is struck through, and *Undo* in the message opens
   it again; then it leaves the card.
 - Anyone who can see a to-do may tick, change or remove it — often whoever did it is not the
   one who wrote it down. It says who noted it; only that person can make it private.

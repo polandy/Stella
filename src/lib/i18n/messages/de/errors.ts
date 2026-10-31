@@ -129,7 +129,7 @@ export const errors: ErrorsMessages = {
 	'errors.gift.alreadyGiven': 'Dieses Geschenk wurde schon verschenkt.',
 	'errors.gift.gone': 'Dieses Geschenk gibt es nicht mehr.',
 	'errors.gift.couldNotSave': 'Das Geschenk konnte nicht gespeichert werden.',
-	'errors.todo.needTitle': 'Ein Todo braucht eine Zeile.',
+	'errors.todo.needTitle': 'Schreib, was zu tun ist.',
 	'errors.todo.needDay': 'Bitte wähle den Tag.',
 	'errors.todo.noSuchDay': (p: { day: string }) => `Den ${p.day} gibt es nicht.`,
 	'errors.todo.gone': 'Dieses Todo gibt es nicht mehr.',

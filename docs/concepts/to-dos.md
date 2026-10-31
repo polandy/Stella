@@ -46,12 +46,12 @@ makes it private or shared again. A private to-do is its author's alone, admins 
 
 1. **Person page — the *To do* card** (`'todos'` in `CONTACT_SECTIONS`). Open to-dos, those
    with a day first (soonest first), then those without (newest first). Each row: a checkbox,
-   the line, the day (*by Fri 8 Nov*; overdue in `--danger` text, *overdue since 2 Nov*),
+   the line, the day (*by Fri, 8 Nov*; past it, plainly *was due Mon, 2 Nov*),
    *noted by …*, *private*. A pencil rewrites line, day and visibility in place.
    - **Placement (recommended):** right under the identity card **while something is open**;
      with nothing open the card is the one-line empty shape at the end of the page
-     (`cardShape`, docs/05 §5.5): *To do · Nothing open.* and *+ To do*.
-   - **Adding:** *+ To do* opens one field and an optional day; Enter saves.
+     (`cardShape`, docs/05 §5.5): *To do · Nothing open.* and *+ Add*.
+   - **Adding:** *+ Add* opens one field and an optional day; Enter saves.
 2. **Home — a *To do* band** in the rail, above *Coming up*: open to-dos the reader may see that
    are **overdue or due within 7 days**, soonest first, at most three, *Show all N* beneath.
    Each row: avatar, the line, the person and day, a checkbox. Absent when empty, like
@@ -85,11 +85,14 @@ makes it private or shared again. A private to-do is its author's alone, admins 
 - **Offline:** adding and ticking are commands (`todo.add`, `todo.tick`) through the outbox
   (§2.18): a tick only ever moves towards done, so replaying it is harmless. Rewriting,
   unticking and removing wait for Stella, as for gifts.
-- **Search:** to-dos are found on the full search page in a group of their own (§2.9).
-- **Export / restore** carry the table (§2.15); the Monica import may bring Monica's tasks
-  (§7, question 5).
-- **Slices:** (1) record, card, palette, offline add and tick; (2) Home band and `/todos`;
-  (3) the story entry and search; (4) Monica tasks, if wanted.
+- **Search:** to-dos are found on the full search page in a group of their own (§2.9), done
+  ones included and marked *done* — the one place to look one up across people.
+- **Export / restore** carry the table (§2.15); the Monica import brings Monica's tasks,
+  completed ones as done on their completion day, so they land in Activity (§7, item 6).
+  Removing a done to-do erases it from the story too: removal is a hard delete.
+- **Slices:** (1) record, card, palette, offline add and tick; (2) the story entry, so a
+  ticked to-do is never shown nowhere for long; (3) Home band, `/todos` and search; (4) Monica
+  tasks. Reordered 2026-10-31 after the UX review.
 
 ## 7. Decided with the maintainer (2026-10-31)
 
@@ -101,3 +104,6 @@ makes it private or shared again. A private to-do is its author's alone, admins 
 5. **Placement:** under the identity card while something is open, otherwise the one-line
    empty card at the end.
 6. **Monica's tasks:** imported as to-dos (slice 4).
+7. **After the UX review (2026-10-31):** *Done* in Activity moves up to slice 2; the whole
+   line ticks; *+ Add*, *By when?*, *was due …* without `--danger`; placement stays (top while
+   anything is open), to be looked at again once the Home band exists.
