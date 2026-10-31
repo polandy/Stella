@@ -1,6 +1,6 @@
 # Concept: to-dos per person
 
-Status: **proposal, waiting for the maintainer's choices (§7).** Mockup: the claude.ai canvas
+Status: **decided 2026-10-31 (§7), ready to build in slices (§6).** Mockup: the claude.ai canvas
 *Stella · Offene Punkte* (https://claude.ai/artifact/Ko3TazkhgPMvQswMHuZ2Bn; person page and Home, phone, Latte). Once built, the rules move into
 a new docs/02 §2.26, docs/03, docs/05 and the screen files `person.md` and `home.md`, and this
 file is deleted.
@@ -91,14 +91,13 @@ makes it private or shared again. A private to-do is its author's alone, admins 
 - **Slices:** (1) record, card, palette, offline add and tick; (2) Home band and `/todos`;
   (3) the story entry and search; (4) Monica tasks, if wanted.
 
-## 7. Open for the maintainer
+## 7. Decided with the maintainer (2026-10-31)
 
-1. **Who may tick, rewrite and remove:** whoever sees it (recommended, as gifts) — or its
-   author only?
-2. **Home band:** overdue and due within 7 days (recommended) — all open ones — or none on Home,
-   only the person page and `/todos`?
-3. **Done:** into the person's story (recommended) — or simply gone after the undo window?
-4. **Assignee** (*for Anna*): leave out (recommended) — or an optional member?
-5. **Monica's tasks:** import them as to-dos (recommended, if the export holds any) — or not?
-6. **Placement on the person page:** at the top while something is open (recommended) — or a
-   fixed place between *Notes* and *Gifts*?
+1. **Who may tick, rewrite and remove:** whoever sees it, as for gifts; only the author
+   switches shared ↔ private.
+2. **Home band:** overdue and due within 7 days, at most three, absent when empty.
+3. **Done:** into the person's story (*Activity*) on the day it was ticked.
+4. **Assignee:** none.
+5. **Placement:** under the identity card while something is open, otherwise the one-line
+   empty card at the end.
+6. **Monica's tasks:** still open — imported as to-dos in slice 4 if the export holds any.
