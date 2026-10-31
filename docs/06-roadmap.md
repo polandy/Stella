@@ -153,7 +153,12 @@ Goal: sand the edges and add the nice-to-haves.
 
 Written down, not scheduled: each needs the owner's decisions (or a change in how the family
 works) before it is specified in docs/02. Nothing here is a candidate for the next task by
-itself, except what is marked *in progress*.
+itself, except what is marked *in progress* or *queued*.
+
+**Queued** (owner, 2026-11-01) means: wanted, written in enough detail to build, taken in the
+listed order unless the owner says otherwise. Each starts by settling its *Open* points with
+the owner (mockup as an Artifact for anything with UI), then moves its rules into docs/02 and
+the screen file in the same PR that builds it, and leaves a one-line *built* note here.
 
 - **To-dos per person** — *built (§2.26), decided 2026-10-31.* The person page's *To do* card,
   *To-do for …* in the palette, adding and ticking offline; *Done: …* in the Activity; Home's
@@ -182,11 +187,139 @@ itself, except what is marked *in progress*.
   password** for it in Settings. A per-person change stamp (shared with offline reading)
   keeps each sync to what changed.
   Open: which contact fields go out, whether a member picks circles to sync, and whether a
-  plain subscribable `.ics` link suffices for the calendar instead of full CalDAV.
+  plain subscribable `.ics` link suffices for the calendar instead of full CalDAV — the
+  `.ics` link is queued below (item 1).
 - **Mail and social sync** — people from mail and social accounts, matched in the same review
   as the address books (§2.16.2). Open: which sources, and what is read from each.
 - **Native mobile apps** — beyond the PWA (§2.18), for what a PWA cannot do on a phone. Open:
   which platforms, and whether a wrapper around the PWA is enough before a true native app.
+
+### Queued, in order
+
+1. **Dates in the phone's calendar — a subscribable `.ics` link** — *queued.* The cheap answer
+   to the CardDAV entry's open calendar question, and to "Stella only speaks when opened": the
+   phone's own calendar shows the occasions and does the reminding, so Stella needs no push,
+   mail or reminder objects (§2.13 stays as it is).
+   - **What a member gets.** *Settings → Calendar*: *Create calendar link* shows one URL
+     (`/cal/<secret>.ics`) with a copy button and a short how-to per platform (Google Calendar
+     "From URL", iOS "Add subscribed calendar", Thunderbird/DAVx⁵). *Revoke* withdraws it at
+     once, no undo; *Create a new link* replaces it. One link per member.
+   - **What is in it.** Exactly what *Coming up* would show that member, without the 30-day
+     horizon: every date with *remind* on (§2.13.1) of every person they may see — derived
+     birthdays, anniversaries, named custom dates — muted, deceased and archived people out,
+     private people only in their owner's feed. One all-day `VEVENT` per date with
+     `RRULE:FREQ=YEARLY` when it recurs (29 February as `BYMONTH=2;BYMONTHDAY=-1`, matching
+     §2.13.3's rule closely enough that the phone never skips it), a single event for a
+     one-off. Summary in the member's language: *Anna turns 11* is impossible with one
+     recurring event, so the summary is *Anna's birthday* / *Anna & Ben's anniversary* /
+     the custom name, and the description carries the birth year when known ("born 2015")
+     plus a link to the person page. Stable `UID` per date (`<dateId or contactId-birthday>@stella`)
+     so edits replace rather than duplicate. No `VALARM`: reminders are the calendar's
+     setting, per member.
+   - **How.** The secret reuses the API-token model (`api_token`, hashed, named, revocable,
+     docs/02 §2.16.1) with a scope column so a calendar token opens `/cal/…` and nothing else,
+     and an API token never opens the feed; no expiry for this kind, `last_used_at` shown in
+     Settings. The route is a thin `+server.ts`: resolve the token to its member, ask the access
+     layer for that member's visible dates (the same port *Coming up* reads), hand them to a
+     pure `src/lib/calendar/ics.ts` (escaping, folding at 75 octets, CRLF, `DTSTAMP` from an
+     injected clock) — test-first with fixed inputs. `Cache-Control: private, max-age=3600`,
+     `ETag` over the content. Rate-limit like the API.
+   - **Tests.** Unit: the ICS writer (recurring, one-off, year-less, 29 Feb, escaping, folding,
+     language), the token scope both ways, visibility (a private person stays out of another
+     member's feed). E2e: create the link, fetch it, see a seeded birthday; revoke, fetch → 404.
+   - **Docs.** docs/02 §2.13.4 and §2.17, docs/03 for the token scope, the Settings screen
+     file, `using-stella.md` (how to subscribe), `install.md` (`ORIGIN` must be reachable from
+     the phones for the link to work).
+   - **Open.** Whether the link also carries open to-dos with a date (§2.26) as a second
+     calendar; recommended: not in the first slice. Whether *Coming up*'s *remind* switch is the
+     right filter or every date goes out; recommended: the switch, so muting means one thing.
+
+2. **Sharing into Stella from other apps (Web Share Target)** — *queued.* On Android the
+   installed PWA appears in the system *Share* sheet; a photo, a link or a piece of text from
+   any app becomes a record about a person in two taps. iOS Safari does not support share
+   targets: there the feature is simply absent, nothing breaks.
+   - **The flow.** The manifest declares `share_target` (`POST`, `multipart/form-data`, fields
+     `title`, `text`, `url`, `files` for `image/*`). It lands on `/share`, a small sheet:
+     a preview of what came in, a person picker (with photos, docs/05 §5.10) and the choices
+     that fit what was shared — **photo**: *Add to their photos* (§2.14) or *Use as profile
+     photo*; **text or link**: *Moment about them* (prefilled capture, §2.22.1), *Gift idea*
+     (§2.25, the link as the idea's link) or *To-do* (§2.26). One primary button, *Save*; the
+     sheet closes back to the person page with the usual toast and undo.
+   - **Offline.** The service worker answers the share `POST` itself, keeps the payload
+     (files as blobs) in IndexedDB and opens `/share?pending=<id>`; saving goes through the
+     offline outbox like any other add (§2.18.1, docs/04 §4.9), so sharing works on the train.
+     A photo larger than the outbox's limit says so instead of failing silently.
+   - **Rules.** Every write is an existing command through the existing use-case and access
+     layer — no new domain kinds. Photos go through the sharp pipeline (EXIF strip, §2.14).
+     Visibility is the kind's default (shared, §2.10); the sheet
+     offers the private switch where the target kind has one.
+   - **Tests.** Unit: the pure decision "what was shared → which choices" (`src/lib/share/`).
+     E2e: post a crafted multipart to `/share` (with `accept: text/html`), pick a person, save
+     a moment and a photo; one offline case with the black-hole route.
+   - **Docs.** docs/02 §2.18, a `share.md` screen file, `using-stella.md`.
+   - **Open.** Whether several shared photos at once are allowed (recommended: yes, up to 10,
+     all to one person); whether a shared link should be offered as a *note* too.
+
+3. **On this day — memories on Home** — *queued.* A quiet band in Home's rail, below *Coming
+   up* and *To do*: what the household wrote on today's date in earlier years. Not a nudge and
+   not about "seeing people more" (declined by the owner: most people are reference) — a reason to
+   enjoy the notebook.
+   - **What shows.** Moments, journal entries (§2.20) and touchpoints (§2.6) the reader may see
+     whose date is today's day and month in an earlier year, newest year first, grouped as
+     *1 year ago*, *5 years ago*; at most three, *More* opens the full list on a
+     `/on-this-day` page (any date, with a day picker). Each item: the people's avatars, the
+     first line, the year; tapping opens it in the person's Activity. With Immich linked
+     (§2.24), one photo strip of the household's linked people taken on this day, through the
+     gateway's date search, only when the Immich key is set. Gallery photos (§2.14) by capture
+     date likewise.
+   - **Absent when empty**, like *Coming up* (§2.13.3). Private entries follow the veil
+     (§2.10.1). Deceased people's entries stay — remembering them is the point.
+   - **How.** A use-case `memoriesOn(day, deps)` with the reader's scope, one indexed query
+     per kind on the day-and-month of the stored date (a generated `MM-DD` column or an index
+     expression, docs/03), the clock injected. Pure grouping and ranking in
+     `src/lib/memories/`. Feb 29 shows on 28 Feb in a common year.
+   - **Tests.** Unit: grouping, the 29 Feb rule, visibility, the cap. E2e: a seeded moment two
+     years back on the fixed test day shows on Home and opens.
+   - **Docs.** docs/02 §2.12, `home.md`, `using-stella.md`.
+   - **Open.** Whether to count only whole years (recommended) or also *a month ago*; whether
+     the band can be switched off per member (recommended: no setting until someone asks).
+
+4. **Before a visit — a person's brief** — *queued.* One compact view of a person for "we're
+   going over in ten minutes": everything worth knowing at a glance, nothing to fill in. Pure
+   aggregation of what is already stored.
+   - **What is on it.** Name, photo, age; their partner and children with ages (derived
+     kinship, §2.4.1), and the household they live in; the next date (§2.13); open to-dos
+     (§2.26) and open gift ideas (§2.25); the last three moments or touchpoints with dates; the
+     pinned notes (§2.5); *How we met*. Each block absent when empty. Read-only, every row
+     links to where it is edited.
+   - **Where.** A *Brief* action in the person page's header menu and a palette command
+     *Brief: …*; a route `/people/<id>/brief`, phone-first, printable on one page (print
+     stylesheet). Offline from the read-through cache like the person page (§2.18).
+   - **How.** One `load` composing existing use-cases through the access layer — no new tables.
+     The choice and order of blocks is a pure function (`src/lib/people/brief.ts`) tested
+     first.
+   - **Tests.** Unit: block selection, ages, empty blocks dropped. E2e: open the brief of a
+     seeded family, see the children and an open gift idea.
+   - **Docs.** docs/02 §2.2, a `person-brief.md` screen file, `using-stella.md`.
+   - **Open.** Whether the brief replaces the top of the person page on a phone instead of
+     being its own page (recommended: own page first, live with it, then decide).
+
+5. **The family tree as a picture or PDF** — *queued.* A printable tree for the grandparents or
+   a family gathering.
+   - **What.** In the explorer's family-tree view (§2.7) an *Export* menu: *PNG* (for sharing)
+     and *PDF / Print* (A4 or A3, landscape). It exports what is on screen: the centre, the
+     current filters and depth, names under the nodes, photos when shown, the light theme
+     always (print), dates of birth and death optional by a switch. A title line (*Family of
+     Anna Example*, editable before export) and the date it was made.
+   - **How.** PNG from Cytoscape's own `cy.png({ full: true, scale })` in the adapter layer;
+     PDF through the browser's print with a print stylesheet that lays the PNG out on the
+     page — no PDF library, no new dependency. Private people the reader may see are
+     included only when a switch says so, off by default, since a print leaves the household.
+   - **Tests.** Unit: the export options → render parameters mapping (pure). E2e: export a PNG
+     and check the download's type and size bounds; print layout stays an owner hand check.
+   - **Docs.** docs/02 §2.7, `graph.md`, `using-stella.md`.
+   - **Open.** Whether a very wide tree should split across pages (recommended: no — scale to
+     one page, offer A3); whether the ego network (not only the tree) exports too.
 
 ## Cross-cutting (every milestone)
 
