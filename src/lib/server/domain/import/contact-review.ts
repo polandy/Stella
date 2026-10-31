@@ -99,10 +99,11 @@ function narrowPlan(plan: ImportPlan, ids: ReadonlySet<string>): ImportPlan {
 		...plan,
 		contacts: plan.contacts.filter((c) => ids.has(c.id)),
 		contactFields: own(plan.contactFields),
-		// A vCard carries no relationships, gifts or activities; nothing of theirs is kept.
+		// A vCard carries no relationships, gifts, tasks or activities; nothing of theirs is kept.
 		relationshipTypes: [],
 		relationships: [],
 		gifts: [],
+		todos: [],
 		interactions: [],
 		notes: own(plan.notes),
 		tags: plan.tags.filter((t) => tagIds.has(t.id)),

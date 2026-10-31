@@ -211,6 +211,7 @@
 					relationships: form.inserted.relationships,
 					notes: form.inserted.notes,
 					gifts: form.inserted.gifts,
+					todos: form.inserted.todos,
 					interactions: form.inserted.interactions,
 					tags: form.inserted.tags
 				})}

@@ -200,6 +200,7 @@ export function readVCard(text: string): SourceExport {
 		tags,
 		photos,
 		gifts: [],
+		tasks: [],
 		lifeEvents: [],
 		pets: [],
 		journalEntries: [],

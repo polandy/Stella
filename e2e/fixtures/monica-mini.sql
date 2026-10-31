@@ -1,6 +1,7 @@
 -- MariaDB dump 10.20-12.3.3-MariaDB, for debian-linux-gnu (x86_64)
 -- A hand-written, minimal Monica 4.x dump for the import e2e: two people who are parent and
--- child, one deleted person, one note, one age-based birthday and one avatar photo.
+-- child, one deleted person, one note, one age-based birthday, one avatar photo and four
+-- tasks: one open, one completed, one on the deleted person and one on nobody.
 CREATE TABLE `contacts` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `first_name` varchar(255) DEFAULT NULL,
@@ -58,6 +59,24 @@ CREATE TABLE `notes` (
 ) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4;
 INSERT INTO `notes` VALUES
 (1,1,'Prefers the harbour walk in Tallinn.',0,'2024-03-02 10:00:00');
+CREATE TABLE `tasks` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `uuid` char(36) DEFAULT NULL,
+  `account_id` int(10) unsigned NOT NULL,
+  `contact_id` int(10) unsigned DEFAULT NULL,
+  `title` varchar(255) NOT NULL,
+  `description` longtext DEFAULT NULL,
+  `completed` tinyint(1) NOT NULL DEFAULT 0,
+  `completed_at` datetime DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4;
+INSERT INTO `tasks` VALUES
+(1,NULL,1,1,'Buch zurückgeben','das rote, von Weihnachten',0,NULL,'2024-03-02 10:00:00','2024-03-02 10:00:00'),
+(2,NULL,1,1,'Rezept schicken',NULL,1,'2024-05-06 18:30:00','2024-04-01 09:00:00','2024-05-06 18:30:00'),
+(3,NULL,1,3,'Never mind',NULL,0,NULL,NULL,NULL),
+(4,NULL,1,NULL,'Steuererklärung',NULL,0,NULL,NULL,NULL);
 CREATE TABLE `photos` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `new_filename` varchar(255) NOT NULL,

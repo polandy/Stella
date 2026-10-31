@@ -157,6 +157,63 @@ describe('readMonicaJsonExport', () => {
 		]);
 	});
 
+	test('reads tasks off the person they belong to, open and completed', () => {
+		const exp = readMonicaJsonExport(
+			document({
+				data: [
+					bucket('contact', [
+						contact({}, [
+							bucket('task', [
+								{
+									uuid: 't-1',
+									created_at: '2021-05-05T00:00:00.000000Z',
+									updated_at: '2021-05-06T00:00:00.000000Z',
+									properties: {
+										title: 'Buch zurückgeben',
+										description: 'das rote',
+										completed: false,
+										completed_at: null
+									}
+								},
+								{
+									uuid: 't-2',
+									properties: {
+										title: 'Rezept schicken',
+										completed: true,
+										completed_at: '2022-03-04T10:11:12.000000Z'
+									}
+								}
+							])
+						])
+					])
+				]
+			})
+		);
+
+		expect(exp.tasks).toEqual([
+			{
+				id: 't-1',
+				contactId: 'c-hans',
+				title: 'Buch zurückgeben',
+				description: 'das rote',
+				completed: false,
+				completedAt: null,
+				createdAt: '2021-05-05T00:00:00.000000Z',
+				updatedAt: '2021-05-06T00:00:00.000000Z'
+			},
+			{
+				id: 't-2',
+				contactId: 'c-hans',
+				title: 'Rezept schicken',
+				description: null,
+				completed: true,
+				completedAt: '2022-03-04T10:11:12.000000Z',
+				createdAt: null,
+				updatedAt: null
+			}
+		]);
+	});
+
 	test('reads notes off the person they belong to', () => {
 		const exp = readMonicaJsonExport(
 			document({

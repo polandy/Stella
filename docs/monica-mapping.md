@@ -76,6 +76,7 @@ contact to themselves (Monica allows that row; Stella refuses such a link) — t
 | `addresses` + `places` | `contact_field` `address`: "street, postal city, province, country" |
 | `notes` | `note`; `is_favorited` → pinned |
 | `gifts` | `gift` (docs/02 §2.25.4), id `<source>:gift:<id>`: `idea` → idea, `offered` → given, `received` → received; name → title, date → day, comment → note, URL → link when it is a web address (otherwise into the note). One that cannot be a gift — given or received without a date, an unknown status — stays a `note` titled *Gift*: "🎁 **name** — status, date", comment and URL below |
+| `tasks` | `todo` (docs/02 §2.26.8), id `<source>:task:<id>`, on the task's person: title, then " — " and the description, on one line; `completed` → done on the day of `completed_at` (UTC; else `updated_at`, then `created_at`), ticked by the importer, so it shows in Activity. A task on no person (account-wide), on a deleted person or with no text is left out and named in the report |
 | `life_events` | `note` titled *Life event*: "📅 **name** (type) — date", note below |
 | `pets` | `note` titled *Pet*: "🐾 **name**, category" |
 | `activities` + `activity_contact` | `interaction` of kind `met` on the first linked person, the others as participants; summary → title, description + "(Monica activity: type)" |
@@ -85,7 +86,7 @@ contact to themselves (Monica allows that row; Stella refuses such a link) — t
 | `entries` (free journal entries not attached to a person) | left out and named in the report |
 | `users` beyond the first | counted in a warning; everything is attributed to the importer |
 
-Not read at all: Monica's `conversations`, `calls`, `tasks`, `debts`, `documents`, audit
+Not read at all: Monica's `conversations`, `calls`, `debts`, `documents`, audit
 logs, API keys and settings. From a JSON export, the rated-day journal rows (`type: "day"`)
 are left alongside the written entries the same way. If your Monica has data there, say so — the report will not
 mention them.

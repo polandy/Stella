@@ -156,6 +156,19 @@ export interface MonicaGift {
 	date: string | null;
 }
 
+export interface MonicaTask {
+	id: MonicaId;
+	/** Null for a task Monica kept on no person — only a dump has those. */
+	contactId: MonicaId | null;
+	title: string | null;
+	description: string | null;
+	completed: boolean;
+	/** Monica's timestamp, as written; the plan reads the day and the moment out of it. */
+	completedAt: string | null;
+	createdAt: string | null;
+	updatedAt: string | null;
+}
+
 export interface MonicaLifeEvent {
 	id: MonicaId;
 	contactId: MonicaId;
@@ -195,6 +208,7 @@ export interface SourceExport {
 	tags: MonicaTag[];
 	photos: MonicaPhoto[];
 	gifts: MonicaGift[];
+	tasks: MonicaTask[];
 	lifeEvents: MonicaLifeEvent[];
 	pets: MonicaPet[];
 	/** Free-standing journal entries (not attached to a person). */
@@ -391,6 +405,16 @@ export function readMonicaExport(dump: SqlDump): SourceExport {
 			url: str(r.url),
 			status: str(r.status),
 			date: dayOf(r.date)
+		})),
+		tasks: optional(dump, 'tasks').map((r) => ({
+			id: Number(r.id),
+			contactId: num(r.contact_id),
+			title: str(r.title),
+			description: str(r.description),
+			completed: bool(r.completed),
+			completedAt: str(r.completed_at),
+			createdAt: str(r.created_at),
+			updatedAt: str(r.updated_at)
 		})),
 		lifeEvents: optional(dump, 'life_events').map((r) => ({
 			id: Number(r.id),
