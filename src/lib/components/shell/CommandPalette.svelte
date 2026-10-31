@@ -50,6 +50,7 @@
 				giftIdea: t('components.palette.giftIdea'),
 				giftIdeas: t('components.palette.giftIdeas'),
 				todoFor: t('components.palette.todoFor'),
+				allTodos: t('components.palette.allTodos'),
 				addPerson: t('components.palette.addPerson'),
 				searchEverything: (q) => t('components.palette.searchEverything', { query: q })
 			},

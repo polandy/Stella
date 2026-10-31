@@ -25,7 +25,7 @@ Detail stays in the feature doc the term points to.
 | **note** | A reference fact about a person, pinnable, not dated by what it is about (docs/02 §2.5). Not a journal entry. | `note`, `note_mention`, `domain/notes/` | memo, comment |
 | **touchpoint** | A logged contact with a person — met, call, video, message, letter — on a day, with optional participants (docs/02 §2.6). Buttons say *Log contact* / *Log interaction*. | `interaction`, `interaction_participant`, `domain/interactions/`, `lib/story/interaction-kinds.ts` | activity, event |
 | **gift** | A present for one person — an idea, given or received (docs/02 §2.25). An idea and the gift it became are one record. | `gift`, `domain/gifts/`, `lib/gifts/`, `components/person/Gift*.svelte` | present, wish |
-| **to-do** | Something the household still owes one person, optionally by a day; open or done (docs/02 §2.26). The UI names the card *To do* (German *Todo*) and one item *a to-do*, *To-do* at a sentence's start. | `todo`, `domain/todos/`, `lib/todos/`, `components/person/Todo*.svelte` | task, reminder |
+| **to-do** | Something the household still owes one person, optionally by a day; open or done (docs/02 §2.26). The UI names the card *To do* (German *Todo*) and one item *a to-do*, *To-do* at a sentence's start. | `todo`, `domain/todos/`, `lib/todos/`, `components/person/Todo*.svelte`, `components/todos/` | task, reminder |
 | **story** | One person's timeline: their journal entries, touchpoints and given or received gifts in one order (docs/02 §2.23). Its heading on the person page reads *Activity*. | `domain/story/`, `lib/story/`, `/contacts/[id]/story` | feed, history |
 | **stream** | The household's newest-first read of what the family did, on Home (docs/02 §2.22.2): a query over the tables that still exist, plus the activity rows for what no table can report. | `domain/stream/`, `lib/stream/`, `db/stream-repository.ts` | feed, *What's new* (the older name, docs/02 §2.11) |
 | **activity** | One row of the household's log, written only for what no remaining table can tell — deletions, merges, export and import, renames, last-name batches, Immich links (§3.3 `activity_log`). A context reports an `ActivityEvent` — what happened, as data — and `domain/activity/` turns it into the row and its line. | `activity_log`, `domain/activity/` | event for the row (an `ActivityEvent` is the report, not the row); the person page's *Activity* heading is the story, not this |
@@ -1032,7 +1032,7 @@ parity test.
 
 ## 3.5 Full-text search (FTS5)
 
-- Four FTS5 virtual tables: `contact_fts`, `note_fts`, `gift_fts` and `journal_fts`, each storing its own indexed text
+- Five FTS5 virtual tables: `contact_fts`, `note_fts`, `gift_fts`, `todo_fts` and `journal_fts`, each storing its own indexed text
   (not `content=`-linked to the base tables, since what is indexed is assembled rather than
   copied — see below), kept in sync via triggers on insert/update/delete.
 - A note's indexed content is **not** its raw body: the `@{contact:<id>}` tokens (§2.20.1) are
@@ -1052,6 +1052,11 @@ parity test.
   only part of the way (no `gift` table yet — only a migration test builds one) gets the gift
   part on the first start that has the table, since the fingerprint records whether it was
   built.
+- A to-do's indexed content is its `title` alone (docs/02 §2.26.7), open and done ones alike —
+  the search marks a done one rather than hide it. Its triggers are insert, delete and an
+  update of `title`; ticking changes nothing indexed. The `todo` table is guarded like `gift`'s:
+  both are *optional parts* (`OPTIONAL_PARTS`, `db/search-index.ts`), built on the first start
+  that has their table.
 - What a trigger writes is fixed when the trigger is created, so the index carries a
   **fingerprint** of the definitions that built it (`search_index_meta`). A startup whose
   definitions hash differently re-creates the triggers and rebuilds the rows; an unchanged one

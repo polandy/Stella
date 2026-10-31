@@ -89,6 +89,8 @@ export interface PaletteLabels {
 	giftIdeas: string;
 	/** *To-do for …*, a to-do on a person (docs/02 §2.26). */
 	todoFor: string;
+	/** The household's list of every open to-do (docs/02 §2.26.6). */
+	allTodos: string;
 	addPerson: string;
 	/** The last row of a non-empty query: "Search everything for …". */
 	searchEverything: (query: string) => string;
@@ -104,6 +106,7 @@ const ACTIONS: readonly ({ id: string; label: ActionLabel; icon: IconName } & (
 	{ id: 'gift-idea', label: 'giftIdea', icon: 'gift', step: 'giftIdea' },
 	{ id: 'todo', label: 'todoFor', icon: 'todo', step: 'todo' },
 	{ id: 'gift-ideas', label: 'giftIdeas', icon: 'idea', href: '/gifts' },
+	{ id: 'all-todos', label: 'allTodos', icon: 'todo', href: '/todos' },
 	{ id: 'add-person', label: 'addPerson', icon: 'add', href: '/contacts/new' }
 ];
 

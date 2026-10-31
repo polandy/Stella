@@ -28,6 +28,7 @@
 		data.results.contacts.length +
 			data.results.notes.length +
 			data.results.gifts.length +
+			data.results.todos.length +
 			data.results.moments.length
 	);
 
@@ -163,6 +164,40 @@
 								<!-- Wraps rather than truncates: the day it was given is the point. -->
 								<span class="text-sm text-fg-muted"
 									>{t('search.giftFor', { name: g.contactName })} · {stateLabel(i18n, g)}</span
+								>
+							</span>
+						</a>
+					{/each}
+				</section>
+			{/if}
+
+			{#if data.results.todos.length > 0}
+				<!-- A to-do leads to the card it lives on; a done one is still found, marked done
+				     (docs/02 §2.9, §2.26.6). -->
+				<section class="flex flex-col gap-1" data-testid="search-todos">
+					<h2 class="text-sm font-medium text-fg-muted">{t('search.todos')}</h2>
+					{#each data.results.todos as todo (todo.todoId)}
+						<a
+							href={contactSectionPath(todo.contactId, 'todos')}
+							class="flex items-center gap-3 rounded-app border border-transparent px-3 py-2 hover:border-border hover:bg-card"
+						>
+							<span class="shrink-0 {todo.done ? 'text-success-text' : 'text-fg-muted'}"
+								><Icon name={todo.done ? 'done' : 'todo'} size={16} /></span
+							>
+							<span class="flex min-w-0 flex-col">
+								<span class="break-words {todo.done ? 'text-fg-muted line-through' : 'text-fg'}"
+									>{todo.title}</span
+								>
+								<span class="text-sm text-fg-muted"
+									>{[
+										t('search.todoFor', { name: todo.contactName }),
+										todo.done &&
+											[t('search.todoDone'), todo.doneOn && shortDate(todo.doneOn)]
+												.filter(Boolean)
+												.join(' ')
+									]
+										.filter(Boolean)
+										.join(' · ')}</span
 								>
 							</span>
 						</a>

@@ -20,12 +20,14 @@ import type { MessageKey } from '$lib/i18n/translate';
 import { linkHintHref } from '$lib/stream/link-hint';
 import { welcomeSteps } from '$lib/stream/welcome';
 import { todayFor } from '$lib/dates/today';
+import { hasPressingTodo } from '$lib/todos/household';
 import { composerFor, linkSuggestionAmong, peopleNamedBy, photosPosted } from './home-view';
+import { householdTodoActions, readHouseholdTodos } from './_shared/household-todos';
 import { streamForView } from './_shared/stream-view';
 
 /*
  * Home (docs/02 §2.22, §2.12): the "What happened?" capture field, the household stream, and
- * the rail beside it — what is coming up. Everything on it is a scoped query over existing
+ * the rail beside it — what is to do and what is coming up. Everything on it is a scoped query over existing
  * tables; capture is the moments use-case. The layout guard already ensures `locals.user`.
  */
 
@@ -42,7 +44,7 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 
 	const named = peopleNamedBy(url.searchParams);
 
-	const [items, onList, dateSources, firstPeople, entryTags] = await Promise.all([
+	const [items, onList, dateSources, firstPeople, entryTags, todos] = await Promise.all([
 		buildStream(locals.services.media.streamDeps, viewer, filter),
 		// Who the household can still act on — the browsing scope — among just those.
 		listBrowsableNamesAmong(locals.services.people.contactNameDeps, viewer, named.ids),
@@ -50,7 +52,9 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 		// Just enough of the household to tell whether it has begun (docs/02 §2.22.3).
 		listPeopleEnoughForFirstRun(locals.services.people.contactDirectoryDeps, viewer),
 		// For the Tags row and the line over a stream narrowed by tags (docs/02 §2.20.2).
-		locals.services.story.entryTags.listVisibleTo(viewer)
+		locals.services.story.entryTags.listVisibleTo(viewer),
+		// Every open one: the band picks the pressing ones, and counts the rest for *Show all*.
+		readHouseholdTodos(locals)
 	]);
 	const stream = await streamForView(locals.services.people.contactNameDeps, viewer, items);
 
@@ -69,8 +73,10 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 		today: day,
 		...composerFor(url.searchParams, named, onList),
 		upcoming,
-		// Below `lg` the rail only precedes the stream when a date is close (docs/05 §5.5).
-		railFirst: hasImminentDate(upcoming),
+		todos,
+		// Below `lg` the rail only precedes the stream when a date is close or a to-do is due
+		// (docs/05 §5.5.1).
+		railFirst: hasImminentDate(upcoming) || hasPressingTodo(todos, day),
 		linkSuggestion: linkSuggestionAmong(named, onList),
 		// The first-run card (docs/02 §2.22.3), or null once the household has begun.
 		welcome: welcomeSteps({
@@ -94,6 +100,8 @@ function captureProblem(field: string | null): MessageKey {
 }
 
 export const actions: Actions = {
+	// The *To do* band ticks here (docs/02 §2.26.6).
+	...householdTodoActions('/'),
 	capture: async ({ request, locals }) => {
 		const viewer = requireViewer(locals);
 		const author = {

@@ -1,6 +1,6 @@
 import { and, desc, eq, isNotNull, isNull, lt, or } from 'drizzle-orm';
 import type { BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
-import { childRecordVisibleTo } from '../access/query-scoping';
+import { childRecordVisibleTo, contactBrowsableBy } from '../access/query-scoping';
 import type { Viewer } from '../access/visibility';
 import type { DoneTodo, Todo, TodoRepository } from '../domain/todos/todos';
 import type * as schema from './schema';
@@ -75,6 +75,30 @@ export function createDrizzleTodoRepository(db: BunSQLiteDatabase<typeof schema>
 				.from(todo)
 				.innerJoin(contact, eq(todo.contactId, contact.id))
 				.where(and(visibleOn(viewer, contactId), isNull(todo.doneAt)))
+				.all();
+		},
+
+		async listOpenVisibleTo(viewer) {
+			// The band and the list order them (`src/lib/todos/`): the rules are pure and tested there.
+			return db
+				.select({
+					...columns,
+					contactName: contact.displayName,
+					avatarPhotoId: contact.avatarPhotoId
+				})
+				.from(todo)
+				.innerJoin(contact, eq(todo.contactId, contact.id))
+				.where(
+					and(
+						isNull(todo.doneAt),
+						childRecordVisibleTo(viewer, {
+							visibility: todo.visibility,
+							createdBy: todo.createdBy
+						}),
+						// A list to act on is a browsing surface: an archived person is out (docs/04 §4.9).
+						contactBrowsableBy(viewer)
+					)
+				)
 				.all();
 		},
 

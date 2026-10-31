@@ -35,6 +35,7 @@ const labels: PaletteLabels = {
 	giftIdea: 'Gift idea for …',
 	giftIdeas: 'All gift ideas',
 	todoFor: 'To-do for …',
+	allTodos: 'All to-dos',
 	addPerson: 'Add person',
 	searchEverything: (query) => `Search everything for “${query}”`
 };
@@ -93,6 +94,7 @@ describe('paletteRows', () => {
 		expect(rows.filter((r) => r.kind === 'action').map((r) => r.id)).toEqual([
 			'write',
 			'gift-ideas',
+			'all-todos',
 			'add-person'
 		]);
 	});
@@ -158,6 +160,7 @@ describe('paletteRows', () => {
 			giftIdea: 'Geschenkidee für …',
 			giftIdeas: 'Alle Geschenkideen',
 			todoFor: 'Todo für …',
+			allTodos: 'Alle Todos',
 			addPerson: 'Person hinzufügen',
 			searchEverything: (query) => `Überall nach „${query}“ suchen`
 		};
@@ -192,11 +195,12 @@ describe('a gift idea from the palette (docs/02 §2.25.2)', () => {
 	it('sits next to writing a moment, and leads to a second step rather than a page', () => {
 		const rows = paletteRows('', people, labels);
 
-		expect(rows.slice(0, 5).map((r) => r.id)).toEqual([
+		expect(rows.slice(0, 6).map((r) => r.id)).toEqual([
 			'write',
 			'gift-idea',
 			'todo',
 			'gift-ideas',
+			'all-todos',
 			'add-person'
 		]);
 		expect(rows[1]).toMatchObject({ kind: 'step', step: 'giftIdea', label: 'Gift idea for …' });
@@ -211,6 +215,14 @@ describe('a gift idea from the palette (docs/02 §2.25.2)', () => {
 			kind: 'action',
 			id: 'gift-ideas',
 			href: '/gifts'
+		});
+	});
+
+	it('opens the household’s list of every open to-do (docs/02 §2.26.6)', () => {
+		expect(paletteRows('all to-dos', people, labels)[0]).toMatchObject({
+			kind: 'action',
+			id: 'all-todos',
+			href: '/todos'
 		});
 	});
 
