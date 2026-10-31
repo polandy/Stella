@@ -24,19 +24,23 @@ export function dueStanding(dueOn: string | null, today: string): DueStanding | 
 }
 
 /**
- * The day as a row shows it: *Fri, 6 Nov*, with the year only when it is another one. Weekday
- * and date are formatted apart and joined here: ICU versions differ on the comma between them.
+ * The day as a row shows it: *Fri, 6 Nov*, with the year only when it is another one. ICU
+ * versions differ on what stands between weekday and date, so that literal is set here.
  */
 function shortDay(lang: DateLanguage, day: string, today: string): string {
-	const date = new Date(`${day}T00:00:00Z`);
-	const weekday = date.toLocaleDateString(lang.intlLocale, { weekday: 'short', timeZone: 'UTC' });
-	const dayMonth = date.toLocaleDateString(lang.intlLocale, {
+	const parts = new Intl.DateTimeFormat(lang.intlLocale, {
+		weekday: 'short',
 		day: 'numeric',
 		month: 'short',
 		...(day.slice(0, 4) === today.slice(0, 4) ? {} : { year: 'numeric' }),
 		timeZone: 'UTC'
-	});
-	return `${weekday}, ${dayMonth}`;
+	}).formatToParts(new Date(`${day}T00:00:00Z`));
+	const at = parts.findIndex((part) => part.type === 'weekday');
+	const date = parts
+		.filter((_part, i) => i !== at && i !== at + 1)
+		.map((part) => part.value)
+		.join('');
+	return `${parts[at]?.value ?? ''}, ${date}`;
 }
 
 /** What a row says about its day: *today*, *tomorrow*, *by Fri, 6 Nov*, *overdue since …*. */
