@@ -76,6 +76,7 @@ export type RestoreWarning =
 	| { code: 'journalEntryIncomplete' }
 	| { code: 'touchpointIncomplete' }
 	| { code: 'giftIncomplete' }
+	| { code: 'todoIncomplete' }
 	| { code: 'tagWithoutName' }
 	| { code: 'tagsNotInList' }
 	| { code: 'immichLinkIncomplete' }
@@ -256,6 +257,7 @@ export function planRestore(
 	const interactions: Row[] = [];
 	const participants: Row[] = [];
 	const gifts: Row[] = [];
+	const todos: Row[] = [];
 	const photos: Row[] = [];
 	const contactTags: Row[] = [];
 	const immichLinks: Row[] = [];
@@ -524,6 +526,31 @@ export function planRestore(
 				given_on: state === 'idea' ? null : givenOn,
 				occasion: str(giftRow, 'occasion'),
 				...stamps(giftRow)
+			});
+		}
+
+		for (const todoRow of records(person, 'todos')) {
+			const title = str(todoRow, 'title');
+			// A to-do needs its line; a day that is not one is dropped rather than the to-do.
+			if (title === null) {
+				warn({ code: 'todoIncomplete' });
+				continue;
+			}
+			const dueOn = str(todoRow, 'due_on');
+			const doneAt = ms(todoRow, 'done_at');
+			const doneBy = str(todoRow, 'done_by');
+			todos.push({
+				id: str(todoRow, 'id') ?? deps.ids.next(),
+				contact_id: contactId,
+				created_by: author(todoRow),
+				visibility: visibilityOf(todoRow),
+				title,
+				due_on:
+					dueOn !== null && FULL_DATE_SHAPE.test(dueOn) && isRealCalendarDay(dueOn) ? dueOn : null,
+				done_at: doneAt,
+				// Who ticked it only when they are a member here; the tick itself stays.
+				done_by: doneAt !== null && doneBy !== null && members.has(doneBy) ? doneBy : null,
+				...stamps(todoRow)
 			});
 		}
 
@@ -847,6 +874,7 @@ export function planRestore(
 			{ table: 'interaction', rows: interactions },
 			{ table: 'interaction_participant', rows: participants },
 			{ table: 'gift', rows: gifts },
+			{ table: 'todo', rows: todos },
 			{ table: 'photo', rows: keptPhotos },
 			{ table: 'circle', rows: circles },
 			{ table: 'circle_membership', rows: memberships },

@@ -25,6 +25,7 @@ import { writeNote } from '../domain/notes/write-note';
 import { addRelationshipChecked } from '../domain/relationships/add-checked';
 import { addRelationshipsOrRefuse } from '../domain/relationships/add-many';
 import { assignTagByName } from '../domain/tags/tags';
+import { addTodo, editTodo, removeTodo, tickTodo, untickTodo } from '../domain/todos/todos';
 import type { AppServices } from '../services/app-services';
 
 /*
@@ -46,6 +47,7 @@ export type HandlerContexts = Pick<
 	| 'notes'
 	| 'records'
 	| 'gifts'
+	| 'todos'
 >;
 
 /** The offline context's own repositories a photo reads to find what it follows. */
@@ -59,7 +61,7 @@ function viewerOf(actor: CommandActor): Viewer {
 }
 
 export function createCommandHandlers(
-	{ auth, people, relationships, circles, media, story, notes, records, gifts }: HandlerContexts,
+	{ auth, people, relationships, circles, media, story, notes, records, gifts, todos }: HandlerContexts,
 	{ receipts, entries }: HandlerRepositories
 ): CommandHandlers {
 	const { contacts, directory, contactNames, contactDeps, namesakeContextDeps } = people;
@@ -115,6 +117,12 @@ export function createCommandHandlers(
 		'gift.edit': (actor, payload) => editGift(gifts.giftDeps, actor, payload),
 		'gift.markGiven': (actor, payload) => markGiftGiven(gifts.giftDeps, actor, payload),
 		'gift.remove': (actor, payload) => removeGift(gifts.giftDeps, actor, payload),
+		// A to-do (docs/02 §2.26): noted and ticked on a phone or online; the rest wait for Stella.
+		'todo.add': (actor, payload) => addTodo(todos.todoDeps, actor, payload),
+		'todo.tick': (actor, payload) => tickTodo(todos.todoDeps, actor, payload),
+		'todo.edit': (actor, payload) => editTodo(todos.todoDeps, actor, payload),
+		'todo.untick': (actor, payload) => untickTodo(todos.todoDeps, actor, payload),
+		'todo.remove': (actor, payload) => removeTodo(todos.todoDeps, actor, payload),
 		'note.add': (actor, payload) =>
 			withNamesakeContext(namesakeContextDeps, viewerOf(actor), () =>
 				writeNote({ ...notes.noteDeps, contacts, directory }, actor, payload)

@@ -85,6 +85,7 @@ export const MERGE_PLAN: readonly MergeStep[] = [
 	repoint('interaction', 'contact_id', 'cannot-collide'),
 	repoint('important_date', 'contact_id', 'cannot-collide'),
 	repoint('gift', 'contact_id', 'cannot-collide'),
+	repoint('todo', 'contact_id', 'cannot-collide'),
 	repoint('photo', 'contact_id', 'cannot-collide'),
 	repoint('activity_log', 'contact_id', 'cannot-collide'),
 	// A member who said "I am this person" follows the record that survives the merge.

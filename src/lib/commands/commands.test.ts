@@ -52,6 +52,14 @@ describe('the command vocabulary', () => {
 		}
 	});
 
+	it('lets a to-do be noted and ticked on a device, but nothing else done to it', () => {
+		expect(isQueueable('todo.add')).toBe(true);
+		expect(isQueueable('todo.tick')).toBe(true);
+		for (const type of ['todo.edit', 'todo.untick', 'todo.remove'] as const) {
+			expect(isQueueable(type)).toBe(false);
+		}
+	});
+
 	it('recognises its own types and nothing else', () => {
 		expect(isCommandType('moment.capture')).toBe(true);
 		expect(isCommandType('contact.delete')).toBe(false);

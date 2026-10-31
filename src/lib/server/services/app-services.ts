@@ -17,6 +17,7 @@ import {
 	type RelationshipWiring
 } from './relationships';
 import { createStoryServices, type StoryServices, type StoryWiring } from './story';
+import { createTodoServices, type TodoServices, type TodoWiring } from './todos';
 
 /*
  * The application's object graph, grouped by bounded context (docs/04 §4.3, docs/08 §8.3).
@@ -44,13 +45,14 @@ export interface AppServices {
 	release: ReleaseServices;
 	offline: OfflineServices;
 	gifts: GiftServices;
+	todos: TodoServices;
 }
 
 /**
  * What the graph is built from; each context's wiring joins this as it moves in. A context
  * that reads another grouped context's repository gets it from here, not from the wiring
  * (`people` reads `auth`'s accounts, the relationships context's kinship graph and `media`'s
- * store; `circles` and `story` read `people`'s contacts and `media`'s store; `gifts` and
+ * store; `circles` and `story` read `people`'s contacts and `media`'s store; `gifts`, `todos` and
  * `records` read `people`'s contacts and `story` reads `gifts`' repository; `archive` restores into `media`'s
  * store and hands what it restored to `gifts`' conversion; `immich` reads `people`'s contacts and `media`'s avatar deps; `nextcloud` reads `media`'s store and avatar deps; `offline`'s command
  * handlers read the contexts whose use-cases they call), so each repository exists once.
@@ -69,7 +71,8 @@ export type ServicesWiring = AuthWiring &
 	Omit<NextcloudWiring, 'media' | 'avatarDeps'> &
 	ReleaseWiring &
 	Omit<OfflineWiring, 'contexts'> &
-	Omit<GiftWiring, 'contacts'>;
+	Omit<GiftWiring, 'contacts'> &
+	Omit<TodoWiring, 'contacts'>;
 
 /** Wires every grouped context. Pure assembly: no I/O beyond what the adapters do when used. */
 export function createServices(wiring: ServicesWiring): AppServices {
@@ -88,6 +91,7 @@ export function createServices(wiring: ServicesWiring): AppServices {
 		media: media.store
 	});
 	const gifts = createGiftServices({ ...wiring, contacts: people.contacts });
+	const todos = createTodoServices({ ...wiring, contacts: people.contacts });
 	const story = createStoryServices({
 		...wiring,
 		contacts: people.contacts,
@@ -119,7 +123,7 @@ export function createServices(wiring: ServicesWiring): AppServices {
 	const release = createReleaseServices(wiring);
 	const offline = createOfflineServices({
 		...wiring,
-		contexts: { auth, people, relationships, circles, media, story, notes, records, gifts }
+		contexts: { auth, people, relationships, circles, media, story, notes, records, gifts, todos }
 	});
 	return {
 		auth,
@@ -136,6 +140,7 @@ export function createServices(wiring: ServicesWiring): AppServices {
 		nextcloud,
 		release,
 		offline,
-		gifts
+		gifts,
+		todos
 	};
 }
