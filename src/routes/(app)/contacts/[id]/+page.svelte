@@ -8,6 +8,7 @@
 	import type { PhotoView } from '$lib/components/person/photo-card-state.svelte';
 	import RelationshipsSection from '$lib/components/person/RelationshipsSection.svelte';
 	import StorySection from '$lib/components/person/StorySection.svelte';
+	import TodosSection from '$lib/components/person/TodosSection.svelte';
 	import { sectionAnchor } from '$lib/people/sections';
 	import { useI18n } from '$lib/i18n/context.svelte';
 	import { showOpenedForm } from '$lib/motion/motion.svelte';
@@ -92,6 +93,12 @@
 	const archived = $derived(c.archivedAt !== null);
 	/** This record is the viewer's own person (docs/02 §2.1.3). */
 	const isSelf = $derived(data.user.selfContactId === c.id);
+
+	/*
+	 * The To do card (docs/02 §2.26) is read first while something is open — right under the
+	 * identity card — and waits at the page's end, as one line, while nothing is (docs/05 §5.5).
+	 */
+	const todosFirst = $derived(data.todos.length > 0);
 </script>
 
 <svelte:head><title>{t('contact.title', { name: c.displayName })}</title></svelte:head>
@@ -112,6 +119,8 @@
 	<!-- Shows, sticking under the top bar, only once the identity card has gone by (docs/05 §5.5). -->
 	<JumpBar {data} />
 
+	{#if todosFirst}<TodosSection {data} {form} />{/if}
+
 	<RelationshipsSection {data} {form} {otherContacts} {showTogether} bind:tracingPath />
 
 	<PhotosSection {data} {form} bind:view={photoView} />
@@ -124,6 +133,8 @@
 
 	<!-- Ideas, and what was given and received (docs/02 §2.25). -->
 	<GiftsSection {data} {form} />
+
+	{#if !todosFirst}<TodosSection {data} {form} />{/if}
 
 	<MentionsSection {data} />
 </main>

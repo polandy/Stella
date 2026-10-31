@@ -33,6 +33,7 @@ import {
 	KeyRound,
 	Lightbulb,
 	Link,
+	ListTodo,
 	ListFilter,
 	Lock,
 	LockOpen,
@@ -159,6 +160,8 @@ export const ICONS = {
 	// A gift — given, received, or not given yet — and the shop page it may link to (docs/02 §2.25).
 	gift: Gift,
 	idea: Lightbulb,
+	// A to-do on a person (docs/02 §2.26).
+	todo: ListTodo,
 	link: Link,
 	// Interaction kinds (docs/02 §2.6)
 	met: Handshake,

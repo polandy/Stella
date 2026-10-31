@@ -29,6 +29,7 @@ import { search } from './search';
 import { settings } from './settings';
 import { story } from './story';
 import { surnames } from './surnames';
+import { todos } from './todos';
 
 /** Every message Stella can say in English — the source of truth for the key set. */
 export const en = {
@@ -57,5 +58,6 @@ export const en = {
 	...search,
 	...settings,
 	...story,
-	...surnames
+	...surnames,
+	...todos
 };

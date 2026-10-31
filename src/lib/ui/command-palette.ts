@@ -1,4 +1,5 @@
 import { giftIdeaPath } from '$lib/gifts/card';
+import { newTodoPath } from '$lib/todos/todos';
 import { foundByFormerName } from '$lib/people/former-name';
 import { foundByJob, jobOf, type Job } from '$lib/people/job';
 import type { IconName } from '$lib/components/ui/icons';
@@ -12,8 +13,9 @@ import { tellApart, type Distinction } from '$lib/people/namesakes';
  * ⌘K then Enter lands in the capture field — while letting the same keys reach a person or
  * an action. Notes are not searched here; a typed query always ends in the full search.
  *
- * Most rows go somewhere. *Gift idea for …* asks something first: it turns the palette into a
- * second step, `giftIdea`, which lists only people, each leading to their idea form.
+ * Most rows go somewhere. *Gift idea for …* and *To do for …* ask something first: each turns
+ * the palette into a second step, `giftIdea` or `todo`, which lists only people, each leading to
+ * their idea form or their To do card's form (docs/02 §2.26).
  *
  * The wording arrives as `PaletteLabels` rather than being written here: this module is
  * pure and language-free, and the component hands it the viewer's language (docs/02 §2.19).
@@ -40,8 +42,14 @@ export interface PalettePerson {
 	company?: string | null;
 }
 
-/** What the palette is asking: anything (`start`), or whom a gift idea is for. */
-export type PaletteStep = 'start' | 'giftIdea';
+/** What the palette is asking: anything (`start`), whom a gift idea or a to-do is for. */
+export type PaletteStep = 'start' | 'giftIdea' | 'todo';
+
+/** Where each person of a second step leads. */
+const PERSON_STEP_PATH = {
+	giftIdea: giftIdeaPath,
+	todo: newTodoPath
+} as const satisfies Record<Exclude<PaletteStep, 'start'>, (contactId: string) => string>;
 
 /** One row of the palette; `href` is where Enter goes, `step` what the palette asks next. */
 export type PaletteRow =
@@ -76,6 +84,8 @@ export interface PaletteLabels {
 	giftIdea: string;
 	/** The household's list of every open idea (docs/02 §2.25.6). */
 	giftIdeas: string;
+	/** *To do for …*, a to-do on a person (docs/02 §2.26). */
+	todoFor: string;
 	addPerson: string;
 	/** The last row of a non-empty query: "Search everything for …". */
 	searchEverything: (query: string) => string;
@@ -89,6 +99,7 @@ const ACTIONS: readonly ({ id: string; label: ActionLabel; icon: IconName } & (
 ))[] = [
 	{ id: 'write', label: 'write', icon: 'write', href: '/?compose' },
 	{ id: 'gift-idea', label: 'giftIdea', icon: 'gift', step: 'giftIdea' },
+	{ id: 'todo', label: 'todoFor', icon: 'todo', step: 'todo' },
 	{ id: 'gift-ideas', label: 'giftIdeas', icon: 'idea', href: '/gifts' },
 	{ id: 'add-person', label: 'addPerson', icon: 'add', href: '/contacts/new' }
 ];
@@ -103,13 +114,14 @@ export function paletteRows(
 	step: PaletteStep = 'start'
 ): PaletteRow[] {
 	const q = query.trim();
-	if (step === 'giftIdea') {
-		// Only whom it is for: a name nobody matches has no idea form to land on.
+	if (step !== 'start') {
+		// Only whom it is for: a name nobody matches has no form to land on.
+		const pathOf = PERSON_STEP_PATH[step];
 		return personSearchRows(q, people, labels.searchEverything, contexts, {
 			listAllWhenEmpty: true
 		})
 			.filter((row) => row.kind === 'person')
-			.map((row) => ({ ...row, href: giftIdeaPath(row.id) }));
+			.map((row) => ({ ...row, href: pathOf(row.id) }));
 	}
 
 	const rows: PaletteRow[] = [];

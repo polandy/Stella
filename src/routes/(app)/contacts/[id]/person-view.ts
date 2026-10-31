@@ -12,6 +12,7 @@ import {
 } from '$lib/server/domain/dates/important-dates';
 import type { GraphModel } from '$lib/graph/model/types';
 import type { Gift } from '$lib/server/domain/gifts/gifts';
+import type { Todo } from '$lib/server/domain/todos/todos';
 import type { MentionedIn } from '$lib/server/domain/mentions/mentioned-in';
 import { renderMarkdownWithMentions } from '$lib/server/domain/notes/markdown';
 import type { GalleryPhoto } from '$lib/server/domain/media/avatars';
@@ -104,6 +105,23 @@ export function giftView(gift: Gift, ctx: PersonViewContext) {
 		notedBy: mine ? null : authorLabel(false, ctx.nameOfAuthor(gift.createdBy)),
 		/** When it was noted, shown on an idea; given and received gifts show their day. */
 		createdAt: gift.createdAt
+	};
+}
+
+/**
+ * An open to-do as the To do card shows it (docs/02 §2.26): who noted it is named by first name,
+ * like a gift; `mine` is what offers *Private*, which only the author may set.
+ */
+export function todoView(todo: Todo, ctx: PersonViewContext) {
+	const mine = todo.createdBy === ctx.viewerId;
+	return {
+		id: todo.id,
+		title: todo.title,
+		dueOn: todo.dueOn,
+		visibility: todo.visibility,
+		mine,
+		notedBy: mine ? null : authorLabel(false, ctx.nameOfAuthor(todo.createdBy)),
+		createdAt: todo.createdAt
 	};
 }
 

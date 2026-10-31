@@ -310,6 +310,18 @@
 								>{/snippet}
 							<p class="mt-1 text-fg">{item.command.payload.title}</p>
 						</KeptItem>
+					{:else if isKept(item, 'todo.add')}
+						<KeptItem {item} editHref={contactSectionPath(item.command.payload.contactId, 'todos')}>
+							{#snippet meta()}<span>{t('home.outbox.todoFor', { name: item.about ?? '' })}</span
+								>{/snippet}
+							<p class="mt-1 text-fg">{item.command.payload.title}</p>
+						</KeptItem>
+					{:else if isKept(item, 'todo.tick')}
+						<!-- A tick carries only ids; `about` holds the to-do's line, kept for this. -->
+						<KeptItem {item}>
+							{#snippet meta()}<span>{t('home.outbox.todoDone')}</span>{/snippet}
+							<p class="mt-1 text-fg">{item.about}</p>
+						</KeptItem>
 					{/if}
 				{/each}
 			</section>

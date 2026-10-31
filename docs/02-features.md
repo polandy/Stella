@@ -38,4 +38,5 @@ resolves by opening the matching file below).
 - [2.23 The activity timeline](features/2.23-story-timeline.md) **[M2]**
 - [2.24 A person's photos, from Immich](features/2.24-immich.md) **[M3]** — optional
 - [2.25 Gift ideas and gifts given](features/2.25-gifts.md) **[M3]**
+- [2.26 To-dos per person](features/2.26-to-dos.md) **[After 1.0]** — in progress
 - [2.21 Feature ↔ milestone summary](features/2.21-feature-milestone-summary.md)

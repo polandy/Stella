@@ -3,7 +3,7 @@ import { now, type Visibility } from './columns';
 import { household, user } from './household';
 import { contact } from './people';
 
-/* What makes up a person's story: journal entries, touchpoints and gifts (docs/03 §3.0). */
+/* What makes up a person's story: journal entries, touchpoints, gifts and to-dos (docs/03 §3.0). */
 
 /*
  * A per-person diary (docs/02 §2.20). Each entry belongs to a contact, is authored by a
@@ -169,5 +169,36 @@ export const gift = sqliteTable(
 	(t) => [
 		// A person's gifts by state, and their given and received ones in story order.
 		index('gift_contact_state_given_idx').on(t.contactId, t.state, t.givenOn)
+	]
+);
+
+/*
+ * Something the household still owes one person (docs/02 §2.26): a line, maybe a day it is due
+ * by, open until somebody ticks it — then `done_at` and `done_by` say when and who. Visibility
+ * follows the child-record rule (private ⇒ only the author).
+ */
+export const todo = sqliteTable(
+	'todo',
+	{
+		id: text('id').primaryKey(),
+		contactId: text('contact_id')
+			.notNull()
+			.references(() => contact.id, { onDelete: 'cascade' }),
+		createdBy: text('created_by')
+			.notNull()
+			.references(() => user.id),
+		visibility: text('visibility').$type<Visibility>().notNull().default('shared'),
+		title: text('title').notNull(),
+		// ISO YYYY-MM-DD; null for no day.
+		dueOn: text('due_on'),
+		doneAt: integer('done_at'),
+		doneBy: text('done_by').references(() => user.id),
+		createdAt: integer('created_at').notNull().default(now),
+		updatedAt: integer('updated_at').notNull().default(now)
+	},
+	(t) => [
+		// A person's open to-dos, and (slice 2) the household's by day.
+		index('todo_contact_done_idx').on(t.contactId, t.doneAt),
+		index('todo_done_due_idx').on(t.doneAt, t.dueOn)
 	]
 );

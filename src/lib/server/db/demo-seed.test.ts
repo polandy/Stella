@@ -187,6 +187,22 @@ describe('seedDemoData', () => {
 		for (const link of symmetric) expect(link.from < link.to).toBe(true);
 	});
 
+	it('leaves Peter to-dos of every standing — overdue, soon, no day — and one done', () => {
+		seed(db);
+		const todos = db
+			.select({ dueOn: schema.todo.dueOn, doneAt: schema.todo.doneAt })
+			.from(schema.todo)
+			.where(eq(schema.todo.contactId, 'demo-c-peter'))
+			.all();
+		const today = new Date().toISOString().slice(0, 10);
+		const open = todos.filter((t) => t.doneAt === null);
+
+		expect(open.some((t) => t.dueOn !== null && t.dueOn < today)).toBe(true);
+		expect(open.some((t) => t.dueOn !== null && t.dueOn > today)).toBe(true);
+		expect(open.some((t) => t.dueOn === null)).toBe(true);
+		expect(todos.some((t) => t.doneAt !== null)).toBe(true);
+	});
+
 	it('is idempotent — reseeding does not duplicate rows', () => {
 		seed(db);
 		const firstContacts = db.select().from(schema.contact).all().length;

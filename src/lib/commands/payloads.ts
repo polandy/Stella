@@ -140,6 +140,33 @@ export const GiftRemoveSchema = v.object({
 	giftId: nonEmpty
 });
 
+/** What a to-do says (docs/02 §2.26); whether the day is real is the use-case's to judge. */
+const todoContent = {
+	title: requiredText,
+	/** ISO `YYYY-MM-DD` it is due by; empty for none. */
+	dueOn: optionalText,
+	visibility
+};
+
+/** A to-do noted on a person. */
+export const TodoAddSchema = v.object({
+	contactId: nonEmpty,
+	...todoContent
+});
+
+/** A to-do rewritten where it is listed. */
+export const TodoEditSchema = v.object({
+	contactId: nonEmpty,
+	todoId: nonEmpty,
+	...todoContent
+});
+
+/** Which to-do a tick, an untick or a removal is about. */
+export const TodoRefSchema = v.object({
+	contactId: nonEmpty,
+	todoId: nonEmpty
+});
+
 /** A tag put on a person by name; a name the household has not used yet makes a new tag. */
 export const TagAssignSchema = v.object({
 	contactId: nonEmpty,
@@ -293,6 +320,11 @@ export const COMMAND_PAYLOAD_SCHEMAS = {
 	'gift.edit': GiftEditSchema,
 	'gift.markGiven': GiftMarkGivenSchema,
 	'gift.remove': GiftRemoveSchema,
+	'todo.add': TodoAddSchema,
+	'todo.tick': TodoRefSchema,
+	'todo.edit': TodoEditSchema,
+	'todo.untick': TodoRefSchema,
+	'todo.remove': TodoRefSchema,
 	'tag.assign': TagAssignSchema,
 	'circle.join': CircleJoinSchema,
 	'relationship.add': RelationshipAddSchema,

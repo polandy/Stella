@@ -15,6 +15,9 @@ the person, and that never leaves the page. Keeping the record tidy (archive, me
 - One column of full-width cards, at most `66.25rem` (about 1060 px), in a fixed order: the
   identity card, then **People · Photos · Activity and Notes · Gifts · Mentioned in**. No
   page tabs (the Gifts card has tabs of its own, inside it).
+- The **To do** card is the one card that moves: right under the identity card (above the jump
+  bar's slot and People) while a to-do is open, otherwise one line after Gifts (docs/02
+  §2.26.2).
 - Activity (about 1.4 parts) and Notes (1 part) stand side by side from `lg`, and stack below
   it with Activity first.
 - Each card carries its own count where the count is exact, its own `+ Add` disclosure (§5.7),
@@ -113,7 +116,9 @@ the person, and that never leaves the page. Keeping the record tidy (archive, me
 
 - `JumpBar` is a row of five links, *People · Photos · Activity · Notes · Gifts*, each with its
   card's count where it has one (none for the paged Activity, none for Gifts — whose count is
-  on its *Ideas* tab — none for a count of nothing). *Mentioned in* is not in it. The five it
+  on its *Ideas* tab — none for a count of nothing). *Mentioned in* is not in it, nor is *To do*:
+  a sixth link does not fit a phone's row, and while a to-do is open its card already stands
+  first. The five it
   links stay at zero — as one line, at the least —
   since that is where their *+ Add* is; the bar's tests hold it to the empty-card rule.
 - It shows **only once it sticks**: it hangs from a zero-height sticky slot that takes no room
@@ -316,6 +321,23 @@ the person, and that never leaves the page. Keeping the record tidy (archive, me
   add form's fields; only the author is offered Shared/Private.
 - Removing follows the undo window of docs/02 §2.23.
 
+#### To do card
+
+- Rows in `orderOpenTodos`'s order (docs/02 §2.26.2), each a native checkbox (`accent-primary`,
+  20 px) beside the line, which is its `<label>` so the whole line is the tap target; then one
+  subtle `text-xs` line: the day — overdue (*was due …*), today and the coming week in
+  `font-medium text-fg`, never `--danger` (no nudges), later `text-fg-muted` — *noted by …* · *private*; the pencil and the remove cross on the right.
+- A tick checks the box and strikes the line through at once (`text-fg-muted line-through`),
+  without waiting for Stella; the row has no pencil or cross while it waits. A refusal unchecks
+  it and says why at the card's top, not in the add form.
+- The add form opens at the card's top: *To do for Hilde*, *What?*, a quiet *By when?* link
+  with the calendar icon that turns into the date field and *No day*; Shared/Private radios,
+  *Save*. The pencil rewrites the row in place with the same fields; only the author is
+  offered Shared/Private.
+- Arriving with `?todo=new` (the palette's *To do for …*) opens the form, on a navigation only,
+  as `?gift=idea` does.
+- When the first to-do is saved the card moves up, and the page scrolls it into view.
+
 #### Notes, Photos, Mentioned in
 
 - **Notes** are pinned-first. Someone else's note names its author after the title
@@ -388,9 +410,9 @@ the person, and that never leaves the page. Keeping the record tidy (archive, me
 #### Empty cards
 
 - `cardShape` (`$lib/people/empty-cards.ts`) decides each card's shape at zero.
-- An empty **Photos**, **Notes** or **Gifts** is **one line** (`Section`'s `empty`): the title,
+- An empty **Photos**, **Notes**, **Gifts** or **To do** is **one line** (`Section`'s `empty`): the title,
   one short sentence cut off rather than wrapped (*No photos yet.*, *Nothing noted yet.*,
-  *No gift ideas yet.*), and the card's actions — *+ Add* and, on Photos, the Immich menu; on
+  *No gift ideas yet.*, *Nothing open.*), and the card's actions — *+ Add* and, on Photos, the Immich menu; on
   Gifts *+ Idea* and the ⋯ menu, which then holds *+ Given* too — with no count and no body.
 - Pressing *+ Add* grows it into the card with its form open; *Cancel* shrinks it back, and
   the button pressed is the one that closes it.

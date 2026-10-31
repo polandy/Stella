@@ -192,6 +192,30 @@ function fullHousehold(): HouseholdSnapshot {
 					created_at: EXPORTED
 				}
 			],
+			todo: [
+				{
+					id: 't-open',
+					contact_id: 'c-hans',
+					created_by: 'u-1',
+					visibility: 'private',
+					title: 'Give the book back',
+					due_on: '2026-11-08',
+					done_at: null,
+					done_by: null,
+					created_at: EXPORTED
+				},
+				{
+					id: 't-done',
+					contact_id: 'c-hans',
+					created_by: 'u-1',
+					visibility: 'shared',
+					title: 'Ask about the knee',
+					due_on: null,
+					done_at: EXPORTED,
+					done_by: 'u-1',
+					created_at: EXPORTED
+				}
+			],
 			photo: [
 				{
 					id: 'p-gallery',
@@ -492,6 +516,7 @@ describe('the round trip', () => {
 			'occasion',
 			'created_at'
 		],
+		todo: ['id', 'contact_id', 'visibility', 'title', 'due_on', 'done_at', 'done_by', 'created_at'],
 		photo: [
 			'id',
 			'contact_id',
@@ -871,6 +896,41 @@ describe('an archive that does not add up', () => {
 				.sort()
 		).toEqual(['g-given', 'g-idea']);
 		expect(plan.warnings).toContainEqual({ code: 'giftIncomplete' });
+	});
+
+	it('leaves out a to-do without a line, and drops a day that does not exist', () => {
+		const plan = planRestore(
+			deps(),
+			archived(
+				bent((s) => {
+					const base = { contact_id: 'c-hans', created_by: 'u-1', created_at: EXPORTED };
+					s.tables.todo.push(
+						{ ...base, id: 't-untitled', title: '' },
+						{ ...base, id: 't-no-day', title: 'Call', due_on: '2026-02-30' }
+					);
+				})
+			),
+			target()
+		);
+		const byId = new Map(rowsOf(plan, 'todo').map((t) => [t.id, t]));
+		expect([...byId.keys()].sort()).toEqual(['t-done', 't-no-day', 't-open']);
+		expect(byId.get('t-no-day')?.due_on).toBeNull();
+		expect(plan.warnings).toContainEqual({ code: 'todoIncomplete' });
+	});
+
+	it('keeps a tick by a member this installation never had, as ticked by nobody it knows', () => {
+		const plan = planRestore(
+			deps(),
+			archived(
+				bent((s) => {
+					s.tables.todo[1]!.done_by = 'u-gone';
+				})
+			),
+			target()
+		);
+		const done = rowsOf(plan, 'todo').find((t) => t.id === 't-done');
+		expect(done?.done_at).toBe(EXPORTED);
+		expect(done?.done_by).toBeNull();
 	});
 
 	it('keeps a gift whose link is not a web address, without the link', () => {

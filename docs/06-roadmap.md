@@ -153,7 +153,12 @@ Goal: sand the edges and add the nice-to-haves.
 
 Written down, not scheduled: each needs the owner's decisions (or a change in how the family
 works) before it is specified in docs/02. Nothing here is a candidate for the next task by
-itself.
+itself, except what is marked *in progress*.
+
+- **To-dos per person** — *in progress (§2.26), decided 2026-10-31.* Slice 1 built: the record,
+  the person page's *To do* card, *To do for …* in the palette, adding and ticking offline.
+  To follow: Home's *To do* band and `/todos`; *Done: …* in the Activity and to-dos in search;
+  Monica's tasks in the import (`docs/concepts/to-dos.md` §6).
 
 - **Stella's people in the phone's address book and calendar (CardDAV / CalDAV)** — *the
   family's phones already sync their contacts with Nextcloud, and the two-way Nextcloud link

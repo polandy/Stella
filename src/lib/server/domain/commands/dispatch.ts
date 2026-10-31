@@ -50,6 +50,11 @@ export interface CommandResults {
 	'gift.edit': { giftId: string };
 	'gift.markGiven': { giftId: string };
 	'gift.remove': { giftId: string };
+	'todo.add': { todoId: string };
+	'todo.tick': { todoId: string };
+	'todo.edit': { todoId: string };
+	'todo.untick': { todoId: string };
+	'todo.remove': { todoId: string };
 	'tag.assign': { tagId: string };
 	'circle.join': { circleId: string };
 	'relationship.add': { relationshipId: string };
@@ -215,6 +220,16 @@ function apply(
 		case 'gift.markGiven':
 			return handlers[command.type](actor, command.payload);
 		case 'gift.remove':
+			return handlers[command.type](actor, command.payload);
+		case 'todo.add':
+			return handlers[command.type](actor, command.payload);
+		case 'todo.tick':
+			return handlers[command.type](actor, command.payload);
+		case 'todo.edit':
+			return handlers[command.type](actor, command.payload);
+		case 'todo.untick':
+			return handlers[command.type](actor, command.payload);
+		case 'todo.remove':
 			return handlers[command.type](actor, command.payload);
 		case 'tag.assign':
 			return handlers[command.type](actor, command.payload);

@@ -165,6 +165,25 @@ describe('what follows the person', () => {
 		).toEqual(['keep', 'keep']);
 	});
 
+	it('brings their to-dos across, open and ticked alike (docs/02 §2.26)', () => {
+		db.insert(schema.todo)
+			.values([
+				{ id: 't1', contactId: 'dup', createdBy: U1, title: 'Give the book back' },
+				{ id: 't2', contactId: 'dup', createdBy: U1, title: 'Call', doneAt: 1, doneBy: U1 }
+			])
+			.run();
+
+		expect(merge()).toBe(true);
+
+		expect(
+			db
+				.select()
+				.from(schema.todo)
+				.all()
+				.map((t) => t.contactId)
+		).toEqual(['keep', 'keep']);
+	});
+
 	it('keeps a member pointing at themselves when their record is the one merged away', () => {
 		db.update(schema.user).set({ selfContactId: 'dup' }).where(eq(schema.user.id, U1)).run();
 		db.update(schema.user).set({ selfContactId: 'keep' }).where(eq(schema.user.id, U2)).run();

@@ -110,6 +110,7 @@ export function buildArchiveDocument(
 	const entries = groupBy(t('journal_entry'), 'contact_id');
 	const interactions = groupBy(t('interaction'), 'contact_id');
 	const gifts = groupBy(t('gift'), 'contact_id');
+	const todos = groupBy(t('todo'), 'contact_id');
 	const galleryPhotos = groupBy(
 		t('photo').filter((p) => text(p, 'journal_entry_id') === null && text(p, 'circle_id') === null),
 		'contact_id'
@@ -289,6 +290,19 @@ export function buildArchiveDocument(
 					visibility: text(g, 'visibility'),
 					author: text(g, 'created_by'),
 					created_at: moment(g, 'created_at')
+				})
+			),
+			// What the household still owes them, open or ticked (docs/02 §2.26).
+			todos: (todos.get(person) ?? []).map((td) =>
+				present({
+					id: id(td),
+					title: text(td, 'title'),
+					due_on: text(td, 'due_on'),
+					done_at: moment(td, 'done_at'),
+					done_by: text(td, 'done_by'),
+					visibility: text(td, 'visibility'),
+					author: text(td, 'created_by'),
+					created_at: moment(td, 'created_at')
 				})
 			),
 			photos: (galleryPhotos.get(person) ?? []).map(photo)

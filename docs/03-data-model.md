@@ -25,6 +25,7 @@ Detail stays in the feature doc the term points to.
 | **note** | A reference fact about a person, pinnable, not dated by what it is about (docs/02 §2.5). Not a journal entry. | `note`, `note_mention`, `domain/notes/` | memo, comment |
 | **touchpoint** | A logged contact with a person — met, call, video, message, letter — on a day, with optional participants (docs/02 §2.6). Buttons say *Log contact* / *Log interaction*. | `interaction`, `interaction_participant`, `domain/interactions/`, `lib/story/interaction-kinds.ts` | activity, event |
 | **gift** | A present for one person — an idea, given or received (docs/02 §2.25). An idea and the gift it became are one record. | `gift`, `domain/gifts/`, `lib/gifts/`, `components/person/Gift*.svelte` | present, wish |
+| **to-do** | Something the household still owes one person, optionally by a day; open or done (docs/02 §2.26). The UI says *To do* / *Todo* (German). | `todo`, `domain/todos/`, `lib/todos/`, `components/person/Todo*.svelte` | task, reminder |
 | **story** | One person's timeline: their journal entries, touchpoints and given or received gifts in one order (docs/02 §2.23). Its heading on the person page reads *Activity*. | `domain/story/`, `lib/story/`, `/contacts/[id]/story` | feed, history |
 | **stream** | The household's newest-first read of what the family did, on Home (docs/02 §2.22.2): a query over the tables that still exist, plus the activity rows for what no table can report. | `domain/stream/`, `lib/stream/`, `db/stream-repository.ts` | feed, *What's new* (the older name, docs/02 §2.11) |
 | **activity** | One row of the household's log, written only for what no remaining table can tell — deletions, merges, export and import, renames, last-name batches, Immich links (§3.3 `activity_log`). A context reports an `ActivityEvent` — what happened, as data — and `domain/activity/` turns it into the row and its line. | `activity_log`, `domain/activity/` | event for the row (an `ActivityEvent` is the report, not the row); the person page's *Activity* heading is the story, not this |
@@ -71,6 +72,7 @@ contact   1───* journal_entry    (per-person diary)      [M2]
 contact   1───* interaction
 contact   1───* important_date
 contact   1───* gift            (ideas, given and received)  [M3]
+contact   1───* todo            (open or done)
 contact   1───* photo
 contact   *───* tag             (contact_tag)
 contact   *───* circle          (circle_membership → derived shared-context links)
@@ -558,6 +560,27 @@ may edit, give or remove it; only its author may change its visibility.
 Indexed on `(contact_id, state, given_on)`: the card's tabs and the story's page of given and
 received gifts (newest `given_on`, then `created_at`) come from it. Exported and restored with
 the person (§2.15), repointed by a merge.
+
+### todo
+Something the household still owes one person (docs/02 §2.26): *give the book back*. Open
+while `done_at` is null. Child record of a contact; visibility per §3.7. Any member who sees a
+to-do may tick, untick, rewrite or remove it; only its author may change its visibility.
+
+| column | type | notes |
+|---|---|---|
+| id | text pk | |
+| contact_id | text fk → contact.id | cascade delete — who it is about |
+| created_by | text fk → user.id | who noted it (*noted by*); not who should do it |
+| visibility | text | `'shared' \| 'private'`, default `'shared'` |
+| title | text | required |
+| due_on | text null | ISO `YYYY-MM-DD`; null for no day |
+| done_at | int null | when it was ticked; null while open |
+| done_by | text null fk → user.id | the member who ticked it |
+| created_at / updated_at | int | |
+
+Indexed on `(contact_id, done_at)` for a person's open to-dos and on `(done_at, due_on)` for the
+household's by day (Home's band, slice 2). Exported and restored with the person (§2.15),
+repointed by a merge.
 
 FTS: `title, note` indexed (3.5).
 
@@ -1049,7 +1072,7 @@ A viewer `u` may read a record `r` iff:
 2. `r.created_by = u.id` (owner always sees their own).
 
 Contact visibility is the root: a `private` contact is visible only to its creator; a
-`shared` contact is visible to the whole household. Child records (`note`, `photo`, `gift`,
+`shared` contact is visible to the whole household. Child records (`note`, `photo`, `gift`, `todo`,
 `interaction`) additionally hide when they are `private` and not owned by `u`, even on a
 shared contact. Relationships require **both** endpoints visible. A **circle** follows the
 same contact-like rule (shared to the household, or private to its owner); a
@@ -1087,7 +1110,7 @@ reaches the server, not when *Remove* was pressed. **Editing** a note or a touch
 only while they still see it (`canEditAuthored` / `authoredEditableBy`, held to the same rows by
 the same parity test): an admin removes, never edits. A removal
 by someone other than the author is logged as `record.removed`, in the delete's transaction (`activity_log`). Household facts — dates, fields, relationships,
-memberships, gifts, tags — stay open to anyone who sees them.
+memberships, gifts, to-dos, tags — stay open to anyone who sees them.
 
 These rules are enforced centrally in the data-access layer (see
 [04-architecture.md](04-architecture.md)), never ad hoc in UI code. They are stated twice — as

@@ -21,6 +21,7 @@ export const RESTORE_TABLES: readonly string[] = [
 	'interaction',
 	'interaction_participant',
 	'gift',
+	'todo',
 	'photo',
 	'tag',
 	'contact_tag',
