@@ -188,6 +188,44 @@ test('noting and ticking are kept offline, and sent once back', async ({ page, c
 	await expect(todoRow(page, ticked)).toHaveCount(0);
 });
 
+test('a tick kept offline is taken back with the row’s Undo, and never sent', async ({
+	page,
+	context
+}) => {
+	const letters = runLetters();
+	await addPerson(page, 'Todolin', `Imfeld${letters}`);
+	const ticked = `Bring the ladder back ${letters}`;
+	await addTodo(page, ticked);
+
+	await context.setOffline(true);
+	const row = todoRow(page, ticked);
+	await row.getByText(ticked).click();
+	await expect(row.getByRole('checkbox', { name: `Done: ${ticked}` })).toBeChecked();
+	await expect(row).toContainText('Not sent yet');
+
+	await row.getByRole('button', { name: `Undo tick: ${ticked}` }).click();
+	await expect(row.getByRole('checkbox', { name: `Done: ${ticked}` })).not.toBeChecked();
+	await expect(row).not.toContainText('Not sent yet');
+
+	// Something else kept meanwhile: once it is sent, the outbox has been through, so the tick
+	// would have gone with it had Undo not dropped it.
+	const card = todoCard(page);
+	const noted = `Water the plants ${letters}`;
+	await card.getByRole('button', { name: 'Add', exact: true }).click();
+	const form = card.getByTestId('todo-form');
+	await form.getByLabel('What is still to do?').fill(noted);
+	await form.getByRole('button', { name: 'Save' }).click();
+	await expect(page.getByTestId('kept-todos').locator('li')).toContainText(noted);
+
+	await context.setOffline(false);
+	await expect(page.getByTestId('kept-todos')).toHaveCount(0);
+	await page.reload();
+	await expect(todoRow(page, noted)).toHaveCount(1);
+	await expect(
+		todoRow(page, ticked).getByRole('checkbox', { name: `Done: ${ticked}` })
+	).not.toBeChecked();
+});
+
 test('a ticked to-do shows in Activity, and unticking it there opens it again', async ({
 	page
 }) => {
