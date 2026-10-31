@@ -189,9 +189,15 @@
 									>{todo.title}</span
 								>
 								<span class="text-sm text-fg-muted"
-									>{t('search.todoFor', { name: todo.contactName })}{#if todo.done}
-										· {t('search.todoDone')}{#if todo.doneOn}
-											{shortDate(todo.doneOn)}{/if}{/if}</span
+									>{[
+										t('search.todoFor', { name: todo.contactName }),
+										todo.done &&
+											[t('search.todoDone'), todo.doneOn && shortDate(todo.doneOn)]
+												.filter(Boolean)
+												.join(' ')
+									]
+										.filter(Boolean)
+										.join(' · ')}</span
 								>
 							</span>
 						</a>
