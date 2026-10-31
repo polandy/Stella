@@ -38,18 +38,20 @@ async function addBirthdaysSoon(page: Page, names: string[], firstInDays = 2): P
 	await page.goto('/');
 }
 
-test('holds only Coming up in the rail, with no band about who has gone quiet', async ({
-	page
-}) => {
+test('holds no band about who has gone quiet in the rail', async ({ page }) => {
 	// A birthday this week, so the rail is there on any day the suite runs and its headings
-	// can be read; the removed *Quiet lately* band would have been the second one.
+	// can be read. Beside *Coming up* only the *To do* band may stand, while the seed's to-dos
+	// are still open — other specs tick them, so its presence is not asserted here.
 	await addBirthdaysSoon(page, ['Mira Quadri']);
 	const rail = page.getByRole('complementary', { name: 'At a glance' });
-	await expect(rail.getByTestId('coming-up')).toBeVisible();
+	const comingUp = rail.getByRole('heading', { name: 'Coming up' });
+	await expect(comingUp).toBeVisible();
 
-	await expect(rail.getByRole('heading')).toHaveText(['Coming up']);
+	for (const heading of await rail.getByRole('heading').allTextContents()) {
+		expect(['To do', 'Coming up']).toContain(heading.trim());
+	}
 	// A band's heading, not a divider inside a list: sentence case (docs/05 §5.3).
-	await expect(rail.getByRole('heading')).toHaveCSS('text-transform', 'none');
+	await expect(comingUp).toHaveCSS('text-transform', 'none');
 });
 
 test('sets the rail beside the stream while something is coming up', async ({ page }) => {
