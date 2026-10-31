@@ -49,6 +49,9 @@ function fakeTodos(): TodoRepository & { rows: Map<string, Todo> } {
 			return [...rows.values()].filter(
 				(t) => t.contactId === contactId && t.doneAt === null && visible(viewer, t)
 			);
+		},
+		async listStoryPageForContactVisibleTo() {
+			throw new Error("the story page is the adapter's to prove");
 		}
 	};
 }
@@ -103,6 +106,7 @@ describe('addTodo', () => {
 			title: 'Give the book back',
 			dueOn: null,
 			doneAt: null,
+			doneOn: null,
 			doneBy: null,
 			createdAt: now,
 			updatedAt: now
@@ -172,11 +176,15 @@ describe('editTodo', () => {
 });
 
 describe('tickTodo and untickTodo', () => {
-	it('marks it done, by whom and when, and takes it off the open list', async () => {
+	it('marks it done, by whom, when and on which day, and takes it off the open list', async () => {
 		const { todoId } = await addTodo(deps, ANDY, book());
 		now += 60_000;
 		await tickTodo(deps, JULIA, { contactId: HILDE, todoId });
-		expect(todos.rows.get(todoId)).toMatchObject({ doneAt: now, doneBy: 'julia' });
+		expect(todos.rows.get(todoId)).toMatchObject({
+			doneAt: now,
+			doneOn: '2026-10-31',
+			doneBy: 'julia'
+		});
 		expect(await listOpenTodosForContact(deps, { id: 'andy', householdId: 'h1' }, HILDE)).toEqual(
 			[]
 		);
@@ -195,7 +203,7 @@ describe('tickTodo and untickTodo', () => {
 		const { todoId } = await addTodo(deps, ANDY, book());
 		await tickTodo(deps, ANDY, { contactId: HILDE, todoId });
 		await untickTodo(deps, JULIA, { contactId: HILDE, todoId });
-		expect(todos.rows.get(todoId)).toMatchObject({ doneAt: null, doneBy: null });
+		expect(todos.rows.get(todoId)).toMatchObject({ doneAt: null, doneOn: null, doneBy: null });
 	});
 
 	it('refuses to tick a to-do that is gone', async () => {

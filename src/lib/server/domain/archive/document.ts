@@ -299,6 +299,7 @@ export function buildArchiveDocument(
 					title: text(td, 'title'),
 					due_on: text(td, 'due_on'),
 					done_at: moment(td, 'done_at'),
+					done_on: text(td, 'done_on'),
 					done_by: text(td, 'done_by'),
 					visibility: text(td, 'visibility'),
 					author: text(td, 'created_by'),

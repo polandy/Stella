@@ -1,6 +1,7 @@
 import { TranslatableError } from '../../../i18n/translatable';
 import { phrase, type Phrase } from '../../../i18n/phrase';
 import { FULL_DATE_SHAPE, isRealCalendarDay } from '../../../dates/calendar';
+import { todayFor } from '../../../dates/today';
 import type { Visibility, Viewer } from '../../access/visibility';
 import type { Clock } from '../../clock';
 import type { IdGenerator } from '../../id';
@@ -31,11 +32,16 @@ export interface Todo {
 	dueOn: string | null;
 	/** When it was ticked (epoch ms); null while open. */
 	doneAt: number | null;
+	/** The household's ISO day it was ticked — where the story shows it (§2.23); null while open. */
+	doneOn: string | null;
 	/** Who ticked it; null while open. */
 	doneBy: string | null;
 	createdAt: number;
 	updatedAt: number;
 }
+
+/** A ticked to-do, as the person's story reads it (docs/02 §2.26). */
+export type DoneTodo = Todo & { doneAt: number; doneOn: string };
 
 /** Port the domain owns; the Drizzle adapter implements it with visibility-scoped reads. */
 export interface TodoRepository {
@@ -48,6 +54,15 @@ export interface TodoRepository {
 	remove(todoId: string): Promise<void>;
 	/** Every open to-do on a person the viewer may see, in no particular order. */
 	listOpenForContactVisibleTo(viewer: Viewer, contactId: string): Promise<Todo[]>;
+	/**
+	 * One page of a person's done to-dos the viewer may see, newest first by (`doneOn`, `doneAt`),
+	 * strictly older than `before` when given — the story's fourth source (docs/02 §2.23).
+	 */
+	listStoryPageForContactVisibleTo(
+		viewer: Viewer,
+		contactId: string,
+		opts: { limit: number; before?: { doneOn: string; doneAt: number } }
+	): Promise<DoneTodo[]>;
 }
 
 /** Collaborators the use-cases need, injected by the composition root. */
@@ -149,6 +164,7 @@ export async function addTodo(
 		title,
 		dueOn,
 		doneAt: null,
+		doneOn: null,
 		doneBy: null,
 		createdAt: now,
 		updatedAt: now
@@ -185,11 +201,17 @@ export async function tickTodo(
 	const todo = await requireVisibleTodo(deps, actor, ref);
 	if (todo.doneAt !== null) return { todoId: todo.id };
 	const now = deps.clock.now();
-	await deps.todos.update({ ...todo, doneAt: now, doneBy: actor.userId, updatedAt: now });
+	await deps.todos.update({
+		...todo,
+		doneAt: now,
+		doneOn: todayFor(deps.clock),
+		doneBy: actor.userId,
+		updatedAt: now
+	});
 	return { todoId: todo.id };
 }
 
-/** Open a ticked to-do again — the toast's *Undo*. */
+/** Open a ticked to-do again — the toast's *Undo*, or *Not done* on its story row. */
 export async function untickTodo(
 	deps: TodoDeps,
 	actor: TodoActor,
@@ -197,11 +219,17 @@ export async function untickTodo(
 ): Promise<{ todoId: string }> {
 	const todo = await requireVisibleTodo(deps, actor, ref);
 	if (todo.doneAt === null) return { todoId: todo.id };
-	await deps.todos.update({ ...todo, doneAt: null, doneBy: null, updatedAt: deps.clock.now() });
+	await deps.todos.update({
+		...todo,
+		doneAt: null,
+		doneOn: null,
+		doneBy: null,
+		updatedAt: deps.clock.now()
+	});
 	return { todoId: todo.id };
 }
 
-/** Remove a to-do the member can see. */
+/** Remove a to-do the member can see — a done one leaves the story with it: nothing is kept. */
 export async function removeTodo(
 	deps: TodoDeps,
 	actor: TodoActor,

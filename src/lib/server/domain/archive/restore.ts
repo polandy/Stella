@@ -10,6 +10,7 @@ import { relationshipPair } from '../../../relationships/endpoints';
 import { foldedLinkDetails } from '../../../relationships/fold';
 import { giftLink, isGiftState } from '../../../gifts/gifts';
 import { FULL_DATE_SHAPE, isRealCalendarDay } from '../../../dates/calendar';
+import { todayFor } from '../../../dates/today';
 
 /*
  * Reading an archive back (docs/02 §2.15): the document turned into rows this installation can
@@ -539,6 +540,7 @@ export function planRestore(
 			const dueOn = str(todoRow, 'due_on');
 			const doneAt = ms(todoRow, 'done_at');
 			const doneBy = str(todoRow, 'done_by');
+			const doneOn = str(todoRow, 'done_on');
 			todos.push({
 				id: str(todoRow, 'id') ?? deps.ids.next(),
 				contact_id: contactId,
@@ -548,6 +550,13 @@ export function planRestore(
 				due_on:
 					dueOn !== null && FULL_DATE_SHAPE.test(dueOn) && isRealCalendarDay(dueOn) ? dueOn : null,
 				done_at: doneAt,
+				// The day it was ticked, as written; an archive without one takes the tick's day here.
+				done_on:
+					doneAt === null
+						? null
+						: doneOn !== null && FULL_DATE_SHAPE.test(doneOn) && isRealCalendarDay(doneOn)
+							? doneOn
+							: todayFor({ now: () => doneAt }),
 				// Who ticked it only when they are a member here; the tick itself stays.
 				done_by: doneAt !== null && doneBy !== null && members.has(doneBy) ? doneBy : null,
 				...stamps(todoRow)

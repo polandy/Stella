@@ -20,7 +20,11 @@ export const todos = {
 	'todos.remove': (p: { title: string }) => `Remove: ${p.title}`,
 	// The toasts, with *Undo* beside them.
 	'todos.done': (p: { title: string }) => `Done: ${p.title}`,
-	'todos.removed': 'To-do removed'
+	'todos.removed': 'To-do removed',
+	// A done one in the person's Activity (docs/02 §2.23): its label, and unchecking it.
+	'todos.story.done': 'Done',
+	'todos.story.reopen': (p: { title: string }) => `Not done yet: ${p.title}`,
+	'todos.story.reopened': (p: { title: string }) => `Open again: ${p.title}`
 };
 
 /** The key set every translation of this area has to provide. */

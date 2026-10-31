@@ -575,11 +575,14 @@ to-do may tick, untick, rewrite or remove it; only its author may change its vis
 | title | text | required |
 | due_on | text null | ISO `YYYY-MM-DD`; null for no day |
 | done_at | int null | when it was ticked; null while open |
+| done_on | text null | ISO `YYYY-MM-DD`, the household's day of the tick — its place in Activity (docs/02 §2.23); null while open |
 | done_by | text null fk → user.id | the member who ticked it |
 | created_at / updated_at | int | |
 
 Indexed on `(contact_id, done_at)` for a person's open to-dos and on `(done_at, due_on)` for the
-household's by day (Home's band, slice 2). Exported and restored with the person (§2.15),
+household's by day (Home's band, slice 3), and on `(contact_id, done_on, done_at)` for the
+story's page of done ones. Removing a to-do deletes the row, so a done one leaves Activity
+with it. Exported and restored with the person (§2.15),
 repointed by a merge.
 
 FTS: `title, note` indexed (3.5).

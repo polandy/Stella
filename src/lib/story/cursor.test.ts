@@ -12,16 +12,15 @@ const point = { day: '2026-08-05', recordedAt: 1_733_000_000_000 };
 
 describe('parseStoryCursor', () => {
 	it('accepts the three states a source can resume in', () => {
-		expect(parseStoryCursor({ journal: 'top', interactions: 'finished', gifts: 'top' })).toEqual({
+		const states = {
 			journal: 'top',
 			interactions: 'finished',
-			gifts: 'top'
-		});
-		expect(parseStoryCursor({ journal: point, interactions: point, gifts: point })).toEqual({
-			journal: point,
-			interactions: point,
-			gifts: point
-		});
+			gifts: 'top',
+			todos: 'finished'
+		} as const;
+		expect(parseStoryCursor(states)).toEqual(states);
+		const points = { journal: point, interactions: point, gifts: point, todos: point };
+		expect(parseStoryCursor(points)).toEqual(points);
 	});
 
 	it('refuses a cursor that is missing a source', () => {
@@ -29,14 +28,18 @@ describe('parseStoryCursor', () => {
 		expect(parseStoryCursor({})).toBeNull();
 		// A page opened before gifts were in the story: refused, not read as "no gifts".
 		expect(parseStoryCursor({ journal: 'top', interactions: 'top' })).toBeNull();
+		// Nor one opened before to-dos were.
+		expect(parseStoryCursor({ journal: 'top', interactions: 'top', gifts: 'top' })).toBeNull();
 	});
 
 	it('refuses a resume state it does not know', () => {
-		expect(parseStoryCursor({ journal: 'restart', interactions: 'top', gifts: 'top' })).toBeNull();
+		expect(
+			parseStoryCursor({ journal: 'restart', interactions: 'top', gifts: 'top', todos: 'top' })
+		).toBeNull();
 	});
 
 	it('refuses a point that is not a real point', () => {
-		const rest = { interactions: 'top', gifts: 'top' };
+		const rest = { interactions: 'top', gifts: 'top', todos: 'top' };
 		expect(parseStoryCursor({ journal: { day: '2026-08-05' }, ...rest })).toBeNull();
 		expect(parseStoryCursor({ journal: { day: '', recordedAt: 1 }, ...rest })).toBeNull();
 		expect(

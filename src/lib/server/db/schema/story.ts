@@ -174,8 +174,8 @@ export const gift = sqliteTable(
 
 /*
  * Something the household still owes one person (docs/02 §2.26): a line, maybe a day it is due
- * by, open until somebody ticks it — then `done_at` and `done_by` say when and who. Visibility
- * follows the child-record rule (private ⇒ only the author).
+ * by, open until somebody ticks it — then `done_at`, `done_on` and `done_by` say when, on which
+ * day and who. Visibility follows the child-record rule (private ⇒ only the author).
  */
 export const todo = sqliteTable(
 	'todo',
@@ -192,6 +192,8 @@ export const todo = sqliteTable(
 		// ISO YYYY-MM-DD; null for no day.
 		dueOn: text('due_on'),
 		doneAt: integer('done_at'),
+		// ISO YYYY-MM-DD, the household's day it was ticked; its place in the story (§2.23).
+		doneOn: text('done_on'),
 		doneBy: text('done_by').references(() => user.id),
 		createdAt: integer('created_at').notNull().default(now),
 		updatedAt: integer('updated_at').notNull().default(now)
@@ -199,6 +201,8 @@ export const todo = sqliteTable(
 	(t) => [
 		// A person's open to-dos, and (slice 2) the household's by day.
 		index('todo_contact_done_idx').on(t.contactId, t.doneAt),
-		index('todo_done_due_idx').on(t.doneAt, t.dueOn)
+		index('todo_done_due_idx').on(t.doneAt, t.dueOn),
+		// A person's story pages through the done ones by (doneOn, doneAt).
+		index('todo_contact_done_on_idx').on(t.contactId, t.doneOn, t.doneAt)
 	]
 );

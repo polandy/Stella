@@ -14,17 +14,23 @@
 	import { KIND_PRESENTATION } from '$lib/story/interaction-kinds';
 	import { groupStoryByDay } from '$lib/story/grouping';
 	import type { SelectablePerson } from '$lib/people/select';
-	import type { StoryCursorView, StoryItemView, StoryPageView } from '$lib/story/item';
+	import type {
+		StoryCursorView,
+		StoryItemView,
+		StoryPageView,
+		StoryTodoItem
+	} from '$lib/story/item';
 	import { placeholderFor } from '$lib/privacy/veil';
 	import { useVeil } from '$lib/privacy/veil.svelte';
 	import { useRemovals } from '$lib/undo/context.svelte';
 	import { removalKey as buildKey } from '$lib/undo/keys';
 	import { removeThroughAction } from '$lib/undo/deferred-removal';
+	import { submitAction } from '$lib/undo/submit-action';
 
 	/*
-	 * A person's story (docs/02 §2.23): what people wrote about them and the times they were in
-	 * touch, in one order. Older pages load on demand from the story endpoint, which merges the
-	 * two sources server-side — the client only ever appends what it is handed.
+	 * A person's story (docs/02 §2.23): what people wrote about them, the times they were in
+	 * touch, the gifts that changed hands and the to-dos ticked off, in one order. Older pages load on demand from the story endpoint, which merges the
+	 * sources server-side — the client only ever appends what it is handed.
 	 */
 	interface Props {
 		contactId: string;
@@ -85,6 +91,32 @@
 		received: { label: 'gifts.story.received', icon: 'gift', accent: 'var(--kind-gift)' }
 	} as const;
 
+	/* A to-do ticked off (docs/02 §2.26): the check icon and `--success`, *Done* as its label. */
+	const TODO_PRESENTATION = {
+		label: 'todos.story.done',
+		icon: 'done',
+		accent: 'var(--success)'
+	} as const;
+
+	// Unticked from here, a to-do opens again on the card and leaves the story; the box stays
+	// checked and still until Stella has answered.
+	let reopeningId = $state<string | null>(null);
+	async function reopen(item: StoryTodoItem) {
+		reopeningId = item.id;
+		const body = new FormData();
+		body.set('todoId', item.id);
+		try {
+			await submitAction(fetch, '?/untickTodo', body);
+			items = items.filter((other) => removalKey(other) !== removalKey(item));
+			removals.notify(t('todos.story.reopened', { title: item.title }));
+		} catch {
+			removals.notify(t('errors.todo.couldNotSave'));
+		}
+		reopeningId = null;
+		// the To do card is the page's, not ours
+		await invalidateAll();
+	}
+
 	// One touchpoint is corrected at a time, in its place (docs/02 §2.6).
 	let editingId = $state<string | null>(null);
 
@@ -104,7 +136,25 @@
 
 	/** The form action that removes an item, by what kind of thing it is. */
 	const removeAction = (item: StoryItemView) =>
-		item.kind === 'journal' ? '?/removeJournalEntry' : '?/removeInteraction';
+		item.kind === 'journal'
+			? '?/removeJournalEntry'
+			: item.kind === 'todo'
+				? '?/removeTodo'
+				: '?/removeInteraction';
+
+	const removedLabel = (item: StoryItemView) =>
+		item.kind === 'journal'
+			? t('story.entryRemoved')
+			: item.kind === 'todo'
+				? t('todos.removed')
+				: t('story.interactionRemoved');
+
+	const removeLabel = (item: StoryItemView) =>
+		item.kind === 'journal'
+			? t('story.removeEntry')
+			: item.kind === 'todo'
+				? t('todos.remove', { title: item.title })
+				: t('story.removeInteraction');
 
 	function deferRemoval(event: SubmitEvent, item: StoryItemView) {
 		event.preventDefault();
@@ -112,7 +162,7 @@
 		const key = removalKey(item);
 		removals.remove({
 			key,
-			label: item.kind === 'journal' ? t('story.entryRemoved') : t('story.interactionRemoved'),
+			label: removedLabel(item),
 			commit: async () => {
 				await removeThroughAction(fetch, removeAction(item), body);
 				items = items.filter((other) => removalKey(other) !== key);
@@ -147,7 +197,9 @@
 								? KIND_PRESENTATION[item.interactionKind]
 								: item.kind === 'gift'
 									? GIFT_PRESENTATION[item.giftState]
-									: null}
+									: item.kind === 'todo'
+										? TODO_PRESENTATION
+										: null}
 						<li data-story-item class="group/item relative">
 							<span
 								class="absolute top-1.5 -left-[1.3125rem] size-2.5 rounded-full ring-4 ring-card"
@@ -167,7 +219,9 @@
 								{/if}
 								{#if item.author}<span class="text-fg-subtle">· {item.author}</span>{/if}
 								{#if item.visibility === 'private'}
-									<PrivateMark veilId={item.kind === 'gift' ? undefined : veilId(item)} />
+									<PrivateMark
+										veilId={item.kind === 'gift' || item.kind === 'todo' ? undefined : veilId(item)}
+									/>
 								{/if}
 								<!-- A gift is changed and removed on the Gifts card, where it lives. -->
 								{#if (item.kind === 'interaction' && item.editable) || item.removable}
@@ -198,14 +252,17 @@
 												action={removeAction(item)}
 												onsubmit={(event) => deferRemoval(event, item)}
 											>
-												<input type="hidden" name="id" value={item.id} />
+												<!-- The to-do actions name their record as the card's do. -->
+												<input
+													type="hidden"
+													name={item.kind === 'todo' ? 'todoId' : 'id'}
+													value={item.id}
+												/>
 												<Button
 													variant="danger"
 													size="sm"
 													icon="remove"
-													label={item.kind === 'journal'
-														? t('story.removeEntry')
-														: t('story.removeInteraction')}
+													label={removeLabel(item)}
 												/>
 											</form>
 										{/if}
@@ -271,6 +328,20 @@
 								{#if item.occasion}
 									<p class="text-sm text-fg-muted">{occasionLabel(t, item.occasion)}</p>
 								{/if}
+							{:else if item.kind === 'todo'}
+								<!-- Still checked: unchecking it opens the to-do again, as on the card. -->
+								<label class="mt-0.5 flex cursor-pointer items-start gap-2 font-medium text-fg">
+									<input
+										type="checkbox"
+										checked
+										disabled={reopeningId === item.id}
+										aria-label={t('todos.story.reopen', { title: item.title })}
+										onchange={() => reopen(item)}
+										class="mt-0.5 size-4 shrink-0 accent-primary"
+										data-testid="story-todo-reopen"
+									/>
+									<span class="min-w-0">{item.title}</span>
+								</label>
 							{:else}
 								<!-- The touchpoint and its editor glide into each other in place (docs/05 §5.11). -->
 								<Swap when={editingId === item.id}>
