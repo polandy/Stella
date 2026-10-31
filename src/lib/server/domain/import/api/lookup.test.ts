@@ -61,6 +61,7 @@ describe('findPeople', () => {
 			searchNotes: async () => [],
 			searchGifts: async () => [],
 			searchMoments: async () => [],
+			searchTodos: async () => [],
 			searchMomentsByTag: async () => []
 		};
 		expect(await findPeople({ search }, viewer, 'anna')).toEqual([
@@ -79,6 +80,7 @@ describe('findPeople', () => {
 			searchNotes: async () => [],
 			searchGifts: async () => [],
 			searchMoments: async () => [],
+			searchTodos: async () => [],
 			searchMomentsByTag: async () => []
 		};
 		expect(await findPeople({ search }, viewer, '   ')).toEqual([]);

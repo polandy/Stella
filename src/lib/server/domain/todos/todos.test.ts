@@ -6,6 +6,7 @@ import {
 	addTodo,
 	editTodo,
 	InvalidTodoError,
+	listOpenTodos,
 	listOpenTodosForContact,
 	removeTodo,
 	tickTodo,
@@ -49,6 +50,11 @@ function fakeTodos(): TodoRepository & { rows: Map<string, Todo> } {
 			return [...rows.values()].filter(
 				(t) => t.contactId === contactId && t.doneAt === null && visible(viewer, t)
 			);
+		},
+		async listOpenVisibleTo(viewer) {
+			return [...rows.values()]
+				.filter((t) => t.doneAt === null && visible(viewer, t))
+				.map((t) => ({ ...t, contactName: 'Hilde', avatarPhotoId: null }));
 		},
 		async listStoryPageForContactVisibleTo() {
 			throw new Error("the story page is the adapter's to prove");
@@ -225,5 +231,15 @@ describe('removeTodo', () => {
 		expect(await refusal(removeTodo(deps, ANDY, { contactId: 'rosa', todoId }))).toBe(
 			'This to-do is no longer there.'
 		);
+	});
+});
+
+describe('listOpenTodos', () => {
+	it('holds the household’s open to-dos with whom each is about, not the done ones', async () => {
+		const { todoId: open } = await addTodo(deps, ANDY, book());
+		const { todoId: done } = await addTodo(deps, ANDY, book());
+		await tickTodo(deps, ANDY, { contactId: HILDE, todoId: done });
+		const listed = await listOpenTodos(deps, { id: 'julia', householdId: 'h1' });
+		expect(listed.map((t) => [t.id, t.contactName])).toEqual([[open, 'Hilde']]);
 	});
 });

@@ -28,3 +28,8 @@ export const journalFts = sqliteTable('journal_fts', {
 	contactId: text('contact_id'),
 	content: text('content')
 });
+
+export const todoFts = sqliteTable('todo_fts', {
+	todoId: text('todo_id'),
+	content: text('content')
+});

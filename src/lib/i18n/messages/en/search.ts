@@ -1,18 +1,22 @@
-/* Full search across people, notes, gifts and moments (docs/02 §2.9), and the graph screen. */
+/* Full search across people, notes, gifts, to-dos and moments (docs/02 §2.9), and the graph screen. */
 
 export const search = {
 	'search.title': 'Search',
-	'search.placeholder': 'Search people, notes, gifts and moments…',
+	'search.placeholder': 'Search people, notes, gifts, to-dos and moments…',
 	'search.noResults': (p: { query: string }) => `No results for “${p.query}”.`,
 	'search.noResultsHint':
-		'Nobody by that name, and no note, gift or moment that says it. If they are new, add them.',
+		'Nobody by that name, and no note, gift, to-do or moment that says it. If they are new, add them.',
 	'search.prompt':
-		'Type to search across people, notes, gifts and moments — or a #tag for the moments carrying it.',
+		'Type to search across people, notes, gifts, to-dos and moments — or a #tag for the moments carrying it.',
 	'search.people': 'People',
 	'search.notes': 'Notes',
 	'search.noteOn': (p: { name: string }) => `on ${p.name}`,
 	'search.gifts': 'Gifts',
 	'search.giftFor': (p: { name: string }) => `for ${p.name}`,
+	'search.todos': 'To-dos',
+	'search.todoFor': (p: { name: string }) => `for ${p.name}`,
+	// A done one stays findable, marked as done (docs/02 §2.9).
+	'search.todoDone': 'done',
 	'search.moments': 'Moments',
 	'search.momentOn': (p: { date: string; name: string }) => `${p.date} · on ${p.name}`,
 	// A `#tag` query finds the moments carrying the tag and nothing else (docs/02 §2.20.2).

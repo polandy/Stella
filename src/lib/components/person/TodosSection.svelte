@@ -11,6 +11,7 @@
 	import type { JustDoneTodos } from '$lib/todos/just-done.svelte';
 	import type { CardTodo } from '$lib/todos/todos';
 	import { outbox } from '$lib/pwa/outbox.svelte';
+	import { keptTicks } from '$lib/todos/kept-ticks.svelte';
 	import { asksForNewTodo } from '$lib/todos/todos';
 	import { useRemovals } from '$lib/undo/context.svelte';
 	import { removalKey } from '$lib/undo/keys';
@@ -54,13 +55,7 @@
 		)
 	);
 	/** The to-dos ticked here while out of reach: struck through until the tick is sent. */
-	const keptTicks = $derived(
-		new Map(
-			outbox.mine
-				.filter((item): item is KeptOf<'todo.tick'> => isKept(item, 'todo.tick'))
-				.map((item) => [item.command.payload.todoId, item])
-		)
-	);
+	const ticksKept = $derived(keptTicks());
 	const line = $derived(cardShape('todos', shown.length > 0 || kept.length > 0) === 'line');
 
 	let open = $state(false);
@@ -152,7 +147,7 @@
 					{justDone}
 					contactId={c.id}
 					today={data.today}
-					keptTick={keptTicks.get(todo.id) ?? null}
+					keptTick={ticksKept.get(todo.id) ?? null}
 					error={rowError(todo.id)}
 				/>
 			{/each}

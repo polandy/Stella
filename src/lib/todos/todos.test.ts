@@ -162,8 +162,8 @@ describe('the English wording', () => {
 	const keysSaying = (pattern: RegExp) =>
 		said.filter(([, text]) => pattern.test(text)).map(([key]) => key);
 
-	it('says *To do* only as the card’s name; one item is a *to-do* everywhere else', () => {
-		expect(keysSaying(/\bTo do\b/)).toEqual(['todos.title']);
+	it('says *To do* only as the card’s and Home band’s name; one item is a *to-do* everywhere else', () => {
+		expect(keysSaying(/\bTo do\b/).sort()).toEqual(['todos.band.title', 'todos.title']);
 		expect(keysSaying(/\btodos?\b/i)).toEqual([]);
 	});
 });

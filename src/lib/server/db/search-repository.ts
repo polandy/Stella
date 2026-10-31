@@ -3,9 +3,9 @@ import type { BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
 import { childRecordVisibleTo, contactBrowsableBy } from '../access/query-scoping';
 import type { Viewer } from '../access/visibility';
 import type { SearchRepository } from '../domain/search/search';
-import { contact, entryTag, gift, journalEntry, journalEntryTag, note } from './schema';
+import { contact, entryTag, gift, journalEntry, journalEntryTag, note, todo } from './schema';
 import type * as schema from './schema';
-import { contactFts, giftFts, journalFts, noteFts } from './search-schema';
+import { contactFts, giftFts, journalFts, noteFts, todoFts } from './search-schema';
 
 /*
  * Drizzle adapter for the SearchRepository port (docs/08 §8.3). Matches via the FTS5 tables,
@@ -111,6 +111,31 @@ export function createDrizzleSearchRepository(
 				.orderBy(sql`bm25(gift_fts)`)
 				.limit(limit)
 				.all();
+		},
+
+		async searchTodos(viewer: Viewer, ftsQuery: string, limit: number) {
+			return db
+				.select({
+					todoId: todo.id,
+					title: todo.title,
+					doneAt: todo.doneAt,
+					doneOn: todo.doneOn,
+					contactId: contact.id,
+					contactName: contact.displayName
+				})
+				.from(todoFts)
+				.innerJoin(todo, eq(todoFts.todoId, todo.id))
+				.innerJoin(contact, eq(todo.contactId, contact.id))
+				.where(
+					and(
+						sql`todo_fts MATCH ${ftsQuery}`,
+						childRecordVisibleTo(viewer, { visibility: todo.visibility, createdBy: todo.createdBy })
+					)
+				)
+				.orderBy(sql`${todo.doneAt} IS NOT NULL`, sql`bm25(todo_fts)`)
+				.limit(limit)
+				.all()
+				.map(({ doneAt, ...hit }) => ({ ...hit, done: doneAt !== null }));
 		},
 
 		async searchMoments(viewer: Viewer, ftsQuery: string, limit: number) {
