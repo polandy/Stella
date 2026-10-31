@@ -68,10 +68,49 @@ export function orderOpenTodos<T extends { dueOn: string | null; createdAt: numb
 	});
 }
 
+/** A to-do ticked on this card, kept in view while the toast announcing it stands. */
+export interface JustDone<T> {
+	todo: T;
+	/** The toast's notice (`RemovalsSnapshot.notices`); null while the tick is being saved. */
+	noticeId: number | null;
+	/** Its *Undo* is on its way: shown open until the page is read again. */
+	reopening: boolean;
+}
+
+/** A row of the card: an open to-do, or one just ticked and still struck through there. */
+export interface CardTodo<T> {
+	todo: T;
+	done: boolean;
+}
+
+/**
+ * What the card shows: the open to-dos, and each one just ticked where it stood, struck
+ * through, while its toast stands — so ticking the last one does not take the card away under
+ * the reader's thumb, as a removal waits for its window (docs/02 §2.23). `standing` holds the
+ * ids of the notices still shown.
+ */
+export function cardTodos<T extends { id: string; dueOn: string | null; createdAt: number }>(
+	open: readonly T[],
+	justDone: readonly JustDone<T>[],
+	standing: ReadonlySet<number>
+): CardTodo<T>[] {
+	const shown = new Map(open.map((todo) => [todo.id, todo]));
+	// Saved, the page has been read again: if Stella still lists it as open, it was opened again.
+	const struck = (entry: JustDone<T>) =>
+		!entry.reopening &&
+		(entry.noticeId === null || (standing.has(entry.noticeId) && !shown.has(entry.todo.id)));
+	const done = new Set(justDone.filter(struck).map((entry) => entry.todo.id));
+	for (const entry of justDone) {
+		if ((entry.reopening || struck(entry)) && !shown.has(entry.todo.id))
+			shown.set(entry.todo.id, entry.todo);
+	}
+	return orderOpenTodos([...shown.values()]).map((todo) => ({ todo, done: done.has(todo.id) }));
+}
+
 const TODO_PARAM = 'todo';
 
 /**
- * Where the command palette's *To do for …* lands (docs/05 §5.4): the person's page with the
+ * Where the command palette's *To-do for …* lands (docs/05 §5.4): the person's page with the
  * card's add field open. No hash, for the reason `giftIdeaPath` gives.
  */
 export function newTodoPath(contactId: string): string {

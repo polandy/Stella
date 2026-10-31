@@ -20,7 +20,7 @@
 			dueOn: string | null;
 			visibility: 'shared' | 'private';
 		};
-		/** Names the form: *To do for Hilde*, *Change: …*. */
+		/** Names the form: *To-do for Hilde*, *Change: …*. */
 		heading: string;
 		action: string;
 		submit: SubmitFunction;

@@ -338,11 +338,18 @@ the person, and that never leaves the page. Keeping the record tidy (archive, me
 - A tick checks the box and strikes the line through at once (`text-fg-muted line-through`),
   without waiting for Stella; the row has no pencil or cross while it waits. A refusal unchecks
   it and says why at the card's top, not in the add form.
-- The add form opens at the card's top: *To do for Hilde*, *What?*, a quiet *By when?* link
+- Saved, the struck row stays in its place for as long as its *Done: …* toast stands, then
+  leaves; the card counts it for its place, so ticking the last one leaves the card at the top
+  until the toast goes (`JustDoneTodos`). *Undo* shows the row open again at once, before the
+  page is read again.
+- A tick kept on the device keeps the struck line with *not sent yet* and, in place of pencil
+  and cross, a ghost *Undo* (named *Not done yet: …*) while the tick is waiting or refused;
+  it drops the tick from the device.
+- The add form opens at the card's top: *To-do for Hilde*, *What?*, a quiet *By when?* link
   with the calendar icon that turns into the date field and *No day*; Shared/Private radios,
   *Save*. The pencil rewrites the row in place with the same fields; only the author is
   offered Shared/Private.
-- Arriving with `?todo=new` (the palette's *To do for …*) opens the form, on a navigation only,
+- Arriving with `?todo=new` (the palette's *To-do for …*) opens the form, on a navigation only,
   as `?gift=idea` does.
 - When the first to-do is saved the card moves up, and the page scrolls it into view.
 

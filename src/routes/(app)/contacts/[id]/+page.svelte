@@ -12,6 +12,8 @@
 	import { sectionAnchor } from '$lib/people/sections';
 	import { useI18n } from '$lib/i18n/context.svelte';
 	import { showOpenedForm } from '$lib/motion/motion.svelte';
+	import { JustDoneTodos } from '$lib/todos/just-done.svelte';
+	import { useRemovals } from '$lib/undo/context.svelte';
 	import { tick } from 'svelte';
 	import type { ActionData, PageData } from './$types';
 
@@ -97,8 +99,12 @@
 	/*
 	 * The To do card (docs/02 §2.26) is read first while something is open — right under the
 	 * identity card — and waits at the page's end, as one line, while nothing is (docs/05 §5.5).
+	 * One just ticked counts while its toast stands, so the last one does not move the card away
+	 * under the reader's thumb.
 	 */
-	const todosFirst = $derived(data.todos.length > 0);
+	const justDone = new JustDoneTodos<PageData['todos'][number]>(useRemovals());
+	const todoRows = $derived(justDone.rows(data.todos));
+	const todosFirst = $derived(todoRows.length > 0);
 </script>
 
 <svelte:head><title>{t('contact.title', { name: c.displayName })}</title></svelte:head>
@@ -119,7 +125,7 @@
 	<!-- Shows, sticking under the top bar, only once the identity card has gone by (docs/05 §5.5). -->
 	<JumpBar {data} />
 
-	{#if todosFirst}<TodosSection {data} {form} />{/if}
+	{#if todosFirst}<TodosSection {data} {form} rows={todoRows} {justDone} />{/if}
 
 	<RelationshipsSection {data} {form} {otherContacts} {showTogether} bind:tracingPath />
 
@@ -134,7 +140,7 @@
 	<!-- Ideas, and what was given and received (docs/02 §2.25). -->
 	<GiftsSection {data} {form} />
 
-	{#if !todosFirst}<TodosSection {data} {form} />{/if}
+	{#if !todosFirst}<TodosSection {data} {form} rows={todoRows} {justDone} />{/if}
 
 	<MentionsSection {data} />
 </main>

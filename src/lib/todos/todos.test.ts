@@ -1,8 +1,16 @@
 import { describe, expect, it } from 'bun:test';
 import type { DateLanguage } from '$lib/dates/labels';
 import { INTL_LOCALES } from '$lib/i18n/locales';
+import { en as english } from '$lib/i18n/messages/en';
 import { createTranslator } from '$lib/i18n/translate';
-import { asksForNewTodo, dueLabel, dueStanding, newTodoPath, orderOpenTodos } from './todos';
+import {
+	asksForNewTodo,
+	cardTodos,
+	dueLabel,
+	dueStanding,
+	newTodoPath,
+	orderOpenTodos
+} from './todos';
 
 /*
  * How an open to-do stands and reads (docs/02 §2.26): the card's order, whether a day is
@@ -77,11 +85,85 @@ describe('orderOpenTodos', () => {
 	});
 });
 
+describe('cardTodos', () => {
+	const todo = (id: string, dueOn: string | null, createdAt: number) => ({ id, dueOn, createdAt });
+	const book = todo('book', '2026-11-02', 1);
+	const recipe = todo('recipe', null, 2);
+	const rows = (list: ReturnType<typeof cardTodos<ReturnType<typeof todo>>>) =>
+		list.map((row) => [row.todo.id, row.done]);
+
+	it('shows the open ones in the card’s order, none of them done', () => {
+		expect(rows(cardTodos([recipe, book], [], new Set()))).toEqual([
+			['book', false],
+			['recipe', false]
+		]);
+	});
+
+	it('keeps a ticked one where it stood, struck through, while its toast stands', () => {
+		const justDone = [{ todo: book, noticeId: 7, reopening: false }];
+		expect(rows(cardTodos([recipe], justDone, new Set([7])))).toEqual([
+			['book', true],
+			['recipe', false]
+		]);
+	});
+
+	it('so the last one ticked does not leave the card empty under the reader’s thumb', () => {
+		const justDone = [{ todo: book, noticeId: 7, reopening: false }];
+		expect(rows(cardTodos([], justDone, new Set([7])))).toEqual([['book', true]]);
+	});
+
+	it('marks it done while it is saved, before the page is read again', () => {
+		const justDone = [{ todo: book, noticeId: null, reopening: false }];
+		expect(rows(cardTodos([book], justDone, new Set()))).toEqual([['book', true]]);
+	});
+
+	it('shows it open once Stella says so again — unticked in Activity while the toast stands', () => {
+		const justDone = [{ todo: book, noticeId: 7, reopening: false }];
+		expect(rows(cardTodos([book], justDone, new Set([7])))).toEqual([['book', false]]);
+	});
+
+	it('keeps it in view, struck through, while the tick is still being saved', () => {
+		const justDone = [{ todo: book, noticeId: null, reopening: false }];
+		expect(rows(cardTodos([], justDone, new Set()))).toEqual([['book', true]]);
+	});
+
+	it('lets it go once the toast is gone', () => {
+		const justDone = [{ todo: book, noticeId: 7, reopening: false }];
+		expect(rows(cardTodos([recipe], justDone, new Set()))).toEqual([['recipe', false]]);
+	});
+
+	it('shows it open again while *Undo* is on its way, so the card does not blink', () => {
+		const justDone = [{ todo: book, noticeId: 7, reopening: true }];
+		expect(rows(cardTodos([], justDone, new Set()))).toEqual([['book', false]]);
+		expect(rows(cardTodos([book], justDone, new Set()))).toEqual([['book', false]]);
+	});
+});
+
 describe('newTodoPath', () => {
 	it('lands on the person with the add field open, and is read back', () => {
 		const path = newTodoPath('c1');
 		expect(path).toBe('/contacts/c1?todo=new');
 		expect(asksForNewTodo(new URL(path, 'https://stella.test'))).toBe(true);
 		expect(asksForNewTodo(new URL('/contacts/c1', 'https://stella.test'))).toBe(false);
+	});
+});
+
+describe('the English wording', () => {
+	// Every message about to-dos as it reads, a function's filled with a stand-in for each value.
+	const anyValue = new Proxy({}, { get: () => 'X' });
+	const said = Object.entries(english)
+		.filter(([key]) => /todo/i.test(key))
+		.map(([key, message]): [string, string] => [
+			key,
+			typeof message === 'function'
+				? String((message as (p: unknown) => unknown)(anyValue))
+				: message
+		]);
+	const keysSaying = (pattern: RegExp) =>
+		said.filter(([, text]) => pattern.test(text)).map(([key]) => key);
+
+	it('says *To do* only as the card’s name; one item is a *to-do* everywhere else', () => {
+		expect(keysSaying(/\bTo do\b/)).toEqual(['todos.title']);
+		expect(keysSaying(/\btodos?\b/i)).toEqual([]);
 	});
 });

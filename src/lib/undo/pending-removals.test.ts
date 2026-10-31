@@ -180,6 +180,17 @@ describe('createPendingRemovals', () => {
 		expect(store.snapshot().notices).toEqual([]);
 	});
 
+	it('names the notice it shows, so a list can keep what it announces in view as long as it stands', () => {
+		const { clock, store } = setup();
+
+		const id = store.notify('Done: Give back the book', () => {});
+		expect(store.snapshot().notices.map((n) => n.id)).toEqual([id]);
+		expect(store.notify('Saved')).not.toBe(id);
+
+		clock.advance(UNDO_WINDOW_MS);
+		expect(store.snapshot().notices).toEqual([]);
+	});
+
 	it('a notice can carry a link to what it announces, and has none otherwise', () => {
 		const { store } = setup();
 

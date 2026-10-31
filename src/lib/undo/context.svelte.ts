@@ -26,7 +26,8 @@ export interface Removals {
 	flush(): Promise<void>;
 	/** Reactive — reading it inside `$derived` tracks the pending list. */
 	isPending(key: string): boolean;
-	notify(text: string, takeBack?: () => void): void;
+	/** Returns the notice's id (`RemovalsSnapshot.notices`). */
+	notify(text: string, takeBack?: () => void): number;
 	/** A message with a link to what it announces — *Lena Köhler added · Open*. */
 	notifyWithLink(text: string, link: NoticeLink): void;
 	/** *Undo* on a notice announcing something that can be taken back. */

@@ -571,15 +571,16 @@ thing you read about them; with nothing open it is a single line at the end of t
 
 - **+ Add** asks only *what*. **By when?** adds a day if there is one; most things have none.
   Those with a day come first, soonest on top; one whose day has passed says *was due …*.
-- **Tap the line** (or its box) when it is done. The line is struck through, and *Undo* in the message opens
-  it again; then it leaves the card and shows under **Activity** as *Done*, on the day it was
+- **Tap the line** (or its box) when it is done. The line is struck through and stays while the message
+  does; *Undo* in the message opens it again. Then it leaves the card and shows under **Activity** as *Done*, on the day it was
   ticked, with who ticked it. Done too soon? Untick its box there and it is open on the card
   again. Removing it there (or on the card) deletes it — it is gone from Activity as well.
 - Anyone who can see a to-do may tick, change or remove it — often whoever did it is not the
   one who wrote it down. It says who noted it; only that person can make it private.
-- From anywhere: `⌘K` / `Ctrl-K`, **To do for …**, then the person's name and `Enter`.
+- From anywhere: `⌘K` / `Ctrl-K`, **To-do for …**, then the person's name and `Enter`.
 - Without a connection, noting and ticking a to-do are kept on your device and sent later;
-  changing or removing one needs Stella to be reachable.
+  changing or removing one needs Stella to be reachable. Ticked one by mistake while offline?
+  **Undo** on its row takes the tick back until it has been sent.
 
 ### Mentioned in
 
@@ -962,7 +963,7 @@ your removing it never quietly takes it off someone else's private contact.
 ## Finding things
 
 `⌘K` / `Ctrl-K` — or the search button at the top — opens a palette that jumps straight to a
-person as you type, and offers *Write a moment*, *Gift idea for …*, *To do for …* and *Add person* as its
+person as you type, and offers *Write a moment*, *Gift idea for …*, *To-do for …* and *Add person* as its
 first rows. Notes are
 not in it; the last row, *Search everything*, opens the full search, which looks through
 people, notes and gifts at once, matches partial words, and only ever returns what you are
