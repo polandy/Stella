@@ -211,7 +211,7 @@ export async function tickTodo(
 	return { todoId: todo.id };
 }
 
-/** Open a ticked to-do again — the toast's *Undo*, or *Not done* on its story row. */
+/** Open a ticked to-do again — the toast's *Undo*, or its ticked box in Activity. */
 export async function untickTodo(
 	deps: TodoDeps,
 	actor: TodoActor,
