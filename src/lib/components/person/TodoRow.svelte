@@ -94,7 +94,7 @@
 	/** *Undo* for a tick still on this device: it is dropped there, and never sent. */
 	function recallTick(commandId: string) {
 		void outbox.discard(commandId).then((recalled) => {
-			// Gone out meanwhile, it is Stella's: the toast's *Undo* then opens it again there.
+			// Gone out meanwhile, it is Stella's: it is opened again from Activity, as the toast says.
 			if (!recalled) removals.notify(t('todos.tickOnItsWay'));
 		});
 	}
@@ -202,7 +202,7 @@
 						variant="ghost"
 						size="sm"
 						type="button"
-						label={t('todos.story.reopen', { title: todo.title })}
+						label={t('todos.recallTick', { title: todo.title })}
 						onclick={() => recallTick(keptTick.command.id)}
 						data-testid="todo-recall">{t('common.undo')}</Button
 					>

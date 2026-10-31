@@ -343,7 +343,7 @@ the person, and that never leaves the page. Keeping the record tidy (archive, me
   until the toast goes (`JustDoneTodos`). *Undo* shows the row open again at once, before the
   page is read again.
 - A tick kept on the device keeps the struck line with *not sent yet* and, in place of pencil
-  and cross, a ghost *Undo* (named *Not done yet: …*) while the tick is waiting or refused;
+  and cross, a ghost *Undo* (named *Undo tick: …*) while the tick is waiting or refused;
   it drops the tick from the device.
 - The add form opens at the card's top: *To-do for Hilde*, *What?*, a quiet *By when?* link
   with the calendar icon that turns into the date field and *No day*; Shared/Private radios,
