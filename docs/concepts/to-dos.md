@@ -100,4 +100,4 @@ makes it private or shared again. A private to-do is its author's alone, admins 
 4. **Assignee:** none.
 5. **Placement:** under the identity card while something is open, otherwise the one-line
    empty card at the end.
-6. **Monica's tasks:** still open — imported as to-dos in slice 4 if the export holds any.
+6. **Monica's tasks:** imported as to-dos (slice 4).
