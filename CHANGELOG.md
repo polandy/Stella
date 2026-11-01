@@ -1,5 +1,21 @@
 # Changelog
 
+## [0.0.36](https://github.com/polandy/Stella/compare/v0.0.35...v0.0.36) (2026-11-01)
+
+
+### Features
+
+* **dates:** subscribe the phone's calendar to a member's dates ([#425](https://github.com/polandy/Stella/issues/425)) ([76ace63](https://github.com/polandy/Stella/commit/76ace63a9babd2b733a296a424363047a979ac5a))
+* **pwa:** share photos, links and text into Stella from other apps ([#428](https://github.com/polandy/Stella/issues/428)) ([e861762](https://github.com/polandy/Stella/commit/e861762aee7424d654917427aefb62bccd62bc73))
+* **todos:** Home's To do band, /todos and to-dos in search (slice 3) ([#421](https://github.com/polandy/Stella/issues/421)) ([1332252](https://github.com/polandy/Stella/commit/1332252d8cba0df427bcbbd3cfcd7ab769456c1d))
+* **todos:** import Monica's tasks as to-dos (slice 4) ([#423](https://github.com/polandy/Stella/issues/423)) ([92df231](https://github.com/polandy/Stella/commit/92df231d82e7b53b4f4fcfc6c79588bb0b5baddd))
+
+
+### Bug Fixes
+
+* **pwa:** take the page's word for the device going offline or online ([#426](https://github.com/polandy/Stella/issues/426)) ([79951ac](https://github.com/polandy/Stella/commit/79951ac4d4725acb6de7cd82306ce6bd798a5252))
+* **pwa:** wait out held removals in e2e, run pwa on full Chromium, and stop late answers overruling offline ([#427](https://github.com/polandy/Stella/issues/427)) ([2a764dd](https://github.com/polandy/Stella/commit/2a764dd1c6d5b89ea7754f6f3487f2b438401558))
+
 ## [0.0.35](https://github.com/polandy/Stella/compare/v0.0.34...v0.0.35) (2026-10-31)
 
 
