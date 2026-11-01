@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
-import { addPerson, factEditor, openPerson, pickPerson, profileRow, signIn } from './app';
+import { addPerson, appReady, factEditor, openPerson, pickPerson, profileRow, signIn } from './app';
 
 /*
  * What a person's page and *Add person* keep while Stella is out of reach (docs/02 §2.18).
@@ -48,6 +48,9 @@ test('keeps a note offline at the top of the notes, edits it, and sends it when 
 	await page.route('**/api/commands', (route) => route.abort());
 	await context.setOffline(false);
 	await page.goto('/');
+	// The outbox shows once the app has started and read the device's copy: hydration first,
+	// so the two do not share one expect's patience on a busy runner.
+	await appReady(page);
 	await expect(page.getByTestId('outbox')).toContainText('note on Lena Brunner');
 	await expect(page.getByTestId('outbox')).toContainText('a kept note about the orchard');
 

@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
-import { fillDate, pickPerson, signIn } from './app';
+import { fillDate, openPeople, pickPerson, signIn } from './app';
 
 /*
  * Touchpoints on the story timeline and "last contacted" (docs/02 §2.6, §2.23). Written after
@@ -124,7 +124,9 @@ test('removes an own interaction and last contacted moves to the remaining one',
 	await expect(timeline).not.toContainText(TITLE);
 	await expect(timeline).toContainText('Quill lunch, the earlier one');
 
-	// The removal is held back for the undo window (docs/02 §2.23); leaving the page sends it.
+	// The removal is held back for the undo window (docs/02 §2.23). Leaving through the app's own
+	// link sends it and waits for it; the `page.goto` in `openPerson` alone would race it.
+	await openPeople(page);
 	await openPerson(page, /Lena Brunner/);
 	await expect(timeline).not.toContainText(TITLE);
 	await expect(page.getByTestId('last-contacted')).toContainText('20 August 2026');
