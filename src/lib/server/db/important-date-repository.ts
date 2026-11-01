@@ -103,6 +103,7 @@ export function createDrizzleImportantDateRepository(
 
 			return [
 				...born.map((b): UpcomingSource => ({
+					dateId: null,
 					contactId: b.contactId,
 					contactName: b.contactName,
 					avatarPhotoId: b.avatarPhotoId,
@@ -115,6 +116,7 @@ export function createDrizzleImportantDateRepository(
 					derived: true
 				})),
 				...explicit.map((e): UpcomingSource => ({
+					dateId: e.id,
 					contactId: e.contactId,
 					contactName: e.contactName,
 					avatarPhotoId: e.avatarPhotoId,

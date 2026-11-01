@@ -172,6 +172,17 @@
 		{/if}
 	</section>
 
+	<!-- Every member's: the feed shows what its member may see (docs/02 §2.13.4). -->
+	<section class="flex flex-col gap-3">
+		<h2 class="text-sm font-medium text-fg-muted">{t('settings.calendar.heading')}</h2>
+		<SettingsLink
+			href="/settings/calendar"
+			icon="calendar"
+			title={t('settings.calendar.title')}
+			blurb={t('settings.calendar.blurb')}
+		/>
+	</section>
+
 	<!-- Every member's, not only the admin's: a token acts as whoever made it (docs/02 §2.16.1). -->
 	<section class="flex flex-col gap-3">
 		<h2 class="text-sm font-medium text-fg-muted">{t('settings.api.heading')}</h2>

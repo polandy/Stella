@@ -150,17 +150,19 @@ Server-side sessions referenced by cookie.
 | oidc_id_token | text null | ID token of the SSO sign-in behind this session; the `id_token_hint` for RP-initiated logout (§2.1). Null for a local sign-in, and gone with the session on sign-out. |
 
 ### api_token  [M2]
-A member's credential for the import API (docs/02 §2.16.1). Never exported (§2.15).
+A member's credential for the import API (docs/02 §2.16.1), or their calendar link (§2.13.4).
+Never exported (§2.15).
 
 | column | type | notes |
 |---|---|---|
 | id | text pk | ULID |
 | user_id | text fk → user.id | cascade delete — a token goes with its member |
 | name | text | what it is for, as its member typed it |
-| token_hash | text unique | SHA-256 of the `stella_…` secret; the secret itself is shown once and never stored |
+| token_hash | text unique | SHA-256 of the `stella_…` (API) or `stellacal_…` (calendar) secret; the secret itself is shown once and never stored |
+| scope | text enum | `api` signs in to `/api/v1/` only; `calendar` opens only its member's `/cal/<secret>.ics`. At most one `calendar` row per member — a new link replaces it |
 | created_at | int | |
-| expires_at | int | a fixed last day (30, 90 or 365 days on); never slides forward on use |
-| last_used_at | int null | stamped on every request it signs |
+| expires_at | int null | an API token's fixed last day (30, 90 or 365 days on), never sliding forward on use; null for a calendar link, which lasts until revoked |
+| last_used_at | int null | stamped on every request it signs, or every fetch of the feed |
 
 ### identity
 Links a Stella user to an external OIDC identity (e.g. Authelia). A user may have a local

@@ -16,7 +16,13 @@ export const dates = {
 	'dates.ago.years': (p: { years: number }) => `${p.years} years ago`,
 	'dates.ago.months': (p: { months: number }) => `${p.months} months ago`,
 	'dates.ago.weeks': (p: { weeks: number }) => `${p.weeks} weeks ago`,
-	'dates.ago.days': (p: { days: number }) => `${p.days} days ago`
+	'dates.ago.days': (p: { days: number }) => `${p.days} days ago`,
+	// An event in a member's subscribed calendar (§2.13.4).
+	'dates.feed.birthday': (p: { name: string }) => `${p.name}'s birthday`,
+	'dates.feed.anniversary': (p: { name: string }) => `${p.name}'s anniversary`,
+	'dates.feed.custom': (p: { name: string; label: string }) => `${p.name}: ${p.label}`,
+	'dates.feed.born': (p: { year: number }) => `Born ${p.year}`,
+	'dates.feed.since': (p: { year: number }) => `Since ${p.year}`
 };
 
 /** The key set every translation of this area has to provide. */

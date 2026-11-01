@@ -114,6 +114,11 @@ right:
 - The proxy must pass the `Host` and `X-Forwarded-*` headers through.
 - `STELLA_URL` must match the public address exactly, scheme included.
 
+The calendar links members subscribe to (*Settings → Calendar*) are built from `STELLA_URL`,
+and it is the phone's calendar — or Google's servers, for Google Calendar — that fetches them.
+So the address must be reachable from there: a link on a LAN-only address works on the phones
+at home only, and Google Calendar needs it reachable from the internet.
+
 [07 — Deployment §7.5 and §7.6](07-deployment.md#75-docker-composeyml) has ready-made
 compose and Traefik snippets.
 

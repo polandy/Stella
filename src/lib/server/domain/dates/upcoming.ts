@@ -24,6 +24,8 @@ export const UPCOMING_LIMIT = 5;
 export const IMMINENT_HORIZON_DAYS = 14;
 
 export interface UpcomingSource {
+	/** The `important_date` row's id; null for a derived birthday, which has no row. */
+	dateId: string | null;
 	contactId: string;
 	contactName: string;
 	avatarPhotoId: string | null;
@@ -77,9 +79,26 @@ function nextRecurrence(source: DayParts, from: DayParts): { ms: number; year: n
 }
 
 /**
- * The upcoming dates for a viewer, nearest first. Deceased people, muted dates, one-off dates
- * that have passed and anything beyond the horizon are left out; the derived birthday of a
- * contact that also has an explicit birthday row is dropped in favour of the explicit one.
+ * The dates on the household's radar, whenever they fall: deceased people and muted dates are
+ * left out, and the derived birthday of a contact that also has an explicit birthday row is
+ * dropped in favour of the explicit one. *Coming up* and the calendar feed (docs/02 §2.13.4)
+ * both start from here, so muting a date means the same in both.
+ */
+export function datesOnTheRadar(sources: readonly UpcomingSource[]): UpcomingSource[] {
+	const explicitBirthdays = new Set(
+		sources.filter((s) => s.kind === 'birthday' && !s.derived).map((s) => s.contactId)
+	);
+	return sources.filter(
+		(source) =>
+			!source.isDeceased &&
+			source.remind &&
+			!(source.derived && source.kind === 'birthday' && explicitBirthdays.has(source.contactId))
+	);
+}
+
+/**
+ * The upcoming dates for a viewer, nearest first: the dates on the radar, less one-off dates
+ * that have passed and anything beyond the horizon.
  */
 export function upcomingDates(
 	sources: UpcomingSource[],
@@ -92,17 +111,8 @@ export function upcomingDates(
 	if (!from || from.year === null) throw new Error(`Not a calendar day: ${today}`);
 	const todayMs = utc(from.year, from.month, from.day);
 
-	// An explicit birthday row wins over the one derived from the contact's birth date.
-	const explicitBirthdays = new Set(
-		sources.filter((s) => s.kind === 'birthday' && !s.derived).map((s) => s.contactId)
-	);
-
 	const upcoming: UpcomingDate[] = [];
-	for (const source of sources) {
-		if (source.isDeceased || !source.remind) continue;
-		if (source.derived && source.kind === 'birthday' && explicitBirthdays.has(source.contactId)) {
-			continue;
-		}
+	for (const source of datesOnTheRadar(sources)) {
 		const day = dayParts(source.date);
 		if (!day) continue;
 

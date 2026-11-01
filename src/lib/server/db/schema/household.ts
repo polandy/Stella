@@ -68,6 +68,8 @@ export const session = sqliteTable(
 /*
  * A member's API token (docs/02 §2.16.1, docs/03 §3.2). Stored as the SHA-256 of the secret,
  * like a session; unlike one it has a name, a fixed last day and a record of its last use.
+ * Its `scope` says what it opens: the API (`api`), or only its member's calendar feed
+ * (`calendar`, docs/02 §2.13.4), which has no last day — it lasts until revoked.
  */
 export const apiToken = sqliteTable(
 	'api_token',
@@ -78,8 +80,11 @@ export const apiToken = sqliteTable(
 			.references(() => user.id, { onDelete: 'cascade' }),
 		name: text('name').notNull(),
 		tokenHash: text('token_hash').notNull().unique(),
+		scope: text('scope', { enum: ['api', 'calendar'] })
+			.notNull()
+			.default('api'),
 		createdAt: integer('created_at').notNull().default(now),
-		expiresAt: integer('expires_at').notNull(),
+		expiresAt: integer('expires_at'),
 		lastUsedAt: integer('last_used_at')
 	},
 	(t) => [index('api_token_user_idx').on(t.userId)]

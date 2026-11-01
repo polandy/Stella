@@ -198,6 +198,7 @@ export const settings = {
 	'settings.apiTokens.usage': 'Send it with every request:',
 	'settings.apiTokens.copy': 'Copy',
 	'settings.apiTokens.copied': 'Copied',
+	'settings.apiTokens.copyFailed': 'Select it and copy',
 	'settings.apiTokens.yours': 'Your tokens',
 	'settings.apiTokens.none': 'You have no tokens.',
 	'settings.apiTokens.validUntil': (p: { date: string }) => `Valid until ${p.date}`,
@@ -209,7 +210,58 @@ export const settings = {
 	'settings.apiTokens.revoked': 'Token revoked. Scripts using it can no longer sign in.',
 	'settings.apiTokens.notFound': 'That token is already gone.',
 	'settings.about.off':
-		'Stella is not checking for new releases. Set UPDATE_CHECK=true to switch it on.'
+		'Stella is not checking for new releases. Set UPDATE_CHECK=true to switch it on.',
+	// *Settings → Calendar* (docs/02 §2.13.4): the member's dates as a subscribed calendar.
+	'settings.calendar.heading': 'Calendar',
+	'settings.calendar.title': 'Calendar',
+	'settings.calendar.blurb': 'Birthdays and anniversaries in your phone’s own calendar.',
+	'settings.calendar.intro':
+		'Birthdays, anniversaries and your other dates in your phone’s own calendar. The calendar does the reminding.',
+	'settings.calendar.what': (p: { toggle: string; comingUp: string }): string =>
+		`Every date with “${p.toggle}” on, of everyone you can see — the same dates as ${p.comingUp}, all year. Private people only in your own calendar.`,
+	'settings.calendar.create': 'Create calendar link',
+	'settings.calendar.createdHeading': 'Your calendar link',
+	'settings.calendar.createdHint':
+		'Copy it now — it is shown only this once. Anyone with the link can read these dates, so keep it to yourself.',
+	'settings.calendar.copy': 'Copy',
+	'settings.calendar.copied': 'Copied',
+	'settings.calendar.copyFailed': 'Select it and copy',
+	'settings.calendar.addTo': 'Add it to',
+	'settings.calendar.app.google': 'Google Calendar',
+	'settings.calendar.app.ios': 'iPhone',
+	'settings.calendar.app.other': 'Other',
+	'settings.calendar.steps.google.1':
+		'On a computer, open Google Calendar → Other calendars → + → From URL.',
+	'settings.calendar.steps.google.2':
+		'Paste the link and add it. It appears on your phone a little later.',
+	'settings.calendar.steps.google.3':
+		'Set its reminders under the calendar’s settings (e.g. 1 day before).',
+	'settings.calendar.steps.ios.1': 'Settings → Calendar → Accounts → Add Account → Other.',
+	'settings.calendar.steps.ios.2': 'Add Subscribed Calendar, paste the link, Next, Save.',
+	'settings.calendar.steps.ios.3': 'Alerts: Calendar → Default Alert Times → All-Day Events.',
+	'settings.calendar.steps.other.1': 'Thunderbird: New Calendar → On the Network → paste the link.',
+	'settings.calendar.steps.other.2':
+		'Android without Google: the ICSx⁵ app → + → paste the link; it needs no login.',
+	'settings.calendar.steps.other.3': 'Reminders are set in that app, per calendar.',
+	'settings.calendar.done': 'Done',
+	'settings.calendar.yours': 'Your link',
+	'settings.calendar.link': 'Calendar link',
+	'settings.calendar.created': (p: { date: string }): string => `Created ${p.date}`,
+	'settings.calendar.lastFetched': (p: { date: string }): string => `last fetched ${p.date}`,
+	'settings.calendar.notFetched': 'not fetched yet',
+	'settings.calendar.replace': 'Create a new link…',
+	'settings.calendar.revoke': 'Revoke…',
+	'settings.calendar.lost': 'Lost the link? Create a new one — the old one stops working.',
+	'settings.calendar.confirmReplace.heading': 'Replace the link?',
+	'settings.calendar.confirmReplace.body':
+		'Calendars subscribed to the old link stop updating. You add the new one once on each device.',
+	'settings.calendar.confirmReplace.submit': 'Create new link',
+	'settings.calendar.confirmRevoke.heading': 'Revoke the calendar link?',
+	'settings.calendar.confirmRevoke.body':
+		'It stops working at once, everywhere. The calendar on your phone keeps what it last fetched until you remove it there.',
+	'settings.calendar.confirmRevoke.submit': 'Revoke',
+	'settings.calendar.keep': 'Keep it',
+	'settings.calendar.revoked': 'Calendar link revoked.'
 };
 
 /** The key set every translation of this area has to provide. */
