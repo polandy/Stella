@@ -241,7 +241,7 @@ export const settings = {
 	'settings.calendar.steps.ios.3': 'Alerts: Calendar → Default Alert Times → All-Day Events.',
 	'settings.calendar.steps.other.1': 'Thunderbird: New Calendar → On the Network → paste the link.',
 	'settings.calendar.steps.other.2':
-		'Android without Google: DAVx⁵ or ICSx⁵ → subscribe to the link.',
+		'Android without Google: the ICSx⁵ app → + → paste the link; it needs no login.',
 	'settings.calendar.steps.other.3': 'Reminders are set in that app, per calendar.',
 	'settings.calendar.done': 'Done',
 	'settings.calendar.yours': 'Your link',

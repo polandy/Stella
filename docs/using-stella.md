@@ -635,8 +635,8 @@ straight away — it is shown only this once — and add it:
   From URL*, paste the link. It reaches your phone a little later.
 - **iPhone:** *Settings → Calendar → Accounts → Add Account → Other → Add Subscribed
   Calendar*, paste the link.
-- **Elsewhere:** Thunderbird's *New Calendar → On the Network*, or DAVx⁵ / ICSx⁵ on Android
-  without Google.
+- **Elsewhere:** Thunderbird's *New Calendar → On the Network*, or the ICSx⁵ app on Android
+  without Google (*+*, paste the link, no login: the secret in the link is the login).
 
 The calendar then shows every date that has *Show on Home* on, of everyone you can see, all
 year round — private people only in your own. When and whether it reminds you is set in the

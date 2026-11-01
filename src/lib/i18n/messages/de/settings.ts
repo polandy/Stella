@@ -230,7 +230,8 @@ export const settings: SettingsMessages = {
 	'settings.calendar.steps.ios.2': 'Kalenderabo hinzufügen, Link einfügen, Weiter, Sichern.',
 	'settings.calendar.steps.ios.3': 'Hinweise: Kalender → Standardhinweise → Ganztägige Ereignisse.',
 	'settings.calendar.steps.other.1': 'Thunderbird: Neuer Kalender → Im Netzwerk → Link einfügen.',
-	'settings.calendar.steps.other.2': 'Android ohne Google: DAVx⁵ oder ICSx⁵ → den Link abonnieren.',
+	'settings.calendar.steps.other.2':
+		'Android ohne Google: die App ICSx⁵ → + → Link einfügen; ohne Anmeldung.',
 	'settings.calendar.steps.other.3': 'Erinnerungen stellst du in dieser App ein, je Kalender.',
 	'settings.calendar.done': 'Fertig',
 	'settings.calendar.yours': 'Dein Link',
