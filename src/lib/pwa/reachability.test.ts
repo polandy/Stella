@@ -1,5 +1,12 @@
 import { describe, expect, it } from 'bun:test';
-import { REPORT_REACHABILITY, isReachabilityReport, probeSays } from './reachability';
+import {
+	CHECK_REACHABILITY,
+	REPORT_REACHABILITY,
+	checkMessage,
+	isReachabilityReport,
+	probeSays,
+	readCheck
+} from './reachability';
 
 /*
  * A page's message channel is shared with anything else that cares to post to it, so the
@@ -80,5 +87,29 @@ describe('what a reachability check concludes', () => {
 		expect(
 			probeSays({ deviceOnline: true, answer: { ...stella, type: 'opaqueredirect', body: null } })
 		).toBe(false);
+	});
+});
+
+/*
+ * The page hears `offline` and `online` before the worker's own `navigator.onLine` has caught
+ * up, so a check carries what the page saw. Trusting the worker's lagging view kept From Immich
+ * enabled offline (pwa-offline.spec.ts, PR #425).
+ */
+describe('a reachability check', () => {
+	it('carries what the page saw of the device', () => {
+		expect(readCheck(checkMessage(false))).toEqual({ deviceOnline: false });
+		expect(readCheck(checkMessage(true))).toEqual({ deviceOnline: true });
+	});
+
+	it('from a page older than that still counts, leaving the device to the worker', () => {
+		// During an update the new worker can still hear a page of the previous build for a moment.
+		expect(readCheck(CHECK_REACHABILITY)).toEqual({ deviceOnline: null });
+	});
+
+	it('is not confused with another message on the same channel', () => {
+		expect(readCheck({ type: CHECK_REACHABILITY, deviceOnline: 'no' })).toBeNull();
+		expect(readCheck({ type: REPORT_REACHABILITY, reachable: true })).toBeNull();
+		expect(readCheck('stella:reachability?')).toBeNull();
+		expect(readCheck(null)).toBeNull();
 	});
 });

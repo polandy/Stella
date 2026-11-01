@@ -23,6 +23,34 @@ export const ASK_REACHABILITY = 'stella:reachability?';
  */
 export const CHECK_REACHABILITY = 'stella:reachability!';
 
+/**
+ * A check as a page sends it, with what the page itself just saw of the device. The page hears
+ * `offline` and `online` before the worker's own `navigator.onLine` has caught up, so the
+ * worker takes the page's word for it rather than its own lagging one.
+ */
+export interface ReachabilityCheck {
+	type: typeof CHECK_REACHABILITY;
+	deviceOnline: boolean;
+}
+
+/** The check a page sends when `deviceOnline` is what its `navigator.onLine` says now. */
+export function checkMessage(deviceOnline: boolean): ReachabilityCheck {
+	return { type: CHECK_REACHABILITY, deviceOnline };
+}
+
+/**
+ * The check in `data` off a `message` event, or null when it is something else. A page of the
+ * previous build sends the bare string during an update; it says nothing of the device, so
+ * `deviceOnline` is null and the worker asks its own.
+ */
+export function readCheck(data: unknown): { deviceOnline: boolean | null } | null {
+	if (data === CHECK_REACHABILITY) return { deviceOnline: null };
+	if (typeof data !== 'object' || data === null) return null;
+	const message = data as Record<string, unknown>;
+	if (message.type !== CHECK_REACHABILITY || typeof message.deviceOnline !== 'boolean') return null;
+	return { deviceOnline: message.deviceOnline };
+}
+
 /** What the worker asks to find out: public, no database, and cheap enough for every check. */
 export const PROBE_PATH = '/healthz';
 

@@ -41,10 +41,10 @@ import {
 } from '$lib/pwa/people-ahead';
 import {
 	ASK_REACHABILITY,
-	CHECK_REACHABILITY,
 	PROBE_PATH,
 	REPORT_REACHABILITY,
 	probeSays,
+	readCheck,
 	type ReachabilityReport
 } from '$lib/pwa/reachability';
 
@@ -144,14 +144,23 @@ worker.addEventListener('message', (event) => {
 		// A page opening is also the moment to keep what should be there before it is read.
 		event.waitUntil(keepAhead().then(refreshPeople));
 	}
-	if (event.data === CHECK_REACHABILITY) event.waitUntil(checkReachability());
+	const check = readCheck(event.data);
+	if (check) event.waitUntil(checkReachability(check.deviceOnline ?? worker.navigator.onLine));
 });
 
 /** The check under way, so a burst of events (offline, then hidden, then shown) asks once. */
 let reachabilityCheck: Promise<void> | null = null;
 
-/** Find out whether Stella answers, without waiting for a page's request to show it. */
-function checkReachability(): Promise<void> {
+/**
+ * Find out whether Stella answers, without waiting for a page's request to show it. A device
+ * without a network settles it at once, and does not join a probe already under way, which
+ * would answer for the network as it was.
+ */
+function checkReachability(deviceOnline: boolean): Promise<void> {
+	if (!deviceOnline) {
+		noteReachability(probeSays({ deviceOnline, answer: null }));
+		return Promise.resolve();
+	}
 	reachabilityCheck ??= probe().finally(() => {
 		reachabilityCheck = null;
 	});
@@ -159,14 +168,13 @@ function checkReachability(): Promise<void> {
 }
 
 async function probe(): Promise<void> {
-	const deviceOnline = worker.navigator.onLine;
-	const response = deviceOnline ? await fetchAhead(PROBE_PATH) : null;
+	const response = await fetchAhead(PROBE_PATH);
 	const answer = response && {
 		ok: response.ok,
 		type: response.type,
 		body: await response.json().catch(() => null)
 	};
-	noteReachability(probeSays({ deviceOnline, answer }));
+	noteReachability(probeSays({ deviceOnline: true, answer }));
 }
 
 /** Fetch and keep each `KEPT_AHEAD` page this build's cache does not hold yet. */
