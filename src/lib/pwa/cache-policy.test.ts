@@ -9,6 +9,7 @@ import {
 	isPageData,
 	patienceFor,
 	endsTheSession,
+	isShareArrival,
 	isStellaCache,
 	keptAt,
 	standInFor,
@@ -178,8 +179,9 @@ describe('what must never be kept', () => {
 
 describe('what is kept before it is read', () => {
 	it('is every place a phone starts from, so a fresh update is not an empty app on the train', () => {
-		// docs/02 §2.18, *What a device keeps*: Home, People, Circles and Settings.
-		expect([...KEPT_AHEAD].sort()).toEqual(['/', '/circles', '/contacts', '/settings']);
+		// docs/02 §2.18, *What a device keeps*: Home, People, Circles and Settings — and the
+		// share sheet, which a share opens offline as readily as online (§2.18.3).
+		expect([...KEPT_AHEAD].sort()).toEqual(['/', '/circles', '/contacts', '/settings', '/share']);
 	});
 
 	it('is only ever what would be kept anyway once read', () => {
@@ -218,6 +220,28 @@ describe('the cache name', () => {
 	it('is not so loose that it claims another app’s cache', () => {
 		expect(isStellaCache('workbox-precache-v2')).toBe(false);
 		expect(isStellaCache('')).toBe(false);
+	});
+});
+
+describe('a share from another app', () => {
+	it('is the share sheet posted to, as the phone does it', () => {
+		expect(isShareArrival({ ...page('/share'), method: 'POST' })).toBe(true);
+	});
+
+	it('is not the sheet opened, nor a post anywhere else', () => {
+		expect(isShareArrival(page('/share'))).toBe(false);
+		expect(isShareArrival({ ...page('/share/other'), method: 'POST' })).toBe(false);
+		expect(isShareArrival({ ...page('/contacts'), method: 'POST' })).toBe(false);
+	});
+
+	it('is never another origin’s post', () => {
+		const foreign = { ...page('/share'), method: 'POST', url: 'https://elsewhere.example/share' };
+
+		expect(isShareArrival(foreign)).toBe(false);
+	});
+
+	it('leaves the sheet waiting on a share to the kept sheet when offline', () => {
+		expect(standInFor(page('/share?pending=01J'))).toBe('/share');
 	});
 });
 

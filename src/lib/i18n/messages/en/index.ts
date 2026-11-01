@@ -27,6 +27,7 @@ import { pwa } from './pwa';
 import { relationships } from './relationships';
 import { search } from './search';
 import { settings } from './settings';
+import { share } from './share';
 import { story } from './story';
 import { surnames } from './surnames';
 import { todos } from './todos';
@@ -57,6 +58,7 @@ export const en = {
 	...relationships,
 	...search,
 	...settings,
+	...share,
 	...story,
 	...surnames,
 	...todos

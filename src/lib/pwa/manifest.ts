@@ -33,7 +33,38 @@ export interface WebAppManifest {
 	background_color: string;
 	theme_color: string;
 	icons: ManifestIcon[];
+	share_target: ShareTarget;
 }
+
+/**
+ * The Web Share Target entry that puts Stella in the phone's share sheet (docs/02 §2.18.3).
+ * A POST, so photos can come along; the service worker takes it, Stella's server never sees it
+ * unless the app is not installed.
+ */
+export interface ShareTarget {
+	action: string;
+	method: 'POST';
+	enctype: 'multipart/form-data';
+	params: {
+		title: string;
+		text: string;
+		url: string;
+		files: { name: string; accept: string[] }[];
+	};
+}
+
+/** Where a share lands, and the form fields its parts arrive in. */
+export const SHARE_TARGET: ShareTarget = {
+	action: '/share',
+	method: 'POST',
+	enctype: 'multipart/form-data',
+	params: {
+		title: 'title',
+		text: 'text',
+		url: 'url',
+		files: [{ name: 'files', accept: ['image/*'] }]
+	}
+};
 
 /** Where the generated icons are served from, under `static/`. */
 const ICON_PATH = '/icons';
@@ -82,6 +113,7 @@ export function buildManifest(t: Translate): WebAppManifest {
 		orientation: 'any',
 		background_color: DEFAULT_APP_BACKGROUND,
 		theme_color: DEFAULT_APP_BACKGROUND,
-		icons: [...APP_ICONS]
+		icons: [...APP_ICONS],
+		share_target: SHARE_TARGET
 	};
 }

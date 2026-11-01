@@ -57,13 +57,32 @@ const NEVER_CACHED = [
 	'/settings/immich'
 ];
 
+/** The share sheet, and where the phone posts what another app shares (docs/02 §2.18.3). */
+export const SHARE_PATH = '/share';
+
+/**
+ * Whether `request` is a share from another app arriving: the phone posts it to the share
+ * sheet, and the worker keeps it on the device and opens the sheet on it, reachable or not.
+ */
+export function isShareArrival(request: CacheableRequest): boolean {
+	if (request.method !== 'POST') return false;
+	const url = new URL(request.url);
+	return url.origin === request.origin && url.pathname === SHARE_PATH;
+}
+
 /**
  * Pages the service worker keeps as soon as a page opens in reach, rather than once they are
  * read: the places a phone starts from (docs/02 §2.18, *What a device keeps*). Every update
  * starts from an empty cache, so without these the app is empty on the train the morning after
  * one — and Settings is opened rarely and wanted offline all the same.
  */
-export const KEPT_AHEAD: readonly string[] = ['/', '/contacts', '/circles', '/settings'];
+export const KEPT_AHEAD: readonly string[] = [
+	'/',
+	'/contacts',
+	'/circles',
+	'/settings',
+	SHARE_PATH
+];
 
 /**
  * When a kept copy was fetched, from its response's `Date` header: the moment Stella wrote it,

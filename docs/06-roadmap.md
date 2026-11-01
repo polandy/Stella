@@ -199,31 +199,8 @@ the screen file in the same PR that builds it, and leaves a one-line *built* not
 1. **Dates in the phone's calendar — a subscribable `.ics` link** — *built*; see docs/02
    §2.13.4. To-dos in the feed stay open.
 
-2. **Sharing into Stella from other apps (Web Share Target)** — *queued.* On Android the
-   installed PWA appears in the system *Share* sheet; a photo, a link or a piece of text from
-   any app becomes a record about a person in two taps. iOS Safari does not support share
-   targets: there the feature is simply absent, nothing breaks.
-   - **The flow.** The manifest declares `share_target` (`POST`, `multipart/form-data`, fields
-     `title`, `text`, `url`, `files` for `image/*`). It lands on `/share`, a small sheet:
-     a preview of what came in, a person picker (with photos, docs/05 §5.10) and the choices
-     that fit what was shared — **photo**: *Add to their photos* (§2.14) or *Use as profile
-     photo*; **text or link**: *Moment about them* (prefilled capture, §2.22.1), *Gift idea*
-     (§2.25, the link as the idea's link) or *To-do* (§2.26). One primary button, *Save*; the
-     sheet closes back to the person page with the usual toast and undo.
-   - **Offline.** The service worker answers the share `POST` itself, keeps the payload
-     (files as blobs) in IndexedDB and opens `/share?pending=<id>`; saving goes through the
-     offline outbox like any other add (§2.18.1, docs/04 §4.9), so sharing works on the train.
-     A photo larger than the outbox's limit says so instead of failing silently.
-   - **Rules.** Every write is an existing command through the existing use-case and access
-     layer — no new domain kinds. Photos go through the sharp pipeline (EXIF strip, §2.14).
-     Visibility is the kind's default (shared, §2.10); the sheet
-     offers the private switch where the target kind has one.
-   - **Tests.** Unit: the pure decision "what was shared → which choices" (`src/lib/share/`).
-     E2e: post a crafted multipart to `/share` (with `accept: text/html`), pick a person, save
-     a moment and a photo; one offline case with the black-hole route.
-   - **Docs.** docs/02 §2.18, a `share.md` screen file, `using-stella.md`.
-   - **Open.** Whether several shared photos at once are allowed (recommended: yes, up to 10,
-     all to one person); whether a shared link should be offered as a *note* too.
+2. **Sharing into Stella from other apps (Web Share Target)** — *built*; see docs/02
+   §2.18.3. A shared link as a *note* was declined: moment, gift idea and to-do cover it.
 
 3. **On this day — memories on Home** — *queued.* A quiet band in Home's rail, below *Coming
    up* and *To do*: what the household wrote on today's date in earlier years. Not a nudge and

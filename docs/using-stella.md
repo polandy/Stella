@@ -1339,6 +1339,25 @@ the household with it. If moments you wrote are still waiting, Stella asks first
 them or throw them away. Kept, they are yours: they are sent the next time you sign in, and
 nobody else signing in on that phone sees them.
 
+### Sharing into Stella from other apps
+
+On an Android phone with Stella installed, Stella is in the *Share* menu of other apps. Share a
+photo from the gallery, or a link or some text from the browser or a chat, pick **Share to
+Stella**, and a small sheet opens: what you shared at the top, then **About whom?** — the
+people you looked at last on this phone first, a search for everyone else — and **As** what
+to keep it.
+
+- **Photos** (up to ten at once) go *to the photos* of that person, without the location your
+  camera stored. A single photo can also become their **profile photo**: you choose the crop,
+  as on their page. That one needs a connection to home.
+- **A link or text** becomes a **moment** about them (the link at the end of the text), a
+  **gift idea** (with the link as the idea's link) or a **to-do** (the link added at the end).
+  You can change the words before saving, and make it private.
+
+*Save* takes you to the person's page, where the new entry is. Away from home it works too: the
+button says *Save for later* and the entry waits on your phone like anything else you write
+there. On an iPhone, Safari does not let web apps into the share menu, so this is not there.
+
 ## Light and dark
 
 Stella follows whatever your device is set to, and both themes are designed rather than

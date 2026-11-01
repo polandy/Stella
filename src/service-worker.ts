@@ -20,10 +20,12 @@ import {
 	KEPT_AHEAD,
 	NETWORK_PATIENCE_MS,
 	OFFLINE_FALLBACK_PATH,
+	SHARE_PATH,
 	cacheKeyFor,
 	cacheNameFor,
 	endsTheSession,
 	isPageData,
+	isShareArrival,
 	isStellaCache,
 	keptAt,
 	patienceFor,
@@ -47,6 +49,7 @@ import {
 	readCheck,
 	type ReachabilityReport
 } from '$lib/pwa/reachability';
+import { keepShare, shareFrom } from '$lib/pwa/share-store';
 
 const worker = self as unknown as ServiceWorkerGlobalScope;
 const CACHE = cacheNameFor(version);
@@ -389,6 +392,11 @@ worker.addEventListener('fetch', (event) => {
 		return;
 	}
 
+	if (isShareArrival(described)) {
+		event.respondWith(takeShare(request));
+		return;
+	}
+
 	if (request.method !== 'GET') return;
 
 	const url = new URL(request.url);
@@ -417,6 +425,19 @@ worker.addEventListener('fetch', (event) => {
 		);
 	}
 });
+
+/**
+ * A share from another app (docs/02 §2.18.3): kept on the device and the sheet opened on it,
+ * whether Stella is in reach or not — the sheet saves through the outbox, which waits when it
+ * must. A 303, so the sheet is a GET the cache can answer and a reload does not post again.
+ */
+async function takeShare(request: Request): Promise<Response> {
+	const share = shareFrom(await request.formData(), crypto.randomUUID(), Date.now());
+	await keepShare(share);
+	const sheet = new URL(SHARE_PATH, worker.location.origin);
+	sheet.searchParams.set('pending', share.id);
+	return Response.redirect(sheet.href, 303);
+}
 
 /**
  * A page that is never kept, answered by the network — or, when that does not answer, by the
