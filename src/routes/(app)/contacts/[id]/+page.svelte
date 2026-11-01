@@ -10,6 +10,7 @@
 	import StorySection from '$lib/components/person/StorySection.svelte';
 	import TodosSection from '$lib/components/person/TodosSection.svelte';
 	import { sectionAnchor } from '$lib/people/sections';
+	import { deviceStorage, openedHere } from '$lib/share/opened-here';
 	import { useI18n } from '$lib/i18n/context.svelte';
 	import { showOpenedForm } from '$lib/motion/motion.svelte';
 	import { JustDoneTodos } from '$lib/todos/just-done.svelte';
@@ -74,6 +75,10 @@
 	$effect(() => {
 		void contactId;
 		photoView = { ...PHOTO_VIEW_AT_START };
+	});
+	// Who was opened here is who a share from another app is offered to first (docs/02 §2.18.3).
+	$effect(() => {
+		openedHere(deviceStorage, data.user.id).note(contactId);
 	});
 	async function showTogether(contactId: string) {
 		photoView = { ...photoView, tab: 'immich', askedByRow: contactId, shown: contactId };

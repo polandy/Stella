@@ -36,6 +36,24 @@ describe('the web app manifest', () => {
 	});
 });
 
+describe('sharing into Stella', () => {
+	it('puts Stella in the share sheet for links, text and photos', () => {
+		const { share_target } = buildManifest(createTranslator('en'));
+
+		expect(share_target).toEqual({
+			action: '/share',
+			method: 'POST',
+			enctype: 'multipart/form-data',
+			params: {
+				title: 'title',
+				text: 'text',
+				url: 'url',
+				files: [{ name: 'files', accept: ['image/*'] }]
+			}
+		});
+	});
+});
+
 describe('the icon iOS is given', () => {
 	it('is a PNG, because Safari takes nothing else', () => {
 		expect(APPLE_TOUCH_ICON.type).toBe('image/png');
