@@ -128,11 +128,23 @@ function noteServed(event: FetchEvent, kept: Response | null): void {
 	void worker.clients.get(clientId).then((client) => client?.postMessage(reportFor(clientId)));
 }
 
+/**
+ * How often a page has said the device lost its network. A request sent before the latest of
+ * those was in flight when the network went, and can still be answered a moment later: that
+ * answer is about before, and must not make Stella reachable again over the page's newer word.
+ */
+let deviceWentOffline = 0;
+
 /** Record what a request turned out to prove, and tell the pages only when it changed. */
 function noteReachability(nowReachable: boolean): void {
 	if (nowReachable === reachable) return;
 	reachable = nowReachable;
 	void report();
+}
+
+/** Record that Stella answered a request sent when `sentAt` was `deviceWentOffline`. */
+function noteAnswered(sentAt: number): void {
+	if (sentAt === deviceWentOffline) noteReachability(true);
 }
 
 worker.addEventListener('message', (event) => {
@@ -158,23 +170,30 @@ let reachabilityCheck: Promise<void> | null = null;
  */
 function checkReachability(deviceOnline: boolean): Promise<void> {
 	if (!deviceOnline) {
+		deviceWentOffline += 1;
+		// A probe under way answers for the network as it was: the next check starts its own.
+		reachabilityCheck = null;
 		noteReachability(probeSays({ deviceOnline, answer: null }));
 		return Promise.resolve();
 	}
-	reachabilityCheck ??= probe().finally(() => {
-		reachabilityCheck = null;
+	if (reachabilityCheck) return reachabilityCheck;
+	const check = probe().finally(() => {
+		if (reachabilityCheck === check) reachabilityCheck = null;
 	});
-	return reachabilityCheck;
+	reachabilityCheck = check;
+	return check;
 }
 
 async function probe(): Promise<void> {
+	const sentAt = deviceWentOffline;
 	const response = await fetchAhead(PROBE_PATH);
 	const answer = response && {
 		ok: response.ok,
 		type: response.type,
 		body: await response.json().catch(() => null)
 	};
-	noteReachability(probeSays({ deviceOnline: true, answer }));
+	if (!probeSays({ deviceOnline: true, answer })) noteReachability(false);
+	else noteAnswered(sentAt);
 }
 
 /** Fetch and keep each `KEPT_AHEAD` page this build's cache does not hold yet. */
@@ -303,8 +322,9 @@ async function networkWithin(
 	hasCopy: boolean,
 	onAnswer: (response: Response) => void = () => {}
 ): Promise<Response | null> {
+	const sentAt = deviceWentOffline;
 	const network = fetch(request).then((response) => {
-		noteReachability(true);
+		noteAnswered(sentAt);
 		onAnswer(response);
 		return response;
 	});
