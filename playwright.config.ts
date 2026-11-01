@@ -87,12 +87,19 @@ export default defineConfig({
 			dependencies: ['setup'],
 			use: { ...devices['Desktop Chrome'], storageState: AUTH_STATE_PATH }
 		},
-		// The offline behaviour is the phone's, so it is driven at a phone's size.
+		// The offline behaviour is the phone's, so it is driven at a phone's size. Full Chromium
+		// rather than the headless shell: the shell segfaulted twice closing a context of these
+		// specs (worker running, offline toggled), the browser itself, not the app.
 		{
 			name: 'pwa',
 			testMatch: PWA_SPECS,
 			dependencies: ['setup'],
-			use: { ...devices['Pixel 7'], storageState: AUTH_STATE_PATH, serviceWorkers: 'allow' }
+			use: {
+				...devices['Pixel 7'],
+				channel: 'chromium',
+				storageState: AUTH_STATE_PATH,
+				serviceWorkers: 'allow'
+			}
 		}
 	],
 	webServer: [

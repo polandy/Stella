@@ -551,6 +551,13 @@ for (const [action, confirm, keeps, family] of [
 		await warning.getByRole('button', { name: confirm }).click();
 		if (action === 'Remove') {
 			await expect(tiles(page)).toHaveCount(0);
+			// The removal is held for Undo. Leaving through the app's own link sends it and waits
+			// for it; a `page.goto` would fire it with `keepalive` and race it (see openPeople).
+			await page
+				.getByTestId('member-grid')
+				.getByRole('link', { name: `Aurelio ${family}` })
+				.click();
+			await expect(page).toHaveURL(aurelioPage);
 		} else {
 			await expect(owner.getByRole('button', { name: 'Share with the household' })).toBeVisible();
 		}

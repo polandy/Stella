@@ -1,6 +1,7 @@
-import { expect, test, type BrowserContext, type Page } from '@playwright/test';
+import { expect, test, type BrowserContext, type Page, type Route } from '@playwright/test';
 import { NETWORK_PATIENCE_MS } from '../src/lib/pwa/cache-policy';
 import { COMMAND_PATIENCE_MS } from '../src/lib/pwa/outbox';
+import { ASK_REACHABILITY, REPORT_REACHABILITY } from '../src/lib/pwa/reachability';
 import { addPerson, signIn } from './app';
 import { linkCardFace, photoTab, unlinkFace, uploadPhotos } from './photo-card';
 
@@ -26,6 +27,24 @@ async function underWorker(page: Page): Promise<void> {
 			navigator.serviceWorker.addEventListener('controllerchange', resolve, { once: true })
 		);
 	});
+}
+
+/** Whether the worker says Stella answers, asked the way a page that has just opened asks. */
+function workerSays(page: Page): Promise<boolean> {
+	return page.evaluate(
+		({ ask, report }) =>
+			new Promise<boolean>((resolve) => {
+				const worker = navigator.serviceWorker;
+				const heard = (event: MessageEvent) => {
+					if (event.data?.type !== report) return;
+					worker.removeEventListener('message', heard);
+					resolve(event.data.reachable === true);
+				};
+				worker.addEventListener('message', heard);
+				worker.controller?.postMessage(ask);
+			}),
+		{ ask: ASK_REACHABILITY, report: REPORT_REACHABILITY }
+	);
 }
 
 /** Whether the worker's cache holds a page, which is what makes it readable offline. */
@@ -184,6 +203,40 @@ test('greys out From Immich offline, and offers it again once back', async ({ pa
 		await context.setOffline(false);
 		await expect(fromImmich).toHaveAttribute('aria-disabled', 'false');
 		await expect(fromImmich).not.toContainText('Needs a connection');
+	} finally {
+		await context.setOffline(false);
+	}
+});
+
+test('keeps From Immich greyed when an answer sent before going offline lands after', async ({
+	page,
+	context
+}) => {
+	// A request in flight when the network goes can still be answered a moment later. That
+	// answer is about before: it must not make Stella reachable again over the page's word.
+	await page.locator('nav a[aria-label="Write a moment"]').click();
+	const sheet = page.getByTestId('compose-sheet');
+	await expect(sheet).toBeVisible();
+	let hold!: (route: Route) => void;
+	const inFlight = new Promise<Route>((resolve) => (hold = resolve));
+	await context.route('**/contacts/__data.json*', (route) => hold(route));
+	const answered = page.evaluate(() =>
+		fetch('/contacts/__data.json').then(
+			() => null,
+			() => null
+		)
+	);
+	const route = await inFlight;
+	try {
+		await context.setOffline(true);
+		await sheet.getByRole('button', { name: 'Add photos' }).click();
+		const fromImmich = page.getByRole('menuitem', { name: /^From Immich/ });
+		await expect(fromImmich).toHaveAttribute('aria-disabled', 'true');
+
+		await route.fulfill({ status: 204 });
+		await answered;
+		expect(await workerSays(page)).toBe(false);
+		await expect(fromImmich).toHaveAttribute('aria-disabled', 'true');
 	} finally {
 		await context.setOffline(false);
 	}
