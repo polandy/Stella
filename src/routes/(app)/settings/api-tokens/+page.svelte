@@ -5,6 +5,7 @@
 	import Button from '$lib/components/ui/Button.svelte';
 	import Icon from '$lib/components/ui/Icon.svelte';
 	import { useI18n } from '$lib/i18n/context.svelte';
+	import { browserClipboard, copyText, selectText } from '$lib/ui/clipboard';
 	import type { ActionData, PageData } from './$types';
 
 	/*
@@ -25,10 +26,11 @@
 	const example = (token: string) =>
 		`curl -H "Authorization: Bearer ${token}" "${page.url.origin}/api/v1/people?q=anna"`;
 
-	let copied = $state(false);
+	let copied = $state<'no' | 'yes' | 'failed'>('no');
+	let tokenText = $state<HTMLElement>();
 	async function copy(token: string) {
-		await navigator.clipboard.writeText(token);
-		copied = true;
+		copied = (await copyText(token, browserClipboard())) ? 'yes' : 'failed';
+		if (copied === 'failed' && tokenText) selectText(tokenText);
 	}
 </script>
 
@@ -51,11 +53,19 @@
 			<h2 class="font-medium text-fg">{t('settings.apiTokens.createdHeading')}</h2>
 			<p class="text-sm text-fg-muted">{t('settings.apiTokens.createdHint')}</p>
 			<div class="flex flex-wrap items-center gap-2">
-				<code class="min-w-0 flex-1 rounded-control bg-bg px-3 py-2 text-sm break-all text-fg"
+				<code
+					bind:this={tokenText}
+					class="min-w-0 flex-1 rounded-control bg-bg px-3 py-2 text-sm break-all text-fg"
 					>{form.created.token}</code
 				>
 				<Button type="button" size="sm" onclick={() => form?.created && copy(form.created.token)}>
-					{copied ? t('settings.apiTokens.copied') : t('settings.apiTokens.copy')}
+					{t(
+						copied === 'yes'
+							? 'settings.apiTokens.copied'
+							: copied === 'failed'
+								? 'settings.apiTokens.copyFailed'
+								: 'settings.apiTokens.copy'
+					)}
 				</Button>
 			</div>
 			<p class="text-sm text-fg-muted">{t('settings.apiTokens.usage')}</p>
@@ -71,7 +81,7 @@
 			method="POST"
 			action="?/create"
 			use:enhance={() => {
-				copied = false;
+				copied = 'no';
 				return ({ update }) => update();
 			}}
 			class="flex flex-col gap-3 rounded-app bg-card p-4 shadow-card"

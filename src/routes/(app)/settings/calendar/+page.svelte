@@ -3,6 +3,7 @@
 	import Button from '$lib/components/ui/Button.svelte';
 	import Icon from '$lib/components/ui/Icon.svelte';
 	import { useI18n } from '$lib/i18n/context.svelte';
+	import { browserClipboard, copyText, selectText } from '$lib/ui/clipboard';
 	import { useRemovals } from '$lib/undo/context.svelte';
 	import type { ActionData, PageData } from './$types';
 
@@ -25,7 +26,8 @@
 	const STEPS = [1, 2, 3] as const;
 
 	let app = $state<App>('google');
-	let copied = $state(false);
+	let copied = $state<'no' | 'yes' | 'failed'>('no');
+	let linkText = $state<HTMLElement>();
 	let dismissed = $state(false);
 	/** The one confirm step that is open. */
 	let confirming = $state<'replace' | 'revoke' | null>(null);
@@ -35,12 +37,12 @@
 	);
 
 	async function copy(link: string) {
-		await navigator.clipboard.writeText(link);
-		copied = true;
+		copied = (await copyText(link, browserClipboard())) ? 'yes' : 'failed';
+		if (copied === 'failed' && linkText) selectText(linkText);
 	}
 
 	const reset = () => {
-		copied = false;
+		copied = 'no';
 		dismissed = false;
 		confirming = null;
 		app = 'google';
@@ -68,11 +70,19 @@
 			<h2 class="font-medium text-fg">{t('settings.calendar.createdHeading')}</h2>
 			<p class="text-sm text-fg-muted">{t('settings.calendar.createdHint')}</p>
 			<div class="flex flex-wrap items-center gap-2">
-				<code class="min-w-0 flex-1 rounded-control bg-bg px-3 py-2 text-sm break-all text-fg"
+				<code
+					bind:this={linkText}
+					class="min-w-0 flex-1 rounded-control bg-bg px-3 py-2 text-sm break-all text-fg"
 					>{created}</code
 				>
 				<Button type="button" size="sm" onclick={() => copy(created)}>
-					{copied ? t('settings.calendar.copied') : t('settings.calendar.copy')}
+					{t(
+						copied === 'yes'
+							? 'settings.calendar.copied'
+							: copied === 'failed'
+								? 'settings.calendar.copyFailed'
+								: 'settings.calendar.copy'
+					)}
 				</Button>
 			</div>
 			<div class="flex flex-col gap-2">
