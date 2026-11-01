@@ -25,7 +25,7 @@ are what it holds today. The household-wide checks are their own page (§5.5.8).
 - A **Household** section after *You* holds one link card, *Members* (docs/02 §2.1).
 - *You* is a labelled person search select; it marks the same person as the identity card's
   *This is me* (§5.5.2).
-- Settings links to *API tokens* under *API*.
+- Settings links to *Calendar* under *Calendar*, before *API tokens* under *API*.
 - **About** shows the running version as the card's own line. When the release check is on, one
   line under it names the newest published release: a small `New` pill in soft primary, the
   version, and *Release notes* as an ordinary link, laid out to wrap on a narrow screen. Nothing
@@ -103,7 +103,28 @@ are what it holds today. The household-wide checks are their own page (§5.5.8).
 - *Revoke* has **no undo toast**, unlike every other removal (§5.7).
 - The page's icon is `apiToken` (a key), not `private`.
 
+#### Calendar
+
+- *Calendar* (docs/02 §2.13.4) is every member's own page; its icon is `calendar`.
+- Without a link: one card saying what the calendar holds (naming *Show on Home* and *Coming
+  up*) and the primary *Create calendar link*.
+- A new link appears **once**, in the `--primary`-bordered panel on `--primary-soft`: the URL
+  with *Copy*, *Add it to* with three pill toggles (*Google Calendar*, *iPhone*, *Other*) over
+  three numbered steps for the chosen one, and *Done*. While it shows, it stands in for the
+  link's row.
+- With a link: *Your link* — a row with the `calendar` icon, *Calendar link*, *Created …* ·
+  *last fetched …* / *not fetched yet*; under it secondary *Create a new link…*, ghost
+  *Revoke…*, and the hint that a lost link is replaced, not shown again.
+- Each opens a sunken confirm step in place of the buttons: *Replace the link?* (*Create new
+  link* primary) or *Revoke the calendar link?* (*Revoke* in danger), *Keep it* focused. A
+  revoke is confirmed in a toast without Undo.
+
 ### Why
+
+The calendar link is shown once and confirmed before it is replaced or revoked because a
+subscribed calendar that quietly stopped updating is noticed only when a birthday goes
+unremarked; the steps per app are on the page because subscribing is the one part Stella cannot
+do for the member.
 
 The import's photo step differs by source because the formats differ: a Monica dump's pictures
 are still on the Monica server, while a JSON export or a vCard carries them inside the file.

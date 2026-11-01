@@ -12,6 +12,7 @@ import type { ContactFieldDeps } from '../domain/contact-fields/contact-fields';
 import type { ContactLookup } from '../domain/contacts/contacts';
 import type { HomeDeps, HomeListDeps } from '../domain/homes/homes';
 import type { SameAddressDeps } from '../domain/homes/same-address';
+import type { CalendarFeedDeps } from '../domain/dates/calendar-feed';
 import type { ImportantDateDeps, ImportantDateRepository } from '../domain/dates/important-dates';
 import type { TagListDeps } from '../domain/tags/tag-lists';
 import type { TagDeps, TagRepository } from '../domain/tags/tags';
@@ -38,6 +39,8 @@ export interface RecordServices {
 	/** *Data quality → Same address*: the check, *Make one home*, *Not the same* (docs/02 §2.17). */
 	sameAddressDeps: SameAddressDeps;
 	importantDateDeps: ImportantDateDeps;
+	/** A member's dates as their phone's subscribed calendar (docs/02 §2.13.4). */
+	calendarFeedDeps: CalendarFeedDeps;
 	tagDeps: TagDeps;
 	/** The chip row, each person's tags and the people a chip filters to. */
 	tagListDeps: TagListDeps;
@@ -71,6 +74,7 @@ export function createRecordServices({ db, clock, ids, contacts }: RecordWiring)
 			clock
 		},
 		importantDateDeps: { dates: importantDates, contacts, ids, clock },
+		calendarFeedDeps: { dates: importantDates, clock },
 		tagDeps: { tags, ids, clock },
 		tagListDeps: { tagLists: createDrizzleTagListReads(db) }
 	};

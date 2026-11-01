@@ -32,31 +32,46 @@ export const API_TOKEN_DEFAULT_LIFETIME_DAYS: ApiTokenLifetime = 90;
 /** The longest name a token may carry; it labels a row, it is not a note. */
 export const API_TOKEN_NAME_MAX = 80;
 
+/**
+ * What a token opens: the API, or only its member's calendar feed (docs/02 §2.13.4). Neither
+ * opens the other's door.
+ */
+export type TokenScope = 'api' | 'calendar';
+
 /** A stored token. `tokenHash` is the SHA-256 of the secret, never the secret. */
 export interface ApiTokenRecord {
 	id: string;
 	userId: string;
 	name: string;
 	tokenHash: string;
+	scope: TokenScope;
+	createdAt: number;
+	/** The fixed last day; null for a calendar link, which lasts until revoked. */
+	expiresAt: number | null;
+	lastUsedAt: number | null;
+}
+
+/** A token as its member's list shows it. */
+export interface ApiTokenSummary {
+	id: string;
+	name: string;
 	createdAt: number;
 	expiresAt: number;
 	lastUsedAt: number | null;
 }
 
-/** A token as its member's list shows it. */
-export type ApiTokenSummary = Pick<
-	ApiTokenRecord,
-	'id' | 'name' | 'createdAt' | 'expiresAt' | 'lastUsedAt'
->;
-
 /** Persistence port for tokens; the edge wires a Drizzle adapter. */
 export interface ApiTokenRepository {
 	insert(record: ApiTokenRecord): Promise<void>;
 	findByHash(tokenHash: string): Promise<ApiTokenRecord | null>;
-	/** The member's tokens, newest first. */
-	listForUser(userId: string): Promise<ApiTokenRecord[]>;
-	/** Deletes the token if it is this member's; false when there was no such token of theirs. */
-	deleteForUser(userId: string, id: string): Promise<boolean>;
+	/** The member's tokens of one scope, newest first. */
+	listForUser(userId: string, scope: TokenScope): Promise<ApiTokenRecord[]>;
+	/** Deletes the token if it is this member's and of this scope; false when there was none. */
+	deleteForUser(userId: string, scope: TokenScope, id: string): Promise<boolean>;
+	/** Deletes every token of this scope the member holds; false when there were none. */
+	deleteScopeForUser(userId: string, scope: TokenScope): Promise<boolean>;
+	/** Deletes the member's tokens of the record's scope and inserts it, as one change. */
+	replaceForUser(record: ApiTokenRecord): Promise<void>;
 	touch(id: string, at: number): Promise<void>;
 }
 
@@ -91,6 +106,7 @@ export async function issueApiToken(
 		userId,
 		name,
 		tokenHash: hashSessionToken(token),
+		scope: 'api',
 		createdAt: now,
 		expiresAt: now + input.lifetimeDays * DAY_MS,
 		lastUsedAt: null
@@ -105,7 +121,7 @@ export async function authenticateApiToken(
 ): Promise<string | null> {
 	if (!token.startsWith(TOKEN_PREFIX)) return null;
 	const record = await deps.tokens.findByHash(hashSessionToken(token));
-	if (!record) return null;
+	if (!record || record.scope !== 'api' || record.expiresAt === null) return null;
 	const now = deps.clock.now();
 	if (now >= record.expiresAt) return null;
 	await deps.tokens.touch(record.id, now);
@@ -117,20 +133,15 @@ export async function listApiTokens(
 	deps: ApiTokenDeps,
 	userId: string
 ): Promise<ApiTokenSummary[]> {
-	return (await deps.tokens.listForUser(userId)).map(
-		({ id, name, createdAt, expiresAt, lastUsedAt }) => ({
-			id,
-			name,
-			createdAt,
-			expiresAt,
-			lastUsedAt
-		})
+	return (await deps.tokens.listForUser(userId, 'api')).flatMap(
+		({ id, name, createdAt, expiresAt, lastUsedAt }) =>
+			expiresAt === null ? [] : [{ id, name, createdAt, expiresAt, lastUsedAt }]
 	);
 }
 
 /** Withdraw one of the member's tokens. False when they have no such token. */
 export function revokeApiToken(deps: ApiTokenDeps, userId: string, id: string): Promise<boolean> {
-	return deps.tokens.deleteForUser(userId, id);
+	return deps.tokens.deleteForUser(userId, 'api', id);
 }
 
 /** The token in an `Authorization: Bearer …` header, or null when there is none. */

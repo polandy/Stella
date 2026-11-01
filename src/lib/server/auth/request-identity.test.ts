@@ -38,6 +38,8 @@ beforeEach(() => {
 				findByHash: async (hash) => tokens.find((t) => t.tokenHash === hash) ?? null,
 				listForUser: async () => tokens,
 				deleteForUser: async () => false,
+				deleteScopeForUser: async () => false,
+				replaceForUser: async () => {},
 				touch: async () => {}
 			},
 			clock: { now: () => NOW },

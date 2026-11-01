@@ -41,13 +41,22 @@ beforeEach(() => {
 			lookups++;
 			return rows.find((r) => r.tokenHash === hash) ?? null;
 		},
-		async listForUser(userId) {
-			return rows.filter((r) => r.userId === userId);
+		async listForUser(userId, scope) {
+			return rows.filter((r) => r.userId === userId && r.scope === scope);
 		},
-		async deleteForUser(userId, id) {
+		async deleteForUser(userId, scope, id) {
 			const before = rows.length;
-			rows = rows.filter((r) => !(r.userId === userId && r.id === id));
+			rows = rows.filter((r) => !(r.userId === userId && r.scope === scope && r.id === id));
 			return rows.length < before;
+		},
+		async deleteScopeForUser(userId, scope) {
+			const before = rows.length;
+			rows = rows.filter((r) => !(r.userId === userId && r.scope === scope));
+			return rows.length < before;
+		},
+		async replaceForUser(record) {
+			rows = rows.filter((r) => !(r.userId === record.userId && r.scope === record.scope));
+			rows.push(record);
 		},
 		async touch(id, at) {
 			touched.push({ id, at });
@@ -73,6 +82,7 @@ describe('issueApiToken', () => {
 				id: 'tok-1',
 				userId: 'user-1',
 				name: 'import script',
+				scope: 'api',
 				tokenHash: hashSessionToken(token),
 				createdAt: NOW,
 				expiresAt: NOW + 90 * DAY,

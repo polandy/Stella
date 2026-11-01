@@ -198,5 +198,57 @@ export const settings: SettingsMessages = {
 	'settings.apiTokens.revoked': 'Token widerrufen. Skripte damit können sich nicht mehr anmelden.',
 	'settings.apiTokens.notFound': 'Dieses Token gibt es schon nicht mehr.',
 	'settings.about.off':
-		'Stella sucht nicht nach neuen Versionen. Mit UPDATE_CHECK=true schaltest du die Suche ein.'
+		'Stella sucht nicht nach neuen Versionen. Mit UPDATE_CHECK=true schaltest du die Suche ein.',
+	// *Settings → Calendar* (docs/02 §2.13.4): the member's dates as a subscribed calendar.
+	'settings.calendar.heading': 'Kalender',
+	'settings.calendar.title': 'Kalender',
+	'settings.calendar.blurb': 'Geburtstage und Jahrestage im eigenen Kalender deines Handys.',
+	'settings.calendar.intro':
+		'Geburtstage, Jahrestage und deine anderen Daten im eigenen Kalender deines Handys. Ans Erinnern denkt der Kalender.',
+	'settings.calendar.what': (p: { toggle: string; comingUp: string }): string =>
+		`Jedes Datum mit „${p.toggle}“, von allen, die du sehen kannst — dieselben Daten wie unter ${p.comingUp}, das ganze Jahr. Private Personen nur in deinem eigenen Kalender.`,
+	'settings.calendar.create': 'Kalender-Link erstellen',
+	'settings.calendar.createdHeading': 'Dein Kalender-Link',
+	'settings.calendar.createdHint':
+		'Kopiere ihn jetzt — er wird nur dieses eine Mal gezeigt. Wer den Link hat, kann diese Daten lesen, also behalte ihn für dich.',
+	'settings.calendar.copy': 'Kopieren',
+	'settings.calendar.copied': 'Kopiert',
+	'settings.calendar.addTo': 'Hinzufügen zu',
+	'settings.calendar.app.google': 'Google Kalender',
+	'settings.calendar.app.ios': 'iPhone',
+	'settings.calendar.app.other': 'Andere',
+	'settings.calendar.steps.google.1':
+		'Am Computer Google Kalender öffnen → Weitere Kalender → + → Per URL.',
+	'settings.calendar.steps.google.2':
+		'Link einfügen und hinzufügen. Auf dem Handy erscheint er etwas später.',
+	'settings.calendar.steps.google.3':
+		'Die Erinnerungen in den Einstellungen des Kalenders festlegen (z. B. 1 Tag vorher).',
+	'settings.calendar.steps.ios.1':
+		'Einstellungen → Kalender → Accounts → Account hinzufügen → Andere.',
+	'settings.calendar.steps.ios.2': 'Kalenderabo hinzufügen, Link einfügen, Weiter, Sichern.',
+	'settings.calendar.steps.ios.3': 'Hinweise: Kalender → Standardhinweise → Ganztägige Ereignisse.',
+	'settings.calendar.steps.other.1': 'Thunderbird: Neuer Kalender → Im Netzwerk → Link einfügen.',
+	'settings.calendar.steps.other.2': 'Android ohne Google: DAVx⁵ oder ICSx⁵ → den Link abonnieren.',
+	'settings.calendar.steps.other.3': 'Erinnerungen stellst du in dieser App ein, je Kalender.',
+	'settings.calendar.done': 'Fertig',
+	'settings.calendar.yours': 'Dein Link',
+	'settings.calendar.link': 'Kalender-Link',
+	'settings.calendar.created': (p: { date: string }): string => `Erstellt am ${p.date}`,
+	'settings.calendar.lastFetched': (p: { date: string }): string =>
+		`zuletzt abgerufen am ${p.date}`,
+	'settings.calendar.notFetched': 'noch nicht abgerufen',
+	'settings.calendar.replace': 'Neuen Link erstellen …',
+	'settings.calendar.revoke': 'Widerrufen …',
+	'settings.calendar.lost':
+		'Link verloren? Erstelle einen neuen — der alte funktioniert dann nicht mehr.',
+	'settings.calendar.confirmReplace.heading': 'Link ersetzen?',
+	'settings.calendar.confirmReplace.body':
+		'Kalender, die den alten Link abonniert haben, werden nicht mehr aktualisiert. Den neuen fügst du auf jedem Gerät einmal hinzu.',
+	'settings.calendar.confirmReplace.submit': 'Neuen Link erstellen',
+	'settings.calendar.confirmRevoke.heading': 'Kalender-Link widerrufen?',
+	'settings.calendar.confirmRevoke.body':
+		'Er funktioniert sofort nirgends mehr. Der Kalender auf deinem Handy behält, was er zuletzt abgerufen hat, bis du ihn dort entfernst.',
+	'settings.calendar.confirmRevoke.submit': 'Widerrufen',
+	'settings.calendar.keep': 'Behalten',
+	'settings.calendar.revoked': 'Kalender-Link widerrufen.'
 };

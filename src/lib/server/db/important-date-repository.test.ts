@@ -4,6 +4,8 @@ import { Database } from 'bun:sqlite';
 import { drizzle, type BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
 import { migrate } from 'drizzle-orm/bun-sqlite/migrator';
 import type { Viewer } from '../access/visibility';
+import { createTranslator } from '../../i18n/translate';
+import { calendarFeed } from '../domain/dates/calendar-feed';
 import type { NewImportantDate } from '../domain/dates/important-dates';
 import * as schema from './schema';
 import { createDrizzleImportantDateRepository } from './important-date-repository';
@@ -183,5 +185,22 @@ describe('createDrizzleImportantDateRepository', () => {
 			'anniversary:false',
 			'birthday:true'
 		]);
+	});
+});
+
+describe('the calendar feed over SQLite', () => {
+	const feedOf = (viewer: Viewer) =>
+		calendarFeed(
+			{ dates: repo, clock: { now: () => Date.UTC(2026, 10, 1) } },
+			{ viewer, translate: createTranslator('en'), origin: 'https://stella.example' }
+		);
+
+	it('carries a private person only in its owner’s feed, and never the deceased', async () => {
+		const mine = await feedOf(viewerU1);
+		const theirs = await feedOf(viewerU2);
+		expect(mine).toContain("SUMMARY:Private's birthday");
+		expect(theirs).not.toContain('Private');
+		expect(theirs).toContain("SUMMARY:Shared's birthday");
+		expect(mine).not.toContain('Gone');
 	});
 });

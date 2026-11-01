@@ -13,6 +13,7 @@ const TODAY = '2026-09-04';
 
 function source(over: Partial<UpcomingSource> = {}): UpcomingSource {
 	return {
+		dateId: null,
 		contactId: 'c1',
 		contactName: 'Lena Brunner',
 		avatarPhotoId: null,

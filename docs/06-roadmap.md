@@ -196,43 +196,8 @@ the screen file in the same PR that builds it, and leaves a one-line *built* not
 
 ### Queued, in order
 
-1. **Dates in the phone's calendar — a subscribable `.ics` link** — *queued.* The cheap answer
-   to the CardDAV entry's open calendar question, and to "Stella only speaks when opened": the
-   phone's own calendar shows the occasions and does the reminding, so Stella needs no push,
-   mail or reminder objects (§2.13 stays as it is).
-   - **What a member gets.** *Settings → Calendar*: *Create calendar link* shows one URL
-     (`/cal/<secret>.ics`) with a copy button and a short how-to per platform (Google Calendar
-     "From URL", iOS "Add subscribed calendar", Thunderbird/DAVx⁵). *Revoke* withdraws it at
-     once, no undo; *Create a new link* replaces it. One link per member.
-   - **What is in it.** Exactly what *Coming up* would show that member, without the 30-day
-     horizon: every date with *remind* on (§2.13.1) of every person they may see — derived
-     birthdays, anniversaries, named custom dates — muted, deceased and archived people out,
-     private people only in their owner's feed. One all-day `VEVENT` per date with
-     `RRULE:FREQ=YEARLY` when it recurs (29 February as `BYMONTH=2;BYMONTHDAY=-1`, matching
-     §2.13.3's rule closely enough that the phone never skips it), a single event for a
-     one-off. Summary in the member's language: *Anna turns 11* is impossible with one
-     recurring event, so the summary is *Anna's birthday* / *Anna & Ben's anniversary* /
-     the custom name, and the description carries the birth year when known ("born 2015")
-     plus a link to the person page. Stable `UID` per date (`<dateId or contactId-birthday>@stella`)
-     so edits replace rather than duplicate. No `VALARM`: reminders are the calendar's
-     setting, per member.
-   - **How.** The secret reuses the API-token model (`api_token`, hashed, named, revocable,
-     docs/02 §2.16.1) with a scope column so a calendar token opens `/cal/…` and nothing else,
-     and an API token never opens the feed; no expiry for this kind, `last_used_at` shown in
-     Settings. The route is a thin `+server.ts`: resolve the token to its member, ask the access
-     layer for that member's visible dates (the same port *Coming up* reads), hand them to a
-     pure `src/lib/calendar/ics.ts` (escaping, folding at 75 octets, CRLF, `DTSTAMP` from an
-     injected clock) — test-first with fixed inputs. `Cache-Control: private, max-age=3600`,
-     `ETag` over the content. Rate-limit like the API.
-   - **Tests.** Unit: the ICS writer (recurring, one-off, year-less, 29 Feb, escaping, folding,
-     language), the token scope both ways, visibility (a private person stays out of another
-     member's feed). E2e: create the link, fetch it, see a seeded birthday; revoke, fetch → 404.
-   - **Docs.** docs/02 §2.13.4 and §2.17, docs/03 for the token scope, the Settings screen
-     file, `using-stella.md` (how to subscribe), `install.md` (`ORIGIN` must be reachable from
-     the phones for the link to work).
-   - **Open.** Whether the link also carries open to-dos with a date (§2.26) as a second
-     calendar; recommended: not in the first slice. Whether *Coming up*'s *remind* switch is the
-     right filter or every date goes out; recommended: the switch, so muting means one thing.
+1. **Dates in the phone's calendar — a subscribable `.ics` link** — *built*; see docs/02
+   §2.13.4. To-dos in the feed stay open.
 
 2. **Sharing into Stella from other apps (Web Share Target)** — *queued.* On Android the
    installed PWA appears in the system *Share* sheet; a photo, a link or a piece of text from

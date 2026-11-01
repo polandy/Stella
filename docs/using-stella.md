@@ -625,6 +625,29 @@ same gesture.
 Two small mercies: people who have died are left out, and a 29 February anniversary lands on
 1 March in the years that have no 29th, instead of quietly skipping.
 
+### In your phone's calendar
+
+Stella only speaks when you open it. If you would rather be reminded by your phone, subscribe
+its calendar to your dates: **Settings → Calendar → Create calendar link**. Copy the link
+straight away — it is shown only this once — and add it:
+
+- **Google Calendar** (and so most Android phones): on a computer, *Other calendars → + →
+  From URL*, paste the link. It reaches your phone a little later.
+- **iPhone:** *Settings → Calendar → Accounts → Add Account → Other → Add Subscribed
+  Calendar*, paste the link.
+- **Elsewhere:** Thunderbird's *New Calendar → On the Network*, or DAVx⁵ / ICSx⁵ on Android
+  without Google.
+
+The calendar then shows every date that has *Show on Home* on, of everyone you can see, all
+year round — private people only in your own. When and whether it reminds you is set in the
+calendar app (one day before, say). Your phone checks for changes every few hours, so an edit
+in Stella shows up there with some delay. One difference from Home: a 29 February date shows
+on 28 February in other years.
+
+Anyone with the link can read these dates, so keep it to yourself. If you lost it or shared
+it by mistake, *Create a new link…* replaces it and *Revoke…* turns it off; the old one stops
+working at once, and you add the new one once on each device.
+
 ## Keeping track of when you were last in touch
 
 When you have called Oma, met a friend for lunch or posted a parcel, press **Log contact** in
