@@ -6,6 +6,7 @@ import {
 	type IncomingCard,
 	type KnownLabel
 } from '../../../import-match/card';
+import { distinctFields, type FieldFactKind } from '../../../import-match/merge-plan';
 import { foldName, normaliseEmail, normalisePhone } from '../../../import-match/normalise';
 import {
 	cardFingerprint,
@@ -62,6 +63,22 @@ export function labelOf(property: Property, card: Property[]): CardLabel | null 
 	return null;
 }
 
+/** A card's fields of one property, each with its label and each value once. */
+export function fieldsOf(
+	card: Property[],
+	name: string,
+	kind: FieldFactKind,
+	value: (p: Property) => string | null
+): CardField[] {
+	const fields = card
+		.filter((p) => p.name === name)
+		.flatMap((p) => {
+			const text = value(p);
+			return text === null ? [] : [{ value: text, label: labelOf(p, card) }];
+		});
+	return distinctFields(kind, fields);
+}
+
 /** The line Stella stores an address as, the same join the mapping makes (`plan.ts`). */
 export function addressLine(property: Property): string | null {
 	const a = readAddress(property);
@@ -102,13 +119,6 @@ function keyOf(card: Property[], incoming: Omit<IncomingCard, 'key' | 'hash'>): 
 
 function readCard(card: Property[], index: number, source: VCardSource) {
 	const first = (name: string) => card.find((p) => p.name === name);
-	const fields = (name: string, value: (p: Property) => string | null): CardField[] =>
-		card
-			.filter((p) => p.name === name)
-			.flatMap((p) => {
-				const text = value(p);
-				return text === null ? [] : [{ value: text, label: labelOf(p, card) }];
-			});
 	const text = (p: Property) => orNull(unescape(p.raw));
 
 	const { firstName, lastName, formatted } = readName(card, index);
@@ -122,10 +132,10 @@ function readCard(card: Property[], index: number, source: VCardSource) {
 		company: orNull(org[0]),
 		jobTitle: orNull(unescape(first('TITLE')?.raw ?? '')),
 		birthday: birthdayOf(first('BDAY')),
-		emails: fields('EMAIL', text),
-		phones: fields('TEL', text),
-		addresses: fields('ADR', addressLine),
-		urls: fields('URL', text),
+		emails: fieldsOf(card, 'EMAIL', 'email', text),
+		phones: fieldsOf(card, 'TEL', 'phone', text),
+		addresses: fieldsOf(card, 'ADR', 'address', addressLine),
+		urls: fieldsOf(card, 'URL', 'url', text),
 		tags: ownCategories(card, source),
 		photo: photos.some((p) => readPhoto(p, 'photo', 'card') !== null)
 			? 'inline'

@@ -512,6 +512,40 @@ describe('planMonicaImport — activities, photos, leftovers', () => {
 		});
 	});
 
+	it("words a vCard field's label: a known one in the member's language, a typed one as is", () => {
+		const exp = emptyExport();
+		exp.contacts = [contact(1, 'Ada', null)];
+		exp.contactFieldTypes = [
+			{ id: 'email', name: 'Email', type: 'email', protocol: null },
+			{ id: 'phone', name: 'Phone', type: 'phone', protocol: null }
+		];
+		exp.contactFields = [
+			{
+				id: 1,
+				contactId: 1,
+				typeId: 'phone',
+				data: '+41 79',
+				createdAt: null,
+				label: { known: 'mobile' }
+			},
+			{
+				id: 2,
+				contactId: 1,
+				typeId: 'email',
+				data: 'a@x.ch',
+				createdAt: null,
+				label: { typed: 'Verein' }
+			},
+			{ id: 3, contactId: 1, typeId: 'email', data: 'b@x.ch', createdAt: null, label: null }
+		];
+
+		expect(planMonicaImport(exp, opts).contactFields.map((f) => f.label)).toEqual([
+			'Mobile',
+			'Verein',
+			null
+		]);
+	});
+
 	it('summarises counts for the preview', () => {
 		const exp = emptyExport();
 		exp.contacts = [contact(1, 'A', null), contact(2, 'B', null)];

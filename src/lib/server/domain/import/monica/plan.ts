@@ -19,7 +19,7 @@ import type { MonicaContact, SourceExport, MonicaId, MonicaSpecialDate } from '.
 import { mapRelationshipType } from './relationship-types';
 import { sourcePrefix } from '../source';
 import type { Gender } from '../../../../people/gender';
-import type { KnownLabel } from '../../../../import-match/card';
+import type { CardLabel, KnownLabel } from '../../../../import-match/card';
 
 /*
  * The Monica → Stella mapping (docs/02 §2.16; the table is docs/monica-mapping.md). Pure:
@@ -61,6 +61,13 @@ export interface ImportWording {
 	/** A label every address book writes the same way (*Home*), for a field the review adds. */
 	fieldLabel: (label: KnownLabel) => string;
 }
+
+/** A card's label in words: a known one in the member's language, a typed one as written. */
+export const fieldLabelText = (
+	label: CardLabel | null,
+	wording: Pick<ImportWording, 'fieldLabel'>
+): string | null =>
+	label === null ? null : 'known' in label ? wording.fieldLabel(label.known) : label.typed;
 
 /** A contact row as the import writes it — the profile fields Stella's create form lacks included. */
 export interface ImportedContact extends NewContact {
@@ -361,13 +368,14 @@ export function planMonicaImport(exp: SourceExport, opts: ImportOptions): Import
 			sortOrder: sortOrder++,
 			...fieldStamp
 		};
+		const label = fieldLabelText(f.label ?? null, opts.wording);
 		if (type?.type === 'email')
-			contactFields.push({ ...base, kind: 'email', label: null, value: f.data });
+			contactFields.push({ ...base, kind: 'email', label, value: f.data });
 		else if (type?.type === 'phone')
-			contactFields.push({ ...base, kind: 'phone', label: null, value: f.data });
+			contactFields.push({ ...base, kind: 'phone', label, value: f.data });
 		// A vCard's URL already carries its scheme; only Monica's own types need one prefixed.
 		else if (type?.type === 'url')
-			contactFields.push({ ...base, kind: 'url', label: null, value: f.data });
+			contactFields.push({ ...base, kind: 'url', label, value: f.data });
 		else if (type?.protocol?.startsWith('http')) {
 			contactFields.push({
 				...base,
