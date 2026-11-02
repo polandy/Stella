@@ -19,6 +19,7 @@ import type { ImmichNameIgnoreDeps } from '../domain/immich/name-ignores';
 import { createImmichMediaSigner, type ImmichMediaSigner } from '../domain/immich/signed-media';
 import type { UseImmichPhotoDeps } from '../domain/immich/use-as-photo';
 import { setContactAvatar, type AvatarDeps } from '../domain/media/avatars';
+import type { ImmichMemoryDeps } from '../domain/memories/immich';
 import type { IdGenerator } from '../id';
 import { demoImmichLibrary } from '../immich/demo-library';
 import { createFakeImmichGateway } from '../immich/fake-gateway';
@@ -47,6 +48,8 @@ export interface ImmichServices {
 	immichGlimpseDeps: ImmichGlimpseDeps;
 	/** The whole library, for the picker beside a photo upload (docs/02 §2.24.9). */
 	immichLibraryDeps: ImmichLibraryDeps;
+	/** *On this day* from the whole library (docs/02 §2.12.1). */
+	immichMemoryDeps: ImmichMemoryDeps;
 	/** The signed proxy that serves every image from Immich. */
 	immichMediaDeps: ImmichMediaDeps;
 	/** *Find your people* — both tabs, from one reading of Immich. */
@@ -122,6 +125,7 @@ export function createImmichServices({
 		signer,
 		immichGlimpseDeps: { links, contacts, gateway, signer, publicUrl },
 		immichLibraryDeps: { gateway, signer },
+		immichMemoryDeps: { gateway, signer, publicUrl },
 		immichMediaDeps: { links, contacts, gateway, signer },
 		immichMatchingDeps: {
 			links,

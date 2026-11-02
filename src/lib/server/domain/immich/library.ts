@@ -1,6 +1,7 @@
 import { immichMediaUrl } from '../../../immich/media-url';
 import type { LibraryPhoto, LibraryView } from '../../../immich/library';
 import type { Viewer } from '../../access/visibility';
+import { cameraDayOf as dayOf, cameraDaysWindow, DAY_MS, MAX_OFFSET_MS } from './camera-day';
 import type { ImmichAsset, ImmichGateway } from './gateway';
 import type { ImmichMediaSigner } from './signed-media';
 
@@ -26,13 +27,6 @@ export const LIBRARY_SEARCH_LIMIT = 60;
 /** The longest description passed on to Immich. */
 export const LIBRARY_QUERY_MAX_LENGTH = 200;
 
-/**
- * How far an instant may lie from the camera's clock: the widest offsets (UTC−12, UTC+14). Immich
- * filters on the instant, so a day on the clock is asked for this much wider on each side.
- */
-const MAX_OFFSET_MS = 14 * 60 * 60 * 1000;
-const DAY_MS = 24 * 60 * 60 * 1000;
-
 /** How many photos one step of the neighbours' search reads, and how many steps it takes at most. */
 const NEIGHBOUR_PAGE = 100;
 const NEIGHBOUR_PAGES = 5;
@@ -50,12 +44,7 @@ export async function readLibraryDay(
 	const start = Date.parse(`${day}T00:00:00Z`);
 	const instant = (ms: number) => new Date(ms).toISOString();
 	const [photos, earlier, later] = await Promise.all([
-		deps.gateway.takenAssets(
-			{ from: instant(start - MAX_OFFSET_MS), before: instant(start + DAY_MS + MAX_OFFSET_MS) },
-			'oldest',
-			LIBRARY_DAY_LIMIT,
-			null
-		),
+		deps.gateway.takenAssets(cameraDaysWindow(day, day), 'oldest', LIBRARY_DAY_LIMIT, null),
 		nearestDay(
 			deps,
 			{ from: null, before: instant(start + MAX_OFFSET_MS) },
@@ -74,7 +63,7 @@ export async function readLibraryDay(
 	return {
 		state: 'day',
 		day,
-		photos: await signed(deps, viewer, ofTheDay),
+		photos: await signLibraryPhotos(deps.signer, viewer, ofTheDay),
 		earlier: earlier.day,
 		later: later.day
 	};
@@ -94,7 +83,10 @@ export async function searchLibrary(
 	const found = await deps.gateway.smartSearch(description, LIBRARY_SEARCH_LIMIT);
 	if (!found.ok) return { state: 'unreachable' };
 	if (!found.value.enabled) return { state: 'searchOff' };
-	return { state: 'found', photos: await signed(deps, viewer, found.value.assets) };
+	return {
+		state: 'found',
+		photos: await signLibraryPhotos(deps.signer, viewer, found.value.assets)
+	};
 }
 
 /**
@@ -128,9 +120,6 @@ export async function photoTakenAt<T>(
 	return signer ? libraryCopyTakenAt(signer, viewer, sent.immichToken) : null;
 }
 
-/** The day a photo was taken on the camera's clock, or null when Immich does not say. */
-const dayOf = (asset: ImmichAsset) => asset.takenAt?.slice(0, 10) ?? null;
-
 /**
  * The first day past `day` in `order` that has a photo: the photos of the window are read in the
  * camera's order, and those of the day itself — maybe hundreds — are stepped over, a page at a
@@ -155,8 +144,8 @@ async function nearestDay(
 }
 
 /** The photos with their URLs, signed for the viewer's household; the preview carries the date. */
-function signed(
-	deps: ImmichLibraryDeps,
+export function signLibraryPhotos(
+	signer: ImmichMediaSigner,
 	viewer: Viewer,
 	assets: readonly ImmichAsset[]
 ): Promise<LibraryPhoto[]> {
@@ -164,8 +153,8 @@ function signed(
 		assets.map(async ({ id, takenAt }) => {
 			const photo = { kind: 'library', householdId: viewer.householdId, assetId: id } as const;
 			const [thumbnail, preview] = await Promise.all([
-				deps.signer.sign({ ...photo, size: 'thumbnail' }),
-				deps.signer.sign({ ...photo, size: 'preview', ...(takenAt === null ? {} : { takenAt }) })
+				signer.sign({ ...photo, size: 'thumbnail' }),
+				signer.sign({ ...photo, size: 'preview', ...(takenAt === null ? {} : { takenAt }) })
 			]);
 			return {
 				id,

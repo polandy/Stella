@@ -1,4 +1,5 @@
 import type { FakeImmichLibrary } from '../../immich/fake-gateway';
+import type { ImmichAsset, ImmichGateway } from './gateway';
 
 /*
  * The library the Immich use-case tests start from: the key belongs to Anna, and her Immich
@@ -24,5 +25,37 @@ export function testLibrary(): FakeImmichLibrary {
 		together: [
 			{ id: BERT_AND_CARL_ID, personIds: [BERT_ID, CARL_ID], assets: 15, color: '#04a5e5' }
 		]
+	};
+}
+
+/** A gateway whose whole library is these photos, each taken at its camera-clock time. */
+export function libraryOf(
+	taken: Record<string, string>
+): Pick<ImmichGateway, 'takenAssets' | 'smartSearch'> {
+	// Each photo's instant: the clock time at UTC−10, so the day's window must reach past midnight.
+	const listed: (ImmichAsset & { instant: string })[] = Object.entries(taken)
+		.map(([id, takenAt]) => ({
+			id,
+			takenAt,
+			instant: new Date(Date.parse(`${takenAt}Z`) + 10 * 3_600_000).toISOString()
+		}))
+		.sort((a, b) => a.takenAt.localeCompare(b.takenAt));
+	return {
+		takenAssets: async ({ from, before }, order, limit, cursor) => {
+			const within = listed.filter(
+				({ instant }) => (from === null || instant >= from) && (before === null || instant < before)
+			);
+			if (order === 'newest') within.reverse();
+			const start = cursor === null ? 0 : Number(cursor);
+			const page = within.slice(start, start + limit);
+			return {
+				ok: true,
+				value: {
+					assets: page.map(({ id, takenAt }) => ({ id, takenAt })),
+					nextCursor: start + limit < within.length ? String(start + limit) : null
+				}
+			};
+		},
+		smartSearch: async () => ({ ok: true, value: { enabled: false } })
 	};
 }

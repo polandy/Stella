@@ -202,8 +202,8 @@ the screen file in the same PR that builds it, and leaves a one-line *built* not
 2. **Sharing into Stella from other apps (Web Share Target)** — *built*; see docs/02
    §2.18.3. A shared link as a *note* was declined: moment, gift idea and to-do cover it.
 
-3. **On this day — memories on Home** — *slice 1 built* (band, `/on-this-day`, moments,
-   touchpoints, gallery photos; docs/02 §2.12.1); *slice 2 queued:* the Immich strip. A quiet band in Home's rail, below *Coming
+3. **On this day — memories on Home** — *built*; see docs/02 §2.12.1 (slice 1: band,
+   `/on-this-day`, moments, touchpoints, gallery photos; slice 2: any Immich photo of the day). A quiet band in Home's rail, below *Coming
    up* and *To do*: what the household wrote on today's date in earlier years. Not a nudge and
    not about "seeing people more" (declined by the owner: most people are reference) — a reason to
    enjoy the notebook.

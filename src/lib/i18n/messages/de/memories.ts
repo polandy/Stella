@@ -6,10 +6,15 @@ export const memories: MemoriesMessages = {
 	'memories.yearsAgo': (p) => (p.count === 1 ? 'Vor einem Jahr' : `Vor ${p.count} Jahren`),
 	'memories.moreFrom': (p) => `Mehr vom ${p.day}`,
 	'memories.photoOf': (p) => `Foto von ${p.name}, ${p.year}`,
-	'memories.page.intro': (p) => `Was der Haushalt am ${p.day} in früheren Jahren festgehalten hat.`,
-	'memories.page.empty': (p) => `Am ${p.day} wurde in früheren Jahren nichts festgehalten.`,
+	'memories.page.intro': (p) =>
+		`Was der Haushalt am ${p.day} in früheren Jahren aufgeschrieben und fotografiert hat.`,
+	'memories.page.empty': (p) =>
+		`Am ${p.day} wurde in früheren Jahren nichts aufgeschrieben oder fotografiert.`,
+	'memories.page.immichLoading': 'Fotos aus Immich…',
 	'memories.page.day': 'Tag',
 	'memories.page.earlier': 'Tag davor',
 	'memories.page.later': 'Tag danach',
-	'memories.page.today': 'Heute'
+	'memories.page.today': 'Heute',
+	'memories.immich.photo': (p) => `Foto aus Immich, ${p.year}`,
+	'memories.immich.takenAt': (p) => `Aufgenommen am ${p.date}, ${p.time}`
 };

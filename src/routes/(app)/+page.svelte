@@ -26,6 +26,7 @@
 	import WelcomeCard from '$lib/components/stream/WelcomeCard.svelte';
 	import TodoBand from '$lib/components/todos/TodoBand.svelte';
 	import MemoryBand from '$lib/components/memories/MemoryBand.svelte';
+	import { ImmichMemories } from '$lib/components/memories/immich-memories.svelte';
 	import { todoBand } from '$lib/todos/household';
 	import { JustDoneTodos } from '$lib/todos/just-done.svelte';
 	import { keptTicks } from '$lib/todos/kept-ticks.svelte';
@@ -84,10 +85,13 @@
 	const justDone = new JustDoneTodos<PageData['todos'][number]>(useRemovals());
 	const band = $derived(todoBand(justDone.rows(data.todos), data.today));
 	const ticksKept = $derived(keptTicks());
-	/** The rail stands while a date or a to-do is close; without either it is absent. */
-	const hasRail = $derived(
-		data.upcoming.length > 0 || band.rows.length > 0 || !data.memories.empty
-	);
+	// *On this day* from Immich (docs/02 §2.12.1), asked for once Home is drawn; without Immich it
+	// stays idle and empty.
+	const immichMemories = new ImmichMemories();
+	$effect(() => (data.immichLibrary ? immichMemories.load(data.today) : undefined));
+	const hasMemories = $derived(!data.memories.empty || immichMemories.years.length > 0);
+	/** The rail stands while a date, a to-do or a memory is close; without any it is absent. */
+	const hasRail = $derived(data.upcoming.length > 0 || band.rows.length > 0 || hasMemories);
 
 	// On a phone the composer is a sheet over the stream, opened by the pencil in the tab bar
 	// (`/?compose`) and closed by handing the URL back — so the open state lives in the URL
@@ -621,12 +625,13 @@
 					{/if}
 				</section>
 			{/if}
-			{#if !data.memories.empty}
+			{#if hasMemories}
 				<MemoryBand
 					years={data.memories.years}
 					photos={data.memories.photos}
 					more={data.memories.more}
 					today={data.today}
+					immich={immichMemories}
 				/>
 			{/if}
 		</aside>
