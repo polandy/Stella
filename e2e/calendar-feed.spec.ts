@@ -43,8 +43,21 @@ test('a calendar link is shown once, serves the dates, and stops when replaced o
 	await expect(page.getByTestId('new-calendar-link')).toHaveCount(0);
 	await expect(page.getByTestId('calendar-link')).toBeVisible();
 
+	// The answer is in; while the page reloads its data the old link must not come back on screen.
+	let release = () => {};
+	const held = new Promise<void>((resolve) => (release = resolve));
+	let arrived = () => {};
+	const requested = new Promise<void>((resolve) => (arrived = resolve));
+	await page.route(/\/settings\/calendar\/__data\.json/, async (route) => {
+		arrived();
+		await held;
+		await route.continue();
+	});
 	await page.getByRole('button', { name: 'Create a new link…' }).click();
 	await page.getByRole('button', { name: 'Create new link' }).click();
+	await requested;
+	await expect(page.getByTestId('new-calendar-link')).toHaveCount(0);
+	release();
 	const second = await shownLink(page);
 	expect(second).not.toBe(first);
 	expect((await page.request.get(first)).status()).toBe(NOT_FOUND);
