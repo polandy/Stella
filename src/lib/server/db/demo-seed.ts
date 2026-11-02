@@ -2,6 +2,7 @@ import type { BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
 import { eq, like } from 'drizzle-orm';
 import type * as schema from './schema';
 import { relationshipPair } from '../../relationships/endpoints';
+import { todayFor } from '../../dates/today';
 import { extractMentionIds, mentionToken, mentionsOtherThan } from '../../mentions/mentions';
 import { hashPasswordSync } from '../auth/password';
 import {
@@ -750,14 +751,15 @@ const MEMORIES: readonly {
 	}
 ];
 
-/** The same day and month `years` back, 28 February standing in for a 29th that year lacks. */
+/**
+ * The same day and month `years` back, on the server's own day as Home reads it (`todayFor`),
+ * 28 February standing in for a 29th that year lacks.
+ */
 function sameDayYearsBack(now: number, years: number): string {
-	const today = new Date(now);
-	const then = new Date(
-		Date.UTC(today.getUTCFullYear() - years, today.getUTCMonth(), today.getUTCDate())
-	);
-	if (then.getUTCMonth() !== today.getUTCMonth()) then.setUTCDate(0);
-	return then.toISOString().slice(0, 10);
+	const today = todayFor({ now: () => now });
+	const year = Number(today.slice(0, 4)) - years;
+	const leapDay = new Date(Date.UTC(year, 1, 29)).getUTCMonth() === 1;
+	return today.endsWith('-02-29') && !leapDay ? `${year}-02-28` : `${year}${today.slice(4)}`;
 }
 
 /*
