@@ -20,8 +20,11 @@ import {
 	readPhoto,
 	splitCards,
 	splitEscaped,
-	unescape
+	unescape,
+	type Property
 } from './vcard-lines';
+import { foldAddress } from '../../../people/same-address';
+import { addressLine, fieldsOf } from './contact-cards';
 import { detectSource, ownCategories } from './vcard-source';
 
 export { VCardError } from './vcard-lines';
@@ -89,22 +92,30 @@ export function readVCard(text: string): SourceExport {
 		}
 
 		let fieldIndex = 0;
-		const addField = (typeId: string, data: string | null) => {
-			if (data === null) return;
-			contactFields.push({
-				id: `${id}~${fieldIndex++}`,
-				contactId: id,
-				typeId,
-				data,
-				createdAt: null
-			});
-		};
-		for (const p of all('EMAIL')) addField('email', orNull(unescape(p.raw)));
-		for (const p of all('TEL')) addField('phone', orNull(unescape(p.raw)));
-		for (const p of all('URL')) addField('url', orNull(unescape(p.raw)));
+		const text = (p: Property) => orNull(unescape(p.raw));
+		for (const [name, typeId] of [
+			['EMAIL', 'email'],
+			['TEL', 'phone'],
+			['URL', 'url']
+		] as const) {
+			for (const { value, label } of fieldsOf(card, name, typeId, text)) {
+				contactFields.push({
+					id: `${id}~${fieldIndex++}`,
+					contactId: id,
+					typeId,
+					data: value,
+					createdAt: null,
+					label
+				});
+			}
+		}
 
 		let addressIndex = 0;
+		const seenAddresses = new Set<string>();
 		for (const p of all('ADR')) {
+			const line = foldAddress(addressLine(p) ?? '');
+			if (seenAddresses.has(line)) continue;
+			seenAddresses.add(line);
 			addresses.push({
 				id: `${id}~adr${addressIndex++}`,
 				contactId: id,

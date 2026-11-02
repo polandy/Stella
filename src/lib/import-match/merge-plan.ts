@@ -38,30 +38,37 @@ function fieldKeys(kind: FieldFactKind, value: string): string[] {
 	return [foldText(value)];
 }
 
-function missingFields(kind: FieldFactKind, incoming: CardField[], held: string[]): Fact[] {
+function missingFields(kind: FieldFactKind, incoming: CardField[], held: string[]): CardField[] {
 	if (kind === 'phone') {
 		// A phone is held when it is the same number or one alike: the same number written
 		// nationally on one side is not a second number.
 		const known = held.map(normalisePhone);
-		const added: Fact[] = [];
+		const added: CardField[] = [];
 		for (const field of incoming) {
 			const phone = normalisePhone(field.value);
 			if (known.some((k) => samePhone(phone, k) !== 'different')) continue;
 			known.push(phone);
-			added.push({ kind, value: field.value, label: field.label });
+			added.push(field);
 		}
 		return added;
 	}
 	const seen = new Set(held.flatMap((value) => fieldKeys(kind, value)));
-	const added: Fact[] = [];
+	const added: CardField[] = [];
 	for (const field of incoming) {
 		const [key] = fieldKeys(kind, field.value);
 		if (!key || seen.has(key)) continue;
 		seen.add(key);
-		added.push({ kind, value: field.value, label: field.label });
+		added.push(field);
 	}
 	return added;
 }
+
+/**
+ * A card's fields of one kind with a value it repeats left out: Google writes a number twice
+ * when two of its contacts were merged, and the person should get it once.
+ */
+export const distinctFields = (kind: FieldFactKind, fields: CardField[]): CardField[] =>
+	missingFields(kind, fields, []);
 
 /** A birthday's month and day, whatever its precision; null when it names no day. */
 const monthDay = (date: PartialDate): string | null =>
@@ -87,11 +94,13 @@ export function mergePlan(card: IncomingCard, person: StellaPerson): MergePlan {
 		...person.fields.filter((f) => f.kind === kind).map((f) => f.value),
 		...(kind === 'address' ? person.homeLines : [])
 	];
+	const missing = (kind: FieldFactKind, incoming: CardField[]): Fact[] =>
+		missingFields(kind, incoming, heldValues(kind)).map((field) => ({ kind, ...field }));
 	add.push(
-		...missingFields('email', card.emails, heldValues('email')),
-		...missingFields('phone', card.phones, heldValues('phone')),
-		...missingFields('address', card.addresses, heldValues('address')),
-		...missingFields('url', card.urls, heldValues('url'))
+		...missing('email', card.emails),
+		...missing('phone', card.phones),
+		...missing('address', card.addresses),
+		...missing('url', card.urls)
 	);
 
 	const sameName = (a: string, b: string) => foldName(a) === foldName(b);

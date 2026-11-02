@@ -1,12 +1,12 @@
 import type { PartialDate } from '../../../dates/partial-date';
 import type { Locale } from '../../../i18n/locales';
 import { matchCard, type CardMatch } from '../../../import-match/candidates';
-import type { CardLabel, IncomingCard, StellaPerson } from '../../../import-match/card';
+import type { IncomingCard, StellaPerson } from '../../../import-match/card';
 import { mergePlan, type Conflict } from '../../../import-match/merge-plan';
 import { withNameParts, type NamePartsChange } from '../../../people/display-name';
 import type { IdGenerator } from '../../id';
 import type { NewContactField } from '../contact-fields/contact-fields';
-import type { ImportWording } from './monica/plan';
+import { fieldLabelText, type ImportWording } from './monica/plan';
 import type { RememberedAnswer } from './source-links';
 
 /*
@@ -81,9 +81,6 @@ export interface CompletionContext {
 	locale: Locale;
 }
 
-const labelText = (label: CardLabel | null, wording: CompletionContext['wording']) =>
-	label === null ? null : 'known' in label ? wording.fieldLabel(label.known) : label.typed;
-
 /**
  * What the card gives the person: what they are missing, and the card's side of each conflict
  * named in `takeCard` — of one that exists; a stale choice for a conflict that is gone is ignored.
@@ -114,7 +111,7 @@ export function completionOf(
 					id: ctx.ids.next(),
 					contactId: person.id,
 					kind: fact.kind,
-					label: labelText(fact.label, ctx.wording),
+					label: fieldLabelText(fact.label, ctx.wording),
 					value: fact.value,
 					meta: null,
 					sortOrder: person.fields.length + completion.fields.length,

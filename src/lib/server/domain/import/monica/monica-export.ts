@@ -1,3 +1,4 @@
+import type { CardLabel } from '../../../../import-match/card';
 import { phrase } from '../../../../i18n/phrase';
 import type { ImportSource } from '../source';
 import { SqlDumpError, type SqlDump, type SqlRow, type SqlValue } from './sql-dump';
@@ -88,6 +89,8 @@ export interface MonicaContactField {
 	typeId: MonicaId;
 	data: string;
 	createdAt: string | null;
+	/** The label a vCard gives the field; Monica's own exports carry none. */
+	label?: CardLabel | null;
 }
 
 export interface MonicaAddress {
