@@ -1070,7 +1070,9 @@ where it came from — so a retry after a hiccup is safe.
 
 Export the address book as a vCard — in Google Contacts *Export → vCard (for iOS Contacts)*,
 or Google Takeout; in Nextcloud's Contacts, *Download* on the address book — and hand it to
-**Import people** like any other file. Stella notices whose address book it is.
+**Import people** like any other file. Stella notices whose address book it is. Google
+offers *Google CSV* first; Stella does not read a CSV and says so — pick the vCard. A contact
+that is only a number, an email or a firm comes in under that as its name.
 
 Before anything is written, Stella asks who is who. Each contact that may be somebody already
 here gets a card: the contact on one side, the person in Stella on the other, with what would

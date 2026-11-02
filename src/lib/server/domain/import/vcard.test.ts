@@ -324,7 +324,34 @@ describe('readVCard', () => {
 		expect(() => readVCard('BEGIN:VCARD\r\nVERSION:4.0\r\nFN:Severin')).toThrow(VCardError);
 	});
 
-	it('refuses a card that names nobody, rather than importing a nameless person', () => {
+	it('names a card without a name by its company, else its email, else its number', () => {
+		// Google keeps a contact that is only a number or a firm, and writes `FN:` empty for it.
+		const exp = readVCard(
+			[
+				card('UID:u1', 'FN:', 'N:;;;;', 'ORG:Bäckerei Müller;Laden', 'EMAIL:info@baeckerei.ch'),
+				card('UID:u2', 'N:;;;;', 'EMAIL:jürg@example.ch', 'TEL:+41 79 000 00 01'),
+				card('UID:u3', 'FN:', 'TEL;TYPE=CELL:+41 79 000 00 02')
+			].join('\r\n')
+		);
+
+		expect(exp.contacts.map((c) => [c.firstName, c.lastName])).toEqual([
+			['Bäckerei Müller', null],
+			['jürg@example.ch', null],
+			['+41 79 000 00 02', null]
+		]);
+	});
+
+	it('refuses a card with nothing to name it by, rather than importing a nameless person', () => {
 		expect(() => readVCard(card('UID:u1', 'NOTE:no name here'))).toThrow(VCardError);
+	});
+
+	it('keeps two identical cards two people, as the review asks about each', () => {
+		// Google exports a contact saved twice as two cards with the same lines and no UID.
+		const twin = card('FN:Jürg Häberli', 'N:Häberli;Jürg;;;');
+		const exp = readVCard([twin, twin].join('\r\n'));
+
+		expect(new Set(exp.contacts.map((c) => c.id)).size).toBe(2);
+		// The first keeps the id it has alone, so an earlier import still recognises it.
+		expect(exp.contacts[0]!.id).toBe(readVCard(twin).contacts[0]!.id);
 	});
 });

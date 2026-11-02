@@ -3,7 +3,7 @@ import { MonicaJsonError, readMonicaJsonExport } from './monica/json-export';
 import { readMonicaExport, type SourceExport } from './monica/monica-export';
 import type { ImportSource } from './source';
 import { parseSqlDump } from './monica/sql-dump';
-import { readVCard } from './vcard';
+import { readVCard, VCardError } from './vcard';
 
 /*
  * Which accepted export an uploaded file is, and reading it whichever it is (docs/02 §2.16).
@@ -20,10 +20,21 @@ export function detectImportFormat(text: string): ImportSource {
 	return 'sql';
 }
 
+/**
+ * A contacts CSV — Google Contacts offers its own first, Outlook's opens alike: a header row of
+ * comma-separated column names. A dump's first line is a comment or a statement, never that.
+ */
+const CSV_HEADER = /^[^,\n]*name[^,\n]*(,[^,\n]*){2,}$/i;
+
+const looksLikeContactsCsv = (text: string): boolean =>
+	CSV_HEADER.test(text.trimStart().split(/\r?\n/, 1)[0] ?? '');
+
 /** Read any accepted export into the one typed view the mapping works on. */
 export function readImportFile(text: string): SourceExport {
 	switch (detectImportFormat(text)) {
 		case 'sql':
+			// Not read, but named: told it is no dump, the member would not know to pick vCard.
+			if (looksLikeContactsCsv(text)) throw new VCardError(phrase('import.error.contactsCsv'));
 			return readMonicaExport(parseSqlDump(text));
 		case 'vcard':
 			return readVCard(text);
