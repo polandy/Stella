@@ -2,6 +2,7 @@ import type { BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
 import { eq, like } from 'drizzle-orm';
 import type * as schema from './schema';
 import { relationshipPair } from '../../relationships/endpoints';
+import { todayFor } from '../../dates/today';
 import { extractMentionIds, mentionToken, mentionsOtherThan } from '../../mentions/mentions';
 import { hashPasswordSync } from '../auth/password';
 import {
@@ -717,6 +718,51 @@ const SYMMETRIC_TYPES = new Set([
 ]);
 
 /*
+ * *On this day* (docs/02 §2.12.1): what the household wrote on today's date in earlier years,
+ * so Home's band has a photo-less day to show — two moments and two touchpoints, one more than
+ * the band holds, so *More* leads to the page. Dated by whole years from the day the seed runs.
+ */
+const MEMORIES: readonly {
+	key: string;
+	person: string;
+	yearsAgo: number;
+	kind?: 'met' | 'call';
+	text: string;
+}[] = [
+	{
+		key: 'choir',
+		person: 'vreni',
+		yearsAgo: 1,
+		text: 'Choir concert in the Münster with @{person:rosa}.'
+	},
+	{
+		key: 'sandra-call',
+		person: 'sandra',
+		yearsAgo: 1,
+		kind: 'call',
+		text: 'Long call about the move'
+	},
+	{ key: 'hike', person: 'thomas', yearsAgo: 3, kind: 'met', text: 'Hike up the Gurten' },
+	{
+		key: 'garden',
+		person: 'rosa',
+		yearsAgo: 6,
+		text: 'Rosa showed us her garden, the dahlias were huge.'
+	}
+];
+
+/**
+ * The same day and month `years` back, on the server's own day as Home reads it (`todayFor`),
+ * 28 February standing in for a 29th that year lacks.
+ */
+function sameDayYearsBack(now: number, years: number): string {
+	const today = todayFor({ now: () => now });
+	const year = Number(today.slice(0, 4)) - years;
+	const leapDay = new Date(Date.UTC(year, 1, 29)).getUTCMonth() === 1;
+	return today.endsWith('-02-29') && !leapDay ? `${year}-02-28` : `${year}${today.slice(4)}`;
+}
+
+/*
  * Seed texts name people by their key (`@{person:lena}`); the stored form is the id-based
  * token the app itself writes (docs/02 §2.20.1), so the demo data goes through the same
  * grammar the parser, the chip and the "Mentioned in" list read.
@@ -1035,6 +1081,47 @@ export function seedDemoData(
 		.values(
 			dated.flatMap(({ kind, day, ...row }) =>
 				kind === 'gift' ? [{ ...row, state: 'given' as const, givenOn: day }] : []
+			)
+		)
+		.onConflictDoNothing()
+		.run();
+
+	const memoryAt = (yearsAgo: number) => Date.parse(sameDayYearsBack(now, yearsAgo));
+	const memoryMoments = MEMORIES.filter((m) => m.kind === undefined).map((m) => ({
+		id: `demo-memory-${m.key}`,
+		contactId: cid(m.person),
+		createdBy: authorId,
+		entryDate: sameDayYearsBack(now, m.yearsAgo),
+		body: withMentions(m.text),
+		createdAt: memoryAt(m.yearsAgo),
+		updatedAt: memoryAt(m.yearsAgo)
+	}));
+	db.insert(journalEntry).values(memoryMoments).onConflictDoNothing().run();
+	db.insert(journalMention)
+		.values(
+			memoryMoments.flatMap((e) =>
+				mentionedBy(e).map((contactId) => ({ journalEntryId: e.id, contactId }))
+			)
+		)
+		.onConflictDoNothing()
+		.run();
+	db.insert(interaction)
+		.values(
+			MEMORIES.flatMap((m) =>
+				m.kind === undefined
+					? []
+					: [
+							{
+								id: `demo-memory-${m.key}`,
+								kind: m.kind,
+								contactId: cid(m.person),
+								createdBy: authorId,
+								happenedAt: sameDayYearsBack(now, m.yearsAgo),
+								title: m.text,
+								createdAt: memoryAt(m.yearsAgo),
+								updatedAt: memoryAt(m.yearsAgo)
+							}
+						]
 			)
 		)
 		.onConflictDoNothing()

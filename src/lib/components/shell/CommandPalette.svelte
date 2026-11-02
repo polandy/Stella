@@ -51,6 +51,7 @@
 				giftIdeas: t('components.palette.giftIdeas'),
 				todoFor: t('components.palette.todoFor'),
 				allTodos: t('components.palette.allTodos'),
+				onThisDay: t('memories.title'),
 				addPerson: t('components.palette.addPerson'),
 				searchEverything: (q) => t('components.palette.searchEverything', { query: q })
 			},

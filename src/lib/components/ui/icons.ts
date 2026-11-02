@@ -12,6 +12,7 @@ import {
 	Briefcase,
 	CalendarDays,
 	Check,
+	History,
 	ChevronDown,
 	ChevronLeft,
 	ChevronRight,
@@ -162,6 +163,8 @@ export const ICONS = {
 	idea: Lightbulb,
 	// A to-do on a person (docs/02 §2.26).
 	todo: ListTodo,
+	// *On this day* — what the household wrote on today's date in earlier years (docs/02 §2.12.1).
+	memories: History,
 	link: Link,
 	// Interaction kinds (docs/02 §2.6)
 	met: Handshake,

@@ -446,12 +446,15 @@ is a dated diary moment. Child record of a contact; visibility per §3.7.
 | created_by | text fk → user.id | the author |
 | visibility | text | `'shared' \| 'private'` (private ⇒ only the author) |
 | entry_date | text | ISO `YYYY-MM-DD`; the day the entry is *about* |
+| entry_month_day | text, generated | `MM-DD` of `entry_date` (virtual, never written); indexed for *On this day* (docs/02 §2.12.1) |
 | title | text null | |
 | body | text | Markdown |
 | created_at / updated_at | int | |
 
 Unique `(contact_id, created_by, entry_date, visibility)` — one shared and one private entry
 per author per contact per day; re-saving a slot edits it. Photos attach via `photo` (§2.14).
+Indexed on `entry_month_day` (`journal_month_day_idx`), so a day's date in every year is one
+index range rather than a scan.
 
 ### journal_mention  [M2]
 A person referenced from a journal entry via an `@`-mention (§2.20.1). Powers the reverse
@@ -509,11 +512,13 @@ outside Drizzle like `search_index_meta`.
 | title | text null | |
 | description | text null | |
 | happened_at | text | ISO date `YYYY-MM-DD` — the day it happened; the timeline orders by it, then `created_at` |
+| happened_month_day | text, generated | `MM-DD` of `happened_at` (virtual); indexed for *On this day* |
 | created_at / updated_at | int | |
 
 Indexed on `(contact_id, happened_at, created_at)`, so a person's touchpoints come in story
-order and the day of the last one is read from the index alone; and on `created_at` for the
-Home stream's newest touchpoints.
+order and the day of the last one is read from the index alone; on `created_at` for the
+Home stream's newest touchpoints; and on `happened_month_day` (`interaction_month_day_idx`)
+for *On this day*.
 
 ### interaction_participant  [M2]
 | column | type | notes |
@@ -612,6 +617,7 @@ FTS: `title` indexed (3.5).
 | size_bytes | int | |
 | caption | text null | |
 | taken_at | text null | when the picture was taken, read from its EXIF in the browser before the re-encode (docs/02 §2.14): `YYYY-MM-DDTHH:MM:SS` as the camera wrote it, plus its `±HH:MM`/`Z` offset when it wrote one; null = unknown. Shown and ordered by when set, else `created_at` |
+| taken_month_day | text, generated | `MM-DD` of `taken_at` (virtual), null with it; indexed (`photo_taken_month_day_idx`) for *On this day*'s gallery photos |
 | pinned_at | int null | when the household pinned this gallery photo as a favourite (docs/02 §2.14); null = not one |
 | created_at | int | |
 

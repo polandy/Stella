@@ -24,6 +24,9 @@ import { hasPressingTodo } from '$lib/todos/household';
 import { composerFor, linkSuggestionAmong, peopleNamedBy, photosPosted } from './home-view';
 import { householdTodoActions, readHouseholdTodos } from './_shared/household-todos';
 import { streamForView } from './_shared/stream-view';
+import { memoryBandForView } from './_shared/memories-view';
+import { memoriesOn } from '$lib/server/domain/memories/memories';
+import { MEMORY_BAND_CAP, MEMORY_STRIP_CAP } from '$lib/memories/memories';
 
 /*
  * Home (docs/02 §2.22, §2.12): the "What happened?" capture field, the household stream, and
@@ -44,7 +47,11 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 
 	const named = peopleNamedBy(url.searchParams);
 
-	const [items, onList, dateSources, firstPeople, entryTags, todos] = await Promise.all([
+	// One reading of the clock, so the composer's day, the horizon and *On this day* cannot
+	// straddle midnight.
+	const day = todayFor(systemClock);
+
+	const [items, onList, dateSources, firstPeople, entryTags, todos, memories] = await Promise.all([
 		buildStream(locals.services.media.streamDeps, viewer, filter),
 		// Who the household can still act on — the browsing scope — among just those.
 		listBrowsableNamesAmong(locals.services.people.contactNameDeps, viewer, named.ids),
@@ -54,12 +61,15 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 		// For the Tags row and the line over a stream narrowed by tags (docs/02 §2.20.2).
 		locals.services.story.entryTags.listVisibleTo(viewer),
 		// Every open one: the band picks the pressing ones, and counts the rest for *Show all*.
-		readHouseholdTodos(locals)
+		readHouseholdTodos(locals),
+		// One past each cap, so the band knows whether *More* has more (docs/02 §2.12.1).
+		memoriesOn(locals.services.media.memoryDeps, viewer, day, {
+			entries: MEMORY_BAND_CAP + 1,
+			photos: MEMORY_STRIP_CAP + 1
+		})
 	]);
 	const stream = await streamForView(locals.services.people.contactNameDeps, viewer, items);
 
-	// One reading of the clock, so the composer's day and the horizon cannot straddle midnight.
-	const day = todayFor(systemClock);
 	const dates = upcomingDates(dateSources, day);
 	// A person coming up with open gift ideas says how many (docs/02 §2.13.3).
 	const ideas = await countOpenIdeas(
@@ -74,6 +84,7 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 		...composerFor(url.searchParams, named, onList),
 		upcoming,
 		todos,
+		memories: memoryBandForView(memories),
 		// Below `lg` the rail only precedes the stream when a date is close or a to-do is due
 		// (docs/05 §5.5.1).
 		railFirst: hasImminentDate(upcoming) || hasPressingTodo(todos, day),

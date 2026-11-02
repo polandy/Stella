@@ -51,6 +51,16 @@ export function contactSectionPath(
 	return `/contacts/${contactId}${question}#${sectionAnchor(section)}`;
 }
 
+/** The id one entry carries on a person's journal page, which holds every entry. */
+export function journalEntryAnchor(entryId: string): string {
+	return `entry-${entryId}`;
+}
+
+/** A link to one entry on a person's journal page — *On this day* opens a moment there. */
+export function journalEntryPath(contactId: string, entryId: string): string {
+	return `/contacts/${contactId}/journal#${journalEntryAnchor(entryId)}`;
+}
+
 /** Which card a passive reference opens: a note is read on Notes, an entry in the story. */
 export const SECTION_FOR_REFERENCE = {
 	note: 'notes',

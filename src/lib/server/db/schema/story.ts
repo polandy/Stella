@@ -1,5 +1,5 @@
 import { index, integer, primaryKey, sqliteTable, text, unique } from 'drizzle-orm/sqlite-core';
-import { now, type Visibility } from './columns';
+import { monthDayOf, now, type Visibility } from './columns';
 import { household, user } from './household';
 import { contact } from './people';
 
@@ -24,6 +24,7 @@ export const journalEntry = sqliteTable(
 			.references(() => user.id),
 		visibility: text('visibility').$type<Visibility>().notNull().default('shared'),
 		entryDate: text('entry_date').notNull(),
+		entryMonthDay: monthDayOf('entry_month_day', 'entry_date'),
 		title: text('title'),
 		body: text('body').notNull(),
 		createdAt: integer('created_at').notNull().default(now),
@@ -33,6 +34,8 @@ export const journalEntry = sqliteTable(
 		// In the story's order, so a page of it is read rather than sorted (docs/02 §2.23).
 		index('journal_contact_day_idx').on(t.contactId, t.entryDate, t.createdAt),
 		index('journal_updated_idx').on(t.updatedAt),
+		// The entries of a day and month in every year, for *On this day* (docs/02 §2.12.1).
+		index('journal_month_day_idx').on(t.entryMonthDay),
 		unique('journal_day_slot').on(t.contactId, t.createdBy, t.entryDate, t.visibility)
 	]
 );
@@ -112,6 +115,7 @@ export const interaction = sqliteTable(
 		title: text('title'),
 		description: text('description'),
 		happenedAt: text('happened_at').notNull(),
+		happenedMonthDay: monthDayOf('happened_month_day', 'happened_at'),
 		createdAt: integer('created_at').notNull().default(now),
 		updatedAt: integer('updated_at').notNull().default(now)
 	},
@@ -119,7 +123,9 @@ export const interaction = sqliteTable(
 		// A person's touchpoints in story order, and the day of their last one (docs/04 §4.8).
 		index('interaction_contact_happened_idx').on(t.contactId, t.happenedAt, t.createdAt),
 		// The newest touchpoints first, for the Home stream.
-		index('interaction_created_idx').on(t.createdAt)
+		index('interaction_created_idx').on(t.createdAt),
+		// The touchpoints of a day and month in every year, for *On this day* (docs/02 §2.12.1).
+		index('interaction_month_day_idx').on(t.happenedMonthDay)
 	]
 );
 

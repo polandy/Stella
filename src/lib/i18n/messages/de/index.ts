@@ -20,6 +20,7 @@ import { importReview } from './import-review';
 import { interactions } from './interactions';
 import { journal } from './journal';
 import { kinship } from './kinship';
+import { memories } from './memories';
 import { nav } from './nav';
 import { nextcloud } from './nextcloud';
 import { privacy } from './privacy';
@@ -51,6 +52,7 @@ export const de = {
 	...interactions,
 	...journal,
 	...kinship,
+	...memories,
 	...nav,
 	...nextcloud,
 	...privacy,

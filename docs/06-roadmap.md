@@ -202,7 +202,8 @@ the screen file in the same PR that builds it, and leaves a one-line *built* not
 2. **Sharing into Stella from other apps (Web Share Target)** — *built*; see docs/02
    §2.18.3. A shared link as a *note* was declined: moment, gift idea and to-do cover it.
 
-3. **On this day — memories on Home** — *queued.* A quiet band in Home's rail, below *Coming
+3. **On this day — memories on Home** — *slice 1 built* (band, `/on-this-day`, moments,
+   touchpoints, gallery photos; docs/02 §2.12.1); *slice 2 queued:* the Immich strip. A quiet band in Home's rail, below *Coming
    up* and *To do*: what the household wrote on today's date in earlier years. Not a nudge and
    not about "seeing people more" (declined by the owner: most people are reference) — a reason to
    enjoy the notebook.
@@ -223,8 +224,8 @@ the screen file in the same PR that builds it, and leaves a one-line *built* not
    - **Tests.** Unit: grouping, the 29 Feb rule, visibility, the cap. E2e: a seeded moment two
      years back on the fixed test day shows on Home and opens.
    - **Docs.** docs/02 §2.12, `home.md`, `using-stella.md`.
-   - **Open.** Whether to count only whole years (recommended) or also *a month ago*; whether
-     the band can be switched off per member (recommended: no setting until someone asks).
+   - **Decided.** Whole years only; no per-member switch until someone asks; the band last in the
+     rail, with a photo strip.
 
 4. **Before a visit — a person's brief** — *queued.* One compact view of a person for "we're
    going over in ten minutes": everything worth knowing at a glance, nothing to fill in. Pure

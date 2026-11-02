@@ -37,6 +37,7 @@ const frameworkFreeFolders = [
 	'src/lib/people/**',
 	'src/lib/gifts/**',
 	'src/lib/todos/**',
+	'src/lib/memories/**',
 	'src/lib/calendar/**',
 	'src/lib/import-match/**',
 	'src/lib/surnames/**',
