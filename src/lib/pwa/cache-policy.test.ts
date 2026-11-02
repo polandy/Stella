@@ -46,6 +46,7 @@ describe('what may be kept on the device', () => {
 		expect(verdictFor(asset('/contacts/abc/immich/photos'))).toBe('skip');
 		expect(verdictFor(asset('/contacts/abc/immich/photos?cursor=12'))).toBe('skip');
 		expect(verdictFor(asset('/immich/library?day=2026-09-01'))).toBe('skip');
+		expect(verdictFor(asset('/immich/on-this-day?day=2026-11-02'))).toBe('skip');
 		// The matching list: Immich's names and counts, and the faces' signed URLs.
 		expect(verdictFor(page('/settings/immich'))).toBe('skip');
 		expect(verdictFor(pageData('/settings/immich'))).toBe('skip');

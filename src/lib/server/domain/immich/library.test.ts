@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'bun:test';
 import type { Viewer } from '../../access/visibility';
 import { createFakeImmichGateway, fakeAssetId } from '../../immich/fake-gateway';
-import type { ImmichAsset, ImmichGateway } from './gateway';
+import type { ImmichGateway } from './gateway';
 import {
 	libraryCopyTakenAt,
 	photoTakenAt,
@@ -10,7 +10,14 @@ import {
 	type ImmichLibraryDeps
 } from './library';
 import { createImmichMediaSigner } from './signed-media';
-import { BERT_AND_CARL_ID, BERT_ID, CARL_ID, DORA_ID, testLibrary } from './test-library';
+import {
+	BERT_AND_CARL_ID,
+	BERT_ID,
+	CARL_ID,
+	DORA_ID,
+	libraryOf,
+	testLibrary
+} from './test-library';
 import { fixedClock } from '../testing';
 
 /*
@@ -40,38 +47,6 @@ async function signedFor(signer: ImmichLibraryDeps['signer'], url: string) {
 	if (!verified.ok) throw new Error('not a signed URL');
 	const { expiresAt: _, ...media } = verified.media;
 	return media;
-}
-
-/** A gateway whose whole library is these photos, each taken at its camera-clock time. */
-function libraryOf(
-	taken: Record<string, string>
-): Pick<ImmichGateway, 'takenAssets' | 'smartSearch'> {
-	// Each photo's instant: the clock time at UTC−10, so the day's window must reach past midnight.
-	const listed: (ImmichAsset & { instant: string })[] = Object.entries(taken)
-		.map(([id, takenAt]) => ({
-			id,
-			takenAt,
-			instant: new Date(Date.parse(`${takenAt}Z`) + 10 * 3_600_000).toISOString()
-		}))
-		.sort((a, b) => a.takenAt.localeCompare(b.takenAt));
-	return {
-		takenAssets: async ({ from, before }, order, limit, cursor) => {
-			const within = listed.filter(
-				({ instant }) => (from === null || instant >= from) && (before === null || instant < before)
-			);
-			if (order === 'newest') within.reverse();
-			const start = cursor === null ? 0 : Number(cursor);
-			const page = within.slice(start, start + limit);
-			return {
-				ok: true,
-				value: {
-					assets: page.map(({ id, takenAt }) => ({ id, takenAt })),
-					nextCursor: start + limit < within.length ? String(start + limit) : null
-				}
-			};
-		},
-		smartSearch: async () => ({ ok: true, value: { enabled: false } })
-	};
 }
 
 const A = '0a000000-0000-4000-8000-000000000000';

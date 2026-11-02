@@ -46,13 +46,17 @@ first to find somebody, so there the page opens on the person search.
   the rail are `gap-6` apart. Mockup: https://claude.ai/artifact/5Lj9VzJEqR7My3sEL2vhjq
 - **On this day** (docs/02 §2.12.1) is the **last** band of the rail (`MemoryBand`): the
   history icon and *On this day*, then one row of up to four square thumbnails (`MemoryPhotos`,
-  `grid-cols-4`, the year in `text-[10px]` on each), then the entries under `text-[11px]`
+  `grid-cols-4`, the year in `text-[10px]` on each) — the gallery's first, then Immich's with the
+  *Immich* pill top right, each a button opening the Immich lightbox (the day and time taken,
+  *1 of 7*, back/on wrapping, *Open in Immich*). While Immich answers, a band that stands anyway
+  fills the row with grey `--bg-sunken` tiles (pulsing unless reduced motion); a band with
+  nothing else stays absent until Immich has photos. Then the entries under `text-[11px]`
   uppercase `--fg-subtle` labels *1 year ago · 2025*. A row (`MemoryRow`) is one link: up to two
   overlapping 28 px faces, the first line in `--fg`, truncated, and under it in `text-xs`
   `--fg-subtle` the names · the kind, plus the private mark. A private line is veiled, passive
   inside the link. *More from 1 November* in `--link` beneath, only when `/on-this-day` holds
-  more. It never moves the rail above the stream. Mockup:
-  https://claude.ai/artifact/DH3TemNZHmgoy6iBVfR17p
+  more, Immich's photos counted. It never moves the rail above the stream. Mockups:
+  https://claude.ai/artifact/DH3TemNZHmgoy6iBVfR17p, Immich: https://claude.ai/artifact/8VokZyK43zm7RYLXJHYrHU
 - From `lg` the bands stand in a **rail** on the right, a 17 rem column. Below `lg` it is the
   same vertical list at full width; nothing on the page scrolls sideways.
 - Each band stops after **three rows**, with *Show all N* beneath it.

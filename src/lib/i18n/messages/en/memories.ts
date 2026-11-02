@@ -10,12 +10,16 @@ export const memories = {
 	'memories.moreFrom': (p: { day: string }) => `More from ${p.day}`,
 	'memories.photoOf': (p: { name: string; year: number }) => `Photo of ${p.name}, ${p.year}`,
 	'memories.page.intro': (p: { day: string }) =>
-		`What the household wrote on ${p.day} in earlier years.`,
-	'memories.page.empty': (p: { day: string }) => `Nothing written on ${p.day} in earlier years.`,
+		`What the household wrote and photographed on ${p.day} in earlier years.`,
+	'memories.page.empty': (p: { day: string }) =>
+		`Nothing written or photographed on ${p.day} in earlier years.`,
+	'memories.page.immichLoading': 'Photos from Immich…',
 	'memories.page.day': 'Day',
 	'memories.page.earlier': 'Day before',
 	'memories.page.later': 'Day after',
-	'memories.page.today': 'Today'
+	'memories.page.today': 'Today',
+	'memories.immich.photo': (p: { year: number }) => `Photo from Immich, ${p.year}`,
+	'memories.immich.takenAt': (p: { date: string; time: string }) => `Taken ${p.date}, ${p.time}`
 };
 
 export type MemoriesMessages = typeof memories;
