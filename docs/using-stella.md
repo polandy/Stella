@@ -1277,6 +1277,15 @@ Opening up someone's connections in the tree lays the whole tree out again, so t
 land in their own generation (or on the shelf) and everyone glides to their new place. *Connection path* traces how two people are linked, and it always answers
 with the people in between rather than the worked-out shortcut — that is the point of asking.
 
+**Export** takes the family tree away as a picture or on paper — for the grandparents, or a
+family gathering. Arrange the map as a *Tree*, set it up the way you want it (the person in the
+middle, the filters, how far it is opened up), then tap *Export* in the toolbar. Give it a
+title, choose *Picture (PNG)* to share it or *PDF / Print* to print it or save it as a PDF, and
+for a print pick *A4* or *A3*: the whole tree always goes on one page, and if that makes the
+names very small the dialog says so and suggests A3. *Years of birth and death* writes them
+under the names. Private people stay out of an export unless you switch them on — a print
+leaves the house. The picture is always dark on white, whichever theme you use.
+
 **Full screen**, at the end of the map's toolbar, gives the map the whole screen and fits it to
 the new size; leaving full screen fits it back. If you have already moved or zoomed the map, it
 stays exactly where you had it instead.

@@ -40,6 +40,15 @@ export interface GraphNode {
 	 * name where no first name is on record (docs/05 §5.8).
 	 */
 	shortName?: string;
+	/**
+	 * Marked private by its author (docs/03 §3.7): the reader may see it, but a family tree that
+	 * leaves the household carries it only when asked (docs/02 §2.7).
+	 */
+	private?: true;
+	/** Person only: the year they were born, where the whole year is on record. */
+	born?: number;
+	/** Person only: the year they died, where it is on record. */
+	died?: number;
 }
 
 export interface GraphEdge {

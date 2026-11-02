@@ -28,6 +28,14 @@ import { circle, circleMembership, contact, relationship, relationshipType } fro
  * scoped snapshot, so an inferred line can never name a person the viewer may not see.
  */
 
+const LEADING_YEAR = /^(\d{4})/;
+
+/** `{ [field]: year }` where the date starts with a whole year, else nothing. */
+function yearField(field: 'born' | 'died', date: string | null): { born?: number; died?: number } {
+	const year = date ? LEADING_YEAR.exec(date)?.[1] : undefined;
+	return year ? { [field]: Number(year) } : {};
+}
+
 export interface GraphRepository extends VisibleFamilySource {
 	loadVisibleGraph(viewer: Viewer): Promise<GraphModel>;
 }
@@ -48,6 +56,9 @@ export function createDrizzleGraphRepository(
 				avatarPhotoId: contact.avatarPhotoId,
 				gender: contact.gender,
 				birthDate: contact.birthDate,
+				birthDatePrecision: contact.birthDatePrecision,
+				deathDate: contact.deathDate,
+				visibility: contact.visibility,
 				firstName: contact.firstName
 			})
 			.from(contact)
@@ -62,7 +73,12 @@ export function createDrizzleGraphRepository(
 			avatarPhotoId: r.avatarPhotoId,
 			// Only how a role word is worded travels, not the gender as somebody typed it.
 			wording: variantFor(r),
-			shortName: r.firstName?.trim() || r.label
+			shortName: r.firstName?.trim() || r.label,
+			...(r.visibility === 'private' ? { private: true as const } : {}),
+			// The years a printed family tree may write under the name (docs/02 §2.7); a year
+			// worked out from an age is a guess, and a print would state it as fact.
+			...yearField('born', r.birthDatePrecision === 'age' ? null : r.birthDate),
+			...yearField('died', r.deathDate)
 		}));
 
 		const fromC = alias(contact, 'from_c');
@@ -101,11 +117,18 @@ export function createDrizzleGraphRepository(
 		// Circles (shared contexts) become their own node kind; memberships become edges
 		// connecting a contact to its circle (docs/02 §2.4.2). Both are visibility-scoped.
 		const circleRows = db
-			.select({ id: circle.id, name: circle.name })
+			.select({ id: circle.id, name: circle.name, visibility: circle.visibility })
 			.from(circle)
 			.where(circleColumnsVisibleTo(viewer, circle))
 			.all();
-		for (const c of circleRows) nodes.push({ id: c.id, kind: 'circle', label: c.name });
+		for (const c of circleRows) {
+			nodes.push({
+				id: c.id,
+				kind: 'circle',
+				label: c.name,
+				...(c.visibility === 'private' ? { private: true as const } : {})
+			});
+		}
 
 		const membershipRows = db
 			.select({

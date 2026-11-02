@@ -12,6 +12,8 @@
 	import { familyLinksAmong } from '$lib/graph/model/generations';
 	import { hiddenInTree } from '$lib/graph/model/tree-shown';
 	import { selectionAsked, treeRelaidFor } from '$lib/graph/tree-view';
+	import { privateCount, type ExportChoices } from '$lib/graph/tree-export';
+	import { exportScene } from '$lib/graph/tree-export-scene';
 	import {
 		explorerAfter,
 		explorerAtOpen,
@@ -79,6 +81,7 @@
 	import { frameFullscreen } from './frame-fullscreen.svelte';
 	import GraphArrangeMenu from './GraphArrangeMenu.svelte';
 	import GraphCanvas from './GraphCanvas.svelte';
+	import GraphExportDialog from './GraphExportDialog.svelte';
 	import GraphFilterMenu from './GraphFilterMenu.svelte';
 	import GraphFindField from './GraphFindField.svelte';
 	import GraphGroupPeek from './GraphGroupPeek.svelte';
@@ -383,6 +386,25 @@
 		for (const id of hiddenInTree(drawnVisible, asked, onPath)) left.add(id);
 		return left;
 	});
+	// The tree goes out as it is shown, in the tree arrangement only (docs/02 §2.7).
+	let exporting = $state(false);
+	const exportable = $derived(arrangedBy === 'tree' && drawnVisible.nodes.length > 0);
+	const exportTitle = $derived.by(() => {
+		const centre = centerId ? drawnVisible.nodes.find((n) => n.id === centerId) : undefined;
+		return centre
+			? t('graph.export.defaultTitle', { name: centre.label })
+			: t('graph.export.untitled');
+	});
+	const exportSceneFor = (choices: Pick<ExportChoices, 'dates' | 'withPrivate'>) =>
+		exportScene({
+			graph,
+			shown: drawnVisible,
+			centerId,
+			rolesInstead,
+			allKinship: switches.allKinship,
+			choices,
+			t
+		});
 	/** What the canvas shows: the filtered map, plus the frames and bundles grouping adds. */
 	const shownIds = () => {
 		const shown = shownOnCanvas(drawnVisible, implied, grouping);
@@ -872,6 +894,18 @@
 				onclick={onShrink}
 			/>
 		{/if}
+		{#if exportable}
+			<Button
+				variant="ghost"
+				size="sm"
+				icon="export"
+				label={t('graph.export.open')}
+				title={t('graph.export.open')}
+				data-testid="tree-export-open"
+				class="pointer-events-auto {onShrink ? '' : 'ml-auto'}"
+				onclick={() => (exporting = true)}
+			/>
+		{/if}
 		{#if screen.available}
 			<Button
 				variant="ghost"
@@ -880,7 +914,7 @@
 				label={t(screen.on ? 'graph.fullscreen.exit' : 'graph.fullscreen.enter')}
 				aria-pressed={screen.on}
 				title={t(screen.on ? 'graph.fullscreen.exit' : 'graph.fullscreen.enter')}
-				class="pointer-events-auto {onShrink ? '' : 'ml-auto'}"
+				class="pointer-events-auto {onShrink || exportable ? '' : 'ml-auto'}"
 				onclick={screen.toggle}
 			/>
 		{/if}
@@ -925,6 +959,18 @@
 			onExpand={expand}
 			{fullGraphHref}
 			onClose={() => dispatch({ type: 'peekClosed' })}
+		/>
+	{/if}
+
+	<!-- Mounted only while asked for, so no preview is drawn behind a closed dialog. -->
+	{#if exporting}
+		<GraphExportDialog
+			bind:open={exporting}
+			defaultTitle={exportTitle}
+			privateCount={privateCount(drawnVisible)}
+			sceneFor={exportSceneFor}
+			edgeLabels={labelsFit}
+			outsideFamily={t('graph.tree.outsideFamily')}
 		/>
 	{/if}
 </div>
