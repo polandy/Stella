@@ -188,8 +188,10 @@
 						use:enhance={() => {
 							const revoking = !replace;
 							return async ({ result, update }) => {
-								reset();
+								// After the answer, not before: until it lands `form` still holds the old,
+								// replaced link, and undoing *Done* would show it again.
 								await update();
+								reset();
 								if (revoking && result.type === 'success') {
 									removals.notify(t('settings.calendar.revoked'));
 								}
