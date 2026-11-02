@@ -132,4 +132,12 @@ describe('readContactCards', () => {
 			'name:anna example|anna@example.org~2'
 		]);
 	});
+
+	it('lists a value the card repeats once', () => {
+		const { cards } = readContactCards(
+			card('FN:Aaron', 'TEL;TYPE=CELL:+41787200373', 'TEL;TYPE=CELL:+41 78 720 03 73')
+		);
+
+		expect(cards[0]?.phones).toEqual([{ value: '+41787200373', label: { known: 'mobile' } }]);
+	});
 });
