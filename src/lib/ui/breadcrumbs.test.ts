@@ -25,6 +25,22 @@ describe('breadcrumbs', () => {
 		]);
 	});
 
+	it("puts a person's brief under their page, so the phone's back link returns there", () => {
+		expect(
+			breadcrumbs(
+				'/(app)/contacts/[id]/brief',
+				{ contact: { displayName: 'Ada' } },
+				{ id: 'c1' },
+				t
+			)
+		).toEqual([
+			{ label: 'Home', href: '/' },
+			{ label: 'People', href: '/contacts' },
+			{ label: 'Ada', href: '/contacts/c1' },
+			{ label: 'Brief' }
+		]);
+	});
+
 	it("puts a tag's page under Tags, named with its #", () => {
 		expect(breadcrumbs('/(app)/tags', {}, {}, t)).toEqual([
 			{ label: 'Home', href: '/' },

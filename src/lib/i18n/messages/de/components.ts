@@ -41,6 +41,8 @@ export const components: ComponentsMessages = {
 	'components.palette.giftIdeaFor': 'Geschenkidee für wen?',
 	'components.palette.todoFor': 'Todo für …',
 	'components.palette.todoForWhom': 'Ein Todo für wen?',
+	'components.palette.briefFor': 'Steckbrief für …',
+	'components.palette.briefForWhom': 'Steckbrief für wen?',
 	'components.palette.back': 'Zurück',
 	'components.palette.searchEverything': (p) => `Überall nach „${p.query}“ suchen`,
 	'components.palette.kindSearch': 'Suche',

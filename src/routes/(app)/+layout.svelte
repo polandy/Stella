@@ -293,9 +293,11 @@
 	{t('nav.skipToContent')}
 </a>
 
-<div class="flex h-dvh w-full overflow-hidden bg-bg text-fg">
+<div
+	class="flex h-dvh w-full overflow-hidden bg-bg text-fg print:h-auto print:overflow-visible print:bg-transparent"
+>
 	<!-- Sidebar (desktop) -->
-	<aside class="hidden w-60 shrink-0 flex-col gap-1 bg-bg-sunken p-3 md:flex">
+	<aside class="hidden w-60 shrink-0 flex-col gap-1 bg-bg-sunken p-3 md:flex print:hidden">
 		<a href="/" class="mb-3 flex items-center px-2 py-1.5" aria-label={t('nav.stellaHome')}>
 			<Logo size={26} wordmark welcomeTarget />
 		</a>
@@ -369,7 +371,7 @@
 			bind:offsetHeight={topBarHeight}
 			onfocusin={() => (topBar = { ...topBar, hidden: false })}
 			style:--top-bar-height="{topBarHeight}px"
-			class="flex items-center gap-3 px-4 py-3 transition-[margin-top] duration-350 ease-in-out motion-reduce:transition-none md:px-6 {topBar.hidden
+			class="flex items-center gap-3 px-4 py-3 transition-[margin-top] duration-350 ease-in-out motion-reduce:transition-none md:px-6 print:hidden {topBar.hidden
 				? 'max-md:-mt-(--top-bar-height)'
 				: ''}"
 			data-testid="top-bar"
@@ -469,7 +471,7 @@
 					topBarHeight,
 					page.scrollHeight - page.clientHeight
 				))}
-			class="flex-1 overflow-y-auto pb-16 md:pb-0"
+			class="flex-1 overflow-y-auto pb-16 md:pb-0 print:overflow-visible print:pb-0"
 		>
 			{@render children()}
 		</div>
@@ -478,7 +480,7 @@
 	<!-- Bottom tab bar (mobile) -->
 	<nav
 		aria-label={t('nav.main')}
-		class="fixed inset-x-0 bottom-0 z-20 flex border-t border-border-subtle bg-card md:hidden"
+		class="fixed inset-x-0 bottom-0 z-20 flex border-t border-border-subtle bg-card md:hidden print:hidden"
 	>
 		{#each tabBar.slice(0, 2) as item (item.href)}
 			<a href={item.href} aria-current={isActive(item) ? 'page' : undefined} class={TAB}>

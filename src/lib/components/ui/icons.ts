@@ -18,6 +18,7 @@ import {
 	ChevronRight,
 	ChevronUp,
 	CircleDot,
+	ClipboardList,
 	CloudOff,
 	CornerDownRight,
 	DownloadCloud,
@@ -47,6 +48,7 @@ import {
 	Pencil,
 	Phone,
 	Plus,
+	Printer,
 	Route,
 	Search,
 	RefreshCw,
@@ -178,7 +180,10 @@ export const ICONS = {
 	// The import review (docs/02 §2.16): a card left out, and where card and person disagree.
 	skip: SkipForward,
 	conflict: TriangleAlert,
-	sync: RefreshCw
+	sync: RefreshCw,
+	// A person's brief, read before a visit, and printing it (docs/02 §2.2.5).
+	brief: ClipboardList,
+	print: Printer
 };
 
 /** One of `ICONS`. */

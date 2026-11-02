@@ -1,5 +1,6 @@
 import { giftIdeaPath } from '$lib/gifts/card';
 import { newTodoPath } from '$lib/todos/todos';
+import { briefPath } from '$lib/people/sections';
 import { foundByFormerName } from '$lib/people/former-name';
 import { foundByJob, jobOf, type Job } from '$lib/people/job';
 import type { IconName } from '$lib/components/ui/icons';
@@ -13,9 +14,10 @@ import { tellApart, type Distinction } from '$lib/people/namesakes';
  * ⌘K then Enter lands in the capture field — while letting the same keys reach a person or
  * an action. Notes are not searched here; a typed query always ends in the full search.
  *
- * Most rows go somewhere. *Gift idea for …* and *To-do for …* ask something first: each turns
- * the palette into a second step, `giftIdea` or `todo`, which lists only people, each leading to
- * their idea form or their To do card's form (docs/02 §2.26).
+ * Most rows go somewhere. *Gift idea for …*, *To-do for …* and *Brief for …* ask something
+ * first: each turns the palette into a second step, `giftIdea`, `todo` or `brief`, which lists
+ * only people, each leading to their idea form, their To do card's form (docs/02 §2.26) or their
+ * brief (docs/02 §2.2.5).
  *
  * The wording arrives as `PaletteLabels` rather than being written here: this module is
  * pure and language-free, and the component hands it the viewer's language (docs/02 §2.19).
@@ -46,12 +48,13 @@ export interface PalettePerson {
 }
 
 /** What the palette is asking: anything (`start`), whom a gift idea or a to-do is for. */
-export type PaletteStep = 'start' | 'giftIdea' | 'todo';
+export type PaletteStep = 'start' | 'giftIdea' | 'todo' | 'brief';
 
 /** Where each person of a second step leads. */
 const PERSON_STEP_PATH = {
 	giftIdea: giftIdeaPath,
-	todo: newTodoPath
+	todo: newTodoPath,
+	brief: briefPath
 } as const satisfies Record<Exclude<PaletteStep, 'start'>, (contactId: string) => string>;
 
 /** One row of the palette; `href` is where Enter goes, `step` what the palette asks next. */
@@ -89,6 +92,8 @@ export interface PaletteLabels {
 	giftIdeas: string;
 	/** *To-do for …*, a to-do on a person (docs/02 §2.26). */
 	todoFor: string;
+	/** *Brief for …*, what to know before a visit (docs/02 §2.2.5). */
+	briefFor: string;
 	/** The household's list of every open to-do (docs/02 §2.26.6). */
 	allTodos: string;
 	/** *On this day*, the household's earlier years on today's date (docs/02 §2.12.1). */
@@ -107,6 +112,7 @@ const ACTIONS: readonly ({ id: string; label: ActionLabel; icon: IconName } & (
 	{ id: 'write', label: 'write', icon: 'write', href: '/?compose' },
 	{ id: 'gift-idea', label: 'giftIdea', icon: 'gift', step: 'giftIdea' },
 	{ id: 'todo', label: 'todoFor', icon: 'todo', step: 'todo' },
+	{ id: 'brief', label: 'briefFor', icon: 'brief', step: 'brief' },
 	{ id: 'gift-ideas', label: 'giftIdeas', icon: 'idea', href: '/gifts' },
 	{ id: 'all-todos', label: 'allTodos', icon: 'todo', href: '/todos' },
 	{ id: 'on-this-day', label: 'onThisDay', icon: 'memories', href: '/on-this-day' },

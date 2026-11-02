@@ -227,7 +227,7 @@ the screen file in the same PR that builds it, and leaves a one-line *built* not
    - **Decided.** Whole years only; no per-member switch until someone asks; the band last in the
      rail, with a photo strip.
 
-4. **Before a visit — a person's brief** — *queued.* One compact view of a person for "we're
+4. **Before a visit — a person's brief** — *built*; see docs/02 §2.2.5. One compact view of a person for "we're
    going over in ten minutes": everything worth knowing at a glance, nothing to fill in. Pure
    aggregation of what is already stored.
    - **What is on it.** Name, photo, age; their partner and children with ages (derived
@@ -236,7 +236,7 @@ the screen file in the same PR that builds it, and leaves a one-line *built* not
      pinned notes (§2.5); *How we met*. Each block absent when empty. Read-only, every row
      links to where it is edited.
    - **Where.** A *Brief* action in the person page's header menu and a palette command
-     *Brief: …*; a route `/people/<id>/brief`, phone-first, printable on one page (print
+     *Brief for …*; a route `/contacts/<id>/brief`, phone-first, printable on one page (print
      stylesheet). Offline from the read-through cache like the person page (§2.18).
    - **How.** One `load` composing existing use-cases through the access layer — no new tables.
      The choice and order of blocks is a pure function (`src/lib/people/brief.ts`) tested
@@ -244,8 +244,9 @@ the screen file in the same PR that builds it, and leaves a one-line *built* not
    - **Tests.** Unit: block selection, ages, empty blocks dropped. E2e: open the brief of a
      seeded family, see the children and an open gift idea.
    - **Docs.** docs/02 §2.2, a `person-brief.md` screen file, `using-stella.md`.
-   - **Open.** Whether the brief replaces the top of the person page on a phone instead of
-     being its own page (recommended: own page first, live with it, then decide).
+   - **Decided.** Its own page first, live with it, then decide whether it replaces the top of
+     the person page on a phone; the family card holds the partner, the children with ages,
+     the household address and housemates; kept offline with the person's page.
 
 5. **The family tree as a picture or PDF** — *queued.* A printable tree for the grandparents or
    a family gathering.

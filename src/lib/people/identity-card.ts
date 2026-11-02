@@ -168,6 +168,16 @@ export function otherDateFacts<
 		.map(({ id, kind, label, date }) => ({ id, kind, label, date, years: ageOn(date, today) }));
 }
 
+/** How this person came into the household's life, as one line, or null when nothing says. */
+export function metLine(contact: {
+	howWeMet: string | null;
+	metPlace: string | null;
+	metDate: string | null;
+}): string | null {
+	const parts = [contact.howWeMet, contact.metPlace, contact.metDate].filter(Boolean);
+	return parts.length > 0 ? parts.join(' · ') : null;
+}
+
 /** Where they live: every address among the contact details, each on one line. */
 export function addressLines(
 	fields: readonly { id: string; kind: string; label: string | null; value: string }[]
@@ -201,6 +211,7 @@ export function initialPanel(
 /** An entry of the card's ⋯ menu, or the line between the two groups. */
 export type RecordMenuEntry =
 	| 'logContact'
+	| 'brief'
 	| 'divider'
 	| 'thisIsMe'
 	| 'notMe'
@@ -211,8 +222,8 @@ export type RecordMenuEntry =
 	| 'delete';
 
 /**
- * What the ⋯ menu offers: logging a touchpoint, then the actions about the record rather than
- * the person (docs/02 §2.2, §2.1.3). Merging and deleting end a record, so they are an admin's;
+ * What the ⋯ menu offers: logging a touchpoint and the brief before a visit (§2.2.5), then the
+ * actions about the record rather than the person (docs/02 §2.2, §2.1.3). Merging and deleting end a record, so they are an admin's;
  * the connection question needs somebody else in the household to ask about.
  */
 export function recordMenu(viewer: {
@@ -223,6 +234,7 @@ export function recordMenu(viewer: {
 }): RecordMenuEntry[] {
 	const entries: RecordMenuEntry[] = [
 		'logContact',
+		'brief',
 		'divider',
 		viewer.isSelf ? 'notMe' : 'thisIsMe'
 	];

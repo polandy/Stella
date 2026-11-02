@@ -50,6 +50,7 @@
 				giftIdea: t('components.palette.giftIdea'),
 				giftIdeas: t('components.palette.giftIdeas'),
 				todoFor: t('components.palette.todoFor'),
+				briefFor: t('components.palette.briefFor'),
 				allTodos: t('components.palette.allTodos'),
 				onThisDay: t('memories.title'),
 				addPerson: t('components.palette.addPerson'),
@@ -63,7 +64,8 @@
 	// A second step asks only whom it is for (docs/05 §5.4).
 	const STEP_QUESTION = $derived({
 		giftIdea: t('components.palette.giftIdeaFor'),
-		todo: t('components.palette.todoForWhom')
+		todo: t('components.palette.todoForWhom'),
+		brief: t('components.palette.briefForWhom')
 	});
 
 	$effect(() => {

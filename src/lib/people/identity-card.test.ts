@@ -8,6 +8,7 @@ import {
 	identityLayout,
 	initialPanel,
 	otherDateFacts,
+	metLine,
 	recordMenu
 } from './identity-card';
 
@@ -268,9 +269,10 @@ describe('addressLines', () => {
 describe('recordMenu', () => {
 	const viewer = { isAdmin: true, archived: false, isSelf: false, canTracePath: true };
 
-	it('offers logging first, then the record-keeping actions in their order', () => {
+	it('offers logging and the brief first, then the record-keeping actions in their order', () => {
 		expect(recordMenu(viewer)).toEqual([
 			'logContact',
+			'brief',
 			'divider',
 			'thisIsMe',
 			'tracePath',
@@ -290,7 +292,7 @@ describe('recordMenu', () => {
 
 	it('keeps merging and deleting for admins, and the path for a household with others in it', () => {
 		const menu = recordMenu({ ...viewer, isAdmin: false, canTracePath: false });
-		expect(menu).toEqual(['logContact', 'divider', 'thisIsMe', 'archive']);
+		expect(menu).toEqual(['logContact', 'brief', 'divider', 'thisIsMe', 'archive']);
 	});
 });
 
@@ -302,5 +304,18 @@ describe('initialPanel', () => {
 	it('opens nothing without a merge target, or for a non-admin carrying one', () => {
 		expect(initialPanel(null, true)).toBeNull();
 		expect(initialPanel('contact-2', false)).toBeNull();
+	});
+});
+
+describe('metLine', () => {
+	it('joins how, where and when into one line, leaving out what is not said', () => {
+		expect(metLine({ howWeMet: 'At university', metPlace: 'Freiburg', metDate: '1998' })).toBe(
+			'At university · Freiburg · 1998'
+		);
+		expect(metLine({ howWeMet: null, metPlace: 'Freiburg', metDate: null })).toBe('Freiburg');
+	});
+
+	it('is none when nothing is said', () => {
+		expect(metLine({ howWeMet: null, metPlace: null, metDate: null })).toBeNull();
 	});
 });

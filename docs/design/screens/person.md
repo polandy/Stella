@@ -88,7 +88,7 @@ the person, and that never leaves the page. Keeping the record tidy (archive, me
 - **One action**: *Write a moment* (primary). It does not leave the page: it opens the moment
   composer at the top of the Activity card and the page glides there.
 - Beside it a framed **⋯** (`MenuButton` with `look="button"`) holds, in order: *Log contact*,
-  a divider, *This is me* / *This is not me*, *How are we connected?* (opening the People
+  *Brief before a visit* (§5.5.17), a divider, *This is me* / *This is not me*, *How are we connected?* (opening the People
   card's picker), *Archive* / *Bring back into the lists*, and, for an admin only, *Merge
   someone into this person* and *Delete for good* (last, in the danger colour).
 - Archiving, merging and deleting open a **confirm step** on the card, unfolding under the

@@ -32,9 +32,9 @@ export function breadcrumbs(
 		if (routeId === '/(app)/contacts/new') trail.push({ label: t('nav.newPerson') });
 		else if (routeId.startsWith('/(app)/contacts/[id]')) {
 			const name = data.contact?.displayName ?? t('nav.contact');
-			if (routeId.endsWith('/journal')) {
+			if (routeId.endsWith('/journal') || routeId.endsWith('/brief')) {
 				trail.push({ label: name, href: `/contacts/${params.id}` });
-				trail.push({ label: t('nav.journal') });
+				trail.push({ label: t(routeId.endsWith('/journal') ? 'nav.journal' : 'nav.brief') });
 			} else trail.push({ label: name });
 		}
 	} else if (routeId.startsWith('/(app)/circles')) {

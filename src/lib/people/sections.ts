@@ -56,6 +56,11 @@ export function journalEntryAnchor(entryId: string): string {
 	return `entry-${entryId}`;
 }
 
+/** A person's brief: what to know before a visit, on a page of its own (docs/02 §2.2.5). */
+export function briefPath(contactId: string): string {
+	return `/contacts/${contactId}/brief`;
+}
+
 /** A link to one entry on a person's journal page — *On this day* opens a moment there. */
 export function journalEntryPath(contactId: string, entryId: string): string {
 	return `/contacts/${contactId}/journal#${journalEntryAnchor(entryId)}`;

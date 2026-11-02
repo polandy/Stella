@@ -408,6 +408,18 @@ or on the person's page lands here; *Open journal* in the Activity card's header
 journal, where moments are read at length and edited. Writing on a day that already has your moment adds to it rather than replacing it; to
 change what is there, use *Edit moment*.
 
+### Before a visit: the brief
+
+On your way to see someone, open **Brief before a visit** from the **⋯** menu on their page — or
+`⌘K` / `Ctrl-K`, **Brief for …** and their name. One short page shows what is worth knowing:
+the next birthday or date coming up for them or their family, their partner and children with
+their ages, where they live and with whom, the pinned notes, the last three moments or contacts,
+open to-dos and gift ideas, and how you met. Anything with nothing in it is left out. Tap any
+line to go where it is kept and change it; **Open the whole page** goes back to their page.
+
+The brief is kept on your phone like the person's page, so it opens without reception.
+**Print** gives one sheet in light colours — handy for someone coming along without the app.
+
 ### Photos
 
 **Photos** is the fourth tab: everything you have collected of that person in a grid — their
@@ -1007,7 +1019,7 @@ your removing it never quietly takes it off someone else's private contact.
 ## Finding things
 
 `⌘K` / `Ctrl-K` — or the search button at the top — opens a palette that jumps straight to a
-person as you type, and offers *Write a moment*, *Gift idea for …*, *To-do for …*, *All gift ideas*, *All to-dos* and *Add person*
+person as you type, and offers *Write a moment*, *Gift idea for …*, *To-do for …*, *Brief for …*, *All gift ideas*, *All to-dos* and *Add person*
 as its first rows. Notes are
 not in it; the last row, *Search everything*, opens the full search, which looks through
 people, notes, gifts, to-dos and moments at once — a done to-do too, marked as done — matches partial words, and only ever returns what you are
