@@ -105,6 +105,42 @@ describe('readVCard', () => {
 		]);
 	});
 
+	it('leaves out a value the card repeats, as Google writes a merged contact', () => {
+		const exp = readVCard(
+			card(
+				'FN:Aaron',
+				'TEL;TYPE=CELL:+41787200373',
+				'TEL;TYPE=CELL:+41 78 720 03 73',
+				'EMAIL:aaron@example.ch',
+				'EMAIL:Aaron@Example.ch',
+				'ADR:;;Bahnhofstrasse 3;Bern;;3011;',
+				'ADR;TYPE=home:;;Bahnhofstrasse 3;Bern;;3011;'
+			)
+		);
+
+		expect(exp.contactFields.map((f) => f.data)).toEqual(['aaron@example.ch', '+41787200373']);
+		expect(exp.addresses).toHaveLength(1);
+	});
+
+	it('carries the label a field has on the card: a typed one, else a known type', () => {
+		const exp = readVCard(
+			card(
+				'FN:Adrian',
+				'item1.EMAIL;TYPE=INTERNET:adrian@example.ch',
+				'item1.X-ABLabel:Verein',
+				'item2.TEL:+41 79 000 00 02',
+				'item2.X-ABLabel:',
+				'TEL;TYPE=CELL:+41 79 000 00 03'
+			)
+		);
+
+		expect(exp.contactFields.map((f) => [f.data, f.label])).toEqual([
+			['adrian@example.ch', { typed: 'Verein' }],
+			['+41 79 000 00 02', null],
+			['+41 79 000 00 03', { known: 'mobile' }]
+		]);
+	});
+
 	it('reads a structured address into its parts, the label coming from the card type', () => {
 		const exp = readVCard(
 			card('UID:u1', 'FN:Severin', 'ADR;TYPE=home:;;Bahnhofstrasse 3;Bern;BE;3011;Switzerland')
