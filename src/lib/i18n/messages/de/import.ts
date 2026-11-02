@@ -123,8 +123,10 @@ export const importer: ImportMessages = {
 	'import.error.vcardEndWithoutBegin': 'Diese Datei beendet eine Karte, die nie begonnen hat.',
 	'import.error.vcardUnclosed': 'Eine Karte in dieser Datei wurde nie mit END:VCARD geschlossen.',
 	'import.error.notVcard': 'Diese Datei ist keine vCard — sie enthält kein BEGIN:VCARD.',
+	'import.error.contactsCsv':
+		'Das ist eine CSV-Datei. Stella liest Kontakte als vCard: in Google Kontakte Exportieren → vCard (für iOS-Kontakte) wählen.',
 	'import.error.vcardNameless': (p) =>
-		`Eine Karte in dieser Datei nennt niemanden — sie hat weder FN noch N (Karte ${p.index}).`,
+		`Eine Karte in dieser Datei nennt niemanden — sie hat weder Name noch Firma, E-Mail oder Nummer (Karte ${p.index}).`,
 	'import.error.dumpMalformedInsert': (p) =>
 		`Fehlerhaftes INSERT für die Tabelle ${p.table}: ${p.what}.`,
 	'import.error.notSqlDump':

@@ -156,8 +156,10 @@ export const importer = {
 	'import.error.vcardEndWithoutBegin': 'This file ends a card that never began.',
 	'import.error.vcardUnclosed': 'A card in this file was never closed with END:VCARD.',
 	'import.error.notVcard': 'This file is not a vCard — it contains no BEGIN:VCARD.',
+	'import.error.contactsCsv':
+		'This is a CSV file. Stella reads contacts as a vCard: in Google Contacts choose Export → vCard (for iOS Contacts).',
 	'import.error.vcardNameless': (p: { index: number }) =>
-		`A card in this file names nobody — it has neither FN nor N (card ${p.index}).`,
+		`A card in this file names nobody — it has no name, company, email or number (card ${p.index}).`,
 	'import.error.dumpMalformedInsert': (p: { table: string; what: string }) =>
 		`Malformed INSERT for table ${p.table}: ${p.what}.`,
 	'import.error.notSqlDump': 'This does not look like a MariaDB/MySQL dump: no CREATE TABLE found.',

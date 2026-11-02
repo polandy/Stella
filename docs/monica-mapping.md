@@ -119,5 +119,7 @@ This is what a card brings as a **new person**. Every vCard is first matched aga
 people already in the household; a card answered *Same person* only completes that person
 (docs/02 §2.16.2).
 
-A card with neither `FN` nor `N` is refused rather than imported as a nameless person, and so
-is a file with no `BEGIN:VCARD` or a card that is never closed.
+A card with neither `FN` nor `N` takes its company (`ORG`), else its first email, else its
+first number as its first name. One with none of these is refused rather than imported as a
+nameless person, and so is a file with no `BEGIN:VCARD` or a card that is never closed. Two
+identical cards — a contact saved twice — are two people; the second's id gets `~2`.

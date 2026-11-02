@@ -2,6 +2,7 @@ import { describe, expect, test } from 'bun:test';
 import { detectImportFormat, readImportFile } from './read';
 import { MonicaJsonError } from './monica/json-export';
 import { SqlDumpError } from './monica/sql-dump';
+import { VCardError } from './vcard';
 
 /* Which of Monica's two exports a file is, decided from the file itself (docs/02 §2.16). */
 
@@ -46,6 +47,18 @@ describe('detectImportFormat', () => {
 });
 
 describe('readImportFile', () => {
+	test('tells a contacts CSV from a dump, so the member learns to export a vCard instead', () => {
+		// Google Contacts offers its own CSV first; Outlook's opens the same way.
+		const google = '\uFEFFFirst Name,Middle Name,Last Name,Phonetic First Name\nJürg,,Häberli,\n';
+		const outlook = 'First Name,Middle Name,Last Name,Title,Suffix\r\nJürg,,Häberli,,\r\n';
+		const read = (text: string) => () => readImportFile(text);
+
+		expect(read(google)).toThrow(VCardError);
+		expect(read(outlook)).toThrow(VCardError);
+		// The positive control: a real dump is still read as one.
+		expect(readImportFile(SQL_DUMP).source).toBe('sql');
+	});
+
 	test('reads a JSON export and says where it came from', () => {
 		expect(readImportFile(JSON_EXPORT).source).toBe('json');
 	});

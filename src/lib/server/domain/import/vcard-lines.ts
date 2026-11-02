@@ -212,13 +212,22 @@ export const orNull = (value: string | undefined): string | null => {
 	return trimmed.length > 0 ? trimmed : null;
 };
 
-/** The card's name parts: structured `N` first, the formatted `FN` when that is all there is. */
+/**
+ * The card's name parts: structured `N` first, the formatted `FN` when that is all there is.
+ * A card naming nobody takes its company, else its email, else its number: Google keeps
+ * contacts that are only that, and one of them must not stop the other few hundred.
+ */
 export function readName(card: Property[], index: number) {
 	const first = (name: string) => card.find((p) => p.name === name);
 	const structured = first('N') ? splitEscaped(first('N')!.raw, ';').map(unescape) : [];
 	const formatted = orNull(unescape(first('FN')?.raw ?? ''));
+	const company = first('ORG') ? orNull(unescape(splitEscaped(first('ORG')!.raw, ';')[0]!)) : null;
+	const standIn =
+		company ??
+		orNull(unescape(first('EMAIL')?.raw ?? '')) ??
+		orNull(unescape(first('TEL')?.raw ?? ''));
 	const lastName = orNull(structured[0]);
-	const firstName = orNull(structured[1]) ?? (lastName === null ? formatted : null);
+	const firstName = orNull(structured[1]) ?? (lastName === null ? (formatted ?? standIn) : null);
 	if (firstName === null && lastName === null) {
 		throw new VCardError(phrase('import.error.vcardNameless', { index: index + 1 }));
 	}

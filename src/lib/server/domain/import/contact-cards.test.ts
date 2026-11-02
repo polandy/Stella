@@ -133,6 +133,13 @@ describe('readContactCards', () => {
 		]);
 	});
 
+	it('names a card without a name the way the import does, so the review can ask about it', () => {
+		// The review and the Nextcloud sync read through here: a nameless card must not stop either.
+		const { cards } = readContactCards(card('FN:', 'N:;;;;', 'TEL;TYPE=CELL:+41 79 000 00 02'));
+
+		expect(cards.map((c) => [c.firstName, c.lastName])).toEqual([['+41 79 000 00 02', null]]);
+	});
+
 	it('lists a value the card repeats once', () => {
 		const { cards } = readContactCards(
 			card('FN:Aaron', 'TEL;TYPE=CELL:+41787200373', 'TEL;TYPE=CELL:+41 78 720 03 73')

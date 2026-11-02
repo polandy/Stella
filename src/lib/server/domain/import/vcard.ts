@@ -66,6 +66,7 @@ export function readVCard(text: string): SourceExport {
 
 	const cards = splitCards(text);
 	const source = detectSource(cards);
+	const seenIds = new Map<string, number>();
 	cards.forEach((card, index) => {
 		const first = (name: string) => card.find((p) => p.name === name);
 		const all = (name: string) => card.filter((p) => p.name === name);
@@ -74,7 +75,13 @@ export function readVCard(text: string): SourceExport {
 		// Without a usable UID the card must still get a *stable* id, and its position is not
 		// one: two address books would then collide and the second one's people be dropped as
 		// duplicates.
-		const id = uid !== undefined && URL_SAFE_ID.test(uid) ? uid : `card-${cardFingerprint(card)}`;
+		const ownId =
+			uid !== undefined && URL_SAFE_ID.test(uid) ? uid : `card-${cardFingerprint(card)}`;
+		// A contact saved twice is two identical cards; the review asks about each, so each
+		// becomes its own person rather than the second silently folding into the first.
+		const count = (seenIds.get(ownId) ?? 0) + 1;
+		seenIds.set(ownId, count);
+		const id = count === 1 ? ownId : `${ownId}~${count}`;
 
 		const { firstName, middleName, lastName } = readName(card, index);
 
