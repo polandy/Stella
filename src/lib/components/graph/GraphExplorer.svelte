@@ -769,9 +769,15 @@
 		ready = true;
 		onReady?.();
 
-		themeObserver = new MutationObserver(retheme);
+		// The export reads the light palette by flipping the theme and straight back in one
+		// task; a batch that ends where it began changed nothing on screen.
+		themeObserver = new MutationObserver((records) => {
+			const root = document.documentElement;
+			if (records[0]?.oldValue !== root.getAttribute('data-theme')) retheme();
+		});
 		themeObserver.observe(document.documentElement, {
 			attributes: true,
+			attributeOldValue: true,
 			attributeFilter: ['data-theme']
 		});
 		colorScheme = window.matchMedia('(prefers-color-scheme: dark)');
