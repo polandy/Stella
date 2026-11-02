@@ -91,6 +91,8 @@ export interface PaletteLabels {
 	todoFor: string;
 	/** The household's list of every open to-do (docs/02 §2.26.6). */
 	allTodos: string;
+	/** *On this day*, the household's earlier years on today's date (docs/02 §2.12.1). */
+	onThisDay: string;
 	addPerson: string;
 	/** The last row of a non-empty query: "Search everything for …". */
 	searchEverything: (query: string) => string;
@@ -107,6 +109,7 @@ const ACTIONS: readonly ({ id: string; label: ActionLabel; icon: IconName } & (
 	{ id: 'todo', label: 'todoFor', icon: 'todo', step: 'todo' },
 	{ id: 'gift-ideas', label: 'giftIdeas', icon: 'idea', href: '/gifts' },
 	{ id: 'all-todos', label: 'allTodos', icon: 'todo', href: '/todos' },
+	{ id: 'on-this-day', label: 'onThisDay', icon: 'memories', href: '/on-this-day' },
 	{ id: 'add-person', label: 'addPerson', icon: 'add', href: '/contacts/new' }
 ];
 

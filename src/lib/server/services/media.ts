@@ -4,6 +4,7 @@ import type { Config } from '../config';
 import { createDrizzleFramingRepository } from '../db/framing-repository';
 import { createDrizzleGalleryPhotoReads } from '../db/gallery-photo-reads';
 import { createDrizzleJournalPhotoReads } from '../db/journal-photo-reads';
+import { createDrizzleMemoryRepository } from '../db/memory-repository';
 import { createDrizzlePhotoFileReads } from '../db/photo-file-reads';
 import { createDrizzlePhotoRepository } from '../db/photo-repository';
 import type * as schema from '../db/schema';
@@ -19,6 +20,7 @@ import type { FramingDeps } from '../domain/media/framing';
 import type { GalleryDeps } from '../domain/media/gallery';
 import type { GalleryUploadDeps } from '../domain/media/gallery-upload';
 import type { JournalPhotoDeps, JournalPhotoReads } from '../domain/media/journal-photos';
+import type { MemoryDeps } from '../domain/memories/memories';
 import type { StreamDeps } from '../domain/stream/stream';
 import type { IdGenerator } from '../id';
 import { createFileMediaStore } from '../media/file-store';
@@ -54,6 +56,7 @@ export interface MediaServices {
 	galleryUploadDeps: GalleryUploadDeps;
 	journalPhotoDeps: JournalPhotoDeps;
 	streamDeps: StreamDeps;
+	memoryDeps: MemoryDeps;
 }
 
 export type MediaConfig = Pick<Config, 'mediaDir'>;
@@ -90,6 +93,7 @@ export function createMediaServices({ config, db, clock, ids }: MediaWiring): Me
 		},
 		galleryUploadDeps: uploadDeps,
 		journalPhotoDeps: uploadDeps,
-		streamDeps: { stream: createDrizzleStreamRepository(db) }
+		streamDeps: { stream: createDrizzleStreamRepository(db) },
+		memoryDeps: { memories: createDrizzleMemoryRepository(db) }
 	};
 }

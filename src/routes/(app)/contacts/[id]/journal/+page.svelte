@@ -18,6 +18,7 @@
 	import { placeholderFor } from '$lib/privacy/veil';
 	import { useVeil } from '$lib/privacy/veil.svelte';
 	import { asTyped } from '$lib/mentions/picks';
+	import { journalEntryAnchor } from '$lib/people/sections';
 	import KeptItem from '$lib/components/pwa/KeptItem.svelte';
 	import { processImage } from '$lib/media/process-image';
 	import { keepable } from '$lib/pwa/keepable';
@@ -371,7 +372,11 @@
 					</div>
 
 					{#each day.items as entry (entry.id)}
-						<article class="rounded-app bg-card p-5 shadow-card">
+						<!-- Its id is where *On this day* lands (docs/02 §2.12.1). -->
+						<article
+							id={journalEntryAnchor(entry.id)}
+							class="scroll-mt-20 rounded-app bg-card p-5 shadow-card"
+						>
 							<div class="mb-2 flex items-center gap-2">
 								{#if entry.title && titleShown(entry)}
 									<h3 class="font-medium text-fg">{entry.title}</h3>

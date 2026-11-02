@@ -12,7 +12,6 @@ import {
 	childRecordVisibleTo,
 	circlePhotoVisibleTo,
 	contactBrowsableBy,
-	contactVisibleTo,
 	relationshipVisibleTo
 } from '../access/query-scoping';
 import type { Viewer } from '../access/visibility';
@@ -24,21 +23,19 @@ import type {
 	RelationshipRow,
 	NoticeRow,
 	MomentQuery,
-	StreamPerson,
 	StreamQuery,
 	StreamRepository
 } from '../domain/stream/stream';
 import type * as schema from './schema';
+import { momentColumns, momentRowsOf, touchpointColumns, touchpointRowsOf } from './story-rows';
 import {
 	activityLog,
 	circle,
 	contact,
 	entryTag,
 	interaction,
-	interactionParticipant,
 	journalEntry,
 	journalEntryTag,
-	journalMention,
 	photo,
 	relationship,
 	relationshipType,
@@ -84,20 +81,7 @@ export function createDrizzleStreamRepository(
 				)
 			);
 			const rows = db
-				.select({
-					id: journalEntry.id,
-					// The last change, not creation: a moment appended to the day's entry (§2.22.1)
-					// has to surface where its author expects it, at the top.
-					at: journalEntry.updatedAt,
-					actorId: user.id,
-					actorName: user.name,
-					anchorId: contact.id,
-					anchorName: contact.displayName,
-					anchorAvatar: contact.avatarPhotoId,
-					entryDate: journalEntry.entryDate,
-					visibility: journalEntry.visibility,
-					body: journalEntry.body
-				})
+				.select(momentColumns)
 				.from(journalEntry)
 				.innerJoin(contact, eq(journalEntry.contactId, contact.id))
 				.innerJoin(user, eq(journalEntry.createdBy, user.id))
@@ -114,52 +98,7 @@ export function createDrizzleStreamRepository(
 				.orderBy(desc(journalEntry.updatedAt))
 				.limit(limit)
 				.all();
-			if (rows.length === 0) return [];
-
-			const ids = rows.map((r) => r.id);
-			const mentionRows = db
-				.select({
-					entryId: journalMention.journalEntryId,
-					id: contact.id,
-					name: contact.displayName,
-					avatarPhotoId: contact.avatarPhotoId
-				})
-				.from(journalMention)
-				.innerJoin(contact, eq(journalMention.contactId, contact.id))
-				.where(and(inArray(journalMention.journalEntryId, ids), contactVisibleTo(viewer)))
-				.all();
-			const photoRows = db
-				.select({ entryId: photo.journalEntryId, id: photo.id })
-				.from(photo)
-				.where(inArray(photo.journalEntryId, ids))
-				.orderBy(photo.createdAt)
-				.all();
-
-			const mentionsByEntry = new Map<string, StreamPerson[]>();
-			for (const m of mentionRows) {
-				const list = mentionsByEntry.get(m.entryId) ?? [];
-				list.push({ id: m.id, name: m.name, avatarPhotoId: m.avatarPhotoId });
-				mentionsByEntry.set(m.entryId, list);
-			}
-			const photosByEntry = new Map<string, string[]>();
-			for (const p of photoRows) {
-				if (!p.entryId) continue;
-				const list = photosByEntry.get(p.entryId) ?? [];
-				list.push(p.id);
-				photosByEntry.set(p.entryId, list);
-			}
-
-			return rows.map((r) => ({
-				id: r.id,
-				at: r.at,
-				actor: { id: r.actorId, name: r.actorName },
-				anchor: { id: r.anchorId, name: r.anchorName, avatarPhotoId: r.anchorAvatar },
-				entryDate: r.entryDate,
-				visibility: r.visibility,
-				body: r.body,
-				mentions: mentionsByEntry.get(r.id) ?? [],
-				photoIds: photosByEntry.get(r.id) ?? []
-			}));
+			return momentRowsOf(db, viewer, rows);
 		},
 
 		async recentNotices(viewer: Viewer, { limit, memberId }: StreamQuery): Promise<NoticeRow[]> {
@@ -334,19 +273,7 @@ export function createDrizzleStreamRepository(
 			{ limit, memberId }: StreamQuery
 		): Promise<InteractionRow[]> {
 			const rows = db
-				.select({
-					id: interaction.id,
-					at: interaction.createdAt,
-					actorId: user.id,
-					actorName: user.name,
-					subjectId: contact.id,
-					subjectName: contact.displayName,
-					subjectAvatar: contact.avatarPhotoId,
-					interactionKind: interaction.kind,
-					happenedAt: interaction.happenedAt,
-					title: interaction.title,
-					visibility: interaction.visibility
-				})
+				.select(touchpointColumns)
 				// Walked from `interaction_created_idx`, newest first, for the same reason as the links.
 				.from(interaction)
 				.crossJoin(contact)
@@ -365,39 +292,7 @@ export function createDrizzleStreamRepository(
 				.orderBy(desc(interaction.createdAt))
 				.limit(limit)
 				.all();
-			if (rows.length === 0) return [];
-
-			const ids = rows.map((r) => r.id);
-			const participantRows = db
-				.select({
-					interactionId: interactionParticipant.interactionId,
-					id: contact.id,
-					name: contact.displayName,
-					avatarPhotoId: contact.avatarPhotoId
-				})
-				.from(interactionParticipant)
-				.innerJoin(contact, eq(interactionParticipant.contactId, contact.id))
-				.where(and(inArray(interactionParticipant.interactionId, ids), contactVisibleTo(viewer)))
-				.orderBy(contact.displayName)
-				.all();
-			const participantsByInteraction = new Map<string, StreamPerson[]>();
-			for (const p of participantRows) {
-				const list = participantsByInteraction.get(p.interactionId) ?? [];
-				list.push({ id: p.id, name: p.name, avatarPhotoId: p.avatarPhotoId });
-				participantsByInteraction.set(p.interactionId, list);
-			}
-
-			return rows.map((r) => ({
-				id: r.id,
-				at: r.at,
-				actor: { id: r.actorId, name: r.actorName },
-				subject: { id: r.subjectId, name: r.subjectName, avatarPhotoId: r.subjectAvatar },
-				interactionKind: r.interactionKind,
-				happenedAt: r.happenedAt,
-				title: r.title,
-				visibility: r.visibility,
-				participants: participantsByInteraction.get(r.id) ?? []
-			}));
+			return touchpointRowsOf(db, viewer, rows);
 		}
 	};
 }

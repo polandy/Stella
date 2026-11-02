@@ -44,13 +44,22 @@ first to find somebody, so there the page opens on the person search.
   card · the day (`TodoDue`), the box at the right end (§5.1). *Show all N* beneath is a link
   to `/todos`, N every open to-do, shown only when `/todos` holds more than the band. Bands in
   the rail are `gap-6` apart. Mockup: https://claude.ai/artifact/5Lj9VzJEqR7My3sEL2vhjq
+- **On this day** (docs/02 §2.12.1) is the **last** band of the rail (`MemoryBand`): the
+  history icon and *On this day*, then one row of up to four square thumbnails (`MemoryPhotos`,
+  `grid-cols-4`, the year in `text-[10px]` on each), then the entries under `text-[11px]`
+  uppercase `--fg-subtle` labels *1 year ago · 2025*. A row (`MemoryRow`) is one link: up to two
+  overlapping 28 px faces, the first line in `--fg`, truncated, and under it in `text-xs`
+  `--fg-subtle` the names · the kind, plus the private mark. A private line is veiled, passive
+  inside the link. *More from 1 November* in `--link` beneath, only when `/on-this-day` holds
+  more. It never moves the rail above the stream. Mockup:
+  https://claude.ai/artifact/DH3TemNZHmgoy6iBVfR17p
 - From `lg` the bands stand in a **rail** on the right, a 17 rem column. Below `lg` it is the
   same vertical list at full width; nothing on the page scrolls sideways.
 - Each band stops after **three rows**, with *Show all N* beneath it.
 - Below `lg` the rail stands **above** the stream only while a date is due **within 14 days**
   (`IMMINENT_HORIZON_DAYS`) or a to-do is overdue or due today (`hasPressingTodo`); otherwise
   it follows the stream.
-- Each band is **absent when empty**, and the rail with both; neither has an empty state. From `lg`
+- Each band is **absent when empty**, and the rail with all of them; neither has an empty state. From `lg`
   its column goes too and the stream takes the page's width.
 - A moment's body keeps a 72ch measure (§5.3).
 - Each stream row ends with the **time of day** it was written, in the viewer's locale
@@ -95,7 +104,8 @@ empty because a permanently empty panel teaches people to stop looking, and its 
 goes with it because a stable stream width was not worth a quarter of the screen standing
 blank most weeks. *To do* goes above *Coming up* because what the household owes is acted on
 now, a date is prepared for; a to-do only pulls the rail above the stream once it is due,
-not a week ahead, so a few far-off lines do not displace the stream.
+not a week ahead, so a few far-off lines do not displace the stream. *On this day* goes last
+and never pulls the rail up: it is for enjoying, nothing in it asks to be acted on.
 
 Older days need no time: their heading already says when. A moment names its people in its
 text, so an avatar row would say them twice; an interaction's participants are not in its

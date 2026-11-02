@@ -66,6 +66,15 @@ them off there too. Changing or removing one is done on the person's page. The b
 there while something is due that soon, and on a phone it moves above the stream once
 something is overdue or due today.
 
+Last in that list comes **On this day**: what the household wrote on today's date in earlier
+years — moments, calls and visits, and the photos taken that day — grouped as *1 year ago*,
+*5 years ago*. Tap one to open it: a moment on the person's journal page, a call on their
+Activity, a photo among their Photos. People who have died stay in it; people you archived do
+not. Private entries stay yours and stay blurred until you tap them. A moment written on
+29 February shows on 28 February in the years without one. *More from …* opens **On this day**
+in full, where you can also step to the day before or after, or pick any day. The palette's
+*On this day* opens it too. The band is only there when the day has something to remember.
+
 ### Writing a moment
 
 Type what happened and mention the people in it with `@`:

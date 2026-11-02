@@ -3,6 +3,7 @@ import { Database } from 'bun:sqlite';
 import { drizzle } from 'drizzle-orm/bun-sqlite';
 import { migrate } from 'drizzle-orm/bun-sqlite/migrator';
 import { createDrizzleInteractionRepository } from './interaction-repository';
+import { createDrizzleMemoryRepository } from './memory-repository';
 import * as schema from './schema';
 import { createDrizzleStreamRepository } from './stream-repository';
 
@@ -139,4 +140,31 @@ describe("the Home stream's newest records", () => {
 		expect(plan[0]).toBe('SCAN interaction USING INDEX interaction_created_idx');
 		expect(plan.filter((step) => step.includes('TEMP B-TREE'))).toEqual([]);
 	});
+});
+
+describe('*On this day*', () => {
+	const onTheDay = { days: ['02-28', '02-29'], before: '2027-02-28', limit: 4 };
+	const READS: [string, string, Parameters<typeof statementsOf>[0]][] = [
+		[
+			'moments',
+			'journal_month_day_idx',
+			(db) => createDrizzleMemoryRepository(db).momentsOn(viewer, onTheDay)
+		],
+		[
+			'touchpoints',
+			'interaction_month_day_idx',
+			(db) => createDrizzleMemoryRepository(db).touchpointsOn(viewer, onTheDay)
+		],
+		[
+			'gallery photos',
+			'photo_taken_month_day_idx',
+			(db) => createDrizzleMemoryRepository(db).photosOn(viewer, onTheDay)
+		]
+	];
+	for (const [what, index, read] of READS) {
+		it(`finds the ${what} of a day and month in every year from its index`, async () => {
+			const plan = await planOfRead(read);
+			expect(plan.some((step) => step.includes(`USING INDEX ${index}`))).toBe(true);
+		});
+	}
 });

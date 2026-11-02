@@ -1,6 +1,6 @@
 import { sql } from 'drizzle-orm';
 import { index, integer, real, sqliteTable, text, uniqueIndex } from 'drizzle-orm/sqlite-core';
-import { now, type Visibility } from './columns';
+import { monthDayOf, now, type Visibility } from './columns';
 import { household, user } from './household';
 import { contact } from './people';
 import { journalEntry } from './story';
@@ -55,6 +55,7 @@ export const photo = sqliteTable(
 		sizeBytes: integer('size_bytes'),
 		caption: text('caption'),
 		takenAt: text('taken_at'),
+		takenMonthDay: monthDayOf('taken_month_day', 'taken_at'),
 		// When the household pinned this gallery photo as one of the person's favourites
 		// (docs/02 §2.14); null when it is not one. A moment rather than a flag, because the
 		// pins are shown most recently pinned first (domain/media/gallery-order.ts).
@@ -69,6 +70,8 @@ export const photo = sqliteTable(
 		uniqueIndex('photo_framing_person_idx')
 			.on(t.framingOf, t.contactId)
 			.where(sql`${t.framingOf} IS NOT NULL`),
-		index('photo_circle_idx').on(t.circleId)
+		index('photo_circle_idx').on(t.circleId),
+		// The photos taken on a day and month in every year, for *On this day* (docs/02 §2.12.1).
+		index('photo_taken_month_day_idx').on(t.takenMonthDay)
 	]
 );

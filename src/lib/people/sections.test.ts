@@ -4,6 +4,7 @@ import {
 	addParentPath,
 	addRelationshipPath,
 	contactSectionPath,
+	journalEntryPath,
 	SECTION_FOR_LEGACY_TAB,
 	SECTION_FOR_REFERENCE,
 	sectionAnchor,
@@ -54,6 +55,12 @@ describe('contactSectionPath', () => {
 				expect(url.hash).toBe(`#${sectionAnchor(section)}`);
 			}
 		}
+	});
+});
+
+describe('journalEntryPath', () => {
+	test("lands on the entry on the person's journal page", () => {
+		expect(journalEntryPath('c1', 'e1')).toBe('/contacts/c1/journal#entry-e1');
 	});
 });
 
