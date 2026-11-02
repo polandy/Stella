@@ -63,7 +63,7 @@ describe('briefHomes', () => {
 });
 
 describe('briefBlockView', () => {
-	it('links the next date to whose it is, and tells the person’s own from a relative’s', () => {
+	it('links the next date to whose it is, a relative’s page for a relative’s date', () => {
 		const date: UpcomingDate = {
 			contactId: 'mia',
 			contactName: 'Mia',
@@ -76,7 +76,7 @@ describe('briefBlockView', () => {
 		};
 		expect(briefBlockView({ kind: 'next', date }, ctx)).toEqual({
 			kind: 'next',
-			date: { ...date, isSubject: false, href: '/contacts/mia' }
+			date: { ...date, href: '/contacts/mia' }
 		});
 	});
 

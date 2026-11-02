@@ -75,7 +75,7 @@ export type BriefMomentView = {
 export type BriefBlockView =
 	| {
 			kind: 'next';
-			date: UpcomingDate & { isSubject: boolean; href: string };
+			date: UpcomingDate & { href: string };
 	  }
 	| {
 			kind: 'family';
@@ -129,11 +129,7 @@ export function briefBlockView(
 		case 'next':
 			return {
 				kind: 'next',
-				date: {
-					...block.date,
-					isSubject: block.date.contactId === ctx.contactId,
-					href: personPath(block.date.contactId)
-				}
+				date: { ...block.date, href: personPath(block.date.contactId) }
 			};
 		case 'family':
 			return {
