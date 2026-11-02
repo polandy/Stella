@@ -222,8 +222,8 @@ export type RecordMenuEntry =
 	| 'delete';
 
 /**
- * What the ⋯ menu offers: logging a touchpoint and the brief before a visit (§2.2.5), then the actions about the record rather than
- * the person (docs/02 §2.2, §2.1.3). Merging and deleting end a record, so they are an admin's;
+ * What the ⋯ menu offers: logging a touchpoint and the brief before a visit (§2.2.5), then the
+ * actions about the record rather than the person (docs/02 §2.2, §2.1.3). Merging and deleting end a record, so they are an admin's;
  * the connection question needs somebody else in the household to ask about.
  */
 export function recordMenu(viewer: {

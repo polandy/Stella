@@ -23,6 +23,7 @@ import { ARCHIVE_FORMAT, ARCHIVE_VERSION } from '../src/lib/server/domain/archiv
 export const LINK = {
 	siblingOf: 'sibling',
 	parentOf: 'parent_child',
+	partnerOf: 'partner',
 	friendOf: 'friend',
 	colleagueOf: 'colleague',
 	connectedTo: 'other'

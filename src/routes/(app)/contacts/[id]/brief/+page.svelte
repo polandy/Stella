@@ -35,8 +35,13 @@
 			: `${t('contact.facts.age', { age: birthday.age })} · ${born}`;
 	});
 
+	// Read at UTC midnight in UTC: a plain local reading shows the day before west of Greenwich.
 	const shortDay = (day: string) =>
-		new Date(day).toLocaleDateString(i18n.intlLocale, { day: 'numeric', month: 'short' });
+		new Date(`${day}T00:00:00Z`).toLocaleDateString(i18n.intlLocale, {
+			day: 'numeric',
+			month: 'short',
+			timeZone: 'UTC'
+		});
 
 	/*
 	 * Paper is white whatever the screen's theme: a dark page printed is a page of ink. The theme
