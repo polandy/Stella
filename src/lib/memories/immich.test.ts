@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'bun:test';
 import type { ImmichMemoryPhoto, ImmichMemoryYear } from '$lib/immich/on-this-day';
-import { immichStrip, memoryCardsWithImmich } from './immich';
+import { immichStrip, memoryCardsWithImmich, withNextPage } from './immich';
 import type { MemoryYearView } from './view';
 
 /*
@@ -72,5 +72,22 @@ describe('memoryCardsWithImmich', () => {
 		expect(memoryCardsWithImmich([card(2025, 1)], [], '2026-11-02')).toEqual([
 			{ ...card(2025, 1), immich: null }
 		]);
+	});
+});
+
+describe('withNextPage', () => {
+	it('adds the next photos below the shown ones of that year only', () => {
+		const next = [photo(2024, 5), photo(2024, 6)];
+		const years = withNextPage([year(2025, 2), year(2024, 2, 4)], 2024, next);
+		expect(years.map((y) => [y.year, ids(y.photos), y.total])).toEqual([
+			[2025, ['2025-0', '2025-1'], 2],
+			[2024, ['2024-0', '2024-1', '2024-5', '2024-6'], 4]
+		]);
+	});
+
+	it('counts what is shown as all there is when the next page comes back empty', () => {
+		// Immich lost photos since it counted them: no *Show more* that brings nothing.
+		const [shown] = withNextPage([year(2024, 12, 20)], 2024, []);
+		expect([shown.photos.length, shown.total]).toEqual([12, 12]);
 	});
 });

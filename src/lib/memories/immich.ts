@@ -43,3 +43,24 @@ export function memoryCardsWithImmich(
 		.map((c) => ({ ...c, immich: immichOf.get(c.year) ?? null }))
 		.sort((a, b) => b.year - a.year);
 }
+
+/**
+ * `years` with `next` below the shown photos of `year` — *Show more* on the page. An empty page
+ * means Immich lost photos since it counted them, so what is shown becomes the total: no
+ * *Show more* that brings nothing.
+ */
+export function withNextPage(
+	years: readonly ImmichMemoryYear[],
+	year: number,
+	next: readonly ImmichMemoryPhoto[]
+): ImmichMemoryYear[] {
+	return years.map((shown) =>
+		shown.year !== year
+			? shown
+			: {
+					...shown,
+					photos: [...shown.photos, ...next],
+					total: next.length === 0 ? shown.photos.length : shown.total
+				}
+	);
+}

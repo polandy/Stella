@@ -3,6 +3,7 @@ import type {
 	ImmichMemoryPage,
 	ImmichMemoryYear
 } from '$lib/immich/on-this-day';
+import { withNextPage } from '$lib/memories/immich';
 
 /*
  * *On this day* from Immich (docs/02 §2.12.1), as Home's band and `/on-this-day` load it: asked
@@ -50,16 +51,7 @@ export class ImmichMemories {
 		const page = await fetchJson<ImmichMemoryPage>(params);
 		this.loadingMore = null;
 		if (this.#day !== day || page?.state !== 'photos') return;
-		this.years = this.years.map((y) =>
-			y.year !== year
-				? y
-				: {
-						...y,
-						photos: [...y.photos, ...page.photos],
-						// Immich lost some since it counted them: no *Show more* that brings nothing.
-						total: page.photos.length === 0 ? y.photos.length : y.total
-					}
-		);
+		this.years = withNextPage(this.years, year, page.photos);
 	}
 }
 
