@@ -9,6 +9,7 @@ export const nav: NavMessages = {
 	'nav.settings': 'Einstellungen',
 	'nav.search': 'Suche',
 	'nav.tags': 'Tags',
+	'nav.brief': 'Steckbrief',
 	'nav.journal': 'Tagebuch',
 	'nav.newPerson': 'Neue Person',
 	'nav.contact': 'Kontakt',

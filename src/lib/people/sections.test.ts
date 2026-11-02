@@ -3,6 +3,7 @@ import {
 	CONTACT_SECTIONS,
 	addParentPath,
 	addRelationshipPath,
+	briefPath,
 	contactSectionPath,
 	journalEntryPath,
 	SECTION_FOR_LEGACY_TAB,
@@ -61,6 +62,12 @@ describe('contactSectionPath', () => {
 describe('journalEntryPath', () => {
 	test("lands on the entry on the person's journal page", () => {
 		expect(journalEntryPath('c1', 'e1')).toBe('/contacts/c1/journal#entry-e1');
+	});
+});
+
+describe('briefPath', () => {
+	test('is the person’s brief, a page of its own beside theirs (docs/02 §2.2.5)', () => {
+		expect(briefPath('c1')).toBe('/contacts/c1/brief');
 	});
 });
 

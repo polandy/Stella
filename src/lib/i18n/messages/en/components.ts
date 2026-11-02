@@ -44,6 +44,8 @@ export const components = {
 	'components.palette.todoFor': 'To-do for …',
 	// The palette's second step after *To-do for …*: whom the to-do is for.
 	'components.palette.todoForWhom': 'A to-do for whom?',
+	'components.palette.briefFor': 'Brief for …',
+	'components.palette.briefForWhom': 'Brief for whom?',
 	'components.palette.back': 'Back',
 	'components.palette.searchEverything': (p: { query: string }) =>
 		`Search everything for “${p.query}”`,

@@ -8,6 +8,7 @@ export const nav = {
 	'nav.settings': 'Settings',
 	'nav.search': 'Search',
 	'nav.tags': 'Tags',
+	'nav.brief': 'Brief',
 	'nav.journal': 'Journal',
 	'nav.newPerson': 'New person',
 	'nav.contact': 'Contact',

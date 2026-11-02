@@ -16,11 +16,12 @@ import {
 const ORIGIN = 'https://stella.example';
 
 describe('peopleToKeep', () => {
-	it('keeps the person page and the journal of everyone, each as its page data', () => {
+	it('keeps the person page, the journal and the brief of everyone, each as its page data', () => {
 		expect(peopleToKeep([{ id: 'c1', avatarPhotoId: null }])).toEqual({
 			pages: [
 				'/contacts/c1/__data.json?x-sveltekit-invalidated=001',
-				'/contacts/c1/journal/__data.json?x-sveltekit-invalidated=001'
+				'/contacts/c1/journal/__data.json?x-sveltekit-invalidated=001',
+				'/contacts/c1/brief/__data.json?x-sveltekit-invalidated=001'
 			],
 			avatars: []
 		});
@@ -36,6 +37,7 @@ describe('keysToPrune', () => {
 		`${ORIGIN}/contacts/gone`,
 		`${ORIGIN}/contacts/gone/__data.json`,
 		`${ORIGIN}/contacts/gone/journal/__data.json`,
+		`${ORIGIN}/contacts/gone/brief/__data.json`,
 		`${ORIGIN}/contacts/stays`,
 		`${ORIGIN}/contacts/stays/__data.json`,
 		`${ORIGIN}/contacts`,
@@ -50,7 +52,8 @@ describe('keysToPrune', () => {
 		expect(keysToPrune(kept, ORIGIN, new Set(['stays']))).toEqual([
 			`${ORIGIN}/contacts/gone`,
 			`${ORIGIN}/contacts/gone/__data.json`,
-			`${ORIGIN}/contacts/gone/journal/__data.json`
+			`${ORIGIN}/contacts/gone/journal/__data.json`,
+			`${ORIGIN}/contacts/gone/brief/__data.json`
 		]);
 	});
 

@@ -5,6 +5,7 @@
 
 import { archive } from './archive';
 import { auth } from './auth';
+import { brief } from './brief';
 import { circles } from './circles';
 import { common } from './common';
 import { components } from './components';
@@ -37,6 +38,7 @@ import { todos } from './todos';
 export const en = {
 	...archive,
 	...auth,
+	...brief,
 	...circles,
 	...common,
 	...components,

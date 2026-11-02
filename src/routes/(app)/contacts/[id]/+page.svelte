@@ -9,6 +9,7 @@
 	import RelationshipsSection from '$lib/components/person/RelationshipsSection.svelte';
 	import StorySection from '$lib/components/person/StorySection.svelte';
 	import TodosSection from '$lib/components/person/TodosSection.svelte';
+	import { metLine as metLineOf } from '$lib/people/identity-card';
 	import { sectionAnchor } from '$lib/people/sections';
 	import { deviceStorage, openedHere } from '$lib/share/opened-here';
 	import { useI18n } from '$lib/i18n/context.svelte';
@@ -91,10 +92,7 @@
 	}
 
 	/** How this person came into the household's life, as one line, or null. */
-	const metLine = $derived.by(() => {
-		const parts = [c.howWeMet, c.metPlace, c.metDate].filter(Boolean);
-		return parts.length > 0 ? parts.join(' · ') : null;
-	});
+	const metLine = $derived(metLineOf(c));
 
 	/** Archived or not decides the action, the wording and the marker; asked once. */
 	const archived = $derived(c.archivedAt !== null);

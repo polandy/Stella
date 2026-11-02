@@ -22,13 +22,20 @@ export interface VisiblePerson {
 export const REFRESH_INTERVAL_MS = 5 * 60 * 1000;
 
 /**
- * SvelteKit's mask for "the page alone, not the layouts around it": a person page and a
- * journal both sit under the root layout and the app layout.
+ * SvelteKit's mask for "the page alone, not the layouts around it": a person page, a journal
+ * and a brief all sit under the root layout and the app layout.
  */
 const PAGE_ONLY = 'x-sveltekit-invalidated=001';
 
-/** The pages every person has that are worth reading offline (§7 decision 1). */
-const personPages = (id: string) => [`/contacts/${id}`, `/contacts/${id}/journal`];
+/**
+ * The pages every person has that are worth reading offline (§7 decision 1). The brief is
+ * among them because it is read on the way over, which is where reception drops.
+ */
+const personPages = (id: string) => [
+	`/contacts/${id}`,
+	`/contacts/${id}/journal`,
+	`/contacts/${id}/brief`
+];
 
 /** What to fetch and keep for `people`: their pages as page data, and their avatars. */
 export function peopleToKeep(people: readonly VisiblePerson[]): {
