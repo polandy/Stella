@@ -85,9 +85,12 @@
 			<h1 class="truncate font-serif text-xl font-semibold text-fg">{c.displayName}</h1>
 			{#if ageLine}<p class="text-sm text-fg-muted" data-testid="brief-age">{ageLine}</p>{/if}
 		</div>
-		<Button size="sm" class="print:hidden" onclick={() => window.print()}>
-			<Icon name="print" size={16} />{t('brief.print')}
-		</Button>
+		<!-- On a wrapper: the button's scoped display outweighs a utility on the button itself. -->
+		<span class="print:hidden">
+			<Button size="sm" onclick={() => window.print()}>
+				<Icon name="print" size={16} />{t('brief.print')}
+			</Button>
+		</span>
 		<p class="hidden text-xs text-fg-subtle print:block">
 			{t('brief.printedOn', { day: dayLabel(i18n, data.today) })}
 		</p>
