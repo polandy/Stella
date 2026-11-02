@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { tick } from 'svelte';
 	import Veil from '$lib/components/ui/Veil.svelte';
 	import { useI18n } from '$lib/i18n/context.svelte';
 	import type { ImmichMemoryPhoto } from '$lib/immich/on-this-day';
@@ -29,7 +30,8 @@
 	function close() {
 		const at = open;
 		open = null;
-		if (at !== null) tiles[at]?.focus();
+		// After the dialog has gone: until then the band is inert and cannot take focus.
+		if (at !== null) void tick().then(() => tiles[at]?.focus());
 	}
 
 	const TILE = 'relative aspect-square max-w-full overflow-hidden rounded-app bg-card';
