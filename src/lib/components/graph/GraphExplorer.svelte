@@ -1,19 +1,8 @@
 <script lang="ts">
 	import { onDestroy, onMount, tick, untrack } from 'svelte';
 	import { goto } from '$app/navigation';
-	import Button from '$lib/components/ui/Button.svelte';
-	import EmptyState from '$lib/components/ui/EmptyState.svelte';
-	import { addParentPath, addRelationshipPath } from '$lib/people/sections';
+	import { addParentPath } from '$lib/people/sections';
 	import { useTranslate } from '$lib/i18n/context.svelte';
-	import { edgeWords, treeRoleWords } from '$lib/graph/edge-words';
-	import { rolesTowards } from '$lib/graph/model/tree-roles';
-	import { shelfCaptions } from '$lib/graph/model/shelf-captions';
-	import { captionWords } from '$lib/graph/caption-words';
-	import { familyLinksAmong } from '$lib/graph/model/generations';
-	import { hiddenInTree } from '$lib/graph/model/tree-shown';
-	import { selectionAsked, treeRelaidFor } from '$lib/graph/tree-view';
-	import { privateCount, type ExportChoices } from '$lib/graph/tree-export';
-	import { exportScene } from '$lib/graph/tree-export-scene';
 	import {
 		explorerAfter,
 		explorerAtOpen,
@@ -21,8 +10,8 @@
 		type ExplorerEvent,
 		type KeptPreferences
 	} from '$lib/graph/explorer-state';
-	import { currentViewOf, groupingApplies, labelsSwitchOf } from '$lib/graph/explorer-look';
-	import { slotElements, toCytoscapeElements } from '$lib/graph/cytoscape/elements';
+	import { currentViewOf } from '$lib/graph/explorer-look';
+	import { treeRelaidFor } from '$lib/graph/tree-view';
 	import { createExplorer, type ExplorerController } from '$lib/graph/cytoscape/explorer';
 	import { buildStylesheet } from '$lib/graph/cytoscape/stylesheet';
 	import { paletteFromDom } from '$lib/graph/cytoscape/theme';
@@ -35,31 +24,11 @@
 		rolesOpenAfter,
 		type CircleRole
 	} from '$lib/graph/model/ego-network';
-	import { canExpand, hasLinks, ringsFrom } from '$lib/graph/model/rings';
-	import { expandWouldAdd } from '$lib/graph/model/expand-offer';
-	import { impliedKinshipEdgeIds } from '$lib/graph/model/implied-kinship';
-	import {
-		applyFilters,
-		emptyModel,
-		mergeModels,
-		withoutDerivedLinks
-	} from '$lib/graph/model/graph-model';
+	import { canExpand } from '$lib/graph/model/rings';
+	import { emptyModel, mergeModels, withoutDerivedLinks } from '$lib/graph/model/graph-model';
 	import { inMemoryGraphSource } from '$lib/graph/model/in-memory-source';
-	import {
-		groupByRole,
-		linksOfGrouped,
-		type EdgeBundle,
-		type RoleGroup
-	} from '$lib/graph/model/role-groups';
-	import { shownOnCanvas } from '$lib/graph/model/shown-on-canvas';
-	import {
-		drawnSlotLine,
-		isParentSlot,
-		missingParentSlots,
-		withParentSlots,
-		type ParentSlot
-	} from '$lib/graph/model/missing-parents';
-	import { graphFiltersFor, openingFilterKeys } from '$lib/graph/model/view-filters';
+	import { isParentSlot, withParentSlots } from '$lib/graph/model/missing-parents';
+	import { openingFilterKeys } from '$lib/graph/model/view-filters';
 	import {
 		savedViewsPreference,
 		type SavedViewsPreference
@@ -69,16 +38,16 @@
 	import { familyTreeLayout } from '$lib/graph/layout/family-tree';
 	import { DEFAULT_NODE_SIZE } from '$lib/graph/layout/geometry';
 	import { spacingFor } from '$lib/graph/layout/density';
-	import { edgeLabelsFit, linesDrawn } from '$lib/graph/layout/legibility';
-	import { hiddenNeighbourCounts } from '$lib/graph/model/hidden-neighbours';
 	import { densityPreference, type DensityPreference } from '$lib/graph/density-preference';
 	import {
 		viewSwitchPreference,
 		type ViewSwitchPreference,
 		type ViewSwitches
 	} from '$lib/graph/view-switches';
-	import type { GraphEdge, GraphFilters, GraphModel } from '$lib/graph/model/types';
+	import type { GraphModel } from '$lib/graph/model/types';
+	import { explorerView } from './explorer-view.svelte';
 	import { frameFullscreen } from './frame-fullscreen.svelte';
+	import GraphAlone from './GraphAlone.svelte';
 	import GraphArrangeMenu from './GraphArrangeMenu.svelte';
 	import GraphCanvas from './GraphCanvas.svelte';
 	import GraphExportDialog from './GraphExportDialog.svelte';
@@ -87,6 +56,7 @@
 	import GraphGroupPeek from './GraphGroupPeek.svelte';
 	import GraphNodePeek from './GraphNodePeek.svelte';
 	import GraphPathPrompt from './GraphPathPrompt.svelte';
+	import GraphViewButtons from './GraphViewButtons.svelte';
 
 	interface Props {
 		/**
@@ -155,10 +125,6 @@
 
 	const t = useTranslate();
 
-	// A built-in relationship type reads in the viewer's language, a household's own type as
-	// somebody typed it, and a former link says so (docs/02 §2.19, §2.7).
-	const edgeLabel = (edge: GraphEdge): string => edgeWords(t, edge);
-
 	// All exploration runs against this in-memory source — no further requests to the server.
 	// The snapshot is a prop, not a constant: a person's page hands a fresh one over after a
 	// save, and the map follows it (see the resync effect below).
@@ -185,14 +151,12 @@
 	 */
 	let ui = $state.raw(untrack(() => explorerAtOpen({ centerId, compact })));
 	const selected = $derived(ui.selected);
-	const selectionCause = $derived(ui.selectionCause);
 	const active = $derived(ui.active);
 	const pathMode = $derived(ui.pathMode);
 	const pathFrom = $derived(ui.pathFrom);
 	const path = $derived(ui.path);
 	const pathMissing = $derived(ui.pathMissing);
 	const switches = $derived(ui.switches);
-	const dissolved = $derived(ui.dissolved);
 	const density = $derived(ui.density);
 	const savedViews = $derived(ui.savedViews);
 	const currentView = $derived(currentViewOf(ui));
@@ -256,219 +220,23 @@
 		}
 	}
 
-	function buildFilters(): GraphFilters {
-		return graphFiltersFor(active, centerId, switches);
-	}
-
-	/*
-	 * The family tree around a person says who everybody is to them under each name — Father,
-	 * Grandmother — instead of naming every line (docs/05 §5.8). Around a circle there is nobody
-	 * to be anybody's father, and the lines keep their names as in every other arrangement.
-	 */
-	const rolesInstead = $derived(
-		arrangedBy === 'tree' &&
-			centerId !== null &&
-			graph.nodes.some((n) => n.id === centerId && n.kind === 'person')
+	// What the map shows, worked out from what was opened up and how it is looked at.
+	const view = explorerView(
+		{
+			graph: () => graph,
+			model: () => model,
+			ui: () => ui,
+			centerId: () => centerId,
+			compact: () => compact,
+			maxRings: () => maxRings,
+			mayAddParents: () => mayAddParents
+		},
+		t
 	);
-	const roles = $derived(rolesInstead && centerId ? rolesTowards(graph, centerId) : null);
-	const shortNameOf = (id: string) => {
-		const node = graph.nodes.find((n) => n.id === id);
-		return node?.shortName ?? node?.label ?? id;
-	};
-	const roleOf = (id: string): string | undefined => {
-		const role = roles?.get(id);
-		if (role) return treeRoleWords(t, role);
-		const caption = shelf?.get(id);
-		return caption ? captionWords(t, caption, shortNameOf) : undefined;
-	};
-
-	const visible = $derived(applyFilters(model, buildFilters()));
-	// Grouping reads what is shown, so the Circles chip off leaves no membership to group by;
-	// the tree's rows are generations, which a group would only pull apart (docs/02 §2.7).
-	const groupingOn = $derived(groupingApplies(ui));
-	// Who is grouped depends only on the memberships shown; it decides whose links come along.
-	const grouped = $derived(
-		groupingOn
-			? new Set(groupByRole(visible, { innerLinks: switches.innerLinks, dissolved }).groupOf.keys())
-			: null
-	);
-	/*
-	 * The map as drawn: what was opened up, plus the links of grouped people to anyone else on
-	 * it. Opening a circle brings its members without their links to each other, and a group is
-	 * about how its people belong together (docs/02 §2.7). The family tree likewise draws the
-	 * family links among the people on it — the parents' marriage, both parents' lines to a
-	 * child — or a map grown from one person would be a star rather than a tree (docs/05 §5.8).
-	 */
-	const drawn = $derived.by(() => {
-		const onMap = () => new Set(model.nodes.map((n) => n.id));
-		if (grouped && grouped.size > 0) {
-			return mergeModels(model, { nodes: [], edges: linksOfGrouped(graph, onMap(), grouped) });
-		}
-		if (arrangedBy === 'tree') {
-			return mergeModels(model, { nodes: [], edges: familyLinksAmong(graph, onMap()) });
-		}
-		return model;
-	});
-	const drawnVisible = $derived(drawn === model ? visible : applyFilters(drawn, buildFilters()));
-	// The shelf beneath says who is who too: "Friend of Sandra", a circle's people on the map.
-	const shelf = $derived(
-		rolesInstead && centerId ? shelfCaptions(graph, drawnVisible, centerId) : null
-	);
-	/*
-	 * The derived lines whose chain of entered links is on the map only repeat it, so they stay
-	 * off unless the reader asks for every one of them (docs/02 §2.7). Read without the
-	 * selection, so a bundle between two groups counts only the lines the map draws, and
-	 * selecting someone neither rebuilds the canvas nor moves anybody.
-	 */
-	const leftOff = $derived(
-		switches.allKinship ? new Set<string>() : impliedKinshipEdgeIds(drawnVisible)
-	);
-	const grouping = $derived(
-		groupingOn
-			? groupByRole(drawnVisible, { innerLinks: switches.innerLinks, dissolved, leftOff })
-			: null
-	);
-	const groupLabel = (g: RoleGroup) =>
-		t('graph.group.label', { role: g.role ?? t('circles.noRole'), count: g.memberIds.length });
-	// The line to a group needs no count: the group's own name carries it.
-	const bundleLabel = (b: EdgeBundle) =>
-		b.kind === 'membership' ? '' : t('graph.bundle.count', { count: b.edgeIds.length });
-	const elements = () => [
-		...toCytoscapeElements(drawn, {
-			centerId: centerId ?? undefined,
-			edgeLabel,
-			hiddenNeighbours: hidden,
-			grouping: grouping ? { grouping, groupLabel, bundleLabel } : undefined,
-			roleOf
-		}),
-		...slotElements(slots, slotName)
-	];
-	/*
-	 * Every line is named only while the names fit (docs/05 §5.8); past that they pile up
-	 * around a hub, and pointing at a line or selecting somebody names theirs. Counted without
-	 * the selection, so selecting somebody never switches every name on or off.
-	 */
-	/*
-	 * The Labels switch as it stands now: the reader's habit, or — in the tree around a person,
-	 * where the roles under the names say it — the tree's own choice, off each time the tree is
-	 * entered (`tree-view.ts`, docs/05 §5.8).
-	 */
-	const labelsSwitch = $derived(labelsSwitchOf(ui, rolesInstead));
 	const flipSwitch = (name: keyof ViewSwitches) =>
-		dispatch({ type: 'switchFlipped', name, rolesInstead });
-	// The lines the tree leaves off are no more drawn than the left-off kinship.
-	const treeLeftOff = $derived(
-		arrangedBy === 'tree' ? hiddenInTree(drawnVisible, null) : new Set<string>()
-	);
-	const labelsFit = $derived(
-		edgeLabelsFit(
-			labelsSwitch,
-			linesDrawn(
-				drawnVisible.edges,
-				grouping ? [leftOff, grouping.tucked, treeLeftOff] : [leftOff, treeLeftOff],
-				grouping?.bundles.length ?? 0
-			)
-		)
-	);
-	// The same lines, but the selected person's own are drawn: selecting names every line. The
-	// family tree also leaves off the lines its bars already draw, and the shelf's lines until
-	// one end is selected (docs/05 §5.8); a traced path shows every line it runs along.
-	const implied = $derived.by(() => {
-		const left = switches.allKinship
-			? new Set<string>()
-			: impliedKinshipEdgeIds(drawnVisible, selected);
-		if (arrangedBy !== 'tree') return left;
-		const onPath = new Set(path?.model.edges.map((e) => e.id) ?? []);
-		// Neither the centre the route opens with nor the person an expand just laid the tree out
-		// around is a question the reader asked: their friends and circles stay unlinked until
-		// somebody is tapped (`tree-view.ts`).
-		const asked = selectionAsked(selectionCause) ? selected : null;
-		for (const id of hiddenInTree(drawnVisible, asked, onPath)) left.add(id);
-		return left;
-	});
+		dispatch({ type: 'switchFlipped', name, rolesInstead: view.rolesInstead });
 	// The tree goes out as it is shown, in the tree arrangement only (docs/02 §2.7).
 	let exporting = $state(false);
-	const exportable = $derived(arrangedBy === 'tree' && drawnVisible.nodes.length > 0);
-	const exportTitle = $derived.by(() => {
-		const centre = centerId ? drawnVisible.nodes.find((n) => n.id === centerId) : undefined;
-		return centre
-			? t('graph.export.defaultTitle', { name: centre.label })
-			: t('graph.export.untitled');
-	});
-	const exportSceneFor = (choices: Pick<ExportChoices, 'dates' | 'withPrivate'>) =>
-		exportScene({
-			graph,
-			shown: drawnVisible,
-			centerId,
-			rolesInstead,
-			allKinship: switches.allKinship,
-			choices,
-			t
-		});
-	/** What the canvas shows: the filtered map, plus the frames and bundles grouping adds. */
-	const shownIds = () => {
-		const shown = shownOnCanvas(drawnVisible, implied, grouping);
-		for (const slot of slots) {
-			shown.nodes.add(slot.id);
-			shown.edges.add(drawnSlotLine(slot).id);
-		}
-		return shown;
-	};
-	const peekGroup = $derived(
-		selected ? (grouping?.groups.find((g) => g.id === selected) ?? null) : null
-	);
-	const nameOf = (id: string) => model.nodes.find((n) => n.id === id)?.label ?? id;
-	/** What the keyboard walk reads out: a slot by what it adds, as the button it acts as. */
-	const canvasNameOf = (id: string) => {
-		const slot = isParentSlot(id) ? slots.find((s) => s.id === id) : undefined;
-		return slot ? t('graph.keyboard.button', { name: slotName(slot) }) : nameOf(id);
-	};
-	const peekNode = $derived(selected ? (model.nodes.find((n) => n.id === selected) ?? null) : null);
-	// How far each node sits from the centre, so the embedded map stops where it promises to.
-	const rings = $derived(centerId ? ringsFrom(model, centerId) : new Map<string, number>());
-	/*
-	 * The slots for missing parents up the centre's line, while the tree writes roles around a
-	 * person (docs/02 §2.7). Never part of `model`: no filter, "+N" or path counts them. A
-	 * person's page carries two hops, so whose parents it holds is whoever an expand could open.
-	 */
-	const slots = $derived(
-		rolesInstead && mayAddParents && centerId
-			? missingParentSlots(graph, drawnVisible, centerId, (id) => canExpand(rings, id, maxRings))
-			: []
-	);
-	const slotName = (slot: ParentSlot) =>
-		t(slot.besideParentId ? 'graph.tree.addOtherParent' : 'graph.tree.addParent', {
-			name: shortNameOf(slot.childId)
-		});
-	// Inside the map's reach, and with something left to open — Expand on somebody whose every
-	// link is drawn already, or who has none, was a button that did nothing (docs/02 §2.7).
-	const peekWithinReach = $derived(
-		peekNode !== null && (centerId === null || canExpand(rings, peekNode.id, maxRings))
-	);
-	// The "+N" on a node that can still grow: who an expand would bring in under the current
-	// filters, and none past the embedded map's last ring (docs/05 §5.8).
-	const hidden = $derived(
-		hiddenNeighbourCounts(graph, drawnVisible, {
-			filters: buildFilters(),
-			expandable: (id) => centerId === null || canExpand(rings, id, maxRings)
-		})
-	);
-	// Expand is offered exactly when it would add something under the current filters: somebody
-	// behind the "+N", or a line among people already shown — never a button that does nothing,
-	// and never missing where a circle's roles are still to be drawn (docs/02 §2.7).
-	const peekHasMore = $derived(
-		peekNode !== null && expandWouldAdd(graph, drawn, peekNode.id, buildFilters())
-	);
-	const peekExpandable = $derived(peekWithinReach && peekHasMore);
-	/*
-	 * A centre linked to nobody draws one lonely dot. The explorer route says why and offers
-	 * the step that changes it; an embedded map is never drawn for somebody without links.
-	 */
-	const lonelyCentre = $derived(
-		!compact && centerId !== null && !hasLinks(graph, centerId)
-			? (graph.nodes.find((n) => n.id === centerId) ?? null)
-			: null
-	);
 
 	/*
 	 * What the reader has opened up, in the order they did it. Kept so a fresh snapshot can be
@@ -483,7 +251,7 @@
 	 * expansion opens (`explorer-state.ts` drops an answer for a circle since left). A primitive,
 	 * so growing the model (which may hand back new node objects) doesn't reset it.
 	 */
-	const peekCircleId = $derived(peekNode?.kind === 'circle' ? peekNode.id : null);
+	const peekCircleId = $derived(view.peekNode?.kind === 'circle' ? view.peekNode.id : null);
 	$effect(() => {
 		const circleId = peekCircleId;
 		void dispatch({ type: 'circlePeeked', circleId });
@@ -529,8 +297,8 @@
 	let onCanvas = new Set<string>();
 	// Push the full (expanded) element set to the renderer whenever the model grows.
 	$effect(() => {
-		const els = elements();
-		const groupOf = grouping?.groupOf ?? new Map<string, string>();
+		const els = view.elements();
+		const groupOf = view.grouping?.groupOf ?? new Map<string, string>();
 		const arranged = arrangedBy;
 		if (!ready || !controller) return;
 		const nodeIds = new Set(els.filter((e) => e.group === 'nodes').map((e) => e.data.id as string));
@@ -549,13 +317,13 @@
 	});
 	// Apply filtering as show/hide (no re-layout).
 	$effect(() => {
-		const { nodes, edges } = shownIds();
+		const { nodes, edges } = view.shownIds();
 		if (!ready || !controller) return;
 		controller.setVisible(nodes, edges);
 	});
 	// A group dissolved, or grouping switched off, takes its selection with it.
 	$effect(() => {
-		const groupIds = new Set(grouping?.groups.map((g) => g.id));
+		const groupIds = new Set(view.grouping?.groups.map((g) => g.id));
 		void dispatch({ type: 'groupsDrawn', groupIds });
 	});
 	// Selection / path highlighting.
@@ -577,7 +345,7 @@
 			: dispatch({
 					type: 'tapped',
 					id,
-					isGroup: grouping?.groups.some((g) => g.id === id) ?? false
+					isGroup: view.grouping?.groups.some((g) => g.id === id) ?? false
 				});
 
 	/*
@@ -585,7 +353,7 @@
 	 * Full screen is left first, or the form would open underneath the map.
 	 */
 	async function openSlot(id: string) {
-		const slot = slots.find((s) => s.id === id);
+		const slot = view.slots.find((s) => s.id === id);
 		if (!slot) return;
 		if (screen.on) await screen.toggle();
 		await goto(addParentPath(slot.childId));
@@ -595,7 +363,7 @@
 	async function expand(id: string) {
 		// The embedded map is one person's neighbourhood, not a way into the whole household:
 		// past its last ring the reader is sent to the explorer route instead (docs/02 §2.7).
-		if (centerId !== null && !canExpand(rings, id, maxRings)) return;
+		if (centerId !== null && !canExpand(view.rings, id, maxRings)) return;
 		// Until the circle's roles have arrived there is nothing to narrow by: open it whole.
 		const roles = peekCircleId === id && roleOptions.length > 0 ? new Set(chosenRoles) : undefined;
 		model = await expandNode(source, model, id, roles);
@@ -629,22 +397,22 @@
 		};
 		if (key === 'tree') {
 			// The slots stand in as parents, so their generation's row makes room for them.
-			canvas.arrangeAt(familyTreeLayout(withParentSlots(drawnVisible, slots), sizeOf), {
+			canvas.arrangeAt(familyTreeLayout(withParentSlots(view.drawnVisible, view.slots), sizeOf), {
 				outsideFamily: t('graph.tree.outsideFamily'),
 				keepNamesDrawn: true
 			});
 			return;
 		}
-		canvas.arrangeAt(circleClustersLayout(drawn, sizeOf, grouping ?? undefined));
+		canvas.arrangeAt(circleClustersLayout(view.drawn, sizeOf, view.grouping ?? undefined));
 	}
 
 	// The one place a stylesheet is built: theme changes and the label toggle share it, so
 	// re-theming can never drop the toggle and vice versa.
 	function stylesheet() {
 		return buildStylesheet(paletteFromDom(), {
-			edgeLabels: labelsFit,
+			edgeLabels: view.labelsFit,
 			reducedMotion,
-			familyTree: rolesInstead
+			familyTree: view.rolesInstead
 		});
 	}
 
@@ -681,7 +449,7 @@
 	 * brought in lands underneath. Read from the layout, not the screen, so a panel still
 	 * sliding in is measured where it will stand.
 	 */
-	const peekOpen = $derived((peekNode !== null || peekGroup !== null) && !pathMode);
+	const peekOpen = $derived((view.peekNode !== null || view.peekGroup !== null) && !pathMode);
 	$effect(() => {
 		const open = peekOpen;
 		if (!ready || !controller) return;
@@ -744,7 +512,7 @@
 		if (!container) throw new Error('The graph canvas has no element to draw into.');
 		const explorer = await createExplorer({
 			container,
-			elements: elements(),
+			elements: view.elements(),
 			stylesheet: stylesheet(),
 			reducedMotion,
 			topInset: toolbarBottom(),
@@ -757,13 +525,14 @@
 			return;
 		}
 		controller = explorer;
-		placedInGroups = grouping?.groupOf ?? new Map();
+		placedInGroups = view.grouping?.groupOf ?? new Map();
 		onCanvas = new Set(
-			elements()
+			view
+				.elements()
 				.filter((e) => e.group === 'nodes')
 				.map((e) => e.data.id as string)
 		);
-		const shown = shownIds();
+		const shown = view.shownIds();
 		controller.setVisible(shown.nodes, shown.edges);
 		controller.highlightNeighborhood(selected);
 		ready = true;
@@ -807,46 +576,19 @@
 		{ready}
 		{selected}
 		{centerId}
-		{grouping}
-		{groupLabel}
-		nameOf={canvasNameOf}
-		{hidden}
+		grouping={view.grouping}
+		groupLabel={view.groupLabel}
+		nameOf={view.canvasNameOf}
+		hidden={view.hidden}
 		positions={() => controller?.positions() ?? new Map()}
 		markCursor={(id) => controller?.markCursor(id)}
 		onActivate={onTapNode}
 		onClear={() => dispatch({ type: 'cleared' })}
 	/>
 
-	<!-- Below the centre rather than over it, and out of the way while a peek panel is open. -->
-	{#if ready && lonelyCentre && !selected}
-		<div
-			class="pointer-events-none absolute inset-x-0 bottom-6 flex justify-center px-4"
-			data-testid="graph-alone"
-		>
-			<div class="pointer-events-auto w-full max-w-sm rounded-app bg-card shadow-pop">
-				{#if lonelyCentre.kind === 'circle'}
-					<EmptyState
-						icon="circles"
-						title={t('graph.aloneCircle.title', { name: lonelyCentre.label })}
-						hint={t('graph.aloneCircle.hint')}
-					>
-						<Button variant="primary" icon="add" href="/circles/{lonelyCentre.id}"
-							>{t('circles.addPeople')}</Button
-						>
-					</EmptyState>
-				{:else}
-					<EmptyState
-						icon="graph"
-						title={t('graph.alone.title', { name: lonelyCentre.label })}
-						hint={t('graph.alone.hint')}
-					>
-						<Button variant="primary" icon="add" href={addRelationshipPath(lonelyCentre.id)}
-							>{t('graph.alone.add')}</Button
-						>
-					</EmptyState>
-				{/if}
-			</div>
-		</div>
+	<!-- Out of the way while a peek panel is open. -->
+	{#if ready && view.lonelyCentre && !selected}
+		<GraphAlone centre={view.lonelyCentre} />
 	{/if}
 
 	<!-- Toolbar. It keeps clear of the peek panel while that is open: the chips wrap on a
@@ -856,7 +598,7 @@
 		bind:this={toolbar}
 		bind:clientHeight={toolbarHeight}
 		class="pointer-events-none absolute inset-x-3 top-3 flex flex-wrap items-center gap-2 transition-[padding]"
-		class:sm:pr-[17rem]={(peekNode || peekGroup) && !pathMode}
+		class:sm:pr-[17rem]={(view.peekNode || view.peekGroup) && !pathMode}
 	>
 		<!-- Above the chips: on a narrow window the chip row wraps under the field, and the
 		     suggestion list would otherwise be hidden behind it. Embedded, there is nobody to
@@ -869,10 +611,10 @@
 			{active}
 			{openingFilters}
 			onToggleFilter={(key) => dispatch({ type: 'filterToggled', key })}
-			switches={{ ...switches, edgeLabels: labelsSwitch }}
+			switches={{ ...switches, edgeLabels: view.labelsSwitch }}
 			onSwitch={flipSwitch}
-			{labelsFit}
-			{rolesInstead}
+			labelsFit={view.labelsFit}
+			rolesInstead={view.rolesInstead}
 			{density}
 			onChooseDensity={(next) => dispatch({ type: 'densityChosen', density: next })}
 			{savedViews}
@@ -884,81 +626,39 @@
 
 		<GraphArrangeMenu {arrangedBy} onArrange={(key) => dispatch({ type: 'arranged', key })} />
 
-		{#if !compact}
-			<!-- Full screen and the connection path start the second row on a phone. -->
-			<div class="basis-full sm:hidden" aria-hidden="true"></div>
-		{/if}
-		{#if onShrink}
-			<Button
-				variant="ghost"
-				size="sm"
-				icon="shrinkMap"
-				label={t('graph.onPerson.shrink')}
-				title={t('graph.onPerson.shrink')}
-				data-map-shrink
-				class="pointer-events-auto ml-auto"
-				onclick={onShrink}
-			/>
-		{/if}
-		{#if exportable}
-			<Button
-				variant="ghost"
-				size="sm"
-				icon="export"
-				label={t('graph.export.open')}
-				title={t('graph.export.open')}
-				data-testid="tree-export-open"
-				class="pointer-events-auto {onShrink ? '' : 'ml-auto'}"
-				onclick={() => (exporting = true)}
-			/>
-		{/if}
-		{#if screen.available}
-			<Button
-				variant="ghost"
-				size="sm"
-				icon={screen.on ? 'exitFullscreen' : 'enterFullscreen'}
-				label={t(screen.on ? 'graph.fullscreen.exit' : 'graph.fullscreen.enter')}
-				aria-pressed={screen.on}
-				title={t(screen.on ? 'graph.fullscreen.exit' : 'graph.fullscreen.enter')}
-				class="pointer-events-auto {onShrink || exportable ? '' : 'ml-auto'}"
-				onclick={screen.toggle}
-			/>
-		{/if}
-		{#if !compact}
-			<button
-				onclick={() => dispatch({ type: 'pathToggled' })}
-				aria-pressed={pathMode}
-				class="pointer-events-auto rounded-full border px-3 py-1 text-xs font-medium backdrop-blur transition-colors {pathMode
-					? 'border-transparent bg-warning-soft text-fg'
-					: 'border-border bg-card/90 text-fg-muted hover:text-fg'}"
-			>
-				{t('graph.connectionPath')}
-			</button>
-		{/if}
+		<GraphViewButtons
+			{compact}
+			{onShrink}
+			exportable={view.exportable}
+			onExport={() => (exporting = true)}
+			{screen}
+			{pathMode}
+			onTogglePath={() => dispatch({ type: 'pathToggled' })}
+		/>
 	</div>
 
 	<!-- Path prompt / result -->
 	{#if pathMode}
-		<GraphPathPrompt {path} {pathMissing} {pathFrom} {nameOf} />
+		<GraphPathPrompt {path} {pathMissing} {pathFrom} nameOf={view.nameOf} />
 	{/if}
 
 	<!-- Peek panel -->
-	{#if peekGroup && !pathMode}
+	{#if view.peekGroup && !pathMode}
 		<GraphGroupPeek
-			group={peekGroup}
-			label={groupLabel(peekGroup)}
+			group={view.peekGroup}
+			label={view.groupLabel(view.peekGroup)}
 			nodes={model.nodes}
-			{nameOf}
+			nameOf={view.nameOf}
 			{compact}
-			onShowIndividually={() => dispatch({ type: 'groupDissolved', id: peekGroup!.id })}
+			onShowIndividually={() => dispatch({ type: 'groupDissolved', id: view.peekGroup!.id })}
 			onClose={() => dispatch({ type: 'peekClosed' })}
 		/>
-	{:else if peekNode && !pathMode}
+	{:else if view.peekNode && !pathMode}
 		<GraphNodePeek
-			node={peekNode}
+			node={view.peekNode}
 			{compact}
-			withinReach={peekWithinReach}
-			expandable={peekExpandable}
+			withinReach={view.peekWithinReach}
+			expandable={view.peekExpandable}
 			{roleOptions}
 			{chosenRoles}
 			onToggleRole={(role) => dispatch({ type: 'roleToggled', role })}
@@ -972,10 +672,10 @@
 	{#if exporting}
 		<GraphExportDialog
 			bind:open={exporting}
-			defaultTitle={exportTitle}
-			privateCount={privateCount(drawnVisible)}
-			sceneFor={exportSceneFor}
-			edgeLabels={labelsFit}
+			defaultTitle={view.exportTitle}
+			privateCount={view.privateCount}
+			sceneFor={view.exportSceneFor}
+			edgeLabels={view.labelsFit}
 			outsideFamily={t('graph.tree.outsideFamily')}
 		/>
 	{/if}
