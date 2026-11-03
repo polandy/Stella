@@ -214,11 +214,11 @@ export const settings = {
 	// *Settings → Calendar* (docs/02 §2.13.4): the member's dates as a subscribed calendar.
 	'settings.calendar.heading': 'Calendar',
 	'settings.calendar.title': 'Calendar',
-	'settings.calendar.blurb': 'Birthdays and anniversaries in your phone’s own calendar.',
+	'settings.calendar.blurb': 'Birthdays, anniversaries and to-dos in your phone’s own calendar.',
 	'settings.calendar.intro':
-		'Birthdays, anniversaries and your other dates in your phone’s own calendar. The calendar does the reminding.',
+		'Birthdays, anniversaries, your other dates and your to-dos in your phone’s own calendar. The calendar does the reminding.',
 	'settings.calendar.what': (p: { toggle: string; comingUp: string }): string =>
-		`Every date with “${p.toggle}” on, of everyone you can see — the same dates as ${p.comingUp}, all year. Private people only in your own calendar.`,
+		`Every date with “${p.toggle}” on, of everyone you can see — the same dates as ${p.comingUp}, all year — and every open to-do with a day, on its day, until it is ticked. Private people and private to-dos only in your own calendar.`,
 	'settings.calendar.create': 'Create calendar link',
 	'settings.calendar.createdHeading': 'Your calendar link',
 	'settings.calendar.createdHint':

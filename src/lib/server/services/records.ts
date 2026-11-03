@@ -16,6 +16,7 @@ import type { CalendarFeedDeps } from '../domain/dates/calendar-feed';
 import type { ImportantDateDeps, ImportantDateRepository } from '../domain/dates/important-dates';
 import type { TagListDeps } from '../domain/tags/tag-lists';
 import type { TagDeps, TagRepository } from '../domain/tags/tags';
+import type { TodoRepository } from '../domain/todos/todos';
 import type { IdGenerator } from '../id';
 
 /*
@@ -52,9 +53,17 @@ export interface RecordWiring {
 	ids: IdGenerator;
 	/** The people group's lookup: removing a field or a date first checks the person is seen. */
 	contacts: ContactLookup;
+	/** The to-dos group's repository: the calendar link holds the dated ones. */
+	todos: TodoRepository;
 }
 
-export function createRecordServices({ db, clock, ids, contacts }: RecordWiring): RecordServices {
+export function createRecordServices({
+	db,
+	clock,
+	ids,
+	contacts,
+	todos
+}: RecordWiring): RecordServices {
 	const contactFields = createDrizzleContactFieldRepository(db);
 	const importantDates = createDrizzleImportantDateRepository(db);
 	const tags = createDrizzleTagRepository(db);
@@ -74,7 +83,7 @@ export function createRecordServices({ db, clock, ids, contacts }: RecordWiring)
 			clock
 		},
 		importantDateDeps: { dates: importantDates, contacts, ids, clock },
-		calendarFeedDeps: { dates: importantDates, clock },
+		calendarFeedDeps: { dates: importantDates, todos, clock },
 		tagDeps: { tags, ids, clock },
 		tagListDeps: { tagLists: createDrizzleTagListReads(db) }
 	};

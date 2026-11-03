@@ -191,7 +191,11 @@ describe('createDrizzleImportantDateRepository', () => {
 describe('the calendar feed over SQLite', () => {
 	const feedOf = (viewer: Viewer) =>
 		calendarFeed(
-			{ dates: repo, clock: { now: () => Date.UTC(2026, 10, 1) } },
+			{
+				dates: repo,
+				todos: { listOpenVisibleTo: async () => [] },
+				clock: { now: () => Date.UTC(2026, 10, 1) }
+			},
 			{ viewer, translate: createTranslator('en'), origin: 'https://stella.example' }
 		);
 

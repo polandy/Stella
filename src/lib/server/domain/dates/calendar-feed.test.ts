@@ -1,6 +1,7 @@
 import { describe, expect, test } from 'bun:test';
 import { createTranslator } from '../../../i18n/translate';
-import { calendarEvents, calendarFeed } from './calendar-feed';
+import type { HouseholdTodo } from '../todos/todos';
+import { calendarEvents, calendarFeed, todoEvents } from './calendar-feed';
 import type { UpcomingSource } from './upcoming';
 
 const en = createTranslator('en');
@@ -137,6 +138,54 @@ describe('calendarEvents', () => {
 	});
 });
 
+function todo(over: Partial<HouseholdTodo> = {}): HouseholdTodo {
+	return {
+		id: 't1',
+		contactId: 'c1',
+		contactName: 'Anna Example',
+		avatarPhotoId: null,
+		createdBy: 'u1',
+		visibility: 'shared',
+		title: 'Give back the book',
+		dueOn: '2026-11-06',
+		doneAt: null,
+		doneOn: null,
+		doneBy: null,
+		createdAt: 0,
+		updatedAt: 0,
+		...over
+	};
+}
+
+describe('todoEvents', () => {
+	test('a to-do with a day is a one-off event on that day, linked to the person', () => {
+		expect(todoEvents([todo()], en, ORIGIN)).toEqual([
+			{
+				uid: 'todo-t1@stella',
+				start: '2026-11-06',
+				yearly: false,
+				summary: 'To do: Give back the book (Anna Example)',
+				description: null,
+				url: 'https://stella.example/contacts/c1'
+			}
+		]);
+	});
+
+	test('a to-do without a day has no day to stand on', () => {
+		expect(todoEvents([todo({ dueOn: null })], en, ORIGIN)).toEqual([]);
+	});
+
+	test('an overdue one stays on the day it was given — no nudge', () => {
+		const [event] = todoEvents([todo({ dueOn: '2025-03-01' })], en, ORIGIN);
+		expect(event.start).toBe('2025-03-01');
+	});
+
+	test('speaks the member’s language', () => {
+		const [event] = todoEvents([todo({ title: 'Buch zurückgeben' })], de, ORIGIN);
+		expect(event.summary).toBe('Zu tun: Buch zurückgeben (Anna Example)');
+	});
+});
+
 describe('calendarFeed', () => {
 	const viewer = { id: 'u1', householdId: 'h1' };
 
@@ -149,6 +198,7 @@ describe('calendarFeed', () => {
 					return [source()];
 				}
 			},
+			todos: { listOpenVisibleTo: async () => [] },
 			clock: { now: () => Date.UTC(2026, 10, 1, 9, 30) }
 		};
 		const morning = await calendarFeed(deps, { viewer, translate: en, origin: ORIGIN });
@@ -160,5 +210,27 @@ describe('calendarFeed', () => {
 		expect(morning).toContain('DTSTAMP:20261101T000000Z');
 		expect(morning).toContain("SUMMARY:Anna Example's birthday");
 		expect(evening).toBe(morning);
+	});
+
+	test('holds the viewer’s open to-dos with a day beside their dates', async () => {
+		const asked: unknown[] = [];
+		const ics = await calendarFeed(
+			{
+				dates: { listSourcesVisibleTo: async () => [source()] },
+				todos: {
+					listOpenVisibleTo: async (v: typeof viewer) => {
+						asked.push(v);
+						return [todo(), todo({ id: 't2', title: 'Call back', dueOn: null })];
+					}
+				},
+				clock: { now: () => Date.UTC(2026, 10, 1, 9, 30) }
+			},
+			{ viewer, translate: en, origin: ORIGIN }
+		);
+		expect(asked).toEqual([viewer]);
+		expect(ics).toContain('UID:todo-t1@stella');
+		expect(ics).toContain('SUMMARY:To do: Give back the book (Anna Example)');
+		expect(ics).not.toContain('Call back');
+		expect(ics).toContain("SUMMARY:Anna Example's birthday");
 	});
 });
