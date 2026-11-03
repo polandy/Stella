@@ -69,7 +69,7 @@ something is overdue or due today.
 Last in that list comes **On this day**: what the household wrote on today's date in earlier
 years — moments, calls and visits, and the photos taken that day — grouped as *1 year ago*,
 *5 years ago*. With Immich set up, every photo of your Immich timeline taken that day joins
-in too, marked *Immich*, after Stella's own. Tap one to open it: a moment on the person's
+in too (back to 1990 — older dates are usually a camera that lost its clock), marked *Immich*, after Stella's own. Tap one to open it: a moment on the person's
 journal page, a call on their Activity, a photo among their Photos — an Immich photo opens
 large, with when it was taken, arrows to the others and *Open in Immich*. People who have died stay in it; people you archived do
 not. Private entries stay yours and stay blurred until you tap them. A moment written on

@@ -26,12 +26,18 @@ export interface ImmichMemoryDeps {
 	publicUrl: string;
 }
 
+/**
+ * The oldest year *On this day* asks Immich about. A camera that lost its clock dates its photos
+ * to 1970 or even year 1, and the look-back would then ask once for every year since.
+ */
+const IMMICH_MEMORY_FIRST_YEAR = 1990;
+
 type YearRead = { ok: true; assets: ImmichAsset[] } | { ok: false };
 
 /**
  * Every earlier year with a photo taken on `day`'s day and month (`YYYY-MM-DD`, the household's
- * today or a picked one), newest year first, back to the oldest photo of the timeline: one call
- * for that photo, then one for each year, all at once.
+ * today or a picked one), newest year first, back to the oldest photo of the timeline but never
+ * before `IMMICH_MEMORY_FIRST_YEAR`: one call for that photo, then one for each year, all at once.
  */
 export async function immichMemoriesOn(
 	deps: ImmichMemoryDeps,
@@ -44,7 +50,8 @@ export async function immichMemoriesOn(
 	if (!oldestDay) return { state: 'years', years: [] };
 
 	const years: number[] = [];
-	for (let year = yearOf(day) - 1; year >= yearOf(oldestDay); year--) years.push(year);
+	const firstYear = Math.max(yearOf(oldestDay), IMMICH_MEMORY_FIRST_YEAR);
+	for (let year = yearOf(day) - 1; year >= firstYear; year--) years.push(year);
 	const reads = await Promise.all(years.map((year) => readYear(deps, day, year)));
 	const found: { year: number; assets: ImmichAsset[] }[] = [];
 	for (const [at, read] of reads.entries()) {
@@ -71,7 +78,8 @@ export async function immichMemoryPage(
 	year: number,
 	from: number
 ): Promise<ImmichMemoryPage> {
-	if (year >= yearOf(day)) return { state: 'photos', photos: [] };
+	if (year >= yearOf(day) || year < IMMICH_MEMORY_FIRST_YEAR)
+		return { state: 'photos', photos: [] };
 	const read = await readYear(deps, day, year);
 	if (!read.ok) return { state: 'unreachable' };
 	const page = read.assets.slice(from, from + IMMICH_MEMORY_PAGE);
