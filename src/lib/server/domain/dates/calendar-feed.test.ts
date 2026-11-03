@@ -164,7 +164,7 @@ describe('todoEvents', () => {
 				uid: 'todo-t1@stella',
 				start: '2026-11-06',
 				yearly: false,
-				summary: 'To do: Give back the book (Anna Example)',
+				summary: 'To-do: Give back the book (Anna Example)',
 				description: null,
 				url: 'https://stella.example/contacts/c1'
 			}
@@ -229,7 +229,7 @@ describe('calendarFeed', () => {
 		);
 		expect(asked).toEqual([viewer]);
 		expect(ics).toContain('UID:todo-t1@stella');
-		expect(ics).toContain('SUMMARY:To do: Give back the book (Anna Example)');
+		expect(ics).toContain('SUMMARY:To-do: Give back the book (Anna Example)');
 		expect(ics).not.toContain('Call back');
 		expect(ics).toContain("SUMMARY:Anna Example's birthday");
 	});

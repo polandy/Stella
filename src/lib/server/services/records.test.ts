@@ -140,7 +140,7 @@ describe('createRecordServices', () => {
 			origin: 'https://stella.example'
 		});
 		expect(ics).toContain('DTSTART;VALUE=DATE:20261012');
-		expect(ics).toContain('SUMMARY:To do: Give back the book (Anna Pollari)');
+		expect(ics).toContain('SUMMARY:To-do: Give back the book (Anna Pollari)');
 	});
 
 	it('removes a field and a date through the group, checking the person against the lookup', async () => {
