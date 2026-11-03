@@ -364,12 +364,16 @@
 		</summary>
 		<ul class="flex list-none flex-col gap-1.5 border-t border-dashed border-border pt-2">
 			{#each declined as suggestion (suggestion.relation + suggestion.fromId + suggestion.toId)}
-				<li class="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-fg-muted">
-					<span><LinkedNames segments={claimOf(suggestion)} /></span>
-					{#if suggestion.dismissed}
-						<span class="text-xs text-fg-subtle">{declinedWhen(suggestion.dismissed)}</span>
-					{/if}
-					<form method="POST" action="?/restoreSuggestion" class="ml-auto shrink-0">
+				<!-- A grid, not a wrapping flex row: a long claim wraps on the left and *Ask again*
+				     stays at the row's end, in line with the other rows. -->
+				<li class="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-x-2 text-sm text-fg-muted">
+					<span class="flex min-w-0 flex-wrap items-baseline gap-x-2 gap-y-0.5">
+						<span><LinkedNames segments={claimOf(suggestion)} /></span>
+						{#if suggestion.dismissed}
+							<span class="text-xs text-fg-subtle">{declinedWhen(suggestion.dismissed)}</span>
+						{/if}
+					</span>
+					<form method="POST" action="?/restoreSuggestion">
 						<input type="hidden" name="relation" value={suggestion.relation} />
 						<input type="hidden" name="fromId" value={suggestion.fromId} />
 						<input type="hidden" name="toId" value={suggestion.toId} />
