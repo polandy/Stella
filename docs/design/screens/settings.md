@@ -107,7 +107,7 @@ are what it holds today. The household-wide checks are their own page (§5.5.8).
 
 - *Calendar* (docs/02 §2.13.4) is every member's own page; its icon is `calendar`.
 - Without a link: one card saying what the calendar holds (naming *Show on Home* and *Coming
-  up*) and the primary *Create calendar link*.
+  up*, and that open to-dos with a day come along) and the primary *Create calendar link*.
 - A new link appears **once**, in the `--primary`-bordered panel on `--primary-soft`: the URL
   with *Copy*, *Add it to* with three pill toggles (*Google Calendar*, *iPhone*, *Other*) over
   three numbered steps for the chosen one, and *Done*. While it shows, it stands in for the
