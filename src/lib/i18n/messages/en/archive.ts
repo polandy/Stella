@@ -87,6 +87,14 @@ export const archive = {
 		'A link to Immich that named no Immich person was left out.',
 	'archive.warning.immichIgnoreIncomplete':
 		'An ignored Immich proposal that named no Immich person was left out.',
+	'archive.warning.immichNameIgnoreIncomplete':
+		'A face ignored under New from Immich that named no Immich person was left out.',
+	'archive.warning.addressBookCardIncomplete':
+		'An answered address-book card without its address book, its key or — once linked — a person from the archive was left out.',
+	'archive.warning.suggestionDismissalIncomplete':
+		'A declined suggestion of an unknown kind, or naming nobody, was left out.',
+	'archive.warning.commandReceiptIncomplete':
+		'A record of an applied change that Stella cannot read was left out.',
 	'archive.warning.circleWithoutName': 'A circle without a name was left out.',
 	'archive.warning.circleMissingParent': (p: { name: string }) =>
 		`“${p.name}” sat inside a circle the archive does not contain; it is restored on its own.`,

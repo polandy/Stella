@@ -872,8 +872,8 @@ pair it with — so it belongs to the household.
 Primary key `(household_id, immich_person_id)`: a face is ignored once, and a second ignore keeps
 the first record. Every read and removal (*Propose again*) is held to the viewer's household; there
 is no contact visibility to check, so every member sees every row. Not written to the activity
-log. Like `suggestion_dismissal`, the backup reads the table but the archive document does not
-carry it yet: a restored household is offered those faces again.
+log. It travels in the archive (§2.15, `immich_names_ignored`), so a restored household is not
+offered those faces again.
 
 ### contact_source_link  [M3]
 The household's answer for one card of another address book in the matching review (docs/02
@@ -898,8 +898,9 @@ back. What a read may *say* follows the person it names: a card linked to someon
 not browse (`contactBrowsableBy` — someone else's private person, or someone archived) is only
 said to be taken care of, never who it is, and is left alone. Written by the review's apply in the
 transaction that writes the people. A merge carries the merged person's links to the survivor
-(a card key names one person, so they cannot collide). The backup reads the table but the archive
-document does not carry it yet: a restored household is asked about those cards again.
+(a card key names one person, so they cannot collide). It travels in the archive (§2.15,
+`address_book_cards`), so a restored household is not asked about those cards again; a link to
+somebody the archive does not hold is left out.
 
 ### nextcloud_card  [M3]
 The linked Nextcloud book's cards as the last sync saw them (docs/02 §2.16.3): the base of the
@@ -986,7 +987,8 @@ the other relations, and the *Last names* page lists these with *Offer again*.
 `relation = 'same_address'`: the people shown and their line folded like the home editor folds
 it. A finding counts as answered while everyone at the line is among the people named, so
 someone new at it asks again and someone gone leaves the answer standing. *Ask again* deletes
-only a row that holds back a finding the viewer can see.
+only a row that holds back a finding the viewer can see. The table travels in the archive (§2.15,
+`declined_suggestions`), so a restored household is not offered again what it already declined.
 
 ### command_receipt  [M3]
 A command id that has been claimed or applied (docs/04 §4.11.2), so a
@@ -1012,8 +1014,9 @@ taken over: a possible duplicate is preferable to a moment presumed saved and ne
 
 **Never replayed.** Nothing is derived from a receipt; the tables stay the truth. A row holds
 ids, not content, and is **kept for good**, so a device offline for months still cannot send
-anything twice. It travels in the archive (§2.15) for the same reason: a household restored
-onto a new server still recognises what an unsent phone already delivered.
+anything twice. It travels in the archive (§2.15, `command_receipts`) for the same reason: a household restored
+onto a new server still recognises what an unsent phone already delivered. Only an applied
+receipt is restored; one pending at the export is left out, so its resend is applied once.
 
 ## 3.4 Partial & fuzzy dates
 

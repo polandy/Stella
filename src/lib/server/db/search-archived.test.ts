@@ -88,7 +88,10 @@ describe('full search leaves out the records of an archived person', () => {
 	});
 
 	it('finds them all again once the person is brought back', async () => {
-		db.update(schema.contact).set({ archivedAt: null }).where(eq(schema.contact.id, 'c-gone')).run();
+		db.update(schema.contact)
+			.set({ archivedAt: null })
+			.where(eq(schema.contact.id, 'c-gone'))
+			.run();
 		expect(await repo.searchNotes(viewer, query, 20)).toHaveLength(2);
 		expect(await repo.searchMoments(viewer, query, 20)).toHaveLength(2);
 		expect(await repo.searchGifts(viewer, query, 20)).toHaveLength(2);

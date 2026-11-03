@@ -176,7 +176,9 @@ export function createDrizzleRestoreRepository(
 						if (!known.has(column)) throw new UnknownColumnError(table, column);
 					}
 
-					if (known.has('household_id')) {
+					// A table keyed by the household itself (a declined Immich face, an answered
+					// card) has no id to clash: its rows are written into this household by key.
+					if (known.has('household_id') && known.has('id')) {
 						const clash = foreignIds(
 							table,
 							rows.map((row) => String(row.id)),

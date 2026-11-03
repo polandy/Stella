@@ -32,7 +32,8 @@ const viaContact = (column = 'contact_id') =>
 /**
  * Every table an export carries, in an order a restore can replay: parents before the rows
  * that point at them. `archive-repository.test.ts` holds this list against the schema, so a
- * new table cannot quietly stay out of the backup.
+ * new table cannot quietly stay out of the backup, and `restore-repository-answers.test.ts`
+ * holds it against the restore plan, so none is read only to be dropped.
  */
 export const EXPORTED_TABLES: readonly Scoped[] = [
 	{ table: 'household', where: 't.id = ?' },
@@ -70,11 +71,11 @@ export const EXPORTED_TABLES: readonly Scoped[] = [
 	{ table: 'immich_link', where: viaContact() },
 	// The Immich faces a member said a contact is not; left out, a restore would propose them again.
 	{ table: 'immich_ignore', where: viaContact() },
-	// The Immich faces the household said are nobody to add (*New from Immich*); like the
-	// declined suggestions below, the table is read but the document does not carry it yet.
+	// The Immich faces the household ignored under *New from Immich*; left out, a restore would
+	// offer them again.
 	{ table: 'immich_name_ignore', where: 't.household_id = ?' },
-	// Which card of another address book is whom, and which were skipped (docs/02 §2.16); read
-	// like the faces above, but the document does not carry it yet.
+	// Which card of another address book is whom, and which were skipped (docs/02 §2.16); left
+	// out, the next import of that book would ask about every card again.
 	{ table: 'contact_source_link', where: 't.household_id = ?' },
 	{ table: 'circle', where: 't.household_id = ?' },
 	{

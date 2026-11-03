@@ -3,6 +3,7 @@ import { phrase, type Phrase } from '../../../i18n/phrase';
 import type { Clock } from '../../clock';
 import type { IdGenerator } from '../../id';
 import { isSafeMediaPath } from './archive';
+import { planAnswers, type AnswerWarning } from './restore-answers';
 import { isImmichId } from '../immich/gateway';
 import { ARCHIVE_FORMAT, ARCHIVE_VERSION } from './document';
 import { CURRENT_RELATIONSHIP_STATUS } from '../../../relationships/status';
@@ -11,6 +12,18 @@ import { foldedLinkDetails } from '../../../relationships/fold';
 import { giftLink, isGiftState } from '../../../gifts/gifts';
 import { FULL_DATE_SHAPE, isRealCalendarDay } from '../../../dates/calendar';
 import { todayFor } from '../../../dates/today';
+import {
+	bool,
+	ids,
+	int,
+	ms,
+	real,
+	record,
+	records,
+	str,
+	visibilityOf,
+	type Row
+} from './restore-fields';
 
 /*
  * Reading an archive back (docs/02 §2.15): the document turned into rows this installation can
@@ -97,7 +110,8 @@ export type RestoreWarning =
 	| { code: 'relationshipToItself' }
 	| { code: 'imagesMissing'; count: number }
 	/** Gift notes or gift touchpoints the archive held, made gift records (docs/02 §2.25.4). */
-	| { code: 'giftsConverted'; count: number };
+	| { code: 'giftsConverted'; count: number }
+	| AnswerWarning;
 
 /** What this installation already has, so the plan can fit itself into it. */
 export interface RestoreTarget {
@@ -138,60 +152,6 @@ export interface RestorePlanDeps {
 	ids: IdGenerator;
 	clock: Clock;
 }
-
-type Row = Record<string, unknown>;
-
-const record = (value: unknown): Row | null =>
-	typeof value === 'object' && value !== null && !Array.isArray(value) ? (value as Row) : null;
-
-/** A list of sub-records, skipping anything that is not one. */
-function records(row: Row, key: string): Row[] {
-	const value = row[key];
-	if (!Array.isArray(value)) return [];
-	return value.map(record).filter((entry): entry is Row => entry !== null);
-}
-
-/** A list of ids, skipping anything that is not one. */
-function ids(row: Row, key: string): string[] {
-	const value = row[key];
-	if (!Array.isArray(value)) return [];
-	return value.filter((entry): entry is string => typeof entry === 'string' && entry.length > 0);
-}
-
-function str(row: Row, key: string): string | null {
-	const value = row[key];
-	if (typeof value === 'string') return value.length > 0 ? value : null;
-	// YAML numbers and booleans in a text field: keep the text rather than lose the value.
-	if (typeof value === 'number' || typeof value === 'boolean') return String(value);
-	return null;
-}
-
-function int(row: Row, key: string): number | null {
-	const value = row[key];
-	return typeof value === 'number' && Number.isFinite(value) ? Math.trunc(value) : null;
-}
-
-/** A measure that may carry a fraction, such as a framing's square. */
-function real(row: Row, key: string): number | null {
-	const value = row[key];
-	return typeof value === 'number' && Number.isFinite(value) ? value : null;
-}
-
-const bool = (row: Row, key: string): boolean => row[key] === true;
-
-/** An ISO instant back to the epoch milliseconds the database stores. */
-function ms(row: Row, key: string): number | null {
-	const value = row[key];
-	if (value instanceof Date) return value.getTime();
-	if (typeof value === 'number' && Number.isFinite(value)) return value;
-	const text = str(row, key);
-	if (text === null) return null;
-	const parsed = Date.parse(text);
-	return Number.isNaN(parsed) ? null : parsed;
-}
-
-const visibilityOf = (row: Row): 'shared' | 'private' =>
-	str(row, 'visibility') === 'private' ? 'private' : 'shared';
 
 /**
  * The document as it came out of the YAML parser, checked far enough to be worth reading.
@@ -848,6 +808,15 @@ export function planRestore(
 		}
 	}
 
+	// ── What the household already answered ──────────────────────────────
+	const answers = planAnswers(document, {
+		householdId: target.householdId,
+		author,
+		knownPeople,
+		now,
+		warn
+	});
+
 	const keptPhotos = photos
 		.filter((p) => {
 			const framingOf = p.framing_of;
@@ -888,7 +857,11 @@ export function planRestore(
 			{ table: 'circle', rows: circles },
 			{ table: 'circle_membership', rows: memberships },
 			{ table: 'relationship', rows: relationships },
-			{ table: 'activity_log', rows: activity }
+			{ table: 'activity_log', rows: activity },
+			{ table: 'immich_name_ignore', rows: answers.immichNameIgnores },
+			{ table: 'contact_source_link', rows: answers.sourceLinks },
+			{ table: 'suggestion_dismissal', rows: answers.dismissals },
+			{ table: 'command_receipt', rows: answers.receipts }
 		],
 		mediaPaths: [...mediaPaths],
 		warnings

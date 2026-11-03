@@ -82,7 +82,10 @@ export function createDrizzleSearchRepository(
 				.where(
 					and(
 						sql`note_fts MATCH ${ftsQuery}`,
-						childRecordBrowsableBy(viewer, { visibility: note.visibility, createdBy: note.createdBy })
+						childRecordBrowsableBy(viewer, {
+							visibility: note.visibility,
+							createdBy: note.createdBy
+						})
 					)
 				)
 				.orderBy(sql`bm25(note_fts)`)
@@ -106,7 +109,10 @@ export function createDrizzleSearchRepository(
 				.where(
 					and(
 						sql`gift_fts MATCH ${ftsQuery}`,
-						childRecordBrowsableBy(viewer, { visibility: gift.visibility, createdBy: gift.createdBy })
+						childRecordBrowsableBy(viewer, {
+							visibility: gift.visibility,
+							createdBy: gift.createdBy
+						})
 					)
 				)
 				.orderBy(sql`bm25(gift_fts)`)
@@ -130,7 +136,10 @@ export function createDrizzleSearchRepository(
 				.where(
 					and(
 						sql`todo_fts MATCH ${ftsQuery}`,
-						childRecordBrowsableBy(viewer, { visibility: todo.visibility, createdBy: todo.createdBy })
+						childRecordBrowsableBy(viewer, {
+							visibility: todo.visibility,
+							createdBy: todo.createdBy
+						})
 					)
 				)
 				.orderBy(sql`${todo.doneAt} IS NOT NULL`, sql`bm25(todo_fts)`)
