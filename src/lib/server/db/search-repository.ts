@@ -1,6 +1,6 @@
 import { and, eq, inArray, sql, type SQL } from 'drizzle-orm';
 import type { BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
-import { childRecordVisibleTo, contactBrowsableBy } from '../access/query-scoping';
+import { childRecordBrowsableBy, contactBrowsableBy } from '../access/query-scoping';
 import type { Viewer } from '../access/visibility';
 import type { SearchRepository } from '../domain/search/search';
 import { contact, entryTag, gift, journalEntry, journalEntryTag, note, todo } from './schema';
@@ -10,7 +10,8 @@ import { contactFts, giftFts, journalFts, noteFts, todoFts } from './search-sche
 /*
  * Drizzle adapter for the SearchRepository port (docs/08 §8.3). Matches via the FTS5 tables,
  * joins the base rows, and applies the central visibility scoping so private records never
- * appear in another member's results. Ranked by bm25 (best first).
+ * appear in another member's results; a record of an archived person is left out with them
+ * (`childRecordBrowsableBy`, docs/02 §2.2). Ranked by bm25 (best first).
  */
 
 export function createDrizzleSearchRepository(
@@ -35,7 +36,7 @@ export function createDrizzleSearchRepository(
 				and(
 					sql`journal_fts MATCH ${ftsQuery}`,
 					where,
-					childRecordVisibleTo(viewer, {
+					childRecordBrowsableBy(viewer, {
 						visibility: journalEntry.visibility,
 						createdBy: journalEntry.createdBy
 					})
@@ -81,7 +82,7 @@ export function createDrizzleSearchRepository(
 				.where(
 					and(
 						sql`note_fts MATCH ${ftsQuery}`,
-						childRecordVisibleTo(viewer, { visibility: note.visibility, createdBy: note.createdBy })
+						childRecordBrowsableBy(viewer, { visibility: note.visibility, createdBy: note.createdBy })
 					)
 				)
 				.orderBy(sql`bm25(note_fts)`)
@@ -105,7 +106,7 @@ export function createDrizzleSearchRepository(
 				.where(
 					and(
 						sql`gift_fts MATCH ${ftsQuery}`,
-						childRecordVisibleTo(viewer, { visibility: gift.visibility, createdBy: gift.createdBy })
+						childRecordBrowsableBy(viewer, { visibility: gift.visibility, createdBy: gift.createdBy })
 					)
 				)
 				.orderBy(sql`bm25(gift_fts)`)
@@ -129,7 +130,7 @@ export function createDrizzleSearchRepository(
 				.where(
 					and(
 						sql`todo_fts MATCH ${ftsQuery}`,
-						childRecordVisibleTo(viewer, { visibility: todo.visibility, createdBy: todo.createdBy })
+						childRecordBrowsableBy(viewer, { visibility: todo.visibility, createdBy: todo.createdBy })
 					)
 				)
 				.orderBy(sql`${todo.doneAt} IS NOT NULL`, sql`bm25(todo_fts)`)

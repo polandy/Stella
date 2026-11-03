@@ -4,14 +4,14 @@ import { eq } from 'drizzle-orm';
 import { drizzle, type BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
 import { migrate } from 'drizzle-orm/bun-sqlite/migrator';
 import * as schema from '../db/schema';
-import { contact } from '../db/schema';
-import { contactBrowsableBy, contactVisibleTo } from './query-scoping';
+import { contact, note } from '../db/schema';
+import { childRecordBrowsableBy, contactBrowsableBy, contactVisibleTo } from './query-scoping';
 import type { Viewer } from './visibility';
 
 /*
- * The one condition of the query-scoping adapter with no twin in `visibility.ts`:
- * `contactBrowsableBy` (docs/04 §4.9). Every other condition is held to its pure rule by
- * `visibility-parity.test.ts`.
+ * The two conditions of the query-scoping adapter with no twin in `visibility.ts`:
+ * `contactBrowsableBy` and `childRecordBrowsableBy` (docs/04 §4.9). Every other condition is
+ * held to its pure rule by `visibility-parity.test.ts`.
  */
 
 const H1 = 'household-1';
@@ -49,7 +49,17 @@ beforeAll(() => {
 			{ id: 'c-priv-u2', householdId: H1, createdBy: U2, visibility: 'private', displayName: 'U2' }
 		])
 		.run();
+	db.insert(note)
+		.values([
+			{ id: 'n-shared', contactId: 'c-shared', createdBy: U1, visibility: 'shared', body: 'a' },
+			{ id: 'n-priv-u1', contactId: 'c-shared', createdBy: U1, visibility: 'private', body: 'b' }
+		])
+		.run();
 });
+
+// The fixture is built once for the whole file, so a case that archives puts it back.
+const setArchived = (id: string, at: number | null) =>
+	db.update(contact).set({ archivedAt: at }).where(eq(contact.id, id)).run();
 
 function scopedContactIds(viewer: Viewer): string[] {
 	return db
@@ -72,10 +82,6 @@ describe('contactBrowsableBy (visible and not archived)', () => {
 			.sort();
 	}
 
-	// The fixture is built once for the whole file, so this case puts back what it changed.
-	const setArchived = (id: string, at: number | null) =>
-		db.update(contact).set({ archivedAt: at }).where(eq(contact.id, id)).run();
-
 	it('drops an archived contact that is otherwise perfectly visible', () => {
 		setArchived('c-shared', 1_700_000_000_000);
 		try {
@@ -91,5 +97,33 @@ describe('contactBrowsableBy (visible and not archived)', () => {
 	it('is exactly visibility while nothing is archived', () => {
 		expect(browsableContactIds(viewerU1)).toEqual(scopedContactIds(viewerU1));
 		expect(browsableContactIds(viewerU2)).toEqual(scopedContactIds(viewerU2));
+	});
+});
+
+describe('childRecordBrowsableBy (visible, and its person not archived)', () => {
+	function browsableNoteIds(viewer: Viewer): string[] {
+		return db
+			.select({ id: note.id })
+			.from(note)
+			.innerJoin(contact, eq(note.contactId, contact.id))
+			.where(childRecordBrowsableBy(viewer, note))
+			.all()
+			.map((r) => r.id)
+			.sort();
+	}
+
+	it('keeps the visibility rule: a private note only for its author', () => {
+		expect(browsableNoteIds(viewerU1)).toEqual(['n-priv-u1', 'n-shared']);
+		expect(browsableNoteIds(viewerU2)).toEqual(['n-shared']);
+	});
+
+	it('drops every note of an archived person', () => {
+		setArchived('c-shared', 1_700_000_000_000);
+		try {
+			expect(browsableNoteIds(viewerU1)).toEqual([]);
+			expect(browsableNoteIds(viewerU2)).toEqual([]);
+		} finally {
+			setArchived('c-shared', null);
+		}
 	});
 });

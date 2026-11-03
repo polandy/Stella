@@ -1,6 +1,6 @@
 import { and, desc, eq, isNotNull, isNull, lt, or } from 'drizzle-orm';
 import type { BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
-import { childRecordVisibleTo, contactBrowsableBy } from '../access/query-scoping';
+import { childRecordBrowsableBy, childRecordVisibleTo } from '../access/query-scoping';
 import type { Viewer } from '../access/visibility';
 import type { DoneTodo, Todo, TodoRepository } from '../domain/todos/todos';
 import type * as schema from './schema';
@@ -91,12 +91,11 @@ export function createDrizzleTodoRepository(db: BunSQLiteDatabase<typeof schema>
 				.where(
 					and(
 						isNull(todo.doneAt),
-						childRecordVisibleTo(viewer, {
+						// A list to act on is a browsing surface: an archived person is out (docs/04 §4.9).
+						childRecordBrowsableBy(viewer, {
 							visibility: todo.visibility,
 							createdBy: todo.createdBy
-						}),
-						// A list to act on is a browsing surface: an archived person is out (docs/04 §4.9).
-						contactBrowsableBy(viewer)
+						})
 					)
 				)
 				.all();

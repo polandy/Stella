@@ -255,6 +255,9 @@ scoped by household, and the Home stream reads the newest people first.
 `archived_at` decides whether they are *listed*. The two are separate conditions, and
 `contactBrowsableBy` is their conjunction — applied by the directory, the search, the name
 suggestions, People's *last written about* column, both *Coming up* queries and the stream's new-people read.
+Its twin for a record about a person, `childRecordBrowsableBy`, adds the same `archived_at`
+test to `childRecordVisibleTo`: the full search's notes, gifts, to-dos and moments and the open
+to-do and gift-idea lists use it, so a record cannot bring an archived person back into view.
 Everything that reasons about the household's shape — `kinship-graph-read`, the graph
 repository — every read of one named contact, and the name lookup that resolves @-mentions
 (`listNamesAmongVisibleTo`, for just the ids a page mentions) keep

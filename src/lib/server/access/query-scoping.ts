@@ -71,6 +71,19 @@ export function childRecordVisibleTo(
 }
 
 /**
+ * Condition for a child record on a surface the household *browses* (the search, a list to act
+ * on): visible as `childRecordVisibleTo`, and its person not archived, so a note, moment, gift
+ * or to-do cannot bring an archived person back into view (docs/04 §4.9). The query must join
+ * `contact`.
+ */
+export function childRecordBrowsableBy(
+	viewer: Viewer,
+	record: { visibility: AnyColumn; createdBy: AnyColumn }
+): SQL {
+	return and(childRecordVisibleTo(viewer, record), isNull(contact.archivedAt))!;
+}
+
+/**
  * Condition for an authored record (note / journal entry / interaction / photo) being one the
  * remover may remove — the SQL of `canRemoveAuthored`: visible, and their own or, for an
  * admin, shared. The query must join `contact`.
