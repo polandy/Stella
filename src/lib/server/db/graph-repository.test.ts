@@ -119,6 +119,38 @@ describe('loadVisibleGraph', () => {
 		expect(short).toEqual({ mara: 'Mara', jonas: 'Jonas', lio: 'Lio' });
 	});
 
+	it('marks a private person the viewer may see, and leaves a shared one unmarked', async () => {
+		seedContact('secret', 'Secret', 'private', U1);
+
+		const graph = await createDrizzleGraphRepository(db).loadVisibleGraph(viewerU1);
+
+		expect(graph.nodes.find((n) => n.id === 'secret')?.private).toBe(true);
+		expect(graph.nodes.find((n) => n.id === 'mara')).not.toHaveProperty('private');
+	});
+
+	it('carries the years of birth and death that are on record, and no guessed one', async () => {
+		const set = (id: string, values: Partial<typeof schema.contact.$inferInsert>) =>
+			db.update(schema.contact).set(values).where(eq(schema.contact.id, id)).run();
+		set('mara', { birthDate: '1938-04-02', isDeceased: 1, deathDate: '2019-11-30' });
+		set('jonas', { birthDate: '1941', birthDatePrecision: 'year' });
+		// A year worked out from an age, and a birthday without a year, say no year to print.
+		set('lio', { birthDate: '1990', birthDatePrecision: 'age' });
+		seedContact('ida', 'Ida');
+		set('ida', { birthDate: '--05-12', birthDatePrecision: 'month_day' });
+
+		const graph = await createDrizzleGraphRepository(db).loadVisibleGraph(viewerU1);
+		const years = Object.fromEntries(
+			graph.nodes.map((n) => [n.id, { born: n.born, died: n.died }])
+		);
+
+		expect(years).toEqual({
+			mara: { born: 1938, died: 2019 },
+			jonas: { born: 1941, died: undefined },
+			lio: { born: undefined, died: undefined },
+			ida: { born: undefined, died: undefined }
+		});
+	});
+
 	it('excludes contacts the viewer cannot see and edges touching them', async () => {
 		seedContact('secret', 'Secret', 'private', U1); // private, owned by U1
 		rel('r-secret', 'mara', 'secret', 'friend');
@@ -198,6 +230,14 @@ describe('loadVisibleGraph — circles', () => {
 				.sort()
 		).toEqual(['m-jonas', 'm-mara']);
 		expect(path).not.toBeNull();
+	});
+
+	it('marks a private circle its author sees', async () => {
+		seedCircle('secret-club', 'Secret Club', 'private', U1);
+
+		const graph = await createDrizzleGraphRepository(db).loadVisibleGraph(viewerU1);
+
+		expect(graph.nodes.find((n) => n.id === 'secret-club')?.private).toBe(true);
 	});
 
 	it('excludes a private circle and its memberships from another member', async () => {

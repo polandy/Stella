@@ -126,3 +126,19 @@ export function paletteFromDom(root: Element = document.documentElement): Palett
 	const styles = getComputedStyle(root);
 	return resolvePalette((cssVar) => styles.getPropertyValue(cssVar).trim());
 }
+
+/**
+ * The light palette whatever the reader's theme: a family tree on paper or shared as a picture
+ * is dark on white (docs/02 §2.7). The light tokens are read by switching the page to light for
+ * the one synchronous read and straight back, so nothing is painted in between.
+ */
+export function lightPaletteFromDom(root: HTMLElement = document.documentElement): Palette {
+	const before = root.getAttribute('data-theme');
+	root.setAttribute('data-theme', 'light');
+	try {
+		return paletteFromDom(root);
+	} finally {
+		if (before === null) root.removeAttribute('data-theme');
+		else root.setAttribute('data-theme', before);
+	}
+}

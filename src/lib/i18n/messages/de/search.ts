@@ -124,5 +124,33 @@ export const search: SearchMessages = {
 	'graph.onPerson.enlarge': 'Karte vergrößern',
 	'graph.onPerson.shrink': 'Karte verkleinern',
 	'graph.fullscreen.enter': 'Vollbild',
-	'graph.fullscreen.exit': 'Vollbild beenden'
+	'graph.fullscreen.exit': 'Vollbild beenden',
+	'graph.export.open': 'Stammbaum exportieren',
+	'graph.export.heading': 'Stammbaum exportieren',
+	'graph.export.titleField': 'Titel',
+	'graph.export.defaultTitle': (p) => `Familie von ${p.name}`,
+	'graph.export.untitled': 'Stammbaum',
+	'graph.export.format': 'Format',
+	'graph.export.png': 'Bild (PNG)',
+	'graph.export.print': 'PDF / Drucken',
+	'graph.export.paper': 'Papier, quer',
+	'graph.export.fits': (p) =>
+		`Der ganze Baum passt auf eine Seite. Die Namen werden in ${p.pt} pt gedruckt.`,
+	'graph.export.smallNames': (p) =>
+		`Der ganze Baum passt auf eine Seite, die Namen aber nur in ${p.pt} pt. A3 druckt sie größer.`,
+	'graph.export.dates': 'Geburts- und Sterbejahre',
+	'graph.export.withPrivate': 'Private Personen einbeziehen',
+	'graph.export.privateHint': (p) =>
+		`${p.count === 1 ? 'Eine Person oder ein Kreis in diesem Baum ist' : `${p.count} Personen oder Kreise in diesem Baum sind`} privat. Ein Ausdruck verlässt den Haushalt.`,
+	'graph.export.madeOn': (p) => `Erstellt am ${p.date}`,
+	'graph.export.preview': 'Vorschau des Exports',
+	'graph.export.drawing': 'Der Baum wird gezeichnet…',
+	'graph.export.failed':
+		'Der Baum ließ sich nicht zeichnen. Versuche es noch einmal oder mit weniger Personen auf der Karte.',
+	'graph.export.download': 'PNG herunterladen',
+	'graph.export.printButton': 'Drucken…',
+	'graph.export.born': (p) => `* ${p.year}`,
+	'graph.export.died': (p) => `† ${p.year}`,
+	'graph.export.lived': (p) => `${p.born} – ${p.died}`,
+	'graph.export.livedUntilUnknown': (p) => `${p.born} – †`
 };

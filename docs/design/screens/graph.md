@@ -45,10 +45,17 @@ card (§5.5.2); its styling is §5.8.
   person — no filter, badge or path counts it — but the keyboard walk steps onto it and reads it
   as a button (*Add a parent of Lena*, *Add Lena's other parent*); tapping it or Enter opens the
   child's page with *Add relationship* open on *Child of*, leaving full screen first.
+- In the tree, **Export** (before Full screen in the toolbar) opens a dialog: on the left a
+  preview of the sheet as it comes out — the page with its margins for a print, the picture
+  alone for a PNG, white whatever the theme — and on the right the title, *Picture (PNG)* or
+  *PDF / Print*, the paper (*A4* or *A3*, landscape) with a hint at the printed name size, the
+  *Years of birth and death* switch and, only when someone on the map is private, the private
+  switch; Cancel and *Download PNG* / *Print…* at the foot. On a phone the dialog is a bottom
+  sheet, the preview capped at 40% of the screen's height so the choices stay in sight.
 - On a phone (below `sm`, tuned for a Pixel 9 Pro at 412 px) search, Filter and Arrange keep
   one row: the search field takes whatever the two menus leave, and the Arrange pill shows only
-  the arrangement's name (its accessible name still reads *Arrange: …*). Full screen and the
-  connection path start a second row.
+  the arrangement's name (its accessible name still reads *Arrange: …*). Export (in the tree), Full
+  screen and the connection path start a second row.
 - On a phone the peek panel is a strip along the bottom: avatar and name side by side, its
   buttons in one row, the general tip left out. The toolbar stays within reach while somebody
   is selected.
@@ -82,6 +89,12 @@ The slots for missing parents keep to the centre's own line because that is the 
 around one person asks, and three generations cap a large family at seven plus signs. They are
 left out of the model so nothing that counts people — filters, "+N", the path — has to learn to
 skip them; and a slot a reader may not use would be a button that only refuses.
+
+The export draws the tree again on a core of its own rather than photographing the screen, so
+the reader's map neither moves nor turns light, and a private person left out leaves no gap. A
+print is one page because a tree split across pages has to be taped back together; A3 is the
+answer when A4 makes the names too small. The preview's title is typed over a blank header at
+the picture's own measures, so a keystroke never draws the tree again.
 
 Esc leaving the native full screen is fine: nobody presses Esc mid-drag. iPadOS/iOS Safari reads
 a downward drag on a Fullscreen-API element as "swipe to dismiss" — the gesture that closes a

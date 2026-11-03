@@ -131,7 +131,34 @@ export const search = {
 	'graph.onPerson.enlarge': 'Enlarge map',
 	'graph.onPerson.shrink': 'Shrink map',
 	'graph.fullscreen.enter': 'Full screen',
-	'graph.fullscreen.exit': 'Leave full screen'
+	'graph.fullscreen.exit': 'Leave full screen',
+	'graph.export.open': 'Export tree',
+	'graph.export.heading': 'Export tree',
+	'graph.export.titleField': 'Title',
+	'graph.export.defaultTitle': (p: { name: string }) => `Family of ${p.name}`,
+	'graph.export.untitled': 'Family tree',
+	'graph.export.format': 'Format',
+	'graph.export.png': 'Picture (PNG)',
+	'graph.export.print': 'PDF / Print',
+	'graph.export.paper': 'Paper, landscape',
+	'graph.export.fits': (p: { pt: string }) =>
+		`The whole tree fits on one page. Names print at ${p.pt} pt.`,
+	'graph.export.smallNames': (p: { pt: string }) =>
+		`The whole tree fits on one page, but names print at only ${p.pt} pt. A3 prints them larger.`,
+	'graph.export.dates': 'Years of birth and death',
+	'graph.export.withPrivate': 'Include private people',
+	'graph.export.privateHint': (p: { count: number }) =>
+		`${p.count === 1 ? 'One person or circle on this tree is' : `${p.count} people or circles on this tree are`} private. A print leaves the household.`,
+	'graph.export.madeOn': (p: { date: string }) => `Made ${p.date}`,
+	'graph.export.preview': 'Preview of the export',
+	'graph.export.drawing': 'Drawing the tree…',
+	'graph.export.failed': 'The tree could not be drawn. Try again, or with fewer people on the map.',
+	'graph.export.download': 'Download PNG',
+	'graph.export.printButton': 'Print…',
+	'graph.export.born': (p: { year: number }) => `b. ${p.year}`,
+	'graph.export.died': (p: { year: number }) => `d. ${p.year}`,
+	'graph.export.lived': (p: { born: number; died: number }) => `${p.born} – ${p.died}`,
+	'graph.export.livedUntilUnknown': (p: { born: number }) => `${p.born} – †`
 };
 
 /** The key set every translation of this area has to provide. */

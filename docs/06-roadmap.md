@@ -248,7 +248,7 @@ the screen file in the same PR that builds it, and leaves a one-line *built* not
      the person page on a phone; the family card holds the partner, the children with ages,
      the household address and housemates; kept offline with the person's page.
 
-5. **The family tree as a picture or PDF** — *queued.* A printable tree for the grandparents or
+5. **The family tree as a picture or PDF** — *built*; see docs/02 §2.7. A printable tree for the grandparents or
    a family gathering.
    - **What.** In the explorer's family-tree view (§2.7) an *Export* menu: *PNG* (for sharing)
      and *PDF / Print* (A4 or A3, landscape). It exports what is on screen: the centre, the
@@ -262,8 +262,8 @@ the screen file in the same PR that builds it, and leaves a one-line *built* not
    - **Tests.** Unit: the export options → render parameters mapping (pure). E2e: export a PNG
      and check the download's type and size bounds; print layout stays an owner hand check.
    - **Docs.** docs/02 §2.7, `graph.md`, `using-stella.md`.
-   - **Open.** Whether a very wide tree should split across pages (recommended: no — scale to
-     one page, offer A3); whether the ego network (not only the tree) exports too.
+   - **Decided.** One page, scaled to fit, with A3 offered when A4 makes the names small; the
+     tree only, not the other arrangements; a dialog with a live preview beside the choices.
 
 ## Cross-cutting (every milestone)
 
