@@ -7,11 +7,11 @@
 	import { useI18n } from '$lib/i18n/context.svelte';
 	import { useRemovals } from '$lib/undo/context.svelte';
 	import { savedEnhance } from '$lib/undo/saved';
-	import { tick } from 'svelte';
+	import { tick, untrack } from 'svelte';
 	import { prefersReducedMotion } from 'svelte/motion';
 	import { reveal } from '$lib/motion/motion.svelte';
 	import { scrollBehavior } from '$lib/motion/motion';
-	import type { PersonForm, PersonPageData } from './types';
+	import { refusedMergeOf, type PersonForm, type PersonPageData } from './types';
 
 	/*
 	 * The confirm step of the identity card's record-keeping actions (docs/02 §2.2). The ⋯ menu
@@ -43,9 +43,10 @@
 	/*
 	 * `?merge=<id>` arrives from *There is already a Lea Brunner — the same person?* after a
 	 * last name was given (docs/02 §2.2.4.4): the card opens this step with that
-	 * person in it, and the merge still waits for the admin's own click.
+	 * person in it, and the merge still waits for the admin's own click. A refused merge comes
+	 * back with its pick the same way.
 	 */
-	const proposedMerge = page.url.searchParams.get('merge');
+	const proposedMerge = untrack(() => refusedMergeOf(form)) ?? page.url.searchParams.get('merge');
 	let mergeTargetId = $state<string[]>(proposedMerge ? [proposedMerge] : []);
 
 	let box = $state<HTMLDivElement>();

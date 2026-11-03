@@ -18,6 +18,11 @@ export type PersonPageData = PageData;
 /** The result of the page's last form action, carrying each section's error. */
 export type PersonForm = ActionData;
 
+/** The person a refused merge came back with, so its step reopens on them (docs/05 §5.5). */
+export function refusedMergeOf(form: PersonForm): string | null {
+	return form && 'mergedId' in form && typeof form.mergedId === 'string' ? form.mergedId : null;
+}
+
 /** The relationship picker's entries: every type, read from each of its sides. */
 export type RelationshipChoices = RelationshipTypeOption<
 	PersonPageData['relationshipTypes'][number]

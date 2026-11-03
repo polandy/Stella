@@ -32,7 +32,7 @@
 	import LastNameHelp from './LastNameHelp.svelte';
 	import NameEditor from './NameEditor.svelte';
 	import RecordActions from './RecordActions.svelte';
-	import type { PersonForm, PersonPageData } from './types';
+	import { refusedMergeOf, type PersonForm, type PersonPageData } from './types';
 
 	/*
 	 * The top of a person's page (docs/05 §5.5): who this is. Portrait, name and description, a
@@ -205,9 +205,14 @@
 	const menu = $derived(
 		recordMenu({ isAdmin: data.isAdmin, archived, isSelf, canTracePath: otherContacts.length > 0 })
 	);
-	/** The confirm step the menu opened; `?merge=` opens merging (docs/02 §2.2.4.4). */
+	/**
+	 * The confirm step the menu opened; `?merge=` opens merging (docs/02 §2.2.4.4), and so does a
+	 * merge the server refused, to say why.
+	 */
 	let panel = $state<'archive' | 'merge' | 'delete' | null>(
-		untrack(() => initialPanel(page.url.searchParams.get('merge'), data.isAdmin))
+		untrack(() =>
+			initialPanel(refusedMergeOf(form) ?? page.url.searchParams.get('merge'), data.isAdmin)
+		)
 	);
 	/*
 	 * This component outlives any one person: following a link from their page to somebody
@@ -218,7 +223,7 @@
 	$effect(() => {
 		if (c.id === panelContactId) return;
 		panelContactId = c.id;
-		panel = initialPanel(page.url.searchParams.get('merge'), data.isAdmin);
+		panel = initialPanel(refusedMergeOf(form) ?? page.url.searchParams.get('merge'), data.isAdmin);
 	});
 </script>
 

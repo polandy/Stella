@@ -197,7 +197,8 @@ export function addressLines(
 
 /**
  * Which confirm step a look at this person's page opens on its own: the merge step when a
- * *same person?* link sent an admin here, otherwise none. Used both at mount and whenever the
+ * *same person?* link sent an admin here, or a merge they asked for came back refused,
+ * otherwise none. Used both at mount and whenever the
  * page keeps its identity card across a client-side navigation to somebody else's page — so an
  * open step does not follow a reader from the person who opened it to the next (docs/05 §5.5).
  */

@@ -34,9 +34,14 @@ export const recordActions = {
 			);
 		} catch (err) {
 			if (!(err instanceof MergeWouldHideRecordsError)) throw err;
-			return fail(400, { mergeError: err.phrase(translator(locals)) });
+			// The pick comes back, so the step reopens with it and says why (docs/05 §5.5).
+			const mergedId = parsed.output.mergedId;
+			return fail(400, { mergeError: err.phrase(translator(locals)), mergedId });
 		}
-		if (!merged) return fail(400, { mergeError: say(locals, 'errors.merge.failed') });
+		if (!merged) {
+			const mergedId = parsed.output.mergedId;
+			return fail(400, { mergeError: say(locals, 'errors.merge.failed'), mergedId });
+		}
 		throw redirect(303, `/contacts/${params.id}`);
 	},
 
