@@ -81,6 +81,14 @@ describe('createAuthServices', () => {
 		expect(auth.completeLoginDeps.clock).toBe(clock);
 	});
 
+	it('hands the edges the sign-in methods the operator turned on', () => {
+		const passwordsOff = { ...config, auth: { local: false, oidc: true } };
+		expect(createAuthServices({ config: passwordsOff, db, clock, ids }).methods).toEqual({
+			local: false,
+			oidc: true
+		});
+	});
+
 	it('reads the OIDC settings off the config', () => {
 		const auth = createAuthServices({ config, db, clock, ids });
 		expect(auth.authorizationRequestDeps.config).toEqual({
