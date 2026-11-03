@@ -1,6 +1,11 @@
 import type { Cookies } from '@sveltejs/kit';
 import { LOCALE_COOKIE, LOCALE_COOKIE_MAX_AGE, type Locale } from '$lib/i18n/locales';
 import { getConfig } from '$lib/server/config';
+import {
+	openOidcTransaction,
+	sealOidcTransaction,
+	type OidcTransaction
+} from './oidc/transaction-cookie';
 
 /*
  * Session cookie helpers. The cookie holds the raw session token; it is httpOnly,
@@ -34,19 +39,16 @@ export function clearSessionCookie(cookies: Cookies): void {
 
 /*
  * Short-lived cookie holding the OIDC transaction (state / nonce / PKCE verifier) between
- * the redirect to the provider and the callback. httpOnly so it is never readable by JS.
+ * the redirect to the provider and the callback. httpOnly so it is never readable by JS, and
+ * sealed with `SESSION_SECRET` so it cannot be planted (`oidc/transaction-cookie.ts`).
  */
 
 const OIDC_COOKIE = 'stella_oidc';
 
-export interface OidcTransaction {
-	state: string;
-	nonce: string;
-	codeVerifier: string;
-}
+export type { OidcTransaction };
 
 export function setOidcTransaction(cookies: Cookies, tx: OidcTransaction): void {
-	cookies.set(OIDC_COOKIE, JSON.stringify(tx), {
+	cookies.set(OIDC_COOKIE, sealOidcTransaction(tx, getConfig().sessionSecret), {
 		path: '/',
 		httpOnly: true,
 		sameSite: 'lax',
@@ -57,22 +59,7 @@ export function setOidcTransaction(cookies: Cookies, tx: OidcTransaction): void 
 
 export function readOidcTransaction(cookies: Cookies): OidcTransaction | null {
 	const raw = cookies.get(OIDC_COOKIE);
-	if (!raw) return null;
-	try {
-		const parsed: unknown = JSON.parse(raw);
-		if (
-			typeof parsed === 'object' &&
-			parsed !== null &&
-			typeof (parsed as OidcTransaction).state === 'string' &&
-			typeof (parsed as OidcTransaction).nonce === 'string' &&
-			typeof (parsed as OidcTransaction).codeVerifier === 'string'
-		) {
-			return parsed as OidcTransaction;
-		}
-	} catch {
-		// fall through to null
-	}
-	return null;
+	return raw ? openOidcTransaction(raw, getConfig().sessionSecret) : null;
 }
 
 export function clearOidcTransaction(cookies: Cookies): void {

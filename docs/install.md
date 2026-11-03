@@ -239,6 +239,21 @@ git pull
 ./deploy.sh
 ```
 
+**Once, if you installed 0.1.0 or earlier:** Stella no longer runs as the all-powerful root
+user inside its container, so the data it wrote back then has to be handed over to it a
+single time, before the update starts:
+
+```sh
+./deploy.sh down
+volume=$(docker volume ls -q --filter name=stella-data)
+docker run --rm -v "$volume":/data alpine chown -R 1000:1000 /data
+git pull
+./deploy.sh
+```
+
+Without it, the container stops right after starting, complaining about a *readonly
+database*. A fresh install needs none of this.
+
 Database changes are applied automatically on startup and only ever move forward. Take a
 backup first if it has been a while since the last one. When an update also moves data into a
 new shape — gifts imported from Monica as notes becoming entries on the **Gifts** card, say —

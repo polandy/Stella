@@ -1,4 +1,4 @@
-import { redirect } from '@sveltejs/kit';
+import { error, redirect } from '@sveltejs/kit';
 import {
 	clearOidcTransaction,
 	readOidcTransaction,
@@ -6,6 +6,7 @@ import {
 } from '$lib/server/auth/cookies';
 import { completeOidcLogin } from '$lib/server/auth/oidc/login';
 import { createSession } from '$lib/server/auth/session';
+import { say } from '$lib/server/i18n/say';
 import type { RequestHandler } from './$types';
 
 /*
@@ -15,10 +16,16 @@ import type { RequestHandler } from './$types';
  */
 
 export const GET: RequestHandler = async ({ url, cookies, locals }) => {
+	if (!locals.services.auth.methods.oidc) throw error(404, say(locals, 'errors.notFound'));
+
 	const code = url.searchParams.get('code');
 	const state = url.searchParams.get('state');
 	const transaction = readOidcTransaction(cookies);
 	clearOidcTransaction(cookies);
+
+	// A member already signed in keeps their session: a callback they did not start (a crafted
+	// link) must not swap it for another account, and the sign-in page never starts one for them.
+	if (locals.user) throw redirect(303, '/');
 
 	if (!code || !state || !transaction || transaction.state !== state) {
 		throw redirect(302, '/login?error=sso');
@@ -31,7 +38,10 @@ export const GET: RequestHandler = async ({ url, cookies, locals }) => {
 			codeVerifier: transaction.codeVerifier,
 			expectedNonce: transaction.nonce
 		});
-	} catch {
+	} catch (failure) {
+		// The visitor sees one sentence; the operator setting up the provider needs the cause —
+		// a wrong client secret, an unreachable token endpoint, a nonce mismatch.
+		console.error(`[sso] ${locals.requestId} sign-in failed:`, failure);
 		throw redirect(302, '/login?error=sso');
 	}
 
