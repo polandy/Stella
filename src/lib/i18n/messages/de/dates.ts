@@ -17,6 +17,7 @@ export const dates: DatesMessages = {
 	'dates.feed.birthday': (p) => `Geburtstag von ${p.name}`,
 	'dates.feed.anniversary': (p) => `Jahrestag von ${p.name}`,
 	'dates.feed.custom': (p) => `${p.name}: ${p.label}`,
+	'dates.feed.todo': (p) => `Zu tun: ${p.title} (${p.name})`,
 	'dates.feed.born': (p) => `Geboren ${p.year}`,
 	'dates.feed.since': (p) => `Seit ${p.year}`
 };

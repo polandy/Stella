@@ -7,6 +7,7 @@ import { hashPassword, verifyPassword } from '../auth/password';
 import type { Clock } from '../clock';
 import { createDrizzleAccountRepository } from '../db/account-repository';
 import { createDrizzleContactRepository } from '../db/contact-repository';
+import { createDrizzleTodoRepository } from '../db/todo-repository';
 import * as schema from '../db/schema';
 import {
 	addContactField,
@@ -19,9 +20,12 @@ import {
 	listImportantDates,
 	removeImportantDate
 } from '../domain/dates/important-dates';
+import { calendarFeed } from '../domain/dates/calendar-feed';
 import { listTagsForContact } from '../domain/tags/tag-lists';
 import { assignTagByName } from '../domain/tags/tags';
+import { addTodo } from '../domain/todos/todos';
 import type { IdGenerator } from '../id';
+import { createTranslator } from '../../i18n/translate';
 import { createServices } from './app-services';
 import type { AuthConfig } from './auth';
 import { createRecordServices, type RecordWiring } from './records';
@@ -57,7 +61,13 @@ beforeEach(async () => {
 			locale: 'en'
 		}
 	);
-	wiring = { db, clock, ids, contacts: createDrizzleContactRepository(db) };
+	wiring = {
+		db,
+		clock,
+		ids,
+		contacts: createDrizzleContactRepository(db),
+		todos: createDrizzleTodoRepository(db)
+	};
 });
 
 const viewerOf = (user: AuthUser) => ({ id: user.id, householdId: user.householdId });
@@ -112,6 +122,25 @@ describe('createRecordServices', () => {
 		expect(dates.map((date) => date.id)).toEqual([dateId]);
 		const tags = await listTagsForContact(records.tagListDeps, viewerOf(admin), anna);
 		expect(tags.map((tag) => tag.id)).toEqual([tagId]);
+	});
+
+	it('puts a dated to-do noted on a person into the calendar link', async () => {
+		const records = createRecordServices(wiring);
+		expect(records.calendarFeedDeps.todos).toBe(wiring.todos);
+		const anna = await addPerson('Anna');
+		await addTodo(
+			{ todos: wiring.todos, contacts: wiring.contacts, ids, clock },
+			{ userId: admin.id, householdId: admin.householdId },
+			{ contactId: anna, title: 'Give back the book', dueOn: '2026-10-12', visibility: 'shared' }
+		);
+
+		const ics = await calendarFeed(records.calendarFeedDeps, {
+			viewer: viewerOf(admin),
+			translate: createTranslator('en'),
+			origin: 'https://stella.example'
+		});
+		expect(ics).toContain('DTSTART;VALUE=DATE:20261012');
+		expect(ics).toContain('SUMMARY:To-do: Give back the book (Anna Pollari)');
 	});
 
 	it('removes a field and a date through the group, checking the person against the lookup', async () => {

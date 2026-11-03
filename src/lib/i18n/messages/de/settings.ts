@@ -203,11 +203,11 @@ export const settings: SettingsMessages = {
 	// *Settings → Calendar* (docs/02 §2.13.4): the member's dates as a subscribed calendar.
 	'settings.calendar.heading': 'Kalender',
 	'settings.calendar.title': 'Kalender',
-	'settings.calendar.blurb': 'Geburtstage und Jahrestage im eigenen Kalender deines Handys.',
+	'settings.calendar.blurb': 'Geburtstage, Jahrestage und Todos im eigenen Kalender deines Handys.',
 	'settings.calendar.intro':
-		'Geburtstage, Jahrestage und deine anderen Daten im eigenen Kalender deines Handys. Ans Erinnern denkt der Kalender.',
+		'Geburtstage, Jahrestage, deine anderen Daten und deine Todos im eigenen Kalender deines Handys. Ans Erinnern denkt der Kalender.',
 	'settings.calendar.what': (p: { toggle: string; comingUp: string }): string =>
-		`Jedes Datum mit „${p.toggle}“, von allen, die du sehen kannst — dieselben Daten wie unter ${p.comingUp}, das ganze Jahr. Private Personen nur in deinem eigenen Kalender.`,
+		`Jedes Datum mit „${p.toggle}“, von allen, die du sehen kannst — dieselben Daten wie unter ${p.comingUp}, das ganze Jahr — und jedes offene Todo mit Tag, an seinem Tag, bis es abgehakt ist. Private Personen und private Todos nur in deinem eigenen Kalender.`,
 	'settings.calendar.create': 'Kalender-Link erstellen',
 	'settings.calendar.createdHeading': 'Dein Kalender-Link',
 	'settings.calendar.createdHint':

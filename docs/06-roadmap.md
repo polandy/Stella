@@ -197,7 +197,7 @@ the screen file in the same PR that builds it, and leaves a one-line *built* not
 ### Queued, in order
 
 1. **Dates in the phone's calendar — a subscribable `.ics` link** — *built*; see docs/02
-   §2.13.4. To-dos in the feed stay open.
+   §2.13.4. Open to-dos with a day are in it too.
 
 2. **Sharing into Stella from other apps (Web Share Target)** — *built*; see docs/02
    §2.18.3. A shared link as a *note* was declined: moment, gift idea and to-do cover it.

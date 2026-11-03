@@ -3,13 +3,15 @@ import { dayParts } from '../../../dates/calendar';
 import type { Translate } from '../../../i18n/translate';
 import type { Viewer } from '../../access/visibility';
 import type { Clock } from '../../clock';
+import type { HouseholdTodo, TodoRepository } from '../todos/todos';
 import type { ImportantDateRepository } from './important-dates';
 import { datesOnTheRadar, type UpcomingSource } from './upcoming';
 
 /*
  * A member's dates as a subscribed calendar (docs/02 §2.13.4): what *Coming up* would show
  * them, without its 30-day horizon — every date on the radar of every person they may see,
- * read through the same scoped port. The phone's calendar then does the reminding.
+ * read through the same scoped port — and every open to-do of theirs with a day, on that day.
+ * The phone's calendar then does the reminding.
  *
  * "Anna turns 11" cannot be said by one event that repeats every year, so an event names the
  * occasion and its description carries the year it began.
@@ -17,6 +19,8 @@ import { datesOnTheRadar, type UpcomingSource } from './upcoming';
 
 export interface CalendarFeedDeps {
 	dates: Pick<ImportantDateRepository, 'listSourcesVisibleTo'>;
+	/** The same list Home's *To do* band reads, so the calendar never shows more. */
+	todos: Pick<TodoRepository, 'listOpenVisibleTo'>;
 	clock: Clock;
 }
 
@@ -76,18 +80,51 @@ function eventOf(source: UpcomingSource, t: Translate, origin: string): IcsEvent
 }
 
 /**
- * The events for these sources, in a fixed order: the same dates give the same bytes whatever
- * order the database returned them in.
+ * A fixed order: the same records give the same bytes whatever order the database returned
+ * them in.
  */
+const byUid = (events: IcsEvent[]) =>
+	events.sort((a, b) => (a.uid < b.uid ? -1 : a.uid > b.uid ? 1 : 0));
+
+/** The events for these sources, in a fixed order. */
 export function calendarEvents(
 	sources: readonly UpcomingSource[],
 	t: Translate,
 	origin: string
 ): IcsEvent[] {
-	return datesOnTheRadar(sources)
-		.map((source) => eventOf(source, t, origin))
-		.filter((event) => event !== null)
-		.sort((a, b) => (a.uid < b.uid ? -1 : a.uid > b.uid ? 1 : 0));
+	return byUid(
+		datesOnTheRadar(sources)
+			.map((source) => eventOf(source, t, origin))
+			.filter((event) => event !== null)
+	);
+}
+
+/**
+ * The events for these open to-dos, in a fixed order. One without a day has none to stand on;
+ * an overdue one stays on the day it was given rather than following the reader to today —
+ * the calendar brings back only what a member wrote down, on their day (§2.26).
+ */
+export function todoEvents(
+	todos: readonly HouseholdTodo[],
+	t: Translate,
+	origin: string
+): IcsEvent[] {
+	return byUid(
+		todos.flatMap((todo) =>
+			todo.dueOn === null
+				? []
+				: [
+						{
+							uid: `todo-${todo.id}@stella`,
+							start: todo.dueOn,
+							yearly: false,
+							summary: t('dates.feed.todo', { title: todo.title, name: todo.contactName }),
+							description: null,
+							url: `${origin}/contacts/${todo.contactId}`
+						}
+					]
+		)
+	);
 }
 
 /**
@@ -99,10 +136,16 @@ export async function calendarFeed(
 	deps: CalendarFeedDeps,
 	reader: CalendarFeedReader
 ): Promise<string> {
-	const sources = await deps.dates.listSourcesVisibleTo(reader.viewer);
+	const [sources, todos] = await Promise.all([
+		deps.dates.listSourcesVisibleTo(reader.viewer),
+		deps.todos.listOpenVisibleTo(reader.viewer)
+	]);
 	return writeIcs({
 		name: CALENDAR_NAME,
 		stamp: Math.floor(deps.clock.now() / DAY_MS) * DAY_MS,
-		events: calendarEvents(sources, reader.translate, reader.origin)
+		events: [
+			...calendarEvents(sources, reader.translate, reader.origin),
+			...todoEvents(todos, reader.translate, reader.origin)
+		]
 	});
 }

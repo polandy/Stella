@@ -663,7 +663,9 @@ straight away — it is shown only this once — and add it:
   without Google (*+*, paste the link, no login: the secret in the link is the login).
 
 The calendar then shows every date that has *Show on Home* on, of everyone you can see, all
-year round — private people only in your own. When and whether it reminds you is set in the
+year round — private people only in your own — and your open to-dos that have a day, on that
+day, as *To-do: Give back the book (Anna)*, until you tick them. A to-do without a day is not
+in it, and one you have not ticked by its day stays on that day. When and whether it reminds you is set in the
 calendar app (one day before, say). Your phone checks for changes every few hours, so an edit
 in Stella shows up there with some delay. One difference from Home: a 29 February date shows
 on 28 February in other years.
