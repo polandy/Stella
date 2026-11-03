@@ -1,5 +1,29 @@
 # Changelog
 
+## [0.1.0](https://github.com/polandy/Stella/compare/v0.0.36...v0.1.0) (2026-11-03)
+
+
+### Features
+
+* **dates:** put open to-dos with a day in the calendar link ([#439](https://github.com/polandy/Stella/issues/439)) ([23337e8](https://github.com/polandy/Stella/commit/23337e85466926dd5d0a111ef1886ff5fa5628e5))
+* **graph:** export the family tree as a picture or a printed page ([#437](https://github.com/polandy/Stella/issues/437)) ([ef90bbf](https://github.com/polandy/Stella/commit/ef90bbf18a45dced126876bf9b7e82dc257c4555))
+* **memories:** add Immich photos of the day to On this day ([#432](https://github.com/polandy/Stella/issues/432)) ([9994327](https://github.com/polandy/Stella/commit/99943278413285a8fd4935242b85062a6f182e10))
+* **memories:** show On this day on Home and its own page ([#430](https://github.com/polandy/Stella/issues/430)) ([a451418](https://github.com/polandy/Stella/commit/a4514187b077818d5a1faacfc35366c3b277f7bb))
+* **people:** add a person's brief to read before a visit ([#435](https://github.com/polandy/Stella/issues/435)) ([972848d](https://github.com/polandy/Stella/commit/972848d0fceeb2598e786f48a50c56a4cbff6df3))
+
+
+### Bug Fixes
+
+* **dates:** replacing the calendar link no longer flashes the old one ([#434](https://github.com/polandy/Stella/issues/434)) ([6d8513b](https://github.com/polandy/Stella/commit/6d8513bd518bc142cb27c15e5d14f9040105fffb))
+* **import:** a Google contact without a name no longer stops the whole vCard ([#436](https://github.com/polandy/Stella/issues/436)) ([7c28f67](https://github.com/polandy/Stella/commit/7c28f67e16f55f9aee60210e6046408ba7bd1076))
+* **import:** a vCard's repeated value comes in once, and new people keep field labels ([#433](https://github.com/polandy/Stella/issues/433)) ([1af5574](https://github.com/polandy/Stella/commit/1af55748920342f111baadf0b4b82bec3776eade))
+* **memories:** On this day asks Immich about no year before 1990 ([#438](https://github.com/polandy/Stella/issues/438)) ([0576400](https://github.com/polandy/Stella/commit/0576400ce6877c24e4a3ae400f2a2ffd09153d57))
+
+
+### Miscellaneous Chores
+
+* **release:** release 0.1.0 ([#441](https://github.com/polandy/Stella/issues/441)) ([4429a4d](https://github.com/polandy/Stella/commit/4429a4de33773a9111a83710f4a687e2c1c2c87b))
+
 ## [0.0.36](https://github.com/polandy/Stella/compare/v0.0.35...v0.0.36) (2026-11-01)
 
 
