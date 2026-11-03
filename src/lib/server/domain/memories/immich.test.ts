@@ -125,6 +125,22 @@ describe('immichMemoriesOn', () => {
 		expect(asked).toHaveLength(6);
 	});
 
+	it('never looks back before 1990, however old the oldest photo’s date', async () => {
+		const { deps, asked } = setup(
+			libraryOf({
+				// A camera that lost its clock dates its photos to 1970 or earlier.
+				[asset(1)]: '1970-11-02T00:00:00',
+				[asset(2)]: '1989-11-02T10:00:00',
+				[asset(3)]: '1990-11-02T10:00:00'
+			})
+		);
+		expect(await yearsOf(deps, '1993-11-02')).toEqual([{ year: 1990, ids: [asset(3)], total: 1 }]);
+		// The oldest photo, then 1992 back to 1990 — nothing older.
+		const years = asked.slice(1).map(([window]) => Number(window.from?.slice(0, 4)));
+		expect(years.toSorted()).toEqual([1990, 1991, 1992]);
+		expect(asked).toHaveLength(4);
+	});
+
 	it('asks nothing more of an empty library', async () => {
 		const { deps, asked } = setup(libraryOf({}));
 		expect(await yearsOf(deps, '2026-11-02')).toEqual([]);
@@ -207,6 +223,15 @@ describe('immichMemoryPage', () => {
 	it('has nothing for this year or a later one, and asks Immich nothing', async () => {
 		const { deps, asked } = setup(libraryOf(taken));
 		expect(await immichMemoryPage(deps, viewer, '2024-11-02', 2024, 0)).toEqual({
+			state: 'photos',
+			photos: []
+		});
+		expect(asked).toHaveLength(0);
+	});
+
+	it('has nothing for a year before 1990, and asks Immich nothing', async () => {
+		const { deps, asked } = setup(libraryOf({ [asset(1)]: '1989-11-02T10:00:00' }));
+		expect(await immichMemoryPage(deps, viewer, '2026-11-02', 1989, 0)).toEqual({
 			state: 'photos',
 			photos: []
 		});
