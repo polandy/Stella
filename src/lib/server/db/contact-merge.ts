@@ -3,7 +3,13 @@ import type { BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
 import { activityEntry, type ActivityOf } from '../domain/activity/activity';
 import { foldedLinkDetails } from '../../relationships/fold';
 import { linkAfterMerge } from '../domain/contacts/merge-links';
-import { MERGE_PLAN, type MergeSettlement, type MergeStep } from '../domain/contacts/merge-plan';
+import {
+	MERGE_PLAN,
+	MergeWouldHideRecordsError,
+	mergeKeepsRecordsInView,
+	type MergeSettlement,
+	type MergeStep
+} from '../domain/contacts/merge-plan';
 import type { MergeableProfile } from '../domain/contacts/merge-profile';
 import type { Viewer } from '../access/visibility';
 import { contactVisibleTo } from '../access/query-scoping';
@@ -209,7 +215,9 @@ function runStep(tx: Db, step: MergeStep, merging: Merging): void {
 
 /**
  * Merge `mergedId` into `keepId`, writing `audit` in the same transaction. Returns false when
- * either contact is out of the viewer's reach, or when the two are the same record.
+ * either contact is out of the viewer's reach, or when the two are the same record; throws
+ * `MergeWouldHideRecordsError` for a shared record merged into a private survivor — asked
+ * again here, inside the write, since either may have changed visibility since the read.
  */
 export function mergeContacts(
 	db: Db,
@@ -226,13 +234,18 @@ export function mergeContacts(
 
 	return db.transaction((tx) => {
 		const both = tx
-			.select({ id: contact.id })
+			.select({ id: contact.id, displayName: contact.displayName, visibility: contact.visibility })
 			.from(contact)
 			.where(
 				and(sql`${contact.id} in (${input.keepId}, ${input.mergedId})`, contactVisibleTo(viewer))
 			)
 			.all();
-		if (both.length !== 2) return false;
+		const keep = both.find((row) => row.id === input.keepId);
+		const mergedAway = both.find((row) => row.id === input.mergedId);
+		if (!keep || !mergedAway) return false;
+		if (!mergeKeepsRecordsInView(keep.visibility, mergedAway.visibility)) {
+			throw new MergeWouldHideRecordsError(keep.displayName, mergedAway.displayName);
+		}
 
 		for (const step of MERGE_PLAN) runStep(tx, step, input);
 

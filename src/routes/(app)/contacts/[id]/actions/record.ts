@@ -2,6 +2,7 @@ import { error, fail, redirect } from '@sveltejs/kit';
 import * as v from 'valibot';
 import { requireAdmin, requireUser, requireViewer } from '$lib/server/auth/guards';
 import { archiveContact, restoreContact } from '$lib/server/domain/contacts/contacts';
+import { MergeWouldHideRecordsError } from '$lib/server/domain/contacts/merge-plan';
 import { deleteContact, mergeContacts } from '$lib/server/domain/contacts/remove-contact';
 import { pruneOrphanTags } from '$lib/server/domain/tags/tags';
 import { setSelfContact, UnknownSelfContactError } from '$lib/server/domain/household/self-contact';
@@ -23,12 +24,18 @@ export const recordActions = {
 		);
 		if (!parsed.success) return fail(400, { mergeError: say(locals, 'errors.merge.choose') });
 
-		const merged = await mergeContacts(
-			locals.services.people.contactDeps,
-			viewer,
-			params.id,
-			parsed.output.mergedId
-		);
+		let merged: boolean;
+		try {
+			merged = await mergeContacts(
+				locals.services.people.contactDeps,
+				viewer,
+				params.id,
+				parsed.output.mergedId
+			);
+		} catch (err) {
+			if (!(err instanceof MergeWouldHideRecordsError)) throw err;
+			return fail(400, { mergeError: err.phrase(translator(locals)) });
+		}
 		if (!merged) return fail(400, { mergeError: say(locals, 'errors.merge.failed') });
 		throw redirect(303, `/contacts/${params.id}`);
 	},

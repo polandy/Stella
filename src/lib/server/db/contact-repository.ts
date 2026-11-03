@@ -192,7 +192,11 @@ export function createDrizzleContactRepository(
 					visibility: keep.visibility,
 					profile: profileOf(keep)
 				},
-				mergedAway: { displayName: mergedAway.displayName, profile: profileOf(mergedAway) }
+				mergedAway: {
+					displayName: mergedAway.displayName,
+					visibility: mergedAway.visibility,
+					profile: profileOf(mergedAway)
+				}
 			};
 		},
 

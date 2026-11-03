@@ -10,6 +10,10 @@
  * search index is not in here: its triggers follow every row the plan moves.
  */
 
+import { phrase } from '../../../i18n/phrase';
+import { TranslatableError } from '../../../i18n/translatable';
+import type { Visibility } from '../../access/visibility';
+
 /**
  * - `cannot-collide`: nothing keys on this column, or a settlement before it has cleared every
  *   collision; a plain update, which would fail loud if that ever stopped being true.
@@ -109,3 +113,22 @@ export const MERGE_LEAVES_BEHIND: readonly { table: string; column: string; why:
 		why: 'a waiting sync conflict compared the card with the merged record; the survivor is written onto the card at the next sync, and a card still saying otherwise asks again'
 	}
 ];
+
+/**
+ * Whether a merge leaves everything written about the two where its readers still see it
+ * (docs/02 §2.2). It all follows the survivor, and what hangs off a private person is seen by
+ * their owner alone: a shared record merged into a private one would take every note, photo,
+ * gift and to-do the household wrote about them out of everyone else's view — and the log of
+ * the merge, private like the survivor, would not even tell them. The admin makes the survivor
+ * shared first, or merges the other way round.
+ */
+export function mergeKeepsRecordsInView(keep: Visibility, mergedAway: Visibility): boolean {
+	return !(keep === 'private' && mergedAway === 'shared');
+}
+
+/** The pair `mergeKeepsRecordsInView` refuses, named so the admin knows which to change. */
+export class MergeWouldHideRecordsError extends TranslatableError {
+	constructor(keep: string, mergedAway: string) {
+		super(phrase('errors.merge.wouldHide', { keep, mergedAway }), 'MergeWouldHideRecordsError');
+	}
+}

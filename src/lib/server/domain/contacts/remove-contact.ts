@@ -3,6 +3,7 @@ import type { Clock } from '../../clock';
 import type { IdGenerator } from '../../id';
 import { activityRecord } from '../activity/activity';
 import type { ContactRepository } from './contacts';
+import { MergeWouldHideRecordsError, mergeKeepsRecordsInView } from './merge-plan';
 import { mergeProfiles } from './merge-profile';
 
 /*
@@ -78,6 +79,7 @@ export async function deleteContact(
  * written to the log — the only trace left of a name that used to exist (docs/02 §2.2).
  *
  * Returns false when either record is out of the viewer's reach, or when the two are the same.
+ * Throws `MergeWouldHideRecordsError` for a shared record merged into a private survivor.
  */
 export async function mergeContacts(
 	deps: MergeContactDeps,
@@ -89,6 +91,9 @@ export async function mergeContacts(
 
 	const pair = await deps.contacts.readForMerge(viewer, keepId, mergedId);
 	if (pair === null) return false;
+	if (!mergeKeepsRecordsInView(pair.keep.visibility, pair.mergedAway.visibility)) {
+		throw new MergeWouldHideRecordsError(pair.keep.displayName, pair.mergedAway.displayName);
+	}
 
 	const now = deps.clock.now();
 	return deps.contacts.mergeVisibleTo(

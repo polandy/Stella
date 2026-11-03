@@ -197,7 +197,9 @@ are related to, the circles they were in. Where both records said something, the
 wins; where yours was blank, theirs fills it in. A link both had to the same person — both
 were Lena's friend — ends up as one link. Two moments about the same day end up
 as one moment with both texts, so nothing anybody wrote is lost. Only an admin can do it, and
-it cannot be undone.
+it cannot be undone. A shared record cannot be merged into a private one — what the household
+wrote about them would then be hidden from everyone but you; make the one you keep shared
+first.
 
 **Removing someone for good.** Archiving is almost always what you want. If a person really
 should not be in Stella at all — someone added by mistake, or who asked to be removed — the

@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'bun:test';
-import { MERGE_PLAN, type MergeSettlement, type MergeStep } from './merge-plan';
+import {
+	MERGE_PLAN,
+	mergeKeepsRecordsInView,
+	type MergeSettlement,
+	type MergeStep
+} from './merge-plan';
 
 /*
  * The order a merge walks the tables that point at a person, and what it does where the
@@ -68,5 +73,21 @@ describe('the merge plan', () => {
 			MERGE_PLAN.flatMap((step) => (step.kind === 'repoint' ? [step.table] : []))
 		);
 		for (const step of MERGE_PLAN) if (step.kind === 'settle') expect(tables).toContain(step.table);
+	});
+});
+
+/*
+ * Everything written about the merged record follows the survivor, and a record about a private
+ * person is seen by its owner alone — so the survivor decides who can still read it.
+ */
+describe('which pairs a merge keeps in view', () => {
+	it('refuses a shared record merged into a private one: the household would lose sight of it', () => {
+		expect(mergeKeepsRecordsInView('private', 'shared')).toBe(false);
+	});
+
+	it('allows every other pair, since nobody who could read the records before loses them', () => {
+		expect(mergeKeepsRecordsInView('shared', 'shared')).toBe(true);
+		expect(mergeKeepsRecordsInView('shared', 'private')).toBe(true);
+		expect(mergeKeepsRecordsInView('private', 'private')).toBe(true);
 	});
 });

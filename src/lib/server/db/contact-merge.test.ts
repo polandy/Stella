@@ -7,6 +7,7 @@ import type { Viewer } from '../access/visibility';
 import type { ActivityOf } from '../domain/activity/activity';
 import type { MergeableProfile } from '../domain/contacts/merge-profile';
 import { relationshipPair } from '../../relationships/endpoints';
+import { MergeWouldHideRecordsError } from '../domain/contacts/merge-plan';
 import { mergeContacts } from './contact-merge';
 import { createDrizzleRelationshipRepository } from './relationship-repository';
 import * as schema from './schema';
@@ -787,6 +788,23 @@ describe('what it refuses', () => {
 		// positive control: the member who owns it can merge it.
 		expect(merge(viewerU2, 'keep', 'theirs')).toBe(true);
 		expect(db.select().from(schema.contactField).all()[0].contactId).toBe('keep');
+	});
+
+	it('refuses a shared record merged into a private survivor, and changes nothing', () => {
+		// Checked again inside the write: the survivor may have turned private since the read.
+		seedContact('mine', 'Mine', 'private');
+		db.insert(schema.note)
+			.values({ id: 'n1', contactId: 'dup', createdBy: U2, visibility: 'shared', body: 'Hi' })
+			.run();
+
+		expect(() => merge(viewer, 'mine', 'dup')).toThrow(MergeWouldHideRecordsError);
+		expect(db.select().from(schema.note).all()[0].contactId).toBe('dup');
+		expect(db.select().from(schema.contact).all()).toHaveLength(3);
+		expect(db.select().from(schema.activityLog).all()).toHaveLength(0);
+
+		// positive control: the same note merges into a shared survivor.
+		expect(merge(viewer, 'keep', 'dup')).toBe(true);
+		expect(db.select().from(schema.note).all()[0].contactId).toBe('keep');
 	});
 
 	it('refuses to merge a record into itself', () => {

@@ -114,6 +114,8 @@ export const errors: ErrorsMessages = {
 	'errors.home.pickSomeone': 'Wähle, wer auch dort wohnt.',
 	'errors.merge.choose': 'Wähle, wer zusammengeführt werden soll.',
 	'errors.merge.failed': 'Diese Person konnte nicht zusammengeführt werden.',
+	'errors.merge.wouldHide': (p: { keep: string; mergedAway: string }) =>
+		`${p.keep} ist privat und ${p.mergedAway} geteilt: Zusammengeführt wäre alles, was der Haushalt über ${p.mergedAway} geschrieben hat, für alle außer dir verborgen. Teile ${p.keep} zuerst.`,
 	'errors.relationship.needPersonAndType': 'Bitte wähle eine Person und eine Beziehungsart.',
 	'errors.relationship.couldNotAdd': 'Die Beziehung konnte nicht hinzugefügt werden.',
 	'errors.relationship.couldNotSave': 'Die Beziehung konnte nicht gespeichert werden.',
