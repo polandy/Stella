@@ -36,7 +36,7 @@
 	<dt class="flex items-center gap-1.5 text-xs text-fg-subtle">
 		<Icon name="work" size={12} />{t('contact.job')}
 	</dt>
-	<dd class="min-w-0 text-sm [overflow-wrap:anywhere] text-fg">
+	<dd class="min-w-0 text-sm wrap-break-word text-fg">
 		<JobEdit
 			jobTitle={contact.jobTitle}
 			company={contact.company}
@@ -57,7 +57,7 @@
 			{:else}
 				<span class="sr-only">{t('contact.job.edit')}: </span><span class={VALUE_WITH_PENCIL}
 					><Icon name="rename" size={12} class={PENCIL_AT_VALUE_END} /><span
-						class="[overflow-wrap:anywhere]"
+						class="wrap-break-word"
 						data-testid="person-job">{jobLine}</span
 					></span
 				>

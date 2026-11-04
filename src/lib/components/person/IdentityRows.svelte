@@ -52,8 +52,9 @@
 <style>
 	/*
 	 * Each row draws the line above itself and the first one does not. Wrapped in a cell, every
-	 * row is its cell's first: the line is drawn here instead, between cells — and from `md`,
-	 * where the rows stand two abreast, not above the second column's first row either.
+	 * row is its cell's first: the line is drawn here instead, between cells — and once the card
+	 * is wide enough for the rows to stand two abreast, not above the second column's first row
+	 * either. The card's own width decides, not the viewport's (IdentityCard).
 	 */
 	.identity-rows > :global(*) > :global(*) {
 		border-top-width: 0;
@@ -61,7 +62,7 @@
 	.identity-rows > :global(* + *) {
 		border-top: 1px solid var(--border-subtle);
 	}
-	@media (width >= 48rem) {
+	@container facts (width >= 36rem) {
 		.identity-rows > :global(:nth-child(2)) {
 			border-top-width: 0;
 		}
@@ -77,7 +78,7 @@
 	.identity-rows {
 		grid-template-columns: minmax(0, 1fr) auto;
 	}
-	@media (width >= 48rem) {
+	@container facts (width >= 36rem) {
 		.identity-rows {
 			grid-template-columns: repeat(2, minmax(0, 1fr) auto);
 		}

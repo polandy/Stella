@@ -214,7 +214,10 @@
 </div>
 
 <style>
-	/* 88px beside the name on a phone, 168px on its own column from `md` (docs/05 §5.5). */
+	/*
+	 * 88px beside the name in a narrow card, 168px in a column of its own once the identity card
+	 * is 48rem wide (docs/05 §5.5): its own width, not the viewport's.
+	 */
 	.portrait {
 		display: block;
 		width: 88px;
@@ -223,7 +226,7 @@
 		box-shadow: var(--shadow-card);
 		container-type: size;
 	}
-	@media (width >= 48rem) {
+	@container identity (width >= 48rem) {
 		.portrait {
 			width: 168px;
 			height: 168px;

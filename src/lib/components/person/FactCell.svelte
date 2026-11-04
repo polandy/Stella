@@ -33,7 +33,7 @@
 	<dt class="flex items-center gap-1.5 text-xs text-fg-subtle">
 		<Icon name={icon} size={12} />{label}
 	</dt>
-	<dd class="min-w-0 text-sm [overflow-wrap:anywhere] text-fg">
+	<dd class="min-w-0 text-sm wrap-break-word text-fg">
 		{#if edit}
 			<!-- The pencil says where to edit, on touch too (docs/05 §5.7). -->
 			<!-- Text flow, not flex: the pencil follows the value's last word on its last line and
