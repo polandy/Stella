@@ -166,6 +166,32 @@ test('answers from the device when requests are never answered, and keeps a new 
 	await tapToLena(page);
 });
 
+test('keeps the page it had when the session has lapsed, not the way to sign in', async ({
+	page,
+	context
+}) => {
+	await tapToLena(page);
+	const lena = new URL(page.url()).pathname;
+
+	// Without a session Stella answers the page's data with a redirect, in a plain 200. Asked
+	// the way a tap asks, the page's own load included, so the worker would keep the answer.
+	const session = await context.cookies();
+	await context.clearCookies();
+	const lapsed = await page.evaluate(
+		(path) =>
+			fetch(`${path}/__data.json?x-sveltekit-invalidated=001`).then((answer) => answer.text()),
+		lena
+	);
+	expect(lapsed).toContain('"type":"redirect"');
+	await context.addCookies(session);
+
+	// Offline, the copy is still Lena's page: a kept redirect would send the tap to sign-in.
+	await homeTab(page).click();
+	await context.setOffline(true);
+	await tapToLena(page);
+	await expect(page).toHaveURL(lena);
+});
+
 test('drops the Immich tab offline and keeps the gallery', async ({ page, context }) => {
 	await addPerson(page, 'Funkline', 'Kartenbild');
 	const href = new URL(page.url()).pathname;
@@ -240,4 +266,26 @@ test('keeps From Immich greyed when an answer sent before going offline lands af
 	} finally {
 		await context.setOffline(false);
 	}
+});
+
+test.describe('after signing out', () => {
+	// Its own session, so signing out cannot end the stored one the other cases start from.
+	test.use({ storageState: { cookies: [], origins: [] } });
+
+	test('keeps the offline screen through a sign-out', async ({ page }) => {
+		// The worker keeps it with the shell when it installs; the cache is the signal.
+		await expect.poll(() => isKept(page, '/offline')).toBe(true);
+
+		// On a phone, signing out sits in Settings.
+		await page.getByRole('link', { name: 'Settings' }).first().click();
+		await page.getByRole('button', { name: 'Sign out' }).click();
+		await expect(page).toHaveURL(/login/);
+		await signIn(page);
+		await underWorker(page);
+
+		// Signing out empties the pages; the offline screen belongs to the shell and stays, as
+		// nothing keeps it again until the next build installs.
+		await expect.poll(() => isKept(page, '/settings')).toBe(true);
+		expect(await isKept(page, '/offline')).toBe(true);
+	});
 });

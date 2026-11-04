@@ -240,6 +240,50 @@ test.describe('signed in', () => {
 		await expect(inStream(page, 'sent once despite a lost answer')).toHaveCount(1);
 	});
 
+	test('refuses an edit made after the answer to its first sending was lost, instead of dropping it', async ({
+		page,
+		context
+	}) => {
+		await context.setOffline(true);
+		await keepMoment(page, 'walked to the old mill');
+
+		// Stella applies the first version; the answer never reaches the page.
+		const applied = new Promise<void>((resolve) => {
+			void page.route('**/api/commands', async (route) => {
+				await route.fetch();
+				await route.abort();
+				resolve();
+			});
+		});
+		await context.setOffline(false);
+		await applied;
+		await expect(kept(page)).toHaveAttribute('data-outbox-state', 'pending');
+
+		// Edited offline while still waiting: Stella holds the old version under the same name.
+		await context.setOffline(true);
+		await page.unroute('**/api/commands');
+		await kept(page).getByRole('button', { name: 'Edit' }).click();
+		const field = page.getByLabel('What happened?');
+		await expect(field).toHaveValue(/walked to the old mill/);
+		await field.fill((await field.inputValue()).replace('old mill', 'new bridge'));
+		await composerSave(page).click();
+		await expect(kept(page)).toContainText('walked to the new bridge');
+
+		// Sent again, recognised as already applied: the change did not arrive, and the page says so.
+		await context.setOffline(false);
+		await expect(kept(page)).toHaveAttribute('data-outbox-state', 'refused');
+		await expect(kept(page)).toContainText('Could not send');
+		await expect(kept(page)).toContainText('Stella already had this from before your change');
+		await expect(kept(page)).toContainText('walked to the new bridge');
+
+		// Edit and save sends the change as well.
+		await kept(page).getByRole('button', { name: 'Edit' }).click();
+		await composerSave(page).click();
+		await expect(page.getByTestId('outbox')).toHaveCount(0);
+		await expect(inStream(page, 'walked to the new bridge')).toBeVisible();
+		await expect(inStream(page, 'walked to the old mill')).toBeVisible();
+	});
+
 	test('keeps a moment Stella refuses on arrival as could-not-send, with the reason', async ({
 		page,
 		context,
