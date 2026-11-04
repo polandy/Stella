@@ -186,7 +186,7 @@ export interface ContactLookupDeps {
 /** The two records a merge is about, with the names the log will have to remember. */
 export interface MergePair {
 	keep: { displayName: string; visibility: Visibility; profile: MergeableProfile };
-	mergedAway: { displayName: string; profile: MergeableProfile };
+	mergedAway: { displayName: string; visibility: Visibility; profile: MergeableProfile };
 }
 
 /** The bytes a deleted contact leaves behind: one pair per photo that hung off them. */

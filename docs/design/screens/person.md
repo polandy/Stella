@@ -94,6 +94,9 @@ the person, and that never leaves the page. Keeping the record tidy (archive, me
 - Archiving, merging and deleting open a **confirm step** on the card, unfolding under the
   actions (§5.11): a sunken panel saying what it does, its button and *Cancel*. For a deletion
   *Cancel* reads *Keep them* and takes the cursor.
+- A merge the server refuses says why inline, above the buttons, with the picker still filled:
+  a shared person cannot be merged into a private one (docs/02 §2.2), and the sentence names
+  both and what to change.
 - The name and the job glide into their editors and back the same way.
 - On a phone the actions span the card under the portrait and name.
 

@@ -96,6 +96,18 @@ export interface ArchiveDocument {
 	people: Record<string, unknown>[];
 	relationships: Record<string, unknown>[];
 	activity: Record<string, unknown>[];
+	/*
+	 * What the household has already answered. Nobody reads these as records, but each one a
+	 * restore lost is a question asked again — or, for a command, a phone's resend applied twice.
+	 */
+	/** The Immich faces ignored under *New from Immich* (docs/02 §2.24.7). */
+	immich_names_ignored: Record<string, unknown>[];
+	/** Which card of another address book is whom, and which were skipped (docs/02 §2.16). */
+	address_book_cards: Record<string, unknown>[];
+	/** The suggestions the household said no to (docs/04 ADR-117). */
+	declined_suggestions: Record<string, unknown>[];
+	/** The commands already applied, so a resend is answered rather than applied again (docs/03 §3.3). */
+	command_receipts: Record<string, unknown>[];
 }
 
 export function buildArchiveDocument(
@@ -413,6 +425,50 @@ export function buildArchiveDocument(
 				summary: text(a, 'summary'),
 				visibility: text(a, 'visibility'),
 				created_at: moment(a, 'created_at')
+			})
+		),
+		immich_names_ignored: t('immich_name_ignore').map((row) =>
+			present({
+				person: text(row, 'immich_person_id'),
+				ignored_by: text(row, 'ignored_by'),
+				ignored_at: moment(row, 'ignored_at')
+			})
+		),
+		address_book_cards: t('contact_source_link').map((row) =>
+			present({
+				source: text(row, 'source'),
+				// The card's key in its address book: its UID, or what stands in for one.
+				card: text(row, 'external_uid'),
+				state: text(row, 'state'),
+				// Only a linked card names somebody; a skipped one names nobody.
+				person: text(row, 'contact_id'),
+				name: text(row, 'card_name'),
+				// The card as it was answered: a different one is a changed card, asked about again.
+				hash: text(row, 'card_hash'),
+				answered_by: text(row, 'answered_by'),
+				answered_at: moment(row, 'answered_at')
+			})
+		),
+		declined_suggestions: t('suggestion_dismissal').map((row) =>
+			present({
+				id: id(row),
+				relation: text(row, 'relation'),
+				// The people the claim was about, by id, in the form the claim is keyed by.
+				pair: text(row, 'pair_key'),
+				declined_by: text(row, 'dismissed_by'),
+				declined_at: moment(row, 'dismissed_at')
+			})
+		),
+		command_receipts: t('command_receipt').map((row) =>
+			present({
+				id: id(row),
+				member: text(row, 'member_id'),
+				type: text(row, 'type'),
+				status: text(row, 'status'),
+				// The answer the resend gets, as the JSON it is stored as.
+				result: text(row, 'result'),
+				claimed_at: moment(row, 'claimed_at'),
+				completed_at: moment(row, 'completed_at')
 			})
 		)
 	};

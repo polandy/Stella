@@ -2,6 +2,7 @@ import { error, fail, redirect } from '@sveltejs/kit';
 import * as v from 'valibot';
 import { requireAdmin, requireUser, requireViewer } from '$lib/server/auth/guards';
 import { archiveContact, restoreContact } from '$lib/server/domain/contacts/contacts';
+import { MergeWouldHideRecordsError } from '$lib/server/domain/contacts/merge-plan';
 import { deleteContact, mergeContacts } from '$lib/server/domain/contacts/remove-contact';
 import { pruneOrphanTags } from '$lib/server/domain/tags/tags';
 import { setSelfContact, UnknownSelfContactError } from '$lib/server/domain/household/self-contact';
@@ -23,13 +24,24 @@ export const recordActions = {
 		);
 		if (!parsed.success) return fail(400, { mergeError: say(locals, 'errors.merge.choose') });
 
-		const merged = await mergeContacts(
-			locals.services.people.contactDeps,
-			viewer,
-			params.id,
-			parsed.output.mergedId
-		);
-		if (!merged) return fail(400, { mergeError: say(locals, 'errors.merge.failed') });
+		let merged: boolean;
+		try {
+			merged = await mergeContacts(
+				locals.services.people.contactDeps,
+				viewer,
+				params.id,
+				parsed.output.mergedId
+			);
+		} catch (err) {
+			if (!(err instanceof MergeWouldHideRecordsError)) throw err;
+			// The pick comes back, so the step reopens with it and says why (docs/05 §5.5).
+			const mergedId = parsed.output.mergedId;
+			return fail(400, { mergeError: err.phrase(translator(locals)), mergedId });
+		}
+		if (!merged) {
+			const mergedId = parsed.output.mergedId;
+			return fail(400, { mergeError: say(locals, 'errors.merge.failed'), mergedId });
+		}
 		throw redirect(303, `/contacts/${params.id}`);
 	},
 

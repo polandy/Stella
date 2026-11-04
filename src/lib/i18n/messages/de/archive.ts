@@ -78,6 +78,14 @@ export const archive: ArchiveMessages = {
 		'Eine Verknüpfung mit Immich ohne gültige Immich-Person wurde ausgelassen.',
 	'archive.warning.immichIgnoreIncomplete':
 		'Ein ignorierter Immich-Vorschlag ohne gültige Immich-Person wurde ausgelassen.',
+	'archive.warning.immichNameIgnoreIncomplete':
+		'Ein unter Neu aus Immich ignoriertes Gesicht ohne gültige Immich-Person wurde ausgelassen.',
+	'archive.warning.addressBookCardIncomplete':
+		'Eine beantwortete Adressbuch-Karte ohne Adressbuch, ohne Schlüssel oder – verknüpft – ohne Menschen aus dem Archiv wurde ausgelassen.',
+	'archive.warning.suggestionDismissalIncomplete':
+		'Ein abgelehnter Vorschlag unbekannter Art oder ohne Beteiligte wurde ausgelassen.',
+	'archive.warning.commandReceiptIncomplete':
+		'Ein Eintrag über eine angewendete Änderung, den Stella nicht lesen kann, wurde ausgelassen.',
 	'archive.warning.circleWithoutName': 'Ein Kreis ohne Namen wurde ausgelassen.',
 	'archive.warning.circleMissingParent': (p) =>
 		`„${p.name}“ lag in einem Kreis, den das Archiv nicht enthält; er wird für sich allein wiederhergestellt.`,

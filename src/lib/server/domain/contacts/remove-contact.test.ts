@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'bun:test';
 import type { ActivityOf } from '../activity/activity';
 import type { Contact, ContactRepository, DeletedContactMedia, MergePair } from './contacts';
+import { MergeWouldHideRecordsError } from './merge-plan';
 import { deleteContact, mergeContacts } from './remove-contact';
 import { contactRepositoryWith, fixedClock, sequentialIds } from '../testing';
 
@@ -202,6 +203,7 @@ describe('mergeContacts', () => {
 		},
 		mergedAway: {
 			displayName: 'Hansueli M.',
+			visibility: 'shared',
 			profile: { ...blank, lastName: 'Müller', jobTitle: 'Schreiner' }
 		}
 	};
@@ -235,11 +237,24 @@ describe('mergeContacts', () => {
 	});
 
 	it('mirrors the survivor visibility, so the log says no more than they do', async () => {
-		const f = mergeableRepo({ ...pair, keep: { ...pair.keep, visibility: 'private' } });
+		const f = mergeableRepo({
+			keep: { ...pair.keep, visibility: 'private' },
+			mergedAway: { ...pair.mergedAway, visibility: 'private' }
+		});
 
 		await mergeContacts(deps(f.repo), viewer, 'keep', 'dup');
 
 		expect(f.merges[0].audit.event.visibility).toBe('private');
+	});
+
+	it('refuses a shared record merged into a private one, naming both, and merges nothing', async () => {
+		const f = mergeableRepo({ ...pair, keep: { ...pair.keep, visibility: 'private' } });
+
+		const refused = mergeContacts(deps(f.repo), viewer, 'keep', 'dup');
+
+		await expect(refused).rejects.toBeInstanceOf(MergeWouldHideRecordsError);
+		await expect(refused).rejects.toThrow(/Hans Müller.*Hansueli M\./);
+		expect(f.merges).toEqual([]);
 	});
 
 	it('refuses a pair the viewer cannot reach, and merges nothing', async () => {

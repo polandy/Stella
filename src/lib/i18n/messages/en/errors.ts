@@ -117,6 +117,8 @@ export const errors = {
 	'errors.home.pickSomeone': 'Pick who lives there too.',
 	'errors.merge.choose': 'Choose who to merge in.',
 	'errors.merge.failed': 'That person could not be merged in.',
+	'errors.merge.wouldHide': (p: { keep: string; mergedAway: string }) =>
+		`${p.keep} is private and ${p.mergedAway} is shared: merged, everything the household wrote about ${p.mergedAway} would be hidden from everyone but you. Make ${p.keep} shared first.`,
 	'errors.relationship.needPersonAndType': 'Please choose a person and a relationship type.',
 	'errors.relationship.couldNotAdd': 'Could not add the relationship.',
 	'errors.relationship.couldNotSave': 'Could not save the relationship.',
