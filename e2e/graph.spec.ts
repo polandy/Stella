@@ -468,7 +468,7 @@ async function ownersAt(page: Page, points: { x: number; y: number }[]): Promise
 	);
 }
 
-test('keeps the suggested names on top when the toolbar wraps under the search field', async ({
+test('keeps the phone toolbar to the search field’s row, clear of the suggested names', async ({
 	page
 }) => {
 	await page.setViewportSize({ width: 320, height: 800 });
@@ -480,15 +480,14 @@ test('keeps the suggested names on top when the toolbar wraps under the search f
 	const list = page.getByTestId('graph-suggestions');
 	await expect(list.getByRole('button', { name: 'Hans Brunner' })).toBeVisible();
 
-	// The toolbar's second row has to overlap the list here, or the rest of this proves nothing.
-	// On a phone Filter and Arrange share the field's row (docs/05 §5.8); the connection path
-	// starts the row below it.
+	// On a phone every tool is an icon beside the field (docs/05 §5.8), even at 320 pixels: the
+	// last of them, the connection path, sits in the field's row and above the list.
 	const fieldBox = await field.boundingBox();
 	const chipBox = await page.getByRole('button', { name: 'Connection path' }).boundingBox();
 	const listBox = await list.boundingBox();
 	if (!fieldBox || !chipBox || !listBox) throw new Error('the toolbar has no layout');
-	expect(chipBox.y).toBeGreaterThan(fieldBox.y + fieldBox.height);
-	expect(chipBox.y).toBeLessThan(listBox.y + listBox.height);
+	expect(chipBox.y).toBeLessThan(fieldBox.y + fieldBox.height);
+	expect(chipBox.y + chipBox.height).toBeLessThanOrEqual(listBox.y);
 
 	// Every name answers for its own position.
 	const rows = await list.getByRole('button').all();
