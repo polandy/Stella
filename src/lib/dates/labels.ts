@@ -29,7 +29,10 @@ export function whenLabel(lang: DateLanguage, daysUntil: number, date: string): 
 	if (daysUntil === 0) return lang.t('common.today');
 	if (daysUntil === 1) return lang.t('common.tomorrow');
 	if (daysUntil < 7) return lang.t('dates.inDays', { days: daysUntil });
+	// `new Date('YYYY-MM-DD')` is UTC midnight, so it is formatted in UTC too: in the device's
+	// zone it would read one day early west of Greenwich.
 	return new Date(date).toLocaleDateString(lang.intlLocale, {
+		timeZone: 'UTC',
 		weekday: 'short',
 		day: 'numeric',
 		month: 'short'
@@ -62,6 +65,7 @@ export function dayLabel(lang: DateLanguage, value: string): string {
 	// Any leap year works as a carrier so 29 February still renders.
 	const date = new Date(yearless ? `2000${value.slice(1)}` : value);
 	return date.toLocaleDateString(lang.intlLocale, {
+		timeZone: 'UTC',
 		day: 'numeric',
 		month: 'long',
 		...(yearless ? {} : { year: 'numeric' })
