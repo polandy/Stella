@@ -1,5 +1,6 @@
 <script lang="ts">
 	import Button from '$lib/components/ui/Button.svelte';
+	import Icon from '$lib/components/ui/Icon.svelte';
 	import { useTranslate } from '$lib/i18n/context.svelte';
 	import type { FrameFullscreen } from './frame-fullscreen.svelte';
 
@@ -28,10 +29,6 @@
 	const t = useTranslate();
 </script>
 
-{#if !compact}
-	<!-- Full screen and the connection path start the second row on a phone. -->
-	<div class="basis-full sm:hidden" aria-hidden="true"></div>
-{/if}
 {#if onShrink}
 	<Button
 		variant="ghost"
@@ -69,13 +66,16 @@
 	/>
 {/if}
 {#if !compact}
+	<!-- An icon on a phone, so the toolbar keeps one row beside the search. -->
 	<button
 		onclick={onTogglePath}
 		aria-pressed={pathMode}
-		class="pointer-events-auto rounded-full border px-3 py-1 text-xs font-medium backdrop-blur transition-colors {pathMode
+		aria-label={t('graph.connectionPath')}
+		class="tap-target pointer-events-auto rounded-full border px-3 py-1 text-xs font-medium backdrop-blur transition-colors max-sm:grid max-sm:size-9 max-sm:place-items-center max-sm:p-0 {pathMode
 			? 'border-transparent bg-warning-soft text-fg'
 			: 'border-border bg-card/90 text-fg-muted hover:text-fg'}"
 	>
-		{t('graph.connectionPath')}
+		<Icon name="connectionPath" size={16} class="sm:hidden" />
+		<span class="max-sm:hidden">{t('graph.connectionPath')}</span>
 	</button>
 {/if}

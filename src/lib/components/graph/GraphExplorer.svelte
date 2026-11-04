@@ -335,8 +335,9 @@
 	// Naming every line is a re-style, not a re-layout.
 	$effect(() => {
 		const sheet = stylesheet();
+		const growNames = !view.rolesInstead;
 		if (!ready || !controller) return;
-		controller.setStylesheet(sheet);
+		controller.setStylesheet(sheet, { growNames });
 	});
 
 	const onTapNode = (id: string) =>
@@ -417,7 +418,7 @@
 	}
 
 	function retheme() {
-		controller?.setStylesheet(stylesheet());
+		controller?.setStylesheet(stylesheet(), { growNames: !view.rolesInstead });
 	}
 
 	let themeObserver: MutationObserver | null = null;

@@ -104,6 +104,10 @@ export const search = {
 	'graph.peek.expand': 'Expand connections',
 	'graph.peek.openProfile': 'Open profile',
 	'graph.peek.openCircle': 'Open the circle',
+	// The phone's one-row strip has room for a word each (docs/05 §5.8).
+	'graph.peek.expandShort': 'Expand',
+	'graph.peek.openProfileShort': 'Profile',
+	'graph.peek.openCircleShort': 'Circle',
 	'graph.peek.roleGroup': 'Role in the circle',
 	'graph.peek.inCircle': (p: { name: string }) => `in ${p.name}`,
 	'graph.peek.showIndividually': 'Show individually',

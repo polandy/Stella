@@ -7,14 +7,21 @@ import {
 	buildStylesheet,
 	CAPTION_CLASS,
 	CURSOR_CLASS,
+	grownNames,
 	HAS_MORE_CLASS,
 	HOVERED_CLASS,
+	LIT_CLASS,
 	ROUTE_FIELDS,
 	ROUTED_CLASS,
 	SLOT_CLASS,
 	type CyStyle
 } from './stylesheet';
-import { CIRCLE_LABEL_WIDTH, LABEL_MIN_ZOOMED_FONT_SIZE } from '../layout/legibility';
+import {
+	CIRCLE_LABEL_WIDTH,
+	LABEL_MIN_ZOOMED_FONT_SIZE,
+	NAME_FONT_SIZE,
+	NODE_LABEL_WIDTH
+} from '../layout/legibility';
 
 /*
  * Palette resolution + stylesheet building (docs/05 §5.6/§5.8), tested with a fake token
@@ -515,6 +522,26 @@ describe('buildStylesheet', () => {
 	it('draws edges in their canvas-safe depth, not the raw token', () => {
 		const romantic = styles.find((s) => s.selector === 'edge[category = "romantic"]');
 		expect(romantic?.style['line-color']).toBe(resolvePalette(read).lines.categories.romantic);
+	});
+});
+
+describe('grownNames', () => {
+	it('adds nothing at full size', () => {
+		expect(grownNames(1)).toEqual([]);
+	});
+
+	it('grows only the lit people and circles, their names and the room under the disc', () => {
+		const sheet = grownNames(2);
+		expect(sheet.map((s) => s.selector)).toEqual([
+			`node.person.${LIT_CLASS}`,
+			`node.circle.${LIT_CLASS}`
+		]);
+		expect(sheet[0].style).toEqual({
+			'font-size': NAME_FONT_SIZE * 2,
+			'text-max-width': `${NODE_LABEL_WIDTH * 2}px`,
+			'text-margin-y': 12
+		});
+		expect(sheet[1].style).toEqual({ 'font-size': NAME_FONT_SIZE * 2, height: 56 });
 	});
 });
 

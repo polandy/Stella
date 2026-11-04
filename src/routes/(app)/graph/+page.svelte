@@ -18,7 +18,13 @@
 <main class="flex h-full flex-col">
 	<!-- The canvas is the page, so the heading is for screen readers; the sidebar says where you are. -->
 	<h1 class="sr-only">{t('nav.graph')}</h1>
-	<div class="flex flex-wrap items-center gap-x-4 gap-y-1 border-b border-border px-6 py-3 text-sm">
+	<!-- On a phone the hint is left out, so without a way back the bar would be an empty band
+	     over the map. -->
+	<div
+		class="flex flex-wrap items-center gap-x-4 gap-y-1 border-b border-border px-6 py-3 text-sm {data.cameFrom
+			? ''
+			: 'max-sm:hidden'}"
+	>
 		{#if data.cameFrom}
 			<!-- Back to the page this centre was opened from — a profile or a circle (docs/05 §5.5). -->
 			<a

@@ -9,6 +9,7 @@ import { sizeOf } from './canvas-nodes';
 import { trackMotion } from './motion';
 import { frameOn } from './framing';
 import { arrangeOn } from './arranging';
+import { growNamesOn } from './name-growth';
 import { reconcile } from './graph-diff';
 import {
 	highlightNeighborhood,
@@ -62,6 +63,7 @@ export function explorerFromCore(cy: Core, opts: ControllerOptions): ExplorerCon
 		if (e.target === cy) opts.onTapBackground();
 	});
 	nameLinesUnderPointer(cy);
+	const names = growNamesOn(cy);
 
 	/** Nothing reaches a torn-down core: the calls still in flight at teardown fall away here. */
 	const alive = () => !cy.destroyed();
@@ -174,9 +176,8 @@ export function explorerFromCore(cy: Core, opts: ControllerOptions): ExplorerCon
 			framing.screenChanged();
 		},
 
-		setStylesheet(stylesheet) {
-			if (!alive()) return;
-			cy.style(stylesheet as unknown as Parameters<typeof cy.style>[0]);
+		setStylesheet(stylesheet, { growNames = false } = {}) {
+			names.restyle(stylesheet, growNames);
 		},
 
 		destroy() {

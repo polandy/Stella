@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'bun:test';
+import cytoscape from 'cytoscape';
 import type { CyElement } from './elements';
-import { HOVERED_CLASS } from './stylesheet';
+import { HOVERED_CLASS, LIT_CLASS } from './stylesheet';
 import { edge, group, tucked, club, core, linkedPair, controller } from './explorer-fixtures';
 
 /*
@@ -125,5 +126,74 @@ describe('lighting the map up', () => {
 
 		expect(cy.$id('kids').hasClass('faded')).toBe(false);
 		expect(cy.$id('andy-lena').hasClass('onpath')).toBe(true);
+	});
+});
+
+describe('growing the lit names while zoomed out', () => {
+	/** Two linked people drawn with a name size, the way the stylesheet sets it. */
+	function namedPair() {
+		return cytoscape({
+			headless: true,
+			styleEnabled: true,
+			elements: [
+				{ data: { id: 'a' }, classes: 'person', position: { x: 0, y: 0 } },
+				{ data: { id: 'b' }, classes: 'person', position: { x: 120, y: 0 } },
+				{ data: { id: 'c' }, classes: 'person', position: { x: 240, y: 0 } },
+				{ data: { id: 'a-b', source: 'a', target: 'b' } }
+			]
+		});
+	}
+	const sheet = [{ selector: 'node.person', style: { 'font-size': 11 } }];
+	const sizeOf = (cy: cytoscape.Core, id: string) => cy.$id(id).numericStyle('font-size');
+
+	it('lights the selected person and their neighbours, or a traced path, and nobody else', () => {
+		const cy = namedPair();
+		const explorer = controller(cy);
+		const lit = () =>
+			cy
+				.$(`.${LIT_CLASS}`)
+				.nodes()
+				.map((n) => n.id())
+				.sort();
+
+		explorer.highlightNeighborhood('a');
+		expect(lit()).toEqual(['a', 'b']);
+		explorer.highlightPath(['b', 'a']);
+		expect(lit()).toEqual(['a', 'b']);
+		explorer.highlightNeighborhood(null);
+		expect(lit()).toEqual([]);
+	});
+
+	it('grows the lit names as the map zooms out, and lets them go back on zooming in', () => {
+		const cy = namedPair();
+		const explorer = controller(cy);
+		explorer.setStylesheet(sheet, { growNames: true });
+		explorer.highlightNeighborhood('a');
+
+		cy.zoom(0.5);
+		expect([sizeOf(cy, 'a'), sizeOf(cy, 'b'), sizeOf(cy, 'c')]).toEqual([22, 22, 11]);
+
+		cy.zoom(1);
+		expect(sizeOf(cy, 'a')).toBe(11);
+	});
+
+	it('grows nothing when the caller says not to, as in the family tree', () => {
+		const cy = namedPair();
+		const explorer = controller(cy);
+		explorer.setStylesheet(sheet, { growNames: false });
+		explorer.highlightNeighborhood('a');
+
+		cy.zoom(0.5);
+		expect(sizeOf(cy, 'a')).toBe(11);
+	});
+
+	it('grows at once when restyled while already zoomed out', () => {
+		const cy = namedPair();
+		const explorer = controller(cy);
+		explorer.highlightNeighborhood('a');
+		cy.zoom(0.5);
+
+		explorer.setStylesheet(sheet, { growNames: true });
+		expect(sizeOf(cy, 'a')).toBe(22);
 	});
 });

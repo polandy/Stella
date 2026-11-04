@@ -45,6 +45,7 @@ import {
 	MessageCircle,
 	Minimize,
 	MonitorSmartphone,
+	Network,
 	Pencil,
 	Phone,
 	Plus,
@@ -148,6 +149,8 @@ export const ICONS = {
 	done: Check,
 	// Arranging people between a circle and its sub-circles (docs/02 §2.4.2).
 	arrange: ArrowRightLeft,
+	// How the map lays its people out, the graph toolbar's Arrange menu on a phone (docs/05 §5.8).
+	mapLayout: Network,
 	move: ArrowRight,
 	copy: Copy,
 	dropHere: ArrowDown,

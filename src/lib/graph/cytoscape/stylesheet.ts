@@ -3,6 +3,7 @@ import { FRAME } from '../layout/group-blocks';
 import {
 	LABEL_MIN_ZOOMED_FONT_SIZE,
 	CIRCLE_LABEL_WIDTH,
+	NAME_FONT_SIZE,
 	NODE_LABEL_WIDTH,
 	SMALLEST_LABEL_FONT_SIZE
 } from '../layout/legibility';
@@ -21,6 +22,8 @@ export const CURSOR_CLASS = 'cursor';
 export const HOVERED_CLASS = 'hovered';
 /** The class a node carries while expanding it would bring more people in (`elements.ts`). */
 export const HAS_MORE_CLASS = 'has-more';
+/** The class the selected person, their neighbours and a traced path carry while lit. */
+export const LIT_CLASS = 'lit';
 /**
  * The class a line drawn at right angles carries, and the data fields its bends and ends are
  * read from (`segments.ts`); the controller sets them, this draws them.
@@ -39,6 +42,10 @@ export const ROUTE_FIELDS = {
  * twice this (`tree-lines.ts`).
  */
 const ROUTE_NAME_OFFSET = 22;
+/** How far a person's name sits below their disc, in model units. */
+const NAME_MARGIN = 6;
+/** A circle's pill height off the family tree, in model units. */
+const CIRCLE_HEIGHT = 28;
 /** The class of a caption the controller writes onto the canvas: words, not somebody to tap. */
 export const CAPTION_CLASS = 'caption';
 /** The class of a missing parent's slot in the family tree, and of its line (`elements.ts`). */
@@ -117,10 +124,10 @@ export function buildStylesheet(p: Palette, options: StylesheetOptions = {}): Cy
 				height: 'data(size)',
 				label: tree ? nameAndRole : 'data(label)',
 				color: p.fg,
-				'font-size': 11,
+				'font-size': NAME_FONT_SIZE,
 				'font-family': p.fontSans,
 				'text-valign': 'bottom',
-				'text-margin-y': 6,
+				'text-margin-y': NAME_MARGIN,
 				'text-max-width': `${NODE_LABEL_WIDTH}px`,
 				// Cutting short works on one line only; the name and its role are two.
 				'text-wrap': tree ? 'wrap' : 'ellipsis',
@@ -194,12 +201,12 @@ export function buildStylesheet(p: Palette, options: StylesheetOptions = {}): Cy
 				width: 'label',
 				// In the tree a circle on the shelf says under its name who on the map is in it
 				// (`shelf-captions.ts`): two lines, so the pill grows to them.
-				height: tree ? 'label' : 28,
+				height: tree ? 'label' : CIRCLE_HEIGHT,
 				padding: '8px',
 				label: tree ? nameAndRole : 'data(label)',
 				...(tree ? { 'text-wrap': 'wrap', 'text-max-width': `${CIRCLE_LABEL_WIDTH}px` } : {}),
 				color: p.fg,
-				'font-size': 11,
+				'font-size': NAME_FONT_SIZE,
 				'font-weight': 600,
 				'text-valign': 'center',
 				'text-halign': 'center',
@@ -476,6 +483,30 @@ export function buildStylesheet(p: Palette, options: StylesheetOptions = {}): Cy
 		{
 			selector: 'node.onpath',
 			style: { opacity: 1, 'border-color': p.lines.path, 'border-width': 5, 'z-index': 30 }
+		}
+	];
+}
+
+/**
+ * The lit names grown by `growth` (`nameGrowth`, docs/05 §5.8), laid over the stylesheet while
+ * the map is zoomed out: the selected person and their neighbours stay readable on a phone, the
+ * faded rest keeps its size. Nothing at full size, and never in the family tree, whose names
+ * wrap over their roles and whose pills grow to them already.
+ */
+export function grownNames(growth: number): CyStyle[] {
+	if (growth === 1) return [];
+	return [
+		{
+			selector: `node.person.${LIT_CLASS}`,
+			style: {
+				'font-size': NAME_FONT_SIZE * growth,
+				'text-max-width': `${NODE_LABEL_WIDTH * growth}px`,
+				'text-margin-y': NAME_MARGIN * growth
+			}
+		},
+		{
+			selector: `node.circle.${LIT_CLASS}`,
+			style: { 'font-size': NAME_FONT_SIZE * growth, height: CIRCLE_HEIGHT * growth }
 		}
 	];
 }

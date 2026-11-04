@@ -17,8 +17,11 @@
 
 	interface Props {
 		variant?: Variant;
-		/** `sm` for controls inside rows and card headers, `md` for a screen's own actions. */
-		size?: 'sm' | 'md';
+		/**
+		 * `sm` for controls inside rows and card headers, `md` for a screen's own actions;
+		 * `adaptive` is `md` that turns `sm` on a phone, for a strip that must keep to one row.
+		 */
+		size?: 'sm' | 'md' | 'adaptive';
 		icon?: IconName;
 		/** Renders as a link to this URL instead of a button. */
 		href?: string;
@@ -98,9 +101,16 @@
 		padding: 0.3125rem 0.625rem;
 		font-size: 0.8125rem;
 	}
-	.md {
+	.md,
+	.adaptive {
 		padding: 0.4375rem 0.875rem;
 		font-size: 0.875rem;
+	}
+	@media (width < 40rem) {
+		.adaptive {
+			padding: 0.3125rem 0.625rem;
+			font-size: 0.8125rem;
+		}
 	}
 	.sm.icon-only {
 		padding: 0.375rem;

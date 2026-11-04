@@ -1,5 +1,5 @@
 import type { Core, EdgeSingular, EventObject, NodeSingular } from 'cytoscape';
-import { CURSOR_CLASS, HOVERED_CLASS, TUCKED_CLASS } from './stylesheet';
+import { CURSOR_CLASS, HOVERED_CLASS, LIT_CLASS, TUCKED_CLASS } from './stylesheet';
 
 /*
  * What the canvas lights up and what it dims: a neighbourhood, a connection path, the node the
@@ -8,7 +8,7 @@ import { CURSOR_CLASS, HOVERED_CLASS, TUCKED_CLASS } from './stylesheet';
  */
 
 /** The classes a highlight sets, all cleared before the next one. */
-const HIGHLIGHT_CLASSES = 'faded highlight selected onpath';
+const HIGHLIGHT_CLASSES = `faded highlight selected onpath ${LIT_CLASS}`;
 
 /** Dims everything except the node and its immediate neighbourhood (null clears). */
 export function highlightNeighborhood(cy: Core, nodeId: string | null): void {
@@ -22,6 +22,7 @@ export function highlightNeighborhood(cy: Core, nodeId: string | null): void {
 	let hood = own.closedNeighborhood();
 	hood = hood.union(hood.nodes().parents());
 	cy.elements().not(hood).addClass('faded');
+	hood.nodes().addClass(LIT_CLASS);
 	// A tucked-away line shows for the member it belongs to, not for whoever is at its
 	// other end: selecting the circle keeps the one line to each group. Nor does it show
 	// for a selected group where the group's own bundle already reaches that other end.
@@ -47,6 +48,7 @@ export function highlightPath(cy: Core, nodeIds: string[] | null): void {
 	}
 	cy.elements().not(path.union(path.nodes().parents())).addClass('faded');
 	path.addClass('onpath');
+	path.nodes().addClass(LIT_CLASS);
 }
 
 /** Rings the node the keyboard is on, and nobody else; the node ringed, or null. */
