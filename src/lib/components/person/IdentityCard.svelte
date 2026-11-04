@@ -229,7 +229,7 @@
 
 <!--
 	The card lays itself out by its own width, not the viewport's: beside the tablet's sidebar the
-	column is phone-narrow, and the wide layout there squeezed the name to a letter a line (UX-01).
+	column is phone-narrow, and the wide layout there squeezed the name to a letter a line.
 -->
 <div class="@container/identity">
 	<section
