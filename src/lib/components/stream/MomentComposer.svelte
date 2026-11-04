@@ -6,6 +6,7 @@
 	import Button from '$lib/components/ui/Button.svelte';
 	import DayPill from '$lib/components/ui/DayPill.svelte';
 	import Icon from '$lib/components/ui/Icon.svelte';
+	import ShareSwitch from '$lib/components/ui/ShareSwitch.svelte';
 	import ImmichLibraryPicker from '$lib/components/immich/ImmichLibraryPicker.svelte';
 	import PhotoSourceMenu from '$lib/components/immich/PhotoSourceMenu.svelte';
 	import KnowThemBy from '$lib/components/people/KnowThemBy.svelte';
@@ -679,41 +680,11 @@
 	{/if}
 
 	<div class="flex flex-wrap items-center gap-2 border-t border-border-subtle px-3 py-2">
-		<!--
-			A switch, because it is one (docs/05 §5.7): a checkbox in the switch role whose name stays
-			put — "Share with household", on or off — so a screen reader hears one control changing
-			state rather than a label that swaps under it. The visible word is the state with its
-			icon, for the eye.
-		-->
-		<label
-			class="group/share inline-flex cursor-pointer items-center gap-2 rounded-full px-1 py-1 text-xs text-fg-muted has-checked:font-semibold has-checked:text-fg has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-focus-ring"
-		>
-			<input
-				type="checkbox"
-				role="switch"
-				class="sr-only"
-				aria-label={t('composer.shareWithHousehold')}
-				checked={visibility === 'shared'}
-				onchange={(e) =>
-					dispatch({
-						type: 'visibilitySet',
-						visibility: (e.currentTarget as HTMLInputElement).checked ? 'shared' : 'private'
-					})}
-			/>
-			<span
-				class="relative h-4.5 w-7.5 shrink-0 rounded-full bg-border transition-colors duration-(--motion-fade) ease-standard group-has-checked/share:bg-primary"
-				aria-hidden="true"
-				><span
-					class="absolute top-0.5 left-0.5 size-3.5 rounded-full bg-card shadow-card transition-transform duration-(--motion-fade) ease-standard group-has-checked/share:translate-x-3"
-				></span></span
-			>
-			<span class="inline-flex items-center gap-1" aria-hidden="true"
-				><Icon name={visibility === 'shared' ? 'shared' : 'private'} size={13} />{visibility ===
-				'shared'
-					? t('common.shared')
-					: t('common.private')}</span
-			>
-		</label>
+		<ShareSwitch
+			shared={visibility === 'shared'}
+			onchange={(shared) =>
+				dispatch({ type: 'visibilitySet', visibility: shared ? 'shared' : 'private' })}
+		/>
 		<input type="hidden" name="visibility" value={visibility} />
 		{#key fresh}
 			{#if !editing}

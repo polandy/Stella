@@ -15,7 +15,8 @@ most pressing first, and to tick off what is done without opening each person.
 - Each row (`HouseholdTodoRow`, `variant="list"`): the line as the checkbox's `<label>`, then a
   `text-xs` line with the day (`TodoDue`) · *noted by …* · *private*; the person with a 20 px
   avatar as a link to their To do card beside the line from `sm`, under it on a phone; the box
-  at the right end (§5.1).
+  at the right end (§5.1), drawn at 20 px and ticked from a 44 px square on a touch screen —
+  the row's whole right end (`tap-target`, §5.9).
 - Ticking is the card's: struck through at once, the toast with *Undo*, the struck row in its
   place while the toast stands; a tick kept on the device says *not sent yet* and offers
   *Undo* on the row. A refusal says why above the groups.

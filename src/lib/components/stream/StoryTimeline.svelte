@@ -237,7 +237,7 @@
 									<!-- On hover or focus — always on a touch screen, which has no hover, and
 									     while the item is being edited. -->
 									<span
-										class="ml-auto inline-flex items-center gap-1 transition-opacity {editingId ===
+										class="ml-auto inline-flex items-center gap-1 transition-opacity pointer-coarse:gap-4 {editingId ===
 										item.id
 											? 'opacity-100'
 											: 'opacity-0 group-hover/item:opacity-100 focus-within:opacity-100 pointer-coarse:opacity-100'}"

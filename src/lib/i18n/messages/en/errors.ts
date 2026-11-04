@@ -180,6 +180,22 @@ export const errors = {
 	'errors.journal.couldNotSave': 'Could not save the moment.',
 	'errors.apiToken.emptyName': 'Please name the token, so you can tell later what it is for.',
 	'errors.journal.gone': 'This entry is no longer there.',
+	// The screen an address that leads nowhere lands on (docs/design/screens/across-screens.md).
+	'errors.stranded.person': 'This person is no longer here',
+	'errors.stranded.personHint':
+		'The link may be old: they were merged into someone else, or removed.',
+	'errors.stranded.allPeople': 'All people',
+	'errors.stranded.circle': 'This circle is no longer here',
+	'errors.stranded.circleHint': 'The link may be old: the circle was deleted.',
+	'errors.stranded.allCircles': 'All circles',
+	'errors.stranded.immich': 'Immich is not connected',
+	'errors.stranded.immichHint':
+		'Whoever runs Stella connects Immich on the server (see the install guide); its section then shows in Settings.',
+	'errors.stranded.setting': 'This setting does not exist',
+	'errors.stranded.settingHint': 'Every setting is listed under Settings.',
+	'errors.stranded.page': 'This page does not exist',
+	'errors.stranded.pageHint': 'The address may be mistyped or old.',
+	'errors.stranded.failed': 'Something went wrong',
 	'errors.unexpected': (p: { requestId: string }) =>
 		`Something went wrong on our side. If it happens again, mention this reference: ${p.requestId}`
 };

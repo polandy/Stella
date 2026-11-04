@@ -10,7 +10,8 @@
 	 *   ghost      a quiet action inside a list or a card header
 	 *   danger     removes something
 	 * Renders an `<a>` when `href` is set, so a link that looks like a button still behaves
-	 * like a link. Inside a form the native submit behaviour is left alone.
+	 * like a link. Inside a form the native submit behaviour is left alone. An icon alone is
+	 * small to draw but reached with a whole finger on a touch screen (`tap-target`, §5.9).
 	 */
 	type Variant = 'primary' | 'secondary' | 'ghost' | 'danger';
 
@@ -56,6 +57,7 @@
 		aria-label={label}
 		class="btn {variant} {size} {className}"
 		class:icon-only={iconOnly}
+		class:tap-target={iconOnly}
 		{...rest}
 	>
 		{@render content()}
@@ -66,6 +68,7 @@
 		aria-label={label}
 		class="btn {variant} {size} {className}"
 		class:icon-only={iconOnly}
+		class:tap-target={iconOnly}
 		{...rest}
 	>
 		{@render content()}
