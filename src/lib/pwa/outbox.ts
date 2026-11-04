@@ -96,6 +96,16 @@ export interface OutboxItem {
 	 * household data now — no longer edited here.
 	 */
 	delivered: boolean;
+	/**
+	 * It went out and no answer settled it, so Stella may have it. Absent on an item never sent,
+	 * and on items kept by an older build.
+	 */
+	unanswered?: true;
+	/**
+	 * The member changed it after it went out unanswered, and it kept its id: if Stella answers
+	 * that it already had that id, what it has is the earlier version (`refuseLostEdits`).
+	 */
+	changedAfterSending?: true;
 }
 
 /** Append a newly written item. */
@@ -184,15 +194,41 @@ export function settle(
 		next.push(
 			answer?.status === 'refused'
 				? { ...item, state: 'refused', reason: answer.reason }
-				: { ...item, state: 'pending' }
+				: { ...item, state: 'pending', unanswered: true }
 		);
 	}
 	return next;
 }
 
-/** The request never got an answer: everything in flight waits again. */
+/**
+ * Stella's answers, with one change: an item edited after an unanswered send (`changedAfterSending`)
+ * that Stella says it *already* applied is refused with `earlier`. Stella answered with the
+ * result of the version it got first and never read the edit, so letting the item go would
+ * drop the member's change without a word. Refused, it stays: edited again it goes out as a
+ * new command, discarded it leaves the earlier version as Stella has it.
+ */
+export function refuseLostEdits(
+	items: readonly OutboxItem[],
+	answers: readonly CommandAnswer[],
+	earlier: string
+): CommandAnswer[] {
+	const changed = new Set(
+		items
+			.filter((item) => item.state === 'sending' && item.changedAfterSending)
+			.map((item) => item.command.id)
+	);
+	return answers.map((answer) =>
+		answer.status === 'applied' && answer.repeated && changed.has(answer.id)
+			? { id: answer.id, status: 'refused', reason: earlier }
+			: answer
+	);
+}
+
+/** The request never got an answer: everything in flight waits again, and Stella may have it. */
 export function unsend(items: readonly OutboxItem[]): OutboxItem[] {
-	return items.map((item) => (item.state === 'sending' ? { ...item, state: 'pending' } : item));
+	return items.map((item) =>
+		item.state === 'sending' ? { ...item, state: 'pending', unanswered: true } : item
+	);
 }
 
 /**
@@ -218,7 +254,9 @@ export function release(items: readonly OutboxItem[], id: string): OutboxItem[] 
  * Save an edit into a held item, which then waits to be sent again. A refused item becomes
  * a new command under `freshId`: Stella has already answered the old id, and the corrected
  * one is a different request. A pending item keeps its id, so a copy that did reach Stella
- * earlier is still recognised. Null when the item is not held.
+ * earlier is still recognised — and if it may have (`unanswered`), the edit is marked, so
+ * that recognition refuses it rather than drop it (`refuseLostEdits`). Null when the item is
+ * not held.
  */
 export function revise<T extends JsonCommand['type']>(
 	items: readonly OutboxItem[],
@@ -228,12 +266,19 @@ export function revise<T extends JsonCommand['type']>(
 ): OutboxItem[] | null {
 	const item = items.find((i) => i.command.id === id);
 	if (!item || item.state !== 'held') return null;
+	const keepsId = item.reason === null;
 	const command = {
 		...item.command,
-		id: item.reason === null ? item.command.id : freshId,
+		id: keepsId ? item.command.id : freshId,
 		payload
 	} as JsonCommand;
-	return items.map((i) => (i === item ? { ...i, command, state: 'pending', reason: null } : i));
+	const { unanswered, changedAfterSending, ...rest } = item;
+	const revised: OutboxItem = { ...rest, command, state: 'pending', reason: null };
+	if (keepsId && (unanswered || changedAfterSending)) {
+		revised.unanswered = true;
+		revised.changedAfterSending = true;
+	}
+	return items.map((i) => (i === item ? revised : i));
 }
 
 /** One photo on its way, sent as `type` and naming the command it follows. */

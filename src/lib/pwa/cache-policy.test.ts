@@ -5,8 +5,11 @@ import {
 	OFFLINE_FALLBACK_PATH,
 	NETWORK_PATIENCE_MS,
 	cacheKeyFor,
-	cacheNameFor,
+	pagesCacheNameFor,
+	purgedAtSignOut,
+	shellCacheNameFor,
 	isPageData,
+	holdsPageData,
 	patienceFor,
 	endsTheSession,
 	isShareArrival,
@@ -202,20 +205,48 @@ describe('when a kept copy was fetched', () => {
 	});
 });
 
+describe('an answer to a page’s data', () => {
+	it('is kept when it holds the page, streamed or not', () => {
+		expect(holdsPageData('{"type":"data","nodes":[]}')).toBe(true);
+		expect(
+			holdsPageData('{"type":"data","nodes":[{"type":"data"}]}\n{"type":"chunk","id":1}\n')
+		).toBe(true);
+	});
+
+	it('is not kept when it sends a lapsed session to sign in, though it came as a 200', () => {
+		// SvelteKit answers a `redirect` thrown in a load with this body and status 200, so
+		// neither `ok` nor `redirected` tells it from the page it would overwrite.
+		expect(holdsPageData('{"type":"redirect","location":"/login"}')).toBe(false);
+	});
+
+	it('is not kept when it is an error, or not SvelteKit’s answer at all', () => {
+		expect(holdsPageData('{"type":"error","error":{"message":"Internal Error"}}')).toBe(false);
+		expect(holdsPageData('<!doctype html><title>Captive portal</title>')).toBe(false);
+		expect(holdsPageData('')).toBe(false);
+	});
+});
+
 describe('the offline page', () => {
 	it('is kept, or there is nothing to show when the network is gone', () => {
 		expect(verdictFor(page(OFFLINE_FALLBACK_PATH))).toBe('keep');
 	});
 });
 
-describe('the cache name', () => {
-	it('changes with the build, so a new Stella never reads the old one', () => {
-		expect(cacheNameFor('1.0.0')).not.toBe(cacheNameFor('1.0.1'));
+describe('the cache names', () => {
+	it('change with the build, so a new Stella never reads the old one', () => {
+		expect(shellCacheNameFor('1.0.0')).not.toBe(shellCacheNameFor('1.0.1'));
+		expect(pagesCacheNameFor('1.0.0')).not.toBe(pagesCacheNameFor('1.0.1'));
 	});
 
-	it('is recognisable as ours, so the purge can find every one of them', () => {
-		expect(isStellaCache(cacheNameFor('1.0.0'))).toBe(true);
-		expect(isStellaCache(cacheNameFor('0.0.11'))).toBe(true);
+	it('keep the shell apart from the pages, so one can go without the other', () => {
+		expect(shellCacheNameFor('1.0.0')).not.toBe(pagesCacheNameFor('1.0.0'));
+	});
+
+	it('are recognisable as ours, so the purge can find every one of them', () => {
+		expect(isStellaCache(shellCacheNameFor('1.0.0'))).toBe(true);
+		expect(isStellaCache(pagesCacheNameFor('0.0.11'))).toBe(true);
+		// The single cache of builds before the split.
+		expect(isStellaCache('stella-0.1.0')).toBe(true);
 	});
 
 	it('is not so loose that it claims another app’s cache', () => {
@@ -260,6 +291,16 @@ describe('signing out', () => {
 	it('is not confused with merely looking at a page', () => {
 		expect(endsTheSession(page('/logout'))).toBe(false);
 		expect(endsTheSession({ ...page('/contacts/abc'), method: 'POST' })).toBe(false);
+	});
+
+	it('empties every page kept but leaves the running build its shell and offline page', () => {
+		const names = [
+			shellCacheNameFor('0.1.1'),
+			pagesCacheNameFor('0.1.1'),
+			'stella-0.1.0',
+			'workbox-precache-v2'
+		];
+		expect(purgedAtSignOut(names, '0.1.1')).toEqual([pagesCacheNameFor('0.1.1'), 'stella-0.1.0']);
 	});
 
 	it('is not claimed for another origin that happens to have the same path', () => {

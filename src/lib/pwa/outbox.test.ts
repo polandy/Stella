@@ -11,6 +11,7 @@ import {
 	queue,
 	recallable,
 	recover,
+	refuseLostEdits,
 	release,
 	revise,
 	settle,
@@ -141,6 +142,56 @@ describe('editing before it is sent', () => {
 
 	it('discards an item the member no longer wants', () => {
 		expect(states(discard(add(add([], 'a'), 'b'), 'a')!)).toEqual([['b', 'pending']]);
+	});
+});
+
+describe('an edit made after a send went unanswered', () => {
+	const EARLIER = 'Stella already had an earlier version';
+	const edited = (items: OutboxItem[], id: string) =>
+		revise(hold(items, id)!, id, { ...moment(id).payload, body: 'fixed @Julia' }, `${id}-new`)!;
+	/** One round whose answers went through `refuseLostEdits` first, as the adapter sends them. */
+	const round = (items: OutboxItem[], answers: CommandAnswer[]) => {
+		const sent = takeBatch(items, 'u1', 10).items;
+		return settle(sent, refuseLostEdits(sent, answers, EARLIER));
+	};
+
+	it('is refused when Stella answers that it already had the command, so the edit is not lost', () => {
+		let items = unsend(takeBatch(add([], 'a'), 'u1', 10).items);
+		items = edited(items, 'a');
+		expect(items[0].command.id).toBe('a');
+
+		items = round(items, [{ id: 'a', status: 'applied', result: {}, repeated: true }]);
+		expect(states(items)).toEqual([['a', 'refused']]);
+		expect(items[0].reason).toBe(EARLIER);
+	});
+
+	it('goes through when the first send never reached Stella', () => {
+		let items = unsend(takeBatch(add([], 'a'), 'u1', 10).items);
+		items = round(edited(items, 'a'), [{ id: 'a', status: 'applied', result: {} }]);
+		expect(items).toEqual([]);
+	});
+
+	it('is not refused when it was edited before it ever went out', () => {
+		const items = round(edited(add([], 'a'), 'a'), [
+			{ id: 'a', status: 'applied', result: {}, repeated: true }
+		]);
+		expect(items).toEqual([]);
+	});
+
+	it('also counts a busy answer as one Stella may have taken', () => {
+		let items = round(add([], 'a'), [{ id: 'a', status: 'busy' }]);
+		items = round(edited(items, 'a'), [{ id: 'a', status: 'applied', result: {}, repeated: true }]);
+		expect(states(items)).toEqual([['a', 'refused']]);
+	});
+
+	it('is sent as a new command once the member corrects the refused item again', () => {
+		let items = unsend(takeBatch(add([], 'a'), 'u1', 10).items);
+		items = round(edited(items, 'a'), [{ id: 'a', status: 'applied', result: {}, repeated: true }]);
+		items = edited(items, 'a');
+
+		expect(items[0].command.id).toBe('a-new');
+		items = round(items, [{ id: 'a-new', status: 'applied', result: {}, repeated: true }]);
+		expect(items).toEqual([]);
 	});
 });
 

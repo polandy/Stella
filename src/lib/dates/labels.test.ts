@@ -1,4 +1,4 @@
-import { describe, expect, test } from 'bun:test';
+import { afterEach, beforeEach, describe, expect, test } from 'bun:test';
 import { INTL_LOCALES } from '$lib/i18n/locales';
 import { createTranslator } from '$lib/i18n/translate';
 import {
@@ -29,6 +29,32 @@ describe('whenLabel', () => {
 		// Matched loosely on purpose: the separator differs between ICU builds (Bun says
 		// "Sun, 13 Sept", Chromium "Sun 13 Sept"), and the wording is what matters.
 		expect(whenLabel(en, 9, '2026-09-13')).toMatch(/Sun.*13 Sept/);
+	});
+});
+
+/*
+ * The test process runs in UTC, which hides a label that formats a calendar day in the
+ * device's zone: west of Greenwich the day is read as UTC midnight and shown one day early.
+ * Bun applies a change to `TZ` at once, so these cases run as a member in California would.
+ */
+describe('labels west of Greenwich', () => {
+	let zone: string | undefined;
+	beforeEach(() => {
+		zone = process.env.TZ;
+		process.env.TZ = 'America/Los_Angeles';
+	});
+	afterEach(() => {
+		if (zone === undefined) delete process.env.TZ;
+		else process.env.TZ = zone;
+	});
+
+	test('whenLabel names the day it was given', () => {
+		expect(whenLabel(en, 9, '2026-09-13')).toMatch(/Sun.*13 Sept/);
+	});
+
+	test('dayLabel keeps 29 February and a full day on their own date', () => {
+		expect(dayLabel(en, '--02-29')).toBe('29 February');
+		expect(dayLabel(en, '2017-09-08')).toBe('8 September 2017');
 	});
 });
 

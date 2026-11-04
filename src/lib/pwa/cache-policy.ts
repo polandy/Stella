@@ -161,6 +161,25 @@ export function isPageData(request: CacheableRequest): boolean {
 	return url.origin === request.origin && dataPageOf(url) !== null;
 }
 
+/**
+ * Whether the body of a page's data answer is the page, by its first line (later lines are the
+ * chunks of streamed promises). Only that is worth keeping: SvelteKit answers a `redirect`
+ * thrown in a load — a lapsed session sent to sign in — with a 200 and `{"type":"redirect"}`,
+ * which no status or header tells from the page, and kept it would replace a good copy with
+ * a way to the sign-in page, which is never kept.
+ */
+export function holdsPageData(body: string): boolean {
+	const firstLine = body.split('\n', 1)[0];
+	try {
+		const answer: unknown = JSON.parse(firstLine);
+		return (
+			typeof answer === 'object' && answer !== null && 'type' in answer && answer.type === 'data'
+		);
+	} catch {
+		return false;
+	}
+}
+
 /** What the service worker may do with the response to `request`. */
 export function verdictFor(request: CacheableRequest): CacheVerdict {
 	if (request.method !== 'GET') return 'skip';
@@ -231,12 +250,31 @@ export function endsTheSession(request: CacheableRequest): boolean {
 	return url.origin === request.origin && url.pathname === SIGN_OUT_PATH;
 }
 
-/**
- * The cache holding one build's pages. Named after the app version so a deployed update
- * starts from an empty one rather than mixing new shell with pages the old one rendered.
+/*
+ * Two caches per build, because sign-out may empty only one of them. The *shell* holds the
+ * build's own assets and the offline page — nobody's data, and fetched only when a build is
+ * installed, so a purge would leave the device without them until the next update. The
+ * *pages* hold everything a member read, which is household data and goes at sign-out.
+ * Both are named after the app version, so an update starts from empty ones rather than
+ * mixing a new shell with pages the old one rendered.
  */
-export function cacheNameFor(version: string): string {
-	return `${CACHE_PREFIX}${version}`;
+
+/** The cache holding one build's precached assets and the offline page. */
+export function shellCacheNameFor(version: string): string {
+	return `${CACHE_PREFIX}shell-${version}`;
+}
+
+/** The cache holding the pages, page data and photos kept while one build runs. */
+export function pagesCacheNameFor(version: string): string {
+	return `${CACHE_PREFIX}pages-${version}`;
+}
+
+/**
+ * The caches sign-out deletes: every one of Stella's but the running build's shell, which
+ * holds no household data and could not be fetched again before the next update.
+ */
+export function purgedAtSignOut(names: readonly string[], version: string): string[] {
+	return names.filter((name) => isStellaCache(name) && name !== shellCacheNameFor(version));
 }
 
 /** Whether a name from `caches.keys()` belongs to Stella. */
