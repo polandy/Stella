@@ -7,6 +7,7 @@ import {
 	cacheKeyFor,
 	cacheNameFor,
 	isPageData,
+	holdsPageData,
 	patienceFor,
 	endsTheSession,
 	isShareArrival,
@@ -199,6 +200,27 @@ describe('when a kept copy was fetched', () => {
 		expect(keptAt(null)).toBeNull();
 		expect(keptAt('')).toBeNull();
 		expect(keptAt('yesterday-ish')).toBeNull();
+	});
+});
+
+describe('an answer to a page’s data', () => {
+	it('is kept when it holds the page, streamed or not', () => {
+		expect(holdsPageData('{"type":"data","nodes":[]}')).toBe(true);
+		expect(
+			holdsPageData('{"type":"data","nodes":[{"type":"data"}]}\n{"type":"chunk","id":1}\n')
+		).toBe(true);
+	});
+
+	it('is not kept when it sends a lapsed session to sign in, though it came as a 200', () => {
+		// SvelteKit answers a `redirect` thrown in a load with this body and status 200, so
+		// neither `ok` nor `redirected` tells it from the page it would overwrite.
+		expect(holdsPageData('{"type":"redirect","location":"/login"}')).toBe(false);
+	});
+
+	it('is not kept when it is an error, or not SvelteKit’s answer at all', () => {
+		expect(holdsPageData('{"type":"error","error":{"message":"Internal Error"}}')).toBe(false);
+		expect(holdsPageData('<!doctype html><title>Captive portal</title>')).toBe(false);
+		expect(holdsPageData('')).toBe(false);
 	});
 });
 

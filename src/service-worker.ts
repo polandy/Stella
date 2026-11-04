@@ -24,6 +24,7 @@ import {
 	cacheKeyFor,
 	cacheNameFor,
 	endsTheSession,
+	holdsPageData,
 	isPageData,
 	isShareArrival,
 	isStellaCache,
@@ -243,6 +244,23 @@ function fetchAhead(path: string, headers: HeadersInit = {}): Promise<Response |
 const isOwnAnswer = (response: Response | null): response is Response =>
 	response !== null && response.type === 'basic' && !response.redirected;
 
+/**
+ * Keep `response` under `key` if it is Stella's own answer — and, for a page's data, the page
+ * itself rather than the redirect a lapsed session gets with a 200 (`holdsPageData`). The body
+ * is read from a copy, so `response` can still be served. False when it was not kept.
+ */
+async function keepCopy(
+	cache: Cache,
+	key: string,
+	response: Response,
+	pageData: boolean
+): Promise<boolean> {
+	if (!isOwnAnswer(response) || !response.ok) return false;
+	if (pageData && !holdsPageData(await response.clone().text())) return false;
+	await cache.put(key, response);
+	return true;
+}
+
 async function keepPeopleAhead(): Promise<void> {
 	const listed = await fetchAhead(VISIBLE_PEOPLE_PATH);
 	if (!isOwnAnswer(listed) || !listed.ok) return;
@@ -299,7 +317,8 @@ async function revalidate(cache: Cache, path: string): Promise<boolean> {
 	}
 	if (!response.ok) return response.status === 404;
 	if (isNewerCopy(response.headers.get('date'), held?.headers.get('date') ?? null)) {
-		await cache.put(key, response);
+		// Not kept means signed out part-way: the rest would get the same answer.
+		return keepCopy(cache, key, response, true);
 	}
 	return true;
 }
@@ -350,10 +369,11 @@ async function networkFirst(event: FetchEvent, key: string): Promise<Response> {
 	const { request } = event;
 	const cache = await caches.open(CACHE);
 	const cached = await cache.match(key);
+	const pageData = isPageData(describe(request));
 	const response = await networkWithin(request, cached !== undefined, (answer) => {
 		// Only a plain success is worth keeping: a redirect to the sign-in page is about this
 		// moment, and an error page cached now would outlive the error.
-		if (answer.ok && answer.type === 'basic') void cache.put(key, answer.clone());
+		void keepCopy(cache, key, answer.clone(), pageData);
 	});
 	if (response) {
 		noteServed(event, null);

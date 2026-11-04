@@ -161,6 +161,25 @@ export function isPageData(request: CacheableRequest): boolean {
 	return url.origin === request.origin && dataPageOf(url) !== null;
 }
 
+/**
+ * Whether the body of a page's data answer is the page, by its first line (later lines are the
+ * chunks of streamed promises). Only that is worth keeping: SvelteKit answers a `redirect`
+ * thrown in a load — a lapsed session sent to sign in — with a 200 and `{"type":"redirect"}`,
+ * which no status or header tells from the page, and kept it would replace a good copy with
+ * a way to the sign-in page, which is never kept.
+ */
+export function holdsPageData(body: string): boolean {
+	const firstLine = body.split('\n', 1)[0];
+	try {
+		const answer: unknown = JSON.parse(firstLine);
+		return (
+			typeof answer === 'object' && answer !== null && 'type' in answer && answer.type === 'data'
+		);
+	} catch {
+		return false;
+	}
+}
+
 /** What the service worker may do with the response to `request`. */
 export function verdictFor(request: CacheableRequest): CacheVerdict {
 	if (request.method !== 'GET') return 'skip';
