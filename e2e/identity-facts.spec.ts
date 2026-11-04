@@ -326,3 +326,65 @@ test.describe('on a phone the size of a Pixel 9 Pro', () => {
 		}
 	});
 });
+
+/**
+ * How the card stands at the viewport a case runs in: the portrait and the name side by side
+ * or stacked, the name's line count, the fact columns, and where *Write a moment* sits.
+ */
+async function cardLayout(page: Page) {
+	return card(page).evaluate((section) => {
+		const box = (el: Element | null) => el!.getBoundingClientRect();
+		const portrait = box(section.querySelector('.portrait'));
+		const nameText = section.querySelector('h1 span') ?? section.querySelector('h1');
+		const name = box(nameText);
+		const actions = box(section.querySelector('[data-testid="identity-actions"]'));
+		const columns = getComputedStyle(
+			section.querySelector('[data-testid="identity-facts"]')!
+		).gridTemplateColumns.split(' ').length;
+		return {
+			portraitWidth: Math.round(portrait.width),
+			nameBesidePortrait: name.left >= portrait.right,
+			nameLines: Math.round(name.height / parseFloat(getComputedStyle(nameText!).lineHeight)),
+			columns,
+			actionsUnderPortrait: actions.top >= portrait.bottom
+		};
+	});
+}
+
+// The card follows its own width, not the viewport's (docs/design/screens/person.md).
+test.describe('on a tablet held upright, its sidebar shown', () => {
+	test.use({ viewport: { width: 820, height: 1180 }, hasTouch: true });
+
+	test('the card keeps the narrow layout, the name on one line beside the portrait', async ({
+		page
+	}) => {
+		await openDemoPerson(page, MARKUS);
+		await expect(page.getByRole('navigation', { name: 'Main' })).toBeVisible();
+
+		expect(await cardLayout(page)).toEqual({
+			portraitWidth: 88,
+			nameBesidePortrait: true,
+			nameLines: 1,
+			columns: 2,
+			actionsUnderPortrait: true
+		});
+	});
+});
+
+test.describe('on a desktop', () => {
+	test.use({ viewport: { width: 1440, height: 900 } });
+
+	test('the card takes the wide layout: the portrait in its own column, four facts across', async ({
+		page
+	}) => {
+		await openDemoPerson(page, MARKUS);
+
+		expect(await cardLayout(page)).toEqual({
+			portraitWidth: 168,
+			nameBesidePortrait: true,
+			nameLines: 1,
+			columns: 4,
+			actionsUnderPortrait: false
+		});
+	});
+});
