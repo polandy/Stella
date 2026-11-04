@@ -88,7 +88,7 @@
 
 <dl
 	bind:this={element}
-	class="grid grid-cols-2 gap-x-5 gap-y-3 md:grid-cols-4"
+	class="grid grid-cols-2 gap-x-5 gap-y-3 @min-[36rem]/facts:grid-cols-4"
 	data-testid="identity-facts"
 >
 	{#each facts as entry (entry.name)}

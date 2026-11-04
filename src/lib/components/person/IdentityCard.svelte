@@ -227,114 +227,125 @@
 	});
 </script>
 
-<section
-	class="grid grid-cols-[88px_minmax(0,1fr)] items-center gap-x-4 gap-y-4 rounded-app bg-card p-4 shadow-card md:grid-cols-[168px_minmax(0,1fr)_auto] md:items-start md:gap-x-7 md:gap-y-5 md:p-6"
-	data-testid="identity-card"
->
-	<div class="md:row-span-2">
-		<AvatarUploader
-			contactId={c.id}
-			name={c.displayName}
-			avatarPhotoId={c.avatarPhotoId}
-			portrait
-			groupPhotos={data.groupPhotosToCut}
-			immich={reachability.reachable ? data.immich : null}
-			immichSearchName={[c.firstName, c.lastName].filter(Boolean).join(' ') || c.displayName}
-		/>
-	</div>
+<!--
+	The card lays itself out by its own width, not the viewport's: beside the tablet's sidebar the
+	column is phone-narrow, and the wide layout there squeezed the name to a letter a line (UX-01).
+-->
+<div class="@container/identity">
+	<section
+		class="grid grid-cols-[88px_minmax(0,1fr)] items-center gap-x-4 gap-y-4 rounded-app bg-card p-4 shadow-card @min-[48rem]/identity:grid-cols-[168px_minmax(0,1fr)_auto] @min-[48rem]/identity:items-start @min-[48rem]/identity:gap-x-7 @min-[48rem]/identity:gap-y-5 @min-[48rem]/identity:p-6"
+		data-testid="identity-card"
+	>
+		<div class="@min-[48rem]/identity:row-span-2">
+			<AvatarUploader
+				contactId={c.id}
+				name={c.displayName}
+				avatarPhotoId={c.avatarPhotoId}
+				portrait
+				groupPhotos={data.groupPhotosToCut}
+				immich={reachability.reachable ? data.immich : null}
+				immichSearchName={[c.firstName, c.lastName].filter(Boolean).join(' ') || c.displayName}
+			/>
+		</div>
 
-	<div class="min-w-0">
-		<!-- Name and description are edited where they are read (docs/02 §2.2). -->
-		<NameEditor
-			name={c}
-			gender={c.gender}
-			shownNameChosen={data.shownNameChosen}
-			error={form?.namePartsError ?? null}
-		/>
-		<!-- An earlier name, neutral on purpose: a maiden name and any other alike (docs/02 §2.2). -->
-		{#if c.formerName}
-			<p class="text-sm text-fg-muted" data-testid="former-name">
-				{t('contact.formerly', { name: c.formerName })}
+		<div class="min-w-0">
+			<!-- Name and description are edited where they are read (docs/02 §2.2). -->
+			<NameEditor
+				name={c}
+				gender={c.gender}
+				shownNameChosen={data.shownNameChosen}
+				error={form?.namePartsError ?? null}
+			/>
+			<!-- An earlier name, neutral on purpose: a maiden name and any other alike (docs/02 §2.2). -->
+			{#if c.formerName}
+				<p class="text-sm text-fg-muted" data-testid="former-name">
+					{t('contact.formerly', { name: c.formerName })}
+				</p>
+			{/if}
+			<!-- Stella's proposal for a missing last name, and passing a new one on. -->
+			<LastNameHelp {data} />
+			<p class="text-fg-muted @max-[48rem]/identity:text-sm">
+				<InlineEdit
+					action="?/editProfile"
+					name="description"
+					value={c.description ?? ''}
+					label={t('contact.editDescription')}
+					placeholder={t('contact.descriptionPlaceholder')}
+					empty={t('contact.addDescription')}
+					clamp
+				/>
 			</p>
-		{/if}
-		<!-- Stella's proposal for a missing last name, and passing a new one on. -->
-		<LastNameHelp {data} />
-		<p class="text-fg-muted max-md:text-sm">
-			<InlineEdit
-				action="?/editProfile"
-				name="description"
-				value={c.description ?? ''}
-				label={t('contact.editDescription')}
-				placeholder={t('contact.descriptionPlaceholder')}
-				empty={t('contact.addDescription')}
-				clamp
-			/>
-		</p>
-		{#if isSelf || c.visibility === 'private' || archived}
-			<IdentityMarkers
-				{isSelf}
-				isPrivate={c.visibility === 'private'}
-				{archived}
-				archivedAt={c.archivedAt}
-			/>
-		{/if}
-		<FormError message={form?.avatarError} variant="inline" size="xs" class="mt-1" />
-	</div>
+			{#if isSelf || c.visibility === 'private' || archived}
+				<IdentityMarkers
+					{isSelf}
+					isPrivate={c.visibility === 'private'}
+					{archived}
+					archivedAt={c.archivedAt}
+				/>
+			{/if}
+			<FormError message={form?.avatarError} variant="inline" size="xs" class="mt-1" />
+		</div>
 
-	<!-- The one thing to do here, and the rest behind ⋯ (docs/05 §5.5). -->
-	<div class="col-span-2 flex items-center gap-2 md:col-span-1" data-testid="identity-actions">
-		<Button
-			variant="primary"
-			icon="journal"
-			href="/contacts/{c.id}/journal"
-			onclick={writeInPlace}
-			class="flex-1 md:flex-none"
+		<!-- The one thing to do here, and the rest behind ⋯ (docs/05 §5.5). -->
+		<div
+			class="col-span-2 flex items-center gap-2 @min-[48rem]/identity:col-span-1"
+			data-testid="identity-actions"
 		>
-			{t('contact.write')}
-		</Button>
-		<IdentityMenu
-			entries={menu}
-			contactId={c.id}
-			{logContact}
-			{tracePath}
-			openPanel={(next) => (panel = next)}
-		/>
-	</div>
+			<Button
+				variant="primary"
+				icon="journal"
+				href="/contacts/{c.id}/journal"
+				onclick={writeInPlace}
+				class="flex-1 @min-[48rem]/identity:flex-none"
+			>
+				{t('contact.write')}
+			</Button>
+			<IdentityMenu
+				entries={menu}
+				contactId={c.id}
+				{logContact}
+				{tracePath}
+				openPanel={(next) => (panel = next)}
+			/>
+		</div>
 
-	<div class="col-span-2 flex min-w-0 flex-col gap-4 md:col-start-2">
-		<RecordActions {data} {form} {otherContacts} {archived} bind:panel />
+		<div
+			class="@container/facts col-span-2 flex min-w-0 flex-col gap-4 @min-[48rem]/identity:col-start-2"
+		>
+			<RecordActions {data} {form} {otherContacts} {archived} bind:panel />
 
-		<IdentityFacts
-			bind:element={facts}
-			{data}
-			{form}
-			facts={layout.facts}
-			editing={current.editing}
-			{birthday}
-			{otherDates}
-			{addresses}
-			{homes}
-			{jobLine}
-			{circles}
-			{keptCircles}
-			onOpen={openEditor}
-			onClose={closeEditor}
-		/>
+			<IdentityFacts
+				bind:element={facts}
+				{data}
+				{form}
+				facts={layout.facts}
+				editing={current.editing}
+				{birthday}
+				{otherDates}
+				{addresses}
+				{homes}
+				{jobLine}
+				{circles}
+				{keptCircles}
+				onOpen={openEditor}
+				onClose={closeEditor}
+			/>
 
-		<IdentityRows {data} {form} rows={layout.rows} {metLine} />
-		{#if layout.behindAddMore.length > 0}
-			<div class="-ml-2.5" transition:reveal>
-				<Button
-					variant="ghost"
-					size="sm"
-					icon="add"
-					type="button"
-					onclick={revealRows}
-					data-testid="identity-add-more"
-				>
-					{addMoreLabel(layout.behindAddMore, t)}
-				</Button>
-			</div>
-		{/if}
-	</div>
-</section>
+			<IdentityRows {data} {form} rows={layout.rows} {metLine} />
+			{#if layout.behindAddMore.length > 0}
+				<div class="-ml-2.5" transition:reveal>
+					<Button
+						variant="ghost"
+						size="sm"
+						icon="add"
+						type="button"
+						onclick={revealRows}
+						data-testid="identity-add-more"
+					>
+						{addMoreLabel(layout.behindAddMore, t)}
+					</Button>
+				</div>
+			{/if}
+		</div>
+	</section>
+</div>

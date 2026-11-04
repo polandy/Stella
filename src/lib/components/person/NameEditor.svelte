@@ -146,7 +146,7 @@
 <!-- The line and its editor glide into each other in place (docs/05 §5.11). -->
 <Swap when={open}>
 	<h1
-		class="text-2xl leading-tight font-semibold tracking-tight [overflow-wrap:anywhere] text-fg md:text-[2rem]"
+		class="text-2xl leading-tight font-semibold tracking-tight wrap-break-word text-fg @min-[48rem]/identity:text-[2rem]"
 	>
 		{name.displayName}
 	</h1>
@@ -297,7 +297,7 @@
 				class="-mx-1 flex w-full max-w-full items-center gap-2 rounded-control px-1 text-left transition-colors hover:bg-card-hover pointer-coarse:min-h-11"
 			>
 				<span
-					class="min-w-0 text-2xl leading-tight font-semibold [overflow-wrap:anywhere] md:text-[2rem]"
+					class="min-w-0 text-2xl leading-tight font-semibold wrap-break-word @min-[48rem]/identity:text-[2rem]"
 					>{name.displayName}</span
 				><Icon name="rename" size={16} class="text-fg-subtle" />
 			</button>

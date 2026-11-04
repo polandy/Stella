@@ -27,10 +27,15 @@ the person, and that never leaves the page. Keeping the record tidy (archive, me
 
 #### Identity card
 
-- `IdentityCard` opens with the portrait: the avatar uploader as a square with rounded
-  corners, 168 px in a column of its own from `md`, 88 px beside the name on a phone. It is
-  the way to change the picture.
-- Then the name and the description, both editable in place. The description wraps to two
+- `IdentityCard` lays itself out by **its own width**, not the viewport's (§5.4): narrower
+  than 48 rem it keeps the phone layout — the portrait beside the name, *Write a moment*
+  across the width under them — and from 48 rem it is the wide one, the portrait in a column
+  of its own and *Write a moment* top right. A tablet held upright, its sidebar shown, gets
+  the phone layout; a landscape one too, since the name column there would be too narrow.
+- It opens with the portrait: the avatar uploader as a square with rounded corners, 168 px
+  in the wide layout, 88 px in the narrow one. It is the way to change the picture.
+- Then the name and the description, both editable in place. The name wraps **on words**,
+  never inside one unless a single word is wider than the card. The description wraps to two
   lines on a phone and shows in full from `md`; it is never cut off at one line.
 - A former name and the last-name chips sit under the name; the **You**, **Private** and
   **Archived** markers beneath them. A tapped chip saves at once under the shell's activity
@@ -38,7 +43,9 @@ the person, and that never leaves the page. Keeping the record tidy (archive, me
   and the *Brunner too?* offer appears in its place (docs/02 §2.2.4.6).
 - The **You** chip is `--primary-soft` on `--primary`; *Archived* is a quiet chip beside
   *Private*.
-- Then a small labelled grid of **facts**: four across from `md`, two on a phone. It is the
+- Then a small labelled grid of **facts**: two across, four once the facts' column is
+  36 rem wide (its own width again; on a phone and an upright tablet two). A value wraps on
+  words, as the name does. It is the
   card's **only reading surface** and holds **only what the record has**:
   - the birthday with the age (from the dates, else the profile; *Born around …* for an
     estimated year);
@@ -75,7 +82,8 @@ the person, and that never leaves the page. Keeping the record tidy (archive, me
   profile* and not deletable; an explicit birthday row replaces it (docs/02 §2.13.2). There is
   no reminders screen: upcoming dates are Home's *Coming up* band (§5.5.1).
 - Below the facts come the **rows** that have no fact (§5.7): Contact (without the addresses),
-  Tags, How we met — two abreast from `md`. A row folds and unfolds in place with the app's
+  Tags, How we met — two abreast at the same width
+  as the four facts. A row folds and unfolds in place with the app's
   one motion (§5.11).
 - What the record does not hold yet collapses into **one quiet button that names it**: the
   first three missing of *address, birthday, job, phone, email, tags* (and *circles*), e.g.
@@ -454,6 +462,11 @@ The facts are the only reading surface, and each fact edits where it is read —
 always did. Empty facts wait behind one button that names them instead of standing as
 blank labels; once asked for they come as slots in their real places. A slot emptied mid-visit
 stays rather than vanishing under the tap.
+
+The identity card follows its own width because the viewport lied about the room: at the `md`
+breakpoint the sidebar appears too, and on an upright tablet the wide layout left the name a
+column so narrow it stood one letter a line and the facts broke inside words. The first thing
+the page shows has to read on every device it is opened on.
 
 *Write a moment* is the thing people came for, so it is the one visible action and it keeps the
 reader on the page. *Log contact* is rare, so it is a ghost button on the card it belongs to and
