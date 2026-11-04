@@ -22,14 +22,16 @@ import {
 	OFFLINE_FALLBACK_PATH,
 	SHARE_PATH,
 	cacheKeyFor,
-	cacheNameFor,
 	endsTheSession,
 	holdsPageData,
 	isPageData,
 	isShareArrival,
 	isStellaCache,
 	keptAt,
+	pagesCacheNameFor,
 	patienceFor,
+	purgedAtSignOut,
+	shellCacheNameFor,
 	standInFor,
 	verdictFor,
 	type CacheableRequest
@@ -53,7 +55,10 @@ import {
 import { keepShare, shareFrom } from '$lib/pwa/share-store';
 
 const worker = self as unknown as ServiceWorkerGlobalScope;
-const CACHE = cacheNameFor(version);
+/** The build's assets and the offline page: nobody's data, so sign-out leaves it. */
+const SHELL = shellCacheNameFor(version);
+/** What a member read: household data, gone at sign-out. */
+const PAGES = pagesCacheNameFor(version);
 
 /** The build's own output plus `static/` — immutable, and enough to paint a shell. */
 const PRECACHED = [...build, ...files];
@@ -64,7 +69,7 @@ const PRECACHED_PATHS = new Set(PRECACHED);
 worker.addEventListener('install', (event) => {
 	event.waitUntil(
 		(async () => {
-			const cache = await caches.open(CACHE);
+			const cache = await caches.open(SHELL);
 			await cache.addAll(PRECACHED);
 			// The fallback is fetched now, while there is a connection — it is the one page
 			// that is useless unless it was cached before it was needed.
@@ -77,9 +82,11 @@ worker.addEventListener('install', (event) => {
 worker.addEventListener('activate', (event) => {
 	event.waitUntil(
 		(async () => {
-			// A new build starts from an empty cache rather than mixing its shell with pages the
+			// A new build starts from empty caches rather than mixing its shell with pages the
 			// previous one rendered.
-			const stale = (await caches.keys()).filter((name) => isStellaCache(name) && name !== CACHE);
+			const stale = (await caches.keys()).filter(
+				(name) => isStellaCache(name) && name !== SHELL && name !== PAGES
+			);
 			await Promise.all(stale.map((name) => caches.delete(name)));
 			await worker.clients.claim();
 			// The pages already open were asked for by the previous worker, into a cache now gone.
@@ -202,7 +209,7 @@ async function probe(): Promise<void> {
 
 /** Fetch and keep each `KEPT_AHEAD` page this build's cache does not hold yet. */
 async function keepAhead(): Promise<void> {
-	const cache = await caches.open(CACHE);
+	const cache = await caches.open(PAGES);
 	for (const path of KEPT_AHEAD) {
 		if (await cache.match(path)) continue;
 		// Bounded: `activate` waits for this, and every request waits for `activate`.
@@ -268,7 +275,7 @@ async function keepPeopleAhead(): Promise<void> {
 	const people = parseVisiblePeople(await listed.json().catch(() => null));
 	if (!people) return;
 
-	const cache = await caches.open(CACHE);
+	const cache = await caches.open(PAGES);
 	const kept = (await cache.keys()).map((request) => request.url);
 	const visible = new Set(people.map((person) => person.id));
 	await Promise.all(
@@ -323,10 +330,15 @@ async function revalidate(cache: Cache, path: string): Promise<boolean> {
 	return true;
 }
 
-/** Throw away every page this device is holding. */
+/** Throw away every page this device is holding; the shell stays (`purgedAtSignOut`). */
 async function purgeCaches(): Promise<void> {
-	const ours = (await caches.keys()).filter(isStellaCache);
-	await Promise.all(ours.map((name) => caches.delete(name)));
+	const purged = purgedAtSignOut(await caches.keys(), version);
+	await Promise.all(purged.map((name) => caches.delete(name)));
+}
+
+/** The page shown when nothing else can be, kept with the shell since the build was installed. */
+async function offlinePage(): Promise<Response | undefined> {
+	return (await caches.open(SHELL)).match(OFFLINE_FALLBACK_PATH);
 }
 
 /** Resolves with null once `ms` have passed. */
@@ -367,7 +379,7 @@ async function networkWithin(
  */
 async function networkFirst(event: FetchEvent, key: string): Promise<Response> {
 	const { request } = event;
-	const cache = await caches.open(CACHE);
+	const cache = await caches.open(PAGES);
 	const cached = await cache.match(key);
 	const pageData = isPageData(describe(request));
 	const response = await networkWithin(request, cached !== undefined, (answer) => {
@@ -385,7 +397,7 @@ async function networkFirst(event: FetchEvent, key: string): Promise<Response> {
 	}
 
 	noteServed(event, null);
-	const fallback = await cache.match(OFFLINE_FALLBACK_PATH);
+	const fallback = await offlinePage();
 	if (fallback && request.mode === 'navigate') return fallback;
 	// A page's data failing is what sends SvelteKit to the whole page, which lands above.
 	return Response.error();
@@ -422,7 +434,7 @@ worker.addEventListener('fetch', (event) => {
 	const url = new URL(request.url);
 	if (url.origin === worker.location.origin && PRECACHED_PATHS.has(url.pathname)) {
 		event.respondWith(
-			caches.open(CACHE).then(async (cache) => (await cache.match(url.pathname)) ?? fetch(request))
+			caches.open(SHELL).then(async (cache) => (await cache.match(url.pathname)) ?? fetch(request))
 		);
 		return;
 	}
@@ -464,10 +476,10 @@ async function takeShare(request: Request): Promise<Response> {
  * kept page it asks something of (`standInFor`). Nothing is written to the cache here.
  */
 async function networkOrStandIn(event: FetchEvent, standIn: string): Promise<Response> {
-	const cache = await caches.open(CACHE);
+	const cache = await caches.open(PAGES);
 	const kept = await cache.match(standIn);
 	const response = await networkWithin(event.request, kept !== undefined);
 	noteServed(event, response ? null : (kept ?? null));
 	if (response) return response;
-	return kept ?? (await cache.match(OFFLINE_FALLBACK_PATH)) ?? Response.error();
+	return kept ?? (await offlinePage()) ?? Response.error();
 }
