@@ -19,7 +19,10 @@ async function addPrivatePerson(page: Page, first: string, last: string): Promis
 	await page.goto('/contacts/new');
 	await page.getByLabel('First name').fill(first);
 	await page.getByLabel('Last name').fill(last);
-	await page.getByRole('radio', { name: 'Private' }).check();
+	// The switch's input is visually hidden; a finger taps its pill, which is the label.
+	const share = page.getByRole('switch', { name: 'Share with household' });
+	await share.locator('xpath=..').click();
+	await expect(share).not.toBeChecked();
 	await page.getByRole('button', { name: 'Add person' }).click();
 	await expect(page.getByRole('heading', { name: `${first} ${last}` })).toBeVisible();
 	await appReady(page);

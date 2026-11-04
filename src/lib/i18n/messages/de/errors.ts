@@ -179,6 +179,21 @@ export const errors: ErrorsMessages = {
 	'errors.apiToken.emptyName':
 		'Bitte gib dem Token einen Namen, damit du später weißt, wofür er ist.',
 	'errors.journal.gone': 'Diesen Eintrag gibt es nicht mehr.',
+	'errors.stranded.person': 'Diese Person gibt es hier nicht mehr',
+	'errors.stranded.personHint':
+		'Der Link ist vielleicht veraltet: Sie wurde mit jemandem zusammengeführt oder entfernt.',
+	'errors.stranded.allPeople': 'Alle Menschen',
+	'errors.stranded.circle': 'Diesen Kreis gibt es hier nicht mehr',
+	'errors.stranded.circleHint': 'Der Link ist vielleicht veraltet: Der Kreis wurde gelöscht.',
+	'errors.stranded.allCircles': 'Alle Kreise',
+	'errors.stranded.immich': 'Immich ist nicht verbunden',
+	'errors.stranded.immichHint':
+		'Wer Stella betreibt, verbindet Immich auf dem Server (siehe Installationsanleitung); danach steht es in den Einstellungen.',
+	'errors.stranded.setting': 'Diese Einstellung gibt es nicht',
+	'errors.stranded.settingHint': 'Alle Einstellungen stehen unter Einstellungen.',
+	'errors.stranded.page': 'Diese Seite gibt es nicht',
+	'errors.stranded.pageHint': 'Die Adresse ist vielleicht vertippt oder veraltet.',
+	'errors.stranded.failed': 'Etwas ist schiefgegangen',
 	'errors.unexpected': (p) =>
 		`Bei uns ist etwas schiefgegangen. Passiert es wieder, nenne diese Kennung: ${p.requestId}`
 };

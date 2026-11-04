@@ -17,10 +17,12 @@
 		title: string;
 		hint?: string;
 		compact?: boolean;
+		/** The title is the page's own `<h1>`, where the empty state is all the screen holds. */
+		heading?: boolean;
 		/** The action, usually one `Button`. */
 		children?: Snippet;
 	}
-	let { icon, title, hint, compact = false, children }: Props = $props();
+	let { icon, title, hint, compact = false, heading = false, children }: Props = $props();
 </script>
 
 {#if compact}
@@ -49,7 +51,11 @@
 		>
 			<Icon name={icon} size={26} strokeWidth={1.5} />
 		</span>
-		<p class="mt-1 font-medium text-fg">{title}</p>
+		{#if heading}
+			<h1 class="mt-1 font-medium text-fg">{title}</h1>
+		{:else}
+			<p class="mt-1 font-medium text-fg">{title}</p>
+		{/if}
 		{#if hint}<p class="max-w-xs text-sm text-fg-muted">{hint}</p>{/if}
 		{#if children}<div class="mt-3">{@render children()}</div>{/if}
 	</div>

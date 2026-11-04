@@ -419,6 +419,24 @@ button:focus-visible .edit-pencil {
 	}
 }
 
+/* A finger's reach (docs/05 §5.9): on a touch screen a small control answers a 44 px square
+   centred on it, so its drawn size can stay. A plain rule, unlayered, so it sets `position`
+   over any utility — never put it on a control that is itself placed `absolute` or `fixed`. */
+@media (pointer: coarse) {
+	.tap-target {
+		position: relative;
+	}
+	.tap-target::after {
+		content: '';
+		position: absolute;
+		top: 50%;
+		left: 50%;
+		width: max(100%, 2.75rem);
+		height: max(100%, 2.75rem);
+		translate: -50% -50%;
+	}
+}
+
 @media (prefers-reduced-motion: reduce) {
 	*,
 	*::before,

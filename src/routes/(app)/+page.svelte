@@ -597,7 +597,11 @@
 									<span class="block text-xs text-fg-subtle">
 										{whenLabel(i18n, item.daysUntil, item.date)}
 										<span aria-hidden="true">·</span>
-										<a href="/?about={item.contactId}" class="text-link hover:underline"
+										<!-- A line of its own height on a touch screen, so the name above stays
+										     its own target (docs/05 §5.9). -->
+										<a
+											href="/?about={item.contactId}"
+											class="text-link hover:underline pointer-coarse:inline-flex pointer-coarse:min-h-6 pointer-coarse:items-center"
 											>{t('home.writeMoment')}</a
 										>
 									</span>

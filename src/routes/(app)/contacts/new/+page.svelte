@@ -10,6 +10,7 @@
 	import type { ActionData, PageData } from './$types';
 
 	import Icon from '$lib/components/ui/Icon.svelte';
+	import ShareSwitch from '$lib/components/ui/ShareSwitch.svelte';
 	import KnowThemBy from '$lib/components/people/KnowThemBy.svelte';
 	import { useTranslate } from '$lib/i18n/context.svelte';
 	import type { MessageKey } from '$lib/i18n/translate';
@@ -43,6 +44,7 @@
 	let relateTo = $state<string | null>(null);
 	// Optional, so a second tap on the chosen chip takes the choice back — a radio alone cannot.
 	let gender = $state<Gender | null>(null);
+	let shared = $state(true);
 	let timer: ReturnType<typeof setTimeout> | null = null;
 	let requestSeq = 0;
 
@@ -313,17 +315,11 @@
 			</div>
 		</details>
 
-		<fieldset class="flex items-center gap-4 text-sm">
-			<span class="text-fg-muted">{t('contacts.new.visibility')}</span>
-			<label class="flex items-center gap-1.5">
-				<input type="radio" name="visibility" value="shared" checked />
-				{t('common.shared')}
-			</label>
-			<label class="flex items-center gap-1.5">
-				<input type="radio" name="visibility" value="private" />
-				{t('common.private')}
-			</label>
-		</fieldset>
+		<!-- The composer's switch, so a finger finds it and shared stays the default (docs/05 §5.9). -->
+		<div class="flex items-center gap-3 text-sm">
+			<span class="text-fg-muted" aria-hidden="true">{t('contacts.new.visibility')}</span>
+			<ShareSwitch bind:shared name="visibility" />
+		</div>
 
 		<Button variant="primary" class="mt-2"
 			>{data.isSelf ? t('contacts.new.selfSubmit') : t('nav.addPerson')}</Button

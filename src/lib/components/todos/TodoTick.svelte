@@ -104,17 +104,21 @@
 <form method="POST" action="?/tickTodo" use:enhance={submitTick} class="flex shrink-0 pt-0.5">
 	<input type="hidden" name="todoId" value={todo.id} />
 	<input type="hidden" name="contactId" value={contactId} />
-	<input
-		{id}
-		type="checkbox"
-		checked={ticked}
-		disabled={ticked}
-		aria-label={t('todos.tick', { title: todo.title })}
-		onchange={(event) => {
-			ticking = true;
-			event.currentTarget.form?.requestSubmit();
-		}}
-		class="size-5 shrink-0 accent-primary"
-		data-testid="todo-tick"
-	/>
+	<!-- The row's right end is the box: on a touch screen a finger's square around it ticks,
+	     its drawn size stays (docs/05 §5.9). -->
+	<label class="tap-target flex cursor-pointer">
+		<input
+			{id}
+			type="checkbox"
+			checked={ticked}
+			disabled={ticked}
+			aria-label={t('todos.tick', { title: todo.title })}
+			onchange={(event) => {
+				ticking = true;
+				event.currentTarget.form?.requestSubmit();
+			}}
+			class="size-5 shrink-0 accent-primary"
+			data-testid="todo-tick"
+		/>
+	</label>
 </form>

@@ -55,7 +55,7 @@
 				<li class="max-w-full min-w-0">
 					<a
 						href="/circles/{circle.circleId}"
-						class="inline-flex max-w-full items-center gap-1.5 rounded-full border border-border px-2.5 py-0.5 text-sm text-fg transition-colors hover:bg-card-hover"
+						class="inline-flex max-w-full items-center gap-1.5 rounded-full border border-border px-2.5 py-0.5 text-sm text-fg transition-colors hover:bg-card-hover pointer-coarse:min-h-8"
 					>
 						<span class="size-2 shrink-0 rounded-full" style={accentDotStyle(circle.color)}></span>
 						<span class="truncate">{circle.name}</span>
@@ -65,10 +65,11 @@
 				</li>
 			{/each}
 			<li>
-				<!-- Joining, a role, leaving: all in the editor this opens under the chips. -->
+				<!-- Joining, a role, leaving: all in the editor this opens under the chips. On a touch
+				     screen the chips grow to 32 px and this one to a finger's width (docs/05 §5.9). -->
 				<button
 					type="button"
-					class="inline-flex min-h-6 items-center gap-1 rounded-full border border-dashed border-border px-2 py-0.5 text-sm text-fg-muted transition-colors hover:bg-card-hover"
+					class="inline-flex min-h-6 items-center justify-center gap-1 rounded-full border border-dashed border-border px-2 py-0.5 text-sm text-fg-muted transition-colors hover:bg-card-hover pointer-coarse:min-h-8 pointer-coarse:min-w-11"
 					aria-label={t('contact.circles.join')}
 					aria-expanded={editing}
 					title={t('contact.circles.join')}

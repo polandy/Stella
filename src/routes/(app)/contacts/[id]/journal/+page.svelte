@@ -390,11 +390,13 @@
 								{#if entry.visibility === 'private'}
 									<PrivateMark veilId={veilId(entry)} tone="pill" />
 								{/if}
-								<div class="ml-auto flex items-center gap-2">
+								<!-- 24 px drawn, a finger's square on a touch screen; the gap keeps the pencil
+								     and the × from sharing one there (docs/05 §5.9). -->
+								<div class="ml-auto flex items-center gap-2 pointer-coarse:gap-5">
 									{#if entry.mine}
 										<button
 											type="button"
-											class="text-fg-subtle hover:text-fg"
+											class="tap-target grid size-6 place-items-center text-fg-subtle hover:text-fg"
 											aria-label={t('journal.editEntry')}
 											title={t('journal.editEntry')}
 											onclick={() => (editingId === entry.id ? cancelEdit() : startEdit(entry))}
@@ -410,7 +412,7 @@
 										>
 											<input type="hidden" name="id" value={entry.id} />
 											<button
-												class="text-fg-subtle hover:text-danger"
+												class="tap-target grid size-6 place-items-center text-fg-subtle hover:text-danger"
 												aria-label={t('journal.deleteEntry')}
 												title={t('journal.deleteEntry')}
 											>

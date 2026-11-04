@@ -2,8 +2,8 @@
 
 ### Intent
 
-Two things every screen shares: what a reader sees where there is nothing yet, and what they
-see when they go from one screen to the next. An empty place should say what belongs there and
+Three things every screen shares: what a reader sees where there is nothing yet, where an
+address that leads nowhere lands, and what they see when they go from one screen to the next. An empty place should say what belongs there and
 offer the step that fills it; moving between screens should feel like staying in one place.
 
 ### Rules
@@ -28,6 +28,21 @@ offer the step that fills it; moving between screens should feel like staying in
   cards*): their sentence stays generic so it fits beside the title on a phone.
 - A no-match state that replaces a filtered list sits in a `role="status"` wrapper.
 
+#### An address that leads nowhere
+
+- A missing person, circle or setting, or any address no route answers, lands on Stella's own
+  screen (`StrandedScreen`, `src/lib/ui/stranded.ts`), never the bare status: an `EmptyState`
+  whose title is the page's `<h1>` and whose action is the way to the list it belonged to —
+  *This person is no longer here* + *All people*, *This circle is no longer here* + *All
+  circles*, *This setting does not exist* + *Settings*, else *This page does not exist* +
+  *Home*.
+- `/settings/immich` on a Stella without Immich says *Immich is not connected*, that whoever
+  runs Stella connects it on the server, and offers *Settings*.
+- Inside the app it renders in the shell (`(app)/+error.svelte`), so the tab bar and the parent
+  crumb stay; an address outside every route gets the same screen without the shell.
+- Any other failure says *Something went wrong* with the server's own message (in the reader's
+  language, with its reference) and offers *Home*.
+
 #### Between screens
 
 - The app cross-fades between screens (`document.startViewTransition`, 160 ms).
@@ -35,6 +50,9 @@ offer the step that fills it; moving between screens should feel like staying in
 - No skeleton loaders.
 
 ### Why
+
+A stale link — from the calendar feed, a share, a person merged away — is the commonest way
+to reach a page that is gone; without the shell the reader had no way back but the browser's.
 
 `compact` exists so the invitation does not push the rest of a card away. The `role="status"`
 wrapper lets a screen reader hear the list go empty while the reader types.
