@@ -1,7 +1,6 @@
 import { redirect } from '@sveltejs/kit';
 import { setOidcTransaction } from '$lib/server/auth/cookies';
 import { createAuthorizationRequest } from '$lib/server/auth/oidc/login';
-import { getConfig } from '$lib/server/config';
 import type { RequestHandler } from './$types';
 
 /*
@@ -10,7 +9,7 @@ import type { RequestHandler } from './$types';
  */
 
 export const GET: RequestHandler = async ({ cookies, locals }) => {
-	if (!getConfig().auth.oidc) {
+	if (!locals.services.auth.methods.oidc) {
 		throw redirect(302, '/login');
 	}
 

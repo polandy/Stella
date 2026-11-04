@@ -1,10 +1,11 @@
-import { fail, redirect } from '@sveltejs/kit';
+import { error, fail, redirect } from '@sveltejs/kit';
 import * as v from 'valibot';
 import { createTranslator, type MessageKey } from '$lib/i18n/translate';
 import { authenticateLocal } from '$lib/server/auth/accounts';
 import { setSessionCookie } from '$lib/server/auth/cookies';
 import { createSession } from '$lib/server/auth/session';
 import { getConfig } from '$lib/server/config';
+import { say } from '$lib/server/i18n/say';
 import type { LoginDenial } from '$lib/server/auth/oidc/types';
 import { DEMO_ADMIN_EMAIL, DEMO_ADMIN_PASSWORD } from '$lib/server/db/demo-seed';
 import type { Actions, PageServerLoad } from './$types';
@@ -36,14 +37,14 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 	const t = createTranslator(locals.locale);
 	if (locals.user) throw redirect(302, '/');
 	if ((await locals.services.auth.accounts.countUsers()) === 0) throw redirect(302, '/setup');
-	const config = getConfig();
+	const { methods } = locals.services.auth;
 	const errorKey = url.searchParams.get('error');
 	return {
-		localEnabled: config.auth.local,
-		oidcEnabled: config.auth.oidc,
+		localEnabled: methods.local,
+		oidcEnabled: methods.oidc,
 		// One-click demo sign-in, only while the demo seed is on (the credentials are public anyway).
 		demoLogin:
-			config.seedDemo && config.auth.local
+			getConfig().seedDemo && methods.local
 				? { email: DEMO_ADMIN_EMAIL, password: DEMO_ADMIN_PASSWORD }
 				: null,
 		ssoError: errorKey ? t(SSO_ERRORS[isSsoError(errorKey) ? errorKey : 'sso']) : null,
@@ -54,6 +55,9 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 
 export const actions: Actions = {
 	default: async ({ request, cookies, locals }) => {
+		// Hiding the form is not enough: an operator who turns local sign-in off to send every
+		// sign-in through the provider must not leave the passwords reachable by a crafted POST.
+		if (!locals.services.auth.methods.local) throw error(404, say(locals, 'errors.notFound'));
 		const t = createTranslator(locals.locale);
 		const form = await request.formData();
 		const parsed = v.safeParse(LoginSchema, {

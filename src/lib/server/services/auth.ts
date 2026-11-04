@@ -28,6 +28,8 @@ import type { IdGenerator } from '../id';
  * else is a use-case's `deps`, named after its type (`sessionDeps` is a `SessionDeps`).
  */
 export interface AuthServices {
+	/** The sign-in methods the operator turned on; every sign-in edge refuses one that is off. */
+	methods: AuthConfig['auth'];
 	/** The edge's own reads: is anyone set up yet, and who is this user id. */
 	accounts: AccountRepository;
 	accountDeps: AccountDeps;
@@ -62,6 +64,7 @@ export function createAuthServices({ config, db, clock, ids }: AuthWiring): Auth
 	});
 
 	return {
+		methods: config.auth,
 		accounts,
 		accountDeps: { accounts, ids, hashPassword, verifyPassword },
 		sessionDeps: { sessions: createDrizzleSessionRepository(db), clock },

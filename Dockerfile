@@ -30,10 +30,12 @@ RUN bun install --frozen-lockfile --production
 COPY --from=build /app/build ./build
 COPY --from=build /app/drizzle ./drizzle
 
-# Persistent state (SQLite file + media) lives on a mounted volume.
-RUN mkdir -p /data
+# Persistent state (SQLite file + media) lives on a mounted volume, owned by the image's
+# unprivileged `bun` user (uid 1000) so the server never runs as root.
+RUN mkdir -p /data && chown bun:bun /data
 VOLUME /data
 EXPOSE 3000
+USER bun
 
 # Liveness check uses Bun itself, so no extra tools are needed in the image.
 HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \

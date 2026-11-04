@@ -204,8 +204,8 @@ services:
       - "3000"                # reachable by the reverse proxy on the shared network
     # ports:
     #   - "127.0.0.1:3000:3000"   # uncomment to test locally without a proxy
-    healthcheck:
-      test: ["CMD", "wget", "-qO-", "http://localhost:3000/healthz"]
+    healthcheck:             # the image has no wget/curl; Bun itself asks
+      test: ["CMD", "bun", "-e", "fetch('http://localhost:3000/healthz').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
       interval: 30s
       timeout: 5s
       retries: 3
@@ -217,6 +217,17 @@ networks:
   proxy:
     external: true            # the network your reverse proxy already uses
 ```
+
+The server runs as the image's unprivileged `bun` user (uid 1000), not as root, so `/data`
+must be writable by uid 1000. A host folder as above is created by Docker as root; create it
+yourself first, and hand it over once:
+
+```bash
+mkdir -p data && sudo chown -R 1000:1000 data
+```
+
+A fresh named volume (the repo's own `docker-compose.yml`) needs nothing: Docker copies the
+image's ownership into it on first use.
 
 ### 7.5.2 Traefik labels (optional)
 
@@ -371,6 +382,18 @@ docker compose pull
 docker compose up -d
 ```
 
+**Once, when updating from 0.1.0 or earlier:** those images ran as root, so the existing
+`/data` belongs to root and the new non-root server cannot write to it — the container stops
+at start-up with `SQLiteError: attempt to write a readonly database`. Hand it to uid 1000 before starting:
+
+```bash
+docker compose down
+sudo chown -R 1000:1000 ./data                       # a host folder, as in 7.5.1
+# or, for a named volume:
+docker run --rm -v <volume>:/data alpine chown -R 1000:1000 /data
+docker compose up -d
+```
+
 Migrations run automatically on startup and are forward-only. Take a backup (7.9)
 before major version bumps.
 
@@ -416,4 +439,5 @@ admin. Everything else works identically.
 | Authelia will not start after adding the client | `post_logout_redirect_uris` on a version that does not know it (4.39): remove the key. |
 | Logout ends on a provider error page | `post_logout_redirect_uris` set but missing the `https://…/login?signedOut=1` entry. |
 | Images 404 / not persisted | `/data` volume not mounted, or `MEDIA_DIR` misconfigured. |
+| Exits at start-up: `attempt to write a readonly database` (`SQLITE_READONLY`) | `/data` not writable by uid 1000 (the server is not root) — `chown -R 1000:1000` it once (7.5.1, 7.10). |
 | Locked out (IdP misconfig) | Sign in with the local break-glass admin (7.11 / `AUTH_LOCAL_ENABLED`). |
