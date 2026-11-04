@@ -13,6 +13,7 @@ import {
 	photoAnswer,
 	queue,
 	recover,
+	refuseLostEdits,
 	release,
 	revise,
 	settle,
@@ -45,6 +46,14 @@ import { readOutbox, updateOutbox } from './outbox-store';
  * through never flashes up as kept.
  */
 
+/** Refusals the device words itself, since Stella's answer does not carry a reason for them. */
+export interface OutboxReasons {
+	/** A photo over the server's request cap. */
+	photoTooLarge: string;
+	/** An edit Stella never read, because it already had the earlier version (`refuseLostEdits`). */
+	earlierVersion: string;
+}
+
 /** What this device holds, whoever's it is; the page only ever shows `mine`. */
 let items = $state<OutboxItem[]>([]);
 let memberId = $state<string | null>(null);
@@ -52,8 +61,8 @@ let sending = false;
 // A send asked for while one runs: it goes again once that one is done.
 let again = false;
 let whenApplied: () => void = () => {};
-/** The reason a photo over the server's request cap is refused with, in the member's language. */
-let photoTooLarge = '';
+/** The reasons this device gives itself for a refusal, in the member's language. */
+let reasons: OutboxReasons = { photoTooLarge: '', earlierVersion: '' };
 
 /** Saves being watched, by command id: who to tell, and Stella's result once it applied. */
 const watchers = new Map<
@@ -111,13 +120,12 @@ export const outbox = {
 
 	/**
 	 * Start for the signed-in member: pick up where a closed app left off, then try to send.
-	 * `onApplied` runs whenever Stella took something, so the page can read it back;
-	 * `tooLarge` is the reason a photo over the server's request cap is refused with.
+	 * `onApplied` runs whenever Stella took something, so the page can read it back.
 	 */
-	async start(member: string, onApplied: () => void, tooLarge: string): Promise<void> {
+	async start(member: string, onApplied: () => void, refusals: OutboxReasons): Promise<void> {
 		memberId = member;
 		whenApplied = onApplied;
-		photoTooLarge = tooLarge;
+		reasons = refusals;
 		await apply(recover);
 		await outbox.send();
 	},
@@ -244,8 +252,11 @@ async function sendCommands(member: string): Promise<boolean> {
 			await apply(unsend);
 			return false;
 		}
-		const answered = answers;
-		await apply((list) => settle(list, answered));
+		let answered: CommandAnswer[] = answers;
+		await apply((list) => {
+			answered = refuseLostEdits(list, answered, reasons.earlierVersion);
+			return settle(list, answered);
+		});
 		// Reading the page again first: a form told afterwards may navigate, which must win.
 		if (answered.some((a) => a.status === 'applied')) whenApplied();
 		for (const answer of answered) await report(answer);
@@ -287,7 +298,7 @@ async function sendPhotos(member: string): Promise<void> {
 			const sent = response.ok
 				? (((await response.json()) as { answer?: CommandAnswer }).answer ?? null)
 				: null;
-			answer = photoAnswer(next.photo.id, response.status, sent, photoTooLarge);
+			answer = photoAnswer(next.photo.id, response.status, sent, reasons.photoTooLarge);
 		} catch {
 			// Out of reach, or not Stella answering: the photo waits.
 		}

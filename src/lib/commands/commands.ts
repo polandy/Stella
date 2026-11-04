@@ -164,7 +164,16 @@ export interface RefusedTarget {
 }
 
 export type CommandAnswer =
-	| { id: string; status: 'applied'; result: unknown }
+	| {
+			id: string;
+			status: 'applied';
+			result: unknown;
+			/**
+			 * Stella had applied this id before and answers with that first result: the content
+			 * sent this time was not looked at. Absent on a first application.
+			 */
+			repeated?: true;
+	  }
 	| { id: string; status: 'refused'; reason: string; refusals?: RefusedTarget[] }
 	| { id: string; status: 'busy' }
 	| { id: string; status: 'failed' };

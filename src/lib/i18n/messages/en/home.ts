@@ -36,6 +36,9 @@ export const home = {
 	'home.outbox.photoRefused': 'Could not send a photo',
 	'home.outbox.photoTooLarge':
 		'Too large for this Stella server. Whoever runs it can raise BODY_SIZE_LIMIT.',
+	// An edit made after a send went unanswered, when Stella turns out to have the first version.
+	'home.outbox.earlierVersion':
+		'Stella already had this from before your change. Edit and save to send the change as well, or discard it.',
 	'home.outbox.photoCount': (p: { count: number }) =>
 		p.count === 1 ? '1 photo' : `${p.count} photos`,
 	'home.outbox.noteOn': (p: { name: string }) => `· note on ${p.name}`,

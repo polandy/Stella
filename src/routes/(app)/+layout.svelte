@@ -191,7 +191,10 @@
 	 */
 	onMount(() => {
 		void outbox
-			.start(data.user.id, () => void invalidateAll(), t('home.outbox.photoTooLarge'))
+			.start(data.user.id, () => void invalidateAll(), {
+				photoTooLarge: t('home.outbox.photoTooLarge'),
+				earlierVersion: t('home.outbox.earlierVersion')
+			})
 			.catch(() => {
 				// No IndexedDB (a private window in some browsers): nothing can have been kept.
 			});

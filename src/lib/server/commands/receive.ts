@@ -33,8 +33,12 @@ export async function answerFor(
 ): Promise<CommandAnswer> {
 	try {
 		const outcome = await dispatchCommand(deps, actor, command);
-		if (outcome.status === 'applied')
-			return { id: command.id, status: 'applied', result: outcome.result };
+		if (outcome.status === 'applied') {
+			const { result, repeated } = outcome;
+			return repeated
+				? { id: command.id, status: 'applied', result, repeated: true }
+				: { id: command.id, status: 'applied', result };
+		}
 		if (outcome.status === 'refused') {
 			const reason = outcome.reason(t);
 			// A batch of links names each refused person, so the form can mark their chips (§2.4).

@@ -131,6 +131,15 @@ describe('receiveQueued', () => {
 		expect(f.bodies).toEqual(['first @Julia', 'second @Julia']);
 	});
 
+	it('says when a command was already applied, so a phone can tell a resend from a first save', async () => {
+		const f = fakes();
+		await receiveQueued(f.deps, actor, t, [moment(ids[0], 'once @Julia')]);
+		const [again] = await receiveQueued(f.deps, actor, t, [moment(ids[0], 'once @Julia')]);
+
+		expect(again).toEqual({ id: ids[0], status: 'applied', result, repeated: true });
+		expect(f.bodies).toEqual(['once @Julia']);
+	});
+
 	it('refuses one command in the member’s words and still applies the others', async () => {
 		const f = fakes();
 		const answers = await receiveQueued(f.deps, actor, t, [
