@@ -1371,7 +1371,9 @@ new person waits on your phone and is added once Stella answers again.
 
 At home nothing of this shows: what you save goes straight in. Only if the connection drops in
 the middle of saving does it turn into *Not sent yet*, and it is sent later like the rest —
-never twice.
+never twice. If you change it while it waits and Stella turns out to have got the
+first version after all, it says so under *Could not send*: save it again to send your change
+as well, or discard it to leave the first version as it is.
 
 Signing out clears the pages your phone was keeping, so handing a device on does not hand on
 the household with it. If moments you wrote are still waiting, Stella asks first whether to keep
