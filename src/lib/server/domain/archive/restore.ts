@@ -109,6 +109,10 @@ export type RestoreWarning =
 	| { code: 'relationshipTwinFolded' }
 	| { code: 'relationshipToItself' }
 	| { code: 'imagesMissing'; count: number }
+	/** Images the archive carried that could not be stored here — a full disk, most likely. */
+	| { code: 'imagesNotStored'; count: number }
+	/** Rows of `table` whose person, entry or circle is not here, so they were left out. */
+	| { code: 'rowsWithoutParent'; table: string; count: number }
 	/** Gift notes or gift touchpoints the archive held, made gift records (docs/02 §2.25.4). */
 	| { code: 'giftsConverted'; count: number }
 	| AnswerWarning;

@@ -63,7 +63,9 @@ function fakeMedia(present: Record<string, Uint8Array> = {}) {
 	return { store, files };
 }
 
-function fakeRestore(counts: RestoreCounts = { contact: { added: 1, skipped: 0 } }) {
+function fakeRestore(
+	counts: RestoreCounts = { contact: { added: 1, skipped: 0, withoutParent: 0 } }
+) {
 	let applied: RestorePlan | null = null;
 	let recorded: ActivityOf<'archive.restored'> | null = null;
 	const repo: RestoreRepository = {
@@ -73,12 +75,11 @@ function fakeRestore(counts: RestoreCounts = { contact: { added: 1, skipped: 0 }
 			symmetricTypeIds: [],
 			tags: []
 		}),
-		applyRestore: async (plan) => {
+		// The trail is written with the rows, so the fake records it at the same moment.
+		applyRestore: async (plan, trail) => {
 			applied = plan;
+			recorded = trail(counts);
 			return counts;
-		},
-		recordImport: async (entry) => {
-			recorded = entry;
 		}
 	};
 	return {
@@ -147,7 +148,7 @@ describe('importing', () => {
 	});
 
 	it('tells the admin what was written and what was already here', async () => {
-		const restore = fakeRestore({ contact: { added: 3, skipped: 2 } });
+		const restore = fakeRestore({ contact: { added: 3, skipped: 2, withoutParent: 0 } });
 		const { store } = fakeMedia();
 		const report = await importArchive(depsWith(restore.repo, store), actor, archiveFile(), 'en');
 
@@ -166,7 +167,7 @@ describe('importing', () => {
 			'en'
 		);
 
-		expect(report.media).toEqual({ stored: 2, alreadyThere: 0, missing: 0 });
+		expect(report.media).toEqual({ stored: 2, alreadyThere: 0, missing: 0, notStored: 0 });
 		expect([...files.get('p1.jpg')!]).toEqual([1, 2]);
 	});
 
@@ -182,7 +183,7 @@ describe('importing', () => {
 		);
 
 		expect([...files.get('p1.jpg')!]).toEqual([9, 9]);
-		expect(report.media).toEqual({ stored: 1, alreadyThere: 1, missing: 0 });
+		expect(report.media).toEqual({ stored: 1, alreadyThere: 1, missing: 0, notStored: 0 });
 	});
 
 	it('says so when the document names an image the archive did not carry', async () => {
@@ -197,6 +198,45 @@ describe('importing', () => {
 
 		expect(report.media.missing).toBe(1);
 		expect(report.warnings).toContainEqual({ code: 'imagesMissing', count: 1 });
+	});
+
+	it('says which rows were left out because what they belonged to is not here (SV-09)', async () => {
+		const restore = fakeRestore({
+			contact: { added: 2, skipped: 0, withoutParent: 0 },
+			note: { added: 1, skipped: 1, withoutParent: 2 }
+		});
+		const { store } = fakeMedia();
+		const report = await importArchive(depsWith(restore.repo, store), actor, archiveFile(), 'en');
+
+		// Left out is not "already here": the skipped count stays the rows that were.
+		expect(report.skipped.note).toBe(1);
+		expect(report.warnings).toContainEqual({ code: 'rowsWithoutParent', table: 'note', count: 2 });
+		// Positive control: a table that lost nothing gets no warning.
+		expect(report.warnings.filter((w) => w.code === 'rowsWithoutParent')).toHaveLength(1);
+	});
+
+	it('reports an image it could not store instead of failing after the rows are in (SV-10)', async () => {
+		const restore = fakeRestore();
+		const { store, files } = fakeMedia();
+		const fullDisk: MediaStore = {
+			...store,
+			put: async (key, bytes) => {
+				if (key === 'p1.jpg') throw new Error('ENOSPC: no space left on device');
+				return store.put(key, bytes);
+			}
+		};
+		const report = await importArchive(
+			depsWith(restore.repo, fullDisk),
+			actor,
+			archiveFile({ 'p1.jpg': new Uint8Array([1]), 't1.jpg': new Uint8Array([2]) }),
+			'en'
+		);
+
+		expect(report.media).toEqual({ stored: 1, alreadyThere: 0, missing: 0, notStored: 1 });
+		expect(report.warnings).toContainEqual({ code: 'imagesNotStored', count: 1 });
+		// The image that could be stored was, and the trail is there regardless.
+		expect([...files.keys()]).toEqual(['t1.jpg']);
+		expect(restore.recorded?.event.kind).toBe('archive.restored');
 	});
 
 	it('writes the images only after the rows, so a failed restore leaves no files behind', async () => {
@@ -221,7 +261,7 @@ describe('importing', () => {
 	});
 
 	it('leaves the trail the household sees in its stream', async () => {
-		const restore = fakeRestore({ contact: { added: 1, skipped: 0 } });
+		const restore = fakeRestore({ contact: { added: 1, skipped: 0, withoutParent: 0 } });
 		const { store } = fakeMedia();
 		await importArchive(depsWith(restore.repo, store), actor, archiveFile(), 'en');
 
@@ -235,7 +275,7 @@ describe('importing', () => {
 	});
 
 	it('writes the trail in the language of the member who restored', async () => {
-		const restore = fakeRestore({ contact: { added: 3, skipped: 1 } });
+		const restore = fakeRestore({ contact: { added: 3, skipped: 1, withoutParent: 0 } });
 		const { store } = fakeMedia();
 		await importArchive(depsWith(restore.repo, store), actor, archiveFile(), 'de');
 		expect(restore.recorded?.event).toMatchObject({ people: 3, locale: 'de' });

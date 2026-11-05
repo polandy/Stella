@@ -9,6 +9,7 @@ import { serialiseDocument } from '../domain/archive/archive';
 import { buildArchiveDocument } from '../domain/archive/document';
 import { ForeignHouseholdError, planRestore, type RestorePlan } from '../domain/archive/restore';
 import { createDrizzleArchiveRepository } from './archive-repository';
+import { restoreTrail } from '../domain/testing';
 import { createDrizzleRestoreRepository } from './restore-repository';
 import { ensureSearchIndex } from './search-index';
 import { seedRelationshipTypes } from './seed';
@@ -35,6 +36,7 @@ const SOURCE_HOUSEHOLD = 'h-source';
 const SOURCE_USER = 'u-source';
 const HERE = 'h-here';
 const ADMIN = 'u-admin';
+const trail = restoreTrail(HERE, ADMIN);
 
 /** A fresh, migrated database with the built-in relationship types and the search index. */
 function freshDb(): { db: BunSQLiteDatabase<typeof schema>; sqlite: Database } {
@@ -190,7 +192,7 @@ describe('readTarget', () => {
 
 describe('applyRestore', () => {
 	it('puts the other installation’s household back, private records included', async () => {
-		const counts = await repo.applyRestore(await plan());
+		const counts = await repo.applyRestore(await plan(), trail);
 
 		const contacts = here.db.select().from(schema.contact).all();
 		expect(contacts.map((c) => c.displayName).sort()).toEqual(['Hans Brunner', 'Rosa Brunner']);
@@ -200,11 +202,11 @@ describe('applyRestore', () => {
 			{ noteId: 'n-1', contactId: 'c-rosa' }
 		]);
 		expect(here.db.select().from(schema.relationship).all()).toHaveLength(1);
-		expect(counts.contact).toEqual({ added: 2, skipped: 0 });
+		expect(counts.contact).toEqual({ added: 2, skipped: 0, withoutParent: 0 });
 	});
 
 	it('moves everything into the household doing the import', async () => {
-		await repo.applyRestore(await plan());
+		await repo.applyRestore(await plan(), trail);
 		for (const row of here.db.select().from(schema.contact).all()) {
 			expect(row.householdId).toBe(HERE);
 		}
@@ -212,26 +214,26 @@ describe('applyRestore', () => {
 	});
 
 	it('gives the records to the importing admin, since the archive’s member is not here', async () => {
-		await repo.applyRestore(await plan());
+		await repo.applyRestore(await plan(), trail);
 		expect(here.db.select().from(schema.contact).all()[0].createdBy).toBe(ADMIN);
 	});
 
 	it('changes nothing the second time the same archive is imported', async () => {
-		await repo.applyRestore(await plan());
+		await repo.applyRestore(await plan(), trail);
 		const before = here.db.select().from(schema.contact).all();
 
-		const counts = await repo.applyRestore(await plan());
+		const counts = await repo.applyRestore(await plan(), trail);
 
 		expect(here.db.select().from(schema.contact).all()).toEqual(before);
-		expect(counts.contact).toEqual({ added: 0, skipped: 2 });
-		expect(counts.note).toEqual({ added: 0, skipped: 1 });
+		expect(counts.contact).toEqual({ added: 0, skipped: 2, withoutParent: 0 });
+		expect(counts.note).toEqual({ added: 0, skipped: 1, withoutParent: 0 });
 	});
 
 	it('leaves an edit made since the export exactly as it is', async () => {
-		await repo.applyRestore(await plan());
+		await repo.applyRestore(await plan(), trail);
 		here.sqlite.query("UPDATE note SET body = 'hazelnuts and walnuts' WHERE id = 'n-1'").run();
 
-		await repo.applyRestore(await plan());
+		await repo.applyRestore(await plan(), trail);
 
 		expect(here.db.select().from(schema.note).all()[0].body).toBe('hazelnuts and walnuts');
 	});
@@ -239,7 +241,7 @@ describe('applyRestore', () => {
 	it('reuses a tag the household already has instead of failing on its name', async () => {
 		here.db.insert(schema.tag).values({ id: 'tg-here', householdId: HERE, name: 'Bern' }).run();
 
-		await repo.applyRestore(await plan());
+		await repo.applyRestore(await plan(), trail);
 
 		expect(
 			here.db
@@ -254,7 +256,7 @@ describe('applyRestore', () => {
 	});
 
 	it('makes a restored note findable in search, because the index is built by the database', async () => {
-		await repo.applyRestore(await plan());
+		await repo.applyRestore(await plan(), trail);
 
 		const hits = here.sqlite
 			.query("SELECT note_id FROM note_fts WHERE note_fts MATCH 'hazelnuts'")
@@ -263,7 +265,7 @@ describe('applyRestore', () => {
 	});
 
 	it('reads the tags of a restored journal entry from its text', async () => {
-		await repo.applyRestore(await plan());
+		await repo.applyRestore(await plan(), trail);
 
 		const tags = here.db.select().from(schema.entryTag).all();
 		expect(tags.map((t) => [t.householdId, t.name])).toEqual([[HERE, 'Hike']]);
@@ -290,9 +292,9 @@ describe('applyRestore', () => {
 			})
 			.run();
 
-		const counts = await repo.applyRestore(await plan());
+		const counts = await repo.applyRestore(await plan(), trail);
 
-		expect(counts.journal_entry).toEqual({ added: 0, skipped: 1 });
+		expect(counts.journal_entry).toEqual({ added: 0, skipped: 1, withoutParent: 0 });
 		expect(here.db.select().from(schema.journalEntryTag).all()).toEqual([]);
 		expect(here.db.select().from(schema.entryTag).all()).toEqual([]);
 	});
@@ -320,10 +322,11 @@ describe('applyRestore', () => {
 			})
 			.run();
 
-		const counts = await repo.applyRestore(await plan());
+		const counts = await repo.applyRestore(await plan(), trail);
 
-		expect(counts.journal_entry).toEqual({ added: 0, skipped: 1 });
-		expect(counts.journal_mention).toEqual({ added: 0, skipped: 1 });
+		expect(counts.journal_entry).toEqual({ added: 0, skipped: 1, withoutParent: 0 });
+		// Its mention was not "already here": what it belonged to never arrived (SV-09).
+		expect(counts.journal_mention).toEqual({ added: 0, skipped: 0, withoutParent: 1 });
 		expect(here.db.select().from(schema.entryTag).all()).toEqual([]);
 		// The day we already had is untouched, and the rest of the archive still arrived.
 		expect(
@@ -353,7 +356,7 @@ describe('applyRestore', () => {
 			})
 			.run();
 
-		await expect(repo.applyRestore(await plan())).rejects.toThrow(ForeignHouseholdError);
+		await expect(repo.applyRestore(await plan(), trail)).rejects.toThrow(ForeignHouseholdError);
 		// Nothing at all was written: not the second person, not the relationship type.
 		expect(
 			here.db
@@ -369,9 +372,9 @@ describe('applyRestore', () => {
 		const broken = await plan();
 		broken.tables.find((t) => t.table === 'note')!.rows[0].contact_id = 'c-nobody';
 
-		const counts = await repo.applyRestore(broken);
+		const counts = await repo.applyRestore(broken, trail);
 
-		expect(counts.note).toEqual({ added: 0, skipped: 1 });
+		expect(counts.note).toEqual({ added: 0, skipped: 0, withoutParent: 1 });
 		// Positive control: the people the note could not be hung on still arrived.
 		expect(here.db.select().from(schema.contact).all()).toHaveLength(2);
 	});
@@ -382,34 +385,42 @@ describe('applyRestore', () => {
 		// comes halfway through, and the people written before it must go with it.
 		broken.tables.find((t) => t.table === 'note')!.rows[0].nickname = 'not a note column';
 
-		await expect(repo.applyRestore(broken)).rejects.toThrow('has no column');
+		await expect(repo.applyRestore(broken, trail)).rejects.toThrow('has no column');
 		expect(here.db.select().from(schema.contact).all()).toEqual([]);
+		expect(here.db.select().from(schema.activityLog).all()).toEqual([]);
 	});
 
 	it('refuses a plan naming a table an archive may not write', async () => {
 		const forged = await plan();
 		forged.tables.push({ table: 'session', rows: [{ id: 's-1', user_id: ADMIN, expires_at: 1 }] });
 
-		await expect(repo.applyRestore(forged)).rejects.toThrow('not a table an archive may write');
+		await expect(repo.applyRestore(forged, trail)).rejects.toThrow(
+			'not a table an archive may write'
+		);
 	});
 
 	it('refuses a plan naming a column the table does not have', async () => {
 		const forged = await plan();
 		forged.tables.find((t) => t.table === 'contact')!.rows[0].password_hash = 'x';
 
-		await expect(repo.applyRestore(forged)).rejects.toThrow('has no column');
+		await expect(repo.applyRestore(forged, trail)).rejects.toThrow('has no column');
 	});
 });
 
-describe('recordImport', () => {
-	it('writes the trail the household sees in its stream', async () => {
-		await repo.recordImport({
+describe('the trail', () => {
+	it('is written with the rows, worded from what was added (SV-10)', async () => {
+		await repo.applyRestore(await plan(), (counts) => ({
 			id: 'a-1',
 			householdId: HERE,
 			actorId: ADMIN,
 			createdAt: NOW,
-			event: { kind: 'archive.restored', people: 2, household: 'Familie Brunner', locale: 'en' }
-		});
+			event: {
+				kind: 'archive.restored',
+				people: counts.contact.added,
+				household: 'Familie Brunner',
+				locale: 'en'
+			}
+		}));
 
 		const rows = here.db.select().from(schema.activityLog).all();
 		expect(rows).toHaveLength(1);
@@ -418,5 +429,19 @@ describe('recordImport', () => {
 			actorId: ADMIN,
 			summary: 'restored 2 people from an archive of Familie Brunner'
 		});
+	});
+
+	it('goes with the rows when the trail cannot be written', async () => {
+		// A trail that fails to land takes the restore with it: the rows never arrive unlogged.
+		await expect(
+			repo.applyRestore(await plan(), () => ({
+				id: 'a-1',
+				householdId: HERE,
+				actorId: 'u-nobody',
+				createdAt: NOW,
+				event: { kind: 'archive.restored', people: 2, household: 'x', locale: 'en' }
+			}))
+		).rejects.toThrow();
+		expect(here.db.select().from(schema.contact).all()).toEqual([]);
 	});
 });

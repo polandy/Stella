@@ -7,6 +7,7 @@ import type { Clock } from '../clock';
 import type { IdGenerator } from '../id';
 import { ARCHIVE_FORMAT, ARCHIVE_VERSION } from '../domain/archive/document';
 import { planRestore, type RestorePlan } from '../domain/archive/restore';
+import { restoreTrail } from '../domain/testing';
 import { createDrizzleRestoreRepository } from './restore-repository';
 import { seedRelationshipTypes } from './seed';
 import * as schema from './schema';
@@ -21,6 +22,7 @@ import * as schema from './schema';
 
 const HERE = 'h-here';
 const ADMIN = 'u-admin';
+const trail = restoreTrail(HERE, ADMIN);
 
 let db: BunSQLiteDatabase<typeof schema>;
 let repo: ReturnType<typeof createDrizzleRestoreRepository>;
@@ -72,26 +74,28 @@ const stored = () =>
 describe('restoring a table that points at itself', () => {
 	it('writes a child whose parent is in the same batch', async () => {
 		const counts = await repo.applyRestore(
-			planOf([circle('school', null), circle('class', 'school')])
+			planOf([circle('school', null), circle('class', 'school')]),
+			trail
 		);
 
 		expect(stored()).toEqual([
 			{ id: 'class', parent: 'school' },
 			{ id: 'school', parent: null }
 		]);
-		expect(counts.circle).toEqual({ added: 2, skipped: 0 });
+		expect(counts.circle).toEqual({ added: 2, skipped: 0, withoutParent: 0 });
 	});
 
 	it('writes a child listed before its parent', async () => {
 		const counts = await repo.applyRestore(
-			planOf([circle('class', 'school'), circle('school', null)])
+			planOf([circle('class', 'school'), circle('school', null)]),
+			trail
 		);
 
 		expect(stored()).toEqual([
 			{ id: 'class', parent: 'school' },
 			{ id: 'school', parent: null }
 		]);
-		expect(counts.circle).toEqual({ added: 2, skipped: 0 });
+		expect(counts.circle).toEqual({ added: 2, skipped: 0, withoutParent: 0 });
 	});
 
 	it('writes a chain of grandchildren in any order', async () => {
@@ -101,7 +105,8 @@ describe('restoring a table that points at itself', () => {
 				circle('class', 'school'),
 				circle('team', 'group'),
 				circle('school', null)
-			])
+			]),
+			trail
 		);
 
 		expect(stored()).toEqual([
@@ -110,48 +115,50 @@ describe('restoring a table that points at itself', () => {
 			{ id: 'school', parent: null },
 			{ id: 'team', parent: 'group' }
 		]);
-		expect(counts.circle).toEqual({ added: 4, skipped: 0 });
+		expect(counts.circle).toEqual({ added: 4, skipped: 0, withoutParent: 0 });
 	});
 
 	it('writes a child whose parent the household already has', async () => {
-		await repo.applyRestore(planOf([circle('school', null)]));
+		await repo.applyRestore(planOf([circle('school', null)]), trail);
 
-		const counts = await repo.applyRestore(planOf([circle('class', 'school')]));
+		const counts = await repo.applyRestore(planOf([circle('class', 'school')]), trail);
 
 		expect(stored()).toEqual([
 			{ id: 'class', parent: 'school' },
 			{ id: 'school', parent: null }
 		]);
-		expect(counts.circle).toEqual({ added: 1, skipped: 0 });
+		expect(counts.circle).toEqual({ added: 1, skipped: 0, withoutParent: 0 });
 	});
 
 	it('skips a child whose parent is nowhere, and its own children with it', async () => {
 		const counts = await repo.applyRestore(
-			planOf([circle('class', 'gone'), circle('group', 'class'), circle('school', null)])
+			planOf([circle('class', 'gone'), circle('group', 'class'), circle('school', null)]),
+			trail
 		);
 
 		expect(stored()).toEqual([{ id: 'school', parent: null }]);
-		expect(counts.circle).toEqual({ added: 1, skipped: 2 });
+		expect(counts.circle).toEqual({ added: 1, skipped: 0, withoutParent: 2 });
 	});
 
 	it('skips rows that only point at each other', async () => {
 		const counts = await repo.applyRestore(
-			planOf([circle('a', 'b'), circle('b', 'a'), circle('school', null)])
+			planOf([circle('a', 'b'), circle('b', 'a'), circle('school', null)]),
+			trail
 		);
 
 		expect(stored()).toEqual([{ id: 'school', parent: null }]);
-		expect(counts.circle).toEqual({ added: 1, skipped: 2 });
+		expect(counts.circle).toEqual({ added: 1, skipped: 0, withoutParent: 2 });
 	});
 
 	it('changes nothing the second time the same batch is restored', async () => {
 		const circles = [circle('team', 'class'), circle('class', 'school'), circle('school', null)];
-		await repo.applyRestore(planOf(circles));
+		await repo.applyRestore(planOf(circles), trail);
 		const before = stored();
 
-		const counts = await repo.applyRestore(planOf(circles));
+		const counts = await repo.applyRestore(planOf(circles), trail);
 
 		expect(stored()).toEqual(before);
-		expect(counts.circle).toEqual({ added: 0, skipped: 3 });
+		expect(counts.circle).toEqual({ added: 0, skipped: 3, withoutParent: 0 });
 	});
 
 	it('brings a nested circle’s members along from a whole archive', async () => {
@@ -174,12 +181,12 @@ describe('restoring a table that points at itself', () => {
 			...(await repo.readTarget(HERE))
 		});
 
-		const counts = await repo.applyRestore(plan);
+		const counts = await repo.applyRestore(plan, trail);
 
 		expect(stored()).toEqual([
 			{ id: 'class', parent: 'school' },
 			{ id: 'school', parent: null }
 		]);
-		expect(counts.circle_membership).toEqual({ added: 1, skipped: 0 });
+		expect(counts.circle_membership).toEqual({ added: 1, skipped: 0, withoutParent: 0 });
 	});
 });

@@ -32,6 +32,13 @@
 				return t('archive.warning.circleMemberMissing', { name: warning.name });
 			case 'imagesMissing':
 				return t('archive.warning.imagesMissing', { count: warning.count });
+			case 'imagesNotStored':
+				return t('archive.warning.imagesNotStored', { count: warning.count });
+			case 'rowsWithoutParent':
+				return t('archive.warning.rowsWithoutParent', {
+					count: warning.count,
+					what: countLabel(t, warning.table, warning.count)
+				});
 			case 'giftsConverted':
 				return t('archive.warning.giftsConverted', { count: warning.count });
 			default:
