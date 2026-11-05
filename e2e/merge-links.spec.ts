@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
-import { appReady, pickPerson, recordAction, signIn } from './app';
+import { appReady, fillDate, pickPerson, recordAction, signIn } from './app';
 import { LINK, personIdOf, seedHousehold } from './seed';
 
 /*
@@ -82,4 +82,38 @@ test('folds a link both records had into one, and refuses it again from either e
 	);
 	await openSeeded(page, theirs);
 	await expect(storedRow(page, survivor)).toHaveCount(1);
+});
+
+test('leaves the survivor out of the people of their own interaction', async ({ page }) => {
+	// Kept to this case: the names say nothing about the id order the links above rely on.
+	const keep = 'Gaudenz Kobelt';
+	const gone = 'Mirjam Kobelt';
+	const along = 'Mirjam Hunkeler';
+	const title = `Kobelt barbecue ${Array.from(crypto.getRandomValues(new Uint8Array(4)), (b) => (b % 10).toString()).join('')}`;
+	await seedHousehold(page, [keep, gone, along]);
+	await openSeeded(page, keep);
+
+	// A touchpoint about the survivor, with the record merged away along — and a control.
+	const story = page.locator('#section-story');
+	await story.getByRole('button', { name: 'Log contact' }).click();
+	await story.getByLabel('Kind').selectOption('met');
+	await fillDate(story, 'Day', '2026-09-12');
+	await story.getByPlaceholder('What happened? (optional)').fill(title);
+	await pickPerson(story.getByLabel('Who else was there?'), gone);
+	await pickPerson(story.getByLabel('Who else was there?'), along);
+	await story.getByRole('button', { name: 'Log interaction' }).click();
+	const touchpoint = story.locator('[data-story-item]', { hasText: title });
+	await expect(touchpoint.getByRole('link', { name: gone })).toHaveCount(1);
+
+	await recordAction(page, 'Merge someone into this person');
+	const form = page.locator('form[action="?/merge"]');
+	await pickPerson(form.getByLabel('Who is the same person?'), gone);
+	await form.getByRole('button', { name: `Merge into ${keep}` }).click();
+	await expect(page.getByTestId('record-confirm')).toHaveCount(0);
+
+	await openSeeded(page, keep);
+	// Positive control: the other participant is still listed, so an empty list cannot pass.
+	await expect(touchpoint.getByRole('link', { name: along })).toHaveCount(1);
+	await expect(touchpoint.getByRole('link', { name: keep })).toHaveCount(0);
+	await expect(touchpoint.getByRole('link', { name: gone })).toHaveCount(0);
 });

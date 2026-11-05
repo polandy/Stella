@@ -7,8 +7,8 @@ import { addPerson, mention, openPerson, recordAction, signIn } from './app';
  *
  * The suite shares one demo database, so these cases invent the person they delete rather
  * than taking one of the Brunners with them — Ophelia Trask is in no other spec and in no
- * seed. The demo user is the household admin; a member's view of this is enforced by
- * `requireAdmin` at the edge and has no second account to be driven from.
+ * seed. The demo user is the household admin; that a member is offered no delete and is
+ * refused a hand-made one is `admin-refusal.spec.ts`.
  */
 
 const WHO = 'Ophelia Trask';
