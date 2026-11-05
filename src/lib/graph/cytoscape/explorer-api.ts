@@ -92,8 +92,12 @@ export interface ExplorerController {
 	 * in which case their view is kept (docs/05 §5.8).
 	 */
 	screenChanged(): void;
-	/** Re-theme the canvas from a freshly-resolved palette. */
-	setStylesheet(stylesheet: CyStyle[]): void;
+	/**
+	 * Re-theme the canvas from a freshly-resolved palette. With `growNames`, the names of the
+	 * selected person and their neighbours grow while the map is zoomed out (`nameGrowth`,
+	 * docs/05 §5.8); the family tree leaves it off.
+	 */
+	setStylesheet(stylesheet: CyStyle[], options?: { growNames?: boolean }): void;
 	/** Tear the canvas down. Idempotent, and every other method no-ops afterwards. */
 	destroy(): void;
 }

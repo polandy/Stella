@@ -51,6 +51,27 @@ export function legibleZoom(
 	return (2 ** (level - 1) / pixelRatio) * LEGIBLE_MARGIN;
 }
 
+/** The size a person's name and a circle's name are drawn at, in model units. */
+export const NAME_FONT_SIZE = 11;
+
+/** The most a lit name grows; past it the names would cover the people they belong to. */
+export const MAX_NAME_GROWTH = 2;
+
+/** How finely the growth is stepped, so a pinch restyles the map a few times, not every frame. */
+const NAME_GROWTH_STEP = 0.125;
+
+/**
+ * How much the names of the selected person and their neighbours grow at `zoom` (docs/05
+ * §5.8). A whole family framed on a phone sits far below full zoom, where an 11-unit name is a
+ * 6-pixel smudge; growing the lit names by the inverse of the zoom keeps them at their own size
+ * on screen, while the faded rest stays small and out of the way.
+ */
+export function nameGrowth(zoom: number): number {
+	if (zoom >= 1) return 1;
+	const stepped = Math.ceil(1 / zoom / NAME_GROWTH_STEP) * NAME_GROWTH_STEP;
+	return Math.min(stepped, MAX_NAME_GROWTH);
+}
+
 /**
  * The most lines the map names at once. Past it, the names around a hub stack on top of each
  * other into noise, so they are left to the lines the reader points at or selects.

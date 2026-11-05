@@ -468,7 +468,7 @@ async function ownersAt(page: Page, points: { x: number; y: number }[]): Promise
 	);
 }
 
-test('keeps the suggested names on top when the toolbar wraps under the search field', async ({
+test('keeps the phone toolbar to the search field’s row, clear of the suggested names', async ({
 	page
 }) => {
 	await page.setViewportSize({ width: 320, height: 800 });
@@ -480,15 +480,14 @@ test('keeps the suggested names on top when the toolbar wraps under the search f
 	const list = page.getByTestId('graph-suggestions');
 	await expect(list.getByRole('button', { name: 'Hans Brunner' })).toBeVisible();
 
-	// The toolbar's second row has to overlap the list here, or the rest of this proves nothing.
-	// On a phone Filter and Arrange share the field's row (docs/05 §5.8); the connection path
-	// starts the row below it.
+	// On a phone every tool is an icon beside the field (docs/05 §5.8), even at 320 pixels: the
+	// last of them, the connection path, sits in the field's row and above the list.
 	const fieldBox = await field.boundingBox();
 	const chipBox = await page.getByRole('button', { name: 'Connection path' }).boundingBox();
 	const listBox = await list.boundingBox();
 	if (!fieldBox || !chipBox || !listBox) throw new Error('the toolbar has no layout');
-	expect(chipBox.y).toBeGreaterThan(fieldBox.y + fieldBox.height);
-	expect(chipBox.y).toBeLessThan(listBox.y + listBox.height);
+	expect(chipBox.y).toBeLessThan(fieldBox.y + fieldBox.height);
+	expect(chipBox.y + chipBox.height).toBeLessThanOrEqual(listBox.y);
 
 	// Every name answers for its own position.
 	const rows = await list.getByRole('button').all();
@@ -505,4 +504,70 @@ test('keeps the suggested names on top when the toolbar wraps under the search f
 	// And the name takes the click, rather than a chip swallowing it.
 	await list.getByRole('button', { name: 'Hans Brunner' }).click();
 	await expect(page.getByRole('complementary').getByText('Hans Brunner')).toBeVisible();
+});
+
+/*
+ * The phone layout of the explorer (docs/05 §5.8, screens/graph.md), at the reference
+ * Pixel 9 Pro's width.
+ */
+
+test('on a phone the peek panel is a one-row strip with short-worded actions', async ({ page }) => {
+	await page.setViewportSize({ width: 412, height: 915 });
+	await page.goto('/graph?center=demo-c-hans');
+	await expect(page.locator('canvas').first()).toBeVisible();
+
+	// Sandra still has connections to bring, so the strip offers Expand as well as Profile.
+	await page.getByLabel('Find a person').fill('Sandra');
+	await page.getByTestId('graph-suggestions').getByRole('button', { name: 'Sandra' }).click();
+	const peek = page.getByRole('complementary');
+	const name = peek.getByText('Sandra Brunner-Keller', { exact: true });
+	// The full words stay the accessible names; the strip shows a word each.
+	const expand = peek.getByRole('button', { name: 'Expand connections' });
+	const profile = peek.getByRole('link', { name: 'Open profile' });
+	const close = peek.getByRole('button', { name: 'Close' });
+	// innerText, not textContent: the full words are still in the button, hidden on a phone.
+	await expect(expand).toBeVisible();
+	expect((await expand.innerText()).trim()).toBe('Expand');
+	expect((await profile.innerText()).trim()).toBe('Profile');
+
+	// Name, both actions and Close share one row: each centre lies within the name's height.
+	const nameBox = await name.boundingBox();
+	if (!nameBox) throw new Error('the strip has no layout');
+	for (const control of [expand, profile, close]) {
+		const box = await control.boundingBox();
+		if (!box) throw new Error('a strip control has no layout');
+		const middle = box.y + box.height / 2;
+		expect(middle).toBeGreaterThan(nameBox.y);
+		expect(middle).toBeLessThan(nameBox.y + nameBox.height);
+	}
+
+	await profile.click();
+	await expect(page).toHaveURL(/\/contacts\/demo-c-sandra/);
+});
+
+test('on a phone a narrowed filter shows a dot on its icon', async ({ page }) => {
+	await page.setViewportSize({ width: 412, height: 915 });
+	await page.goto('/graph?center=demo-c-hans');
+	await expect(page.locator('canvas').first()).toBeVisible();
+	const dot = page.getByTestId('menu-narrowed-dot');
+	await expect(dot).toHaveCount(0);
+
+	const menu = await filterMenu(page);
+	await menu.getByRole('menuitemcheckbox', { name: 'Family', exact: true }).click();
+	await page.keyboard.press('Escape');
+	await expect(dot).toBeVisible();
+});
+
+test('on a phone the bar above the map is there only to carry the way back', async ({ page }) => {
+	await page.setViewportSize({ width: 412, height: 915 });
+	const bar = page.getByTestId('graph-hint-bar');
+
+	await page.goto('/graph?center=demo-c-hans');
+	await expect(page.locator('canvas').first()).toBeVisible();
+	await expect(bar.getByRole('link', { name: /Hans Brunner/ })).toBeVisible();
+
+	// Opened without a centre the reader has nowhere to go back to, so no empty band.
+	await page.goto('/graph');
+	await expect(page.locator('canvas').first()).toBeVisible();
+	await expect(bar).toBeHidden();
 });

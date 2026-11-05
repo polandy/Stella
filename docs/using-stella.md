@@ -1280,6 +1280,8 @@ the parent and save.
 Opening up someone's connections in the tree lays the whole tree out again, so the newcomers
 land in their own generation (or on the shelf) and everyone glides to their new place. *Connection path* traces how two people are linked, and it always answers
 with the people in between rather than the worked-out shortcut — that is the point of asking.
+On a phone Filter, Arrange and *Connection path* are the round icons beside the search, and the
+selected person's name, *Expand* and *Profile* sit in one row at the foot of the map.
 
 **Export** takes the family tree away as a picture or on paper — for the grandparents, or a
 family gathering. Arrange the map as a *Tree*, set it up the way you want it (the person in the

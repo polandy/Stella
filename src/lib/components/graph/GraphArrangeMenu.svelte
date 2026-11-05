@@ -15,11 +15,10 @@
 	const arrangedLabel = $derived(ARRANGEMENTS.find((a) => a.key === arrangedBy)!.label);
 </script>
 
-<MenuButton label={t('graph.arrange.current', { name: t(arrangedLabel) })}>
+<!-- A phone shows the icon only, so the toolbar keeps one row; the label still names the choice. -->
+<MenuButton label={t('graph.arrange.current', { name: t(arrangedLabel) })} phoneIcon="mapLayout">
 	{#snippet trigger()}
-		<!-- The pill's label keeps "Arrange:" for assistive tech; a phone shows the name only. -->
-		<span class="sm:hidden">{t(arrangedLabel)}</span>
-		<span class="max-sm:hidden">{t('graph.arrange.current', { name: t(arrangedLabel) })}</span>
+		{t('graph.arrange.current', { name: t(arrangedLabel) })}
 	{/snippet}
 	{#snippet children({ close })}
 		{#each ARRANGEMENTS as arrangement (arrangement.key)}

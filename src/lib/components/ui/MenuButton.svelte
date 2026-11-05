@@ -9,6 +9,8 @@
 		type Band,
 		type Span
 	} from '$lib/ui/menu';
+	import Icon from './Icon.svelte';
+	import type { IconName } from './icons';
 
 	/*
 	 * A pill that opens a small menu below it (docs/05 §5.8) — the graph toolbar's Filter and
@@ -37,6 +39,11 @@
 		 * of a journal entry, which open *From this device* / *From Immich* (docs/02 §2.24.9).
 		 */
 		look?: 'pill' | 'button' | 'icon' | 'outline';
+		/**
+		 * A pill that shows only this icon on a phone, so the graph toolbar keeps one row beside
+		 * its search (docs/05 §5.8); `highlighted` is then a dot on it.
+		 */
+		phoneIcon?: IconName;
 	}
 
 	let {
@@ -45,7 +52,8 @@
 		children,
 		highlighted = false,
 		align = 'start',
-		look = 'pill'
+		look = 'pill',
+		phoneIcon
 	}: Props = $props();
 
 	let open = $state(false);
@@ -191,7 +199,9 @@
 			aria-label={label}
 			onclick={() => (open ? close() : void show())}
 			onkeydown={onPillKeydown}
-			class="flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-medium backdrop-blur transition-colors hover:text-fg"
+			class="flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-medium backdrop-blur transition-colors hover:text-fg {phoneIcon
+				? 'tap-target max-sm:relative max-sm:size-9 max-sm:justify-center max-sm:p-0'
+				: ''}"
 			class:border-border={!highlighted}
 			class:bg-card={!highlighted}
 			class:text-fg-muted={!highlighted}
@@ -200,10 +210,22 @@
 				? 'background:color-mix(in srgb, var(--primary) 18%, var(--card)); color:var(--fg)'
 				: ''}
 		>
-			{@render trigger()}
-			<svg class="size-2.5 opacity-70" viewBox="0 0 10 10" aria-hidden="true">
-				<path d="M1.5 3.5 5 7l3.5-3.5" fill="none" stroke="currentColor" stroke-width="1.5" />
-			</svg>
+			{#if phoneIcon}
+				<Icon name={phoneIcon} size={16} class="sm:hidden" />
+				{#if highlighted}
+					<span
+						data-testid="menu-narrowed-dot"
+						class="absolute top-1 right-1 size-2 rounded-full border border-card bg-primary sm:hidden"
+						aria-hidden="true"
+					></span>
+				{/if}
+			{/if}
+			<span class="contents {phoneIcon ? 'max-sm:hidden' : ''}">
+				{@render trigger()}
+				<svg class="size-2.5 opacity-70" viewBox="0 0 10 10" aria-hidden="true">
+					<path d="M1.5 3.5 5 7l3.5-3.5" fill="none" stroke="currentColor" stroke-width="1.5" />
+				</svg>
+			</span>
 		</button>
 	{/if}
 

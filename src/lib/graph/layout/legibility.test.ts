@@ -9,6 +9,9 @@ import {
 	linesDrawn,
 	MAX_NODE_DIAMETER,
 	MIN_NODE_DIAMETER,
+	MAX_NAME_GROWTH,
+	NAME_FONT_SIZE,
+	nameGrowth,
 	nodeDiameter
 } from './legibility';
 
@@ -123,5 +126,31 @@ describe('labelsDrawnAt and legibleZoom', () => {
 			expect(labelsDrawnAt(zoom * 0.95, ratio)).toBe(false);
 		}
 		expect(SMALLEST_LABEL_FONT_SIZE).toBeLessThanOrEqual(11);
+	});
+});
+
+describe('nameGrowth', () => {
+	it('leaves the names alone at full zoom and closer', () => {
+		expect(nameGrowth(1)).toBe(1);
+		expect(nameGrowth(2.5)).toBe(1);
+	});
+
+	it('keeps a lit name at least its own size on screen while the map is zoomed out', () => {
+		for (let zoom = 0.5; zoom < 1; zoom += 0.01) {
+			expect(NAME_FONT_SIZE * nameGrowth(zoom) * zoom).toBeGreaterThanOrEqual(
+				NAME_FONT_SIZE - 1e-9
+			);
+		}
+	});
+
+	it('grows in steps, so a pinch restyles the map only a handful of times', () => {
+		const steps = new Set<number>();
+		for (let zoom = 0.2; zoom <= 1; zoom += 0.001) steps.add(nameGrowth(zoom));
+		expect(steps.size).toBeLessThanOrEqual(9);
+	});
+
+	it('stops growing at the cap, where the names would cover the people', () => {
+		expect(nameGrowth(0.5)).toBe(MAX_NAME_GROWTH);
+		expect(nameGrowth(0.2)).toBe(MAX_NAME_GROWTH);
 	});
 });

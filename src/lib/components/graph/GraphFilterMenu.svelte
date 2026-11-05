@@ -122,7 +122,11 @@
 <!-- The line kinds and their names live in one menu: it is the legend too, each kind
      drawn in its colour and line style, and the pill counts what is shown so a narrowed
      map is never mistaken for a sparse one (docs/05 §5.8). -->
-<MenuButton label={t('graph.filter.summary', filters)} highlighted={filters.narrowed}>
+<MenuButton
+	label={t('graph.filter.summary', filters)}
+	highlighted={filters.narrowed}
+	phoneIcon="filter"
+>
 	{#snippet trigger()}
 		{t('graph.filter')}
 		<span class="rounded-full bg-bg-sunken px-1.5 text-fg-muted tabular-nums">

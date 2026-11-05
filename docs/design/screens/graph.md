@@ -52,13 +52,16 @@ card (§5.5.2); its styling is §5.8.
   *Years of birth and death* switch and, only when someone on the map is private, the private
   switch; Cancel and *Download PNG* / *Print…* at the foot. On a phone the dialog is a bottom
   sheet, the preview capped at 40% of the screen's height so the choices stay in sight.
-- On a phone (below `sm`, tuned for a Pixel 9 Pro at 412 px) search, Filter and Arrange keep
-  one row: the search field takes whatever the two menus leave, and the Arrange pill shows only
-  the arrangement's name (its accessible name still reads *Arrange: …*). Export (in the tree), Full
-  screen and the connection path start a second row.
-- On a phone the peek panel is a strip along the bottom: avatar and name side by side, its
-  buttons in one row, the general tip left out. The toolbar stays within reach while somebody
-  is selected.
+- On a phone (below `sm`, tuned for a Pixel 9 Pro at 412 px) the toolbar is one row: the
+  search field takes whatever the rest leave, and Filter, Arrange and the connection path are
+  round icon buttons (their accessible names still read *Filter: …*, *Arrange: …*,
+  *Connection path*); a narrowed filter shows a dot. Export (in the tree), Shrink (on a person's
+  page) and Full screen become the same round pills; wider screens keep them ghost buttons. The page's hint bar above the map is left out unless it carries the way back.
+- On a phone the peek panel is a one-row strip along the bottom: avatar and name side by side,
+  then Expand and Profile (a word each, the full words their accessible names) and close. A
+  circle's roles and *the map ends here* go under the row; the general tip and *everything is
+  already shown* are left out. Tapping a selected person again still expands them. The toolbar
+  stays within reach while somebody is selected.
 - An open Filter or Arrange menu moves sideways as far as it must to stay on the map, 12 px
   clear of its edge.
 - A **Full screen** button at the end of the toolbar row hands the whole frame — canvas,
@@ -83,7 +86,10 @@ former link already has a kind and a category; the switch cuts across them. They
 default because an ex-partner is still part of how a family hangs together, and a bar the
 children hang from would say the two are still a couple. On a phone both menu pills stand at the right, so a menu opening
 from there would run off the screen unless it moves. The peek panel has no room beside the map
-on a phone, hence the bottom strip.
+on a phone, hence the bottom strip — kept to one row, because a second toolbar row, an empty
+hint bar and a tall card together left a 412 px phone a map the size of a stamp. A phone frames
+a whole family far below full zoom, so the names around the selected person grow with it; the
+faded rest stays small, or the grown names would cover the people.
 
 The slots for missing parents keep to the centre's own line because that is the question a tree
 around one person asks, and three generations cap a large family at seven plus signs. They are
