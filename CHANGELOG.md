@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.1.1](https://github.com/polandy/Stella/compare/v0.1.0...v0.1.1) (2026-11-05)
+
+
+### Bug Fixes
+
+* **auth:** enforce the sign-in switches, seal the OIDC cookie, run the container as bun ([#446](https://github.com/polandy/Stella/issues/446)) ([36866a3](https://github.com/polandy/Stella/commit/36866a3c1217d9d0a1c4f495d45593963eb4b832))
+* data integrity — merge visibility, complete archive, search without archived people ([#447](https://github.com/polandy/Stella/issues/447)) ([5662cb4](https://github.com/polandy/Stella/commit/5662cb4f2e8395dca66045a56b586dc44e51176e))
+* **graph:** phone map — one toolbar row, no blank band, one-line strip, names grow with zoom (UX-05) ([#451](https://github.com/polandy/Stella/issues/451)) ([6b6fb41](https://github.com/polandy/Stella/commit/6b6fb413e282f49034f5d4bbf1a0245d803ef77b))
+* offline outbox, service-worker caches, day labels ([#448](https://github.com/polandy/Stella/issues/448)) ([192d902](https://github.com/polandy/Stella/commit/192d902dd2dbc4417c4d56b23909cbc25ab83818))
+* **people:** Ask again stays in line when a declined claim wraps ([#443](https://github.com/polandy/Stella/issues/443)) ([19908a0](https://github.com/polandy/Stella/commit/19908a04e7dd0964552053a6085a59c7bc77157d))
+* **ui:** identity card lays out by its own width, not the viewport (UX-01) ([#450](https://github.com/polandy/Stella/issues/450)) ([14bfa3f](https://github.com/polandy/Stella/commit/14bfa3f48e00476b9c5047fcf84c2ac2ee94e6c3))
+* **ui:** own not-found screen inside the shell, finger-sized tap targets ([#449](https://github.com/polandy/Stella/issues/449)) ([84d97ae](https://github.com/polandy/Stella/commit/84d97ae14389253c126253f4d86bda1bc88633dc))
+
 ## [0.1.0](https://github.com/polandy/Stella/compare/v0.0.36...v0.1.0) (2026-11-03)
 
 
