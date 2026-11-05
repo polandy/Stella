@@ -55,13 +55,16 @@ export interface AuthWiring {
 export function createAuthServices({ config, db, clock, ids }: AuthWiring): AuthServices {
 	const { oidc } = config;
 	const accounts = createDrizzleAccountRepository(db);
-	// One provider for sign-in, its callback and sign-out: it caches the discovery document.
-	const provider = createOidcProvider({
-		issuer: oidc.issuer,
-		clientId: oidc.clientId,
-		clientSecret: oidc.clientSecret,
-		redirectUri: oidc.redirectUri
-	});
+	// One provider for sign-in, its callback and sign-out: it keeps the discovery document an hour.
+	const provider = createOidcProvider(
+		{
+			issuer: oidc.issuer,
+			clientId: oidc.clientId,
+			clientSecret: oidc.clientSecret,
+			redirectUri: oidc.redirectUri
+		},
+		{ clock }
+	);
 
 	return {
 		methods: config.auth,

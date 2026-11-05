@@ -107,7 +107,22 @@ export function createHttpAddressBookGateway({
 	log = (message) => console.warn(message)
 }: HttpAddressBookOptions): AddressBookGateway {
 	const authorization = `Basic ${btoa(`${user}:${appPassword}`)}`;
-	const collectionPath = new URL(url).pathname;
+	const book = new URL(url);
+	const collectionPath = book.pathname;
+
+	/*
+	 * A card's href comes from the server's answer or a stored row, and `new URL` keeps an
+	 * absolute one as it is: resolved, it must still lie inside the book, or the Basic header
+	 * would travel to wherever it points.
+	 */
+	function inBook(href: string): string {
+		const target = new URL(href, book);
+		if (target.origin !== book.origin || !target.pathname.startsWith(collectionPath)) {
+			log(`Nextcloud card outside the address book refused: ${href}`);
+			throw new AddressBookUnreachableError('card outside the address book');
+		}
+		return target.href;
+	}
 
 	async function request(
 		method: string,
@@ -170,7 +185,7 @@ export function createHttpAddressBookGateway({
 		changesSince: sync,
 
 		async put(href, vcard, etag) {
-			const answer = await request('PUT', new URL(href, url).href, {
+			const answer = await request('PUT', inBook(href), {
 				body: vcard,
 				headers: { 'if-match': etag, 'content-type': 'text/vcard; charset=utf-8' }
 			});

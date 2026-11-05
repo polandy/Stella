@@ -30,6 +30,7 @@ export const auth = {
 	'auth.setup.needName': 'Please enter your name.',
 	'auth.setup.needEmail': 'Please enter a valid email.',
 	'auth.setup.needPassword': 'Use at least 8 characters.',
+	'auth.setup.passwordTooLong': 'Use at most 128 characters.',
 	'auth.setup.invalidInput': 'Invalid input.',
 	'auth.setup.alreadyDone': 'Setup has already been completed.'
 };

@@ -1,7 +1,7 @@
 import { fail, redirect } from '@sveltejs/kit';
 import * as v from 'valibot';
 import { createTranslator, messageKey, type MessageKey } from '$lib/i18n/translate';
-import { registerFirstAdmin } from '$lib/server/auth/accounts';
+import { registerFirstAdmin, SetupAlreadyDoneError } from '$lib/server/auth/accounts';
 import { setSessionCookie } from '$lib/server/auth/cookies';
 import { createSession } from '$lib/server/auth/session';
 import type { Actions, PageServerLoad } from './$types';
@@ -23,7 +23,11 @@ const SetupSchema = v.object({
 	),
 	name: v.pipe(v.string(), v.trim(), v.minLength(1, messageKey('auth.setup.needName'))),
 	email: v.pipe(v.string(), v.trim(), v.email(messageKey('auth.setup.needEmail'))),
-	password: v.pipe(v.string(), v.minLength(8, messageKey('auth.setup.needPassword')))
+	password: v.pipe(
+		v.string(),
+		v.minLength(8, messageKey('auth.setup.needPassword')),
+		v.maxLength(128, messageKey('auth.setup.passwordTooLong'))
+	)
 });
 
 export const load: PageServerLoad = async ({ locals }) => {
@@ -48,15 +52,16 @@ export const actions: Actions = {
 			return fail(400, { error: t(issue ?? 'auth.setup.invalidInput') });
 		}
 
-		if ((await locals.services.auth.accounts.countUsers()) > 0) {
-			return fail(409, { error: t('auth.setup.alreadyDone') });
-		}
-
 		// The language the form was read in becomes the admin's stored preference.
 		const user = await registerFirstAdmin(locals.services.auth.accountDeps, {
 			...parsed.output,
 			locale: locals.locale
+		}).catch((err: unknown) => {
+			// Set up already — or by another setup while this one was hashing its password.
+			if (err instanceof SetupAlreadyDoneError) return null;
+			throw err;
 		});
+		if (!user) return fail(409, { error: t('auth.setup.alreadyDone') });
 		const { token, session } = await createSession(locals.services.auth.sessionDeps, user.id);
 		setSessionCookie(cookies, token, session.expiresAt);
 		throw redirect(303, '/');

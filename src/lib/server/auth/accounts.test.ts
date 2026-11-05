@@ -5,6 +5,7 @@ import {
 	changeBlurPrivate,
 	changeLocale,
 	registerFirstAdmin,
+	SetupAlreadyDoneError,
 	type AccountRepository,
 	type AuthUser,
 	type NewAdmin,
@@ -32,8 +33,10 @@ function fakeRepo(seed: { user: AuthUser; passwordHash: string | null }[] = []) 
 		},
 		findById: async (id) => users.find((u) => u.user.id === id)?.user ?? null,
 		insertHouseholdWithAdmin: async (data) => {
+			if (users.length > 0) return false;
 			inserted = data;
 			users.push({ user: data.user, passwordHash: data.user.passwordHash });
+			return true;
 		},
 		updateLocale: async (userId, locale) => {
 			localeWrites.push({ userId, locale });
@@ -107,7 +110,25 @@ describe('registerFirstAdmin', () => {
 				password: 'pw',
 				locale: DEFAULT_LOCALE
 			})
-		).rejects.toThrow();
+		).rejects.toThrow(SetupAlreadyDoneError);
+	});
+
+	it('refuses the slower of two setups racing past the first check', async () => {
+		const f = fakeRepo();
+		const input = (email: string) => ({
+			householdName: 'H',
+			name: 'N',
+			email,
+			password: 'a-good-passphrase',
+			locale: DEFAULT_LOCALE
+		});
+		const [first, second] = await Promise.allSettled([
+			registerFirstAdmin(deps(f.repo), input('a@example.test')),
+			registerFirstAdmin(deps(f.repo), input('b@example.test'))
+		]);
+		expect(first.status).toBe('fulfilled');
+		expect(second.status).toBe('rejected');
+		expect((second as PromiseRejectedResult).reason).toBeInstanceOf(SetupAlreadyDoneError);
 	});
 });
 

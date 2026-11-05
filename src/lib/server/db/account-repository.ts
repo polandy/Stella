@@ -81,7 +81,16 @@ export function createDrizzleAccountRepository(
 		},
 
 		async insertHouseholdWithAdmin(data) {
-			db.transaction((tx) => {
+			// The check and the insert share one transaction: bun:sqlite runs it synchronously,
+			// so a second setup that passed the route's own check finds the first one here.
+			return db.transaction((tx) => {
+				const existing = tx
+					.select({ id: userTable.id })
+					.from(userTable)
+					.where(isMemberAccount())
+					.limit(1)
+					.get();
+				if (existing) return false;
 				tx.insert(householdTable)
 					.values({ id: data.household.id, name: data.household.name })
 					.run();
@@ -97,6 +106,7 @@ export function createDrizzleAccountRepository(
 						localePref: data.user.locale
 					})
 					.run();
+				return true;
 			});
 		},
 

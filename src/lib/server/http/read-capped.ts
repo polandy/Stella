@@ -4,6 +4,14 @@
  * the server's memory.
  */
 
+/** A body that grew past its cap; nothing beyond the cap was kept. */
+export class BodyTooLargeError extends Error {
+	constructor(maxBytes: number) {
+		super(`answered with more than ${maxBytes} bytes`);
+		this.name = 'BodyTooLargeError';
+	}
+}
+
 /** The body's bytes, or a refusal once it grows past `maxBytes`. */
 export async function readCapped(
 	response: Response,
@@ -20,7 +28,7 @@ export async function readCapped(
 			const { done, value } = await reader.read();
 			if (done) break;
 			size += value.byteLength;
-			if (size > maxBytes) throw new Error(`answered with more than ${maxBytes} bytes`);
+			if (size > maxBytes) throw new BodyTooLargeError(maxBytes);
 			chunks.push(value);
 		}
 	} finally {

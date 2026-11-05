@@ -146,4 +146,21 @@ describe('the CardDAV address book', () => {
 		expect(seen[0]!.headers.get('if-match')).toBe('"e1"');
 		expect(seen[0]!.headers.get('content-type')).toBe('text/vcard; charset=utf-8');
 	});
+
+	it('never sends the password to a card outside the book', async () => {
+		const { fetch, seen } = fakeFetch([]);
+		const book = gateway(fetch);
+		for (const href of [
+			'https://evil.example.net/a.vcf',
+			'//evil.example.net/a.vcf',
+			'http://cloud.example.com' + PATH + 'a.vcf',
+			'/remote.php/dav/addressbooks/users/other/contacts/a.vcf',
+			PATH + '../other/a.vcf'
+		]) {
+			await expect(book.put(href, card('a'), '"e1"')).rejects.toThrow(
+				AddressBookUnreachableError
+			);
+		}
+		expect(seen).toEqual([]);
+	});
 });
