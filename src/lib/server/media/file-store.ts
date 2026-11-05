@@ -1,6 +1,6 @@
 import { rm } from 'node:fs/promises';
-import { join } from 'node:path';
 import type { MediaStore } from '../domain/media/avatars';
+import { mediaFileIn } from './media-path';
 
 /*
  * Filesystem MediaStore over MEDIA_DIR (docs/04 §4.6). Files are addressed by a relative key
@@ -9,7 +9,7 @@ import type { MediaStore } from '../domain/media/avatars';
  * a file whole to the browser is its own port, over the same directory (`file-stream-source.ts`).
  */
 export function createFileMediaStore(baseDir: string): MediaStore {
-	const resolve = (path: string) => join(baseDir, path);
+	const resolve = (path: string) => mediaFileIn(baseDir, path);
 
 	return {
 		async put(key: string, bytes: Uint8Array): Promise<string> {

@@ -50,9 +50,32 @@ describe('createDrizzleAccountRepository', () => {
 	});
 
 	it('creates a household with its admin atomically', async () => {
-		await seedAdmin();
+		expect(
+			await repo.insertHouseholdWithAdmin({
+				household: { id: admin.householdId, name: 'Pollari' },
+				user: { ...admin, roleLocked: 1, passwordHash: 'hashed:pw' }
+			})
+		).toBe(true);
 		expect(await repo.countUsers()).toBe(1);
 		expect(await repo.findById('user-1')).toEqual(admin);
+	});
+
+	it('creates no second household once one exists, even when both passed the first check', async () => {
+		await seedAdmin();
+		const second = await repo.insertHouseholdWithAdmin({
+			household: { id: 'household-2', name: 'Intruder' },
+			user: {
+				...admin,
+				id: 'user-2',
+				householdId: 'household-2',
+				email: 'x@example.test',
+				roleLocked: 1,
+				passwordHash: 'h'
+			}
+		});
+		expect(second).toBe(false);
+		expect(await repo.countUsers()).toBe(1);
+		expect(db.select().from(schema.household).all()).toHaveLength(1);
 	});
 
 	it('reads credentials back by email', async () => {

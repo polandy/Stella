@@ -24,7 +24,7 @@ const logoSvg = await read('../../../static/logo.svg');
 
 const overlayMarkup = /<div id="stella-welcome"[\s\S]*?<\/svg>[\s\S]*?<\/div>/.exec(appHtml)?.[0];
 const overlayStyle = /<style>([\s\S]*?)<\/style>/.exec(appHtml)?.[1] ?? '';
-const scripts = [...appHtml.matchAll(/<script>([\s\S]*?)<\/script>/g)].map((m) => m[1]);
+const scripts = [...appHtml.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/g)].map((m) => m[1]);
 const headScript = scripts.find((s) => s.includes('stella-theme')) ?? '';
 const overlayScript = scripts.find((s) => s.includes('welcome-cue')) ?? '';
 

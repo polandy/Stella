@@ -3,6 +3,7 @@ import { mkdtemp, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { createFileMediaStore } from './file-store';
+import { MediaPathOutsideError } from './media-path';
 import { createFileMediaStreamSource } from './file-stream-source';
 
 /*
@@ -46,6 +47,21 @@ describe('createFileMediaStore', () => {
 		expect(await store.read('b.jpg')).toBeNull();
 		await store.delete('b.jpg'); // must not throw
 	});
+
+	it('keeps a nested key inside the media directory', async () => {
+		const store = await freshStore();
+		await store.put('thumbs/d.jpg', new Uint8Array([4]));
+		expect(await store.read('thumbs/d.jpg')).toEqual(new Uint8Array([4]));
+	});
+
+	it('refuses a path that leaves the media directory, on every operation', async () => {
+		const store = await freshStore();
+		for (const path of ['../outside.jpg', 'thumbs/../../outside.jpg', '/etc/passwd']) {
+			await expect(store.put(path, new Uint8Array([1]))).rejects.toThrow(MediaPathOutsideError);
+			await expect(store.read(path)).rejects.toThrow(MediaPathOutsideError);
+			await expect(store.delete(path)).rejects.toThrow(MediaPathOutsideError);
+		}
+	});
 });
 
 describe('createFileMediaStreamSource', () => {
@@ -61,5 +77,10 @@ describe('createFileMediaStreamSource', () => {
 	it('opens nothing for a missing file', async () => {
 		const source = createFileMediaStreamSource(await freshDir());
 		expect(await source.open('missing.jpg')).toBeNull();
+	});
+
+	it('refuses a path that leaves the media directory', async () => {
+		const source = createFileMediaStreamSource(await freshDir());
+		await expect(source.open('../outside.jpg')).rejects.toThrow(MediaPathOutsideError);
 	});
 });

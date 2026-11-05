@@ -253,6 +253,11 @@ If you use Traefik, add labels instead of a separate proxy config:
   from `STELLA_URL`, so that must match the public URL exactly (scheme + host).
 - adapter-node validates the browser `Origin` on POSTs against `ORIGIN` (compose sets it to
   `STELLA_URL`). A mismatch yields 403 on every form submit — keep the two in lockstep.
+- **The proxy throttles sign-in and sends HSTS** — Stella does neither (docs/04 §4.7). Limit
+  `POST /login` per client address (e.g. Traefik's `ratelimit` middleware, nginx's
+  `limit_req`, Caddy's `rate_limit`), so an exposed instance cannot be guessed at, nor kept
+  busy hashing passwords; with SSO only, Authelia's own regulation covers it. Add
+  `Strict-Transport-Security` once the domain is HTTPS-only.
 - Ensure both `stella.example.home` and `auth.example.home` are reachable from the user's
   browser (OIDC redirects happen in the browser).
 - **Installing Stella on a phone needs TLS.** A browser registers a service worker only in a

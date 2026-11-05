@@ -4,6 +4,7 @@ import { resolveLocale } from '$lib/i18n/resolve';
 import { loadCatalog } from '$lib/i18n/translate';
 import { clearSessionCookie, SESSION_COOKIE, setLocaleCookie } from '$lib/server/auth/cookies';
 import { resolveRequestIdentity } from '$lib/server/auth/request-identity';
+import { formActionDirective } from '$lib/server/http/csp';
 import { etagOf, isUnchanged, wantsEtag } from '$lib/server/http/etag';
 import {
 	describeUnexpectedError,
@@ -81,6 +82,8 @@ export const handle: Handle = async ({ event, resolve }) => {
 		transformPageChunk: ({ html }) => html.replace('%lang%', event.locals.locale)
 	});
 	const answer = await withEtag(event.request, response);
+	const csp = answer.headers.get('Content-Security-Policy');
+	if (csp) answer.headers.set('Content-Security-Policy', `${csp}; ${signOutFormAction()}`);
 	answer.headers.set('X-Content-Type-Options', 'nosniff');
 	answer.headers.set('X-Frame-Options', 'DENY');
 	answer.headers.set('Referrer-Policy', 'same-origin');
@@ -111,6 +114,12 @@ export const handleError: HandleServerError = ({ error, event, status, message }
 	const t = createTranslator(event.locals.locale ?? DEFAULT_LOCALE);
 	return { message: t('errors.unexpected', { requestId }), requestId };
 };
+
+/** Sign-out may hand over to the identity provider's end-session endpoint (docs/04 §4.4). */
+function signOutFormAction(): string {
+	const { auth, oidc } = getConfig();
+	return formActionDirective(auth.oidc && oidc.rpLogout ? oidc.issuer : null);
+}
 
 /**
  * A page's data, tagged with its content — or, when the device already holds exactly that, a

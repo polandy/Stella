@@ -33,6 +33,7 @@ export const auth: AuthMessages = {
 	'auth.setup.needName': 'Bitte gib deinen Namen ein.',
 	'auth.setup.needEmail': 'Bitte gib eine gültige E-Mail-Adresse ein.',
 	'auth.setup.needPassword': 'Verwende mindestens 8 Zeichen.',
+	'auth.setup.passwordTooLong': 'Verwende höchstens 128 Zeichen.',
 	'auth.setup.invalidInput': 'Ungültige Eingabe.',
 	'auth.setup.alreadyDone': 'Die Einrichtung ist bereits abgeschlossen.'
 };

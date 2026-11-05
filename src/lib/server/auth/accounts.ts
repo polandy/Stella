@@ -39,8 +39,11 @@ export interface AccountRepository {
 	countUsers(): Promise<number>;
 	findCredentialsByEmail(email: string): Promise<StoredCredentials | null>;
 	findById(id: string): Promise<AuthUser | null>;
-	/** Atomically create the household and its first admin. */
-	insertHouseholdWithAdmin(data: NewAdmin): Promise<void>;
+	/**
+	 * Atomically create the household and its first admin — only while no account at all
+	 * exists. False when another setup got there first.
+	 */
+	insertHouseholdWithAdmin(data: NewAdmin): Promise<boolean>;
 	/** Persist the user's interface language. */
 	updateLocale(userId: string, locale: Locale): Promise<void>;
 	/** Persist which contact the user is, or clear it with `null` (docs/02 §2.1.3). */
@@ -101,6 +104,14 @@ export async function changeBlurPrivate(
 	return on;
 }
 
+/** First-run setup asked for when an account already exists. */
+export class SetupAlreadyDoneError extends Error {
+	constructor() {
+		super('Setup has already been completed: a user already exists.');
+		this.name = 'SetupAlreadyDoneError';
+	}
+}
+
 /**
  * Create the household and its first, admin user. Only allowed while no users exist (the
  * one-time first-run setup). The admin is `roleLocked` so IdP group-sync can never demote
@@ -110,9 +121,7 @@ export async function registerFirstAdmin(
 	deps: AccountDeps,
 	input: FirstAdminInput
 ): Promise<AuthUser> {
-	if ((await deps.accounts.countUsers()) > 0) {
-		throw new Error('Setup has already been completed: a user already exists.');
-	}
+	if ((await deps.accounts.countUsers()) > 0) throw new SetupAlreadyDoneError();
 
 	const household = { id: deps.ids.next(), name: input.householdName };
 	const user: AuthUser = {
@@ -127,10 +136,12 @@ export async function registerFirstAdmin(
 	};
 	const passwordHash = await deps.hashPassword(input.password);
 
-	await deps.accounts.insertHouseholdWithAdmin({
+	// Hashing takes a while: a second setup may have passed the check above meanwhile.
+	const inserted = await deps.accounts.insertHouseholdWithAdmin({
 		household,
 		user: { ...user, roleLocked: 1, passwordHash }
 	});
+	if (!inserted) throw new SetupAlreadyDoneError();
 
 	return user;
 }

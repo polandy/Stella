@@ -2,7 +2,6 @@ import { fail, redirect } from '@sveltejs/kit';
 import * as v from 'valibot';
 import { detectImportFormat } from '$lib/server/domain/import/read';
 import { skippedContacts } from '$lib/server/domain/import/review-view';
-import { phrase } from '$lib/i18n/phrase';
 import { requireAdmin } from '$lib/server/auth/guards';
 import { getConfig } from '$lib/server/config';
 import { applyImport, previewImport } from '$lib/server/domain/import/apply';
@@ -15,6 +14,7 @@ import {
 	stageDump,
 	STAGED_DUMP_MAX_AGE_MS
 } from '$lib/server/import/staging';
+import { dumpTextOf } from '$lib/server/import/dump-text';
 import { importWording } from '$lib/server/i18n/import-wording';
 import { say, translator } from '$lib/server/i18n/say';
 import type { Actions, PageServerLoad } from './$types';
@@ -39,8 +39,6 @@ const isUnreadable = (err: unknown): err is SqlDumpError | MonicaJsonError | VCa
 /** Largest export accepted, uncompressed. A family's Monica is a few MB; this is generous. */
 const DUMP_MAX_BYTES = 200 * 1024 * 1024;
 
-const GZIP_MAGIC = [0x1f, 0x8b];
-
 export const load: PageServerLoad = async ({ locals }) => {
 	const user = requireAdmin(locals);
 	return {
@@ -51,15 +49,6 @@ export const load: PageServerLoad = async ({ locals }) => {
 		nextcloud: await nextcloudPanel(locals)
 	};
 };
-
-/** The export as text, whether it arrived plain or gzipped. */
-async function dumpTextOf(file: File): Promise<string> {
-	const bytes = new Uint8Array(await file.arrayBuffer());
-	const gzipped = bytes[0] === GZIP_MAGIC[0] && bytes[1] === GZIP_MAGIC[1];
-	const plain = gzipped ? Bun.gunzipSync(bytes) : bytes;
-	if (plain.byteLength > DUMP_MAX_BYTES) throw new SqlDumpError(phrase('import.error.tooLarge'));
-	return new TextDecoder().decode(plain);
-}
 
 export const actions = {
 	...reviewActions,
@@ -77,7 +66,7 @@ export const actions = {
 			});
 		}
 		try {
-			const text = await dumpTextOf(file);
+			const text = await dumpTextOf(file, DUMP_MAX_BYTES);
 			const plan = previewImport(locals.services.archive.importDeps, text, {
 				householdId: user.householdId,
 				userId: user.id,
