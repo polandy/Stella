@@ -119,6 +119,14 @@ export const archive = {
 		p.count === 1
 			? '1 image named in the document was not in the archive; that photo will show as missing.'
 			: `${p.count} images named in the document were not in the archive; those photos will show as missing.`,
+	'archive.warning.imagesNotStored': (p: { count: number }) =>
+		p.count === 1
+			? '1 image could not be stored here — is the disk full? That photo shows as missing; import the archive again once there is room.'
+			: `${p.count} images could not be stored here — is the disk full? Those photos show as missing; import the archive again once there is room.`,
+	'archive.warning.rowsWithoutParent': (p: { count: number; what: string }) =>
+		p.count === 1
+			? `${p.what} was left out: what it belongs to is not here.`
+			: `${p.what} were left out: what they belong to is not here.`,
 	'archive.warning.giftsConverted': (p: { count: number }) =>
 		p.count === 1
 			? 'The archive held a gift as a Monica note or a gift touchpoint; it is now a gift on the Gifts card.'

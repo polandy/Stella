@@ -9,6 +9,7 @@ import { relationshipPair } from '../../relationships/endpoints';
 import { ARCHIVE_FORMAT, ARCHIVE_VERSION } from '../domain/archive/document';
 import { planRestore } from '../domain/archive/restore';
 import { createDrizzleRelationshipRepository } from './relationship-repository';
+import { restoreTrail } from '../domain/testing';
 import { createDrizzleRestoreRepository } from './restore-repository';
 import { seedRelationshipTypes } from './seed';
 import * as schema from './schema';
@@ -29,6 +30,7 @@ const idGen = (): IdGenerator => {
 
 const HERE = 'h-here';
 const ADMIN = 'u-admin';
+const trail = restoreTrail(HERE, ADMIN);
 
 type Link = { id: string; from: string; to: string; type: string; description?: string };
 
@@ -64,7 +66,7 @@ async function restore(links: Link[]) {
 		actorId: ADMIN,
 		...known
 	});
-	return repo.applyRestore(plan);
+	return repo.applyRestore(plan, trail);
 }
 
 const stored = () =>
@@ -106,7 +108,7 @@ describe('a restored relationship', () => {
 			{ id: 'r-twin', from: 'anna', to: 'carl', type: 'friend' }
 		]);
 		expect(stored()).toEqual([{ id: 'r-twin', from: 'anna', to: 'carl', note: 'school' }]);
-		expect(counts.relationship).toEqual({ added: 1, skipped: 0 });
+		expect(counts.relationship).toEqual({ added: 1, skipped: 0, withoutParent: 0 });
 	});
 
 	it('leaves the household’s own row whole where it already has the link', async () => {
@@ -117,7 +119,7 @@ describe('a restored relationship', () => {
 		]);
 
 		expect(stored()).toEqual([{ id: 'r-here', from: 'anna', to: 'carl', note: null }]);
-		expect(counts.relationship).toEqual({ added: 0, skipped: 1 });
+		expect(counts.relationship).toEqual({ added: 0, skipped: 1, withoutParent: 0 });
 	});
 
 	it('changes nothing the second time the same archive is imported', async () => {
@@ -131,7 +133,7 @@ describe('a restored relationship', () => {
 		const counts = await restore(links);
 
 		expect(stored()).toEqual(before);
-		expect(counts.relationship).toEqual({ added: 0, skipped: 1 });
+		expect(counts.relationship).toEqual({ added: 0, skipped: 1, withoutParent: 0 });
 	});
 
 	it('never links a person to themselves', async () => {

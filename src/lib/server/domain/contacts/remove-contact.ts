@@ -1,4 +1,4 @@
-import type { Viewer } from '../../access/visibility';
+import { canDeleteContact, canMergeContacts, type Remover } from '../../access/visibility';
 import type { Clock } from '../../clock';
 import type { IdGenerator } from '../../id';
 import { activityRecord } from '../activity/activity';
@@ -23,7 +23,7 @@ export interface PhotoFileCascade {
 
 /** Deleting a person also unlinks the bytes of their photos (docs/02 §2.2). */
 export interface DeleteContactDeps {
-	contacts: Pick<ContactRepository, 'findByIdVisibleTo' | 'deleteVisibleTo'>;
+	contacts: Pick<ContactRepository, 'findByIdVisibleTo' | 'deleteDeletableBy'>;
 	photoFiles: PhotoFileCascade;
 	ids: IdGenerator;
 	clock: Clock;
@@ -31,7 +31,7 @@ export interface DeleteContactDeps {
 
 /** Merging reads both records, then moves and logs everything in the repository's one write. */
 export interface MergeContactDeps {
-	contacts: Pick<ContactRepository, 'readForMerge' | 'mergeVisibleTo'>;
+	contacts: Pick<ContactRepository, 'readForMerge' | 'mergeMergeableBy'>;
 	ids: IdGenerator;
 	clock: Clock;
 }
@@ -42,21 +42,28 @@ export interface MergeContactDeps {
  * because a file left behind is the harmless direction of that failure while a delete with
  * no trace is not (docs/02 §2.2).
  *
- * Returns false when the contact is not visible to the viewer, exactly as for one that is
- * not there. *Who* may delete is decided at the edge: this is admin-only (docs/02 §2.2).
+ * Admin only (`canDeleteContact`, docs/02 §2.2): returns false when the remover may not
+ * delete the contact — a member, or a contact they cannot see — exactly as for one that is
+ * not there. The write asks the same rule again in its own condition.
  */
 export async function deleteContact(
 	deps: DeleteContactDeps,
-	viewer: Viewer,
+	remover: Remover,
 	id: string
 ): Promise<boolean> {
-	const contact = await deps.contacts.findByIdVisibleTo(viewer, id);
+	const contact = await deps.contacts.findByIdVisibleTo(remover, id);
 	if (contact === null) return false;
+	const access = {
+		householdId: contact.householdId,
+		ownerId: contact.createdBy,
+		visibility: contact.visibility
+	};
+	if (!canDeleteContact(remover, access)) return false;
 
-	const files = await deps.contacts.deleteVisibleTo(
-		viewer,
+	const files = await deps.contacts.deleteDeletableBy(
+		remover,
 		id,
-		activityRecord(deps, viewer, {
+		activityRecord(deps, remover, {
 			kind: 'contact.deleted',
 			contactId: id,
 			displayName: contact.displayName,
@@ -78,39 +85,42 @@ export async function deleteContact(
  * note, photo, date, link and journal entry. The emptied record is then deleted and the merge
  * written to the log — the only trace left of a name that used to exist (docs/02 §2.2).
  *
- * Returns false when either record is out of the viewer's reach, or when the two are the same.
+ * Admin only (`canMergeContacts`, docs/02 §2.2): returns false when the remover may not merge
+ * the two — a member, or either record out of their reach — or when the two are the same.
  * Throws `MergeWouldHideRecordsError` for a shared record merged into a private survivor.
  */
 export async function mergeContacts(
 	deps: MergeContactDeps,
-	viewer: Viewer,
+	remover: Remover,
 	keepId: string,
 	mergedId: string
 ): Promise<boolean> {
 	if (keepId === mergedId) return false;
 
-	const pair = await deps.contacts.readForMerge(viewer, keepId, mergedId);
+	const pair = await deps.contacts.readForMerge(remover, keepId, mergedId);
 	if (pair === null) return false;
-	if (!mergeKeepsRecordsInView(pair.keep.visibility, pair.mergedAway.visibility)) {
+	if (!canMergeContacts(remover, pair.keep.access, pair.mergedAway.access)) return false;
+	const keepVisibility = pair.keep.access.visibility;
+	if (!mergeKeepsRecordsInView(keepVisibility, pair.mergedAway.access.visibility)) {
 		throw new MergeWouldHideRecordsError(pair.keep.displayName, pair.mergedAway.displayName);
 	}
 
 	const now = deps.clock.now();
-	return deps.contacts.mergeVisibleTo(
-		viewer,
+	return deps.contacts.mergeMergeableBy(
+		remover,
 		keepId,
 		mergedId,
 		mergeProfiles(pair.keep.profile, pair.mergedAway.profile),
 		activityRecord(
 			deps,
-			viewer,
+			remover,
 			{
 				kind: 'contact.merged',
 				keepId,
 				mergedAwayId: mergedId,
 				keep: pair.keep.displayName,
 				mergedAway: pair.mergedAway.displayName,
-				visibility: pair.keep.visibility
+				visibility: keepVisibility
 			},
 			now
 		),

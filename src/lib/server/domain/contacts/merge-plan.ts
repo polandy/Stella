@@ -39,7 +39,13 @@ export type MergeSettlement =
 	 */
 	| 'drop-links-between-the-two'
 	/** A membership of a circle the survivor is already in; nothing keys on it, so drop it. */
-	| 'drop-memberships-survivor-has';
+	| 'drop-memberships-survivor-has'
+	/**
+	 * An interaction about one of the two that had the other along is, once both moved, about
+	 * the survivor with the survivor among its people; they go from that list. Runs after the
+	 * interactions and their participants have both been repointed.
+	 */
+	| 'drop-survivor-from-own-interactions';
 
 export type MergeStep =
 	| { kind: 'repoint'; table: string; column: string; onConflict: MergeConflictRule }
@@ -87,6 +93,7 @@ export const MERGE_PLAN: readonly MergeStep[] = [
 	repoint('contact_field', 'contact_id', 'cannot-collide'),
 	repoint('note', 'contact_id', 'cannot-collide'),
 	repoint('interaction', 'contact_id', 'cannot-collide'),
+	settle('drop-survivor-from-own-interactions', 'interaction_participant'),
 	repoint('important_date', 'contact_id', 'cannot-collide'),
 	repoint('gift', 'contact_id', 'cannot-collide'),
 	repoint('todo', 'contact_id', 'cannot-collide'),

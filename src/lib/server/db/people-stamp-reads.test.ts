@@ -139,17 +139,25 @@ describe('the people stamp', () => {
 		[
 			'a name edited',
 			() =>
-				createDrizzleContactRepository(db).updateProfile('ben', {
-					displayName: 'Ben B.',
-					description: null,
-					updatedAt: tick()
-				})
+				createDrizzleContactRepository(db).writeNames(
+					[
+						{
+							id: 'ben',
+							displayName: 'Ben B.',
+							firstName: 'Ben',
+							lastName: 'B.',
+							nickname: null,
+							formerName: null,
+							updatedAt: tick()
+						}
+					],
+					null
+				)
 		],
 		[
 			'a description written',
 			() =>
 				createDrizzleContactRepository(db).updateProfile('ben', {
-					displayName: 'ben',
 					description: 'from school',
 					updatedAt: tick()
 				})
@@ -158,7 +166,7 @@ describe('the people stamp', () => {
 		[
 			'a person deleted',
 			() =>
-				createDrizzleContactRepository(db).deleteVisibleTo(andy, 'cleo', {
+				createDrizzleContactRepository(db).deleteDeletableBy({ ...andy, isAdmin: true }, 'cleo', {
 					id: 'log-1',
 					householdId: H,
 					actorId: U1,

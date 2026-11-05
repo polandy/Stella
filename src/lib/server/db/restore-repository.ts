@@ -160,7 +160,10 @@ export function createDrizzleRestoreRepository(
 			};
 		},
 
-		async applyRestore(plan: RestorePlan): Promise<RestoreCounts> {
+		async applyRestore(
+			plan: RestorePlan,
+			trail: (counts: RestoreCounts) => ActivityOf<'archive.restored'>
+		): Promise<RestoreCounts> {
 			const householdId = plan.householdId;
 
 			return sqlite.transaction((): RestoreCounts => {
@@ -226,12 +229,18 @@ export function createDrizzleRestoreRepository(
 						`INSERT OR IGNORE INTO "${table}" (${columns.map((c) => `"${c}"`).join(',')}) VALUES (${columns.map(() => '?').join(',')})`
 					);
 					const selfLinks = links.filter((link) => link.parent === table);
+					let withoutParent = 0;
 					for (const row of parentsFirst(rows, selfLinks)) {
-						if (!isWritable(row)) continue;
+						if (!isWritable(row)) {
+							withoutParent++;
+							continue;
+						}
 						insert.run(...(columns.map((column) => row[column]) as SQLQueryBindings[]));
 					}
 					const added = countOf(table) - before;
-					counts[table] = { added, skipped: rows.length - added };
+					// Told apart, because the report reads `skipped` as "already here" and a row
+					// with nothing to hang on is lost, not present (SV-09).
+					counts[table] = { added, skipped: rows.length - added - withoutParent, withoutParent };
 				}
 
 				// An entry's tags are its text's (docs/02 §2.20.2), so the archive carries no tag
@@ -245,12 +254,13 @@ export function createDrizzleRestoreRepository(
 					if (row) writeEntryTags(db, ids, id, hashtagsIn(row.body));
 				}
 
+				// The log line lands with the rows or not at all (ADR-048).
+				db.insert(activityLog)
+					.values(localizedActivityEntry(trail(counts), wording))
+					.run();
+
 				return counts;
 			})();
-		},
-
-		async recordImport(entry: ActivityOf<'archive.restored'>): Promise<void> {
-			db.insert(activityLog).values(localizedActivityEntry(entry, wording)).run();
 		}
 	};
 }

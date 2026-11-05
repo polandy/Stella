@@ -57,9 +57,14 @@ const sidesOf = (conflict: SyncConflict) =>
 
 export function createDrizzleNextcloudStore(db: Db): NextcloudStore {
 	/** Forget the conflicts of the people named, in this book. */
-	const dropConflicts = (source: NextcloudSource, contactIds: string[]) => {
+	/** Drops the conflicts of people no longer linked — inside the transaction that unlinked them. */
+	const dropConflicts = (
+		tx: Pick<typeof db, 'delete'>,
+		source: NextcloudSource,
+		contactIds: string[]
+	) => {
 		if (contactIds.length === 0) return;
-		db.delete(nextcloudConflict)
+		tx.delete(nextcloudConflict)
 			.where(
 				and(eq(nextcloudConflict.source, source), inArray(nextcloudConflict.contactId, contactIds))
 			)
@@ -151,35 +156,33 @@ export function createDrizzleNextcloudStore(db: Db): NextcloudStore {
 					.returning({ contactId: contactSourceLink.contactId })
 					.all();
 				const people = links.flatMap((l) => (l.contactId ? [l.contactId] : []));
-				if (people.length > 0) {
-					tx.delete(nextcloudConflict)
-						.where(
-							and(
-								eq(nextcloudConflict.source, source),
-								inArray(nextcloudConflict.contactId, people)
-							)
-						)
-						.run();
-				}
+				dropConflicts(tx, source, people);
 				return people.length > 0;
 			});
 		},
 
 		async unlinkPrivate(householdId, source) {
-			const privateIds = db
-				.select({ id: contact.id })
-				.from(contact)
-				.where(and(eq(contact.householdId, householdId), eq(contact.visibility, 'private')));
-			const dropped = db
-				.delete(contactSourceLink)
-				.where(and(linkedTo(householdId, source), inArray(contactSourceLink.contactId, privateIds)))
-				.returning({ contactId: contactSourceLink.contactId })
-				.all();
-			dropConflicts(
-				source,
-				dropped.flatMap((d) => (d.contactId ? [d.contactId] : []))
-			);
-			return dropped.length;
+			// One transaction, as `dropCard`: a link gone without its conflicts would leave a
+			// conflict nobody can resolve, since the sync no longer reaches that person.
+			return db.transaction((tx) => {
+				const privateIds = tx
+					.select({ id: contact.id })
+					.from(contact)
+					.where(and(eq(contact.householdId, householdId), eq(contact.visibility, 'private')));
+				const dropped = tx
+					.delete(contactSourceLink)
+					.where(
+						and(linkedTo(householdId, source), inArray(contactSourceLink.contactId, privateIds))
+					)
+					.returning({ contactId: contactSourceLink.contactId })
+					.all();
+				dropConflicts(
+					tx,
+					source,
+					dropped.flatMap((d) => (d.contactId ? [d.contactId] : []))
+				);
+				return dropped.length;
+			});
 		},
 
 		async linkedCard(viewer, contactId) {

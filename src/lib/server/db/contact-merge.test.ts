@@ -3,7 +3,7 @@ import { Database } from 'bun:sqlite';
 import { eq } from 'drizzle-orm';
 import { drizzle, type BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
 import { migrate } from 'drizzle-orm/bun-sqlite/migrator';
-import type { Viewer } from '../access/visibility';
+import type { Remover } from '../access/visibility';
 import type { ActivityOf } from '../domain/activity/activity';
 import type { MergeableProfile } from '../domain/contacts/merge-profile';
 import { relationshipPair } from '../../relationships/endpoints';
@@ -22,8 +22,9 @@ import { seedRelationshipTypes } from './seed';
 const H = 'household-1';
 const U1 = 'user-1';
 const U2 = 'user-2';
-const viewer: Viewer = { id: U1, householdId: H };
-const viewerU2: Viewer = { id: U2, householdId: H };
+// Merging is an admin's (docs/02 §2.2); both are, so a case about reach is about reach alone.
+const viewer: Remover = { id: U1, householdId: H, isAdmin: true };
+const viewerU2: Remover = { id: U2, householdId: H, isAdmin: true };
 
 let db: BunSQLiteDatabase<typeof schema>;
 
@@ -76,7 +77,7 @@ function seedContact(
 		.run();
 }
 
-const merge = (v: Viewer = viewer, keepId = 'keep', mergedId = 'dup') =>
+const merge = (v: Remover = viewer, keepId = 'keep', mergedId = 'dup') =>
 	mergeContacts(db, v, { keepId, mergedId, profile: PROFILE, audit, updatedAt: 999 });
 
 beforeEach(() => {
@@ -216,6 +217,32 @@ describe('what follows the person', () => {
 });
 
 describe('what would collide', () => {
+	it('never leaves the survivor among the people of their own interaction (SV-12)', () => {
+		seedContact('anna', 'Anna');
+		db.insert(schema.interaction)
+			.values([
+				// About the duplicate, with the survivor along: after the merge it is about Hans.
+				{ id: 'i-dup', contactId: 'dup', createdBy: U1, kind: 'call', happenedAt: '2026-01-01' },
+				// About the survivor, with the duplicate along: the same, the other way round.
+				{ id: 'i-keep', contactId: 'keep', createdBy: U1, kind: 'met', happenedAt: '2026-01-02' }
+			])
+			.run();
+		db.insert(schema.interactionParticipant)
+			.values([
+				{ interactionId: 'i-dup', contactId: 'keep' },
+				{ interactionId: 'i-dup', contactId: 'anna' },
+				{ interactionId: 'i-keep', contactId: 'dup' }
+			])
+			.run();
+
+		expect(merge()).toBe(true);
+
+		// Anna is still along — the step drops only the survivor from what is about them.
+		expect(db.select().from(schema.interactionParticipant).all()).toEqual([
+			{ interactionId: 'i-dup', contactId: 'anna' }
+		]);
+	});
+
 	it('keeps a tag the survivor already had, and takes the one they did not', () => {
 		db.insert(schema.tag)
 			.values([
@@ -785,9 +812,18 @@ describe('what it refuses', () => {
 		expect(db.select().from(schema.contact).all()).toHaveLength(3);
 		expect(db.select().from(schema.activityLog).all()).toHaveLength(0);
 
-		// positive control: the member who owns it can merge it.
+		// positive control: the admin who owns it can merge it.
 		expect(merge(viewerU2, 'keep', 'theirs')).toBe(true);
 		expect(db.select().from(schema.contactField).all()[0].contactId).toBe('keep');
+	});
+
+	it('refuses a member, who sees both, and changes nothing', () => {
+		expect(merge({ ...viewer, isAdmin: false })).toBe(false);
+		expect(db.select().from(schema.contact).all()).toHaveLength(2);
+		expect(db.select().from(schema.activityLog).all()).toHaveLength(0);
+
+		// positive control: the same pair, merged by an admin.
+		expect(merge(viewer)).toBe(true);
 	});
 
 	it('refuses a shared record merged into a private survivor, and changes nothing', () => {

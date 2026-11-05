@@ -34,10 +34,13 @@ export interface ArchiveFile {
 	media: Map<string, Uint8Array>;
 }
 
-/** How many rows of one table were written, and how many were already here. */
+/** What became of the rows of one table. */
 export interface TableOutcome {
 	added: number;
+	/** Rows left alone because they — or a row in their place — were already here. */
 	skipped: number;
+	/** Rows left out because something they point at is not here: the person, the entry. */
+	withoutParent: number;
 }
 
 export type RestoreCounts = Record<string, TableOutcome>;
@@ -49,9 +52,15 @@ export type RestoreCounts = Record<string, TableOutcome>;
 export interface RestoreRepository {
 	/** What the installation already has, so the plan can be fitted into it. */
 	readTarget(householdId: string): Promise<Omit<RestoreTarget, 'householdId' | 'actorId'>>;
-	applyRestore(plan: RestorePlan): Promise<RestoreCounts>;
-	/** Records that an import happened, so the household can see it in the stream. */
-	recordImport(entry: ActivityOf<'archive.restored'>): Promise<void>;
+	/**
+	 * Writes the plan and, in the same transaction, the log line `trail` builds from what was
+	 * written — so the household sees every restore that changed anything (ADR-048). The line
+	 * needs the counts, hence a function rather than the entry itself.
+	 */
+	applyRestore(
+		plan: RestorePlan,
+		trail: (counts: RestoreCounts) => ActivityOf<'archive.restored'>
+	): Promise<RestoreCounts>;
 }
 
 export interface ImportArchiveDeps {
@@ -73,7 +82,8 @@ export interface ImportReport {
 	exportedAt: string | null;
 	added: Record<string, number>;
 	skipped: Record<string, number>;
-	media: { stored: number; alreadyThere: number; missing: number };
+	/** `notStored`: images the archive carried that the media store would not take. */
+	media: { stored: number; alreadyThere: number; missing: number; notStored: number };
 	warnings: RestoreWarning[];
 }
 
@@ -130,47 +140,66 @@ export async function importArchive(
 		...known
 	});
 
-	const counts = await deps.restore.applyRestore(plan);
+	const counts = await deps.restore.applyRestore(plan, (written) =>
+		activityRecord(
+			deps,
+			{ id: actor.userId, householdId: actor.householdId },
+			{
+				kind: 'archive.restored',
+				people: written.contact?.added ?? 0,
+				household: plan.household,
+				locale
+			}
+		)
+	);
+	// From here on the rows and their log line are in. What follows can only add to them, so a
+	// failure is reported rather than thrown — a throw would tell the admin the restore failed.
+	// The gift conversion is the exception: it runs at every start, so a failure here is retried
+	// there, and it is loud because it is a bug, not a full disk.
 	const converted = await deps.convertHeldGifts();
 	const added: Record<string, number> = {};
 	const skipped: Record<string, number> = {};
+	const warnings = [...plan.warnings];
 	for (const [table, outcome] of Object.entries(counts)) {
 		added[table] = outcome.added;
 		skipped[table] = outcome.skipped;
+		if (outcome.withoutParent > 0) {
+			warnings.push({ code: 'rowsWithoutParent', table, count: outcome.withoutParent });
+		}
 	}
 
 	// Only after the rows are in: files without rows pointing at them are litter, rows without
 	// their file are a broken gallery. An image that is already here is left alone — the same
 	// rule the rows follow.
-	const media = { stored: 0, alreadyThere: 0, missing: 0 };
-	const warnings = [...plan.warnings];
+	const media = { stored: 0, alreadyThere: 0, missing: 0, notStored: 0 };
 	for (const path of plan.mediaPaths) {
-		if ((await deps.media.read(path)) !== null) {
-			media.alreadyThere++;
-			continue;
-		}
 		const bytes = file.media.get(path);
-		if (!bytes) {
-			media.missing++;
-			continue;
+		try {
+			if ((await deps.media.read(path)) !== null) {
+				media.alreadyThere++;
+				continue;
+			}
+			if (!bytes) {
+				media.missing++;
+				continue;
+			}
+			await deps.media.put(path, bytes);
+			media.stored++;
+		} catch {
+			// A full disk or an unwritable directory: the photo row is in and shows as missing,
+			// and importing the same archive again once there is room puts the file beside it.
+			media.notStored++;
 		}
-		await deps.media.put(path, bytes);
-		media.stored++;
 	}
 	if (media.missing > 0) {
 		warnings.push({ code: 'imagesMissing', count: media.missing });
 	}
+	if (media.notStored > 0) {
+		warnings.push({ code: 'imagesNotStored', count: media.notStored });
+	}
 	if (converted.giftsWritten > 0) {
 		warnings.push({ code: 'giftsConverted', count: converted.giftsWritten });
 	}
-
-	await deps.restore.recordImport(
-		activityRecord(
-			deps,
-			{ id: actor.userId, householdId: actor.householdId },
-			{ kind: 'archive.restored', people: added.contact ?? 0, household: plan.household, locale }
-		)
-	);
 
 	return {
 		household: plan.household,

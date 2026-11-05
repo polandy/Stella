@@ -1,10 +1,11 @@
 import { and, eq, inArray, or } from 'drizzle-orm';
 import type { BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
-import { contactVisibleTo } from '../access/query-scoping';
-import type { Viewer } from '../access/visibility';
+import { contactDeletableBy, contactVisibleTo } from '../access/query-scoping';
+import type { Remover, Viewer } from '../access/visibility';
 import type {
 	Contact,
 	ContactRepository,
+	MergeSide,
 	NewContact,
 	ProfilePatch
 } from '../domain/contacts/contacts';
@@ -101,12 +102,12 @@ export function createDrizzleContactRepository(
 				: null;
 		},
 
-		async deleteVisibleTo(viewer: Viewer, id: string, audit: ActivityOf<'contact.deleted'>) {
+		async deleteDeletableBy(remover: Remover, id: string, audit: ActivityOf<'contact.deleted'>) {
 			return db.transaction((tx) => {
 				const found = tx
 					.select({ id: contactTable.id })
 					.from(contactTable)
-					.where(and(eq(contactTable.id, id), contactVisibleTo(viewer)))
+					.where(and(eq(contactTable.id, id), contactDeletableBy(remover)))
 					.get();
 				if (!found) return null;
 
@@ -152,6 +153,8 @@ export function createDrizzleContactRepository(
 				.select({
 					...mergeableColumns,
 					id: contactTable.id,
+					householdId: contactTable.householdId,
+					createdBy: contactTable.createdBy,
 					displayName: contactTable.displayName,
 					visibility: contactTable.visibility
 				})
@@ -186,29 +189,28 @@ export function createDrizzleContactRepository(
 				withoutLastNameAt: row.withoutLastNameAt
 			});
 
-			return {
-				keep: {
-					displayName: keep.displayName,
-					visibility: keep.visibility,
-					profile: profileOf(keep)
+			const sideOf = (row: (typeof rows)[number]): MergeSide => ({
+				access: {
+					householdId: row.householdId,
+					ownerId: row.createdBy,
+					visibility: row.visibility
 				},
-				mergedAway: {
-					displayName: mergedAway.displayName,
-					visibility: mergedAway.visibility,
-					profile: profileOf(mergedAway)
-				}
-			};
+				displayName: row.displayName,
+				profile: profileOf(row)
+			});
+
+			return { keep: sideOf(keep), mergedAway: sideOf(mergedAway) };
 		},
 
-		async mergeVisibleTo(
-			viewer: Viewer,
+		async mergeMergeableBy(
+			remover: Remover,
 			keepId: string,
 			mergedId: string,
 			profile: MergeableProfile,
 			audit: ActivityOf<'contact.merged'>,
 			updatedAt: number
 		) {
-			return mergeContacts(db, viewer, { keepId, mergedId, profile, audit, updatedAt });
+			return mergeContacts(db, remover, { keepId, mergedId, profile, audit, updatedAt });
 		},
 
 		async setArchived(id: string, archivedAt: number | null) {
@@ -218,7 +220,6 @@ export function createDrizzleContactRepository(
 		async updateProfile(id: string, patch: ProfilePatch) {
 			db.update(contactTable)
 				.set({
-					displayName: patch.displayName,
 					description: patch.description,
 					updatedAt: patch.updatedAt
 				})

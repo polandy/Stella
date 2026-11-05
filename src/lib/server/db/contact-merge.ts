@@ -1,4 +1,4 @@
-import { and, eq, or, sql } from 'drizzle-orm';
+import { and, eq, inArray, or, sql } from 'drizzle-orm';
 import type { BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
 import { activityEntry, type ActivityOf } from '../domain/activity/activity';
 import { foldedLinkDetails } from '../../relationships/fold';
@@ -11,14 +11,16 @@ import {
 	type MergeStep
 } from '../domain/contacts/merge-plan';
 import type { MergeableProfile } from '../domain/contacts/merge-profile';
-import type { Viewer } from '../access/visibility';
-import { contactVisibleTo } from '../access/query-scoping';
+import type { Remover } from '../access/visibility';
+import { contactMergeableBy } from '../access/query-scoping';
 import { keepUnwornCuts } from './cut-turning';
 import type * as schema from './schema';
 import {
 	activityLog,
 	circleMembership,
 	contact,
+	interaction,
+	interactionParticipant,
 	journalEntry,
 	journalMention,
 	photo,
@@ -193,12 +195,31 @@ function dropMembershipsSurvivorHas(tx: Db, { keepId, mergedId }: Merging): void
 	}
 }
 
+/** Nobody is a participant of an interaction about themselves (SV-12). */
+function dropSurvivorFromOwnInteractions(tx: Db, { keepId }: Merging): void {
+	tx.delete(interactionParticipant)
+		.where(
+			and(
+				eq(interactionParticipant.contactId, keepId),
+				inArray(
+					interactionParticipant.interactionId,
+					tx
+						.select({ id: interaction.id })
+						.from(interaction)
+						.where(eq(interaction.contactId, keepId))
+				)
+			)
+		)
+		.run();
+}
+
 /** The steps the plan names rather than describes, each implemented here. */
 const SETTLEMENTS: Record<MergeSettlement, (tx: Db, merging: Merging) => void> = {
 	'join-journal-days': joinJournalDays,
 	'move-links-in-stored-order': moveLinksInStoredOrder,
 	'drop-links-between-the-two': dropLinksBetweenTheTwo,
 	'drop-memberships-survivor-has': dropMembershipsSurvivorHas,
+	'drop-survivor-from-own-interactions': dropSurvivorFromOwnInteractions,
 	'turn-merged-cuts': (tx, { mergedId }) => keepUnwornCuts(tx, mergedId, { evenWorn: true })
 };
 
@@ -215,13 +236,14 @@ function runStep(tx: Db, step: MergeStep, merging: Merging): void {
 
 /**
  * Merge `mergedId` into `keepId`, writing `audit` in the same transaction. Returns false when
- * either contact is out of the viewer's reach, or when the two are the same record; throws
+ * the remover may not merge them (`contactMergeableBy` on both rows: an admin who sees both),
+ * or when the two are the same record; throws
  * `MergeWouldHideRecordsError` for a shared record merged into a private survivor — asked
  * again here, inside the write, since either may have changed visibility since the read.
  */
 export function mergeContacts(
 	db: Db,
-	viewer: Viewer,
+	remover: Remover,
 	input: {
 		keepId: string;
 		mergedId: string;
@@ -237,7 +259,7 @@ export function mergeContacts(
 			.select({ id: contact.id, displayName: contact.displayName, visibility: contact.visibility })
 			.from(contact)
 			.where(
-				and(sql`${contact.id} in (${input.keepId}, ${input.mergedId})`, contactVisibleTo(viewer))
+				and(sql`${contact.id} in (${input.keepId}, ${input.mergedId})`, contactMergeableBy(remover))
 			)
 			.all();
 		const keep = both.find((row) => row.id === input.keepId);

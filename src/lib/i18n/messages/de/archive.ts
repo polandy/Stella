@@ -111,6 +111,14 @@ export const archive: ArchiveMessages = {
 		p.count === 1
 			? 'Ein im Dokument genanntes Bild war nicht im Archiv; dieses Foto wird als fehlend angezeigt.'
 			: `${p.count} im Dokument genannte Bilder waren nicht im Archiv; diese Fotos werden als fehlend angezeigt.`,
+	'archive.warning.imagesNotStored': (p) =>
+		p.count === 1
+			? 'Ein Bild konnte hier nicht gespeichert werden – ist die Festplatte voll? Dieses Foto wird als fehlend angezeigt; importiere das Archiv erneut, sobald Platz ist.'
+			: `${p.count} Bilder konnten hier nicht gespeichert werden – ist die Festplatte voll? Diese Fotos werden als fehlend angezeigt; importiere das Archiv erneut, sobald Platz ist.`,
+	'archive.warning.rowsWithoutParent': (p) =>
+		p.count === 1
+			? `${p.what} wurde ausgelassen, weil das, wozu der Datensatz gehört, hier fehlt.`
+			: `${p.what} wurden ausgelassen, weil das, wozu sie gehören, hier fehlt.`,
 	'archive.warning.giftsConverted': (p) =>
 		p.count === 1
 			? 'Das Archiv enthielt ein Geschenk als Monica-Notiz oder als Kontakt der Art Geschenk; es steht jetzt als Geschenk auf der Geschenke-Karte.'

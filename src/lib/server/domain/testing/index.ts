@@ -39,3 +39,4 @@ export {
 	relationshipTypeRepositoryWith,
 	someTie
 } from './relationships';
+export { restoreTrail } from './archive';

@@ -9,6 +9,7 @@ import { serialiseDocument } from '../domain/archive/archive';
 import { buildArchiveDocument } from '../domain/archive/document';
 import { planRestore, type RestorePlan } from '../domain/archive/restore';
 import { createDrizzleArchiveRepository, EXPORTED_TABLES } from './archive-repository';
+import { restoreTrail } from '../domain/testing';
 import { createDrizzleRestoreRepository } from './restore-repository';
 import { ensureSearchIndex } from './search-index';
 import { seedRelationshipTypes } from './seed';
@@ -34,6 +35,7 @@ const SOURCE = 'h-source';
 const SOURCE_USER = 'u-source';
 const HERE = 'h-here';
 const ADMIN = 'u-admin';
+const trail = restoreTrail(HERE, ADMIN);
 
 function freshDb(): { db: BunSQLiteDatabase<typeof schema>; sqlite: Database } {
 	const sqlite = new Database(':memory:');
@@ -149,14 +151,14 @@ async function plan(): Promise<RestorePlan> {
 
 describe('restoring what the household has already answered', () => {
 	it('keeps the Immich faces it ignored, so New from Immich does not offer them again', async () => {
-		await repo.applyRestore(await plan());
+		await repo.applyRestore(await plan(), trail);
 		expect(here.db.select().from(schema.immichNameIgnore).all()).toEqual([
 			{ householdId: HERE, immichPersonId: FACE, ignoredBy: ADMIN, ignoredAt: EXPORTED }
 		]);
 	});
 
 	it('keeps the address-book cards it linked or skipped, so the next import does not ask again', async () => {
-		await repo.applyRestore(await plan());
+		await repo.applyRestore(await plan(), trail);
 		const links = here.db.select().from(schema.contactSourceLink).all();
 		expect(links.map((l) => [l.externalUid, l.state, l.contactId, l.householdId])).toEqual([
 			['uid-hans', 'linked', 'c-hans', HERE],
@@ -165,7 +167,7 @@ describe('restoring what the household has already answered', () => {
 	});
 
 	it('keeps the suggestions it declined, so none is offered again', async () => {
-		await repo.applyRestore(await plan());
+		await repo.applyRestore(await plan(), trail);
 		expect(here.db.select().from(schema.suggestionDismissal).all()).toEqual([
 			{
 				id: 'sd-1',
@@ -179,7 +181,7 @@ describe('restoring what the household has already answered', () => {
 	});
 
 	it('keeps the commands it applied, so a phone’s resend is answered and not applied twice', async () => {
-		await repo.applyRestore(await plan());
+		await repo.applyRestore(await plan(), trail);
 		expect(here.db.select().from(schema.commandReceipt).all()).toEqual([
 			{
 				id: 'cmd-1',
@@ -195,8 +197,8 @@ describe('restoring what the household has already answered', () => {
 	});
 
 	it('adds none of them a second time when the same archive is imported again', async () => {
-		await repo.applyRestore(await plan());
-		const counts = await repo.applyRestore(await plan());
+		await repo.applyRestore(await plan(), trail);
+		const counts = await repo.applyRestore(await plan(), trail);
 		for (const table of [
 			'immich_name_ignore',
 			'contact_source_link',

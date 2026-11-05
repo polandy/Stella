@@ -102,9 +102,7 @@ describe('editProfile', () => {
 		const { services, written } = describing();
 		const form = formOf({ description: '  Sings in the choir  ' });
 		expect(await post(actions.editProfile, services, form)).toEqual(BACK);
-		expect(written).toEqual([
-			['anna', { displayName: 'Anna Berg', description: 'Sings in the choir', updatedAt: NOW }]
-		]);
+		expect(written).toEqual([['anna', { description: 'Sings in the choir', updatedAt: NOW }]]);
 	});
 
 	it('takes the description off when it is emptied or left out', async () => {

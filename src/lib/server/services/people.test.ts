@@ -141,7 +141,9 @@ describe('createPeopleServices', () => {
 	it('unlinks a deleted person’s files through the injected media store', async () => {
 		const people = createPeopleServices(wiring);
 		const id = await addAnna(people.contactDeps);
-		expect(await deleteContact(people.deleteContactDeps, viewerOf(admin), id)).toBe(true);
+		expect(
+			await deleteContact(people.deleteContactDeps, { ...viewerOf(admin), isAdmin: true }, id)
+		).toBe(true);
 		expect(people.deleteContactDeps.photoFiles).toBe(media);
 		expect(await people.contacts.findByIdVisibleTo(viewerOf(admin), id)).toBeNull();
 	});
