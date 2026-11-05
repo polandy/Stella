@@ -157,9 +157,7 @@ describe('the CardDAV address book', () => {
 			'/remote.php/dav/addressbooks/users/other/contacts/a.vcf',
 			PATH + '../other/a.vcf'
 		]) {
-			await expect(book.put(href, card('a'), '"e1"')).rejects.toThrow(
-				AddressBookUnreachableError
-			);
+			await expect(book.put(href, card('a'), '"e1"')).rejects.toThrow(AddressBookUnreachableError);
 		}
 		expect(seen).toEqual([]);
 	});
