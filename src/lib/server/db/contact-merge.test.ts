@@ -217,6 +217,32 @@ describe('what follows the person', () => {
 });
 
 describe('what would collide', () => {
+	it('never leaves the survivor among the people of their own interaction (SV-12)', () => {
+		seedContact('anna', 'Anna');
+		db.insert(schema.interaction)
+			.values([
+				// About the duplicate, with the survivor along: after the merge it is about Hans.
+				{ id: 'i-dup', contactId: 'dup', createdBy: U1, kind: 'call', happenedAt: '2026-01-01' },
+				// About the survivor, with the duplicate along: the same, the other way round.
+				{ id: 'i-keep', contactId: 'keep', createdBy: U1, kind: 'meal', happenedAt: '2026-01-02' }
+			])
+			.run();
+		db.insert(schema.interactionParticipant)
+			.values([
+				{ interactionId: 'i-dup', contactId: 'keep' },
+				{ interactionId: 'i-dup', contactId: 'anna' },
+				{ interactionId: 'i-keep', contactId: 'dup' }
+			])
+			.run();
+
+		expect(merge()).toBe(true);
+
+		// Anna is still along — the step drops only the survivor from what is about them.
+		expect(db.select().from(schema.interactionParticipant).all()).toEqual([
+			{ interactionId: 'i-dup', contactId: 'anna' }
+		]);
+	});
+
 	it('keeps a tag the survivor already had, and takes the one they did not', () => {
 		db.insert(schema.tag)
 			.values([

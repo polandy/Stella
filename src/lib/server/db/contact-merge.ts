@@ -1,4 +1,4 @@
-import { and, eq, or, sql } from 'drizzle-orm';
+import { and, eq, inArray, or, sql } from 'drizzle-orm';
 import type { BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
 import { activityEntry, type ActivityOf } from '../domain/activity/activity';
 import { foldedLinkDetails } from '../../relationships/fold';
@@ -19,6 +19,8 @@ import {
 	activityLog,
 	circleMembership,
 	contact,
+	interaction,
+	interactionParticipant,
 	journalEntry,
 	journalMention,
 	photo,
@@ -193,12 +195,31 @@ function dropMembershipsSurvivorHas(tx: Db, { keepId, mergedId }: Merging): void
 	}
 }
 
+/** Nobody is a participant of an interaction about themselves (SV-12). */
+function dropSurvivorFromOwnInteractions(tx: Db, { keepId }: Merging): void {
+	tx.delete(interactionParticipant)
+		.where(
+			and(
+				eq(interactionParticipant.contactId, keepId),
+				inArray(
+					interactionParticipant.interactionId,
+					tx
+						.select({ id: interaction.id })
+						.from(interaction)
+						.where(eq(interaction.contactId, keepId))
+				)
+			)
+		)
+		.run();
+}
+
 /** The steps the plan names rather than describes, each implemented here. */
 const SETTLEMENTS: Record<MergeSettlement, (tx: Db, merging: Merging) => void> = {
 	'join-journal-days': joinJournalDays,
 	'move-links-in-stored-order': moveLinksInStoredOrder,
 	'drop-links-between-the-two': dropLinksBetweenTheTwo,
 	'drop-memberships-survivor-has': dropMembershipsSurvivorHas,
+	'drop-survivor-from-own-interactions': dropSurvivorFromOwnInteractions,
 	'turn-merged-cuts': (tx, { mergedId }) => keepUnwornCuts(tx, mergedId, { evenWorn: true })
 };
 
