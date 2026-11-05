@@ -224,7 +224,7 @@ describe('what would collide', () => {
 				// About the duplicate, with the survivor along: after the merge it is about Hans.
 				{ id: 'i-dup', contactId: 'dup', createdBy: U1, kind: 'call', happenedAt: '2026-01-01' },
 				// About the survivor, with the duplicate along: the same, the other way round.
-				{ id: 'i-keep', contactId: 'keep', createdBy: U1, kind: 'meal', happenedAt: '2026-01-02' }
+				{ id: 'i-keep', contactId: 'keep', createdBy: U1, kind: 'met', happenedAt: '2026-01-02' }
 			])
 			.run();
 		db.insert(schema.interactionParticipant)

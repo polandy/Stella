@@ -190,7 +190,11 @@ export function createDrizzleContactRepository(
 			});
 
 			const sideOf = (row: (typeof rows)[number]): MergeSide => ({
-				access: { householdId: row.householdId, ownerId: row.createdBy, visibility: row.visibility },
+				access: {
+					householdId: row.householdId,
+					ownerId: row.createdBy,
+					visibility: row.visibility
+				},
 				displayName: row.displayName,
 				profile: profileOf(row)
 			});
