@@ -3,7 +3,7 @@ import { eq } from 'drizzle-orm';
 import { Database } from 'bun:sqlite';
 import { drizzle, type BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
 import { migrate } from 'drizzle-orm/bun-sqlite/migrator';
-import type { Viewer } from '../access/visibility';
+import type { Remover, Viewer } from '../access/visibility';
 import type { ActivityOf } from '../domain/activity/activity';
 import { lastNamesFacts } from '../../stream/notices';
 import type { NewContact } from '../domain/contacts/contacts';
@@ -22,6 +22,9 @@ const U1 = 'user-1';
 const U2 = 'user-2';
 const viewerU1: Viewer = { id: U1, householdId: H1 };
 const viewerU2: Viewer = { id: U2, householdId: H1 };
+// Deleting is an admin's (docs/02 §2.2): both may, so a case about reach is about reach alone.
+const adminU1: Remover = { ...viewerU1, isAdmin: true };
+const adminU2: Remover = { ...viewerU2, isAdmin: true };
 
 let db: BunSQLiteDatabase<typeof schema>;
 let repo: ReturnType<typeof createDrizzleContactRepository>;
@@ -351,7 +354,7 @@ describe('deleting a contact', () => {
 	});
 
 	it('takes everything that hung off them, and nobody else', async () => {
-		expect(await repo.deleteVisibleTo(viewerU1, 'c-gone', audit())).not.toBeNull();
+		expect(await repo.deleteDeletableBy(adminU1, 'c-gone', audit())).not.toBeNull();
 
 		expect(await repo.findByIdVisibleTo(viewerU1, 'c-gone')).toBeNull();
 		expect(db.select().from(schema.note).all()).toHaveLength(0);
@@ -370,7 +373,7 @@ describe('deleting a contact', () => {
 	it('hands back the bytes of their gallery *and* their journal photos', async () => {
 		// The journal entry cascades with the contact, so its photo would leave orphaned
 		// bytes behind if only the gallery were collected.
-		const files = await repo.deleteVisibleTo(viewerU1, 'c-gone', audit());
+		const files = await repo.deleteDeletableBy(adminU1, 'c-gone', audit());
 
 		expect(files?.map((f) => f.filePath).sort()).toEqual(['g.jpg', 'j.jpg']);
 		expect(files?.map((f) => f.thumbPath).sort()).toEqual(['g-t.jpg', 'j-t.jpg']);
@@ -384,7 +387,7 @@ describe('deleting a contact', () => {
 			.where(eq(schema.contact.id, 'c-gone'))
 			.run();
 
-		expect(await repo.deleteVisibleTo(viewerU1, 'c-gone', audit())).not.toBeNull();
+		expect(await repo.deleteDeletableBy(adminU1, 'c-gone', audit())).not.toBeNull();
 		expect(await repo.findByIdVisibleTo(viewerU1, 'c-gone')).toBeNull();
 	});
 
@@ -392,7 +395,7 @@ describe('deleting a contact', () => {
 		db.update(schema.user).set({ selfContactId: 'c-gone' }).where(eq(schema.user.id, U1)).run();
 		db.update(schema.user).set({ selfContactId: 'c-stays' }).where(eq(schema.user.id, U2)).run();
 
-		expect(await repo.deleteVisibleTo(viewerU1, 'c-gone', audit())).not.toBeNull();
+		expect(await repo.deleteDeletableBy(adminU1, 'c-gone', audit())).not.toBeNull();
 
 		const byUser = new Map(
 			db
@@ -407,7 +410,7 @@ describe('deleting a contact', () => {
 	});
 
 	it('writes the log entry that outlives the row', async () => {
-		await repo.deleteVisibleTo(viewerU1, 'c-gone', audit());
+		await repo.deleteDeletableBy(adminU1, 'c-gone', audit());
 
 		const logged = db.select().from(schema.activityLog).all();
 		expect(logged).toHaveLength(1);
@@ -426,16 +429,27 @@ describe('deleting a contact', () => {
 		);
 
 		expect(
-			await repo.deleteVisibleTo(viewerU1, 'c-theirs', audit({ contactId: 'c-theirs' }))
+			await repo.deleteDeletableBy(adminU1, 'c-theirs', audit({ contactId: 'c-theirs' }))
 		).toBeNull();
 		expect((await repo.findByIdVisibleTo(viewerU2, 'c-theirs'))?.displayName).toBe('Theirs');
 		expect(db.select().from(schema.activityLog).all()).toHaveLength(0);
 
 		// positive control: their owner can delete them, and that does write a log row.
 		expect(
-			await repo.deleteVisibleTo(viewerU2, 'c-theirs', audit({ contactId: 'c-theirs' }))
+			await repo.deleteDeletableBy(adminU2, 'c-theirs', audit({ contactId: 'c-theirs' }))
 		).not.toBeNull();
 		expect(db.select().from(schema.activityLog).all()).toHaveLength(1);
+	});
+
+	it('deletes nothing for a member, not even a contact they made themselves', async () => {
+		const member: Remover = { ...viewerU1, isAdmin: false };
+
+		expect(await repo.deleteDeletableBy(member, 'c-gone', audit())).toBeNull();
+		expect((await repo.findByIdVisibleTo(viewerU1, 'c-gone'))?.displayName).toBe('Gone Person');
+		expect(db.select().from(schema.activityLog).all()).toHaveLength(0);
+
+		// positive control: the same contact, deleted by an admin.
+		expect(await repo.deleteDeletableBy(adminU1, 'c-gone', audit())).not.toBeNull();
 	});
 });
 

@@ -158,7 +158,7 @@ describe('the people stamp', () => {
 		[
 			'a person deleted',
 			() =>
-				createDrizzleContactRepository(db).deleteVisibleTo(andy, 'cleo', {
+				createDrizzleContactRepository(db).deleteDeletableBy({ ...andy, isAdmin: true }, 'cleo', {
 					id: 'log-1',
 					householdId: H,
 					actorId: U1,

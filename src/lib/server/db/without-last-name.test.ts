@@ -3,7 +3,7 @@ import { eq } from 'drizzle-orm';
 import { Database } from 'bun:sqlite';
 import { drizzle, type BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
 import { migrate } from 'drizzle-orm/bun-sqlite/migrator';
-import type { Viewer } from '../access/visibility';
+import type { Remover, Viewer } from '../access/visibility';
 import { setLastNames } from '../domain/contacts/last-names';
 import { editNameParts } from '../domain/contacts/name-parts';
 import { mergeContacts } from '../domain/contacts/remove-contact';
@@ -22,6 +22,7 @@ const H = 'household-1';
 const U1 = 'user-1';
 const U2 = 'user-2';
 const viewer: Viewer = { id: U1, householdId: H };
+const admin: Remover = { ...viewer, isAdmin: true };
 const NOW = 1_700_000_000_000;
 
 let db: BunSQLiteDatabase<typeof schema>;
@@ -135,7 +136,7 @@ describe('merging a settled person', () => {
 	it('keeps the mark on the survivor while neither brings a last name', async () => {
 		await settleWithoutLastName(deps, viewer, 'jonas');
 
-		expect(await mergeContacts(deps, viewer, 'tom', 'jonas')).toBe(true);
+		expect(await mergeContacts(deps, admin, 'tom', 'jonas')).toBe(true);
 
 		expect(markOf('tom')).toBe(NOW);
 	});
@@ -149,7 +150,7 @@ describe('merging a settled person', () => {
 			'en'
 		);
 
-		await mergeContacts(deps, viewer, 'tom', 'jonas');
+		await mergeContacts(deps, admin, 'tom', 'jonas');
 
 		expect(markOf('tom')).toBeNull();
 	});

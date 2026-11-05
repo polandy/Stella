@@ -1,6 +1,6 @@
 import { TranslatableError } from '../../../i18n/translatable';
 import { phrase } from '../../../i18n/phrase';
-import type { Visibility, Viewer } from '../../access/visibility';
+import type { ContactAccess, Remover, Visibility, Viewer } from '../../access/visibility';
 import type { Clock } from '../../clock';
 import type { ActivityOf } from '../activity/activity';
 import type { MergeableProfile } from './merge-profile';
@@ -143,10 +143,11 @@ export interface ContactRepository extends NameRepository, WithoutLastNameReposi
 	/**
 	 * Delete the contact and everything hanging off it, writing `audit` in the same
 	 * transaction — a deletion that left no trace is the one this log exists to prevent.
-	 * Returns the files to unlink, or null when the viewer may not see the contact.
+	 * Returns the files to unlink, or null when the remover may not delete the contact
+	 * (`canDeleteContact`, asked again inside the write).
 	 */
-	deleteVisibleTo(
-		viewer: Viewer,
+	deleteDeletableBy(
+		remover: Remover,
 		id: string,
 		audit: ActivityOf<'contact.deleted'>
 	): Promise<DeletedContactMedia[] | null>;
@@ -154,10 +155,11 @@ export interface ContactRepository extends NameRepository, WithoutLastNameReposi
 	readForMerge(viewer: Viewer, keepId: string, mergedId: string): Promise<MergePair | null>;
 	/**
 	 * Move everything from one record onto the other, write the merged profile, delete the
-	 * emptied record and log it — all in one transaction. False when either is out of reach.
+	 * emptied record and log it — all in one transaction. False when the remover may not merge
+	 * the two (`canMergeContacts`, asked again inside the write).
 	 */
-	mergeVisibleTo(
-		viewer: Viewer,
+	mergeMergeableBy(
+		remover: Remover,
 		keepId: string,
 		mergedId: string,
 		profile: MergeableProfile,
@@ -184,9 +186,16 @@ export interface ContactLookupDeps {
 }
 
 /** The two records a merge is about, with the names the log will have to remember. */
+/** One side of a merge: who may merge it, what the log names it, and what it says. */
+export interface MergeSide {
+	access: ContactAccess;
+	displayName: string;
+	profile: MergeableProfile;
+}
+
 export interface MergePair {
-	keep: { displayName: string; visibility: Visibility; profile: MergeableProfile };
-	mergedAway: { displayName: string; visibility: Visibility; profile: MergeableProfile };
+	keep: MergeSide;
+	mergedAway: MergeSide;
 }
 
 /** The bytes a deleted contact leaves behind: one pair per photo that hung off them. */

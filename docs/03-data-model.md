@@ -1124,10 +1124,14 @@ by the parity test). A **circle** is deleted by the same rule with the circle as
 creator, always, and an admin when it is shared — both must see it, so a private circle is its
 creator's alone (`canDeleteCircle` / `circleDeletableBy`, held to the same rows by the parity
 test). The remover is a viewer plus `isAdmin`, which the route reads from the
-signed-in user's `role` (`requireRemover`); it is the only rule here that looks at the role, beside who removes a **member**: an admin, any
-other current member of their own household (`canRemoveMember` / `memberRemovableBy`), and
-who restores one: an admin, any former member of their own household (`canRestoreMember` /
-`memberRestorableBy`), both held by their own parity test.
+signed-in user's `role` (`requireRemover`). The role counts in these rules and in three more.
+Deleting or merging a **person** is an admin's, on a person they see — for a merge, both
+(`canDeleteContact` / `contactDeletableBy`, `canMergeContacts` / `contactMergeableBy`, held by
+their own parity test). The use-case refuses a member as for a person not there, and the write
+asks again inside its transaction. Removing a **member** is an admin's, on any other current
+member of their own household (`canRemoveMember` / `memberRemovableBy`). Restoring one is an
+admin's too, on any former member of their own household (`canRestoreMember` /
+`memberRestorableBy`); both are held by their own parity test.
 The delete is scoped by the SQL condition itself, so the right is checked when the removal
 reaches the server, not when *Remove* was pressed. **Editing** a note or a touchpoint is the author's alone, and
 only while they still see it (`canEditAuthored` / `authoredEditableBy`, held to the same rows by

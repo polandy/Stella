@@ -1,6 +1,6 @@
 import { error, fail, redirect } from '@sveltejs/kit';
 import * as v from 'valibot';
-import { requireAdmin, requireUser, requireViewer } from '$lib/server/auth/guards';
+import { requireAdmin, requireRemover, requireUser, requireViewer } from '$lib/server/auth/guards';
 import { archiveContact, restoreContact } from '$lib/server/domain/contacts/contacts';
 import { MergeWouldHideRecordsError } from '$lib/server/domain/contacts/merge-plan';
 import { deleteContact, mergeContacts } from '$lib/server/domain/contacts/remove-contact';
@@ -13,11 +13,12 @@ import type { Actions } from '../$types';
 export const recordActions = {
 	/*
 	 * Merging a duplicate into this person (docs/02 §2.2). Admin only for the same reason as
-	 * deleting: it ends a record, and there is no way back.
+	 * deleting: it ends a record, and there is no way back. The 403 here says so in words; the
+	 * use-case holds the rule itself (`canMergeContacts`).
 	 */
 	merge: async ({ request, params, locals }) => {
 		requireAdmin(locals);
-		const viewer = requireViewer(locals);
+		const remover = requireRemover(locals);
 		const parsed = v.safeParse(
 			v.object({ mergedId: v.pipe(v.string(), v.minLength(1)) }),
 			Object.fromEntries(await request.formData())
@@ -28,7 +29,7 @@ export const recordActions = {
 		try {
 			merged = await mergeContacts(
 				locals.services.people.contactDeps,
-				viewer,
+				remover,
 				params.id,
 				parsed.output.mergedId
 			);
@@ -49,12 +50,12 @@ export const recordActions = {
 	 * Deleting for good (docs/02 §2.2). Admin only, like the other irreversible tools in
 	 * Settings → Data: archiving is there for everyone, and this is the one that cannot be
 	 * taken back. The visibility scope still applies, so an admin cannot reach another
-	 * member's private contact.
+	 * member's private contact. As for merging, the use-case holds the rule (`canDeleteContact`).
 	 */
 	delete: async ({ params, locals }) => {
 		const user = requireAdmin(locals);
-		const viewer = requireViewer(locals);
-		const done = await deleteContact(locals.services.people.deleteContactDeps, viewer, params.id);
+		const remover = requireRemover(locals);
+		const done = await deleteContact(locals.services.people.deleteContactDeps, remover, params.id);
 		if (!done) throw error(404, say(locals, 'errors.contact.notFound'));
 		// Their tag assignments went with them by cascade, so a tag they were the last
 		// carrier of is orphaned here rather than by `unassignTag` (docs/02 §2.8).

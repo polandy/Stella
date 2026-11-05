@@ -11,8 +11,8 @@ import {
 	type MergeStep
 } from '../domain/contacts/merge-plan';
 import type { MergeableProfile } from '../domain/contacts/merge-profile';
-import type { Viewer } from '../access/visibility';
-import { contactVisibleTo } from '../access/query-scoping';
+import type { Remover } from '../access/visibility';
+import { contactMergeableBy } from '../access/query-scoping';
 import { keepUnwornCuts } from './cut-turning';
 import type * as schema from './schema';
 import {
@@ -215,13 +215,14 @@ function runStep(tx: Db, step: MergeStep, merging: Merging): void {
 
 /**
  * Merge `mergedId` into `keepId`, writing `audit` in the same transaction. Returns false when
- * either contact is out of the viewer's reach, or when the two are the same record; throws
+ * the remover may not merge them (`contactMergeableBy` on both rows: an admin who sees both),
+ * or when the two are the same record; throws
  * `MergeWouldHideRecordsError` for a shared record merged into a private survivor — asked
  * again here, inside the write, since either may have changed visibility since the read.
  */
 export function mergeContacts(
 	db: Db,
-	viewer: Viewer,
+	remover: Remover,
 	input: {
 		keepId: string;
 		mergedId: string;
@@ -237,7 +238,7 @@ export function mergeContacts(
 			.select({ id: contact.id, displayName: contact.displayName, visibility: contact.visibility })
 			.from(contact)
 			.where(
-				and(sql`${contact.id} in (${input.keepId}, ${input.mergedId})`, contactVisibleTo(viewer))
+				and(sql`${contact.id} in (${input.keepId}, ${input.mergedId})`, contactMergeableBy(remover))
 			)
 			.all();
 		const keep = both.find((row) => row.id === input.keepId);

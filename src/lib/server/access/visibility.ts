@@ -76,6 +76,28 @@ export function canRemoveAuthored(remover: Remover, record: ChildRecordAccess): 
 }
 
 /**
+ * A person may be deleted by an admin, and only one who sees them: it ends a record for good,
+ * so it is no member's call, and an admin gains nothing on another member's private contact
+ * (docs/02 §2.2).
+ */
+export function canDeleteContact(remover: Remover, contact: ContactAccess): boolean {
+	return remover.isAdmin && canViewContact(remover, contact);
+}
+
+/**
+ * Two people may be merged by an admin who sees both — the delete rule, since the merged
+ * record ends (docs/02 §2.2). Whether the survivor's visibility keeps the household's records
+ * in view is the domain's own question (`mergeKeepsRecordsInView`).
+ */
+export function canMergeContacts(
+	remover: Remover,
+	keep: ContactAccess,
+	mergedAway: ContactAccess
+): boolean {
+	return canDeleteContact(remover, keep) && canDeleteContact(remover, mergedAway);
+}
+
+/**
  * An authored record may be edited by its author alone, and only while they still see it: an
  * admin removes another member's shared record but never rewrites it (docs/02 §2.5).
  */

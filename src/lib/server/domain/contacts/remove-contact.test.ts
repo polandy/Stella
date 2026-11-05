@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'bun:test';
+import type { Visibility } from '../../access/visibility';
 import type { ActivityOf } from '../activity/activity';
 import type { Contact, ContactRepository, DeletedContactMedia, MergePair } from './contacts';
 import { MergeWouldHideRecordsError } from './merge-plan';
@@ -8,7 +9,9 @@ import { contactRepositoryWith, fixedClock, sequentialIds } from '../testing';
 const NOW = 1_700_000_000_000;
 const clock = fixedClock(NOW);
 
-const viewer = { id: 'user-1', householdId: 'household-1' };
+// Deleting and merging are an admin's (docs/02 §2.2); `member` is the one refused for the role.
+const viewer = { id: 'user-1', householdId: 'household-1', isAdmin: true };
+const member = { ...viewer, isAdmin: false };
 
 const existing: Contact = {
 	id: 'contact-1',
@@ -46,7 +49,7 @@ describe('deleteContact', () => {
 		const deleted: { id: string; audit: ActivityOf<'contact.deleted'> }[] = [];
 		const repo = contactRepositoryWith({
 			findByIdVisibleTo: async () => found,
-			deleteVisibleTo: async (_viewer, id, audit) => {
+			deleteDeletableBy: async (_viewer, id, audit) => {
 				if (found === null) return null;
 				deleted.push({ id, audit });
 				return media;
@@ -148,6 +151,24 @@ describe('deleteContact', () => {
 		expect(visible.deleted).toHaveLength(1);
 		expect(removedFiles).toEqual(['a.jpg', 'a-thumb.jpg']);
 	});
+
+	it('deletes nothing for a member, even of a contact they see and made', async () => {
+		const f = deletableRepo(existing, files);
+		const removedFiles: string[] = [];
+		const deps = {
+			contacts: f.repo,
+			photoFiles: { delete: async (p: string) => void removedFiles.push(p) },
+			ids: sequentialIds('log-1'),
+			clock
+		};
+
+		expect(await deleteContact(deps, member, 'contact-1')).toBe(false);
+		expect(f.deleted).toEqual([]);
+		expect(removedFiles).toEqual([]);
+
+		// positive control: the same contact, deleted by an admin.
+		expect(await deleteContact(deps, viewer, 'contact-1')).toBe(true);
+	});
 });
 
 /*
@@ -164,7 +185,7 @@ describe('mergeContacts', () => {
 		}[] = [];
 		const repo = contactRepositoryWith({
 			readForMerge: async () => pair,
-			mergeVisibleTo: async (_v, keepId, mergedId, profile, audit) => {
+			mergeMergeableBy: async (_v, keepId, mergedId, profile, audit) => {
 				merges.push({ keepId, mergedId, profile, audit });
 				return true;
 			}
@@ -195,15 +216,21 @@ describe('mergeContacts', () => {
 		withoutLastNameAt: null
 	};
 
+	const access = (visibility: Visibility) => ({
+		householdId: 'household-1',
+		ownerId: 'user-1',
+		visibility
+	});
+
 	const pair: MergePair = {
 		keep: {
+			access: access('shared'),
 			displayName: 'Hans Müller',
-			visibility: 'shared',
 			profile: { ...blank, firstName: 'Hans' }
 		},
 		mergedAway: {
+			access: access('shared'),
 			displayName: 'Hansueli M.',
-			visibility: 'shared',
 			profile: { ...blank, lastName: 'Müller', jobTitle: 'Schreiner' }
 		}
 	};
@@ -238,8 +265,8 @@ describe('mergeContacts', () => {
 
 	it('mirrors the survivor visibility, so the log says no more than they do', async () => {
 		const f = mergeableRepo({
-			keep: { ...pair.keep, visibility: 'private' },
-			mergedAway: { ...pair.mergedAway, visibility: 'private' }
+			keep: { ...pair.keep, access: access('private') },
+			mergedAway: { ...pair.mergedAway, access: access('private') }
 		});
 
 		await mergeContacts(deps(f.repo), viewer, 'keep', 'dup');
@@ -248,7 +275,7 @@ describe('mergeContacts', () => {
 	});
 
 	it('refuses a shared record merged into a private one, naming both, and merges nothing', async () => {
-		const f = mergeableRepo({ ...pair, keep: { ...pair.keep, visibility: 'private' } });
+		const f = mergeableRepo({ ...pair, keep: { ...pair.keep, access: access('private') } });
 
 		const refused = mergeContacts(deps(f.repo), viewer, 'keep', 'dup');
 
@@ -267,6 +294,16 @@ describe('mergeContacts', () => {
 		const reachable = mergeableRepo(pair);
 		expect(await mergeContacts(deps(reachable.repo), viewer, 'keep', 'dup')).toBe(true);
 		expect(reachable.merges).toHaveLength(1);
+	});
+
+	it('refuses a member, who sees both, and merges nothing', async () => {
+		const f = mergeableRepo(pair);
+
+		expect(await mergeContacts(deps(f.repo), member, 'keep', 'dup')).toBe(false);
+		expect(f.merges).toEqual([]);
+
+		// positive control: the same pair, merged by an admin.
+		expect(await mergeContacts(deps(f.repo), viewer, 'keep', 'dup')).toBe(true);
 	});
 
 	it('refuses to merge a record into itself before reading anything', async () => {

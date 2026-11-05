@@ -47,6 +47,23 @@ export function contactBrowsableBy(viewer: Viewer): SQL {
 }
 
 /**
+ * Condition for a contact the remover may delete — the SQL of `canDeleteContact`: an admin, and
+ * a contact they see.
+ */
+export function contactDeletableBy(remover: Remover): SQL {
+	if (!remover.isAdmin) return sql`0`;
+	return contactVisibleTo(remover);
+}
+
+/**
+ * Condition for a contact the remover may merge, on either side — the SQL of
+ * `canMergeContacts`, row by row: both rows of the pair must match.
+ */
+export function contactMergeableBy(remover: Remover): SQL {
+	return contactDeletableBy(remover);
+}
+
+/**
  * Condition for a person the linked address book may hold (docs/02 §2.16.3): one `viewer` may
  * browse, and shared — a private person never reaches the book, not even through the member
  * who made them.
