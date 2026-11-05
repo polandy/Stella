@@ -55,8 +55,8 @@ card (§5.5.2); its styling is §5.8.
 - On a phone (below `sm`, tuned for a Pixel 9 Pro at 412 px) the toolbar is one row: the
   search field takes whatever the rest leave, and Filter, Arrange and the connection path are
   round icon buttons (their accessible names still read *Filter: …*, *Arrange: …*,
-  *Connection path*); a narrowed filter shows a dot. Export (in the tree) and Full screen keep
-  their icons. The page's hint bar above the map is left out unless it carries the way back.
+  *Connection path*); a narrowed filter shows a dot. Export (in the tree), Shrink (on a person's
+  page) and Full screen become the same round pills; wider screens keep them ghost buttons. The page's hint bar above the map is left out unless it carries the way back.
 - On a phone the peek panel is a one-row strip along the bottom: avatar and name side by side,
   then Expand and Profile (a word each, the full words their accessible names) and close. A
   circle's roles and *the map ends here* go under the row; the general tip and *everything is

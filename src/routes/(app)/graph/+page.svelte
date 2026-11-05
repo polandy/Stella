@@ -21,6 +21,7 @@
 	<!-- On a phone the hint is left out, so without a way back the bar would be an empty band
 	     over the map. -->
 	<div
+		data-testid="graph-hint-bar"
 		class="flex flex-wrap items-center gap-x-4 gap-y-1 border-b border-border px-6 py-3 text-sm {data.cameFrom
 			? ''
 			: 'max-sm:hidden'}"

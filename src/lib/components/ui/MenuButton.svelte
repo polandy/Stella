@@ -214,6 +214,7 @@
 				<Icon name={phoneIcon} size={16} class="sm:hidden" />
 				{#if highlighted}
 					<span
+						data-testid="menu-narrowed-dot"
 						class="absolute top-1 right-1 size-2 rounded-full border border-card bg-primary sm:hidden"
 						aria-hidden="true"
 					></span>
