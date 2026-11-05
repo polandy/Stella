@@ -283,5 +283,8 @@ stays simple. (See [01-vision-and-scope.md §1.6](01-vision-and-scope.md).)
 - **Local 2FA** (TOTP) for accounts without SSO, and opt-in email reminders — deprioritized:
   Stella runs behind Authelia, which already asks for the second factor. The `totp_secret`
   column stays reserved (docs/03).
+- **"Sign out everywhere" and a sign-in audit log** — not built (owner, 2026-11-03): a removed
+  member's sessions already sign nobody in, sign-in attempts are throttled at the reverse proxy
+  and Authelia keeps its own log (docs/04 §4.7).
 - **Change digests** by email or signed webhook (docs/02 §2.11.1, docs/04 §4.12) — taken off
   the roadmap for now; the design stays written down in case it comes back.

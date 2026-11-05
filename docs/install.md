@@ -108,11 +108,14 @@ database: `docker compose down -v` removes the demo data for good.
 ## Running it behind your own domain
 
 If you already have a reverse proxy (Traefik, Caddy, nginx) terminating HTTPS, point it at
-the container's port 3000 and set `STELLA_URL` to the public address. Two things to get
+the container's port 3000 and set `STELLA_URL` to the public address. Three things to get
 right:
 
 - The proxy must pass the `Host` and `X-Forwarded-*` headers through.
 - `STELLA_URL` must match the public address exactly, scheme included.
+- If Stella is reachable from the internet with password sign-in on, let the proxy limit how
+  often one address may try to sign in — Stella itself does not (see
+  [07 §7.6](07-deployment.md#76-reverse-proxy-notes)).
 
 The calendar links members subscribe to (*Settings → Calendar*) are built from `STELLA_URL`,
 and it is the phone's calendar — or Google's servers, for Google Calendar — that fetches them.
