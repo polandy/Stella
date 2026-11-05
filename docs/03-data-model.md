@@ -392,7 +392,10 @@ Constraints: `CHECK (from_contact_id <> to_contact_id)` (`relationship_not_to_se
 on a phone is refused rather than retried — and the table is the backstop for a writer that
 skips it. A merge drops the links between the two records before it repoints either end, since
 those would become self links. Migration `0027_relationship_not_to_self` added the CHECK by
-rebuilding the table and left any self link already stored behind, unreported.
+rebuilding the table and left any self link already stored behind, unreported. A generation
+type stored one way between two people (docs/02 §2.4) refuses the flipped pair inside the
+write's own transaction — insert, batch and retype — so two members claiming it in opposite
+directions at once cannot both land; the use-case asks the same first, for the reason it shows.
 Indexed on `from_contact_id`, `to_contact_id`, `type_id`, and on `created_at` for the Home
 stream's newest links.
 Direction is stored canonically for asymmetric types (from = forward-label side); a

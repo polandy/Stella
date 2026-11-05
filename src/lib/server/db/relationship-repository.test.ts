@@ -9,9 +9,10 @@ import { seedRelationshipTypes } from './seed';
 import { CURRENT_RELATIONSHIP_STATUS } from '../../relationships/status';
 import { createDrizzleRelationshipRepository } from './relationship-repository';
 import { createDrizzleRelationshipTieReads } from './relationship-tie-reads';
-import type {
-	RelationshipRepository,
-	RelationshipTieReads
+import {
+	ContradictoryRelationshipError,
+	type RelationshipRepository,
+	type RelationshipTieReads
 } from '../domain/relationships/relationships';
 
 /*
@@ -369,5 +370,90 @@ describe('findVisibleTo / updateVisibleTo / removeVisibleTo', () => {
 				1
 			)
 		).toBe(false);
+	});
+});
+
+/*
+ * A generation runs one way (docs/02 §2.4). The use-case asks before it writes; the write asks
+ * again inside its own transaction, so two members adding *parent of* in opposite directions
+ * at the same moment cannot both land (SV-07).
+ */
+describe('a generation claimed both ways', () => {
+	beforeEach(async () => {
+		seedContact('hans', 'Hans', 'shared');
+		seedContact('bettina', 'Bettina', 'shared');
+		await repo.insert(newRelationship('rel-1', 'bettina', 'hans', 'parent_child'));
+	});
+
+	const storedIds = () =>
+		db
+			.select({ id: schema.relationship.id })
+			.from(schema.relationship)
+			.all()
+			.map((r) => r.id)
+			.sort();
+
+	it('refuses the flipped pair on insert, and stores nothing', async () => {
+		await expect(
+			repo.insert(newRelationship('rel-2', 'hans', 'bettina', 'parent_child'))
+		).rejects.toBeInstanceOf(ContradictoryRelationshipError);
+		expect(storedIds()).toEqual(['rel-1']);
+
+		// positive control: the same direction of another generation type is no contradiction.
+		await repo.insert(newRelationship('rel-3', 'hans', 'bettina', 'grandparent_grandchild'));
+		expect(storedIds()).toEqual(['rel-1', 'rel-3']);
+	});
+
+	it('refuses a batch holding the flipped pair, and stores none of it', async () => {
+		seedContact('anna', 'Anna', 'shared');
+		await expect(
+			repo.insertAll([
+				newRelationship('rel-2', 'anna', 'hans', 'parent_child'),
+				newRelationship('rel-3', 'hans', 'bettina', 'parent_child')
+			])
+		).rejects.toBeInstanceOf(ContradictoryRelationshipError);
+		expect(storedIds()).toEqual(['rel-1']);
+	});
+
+	it('refuses a batch that claims both ways within itself', async () => {
+		seedContact('anna', 'Anna', 'shared');
+		await expect(
+			repo.insertAll([
+				newRelationship('rel-2', 'anna', 'hans', 'parent_child'),
+				newRelationship('rel-3', 'hans', 'anna', 'parent_child')
+			])
+		).rejects.toBeInstanceOf(ContradictoryRelationshipError);
+		expect(storedIds()).toEqual(['rel-1']);
+
+		// positive control: the first of them alone goes in.
+		await repo.insertAll([newRelationship('rel-2', 'anna', 'hans', 'parent_child')]);
+		expect(storedIds()).toEqual(['rel-1', 'rel-2']);
+	});
+
+	it('refuses a retype onto the flipped pair, and leaves the link as it was', async () => {
+		await repo.insert(newRelationship('rel-2', 'hans', 'bettina', 'friend'));
+		const retypeTo = (typeId: string) =>
+			repo.updateVisibleTo(
+				viewerU1,
+				'rel-2',
+				{
+					description: null,
+					sinceDate: null,
+					status: CURRENT_RELATIONSHIP_STATUS,
+					retype: { endpoints: { fromContactId: 'hans', toContactId: 'bettina' }, typeId }
+				},
+				1
+			);
+
+		await expect(retypeTo('parent_child')).rejects.toBeInstanceOf(ContradictoryRelationshipError);
+		const row = db
+			.select()
+			.from(schema.relationship)
+			.where(eq(schema.relationship.id, 'rel-2'))
+			.get();
+		expect(row?.typeId).toBe('friend');
+
+		// positive control: the same pair as another generation type is no contradiction.
+		expect(await retypeTo('grandparent_grandchild')).toBe(true);
 	});
 });
