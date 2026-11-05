@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it } from 'bun:test';
 import { Database } from 'bun:sqlite';
+import { sql } from 'drizzle-orm';
 import { drizzle, type BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
 import { migrate } from 'drizzle-orm/bun-sqlite/migrator';
 import type { ContactSource, NextcloudSource } from '../../import-match/card';
@@ -209,6 +210,24 @@ describe('createDrizzleNextcloudStore', () => {
 				.map((l) => l.externalUid)
 		).toEqual(['anna']);
 		expect(db.select().from(schema.nextcloudConflict).all()).toEqual([]);
+	});
+
+	it('keeps the links when their conflicts cannot be dropped, so nothing half-goes (SV-11)', async () => {
+		link('private', 'c-private');
+		await store.putConflicts(H, BOOK, 'c-private', [{ kind: 'photo' }], 5);
+		db.run(
+			sql`CREATE TRIGGER refuse_conflict_delete BEFORE DELETE ON nextcloud_conflict BEGIN SELECT RAISE(ABORT, 'disk I/O error'); END`
+		);
+
+		await expect(store.unlinkPrivate(H, BOOK)).rejects.toThrow('disk I/O error');
+		// The link went back with the failed conflict delete — the next sync retries both.
+		expect(
+			db
+				.select()
+				.from(schema.contactSourceLink)
+				.all()
+				.map((l) => l.externalUid)
+		).toEqual(['private']);
 	});
 
 	it('forgets a card gone from the book with its link, and keeps the person', async () => {
