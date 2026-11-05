@@ -103,7 +103,7 @@ describe('editProfile', () => {
 		const form = formOf({ description: '  Sings in the choir  ' });
 		expect(await post(actions.editProfile, services, form)).toEqual(BACK);
 		expect(written).toEqual([
-			['anna', { displayName: 'Anna Berg', description: 'Sings in the choir', updatedAt: NOW }]
+			['anna', { description: 'Sings in the choir', updatedAt: NOW }]
 		]);
 	});
 

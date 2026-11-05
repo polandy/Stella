@@ -279,7 +279,7 @@ describe('editProfile', () => {
 		expect(f.patches).toEqual([
 			{
 				id: 'contact-1',
-				patch: { displayName: 'Hans Müller', description: 'Nachbar, links', updatedAt: NOW }
+				patch: { description: 'Nachbar, links', updatedAt: NOW }
 			}
 		]);
 	});
@@ -454,7 +454,7 @@ describe('describeContact', () => {
 		expect(f.patches).toEqual([
 			{
 				id: 'contact-1',
-				patch: { displayName: 'Thomas', description: 'SAC hut, Aug 2026', updatedAt: NOW }
+				patch: { description: 'SAC hut, Aug 2026', updatedAt: NOW }
 			}
 		]);
 	});

@@ -216,7 +216,6 @@ export function createDrizzleContactRepository(
 		async updateProfile(id: string, patch: ProfilePatch) {
 			db.update(contactTable)
 				.set({
-					displayName: patch.displayName,
 					description: patch.description,
 					updatedAt: patch.updatedAt
 				})

@@ -134,26 +134,18 @@ describe('editing the hero in place', () => {
 		);
 	});
 
-	it('renames a contact and rewords the description, leaving the rest alone', async () => {
-		await repo.updateProfile('c-shared', {
-			displayName: 'Renamed Person',
-			description: 'Now says this',
-			updatedAt: 999
-		});
+	it('rewords the description, leaving the rest alone', async () => {
+		await repo.updateProfile('c-shared', { description: 'Now says this', updatedAt: 999 });
 
 		const after = await repo.findByIdVisibleTo(viewerU1, 'c-shared');
-		expect(after?.displayName).toBe('Renamed Person');
+		expect(after?.displayName).toBe('Bea');
 		expect(after?.description).toBe('Now says this');
 		expect(after?.visibility).toBe('shared');
 		expect(after?.updatedAt).toBe(999);
 	});
 
 	it('clears a description when it is written as null', async () => {
-		await repo.updateProfile('c-shared', {
-			displayName: 'Still Named',
-			description: null,
-			updatedAt: 1
-		});
+		await repo.updateProfile('c-shared', { description: null, updatedAt: 1 });
 
 		expect((await repo.findByIdVisibleTo(viewerU1, 'c-shared'))?.description).toBeNull();
 	});
@@ -161,13 +153,24 @@ describe('editing the hero in place', () => {
 	it('touches only the contact it names', async () => {
 		const before = await repo.findByIdVisibleTo(viewerU1, 'c-priv');
 
-		await repo.updateProfile('c-shared', {
-			displayName: 'Only me',
-			description: null,
-			updatedAt: 2
-		});
+		await repo.updateProfile('c-shared', { description: null, updatedAt: 2 });
 
 		expect(await repo.findByIdVisibleTo(viewerU1, 'c-priv')).toEqual(before!);
+	});
+
+	it('keeps a rename made since the description editor read the person (SV-05)', async () => {
+		// Another member renames Bea between this member's read and their save: the save
+		// carries no name, so it cannot put the old one back.
+		db.update(schema.contact)
+			.set({ displayName: 'Bea Renamed' })
+			.where(eq(schema.contact.id, 'c-shared'))
+			.run();
+
+		await repo.updateProfile('c-shared', { description: 'Now says this', updatedAt: 3 });
+
+		const after = await repo.findByIdVisibleTo(viewerU1, 'c-shared');
+		expect(after?.displayName).toBe('Bea Renamed');
+		expect(after?.description).toBe('Now says this');
 	});
 });
 

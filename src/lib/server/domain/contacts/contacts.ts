@@ -117,8 +117,8 @@ export interface ContactSummary {
 }
 
 /** The fields the hero edits in place, already normalised. */
+/** The hero's description; the name is never part of it (`editNameParts` writes names). */
 export interface ProfilePatch {
-	displayName: string;
 	description: string | null;
 	updatedAt: number;
 }
@@ -323,8 +323,8 @@ export async function editProfile(
 	const contact = await deps.contacts.findByIdVisibleTo(viewer, id);
 	if (contact === null) return false;
 
+	// No name in the write: one read before it would put back a name renamed meanwhile.
 	await deps.contacts.updateProfile(id, {
-		displayName: contact.displayName,
 		description: orNull(edit.description),
 		updatedAt: deps.clock.now()
 	});
@@ -412,7 +412,6 @@ export async function describeContact(
 	if (contact === null) return false;
 
 	await deps.contacts.updateProfile(id, {
-		displayName: contact.displayName,
 		description: written,
 		updatedAt: deps.clock.now()
 	});
