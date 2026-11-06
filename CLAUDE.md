@@ -6,8 +6,7 @@ suite is the **source of truth**; this file only routes, and every coding agent 
 
 > Open **only** the doc/source file your task touches. `02`, `04` and `05` are split one file
 > per section: open the index (e.g. `docs/02-features.md`), find the `§`, open that file.
-> A concept under `docs/concepts/` whose status says *built* is history — read the feature
-> doc instead. Keep this file and the docs free of duplication.
+> Keep this file and the docs free of duplication.
 
 ## Golden rules — full text `docs/08-coding-guidelines.md`, read once
 
@@ -40,7 +39,7 @@ Bun · SvelteKit (Svelte 5, runes) · SQLite WAL + Drizzle · Tailwind v4 + Catp
 | `src/lib/server/access/` | **central** ACL / visibility (`docs/03` §3.7) — the *only* authz path |
 | `src/lib/server/domain/` | use-cases, test-first; `commands/` applies a command once |
 | `src/lib/server/{auth,immich,commands,…}/` | infrastructure and edge helpers: sessions + OIDC, the Immich gateway, the command wire edge, media store, HTTP helpers |
-| `src/lib/{calendar,commands,people,gifts,todos,memories,hashtags,immich,import-match,kinship,motion,pwa,stream,suggestions,surnames,sync,ui}/` | **pure** decisions, test-first; a `*.svelte.ts` beside one is its browser adapter |
+| `src/lib/{calendar,commands,people,gifts,todos,memories,hashtags,immich,import-match,kinship,motion,privacy,pwa,share,stream,suggestions,surnames,sync,ui}/` | **pure** decisions, test-first; a `*.svelte.ts` beside one is its browser adapter |
 | `src/lib/graph/` | pure `model/`, `layout/`, `keyboard.ts`, `phone-map.ts`; `cytoscape/` renders, no logic |
 | `src/routes/` | thin edges: `load` / form actions / `+server.ts`; big pages colocate `load.ts` + `actions/` |
 | `src/lib/{relationships,circles,story,mentions,dates,media,undo,archive}/` | client-safe helpers per concept, not lint-guarded as pure |

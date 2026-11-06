@@ -146,8 +146,9 @@ Goal: sand the edges and add the nice-to-haves.
   *Arrange people* on a circle with sub-circles: a card per circle, move or copy by dragging or
   by tapping, one batch in one transaction, *Undo* restores the deleted memberships exactly.
 
-**Exit:** a release-quality 1.0 the family enjoys using daily. *Feature-complete 2026-10-30;
-1.0.0 is cut once the owner's outstanding hand tests are through.*
+**Exit:** a release-quality app the family enjoys using daily. *Feature-complete 2026-10-30;
+released as 0.1.0 on 2026-11-03. Releases stay on the 0.1.x line; a larger jump is the
+owner's call (§8.9).*
 
 ## After 1.0
 

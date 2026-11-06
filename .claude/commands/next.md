@@ -1,7 +1,7 @@
 Identify the next task to work on:
 
-1. Check what is already in flight first: `gh pr list` and `git worktree list`. The standing rule
-   is **one open PR at a time**, so an open PR waiting on a merge go-ahead *is* the next task.
+1. Check what is already in flight first: `gh pr list` and `git worktree list`. The open-PR limit
+   is the one in `docs/08` §8.10; an open PR waiting on a merge go-ahead comes before new work.
 2. The sources of open work, in order:
    - whatever the owner has just asked for
    - the open items of the current milestone in `docs/06-roadmap.md` (a milestone is worked top

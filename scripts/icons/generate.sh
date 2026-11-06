@@ -2,8 +2,8 @@
 # Regenerate the installable app icons (docs/02 §2.18) into `static/icons/`.
 #
 # The art and its geometry live in `src/lib/pwa/icon-art.ts`, where they are unit-tested;
-# this only turns them into PNGs. Chromium cannot run on the NixOS host, so the rasterising
-# happens inside the pinned Playwright image — the same one the e2e suite uses.
+# this only turns them into PNGs. The rasterising happens inside the pinned Playwright
+# image — the same one the e2e suite uses — so the browser build is pinned regardless of host.
 #
 # The output is committed: it changes only when the mark does, and neither a build nor CI
 # should need a container to produce an icon.
