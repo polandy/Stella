@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'bun:test';
 import { inEnglish, phrase } from '../../../i18n/phrase';
+import type { MessageKey, MessageParams } from '../../../i18n/translate';
 import {
 	cardFingerprint,
 	fingerprint,
@@ -33,9 +34,9 @@ const line = (text: string): Property => {
 
 const card = (...lines: string[]): Property[] => lines.map(line);
 
-/** A message with no values, in English. */
-const english = (key: Parameters<typeof phrase<'import.error.notVcard'>>[0]) =>
-	inEnglish(phrase(key));
+/** A message in English. */
+const english = <K extends MessageKey>(key: K, ...params: MessageParams<K>) =>
+	inEnglish(phrase(key, ...params));
 
 /** The English message a vCard error carries, to tell its phrases apart. */
 const messageOf = (run: () => unknown): string => {
@@ -193,9 +194,7 @@ describe('splitCards', () => {
 
 	it('refuses a file with no card at all', () => {
 		expect(messageOf(() => splitCards(''))).toBe(english('import.error.notVcard'));
-		expect(messageOf(() => splitCards('Dear Severin,'))).toBe(
-			english('import.error.notVcard')
-		);
+		expect(messageOf(() => splitCards('Dear Severin,'))).toBe(english('import.error.notVcard'));
 	});
 });
 
