@@ -69,6 +69,8 @@ export interface CircleServices {
 	circleDeletionDeps: CircleDeletionPreviewDeps;
 	/** Deleting a circle unlinks its photos' files once the write has committed. */
 	deleteCircleDeps: DeleteCircleDeps;
+	/** The randomness behind a new circle's suggested colour (`suggestCircleColor`). */
+	random: () => number;
 }
 
 export interface CircleWiring {
@@ -118,6 +120,7 @@ export function createCircleServices({
 		renameRoleDeps: { circles, memberships, circlePhotos, clock },
 		cutDeps: { cuts, contacts, media, ids, clock },
 		circleDeletionDeps: { circles },
-		deleteCircleDeps: { circles, media, ids, clock }
+		deleteCircleDeps: { circles, media, ids, clock },
+		random: Math.random
 	};
 }

@@ -104,7 +104,8 @@ const edgeBoilerplateSyntax = [
 			'Use requireViewer(locals) / requireUser(locals) from $lib/server/auth/guards instead of a hand-written login redirect.'
 	},
 	{
-		selector: "NewExpression[callee.name='Date']",
+		selector:
+			"NewExpression[callee.name='Date'], CallExpression[callee.object.name='Date'][callee.property.name='now']",
 		message:
 			'The edge reads time off the injected clock: todayFor(systemClock) from $lib/dates/today, or clock.now() (docs/08 §8.2 item 10).'
 	},

@@ -28,7 +28,7 @@ export const POST: RequestHandler = async ({ locals }) => {
 	// it (docs/02 §2.15). This is the authorisation; the repository scopes by household.
 	if (user.role !== 'admin') throw error(403, say(locals, 'errors.export.adminOnly'));
 
-	const { fileName, document, mediaPaths } = await exportHousehold(
+	const { fileName, document, mediaPaths, exportedAt } = await exportHousehold(
 		locals.services.archive.archiveDeps,
 		{
 			userId: user.id,
@@ -41,7 +41,7 @@ export const POST: RequestHandler = async ({ locals }) => {
 	const plan = planArchive(mediaPaths);
 
 	const media = locals.services.media.store;
-	const mtime = Math.floor(Date.now() / 1000);
+	const mtime = Math.floor(exportedAt / 1000);
 	const entries = archiveEntries(plan, {
 		documentText: serialiseDocument(document),
 		read: (path) => media.read(path),

@@ -98,6 +98,13 @@ export interface HomeDeps {
 	clock: Clock;
 }
 
+/** A blank line would leave the home without an address; taking it off is removing it. */
+export class EmptyAddressLineError extends TranslatableError {
+	constructor() {
+		super(phrase('errors.field.needValue'), 'EmptyAddressLineError');
+	}
+}
+
 /** The home or the address being shared is not (any longer) one this person has. */
 export class HomeGoneError extends TranslatableError {
 	constructor() {
@@ -259,7 +266,7 @@ export async function changeHomeLine(
 	input: ChangeLineInput
 ): Promise<{ changedFor: number }> {
 	const value = input.value.trim();
-	if (value.length === 0) throw new Error('An address needs a line.');
+	if (value.length === 0) throw new EmptyAddressLineError();
 	await requireVisible(deps, viewer, [input.contactId]);
 	const home = await deps.homes.findForMemberVisibleTo(viewer, input.homeId, input.contactId);
 	if (!home) throw new HomeGoneError();
