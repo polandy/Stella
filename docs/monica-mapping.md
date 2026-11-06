@@ -101,7 +101,7 @@ sparsely. `src/lib/server/domain/import/vcard.ts` reads it; unknown properties a
 | `UID` | the record's key; `urn:uuid:` stripped. A card without one — or with one that could not survive a URL, since the id ends up in `/contacts/<id>` — is keyed by a fingerprint of its own contents, so the same card imported from two files is one person and two different cards never collide |
 | `FN`, `N` | display name, given / additional / family name — `FN` alone when there is no `N` |
 | `NICKNAME` | nickname (the first, if the card lists several) |
-| `BDAY` | birth date; `--MMDD` becomes a birthday whose year is unknown; free text is ignored |
+| `BDAY` | birth date; `--MMDD` becomes a birthday whose year is unknown; free text, and a day no calendar has (`1990-13-45`), is ignored |
 | `GENDER` | `M` / `F` mapped as Monica's codes are; anything else left empty |
 | `ORG`, `TITLE` | company (first component) and job title |
 | `EMAIL`, `TEL`, `URL` | `contact_field` `email` / `phone` / `url` |

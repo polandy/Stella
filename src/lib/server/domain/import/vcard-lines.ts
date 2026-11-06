@@ -1,3 +1,4 @@
+import { isRealCalendarDay } from '../../../dates/calendar';
 import { TranslatableError } from '../../../i18n/translatable';
 import { phrase, type Phrase } from '../../../i18n/phrase';
 import type { MonicaPhoto } from './monica/monica-export';
@@ -234,13 +235,21 @@ export function readName(card: Property[], index: number) {
 	return { firstName, middleName: orNull(structured[2]), lastName, formatted };
 }
 
-/** A vCard date, which may withhold the year (`--0407`). Null when it is free text. */
+/**
+ * A vCard date, which may withhold the year (`--0407`). Null when it is free text or a day no
+ * calendar has (`1990-13-45`): the card then has no birthday rather than an impossible one.
+ */
 export function parseDay(raw: string): { date: string; isYearUnknown: boolean } | null {
 	const value = raw.trim().split('T')[0]!;
 	const full = /^(\d{4})-?(\d{2})-?(\d{2})$/.exec(value);
-	if (full) return { date: `${full[1]}-${full[2]}-${full[3]}`, isYearUnknown: false };
+	if (full) {
+		const date = `${full[1]}-${full[2]}-${full[3]}`;
+		return isRealCalendarDay(date) ? { date, isYearUnknown: false } : null;
+	}
 	const noYear = /^--(\d{2})-?(\d{2})$/.exec(value);
-	if (noYear) return { date: `0000-${noYear[1]}-${noYear[2]}`, isYearUnknown: true };
+	if (noYear && isRealCalendarDay(`--${noYear[1]}-${noYear[2]}`)) {
+		return { date: `0000-${noYear[1]}-${noYear[2]}`, isYearUnknown: true };
+	}
 	return null;
 }
 
