@@ -34,6 +34,7 @@
 			{#each suggestions as c (c.id)}
 				<li>
 					<button
+						type="button"
 						onclick={() => {
 							query = '';
 							onReveal(c.id);

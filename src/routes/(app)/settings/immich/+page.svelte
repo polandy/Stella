@@ -376,6 +376,7 @@
 										<input type="hidden" name="contactId" value={row.contact.id} />
 										<input type="hidden" name="immichPersonId" value={face.personId} />
 										<button
+											type="submit"
 											class="flex w-28 flex-col items-center gap-1 rounded-app border border-border p-2 text-center transition-colors hover:bg-card-hover"
 											aria-label={t('immich.picker.link', {
 												immichName: face.name,

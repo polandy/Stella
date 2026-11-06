@@ -1,4 +1,5 @@
 <script lang="ts">
+	import Icon from '$lib/components/ui/Icon.svelte';
 	import MenuButton from '$lib/components/ui/MenuButton.svelte';
 	import { useTranslate } from '$lib/i18n/context.svelte';
 	import { ARRANGEMENTS, type ArrangementKey } from '$lib/graph/layout/arrangements';
@@ -32,8 +33,8 @@
 				}}
 				class={MENU_ITEM}
 			>
-				<span class="w-3 shrink-0 font-bold text-primary" aria-hidden="true">
-					{#if arrangedBy === arrangement.key}✓{/if}
+				<span class="flex w-3 shrink-0 text-primary">
+					{#if arrangedBy === arrangement.key}<Icon name="done" size={12} strokeWidth={2.5} />{/if}
 				</span>
 				<span class="flex-1">
 					{t(arrangement.label)}

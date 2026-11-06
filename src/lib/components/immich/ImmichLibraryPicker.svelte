@@ -288,14 +288,14 @@
 									class="size-full object-cover transition-opacity group-disabled:opacity-50"
 								/>
 								<span
-									class="absolute top-1.5 right-1.5 grid size-6 place-items-center rounded-full border-2 border-white text-xs font-bold text-primary-fg tabular-nums shadow-card {number
+									class="absolute top-1.5 right-1.5 grid size-6 place-items-center rounded-full border-2 border-scrim-fg text-xs font-bold text-primary-fg tabular-nums shadow-card {number
 										? 'bg-primary'
-										: 'bg-black/20'}"
+										: 'bg-scrim/20'}"
 									aria-hidden="true">{number ?? ''}</span
 								>
 								{#if label}
 									<span
-										class="absolute bottom-1 left-1 rounded bg-black/55 px-1 text-[11px] text-white tabular-nums"
+										class="absolute bottom-1 left-1 rounded bg-scrim/55 px-1 text-[11px] text-scrim-fg tabular-nums"
 										aria-hidden="true">{label}</span
 									>
 								{/if}

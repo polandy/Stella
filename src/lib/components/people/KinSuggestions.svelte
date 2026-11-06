@@ -139,9 +139,12 @@
 	 * observed rather than reported: a claim the store no longer holds, and that never went as
 	 * far as *sending*, was taken back, and its row returns to the open list.
 	 */
+	const takenBack = $derived(
+		Object.keys(answered).filter((key) => wasTakenBack(answered[key], removals.isPending(key)))
+	);
+	// Reads only the derived list, so dropping its keys runs it once more with nothing to drop.
 	$effect(() => {
-		for (const [key, claim] of Object.entries(answered)) {
-			if (!wasTakenBack(claim, removals.isPending(key))) continue;
+		for (const key of takenBack) {
 			delete answered[key];
 			if (owed?.key === key) owed = null;
 		}

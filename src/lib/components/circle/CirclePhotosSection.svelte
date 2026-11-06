@@ -209,7 +209,7 @@
 								<span class="sr-only">{t('contact.photos.favourite')}</span>
 							{/if}
 							<span
-								class="pointer-events-none absolute inset-x-0 bottom-0 flex flex-col bg-gradient-to-t from-black/65 to-transparent px-1.5 pt-3 pb-1 text-left text-[0.6875rem] font-medium text-white"
+								class="pointer-events-none absolute inset-x-0 bottom-0 flex flex-col bg-gradient-to-t from-scrim/65 to-transparent px-1.5 pt-3 pb-1 text-left text-[0.6875rem] font-medium text-scrim-fg"
 								aria-hidden="true"
 							>
 								{#if p.roleLabel}<span class="truncate">{p.roleLabel}</span>{/if}

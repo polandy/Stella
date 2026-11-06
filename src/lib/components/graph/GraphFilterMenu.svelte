@@ -1,4 +1,5 @@
 <script lang="ts">
+	import Icon from '$lib/components/ui/Icon.svelte';
 	import MenuButton from '$lib/components/ui/MenuButton.svelte';
 	import { filterSummary } from '$lib/ui/menu';
 	import { categoryVar } from '$lib/design/tokens';
@@ -265,8 +266,8 @@
 					onclick={() => onChooseDensity(option)}
 					class={MENU_ITEM}
 				>
-					<span class="w-3 shrink-0 font-bold text-primary" aria-hidden="true">
-						{#if density === option}✓{/if}
+					<span class="flex w-3 shrink-0 text-primary">
+						{#if density === option}<Icon name="done" size={12} strokeWidth={2.5} />{/if}
 					</span>
 					<span class="flex-1">{t(`graph.density.${option}`)}</span>
 				</button>

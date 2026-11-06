@@ -78,7 +78,11 @@
 	// *On this day* from Immich (docs/02 §2.12.1), asked for once Home is drawn; without Immich it
 	// stays idle and empty.
 	const immichMemories = new ImmichMemories();
-	$effect(() => (data.immichLibrary ? immichMemories.load(data.today) : undefined));
+	$effect(() => {
+		if (!data.immichLibrary) return;
+		// The teardown forgets the day, so a late answer for it is dropped.
+		return immichMemories.load(data.today);
+	});
 	const hasMemories = $derived(!data.memories.empty || immichMemories.years.length > 0);
 	// A phone folds each rail section to one line: how many, and the first (docs/05 §5.5.1).
 	const todoSummary = $derived(railSummary(band.due, todoRailFirst(band.rows)));

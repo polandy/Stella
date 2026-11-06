@@ -385,3 +385,14 @@ describe('text on a state tint', () => {
 		});
 	}
 });
+
+describe('the photo scrim', () => {
+	// A photo looks the same in every theme, so the shade laid over it for a caption does too.
+	it('is the same black under white words in every theme', () => {
+		for (const theme of ['light', 'dark', 'system-dark'] as const) {
+			const tokens = tokensFor(css, theme);
+			expect(resolveColor(tokens, '--scrim')).toBe('#000000');
+			expect(resolveColor(tokens, '--scrim-fg')).toBe('#ffffff');
+		}
+	});
+});

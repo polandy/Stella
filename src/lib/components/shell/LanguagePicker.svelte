@@ -20,6 +20,7 @@
 	{#each LOCALES as locale (locale)}
 		{@const current = locale === i18n.locale}
 		<button
+			type="submit"
 			name="locale"
 			value={locale}
 			lang={locale}

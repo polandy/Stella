@@ -77,6 +77,7 @@
 				<input type="hidden" name="lastName" value={chip.name} />
 				<input type="hidden" name="contactId" value={c.id} />
 				<button
+					type="submit"
 					class="min-h-8 rounded-full border border-border bg-bg px-2.5 font-medium text-fg hover:border-primary hover:text-primary disabled:opacity-50 pointer-coarse:min-h-11 pointer-coarse:px-4 pointer-coarse:text-sm"
 					title={chip.why}
 					aria-label={t('surnames.chipHint', { name: chip.name })}

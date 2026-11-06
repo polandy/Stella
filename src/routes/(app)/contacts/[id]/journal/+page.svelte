@@ -370,6 +370,7 @@
 										>
 											<input type="hidden" name="id" value={entry.id} />
 											<button
+												type="submit"
 												class="tap-target grid size-6 place-items-center text-fg-subtle hover:text-danger"
 												aria-label={t('journal.deleteEntry')}
 												title={t('journal.deleteEntry')}

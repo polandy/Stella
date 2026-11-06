@@ -243,6 +243,12 @@
 	--edge-membership: var(--accent-lavender);
 	--edge-kinship: var(--fg-subtle);
 
+	/* A shade over a photo so the words on it read (docs/05 §5.2.2). A photo looks the same in
+	   every theme, so this does not follow the palette; each overlay picks its own strength,
+	   `bg-scrim/60`. */
+	--scrim: #000000;
+	--scrim-fg: #ffffff;
+
 	/* Motion: one glide and one fade for everything that opens in place (docs/05 §5.11).
 	   Mirrored by `MOTION` in src/lib/design/tokens.ts. */
 	--motion-expand: 300ms;
@@ -283,6 +289,8 @@
 	--color-danger-soft: var(--danger-soft);
 	--color-link: var(--link);
 	--color-focus-ring: var(--focus-ring);
+	--color-scrim: var(--scrim);
+	--color-scrim-fg: var(--scrim-fg);
 
 	--radius-app: var(--radius);
 	--radius-control: var(--radius-control);

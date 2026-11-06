@@ -166,6 +166,8 @@
 		)
 	);
 	// What was listed stays listed for the visit, so emptying it does not make it vanish.
+	// It writes the `visit` it reads, and stops there: the write makes `current` this person's visit
+	// with every listed name kept, so the next run finds nothing to add.
 	$effect(() => {
 		const added = layout.listed.filter((name) => !current.kept.includes(name));
 		if (added.length > 0 || visit.id !== c.id)

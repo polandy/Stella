@@ -81,8 +81,8 @@
 				onclick={() => onApply(view)}
 				class={MENU_ITEM}
 			>
-				<span class="w-3 shrink-0 font-bold text-primary" aria-hidden="true">
-					{#if current === view.name}✓{/if}
+				<span class="flex w-3 shrink-0 text-primary">
+					{#if current === view.name}<Icon name="done" size={12} strokeWidth={2.5} />{/if}
 				</span>
 				<span class="flex-1 truncate">{view.name}</span>
 			</button>

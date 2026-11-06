@@ -119,7 +119,10 @@
 	// A navigation is work like any other, and reported the same way, so a short one stays
 	// under the store's own delay instead of flashing the indicator for a frame. The rule
 	// itself is in `$lib/sync/pending`, where a unit test can drive it.
-	$effect(() => reportNavigation(pending, navigating.to));
+	$effect(() => {
+		// The teardown ends the navigation it began.
+		return reportNavigation(pending, navigating.to);
+	});
 
 	// Removals are held back for an undo window (docs/04 §4.9). Leaving the page ends the
 	// window: a client-side navigation waits for the requests so the next screen cannot read
@@ -343,6 +346,7 @@
 				<div class="flex gap-1 rounded-control border border-border p-1">
 					{#each THEME_CHOICES as choice (choice.value)}
 						<button
+							type="button"
 							onclick={() => applyTheme(choice.value)}
 							aria-pressed={theme === choice.value}
 							class="flex-1 rounded-md px-2 py-1 text-xs font-medium transition-colors"
@@ -356,6 +360,7 @@
 				</div>
 				<SignOutForm class="mt-1">
 					<button
+						type="submit"
 						class="w-full rounded-md px-3 py-2 text-left text-sm text-fg-muted transition-colors hover:bg-card-hover hover:text-fg"
 					>
 						{t('nav.signOut')}

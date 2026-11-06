@@ -166,7 +166,7 @@
 	>
 		<Avatar id={contactId} {name} {avatarPhotoId} {size} fill={portrait} />
 		<span
-			class="absolute inset-0 grid place-items-center bg-black/45 text-xs font-medium text-white transition-opacity {busy
+			class="absolute inset-0 grid place-items-center bg-scrim/45 text-xs font-medium text-scrim-fg transition-opacity {busy
 				? 'opacity-100'
 				: 'opacity-0 group-hover:opacity-100'} {portrait ? 'rounded-[inherit]' : 'rounded-full'}"
 		>

@@ -222,9 +222,7 @@
 			{/if}
 			<span class="contents {phoneIcon ? 'max-sm:hidden' : ''}">
 				{@render trigger()}
-				<svg class="size-2.5 opacity-70" viewBox="0 0 10 10" aria-hidden="true">
-					<path d="M1.5 3.5 5 7l3.5-3.5" fill="none" stroke="currentColor" stroke-width="1.5" />
-				</svg>
+				<Icon name="expand" size={10} strokeWidth={2.5} class="opacity-70" />
 			</span>
 		</button>
 	{/if}

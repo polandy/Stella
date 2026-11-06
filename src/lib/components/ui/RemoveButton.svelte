@@ -122,6 +122,7 @@
 	{#if bare}
 		<!-- 24px square at least (WCAG 2.5.8), however small the chip it sits on. -->
 		<button
+			type="submit"
 			class="-my-1 grid size-6 place-items-center rounded-full text-fg-muted transition-colors hover:bg-bg-sunken hover:text-fg"
 			aria-label={label}
 		>

@@ -179,6 +179,7 @@
 	}
 	// However the edit ends — saved, cancelled, or the log form taking the spot — the kept
 	// moment is let go, to be sent with the rest.
+	// It clears the `editingMoment` it guards on, so its own rerun returns at once.
 	$effect(() => {
 		if (openForm === 'moment' || !editingMoment) return;
 		const item = editingMoment;
@@ -233,6 +234,7 @@
 		logFresh++;
 		openForm = 'log';
 	}
+	// The log form closing lets its kept entry go; clearing `editingLog` ends the rerun at once.
 	$effect(() => {
 		if (logOpen || !editingLog) return;
 		const item = editingLog;
