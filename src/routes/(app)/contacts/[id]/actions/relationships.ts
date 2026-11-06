@@ -13,12 +13,12 @@ import { contactSectionPath } from '$lib/people/sections';
 import {
 	ContradictoryRelationshipError,
 	DuplicateRelationshipError,
-	editRelationship,
-	InvalidRelationshipDetailsError,
 	removeRelationship,
-	removeRelationships,
-	RelationshipExcludedError
+	removeRelationships
 } from '$lib/server/domain/relationships/relationships';
+import { InvalidRelationshipDetailsError } from '$lib/server/domain/relationships/details';
+import { editRelationship } from '$lib/server/domain/relationships/edit';
+import { RelationshipExcludedError } from '$lib/server/domain/relationships/exclusions';
 import { acceptClaim, declineClaim, restoreClaim } from '../../../_shared/suggestion-answers';
 import { RelationshipsRefusedError } from '$lib/server/domain/relationships/add-many';
 import { say, translator } from '$lib/server/i18n/say';

@@ -7,13 +7,9 @@ import {
 } from '../../../kinship/kinship';
 import type { ExclusionFacts } from '../../../relationships/exclusions';
 import type { Viewer } from '../../access/visibility';
-import {
-	exclusionFactsFrom,
-	kinshipFrom,
-	type KinshipRead,
-	type RelationshipTieReads,
-	type RelationshipView
-} from './relationships';
+import { exclusionFactsFrom } from './exclusions';
+import { kinshipFrom, type KinshipRead } from './kinship';
+import type { RelationshipTieReads, RelationshipView } from './relationships';
 import {
 	reviewPersonIn,
 	type ProposedLink,
