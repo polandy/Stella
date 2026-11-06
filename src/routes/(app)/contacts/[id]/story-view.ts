@@ -58,6 +58,19 @@ export function nameLookup(
 	return (contactId) => byId.get(contactId) ?? null;
 }
 
+/** Whom each mention in `body` names, for the people the viewer may see. */
+function mentionNamesIn(
+	body: string,
+	nameOf: (contactId: string) => string | null
+): Record<string, string> {
+	return Object.fromEntries(
+		extractMentionIds(body).flatMap((id) => {
+			const name = nameOf(id);
+			return name === null ? [] : [[id, name]];
+		})
+	);
+}
+
 export interface StoryViewContext {
 	/** The signed-in member, to decide what they may remove and who counts as "you". */
 	remover: Remover;
@@ -86,19 +99,24 @@ function removable(
 export function toStoryItem(item: StoryItem, ctx: StoryViewContext): StoryItemView {
 	if (item.kind === 'journal') {
 		const entry = item.entry;
+		const mine = entry.createdBy === ctx.remover.id;
 		return {
 			kind: 'journal',
 			id: entry.id,
 			day: item.day,
 			recordedAt: item.recordedAt,
 			visibility: entry.visibility,
-			mine: entry.createdBy === ctx.remover.id,
+			mine,
 			removable: removable(ctx, entry),
-			author: authorLabel(entry.createdBy === ctx.remover.id, ctx.nameOfAuthor(entry.createdBy)),
+			author: authorLabel(mine, ctx.nameOfAuthor(entry.createdBy)),
 			title: entry.title,
 			// Beyond the journal, a tag leads to its own page (docs/02 §2.20.2).
 			bodyHtml: renderMarkdownWithMentions(entry.body, ctx.nameOf, { tagHref: tagPageHref }),
-			photos: ctx.photosByEntry.get(entry.id) ?? []
+			photos: ctx.photosByEntry.get(entry.id) ?? [],
+			// Only an author edits an entry (docs/03 §3.7), so only their own carry the stored body.
+			editable: mine,
+			bodyForEdit: mine ? entry.body : null,
+			mentionNames: mine ? mentionNamesIn(entry.body, ctx.nameOf) : {}
 		};
 	}
 

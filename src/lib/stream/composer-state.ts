@@ -120,7 +120,8 @@ export type ComposerCommand =
 	| { kind: 'submit'; id: string; payload: MomentCapturePayload; photos: KeptPhoto[] }
 	/** Save an edit into the kept moment `id`; answered by `revised`. */
 	| { kind: 'revise'; id: string; payload: MomentCapturePayload }
-	| { kind: 'backToStream'; href: string }
+	/** Home again, `entryId` naming the journal entry the moment landed in. */
+	| { kind: 'backToStream'; href: string; entryId: string }
 	| { kind: 'onSaved' }
 	| { kind: 'onKept' }
 	| { kind: 'onEditDone' }

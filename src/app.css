@@ -494,6 +494,19 @@ button:focus-visible .edit-pencil {
 	}
 }
 
+/* A stream row shown from its toast — *Moment saved · Show* — clears the top bar and flashes once. */
+.stream-row {
+	scroll-margin-block: 5rem;
+}
+.stream-row:target {
+	animation: stream-row-flash 1.6s var(--ease-standard);
+}
+@keyframes stream-row-flash {
+	from {
+		background-color: var(--primary-soft);
+	}
+}
+
 /* Screen-to-screen cross-fade (docs/05 §5.5); the shell opts out under reduced motion. */
 ::view-transition-old(root),
 ::view-transition-new(root) {

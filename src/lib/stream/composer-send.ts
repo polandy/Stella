@@ -62,8 +62,11 @@ function answered(state: ComposerState, event: Extract<SendEvent, { type: 'answe
 	if (delivery.status === 'kept') return only(next, [{ kind: 'onKept' }]);
 	if (event.inPlace) return only(next, [{ kind: 'onSaved' }]);
 	// Back to the stream, offering to link the first two people in it (§2.22.1).
-	const { linkSuggestion } = delivery.result as { linkSuggestion: [string, string] | null };
-	return only(next, [{ kind: 'backToStream', href: linkHintHref(linkSuggestion) }]);
+	const { entryId, linkSuggestion } = delivery.result as {
+		entryId: string;
+		linkSuggestion: [string, string] | null;
+	};
+	return only(next, [{ kind: 'backToStream', href: linkHintHref(linkSuggestion), entryId }]);
 }
 
 export function sendingAfter(state: ComposerState, event: SendEvent): ComposerStep {

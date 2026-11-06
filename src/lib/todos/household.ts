@@ -36,6 +36,8 @@ export interface TodoBand<T> {
 	rows: CardTodo<T>[];
 	/** Every open to-do the reader may see — the *Show all N* that leads to `/todos`. */
 	open: number;
+	/** The open ones overdue or due within the week, past the three shown — the phone's line. */
+	due: number;
 	/** Whether `/todos` holds more than the band shows. */
 	showsAll: boolean;
 }
@@ -47,7 +49,8 @@ export function todoBand<T extends Dated>(
 ): TodoBand<T> {
 	const shown = rows.filter((row) => inBand(row.todo, today)).slice(0, BAND_CAP);
 	const open = rows.filter((row) => !row.done).length;
-	return { rows: shown, open, showsAll: open > shown.filter((row) => !row.done).length };
+	const due = rows.filter((row) => !row.done && inBand(row.todo, today)).length;
+	return { rows: shown, open, due, showsAll: open > shown.filter((row) => !row.done).length };
 }
 
 /**

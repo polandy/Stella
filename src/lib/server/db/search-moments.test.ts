@@ -79,7 +79,7 @@ describe('searchMoments by words', () => {
 		expect(byBody).toEqual([
 			expect.objectContaining({ entryId: 'j-1', contactId: 'c-hans', contactName: 'Hans' })
 		]);
-		expect(byBody[0].snippet).toContain('lake');
+		expect(byBody[0].body).toContain('lake');
 		expect(await repo.searchMoments(viewerU1, words('sunday'), 20)).toHaveLength(1);
 	});
 
@@ -135,7 +135,7 @@ describe('searchMomentsByTag', () => {
 
 		const hits = await repo.searchMomentsByTag(viewerU1, 'hike', 20);
 		expect(hits.map((h) => h.entryId)).toEqual(['j-1']);
-		expect(hits[0].snippet).toContain('#Hike');
+		expect(hits[0].body).toContain('#Hike');
 	});
 
 	it('keeps another member’s private moment out', async () => {

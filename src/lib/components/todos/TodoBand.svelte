@@ -1,6 +1,5 @@
 <script lang="ts">
 	import FormError from '$lib/components/ui/FormError.svelte';
-	import Icon from '$lib/components/ui/Icon.svelte';
 	import { useI18n } from '$lib/i18n/context.svelte';
 	import type { KeptOf } from '$lib/pwa/outbox';
 	import type { HouseholdTodoView, TodoBand } from '$lib/todos/household';
@@ -24,10 +23,8 @@
 	const t = useI18n().t;
 </script>
 
-<section data-testid="todo-band">
-	<h2 class="flex items-center gap-2 pb-2 text-sm font-semibold text-fg">
-		<Icon name="todo" size={13} />{t('todos.band.title')}
-	</h2>
+<!-- Its heading is the rail section's around it (`RailSection`). -->
+<div>
 	<ul class="flex flex-col">
 		{#each band.rows as row (row.todo.id)}
 			<HouseholdTodoRow
@@ -48,4 +45,4 @@
 			data-testid="todo-band-all">{t('home.showAll', { count: band.open })}</a
 		>
 	{/if}
-</section>
+</div>

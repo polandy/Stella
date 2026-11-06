@@ -310,7 +310,10 @@ the person, and that never leaves the page. Keeping the record tidy (archive, me
   has no hover. *Edit* is a touchpoint's, for its author alone (`canEditAuthored`, docs/03
   §3.7): the touchpoint glides into the log form's fields in place (`Swap`,
   `InteractionEditor`) — kind, day, title, details and *Who else was there?*; visibility stays
-  out — and *Save* closes it with *Saved*. One touchpoint is open at a time. Online only.
+  out — and *Save* closes it with *Saved*. A moment's author gets the same pencil: the moment
+  glides into the journal page's own editor (`JournalEntryEditor`, one component for both) —
+  title and text with the @-picker; day, visibility and photos stay, the photos hidden while it
+  is open. One item is open at a time. Online only.
 
 #### Gifts card
 

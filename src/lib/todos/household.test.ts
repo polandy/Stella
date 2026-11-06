@@ -43,6 +43,20 @@ describe('todoBand', () => {
 		expect(band.showsAll).toBe(true);
 	});
 
+	it('counts the open ones due that soon, past the three it shows, for the phone line', () => {
+		const band = todoBand(
+			[
+				row('a', '2026-10-30', true),
+				row('b', TODAY),
+				row('c', '2026-11-02'),
+				row('d', '2026-11-07'),
+				row('later', '2026-12-01')
+			],
+			TODAY
+		);
+		expect(band.due).toBe(3);
+	});
+
 	it('has no *Show all* when the band already holds every open one', () => {
 		const band = todoBand([row('a', TODAY), row('b', '2026-11-02')], TODAY);
 		expect(band.showsAll).toBe(false);

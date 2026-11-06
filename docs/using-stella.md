@@ -78,6 +78,9 @@ in full, where you can also step to the day before or after, or pick any day; ea
 twelve Immich photos at first, and *Show more* brings the next twelve. The palette's
 *On this day* opens it too. The band is only there when the day has something to remember.
 
+On a phone the three lists fold to one line each — *To-dos 2 · Call Rosa about the move* —
+so the stream stays near the top. Tap a line to open that list in place and again to fold it.
+
 ### Writing a moment
 
 Type what happened and mention the people in it with `@`:
@@ -96,7 +99,8 @@ A few things worth knowing:
 - **`⌘K` / `Ctrl-K`** from anywhere opens a small palette; its first row is *Write a
   moment*, so `⌘K`, `Enter` puts the cursor in the field. **`⌘⏎` / `Ctrl-⏎`** saves.
 - **On a phone**, tap the pencil in the middle of the bottom bar; the composer slides up
-  over the stream. The top of a phone's Home is a search field for people instead: start
+  over the stream. After *Save*, *Moment saved* shows for a few seconds; tap *Show* to
+  jump to it. The top of a phone's Home is a search field for people instead: start
   typing a name and the people who match appear right under it; tap one to open their page.
   The last row, *Search everything*, also looks through notes. It works offline too, for
   everyone Stella already showed you. Because that field is the search on Home, the top bar
@@ -118,6 +122,9 @@ A few things worth knowing:
   the last week is right there, *Another day…* opens a calendar for any earlier one.
 - **Two moments about the same person on the same day** end up in one journal entry, one
   paragraph each. The second one is added; nothing you wrote earlier is replaced.
+- **A slip in a moment you wrote?** Tap its pencil — in the person's *Activity* card or on
+  their journal page — and the moment turns into its title and text right there; *Save* keeps
+  the change. Its day, who sees it and its photos stay as they were.
 - **Tags.** Write `#hike` or `#Geburtstag` anywhere in a moment to give it a topic. Typing `#`
   suggests the tags your household already uses; a line under the field shows which tags the
   moment gets. `#Hike` and `#hike` are the same tag. A tag reads as a coloured chip. In a
