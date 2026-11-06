@@ -64,6 +64,7 @@
 									<input type="hidden" name="lastName" value={option.name} />
 									<input type="hidden" name="contactId" value={row.person.id} />
 									<button
+										type="submit"
 										class="min-h-9 rounded-full border border-border bg-bg px-3 text-sm font-medium text-fg hover:border-primary hover:text-primary disabled:opacity-50"
 										{disabled}
 									>

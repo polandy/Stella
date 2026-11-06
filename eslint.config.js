@@ -155,6 +155,9 @@ export default ts.config(
 			],
 			// The control characters in our patterns are deliberate: separators and sanitisers.
 			'no-control-regex': 'off',
+			// A bare `<button>` submits; a reusable one changes behaviour the day a caller wraps
+			// it in a form, so every button says which it is.
+			'svelte/button-has-type': 'error',
 
 			// Rules that would ask for a sweep of non-mechanical changes. Each is a decision to
 			// revisit on its own, not part of wiring the tools.

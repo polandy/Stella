@@ -76,6 +76,7 @@
 {#if !compact}
 	<!-- An icon on a phone, so the toolbar keeps one row beside the search. -->
 	<button
+		type="button"
 		onclick={onTogglePath}
 		aria-pressed={pathMode}
 		aria-label={t('graph.connectionPath')}

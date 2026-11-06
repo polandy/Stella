@@ -37,10 +37,12 @@
 
 	// *Undo* is pressed in the toast: a finding the store no longer holds, and that never went as
 	// far as *sending*, was taken back, and its card returns.
+	const takenBack = $derived(
+		Object.keys(answered).filter((key) => wasTakenBack(answered[key], removals.isPending(key)))
+	);
+	// Reads only the derived list, so dropping its keys runs it once more with nothing to drop.
 	$effect(() => {
-		for (const [key, claim] of Object.entries(answered)) {
-			if (wasTakenBack(claim, removals.isPending(key))) delete answered[key];
-		}
+		for (const key of takenBack) delete answered[key];
 	});
 
 	const open = $derived(data.checked ? data.open.filter((f) => !answered[f.key]) : []);

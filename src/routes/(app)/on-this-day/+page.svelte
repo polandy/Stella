@@ -23,7 +23,11 @@
 	let { data }: { data: PageData } = $props();
 
 	const immich = new ImmichMemories();
-	$effect(() => (data.immichLibrary ? immich.load(data.day) : undefined));
+	$effect(() => {
+		if (!data.immichLibrary) return;
+		// The teardown forgets the day, so a late answer for it is dropped.
+		return immich.load(data.day);
+	});
 	const cards = $derived(memoryCardsWithImmich(data.years, immich.years, data.day));
 	const waiting = $derived(immich.phase === 'loading');
 

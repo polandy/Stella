@@ -14,7 +14,7 @@
 		type PaletteStep
 	} from '$lib/ui/command-palette';
 	import { usePeopleContext } from '$lib/people/context.svelte';
-	import { tick } from 'svelte';
+	import { tick, untrack } from 'svelte';
 
 	/*
 	 * ⌘K (docs/05 §5.4). A native <dialog> so focus trapping, Escape and the backdrop come
@@ -81,9 +81,13 @@
 		}
 	});
 
-	// Keep the highlight on a real row when the query shrinks the list under it.
+	// Keep the highlight on a real row when the query shrinks the list under it. Only the rows
+	// are watched: every other write to `selected` already lands on a row.
 	$effect(() => {
-		if (selected >= rows.length) selected = Math.max(0, rows.length - 1);
+		const last = Math.max(0, rows.length - 1);
+		untrack(() => {
+			if (selected > last) selected = last;
+		});
 	});
 
 	function goTo(next: PaletteStep) {

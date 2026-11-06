@@ -73,6 +73,7 @@
 						<input type="hidden" name="kind" value={row.conflict.kind} />
 						{#each ['stella', 'card'] as const as which (which)}
 							<button
+								type="submit"
 								name="take"
 								value={which}
 								class="flex min-w-0 flex-col items-start gap-1 rounded-md border border-border px-3 py-2 text-left hover:border-primary hover:bg-primary-soft focus-visible:outline-2 focus-visible:outline-focus-ring"
