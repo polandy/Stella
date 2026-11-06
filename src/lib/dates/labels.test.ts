@@ -99,7 +99,8 @@ describe('dayHeading', () => {
 	});
 
 	test('adds the year only to a day of an earlier year', () => {
-		expect(dayHeading(en, '2025-09-21', '2026-11-06')).toBe('Sunday, 21 September 2025');
+		// Whether a comma follows the weekday is the ICU build's call, not ours.
+		expect(dayHeading(en, '2025-09-21', '2026-11-06')).toMatch(/^Sunday,? 21 September 2025$/);
 		// Across New Year, yesterday is still yesterday.
 		expect(dayHeading(en, '2025-12-31', '2026-01-01')).toBe('Yesterday');
 	});
