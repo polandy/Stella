@@ -11,6 +11,7 @@
 	import PersonFinder from '$lib/components/people/PersonFinder.svelte';
 	import StreamNotice from '$lib/components/stream/StreamNotice.svelte';
 	import StreamCirclePhoto from '$lib/components/stream/StreamCirclePhoto.svelte';
+	import { savedMomentAnchor } from '$lib/stream/saved-moment';
 	import PrivateMark from '$lib/components/ui/PrivateMark.svelte';
 	import Veil from '$lib/components/ui/Veil.svelte';
 	import { asTyped, newPeopleAsCandidates } from '$lib/mentions/picks';
@@ -401,8 +402,10 @@
 							{day.label}<span class="h-px flex-1 bg-border"></span>
 						</div>
 						{#each day.items as item (item.kind + item.id)}
+							<!-- A moment's row is the target of *Moment saved · Show* (`saved-moment.ts`). -->
 							<article
-								class="group grid grid-cols-[32px_1fr] gap-3 rounded-app px-2.5 py-2.5 transition-colors hover:bg-card"
+								id={item.kind === 'moment' ? savedMomentAnchor(item.id) : undefined}
+								class="stream-row group grid grid-cols-[32px_1fr] gap-3 rounded-app px-2.5 py-2.5 transition-colors hover:bg-card"
 							>
 								{#if item.kind === 'moment'}
 									<StreamMoment {item} members={data.members} when={stream.when(item.at)} />

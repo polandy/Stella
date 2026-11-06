@@ -10,7 +10,9 @@ first to find somebody, so there the page opens on the person search.
 
 - The capture field sits over the household stream (docs/02 §2.22). On a phone the top is the
   person search instead: the *What happened?* heading is left to screen readers, and the
-  composer is a **sheet** opened from the tab-bar pencil.
+  composer is a **sheet** opened from the tab-bar pencil. A save closes it with *Moment saved ·
+  Show* (five seconds); *Show* scrolls to the moment's row, which flashes once — the sheet
+  hid where the moment landed, so the toast points there (docs/02 §2.22.1).
 - While *Save* is off and something is typed or a photo added, the composer's status line says
   why, in `--fg-muted` rather than the line's usual `--fg-subtle` (docs/02 §2.22.1): a member
   who added a photo and words but no `@` must not take *Save* for broken.

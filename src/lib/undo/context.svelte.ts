@@ -29,7 +29,7 @@ export interface Removals {
 	/** Returns the notice's id (`RemovalsSnapshot.notices`). */
 	notify(text: string, takeBack?: () => void): number;
 	/** A message with a link to what it announces — *Lena Köhler added · Open*. */
-	notifyWithLink(text: string, link: NoticeLink): void;
+	notifyWithLink(text: string, link: NoticeLink, windowMs?: number): void;
 	/** *Undo* on a notice announcing something that can be taken back. */
 	takeBack(noticeId: number): void;
 	/** Stops the windows while the reader is at the toasts; `release` lets them run again. */

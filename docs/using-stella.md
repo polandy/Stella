@@ -96,7 +96,8 @@ A few things worth knowing:
 - **`⌘K` / `Ctrl-K`** from anywhere opens a small palette; its first row is *Write a
   moment*, so `⌘K`, `Enter` puts the cursor in the field. **`⌘⏎` / `Ctrl-⏎`** saves.
 - **On a phone**, tap the pencil in the middle of the bottom bar; the composer slides up
-  over the stream. The top of a phone's Home is a search field for people instead: start
+  over the stream. After *Save*, *Moment saved* shows for a few seconds; tap *Show* to
+  jump to it. The top of a phone's Home is a search field for people instead: start
   typing a name and the people who match appear right under it; tap one to open their page.
   The last row, *Search everything*, also looks through notes. It works offline too, for
   everyone Stella already showed you. Because that field is the search on Home, the top bar

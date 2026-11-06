@@ -77,8 +77,11 @@ export interface PendingRemovals {
 	 * Returns the notice's id, so a list can keep what it announces in view while it stands.
 	 */
 	notify(text: string, takeBack?: () => void): number;
-	/** Shows a message for one window with a link to what it announces, which was just made. */
-	notifyWithLink(text: string, link: NoticeLink): void;
+	/**
+	 * Shows a message with a link to what it announces, which was just made — for one window, or
+	 * for `windowMs` when the message is only a pointer and should not stand as long.
+	 */
+	notifyWithLink(text: string, link: NoticeLink, windowMs?: number): void;
 	/** *Undo* on an undoable notice: drops it and runs its `takeBack`, once. Otherwise a no-op. */
 	takeBack(noticeId: number): void;
 	/**
@@ -109,6 +112,8 @@ interface Pending {
 interface ShownNotice {
 	notice: Notice;
 	timer: unknown;
+	/** How long it stands, when not one undo window. */
+	windowMs?: number;
 	takeBack?: () => void;
 }
 
@@ -148,7 +153,7 @@ export function createPendingRemovals(deps: PendingRemovalsDeps): PendingRemoval
 	function armNotice(shown: ShownNotice) {
 		shown.timer = held
 			? undefined
-			: scheduler.setTimeout(() => dismissNotice(shown.notice.id), windowMs);
+			: scheduler.setTimeout(() => dismissNotice(shown.notice.id), shown.windowMs ?? windowMs);
 	}
 
 	function dismissNotice(id: number) {
@@ -205,8 +210,12 @@ export function createPendingRemovals(deps: PendingRemovalsDeps): PendingRemoval
 				takeBack
 			});
 		},
-		notifyWithLink(text, link) {
-			void show({ notice: { id: nextNoticeId++, text, undoable: false, link }, timer: undefined });
+		notifyWithLink(text, link, ownWindowMs) {
+			void show({
+				notice: { id: nextNoticeId++, text, undoable: false, link },
+				timer: undefined,
+				windowMs: ownWindowMs
+			});
 		},
 		takeBack(noticeId) {
 			const shown = notices.find((candidate) => candidate.notice.id === noticeId);

@@ -27,6 +27,8 @@
 	import { outbox } from '$lib/pwa/outbox.svelte';
 	import { reachability } from '$lib/pwa/reachability.svelte';
 	import { createPanelKey, keyupAsksPicker, textKey } from '$lib/stream/composer-keys';
+	import { SAVED_NOTICE_MS, savedMomentAnchor } from '$lib/stream/saved-moment';
+	import { useRemovals } from '$lib/undo/context.svelte';
 	import {
 		composerPeople,
 		composerReading,
@@ -126,6 +128,7 @@
 	}: Props = $props();
 
 	const t = useTranslate();
+	const removals = useRemovals();
 	const uid = $props.id();
 	const errorId = `${uid}-error`;
 	const listboxId = `${uid}-people`;
@@ -299,7 +302,13 @@
 				return dispatch({ type: 'revised', saved, nextCommandId: ulid() });
 			}
 			case 'backToStream':
-				return goto(command.href, { invalidateAll: true });
+				await goto(command.href, { invalidateAll: true });
+				// The sheet is gone and the moment somewhere in the stream: point to it (§2.22.1).
+				return removals.notifyWithLink(
+					t('home.momentSaved'),
+					{ label: t('home.momentSaved.show'), href: `#${savedMomentAnchor(command.entryId)}` },
+					SAVED_NOTICE_MS
+				);
 			case 'onSaved':
 				return onSaved?.();
 			case 'onKept':

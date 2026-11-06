@@ -67,7 +67,7 @@ const prepared = (reachable: boolean): ComposerEvent => ({
 });
 const applied = (inPlace: boolean): ComposerEvent => ({
 	type: 'answered',
-	delivery: { status: 'applied', result: { linkSuggestion: ['anna', 'bob'] } },
+	delivery: { status: 'applied', result: { entryId: 'e-1', linkSuggestion: ['anna', 'bob'] } },
 	inPlace,
 	nextCommandId: 'cmd-2'
 });
@@ -101,7 +101,11 @@ describe('online', () => {
 
 	it('goes back to the stream offering to link the first two, and starts afresh', () => {
 		const { state, commands } = run(withPhoto(), submitted, prepared(true), applied(false));
-		expect(commands.at(-1)).toEqual({ kind: 'backToStream', href: linkHintHref(['anna', 'bob']) });
+		expect(commands.at(-1)).toEqual({
+			kind: 'backToStream',
+			href: linkHintHref(['anna', 'bob']),
+			entryId: 'e-1'
+		});
 		expect(state).toMatchObject({ body: '', picks: [], photos: [], commandId: 'cmd-2', fresh: 1 });
 		// Still saving until the stream is there.
 		expect(state.sending).not.toBeNull();

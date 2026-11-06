@@ -202,6 +202,21 @@ describe('createPendingRemovals', () => {
 			['Lena Köhler added', false, { label: 'Open', href: '/contacts/c-1' }]
 		]);
 	});
+
+	it('a linked notice can stand for a window of its own, held and released like the others', () => {
+		const { clock, store } = setup();
+
+		store.notifyWithLink('Moment saved', { label: 'Show', href: '#moment-e-1' }, 5000);
+		clock.advance(4999);
+		expect(store.snapshot().notices.map((n) => n.text)).toEqual(['Moment saved']);
+		store.hold();
+		clock.advance(UNDO_WINDOW_MS);
+		store.release();
+		clock.advance(4999);
+		expect(store.snapshot().notices.map((n) => n.text)).toEqual(['Moment saved']);
+		clock.advance(1);
+		expect(store.snapshot().notices).toEqual([]);
+	});
 });
 
 /*

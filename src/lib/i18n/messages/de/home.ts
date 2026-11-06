@@ -8,6 +8,8 @@ export const home: HomeMessages = {
 	'home.title': 'Start · Stella',
 	'home.heading': 'Was ist passiert?',
 	'home.intro': 'Schreib auf, was war – der ganze Haushalt sieht es, außer du hältst es privat.',
+	'home.momentSaved': 'Moment gespeichert',
+	'home.momentSaved.show': 'Zeigen',
 	'home.you': 'Du',
 	'home.atAGlance': 'Auf einen Blick',
 	'home.comingUp': 'Kommt bald',

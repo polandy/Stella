@@ -13,6 +13,8 @@ export const home = {
 	'home.intro':
 		'Write down what happened — the whole household sees it, unless you keep it private.',
 	'home.you': 'You',
+	'home.momentSaved': 'Moment saved',
+	'home.momentSaved.show': 'Show',
 	'home.atAGlance': 'At a glance',
 	'home.comingUp': 'Coming up',
 	'home.writeMoment': 'Write a moment',
