@@ -1,6 +1,7 @@
 #!/bin/sh
 # PostToolUse(Edit|Write): format the touched file the way the project's formatter
-# would, so nobody has to commit `style:` fixes on our branches.
+# would, so nobody has to commit `style:` fixes on our branches. Markdown is left alone:
+# `.prettierignore` keeps prose hand-written.
 #
 # Prettier is a devDependency, so a missing binary means node_modules predates it —
 # a silent skip there let unformatted files reach CI and fail `bun run lint`. The
@@ -11,11 +12,11 @@ file=$(printf '%s' "$input" | jq -r '.tool_input.file_path // empty')
 [ -n "$file" ] && [ -f "$file" ] || exit 0
 
 case "$file" in
-  "$CLAUDE_PROJECT_DIR"/src/* | "$CLAUDE_PROJECT_DIR"/e2e/* | "$CLAUDE_PROJECT_DIR"/docs/*) ;;
+  "$CLAUDE_PROJECT_DIR"/src/* | "$CLAUDE_PROJECT_DIR"/e2e/*) ;;
   *) exit 0 ;;
 esac
 case "$file" in
-  *.ts | *.svelte | *.css | *.json | *.md) ;;
+  *.ts | *.svelte | *.css | *.json) ;;
   *) exit 0 ;;
 esac
 

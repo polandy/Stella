@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'bun:test';
+import { afterEach, beforeEach, describe, expect, it, spyOn } from 'bun:test';
 import { createTranslator } from '$lib/i18n/translate';
 import { ActionFailedError } from '$lib/undo/submit-action';
 import {
@@ -57,6 +57,20 @@ function fakes(answers: { give?: Error; takeBack?: Error } = {}) {
 	return { deps, steps, sent, notices };
 }
 
+/*
+ * The failure cases log what broke, as they should; the spy keeps that off a green run's stderr
+ * and lets each case assert it was logged.
+ */
+let logged: unknown[][];
+let errorSpy: ReturnType<typeof spyOn>;
+beforeEach(() => {
+	logged = [];
+	errorSpy = spyOn(console, 'error').mockImplementation((...args: unknown[]) => {
+		logged.push(args);
+	});
+});
+afterEach(() => errorSpy.mockRestore());
+
 describe('giveFromChip', () => {
 	it('saves at once, keeps the spinner up until the page has reloaded, then offers Undo', async () => {
 		const f = fakes();
@@ -89,6 +103,7 @@ describe('giveFromChip', () => {
 
 		expect(f.steps).toEqual(['begin', 'send /contacts/anna?/setLastNames', 'end', 'notify']);
 		expect(f.notices).toEqual([{ text: t('surnames.chipFailed'), takeBack: undefined }]);
+		expect(logged).toHaveLength(1);
 	});
 
 	it('takes the name back from the toast’s Undo', async () => {
@@ -145,5 +160,6 @@ describe('takeBackChip', () => {
 
 		expect(f.steps).toEqual(['begin', 'send /contacts/anna?/takeBackLastName', 'end', 'notify']);
 		expect(f.notices).toEqual([{ text: t('surnames.chipUndoFailed'), takeBack: undefined }]);
+		expect(logged).toHaveLength(1);
 	});
 });

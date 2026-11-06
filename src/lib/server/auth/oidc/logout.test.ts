@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'bun:test';
+import { afterEach, beforeEach, describe, expect, it, spyOn } from 'bun:test';
 import { planRpLogout, type RpLogoutDeps } from './logout';
 
 /*
@@ -28,6 +28,20 @@ function deps(
 		...overrides
 	};
 }
+
+/*
+ * The failure cases log what broke, as they should; the spy keeps that off a green run's stderr
+ * and lets each case assert it was logged.
+ */
+let logged: unknown[][];
+let errorSpy: ReturnType<typeof spyOn>;
+beforeEach(() => {
+	logged = [];
+	errorSpy = spyOn(console, 'error').mockImplementation((...args: unknown[]) => {
+		logged.push(args);
+	});
+});
+afterEach(() => errorSpy.mockRestore());
 
 describe('planRpLogout', () => {
 	it('returns the provider logout URL for a federated session', async () => {
@@ -65,5 +79,7 @@ describe('planRpLogout', () => {
 
 		expect(await planRpLogout(d, ID_TOKEN)).toBeNull();
 		expect(d.calls).toEqual([1]); // it did try, and swallowed only the failure
+		expect(logged).toHaveLength(1);
+		expect(String(logged[0][0])).toContain('signing out locally only');
 	});
 });

@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'bun:test';
+import { afterEach, beforeEach, describe, expect, it, spyOn } from 'bun:test';
 import { createTranslator } from '../../i18n/translate';
 import type { CommandDeps, CommandReceipt } from '../domain/commands/dispatch';
 import { MomentNeedsPersonError, type CapturedMoment } from '../domain/moments/moments';
@@ -116,6 +116,20 @@ function fakes() {
 	return { deps, bodies };
 }
 
+/*
+ * The failure cases log what broke, as they should; the spy keeps that off a green run's stderr
+ * and lets each case assert it was logged.
+ */
+let logged: unknown[][];
+let errorSpy: ReturnType<typeof spyOn>;
+beforeEach(() => {
+	logged = [];
+	errorSpy = spyOn(console, 'error').mockImplementation((...args: unknown[]) => {
+		logged.push(args);
+	});
+});
+afterEach(() => errorSpy.mockRestore());
+
 describe('receiveQueued', () => {
 	it('applies each command in the order sent and answers each', async () => {
 		const f = fakes();
@@ -208,5 +222,6 @@ describe('receiveQueued', () => {
 			{ id: ids[0], status: 'failed' },
 			{ id: ids[1], status: 'applied', result }
 		]);
+		expect(logged).toHaveLength(1); // logged here, where it happened
 	});
 });
