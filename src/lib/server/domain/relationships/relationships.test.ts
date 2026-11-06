@@ -13,20 +13,19 @@ import {
 	describeRelationshipFor,
 	ContradictoryRelationshipError,
 	DuplicateRelationshipError,
-	editRelationship,
-	InvalidRelationshipDetailsError,
-	parseRelationshipDetails,
 	removeRelationship,
 	removeRelationships,
 	type RelationshipUpdate,
-	readKinship,
 	type NewRelationship,
 	type RelationshipRepository,
 	type RelationshipType,
 	type RelationshipView,
-	RelationshipExcludedError,
 	type StoredRelationship
 } from './relationships';
+import { InvalidRelationshipDetailsError, parseRelationshipDetails } from './details';
+import { editRelationship } from './edit';
+import { RelationshipExcludedError } from './exclusions';
+import { readKinship } from './kinship';
 import type { KinshipGraphReads } from './suggestion-review';
 import { inMemoryKinshipGraph, someTie } from '../testing';
 

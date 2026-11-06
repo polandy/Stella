@@ -4,7 +4,8 @@ import type { Clock } from '../../clock';
 import type { IdGenerator } from '../../id';
 import { activityRecord, type ActivityOf } from '../activity/activity';
 import { withNameEdit, type StoredName } from '../../../people/display-name';
-import { EmptyContactNameError, type Contact } from './contacts';
+import { EmptyContactNameError } from './profile';
+import type { Contact } from './contacts';
 import { clearsNoLastName } from '../../../surnames/review';
 
 /*

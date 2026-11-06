@@ -7,7 +7,7 @@ import type { Clock } from '../clock';
 import { createDrizzleAccountRepository } from '../db/account-repository';
 import { createDrizzleKinshipGraphReads } from '../db/kinship-graph-read';
 import * as schema from '../db/schema';
-import { createContact } from '../domain/contacts/contacts';
+import { createContact } from '../domain/contacts/create-contact';
 import { deleteContact } from '../domain/contacts/remove-contact';
 import { setSelfContact } from '../domain/household/self-contact';
 import type { IdGenerator } from '../id';

@@ -13,7 +13,7 @@ import { createDrizzleContactRepository } from '../db/contact-repository';
 import * as schema from '../db/schema';
 import { exportHousehold, serialiseDocument } from '../domain/archive/archive';
 import { importArchive } from '../domain/archive/import';
-import { createContact } from '../domain/contacts/contacts';
+import { createContact } from '../domain/contacts/create-contact';
 import type { IdGenerator } from '../id';
 import { createFileMediaStore } from '../media/file-store';
 import { createServices } from './app-services';

@@ -2,7 +2,7 @@ import { describe, expect, it } from 'bun:test';
 import type { Viewer } from '../../access/visibility';
 import type { Contact, ContactSummary, NewContact } from '../contacts/contacts';
 import type { JournalAuthor, JournalEntry, NewJournalEntry } from '../journal/journal';
-import { NeedsSomethingToKnowThemByError } from '../contacts/contacts';
+import { NeedsSomethingToKnowThemByError } from '../contacts/create-contact';
 import { AmbiguousMentionError } from '../mentions/resolve-for-audience';
 import { ContactGoneError } from '../contacts/require-visible';
 import { MomentNeedsPersonError, captureMoment, type CaptureMomentDeps } from './moments';

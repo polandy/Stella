@@ -12,7 +12,8 @@ import {
 	mentionsOtherThan
 } from '../../../mentions/mentions';
 import { resolveForAudience } from '../mentions/resolve-for-audience';
-import { createContact, type ContactRepository } from '../contacts/contacts';
+import { createContact } from '../contacts/create-contact';
+import type { ContactRepository } from '../contacts/contacts';
 import type { ContactDirectoryReads } from '../contacts/directory';
 import { requireVisibleContact } from '../contacts/require-visible';
 import { addToJournalDay, type JournalAuthor, type JournalRepository } from '../journal/journal';
