@@ -1,7 +1,7 @@
 import type { Core, NodeCollection, NodeSingular } from 'cytoscape';
 import type { CyElement } from './elements';
 import type { Size } from '../layout/geometry';
-import { CAPTION_CLASS } from './stylesheet';
+import { CAPTION_CLASS } from './canvas-classes';
 
 /*
  * Which of the canvas's nodes are people, and how much room each takes — shared by the

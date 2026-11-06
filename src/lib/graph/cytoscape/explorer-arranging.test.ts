@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'bun:test';
 import type { Core } from 'cytoscape';
 import { spacingFor } from '../layout/density';
-import { CAPTION_CLASS, ROUTE_FIELDS, ROUTED_CLASS } from './stylesheet';
+import { CAPTION_CLASS, ROUTE_FIELDS, ROUTED_CLASS } from './canvas-classes';
 import {
 	node,
 	edge,

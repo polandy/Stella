@@ -6,7 +6,7 @@ import { peopleOn, sizeOf } from './canvas-nodes';
 import type { Framing } from './framing';
 import type { Motion } from './motion';
 import type { Placement, Point } from './placement';
-import { TUCKED_CLASS } from './stylesheet';
+import { TUCKED_CLASS } from './canvas-classes';
 
 /*
  * Moving people: every arrangement is worked out first and then glided into, the view travelling

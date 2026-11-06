@@ -1,6 +1,7 @@
 import type { Core } from 'cytoscape';
 import { nameGrowth } from '../layout/legibility';
-import { grownNames, type CyStyle } from './stylesheet';
+import { grownNames } from './stylesheet-nodes';
+import type { CyStyle } from './stylesheet';
 
 /**
  * Lays the grown lit names over the stylesheet as the zoom crosses a step (`nameGrowth`,

@@ -2,7 +2,7 @@ import type { Core, ElementDefinition } from 'cytoscape';
 import type { CyElement } from './elements';
 import { isFrame, peopleOn } from './canvas-nodes';
 import { placeNewcomers, type Placement, type Point } from './placement';
-import { HAS_MORE_CLASS, TUCKED_CLASS } from './stylesheet';
+import { HAS_MORE_CLASS, TUCKED_CLASS } from './canvas-classes';
 import { CAPTION_ID } from './tree-canvas';
 
 /*

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'bun:test';
 import type { CyElement } from './elements';
 import { spacingFor } from '../layout/density';
-import { HAS_MORE_CLASS } from './stylesheet';
+import { HAS_MORE_CLASS } from './canvas-classes';
 import {
 	node,
 	edge,
