@@ -16,6 +16,7 @@
 	import type { GlimpsePhoto } from '$lib/immich/strip';
 	import { thumbnailUrl } from '$lib/media/urls';
 	import Button from '../ui/Button.svelte';
+	import { syncModal } from '../ui/modal';
 	import { fetchGlimpse } from './immich-glimpse';
 
 	/*
@@ -60,21 +61,21 @@
 	let immichPhase = $state<'loading' | 'shown' | 'failed'>('loading');
 
 	$effect(() => {
-		if (!open || !dialog || dialog.open) return;
-		dialog.showModal();
-		if (immich !== 'photos') return;
-		// Asked each time the chooser opens: the signed URLs are fresh, and a new link shows at once.
-		immichPhase = 'loading';
-		immichPhotos = [];
-		const asked = contactId;
-		void fetchGlimpse(asked, null).then((page) => {
-			if (asked !== contactId) return;
-			if (page?.state === 'photos') {
-				immichPhotos = page.photos;
-				immichPhase = 'shown';
-			} else {
-				immichPhase = 'failed';
-			}
+		syncModal(dialog, open, () => {
+			if (immich !== 'photos') return;
+			// Asked each time the chooser opens: the signed URLs are fresh, and a new link shows at once.
+			immichPhase = 'loading';
+			immichPhotos = [];
+			const asked = contactId;
+			void fetchGlimpse(asked, null).then((page) => {
+				if (asked !== contactId) return;
+				if (page?.state === 'photos') {
+					immichPhotos = page.photos;
+					immichPhase = 'shown';
+				} else {
+					immichPhase = 'failed';
+				}
+			});
 		});
 	});
 

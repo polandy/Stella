@@ -9,6 +9,7 @@
 	import { tick } from 'svelte';
 	import { deviceDay } from '$lib/dates/today';
 	import Button from '$lib/components/ui/Button.svelte';
+	import { syncModal } from '$lib/components/ui/modal';
 	import FormError from '$lib/components/ui/FormError.svelte';
 	import Icon from '$lib/components/ui/Icon.svelte';
 	import { useI18n } from '$lib/i18n/context.svelte';
@@ -54,17 +55,15 @@
 	let copyError = $state<string | null>(null);
 
 	$effect(() => {
-		if (!dialog) return;
-		if (open && !dialog.open) {
+		syncModal(dialog, open, () => {
 			ticked = [];
 			seen.clear();
 			query = '';
 			copyError = null;
 			const first = day ?? deviceDay();
 			lastDay = first;
-			dialog.showModal();
 			void load({ day: first });
-		} else if (!open && dialog.open) dialog.close();
+		});
 	});
 
 	// Only the latest question may fill the grid: a slower answer to an earlier one arrives last.

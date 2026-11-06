@@ -5,6 +5,7 @@
 	import { goto } from '$app/navigation';
 	import Avatar from '$lib/components/ui/Avatar.svelte';
 	import Icon from '$lib/components/ui/Icon.svelte';
+	import { syncModal } from '$lib/components/ui/modal';
 	import NamesakeLine from '$lib/components/people/NamesakeLine.svelte';
 	import { useTranslate } from '$lib/i18n/context.svelte';
 	import {
@@ -69,16 +70,12 @@
 	});
 
 	$effect(() => {
-		if (!dialog) return;
-		if (open && !dialog.open) {
+		syncModal(dialog, open, () => {
 			query = '';
 			selected = 0;
 			step = 'start';
-			dialog.showModal();
 			void tick().then(() => input?.focus());
-		} else if (!open && dialog.open) {
-			dialog.close();
-		}
+		});
 	});
 
 	// Keep the highlight on a real row when the query shrinks the list under it. Only the rows

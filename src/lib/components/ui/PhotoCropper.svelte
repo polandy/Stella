@@ -17,6 +17,7 @@
 		type WindowPixel
 	} from '$lib/media/crop';
 	import Button from './Button.svelte';
+	import { syncModal } from './modal';
 
 	/*
 	 * Choosing which square of a picture becomes a person's photo (docs/02 §2.14). The picture
@@ -57,14 +58,10 @@
 	});
 
 	$effect(() => {
-		if (!dialog) return;
-		if (file && !dialog.open) {
+		syncModal(dialog, file !== null, () => {
 			image = null;
 			crop = null;
-			dialog.showModal();
-		} else if (!file && dialog.open) {
-			dialog.close();
-		}
+		});
 	});
 
 	const placement = $derived(
