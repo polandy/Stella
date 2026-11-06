@@ -6,7 +6,8 @@ import { mergePlan, type Conflict } from '../../../import-match/merge-plan';
 import { withNameParts, type NamePartsChange } from '../../../people/display-name';
 import type { IdGenerator } from '../../id';
 import type { NewContactField } from '../contact-fields/contact-fields';
-import { fieldLabelText, type ImportWording } from './monica/plan';
+import type { ImportWording } from './monica/plan';
+import { fieldLabelText } from './monica/plan-fields';
 import type { RememberedAnswer } from './source-links';
 
 /*
