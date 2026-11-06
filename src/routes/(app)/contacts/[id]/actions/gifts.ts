@@ -4,7 +4,7 @@ import {
 	GiftEditSchema,
 	GiftMarkGivenSchema,
 	GiftRemoveSchema
-} from '$lib/commands/payloads';
+} from '$lib/commands/gift-todo-payloads';
 import { contactSectionPath } from '$lib/people/sections';
 import type { RequestEvent } from '@sveltejs/kit';
 import { applyGiftCommand, occasionOf, type GiftCommand } from '../../../_shared/gift-commands';

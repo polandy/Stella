@@ -1,5 +1,5 @@
 import { fromFormData } from '$lib/commands/form-data';
-import { TodoRefSchema } from '$lib/commands/payloads';
+import { TodoRefSchema } from '$lib/commands/gift-todo-payloads';
 import { requireViewer } from '$lib/server/auth/guards';
 import { authorNames } from '$lib/server/domain/household/members';
 import { listOpenTodos, type HouseholdTodo } from '$lib/server/domain/todos/todos';

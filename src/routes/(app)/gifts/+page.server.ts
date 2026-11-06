@@ -1,5 +1,5 @@
 import { fromFormData } from '$lib/commands/form-data';
-import { GiftMarkGivenSchema } from '$lib/commands/payloads';
+import { GiftMarkGivenSchema } from '$lib/commands/gift-todo-payloads';
 import { todayFor } from '$lib/dates/today';
 import { ideaListGroups } from '$lib/gifts/idea-list';
 import { requireViewer } from '$lib/server/auth/guards';

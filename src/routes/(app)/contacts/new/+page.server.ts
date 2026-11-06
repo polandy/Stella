@@ -3,7 +3,7 @@ import { requireViewer } from '$lib/server/auth/guards';
 import { createTranslator } from '$lib/i18n/translate';
 import { readCommand } from '$lib/server/commands/parse';
 import { fromFormData } from '$lib/commands/form-data';
-import { ContactAddSchema } from '$lib/commands/payloads';
+import { ContactAddSchema } from '$lib/commands/person-payloads';
 import { systemClock } from '$lib/server/clock';
 import { dispatchCommand } from '$lib/server/domain/commands/dispatch';
 import { ulidGenerator } from '$lib/server/id';

@@ -6,7 +6,8 @@ import {
 	type Command,
 	type JsonCommand
 } from '../../commands/commands';
-import { COMMAND_PAYLOAD_SCHEMAS, CommandIdSchema, PhotoWireSchema } from '../../commands/payloads';
+import { CommandIdSchema } from '../../commands/payload-fields';
+import { COMMAND_PAYLOAD_SCHEMAS, PhotoWireSchema } from '../../commands/payloads';
 
 /*
  * Reading a command off the wire (docs/04 §4.11.2). The edge's half of the
