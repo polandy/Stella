@@ -51,7 +51,8 @@ test('holds no band about who has gone quiet in the rail', async ({ page }) => {
 	const comingUp = rail.getByRole('heading', { name: 'Coming up' });
 	await expect(comingUp).toBeVisible();
 
-	for (const heading of await rail.getByRole('heading', { level: 2 }).allTextContents()) {
+	// The rendered text: a heading also holds the phone's folded line, hidden from `lg`.
+	for (const heading of await rail.getByRole('heading', { level: 2 }).allInnerTexts()) {
 		expect(['To-dos', 'Coming up', 'On this day']).toContain(heading.trim());
 	}
 	// A band's heading, not a divider inside a list: sentence case (docs/05 §5.3).
@@ -144,6 +145,8 @@ test.describe('on a phone', () => {
 			'Dora Reinhardt'
 		]);
 		const comingUp = page.getByTestId('coming-up');
+		// A phone folds each rail section to one line; the cap is what shows once it is open.
+		await page.getByTestId('coming-up-toggle').click();
 		// `getByRole` skips what `display: none` hides, so the rows past the cap are counted
 		// through the DOM instead — the point of the test is that they are there but unseen.
 		const rows = comingUp.locator('li');
@@ -173,6 +176,7 @@ test.describe('on a phone', () => {
 		// rule — the rail below the stream — is `hasImminentDate`'s unit tests: nothing here
 		// can empty a household's calendar deterministically.
 		await addBirthdaysSoon(page, ['Yannick Zwahlen'], 1);
+		await page.getByTestId('coming-up-toggle').click();
 
 		await expect(
 			page.getByTestId('coming-up').getByRole('link', { name: 'Yannick Zwahlen' })

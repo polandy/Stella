@@ -1,5 +1,4 @@
 <script lang="ts">
-	import Icon from '$lib/components/ui/Icon.svelte';
 	import { useI18n } from '$lib/i18n/context.svelte';
 	import { dayLabel } from '$lib/dates/labels';
 	import { immichStrip } from '$lib/memories/immich';
@@ -36,10 +35,8 @@
 	);
 </script>
 
-<section data-testid="memory-band" class="flex flex-col gap-2">
-	<h2 class="flex items-center gap-2 text-sm font-semibold text-fg">
-		<Icon name="memories" size={13} />{t('memories.title')}
-	</h2>
+<!-- Its heading is the rail section's around it (`RailSection`). -->
+<div class="flex flex-col gap-2">
 	{#if photos.length || strip.photos.length || holds}
 		<MemoryPhotos {photos} immich={strip.photos} {holds} />
 	{/if}
@@ -61,4 +58,4 @@
 			>{t('memories.moreFrom', { day: dayLabel(i18n, `--${today.slice(5)}`) })}</a
 		>
 	{/if}
-</section>
+</div>

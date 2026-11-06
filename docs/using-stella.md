@@ -78,6 +78,9 @@ in full, where you can also step to the day before or after, or pick any day; ea
 twelve Immich photos at first, and *Show more* brings the next twelve. The palette's
 *On this day* opens it too. The band is only there when the day has something to remember.
 
+On a phone the three lists fold to one line each — *To-dos 2 · Call Rosa about the move* —
+so the stream stays near the top. Tap a line to open that list in place and again to fold it.
+
 ### Writing a moment
 
 Type what happened and mention the people in it with `@`:

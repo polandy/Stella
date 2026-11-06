@@ -61,6 +61,15 @@ first to find somebody, so there the page opens on the person search.
   https://claude.ai/artifact/DH3TemNZHmgoy6iBVfR17p, Immich: https://claude.ai/artifact/8VokZyK43zm7RYLXJHYrHU
 - From `lg` the bands stand in a **rail** on the right, a 17 rem column. Below `lg` it is the
   same vertical list at full width; nothing on the page scrolls sideways.
+- Below `lg` the rail is **one card** (`--bg-card`, divided rows) and each band **folds to one
+  line** (`RailSection`): its icon in `--primary`, the title, then in `--fg-muted`, truncated,
+  *how many · the first* — *2 · Call Rosa about the move*, *3 · Hilde birthday · in 4 days*,
+  *5 · Rosa's first steps, 2024* (`railSummary`, `src/lib/stream/rail-summary.ts`) — and a
+  chevron. Every band starts folded; a tap opens it in place (the band as above, the summary
+  gone), each band on its own, nothing remembered. A private entry is never the one named. The
+  line is a ≥ 48 px button with `aria-expanded` inside the band's heading. From `lg` the line
+  is not there and the band always stands open. Mockup:
+  https://claude.ai/artifact/9hayQj8bvDjxia6EPbZcsS
 - Each band stops after **three rows**, with *Show all N* beneath it.
 - Below `lg` the rail stands **above** the stream only while a date is due **within 14 days**
   (`IMMINENT_HORIZON_DAYS`) or a to-do is overdue or due today (`hasPressingTodo`); otherwise
@@ -112,6 +121,11 @@ blank most weeks. *To-dos* goes above *Coming up* because what the household owe
 now, a date is prepared for; a to-do only pulls the rail above the stream once it is due,
 not a week ahead, so a few far-off lines do not displace the stream. *On this day* goes last
 and never pulls the rail up: it is for enjoying, nothing in it asks to be acted on.
+
+On a phone the open bands still stood between the search field and the stream, three rows
+each, so the stream the page is for began a screen down. Folded, the rail costs three lines and
+still says what is waiting and the most pressing one; opening one band is a tap away. Folds are
+not remembered, so Home always opens on the stream.
 
 Older days need no time: their heading already says when. A moment names its people in its
 text, so an avatar row would say them twice; an interaction's participants are not in its

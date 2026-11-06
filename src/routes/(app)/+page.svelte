@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { glide, reveal } from '$lib/motion/motion.svelte';
+	import { reveal } from '$lib/motion/motion.svelte';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
 	import { MediaQuery } from 'svelte/reactivity';
@@ -26,6 +26,9 @@
 	import KeptItem from '$lib/components/pwa/KeptItem.svelte';
 	import WelcomeCard from '$lib/components/stream/WelcomeCard.svelte';
 	import TodoBand from '$lib/components/todos/TodoBand.svelte';
+	import RailSection from '$lib/components/stream/RailSection.svelte';
+	import ComingUp from '$lib/components/stream/ComingUp.svelte';
+	import { memoryRail, railSummary, todoRailFirst } from '$lib/stream/rail-summary';
 	import MemoryBand from '$lib/components/memories/MemoryBand.svelte';
 	import { ImmichMemories } from '$lib/components/memories/immich-memories.svelte';
 	import { todoBand } from '$lib/todos/household';
@@ -33,7 +36,6 @@
 	import { keptTicks } from '$lib/todos/kept-ticks.svelte';
 	import { useRemovals } from '$lib/undo/context.svelte';
 	import { contactSectionPath } from '$lib/people/sections';
-	import { occasionLabel, whenLabel } from '$lib/dates/labels';
 	import { useI18n } from '$lib/i18n/context.svelte';
 	import { relationshipRowLabel } from '$lib/relationships/labels';
 	import { KIND_PRESENTATION } from '$lib/story/interaction-kinds';
@@ -61,25 +63,12 @@
 
 	const filtered = $derived(isNarrowed(data.filter));
 
-	// The rail's rows: one vertical list at every width — beside the stream from lg, above or
-	// below it on a phone. Nothing scrolls sideways, so nothing hides off the right edge.
-	const RAIL_LIST = 'flex flex-col';
-	const RAIL_ROW =
-		'grid grid-cols-[28px_1fr] items-center gap-2.5 rounded-app px-1.5 py-1.5 transition-colors hover:bg-card';
-
-	// A phone shows the first few rows of the band and keeps the rest one tap away, so a full
-	// band never pushes the stream off the screen; from lg the whole band is there (docs/05 §5.5).
-	const RAIL_CAP = 3;
-	const RAIL_OVERFLOW = 'max-lg:hidden';
-
 	// Below `lg` the page is one column: heading, capture field, then either the rail and the
 	// stream or the stream and the rail — the rail earns the place above the stream only while
 	// a date is close (`railFirst`, docs/05 §5.5). The capture field stays on top either way.
 	const RAIL_BEFORE_STREAM = 'max-lg:order-2';
 	const RAIL_AFTER_STREAM = 'max-lg:order-4';
 	const railOrder = $derived(data.railFirst ? RAIL_BEFORE_STREAM : RAIL_AFTER_STREAM);
-
-	let showAllUpcoming = $state(false);
 
 	// The *To-dos* band (docs/02 §2.26.6): a row just ticked stays, struck through, while its
 	// toast stands, as on the person's card.
@@ -91,6 +80,15 @@
 	const immichMemories = new ImmichMemories();
 	$effect(() => (data.immichLibrary ? immichMemories.load(data.today) : undefined));
 	const hasMemories = $derived(!data.memories.empty || immichMemories.years.length > 0);
+	// A phone folds each rail section to one line: how many, and the first (docs/05 §5.5.1).
+	const todoSummary = $derived(railSummary(band.due, todoRailFirst(band.rows)));
+	const memorySummary = $derived.by(() => {
+		const { count, first } = memoryRail(
+			data.memories.years,
+			data.memories.photos.length + immichMemories.years.reduce((sum, year) => sum + year.total, 0)
+		);
+		return railSummary(count, first);
+	});
 	/** The rail stands while a date, a to-do or a memory is close; without any it is absent. */
 	const hasRail = $derived(data.upcoming.length > 0 || band.rows.length > 0 || hasMemories);
 
@@ -550,96 +548,48 @@
 		{/if}
 	</div>
 
-	{#snippet showAll(total: number, reveal: () => void)}
-		<button
-			type="button"
-			class="self-start px-1.5 pt-1.5 text-xs font-medium text-link hover:underline lg:hidden"
-			onclick={reveal}
-		>
-			{t('home.showAll', { count: total })}
-		</button>
-	{/snippet}
-
 	<!-- The rail: what is to do, what is coming up, and what happened on this day in earlier years. It is absent when nothing is, because a box
      that is permanently empty teaches people to stop looking at it; from lg its column goes with
      it, and the stream takes the width rather than leave a quarter of the screen blank. -->
 	{#if hasRail}
 		<aside
-			class="flex min-w-0 flex-col gap-6 lg:col-start-2 lg:row-span-3 lg:row-start-1 lg:self-start {railOrder}"
+			class="flex min-w-0 flex-col gap-6 max-lg:gap-0 max-lg:divide-y max-lg:divide-border max-lg:rounded-app max-lg:border max-lg:border-border max-lg:bg-card lg:col-start-2 lg:row-span-3 lg:row-start-1 lg:self-start {railOrder}"
 			aria-label={t('home.atAGlance')}
 		>
 			{#if band.rows.length}
-				<TodoBand
-					{band}
-					today={data.today}
-					{justDone}
-					{ticksKept}
-					error={form && 'todoTickError' in form ? (form.todoTickError ?? null) : null}
-				/>
+				<RailSection
+					icon="todo"
+					title={t('todos.band.title')}
+					summary={todoSummary}
+					testid="todo-band"
+				>
+					<TodoBand
+						{band}
+						today={data.today}
+						{justDone}
+						{ticksKept}
+						error={form && 'todoTickError' in form ? (form.todoTickError ?? null) : null}
+					/>
+				</RailSection>
 			{/if}
 			{#if data.upcoming.length}
-				<section data-testid="coming-up">
-					<h2 class="flex items-center gap-2 pb-2 text-sm font-semibold text-fg">
-						<Icon name="calendar" size={13} />{t('home.comingUp')}
-					</h2>
-					<!-- *Show all* opens the rest of the list in place (docs/05 §5.11). -->
-					<ul class={RAIL_LIST} use:glide={{ key: showAllUpcoming }}>
-						{#each data.upcoming as item, i (item.contactId + item.date + item.kind)}
-							<li class="{RAIL_ROW} {i >= RAIL_CAP && !showAllUpcoming ? RAIL_OVERFLOW : ''}">
-								<Avatar
-									id={item.contactId}
-									name={item.contactName}
-									avatarPhotoId={item.avatarPhotoId}
-									size={28}
-								/>
-								<div class="min-w-0 text-[13px] leading-snug text-fg-muted">
-									<a href="/contacts/{item.contactId}" class="font-semibold text-fg hover:underline"
-										>{item.contactName}</a
-									>
-									<span>{occasionLabel(i18n, item)}</span>
-									<span class="block text-xs text-fg-subtle">
-										{whenLabel(i18n, item.daysUntil, item.date)}
-										<span aria-hidden="true">·</span>
-										<!-- A line of its own height on a touch screen, so the name above stays
-										     its own target (docs/05 §5.9). -->
-										<a
-											href="/?about={item.contactId}"
-											class="text-link hover:underline pointer-coarse:inline-flex pointer-coarse:min-h-6 pointer-coarse:items-center"
-											>{t('home.writeMoment')}</a
-										>
-									</span>
-									{#if item.giftIdeas > 0}
-										<!-- The occasion is the moment an idea was noted for (docs/02 §2.13.3). -->
-										<a
-											href={contactSectionPath(item.contactId, 'gifts')}
-											class="mt-0.5 inline-flex items-center gap-1 text-xs text-link hover:underline"
-											aria-label={t('home.giftIdeasFor', {
-												count: item.giftIdeas,
-												name: item.contactName
-											})}
-											data-testid="coming-up-gift-ideas"
-											><Icon name="gift" size={12} />{t('home.giftIdeas', {
-												count: item.giftIdeas
-											})}</a
-										>
-									{/if}
-								</div>
-							</li>
-						{/each}
-					</ul>
-					{#if data.upcoming.length > RAIL_CAP && !showAllUpcoming}
-						{@render showAll(data.upcoming.length, () => (showAllUpcoming = true))}
-					{/if}
-				</section>
+				<ComingUp upcoming={data.upcoming} />
 			{/if}
 			{#if hasMemories}
-				<MemoryBand
-					years={data.memories.years}
-					photos={data.memories.photos}
-					more={data.memories.more}
-					today={data.today}
-					immich={immichMemories}
-				/>
+				<RailSection
+					icon="memories"
+					title={t('memories.title')}
+					summary={memorySummary}
+					testid="memory-band"
+				>
+					<MemoryBand
+						years={data.memories.years}
+						photos={data.memories.photos}
+						more={data.memories.more}
+						today={data.today}
+						immich={immichMemories}
+					/>
+				</RailSection>
 			{/if}
 		</aside>
 	{/if}
