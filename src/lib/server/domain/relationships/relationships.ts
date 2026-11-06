@@ -31,7 +31,10 @@ import {
 	type RelationshipStatus
 } from '../../../relationships/status';
 import { isWholeDay } from '../../../dates/calendar';
-import type { RelationshipTypeRepository } from './relationship-types';
+import {
+	InvalidRelationshipTypeError,
+	type RelationshipTypeRepository
+} from './relationship-types';
 import type { Clock } from '../../clock';
 import type { IdGenerator } from '../../id';
 
@@ -449,9 +452,7 @@ export async function createRelationship(
 	input: CreateRelationshipInput
 ): Promise<string> {
 	const type = await deps.types.getType(viewer, input.typeId);
-	if (!type) {
-		throw new Error('Unknown relationship type.');
-	}
+	if (!type) throw new InvalidRelationshipTypeError(phrase('errors.relationshipType.gone'));
 	const details = parseRelationshipDetails(input);
 
 	const { fromContactId, toContactId } = relationshipPair(
@@ -617,9 +618,7 @@ async function planRetype(
 	choice: { typeId: string; side: RelationshipSide }
 ): Promise<Retype | null> {
 	const type = await deps.types.getType(viewer, choice.typeId);
-	if (!type) {
-		throw new Error('Unknown relationship type.');
-	}
+	if (!type) throw new InvalidRelationshipTypeError(phrase('errors.relationshipType.gone'));
 
 	const otherContactId = otherEndpointOf(current, perspectiveContactId);
 	if (otherContactId === null) return null;

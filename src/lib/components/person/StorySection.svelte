@@ -34,7 +34,9 @@
 	import { useRemovals } from '$lib/undo/context.svelte';
 	import { savedEnhance } from '$lib/undo/saved';
 	import type { SubmitFunction } from '@sveltejs/kit';
-	import { tick } from 'svelte';
+	import { tick, untrack } from 'svelte';
+	import { browser } from '$app/environment';
+	import { deviceDay, writersDay } from '$lib/dates/today';
 	import { ulid } from 'ulid';
 	import { INPUT } from './inputs';
 	import type { PersonForm, PersonPageData } from './types';
@@ -58,8 +60,8 @@
 	const i18n = useI18n();
 	const t = i18n.t;
 	const c = $derived(data.contact);
-	// Today in the browser's zone, as the default day for a new interaction.
-	const today = new Date().toLocaleDateString('en-CA');
+	// The writer's day, as the default day for a new interaction.
+	const today = $derived(writersDay(data.today, browser ? deviceDay() : null));
 	const removals = useRemovals();
 	/** What a form saved through the outbox does once Stella took it: say so, then `close`. */
 	const savedThen = (close: () => void) => () => {
@@ -198,7 +200,7 @@
 	);
 	// The form's first kind is its default, as it was before it could be reopened on a kept one.
 	let logKind = $state<InteractionKind>(INTERACTION_KINDS[0]);
-	let logDay = $state(today);
+	let logDay = $state(untrack(() => today));
 	let logTitle = $state('');
 	let logDescription = $state('');
 	let logVisibility = $state<'shared' | 'private'>('shared');

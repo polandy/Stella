@@ -99,6 +99,12 @@ describe('exportHousehold', () => {
 		expect(result.mediaPaths).toEqual(['photo-1.jpg', 'photo-1-thumb.jpg']);
 	});
 
+	it('hands back the instant it was taken, so the files are stamped with the same time', async () => {
+		const f = fakeRepo();
+		const result = await exportHousehold({ archive: f.repo, clock, ids }, actor);
+		expect(result.exportedAt).toBe(NOW);
+	});
+
 	it('leaves a trail the whole household can see', async () => {
 		const f = fakeRepo();
 		await exportHousehold({ archive: f.repo, clock, ids }, actor);

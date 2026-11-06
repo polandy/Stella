@@ -4,6 +4,7 @@ import { createTranslator } from '../../../i18n/translate';
 import type { Clock } from '../../clock';
 import type { IdGenerator } from '../../id';
 import { BUILT_IN_RELATIONSHIP_TYPES } from './built-in-types';
+import { InvalidRelationshipTypeError } from './relationship-types';
 import type { KinshipGraph } from '../../../kinship/kinship';
 import type { Viewer } from '../../access/visibility';
 import {
@@ -251,7 +252,7 @@ describe('createRelationship', () => {
 					typeId: 'nope'
 				}
 			)
-		).rejects.toThrow();
+		).rejects.toBeInstanceOf(InvalidRelationshipTypeError);
 	});
 
 	it('rejects a duplicate relationship', async () => {
@@ -861,7 +862,7 @@ describe('editRelationship', () => {
 					perspectiveContactId: 'bert',
 					typeChoice: { typeId: 'another-households-type', side: 'forward' }
 				})
-			).rejects.toThrow('Unknown relationship type.');
+			).rejects.toBeInstanceOf(InvalidRelationshipTypeError);
 			expect(f.updates).toEqual([]);
 		});
 	});

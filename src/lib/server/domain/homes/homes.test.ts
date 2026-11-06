@@ -4,7 +4,14 @@ import type { Contact } from '../contacts/contacts';
 import { ContactGoneError } from '../contacts/require-visible';
 import { fixedClock, sequentialIds } from '../testing';
 import { homeRepositoryWith, type HomeWorld } from '../testing/homes';
-import { changeHomeLine, HomeGoneError, leaveHome, shareAddress, type HomeDeps } from './homes';
+import {
+	changeHomeLine,
+	EmptyAddressLineError,
+	HomeGoneError,
+	leaveHome,
+	shareAddress,
+	type HomeDeps
+} from './homes';
 
 /*
  * The shared home (docs/02 §2.2, *A shared home*): sharing an address, rewriting it for
@@ -292,6 +299,20 @@ describe('changeHomeLine', () => {
 				scope: 'everyone'
 			})
 		).rejects.toBeInstanceOf(HomeGoneError);
+	});
+
+	it('refuses a blank line: taking the address off is removing it', async () => {
+		const { deps } = depsOver(world());
+
+		await expect(
+			changeHomeLine(deps, viewer, {
+				contactId: 'tim',
+				homeId: 'home-1',
+				label: null,
+				value: '  ',
+				scope: 'everyone'
+			})
+		).rejects.toBeInstanceOf(EmptyAddressLineError);
 	});
 });
 

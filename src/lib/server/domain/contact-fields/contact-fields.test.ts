@@ -6,6 +6,7 @@ import { ContactGoneError } from '../contacts/require-visible';
 import {
 	addContactField,
 	editContactField,
+	InvalidContactFieldError,
 	fieldHref,
 	removeContactField,
 	type ContactFieldRepository,
@@ -111,7 +112,7 @@ describe('addContactField', () => {
 		const f = fakeRepo();
 		await expect(
 			addContactField(deps(f.repo), { contactId: 'c', kind: 'email', value: '   ' })
-		).rejects.toThrow();
+		).rejects.toBeInstanceOf(InvalidContactFieldError);
 	});
 
 	it('rejects an unknown kind', async () => {
@@ -119,7 +120,7 @@ describe('addContactField', () => {
 		await expect(
 			// @ts-expect-error testing runtime guard against an invalid kind
 			addContactField(deps(f.repo), { contactId: 'c', kind: 'telepathy', value: 'x' })
-		).rejects.toThrow();
+		).rejects.toBeInstanceOf(InvalidContactFieldError);
 	});
 });
 
@@ -147,7 +148,7 @@ describe('editContactField', () => {
 		const f = fakeRepo();
 		await expect(
 			editContactField(deps(f.repo), { contactId: 'c', fieldId: 'f', label: null, value: ' ' })
-		).rejects.toThrow();
+		).rejects.toBeInstanceOf(InvalidContactFieldError);
 		expect(f.updates).toEqual([]);
 	});
 });

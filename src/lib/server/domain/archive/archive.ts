@@ -110,6 +110,8 @@ export interface ExportedArchive {
 	document: ArchiveDocument;
 	/** The image files to put beside it, as relative media keys. */
 	mediaPaths: string[];
+	/** The instant the archive was taken (epoch ms), so its files carry the same time. */
+	exportedAt: number;
 }
 
 /**
@@ -136,7 +138,8 @@ export async function exportHousehold(
 	return {
 		fileName: archiveFileName(snapshot.householdName, exportedAt),
 		document,
-		mediaPaths: snapshot.mediaPaths
+		mediaPaths: snapshot.mediaPaths,
+		exportedAt
 	};
 }
 

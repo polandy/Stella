@@ -7,6 +7,7 @@ import {
 	sequentialIds,
 	someCircle
 } from '../testing';
+import { BlankCircleNameError } from './circle-details';
 import { CircleParentGoneError } from './nesting';
 import {
 	addMember,
@@ -188,6 +189,15 @@ describe('joinCircleByName', () => {
 		expect(id).toBe('circle-1');
 		expect(f.inserted[0]).toMatchObject({ name: 'Ski Course' });
 		expect(f.memberships[0]).toMatchObject({ circleId: 'circle-1', contactId: 'mara' });
+	});
+
+	it('refuses a blank name, as a phrase the reader can be shown', async () => {
+		const f = fakeRepo(null);
+		const deps: CircleDeps = { circles: f.repo, ids: sequentialIds('circle-1'), clock };
+		await expect(joinCircleByName(deps, creator, 'mara', '   ')).rejects.toBeInstanceOf(
+			BlankCircleNameError
+		);
+		expect(f.inserted).toHaveLength(0);
 	});
 });
 

@@ -12,3 +12,18 @@ export function todayFor(clock: { now(): number }): string {
 	const d = new Date(clock.now());
 	return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
 }
+
+/**
+ * The day a page in the browser treats as today. A page kept on the device may be days old, and
+ * so is the `rendered` day it came with: the device's own calendar is the writer's, and it only
+ * ever moves the day forward. Without a device day (on the server) it is the rendered one, so
+ * both renders agree.
+ */
+export function writersDay(rendered: string, device: string | null): string {
+	return device !== null && device > rendered ? device : rendered;
+}
+
+/** The device's calendar day as `YYYY-MM-DD`; `en-CA` spells it so on the local calendar. */
+export function deviceDay(): string {
+	return new Date().toLocaleDateString('en-CA');
+}

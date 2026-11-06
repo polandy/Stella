@@ -25,6 +25,13 @@ export class EmptyJournalEntryError extends TranslatableError {
 	}
 }
 
+/** An entry belongs to one calendar day, written as `YYYY-MM-DD`. */
+export class InvalidJournalDayError extends TranslatableError {
+	constructor() {
+		super(phrase('errors.journal.badDay'), 'InvalidJournalDayError');
+	}
+}
+
 export interface JournalAuthor {
 	userId: string;
 	householdId: string;
@@ -171,12 +178,8 @@ export async function saveJournalEntry(
 	input: SaveJournalEntryInput
 ): Promise<string> {
 	const body = input.body.trim();
-	if (body.length === 0) {
-		throw new Error('A journal entry needs some content.');
-	}
-	if (!ISO_DATE.test(input.entryDate)) {
-		throw new Error('A journal entry needs a valid date (YYYY-MM-DD).');
-	}
+	if (body.length === 0) throw new EmptyJournalEntryError();
+	if (!ISO_DATE.test(input.entryDate)) throw new InvalidJournalDayError();
 
 	const visibility = input.visibility ?? author.defaultVisibility;
 	const title = orNull(input.title);
@@ -334,7 +337,7 @@ export async function addToJournalDay(
 	addition: JournalDayAddition
 ): Promise<string> {
 	const body = addition.body.trim();
-	if (body.length === 0) throw new Error('A journal entry needs some content.');
+	if (body.length === 0) throw new EmptyJournalEntryError();
 	const sameDay = await deps.journal.findDay({
 		authorId: author.userId,
 		contactId: addition.contactId,

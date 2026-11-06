@@ -5,6 +5,7 @@ import {
 	addToJournalDay,
 	editJournalEntry,
 	EmptyJournalEntryError,
+	InvalidJournalDayError,
 	saveJournalEntry,
 	listJournalForContact,
 	type JournalAuthor,
@@ -195,14 +196,14 @@ describe('saveJournalEntry', () => {
 		const d = deps();
 		await expect(
 			saveJournalEntry(d, author, { contactId: 'c1', entryDate: '2026-07-11', body: '   ' })
-		).rejects.toThrow();
+		).rejects.toBeInstanceOf(EmptyJournalEntryError);
 	});
 
 	it('rejects a malformed date', async () => {
 		const d = deps();
 		await expect(
 			saveJournalEntry(d, author, { contactId: 'c1', entryDate: '11.07.2026', body: 'x' })
-		).rejects.toThrow();
+		).rejects.toBeInstanceOf(InvalidJournalDayError);
 	});
 });
 

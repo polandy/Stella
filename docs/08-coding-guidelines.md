@@ -34,7 +34,10 @@ rule and pragmatism genuinely conflict, favor readability and testability.
     logic. Inject a `Clock` and an `IdGenerator` so tests are deterministic and fast. The
     edge is no exception: a route that needs today's date asks `todayFor(clock)`
     (`src/lib/dates/today.ts`) with the server's `systemClock`, so it and the use-cases agree
-    on what day it is.
+    on what day it is. A component takes that day from its page data and reads it through
+    `writersDay(data.today, browser ? deviceDay() : null)`, so the server and the browser draw
+    the same day and a page kept on the device for days still moves forward; randomness (a
+    circle's suggested colour) comes off `locals.services` like the clock.
     Deliberately expensive work is injectable for the same reason — the demo seed takes its
     password hasher, so only the case that is about Argon2id pays for it. Where a test would
     otherwise wait and hope, the production code publishes the state instead: the explorer's
@@ -69,8 +72,8 @@ rule and pragmatism genuinely conflict, favor readability and testability.
     `*.svelte.ts` browser adapter may), and no `$lib/server/services` outside `src/routes/`
     and `src/hooks.server.ts` (§8.3). And it
     keeps the edge's boilerplate in one place: no hand-written `if (!locals.user) throw
-    redirect(…)` (use `requireViewer` / `requireUser`, docs/04 §4.4), no `new Date(` in a
-    route module (`todayFor(clock)`, item 10), no local `key()` helper (`messageKey()` from
+    redirect(…)` (use `requireViewer` / `requireUser`, docs/04 §4.4), no `new Date(` or
+    `Date.now()` in a route module (`todayFor(clock)`, item 10), no local `key()` helper (`messageKey()` from
     `$lib/i18n/translate`). A file that breaks a boundary today is listed, with the reason,
     in the config's exception lists — shrink them, never grow them without a reason.
     Markdown is not formatted. The one-time reformat is listed in `.git-blame-ignore-revs`

@@ -4,6 +4,8 @@ import type { Clock } from '../../clock';
 import type { IdGenerator } from '../../id';
 import type { ContactLookup } from '../contacts/contacts';
 import { ContactGoneError } from '../contacts/require-visible';
+import { phrase, type Phrase } from '../../../i18n/phrase';
+import { TranslatableError } from '../../../i18n/translatable';
 
 /*
  * Contact field use-cases (docs/02 §2.3). Fields are child records of a contact and have
@@ -71,6 +73,13 @@ export interface AddContactFieldInput {
 	sortOrder?: number;
 }
 
+/** A field could not be stored as entered; the phrase names what is missing. */
+export class InvalidContactFieldError extends TranslatableError {
+	constructor(message: Phrase) {
+		super(message, 'InvalidContactFieldError');
+	}
+}
+
 const orNull = (value?: string | null): string | null => {
 	const trimmed = (value ?? '').trim();
 	return trimmed.length > 0 ? trimmed : null;
@@ -82,12 +91,10 @@ export async function addContactField(
 	input: AddContactFieldInput
 ): Promise<string> {
 	if (!CONTACT_FIELD_KINDS.includes(input.kind)) {
-		throw new Error(`Unknown contact field kind: ${input.kind}`);
+		throw new InvalidContactFieldError(phrase('errors.field.needKindAndValue'));
 	}
 	const value = input.value.trim();
-	if (value.length === 0) {
-		throw new Error('A contact field needs a value.');
-	}
+	if (value.length === 0) throw new InvalidContactFieldError(phrase('errors.field.needValue'));
 
 	const now = deps.clock.now();
 	const id = deps.ids.next();
@@ -116,7 +123,7 @@ export async function editContactField(
 	input: { contactId: string; fieldId: string; label: string | null; value: string }
 ): Promise<void> {
 	const value = input.value.trim();
-	if (value.length === 0) throw new Error('A contact field needs a value.');
+	if (value.length === 0) throw new InvalidContactFieldError(phrase('errors.field.needValue'));
 	await deps.fields.update(input.contactId, input.fieldId, {
 		label: orNull(input.label),
 		value,

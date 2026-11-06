@@ -25,6 +25,8 @@
 	import { jobShortForm } from '$lib/people/job';
 	import { homesShown } from '$lib/people/home';
 	import { tick, untrack } from 'svelte';
+	import { browser } from '$app/environment';
+	import { deviceDay, writersDay } from '$lib/dates/today';
 	import IdentityFacts, { type EditedFact } from './IdentityFacts.svelte';
 	import IdentityMarkers from './IdentityMarkers.svelte';
 	import IdentityMenu from './IdentityMenu.svelte';
@@ -85,7 +87,7 @@
 	const c = $derived(data.contact);
 
 	/** The viewer's day, for the age beside a birthday and the years since a date. */
-	const today = new Date().toLocaleDateString('en-CA');
+	const today = $derived(writersDay(data.today, browser ? deviceDay() : null));
 
 	// Something on its way out (docs/02 §2.23) is gone from the facts while its undo window is open.
 	const removals = useRemovals();

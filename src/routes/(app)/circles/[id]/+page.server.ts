@@ -75,7 +75,10 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 		// What *Belongs to* shows: the circle it sits directly inside, null for none.
 		parentId: tree.ancestors(circle.id).at(-1)?.id ?? null,
 		// The colour *New sub-circle* starts on, as the list's *New circle* does.
-		suggestedColor: suggestCircleColor(flat.map((c) => c.color)),
+		suggestedColor: suggestCircleColor(
+			flat.map((c) => c.color),
+			locals.services.circles.random
+		),
 		// Where the timeline's today marker stands, on the server's clock.
 		today: todayFor(locals.services.circles.circleDeps.clock),
 		// What the header's edit form offers (docs/02 §2.4.2), as the create form does.

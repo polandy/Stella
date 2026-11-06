@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test';
-import { todayFor } from './today';
+import { todayFor, writersDay } from './today';
 
 /*
  * "Today" is the server's calendar day, read off the injected clock. The instants are built
@@ -26,5 +26,19 @@ describe('todayFor', () => {
 
 	it('turns over at local midnight, not at UTC midnight', () => {
 		expect(todayFor(at(2027, 0, 1, 0, 0))).toBe('2027-01-01');
+	});
+});
+
+describe('writersDay', () => {
+	it('is the rendered day where there is no device', () => {
+		expect(writersDay('2026-10-08', null)).toBe('2026-10-08');
+	});
+
+	it('moves forward to the device’s day on a page kept for days', () => {
+		expect(writersDay('2026-10-08', '2026-10-10')).toBe('2026-10-10');
+	});
+
+	it('never moves back to a device that is behind', () => {
+		expect(writersDay('2026-10-08', '2026-10-07')).toBe('2026-10-08');
 	});
 });

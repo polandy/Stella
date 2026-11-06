@@ -7,6 +7,7 @@
 -->
 <script lang="ts">
 	import { tick } from 'svelte';
+	import { deviceDay } from '$lib/dates/today';
 	import Button from '$lib/components/ui/Button.svelte';
 	import FormError from '$lib/components/ui/FormError.svelte';
 	import Icon from '$lib/components/ui/Icon.svelte';
@@ -59,8 +60,7 @@
 			seen.clear();
 			query = '';
 			copyError = null;
-			// `en-CA` spells a date as `YYYY-MM-DD`, on the device's own calendar.
-			const first = day ?? new Date().toLocaleDateString('en-CA');
+			const first = day ?? deviceDay();
 			lastDay = first;
 			dialog.showModal();
 			void load({ day: first });

@@ -4,6 +4,7 @@ import type { Clock } from '../../clock';
 import type { IdGenerator } from '../../id';
 import type { ActivityOf } from '../activity/activity';
 import {
+	BlankCircleNameError,
 	CIRCLE_COLORS,
 	readCircleDetails,
 	type CircleColor,
@@ -40,12 +41,10 @@ export {
 /**
  * Suggest a colour to pre-select when creating a circle: a random one **not yet used** by
  * existing circles, so circles stay visually distinct; if every colour is taken, any random
- * one. `rng` is injectable for deterministic tests.
+ * one. `rng` comes from the composition root (`locals.services.circles.random`), so the domain
+ * holds no hidden randomness and a test pins the pick.
  */
-export function suggestCircleColor(
-	usedColors: readonly string[],
-	rng: () => number = Math.random
-): CircleColor {
+export function suggestCircleColor(usedColors: readonly string[], rng: () => number): CircleColor {
 	const used = new Set(usedColors);
 	const free = CIRCLE_COLORS.filter((c) => !used.has(c));
 	const pool = free.length > 0 ? free : CIRCLE_COLORS;
@@ -349,7 +348,7 @@ export async function joinCircleByName(
 	role?: string | null
 ): Promise<string> {
 	const name = circleName.trim();
-	if (name === '') throw new Error('A circle needs a name.');
+	if (name === '') throw new BlankCircleNameError();
 
 	const viewer = { id: creator.userId, householdId: creator.householdId };
 	const existing = await deps.circles.findByNameVisibleTo(viewer, name);

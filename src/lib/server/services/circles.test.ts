@@ -165,6 +165,11 @@ describe('createCircleServices', () => {
 		expect(circles.memberRoleDeps.clock).toBe(clock);
 	});
 
+	it('hands out the randomness a suggested colour is drawn with', () => {
+		// The one place `Math.random` is wired: the domain only ever receives it.
+		expect(createCircleServices(wiring).random).toBe(Math.random);
+	});
+
 	it('renames a role across members and photos, and offers the photo to cut from', async () => {
 		const circles = createCircleServices(wiring);
 		const anna = await addPerson('Anna');

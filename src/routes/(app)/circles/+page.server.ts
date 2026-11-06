@@ -36,7 +36,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 		covers,
 		colors: CIRCLE_COLORS,
 		kinds: CIRCLE_KINDS,
-		suggestedColor: suggestCircleColor(usedColors)
+		suggestedColor: suggestCircleColor(usedColors, locals.services.circles.random)
 	};
 };
 
