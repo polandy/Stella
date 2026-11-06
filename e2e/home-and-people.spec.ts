@@ -137,6 +137,26 @@ test.describe('on a phone', () => {
 		expect(sideways).toEqual({ page: false, bands: false });
 	});
 
+	test('folds each rail section to one line until it is tapped', async ({ page }) => {
+		// Ahead of everyone else's, so the folded line names this person.
+		await addBirthdaysSoon(page, ['Pirmin Quellet'], 1);
+		const toggle = page.getByTestId('coming-up-toggle');
+		const row = page.getByTestId('coming-up').getByRole('link', { name: 'Pirmin Quellet' });
+
+		await expect(toggle).toHaveAttribute('aria-expanded', 'false');
+		await expect(toggle).toContainText(/Coming up\s*\d+ · Pirmin Quellet/);
+		await expect(row).toBeHidden();
+
+		await toggle.click();
+		await expect(toggle).toHaveAttribute('aria-expanded', 'true');
+		await expect(row).toBeVisible();
+		// Open, the line is the heading alone: the rows say the rest.
+		await expect(toggle).not.toContainText('Pirmin Quellet');
+
+		await toggle.click();
+		await expect(row).toBeHidden();
+	});
+
 	test('stops a band after three people and shows the rest on request', async ({ page }) => {
 		await addBirthdaysSoon(page, [
 			'Alina Nyffeler',
