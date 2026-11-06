@@ -12,10 +12,10 @@ import { RelationshipsRefusedError } from '$lib/server/domain/relationships/add-
 import {
 	ContradictoryRelationshipError,
 	DuplicateRelationshipError,
-	RelationshipExcludedError,
 	type RelationshipRepository,
 	type RelationshipType
 } from '$lib/server/domain/relationships/relationships';
+import { RelationshipExcludedError } from '$lib/server/domain/relationships/exclusions';
 import {
 	commandDepsWith,
 	inMemoryKinshipGraph,

@@ -6,7 +6,8 @@ import type { KinshipGraph } from '$lib/kinship/kinship';
 import { pairKey, type Dismissal } from '$lib/suggestions/claims';
 import type { Viewer } from '../../access/visibility';
 import { readFamilyOf, type FamilyReadDeps } from './family';
-import { readExclusionFacts, readKinship } from './relationships';
+import { readExclusionFacts } from './exclusions';
+import { readKinship } from './kinship';
 import { reviewPerson, type ProposedLink } from './suggestion-review';
 import { inMemoryKinshipGraph, inMemoryRelationshipTies, someTie } from '../testing';
 

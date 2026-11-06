@@ -1,7 +1,8 @@
 import type { Locale } from '../../../i18n/locales';
 import type { ContactAddPayload } from '../../../commands/commands';
 import { setSelfContact, type SelfContactStore } from '../household/self-contact';
-import { createContact, type ContactDeps } from './contacts';
+import { createContact } from './create-contact';
+import type { ContactDeps } from './contacts';
 
 /*
  * The `contact.add` command's use-case (docs/02 §2.2): add a person, and — when the member

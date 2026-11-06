@@ -11,7 +11,7 @@ import { createDrizzleContactRepository } from '../db/contact-repository';
 import { createDrizzleGiftRepository } from '../db/gift-repository';
 import { createDrizzleTodoRepository } from '../db/todo-repository';
 import * as schema from '../db/schema';
-import { createContact } from '../domain/contacts/contacts';
+import { createContact } from '../domain/contacts/create-contact';
 import { lastContactedOn, logInteraction } from '../domain/interactions/interactions';
 import { listJournalForContact } from '../domain/journal/journal';
 import type { MediaStore } from '../domain/media/avatars';

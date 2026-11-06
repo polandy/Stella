@@ -1,36 +1,16 @@
 import { TranslatableError } from '../../../i18n/translatable';
-import { phrase, type Phrase } from '../../../i18n/phrase';
-import type { KinshipGraph, Pair } from '../../../kinship/kinship';
-import { deriveKinship, type DerivedKin } from '../../../kinship/kinship';
-import { evaluateAll } from '../../../suggestions/engine';
-import type { Dismissal } from '../../../suggestions/claims';
-import type { PrimaryLink, Trigger } from '../../../suggestions/types';
-import { buildView } from '../../../suggestions/view';
-import {
-	nameProposals,
-	type KinshipGraphReads,
-	type ProposedLink,
-	type SuggestionReviewSource
-} from './suggestion-review';
+import { phrase } from '../../../i18n/phrase';
 import type { Viewer } from '../../access/visibility';
 import type { RelationshipCategory } from '../../../relationships/categories';
 import { relationshipPair, type Endpoints } from '../../../relationships/endpoints';
-import { endpointsForSide, type RelationshipSide } from '../../../relationships/type-options';
-import {
-	exclusionFor,
-	MAX_PARENTS,
-	type Exclusion,
-	type ExclusionFacts,
-	type ExclusionReason
-} from '../../../relationships/exclusions';
-import { relationshipRowLabel } from '../../../relationships/labels';
 import { GENERATION_TYPE_KEYS } from '../../../relationships/type-keys';
 import {
-	CURRENT_RELATIONSHIP_STATUS,
-	RELATIONSHIP_STATUSES,
-	type RelationshipStatus
-} from '../../../relationships/status';
-import { isWholeDay } from '../../../dates/calendar';
+	parseRelationshipDetails,
+	type RelationshipDetails,
+	type RelationshipDetailsInput
+} from './details';
+import { guardExclusions, type ExclusionSource } from './exclusions';
+import type { KinshipGraphReads } from './suggestion-review';
 import {
 	InvalidRelationshipTypeError,
 	type RelationshipTypeRepository
@@ -40,7 +20,9 @@ import type { IdGenerator } from '../../id';
 
 /*
  * Relationship domain (docs/02 §2.4). Pure helpers for canonical storage direction and
- * perspective-aware labels, plus the createRelationship use-case over a repository port.
+ * perspective-aware labels, the repository port, and creating and removing a link. Beside it:
+ * `details.ts` checks what a link carries, `exclusions.ts` what the records rule out,
+ * `edit.ts` corrects a link, and `kinship.ts` reads the kin that follow from the links.
  */
 
 export interface RelationshipType {
@@ -96,61 +78,6 @@ export function describeRelationshipFor(
 }
 
 // ── Use-case ────────────────────────────────────────────────────────────────
-
-/** The specifics a relationship carries beyond its type (docs/02 §2.4). */
-export interface RelationshipDetails {
-	/** Free text: how these two connect, e.g. "met through Peter at the ski course". */
-	description: string | null;
-	/** A full ISO day the link dates from, or null. */
-	sinceDate: string | null;
-	/** Whether the tie still holds. A link that exists is `current` until someone ends it. */
-	status: RelationshipStatus;
-}
-
-/**
- * The same three as they arrive from a form. For the two free fields, absent, blank and null
- * all mean "not said"; for the status they mean `current`, the only state a link that exists
- * can be in until it is explicitly ended (docs/02 §2.4).
- */
-export interface RelationshipDetailsInput {
-	description?: string | null;
-	sinceDate?: string | null;
-	status?: string | null;
-}
-
-export class InvalidRelationshipDetailsError extends TranslatableError {
-	constructor(message: Phrase) {
-		super(message, 'InvalidRelationshipDetailsError');
-	}
-}
-
-const blankToNull = (value: string | null | undefined): string | null =>
-	(value ?? '').trim() || null;
-
-/**
- * Normalise and check the details, so nothing unreal is ever stored. A since-day must be a
- * whole day that exists: `--06-01` is legal for a birthday but says nothing about *when* a
- * relationship began, and `2019-02-30` would silently roll into March downstream.
- */
-export function parseRelationshipDetails(input: RelationshipDetailsInput): RelationshipDetails {
-	const sinceDate = blankToNull(input.sinceDate);
-	if (sinceDate && !isWholeDay(sinceDate)) {
-		throw new InvalidRelationshipDetailsError(
-			phrase('errors.relationship.noSuchDay', { day: sinceDate })
-		);
-	}
-
-	const status = blankToNull(input.status);
-	if (status && !RELATIONSHIP_STATUSES.includes(status as RelationshipStatus)) {
-		throw new InvalidRelationshipDetailsError(phrase('errors.relationship.currentOrFormer'));
-	}
-
-	return {
-		description: blankToNull(input.description),
-		sinceDate,
-		status: (status as RelationshipStatus | null) ?? CURRENT_RELATIONSHIP_STATUS
-	};
-}
 
 export interface NewRelationship extends RelationshipDetails {
 	id: string;
@@ -290,156 +217,6 @@ export class ContradictoryRelationshipError extends TranslatableError {
 	}
 }
 
-/*
- * What is already on record, and what that rules out (docs/02 §2.4). The rules themselves
- * are pure and live in `$lib/relationships/exclusions`; here they are handed the household's
- * links. The person page is given the very same reading, so the picker greys out exactly
- * what this use-case would refuse.
- */
-
-/**
- * The sentence each refusal is read as, given what it is about. `alreadyRomantic` refuses
- * because of a particular link and says which one — from the subject's side, and translated
- * where Stella owns the type — since the person's name alone reads as a claim about the tie
- * that was just refused rather than about the one standing in the way.
- */
-type NameOf = (contactId: string) => string;
-
-const PHRASE_FOR_REASON: Record<ExclusionReason, (e: Exclusion, nameOf: NameOf) => Phrase> = {
-	alreadyRomantic: (exclusion, nameOf) => {
-		const name = nameOf(exclusion.personId);
-		const tie = exclusion.tie;
-		if (!tie) return phrase('errors.relationship.alreadyRomantic', { name });
-		return (t) => t('errors.relationship.alreadyTied', { tie: relationshipRowLabel(t, tie), name });
-	},
-	// Both people: which of the two is spoken for is the whole answer, and naming only the
-	// partner leaves the sentence to be read as being about whoever's page it arrives on.
-	romanticTaken: (exclusion, nameOf) =>
-		phrase('errors.relationship.romanticTaken', {
-			name: nameOf(exclusion.personId),
-			partner: exclusion.partnerId ? nameOf(exclusion.partnerId) : ''
-		}),
-	parentsComplete: (exclusion, nameOf) =>
-		phrase('errors.relationship.parentsComplete', {
-			name: nameOf(exclusion.personId),
-			max: MAX_PARENTS
-		})
-};
-
-/** A tie that cannot hold beside the ties already on record (docs/02 §2.4). */
-export class RelationshipExcludedError extends TranslatableError {
-	/** Which rule refused — a caller reacts to the kind, never to the wording. */
-	readonly reason: ExclusionReason;
-
-	constructor(exclusion: Exclusion, nameOf: (contactId: string) => string) {
-		super(PHRASE_FOR_REASON[exclusion.reason](exclusion, nameOf), 'RelationshipExcludedError');
-		this.reason = exclusion.reason;
-	}
-}
-
-/** The facts, plus the names to word a refusal with — both cut from the one graph read. */
-interface ExclusionCheck {
-	facts: ExclusionFacts;
-	nameOf: (contactId: string) => string;
-}
-
-/** The two reads an exclusion check is made of. */
-export interface ExclusionSource {
-	kinship: KinshipGraphReads;
-	ties: RelationshipTieReads;
-}
-
-/**
- * What the exclusion rules need to judge a claim made from `subjectId`'s profile, read from
- * the two read models, both already scoped to the viewer.
- */
-async function loadExclusionCheck(
-	deps: ExclusionSource,
-	viewer: Viewer,
-	subjectId: string
-): Promise<ExclusionCheck> {
-	const [graph, ties] = await Promise.all([
-		deps.kinship.loadKinshipGraphVisibleTo(viewer),
-		deps.ties.listForContactVisibleTo(viewer, subjectId)
-	]);
-	const names = new Map(graph.people.map((person) => [person.id, person.displayName]));
-	return {
-		facts: exclusionFactsFrom(graph, ties),
-		nameOf: (contactId) => names.get(contactId) ?? ''
-	};
-}
-
-/**
- * The exclusion facts out of a graph and the subject's own ties that were already read — the
- * person page reads both for other cards, and asking the store again would only repeat them.
- * Only partnerships that still hold are passed on — that is the escape a household needs,
- * because a marriage marked former stops standing in the way of the next one.
- */
-export function exclusionFactsFrom(
-	graph: KinshipGraph,
-	ties: readonly RelationshipView[]
-): ExclusionFacts {
-	return {
-		subjectTies: ties.map((tie) => ({
-			relationshipId: tie.id,
-			otherContactId: tie.otherContactId,
-			category: tie.category,
-			// Carried so a refusal can name the link it is refusing for, in the words that row
-			// reads in on this profile.
-			typeKey: tie.typeKey,
-			side: tie.side,
-			label: tie.label
-		})),
-		romanticPairs: graph.partnerEdges
-			.filter((edge) => !edge.former)
-			.map((edge) => ({ a: edge.a, b: edge.b, sinceDate: edge.sinceDate ?? null })),
-		parentEdges: graph.parentEdges.map((edge) => ({
-			parentId: edge.parentId,
-			childId: edge.childId
-		}))
-	};
-}
-
-/** The same reading the write is guarded by, for the picker on the person page. */
-export async function readExclusionFacts(
-	deps: ExclusionSource,
-	viewer: Viewer,
-	subjectId: string
-): Promise<ExclusionFacts> {
-	return (await loadExclusionCheck(deps, viewer, subjectId)).facts;
-}
-
-/**
- * Refuse a claim the household's own records already rule out.
- *
- * Read from `perspectiveContactId` — the profile the entry was made on — rather than from the
- * stored `from` endpoint. A symmetric type is canonicalised by id, so the two are often not
- * the same person, and a refusal read from the wrong end names the link backwards: *Godparent
- * of Giulio* on Giulio's own page, where what he is is the godchild.
- */
-async function guardExclusions(
-	deps: ExclusionSource,
-	viewer: Viewer,
-	endpoints: Endpoints,
-	type: RelationshipType,
-	perspectiveContactId: string,
-	exceptId?: string
-): Promise<void> {
-	const fromPerspective = perspectiveContactId === endpoints.fromContactId;
-	const targetId = fromPerspective ? endpoints.toContactId : endpoints.fromContactId;
-	const { facts, nameOf } = await loadExclusionCheck(deps, viewer, perspectiveContactId);
-	const exclusion = exclusionFor(facts, {
-		subjectId: perspectiveContactId,
-		targetId,
-		type: { key: type.key, category: type.category },
-		side: fromPerspective ? 'forward' : 'reverse',
-		exceptId
-	});
-	if (exclusion) {
-		throw new RelationshipExcludedError(exclusion, nameOf);
-	}
-}
-
 /**
  * Create a relationship between two contacts. Validates the type, rejects self links,
  * stores in canonical direction, prevents duplicates and refuses a generation claimed in
@@ -498,191 +275,6 @@ export async function createRelationship(
 		updatedAt: now
 	});
 	return id;
-}
-
-/**
- * Everything the person page shows about inferred kinship (docs/02 §2.4.1): the relatives
- * derived for `subjectId`, and — when primary links have just been stored between the pairs of
- * `proposeFor`, one or a whole batch — the links that follow from them and are not stored yet.
- *
- * One port call serves both, because both read the same graph. Visibility is settled by the
- * read model, so neither a derived label nor a proposal can name someone the viewer may not see.
- */
-export type { ProposedLink };
-
-export interface KinshipRead {
-	derived: DerivedKin[];
-	proposals: ProposedLink[];
-}
-
-export async function readKinship(
-	deps: SuggestionReviewSource,
-	viewer: Viewer,
-	subjectId: string,
-	proposeFor: readonly Pair[] = []
-): Promise<KinshipRead> {
-	const [graph, dismissals] = await Promise.all([
-		deps.kinship.loadKinshipGraphVisibleTo(viewer),
-		deps.dismissals.listForHousehold(viewer)
-	]);
-	return kinshipFrom(graph, dismissals, subjectId, proposeFor);
-}
-
-/**
- * `readKinship` over a graph and a dismissal log already read. The dismissals are only
- * consulted when `proposeFor` names a stored link, so a caller that has none may pass `[]`.
- *
- * Every pair is read as entered on `subjectId`'s page — the only page that names pairs after a
- * write — which is what lets L3 stay quiet where the form already offered the second parent.
- */
-export function kinshipFrom(
-	graph: KinshipGraph,
-	dismissals: readonly Dismissal[],
-	subjectId: string,
-	proposeFor: readonly Pair[] = []
-): KinshipRead {
-	const derived = deriveKinship(graph, subjectId);
-	const triggers = proposeFor.flatMap((pair): Trigger[] => {
-		const link = primaryLinkBetween(graph, pair.a, pair.b);
-		return link ? [{ kind: 'link-stored', link, enteredFrom: subjectId }] : [];
-	});
-	if (triggers.length === 0) return { derived, proposals: [] };
-
-	// A claim declined once is not offered again, however it is reached (§6.4) — including
-	// here, in the instant after the write, where it would otherwise slip past the log.
-	const view = buildView(graph, dismissals);
-	const proposals = nameProposals(evaluateAll(triggers, view), view.nameOf);
-	return { derived, proposals };
-}
-
-/**
- * The primary link stored between two people, if any. Reading it back from the graph rather
- * than trusting the caller means a hand-written URL can only ever name a link that exists
- * and that the viewer may see.
- */
-function primaryLinkBetween(graph: KinshipGraph, a: string, b: string): PrimaryLink | null {
-	const joins = (x: string, y: string) => (x === a && y === b) || (x === b && y === a);
-	for (const edge of graph.parentEdges) {
-		if (joins(edge.parentId, edge.childId)) {
-			return { kind: 'parent', fromId: edge.parentId, toId: edge.childId };
-		}
-	}
-	for (const edge of graph.siblingEdges) {
-		if (joins(edge.a, edge.b)) return { kind: 'sibling', fromId: edge.a, toId: edge.b };
-	}
-	for (const edge of graph.partnerEdges) {
-		if (joins(edge.a, edge.b)) return { kind: 'partner', fromId: edge.a, toId: edge.b };
-	}
-	return null;
-}
-
-/** What an edit reads and writes: the link itself, and what a retype is judged against. */
-export interface EditRelationshipDeps extends ExclusionSource {
-	relationships: Pick<RelationshipRepository, 'exists' | 'findVisibleTo' | 'updateVisibleTo'>;
-	types: Pick<RelationshipTypeRepository, 'getType'>;
-	clock: Clock;
-}
-
-/** One edit of a link that is already there: its specifics, and optionally its type. */
-export interface EditRelationshipInput extends RelationshipDetailsInput {
-	relationshipId: string;
-	/** Whose profile the edit was made from — the chosen side is read from their perspective. */
-	perspectiveContactId: string;
-	/** The type and the side it was read from; absent leaves the type alone. */
-	typeChoice?: { typeId: string; side: RelationshipSide } | null;
-}
-
-/** The endpoint of `link` that is not `contactId`, or null when they are not an endpoint. */
-function otherEndpointOf(link: StoredRelationship, contactId: string): string | null {
-	if (contactId === link.fromContactId) return link.toContactId;
-	if (contactId === link.toContactId) return link.fromContactId;
-	return null;
-}
-
-/**
- * Where a link lands once it carries another type (docs/02 §2.4): the chosen side is read
- * from the profile the edit was made on, and the type decides whether the pair is stored
- * order-independently — so a partner becoming a spouse, and a generation entered the wrong
- * way round, both come out canonical. Null when the viewer is editing from a profile that is
- * not an endpoint of the link.
- *
- * The guards are the ones creating a link passes, with the link itself left out of both:
- * measured against itself, every retype would read as its own duplicate and every flipped
- * generation as its own contradiction.
- */
-async function planRetype(
-	deps: EditRelationshipDeps,
-	viewer: Viewer,
-	current: StoredRelationship,
-	perspectiveContactId: string,
-	choice: { typeId: string; side: RelationshipSide }
-): Promise<Retype | null> {
-	const type = await deps.types.getType(viewer, choice.typeId);
-	if (!type) throw new InvalidRelationshipTypeError(phrase('errors.relationshipType.gone'));
-
-	const otherContactId = otherEndpointOf(current, perspectiveContactId);
-	if (otherContactId === null) return null;
-
-	const asked = endpointsForSide(perspectiveContactId, otherContactId, choice.side);
-	const endpoints = relationshipPair(asked.fromContactId, asked.toContactId, type.symmetric);
-
-	if (
-		await deps.relationships.exists(
-			endpoints.fromContactId,
-			endpoints.toContactId,
-			type.id,
-			current.id
-		)
-	) {
-		throw new DuplicateRelationshipError();
-	}
-	if (
-		GENERATION_TYPE_KEYS.includes(type.key) &&
-		(await deps.relationships.exists(
-			endpoints.toContactId,
-			endpoints.fromContactId,
-			type.id,
-			current.id
-		))
-	) {
-		throw new ContradictoryRelationshipError();
-	}
-
-	await guardExclusions(deps, viewer, endpoints, type, perspectiveContactId, current.id);
-
-	return { endpoints, typeId: type.id };
-}
-
-/**
- * Correct a link that is already there (docs/02 §2.4): its specifics, and its type where a
- * tie was named wrongly or has moved on — a partner who became a spouse. Changing the type
- * can flip the stored direction, so the same duplicate and contradiction guards that creating
- * a link passes are re-run here.
- *
- * Returns false when the viewer may not see the relationship — the same answer as for one
- * that does not exist, so no one learns of a link through a private person by editing it.
- */
-export async function editRelationship(
-	deps: EditRelationshipDeps,
-	viewer: Viewer,
-	input: EditRelationshipInput
-): Promise<boolean> {
-	const details = parseRelationshipDetails(input);
-
-	let retype: Retype | null = null;
-	if (input.typeChoice) {
-		const current = await deps.relationships.findVisibleTo(viewer, input.relationshipId);
-		if (!current) return false;
-		retype = await planRetype(deps, viewer, current, input.perspectiveContactId, input.typeChoice);
-		if (!retype) return false;
-	}
-
-	return deps.relationships.updateVisibleTo(
-		viewer,
-		input.relationshipId,
-		{ ...details, retype },
-		deps.clock.now()
-	);
 }
 
 /**

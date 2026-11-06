@@ -16,7 +16,8 @@ import {
 } from '../media/journal-photos';
 import { sniffImageMime } from '../media/avatars';
 import { leadPhoto, matchRoleOption, photoRoleOptions } from './circle-photo-view';
-import { suggestRoles, type CircleRepository } from './circles';
+import { suggestRoles } from './role-groups';
+import type { CircleRepository } from './circles';
 import type { CircleMembershipReads } from './memberships';
 
 /*

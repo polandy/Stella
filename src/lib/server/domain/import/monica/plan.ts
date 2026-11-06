@@ -1,30 +1,26 @@
 import type { Locale } from '../../../../i18n/locales';
 import type { Visibility } from '../../../access/visibility';
 import type { NewContactField } from '../../contact-fields/contact-fields';
-import type { BirthDatePrecision, NewContact } from '../../contacts/contacts';
-import { deriveDisplayName } from '../../../../people/display-name';
+import type { NewContact } from '../../contacts/contacts';
 import type { NewInteraction } from '../../interactions/interactions';
 import type { NewNote } from '../../notes/notes';
 import type { Gift } from '../../gifts/gifts';
 import type { Todo } from '../../todos/todos';
-import { taskDone, taskLine } from './tasks';
-import { giftFromMonica } from '../../../../gifts/conversion';
 import type { RelationshipCategory } from '../../../../relationships/categories';
-import { CURRENT_RELATIONSHIP_STATUS } from '../../../../relationships/status';
 import type { NewRelationship } from '../../relationships/relationships';
-import { BUILT_IN_RELATIONSHIP_TYPES } from '../../relationships/built-in-types';
-import { relationshipPair } from '../../../../relationships/endpoints';
-import { resolveTagColor, type NewTag } from '../../tags/tags';
-import type { MonicaContact, SourceExport, MonicaId, MonicaSpecialDate } from './monica-export';
-import { mapRelationshipType } from './relationship-types';
+import type { NewTag } from '../../tags/tags';
+import type { MonicaId, SourceExport } from './monica-export';
 import { sourcePrefix } from '../source';
-import type { Gender } from '../../../../people/gender';
-import type { CardLabel, KnownLabel } from '../../../../import-match/card';
+import type { KnownLabel } from '../../../../import-match/card';
+import { planContacts, planPhotos, planTags } from './plan-contacts';
+import { planContactFields } from './plan-fields';
+import { planPersonRecords } from './plan-records';
+import { planRelationships } from './plan-relationships';
 
 /*
  * The Monica → Stella mapping (docs/02 §2.16; the table is docs/monica-mapping.md). Pure:
  * given the typed export it decides every row the import will write and reports what it
- * approximated or left out. Ids are stable *source ids* (`monica:contact:12`), so importing
+ * approximated or left out; each table group is planned by its own `plan-*.ts` module. Ids are stable *source ids* (`monica:contact:12`), so importing
  * the same export twice cannot duplicate — the adapter inserts with "do nothing on conflict".
  */
 
@@ -61,13 +57,6 @@ export interface ImportWording {
 	/** A label every address book writes the same way (*Home*), for a field the review adds. */
 	fieldLabel: (label: KnownLabel) => string;
 }
-
-/** A card's label in words: a known one in the member's language, a typed one as written. */
-export const fieldLabelText = (
-	label: CardLabel | null,
-	wording: Pick<ImportWording, 'fieldLabel'>
-): string | null =>
-	label === null ? null : 'known' in label ? wording.fieldLabel(label.known) : label.typed;
 
 /** A contact row as the import writes it — the profile fields Stella's create form lacks included. */
 export interface ImportedContact extends NewContact {
@@ -184,45 +173,23 @@ export interface ImportPlan {
 	report: ImportReport;
 }
 
-const orNull = (value: string | null | undefined): string | null => {
-	const trimmed = (value ?? '').trim();
-	return trimmed.length > 0 ? trimmed : null;
-};
-
-/** Monica's gender codes → Stella's gender. "Prefer not to say" stays empty. */
-const GENDER: Record<string, Gender> = { M: 'male', F: 'female' };
-
-/** A Monica special date → Stella's stored value plus precision (docs/03 §3.4). */
-function birthDateOf(date: MonicaSpecialDate | undefined): {
-	birthDate: string | null;
-	birthDatePrecision: BirthDatePrecision;
-} {
-	if (!date) return { birthDate: null, birthDatePrecision: 'full' };
-	if (date.isAgeBased) return { birthDate: date.date.slice(0, 4), birthDatePrecision: 'age' };
-	if (date.isYearUnknown)
-		return { birthDate: `--${date.date.slice(5)}`, birthDatePrecision: 'month_day' };
-	return { birthDate: date.date, birthDatePrecision: 'full' };
+/** Everything the per-table planners share: the ids, who and when, and the report. */
+export interface MonicaPlanContext {
+	/** The export's id prefix, so importing the same export twice finds its own rows. */
+	prefix: string;
+	contactId: (sourceId: MonicaId) => string;
+	/** The contacts not deleted in Monica; a record of any other is left out. */
+	liveIds: ReadonlySet<MonicaId>;
+	opts: ImportOptions;
+	/** Who wrote a record, how visible it is and when: the same for every imported row. */
+	stamp: Pick<NewContact, 'createdBy' | 'visibility' | 'createdAt' | 'updatedAt'>;
+	skip: (what: SkippedKind, why: SkippedReason, count?: number, detail?: string) => void;
+	warn: (warning: ImportWarning) => void;
 }
-
-function howWeMetOf(
-	c: MonicaContact,
-	nameOf: (id: MonicaId) => string | null,
-	wording: ImportWording
-): string | null {
-	const info = orNull(c.firstMetAdditionalInfo);
-	const through = c.firstMetThroughContactId === null ? null : nameOf(c.firstMetThroughContactId);
-	if (info && through) return wording.metThroughInfo(info, through);
-	if (through) return wording.metThrough(through);
-	return info;
-}
-
-/** Humanise Monica's snake_case activity/life-event keys: `ate_restaurant` → "ate restaurant". */
-const humanise = (key: string) => key.replace(/_/g, ' ');
 
 /** Plan the import of a Monica export. Pure; see the module comment. */
 export function planMonicaImport(exp: SourceExport, opts: ImportOptions): ImportPlan {
 	const prefix = sourcePrefix(exp.source);
-	const contactId = (sourceId: MonicaId) => `${prefix}:contact:${sourceId}`;
 	const warnings: ImportWarning[] = [];
 	const skipped: SkippedRecords[] = [];
 	const skip = (what: SkippedKind, why: SkippedReason, count = 1, detail?: string) => {
@@ -230,366 +197,31 @@ export function planMonicaImport(exp: SourceExport, opts: ImportOptions): Import
 		if (existing) existing.count += count;
 		else skipped.push({ what, count, why, ...(detail === undefined ? {} : { detail }) });
 	};
-	const wording = opts.wording;
-	const stamp = {
-		createdBy: opts.userId,
-		visibility: opts.visibility,
-		createdAt: opts.now,
-		updatedAt: opts.now
-	};
 
-	// ── Contacts ────────────────────────────────────────────────────────────
 	const live = exp.contacts.filter((c) => c.deletedAt === null);
 	const deleted = exp.contacts.length - live.length;
 	if (deleted > 0) skip('contact', 'deletedInMonica', deleted);
-	const liveIds = new Set(live.map((c) => c.id));
-	const specialDates = new Map(exp.specialDates.map((d) => [d.id, d]));
-	const genders = new Map(exp.genders.map((g) => [g.id, g.type]));
-	const nameOf = (id: MonicaId): string | null => {
-		const c = exp.contacts.find((x) => x.id === id);
-		return c
-			? deriveDisplayName(
-					{ firstName: c.firstName, lastName: c.lastName, nickname: c.nickname },
-					opts.locale
-				)
-			: null;
-	};
-
-	const contacts = live.map((c): ImportedContact => {
-		const firstName = orNull([c.firstName, c.middleName].filter(Boolean).join(' '));
-		const lastName = orNull(c.lastName);
-		const nickname = orNull(c.nickname);
-		const birthday = birthDateOf(
-			c.birthdaySpecialDateId === null ? undefined : specialDates.get(c.birthdaySpecialDateId)
-		);
-		const death =
-			c.deceasedSpecialDateId === null ? undefined : specialDates.get(c.deceasedSpecialDateId);
-		const met =
-			c.firstMetSpecialDateId === null ? undefined : specialDates.get(c.firstMetSpecialDateId);
-		const genderType = c.genderId === null ? null : (genders.get(c.genderId) ?? null);
-		return {
-			id: contactId(c.id),
-			householdId: opts.householdId,
-			...stamp,
-			displayName: deriveDisplayName({ firstName, lastName, nickname }, opts.locale),
-			firstName,
-			lastName,
-			nickname,
-			description: orNull(c.description),
-			howWeMet: howWeMetOf(c, nameOf, wording),
-			metDate: met?.date ?? null,
-			metPlace: orNull(c.firstMetWhere),
-			...birthday,
-			gender: genderType === null ? null : (GENDER[genderType] ?? null),
-			jobTitle: orNull(c.job),
-			company: orNull(c.company),
-			isDeceased: c.isDead,
-			deathDate: death?.date ?? null
-		};
-	});
-
-	// ── Relationships ───────────────────────────────────────────────────────
-	const typeNames = new Map(exp.relationshipTypes.map((t) => [t.id, t.name]));
-	const customTypes = new Map<string, ImportedRelationshipType>();
-	const seenRelationships = new Set<string>();
-	const relationships: NewRelationship[] = [];
-	const unknownTypeNames = new Set<string>();
-	for (const r of exp.relationships) {
-		if (!liveIds.has(r.contactIs) || !liveIds.has(r.ofContact)) {
-			skip('relationship', 'refersToDeletedContact');
-			continue;
-		}
-		// Monica lets a row name one contact at both ends; Stella refuses such a link
-		// (`relationshipPair`), so the row is left out rather than failing the whole import.
-		if (r.contactIs === r.ofContact) {
-			skip('relationship', 'linksPersonToThemselves');
-			continue;
-		}
-		const name = typeNames.get(r.typeId) ?? `type ${r.typeId}`;
-		const mapped = mapRelationshipType(name);
-		let typeId = mapped.key;
-		if (mapped.custom) {
-			typeId = `${prefix}:reltype:${mapped.key}`;
-			if (!customTypes.has(typeId)) {
-				customTypes.set(typeId, {
-					id: typeId,
-					householdId: opts.householdId,
-					key: mapped.key,
-					...mapped.custom
-				});
-				if (mapped.custom.category === 'other') unknownTypeNames.add(name);
-			}
-		}
-		const symmetric = mapped.custom?.symmetric ?? isBuiltInSymmetric(mapped.key);
-		// Monica's own migration that built this table (`migrate_offsprings`, 2018) proves the
-		// row reads backwards from how it looks: "contact_is <type> of_contact" really means
-		// of_contact holds the named role and contact_is is the implicit other end — a "child"
-		// row has contact_is as the *parent* and of_contact as the child. `mapped.forward` says
-		// whether Monica's type name is Stella's forward-label side, and that role belongs to
-		// of_contact, not contact_is.
-		const [a, b] = mapped.forward ? [r.ofContact, r.contactIs] : [r.contactIs, r.ofContact];
-		const ends = relationshipPair(contactId(a), contactId(b), symmetric);
-		const dedupeKey = `${typeId}|${ends.fromContactId}|${ends.toContactId}`;
-		if (seenRelationships.has(dedupeKey)) continue;
-		seenRelationships.add(dedupeKey);
-		relationships.push({
-			id: `${prefix}:relationship:${r.id}`,
-			householdId: opts.householdId,
-			...ends,
-			typeId,
-			description: null,
-			// Monica records neither of these, so there is nothing to carry over. A link it did
-			// record is one that holds, which is what `current` says (docs/02 §2.4).
-			sinceDate: null,
-			status: CURRENT_RELATIONSHIP_STATUS,
+	const ctx: MonicaPlanContext = {
+		prefix,
+		contactId: (sourceId) => `${prefix}:contact:${sourceId}`,
+		liveIds: new Set(live.map((c) => c.id)),
+		opts,
+		stamp: {
 			createdBy: opts.userId,
+			visibility: opts.visibility,
 			createdAt: opts.now,
 			updatedAt: opts.now
-		});
-	}
-	for (const name of unknownTypeNames) {
-		warnings.push({ code: 'customType', name });
-	}
-
-	// ── Contact fields ──────────────────────────────────────────────────────
-	const fieldTypes = new Map(exp.contactFieldTypes.map((t) => [t.id, t]));
-	const contactFields: NewContactField[] = [];
-	let sortOrder = 0;
-	const fieldStamp = { createdAt: opts.now, updatedAt: opts.now, meta: null };
-	for (const f of exp.contactFields) {
-		if (!liveIds.has(f.contactId)) {
-			skip('contactField', 'belongsToDeletedContact');
-			continue;
-		}
-		const type = fieldTypes.get(f.typeId);
-		const base = {
-			id: `${prefix}:field:${f.id}`,
-			contactId: contactId(f.contactId),
-			sortOrder: sortOrder++,
-			...fieldStamp
-		};
-		const label = fieldLabelText(f.label ?? null, opts.wording);
-		if (type?.type === 'email')
-			contactFields.push({ ...base, kind: 'email', label, value: f.data });
-		else if (type?.type === 'phone')
-			contactFields.push({ ...base, kind: 'phone', label, value: f.data });
-		// A vCard's URL already carries its scheme; only Monica's own types need one prefixed.
-		else if (type?.type === 'url')
-			contactFields.push({ ...base, kind: 'url', label, value: f.data });
-		else if (type?.protocol?.startsWith('http')) {
-			contactFields.push({
-				...base,
-				kind: 'url',
-				label: type.name,
-				value: `${type.protocol}${f.data}`
-			});
-		} else
-			contactFields.push({ ...base, kind: 'custom', label: type?.name ?? null, value: f.data });
-	}
-	for (const a of exp.addresses) {
-		if (!liveIds.has(a.contactId)) {
-			skip('address', 'belongsToDeletedContact');
-			continue;
-		}
-		const cityLine = orNull([a.postalCode, a.city].filter(Boolean).join(' '));
-		const value = [a.street, cityLine, a.province, a.country]
-			.map(orNull)
-			.filter(Boolean)
-			.join(', ');
-		if (!value) {
-			skip('address', 'empty');
-			continue;
-		}
-		contactFields.push({
-			id: `${prefix}:address:${a.id}`,
-			contactId: contactId(a.contactId),
-			kind: 'address',
-			label: orNull(a.name),
-			value,
-			sortOrder: sortOrder++,
-			...fieldStamp
-		});
-	}
-
-	// ── Notes, plus the Monica modules Stella has no home for ───────────────
-	const notes: NewNote[] = [];
-	const noteFor = (
-		id: string,
-		monicaContactId: MonicaId,
-		title: string | null,
-		body: string,
-		isPinned = false,
-		what: SkippedKind = 'note'
-	) => {
-		if (!liveIds.has(monicaContactId)) {
-			skip(what, 'belongsToDeletedContact');
-			return;
-		}
-		notes.push({ id, contactId: contactId(monicaContactId), ...stamp, title, body, isPinned });
+		},
+		skip,
+		warn: (warning) => warnings.push(warning)
 	};
-	for (const n of exp.notes)
-		noteFor(`${prefix}:note:${n.id}`, n.contactId, null, n.body, n.isFavorited);
-	// A Monica gift becomes a gift record (docs/02 §2.25.4) under the id its note had, so a
-	// note left from an earlier import and its gift are one record. One the conversion refuses
-	// — given without a day, a status Monica does not have — stays the note it always was.
-	const gifts: Gift[] = [];
-	for (const g of exp.gifts) {
-		const made = giftFromMonica({
-			name: g.name,
-			status: g.status,
-			day: g.date,
-			comment: g.comment,
-			url: g.url
-		});
-		if (made.ok) {
-			if (!liveIds.has(g.contactId)) {
-				skip('gift', 'belongsToDeletedContact');
-				continue;
-			}
-			gifts.push({
-				id: `${prefix}:gift:${g.id}`,
-				contactId: contactId(g.contactId),
-				...stamp,
-				...made.gift,
-				occasion: null
-			});
-			continue;
-		}
-		const meta = [g.status, g.date ? wording.day(g.date) : null].filter(Boolean).join(', ');
-		const lines = [
-			`🎁 **${g.name}**${meta ? ` — ${meta}` : ''}`,
-			orNull(g.comment),
-			orNull(g.url)
-		].filter(Boolean);
-		noteFor(`${prefix}:gift:${g.id}`, g.contactId, wording.gift, lines.join('\n\n'), false, 'gift');
-	}
-	// ── Tasks → to-dos (docs/02 §2.26.8) ───────────────────────────────────
-	const todos: Todo[] = [];
-	for (const t of exp.tasks) {
-		if (t.contactId === null) {
-			skip('task', 'attachedToNoPerson');
-			continue;
-		}
-		if (!liveIds.has(t.contactId)) {
-			skip('task', 'belongsToDeletedContact');
-			continue;
-		}
-		const title = taskLine(t);
-		if (title === null) {
-			skip('task', 'empty');
-			continue;
-		}
-		const done = taskDone(t, opts.now);
-		todos.push({
-			id: `${prefix}:task:${t.id}`,
-			contactId: contactId(t.contactId),
-			...stamp,
-			title,
-			dueOn: null,
-			doneAt: done?.doneAt ?? null,
-			doneOn: done?.doneOn ?? null,
-			// Monica does not say who ticked it; the import is the importing member's word.
-			doneBy: done ? opts.userId : null
-		});
-	}
 
-	for (const e of exp.lifeEvents) {
-		const head = `📅 **${e.name ?? (e.typeKey ? humanise(e.typeKey) : wording.lifeEvent)}**${e.typeKey && e.name ? ` (${humanise(e.typeKey)})` : ''}`;
-		const when = e.happenedAt ? ` — ${wording.day(e.happenedAt)}` : '';
-		noteFor(
-			`${prefix}:lifeevent:${e.id}`,
-			e.contactId,
-			wording.lifeEvent,
-			[head + when, orNull(e.note)].filter(Boolean).join('\n\n'),
-			false,
-			'lifeEvent'
-		);
-	}
-	for (const p of exp.pets) {
-		noteFor(
-			`${prefix}:pet:${p.id}`,
-			p.contactId,
-			wording.pet,
-			`🐾 **${p.name ?? wording.pet}**${p.category ? `, ${p.category}` : ''}`,
-			false,
-			'pet'
-		);
-	}
-
-	// ── Activities → interactions ───────────────────────────────────────────
-	const interactions: NewInteraction[] = [];
-	for (const a of exp.activities) {
-		const people = a.contactIds.filter((id) => liveIds.has(id));
-		if (people.length === 0) {
-			skip(
-				'activity',
-				a.contactIds.length === 0 ? 'linkedToNoPerson' : 'linkedOnlyToDeletedContacts'
-			);
-			continue;
-		}
-		const [subject, ...participants] = people;
-		const description = [
-			orNull(a.description),
-			a.typeKey ? wording.monicaActivity(humanise(a.typeKey)) : null
-		]
-			.filter(Boolean)
-			.join('\n\n');
-		interactions.push({
-			id: `${prefix}:activity:${a.id}`,
-			contactId: contactId(subject!),
-			...stamp,
-			kind: 'met',
-			happenedAt: a.happenedAt,
-			title: orNull(a.summary),
-			description: orNull(description),
-			participantIds: participants.map(contactId)
-		});
-	}
-
-	// ── Tags ────────────────────────────────────────────────────────────────
-	const tags: NewTag[] = [];
-	const contactTags: { contactId: string; tagId: string }[] = [];
-	for (const t of exp.tags) {
-		const tagId = `${prefix}:tag:${t.id}`;
-		tags.push({
-			id: tagId,
-			householdId: opts.householdId,
-			name: t.name,
-			color: resolveTagColor(null),
-			createdAt: opts.now,
-			updatedAt: opts.now
-		});
-		for (const c of t.contactIds) {
-			if (liveIds.has(c)) contactTags.push({ contactId: contactId(c), tagId });
-		}
-	}
-
-	// ── Photos ──────────────────────────────────────────────────────────────
-	const avatarOf = new Map(
-		live
-			.filter((c) => c.avatarSource === 'photo' && c.avatarPhotoId !== null)
-			.map((c) => [c.avatarPhotoId!, c.id])
-	);
-	const photos: ImportedPhoto[] = [];
-	for (const p of exp.photos) {
-		if (p.contactId === null) {
-			skip('photo', 'attachedToNoPerson');
-			continue;
-		}
-		if (!liveIds.has(p.contactId)) {
-			skip('photo', 'belongsToDeletedContact');
-			continue;
-		}
-		photos.push({
-			id: `${prefix}:photo:${p.id}`,
-			contactId: contactId(p.contactId),
-			sourcePath: p.path,
-			mime: p.mime,
-			sizeBytes: p.sizeBytes,
-			isAvatar: avatarOf.get(p.id) === p.contactId,
-			dataUrl: p.dataUrl
-		});
-	}
+	const contacts = planContacts(exp, live, ctx);
+	const { relationships, relationshipTypes } = planRelationships(exp, ctx);
+	const contactFields = planContactFields(exp, ctx);
+	const { notes, gifts, todos, interactions } = planPersonRecords(exp, ctx);
+	const { tags, contactTags } = planTags(exp, ctx);
+	const photos = planPhotos(exp, live, ctx);
 
 	// ── What has no place in Stella ─────────────────────────────────────────
 	for (const j of exp.journalEntries) {
@@ -610,7 +242,6 @@ export function planMonicaImport(exp: SourceExport, opts: ImportOptions): Import
 		warnings.push({ code: 'jsonNoHowWeMet' });
 	}
 
-	const relationshipTypes = [...customTypes.values()];
 	return {
 		contacts,
 		contactFields,
@@ -640,10 +271,4 @@ export function planMonicaImport(exp: SourceExport, opts: ImportOptions): Import
 			skipped
 		}
 	};
-}
-
-function isBuiltInSymmetric(key: string): boolean {
-	const type = BUILT_IN_RELATIONSHIP_TYPES.find((t) => t.id === key);
-	if (!type) throw new Error(`Relationship type mapping names unknown built-in type ${key}.`);
-	return type.symmetric;
 }

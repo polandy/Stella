@@ -12,7 +12,7 @@ import { joinCircleByName } from '../domain/circles/circles';
 import { listCircles } from '../domain/circles/directory';
 import { listCirclesForContact, listMembers } from '../domain/circles/memberships';
 import { renameCircleRole } from '../domain/circles/rename-role';
-import { createContact } from '../domain/contacts/contacts';
+import { createContact } from '../domain/contacts/create-contact';
 import type { MediaStore } from '../domain/media/avatars';
 import { listGroupPhotosToCut } from '../domain/media/cuts';
 import type { IdGenerator } from '../id';

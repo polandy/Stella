@@ -1,15 +1,6 @@
 import { describe, expect, it } from 'bun:test';
 import {
 	archiveContact,
-	createContact,
-	editProfile,
-	setGender,
-	InvalidGenderError,
-	setJob,
-	JobFieldTooLongError,
-	describeContact,
-	EmptyDescriptionError,
-	NeedsSomethingToKnowThemByError,
 	restoreContact,
 	type Contact,
 	type ContactCreator,
@@ -17,6 +8,16 @@ import {
 	type NewContact,
 	type ProfilePatch
 } from './contacts';
+import { createContact, NeedsSomethingToKnowThemByError } from './create-contact';
+import {
+	editProfile,
+	setGender,
+	InvalidGenderError,
+	setJob,
+	JobFieldTooLongError,
+	describeContact,
+	EmptyDescriptionError
+} from './profile';
 import { contactRepositoryWith, fixedClock, sequentialIds } from '../testing';
 
 /*

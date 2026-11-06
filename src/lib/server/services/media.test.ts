@@ -11,7 +11,7 @@ import type { Clock } from '../clock';
 import { createDrizzleAccountRepository } from '../db/account-repository';
 import { createDrizzleContactRepository } from '../db/contact-repository';
 import * as schema from '../db/schema';
-import { createContact } from '../domain/contacts/contacts';
+import { createContact } from '../domain/contacts/create-contact';
 import { listGallery } from '../domain/media/gallery';
 import { buildStream } from '../domain/stream/stream';
 import type { IdGenerator } from '../id';

@@ -14,7 +14,7 @@ import {
 	listContactFields,
 	removeContactField
 } from '../domain/contact-fields/contact-fields';
-import { createContact } from '../domain/contacts/contacts';
+import { createContact } from '../domain/contacts/create-contact';
 import {
 	addImportantDate,
 	listImportantDates,

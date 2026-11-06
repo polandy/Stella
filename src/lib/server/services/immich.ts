@@ -5,7 +5,8 @@ import { createDrizzleImmichIgnoreRepository } from '../db/immich-ignore-reposit
 import { createDrizzleImmichLinkRepository } from '../db/immich-link-repository';
 import { createDrizzleImmichNameIgnoreRepository } from '../db/immich-name-ignore-repository';
 import type * as schema from '../db/schema';
-import { createContact, type ContactDeps } from '../domain/contacts/contacts';
+import { createContact } from '../domain/contacts/create-contact';
+import type { ContactDeps } from '../domain/contacts/contacts';
 import type { PersonContextReads } from '../domain/contacts/person-context';
 import type { AddFromImmichDeps } from '../domain/immich/add-from-immich';
 import { createImmichConnection, type ImmichConnection } from '../domain/immich/connection';
