@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 # Run the Playwright e2e suite.
 #
-# Chromium cannot run on the NixOS host, so the browser runs inside the pinned Playwright
-# image (`--network host`) while the app server runs here under Bun. Every run starts from a
-# fresh database seeded with the demo dataset, so the suite is deterministic.
+# The browser runs inside the pinned Playwright image (`--network host`), so its build and
+# `TZ` are pinned regardless of host; the app server runs here under Bun. Every run starts
+# from a fresh database seeded with the demo dataset, so the suite is deterministic.
 #   ./e2e/run.sh                 run everything
 #   ./e2e/run.sh --grep moment   pass any Playwright flag through
 #   E2E_PORT=4183 ./e2e/run.sh   use another port, so two worktrees can run side by side

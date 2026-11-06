@@ -3,10 +3,6 @@
 How to self-host **Stella** with Docker, behind your existing reverse proxy, using
 **Authelia** as the OIDC single-sign-on provider.
 
-> This guide documents the target operational setup. Some referenced files (the
-> `Dockerfile`, `docker-compose.yml`) are created during milestone **M0**; the values
-> here are the contract they implement.
-
 ## 7.1 Overview
 
 ```

@@ -208,15 +208,15 @@ Vite never reaches it and it is not built.
 
 `bun run test:e2e` (`e2e/run.sh`) builds the app, starts it on `127.0.0.1:4173` against a
 **fresh** `./data/e2e` database with `SEED_DEMO=true`, and drives it from the pinned
-`mcr.microsoft.com/playwright` image with `--network host` — Chromium does not run on the
-NixOS host. The image tag must match the `@playwright/test` version in `package.json`.
+`mcr.microsoft.com/playwright` image with `--network host`, so the browser build and `TZ` are
+pinned regardless of host. The image tag must match the `@playwright/test` version in `package.json`.
 
 A `setup` project signs in through the one-click demo button once and stores the session; every
 other spec starts from it, which is a page load and a form post saved per test (`signIn()` in
 `e2e/app.ts` falls back to the button when `--grep` filtered the setup project out). All specs
 in one run share one database, so they run serially and **must not depend on each other's
-data** — CI enforces this by splitting the suite across five runners
-(`bunx playwright test --shard`), each with its own freshly seeded server.
+data** — CI enforces this by splitting the suite across several runners
+(`bunx playwright test --shard`; the shard count lives in `.github/workflows/ci.yml`), each with its own freshly seeded server.
 
 **Seed the setting, drive the step.** A case that needs a household's worth of people and
 links before its first assertion brings them in through the archive restore (`seedHousehold`

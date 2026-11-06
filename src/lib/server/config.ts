@@ -83,6 +83,9 @@ const RawSchema = v.object({
 	OIDC_RP_LOGOUT: boolFrom(true)
 });
 
+/** Every variable the schema reads — `.env.example` and docs/04 §4.5 list each one. */
+export const configKeys = Object.keys(RawSchema.entries);
+
 function build() {
 	const raw = v.parse(RawSchema, env);
 

@@ -1,7 +1,7 @@
 /*
  * Rasterises the SVG documents written by `generate.sh` into the PNGs the manifest lists.
  * Runs *inside* the pinned Playwright image (plain Node, no Bun, no project imports), which
- * is the only place a browser runs on the NixOS host.
+ * pins the browser build regardless of host.
  */
 import { readFile, writeFile } from 'node:fs/promises';
 import { chromium } from '@playwright/test';

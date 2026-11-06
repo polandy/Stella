@@ -58,8 +58,8 @@ const frameworkFreeFolders = [
 	'src/lib/graph/view-follow.ts'
 ];
 
-// Files that break a boundary today. They are not refactored here: each is a later item of
-// docs/concepts/architecture-review-2026-10.md, and the list shrinks as those land.
+// Files under a guarded folder that need one framework import by design; the comment above
+// each group says which and why. Anything new belongs in a browser adapter, not on this list.
 const frameworkExceptions = [
 	// Type-only `SubmitFunction` imports: the enhance callbacks these modules build.
 	'src/lib/sync/pending.ts',
