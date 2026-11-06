@@ -10,7 +10,7 @@ import type { Endpoints } from './endpoints';
  */
 
 /** The two labels a type carries, in the order the picker offers them. */
-export const RELATIONSHIP_SIDES = ['forward', 'reverse'] as const;
+const RELATIONSHIP_SIDES = ['forward', 'reverse'] as const;
 
 /** Which of a type's two labels a choice reads. */
 export type RelationshipSide = (typeof RELATIONSHIP_SIDES)[number];

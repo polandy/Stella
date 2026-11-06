@@ -67,7 +67,6 @@ export const search = {
 	'graph.innerLinks.hint': 'Show family, friends and colleagues among the people of a group',
 	'graph.group.label': (p: { role: string; count: number }) => `${p.role} · ${p.count}`,
 	'graph.bundle.count': (p: { count: number }) => `${p.count} links`,
-	'graph.arrange': 'Arrange',
 	'graph.arrange.current': (p: { name: string }) => `Arrange: ${p.name}`,
 	'graph.arrange.force': 'Free',
 	'graph.arrange.force.hint': 'Let the connections pull the map into shape',
@@ -129,7 +128,6 @@ export const search = {
 	'graph.aloneCircle.title': (p: { name: string }) => `Nobody is in ${p.name} yet`,
 	'graph.aloneCircle.hint': 'Add the people who share this circle, and the map grows from there.',
 	'graph.onPerson.label': (p: { name: string }) => `The people around ${p.name}`,
-	'graph.onPerson.loading': 'Drawing the map…',
 	// A phone's small preview of a person's map, grown inside the People card and back
 	// (docs/05 §5.5) — not full screen, which is `graph.fullscreen.enter` on the same preview.
 	'graph.onPerson.enlarge': 'Enlarge map',

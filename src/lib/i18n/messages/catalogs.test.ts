@@ -1,6 +1,19 @@
 import { describe, expect, it } from 'bun:test';
+import { Glob } from 'bun';
+import { readFileSync } from 'node:fs';
 import { de } from './de';
 import { en } from './en';
+
+/**
+ * Every source and spec file outside the catalogues, as one text. A key is in use when it
+ * stands there quoted, or when a template builds it from a prefix (`pwa.install.byHand.${…}`).
+ */
+function sourcesOutsideCatalogues(): string {
+	return [...new Glob('{src,e2e}/**/*.{ts,svelte}').scanSync()]
+		.filter((path) => !path.includes('i18n/messages/'))
+		.map((path) => readFileSync(path, 'utf8'))
+		.join('\n');
+}
 
 /*
  * The compiler already types each German area module against its English counterpart. This
@@ -32,5 +45,17 @@ describe('message catalogues', () => {
 				de[key as keyof typeof de] === value
 		);
 		expect(copied).toEqual([]);
+	});
+
+	it('hold no message nothing says', () => {
+		// Dead copy in two languages drifts unseen, and the parity check above keeps it alive.
+		const text = sourcesOutsideCatalogues();
+		const prefixes = [...text.matchAll(/[`'"]([a-zA-Z][\w.]*\.)\$\{/g)].map((m) => m[1]!);
+		const unused = Object.keys(en).filter(
+			(key) =>
+				![`'${key}'`, `"${key}"`, `\`${key}\``].some((quoted) => text.includes(quoted)) &&
+				!prefixes.some((prefix) => key.startsWith(prefix))
+		);
+		expect(unused).toEqual([]);
 	});
 });

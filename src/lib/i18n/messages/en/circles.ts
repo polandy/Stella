@@ -104,7 +104,6 @@ export const circles = {
 	// The circle's photos (docs/02 §2.4.2).
 	'circles.photos.title': 'Photos',
 	'circles.photos.add': 'Add photos',
-	'circles.photos.none': 'No photos of this circle yet.',
 	'circles.photos.filter': 'Show photos of',
 	'circles.photos.all': 'All',
 	'circles.photos.pictures': 'Pictures',

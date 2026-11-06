@@ -92,16 +92,6 @@ export function layoutNames(cy: Core): string[] {
 	return names;
 }
 
-/** Records the options of every layout the controller asks for, and runs none of them. */
-export function stubLayouts(cy: Core): Record<string, unknown>[] {
-	const asked: Record<string, unknown>[] = [];
-	cy.layout = ((options: Record<string, unknown>) => {
-		asked.push(options);
-		return { run: () => {}, stop: () => {} };
-	}) as unknown as Core['layout'];
-	return asked;
-}
-
 /** Reads back the layout state the controller writes onto the container it was given. */
 export function containerStub() {
 	const attributes: Record<string, string> = {};

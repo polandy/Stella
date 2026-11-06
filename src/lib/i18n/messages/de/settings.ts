@@ -9,7 +9,6 @@ export const settings: SettingsMessages = {
 	'settings.language.label': 'Sprache der Oberfläche',
 	'settings.language.hint':
 		'Stella spricht Deutsch und Englisch. Deine Wahl wird in deinem Profil gespeichert und gilt damit auf jedem Gerät, auf dem du dich anmeldest.',
-	'settings.language.saved': 'Sprache geändert.',
 	'settings.language.unsupported': 'Diese Sprache spricht Stella nicht.',
 	'settings.self.heading': 'Du',
 	'settings.self.label': 'Welche dieser Personen bist du',
@@ -134,8 +133,6 @@ export const settings: SettingsMessages = {
 		'Es läuft keine Regel, bevor du fragst. Bei einem grossen Haushalt dauert das einen Moment.',
 	'settings.relationships.check': 'Alle Beziehungen prüfen',
 	'settings.relationships.checkAgain': 'Erneut prüfen',
-	'settings.relationships.openCount': (p) =>
-		p.count === 1 ? '1 offener Vorschlag' : `${p.count} offene Vorschläge`,
 	'settings.relationships.nothing':
 		'Nichts Offenes. Stella findet in deinem Haushalt nichts, was nicht schon eingetragen ist.',
 	'settings.relationships.openAcross': (p) =>

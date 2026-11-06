@@ -94,7 +94,6 @@ export const errors: ErrorsMessages = {
 	'errors.image.takenAt': 'Das Aufnahmedatum des Fotos kann nicht stimmen.',
 	'errors.image.cropOutside': 'Der gewählte Ausschnitt passt nicht ins Foto.',
 	'errors.image.dimensions': 'Ungültige Bildabmessungen.',
-	'errors.image.couldNotStore': 'Das Foto konnte nicht gespeichert werden.',
 	'errors.caption.tooLong': (p) => `Eine Bildunterschrift darf höchstens ${p.max} Zeichen haben.`,
 
 	'errors.moment.needText': 'Schreib zuerst, was passiert ist.',
@@ -145,7 +144,6 @@ export const errors: ErrorsMessages = {
 	'errors.interaction.gone': 'Diesen Kontakt gibt es nicht mehr.',
 	'errors.tag.needName': 'Bitte gib einen Namen für das Schlagwort ein.',
 	'errors.tag.couldNotAdd': 'Das Schlagwort konnte nicht hinzugefügt werden.',
-	'errors.image.chooseSome': 'Bitte wähle mindestens ein Bild.',
 	'errors.image.chooseOne': 'Bitte wähle ein Bild.',
 	'errors.caption.unreadable': 'Diese Bildunterschrift war nicht zu lesen.',
 	'errors.photo.onlyOwnerCaption': 'Nur wer ein Foto hinzugefügt hat, kann es beschriften.',

@@ -6,7 +6,7 @@ import { hashtagAt, hashtagsIn, tagKey } from './hashtags';
  */
 
 /** Max tags the picker shows. */
-export const TAG_PICKER_LIMIT = 6;
+const TAG_PICKER_LIMIT = 6;
 
 /** A tag the viewer can see, as the shell hands it to every picker. */
 export interface KnownTag {

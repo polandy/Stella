@@ -8,7 +8,7 @@ import type { RoleTerm } from './roles';
  */
 
 /** The card's groups, in the order it shows them. */
-export const PEOPLE_GROUPS = ['family', 'social', 'professional', 'other'] as const;
+const PEOPLE_GROUPS = ['family', 'social', 'professional', 'other'] as const;
 export type PeopleGroup = (typeof PEOPLE_GROUPS)[number];
 
 /**

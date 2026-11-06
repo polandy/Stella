@@ -27,7 +27,7 @@ export interface LetterGroup<T extends DirectoryPerson> {
 }
 
 /** The group for names that start with a digit or a symbol. Sorted last. */
-export const OTHER_LETTER = '#';
+const OTHER_LETTER = '#';
 
 /** Lower-case with accents stripped, so `Émile` files under E and `emile` finds it. */
 function fold(value: string): string {

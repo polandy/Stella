@@ -8,7 +8,7 @@ import { hasMessage, type Translate } from '$lib/i18n/translate';
  */
 
 /** Every table a report can mention, in the order a report reads best. */
-export const RESTORE_TABLES: readonly string[] = [
+const RESTORE_TABLES: readonly string[] = [
 	'contact',
 	'relationship',
 	'relationship_type',

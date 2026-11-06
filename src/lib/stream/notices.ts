@@ -21,7 +21,7 @@ export const CIRCLE_ENTITY = 'circle';
  * The authored records a member other than the author may remove (docs/03 §3.7). A removal of
  * one is logged under its kind as entity type, with facts — never its text (docs/02 §2.11).
  */
-export const REMOVED_RECORD_KINDS = [
+const REMOVED_RECORD_KINDS = [
 	'note',
 	'journal_entry',
 	'interaction',

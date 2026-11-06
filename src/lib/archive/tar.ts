@@ -16,7 +16,7 @@ import { phrase, type Phrase } from '../i18n/phrase';
 export const TAR_BLOCK = 512;
 
 /** ustar keeps the file name in 100 bytes; nothing in an export comes near it. */
-export const MAX_NAME_LENGTH = 100;
+const MAX_NAME_LENGTH = 100;
 
 /** A name the format cannot carry. Thrown rather than truncated: a silently renamed file in a
  * backup is worse than a failed export. */

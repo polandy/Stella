@@ -56,7 +56,7 @@ export interface MembershipCandidate {
  * namesake (*Father of Thomas*), so one is not always enough; a few cover that without
  * sending everyone's whole network.
  */
-export const TIES_KEPT = 3;
+const TIES_KEPT = 3;
 
 const categoryRank = (category: RelationshipCategory) => RELATIONSHIP_CATEGORIES.indexOf(category);
 

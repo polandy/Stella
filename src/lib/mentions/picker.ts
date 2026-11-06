@@ -7,7 +7,7 @@ import { mentionKey, type MentionCandidate } from './mentions';
  */
 
 /** Max suggestions the picker shows. */
-export const PICKER_LIMIT = 5;
+const PICKER_LIMIT = 5;
 
 /** A handle is `@` + letters/digits. The `@` must sit at a boundary (docs/02 §2.20.1). */
 const HANDLE_AT_CARET = /(?<![\p{L}\p{N}@\\])@([\p{L}\p{N}]*)$/u;

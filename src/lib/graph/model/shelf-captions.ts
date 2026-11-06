@@ -25,7 +25,7 @@ export type ShelfCaption =
 	| { kind: 'members'; ids: string[]; more: number };
 
 /** The most people a circle names before the rest become "+N": two names still fit a pill. */
-export const MEMBERS_NAMED = 2;
+const MEMBERS_NAMED = 2;
 
 /**
  * The caption of everybody on the shelf of `onMap` that has one, keyed by id. Ties are read
