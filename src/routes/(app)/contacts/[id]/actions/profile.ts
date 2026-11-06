@@ -8,9 +8,9 @@ import {
 	EmptyContactNameError,
 	JobFieldTooLongError,
 	setGender,
-	setJob,
-	getContact
-} from '$lib/server/domain/contacts/contacts';
+	setJob
+} from '$lib/server/domain/contacts/profile';
+import { getContact } from '$lib/server/domain/contacts/contacts';
 import { InvalidAvatarError, setContactAvatar } from '$lib/server/domain/media/avatars';
 import { editNameParts } from '$lib/server/domain/contacts/name-parts';
 import { takenAtField } from '$lib/server/http/taken-at-field';

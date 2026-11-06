@@ -8,7 +8,7 @@ import { createDrizzleAccountRepository } from '../db/account-repository';
 import { createDrizzleContactRepository } from '../db/contact-repository';
 import * as schema from '../db/schema';
 import { seedRelationshipTypes } from '../db/seed';
-import { createContact } from '../domain/contacts/contacts';
+import { createContact } from '../domain/contacts/create-contact';
 import { readFamilyOf } from '../domain/relationships/family';
 import { createRelationshipType } from '../domain/relationships/relationship-types';
 import { createRelationship } from '../domain/relationships/relationships';

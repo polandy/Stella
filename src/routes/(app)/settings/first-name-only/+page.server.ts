@@ -1,7 +1,7 @@
 import { error, fail } from '@sveltejs/kit';
 import { requireUser, requireViewer } from '$lib/server/auth/guards';
 import * as v from 'valibot';
-import { describeContact, EmptyDescriptionError } from '$lib/server/domain/contacts/contacts';
+import { describeContact, EmptyDescriptionError } from '$lib/server/domain/contacts/profile';
 import { listContacts } from '$lib/server/domain/contacts/directory';
 import { contextOfPeople } from '$lib/server/domain/contacts/person-context';
 import { say, translator } from '$lib/server/i18n/say';

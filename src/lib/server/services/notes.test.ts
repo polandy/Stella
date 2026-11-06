@@ -8,7 +8,7 @@ import type { Clock } from '../clock';
 import { createDrizzleAccountRepository } from '../db/account-repository';
 import { createDrizzleContactRepository } from '../db/contact-repository';
 import * as schema from '../db/schema';
-import { createContact } from '../domain/contacts/contacts';
+import { createContact } from '../domain/contacts/create-contact';
 import { listMentionedIn } from '../domain/mentions/mentioned-in';
 import { createNote, listNotesForContact, setNoteMentions } from '../domain/notes/notes';
 import type { IdGenerator } from '../id';

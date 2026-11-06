@@ -9,7 +9,7 @@ import { createDrizzleAccountRepository } from '../db/account-repository';
 import { createDrizzleContactRepository } from '../db/contact-repository';
 import * as schema from '../db/schema';
 import { ensureSearchIndex } from '../db/search-index';
-import { createContact } from '../domain/contacts/contacts';
+import { createContact } from '../domain/contacts/create-contact';
 import { authorNames, membersViewerFirst } from '../domain/household/members';
 import { listMemberAccounts, removeMember } from '../domain/household/remove-member';
 import { search } from '../domain/search/search';

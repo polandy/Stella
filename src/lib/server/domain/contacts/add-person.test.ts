@@ -2,7 +2,8 @@ import { describe, expect, it } from 'bun:test';
 import type { ContactAddPayload } from '../../../commands/commands';
 import type { Viewer } from '../../access/visibility';
 import { addPerson, type AddPersonDeps } from './add-person';
-import { NeedsSomethingToKnowThemByError, type Contact, type NewContact } from './contacts';
+import { NeedsSomethingToKnowThemByError } from './create-contact';
+import type { Contact, NewContact } from './contacts';
 import { contactRepositoryWith, fixedClock, sequentialIds } from '../testing';
 
 /*

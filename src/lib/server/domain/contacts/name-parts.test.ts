@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'bun:test';
 import type { Contact } from './contacts';
 import { editNameParts, type NameRepository, type NameWrite } from './name-parts';
-import { EmptyContactNameError } from './contacts';
+import { EmptyContactNameError } from './profile';
 import type { ActivityOf } from '../activity/activity';
 
 /*
