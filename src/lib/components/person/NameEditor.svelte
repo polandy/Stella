@@ -1,7 +1,6 @@
 <script lang="ts">
 	import Swap from '$lib/components/ui/Swap.svelte';
 	import { enhance } from '$app/forms';
-	import { tick } from 'svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import FormError from '$lib/components/ui/FormError.svelte';
 	import Icon from '$lib/components/ui/Icon.svelte';
@@ -9,8 +8,7 @@
 	import { withNameParts } from '$lib/people/display-name';
 	import { GENDERS, type Gender } from '$lib/people/gender';
 	import { reachability } from '$lib/pwa/reachability.svelte';
-	import { focusDestination } from '$lib/ui/focus-destination';
-	import { focusLeftForm, owesFocusBack } from '$lib/ui/focus-return';
+	import { FocusReturn } from '$lib/ui/focus-return.svelte';
 	import { useRemovals } from '$lib/undo/context.svelte';
 	import { savedEnhance } from '$lib/undo/saved';
 
@@ -119,23 +117,9 @@
 
 	// Focus goes back to the name once the editor closes, so the next Tab carries on from here.
 	let trigger = $state<HTMLButtonElement | null>(null);
-	let focusInForm = false;
-	let wasOpen = false;
-	function onFocusOut(event: FocusEvent) {
-		const formEl = event.currentTarget as HTMLFormElement;
-		if (focusLeftForm(focusDestination(formEl, event.relatedTarget))) focusInForm = false;
-	}
+	const focusBack = new FocusReturn(() => trigger);
 	$effect(() => {
-		const justClosed = wasOpen && !open;
-		wasOpen = open;
-		if (!justClosed) return;
-		const hadFocusInside = focusInForm;
-		focusInForm = false;
-		void tick().then(() => {
-			const active = document.activeElement;
-			const focusNow = active === null || active === document.body ? 'page' : 'elsewhere';
-			if (owesFocusBack({ hadFocusInside, focusNow })) trigger?.focus();
-		});
+		focusBack.follow(open);
 	});
 
 	const FIELD =
@@ -157,8 +141,8 @@
 		action="?/editNameParts"
 		use:enhance={saved}
 		onkeydown={onKeydown}
-		onfocusin={() => (focusInForm = true)}
-		onfocusout={onFocusOut}
+		onfocusin={focusBack.focusin}
+		onfocusout={focusBack.focusout}
 		class="mt-2 flex flex-col gap-2 rounded-app bg-bg-sunken p-3 pointer-coarse:gap-3"
 		data-testid="name-editor"
 	>

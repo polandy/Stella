@@ -7,18 +7,21 @@ import { syncModal, type ModalDialog } from './modal';
  * changed, and the opener's fresh start runs once per opening, not on every effect run.
  */
 
-function fakeDialog(open = false) {
+function fakeDialog(startOpen = false) {
 	const calls: string[] = [];
+	let open = startOpen;
 	const dialog: ModalDialog = {
-		open,
+		get open() {
+			return open;
+		},
 		showModal() {
-			if (this.open) throw new Error('InvalidStateError');
+			if (open) throw new Error('InvalidStateError');
 			calls.push('showModal');
-			this.open = true;
+			open = true;
 		},
 		close() {
 			calls.push('close');
-			this.open = false;
+			open = false;
 		}
 	};
 	return { dialog, calls };

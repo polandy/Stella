@@ -5,8 +5,7 @@
 	import Button from './Button.svelte';
 	import Icon from './Icon.svelte';
 	import { FIELD_SELECTOR, firstField } from './first-field';
-	import { focusLeftForm, owesFocusBack } from '$lib/ui/focus-return';
-	import { focusDestination } from '$lib/ui/focus-destination';
+	import { FocusReturn } from '$lib/ui/focus-return.svelte';
 	import { reveal, settleOpenedForm, showOpenedForm } from '$lib/motion/motion.svelte';
 	import { openedFormGlide } from '$lib/motion/motion';
 	import type { IconName } from './icons';
@@ -122,16 +121,10 @@
 	 * the cursor into it would skip the error message the reader arrived for.
 	 */
 	let wasExpanded = false;
-	/*
-	 * Whether the cursor is in the form. A save or a cancel closes it and takes the focused
-	 * field with it; the browser then drops focus on the page, and the next Tab would start at
-	 * the top. Tracked from the form's own focus events, because by the time it has closed the
-	 * field is gone and there is nothing left to ask (WCAG 2.4.3).
-	 */
-	let focusInForm = false;
-	function onFocusOut(event: FocusEvent) {
-		if (form && focusLeftForm(focusDestination(form, event.relatedTarget))) focusInForm = false;
-	}
+	// A save or a cancel closes the form under the cursor; focus goes back to its button.
+	const focusBack = new FocusReturn(() =>
+		card?.querySelector<HTMLElement>('[data-section-toggle]')
+	);
 
 	function toggle() {
 		open = !expanded;
@@ -146,15 +139,7 @@
 		if (expanded && !wasExpanded) openGlide.opening();
 		wasExpanded = expanded;
 		if (justClosed) {
-			const hadFocusInside = focusInForm;
-			focusInForm = false;
-			void tick().then(() => {
-				const active = document.activeElement;
-				const focusNow = active === null || active === document.body ? 'page' : 'elsewhere';
-				if (owesFocusBack({ hadFocusInside, focusNow })) {
-					card?.querySelector<HTMLElement>('[data-section-toggle]')?.focus();
-				}
-			});
+			focusBack.closed();
 			return;
 		}
 		if (!justOpened || !form) return;
@@ -234,8 +219,8 @@
 			onintroend={keepFormInView}
 			role="group"
 			onkeydown={onKeydown}
-			onfocusin={() => (focusInForm = true)}
-			onfocusout={onFocusOut}
+			onfocusin={focusBack.focusin}
+			onfocusout={focusBack.focusout}
 			class={empty === undefined ? 'mb-3 border-b border-border-subtle pb-3' : undefined}
 		>
 			<FormError message={error} class="mb-3" />

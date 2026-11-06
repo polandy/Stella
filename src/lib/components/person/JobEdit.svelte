@@ -5,11 +5,10 @@
 	import FormError from '$lib/components/ui/FormError.svelte';
 	import { useTranslate } from '$lib/i18n/context.svelte';
 	import { JOB_FIELD_MAX_LENGTH, type JobEditorPlace } from '$lib/people/job';
-	import { focusDestination } from '$lib/ui/focus-destination';
-	import { focusLeftForm, owesFocusBack } from '$lib/ui/focus-return';
+	import { FocusReturn } from '$lib/ui/focus-return.svelte';
 	import { useRemovals } from '$lib/undo/context.svelte';
 	import { savedEnhance } from '$lib/undo/saved';
-	import { tick, type Snippet } from 'svelte';
+	import type { Snippet } from 'svelte';
 
 	/*
 	 * A person's job, edited where it is read (docs/02 §2.2): the profile card's *Job* row and the
@@ -83,23 +82,9 @@
 
 	// And hand focus back to the trigger once the editor goes, as `InlineEdit` does (WCAG 2.4.3).
 	let trigger = $state<HTMLButtonElement | null>(null);
-	let focusInForm = false;
-	let wasOpen = false;
-	function onFocusOut(event: FocusEvent) {
-		const formEl = event.currentTarget as HTMLFormElement;
-		if (focusLeftForm(focusDestination(formEl, event.relatedTarget))) focusInForm = false;
-	}
+	const focusBack = new FocusReturn(() => trigger);
 	$effect(() => {
-		const justClosed = wasOpen && !open;
-		wasOpen = open;
-		if (!justClosed) return;
-		const hadFocusInside = focusInForm;
-		focusInForm = false;
-		void tick().then(() => {
-			const active = document.activeElement;
-			const focusNow = active === null || active === document.body ? 'page' : 'elsewhere';
-			if (owesFocusBack({ hadFocusInside, focusNow })) trigger?.focus();
-		});
+		focusBack.follow(open);
 	});
 </script>
 
@@ -109,8 +94,8 @@
 		method="POST"
 		action="?/setJob"
 		use:enhance={saved}
-		onfocusin={() => (focusInForm = true)}
-		onfocusout={onFocusOut}
+		onfocusin={focusBack.focusin}
+		onfocusout={focusBack.focusout}
 		class="flex flex-col gap-2 {formClass}"
 		data-testid="job-editor"
 	>
