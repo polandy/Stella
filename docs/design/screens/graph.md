@@ -75,7 +75,10 @@ card (§5.5.2); its styling is §5.8.
 - Both icon buttons carry their name as a tooltip.
 - With a mouse, and on every touch device except iPadOS/iOS Safari (Android, a touch laptop),
   full screen is the browser's own Fullscreen API; Esc leaves it too.
-- On iPadOS/iOS Safari full screen is an app-level overlay; only the button leaves it.
+- On iPadOS/iOS Safari full screen is an app-level overlay; the button leaves it, and so does
+  Esc from an attached keyboard once nothing inside (a selection, an open menu) took it first.
+  It is a fixed region, not a modal dialog: the page behind stays reachable, so nothing
+  claims it is not.
 - Where neither is available the button is absent.
 
 ### Why

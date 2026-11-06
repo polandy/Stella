@@ -569,8 +569,6 @@
 	class:fixed={overlay}
 	class:inset-0={overlay}
 	class:z-50={overlay}
-	role={overlay ? 'dialog' : undefined}
-	aria-modal={overlay ? 'true' : undefined}
 >
 	<GraphCanvas
 		bind:container

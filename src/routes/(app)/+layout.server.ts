@@ -14,6 +14,8 @@ import type { LayoutServerLoad } from './$types';
  * navigation keeps it; `app:people` is what the shell reloads when its stamp has gone stale.
  * The tags the viewer can see ride along for the `#` list (docs/02 §2.20.2), for the same reason.
  * `immichLibrary` says whether a photo can come from Immich beside an upload (docs/02 §2.24.9).
+ * `timeZone` is the household's — the zone the server runs in (`TZ`, docs/07) — so a page drawn
+ * here and come alive in the browser agree on what *Today* is (docs/02 §2.22.2).
  *
  * Opening Stella also syncs the linked Nextcloud book when it is due (docs/02 §2.16.3), without
  * the page waiting for it.
@@ -43,6 +45,7 @@ export const load: LayoutServerLoad = async ({ locals, depends }) => {
 		user: locals.user,
 		...people,
 		entryTags,
-		immichLibrary: locals.services.immich !== null
+		immichLibrary: locals.services.immich !== null,
+		timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone
 	};
 };

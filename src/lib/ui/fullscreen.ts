@@ -24,3 +24,13 @@ export const dismissesFullscreenOnDrag = ({
 	/iPad|iPhone|iPod/.test(userAgent) ||
 	// iPadOS reports itself as a Mac; a Mac never has touch points, so this only matches an iPad.
 	(platform === 'MacIntel' && maxTouchPoints > 1);
+
+/**
+ * Whether a key leaves the app-level full screen: Escape, as it leaves the browser's own —
+ * unless something inside (the canvas letting go of a selection, a menu closing) took it first.
+ */
+export const leavesOverlayOn = ({
+	key,
+	defaultPrevented
+}: Pick<KeyboardEvent, 'key' | 'defaultPrevented'>): boolean =>
+	key === 'Escape' && !defaultPrevented;

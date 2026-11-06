@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { tick, untrack } from 'svelte';
+	import { tick } from 'svelte';
 	import { enhance } from '$app/forms';
 	import Button from '$lib/components/ui/Button.svelte';
 	import Icon from '$lib/components/ui/Icon.svelte';
@@ -24,11 +24,10 @@
 	const removals = useRemovals();
 	const device = veil.device;
 
-	// Follows the stored choice; flipped at once on a tap so the switch never lags the finger.
-	let on = $state(untrack(() => blurPrivate));
-	$effect(() => {
-		on = blurPrivate;
-	});
+	// The stored choice, except while a tap is being saved: then the switch shows the tap, so it
+	// never lags the finger. Settled, it follows the stored choice again.
+	let saving = $state<boolean | null>(null);
+	const on = $derived(saving ?? blurPrivate);
 	let blurForm = $state<HTMLFormElement>();
 
 	let busy = $state(false);
@@ -75,12 +74,13 @@
 			use:enhance={() =>
 				async ({ result, update }) => {
 					if (result.type !== 'success') {
-						on = blurPrivate;
+						saving = null;
 						removals.notify(t('privacy.settings.blurFailed'));
 						return;
 					}
 					await update({ reset: false });
 					removals.notify(t(on ? 'privacy.settings.blurOn' : 'privacy.settings.blurOff'));
+					saving = null;
 				}}
 		>
 			<label for="blur-private" class="min-w-0 flex-1">
@@ -96,7 +96,7 @@
 					role="switch"
 					name="blur"
 					class="peer absolute inset-0 z-10 cursor-pointer opacity-0"
-					bind:checked={on}
+					bind:checked={() => on, (checked) => (saving = checked)}
 					onchange={() => blurForm?.requestSubmit()}
 				/>
 				<span

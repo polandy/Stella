@@ -1,4 +1,4 @@
-import { dismissesFullscreenOnDrag } from '$lib/ui/fullscreen';
+import { dismissesFullscreenOnDrag, leavesOverlayOn } from '$lib/ui/fullscreen';
 import { scrollingAncestor } from '$lib/ui/keep-place';
 
 /** Full screen for the explorer's frame, whichever way this device supports it. */
@@ -26,7 +26,9 @@ export interface FrameFullscreen {
  *   ran, because no pointer event fires for it). These devices (`dismissesFullscreenOnDrag`)
  *   get an app-level full screen instead: a fixed overlay over the whole viewport that is never
  *   handed to the browser, so there is no native gesture that can dismiss it — only the
- *   button. Android and other touch devices don't have this quirk, so they keep the native
+ *   button, or Escape from a keyboard. It is not announced as a modal dialog: nothing behind
+ *   it is made inert, and "modal" would tell a screen reader the page behind is out of reach
+ *   when it is still in the tab order. Android and other touch devices don't have this quirk, so they keep the native
  *   Fullscreen API like a mouse does.
  * Where neither is available (no Fullscreen API and not one of these devices) the button is
  * simply absent.
@@ -78,6 +80,20 @@ export function frameFullscreen(getFrame: () => HTMLElement): FrameFullscreen {
 		return () => {
 			scroller.style.overflow = previous;
 		};
+	});
+
+	// Escape leaves the overlay, as it leaves the browser's own full screen. Heard on the frame,
+	// after whatever inside it (the canvas, a menu) had the chance to take the key first.
+	$effect(() => {
+		if (!usesCssFullscreen || !fullscreen) return;
+		const frame = getFrame();
+		const onKeydown = (event: KeyboardEvent) => {
+			if (!leavesOverlayOn(event)) return;
+			event.preventDefault();
+			fullscreen = false;
+		};
+		frame.addEventListener('keydown', onKeydown);
+		return () => frame.removeEventListener('keydown', onKeydown);
 	});
 
 	return {
