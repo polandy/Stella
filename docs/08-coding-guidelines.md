@@ -378,6 +378,9 @@ A change is done when:
 
 - **Exact, pinned versions only.** No `^` or `~` ranges in `package.json` — every
   dependency is a single fixed version.
+- **One Bun version.** `packageManager` in `package.json` is the pin; CI reads it
+  (`bun-version-file`), and the Dockerfile's `BUN_VERSION` and `@types/bun` repeat it —
+  `src/bun-version.test.ts` fails when they drift. Bump all three in one commit.
 - **Committed lockfile is authoritative.** `bun.lock` carries the exact resolved tree and
   per-package integrity hashes; it is always committed.
 - **Enforced automatically:** `bunfig.toml` (`[install] exact = true`) and `.npmrc`

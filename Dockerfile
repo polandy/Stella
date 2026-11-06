@@ -1,7 +1,10 @@
 # syntax=docker/dockerfile:1
 
+# The runtime is the `packageManager` pin in package.json; src/bun-version.test.ts keeps them equal.
+ARG BUN_VERSION=1.4.4
+
 # --- Build stage: install everything and build the SvelteKit server ---
-FROM oven/bun:1.3.13-slim AS build
+FROM oven/bun:${BUN_VERSION}-slim AS build
 WORKDIR /app
 
 COPY package.json bun.lock ./
@@ -11,7 +14,7 @@ COPY . .
 RUN bun run build
 
 # --- Runtime stage: production deps only + the built server ---
-FROM oven/bun:1.3.13-slim AS runtime
+FROM oven/bun:${BUN_VERSION}-slim AS runtime
 WORKDIR /app
 ENV NODE_ENV=production \
     PORT=3000 \
