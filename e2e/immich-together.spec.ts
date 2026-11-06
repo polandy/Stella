@@ -1,7 +1,15 @@
 import { expect, test, type Locator, type Page } from '@playwright/test';
 import { immich as en } from '../src/lib/i18n/messages/en/immich';
 import { immich as de } from '../src/lib/i18n/messages/de/immich';
-import { addPerson, appReady, editPeople, recordAction, signIn, unfoldPeople } from './app';
+import {
+	addPerson,
+	appReady,
+	editPeople,
+	recordAction,
+	releaseSelfClaim,
+	signIn,
+	unfoldPeople
+} from './app';
 
 /*
  * Photos of two people together, from Immich (docs/02 §2.24.8): the chips over a person's
@@ -45,13 +53,7 @@ test.afterEach(async ({ page }) => {
 	const english = page.getByRole('button', { name: 'English' });
 	await expect(english).toBeVisible();
 	if ((await english.getAttribute('aria-current')) !== 'true') await english.click();
-	await expect(page.getByRole('heading', { name: 'Settings', exact: true })).toBeVisible();
-	await appReady(page);
-	const letGo = page.getByRole('button', { name: 'None of them is me' });
-	if (await letGo.isVisible()) {
-		await letGo.click();
-		await expect(letGo).toBeHidden();
-	}
+	await releaseSelfClaim(page);
 	while (linkedHere.length > 0) await unlink(page, linkedHere.pop()!);
 });
 

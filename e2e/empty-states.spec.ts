@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
-import { addPerson, appReady, recordAction, signIn } from './app';
+import { addPerson, appReady, recordAction, releaseSelfClaim, signIn } from './app';
 
 /*
  * Empty screens as invitations, and adding yourself (docs/02 §2.1.3, §2.22.3, docs/05 §5.10).
@@ -47,12 +47,7 @@ test.beforeEach(async ({ page }) => {
 test.describe('adding yourself', () => {
 	// Who you are lives in the profile and the suite shares one database: give it back.
 	test.afterEach(async ({ page }) => {
-		await page.goto('/settings');
-		const letGo = page.getByRole('button', { name: 'None of them is me' });
-		if (await letGo.isVisible()) {
-			await letGo.click();
-			await expect(letGo).toBeHidden();
-		}
+		await releaseSelfClaim(page);
 	});
 
 	test('Settings offers to add yourself when you are not in the list, and the new person is you', async ({

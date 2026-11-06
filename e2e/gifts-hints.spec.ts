@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
-import { addPerson, appReady, fillDate, signIn } from './app';
+import { addPerson, appReady, fillDate, isoDaysAfter, serverToday, signIn } from './app';
 
 /*
  * What helps before an occasion (docs/02 §2.25.2, §2.25.5): the *already given* hint under a
@@ -62,13 +62,15 @@ test('a person coming up with open ideas says how many, linking to their gifts',
 	page
 }) => {
 	const last = `Imhof${runLetters()}`;
-	// Today, so they lead the band whatever else the shared database has coming up.
-	const today = new Date().toISOString().slice(5, 10);
+	// The server's tomorrow, so they lead the band whatever else the shared database has coming
+	// up — and still do as today when a run steps over midnight, where a birthday of today would
+	// drop out of the band (docs/08 §8.4.2).
+	const tomorrow = isoDaysAfter(await serverToday(page), 1).slice(5);
 	await page.goto('/contacts/new');
 	await page.getByLabel('First name').fill('Severin');
 	await page.getByLabel('Last name').fill(last);
 	await page.getByText('More — nickname, birthday').click();
-	await fillDate(page.locator('form'), 'Birthday', `1980-${today}`);
+	await fillDate(page.locator('form'), 'Birthday', `1980-${tomorrow}`);
 	await page.getByRole('button', { name: 'Add person' }).click();
 	const name = `Severin ${last}`;
 	await expect(page.getByRole('heading', { name })).toBeVisible();

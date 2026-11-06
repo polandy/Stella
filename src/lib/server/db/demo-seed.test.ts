@@ -12,6 +12,7 @@ import {
 } from './demo-seed';
 import * as schema from './schema';
 import { seedRelationshipTypes } from './seed';
+import { fixedClock } from '../domain/testing';
 
 /*
  * Spec for the Brunner demo seed: it must produce a self-consistent dataset (foreign keys
@@ -30,9 +31,12 @@ const stubHash = (password: string) => `stub-hash:${password}`;
 
 let db: BunSQLiteDatabase<typeof schema>;
 
-/** Seeds without paying for Argon2id. */
+/** The day the seed "runs": its relative dates are counted from here, not the wall clock. */
+const SEEDED_AT = Date.UTC(2026, 10, 6, 12);
+
+/** Seeds without paying for Argon2id, on a clock that stands still. */
 const seed = (database: BunSQLiteDatabase<typeof schema>) =>
-	seedDemoData(database, { hashPassword: stubHash });
+	seedDemoData(database, { hashPassword: stubHash, clock: fixedClock(SEEDED_AT) });
 
 beforeEach(() => {
 	const sqlite = new Database(':memory:');
@@ -190,17 +194,19 @@ describe('seedDemoData', () => {
 	it('leaves Peter to-dos of every standing — overdue, soon, no day — and one done', () => {
 		seed(db);
 		const todos = db
-			.select({ dueOn: schema.todo.dueOn, doneAt: schema.todo.doneAt })
+			.select({ dueOn: schema.todo.dueOn, doneOn: schema.todo.doneOn })
 			.from(schema.todo)
 			.where(eq(schema.todo.contactId, 'demo-c-peter'))
 			.all();
-		const today = new Date().toISOString().slice(0, 10);
-		const open = todos.filter((t) => t.doneAt === null);
+		const open = todos
+			.filter((t) => t.doneOn === null)
+			.map((t) => t.dueOn)
+			.sort();
+		const done = todos.filter((t) => t.doneOn !== null).map((t) => t.doneOn);
 
-		expect(open.some((t) => t.dueOn !== null && t.dueOn < today)).toBe(true);
-		expect(open.some((t) => t.dueOn !== null && t.dueOn > today)).toBe(true);
-		expect(open.some((t) => t.dueOn === null)).toBe(true);
-		expect(todos.some((t) => t.doneAt !== null)).toBe(true);
+		// Seeded on 2026-11-06: four days overdue, due in three and in forty days, one undated.
+		expect(open).toEqual([null, '2026-11-02', '2026-11-09', '2026-12-16'].sort());
+		expect(done).toEqual(['2026-10-31']);
 	});
 
 	it('is idempotent — reseeding does not duplicate rows', () => {

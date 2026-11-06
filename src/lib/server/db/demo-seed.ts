@@ -5,6 +5,7 @@ import { relationshipPair } from '../../relationships/endpoints';
 import { todayFor } from '../../dates/today';
 import { extractMentionIds, mentionToken, mentionsOtherThan } from '../../mentions/mentions';
 import { hashPasswordSync } from '../auth/password';
+import { systemClock, type Clock } from '../clock';
 import {
 	circle,
 	circleMembership,
@@ -873,6 +874,11 @@ export interface DemoSeedDeps {
 	 * or circles made the suite slow enough to trip its own timeout.
 	 */
 	hashPassword?: HashPassword;
+	/**
+	 * Defaults to the system clock. Every "today", "recent" and "years back" date in the
+	 * dataset is counted from it, so a test passes a fixed one and asserts exact days.
+	 */
+	clock?: Clock;
 }
 
 /**
@@ -893,7 +899,7 @@ export function seedDemoData(
 	);
 
 	const displayName = (p: Person) => `${p.first} ${p.last}`;
-	const now = Date.now();
+	const now = (deps.clock ?? systemClock).now();
 	const seededAt = now - SEED_AGE_DAYS * DAY_MS;
 
 	db.insert(contact)

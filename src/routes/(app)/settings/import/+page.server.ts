@@ -74,7 +74,11 @@ export const actions = {
 				wording: importWording(locals),
 				locale: locals.locale
 			});
-			await pruneStagedDumps(getConfig().importDir, STAGED_DUMP_MAX_AGE_MS);
+			await pruneStagedDumps(
+				getConfig().importDir,
+				STAGED_DUMP_MAX_AGE_MS,
+				locals.services.archive.importDeps.clock.now()
+			);
 			const token = await stageDump(getConfig().importDir, text);
 			return {
 				step: 'preview' as const,

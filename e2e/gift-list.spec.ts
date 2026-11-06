@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
-import { addPerson, appReady, fillDate, signIn } from './app';
+import { addPerson, appReady, fillDate, isoDaysAfter, serverToday, signIn } from './app';
 import { UNDO_WINDOW_MS } from '../src/lib/undo/pending-removals';
 
 /*
@@ -18,14 +18,18 @@ function runLetters(): string {
 	).join('');
 }
 
-/** A new person whose birthday is today — e2e runs pin `TZ=UTC` on both sides. */
-async function addPersonBornToday(page: Page, first: string, last: string): Promise<void> {
-	const today = new Date().toISOString().slice(5, 10);
+/**
+ * A new person whose birthday is the server's tomorrow. Tomorrow rather than today: a run that
+ * steps over midnight turns it into today, still next on the list, where a birthday of today
+ * would become one a year away (docs/08 §8.4.2).
+ */
+async function addPersonBornTomorrow(page: Page, first: string, last: string): Promise<void> {
+	const tomorrow = isoDaysAfter(await serverToday(page), 1).slice(5);
 	await page.goto('/contacts/new');
 	await page.getByLabel('First name').fill(first);
 	await page.getByLabel('Last name').fill(last);
 	await page.getByText('More — nickname, birthday').click();
-	await fillDate(page.locator('form'), 'Birthday', `1980-${today}`);
+	await fillDate(page.locator('form'), 'Birthday', `1980-${tomorrow}`);
 	await page.getByRole('button', { name: 'Add person' }).click();
 	await expect(page.getByRole('heading', { name: `${first} ${last}` })).toBeVisible();
 	await appReady(page);
@@ -47,10 +51,10 @@ const group = (page: Page, name: string) =>
 test('the palette opens the list, whoever’s occasion comes next on top', async ({ page }) => {
 	await signIn(page);
 	const letters = runLetters();
-	// Born today, so they come first whatever else the shared database holds; on Christmas Eve
-	// both share the day and the name still puts them first.
+	// Born tomorrow, so they come first whatever else the shared database holds; on Christmas Eve
+	// and the day before both share the day and the name still puts them first.
 	const soon = `Aurelio Quendt${letters}`;
-	await addPersonBornToday(page, 'Aurelio', `Quendt${letters}`);
+	await addPersonBornTomorrow(page, 'Aurelio', `Quendt${letters}`);
 	await addIdea(page, `Telescope ${letters}`);
 	// No birthday: their ideas are for Christmas Eve.
 	const later = `Zenobia Quendt${letters}`;
@@ -73,7 +77,8 @@ test('the palette opens the list, whoever’s occasion comes next on top', async
 	expect(names.map((name) => name.trim()).indexOf(soon)).toBeLessThan(
 		names.map((name) => name.trim()).indexOf(later)
 	);
-	await expect(group(page, soon).getByTestId('gift-list-next')).toContainText('today');
+	// Tomorrow, or today once a run has stepped over midnight (docs/08 §8.4.2).
+	await expect(group(page, soon).getByTestId('gift-list-next')).toContainText(/tomorrow|today/);
 	await expect(group(page, later).getByTestId('gift-list-next')).toHaveText(/^\s*Christmas /);
 });
 

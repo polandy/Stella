@@ -39,8 +39,12 @@ export async function discardStagedDump(dir: string, token: string): Promise<voi
 	await rm(pathOf(dir, token), { force: true });
 }
 
-/** Remove staged dumps older than `maxAgeMs`; returns how many went. */
-export async function pruneStagedDumps(dir: string, maxAgeMs: number): Promise<number> {
+/** Remove staged dumps older than `maxAgeMs` at `now` (epoch ms); returns how many went. */
+export async function pruneStagedDumps(
+	dir: string,
+	maxAgeMs: number,
+	now: number
+): Promise<number> {
 	let removed = 0;
 	let names: string[];
 	try {
@@ -48,7 +52,7 @@ export async function pruneStagedDumps(dir: string, maxAgeMs: number): Promise<n
 	} catch {
 		return 0; // nothing staged yet
 	}
-	const cutoff = Date.now() - maxAgeMs;
+	const cutoff = now - maxAgeMs;
 	for (const name of names) {
 		if (!name.endsWith('.sql')) continue;
 		const path = join(dir, name);
