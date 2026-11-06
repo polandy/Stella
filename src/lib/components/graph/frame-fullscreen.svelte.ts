@@ -82,18 +82,22 @@ export function frameFullscreen(getFrame: () => HTMLElement): FrameFullscreen {
 		};
 	});
 
-	// Escape leaves the overlay, as it leaves the browser's own full screen. Heard on the frame,
-	// after whatever inside it (the canvas, a menu) had the chance to take the key first.
+	// Escape leaves the overlay, as it leaves the browser's own full screen — once whatever
+	// inside it (the canvas, a menu) had the chance to take the key first. Heard on the window:
+	// Svelte delegates `onkeydown` to the app's root, so a listener on the frame itself would run
+	// before those handlers and never see them take it.
 	$effect(() => {
 		if (!usesCssFullscreen || !fullscreen) return;
 		const frame = getFrame();
 		const onKeydown = (event: KeyboardEvent) => {
-			if (!leavesOverlayOn(event)) return;
+			const from = event.target;
+			const inOverlay = from === document.body || (from instanceof Node && frame.contains(from));
+			if (!inOverlay || !leavesOverlayOn(event)) return;
 			event.preventDefault();
 			fullscreen = false;
 		};
-		frame.addEventListener('keydown', onKeydown);
-		return () => frame.removeEventListener('keydown', onKeydown);
+		window.addEventListener('keydown', onKeydown);
+		return () => window.removeEventListener('keydown', onKeydown);
 	});
 
 	return {

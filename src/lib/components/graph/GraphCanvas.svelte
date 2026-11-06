@@ -29,6 +29,8 @@
 		onActivate: (id: string) => Promise<void>;
 		/** Escape: let go of what is selected or being picked. */
 		onClear: () => void;
+		/** Whether there is anything for Escape to let go of; if not, the key is left alone. */
+		clearable: boolean;
 	}
 	let {
 		container = $bindable(),
@@ -42,7 +44,8 @@
 		positions,
 		markCursor,
 		onActivate,
-		onClear
+		onClear,
+		clearable
 	}: Props = $props();
 
 	const t = useTranslate();
@@ -92,6 +95,8 @@
 		if (event.altKey || event.ctrlKey || event.metaKey) return;
 		const action = keyFor(event.key);
 		if (!action) return;
+		// Nothing to let go of: Escape goes on to what holds the map (the touch full screen).
+		if (action.kind === 'clear' && !clearable) return;
 		event.preventDefault();
 		keyboardOnCanvas = true;
 		if (action.kind === 'move') placeCursor(action.to);

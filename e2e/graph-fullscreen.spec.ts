@@ -58,6 +58,39 @@ test('full screen on touch is an app overlay covering the viewport, not a modal 
 });
 
 /*
+ * Escape from a keyboard (an iPad with one attached) leaves the overlay, as it leaves the
+ * browser's own full screen — but only once the map has nothing left to let go of: the first
+ * Escape on a selection takes back the selection and the page stays full screen.
+ */
+test('Escape on the map lets go of the selection first, and leaves full screen after', async ({
+	page
+}) => {
+	await page.goto('/graph?center=demo-c-hans');
+	const canvas = page.getByRole('application', { name: 'Relationship map' });
+	await expect(canvas).toBeVisible();
+	await settled(page);
+
+	await page.getByRole('button', { name: 'Full screen' }).click();
+	const overlay = page.getByTestId('graph-frame');
+	await expect(overlay).toHaveCSS('position', 'fixed');
+
+	// Tabbed onto, as a keyboard arrives; the explorer opens with the centre selected.
+	await page.getByLabel('Find a person').focus();
+	await page.keyboard.press('Shift+Tab');
+	await expect(canvas).toBeFocused();
+	const announcement = page.locator('[role="application"] ~ p[aria-live="polite"]');
+	await expect(announcement).toHaveText(/^Hans Brunner.*, selected$/);
+
+	await page.keyboard.press('Escape');
+	await expect(announcement).toHaveText(/^Hans Brunner(?!.*, selected$)/);
+	await expect(overlay).toHaveCSS('position', 'fixed');
+
+	await page.keyboard.press('Escape');
+	await expect(overlay).toHaveCSS('position', 'relative');
+	await expect(page.getByRole('button', { name: 'Full screen' })).toBeVisible();
+});
+
+/*
  * The embedded map on a person's page always has a real page behind it (unlike the /graph
  * route, which has nothing to scroll behind it). The scroll lock used to target
  * `document.body`, which is never the app's own scroller (the shell root is already

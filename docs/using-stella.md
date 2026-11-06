@@ -1299,7 +1299,8 @@ stays exactly where you had it instead.
 The map works from the keyboard too. *Tab* onto it and the arrow keys walk from person to
 person — to whoever stands next in that direction — with a dashed ring showing where you are
 (the person you selected wears a solid ring with a soft glow instead). *Enter*
-does what a click does, *Home* goes back to the person you selected, or else the one in the middle, and *Escape* lets go.
+does what a click does, *Home* goes back to the person you selected, or else the one in the middle, and *Escape* lets go. On an iPad with a keyboard, one more
+*Escape* with nothing selected leaves full screen.
 
 A big circle — a school class, a club — can bury the map under one line per member. Switch on
 *Group by role* in the *Filter* menu and everyone with the same role in a circle stands

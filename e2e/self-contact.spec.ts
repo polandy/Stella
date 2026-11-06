@@ -128,3 +128,23 @@ test('says it, and takes it back, from the person’s own page', async ({ page }
 	await page.goto('/settings');
 	await expect(page.getByLabel('Which of these people is you')).toHaveValue('');
 });
+
+/*
+ * The Settings picker holds an unsaved pick and follows what is stored once it changes — a
+ * derivation now, not an effect copying the stored value over (review 2026-11 CO-03).
+ */
+test('the Settings picker keeps what was saved across a reload, and clears it again', async ({
+	page
+}) => {
+	const picker = page.getByLabel('Which of these people is you');
+
+	await sayIAm(page, ME);
+	await page.reload();
+	await expect(picker).toHaveValue(ME);
+
+	await page.getByRole('button', { name: 'None of them is me' }).click();
+	await expect(picker).toHaveValue('');
+	await page.reload();
+	await expect(picker).toHaveValue('');
+	await expect(page.getByRole('button', { name: 'None of them is me' })).toBeHidden();
+});
