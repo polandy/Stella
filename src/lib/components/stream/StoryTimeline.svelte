@@ -4,6 +4,7 @@
 	import Button from '$lib/components/ui/Button.svelte';
 	import Icon from '$lib/components/ui/Icon.svelte';
 	import InteractionEditor from '$lib/components/person/InteractionEditor.svelte';
+	import JournalEntryEditor from '$lib/components/journal/JournalEntryEditor.svelte';
 	import PrivateMark from '$lib/components/ui/PrivateMark.svelte';
 	import Swap from '$lib/components/ui/Swap.svelte';
 	import Veil from '$lib/components/ui/Veil.svelte';
@@ -26,6 +27,7 @@
 	import { removalKey as buildKey } from '$lib/undo/keys';
 	import { removeThroughAction } from '$lib/undo/deferred-removal';
 	import { submitAction } from '$lib/undo/submit-action';
+	import type { ComponentProps } from 'svelte';
 
 	/*
 	 * A person's story (docs/02 §2.23): what people wrote about them, the times they were in
@@ -35,12 +37,14 @@
 	interface Props {
 		contactId: string;
 		initial: StoryPageView;
-		/** Whom else a touchpoint being corrected can name: everyone visible but this person. */
-		candidates: SelectablePerson[];
+		/** Whom else a touchpoint or a moment being corrected can name: everyone visible but this person. */
+		candidates: SelectablePerson[] & ComponentProps<typeof JournalEntryEditor>['candidates'];
+		/** The household's tags, which a moment being corrected offers as it is typed. */
+		tags: ComponentProps<typeof JournalEntryEditor>['tags'];
 		/** The household's day, so the day headings say *Today* and leave this year's year off. */
 		today: string;
 	}
-	let { contactId, initial, candidates, today }: Props = $props();
+	let { contactId, initial, candidates, tags, today }: Props = $props();
 
 	const i18n = useI18n();
 	const t = i18n.t;
@@ -119,7 +123,7 @@
 		await invalidateAll();
 	}
 
-	// One touchpoint is corrected at a time, in its place (docs/02 §2.6).
+	// One touchpoint or moment is corrected at a time, in its place (docs/02 §2.6, §2.20).
 	let editingId = $state<string | null>(null);
 
 	// A private item's words and photos stay blurred until asked for (docs/02 §2.10.1); its
@@ -235,7 +239,7 @@
 								{/if}
 								<!-- A gift is changed and removed on the Gifts card, where it lives; a done to-do's cross
 								     stands beside its line, as on the card. -->
-								{#if (item.kind === 'interaction' && item.editable) || (item.removable && item.kind !== 'todo')}
+								{#if ((item.kind === 'interaction' || item.kind === 'journal') && item.editable) || (item.removable && item.kind !== 'todo')}
 									<!-- On hover or focus — always on a touch screen, which has no hover, and
 									     while the item is being edited. -->
 									<span
@@ -245,14 +249,16 @@
 											: 'opacity-0 group-hover/item:opacity-100 focus-within:opacity-100 pointer-coarse:opacity-100'}"
 									>
 										<!-- Its author's alone (docs/03 §3.7). Online only. -->
-										{#if item.kind === 'interaction' && item.editable}
+										{#if (item.kind === 'interaction' || item.kind === 'journal') && item.editable}
+											{@const editLabel =
+												item.kind === 'journal' ? t('story.editEntry') : t('story.editInteraction')}
 											<Button
 												variant="ghost"
 												size="sm"
 												type="button"
 												icon="write"
-												label={t('story.editInteraction')}
-												title={t('story.editInteraction')}
+												label={editLabel}
+												title={editLabel}
 												aria-expanded={editingId === item.id}
 												onclick={() => toggleEditor(item)}
 											/>
@@ -265,54 +271,72 @@
 							</div>
 
 							{#if item.kind === 'journal'}
-								<Veil
-									id={veilId(item)}
-									isPrivate={item.visibility === 'private'}
-									label={t('privacy.veil.moment')}
-								>
-									{#snippet standIn()}
-										{#if item.title}
-											<p class="mt-1 font-semibold text-fg">{placeholderFor(item.title)}</p>
-										{/if}
-										<p class="mt-0.5 max-w-[65ch] whitespace-pre-line text-fg">
-											{placeholderFor(item.bodyHtml)}
-										</p>
-										{#if item.photos.length}
-											<div class="mt-3 flex flex-wrap gap-2">
-												{#each item.photos as photoId (photoId)}
-													<span class="size-20 rounded-control bg-fg-subtle/40"></span>
-												{/each}
-											</div>
-										{/if}
+								<!-- The moment and the journal's own editor glide into each other in place
+								     (docs/05 §5.11); its day and photos stay as they are. -->
+								<Swap when={editingId === item.id}>
+									<div class="mt-1">
+										<JournalEntryEditor
+											{contactId}
+											entry={item}
+											{candidates}
+											{tags}
+											onDone={(saved) => {
+												editingId = null;
+												if (saved) removals.notify(t('components.saved'));
+											}}
+										/>
+									</div>
+									{#snippet otherwise()}
+										<Veil
+											id={veilId(item)}
+											isPrivate={item.visibility === 'private'}
+											label={t('privacy.veil.moment')}
+										>
+											{#snippet standIn()}
+												{#if item.title}
+													<p class="mt-1 font-semibold text-fg">{placeholderFor(item.title)}</p>
+												{/if}
+												<p class="mt-0.5 max-w-[65ch] whitespace-pre-line text-fg">
+													{placeholderFor(item.bodyHtml)}
+												</p>
+												{#if item.photos.length}
+													<div class="mt-3 flex flex-wrap gap-2">
+														{#each item.photos as photoId (photoId)}
+															<span class="size-20 rounded-control bg-fg-subtle/40"></span>
+														{/each}
+													</div>
+												{/if}
+											{/snippet}
+											{#if item.title}
+												<h4 class="mt-1 font-semibold text-fg">{item.title}</h4>
+											{/if}
+											<!-- server-rendered, already-safe Markdown (docs/02 §2.5) -->
+											<div class="note-body mt-0.5 max-w-[65ch] text-fg">{@html item.bodyHtml}</div>
+											{#if item.photos.length}
+												<div class="mt-3 flex flex-wrap gap-2">
+													{#each item.photos as photoId, index (photoId)}
+														<a
+															href="/media/{photoId}"
+															target="_blank"
+															rel="noreferrer"
+															class="block overflow-hidden rounded-control"
+														>
+															<img
+																src="/media/{photoId}?thumb"
+																alt={t('components.photo.open', {
+																	n: index + 1,
+																	count: item.photos.length
+																})}
+																loading="lazy"
+																class="size-20 object-cover"
+															/>
+														</a>
+													{/each}
+												</div>
+											{/if}
+										</Veil>
 									{/snippet}
-									{#if item.title}
-										<h4 class="mt-1 font-semibold text-fg">{item.title}</h4>
-									{/if}
-									<!-- server-rendered, already-safe Markdown (docs/02 §2.5) -->
-									<div class="note-body mt-0.5 max-w-[65ch] text-fg">{@html item.bodyHtml}</div>
-									{#if item.photos.length}
-										<div class="mt-3 flex flex-wrap gap-2">
-											{#each item.photos as photoId, index (photoId)}
-												<a
-													href="/media/{photoId}"
-													target="_blank"
-													rel="noreferrer"
-													class="block overflow-hidden rounded-control"
-												>
-													<img
-														src="/media/{photoId}?thumb"
-														alt={t('components.photo.open', {
-															n: index + 1,
-															count: item.photos.length
-														})}
-														loading="lazy"
-														class="size-20 object-cover"
-													/>
-												</a>
-											{/each}
-										</div>
-									{/if}
-								</Veil>
+								</Swap>
 							{:else if item.kind === 'gift'}
 								<!-- Links to the card the gift lives on, where it is changed. -->
 								<a

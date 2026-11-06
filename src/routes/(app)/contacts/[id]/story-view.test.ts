@@ -110,6 +110,26 @@ describe('toStoryItem, journal entries', () => {
 		expect(view.bodyHtml).not.toContain('secret');
 	});
 
+	it('hands its author the stored body and whom each mention names, to edit it in place', () => {
+		const view = toStoryItem(
+			journalItem({ body: 'Went with @{contact:lena} and @{contact:secret}.' }),
+			context({ nameOf: (id) => (id === 'lena' ? 'Lena Brunner' : null) })
+		);
+
+		if (view.kind !== 'journal') throw new Error('expected a journal item');
+		expect(view.editable).toBe(true);
+		expect(view.bodyForEdit).toBe('Went with @{contact:lena} and @{contact:secret}.');
+		expect(view.mentionNames).toEqual({ lena: 'Lena Brunner' });
+	});
+
+	it("offers someone else's entry no editor and keeps its stored body back", () => {
+		const view = toStoryItem(journalItem({ createdBy: 'user-2' }), context());
+
+		if (view.kind !== 'journal') throw new Error('expected a journal item');
+		expect(view.editable).toBe(false);
+		expect(view.bodyForEdit).toBeNull();
+	});
+
 	it('attaches only the photos of that entry', () => {
 		const view = toStoryItem(
 			journalItem(),

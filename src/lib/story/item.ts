@@ -28,6 +28,12 @@ export interface StoryJournalItem extends StoryItemBase {
 	/** Server-rendered, already-safe Markdown (docs/02 §2.5). */
 	bodyHtml: string;
 	photos: string[];
+	/** Whether *Edit* is offered: the author alone, as on the journal page (docs/02 §2.20). */
+	editable: boolean;
+	/** The stored body for the editor — its author's alone, null for anyone else's. */
+	bodyForEdit: string | null;
+	/** Whom each mention in the body names, so the editor shows them as handles. */
+	mentionNames: Record<string, string>;
 }
 
 /** An interaction: someone was in touch with this person on that day. */

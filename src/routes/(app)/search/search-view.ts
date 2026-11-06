@@ -27,5 +27,9 @@ export async function searchForView(
 		...hit,
 		snippet: matchSnippet(body, nameOf, query)
 	});
-	return { ...results, notes: results.notes.map(snippetOf), moments: results.moments.map(snippetOf) };
+	return {
+		...results,
+		notes: results.notes.map(snippetOf),
+		moments: results.moments.map(snippetOf)
+	};
 }

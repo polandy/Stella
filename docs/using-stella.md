@@ -118,6 +118,9 @@ A few things worth knowing:
   the last week is right there, *Another day…* opens a calendar for any earlier one.
 - **Two moments about the same person on the same day** end up in one journal entry, one
   paragraph each. The second one is added; nothing you wrote earlier is replaced.
+- **A slip in a moment you wrote?** Tap its pencil — in the person's *Activity* card or on
+  their journal page — and the moment turns into its title and text right there; *Save* keeps
+  the change. Its day, who sees it and its photos stay as they were.
 - **Tags.** Write `#hike` or `#Geburtstag` anywhere in a moment to give it a topic. Typing `#`
   suggests the tags your household already uses; a line under the field shows which tags the
   moment gets. `#Hike` and `#hike` are the same tag. A tag reads as a coloured chip. In a

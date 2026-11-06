@@ -5,6 +5,7 @@ export const story = {
 	'story.journal': 'Moment',
 	'story.removeEntry': 'Remove moment',
 	'story.removeInteraction': 'Remove interaction',
+	'story.editEntry': 'Edit moment',
 	'story.editInteraction': 'Edit interaction',
 	'story.saveFailed': 'Could not save the changes. Try again.',
 	'story.entryRemoved': 'Moment removed',

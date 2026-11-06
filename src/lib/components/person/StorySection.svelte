@@ -383,6 +383,7 @@
 				contactId={c.id}
 				initial={data.story}
 				candidates={otherContacts}
+				tags={data.entryTags}
 				today={data.today}
 			/>
 		{/key}

@@ -2,7 +2,7 @@
 	import Swap from '$lib/components/ui/Swap.svelte';
 	import { reveal } from '$lib/motion/motion.svelte';
 	import FormError from '$lib/components/ui/FormError.svelte';
-	import { deserialize, enhance } from '$app/forms';
+	import { enhance } from '$app/forms';
 	import { invalidateAll } from '$app/navigation';
 	import Avatar from '$lib/components/ui/Avatar.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
@@ -13,6 +13,7 @@
 	import ImmichLibraryPicker from '$lib/components/immich/ImmichLibraryPicker.svelte';
 	import PhotoSourceMenu from '$lib/components/immich/PhotoSourceMenu.svelte';
 	import MentionTextarea from '$lib/components/stream/MentionTextarea.svelte';
+	import JournalEntryEditor from '$lib/components/journal/JournalEntryEditor.svelte';
 	import JournalTagFilter from '$lib/components/journal/JournalTagFilter.svelte';
 	import PrivateMark from '$lib/components/ui/PrivateMark.svelte';
 	import Veil from '$lib/components/ui/Veil.svelte';
@@ -149,13 +150,8 @@
 		});
 	}
 
-	// Editing an entry in place: only one at a time, prefilled from the entry being edited.
+	// Editing an entry in place: only one at a time (docs/02 §2.20).
 	let editingId = $state<string | null>(null);
-	let editTitle = $state('');
-	let editBody = $state('');
-	let editSaving = $state(false);
-	let editUnclear = $state(false);
-	let editError = $state<string | null>(null);
 
 	// A private entry's title, text and photos stay blurred until asked for (docs/02 §2.10.1).
 	const veil = useVeil();
@@ -166,40 +162,9 @@
 	function startEdit(entry: PageData['entries'][number]) {
 		if (entry.visibility === 'private') veil.revealForEdit(veilId(entry));
 		editingId = entry.id;
-		editTitle = entry.title ?? '';
-		editBody = entry.bodyForEdit ?? '';
-		editError = null;
 	}
 	function cancelEdit() {
 		editingId = null;
-		editError = null;
-	}
-	async function onEditSubmit(event: SubmitEvent) {
-		event.preventDefault();
-		const formEl = event.currentTarget as HTMLFormElement;
-		editSaving = true;
-		editError = null;
-		try {
-			const res = await fetch(`/contacts/${c.id}/journal?/edit`, {
-				method: 'POST',
-				body: new FormData(formEl),
-				headers: { 'x-sveltekit-action': 'true' }
-			});
-			const result = deserialize(await res.text());
-			// A refusal says why — a namesake to pick, say (docs/02 §2.2.3) — and keeps the text.
-			if (result.type === 'failure') {
-				editError =
-					(result.data?.journalError as string | undefined) ?? t('journal.editSaveFailed');
-				return;
-			}
-			if (result.type === 'error') throw new Error();
-			editingId = null;
-			await invalidateAll();
-		} catch {
-			editError = t('journal.editSaveFailed');
-		} finally {
-			editSaving = false;
-		}
 	}
 
 	// Group the (already newest-first) entries by their day for the timeline.
@@ -417,46 +382,13 @@
 							</div>
 							<!-- The entry and its editor glide into each other in place (docs/05 §5.11). -->
 							<Swap when={editingId === entry.id}>
-								<form
-									method="POST"
-									action="?/edit"
-									onsubmit={onEditSubmit}
-									class="flex flex-col gap-3"
-								>
-									<input type="hidden" name="id" value={entry.id} />
-									<FormError message={editError} />
-									<label class="flex flex-col gap-1 text-sm">
-										<span class="text-fg-muted">{t('journal.titleOptional')}</span>
-										<input
-											name="title"
-											bind:value={editTitle}
-											placeholder={t('journal.titlePlaceholder')}
-											class="rounded-md border border-border-input bg-bg px-3 py-2 text-fg"
-										/>
-									</label>
-									<MentionTextarea
-										name="body"
-										label={t('journal.entry')}
-										rows={5}
-										required
-										bind:value={editBody}
-										bind:unclear={editUnclear}
-										names={entry.mentionNames}
-										{candidates}
-										tags={data.entryTags}
-										visibility={entry.visibility}
-										placeholder={t('journal.bodyPlaceholder')}
-										class="w-full rounded-md border border-border-input bg-bg px-3 py-2 text-fg"
-									/>
-									<div class="flex items-center gap-3">
-										<Button variant="primary" disabled={editSaving || editUnclear}>
-											{editSaving ? t('common.saving') : t('journal.saveChanges')}
-										</Button>
-										<Button variant="ghost" type="button" onclick={cancelEdit}>
-											{t('common.cancel')}
-										</Button>
-									</div>
-								</form>
+								<JournalEntryEditor
+									contactId={c.id}
+									{entry}
+									{candidates}
+									tags={data.entryTags}
+									onDone={cancelEdit}
+								/>
 								{#snippet otherwise()}
 									<Veil
 										id={veilId(entry)}
