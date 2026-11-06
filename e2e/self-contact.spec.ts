@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
-import { openPerson, pickPerson, recordAction, signIn } from './app';
+import { openPerson, pickPerson, recordAction, releaseSelfClaim, signIn } from './app';
 
 /*
  * Saying which of these people you are (docs/02 §2.1.3). Written after the screens were seen
@@ -52,12 +52,7 @@ test.beforeEach(async ({ page }) => {
 });
 
 test.afterEach(async ({ page }) => {
-	await page.goto('/settings');
-	const letGo = page.getByRole('button', { name: 'None of them is me' });
-	if (await letGo.isVisible()) {
-		await letGo.click();
-		await expect(letGo).toBeHidden();
-	}
+	await releaseSelfClaim(page);
 });
 
 test('marks the person you say you are, on their page and in the list', async ({ page }) => {

@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
-import { appReady, fillDate, signIn } from './app';
+import { appReady, fillDate, isoDaysAfter, serverToday, signIn } from './app';
 
 /*
  * Home's rail, the People directory and the ⌘K palette (docs/02 §2.12, §2.2, §2.22.1;
@@ -23,10 +23,13 @@ test.beforeEach(async ({ page }) => {
  * takes `firstInDays: 1` and is sorted in front of everybody else's.
  */
 async function addBirthdaysSoon(page: Page, names: string[], firstInDays = 2): Promise<void> {
+	// Counted from the server's day, not the runner's: one clock (docs/08 §8.4.2). Every day is at
+	// least a day ahead, so a run that steps over midnight still finds it inside the horizon.
+	const today = await serverToday(page);
 	for (const [i, name] of names.entries()) {
 		const [first, last] = name.split(' ');
 		// A leap year, so a 29 February birthday is a real date to type into the field.
-		const soon = new Date(Date.now() + (i + firstInDays) * 86_400_000).toISOString().slice(5, 10);
+		const soon = isoDaysAfter(today, i + firstInDays).slice(5);
 		await page.goto('/contacts/new');
 		await page.getByLabel('First name').fill(first);
 		await page.getByLabel('Last name').fill(last);

@@ -301,7 +301,10 @@ builds a date: the test's and the server's. They agree only because `TZ` is pinn
 CI jobs and for the container `e2e/run.sh` starts — so do not unpin it. And a run that steps
 over midnight is a real case: where a test compares against "today", both sides of the write
 are correct answers, and the assertion accepts either. `e2e/mentioned-in.spec.ts` is the
-worked example. Widening it that far is not a weaker assertion; on any run that does not
+worked example. Where a spec has to *build* a day, it counts from the server's (`serverToday`
+in `e2e/app.ts`), not the runner's, and picks one that survives the step: a birthday that must
+stay coming up is set for tomorrow, which midnight turns into today, never for today, which
+midnight turns into next year. Widening it that far is not a weaker assertion; on any run that does not
 cross midnight the two collapse into the one day it always checked.
 
 ## 8.5 What is and isn't unit-tested

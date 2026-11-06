@@ -243,6 +243,41 @@ export async function pickPerson(field: Locator, name: string): Promise<void> {
 }
 
 /**
+ * Gives back the signed-in member's claim to a person, if a spec made one: the suite shares
+ * one database, and a claim left behind changes the next spec's Settings and map. Waits for
+ * the settled page before asking, because an instantaneous `isVisible()` on a page still
+ * hydrating could say no and skip the cleanup silently.
+ */
+export async function releaseSelfClaim(page: Page): Promise<void> {
+	await page.goto('/settings');
+	await expect(page.getByRole('heading', { name: 'Settings', exact: true })).toBeVisible();
+	await expect(page.getByText('Which of these people is you')).toBeVisible();
+	await appReady(page);
+	const letGo = page.getByRole('button', { name: 'None of them is me' });
+	if (await letGo.isVisible()) {
+		await letGo.click();
+		await expect(letGo).toBeHidden();
+	}
+}
+
+/**
+ * The server's today, `YYYY-MM-DD`: the day picker on `/on-this-day` cannot go past it. A spec
+ * that dates something "today" counts from here rather than from the runner's own clock, so
+ * only one clock is in play (docs/08 §8.4.2). Navigates away from the current page.
+ */
+export async function serverToday(page: Page): Promise<string> {
+	await page.goto('/on-this-day');
+	const today = await page.getByLabel('Day', { exact: true }).getAttribute('max');
+	expect(today).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+	return today!;
+}
+
+/** The ISO day `days` after `iso` (before it when negative). */
+export function isoDaysAfter(iso: string, days: number): string {
+	return new Date(Date.parse(iso) + days * 86_400_000).toISOString().slice(0, 10);
+}
+
+/**
  * Fills a `DateField` with an ISO day. The field is three controls in the reader's own
  * language rather than one native `<input type="date">`, so a spec names the day it wants
  * and this puts it in the right segments — `--MM-DD` leaving the year blank.

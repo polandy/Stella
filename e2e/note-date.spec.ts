@@ -28,22 +28,36 @@ function exactDay(): string {
 	return new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
 }
 
+/** A pattern matching exactly one of these literal strings (escaped: nothing here is a regex). */
+const anyOf = (texts: string[]) =>
+	new RegExp(
+		`^\\s*(${texts.map((text) => text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|')})\\s*$`
+	);
+
 test('a note names when it was written, and the exact day on tap', async ({ page }) => {
 	const text = `notiz${runLetters()}`;
 
 	await signIn(page);
 	await addPerson(page, 'Edwina', `Prell${runLetters()}`);
+	const before = exactDay();
 	await writeNote(page, text);
+	// A run that steps over midnight around the write has two honest answers — the note dated
+	// the day before and called *yesterday*, or the day after and called *today* — and accepts
+	// either; on any other run both collapse into today (docs/08 §8.4.2).
+	const days = [...new Set([before, exactDay()])];
+	const words = days.length === 1 ? ['today'] : ['today', 'yesterday'];
 
-	const dateBtn = note(page, text).getByRole('button', { name: `Created ${exactDay()}` });
-	await expect(dateBtn).toHaveText('today');
+	const dateBtn = note(page, text).getByRole('button', {
+		name: anyOf(days.map((day) => `Created ${day}`))
+	});
+	await expect(dateBtn).toHaveText(anyOf(words));
 	await expect(dateBtn).toHaveAttribute('aria-expanded', 'false');
 
 	// Tapping it opens the exact day as a dismissable bubble, not a navigation.
 	await dateBtn.click();
 	await expect(dateBtn).toHaveAttribute('aria-expanded', 'true');
 	const bubble = note(page, text).getByRole('status');
-	await expect(bubble).toHaveText(exactDay());
+	await expect(bubble).toHaveText(anyOf(days));
 
 	// Escape closes it and returns focus to the date.
 	await page.keyboard.press('Escape');

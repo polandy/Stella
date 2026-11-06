@@ -11,6 +11,8 @@ import { discardStagedDump, pruneStagedDumps, readStagedDump, stageDump } from '
  */
 
 const DAY = 24 * 60 * 60 * 1000;
+/** The moment the pruning runs: fixtures are dated against it, never against the wall clock. */
+const NOW = Date.UTC(2026, 10, 6, 12);
 let dir: string;
 
 beforeEach(async () => {
@@ -36,13 +38,18 @@ describe('staging', () => {
 	it('prunes dumps older than the given age and keeps the fresh ones', async () => {
 		const old = await stageDump(dir, 'old');
 		const fresh = await stageDump(dir, 'fresh');
-		const twoDaysAgo = new Date(Date.now() - 2 * DAY);
-		await utimes(join(dir, `${old}.sql`), twoDaysAgo, twoDaysAgo);
+		const edge = await stageDump(dir, 'edge');
+		const at = async (token: string, ms: number) =>
+			utimes(join(dir, `${token}.sql`), new Date(ms), new Date(ms));
+		await at(old, NOW - DAY - 1);
+		await at(edge, NOW - DAY);
+		await at(fresh, NOW - DAY / 2);
 
-		const removed = await pruneStagedDumps(dir, DAY);
+		const removed = await pruneStagedDumps(dir, DAY, NOW);
 		expect(removed).toBe(1);
 		expect(await readStagedDump(dir, old)).toBeNull();
 		expect(await readStagedDump(dir, fresh)).toBe('fresh');
-		expect(await readdir(dir)).toEqual([`${fresh}.sql`]);
+		expect(await readStagedDump(dir, edge)).toBe('edge');
+		expect((await readdir(dir)).sort()).toEqual([`${edge}.sql`, `${fresh}.sql`].sort());
 	});
 });

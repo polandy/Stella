@@ -1,5 +1,5 @@
-import { expect, test, type Page } from '@playwright/test';
-import { mentionNew, signIn } from './app';
+import { expect, test } from '@playwright/test';
+import { mentionNew, serverToday, signIn } from './app';
 
 /*
  * *On this day* (docs/02 §2.12.1): a moment written on today's date in an earlier year comes
@@ -26,14 +26,6 @@ const FIXED_DAY = '2026-08-31';
 const PHOTO_OF_2025 = /\/photos\/0000016e-0000-4000-8000-[0-9a-f]{12}$/;
 
 const MOMENT = 'rowed across the Lauerzersee';
-
-/** The server's today, `YYYY-MM-DD`: the day picker on `/on-this-day` cannot go past it. */
-async function serverToday(page: Page): Promise<string> {
-	await page.goto('/on-this-day');
-	const today = await page.getByLabel('Day', { exact: true }).getAttribute('max');
-	expect(today).toMatch(/^\d{4}-\d{2}-\d{2}$/);
-	return today!;
-}
 
 test.beforeEach(async ({ page }) => {
 	await signIn(page);
