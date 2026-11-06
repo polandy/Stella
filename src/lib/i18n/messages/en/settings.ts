@@ -2,8 +2,7 @@
 
 export const settings = {
 	'settings.title': 'Settings',
-	'settings.intro':
-		'Appearance settings are on their way; the language, the data tools, the relationship vocabulary and your account live here already.',
+	'settings.intro': 'Your language and account, the household, the data tools and this device.',
 	'settings.language.heading': 'Language',
 	'settings.language.label': 'Interface language',
 	'settings.language.hint':

@@ -25,8 +25,15 @@ export const pwa = {
 		'Added to the home screen, Stella opens in its own window and keeps everyone you can see readable without a connection.',
 	'pwa.install.action': 'Install',
 	'pwa.install.installed': 'Stella is installed on this device.',
-	'pwa.install.byHand':
-		'This browser has no install button. In Safari, use Share → Add to Home Screen.'
+	/* No prompt to raise: the hint names this browser's own menu path (src/lib/pwa/install-route.ts). */
+	'pwa.install.byHand.ios':
+		'This browser has no install button. Tap Share, then Add to Home Screen.',
+	'pwa.install.byHand.android':
+		'This browser has no install button. Open the ⋮ menu and choose Add to Home screen.',
+	'pwa.install.byHand.macSafari':
+		'This browser has no install button. In the File menu, choose Add to Dock.',
+	'pwa.install.byHand.other':
+		'This browser has no install button. Look in its menu for Install or Add to Home Screen.'
 };
 
 /** The key set every translation of this area has to provide. */

@@ -23,6 +23,12 @@ export const pwa: PwaMessages = {
 		'Auf dem Startbildschirm öffnet Stella sich in einem eigenen Fenster, und alle, die du sehen kannst, bleiben auch ohne Verbindung lesbar.',
 	'pwa.install.action': 'Installieren',
 	'pwa.install.installed': 'Stella ist auf diesem Gerät installiert.',
-	'pwa.install.byHand':
-		'Dieser Browser hat keinen Installieren-Knopf. In Safari: Teilen → Zum Home-Bildschirm.'
+	'pwa.install.byHand.ios':
+		'Dieser Browser hat keinen Installieren-Knopf. Tippe auf Teilen, dann auf Zum Home-Bildschirm.',
+	'pwa.install.byHand.android':
+		'Dieser Browser hat keinen Installieren-Knopf. Öffne das ⋮-Menü und wähle Zum Startbildschirm hinzufügen.',
+	'pwa.install.byHand.macSafari':
+		'Dieser Browser hat keinen Installieren-Knopf. Wähle im Menü Ablage den Punkt Zum Dock hinzufügen.',
+	'pwa.install.byHand.other':
+		'Dieser Browser hat keinen Installieren-Knopf. Such in seinem Menü nach Installieren oder Zum Startbildschirm hinzufügen.'
 };

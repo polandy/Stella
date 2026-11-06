@@ -111,7 +111,11 @@
 
 	<PrivacySettings blurPrivate={data.user.blurPrivate} />
 
-	<!-- Every member's: who signs in is no secret in a household; removing is an admin's (§2.1). -->
+	<!--
+		Every member's: who signs in is no secret in a household; removing is an admin's (§2.1).
+		The relationship vocabulary is the household's too, so it stands here rather than among
+		the data tools — still the admin's to change.
+	-->
 	<section class="flex flex-col gap-3">
 		<h2 class="text-sm font-medium text-fg-muted">{t('settings.household.heading')}</h2>
 		<SettingsLink
@@ -120,6 +124,14 @@
 			title={t('settings.members.title')}
 			blurb={t('settings.members.blurb')}
 		/>
+		{#if data.isAdmin}
+			<SettingsLink
+				href="/settings/relationship-types"
+				icon="connectionPath"
+				title={t('settings.data.relationshipTypes')}
+				blurb={t('settings.data.relationshipTypesBlurb')}
+			/>
+		{/if}
 	</section>
 
 	<!--
@@ -221,12 +233,6 @@
 				icon="archive"
 				title={t('settings.data.restore')}
 				blurb={t('settings.data.restoreBlurb')}
-			/>
-			<SettingsLink
-				href="/settings/relationship-types"
-				icon="people"
-				title={t('settings.data.relationshipTypes')}
-				blurb={t('settings.data.relationshipTypesBlurb')}
 			/>
 		{:else}
 			<p class="text-sm text-fg-subtle">{t('settings.data.adminOnly')}</p>

@@ -109,7 +109,7 @@ export function giftView(gift: Gift, ctx: PersonViewContext) {
 }
 
 /**
- * An open to-do as the To do card shows it (docs/02 §2.26): who noted it is named by first name,
+ * An open to-do as the To-dos card shows it (docs/02 §2.26): who noted it is named by first name,
  * like a gift; `mine` is what offers *Private*, which only the author may set.
  */
 export function todoView(todo: Todo, ctx: PersonViewContext) {

@@ -83,7 +83,9 @@
 
 			<label class="flex flex-col gap-1 text-sm">
 				<span class="text-fg-muted">{t('circles.name')}</span>
+				<!-- Opened to type a name, so the name takes the keys (UX-18). -->
 				<input
+					{@attach (input: HTMLInputElement) => input.focus()}
 					name="name"
 					value={newName}
 					placeholder={t('circles.namePlaceholder')}

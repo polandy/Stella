@@ -2,7 +2,6 @@
 	import { enhance } from '$app/forms';
 	import Button from '$lib/components/ui/Button.svelte';
 	import EmptyState from '$lib/components/ui/EmptyState.svelte';
-	import Icon from '$lib/components/ui/Icon.svelte';
 	import LastNameChoices from '$lib/components/surnames/LastNameChoices.svelte';
 	import LastNameFields from '$lib/components/surnames/LastNameFields.svelte';
 	import LastNameGroup from '$lib/components/surnames/LastNameGroup.svelte';
@@ -44,9 +43,6 @@
 
 <main class="mx-auto flex w-full max-w-2xl flex-col gap-6 px-6 py-10">
 	<header class="flex flex-col gap-1">
-		<a href="/settings" class="flex items-center gap-1 text-sm text-link hover:underline">
-			<Icon name="forward" size={12} />{t('nav.settings')}
-		</a>
 		<h1 class="text-2xl font-semibold text-fg">{t('surnames.page.title')}</h1>
 		<p class="text-fg-muted">{t('surnames.page.intro')}</p>
 	</header>

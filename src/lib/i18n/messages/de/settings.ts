@@ -4,7 +4,7 @@ import type { SettingsMessages } from '../en/settings';
 export const settings: SettingsMessages = {
 	'settings.title': 'Einstellungen',
 	'settings.intro':
-		'Darstellungseinstellungen kommen noch; Sprache, Datenwerkzeuge, das Beziehungs-Vokabular und dein Konto findest du schon hier.',
+		'Deine Sprache und dein Konto, der Haushalt, die Datenwerkzeuge und dieses Gerät.',
 	'settings.language.heading': 'Sprache',
 	'settings.language.label': 'Sprache der Oberfläche',
 	'settings.language.hint':

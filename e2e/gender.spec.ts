@@ -118,6 +118,7 @@ test.describe('without JavaScript', () => {
 		await page.goto('/contacts/new');
 		await page.getByLabel('First name').fill('Leonie');
 		await page.getByLabel('Last name').fill('Zumstein');
+		await page.locator('summary', { hasText: 'More' }).click();
 		await page.getByText('Diverse', { exact: true }).click();
 		await expect(page.getByRole('radio', { name: 'Diverse', exact: true })).toBeChecked();
 		await page.getByRole('button', { name: 'Add person' }).click();
@@ -144,6 +145,8 @@ test('asks for a gender while adding someone, and lets a second tap take the cho
 	await appReady(page);
 	await page.getByLabel('First name').fill('Nora');
 	await page.getByLabel('Last name').fill('Zumstein');
+	// Behind *More*, with the nickname and the birthday (docs/design/screens/add-person.md).
+	await page.locator('summary', { hasText: 'More' }).click();
 
 	const male = page.getByRole('radio', { name: 'Male', exact: true });
 	await page.getByText('Male', { exact: true }).click();

@@ -52,7 +52,7 @@ export const contacts = {
 	'contacts.new.howWeMet': 'How we met',
 	'contacts.new.where': 'Where',
 	'contacts.new.wherePlaceholder': 'at the lake',
-	'contacts.new.more': 'More — nickname, birthday',
+	'contacts.new.more': 'More — nickname, birthday, gender',
 	'contacts.new.nickname': 'Nickname',
 	'contacts.new.birthday': 'Birthday',
 	'contacts.new.visibility': 'Visibility',

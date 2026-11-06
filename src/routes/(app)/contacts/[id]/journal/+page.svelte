@@ -7,6 +7,7 @@
 	import Avatar from '$lib/components/ui/Avatar.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import DateField from '$lib/components/ui/DateField.svelte';
+	import { dayHeading } from '$lib/dates/labels';
 	import EmptyState from '$lib/components/ui/EmptyState.svelte';
 	import Icon from '$lib/components/ui/Icon.svelte';
 	import ImmichLibraryPicker from '$lib/components/immich/ImmichLibraryPicker.svelte';
@@ -216,16 +217,6 @@
 		return groups;
 	});
 
-	function prettyDate(iso: string): string {
-		const [y, m, d] = iso.split('-').map(Number);
-		return new Date(y, m - 1, d).toLocaleDateString(i18n.intlLocale, {
-			weekday: 'long',
-			day: 'numeric',
-			month: 'long',
-			year: 'numeric'
-		});
-	}
-
 	// Show the compose form open when there was an error, otherwise behind a button.
 	let composing = $state(false);
 	const showForm = $derived(composing || !!form?.journalError);
@@ -345,7 +336,9 @@
 			{#each keptEntries as item (item.command.id)}
 				<li>
 					<KeptItem {item}>
-						{#snippet meta()}<span>· {prettyDate(item.command.payload.entryDate)}</span>{/snippet}
+						{#snippet meta()}<span
+								>· {dayHeading(i18n, item.command.payload.entryDate, data.today)}</span
+							>{/snippet}
 						{#if item.command.payload.title}<p class="mt-1 font-medium text-fg">
 								{item.command.payload.title}
 							</p>{/if}
@@ -366,7 +359,7 @@
 				<li class="flex flex-col gap-3">
 					<div class="flex items-center gap-3">
 						<h2 class="text-sm font-semibold tracking-wide text-fg-subtle uppercase">
-							{prettyDate(day.date)}
+							{dayHeading(i18n, day.date, data.today)}
 						</h2>
 						<span class="h-px flex-1 bg-border"></span>
 					</div>

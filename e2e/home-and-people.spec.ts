@@ -43,7 +43,7 @@ async function addBirthdaysSoon(page: Page, names: string[], firstInDays = 2): P
 
 test('holds no band about who has gone quiet in the rail', async ({ page }) => {
 	// A birthday this week, so the rail is there on any day the suite runs and its headings
-	// can be read. Beside *Coming up* only the *To do* band may stand, while the seed's to-dos
+	// can be read. Beside *Coming up* only the *To-dos* band may stand, while the seed's to-dos
 	// are still open — other specs tick them — and *On this day*, from the seed's memories;
 	// neither presence is asserted here.
 	await addBirthdaysSoon(page, ['Mira Quadri']);
@@ -52,7 +52,7 @@ test('holds no band about who has gone quiet in the rail', async ({ page }) => {
 	await expect(comingUp).toBeVisible();
 
 	for (const heading of await rail.getByRole('heading', { level: 2 }).allTextContents()) {
-		expect(['To do', 'Coming up', 'On this day']).toContain(heading.trim());
+		expect(['To-dos', 'Coming up', 'On this day']).toContain(heading.trim());
 	}
 	// A band's heading, not a divider inside a list: sentence case (docs/05 §5.3).
 	await expect(comingUp).toHaveCSS('text-transform', 'none');

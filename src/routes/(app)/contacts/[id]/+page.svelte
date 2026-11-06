@@ -100,7 +100,7 @@
 	const isSelf = $derived(data.user.selfContactId === c.id);
 
 	/*
-	 * The To do card (docs/02 §2.26) is read first while something is open — right under the
+	 * The To-dos card (docs/02 §2.26) is read first while something is open — right under the
 	 * identity card — and waits at the page's end, as one line, while nothing is (docs/05 §5.5).
 	 * One just ticked counts while its toast stands, so the last one does not move the card away
 	 * under the reader's thumb.

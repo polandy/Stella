@@ -110,4 +110,38 @@ describe('breadcrumbs', () => {
 			{ label: 'Arrange people' }
 		]);
 	});
+
+	it('puts the pages reached from Home under Home, so a phone has a way back', () => {
+		for (const [route, label] of [
+			['/(app)/on-this-day', 'On this day'],
+			['/(app)/gifts', 'Gift ideas'],
+			['/(app)/todos', 'To-dos'],
+			['/(app)/share', 'Share to Stella']
+		])
+			expect(breadcrumbs(route, {}, {}, t)).toEqual([{ label: 'Home', href: '/' }, { label }]);
+	});
+
+	it('is Home then Settings on Settings itself, the last step unlinked', () => {
+		expect(breadcrumbs('/(app)/settings', {}, {}, t)).toEqual([
+			{ label: 'Home', href: '/' },
+			{ label: 'Settings' }
+		]);
+	});
+
+	it('names a settings page under Settings, so a phone goes back to Settings', () => {
+		for (const [route, label] of [
+			['/(app)/settings/members', 'Members'],
+			['/(app)/settings/relationship-types', 'Relationship types'],
+			['/(app)/settings/calendar', 'Calendar'],
+			['/(app)/settings/relationships', 'Check relationships'],
+			['/(app)/settings/api-tokens', 'API tokens'],
+			['/(app)/settings/import', 'Import people'],
+			['/(app)/settings/import/review', 'Import people']
+		])
+			expect(breadcrumbs(route, {}, {}, t)).toEqual([
+				{ label: 'Home', href: '/' },
+				{ label: 'Settings', href: '/settings' },
+				{ label }
+			]);
+	});
 });

@@ -83,9 +83,6 @@
 
 <main class="mx-auto flex w-full max-w-2xl flex-col gap-6 px-6 py-10" data-kin-scope>
 	<header class="flex flex-col gap-1">
-		<a href="/settings" class="flex items-center gap-1 text-sm text-link hover:underline">
-			<Icon name="forward" size={12} />{t('nav.settings')}
-		</a>
 		<h1 class="text-2xl font-semibold text-fg" data-kin-heading tabindex="-1">
 			{t('settings.relationships.title')}
 		</h1>

@@ -29,7 +29,7 @@ export const actions = {
 	...noteActions,
 	// The Gifts card (docs/02 §2.25).
 	...giftActions,
-	// The To do card (docs/02 §2.26).
+	// The To-dos card (docs/02 §2.26).
 	...todoActions,
 	...fieldActions,
 	// A shared home: share, rewrite, move out (docs/02 §2.2).

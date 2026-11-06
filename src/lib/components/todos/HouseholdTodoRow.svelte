@@ -13,7 +13,7 @@
 	import TodoTick from './TodoTick.svelte';
 
 	/*
-	 * One of the household's open to-dos, on Home's *To do* band or on `/todos` (docs/02 §2.26.6):
+	 * One of the household's open to-dos, on Home's *To-dos* band or on `/todos` (docs/02 §2.26.6):
 	 * the line, whom it is about and when, and the tick box on the right (`TodoTick`). The band
 	 * leads with the person's face, as *Coming up* does; the list names them beside the line,
 	 * under it on a phone. Rewriting and removing stay on the person's card, where the name leads.

@@ -22,7 +22,7 @@
 	import type { PersonForm, PersonPageData } from './types';
 
 	/*
-	 * The To do card (docs/02 §2.26): what is still owed this person, those with a day first.
+	 * The To-dos card (docs/02 §2.26): what is still owed this person, those with a day first.
 	 * The page sets it right under the identity card while something is open and at its end, as
 	 * one line, while nothing is (docs/05 §5.5) — so a to-do is the first thing read about
 	 * somebody exactly as long as there is one.

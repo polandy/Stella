@@ -17,7 +17,7 @@
 	import type { PersonPageData } from './types';
 
 	/*
-	 * One open to-do on the To do card (docs/02 §2.26): the line, its day, who noted it, and the
+	 * One open to-do on the To-dos card (docs/02 §2.26): the line, its day, who noted it, and the
 	 * tick box on the right (`TodoTick`). A tick kept on the device offers *Undo* on the row
 	 * itself until it is on its way. The pencil rewrites it in place; removing it has the undo
 	 * every removal has (docs/02 §2.23).

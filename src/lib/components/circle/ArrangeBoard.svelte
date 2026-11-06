@@ -255,7 +255,13 @@
 			{/each}
 		</div>
 		<p class="text-sm text-fg-muted">
-			{t(mode === 'move' ? 'circles.arrange.hintMove' : 'circles.arrange.hintCopy')}
+			{t(
+				'circles.arrange.hint'
+			)}<!-- Alt means nothing to a finger; Move/Copy above is its way (UX-17). --><span
+				class="hidden pointer-fine:inline"
+			>
+				· {t(mode === 'move' ? 'circles.arrange.hintAltMove' : 'circles.arrange.hintAltCopy')}</span
+			>
 		</p>
 	</div>
 
@@ -285,9 +291,12 @@
 						<h2 class="truncate text-sm font-semibold text-fg">
 							{index === 0 ? t('circles.arrange.direct', { name: zone.name }) : zone.name}
 						</h2>
-						<p class="truncate text-xs text-fg-muted">
-							{index === 0 ? t('circles.arrange.itself') : zone.path.join(' › ')}
-						</p>
+						<!-- A direct sub-circle's path is its name alone, already the heading. -->
+						{#if index === 0 || zone.path.length > 1}
+							<p class="truncate text-xs text-fg-muted">
+								{index === 0 ? t('circles.arrange.itself') : zone.path.join(' › ')}
+							</p>
+						{/if}
 					</div>
 					<span
 						class="shrink-0 rounded-full bg-bg-sunken px-2 py-0.5 text-xs text-fg-muted tabular-nums"

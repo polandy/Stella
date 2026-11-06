@@ -8,7 +8,7 @@
 	import HouseholdTodoRow from './HouseholdTodoRow.svelte';
 
 	/*
-	 * Home's *To do* band (docs/02 §2.26.6): what is overdue or due within the week, across
+	 * Home's *To-dos* band (docs/02 §2.26.6): what is overdue or due within the week, across
 	 * everyone the reader may see, at most three, above *Coming up* in the rail. *Show all*
 	 * leads to `/todos`, which holds the rest; the band is absent while nothing is that close.
 	 */

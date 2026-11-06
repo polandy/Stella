@@ -379,7 +379,12 @@
 	<!-- A person with nothing yet: the empty state steps aside while the composer is open. -->
 	{#if !(openForm === 'moment' && data.story.items.length === 0)}
 		{#key data.story}
-			<StoryTimeline contactId={c.id} initial={data.story} candidates={otherContacts} />
+			<StoryTimeline
+				contactId={c.id}
+				initial={data.story}
+				candidates={otherContacts}
+				today={data.today}
+			/>
 		{/key}
 	{/if}
 

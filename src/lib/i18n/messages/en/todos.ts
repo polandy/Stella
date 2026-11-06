@@ -1,7 +1,7 @@
 /* To-dos: what the household still owes a person, on the person page (docs/02 §2.26). */
 
 export const todos = {
-	'todos.title': 'To do',
+	'todos.title': 'To-dos',
 	// The card as one line, with nothing open (docs/05 §5.5).
 	'todos.none': 'Nothing open.',
 	'todos.add': 'Add',
@@ -30,7 +30,7 @@ export const todos = {
 	'todos.story.reopen': (p: { title: string }) => `Not done yet: ${p.title}`,
 	'todos.story.reopened': (p: { title: string }) => `Open again: ${p.title}`,
 	// Home's band (docs/02 §2.26.6): what is overdue or due within the week.
-	'todos.band.title': 'To do',
+	'todos.band.title': 'To-dos',
 	// `/todos`: every open to-do of the household, grouped by its day.
 	'todos.list.title': 'To-dos',
 	'todos.list.intro': 'Everything still to do, for everyone, the most pressing first.',

@@ -4,7 +4,7 @@
  * so the 29 February rule and the grouping are tested without a calendar on the wall.
  */
 
-/** Home's band stops after three entries, as *Coming up* and *To do* do (docs/05 §5.5.1). */
+/** Home's band stops after three entries, as *Coming up* and *To-dos* do (docs/05 §5.5.1). */
 export const MEMORY_BAND_CAP = 3;
 
 /** The photos that fit one row of the 17 rem rail. */

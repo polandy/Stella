@@ -9,7 +9,7 @@ import { requireViewer } from '$lib/server/auth/guards';
 import { say, translator } from '$lib/server/i18n/say';
 
 /*
- * A to-do changed from a form (docs/02 §2.26). The person's To do card posts these commands
+ * A to-do changed from a form (docs/02 §2.26). The person's To-dos card posts these commands
  * (docs/04 §4.11.2) today; the household's list of every open to-do will post the same ones and
  * answer the same way, which is why this is shared rather than the card's own.
  */

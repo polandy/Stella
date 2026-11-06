@@ -12,7 +12,7 @@ import { factEditor, signIn } from './app';
 const DUMP = 'e2e/fixtures/monica-mini.sql';
 const PHOTO_FOLDER = 'e2e/fixtures/monica-photos';
 
-/** An open to-do on the person's To do card. */
+/** An open to-do on the person's To-dos card. */
 const todoRow = (page: Page, title: string) =>
 	page.getByTestId('todos').locator('li', { hasText: title });
 

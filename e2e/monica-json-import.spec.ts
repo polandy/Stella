@@ -16,7 +16,7 @@ import { signIn } from './app';
 const EXPORT = 'e2e/fixtures/monica-mini.json';
 const PHOTO_ID = 'monica:photo:9f0d5c2a-1111-4a5b-8c3d-0000000000p1';
 
-/** An open to-do on the person's To do card. */
+/** An open to-do on the person's To-dos card. */
 const todoRow = (page: Page, title: string) =>
 	page.getByTestId('todos').locator('li', { hasText: title });
 

@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { useTranslate } from '$lib/i18n/context.svelte';
 	import { install } from '$lib/pwa/install.svelte';
+	import { installRouteFor } from '$lib/pwa/install-route';
 	import Button from '../ui/Button.svelte';
 	import Icon from '../ui/Icon.svelte';
 
@@ -13,6 +14,16 @@
 	 * says so in every one of the three states a device can be in.
 	 */
 	const t = useTranslate();
+
+	/* Which menu path to name when there is no button; the server cannot know, the browser corrects it. */
+	const route = $derived(
+		typeof navigator === 'undefined'
+			? 'other'
+			: installRouteFor({
+					userAgent: navigator.userAgent,
+					maxTouchPoints: navigator.maxTouchPoints
+				})
+	);
 </script>
 
 <section class="flex flex-col gap-3" data-testid="install-card">
@@ -32,7 +43,7 @@
 				{:else if install.state === 'ready'}
 					{t('pwa.install.hint')}
 				{:else}
-					{t('pwa.install.byHand')}
+					{t(`pwa.install.byHand.${route}`)}
 				{/if}
 			</p>
 		</div>

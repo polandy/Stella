@@ -117,7 +117,7 @@
 				ticking = true;
 				event.currentTarget.form?.requestSubmit();
 			}}
-			class="size-5 shrink-0 accent-primary"
+			class="size-5 shrink-0"
 			data-testid="todo-tick"
 		/>
 	</label>

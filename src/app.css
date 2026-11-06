@@ -400,6 +400,53 @@ body {
 	font-style: italic;
 }
 
+/*
+ * One tick box in both themes (docs/05 §5.7): a 2 px `--fg-muted` frame that holds its 3:1
+ * against Latte's white card and Mocha's dark one, where the browser's own 1 px box all but
+ * vanished; ticked, it fills with the primary colour and a check. In the base layer, so a
+ * control's size and margin utilities still apply; a box hidden behind a styled peer
+ * (`sr-only`, `opacity-0`) is untouched to the eye.
+ */
+@layer base {
+	input[type='checkbox'] {
+		appearance: none;
+		display: inline-grid;
+		place-content: center;
+		flex-shrink: 0;
+		width: 1rem;
+		height: 1rem;
+		margin: 0;
+		border: 2px solid var(--fg-muted);
+		border-radius: 0.3rem;
+		background-color: transparent;
+		cursor: pointer;
+		transition:
+			background-color var(--motion-fade) var(--ease-standard),
+			border-color var(--motion-fade) var(--ease-standard);
+	}
+	input[type='checkbox']::before {
+		content: '';
+		width: 0.7em;
+		height: 0.7em;
+		background-color: var(--primary-fg);
+		mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m5 12 5 5 9-10'/%3E%3C/svg%3E")
+			center / contain no-repeat;
+		scale: 0;
+		transition: scale var(--motion-fade) var(--ease-standard);
+	}
+	input[type='checkbox']:checked {
+		border-color: var(--primary);
+		background-color: var(--primary);
+	}
+	input[type='checkbox']:checked::before {
+		scale: 1;
+	}
+	input[type='checkbox']:disabled {
+		cursor: default;
+		opacity: 0.5;
+	}
+}
+
 /* Where to edit (docs/05 §5.7): a value that edits in place carries a faint pencil inside its
    trigger — always on a touch screen, where no hover ever says so, and on hover or keyboard
    focus elsewhere. A plain rule rather than utilities, so no static class fights a variant. */

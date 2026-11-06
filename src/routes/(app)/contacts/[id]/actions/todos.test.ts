@@ -7,7 +7,7 @@ import { answerOf, formOf, routeEvent, type FakeServices } from '$lib/server/tes
 import { todoActions as actions } from './todos';
 
 /*
- * The To do card's actions (docs/02 §2.26), as the edge answers them: every change is a command
+ * The To-dos card's actions (docs/02 §2.26), as the edge answers them: every change is a command
  * on the person the URL names, back to their card when it worked. A to-do already gone answers
  * 404, which a held remove reads as done (docs/02 §2.23).
  */

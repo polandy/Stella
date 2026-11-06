@@ -231,7 +231,6 @@ export const circles: CirclesMessages = {
 	'circles.arrange.open': 'Personen ordnen',
 	'circles.arrange.title': (p) => `Personen ordnen · ${p.name}`,
 	'circles.arrange.heading': 'Personen ordnen',
-	'circles.arrange.back': (p) => `Zurück zu ${p.name}`,
 	'circles.arrange.summary': (p) =>
 		`${p.name} und ${p.subCircles === 1 ? '1 Unterkreis' : `${p.subCircles} Unterkreise`} · ${
 			p.people === 1 ? '1 Person' : `${p.people} Personen`
@@ -240,10 +239,9 @@ export const circles: CirclesMessages = {
 	'circles.arrange.modeLabel': 'Beim Ziehen',
 	'circles.arrange.move': 'Verschieben',
 	'circles.arrange.copy': 'Kopieren',
-	'circles.arrange.hintMove':
-		'Personen ziehen oder antippen und ein Ziel wählen · Alt beim Ablegen: stattdessen kopieren',
-	'circles.arrange.hintCopy':
-		'Personen ziehen oder antippen und ein Ziel wählen · Alt beim Ablegen: stattdessen verschieben',
+	'circles.arrange.hint': 'Personen ziehen oder antippen und ein Ziel wählen',
+	'circles.arrange.hintAltMove': 'Alt beim Ablegen: stattdessen kopieren',
+	'circles.arrange.hintAltCopy': 'Alt beim Ablegen: stattdessen verschieben',
 	'circles.arrange.direct': (p) => `Direkt in ${p.name}`,
 	'circles.arrange.itself': 'Der Kreis selbst',
 	'circles.arrange.count': (p) => (p.count === 1 ? '1 Person' : `${p.count} Personen`),

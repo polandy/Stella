@@ -4,6 +4,7 @@ import { createTranslator } from '$lib/i18n/translate';
 import {
 	createdLabel,
 	createdOnLabel,
+	dayHeading,
 	dayLabel,
 	occasionLabel,
 	sinceLabel,
@@ -83,6 +84,29 @@ describe('occasionLabel', () => {
 
 	test('uses the label of a custom date', () => {
 		expect(occasionLabel(en, { kind: 'custom', label: 'Umzug', turning: null })).toBe('Umzug');
+	});
+});
+
+describe('dayHeading', () => {
+	// One heading over a day's entries on Home, in a journal and on a person's Activity card.
+	test('names today and yesterday', () => {
+		expect(dayHeading(en, '2026-11-06', '2026-11-06')).toBe('Today');
+		expect(dayHeading(en, '2026-11-05', '2026-11-06')).toBe('Yesterday');
+	});
+
+	test('gives an earlier day of this year its weekday and date, no year', () => {
+		expect(dayHeading(en, '2026-09-21', '2026-11-06')).toBe('Monday 21 September');
+	});
+
+	test('adds the year only to a day of an earlier year', () => {
+		expect(dayHeading(en, '2025-09-21', '2026-11-06')).toBe('Sunday, 21 September 2025');
+		// Across New Year, yesterday is still yesterday.
+		expect(dayHeading(en, '2025-12-31', '2026-01-01')).toBe('Yesterday');
+	});
+
+	test('reads in German too', () => {
+		expect(dayHeading(de, '2026-09-21', '2026-11-06')).toBe('Montag, 21. September');
+		expect(dayHeading(de, '2026-11-06', '2026-11-06')).toBe('Heute');
 	});
 });
 

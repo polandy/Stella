@@ -10,7 +10,7 @@ import type { RequestEvent } from '@sveltejs/kit';
 import { applyTodoCommand, type TodoCommand, type TodoErrorKey } from './todo-commands';
 
 /*
- * The household's to-dos beyond one person (docs/02 §2.26.6): Home's *To do* band and `/todos`
+ * The household's to-dos beyond one person (docs/02 §2.26.6): Home's *To-dos* band and `/todos`
  * read the same rows and tick them the same way. Neither has a person in its URL, so the form
  * names them and the access layer checks it, as on the gift list (§2.25.6). Rewriting and
  * removing a to-do stay on the person's card.

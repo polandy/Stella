@@ -19,7 +19,7 @@ import { datesOnTheRadar, type UpcomingSource } from './upcoming';
 
 export interface CalendarFeedDeps {
 	dates: Pick<ImportantDateRepository, 'listSourcesVisibleTo'>;
-	/** The same list Home's *To do* band reads, so the calendar never shows more. */
+	/** The same list Home's *To-dos* band reads, so the calendar never shows more. */
 	todos: Pick<TodoRepository, 'listOpenVisibleTo'>;
 	clock: Clock;
 }

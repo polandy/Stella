@@ -3,7 +3,6 @@
 	import RestoreMemberStep from '$lib/components/members/RestoreMemberStep.svelte';
 	import Avatar from '$lib/components/ui/Avatar.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
-	import Icon from '$lib/components/ui/Icon.svelte';
 	import { useI18n } from '$lib/i18n/context.svelte';
 	import { useRemovals } from '$lib/undo/context.svelte';
 	import type { PageData } from './$types';
@@ -44,9 +43,6 @@
 
 <main class="mx-auto flex w-full max-w-2xl flex-col gap-8 px-6 py-10">
 	<header class="flex flex-col gap-1">
-		<a href="/settings" class="flex items-center gap-1 text-sm text-link hover:underline">
-			<Icon name="forward" size={12} />{t('nav.settings')}
-		</a>
 		<h1 class="text-2xl font-semibold text-fg">{t('settings.members.title')}</h1>
 		<p class="text-fg-muted">
 			{t('settings.members.intro')}
