@@ -1,6 +1,7 @@
 import type { MomentCapturePayload } from '$lib/commands/commands';
 import { toStored } from '$lib/mentions/picks';
-import type { Delivery, KeptPhoto } from '$lib/pwa/outbox';
+import type { KeptPhoto } from '$lib/pwa/outbox';
+import type { Delivery } from '$lib/pwa/outbox-delivery';
 import { cleared } from './composer-reading';
 import type { ComposerCommand, ComposerState, ComposerStep } from './composer-state';
 import { linkHintHref } from './link-hint';

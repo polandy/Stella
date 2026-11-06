@@ -5,36 +5,31 @@ import {
 	type JsonCommand
 } from '../commands/commands';
 import {
-	deliveryFor,
-	deliveryLeftOver,
 	discard,
 	discardAllOf,
 	hold,
-	photoAnswer,
 	queue,
 	recover,
 	refuseLostEdits,
 	release,
 	revise,
 	settle,
-	settlePhoto,
 	takeBatch,
-	takePhoto,
 	unsend,
-	COMMAND_PATIENCE_MS,
-	PHOTO_PATIENCE_MS,
-	type Delivery,
 	type KeptPhoto,
-	type OutboxItem,
-	type PhotoUpload
+	type OutboxItem
 } from './outbox';
+import { deliveryFor, deliveryLeftOver, type Delivery } from './outbox-delivery';
+import { settlePhoto, takePhoto, type PhotoUpload } from './outbox-photos';
 import { readOutbox, updateOutbox } from './outbox-store';
+import { postCommands, postPhoto } from './outbox-wire';
 import { sendRounds } from './send-rounds';
 
 /*
  * The outbox on this device, as a rune the page reads (docs/02 §2.18.1).
- * An adapter: what each step *means* is `outbox.ts`, where it is tested; this file keeps the
- * list in IndexedDB, sends it to `POST /api/commands`, and mirrors it for the page.
+ * An adapter: what each step *means* is `outbox.ts` and `outbox-photos.ts`, where it is tested;
+ * this file keeps the list in IndexedDB, sends it through `outbox-wire.ts`, and mirrors it for
+ * the page.
  *
  * Sending is tried when the app opens, when Stella is reported reachable again, when the tab
  * comes back into view and right after something is saved — never on a timer. A send that
@@ -96,18 +91,6 @@ async function attempt(step: (list: OutboxItem[]) => OutboxItem[] | null): Promi
 		return next ?? list;
 	});
 	return done;
-}
-
-/** The answers in a response, or null when it is not an answer from Stella at all. */
-async function answersFrom(response: Response): Promise<CommandAnswer[] | null> {
-	if (!response.ok) return null;
-	try {
-		const body = (await response.json()) as { answers?: unknown };
-		return Array.isArray(body.answers) ? (body.answers as CommandAnswer[]) : null;
-	} catch {
-		// A captive portal or a proxy answering in Stella's place.
-		return null;
-	}
 }
 
 export const outbox = {
@@ -232,18 +215,7 @@ async function sendCommands(member: string): Promise<boolean> {
 		});
 		if (batch.length === 0) return true;
 
-		let answers: CommandAnswer[] | null = null;
-		try {
-			const response = await fetch('/api/commands', {
-				method: 'POST',
-				headers: { 'content-type': 'application/json' },
-				body: JSON.stringify({ commands: batch }),
-				signal: AbortSignal.timeout(COMMAND_PATIENCE_MS)
-			});
-			answers = await answersFrom(response);
-		} catch {
-			// Out of reach, or no answer in time. Everything waits for the next chance.
-		}
+		const answers = await postCommands(batch);
 		if (!answers) {
 			await apply(unsend);
 			return false;
@@ -273,31 +245,7 @@ async function sendPhotos(member: string): Promise<void> {
 		const next = upload as PhotoUpload | null;
 		if (!next) return;
 
-		const form = new FormData();
-		form.set('id', next.photo.id);
-		form.set('type', next.type);
-		form.set('parentId', next.parentId);
-		form.set('image', next.photo.image, 'photo.jpg');
-		form.set('thumb', next.photo.thumb, 'thumb.jpg');
-		if (next.photo.view) form.set('view', next.photo.view, 'view.jpg');
-		form.set('width', String(next.photo.width));
-		form.set('height', String(next.photo.height));
-		if (next.photo.takenAt) form.set('takenAt', next.photo.takenAt);
-		if (next.photo.immichToken) form.set('immichToken', next.photo.immichToken);
-		let answer: CommandAnswer | null = null;
-		try {
-			const response = await fetch('/api/commands/photo', {
-				method: 'POST',
-				body: form,
-				signal: AbortSignal.timeout(PHOTO_PATIENCE_MS)
-			});
-			const sent = response.ok
-				? (((await response.json()) as { answer?: CommandAnswer }).answer ?? null)
-				: null;
-			answer = photoAnswer(next.photo.id, response.status, sent, reasons.photoTooLarge);
-		} catch {
-			// Out of reach, or not Stella answering: the photo waits.
-		}
+		const answer = await postPhoto(next, reasons.photoTooLarge);
 		await apply((list) => settlePhoto(list, next.parentId, next.photo.id, answer));
 		if (answer?.status === 'applied') whenApplied();
 		// A refused photo does not undo its entry, which Stella has: it stays kept, with the reason.
