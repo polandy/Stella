@@ -53,6 +53,7 @@ import {
 	type ReachabilityReport
 } from '$lib/pwa/reachability';
 import { keepShare, shareFrom } from '$lib/pwa/share-store';
+import { isStorageFull, mediaToEvict } from '$lib/pwa/storage-full';
 
 const worker = self as unknown as ServiceWorkerGlobalScope;
 /** The build's assets and the offline page: nobody's data, so sign-out leaves it. */
@@ -217,7 +218,7 @@ async function keepAhead(): Promise<void> {
 		const response = await fetch(path, { signal }).catch(() => null);
 		// Redirected means signed out: that is the sign-in page, not the one asked for.
 		if (response?.ok && response.type === 'basic' && !response.redirected) {
-			await cache.put(path, response);
+			if (!(await put(cache, path, response))) return;
 		}
 	}
 }
@@ -264,8 +265,41 @@ async function keepCopy(
 ): Promise<boolean> {
 	if (!isOwnAnswer(response) || !response.ok) return false;
 	if (pageData && !holdsPageData(await response.clone().text())) return false;
-	await cache.put(key, response);
-	return true;
+	return put(cache, key, response);
+}
+
+/**
+ * Keep `response` under `key`. A full device gives up its oldest photos and tries once more
+ * (docs/02 §2.18); still full, nothing is kept and false says so, so a refresh stops there
+ * instead of failing. Any other failure is thrown.
+ */
+async function put(cache: Cache, key: string, response: Response): Promise<boolean> {
+	const spare = response.clone();
+	try {
+		await cache.put(key, response);
+		return true;
+	} catch (error) {
+		if (!isStorageFull(error)) throw error;
+	}
+	await makeRoom(cache);
+	try {
+		await cache.put(key, spare);
+		return true;
+	} catch (error) {
+		if (!isStorageFull(error)) throw error;
+		return false;
+	}
+}
+
+/** Delete the oldest kept photos (`mediaToEvict`); they are fetched again when next seen. */
+async function makeRoom(cache: Cache): Promise<void> {
+	const kept = await Promise.all(
+		(await cache.keys()).map(async (request) => ({
+			key: request.url,
+			date: (await cache.match(request))?.headers.get('date') ?? null
+		}))
+	);
+	await Promise.all(mediaToEvict(kept, worker.location.origin).map((key) => cache.delete(key)));
 }
 
 async function keepPeopleAhead(): Promise<void> {
@@ -291,7 +325,8 @@ async function keepPeopleAhead(): Promise<void> {
 		if (await cache.match(avatar)) continue;
 		const response = await fetchAhead(avatar);
 		if (!isOwnAnswer(response) || !response.ok) return;
-		await cache.put(avatar, response);
+		// The device is full even after giving up photos: the rest would not fit either.
+		if (!(await put(cache, avatar, response))) return;
 	}
 	lastPeopleRefresh = Date.now();
 }
@@ -319,8 +354,11 @@ async function revalidate(cache: Cache, path: string): Promise<boolean> {
 		const headers = new Headers(held.headers);
 		const date = response.headers.get('date');
 		if (date) headers.set('date', date);
-		await cache.put(key, new Response(await held.arrayBuffer(), { status: held.status, headers }));
-		return true;
+		return put(
+			cache,
+			key,
+			new Response(await held.arrayBuffer(), { status: held.status, headers })
+		);
 	}
 	if (!response.ok) return response.status === 404;
 	if (isNewerCopy(response.headers.get('date'), held?.headers.get('date') ?? null)) {
