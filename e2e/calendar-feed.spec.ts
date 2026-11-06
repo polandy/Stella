@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
-import { addPerson, fillDate, signIn } from './app';
+import { addPerson, appReady, fillDate, signIn } from './app';
 
 /*
  * The calendar link (docs/02 §2.13.4), end to end: a member makes it on Settings → Calendar,
@@ -112,6 +112,8 @@ test('a calendar link is shown once, serves the dates and dated to-dos, and stop
 	// Ticked, it leaves the calendar on the next fetch — while the dates stay, so the feed
 	// itself still answers.
 	await page.goto(personPage);
+	// A tick before hydration is a plain click on a label: nothing is saved.
+	await appReady(page);
 	await todoRow(page, dated).getByText(dated).click();
 	await expect(page.getByText(`Done: ${dated}`)).toBeVisible();
 	await expect.poll(() => feedText(page, second)).not.toContain(dated);
