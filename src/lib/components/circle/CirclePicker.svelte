@@ -6,6 +6,7 @@
   circle into this one (`add`). A row that cannot be chosen stays and says why.
 -->
 <script lang="ts">
+	import { FIELD } from '$lib/components/ui/field';
 	import { tick } from 'svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import { syncModal } from '$lib/components/ui/modal';
@@ -129,7 +130,7 @@
 			placeholder={t('circles.picker.search')}
 			aria-label={t('circles.picker.search')}
 			autocomplete="off"
-			class="rounded-control border border-border-input bg-bg px-3 py-2 text-fg"
+			class="{FIELD} px-3 py-2"
 		/>
 
 		<ul class="-mx-2 flex-1 overflow-y-auto" data-testid="circle-picker-rows">

@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { FIELD } from '$lib/components/ui/field';
 	import FormError from '$lib/components/ui/FormError.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import { countLabel, summariseRestore, tableLabel } from '$lib/archive/labels';
@@ -75,7 +76,7 @@
 				name="archive"
 				accept=".tar,application/x-tar"
 				required
-				class="rounded-md border border-border-input bg-bg px-3 py-2 text-sm text-fg"
+				class="{FIELD} px-3 py-2 text-sm"
 			/>
 		</label>
 		<p class="text-xs text-fg-subtle">{t('archive.restore.fileHint')}</p>

@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { FIELD, FIELD_ON_BG } from '$lib/components/ui/field';
 	import FormError from '$lib/components/ui/FormError.svelte';
 	import { browser } from '$app/environment';
 	import { goto } from '$app/navigation';
@@ -553,7 +554,7 @@
 						bind:value={() => creating?.firstName ?? '', (v) => editCreating('firstName', v)}
 						type="text"
 						autocomplete="off"
-						class="rounded-control border border-border-input bg-bg px-2 py-1.5 text-sm text-fg outline-none focus:ring-2 focus:ring-primary"
+						class="{FIELD} px-2 py-1.5 text-sm"
 					/>
 				</label>
 				<label class="flex flex-col gap-1 text-xs text-fg-muted">
@@ -562,7 +563,7 @@
 						bind:value={() => creating?.lastName ?? '', (v) => editCreating('lastName', v)}
 						type="text"
 						autocomplete="off"
-						class="rounded-control border border-border-input bg-bg px-2 py-1.5 text-sm text-fg outline-none focus:ring-2 focus:ring-primary"
+						class="{FIELD} px-2 py-1.5 text-sm"
 					/>
 				</label>
 			</div>
@@ -572,7 +573,7 @@
 					compact
 					label={t('components.personSearch.description')}
 					bind:value={() => creating?.description ?? '', (v) => editCreating('description', v)}
-					inputClass="rounded-control border border-border-input bg-card px-2 py-1.5 text-sm text-fg outline-none focus:ring-2 focus:ring-primary"
+					inputClass="{FIELD_ON_BG} px-2 py-1.5 text-sm"
 				/>
 			{:else}
 				<label class="flex flex-col gap-1 text-xs text-fg-muted">
@@ -582,7 +583,7 @@
 						type="text"
 						autocomplete="off"
 						placeholder={t('components.namesake.placeholder')}
-						class="rounded-control border border-border-input bg-bg px-2 py-1.5 text-sm text-fg outline-none focus:ring-2 focus:ring-primary"
+						class="{FIELD} px-2 py-1.5 text-sm"
 					/>
 				</label>
 			{/if}

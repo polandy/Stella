@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { FIELD_ON_BG } from '$lib/components/ui/field';
 	import { useTranslate } from '$lib/i18n/context.svelte';
 	import { matchPeople, peopleOf } from '$lib/graph/model/people-search';
 	import type { GraphModel } from '$lib/graph/model/types';
@@ -24,7 +25,7 @@
 		bind:value={query}
 		placeholder={t('graph.findPlaceholder')}
 		aria-label={t('graph.find')}
-		class="w-full rounded-app border border-border-input bg-card/90 px-3 py-2 text-sm text-fg backdrop-blur sm:w-56"
+		class="{FIELD_ON_BG} w-full px-3 py-2 text-sm sm:w-56"
 	/>
 	{#if suggestions.length}
 		<ul

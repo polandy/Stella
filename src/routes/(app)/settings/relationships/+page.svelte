@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { FIELD_ON_BG } from '$lib/components/ui/field';
 	import FormError from '$lib/components/ui/FormError.svelte';
 	import Avatar from '$lib/components/ui/Avatar.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
@@ -173,7 +174,7 @@
 				type="search"
 				value={data.query}
 				placeholder={t('settings.relationships.findPerson')}
-				class="min-w-0 flex-1 rounded-app border border-border-input bg-card px-3 py-1.5 text-sm text-fg placeholder:text-fg-subtle"
+				class="{FIELD_ON_BG} min-w-0 flex-1 px-3 py-1.5 text-sm"
 			/>
 			<Button variant="ghost" size="sm">{t('settings.relationships.searchSubmit')}</Button>
 			{#if data.query}

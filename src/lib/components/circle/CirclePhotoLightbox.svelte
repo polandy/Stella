@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { FIELD } from '$lib/components/ui/field';
 	import { enhance } from '$app/forms';
 	import Button from '$lib/components/ui/Button.svelte';
 	import FormError from '$lib/components/ui/FormError.svelte';
@@ -71,7 +72,7 @@
 		void photo.id;
 		confirming = null;
 	});
-	const INPUT = 'rounded-md border border-border-input bg-bg px-3 py-2 text-sm text-fg';
+	const INPUT = `${FIELD} px-3 py-2 text-sm`;
 	// Saves stay in the lightbox: the page's data reloads around it, the photo stays open.
 	const keepOpen =
 		() =>

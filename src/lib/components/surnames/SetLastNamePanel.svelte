@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { FIELD } from '$lib/components/ui/field';
 	import { enhance } from '$app/forms';
 	import type { SubmitFunction } from '@sveltejs/kit';
 	import Button from '$lib/components/ui/Button.svelte';
@@ -73,7 +74,7 @@
 				options={knownSurnames}
 				placeholder={t('surnames.lastNamePlaceholder')}
 				placement="above"
-				class="w-44 rounded-md border border-border-input bg-bg px-3 py-2 text-fg"
+				class="{FIELD} w-44 px-3 py-2"
 			/>
 			{#if plan.asks && typed}
 				<Button

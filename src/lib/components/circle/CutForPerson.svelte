@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { FIELD } from '$lib/components/ui/field';
 	import { invalidateAll } from '$app/navigation';
 	import Avatar from '$lib/components/ui/Avatar.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
@@ -103,7 +104,7 @@
 	const initialCrop = $derived(
 		chosen ? (wearers.find((w) => w.contactId === chosen!.id)?.crop ?? null) : null
 	);
-	const INPUT = 'w-full rounded-md border border-border-input bg-bg px-3 py-2 text-sm text-fg';
+	const INPUT = `${FIELD} w-full px-3 py-2 text-sm`;
 </script>
 
 {#snippet personRow(person: CutCandidate)}

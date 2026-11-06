@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { FIELD } from '$lib/components/ui/field';
 	import FormerlyMark from '$lib/components/people/FormerlyMark.svelte';
 	import FoundByJobMark from '$lib/components/people/FoundByJobMark.svelte';
 	import JobLine from '$lib/components/people/JobLine.svelte';
@@ -65,7 +66,7 @@
 			value={data.q}
 			placeholder={t('search.placeholder')}
 			aria-label={t('search.title')}
-			class="flex-1 rounded-app border border-border-input bg-bg px-4 py-2.5 text-fg"
+			class="{FIELD} flex-1 px-4 py-2.5"
 		/>
 		<Button variant="primary">{t('common.search')}</Button>
 	</form>

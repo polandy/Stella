@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { FIELD } from '$lib/components/ui/field';
 	import Swap from '$lib/components/ui/Swap.svelte';
 	import { enhance } from '$app/forms';
 	import Button from '$lib/components/ui/Button.svelte';
@@ -122,8 +123,7 @@
 		focusBack.follow(open);
 	});
 
-	const FIELD =
-		'w-full min-w-0 rounded-control border border-border-input bg-bg px-2 py-1.5 text-sm text-fg outline-none focus:border-primary pointer-coarse:min-h-11 pointer-coarse:text-base';
+	const NAME_FIELD = `${FIELD} w-full min-w-0 px-2 py-1.5 text-sm pointer-coarse:min-h-11 pointer-coarse:text-base`;
 	const LABEL = 'flex flex-col gap-1 text-xs text-fg-muted';
 </script>
 
@@ -156,7 +156,7 @@
 					bind:value={firstName}
 					oninput={partsTyped}
 					autocomplete="off"
-					class={FIELD}
+					class={NAME_FIELD}
 				/>
 			</label>
 			<label class={LABEL} for="{uid}-last">
@@ -167,7 +167,7 @@
 					bind:value={lastName}
 					oninput={partsTyped}
 					autocomplete="off"
-					class={FIELD}
+					class={NAME_FIELD}
 				/>
 			</label>
 			<label class={LABEL} for="{uid}-nick">
@@ -178,7 +178,7 @@
 					bind:value={nickname}
 					oninput={partsTyped}
 					autocomplete="off"
-					class={FIELD}
+					class={NAME_FIELD}
 				/>
 			</label>
 		</div>
@@ -190,7 +190,7 @@
 				name="formerName"
 				bind:value={formerName}
 				autocomplete="off"
-				class={FIELD}
+				class={NAME_FIELD}
 			/>
 		</label>
 		<label class={LABEL} for="{uid}-shown">
@@ -203,7 +203,7 @@
 				autocomplete="off"
 				aria-invalid={error ? 'true' : undefined}
 				aria-describedby="{uid}-shown-hint"
-				class={FIELD}
+				class={NAME_FIELD}
 			/>
 			<span id="{uid}-shown-hint" class="text-fg-subtle">
 				{following ? t('contact.nameParts.shownAsFollows') : t('contact.nameParts.shownAsChosen')}

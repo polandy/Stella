@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { FIELD } from '$lib/components/ui/field';
 	import Button from '$lib/components/ui/Button.svelte';
 	import FormError from '$lib/components/ui/FormError.svelte';
 	import MentionTextarea from '$lib/components/stream/MentionTextarea.svelte';
@@ -90,7 +91,7 @@
 			name="title"
 			bind:value={title}
 			placeholder={t('journal.titlePlaceholder')}
-			class="rounded-md border border-border-input bg-bg px-3 py-2 text-fg"
+			class="{FIELD} px-3 py-2"
 		/>
 	</label>
 	<MentionTextarea
@@ -105,7 +106,7 @@
 		{tags}
 		visibility={entry.visibility}
 		placeholder={t('journal.bodyPlaceholder')}
-		class="w-full rounded-md border border-border-input bg-bg px-3 py-2 text-fg"
+		class="{FIELD} w-full px-3 py-2"
 	/>
 	<div class="flex items-center gap-3">
 		<Button variant="primary" disabled={saving || unclear}>

@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { FIELD } from '$lib/components/ui/field';
 	import Swap from '$lib/components/ui/Swap.svelte';
 	import { enhance } from '$app/forms';
 	import Button from '$lib/components/ui/Button.svelte';
@@ -113,7 +114,7 @@
 				aria-invalid={error ? 'true' : undefined}
 				aria-describedby={error ? errorId : undefined}
 				onkeydown={onKeydown}
-				class="min-h-11 min-w-0 rounded-control border border-border-input bg-bg px-2 py-1.5 text-base text-fg outline-none focus:border-primary"
+				class="{FIELD} min-h-11 min-w-0 px-2 py-1.5 text-base"
 			/>
 		</label>
 		<label class="flex flex-col gap-1 text-xs font-medium text-fg-muted">
@@ -127,7 +128,7 @@
 				aria-invalid={error ? 'true' : undefined}
 				aria-describedby={error ? errorId : undefined}
 				onkeydown={onKeydown}
-				class="min-h-11 min-w-0 rounded-control border border-border-input bg-bg px-2 py-1.5 text-base text-fg outline-none focus:border-primary"
+				class="{FIELD} min-h-11 min-w-0 px-2 py-1.5 text-base"
 			/>
 		</label>
 		<FormError message={error} id={errorId} variant="inline" />

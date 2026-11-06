@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { FIELD } from '$lib/components/ui/field';
 	import { reveal } from '$lib/motion/motion.svelte';
 	import { enhance } from '$app/forms';
 	import Button from '$lib/components/ui/Button.svelte';
@@ -23,8 +24,7 @@
 	const t = useTranslate();
 
 	/** One class for every text input on the page, so they cannot drift apart. */
-	const INPUT =
-		'rounded-control border border-border-input bg-bg px-3 py-2 text-sm text-fg placeholder:text-fg-subtle';
+	const INPUT = `${FIELD} px-3 py-2 text-sm`;
 
 	let addOpen = $state(false);
 	let editing = $state<string | null>(null);

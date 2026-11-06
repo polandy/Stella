@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { FIELD, FIELD_FRAME } from '$lib/components/ui/field';
 	import { reveal } from '$lib/motion/motion.svelte';
 	import FormError from '$lib/components/ui/FormError.svelte';
 	import Avatar from '$lib/components/ui/Avatar.svelte';
@@ -92,24 +93,21 @@
 					required
 					aria-invalid={form?.error ? 'true' : undefined}
 					aria-describedby={form?.error ? 'circle-error' : undefined}
-					class="rounded-md border border-border-input bg-bg px-3 py-2 text-fg"
+					class="{FIELD} px-3 py-2"
 				/>
 			</label>
 
 			<div class="flex flex-wrap gap-4">
 				<label class="flex flex-1 flex-col gap-1 text-sm">
 					<span class="text-fg-muted">{t('circles.kindLabel')}</span>
-					<select name="kind" class="rounded-md border border-border-input bg-bg px-3 py-2 text-fg">
+					<select name="kind" class="{FIELD} px-3 py-2">
 						{#each data.kinds as kind (kind)}<option value={kind}>{circleKindLabel(t, kind)}</option
 							>{/each}
 					</select>
 				</label>
 				<label class="flex flex-[2] flex-col gap-1 text-sm">
 					<span class="text-fg-muted">{t('circles.descriptionLabel')}</span>
-					<input
-						name="description"
-						class="rounded-md border border-border-input bg-bg px-3 py-2 text-fg"
-					/>
+					<input name="description" class="{FIELD} px-3 py-2" />
 				</label>
 			</div>
 
@@ -130,9 +128,7 @@
 	{/if}
 
 	{#if data.circles.length > 0}
-		<label
-			class="flex items-center gap-2 rounded-control border border-border-input bg-card px-3 py-2 shadow-card focus-within:border-primary"
-		>
+		<label class="{FIELD_FRAME} flex items-center gap-2 bg-card px-3 py-2 shadow-card">
 			<Icon name="search" size={15} />
 			<span class="sr-only">{t('circles.find')}</span>
 			<input

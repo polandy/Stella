@@ -6,6 +6,7 @@
   saved until the form is.
 -->
 <script lang="ts">
+	import { FIELD } from '$lib/components/ui/field';
 	import CirclePicker from '$lib/components/circle/CirclePicker.svelte';
 	import FormError from '$lib/components/ui/FormError.svelte';
 	import Icon from '$lib/components/ui/Icon.svelte';
@@ -82,7 +83,7 @@
 	<input type="hidden" name="parent" value={value ?? ''} />
 	<button
 		type="button"
-		class="flex items-center gap-3 rounded-control border border-border-input bg-bg px-3 py-2 text-left text-fg hover:border-primary"
+		class="{FIELD} flex items-center gap-3 px-3 py-2 text-left hover:border-primary"
 		aria-label={t('circles.parent.choose', { current })}
 		aria-describedby="{helpId}{error ? ` ${errorId}` : ''}"
 		onclick={() => (picking = true)}

@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { FIELD } from '$lib/components/ui/field';
 	import { enhance } from '$app/forms';
 	import type { SubmitFunction } from '@sveltejs/kit';
 	import Avatar from '$lib/components/ui/Avatar.svelte';
@@ -116,7 +117,7 @@
 								bind:value={() => drafts[person.id] ?? '', (typed) => (drafts[person.id] = typed)}
 								options={knownSurnames}
 								placeholder={t('surnames.lastNamePlaceholder')}
-								class="min-w-0 flex-1 rounded-md border border-border-input bg-bg px-3 py-1.5 text-sm text-fg sm:w-44"
+								class="{FIELD} min-w-0 flex-1 px-3 py-1.5 text-sm sm:w-44"
 							/>
 							<Button size="sm" disabled={disabled || !(drafts[person.id] ?? '').trim()}
 								>{t('common.save')}</Button

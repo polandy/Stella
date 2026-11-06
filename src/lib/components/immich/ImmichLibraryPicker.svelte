@@ -6,6 +6,7 @@
   proxy and hands them over as files, for the same pipeline as a pick from the device.
 -->
 <script lang="ts">
+	import { FIELD } from '$lib/components/ui/field';
 	import { tick } from 'svelte';
 	import { deviceDay } from '$lib/dates/today';
 	import Button from '$lib/components/ui/Button.svelte';
@@ -185,7 +186,7 @@
 				autocomplete="off"
 				enterkeyhint="search"
 				onkeydown={search}
-				class="w-full rounded-control border border-border-input bg-bg py-2 pr-3 pl-9 text-fg"
+				class="{FIELD} w-full py-2 pr-3 pl-9"
 			/>
 		</div>
 

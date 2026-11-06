@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { FIELD_FRAME } from '$lib/components/ui/field';
 	import Icon from '$lib/components/ui/Icon.svelte';
 	import { useTranslate } from '$lib/i18n/context.svelte';
 	import type { ReviewCandidate } from '$lib/import-match/review';
@@ -40,7 +41,7 @@
 </script>
 
 <div class="flex flex-col gap-2">
-	<label class="flex items-center gap-2 rounded-md border border-border-input bg-bg px-3 py-2">
+	<label class="{FIELD_FRAME} flex items-center gap-2 bg-bg px-3 py-2">
 		<Icon name="search" class="text-fg-subtle" />
 		<input
 			type="search"

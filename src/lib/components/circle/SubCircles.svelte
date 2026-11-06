@@ -10,6 +10,7 @@
   no confirmation step (ADR-126).
 -->
 <script lang="ts">
+	import { FIELD } from '$lib/components/ui/field';
 	import { enhance } from '$app/forms';
 	import CirclePicker from '$lib/components/circle/CirclePicker.svelte';
 	import ColourSwatches from '$lib/components/circle/ColourSwatches.svelte';
@@ -96,7 +97,7 @@
 		);
 	}
 
-	const INPUT = 'rounded-control border border-border-input bg-bg px-3 py-2 text-fg';
+	const INPUT = `${FIELD} px-3 py-2`;
 	const timeline = $derived(circleTimeline(circles, today));
 	// A year mark too close to the today label would print over it; today wins.
 	const TICK_CLEARANCE = 8;

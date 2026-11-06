@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { FIELD } from '$lib/components/ui/field';
 	import Swap from '$lib/components/ui/Swap.svelte';
 	import { reveal } from '$lib/motion/motion.svelte';
 	import FormError from '$lib/components/ui/FormError.svelte';
@@ -231,7 +232,7 @@
 					<input
 						name="title"
 						placeholder={t('journal.titlePlaceholder')}
-						class="rounded-md border border-border-input bg-bg px-3 py-2 text-fg"
+						class="{FIELD} px-3 py-2"
 					/>
 				</label>
 			</div>
@@ -245,7 +246,7 @@
 				visibility={entryVisibility}
 				bind:unclear={entryUnclear}
 				placeholder={t('journal.bodyPlaceholder')}
-				class="w-full rounded-md border border-border-input bg-bg px-3 py-2 text-fg"
+				class="{FIELD} w-full px-3 py-2"
 			/>
 			<div class="flex flex-wrap items-center gap-3">
 				{#if data.immichLibrary}

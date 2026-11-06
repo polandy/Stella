@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { FIELD } from '$lib/components/ui/field';
 	import FormError from '$lib/components/ui/FormError.svelte';
 	import { enhance } from '$app/forms';
 	import { page } from '$app/state';
@@ -16,8 +17,7 @@
 	const i18n = useI18n();
 	const t = i18n.t;
 
-	const INPUT =
-		'rounded-control border border-border-input bg-bg px-3 py-2 text-sm text-fg placeholder:text-fg-subtle';
+	const INPUT = `${FIELD} px-3 py-2 text-sm`;
 
 	const day = (at: number) =>
 		new Date(at).toLocaleDateString(i18n.intlLocale, { dateStyle: 'medium' });

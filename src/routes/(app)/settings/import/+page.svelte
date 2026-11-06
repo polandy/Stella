@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { FIELD } from '$lib/components/ui/field';
 	import FormError from '$lib/components/ui/FormError.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import { useTranslate } from '$lib/i18n/context.svelte';
@@ -45,7 +46,7 @@
 		return hasMessage(key) ? t(key) : what.replace(/([A-Z])/g, ' $1').toLowerCase();
 	};
 
-	const fieldClass = 'rounded-md border border-border-input bg-bg px-3 py-2 text-sm text-fg';
+	const fieldClass = `${FIELD} px-3 py-2 text-sm`;
 </script>
 
 <svelte:head><title>{t('common.pageTitle', { page: t('import.title') })}</title></svelte:head>
