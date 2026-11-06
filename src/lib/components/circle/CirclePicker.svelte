@@ -8,6 +8,7 @@
 <script lang="ts">
 	import { tick } from 'svelte';
 	import Button from '$lib/components/ui/Button.svelte';
+	import { syncModal } from '$lib/components/ui/modal';
 	import Icon from '$lib/components/ui/Icon.svelte';
 	import {
 		pickerRows,
@@ -69,12 +70,10 @@
 	);
 
 	$effect(() => {
-		if (!dialog) return;
-		if (open && !dialog.open) {
+		syncModal(dialog, open, () => {
 			query = '';
-			dialog.showModal();
 			void tick().then(() => searchInput?.focus());
-		} else if (!open && dialog.open) dialog.close();
+		});
 	});
 
 	function choose(id: string | null) {

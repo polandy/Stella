@@ -7,6 +7,7 @@
 <script lang="ts">
 	import { onDestroy, untrack } from 'svelte';
 	import Button from '$lib/components/ui/Button.svelte';
+	import { syncModal } from '$lib/components/ui/modal';
 	import FormError from '$lib/components/ui/FormError.svelte';
 	import { useI18n } from '$lib/i18n/context.svelte';
 	import { drawTreeImage, type TreeImage } from '$lib/graph/cytoscape/tree-image';
@@ -78,11 +79,7 @@
 		new Intl.NumberFormat(i18n.intlLocale, { maximumFractionDigits: 1 }).format(value);
 
 	$effect(() => {
-		if (!dialog) return;
-		if (open && !dialog.open) {
-			title = defaultTitle;
-			dialog.showModal();
-		} else if (!open && dialog.open) dialog.close();
+		syncModal(dialog, open, () => (title = defaultTitle));
 	});
 
 	/** Sharp in the dialog's preview on a dense display, and quick to draw. */

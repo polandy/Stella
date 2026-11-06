@@ -2,6 +2,7 @@
 	import Button from '$lib/components/ui/Button.svelte';
 	import FormError from '$lib/components/ui/FormError.svelte';
 	import PhotoCropper from '$lib/components/ui/PhotoCropper.svelte';
+	import { syncModal } from '$lib/components/ui/modal';
 	import { tick, untrack } from 'svelte';
 	import { invalidateAll } from '$app/navigation';
 	import { dayLabel } from '$lib/dates/labels';
@@ -109,14 +110,14 @@
 	}
 
 	$effect(() => {
-		if (!open || !dialog || dialog.open) return;
-		// Every opening starts on the faces, wherever the last one was left.
-		untrack(() => void backToFaces());
-		query = searchName;
-		faces = [];
-		answered = false;
-		dialog.showModal();
-		void search();
+		syncModal(dialog, open, () => {
+			// Every opening starts on the faces, wherever the last one was left.
+			untrack(() => void backToFaces());
+			query = searchName;
+			faces = [];
+			answered = false;
+			void search();
+		});
 	});
 
 	/*

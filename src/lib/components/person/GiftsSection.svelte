@@ -7,6 +7,7 @@
 	import KeptItem from '$lib/components/pwa/KeptItem.svelte';
 	import MenuButton from '$lib/components/ui/MenuButton.svelte';
 	import Section from '$lib/components/ui/Section.svelte';
+	import Tabs from '$lib/components/ui/Tabs.svelte';
 	import { cardShape } from '$lib/people/empty-cards';
 	import { sectionAnchor } from '$lib/people/sections';
 	import { asksForGiftIdea, byYear, giftTabs, type GiftTab } from '$lib/gifts/card';
@@ -139,15 +140,6 @@
 
 	const MENU_ITEM =
 		'flex w-full items-center gap-2 rounded-control px-2.5 py-1.5 text-left text-sm text-fg hover:bg-primary-soft focus-visible:bg-primary-soft';
-
-	function stepTab(event: KeyboardEvent) {
-		if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') return;
-		event.preventDefault();
-		const order = tabs.map((entry) => entry.tab);
-		const at = order.indexOf(current) + (event.key === 'ArrowRight' ? 1 : -1);
-		tab = order[(at + order.length) % order.length];
-		document.getElementById(`gift-tab-${tab}`)?.focus();
-	}
 </script>
 
 <Section
@@ -214,30 +206,22 @@
 	{/if}
 
 	{#if shown.length > 0}
-		<div
-			role="tablist"
-			aria-label={t('gifts.tabs.label')}
-			tabindex="-1"
-			class="mb-2 flex w-fit max-w-full gap-1 rounded-full bg-bg-sunken p-1"
-			onkeydown={stepTab}
+		<Tabs
+			tabs={tabs.map((entry) => entry.tab)}
+			chosen={current}
+			onchoose={(next) => (tab = next)}
+			label={t('gifts.tabs.label')}
+			idPrefix="gift-tab"
+			panel="gift-panel"
+			class="mb-2"
 		>
-			{#each tabs as entry (entry.tab)}
-				<button
-					type="button"
-					role="tab"
-					id="gift-tab-{entry.tab}"
-					aria-selected={current === entry.tab}
-					aria-controls="gift-panel"
-					tabindex={current === entry.tab ? 0 : -1}
-					onclick={() => (tab = entry.tab)}
-					class="rounded-full px-3.5 py-1.5 text-sm whitespace-nowrap text-fg-muted transition-colors hover:text-fg aria-selected:bg-card aria-selected:font-medium aria-selected:text-fg aria-selected:shadow-card"
-				>
-					{t(`gifts.tab.${entry.tab}`)}{#if entry.count !== null}<span class="tabular-nums"
-							>{` · ${entry.count}`}</span
-						>{/if}
-				</button>
-			{/each}
-		</div>
+			{#snippet content(which)}
+				{@const count = tabs.find((entry) => entry.tab === which)?.count ?? null}
+				{t(`gifts.tab.${which}`)}{#if count !== null}<span class="tabular-nums"
+						>{` · ${count}`}</span
+					>{/if}
+			{/snippet}
+		</Tabs>
 
 		<div role="tabpanel" id="gift-panel" aria-labelledby="gift-tab-{current}" data-tab={current}>
 			{#if current === 'ideas'}

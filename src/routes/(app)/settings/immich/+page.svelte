@@ -8,6 +8,7 @@
 	import FormError from '$lib/components/ui/FormError.svelte';
 	import NewFromImmich from '$lib/components/immich/NewFromImmich.svelte';
 	import SkeletonRows from '$lib/components/ui/SkeletonRows.svelte';
+	import Tabs from '$lib/components/ui/Tabs.svelte';
 	import { useI18n } from '$lib/i18n/context.svelte';
 	import { usePending } from '$lib/sync/context.svelte';
 	import { whilePending } from '$lib/sync/pending';
@@ -128,15 +129,6 @@
 						!removals.isPending(removalKey('immich-newcomer-ignore', row.personId))
 				).length;
 
-	/** Left and right step between the tabs, as a tab list does (WAI-ARIA tabs pattern). */
-	function stepTab(event: KeyboardEvent) {
-		if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') return;
-		event.preventDefault();
-		const at = TABS.indexOf(tab) + (event.key === 'ArrowRight' ? 1 : -1);
-		tab = TABS[(at + TABS.length) % TABS.length];
-		document.getElementById(`immich-tab-${tab}`)?.focus();
-	}
-
 	const shown = <T extends { contact: { id: string } }>(rows: T[]) =>
 		rows.filter(
 			(row) =>
@@ -196,33 +188,23 @@
 
 {#snippet tabs(matches: Matches | null)}
 	<!-- Counts only once Immich has answered; until then the labels stand alone. -->
-	<div
-		role="tablist"
-		aria-label={t('immich.tabs.label')}
-		tabindex="-1"
-		class="flex w-fit max-w-full gap-1 rounded-full bg-bg-sunken p-1"
-		onkeydown={stepTab}
+	<Tabs
+		tabs={TABS}
+		chosen={tab}
+		onchoose={(next) => (tab = next)}
+		label={t('immich.tabs.label')}
+		idPrefix="immich-tab"
+		panel="immich-panel"
 	>
-		{#each TABS as which (which)}
+		{#snippet content(which)}
 			{@const count = matches && !matches.error ? tabCount(matches, which) : null}
-			<button
-				type="button"
-				role="tab"
-				id="immich-tab-{which}"
-				aria-selected={tab === which}
-				aria-controls="immich-panel"
-				tabindex={tab === which ? 0 : -1}
-				onclick={() => (tab = which)}
-				class="rounded-full px-3.5 py-1.5 text-sm whitespace-nowrap text-fg-muted transition-colors hover:text-fg aria-selected:bg-card aria-selected:font-medium aria-selected:text-fg aria-selected:shadow-card"
-			>
-				{which === 'matching'
-					? t('immich.tabs.matching')
-					: t('immich.tabs.new')}{#if count !== null}<span class="tabular-nums"
-						>{` · ${shownCount(count)}`}</span
-					>{/if}
-			</button>
-		{/each}
-	</div>
+			{which === 'matching'
+				? t('immich.tabs.matching')
+				: t('immich.tabs.new')}{#if count !== null}<span class="tabular-nums"
+					>{` · ${shownCount(count)}`}</span
+				>{/if}
+		{/snippet}
+	</Tabs>
 {/snippet}
 
 {#snippet panel(matches: Matches)}
