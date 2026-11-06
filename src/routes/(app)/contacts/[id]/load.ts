@@ -2,43 +2,21 @@ import { error, redirect } from '@sveltejs/kit';
 import { requireRemover, requireUser, requireViewer } from '$lib/server/auth/guards';
 import { CONTACT_FIELD_KINDS } from '$lib/people/contact-fields';
 import { parseProposePairs } from '$lib/people/propose';
-import { listContactFields } from '$lib/server/domain/contact-fields/contact-fields';
-import {
-	listCirclesForContact,
-	listRoleSuggestionsByCircleName
-} from '$lib/server/domain/circles/memberships';
-import { listHomesOf } from '$lib/server/domain/homes/homes';
 import { getContact } from '$lib/server/domain/contacts/contacts';
 import { shownNameIsChosen } from '$lib/people/display-name';
-import { readSurnameHelp } from '$lib/server/domain/contacts/last-names';
-import { textOf } from '$lib/i18n/linked';
-import type { SurnameOption, SurnameProposal } from '$lib/suggestions/rules/surnames';
-import type { Translate } from '$lib/i18n/translate';
-import { listImportantDates } from '$lib/server/domain/dates/important-dates';
 import { IMPORTANT_DATE_KINDS } from '$lib/dates/kinds';
-import { INTERACTION_KINDS, lastContactedOn } from '$lib/server/domain/interactions/interactions';
-import { authorNames } from '$lib/server/domain/household/members';
-import { listStoryPage } from '$lib/server/domain/story/story';
-import { listGroupPhotosOf, listGroupPhotosToCut } from '$lib/server/domain/media/cuts';
-import { listGallery } from '$lib/server/domain/media/gallery';
+import { INTERACTION_KINDS } from '$lib/server/domain/interactions/interactions';
 import { contactSectionPath, RELATE_AS_PARAM, sectionForLegacyTab } from '$lib/people/sections';
 import { personMap } from '$lib/graph/model/person-map';
-import { listMentionedIn } from '$lib/server/domain/mentions/mentioned-in';
-import { listNotesForContact } from '$lib/server/domain/notes/notes';
-import { listGiftsForContact } from '$lib/server/domain/gifts/gifts';
-import { listOpenTodosForContact } from '$lib/server/domain/todos/todos';
 import { orderOpenTodos } from '$lib/todos/todos';
 import { todayFor } from '$lib/dates/today';
 import { systemClock } from '$lib/server/clock';
-import { readFamilyOf } from '$lib/server/domain/relationships/family';
-import { listTagsForContact } from '$lib/server/domain/tags/tag-lists';
 import { TAG_COLORS } from '$lib/design/tag-colors';
 import { readTogetherOffers } from '$lib/server/domain/immich/glimpse';
 import { readImmichLink, readLinkedPerson } from '$lib/server/domain/immich/links';
 import { togetherCandidates } from '$lib/immich/together';
-import { canAddRelationshipTo, type Viewer } from '$lib/server/access/visibility';
+import { canAddRelationshipTo } from '$lib/server/access/visibility';
 import { say, translator } from '$lib/server/i18n/say';
-import { allOf } from '$lib/../routes/(app)/contacts/[id]/all-of';
 import {
 	birthdayOf,
 	declinedBy,
@@ -54,9 +32,9 @@ import {
 	type PersonViewContext
 } from './person-view';
 import { REVIEW_PARAM } from './review-path';
-import { entryIdsOf, nameLookup, photosByEntry, STORY_PAGE_SIZE, toStoryItem } from './story-view';
+import { entryIdsOf, nameLookup, photosByEntry, toStoryItem } from './story-view';
+import { lastNameChips, readPersonPage } from './read-person-page';
 import type { PageServerLoad } from './$types';
-import type { AppServices } from '$lib/server/services/app-services';
 
 export const load = (async ({ locals, params, url }) => {
 	const user = requireUser(locals);
@@ -239,81 +217,3 @@ export const load = (async ({ locals, params, url }) => {
 		isAdmin: user.role === 'admin'
 	};
 }) satisfies PageServerLoad;
-
-/**
- * Everything the person page reads, at once and each under its own name. Every read goes
- * through a use-case scoped to the viewer; nothing here decides what anyone may see.
- */
-function readPersonPage(
-	{
-		people,
-		relationships,
-		circles,
-		media,
-		story,
-		notes,
-		records,
-		household,
-		gifts,
-		todos
-	}: Pick<
-		AppServices,
-		| 'people'
-		| 'relationships'
-		| 'circles'
-		| 'media'
-		| 'story'
-		| 'notes'
-		| 'records'
-		| 'household'
-		| 'gifts'
-		| 'todos'
-	>,
-	viewer: Viewer,
-	contactId: string,
-	request: { reviewOpen: boolean; proposeFor: { a: string; b: string }[] }
-) {
-	return allOf({
-		// The person's own records.
-		dates: listImportantDates(records.importantDateDeps, viewer, contactId),
-		fields: listContactFields(records.contactFieldDeps, viewer, contactId),
-		homes: listHomesOf(records.homeListDeps, viewer, contactId),
-		tags: listTagsForContact(records.tagListDeps, viewer, contactId),
-		contactCircles: listCirclesForContact(circles.circleMembershipDeps, viewer, contactId),
-		storyPage: listStoryPage(story.storyDeps, viewer, contactId, { limit: STORY_PAGE_SIZE }),
-		lastContactedAt: lastContactedOn(story.interactionDeps, viewer, contactId),
-		notes: listNotesForContact(notes.noteDeps, viewer, contactId),
-		gifts: listGiftsForContact(gifts.giftDeps, viewer, contactId),
-		todos: listOpenTodosForContact(todos.todoDeps, viewer, contactId),
-		mentionedIn: listMentionedIn(notes.mentionedInDeps, viewer, contactId),
-		gallery: listGallery(media.galleryDeps, viewer, contactId),
-		groupPhotos: listGroupPhotosOf(circles.cutDeps, viewer, contactId),
-		groupPhotosToCut: listGroupPhotosToCut(circles.cutDeps, viewer, contactId),
-
-		/*
-		 * Their place in the family: their links, derived kin, proposals, the review, what the
-		 * picker greys out and the map, all from one read of the visible graph. The map is cut
-		 * from the same access-scoped snapshot the explorer route reads, and for the same reason:
-		 * derived kinship is worked out over the whole visible graph, so an inference cut from a
-		 * slice could name the wrong relative. Only the person's own slice is sent to the browser.
-		 */
-		family: readFamilyOf(relationships.familyReadDeps, viewer, contactId, request),
-		surnameHelp: readSurnameHelp(people.surnameReviewDeps, viewer, contactId),
-
-		// What the forms offer, and who wrote what.
-		nameOfAuthor: authorNames(household.memberDeps, viewer.householdId),
-		relationshipTypes: relationships.relationshipTypes.listTypes(viewer),
-		circleRolesByName: listRoleSuggestionsByCircleName(circles.circleMembershipDeps, viewer)
-	});
-}
-
-/** The proposal as the hero's chips: one name, or each of several equally sure ones (§3.4). */
-function lastNameChips(proposal: SurnameProposal, t: Translate): { name: string; why: string }[] {
-	const chip = (option: SurnameOption) => ({
-		name: option.name,
-		why: option.reasons.map((reason) => textOf(reason(t))).join(' · ')
-	});
-	if (proposal.kind === 'one') return [chip(proposal)];
-	if (proposal.kind === 'choose') return proposal.options.map(chip);
-	return [];
-}
