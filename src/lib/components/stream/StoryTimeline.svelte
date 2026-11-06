@@ -8,7 +8,7 @@
 	import Swap from '$lib/components/ui/Swap.svelte';
 	import Veil from '$lib/components/ui/Veil.svelte';
 	import { contactSectionPath } from '$lib/people/sections';
-	import { dayLabel } from '$lib/dates/labels';
+	import { dayHeading } from '$lib/dates/labels';
 	import { occasionLabel } from '$lib/gifts/labels';
 	import { useI18n } from '$lib/i18n/context.svelte';
 	import { KIND_PRESENTATION } from '$lib/story/interaction-kinds';
@@ -37,8 +37,10 @@
 		initial: StoryPageView;
 		/** Whom else a touchpoint being corrected can name: everyone visible but this person. */
 		candidates: SelectablePerson[];
+		/** The household's day, so the day headings say *Today* and leave this year's year off. */
+		today: string;
 	}
-	let { contactId, initial, candidates }: Props = $props();
+	let { contactId, initial, candidates, today }: Props = $props();
 
 	const i18n = useI18n();
 	const t = i18n.t;
@@ -113,7 +115,7 @@
 			removals.notify(t('errors.todo.couldNotSave'));
 		}
 		reopeningId = null;
-		// the To do card is the page's, not ours
+		// the To-dos card is the page's, not ours
 		await invalidateAll();
 	}
 
@@ -193,7 +195,7 @@
 		{#each days as group (group.day)}
 			<li>
 				<div class="flex items-center gap-3 pt-5 pb-2 first:pt-0">
-					<h3 class="text-xs font-semibold text-fg-subtle">{dayLabel(i18n, group.day)}</h3>
+					<h3 class="text-xs font-semibold text-fg-subtle">{dayHeading(i18n, group.day, today)}</h3>
 					<span class="h-px flex-1 bg-border-subtle"></span>
 				</div>
 
@@ -341,7 +343,7 @@
 										disabled={reopeningId === item.id}
 										aria-label={t('todos.story.reopen', { title: item.title })}
 										onchange={() => reopen(item)}
-										class="mt-0.5 size-4 shrink-0 accent-primary"
+										class="mt-0.5 size-4 shrink-0"
 										data-testid="story-todo-reopen"
 									/>
 								</div>

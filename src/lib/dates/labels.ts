@@ -59,6 +59,24 @@ export function occasionLabel(lang: DateLanguage, occasion: Occasion): string {
 	return occasion.label ?? lang.t('dates.somethingComingUp');
 }
 
+/**
+ * The heading over a day's entries — Home's stream, a journal, a person's Activity card — so
+ * one day reads one way everywhere: *Today*, *Yesterday*, else the weekday and the date, with
+ * the year only for a day of an earlier year. Both days are ISO days in the household's zone.
+ */
+export function dayHeading(lang: DateLanguage, day: string, today: string): string {
+	const daysAgo = Math.round((Date.parse(today) - Date.parse(day)) / DAY_MS);
+	if (daysAgo === 0) return lang.t('home.today');
+	if (daysAgo === 1) return lang.t('home.yesterday');
+	return new Date(day).toLocaleDateString(lang.intlLocale, {
+		timeZone: 'UTC',
+		weekday: 'long',
+		day: 'numeric',
+		month: 'long',
+		...(day.slice(0, 4) === today.slice(0, 4) ? {} : { year: 'numeric' })
+	});
+}
+
 /** Render `YYYY-MM-DD`, or a year-less `--MM-DD` without inventing a year. */
 export function dayLabel(lang: DateLanguage, value: string): string {
 	const yearless = value.startsWith('--');

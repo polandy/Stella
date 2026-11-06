@@ -2,7 +2,7 @@ import { expect, test, type Locator, type Page } from '@playwright/test';
 import { addPerson, appReady, fillDate, signIn } from './app';
 
 /*
- * The To do card on the person page (docs/02 §2.26): noting a to-do with or without a day,
+ * The To-dos card on the person page (docs/02 §2.26): noting a to-do with or without a day,
  * ticking it by its line, rewriting and removing it, the card moving to the top once something
  * is open, *To-do for …* in the palette, and noting and ticking while Stella is out of reach;
  * a ticked one in the person's Activity (§2.23), unticked or removed from there. Written after
@@ -37,7 +37,7 @@ async function addTodo(page: Page, title: string, dueOn?: string): Promise<void>
 	await expect(todoRow(page, title)).toHaveCount(1);
 }
 
-/** Where the To do card stands among the page's cards, counted from the top. */
+/** Where the To-dos card stands among the page's cards, counted from the top. */
 function cardPlace(page: Page): Promise<number> {
 	return page
 		.locator('section[id^="section-"]')

@@ -1,7 +1,7 @@
 import { dueStanding, type CardTodo } from './todos';
 
 /*
- * The household's to-dos beyond one person (docs/02 §2.26.6): what Home's *To do* band holds
+ * The household's to-dos beyond one person (docs/02 §2.26.6): what Home's *To-dos* band holds
  * and how `/todos` groups them. Pure and handed *today*, the household's day; both take the
  * card's rows (`cardTodos`), so a row just ticked stays where it stood while its toast does.
  */
@@ -40,7 +40,7 @@ export interface TodoBand<T> {
 	showsAll: boolean;
 }
 
-/** Home's *To do* band, from the card's rows in their order (`cardTodos`). */
+/** Home's *To-dos* band, from the card's rows in their order (`cardTodos`). */
 export function todoBand<T extends Dated>(
 	rows: readonly CardTodo<T>[],
 	today: string

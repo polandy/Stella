@@ -15,7 +15,7 @@ know about them in under a minute, on the phone, or on paper for whoever comes a
 - **Coming up** is a card of its own, a link: the gift icon for a birthday, else the calendar,
   *Mia turns 13* and *in 12 days*. It has no heading — the line says what it is.
 - The other blocks are cards headed in small capitals, in this order: *Family & home*, *Pinned
-  notes*, *Lately*, *To do*, *Gift ideas*, *How we met*. A block with nothing in it is not
+  notes*, *Lately*, *To-dos*, *Gift ideas*, *How we met*. A block with nothing in it is not
   drawn, never an empty heading.
 - Every row is a link with a sunken hover, one line, to where the row is edited. A relative:
   name, the role (*daughter*), the age right-aligned. A home: the home icon, the address, *with

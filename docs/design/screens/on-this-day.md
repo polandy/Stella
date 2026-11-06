@@ -10,9 +10,11 @@ today's, from Home's band, or any other day they want to look back on.
 - **`/on-this-day`** heads with the history icon and *On this day* (*An diesem Tag*), and one
   line: *What the household wrote and photographed on 1 November in earlier years.* Mockups:
   https://claude.ai/artifact/DH3TemNZHmgoy6iBVfR17p, Immich: https://claude.ai/artifact/8VokZyK43zm7RYLXJHYrHU
-- Under it the **day picker**: a back chevron (*Day before*), a date input (`max` today), a
-  forward chevron (*Day after*) and *Today* — the last two only while the day is not today. It is
-  a plain GET form (`?day=`); picking a date submits it.
+- Under it the **day picker**: a back chevron (*Day before*), the app's `DateField` (day,
+  month, year in the language's order, `max` today; §5.7), a forward chevron (*Day after*) and
+  *Today* — the last two only while the day is not today. The day sits in the address
+  (`?day=`); a segment committed — a month chosen, the day or year left or entered — opens that
+  day, never each key, so typing *12* does not open the 1st on the way.
 - One card per **year** (`bg-card`, `shadow-card`), newest first, headed *2 years ago · 2024*:
   that year's photos (`MemoryPhotos`, without the year on each) above its entries
   (`MemoryRow`, as in Home's band). A year with only photos, or only entries, is a card too.

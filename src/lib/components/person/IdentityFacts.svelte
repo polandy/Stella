@@ -88,7 +88,7 @@
 
 <dl
 	bind:this={element}
-	class="grid grid-cols-2 gap-x-5 gap-y-3 @min-[36rem]/facts:grid-cols-4"
+	class="grid grid-cols-1 gap-x-5 gap-y-3 @min-[23rem]/facts:grid-cols-2 @min-[36rem]/facts:grid-cols-4"
 	data-testid="identity-facts"
 >
 	{#each facts as entry (entry.name)}
@@ -110,9 +110,10 @@
 			{:else}
 				{#snippet birthdayValue()}
 					{#if birthday?.kind === 'day'}
+						<!-- The age never splits from its "·", so the line breaks before it (UX-02). -->
 						{dayLabel(i18n, birthday.date)}
-						{#if birthday.age !== null}<span class="text-fg-subtle">
-								· {t('contact.facts.age', { age: birthday.age })}</span
+						{#if birthday.age !== null}<span class="whitespace-nowrap text-fg-subtle"
+								>· {t('contact.facts.age', { age: birthday.age })}</span
 							>{/if}
 					{:else if birthday?.kind === 'around'}
 						{t('contact.around', { year: birthday.year })}
@@ -131,8 +132,8 @@
 			{#each otherDates as date (date.id)}
 				{#snippet dateValue()}
 					{dayLabel(i18n, date.date)}
-					{#if date.years !== null}<span class="text-fg-subtle">
-							· {t('contact.facts.age', { age: date.years })}</span
+					{#if date.years !== null}<span class="whitespace-nowrap text-fg-subtle"
+							>· {t('contact.facts.age', { age: date.years })}</span
 						>{/if}
 				{/snippet}
 				<FactCell

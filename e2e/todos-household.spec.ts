@@ -2,7 +2,7 @@ import { expect, test, type Page } from '@playwright/test';
 import { addPerson, appReady, fillDate, signIn } from './app';
 
 /*
- * The household's to-dos beyond one person (docs/02 §2.26.6–7): Home's *To do* band with its
+ * The household's to-dos beyond one person (docs/02 §2.26.6–7): Home's *To-dos* band with its
  * box on the right, ticking there with *Undo*, *Show all* leading to `/todos` and its groups,
  * ticking on `/todos`, *All to-dos* in the palette, and full search finding open and done
  * to-dos. Written after the owner tried them in the app (docs/08 §8.4.1).
@@ -20,7 +20,7 @@ function runLetters(): string {
 	).join('');
 }
 
-/** Notes a to-do on the person page in view, through the To do card's own *+ Add*. */
+/** Notes a to-do on the person page in view, through the To-dos card's own *+ Add*. */
 async function addTodo(page: Page, title: string, dueOn?: string): Promise<void> {
 	const card = page.locator('#section-todos');
 	await card.getByRole('button', { name: 'Add', exact: true }).click();
@@ -53,7 +53,7 @@ test.beforeEach(async ({ page }) => {
 	await signIn(page);
 });
 
-test('an overdue to-do stands in Home’s To do band, its box on the right', async ({ page }) => {
+test('an overdue to-do stands in Home’s To-dos band, its box on the right', async ({ page }) => {
 	const letters = runLetters();
 	const last = `Imfeld${letters}`;
 	await addPerson(page, 'Bandolin', last);

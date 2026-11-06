@@ -14,7 +14,7 @@ most pressing first, and to tick off what is done without opening each person.
   (`todoListGroups`, docs/02 §2.26.6). The heading is `--fg`, *Overdue* too — no nudges.
 - Each row (`HouseholdTodoRow`, `variant="list"`): the line as the checkbox's `<label>`, then a
   `text-xs` line with the day (`TodoDue`) · *noted by …* · *private*; the person with a 20 px
-  avatar as a link to their To do card beside the line from `sm`, under it on a phone; the box
+  avatar as a link to their To-dos card beside the line from `sm`, under it on a phone; the box
   at the right end (§5.1), drawn at 20 px and ticked from a 44 px square on a touch screen —
   the row's whole right end (`tap-target`, §5.9).
 - Ticking is the card's: struck through at once, the toast with *Undo*, the struck row in its
@@ -23,7 +23,7 @@ most pressing first, and to tick off what is done without opening each person.
 - No pencil and no remove: those stay on the person's card, where the name leads.
 - With nothing open: `EmptyState` with the to-do icon, *Nothing open.*, and the hint that a
   to-do noted on a person's page shows up here.
-- Nothing in the navigation leads here: Home's *Show all N* under the *To do* band and the
+- Nothing in the navigation leads here: Home's *Show all N* under the *To-dos* band and the
   palette's *All to-dos* do.
 
 ### Why

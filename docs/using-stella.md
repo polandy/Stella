@@ -58,7 +58,7 @@ nothing to say, and on a wide screen the stream then takes its room. On a phone 
 above it only while something is due within a fortnight, which is when it is worth the top
 of the screen. It shows three people there, with *Show all* underneath when there are more.
 
-Above it stands **To do**: up to three to-dos, for anyone, that are overdue or due within the
+Above it stands **To-dos**: up to three to-dos, for anyone, that are overdue or due within the
 week, each with the person's face, whom it is for and when. Tick the box on the right when it
 is done, just as on their page. *Show all* opens **To-dos**, every open to-do of the
 household on one page, grouped into *Overdue*, *This week*, *Later* and *No day*; you can tick
@@ -313,7 +313,7 @@ related**, with a dashed ring and quieter text. The card's header holds **Edit**
 **⋯** holds *How are we connected?*, *Check relationships* and *Open in the graph*.
 
 After People come **Photos**, **Activity** and the **Notes** side by side (one under the other
-on a phone), then **Gifts**, and **Mentioned in** last. **To do** moves: it stands right under
+on a phone), then **Gifts**, and **Mentioned in** last. **To-dos** moves: it stands right under
 the name while something is open, and at the end otherwise. Nothing is behind a tab, so nothing has to be found
 before it can be read; each card says how many things are in it. A card with nothing in it yet
 keeps out of the way: empty **Photos**, **Notes** and **Gifts** are a single line with their
@@ -394,7 +394,7 @@ someone else's private note.
 someone wrote and the times someone was in touch, newest first, day by day. They used
 to be two separate lists and you had to merge them in your head. Older activity loads when you
 ask for it with *Show earlier*. Gifts you gave them or received from them show here too, on
-their day (see *Gifts* below), and so does each to-do once it is done (see *To do*).
+their day (see *Gifts* below), and so does each to-do once it is done (see *To-dos*).
 
 **Write a moment** on a person's page does not take you away: the page glides down to their
 *Activity* card and the writing field opens at its top, with the cursor in it. A chip above the
@@ -597,9 +597,9 @@ now a given gift on its day (one on each person it was logged with), and the gif
 import brought in as notes are now ideas, given or received gifts. A gift note somebody had
 written in since the import stays a note, so nothing you wrote is lost.
 
-### To do
+### To-dos
 
-The **To do** card holds what you still owe someone — *give the book back*, *ask how the
+The **To-dos** card holds what you still owe someone — *give the book back*, *ask how the
 surgery went*. While something is open it stands right under their name, so it is the first
 thing you read about them; with nothing open it is a single line at the end of the page.
 
@@ -1064,7 +1064,7 @@ What lands where: people with their names, birthdays (an age-based one becomes "
 around 2016"), job and how you met; relationships, with Monica's kinds that Stella lacks
 (cousin, godparent, best friend, …) added as new kinds rather than dropped; notes;
 activities as **interactions**; Monica's gifts onto the **Gifts** card; Monica's tasks onto the
-**To do** card — finished ones as *Done* in Activity on the day they were finished; tags; and life events
+**To-dos** card — finished ones as *Done* in Activity on the day they were finished; tags; and life events
 and pets as clearly labelled notes on the person, so nothing quietly disappears. The full table is in
 [monica-mapping.md](monica-mapping.md).
 
@@ -1346,8 +1346,9 @@ updates itself; that is the household admin's job.
 
 Stella can live on your home screen like any other app. Open **Settings → This device** and
 tap *Install* — after that Stella opens in its own window, without the browser's address bar
-across the top. Safari has no such button: use *Share → Add to Home Screen* instead, and the
-card in Settings says so.
+across the top. Where the browser has no such button, the card names its own menu path
+instead: *Share → Add to Home Screen* on an iPhone or iPad, the *⋮* menu → *Add to Home screen*
+on Android, *File → Add to Dock* in Safari on a Mac.
 
 Once it is installed, every person you can see — their page and their journal — and Home,
 People, Circles and Settings stay readable, whether or not you opened them. Stella keeps them

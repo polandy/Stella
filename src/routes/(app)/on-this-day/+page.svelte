@@ -3,6 +3,7 @@
 	import MemoryRow from '$lib/components/memories/MemoryRow.svelte';
 	import { ImmichMemories } from '$lib/components/memories/immich-memories.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
+	import DateField from '$lib/components/ui/DateField.svelte';
 	import EmptyState from '$lib/components/ui/EmptyState.svelte';
 	import Icon from '$lib/components/ui/Icon.svelte';
 	import { dayLabel } from '$lib/dates/labels';
@@ -10,6 +11,8 @@
 	import { useI18n } from '$lib/i18n/context.svelte';
 	import { MEMORY_STRIP_CAP } from '$lib/memories/memories';
 	import { memoryCardsWithImmich } from '$lib/memories/immich';
+	import { untrack } from 'svelte';
+	import { afterNavigate, goto } from '$app/navigation';
 	import type { PageData } from './$types';
 
 	/*
@@ -30,6 +33,25 @@
 	const isToday = $derived(data.day === data.today);
 	const hrefFor = (day: string) =>
 		day === data.today ? '/on-this-day' : `/on-this-day?day=${day}`;
+
+	/*
+	 * The day in the picker's segments; empty while they do not make a day up to today. It is
+	 * visited when a segment is committed — a month chosen, a day or year left or entered — not
+	 * on each key, so typing *12* does not first open the 1st.
+	 */
+	let picked = $state(untrack(() => data.day));
+	// The field seeds itself once; a day reached by the chevrons or *Today* starts it afresh.
+	let fieldGeneration = $state(0);
+	afterNavigate(() => {
+		if (picked === data.day) return;
+		picked = data.day;
+		fieldGeneration += 1;
+	});
+	function visitPicked(event: Event) {
+		event.preventDefault();
+		if (picked !== '' && picked !== data.day)
+			void goto(hrefFor(picked), { keepFocus: true, noScroll: true });
+	}
 	const STEP =
 		'inline-flex size-9 items-center justify-center rounded-app text-fg-muted hover:bg-card hover:text-fg';
 </script>
@@ -44,21 +66,20 @@
 		<p class="text-sm text-fg-muted">{t('memories.page.intro', { day: monthDay })}</p>
 	</header>
 
-	<!-- A plain GET form: picking a day is a link, and it works before the page has loaded. -->
-	<form method="GET" class="flex flex-wrap items-center gap-1" data-testid="memory-day-picker">
+	<!-- A GET form: the day lives in the address, and the chevrons are plain links. -->
+	<form
+		method="GET"
+		class="flex flex-wrap items-center gap-1"
+		data-testid="memory-day-picker"
+		onchange={visitPicked}
+		onsubmit={visitPicked}
+	>
 		<a href={hrefFor(addDays(data.day, -1))} class={STEP} aria-label={t('memories.page.earlier')}
 			><Icon name="back" size={16} /></a
 		>
-		<label class="sr-only" for="memory-day">{t('memories.page.day')}</label>
-		<input
-			id="memory-day"
-			type="date"
-			name="day"
-			value={data.day}
-			max={data.today}
-			class="rounded-app border border-border bg-bg px-2 py-1.5 text-sm text-fg"
-			onchange={(e) => e.currentTarget.form?.requestSubmit()}
-		/>
+		{#key fieldGeneration}
+			<DateField name="day" bind:value={picked} max={data.today} label={t('memories.page.day')} />
+		{/key}
 		{#if isToday}
 			<span class="{STEP} opacity-40" aria-hidden="true"><Icon name="forward" size={16} /></span>
 		{:else}

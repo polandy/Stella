@@ -15,7 +15,7 @@ the person, and that never leaves the page. Keeping the record tidy (archive, me
 - One column of full-width cards, at most `66.25rem` (about 1060 px), in a fixed order: the
   identity card, then **People · Photos · Activity and Notes · Gifts · Mentioned in**. No
   page tabs (the Gifts card has tabs of its own, inside it).
-- The **To do** card is the one card that moves: right under the identity card (above the jump
+- The **To-dos** card is the one card that moves: right under the identity card (above the jump
   bar's slot and People) while a to-do is open, otherwise one line after Gifts (docs/02
   §2.26.2).
 - Activity (about 1.4 parts) and Notes (1 part) stand side by side from `lg`, and stack below
@@ -44,8 +44,10 @@ the person, and that never leaves the page. Keeping the record tidy (archive, me
 - The **You** chip is `--primary-soft` on `--primary`; *Archived* is a quiet chip beside
   *Private*.
 - Then a small labelled grid of **facts**: two across, four once the facts' column is
-  36 rem wide (its own width again; on a phone and an upright tablet two). A value wraps on
-  words, as the name does. It is the
+  36 rem wide (its own width again; on a phone and an upright tablet two), and one alone
+  while the column is under 23 rem (a 360 px phone). A value wraps on words, as the name
+  does, but an age or a span of years (*· 43 years*) never splits: the line breaks before
+  its dot. It is the
   card's **only reading surface** and holds **only what the record has**:
   - the birthday with the age (from the dates, else the profile; *Born around …* for an
     estimated year);
@@ -92,7 +94,8 @@ the person, and that never leaves the page. Keeping the record tidy (archive, me
   slots** (*Address · + Add*, each opening its editor) and the empty rows below, and hands the
   cursor to the first.
 - A fact or row emptied during a visit stays where it was, as a slot.
-- Gender is not on the card; it is set in the name editor.
+- Gender is not on the card; it is set in the name editor, or while adding someone behind
+  *More*.
 - **One action**: *Write a moment* (primary). It does not leave the page: it opens the moment
   composer at the top of the Activity card and the page glides there.
 - Beside it a framed **⋯** (`MenuButton` with `look="button"`) holds, in order: *Log contact*,
@@ -127,7 +130,7 @@ the person, and that never leaves the page. Keeping the record tidy (archive, me
 
 - `JumpBar` is a row of five links, *People · Photos · Activity · Notes · Gifts*, each with its
   card's count where it has one (none for the paged Activity, none for Gifts — whose count is
-  on its *Ideas* tab — none for a count of nothing). *Mentioned in* is not in it, nor is *To do*:
+  on its *Ideas* tab — none for a count of nothing). *Mentioned in* is not in it, nor is *To-dos*:
   a sixth link does not fit a phone's row, and while a to-do is open its card already stands
   first. The five it
   links stay at zero — as one line, at the least —
@@ -340,7 +343,7 @@ the person, and that never leaves the page. Keeping the record tidy (archive, me
   add form's fields; only the author is offered Shared/Private.
 - Removing follows the undo window of docs/02 §2.23.
 
-#### To do card
+#### To-dos card
 
 - Rows in `orderOpenTodos`'s order (docs/02 §2.26.2), each a native checkbox (`accent-primary`,
   20 px) beside the line, which is its `<label>` so the whole line is the tap target; then one
@@ -436,7 +439,7 @@ the person, and that never leaves the page. Keeping the record tidy (archive, me
 #### Empty cards
 
 - `cardShape` (`$lib/people/empty-cards.ts`) decides each card's shape at zero.
-- An empty **Photos**, **Notes**, **Gifts** or **To do** is **one line** (`Section`'s `empty`): the title,
+- An empty **Photos**, **Notes**, **Gifts** or **To-dos** is **one line** (`Section`'s `empty`): the title,
   one short sentence cut off rather than wrapped (*No photos yet.*, *Nothing noted yet.*,
   *No gift ideas yet.*, *Nothing open.*), and the card's actions — *+ Add* and, on Photos, the Immich menu; on
   Gifts *+ Idea* and the ⋯ menu, which then holds *+ Given* too — with no count and no body.

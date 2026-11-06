@@ -54,7 +54,7 @@ export const contacts: ContactsMessages = {
 	'contacts.new.howWeMet': 'Wie wir uns kennengelernt haben',
 	'contacts.new.where': 'Wo',
 	'contacts.new.wherePlaceholder': 'am See',
-	'contacts.new.more': 'Mehr — Spitzname, Geburtstag',
+	'contacts.new.more': 'Mehr — Spitzname, Geburtstag, Geschlecht',
 	'contacts.new.nickname': 'Spitzname',
 	'contacts.new.birthday': 'Geburtstag',
 	'contacts.new.visibility': 'Sichtbarkeit',

@@ -268,7 +268,7 @@ describe('a to-do from the palette (docs/02 §2.26)', () => {
 			expect(paletteRows(typed, people, labels)[0]).toMatchObject({ id: 'todo' });
 	});
 
-	it('then asks only whom it is for: people, each landing on their To do card’s form', () => {
+	it('then asks only whom it is for: people, each landing on their To-dos card’s form', () => {
 		const rows = paletteRows('ma', people, labels, new Map(), 'todo');
 
 		expect(rows.every((r) => r.kind === 'person')).toBe(true);

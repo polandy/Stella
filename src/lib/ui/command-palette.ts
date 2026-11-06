@@ -16,7 +16,7 @@ import { tellApart, type Distinction } from '$lib/people/namesakes';
  *
  * Most rows go somewhere. *Gift idea for …*, *To-do for …* and *Brief for …* ask something
  * first: each turns the palette into a second step, `giftIdea`, `todo` or `brief`, which lists
- * only people, each leading to their idea form, their To do card's form (docs/02 §2.26) or their
+ * only people, each leading to their idea form, their To-dos card's form (docs/02 §2.26) or their
  * brief (docs/02 §2.2.5).
  *
  * The wording arrives as `PaletteLabels` rather than being written here: this module is

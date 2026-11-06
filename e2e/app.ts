@@ -261,13 +261,14 @@ export async function releaseSelfClaim(page: Page): Promise<void> {
 }
 
 /**
- * The server's today, `YYYY-MM-DD`: the day picker on `/on-this-day` cannot go past it. A spec
- * that dates something "today" counts from here rather than from the runner's own clock, so
- * only one clock is in play (docs/08 §8.4.2). Navigates away from the current page.
+ * The server's today, `YYYY-MM-DD`: `/on-this-day` without a day shows today, and its day
+ * picker posts that day in a hidden field. A spec that dates something "today" counts from here
+ * rather than from the runner's own clock, so only one clock is in play (docs/08 §8.4.2).
+ * Navigates away from the current page.
  */
 export async function serverToday(page: Page): Promise<string> {
 	await page.goto('/on-this-day');
-	const today = await page.getByLabel('Day', { exact: true }).getAttribute('max');
+	const today = await page.locator('input[type="hidden"][name="day"]').inputValue();
 	expect(today).toMatch(/^\d{4}-\d{2}-\d{2}$/);
 	return today!;
 }

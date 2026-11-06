@@ -80,7 +80,7 @@
 
 	let showAllUpcoming = $state(false);
 
-	// The *To do* band (docs/02 §2.26.6): a row just ticked stays, struck through, while its
+	// The *To-dos* band (docs/02 §2.26.6): a row just ticked stays, struck through, while its
 	// toast stands, as on the person's card.
 	const justDone = new JustDoneTodos<PageData['todos'][number]>(useRemovals());
 	const band = $derived(todoBand(justDone.rows(data.todos), data.today));

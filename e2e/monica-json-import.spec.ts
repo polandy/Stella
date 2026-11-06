@@ -16,7 +16,7 @@ import { signIn } from './app';
 const EXPORT = 'e2e/fixtures/monica-mini.json';
 const PHOTO_ID = 'monica:photo:9f0d5c2a-1111-4a5b-8c3d-0000000000p1';
 
-/** An open to-do on the person's To do card. */
+/** An open to-do on the person's To-dos card. */
 const todoRow = (page: Page, title: string) =>
 	page.getByTestId('todos').locator('li', { hasText: title });
 
@@ -82,7 +82,7 @@ test('imports a JSON export, stores the pictures it carries and shows the people
 	// Monica's tasks (docs/02 §2.26.8): the open one on the card, the description after its
 	// title; the completed one done in Activity on the day Monica completed it.
 	await expect(todoRow(page, 'Buch zurückgeben — das rote, von Weihnachten')).toHaveCount(1);
-	await expect(doneOn(page, '6 May 2024', 'Rezept schicken')).toContainText('Done');
+	await expect(doneOn(page, 'Monday, 6 May 2024', 'Rezept schicken')).toContainText('Done');
 	// The embedded picture went through the browser's resize pipeline and became the avatar.
 	await expect(page.locator('img[alt="Severin Hauenstein"]')).toHaveAttribute(
 		'src',

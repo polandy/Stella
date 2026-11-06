@@ -37,10 +37,10 @@ first to find somebody, so there the page opens on the person search.
   beneath: the gift icon and *2 ideas* in `--link`, `text-xs`, to their Gifts card; its
   accessible name says *2 gift ideas for Hilde*. Its own line, not on the *Write a moment*
   line, because the 17 rem rail would wrap them mid-phrase.
-- **To do** (docs/02 §2.26.6) is a band of its own **above *Coming up*** in the same rail
-  (`TodoBand`): the to-do icon and *To do*, then up to three rows of what is overdue or due
+- **To-dos** (docs/02 §2.26.6) is a band of its own **above *Coming up*** in the same rail
+  (`TodoBand`): the to-do icon and *To-dos*, then up to three rows of what is overdue or due
   within the week. Each row (`HouseholdTodoRow`, `variant="band"`) is a 28 px avatar, the line
-  as the checkbox's `<label>`, and under it in `text-xs` the person as a link to their To do
+  as the checkbox's `<label>`, and under it in `text-xs` the person as a link to their To-dos
   card · the day (`TodoDue`), the box at the right end (§5.1). *Show all N* beneath is a link
   to `/todos`, N every open to-do, shown only when `/todos` holds more than the band. Bands in
   the rail are `gap-6` apart. Mockup: https://claude.ai/artifact/5Lj9VzJEqR7My3sEL2vhjq
@@ -106,7 +106,7 @@ Nothing scrolls sideways because what lies off the right edge of a phone is not 
 nothing is imminent it follows the stream, still one scroll away. It is absent rather than
 empty because a permanently empty panel teaches people to stop looking, and its rail column
 goes with it because a stable stream width was not worth a quarter of the screen standing
-blank most weeks. *To do* goes above *Coming up* because what the household owes is acted on
+blank most weeks. *To-dos* goes above *Coming up* because what the household owes is acted on
 now, a date is prepared for; a to-do only pulls the rail above the stream once it is due,
 not a week ahead, so a few far-off lines do not displace the stream. *On this day* goes last
 and never pulls the rail up: it is for enjoying, nothing in it asks to be acted on.

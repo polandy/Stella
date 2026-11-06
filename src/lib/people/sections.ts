@@ -15,7 +15,7 @@ import { encodeRelationshipChoice } from '../relationships/type-options';
 /**
  * Every addressable card, in the order the page shows them under the identity card: who they
  * belong with, what was taken, then the story and the notes (side by side on a wide screen),
- * the gifts (docs/02 §2.25), and last where somebody else named them. The To do card (docs/02
+ * the gifts (docs/02 §2.25), and last where somebody else named them. The To-dos card (docs/02
  * §2.26) moves: right under the identity card while something is open, here at the end, before
  * *Mentioned in*, while nothing is. The identity card itself is the page's top and needs no
  * anchor.

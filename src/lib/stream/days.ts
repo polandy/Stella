@@ -1,4 +1,4 @@
-import type { DateLanguage } from '$lib/dates/labels';
+import { dayHeading, type DateLanguage } from '$lib/dates/labels';
 
 /*
  * Home's stream by day (docs/02 §2.22.2): newest first under a heading per calendar day —
@@ -38,7 +38,7 @@ export function streamDays<T extends { at: number }>(
 ): StreamDay<T>[] {
 	const days: StreamDay<T>[] = [];
 	for (const item of items) {
-		const label = dayHeading(lang, item.at, now, timeZone);
+		const label = dayHeading(lang, dayIn(item.at, timeZone), dayIn(now, timeZone));
 		const last = days.at(-1);
 		if (last && last.label === label) last.items.push(item);
 		else days.push({ label, items: [item] });
@@ -76,21 +76,8 @@ export function streamTime(
 	};
 }
 
-const TODAY = 0;
 const YESTERDAY = 1;
 const DAY_MS = 86_400_000;
-
-function dayHeading(lang: DateLanguage, at: number, now: number, timeZone: string): string {
-	const days = daysBefore(at, now, timeZone);
-	if (days === TODAY) return lang.t('home.today');
-	if (days === YESTERDAY) return lang.t('home.yesterday');
-	return new Date(at).toLocaleDateString(lang.intlLocale, {
-		weekday: 'long',
-		day: 'numeric',
-		month: 'long',
-		timeZone
-	});
-}
 
 /** The calendar day `ms` falls on in `timeZone`, as `YYYY-MM-DD` (en-CA writes it so). */
 function dayIn(ms: number, timeZone: string): string {

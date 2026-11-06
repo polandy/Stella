@@ -228,7 +228,6 @@ export const circles = {
 	'circles.arrange.open': 'Arrange people',
 	'circles.arrange.title': (p: { name: string }) => `Arrange people · ${p.name}`,
 	'circles.arrange.heading': 'Arrange people',
-	'circles.arrange.back': (p: { name: string }) => `Back to ${p.name}`,
 	'circles.arrange.summary': (p: { name: string; subCircles: number; people: number }) =>
 		`${p.name} and ${p.subCircles === 1 ? '1 sub-circle' : `${p.subCircles} sub-circles`} · ${
 			p.people === 1 ? '1 person' : `${p.people} people`
@@ -237,10 +236,9 @@ export const circles = {
 	'circles.arrange.modeLabel': 'When dragging',
 	'circles.arrange.move': 'Move',
 	'circles.arrange.copy': 'Copy',
-	'circles.arrange.hintMove':
-		'Drag or tap people and pick a target · Alt while dropping: copy instead',
-	'circles.arrange.hintCopy':
-		'Drag or tap people and pick a target · Alt while dropping: move instead',
+	'circles.arrange.hint': 'Drag or tap people and pick a target',
+	'circles.arrange.hintAltMove': 'Alt while dropping: copy instead',
+	'circles.arrange.hintAltCopy': 'Alt while dropping: move instead',
 	'circles.arrange.direct': (p: { name: string }) => `Directly in ${p.name}`,
 	'circles.arrange.itself': 'The circle itself',
 	'circles.arrange.count': (p: { count: number }) =>

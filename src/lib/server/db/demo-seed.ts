@@ -773,9 +773,9 @@ const withMentions = (text: string) =>
 
 /**
  * What is still owed Peter, Grosi’s husband (docs/02 §2.26): one overdue, one due this week, one with no
- * day, one private and one already done, so the To do card stands at the top of his page and
+ * day, one private and one already done, so the To-dos card stands at the top of his page and
  * shows every standing. `dueIn` counts days from today, negative for past ones. Two more, on
- * Lena and Beat, give Home's *To do* band three faces and *Show all* (docs/02 §2.26.6).
+ * Lena and Beat, give Home's *To-dos* band three faces and *Show all* (docs/02 §2.26.6).
  */
 const TODOS: readonly {
 	key: string;

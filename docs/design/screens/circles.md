@@ -111,14 +111,16 @@ its photos, and lets the household manage members in bulk.
 #### Arrange people
 
 - Reached from the **Arrange people** button in the Members section of a circle that has
-  sub-circles (not shown otherwise). Its own view with a back link to the circle (the top bar's
-  trail is *… › Circle › Arrange people*), a heading, and a line *School and 2 sub-circles · 14
+  sub-circles (not shown otherwise). Its own view; the way back is the top bar's trail
+  (*… › Circle › Arrange people*, on a phone *‹ Circle*), no back link on the page (§5.4). A heading, and a line *School and 2 sub-circles · 14
   people*.
 - A toggle *When dragging: Move | Copy* (two `aria-pressed` buttons in a group, Move by default)
-  with a hint line; Alt while dropping flips the mode for that drop.
+  with a hint line; Alt while dropping flips the mode for that drop, and the hint names Alt
+  only for a fine pointer — on touch the toggle is the way.
 - One **card per circle** in a grid of `repeat(auto-fill, minmax(240px, 1fr))`, one column on a
   phone: first *Directly in <circle>* (subtitle *The circle itself*), then each sub-circle at any
-  depth, newest first, with its path (*Class 5b › Choir*). The header carries a count pill
+  depth, newest first, with its path under the name (*Class 5b › Choir*) — none for a direct
+  sub-circle, whose path would only repeat its name. The header carries a count pill
   (*3 people*); an empty card is a dashed box, *Nobody yet. Drag people here.*
 - A person is a chip: avatar, name, and *also in …* naming the other cards that hold them. A
   selected chip is filled with the primary colour and a check mark. A chip is a button

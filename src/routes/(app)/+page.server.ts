@@ -111,7 +111,7 @@ function captureProblem(field: string | null): MessageKey {
 }
 
 export const actions: Actions = {
-	// The *To do* band ticks here (docs/02 §2.26.6).
+	// The *To-dos* band ticks here (docs/02 §2.26.6).
 	...householdTodoActions('/'),
 	capture: async ({ request, locals }) => {
 		const viewer = requireViewer(locals);

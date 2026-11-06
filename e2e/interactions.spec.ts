@@ -53,7 +53,8 @@ test('logs a call with a participant, shows it on the timeline and derives last 
 
 	const timeline = page.getByTestId('story-timeline');
 	await expect(timeline).toContainText('Call');
-	await expect(timeline).toContainText('1 September 2026');
+	// The heading carries the year only once it is an earlier one, so the day and month alone.
+	await expect(timeline).toContainText('1 September');
 	await expect(timeline).toContainText(TITLE);
 	await expect(timeline).toContainText('She wants Oma to come along.');
 	await expect(timeline.getByRole('link', { name: 'Markus Brunner' })).toBeVisible();

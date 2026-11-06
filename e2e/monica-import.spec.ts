@@ -12,7 +12,7 @@ import { factEditor, signIn } from './app';
 const DUMP = 'e2e/fixtures/monica-mini.sql';
 const PHOTO_FOLDER = 'e2e/fixtures/monica-photos';
 
-/** An open to-do on the person's To do card. */
+/** An open to-do on the person's To-dos card. */
 const todoRow = (page: Page, title: string) =>
 	page.getByTestId('todos').locator('li', { hasText: title });
 
@@ -75,7 +75,7 @@ test('previews the dump, imports it, attaches the photos and shows the people in
 	// Monica's tasks (docs/02 §2.26.8): the open one on the card, the description after its
 	// title; the completed one done in Activity on the day Monica completed it.
 	await expect(todoRow(page, 'Buch zurückgeben — das rote, von Weihnachten')).toHaveCount(1);
-	await expect(doneOn(page, '6 May 2024', 'Rezept schicken')).toContainText('Done');
+	await expect(doneOn(page, 'Monday, 6 May 2024', 'Rezept schicken')).toContainText('Done');
 	await expect(page.locator('img[alt="Ottilie Vogelsang"]')).toHaveAttribute(
 		'src',
 		/monica:photo:1/

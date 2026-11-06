@@ -119,7 +119,8 @@ test('an author edits their touchpoint; nobody else may, and an admin only remov
 	await expect(edited.getByRole('link', { name: BEFORE })).toHaveCount(0);
 	// Moved to its new day, after the admin's on the 12th.
 	const days = storyCard(nina).getByTestId('story-timeline');
-	await expect(days).toContainText('3 September 2026');
+	// The heading carries the year only once it is an earlier one, so the day and month alone.
+	await expect(days).toContainText('3 September');
 	const titles = storyCard(nina).locator('[data-story-item]');
 	await expect(titles.filter({ hasText: letters })).toHaveText([
 		new RegExp(adminsOwn),

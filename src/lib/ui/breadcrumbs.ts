@@ -1,4 +1,4 @@
-import type { Translate } from '$lib/i18n/translate';
+import type { MessageKey, Messages, Translate } from '$lib/i18n/translate';
 
 /** One step of the top bar's trail; the current page's step carries no link. */
 export type Crumb = { label: string; href?: string };
@@ -11,6 +11,32 @@ export type CrumbData = {
 	nesting?: { ancestors?: { id: string; name: string }[] };
 	/** A tag's page names its tag (docs/02 §2.20.2). */
 	tag?: { name?: string };
+};
+
+/** A message that takes no values, so it can name a step. */
+type PlainKey = { [K in MessageKey]: Messages[K] extends string ? K : never }[MessageKey];
+
+/** Pages one step below Home that are not a tab of their own, named by their title. */
+const UNDER_HOME: Record<string, PlainKey> = {
+	'/(app)/on-this-day': 'memories.title',
+	'/(app)/gifts': 'gifts.list.title',
+	'/(app)/todos': 'todos.list.title',
+	'/(app)/share': 'share.title'
+};
+
+/** The pages under Settings by their first path segment, named by their title. */
+const UNDER_SETTINGS: Record<string, PlainKey> = {
+	'api-tokens': 'settings.api.title',
+	calendar: 'settings.calendar.title',
+	'first-name-only': 'settings.firstNameOnly.title',
+	immich: 'immich.match.title',
+	import: 'nav.importPeople',
+	'last-names': 'surnames.page.title',
+	members: 'settings.members.title',
+	'nextcloud-conflicts': 'nextcloud.conflicts.title',
+	'relationship-types': 'relationshipTypes.title',
+	relationships: 'settings.relationships.title',
+	'same-address': 'settings.sameAddress.title'
 };
 
 /**
@@ -58,8 +84,13 @@ export function breadcrumbs(
 	} else if (routeId.startsWith('/(app)/search')) {
 		trail.push({ label: t('nav.search') });
 	} else if (routeId.startsWith('/(app)/settings')) {
-		trail.push({ label: t('nav.settings'), href: '/settings' });
-		if (routeId.startsWith('/(app)/settings/import')) trail.push({ label: t('nav.importPeople') });
+		const page = UNDER_SETTINGS[routeId.split('/')[3] ?? ''];
+		if (page) {
+			trail.push({ label: t('nav.settings'), href: '/settings' });
+			trail.push({ label: t(page) });
+		} else trail.push({ label: t('nav.settings') });
+	} else if (UNDER_HOME[routeId]) {
+		trail.push({ label: t(UNDER_HOME[routeId]) });
 	}
 	return trail;
 }

@@ -22,7 +22,9 @@ are what it holds today. The household-wide checks are their own page (§5.5.8).
   theirs; *Forget* in danger, *Keep it* focused, Escape keeps); **not set up** — a line on
   what it does and *Set up device unlock*; **not possible here** — one line saying a tap shows
   an entry instead.
-- A **Household** section after *You* holds one link card, *Members* (docs/02 §2.1).
+- A **Household** section after *You* holds the *Members* link card (docs/02 §2.1) and, for an
+  admin, *Relationship types* (§2.4) — the household's vocabulary, not a data tool. The intro
+  above names only what is there; it promises nothing to come.
 - *You* is a labelled person search select; it marks the same person as the identity card's
   *This is me* (§5.5.2).
 - Settings links to *Calendar* under *Calendar*, before *API tokens* under *API*.
