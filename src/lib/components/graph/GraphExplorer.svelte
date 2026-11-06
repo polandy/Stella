@@ -569,6 +569,7 @@
 	class:fixed={overlay}
 	class:inset-0={overlay}
 	class:z-50={overlay}
+	data-testid="graph-frame"
 >
 	<GraphCanvas
 		bind:container
