@@ -98,7 +98,6 @@ export const errors = {
 	'errors.image.takenAt': "The photo's capture date can't be right.",
 	'errors.image.cropOutside': 'The chosen square does not fit inside the photo.',
 	'errors.image.dimensions': 'Invalid image dimensions.',
-	'errors.image.couldNotStore': 'Could not store the photo.',
 	'errors.caption.tooLong': (p: { max: number }) => `A caption can be at most ${p.max} characters.`,
 
 	'errors.moment.needText': 'Write what happened first.',
@@ -148,7 +147,6 @@ export const errors = {
 	'errors.interaction.gone': 'This interaction is no longer there.',
 	'errors.tag.needName': 'Please enter a tag name.',
 	'errors.tag.couldNotAdd': 'Could not add the tag.',
-	'errors.image.chooseSome': 'Please choose at least one image.',
 	'errors.image.chooseOne': 'Please choose an image.',
 	'errors.caption.unreadable': 'Could not read that caption.',
 	'errors.photo.onlyOwnerCaption': 'Only the person who added a photo can caption it.',

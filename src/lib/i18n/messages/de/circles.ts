@@ -106,7 +106,6 @@ export const circles: CirclesMessages = {
 	// Die Fotos eines Kreises (docs/02 §2.4.2).
 	'circles.photos.title': 'Fotos',
 	'circles.photos.add': 'Fotos hinzufügen',
-	'circles.photos.none': 'Noch keine Fotos von diesem Kreis.',
 	'circles.photos.filter': 'Fotos zeigen von',
 	'circles.photos.all': 'Alle',
 	'circles.photos.pictures': 'Bilder',

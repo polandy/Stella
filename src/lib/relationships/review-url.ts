@@ -17,16 +17,16 @@ export const REVIEW_PARAM = 'review';
 export const QUERY_PARAM = 'q';
 
 /** The key of the last group on the previous page — a key, never an offset (see `paging.ts`). */
-export const AFTER_PARAM = 'after';
+const AFTER_PARAM = 'after';
 
 /** The key of the first group on the next page, for walking backwards. */
-export const BEFORE_PARAM = 'before';
+const BEFORE_PARAM = 'before';
 
 /** The declined log, once it has outgrown the drawer inside the list. */
-export const DECLINED_PARAM = 'declined';
+const DECLINED_PARAM = 'declined';
 
 /** Where the review lives. */
-export const REVIEW_BASE = '/settings/relationships';
+const REVIEW_BASE = '/settings/relationships';
 
 /**
  * The hidden field a form carries its place back in.

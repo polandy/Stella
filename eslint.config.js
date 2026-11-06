@@ -14,6 +14,16 @@ const frameworkImports = [
 	}
 ];
 
+// A pure module's plain `.ts` also leaves Svelte's runtime to its `*.svelte.ts` adapter, so a
+// unit test runs without it. Easing curves are plain functions of a number, so they may stay.
+const pureImports = [
+	...frameworkImports,
+	{
+		regex: '^svelte(/(?!easing$).*)?$',
+		message: 'Pure logic: Svelte runtime belongs in the *.svelte.ts browser adapter (CLAUDE.md).'
+	}
+];
+
 // `services/` wires concretes to use-cases; only the SvelteKit edge may reach for it, or a
 // use-case would end up depending on a concrete DB again (docs/08 §8.3). Any module inside the
 // folder counts, not just its index — `../services/app-services` hands out the same wiring —
@@ -49,6 +59,7 @@ const frameworkFreeFolders = [
 	'src/lib/privacy/**',
 	'src/lib/commands/**',
 	'src/lib/immich/**',
+	'src/lib/kinship/**',
 	'src/lib/graph/model/**',
 	'src/lib/graph/layout/**',
 	'src/lib/graph/explorer-look.ts',
@@ -198,6 +209,13 @@ export default ts.config(
 		ignores: frameworkExceptions,
 		rules: {
 			'no-restricted-imports': ['error', { patterns: frameworkImports }]
+		}
+	},
+	{
+		files: frameworkFreeFolders,
+		ignores: [...frameworkExceptions, '**/*.svelte.ts'],
+		rules: {
+			'no-restricted-imports': ['error', { patterns: pureImports }]
 		}
 	}
 );

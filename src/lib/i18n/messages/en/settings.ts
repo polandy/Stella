@@ -7,7 +7,6 @@ export const settings = {
 	'settings.language.label': 'Interface language',
 	'settings.language.hint':
 		'Stella speaks English and German. Your choice is kept with your profile, so every device you sign in on follows it.',
-	'settings.language.saved': 'Language changed.',
 	'settings.language.unsupported': 'Stella does not speak that language.',
 	'settings.self.heading': 'You',
 	'settings.self.label': 'Which of these people is you',
@@ -136,8 +135,6 @@ export const settings = {
 		'No rule runs until you ask. On a large household this takes a moment.',
 	'settings.relationships.check': 'Check all relationships',
 	'settings.relationships.checkAgain': 'Check again',
-	'settings.relationships.openCount': (p: { count: number }) =>
-		p.count === 1 ? '1 suggestion open' : `${p.count} suggestions open`,
 	'settings.relationships.nothing':
 		'Nothing open. Stella finds nothing across your household that is not on record already.',
 	/*

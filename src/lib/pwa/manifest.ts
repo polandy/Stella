@@ -54,7 +54,7 @@ export interface ShareTarget {
 }
 
 /** Where a share lands, and the form fields its parts arrive in. */
-export const SHARE_TARGET: ShareTarget = {
+const SHARE_TARGET: ShareTarget = {
 	action: '/share',
 	method: 'POST',
 	enctype: 'multipart/form-data',

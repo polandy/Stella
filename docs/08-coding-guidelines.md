@@ -64,8 +64,10 @@ rule and pragmatism genuinely conflict, favor readability and testability.
     `typescript-eslint`, `eslint-plugin-svelte`) lints. `bun run format` rewrites,
     `bun run lint` checks both and runs in CI. The lint also guards the architecture with
     `no-restricted-imports`: no `$app` / `$env` / `@sveltejs/kit` under
-    `src/lib/server/{domain,access}` or a folder CLAUDE.md calls *pure*, and no
-    `$lib/server/services` outside `src/routes/` and `src/hooks.server.ts` (§8.3). And it
+    `src/lib/server/{domain,access}` or a folder CLAUDE.md calls *pure*, no Svelte runtime
+    (`svelte`, `svelte/*` but `svelte/easing`) in such a folder's plain `.ts` (its
+    `*.svelte.ts` browser adapter may), and no `$lib/server/services` outside `src/routes/`
+    and `src/hooks.server.ts` (§8.3). And it
     keeps the edge's boilerplate in one place: no hand-written `if (!locals.user) throw
     redirect(…)` (use `requireViewer` / `requireUser`, docs/04 §4.4), no `new Date(` in a
     route module (`todayFor(clock)`, item 10), no local `key()` helper (`messageKey()` from
@@ -366,6 +368,8 @@ A change is done when:
 2. Add the same key to `messages/de/` — the compiler insists.
 3. A new area needs its module in both barrels (`messages/{en,de}/index.ts`); the parity
    spec in `messages/catalogs.test.ts` catches a barrel that forgot one.
+4. Use it. The same spec fails on a key no source or spec file names, quoted or built from a
+   template prefix (`pwa.install.byHand.${…}`), so copy leaves the catalogue with its caller.
 
 ## 8.8 Dependency policy
 

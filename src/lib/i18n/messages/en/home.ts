@@ -44,7 +44,6 @@ export const home = {
 	'home.outbox.photoCount': (p: { count: number }) =>
 		p.count === 1 ? '1 photo' : `${p.count} photos`,
 	'home.outbox.noteOn': (p: { name: string }) => `· note on ${p.name}`,
-	'home.outbox.editOnPage': 'Edit',
 	'home.outbox.discardNamed': (p: { name: string }) => `Discard “${p.name}”`,
 	'home.outbox.tagOn': (p: { name: string }) => `· tag on ${p.name}`,
 	'home.outbox.circleFor': (p: { name: string }) => `· circle for ${p.name}`,

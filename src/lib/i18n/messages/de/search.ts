@@ -68,7 +68,6 @@ export const search: SearchMessages = {
 		'Familie, Freundschaft und Beruf zwischen den Menschen einer Gruppe zeigen',
 	'graph.group.label': (p) => `${p.role} · ${p.count}`,
 	'graph.bundle.count': (p) => `${p.count} Verbindungen`,
-	'graph.arrange': 'Anordnen',
 	'graph.arrange.current': (p) => `Anordnen: ${p.name}`,
 	'graph.arrange.force': 'Frei',
 	'graph.arrange.force.hint': 'Die Verbindungen ziehen den Graphen in Form',
@@ -124,7 +123,6 @@ export const search: SearchMessages = {
 	'graph.aloneCircle.hint':
 		'Füge die Menschen hinzu, die diesen Kreis teilen, und die Karte wächst von dort aus.',
 	'graph.onPerson.label': (p) => `Die Menschen um ${p.name}`,
-	'graph.onPerson.loading': 'Karte wird gezeichnet…',
 	'graph.onPerson.enlarge': 'Karte vergrößern',
 	'graph.onPerson.shrink': 'Karte verkleinern',
 	'graph.fullscreen.enter': 'Vollbild',

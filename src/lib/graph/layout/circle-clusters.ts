@@ -21,7 +21,7 @@ import {
  */
 
 /** Distances of the arrangement by circles, in model units. */
-export const CLUSTER_SPACING = {
+const CLUSTER_SPACING = {
 	/** The least room between any two nodes' names. */
 	gap: 30,
 	/** Between one group and the next. */

@@ -22,7 +22,7 @@ const clean = (value?: string | null): string => (value ?? '').trim();
  * The quote marks a nickname is set in, by the language the name is written in. The stored name
  * is data, not interface copy: the pair is chosen once, when the name is written, and stays.
  */
-export const NICKNAME_QUOTES: Readonly<Record<Locale, readonly [open: string, close: string]>> = {
+const NICKNAME_QUOTES: Readonly<Record<Locale, readonly [open: string, close: string]>> = {
 	en: ['“', '”'],
 	de: ['„', '“']
 };
