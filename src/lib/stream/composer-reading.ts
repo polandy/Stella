@@ -103,15 +103,6 @@ export function composerReading(
 	return { referenced, unclear, blocked, canSave: blocked === null, saveHint };
 }
 
-/**
- * The day a new moment defaults to. A page kept on the device may be days old, and so is the
- * day it was rendered with: the device's own calendar is the writer's, and it only ever moves
- * the default forward.
- */
-export function defaultDay(today: string, deviceDay: string | null): string {
-	return deviceDay !== null && deviceDay > today ? deviceDay : today;
-}
-
 /** What is typed, in the form it is stored and started from again. */
 export function draftOf(
 	state: Pick<ComposerState, 'body' | 'picks' | 'visibility' | 'newPeople'>

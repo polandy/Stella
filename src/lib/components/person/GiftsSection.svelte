@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { browser } from '$app/environment';
+	import { deviceDay, writersDay } from '$lib/dates/today';
 	import { afterNavigate } from '$app/navigation';
 	import Button from '$lib/components/ui/Button.svelte';
 	import Icon from '$lib/components/ui/Icon.svelte';
@@ -33,7 +35,7 @@
 	const removals = useRemovals();
 	const c = $derived(data.contact);
 	// The writer's day, as the story's forms take it.
-	const today = new Date().toLocaleDateString('en-CA');
+	const today = $derived(writersDay(data.today, browser ? deviceDay() : null));
 
 	// A gift on its way out (docs/02 §2.23) is gone from the card while its undo window is open.
 	const shown = $derived(data.gifts.filter((g) => !removals.isPending(removalKey('gift', g.id))));

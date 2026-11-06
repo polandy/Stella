@@ -29,10 +29,10 @@
 	import { createPanelKey, keyupAsksPicker, textKey } from '$lib/stream/composer-keys';
 	import { SAVED_NOTICE_MS, savedMomentAnchor } from '$lib/stream/saved-moment';
 	import { useRemovals } from '$lib/undo/context.svelte';
+	import { deviceDay, writersDay } from '$lib/dates/today';
 	import {
 		composerPeople,
 		composerReading,
-		defaultDay,
 		draftOf,
 		pickerRows
 	} from '$lib/stream/composer-reading';
@@ -184,9 +184,7 @@
 
 	const anchorPerson = $derived(anchor ?? candidates.find((c) => c.id === anchorId) ?? null);
 
-	// A page kept on the device may be days old, and so is the day it was rendered with.
-	const localDay = () => new Date().toLocaleDateString('en-CA');
-	const day = $derived(defaultDay(today, browser ? localDay() : null));
+	const day = $derived(writersDay(today, browser ? deviceDay() : null));
 	let textarea: HTMLTextAreaElement | undefined = $state();
 	let composer: HTMLFormElement | undefined = $state();
 	let list: HTMLUListElement | undefined = $state();

@@ -15,7 +15,7 @@
 	import type { CropRect } from '$lib/media/crop';
 	import { processAvatar } from '$lib/media/process-avatar';
 	import { processImage } from '$lib/media/process-image';
-	import { defaultDay } from '$lib/stream/composer-reading';
+	import { deviceDay, writersDay } from '$lib/dates/today';
 	import type { KeptPhoto } from '$lib/pwa/outbox';
 	import { outbox } from '$lib/pwa/outbox.svelte';
 	import { reachability } from '$lib/pwa/reachability.svelte';
@@ -167,7 +167,7 @@
 			{
 				contactId: person.id,
 				visibility,
-				day: defaultDay(data.today, new Date().toLocaleDateString('en-CA'))
+				day: writersDay(data.today, deviceDay())
 			},
 			{ id: ulid(), issuedAt: Date.now() }
 		);

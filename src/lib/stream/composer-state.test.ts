@@ -1,13 +1,7 @@
 import { describe, expect, it } from 'bun:test';
 import { newPersonMentionId } from '$lib/commands/commands';
 import { handleFor } from '$lib/mentions/picker';
-import {
-	composerPeople,
-	composerReading,
-	defaultDay,
-	draftOf,
-	pickerRows
-} from './composer-reading';
+import { composerPeople, composerReading, draftOf, pickerRows } from './composer-reading';
 import {
 	composerAfter,
 	composerAtOpen,
@@ -268,14 +262,6 @@ describe('photos', () => {
 			editing: null
 		});
 		expect(commands).toContainEqual({ kind: 'preparePhotos', files: [photo, photo] });
-	});
-});
-
-describe('the day', () => {
-	it('defaults to the later of the device’s day and the page’s', () => {
-		expect(defaultDay('2026-10-08', null)).toBe('2026-10-08');
-		expect(defaultDay('2026-10-08', '2026-10-10')).toBe('2026-10-10');
-		expect(defaultDay('2026-10-08', '2026-10-07')).toBe('2026-10-08');
 	});
 });
 
