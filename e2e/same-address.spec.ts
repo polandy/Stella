@@ -33,7 +33,10 @@ async function checkFromSettings(page: Page): Promise<void> {
 
 /** Leaves through the back link, which sends a held answer before Settings is read. */
 async function backToSettings(page: Page): Promise<void> {
-	await page.getByRole('main').getByRole('link', { name: 'Settings' }).click();
+	await page
+		.getByRole('navigation', { name: 'Breadcrumb' })
+		.getByRole('link', { name: 'Settings' })
+		.click();
 	await expect(page.getByRole('heading', { level: 1, name: 'Settings' })).toBeVisible();
 }
 
