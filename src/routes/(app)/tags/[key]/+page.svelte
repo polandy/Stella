@@ -21,8 +21,8 @@
 	const stream = $derived.by(() => {
 		const now = Date.now();
 		return {
-			days: streamDays(i18n, data.stream, now),
-			when: (at: number) => streamTime(i18n, at, now)
+			days: streamDays(i18n, data.stream, now, data.timeZone),
+			when: (at: number) => streamTime(i18n, at, now, data.timeZone)
 		};
 	});
 </script>

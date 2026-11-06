@@ -29,6 +29,7 @@ import {
 	type PhotoUpload
 } from './outbox';
 import { readOutbox, updateOutbox } from './outbox-store';
+import { sendRounds } from './send-rounds';
 
 /*
  * The outbox on this device, as a rune the page reads (docs/02 §2.18.1).
@@ -57,9 +58,6 @@ export interface OutboxReasons {
 /** What this device holds, whoever's it is; the page only ever shows `mine`. */
 let items = $state<OutboxItem[]>([]);
 let memberId = $state<string | null>(null);
-let sending = false;
-// A send asked for while one runs: it goes again once that one is done.
-let again = false;
 let whenApplied: () => void = () => {};
 /** The reasons this device gives itself for a refusal, in the member's language. */
 let reasons: OutboxReasons = { photoTooLarge: '', earlierVersion: '' };
@@ -204,26 +202,24 @@ export const outbox = {
 	 * nothing waits or Stella stops answering.
 	 */
 	async send(): Promise<void> {
-		const member = memberId;
-		if (!member) return;
-		if (sending) {
-			again = true;
-			return;
-		}
-		sending = true;
-		try {
-			if (await sendCommands(member)) await sendPhotos(member);
-		} finally {
-			sending = false;
-		}
-		if (again) {
-			again = false;
-			return outbox.send();
-		}
-		// The round is over: whatever is still watched got no answer that settles it.
-		for (const [id, watcher] of [...watchers]) tell(id, deliveryLeftOver(watcher.applied));
+		if (memberId) await sendInRounds();
 	}
 };
+
+const sendInRounds = sendRounds({
+	async round() {
+		const member = memberId;
+		if (!member) return;
+		if (await sendCommands(member)) await sendPhotos(member);
+	},
+	// Whatever is still watched got no answer that settles it: it stays kept on the device.
+	roundOver() {
+		for (const [id, watcher] of [...watchers]) tell(id, deliveryLeftOver(watcher.applied));
+	},
+	failed(error) {
+		console.error('Could not send the outbox:', error);
+	}
+});
 
 /** Send queued commands in batches; true when everything that could go went. */
 async function sendCommands(member: string): Promise<boolean> {

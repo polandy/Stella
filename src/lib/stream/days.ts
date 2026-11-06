@@ -8,7 +8,9 @@ import type { DateLanguage } from '$lib/dates/labels';
  * add. The full date and time stay in the tooltip.
  *
  * Pure: the clock is handed in as `now`, the words and formats come from `DateLanguage`. Days
- * are the viewer's local calendar days, as the stream is read where the viewer is.
+ * are the household's calendar days, in the `timeZone` the server hands down: the page drawn on
+ * the server and the same page come alive in the browser must agree on what *Today* is, and
+ * only the server's zone is known to both.
  */
 
 /** One day of the stream: its heading and its items, in the order they came. */
@@ -27,15 +29,16 @@ export interface StreamTime {
 	datetime: string;
 }
 
-/** Groups a newest-first stream by the local calendar day each item was written on. */
+/** Groups a newest-first stream by the calendar day in `timeZone` each item was written on. */
 export function streamDays<T extends { at: number }>(
 	lang: DateLanguage,
 	items: readonly T[],
-	now: number
+	now: number,
+	timeZone: string
 ): StreamDay<T>[] {
 	const days: StreamDay<T>[] = [];
 	for (const item of items) {
-		const label = dayHeading(lang, item.at, now);
+		const label = dayHeading(lang, item.at, now, timeZone);
 		const last = days.at(-1);
 		if (last && last.label === label) last.items.push(item);
 		else days.push({ label, items: [item] });
@@ -44,12 +47,21 @@ export function streamDays<T extends { at: number }>(
 }
 
 /** What an item shows beside it, given the day heading it sits under. */
-export function streamTime(lang: DateLanguage, at: number, now: number): StreamTime {
+export function streamTime(
+	lang: DateLanguage,
+	at: number,
+	now: number,
+	timeZone: string
+): StreamTime {
 	const instant = new Date(at);
 	return {
 		label:
-			daysBefore(at, now) <= YESTERDAY
-				? instant.toLocaleTimeString(lang.intlLocale, { hour: '2-digit', minute: '2-digit' })
+			daysBefore(at, now, timeZone) <= YESTERDAY
+				? instant.toLocaleTimeString(lang.intlLocale, {
+						hour: '2-digit',
+						minute: '2-digit',
+						timeZone
+					})
 				: '',
 		title: instant.toLocaleString(lang.intlLocale, {
 			weekday: 'long',
@@ -57,7 +69,8 @@ export function streamTime(lang: DateLanguage, at: number, now: number): StreamT
 			month: 'long',
 			year: 'numeric',
 			hour: '2-digit',
-			minute: '2-digit'
+			minute: '2-digit',
+			timeZone
 		}),
 		datetime: instant.toISOString()
 	};
@@ -67,19 +80,24 @@ const TODAY = 0;
 const YESTERDAY = 1;
 const DAY_MS = 86_400_000;
 
-function dayHeading(lang: DateLanguage, at: number, now: number): string {
-	const days = daysBefore(at, now);
+function dayHeading(lang: DateLanguage, at: number, now: number, timeZone: string): string {
+	const days = daysBefore(at, now, timeZone);
 	if (days === TODAY) return lang.t('home.today');
 	if (days === YESTERDAY) return lang.t('home.yesterday');
 	return new Date(at).toLocaleDateString(lang.intlLocale, {
 		weekday: 'long',
 		day: 'numeric',
-		month: 'long'
+		month: 'long',
+		timeZone
 	});
 }
 
-/** Whole local calendar days between `at` and `now`; rounding absorbs a daylight-saving hour. */
-function daysBefore(at: number, now: number): number {
-	const midnight = (ms: number) => new Date(ms).setHours(0, 0, 0, 0);
-	return Math.round((midnight(now) - midnight(at)) / DAY_MS);
+/** The calendar day `ms` falls on in `timeZone`, as `YYYY-MM-DD` (en-CA writes it so). */
+function dayIn(ms: number, timeZone: string): string {
+	return new Date(ms).toLocaleDateString('en-CA', { timeZone });
+}
+
+/** Whole calendar days in `timeZone` between `at` and `now`, counted as UTC days, so no DST hour. */
+function daysBefore(at: number, now: number, timeZone: string): number {
+	return Math.round((Date.parse(dayIn(now, timeZone)) - Date.parse(dayIn(at, timeZone))) / DAY_MS);
 }

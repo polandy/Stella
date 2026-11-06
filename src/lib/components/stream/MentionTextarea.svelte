@@ -127,6 +127,8 @@
 		text = next;
 		handedOut = toStored(text, picks);
 		value = handedOut;
+		// In the same step as the text, so a save sent right after a keystroke is judged on it.
+		unclear = unclearNow.length > 0;
 	}
 
 	const audience = $derived(allowedForAudience(candidates, visibility));
@@ -136,7 +138,9 @@
 	const namesakes = $derived(tellApart(audience, peopleContext()));
 	// Asked the way the server would refuse it, before saving is offered (docs/02 §2.2.3).
 	const unclearNow = $derived(unclearHandles(value, audience, peopleContext()));
-	$effect(() => {
+	// What the field does not change itself — the audience a parent's visibility switch narrows,
+	// a text set from outside — is followed before the next paint, never a frame late.
+	$effect.pre(() => {
 		unclear = unclearNow.length > 0;
 	});
 

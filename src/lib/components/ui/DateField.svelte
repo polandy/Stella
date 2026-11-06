@@ -84,10 +84,12 @@
 		dayInput?.setCustomValidity(problemText ?? '');
 	});
 
-	// Hands the ISO value back to a caller that binds it instead of posting a form field.
-	$effect(() => {
+	// Hands the ISO value back to a caller that binds it, in the same step the segment changes:
+	// an effect would lag a tick behind and re-enter when the caller normalises `value`.
+	function setPart(part: keyof DateParts, next: string) {
+		parts[part] = next;
 		value = iso;
-	});
+	}
 </script>
 
 <fieldset class="min-w-0 {className}">
@@ -99,7 +101,7 @@
 		{#each order as segment (segment)}
 			{#if segment === 'month'}
 				<select
-					bind:value={parts.month}
+					bind:value={() => parts.month, (v) => setPart('month', v)}
 					aria-label={i18n.t('components.dateField.month')}
 					{required}
 					class="min-w-0 rounded-control border border-border-input bg-bg px-2 py-2 text-sm text-fg"
@@ -113,7 +115,7 @@
 			{:else if segment === 'day'}
 				<input
 					bind:this={dayInput}
-					bind:value={parts.day}
+					bind:value={() => parts.day, (v) => setPart('day', v)}
 					{id}
 					type="text"
 					inputmode="numeric"
@@ -126,7 +128,7 @@
 				/>
 			{:else}
 				<input
-					bind:value={parts.year}
+					bind:value={() => parts.year, (v) => setPart('year', v)}
 					type="text"
 					inputmode="numeric"
 					maxlength="4"

@@ -4,6 +4,7 @@
 	import { addParentPath } from '$lib/people/sections';
 	import { useTranslate } from '$lib/i18n/context.svelte';
 	import {
+		escapeLetsGo,
 		explorerAfter,
 		explorerAtOpen,
 		type ExplorerCommand,
@@ -569,8 +570,7 @@
 	class:fixed={overlay}
 	class:inset-0={overlay}
 	class:z-50={overlay}
-	role={overlay ? 'dialog' : undefined}
-	aria-modal={overlay ? 'true' : undefined}
+	data-testid="graph-frame"
 >
 	<GraphCanvas
 		bind:container
@@ -585,6 +585,7 @@
 		markCursor={(id) => controller?.markCursor(id)}
 		onActivate={onTapNode}
 		onClear={() => dispatch({ type: 'cleared' })}
+		clearable={escapeLetsGo(ui)}
 	/>
 
 	<!-- Out of the way while a peek panel is open. -->

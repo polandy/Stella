@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'bun:test';
 import {
+	escapeLetsGo,
 	explorerAfter,
 	explorerAtOpen,
 	type ExplorerCommand,
@@ -177,6 +178,15 @@ describe('the keyboard on the canvas', () => {
 
 	it('lets go of the selection outside path mode', () => {
 		expect(run(opened(), tap('bob'), { type: 'cleared' }).state.selected).toBeNull();
+	});
+
+	// Escape with nothing to let go of is left to the full-screen overlay around the canvas.
+	it('has something to let go of while somebody is selected or path mode is on', () => {
+		expect(escapeLetsGo(opened())).toBe(true);
+		expect(escapeLetsGo(run(opened(), tap('bob')).state)).toBe(true);
+		expect(escapeLetsGo(run(opened(), { type: 'pathToggled' }).state)).toBe(true);
+		expect(escapeLetsGo(run(opened(), { type: 'cleared' }).state)).toBe(false);
+		expect(escapeLetsGo(opened(null))).toBe(false);
 	});
 });
 

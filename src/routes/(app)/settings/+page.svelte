@@ -2,7 +2,6 @@
 	import FormError from '$lib/components/ui/FormError.svelte';
 	import SignOutForm from '$lib/components/shell/SignOutForm.svelte';
 	import SettingsLink from '$lib/components/settings/SettingsLink.svelte';
-	import { untrack } from 'svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import Icon from '$lib/components/ui/Icon.svelte';
 	import InstallCard from '$lib/components/pwa/InstallCard.svelte';
@@ -30,13 +29,11 @@
 		'asset.view': 'immich.settings.scope.asset.view'
 	} as const;
 
-	/* Who the member says they are (docs/02 §2.1.3) — the picker follows what is stored. */
-	let selfIds = $state<string[]>(
-		untrack(() => (data.user.selfContactId ? [data.user.selfContactId] : []))
-	);
-	$effect(() => {
-		selfIds = data.user.selfContactId ? [data.user.selfContactId] : [];
-	});
+	/*
+	 * Who the member says they are (docs/02 §2.1.3). The picker holds an unsaved pick; whenever
+	 * what is stored changes, it follows that again.
+	 */
+	let selfIds = $derived(data.user.selfContactId ? [data.user.selfContactId] : []);
 </script>
 
 <svelte:head><title>{t('common.pageTitle', { page: t('settings.title') })}</title></svelte:head>

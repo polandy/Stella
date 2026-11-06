@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test';
-import { dismissesFullscreenOnDrag } from './fullscreen';
+import { dismissesFullscreenOnDrag, leavesOverlayOn } from './fullscreen';
 
 /*
  * Which devices get the graph's app-level full screen instead of the browser's (docs/05 §5.8,
@@ -51,5 +51,23 @@ describe('dismissesFullscreenOnDrag', () => {
 		expect(
 			dismissesFullscreenOnDrag({ userAgent: WINDOWS, platform: 'Win32', maxTouchPoints: 10 })
 		).toBe(false);
+	});
+});
+
+describe('leavesOverlayOn', () => {
+	const key = (k: string, defaultPrevented = false) => ({ key: k, defaultPrevented });
+
+	it('leaves the app-level full screen on Escape, as the browser’s own does', () => {
+		expect(leavesOverlayOn(key('Escape'))).toBe(true);
+	});
+
+	it('leaves it alone when something inside already took the Escape', () => {
+		// The canvas lets go of a selection, a menu closes: one Escape, one step back.
+		expect(leavesOverlayOn(key('Escape', true))).toBe(false);
+	});
+
+	it('ignores every other key', () => {
+		expect(leavesOverlayOn(key('Enter'))).toBe(false);
+		expect(leavesOverlayOn(key('Esc'))).toBe(false);
 	});
 });

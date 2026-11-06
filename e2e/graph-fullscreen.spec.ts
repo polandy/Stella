@@ -22,7 +22,7 @@ test.beforeEach(async ({ page }) => {
 	await signIn(page);
 });
 
-test('full screen on touch is an app overlay covering the viewport, and only the button leaves it', async ({
+test('full screen on touch is an app overlay covering the viewport, not a modal dialog, and a pan does not leave it', async ({
 	page
 }) => {
 	await page.goto('/graph?center=demo-c-hans');
@@ -31,8 +31,10 @@ test('full screen on touch is an app overlay covering the viewport, and only the
 
 	await page.getByRole('button', { name: 'Full screen' }).click();
 
-	const overlay = page.getByRole('dialog');
-	await expect(overlay).toBeVisible();
+	// A fixed region over the page, not a modal dialog: nothing behind it is made inert.
+	const overlay = page.getByTestId('graph-frame');
+	await expect(overlay).toHaveCSS('position', 'fixed');
+	await expect(page.getByRole('dialog')).toHaveCount(0);
 	const box = await overlay.boundingBox();
 	const viewport = page.viewportSize();
 	if (!box || !viewport) throw new Error('the full screen overlay has no layout');
@@ -52,7 +54,40 @@ test('full screen on touch is an app overlay covering the viewport, and only the
 	await expect(overlay).toBeVisible();
 
 	await page.getByRole('button', { name: 'Leave full screen' }).click();
-	await expect(page.getByRole('dialog')).toHaveCount(0);
+	await expect(overlay).toHaveCSS('position', 'relative');
+});
+
+/*
+ * Escape from a keyboard (an iPad with one attached) leaves the overlay, as it leaves the
+ * browser's own full screen — but only once the map has nothing left to let go of: the first
+ * Escape on a selection takes back the selection and the page stays full screen.
+ */
+test('Escape on the map lets go of the selection first, and leaves full screen after', async ({
+	page
+}) => {
+	await page.goto('/graph?center=demo-c-hans');
+	const canvas = page.getByRole('application', { name: 'Relationship map' });
+	await expect(canvas).toBeVisible();
+	await settled(page);
+
+	await page.getByRole('button', { name: 'Full screen' }).click();
+	const overlay = page.getByTestId('graph-frame');
+	await expect(overlay).toHaveCSS('position', 'fixed');
+
+	// Tabbed onto, as a keyboard arrives; the explorer opens with the centre selected.
+	await page.getByLabel('Find a person').focus();
+	await page.keyboard.press('Shift+Tab');
+	await expect(canvas).toBeFocused();
+	const announcement = page.locator('[role="application"] ~ p[aria-live="polite"]');
+	await expect(announcement).toHaveText(/^Hans Brunner.*, selected$/);
+
+	await page.keyboard.press('Escape');
+	await expect(announcement).toHaveText(/^Hans Brunner(?!.*, selected$)/);
+	await expect(overlay).toHaveCSS('position', 'fixed');
+
+	await page.keyboard.press('Escape');
+	await expect(overlay).toHaveCSS('position', 'relative');
+	await expect(page.getByRole('button', { name: 'Full screen' })).toBeVisible();
 });
 
 /*
@@ -95,10 +130,11 @@ test('touch full screen locks the page’s real scroll container, not document.b
 	expect(await lockState()).toEqual({ scrollerLocked: false, bodyLocked: false });
 
 	await map.getByRole('button', { name: 'Full screen' }).click();
-	await expect(page.getByRole('dialog')).toBeVisible();
+	const frame = page.getByTestId('graph-frame');
+	await expect(frame).toHaveCSS('position', 'fixed');
 	expect(await lockState()).toEqual({ scrollerLocked: true, bodyLocked: false });
 
 	await page.getByRole('button', { name: 'Leave full screen' }).click();
-	await expect(page.getByRole('dialog')).toHaveCount(0);
+	await expect(frame).toHaveCSS('position', 'relative');
 	expect(await lockState()).toEqual({ scrollerLocked: false, bodyLocked: false });
 });

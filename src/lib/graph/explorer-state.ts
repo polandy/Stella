@@ -187,6 +187,14 @@ function tappedBackground(state: ExplorerState): ExplorerState {
 	return { ...state, selected: null, path: null };
 }
 
+/**
+ * Whether Escape on the canvas has something to let go of (a selection, a traced chain, path
+ * mode). When it has not, the key is not the canvas's: it goes on to whatever holds the map —
+ * the touch full screen leaves on it.
+ */
+export const escapeLetsGo = (state: ExplorerState): boolean =>
+	state.pathMode || state.selected !== null || state.path !== null;
+
 /** The state after `event`, and what the component is to do about it. */
 export function explorerAfter(state: ExplorerState, event: ExplorerEvent): ExplorerStep {
 	switch (event.type) {
