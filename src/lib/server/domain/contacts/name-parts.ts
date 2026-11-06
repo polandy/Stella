@@ -32,12 +32,14 @@ export interface NameRepository {
 	findByIdVisibleTo(viewer: Viewer, id: string): Promise<Contact | null>;
 	/**
 	 * Write every name of `writes` and, when given, the log entry, in **one** transaction — a
-	 * batch lands whole or not at all. The caller has already checked that each is visible.
+	 * batch lands whole or not at all. Each write asks visibility again; false, with nothing
+	 * written, when the viewer no longer sees one of them.
 	 */
 	writeNames(
+		viewer: Viewer,
 		writes: readonly NameWrite[],
 		audit: ActivityOf<'contact.renamed' | 'lastNames.given'> | null
-	): Promise<void>;
+	): Promise<boolean>;
 }
 
 export interface NameDeps {
@@ -105,9 +107,9 @@ export async function editNameParts(
 				now
 			)
 		: null;
-	await deps.names.writeNames(
+	return deps.names.writeNames(
+		viewer,
 		[{ id, ...next, formerName, ...noLastNameAfter(next.lastName), updatedAt: now }],
 		audit
 	);
-	return true;
 }

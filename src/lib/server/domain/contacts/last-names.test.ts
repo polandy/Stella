@@ -81,10 +81,12 @@ function fakeDeps(
 				findByIdVisibleTo: async (_v: unknown, id: string) =>
 					visible.find((c) => c.id === id) ?? null,
 				writeNames: async (
+					_v: unknown,
 					writes: readonly NameWrite[],
 					audit: ActivityOf<'contact.renamed' | 'lastNames.given'> | null
 				) => {
 					batches.push({ writes, audit });
+					return true;
 				}
 			},
 			surnames: { loadSurnameFactsVisibleTo: async () => ({ people, familyCircles: [] }) },
@@ -113,6 +115,14 @@ const lea = contact('lea', 'Lea', null);
 const max = contact('max', 'Max', null);
 
 describe('setLastNames', () => {
+	it('answers null, as for one never visible, when the write finds someone gone (SV-06)', async () => {
+		const f = fakeDeps([lea]);
+		f.deps.names.writeNames = async () => false;
+
+		const changes = [{ contactId: 'lea', lastName: 'Brunner', replace: false }];
+		expect(await setLastNames(f.deps, viewer, changes, 'de')).toBeNull();
+	});
+
 	it('writes every change in one batch with one log entry, the shown names following', async () => {
 		const f = fakeDeps([lea, max]);
 
@@ -252,6 +262,14 @@ describe('takeBackLastName', () => {
 	const before = { displayName: 'Anna', firstName: null };
 	/** What giving *Brunner* made of her: the shown word became her first name. */
 	const given = contact('anna', 'Anna', 'Brunner');
+
+	it('answers false for a person made private since the read (SV-06)', async () => {
+		const f = fakeDeps([given]);
+		f.deps.names.writeNames = async () => false;
+
+		const takeBack = { contactId: 'anna', lastName: 'Brunner', before };
+		expect(await takeBackLastName(f.deps, viewer, takeBack, 'de')).toBe(false);
+	});
 
 	it('puts the name back exactly as it was before the last name was given', async () => {
 		const f = fakeDeps([given]);

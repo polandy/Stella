@@ -143,7 +143,8 @@ export async function setLastNames(
 	if (writes.length === 0) return 0;
 
 	const names = [...new Set(writes.map((w) => w.lastName!))];
-	await deps.names.writeNames(
+	const written = await deps.names.writeNames(
+		viewer,
 		writes,
 		activityRecord(
 			deps,
@@ -159,7 +160,7 @@ export async function setLastNames(
 			now
 		)
 	);
-	return writes.length;
+	return written ? writes.length : null;
 }
 
 /**
@@ -212,7 +213,8 @@ export async function takeBackLastName(
 	if (!unchanged) throw new LastNameChangedError(contact.displayName);
 
 	const now = deps.clock.now();
-	await deps.names.writeNames(
+	return deps.names.writeNames(
+		viewer,
 		[{ id: contact.id, ...before, formerName: contact.formerName, updatedAt: now }],
 		activityRecord(
 			deps,
@@ -227,7 +229,6 @@ export async function takeBackLastName(
 			now
 		)
 	);
-	return true;
 }
 
 /** The *Last names* list for one viewer (§3.1). */

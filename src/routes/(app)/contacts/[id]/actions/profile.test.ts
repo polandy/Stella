@@ -70,6 +70,10 @@ const post = (
 	locale: Locale = 'en'
 ) => answerOf(action(routeEvent({ services, params: PAGE, form, locale })));
 
+/** A write as a test records it: what the port was handed after the viewer. */
+type Written<K extends 'updateProfile' | 'setGender' | 'setJob'> =
+	Parameters<ContactRepository[K]> extends [unknown, ...infer Rest] ? Rest : never;
+
 /** The contact port over Anna, or over nobody the viewer may see, plus the writes it was given. */
 function contactsOver(person: Contact | null, writes: Partial<ContactRepository> = {}) {
 	const contactDeps = {
@@ -84,14 +88,17 @@ function contactsOver(person: Contact | null, writes: Partial<ContactRepository>
 }
 
 describe('editProfile', () => {
-	type ProfileWrite = Parameters<ContactRepository['updateProfile']>;
+	type ProfileWrite = Written<'updateProfile'>;
 
 	function describing(person: Contact | null = ANNA) {
 		const written: ProfileWrite[] = [];
 		const services: FakeServices = {
 			people: {
 				contactDeps: contactsOver(person, {
-					updateProfile: async (...write) => void written.push(write)
+					updateProfile: async (_viewer, ...write) => {
+						written.push(write);
+						return true;
+					}
 				})
 			}
 		};
@@ -152,22 +159,26 @@ describe('editNameParts', () => {
 	/** Anna's name and gender, as the viewer sees them; the writes are the test's. */
 	function renaming(person: Contact | null = ANNA, breakage?: Error) {
 		const names: NameWrite[] = [];
-		const genders: Parameters<ContactRepository['setGender']>[] = [];
+		const genders: Written<'setGender'>[] = [];
 		const services: FakeServices = {
 			people: {
 				nameDeps: {
 					names: {
 						findByIdVisibleTo: async (_viewer, id) => (person?.id === id ? person : null),
-						writeNames: async (writes) => {
+						writeNames: async (_viewer, writes) => {
 							if (breakage) throw breakage;
 							names.push(...writes);
+							return true;
 						}
 					},
 					ids: sequentialIds('a1'),
 					clock: fixedClock(NOW)
 				},
 				contactDeps: contactsOver(person, {
-					setGender: async (...write) => void genders.push(write)
+					setGender: async (_viewer, ...write) => {
+						genders.push(write);
+						return true;
+					}
 				})
 			}
 		};
@@ -261,9 +272,16 @@ describe('setJob', () => {
 	const job = { place: 'header', jobTitle: 'Teacher', company: 'Lindholm School' };
 
 	function employing(person: Contact | null = ANNA) {
-		const jobs: Parameters<ContactRepository['setJob']>[] = [];
+		const jobs: Written<'setJob'>[] = [];
 		const services: FakeServices = {
-			people: { contactDeps: contactsOver(person, { setJob: async (...w) => void jobs.push(w) }) }
+			people: {
+				contactDeps: contactsOver(person, {
+					setJob: async (_viewer, ...w) => {
+						jobs.push(w);
+						return true;
+					}
+				})
+			}
 		};
 		return { services, jobs };
 	}

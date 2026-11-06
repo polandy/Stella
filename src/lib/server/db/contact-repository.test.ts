@@ -135,7 +135,10 @@ describe('editing the hero in place', () => {
 	});
 
 	it('rewords the description, leaving the rest alone', async () => {
-		await repo.updateProfile('c-shared', { description: 'Now says this', updatedAt: 999 });
+		await repo.updateProfile(viewerU1, 'c-shared', {
+			description: 'Now says this',
+			updatedAt: 999
+		});
 
 		const after = await repo.findByIdVisibleTo(viewerU1, 'c-shared');
 		expect(after?.displayName).toBe('Bea');
@@ -145,7 +148,7 @@ describe('editing the hero in place', () => {
 	});
 
 	it('clears a description when it is written as null', async () => {
-		await repo.updateProfile('c-shared', { description: null, updatedAt: 1 });
+		await repo.updateProfile(viewerU1, 'c-shared', { description: null, updatedAt: 1 });
 
 		expect((await repo.findByIdVisibleTo(viewerU1, 'c-shared'))?.description).toBeNull();
 	});
@@ -153,7 +156,7 @@ describe('editing the hero in place', () => {
 	it('touches only the contact it names', async () => {
 		const before = await repo.findByIdVisibleTo(viewerU1, 'c-priv');
 
-		await repo.updateProfile('c-shared', { description: null, updatedAt: 2 });
+		await repo.updateProfile(viewerU1, 'c-shared', { description: null, updatedAt: 2 });
 
 		expect(await repo.findByIdVisibleTo(viewerU1, 'c-priv')).toEqual(before!);
 	});
@@ -166,7 +169,7 @@ describe('editing the hero in place', () => {
 			.where(eq(schema.contact.id, 'c-shared'))
 			.run();
 
-		await repo.updateProfile('c-shared', { description: 'Now says this', updatedAt: 3 });
+		await repo.updateProfile(viewerU1, 'c-shared', { description: 'Now says this', updatedAt: 3 });
 
 		const after = await repo.findByIdVisibleTo(viewerU1, 'c-shared');
 		expect(after?.displayName).toBe('Bea Renamed');
@@ -181,13 +184,13 @@ describe('setting a gender', () => {
 	});
 
 	it('records a gender and stamps the change, then takes it off the record again', async () => {
-		await repo.setGender('c-rosa', 'female', 500);
+		await repo.setGender(viewerU1, 'c-rosa', 'female', 500);
 		expect(await repo.findByIdVisibleTo(viewerU1, 'c-rosa')).toMatchObject({
 			gender: 'female',
 			updatedAt: 500
 		});
 
-		await repo.setGender('c-rosa', null, 600);
+		await repo.setGender(viewerU1, 'c-rosa', null, 600);
 		expect(await repo.findByIdVisibleTo(viewerU1, 'c-rosa')).toMatchObject({
 			gender: null,
 			updatedAt: 600
@@ -197,7 +200,7 @@ describe('setting a gender', () => {
 	it('touches only the contact it names', async () => {
 		const before = await repo.findByIdVisibleTo(viewerU1, 'c-other');
 
-		await repo.setGender('c-rosa', 'male', 2);
+		await repo.setGender(viewerU1, 'c-rosa', 'male', 2);
 
 		expect((await repo.findByIdVisibleTo(viewerU1, 'c-rosa'))?.gender).toBe('male');
 		expect(await repo.findByIdVisibleTo(viewerU1, 'c-other')).toEqual(before!);
@@ -211,14 +214,19 @@ describe('setting a job', () => {
 	});
 
 	it('records both fields and stamps the change, then takes them off the record again', async () => {
-		await repo.setJob('c-anna', { jobTitle: 'Teacher', company: 'Primarschule Muri' }, 500);
+		await repo.setJob(
+			viewerU1,
+			'c-anna',
+			{ jobTitle: 'Teacher', company: 'Primarschule Muri' },
+			500
+		);
 		expect(await repo.findByIdVisibleTo(viewerU1, 'c-anna')).toMatchObject({
 			jobTitle: 'Teacher',
 			company: 'Primarschule Muri',
 			updatedAt: 500
 		});
 
-		await repo.setJob('c-anna', { jobTitle: null, company: null }, 600);
+		await repo.setJob(viewerU1, 'c-anna', { jobTitle: null, company: null }, 600);
 		expect(await repo.findByIdVisibleTo(viewerU1, 'c-anna')).toMatchObject({
 			jobTitle: null,
 			company: null,
@@ -227,7 +235,12 @@ describe('setting a job', () => {
 	});
 
 	it('lists the job with the person, so the directory can show it and find by it', async () => {
-		await repo.setJob('c-anna', { jobTitle: 'Teacher', company: 'Primarschule Muri' }, 500);
+		await repo.setJob(
+			viewerU1,
+			'c-anna',
+			{ jobTitle: 'Teacher', company: 'Primarschule Muri' },
+			500
+		);
 
 		const listed = await createDrizzleContactDirectoryReads(db).listVisibleTo(viewerU1);
 
@@ -241,7 +254,7 @@ describe('setting a job', () => {
 	it('touches only the contact it names', async () => {
 		const before = await repo.findByIdVisibleTo(viewerU1, 'c-other');
 
-		await repo.setJob('c-anna', { jobTitle: 'Teacher', company: null }, 2);
+		await repo.setJob(viewerU1, 'c-anna', { jobTitle: 'Teacher', company: null }, 2);
 
 		expect((await repo.findByIdVisibleTo(viewerU1, 'c-anna'))?.jobTitle).toBe('Teacher');
 		expect(await repo.findByIdVisibleTo(viewerU1, 'c-other')).toEqual(before!);
@@ -257,26 +270,100 @@ describe('archiving', () => {
 	it('stamps and clears archived_at, and reads it back', async () => {
 		expect((await repo.findByIdVisibleTo(viewerU1, 'c-old'))?.archivedAt).toBeNull();
 
-		await repo.setArchived('c-old', 1_700_000_000_000);
+		await repo.setArchived(viewerU1, 'c-old', 1_700_000_000_000);
 		expect((await repo.findByIdVisibleTo(viewerU1, 'c-old'))?.archivedAt).toBe(1_700_000_000_000);
 
-		await repo.setArchived('c-old', null);
+		await repo.setArchived(viewerU1, 'c-old', null);
 		expect((await repo.findByIdVisibleTo(viewerU1, 'c-old'))?.archivedAt).toBeNull();
 	});
 
 	it('leaves every other contact where they were', async () => {
 		const before = await repo.findByIdVisibleTo(viewerU1, 'c-here');
 
-		await repo.setArchived('c-old', 1_700_000_000_000);
+		await repo.setArchived(viewerU1, 'c-old', 1_700_000_000_000);
 
 		expect(await repo.findByIdVisibleTo(viewerU1, 'c-here')).toEqual(before!);
 	});
 
 	// An archived contact still opens: the page is where they are brought back from.
 	it('still finds an archived contact by id', async () => {
-		await repo.setArchived('c-old', 1_700_000_000_000);
+		await repo.setArchived(viewerU1, 'c-old', 1_700_000_000_000);
 
 		expect((await repo.findByIdVisibleTo(viewerU1, 'c-old'))?.displayName).toBe('Old Neighbour');
+	});
+});
+
+/*
+ * Every write asks visibility again in its own statement (docs/03 §3.7): a person made private
+ * between a member's read and their save is not written, and a new caller cannot skip the read.
+ */
+describe('a write to a person the writer cannot see (SV-06)', () => {
+	const renamed: ActivityOf<'contact.renamed'> = {
+		id: 'log-1',
+		householdId: H1,
+		actorId: U2,
+		createdAt: NOW + 1,
+		event: {
+			kind: 'contact.renamed',
+			contactId: 'c-shared',
+			from: 'Bea',
+			to: 'Bea Brunner',
+			visibility: 'shared'
+		}
+	};
+	const brunner = (id: string, displayName: string) => ({
+		id,
+		displayName,
+		firstName: null,
+		lastName: 'Brunner',
+		nickname: null,
+		formerName: null,
+		updatedAt: NOW + 1
+	});
+
+	// The raw row: *no last name* is a column the domain's `Contact` does not carry.
+	const privateRow = () =>
+		db.select().from(schema.contact).where(eq(schema.contact.id, 'c-priv')).get();
+	let before: ReturnType<typeof privateRow>;
+	beforeEach(async () => {
+		await repo.insert(contactInput({ id: 'c-shared', displayName: 'Bea' }));
+		await repo.insert(
+			contactInput({ id: 'c-priv', visibility: 'private', displayName: 'Private' })
+		);
+		before = privateRow();
+	});
+
+	const writes: [string, (viewer: Viewer) => Promise<boolean>][] = [
+		['a description', (v) => repo.updateProfile(v, 'c-priv', { description: 'x', updatedAt: 9 })],
+		['a gender', (v) => repo.setGender(v, 'c-priv', 'female', 9)],
+		['a job', (v) => repo.setJob(v, 'c-priv', { jobTitle: 'Teacher', company: null }, 9)],
+		['an archive stamp', (v) => repo.setArchived(v, 'c-priv', 9)],
+		['no last name', (v) => repo.markWithoutLastName(v, 'c-priv', 9)],
+		['a name', (v) => repo.writeNames(v, [brunner('c-priv', 'Private Brunner')], null)]
+	];
+
+	for (const [what, write] of writes) {
+		it(`leaves ${what} unwritten and says so`, async () => {
+			expect(await write(viewerU2)).toBe(false);
+			expect(privateRow()).toEqual(before);
+		});
+
+		it(`writes ${what} for the member who sees the person`, async () => {
+			expect(await write(viewerU1)).toBe(true);
+			expect(privateRow()).not.toEqual(before);
+		});
+	}
+
+	it('writes nothing of a name batch with one person out of reach, not even its log line', async () => {
+		const written = await repo.writeNames(
+			viewerU2,
+			[brunner('c-shared', 'Bea Brunner'), brunner('c-priv', 'Private Brunner')],
+			renamed
+		);
+
+		expect(written).toBe(false);
+		expect((await repo.findByIdVisibleTo(viewerU1, 'c-shared'))?.displayName).toBe('Bea');
+		expect(db.select().from(schema.activityLog).all()).toEqual([]);
 	});
 });
 
@@ -489,6 +576,7 @@ describe('writeNames', () => {
 		};
 
 		await repo.writeNames(
+			viewerU1,
 			[
 				write('lea', 'Brunner'),
 				{ ...write('max', 'Brunner'), firstName: 'Max', displayName: 'Max Brunner' }
@@ -512,7 +600,7 @@ describe('writeNames', () => {
 			contactInput({ id: 'lea', displayName: 'Lea Meier', firstName: 'Lea', lastName: 'Meier' })
 		);
 
-		await repo.writeNames([{ ...write('lea', 'Brunner'), formerName: 'Meier' }], null);
+		await repo.writeNames(viewerU1, [{ ...write('lea', 'Brunner'), formerName: 'Meier' }], null);
 
 		expect(await repo.findByIdVisibleTo(viewerU1, 'lea')).toMatchObject({
 			lastName: 'Brunner',

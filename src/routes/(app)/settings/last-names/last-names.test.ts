@@ -49,8 +49,9 @@ function household(
 			const p = people.find((candidate) => candidate.id === id);
 			return p ? ({ id: p.id, lastName: p.lastName, displayName: p.displayName } as Contact) : null;
 		},
-		markWithoutLastName: async (id: string, at: number | null) => {
+		markWithoutLastName: async (_v: unknown, id: string, at: number | null) => {
 			marks.push({ id, at });
+			return true;
 		}
 	};
 	const surnameDismissals = {
@@ -71,7 +72,7 @@ function household(
 				surnameDismissals
 			},
 			surnameDismissalDeps: {
-				names: { ...contacts, writeNames: async () => {} },
+				names: { ...contacts, writeNames: async () => true },
 				surnameDismissals,
 				ids: sequentialIds('d'),
 				clock: fixedClock(7)

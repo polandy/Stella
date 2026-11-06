@@ -126,7 +126,7 @@ describe('createDrizzleContactDirectoryReads', () => {
 		});
 
 		it('lists the archived ones, which no other list shows', async () => {
-			await repo.setArchived('c-old', 1_700_000_000_000);
+			await repo.setArchived(viewerU1, 'c-old', 1_700_000_000_000);
 
 			const archived = (await directory.listArchivedVisibleTo(viewerU1)).map((c) => c.id);
 			expect(archived).toEqual(['c-old']);
@@ -140,7 +140,7 @@ describe('createDrizzleContactDirectoryReads', () => {
 					displayName: 'Theirs'
 				})
 			);
-			await repo.setArchived('c-theirs', 1_700_000_000_000);
+			await repo.setArchived(viewerU2, 'c-theirs', 1_700_000_000_000);
 			expect((await directory.listArchivedVisibleTo(viewerU1)).map((c) => c.id)).toEqual(['c-old']);
 			expect((await directory.listArchivedVisibleTo(viewerU2)).map((c) => c.id).sort()).toEqual([
 				'c-old',
@@ -149,7 +149,7 @@ describe('createDrizzleContactDirectoryReads', () => {
 		});
 
 		it('takes an archived contact out of the directory and the name suggestions', async () => {
-			await repo.setArchived('c-old', 1_700_000_000_000);
+			await repo.setArchived(viewerU1, 'c-old', 1_700_000_000_000);
 
 			const listed = (await directory.listVisibleTo(viewerU1)).map((c) => c.id);
 			expect(listed).not.toContain('c-old');
@@ -241,7 +241,7 @@ describe('reading a few people by id', () => {
 		await repo.insert(
 			contactInput({ id: 'c-theirs', visibility: 'private', createdBy: U2, displayName: 'Theirs' })
 		);
-		await repo.setArchived('c-old', NOW);
+		await repo.setArchived(viewerU1, 'c-old', NOW);
 	});
 
 	const sorted = (names: { id: string; displayName: string }[]) =>
@@ -303,7 +303,7 @@ describe('reading a few people by id', () => {
 
 	it('counts the archived people the viewer may see', async () => {
 		expect(await directory.countArchivedVisibleTo(viewerU1)).toBe(1);
-		await repo.setArchived('c-theirs', NOW);
+		await repo.setArchived(viewerU2, 'c-theirs', NOW);
 		expect(await directory.countArchivedVisibleTo(viewerU1)).toBe(1);
 		expect(await directory.countArchivedVisibleTo(viewerU2)).toBe(2);
 		expect(await directory.countArchivedVisibleTo(viewerU2)).toBe(

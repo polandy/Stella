@@ -132,14 +132,19 @@ export interface ProfilePatch {
 export interface ContactRepository extends NameRepository, WithoutLastNameRepository {
 	insert(contact: NewContact): Promise<void>;
 	findByIdVisibleTo(viewer: Viewer, id: string): Promise<Contact | null>;
-	/** Write the hero's own fields; the caller has already checked the contact is visible. */
-	updateProfile(id: string, patch: ProfilePatch): Promise<void>;
-	/** Record a gender, or none; the caller has already checked the contact is visible. */
-	setGender(id: string, gender: Gender | null, updatedAt: number): Promise<void>;
-	/** Write both job fields at once; the caller has already checked the contact is visible. */
-	setJob(id: string, job: Job, updatedAt: number): Promise<void>;
-	/** Stamp or clear `archived_at`; the caller has already checked the contact is visible. */
-	setArchived(id: string, archivedAt: number | null): Promise<void>;
+	/*
+	 * The record's field writes. Each asks visibility again in its own statement and returns
+	 * false when the viewer does not see the contact — the read a use-case makes first may be
+	 * a moment old (docs/03 §3.7).
+	 */
+	/** Write the hero's own fields. */
+	updateProfile(viewer: Viewer, id: string, patch: ProfilePatch): Promise<boolean>;
+	/** Record a gender, or none. */
+	setGender(viewer: Viewer, id: string, gender: Gender | null, updatedAt: number): Promise<boolean>;
+	/** Write both job fields at once. */
+	setJob(viewer: Viewer, id: string, job: Job, updatedAt: number): Promise<boolean>;
+	/** Stamp or clear `archived_at`. */
+	setArchived(viewer: Viewer, id: string, archivedAt: number | null): Promise<boolean>;
 	/**
 	 * Delete the contact and everything hanging off it, writing `audit` in the same
 	 * transaction — a deletion that left no trace is the one this log exists to prevent.
@@ -324,11 +329,10 @@ export async function editProfile(
 	if (contact === null) return false;
 
 	// No name in the write: one read before it would put back a name renamed meanwhile.
-	await deps.contacts.updateProfile(id, {
+	return deps.contacts.updateProfile(viewer, id, {
 		description: orNull(edit.description),
 		updatedAt: deps.clock.now()
 	});
-	return true;
 }
 
 /**
@@ -345,8 +349,7 @@ export async function setGender(
 	const contact = await deps.contacts.findByIdVisibleTo(viewer, id);
 	if (contact === null) return false;
 
-	await deps.contacts.setGender(id, checked, deps.clock.now());
-	return true;
+	return deps.contacts.setGender(viewer, id, checked, deps.clock.now());
 }
 
 /** Thrown when a job title or company is longer than Stella keeps (docs/02 §2.2). */
@@ -384,8 +387,7 @@ export async function setJob(
 	const contact = await deps.contacts.findByIdVisibleTo(viewer, id);
 	if (contact === null) return false;
 
-	await deps.contacts.setJob(id, checked, deps.clock.now());
-	return true;
+	return deps.contacts.setJob(viewer, id, checked, deps.clock.now());
 }
 
 export class EmptyDescriptionError extends TranslatableError {
@@ -411,11 +413,10 @@ export async function describeContact(
 	const contact = await deps.contacts.findByIdVisibleTo(viewer, id);
 	if (contact === null) return false;
 
-	await deps.contacts.updateProfile(id, {
+	return deps.contacts.updateProfile(viewer, id, {
 		description: written,
 		updatedAt: deps.clock.now()
 	});
-	return true;
 }
 
 /** Fetch a contact the viewer may see, or null. */
@@ -441,8 +442,7 @@ async function setArchived(
 ): Promise<boolean> {
 	const contact = await deps.contacts.findByIdVisibleTo(viewer, id);
 	if (contact === null) return false;
-	await deps.contacts.setArchived(id, archivedAt);
-	return true;
+	return deps.contacts.setArchived(viewer, id, archivedAt);
 }
 
 /** Archive a contact, stamping the moment it happened. */

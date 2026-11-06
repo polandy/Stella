@@ -47,8 +47,9 @@ function fakeNames(...visible: Contact[]) {
 	}[] = [];
 	const names: NameRepository = {
 		findByIdVisibleTo: async (_viewer, id) => visible.find((c) => c.id === id) ?? null,
-		writeNames: async (writes, audit) => {
+		writeNames: async (_viewer, writes, audit) => {
 			batches.push({ writes, audit });
+			return true;
 		}
 	};
 	return { deps: { names, clock: { now: () => NOW }, ids: { next: () => 'log-1' } }, batches };
@@ -237,6 +238,21 @@ describe('editNameParts', () => {
 		expect(hidden.batches).toEqual([]);
 		// positive control: the same edit of a visible person is written
 		expect(visible.batches).toHaveLength(1);
+	});
+
+	it('answers false for a person made private since the read (SV-06)', async () => {
+		const f = fakeNames(thomas);
+		f.deps.names.writeNames = async () => false;
+		const parts = {
+			firstName: 'Thomas',
+			lastName: 'Brunner',
+			nickname: null,
+			displayName: 'Thomas',
+			formerName: null,
+			keepFormerName: false
+		};
+
+		expect(await editNameParts(f.deps, viewer, 'thomas', parts, 'de')).toBe(false);
 	});
 
 	/*
