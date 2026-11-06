@@ -1,11 +1,7 @@
 import { circleNameKey } from '../../../circles/name-key';
 import type { Viewer } from '../../access/visibility';
-import {
-	suggestRoles,
-	type CircleRoleUse,
-	type ContactCircleView,
-	type MemberView
-} from './circles';
+import { suggestRoles } from './role-groups';
+import type { CircleRoleUse, ContactCircleView, MemberView } from './circles';
 
 /*
  * Who is in which circle, and under which role (docs/02 §2.4.2): a circle's members, a person's

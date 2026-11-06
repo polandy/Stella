@@ -9,25 +9,21 @@ import {
 } from '../testing';
 import { BlankCircleNameError } from './circle-details';
 import { CircleParentGoneError } from './nesting';
+import { addMember, addMembers, removeMember, setMembersRole } from './members';
 import {
-	addMember,
-	addMembers,
 	CIRCLE_COLORS,
 	createCircle,
-	groupMembersByRole,
 	joinCircleByName,
-	removeMember,
 	resolveCircleColor,
 	resolveCircleKind,
-	setMembersRole,
 	suggestCircleColor,
-	suggestRoles,
 	type Circle,
 	type CircleDeps,
 	type MemberView,
 	type NewCircle,
 	type NewMembership
 } from './circles';
+import { groupMembersByRole, suggestRoles } from './role-groups';
 
 /*
  * Circle validation + use-cases (docs/02 §2.4.2). Pure/fake-driven: colour/kind normalisation,

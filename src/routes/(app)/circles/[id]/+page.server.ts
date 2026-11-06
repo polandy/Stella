@@ -1,16 +1,13 @@
 import { error, fail, redirect } from '@sveltejs/kit';
 import { requireRemover, requireViewer } from '$lib/server/auth/guards';
+import { addMembers, removeMember, setMembersRole } from '$lib/server/domain/circles/members';
 import {
-	addMembers,
 	CIRCLE_COLORS,
 	CIRCLE_KINDS,
 	getCircle,
-	groupMembersByRole,
-	removeMember,
-	setMembersRole,
-	suggestCircleColor,
-	suggestRoles
+	suggestCircleColor
 } from '$lib/server/domain/circles/circles';
+import { groupMembersByRole, suggestRoles } from '$lib/server/domain/circles/role-groups';
 import { listMembers } from '$lib/server/domain/circles/memberships';
 import { readCircleTree } from '$lib/server/domain/circles/tree';
 import { circleTree } from '$lib/circles/tree';

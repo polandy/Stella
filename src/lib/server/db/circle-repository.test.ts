@@ -4,13 +4,8 @@ import { eq } from 'drizzle-orm';
 import { drizzle, type BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
 import { migrate } from 'drizzle-orm/bun-sqlite/migrator';
 import type { Viewer } from '../access/visibility';
-import {
-	addMember,
-	createCircle,
-	setMembersRole,
-	type CircleDeps,
-	type MemberRoleDeps
-} from '../domain/circles/circles';
+import { addMember, setMembersRole } from '../domain/circles/members';
+import { createCircle, type CircleDeps, type MemberRoleDeps } from '../domain/circles/circles';
 import type { CircleMembershipReads } from '../domain/circles/memberships';
 import { createDrizzleCircleMembershipReads } from './circle-membership-reads';
 import { createDrizzleCircleNestingReads } from './circle-nesting-reads';

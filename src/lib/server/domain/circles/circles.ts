@@ -1,4 +1,3 @@
-import { roleKey } from '../../../circles/role-key';
 import type { Remover, Viewer } from '../../access/visibility';
 import type { Clock } from '../../clock';
 import type { IdGenerator } from '../../id';
@@ -13,6 +12,7 @@ import {
 	type CircleKind
 } from './circle-details';
 import type { CircleDeletionFacts, DeletedCirclePhotoFiles } from './delete-circle';
+import { addMember } from './members';
 import type { CircleMembershipReads } from './memberships';
 import { CircleParentGoneError } from './nesting';
 
@@ -22,7 +22,8 @@ import { CircleParentGoneError } from './nesting';
  * from tags. Two contacts in the same circle are connected "via {circle}". Pure validation +
  * use-cases over a repository port; all reads are visibility-scoped in the adapter (§3.7). What
  * the screens list are read models of their own: the overview (`directory.ts`) and who is in
- * which circle (`memberships.ts`).
+ * which circle (`memberships.ts`). Adding and removing members is `members.ts`; the role rule,
+ * `role-groups.ts`.
  */
 
 // The vocabularies and their checks live with the rest of a circle's details; re-exported here
@@ -49,67 +50,6 @@ export function suggestCircleColor(usedColors: readonly string[], rng: () => num
 	const free = CIRCLE_COLORS.filter((c) => !used.has(c));
 	const pool = free.length > 0 ? free : CIRCLE_COLORS;
 	return pool[Math.floor(rng() * pool.length)];
-}
-
-/**
- * The one rule for which roles are "the same": trimmed, case-folded, blank means none. Each
- * role comes back under the spelling the household writes most often (alphabetical on a tie),
- * with the items that carry it, most common role first and ties broken alphabetically. Items
- * without a role are left out.
- */
-function foldByRole<T>(
-	items: readonly T[],
-	roleOf: (item: T) => string | null | undefined
-): { label: string; items: T[] }[] {
-	const byKey = new Map<string, { items: T[]; spellings: Map<string, number> }>();
-	for (const item of items) {
-		const key = roleKey(roleOf(item));
-		if (key === null) continue;
-		const role = (roleOf(item) ?? '').trim();
-		const entry = byKey.get(key) ?? { items: [] as T[], spellings: new Map<string, number>() };
-		entry.items.push(item);
-		entry.spellings.set(role, (entry.spellings.get(role) ?? 0) + 1);
-		byKey.set(key, entry);
-	}
-	return [...byKey.values()]
-		.map((e) => {
-			const label = [...e.spellings.entries()].sort(
-				(a, b) => b[1] - a[1] || a[0].localeCompare(b[0])
-			)[0][0];
-			return { label, items: e.items };
-		})
-		.sort((a, b) => b.items.length - a.items.length || a.label.localeCompare(b.label));
-}
-
-/**
- * The roles already in use, most common first and ties broken alphabetically — what to offer
- * when someone is added to a circle. Blank roles drop out; spellings that differ only in case
- * fold into the most common one (`Teacher` and `teacher` are one role, not two).
- */
-export function suggestRoles(usedRoles: readonly (string | null | undefined)[]): string[] {
-	return foldByRole(usedRoles, (role) => role).map((group) => group.label);
-}
-
-/** The people of a circle who share one role; `role` is null for those who have none. */
-export interface RoleGroup<T> {
-	role: string | null;
-	members: T[];
-}
-
-/**
- * A circle's members grouped by role, in the order `suggestRoles` offers the roles, with the
- * people who have no role last. The members' own order is kept inside each group.
- */
-export function groupMembersByRole<T extends { role: string | null }>(
-	members: readonly T[]
-): RoleGroup<T>[] {
-	const groups: RoleGroup<T>[] = foldByRole(members, (m) => m.role).map((g) => ({
-		role: g.label,
-		members: g.items
-	}));
-	const withoutRole = members.filter((m) => roleKey(m.role) === null);
-	if (withoutRole.length > 0) groups.push({ role: null, members: withoutRole });
-	return groups;
 }
 
 // ── Value shapes ──────────────────────────────────────────────────────────
@@ -297,11 +237,6 @@ export interface CreateCircleInput extends CircleDetailsInput {
 
 // ── Use-cases ───────────────────────────────────────────────────────────────
 
-const orNull = (value?: string | null): string | null => {
-	const trimmed = (value ?? '').trim();
-	return trimmed.length > 0 ? trimmed : null;
-};
-
 /**
  * Create a circle. Its details are checked as editing checks them (`readCircleDetails`);
  * visibility defaults to the creator's default. A parent must be one the creator sees — a new
@@ -355,83 +290,6 @@ export async function joinCircleByName(
 	const circleId = existing?.id ?? (await createCircle(deps, creator, { name }));
 	await addMember(deps, creator, circleId, contactId, role);
 	return circleId;
-}
-
-/** Add a contact to an existing circle (the circle-detail flow). Idempotent. */
-export async function addMember(
-	deps: CircleDeps,
-	creator: Pick<CircleCreator, 'userId'>,
-	circleId: string,
-	contactId: string,
-	role?: string | null
-): Promise<void> {
-	await addMembers(deps, creator, circleId, [contactId], role);
-}
-
-/**
- * Add several contacts to a circle in one go (the circle-detail flow). A role, when given,
- * applies to every one of them. Someone named twice in the same pick joins once, and a contact
- * already in the circle keeps the role they joined with, so this never re-roles an existing
- * member. The whole pick is one transaction: it lands complete or not at all.
- */
-export async function addMembers(
-	deps: CircleDeps,
-	creator: Pick<CircleCreator, 'userId'>,
-	circleId: string,
-	contactIds: readonly string[],
-	role?: string | null
-): Promise<void> {
-	const now = deps.clock.now();
-	const memberRole = orNull(role);
-	const memberships = [...new Set(contactIds)].map((contactId) => ({
-		id: deps.ids.next(),
-		circleId,
-		contactId,
-		role: memberRole,
-		createdBy: creator.userId,
-		createdAt: now,
-		updatedAt: now
-	}));
-	await deps.circles.addMemberships(memberships);
-}
-
-/**
- * Give several members of a circle one role at once, or none when `role` is blank. The
- * counterpart of {@link addMembers}, which never re-roles someone already in: this is how an
- * existing member changes role. Each member is named once however often the pick repeats them,
- * and only those the viewer can see in this circle are touched — an id from elsewhere, or one
- * that is not a member, is left out rather than written or joined (§3.7).
- */
-export async function setMembersRole(
-	deps: MemberRoleDeps,
-	viewer: Viewer,
-	circleId: string,
-	contactIds: readonly string[],
-	role: string | null | undefined
-): Promise<void> {
-	const visible = new Set(
-		(await deps.memberships.listMembersVisibleTo(viewer, circleId)).map((m) => m.contactId)
-	);
-	const chosen = [...new Set(contactIds)].filter((id) => visible.has(id));
-	if (chosen.length === 0) return;
-	await deps.circles.setRoles(circleId, chosen, orNull(role), deps.clock.now());
-}
-
-/**
- * Take one person out of a circle. Only a membership the viewer can see is touched — both its
- * circle and its contact visible (§3.7) — so an id from elsewhere, or someone else's private
- * contact, is left in place. Answers whether anyone was removed.
- */
-export async function removeMember(
-	deps: MemberRemovalDeps,
-	viewer: Viewer,
-	circleId: string,
-	contactId: string
-): Promise<boolean> {
-	const members = await deps.memberships.listMembersVisibleTo(viewer, circleId);
-	if (!members.some((m) => m.contactId === contactId)) return false;
-	await deps.circles.removeMembership(circleId, contactId);
-	return true;
 }
 
 export async function getCircle(
