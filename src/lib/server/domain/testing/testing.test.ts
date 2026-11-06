@@ -139,7 +139,7 @@ describe('contactRepositoryWith', () => {
 
 	it('fails loud on a method the test did not expect to be called', async () => {
 		const repo = contactRepositoryWith({});
-		await expect(repo.setArchived('anna', 1)).rejects.toThrow(
+		await expect(repo.setArchived(viewer, 'anna', 1)).rejects.toThrow(
 			'ContactRepository.setArchived was not expected in this test'
 		);
 	});

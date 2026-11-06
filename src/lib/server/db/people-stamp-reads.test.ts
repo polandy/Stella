@@ -140,6 +140,7 @@ describe('the people stamp', () => {
 			'a name edited',
 			() =>
 				createDrizzleContactRepository(db).writeNames(
+					andy,
 					[
 						{
 							id: 'ben',
@@ -157,12 +158,15 @@ describe('the people stamp', () => {
 		[
 			'a description written',
 			() =>
-				createDrizzleContactRepository(db).updateProfile('ben', {
+				createDrizzleContactRepository(db).updateProfile(andy, 'ben', {
 					description: 'from school',
 					updatedAt: tick()
 				})
 		],
-		['a person archived', () => createDrizzleContactRepository(db).setArchived('cleo', tick())],
+		[
+			'a person archived',
+			() => createDrizzleContactRepository(db).setArchived(andy, 'cleo', tick())
+		],
 		[
 			'a person deleted',
 			() =>

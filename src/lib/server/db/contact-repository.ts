@@ -1,4 +1,4 @@
-import { and, eq, inArray, or } from 'drizzle-orm';
+import { and, eq, inArray, or, TransactionRollbackError } from 'drizzle-orm';
 import type { BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
 import { contactDeletableBy, contactVisibleTo } from '../access/query-scoping';
 import type { Remover, Viewer } from '../access/visibility';
@@ -26,9 +26,10 @@ import {
 
 /*
  * Drizzle adapter for the ContactRepository port (docs/08 §8.3): the record's writes and the
- * one-record reads they rest on. Reads are scoped through the central `contactVisibleTo`
- * condition so access control is enforced in one place. The lists are read models of their
- * own (`contact-directory-reads.ts`, `contact-name-reads.ts`, `name-candidate-reads.ts`).
+ * one-record reads they rest on. Reads and writes are scoped through the central
+ * `contactVisibleTo` condition so access control is enforced in one place. The lists are read
+ * models of their own (`contact-directory-reads.ts`, `contact-name-reads.ts`,
+ * `name-candidate-reads.ts`).
  */
 
 /** The profile columns a merge combines (docs/02 §2.2) — every one that can be empty. */
@@ -84,6 +85,26 @@ const contactColumns = {
 export function createDrizzleContactRepository(
 	db: BunSQLiteDatabase<typeof schema>
 ): ContactRepository {
+	/**
+	 * Write `values` to the contact when the viewer sees them, and say whether it did. The rule
+	 * is in the statement itself, not left to a read before it: a person made private since that
+	 * read is not written (docs/03 §3.7).
+	 */
+	function writeVisible(
+		viewer: Viewer,
+		id: string,
+		values: Partial<typeof contactTable.$inferInsert>,
+		on: Pick<BunSQLiteDatabase<typeof schema>, 'update'> = db
+	): boolean {
+		const written = on
+			.update(contactTable)
+			.set(values)
+			.where(and(eq(contactTable.id, id), contactVisibleTo(viewer)))
+			.returning({ id: contactTable.id })
+			.all();
+		return written.length > 0;
+	}
+
 	return {
 		async insert(contact: NewContact) {
 			db.insert(contactTable).values(contact).run();
@@ -213,47 +234,49 @@ export function createDrizzleContactRepository(
 			return mergeContacts(db, remover, { keepId, mergedId, profile, audit, updatedAt });
 		},
 
-		async setArchived(id: string, archivedAt: number | null) {
-			db.update(contactTable).set({ archivedAt }).where(eq(contactTable.id, id)).run();
+		async setArchived(viewer: Viewer, id: string, archivedAt: number | null) {
+			return writeVisible(viewer, id, { archivedAt });
 		},
 
-		async updateProfile(id: string, patch: ProfilePatch) {
-			db.update(contactTable)
-				.set({
-					description: patch.description,
-					updatedAt: patch.updatedAt
-				})
-				.where(eq(contactTable.id, id))
-				.run();
+		async updateProfile(viewer: Viewer, id: string, patch: ProfilePatch) {
+			return writeVisible(viewer, id, {
+				description: patch.description,
+				updatedAt: patch.updatedAt
+			});
 		},
 
-		async setGender(id: string, gender: Gender | null, updatedAt: number) {
-			db.update(contactTable).set({ gender, updatedAt }).where(eq(contactTable.id, id)).run();
+		async setGender(viewer: Viewer, id: string, gender: Gender | null, updatedAt: number) {
+			return writeVisible(viewer, id, { gender, updatedAt });
 		},
 
-		async setJob(id: string, job: Job, updatedAt: number) {
-			db.update(contactTable)
-				.set({ ...job, updatedAt })
-				.where(eq(contactTable.id, id))
-				.run();
+		async setJob(viewer: Viewer, id: string, job: Job, updatedAt: number) {
+			return writeVisible(viewer, id, { ...job, updatedAt });
 		},
 
 		async writeNames(
+			viewer: Viewer,
 			writes: readonly NameWrite[],
 			audit: ActivityOf<'contact.renamed' | 'lastNames.given'> | null
 		) {
 			// One transaction: a batch of last names lands whole, with the line that tells the
-			// household about it, or not at all (docs/02 §2.2.4.4).
-			db.transaction((tx) => {
-				for (const { id, ...name } of writes) {
-					tx.update(contactTable).set(name).where(eq(contactTable.id, id)).run();
-				}
-				if (audit) tx.insert(activityLog).values(activityEntry(audit)).run();
-			});
+			// household about it, or not at all (docs/02 §2.2.4.4) — also when one person has
+			// gone out of the writer's sight since the read.
+			try {
+				db.transaction((tx) => {
+					for (const { id, ...name } of writes) {
+						if (!writeVisible(viewer, id, name, tx)) tx.rollback();
+					}
+					if (audit) tx.insert(activityLog).values(activityEntry(audit)).run();
+				});
+				return true;
+			} catch (error) {
+				if (error instanceof TransactionRollbackError) return false;
+				throw error;
+			}
 		},
 
-		async markWithoutLastName(id: string, at: number | null) {
-			db.update(contactTable).set({ withoutLastNameAt: at }).where(eq(contactTable.id, id)).run();
+		async markWithoutLastName(viewer: Viewer, id: string, at: number | null) {
+			return writeVisible(viewer, id, { withoutLastNameAt: at });
 		}
 	};
 }

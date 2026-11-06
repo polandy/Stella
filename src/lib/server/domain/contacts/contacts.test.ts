@@ -208,7 +208,8 @@ describe('createContact birth dates', () => {
  * with no name is unreachable in every list that sorts by it.
  */
 
-function editableRepo(contact: Contact | null) {
+/** `stillVisible`: false when the person leaves the viewer's sight between read and write. */
+function editableRepo(contact: Contact | null, stillVisible = true) {
 	const patches: { id: string; patch: ProfilePatch }[] = [];
 	const archived: { id: string; archivedAt: number | null }[] = [];
 	const genders: { id: string; gender: string | null; updatedAt: number }[] = [];
@@ -219,17 +220,21 @@ function editableRepo(contact: Contact | null) {
 	}[] = [];
 	const repo = contactRepositoryWith({
 		findByIdVisibleTo: async () => contact,
-		updateProfile: async (id, patch) => {
-			patches.push({ id, patch });
+		updateProfile: async (_viewer, id, patch) => {
+			if (stillVisible) patches.push({ id, patch });
+			return stillVisible;
 		},
-		setGender: async (id, gender, updatedAt) => {
-			genders.push({ id, gender, updatedAt });
+		setGender: async (_viewer, id, gender, updatedAt) => {
+			if (stillVisible) genders.push({ id, gender, updatedAt });
+			return stillVisible;
 		},
-		setJob: async (id, job, updatedAt) => {
-			jobs.push({ id, job, updatedAt });
+		setJob: async (_viewer, id, job, updatedAt) => {
+			if (stillVisible) jobs.push({ id, job, updatedAt });
+			return stillVisible;
 		},
-		setArchived: async (id, archivedAt) => {
-			archived.push({ id, archivedAt });
+		setArchived: async (_viewer, id, archivedAt) => {
+			if (stillVisible) archived.push({ id, archivedAt });
+			return stillVisible;
 		}
 	});
 	return { repo, patches, archived, genders, jobs };
@@ -514,4 +519,25 @@ describe('archiveContact / restoreContact', () => {
 		expect(f.archived).toEqual([]);
 		expect(visible.archived).toHaveLength(1);
 	});
+});
+
+/*
+ * The read before a write may be a moment old: the write asks visibility again (docs/03 §3.7),
+ * and a person made private in between is answered for as one that is not there (SV-06).
+ */
+describe('a person gone from sight between the read and the write', () => {
+	const uses: [string, (repo: ContactRepository) => Promise<boolean>][] = [
+		['editProfile', (r) => editProfile(deps(r), viewer, 'contact-1', { description: 'x' })],
+		['describeContact', (r) => describeContact(deps(r), viewer, 'contact-1', 'x')],
+		['setGender', (r) => setGender(deps(r), viewer, 'contact-1', 'female')],
+		['setJob', (r) => setJob(deps(r), viewer, 'contact-1', { jobTitle: 'x', company: null })],
+		['archiveContact', (r) => archiveContact(deps(r), viewer, 'contact-1')],
+		['restoreContact', (r) => restoreContact(deps(r), viewer, 'contact-1')]
+	];
+
+	for (const [name, use] of uses) {
+		it(`${name} answers false`, async () => {
+			expect(await use(editableRepo(existing, false).repo)).toBe(false);
+		});
+	}
 });

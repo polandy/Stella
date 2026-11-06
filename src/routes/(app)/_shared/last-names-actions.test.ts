@@ -44,8 +44,9 @@ function fakes(visible: Contact[]) {
 		lastNameDeps: {
 			names: {
 				findByIdVisibleTo: async (_v, id) => visible.find((c) => c.id === id) ?? null,
-				writeNames: async (writes) => {
+				writeNames: async (_v, writes) => {
 					written.push([...writes]);
+					return true;
 				}
 			},
 			ids: { next: () => 'id-1' },

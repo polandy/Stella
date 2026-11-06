@@ -21,8 +21,9 @@ function fakeDeps(visible: Contact[]) {
 			withoutLastName: {
 				findByIdVisibleTo: async (_v: unknown, id: string) =>
 					visible.find((c) => c.id === id) ?? null,
-				markWithoutLastName: async (id: string, at: number | null) => {
+				markWithoutLastName: async (_v: unknown, id: string, at: number | null) => {
 					marks.push({ id, at });
+					return true;
 				}
 			},
 			clock: { now: () => NOW }
@@ -71,5 +72,15 @@ describe('askAgainForLastName', () => {
 		expect(await askAgainForLastName(f.deps, viewer, 'jonas')).toBe(false);
 
 		expect(f.marks).toEqual([]);
+	});
+});
+
+describe('a person made private since the read (SV-06)', () => {
+	it('answers false from both, as for one never visible', async () => {
+		const f = fakeDeps([contact('jonas', null)]);
+		f.deps.withoutLastName.markWithoutLastName = async () => false;
+
+		expect(await settleWithoutLastName(f.deps, viewer, 'jonas')).toBe(false);
+		expect(await askAgainForLastName(f.deps, viewer, 'jonas')).toBe(false);
 	});
 });

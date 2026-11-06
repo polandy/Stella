@@ -1138,7 +1138,10 @@ admin's too, on any former member of their own household (`canRestoreMember` /
 The delete is scoped by the SQL condition itself, so the right is checked when the removal
 reaches the server, not when *Remove* was pressed. **Editing** a note or a touchpoint is the author's alone, and
 only while they still see it (`canEditAuthored` / `authoredEditableBy`, held to the same rows by
-the same parity test): an admin removes, never edits. A removal
+the same parity test): an admin removes, never edits. **Editing a person** — name, description,
+gender, job, archive, *no last name* — is anyone's who sees them, and each write carries
+`contactVisibleTo` in its own statement, so a person made private since the editor was read is
+answered for as one that is not there. A removal
 by someone other than the author is logged as `record.removed`, in the delete's transaction (`activity_log`). Household facts — dates, fields, relationships,
 memberships, gifts, to-dos, tags — stay open to anyone who sees them.
 

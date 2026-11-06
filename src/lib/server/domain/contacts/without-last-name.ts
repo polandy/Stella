@@ -12,8 +12,8 @@ import type { NameRepository } from './name-parts';
 
 /** The port the mark is written through (docs/08 §8.3). */
 export interface WithoutLastNameRepository extends Pick<NameRepository, 'findByIdVisibleTo'> {
-	/** Set the mark to `at`, or clear it with null. The caller has checked visibility. */
-	markWithoutLastName(id: string, at: number | null): Promise<void>;
+	/** Set the mark to `at`, or clear it with null; false when the viewer does not see them. */
+	markWithoutLastName(viewer: Viewer, id: string, at: number | null): Promise<boolean>;
 }
 
 export interface WithoutLastNameDeps {
@@ -33,8 +33,7 @@ export async function settleWithoutLastName(
 	const person = await deps.withoutLastName.findByIdVisibleTo(viewer, contactId);
 	if (person === null) return false;
 	if (clearsNoLastName(person.lastName)) return true;
-	await deps.withoutLastName.markWithoutLastName(contactId, deps.clock.now());
-	return true;
+	return deps.withoutLastName.markWithoutLastName(viewer, contactId, deps.clock.now());
 }
 
 /** *Ask again*: the person is back on the list. False when the person is not visible. */
@@ -44,6 +43,5 @@ export async function askAgainForLastName(
 	contactId: string
 ): Promise<boolean> {
 	if ((await deps.withoutLastName.findByIdVisibleTo(viewer, contactId)) === null) return false;
-	await deps.withoutLastName.markWithoutLastName(contactId, null);
-	return true;
+	return deps.withoutLastName.markWithoutLastName(viewer, contactId, null);
 }
