@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { FIELD_FRAME } from '$lib/components/ui/field';
 	import FormerlyMark from '$lib/components/people/FormerlyMark.svelte';
 	import { foundByFormerName } from '$lib/people/former-name';
 	import FoundByJobMark from '$lib/components/people/FoundByJobMark.svelte';
@@ -89,9 +90,7 @@
 
 	<!-- Find as you type. Filtering runs on what is already loaded, so there is no round trip
 	     and no wait between the keystroke and the list. -->
-	<label
-		class="flex items-center gap-2 rounded-control border border-border-input bg-card px-3 py-2 shadow-card focus-within:border-primary"
-	>
+	<label class="{FIELD_FRAME} flex items-center gap-2 bg-card px-3 py-2 shadow-card">
 		<Icon name="search" size={15} />
 		<span class="sr-only">{t('contacts.find')}</span>
 		<input

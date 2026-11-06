@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { FIELD_ON_BG } from '$lib/components/ui/field';
 	import { enhance } from '$app/forms';
 	import Avatar from '$lib/components/ui/Avatar.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
@@ -80,7 +81,7 @@
 								autocomplete="off"
 								value={person.suggestion ?? ''}
 								placeholder={t('components.namesake.placeholder')}
-								class="w-full min-w-0 rounded-md border border-border-input bg-card px-3 py-1.5 text-sm text-fg placeholder:text-fg-subtle"
+								class="{FIELD_ON_BG} w-full min-w-0 px-3 py-1.5 text-sm"
 							/>
 						</label>
 						<Button type="submit" size="sm">{t('common.save')}</Button>

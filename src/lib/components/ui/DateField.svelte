@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { FIELD } from '$lib/components/ui/field';
 	import { untrack } from 'svelte';
 	import {
 		dateProblem,
@@ -104,7 +105,7 @@
 					bind:value={() => parts.month, (v) => setPart('month', v)}
 					aria-label={i18n.t('components.dateField.month')}
 					{required}
-					class="min-w-0 rounded-control border border-border-input bg-bg px-2 py-2 text-sm text-fg"
+					class="{FIELD} min-w-0 px-2 py-2 text-sm"
 					class:stretch
 				>
 					<option value="">{i18n.t('components.dateField.monthEmpty')}</option>
@@ -124,7 +125,7 @@
 					{required}
 					aria-label={i18n.t('components.dateField.day')}
 					placeholder={i18n.t('components.dateField.dayPlaceholder')}
-					class="w-12 rounded-control border border-border-input bg-bg px-2 py-2 text-sm text-fg placeholder:text-fg-subtle"
+					class="{FIELD} w-12 px-2 py-2 text-sm"
 				/>
 			{:else}
 				<input
@@ -136,7 +137,7 @@
 					required={required && !allowYearUnknown}
 					aria-label={i18n.t('components.dateField.year')}
 					placeholder={i18n.t('components.dateField.yearPlaceholder')}
-					class="w-16 rounded-control border border-border-input bg-bg px-2 py-2 text-sm text-fg placeholder:text-fg-subtle"
+					class="{FIELD} w-16 px-2 py-2 text-sm"
 				/>
 			{/if}
 		{/each}

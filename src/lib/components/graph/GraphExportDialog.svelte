@@ -5,6 +5,7 @@
   comes out. The tree is drawn by `cytoscape/tree-image.ts`; this only asks and hands it on.
 -->
 <script lang="ts">
+	import { FIELD } from '$lib/components/ui/field';
 	import { onDestroy, untrack } from 'svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import { syncModal } from '$lib/components/ui/modal';
@@ -210,11 +211,7 @@
 			<h2 id={titleId} class="text-base font-semibold">{t('graph.export.heading')}</h2>
 			<label class={GROUP}>
 				{t('graph.export.titleField')}
-				<input
-					type="text"
-					bind:value={title}
-					class="rounded-control border border-border-input bg-bg px-3 py-2 font-normal text-fg"
-				/>
+				<input type="text" bind:value={title} class="{FIELD} px-3 py-2 font-normal" />
 			</label>
 			<div class={GROUP}>
 				<span id="{titleId}-format">{t('graph.export.format')}</span>

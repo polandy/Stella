@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { FIELD } from '$lib/components/ui/field';
 	import FormError from '$lib/components/ui/FormError.svelte';
 	import { enhance } from '$app/forms';
 	import Button from '$lib/components/ui/Button.svelte';
@@ -130,7 +131,7 @@
 			aria-invalid={error ? 'true' : undefined}
 			aria-describedby={error ? errorId : undefined}
 			onkeydown={onKeydown}
-			class="min-w-0 flex-1 rounded-control border border-border-input bg-bg px-2 py-1 text-fg outline-none focus:border-primary"
+			class="{FIELD} min-w-0 flex-1 px-2 py-1"
 			class:text-2xl={heading}
 			class:font-semibold={heading}
 		/>

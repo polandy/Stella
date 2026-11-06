@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { FIELD, FIELD_ON_BG } from '$lib/components/ui/field';
 	import { reveal } from '$lib/motion/motion.svelte';
 	import FormError from '$lib/components/ui/FormError.svelte';
 	import { enhance } from '$app/forms';
@@ -136,7 +137,7 @@
 	const field = 'flex min-w-0 flex-col gap-1 text-sm';
 	// `w-full min-w-0`: an input's intrinsic width (~20 characters) would otherwise push a
 	// two-column row past the card's edge on a phone.
-	const input = 'w-full min-w-0 rounded-md border border-border-input bg-bg px-3 py-2 text-fg';
+	const input = `${FIELD} w-full min-w-0 px-3 py-2`;
 </script>
 
 <svelte:head><title>{t('contacts.new.title')}</title></svelte:head>
@@ -236,7 +237,7 @@
 				label={t('contacts.new.description')}
 				name="description"
 				bind:value={description}
-				inputClass="w-full min-w-0 rounded-md border border-border-input bg-card px-3 py-2 text-fg"
+				inputClass="{FIELD_ON_BG} w-full min-w-0 px-3 py-2"
 			/>
 		{:else}
 			<label class={field}>

@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { FIELD } from '$lib/components/ui/field';
 	import Button from '$lib/components/ui/Button.svelte';
 	import FormError from '$lib/components/ui/FormError.svelte';
 	import PhotoCropper from '$lib/components/ui/PhotoCropper.svelte';
@@ -216,8 +217,7 @@
 		}
 	}
 
-	const INPUT =
-		'min-w-0 flex-1 rounded-md border border-border-input bg-bg px-3 py-2 text-sm text-fg';
+	const INPUT = `${FIELD} min-w-0 flex-1 px-3 py-2 text-sm`;
 	const FACE_BUTTON =
 		'flex w-full flex-col items-center gap-1.5 rounded-control p-1.5 text-center hover:bg-bg-sunken focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary';
 </script>

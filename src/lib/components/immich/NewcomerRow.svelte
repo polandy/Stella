@@ -34,6 +34,7 @@
 </script>
 
 <script lang="ts">
+	import { FIELD_ON_BG } from '$lib/components/ui/field';
 	import { enhance } from '$app/forms';
 	import { untrack } from 'svelte';
 	import type { SubmitFunction } from '@sveltejs/kit';
@@ -140,8 +141,7 @@
 		return parts.filter((part) => part !== null).join(' · ');
 	}
 
-	const fieldClass =
-		'rounded-control border border-border-input bg-card px-3 py-2 text-sm text-fg outline-none focus:ring-2 focus:ring-primary';
+	const fieldClass = `${FIELD_ON_BG} px-3 py-2 text-sm`;
 </script>
 
 <li

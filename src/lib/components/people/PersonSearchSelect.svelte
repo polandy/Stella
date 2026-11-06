@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { FIELD, FIELD_FRAME, FIELD_ON_BG } from '$lib/components/ui/field';
 	import FormerlyMark from '$lib/components/people/FormerlyMark.svelte';
 	import FoundByJobMark from '$lib/components/people/FoundByJobMark.svelte';
 	import JobLine from '$lib/components/people/JobLine.svelte';
@@ -340,9 +341,7 @@
 		<input type="hidden" {name} value={pid} />
 	{/each}
 
-	<div
-		class="flex flex-wrap items-center gap-1.5 rounded-md border border-border-input bg-bg px-2 py-1.5 focus-within:ring-2 focus-within:ring-primary {className}"
-	>
+	<div class="{FIELD_FRAME} flex flex-wrap items-center gap-1.5 bg-bg px-2 py-1.5 {className}">
 		{#if multiple}
 			{#each chosen as person (person.id)}
 				{@const marked = markedIds.includes(person.id)}
@@ -423,7 +422,7 @@
 							bind:value={draft.firstName}
 							type="text"
 							autocomplete="off"
-							class="rounded-control border border-border-input bg-bg px-2 py-1.5 text-sm text-fg outline-none focus:ring-2 focus:ring-primary"
+							class="{FIELD} px-2 py-1.5 text-sm"
 						/>
 					</label>
 					<label class="flex flex-col gap-1 text-xs text-fg-muted">
@@ -432,7 +431,7 @@
 							bind:value={draft.lastName}
 							type="text"
 							autocomplete="off"
-							class="rounded-control border border-border-input bg-bg px-2 py-1.5 text-sm text-fg outline-none focus:ring-2 focus:ring-primary"
+							class="{FIELD} px-2 py-1.5 text-sm"
 						/>
 					</label>
 				</div>
@@ -443,7 +442,7 @@
 						compact
 						label={t('components.personSearch.description')}
 						bind:value={draft.description}
-						inputClass="rounded-control border border-border-input bg-card px-2 py-1.5 text-sm text-fg outline-none focus:ring-2 focus:ring-primary"
+						inputClass="{FIELD_ON_BG} px-2 py-1.5 text-sm"
 					/>
 				{:else}
 					<!-- Worth asking for anyone new, not only a first name alone: it is what they are found by. -->
@@ -454,7 +453,7 @@
 							type="text"
 							autocomplete="off"
 							placeholder={t('components.namesake.placeholder')}
-							class="rounded-control border border-border-input bg-bg px-2 py-1.5 text-sm text-fg outline-none focus:ring-2 focus:ring-primary"
+							class="{FIELD} px-2 py-1.5 text-sm"
 						/>
 					</label>
 				{/if}
@@ -468,7 +467,7 @@
 								bind:value={draft.nickname}
 								type="text"
 								autocomplete="off"
-								class="rounded-control border border-border-input bg-bg px-2 py-1.5 text-sm text-fg outline-none focus:ring-2 focus:ring-primary"
+								class="{FIELD} px-2 py-1.5 text-sm"
 							/>
 						</label>
 						<div class="col-span-2 flex flex-col gap-1">

@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { FIELD } from '$lib/components/ui/field';
 	import { onMount } from 'svelte';
 	import { enhance } from '$app/forms';
 	import { invalidateAll } from '$app/navigation';
@@ -183,7 +184,7 @@
 			? form.renameError
 			: null;
 	}
-	const INPUT = 'rounded-md border border-border-input bg-bg px-3 py-2 text-fg';
+	const INPUT = `${FIELD} px-3 py-2`;
 </script>
 
 <svelte:head><title>{t('circles.detail.title', { name: circle.name })}</title></svelte:head>

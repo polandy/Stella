@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { FIELD } from '$lib/components/ui/field';
 	import { tick } from 'svelte';
 	import { enhance } from '$app/forms';
 	import CircleDeleteStep from '$lib/components/circle/CircleDeleteStep.svelte';
@@ -137,7 +138,7 @@
 	 */
 	const isDay = (value: string | null) => value === null || /^\d{4}-\d{2}-\d{2}$/.test(value);
 
-	const INPUT = 'rounded-control border border-border-input bg-bg px-3 py-2 text-fg';
+	const INPUT = `${FIELD} px-3 py-2`;
 	const ITEM_SHAPE =
 		'flex w-full items-center gap-2 rounded-control px-2.5 py-1.5 text-left text-sm hover:bg-primary-soft focus-visible:bg-primary-soft';
 	const ITEM = `${ITEM_SHAPE} text-fg`;

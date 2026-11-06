@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { FIELD } from '$lib/components/ui/field';
 	import { invalidateAll } from '$app/navigation';
 	import Button from '$lib/components/ui/Button.svelte';
 	import Icon from '$lib/components/ui/Icon.svelte';
@@ -241,7 +242,7 @@
 					multiple
 					required={fromImmich.length === 0}
 					onchange={(e) => (picked = Array.from(e.currentTarget.files ?? []))}
-					class="rounded-md border border-border-input bg-bg px-3 py-2 text-fg"
+					class="{FIELD} px-3 py-2"
 				/>
 			</label>
 			{#if data.immichLibrary}

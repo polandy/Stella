@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { FIELD } from '$lib/components/ui/field';
 	import FormError from '$lib/components/ui/FormError.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import { useTranslate } from '$lib/i18n/context.svelte';
@@ -6,7 +7,7 @@
 
 	let { form, data }: { form: ActionData; data: PageData } = $props();
 	const t = useTranslate();
-	const INPUT = 'rounded-md border border-border-input bg-bg px-3 py-2 text-fg';
+	const INPUT = `${FIELD} px-3 py-2`;
 </script>
 
 <svelte:head><title>{t('auth.signInTitle')}</title></svelte:head>

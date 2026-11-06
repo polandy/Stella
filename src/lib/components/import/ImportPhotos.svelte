@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { FIELD } from '$lib/components/ui/field';
 	import Button from '$lib/components/ui/Button.svelte';
 	import type { Snippet } from 'svelte';
 	import { useTranslate } from '$lib/i18n/context.svelte';
@@ -126,7 +127,7 @@
 				accept="image/*"
 				onchange={onPhotosPicked}
 				disabled={uploading}
-				class="rounded-md border border-border-input bg-bg px-3 py-2 text-sm text-fg"
+				class="{FIELD} px-3 py-2 text-sm"
 				aria-label={t('import.photos.folderLabel')}
 			/>
 		{/if}

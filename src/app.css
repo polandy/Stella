@@ -331,6 +331,21 @@ body {
 }
 
 /*
+ * A text field draws the same ring on its own edge instead of 2px outside it, so it reads as a
+ * thicker border and no tight row or scroll pane clips it (`ui/field.ts`). A frame around a bare
+ * input — a search icon beside it, chips before it — draws the ring for that input.
+ */
+.field:focus-visible,
+.field-frame:has(input:focus-visible) {
+	outline: 2px solid var(--focus-ring);
+	outline-offset: -1px;
+}
+
+.field-frame input:focus-visible {
+	outline: none;
+}
+
+/*
  * Prose written by a person — note bodies, journal entries, moments — is set in the serif
  * (docs/05 §5.3), so a written line never reads like a data field. Preflight resets the
  * defaults, so restore the basics.
