@@ -2,28 +2,15 @@ import { TranslatableError } from '../../../i18n/translatable';
 import { phrase, type Phrase } from '../../../i18n/phrase';
 import type { Clock } from '../../clock';
 import type { IdGenerator } from '../../id';
-import { isSafeMediaPath } from './archive';
-import { planAnswers, type AnswerWarning } from './restore-answers';
-import { isImmichId } from '../immich/gateway';
+import { planAnswers } from './restore-answers';
 import { ARCHIVE_FORMAT, ARCHIVE_VERSION } from './document';
-import { CURRENT_RELATIONSHIP_STATUS } from '../../../relationships/status';
-import { relationshipPair } from '../../../relationships/endpoints';
-import { foldedLinkDetails } from '../../../relationships/fold';
-import { giftLink, isGiftState } from '../../../gifts/gifts';
-import { FULL_DATE_SHAPE, isRealCalendarDay } from '../../../dates/calendar';
-import { todayFor } from '../../../dates/today';
-import {
-	bool,
-	ids,
-	int,
-	ms,
-	real,
-	record,
-	records,
-	str,
-	visibilityOf,
-	type Row
-} from './restore-fields';
+import type { RestoreContext, RestoreWarning } from './restore-context';
+import { int, ms, record, records, str, visibilityOf, type Row } from './restore-fields';
+import { planCircles, planHomes, planTags } from './restore-groups';
+import { planImmichIgnores, planPeople } from './restore-people';
+import { photoPlan } from './restore-photos';
+import { planPersonRecords } from './restore-records';
+import { planRelationships } from './restore-relationships';
 
 /*
  * Reading an archive back (docs/02 §2.15): the document turned into rows this installation can
@@ -70,52 +57,6 @@ export class ArchiveVersionError extends TranslatableError {
 		);
 	}
 }
-
-/** The kinds of pointer a restore can find dangling. */
-export type MentionKind = 'noteMentions' | 'journalMentions' | 'touchpointParticipants';
-
-/**
- * Something the restore left out, as a code the page words (docs/02 §2.19). The plan is a
- * domain module and has no language of its own; the report says *what* happened and the
- * wizard says it in the reader's.
- */
-export type RestoreWarning =
-	| { code: 'personWithoutName' }
-	| { code: 'photoWithoutFile' }
-	| { code: 'photoBadPath'; file: string }
-	| { code: 'pointedAtMissingPeople'; what: MentionKind }
-	| { code: 'contactFieldIncomplete' }
-	| { code: 'importantDateIncomplete' }
-	| { code: 'noteWithoutText' }
-	| { code: 'journalEntryIncomplete' }
-	| { code: 'touchpointIncomplete' }
-	| { code: 'giftIncomplete' }
-	| { code: 'todoIncomplete' }
-	| { code: 'tagWithoutName' }
-	| { code: 'tagsNotInList' }
-	| { code: 'immichLinkIncomplete' }
-	| { code: 'immichIgnoreIncomplete' }
-	| { code: 'circleWithoutName' }
-	| { code: 'circleMissingParent'; name: string }
-	| { code: 'circleMemberMissing'; name: string }
-	/** A shared address without its line, or with nobody of the archive living there. */
-	| { code: 'homeIncomplete' }
-	| { code: 'homeMembersMissing' }
-	| { code: 'relationshipTypeWithoutName' }
-	| { code: 'relationshipMissingEnd' }
-	| { code: 'relationshipsMissingPeople' }
-	| { code: 'relationshipUnknownType' }
-	/** The same symmetric link from both ends, restored once (docs/03 §relationship). */
-	| { code: 'relationshipTwinFolded' }
-	| { code: 'relationshipToItself' }
-	| { code: 'imagesMissing'; count: number }
-	/** Images the archive carried that could not be stored here — a full disk, most likely. */
-	| { code: 'imagesNotStored'; count: number }
-	/** Rows of `table` whose person, entry or circle is not here, so they were left out. */
-	| { code: 'rowsWithoutParent'; table: string; count: number }
-	/** Gift notes or gift touchpoints the archive held, made gift records (docs/02 §2.25.4). */
-	| { code: 'giftsConverted'; count: number }
-	| AnswerWarning;
 
 /** What this installation already has, so the plan can fit itself into it. */
 export interface RestoreTarget {
@@ -175,15 +116,10 @@ export function readArchiveDocument(parsed: unknown): Row {
 	return document;
 }
 
-/** A gift's link if it is a web address; anything else is dropped rather than kept as a link. */
-function webLinkOf(raw: string | null): string | null {
-	const link = giftLink(raw ?? '');
-	return link.ok ? link.url : null;
-}
-
 /**
  * Turn a parsed archive document into the rows to insert. Nothing here touches the database:
- * what the installation already has arrives in `target`, and what comes out is a plan.
+ * what the installation already has arrives in `target`, and what comes out is a plan. Each
+ * table group is planned by its own `restore-*.ts` module, in the order their warnings read.
  */
 export function planRestore(
 	deps: RestorePlanDeps,
@@ -193,645 +129,45 @@ export function planRestore(
 	const document = readArchiveDocument(parsed);
 	const now = deps.clock.now();
 	const warnings: RestoreWarning[] = [];
-	const warn = (warning: RestoreWarning) => {
-		const same = (a: RestoreWarning, b: RestoreWarning) => JSON.stringify(a) === JSON.stringify(b);
-		if (!warnings.some((existing) => same(existing, warning))) warnings.push(warning);
-	};
-
 	const members = new Set(target.memberIds);
-	/** Authorship survives a restore into its own installation; otherwise it is the admin's. */
-	const author = (row: Row, key = 'author'): string => {
-		const written = str(row, key);
-		return written !== null && members.has(written) ? written : target.actorId;
+	const ctx: RestoreContext = {
+		householdId: target.householdId,
+		ids: deps.ids,
+		now,
+		members,
+		author: (row, key = 'author') => {
+			const written = str(row, key);
+			return written !== null && members.has(written) ? written : target.actorId;
+		},
+		stamps: (row) => {
+			const createdAt = ms(row, 'created_at') ?? now;
+			// `updated_at` is bookkeeping the archive does not carry: the row is new here.
+			return { created_at: createdAt, updated_at: createdAt };
+		},
+		warn: (warning) => {
+			const same = (a: RestoreWarning, b: RestoreWarning) =>
+				JSON.stringify(a) === JSON.stringify(b);
+			if (!warnings.some((existing) => same(existing, warning))) warnings.push(warning);
+		}
 	};
-
-	const stamps = (row: Row) => {
-		const createdAt = ms(row, 'created_at') ?? now;
-		// `updated_at` is bookkeeping the archive does not carry: the row is new here.
-		return { created_at: createdAt, updated_at: createdAt };
-	};
-
-	// ── People ────────────────────────────────────────────────────────────
-	const contacts: Row[] = [];
-	const contactFields: Row[] = [];
-	const importantDates: Row[] = [];
-	const notes: Row[] = [];
-	const noteMentions: Row[] = [];
-	const journalEntries: Row[] = [];
-	const journalMentions: Row[] = [];
-	const interactions: Row[] = [];
-	const participants: Row[] = [];
-	const gifts: Row[] = [];
-	const todos: Row[] = [];
-	const photos: Row[] = [];
-	const contactTags: Row[] = [];
-	const immichLinks: Row[] = [];
-	const immichIgnores: Row[] = [];
-	const mediaPaths = new Set<string>();
 
 	const people = records(document, 'people');
-	const knownPeople = new Set<string>();
-	for (const person of people) {
-		const id = str(person, 'id');
-		const displayName = str(person, 'display_name');
-		if (id === null || displayName === null) {
-			warn({ code: 'personWithoutName' });
-			continue;
-		}
-		knownPeople.add(id);
-		contacts.push({
-			id,
-			household_id: target.householdId,
-			created_by: author(person),
-			visibility: visibilityOf(person),
-			first_name: str(person, 'first_name'),
-			last_name: str(person, 'last_name'),
-			nickname: str(person, 'nickname'),
-			prefix: str(person, 'prefix'),
-			suffix: str(person, 'suffix'),
-			former_name: str(person, 'former_name'),
-			display_name: displayName,
-			gender: str(person, 'gender'),
-			pronouns: str(person, 'pronouns'),
-			description: str(person, 'description'),
-			avatar_photo_id: str(person, 'avatar'),
-			birth_date: str(person, 'birth_date'),
-			birth_date_precision: str(person, 'birth_date_precision') ?? 'full',
-			is_deceased: bool(person, 'deceased') ? 1 : 0,
-			death_date: str(person, 'death_date'),
-			job_title: str(person, 'job_title'),
-			company: str(person, 'company'),
-			how_we_met: str(person, 'how_we_met'),
-			met_date: str(person, 'met_date'),
-			met_place: str(person, 'met_place'),
-			without_last_name_at: ms(person, 'without_last_name_at'),
-			archived_at: ms(person, 'archived_at'),
-			...stamps(person)
-		});
-	}
-
-	// Which Immich person each of them is (docs/02 §2.24.5). The id travels into
-	// Immich's URL paths, so one that is not an Immich id is refused rather than restored.
-	for (const person of people) {
-		const contactId = str(person, 'id');
-		const link = record(person.immich);
-		if (contactId === null || !knownPeople.has(contactId) || link === null) continue;
-		const immichPersonId = str(link, 'person');
-		if (!isImmichId(immichPersonId)) {
-			warn({ code: 'immichLinkIncomplete' });
-			continue;
-		}
-		immichLinks.push({
-			contact_id: contactId,
-			immich_person_id: immichPersonId,
-			linked_by: author(link, 'linked_by'),
-			linked_at: ms(link, 'linked_at') ?? now
-		});
-	}
-
-	/** A photo, wherever it hangs: a person's gallery, a journal entry, or a circle. */
-	const addPhoto = (
-		row: Row,
-		owner: { contactId: string; journalEntryId: string | null } | { circleId: string }
-	) => {
-		const file = str(row, 'file');
-		const thumb = str(row, 'thumb');
-		const view = str(row, 'view');
-		if (file === null || thumb === null) {
-			warn({ code: 'photoWithoutFile' });
-			return;
-		}
-		if (
-			!isSafeMediaPath(file) ||
-			!isSafeMediaPath(thumb) ||
-			(view !== null && !isSafeMediaPath(view))
-		) {
-			// A path out of the media directory is the one thing in an archive that could reach
-			// the rest of the disk. It is refused, not cleaned up.
-			warn({ code: 'photoBadPath', file });
-			return;
-		}
-		mediaPaths.add(file);
-		mediaPaths.add(thumb);
-		if (view !== null) mediaPaths.add(view);
-		const crop = record(row.crop);
-		photos.push({
-			id: str(row, 'id') ?? deps.ids.next(),
-			household_id: target.householdId,
-			contact_id: 'contactId' in owner ? owner.contactId : null,
-			journal_entry_id: 'contactId' in owner ? owner.journalEntryId : null,
-			circle_id: 'circleId' in owner ? owner.circleId : null,
-			circle_role: 'circleId' in owner ? str(row, 'role') : null,
-			created_by: author(row),
-			visibility: visibilityOf(row),
-			file_path: file,
-			thumb_path: thumb,
-			view_path: view,
-			mime: str(row, 'mime') ?? 'image/jpeg',
-			width: int(row, 'width'),
-			height: int(row, 'height'),
-			size_bytes: int(row, 'bytes'),
-			caption: str(row, 'caption'),
-			taken_at: str(row, 'taken_at'),
-			framing_of: str(row, 'framing_of'),
-			cut_from: str(row, 'cut_from'),
-			crop_x: crop ? real(crop, 'x') : null,
-			crop_y: crop ? real(crop, 'y') : null,
-			crop_size: crop ? real(crop, 'size') : null,
-			pinned_at: ms(row, 'pinned_at'),
-			created_at: ms(row, 'created_at') ?? now
-		});
-	};
-
-	/** Mentions and participants can only point at people this archive brought along. */
-	const knownOnly = (candidates: string[], what: MentionKind): string[] =>
-		candidates.filter((id) => {
-			if (knownPeople.has(id)) return true;
-			warn({ code: 'pointedAtMissingPeople', what });
-			return false;
-		});
-
-	for (const person of people) {
-		const contactId = str(person, 'id');
-		if (contactId === null || !knownPeople.has(contactId)) continue;
-
-		records(person, 'fields').forEach((field, index) => {
-			const value = str(field, 'value');
-			const kind = str(field, 'kind');
-			if (value === null || kind === null) {
-				warn({ code: 'contactFieldIncomplete' });
-				return;
-			}
-			contactFields.push({
-				id: str(field, 'id') ?? deps.ids.next(),
-				contact_id: contactId,
-				kind,
-				label: str(field, 'label'),
-				value,
-				meta: str(field, 'meta'),
-				// Older archives carry no order; the order they are written in is the order.
-				sort_order: int(field, 'sort_order') ?? index,
-				created_at: now,
-				updated_at: now
-			});
-		});
-
-		for (const date of records(person, 'important_dates')) {
-			const day = str(date, 'date');
-			const kind = str(date, 'kind');
-			if (day === null || kind === null) {
-				warn({ code: 'importantDateIncomplete' });
-				continue;
-			}
-			importantDates.push({
-				id: str(date, 'id') ?? deps.ids.next(),
-				contact_id: contactId,
-				kind,
-				label: str(date, 'label'),
-				date: day,
-				recurs_yearly: bool(date, 'recurs_yearly') ? 1 : 0,
-				remind: bool(date, 'remind') ? 1 : 0,
-				created_at: now,
-				updated_at: now
-			});
-		}
-
-		for (const note of records(person, 'notes')) {
-			const body = str(note, 'body');
-			if (body === null) {
-				warn({ code: 'noteWithoutText' });
-				continue;
-			}
-			const noteId = str(note, 'id') ?? deps.ids.next();
-			notes.push({
-				id: noteId,
-				contact_id: contactId,
-				created_by: author(note),
-				visibility: visibilityOf(note),
-				title: str(note, 'title'),
-				body,
-				is_pinned: bool(note, 'pinned') ? 1 : 0,
-				...stamps(note)
-			});
-			for (const mentioned of knownOnly(ids(note, 'mentions'), 'noteMentions')) {
-				noteMentions.push({ note_id: noteId, contact_id: mentioned });
-			}
-		}
-
-		for (const entry of records(person, 'journal')) {
-			const body = str(entry, 'body');
-			const day = str(entry, 'date');
-			if (body === null || day === null) {
-				warn({ code: 'journalEntryIncomplete' });
-				continue;
-			}
-			const entryId = str(entry, 'id') ?? deps.ids.next();
-			journalEntries.push({
-				id: entryId,
-				contact_id: contactId,
-				created_by: author(entry),
-				visibility: visibilityOf(entry),
-				entry_date: day,
-				title: str(entry, 'title'),
-				body,
-				...stamps(entry)
-			});
-			for (const mentioned of knownOnly(ids(entry, 'mentions'), 'journalMentions')) {
-				journalMentions.push({ journal_entry_id: entryId, contact_id: mentioned });
-			}
-			for (const image of records(entry, 'photos'))
-				addPhoto(image, { contactId, journalEntryId: entryId });
-		}
-
-		for (const touch of records(person, 'interactions')) {
-			const kind = str(touch, 'kind');
-			const happenedAt = str(touch, 'happened_at');
-			if (kind === null || happenedAt === null) {
-				warn({ code: 'touchpointIncomplete' });
-				continue;
-			}
-			const interactionId = str(touch, 'id') ?? deps.ids.next();
-			interactions.push({
-				id: interactionId,
-				contact_id: contactId,
-				created_by: author(touch),
-				visibility: visibilityOf(touch),
-				kind,
-				title: str(touch, 'title'),
-				description: str(touch, 'description'),
-				happened_at: happenedAt,
-				...stamps(touch)
-			});
-			for (const other of knownOnly(ids(touch, 'participants'), 'touchpointParticipants')) {
-				participants.push({ interaction_id: interactionId, contact_id: other });
-			}
-		}
-
-		for (const giftRow of records(person, 'gifts')) {
-			const state = str(giftRow, 'state');
-			const title = str(giftRow, 'title');
-			const givenOn = str(giftRow, 'given_on');
-			// A gift needs its name and one of its three states; a given or received one, its day.
-			const known = state !== null && isGiftState(state);
-			const dated = givenOn !== null && FULL_DATE_SHAPE.test(givenOn) && isRealCalendarDay(givenOn);
-			if (!known || title === null || (state !== 'idea' && !dated)) {
-				warn({ code: 'giftIncomplete' });
-				continue;
-			}
-			gifts.push({
-				id: str(giftRow, 'id') ?? deps.ids.next(),
-				contact_id: contactId,
-				created_by: author(giftRow),
-				visibility: visibilityOf(giftRow),
-				state,
-				title,
-				note: str(giftRow, 'note'),
-				// Only a web address is kept, as the form keeps it: the card renders it as a link.
-				url: webLinkOf(str(giftRow, 'url')),
-				given_on: state === 'idea' ? null : givenOn,
-				occasion: str(giftRow, 'occasion'),
-				...stamps(giftRow)
-			});
-		}
-
-		for (const todoRow of records(person, 'todos')) {
-			const title = str(todoRow, 'title');
-			// A to-do needs its line; a day that is not one is dropped rather than the to-do.
-			if (title === null) {
-				warn({ code: 'todoIncomplete' });
-				continue;
-			}
-			const dueOn = str(todoRow, 'due_on');
-			const doneAt = ms(todoRow, 'done_at');
-			const doneBy = str(todoRow, 'done_by');
-			const doneOn = str(todoRow, 'done_on');
-			todos.push({
-				id: str(todoRow, 'id') ?? deps.ids.next(),
-				contact_id: contactId,
-				created_by: author(todoRow),
-				visibility: visibilityOf(todoRow),
-				title,
-				due_on:
-					dueOn !== null && FULL_DATE_SHAPE.test(dueOn) && isRealCalendarDay(dueOn) ? dueOn : null,
-				done_at: doneAt,
-				// The day it was ticked, as written; an archive without one takes the tick's day here.
-				done_on:
-					doneAt === null
-						? null
-						: doneOn !== null && FULL_DATE_SHAPE.test(doneOn) && isRealCalendarDay(doneOn)
-							? doneOn
-							: todayFor({ now: () => doneAt }),
-				// Who ticked it only when they are a member here; the tick itself stays.
-				done_by: doneAt !== null && doneBy !== null && members.has(doneBy) ? doneBy : null,
-				...stamps(todoRow)
-			});
-		}
-
-		for (const image of records(person, 'photos'))
-			addPhoto(image, { contactId, journalEntryId: null });
-	}
-
-	// ── Tags ──────────────────────────────────────────────────────────────
-	// A tag is unique by name within a household, so one the household already has is reused
-	// and the archive's id is re-pointed at it — otherwise every link would hit that constraint.
-	const tags: Row[] = [];
-	const tagIdByArchiveId = new Map<string, string>();
-	const tagIdByName = new Map(target.tags.map((tag) => [tag.name, tag.id]));
-	for (const tag of records(document, 'tags')) {
-		const id = str(tag, 'id');
-		const name = str(tag, 'name');
-		if (id === null || name === null) {
-			warn({ code: 'tagWithoutName' });
-			continue;
-		}
-		const existing = tagIdByName.get(name);
-		if (existing !== undefined) {
-			tagIdByArchiveId.set(id, existing);
-			continue;
-		}
-		tagIdByArchiveId.set(id, id);
-		tagIdByName.set(name, id);
-		tags.push({
-			id,
-			household_id: target.householdId,
-			name,
-			color: str(tag, 'color') ?? 'lavender',
-			...stamps(tag)
-		});
-	}
-
-	for (const person of people) {
-		const contactId = str(person, 'id');
-		if (contactId === null || !knownPeople.has(contactId)) continue;
-		for (const archiveTagId of ids(person, 'tags')) {
-			const tagId = tagIdByArchiveId.get(archiveTagId);
-			if (tagId === undefined) {
-				warn({ code: 'tagsNotInList' });
-				continue;
-			}
-			contactTags.push({ contact_id: contactId, tag_id: tagId });
-		}
-	}
-
-	// ── Circles ───────────────────────────────────────────────────────────
-	const circles: Row[] = [];
-	const memberships: Row[] = [];
-	const circleRows = records(document, 'circles');
-	const knownCircles = new Set(
-		circleRows.map((circle) => str(circle, 'id')).filter((id): id is string => id !== null)
-	);
-	for (const circle of circleRows) {
-		const id = str(circle, 'id');
-		const name = str(circle, 'name');
-		if (id === null || name === null) {
-			warn({ code: 'circleWithoutName' });
-			continue;
-		}
-		const parent = str(circle, 'parent');
-		if (parent !== null && !knownCircles.has(parent)) {
-			warn({ code: 'circleMissingParent', name });
-		}
-		circles.push({
-			id,
-			household_id: target.householdId,
-			created_by: author(circle),
-			visibility: visibilityOf(circle),
-			name,
-			description: str(circle, 'description'),
-			kind: str(circle, 'kind') ?? 'other',
-			color: str(circle, 'color') ?? 'blue',
-			parent_circle_id: parent !== null && knownCircles.has(parent) ? parent : null,
-			start_date: str(circle, 'start'),
-			end_date: str(circle, 'end'),
-			archived_at: ms(circle, 'archived_at'),
-			...stamps(circle)
-		});
-
-		// Only a circle that is restored brings its photos: a refused circle refuses them too.
-		for (const image of records(circle, 'photos')) addPhoto(image, { circleId: id });
-
-		for (const member of records(circle, 'members')) {
-			const person = str(member, 'person');
-			if (person === null || !knownPeople.has(person)) {
-				warn({ code: 'circleMemberMissing', name });
-				continue;
-			}
-			memberships.push({
-				id: str(member, 'id') ?? deps.ids.next(),
-				circle_id: id,
-				contact_id: person,
-				role: str(member, 'role'),
-				start_date: str(member, 'since'),
-				end_date: str(member, 'until'),
-				note: str(member, 'note'),
-				created_by: author(member),
-				...stamps(member)
-			});
-		}
-	}
-
-	// ── Shared homes ──────────────────────────────────────────────────────
-	// A home is only ever reached through who lives there (docs/03 §3.3): one with nobody of
-	// this archive in it would be an address nobody could see or remove, so it is left out.
-	const homes: Row[] = [];
-	const homeMembers: Row[] = [];
-	for (const home of records(document, 'homes')) {
-		const id = str(home, 'id');
-		const value = str(home, 'value');
-		const livesThere = ids(home, 'members');
-		const known = livesThere.filter((person) => knownPeople.has(person));
-		if (known.length < livesThere.length) warn({ code: 'homeMembersMissing' });
-		if (id === null || value === null || known.length === 0) {
-			warn({ code: 'homeIncomplete' });
-			continue;
-		}
-		homes.push({
-			id,
-			household_id: target.householdId,
-			label: str(home, 'label'),
-			value,
-			meta: str(home, 'meta'),
-			created_by: author(home),
-			...stamps(home)
-		});
-		for (const person of new Set(known)) {
-			homeMembers.push({
-				home_id: id,
-				contact_id: person,
-				created_by: author(home),
-				created_at: ms(home, 'created_at') ?? now
-			});
-		}
-	}
-
-	// ── Relationship types and relationships ──────────────────────────────
-	const relationshipTypes: Row[] = [];
-	const knownTypes = new Set(target.relationshipTypeIds);
-	const symmetricTypes = new Set(target.symmetricTypeIds);
-	records(document, 'relationship_types').forEach((type, index) => {
-		const id = str(type, 'id');
-		const key = str(type, 'key');
-		const forward = str(type, 'forward_label');
-		if (id === null || key === null || forward === null) {
-			warn({ code: 'relationshipTypeWithoutName' });
-			return;
-		}
-		// A type already here keeps its row, so its links are stored the way that row says.
-		if (!knownTypes.has(id) && bool(type, 'symmetric')) symmetricTypes.add(id);
-		knownTypes.add(id);
-		relationshipTypes.push({
-			id,
-			household_id: target.householdId,
-			key,
-			forward_label: forward,
-			reverse_label: str(type, 'reverse_label') ?? forward,
-			category: str(type, 'category') ?? 'other',
-			symmetric: bool(type, 'symmetric') ? 1 : 0,
-			sort_order: int(type, 'sort_order') ?? index
-		});
-	});
-
-	const relationships: Row[] = [];
-	/*
-	 * Each link takes its ends from `relationshipPair`, like every other writer's (docs/03
-	 * §relationship): an archive from before migration 0025, or one edited by hand, can hold a
-	 * symmetric link the wrong way round, and the unique index and the duplicate check would miss
-	 * it from the other end. The same link from both ends is restored once, as 0025 folded it:
-	 * the copy stored sorted keeps its row and takes only the blanks the other can fill. One the
-	 * household already has is left to the adapter, which keeps the household's row whole.
-	 */
-	const symmetricLinks = new Map<string, { row: Row; givenSorted: boolean }>();
-	const fold = (kept: Row, copy: Row) => {
-		const filled = foldedLinkDetails(
-			{ description: kept.note as string | null, sinceDate: kept.since_date as string | null },
-			{ description: copy.note as string | null, sinceDate: copy.since_date as string | null }
-		);
-		if (filled.description !== undefined) kept.note = filled.description;
-		if (filled.sinceDate !== undefined) kept.since_date = filled.sinceDate;
-	};
-	for (const link of records(document, 'relationships')) {
-		const from = str(link, 'from');
-		const to = str(link, 'to');
-		const type = str(link, 'type');
-		if (from === null || to === null || type === null) {
-			warn({ code: 'relationshipMissingEnd' });
-			continue;
-		}
-		if (!knownPeople.has(from) || !knownPeople.has(to)) {
-			warn({ code: 'relationshipsMissingPeople' });
-			continue;
-		}
-		if (!knownTypes.has(type)) {
-			warn({ code: 'relationshipUnknownType' });
-			continue;
-		}
-		if (from === to) {
-			warn({ code: 'relationshipToItself' });
-			continue;
-		}
-		const symmetric = symmetricTypes.has(type);
-		const pair = relationshipPair(from, to, symmetric);
-		const row: Row = {
-			id: str(link, 'id') ?? deps.ids.next(),
-			household_id: target.householdId,
-			from_contact_id: pair.fromContactId,
-			to_contact_id: pair.toContactId,
-			type_id: type,
-			note: str(link, 'description'),
-			since_date: str(link, 'since'),
-			// An archive from before the status meant anything carries none; a link that is on
-			// record holds until someone ends it (docs/02 §2.4).
-			status: str(link, 'status') ?? CURRENT_RELATIONSHIP_STATUS,
-			created_by: author(link),
-			...stamps(link)
-		};
-		if (!symmetric) {
-			relationships.push(row);
-			continue;
-		}
-		const key = JSON.stringify([pair.fromContactId, pair.toContactId, type]);
-		const givenSorted = from === pair.fromContactId;
-		const twin = symmetricLinks.get(key);
-		if (twin === undefined) {
-			symmetricLinks.set(key, { row, givenSorted });
-			relationships.push(row);
-			continue;
-		}
-		warn({ code: 'relationshipTwinFolded' });
-		if (twin.givenSorted || !givenSorted) {
-			fold(twin.row, row);
-			continue;
-		}
-		fold(row, twin.row);
-		relationships[relationships.indexOf(twin.row)] = row;
-		symmetricLinks.set(key, { row, givenSorted });
-	}
-
-	// ── The trail ─────────────────────────────────────────────────────────
-	const activity: Row[] = [];
-	for (const entry of records(document, 'activity')) {
-		const action = str(entry, 'action');
-		const summary = str(entry, 'summary');
-		if (action === null || summary === null) continue;
-		activity.push({
-			id: str(entry, 'id') ?? deps.ids.next(),
-			household_id: target.householdId,
-			actor_id: author(entry, 'actor'),
-			action,
-			entity_type: str(entry, 'entity_type') ?? 'contact',
-			entity_id: str(entry, 'entity_id') ?? '',
-			contact_id: str(entry, 'person'),
-			visibility: visibilityOf(entry),
-			summary,
-			created_at: ms(entry, 'created_at') ?? now
-		});
-	}
-
-	// A framing whose photo was refused above would be worn by nobody's gallery and could never
-	// be removed from the interface; it goes with its photo, files included (docs/02 §2.14).
-	// A profile picture cut from a group photo is such a framing too (concept §6). A photo that
-	// was cut from one before only remembers it, so it stays and forgets a group photo refused.
-	const photoIds = new Set(photos.filter((p) => p.framing_of === null).map((p) => p.id));
-	// The Immich faces each of them was said not to be (docs/02 §2.24.5), refused on
-	// the same terms as a link: the id travels into Immich's URL paths.
-	for (const person of people) {
-		const contactId = str(person, 'id');
-		if (contactId === null || !knownPeople.has(contactId)) continue;
-		for (const ignored of records(person, 'immich_ignored')) {
-			const immichPersonId = str(ignored, 'person');
-			if (!isImmichId(immichPersonId)) {
-				warn({ code: 'immichIgnoreIncomplete' });
-				continue;
-			}
-			immichIgnores.push({
-				contact_id: contactId,
-				immich_person_id: immichPersonId,
-				ignored_by: author(ignored, 'ignored_by'),
-				ignored_at: ms(ignored, 'ignored_at') ?? now
-			});
-		}
-	}
-
-	// ── What the household already answered ──────────────────────────────
-	const answers = planAnswers(document, {
-		householdId: target.householdId,
-		author,
+	const photos = photoPlan(ctx);
+	const { contacts, immichLinks, knownPeople } = planPeople(people, ctx);
+	const personRecords = planPersonRecords(people, knownPeople, photos, ctx);
+	const { tags, contactTags } = planTags(document, people, knownPeople, target.tags, ctx);
+	const { circles, memberships } = planCircles(document, knownPeople, photos, ctx);
+	const { homes, homeMembers } = planHomes(document, knownPeople, ctx);
+	const { relationshipTypes, relationships } = planRelationships(
+		document,
 		knownPeople,
-		now,
-		warn
-	});
-
-	const keptPhotos = photos
-		.filter((p) => {
-			const framingOf = p.framing_of;
-			if (typeof framingOf !== 'string' || photoIds.has(framingOf)) return true;
-			mediaPaths.delete(p.file_path as string);
-			mediaPaths.delete(p.thumb_path as string);
-			return false;
-		})
-		.map((p) =>
-			typeof p.cut_from === 'string' && !photoIds.has(p.cut_from) ? { ...p, cut_from: null } : p
-		);
+		target,
+		ctx
+	);
+	const activity = planTrail(document, ctx);
+	const immichIgnores = planImmichIgnores(people, knownPeople, ctx);
+	const answers = planAnswers(document, { ...ctx, knownPeople });
+	const kept = photos.finish();
 
 	return {
 		householdId: target.householdId,
@@ -841,23 +177,23 @@ export function planRestore(
 		tables: [
 			{ table: 'relationship_type', rows: relationshipTypes },
 			{ table: 'contact', rows: contacts },
-			{ table: 'contact_field', rows: contactFields },
+			{ table: 'contact_field', rows: personRecords.contactFields },
 			{ table: 'home', rows: homes },
 			{ table: 'home_member', rows: homeMembers },
-			{ table: 'important_date', rows: importantDates },
+			{ table: 'important_date', rows: personRecords.importantDates },
 			{ table: 'tag', rows: tags },
 			{ table: 'contact_tag', rows: contactTags },
 			{ table: 'immich_link', rows: immichLinks },
 			{ table: 'immich_ignore', rows: immichIgnores },
-			{ table: 'note', rows: notes },
-			{ table: 'note_mention', rows: noteMentions },
-			{ table: 'journal_entry', rows: journalEntries },
-			{ table: 'journal_mention', rows: journalMentions },
-			{ table: 'interaction', rows: interactions },
-			{ table: 'interaction_participant', rows: participants },
-			{ table: 'gift', rows: gifts },
-			{ table: 'todo', rows: todos },
-			{ table: 'photo', rows: keptPhotos },
+			{ table: 'note', rows: personRecords.notes },
+			{ table: 'note_mention', rows: personRecords.noteMentions },
+			{ table: 'journal_entry', rows: personRecords.journalEntries },
+			{ table: 'journal_mention', rows: personRecords.journalMentions },
+			{ table: 'interaction', rows: personRecords.interactions },
+			{ table: 'interaction_participant', rows: personRecords.participants },
+			{ table: 'gift', rows: personRecords.gifts },
+			{ table: 'todo', rows: personRecords.todos },
+			{ table: 'photo', rows: kept.photos },
 			{ table: 'circle', rows: circles },
 			{ table: 'circle_membership', rows: memberships },
 			{ table: 'relationship', rows: relationships },
@@ -867,7 +203,30 @@ export function planRestore(
 			{ table: 'suggestion_dismissal', rows: answers.dismissals },
 			{ table: 'command_receipt', rows: answers.receipts }
 		],
-		mediaPaths: [...mediaPaths],
+		mediaPaths: kept.mediaPaths,
 		warnings
 	};
+}
+
+/** The activity trail, kept where it says what was done; a line without that is dropped. */
+function planTrail(document: Row, ctx: RestoreContext): Row[] {
+	const activity: Row[] = [];
+	for (const entry of records(document, 'activity')) {
+		const action = str(entry, 'action');
+		const summary = str(entry, 'summary');
+		if (action === null || summary === null) continue;
+		activity.push({
+			id: str(entry, 'id') ?? ctx.ids.next(),
+			household_id: ctx.householdId,
+			actor_id: ctx.author(entry, 'actor'),
+			action,
+			entity_type: str(entry, 'entity_type') ?? 'contact',
+			entity_id: str(entry, 'entity_id') ?? '',
+			contact_id: str(entry, 'person'),
+			visibility: visibilityOf(entry),
+			summary,
+			created_at: ms(entry, 'created_at') ?? ctx.now
+		});
+	}
+	return activity;
 }

@@ -4,7 +4,7 @@
 	import Button from '$lib/components/ui/Button.svelte';
 	import { countLabel, summariseRestore, tableLabel } from '$lib/archive/labels';
 	import { useI18n } from '$lib/i18n/context.svelte';
-	import type { RestoreWarning } from '$lib/server/domain/archive/restore';
+	import type { RestoreWarning } from '$lib/server/domain/archive/restore-context';
 	import type { ActionData } from './$types';
 
 	/*

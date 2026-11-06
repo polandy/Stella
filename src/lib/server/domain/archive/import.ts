@@ -6,13 +6,8 @@ import type { Locale } from '../../../i18n/locales';
 import type { HeldGiftsReport } from '../gifts/held-gifts';
 import type { MediaStore } from '../media/avatars';
 import { DOCUMENT_ENTRY, MEDIA_PREFIX, isSafeMediaPath } from './archive';
-import {
-	ArchiveFormatError,
-	planRestore,
-	type RestorePlan,
-	type RestoreTarget,
-	type RestoreWarning
-} from './restore';
+import { ArchiveFormatError, planRestore, type RestorePlan, type RestoreTarget } from './restore';
+import type { RestoreWarning } from './restore-context';
 
 /*
  * Reading an archive back into the household (docs/02 §2.15) — the other half of the export.
