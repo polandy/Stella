@@ -40,12 +40,64 @@ export function mentionSnippet(
 	nameOf: (id: string) => string | null,
 	limit = SNIPPET_LENGTH
 ): string {
-	const flat = segmentMentions(body)
+	return truncate(flatten(body, nameOf), limit);
+}
+
+/** A body as one line of plain text, its mentions named — uncut. */
+function flatten(body: string, nameOf: (id: string) => string | null): string {
+	return segmentMentions(body)
 		.map((segment) =>
 			segment.type === 'text'
 				? plain(segment.value)
 				: `@${nameOf(segment.id) ?? UNKNOWN_MENTION.slice(1)}`
 		)
-		.join('');
-	return truncate(flat.replace(/\s+/g, ' ').trim(), limit);
+		.join('')
+		.replace(/\s+/g, ' ')
+		.trim();
+}
+
+/** How much a cut search snippet shows before the word it was found by, and after it at least. */
+const MATCH_LEAD = 30;
+
+/**
+ * One character lowercased and stripped of its accents, the way the FTS index folds a word —
+ * kept to one character, so an index into the folded text is an index into the original.
+ */
+function foldChar(ch: string): string {
+	const folded = ch.normalize('NFD').replace(/\p{M}/gu, '').toLowerCase();
+	return folded.length === 1 ? folded : ch;
+}
+
+/** Where the first word starting with one of `words` begins in `text`, or -1. */
+function firstMatch(text: string, words: readonly string[]): number {
+	const folded = Array.from(text, foldChar).join('');
+	let best = -1;
+	for (const word of words) {
+		const re = new RegExp(`(?<![\\p{L}\\p{N}])${word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`, 'u');
+		const at = folded.search(re);
+		if (at >= 0 && (best < 0 || at < best)) best = at;
+	}
+	return best;
+}
+
+/**
+ * A search hit's body as one line, cut around the first word the query found (docs/02 §2.9).
+ * Built here rather than by the index, so a mention reads as the person's name exactly as the
+ * chip does — the index only knows the name sits somewhere in the entry. `nameOf` is scoped to
+ * the viewer, as for {@link mentionSnippet}; a body matched only by its title shows its start.
+ */
+export function matchSnippet(
+	body: string,
+	nameOf: (id: string) => string | null,
+	query: string,
+	limit = SNIPPET_LENGTH
+): string {
+	const flat = flatten(body, nameOf);
+	const words = Array.from(query.match(/[\p{L}\p{N}]+/gu) ?? [], (w) =>
+		Array.from(w, foldChar).join('')
+	);
+	const at = firstMatch(flat, words);
+	if (at < limit - MATCH_LEAD) return truncate(flat, limit);
+	const start = flat.lastIndexOf(' ', at - MATCH_LEAD) + 1;
+	return `…${truncate(flat.slice(start), limit)}`;
 }

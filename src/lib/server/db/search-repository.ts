@@ -23,7 +23,7 @@ export function createDrizzleSearchRepository(
 			.select({
 				entryId: journalEntry.id,
 				title: journalEntry.title,
-				snippet: sql<string>`snippet(journal_fts, 2, '', '', '…', 12)`,
+				body: journalEntry.body,
 				visibility: journalEntry.visibility,
 				entryDate: journalEntry.entryDate,
 				contactId: contact.id,
@@ -71,7 +71,7 @@ export function createDrizzleSearchRepository(
 				.select({
 					noteId: note.id,
 					title: note.title,
-					snippet: sql<string>`snippet(note_fts, 2, '', '', '…', 12)`,
+					body: note.body,
 					visibility: note.visibility,
 					contactId: contact.id,
 					contactName: contact.displayName

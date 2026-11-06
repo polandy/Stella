@@ -36,7 +36,8 @@ export interface FoundContact extends ContactHit {
 export interface NoteHit {
 	noteId: string;
 	title: string | null;
-	snippet: string;
+	/** As stored, mention tokens and all — the page cuts the snippet and names the people. */
+	body: string;
 	/** A private one's snippet stays blurred on its author's screen (docs/02 §2.10.1). */
 	visibility: Visibility;
 	contactId: string;
@@ -58,7 +59,8 @@ export interface GiftHit {
 export interface MomentHit {
 	entryId: string;
 	title: string | null;
-	snippet: string;
+	/** As stored, as a note's is. */
+	body: string;
 	/** A private one's snippet stays blurred on its author's screen, as a note's does. */
 	visibility: Visibility;
 	/** ISO YYYY-MM-DD. */

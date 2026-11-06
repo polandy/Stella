@@ -12,7 +12,7 @@ const viewer: Viewer = { id: 'u', householdId: 'h' };
 const moment: MomentHit = {
 	entryId: 'j1',
 	title: null,
-	snippet: 'Up the hill #Hike',
+	body: 'Up the hill #Hike',
 	visibility: 'shared',
 	entryDate: '2026-10-12',
 	contactId: 'c1',
