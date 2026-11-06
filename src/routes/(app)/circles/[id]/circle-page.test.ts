@@ -147,7 +147,8 @@ function household({
 			cutDeps: { cuts: cutRepositoryWith({ listCutsOfCircle: async () => cutRows }) } as never,
 			memberRoleDeps: { circles, memberships, clock },
 			renameRoleDeps: { circles, memberships, circlePhotos, clock },
-			memberRemovalDeps: { circles, memberships }
+			memberRemovalDeps: { circles, memberships },
+			random: () => 0
 		},
 		people: {
 			contactNameDeps: {
