@@ -78,7 +78,6 @@ export const circles = {
 	'circles.roleAppliesToAll': 'Applies to everyone you picked.',
 	'circles.roleLabel': 'Role (optional)',
 	'circles.rolePlaceholder': 'member',
-	'circles.removeMember': (p: { name: string }) => `Remove ${p.name} from circle`,
 	'circles.removedFromCircle': 'Removed from the circle',
 	'circles.noRole': 'No role',
 	'circles.renameRole': (p: { role: string }) => `Rename the role ${p.role}`,
@@ -103,6 +102,7 @@ export const circles = {
 		'Add the people who share this context; each of them will show it on their page.',
 	// The circle's photos (docs/02 §2.4.2).
 	'circles.photos.title': 'Photos',
+	'circles.photos.none': 'No photos yet.',
 	'circles.photos.add': 'Add photos',
 	'circles.photos.filter': 'Show photos of',
 	'circles.photos.all': 'All',

@@ -906,8 +906,8 @@ every match at once. If you would rather the search empty itself after each pick
 
 To change the role of people already in the circle, press **Select** above the members, tick
 the people (or **all** beside a role heading), type the role in the bar at the bottom and
-press *Apply*. Leaving it empty takes the role away. The same bar removes the selected
-people from the circle, and **Set last name** gives them all one last name — the quickest way
+press *Apply*. Leaving it empty takes the role away. The same bar's *Remove* takes the selected
+people out of the circle (this is also how you remove a single person), and **Set last name** gives them all one last name — the quickest way
 to name a family whose circle you already have.
 
 A circle's page shows its people grouped by role — all the players together, the coaches

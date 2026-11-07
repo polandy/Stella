@@ -80,7 +80,6 @@ export const circles: CirclesMessages = {
 	'circles.roleAppliesToAll': 'Gilt für alle Gewählten.',
 	'circles.roleLabel': 'Rolle (optional)',
 	'circles.rolePlaceholder': 'Mitglied',
-	'circles.removeMember': (p) => `${p.name} aus dem Kreis entfernen`,
 	'circles.removedFromCircle': 'Aus dem Kreis entfernt',
 	'circles.noRole': 'Ohne Rolle',
 	'circles.renameRole': (p) => `Rolle ${p.role} umbenennen`,
@@ -105,6 +104,7 @@ export const circles: CirclesMessages = {
 		'Füge die Menschen hinzu, die diesen Zusammenhang teilen; bei jedem von ihnen erscheint er auf der Seite.',
 	// Die Fotos eines Kreises (docs/02 §2.4.2).
 	'circles.photos.title': 'Fotos',
+	'circles.photos.none': 'Noch keine Fotos.',
 	'circles.photos.add': 'Fotos hinzufügen',
 	'circles.photos.filter': 'Fotos zeigen von',
 	'circles.photos.all': 'Alle',

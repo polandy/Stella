@@ -89,8 +89,13 @@ test('a member removed from a circle leaves the grid and comes back with Undo', 
 	await expect(members.getByRole('link', { name: 'Beat Steiner' })).toBeVisible();
 	await expect(heading).toContainText('4');
 
-	await page.getByRole('button', { name: 'Remove Beat Steiner from circle' }).click();
+	// A member leaves through Select: no row carries a × of its own (docs/05 §5.5).
+	await page.getByRole('button', { name: 'Select', exact: true }).click();
+	await page.getByLabel('Select Beat Steiner').check();
+	await page.getByTestId('selection-bar').getByRole('button', { name: 'Remove' }).click();
+	await page.getByRole('button', { name: 'Done selecting' }).click();
 	await expect(members.getByRole('link', { name: 'Beat Steiner' })).toHaveCount(0);
+	await expect(members.getByRole('link').first()).toBeVisible();
 	await expect(heading).toContainText('3');
 	const toast = page.getByTestId('toast-undo');
 	await expect(toast).toContainText('Removed from the circle');

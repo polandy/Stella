@@ -1,12 +1,12 @@
 <script lang="ts">
 	import Avatar from '$lib/components/ui/Avatar.svelte';
-	import RemoveButton from '$lib/components/ui/RemoveButton.svelte';
 	import { useTranslate } from '$lib/i18n/context.svelte';
 	import type { CirclePageData } from './types';
 
 	/*
-	 * One member on a circle's page (docs/02 §2.4.2): a face and a name that open the person, and
-	 * a remove with its undo window — or, while selecting, a checkbox the whole card answers to.
+	 * One member on a circle's page (docs/02 §2.4.2): a face and a name that open the person — or,
+	 * while selecting, a checkbox the whole card answers to. Removing goes through the selection
+	 * bar, so no row carries a × one mis-tap away (docs/05 §5.5).
 	 */
 	let {
 		member: m,
@@ -47,13 +47,5 @@
 			href="/contacts/{m.contactId}"
 			class="min-w-0 flex-1 truncate font-medium text-fg hover:underline">{m.displayName}</a
 		>
-		<RemoveButton
-			kind="membership"
-			id={m.membershipId}
-			action="?/removeMember"
-			fields={{ contactId: m.contactId }}
-			label={t('circles.removeMember', { name: m.displayName })}
-			removed={t('circles.removedFromCircle')}
-		/>
 	{/if}
 </li>
