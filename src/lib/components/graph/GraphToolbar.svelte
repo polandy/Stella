@@ -66,7 +66,7 @@
 	bind:this={element}
 	bind:clientHeight={height}
 	class="pointer-events-none absolute inset-x-3 top-3 flex flex-wrap items-center gap-2 transition-[padding]"
-	class:sm:pr-[17rem]={peekOpen}
+	class:lg:pr-[17rem]={peekOpen}
 >
 	<!-- Above the chips: on a narrow window the chip row wraps under the field, and the
 	     suggestion list would otherwise be hidden behind it. Embedded, there is nobody to

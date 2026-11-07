@@ -25,7 +25,7 @@
 
 <aside
 	data-testid="group-peek"
-	class="absolute top-3 right-3 overflow-auto rounded-app border border-border bg-card/95 p-4 shadow-pop backdrop-blur max-sm:inset-x-3 max-sm:top-auto max-sm:bottom-3 max-sm:max-h-[60%] max-sm:w-auto max-sm:p-3"
+	class="absolute top-3 right-3 overflow-auto rounded-app border border-border bg-card/95 p-4 shadow-pop backdrop-blur max-lg:inset-x-3 max-lg:top-auto max-lg:bottom-3 max-lg:max-h-[60%] max-lg:w-auto max-lg:p-3"
 	class:bottom-3={!compact}
 	class:w-64={!compact}
 	class:w-52={compact}
@@ -44,7 +44,7 @@
 	<div class="mb-3 text-xs text-fg-subtle">
 		{t('graph.peek.inCircle', { name: nameOf(group.circleId) })}
 	</div>
-	<ul class="mb-4 flex flex-col gap-1 max-sm:mb-3">
+	<ul class="mb-4 flex flex-col gap-1 max-lg:mb-3">
 		{#each group.memberIds as id (id)}
 			<li>
 				<a
@@ -62,11 +62,11 @@
 			</li>
 		{/each}
 	</ul>
-	<div class="flex flex-col gap-2 max-sm:flex-row">
-		<Button type="button" class="max-sm:flex-1" onclick={onShowIndividually}>
+	<div class="flex flex-col gap-2 max-lg:flex-row">
+		<Button type="button" class="max-lg:flex-1" onclick={onShowIndividually}>
 			{t('graph.peek.showIndividually')}
 		</Button>
-		<Button variant="primary" class="max-sm:flex-1" href="/circles/{group.circleId}"
+		<Button variant="primary" class="max-lg:flex-1" href="/circles/{group.circleId}"
 			>{t('graph.peek.openCircle')}</Button
 		>
 	</div>

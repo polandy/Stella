@@ -5,14 +5,18 @@
 	 * already loaded — no graph engine, no extra fetch — and drawn by the server, so the People
 	 * card shows the shape at once and keeps it where the engine never arrives. It is a picture
 	 * rather than the map: no links, hidden from a screen reader (the list beside it names and
-	 * links everybody), one button as a whole in the card. Category accents follow docs/05 §5.6.
+	 * links everybody), one button as a whole in the card. As on the map, a face wears the
+	 * person's own accent, the one their avatar has (docs/05 §5.10), so nobody changes colour when
+	 * the map takes over; a line wears its relationship category (§5.6).
 	 *
-	 * Two shapes. `ring` is the phone's 100 px preview: a ring of faces, no names — at that size
-	 * names would not read. `strip` is a wide card's 7.5 rem strip: a sideways fan with every
-	 * first name (`stripFan`), drawn at its own size and centred, so a narrow card crops its ends
-	 * rather than shrinking the names.
+	 * Two shapes, both drawn at their own size, so a narrow card crops their ends rather than
+	 * shrinking the names. `ring` is the phone's 9.5 rem preview: a ring with every first name,
+	 * the people past its last place folded into a "+N" disc (`namedRing`). `strip` is a wide
+	 * card's 7.5 rem strip: a sideways fan with every first name (`stripFan`).
 	 */
-	import { categoryDiscFill, categoryVar } from '$lib/design/tokens';
+	import { accentDiscFill, accentVar, categoryVar } from '$lib/design/tokens';
+	import { avatarAccent, initials } from '$lib/people/avatar';
+	import { namedRing } from '$lib/graph/layout/named-ring';
 	import { stripFan } from '$lib/graph/layout/strip-fan';
 	import { thumbnailUrl } from '$lib/media/urls';
 	import {
@@ -23,7 +27,7 @@
 	interface EgoNode {
 		id: string;
 		name: string;
-		/** What the strip writes beside the face: the first name. */
+		/** What the picture writes beside the face: the first name. */
 		firstName: string;
 		category: string;
 		/** A face where there is one, so this reads like the interactive map it precedes. */
@@ -32,11 +36,14 @@
 		former?: boolean;
 	}
 	let {
+		centerId,
 		centerName,
 		centerPhotoId = null,
 		nodes,
 		variant
 	}: {
+		/** Whose accent the centre wears. */
+		centerId: string;
 		centerName: string;
 		centerPhotoId?: string | null;
 		nodes: EgoNode[];
@@ -51,59 +58,42 @@
 			? (category as RelationshipCategory)
 			: 'other';
 
-	function initials(name: string): string {
-		return name
-			.split(/\s+/)
-			.map((w) => w[0])
-			.filter(Boolean)
-			.slice(0, 2)
-			.join('')
-			.toUpperCase();
-	}
-
-	// The ring's fixed geometry; that SVG scales to its box via viewBox.
-	const RING_W = 460;
-	const RING_CENTER_R = 30;
-	const RING_NODE_R = 22;
-	const RING = 120;
-	const ringH = $derived(nodes.length > 6 ? 360 : 320);
-	// The strip's: drawn at its own pixel size, faces small enough for two rows in 7.5 rem.
+	// The strip's faces are small enough for two rows in 7.5 rem.
 	const STRIP_CENTER_R = 16;
 	const STRIP_NODE_R = 11;
-	const fan = $derived(stripFan(nodes.length));
 
 	const layout = $derived.by(() => {
 		if (variant === 'strip') {
+			const fan = stripFan(nodes.length);
 			return {
 				width: fan.width,
 				height: fan.height,
 				center: { ...fan.center, r: STRIP_CENTER_R },
 				nodeR: STRIP_NODE_R,
-				labelY: (i: number) => fan.nodes[i].labelY,
-				at: (i: number) => fan.nodes[i]
+				places: fan.nodes,
+				more: null,
+				labelWidth: fan.labelWidth
 			};
 		}
-		const center = { x: RING_W / 2, y: ringH / 2 - 6, r: RING_CENTER_R };
+		const ring = namedRing(nodes.length);
 		return {
-			width: RING_W,
-			height: ringH,
-			center,
-			nodeR: RING_NODE_R,
-			labelY: () => null,
-			// On a ring starting at the top, going clockwise.
-			at: (i: number) => {
-				const angle = -Math.PI / 2 + (i * 2 * Math.PI) / Math.max(nodes.length, 1);
-				return { x: center.x + RING * Math.cos(angle), y: center.y + RING * Math.sin(angle) };
-			}
+			width: ring.width,
+			height: ring.height,
+			center: { ...ring.center, r: ring.centerR },
+			nodeR: ring.nodeR,
+			places: ring.nodes,
+			more: ring.more,
+			labelWidth: ring.labelWidth
 		};
 	});
+	// The ring may show fewer people than there are; the rest are its "+N".
 	const placed = $derived(
-		nodes.map((n, i) => ({
+		nodes.slice(0, layout.places.length).map((n, i) => ({
 			...n,
-			...layout.at(i),
-			labelY: layout.labelY(i),
-			color: categoryVar(categoryOf(n.category)),
-			disc: categoryDiscFill(categoryOf(n.category))
+			...layout.places[i],
+			line: categoryVar(categoryOf(n.category)),
+			color: accentVar(avatarAccent(n.id)),
+			disc: accentDiscFill(avatarAccent(n.id))
 		}))
 	);
 	const c = $derived(layout.center);
@@ -113,8 +103,8 @@
 <svg
 	class="ego shape-{variant}"
 	viewBox="0 0 {layout.width} {layout.height}"
-	width={variant === 'strip' ? layout.width : undefined}
-	height={variant === 'strip' ? layout.height : undefined}
+	width={layout.width}
+	height={layout.height}
 	preserveAspectRatio="xMidYMid meet"
 	aria-hidden="true"
 >
@@ -136,13 +126,21 @@
 			y1={c.y}
 			x2={n.x}
 			y2={n.y}
-			stroke="var(--border)"
+			stroke={n.line}
 			stroke-width={n.former ? 1.2 : 2}
 			stroke-dasharray={n.former ? '6 3' : undefined}
 		/>
 	{/each}
 
-	<circle cx={c.x} cy={c.y} r={c.r} fill="var(--primary)" />
+	<!-- The centre as on the map: the person's own disc, ringed in the primary colour. -->
+	<circle
+		cx={c.x}
+		cy={c.y}
+		r={c.r}
+		fill={accentDiscFill(avatarAccent(centerId))}
+		stroke="var(--primary)"
+		stroke-width="3"
+	/>
 	{#if centerPhotoId}
 		<image
 			href={thumbnailUrl(centerPhotoId)}
@@ -159,23 +157,16 @@
 			y={c.y}
 			dy="0.35em"
 			text-anchor="middle"
-			fill="var(--primary-fg)"
+			fill="var(--fg)"
 			font-weight="700"
-			font-size={variant === 'strip' ? 12 : 13}
+			font-size="12"
 		>
 			{initials(centerName)}
 		</text>
 	{/if}
 
 	{#each placed as n (n.id)}
-		<circle
-			cx={n.x}
-			cy={n.y}
-			{r}
-			fill={n.disc}
-			stroke={n.color}
-			stroke-width={variant === 'strip' ? 2 : 3}
-		/>
+		<circle cx={n.x} cy={n.y} {r} fill={n.disc} stroke={n.color} stroke-width="2" />
 		{#if n.avatarPhotoId}
 			<image
 				href={thumbnailUrl(n.avatarPhotoId)}
@@ -187,33 +178,40 @@
 				clip-path="url(#{uid}-{n.id})"
 			/>
 		{/if}
-		{#if n.labelY !== null}
-			<!-- A long first name is squeezed into its slot rather than run into the next one. -->
-			<text
-				x={n.x}
-				y={n.labelY}
-				text-anchor="middle"
-				fill="var(--fg-muted)"
-				class="who"
-				textLength={n.firstName.length > 13 ? fan.labelWidth - 8 : undefined}
-				lengthAdjust="spacingAndGlyphs">{n.firstName}</text
-			>
-		{/if}
+		<!-- A long first name is squeezed into its slot rather than run into the next one. -->
+		<text
+			x={n.x}
+			y={n.labelY}
+			text-anchor="middle"
+			fill="var(--fg-muted)"
+			class="who"
+			textLength={n.firstName.length * 6.5 > layout.labelWidth - 8
+				? layout.labelWidth - 8
+				: undefined}
+			lengthAdjust="spacingAndGlyphs">{n.firstName}</text
+		>
 	{/each}
+	{#if layout.more}
+		{@const more = layout.more}
+		<circle
+			cx={more.x}
+			cy={more.y}
+			{r}
+			fill="var(--card)"
+			stroke="var(--border)"
+			stroke-width="2"
+		/>
+		<text x={more.x} y={more.y} dy="0.35em" text-anchor="middle" fill="var(--fg-muted)" class="more"
+			>+{more.count}</text
+		>
+	{/if}
 </svg>
 
 <style>
+	/* Both keep their own size, centred in their box, which crops what does not fit.
+	   (`shape-`, never the bare `ring`: that is a Tailwind utility.) */
 	.ego {
 		display: block;
-	}
-	/* The ring fills the box its button gives it and wears that box's frame. (`shape-`, never the
-	   bare `ring`: that is a Tailwind utility, which would draw a ring round the picture.) */
-	.ego.shape-ring {
-		width: 100%;
-		height: 100%;
-	}
-	/* The strip keeps its own size, centred in the frame, which crops what does not fit. */
-	.ego.shape-strip {
 		position: absolute;
 		top: 0;
 		left: 50%;
@@ -223,6 +221,10 @@
 	.who {
 		font-size: 11px;
 		font-weight: 500;
+	}
+	.more {
+		font-size: 10px;
+		font-weight: 600;
 	}
 	text {
 		pointer-events: none;

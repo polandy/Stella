@@ -57,8 +57,9 @@ card (§5.5.2); its styling is §5.8.
   round icon buttons (their accessible names still read *Filter: …*, *Arrange: …*,
   *Connection path*); a narrowed filter shows a dot. Export (in the tree), Shrink (on a person's
   page) and Full screen become the same round pills; wider screens keep them ghost buttons. The page's hint bar above the map is left out unless it carries the way back.
-- On a phone the peek panel is a one-row strip along the bottom: avatar and name side by side,
-  then Expand and Profile (a word each, the full words their accessible names) and close. A
+- Below `lg` (1024 px: a phone, a tablet) the peek panel is a one-row strip along the bottom,
+  on the full map and a person's map alike: avatar and name side by side,
+  then Expand and Profile (on a phone a word each, the full words their accessible names) and close. A
   circle's roles and *the map ends here* go under the row; the general tip and *everything is
   already shown* are left out. Tapping a selected person again still expands them. The toolbar
   stays within reach while somebody is selected.
@@ -90,7 +91,9 @@ default because an ex-partner is still part of how a family hangs together, and 
 children hang from would say the two are still a couple. On a phone both menu pills stand at the right, so a menu opening
 from there would run off the screen unless it moves. The peek panel has no room beside the map
 on a phone, hence the bottom strip — kept to one row, because a second toolbar row, an empty
-hint bar and a tall card together left a 412 px phone a map the size of a stamp. A phone frames
+hint bar and a tall card together left a 412 px phone a map the size of a stamp. A tablet takes
+the strip too: at 820 px a full-height panel covered the right half of the map, so the person
+just tapped was often underneath it, while a strip leaves the whole width to the map. A phone frames
 a whole family far below full zoom, so the names around the selected person grow with it; the
 faded rest stays small, or the grown names would cover the people.
 
