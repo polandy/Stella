@@ -1,4 +1,8 @@
-import { densityPreference, type DensityPreference } from '$lib/graph/density-preference';
+import {
+	densityPreference,
+	type DensityPreference,
+	type PreferenceStorage
+} from '$lib/graph/density-preference';
 import type { KeptPreferences } from '$lib/graph/explorer-state';
 import { savedViewsPreference, type SavedViewsPreference } from '$lib/graph/saved-views-preference';
 import { viewSwitchPreference, type ViewSwitchPreference } from '$lib/graph/view-switches';
@@ -16,7 +20,7 @@ export interface PreferenceStores {
  * position, since a view is how to look, not where. `storage` is a getter because merely reading
  * `localStorage` throws where storage is blocked; the defaults then stand.
  */
-export function loadKeptPreferences(storage: () => Storage): {
+export function loadKeptPreferences(storage: () => PreferenceStorage): {
 	stores: PreferenceStores;
 	kept: KeptPreferences;
 } {
