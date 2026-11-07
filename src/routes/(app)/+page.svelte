@@ -3,33 +3,25 @@
 	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
 	import { MediaQuery } from 'svelte/reactivity';
-	import Avatar from '$lib/components/ui/Avatar.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import EmptyState from '$lib/components/ui/EmptyState.svelte';
-	import Icon from '$lib/components/ui/Icon.svelte';
 	import MomentComposer from '$lib/components/stream/MomentComposer.svelte';
 	import PersonFinder from '$lib/components/people/PersonFinder.svelte';
 	import StreamNotice from '$lib/components/stream/StreamNotice.svelte';
 	import StreamCirclePhoto from '$lib/components/stream/StreamCirclePhoto.svelte';
 	import { savedMomentAnchor } from '$lib/stream/saved-moment';
-	import PrivateMark from '$lib/components/ui/PrivateMark.svelte';
-	import Veil from '$lib/components/ui/Veil.svelte';
-	import { asTyped, newPeopleAsCandidates } from '$lib/mentions/picks';
-	import { dayLabel as calendarDayLabel } from '$lib/dates/labels';
 	import { streamDays, streamTime } from '$lib/stream/days';
-	import StreamWhen from '$lib/components/stream/StreamWhen.svelte';
-	import StreamFace from '$lib/components/stream/StreamFace.svelte';
 	import StreamMoment from '$lib/components/stream/StreamMoment.svelte';
+	import StreamPersonAdded from '$lib/components/stream/StreamPersonAdded.svelte';
+	import StreamInteraction from '$lib/components/stream/StreamInteraction.svelte';
+	import StreamRelationship from '$lib/components/stream/StreamRelationship.svelte';
+	import ComposeSheet from '$lib/components/stream/ComposeSheet.svelte';
+	import HomeRail from '$lib/components/stream/HomeRail.svelte';
+	import KeptList from '$lib/components/pwa/KeptList.svelte';
 	import StreamFilter from '$lib/components/stream/StreamFilter.svelte';
 	import { outbox } from '$lib/pwa/outbox.svelte';
 	import { isKept, type KeptOf } from '$lib/pwa/outbox';
-	import KeptItem from '$lib/components/pwa/KeptItem.svelte';
 	import WelcomeCard from '$lib/components/stream/WelcomeCard.svelte';
-	import TodoBand from '$lib/components/todos/TodoBand.svelte';
-	import RailSection from '$lib/components/stream/RailSection.svelte';
-	import ComingUp from '$lib/components/stream/ComingUp.svelte';
-	import { memoryRail, railSummary, todoRailFirst } from '$lib/stream/rail-summary';
-	import MemoryBand from '$lib/components/memories/MemoryBand.svelte';
 	import { ImmichMemories } from '$lib/components/memories/immich-memories.svelte';
 	import { todoBand } from '$lib/todos/household';
 	import { JustDoneTodos } from '$lib/todos/just-done.svelte';
@@ -37,8 +29,6 @@
 	import { useRemovals } from '$lib/undo/context.svelte';
 	import { contactSectionPath } from '$lib/people/sections';
 	import { useI18n } from '$lib/i18n/context.svelte';
-	import { relationshipRowLabel } from '$lib/relationships/labels';
-	import { KIND_PRESENTATION } from '$lib/story/interaction-kinds';
 	import { isNarrowed, NO_FILTER, streamFilterHref } from '$lib/stream/filter';
 	import type { ActionData, PageData } from './$types';
 
@@ -58,6 +48,9 @@
 		};
 	});
 	const days = $derived(stream.days);
+	/** Who did what a stream row reports: the actor, or *You*. */
+	const who = (item: { mine: boolean; actor: { name: string } }) =>
+		item.mine ? t('home.you') : item.actor.name;
 
 	let hintDismissed = $state(false);
 
@@ -84,15 +77,6 @@
 		return immichMemories.load(data.today);
 	});
 	const hasMemories = $derived(!data.memories.empty || immichMemories.years.length > 0);
-	// A phone folds each rail section to one line: how many, and the first (docs/05 §5.5.1).
-	const todoSummary = $derived(railSummary(band.due, todoRailFirst(band.rows)));
-	const memorySummary = $derived.by(() => {
-		const { count, first } = memoryRail(
-			data.memories.years,
-			data.memories.photos.length + immichMemories.years.reduce((sum, year) => sum + year.total, 0)
-		);
-		return railSummary(count, first);
-	});
 	/** The rail stands while a date, a to-do or a memory is close; without any it is absent. */
 	const hasRail = $derived(data.upcoming.length > 0 || band.rows.length > 0 || hasMemories);
 
@@ -136,13 +120,6 @@
 		const item = editing;
 		editing = null;
 		if (item) await outbox.release(item.command.id);
-	}
-	/** The day a kept moment is about, read the reader's way. */
-	function keptDay(iso: string): string {
-		return new Date(`${iso}T12:00:00`).toLocaleDateString(i18n.intlLocale, {
-			day: 'numeric',
-			month: 'long'
-		});
 	}
 </script>
 
@@ -188,166 +165,14 @@
 		</div>
 		<div class="md:hidden">
 			{#if sheetOpen || (form?.momentError && phone.current)}
-				<!-- A modal <dialog>, so the platform keeps focus inside, Escape closes and the stream
-			     behind is out of reach for a screen reader too (docs/05 §5.9). Not a scroll box:
-			     the day calendar and the @-picker open past its top edge. -->
-				<dialog
-					{@attach (sheet: HTMLDialogElement) => sheet.showModal()}
-					oncancel={(event) => {
-						event.preventDefault();
-						closeSheet();
-					}}
-					onclick={(event) => event.target === event.currentTarget && closeSheet()}
-					aria-label={t('nav.writeMoment')}
-					class="mt-auto mb-0 w-full max-w-none overflow-visible rounded-t-app bg-bg p-0 text-fg shadow-pop backdrop:bg-bg-sunken/70 backdrop:backdrop-blur-sm"
-					data-testid="compose-sheet"
-				>
-					<!-- The padding lives inside, so a tap on the sheet's edge is not a tap on the backdrop. -->
-					<div class="p-3 pb-4">
-						<div class="mx-auto mb-2 h-1 w-10 rounded-full bg-border"></div>
-						{@render composer()}
-					</div>
-				</dialog>
+				<ComposeSheet onclose={closeSheet}>{@render composer()}</ComposeSheet>
 			{:else}
 				<!-- The pencil in the tab bar writes; the top of a phone's Home finds a person. -->
 				<PersonFinder people={data.people} />
 			{/if}
 		</div>
 
-		{#if outbox.mine.length}
-			<section
-				class="mt-3 flex flex-col gap-1.5"
-				aria-label={t('home.outbox.label')}
-				data-testid="outbox"
-			>
-				{#each outbox.mine as item (item.command.id)}
-					{#if isKept(item, 'moment.capture')}
-						<KeptItem {item} onEdit={() => edit(item)}>
-							{#snippet meta()}
-								<span
-									class="ml-auto text-xs whitespace-nowrap text-fg-subtle"
-									title={item.command.payload.entryDate}
-									>{keptDay(item.command.payload.entryDate)}</span
-								>
-							{/snippet}
-							<p class="mt-1 whitespace-pre-line text-fg">
-								{asTyped(item.command.payload.body, [
-									...data.people,
-									...newPeopleAsCandidates(item.command.payload.newPeople)
-								])}
-							</p>
-						</KeptItem>
-					{:else if isKept(item, 'note.add')}
-						<KeptItem {item} editHref={contactSectionPath(item.command.payload.contactId, 'notes')}>
-							{#snippet meta()}<span>{t('home.outbox.noteOn', { name: item.about ?? '' })}</span
-								>{/snippet}
-							<p class="mt-1 whitespace-pre-line text-fg">
-								{asTyped(item.command.payload.body, data.people)}
-							</p>
-						</KeptItem>
-					{:else if isKept(item, 'interaction.log')}
-						{@const kind = KIND_PRESENTATION[item.command.payload.kind]}
-						<KeptItem {item} editHref={contactSectionPath(item.command.payload.contactId, 'story')}>
-							{#snippet meta()}
-								<span>· {t(kind.label)} · {item.about ?? ''}</span>
-								<span
-									class="ml-auto text-xs whitespace-nowrap text-fg-subtle"
-									title={item.command.payload.happenedAt}
-									>{keptDay(item.command.payload.happenedAt)}</span
-								>
-							{/snippet}
-							{#if item.command.payload.title}<p class="mt-1 text-fg">
-									{item.command.payload.title}
-								</p>{/if}
-						</KeptItem>
-					{:else if isKept(item, 'tag.assign')}
-						<KeptItem {item}>
-							{#snippet meta()}<span>{t('home.outbox.tagOn', { name: item.about ?? '' })}</span
-								>{/snippet}
-							<p class="mt-1 text-fg">{item.command.payload.name}</p>
-						</KeptItem>
-					{:else if isKept(item, 'contact.add')}
-						<KeptItem {item}>
-							{#snippet meta()}<span>{t('home.outbox.newPerson')}</span>{/snippet}
-							<p class="mt-1 text-fg">{item.about ?? ''}</p>
-						</KeptItem>
-					{:else if isKept(item, 'relationship.add')}
-						<KeptItem {item}>
-							{#snippet meta()}<span>{t('home.outbox.link')}</span>{/snippet}
-							<p class="mt-1 text-fg">{item.about ?? ''}</p>
-						</KeptItem>
-					{:else if isKept(item, 'circle.join')}
-						<KeptItem {item}>
-							{#snippet meta()}<span>{t('home.outbox.circleFor', { name: item.about ?? '' })}</span
-								>{/snippet}
-							<p class="mt-1 text-fg">
-								{item.command.payload.circleName}{item.command.payload.role
-									? ` · ${item.command.payload.role}`
-									: ''}
-							</p>
-						</KeptItem>
-					{:else if isKept(item, 'journal.write')}
-						<KeptItem {item}>
-							{#snippet meta()}
-								<span>{t('home.outbox.journalOf', { name: item.about ?? '' })}</span>
-								<span
-									class="ml-auto text-xs whitespace-nowrap text-fg-subtle"
-									title={item.command.payload.entryDate}
-									>{keptDay(item.command.payload.entryDate)}</span
-								>
-							{/snippet}
-							<p class="mt-1 whitespace-pre-line text-fg">
-								{asTyped(item.command.payload.body, data.people)}
-							</p>
-						</KeptItem>
-					{:else if isKept(item, 'field.add')}
-						<KeptItem {item}>
-							{#snippet meta()}<span>{t('home.outbox.contactFor', { name: item.about ?? '' })}</span
-								>{/snippet}
-							<p class="mt-1 text-fg">{item.command.payload.value}</p>
-						</KeptItem>
-					{:else if isKept(item, 'date.add')}
-						<KeptItem {item}>
-							{#snippet meta()}<span>{t('home.outbox.dateFor', { name: item.about ?? '' })}</span
-								>{/snippet}
-							<p class="mt-1 text-fg">
-								{[item.command.payload.label, calendarDayLabel(i18n, item.command.payload.date)]
-									.filter(Boolean)
-									.join(' · ')}
-							</p>
-						</KeptItem>
-					{:else if isKept(item, 'gallery.add')}
-						<KeptItem {item}>
-							{#snippet meta()}<span>{t('home.outbox.photosOf', { name: item.about ?? '' })}</span
-								>{/snippet}
-						</KeptItem>
-					{:else if isKept(item, 'circleGallery.add')}
-						<KeptItem {item}>
-							{#snippet meta()}<span>{t('home.outbox.photosFor', { name: item.about ?? '' })}</span
-								>{/snippet}
-						</KeptItem>
-					{:else if isKept(item, 'gift.add')}
-						<KeptItem {item} editHref={contactSectionPath(item.command.payload.contactId, 'gifts')}>
-							{#snippet meta()}<span>{t('home.outbox.giftFor', { name: item.about ?? '' })}</span
-								>{/snippet}
-							<p class="mt-1 text-fg">{item.command.payload.title}</p>
-						</KeptItem>
-					{:else if isKept(item, 'todo.add')}
-						<KeptItem {item} editHref={contactSectionPath(item.command.payload.contactId, 'todos')}>
-							{#snippet meta()}<span>{t('home.outbox.todoFor', { name: item.about ?? '' })}</span
-								>{/snippet}
-							<p class="mt-1 text-fg">{item.command.payload.title}</p>
-						</KeptItem>
-					{:else if isKept(item, 'todo.tick')}
-						<!-- A tick carries only ids; `about` holds the to-do's line, kept for this. -->
-						<KeptItem {item}>
-							{#snippet meta()}<span>{t('home.outbox.todoDone')}</span>{/snippet}
-							<p class="mt-1 text-fg">{item.about}</p>
-						</KeptItem>
-					{/if}
-				{/each}
-			</section>
-		{/if}
+		<KeptList people={data.people} onedit={edit} />
 	</div>
 
 	<div class="flex min-w-0 flex-col gap-6 max-lg:order-3 lg:col-start-1 lg:row-start-3">
@@ -412,125 +237,36 @@
 								{#if item.kind === 'moment'}
 									<StreamMoment {item} members={data.members} when={stream.when(item.at)} />
 								{:else if item.kind === 'person'}
-									<StreamFace person={item.person} row={item} members={data.members} />
-									<div class="min-w-0">
-										<div class="flex flex-wrap items-baseline gap-x-1.5 text-[13px] text-fg-muted">
-											<b class="font-semibold text-fg"
-												>{item.mine ? t('home.you') : item.actor.name}</b
-											>
-											<span>{t('home.stream.added')}</span>
-											<a
-												href="/contacts/{item.person.id}"
-												class="font-medium text-fg hover:underline">{item.person.name}</a
-											>
-											{#if t('home.stream.addedAfter')}<span>{t('home.stream.addedAfter')}</span
-												>{/if}
-											<span
-												class="rounded bg-success/16 px-1.5 text-[10px] font-semibold tracking-wide text-fg uppercase"
-												>{t('home.stream.newPerson')}</span
-											>
-											{#if item.visibility === 'private'}<PrivateMark class="text-[11px]" />{/if}
-											<StreamWhen time={stream.when(item.at)} />
-										</div>
-										{#if item.description}<p class="mt-0.5 text-sm text-fg-muted">
-												{item.description}
-											</p>{/if}
-									</div>
-								{:else if item.kind === 'interaction'}
-									{@const kind = KIND_PRESENTATION[item.interactionKind]}
-									<StreamFace person={item.subject} row={item} members={data.members} />
-									<div class="min-w-0">
-										<div class="flex flex-wrap items-baseline gap-x-1.5 text-[13px] text-fg-muted">
-											<b class="font-semibold text-fg"
-												>{item.mine ? t('home.you') : item.actor.name}</b
-											>
-											<span>{t('home.stream.logged')}</span>
-											<span class="inline-flex items-center gap-1 font-semibold text-fg"
-												><span style="color:{kind.accent}"><Icon name={kind.icon} size={12} /></span
-												>{t(kind.label)}</span
-											>
-											<span>{t('home.stream.loggedWith')}</span>
-											<a
-												href="/contacts/{item.subject.id}"
-												class="font-medium text-fg hover:underline">{item.subject.name}</a
-											>
-											{#if t('home.stream.loggedAfter')}<span>{t('home.stream.loggedAfter')}</span
-												>{/if}
-											{#if item.visibility === 'private'}<PrivateMark
-													veilId="interaction:{item.id}"
-													class="text-[11px]"
-												/>{/if}
-											<StreamWhen time={stream.when(item.at)} />
-										</div>
-										{#if item.title}
-											<Veil
-												id="interaction:{item.id}"
-												isPrivate={item.visibility === 'private'}
-												label={t('privacy.veil.interaction')}
-												text={item.title}
-												class="mt-0.5"
-												textClass="text-sm text-fg"
-											>
-												<p class="text-sm text-fg">{item.title}</p>
-											</Veil>
-										{/if}
-										{#if item.participants.length}
-											<div class="mt-1.5 flex flex-wrap gap-1.5">
-												{#each item.participants as m (m.id)}
-													<a
-														href="/contacts/{m.id}"
-														class="inline-flex items-center gap-1.5 rounded-full bg-bg-sunken py-0.5 pr-2 pl-1 text-xs text-fg-muted hover:text-fg"
-													>
-														<Avatar
-															id={m.id}
-															name={m.name}
-															avatarPhotoId={m.avatarPhotoId}
-															size={18}
-														/>{m.name}
-													</a>
-												{/each}
-											</div>
-										{/if}
-									</div>
-								{:else if item.kind === 'circlePhoto'}
-									<StreamCirclePhoto
+									<StreamPersonAdded
 										{item}
-										who={item.mine ? t('home.you') : item.actor.name}
+										who={who(item)}
 										time={stream.when(item.at)}
+										members={data.members}
 									/>
+								{:else if item.kind === 'interaction'}
+									<StreamInteraction
+										{item}
+										who={who(item)}
+										time={stream.when(item.at)}
+										members={data.members}
+									/>
+								{:else if item.kind === 'circlePhoto'}
+									<StreamCirclePhoto {item} who={who(item)} time={stream.when(item.at)} />
 								{:else if item.kind === 'notice'}
 									<StreamNotice
 										content={item.content}
-										who={item.mine ? t('home.you') : item.actor.name}
+										who={who(item)}
 										time={stream.when(item.at)}
 										readerId={data.user.id}
 										canOpen={(id) => peopleIds.has(id)}
 									/>
 								{:else}
-									<StreamFace person={item.from} row={item} members={data.members} />
-									<div class="min-w-0">
-										<div class="flex flex-wrap items-baseline gap-x-1.5 text-[13px] text-fg-muted">
-											<b class="font-semibold text-fg"
-												>{item.mine ? t('home.you') : item.actor.name}</b
-											>
-											<span>{t('home.stream.linked')}</span>
-											<a href="/contacts/{item.from.id}" class="font-medium text-fg hover:underline"
-												>{item.from.name}</a
-											>
-											<span class="text-fg-subtle">→</span>
-											<span>{relationshipRowLabel(t, item)}</span>
-											<a href="/contacts/{item.to.id}" class="font-medium text-fg hover:underline"
-												>{item.to.name}</a
-											>
-											{#if t('home.stream.linkedAfter')}<span>{t('home.stream.linkedAfter')}</span
-												>{/if}
-											<span
-												class="rounded bg-link/16 px-1.5 text-[10px] font-semibold tracking-wide text-fg uppercase"
-												>{t('home.stream.relationship')}</span
-											>
-											<StreamWhen time={stream.when(item.at)} />
-										</div>
-									</div>
+									<StreamRelationship
+										{item}
+										who={who(item)}
+										time={stream.when(item.at)}
+										members={data.members}
+									/>
 								{/if}
 							</article>
 						{/each}
@@ -556,45 +292,17 @@
      that is permanently empty teaches people to stop looking at it; from lg its column goes with
      it, and the stream takes the width rather than leave a quarter of the screen blank. -->
 	{#if hasRail}
-		<aside
-			class="flex min-w-0 flex-col gap-6 max-lg:gap-0 max-lg:divide-y max-lg:divide-border max-lg:rounded-app max-lg:border max-lg:border-border max-lg:bg-card lg:col-start-2 lg:row-span-3 lg:row-start-1 lg:self-start {railOrder}"
-			aria-label={t('home.atAGlance')}
-		>
-			{#if band.rows.length}
-				<RailSection
-					icon="todo"
-					title={t('todos.band.title')}
-					summary={todoSummary}
-					testid="todo-band"
-				>
-					<TodoBand
-						{band}
-						today={data.today}
-						{justDone}
-						{ticksKept}
-						error={form && 'todoTickError' in form ? (form.todoTickError ?? null) : null}
-					/>
-				</RailSection>
-			{/if}
-			{#if data.upcoming.length}
-				<ComingUp upcoming={data.upcoming} />
-			{/if}
-			{#if hasMemories}
-				<RailSection
-					icon="memories"
-					title={t('memories.title')}
-					summary={memorySummary}
-					testid="memory-band"
-				>
-					<MemoryBand
-						years={data.memories.years}
-						photos={data.memories.photos}
-						more={data.memories.more}
-						today={data.today}
-						immich={immichMemories}
-					/>
-				</RailSection>
-			{/if}
-		</aside>
+		<HomeRail
+			class={railOrder}
+			{band}
+			today={data.today}
+			{justDone}
+			{ticksKept}
+			todoTickError={form && 'todoTickError' in form ? (form.todoTickError ?? null) : null}
+			upcoming={data.upcoming}
+			memories={data.memories}
+			{immichMemories}
+			{hasMemories}
+		/>
 	{/if}
 </main>
