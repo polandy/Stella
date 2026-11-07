@@ -1,0 +1,37 @@
+name: rebuild
+
+# Rebuilds the latest release every week, so its image picks up the base image's security
+# fixes without waiting for the next release. The version tag then points at a new digest;
+# deployments that pin the digest see that as an ordinary digest update.
+#
+# A rebuild that still carries a fixable CRITICAL vulnerability (one only a dependency bump or a
+# newer Bun removes) fails the scan in publish.yml and pushes nothing — the failed run is the
+# signal to act.
+on:
+  schedule:
+    # Sunday night, ahead of the Monday-morning digest updates downstream.
+    - cron: '0 3 * * 0'
+  workflow_dispatch:
+
+jobs:
+  latest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+    outputs:
+      tag: ${{ steps.release.outputs.tag }}
+    steps:
+      - id: release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: echo "tag=$(gh release view --repo '${{ github.repository }}' --json tagName --jq .tagName)" >> "$GITHUB_OUTPUT"
+
+  publish:
+    needs: latest
+    permissions:
+      contents: read
+      packages: write
+    uses: ./.github/workflows/publish.yml
+    with:
+      tag: ${{ needs.latest.outputs.tag }}

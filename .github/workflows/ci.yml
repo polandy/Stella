@@ -36,6 +36,18 @@ jobs:
       # neither the unit tests nor the e2e build exercise, so it needs its own check.
       - run: ./scripts/dev-smoke.sh
 
+  # The image a release would publish, built and scanned: a change that pulls a fixable
+  # CRITICAL vulnerability into it (a dependency, the base image) fails here, not at release.
+  image:
+    runs-on: ubuntu-latest
+    # A cold build takes a few minutes; the scan adds one for its database.
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      # No layer cache: a cached `apt-get upgrade` layer would scan last week's packages.
+      - run: docker build --pull -t stella:ci .
+      - run: ./scripts/scan-image.sh stella:ci
+
   e2e:
     runs-on: ubuntu-latest
     # The slowest shard runs about three minutes; a shard still going at fifteen is stuck

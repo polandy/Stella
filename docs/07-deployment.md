@@ -172,6 +172,13 @@ calls `publish`, which builds the image and pushes it to `ghcr.io/polandy/stella
 from the release run rather than triggered by the tag, so it runs once whichever token
 release-please pushed the tag with.)
 
+Every build upgrades the base image's Debian packages and is scanned with Trivy
+(`scripts/scan-image.sh`) before anything is pushed: a CRITICAL vulnerability that has a fix
+stops the push. CI runs the same build and scan on every pull request. Each Sunday night the
+`rebuild` workflow rebuilds the **latest release** the same way, so its `X.Y.Z` tag moves to
+a new digest carrying the current security fixes — same code, same version. A rebuild whose
+scan still fails (a fix that needs a dependency bump or a newer Bun) pushes nothing.
+
 Pin the **digest**, not a tag — a tag can be moved, a digest cannot:
 
 ```yaml
@@ -179,7 +186,8 @@ image: ghcr.io/polandy/stella:0.0.3@sha256:…
 ```
 
 `latest` is fine for a hobby setup where an unattended restart may pick up a new version;
-anywhere the running version matters, pin the digest and bump it deliberately.
+anywhere the running version matters, pin the digest and bump it deliberately — including
+the weekly rebuild's digest, which brings only security updates.
 
 ### 7.5.1 The file
 
