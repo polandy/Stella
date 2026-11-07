@@ -8,56 +8,35 @@
 		explorerAfter,
 		explorerAtOpen,
 		type ExplorerCommand,
-		type ExplorerEvent,
-		type KeptPreferences
+		type ExplorerEvent
 	} from '$lib/graph/explorer-state';
-	import { currentViewOf } from '$lib/graph/explorer-look';
 	import { treeRelaidFor } from '$lib/graph/tree-view';
 	import { createExplorer, type ExplorerController } from '$lib/graph/cytoscape/explorer';
 	import { buildStylesheet } from '$lib/graph/cytoscape/stylesheet';
 	import { paletteFromDom } from '$lib/graph/cytoscape/theme';
 	import { findConnectionPath } from '$lib/graph/model/connection-path';
-	import {
-		buildEgoNetwork,
-		circleRoles,
-		expandNode,
-		rebuildExplored,
-		rolesOpenAfter,
-		type CircleRole
-	} from '$lib/graph/model/ego-network';
+	import { circleRoles } from '$lib/graph/model/ego-network';
 	import { canExpand } from '$lib/graph/model/rings';
-	import { emptyModel, mergeModels, withoutDerivedLinks } from '$lib/graph/model/graph-model';
+	import { withoutDerivedLinks } from '$lib/graph/model/graph-model';
 	import { inMemoryGraphSource } from '$lib/graph/model/in-memory-source';
 	import { isParentSlot, withParentSlots } from '$lib/graph/model/missing-parents';
 	import { openingFilterKeys } from '$lib/graph/model/view-filters';
-	import {
-		savedViewsPreference,
-		type SavedViewsPreference
-	} from '$lib/graph/saved-views-preference';
 	import type { ArrangementKey } from '$lib/graph/layout/arrangements';
 	import { circleClustersLayout } from '$lib/graph/layout/circle-clusters';
 	import { familyTreeLayout } from '$lib/graph/layout/family-tree';
 	import { DEFAULT_NODE_SIZE } from '$lib/graph/layout/geometry';
 	import { spacingFor } from '$lib/graph/layout/density';
-	import { densityPreference, type DensityPreference } from '$lib/graph/density-preference';
-	import {
-		viewSwitchPreference,
-		type ViewSwitchPreference,
-		type ViewSwitches
-	} from '$lib/graph/view-switches';
 	import type { GraphModel } from '$lib/graph/model/types';
+	import { exploredMap } from './explored-map.svelte';
 	import { explorerView } from './explorer-view.svelte';
 	import { frameFullscreen } from './frame-fullscreen.svelte';
+	import { loadKeptPreferences, type PreferenceStores } from './kept-preferences';
+	import { watchTheme } from './theme-watch';
 	import GraphAlone from './GraphAlone.svelte';
-	import GraphArrangeMenu from './GraphArrangeMenu.svelte';
 	import GraphCanvas from './GraphCanvas.svelte';
 	import GraphExportDialog from './GraphExportDialog.svelte';
-	import GraphFilterMenu from './GraphFilterMenu.svelte';
-	import GraphFindField from './GraphFindField.svelte';
-	import GraphGroupPeek from './GraphGroupPeek.svelte';
-	import GraphNodePeek from './GraphNodePeek.svelte';
-	import GraphPathPrompt from './GraphPathPrompt.svelte';
-	import GraphViewButtons from './GraphViewButtons.svelte';
+	import GraphPeek from './GraphPeek.svelte';
+	import GraphToolbar from './GraphToolbar.svelte';
 
 	interface Props {
 		/**
@@ -126,7 +105,6 @@
 
 	const t = useTranslate();
 
-	// All exploration runs against this in-memory source — no further requests to the server.
 	// The snapshot is a prop, not a constant: a person's page hands a fresh one over after a
 	// save, and the map follows it (see the resync effect below).
 	const source = $derived(inMemoryGraphSource(graph));
@@ -142,8 +120,7 @@
 	let controller: ExplorerController | null = null;
 	let ready = $state(false);
 
-	// Starts empty; the ego view around the centre is built client-side on mount.
-	let model = $state<GraphModel>(emptyModel());
+	const explored = exploredMap(() => source);
 	/*
 	 * Who is selected and why, the path being picked, how the map is looked at, and what the
 	 * canvas last heard of full screen: the transitions are `explorer-state.ts`, and this
@@ -152,28 +129,16 @@
 	 */
 	let ui = $state.raw(untrack(() => explorerAtOpen({ centerId, compact })));
 	const selected = $derived(ui.selected);
-	const active = $derived(ui.active);
 	const pathMode = $derived(ui.pathMode);
-	const pathFrom = $derived(ui.pathFrom);
 	const path = $derived(ui.path);
-	const pathMissing = $derived(ui.pathMissing);
-	const switches = $derived(ui.switches);
 	const density = $derived(ui.density);
-	const savedViews = $derived(ui.savedViews);
-	const currentView = $derived(currentViewOf(ui));
 	const arrangedBy = $derived(ui.arrangedBy);
 	const roleOptions = $derived(ui.circleRoles.options);
 	const chosenRoles = $derived(ui.circleRoles.chosen);
 	const openingFilters = openingFilterKeys(untrack(() => compact));
 
-	/*
-	 * The habits this browser keeps (docs/05 §5.8, docs/02 §2.7): the Filter menu's switches,
-	 * the density, and the saved views — named Filter-menu states, never the centre or anybody's
-	 * position, since a view is how to look, not where.
-	 */
-	let switchStore: ViewSwitchPreference | null = null;
-	let densityStore: DensityPreference | null = null;
-	let viewStore: SavedViewsPreference | null = null;
+	/** Where this browser keeps the reader's habits, once loaded (`kept-preferences.ts`). */
+	let stores: PreferenceStores = {};
 
 	/** Moves the state on, then carries out what it asks for; settles once all of it has. */
 	async function dispatch(event: ExplorerEvent): Promise<void> {
@@ -193,7 +158,7 @@
 				return expand(command.id);
 			case 'tracePath': {
 				const found = await findConnectionPath(pathSource, command.from, command.to);
-				if (found) model = mergeModels(model, found.model);
+				if (found) explored.merge(found.model);
 				return dispatch({ type: 'pathTraced', path: found });
 			}
 			case 'arrange':
@@ -203,9 +168,9 @@
 				if (!settledForGroups) arrangeNow(command.key);
 				return;
 			case 'keepSwitch':
-				return switchStore?.save(command.name, command.on);
+				return stores.switches?.save(command.name, command.on);
 			case 'keepDensity':
-				return densityStore?.save(command.density);
+				return stores.density?.save(command.density);
 			case 'respace':
 				// A new density re-runs the free arrangement, since that is the shape it describes; the
 				// tree and the circles measure every name already, and only the next expand follows it.
@@ -213,7 +178,7 @@
 				if (command.rearrange) controller?.arrange();
 				return;
 			case 'keepViews':
-				return viewStore?.save(command.views);
+				return stores.views?.save(command.views);
 			case 'leftFullscreen':
 				return onFullscreenExit?.();
 			case 'screenChanged':
@@ -225,7 +190,7 @@
 	const view = explorerView(
 		{
 			graph: () => graph,
-			model: () => model,
+			model: () => explored.model,
 			ui: () => ui,
 			centerId: () => centerId,
 			compact: () => compact,
@@ -234,18 +199,8 @@
 		},
 		t
 	);
-	const flipSwitch = (name: keyof ViewSwitches) =>
-		dispatch({ type: 'switchFlipped', name, rolesInstead: view.rolesInstead });
 	// The tree goes out as it is shown, in the tree arrangement only (docs/02 §2.7).
 	let exporting = $state(false);
-
-	/*
-	 * What the reader has opened up, in the order they did it. Kept so a fresh snapshot can be
-	 * explored to the same extent instead of collapsing the map back to the first ring.
-	 */
-	let expandedIds = new Set<string>();
-	/** For a circle opened up for some roles only, which — so a resync reopens it the same way. */
-	const expandedRoles = new Map<string, ReadonlySet<CircleRole>>();
 
 	/*
 	 * The selected circle's roles, fetched for the peek panel to choose which of them the next
@@ -281,9 +236,8 @@
 	async function resync() {
 		if (!centerId) return;
 		void dispatch({ type: 'snapshotChanged' });
-		model = await rebuildExplored(source, centerId, expandedIds, 1, expandedRoles);
-		expandedIds = new Set([...expandedIds].filter((id) => model.nodes.some((n) => n.id === id)));
-		void dispatch({ type: 'rebuilt', nodeIds: new Set(model.nodes.map((n) => n.id)) });
+		const nodeIds = await explored.rebuild(centerId);
+		void dispatch({ type: 'rebuilt', nodeIds });
 	}
 
 	/*
@@ -367,22 +321,17 @@
 		// past its last ring the reader is sent to the explorer route instead (docs/02 §2.7).
 		if (centerId !== null && !canExpand(view.rings, id, maxRings)) return;
 		// Until the circle's roles have arrived there is nothing to narrow by: open it whole.
-		const roles = peekCircleId === id && roleOptions.length > 0 ? new Set(chosenRoles) : undefined;
-		model = await expandNode(source, model, id, roles);
-		if (roles) {
-			const all = new Set(roleOptions.map((o) => o.role));
-			const open = rolesOpenAfter(expandedIds.has(id), expandedRoles.get(id), roles, all);
-			if (open) expandedRoles.set(id, open);
-			else expandedRoles.delete(id);
-		}
-		expandedIds.add(id);
+		const narrowed = peekCircleId === id && roleOptions.length > 0;
+		await explored.expand(
+			id,
+			narrowed
+				? { chosen: new Set(chosenRoles), all: new Set(roleOptions.map((o) => o.role)) }
+				: undefined
+		);
 	}
 
 	async function reveal(id: string) {
-		if (!model.nodes.some((n) => n.id === id)) {
-			model = mergeModels(model, await buildEgoNetwork(source, id, 1));
-			expandedIds.add(id);
-		}
+		await explored.reveal(id);
 		void dispatch({ type: 'found', id });
 		controller?.focus(id);
 	}
@@ -422,8 +371,7 @@
 		controller?.setStylesheet(stylesheet(), { growNames: !view.rolesInstead });
 	}
 
-	let themeObserver: MutationObserver | null = null;
-	let colorScheme: MediaQueryList | null = null;
+	let stopWatchingTheme: (() => void) | null = null;
 	/*
 	 * Mounting is asynchronous — the ego network, a traced chain, and the ~400 KB engine are all
 	 * awaited — and a page can be left before any of that lands. The component is then already
@@ -485,29 +433,21 @@
 		// Before anything is awaited: a browser grants full screen only close to the tap.
 		if (startFullscreen) void screen.toggle();
 		// Build the initial ego view around the centre from the in-memory snapshot.
-		if (centerId) model = await buildEgoNetwork(source, centerId, 1);
+		if (centerId) await explored.open(centerId);
 
 		// A link may arrive with the question already asked (docs/05 §5.5): trace it before the
 		// canvas is built, so the chain is what the first layout lays out rather than a jump.
 		if (centerId && tracePathTo) {
 			const found = await findConnectionPath(pathSource, centerId, tracePathTo);
-			if (found) model = mergeModels(model, found.model);
+			if (found) explored.merge(found.model);
 			void dispatch({ type: 'tracedOnOpen', path: found });
 		}
 
 		if (disposed) return;
 
-		const kept: KeptPreferences = {};
-		try {
-			switchStore = viewSwitchPreference(localStorage);
-			kept.switches = switchStore.load();
-			densityStore = densityPreference(localStorage);
-			kept.density = densityStore.load();
-			viewStore = savedViewsPreference(localStorage);
-			kept.savedViews = viewStore.load();
-		} catch {
-			// Storage can be blocked; the defaults stand.
-		}
+		const loaded = loadKeptPreferences(() => localStorage);
+		stores = loaded.stores;
+		const kept = loaded.kept;
 		void dispatch({ type: 'preferencesLoaded', kept });
 
 		// Bound by the canvas as it mounts, which is before this runs.
@@ -540,25 +480,12 @@
 		ready = true;
 		onReady?.();
 
-		// The export reads the light palette by flipping the theme and straight back in one
-		// task; a batch that ends where it began changed nothing on screen.
-		themeObserver = new MutationObserver((records) => {
-			const root = document.documentElement;
-			if (records[0]?.oldValue !== root.getAttribute('data-theme')) retheme();
-		});
-		themeObserver.observe(document.documentElement, {
-			attributes: true,
-			attributeOldValue: true,
-			attributeFilter: ['data-theme']
-		});
-		colorScheme = window.matchMedia('(prefers-color-scheme: dark)');
-		colorScheme.addEventListener('change', retheme);
+		stopWatchingTheme = watchTheme(retheme);
 	});
 
 	onDestroy(() => {
 		disposed = true;
-		themeObserver?.disconnect();
-		colorScheme?.removeEventListener('change', retheme);
+		stopWatchingTheme?.();
 		controller?.destroy();
 	});
 </script>
@@ -593,82 +520,31 @@
 		<GraphAlone centre={view.lonelyCentre} />
 	{/if}
 
-	<!-- Toolbar. It keeps clear of the peek panel while that is open: the chips wrap on a
-	     narrow window, and the row that wraps would otherwise slide underneath it — leaving
-	     the button under there unclickable. -->
-	<div
-		bind:this={toolbar}
-		bind:clientHeight={toolbarHeight}
-		class="pointer-events-none absolute inset-x-3 top-3 flex flex-wrap items-center gap-2 transition-[padding]"
-		class:sm:pr-[17rem]={(view.peekNode || view.peekGroup) && !pathMode}
-	>
-		<!-- Above the chips: on a narrow window the chip row wraps under the field, and the
-		     suggestion list would otherwise be hidden behind it. Embedded, there is nobody to
-		     find: the map holds one person's neighbourhood and the page has its own search. -->
-		{#if !compact}
-			<GraphFindField {graph} onReveal={reveal} />
-		{/if}
+	<GraphToolbar
+		bind:element={toolbar}
+		bind:height={toolbarHeight}
+		{graph}
+		{compact}
+		{ui}
+		{view}
+		{openingFilters}
+		{peekOpen}
+		{screen}
+		{onShrink}
+		onReveal={reveal}
+		onExport={() => (exporting = true)}
+		{dispatch}
+	/>
 
-		<GraphFilterMenu
-			{active}
-			{openingFilters}
-			onToggleFilter={(key) => dispatch({ type: 'filterToggled', key })}
-			switches={{ ...switches, edgeLabels: view.labelsSwitch }}
-			onSwitch={flipSwitch}
-			labelsFit={view.labelsFit}
-			rolesInstead={view.rolesInstead}
-			{density}
-			onChooseDensity={(next) => dispatch({ type: 'densityChosen', density: next })}
-			{savedViews}
-			{currentView}
-			onApplyView={(view) => dispatch({ type: 'viewApplied', view })}
-			onSaveView={(name) => dispatch({ type: 'viewSaved', name })}
-			onDeleteView={(name) => dispatch({ type: 'viewDeleted', name })}
-		/>
-
-		<GraphArrangeMenu {arrangedBy} onArrange={(key) => dispatch({ type: 'arranged', key })} />
-
-		<GraphViewButtons
-			{compact}
-			{onShrink}
-			exportable={view.exportable}
-			onExport={() => (exporting = true)}
-			{screen}
-			{pathMode}
-			onTogglePath={() => dispatch({ type: 'pathToggled' })}
-		/>
-	</div>
-
-	<!-- Path prompt / result -->
-	{#if pathMode}
-		<GraphPathPrompt {path} {pathMissing} {pathFrom} nameOf={view.nameOf} />
-	{/if}
-
-	<!-- Peek panel -->
-	{#if view.peekGroup && !pathMode}
-		<GraphGroupPeek
-			group={view.peekGroup}
-			label={view.groupLabel(view.peekGroup)}
-			nodes={model.nodes}
-			nameOf={view.nameOf}
-			{compact}
-			onShowIndividually={() => dispatch({ type: 'groupDissolved', id: view.peekGroup!.id })}
-			onClose={() => dispatch({ type: 'peekClosed' })}
-		/>
-	{:else if view.peekNode && !pathMode}
-		<GraphNodePeek
-			node={view.peekNode}
-			{compact}
-			withinReach={view.peekWithinReach}
-			expandable={view.peekExpandable}
-			{roleOptions}
-			{chosenRoles}
-			onToggleRole={(role) => dispatch({ type: 'roleToggled', role })}
-			onExpand={expand}
-			{fullGraphHref}
-			onClose={() => dispatch({ type: 'peekClosed' })}
-		/>
-	{/if}
+	<GraphPeek
+		{ui}
+		{view}
+		nodes={explored.model.nodes}
+		{compact}
+		onExpand={expand}
+		{fullGraphHref}
+		{dispatch}
+	/>
 
 	<!-- Mounted only while asked for, so no preview is drawn behind a closed dialog. -->
 	{#if exporting}

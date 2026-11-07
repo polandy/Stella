@@ -1,24 +1,12 @@
 <script lang="ts">
 	import Button from '$lib/components/ui/Button.svelte';
-	import Icon from '$lib/components/ui/Icon.svelte';
-	import KeptItem from '$lib/components/pwa/KeptItem.svelte';
-	import MenuButton from '$lib/components/ui/MenuButton.svelte';
-	import PersonSearchSelect from '$lib/components/people/PersonSearchSelect.svelte';
 	import Section from '$lib/components/ui/Section.svelte';
-	import { contactSectionPath, sectionAnchor } from '$lib/people/sections';
+	import { sectionAnchor } from '$lib/people/sections';
 	import { useI18n } from '$lib/i18n/context.svelte';
-	import { isKept, type KeptOf } from '$lib/pwa/outbox';
-	import { outbox } from '$lib/pwa/outbox.svelte';
 	import { exclusionFor, type Exclusion } from '$lib/relationships/exclusions';
 	import type { RelationshipCategory } from '$lib/relationships/categories';
 	import { relationshipTypeLabel } from '$lib/relationships/labels';
-	import { REVIEW_PARAM } from '$lib/relationships/review-url';
-	import {
-		foldPeople,
-		groupPeople,
-		WORKED_OUT,
-		type HiddenGroup
-	} from '$lib/relationships/people-groups';
+	import { foldPeople, groupPeople, type HiddenGroup } from '$lib/relationships/people-groups';
 	import { otherEndRole } from '$lib/relationships/roles';
 	import { offeredChoice, relationshipTypeOptions } from '$lib/relationships/type-options';
 	import type { SelectablePerson } from '$lib/people/select';
@@ -26,13 +14,17 @@
 	import { removalKey, type RemovalKind } from '$lib/undo/keys';
 	import { tick, untrack } from 'svelte';
 	import { prefersReducedMotion } from 'svelte/motion';
-	import { glide, reveal } from '$lib/motion/motion.svelte';
+	import { glide } from '$lib/motion/motion.svelte';
 	import { scrollToShow, showOpenedForm } from '$lib/motion/scroll.svelte';
 	import { scrollBehavior } from '$lib/motion/motion';
 	import AddRelationshipForm from './AddRelationshipForm.svelte';
+	import FoldedGroups from './FoldedGroups.svelte';
+	import HowConnectedPrompt from './HowConnectedPrompt.svelte';
+	import KeptLinks from './KeptLinks.svelte';
 	import KinPanels from './KinPanels.svelte';
 	import PeopleMap from './PeopleMap.svelte';
 	import RelationshipList from './RelationshipList.svelte';
+	import RelationshipsMenu from './RelationshipsMenu.svelte';
 	import type { PersonForm, PersonPageData } from './types';
 
 	/*
@@ -112,10 +104,6 @@
 			unfolded
 		)
 	);
-	const hiddenGroupLabel = (hidden: HiddenGroup) =>
-		hidden.group === WORKED_OUT
-			? t('contact.relationships.derivedShort')
-			: t(`contact.relationships.group.${hidden.group}`);
 
 	// Relationships keep their own open state: the quick-add flow opens that section by URL.
 	/*
@@ -136,23 +124,6 @@
 	 * knows: a family link began on the younger one's birthday (docs/02 §2.4).
 	 */
 	const relationshipChoices = $derived(relationshipTypeOptions(data.relationshipTypes));
-	/*
-	 * Links entered here while Stella was out of reach, kept until they are sent (docs/02
-	 * §2.18). The guardrails are the server's: a link that has meanwhile become a duplicate or a
-	 * contradiction comes back refused, with the reason. Named the way the picker names them.
-	 */
-	const keptLinks = $derived(
-		outbox.mine.filter(
-			(item): item is KeptOf<'relationship.add'> | KeptOf<'relationship.addMany'> =>
-				(isKept(item, 'relationship.add') || isKept(item, 'relationship.addMany')) &&
-				item.command.payload.contactId === c.id
-		)
-	);
-	/** Who a kept link or batch is with: one person, or everyone picked for it. */
-	const keptTargets = (item: (typeof keptLinks)[number]): string[] =>
-		item.command.type === 'relationship.addMany'
-			? item.command.payload.links.map((link) => link.targetId)
-			: [item.command.payload.targetId];
 	/** "Child of Anna Brunner and Bert Brunner", for a kept link or batch. */
 	function keptLinkLabel(typeChoice: string, targetIds: readonly string[]): string {
 		const option = relationshipChoices.find((o) => o.value === typeChoice);
@@ -220,15 +191,7 @@
 		contactId === c.id
 			? c.displayName
 			: (otherContacts.find((person) => person.id === contactId)?.displayName ?? '');
-	/*
-	 * "How are we connected?" — the picker is on the page rather than in the canvas: the map
-	 * holds two hops, the household holds the answer, and the app's own person picker is what
-	 * every other "which person?" question on this page uses.
-	 */
-	let pathTargetId = $state<string[]>([]);
-	const pathTarget = $derived(pathTargetId[0] ?? null);
-
-	/** Opens the picker and hands it the cursor — the question is the next thing to answer. */
+	/** Opens "How are we connected?" (`HowConnectedPrompt`) and hands it the cursor — the question is the next thing to answer. */
 	async function askHowConnected() {
 		tracingPath = true;
 		await tick();
@@ -291,8 +254,6 @@
 	/** How long the tint on a group just landed on takes to fade. */
 	const LANDING_TINT_MS = 1200;
 
-	const MENU_ITEM =
-		'flex w-full items-center gap-2 rounded-control px-2.5 py-1.5 text-left text-sm text-fg hover:bg-primary-soft focus-visible:bg-primary-soft';
 	/** Nothing to correct on an empty card, so it offers no *Edit*. */
 	const editable = $derived(visibleRelationships.length > 0 || data.derivedKin.length > 0);
 </script>
@@ -321,89 +282,16 @@
 		{/if}
 	{/snippet}
 	{#snippet menu()}
-		<MenuButton label={t('contact.relationships.menu')} align="end" look="button">
-			{#snippet trigger()}<Icon name="more" size={16} />{/snippet}
-			{#snippet children({ close })}
-				{#if otherContacts.length > 0}
-					<button
-						type="button"
-						role="menuitem"
-						class={MENU_ITEM}
-						onclick={() => (close(), askHowConnected())}
-					>
-						<Icon name="connectionPath" size={14} />{t('contact.relationships.howConnected')}
-					</button>
-				{/if}
-				<!--
-						The on-demand review (docs/02 §2.4.1): nothing
-						runs until it is chosen, and asking what else might be true is never what this
-						card is for — so it waits in the menu.
-					-->
-				<a
-					role="menuitem"
-					class={MENU_ITEM}
-					href={contactSectionPath(c.id, 'relationships', REVIEW_PARAM)}
-				>
-					<Icon name="search" size={14} />{data.review.open
-						? t('contact.relationships.reviewAgain')
-						: t('contact.relationships.review')}
-				</a>
-				<!-- The way out of this person's two hops and into the household. -->
-				<a role="menuitem" class={MENU_ITEM} href="/graph?center={c.id}">
-					<Icon name="graph" size={14} />{t('graph.openInGraph')}
-				</a>
-			{/snippet}
-		</MenuButton>
+		<RelationshipsMenu
+			contactId={c.id}
+			reviewOpen={data.review.open}
+			canAskHowConnected={otherContacts.length > 0}
+			onAskHowConnected={askHowConnected}
+		/>
 	{/snippet}
 
-	{#if keptLinks.length > 0}
-		<ul class="mb-3 flex flex-col gap-2" data-testid="kept-links">
-			{#each keptLinks as item (item.command.id)}
-				<li>
-					<KeptItem {item}>
-						<p class="mt-1 text-fg">
-							{keptLinkLabel(item.command.payload.typeChoice, keptTargets(item))}
-						</p>
-					</KeptItem>
-				</li>
-			{/each}
-		</ul>
-	{/if}
-	<!--
-			"How are we connected?" is a question this card cannot answer: it holds two hops
-			of the household and the chain usually runs further. So it asks who, and hands
-			both ends to the explorer, which holds the whole graph (docs/05 §5.5).
-		-->
-	{#if tracingPath}
-		<div
-			transition:reveal
-			class="mb-3 flex flex-wrap items-end gap-3 rounded-control bg-bg-sunken p-3"
-		>
-			<label for="path-target" class="flex min-w-48 flex-1 flex-col gap-1 text-sm">
-				<span class="text-fg-muted">
-					{t('contact.relationships.howConnectedTo', { name: c.displayName })}
-				</span>
-				<PersonSearchSelect
-					id="path-target"
-					people={otherContacts}
-					name="pathTarget"
-					bind:selectedIds={pathTargetId}
-				/>
-			</label>
-			<Button
-				variant="primary"
-				size="sm"
-				icon="connectionPath"
-				href={pathTarget ? `/graph?center=${c.id}&path=${pathTarget}` : undefined}
-				disabled={!pathTarget}
-			>
-				{t('contact.relationships.tracePath')}
-			</Button>
-			<Button type="button" variant="ghost" size="sm" onclick={() => (tracingPath = false)}>
-				{t('common.cancel')}
-			</Button>
-		</div>
-	{/if}
+	<KeptLinks contactId={c.id} labelOf={keptLinkLabel} />
+	<HowConnectedPrompt bind:open={tracingPath} contact={c} people={otherContacts} />
 
 	<!--
 			The map and the list (docs/05 §5.5). The map is a preview across the card's top on
@@ -435,35 +323,8 @@
 
 				<KinPanels {data} {editing} kinShown={fold.workedOutShown} />
 
-				<!--
-					What the fold hides, by group: every group folded away whole with its count, the
-					worked-out block last — a group partly shown is counted by its own heading. Each
-					one unfolds the card and lands on that group.
-				-->
 				{#if fold.hiddenGroups.length > 0}
-					<ul
-						class="mt-1 flex list-none flex-wrap items-center gap-x-1 gap-y-0.5 text-[11px] font-semibold tracking-wide text-fg-subtle uppercase"
-						aria-label={t('contact.relationships.foldedAway')}
-						data-testid="people-folded-groups"
-					>
-						{#each fold.hiddenGroups as hidden, index (hidden.group)}
-							<li class="flex items-center gap-1">
-								{#if index > 0}<span class="text-border" aria-hidden="true">·</span>{/if}
-								<button
-									type="button"
-									class="inline-flex items-center gap-1.5 rounded-full border border-dashed border-border px-2 py-1 tracking-wide uppercase hover:border-solid hover:bg-card-hover hover:text-fg"
-									aria-label={t('contact.relationships.showGroup', {
-										group: hiddenGroupLabel(hidden),
-										count: hidden.count
-									})}
-									onclick={() => showGroup(hidden.group)}
-								>
-									{#if hidden.group === WORKED_OUT}<Icon name="explore" size={12} />{/if}
-									{hiddenGroupLabel(hidden)} · {hidden.count}
-								</button>
-							</li>
-						{/each}
-					</ul>
+					<FoldedGroups groups={fold.hiddenGroups} onShow={showGroup} />
 				{/if}
 			</div>
 
