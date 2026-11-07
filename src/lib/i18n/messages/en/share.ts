@@ -16,6 +16,8 @@ export const share = {
 		'The photos did not come along. Share them again once Stella is installed as an app on this phone.',
 	'share.gone': 'This share was saved already, or has expired. Share it again from the other app.',
 	'share.nothing': 'Nothing came along that Stella could save.',
+	'share.whereFrom':
+		'Once Stella is installed, it shows up in other apps’ Share menu: share a photo, a link or some text to it.',
 	'share.who': 'About whom?',
 	'share.search': 'Search for a person',
 	'share.searchPlaceholder': 'Search a name',

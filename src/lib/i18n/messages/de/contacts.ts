@@ -14,7 +14,7 @@ export const contacts: ContactsMessages = {
 	'contacts.archivedChip': (p) => `Archiviert (${p.count})`,
 	'contacts.archived': 'Archiviert',
 	'contacts.private': 'privat',
-	'contacts.lastWrittenAbout': 'Zuletzt beschrieben',
+	'contacts.menu': 'Mehr zu Personen',
 	'contacts.lastWrittenAboutOn': (p) => `Zuletzt beschrieben am ${p.date}`,
 	'contacts.nothingWrittenYet': 'Noch nichts geschrieben',
 	'contacts.noMatch': (p) => `Niemand passt zu „${p.query}“.`,

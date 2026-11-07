@@ -46,3 +46,11 @@ export function followScroll(
 
 	return { hidden, y, travel };
 }
+
+/**
+ * Whether the bar offers *Add person* on the route `routeId`. Not on the add page itself: two
+ * primary actions of one name, and the bar's would only reload the form (docs/05 §5.4).
+ */
+export function offersAddPerson(routeId: string | null): boolean {
+	return routeId !== '/(app)/contacts/new';
+}

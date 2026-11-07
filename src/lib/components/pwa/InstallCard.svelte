@@ -26,7 +26,7 @@
 	);
 </script>
 
-<section class="flex flex-col gap-3" data-testid="install-card">
+<section id="install" class="flex scroll-mt-20 flex-col gap-3" data-testid="install-card">
 	<h2 class="text-sm font-medium text-fg-muted">{t('pwa.install.heading')}</h2>
 	<div class="flex items-center gap-4 rounded-app bg-card p-4 shadow-card">
 		<span

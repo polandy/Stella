@@ -31,6 +31,7 @@ export const surnames = {
 	'surnames.chooseOne': 'Choose one',
 	'surnames.noSuggestion': 'No suggestion',
 	'surnames.select': 'Select…',
+	'surnames.selectSeveral': 'Set last name for several…',
 	'surnames.choose': (p: { name: string }) => `Choose ${p.name}`,
 	'surnames.deceased': 'deceased',
 	'surnames.rowMenu': (p: { name: string }) => `More for ${p.name}`,

@@ -39,7 +39,13 @@ export function linkSuggestionAmong(named: NamedPeople, onList: readonly OnList[
 	return a && b && nameA && nameB ? { a: { id: a, name: nameA }, b: { id: b, name: nameB } } : null;
 }
 
-/** "Write a moment" on an upcoming date opens the composer with that person already in it. */
+/** `?compose=tag`: the Tags page's empty state, whose moment starts with a tag. */
+export const COMPOSE_TAG_HREF = '/?compose=tag';
+
+/**
+ * "Write a moment" on an upcoming date opens the composer with that person already in it; on
+ * the empty Tags page, with a `#` already typed.
+ */
 export function composerFor(
 	params: URLSearchParams,
 	named: NamedPeople,
@@ -49,7 +55,7 @@ export function composerFor(
 	return {
 		compose: params.has('compose') || about !== undefined,
 		// As stored, so the composer takes the person as picked — a namesake too (docs/02 §2.2.3).
-		draft: about ? `${mentionToken(about.id)} ` : null
+		draft: about ? `${mentionToken(about.id)} ` : params.get('compose') === 'tag' ? '#' : null
 	};
 }
 

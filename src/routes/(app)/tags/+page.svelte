@@ -1,8 +1,11 @@
 <script lang="ts">
+	import Button from '$lib/components/ui/Button.svelte';
 	import EmptyState from '$lib/components/ui/EmptyState.svelte';
+	import Icon from '$lib/components/ui/Icon.svelte';
 	import TagChip from '$lib/components/journal/TagChip.svelte';
 	import { tagPageHref } from '$lib/hashtags/hashtags';
 	import { useI18n } from '$lib/i18n/context.svelte';
+	import { COMPOSE_TAG_HREF } from '../home-view';
 	import type { PageData } from './$types';
 
 	/*
@@ -35,10 +38,11 @@
 		</nav>
 		<p class="text-sm text-fg-muted">{t('journal.tags.listHint')}</p>
 	{:else}
-		<EmptyState
-			icon="write"
-			title={t('journal.tags.listEmpty')}
-			hint={t('journal.tags.noneHint')}
-		/>
+		<EmptyState icon="write" title={t('journal.tags.listEmpty')} hint={t('journal.tags.noneHint')}>
+			<!-- A tag is born in a moment, so the way to a first one is a moment that starts with #. -->
+			<Button variant="primary" href={COMPOSE_TAG_HREF}>
+				<Icon name="write" size={16} />{t('home.writeMoment')}
+			</Button>
+		</EmptyState>
 	{/if}
 </main>

@@ -77,7 +77,8 @@ its photos, and lets the household manage members in bulk.
 - A circle with sub-circles but no direct members says so where the members would be:
   *Directly, nobody belongs to School — the people are in its sub-circles.*
 - The members stand in **grids** of avatar cards, one per role under a small uppercase heading
-  with its count; no headings when nobody has a role.
+  with its count; no headings when nobody has a role. A card is the face and the name, which
+  opens the person; it carries no × — removing goes through *Select*.
 - *Add member* is the card's one disclosure.
 - *Select* in the card header turns each card into a checkbox target, with an *all* box beside
   every role heading, and raises a **selection bar** fixed to the bottom of the screen: the
@@ -152,7 +153,8 @@ its photos, and lets the household manage members in bulk.
   to walk. Each strip is one button.
 - Below the members a *Photos* card holds the role chips (the Circles chip style, only with more
   than one group) and a square grid (three columns, five from `sm`) whose tiles carry the role
-  and the date on the gradient, a star when pinned and a lock when private.
+  and the date on the gradient, a star when pinned and a lock when private. Without a photo the
+  card is one line, *No photos yet.*, as on a person.
 - *Add photos* is the Photos card's disclosure: the files, *Who is in them?* and *Who can see
   them?* as pill radios, and the submit naming how many photos it adds.
 - The lightbox is the person gallery's dialog (§5.9), with a step back and forward for touch,
@@ -180,7 +182,9 @@ actions (deleting) join it there, as on the person page; it turns the header its
 form so the reader edits what they were just reading. Deleting has no Undo — the files go and
 so does the page — so its step says what it takes before anything happens and starts on *Keep
 it*, so a second Enter never deletes; the counts are read only when the step opens, so the
-page's load does not count photos for a step most visits never open. Strips have a fixed height on a wide screen so the members stay in view.
+page's load does not count photos for a step most visits never open. Strips have a fixed height on a wide screen so the members stay in view. A member card has no × of its
+own because a row of them is a row of destructive buttons one mis-tap away; *Select* already
+removes, with the same undo, so one extra tap buys one way into changing the members.
 
 The list shows families rather than levels because a school with eight classes would otherwise
 bury everything else under nine equal cards; a row is enough to find a class, and its page has

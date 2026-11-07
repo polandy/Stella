@@ -5,7 +5,9 @@
 	import ActivityIndicator from '$lib/components/ui/ActivityIndicator.svelte';
 	import CommandPalette from '$lib/components/shell/CommandPalette.svelte';
 	import Icon from '$lib/components/ui/Icon.svelte';
-	import { useTranslate } from '$lib/i18n/context.svelte';
+	import { useI18n, useTranslate } from '$lib/i18n/context.svelte';
+	import { provideGivenNames } from '$lib/surnames/given-names.svelte';
+	import { withGivenNames } from '$lib/surnames/given-names';
 	import type { IconName } from '$lib/components/ui/icons';
 	import type { MessageKey } from '$lib/i18n/translate';
 	import Logo from '$lib/components/shell/Logo.svelte';
@@ -19,7 +21,7 @@
 	import { createDeviceUnlock } from '$lib/privacy/device-unlock.svelte';
 	import { provideVeil } from '$lib/privacy/veil.svelte';
 	import { reportNavigation } from '$lib/sync/pending';
-	import { followScroll, SHOWN_TOP_BAR } from '$lib/ui/top-bar';
+	import { followScroll, offersAddPerson, SHOWN_TOP_BAR } from '$lib/ui/top-bar';
 	import { breadcrumbs, type CrumbData } from '$lib/ui/breadcrumbs';
 	import { onMount, untrack, type Snippet } from 'svelte';
 	import type { LayoutData } from './$types';
@@ -114,6 +116,10 @@
 	});
 
 	const removals = provideRemovals();
+	// A last name given on any page is ⌘K's at once, before its undo window and reload (§2.2.4.4).
+	const given = provideGivenNames();
+	const i18n = useI18n();
+	const palettePeople = $derived(withGivenNames(data.people, given.names, i18n.locale));
 	providePeopleContext(() => data.peopleContext);
 	// The member's private entries stay blurred until asked for (docs/02 §2.10.1). A tap shows
 	// one until the page is left; a new page starts blurred again, the five-minute window aside.
@@ -157,7 +163,7 @@
 	it. It is fixed to the top of the window, so it never moves the page it reports on.
 -->
 <ActivityIndicator busy={pending.busy} label={pending.label ?? t('common.updating')} />
-<CommandPalette people={data.people} bind:open={paletteOpen} />
+<CommandPalette people={palettePeople} bind:open={paletteOpen} />
 <Toast />
 
 <!-- The visible height, not 100vh: a phone browser counts 100vh with its address bar hidden,
@@ -273,14 +279,16 @@
 				</button>
 				<!-- Secondary, not primary: the one filled action on a screen is the page's own — the
 				     pencil on Home, *Write a moment* on a person (docs/05 §5.1, §5.4). -->
-				<Button
-					variant="secondary"
-					icon="addPerson"
-					href="/contacts/new"
-					label={t('nav.addPerson')}
-				>
-					<span class="hidden md:inline">{t('nav.addPerson')}</span>
-				</Button>
+				{#if offersAddPerson(page.route.id)}
+					<Button
+						variant="secondary"
+						icon="addPerson"
+						href="/contacts/new"
+						label={t('nav.addPerson')}
+					>
+						<span class="hidden md:inline">{t('nav.addPerson')}</span>
+					</Button>
+				{/if}
 				<!-- Wrapped: the button's own display rule would outrank a utility on the element. -->
 				<span class="md:hidden"
 					><Button

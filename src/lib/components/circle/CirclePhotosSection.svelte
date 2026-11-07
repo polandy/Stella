@@ -133,6 +133,7 @@
 	title={t('circles.photos.title')}
 	count={view.photos.length || undefined}
 	addLabel={t('circles.photos.add')}
+	empty={view.photos.length + kept.length === 0 ? t('circles.photos.none') : undefined}
 	error={error ?? uploadError}
 	bind:open
 >

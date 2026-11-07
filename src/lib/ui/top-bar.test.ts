@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'bun:test';
-import { SHOWN_TOP_BAR, TOP_BAR_TRAVEL_PX, followScroll, type TopBarState } from './top-bar';
+import {
+	SHOWN_TOP_BAR,
+	TOP_BAR_TRAVEL_PX,
+	followScroll,
+	offersAddPerson,
+	type TopBarState
+} from './top-bar';
 
 /*
  * The phone's top bar slides away while the reader scrolls down and comes back as soon as
@@ -77,5 +83,14 @@ describe('followScroll', () => {
 		const hiddenAtEnd = scrollThrough([900, 950, 1000], 60, SHOWN_TOP_BAR, 1000);
 		expect(scrollThrough([960, 941], 60, hiddenAtEnd, 1000).hidden).toBe(true);
 		expect(scrollThrough([960, 939], 60, hiddenAtEnd, 1000).hidden).toBe(false);
+	});
+});
+
+describe('offersAddPerson', () => {
+	it('offers Add person everywhere but on the page that already is Add person', () => {
+		expect(offersAddPerson('/(app)')).toBe(true);
+		expect(offersAddPerson('/(app)/contacts')).toBe(true);
+		expect(offersAddPerson('/(app)/contacts/[id]')).toBe(true);
+		expect(offersAddPerson('/(app)/contacts/new')).toBe(false);
 	});
 });

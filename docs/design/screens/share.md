@@ -33,6 +33,10 @@ caring whether home can be reached right now.
 - One primary button across the width: *Save*, or *Save for later* out of reach. Without a
   person it is disabled and a line above it says *Pick who it is about first.* A refusal shows
   above the button, the sheet stays.
+- With nothing shared — the page opened by hand — a `bg-card` line says *Nothing came along
+  that Stella could save.*, and one line under it says where sharing starts: the installed
+  app's place in another app's Share menu, with an *Install Stella* link to Settings' install
+  card (`/settings#install`) while this device has not installed it.
 - After saving, the person's page with the toast (*Moment saved*, *Saved for later*, …); no undo
   in the toast — the entry is removed where it landed.
 
