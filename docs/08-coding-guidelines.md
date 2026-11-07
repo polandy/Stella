@@ -361,7 +361,8 @@ A change is done when:
   catalogue in both languages (docs/02 §2.19): components call `t('…')` from `useI18n()`,
   routes call `say(locals, '…')`, and a domain refusal carries a `Phrase` instead of a
   sentence. `messages/de/*` is typed against `messages/en/*`, so a missing translation is a
-  compile error rather than a screen half in English.
+  compile error rather than a screen half in English. The one exemption is the dev-only debug
+  workbench (docs/02 §2.19).
 - Relevant docs (this suite) are updated if behavior or model changed.
 
 ### Adding a message

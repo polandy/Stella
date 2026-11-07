@@ -1,7 +1,8 @@
 name: publish
 
-# Called by the release job once release-please has cut a release, and runnable by hand to
-# re-publish a tag whose build failed.
+# Called by the release job once release-please has cut a release, by the weekly rebuild
+# (rebuild.yml) to refresh the latest release's packages, and runnable by hand to re-publish a
+# tag whose build failed.
 #
 # It is deliberately NOT triggered by the release tag itself: when release-please pushes that
 # tag with the run's GITHUB_TOKEN, GitHub starts no workflow from it, and with a personal
@@ -60,15 +61,26 @@ jobs:
             type=semver,pattern={{major}}.{{minor}},value=${{ inputs.tag }}
             type=raw,value=latest
 
-      - id: build
-        uses: docker/build-push-action@v6
+      # Built without a layer cache, so `apt-get upgrade` and the base image are current —
+      # the weekly rebuild exists for exactly that — and loaded locally to be scanned first.
+      - uses: docker/build-push-action@v6
         with:
           context: .
-          push: true
+          pull: true
+          no-cache: true
+          load: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+
+      # Nothing is pushed while it carries a CRITICAL vulnerability that has a fix.
+      - run: ./scripts/scan-image.sh "${{ env.IMAGE }}:${{ steps.meta.outputs.version }}"
+
+      # The scanned image itself is pushed — no second build that could come out different.
+      - id: push
+        run: |
+          docker push --all-tags "${{ env.IMAGE }}"
+          ref="$(docker inspect --format '{{index .RepoDigests 0}}' "${{ env.IMAGE }}:${{ steps.meta.outputs.version }}")"
+          echo "digest=${ref#*@}" >> "$GITHUB_OUTPUT"
 
       # A tag can be moved; a digest cannot. Self-hosted deployments pin the digest, so
       # print it where it can be copied rather than making anyone go and look it up.
@@ -78,6 +90,6 @@ jobs:
             echo "### Image published"
             echo
             echo '```'
-            echo "${{ env.IMAGE }}:${{ steps.meta.outputs.version }}@${{ steps.build.outputs.digest }}"
+            echo "${{ env.IMAGE }}:${{ steps.meta.outputs.version }}@${{ steps.push.outputs.digest }}"
             echo '```'
           } >> "$GITHUB_STEP_SUMMARY"

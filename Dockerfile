@@ -25,6 +25,13 @@ ENV NODE_ENV=production \
     # 512 KB default; the archive is the biggest of them and sets this number.
     BODY_SIZE_LIMIT=250M
 
+# The base tag is only published once per Bun release, so its Debian packages age until the
+# next one. Upgrading here lets every build — the weekly rebuild above all — ship the
+# current security fixes (scripts/scan-image.sh gates on them).
+RUN apt-get update \
+    && apt-get upgrade -y --no-install-recommends \
+    && rm -rf /var/lib/apt/lists/*
+
 # Only production dependencies are needed to run the adapter-node output.
 COPY package.json bun.lock ./
 RUN bun install --frozen-lockfile --production
