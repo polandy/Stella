@@ -228,8 +228,11 @@ the person, and that never leaves the page. Keeping the record tidy (archive, me
   them, so no name runs under them and a 360 px phone still shows every name whole. **Wider**, a 7.5
   rem strip with the people in a wide fan, half to either side in two staggered rows, every face
   under or over its **first name** (`stripFan`, `src/lib/graph/layout/strip-fan.ts`).
-- In both, the line to somebody joined to the person by **former** links alone is thinner and
-  dashed, as on the map (§5.8); one current link beside a former one keeps it solid.
+- In both, every face is drawn as on the map (§5.8): the person's own avatar disc, this
+  person's ringed in the primary colour, and each line in its relationship category's colour,
+  so nobody changes colour when the live map takes over. The line to somebody joined to the
+  person by **former** links alone is thinner and dashed, as on the map; one current link
+  beside a former one keeps it solid.
 - Both are drawn at their own size and centred: a narrow card crops their ends rather than
   shrinking the names.
 - In its bottom-right corner sit two icon-only controls, each a 44 px target around a 32 px

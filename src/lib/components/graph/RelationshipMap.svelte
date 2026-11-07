@@ -250,11 +250,11 @@
 				     runs under them. -->
 				<span class="relative block h-38 w-full overflow-hidden sm:hidden"
 					><span class="absolute inset-y-0 right-11 left-0"
-						><EgoGraph {centerName} {centerPhotoId} {nodes} variant="ring" /></span
+						><EgoGraph {centerId} {centerName} {centerPhotoId} {nodes} variant="ring" /></span
 					></span
 				>
 				<span class="relative block h-30 w-full overflow-hidden max-sm:hidden"
-					><EgoGraph {centerName} {centerPhotoId} {nodes} variant="strip" /></span
+					><EgoGraph {centerId} {centerName} {centerPhotoId} {nodes} variant="strip" /></span
 				>
 			</button>
 			<div

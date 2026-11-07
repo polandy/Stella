@@ -5,14 +5,17 @@
 	 * already loaded — no graph engine, no extra fetch — and drawn by the server, so the People
 	 * card shows the shape at once and keeps it where the engine never arrives. It is a picture
 	 * rather than the map: no links, hidden from a screen reader (the list beside it names and
-	 * links everybody), one button as a whole in the card. Category accents follow docs/05 §5.6.
+	 * links everybody), one button as a whole in the card. As on the map, a face wears the
+	 * person's own accent, the one their avatar has (docs/05 §5.10), so nobody changes colour when
+	 * the map takes over; a line wears its relationship category (§5.6).
 	 *
 	 * Two shapes, both drawn at their own size, so a narrow card crops their ends rather than
 	 * shrinking the names. `ring` is the phone's 9.5 rem preview: a ring with every first name,
 	 * the people past its last place folded into a "+N" disc (`namedRing`). `strip` is a wide
 	 * card's 7.5 rem strip: a sideways fan with every first name (`stripFan`).
 	 */
-	import { categoryDiscFill, categoryVar } from '$lib/design/tokens';
+	import { accentDiscFill, accentVar, categoryVar } from '$lib/design/tokens';
+	import { avatarAccent, initials } from '$lib/people/avatar';
 	import { namedRing } from '$lib/graph/layout/named-ring';
 	import { stripFan } from '$lib/graph/layout/strip-fan';
 	import { thumbnailUrl } from '$lib/media/urls';
@@ -33,11 +36,14 @@
 		former?: boolean;
 	}
 	let {
+		centerId,
 		centerName,
 		centerPhotoId = null,
 		nodes,
 		variant
 	}: {
+		/** Whose accent the centre wears. */
+		centerId: string;
 		centerName: string;
 		centerPhotoId?: string | null;
 		nodes: EgoNode[];
@@ -51,16 +57,6 @@
 		(RELATIONSHIP_CATEGORIES as readonly string[]).includes(category)
 			? (category as RelationshipCategory)
 			: 'other';
-
-	function initials(name: string): string {
-		return name
-			.split(/\s+/)
-			.map((w) => w[0])
-			.filter(Boolean)
-			.slice(0, 2)
-			.join('')
-			.toUpperCase();
-	}
 
 	// The strip's faces are small enough for two rows in 7.5 rem.
 	const STRIP_CENTER_R = 16;
@@ -95,8 +91,9 @@
 		nodes.slice(0, layout.places.length).map((n, i) => ({
 			...n,
 			...layout.places[i],
-			color: categoryVar(categoryOf(n.category)),
-			disc: categoryDiscFill(categoryOf(n.category))
+			line: categoryVar(categoryOf(n.category)),
+			color: accentVar(avatarAccent(n.id)),
+			disc: accentDiscFill(avatarAccent(n.id))
 		}))
 	);
 	const c = $derived(layout.center);
@@ -129,13 +126,21 @@
 			y1={c.y}
 			x2={n.x}
 			y2={n.y}
-			stroke="var(--border)"
+			stroke={n.line}
 			stroke-width={n.former ? 1.2 : 2}
 			stroke-dasharray={n.former ? '6 3' : undefined}
 		/>
 	{/each}
 
-	<circle cx={c.x} cy={c.y} r={c.r} fill="var(--primary)" />
+	<!-- The centre as on the map: the person's own disc, ringed in the primary colour. -->
+	<circle
+		cx={c.x}
+		cy={c.y}
+		r={c.r}
+		fill={accentDiscFill(avatarAccent(centerId))}
+		stroke="var(--primary)"
+		stroke-width="3"
+	/>
 	{#if centerPhotoId}
 		<image
 			href={thumbnailUrl(centerPhotoId)}
@@ -152,7 +157,7 @@
 			y={c.y}
 			dy="0.35em"
 			text-anchor="middle"
-			fill="var(--primary-fg)"
+			fill="var(--fg)"
 			font-weight="700"
 			font-size="12"
 		>

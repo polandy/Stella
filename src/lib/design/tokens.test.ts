@@ -5,7 +5,7 @@ import {
 	AVATAR_ACCENTS,
 	accentAvatarStyle,
 	accentChipStyle,
-	categoryDiscFill,
+	accentDiscFill,
 	accentDotStyle,
 	accentVar,
 	AVATAR_RING_PX,
@@ -85,9 +85,9 @@ describe('accent styles', () => {
 		);
 	});
 
-	it('fills an SVG initials disc with a tint of its category over the card, like an avatar', () => {
-		expect(categoryDiscFill('family')).toBe(
-			'color-mix(in srgb, var(--cat-family) var(--tint-avatar), var(--card))'
+	it('fills an SVG initials disc with a tint of its accent over the card, like an avatar', () => {
+		expect(accentDiscFill('teal')).toBe(
+			'color-mix(in srgb, var(--accent-teal) var(--tint-avatar), var(--card))'
 		);
 	});
 
