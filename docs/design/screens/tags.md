@@ -17,7 +17,9 @@ it is about — or to see which topics the household writes about at all.
   tags*; it does not tell a tag nobody uses from one only on another member's private moments.
 - **All tags** (`/tags`): a title, one line on what the page is, the tags as large chips with
   their counts, most used first, a lock on those only on the viewer's private moments, and one
-  hint on how a tag is made. Nothing in the navigation leads here; *All tags* on a tag's page
+  hint on how a tag is made. Without a tag it is the empty state *No tags yet* with one primary
+  *Write a moment*, which opens the composer with a `#` already typed (`/?compose=tag`).
+  Nothing in the navigation leads here; *All tags* on a tag's page
   and on Home's Tags row do. The breadcrumbs read *Home / Tags / #crafts*.
 
 ### Why
@@ -26,4 +28,5 @@ The page is the household's view of a topic, so it reads like Home's stream rath
 journal: who wrote what in whose journal. The person's name keeps the tag because whoever
 follows it is still reading that topic. *All tags* stays out of the navigation because tags are
 reached from a moment, from Home or from search; one more tab for a list visited now and then
-would crowd the phone's bar.
+would crowd the phone's bar. An empty list's way forward is the moment a tag is born in, so its
+button starts one at the `#` rather than explaining the syntax and stopping.

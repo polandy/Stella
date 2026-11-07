@@ -16,6 +16,8 @@ export const share: ShareMessages = {
 	'share.gone':
 		'Das wurde schon gespeichert oder ist abgelaufen. Teile es nochmal aus der anderen App.',
 	'share.nothing': 'Es kam nichts mit, das Stella speichern könnte.',
+	'share.whereFrom':
+		'Ist Stella installiert, steht sie im Teilen-Menü anderer Apps: Teile ein Foto, einen Link oder Text mit ihr.',
 	'share.who': 'Über wen?',
 	'share.search': 'Person suchen',
 	'share.searchPlaceholder': 'Name suchen',

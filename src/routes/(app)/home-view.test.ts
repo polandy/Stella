@@ -75,6 +75,14 @@ describe('composerFor', () => {
 			draft: null
 		});
 	});
+
+	it('opens it with a # typed when asked for a tag, so a tag is the first thing written', () => {
+		const asked = params('compose=tag');
+		expect(composerFor(asked, peopleNamedBy(asked), onList)).toEqual({
+			compose: true,
+			draft: '#'
+		});
+	});
 });
 
 describe('photosPosted', () => {

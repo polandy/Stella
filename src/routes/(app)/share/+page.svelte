@@ -17,6 +17,7 @@
 	import { processImage } from '$lib/media/process-image';
 	import { deviceDay, writersDay } from '$lib/dates/today';
 	import type { KeptPhoto } from '$lib/pwa/outbox';
+	import { install } from '$lib/pwa/install.svelte';
 	import { outbox } from '$lib/pwa/outbox.svelte';
 	import { reachability } from '$lib/pwa/reachability.svelte';
 	import { forgetShare, readShare, type SharedPhoto } from '$lib/pwa/share-store';
@@ -253,6 +254,16 @@
 			>
 				{gone ? t('share.gone') : t('share.nothing')}
 			</p>
+			<!-- An empty page is mostly someone who opened it by hand: say where sharing starts, and
+			     offer the install it needs while there is one to do (docs/02 §2.18). -->
+			{#if !gone}
+				<p class="text-sm text-fg-muted" data-testid="share-where-from">
+					{t('share.whereFrom')}{#if install.state !== 'installed'}
+						{' '}<a href="/settings#install" class="font-medium text-primary hover:underline"
+							>{t('pwa.install.label')}</a
+						>{/if}
+				</p>
+			{/if}
 			{#if photosLeftBehind}<p class="text-sm text-fg-muted">{t('share.photosLeftBehind')}</p>{/if}
 		{:else}
 			<SharedPreview {shared} {previews} {photosLeftBehind} />
