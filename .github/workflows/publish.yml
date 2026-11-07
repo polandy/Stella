@@ -75,15 +75,12 @@ jobs:
       # Nothing is pushed while it carries a CRITICAL vulnerability that has a fix.
       - run: ./scripts/scan-image.sh "${{ env.IMAGE }}:${{ steps.meta.outputs.version }}"
 
-      # Same inputs on the same builder: every layer comes from the scanned build's cache,
-      # so the pushed image is the one just scanned.
-      - id: build
-        uses: docker/build-push-action@v6
-        with:
-          context: .
-          push: true
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
+      # The scanned image itself is pushed — no second build that could come out different.
+      - id: push
+        run: |
+          docker push --all-tags "${{ env.IMAGE }}"
+          ref="$(docker inspect --format '{{index .RepoDigests 0}}' "${{ env.IMAGE }}:${{ steps.meta.outputs.version }}")"
+          echo "digest=${ref#*@}" >> "$GITHUB_OUTPUT"
 
       # A tag can be moved; a digest cannot. Self-hosted deployments pin the digest, so
       # print it where it can be copied rather than making anyone go and look it up.
@@ -93,6 +90,6 @@ jobs:
             echo "### Image published"
             echo
             echo '```'
-            echo "${{ env.IMAGE }}:${{ steps.meta.outputs.version }}@${{ steps.build.outputs.digest }}"
+            echo "${{ env.IMAGE }}:${{ steps.meta.outputs.version }}@${{ steps.push.outputs.digest }}"
             echo '```'
           } >> "$GITHUB_STEP_SUMMARY"
