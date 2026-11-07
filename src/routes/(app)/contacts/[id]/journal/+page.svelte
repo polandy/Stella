@@ -1,33 +1,16 @@
 <script lang="ts">
-	import { FIELD } from '$lib/components/ui/field';
-	import Swap from '$lib/components/ui/Swap.svelte';
-	import { reveal } from '$lib/motion/motion.svelte';
-	import FormError from '$lib/components/ui/FormError.svelte';
-	import { enhance } from '$app/forms';
 	import { invalidateAll } from '$app/navigation';
 	import Avatar from '$lib/components/ui/Avatar.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
-	import DateField from '$lib/components/ui/DateField.svelte';
 	import { dayHeading } from '$lib/dates/labels';
 	import EmptyState from '$lib/components/ui/EmptyState.svelte';
-	import Icon from '$lib/components/ui/Icon.svelte';
-	import ImmichLibraryPicker from '$lib/components/immich/ImmichLibraryPicker.svelte';
-	import PhotoSourceMenu from '$lib/components/immich/PhotoSourceMenu.svelte';
-	import MentionTextarea from '$lib/components/stream/MentionTextarea.svelte';
-	import JournalEntryEditor from '$lib/components/journal/JournalEntryEditor.svelte';
+	import JournalCompose from '$lib/components/journal/JournalCompose.svelte';
+	import JournalEntryCard from '$lib/components/journal/JournalEntryCard.svelte';
 	import JournalTagFilter from '$lib/components/journal/JournalTagFilter.svelte';
-	import PrivateMark from '$lib/components/ui/PrivateMark.svelte';
-	import Veil from '$lib/components/ui/Veil.svelte';
-	import { placeholderFor } from '$lib/privacy/veil';
-	import { useVeil } from '$lib/privacy/veil.svelte';
 	import { asTyped } from '$lib/mentions/picks';
-	import { journalEntryAnchor } from '$lib/people/sections';
 	import KeptItem from '$lib/components/pwa/KeptItem.svelte';
-	import { processImage } from '$lib/media/process-image';
-	import { keepable } from '$lib/pwa/keepable';
-	import { isKept, type KeptOf, type KeptPhoto } from '$lib/pwa/outbox';
+	import { isKept, type KeptOf } from '$lib/pwa/outbox';
 	import { outbox } from '$lib/pwa/outbox.svelte';
-	import { ulid } from 'ulid';
 	import { useRemovals } from '$lib/undo/context.svelte';
 	import { removalKey as buildKey } from '$lib/undo/keys';
 	import { removeThroughAction } from '$lib/undo/deferred-removal';
@@ -44,94 +27,11 @@
 
 	const c = $derived(data.contact);
 
-	// The entry's audience narrows whom the @-picker offers (docs/02 §2.20.1).
-	let entryVisibility = $state<'shared' | 'private'>('shared');
-	// A typed @Thomas that could be several people keeps saving off until one is picked.
-	let entryUnclear = $state(false);
-
-	// Selected images for the entry being composed (processed in the browser on submit).
-	let picked = $state<File[]>([]);
-	let uploading = $state(false);
-	let uploadError = $state<string | null>(null);
-	let composeForm: HTMLFormElement | undefined = $state();
-
-	function onFiles(event: Event) {
-		picked = Array.from((event.currentTarget as HTMLInputElement).files ?? []);
-	}
-
-	/*
-	 * Photos copied from Immich (docs/02 §2.24.9) add to the entry's, and a new pick on the device
-	 * keeps them. The picker opens on the day the entry's field says.
-	 */
-	let fromImmich = $state<File[]>([]);
-	let libraryOpen = $state(false);
-	let libraryDay = $state('');
-	function openLibrary() {
-		const entryDate = composeForm ? new FormData(composeForm).get('entryDate') : null;
-		libraryDay = typeof entryDate === 'string' && entryDate !== '' ? entryDate : data.today;
-		libraryOpen = true;
-	}
-
-	/*
-	 * An entry is saved as a command through the outbox, in reach or not (docs/02 §2.18.1, docs/04
-	 * ADR-076): its photos are processed first (downscaled, location
-	 * stripped) and follow it. Kept on the device when Stella cannot take it, it shows above the
-	 * timeline until it is sent. Without JavaScript the form posts to its action as before.
-	 */
+	// Entries written while Stella was out of reach show above the timeline until they are sent.
 	const keptEntries = $derived(
 		outbox.mine.filter(
 			(item): item is KeptOf<'journal.write'> =>
 				isKept(item, 'journal.write') && item.command.payload.contactId === c.id
-		)
-	);
-	function doneComposing() {
-		composeForm?.reset();
-		picked = [];
-		fromImmich = [];
-		entryVisibility = 'shared';
-		composing = false;
-	}
-	const journalForm = $derived(
-		keepable(
-			{
-				toCommand: (form, id) => {
-					const body = String(form.get('body') ?? '').trim();
-					const entryDate = String(form.get('entryDate') ?? '');
-					if (!body || !entryDate) return null;
-					return {
-						id,
-						type: 'journal.write',
-						payload: {
-							contactId: c.id,
-							entryDate,
-							title: String(form.get('title') ?? '').trim() || null,
-							body,
-							visibility: form.get('visibility') === 'private' ? 'private' : 'shared'
-						},
-						issuedAt: Date.now()
-					};
-				},
-				about: c.displayName,
-				errorKey: 'journalError',
-				photos: async () => {
-					uploading = true;
-					uploadError = null;
-					try {
-						const photos: KeptPhoto[] = [];
-						for (const file of [...picked, ...fromImmich])
-							photos.push({ id: ulid(), ...(await processImage(file)) });
-						return photos;
-					} catch {
-						uploadError = t('journal.uploadFailed');
-						return null;
-					} finally {
-						uploading = false;
-					}
-				},
-				onApplied: doneComposing,
-				onKept: doneComposing
-			},
-			() => {}
 		)
 	);
 
@@ -153,20 +53,6 @@
 
 	// Editing an entry in place: only one at a time (docs/02 §2.20).
 	let editingId = $state<string | null>(null);
-
-	// A private entry's title, text and photos stay blurred until asked for (docs/02 §2.10.1).
-	const veil = useVeil();
-	const veilId = (entry: PageData['entries'][number]) => `journal:${entry.id}`;
-	const titleShown = (entry: PageData['entries'][number]) =>
-		entry.visibility !== 'private' || !veil.isVeiled(veilId(entry));
-
-	function startEdit(entry: PageData['entries'][number]) {
-		if (entry.visibility === 'private') veil.revealForEdit(veilId(entry));
-		editingId = entry.id;
-	}
-	function cancelEdit() {
-		editingId = null;
-	}
 
 	// Group the (already newest-first) entries by their day for the timeline.
 	const days = $derived.by(() => {
@@ -204,98 +90,16 @@
 		</Button>
 	</header>
 
-	{#if showForm}
-		<form
-			transition:reveal
-			method="POST"
-			action="?/save"
-			enctype="multipart/form-data"
-			use:enhance={journalForm}
-			bind:this={composeForm}
-			class="flex flex-col gap-3 rounded-app bg-card p-5 shadow-card"
-		>
-			<FormError message={form?.journalError} />
-			<FormError message={uploadError} />
-			<div class="flex flex-wrap items-end gap-3">
-				<div class="flex flex-col gap-1 text-sm">
-					<span class="text-fg-muted">{t('journal.day')}</span>
-					<DateField
-						name="entryDate"
-						value={data.today}
-						max={data.today}
-						required
-						label={t('journal.day')}
-					/>
-				</div>
-				<label class="flex flex-1 flex-col gap-1 text-sm">
-					<span class="text-fg-muted">{t('journal.titleOptional')}</span>
-					<input
-						name="title"
-						placeholder={t('journal.titlePlaceholder')}
-						class="{FIELD} px-3 py-2"
-					/>
-				</label>
-			</div>
-			<MentionTextarea
-				name="body"
-				label={t('journal.entry')}
-				rows={5}
-				required
-				{candidates}
-				tags={data.entryTags}
-				visibility={entryVisibility}
-				bind:unclear={entryUnclear}
-				placeholder={t('journal.bodyPlaceholder')}
-				class="{FIELD} w-full px-3 py-2"
-			/>
-			<div class="flex flex-wrap items-center gap-3">
-				{#if data.immichLibrary}
-					<PhotoSourceMenu
-						label={t('journal.addPhotos')}
-						look="outline"
-						onfiles={(files) => (picked = files)}
-						onimmich={openLibrary}
-					>
-						{#snippet trigger()}<Icon name="photo" size={15} />{t('journal.addPhotos')}{/snippet}
-					</PhotoSourceMenu>
-				{:else}
-					<!-- `sr-only`, not `hidden`: a hidden input is out of the tab order, and the button
-					     with it (WCAG 2.1.1). The label shows where focus is instead. -->
-					<label
-						class="inline-flex cursor-pointer items-center gap-2 rounded-app border border-border px-3 py-2 text-sm text-fg-muted hover:text-fg has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-focus-ring"
-					>
-						<Icon name="photo" size={15} />
-						{t('journal.addPhotos')}
-						<input type="file" accept="image/*" multiple onchange={onFiles} class="sr-only" />
-					</label>
-				{/if}
-				{#if picked.length + fromImmich.length}
-					<span class="text-sm text-fg-subtle">
-						{t('journal.photosReady', { count: picked.length + fromImmich.length })}
-					</span>
-				{/if}
-			</div>
-			<div class="flex flex-wrap items-center gap-4 text-sm">
-				<fieldset class="flex flex-wrap items-center gap-4">
-					<legend class="sr-only">{t('common.visibility')}</legend>
-					<label class="flex items-center gap-1.5">
-						<input type="radio" name="visibility" value="shared" bind:group={entryVisibility} />
-						{t('common.shared')}
-					</label>
-					<label class="flex items-center gap-1.5">
-						<input type="radio" name="visibility" value="private" bind:group={entryVisibility} />
-						{t('journal.privateOnlyYou')}
-					</label>
-				</fieldset>
-				<Button variant="primary" disabled={uploading || entryUnclear} class="ml-auto">
-					{uploading ? t('common.saving') : t('journal.saveEntry')}
-				</Button>
-			</div>
-			<p class="text-xs text-fg-subtle">
-				{t('journal.oneEntryPerDay')}
-			</p>
-		</form>
-	{/if}
+	<JournalCompose
+		open={showForm}
+		contact={c}
+		{candidates}
+		tags={data.entryTags}
+		today={data.today}
+		immichLibrary={data.immichLibrary}
+		error={form?.journalError}
+		onDone={() => (composing = false)}
+	/>
 
 	{#if keptEntries.length > 0}
 		<ul class="flex flex-col gap-2" data-testid="kept-entries">
@@ -331,113 +135,17 @@
 					</div>
 
 					{#each day.items as entry (entry.id)}
-						<!-- Its id is where *On this day* lands (docs/02 §2.12.1). -->
-						<article
-							id={journalEntryAnchor(entry.id)}
-							class="scroll-mt-20 rounded-app bg-card p-5 shadow-card"
-						>
-							<div class="mb-2 flex items-center gap-2">
-								{#if entry.title && titleShown(entry)}
-									<h3 class="font-medium text-fg">{entry.title}</h3>
-								{/if}
-								<!-- No kind chip here to hang the name off, so it says "by" and reads on its own. -->
-								{#if entry.author}
-									<span class="text-xs text-fg-subtle">
-										{t('journal.by', { author: entry.author })}
-									</span>
-								{/if}
-								{#if entry.visibility === 'private'}
-									<PrivateMark veilId={veilId(entry)} tone="pill" />
-								{/if}
-								<!-- 24 px drawn, a finger's square on a touch screen; the gap keeps the pencil
-								     and the × from sharing one there (docs/05 §5.9). -->
-								<div class="ml-auto flex items-center gap-2 pointer-coarse:gap-5">
-									{#if entry.mine}
-										<button
-											type="button"
-											class="tap-target grid size-6 place-items-center text-fg-subtle hover:text-fg"
-											aria-label={t('journal.editEntry')}
-											title={t('journal.editEntry')}
-											onclick={() => (editingId === entry.id ? cancelEdit() : startEdit(entry))}
-										>
-											<Icon name="write" size={15} />
-										</button>
-									{/if}
-									{#if entry.removable}
-										<form
-											method="POST"
-											action="?/delete"
-											onsubmit={(event) => deferRemoval(event, entry)}
-										>
-											<input type="hidden" name="id" value={entry.id} />
-											<button
-												type="submit"
-												class="tap-target grid size-6 place-items-center text-fg-subtle hover:text-danger"
-												aria-label={t('journal.deleteEntry')}
-												title={t('journal.deleteEntry')}
-											>
-												<Icon name="remove" size={15} />
-											</button>
-										</form>
-									{/if}
-								</div>
-							</div>
-							<!-- The entry and its editor glide into each other in place (docs/05 §5.11). -->
-							<Swap when={editingId === entry.id}>
-								<JournalEntryEditor
-									contactId={c.id}
-									{entry}
-									{candidates}
-									tags={data.entryTags}
-									onDone={cancelEdit}
-								/>
-								{#snippet otherwise()}
-									<Veil
-										id={veilId(entry)}
-										isPrivate={entry.visibility === 'private'}
-										label={t('privacy.veil.moment')}
-									>
-										{#snippet standIn()}
-											{#if entry.title}
-												<p class="mb-2 font-medium text-fg">{placeholderFor(entry.title)}</p>
-											{/if}
-											<p class="whitespace-pre-line text-fg">{placeholderFor(entry.bodyHtml)}</p>
-										{/snippet}
-										<!-- server-rendered, already-safe Markdown (docs/02 §2.5) -->
-										<div class="note-body text-fg">{@html entry.bodyHtml}</div>
-									</Veil>
-								{/snippet}
-							</Swap>
-
-							{#if entry.photos.length}
-								<!-- The same veil as the text: one tap shows both. -->
-								<Veil
-									id={veilId(entry)}
-									isPrivate={entry.visibility === 'private'}
-									label={t('privacy.veil.photo')}
-									photo
-									class="mt-3 w-fit"
-								>
-									<div class="flex flex-wrap gap-2">
-										{#each entry.photos as photoId (photoId)}
-											<a
-												href="/media/{photoId}"
-												target="_blank"
-												rel="noreferrer"
-												class="block overflow-hidden rounded-app border border-border"
-											>
-												<img
-													src="/media/{photoId}?thumb"
-													alt={t('journal.photoAlt', { name: c.displayName, day: day.date })}
-													loading="lazy"
-													class="h-28 w-28 object-cover transition-transform hover:scale-105"
-												/>
-											</a>
-										{/each}
-									</div>
-								</Veil>
-							{/if}
-						</article>
+						<JournalEntryCard
+							{entry}
+							contact={c}
+							day={day.date}
+							{candidates}
+							tags={data.entryTags}
+							editing={editingId === entry.id}
+							onEdit={() => (editingId = entry.id)}
+							onDoneEditing={() => (editingId = null)}
+							onRemove={(event) => deferRemoval(event, entry)}
+						/>
 					{/each}
 				</li>
 			{/each}
@@ -459,11 +167,3 @@
 		</EmptyState>
 	{/if}
 </main>
-
-{#if data.immichLibrary}
-	<ImmichLibraryPicker
-		bind:open={libraryOpen}
-		day={libraryDay}
-		onadd={(copies) => (fromImmich = [...fromImmich, ...copies.map((copy) => copy.file)])}
-	/>
-{/if}
