@@ -74,6 +74,23 @@ test('a phone shows a preview with its two ways in, not the live map', async ({ 
 	await expect(people.locator('canvas')).toHaveCount(0);
 });
 
+test('the preview names everybody and draws each face in its avatar colour', async ({ page }) => {
+	await openMarkus(page);
+	const ring = preview(page).locator('svg.shape-ring');
+
+	// A first name beside every face, so nobody is only a colour.
+	const names = ring.locator('text.who');
+	await expect(names.first()).toBeVisible();
+	expect(await names.count()).toBeGreaterThan(0);
+	for (const name of await names.allTextContents()) expect(name.trim()).not.toBe('');
+
+	// A face wears the accent of its person, as the list's avatar and the map do; the category
+	// colours the line to it.
+	const faces = ring.locator('circle[stroke^="var(--accent-"]');
+	expect(await faces.count()).toBeGreaterThan(1);
+	await expect(ring.locator('line[stroke^="var(--cat-"]').first()).toBeAttached();
+});
+
 test('Enlarge grows the map in the card, and Shrink puts the preview back', async ({ page }) => {
 	await openMarkus(page);
 	const before = await frameHeight(page);
