@@ -72,8 +72,11 @@
 		{#if notice.undoable}
 			<div class="toast" data-testid="toast-undo">
 				<span class="pl-2">{notice.text}</span>
-				<Button variant="secondary" size="sm" onclick={() => removals.takeBack(notice.id)}
-					>{t('common.undo')}</Button
+				<Button
+					variant="secondary"
+					size="sm"
+					data-notice-undo={notice.id}
+					onclick={() => removals.takeBack(notice.id)}>{t('common.undo')}</Button
 				>
 			</div>
 		{:else if notice.link}

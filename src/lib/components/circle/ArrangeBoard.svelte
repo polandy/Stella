@@ -84,8 +84,8 @@
 		);
 	}
 
-	function say(text: string, takeBack?: () => void) {
-		removals.notify(text, takeBack);
+	function say(text: string, takeBack?: () => void): number {
+		return removals.notify(text, takeBack);
 	}
 
 	function takeBack(change: unknown) {
@@ -128,8 +128,7 @@
 					text += ` · ${t('circles.arrange.alreadyThere', { count: toast.alreadyThere })}`;
 				}
 			}
-			say(text, () => takeBack(value.change));
-			await focusUndo();
+			await focusUndo(say(text, () => takeBack(value.change)));
 		} catch (error) {
 			console.error('Could not arrange the people:', error);
 			say(t('errors.form.checkAndRetry'));
@@ -210,9 +209,9 @@
 			focusFirst('[data-testid="arrange-person"] button[aria-pressed="true"]');
 		}
 	}
-	async function focusUndo() {
+	async function focusUndo(noticeId: number) {
 		await tick();
-		if (!focusFirst('[data-testid="toasts"] [data-testid="toast-undo"]:last-of-type button')) {
+		if (!removals.focusNoticeUndo(noticeId)) {
 			focusFirst('[data-testid="arrange-person"] button');
 		}
 	}
