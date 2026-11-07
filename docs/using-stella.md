@@ -307,8 +307,9 @@ list shows the first few people you entered and a **Show … more** button; the 
 worked out wait behind it too. A line under the folded list says what is hidden, group by
 group — *Friends · 3 · Work · 2 · Also related · 5* — and tapping one of them opens the whole
 list and takes you to that group. Across the top of the card is a little picture of who they
-are connected to: on a wide screen a strip with everyone's first name, on a phone a small
-preview without names, each with two icons in its corner. Tap the picture or its **Enlarge
+are connected to: on a wide screen a strip with everyone's first name, on a phone a ring of faces with their
+first names (past eight people, the last place says how many more), each with two icons in
+its corner. Tap the picture or its **Enlarge
 map** icon and the map grows right there in the card — about a screen tall on a phone — with
 its Filter and Arrange buttons — drag inside it to move
 the map, swipe on the page below it to scroll on, and the **Shrink map** icon at the top of the

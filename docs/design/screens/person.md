@@ -221,12 +221,19 @@ the person, and that never leaves the page. Keeping the record tidy (archive, me
   reach of two hops (§5.8). On every width it is a **preview** across the card's top, under
   the header; the live canvas waits until it is asked for.
 - The preview is a picture the server draws (`EgoGraph`), with no links. On a **phone**
-  (below `sm`) a 100 px strip, the people in a ring, no names. **Wider**, a 7.5 rem strip with
-  the people in a wide fan, half to either side in two staggered rows, every face under or
-  over its **first name** (`stripFan`, `src/lib/graph/layout/strip-fan.ts`).
-- In both, the line to somebody joined to the person by **former** links alone is thinner and
-  dashed, as on the map (§5.8); one current link beside a former one keeps it solid.
-- The strip is drawn at its own size and centred: a narrow card crops its ends rather than
+  (below `sm`) a 9.5 rem strip, the people in a flattened ring, every face under or over its
+  **first name** — over in the upper half, under in the lower; past eight places the last is a
+  *+N* disc for everyone else (`namedRing`, `src/lib/graph/layout/named-ring.ts`). There the
+  two corner icons stand one above the other, and the ring is centred in the room left of
+  them, so no name runs under them and a 360 px phone still shows every name whole. **Wider**, a 7.5
+  rem strip with the people in a wide fan, half to either side in two staggered rows, every face
+  under or over its **first name** (`stripFan`, `src/lib/graph/layout/strip-fan.ts`).
+- In both, every face is drawn as on the map (§5.8): the person's own avatar disc, this
+  person's ringed in the primary colour, and each line in its relationship category's colour,
+  so nobody changes colour when the live map takes over. The line to somebody joined to the
+  person by **former** links alone is thinner and dashed, as on the map; one current link
+  beside a former one keeps it solid.
+- Both are drawn at their own size and centred: a narrow card crops their ends rather than
   shrinking the names.
 - In its bottom-right corner sit two icon-only controls, each a 44 px target around a 32 px
   card-coloured disc, named for a screen reader and with a tooltip.
@@ -497,8 +504,10 @@ answer it: it holds two hops, and the answer usually runs further.
 
 The map is a preview because a card-sized canvas at rest was too small to read and panned by
 accident while scrolling, and as a 20 rem column beside the list it told the reader *that*
-somebody had ten links while squeezing the list that names them. Names show only where the width
-makes them legible. On a phone the enlarged map leaves page in view because the canvas takes a
+somebody had ten links while squeezing the list that names them. The phone's ring once went
+without names, and for somebody with two or three people it was then the largest thing on the
+card saying nothing the list did not; a slightly taller ring with first names tells who is
+where at a glance, and folding the rest into *+N* keeps the names legible. On a phone the enlarged map leaves page in view because the canvas takes a
 vertical swipe as a pan; the strip below is always there to scroll by. Enlarging is animated so
 it reads as the preview growing rather than a jump; the live map waits for the height because
 built mid-glide it costs a phone the glide's frames, and a canvas framed once never visibly

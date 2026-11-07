@@ -99,12 +99,12 @@ export function accentAvatarStyle(accent: Accent): string {
 }
 
 /**
- * The fill of an SVG initials disc in a relationship category's colour: the avatar's tint,
- * since the initials on it are written in `--fg` — white on the flat accent fell to 1.5:1 in
- * Mocha (docs/05 §5.9).
+ * The fill of an SVG initials disc in a person's accent: the avatar's tint, so a face keeps its
+ * colour between the list, the map preview and the map, and the initials on it are written in
+ * `--fg` — white on the flat accent fell to 1.5:1 in Mocha (docs/05 §5.9).
  */
-export function categoryDiscFill(category: RelationshipCategory): string {
-	return `color-mix(in srgb, ${categoryVar(category)} var(--tint-avatar), var(--card))`;
+export function accentDiscFill(accent: Accent): string {
+	return `color-mix(in srgb, ${accentVar(accent)} var(--tint-avatar), var(--card))`;
 }
 
 /** Inline style for a solid colour dot, as used by circles and legends. */

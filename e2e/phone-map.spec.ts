@@ -37,6 +37,8 @@ const enlargeButton = (page: Page) => preview(page).getByRole('button', { name: 
 const shrinkButton = (page: Page) => enlarged(page).getByRole('button', { name: 'Shrink map' });
 
 /** The frame's drawn height, which is what grows and shrinks in place. */
+/** Taller than the drawn preview (the named ring, 152 px and its border), far short of the live map. */
+const PREVIEW_MAX = 200;
 const frameHeight = async (page: Page) => (await preview(page).boundingBox())?.height ?? 0;
 
 /** Grows the map in place; done once the live map shows and holds the cursor. */
@@ -67,9 +69,26 @@ test('a phone shows a preview with its two ways in, not the live map', async ({ 
 	);
 	// The explorer's code has arrived (the button above is enabled), and still only the drawing
 	// is in the card.
-	expect(await frameHeight(page)).toBeLessThan(150);
+	expect(await frameHeight(page)).toBeLessThan(PREVIEW_MAX);
 	await expect(enlarged(page)).toHaveCount(0);
 	await expect(people.locator('canvas')).toHaveCount(0);
+});
+
+test('the preview names everybody and draws each face in its avatar colour', async ({ page }) => {
+	await openMarkus(page);
+	const ring = preview(page).locator('svg.shape-ring');
+
+	// A first name beside every face, so nobody is only a colour.
+	const names = ring.locator('text.who');
+	await expect(names.first()).toBeVisible();
+	expect(await names.count()).toBeGreaterThan(0);
+	for (const name of await names.allTextContents()) expect(name.trim()).not.toBe('');
+
+	// A face wears the accent of its person, as the list's avatar and the map do; the category
+	// colours the line to it.
+	const faces = ring.locator('circle[stroke^="var(--accent-"]');
+	expect(await faces.count()).toBeGreaterThan(1);
+	await expect(ring.locator('line[stroke^="var(--cat-"]').first()).toBeAttached();
 });
 
 test('Enlarge grows the map in the card, and Shrink puts the preview back', async ({ page }) => {
@@ -88,7 +107,7 @@ test('Enlarge grows the map in the card, and Shrink puts the preview back', asyn
 	await expect(enlargeButton(page)).toBeFocused();
 	// Once the frame is back at its height the live map is taken away.
 	await expect(enlarged(page)).toHaveCount(0);
-	await expect.poll(() => frameHeight(page)).toBeLessThan(150);
+	await expect.poll(() => frameHeight(page)).toBeLessThan(PREVIEW_MAX);
 });
 
 test('with reduced motion the map switches at once, without a glide', async ({ page }) => {

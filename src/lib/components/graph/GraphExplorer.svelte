@@ -394,7 +394,7 @@
 		controller.setTopInset(inset);
 	});
 	/*
-	 * The peek panel floats beside the map on a wide window and along its foot on a phone. The
+	 * The peek panel floats beside the map on a wide window and along its foot below `lg`. The
 	 * next framing — the family tree after an expand — keeps the map clear of it, so nobody it
 	 * brought in lands underneath. Read from the layout, not the screen, so a panel still
 	 * sliding in is measured where it will stand.
