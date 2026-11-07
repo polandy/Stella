@@ -181,7 +181,7 @@ behalf. If it isn't the moment for that, dismiss it; nothing is lost.
 
 **The list** is everyone you may see, grouped by surname, with a *Find someone* field at the
 top that matches as you type — by any name, nickname or the description you gave them. On
-the right of each row is when something was last written about that person.
+the right of a row is when something was last written about that person, if anything has been.
 
 ### Archiving, merging, removing
 
