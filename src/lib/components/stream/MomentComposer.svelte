@@ -1,31 +1,27 @@
 <script lang="ts">
-	import { FIELD, FIELD_ON_BG } from '$lib/components/ui/field';
 	import FormError from '$lib/components/ui/FormError.svelte';
 	import { browser } from '$app/environment';
 	import { goto } from '$app/navigation';
 	import Avatar from '$lib/components/ui/Avatar.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import DayPill from '$lib/components/ui/DayPill.svelte';
-	import Icon from '$lib/components/ui/Icon.svelte';
 	import ShareSwitch from '$lib/components/ui/ShareSwitch.svelte';
 	import ImmichLibraryPicker from '$lib/components/immich/ImmichLibraryPicker.svelte';
-	import PhotoSourceMenu from '$lib/components/immich/PhotoSourceMenu.svelte';
-	import KnowThemBy from '$lib/components/people/KnowThemBy.svelte';
+	import CreatePersonPanel from '$lib/components/people/CreatePersonPanel.svelte';
+	import ComposerPeopleList from '$lib/components/stream/ComposerPeopleList.svelte';
+	import ComposerPhotos from '$lib/components/stream/ComposerPhotos.svelte';
+	import ComposerSaveHint from '$lib/components/stream/ComposerSaveHint.svelte';
 	import TagListbox from '$lib/components/journal/TagListbox.svelte';
 	import TagsLine from '$lib/components/journal/TagsLine.svelte';
 	import type { KnownTag } from '$lib/hashtags/picker';
 	import { TagPicker } from '$lib/hashtags/tag-picker.svelte';
-	import NamesakeLine from '$lib/components/people/NamesakeLine.svelte';
 	import WhichNamesake from '$lib/components/people/WhichNamesake.svelte';
 	import { useTranslate } from '$lib/i18n/context.svelte';
-	import { processImage } from '$lib/media/process-image';
-	import { listPlacement, type ListPlacement } from '$lib/mentions/picker';
 	import { usePeopleContext } from '$lib/people/context.svelte';
 	import { tellApart } from '$lib/people/namesakes';
-	import { isKnownByMoreThanAFirstName, wantsSomethingToKnowThemBy } from '$lib/people/new-person';
+	import { isKnownByMoreThanAFirstName } from '$lib/people/new-person';
 	import type { MomentDraft } from '$lib/people/story-forms';
-	import type { KeptOf, KeptPhoto } from '$lib/pwa/outbox';
-	import { outbox } from '$lib/pwa/outbox.svelte';
+	import type { KeptOf } from '$lib/pwa/outbox';
 	import { reachability } from '$lib/pwa/reachability.svelte';
 	import { createPanelKey, keyupAsksPicker, textKey } from '$lib/stream/composer-keys';
 	import { SAVED_NOTICE_MS, savedMomentAnchor } from '$lib/stream/saved-moment';
@@ -38,14 +34,12 @@
 		pickerRows
 	} from '$lib/stream/composer-reading';
 	import {
-		composerAfter,
 		composerAtOpen,
 		type ComposerCandidate,
-		type ComposerCommand,
 		type ComposerError,
-		type ComposerEvent,
 		type Creating
 	} from '$lib/stream/composer-state';
+	import { ComposerController } from '$lib/stream/composer.svelte';
 	import { tick, untrack } from 'svelte';
 	import { ulid } from 'ulid';
 
@@ -140,13 +134,13 @@
 
 	/*
 	 * What the composer is doing — the text and its picks, the @-list, a person being created,
-	 * the photos and a save on its way: the transitions are `composer-state.ts`, and this
-	 * component carries out the commands they hand back. Raw, and read through one derived per
-	 * field, so an event that changes one of them re-runs only what reads that one.
+	 * the photos and a save on its way: the transitions are `composer-state.ts`, and
+	 * `composer.svelte.ts` carries out the commands they hand back, asking this component for
+	 * whatever touches the page.
 	 */
 	// svelte-ignore state_referenced_locally -- the kept moment is only a starting value on purpose
 	const kept = editing?.command.payload ?? null;
-	let ui = $state.raw(
+	const controller = new ComposerController(
 		untrack(() =>
 			composerAtOpen({
 				candidates,
@@ -157,8 +151,36 @@
 				anchorId: anchor?.id ?? null,
 				commandId: ulid()
 			})
-		)
+		),
+		{
+			async focusText(caret) {
+				await tick();
+				textarea?.focus();
+				if (caret !== null) textarea?.setSelectionRange(caret, caret);
+			},
+			async focusCreate() {
+				clearTimeout(closingPicker);
+				await tick();
+				createFirstName?.focus();
+			},
+			async backToStream(href, entryId) {
+				await goto(href, { invalidateAll: true });
+				// The sheet is gone and the moment somewhere in the stream: point to it (§2.22.1).
+				removals.notifyWithLink(
+					t('home.momentSaved'),
+					{ label: t('home.momentSaved.show'), href: `#${savedMomentAnchor(entryId)}` },
+					SAVED_NOTICE_MS
+				);
+			},
+			savesInPlace: () => onSaved !== undefined,
+			onSaved: () => onSaved?.(),
+			onKept: () => onKept?.(),
+			onEditDone: () => onEditDone?.(),
+			onCancel: (held) => onCancel?.(held)
+		}
 	);
+	const ui = $derived(controller.state);
+	const dispatch = controller.dispatch;
 	const body = $derived(ui.body);
 	const picks = $derived(ui.picks);
 	const newPeople = $derived(ui.newPeople);
@@ -188,8 +210,6 @@
 	const day = $derived(writersDay(today, browser ? deviceDay() : null));
 	let textarea: HTMLTextAreaElement | undefined = $state();
 	let composer: HTMLFormElement | undefined = $state();
-	let list: HTMLUListElement | undefined = $state();
-	let placement: ListPlacement = $state({ side: 'below', maxHeight: Number.POSITIVE_INFINITY });
 
 	const people = $derived(composerPeople({ anchorId, visibility, newPeople }, candidates));
 	const audience = $derived(people.audience);
@@ -200,11 +220,6 @@
 	// The second line counts everyone the list could offer, not only what the query left.
 	const peopleContext = usePeopleContext();
 	const namesakes = $derived(tellApart(audience, peopleContext()));
-	const askForSomethingToKnowThemBy = $derived(
-		creating
-			? wantsSomethingToKnowThemBy({ firstName: creating.firstName, lastName: creating.lastName })
-			: false
-	);
 	const reading = $derived(
 		composerReading(
 			{ body, picks, anchorId, sending, photos: ui.photos, immichPhotos: ui.immichPhotos },
@@ -212,13 +227,8 @@
 			peopleContext()
 		)
 	);
-	const referenced = $derived(reading.referenced);
 	const unclear = $derived(reading.unclear);
 	const canSave = $derived(reading.canSave);
-	const SAVE_HINTS = {
-		writeWhatHappened: 'composer.needText',
-		mentionSomeone: 'composer.needMention'
-	} as const;
 
 	const ERRORS = {
 		couldNotKeep: 'composer.couldNotKeep',
@@ -228,95 +238,6 @@
 	function errorText(error: ComposerError | null): string | null {
 		if (!error) return null;
 		return error.kind === 'refused' ? error.reason : t(ERRORS[error.kind]);
-	}
-
-	/** Moves the state on, then carries out what it asks for; settles once all of it has. */
-	async function dispatch(event: ComposerEvent): Promise<void> {
-		// Untracked: an effect that dispatches must not come to depend on the state it writes, nor
-		// on whatever a command reads on its way.
-		const step = composerAfter(
-			untrack(() => ui),
-			event
-		);
-		ui = step.state;
-		await Promise.all(untrack(() => step.commands.map(carryOut)));
-	}
-
-	async function carryOut(command: ComposerCommand): Promise<void> {
-		switch (command.kind) {
-			case 'focusText':
-				await tick();
-				textarea?.focus();
-				if (command.caret !== null) textarea?.setSelectionRange(command.caret, command.caret);
-				return;
-			case 'focusCreate':
-				clearTimeout(closingPicker);
-				await tick();
-				createFirstName?.focus();
-				return;
-			case 'preparePhotos': {
-				const prepared = await preparePhotos(command.files);
-				return dispatch({
-					type: 'photosPrepared',
-					photos: prepared,
-					reachable: reachability.reachable
-				});
-			}
-			case 'keep':
-				// Keep the moment, and its photos, on this device until Stella answers again.
-				try {
-					await outbox.add(
-						{
-							id: command.id,
-							type: 'moment.capture',
-							payload: command.payload,
-							issuedAt: Date.now()
-						},
-						command.photos
-					);
-					await dispatch({ type: 'keptOnDevice', nextCommandId: ulid() });
-				} catch {
-					await dispatch({ type: 'keepFailed' });
-				}
-				return;
-			case 'submit': {
-				const delivery = await outbox.submit(
-					{
-						id: command.id,
-						type: 'moment.capture',
-						payload: command.payload,
-						issuedAt: Date.now()
-					},
-					command.photos
-				);
-				return dispatch({
-					type: 'answered',
-					delivery,
-					inPlace: onSaved !== undefined,
-					nextCommandId: ulid()
-				});
-			}
-			case 'revise': {
-				const saved = await outbox.revise(command.id, command.payload, ulid());
-				return dispatch({ type: 'revised', saved, nextCommandId: ulid() });
-			}
-			case 'backToStream':
-				await goto(command.href, { invalidateAll: true });
-				// The sheet is gone and the moment somewhere in the stream: point to it (§2.22.1).
-				return removals.notifyWithLink(
-					t('home.momentSaved'),
-					{ label: t('home.momentSaved.show'), href: `#${savedMomentAnchor(command.entryId)}` },
-					SAVED_NOTICE_MS
-				);
-			case 'onSaved':
-				return onSaved?.();
-			case 'onKept':
-				return onKept?.();
-			case 'onEditDone':
-				return onEditDone?.();
-			case 'onCancel':
-				return onCancel?.(command.draft);
-		}
 	}
 
 	// Leaving the field closes the picker a moment later, so a click on a suggestion still
@@ -410,20 +331,6 @@
 		onDraft(draftOf({ body, visibility, newPeople, picks: untrack(() => picks) }));
 	});
 
-	/**
-	 * The picked photos, processed in the browser (downscaled, location stripped) and each named
-	 * as a command of its own — once per save, so a save that ends up kept for later sends the
-	 * very same photos under the very same names.
-	 */
-	async function preparePhotos(files: readonly File[]): Promise<KeptPhoto[]> {
-		const prepared: KeptPhoto[] = [];
-		for (const file of files) {
-			const { image, thumb, width, height, takenAt } = await processImage(file);
-			prepared.push({ id: ulid(), image, thumb, width, height, takenAt });
-		}
-		return prepared;
-	}
-
 	async function onSubmit(event: SubmitEvent) {
 		event.preventDefault();
 		const data = new FormData(event.currentTarget as HTMLFormElement);
@@ -442,25 +349,6 @@
 
 	$effect(() => {
 		if (autofocus) textarea?.focus();
-	});
-
-	/** Where the list starts below the composer's top edge (`top-16`), and its gap to a screen edge. */
-	const LIST_OFFSET = 64;
-	const EDGE_GAP = 8;
-
-	// The list stays on screen: in the phone's sheet the composer sits at the bottom, with the
-	// keyboard shrinking the visible part further, so it opens upwards when there is more room.
-	$effect(() => {
-		if (!list || !composer) return;
-		void rows.length;
-		const viewport = window.visualViewport;
-		const visibleTop = viewport?.offsetTop ?? 0;
-		const visibleBottom = visibleTop + (viewport?.height ?? window.innerHeight);
-		const top = composer.getBoundingClientRect().top;
-		placement = listPlacement(
-			{ above: top - visibleTop - EDGE_GAP, below: visibleBottom - top - LIST_OFFSET - EDGE_GAP },
-			list.scrollHeight
-		);
 	});
 </script>
 
@@ -536,57 +424,17 @@
 	{/if}
 
 	{#if creating}
-		<!-- Plain inputs, not a nested form: the panel lives inside the moment's form. It takes
-		     its place in the card rather than floating over it, so on a phone, where the composer
-		     is a sheet at the bottom of the screen, it grows the sheet instead of leaving it. -->
-		<div
-			class="mx-3 mb-2 flex flex-col gap-2.5 rounded-app border border-border bg-bg p-3"
-			data-testid="composer-create"
+		<!-- It takes its place in the card rather than floating over it, so on a phone, where the
+		     composer is a sheet at the bottom of the screen, it grows the sheet instead of leaving it. -->
+		<CreatePersonPanel
+			bind:firstName={() => creating?.firstName ?? '', (v) => editCreating('firstName', v)}
+			bind:lastName={() => creating?.lastName ?? '', (v) => editCreating('lastName', v)}
+			bind:description={() => creating?.description ?? '', (v) => editCreating('description', v)}
+			bind:firstNameInput={createFirstName}
 			onkeydown={onCreateKeydown}
-			role="none"
+			data-testid="composer-create"
+			class="mx-3 mb-2 rounded-app border border-border bg-bg p-3"
 		>
-			<p class="text-sm font-semibold text-fg">{t('components.personSearch.createTitle')}</p>
-			<div class="grid grid-cols-2 gap-2">
-				<label class="flex flex-col gap-1 text-xs text-fg-muted">
-					{t('components.personSearch.firstName')}
-					<input
-						bind:this={createFirstName}
-						bind:value={() => creating?.firstName ?? '', (v) => editCreating('firstName', v)}
-						type="text"
-						autocomplete="off"
-						class="{FIELD} px-2 py-1.5 text-sm"
-					/>
-				</label>
-				<label class="flex flex-col gap-1 text-xs text-fg-muted">
-					{t('components.personSearch.lastName')}
-					<input
-						bind:value={() => creating?.lastName ?? '', (v) => editCreating('lastName', v)}
-						type="text"
-						autocomplete="off"
-						class="{FIELD} px-2 py-1.5 text-sm"
-					/>
-				</label>
-			</div>
-			{#if askForSomethingToKnowThemBy}
-				<KnowThemBy
-					firstName={creating.firstName}
-					compact
-					label={t('components.personSearch.description')}
-					bind:value={() => creating?.description ?? '', (v) => editCreating('description', v)}
-					inputClass="{FIELD_ON_BG} px-2 py-1.5 text-sm"
-				/>
-			{:else}
-				<label class="flex flex-col gap-1 text-xs text-fg-muted">
-					{t('components.personSearch.description')}
-					<input
-						bind:value={() => creating?.description ?? '', (v) => editCreating('description', v)}
-						type="text"
-						autocomplete="off"
-						placeholder={t('components.namesake.placeholder')}
-						class="{FIELD} px-2 py-1.5 text-sm"
-					/>
-				</label>
-			{/if}
 			<div class="flex justify-end gap-2">
 				<!-- `type="button"`: inside the moment's form, these must never save it. -->
 				<Button type="button" variant="ghost" size="sm" onclick={cancelCreate}
@@ -602,7 +450,7 @@
 					{t('composer.addPerson')}
 				</Button>
 			</div>
-		</div>
+		</CreatePersonPanel>
 	{:else if tagPicker.open}
 		<TagListbox
 			id={tagListId}
@@ -613,74 +461,18 @@
 			onhighlight={(i) => (tagPicker.highlighted = i)}
 			class="top-16 left-14 w-[min(320px,calc(100%-4rem))]"
 		/>
-	{:else if active && rows.length > 0}
-		<ul
+	{:else if active && rows.length > 0 && composer}
+		<ComposerPeopleList
 			id={listboxId}
-			role="listbox"
-			aria-label={t('composer.people')}
-			bind:this={list}
-			style:max-height="{placement.maxHeight}px"
-			class="absolute left-14 z-10 w-[min(320px,calc(100%-4rem))] overflow-y-auto rounded-app border border-border bg-card p-1 shadow-pop {placement.side ===
-			'above'
-				? 'bottom-full mb-1'
-				: 'top-16'}"
-		>
-			<!-- A caption for the eye; the listbox carries the same words as its name. -->
-			<li
-				role="presentation"
-				aria-hidden="true"
-				class="px-2.5 pt-1.5 pb-1 text-[11px] font-semibold tracking-wider text-fg-muted uppercase"
-			>
-				{t('composer.people')}
-			</li>
-			{#each rows as row, i (row.kind === 'person' ? row.person.id : 'create')}
-				<li role="none">
-					<!-- tabindex -1: the field keeps focus and points here with aria-activedescendant. -->
-					<button
-						type="button"
-						role="option"
-						id={optionId(i)}
-						tabindex="-1"
-						aria-selected={i === selected}
-						onmousedown={(e) => {
-							e.preventDefault();
-							void choose(i);
-						}}
-						onmouseenter={() => dispatch({ type: 'highlighted', index: i })}
-						class="flex w-full items-center gap-2.5 rounded-control px-2.5 py-1.5 text-left text-sm text-fg aria-selected:bg-primary-soft"
-					>
-						{#if row.kind === 'person'}
-							<Avatar
-								id={row.person.id}
-								name={row.person.displayName}
-								avatarPhotoId={row.person.avatarPhotoId}
-								size={22}
-							/>
-							<span class="min-w-0">
-								<span class="block truncate">{row.person.displayName}</span>
-								{#if namesakes.get(row.person.id)}<NamesakeLine
-										distinction={namesakes.get(row.person.id)!}
-									/>{/if}
-							</span>
-							{#if createdIds.has(row.person.id)}<span class="ml-auto text-xs text-fg-subtle"
-									>{t('composer.justCreated')}</span
-								>{/if}
-						{:else}
-							<span
-								class="grid size-[22px] place-items-center rounded-full border border-dashed border-success text-success-text"
-								aria-hidden="true">+</span
-							>
-							<span class="font-semibold text-success-text"
-								>{row.another
-									? t('composer.createAnother', { name: row.name })
-									: t('composer.create', { name: row.name })}</span
-							>
-							<span class="ml-auto text-xs text-fg-subtle">{t('composer.newPerson')}</span>
-						{/if}
-					</button>
-				</li>
-			{/each}
-		</ul>
+			{rows}
+			highlighted={selected}
+			{optionId}
+			{namesakes}
+			{createdIds}
+			{composer}
+			onchoose={(i) => void choose(i)}
+			onhighlight={(index) => dispatch({ type: 'highlighted', index })}
+		/>
 	{/if}
 
 	{#if unclear.length}
@@ -696,65 +488,16 @@
 		<input type="hidden" name="visibility" value={visibility} />
 		{#key fresh}
 			{#if !editing}
-				<!-- An icon button, as it acts at once (docs/05 §5.7); the badge counts what was picked.
-				     `sr-only`, not `hidden`: a hidden input is out of the tab order, and the photo
-				     button with it (WCAG 2.1.1). The button shows where focus is instead. -->
-				{#snippet photoBadge()}
-					<Icon name="photo" size={17} />
-					{#if photoCount}<span
-							class="absolute -top-0.5 -right-1 grid h-4 min-w-4 place-items-center rounded-full bg-primary px-1 text-[10px] font-bold text-primary-fg tabular-nums"
-							aria-hidden="true"
-							data-testid="photo-count">{photoCount}</span
-						>{/if}
-				{/snippet}
-				{#if immichLibrary}
-					<PhotoSourceMenu
-						label={t('composer.addPhotos')}
-						trigger={photoBadge}
-						look="icon"
-						onfiles={(files) => dispatch({ type: 'photosPicked', files })}
-						onimmich={openLibrary}
-					/>
-				{:else}
-					<label
-						title={t('composer.addPhotos')}
-						class="relative grid size-8 cursor-pointer place-items-center rounded-full text-fg-muted transition-colors hover:bg-card-hover hover:text-fg has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-focus-ring"
-					>
-						{@render photoBadge()}
-						<input
-							type="file"
-							accept="image/*"
-							multiple
-							aria-label={t('composer.addPhotos')}
-							onchange={(e) =>
-								dispatch({
-									type: 'photosPicked',
-									files: Array.from((e.currentTarget as HTMLInputElement).files ?? [])
-								})}
-							class="sr-only"
-						/>
-					</label>
-				{/if}
+				<ComposerPhotos
+					count={photoCount}
+					{immichLibrary}
+					onfiles={(files) => dispatch({ type: 'photosPicked', files })}
+					onimmich={openLibrary}
+				/>
 			{/if}
 			<DayPill name="entryDate" value={kept?.entryDate ?? day} today={day} />
 		{/key}
-		<span class="text-xs text-fg-subtle" aria-live="polite">
-			<!-- Why Save is off comes first, a shade stronger: it is what stands in the way. -->
-			{#if reading.saveHint}
-				<span class="text-fg-muted" data-testid="save-hint">{t(SAVE_HINTS[reading.saveHint])}</span>
-			{:else if unclear.length}
-				<!-- The box above asks which one. -->
-			{:else if anchorId}
-				{t('composer.mentionsSomeoneElse')}
-			{:else if referenced.length}
-				{t('composer.goesTo')}
-				<b class="font-semibold text-fg-muted">{referenced[0].displayName}</b>{t(
-					'composer.goesToJournal'
-				)}{referenced.length > 1
-					? t('composer.alsoMentions', { count: referenced.length - 1 })
-					: ''}
-			{/if}
-		</span>
+		<ComposerSaveHint {reading} anchored={anchorId !== null} />
 		<div class="ml-auto flex items-center gap-2">
 			{#if editing}
 				<Button variant="ghost" type="button" onclick={() => onEditDone?.()}

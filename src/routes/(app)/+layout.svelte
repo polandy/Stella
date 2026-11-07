@@ -1,13 +1,5 @@
 <script lang="ts">
-	import {
-		afterNavigate,
-		beforeNavigate,
-		goto,
-		invalidate,
-		invalidateAll,
-		onNavigate,
-		pushState
-	} from '$app/navigation';
+	import { afterNavigate, onNavigate, pushState } from '$app/navigation';
 	import { navigating, page } from '$app/state';
 	import Button from '$lib/components/ui/Button.svelte';
 	import ActivityIndicator from '$lib/components/ui/ActivityIndicator.svelte';
@@ -19,22 +11,19 @@
 	import Logo from '$lib/components/shell/Logo.svelte';
 	import OfflineBanner from '$lib/components/pwa/OfflineBanner.svelte';
 	import VeilLock from '$lib/components/shell/VeilLock.svelte';
-	import SignOutForm from '$lib/components/shell/SignOutForm.svelte';
+	import AccountMenu from '$lib/components/shell/AccountMenu.svelte';
 	import Toast from '$lib/components/ui/Toast.svelte';
 	import { provideRemovals } from '$lib/undo/context.svelte';
-	import { navigationTurns } from '$lib/undo/navigation-turns';
 	import { providePending } from '$lib/sync/context.svelte';
 	import { providePeopleContext } from '$lib/people/context.svelte';
 	import { createDeviceUnlock } from '$lib/privacy/device-unlock.svelte';
 	import { provideVeil } from '$lib/privacy/veil.svelte';
-	import { refreshPeopleIfChanged, shellReloads } from '$lib/sync/people-freshness';
-	import { outbox } from '$lib/pwa/outbox.svelte';
-	import { reachability } from '$lib/pwa/reachability.svelte';
 	import { reportNavigation } from '$lib/sync/pending';
 	import { followScroll, SHOWN_TOP_BAR } from '$lib/ui/top-bar';
 	import { breadcrumbs, type CrumbData } from '$lib/ui/breadcrumbs';
 	import { onMount, untrack, type Snippet } from 'svelte';
 	import type { LayoutData } from './$types';
+	import { keepShellCurrent } from './shell-lifecycle.svelte';
 
 	let { data, children }: { data: LayoutData; children: Snippet } = $props();
 
@@ -124,10 +113,6 @@
 		return reportNavigation(pending, navigating.to);
 	});
 
-	// Removals are held back for an undo window (docs/04 §4.9). Leaving the page ends the
-	// window: a client-side navigation waits for the requests so the next screen cannot read
-	// the item back; an unload — or a native form post, which must not be replayed as a GET —
-	// sends them with keepalive alongside and hopes for the best.
 	const removals = provideRemovals();
 	providePeopleContext(() => data.peopleContext);
 	// The member's private entries stay blurred until asked for (docs/02 §2.10.1). A tap shows
@@ -140,83 +125,13 @@
 	afterNavigate(({ from, to }) => {
 		if (from?.url.pathname !== to?.url.pathname) veil.leftPage();
 	});
-	/*
-	 * The people every picker reads come with the shell, which a client-side navigation keeps,
-	 * and so does a tab left open while someone else adds a person. After a navigation, and
-	 * whenever the tab comes back into view, they are reloaded if anyone changed them
-	 * (docs/04 §4.9).
-	 */
-	const refreshPeople = () =>
-		void refreshPeopleIfChanged(
-			{
-				fetchStamp: async () => {
-					const answer = await fetch('/api/people/stamp');
-					if (!answer.ok) throw new Error(`people stamp: ${answer.status}`);
-					return ((await answer.json()) as { stamp: string }).stamp;
-				},
-				reload: () => invalidate('app:people')
-			},
-			data.peopleStamp
-		);
-	// A navigation that reloaded the shell (a form submit, an invalidation) is fresh already.
-	const shell = shellReloads(untrack(() => data.people));
-	afterNavigate((navigation) => {
-		if (shell.reloadedSinceLastLook(data.people)) return;
-		if (navigation.type !== 'enter') refreshPeople();
-	});
-	const turns = navigationTurns();
-	beforeNavigate((navigation) => {
-		// Taken for every navigation, so a newer one retires any held back below.
-		const stillLatest = turns.take();
-		if (removals.snapshot.removals.length === 0) return;
-		if (navigation.type === 'leave' || navigation.type === 'form' || !navigation.to) {
-			void removals.flush();
-			return;
+	keepShellCurrent({
+		data: () => ({ userId: data.user.id, people: data.people, peopleStamp: data.peopleStamp }),
+		removals,
+		outboxPhrases: {
+			photoTooLarge: t('home.outbox.photoTooLarge'),
+			earlierVersion: t('home.outbox.earlierVersion')
 		}
-		const { to, type, delta } = navigation;
-		navigation.cancel();
-		void removals.flush().then(() => {
-			if (!stillLatest()) return;
-			if (type === 'popstate' && delta) history.go(delta);
-			else void goto(to.url);
-		});
-	});
-	onMount(() => {
-		const flush = () => void removals.flush();
-		window.addEventListener('pagehide', flush);
-		return () => window.removeEventListener('pagehide', flush);
-	});
-
-	/*
-	 * What this member saved while Stella was out of reach (docs/02 §2.18.1) is sent when the app
-	 * opens, when Stella answers again, when the tab comes back into
-	 * view and when the device joins a network — never on a timer. What Stella took is read back by reloading the page's data.
-	 */
-	onMount(() => {
-		void outbox
-			.start(data.user.id, () => void invalidateAll(), {
-				photoTooLarge: t('home.outbox.photoTooLarge'),
-				earlierVersion: t('home.outbox.earlierVersion')
-			})
-			.catch(() => {
-				// No IndexedDB (a private window in some browsers): nothing can have been kept.
-			});
-		const onVisible = () => {
-			if (document.visibilityState !== 'visible') return;
-			void outbox.refresh().then(() => outbox.send());
-			refreshPeople();
-		};
-		// A hint, not proof: it fires when the phone joins a network — the home Wi-Fi, say.
-		const onOnline = () => void outbox.send();
-		document.addEventListener('visibilitychange', onVisible);
-		window.addEventListener('online', onOnline);
-		return () => {
-			document.removeEventListener('visibilitychange', onVisible);
-			window.removeEventListener('online', onOnline);
-		};
-	});
-	$effect(() => {
-		if (reachability.reachable) void outbox.send();
 	});
 
 	// On Home the pencil opens the sheet as shallow state, which needs no round trip and so
@@ -232,47 +147,6 @@
 	const TAB =
 		'relative flex flex-1 flex-col items-center gap-1 py-2.5 text-[11px] font-medium text-fg-subtle aria-[current=page]:font-semibold aria-[current=page]:text-primary';
 	const TAB_MARK = 'absolute inset-x-1/4 top-0 h-0.5 rounded-b-full bg-primary';
-
-	let accountMenu: HTMLDetailsElement | undefined = $state();
-	function closeAccountMenuOnEscape(event: KeyboardEvent) {
-		if (event.key !== 'Escape' || !accountMenu?.open) return;
-		event.preventDefault();
-		accountMenu.open = false;
-		accountMenu.querySelector('summary')?.focus();
-	}
-
-	// Theme: same contract as the no-flash init in app.html (stella-theme).
-	type ThemeChoice = 'light' | 'system' | 'dark';
-	const THEME_CHOICES: { value: ThemeChoice; label: MessageKey }[] = [
-		{ value: 'light', label: 'nav.theme.light' },
-		{ value: 'system', label: 'nav.theme.system' },
-		{ value: 'dark', label: 'nav.theme.dark' }
-	];
-	let theme = $state<ThemeChoice>('system');
-	onMount(() => {
-		const t = localStorage.getItem('stella-theme');
-		if (t === 'light' || t === 'dark') theme = t;
-	});
-	function applyTheme(choice: ThemeChoice) {
-		theme = choice;
-		const root = document.documentElement;
-		if (choice === 'system') {
-			root.removeAttribute('data-theme');
-			localStorage.removeItem('stella-theme');
-		} else {
-			root.setAttribute('data-theme', choice);
-			localStorage.setItem('stella-theme', choice);
-		}
-	}
-
-	const initials = $derived(
-		data.user.name
-			.split(/\s+/)
-			.map((w) => w[0])
-			.slice(0, 2)
-			.join('')
-			.toUpperCase()
-	);
 </script>
 
 <svelte:window onkeydown={onGlobalKeydown} />
@@ -323,51 +197,7 @@
 
 		<div class="flex-1"></div>
 
-		<!-- Account: theme + sign out -->
-		<!-- Escape closes it like any other menu, and hands focus back to its summary. -->
-		<!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
-		<details class="group relative" bind:this={accountMenu} onkeydown={closeAccountMenuOnEscape}>
-			<summary
-				class="flex cursor-pointer list-none items-center gap-2.5 rounded-app bg-card p-2 shadow-card [&::-webkit-details-marker]:hidden"
-			>
-				<span class="sr-only">{t('nav.accountMenu')}</span>
-				<span
-					class="grid size-8 place-items-center rounded-full bg-primary text-xs font-semibold text-primary-fg"
-					>{initials}</span
-				>
-				<span class="min-w-0 flex-1">
-					<span class="block truncate text-sm font-medium text-fg">{data.user.name}</span>
-					<span class="block truncate text-xs text-fg-subtle">{data.user.email}</span>
-				</span>
-			</summary>
-			<div
-				class="absolute bottom-full left-0 mb-2 w-full rounded-app border border-border bg-card p-2 shadow-pop"
-			>
-				<div class="flex gap-1 rounded-control border border-border p-1">
-					{#each THEME_CHOICES as choice (choice.value)}
-						<button
-							type="button"
-							onclick={() => applyTheme(choice.value)}
-							aria-pressed={theme === choice.value}
-							class="flex-1 rounded-md px-2 py-1 text-xs font-medium transition-colors"
-							class:bg-primary={theme === choice.value}
-							class:text-primary-fg={theme === choice.value}
-							class:text-fg-muted={theme !== choice.value}
-						>
-							{t(choice.label)}
-						</button>
-					{/each}
-				</div>
-				<SignOutForm class="mt-1">
-					<button
-						type="submit"
-						class="w-full rounded-md px-3 py-2 text-left text-sm text-fg-muted transition-colors hover:bg-card-hover hover:text-fg"
-					>
-						{t('nav.signOut')}
-					</button>
-				</SignOutForm>
-			</div>
-		</details>
+		<AccountMenu name={data.user.name} email={data.user.email} />
 	</aside>
 
 	<!-- Main column -->
