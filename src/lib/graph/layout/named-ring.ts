@@ -16,10 +16,10 @@ export const NAMED_RING_FACES = 8;
 const CENTER_R = 16;
 const NODE_R = 12;
 /** The ring's half-width and half-height. */
-const RX = 100;
+const RX = 96;
 const RY = 46;
 /** The room one first name takes; a longer one is squeezed to fit. */
-const LABEL_WIDTH = 64;
+const LABEL_WIDTH = 60;
 /** Wide enough for the ring and its outermost names; a narrower card crops the ends. */
 const WIDTH = 2 * (RX + LABEL_WIDTH / 2);
 /** A name's baseline over a face in the upper half, and under one in the lower. */

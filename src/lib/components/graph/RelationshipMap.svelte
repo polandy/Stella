@@ -246,9 +246,10 @@
 				class="flex size-full items-center text-left"
 			>
 				<!-- Both drawn by the server; the width picks one. -->
-				<!-- The ring centred in the room left of the corner icons, so no name runs under them. -->
+				<!-- The ring centred in the room left of the icons, stacked on a phone, so no name
+				     runs under them. -->
 				<span class="relative block h-38 w-full overflow-hidden sm:hidden"
-					><span class="absolute inset-y-0 right-22 left-0"
+					><span class="absolute inset-y-0 right-11 left-0"
 						><EgoGraph {centerName} {centerPhotoId} {nodes} variant="ring" /></span
 					></span
 				>
@@ -257,7 +258,7 @@
 				>
 			</button>
 			<div
-				class="pointer-events-none absolute right-1 bottom-1 flex transition-opacity duration-(--motion-fade) ease-standard"
+				class="pointer-events-none absolute right-1 bottom-1 flex transition-opacity duration-(--motion-fade) ease-standard max-sm:flex-col"
 				class:opacity-0={!layers.previewControlsShown}
 			>
 				<span class="grid size-11 place-items-center" class:invisible={!Explorer}>

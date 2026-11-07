@@ -223,8 +223,9 @@ the person, and that never leaves the page. Keeping the record tidy (archive, me
 - The preview is a picture the server draws (`EgoGraph`), with no links. On a **phone**
   (below `sm`) a 9.5 rem strip, the people in a flattened ring, every face under or over its
   **first name** — over in the upper half, under in the lower; past eight places the last is a
-  *+N* disc for everyone else (`namedRing`, `src/lib/graph/layout/named-ring.ts`). The ring is
-  centred in the room left of the corner icons, so no name runs under them. **Wider**, a 7.5
+  *+N* disc for everyone else (`namedRing`, `src/lib/graph/layout/named-ring.ts`). There the
+  two corner icons stand one above the other, and the ring is centred in the room left of
+  them, so no name runs under them and a 360 px phone still shows every name whole. **Wider**, a 7.5
   rem strip with the people in a wide fan, half to either side in two staggered rows, every face
   under or over its **first name** (`stripFan`, `src/lib/graph/layout/strip-fan.ts`).
 - In both, the line to somebody joined to the person by **former** links alone is thinner and
