@@ -1,7 +1,13 @@
 import type { Core, NodeSingular } from 'cytoscape';
 import type { Arrangement, Point } from '../layout/geometry';
 import { segmentsOf } from './segments';
-import { BOW_FIELD, BOWED_CLASS, CAPTION_CLASS, ROUTE_FIELDS, ROUTED_CLASS } from './stylesheet';
+import {
+	BOW_FIELD,
+	BOWED_CLASS,
+	CAPTION_CLASS,
+	ROUTE_FIELDS,
+	ROUTED_CLASS
+} from './canvas-classes';
 
 /*
  * What the canvas does for the arranged maps beyond moving people (docs/05 §5.8): bending and

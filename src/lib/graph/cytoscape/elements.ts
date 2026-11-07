@@ -2,7 +2,7 @@ import { avatarAccent } from '../../people/avatar';
 import { thumbnailUrl } from '../../media/urls';
 import type { EdgeBundle, RoleGroup, RoleGrouping } from '../model/role-groups';
 import { nodeDiameter } from '../layout/legibility';
-import { HAS_MORE_CLASS, SLOT_CLASS, TUCKED_CLASS } from './stylesheet';
+import { HAS_MORE_CLASS, SLOT_CLASS, TUCKED_CLASS } from './canvas-classes';
 import { drawnSlotLine, type ParentSlot } from '../model/missing-parents';
 import type { GraphEdge, GraphModel } from '../model/types';
 

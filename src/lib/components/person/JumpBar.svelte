@@ -10,7 +10,7 @@
 	} from '$lib/people/jump-bar';
 	import { replaceState } from '$app/navigation';
 	import { page } from '$app/state';
-	import { bringCardIntoView } from '$lib/motion/motion.svelte';
+	import { bringCardIntoView } from '$lib/motion/scroll.svelte';
 	import { sectionAnchor } from '$lib/people/sections';
 	import { useI18n } from '$lib/i18n/context.svelte';
 	import { useRemovals } from '$lib/undo/context.svelte';

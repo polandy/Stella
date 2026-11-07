@@ -26,7 +26,8 @@
 		type InteractionKind
 	} from '$lib/story/interaction-kinds';
 	import { asTyped, newPeopleAsCandidates } from '$lib/mentions/picks';
-	import { reveal, settleOpenedForm, showOpenedForm } from '$lib/motion/motion.svelte';
+	import { reveal } from '$lib/motion/motion.svelte';
+	import { settleOpenedForm, showOpenedForm } from '$lib/motion/scroll.svelte';
 	import { openedFormGlide } from '$lib/motion/motion';
 	import { keepable } from '$lib/pwa/keepable';
 	import { isKept, type KeptOf } from '$lib/pwa/outbox';

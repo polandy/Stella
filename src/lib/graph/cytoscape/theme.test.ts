@@ -3,19 +3,18 @@ import { resolvePalette } from './theme';
 import { AA_LARGE, AA_TEXT, contrastRatio, mixHex } from '../../design/color';
 import { resolveColor, tokensFor, type Theme } from '../../design/css-tokens';
 import { RELATIONSHIP_CATEGORIES } from '../../relationships/categories';
+import { buildStylesheet, type CyStyle } from './stylesheet';
+import { grownNames } from './stylesheet-nodes';
 import {
-	buildStylesheet,
 	CAPTION_CLASS,
 	CURSOR_CLASS,
-	grownNames,
 	HAS_MORE_CLASS,
 	HOVERED_CLASS,
 	LIT_CLASS,
 	ROUTE_FIELDS,
 	ROUTED_CLASS,
-	SLOT_CLASS,
-	type CyStyle
-} from './stylesheet';
+	SLOT_CLASS
+} from './canvas-classes';
 import {
 	CIRCLE_LABEL_WIDTH,
 	LABEL_MIN_ZOOMED_FONT_SIZE,

@@ -4,7 +4,7 @@ import { familyIn } from '../layout/geometry';
 import { DEFAULT_DENSITY, spacingFor } from '../layout/density';
 import type { Point } from './placement';
 import { bendLines, writeCaption } from './tree-canvas';
-import { CAPTION_CLASS } from './stylesheet';
+import { CAPTION_CLASS } from './canvas-classes';
 import { sizeOf } from './canvas-nodes';
 import { trackMotion } from './motion';
 import { frameOn } from './framing';

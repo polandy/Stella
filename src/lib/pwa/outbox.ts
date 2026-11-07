@@ -1,16 +1,9 @@
-import {
-	photoCommandFor,
-	type CommandAnswer,
-	type CommandPayloads,
-	type JsonCommand,
-	type PhotoCommandType,
-	type RefusedTarget
-} from '../commands/commands';
+import type { CommandAnswer, CommandPayloads, JsonCommand } from '../commands/commands';
 
 /*
  * The outbox (docs/02 §2.18.1): what a phone holds back while Stella is
- * out of reach, and what becomes of it. Pure; `outbox-store.ts` keeps it on the device and
- * `outbox.svelte.ts` sends it. Every function returns a new list and leaves its input alone.
+ * out of reach, and what becomes of it. Pure; `outbox-store.ts` keeps it on the device,
+ * `outbox.svelte.ts` sends it, and `outbox-photos.ts` sends the photos that follow an item. Every function returns a new list and leaves its input alone.
  *
  * The rule: **the outbox is the only copy of what the member wrote.** Nothing leaves it until
  * Stella has confirmed it (`applied`) or the member discards it. An item being edited is *held*
@@ -25,25 +18,6 @@ import {
  * carries its id, so one Stella took after all is recognised when it comes again.
  */
 export const COMMAND_PATIENCE_MS = 10_000;
-
-/** The same for one photo, which is megabytes rather than a few lines of text. */
-export const PHOTO_PATIENCE_MS = 60_000;
-
-/**
- * What a photo upload's response says. A 413 comes from the server in front of Stella, not
- * Stella itself: the photo is over its request cap (`BODY_SIZE_LIMIT`, docs/07) and would be
- * turned away on every try, so it is refused with `tooLarge` instead of waiting for ever.
- * Anything else that is not Stella's answer may pass next time, so it waits (null).
- */
-export function photoAnswer(
-	id: string,
-	httpStatus: number,
-	answer: CommandAnswer | null,
-	tooLarge: string
-): CommandAnswer | null {
-	if (httpStatus === 413) return { id, status: 'refused', reason: tooLarge };
-	return answer;
-}
 
 /**
  * Where an item stands. `pending` waits to be sent; `held` is open in the composer; `sending`
@@ -281,62 +255,6 @@ export function revise<T extends JsonCommand['type']>(
 	return items.map((i) => (i === item ? revised : i));
 }
 
-/** One photo on its way, sent as `type` and naming the command it follows. */
-export interface PhotoUpload {
-	parentId: string;
-	type: PhotoCommandType;
-	photo: KeptPhoto;
-}
-
-/**
- * The next photo of `memberId`'s to upload, from an item Stella already has, marking that
- * item *sending*; null when there is none.
- */
-export function takePhoto(
-	items: readonly OutboxItem[],
-	memberId: string
-): { items: OutboxItem[]; upload: PhotoUpload } | null {
-	const item = items.find(
-		(i) => i.memberId === memberId && i.delivered && i.state === 'pending' && i.photos.length > 0
-	);
-	const type = item && photoCommandFor(item.command.type);
-	if (!item || !type) return null;
-	return {
-		items: items.map((i) => (i === item ? { ...i, state: 'sending' } : i)),
-		upload: { parentId: item.command.id, type, photo: item.photos[0] }
-	};
-}
-
-/**
- * Apply Stella's answer to one photo upload (null: no answer came). *Applied* drops the photo,
- * and the item with its last one; *refused* stays with the reason; anything else waits.
- */
-export function settlePhoto(
-	items: readonly OutboxItem[],
-	parentId: string,
-	photoId: string,
-	answer: CommandAnswer | null
-): OutboxItem[] {
-	const next: OutboxItem[] = [];
-	for (const item of items) {
-		if (item.command.id !== parentId || item.state !== 'sending') {
-			next.push(item);
-			continue;
-		}
-		if (answer?.status === 'applied') {
-			const photos = item.photos.filter((p) => p.id !== photoId);
-			if (photos.length > 0) next.push({ ...item, photos, state: 'pending' });
-			continue;
-		}
-		next.push(
-			answer?.status === 'refused'
-				? { ...item, state: 'refused', reason: answer.reason }
-				: { ...item, state: 'pending' }
-		);
-	}
-	return next;
-}
-
 /** Whether the member can still take it back here: waiting or refused, not on its way or open. */
 export function recallable(item: OutboxItem): boolean {
 	return item.state === 'pending' || item.state === 'refused';
@@ -366,36 +284,4 @@ export function recover(items: readonly OutboxItem[]): OutboxItem[] {
 	return unsend(items).map((i) =>
 		i.state === 'held' ? { ...i, state: i.reason === null ? 'pending' : 'refused' } : i
 	);
-}
-
-/**
- * What became of a save the member is watching (docs/04 ADR-076: online saves go through the
- * outbox too). *Applied* hands the form Stella's result; *refused* its reason, for the form to
- * show where the action's own error would be; *kept* means it waits on this device.
- */
-export type Delivery =
-	| { status: 'applied'; result: unknown }
-	| { status: 'refused'; reason: string; refusals?: RefusedTarget[] }
-	| { status: 'kept' };
-
-/**
- * What Stella's answer to a watched save means for whoever watches it; null while that is not
- * known yet — a "not now", or photos of it still on their way.
- */
-export function deliveryFor(answer: CommandAnswer, photosLeft: boolean): Delivery | null {
-	if (answer.status === 'refused') {
-		const { reason, refusals } = answer;
-		return refusals ? { status: 'refused', reason, refusals } : { status: 'refused', reason };
-	}
-	if (answer.status === 'applied' && !photosLeft)
-		return { status: 'applied', result: answer.result };
-	return null;
-}
-
-/**
- * A watched save still unsettled when a sending round ends: done if Stella took it (`applied`,
- * only its photos left to send later), kept otherwise.
- */
-export function deliveryLeftOver(applied: { result: unknown } | null): Delivery {
-	return applied ? { status: 'applied', result: applied.result } : { status: 'kept' };
 }

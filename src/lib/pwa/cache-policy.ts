@@ -2,7 +2,7 @@
  * What a device may keep (docs/02 §2.18).
  *
  * This is the whole of the offline story's judgement, kept pure and away from the service
- * worker so it can be read and tested without a browser. `service-worker.ts` is the adapter
+ * worker so it can be read and tested without a browser. `src/service-worker/` is the adapter
  * that asks these questions of a real `Request` and does what it is told.
  *
  * The rule behind the rules: a cached page is household data sitting on a device, so only

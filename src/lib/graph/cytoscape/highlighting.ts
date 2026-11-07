@@ -1,5 +1,5 @@
 import type { Core, EdgeSingular, EventObject, NodeSingular } from 'cytoscape';
-import { CURSOR_CLASS, HOVERED_CLASS, LIT_CLASS, TUCKED_CLASS } from './stylesheet';
+import { CURSOR_CLASS, HOVERED_CLASS, LIT_CLASS, TUCKED_CLASS } from './canvas-classes';
 
 /*
  * What the canvas lights up and what it dims: a neighbourhood, a connection path, the node the

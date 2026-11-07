@@ -13,7 +13,7 @@
 	import { sectionAnchor } from '$lib/people/sections';
 	import { deviceStorage, openedHere } from '$lib/share/opened-here';
 	import { useI18n } from '$lib/i18n/context.svelte';
-	import { showOpenedForm } from '$lib/motion/motion.svelte';
+	import { showOpenedForm } from '$lib/motion/scroll.svelte';
 	import { JustDoneTodos } from '$lib/todos/just-done.svelte';
 	import { useRemovals } from '$lib/undo/context.svelte';
 	import { tick } from 'svelte';

@@ -6,7 +6,8 @@
 	import Icon from './Icon.svelte';
 	import { FIELD_SELECTOR, firstField } from './first-field';
 	import { FocusReturn } from '$lib/ui/focus-return.svelte';
-	import { reveal, settleOpenedForm, showOpenedForm } from '$lib/motion/motion.svelte';
+	import { reveal } from '$lib/motion/motion.svelte';
+	import { settleOpenedForm, showOpenedForm } from '$lib/motion/scroll.svelte';
 	import { openedFormGlide } from '$lib/motion/motion';
 	import type { IconName } from './icons';
 

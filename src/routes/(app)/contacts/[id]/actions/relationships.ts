@@ -1,7 +1,7 @@
 import { dispatchCommand } from '$lib/server/domain/commands/dispatch';
 import { readCommand } from '$lib/server/commands/parse';
 import { fromFormData } from '$lib/commands/form-data';
-import { RelationshipAddManySchema, RelationshipAddSchema } from '$lib/commands/payloads';
+import { RelationshipAddManySchema, RelationshipAddSchema } from '$lib/commands/person-payloads';
 import { ulidGenerator } from '$lib/server/id';
 import { systemClock } from '$lib/server/clock';
 import { fail, redirect } from '@sveltejs/kit';

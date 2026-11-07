@@ -26,7 +26,8 @@
 	import { removalKey, type RemovalKind } from '$lib/undo/keys';
 	import { tick, untrack } from 'svelte';
 	import { prefersReducedMotion } from 'svelte/motion';
-	import { glide, reveal, scrollToShow, showOpenedForm } from '$lib/motion/motion.svelte';
+	import { glide, reveal } from '$lib/motion/motion.svelte';
+	import { scrollToShow, showOpenedForm } from '$lib/motion/scroll.svelte';
 	import { scrollBehavior } from '$lib/motion/motion';
 	import AddRelationshipForm from './AddRelationshipForm.svelte';
 	import KinPanels from './KinPanels.svelte';

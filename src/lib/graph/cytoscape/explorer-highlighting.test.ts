@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'bun:test';
 import cytoscape from 'cytoscape';
 import type { CyElement } from './elements';
-import { HOVERED_CLASS, LIT_CLASS } from './stylesheet';
+import { HOVERED_CLASS, LIT_CLASS } from './canvas-classes';
 import { edge, group, tucked, club, core, linkedPair, controller } from './explorer-fixtures';
 
 /*
