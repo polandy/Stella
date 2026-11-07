@@ -1,5 +1,22 @@
 # Changelog
 
+## [0.1.2](https://github.com/polandy/Stella/compare/v0.1.1...v0.1.2) (2026-11-07)
+
+
+### Bug Fixes
+
+* a full device gives up its oldest photos instead of stopping the offline refresh (review P3 CL-07) ([#471](https://github.com/polandy/Stella/issues/471)) ([0b3a3d4](https://github.com/polandy/Stella/commit/0b3a3d430418c70c1ab55fb98b2061acfef72776))
+* **client:** outbox throw settles saves, stream days in household zone, no effect mirrors, overlay Escape (review P2 client) ([#455](https://github.com/polandy/Stella/issues/455)) ([4c75beb](https://github.com/polandy/Stella/commit/4c75beb94e2fcfb72ea0f4d9ec492e45f58ce988))
+* contact writes ask visibility in their own statement (review P3 SV-06) ([#468](https://github.com/polandy/Stella/issues/468)) ([b7484a4](https://github.com/polandy/Stella/commit/b7484a4d5328d5093f47a183f74ca94eaa7f40df))
+* **data:** admin-only removal in access/, honest restore report, atomic unlink, merge settles interactions (review P2 data) ([#454](https://github.com/polandy/Stella/issues/454)) ([d3bc8e7](https://github.com/polandy/Stella/commit/d3bc8e712f8ac94d0c75cc8edb99bd0267360fdf))
+* domain refusals carry a phrase, clocks and randomness come from the composition root (review P3 clocks) ([#462](https://github.com/polandy/Stella/issues/462)) ([580cd51](https://github.com/polandy/Stella/commit/580cd514cd31e1a23c86c6adcd3b466a8a822827))
+* **image:** gate pushes on a Trivy scan and rebuild the latest release weekly ([ea449ea](https://github.com/polandy/Stella/commit/ea449eaa345e11bc1aafbd879fa84593931e2806))
+* one text-field look with the focus ring on its edge (review P3 CO-01) ([#465](https://github.com/polandy/Stella/issues/465)) ([ccaa15c](https://github.com/polandy/Stella/commit/ccaa15c3e164e025bc606b58589bfcc365bc3419))
+* **security:** CSP, confined media paths and Nextcloud hrefs, atomic setup, capped import, checked OIDC discovery ([#452](https://github.com/polandy/Stella/issues/452)) ([e95d328](https://github.com/polandy/Stella/commit/e95d328fa3c79f6c539cb65a2bb5d4850817941e))
+* small screen polish — Add person, circle members, People's select, empty Tags and Share (review P3 UX-16, UX-19, UX-22, UX-25) ([#475](https://github.com/polandy/Stella/issues/475)) ([52dab0e](https://github.com/polandy/Stella/commit/52dab0e8357e6befb37d58b25b330300464f46a5))
+* **ui:** P2 UX polish — back links, gender behind More, day headings, tick boxes, install hint (review P2 UX) ([#459](https://github.com/polandy/Stella/issues/459)) ([3133b9b](https://github.com/polandy/Stella/commit/3133b9bed4bc69276bc5f01b5ff83a193d676058))
+* **ux:** edit a moment in place, saved-moment toast, mentions in snippets, folded phone rail (review P2 UX) ([#460](https://github.com/polandy/Stella/issues/460)) ([23644e3](https://github.com/polandy/Stella/commit/23644e3801e1f0bc2e0c699b15aaaf0580d67e82))
+
 ## [0.1.1](https://github.com/polandy/Stella/compare/v0.1.0...v0.1.1) (2026-11-05)
 
 
