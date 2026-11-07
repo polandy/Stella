@@ -6,6 +6,7 @@ import { usePending } from '$lib/sync/context.svelte';
 import { useRemovals } from '$lib/undo/context.svelte';
 import { submitAction } from '$lib/undo/submit-action';
 import { held, hiddenIds, sending, settle, takenBack, type Batches } from './batches';
+import { useGivenNames } from './given-names.svelte';
 import { passOnOffer, type PassOnMap } from './pass-on';
 
 /*
@@ -39,20 +40,24 @@ export interface HeldNames {
  * Call once from a component's script; it reads the shell's removals store from context.
  * `passOn` is the page's map of nameless children and siblings; without one nothing is offered.
  */
+/** One count for every page, so a batch's key is its own across the shell's stores. */
+let counter = 0;
+
 export function useHeldNames(passOn: () => PassOnMap = () => ({})): HeldNames {
 	const removals = useRemovals();
 	const pending = usePending();
 	const i18n = useI18n();
 	const t = i18n.t;
+	const given = useGivenNames();
 	let batches = $state.raw<Batches>({});
 	/** Everyone named during this visit, so an offer never comes back for them. */
 	const namedThisVisit = new Set<string>();
-	let counter = 0;
-
 	// Undo is pressed in the toast: a batch the store let go of before sending was taken back.
 	$effect(() => {
 		void removals.snapshot;
-		batches = takenBack(batches, removals.isPending);
+		const kept = takenBack(batches, removals.isPending);
+		for (const key of Object.keys(batches)) if (!(key in kept)) given.release(key);
+		batches = kept;
 	});
 
 	const listOf = (names: string[]) =>
@@ -73,6 +78,8 @@ export function useHeldNames(passOn: () => PassOnMap = () => ({})): HeldNames {
 		for (const id of ids) namedThisVisit.add(id);
 		const heirs = passOnOffer(passOn(), fresh, lastName, namedThisVisit);
 		batches = held(batches, key, ids);
+		// Every list and search reads the name at once, not only after the window and the reload.
+		given.give(key, ids, lastName);
 		removals.remove({
 			key,
 			label: heirs.length
@@ -104,12 +111,14 @@ export function useHeldNames(passOn: () => PassOnMap = () => ({})): HeldNames {
 						// Its own words rather than the store's "could not remove": nothing was removed.
 						console.error('Could not give the held last names:', error);
 						batches = settle(batches, key, 'failed');
+						given.release(key);
 						for (const id of ids) namedThisVisit.delete(id);
 						removals.notify(t('surnames.toast.failed'));
 						return;
 					}
 					batches = settle(batches, key, 'sent');
 					await invalidateAll();
+					given.release(key);
 				})
 		});
 	}

@@ -26,6 +26,8 @@
 	import { newPersonHref } from '$lib/people/new-person';
 	import { reachability } from '$lib/pwa/reachability.svelte';
 	import { householdSpellings } from '$lib/suggestions/surname-groups';
+	import { useGivenNames } from '$lib/surnames/given-names.svelte';
+	import { withGivenNames } from '$lib/surnames/given-names';
 	import { useHeldNames } from '$lib/surnames/held-names.svelte';
 	import { useRemovals } from '$lib/undo/context.svelte';
 	import { deferredRemoval } from '$lib/undo/deferred-removal';
@@ -34,12 +36,16 @@
 	import type { ActionData, PageData } from './$types';
 
 	let { data, form }: { data: PageData; form: ActionData } = $props();
+	const i18n = useI18n();
+	// A last name given a moment ago reads at once, before its undo window and reload (§2.2.4.4).
+	const given = useGivenNames();
+	const people = $derived(withGivenNames(data.people, given.names, i18n.locale));
+	const shownNameOf = $derived(new Map(people.map((p) => [p.id, p.displayName])));
 	// The shell's people who are not in the circle yet: the ones the picker can add.
 	const candidates = $derived.by(() => {
 		const members = new Set(data.memberIds);
-		return data.people.filter((p) => !members.has(p.id));
+		return people.filter((p) => !members.has(p.id));
 	});
-	const i18n = useI18n();
 	const t = i18n.t;
 	const circle = $derived(data.circle);
 	// Where the circle sits among the others (docs/02 §2.4.2).
@@ -70,9 +76,13 @@
 		data.memberGroups
 			.map((g) => ({
 				...g,
-				members: g.members.filter(
-					(m) => !removals.isPending(removalKey('membership', m.membershipId))
-				)
+				members: g.members
+					.filter((m) => !removals.isPending(removalKey('membership', m.membershipId)))
+					.map((m) =>
+						given.names.has(m.contactId)
+							? { ...m, displayName: shownNameOf.get(m.contactId) ?? m.displayName }
+							: m
+					)
 			}))
 			.filter((g) => g.members.length > 0)
 	);
@@ -117,15 +127,15 @@
 	 * people, which carry them for every picker already.
 	 */
 	const heldNames = useHeldNames(() => data.passOn);
-	const lastNameOf = $derived(new Map(data.people.map((p) => [p.id, p.lastName])));
+	const lastNameOf = $derived(new Map(people.map((p) => [p.id, p.lastName])));
 	const lastNames = $derived({
 		chosen: chosenMembers.map((m) => ({
 			id: m.contactId,
 			displayName: m.displayName,
 			lastName: lastNameOf.get(m.contactId) ?? null
 		})),
-		knownSurnames: [...householdSpellings(data.people.map((p) => p.lastName)).values()].sort(
-			(a, b) => a.localeCompare(b)
+		knownSurnames: [...householdSpellings(people.map((p) => p.lastName)).values()].sort((a, b) =>
+			a.localeCompare(b)
 		),
 		held: heldNames.submit(),
 		disabled: !reachability.reachable,
@@ -437,7 +447,7 @@
 		circleName={circle.name}
 		viewerId={data.viewerId}
 		members={data.memberGroups.flatMap((g) => g.members)}
-		people={data.people}
+		{people}
 		cuts={data.cuts[walked.id]}
 		error={form && 'photoError' in form ? (form.photoError ?? null) : null}
 		{photoDate}

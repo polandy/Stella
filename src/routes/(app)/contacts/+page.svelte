@@ -19,6 +19,8 @@
 	import NamesakeHints from '$lib/components/surnames/NamesakeHints.svelte';
 	import { reachability } from '$lib/pwa/reachability.svelte';
 	import { householdSpellings } from '$lib/suggestions/surname-groups';
+	import { useGivenNames } from '$lib/surnames/given-names.svelte';
+	import { withGivenNames } from '$lib/surnames/given-names';
 	import { useHeldNames } from '$lib/surnames/held-names.svelte';
 	import { namesakesAfterNaming, type NamesakeAfterNaming } from '$lib/surnames/namesakes';
 	import type { PageData } from './$types';
@@ -30,7 +32,10 @@
 
 	let query = $state('');
 
-	const found = $derived(data.contacts.filter((c) => matchesQuery(c, query)));
+	// A last name given a moment ago is found at once, before its undo window and reload (§2.2.4.4).
+	const given = useGivenNames();
+	const people = $derived(withGivenNames(data.contacts, given.names, i18n.locale));
+	const found = $derived(people.filter((c) => matchesQuery(c, query)));
 	const groups = $derived(groupByLetter(found));
 
 	/*
@@ -42,7 +47,7 @@
 	const chosen = $derived(found.filter((c) => selected[c.id]));
 	const everyoneChosen = $derived(found.length > 0 && chosen.length === found.length);
 	const knownSurnames = $derived(
-		[...householdSpellings(data.contacts.map((c) => c.lastName)).values()].sort((a, b) =>
+		[...householdSpellings(people.map((c) => c.lastName)).values()].sort((a, b) =>
 			a.localeCompare(b)
 		)
 	);

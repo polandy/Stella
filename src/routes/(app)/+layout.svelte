@@ -5,7 +5,9 @@
 	import ActivityIndicator from '$lib/components/ui/ActivityIndicator.svelte';
 	import CommandPalette from '$lib/components/shell/CommandPalette.svelte';
 	import Icon from '$lib/components/ui/Icon.svelte';
-	import { useTranslate } from '$lib/i18n/context.svelte';
+	import { useI18n, useTranslate } from '$lib/i18n/context.svelte';
+	import { provideGivenNames } from '$lib/surnames/given-names.svelte';
+	import { withGivenNames } from '$lib/surnames/given-names';
 	import type { IconName } from '$lib/components/ui/icons';
 	import type { MessageKey } from '$lib/i18n/translate';
 	import Logo from '$lib/components/shell/Logo.svelte';
@@ -114,6 +116,10 @@
 	});
 
 	const removals = provideRemovals();
+	// A last name given on any page is ⌘K's at once, before its undo window and reload (§2.2.4.4).
+	const given = provideGivenNames();
+	const i18n = useI18n();
+	const palettePeople = $derived(withGivenNames(data.people, given.names, i18n.locale));
 	providePeopleContext(() => data.peopleContext);
 	// The member's private entries stay blurred until asked for (docs/02 §2.10.1). A tap shows
 	// one until the page is left; a new page starts blurred again, the five-minute window aside.
@@ -157,7 +163,7 @@
 	it. It is fixed to the top of the window, so it never moves the page it reports on.
 -->
 <ActivityIndicator busy={pending.busy} label={pending.label ?? t('common.updating')} />
-<CommandPalette people={data.people} bind:open={paletteOpen} />
+<CommandPalette people={palettePeople} bind:open={paletteOpen} />
 <Toast />
 
 <!-- The visible height, not 100vh: a phone browser counts 100vh with its address bar hidden,
