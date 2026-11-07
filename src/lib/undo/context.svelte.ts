@@ -28,6 +28,11 @@ export interface Removals {
 	isPending(key: string): boolean;
 	/** Returns the notice's id (`RemovalsSnapshot.notices`). */
 	notify(text: string, takeBack?: () => void): number;
+	/**
+	 * Moves focus to the *Undo* of the undoable notice `noticeId`, once the region has rendered
+	 * it; false when that notice is gone or has no Undo.
+	 */
+	focusNoticeUndo(noticeId: number): boolean;
 	/** A message with a link to what it announces — *Lena Köhler added · Open*. */
 	notifyWithLink(text: string, link: NoticeLink, windowMs?: number): void;
 	/** *Undo* on a notice announcing something that can be taken back. */
@@ -60,6 +65,11 @@ export function provideRemovals(): Removals {
 		flush: store.flush,
 		isPending: (key) => snapshot.removals.some((removal) => removal.key === key),
 		notify: store.notify,
+		focusNoticeUndo: (noticeId) => {
+			const button = document.querySelector<HTMLElement>(`[data-notice-undo="${noticeId}"]`);
+			button?.focus();
+			return !!button;
+		},
 		notifyWithLink: store.notifyWithLink,
 		takeBack: store.takeBack,
 		hold: store.hold,

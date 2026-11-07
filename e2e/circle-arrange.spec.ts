@@ -124,6 +124,30 @@ test('copies with the keyboard alone and keeps the person where they were', asyn
 	await expect(page.getByTestId('toast-undo').getByRole('button', { name: 'Undo' })).toBeFocused();
 });
 
+test("with an older toast still open, focus goes to the new toast's Undo", async ({ page }) => {
+	// The page's clock is under the test's hand: the older toast stays until `runFor` ends it.
+	await page.clock.install();
+	const s = await seedSchool(page, 'Two');
+	await openArrange(page, s.parent);
+	await page.clock.pauseAt((await page.evaluate(() => Date.now())) + 1000);
+	const sub = cardOf(page, s.child);
+	const own = cardOf(page, s.parent);
+	await personIn(sub, s.lena).getByRole('button').click();
+	await page.getByTestId('arrange-copy-to').click();
+	await own.getByTestId('arrange-here').click();
+	await expect(page.getByText(`1 person copied to ${s.parent}`)).toBeVisible();
+	// The open toast covers the buttons, so the second pick is made with the keyboard.
+	await personIn(sub, s.mia).getByRole('button').focus();
+	await page.keyboard.press('Space');
+	await page.getByTestId('arrange-move-to').focus();
+	await page.keyboard.press('Enter');
+	await expect(own.getByTestId('arrange-here')).toBeFocused();
+	await page.keyboard.press('Enter');
+	await expect(page.getByTestId('toast-undo')).toHaveCount(2);
+	const newest = page.getByTestId('toast-undo').filter({ hasText: '1 person moved' });
+	await expect(newest.getByRole('button', { name: 'Undo' })).toBeFocused();
+});
+
 test('Escape leaves the target step without changing anything', async ({ page }) => {
 	const s = await seedSchool(page, 'Esc');
 	await openArrange(page, s.parent);
