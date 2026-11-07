@@ -1,7 +1,8 @@
 name: publish
 
-# Called by the release job once release-please has cut a release, and runnable by hand to
-# re-publish a tag whose build failed.
+# Called by the release job once release-please has cut a release, by the weekly rebuild
+# (rebuild.yml) to refresh the latest release's packages, and runnable by hand to re-publish a
+# tag whose build failed.
 #
 # It is deliberately NOT triggered by the release tag itself: when release-please pushes that
 # tag with the run's GITHUB_TOKEN, GitHub starts no workflow from it, and with a personal
@@ -60,6 +61,22 @@ jobs:
             type=semver,pattern={{major}}.{{minor}},value=${{ inputs.tag }}
             type=raw,value=latest
 
+      # Built without a layer cache, so `apt-get upgrade` and the base image are current —
+      # the weekly rebuild exists for exactly that — and loaded locally to be scanned first.
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          pull: true
+          no-cache: true
+          load: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+
+      # Nothing is pushed while it carries a CRITICAL vulnerability that has a fix.
+      - run: ./scripts/scan-image.sh "${{ env.IMAGE }}:${{ steps.meta.outputs.version }}"
+
+      # Same inputs on the same builder: every layer comes from the scanned build's cache,
+      # so the pushed image is the one just scanned.
       - id: build
         uses: docker/build-push-action@v6
         with:
@@ -67,8 +84,6 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
 
       # A tag can be moved; a digest cannot. Self-hosted deployments pin the digest, so
       # print it where it can be copied rather than making anyone go and look it up.
