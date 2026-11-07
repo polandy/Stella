@@ -32,7 +32,8 @@ async function writtenOnPeople(page: Page, names: readonly string[]): Promise<vo
 async function selectOnPeople(page: Page, names: readonly string[]): Promise<void> {
 	await page.goto('/contacts');
 	await appReady(page);
-	await page.getByRole('button', { name: 'Select…' }).click();
+	await page.getByRole('button', { name: 'More for people' }).click();
+	await page.getByRole('menuitem', { name: 'Set last name for several…' }).click();
 	for (const name of names) await page.getByLabel(`Choose ${name}`, { exact: true }).check();
 	await page.getByRole('button', { name: 'Set last name' }).click();
 }

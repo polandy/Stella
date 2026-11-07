@@ -31,6 +31,7 @@ export const surnames: SurnamesMessages = {
 	'surnames.chooseOne': 'Einen wählen',
 	'surnames.noSuggestion': 'Kein Vorschlag',
 	'surnames.select': 'Auswählen…',
+	'surnames.selectSeveral': 'Nachnamen für mehrere setzen…',
 	'surnames.choose': (p) => `${p.name} auswählen`,
 	'surnames.deceased': 'verstorben',
 	'surnames.rowMenu': (p) => `Mehr zu ${p.name}`,

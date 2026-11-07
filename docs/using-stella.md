@@ -255,8 +255,8 @@ or the name they are shown by already says *Thomas Brunner* — it groups them u
 says why on each row, and **Apply** gives the ticked ones the name. A partner's or a child's
 name is offered unticked, since people do not always share it; two parents with different
 names make you pick. Anyone without a suggestion gets a field, and **Select…** gives several
-of them one name — and the People list has the same **Select**: tick anyone, then **Set last
-name**. If nobody you ticked has a last name yet, **Set** saves straight away (*Undo* is in the
+of them one name — and the People list has the same: **⋯ → Set last name for several…** beside
+its heading, tick anyone, then **Set last name**. If nobody you ticked has a last name yet, **Set** saves straight away (*Undo* is in the
 note that follows). If anyone already has a *different* last name, Stella first says how many
 it will name and lists them, each with a box to tick if you really mean to replace it, and
 **Replace all** ticks them together; nobody's name is replaced unless you tick it. When someone gets their first last name, Stella offers

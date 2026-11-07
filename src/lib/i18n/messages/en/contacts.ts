@@ -13,7 +13,7 @@ export const contacts = {
 	'contacts.archivedChip': (p: { count: number }) => `Archived (${p.count})`,
 	'contacts.archived': 'Archived',
 	'contacts.private': 'private',
-	'contacts.lastWrittenAbout': 'Last written about',
+	'contacts.menu': 'More for people',
 	'contacts.lastWrittenAboutOn': (p: { date: string }) => `Last written about ${p.date}`,
 	'contacts.nothingWrittenYet': 'Nothing written yet',
 	'contacts.noMatch': (p: { query: string }) => `Nobody matches “${p.query}”.`,

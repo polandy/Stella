@@ -4,6 +4,7 @@
 	import { foundByFormerName } from '$lib/people/former-name';
 	import FoundByJobMark from '$lib/components/people/FoundByJobMark.svelte';
 	import JobLine from '$lib/components/people/JobLine.svelte';
+	import MenuButton from '$lib/components/ui/MenuButton.svelte';
 	import { foundByJob } from '$lib/people/job';
 	import Avatar from '$lib/components/ui/Avatar.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
@@ -64,25 +65,36 @@
 	class="mx-auto flex w-full max-w-4xl flex-col gap-5 px-4 py-6 md:px-6 md:py-10"
 	class:pb-36={selecting}
 >
-	<header>
-		<h1 class="text-2xl font-semibold text-fg">
-			{data.showArchived ? t('contacts.headingArchived') : t('contacts.heading')}
-		</h1>
-		<p class="text-sm text-fg-muted">
-			{t('contacts.count', { count: data.contacts.length })}{#if data.activeTag}
-				{' '}{t('contacts.withThisTag')}{/if}{#if data.showArchived}{t(
-					'contacts.archivedSuffix'
-				)}{/if}
-		</p>
-		{#if !data.showArchived && data.contacts.length > 0}
-			<Button
-				size="sm"
-				class="mt-2"
-				aria-pressed={selecting}
-				onclick={() => (selecting ? stopSelecting() : (selecting = true))}
-			>
-				{selecting ? t('common.cancel') : t('surnames.select')}
-			</Button>
+	<header class="flex items-start gap-3">
+		<div class="min-w-0 flex-1">
+			<h1 class="text-2xl font-semibold text-fg">
+				{data.showArchived ? t('contacts.headingArchived') : t('contacts.heading')}
+			</h1>
+			<p class="text-sm text-fg-muted">
+				{t('contacts.count', { count: data.contacts.length })}{#if data.activeTag}
+					{' '}{t('contacts.withThisTag')}{/if}{#if data.showArchived}{t(
+						'contacts.archivedSuffix'
+					)}{/if}
+			</p>
+		</div>
+		<!-- Selecting has one use, setting a last name for several people, so the menu says that
+		     rather than a bare "Select…" that leaves the reader to guess. -->
+		{#if selecting}
+			<Button size="sm" onclick={stopSelecting}>{t('common.cancel')}</Button>
+		{:else if !data.showArchived && data.contacts.length > 0}
+			<MenuButton label={t('contacts.menu')} align="end" look="button">
+				{#snippet trigger()}<Icon name="more" size={18} />{/snippet}
+				{#snippet children({ close })}
+					<button
+						type="button"
+						role="menuitem"
+						class="flex w-full items-center gap-2 rounded-control px-2.5 py-1.5 text-left text-sm whitespace-nowrap text-fg hover:bg-primary-soft focus-visible:bg-primary-soft"
+						onclick={() => (close(), (selecting = true))}
+					>
+						<Icon name="rename" size={14} />{t('surnames.selectSeveral')}
+					</button>
+				{/snippet}
+			</MenuButton>
 		{/if}
 	</header>
 
@@ -186,14 +198,6 @@
 		</div>
 	{:else}
 		<div class="flex flex-col gap-4" data-testid="people-directory">
-			{#if !data.showArchived}
-				<div
-					class="flex justify-end px-2.5 text-[11px] font-medium text-fg-subtle"
-					aria-hidden="true"
-				>
-					{t('contacts.lastWrittenAbout')}
-				</div>
-			{/if}
 			{#each groups as group (group.letter)}
 				<section>
 					<h2
@@ -256,19 +260,20 @@
 										<JobLine job={contact} />
 									</span>
 									<!-- The "last written about" read leaves archived people out, so claiming
-									     anything here would be claiming they were never written about. -->
+									     anything here would be claiming they were never written about. A row
+									     with nothing written yet stays quiet rather than ending in a dash. -->
 									{#if data.showArchived}
 										<span class="text-xs whitespace-nowrap text-fg-subtle"
 											>{t('contacts.archived')}</span
 										>
-									{:else}
+									{:else if since}
 										<span
 											class="text-xs whitespace-nowrap text-fg-subtle tabular-nums"
-											title={since
-												? t('contacts.lastWrittenAboutOn', { date: contact.lastTouchedOn ?? '' })
-												: t('contacts.nothingWrittenYet')}
+											title={t('contacts.lastWrittenAboutOn', {
+												date: contact.lastTouchedOn ?? ''
+											})}
 										>
-											{since ?? '—'}
+											{since}
 										</span>
 									{/if}
 								</a>
