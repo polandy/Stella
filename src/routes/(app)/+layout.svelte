@@ -19,7 +19,7 @@
 	import { createDeviceUnlock } from '$lib/privacy/device-unlock.svelte';
 	import { provideVeil } from '$lib/privacy/veil.svelte';
 	import { reportNavigation } from '$lib/sync/pending';
-	import { followScroll, SHOWN_TOP_BAR } from '$lib/ui/top-bar';
+	import { followScroll, offersAddPerson, SHOWN_TOP_BAR } from '$lib/ui/top-bar';
 	import { breadcrumbs, type CrumbData } from '$lib/ui/breadcrumbs';
 	import { onMount, untrack, type Snippet } from 'svelte';
 	import type { LayoutData } from './$types';
@@ -273,14 +273,16 @@
 				</button>
 				<!-- Secondary, not primary: the one filled action on a screen is the page's own — the
 				     pencil on Home, *Write a moment* on a person (docs/05 §5.1, §5.4). -->
-				<Button
-					variant="secondary"
-					icon="addPerson"
-					href="/contacts/new"
-					label={t('nav.addPerson')}
-				>
-					<span class="hidden md:inline">{t('nav.addPerson')}</span>
-				</Button>
+				{#if offersAddPerson(page.route.id)}
+					<Button
+						variant="secondary"
+						icon="addPerson"
+						href="/contacts/new"
+						label={t('nav.addPerson')}
+					>
+						<span class="hidden md:inline">{t('nav.addPerson')}</span>
+					</Button>
+				{/if}
 				<!-- Wrapped: the button's own display rule would outrank a utility on the element. -->
 				<span class="md:hidden"
 					><Button
