@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.1.3](https://github.com/polandy/Stella/compare/v0.1.2...v0.1.3) (2026-11-07)
+
+
+### Bug Fixes
+
+* a named ring for the phone's map preview, and the peek strip on a tablet (review P3 UX-04, UX-06) ([#476](https://github.com/polandy/Stella/issues/476)) ([fa888e7](https://github.com/polandy/Stella/commit/fa888e7e2ce0d76995b60ad64d48bf671fa3d47d))
+* Arrange board focuses its own Undo through a toast handle, not a selector ([#480](https://github.com/polandy/Stella/issues/480)) ([7c8c0e8](https://github.com/polandy/Stella/commit/7c8c0e8d7f6abe699ea25e064e103a0b1b025e5c))
+
 ## [0.1.2](https://github.com/polandy/Stella/compare/v0.1.1...v0.1.2) (2026-11-07)
 
 
