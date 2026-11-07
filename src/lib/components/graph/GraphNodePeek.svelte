@@ -41,11 +41,12 @@
 </script>
 
 <!-- Full height beside a full-screen canvas; embedded it is only as tall as what it
-     says, so it does not sit as an empty panel over half a card-sized map. A phone has no
-     room beside the map: there it is one row along the bottom — avatar, name, the actions,
-     close — so the map keeps the screen; the circle's roles and the edge of the map go below. -->
+     says, so it does not sit as an empty panel over half a card-sized map. Below `lg` (a phone,
+     a tablet) a panel beside the map covers the people just tapped: there it is one row along
+     the bottom — avatar, name, the actions, close — so the map keeps the screen; the circle's
+     roles and the edge of the map go below. -->
 <aside
-	class="absolute top-3 right-3 overflow-auto rounded-app border border-border bg-card/95 p-4 shadow-pop backdrop-blur max-sm:inset-x-3 max-sm:top-auto max-sm:bottom-3 max-sm:flex max-sm:max-h-[60%] max-sm:w-auto max-sm:flex-wrap max-sm:items-center max-sm:gap-2 max-sm:p-2.5"
+	class="absolute top-3 right-3 overflow-auto rounded-app border border-border bg-card/95 p-4 shadow-pop backdrop-blur max-lg:inset-x-3 max-lg:top-auto max-lg:bottom-3 max-lg:flex max-lg:max-h-[60%] max-lg:w-auto max-lg:flex-wrap max-lg:items-center max-lg:gap-2 max-lg:p-2.5"
 	class:bottom-3={!compact}
 	class:w-64={!compact}
 	class:w-52={compact}
@@ -56,15 +57,15 @@
 		size="sm"
 		icon="remove"
 		label={t('common.close')}
-		class="float-right max-sm:order-1"
+		class="float-right max-lg:order-1"
 		onclick={onClose}
 	/>
 	<div
-		class="mb-4 max-sm:mb-0 max-sm:flex max-sm:min-w-0 max-sm:flex-1 max-sm:items-center max-sm:gap-2.5"
+		class="mb-4 max-lg:mb-0 max-lg:flex max-lg:min-w-0 max-lg:flex-1 max-lg:items-center max-lg:gap-2.5"
 	>
 		{#if node.kind === 'person'}
 			<!-- A size container, so the initials scale with the box (`Avatar` fill). -->
-			<div class="@container mb-3 size-14 shrink-0 rounded-full max-sm:mb-0 max-sm:size-10">
+			<div class="@container mb-3 size-14 shrink-0 rounded-full max-lg:mb-0 max-lg:size-10">
 				<Avatar
 					id={node.id}
 					name={node.label}
@@ -75,11 +76,11 @@
 			</div>
 		{/if}
 		<div class="min-w-0">
-			<div class="text-lg font-semibold text-fg max-sm:truncate max-sm:text-base">{node.label}</div>
+			<div class="text-lg font-semibold text-fg max-lg:truncate max-lg:text-base">{node.label}</div>
 			<!-- "Person" says nothing the strip's avatar does not; a death or a circle still shows. -->
 			<div
 				class="text-xs text-fg-subtle {node.kind === 'person' && !node.deceased
-					? 'max-sm:hidden'
+					? 'max-lg:hidden'
 					: ''}"
 			>
 				{node.kind === 'circle' ? t('graph.peek.sharedContext') : t('graph.peek.person')}
@@ -87,11 +88,11 @@
 			</div>
 		</div>
 	</div>
-	<!-- On a phone the buttons join the strip's row; the roles go under it. -->
-	<div class="flex flex-col gap-2 max-sm:contents">
+	<!-- In the strip the buttons join its row; the roles go under it. -->
+	<div class="flex flex-col gap-2 max-lg:contents">
 		{#if node.kind === 'circle' && expandable && roleOptions.length > 1}
 			<fieldset
-				class="flex flex-col gap-1 text-sm max-sm:order-2 max-sm:basis-full"
+				class="flex flex-col gap-1 text-sm max-lg:order-2 max-lg:basis-full"
 				data-testid="circle-roles"
 			>
 				<legend class="mb-1 text-xs text-fg-subtle">{t('graph.peek.rolesToOpen')}</legend>
@@ -141,11 +142,11 @@
 			>
 		{/if}
 	</div>
-	<!-- The general tip and "all shown" are left out of a phone's strip; that the map ends here
-	     is not. -->
+	<!-- The general tip and "all shown" are left out of the strip; that the map ends here is
+	     not. -->
 	<p
-		class="mt-4 text-xs text-fg-subtle max-sm:order-2 max-sm:mt-0 max-sm:basis-full {withinReach
-			? 'max-sm:hidden'
+		class="mt-4 text-xs text-fg-subtle max-lg:order-2 max-lg:mt-0 max-lg:basis-full {withinReach
+			? 'max-lg:hidden'
 			: ''}"
 	>
 		{#if !withinReach}

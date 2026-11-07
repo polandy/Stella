@@ -28,8 +28,8 @@
 	 *
 	 * On every width the map is a preview at the card's top: a canvas at rest there is too small
 	 * to read, too easy to pan by accident while scrolling past it, and as a column it squeezed
-	 * the list beside it. A phone's is a 100 px ring without names, a wider card's a 7.5 rem strip
-	 * with every first name (`EgoGraph`). The preview offers two ways in, two icons in its corner
+	 * the list beside it. A phone's is a 9.5 rem ring, a wider card's a 7.5 rem strip, both with
+	 * every first name (`EgoGraph`). The preview offers two ways in, two icons in its corner
 	 * (docs/05 §5.5): *Enlarge map* grows this same explorer inside the card — about a screen's
 	 * height on a phone, 24 rem wider up — the reader still on the page, and *Shrink map* in the
 	 * map's own toolbar puts the preview back; *Full screen* opens it full screen, and leaving
@@ -117,8 +117,8 @@
 	 * the frame moves and is framed once, at its final size.
 	 */
 	const ENLARGED_HEIGHT = 'h-[max(20rem,calc(100dvh-12.75rem))] sm:h-96';
-	/** The preview's height: the phone's 100 px ring, a wider card's 7.5 rem strip. */
-	const PREVIEW_HEIGHT = 'h-25 sm:h-30';
+	/** The preview's height: the phone's 9.5 rem named ring, a wider card's 7.5 rem strip. */
+	const PREVIEW_HEIGHT = 'h-38 sm:h-30';
 	let frame = $state<HTMLDivElement>();
 	const scrolling = () => scrollBehavior(prefersReducedMotion.current);
 
@@ -246,8 +246,11 @@
 				class="flex size-full items-center text-left"
 			>
 				<!-- Both drawn by the server; the width picks one. -->
-				<span class="block h-22 w-full sm:hidden"
-					><EgoGraph {centerName} {centerPhotoId} {nodes} variant="ring" /></span
+				<!-- The ring centred in the room left of the corner icons, so no name runs under them. -->
+				<span class="relative block h-38 w-full overflow-hidden sm:hidden"
+					><span class="absolute inset-y-0 right-22 left-0"
+						><EgoGraph {centerName} {centerPhotoId} {nodes} variant="ring" /></span
+					></span
 				>
 				<span class="relative block h-30 w-full overflow-hidden max-sm:hidden"
 					><EgoGraph {centerName} {centerPhotoId} {nodes} variant="strip" /></span
