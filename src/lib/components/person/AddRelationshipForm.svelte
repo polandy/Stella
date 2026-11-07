@@ -1,14 +1,10 @@
 <script lang="ts">
-	import Swap from '$lib/components/ui/Swap.svelte';
-	import Avatar from '$lib/components/ui/Avatar.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
-	import DateField from '$lib/components/ui/DateField.svelte';
-	import Icon from '$lib/components/ui/Icon.svelte';
 	import PersonSearchSelect from '$lib/components/people/PersonSearchSelect.svelte';
 	import { enhance } from '$app/forms';
 	import { goto } from '$app/navigation';
 	import { proposeHref } from '$lib/people/propose';
-	import { useI18n } from '$lib/i18n/context.svelte';
+	import { useTranslate } from '$lib/i18n/context.svelte';
 	import type { SelectablePerson } from '$lib/people/select';
 	import { keepable } from '$lib/pwa/keepable';
 	import {
@@ -29,8 +25,9 @@
 		sincePerPair,
 		type ServerRefusal
 	} from '$lib/relationships/multi-pick';
+	import { addRelationshipCommand } from '$lib/relationships/add-command';
 	import { livesAtOffer } from '$lib/relationships/lives-at';
-	import { firstPickable, groupByExclusion } from '$lib/relationships/picker-groups';
+	import { firstPickable } from '$lib/relationships/picker-groups';
 	import { sinceDateFromBirth } from '$lib/relationships/since';
 	import { PARENT_CHILD_TYPE_KEY, PARTNER_TYPE_KEYS } from '$lib/relationships/type-keys';
 	import { CURRENT_RELATIONSHIP_STATUS, RELATIONSHIP_STATUSES } from '$lib/relationships/status';
@@ -39,7 +36,11 @@
 	import { useRemovals } from '$lib/undo/context.svelte';
 	import { savedEnhance } from '$lib/undo/saved';
 	import { INPUT } from './inputs';
+	import LivesAtOffer from './LivesAtOffer.svelte';
 	import { postLivesAt } from './lives-at-post';
+	import RelationshipTypeSelect from './RelationshipTypeSelect.svelte';
+	import SecondParentOffer from './SecondParentOffer.svelte';
+	import SinceDates from './SinceDates.svelte';
 	import { announceSavedBatch, relationshipIdsOf } from './saved-batch';
 	import type { ExclusionOf, PersonForm, PersonPageData, RelationshipChoices } from './types';
 
@@ -88,8 +89,7 @@
 		pickedTargets: SelectablePerson[];
 	} = $props();
 
-	const i18n = useI18n();
-	const t = i18n.t;
+	const t = useTranslate();
 	const c = $derived(data.contact);
 	const removals = useRemovals();
 	// The shell's one activity indicator, which every change to the graph reports to (docs/05 §5.7).
@@ -126,47 +126,16 @@
 		keepable(
 			{
 				toCommand: (fields, id) => {
-					const targetIds = fields.getAll('targetId').map(String).filter(Boolean);
-					const typeChoice = String(fields.get('typeChoice') ?? '');
-					if (targetIds.length === 0 || !typeChoice) return null;
+					const command = addRelationshipCommand(fields, {
+						id,
+						contactId: c.id,
+						issuedAt: Date.now()
+					});
+					if (!command) return null;
 					movingIn =
 						livesAt && livesAtTaken ? { address: livesAt.address, ids: livesAt.newIds } : null;
-					const text = (value: FormDataEntryValue | null) => String(value ?? '').trim() || null;
-					if (targetIds.length === 1) {
-						return {
-							id,
-							type: 'relationship.add',
-							payload: {
-								contactId: c.id,
-								targetId: targetIds[0],
-								typeChoice,
-								description: text(fields.get('description')),
-								sinceDate: text(fields.get('sinceDate')),
-								status: text(fields.get('status'))
-							},
-							issuedAt: Date.now()
-						};
-					}
-					// One field for every pair, or one per pair in the order the people were picked.
-					const sinceDates = fields.getAll('sinceDate');
-					if (sinceDates.length !== 1 && sinceDates.length !== targetIds.length) return null;
-					const status = RELATIONSHIP_STATUSES.find((s) => s === fields.get('status'));
-					submittedChoice = typeChoice;
-					return {
-						id,
-						type: 'relationship.addMany',
-						payload: {
-							contactId: c.id,
-							typeChoice,
-							status: status ?? CURRENT_RELATIONSHIP_STATUS,
-							description: text(fields.get('description')),
-							links: targetIds.map((targetId, index) => ({
-								targetId,
-								sinceDate: text(sinceDates.length === 1 ? sinceDates[0] : sinceDates[index])
-							}))
-						},
-						issuedAt: Date.now()
-					};
+					if (command.type === 'relationship.addMany') submittedChoice = command.payload.typeChoice;
+					return command;
 				},
 				about: (fields) =>
 					`${c.displayName} · ${keptLinkLabel(String(fields.get('typeChoice') ?? ''), fields.getAll('targetId').map(String))}`,
@@ -337,9 +306,6 @@
 	/** The since day per pair, from the birthday rule. */
 	const sincePairs = $derived(sincePerPair(kinChoice, data.contact, pickedPeople));
 	const sameSince = $derived(sharedSince(sincePairs));
-	/** *Use one date for all*, chosen while the pairs' days differ. */
-	let useOneDate = $state(false);
-	const perPair = $derived(several && sameSince === null && !useOneDate);
 	// Nobody picked yet: a "Child of" link still begins on this person's own birthday, as before.
 	const oneSince = $derived(
 		picked.length === 0
@@ -363,44 +329,13 @@
 			<span class="text-fg-muted">
 				{t('contact.relationships.is', { name: c.displayName })}
 			</span>
-			<!-- Both directions of an asymmetric type, so "is a child of" needs no
-				 detour via the other profile (docs/02 §2.4). -->
-			<!-- Read, not bound: binding would hand the select a value of its own before
-				 anybody has chosen, and an unmatched one deselects every option — the form
-				 would then post no type at all. `selected` still has to follow the choice,
-				 because picking another person regroups the entries and a rebuilt option
-				 loses the selection the DOM was holding. -->
-			<select
-				name="typeChoice"
-				onchange={(event) => (relationshipChoice = event.currentTarget.value)}
-				class={INPUT}
-			>
-				{#each groupByExclusion(relationshipChoices, forEveryone) as group (group.options[0].value)}
-					{#if group.exclusion}
-						<optgroup
-							label={t('relationships.blocked.group', {
-								reason: exclusionLabel(t, group.exclusion, nameOfContact)
-							})}
-						>
-							{#each group.options as option (option.value)}
-								<option
-									value={option.value}
-									selected={option.value === relationshipChoice}
-									disabled
-								>
-									{relationshipTypeLabel(t, option.type, option.side)}
-								</option>
-							{/each}
-						</optgroup>
-					{:else}
-						{#each group.options as option (option.value)}
-							<option value={option.value} selected={option.value === relationshipChoice}>
-								{relationshipTypeLabel(t, option.type, option.side)}
-							</option>
-						{/each}
-					{/if}
-				{/each}
-			</select>
+			<RelationshipTypeSelect
+				choices={relationshipChoices}
+				chosen={relationshipChoice}
+				{forEveryone}
+				{nameOfContact}
+				onchoose={(value) => (relationshipChoice = value)}
+			/>
 		</label>
 		<div class="flex min-w-0 flex-[2_1_18rem] flex-col gap-1 text-sm">
 			<label for="relationship-target" class="text-fg-muted"
@@ -446,58 +381,14 @@
 			</div>
 			<!-- Outside the live region: an offer is not news to interrupt with, only a choice. -->
 			{#if coParent}
-				<div
-					class="flex flex-wrap items-center gap-2 rounded-control border border-dashed border-primary bg-card px-2 py-1.5 text-sm text-fg-muted"
-					data-testid="second-parent-offer"
-				>
-					<span>{t('contact.relationships.secondParentAlso')}</span>
-					<button
-						type="button"
-						class="inline-flex min-h-8 items-center gap-1.5 rounded-full border border-primary bg-card py-0.5 pr-2.5 pl-0.5 text-fg hover:bg-primary-soft"
-						aria-label={t('contact.relationships.secondParentAdd', {
-							name: coParent.partner.displayName
-						})}
-						onclick={() => (relationshipTargetId = [...relationshipTargetId, coParent.partner.id])}
-					>
-						<Avatar
-							id={coParent.partner.id}
-							name={coParent.partner.displayName}
-							avatarPhotoId={coParent.partner.avatarPhotoId}
-							size={24}
-						/>
-						<Icon name="add" size={14} />
-						{coParent.partner.displayName}
-					</button>
-					<span class="text-xs text-fg-subtle">
-						{t('contact.relationships.secondParentWhy', { name: coParent.parentName })}
-					</span>
-				</div>
+				<SecondParentOffer
+					partner={coParent.partner}
+					parentName={coParent.parentName}
+					onadd={() => (relationshipTargetId = [...relationshipTargetId, coParent.partner.id])}
+				/>
 			{/if}
 			{#if livesAt}
-				<label
-					class="flex items-start gap-2 rounded-control border border-dashed border-primary bg-card px-2 py-1.5 text-sm"
-					data-testid="lives-at-offer"
-				>
-					<input type="checkbox" bind:checked={livesAtTaken} class="mt-0.5" />
-					<span class="flex min-w-0 flex-col gap-1">
-						<span class="flex items-center gap-1.5 font-medium text-fg">
-							<Icon name="home" size={14} />
-							{t('contact.relationships.livesAt', { line: livesAt.line })}
-						</span>
-						<span class="flex flex-wrap items-center gap-1 text-xs text-fg-muted">
-							{#each housemates as housemate (housemate.id)}
-								<Avatar id={housemate.id} name={housemate.displayName} size={20} />
-							{/each}
-							<span class="ml-1">
-								{t('contact.relationships.livesAtWith', {
-									names: new Intl.ListFormat(i18n.intlLocale, { type: 'conjunction' }).format(
-										housemates.map((housemate) => housemate.displayName)
-									)
-								})}
-							</span>
-						</span>
-					</span>
-				</label>
+				<LivesAtOffer line={livesAt.line} {housemates} bind:taken={livesAtTaken} />
 			{/if}
 		</div>
 		<label class="flex w-full flex-col gap-1 text-sm">
@@ -512,57 +403,7 @@
 				class={INPUT}
 			/>
 		</label>
-		<!-- One date or one per person: the two glide into each other in place (docs/05 §5.11). -->
-		<Swap when={perPair} class={perPair ? 'w-full' : ''}>
-			<!-- The days differ (several children): one field per pair, each prefilled and clearable. -->
-			<fieldset class="flex w-full min-w-0 flex-col gap-1 text-sm">
-				<legend class="mb-1 text-fg-muted">
-					{t('contact.relationships.sinceLabel')} · {t('contact.relationships.sinceEach')}
-				</legend>
-				<ul class="flex flex-col gap-2 rounded-control border border-border bg-card p-2">
-					{#each sincePairs as pair (`${pair.targetId}|${pair.sinceDate}`)}
-						<li class="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
-							<span class="min-w-0 truncate text-fg">{nameOfPicked(pair.targetId)}</span>
-							<DateField
-								name="sinceDate"
-								value={pair.sinceDate}
-								label={t('contact.relationships.sinceFor', { name: nameOfPicked(pair.targetId) })}
-							/>
-						</li>
-					{/each}
-				</ul>
-				<button
-					type="button"
-					class="self-start rounded-control py-1 text-xs font-medium text-link hover:underline"
-					onclick={() => (useOneDate = true)}
-				>
-					{t('contact.relationships.oneDateForAll')}
-				</button>
-			</fieldset>
-			{#snippet otherwise()}
-				<div class="flex flex-col gap-1 text-sm">
-					<span class="text-fg-muted">{t('contact.relationships.sinceLabel')}</span>
-					<!-- Keyed: the field owns its segments once it is on screen, so a new
-					 suggestion arrives as a fresh field rather than as a silent overwrite. -->
-					{#key oneSince}
-						<DateField
-							name="sinceDate"
-							value={oneSince}
-							label={t('contact.relationships.sinceLabel')}
-						/>
-					{/key}
-					{#if several && useOneDate && sameSince === null}
-						<button
-							type="button"
-							class="self-start rounded-control py-1 text-xs font-medium text-link hover:underline"
-							onclick={() => (useOneDate = false)}
-						>
-							{t('contact.relationships.datePerPerson')}
-						</button>
-					{/if}
-				</div>
-			{/snippet}
-		</Swap>
+		<SinceDates pairs={sincePairs} {oneSince} {several} {sameSince} {nameOfPicked} />
 		<label class="flex flex-col gap-1 text-sm">
 			<span class="text-fg-muted">{t('contact.relationships.status')}</span>
 			<!-- A link being entered is one that holds, so `current` is preselected and
