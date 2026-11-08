@@ -67,6 +67,8 @@ export interface MomentHit {
 	entryDate: string;
 	contactId: string;
 	contactName: string;
+	/** The further people it is about that the viewer sees (docs/02 §2.20.3). */
+	otherNames: string[];
 }
 
 /** A to-do found by its title, open or done, with the person it is about (docs/02 §2.26). */

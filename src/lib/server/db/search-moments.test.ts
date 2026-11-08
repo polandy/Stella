@@ -84,6 +84,15 @@ describe('searchMoments by words', () => {
 		expect(await repo.searchMoments(viewerU1, words('sunday'), 20)).toHaveLength(1);
 	});
 
+	it('names every person a moment is about, the anchor first', async () => {
+		entry('j-1', 'Zoo with the kids', { subjectKey: 'c-eva,c-hans' });
+		db.insert(schema.journalSubject).values({ journalEntryId: 'j-1', contactId: 'c-eva' }).run();
+
+		expect(await repo.searchMoments(viewerU1, words('zoo'), 20)).toEqual([
+			expect.objectContaining({ contactName: 'Hans', otherNames: ['Eva Roth'] })
+		]);
+	});
+
 	it('finds a tag as the plain word', async () => {
 		entry('j-1', 'Up the hill #Hike');
 

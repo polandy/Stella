@@ -6,6 +6,7 @@
 	import type { StreamTime } from '$lib/stream/days';
 	import { journalTagHref } from '$lib/hashtags/hashtags';
 	import { useI18n } from '$lib/i18n/context.svelte';
+	import { listSentence, segmentsOf } from '$lib/i18n/linked';
 	import type { PageData } from '../../../routes/(app)/$types';
 
 	/** The moment as the stream's `load` hands it over (`streamForView`). */
@@ -29,19 +30,43 @@
 		tag ? journalTagHref(item.anchor.id)(tag) : `/contacts/${item.anchor.id}/journal`
 	);
 
-	const t = useI18n().t;
+	const i18n = useI18n();
+	const t = i18n.t;
+
+	// A moment about several people names them all: *You wrote about Markus, Sandra and Lea*.
+	const aboutAll = $derived(
+		segmentsOf(
+			listSentence(
+				[item.anchor, ...item.others].map((p) => ({ id: p.id, displayName: p.name })),
+				(names) => new Intl.ListFormat(i18n.intlLocale, { type: 'conjunction' }).format(names),
+				(names) => names
+			)
+		)
+	);
 </script>
 
-<StreamFace person={item.anchor} row={item} {members} />
+<StreamFace person={item.anchor} others={item.others} row={item} {members} />
 <div class="min-w-0">
 	<div class="flex flex-wrap items-baseline gap-x-1.5 text-[13px] text-fg-muted">
 		<b class="font-semibold text-fg">{item.mine ? t('home.you') : item.actor.name}</b>
-		<span>{t('home.stream.wroteIn')}</span>
-		<span
-			><a href={journalHref} class="font-medium text-fg hover:underline">{item.anchor.name}</a>{t(
-				'home.stream.wroteInJournal'
-			)}</span
-		>
+		{#if item.others.length}
+			<span>{t('home.stream.wroteAbout')}</span>
+			<span
+				>{#each aboutAll as segment}{#if 'person' in segment}<a
+							href={segment.person.id === item.anchor.id
+								? journalHref
+								: `/contacts/${segment.person.id}/journal`}
+							class="font-medium text-fg hover:underline">{segment.person.name}</a
+						>{:else}{segment.text}{/if}{/each}</span
+			>
+		{:else}
+			<span>{t('home.stream.wroteIn')}</span>
+			<span
+				><a href={journalHref} class="font-medium text-fg hover:underline">{item.anchor.name}</a>{t(
+					'home.stream.wroteInJournal'
+				)}</span
+			>
+		{/if}
 		{#if item.visibility === 'private'}<PrivateMark
 				veilId="journal:{item.id}"
 				class="text-[11px]"

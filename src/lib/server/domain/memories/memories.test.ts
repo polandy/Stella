@@ -22,6 +22,7 @@ const moment = (id: string, entryDate: string, at = 0): MomentRow => ({
 	at,
 	actor: { id: 'andy', name: 'Andy' },
 	anchor: person('hilde'),
+	others: [],
 	entryDate,
 	visibility: 'shared',
 	body: 'Plum cake at Hilde’s',

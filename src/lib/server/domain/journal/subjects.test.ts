@@ -3,7 +3,8 @@ import {
 	JournalSubjectNotAllowedError,
 	NoJournalSubjectError,
 	subjectKeyOf,
-	subjectsForAudience
+	subjectsForAudience,
+	withUnseenSubjects
 } from './subjects';
 
 describe('subjectKeyOf', () => {
@@ -52,6 +53,16 @@ describe('subjectsForAudience', () => {
 		expect(subjectsForAudience(visible, 'shared', ['archived', 'markus'], ['archived'])).toEqual([
 			'archived',
 			'markus'
+		]);
+	});
+});
+
+describe('withUnseenSubjects', () => {
+	it('keeps a subject the author cannot see, which the editor had no chip for', () => {
+		const visible = [{ id: 'markus' }, { id: 'lea' }];
+		expect(withUnseenSubjects(['lea'], ['markus', 'hidden', 'lea'], visible)).toEqual([
+			'lea',
+			'hidden'
 		]);
 	});
 });

@@ -23,6 +23,11 @@ export const journal: JournalMessages = {
 	'journal.editSaveFailed': 'Die Änderungen konnten nicht gespeichert werden. Versuche es erneut.',
 	'journal.deleteEntry': 'Moment löschen',
 	'journal.entryRemoved': 'Moment entfernt',
+	'journal.removedFor': (p) => `Moment entfernt für ${p.names}`,
+	'journal.with': (p) => `mit ${p.names}`,
+	'journal.subjects.label': 'Über',
+	'journal.subjects.add': 'Person hinzufügen',
+	'journal.subjects.lastOne': 'Ein Moment handelt von jemandem. Um ihn loszuwerden, lösche ihn.',
 	'journal.photoAlt': (p) => `${p.name}, ${p.day}`,
 	'journal.empty.title': 'Noch keine Momente.',
 	'journal.empty.hint': (p) =>

@@ -80,7 +80,7 @@ export interface TagSummary {
 export function tagSummary(
 	key: string,
 	tags: readonly KnownTag[],
-	moments: readonly { anchor: { id: string } }[]
+	moments: readonly { anchor: { id: string }; others: readonly { id: string }[] }[]
 ): TagSummary | null {
 	const known = tags.find((t) => t.key === key);
 	if (!known || moments.length === 0) return null;
@@ -89,7 +89,7 @@ export function tagSummary(
 		name: known.name,
 		onlyPrivate: known.onlyPrivate,
 		moments: moments.length,
-		people: new Set(moments.map((m) => m.anchor.id)).size
+		people: new Set(moments.flatMap((m) => [m.anchor.id, ...m.others.map((o) => o.id)])).size
 	};
 }
 

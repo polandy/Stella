@@ -11,6 +11,7 @@ import type { StoryItem } from '$lib/server/domain/story/story';
 import { extractMentionIds } from '$lib/mentions/mentions';
 import { authorLabel } from '$lib/story/author';
 import type { StoryItemView } from '$lib/story/item';
+import { subjectFacesOf, type SubjectFace } from '$lib/story/subjects';
 
 /*
  * Turn a domain story item into what the timeline renders (docs/02 §2.23). This is the edge's
@@ -33,11 +34,13 @@ export function photosByEntry(photos: readonly JournalPhotoRef[]): Map<string, s
 	return grouped;
 }
 
-/** The people the journal entries among `items` mention, each once — the names a page needs. */
-export function mentionIdsOf(items: readonly StoryItem[]): string[] {
+/** The people the journal entries among `items` are about or mention, each once — the names a page needs. */
+export function namedIdsOf(items: readonly StoryItem[]): string[] {
 	const ids = new Set<string>();
 	for (const item of items) {
-		if (item.kind === 'journal') for (const id of extractMentionIds(item.entry.body)) ids.add(id);
+		if (item.kind !== 'journal') continue;
+		for (const id of item.entry.subjectIds) ids.add(id);
+		for (const id of extractMentionIds(item.entry.body)) ids.add(id);
 	}
 	return [...ids];
 }
@@ -82,6 +85,8 @@ export interface StoryViewContext {
 	photosByEntry: Map<string, string[]>;
 	/** Display name for an @-mention target the viewer may see, or null. */
 	nameOf: (contactId: string) => string | null;
+	/** Name and face of a subject the viewer may see, or null (docs/02 §2.20.3). */
+	faceOf: (contactId: string) => SubjectFace | null;
 }
 
 /** Whether *Remove* is drawn: the access layer's rule, so the button is never one that fails. */
@@ -113,6 +118,7 @@ export function toStoryItem(item: StoryItem, ctx: StoryViewContext): StoryItemVi
 			// Beyond the journal, a tag leads to its own page (docs/02 §2.20.2).
 			bodyHtml: renderMarkdownWithMentions(entry.body, ctx.nameOf, { tagHref: tagPageHref }),
 			photos: ctx.photosByEntry.get(entry.id) ?? [],
+			subjects: subjectFacesOf(entry.subjectIds, ctx.faceOf),
 			// Only an author edits an entry (docs/03 §3.7), so only their own carry the stored body.
 			editable: mine,
 			bodyForEdit: mine ? entry.body : null,

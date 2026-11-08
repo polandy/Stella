@@ -31,7 +31,7 @@ export function memoryRowOf(memory: Memory): MemoryRowView {
 		return {
 			...base,
 			kind: 'moment',
-			people: uniquePeople([memory.anchor, ...memory.mentions]),
+			people: uniquePeople([memory.anchor, ...memory.others, ...memory.mentions]),
 			line:
 				mentionSnippet(memory.body, (id) => nameById.get(id) ?? null, MEMORY_LINE_LENGTH) || null,
 			interactionKind: null,

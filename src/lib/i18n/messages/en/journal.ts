@@ -23,6 +23,11 @@ export const journal = {
 	'journal.editSaveFailed': 'Could not save the changes. Try again.',
 	'journal.deleteEntry': 'Delete moment',
 	'journal.entryRemoved': 'Moment removed',
+	'journal.removedFor': (p: { names: string }) => `Moment removed for ${p.names}`,
+	'journal.with': (p: { names: string }) => `with ${p.names}`,
+	'journal.subjects.label': 'About',
+	'journal.subjects.add': 'Add someone',
+	'journal.subjects.lastOne': 'A moment is about someone. To drop it, delete it.',
 	'journal.photoAlt': (p: { name: string; day: string }) => `${p.name}, ${p.day}`,
 	'journal.empty.title': 'No moments yet.',
 	'journal.empty.hint': (p: { name: string }) =>

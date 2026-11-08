@@ -151,6 +151,20 @@ describe('recentMoments', () => {
 		expect(rows[0].photoIds).toEqual(['ph1']);
 	});
 
+	it('carries the further people a moment is about, in order, only those the viewer sees', async () => {
+		for (const id of ['markus', 'sandra', 'lea']) seedContact(id, 1);
+		seedContact('secret', 1, 'private', U1);
+		seedEntry('zoo', 'markus', 100);
+		db.insert(schema.journalSubject)
+			.values(
+				['sandra', 'secret', 'lea'].map((contactId) => ({ journalEntryId: 'zoo', contactId }))
+			)
+			.run();
+
+		const [row] = await repo.recentMoments(asU2, EVERYONE);
+		expect(row.others.map((o) => o.id)).toEqual(['sandra', 'lea']);
+	});
+
 	it('places a moment by its last change, so one appended to an older entry comes first', async () => {
 		seedContact('julia', 1);
 		seedEntry('earlier-today', 'julia', 100);

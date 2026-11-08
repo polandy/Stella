@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'bun:test';
 import {
 	entryIdsOf,
-	mentionIdsOf,
+	namedIdsOf,
 	nameLookup,
 	photosByEntry,
 	toStoryItem,
@@ -23,6 +23,7 @@ function context(overrides: Partial<StoryViewContext> = {}): StoryViewContext {
 		person: { householdId: 'h1', ownerId: 'someone', visibility: 'shared' },
 		photosByEntry: new Map(),
 		nameOf: () => null,
+		faceOf: () => null,
 		nameOfAuthor: () => null,
 		...overrides
 	};
@@ -385,6 +386,18 @@ describe('nameLookup', () => {
  * A page of the story reads names and photos for itself, not for the whole household: these
  * say which. Rendering a page with only them must give what rendering it with everything gave.
  */
+describe('a moment about several people', () => {
+	const face = (id: string) => ({ id, displayName: id.toUpperCase(), avatarPhotoId: null });
+
+	it('carries its subjects, the anchor first, leaving out anyone the viewer cannot see', () => {
+		const item = toStoryItem(
+			journalItem({ subjectIds: ['c1', 'lea', 'hidden'] }),
+			context({ faceOf: (id) => (id === 'hidden' ? null : face(id)) })
+		);
+		expect(item.kind === 'journal' && item.subjects).toEqual([face('c1'), face('lea')]);
+	});
+});
+
 describe('what a story page needs looked up', () => {
 	const page = [
 		journalItem({
@@ -395,8 +408,8 @@ describe('what a story page needs looked up', () => {
 		journalItem({ id: 'j2', body: 'Nobody named.' })
 	];
 
-	it('names the people the journal entries on the page mention, each once', () => {
-		expect(mentionIdsOf(page)).toEqual(['anna', 'ben']);
+	it('names the people the journal entries on the page are about or mention, each once', () => {
+		expect(namedIdsOf(page)).toEqual(['c1', 'anna', 'ben']);
 	});
 
 	it('lists the journal entries on the page, whose photos it shows', () => {
@@ -410,7 +423,7 @@ describe('what a story page needs looked up', () => {
 			['cleo', 'Cleo'],
 			['dora', 'Dora']
 		]);
-		const few = new Map([...everyone].filter(([id]) => mentionIdsOf(page).includes(id)));
+		const few = new Map([...everyone].filter(([id]) => namedIdsOf(page).includes(id)));
 		const render = (names: Map<string, string>) =>
 			page.map((item) => toStoryItem(item, context({ nameOf: (id) => names.get(id) ?? null })));
 		expect(render(few)).toEqual(render(everyone));

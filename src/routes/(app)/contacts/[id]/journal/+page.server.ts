@@ -10,7 +10,7 @@ import {
 	editJournalEntry,
 	listJournalForContact
 } from '$lib/server/domain/journal/journal';
-import { subjectsForAudience } from '$lib/server/domain/journal/subjects';
+import { subjectsForAudience, withUnseenSubjects } from '$lib/server/domain/journal/subjects';
 import { extractMentionIds } from '$lib/mentions/mentions';
 import { resolveForAudience } from '$lib/server/domain/mentions/resolve-for-audience';
 import { withNamesakeContext } from '$lib/server/domain/mentions/namesake-context';
@@ -43,11 +43,11 @@ export const load: PageServerLoad = async ({ locals, params, url }) => {
 	]);
 	// The filter lives in the address, so a tag chip is a link and Back undoes it (docs/02 §2.20.2).
 	const activeTags = activeTagsFor(url.searchParams.getAll('tag'), tags);
-	// Names for the people the entries mention, not for the whole household.
+	// Names for the people the entries are about or mention, not for the whole household.
 	const contactNames = await listContactNamesAmong(
 		locals.services.people.contactNameDeps,
 		viewer,
-		entries.flatMap((e) => extractMentionIds(e.body))
+		entries.flatMap((e) => [...e.subjectIds, ...extractMentionIds(e.body)])
 	);
 
 	const nameOfAuthor = await authorNames(locals.services.household.memberDeps, viewer.householdId);
@@ -186,7 +186,9 @@ export const actions: Actions = {
 				subjectIds: subjectsForAudience(
 					contacts,
 					entry.visibility,
-					parsed.output.subjectIds.length > 0 ? parsed.output.subjectIds : entry.subjectIds,
+					parsed.output.subjectIds.length > 0
+						? withUnseenSubjects(parsed.output.subjectIds, entry.subjectIds, contacts)
+						: entry.subjectIds,
 					entry.subjectIds
 				)
 			});

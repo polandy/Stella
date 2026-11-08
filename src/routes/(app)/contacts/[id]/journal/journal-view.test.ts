@@ -3,6 +3,7 @@ import { mentionToken } from '$lib/mentions/mentions';
 import type { JournalEntry } from '$lib/server/domain/journal/journal';
 import { someJournalEntry } from '$lib/server/domain/testing';
 import type { Remover } from '$lib/server/access/visibility';
+import type { SubjectFace } from '$lib/story/subjects';
 import { activeTagsFor, journalEntriesFor } from './journal-view';
 
 /*
@@ -32,7 +33,7 @@ function view(
 		remover?: Remover;
 		tags?: readonly string[];
 		photos?: { id: string; journalEntryId: string }[];
-		names?: { id: string; displayName: string }[];
+		names?: SubjectFace[];
 	} = {}
 ) {
 	return journalEntriesFor({
@@ -91,12 +92,21 @@ describe('journalEntriesFor', () => {
 		const body = `${mentionToken('ben')} and ${mentionToken('hidden')}`;
 		const [shown] = view([entry('e1', { body })], {
 			names: [
-				{ id: 'ben', displayName: 'Ben Brunner' },
-				{ id: 'cleo', displayName: 'Cleo' }
+				{ id: 'ben', displayName: 'Ben Brunner', avatarPhotoId: null },
+				{ id: 'cleo', displayName: 'Cleo', avatarPhotoId: null }
 			]
 		});
 		expect(shown!.mentionNames).toEqual({ ben: 'Ben Brunner' });
 		expect(shown!.bodyHtml).toContain('Ben Brunner');
+	});
+
+	it('names the people a moment is about, the anchor first, with their faces', () => {
+		const lea = { id: 'lea', displayName: 'Lea', avatarPhotoId: 'p-lea' };
+		const anchor = { id: 'c1', displayName: 'Markus', avatarPhotoId: null };
+		const [shown] = view([entry('e1', { subjectIds: ['c1', 'lea', 'hidden'] })], {
+			names: [lea, anchor]
+		});
+		expect(shown!.subjects).toEqual([anchor, lea]);
 	});
 
 	it('offers Remove to an admin on another member’s shared entry, never on a private one', () => {

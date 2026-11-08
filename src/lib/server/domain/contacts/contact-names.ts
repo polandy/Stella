@@ -1,5 +1,5 @@
 import type { Viewer } from '../../access/visibility';
-import type { ContactName } from './contacts';
+import type { ContactFace, ContactName } from './contacts';
 
 /*
  * Id and name of the people a page is about to name (docs/02 §2.2): the @-mentions in a story
@@ -15,7 +15,7 @@ import type { ContactName } from './contacts';
 /** Names of contacts, read through the access layer. */
 export interface ContactNameReads {
 	/** Those of `ids` the viewer may see — archived ones included. */
-	listNamesAmongVisibleTo(viewer: Viewer, ids: readonly string[]): Promise<ContactName[]>;
+	listNamesAmongVisibleTo(viewer: Viewer, ids: readonly string[]): Promise<ContactFace[]>;
 	/** Those of `ids` the viewer may see and the household still browses — archived ones left out. */
 	listBrowsableNamesAmong(viewer: Viewer, ids: readonly string[]): Promise<ContactName[]>;
 }
@@ -29,7 +29,7 @@ export async function listContactNamesAmong(
 	deps: ContactNameDeps,
 	viewer: Viewer,
 	ids: readonly string[]
-): Promise<ContactName[]> {
+): Promise<ContactFace[]> {
 	const unique = [...new Set(ids)];
 	return unique.length === 0 ? [] : deps.contactNames.listNamesAmongVisibleTo(viewer, unique);
 }

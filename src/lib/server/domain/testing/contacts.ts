@@ -70,12 +70,16 @@ export function inMemoryContactDirectory(people: readonly FakePerson[]): Contact
 /** `ContactNameReads` over a fixed list of people, answering in the order they were given. */
 export function inMemoryContactNames(people: readonly FakePerson[]): ContactNameReads {
 	const among = (ids: readonly string[], keep: (p: FakePerson) => boolean) =>
-		people
-			.filter((p) => ids.includes(p.id) && keep(p))
-			.map(({ id, displayName }) => ({ id, displayName }));
+		people.filter((p) => ids.includes(p.id) && keep(p));
 	return {
-		listNamesAmongVisibleTo: async (_viewer, ids) => among(ids, () => true),
-		listBrowsableNamesAmong: async (_viewer, ids) => among(ids, (p) => !p.archived)
+		listNamesAmongVisibleTo: async (_viewer, ids) =>
+			among(ids, () => true).map(({ id, displayName, avatarPhotoId }) => ({
+				id,
+				displayName,
+				avatarPhotoId
+			})),
+		listBrowsableNamesAmong: async (_viewer, ids) =>
+			among(ids, (p) => !p.archived).map(({ id, displayName }) => ({ id, displayName }))
 	};
 }
 

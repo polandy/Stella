@@ -202,6 +202,19 @@ describe('who sees a tag', () => {
 			{ name: 'lake', key: 'lake', count: 1, onlyPrivate: false }
 		]);
 	});
+
+	it('lists a moment’s tags in the journal of every person it is about', async () => {
+		await saveJournalEntry(deps(), one, {
+			contactId: 'mine',
+			furtherSubjectIds: ['kid'],
+			entryDate: '2026-07-11',
+			body: '#zoo',
+			visibility: 'private'
+		});
+		expect(await reads().listOnContactVisibleTo(viewerOne, 'kid')).toEqual([
+			{ name: 'zoo', key: 'zoo', count: 1, onlyPrivate: true }
+		]);
+	});
 });
 
 describe('entries written before tags existed', () => {

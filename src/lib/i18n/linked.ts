@@ -81,3 +81,22 @@ export function textOf<Slot extends string>(sentence: LinkedSentence<Slot>): str
 	const names = Object.fromEntries(slots.map((slot) => [slot, sentence.people[slot]!.name]));
 	return sentence.say(names as Record<Slot, string>);
 }
+
+/**
+ * A sentence around a list of people — *lives with …*, *with …* — every name a way to that
+ * person. However many there are, the language joins them (`list`) and places them (`say`).
+ */
+export function listSentence(
+	named: readonly { id: string; displayName: string }[],
+	list: (names: string[]) => string,
+	say: (names: string) => string
+): LinkedSentence {
+	const people: Record<string, PersonRef> = {};
+	named.forEach((person, index) => {
+		people[`p${index}`] = { id: person.id, name: person.displayName };
+	});
+	return {
+		people,
+		say: (names) => say(list(Object.keys(people).map((slot) => names[slot]!)))
+	};
+}

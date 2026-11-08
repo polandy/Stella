@@ -282,8 +282,8 @@ describe('names out of the visible graph', () => {
 
 	it('names every person in it, and only people', () => {
 		expect(peopleNamedIn(graph)).toEqual([
-			{ id: 'c-zora', displayName: 'Zora' },
-			{ id: 'c-anna', displayName: 'Anna Brunner' }
+			{ id: 'c-zora', displayName: 'Zora', avatarPhotoId: null },
+			{ id: 'c-anna', displayName: 'Anna Brunner', avatarPhotoId: null }
 		]);
 	});
 

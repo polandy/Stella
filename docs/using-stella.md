@@ -418,6 +418,16 @@ or on the person's page lands here; *Open journal* in the Activity card's header
 journal, where moments are read at length and edited. Writing on a day that already has your moment adds to it rather than replacing it; to
 change what is there, use *Edit moment*.
 
+**A moment about several people** — an evening with the Brunners, say — is one moment, not one
+per person. It shows in the journal and Activity of each of them, with *with Sandra, Lea and Tim*
+and their small faces under it, and on Home as one row: *You wrote about Markus, Sandra, Lea and
+Tim*. Its author changes who it is about in *Edit moment*: the **About** row holds a chip per
+person — tap × to take someone off (the moment leaves their page and stays for the rest), or
+*Add someone* to add a person. The last chip has no ×; to drop the moment, remove it. A shared
+moment can only be about people the whole household sees. *Remove* takes it away for all of
+them, and the message says so: *Moment removed for Markus, Sandra, Lea and Tim*. If the people
+end up the same as another moment you wrote that day, the two become one, nothing lost.
+
 ### Before a visit: the brief
 
 On your way to see someone, open **Brief before a visit** from the **⋯** menu on their page — or

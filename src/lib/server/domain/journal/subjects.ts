@@ -52,3 +52,16 @@ export function subjectsForAudience(
 	if (subjects.some((id) => !allowed.has(id))) throw new JournalSubjectNotAllowedError();
 	return subjects;
 }
+
+/**
+ * The posted subjects plus those already on the entry that the author does not see: the editor
+ * could not show them as chips, so their absence from the form is no removal.
+ */
+export function withUnseenSubjects(
+	posted: readonly string[],
+	already: readonly string[],
+	visible: readonly { id: string }[]
+): string[] {
+	const seen = new Set(visible.map((c) => c.id));
+	return distinctSubjects([...posted, ...already.filter((id) => !seen.has(id))]);
+}

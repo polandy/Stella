@@ -38,12 +38,23 @@
 	// Removing is held back for an undo window (docs/02 §2.23), same as on the story.
 	const removals = useRemovals();
 	const removalKey = (entry: { id: string }) => buildKey('journal', entry.id);
-	function deferRemoval(event: SubmitEvent, entry: { id: string }) {
+	function deferRemoval(
+		event: SubmitEvent,
+		entry: { id: string; subjects: readonly { displayName: string }[] }
+	) {
 		event.preventDefault();
 		const body = new FormData(event.currentTarget as HTMLFormElement);
 		removals.remove({
 			key: removalKey(entry),
-			label: t('journal.entryRemoved'),
+			// A moment about several people goes from every page, so the toast names them all.
+			label:
+				entry.subjects.length > 1
+					? t('journal.removedFor', {
+							names: new Intl.ListFormat(i18n.intlLocale, { type: 'conjunction' }).format(
+								entry.subjects.map((s) => s.displayName)
+							)
+						})
+					: t('journal.entryRemoved'),
 			commit: async () => {
 				await removeThroughAction(fetch, '?/delete', body);
 				await invalidateAll();

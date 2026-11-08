@@ -244,7 +244,7 @@ describe('reading a few people by id', () => {
 		await repo.setArchived(viewerU1, 'c-old', NOW);
 	});
 
-	const sorted = (names: { id: string; displayName: string }[]) =>
+	const sorted = <T extends { id: string }>(names: T[]) =>
 		[...names].sort((a, b) => a.id.localeCompare(b.id));
 
 	it('names exactly the asked-for people the viewer may see, archived ones included', async () => {
@@ -255,14 +255,14 @@ describe('reading a few people by id', () => {
 			'c-gone'
 		]);
 		expect(sorted(names)).toEqual([
-			{ id: 'c-anna', displayName: 'Anna' },
-			{ id: 'c-old', displayName: 'Old Neighbour' }
+			{ id: 'c-anna', displayName: 'Anna', avatarPhotoId: null },
+			{ id: 'c-old', displayName: 'Old Neighbour', avatarPhotoId: null }
 		]);
 		// It is the visibility scope: the private person's owner is named them too.
 		const asked = await nameReads.listNamesAmongVisibleTo(viewerU2, ['c-old', 'c-theirs']);
 		expect(sorted(asked)).toEqual([
-			{ id: 'c-old', displayName: 'Old Neighbour' },
-			{ id: 'c-theirs', displayName: 'Theirs' }
+			{ id: 'c-old', displayName: 'Old Neighbour', avatarPhotoId: null },
+			{ id: 'c-theirs', displayName: 'Theirs', avatarPhotoId: null }
 		]);
 	});
 

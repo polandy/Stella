@@ -230,7 +230,10 @@
 										·
 									{/if}{t('search.momentOn', {
 										date: shortDate(m.entryDate),
-										name: m.contactName
+										name: new Intl.ListFormat(i18n.intlLocale, { type: 'conjunction' }).format([
+											m.contactName,
+											...m.otherNames
+										])
 									})}</span
 								>
 								{#if m.visibility === 'private'}<PrivateMark class="text-xs" />{/if}

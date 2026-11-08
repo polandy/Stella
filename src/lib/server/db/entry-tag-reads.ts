@@ -5,6 +5,7 @@ import { childRecordVisibleTo } from '../access/query-scoping';
 import type { Viewer } from '../access/visibility';
 import type { EntryTagReads } from '../domain/journal/tags';
 import type * as schema from './schema';
+import { journalAbout } from './journal-subjects';
 import { contact, entryTag, journalEntry, journalEntryTag } from './schema';
 
 /*
@@ -32,7 +33,7 @@ export function createDrizzleEntryTagReads(db: BunSQLiteDatabase<typeof schema>)
 			.where(
 				and(
 					eq(entryTag.householdId, viewer.householdId),
-					contactId ? eq(journalEntry.contactId, contactId) : undefined,
+					contactId ? journalAbout(contactId) : undefined,
 					childRecordVisibleTo(viewer, {
 						visibility: journalEntry.visibility,
 						createdBy: journalEntry.createdBy

@@ -6,6 +6,7 @@ import type { JournalEntry } from '$lib/server/domain/journal/journal';
 import type { JournalPhotoRef } from '$lib/server/domain/media/journal-photos';
 import { renderMarkdownWithMentions } from '$lib/server/domain/notes/markdown';
 import { authorLabel } from '$lib/story/author';
+import { faceLookup, subjectFacesOf, type SubjectFace } from '$lib/story/subjects';
 
 /*
  * The journal's entries as the page shows them (docs/02 §2.20), as plain data so it is tested
@@ -21,8 +22,8 @@ export interface JournalViewInput {
 	entries: readonly JournalEntry[];
 	/** The visible photos on the contact, oldest first. */
 	photos: readonly JournalPhotoRef[];
-	/** The mentioned people the viewer may see, archived ones included. */
-	names: readonly { id: string; displayName: string }[];
+	/** The people the entries are about or mention that the viewer may see, archived ones included. */
+	names: readonly SubjectFace[];
 	/** Who wrote an entry, by member id; null for someone no longer in the household. */
 	nameOfAuthor: (userId: string) => string | null;
 	/** The keys of the tags an entry must all carry (`?tag=`, once each); empty for every entry. */
@@ -67,6 +68,7 @@ export function journalEntriesFor({
 	// included, since a mention already written still names them (docs/02 §2.2).
 	const nameById = new Map(names.map((c) => [c.id, c.displayName]));
 	const nameOf = (id: string) => nameById.get(id) ?? null;
+	const faceOf = faceLookup(names);
 
 	// An entry carries a tag when its text does — the same reading that filed it (docs/02 §2.20.2).
 	const keys = tags.map(tagKey);
@@ -100,6 +102,7 @@ export function journalEntriesFor({
 		// Who wrote each entry, named the same way the story names it (docs/02 §2.23).
 		author: authorLabel(e.createdBy === viewerId, nameOfAuthor(e.createdBy)),
 		photos: photosByEntry.get(e.id) ?? [],
+		subjects: subjectFacesOf(e.subjectIds, faceOf),
 		updatedAt: e.updatedAt
 	}));
 }

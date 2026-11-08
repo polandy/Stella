@@ -1,3 +1,4 @@
+import type { SubjectFace } from '$lib/story/subjects';
 import { SECTION_FOR_REFERENCE, contactSectionPath } from '$lib/people/sections';
 import { segmentsOf } from '$lib/i18n/linked';
 import type { Translate } from '$lib/i18n/translate';
@@ -58,10 +59,12 @@ export function birthdayOf(
 	};
 }
 
-/** The people in the visible graph by name — the visibility scope, archived people included. */
-export function peopleNamedIn(graph: GraphModel): { id: string; displayName: string }[] {
+/** The people in the visible graph by name and face — the visibility scope, archived people included. */
+export function peopleNamedIn(graph: GraphModel): SubjectFace[] {
 	return graph.nodes.flatMap((node) =>
-		node.kind === 'person' ? [{ id: node.id, displayName: node.label }] : []
+		node.kind === 'person'
+			? [{ id: node.id, displayName: node.label, avatarPhotoId: node.avatarPhotoId ?? null }]
+			: []
 	);
 }
 

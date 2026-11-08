@@ -119,8 +119,8 @@ describe('inMemoryContactNames', () => {
 
 	it('names the asked-for people, archived ones included', async () => {
 		expect(await names.listNamesAmongVisibleTo(viewer, ['old', 'anna', 'nobody'])).toEqual([
-			{ id: 'anna', displayName: 'Anna' },
-			{ id: 'old', displayName: 'Otto' }
+			{ id: 'anna', displayName: 'Anna', avatarPhotoId: null },
+			{ id: 'old', displayName: 'Otto', avatarPhotoId: null }
 		]);
 	});
 

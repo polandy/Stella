@@ -1,3 +1,4 @@
+import { faceLookup } from '$lib/story/subjects';
 import { error, json } from '@sveltejs/kit';
 import { requireRemover } from '$lib/server/auth/guards';
 import { getContact } from '$lib/server/domain/contacts/contacts';
@@ -7,7 +8,7 @@ import { listStoryPage } from '$lib/server/domain/story/story';
 import { parseStoryCursor } from '$lib/story/cursor';
 import {
 	entryIdsOf,
-	mentionIdsOf,
+	namedIdsOf,
 	nameLookup,
 	photosByEntry,
 	STORY_PAGE_SIZE,
@@ -49,7 +50,7 @@ export const POST: RequestHandler = async ({ locals, params, request }) => {
 			params.id,
 			entryIdsOf(page.items)
 		),
-		listContactNamesAmong(locals.services.people.contactNameDeps, viewer, mentionIdsOf(page.items)),
+		listContactNamesAmong(locals.services.people.contactNameDeps, viewer, namedIdsOf(page.items)),
 		authorNames(locals.services.household.memberDeps, viewer.householdId)
 	]);
 	const context = {
@@ -61,6 +62,7 @@ export const POST: RequestHandler = async ({ locals, params, request }) => {
 		},
 		photosByEntry: photosByEntry(photos),
 		nameOf: nameLookup(names),
+		faceOf: faceLookup(names),
 		nameOfAuthor
 	};
 
