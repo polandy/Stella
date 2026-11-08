@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.1.4](https://github.com/polandy/Stella/compare/v0.1.3...v0.1.4) (2026-11-08)
+
+
+### Features
+
+* **journal:** one moment about several people — model, reads and editor (ADR-131, PR 1) ([#482](https://github.com/polandy/Stella/issues/482)) ([3b5e5d6](https://github.com/polandy/Stella/commit/3b5e5d66c39a98c44455473f8954da5481d082be))
+* **moments:** offer the anchor's home in the composer (ADR-131, D18) ([#484](https://github.com/polandy/Stella/issues/484)) ([f55b89e](https://github.com/polandy/Stella/commit/f55b89e13b8df1ccbad984876f5271e645939f4e))
+
 ## [0.1.3](https://github.com/polandy/Stella/compare/v0.1.2...v0.1.3) (2026-11-07)
 
 
