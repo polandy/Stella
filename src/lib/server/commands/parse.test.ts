@@ -43,6 +43,17 @@ describe('parseCommand', () => {
 		expect(parseCommand({ ...good, payload: { ...good.payload, anchorId: '' } })).toBeNull();
 	});
 
+	it('reads the further people a moment is about (docs/02 §2.20.3)', () => {
+		const parsed = parseCommand({
+			...good,
+			payload: { ...good.payload, subjectIds: ['sandra', 'lea'] }
+		});
+		expect(parsed?.payload).toMatchObject({ subjectIds: ['sandra', 'lea'] });
+		expect(
+			parseCommand({ ...good, payload: { ...good.payload, subjectIds: ['sandra', ''] } })
+		).toBeNull();
+	});
+
 	it('defaults a moment to shared and to nobody new, as the form does', () => {
 		const parsed = parseCommand({
 			...good,
