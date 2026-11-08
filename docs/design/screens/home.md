@@ -16,6 +16,9 @@ first to find somebody, so there the page opens on the person search.
 - While *Save* is off and something is typed or a photo added, the composer's status line says
   why, in `--fg-muted` rather than the line's usual `--fg-subtle` (docs/02 §2.22.1): a member
   who added a photo and words but no `@` must not take *Save* for broken.
+- Once the first `@` names whose moment it is, that person's chip opens a line above the field,
+  with *＋ Person* and the offer of their home, as on the person page (docs/02 §2.20.3); before
+  it there is no one to offer a home for, so the line stays away.
 - From `md` the stream carries rows of filter chips, *What* and *Who*, in the Circles chip
   style: links with `aria-current`, wrapping onto a second line, never scrolling sideways.
 - A third row, *Tags*, follows while the household has a tag: *All*, the **eight** most used

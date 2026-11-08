@@ -11,6 +11,7 @@
 	import ComposerPeopleList from '$lib/components/stream/ComposerPeopleList.svelte';
 	import ComposerPhotos from '$lib/components/stream/ComposerPhotos.svelte';
 	import ComposerSaveHint from '$lib/components/stream/ComposerSaveHint.svelte';
+	import ComposerSubjects from '$lib/components/stream/ComposerSubjects.svelte';
 	import TagListbox from '$lib/components/journal/TagListbox.svelte';
 	import TagsLine from '$lib/components/journal/TagsLine.svelte';
 	import type { KnownTag } from '$lib/hashtags/picker';
@@ -39,6 +40,7 @@
 		type ComposerError,
 		type Creating
 	} from '$lib/stream/composer-state';
+	import { subjectsUnfit, type HomeMembers } from '$lib/stream/composer-subjects';
 	import { ComposerController } from '$lib/stream/composer.svelte';
 	import { tick, untrack } from 'svelte';
 	import { ulid } from 'ulid';
@@ -96,6 +98,8 @@
 		tags?: readonly KnownTag[];
 		/** Immich is on the instance: the photo button offers *From Immich* (docs/02 §2.24.9). */
 		immichLibrary?: boolean;
+		/** The households the author can see, offered in one tap beside the moment's person. */
+		homes?: readonly HomeMembers[];
 	}
 	interface Anchor {
 		id: string;
@@ -119,7 +123,8 @@
 		onCancel,
 		onDraft,
 		tags = [],
-		immichLibrary = false
+		immichLibrary = false,
+		homes = []
 	}: Props = $props();
 
 	const t = useTranslate();
@@ -186,6 +191,7 @@
 	const newPeople = $derived(ui.newPeople);
 	const visibility = $derived(ui.visibility);
 	const anchorId = $derived(ui.anchorId);
+	const subjectIds = $derived(ui.subjectIds);
 	const fresh = $derived(ui.fresh);
 	const photoCount = $derived(ui.photos.length + ui.immichPhotos.length);
 	/*
@@ -224,8 +230,13 @@
 		composerReading(
 			{ body, picks, anchorId, sending, photos: ui.photos, immichPhotos: ui.immichPhotos },
 			known,
-			peopleContext()
+			peopleContext(),
+			subjectsUnfit(subjectIds, visibility, candidates)
 		)
+	);
+	// On Home the moment is the first @'s, so the chips beside it wait for that @ (§2.20.3).
+	const subjectsAnchor = $derived(
+		anchorPerson ?? candidates.find((c) => c.id === reading.referenced[0]?.id) ?? null
 	);
 	const unclear = $derived(reading.unclear);
 	const canSave = $derived(reading.canSave);
@@ -325,10 +336,10 @@
 
 	const cancel = () => void dispatch({ type: 'cancelled', nextCommandId: ulid() });
 
-	// Picks change only with the text, so the text alone says when the draft has changed.
+	// Picks change only with the text, so the text and the chips say when the draft has changed.
 	$effect(() => {
 		if (!onDraft) return;
-		onDraft(draftOf({ body, visibility, newPeople, picks: untrack(() => picks) }));
+		onDraft(draftOf({ body, visibility, newPeople, subjectIds, picks: untrack(() => picks) }));
 	});
 
 	async function onSubmit(event: SubmitEvent) {
@@ -361,23 +372,17 @@
 	class="relative flex flex-col rounded-app bg-card shadow-card transition-shadow focus-within:ring-2 focus-within:ring-primary/40"
 >
 	<FormError message={error ?? localError} id={errorId} class="mx-3 mt-3" />
-	{#if anchorPerson}
-		<!-- Not removable: the moment is on this person's page, so it is theirs. -->
-		<p class="flex flex-wrap items-center gap-1.5 px-3 pt-3 text-xs text-fg-subtle" data-anchor>
-			<span
-				class="inline-flex items-center gap-1.5 rounded-full bg-primary-soft py-0.5 pr-2.5 pl-0.5 font-semibold text-fg"
-			>
-				<Avatar
-					id={anchorPerson.id}
-					name={anchorPerson.displayName}
-					avatarPhotoId={anchorPerson.avatarPhotoId}
-					size={20}
-				/>{anchorPerson.displayName}
-			</span>
-			{t('composer.anchorGoesTo', {
-				name: anchorPerson.firstName ?? anchorPerson.displayName
-			})}
-		</p>
+	{#if subjectsAnchor}
+		<ComposerSubjects
+			anchor={subjectsAnchor}
+			onPersonPage={anchorPerson !== null}
+			{subjectIds}
+			{candidates}
+			{homes}
+			{visibility}
+			onadd={(ids) => void dispatch({ type: 'subjectsAdded', ids, anchorId: subjectsAnchor.id })}
+			onremove={(id) => void dispatch({ type: 'subjectRemoved', id })}
+		/>
 	{/if}
 	<div class="flex items-start gap-3 p-3 pb-2">
 		{#if !anchorPerson}

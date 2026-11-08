@@ -24,7 +24,11 @@
 <span class="text-xs text-fg-subtle" aria-live="polite">
 	<!-- Why Save is off comes first, a shade stronger: it is what stands in the way. -->
 	{#if reading.saveHint}
-		<span class="text-fg-muted" data-testid="save-hint">{t(SAVE_HINTS[reading.saveHint])}</span>
+		<span class="text-fg-muted" data-testid="save-hint"
+			>{reading.saveHint === 'unfitSubject'
+				? t('composer.unfitSubject', { name: reading.unfitSubject ?? '' })
+				: t(SAVE_HINTS[reading.saveHint])}</span
+		>
 	{:else if reading.unclear.length}
 		<!-- The box above asks which one. -->
 	{:else if anchored}

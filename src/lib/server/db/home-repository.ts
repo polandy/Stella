@@ -2,7 +2,13 @@ import { and, asc, eq, inArray, ne, sql } from 'drizzle-orm';
 import { alias } from 'drizzle-orm/sqlite-core';
 import type { BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
 import { contactColumnsVisibleTo, contactVisibleTo } from '../access/query-scoping';
-import type { HeldAddress, HomeOf, HomeReads, HomeRepository } from '../domain/homes/homes';
+import type {
+	HeldAddress,
+	HomeMembers,
+	HomeOf,
+	HomeReads,
+	HomeRepository
+} from '../domain/homes/homes';
 import type * as schema from './schema';
 import { contact, contactField, home, homeMember } from './schema';
 
@@ -148,6 +154,23 @@ export function createDrizzleHomeReads(db: BunSQLiteDatabase<typeof schema>): Ho
 				}
 			}
 			return [...homes.values()];
+		},
+
+		async listMembersVisibleTo(viewer) {
+			const rows = db
+				.select({ id: homeMember.homeId, contactId: homeMember.contactId })
+				.from(homeMember)
+				.innerJoin(contact, eq(contact.id, homeMember.contactId))
+				.where(contactVisibleTo(viewer))
+				.orderBy(asc(homeMember.homeId), asc(homeMember.contactId))
+				.all();
+			const homes = new Map<string, HomeMembers>();
+			for (const row of rows) {
+				const found = homes.get(row.id) ?? { id: row.id, memberIds: [] };
+				found.memberIds.push(row.contactId);
+				homes.set(row.id, found);
+			}
+			return [...homes.values()].filter((h) => h.memberIds.length > 1);
 		}
 	};
 }

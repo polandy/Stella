@@ -428,6 +428,15 @@ moment can only be about people the whole household sees. *Remove* takes it away
 them, and the message says so: *Moment removed for Markus, Sandra, Lea and Tim*. If the people
 end up the same as another moment you wrote that day, the two become one, nothing lost.
 
+You can write it that way straight away. On someone's page — or on Home once the first `@`
+says whose moment it is — a line under their chip offers the people who live with them:
+*＋ Sandra, Lea & Tim · live with Markus*. One tap adds them all as chips; tap × on one who was
+not there. Nobody is added unless you tap it, since most moments are about one person.
+*＋ Person* adds anyone else, grandma included, and the line then says how many journals the
+moment goes to. A shared moment only offers people the household sees; if you add someone
+private to a private moment and then switch it to *Shared*, Save waits until you take them off
+or make the moment private again.
+
 ### Before a visit: the brief
 
 On your way to see someone, open **Brief before a visit** from the **⋯** menu on their page — or

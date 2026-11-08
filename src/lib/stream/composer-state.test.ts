@@ -278,3 +278,57 @@ describe('cancelling', () => {
 		expect(state).toMatchObject({ body: '', picks: [], commandId: 'cmd-2', fresh: 1 });
 	});
 });
+
+/*
+ * The people a moment is about beside its anchor (docs/02 §2.20.3): chips the offer or
+ * *＋ Person* adds, each removable, carried by the draft and the save.
+ */
+describe('the moment’s further subjects', () => {
+	it('starts with none: offered, never preselected', () => {
+		expect(opened({ anchorId: 'anna' }).subjectIds).toEqual([]);
+	});
+
+	it('adds people once each, never the anchor, and takes one out again', () => {
+		const { state } = run(
+			opened({ anchorId: 'anna' }),
+			{ type: 'subjectsAdded', ids: ['t1', 'anna'], anchorId: 'anna' },
+			{ type: 'subjectsAdded', ids: ['t1', 't2'], anchorId: 'anna' },
+			{ type: 'subjectRemoved', id: 't1' }
+		);
+		expect(state.subjectIds).toEqual(['t2']);
+	});
+
+	it('keeps them in the draft and starts from them again', () => {
+		const { state } = run(opened({ anchorId: 'anna' }), {
+			type: 'subjectsAdded',
+			ids: ['t1'],
+			anchorId: 'anna'
+		});
+		const draft = draftOf(state);
+		expect(draft.subjectIds).toEqual(['t1']);
+		expect(opened({ anchorId: 'anna', held: draft }).subjectIds).toEqual(['t1']);
+	});
+
+	it('leaves them out of a draft about one person', () => {
+		expect(draftOf(opened({ anchorId: 'anna' }))).not.toHaveProperty('subjectIds');
+	});
+
+	it('empties them when the moment is cancelled', () => {
+		const { state } = run(
+			opened({ anchorId: 'anna' }),
+			{ type: 'subjectsAdded', ids: ['t1'], anchorId: 'anna' },
+			{ type: 'cancelled', nextCommandId: 'cmd-2' }
+		);
+		expect(state.subjectIds).toEqual([]);
+	});
+});
+
+describe('composerReading with a chip its audience may not name', () => {
+	it('keeps Save off and names who stands in the way', () => {
+		const state = opened({ anchorId: 'anna' });
+		const reading = composerReading({ ...state, body: 'Tea' }, candidates, new Map(), [secret]);
+		expect(reading.blocked).toBe('unfitSubject');
+		expect(reading.saveHint).toBe('unfitSubject');
+		expect(reading.unfitSubject).toBe('Sam Secret');
+	});
+});

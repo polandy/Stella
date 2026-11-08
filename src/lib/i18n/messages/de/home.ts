@@ -136,6 +136,20 @@ export const home: HomeMessages = {
 	'composer.placeholderAbout': (p) => `Was hast du mit ${p.name} erlebt?`,
 	'composer.anchorGoesTo': (p) => `· landet im Tagebuch von ${p.name}`,
 	'composer.mentionsSomeoneElse': '@ erwähnt weitere Personen',
+	'composer.goesToJournals': (p) => `· landet in ${p.count} Tagebüchern`,
+	'composer.offerNames': (p) =>
+		p.names.length < 2
+			? (p.names[0] ?? '')
+			: `${p.names.slice(0, -1).join(', ')} & ${p.names.at(-1)}`,
+	'composer.offerLiveWith': (p) => `· ${p.count === 1 ? 'wohnt' : 'wohnen'} mit ${p.name}`,
+	'composer.offerTake': (p) => `${p.names} zum Moment hinzufügen`,
+	'composer.privateOnly': (p) => `${p.names} nur in einem privaten Moment`,
+	'composer.addSubject': 'Person',
+	'composer.addSubjectLabel': 'Jemanden hinzufügen, um den es in diesem Moment geht',
+	'composer.findPerson': 'Person suchen…',
+	'composer.subjects': 'Menschen in diesem Moment',
+	'composer.unfitSubject': (p) =>
+		`${p.name} ist nur für dich sichtbar — mach den Moment privat oder nimm ${p.name} heraus`,
 	'composer.discarded': 'Moment verworfen',
 	'composer.people': 'Menschen',
 	'composer.tags': 'Tags',

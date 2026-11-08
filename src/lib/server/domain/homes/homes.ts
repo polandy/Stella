@@ -85,6 +85,14 @@ export interface HomeRepository {
 export interface HomeReads {
 	/** The homes someone the viewer may see lives in, oldest first. */
 	listForContactVisibleTo(viewer: Viewer, contactId: string): Promise<HomeOf[]>;
+	/** Every home with two or more people the viewer may see, and who they are (§2.20.3). */
+	listMembersVisibleTo(viewer: Viewer): Promise<HomeMembers[]>;
+}
+
+/** A home as the moment composer offers it: whom the viewer sees living there. */
+export interface HomeMembers {
+	id: string;
+	memberIds: string[];
 }
 
 export interface HomeListDeps {
@@ -328,6 +336,11 @@ export async function leaveHome(
 	const change = emptyChange();
 	change.leave.push({ homeId: input.homeId, contactId: input.contactId });
 	await deps.homes.apply(change);
+}
+
+/** The household's homes as the moment composer offers them (docs/02 §2.20.3). */
+export async function listHomeMembers(deps: HomeListDeps, viewer: Viewer): Promise<HomeMembers[]> {
+	return deps.homeReads.listMembersVisibleTo(viewer);
 }
 
 /** The homes someone lives in, as the viewer may see them. */

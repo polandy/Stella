@@ -4,6 +4,7 @@ import { listBrowsableNamesAmong } from '$lib/server/domain/contacts/contact-nam
 import { listPeopleEnoughForFirstRun } from '$lib/server/domain/contacts/directory';
 import { hasImminentDate, upcomingDates } from '$lib/server/domain/dates/upcoming';
 import { countOpenIdeas } from '$lib/server/domain/gifts/gifts';
+import { listHomeMembers } from '$lib/server/domain/homes/homes';
 import { dispatchCommand } from '$lib/server/domain/commands/dispatch';
 import { parsePhotoCommand, readCommand } from '$lib/server/commands/parse';
 import { fromFormData } from '$lib/commands/form-data';
@@ -51,23 +52,26 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 	// straddle midnight.
 	const day = todayFor(systemClock);
 
-	const [items, onList, dateSources, firstPeople, entryTags, todos, memories] = await Promise.all([
-		buildStream(locals.services.media.streamDeps, viewer, filter),
-		// Who the household can still act on — the browsing scope — among just those.
-		listBrowsableNamesAmong(locals.services.people.contactNameDeps, viewer, named.ids),
-		locals.services.records.importantDates.listSourcesVisibleTo(viewer),
-		// Just enough of the household to tell whether it has begun (docs/02 §2.22.3).
-		listPeopleEnoughForFirstRun(locals.services.people.contactDirectoryDeps, viewer),
-		// For the Tags row and the line over a stream narrowed by tags (docs/02 §2.20.2).
-		locals.services.story.entryTags.listVisibleTo(viewer),
-		// Every open one: the band picks the pressing ones, and counts the rest for *Show all*.
-		readHouseholdTodos(locals),
-		// One past each cap, so the band knows whether *More* has more (docs/02 §2.12.1).
-		memoriesOn(locals.services.media.memoryDeps, viewer, day, {
-			entries: MEMORY_BAND_CAP + 1,
-			photos: MEMORY_STRIP_CAP + 1
-		})
-	]);
+	const [items, onList, dateSources, firstPeople, entryTags, todos, memories, homes] =
+		await Promise.all([
+			buildStream(locals.services.media.streamDeps, viewer, filter),
+			// Who the household can still act on — the browsing scope — among just those.
+			listBrowsableNamesAmong(locals.services.people.contactNameDeps, viewer, named.ids),
+			locals.services.records.importantDates.listSourcesVisibleTo(viewer),
+			// Just enough of the household to tell whether it has begun (docs/02 §2.22.3).
+			listPeopleEnoughForFirstRun(locals.services.people.contactDirectoryDeps, viewer),
+			// For the Tags row and the line over a stream narrowed by tags (docs/02 §2.20.2).
+			locals.services.story.entryTags.listVisibleTo(viewer),
+			// Every open one: the band picks the pressing ones, and counts the rest for *Show all*.
+			readHouseholdTodos(locals),
+			// One past each cap, so the band knows whether *More* has more (docs/02 §2.12.1).
+			memoriesOn(locals.services.media.memoryDeps, viewer, day, {
+				entries: MEMORY_BAND_CAP + 1,
+				photos: MEMORY_STRIP_CAP + 1
+			}),
+			// The composer offers whoever shares the moment's person's home (docs/02 §2.20.3).
+			listHomeMembers(locals.services.records.homeListDeps, viewer)
+		]);
 	const stream = await streamForView(locals.services.people.contactNameDeps, viewer, items);
 
 	const dates = upcomingDates(dateSources, day);
@@ -81,6 +85,7 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 
 	return {
 		today: day,
+		homes,
 		...composerFor(url.searchParams, named, onList),
 		upcoming,
 		todos,
