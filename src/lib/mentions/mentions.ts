@@ -167,10 +167,10 @@ export function segmentMentions(body: string): MentionSegment[] {
 }
 
 /**
- * The people a body references other than the one it is about (docs/02 §2.20.1). Naming the
- * person whose note or journal entry this is says nothing new — they are its subject, not a
- * passive reference — so that id never becomes a link.
+ * The people a body references other than the ones it is about (docs/02 §2.20.1, §2.20.3).
+ * Naming a person whose note or journal entry this is says nothing new — they are its subject,
+ * not a passive reference — so that id never becomes a link.
  */
-export function mentionsOtherThan(ids: readonly string[], subjectContactId: string): string[] {
-	return ids.filter((id) => id !== subjectContactId);
+export function mentionsOtherThan(ids: readonly string[], subjectIds: readonly string[]): string[] {
+	return ids.filter((id) => !subjectIds.includes(id));
 }

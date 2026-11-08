@@ -13,6 +13,7 @@ import {
 	type JournalDeps,
 	type NewJournalEntry
 } from './journal';
+import { NoJournalSubjectError } from './subjects';
 
 /*
  * Journal use-cases (docs/02 §2.20). A journal entry is a per-person, per-day diary entry
@@ -26,6 +27,8 @@ import {
 const author: JournalAuthor = { userId: 'u1', householdId: 'h1', defaultVisibility: 'shared' };
 const viewer: Viewer = { id: 'u1', householdId: 'h1' };
 
+const keyOf = (ids: readonly string[]) => [...ids].sort().join(',');
+
 /** In-memory fake of the JournalRepository, enough to exercise the pure use-cases. */
 function fakeRepo(seed: JournalEntry[] = []) {
 	const rows = [...seed];
@@ -36,7 +39,7 @@ function fakeRepo(seed: JournalEntry[] = []) {
 		tags,
 		async findDay(p: {
 			authorId: string;
-			contactId: string;
+			subjectIds: readonly string[];
 			entryDate: string;
 			visibility: string;
 		}) {
@@ -44,14 +47,14 @@ function fakeRepo(seed: JournalEntry[] = []) {
 				rows.find(
 					(r) =>
 						r.createdBy === p.authorId &&
-						r.contactId === p.contactId &&
+						keyOf(r.subjectIds) === keyOf(p.subjectIds) &&
 						r.entryDate === p.entryDate &&
 						r.visibility === p.visibility
 				) ?? null
 			);
 		},
 		async insert(e: NewJournalEntry) {
-			rows.push({ ...e });
+			rows.push({ ...e, subjectIds: [...e.subjectIds] });
 		},
 		async updateBody(p: { id: string; title: string | null; body: string; updatedAt: number }) {
 			const row = rows.find((r) => r.id === p.id);
@@ -73,6 +76,18 @@ function fakeRepo(seed: JournalEntry[] = []) {
 			row.body = p.body;
 			row.updatedAt = p.updatedAt;
 			return true;
+		},
+		async setSubjectsOwn(p: {
+			authorId: string;
+			id: string;
+			subjectIds: readonly string[];
+			updatedAt: number;
+		}) {
+			const row = rows.find((r) => r.id === p.id && r.createdBy === p.authorId);
+			if (!row) return null;
+			row.subjectIds = [...p.subjectIds];
+			row.contactId = p.subjectIds[0];
+			return row.id;
 		},
 		async listForContactVisibleTo(_v: Viewer, contactId: string) {
 			return rows.filter((r) => r.contactId === contactId);
@@ -147,6 +162,7 @@ describe('saveJournalEntry', () => {
 		expect(d.repo.rows).toHaveLength(1);
 		expect(d.repo.rows[0]).toMatchObject({
 			contactId: 'c1',
+			subjectIds: ['c1'],
 			createdBy: 'u1',
 			visibility: 'shared',
 			entryDate: '2026-07-11',
@@ -251,8 +267,9 @@ describe('tags from the text', () => {
 				someJournalEntry('e2', { createdBy: 'u2', body: '#lake' })
 			])
 		);
-		await editJournalEntry(d, author, { id: 'e1', body: 'Now a #hike' });
-		await editJournalEntry(d, author, { id: 'e2', body: 'Now a #hike' });
+		const edit = { body: 'Now a #hike', mentionIds: [], subjectIds: ['anna'] };
+		await editJournalEntry(d, author, { id: 'e1', ...edit });
+		await editJournalEntry(d, author, { id: 'e2', ...edit });
 		expect(d.repo.tags.get('e1')).toEqual(['hike']);
 		expect(d.repo.tags.has('e2')).toBe(false);
 	});
@@ -264,6 +281,7 @@ describe('listJournalForContact', () => {
 			{
 				id: 'a',
 				contactId: 'c1',
+				subjectIds: ['c1'],
 				createdBy: 'u1',
 				visibility: 'shared',
 				entryDate: '2026-07-10',
@@ -290,6 +308,7 @@ describe('editJournalEntry', () => {
 				{
 					id: 'e1',
 					contactId: 'c1',
+					subjectIds: ['c1'],
 					createdBy: 'u1',
 					visibility: 'shared',
 					entryDate: '2026-07-11',
@@ -303,20 +322,23 @@ describe('editJournalEntry', () => {
 		const ok = await editJournalEntry(d, author, {
 			id: 'e1',
 			title: 'New',
-			body: 'expanded draft'
+			body: 'expanded draft',
+			mentionIds: [],
+			subjectIds: ['c1']
 		});
-		expect(ok).toBe(true);
+		expect(ok).toBe('e1');
 		expect(d.repo.rows[0]).toMatchObject({ title: 'New', body: 'expanded draft', updatedAt: 1000 });
 		// the slot itself is untouched
 		expect(d.repo.rows[0]).toMatchObject({ entryDate: '2026-07-11', visibility: 'shared' });
 	});
 
-	it('returns false for an entry that is not the author’s own', async () => {
+	it('returns null for an entry that is not the author’s own', async () => {
 		const d = deps(
 			fakeRepo([
 				{
 					id: 'e1',
 					contactId: 'c1',
+					subjectIds: ['c1'],
 					createdBy: 'someone-else',
 					visibility: 'shared',
 					entryDate: '2026-07-11',
@@ -327,7 +349,14 @@ describe('editJournalEntry', () => {
 				}
 			])
 		);
-		expect(await editJournalEntry(d, author, { id: 'e1', body: 'hijacked' })).toBe(false);
+		expect(
+			await editJournalEntry(d, author, {
+				id: 'e1',
+				body: 'hijacked',
+				mentionIds: [],
+				subjectIds: ['c1']
+			})
+		).toBeNull();
 		expect(d.repo.rows[0].body).toBe('draft');
 	});
 
@@ -337,6 +366,7 @@ describe('editJournalEntry', () => {
 				{
 					id: 'e1',
 					contactId: 'c1',
+					subjectIds: ['c1'],
 					createdBy: 'u1',
 					visibility: 'shared',
 					entryDate: '2026-07-11',
@@ -347,8 +377,78 @@ describe('editJournalEntry', () => {
 				}
 			])
 		);
-		await expect(editJournalEntry(d, author, { id: 'e1', body: '   ' })).rejects.toBeInstanceOf(
-			EmptyJournalEntryError
-		);
+		await expect(
+			editJournalEntry(d, author, { id: 'e1', body: '   ', mentionIds: [], subjectIds: ['c1'] })
+		).rejects.toBeInstanceOf(EmptyJournalEntryError);
+	});
+});
+
+/*
+ * A moment about several people (docs/02 §2.20.3, ADR-131): the first is the anchor, the slot
+ * is the set of them, and a subject is never also a mention.
+ */
+describe('a moment about several people', () => {
+	const day = { entryDate: '2026-07-11', visibility: 'shared' as const, title: null };
+
+	it('stores everyone, the anchor first, and keys the slot by the set', async () => {
+		const d = deps();
+		const first = await addToJournalDay(d, author, {
+			...day,
+			contactId: 'markus',
+			furtherSubjectIds: ['sandra', 'markus'],
+			body: 'Zoo',
+			mentionIds: []
+		});
+		const again = await addToJournalDay(d, author, {
+			...day,
+			contactId: 'sandra',
+			furtherSubjectIds: ['markus'],
+			body: 'Ice cream',
+			mentionIds: []
+		});
+		expect(again).toBe(first);
+		expect(d.repo.rows).toHaveLength(1);
+		expect(d.repo.rows[0]).toMatchObject({ contactId: 'markus', subjectIds: ['markus', 'sandra'] });
+	});
+
+	it('keeps a different set of people a separate slot that day', async () => {
+		const d = deps();
+		const add = { ...day, contactId: 'markus', body: 'x', mentionIds: [] };
+		await addToJournalDay(d, author, add);
+		await addToJournalDay(d, author, { ...add, furtherSubjectIds: ['sandra'] });
+		expect(d.repo.rows).toHaveLength(2);
+	});
+
+	it('drops a subject from the mentions, so nobody is counted twice', async () => {
+		const d = deps();
+		const id = await addToJournalDay(d, author, {
+			...day,
+			contactId: 'markus',
+			furtherSubjectIds: ['sandra'],
+			body: 'With @Sandra and @Oma',
+			mentionIds: ['sandra', 'oma']
+		});
+		expect(await d.repo.listMentionedContactIds(id)).toEqual(['oma']);
+	});
+
+	it('edits the people, the first becoming the anchor', async () => {
+		const d = deps(fakeRepo([someJournalEntry('e1', { contactId: 'markus', createdBy: 'u1' })]));
+		const id = await editJournalEntry(d, author, {
+			id: 'e1',
+			body: 'Zoo with @Sandra',
+			mentionIds: ['sandra'],
+			subjectIds: ['sandra', 'lea', 'sandra']
+		});
+		expect(id).toBe('e1');
+		expect(d.repo.rows[0]).toMatchObject({ contactId: 'sandra', subjectIds: ['sandra', 'lea'] });
+		expect(await d.repo.listMentionedContactIds('e1')).toEqual([]);
+	});
+
+	it('refuses to leave a moment about nobody: that is removing it', async () => {
+		const d = deps(fakeRepo([someJournalEntry('e1', { createdBy: 'u1' })]));
+		await expect(
+			editJournalEntry(d, author, { id: 'e1', body: 'x', mentionIds: [], subjectIds: [] })
+		).rejects.toBeInstanceOf(NoJournalSubjectError);
+		expect(d.repo.rows[0].subjectIds).toEqual(['anna']);
 	});
 });

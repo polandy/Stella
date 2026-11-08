@@ -103,7 +103,8 @@ function entry(
 			body: 'hiked with @{contact:c-sandra}',
 			createdAt: JULY_12,
 			updatedAt: JULY_12,
-			...over
+			...over,
+			subjectKey: over.contactId ?? 'c-beat'
 		})
 		.run();
 	db.insert(schema.journalMention).values({ journalEntryId: id, contactId: mentions }).run();

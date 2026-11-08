@@ -23,6 +23,7 @@ const moment = (body: string): StreamItem => ({
 	at: 1,
 	actor: { id: 'u1', name: 'One' },
 	anchor: { id: 'anna', name: 'Anna', avatarPhotoId: null },
+	others: [],
 	entryDate: '2026-10-29',
 	visibility: 'shared',
 	body,

@@ -52,6 +52,7 @@ export const archive: ArchiveMessages = {
 
 	'archive.mention.noteMentions': 'Notiz-Erwähnungen',
 	'archive.mention.journalMentions': 'Tagebuch-Erwähnungen',
+	'archive.mention.journalSubjects': 'Personen gemeinsamer Momente',
 	'archive.mention.touchpointParticipants': 'Kontakt-Beteiligte',
 
 	'archive.warning.personWithoutName': 'Eine Person ohne Kennung oder Namen wurde ausgelassen.',

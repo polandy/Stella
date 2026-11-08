@@ -55,6 +55,6 @@ export async function editNote(
 	});
 	if (!written) return false;
 
-	await setNoteMentions(deps, input.id, mentionsOtherThan(resolved.ids, found.contactId));
+	await setNoteMentions(deps, input.id, mentionsOtherThan(resolved.ids, [found.contactId]));
 	return true;
 }

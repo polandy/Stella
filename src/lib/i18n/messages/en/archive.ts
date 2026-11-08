@@ -61,6 +61,7 @@ export const archive = {
 
 	'archive.mention.noteMentions': 'note mentions',
 	'archive.mention.journalMentions': 'journal mentions',
+	'archive.mention.journalSubjects': 'people of shared moments',
 	'archive.mention.touchpointParticipants': 'touchpoint participants',
 
 	'archive.warning.personWithoutName': 'A person without an id or a name was left out.',

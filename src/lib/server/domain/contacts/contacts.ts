@@ -83,6 +83,11 @@ export interface ContactName {
 	displayName: string;
 }
 
+/** A name with the face beside it, for the people a page draws (docs/02 §2.20.3). */
+export interface ContactFace extends ContactName {
+	avatarPhotoId: string | null;
+}
+
 /** What tells namesakes apart (docs/02 §2.2.3), as stored. */
 export interface DistinguishableContact extends ContactName {
 	lastName: string | null;

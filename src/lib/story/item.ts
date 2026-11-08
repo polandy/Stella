@@ -1,4 +1,5 @@
 import type { InteractionKind } from '$lib/story/interaction-kinds';
+import type { SubjectFace } from '$lib/story/subjects';
 
 /*
  * What the story timeline renders (docs/02 §2.23). Client-safe: the type lives here so the
@@ -28,6 +29,8 @@ export interface StoryJournalItem extends StoryItemBase {
 	/** Server-rendered, already-safe Markdown (docs/02 §2.5). */
 	bodyHtml: string;
 	photos: string[];
+	/** Whom it is about, the anchor first (docs/02 §2.20.3). */
+	subjects: SubjectFace[];
 	/** Whether *Edit* is offered: the author alone, as on the journal page (docs/02 §2.20). */
 	editable: boolean;
 	/** The stored body for the editor — its author's alone, null for anyone else's. */

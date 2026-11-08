@@ -9,6 +9,8 @@
 	import { useI18n } from '$lib/i18n/context.svelte';
 	import type { ComponentProps } from 'svelte';
 	import JournalEntryEditor from './JournalEntryEditor.svelte';
+	import MomentWith from './MomentWith.svelte';
+	import { othersThan, type SubjectFace } from '$lib/story/subjects';
 
 	type EditorProps = ComponentProps<typeof JournalEntryEditor>;
 
@@ -34,6 +36,7 @@
 			/** Server-rendered, already-safe Markdown (docs/02 §2.5). */
 			bodyHtml: string;
 			photos: string[];
+			subjects: SubjectFace[];
 		};
 		/** Whose journal it is: the editor saves there, and the photos are of them. */
 		contact: { id: string; displayName: string };
@@ -106,6 +109,7 @@
 			{/if}
 		</div>
 	</div>
+	<MomentWith others={othersThan(entry.subjects, contact.id)} />
 	<!-- The entry and its editor glide into each other in place (docs/05 §5.11). -->
 	<Swap when={editing}>
 		<JournalEntryEditor contactId={contact.id} {entry} {candidates} {tags} onDone={onDoneEditing} />

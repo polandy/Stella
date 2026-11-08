@@ -15,6 +15,7 @@ import { mergeContacts } from './contact-merge';
 import type { NameWrite } from '../domain/contacts/name-parts';
 import { readGender, type Gender } from '../../people/gender';
 import type { Job } from '../../people/job';
+import { replaceSubjectEverywhere } from './journal-subjects';
 import type * as schema from './schema';
 import {
 	activityLog,
@@ -132,6 +133,8 @@ export function createDrizzleContactRepository(
 					.get();
 				if (!found) return null;
 
+				// A moment about others too stays theirs; only one about this person alone goes.
+				replaceSubjectEverywhere(tx, id, null, audit.createdAt);
 				// Every photo the contact carries — their own and those inside their journal
 				// entries — goes first and explicitly. The entries cascade with the contact, but
 				// `photo.journal_entry_id` carries no cascade in the database (docs/03 §photo),

@@ -14,6 +14,7 @@ export function someJournalEntry(
 	return {
 		id,
 		contactId: 'anna',
+		subjectIds: [fields.contactId ?? 'anna'],
 		createdBy: 'u1',
 		visibility: 'shared',
 		entryDate: '2026-10-09',
@@ -37,7 +38,8 @@ const JOURNAL_REPOSITORY_METHODS: Record<keyof JournalRepository, true> = {
 	deleteRemovableBy: true,
 	replaceMentions: true,
 	listMentionedContactIds: true,
-	replaceTags: true
+	replaceTags: true,
+	setSubjectsOwn: true
 };
 
 /**

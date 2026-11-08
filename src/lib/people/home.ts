@@ -1,4 +1,4 @@
-import type { LinkedSentence, PersonRef } from '$lib/i18n/linked';
+import { listSentence, type LinkedSentence } from '$lib/i18n/linked';
 import type { RelationshipCategory } from '$lib/relationships/categories';
 import type { RelationshipStatus } from '$lib/relationships/status';
 import { removalKey } from '$lib/undo/keys';
@@ -23,14 +23,7 @@ export function livesWithSentence(
 	list: (names: string[]) => string,
 	say: (names: string) => string
 ): LinkedSentence {
-	const people: Record<string, PersonRef> = {};
-	housemates.forEach((mate, index) => {
-		people[`p${index}`] = { id: mate.id, name: mate.displayName };
-	});
-	return {
-		people,
-		say: (names) => say(list(Object.keys(people).map((slot) => names[slot]!)))
-	};
+	return listSentence(housemates, list, say);
 }
 
 /** The key of someone moving out of a home, held while its undo window is open. */

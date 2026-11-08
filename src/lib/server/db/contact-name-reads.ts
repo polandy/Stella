@@ -20,7 +20,7 @@ export function createDrizzleContactNameReads(
 	return {
 		async listNamesAmongVisibleTo(viewer: Viewer, ids: readonly string[]) {
 			return db
-				.select(nameColumns)
+				.select({ ...nameColumns, avatarPhotoId: contactTable.avatarPhotoId })
 				.from(contactTable)
 				.where(and(inArray(contactTable.id, [...ids]), contactVisibleTo(viewer)))
 				.all();

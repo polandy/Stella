@@ -16,7 +16,8 @@ const viewer = { id: 'u', householdId: 'h' };
 /** Records what the store was asked: the calls are what these cases are about. */
 function recordingNames() {
 	const asked: { read: string; ids: readonly string[] }[] = [];
-	const answer = (ids: readonly string[]) => ids.map((id) => ({ id, displayName: id }));
+	const answer = (ids: readonly string[]) =>
+		ids.map((id) => ({ id, displayName: id, avatarPhotoId: null }));
 	const contactNames: ContactNameReads = {
 		listNamesAmongVisibleTo: async (_viewer, ids) => {
 			asked.push({ read: 'visible', ids });

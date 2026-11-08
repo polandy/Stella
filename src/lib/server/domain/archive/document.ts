@@ -138,6 +138,8 @@ export function buildArchiveDocument(
 	);
 	const noteMentions = linksBy(t('note_mention'), 'note_id', 'contact_id');
 	const entryMentions = linksBy(t('journal_mention'), 'journal_entry_id', 'contact_id');
+	// The further people of an entry; the entry itself sits under its anchor (docs/02 §2.20.3).
+	const entrySubjects = linksBy(t('journal_subject'), 'journal_entry_id', 'contact_id');
 	const participants = linksBy(t('interaction_participant'), 'interaction_id', 'contact_id');
 	const contactTags = linksBy(t('contact_tag'), 'contact_id', 'tag_id');
 	const circleMembers = groupBy(t('circle_membership'), 'circle_id');
@@ -272,6 +274,7 @@ export function buildArchiveDocument(
 					visibility: text(e, 'visibility'),
 					author: text(e, 'created_by'),
 					created_at: moment(e, 'created_at'),
+					subjects: entrySubjects.get(id(e)) ?? null,
 					mentions: entryMentions.get(id(e)) ?? null,
 					photos: (entryPhotos.get(id(e)) ?? []).map(photo)
 				})

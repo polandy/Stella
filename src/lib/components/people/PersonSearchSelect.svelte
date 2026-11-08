@@ -56,6 +56,8 @@
 		 * search closes and says `fullPlaceholder`; chips beyond it stay, for the form to explain.
 		 */
 		max?: number | null;
+		/** With `multiple`: the fewest chips the field keeps; that many have no ×. */
+		min?: number;
 		/** What the closed search says once `max` is reached. */
 		fullPlaceholder?: string;
 		/** Chips to mark as refused — the form says why under the field (docs/02 §2.4). */
@@ -80,6 +82,7 @@
 		onPick,
 		onCreate,
 		max = null,
+		min = 0,
 		fullPlaceholder,
 		markedIds = [],
 		markedLabel = '',
@@ -171,6 +174,7 @@
 	}
 
 	function remove(pid: string) {
+		if (selectedIds.length <= min) return;
 		selectedIds = selectedIds.filter((id) => id !== pid);
 	}
 
@@ -268,14 +272,18 @@
 					<span class={marked ? 'line-through decoration-danger' : ''}>{person.displayName}</span>
 					{#if marked && markedLabel}<span class="sr-only">({markedLabel})</span>{/if}
 					<!-- 24px square (WCAG 2.5.8); the negative margin keeps the chip its own height. -->
-					<button
-						type="button"
-						onclick={() => remove(person.id)}
-						aria-label={t('components.personSearch.remove', { name: person.displayName })}
-						class="-my-1 grid size-6 place-items-center rounded-full text-fg-muted hover:bg-bg hover:text-fg"
-					>
-						<Icon name="remove" size={12} />
-					</button>
+					{#if selectedIds.length > min}
+						<button
+							type="button"
+							onclick={() => remove(person.id)}
+							aria-label={t('components.personSearch.remove', { name: person.displayName })}
+							class="-my-1 grid size-6 place-items-center rounded-full text-fg-muted hover:bg-bg hover:text-fg"
+						>
+							<Icon name="remove" size={12} />
+						</button>
+					{:else}
+						<span class="w-1"></span>
+					{/if}
 				</span>
 			{/each}
 		{/if}

@@ -80,6 +80,7 @@ export const home = {
 	'home.link.notNow': 'Not now',
 	'home.stream.wroteIn': 'wrote in',
 	'home.stream.wroteInJournal': '’s journal',
+	'home.stream.wroteAbout': 'wrote about',
 	'home.stream.added': 'added',
 	'home.stream.addedAfter': '',
 	'home.stream.newPerson': 'New person',

@@ -404,6 +404,7 @@ describe('deleting a contact', () => {
 			.values({
 				id: 'j-1',
 				contactId: 'c-gone',
+				subjectKey: 'c-gone',
 				createdBy: U1,
 				visibility: 'shared',
 				entryDate: '2025-01-01',

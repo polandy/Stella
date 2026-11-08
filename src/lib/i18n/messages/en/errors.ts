@@ -178,6 +178,9 @@ export const errors = {
 	'errors.journal.couldNotSave': 'Could not save the moment.',
 	'errors.apiToken.emptyName': 'Please name the token, so you can tell later what it is for.',
 	'errors.journal.gone': 'This entry is no longer there.',
+	'errors.journal.noSubject': 'A moment is about at least one person. To drop it, remove it.',
+	'errors.journal.subjectNotAllowed':
+		'A shared moment can only be about people the whole household sees.',
 	// The screen an address that leads nowhere lands on (docs/design/screens/across-screens.md).
 	'errors.stranded.person': 'This person is no longer here',
 	'errors.stranded.personHint':

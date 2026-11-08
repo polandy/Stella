@@ -15,6 +15,7 @@ const moment = (over: Partial<Extract<Memory, { kind: 'moment' }>> = {}): Memory
 	date: '2024-11-01',
 	actor,
 	anchor: hilde,
+	others: [],
 	entryDate: '2024-11-01',
 	visibility: 'shared',
 	body: '**Kuchen** mit @{contact:karl} im Garten',

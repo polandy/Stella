@@ -65,7 +65,11 @@ describe('tagNarrowing', () => {
 });
 
 describe('tagSummary', () => {
-	const moment = (id: string, anchorId: string) => ({ id, anchor: { id: anchorId } });
+	const moment = (id: string, anchorId: string, others: string[] = []) => ({
+		id,
+		anchor: { id: anchorId },
+		others: others.map((o) => ({ id: o }))
+	});
 
 	it('counts the moments and the people they are about', () => {
 		const summary = tagSummary(
@@ -90,6 +94,15 @@ describe('tagSummary', () => {
 
 	it('is null for a tag the viewer has no moment of — unknown, or on others’ private moments', () => {
 		expect(tagSummary('walk', [], [])).toBeNull();
+	});
+
+	it('counts every person a moment is about, once', () => {
+		const summary = tagSummary(
+			'walk',
+			[tag('Walk', 2)],
+			[moment('m1', 'markus', ['sandra', 'lea']), moment('m2', 'lea')]
+		);
+		expect(summary).toMatchObject({ moments: 2, people: 3 });
 	});
 });
 

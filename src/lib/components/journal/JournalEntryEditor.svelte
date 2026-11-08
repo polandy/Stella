@@ -3,6 +3,8 @@
 	import Button from '$lib/components/ui/Button.svelte';
 	import FormError from '$lib/components/ui/FormError.svelte';
 	import MentionTextarea from '$lib/components/stream/MentionTextarea.svelte';
+	import PersonSearchSelect from '$lib/components/people/PersonSearchSelect.svelte';
+	import { subjectPool, type SubjectFace } from '$lib/story/subjects';
 	import { deserialize } from '$app/forms';
 	import { invalidateAll } from '$app/navigation';
 	import { useI18n } from '$lib/i18n/context.svelte';
@@ -10,7 +12,7 @@
 
 	/*
 	 * A journal entry corrected in place (docs/02 §2.20): its title and text, the day, who sees
-	 * it and its photos staying as they are. One editor for the journal page and the person's
+	 * it and its photos staying as they are, and the people it is about (§2.20.3). One editor for the journal page and the person's
 	 * Activity card, so both save the same way. Its author's alone; online only, like removing.
 	 */
 	let {
@@ -30,6 +32,8 @@
 			/** Whom each mention names, so the field shows them as handles. */
 			mentionNames: Record<string, string>;
 			visibility: 'shared' | 'private';
+			/** Whom it is about that the author sees, the anchor first. */
+			subjects: SubjectFace[];
 		};
 		/** Whom the @-picker offers: everyone visible but the person whose journal it is. */
 		candidates: ComponentProps<typeof MentionTextarea>['candidates'];
@@ -45,6 +49,9 @@
 	let title = $state(entry.title ?? '');
 	// svelte-ignore state_referenced_locally
 	let body = $state(entry.bodyForEdit ?? '');
+	// svelte-ignore state_referenced_locally
+	let subjectIds = $state(entry.subjects.map((s) => s.id));
+	const pool = $derived(subjectPool(entry.subjects, candidates, entry.visibility));
 	let saving = $state(false);
 	let unclear = $state(false);
 	let error = $state<string | null>(null);
@@ -85,6 +92,26 @@
 >
 	<input type="hidden" name="id" value={entry.id} />
 	<FormError message={error} />
+	<div class="flex flex-col gap-1 text-sm">
+		<label for="journal-subjects-{entry.id}" class="text-fg-muted">
+			{t('journal.subjects.label')}
+		</label>
+		<PersonSearchSelect
+			id="journal-subjects-{entry.id}"
+			people={pool}
+			name="subjectIds"
+			multiple
+			min={1}
+			bind:selectedIds={subjectIds}
+			describedBy={subjectIds.length === 1 ? `journal-subjects-hint-${entry.id}` : undefined}
+			placeholder={t('journal.subjects.add')}
+		/>
+		{#if subjectIds.length === 1}
+			<p id="journal-subjects-hint-{entry.id}" class="text-xs text-fg-muted">
+				{t('journal.subjects.lastOne')}
+			</p>
+		{/if}
+	</div>
 	<label class="flex flex-col gap-1 text-sm">
 		<span class="text-fg-muted">{t('journal.titleOptional')}</span>
 		<input

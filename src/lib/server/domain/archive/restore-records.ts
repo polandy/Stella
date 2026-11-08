@@ -4,6 +4,7 @@ import { todayFor } from '../../../dates/today';
 import type { MentionKind, RestoreContext } from './restore-context';
 import { bool, ids, int, ms, records, str, visibilityOf, type Row } from './restore-fields';
 import type { PhotoPlan } from './restore-photos';
+import { subjectKeyOf } from '../journal/subjects';
 
 /*
  * What each restored person carries (docs/02 §2.15): contact fields, dates, notes, journal
@@ -17,6 +18,7 @@ export interface PersonRecordRows {
 	notes: Row[];
 	noteMentions: Row[];
 	journalEntries: Row[];
+	journalSubjects: Row[];
 	journalMentions: Row[];
 	interactions: Row[];
 	participants: Row[];
@@ -46,6 +48,7 @@ export function planPersonRecords(
 		notes: [],
 		noteMentions: [],
 		journalEntries: [],
+		journalSubjects: [],
 		journalMentions: [],
 		interactions: [],
 		participants: [],
@@ -136,9 +139,12 @@ export function planPersonRecords(
 				continue;
 			}
 			const entryId = str(entry, 'id') ?? ctx.ids.next();
+			// An archive from before ADR-131 has none: a one-person entry, keyed by its person.
+			const further = knownOnly(ids(entry, 'subjects'), 'journalSubjects');
 			rows.journalEntries.push({
 				id: entryId,
 				contact_id: contactId,
+				subject_key: subjectKeyOf([contactId, ...further]),
 				created_by: author(entry),
 				visibility: visibilityOf(entry),
 				entry_date: day,
@@ -146,6 +152,9 @@ export function planPersonRecords(
 				body,
 				...stamps(entry)
 			});
+			for (const subject of further.filter((id) => id !== contactId)) {
+				rows.journalSubjects.push({ journal_entry_id: entryId, contact_id: subject });
+			}
 			for (const mentioned of knownOnly(ids(entry, 'mentions'), 'journalMentions')) {
 				rows.journalMentions.push({ journal_entry_id: entryId, contact_id: mentioned });
 			}

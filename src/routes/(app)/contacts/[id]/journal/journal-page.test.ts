@@ -115,6 +115,7 @@ function journalOver(
 ) {
 	const edited: { id: string; title: string | null; body: string; updatedAt: number }[] = [];
 	const mentioned: [string, string[]][] = [];
+	const subjects: [string, readonly string[]][] = [];
 	const unlinked: string[] = [];
 	const journal = journalRepositoryWith({
 		listForContactVisibleTo: async (_viewer, contactId) =>
@@ -125,6 +126,11 @@ function journalOver(
 			return own;
 		},
 		replaceMentions: async (id, ids) => void mentioned.push([id, ids]),
+		setSubjectsOwn: async ({ authorId, id, subjectIds }) => {
+			const own = entries.some((e) => e.id === id && e.createdBy === authorId);
+			if (own) subjects.push([id, subjectIds]);
+			return own ? id : null;
+		},
 		replaceTags: async () => {},
 		findRemovableBy: async (remover, id) =>
 			entries.some((e) => e.id === id && e.createdBy === remover.id)
@@ -149,7 +155,7 @@ function journalOver(
 		ids: sequentialIds(),
 		clock: fixedClock(NOW)
 	};
-	return { journalDeps, edited, mentioned, unlinked };
+	return { journalDeps, edited, mentioned, subjects, unlinked };
 }
 
 /** Runs `action` on Anna's journal with `form` posted, over `services`. */
@@ -406,6 +412,29 @@ describe('edit', () => {
 		const journal = journalOver();
 		await edit(formOf({ ...change, body: `${mentionToken('anna')} and @BenBrunner` }), journal);
 		expect(journal.mentioned).toEqual([['e1', ['ben']]]);
+	});
+
+	it('keeps the people it is about when the form names none', async () => {
+		const journal = journalOver();
+		await edit(formOf(change), journal);
+		expect(journal.subjects).toEqual([['e1', ['anna']]]);
+	});
+
+	it('gives the entry the people the author chose, the first its anchor', async () => {
+		const journal = journalOver();
+		const form = formOf(change);
+		for (const id of ['ben', 'anna']) form.append('subjectIds', id);
+		expect(await edit(form, journal)).toEqual(BACK);
+		expect(journal.subjects).toEqual([['e1', ['ben', 'anna']]]);
+	});
+
+	it('refuses a private person in a shared moment before writing anything', async () => {
+		const journal = journalOver();
+		const form = formOf(change);
+		for (const id of ['anna', 'pia']) form.append('subjectIds', id);
+		const answer = await edit(form, journal, { locale: 'de' });
+		expect(answer).toEqual(refused(400, de('errors.journal.subjectNotAllowed')));
+		expect(journal.edited).toEqual([]);
 	});
 
 	it('clears a title left empty', async () => {

@@ -42,6 +42,8 @@ export interface MomentRow {
 	at: number;
 	actor: StreamActor;
 	anchor: StreamPerson;
+	/** The further people it is about that the viewer sees, in order (docs/02 §2.20.3). */
+	others: StreamPerson[];
 	entryDate: string;
 	visibility: Visibility;
 	/** Markdown source with canonical mention tokens; rendered at the edge. */

@@ -154,7 +154,9 @@ function household({
 			contactNameDeps: {
 				contactNames: {
 					listNamesAmongVisibleTo: async (_viewer, ids) =>
-						ids.filter((id) => people.includes(id)).map((id) => ({ id, displayName: id })),
+						ids
+							.filter((id) => people.includes(id))
+							.map((id) => ({ id, displayName: id, avatarPhotoId: null })),
 					listBrowsableNamesAmong: async (_viewer, ids) =>
 						ids
 							.filter((id) => people.includes(id) && !archived.includes(id))

@@ -5,6 +5,8 @@
 	import Icon from '$lib/components/ui/Icon.svelte';
 	import InteractionEditor from '$lib/components/person/InteractionEditor.svelte';
 	import JournalEntryEditor from '$lib/components/journal/JournalEntryEditor.svelte';
+	import MomentWith from '$lib/components/journal/MomentWith.svelte';
+	import { othersThan } from '$lib/story/subjects';
 	import PrivateMark from '$lib/components/ui/PrivateMark.svelte';
 	import Swap from '$lib/components/ui/Swap.svelte';
 	import Veil from '$lib/components/ui/Veil.svelte';
@@ -148,12 +150,20 @@
 				? '?/removeTodo'
 				: '?/removeInteraction';
 
+	// A moment about several people goes from every page, so the toast names them all.
 	const removedLabel = (item: StoryItemView) =>
 		item.kind === 'journal'
-			? t('story.entryRemoved')
+			? item.subjects.length > 1
+				? t('journal.removedFor', { names: listOf(item.subjects) })
+				: t('story.entryRemoved')
 			: item.kind === 'todo'
 				? t('todos.removed')
 				: t('story.interactionRemoved');
+
+	const listOf = (people: readonly { displayName: string }[]) =>
+		new Intl.ListFormat(i18n.intlLocale, { type: 'conjunction' }).format(
+			people.map((p) => p.displayName)
+		);
 
 	const removeLabel = (item: StoryItemView) =>
 		item.kind === 'journal'
@@ -271,6 +281,7 @@
 							</div>
 
 							{#if item.kind === 'journal'}
+								<MomentWith others={othersThan(item.subjects, contactId)} />
 								<!-- The moment and the journal's own editor glide into each other in place
 								     (docs/05 §5.11); its day and photos stay as they are. -->
 								<Swap when={editingId === item.id}>

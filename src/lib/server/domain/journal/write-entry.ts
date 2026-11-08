@@ -59,7 +59,7 @@ export async function writeJournalEntry(
 			visibility: input.visibility,
 			title: input.title,
 			body: resolved.body,
-			mentionIds: mentionsOtherThan(resolved.ids, input.contactId)
+			mentionIds: mentionsOtherThan(resolved.ids, [input.contactId])
 		}
 	);
 	return {

@@ -1,4 +1,4 @@
-import { and, desc, eq, lt, or } from 'drizzle-orm';
+import { and, desc, eq, inArray, lt, or, sql } from 'drizzle-orm';
 import type { BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
 import { authoredRemovableBy, childRecordVisibleTo } from '../access/query-scoping';
 import type { DeletedPhotoFiles } from '../domain/media/avatars';
@@ -12,14 +12,25 @@ import type {
 } from '../domain/journal/journal';
 import type { IdGenerator } from '../id';
 import { sweepEntryTags, writeEntryTags } from './entry-tags';
+import { insertFurtherSubjects, journalAbout, setEntrySubjects } from './journal-subjects';
+import { subjectKeyOf } from '../domain/journal/subjects';
 import type * as schema from './schema';
-import { activityLog, contact, journalEntry, journalMention, photo, user } from './schema';
+import {
+	activityLog,
+	contact,
+	journalEntry,
+	journalMention,
+	journalSubject,
+	photo,
+	user
+} from './schema';
 
 /*
  * Drizzle adapter for the JournalRepository port (docs/08 §8.3). Reads join the parent contact
  * and are scoped through the central `childRecordVisibleTo`, so a private entry — or any entry
  * on a private contact — is only returned to those allowed to see it. The `journal_day_slot`
- * unique index backs the per-day/visibility upsert done in the domain use-case.
+ * unique index backs the per-day/visibility upsert done in the domain use-case. An entry is read
+ * in each of its subjects' journals (docs/02 §2.20.3); its visibility is its anchor's.
  */
 
 const columns = {
@@ -44,10 +55,30 @@ export function createDrizzleJournalRepository(
 			createdBy: journalEntry.createdBy
 		});
 
+	/** Each entry with its subjects, the anchor first. */
+	const withSubjects = (rows: Omit<JournalEntry, 'subjectIds'>[]): JournalEntry[] => {
+		if (rows.length === 0) return [];
+		const further = new Map<string, string[]>();
+		for (const row of db
+			.select({ entryId: journalSubject.journalEntryId, contactId: journalSubject.contactId })
+			.from(journalSubject)
+			.where(
+				inArray(
+					journalSubject.journalEntryId,
+					rows.map((r) => r.id)
+				)
+			)
+			.orderBy(sql`rowid`)
+			.all()) {
+			further.set(row.entryId, [...(further.get(row.entryId) ?? []), row.contactId]);
+		}
+		return rows.map((r) => ({ ...r, subjectIds: [r.contactId, ...(further.get(r.id) ?? [])] }));
+	};
+
 	return {
 		async findDay(p: {
 			authorId: string;
-			contactId: string;
+			subjectIds: readonly string[];
 			entryDate: string;
 			visibility: Visibility;
 		}): Promise<JournalEntry | null> {
@@ -56,30 +87,34 @@ export function createDrizzleJournalRepository(
 				.from(journalEntry)
 				.where(
 					and(
-						eq(journalEntry.contactId, p.contactId),
+						eq(journalEntry.subjectKey, subjectKeyOf(p.subjectIds)),
 						eq(journalEntry.createdBy, p.authorId),
 						eq(journalEntry.entryDate, p.entryDate),
 						eq(journalEntry.visibility, p.visibility)
 					)
 				)
 				.get();
-			return row ?? null;
+			return row ? withSubjects([row])[0] : null;
 		},
 
 		async insert(e: NewJournalEntry) {
-			db.insert(journalEntry)
-				.values({
-					id: e.id,
-					contactId: e.contactId,
-					createdBy: e.createdBy,
-					visibility: e.visibility,
-					entryDate: e.entryDate,
-					title: e.title,
-					body: e.body,
-					createdAt: e.createdAt,
-					updatedAt: e.updatedAt
-				})
-				.run();
+			db.transaction((tx) => {
+				tx.insert(journalEntry)
+					.values({
+						id: e.id,
+						contactId: e.subjectIds[0],
+						subjectKey: subjectKeyOf(e.subjectIds),
+						createdBy: e.createdBy,
+						visibility: e.visibility,
+						entryDate: e.entryDate,
+						title: e.title,
+						body: e.body,
+						createdAt: e.createdAt,
+						updatedAt: e.updatedAt
+					})
+					.run();
+				insertFurtherSubjects(tx, e.id, e.subjectIds);
+			});
 		},
 
 		async updateBody(p: { id: string; title: string | null; body: string; updatedAt: number }) {
@@ -109,22 +144,40 @@ export function createDrizzleJournalRepository(
 			return true;
 		},
 
+		async setSubjectsOwn(p: {
+			authorId: string;
+			id: string;
+			subjectIds: readonly string[];
+			updatedAt: number;
+		}): Promise<string | null> {
+			return db.transaction((tx) => {
+				const own = tx
+					.select({ id: journalEntry.id })
+					.from(journalEntry)
+					.where(and(eq(journalEntry.id, p.id), eq(journalEntry.createdBy, p.authorId)))
+					.get();
+				return own ? setEntrySubjects(tx, p.id, p.subjectIds, p.updatedAt) : null;
+			});
+		},
+
 		async listForContactVisibleTo(viewer: Viewer, contactId: string): Promise<JournalEntry[]> {
-			return db
-				.select(columns)
-				.from(journalEntry)
-				.innerJoin(contact, eq(journalEntry.contactId, contact.id))
-				.where(
-					and(
-						eq(journalEntry.contactId, contactId),
-						childRecordVisibleTo(viewer, {
-							visibility: journalEntry.visibility,
-							createdBy: journalEntry.createdBy
-						})
+			return withSubjects(
+				db
+					.select(columns)
+					.from(journalEntry)
+					.innerJoin(contact, eq(journalEntry.contactId, contact.id))
+					.where(
+						and(
+							journalAbout(contactId),
+							childRecordVisibleTo(viewer, {
+								visibility: journalEntry.visibility,
+								createdBy: journalEntry.createdBy
+							})
+						)
 					)
-				)
-				.orderBy(desc(journalEntry.entryDate), desc(journalEntry.createdAt))
-				.all();
+					.orderBy(desc(journalEntry.entryDate), desc(journalEntry.createdAt))
+					.all()
+			);
 		},
 
 		async listPageForContactVisibleTo(
@@ -133,7 +186,7 @@ export function createDrizzleJournalRepository(
 			opts: { limit: number; before?: JournalCursor }
 		): Promise<JournalEntry[]> {
 			const conditions = [
-				eq(journalEntry.contactId, contactId),
+				journalAbout(contactId),
 				childRecordVisibleTo(viewer, {
 					visibility: journalEntry.visibility,
 					createdBy: journalEntry.createdBy
@@ -149,14 +202,16 @@ export function createDrizzleJournalRepository(
 					)!
 				);
 			}
-			return db
-				.select(columns)
-				.from(journalEntry)
-				.innerJoin(contact, eq(journalEntry.contactId, contact.id))
-				.where(and(...conditions))
-				.orderBy(desc(journalEntry.entryDate), desc(journalEntry.createdAt))
-				.limit(opts.limit)
-				.all();
+			return withSubjects(
+				db
+					.select(columns)
+					.from(journalEntry)
+					.innerJoin(contact, eq(journalEntry.contactId, contact.id))
+					.where(and(...conditions))
+					.orderBy(desc(journalEntry.entryDate), desc(journalEntry.createdAt))
+					.limit(opts.limit)
+					.all()
+			);
 		},
 
 		async findRemovableBy(remover: Remover, id: string) {

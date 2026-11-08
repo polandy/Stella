@@ -1,9 +1,18 @@
-import { and, eq, inArray, sql, type SQL } from 'drizzle-orm';
+import { and, asc, eq, inArray, sql, type SQL } from 'drizzle-orm';
 import type { BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
 import { childRecordBrowsableBy, contactBrowsableBy } from '../access/query-scoping';
 import type { Viewer } from '../access/visibility';
 import type { SearchRepository } from '../domain/search/search';
-import { contact, entryTag, gift, journalEntry, journalEntryTag, note, todo } from './schema';
+import {
+	contact,
+	entryTag,
+	gift,
+	journalEntry,
+	journalEntryTag,
+	journalSubject,
+	note,
+	todo
+} from './schema';
 import type * as schema from './schema';
 import { contactFts, giftFts, journalFts, noteFts, todoFts } from './search-schema';
 
@@ -17,8 +26,32 @@ import { contactFts, giftFts, journalFts, noteFts, todoFts } from './search-sche
 export function createDrizzleSearchRepository(
 	db: BunSQLiteDatabase<typeof schema>
 ): SearchRepository {
-	/** The moments matching `ftsQuery`, narrowed by `where`, best first. */
-	const moments = (viewer: Viewer, ftsQuery: string, where: SQL | undefined, limit: number) =>
+	/** The names of the further people each moment is about that the viewer sees, in order. */
+	const othersOf = (viewer: Viewer, entryIds: string[]) => {
+		const rows = db
+			.select({ entryId: journalSubject.journalEntryId, name: contact.displayName })
+			.from(journalSubject)
+			.innerJoin(contact, eq(journalSubject.contactId, contact.id))
+			.where(and(inArray(journalSubject.journalEntryId, entryIds), contactBrowsableBy(viewer)))
+			.orderBy(asc(sql`${journalSubject}.rowid`))
+			.all();
+		const byEntry = new Map<string, string[]>();
+		for (const row of rows)
+			byEntry.set(row.entryId, [...(byEntry.get(row.entryId) ?? []), row.name]);
+		return byEntry;
+	};
+
+	/** The moments matching `ftsQuery`, narrowed by `where`, best first, with all their people. */
+	const moments = (viewer: Viewer, ftsQuery: string, where: SQL | undefined, limit: number) => {
+		const hits = momentHits(viewer, ftsQuery, where, limit);
+		const others = othersOf(
+			viewer,
+			hits.map((h) => h.entryId)
+		);
+		return hits.map((h) => ({ ...h, otherNames: others.get(h.entryId) ?? [] }));
+	};
+
+	const momentHits = (viewer: Viewer, ftsQuery: string, where: SQL | undefined, limit: number) =>
 		db
 			.select({
 				entryId: journalEntry.id,

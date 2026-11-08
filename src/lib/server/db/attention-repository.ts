@@ -4,7 +4,7 @@ import { childRecordVisibleTo, contactBrowsableBy } from '../access/query-scopin
 import type { Viewer } from '../access/visibility';
 import type { AttentionRepository, LastTouched } from '../domain/attention/last-touched';
 import type * as schema from './schema';
-import { contact, interaction, journalEntry } from './schema';
+import { contact, interaction, journalEntry, journalSubject } from './schema';
 
 /*
  * Drizzle adapter for the AttentionRepository port (docs/02 §2.2). Three scoped reads rather
@@ -34,6 +34,16 @@ export function createDrizzleAttentionRepository(
 				.groupBy(journalEntry.contactId)
 				.all();
 
+			// A moment about several people counts for each of them (docs/02 §2.20.3).
+			const latestAsFurtherSubject = db
+				.select({ contactId: journalSubject.contactId, day: max(journalEntry.entryDate) })
+				.from(journalSubject)
+				.innerJoin(journalEntry, eq(journalSubject.journalEntryId, journalEntry.id))
+				.innerJoin(contact, eq(journalEntry.contactId, contact.id))
+				.where(childRecordVisibleTo(viewer, journalEntry))
+				.groupBy(journalSubject.contactId)
+				.all();
+
 			const latestTouchpoint = db
 				.select({ contactId: interaction.contactId, day: max(interaction.happenedAt) })
 				.from(interaction)
@@ -44,7 +54,11 @@ export function createDrizzleAttentionRepository(
 
 			// ISO days compare as strings, so the later of the two is the greater one.
 			const lastTouched = new Map<string, string>();
-			for (const { contactId, day } of [...latestJournal, ...latestTouchpoint]) {
+			for (const { contactId, day } of [
+				...latestJournal,
+				...latestAsFurtherSubject,
+				...latestTouchpoint
+			]) {
 				if (day === null) continue;
 				const known = lastTouched.get(contactId);
 				if (known === undefined || day > known) lastTouched.set(contactId, day);

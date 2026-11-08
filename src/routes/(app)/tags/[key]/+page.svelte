@@ -65,7 +65,7 @@
 					</div>
 					{#each day.items as item (item.kind + item.id)}
 						<article
-							class="group grid grid-cols-[32px_1fr] gap-3 rounded-app px-2.5 py-2.5 transition-colors hover:bg-card"
+							class="group grid grid-cols-[minmax(32px,auto)_1fr] gap-3 rounded-app px-2.5 py-2.5 transition-colors hover:bg-card"
 						>
 							<StreamMoment
 								{item}

@@ -1,3 +1,4 @@
+import { faceLookup } from '$lib/story/subjects';
 import { error, redirect } from '@sveltejs/kit';
 import { requireRemover, requireUser, requireViewer } from '$lib/server/auth/guards';
 import { CONTACT_FIELD_KINDS } from '$lib/people/contact-fields';
@@ -89,11 +90,12 @@ export const load = (async ({ locals, params, url }) => {
 		entryIdsOf(read.storyPage.items)
 	);
 
+	const named = peopleNamedIn(read.family.graph);
 	const ctx: PersonViewContext = {
 		viewerId: viewer.id,
 		// The visible graph holds everyone the viewer may see, archived people included, so a
 		// mention already written keeps its name (docs/02 §2.2) without a second read of them.
-		nameOf: nameLookup(peopleNamedIn(read.family.graph)),
+		nameOf: nameLookup(named),
 		nameOfAuthor: read.nameOfAuthor
 	};
 	const t = translator(locals);
@@ -106,7 +108,8 @@ export const load = (async ({ locals, params, url }) => {
 		...ctx,
 		remover,
 		person,
-		photosByEntry: photosByEntry(journalPhotos)
+		photosByEntry: photosByEntry(journalPhotos),
+		faceOf: faceLookup(named)
 	};
 
 	return {

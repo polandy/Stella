@@ -176,7 +176,7 @@ function anchorAndMentions(
 	anchorId: string | null | undefined
 ): { anchorContactId: string; mentionedContactIds: string[] } {
 	if (anchorId)
-		return { anchorContactId: anchorId, mentionedContactIds: mentionsOtherThan(ids, anchorId) };
+		return { anchorContactId: anchorId, mentionedContactIds: mentionsOtherThan(ids, [anchorId]) };
 	const [anchorContactId, ...mentionedContactIds] = ids;
 	if (!anchorContactId) throw new MomentNeedsPersonError();
 	return { anchorContactId, mentionedContactIds };

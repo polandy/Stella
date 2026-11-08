@@ -117,7 +117,14 @@ describe('the gallery (docs/02 §2.14)', () => {
 		await repo.insert(photo({ id: 'g-private', visibility: 'private', createdAt: 200 }));
 		await repo.insert(photo({ id: 'g-u2', createdBy: U2, createdAt: 300 }));
 		db.insert(schema.journalEntry)
-			.values({ id: 'j1', contactId: 'mara', createdBy: U1, entryDate: '2026-01-01', body: 'x' })
+			.values({
+				id: 'j1',
+				contactId: 'mara',
+				subjectKey: 'mara',
+				createdBy: U1,
+				entryDate: '2026-01-01',
+				body: 'x'
+			})
 			.run();
 		await repo.insert(photo({ id: 'in-journal', journalEntryId: 'j1', createdAt: 400 }));
 		// A caption is written after the upload, the way the interface does it.
@@ -199,7 +206,7 @@ describe('the gallery (docs/02 §2.14)', () => {
 describe('listJournalPhotosOfEntries', () => {
 	function entry(id: string, entryDate: string) {
 		db.insert(schema.journalEntry)
-			.values({ id, contactId: 'mara', createdBy: U1, entryDate, body: id })
+			.values({ id, contactId: 'mara', subjectKey: 'mara', createdBy: U1, entryDate, body: id })
 			.run();
 	}
 

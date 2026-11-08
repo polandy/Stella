@@ -23,7 +23,8 @@ const moment: MomentHit = {
 	visibility: 'shared',
 	entryDate: '2026-10-12',
 	contactId: 'c1',
-	contactName: 'Hans'
+	contactName: 'Hans',
+	otherNames: []
 };
 const note: NoteHit = {
 	noteId: 'n1',

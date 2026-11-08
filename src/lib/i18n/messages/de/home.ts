@@ -73,6 +73,7 @@ export const home: HomeMessages = {
 	'home.link.notNow': 'Jetzt nicht',
 	'home.stream.wroteIn': 'schrieb in',
 	'home.stream.wroteInJournal': 's Tagebuch',
+	'home.stream.wroteAbout': 'schrieb über',
 	'home.stream.added': 'legte',
 	'home.stream.addedAfter': 'an',
 	'home.stream.newPerson': 'Neue Person',

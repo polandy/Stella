@@ -85,6 +85,7 @@ describe('attention repository, last touched', () => {
 			.values({
 				id: 'j1',
 				contactId: 'oma',
+				subjectKey: 'oma',
 				createdBy: U1,
 				visibility: 'shared',
 				entryDate: '2026-08-01',
@@ -108,6 +109,7 @@ describe('attention repository, last touched', () => {
 			.values({
 				id: 'j2',
 				contactId: 'oma',
+				subjectKey: 'oma',
 				createdBy: U1,
 				visibility: 'shared',
 				entryDate: '2026-09-01',
@@ -123,6 +125,7 @@ describe('attention repository, last touched', () => {
 			.values({
 				id: 'j1',
 				contactId: 'oma',
+				subjectKey: 'oma',
 				createdBy: U1,
 				visibility: 'private',
 				entryDate: '2026-09-01',
@@ -131,6 +134,24 @@ describe('attention repository, last touched', () => {
 			.run();
 
 		// The author sees their own private entry; the other household member does not.
+		expect((await byId(viewerU1, 'oma'))!.lastTouchedOn).toBe('2026-09-01');
+		expect((await byId(viewerU2, 'oma'))!.lastTouchedOn).toBeNull();
+	});
+
+	it('dates every person a moment is about, not only its anchor', async () => {
+		db.insert(schema.journalEntry)
+			.values({
+				id: 'j1',
+				contactId: 'secret',
+				subjectKey: 'oma,secret',
+				createdBy: U1,
+				visibility: 'private',
+				entryDate: '2026-09-01',
+				body: 'x'
+			})
+			.run();
+		db.insert(schema.journalSubject).values({ journalEntryId: 'j1', contactId: 'oma' }).run();
+
 		expect((await byId(viewerU1, 'oma'))!.lastTouchedOn).toBe('2026-09-01');
 		expect((await byId(viewerU2, 'oma'))!.lastTouchedOn).toBeNull();
 	});

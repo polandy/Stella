@@ -232,7 +232,7 @@
 							<!-- A moment's row is the target of *Moment saved · Show* (`saved-moment.ts`). -->
 							<article
 								id={item.kind === 'moment' ? savedMomentAnchor(item.id) : undefined}
-								class="stream-row group grid grid-cols-[32px_1fr] gap-3 rounded-app px-2.5 py-2.5 transition-colors hover:bg-card"
+								class="stream-row group grid grid-cols-[minmax(32px,auto)_1fr] gap-3 rounded-app px-2.5 py-2.5 transition-colors hover:bg-card"
 							>
 								{#if item.kind === 'moment'}
 									<StreamMoment {item} members={data.members} when={stream.when(item.at)} />
