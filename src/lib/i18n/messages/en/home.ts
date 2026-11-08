@@ -146,6 +146,21 @@ export const home = {
 	'composer.placeholderAbout': (p: { name: string }) => `What happened with ${p.name}?`,
 	'composer.anchorGoesTo': (p: { name: string }) => `· goes to ${p.name}’s journal`,
 	'composer.mentionsSomeoneElse': '@ mentions someone else',
+	'composer.goesToJournals': (p: { count: number }) => `· goes to ${p.count} journals`,
+	'composer.offerNames': (p: { names: readonly string[] }) =>
+		p.names.length < 2
+			? (p.names[0] ?? '')
+			: `${p.names.slice(0, -1).join(', ')} & ${p.names.at(-1)}`,
+	'composer.offerLiveWith': (p: { count: number; name: string }) =>
+		`· ${p.count === 1 ? 'lives' : 'live'} with ${p.name}`,
+	'composer.offerTake': (p: { names: string }) => `Add ${p.names} to the moment`,
+	'composer.privateOnly': (p: { names: string }) => `${p.names} only in a private moment`,
+	'composer.addSubject': 'Person',
+	'composer.addSubjectLabel': 'Add someone this moment is about',
+	'composer.findPerson': 'Find a person…',
+	'composer.subjects': 'People in this moment',
+	'composer.unfitSubject': (p: { name: string }) =>
+		`${p.name} is private to you — make the moment private, or take ${p.name} out`,
 	'composer.discarded': 'Moment discarded',
 	'composer.people': 'People',
 	'composer.tags': 'Tags',

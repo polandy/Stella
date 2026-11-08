@@ -56,10 +56,10 @@ export function pickerRows(
  * Why Save is off, in the order the writer meets it: a moment on its way, no words yet, a
  * namesake left open, nobody to file it under — the page's own person or an @mention.
  */
-export type SaveBlock = 'sending' | 'noText' | 'unclear' | 'noPerson';
+export type SaveBlock = 'sending' | 'noText' | 'unclear' | 'unfitSubject' | 'noPerson';
 
 /** The line beside a disabled Save; a namesake and a moment on its way have their own words. */
-export type SaveHint = 'writeWhatHappened' | 'mentionSomeone';
+export type SaveHint = 'writeWhatHappened' | 'unfitSubject' | 'mentionSomeone';
 
 export interface ComposerReading {
 	/** For the "goes to …'s journal" line: picks by id, anything typed by name. */
@@ -70,12 +70,16 @@ export interface ComposerReading {
 	canSave: boolean;
 	/** Only once something is typed or a photo added: an empty field needs no telling. */
 	saveHint: SaveHint | null;
+	/** A chip the moment's audience may not name, by name: a private person in a shared one. */
+	unfitSubject: string | null;
 }
 
 export function composerReading(
 	state: Pick<ComposerState, 'body' | 'picks' | 'anchorId' | 'sending' | 'photos' | 'immichPhotos'>,
 	known: readonly MentionCandidate[],
-	contexts: ReadonlyMap<string, PersonContext>
+	contexts: ReadonlyMap<string, PersonContext>,
+	/** The chips the audience may not name (`subjectsUnfit`). */
+	unfit: readonly { displayName: string }[] = []
 ): ComposerReading {
 	const stored = toStored(state.body, state.picks);
 	const resolved = resolveMentions(stored, createHandleResolver([...known]));
@@ -89,28 +93,40 @@ export function composerReading(
 				? 'noText'
 				: unclear.length > 0
 					? 'unclear'
-					: state.anchorId === null && referenced.length === 0
-						? 'noPerson'
-						: null;
+					: unfit.length > 0
+						? 'unfitSubject'
+						: state.anchorId === null && referenced.length === 0
+							? 'noPerson'
+							: null;
 	const started = hasText || state.photos.length + state.immichPhotos.length > 0;
 	const saveHint: SaveHint | null = !started
 		? null
 		: blocked === 'noText'
 			? 'writeWhatHappened'
-			: blocked === 'noPerson'
-				? 'mentionSomeone'
-				: null;
-	return { referenced, unclear, blocked, canSave: blocked === null, saveHint };
+			: blocked === 'unfitSubject'
+				? 'unfitSubject'
+				: blocked === 'noPerson'
+					? 'mentionSomeone'
+					: null;
+	return {
+		referenced,
+		unclear,
+		blocked,
+		canSave: blocked === null,
+		saveHint,
+		unfitSubject: unfit[0]?.displayName ?? null
+	};
 }
 
 /** What is typed, in the form it is stored and started from again. */
 export function draftOf(
-	state: Pick<ComposerState, 'body' | 'picks' | 'visibility' | 'newPeople'>
+	state: Pick<ComposerState, 'body' | 'picks' | 'visibility' | 'newPeople' | 'subjectIds'>
 ): MomentDraft {
 	return {
 		body: toStored(state.body, state.picks),
 		visibility: state.visibility,
-		newPeople: [...state.newPeople]
+		newPeople: [...state.newPeople],
+		...(state.subjectIds.length > 0 ? { subjectIds: [...state.subjectIds] } : {})
 	};
 }
 
@@ -123,6 +139,7 @@ export function cleared(state: ComposerState, nextCommandId: string): ComposerSt
 		photos: [],
 		immichPhotos: [],
 		newPeople: [],
+		subjectIds: [],
 		fresh: state.fresh + 1,
 		commandId: nextCommandId
 	};

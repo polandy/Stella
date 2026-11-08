@@ -223,3 +223,36 @@ describe('reset after saving', () => {
 		expect(state.newPeople).toEqual([]);
 	});
 });
+
+describe('saving a moment about several people (§2.20.3)', () => {
+	it('sends the chips as its subjects, and starts the next moment without them', () => {
+		const { state, commands } = run(
+			opened('anna'),
+			{ type: 'subjectsAdded', ids: ['sandra', 'lea'], anchorId: 'anna' },
+			{ type: 'submitted', entryDate: '2026-11-08', editing: null },
+			{ type: 'photosPrepared', photos: [], reachable: true }
+		);
+		const submit = commands.find((c) => c.kind === 'submit');
+		expect(submit && 'payload' in submit ? submit.payload.subjectIds : null).toEqual([
+			'sandra',
+			'lea'
+		]);
+		const next = run(state, {
+			type: 'answered',
+			delivery: { status: 'kept' },
+			inPlace: true,
+			nextCommandId: 'cmd-2'
+		}).state;
+		expect(next.subjectIds).toEqual([]);
+	});
+
+	it('sends no subjects for a moment about one person', () => {
+		const { commands } = run(
+			opened('anna'),
+			{ type: 'submitted', entryDate: '2026-11-08', editing: null },
+			{ type: 'photosPrepared', photos: [], reachable: true }
+		);
+		const submit = commands.find((c) => c.kind === 'submit');
+		expect(submit && 'payload' in submit ? submit.payload : {}).not.toHaveProperty('subjectIds');
+	});
+});

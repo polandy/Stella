@@ -139,6 +139,7 @@
 			{editing}
 			onEditDone={stopEditing}
 			onKept={() => sheetOpen && closeSheet()}
+			homes={data.homes}
 		/>
 	{/key}
 {/snippet}

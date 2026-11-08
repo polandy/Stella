@@ -324,6 +324,10 @@
 					me={{ id: data.user.id, name: data.user.name }}
 					{today}
 					anchor={c}
+					homes={data.homes.map((home) => ({
+						id: home.id,
+						memberIds: [c.id, ...home.livesWith.map((p) => p.id)]
+					}))}
 					held={editingMoment ? null : momentDraft}
 					editing={editingMoment}
 					onEditDone={stopEditingMoment}

@@ -9,6 +9,7 @@ import type { KeptPhoto } from '$lib/pwa/outbox';
 import { cleared, draftOf } from './composer-reading';
 import { sendingAfter, type SendEvent } from './composer-send';
 import { addCreated, chosen, only, withPicker, withText } from './composer-mentions';
+import { subjectsAdded } from './composer-subjects';
 
 /*
  * What the moment composer is doing (docs/02 §2.22.1): the text and whom its picked handles
@@ -54,6 +55,8 @@ export interface ComposerState {
 	visibility: MentionAudience;
 	/** The person whose page the moment is written on: it lands in their journal without an `@`. */
 	anchorId: string | null;
+	/** Whom else it is about, beside the anchor (§2.20.3): chips, never preselected. */
+	subjectIds: readonly string[];
 	/** The command this draft will be saved as; a new one after every save. */
 	commandId: string;
 	/**
@@ -92,6 +95,9 @@ export type ComposerEvent =
 	| { type: 'createAdded'; key: string }
 	| { type: 'createCancelled' }
 	| { type: 'visibilitySet'; visibility: MentionAudience }
+	/** A home's offer or *＋ Person*; `anchorId` is whom the moment goes to now. */
+	| { type: 'subjectsAdded'; ids: readonly string[]; anchorId: string | null }
+	| { type: 'subjectRemoved'; id: string }
 	| { type: 'photosPicked'; files: readonly File[] }
 	| { type: 'immichPhotosAdded'; files: readonly File[] }
 	| { type: 'cancelled'; nextCommandId: string }
@@ -150,6 +156,7 @@ export function composerAtOpen(at: ComposerOpening): ComposerState {
 		visibility: startFrom?.visibility ?? 'shared',
 		// A kept moment written on a person's page stays theirs, wherever it is opened again.
 		anchorId: at.anchorId ?? at.kept?.anchorId ?? null,
+		subjectIds: startFrom?.subjectIds ?? [],
 		commandId: at.commandId,
 		fresh: 0,
 		photos: [],
@@ -191,6 +198,13 @@ export function composerAfter(state: ComposerState, event: ComposerEvent): Compo
 			]);
 		case 'visibilitySet':
 			return only({ ...state, visibility: event.visibility });
+		case 'subjectsAdded':
+			return only({
+				...state,
+				subjectIds: subjectsAdded(state.subjectIds, event.ids, event.anchorId)
+			});
+		case 'subjectRemoved':
+			return only({ ...state, subjectIds: state.subjectIds.filter((id) => id !== event.id) });
 		case 'photosPicked':
 			return only({ ...state, photos: [...event.files] });
 		case 'immichPhotosAdded':

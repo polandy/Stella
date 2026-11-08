@@ -6,6 +6,7 @@ import { NeedsSomethingToKnowThemByError } from '../contacts/create-contact';
 import { AmbiguousMentionError } from '../mentions/resolve-for-audience';
 import { ContactGoneError } from '../contacts/require-visible';
 import { MomentNeedsPersonError, captureMoment, type CaptureMomentDeps } from './moments';
+import { JournalSubjectNotAllowedError } from '../journal/subjects';
 import { contactRepositoryWith } from '../testing';
 
 /*
@@ -438,5 +439,108 @@ describe('captureMoment with an anchor', () => {
 		expect(f.entries).toHaveLength(1);
 		expect(f.entries[0].body).toContain('Morning run');
 		expect(f.entries[0].body).toContain('Evening call');
+	});
+});
+
+/*
+ * A moment about several people (docs/02 §2.20.3): the composer's chips are its further
+ * subjects, beside the anchor; an `@` stays a mention.
+ */
+describe('captureMoment with further subjects', () => {
+	const home = [
+		{ id: 'markus', displayName: 'Markus Brunner', firstName: 'Markus', lastName: 'Brunner' },
+		{ id: 'sandra', displayName: 'Sandra Brunner', firstName: 'Sandra', lastName: 'Brunner' },
+		{ id: 'lea', displayName: 'Lea Brunner', firstName: 'Lea', lastName: 'Brunner' },
+		{
+			id: 'jonas',
+			displayName: 'Jonas Brunner',
+			firstName: 'Jonas',
+			lastName: 'Brunner',
+			visibility: 'private' as const,
+			createdBy: author.userId
+		}
+	];
+
+	it('is one entry about the anchor and every chip', async () => {
+		const f = fakes(home);
+		const result = await captureMoment(f.deps, author, {
+			...base,
+			body: 'Raclette evening',
+			anchorId: 'markus',
+			subjectIds: ['sandra', 'lea']
+		});
+
+		expect(f.entries).toHaveLength(1);
+		expect(f.entries[0]).toMatchObject({
+			contactId: 'markus',
+			subjectIds: ['markus', 'sandra', 'lea']
+		});
+		expect(result.mentionedContactIds).toEqual([]);
+	});
+
+	it('takes the first mention as the anchor on Home, the chips beside it', async () => {
+		const f = fakes(home);
+		const result = await captureMoment(f.deps, author, {
+			...base,
+			body: 'Raclette with @MarkusBrunner',
+			subjectIds: ['sandra']
+		});
+
+		expect(result.anchorContactId).toBe('markus');
+		expect(f.entries[0].subjectIds).toEqual(['markus', 'sandra']);
+	});
+
+	it('stores no mention of a subject named with @', async () => {
+		const f = fakes(home);
+		const result = await captureMoment(f.deps, author, {
+			...base,
+			body: '@LeaBrunner read her horse story',
+			anchorId: 'markus',
+			subjectIds: ['lea']
+		});
+
+		expect(result.mentionedContactIds).toEqual([]);
+		expect(f.mentions.get(result.entryId)).toEqual([]);
+	});
+
+	it('keeps a solo note and the family evening of one day apart', async () => {
+		const f = fakes(home);
+		await captureMoment(f.deps, author, { ...base, body: 'Solo run', anchorId: 'markus' });
+		await captureMoment(f.deps, author, {
+			...base,
+			body: 'Family evening',
+			anchorId: 'markus',
+			subjectIds: ['sandra']
+		});
+
+		expect(f.entries).toHaveLength(2);
+	});
+
+	it('refuses a private person in a shared moment, creating nobody', async () => {
+		const f = fakes(home);
+		await expect(
+			captureMoment(f.deps, author, {
+				...base,
+				body: 'Met @{contact:new:k1}',
+				anchorId: 'markus',
+				subjectIds: ['jonas'],
+				newPeople: [{ key: 'k1', firstName: 'Nina', lastName: 'Graf', description: null }]
+			})
+		).rejects.toBeInstanceOf(JournalSubjectNotAllowedError);
+		expect(f.contacts).toHaveLength(home.length);
+		expect(f.entries).toHaveLength(0);
+	});
+
+	it('takes a private person in a private moment', async () => {
+		const f = fakes(home);
+		await captureMoment(f.deps, author, {
+			...base,
+			body: 'Quiet evening',
+			visibility: 'private',
+			anchorId: 'markus',
+			subjectIds: ['jonas']
+		});
+
+		expect(f.entries[0].subjectIds).toEqual(['markus', 'jonas']);
 	});
 });

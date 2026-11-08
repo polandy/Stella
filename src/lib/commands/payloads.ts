@@ -68,7 +68,12 @@ export const MomentCaptureSchema = v.object({
 	 * without an `@`. Absent, the first person mentioned is the anchor; a phone that queued the
 	 * moment before the field existed sends none.
 	 */
-	anchorId: v.optional(nonEmpty)
+	anchorId: v.optional(nonEmpty),
+	/**
+	 * Further people it is about, beside the anchor (docs/02 §2.20.3): the composer's chips. A
+	 * phone that queued the moment before the field existed sends none, a moment about one.
+	 */
+	subjectIds: v.optional(v.array(nonEmpty))
 });
 
 /** A note on a person (docs/02 §2.5), as the person page's note form hands it over. */

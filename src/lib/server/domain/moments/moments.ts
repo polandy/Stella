@@ -17,6 +17,7 @@ import type { ContactRepository } from '../contacts/contacts';
 import type { ContactDirectoryReads } from '../contacts/directory';
 import { requireVisibleContact } from '../contacts/require-visible';
 import { addToJournalDay, type JournalAuthor, type JournalRepository } from '../journal/journal';
+import { subjectsForAudience } from '../journal/subjects';
 
 /*
  * Moments (docs/02 §2.22.1): the one-sentence capture. A moment *is* a journal entry — the
@@ -28,6 +29,9 @@ import { addToJournalDay, type JournalAuthor, type JournalRepository } from '../
  * Written on a person's own page, a moment carries that person as its `anchorId`: it lands in
  * their journal without an `@`, everyone else it names is a mention beside them, and naming the
  * anchor too adds no self-mention — as on the journal page (`writeJournalEntry`).
+ *
+ * The composer's chips are further subjects beside the anchor (§2.20.3): the entry lands in
+ * each one's journal, its day slot is the set of them, and naming one with `@` is no mention.
  */
 
 export interface CaptureMomentInput {
@@ -44,6 +48,8 @@ export interface CaptureMomentInput {
 	newPeople: (string | MomentNewPerson)[];
 	/** The person whose page it was written on; absent, the first person mentioned. */
 	anchorId?: string | null;
+	/** Further people it is about, beside the anchor (§2.20.3). */
+	subjectIds?: readonly string[];
 }
 
 export interface CaptureMomentDeps {
@@ -95,6 +101,10 @@ export async function captureMoment(
 	// A handle that is two people is asked about before anyone is created: a refused moment
 	// must leave the household as it found it.
 	resolveForAudience(visible, input.visibility, body);
+	// The anchor is bounded by its own visibility, as on its journal page; a chip by the audience.
+	const furtherSubjectIds = input.subjectIds?.length
+		? subjectsForAudience(visible, input.visibility, input.subjectIds)
+		: [];
 
 	const mentionedKeys = new Set(extractHandles(body).map(mentionKey));
 	const existingKeys = new Set(visible.map((c) => mentionKey(c.displayName)));
@@ -145,13 +155,16 @@ export async function captureMoment(
 		input.visibility,
 		written
 	);
-	const { anchorContactId, mentionedContactIds } = anchorAndMentions(resolved.ids, input.anchorId);
+	const anchored = anchorAndMentions(resolved.ids, input.anchorId);
+	const { anchorContactId } = anchored;
+	const mentionedContactIds = mentionsOtherThan(anchored.mentionedContactIds, furtherSubjectIds);
 	// A moment is an addition (§2.20): a day slot that already holds an entry gets it appended.
 	const entryId = await addToJournalDay(
 		{ journal: deps.journal, ids: deps.ids, clock: deps.clock },
 		author,
 		{
 			contactId: anchorContactId,
+			furtherSubjectIds,
 			entryDate: input.entryDate,
 			visibility: input.visibility,
 			title: null,

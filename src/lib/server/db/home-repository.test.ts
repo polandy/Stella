@@ -110,6 +110,26 @@ describe('HomeReads', () => {
 	});
 });
 
+describe('HomeReads.listMembersVisibleTo', () => {
+	it('lists every home with the members the viewer may see', async () => {
+		expect(await reads.listMembersVisibleTo(u1)).toEqual([
+			{ id: 'home-1', memberIds: ['anna', 'lena', 'tim'] }
+		]);
+		expect(await reads.listMembersVisibleTo(u2)).toEqual([
+			{ id: 'home-1', memberIds: ['anna', 'tim'] }
+		]);
+	});
+
+	it('leaves out a home where the viewer sees nobody beside one person', async () => {
+		db.delete(schema.homeMember).where(eq(schema.homeMember.contactId, 'anna')).run();
+		expect(await reads.listMembersVisibleTo(u2)).toEqual([]);
+	});
+
+	it('reads no other household', async () => {
+		expect(await reads.listMembersVisibleTo({ id: U1, householdId: 'other' })).toEqual([]);
+	});
+});
+
 describe('HomeRepository', () => {
 	it('finds a home through a member the viewer may see, and says who of them they see', async () => {
 		const found = await repo.findForMemberVisibleTo(u2, 'home-1', 'tim');

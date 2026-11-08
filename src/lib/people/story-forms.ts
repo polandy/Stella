@@ -7,7 +7,10 @@
 import type { MomentCapturePayload } from '../commands/commands';
 
 /** What is typed in the moment composer, kept while it is folded away or offered back. */
-export type MomentDraft = Pick<MomentCapturePayload, 'body' | 'visibility' | 'newPeople'>;
+export type MomentDraft = Pick<
+	MomentCapturePayload,
+	'body' | 'visibility' | 'newPeople' | 'subjectIds'
+>;
 
 /** The forms that can open at the top of the Activity card. */
 export type StoryForm = 'moment' | 'log';
