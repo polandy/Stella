@@ -19,8 +19,8 @@ import {
  * A moment and a touchpoint as a list of them reads one — the household stream
  * (docs/02 §2.22.2) and *On this day* (§2.12.1) alike: the columns to select, joined with the
  * author and the person, and what comes after the scoped read — the mention chips, the photos,
- * the further people a moment is about, the participants. Those last are limited to people the viewer may see, so they never widen
- * the read they hang off.
+ * the further people a moment is about, the participants. Those last are limited to people the
+ * viewer may see, so they never widen the read they hang off.
  */
 
 /** A moment's columns; the read joins `contact` on the entry's person and `user` on its author. */
@@ -78,7 +78,7 @@ const personOf = (p: StreamPerson): StreamPerson => ({
 	avatarPhotoId: p.avatarPhotoId
 });
 
-/** The scoped moment rows, with the people beside the anchor and the mentions the viewer may see, and the photos, in their order. */
+/** The scoped moment rows with the further people, mentions and photos the viewer may see. */
 export function momentRowsOf(db: Db, viewer: Viewer, rows: MomentSelection[]): MomentRow[] {
 	if (rows.length === 0) return [];
 	const ids = rows.map((r) => r.id);

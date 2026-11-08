@@ -323,7 +323,8 @@ the person, and that never leaves the page. Keeping the record tidy (archive, me
   `InteractionEditor`) — kind, day, title, details and *Who else was there?*; visibility stays
   out — and *Save* closes it with *Saved*. A moment's author gets the same pencil: the moment
   glides into the journal page's own editor (`JournalEntryEditor`, one component for both) —
-  title and text with the @-picker; day, visibility and photos stay, the photos hidden while it
+  title and text with the @-picker, and the *About* row of people chips (the last one has no ×,
+  docs/02 §2.20.3); day, visibility and photos stay, the photos hidden while it
   is open. One item is open at a time. Online only.
 
 #### Gifts card
