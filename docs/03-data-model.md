@@ -20,7 +20,8 @@ Detail stays in the feature doc the term points to.
 | **relationship** | A link someone entered between two people, with a type and a direction (docs/02 §2.4). | `relationship`, `relationship_type`, `domain/relationships/`, `lib/relationships/`; its two ends as stored are a `RelationshipPair` (`lib/relationships/endpoints.ts`) | connection; *edge* only inside `lib/graph/` |
 | **partial date** | A date known only in part — a whole day, a day without its year, a year, or a year estimated from an age (§3.4). A birth date is one. | `birth_date` + `birth_date_precision` on `contact`, `PartialDate` in `lib/dates/partial-date.ts` | fuzzy date (in code), incomplete date |
 | **kin** | A relative nobody entered — grandparent, cousin, in-law — named from the relationships the viewer may see, for display only and never stored (docs/02 §2.4.1). | `lib/kinship/` | inferred relationship (as if it were stored) |
-| **journal entry** | A dated diary record about one person, by one author, for one day (docs/02 §2.20). The UI calls every journal entry a *moment*. | `journal_entry`, `journal_mention`, `domain/journal/`, `/contacts/[id]/journal` | diary entry, post |
+| **journal entry** | A dated diary record about one or more people (its *subjects*, the first the *anchor*), by one author, for one day (docs/02 §2.20, §2.20.3). The UI calls every journal entry a *moment*. | `journal_entry`, `journal_subject`, `journal_mention`, `domain/journal/`, `/contacts/[id]/journal` | diary entry, post |
+| **subject** | A person a journal entry is *about*: it lands in their journal and Activity. Not a mention, which is a passive `@`-reference (docs/02 §2.20.3). | `journal_entry.contact_id` (the anchor) + `journal_subject` | participant (that is a touchpoint's) |
 | **moment** | The UI's word for a journal entry; also Home's one-sentence capture (*What happened?*) that writes one, landing in the journal of the first person it @-mentions (docs/02 §2.22.1). | a `journal_entry` row; the capture is `domain/moments/` | — (not a table of its own) |
 | **note** | A reference fact about a person, pinnable, not dated by what it is about (docs/02 §2.5). Not a journal entry. | `note`, `note_mention`, `domain/notes/` | memo, comment |
 | **touchpoint** | A logged contact with a person — met, call, video, message, letter — on a day, with optional participants (docs/02 §2.6). Buttons say *Log contact* / *Log interaction*. | `interaction`, `interaction_participant`, `domain/interactions/`, `lib/story/interaction-kinds.ts` | activity, event |
@@ -91,6 +92,7 @@ relationship_type 1───* relationship
 interaction   *───* contact     (interaction_participant)
 note          *───* contact     (note_mention)          [M2]
 journal_entry *───* contact     (journal_mention → passive @-references) [M2]
+journal_entry *───* contact     (journal_subject → further people it is about) [M3]
 journal_entry *───* entry_tag   (journal_entry_tag → #tags in the text)  [M3]
 household     1───* entry_tag
 
@@ -452,13 +454,16 @@ is a dated diary moment. Child record of a contact; visibility per §3.7.
 | created_by | text fk → user.id | the author |
 | visibility | text | `'shared' \| 'private'` (private ⇒ only the author) |
 | entry_date | text | ISO `YYYY-MM-DD`; the day the entry is *about* |
+| subject_key | text | the sorted ids of all its subjects, `,`-joined — `contact_id` alone for a one-person entry; kept by the repository on every write that changes subjects [M3] |
 | entry_month_day | text, generated | `MM-DD` of `entry_date` (virtual, never written); indexed for *On this day* (docs/02 §2.12.1) |
 | title | text null | |
 | body | text | Markdown |
 | created_at / updated_at | int | |
 
-Unique `(contact_id, created_by, entry_date, visibility)` — one shared and one private entry
-per author per contact per day; re-saving a slot edits it. Photos attach via `photo` (§2.14).
+Unique `(subject_key, created_by, entry_date, visibility)` — one shared and one private entry
+per author per set of people per day; re-saving a slot edits it, and an edit of the subjects
+that lands on another entry's slot joins the two (docs/02 §2.20.3). Before multi-subject
+moments the key was `contact_id`; the migration copies it into `subject_key`. Photos attach via `photo` (§2.14).
 Indexed on `entry_month_day` (`journal_month_day_idx`), so a day's date in every year is one
 index range rather than a scan.
 
@@ -476,6 +481,22 @@ Indexed on `contact_id` for the reverse lookup. The **source** person (whose jou
 **author** are read from the parent `journal_entry`, so they are not duplicated here. A
 self-reference (`contact_id` = the entry's own `contact_id`) is **not** stored. Mirrors
 `note_mention`; both should be produced by one shared mention parser/resolver (§2.20.1).
+A subject of the entry (anchor or `journal_subject`) is never stored here.
+
+### journal_subject  [M3]
+The further people a journal entry is about, beside its anchor `contact_id` (docs/02
+§2.20.3). Mirrors `journal_mention` and `interaction_participant`.
+
+| column | type | notes |
+|---|---|---|
+| journal_entry_id | text fk → journal_entry.id | cascade delete |
+| contact_id | text fk → contact.id | cascade delete — re-anchoring is the domain's job first |
+| pk (journal_entry_id, contact_id) | | at most one row per (entry, person) |
+
+Indexed on `contact_id`. Never holds the anchor. Reads "about X" match `contact_id = X` **or**
+an existing `journal_subject` row for X. Deleting the anchor promotes the next subject (its
+photos' `contact_id` follow); a merge moves rows to the survivor, dropping duplicates and the
+survivor's own row when they are the anchor.
 
 ### entry_tag  [M3]
 A tag written into journal entries as `#word` (docs/02 §2.20.2) — the household's own set,
@@ -1109,7 +1130,11 @@ contact's place (`canViewCirclePhoto` / `circlePhotoVisibleTo`). A **journal_men
 passive "Mentioned in" item it drives) is visible only when its parent entry is visible to
 the viewer (child-record rule — a private entry ⇒ only its author) **and** the referenced
 contact is visible; a **shared** entry may reference only household-visible contacts, so a
-mention never widens access nor reveals a `private` contact's existence. An **activity_log**
+mention never widens access nor reveals a `private` contact's existence. A **journal_subject**
+reads with its parent entry, which is visible when it is the viewer's own or shared with its
+anchor visible; a **shared** entry may be about household-visible contacts only
+(`allowedForAudience`, as for mentions), so every subject of a shared entry is one the whole
+household sees. An **activity_log**
 entry outlives what it describes, so it is scoped by itself: within its household, shared or the
 viewer's own action (`canViewActivity` / `activityVisibleTo`). Admins gain no special
 access to `private` records.

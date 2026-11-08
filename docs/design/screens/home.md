@@ -83,7 +83,9 @@ first to find somebody, so there the page opens on the person search.
   `streamDays` / `streamTime` (`src/lib/stream/days.ts`), handed the clock.
 - A moment's people are the mention chips in its body and nothing more. An interaction keeps
   its row of participant avatar chips beneath it.
-- **A row's avatar is its subject, not its author**: the anchor of a moment, the person added,
+- **A row's avatar is its subject, not its author**: the anchor of a moment — up to three
+  overlapping faces (+N) when it is about several people, all named in the sentence (docs/02
+  §2.20.3) — the person added,
   the one an interaction was with, the *from* side of a link. Who wrote it is the sentence's
   first word.
 - On a row **another member** wrote, that member's own avatar (16px) overlaps the subject's

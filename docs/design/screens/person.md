@@ -285,6 +285,10 @@ the person, and that never leaves the page. Keeping the record tidy (archive, me
 - The composer is Home's `MomentComposer` with an `anchor`: a non-removable chip with the
   person's avatar and name, *· goes to Markus's journal*, above the serif field; the sharing
   switch, the photo button, the day pill, *Cancel* and *Save* below.
+- Under the anchor chip a quiet line offers the anchor's home — *＋ Sandra, Lea & Tim · live
+  with Markus* — and *＋ Person*; a tap adds removable chips, and the anchor line then reads
+  *· goes to 4 journals*. Offered, never preselected (docs/02 §2.20.3). A moment about several
+  people names the others under its kind line, *with Sandra, Lea and Tim*.
 - *Write a moment* unfolds the composer, brings the card into view the way every card form
   opens (§5.11: a card low in the view or off screen glides its top to just under the top
   bar) and puts the cursor in the field. Pressed while the composer is open, it only does the
