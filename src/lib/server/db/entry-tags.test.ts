@@ -94,7 +94,12 @@ describe('the household’s tag set', () => {
 
 	it('sweeps a tag once an edit takes it off the last entry', async () => {
 		const id = await write(one, '#lake and #walk');
-		await editJournalEntry(deps(), one, { id, body: 'Just a #walk' });
+		await editJournalEntry(deps(), one, {
+			id,
+			body: 'Just a #walk',
+			mentionIds: [],
+			subjectIds: ['kid']
+		});
 		expect(tagRows().map((t) => t.name)).toEqual(['walk']);
 	});
 
@@ -107,7 +112,12 @@ describe('the household’s tag set', () => {
 	it('keeps a tag another entry still carries', async () => {
 		const id = await write(one, '#lake');
 		await write(two, '#lake');
-		await editJournalEntry(deps(), one, { id, body: 'nothing' });
+		await editJournalEntry(deps(), one, {
+			id,
+			body: 'nothing',
+			mentionIds: [],
+			subjectIds: ['kid']
+		});
 		expect(tagRows().map((t) => t.name)).toEqual(['lake']);
 	});
 
@@ -200,6 +210,7 @@ describe('entries written before tags existed', () => {
 			.values({
 				id: 'old',
 				contactId: 'kid',
+				subjectKey: 'kid',
 				createdBy: U1,
 				entryDate: '2026-01-01',
 				body: 'An old #Trip'

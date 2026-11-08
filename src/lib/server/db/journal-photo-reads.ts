@@ -4,7 +4,8 @@ import { childRecordVisibleTo } from '../access/query-scoping';
 import type { Viewer } from '../access/visibility';
 import type { JournalPhotoReads, JournalPhotoRef } from '../domain/media/journal-photos';
 import type * as schema from './schema';
-import { contact, photo } from './schema';
+import { journalAbout } from './journal-subjects';
+import { contact, journalEntry, photo } from './schema';
 
 /*
  * Drizzle adapter for the journal photos a story reads (docs/08 §8.3), scoped through the
@@ -14,15 +15,19 @@ import { contact, photo } from './schema';
 export function createDrizzleJournalPhotoReads(
 	db: BunSQLiteDatabase<typeof schema>
 ): JournalPhotoReads {
-	/** A person's journal photos the viewer may see, oldest first, among the entries `entries` picks. */
+	/**
+	 * The photos of entries about a person (anchor or subject, docs/02 §2.20.3) the viewer may
+	 * see, oldest first, among the entries `entries` picks. A photo's `contact_id` is the anchor.
+	 */
 	function journalPhotosWhere(viewer: Viewer, contactId: string, entries: SQL): JournalPhotoRef[] {
 		const rows = db
 			.select({ id: photo.id, journalEntryId: photo.journalEntryId })
 			.from(photo)
 			.innerJoin(contact, eq(photo.contactId, contact.id))
+			.innerJoin(journalEntry, eq(photo.journalEntryId, journalEntry.id))
 			.where(
 				and(
-					eq(photo.contactId, contactId),
+					journalAbout(contactId),
 					entries,
 					childRecordVisibleTo(viewer, { visibility: photo.visibility, createdBy: photo.createdBy })
 				)

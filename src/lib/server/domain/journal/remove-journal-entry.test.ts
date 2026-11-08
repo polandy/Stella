@@ -34,6 +34,7 @@ function addEntry(id: string, over: Partial<typeof schema.journalEntry.$inferIns
 		.values({
 			id,
 			contactId: 'c-kurt',
+			subjectKey: 'c-kurt',
 			createdBy: AUTHOR,
 			visibility: 'shared',
 			entryDate: '2026-10-08',

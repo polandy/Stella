@@ -51,7 +51,13 @@ beforeEach(() => {
 			.values({ ...base, id: `n-${contactId}`, body: 'Zeltlager am See' })
 			.run();
 		db.insert(schema.journalEntry)
-			.values({ ...base, id: `j-${contactId}`, entryDate: '2026-10-01', body: 'Zeltlager am See' })
+			.values({
+				...base,
+				subjectKey: contactId,
+				id: `j-${contactId}`,
+				entryDate: '2026-10-01',
+				body: 'Zeltlager am See'
+			})
 			.run();
 		db.insert(schema.gift)
 			.values({ ...base, id: `g-${contactId}`, state: 'idea', title: 'Zeltlager Fotobuch' })

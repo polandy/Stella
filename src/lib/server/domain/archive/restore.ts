@@ -188,6 +188,7 @@ export function planRestore(
 			{ table: 'note', rows: personRecords.notes },
 			{ table: 'note_mention', rows: personRecords.noteMentions },
 			{ table: 'journal_entry', rows: personRecords.journalEntries },
+			{ table: 'journal_subject', rows: personRecords.journalSubjects },
 			{ table: 'journal_mention', rows: personRecords.journalMentions },
 			{ table: 'interaction', rows: personRecords.interactions },
 			{ table: 'interaction_participant', rows: personRecords.participants },

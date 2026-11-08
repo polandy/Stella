@@ -342,6 +342,7 @@ describe('what would collide', () => {
 				{
 					id: 'j-keep',
 					contactId: 'keep',
+					subjectKey: 'keep',
 					createdBy: U1,
 					visibility: 'shared',
 					entryDate: '2026-05-01',
@@ -350,6 +351,7 @@ describe('what would collide', () => {
 				{
 					id: 'j-dup',
 					contactId: 'dup',
+					subjectKey: 'dup',
 					createdBy: U1,
 					visibility: 'shared',
 					entryDate: '2026-05-01',
@@ -384,6 +386,7 @@ describe('what would collide', () => {
 				{
 					id: 'j-keep',
 					contactId: 'keep',
+					subjectKey: 'keep',
 					createdBy: U1,
 					entryDate: '2026-05-01',
 					body: '#market'
@@ -391,6 +394,7 @@ describe('what would collide', () => {
 				{
 					id: 'j-dup',
 					contactId: 'dup',
+					subjectKey: 'dup',
 					createdBy: U1,
 					entryDate: '2026-05-01',
 					body: '#market #pears'
@@ -426,6 +430,7 @@ describe('what would collide', () => {
 				{
 					id: 'j-keep',
 					contactId: 'keep',
+					subjectKey: 'keep',
 					createdBy: U1,
 					visibility: 'shared',
 					entryDate: '2026-05-01',
@@ -434,6 +439,7 @@ describe('what would collide', () => {
 				{
 					id: 'j-dup',
 					contactId: 'dup',
+					subjectKey: 'dup',
 					createdBy: U1,
 					visibility: 'shared',
 					entryDate: '2026-05-02',

@@ -9,8 +9,9 @@ import { contact } from './people';
  * A per-person diary (docs/02 §2.20). Each entry belongs to a contact, is authored by a
  * household member, and is *about* a specific day (`entry_date`, an ISO YYYY-MM-DD string,
  * distinct from the created_at timestamp). Body is Markdown. Visibility follows the child-record
- * rule (private ⇒ only the author). One entry per (contact, author, day, visibility) slot, so a
- * member keeps at most one shared and one private entry for a contact on any given day.
+ * rule (private ⇒ only the author). `contact_id` is the anchor; further people it is about sit in
+ * `journal_subject` (docs/02 §2.20.3). One entry per (people, author, day, visibility) slot, the
+ * people being `subject_key` — the sorted subject ids, kept by the repository.
  */
 export const journalEntry = sqliteTable(
 	'journal_entry',
@@ -24,6 +25,7 @@ export const journalEntry = sqliteTable(
 			.references(() => user.id),
 		visibility: text('visibility').$type<Visibility>().notNull().default('shared'),
 		entryDate: text('entry_date').notNull(),
+		subjectKey: text('subject_key').notNull(),
 		entryMonthDay: monthDayOf('entry_month_day', 'entry_date'),
 		title: text('title'),
 		body: text('body').notNull(),
@@ -36,7 +38,24 @@ export const journalEntry = sqliteTable(
 		index('journal_updated_idx').on(t.updatedAt),
 		// The entries of a day and month in every year, for *On this day* (docs/02 §2.12.1).
 		index('journal_month_day_idx').on(t.entryMonthDay),
-		unique('journal_day_slot').on(t.contactId, t.createdBy, t.entryDate, t.visibility)
+		unique('journal_day_slot').on(t.subjectKey, t.createdBy, t.entryDate, t.visibility)
+	]
+);
+
+/* The further people a journal entry is about, beside its anchor (docs/02 §2.20.3, docs/03). */
+export const journalSubject = sqliteTable(
+	'journal_subject',
+	{
+		journalEntryId: text('journal_entry_id')
+			.notNull()
+			.references(() => journalEntry.id, { onDelete: 'cascade' }),
+		contactId: text('contact_id')
+			.notNull()
+			.references(() => contact.id, { onDelete: 'cascade' })
+	},
+	(t) => [
+		primaryKey({ columns: [t.journalEntryId, t.contactId] }),
+		index('journal_subject_contact_idx').on(t.contactId)
 	]
 );
 

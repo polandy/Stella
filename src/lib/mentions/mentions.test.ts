@@ -194,10 +194,16 @@ describe('segmentMentions', () => {
 
 describe('mentionsOtherThan', () => {
 	it('drops the person the text is about, who is its subject rather than a reference', () => {
-		expect(mentionsOtherThan(['sandra', 'beat', 'lena'], 'beat')).toEqual(['sandra', 'lena']);
+		expect(mentionsOtherThan(['sandra', 'beat', 'lena'], ['beat'])).toEqual(['sandra', 'lena']);
 	});
 
 	it('keeps everyone when the subject is not among them', () => {
-		expect(mentionsOtherThan(['sandra', 'lena'], 'beat')).toEqual(['sandra', 'lena']);
+		expect(mentionsOtherThan(['sandra', 'lena'], ['beat'])).toEqual(['sandra', 'lena']);
+	});
+
+	it('drops every subject of a moment about several people (docs/02 §2.20.3)', () => {
+		expect(mentionsOtherThan(['sandra', 'beat', 'lena'], ['markus', 'sandra', 'lena'])).toEqual([
+			'beat'
+		]);
 	});
 });

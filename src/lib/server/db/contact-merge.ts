@@ -14,6 +14,7 @@ import type { MergeableProfile } from '../domain/contacts/merge-profile';
 import type { Remover } from '../access/visibility';
 import { contactMergeableBy } from '../access/query-scoping';
 import { keepUnwornCuts } from './cut-turning';
+import { replaceSubjectEverywhere } from './journal-subjects';
 import type * as schema from './schema';
 import {
 	activityLog,
@@ -21,9 +22,6 @@ import {
 	contact,
 	interaction,
 	interactionParticipant,
-	journalEntry,
-	journalMention,
-	photo,
 	relationship,
 	relationshipType
 } from './schema';
@@ -46,61 +44,6 @@ interface Merging {
 	keepId: string;
 	mergedId: string;
 	updatedAt: number;
-}
-
-/**
- * An entry is unique per (contact, author, day, visibility), so two entries written about the
- * same day by the same member cannot both survive as rows: the one being merged away is
- * appended to the one that stays, with its photos, mentions and tags, and only then removed. Nothing
- * anybody wrote is dropped; every entry left can move without colliding.
- */
-function joinJournalDays(tx: Db, { keepId, mergedId, updatedAt }: Merging): void {
-	const colliding = tx
-		.select({
-			id: journalEntry.id,
-			body: journalEntry.body,
-			createdBy: journalEntry.createdBy,
-			entryDate: journalEntry.entryDate,
-			visibility: journalEntry.visibility
-		})
-		.from(journalEntry)
-		.where(eq(journalEntry.contactId, mergedId))
-		.all();
-
-	for (const entry of colliding) {
-		const survivor = tx
-			.select({ id: journalEntry.id, body: journalEntry.body })
-			.from(journalEntry)
-			.where(
-				and(
-					eq(journalEntry.contactId, keepId),
-					eq(journalEntry.createdBy, entry.createdBy),
-					eq(journalEntry.entryDate, entry.entryDate),
-					eq(journalEntry.visibility, entry.visibility)
-				)
-			)
-			.get();
-		if (!survivor) continue; // the slot is free; the plan's repoint moves it
-
-		tx.update(journalEntry)
-			.set({ body: `${survivor.body}\n\n${entry.body}`, updatedAt })
-			.where(eq(journalEntry.id, survivor.id))
-			.run();
-		tx.update(photo)
-			.set({ journalEntryId: survivor.id })
-			.where(eq(photo.journalEntryId, entry.id))
-			.run();
-		// The mention rows key on (entry, contact), so the ones the survivor already has lose.
-		tx.run(
-			sql`update or ignore journal_mention set journal_entry_id = ${survivor.id} where journal_entry_id = ${entry.id}`
-		);
-		tx.delete(journalMention).where(eq(journalMention.journalEntryId, entry.id)).run();
-		// The joined text carries both entries' tags (docs/02 §2.20.2); the same move gives them.
-		tx.run(
-			sql`update or ignore journal_entry_tag set journal_entry_id = ${survivor.id} where journal_entry_id = ${entry.id}`
-		);
-		tx.delete(journalEntry).where(eq(journalEntry.id, entry.id)).run();
-	}
 }
 
 /**
@@ -215,7 +158,8 @@ function dropSurvivorFromOwnInteractions(tx: Db, { keepId }: Merging): void {
 
 /** The steps the plan names rather than describes, each implemented here. */
 const SETTLEMENTS: Record<MergeSettlement, (tx: Db, merging: Merging) => void> = {
-	'join-journal-days': joinJournalDays,
+	'move-journal-subjects': (tx, { keepId, mergedId, updatedAt }) =>
+		replaceSubjectEverywhere(tx, mergedId, keepId, updatedAt),
 	'move-links-in-stored-order': moveLinksInStoredOrder,
 	'drop-links-between-the-two': dropLinksBetweenTheTwo,
 	'drop-memberships-survivor-has': dropMembershipsSurvivorHas,

@@ -37,6 +37,7 @@ function entry(
 		.values({
 			id,
 			contactId: 'c-hans',
+			subjectKey: 'c-hans',
 			createdBy: U1,
 			visibility: 'shared',
 			entryDate: `2026-10-${String(10 + seq++).padStart(2, '0')}`,

@@ -40,7 +40,7 @@ describe('the merge plan', () => {
 	});
 
 	it('joins two entries about the same day before the journal moves, which then cannot collide', () => {
-		expect(settling('join-journal-days')).toBeLessThan(repointOf('journal_entry'));
+		expect(settling('move-journal-subjects')).toBeLessThan(repointOf('journal_entry'));
 		expect(MERGE_PLAN[repointOf('journal_entry')]).toMatchObject({ onConflict: 'cannot-collide' });
 	});
 

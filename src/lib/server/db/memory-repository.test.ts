@@ -43,6 +43,7 @@ function seedEntry(
 		.values({
 			id,
 			contactId,
+			subjectKey: contactId,
 			createdBy: U1,
 			visibility,
 			entryDate,
@@ -150,6 +151,7 @@ describe('momentsOn', () => {
 			.values({
 				id: 'foreign',
 				contactId: 'theirs',
+				subjectKey: 'theirs',
 				createdBy: 'stranger',
 				entryDate: '2025-11-01',
 				body: 'not yours'

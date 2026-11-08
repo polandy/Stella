@@ -94,6 +94,7 @@ function fillSource(db: BunSQLiteDatabase<typeof schema>): void {
 		.values({
 			id: 'j-1',
 			contactId: 'c-hans',
+			subjectKey: 'c-hans',
 			createdBy: SOURCE_USER,
 			visibility: 'shared',
 			entryDate: '2026-07-12',
@@ -285,6 +286,7 @@ describe('applyRestore', () => {
 			.values({
 				id: 'j-1',
 				contactId: 'c-hans',
+				subjectKey: 'c-hans',
 				createdBy: ADMIN,
 				visibility: 'shared',
 				entryDate: '2026-07-01',
@@ -315,6 +317,7 @@ describe('applyRestore', () => {
 			.values({
 				id: 'j-ours',
 				contactId: 'c-hans',
+				subjectKey: 'c-hans',
 				createdBy: ADMIN,
 				visibility: 'shared',
 				entryDate: '2026-07-12',

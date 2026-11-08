@@ -177,6 +177,10 @@ export const errors: ErrorsMessages = {
 	'errors.apiToken.emptyName':
 		'Bitte gib dem Token einen Namen, damit du später weißt, wofür er ist.',
 	'errors.journal.gone': 'Diesen Eintrag gibt es nicht mehr.',
+	'errors.journal.noSubject':
+		'Ein Moment handelt von mindestens einer Person. Um ihn loszuwerden, entferne ihn.',
+	'errors.journal.subjectNotAllowed':
+		'Ein geteilter Moment kann nur von Personen handeln, die der ganze Haushalt sieht.',
 	'errors.stranded.person': 'Diese Person gibt es hier nicht mehr',
 	'errors.stranded.personHint':
 		'Der Link ist vielleicht veraltet: Sie wurde mit jemandem zusammengeführt oder entfernt.',

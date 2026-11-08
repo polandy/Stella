@@ -60,7 +60,7 @@ function fakes(people = [person('julia'), person('marco'), person('sam', 'privat
 					entries.find(
 						(e) =>
 							e.createdBy === p.authorId &&
-							e.contactId === p.contactId &&
+							[...e.subjectIds].sort().join(',') === [...p.subjectIds].sort().join(',') &&
 							e.entryDate === p.entryDate &&
 							e.visibility === p.visibility
 					) ?? null

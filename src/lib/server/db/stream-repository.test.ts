@@ -49,6 +49,7 @@ function seedEntry(
 		.values({
 			id,
 			contactId,
+			subjectKey: contactId,
 			createdBy,
 			visibility,
 			entryDate,

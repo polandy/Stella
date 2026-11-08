@@ -144,7 +144,13 @@ export function seedParityDb(): BunSQLiteDatabase<typeof schema> {
 			.values({ id: `n-${suffix}`, ...common, body: suffix })
 			.run();
 		db.insert(journalEntry)
-			.values({ id: `j-${suffix}`, ...common, entryDate: '2026-10-08', body: suffix })
+			.values({
+				id: `j-${suffix}`,
+				...common,
+				subjectKey: contactId,
+				entryDate: '2026-10-08',
+				body: suffix
+			})
 			.run();
 		db.insert(interaction)
 			.values({ id: `i-${suffix}`, ...common, kind: 'met', happenedAt: '2026-10-08' })

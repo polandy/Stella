@@ -798,7 +798,7 @@ const TODOS: readonly {
 
 /** The people a seeded body names, minus the person it is already about. */
 const mentionedBy = (row: { contactId: string; body: string }) =>
-	mentionsOtherThan(extractMentionIds(row.body), row.contactId);
+	mentionsOtherThan(extractMentionIds(row.body), [row.contactId]);
 
 /**
  * Gifts for Grosi Ursula (docs/02 §2.25): two open ideas, what was given over two years and one
@@ -1048,6 +1048,7 @@ export function seedDemoData(
 	const entries = STORY.filter((s) => s.kind === undefined).map((s, i) => ({
 		id: `demo-journal-${s.person}-${i}`,
 		contactId: cid(s.person),
+		subjectKey: cid(s.person),
 		createdBy: s.byMember ? memberId : authorId,
 		entryDate: dayBefore(now, s.daysAgo),
 		body: withMentions(s.text),
@@ -1096,6 +1097,7 @@ export function seedDemoData(
 	const memoryMoments = MEMORIES.filter((m) => m.kind === undefined).map((m) => ({
 		id: `demo-memory-${m.key}`,
 		contactId: cid(m.person),
+		subjectKey: cid(m.person),
 		createdBy: authorId,
 		entryDate: sameDayYearsBack(now, m.yearsAgo),
 		body: withMentions(m.text),

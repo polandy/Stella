@@ -26,8 +26,11 @@ export type MergeConflictRule = 'cannot-collide' | 'survivor-keeps';
 export type MergeSettlement =
 	/** A cut the merged record wears becomes a photo of its own before its photos move. */
 	| 'turn-merged-cuts'
-	/** Two entries by the same member about the same day become one, both bodies kept. */
-	| 'join-journal-days'
+	/**
+	 * The survivor stands in for the merged record among each entry's people; two entries by
+	 * the same member about the same people that day become one, both bodies kept.
+	 */
+	| 'move-journal-subjects'
 	/**
 	 * A link to a third person lands in stored order (`merge-links.ts`): one the survivor
 	 * already has folds into theirs, a symmetric one is re-sorted.
@@ -65,8 +68,9 @@ const settle = (settlement: MergeSettlement, table: string): MergeStep => ({
 
 /** In the order it runs. Table and column names are the database's (docs/03). */
 export const MERGE_PLAN: readonly MergeStep[] = [
-	settle('join-journal-days', 'journal_entry'),
+	settle('move-journal-subjects', 'journal_entry'),
 	repoint('journal_entry', 'contact_id', 'cannot-collide'),
+	repoint('journal_subject', 'contact_id', 'survivor-keeps'),
 	settle('drop-links-between-the-two', 'relationship'),
 	settle('move-links-in-stored-order', 'relationship'),
 	repoint('relationship', 'from_contact_id', 'survivor-keeps'),

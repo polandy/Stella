@@ -119,6 +119,7 @@ describe('removeGalleryPhoto: who may', () => {
 			.values({
 				id: 'j-1',
 				contactId: 'c-kurt',
+				subjectKey: 'c-kurt',
 				createdBy: AUTHOR,
 				entryDate: '2026-10-08',
 				body: 'x'

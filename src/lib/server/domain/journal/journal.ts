@@ -7,14 +7,16 @@ import type { IdGenerator } from '../../id';
 import type { ActivityOf } from '../activity/activity';
 import { removalAudit, type RemovableRecord } from '../activity/removal';
 import type { DeletedPhotoFiles, MediaStore } from '../media/avatars';
+import { mentionsOtherThan } from '../../../mentions/mentions';
+import { distinctSubjects, NoJournalSubjectError } from './subjects';
 
 /*
  * Journal use-cases (docs/02 §2.20). A journal is a per-person diary: household members record
  * a contact's moments day by day, in Markdown, optionally with photos (added separately). An
  * entry is a child record of a contact — its visibility follows the central rule (private ⇒
- * only the author). Uniqueness is per (contact, author, day, visibility): saving the same slot
- * again edits it rather than duplicating, which is what "one entry per day" means in practice
- * while still allowing a member a separate private and shared entry for the same day.
+ * only the author). Uniqueness is per (people, author, day, visibility) — the people being its
+ * subjects, the anchor first (§2.20.3): saving the same slot again edits it rather than
+ * duplicating, while still allowing a member a separate private and shared entry for the day.
  * Orchestration is pure; visibility-scoped reads live in the adapter.
  */
 
@@ -40,7 +42,10 @@ export interface JournalAuthor {
 
 export interface NewJournalEntry {
 	id: string;
+	/** The anchor: the first of `subjectIds`. */
 	contactId: string;
+	/** Everyone the entry is about, the anchor first (§2.20.3). */
+	subjectIds: string[];
 	createdBy: string;
 	visibility: Visibility;
 	/** The day the entry is *about*, as an ISO `YYYY-MM-DD` string (distinct from createdAt). */
@@ -56,10 +61,10 @@ export interface NewJournalEntry {
 export interface JournalEntry extends NewJournalEntry {}
 
 export interface JournalRepository {
-	/** The author's entry for a specific day+visibility slot, or null. */
+	/** The author's entry for a specific day+visibility slot about these people, or null. */
 	findDay(params: {
 		authorId: string;
-		contactId: string;
+		subjectIds: readonly string[];
 		entryDate: string;
 		visibility: Visibility;
 	}): Promise<JournalEntry | null>;
@@ -81,7 +86,18 @@ export interface JournalRepository {
 		body: string;
 		updatedAt: number;
 	}): Promise<boolean>;
-	/** Entries on a contact the viewer may see, newest day first. */
+	/**
+	 * Give an entry the author owns exactly these subjects, the first its anchor; joined into the
+	 * author's entry about the same people that day when there is one. Returns the id holding it
+	 * afterwards, or null when the author owns no such entry.
+	 */
+	setSubjectsOwn(params: {
+		authorId: string;
+		id: string;
+		subjectIds: readonly string[];
+		updatedAt: number;
+	}): Promise<string | null>;
+	/** Entries about a contact (anchor or subject) the viewer may see, newest day first. */
 	listForContactVisibleTo(viewer: Viewer, contactId: string): Promise<JournalEntry[]>;
 	/**
 	 * One keyset page of visible entries, newest day first. `before` excludes everything at or
@@ -153,6 +169,8 @@ export interface JournalDayDeps {
 
 export interface SaveJournalEntryInput {
 	contactId: string;
+	/** Further people it is about, beside `contactId` (§2.20.3). */
+	furtherSubjectIds?: string[];
 	entryDate: string;
 	body: string;
 	title?: string | null;
@@ -185,9 +203,10 @@ export async function saveJournalEntry(
 	const title = orNull(input.title);
 	const now = deps.clock.now();
 
+	const subjectIds = distinctSubjects([input.contactId, ...(input.furtherSubjectIds ?? [])]);
 	const existing = await deps.journal.findDay({
 		authorId: author.userId,
-		contactId: input.contactId,
+		subjectIds,
 		entryDate: input.entryDate,
 		visibility
 	});
@@ -201,6 +220,7 @@ export async function saveJournalEntry(
 	await deps.journal.insert({
 		id,
 		contactId: input.contactId,
+		subjectIds,
 		createdBy: author.userId,
 		visibility,
 		entryDate: input.entryDate,
@@ -217,31 +237,50 @@ export interface EditJournalEntryInput {
 	id: string;
 	body: string;
 	title?: string | null;
+	/** The people it names, resolved for its audience. */
+	mentionIds: string[];
+	/** Everyone it is about, the anchor first, already checked for its audience (§2.20.3). */
+	subjectIds: string[];
 }
 
 /**
- * Edit the text of one of the author's own journal entries in place. The day and visibility are
- * part of an entry's identity (docs/02 §2.20) — changing either means writing a new entry
- * instead — so only the title and body change here. Returns whether such an owned entry
+ * Edit the text and people of one of the author's own journal entries in place. The day and
+ * visibility are part of an entry's identity (docs/02 §2.20) — changing either means writing a
+ * new entry instead. People made equal to another of the author's entries that day join it
+ * (§2.20.3). Returns the id holding the entry afterwards, or null when no such owned entry
  * existed.
  */
 export async function editJournalEntry(
-	deps: Pick<JournalDeps, 'journal' | 'clock'>,
-	author: JournalAuthor,
+	deps: Pick<JournalDeps, 'clock'> & {
+		journal: Pick<
+			JournalRepository,
+			'updateOwn' | 'replaceTags' | 'replaceMentions' | 'setSubjectsOwn'
+		>;
+	},
+	author: Pick<JournalAuthor, 'userId'>,
 	input: EditJournalEntryInput
-): Promise<boolean> {
+): Promise<string | null> {
 	const body = input.body.trim();
 	if (body.length === 0) throw new EmptyJournalEntryError();
-	const title = orNull(input.title);
+	const subjectIds = distinctSubjects(input.subjectIds);
+	if (subjectIds.length === 0) throw new NoJournalSubjectError();
+	const updatedAt = deps.clock.now();
 	const own = await deps.journal.updateOwn({
 		authorId: author.userId,
 		id: input.id,
-		title,
+		title: orNull(input.title),
 		body,
-		updatedAt: deps.clock.now()
+		updatedAt
 	});
-	if (own) await deps.journal.replaceTags(input.id, hashtagsIn(body));
-	return own;
+	if (!own) return null;
+	await deps.journal.replaceTags(input.id, hashtagsIn(body));
+	await setJournalMentions(deps, input.id, mentionsOtherThan(input.mentionIds, subjectIds));
+	return deps.journal.setSubjectsOwn({
+		authorId: author.userId,
+		id: input.id,
+		subjectIds,
+		updatedAt
+	});
 }
 
 /** List the journal entries on a contact that the viewer may see (newest day first). */
@@ -317,6 +356,8 @@ export async function removeJournalEntry(
 /** Text for one day slot, its mentions already resolved to the people it names. */
 export interface JournalDayAddition {
 	contactId: string;
+	/** Further people it is about, beside `contactId` (§2.20.3). */
+	furtherSubjectIds?: string[];
 	entryDate: string;
 	visibility: Visibility;
 	title: string | null;
@@ -338,15 +379,17 @@ export async function addToJournalDay(
 ): Promise<string> {
 	const body = addition.body.trim();
 	if (body.length === 0) throw new EmptyJournalEntryError();
+	const subjectIds = distinctSubjects([addition.contactId, ...(addition.furtherSubjectIds ?? [])]);
+	const mentionIds = mentionsOtherThan(addition.mentionIds, subjectIds);
 	const sameDay = await deps.journal.findDay({
 		authorId: author.userId,
-		contactId: addition.contactId,
+		subjectIds,
 		entryDate: addition.entryDate,
 		visibility: addition.visibility
 	});
 	if (!sameDay) {
 		const entryId = await saveJournalEntry(deps, author, addition);
-		await setJournalMentions(deps, entryId, addition.mentionIds);
+		await setJournalMentions(deps, entryId, mentionIds);
 		return entryId;
 	}
 	const day = `${sameDay.body}\n\n${body}`;
@@ -359,7 +402,7 @@ export async function addToJournalDay(
 	await deps.journal.replaceTags(sameDay.id, hashtagsIn(day));
 	await setJournalMentions(deps, sameDay.id, [
 		...(await deps.journal.listMentionedContactIds(sameDay.id)),
-		...addition.mentionIds
+		...mentionIds
 	]);
 	return sameDay.id;
 }

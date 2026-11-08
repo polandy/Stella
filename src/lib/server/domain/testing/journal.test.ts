@@ -8,6 +8,7 @@ describe('someJournalEntry', () => {
 		expect(someJournalEntry('e1')).toEqual({
 			id: 'e1',
 			contactId: 'anna',
+			subjectIds: ['anna'],
 			createdBy: 'u1',
 			visibility: 'shared',
 			entryDate: '2026-10-09',

@@ -111,6 +111,7 @@ describe('briefBlockView', () => {
 				entry: {
 					id: 'j1',
 					contactId: 'anna',
+					subjectIds: ['anna'],
 					createdBy: 'u1',
 					visibility: 'private',
 					entryDate: '2026-10-30',

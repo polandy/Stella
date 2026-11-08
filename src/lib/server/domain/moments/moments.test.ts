@@ -89,7 +89,7 @@ function fakes(seedContacts: Partial<NewContact>[] = []) {
 					entries.find(
 						(e) =>
 							e.createdBy === p.authorId &&
-							e.contactId === p.contactId &&
+							[...e.subjectIds].sort().join(',') === [...p.subjectIds].sort().join(',') &&
 							e.entryDate === p.entryDate &&
 							e.visibility === p.visibility
 					) ?? null
@@ -127,6 +127,9 @@ function fakes(seedContacts: Partial<NewContact>[] = []) {
 				mentions.set(id, ids);
 			},
 			async replaceTags() {},
+			async setSubjectsOwn() {
+				return null;
+			},
 			async listMentionedContactIds(id) {
 				return mentions.get(id) ?? [];
 			}

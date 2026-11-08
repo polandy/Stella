@@ -52,6 +52,6 @@ export async function writeNote(
 			isPinned: input.isPinned
 		}
 	);
-	await setNoteMentions(deps, noteId, mentionsOtherThan(resolved.ids, input.contactId));
+	await setNoteMentions(deps, noteId, mentionsOtherThan(resolved.ids, [input.contactId]));
 	return { noteId };
 }

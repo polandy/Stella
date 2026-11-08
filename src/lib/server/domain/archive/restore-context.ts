@@ -9,7 +9,8 @@ import type { Row } from './restore-fields';
  */
 
 /** The kinds of pointer a restore can find dangling. */
-export type MentionKind = 'noteMentions' | 'journalMentions' | 'touchpointParticipants';
+export type MentionKind =
+	'noteMentions' | 'journalMentions' | 'journalSubjects' | 'touchpointParticipants';
 
 /**
  * Something the restore left out, as a code the page words (docs/02 §2.19). The plan is a

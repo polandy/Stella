@@ -51,6 +51,10 @@ export const EXPORTED_TABLES: readonly Scoped[] = [
 	},
 	{ table: 'journal_entry', where: viaContact() },
 	{
+		table: 'journal_subject',
+		where: `t.journal_entry_id IN (SELECT j.id FROM journal_entry j JOIN contact c ON c.id = j.contact_id WHERE c.household_id = ?)`
+	},
+	{
 		table: 'journal_mention',
 		where: `t.journal_entry_id IN (SELECT j.id FROM journal_entry j JOIN contact c ON c.id = j.contact_id WHERE c.household_id = ?)`
 	},

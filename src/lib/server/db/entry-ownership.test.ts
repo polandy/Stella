@@ -25,7 +25,14 @@ describe('entry ownership', () => {
 			.values({ id: 'c', householdId: 'h', createdBy: 'u1', displayName: 'C' })
 			.run();
 		db.insert(schema.journalEntry)
-			.values({ id: 'e1', contactId: 'c', createdBy: 'u1', entryDate: '2026-09-27', body: 'x' })
+			.values({
+				id: 'e1',
+				contactId: 'c',
+				subjectKey: 'c',
+				createdBy: 'u1',
+				entryDate: '2026-09-27',
+				body: 'x'
+			})
 			.run();
 		const entries = createDrizzleEntryOwnership(db);
 

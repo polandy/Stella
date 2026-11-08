@@ -36,6 +36,7 @@ function journalItem(overrides: Record<string, unknown> = {}): StoryItem {
 		entry: {
 			id: 'j1',
 			contactId: 'c1',
+			subjectIds: ['c1'],
 			createdBy: VIEWER,
 			visibility: 'shared',
 			entryDate: '2026-08-05',

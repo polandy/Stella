@@ -8,10 +8,10 @@ import { authorNames } from '$lib/server/domain/household/members';
 import {
 	removeJournalEntry,
 	editJournalEntry,
-	listJournalForContact,
-	setJournalMentions
+	listJournalForContact
 } from '$lib/server/domain/journal/journal';
-import { extractMentionIds, mentionsOtherThan } from '$lib/mentions/mentions';
+import { subjectsForAudience } from '$lib/server/domain/journal/subjects';
+import { extractMentionIds } from '$lib/mentions/mentions';
 import { resolveForAudience } from '$lib/server/domain/mentions/resolve-for-audience';
 import { withNamesakeContext } from '$lib/server/domain/mentions/namesake-context';
 import { readCommand } from '$lib/server/commands/parse';
@@ -86,7 +86,8 @@ export const load: PageServerLoad = async ({ locals, params, url }) => {
 const EditSchema = v.object({
 	id: v.string(),
 	title: v.optional(v.pipe(v.string(), v.trim())),
-	body: v.string()
+	body: v.string(),
+	subjectIds: v.array(v.string())
 });
 
 /** What the journal says when the entry's field `field` did not read. */
@@ -142,7 +143,8 @@ export const actions: Actions = {
 		const parsed = v.safeParse(EditSchema, {
 			id: form.get('id'),
 			title: form.get('title') || undefined,
-			body: form.get('body')
+			body: form.get('body'),
+			subjectIds: form.getAll('subjectIds')
 		});
 		if (!parsed.success) {
 			return fail(400, { journalError: say(locals, 'errors.form.checkAndRetry') });
@@ -168,33 +170,33 @@ export const actions: Actions = {
 			defaultVisibility: 'shared' as const
 		};
 
-		let ok: boolean;
-		let resolved: { body: string; ids: string[] };
+		let kept: string | null;
 		try {
 			// A handle that could be several people is asked about, not dropped (docs/02 §2.2.3).
-			resolved = await withNamesakeContext(
+			const resolved = await withNamesakeContext(
 				locals.services.people.namesakeContextDeps,
 				viewer,
 				async () => resolveForAudience(contacts, entry.visibility, parsed.output.body)
 			);
-			ok = await editJournalEntry(locals.services.story.journalDeps, author, {
+			kept = await editJournalEntry(locals.services.story.journalDeps, author, {
 				id: parsed.output.id,
 				title: parsed.output.title ?? null,
-				body: resolved.body
+				body: resolved.body,
+				mentionIds: resolved.ids,
+				subjectIds: subjectsForAudience(
+					contacts,
+					entry.visibility,
+					parsed.output.subjectIds.length > 0 ? parsed.output.subjectIds : entry.subjectIds,
+					entry.subjectIds
+				)
 			});
 		} catch (err) {
 			if (!(err instanceof TranslatableError)) throw err;
 			return fail(400, { journalError: err.phrase(translator(locals)) });
 		}
-		if (!ok) {
+		if (!kept) {
 			return fail(404, { journalError: say(locals, 'errors.journal.gone') });
 		}
-
-		await setJournalMentions(
-			locals.services.story.journalDeps,
-			parsed.output.id,
-			mentionsOtherThan(resolved.ids, params.id)
-		);
 
 		throw redirect(303, `/contacts/${params.id}/journal`);
 	},

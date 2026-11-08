@@ -85,6 +85,7 @@ describe('attention repository, last touched', () => {
 			.values({
 				id: 'j1',
 				contactId: 'oma',
+				subjectKey: 'oma',
 				createdBy: U1,
 				visibility: 'shared',
 				entryDate: '2026-08-01',
@@ -108,6 +109,7 @@ describe('attention repository, last touched', () => {
 			.values({
 				id: 'j2',
 				contactId: 'oma',
+				subjectKey: 'oma',
 				createdBy: U1,
 				visibility: 'shared',
 				entryDate: '2026-09-01',
@@ -123,6 +125,7 @@ describe('attention repository, last touched', () => {
 			.values({
 				id: 'j1',
 				contactId: 'oma',
+				subjectKey: 'oma',
 				createdBy: U1,
 				visibility: 'private',
 				entryDate: '2026-09-01',

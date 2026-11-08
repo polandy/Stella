@@ -22,6 +22,7 @@ function entry(day: string, recordedAt: number, id = `j-${day}-${recordedAt}`): 
 	return {
 		id,
 		contactId: 'c1',
+		subjectIds: ['c1'],
 		createdBy: 'u1',
 		visibility: 'shared',
 		entryDate: day,
