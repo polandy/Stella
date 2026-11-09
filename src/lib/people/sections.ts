@@ -1,3 +1,4 @@
+import { journalTagHref } from '../hashtags/hashtags';
 import { PARENT_CHILD_TYPE_KEY } from '../relationships/type-keys';
 import { encodeRelationshipChoice } from '../relationships/type-options';
 
@@ -64,6 +65,13 @@ export function briefPath(contactId: string): string {
 /** A link to one entry on a person's journal page — *On this day* opens a moment there. */
 export function journalEntryPath(contactId: string, entryId: string): string {
 	return `/contacts/${contactId}/journal#${journalEntryAnchor(entryId)}`;
+}
+
+/** The entry's link from a stream or a search hit; a tag filter it was found by stays on. */
+export function journalEntryHref(contactId: string, entryId: string, tag?: string): string {
+	return tag
+		? `${journalTagHref(contactId)(tag)}#${journalEntryAnchor(entryId)}`
+		: journalEntryPath(contactId, entryId);
 }
 
 /** Which card a passive reference opens: a note is read on Notes, an entry in the story. */

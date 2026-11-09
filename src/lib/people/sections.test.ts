@@ -5,6 +5,7 @@ import {
 	addRelationshipPath,
 	briefPath,
 	contactSectionPath,
+	journalEntryHref,
 	journalEntryPath,
 	SECTION_FOR_LEGACY_TAB,
 	SECTION_FOR_REFERENCE,
@@ -62,6 +63,16 @@ describe('contactSectionPath', () => {
 describe('journalEntryPath', () => {
 	test("lands on the entry on the person's journal page", () => {
 		expect(journalEntryPath('c1', 'e1')).toBe('/contacts/c1/journal#entry-e1');
+	});
+});
+
+describe('journalEntryHref', () => {
+	test('is the entry’s own link without a tag', () => {
+		expect(journalEntryHref('c1', 'e1')).toBe(journalEntryPath('c1', 'e1'));
+	});
+
+	test('keeps the tag a stream was filtered by, ahead of the entry’s anchor', () => {
+		expect(journalEntryHref('c1', 'e1', 'trip')).toBe('/contacts/c1/journal?tag=trip#entry-e1');
 	});
 });
 

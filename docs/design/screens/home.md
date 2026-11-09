@@ -96,6 +96,13 @@ first to find somebody, so there the page opens on the person search.
   The reader's own rows carry no badge, and a household of one member shows none
   (`offersMemberChoice`, the test that shows the *Who* row). The decision is the pure
   `showsActorBadge` (`src/lib/stream/actor-badge.ts`). The badge is `aria-hidden`.
+- A **moment's row is one link to its entry** (`/contacts/{id}/journal#entry-{id}`, the journal
+  page where it is read and edited): a tap on the row's empty space or words opens it, and the
+  link is focusable with the name *Open this moment*. What is interactive inside — the person's
+  name (their journal), a photo, a mention or tag chip, a private veil — keeps its own target
+  above it (`.moment-open`, `.moment-cell` in `app.css`; text in the row cannot be selected).
+  On a tag's page the entry opens in the journal filtered by the tag, and a search hit for a
+  moment opens its entry the same way (`journalEntryHref`).
 - A person's removal renders in the stream without an avatar or a link: a neutral icon, who
   did it, and what it says.
 - **First-run card** (docs/02 §2.22.3): one card above the stream while the household holds

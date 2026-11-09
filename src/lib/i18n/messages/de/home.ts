@@ -72,6 +72,7 @@ export const home: HomeMessages = {
 	'home.link.confirm': 'Verknüpfen',
 	'home.link.notNow': 'Jetzt nicht',
 	'home.stream.wroteIn': 'schrieb in',
+	'home.stream.openMoment': 'Diesen Moment öffnen',
 	'home.stream.wroteInJournal': 's Tagebuch',
 	'home.stream.wroteAbout': 'schrieb über',
 	'home.stream.added': 'legte',
