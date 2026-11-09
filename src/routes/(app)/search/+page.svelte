@@ -11,10 +11,10 @@
 	import PrivateMark from '$lib/components/ui/PrivateMark.svelte';
 	import Veil from '$lib/components/ui/Veil.svelte';
 	import { stateLabel } from '$lib/gifts/labels';
-	import { journalTagHref, tagPageHref } from '$lib/hashtags/hashtags';
+	import { tagPageHref } from '$lib/hashtags/hashtags';
 	import { searchTagHead } from '$lib/hashtags/tag-pages';
 	import { newPersonHref } from '$lib/people/new-person';
-	import { contactSectionPath } from '$lib/people/sections';
+	import { contactSectionPath, journalEntryHref } from '$lib/people/sections';
 	import { useI18n } from '$lib/i18n/context.svelte';
 	import { useVeil } from '$lib/privacy/veil.svelte';
 	import type { PageData } from './$types';
@@ -33,10 +33,9 @@
 			data.results.moments.length
 	);
 
-	/** A moment found by its tag opens its journal filtered by that tag (docs/02 §2.20.2). */
-	function momentHref(contactId: string): string {
-		const tag = data.results.tag;
-		return tag ? journalTagHref(contactId)(tag) : `/contacts/${contactId}/journal`;
+	/** A moment opens on its own entry; found by a tag, in the journal filtered by it (docs/02 §2.20.2). */
+	function momentHref(contactId: string, entryId: string): string {
+		return journalEntryHref(contactId, entryId, data.results.tag ?? undefined);
 	}
 
 	/** A `#tag` query's moments head with the tag's own page (docs/02 §2.9). */
@@ -221,7 +220,7 @@
 					{/if}
 					{#each data.results.moments as m (m.entryId)}
 						<a
-							href={momentHref(m.contactId)}
+							href={momentHref(m.contactId, m.entryId)}
 							class="flex flex-col rounded-app border border-transparent px-3 py-2 hover:border-border hover:bg-card"
 						>
 							<span class="flex flex-wrap items-center gap-x-2 text-sm text-fg-muted">

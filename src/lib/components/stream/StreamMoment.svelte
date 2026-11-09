@@ -5,6 +5,7 @@
 	import StreamWhen from '$lib/components/stream/StreamWhen.svelte';
 	import type { StreamTime } from '$lib/stream/days';
 	import { journalTagHref } from '$lib/hashtags/hashtags';
+	import { journalEntryHref } from '$lib/people/sections';
 	import { useI18n } from '$lib/i18n/context.svelte';
 	import { listSentence, segmentsOf } from '$lib/i18n/linked';
 	import type { PageData } from '../../../routes/(app)/$types';
@@ -29,6 +30,7 @@
 	const journalHref = $derived(
 		tag ? journalTagHref(item.anchor.id)(tag) : `/contacts/${item.anchor.id}/journal`
 	);
+	const entryHref = $derived(journalEntryHref(item.anchor.id, item.id, tag));
 
 	const i18n = useI18n();
 	const t = i18n.t;
@@ -45,8 +47,11 @@
 	);
 </script>
 
+<!-- The whole row opens the moment: this link spans it, and what is interactive inside
+     (names, photos, chips, the veil) sits above it. -->
+<a href={entryHref} class="moment-open" aria-label={t('home.stream.openMoment')}></a>
 <StreamFace person={item.anchor} others={item.others} row={item} {members} />
-<div class="min-w-0">
+<div class="moment-cell min-w-0">
 	<div class="flex flex-wrap items-baseline gap-x-1.5 text-[13px] text-fg-muted">
 		<b class="font-semibold text-fg">{item.mine ? t('home.you') : item.actor.name}</b>
 		{#if item.others.length}

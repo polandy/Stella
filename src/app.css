@@ -524,6 +524,23 @@ button:focus-visible .edit-pencil {
 .stream-row:target {
 	animation: stream-row-flash 1.6s var(--ease-standard);
 }
+/* A moment's row is one link: the cells let a tap through, what is interactive in them keeps it. */
+.moment-open {
+	position: absolute;
+	inset: 0;
+	border-radius: var(--radius-app);
+}
+.moment-open:focus-visible {
+	outline: 2px solid var(--primary);
+	outline-offset: 2px;
+}
+.moment-cell {
+	position: relative;
+	pointer-events: none;
+}
+.moment-cell :is(a, button) {
+	pointer-events: auto;
+}
 @keyframes stream-row-flash {
 	from {
 		background-color: var(--primary-soft);
