@@ -138,7 +138,7 @@ test('finds the moments carrying one #tag in search, and the tag as a plain word
 	await expect(moments).toContainText(PERSON);
 
 	await moments.click();
-	await expect(page).toHaveURL(/\/journal\?tag=velotour$/);
+	await expect(page).toHaveURL(/\/journal\?tag=velotour#entry-/);
 	await expect(filter(page)).toContainText(`1 moment with #${RIDE}`);
 
 	await page.goto(`/search?q=${SWIM}`);
