@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.5](https://github.com/polandy/Stella/compare/v0.1.4...v0.1.5) (2026-11-09)
+
+
+### Features
+
+* a moment's row opens its entry on tap ([#485](https://github.com/polandy/Stella/issues/485)) ([72a5c86](https://github.com/polandy/Stella/commit/72a5c86db61ccd5d4a21cc10d20154d06294f5a1))
+
 ## [0.1.4](https://github.com/polandy/Stella/compare/v0.1.3...v0.1.4) (2026-11-08)
 
 
