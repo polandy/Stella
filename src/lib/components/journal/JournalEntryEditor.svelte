@@ -59,6 +59,8 @@
 	let subjectIds = $state(entry.subjects.map((s) => s.id));
 	const pool = $derived(subjectPool(entry.subjects, candidates, entry.visibility));
 	let saving = $state(false);
+	let unclear = $state(false);
+	let error = $state<string | null>(null);
 
 	// Photos marked for removal go on save; Cancel keeps them.
 	let removing = $state<string[]>([]);
@@ -118,20 +120,21 @@
 		}
 		return true;
 	}
-	let unclear = $state(false);
-	let error = $state<string | null>(null);
 
 	async function save(event: SubmitEvent) {
 		event.preventDefault();
 		const form = new FormData(event.currentTarget as HTMLFormElement);
 		saving = true;
 		error = null;
+		const storing = added.length > 0;
 		try {
 			if (!(await storeAdded())) return;
 			const result = await post('edit', form);
 			// A refusal says why — a namesake to pick, say (docs/02 §2.2.3) — and keeps the text.
 			if (result.type === 'failure') {
 				error = (result.data?.journalError as string | undefined) ?? t('journal.editSaveFailed');
+				// The photos stored before it are the entry's now; show them so.
+				if (storing) await invalidateAll();
 				return;
 			}
 			if (result.type === 'error') throw new Error();
