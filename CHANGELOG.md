@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.6](https://github.com/polandy/Stella/compare/v0.1.5...v0.1.6) (2026-11-13)
+
+
+### Features
+
+* **journal:** add and remove photos while editing a moment ([#487](https://github.com/polandy/Stella/issues/487)) ([787738c](https://github.com/polandy/Stella/commit/787738c59c5853e7c6e8e452b18ad297ad3c132a))
+
 ## [0.1.5](https://github.com/polandy/Stella/compare/v0.1.4...v0.1.5) (2026-11-09)
 
 
