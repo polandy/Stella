@@ -48,6 +48,17 @@ test('an entry refers to a photo from Immich, shows a placeholder when it is gon
 	await expect(photo).toHaveCount(1);
 	await expect(entry.locator('img[src^="/media/"]:not([src^="/media/immich/"])')).toHaveCount(0);
 
+	// The person's story shows it too.
+	const journalUrl = page.url();
+	await page.goto(journalUrl.replace(/\/journal.*$/, ''));
+	await expect(
+		page
+			.locator('#section-story [data-story-item]')
+			.filter({ hasText: 'a walk, photo kept in Immich' })
+			.locator('img[src^="/media/immich/"]')
+	).toHaveCount(1);
+	await page.goto(journalUrl);
+
 	// Immich no longer has it (the proxy answers 404): a placeholder, never a broken image.
 	await page.route('**/media/immich/**', (route) => route.fulfill({ status: 404 }));
 	await page.reload();

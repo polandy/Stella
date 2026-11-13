@@ -168,7 +168,7 @@
 					<ImmichPhotoTile
 						{photo}
 						alt={t('journal.photoAlt', { name: contact.displayName, day })}
-						class="h-28 w-28"
+						class="h-28 w-28 rounded-app"
 					/>
 				{/each}
 			</div>

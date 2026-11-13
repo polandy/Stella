@@ -13,7 +13,7 @@
 	interface Props {
 		photo: EntryImmichPhoto;
 		alt: string;
-		/** The tile's size and frame. */
+		/** The tile's size and frame, its corners included. */
 		class: string;
 		/** Whether the tile opens the photo; off inside the editor. */
 		link?: boolean;
@@ -39,7 +39,7 @@
 		role="img"
 		aria-label={t('journal.immichPhotoUnavailable')}
 		title={t('journal.immichPhotoUnavailable')}
-		class="{frame} bg-sunken grid place-items-center rounded-app border border-dashed border-border text-fg-subtle"
+		class="{frame} grid place-items-center border border-dashed border-border bg-bg-sunken text-fg-subtle"
 		data-testid="immich-photo-unavailable"
 	>
 		<Icon name="offline" size={20} />

@@ -353,7 +353,7 @@
 																n: item.photos.length + index + 1,
 																count
 															})}
-															class="size-20"
+															class="size-20 rounded-app"
 														/>
 													{/each}
 												</div>
