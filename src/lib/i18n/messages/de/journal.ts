@@ -28,6 +28,13 @@ export const journal: JournalMessages = {
 	'journal.subjects.label': 'Über',
 	'journal.subjects.add': 'Person hinzufügen',
 	'journal.subjects.lastOne': 'Ein Moment handelt von jemandem. Um ihn loszuwerden, lösche ihn.',
+	'journal.edit.photos': 'Fotos',
+	'journal.edit.removePhoto': (p) => `Foto ${p.n} von ${p.count} entfernen`,
+	'journal.edit.removeNewPhoto': (p) => `Neues Foto ${p.n} von ${p.count} verwerfen`,
+	'journal.edit.photosRemoved': (p) =>
+		p.count === 1
+			? '1 Foto wird beim Speichern entfernt'
+			: `${p.count} Fotos werden beim Speichern entfernt`,
 	'journal.photoAlt': (p) => `${p.name}, ${p.day}`,
 	'journal.empty.title': 'Noch keine Momente.',
 	'journal.empty.hint': (p) =>
