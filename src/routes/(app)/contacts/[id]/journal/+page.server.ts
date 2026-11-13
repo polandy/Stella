@@ -10,6 +10,8 @@ import {
 	editJournalEntry,
 	listJournalForContact
 } from '$lib/server/domain/journal/journal';
+import { addPhotoToOwnEntry, removePhotoFromOwnEntry } from '$lib/server/domain/media/entry-photos';
+import { InvalidImageError } from '$lib/server/domain/media/journal-photos';
 import { subjectsForAudience, withUnseenSubjects } from '$lib/server/domain/journal/subjects';
 import { extractMentionIds } from '$lib/mentions/mentions';
 import { resolveForAudience } from '$lib/server/domain/mentions/resolve-for-audience';
@@ -87,7 +89,8 @@ const EditSchema = v.object({
 	id: v.string(),
 	title: v.optional(v.pipe(v.string(), v.trim())),
 	body: v.string(),
-	subjectIds: v.array(v.string())
+	subjectIds: v.array(v.string()),
+	removePhotoIds: v.array(v.string())
 });
 
 /** What the journal says when the entry's field `field` did not read. */
@@ -144,7 +147,8 @@ export const actions: Actions = {
 			id: form.get('id'),
 			title: form.get('title') || undefined,
 			body: form.get('body'),
-			subjectIds: form.getAll('subjectIds')
+			subjectIds: form.getAll('subjectIds'),
+			removePhotoIds: form.getAll('removePhotoIds')
 		});
 		if (!parsed.success) {
 			return fail(400, { journalError: say(locals, 'errors.form.checkAndRetry') });
@@ -199,8 +203,53 @@ export const actions: Actions = {
 		if (!kept) {
 			return fail(404, { journalError: say(locals, 'errors.journal.gone') });
 		}
+		// Only once the text is saved; a joined entry carries its photos along under `kept`.
+		for (const photoId of parsed.output.removePhotoIds) {
+			await removePhotoFromOwnEntry(locals.services.media.entryPhotoDeps, viewer.id, {
+				entryId: kept,
+				photoId
+			});
+		}
 
 		throw redirect(303, `/contacts/${params.id}/journal`);
+	},
+
+	/**
+	 * One photo added to an own entry while it is edited (docs/02 §2.20), processed in the
+	 * browser like any journal photo. Answers the new photo's id; the editor sends its edit after.
+	 */
+	addPhoto: async ({ request, locals }) => {
+		const viewer = requireViewer(locals);
+		const form = await request.formData();
+		const id = form.get('id');
+		const image = form.get('image');
+		const thumb = form.get('thumb');
+		const takenAt = form.get('takenAt');
+		if (typeof id !== 'string' || !(image instanceof File) || !(thumb instanceof File)) {
+			return fail(400, { journalError: say(locals, 'errors.form.checkAndRetry') });
+		}
+		let photoId: string | null;
+		try {
+			photoId = await addPhotoToOwnEntry(
+				locals.services.media.entryPhotoDeps,
+				{ userId: viewer.id, householdId: viewer.householdId },
+				{
+					entryId: id,
+					upload: {
+						image: new Uint8Array(await image.arrayBuffer()),
+						thumb: new Uint8Array(await thumb.arrayBuffer()),
+						width: Number(form.get('width')),
+						height: Number(form.get('height')),
+						takenAt: typeof takenAt === 'string' && takenAt !== '' ? takenAt : null
+					}
+				}
+			);
+		} catch (err) {
+			if (!(err instanceof InvalidImageError)) throw err;
+			return fail(400, { journalError: err.phrase(translator(locals)) });
+		}
+		if (!photoId) return fail(404, { journalError: say(locals, 'errors.journal.gone') });
+		return { photoId };
 	},
 
 	delete: async ({ request, params, locals }) => {

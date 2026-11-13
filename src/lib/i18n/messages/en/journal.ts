@@ -28,6 +28,13 @@ export const journal = {
 	'journal.subjects.label': 'About',
 	'journal.subjects.add': 'Add someone',
 	'journal.subjects.lastOne': 'A moment is about someone. To drop it, delete it.',
+	'journal.edit.photos': 'Photos',
+	'journal.edit.removePhoto': (p: { n: number; count: number }) =>
+		`Remove photo ${p.n} of ${p.count}`,
+	'journal.edit.removeNewPhoto': (p: { n: number; count: number }) =>
+		`Drop new photo ${p.n} of ${p.count}`,
+	'journal.edit.photosRemoved': (p: { count: number }) =>
+		p.count === 1 ? '1 photo goes when you save' : `${p.count} photos go when you save`,
 	'journal.photoAlt': (p: { name: string; day: string }) => `${p.name}, ${p.day}`,
 	'journal.empty.title': 'No moments yet.',
 	'journal.empty.hint': (p: { name: string }) =>

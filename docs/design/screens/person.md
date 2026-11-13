@@ -324,8 +324,10 @@ the person, and that never leaves the page. Keeping the record tidy (archive, me
   out — and *Save* closes it with *Saved*. A moment's author gets the same pencil: the moment
   glides into the journal page's own editor (`JournalEntryEditor`, one component for both) —
   title and text with the @-picker, and the *About* row of people chips (the last one has no ×,
-  docs/02 §2.20.3); day, visibility and photos stay, the photos hidden while it
-  is open. One item is open at a time. Online only.
+  docs/02 §2.20.3), and its photos as square thumbnails, each with a × to take it off, then
+  *Add photos*; day and visibility stay. A × only marks a photo (*1 photo goes when you save*,
+  with *Undo*); *Cancel* keeps it. New picks show dashed until saved. One item is open at a time.
+  Online only.
 
 #### Gifts card
 

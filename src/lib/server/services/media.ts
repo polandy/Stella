@@ -4,6 +4,7 @@ import type { Config } from '../config';
 import { createDrizzleFramingRepository } from '../db/framing-repository';
 import { createDrizzleGalleryPhotoReads } from '../db/gallery-photo-reads';
 import { createDrizzleJournalPhotoReads } from '../db/journal-photo-reads';
+import { createDrizzleOwnEntries } from '../db/own-entry-photos';
 import { createDrizzleMemoryRepository } from '../db/memory-repository';
 import { createDrizzlePhotoFileReads } from '../db/photo-file-reads';
 import { createDrizzlePhotoRepository } from '../db/photo-repository';
@@ -16,6 +17,7 @@ import type {
 	MediaStreamSource,
 	PhotoFileReads
 } from '../domain/media/avatars';
+import type { EntryPhotoDeps } from '../domain/media/entry-photos';
 import type { FramingDeps } from '../domain/media/framing';
 import type { GalleryDeps } from '../domain/media/gallery';
 import type { GalleryUploadDeps } from '../domain/media/gallery-upload';
@@ -55,6 +57,8 @@ export interface MediaServices {
 	framingDeps: FramingDeps;
 	galleryUploadDeps: GalleryUploadDeps;
 	journalPhotoDeps: JournalPhotoDeps;
+	/** An entry's photos as its author edits it (docs/02 §2.20). */
+	entryPhotoDeps: EntryPhotoDeps;
 	streamDeps: StreamDeps;
 	memoryDeps: MemoryDeps;
 }
@@ -93,6 +97,7 @@ export function createMediaServices({ config, db, clock, ids }: MediaWiring): Me
 		},
 		galleryUploadDeps: uploadDeps,
 		journalPhotoDeps: uploadDeps,
+		entryPhotoDeps: { ...uploadDeps, entries: createDrizzleOwnEntries(db) },
 		streamDeps: { stream: createDrizzleStreamRepository(db) },
 		memoryDeps: { memories: createDrizzleMemoryRepository(db) }
 	};

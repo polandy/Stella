@@ -127,7 +127,8 @@
 		{/snippet}
 	</Swap>
 
-	{#if entry.photos.length}
+	<!-- While editing, the editor shows the photos. -->
+	{#if entry.photos.length && !editing}
 		<!-- The same veil as the text: one tap shows both. -->
 		<Veil
 			id={veilId}
