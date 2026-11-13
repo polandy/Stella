@@ -1,5 +1,13 @@
 import { sql } from 'drizzle-orm';
-import { index, integer, real, sqliteTable, text, uniqueIndex } from 'drizzle-orm/sqlite-core';
+import {
+	index,
+	integer,
+	primaryKey,
+	real,
+	sqliteTable,
+	text,
+	uniqueIndex
+} from 'drizzle-orm/sqlite-core';
 import { monthDayOf, now, type Visibility } from './columns';
 import { household, user } from './household';
 import { contact } from './people';
@@ -74,4 +82,17 @@ export const photo = sqliteTable(
 		// The photos taken on a day and month in every year, for *On this day* (docs/02 §2.12.1).
 		index('photo_taken_month_day_idx').on(t.takenMonthDay)
 	]
+);
+
+/** An Immich photo a journal entry refers to, never a copy (docs/04 ADR-132). */
+export const journalImmichPhoto = sqliteTable(
+	'journal_immich_photo',
+	{
+		journalEntryId: text('journal_entry_id')
+			.notNull()
+			.references(() => journalEntry.id, { onDelete: 'cascade' }),
+		assetId: text('asset_id').notNull(),
+		addedAt: integer('added_at').notNull().default(now)
+	},
+	(t) => [primaryKey({ columns: [t.journalEntryId, t.assetId] })]
 );

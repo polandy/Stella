@@ -18,6 +18,7 @@ const RESTORE_TABLES: readonly string[] = [
 	'note_mention',
 	'journal_entry',
 	'journal_mention',
+	'journal_immich_photo',
 	'interaction',
 	'interaction_participant',
 	'gift',

@@ -33,6 +33,7 @@ export type RestoreWarning =
 	| { code: 'tagsNotInList' }
 	| { code: 'immichLinkIncomplete' }
 	| { code: 'immichIgnoreIncomplete' }
+	| { code: 'immichPhotoIncomplete' }
 	| { code: 'circleWithoutName' }
 	| { code: 'circleMissingParent'; name: string }
 	| { code: 'circleMemberMissing'; name: string }

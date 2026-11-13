@@ -534,6 +534,11 @@ copies them into Stella, so they stay even if they are later deleted in Immich. 
 someone's gallery this way keeps the date Immich has for it. You need a connection for this:
 offline, **From Immich** is greyed out.
 
+**Editing a journal entry** is the exception: photos you add there from Immich are not copied —
+the entry only points at them, so there is no second copy in Stella. If Immich is down or the
+photo was deleted there, the entry shows *Photo not available from Immich* in its place. Taking
+such a photo off the entry with × never deletes it in Immich.
+
 ### Photos together
 
 **Photos together.** Once you have said which person is you (*This is me*) and that person is

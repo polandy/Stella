@@ -36,6 +36,8 @@ export const archive: ArchiveMessages = {
 	'archive.table.journal_entry': (p) => (p.count === 1 ? 'Tagebucheintrag' : 'Tagebucheinträge'),
 	'archive.table.journal_mention': (p) =>
 		p.count === 1 ? 'Tagebuch-Erwähnung' : 'Tagebuch-Erwähnungen',
+	'archive.table.journal_immich_photo': (p) =>
+		p.count === 1 ? 'Immich-Foto an einem Tagebucheintrag' : 'Immich-Fotos an Tagebucheinträgen',
 	'archive.table.interaction': (p) => (p.count === 1 ? 'Kontakt' : 'Kontakte'),
 	'archive.table.interaction_participant': (p) => (p.count === 1 ? 'Beteiligter' : 'Beteiligte'),
 	'archive.table.gift': (p) => (p.count === 1 ? 'Geschenk' : 'Geschenke'),
@@ -79,6 +81,8 @@ export const archive: ArchiveMessages = {
 		'Eine Verknüpfung mit Immich ohne gültige Immich-Person wurde ausgelassen.',
 	'archive.warning.immichIgnoreIncomplete':
 		'Ein ignorierter Immich-Vorschlag ohne gültige Immich-Person wurde ausgelassen.',
+	'archive.warning.immichPhotoIncomplete':
+		'Ein Immich-Foto an einem Tagebucheintrag ohne gültiges Immich-Foto wurde ausgelassen.',
 	'archive.warning.immichNameIgnoreIncomplete':
 		'Ein unter Neu aus Immich ignoriertes Gesicht ohne gültige Immich-Person wurde ausgelassen.',
 	'archive.warning.addressBookCardIncomplete':

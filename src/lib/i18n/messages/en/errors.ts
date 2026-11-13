@@ -157,6 +157,7 @@ export const errors = {
 	'errors.photo.notFound': 'That photo could not be found.',
 	'errors.photo.fromImmichGone':
 		'This photo is no longer available from Immich. Reload the page and try again.',
+	'errors.photo.immichNotConnected': 'Immich is not connected, so no photo can be picked from it.',
 	'errors.circle.needName': 'Please enter a circle name.',
 	'errors.circle.couldNotAdd': 'Could not add the circle.',
 	'errors.circle.notFound': 'Circle not found',

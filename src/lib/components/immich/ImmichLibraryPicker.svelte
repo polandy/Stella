@@ -3,7 +3,8 @@
   *From Immich* (docs/02 §2.24.9, docs/design/screens/immich-library.md): a sheet from the bottom
   with every photo Immich has from one day, whoever is in it, and a smart search across the whole
   library. Taps tick photos, numbered in order; *Add N photos* copies them through Stella's signed
-  proxy and hands them over as files, for the same pipeline as a pick from the device.
+  proxy and hands them over as files, for the same pipeline as a pick from the device — or, with
+  `onlink`, hands the photos themselves over, to be kept as references (docs/04 ADR-132).
 -->
 <script lang="ts">
 	import { FIELD } from '$lib/components/ui/field';
@@ -31,10 +32,12 @@
 		/** The day the sheet opens on, `YYYY-MM-DD`: the entry's; a gallery has none, so today. */
 		day?: string | null;
 		/** The ticked photos, copied, in the order they were ticked. The sheet then closes. */
-		onadd: (copies: ImmichCopy[]) => void;
+		onadd?: (copies: ImmichCopy[]) => void;
+		/** Instead of copies: the ticked photos themselves, in order. The sheet then closes. */
+		onlink?: (photos: LibraryPhoto[]) => void;
 	}
 
-	let { open = $bindable(false), day = null, onadd }: Props = $props();
+	let { open = $bindable(false), day = null, onadd, onlink }: Props = $props();
 
 	const i18n = useI18n();
 	const t = i18n.t;
@@ -105,6 +108,11 @@
 
 	async function add() {
 		const photos = ticked.flatMap((id) => seen.get(id) ?? []);
+		if (onlink) {
+			onlink(photos);
+			open = false;
+			return;
+		}
 		copying = { done: 0, count: photos.length };
 		copyError = null;
 		const copies: ImmichCopy[] = [];
@@ -119,7 +127,7 @@
 		} finally {
 			copying = null;
 		}
-		onadd(copies);
+		onadd?.(copies);
 		removals.notify(t('immich.library.added', { count: copies.length }));
 		open = false;
 	}

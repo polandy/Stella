@@ -394,6 +394,7 @@
 				candidates={otherContacts}
 				tags={data.entryTags}
 				today={data.today}
+				immichLibrary={data.immichLibrary}
 			/>
 		{/key}
 	{/if}

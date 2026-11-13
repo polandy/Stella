@@ -5,6 +5,7 @@
 	import Icon from '$lib/components/ui/Icon.svelte';
 	import InteractionEditor from '$lib/components/person/InteractionEditor.svelte';
 	import JournalEntryEditor from '$lib/components/journal/JournalEntryEditor.svelte';
+	import ImmichPhotoTile from '$lib/components/immich/ImmichPhotoTile.svelte';
 	import MomentWith from '$lib/components/journal/MomentWith.svelte';
 	import { othersThan } from '$lib/story/subjects';
 	import PrivateMark from '$lib/components/ui/PrivateMark.svelte';
@@ -45,8 +46,10 @@
 		tags: ComponentProps<typeof JournalEntryEditor>['tags'];
 		/** The household's day, so the day headings say *Today* and leave this year's year off. */
 		today: string;
+		/** Whether Immich is on the instance, so the editor offers its photos. */
+		immichLibrary: boolean;
 	}
-	let { contactId, initial, candidates, tags, today }: Props = $props();
+	let { contactId, initial, candidates, tags, today, immichLibrary }: Props = $props();
 
 	const i18n = useI18n();
 	const t = i18n.t;
@@ -289,6 +292,8 @@
 										<JournalEntryEditor
 											{contactId}
 											entry={item}
+											day={item.day}
+											{immichLibrary}
 											{candidates}
 											{tags}
 											onDone={(saved) => {
@@ -310,9 +315,9 @@
 												<p class="mt-0.5 max-w-[65ch] whitespace-pre-line text-fg">
 													{placeholderFor(item.bodyHtml)}
 												</p>
-												{#if item.photos.length}
+												{#if item.photos.length || item.immichPhotos.length}
 													<div class="mt-3 flex flex-wrap gap-2">
-														{#each item.photos as photoId (photoId)}
+														{#each [...item.photos, ...item.immichPhotos.map((p) => p.assetId)] as photoId (photoId)}
 															<span class="size-20 rounded-control bg-fg-subtle/40"></span>
 														{/each}
 													</div>
@@ -323,7 +328,8 @@
 											{/if}
 											<!-- server-rendered, already-safe Markdown (docs/02 §2.5) -->
 											<div class="note-body mt-0.5 max-w-[65ch] text-fg">{@html item.bodyHtml}</div>
-											{#if item.photos.length}
+											{#if item.photos.length || item.immichPhotos.length}
+												{@const count = item.photos.length + item.immichPhotos.length}
 												<div class="mt-3 flex flex-wrap gap-2">
 													{#each item.photos as photoId, index (photoId)}
 														<a
@@ -334,14 +340,21 @@
 														>
 															<img
 																src="/media/{photoId}?thumb"
-																alt={t('components.photo.open', {
-																	n: index + 1,
-																	count: item.photos.length
-																})}
+																alt={t('components.photo.open', { n: index + 1, count })}
 																loading="lazy"
 																class="size-20 object-cover"
 															/>
 														</a>
+													{/each}
+													{#each item.immichPhotos as photo, index (photo.assetId)}
+														<ImmichPhotoTile
+															{photo}
+															alt={t('components.photo.open', {
+																n: item.photos.length + index + 1,
+																count
+															})}
+															class="size-20"
+														/>
 													{/each}
 												</div>
 											{/if}

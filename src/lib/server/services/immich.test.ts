@@ -8,6 +8,7 @@ import type { Clock } from '../clock';
 import { createDrizzleAccountRepository } from '../db/account-repository';
 import { createDrizzleContactDirectoryReads } from '../db/contact-directory-reads';
 import { createDrizzleContactRepository } from '../db/contact-repository';
+import { createDrizzleOwnEntryImmichPhotos } from '../db/entry-immich-photos';
 import { createDrizzlePersonContextReads } from '../db/person-context-reads';
 import * as schema from '../db/schema';
 import type { AvatarDeps } from '../domain/media/avatars';
@@ -80,7 +81,8 @@ beforeEach(async () => {
 		directory: createDrizzleContactDirectoryReads(db),
 		contactDeps: { contacts, ids, clock },
 		contextReads: createDrizzlePersonContextReads(db),
-		avatarDeps
+		avatarDeps,
+		ownEntryImmichPhotos: createDrizzleOwnEntryImmichPhotos(db)
 	};
 });
 

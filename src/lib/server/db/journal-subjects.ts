@@ -50,8 +50,8 @@ export function insertFurtherSubjects(tx: Db, entryId: string, subjectIds: reado
 }
 
 /**
- * Append `from` to `into` — the same people, author, day and visibility — with its photos,
- * mentions and tags, then delete it. Nothing anybody wrote is dropped (ADR-086).
+ * Append `from` to `into` — the same people, author, day and visibility — with its photos, Immich
+ * references, mentions and tags, then delete it. Nothing anybody wrote is dropped (ADR-086).
  */
 function joinInto(tx: Db, fromId: string, into: { id: string; anchor: string }, updatedAt: number) {
 	const from = tx
@@ -79,6 +79,9 @@ function joinInto(tx: Db, fromId: string, into: { id: string; anchor: string }, 
 	);
 	tx.run(
 		sql`update or ignore journal_entry_tag set journal_entry_id = ${into.id} where journal_entry_id = ${fromId}`
+	);
+	tx.run(
+		sql`update or ignore journal_immich_photo set journal_entry_id = ${into.id} where journal_entry_id = ${fromId}`
 	);
 	tx.delete(journalEntry).where(eq(journalEntry.id, fromId)).run();
 }

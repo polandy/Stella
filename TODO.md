@@ -6,9 +6,7 @@ Open implementation work, in order. A finished item is deleted in the PR that fi
 
 Step 1 (adding and removing own photos while editing a moment) is built. Left:
 
-- **Immich photos as a reference, not a copy.** In the moment editor (and the composer), *From
-  Immich* stores a reference to the Immich asset and shows it through the existing server-side
-  Immich proxy (`/media/immich/[token]`, no key in the browser) instead of copying it — this
-  departs from ADR-129's copy for journal photos, so the ADR gets a successor. Removing a
-  reference never touches the asset in Immich. Tests: Immich unreachable, asset deleted in
-  Immich (a placeholder, not a broken image), a reference the viewer may no longer see.
+- **Immich photos as a reference in the composer.** The moment editor already refers to Immich
+  photos instead of copying them (ADR-132); the composer, which writes through the offline
+  outbox, still copies. Make its *From Immich* a reference too, the outbox carrying the signed
+  tokens.

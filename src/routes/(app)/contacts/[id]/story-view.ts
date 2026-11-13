@@ -4,6 +4,7 @@ import {
 	type ContactAccess,
 	type Remover
 } from '$lib/server/access/visibility';
+import type { EntryImmichPhoto } from '$lib/immich/library';
 import type { JournalPhotoRef } from '$lib/server/domain/media/journal-photos';
 import { renderMarkdownWithMentions } from '$lib/server/domain/notes/markdown';
 import { tagPageHref } from '$lib/hashtags/hashtags';
@@ -83,6 +84,8 @@ export interface StoryViewContext {
 	nameOfAuthor: (userId: string) => string | null;
 	/** Visible journal photo ids, keyed by entry id. */
 	photosByEntry: Map<string, string[]>;
+	/** The Immich photos each entry refers to, keyed by entry id (docs/04 ADR-132). */
+	immichPhotosByEntry: ReadonlyMap<string, EntryImmichPhoto[]>;
 	/** Display name for an @-mention target the viewer may see, or null. */
 	nameOf: (contactId: string) => string | null;
 	/** Name and face of a subject the viewer may see, or null (docs/02 §2.20.3). */
@@ -118,6 +121,7 @@ export function toStoryItem(item: StoryItem, ctx: StoryViewContext): StoryItemVi
 			// Beyond the journal, a tag leads to its own page (docs/02 §2.20.2).
 			bodyHtml: renderMarkdownWithMentions(entry.body, ctx.nameOf, { tagHref: tagPageHref }),
 			photos: ctx.photosByEntry.get(entry.id) ?? [],
+			immichPhotos: ctx.immichPhotosByEntry.get(entry.id) ?? [],
 			subjects: subjectFacesOf(entry.subjectIds, ctx.faceOf),
 			// Only an author edits an entry (docs/03 §3.7), so only their own carry the stored body.
 			editable: mine,

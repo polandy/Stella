@@ -192,8 +192,10 @@ describe('load', () => {
 				journalPhotos: {
 					listJournalPhotos: async () => [{ id: 'p1', journalEntryId: 'e2' }],
 					listJournalPhotosOfEntries: async () => []
-				}
+				},
+				entryImmichPhotos: { listOfEntries: async () => [] }
 			},
+			immich: null,
 			household: {
 				memberDeps: {
 					members: {
