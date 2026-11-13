@@ -27,6 +27,10 @@ they already took, which live in Immich, without leaving Stella or downloading t
   photos* as the primary button, disabled at none. At 20 it says *At most 20 at a time*, and a further tap does nothing.
   *Add* shows *Copying 3 of 5 photos from Immich…*, then closes the sheet and a toast says
   *5 photos from Immich added*; a failed copy says so and keeps the ticks.
+- **In a journal entry's editor** nothing is copied (docs/04 ADR-132): *Add N photos* closes
+  the sheet at once and the picks wait beside the entry's photos with a dashed frame until
+  *Save*. A referred photo Immich no longer serves is a dashed tile with the offline icon, named
+  *Photo not available from Immich* — never a broken image.
 - **States:** skeleton tiles while loading; *No photos from 12 June in Immich.* with the arrows
   still there and a line that they skip to a day with some; *Immich didn’t answer.* with *Try
   again*.

@@ -281,6 +281,13 @@
       "when": 1794176030659,
       "tag": "0039_household_moment",
       "breakpoints": true
+    },
+    {
+      "idx": 40,
+      "version": "6",
+      "when": 1794557431992,
+      "tag": "0040_journal_immich_photo",
+      "breakpoints": true
     }
   ]
 }

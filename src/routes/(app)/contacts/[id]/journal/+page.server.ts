@@ -12,6 +12,11 @@ import {
 } from '$lib/server/domain/journal/journal';
 import { addPhotoToOwnEntry, removePhotoFromOwnEntry } from '$lib/server/domain/media/entry-photos';
 import { InvalidImageError } from '$lib/server/domain/media/journal-photos';
+import {
+	immichPhotosOfEntries,
+	linkImmichPhotosToOwnEntry,
+	unlinkImmichPhotoFromOwnEntry
+} from '$lib/server/domain/immich/entry-immich-photos';
 import { subjectsForAudience, withUnseenSubjects } from '$lib/server/domain/journal/subjects';
 import { extractMentionIds } from '$lib/mentions/mentions';
 import { resolveForAudience } from '$lib/server/domain/mentions/resolve-for-audience';
@@ -53,6 +58,15 @@ export const load: PageServerLoad = async ({ locals, params, url }) => {
 	);
 
 	const nameOfAuthor = await authorNames(locals.services.household.memberDeps, viewer.householdId);
+	const immichPhotos = await immichPhotosOfEntries(
+		{
+			reads: locals.services.media.entryImmichPhotos,
+			signer: locals.services.immich?.signer ?? null
+		},
+		viewer,
+		params.id,
+		entries.map((e) => e.id)
+	);
 
 	return {
 		contact: {
@@ -73,6 +87,7 @@ export const load: PageServerLoad = async ({ locals, params, url }) => {
 			},
 			entries,
 			photos: journalPhotos,
+			immichPhotos,
 			names: contactNames,
 			nameOfAuthor,
 			tags: activeTags.map((tag) => tag.key)
@@ -90,7 +105,8 @@ const EditSchema = v.object({
 	title: v.optional(v.pipe(v.string(), v.trim())),
 	body: v.string(),
 	subjectIds: v.array(v.string()),
-	removePhotoIds: v.array(v.string())
+	removePhotoIds: v.array(v.string()),
+	unlinkImmichAssetIds: v.array(v.string())
 });
 
 /** What the journal says when the entry's field `field` did not read. */
@@ -148,7 +164,8 @@ export const actions: Actions = {
 			title: form.get('title') || undefined,
 			body: form.get('body'),
 			subjectIds: form.getAll('subjectIds'),
-			removePhotoIds: form.getAll('removePhotoIds')
+			removePhotoIds: form.getAll('removePhotoIds'),
+			unlinkImmichAssetIds: form.getAll('unlinkImmichAssetIds')
 		});
 		if (!parsed.success) {
 			return fail(400, { journalError: say(locals, 'errors.form.checkAndRetry') });
@@ -210,8 +227,46 @@ export const actions: Actions = {
 				photoId
 			});
 		}
+		for (const assetId of parsed.output.unlinkImmichAssetIds) {
+			await unlinkImmichPhotoFromOwnEntry(
+				{ entries: locals.services.media.ownEntryImmichPhotos },
+				viewer.id,
+				{
+					entryId: kept,
+					assetId
+				}
+			);
+		}
 
 		throw redirect(303, `/contacts/${params.id}/journal`);
+	},
+
+	/**
+	 * Immich photos picked while an own entry is edited, kept as references to the asset (docs/04
+	 * ADR-132). The picker's signed tokens name them; the editor sends its edit after.
+	 */
+	linkImmichPhotos: async ({ request, locals }) => {
+		const viewer = requireViewer(locals);
+		const form = await request.formData();
+		const id = form.get('id');
+		const tokens = form.getAll('tokens');
+		if (typeof id !== 'string' || !tokens.every((t) => typeof t === 'string')) {
+			return fail(400, { journalError: say(locals, 'errors.form.checkAndRetry') });
+		}
+		const outcome = await linkImmichPhotosToOwnEntry(
+			locals.services.immich?.entryImmichPhotoDeps ?? null,
+			viewer,
+			{ entryId: id, tokens }
+		);
+		if (outcome === 'notConfigured') {
+			return fail(409, { journalError: say(locals, 'errors.photo.immichNotConnected') });
+		}
+		// A token from a picker left open too long reads as expired: reloading lists it afresh.
+		if (outcome === 'invalid') {
+			return fail(400, { journalError: say(locals, 'errors.photo.fromImmichGone') });
+		}
+		if (outcome === 'gone') return fail(404, { journalError: say(locals, 'errors.journal.gone') });
+		return { linked: tokens.length };
 	},
 
 	/**

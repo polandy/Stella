@@ -4,6 +4,7 @@ import type { JournalEntry } from '$lib/server/domain/journal/journal';
 import { someJournalEntry } from '$lib/server/domain/testing';
 import type { Remover } from '$lib/server/access/visibility';
 import type { SubjectFace } from '$lib/story/subjects';
+import type { EntryImmichPhoto } from '$lib/immich/library';
 import { activeTagsFor, journalEntriesFor } from './journal-view';
 
 /*
@@ -26,6 +27,7 @@ function view(
 	entries: JournalEntry[],
 	{
 		photos = [],
+		immichPhotos = new Map(),
 		names = [],
 		remover = { id: VIEWER, householdId: 'h1', isAdmin: false },
 		tags = []
@@ -33,6 +35,7 @@ function view(
 		remover?: Remover;
 		tags?: readonly string[];
 		photos?: { id: string; journalEntryId: string }[];
+		immichPhotos?: Map<string, EntryImmichPhoto[]>;
 		names?: SubjectFace[];
 	} = {}
 ) {
@@ -43,6 +46,7 @@ function view(
 		tags,
 		entries,
 		photos,
+		immichPhotos,
 		names,
 		nameOfAuthor: (id) => MEMBERS.get(id) ?? null
 	});
@@ -86,6 +90,12 @@ describe('journalEntriesFor', () => {
 			]
 		});
 		expect(shown.map((e) => e.photos)).toEqual([['p2'], ['p1', 'p3']]);
+	});
+
+	it('gives each entry the Immich photos it refers to, and none to the others', () => {
+		const ref = { assetId: 'a1', thumbnailUrl: '/media/immich/t', previewUrl: '/media/immich/p' };
+		const shown = view([entry('e1'), entry('e2')], { immichPhotos: new Map([['e2', [ref]]]) });
+		expect(shown.map((e) => e.immichPhotos)).toEqual([[], [ref]]);
 	});
 
 	it('names only the mentioned people the viewer may see', () => {

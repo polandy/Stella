@@ -9,6 +9,7 @@ import { ARCHIVE_FORMAT, ARCHIVE_VERSION, buildArchiveDocument } from './documen
  */
 
 const NOW = Date.UTC(2026, 8, 7, 9, 30);
+const IMMICH_ASSET = '11111111-1111-4111-8111-111111111111';
 
 /** A household with one of everything, wired together the way the database wires it. */
 function fullHousehold(): HouseholdSnapshot {
@@ -86,6 +87,7 @@ function fullHousehold(): HouseholdSnapshot {
 				}
 			],
 			journal_mention: [{ journal_entry_id: 'j-1', contact_id: 'c-rosa' }],
+			journal_immich_photo: [{ journal_entry_id: 'j-1', asset_id: IMMICH_ASSET }],
 			interaction: [
 				{
 					id: 'i-1',
@@ -260,6 +262,11 @@ describe('a person', () => {
 		const entry = (hans().journal as Record<string, unknown>[])[0];
 		expect((entry.photos as Record<string, unknown>[]).map((p) => p.id)).toEqual(['p-journal']);
 		expect((hans().photos as Record<string, unknown>[]).map((p) => p.id)).toEqual(['p-gallery']);
+	});
+
+	it('names an entry’s Immich photos by asset, the pictures staying in Immich', () => {
+		const entry = (hans().journal as Record<string, unknown>[])[0];
+		expect(entry.immich_photos).toEqual([IMMICH_ASSET]);
 	});
 
 	it('puts a circle photo with its circle, in nobody’s gallery', () => {

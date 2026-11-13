@@ -22,6 +22,7 @@ function context(overrides: Partial<StoryViewContext> = {}): StoryViewContext {
 		remover: { id: VIEWER, householdId: 'h1', isAdmin: false },
 		person: { householdId: 'h1', ownerId: 'someone', visibility: 'shared' },
 		photosByEntry: new Map(),
+		immichPhotosByEntry: new Map(),
 		nameOf: () => null,
 		faceOf: () => null,
 		nameOfAuthor: () => null,
@@ -155,6 +156,22 @@ describe('toStoryItem, journal entries', () => {
 
 		if (view.kind !== 'journal') throw new Error('expected a journal item');
 		expect(view.photos).toEqual([]);
+	});
+
+	it('attaches the Immich photos that entry refers to', () => {
+		const ref = { assetId: 'a1', thumbnailUrl: null, previewUrl: null };
+		const view = toStoryItem(
+			journalItem(),
+			context({
+				immichPhotosByEntry: new Map([
+					['j1', [ref]],
+					['j2', [{ ...ref, assetId: 'a2' }]]
+				])
+			})
+		);
+
+		if (view.kind !== 'journal') throw new Error('expected a journal item');
+		expect(view.immichPhotos).toEqual([ref]);
 	});
 });
 

@@ -33,6 +33,7 @@ import {
 	type PersonViewContext
 } from './person-view';
 import { REVIEW_PARAM } from './review-path';
+import { immichPhotosOfEntries } from '$lib/server/domain/immich/entry-immich-photos';
 import { entryIdsOf, nameLookup, photosByEntry, toStoryItem } from './story-view';
 import { lastNameChips, readPersonPage } from './read-person-page';
 import type { PageServerLoad } from './$types';
@@ -84,11 +85,23 @@ export const load = (async ({ locals, params, url }) => {
 			: [];
 
 	// Only the photos of the entries on the story's first page; later pages bring their own.
-	const journalPhotos = await locals.services.media.journalPhotos.listJournalPhotosOfEntries(
-		viewer,
-		params.id,
-		entryIdsOf(read.storyPage.items)
-	);
+	const storyEntryIds = entryIdsOf(read.storyPage.items);
+	const [journalPhotos, immichPhotosByEntry] = await Promise.all([
+		locals.services.media.journalPhotos.listJournalPhotosOfEntries(
+			viewer,
+			params.id,
+			storyEntryIds
+		),
+		immichPhotosOfEntries(
+			{
+				reads: locals.services.media.entryImmichPhotos,
+				signer: locals.services.immich?.signer ?? null
+			},
+			viewer,
+			params.id,
+			storyEntryIds
+		)
+	]);
 
 	const named = peopleNamedIn(read.family.graph);
 	const ctx: PersonViewContext = {
@@ -109,6 +122,7 @@ export const load = (async ({ locals, params, url }) => {
 		remover,
 		person,
 		photosByEntry: photosByEntry(journalPhotos),
+		immichPhotosByEntry,
 		faceOf: faceLookup(named)
 	};
 

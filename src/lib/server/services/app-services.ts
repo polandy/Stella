@@ -67,7 +67,15 @@ export type ServicesWiring = AuthWiring &
 	Omit<RecordWiring, 'contacts' | 'todos'> &
 	HouseholdWiring &
 	Omit<ArchiveWiring, 'media' | 'convertHeldGifts'> &
-	Omit<ImmichWiring, 'contacts' | 'directory' | 'contactDeps' | 'contextReads' | 'avatarDeps'> &
+	Omit<
+		ImmichWiring,
+		| 'contacts'
+		| 'directory'
+		| 'contactDeps'
+		| 'contextReads'
+		| 'avatarDeps'
+		| 'ownEntryImmichPhotos'
+	> &
 	Omit<NextcloudWiring, 'media' | 'avatarDeps'> &
 	ReleaseWiring &
 	Omit<OfflineWiring, 'contexts'> &
@@ -118,7 +126,8 @@ export function createServices(wiring: ServicesWiring): AppServices {
 		directory: people.directory,
 		contactDeps: people.contactDeps,
 		contextReads: people.personContextDeps.contextReads,
-		avatarDeps: media.avatarDeps
+		avatarDeps: media.avatarDeps,
+		ownEntryImmichPhotos: media.ownEntryImmichPhotos
 	});
 	const nextcloud = createNextcloudServices({
 		...wiring,

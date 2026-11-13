@@ -4,6 +4,10 @@ import type { Config } from '../config';
 import { createDrizzleFramingRepository } from '../db/framing-repository';
 import { createDrizzleGalleryPhotoReads } from '../db/gallery-photo-reads';
 import { createDrizzleJournalPhotoReads } from '../db/journal-photo-reads';
+import {
+	createDrizzleEntryImmichPhotoReads,
+	createDrizzleOwnEntryImmichPhotos
+} from '../db/entry-immich-photos';
 import { createDrizzleOwnEntries } from '../db/own-entry-photos';
 import { createDrizzleMemoryRepository } from '../db/memory-repository';
 import { createDrizzlePhotoFileReads } from '../db/photo-file-reads';
@@ -17,6 +21,10 @@ import type {
 	MediaStreamSource,
 	PhotoFileReads
 } from '../domain/media/avatars';
+import type {
+	EntryImmichPhotoReads,
+	OwnEntryImmichPhotos
+} from '../domain/immich/entry-immich-photos';
 import type { EntryPhotoDeps } from '../domain/media/entry-photos';
 import type { FramingDeps } from '../domain/media/framing';
 import type { GalleryDeps } from '../domain/media/gallery';
@@ -59,6 +67,10 @@ export interface MediaServices {
 	journalPhotoDeps: JournalPhotoDeps;
 	/** An entry's photos as its author edits it (docs/02 §2.20). */
 	entryPhotoDeps: EntryPhotoDeps;
+	/** The Immich references on the entries a story page reads (docs/04 ADR-132). */
+	entryImmichPhotos: EntryImmichPhotoReads;
+	/** An entry's Immich references as its author edits it; taking one off needs no Immich. */
+	ownEntryImmichPhotos: OwnEntryImmichPhotos;
 	streamDeps: StreamDeps;
 	memoryDeps: MemoryDeps;
 }
@@ -98,6 +110,8 @@ export function createMediaServices({ config, db, clock, ids }: MediaWiring): Me
 		galleryUploadDeps: uploadDeps,
 		journalPhotoDeps: uploadDeps,
 		entryPhotoDeps: { ...uploadDeps, entries: createDrizzleOwnEntries(db) },
+		entryImmichPhotos: createDrizzleEntryImmichPhotoReads(db),
+		ownEntryImmichPhotos: createDrizzleOwnEntryImmichPhotos(db),
 		streamDeps: { stream: createDrizzleStreamRepository(db) },
 		memoryDeps: { memories: createDrizzleMemoryRepository(db) }
 	};

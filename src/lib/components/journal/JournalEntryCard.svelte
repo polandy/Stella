@@ -10,6 +10,7 @@
 	import type { ComponentProps } from 'svelte';
 	import JournalEntryEditor from './JournalEntryEditor.svelte';
 	import MomentWith from './MomentWith.svelte';
+	import ImmichPhotoTile from '$lib/components/immich/ImmichPhotoTile.svelte';
 	import { othersThan, type SubjectFace } from '$lib/story/subjects';
 
 	type EditorProps = ComponentProps<typeof JournalEntryEditor>;
@@ -24,6 +25,7 @@
 		day,
 		candidates,
 		tags,
+		immichLibrary,
 		editing,
 		onEdit,
 		onDoneEditing,
@@ -44,6 +46,7 @@
 		day: string;
 		candidates: EditorProps['candidates'];
 		tags: EditorProps['tags'];
+		immichLibrary: EditorProps['immichLibrary'];
 		/** This entry is the one being edited — only one at a time. */
 		editing: boolean;
 		onEdit: () => void;
@@ -112,7 +115,15 @@
 	<MomentWith others={othersThan(entry.subjects, contact.id)} />
 	<!-- The entry and its editor glide into each other in place (docs/05 §5.11). -->
 	<Swap when={editing}>
-		<JournalEntryEditor contactId={contact.id} {entry} {candidates} {tags} onDone={onDoneEditing} />
+		<JournalEntryEditor
+			contactId={contact.id}
+			{entry}
+			{day}
+			{immichLibrary}
+			{candidates}
+			{tags}
+			onDone={onDoneEditing}
+		/>
 		{#snippet otherwise()}
 			<Veil id={veilId} isPrivate={entry.visibility === 'private'} label={t('privacy.veil.moment')}>
 				{#snippet standIn()}
@@ -128,7 +139,7 @@
 	</Swap>
 
 	<!-- While editing, the editor shows the photos. -->
-	{#if entry.photos.length && !editing}
+	{#if (entry.photos.length || entry.immichPhotos.length) && !editing}
 		<!-- The same veil as the text: one tap shows both. -->
 		<Veil
 			id={veilId}
@@ -152,6 +163,13 @@
 							class="h-28 w-28 object-cover transition-transform hover:scale-105"
 						/>
 					</a>
+				{/each}
+				{#each entry.immichPhotos as photo (photo.assetId)}
+					<ImmichPhotoTile
+						{photo}
+						alt={t('journal.photoAlt', { name: contact.displayName, day })}
+						class="h-28 w-28 rounded-app"
+					/>
 				{/each}
 			</div>
 		</Veil>

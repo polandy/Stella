@@ -152,6 +152,7 @@
 							day={day.date}
 							{candidates}
 							tags={data.entryTags}
+							immichLibrary={data.immichLibrary}
 							editing={editingId === entry.id}
 							onEdit={() => (editingId = entry.id)}
 							onDoneEditing={() => (editingId = null)}

@@ -5,6 +5,7 @@ import type { MentionKind, RestoreContext } from './restore-context';
 import { bool, ids, int, ms, records, str, visibilityOf, type Row } from './restore-fields';
 import type { PhotoPlan } from './restore-photos';
 import { subjectKeyOf } from '../journal/subjects';
+import { isImmichId } from '../immich/gateway';
 
 /*
  * What each restored person carries (docs/02 §2.15): contact fields, dates, notes, journal
@@ -20,6 +21,7 @@ export interface PersonRecordRows {
 	journalEntries: Row[];
 	journalSubjects: Row[];
 	journalMentions: Row[];
+	journalImmichPhotos: Row[];
 	interactions: Row[];
 	participants: Row[];
 	gifts: Row[];
@@ -50,6 +52,7 @@ export function planPersonRecords(
 		journalEntries: [],
 		journalSubjects: [],
 		journalMentions: [],
+		journalImmichPhotos: [],
 		interactions: [],
 		participants: [],
 		gifts: [],
@@ -157,6 +160,17 @@ export function planPersonRecords(
 			}
 			for (const mentioned of knownOnly(ids(entry, 'mentions'), 'journalMentions')) {
 				rows.journalMentions.push({ journal_entry_id: entryId, contact_id: mentioned });
+			}
+			for (const assetId of new Set(ids(entry, 'immich_photos'))) {
+				if (!isImmichId(assetId)) {
+					warn({ code: 'immichPhotoIncomplete' });
+					continue;
+				}
+				rows.journalImmichPhotos.push({
+					journal_entry_id: entryId,
+					asset_id: assetId,
+					added_at: now
+				});
 			}
 			for (const image of records(entry, 'photos'))
 				photos.add(image, { contactId, journalEntryId: entryId });

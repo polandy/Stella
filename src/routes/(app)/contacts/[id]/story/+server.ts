@@ -5,6 +5,7 @@ import { getContact } from '$lib/server/domain/contacts/contacts';
 import { listContactNamesAmong } from '$lib/server/domain/contacts/contact-names';
 import { authorNames } from '$lib/server/domain/household/members';
 import { listStoryPage } from '$lib/server/domain/story/story';
+import { immichPhotosOfEntries } from '$lib/server/domain/immich/entry-immich-photos';
 import { parseStoryCursor } from '$lib/story/cursor';
 import {
 	entryIdsOf,
@@ -44,11 +45,17 @@ export const POST: RequestHandler = async ({ locals, params, request }) => {
 	});
 
 	// Only what this page shows: its entries' photos and the people its entries mention.
-	const [photos, names, nameOfAuthor] = await Promise.all([
-		locals.services.media.journalPhotos.listJournalPhotosOfEntries(
+	const entryIds = entryIdsOf(page.items);
+	const [photos, immichPhotosByEntry, names, nameOfAuthor] = await Promise.all([
+		locals.services.media.journalPhotos.listJournalPhotosOfEntries(viewer, params.id, entryIds),
+		immichPhotosOfEntries(
+			{
+				reads: locals.services.media.entryImmichPhotos,
+				signer: locals.services.immich?.signer ?? null
+			},
 			viewer,
 			params.id,
-			entryIdsOf(page.items)
+			entryIds
 		),
 		listContactNamesAmong(locals.services.people.contactNameDeps, viewer, namedIdsOf(page.items)),
 		authorNames(locals.services.household.memberDeps, viewer.householdId)
@@ -61,6 +68,7 @@ export const POST: RequestHandler = async ({ locals, params, request }) => {
 			visibility: contact.visibility
 		},
 		photosByEntry: photosByEntry(photos),
+		immichPhotosByEntry,
 		nameOf: nameLookup(names),
 		faceOf: faceLookup(names),
 		nameOfAuthor

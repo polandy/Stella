@@ -35,6 +35,7 @@ export const journal = {
 		`Drop new photo ${p.n} of ${p.count}`,
 	'journal.edit.photosRemoved': (p: { count: number }) =>
 		p.count === 1 ? '1 photo goes when you save' : `${p.count} photos go when you save`,
+	'journal.immichPhotoUnavailable': 'Photo not available from Immich',
 	'journal.photoAlt': (p: { name: string; day: string }) => `${p.name}, ${p.day}`,
 	'journal.empty.title': 'No moments yet.',
 	'journal.empty.hint': (p: { name: string }) =>

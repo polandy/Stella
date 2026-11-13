@@ -1,4 +1,5 @@
 import type { InteractionKind } from '$lib/story/interaction-kinds';
+import type { EntryImmichPhoto } from '$lib/immich/library';
 import type { SubjectFace } from '$lib/story/subjects';
 
 /*
@@ -29,6 +30,8 @@ export interface StoryJournalItem extends StoryItemBase {
 	/** Server-rendered, already-safe Markdown (docs/02 §2.5). */
 	bodyHtml: string;
 	photos: string[];
+	/** The Immich photos it refers to, shown through the signed proxy (docs/04 ADR-132). */
+	immichPhotos: EntryImmichPhoto[];
 	/** Whom it is about, the anchor first (docs/02 §2.20.3). */
 	subjects: SubjectFace[];
 	/** Whether *Edit* is offered: the author alone, as on the journal page (docs/02 §2.20). */

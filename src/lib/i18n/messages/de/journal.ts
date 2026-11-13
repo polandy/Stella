@@ -35,6 +35,7 @@ export const journal: JournalMessages = {
 		p.count === 1
 			? '1 Foto wird beim Speichern entfernt'
 			: `${p.count} Fotos werden beim Speichern entfernt`,
+	'journal.immichPhotoUnavailable': 'Foto aus Immich nicht verfügbar',
 	'journal.photoAlt': (p) => `${p.name}, ${p.day}`,
 	'journal.empty.title': 'Noch keine Momente.',
 	'journal.empty.hint': (p) =>

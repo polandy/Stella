@@ -190,6 +190,7 @@ export function planRestore(
 			{ table: 'journal_entry', rows: personRecords.journalEntries },
 			{ table: 'journal_subject', rows: personRecords.journalSubjects },
 			{ table: 'journal_mention', rows: personRecords.journalMentions },
+			{ table: 'journal_immich_photo', rows: personRecords.journalImmichPhotos },
 			{ table: 'interaction', rows: personRecords.interactions },
 			{ table: 'interaction_participant', rows: personRecords.participants },
 			{ table: 'gift', rows: personRecords.gifts },

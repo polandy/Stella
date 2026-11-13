@@ -41,6 +41,8 @@ export const archive = {
 		p.count === 1 ? 'journal entry' : 'journal entries',
 	'archive.table.journal_mention': (p: { count: number }): string =>
 		p.count === 1 ? 'journal mention' : 'journal mentions',
+	'archive.table.journal_immich_photo': (p: { count: number }): string =>
+		p.count === 1 ? 'Immich photo on a journal entry' : 'Immich photos on journal entries',
 	'archive.table.interaction': (p: { count: number }): string =>
 		p.count === 1 ? 'touchpoint' : 'touchpoints',
 	'archive.table.interaction_participant': (p: { count: number }): string =>
@@ -88,6 +90,8 @@ export const archive = {
 		'A link to Immich that named no Immich person was left out.',
 	'archive.warning.immichIgnoreIncomplete':
 		'An ignored Immich proposal that named no Immich person was left out.',
+	'archive.warning.immichPhotoIncomplete':
+		'An Immich photo on a journal entry that named no Immich photo was left out.',
 	'archive.warning.immichNameIgnoreIncomplete':
 		'A face ignored under New from Immich that named no Immich person was left out.',
 	'archive.warning.addressBookCardIncomplete':

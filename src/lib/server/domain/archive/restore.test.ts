@@ -19,6 +19,7 @@ import {
 
 const NOW = Date.UTC(2026, 9, 1, 8, 0);
 const EXPORTED = Date.UTC(2026, 8, 7, 9, 30);
+const IMMICH_ASSET = '11111111-1111-4111-8111-111111111111';
 const clock: Clock = { now: () => NOW };
 
 /** Predictable ids, so a test can tell a made-up one from a restored one. */
@@ -150,6 +151,9 @@ function fullHousehold(): HouseholdSnapshot {
 				}
 			],
 			journal_mention: [{ journal_entry_id: 'j-1', contact_id: 'c-rosa' }],
+			journal_immich_photo: [
+				{ journal_entry_id: 'j-1', asset_id: IMMICH_ASSET, added_at: 1_700_000_000_000 }
+			],
 			interaction: [
 				{
 					id: 'i-1',
@@ -495,6 +499,7 @@ describe('the round trip', () => {
 		note_mention: ['note_id', 'contact_id'],
 		journal_entry: ['id', 'contact_id', 'visibility', 'entry_date', 'title', 'body', 'created_at'],
 		journal_mention: ['journal_entry_id', 'contact_id'],
+		journal_immich_photo: ['journal_entry_id', 'asset_id'],
 		interaction: [
 			'id',
 			'contact_id',
@@ -794,6 +799,17 @@ describe('an archive that does not add up', () => {
 		const plan = planRestore(deps(), document, target());
 		expect(rowsOf(plan, 'immich_ignore')).toEqual([]);
 		expect(plan.warnings).toContainEqual({ code: 'immichIgnoreIncomplete' });
+	});
+
+	it('leaves out an Immich photo on an entry that names no Immich photo, and says so', () => {
+		const document = archived() as {
+			people: { journal: { immich_photos?: string[] }[] }[];
+		};
+		const entry = document.people.flatMap((p) => p.journal).find((e) => e.immich_photos)!;
+		entry.immich_photos = ['../users/me'];
+		const plan = planRestore(deps(), document, target());
+		expect(rowsOf(plan, 'journal_immich_photo')).toEqual([]);
+		expect(plan.warnings).toContainEqual({ code: 'immichPhotoIncomplete' });
 	});
 
 	it('gives an ignored Immich proposal by a member this installation never had to the admin', () => {

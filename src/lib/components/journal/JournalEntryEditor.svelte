@@ -2,7 +2,6 @@
 	import { FIELD } from '$lib/components/ui/field';
 	import Button from '$lib/components/ui/Button.svelte';
 	import FormError from '$lib/components/ui/FormError.svelte';
-	import Icon from '$lib/components/ui/Icon.svelte';
 	import MentionTextarea from '$lib/components/stream/MentionTextarea.svelte';
 	import PersonSearchSelect from '$lib/components/people/PersonSearchSelect.svelte';
 	import { subjectPool, type SubjectFace } from '$lib/story/subjects';
@@ -10,11 +9,14 @@
 	import { invalidateAll } from '$app/navigation';
 	import { useI18n } from '$lib/i18n/context.svelte';
 	import { processImage } from '$lib/media/process-image';
-	import { onDestroy } from 'svelte';
+	import { immichMediaToken } from '$lib/immich/media-url';
+	import type { EntryImmichPhoto, LibraryPhoto } from '$lib/immich/library';
 	import type { ComponentProps } from 'svelte';
+	import EntryEditorPhotos from './EntryEditorPhotos.svelte';
 
 	/*
-	 * A journal entry corrected in place (docs/02 §2.20): its title and text, its photos, and the
+	 * A journal entry corrected in place (docs/02 §2.20): its title and text, its photos — stored
+	 * ones and Immich references (docs/04 ADR-132) — and the
 	 * people it is about (§2.20.3); the day and who sees it stay. One editor for the journal page
 	 * and the person's Activity card, so both save the same way. Its author's alone; online only,
 	 * like removing.
@@ -22,6 +24,8 @@
 	let {
 		contactId,
 		entry,
+		day,
+		immichLibrary,
 		candidates,
 		tags,
 		onDone
@@ -40,7 +44,13 @@
 			subjects: SubjectFace[];
 			/** Its photos' ids, oldest first. */
 			photos: string[];
+			/** The Immich photos it refers to. */
+			immichPhotos: EntryImmichPhoto[];
 		};
+		/** The entry's day, where the Immich picker opens. */
+		day: string;
+		/** Whether Immich is on the instance, so photos can be picked from it. */
+		immichLibrary: boolean;
 		/** Whom the @-picker offers: everyone visible but the person whose journal it is. */
 		candidates: ComponentProps<typeof MentionTextarea>['candidates'];
 		tags: ComponentProps<typeof MentionTextarea>['tags'];
@@ -64,20 +74,9 @@
 
 	// Photos marked for removal go on save; Cancel keeps them.
 	let removing = $state<string[]>([]);
-	const kept = $derived(entry.photos.filter((id) => !removing.includes(id)));
-	/** Pictures picked on the device, each with a preview until it is stored. */
+	let unlinking = $state<string[]>([]);
 	let added = $state<{ file: File; url: string }[]>([]);
-	function onFiles(event: Event) {
-		const input = event.currentTarget as HTMLInputElement;
-		const files = Array.from(input.files ?? []);
-		added = [...added, ...files.map((file) => ({ file, url: URL.createObjectURL(file) }))];
-		input.value = '';
-	}
-	function dropAdded(url: string) {
-		URL.revokeObjectURL(url);
-		added = added.filter((a) => a.url !== url);
-	}
-	onDestroy(() => added.forEach((a) => URL.revokeObjectURL(a.url)));
+	let linking = $state<LibraryPhoto[]>([]);
 
 	async function post(action: string, body: FormData) {
 		const res = await fetch(`/contacts/${contactId}/journal?/${action}`, {
@@ -116,8 +115,27 @@
 				return false;
 			}
 			if (result.type === 'error') throw new Error();
-			dropAdded(next!.url);
+			URL.revokeObjectURL(next!.url);
+			added = added.slice(1);
 		}
+		return true;
+	}
+
+	/** Refer to the Immich photos picked, all at once, before the text (docs/04 ADR-132). */
+	async function storeLinked(): Promise<boolean> {
+		if (!linking.length) return true;
+		const body = new FormData();
+		body.set('id', entry.id);
+		for (const pick of linking) body.append('tokens', immichMediaToken(pick.thumbnailUrl) ?? '');
+		const result = await post('linkImmichPhotos', body);
+		if (result.type === 'failure') {
+			error = (result.data?.journalError as string | undefined) ?? t('journal.editSaveFailed');
+			// Device photos stored just before are the entry's now; show them so.
+			await invalidateAll();
+			return false;
+		}
+		if (result.type === 'error') throw new Error();
+		linking = [];
 		return true;
 	}
 
@@ -126,9 +144,9 @@
 		const form = new FormData(event.currentTarget as HTMLFormElement);
 		saving = true;
 		error = null;
-		const storing = added.length > 0;
+		const storing = added.length > 0 || linking.length > 0;
 		try {
-			if (!(await storeAdded())) return;
+			if (!(await storeAdded()) || !(await storeLinked())) return;
 			const result = await post('edit', form);
 			// A refusal says why — a namesake to pick, say (docs/02 §2.2.3) — and keeps the text.
 			if (result.type === 'failure') {
@@ -200,71 +218,16 @@
 		placeholder={t('journal.bodyPlaceholder')}
 		class="{FIELD} w-full px-3 py-2"
 	/>
-	<div class="flex flex-col gap-2 text-sm" role="group" aria-label={t('journal.edit.photos')}>
-		{#if kept.length || added.length}
-			<ul class="flex flex-wrap gap-2">
-				{#each kept as photoId, index (photoId)}
-					{@const label = t('journal.edit.removePhoto', { n: index + 1, count: kept.length })}
-					<li class="relative">
-						<img
-							src="/media/{photoId}?thumb"
-							alt=""
-							class="size-20 rounded-control border border-border object-cover"
-						/>
-						<button
-							type="button"
-							class="tap-target absolute top-1 right-1 grid size-6 place-items-center rounded-full bg-card text-fg-muted shadow hover:text-danger"
-							aria-label={label}
-							title={label}
-							onclick={() => (removing = [...removing, photoId])}
-						>
-							<Icon name="remove" size={14} />
-						</button>
-					</li>
-				{/each}
-				{#each added as pick, index (pick.url)}
-					{@const label = t('journal.edit.removeNewPhoto', { n: index + 1, count: added.length })}
-					<li class="relative">
-						<img
-							src={pick.url}
-							alt=""
-							class="size-20 rounded-control border border-dashed border-primary object-cover"
-						/>
-						<button
-							type="button"
-							class="tap-target absolute top-1 right-1 grid size-6 place-items-center rounded-full bg-card text-fg-muted shadow hover:text-danger"
-							aria-label={label}
-							title={label}
-							onclick={() => dropAdded(pick.url)}
-						>
-							<Icon name="remove" size={14} />
-						</button>
-					</li>
-				{/each}
-			</ul>
-		{/if}
-		{#each removing as photoId (photoId)}
-			<input type="hidden" name="removePhotoIds" value={photoId} />
-		{/each}
-		<div class="flex flex-wrap items-center gap-3">
-			<!-- `sr-only`, not `hidden`, so the picker stays in the tab order (WCAG 2.1.1). -->
-			<label
-				class="inline-flex cursor-pointer items-center gap-2 rounded-app border border-border px-3 py-2 text-fg-muted hover:text-fg has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-focus-ring"
-			>
-				<Icon name="photo" size={15} />
-				{t('journal.addPhotos')}
-				<input type="file" accept="image/*" multiple onchange={onFiles} class="sr-only" />
-			</label>
-			{#if removing.length}
-				<span class="text-fg-subtle" role="status">
-					{t('journal.edit.photosRemoved', { count: removing.length })}
-				</span>
-				<Button variant="ghost" type="button" onclick={() => (removing = [])}>
-					{t('common.undo')}
-				</Button>
-			{/if}
-		</div>
-	</div>
+	<EntryEditorPhotos
+		photos={entry.photos}
+		immichPhotos={entry.immichPhotos}
+		{day}
+		{immichLibrary}
+		bind:removing
+		bind:unlinking
+		bind:added
+		bind:linking
+	/>
 	<div class="flex items-center gap-3">
 		<Button variant="primary" disabled={saving || unclear}>
 			{saving ? t('common.saving') : t('journal.saveChanges')}

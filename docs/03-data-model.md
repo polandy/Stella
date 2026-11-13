@@ -94,6 +94,7 @@ note          *───* contact     (note_mention)          [M2]
 journal_entry *───* contact     (journal_mention → passive @-references) [M2]
 journal_entry *───* contact     (journal_subject → further people it is about) [M3]
 journal_entry *───* entry_tag   (journal_entry_tag → #tags in the text)  [M3]
+journal_entry 1───* Immich asset (journal_immich_photo → photos by reference) [M3]
 household     1───* entry_tag
 
 activity_log *───1 user
@@ -482,6 +483,19 @@ Indexed on `contact_id` for the reverse lookup. The **source** person (whose jou
 self-reference (`contact_id` = the entry's own `contact_id`) is **not** stored. Mirrors
 `note_mention`; both should be produced by one shared mention parser/resolver (§2.20.1).
 A subject of the entry (anchor or `journal_subject`) is never stored here.
+
+### journal_immich_photo  [M3]
+An Immich photo a journal entry refers to instead of a copy (docs/02 §2.20, docs/04 ADR-132).
+Nothing is stored on disk; the photo is shown through the signed Immich proxy.
+
+| column | type | notes |
+|---|---|---|
+| journal_entry_id | text fk → journal_entry.id | cascade delete |
+| asset_id | text | the Immich asset's id; never deleted in Immich |
+| added_at | integer (timestamp_ms) | display order |
+| pk (journal_entry_id, asset_id) | | at most one reference per (entry, photo) |
+
+Visible exactly as its entry; moves along when entries join (docs/02 §2.20.3).
 
 ### journal_subject  [M3]
 The further people a journal entry is about, beside its anchor `contact_id` (docs/02

@@ -20,6 +20,10 @@ import type { ImmichNameIgnoreDeps } from '../domain/immich/name-ignores';
 import { createImmichMediaSigner, type ImmichMediaSigner } from '../domain/immich/signed-media';
 import type { UseImmichPhotoDeps } from '../domain/immich/use-as-photo';
 import { setContactAvatar, type AvatarDeps } from '../domain/media/avatars';
+import type {
+	EntryImmichPhotoDeps,
+	OwnEntryImmichPhotos
+} from '../domain/immich/entry-immich-photos';
 import type { ImmichMemoryDeps } from '../domain/memories/immich';
 import type { IdGenerator } from '../id';
 import { demoImmichLibrary } from '../immich/demo-library';
@@ -68,6 +72,8 @@ export interface ImmichServices {
 	useImmichPhotoDeps: UseImmichPhotoDeps;
 	/** Linking a contact to an Immich person. */
 	immichLinkDeps: ImmichLinkDeps;
+	/** Referring to library photos from a journal entry (docs/02 §2.20, ADR-132). */
+	entryImmichPhotoDeps: EntryImmichPhotoDeps;
 }
 
 /** The part of the configuration the immich context reads. */
@@ -88,6 +94,8 @@ export interface ImmichWiring {
 	contextReads: PersonContextReads;
 	/** The media context's avatar path, which a photo kept from Immich takes. */
 	avatarDeps: AvatarDeps;
+	/** The media context's Immich references on journal entries. */
+	ownEntryImmichPhotos: OwnEntryImmichPhotos;
 }
 
 /** The immich group, or null when this instance has no Immich configured. */
@@ -100,7 +108,8 @@ export function createImmichServices({
 	directory,
 	contactDeps,
 	contextReads,
-	avatarDeps
+	avatarDeps,
+	ownEntryImmichPhotos
 }: ImmichWiring): ImmichServices | null {
 	const { immich } = config;
 	if (!immich) return null;
@@ -152,6 +161,7 @@ export function createImmichServices({
 			setAvatar: (uploader, contactId, upload) =>
 				setContactAvatar(avatarDeps, uploader, contactId, upload)
 		},
-		immichLinkDeps
+		immichLinkDeps,
+		entryImmichPhotoDeps: { entries: ownEntryImmichPhotos, signer }
 	};
 }

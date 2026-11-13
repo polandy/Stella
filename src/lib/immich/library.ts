@@ -31,3 +31,14 @@ export type LibraryView =
 	/** The library runs without machine learning, so there is no search by description. */
 	| { state: 'searchOff' }
 	| { state: 'unreachable' };
+
+/**
+ * An Immich photo on a journal entry, kept as a reference (docs/02 §2.20, docs/04 ADR-132): both
+ * URLs signed for the reader's household, or null when Immich is not on the instance any more.
+ */
+export interface EntryImmichPhoto {
+	/** Immich's id for the photo, which keys it on the entry. */
+	assetId: string;
+	thumbnailUrl: string | null;
+	previewUrl: string | null;
+}

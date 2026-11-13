@@ -4,6 +4,7 @@ import { hashtagsIn, journalTagHref, tagKey } from '$lib/hashtags/hashtags';
 import type { KnownTag } from '$lib/hashtags/picker';
 import type { JournalEntry } from '$lib/server/domain/journal/journal';
 import type { JournalPhotoRef } from '$lib/server/domain/media/journal-photos';
+import type { EntryImmichPhoto } from '$lib/immich/library';
 import { renderMarkdownWithMentions } from '$lib/server/domain/notes/markdown';
 import { authorLabel } from '$lib/story/author';
 import { faceLookup, subjectFacesOf, type SubjectFace } from '$lib/story/subjects';
@@ -22,6 +23,8 @@ export interface JournalViewInput {
 	entries: readonly JournalEntry[];
 	/** The visible photos on the contact, oldest first. */
 	photos: readonly JournalPhotoRef[];
+	/** The Immich photos the entries refer to, by entry (docs/04 ADR-132). */
+	immichPhotos: ReadonlyMap<string, EntryImmichPhoto[]>;
 	/** The people the entries are about or mention that the viewer may see, archived ones included. */
 	names: readonly SubjectFace[];
 	/** Who wrote an entry, by member id; null for someone no longer in the household. */
@@ -51,6 +54,7 @@ export function journalEntriesFor({
 	person,
 	entries,
 	photos,
+	immichPhotos,
 	names,
 	nameOfAuthor,
 	tags
@@ -102,6 +106,7 @@ export function journalEntriesFor({
 		// Who wrote each entry, named the same way the story names it (docs/02 §2.23).
 		author: authorLabel(e.createdBy === viewerId, nameOfAuthor(e.createdBy)),
 		photos: photosByEntry.get(e.id) ?? [],
+		immichPhotos: immichPhotos.get(e.id) ?? [],
 		subjects: subjectFacesOf(e.subjectIds, faceOf),
 		updatedAt: e.updatedAt
 	}));
