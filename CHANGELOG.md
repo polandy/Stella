@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.7](https://github.com/polandy/Stella/compare/v0.1.6...v0.1.7) (2026-11-13)
+
+
+### Features
+
+* **journal:** refer to Immich photos from an entry instead of copying them ([#489](https://github.com/polandy/Stella/issues/489)) ([8affd79](https://github.com/polandy/Stella/commit/8affd79d603fe807935226f007c97cd9fa131331))
+
 ## [0.1.6](https://github.com/polandy/Stella/compare/v0.1.5...v0.1.6) (2026-11-13)
 
 
