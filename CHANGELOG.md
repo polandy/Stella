@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.8](https://github.com/polandy/Stella/compare/v0.1.7...v0.1.8) (2026-11-14)
+
+
+### Features
+
+* **people:** person search closes on an outside tap and flips upwards when tight ([#492](https://github.com/polandy/Stella/issues/492)) ([51cbe8a](https://github.com/polandy/Stella/commit/51cbe8ab19f2607476ba296e47f3641cfe631794))
+
 ## [0.1.7](https://github.com/polandy/Stella/compare/v0.1.6...v0.1.7) (2026-11-13)
 
 
