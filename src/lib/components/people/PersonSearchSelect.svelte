@@ -14,6 +14,8 @@
 		stillNeedsAPick,
 		type SelectablePerson
 	} from '$lib/people/select';
+	import { watchPlacement } from '$lib/people/panel-placement.svelte';
+	import type { PanelPlacement } from '$lib/people/panel-placement';
 	import { useRemovals } from '$lib/undo/context.svelte';
 	import { BLUR_CLOSE_MS } from '$lib/components/ui/blur-close';
 
@@ -136,18 +138,30 @@
 
 	/*
 	 * The search list closes when the input loses focus, but the create panel has to survive
-	 * that — the caret moves into it. So while it is open, a pointer landing anywhere outside
-	 * this picker is what closes it.
+	 * that — the caret moves into it. So a pointer landing anywhere outside this picker is
+	 * what closes it, below.
 	 */
+
+	let placement = $state<PanelPlacement>({ side: 'below', maxHeight: 224 });
+
+	// A tap beside the picker closes the list and keeps the picks; the list follows the field.
 	$effect(() => {
-		if (!creating) return;
+		if (!open || !root) return;
+		const field = root;
 		const closeOnOutside = (event: PointerEvent) => {
-			if (root?.contains(event.target as Node)) return;
+			if (field.contains(event.target as Node)) return;
 			creating = false;
 			open = false;
 		};
 		document.addEventListener('pointerdown', closeOnOutside, true);
-		return () => document.removeEventListener('pointerdown', closeOnOutside, true);
+		const stop = watchPlacement(field, (next) => {
+			if (next) placement = next;
+			else open = false;
+		});
+		return () => {
+			document.removeEventListener('pointerdown', closeOnOutside, true);
+			stop();
+		};
 	});
 
 	/** Whether the picks just made reached `max`; read straight off the ids, ahead of `full`. */
@@ -159,7 +173,8 @@
 		// At the cap the search closes; a kept search would stand in it, greyed out, saying nothing.
 		query = atCap() ? '' : queryAfterPick(query, multiple && keepSearch);
 		highlighted = 0;
-		open = multiple;
+		// A kept search stays listed; otherwise open only where it covers nothing below the field.
+		open = multiple && (keepSearch || placement.side === 'above');
 		if (!multiple) input?.blur();
 	}
 
@@ -243,8 +258,11 @@
 		if (showCreate && highlighted === createIndex) return createOptionId;
 		return highlighted < matches.length ? optionId(highlighted) : undefined;
 	});
-	const panelClass =
-		'absolute left-0 top-full z-10 mt-1 w-full min-w-[16rem] rounded-app border border-border bg-card shadow-pop';
+	const panelClass = $derived(
+		`absolute left-0 z-10 w-full overflow-y-auto ${placement.side === 'above' ? 'bottom-full mb-1' : 'top-full mt-1'} ` +
+			'min-w-[16rem] rounded-app border border-border bg-card shadow-pop'
+	);
+	const panelStyle = $derived(`max-height: ${placement.maxHeight}px`);
 </script>
 
 <div class="relative" bind:this={root}>
@@ -324,7 +342,7 @@
 	</div>
 
 	{#if open && creating}
-		<div class={panelClass} data-testid="person-search-create">
+		<div class={panelClass} style={panelStyle} data-testid="person-search-create">
 			<PersonQuickAdd
 				typed={query}
 				{suggestedDescription}
@@ -333,7 +351,12 @@
 			/>
 		</div>
 	{:else if open && !full}
-		<div class={panelClass}>
+		<div
+			class={panelClass}
+			style={panelStyle}
+			data-testid="person-search-panel"
+			data-side={placement.side}
+		>
 			<PersonSearchOptions
 				{listboxId}
 				{optionId}
