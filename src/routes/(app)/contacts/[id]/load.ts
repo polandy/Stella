@@ -137,7 +137,8 @@ export const load = (async ({ locals, params, url }) => {
 		 */
 		lastNameHelp: {
 			chips: lastNameChips(read.surnameHelp.proposal, t),
-			passOn: read.surnameHelp.passOn
+			passOn: read.surnameHelp.passOn,
+			family: read.surnameHelp.family
 		},
 		...birthdayOf(contact, read.dates),
 		dates: read.dates,

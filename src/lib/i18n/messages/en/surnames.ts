@@ -76,6 +76,12 @@ export const surnames = {
 	'surnames.chipUndoFailed': 'Could not take the last name back. Please try again.',
 	'surnames.passOnPrompt': (p: { people: string; count: number; name: string }) =>
 		`${p.people} ${p.count === 1 ? 'has' : 'have'} no last name yet — ${p.name} too?`,
+	'surnames.renamePrompt': (p: { from: string; name: string; count: number }) =>
+		p.count === 1
+			? `This relative still carries ${p.from} — change it to ${p.name} too?`
+			: `These relatives still carry ${p.from} — change it to ${p.name} too?`,
+	'surnames.renameApply': (p: { count: number }) =>
+		p.count === 1 ? 'Change for 1 person' : `Change for ${p.count} people`,
 	'surnames.no': 'No'
 };
 

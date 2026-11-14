@@ -5,7 +5,8 @@ import {
 	foldSurname,
 	proposeSurname,
 	type FamilyCircle,
-	type SurnameDismissal
+	type SurnameDismissal,
+	type SurnameView
 } from '../../../suggestions/rules/surnames';
 import { householdSpellings, type SurnameList } from '../../../suggestions/surname-groups';
 import { awaitsLastName, reviewList, type ReviewPerson } from '../../../surnames/review';
@@ -14,6 +15,7 @@ import type { Locale } from '../../../i18n/locales';
 import type { IdGenerator } from '../../id';
 import type { KinshipGraph } from '../../../kinship/kinship';
 import type { PassOnMap } from '../../../surnames/pass-on';
+import type { NamedKin } from '../../../surnames/rename-offer';
 import type { SurnameProposal } from '../../../suggestions/rules/surnames';
 import { activityRecord } from '../activity/activity';
 import { withNameParts, type StoredName } from '../../../people/display-name';
@@ -287,6 +289,8 @@ export interface SurnameHelp {
 	passOn: PassOnMap;
 	/** What Stella proposes for `subjectId`, for the profile's chip (§3.4); none without a subject. */
 	proposal: SurnameProposal;
+	/** The subject's family with a last name, for a changed one to be offered to (§2.2.4.7). */
+	family: NamedKin[];
 }
 
 /**
@@ -328,8 +332,36 @@ export async function readSurnameHelp(
 	const settled = facts.people.some((p) => p.id === subjectId && p.withoutLastNameAt !== null);
 	return {
 		passOn,
-		proposal: subjectId && !settled ? proposeSurname(view, subjectId) : { kind: 'none' }
+		proposal: subjectId && !settled ? proposeSurname(view, subjectId) : { kind: 'none' },
+		family: subjectId ? namedFamily(facts.people, view, subjectId, declined) : []
 	};
+}
+
+/** Parents, children, siblings, current partners and family-circle members with a last name. */
+function namedFamily(
+	people: readonly SurnameListPerson[],
+	view: SurnameView,
+	id: string,
+	declined: ReadonlyMap<string, string[]>
+): NamedKin[] {
+	const byId = new Map(people.map((p) => [p.id, p]));
+	const ids = new Set([
+		...view.parentsOf(id),
+		...view.childrenOf(id),
+		...view.siblingsOf(id),
+		...view.partnersOf(id),
+		...view.familyCirclesOf(id).flatMap((circle) => circle.memberIds)
+	]);
+	ids.delete(id);
+	return [...ids]
+		.map((kinId) => byId.get(kinId))
+		.filter((p) => p !== undefined && !p.archived && (p.lastName ?? '').trim() !== '')
+		.map((p) => ({
+			id: p!.id,
+			name: p!.displayName,
+			lastName: p!.lastName!,
+			declined: declined.get(p!.id) ?? []
+		}));
 }
 
 /** What the Settings card says: how many have no last name, and for how many Stella has one. */

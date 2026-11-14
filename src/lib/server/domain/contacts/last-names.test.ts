@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'bun:test';
 import type { KinshipGraph } from '../../../kinship/kinship';
+import type { FamilyCircle } from '../../../suggestions/rules/surnames';
 import type { ActivityOf } from '../activity/activity';
 import type { Contact } from './contacts';
 import {
@@ -64,7 +65,8 @@ function contact(
 function fakeDeps(
 	visible: Contact[],
 	people: SurnameListPerson[] = [],
-	graph: Partial<KinshipGraph> = {}
+	graph: Partial<KinshipGraph> = {},
+	familyCircles: FamilyCircle[] = []
 ) {
 	const batches: {
 		writes: readonly NameWrite[];
@@ -89,7 +91,7 @@ function fakeDeps(
 					return true;
 				}
 			},
-			surnames: { loadSurnameFactsVisibleTo: async () => ({ people, familyCircles: [] }) },
+			surnames: { loadSurnameFactsVisibleTo: async () => ({ people, familyCircles }) },
 			kinship: inMemoryKinshipGraph({
 				people: people.map((p) => ({ id: p.id, displayName: p.displayName })),
 				...graph
@@ -505,6 +507,44 @@ describe('readSurnameHelp', () => {
 			kind: 'one',
 			name: 'Brunner'
 		});
+	});
+
+	it('hands the subject their named family, for a changed name to be offered to', async () => {
+		const f = fakeDeps(
+			[lea],
+			[
+				listed('peter', 'Bruner'),
+				listed('lea', 'Bruner'),
+				listed('anna', 'Keller'),
+				listed('ex', 'Bruner'),
+				listed('cousin', 'Bruner'),
+				listed('kid', null),
+				listed('gone', 'Bruner', { archived: true }),
+				listed('stranger', 'Bruner')
+			],
+			{
+				parentEdges: [
+					{ parentId: 'peter', childId: 'lea' },
+					{ parentId: 'peter', childId: 'kid' },
+					{ parentId: 'peter', childId: 'gone' }
+				],
+				partnerEdges: [
+					{ a: 'peter', b: 'anna', former: false },
+					{ a: 'peter', b: 'ex', former: true }
+				]
+			},
+			[{ id: 'c1', name: 'Family', memberIds: ['peter', 'cousin'] }]
+		);
+		await dismissLastName(f.deps, viewer, 'lea', 'Brunner');
+
+		const help = await readSurnameHelp(f.deps, viewer, 'peter');
+
+		expect(help.family).toEqual([
+			{ id: 'lea', name: 'lea', lastName: 'Bruner', declined: ['brunner'] },
+			{ id: 'anna', name: 'anna', lastName: 'Keller', declined: [] },
+			{ id: 'cousin', name: 'cousin', lastName: 'Bruner', declined: [] }
+		]);
+		expect((await readSurnameHelp(f.deps, viewer, null)).family).toEqual([]);
 	});
 
 	it('proposes nothing without a subject', async () => {
