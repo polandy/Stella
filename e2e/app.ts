@@ -239,7 +239,11 @@ export async function pickPerson(field: Locator, name: string): Promise<void> {
 	// input keeps focus through the option's mousedown handler, so send the key to whatever
 	// is focused rather than re-resolving `field` — its own actionability check can stall
 	// while the just-added chip is still shifting the input's layout.
-	await field.page().keyboard.press('Escape');
+	// A multiple picker whose list closed itself needs none, and an Escape then would reach the
+	// form around it.
+	if (await field.page().getByTestId('person-search-panel').isVisible()) {
+		await field.page().keyboard.press('Escape');
+	}
 }
 
 /**
