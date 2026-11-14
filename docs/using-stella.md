@@ -262,7 +262,9 @@ note that follows). If anyone already has a *different* last name, Stella first 
 it will name and lists them, each with a box to tick if you really mean to replace it, and
 **Replace all** ticks them together; nobody's name is replaced unless you tick it. When someone gets their first last name, Stella offers
 it to their children and brothers and sisters who have none yet — *Brunner too?* — one
-generation at a time, so a daughter who married into another name simply ends the chain. On a
+generation at a time, so a daughter who married into another name simply ends the chain. When
+you correct someone's last name — *Bruner* was meant to be *Brunner* — Stella lists their family
+who still have the old name, all ticked: untick anyone who should keep it, then **Change**. On a
 person's page, a suggested name shows as a chip under their name (*Brunner?*): one tap saves it
 straight away, and the note that follows has **Undo** to take it back.
 *Not Brunner* in a row's menu tells Stella not to propose that name for that

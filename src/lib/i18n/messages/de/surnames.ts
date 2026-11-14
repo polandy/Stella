@@ -73,5 +73,11 @@ export const surnames: SurnamesMessages = {
 		'Der Nachname konnte nicht zurückgenommen werden. Bitte nochmal versuchen.',
 	'surnames.passOnPrompt': (p) =>
 		`${p.people} ${p.count === 1 ? 'hat' : 'haben'} noch keinen Nachnamen — auch ${p.name}?`,
+	'surnames.renamePrompt': (p) =>
+		p.count === 1
+			? `Diese Person aus der Familie heißt noch ${p.from} — auch in ${p.name} ändern?`
+			: `Diese Personen aus der Familie heißen noch ${p.from} — auch in ${p.name} ändern?`,
+	'surnames.renameApply': (p) =>
+		p.count === 1 ? 'Für 1 Person ändern' : `Für ${p.count} Personen ändern`,
 	'surnames.no': 'Nein'
 };

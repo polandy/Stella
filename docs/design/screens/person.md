@@ -40,7 +40,9 @@ the person, and that never leaves the page. Keeping the record tidy (archive, me
 - A former name and the last-name chips sit under the name; the **You**, **Private** and
   **Archived** markers beneath them. A tapped chip saves at once under the shell's activity
   indicator and steps aside until the reloaded name replaces it; its toast carries **Undo**,
-  and the *Brunner too?* offer appears in its place (docs/02 §2.2.4.6).
+  and the *Brunner too?* offer appears in its place (docs/02 §2.2.4.6). A changed last name
+  brings the same panel with a ticked row per relative still carrying the old one, ticks on
+  the right (docs/02 §2.2.4.7).
 - The **You** chip is `--primary-soft` on `--primary`; *Archived* is a quiet chip beside
   *Private*.
 - Then a small labelled grid of **facts**: two across, four once the facts' column is
