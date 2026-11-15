@@ -115,6 +115,7 @@
 			{
 				derivedBirthday: data.derivedBirthday,
 				estimatedBirthYear: data.estimatedBirthYear,
+				isDeceased: c.isDeceased,
 				dates
 			},
 			today

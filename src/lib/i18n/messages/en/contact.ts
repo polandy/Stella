@@ -47,6 +47,9 @@ export const contact = {
 	'contact.facts.birthday': 'Birthday',
 	'contact.facts.born': 'Born',
 	'contact.facts.age': (p: { age: number }) => (p.age === 1 ? '1 year' : `${p.age} years`),
+	'contact.facts.ageEstimate': 'Age',
+	'contact.facts.estimatedAge': (p: { age: number }) =>
+		p.age === 0 ? 'under 1 year' : p.age === 1 ? 'about 1 year' : `about ${p.age} years`,
 	'contact.menu.label': 'More actions',
 	'contact.menu.archive': 'Archive',
 

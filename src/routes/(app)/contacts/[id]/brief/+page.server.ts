@@ -55,7 +55,8 @@ export const load = (async ({ locals, params }) => {
 			proposeFor: []
 		}),
 		// The household's dates: the family's birthdays give their ages and the date coming up.
-		dateSources: services.records.importantDates.listSourcesVisibleTo(viewer)
+		dateSources: services.records.importantDates.listSourcesVisibleTo(viewer),
+		birthEstimates: services.records.importantDates.listBirthEstimatesVisibleTo(viewer)
 	});
 
 	const family = closeFamily(
@@ -63,7 +64,8 @@ export const load = (async ({ locals, params }) => {
 			ties: read.family.ties,
 			tieWording: read.family.tieWording,
 			derivedKin: read.family.kinship.derived,
-			birthdays: read.dateSources
+			birthdays: read.dateSources,
+			birthEstimates: read.birthEstimates
 		},
 		today
 	);
@@ -91,7 +93,10 @@ export const load = (async ({ locals, params }) => {
 			avatarPhotoId: contact.avatarPhotoId,
 			isDeceased: contact.isDeceased
 		},
-		birthday: birthdayFact({ ...birthdayOf(contact, read.dates), dates: read.dates }, today),
+		birthday: birthdayFact(
+			{ ...birthdayOf(contact, read.dates), isDeceased: contact.isDeceased, dates: read.dates },
+			today
+		),
 		blocks: blocks.map((block) => briefBlockView(block, { contactId: contact.id, nameOf })),
 		today
 	};

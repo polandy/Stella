@@ -97,7 +97,7 @@ export async function seedHousehold(
 	types: readonly SeedType[] = [],
 	/** Who has died, by full name, likewise the setting of a case. */
 	deceased: readonly string[] = [],
-	/** Birthdays in ISO, by full name, likewise the setting of a case. */
+	/** Birthdays in ISO (a bare year is an estimate, `age`), by full name, likewise the setting of a case. */
 	births: Readonly<Record<string, string>> = {},
 	/** Job title and company, by full name, likewise the setting of a case. */
 	jobs: Readonly<Record<string, { title?: string; company?: string }>> = {},
@@ -118,6 +118,7 @@ export async function seedHousehold(
 				gender: genders[name] ?? null,
 				deceased: deceased.includes(name) ? true : null,
 				birth_date: births[name] ?? null,
+				...(/^\d{4}$/.test(births[name] ?? '') && { birth_date_precision: 'age' }),
 				job_title: jobs[name]?.title ?? null,
 				company: jobs[name]?.company ?? null,
 				fields:

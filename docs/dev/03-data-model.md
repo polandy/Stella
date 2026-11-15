@@ -1063,8 +1063,9 @@ People often don't know a full birthdate. We store the ISO string plus a **preci
 - `full` — `1990-04-23`
 - `month_day` — `--04-23` (birthday known, year unknown)
 - `year` — `1990`
-- `age` — store an approximate birth year derived from an entered age at a known point;
-  flagged as estimate.
+- `age` — an approximate birth year worked out from an age (*this year − age*), entered or
+  imported; flagged as estimate. Its age is *this year − that year*, so it grows at New Year
+  with no reference day kept (`estimatedAge`, docs/dev/02 §2.13.1).
 
 The UI renders accordingly (e.g. age hidden when only month/day known). Reminders use
 `month_day`/`full`.

@@ -2,6 +2,7 @@ import { describe, expect, it } from 'bun:test';
 import {
 	comparePartialDates,
 	DAY_PRECISIONS,
+	estimatedAge,
 	namesADay,
 	partialDateOfDay,
 	type PartialDate
@@ -75,5 +76,27 @@ describe('comparePartialDates', () => {
 	it('cannot order a value its precision does not describe', () => {
 		expect(comparePartialDates(full('1990'), full('1990-04-23'))).toBeNull();
 		expect(comparePartialDates(year('--04-23'), year('1990'))).toBeNull();
+	});
+});
+
+describe('estimatedAge', () => {
+	it('counts the years from an estimated birth year to this year', () => {
+		expect(estimatedAge('1992', '2026-11-15')).toBe(34);
+	});
+
+	it('grows at New Year, not on the day it was entered', () => {
+		expect(estimatedAge('1992', '2026-01-01')).toBe(34);
+		expect(estimatedAge('1992', '2026-12-31')).toBe(34);
+		expect(estimatedAge('1992', '2027-01-01')).toBe(35);
+	});
+
+	it('is zero in the year of birth', () => {
+		expect(estimatedAge('2026', '2026-11-15')).toBe(0);
+	});
+
+	it('is null for a year still to come or a value that is not a year', () => {
+		expect(estimatedAge('2027', '2026-11-15')).toBeNull();
+		expect(estimatedAge('92', '2026-11-15')).toBeNull();
+		expect(estimatedAge('1992-03-14', '2026-11-15')).toBeNull();
 	});
 });

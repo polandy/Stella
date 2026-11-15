@@ -32,7 +32,8 @@ function fakeRepo() {
 		remove: async (contactId, dateId) => {
 			removed.push({ contactId, dateId });
 		},
-		listSourcesVisibleTo: async () => []
+		listSourcesVisibleTo: async () => [],
+		listBirthEstimatesVisibleTo: async () => []
 	};
 	return {
 		repo,

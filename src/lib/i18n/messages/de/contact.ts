@@ -45,6 +45,9 @@ export const contact: ContactMessages = {
 	'contact.facts.birthday': 'Geburtstag',
 	'contact.facts.born': 'Geboren',
 	'contact.facts.age': (p) => (p.age === 1 ? '1 Jahr' : `${p.age} Jahre`),
+	'contact.facts.ageEstimate': 'Alter',
+	'contact.facts.estimatedAge': (p) =>
+		p.age === 0 ? 'unter 1 Jahr' : p.age === 1 ? 'ca. 1 Jahr' : `ca. ${p.age} Jahre`,
 	'contact.menu.label': 'Weitere Aktionen',
 	'contact.menu.archive': 'Archivieren',
 

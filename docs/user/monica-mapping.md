@@ -35,7 +35,7 @@ would collide on them — scope the ids by household before multi-tenancy (docs/
 | `contacts.deleted_at` set | left out, counted in the report |
 | `contacts.is_partial` (name-only placeholders) | imported like any other person |
 | `genders.type` `M` / `F` / `O` | `gender` `male` / `female` / empty |
-| `special_dates` via `birthday_special_date_id` | `birth_date`: full day → `full`; `is_year_unknown` → `--MM-DD`, `month_day`; `is_age_based` → the year only, `age` ("born around 2016", never a birthday) |
+| `special_dates` via `birthday_special_date_id` | `birth_date`: full day → `full`; `is_year_unknown` → `--MM-DD`, `month_day`; `is_age_based` → the year only, `age` (an estimated age, "about 10 years", never a birthday) |
 | `special_dates` via `deceased_special_date_id` | `death_date` |
 | `special_dates` via `first_met_special_date_id`, `first_met_where`, `first_met_additional_info`, `first_met_through_contact_id` | `met_date`, `met_place`, `how_we_met` ("… (through Name)") |
 | `contacts.avatar_photo_id` (when `avatar_source = photo`) | that photo becomes the avatar |

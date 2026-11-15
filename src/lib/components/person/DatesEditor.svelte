@@ -8,6 +8,7 @@
 	import { enhance } from '$app/forms';
 	import { isImportantDateKind } from '$lib/dates/kinds';
 	import { dayLabel } from '$lib/dates/labels';
+	import { estimatedAge } from '$lib/dates/partial-date';
 	import { deviceDay, writersDay } from '$lib/dates/today';
 	import { useI18n } from '$lib/i18n/context.svelte';
 	import { hasMessage } from '$lib/i18n/translate';
@@ -127,10 +128,15 @@
 	{#if data.derivedBirthday || data.estimatedBirthYear || visibleDates.length > 0}
 		<ul class="flex flex-col gap-1.5 text-sm" data-testid="dates-list">
 			{#if data.estimatedBirthYear}
+				{@const age = c.isDeceased ? null : estimatedAge(data.estimatedBirthYear, today)}
 				<li class="flex items-center gap-3">
-					<span class="w-24 shrink-0 text-fg-subtle">{t('contact.facts.born')}</span>
+					<span class="w-24 shrink-0 text-fg-subtle"
+						>{age === null ? t('contact.facts.born') : t('contact.facts.ageEstimate')}</span
+					>
 					<span class="flex-1 truncate text-fg">
-						{t('contact.around', { year: data.estimatedBirthYear })}
+						{age === null
+							? t('contact.around', { year: data.estimatedBirthYear })
+							: t('contact.facts.estimatedAge', { age })}
 					</span>
 					<span class="text-xs text-fg-subtle">{t('contact.estimated')}</span>
 				</li>

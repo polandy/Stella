@@ -43,13 +43,30 @@ describe('closeFamily', () => {
 				],
 				tieWording: { ben: 'male', mia: 'female' },
 				derivedKin: [],
+				birthEstimates: [],
 				birthdays: [birthday('ben', '1976-05-01'), birthday('mia', '2013-11-14')]
 			},
 			TODAY
 		);
 		expect(family).toEqual([
-			{ id: 'ben', name: 'ben', role: 'spouse', variant: 'male', age: 50, deceased: false },
-			{ id: 'mia', name: 'mia', role: 'child', variant: 'female', age: 12, deceased: false }
+			{
+				id: 'ben',
+				name: 'ben',
+				role: 'spouse',
+				variant: 'male',
+				age: 50,
+				ageEstimated: false,
+				deceased: false
+			},
+			{
+				id: 'mia',
+				name: 'mia',
+				role: 'child',
+				variant: 'female',
+				age: 12,
+				ageEstimated: false,
+				deceased: false
+			}
 		]);
 	});
 
@@ -64,6 +81,7 @@ describe('closeFamily', () => {
 				],
 				tieWording: {},
 				derivedKin: [],
+				birthEstimates: [],
 				birthdays: [birthday('leo', '2017-03-01'), birthday('mia', '2013-11-14')]
 			},
 			TODAY
@@ -84,6 +102,7 @@ describe('closeFamily', () => {
 				],
 				tieWording: {},
 				derivedKin: [],
+				birthEstimates: [],
 				birthdays: []
 			},
 			TODAY
@@ -100,6 +119,7 @@ describe('closeFamily', () => {
 					{ personId: 'tom', displayName: 'Tom', term: 'step-child', variant: 'male' },
 					{ personId: 'gran', displayName: 'Gran', term: 'grandparent', variant: 'female' }
 				],
+				birthEstimates: [],
 				birthdays: [birthday('tom', '2010-01-01'), birthday('mia', '2013-11-14')]
 			},
 			TODAY
@@ -119,6 +139,7 @@ describe('closeFamily', () => {
 				],
 				tieWording: {},
 				derivedKin: [],
+				birthEstimates: [],
 				birthdays: []
 			},
 			TODAY
@@ -135,6 +156,7 @@ describe('closeFamily', () => {
 				],
 				tieWording: {},
 				derivedKin: [],
+				birthEstimates: [],
 				birthdays: [
 					birthday('mia', '2010-11-14'),
 					birthday('mia', '2013-11-14', { derived: false }),
@@ -155,11 +177,52 @@ describe('closeFamily', () => {
 				ties: [tie({ otherContactId: 'ben', typeKey: 'spouse' })],
 				tieWording: {},
 				derivedKin: [],
+				birthEstimates: [],
 				birthdays: [birthday('ben', '1950-01-01', { isDeceased: true })]
 			},
 			TODAY
 		);
 		expect(ben).toMatchObject({ deceased: true, age: null });
+	});
+
+	it('gives an estimated birth year as an estimated age, sorted among the others', () => {
+		const family = closeFamily(
+			{
+				ties: [
+					tie({ otherContactId: 'mia', typeKey: 'parent_child' }),
+					tie({ otherContactId: 'leo', typeKey: 'parent_child' }),
+					tie({ otherContactId: 'zoe', typeKey: 'parent_child' })
+				],
+				tieWording: {},
+				derivedKin: [],
+				birthEstimates: [
+					{ contactId: 'leo', year: '2010', isDeceased: false },
+					{ contactId: 'mia', year: '2000', isDeceased: false }
+				],
+				// Mia's birthday names its year, so it wins over her estimate.
+				birthdays: [birthday('mia', '2013-11-14'), birthday('leo', '--03-01')]
+			},
+			TODAY
+		);
+		expect(family.map(({ id, age, ageEstimated }) => [id, age, ageEstimated])).toEqual([
+			['leo', 16, true],
+			['mia', 12, false],
+			['zoe', null, false]
+		]);
+	});
+
+	it('gives no estimated age for a member who has died', () => {
+		const [ben] = closeFamily(
+			{
+				ties: [tie({ otherContactId: 'ben', typeKey: 'spouse' })],
+				tieWording: {},
+				derivedKin: [],
+				birthEstimates: [{ contactId: 'ben', year: '1940', isDeceased: true }],
+				birthdays: []
+			},
+			TODAY
+		);
+		expect(ben).toMatchObject({ deceased: true, age: null, ageEstimated: false });
 	});
 });
 
@@ -206,6 +269,7 @@ const member = {
 	role: 'spouse',
 	variant: 'male',
 	age: 50,
+	ageEstimated: false,
 	deceased: false
 } as const;
 
