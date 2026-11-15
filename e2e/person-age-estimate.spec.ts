@@ -75,7 +75,7 @@ test('states an estimated birth year as an age, in the dates editor and the brie
 	await expect(birthdayFact(page)).not.toContainText('about');
 });
 
-test('takes an age alone as the estimate, sets it again and removes it with undo in the dates editor, and a birthday with its year clears it', async ({
+test('takes an age alone as the estimate, sets it again and removes it with undo in the dates editor', async ({
 	page
 }) => {
 	const year = Number((await serverToday(page)).slice(0, 4));
@@ -118,14 +118,46 @@ test('takes an age alone as the estimate, sets it again and removes it with undo
 	await expect(editor.getByTestId('dates-list')).toContainText('about 50 years');
 	await expect(editor.getByTestId('dates-list')).not.toContainText('about 34 years');
 
-	// A birthday with its year wins and clears the estimate (F3).
+	// Removed for good once the page is left (docs/dev/02 §2.23).
+	await editor.getByRole('button', { name: 'Remove Age' }).click();
+	await expect(page.getByTestId('toast-undo')).toContainText('Date removed');
+	await page.getByRole('link', { name: 'Home', exact: true }).first().click();
+	await expect(page.getByRole('heading', { name: 'What happened?' })).toBeVisible();
+	await page.goto(personUrl);
+	await appReady(page);
+	await expect(page.getByRole('heading', { name: `Mara ${last}` })).toBeVisible();
+	await expect(page.getByText('about 50 years')).toHaveCount(0);
+});
+
+test('the add form without JavaScript sets the estimate too, and a birthday saved with its year clears it (F3)', async ({
+	page
+}) => {
+	const year = Number((await serverToday(page)).slice(0, 4));
+	const vera = `Vera Jahrklar${runLetters()}`;
+	await seedHousehold(page, [vera], [], {}, [], [], [], { [vera]: String(year - 34) });
+	await personPage(page, vera);
+	await appReady(page);
+	await expect(birthdayFact(page)).toContainText('about 34 years');
+
+	// Without JavaScript the add form posts the age's year to its action, which sets it the same way.
+	const posted = await page.request.post(`${page.url()}?/addDate`, {
+		form: { kind: 'birthday', date: '', birthYearEstimate: String(year - 36) },
+		headers: { origin: new URL(page.url()).origin, accept: 'text/html' }
+	});
+	expect(posted.ok()).toBe(true);
+	await personPage(page, vera);
+	await appReady(page);
+	await expect(birthdayFact(page)).toContainText('about 36 years');
+
+	await birthdayFact(page).getByRole('button').first().click();
+	const editor = page.locator('[data-fact-editor="dates"]');
 	await editor.getByRole('button', { name: 'Add a date' }).click();
 	await editor.getByLabel('Kind').selectOption({ label: 'Birthday' });
 	await fillDate(editor, 'Day', `${year - 30}-03-14`);
 	await editor.getByRole('button', { name: 'Add', exact: true }).click();
 	await expect(editor.getByRole('button', { name: 'Remove Birthday' })).toBeVisible();
 	await expect(editor.getByTestId('dates-list')).not.toContainText('estimated');
-	await page.goto(personUrl);
+	await personPage(page, vera);
 	await appReady(page);
 	await expect(birthdayFact(page)).toContainText('14 March');
 	await expect(birthdayFact(page)).not.toContainText('about');
