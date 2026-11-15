@@ -19,6 +19,9 @@ Review uncommitted or recently committed changes against project standards:
    - The delivery loop (`docs/dev/08` §8.4.1): unit/integration tests come with the change; the
      Playwright e2e only after the owner's OK — and then it asserts rendered content, never
      just the URL, and never waits on a timeout.
+   - Every `docs/dev/02` section the diff adds or changes has an e2e case that cites it (or a
+     one-line reason unit is the right layer); `e2e/` has no case still asserting changed or
+     removed behaviour; an e2e still owed is listed as `e2e owed: §2.x.y`.
    - Conventional Commit type matches the user-facing impact (release-please derives the
      version from it).
 4. Report findings concisely: what's good, what needs fixing. If everything is clean, say so
