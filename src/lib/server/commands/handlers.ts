@@ -16,6 +16,7 @@ import { addContactField } from '../domain/contact-fields/contact-fields';
 import { addPerson } from '../domain/contacts/add-person';
 import { onVisibleContact } from '../domain/contacts/require-visible';
 import { addImportantDate } from '../domain/dates/important-dates';
+import { setBirthEstimate } from '../domain/dates/birth-estimate';
 import { addGift, editGift, markGiftGiven, removeGift } from '../domain/gifts/gifts';
 import { logInteractionChecked } from '../domain/interactions/log-checked';
 import { writeJournalEntry } from '../domain/journal/write-entry';
@@ -150,6 +151,10 @@ export function createCommandHandlers(
 		'date.add': onVisibleContact(contacts, async (_actor, payload) => ({
 			dateId: await addImportantDate(importantDateDeps, payload)
 		})),
+		'contact.birthEstimate': async (actor, payload) => {
+			await setBirthEstimate(importantDateDeps, viewerOf(actor), payload);
+			return { contactId: payload.contactId };
+		},
 		// Checks the person once; the photos following it land where it says (`photos.ts`).
 		'gallery.add': onVisibleContact(contacts, async (_actor, payload) => ({
 			contactId: payload.contactId,

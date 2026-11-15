@@ -223,7 +223,9 @@ description, phone, email, address, birthday — is optional and can be filled i
 
 A **birthday** takes the day and the month, then either the year or, after *or*, how old the
 person is today — Stella works the year out from the age. Leave both blank if you do not know
-the year. Every date field shows the day it names with its weekday underneath, *Sun, 15/11/2026*,
+the year. If you know neither the day nor the year, type **only the age**: Stella keeps it as an
+estimate (*Age · about 34*) that grows by one each New Year, and saving the real birthday with
+its year later replaces it. Every date field shows the day it names with its weekday underneath, *Sun, 15/11/2026*,
 so a mistyped day stands out before you save.
 
 **Gender** is set with the name: tap the name (the pencil beside it), pick *Female*, *Male*,

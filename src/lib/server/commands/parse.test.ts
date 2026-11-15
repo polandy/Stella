@@ -282,6 +282,7 @@ describe('parseCommand, for a new person', () => {
 			howWeMet: null,
 			metPlace: null,
 			birthDate: '1990-04-02',
+			birthYearEstimate: null,
 			gender: null,
 			visibility: 'shared',
 			isSelf: false

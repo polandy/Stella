@@ -224,6 +224,54 @@ describe('createDrizzleImportantDateRepository', () => {
 	});
 });
 
+describe('estimated birth years', () => {
+	const birthOf = (id: string) =>
+		db
+			.select({ birthDate: schema.contact.birthDate, precision: schema.contact.birthDatePrecision })
+			.from(schema.contact)
+			.where(eq(schema.contact.id, id))
+			.get();
+	const estimate = (id: string, year: string) =>
+		db
+			.update(schema.contact)
+			.set({ birthDate: year, birthDatePrecision: 'age' })
+			.where(eq(schema.contact.id, id))
+			.run();
+
+	it('keeps, replaces and clears an estimate where no day is on record', async () => {
+		estimate('c-shared', '1990');
+		expect(await repo.setBirthYear(viewerU1, 'c-shared', '1992', 5)).toBe(true);
+		expect(birthOf('c-shared')).toEqual({ birthDate: '1992', precision: 'age' });
+		expect(await repo.setBirthYear(viewerU1, 'c-shared', null, 6)).toBe(true);
+		expect(birthOf('c-shared')).toEqual({ birthDate: null, precision: 'full' });
+	});
+
+	it('never writes over a day, nor on a person the viewer does not see', async () => {
+		expect(await repo.setBirthYear(viewerU1, 'c-shared', '1992', 5)).toBe(false);
+		expect(birthOf('c-shared')).toEqual({ birthDate: '1985-07-02', precision: 'full' });
+		estimate('c-priv', '1990');
+		expect(await repo.setBirthYear(viewerU2, 'c-priv', '1992', 5)).toBe(false);
+		expect(birthOf('c-priv')).toEqual({ birthDate: '1990', precision: 'age' });
+	});
+
+	it('lets a birthday with its year clear the estimate in the same write, and only then', async () => {
+		estimate('c-shared', '1990');
+		await repo.insert(date({ id: 'd1', kind: 'birthday', date: '--03-14' }));
+		expect(birthOf('c-shared')).toEqual({ birthDate: '1990', precision: 'age' });
+		await repo.insert(date({ id: 'd2', kind: 'birthday', date: '1992-03-14' }), {
+			replacesBirthYear: true
+		});
+		expect(birthOf('c-shared')).toEqual({ birthDate: null, precision: 'full' });
+	});
+
+	it('leaves a profile day alone when a birthday row replaces a birth year', async () => {
+		await repo.insert(date({ id: 'd1', kind: 'birthday', date: '1992-03-14' }), {
+			replacesBirthYear: true
+		});
+		expect(birthOf('c-shared')).toEqual({ birthDate: '1985-07-02', precision: 'full' });
+	});
+});
+
 describe('the calendar feed over SQLite', () => {
 	const feedOf = (viewer: Viewer) =>
 		calendarFeed(

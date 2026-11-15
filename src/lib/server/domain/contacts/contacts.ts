@@ -39,6 +39,8 @@ export interface CreateContactInput {
 	metPlace?: string | null;
 	/** ISO `YYYY-MM-DD`, or `--MM-DD` when the year is unknown. */
 	birthDate?: string | null;
+	/** A birth year worked out from an age alone; a `birthDate` given beside it wins. */
+	birthYearEstimate?: string | null;
 	gender?: Gender | null;
 	visibility?: Visibility;
 }

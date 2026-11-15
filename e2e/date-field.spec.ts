@@ -130,3 +130,21 @@ test('refuses a half-filled date rather than quietly storing nothing', async ({ 
 	await expect(page.getByText('Fill in the whole date, or clear it.')).toBeVisible();
 	await expect(page.locator('input[name=birthDate]')).toHaveValue('');
 });
+
+test('takes an age alone as an estimate, and a day typed makes it a date again', async ({
+	page
+}) => {
+	await openQuickAdd(page, 'More — nickname, birthday');
+	const birthday = page.getByRole('group', { name: 'Birthday' });
+	await birthday.getByLabel('Age', { exact: true }).fill('34');
+	const estimate = page.getByTestId('date-estimate');
+	await expect(estimate).toContainText('Birthday unknown – about 34 years');
+	await expect(page.locator('input[name=birthYearEstimate]')).not.toHaveValue('');
+	await expect(page.locator('input[name=birthDate]')).toHaveValue('');
+
+	await birthday.getByLabel('Day', { exact: true }).fill('14');
+	await birthday.getByLabel('Month', { exact: true }).selectOption('3');
+	await expect(estimate).toHaveCount(0);
+	await expect(page.locator('input[name=birthYearEstimate]')).toHaveValue('');
+	await expect(page.locator('input[name=birthDate]')).toHaveValue(/^\d{4}-03-14$/);
+});

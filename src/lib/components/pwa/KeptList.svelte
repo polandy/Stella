@@ -135,6 +135,12 @@
 							.join(' · ')}
 					</p>
 				</KeptItem>
+			{:else if isKept(item, 'contact.birthEstimate')}
+				<KeptItem {item}>
+					{#snippet meta()}<span>{t('home.outbox.dateFor', { name: item.about ?? '' })}</span
+						>{/snippet}
+					<p class="mt-1 text-fg">{t('contact.around', { year: item.command.payload.year })}</p>
+				</KeptItem>
 			{:else if isKept(item, 'gallery.add')}
 				<KeptItem {item}>
 					{#snippet meta()}<span>{t('home.outbox.photosOf', { name: item.about ?? '' })}</span

@@ -83,7 +83,9 @@ the person, and that never leaves the page. Keeping the record tidy (archive, me
   picking.
 - The dates editor holds each date's kind, day, *year unknown*, whether it repeats and whether
   it shows on Home. A birthday derived from the profile is listed there too, marked *from the
-  profile* and not deletable; an explicit birthday row replaces it (docs/dev/02 §2.13.2). There is
+  profile* and not deletable; an explicit birthday row replaces it (docs/dev/02 §2.13.2). An
+  estimated birth year is listed as *about 34 years · estimated* with a remove of its own; the add
+  form starts from that age, and an age alone sets it again (docs/dev/02 §2.13.1). There is
   no reminders screen: upcoming dates are Home's *Coming up* band (§5.5.1).
 - Below the facts come the **rows** that have no fact (§5.7): Contact (without the addresses),
   Tags, How we met — two abreast at the same width

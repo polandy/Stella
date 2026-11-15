@@ -64,6 +64,9 @@ export const errors: ErrorsMessages = {
 	'errors.date.noSuchDay': (p) => `Diesen Tag gibt es im Kalender nicht: ${p.day}.`,
 	'errors.date.needsLabel': 'Gib dem Datum einen Namen, damit es später etwas bedeutet.',
 	'errors.date.couldNotAdd': 'Das Datum konnte nicht hinzugefügt werden.',
+	'errors.date.estimateOutOfRange': (p) => `Gib ein Alter von 0 bis ${p.max} Jahren an.`,
+	'errors.date.birthDayOnRecord':
+		'Das Profil kennt den Geburtstag schon mit Tag. Trag ihn stattdessen mit Jahr ein.',
 
 	'errors.interaction.unknownKind': (p) => `Unbekannte Art von Kontakt: ${p.kind}`,
 	'errors.interaction.dayFormat': 'Der Tag muss JJJJ-MM-TT lauten.',

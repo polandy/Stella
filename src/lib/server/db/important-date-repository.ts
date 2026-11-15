@@ -1,4 +1,4 @@
-import { and, eq, inArray, isNotNull, notInArray } from 'drizzle-orm';
+import { and, eq, inArray, isNotNull, isNull, notInArray, or } from 'drizzle-orm';
 import type { BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
 import { contactBrowsableBy, contactVisibleTo } from '../access/query-scoping';
 import type { Viewer } from '../access/visibility';
@@ -38,15 +38,46 @@ export function createDrizzleImportantDateRepository(
 		updatedAt: importantDate.updatedAt
 	};
 
+	// A birth year alone (`year`/`age`), which a day or a new estimate may replace.
+	const namesNoDay = notInArray(contact.birthDatePrecision, [...DAY_PRECISIONS]);
+
 	return {
-		async insert(d: NewImportantDate) {
-			db.insert(importantDate)
-				.values({
-					...d,
-					recursYearly: d.recursYearly ? 1 : 0,
-					remind: d.remind ? 1 : 0
-				})
-				.run();
+		async insert(d: NewImportantDate, options = {}) {
+			db.transaction((tx) => {
+				tx.insert(importantDate)
+					.values({
+						...d,
+						recursYearly: d.recursYearly ? 1 : 0,
+						remind: d.remind ? 1 : 0
+					})
+					.run();
+				if (options.replacesBirthYear) {
+					tx.update(contact)
+						.set({ birthDate: null, birthDatePrecision: 'full', updatedAt: d.updatedAt })
+						.where(and(eq(contact.id, d.contactId), namesNoDay))
+						.run();
+				}
+			});
+		},
+
+		async setBirthYear(viewer: Viewer, contactId: string, year: string | null, updatedAt: number) {
+			const written = db
+				.update(contact)
+				.set(
+					year === null
+						? { birthDate: null, birthDatePrecision: 'full', updatedAt }
+						: { birthDate: year, birthDatePrecision: 'age', updatedAt }
+				)
+				.where(
+					and(
+						eq(contact.id, contactId),
+						contactVisibleTo(viewer),
+						or(isNull(contact.birthDate), namesNoDay)
+					)
+				)
+				.returning({ id: contact.id })
+				.all();
+			return written.length > 0;
 		},
 
 		async listForContactVisibleTo(viewer: Viewer, contactId: string) {

@@ -2,6 +2,7 @@ import { describe, expect, it } from 'bun:test';
 import {
 	birthYearFromAge,
 	dateProblem,
+	estimateFromAge,
 	isoToParts,
 	monthNames,
 	partsToIso,
@@ -224,5 +225,42 @@ describe('dateProblem with an age typed', () => {
 		expect(
 			dateProblem(parts({ day: '3', month: '4' }), { age: ' ', allowYearUnknown: true })
 		).toBeNull();
+	});
+});
+
+describe('estimateFromAge', () => {
+	const TODAY = '2026-11-15';
+
+	it('works an age alone out to the year it counts back to', () => {
+		expect(estimateFromAge('34', TODAY)).toBe('1992');
+		expect(estimateFromAge(' 34 ', TODAY)).toBe('1992');
+	});
+
+	it('takes 0 as born this year and 150 as the oldest', () => {
+		expect(estimateFromAge('0', TODAY)).toBe('2026');
+		expect(estimateFromAge('150', TODAY)).toBe('1876');
+	});
+
+	it('gives nothing for no age, no whole number or one past 150', () => {
+		expect(estimateFromAge('', TODAY)).toBe('');
+		expect(estimateFromAge('abc', TODAY)).toBe('');
+		expect(estimateFromAge('3.5', TODAY)).toBe('');
+		expect(estimateFromAge('151', TODAY)).toBe('');
+	});
+});
+
+describe('dateProblem with an age alone', () => {
+	it('takes a usable age with every segment empty as an estimate, not a fault', () => {
+		expect(dateProblem(parts(), { age: '34' })).toBeNull();
+	});
+
+	it('calls an age alone that is no whole age unreadable', () => {
+		expect(dateProblem(parts(), { age: 'abc' })).toBe('ageUnreadable');
+		expect(dateProblem(parts(), { age: '151' })).toBe('ageUnreadable');
+	});
+
+	it('still asks for the whole date when a day or month stands beside the age', () => {
+		expect(dateProblem(parts({ day: '3' }), { age: '34' })).toBe('incomplete');
+		expect(dateProblem(parts({ month: '4' }), { age: '34' })).toBe('incomplete');
 	});
 });

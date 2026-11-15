@@ -102,6 +102,7 @@
 						howWeMet: text(data, 'howWeMet'),
 						metPlace: text(data, 'metPlace'),
 						birthDate: text(data, 'birthDate'),
+						birthYearEstimate: text(data, 'birthYearEstimate'),
 						gender,
 						visibility: data.get('visibility') === 'private' ? 'private' : 'shared',
 						isSelf: data.get('isSelf') === '1'
@@ -288,6 +289,7 @@
 					<span class="text-fg-muted">{t('contacts.new.birthday')}</span>
 					<DateField
 						name="birthDate"
+						estimateName="birthYearEstimate"
 						label={t('contacts.new.birthday')}
 						allowYearUnknown
 						ageOn={writersDay(data.today, browser ? deviceDay() : null)}

@@ -36,6 +36,7 @@ export interface CommandResults {
 	'journal.write': { entryId: string; anchorContactId: string; visibility: Visibility };
 	'field.add': { fieldId: string };
 	'date.add': { dateId: string };
+	'contact.birthEstimate': { contactId: string };
 	/** Where the photos following it go. */
 	'gallery.add': { contactId: string; visibility: Visibility };
 	/** The stored photo's id. */
@@ -246,6 +247,8 @@ function apply(
 		case 'field.add':
 			return handlers[command.type](actor, command.payload);
 		case 'date.add':
+			return handlers[command.type](actor, command.payload);
+		case 'contact.birthEstimate':
 			return handlers[command.type](actor, command.payload);
 		case 'gallery.add':
 			return handlers[command.type](actor, command.payload);

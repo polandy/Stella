@@ -22,6 +22,7 @@ const payload: ContactAddPayload = {
 	howWeMet: null,
 	metPlace: null,
 	birthDate: null,
+	birthYearEstimate: null,
 	gender: null,
 	visibility: 'shared',
 	isSelf: false

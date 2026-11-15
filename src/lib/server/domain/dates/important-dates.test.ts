@@ -23,11 +23,14 @@ const ids: IdGenerator = { next: () => 'date-1' };
 
 function fakeRepo() {
 	let inserted: NewImportantDate | null = null;
+	let replacesBirthYear: boolean | undefined;
 	const removed: { contactId: string; dateId: string }[] = [];
 	const repo: ImportantDateRepository = {
-		insert: async (d) => {
+		insert: async (d, options) => {
 			inserted = d;
+			replacesBirthYear = options?.replacesBirthYear;
 		},
+		setBirthYear: async () => true,
 		listForContactVisibleTo: async () => [],
 		remove: async (contactId, dateId) => {
 			removed.push({ contactId, dateId });
@@ -40,6 +43,9 @@ function fakeRepo() {
 		removed,
 		get inserted() {
 			return inserted;
+		},
+		get replacesBirthYear() {
+			return replacesBirthYear;
 		}
 	};
 }
@@ -79,6 +85,32 @@ describe('addImportantDate', () => {
 		const f = fakeRepo();
 		await addImportantDate(deps(f.repo), { contactId: 'c1', kind: 'birthday', date: '--05-20' });
 		expect(f.inserted?.date).toBe('--05-20');
+	});
+
+	it('lets a birthday with its year replace an estimated birth year, and nothing else', async () => {
+		const full = fakeRepo();
+		await addImportantDate(deps(full.repo), {
+			contactId: 'c1',
+			kind: 'birthday',
+			date: '1992-03-14'
+		});
+		expect(full.replacesBirthYear).toBe(true);
+
+		const yearless = fakeRepo();
+		await addImportantDate(deps(yearless.repo), {
+			contactId: 'c1',
+			kind: 'birthday',
+			date: '--03-14'
+		});
+		expect(yearless.replacesBirthYear).toBe(false);
+
+		const anniversary = fakeRepo();
+		await addImportantDate(deps(anniversary.repo), {
+			contactId: 'c1',
+			kind: 'anniversary',
+			date: '2009-06-13'
+		});
+		expect(anniversary.replacesBirthYear).toBe(false);
 	});
 
 	it('trims the label of a custom date', async () => {

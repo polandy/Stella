@@ -24,6 +24,8 @@ const InlineCreateSchema = v.object({
 	/** Asked for when there is no last name, so this Thomas can be told from the next (§2.2.3). */
 	description: optional,
 	birthDate: optional,
+	/** A `YYYY` worked out from an age alone (§2.13.1); a `birthDate` beside it wins. */
+	birthYearEstimate: optional,
 	visibility: v.optional(v.picklist(['shared', 'private']), 'shared')
 });
 

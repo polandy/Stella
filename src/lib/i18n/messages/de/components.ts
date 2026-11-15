@@ -97,6 +97,7 @@ export const components: ComponentsMessages = {
 	'components.dateField.age': 'Alter',
 	'components.dateField.agePlaceholder': 'Alter',
 	'components.dateField.ageUnreadable': 'Gib das Alter in ganzen Jahren an.',
+	'components.dateField.estimate': (p) => `Geburtstag unbekannt – ${p.age} (um ${p.year})`,
 	'components.toasts': 'Mitteilungen',
 	'components.colour.rosewater': 'Rosenholz',
 	'components.colour.flamingo': 'Flamingo',

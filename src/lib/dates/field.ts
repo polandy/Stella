@@ -92,8 +92,12 @@ export function dateProblem(parts: DateParts, expected: DateExpectation = {}): D
 	const day = parts.day.trim();
 	const month = parts.month.trim();
 	const year = parts.year.trim();
-	if (day === '' && month === '' && year === '') return null;
-	if ((expected.age ?? '').trim() !== '' && year === '' && day !== '' && month !== '') {
+	const age = (expected.age ?? '').trim();
+	// An age alone is an estimated birth year (docs/dev/02 §2.13), whole or not at all.
+	if (day === '' && month === '' && year === '') {
+		return age !== '' && wholeAge(age) === null ? 'ageUnreadable' : null;
+	}
+	if (age !== '' && year === '' && day !== '' && month !== '') {
 		return 'ageUnreadable';
 	}
 
@@ -122,6 +126,21 @@ export function isoToParts(value: string): DateParts {
 /** The oldest age the field takes: a typo beyond it would place a birthday centuries back. */
 const MAX_AGE = 150;
 
+/** The age as a whole number of years from 0 to `MAX_AGE`; null for anything else. */
+function wholeAge(age: string): number | null {
+	const years = age.trim();
+	return /^\d{1,3}$/.test(years) && Number(years) <= MAX_AGE ? Number(years) : null;
+}
+
+/**
+ * The birth year an age alone stands for on `today`: this year less the age, so the estimate
+ * reads the typed age back until New Year (docs/dev/03 §3.4). Empty for no whole age.
+ */
+export function estimateFromAge(age: string, today: string): string {
+	const years = wholeAge(age);
+	return years === null ? '' : String(Number(today.slice(0, 4)) - years);
+}
+
 /**
  * The birth year for a day and month and the age someone is `today` (`YYYY-MM-DD`), as the
  * field's year segment; empty while the day, month or age is missing or no whole age. A birthday
@@ -130,12 +149,12 @@ const MAX_AGE = 150;
 export function birthYearFromAge(parts: DateParts, age: string, today: string): string {
 	const day = Number(parts.day.trim());
 	const month = Number(parts.month.trim());
-	const years = age.trim();
-	if (!day || !month || !/^\d{1,3}$/.test(years) || Number(years) > MAX_AGE) return '';
+	const years = wholeAge(age);
+	if (!day || !month || years === null) return '';
 
 	const [thisYear, thisMonth, thisDay] = today.split('-').map(Number);
 	const stillToCome = month > thisMonth || (month === thisMonth && day > thisDay);
-	return String(thisYear - Number(years) - (stillToCome ? 1 : 0));
+	return String(thisYear - years - (stillToCome ? 1 : 0));
 }
 
 /** A full ISO day with its weekday, e.g. `So., 15.11.2026`; null for a year-less day or none. */
