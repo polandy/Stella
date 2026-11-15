@@ -25,7 +25,7 @@ test.beforeEach(async ({ page }) => {
 	await signIn(page);
 });
 
-test('states an estimated birth year as an age, in the brief too, and only the year once they died', async ({
+test('states an estimated birth year as an age, in the dates editor and the brief too, and only the year once they died', async ({
 	page
 }) => {
 	const year = Number((await serverToday(page)).slice(0, 4));
@@ -33,15 +33,16 @@ test('states an estimated birth year as an age, in the brief too, and only the y
 	const lena = `Lena ${last}`;
 	const ben = `Ben ${last}`;
 	const opa = `Otto ${last}`;
+	const baby = `Nino ${last}`;
 	await seedHousehold(
 		page,
-		[lena, ben, opa],
+		[lena, ben, opa, baby],
 		[{ from: lena, to: ben, type: LINK.partnerOf }],
 		{},
 		[],
 		[],
 		[opa],
-		{ [lena]: String(year - 34), [ben]: String(year - 40), [opa]: '1940' }
+		{ [lena]: String(year - 34), [ben]: String(year - 40), [opa]: '1940', [baby]: String(year) }
 	);
 
 	await personPage(page, lena);
@@ -49,6 +50,10 @@ test('states an estimated birth year as an age, in the brief too, and only the y
 	await expect(birthdayFact(page)).toContainText('Age');
 	await expect(birthdayFact(page)).toContainText('about 34 years');
 	await expect(birthdayFact(page)).toContainText(`around ${year - 34}`);
+	// The dates editor lists it the same way, marked as an estimate.
+	await birthdayFact(page).getByRole('button').first().click();
+	await expect(page.getByTestId('dates-list')).toContainText('about 34 years');
+	await expect(page.getByTestId('dates-list')).toContainText('estimated');
 
 	await recordAction(page, 'Brief before a visit');
 	await expect(page.getByTestId('brief-age')).toHaveText(
@@ -57,6 +62,10 @@ test('states an estimated birth year as an age, in the brief too, and only the y
 	await expect(page.getByTestId('brief-family').getByRole('link', { name: ben })).toContainText(
 		'about 40 years'
 	);
+
+	await personPage(page, baby);
+	await appReady(page);
+	await expect(birthdayFact(page)).toContainText('under 1 year');
 
 	await personPage(page, opa);
 	await appReady(page);
