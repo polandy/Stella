@@ -38,7 +38,7 @@ test('writes the day first, where the browser would have written the month', asy
 	const labels = await segments(birthday).evaluateAll((els) =>
 		els.map((el) => el.getAttribute('aria-label'))
 	);
-	expect(labels).toEqual(['Day', 'Month', 'Year']);
+	expect(labels).toEqual(['Day', 'Month', 'Year', 'Age']);
 });
 
 test.describe('read in German', () => {
@@ -61,7 +61,7 @@ test.describe('read in German', () => {
 		const labels = await segments(birthday).evaluateAll((els) =>
 			els.map((el) => el.getAttribute('aria-label'))
 		);
-		expect(labels).toEqual(['Tag', 'Monat', 'Jahr']);
+		expect(labels).toEqual(['Tag', 'Monat', 'Jahr', 'Alter']);
 		// The month is a named choice, and the names are German — not the browser's English.
 		await expect(birthday.getByLabel('Monat', { exact: true }).getByRole('option')).toContainText([
 			'Monat…',
