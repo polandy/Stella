@@ -6,6 +6,7 @@
  */
 
 import { compareMonthDay, dayParts } from '$lib/dates/calendar';
+import { estimatedAge } from '$lib/dates/partial-date';
 import type { Translate } from '$lib/i18n/translate';
 
 /** A fact the card states, in the order it states them. */
@@ -130,9 +131,15 @@ export function ageOn(birthDate: string, today: string): number | null {
 	return age >= 0 ? age : null;
 }
 
-/** The birthday the card states: a day (with an age when the year is known), or a guessed year. */
+/**
+ * The birthday the card states: a day (with an age when the year is known, or an estimated one
+ * beside a day without a year), or an estimated birth year as an age. A deceased person's
+ * estimate gives no age: *about 86* of somebody long gone reads as if they were alive.
+ */
 export type BirthdayFact =
-	{ kind: 'day'; date: string; age: number | null } | { kind: 'around'; year: string } | null;
+	| { kind: 'day'; date: string; age: number | null; estimatedAge: number | null }
+	| { kind: 'estimate'; year: string; age: number | null }
+	| null;
 
 /**
  * A birthday entered among the dates wins over the profile's: the load already drops the
@@ -142,13 +149,23 @@ export function birthdayFact(
 	record: {
 		derivedBirthday: string | null;
 		estimatedBirthYear: string | null;
+		isDeceased: boolean;
 		dates: readonly { kind: string; date: string }[];
 	},
 	today: string
 ): BirthdayFact {
 	const day = record.dates.find((date) => date.kind === 'birthday')?.date ?? record.derivedBirthday;
-	if (day) return { kind: 'day', date: day, age: ageOn(day, today) };
-	if (record.estimatedBirthYear) return { kind: 'around', year: record.estimatedBirthYear };
+	const estimate =
+		record.estimatedBirthYear && !record.isDeceased
+			? estimatedAge(record.estimatedBirthYear, today)
+			: null;
+	if (day) {
+		const age = ageOn(day, today);
+		return { kind: 'day', date: day, age, estimatedAge: dayParts(day)?.year ? null : estimate };
+	}
+	if (record.estimatedBirthYear) {
+		return { kind: 'estimate', year: record.estimatedBirthYear, age: estimate };
+	}
 	return null;
 }
 

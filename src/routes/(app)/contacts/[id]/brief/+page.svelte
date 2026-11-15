@@ -24,15 +24,22 @@
 	const t = i18n.t;
 	const c = $derived(data.contact);
 
-	/** *48 years · born 3 March 1978*, or *born around 1978*. */
+	/** *48 years · born 3 March 1978*, or *about 48 years · born around 1978*. */
 	const ageLine = $derived.by(() => {
 		const birthday = data.birthday;
-		if (birthday?.kind === 'around') return t('brief.bornAround', { year: birthday.year });
-		if (birthday?.kind !== 'day') return null;
-		const born = t('brief.born', { day: dayLabel(i18n, birthday.date) });
-		return birthday.age === null || c.isDeceased
+		if (!birthday) return null;
+		const born =
+			birthday.kind === 'estimate'
+				? t('brief.bornAround', { year: birthday.year })
+				: t('brief.born', { day: dayLabel(i18n, birthday.date) });
+		if (c.isDeceased) return born;
+		if (birthday.kind === 'day' && birthday.age !== null) {
+			return `${t('contact.facts.age', { age: birthday.age })} · ${born}`;
+		}
+		const guessed = birthday.kind === 'estimate' ? birthday.age : birthday.estimatedAge;
+		return guessed === null
 			? born
-			: `${t('contact.facts.age', { age: birthday.age })} · ${born}`;
+			: `${t('contact.facts.estimatedAge', { age: guessed })} · ${born}`;
 	});
 
 	// Read at UTC midnight in UTC: a plain local reading shows the day before west of Greenwich.
@@ -142,9 +149,10 @@
 										<span class="ml-auto text-xs text-fg-subtle">
 											{#if member.deceased}{t(
 													'brief.family.deceased'
-												)}{:else if member.age !== null}{t('contact.facts.age', {
-													age: member.age
-												})}{/if}
+												)}{:else if member.age !== null}{t(
+													member.ageEstimated ? 'contact.facts.estimatedAge' : 'contact.facts.age',
+													{ age: member.age }
+												)}{/if}
 										</span>
 									</a>
 								</li>

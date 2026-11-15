@@ -173,7 +173,15 @@ describe('briefBlockView', () => {
 			{
 				kind: 'family',
 				members: [
-					{ id: 'mia', name: 'Mia', role: 'child', variant: 'female', age: 12, deceased: false }
+					{
+						id: 'mia',
+						name: 'Mia',
+						role: 'child',
+						variant: 'female',
+						age: 12,
+						ageEstimated: false,
+						deceased: false
+					}
 				],
 				homes: [{ id: 'h1', line: 'Lindenstraße 4', livesWith: [] }]
 			},

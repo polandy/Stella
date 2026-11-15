@@ -51,8 +51,8 @@ the person, and that never leaves the page. Keeping the record tidy (archive, me
   does, but an age or a span of years (*· 43 years*) never splits: the line breaks before
   its dot. It is the
   card's **only reading surface** and holds **only what the record has**:
-  - the birthday with the age (from the dates, else the profile; *Born around …* for an
-    estimated year);
+  - the birthday with the age (from the dates, else the profile; *Age · about 34 years* with
+    a quiet *· around 1992* for an estimated year, *Born · around 1940* once they have died);
   - **every other date** as a fact of its own with the years since (*Hochzeitstag · 13 June
     2009 · 17 years*);
   - the addresses among the contact details, one line each, and each shared home's line with

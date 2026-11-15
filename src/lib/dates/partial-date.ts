@@ -46,6 +46,17 @@ function known(date: PartialDate): { year: number | null; day: DayParts | null }
 }
 
 /**
+ * How old someone born in an estimated `year` is on `today`: this year less that one, so the age
+ * grows each New Year by itself (docs/dev/03 §3.4). Null for a year to come or no bare year.
+ */
+export function estimatedAge(year: string, today: string): number | null {
+	const now = dayParts(today);
+	if (!BARE_YEAR.test(year) || now === null || now.year === null) return null;
+	const age = now.year - Number(year);
+	return age >= 0 ? age : null;
+}
+
+/**
  * Which of two partial dates came first, as far as both say: negative, zero or positive, or
  * null when what is known cannot decide it — a year-less day against a dated one, or two dates
  * in the same year when either knows only the year.

@@ -144,6 +144,42 @@ describe('createDrizzleImportantDateRepository', () => {
 		expect(sources.some((s) => s.contactId === 'c-shared' && s.derived)).toBe(true);
 	});
 
+	it('lists the estimated birth years apart, scoped like every other read', async () => {
+		db.insert(schema.contact)
+			.values([
+				{
+					id: 'c-estimated',
+					householdId: H,
+					createdBy: U1,
+					visibility: 'shared',
+					displayName: 'Roughly',
+					birthDate: '1992',
+					birthDatePrecision: 'age'
+				},
+				{
+					id: 'c-estimated-priv',
+					householdId: H,
+					createdBy: U1,
+					visibility: 'private',
+					displayName: 'Secret',
+					birthDate: '1980',
+					birthDatePrecision: 'year',
+					isDeceased: 1
+				}
+			])
+			.run();
+		expect(await repo.listBirthEstimatesVisibleTo(viewerU1)).toEqual(
+			expect.arrayContaining([
+				{ contactId: 'c-estimated', year: '1992', isDeceased: false },
+				{ contactId: 'c-estimated-priv', year: '1980', isDeceased: true }
+			])
+		);
+		// A birth date that names a day is no estimate, and the private one stays its owner's.
+		expect(await repo.listBirthEstimatesVisibleTo(viewerU2)).toEqual([
+			{ contactId: 'c-estimated', year: '1992', isDeceased: false }
+		]);
+	});
+
 	it('reports a deceased person so the domain can leave them out', async () => {
 		const sources = await repo.listSourcesVisibleTo(viewerU1);
 		expect(sources.find((s) => s.contactId === 'c-gone')).toMatchObject({ isDeceased: true });

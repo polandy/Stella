@@ -1100,8 +1100,8 @@ photos — together with a list of everything it will leave out and why (people 
 Monica, a relationship that links somebody to themselves, reminders Stella works out itself). Nothing is written until you press *Import
 now*, and it is all or nothing: if anything goes wrong half-way, nothing is kept.
 
-What lands where: people with their names, birthdays (an age-based one becomes "born
-around 2016"), job and how you met; relationships, with Monica's kinds that Stella lacks
+What lands where: people with their names, birthdays (an age-based one becomes an
+estimated age, "Age · about 10 years", that grows by one each New Year), job and how you met; relationships, with Monica's kinds that Stella lacks
 (cousin, godparent, best friend, …) added as new kinds rather than dropped; notes;
 activities as **interactions**; Monica's gifts onto the **Gifts** card; Monica's tasks onto the
 **To-dos** card — finished ones as *Done* in Activity on the day they were finished; tags; and life events

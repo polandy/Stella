@@ -114,13 +114,26 @@
 						{dayLabel(i18n, birthday.date)}
 						{#if birthday.age !== null}<span class="whitespace-nowrap text-fg-subtle"
 								>· {t('contact.facts.age', { age: birthday.age })}</span
+							>{:else if birthday.estimatedAge !== null}<span
+								class="whitespace-nowrap text-fg-subtle"
+								>· {t('contact.facts.estimatedAge', { age: birthday.estimatedAge })}</span
 							>{/if}
-					{:else if birthday?.kind === 'around'}
+					{:else if birthday?.kind === 'estimate' && birthday.age !== null}
+						<!-- The age is what was asked; the year it works out to stays quiet beside it. -->
+						{t('contact.facts.estimatedAge', { age: birthday.age })}
+						<span class="whitespace-nowrap text-fg-subtle"
+							>· {t('contact.around', { year: birthday.year })}</span
+						>
+					{:else if birthday?.kind === 'estimate'}
 						{t('contact.around', { year: birthday.year })}
 					{/if}
 				{/snippet}
 				<FactCell
-					label={birthday.kind === 'day' ? t('contact.facts.birthday') : t('contact.facts.born')}
+					label={birthday.kind === 'day'
+						? t('contact.facts.birthday')
+						: birthday.age !== null
+							? t('contact.facts.ageEstimate')
+							: t('contact.facts.born')}
 					icon="gift"
 					name="birthday"
 					value={birthdayValue}

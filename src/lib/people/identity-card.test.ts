@@ -169,46 +169,86 @@ describe('ageOn', () => {
 
 describe('birthdayFact', () => {
 	const today = '2026-10-05';
+	const record = (over: Partial<Parameters<typeof birthdayFact>[0]> = {}) => ({
+		derivedBirthday: null,
+		estimatedBirthYear: null,
+		isDeceased: false,
+		dates: [],
+		...over
+	});
 
 	it('prefers a birthday among the dates over the profile', () => {
 		expect(
 			birthdayFact(
-				{
-					derivedBirthday: null,
-					estimatedBirthYear: null,
+				record({
 					dates: [
 						{ kind: 'anniversary', date: '2010-06-01' },
 						{ kind: 'birthday', date: '2015-05-20' }
 					]
-				},
+				}),
 				today
 			)
-		).toEqual({ kind: 'day', date: '2015-05-20', age: 11 });
+		).toEqual({ kind: 'day', date: '2015-05-20', age: 11, estimatedAge: null });
 	});
 
 	it('falls back to the profile birthday, with no age when it has no year', () => {
-		expect(
-			birthdayFact({ derivedBirthday: '--05-20', estimatedBirthYear: null, dates: [] }, today)
-		).toEqual({
+		expect(birthdayFact(record({ derivedBirthday: '--05-20' }), today)).toEqual({
 			kind: 'day',
 			date: '--05-20',
+			age: null,
+			estimatedAge: null
+		});
+	});
+
+	it('states an estimated birth year as an age that counts on by itself', () => {
+		expect(birthdayFact(record({ estimatedBirthYear: '1992' }), today)).toEqual({
+			kind: 'estimate',
+			year: '1992',
+			age: 34
+		});
+	});
+
+	it('gives no age for the estimate of someone who has died, only the year', () => {
+		expect(birthdayFact(record({ estimatedBirthYear: '1940', isDeceased: true }), today)).toEqual({
+			kind: 'estimate',
+			year: '1940',
 			age: null
 		});
 	});
 
-	it('says "around" for a year that is only estimated', () => {
+	it('lets a birthday with a year win over the estimate', () => {
 		expect(
-			birthdayFact({ derivedBirthday: null, estimatedBirthYear: '1960', dates: [] }, today)
-		).toEqual({
-			kind: 'around',
-			year: '1960'
-		});
+			birthdayFact(
+				record({
+					estimatedBirthYear: '1990',
+					dates: [{ kind: 'birthday', date: '1992-03-14' }]
+				}),
+				today
+			)
+		).toEqual({ kind: 'day', date: '1992-03-14', age: 34, estimatedAge: null });
+	});
+
+	it('puts the estimate beside a birthday that has no year', () => {
+		expect(
+			birthdayFact(
+				record({ estimatedBirthYear: '1992', dates: [{ kind: 'birthday', date: '--03-14' }] }),
+				today
+			)
+		).toEqual({ kind: 'day', date: '--03-14', age: null, estimatedAge: 34 });
+		expect(
+			birthdayFact(
+				record({
+					estimatedBirthYear: '1940',
+					isDeceased: true,
+					dates: [{ kind: 'birthday', date: '--03-14' }]
+				}),
+				today
+			)
+		).toEqual({ kind: 'day', date: '--03-14', age: null, estimatedAge: null });
 	});
 
 	it('is null when nothing says when they were born', () => {
-		expect(
-			birthdayFact({ derivedBirthday: null, estimatedBirthYear: null, dates: [] }, today)
-		).toBeNull();
+		expect(birthdayFact(record(), today)).toBeNull();
 	});
 });
 

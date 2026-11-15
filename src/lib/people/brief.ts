@@ -8,6 +8,7 @@
 import type { KinTerm, KinVariant } from '../kinship/kinship';
 import { otherEndRole, type RoleTerm } from '../relationships/roles';
 import { FORMER_RELATIONSHIP_STATUS } from '../relationships/status';
+import { estimatedAge } from '../dates/partial-date';
 import { ageOn } from './identity-card';
 
 /** How many of the latest moments and touchpoints the brief shows. */
@@ -40,6 +41,13 @@ export interface BirthdaySource {
 	isDeceased: boolean;
 }
 
+/** A birth year somebody only estimated (docs/dev/03 §3.4), which names no birthday. */
+export interface BirthEstimate {
+	contactId: string;
+	year: string;
+	isDeceased: boolean;
+}
+
 /** Who belongs to the person, closest first: the couple, then the children. */
 export type FamilyRole = 'spouse' | 'partner' | 'child' | 'step-child';
 
@@ -54,6 +62,8 @@ export interface FamilyMember {
 	variant: KinVariant;
 	/** Whole years today; null without a known birth year, or once they have died. */
 	age: number | null;
+	/** The age comes from an estimated birth year, so it reads *about 34*. */
+	ageEstimated: boolean;
 	deceased: boolean;
 }
 
@@ -68,11 +78,13 @@ export function closeFamily(
 		tieWording: Readonly<Record<string, KinVariant>>;
 		derivedKin: readonly BriefKin[];
 		birthdays: readonly BirthdaySource[];
+		birthEstimates: readonly BirthEstimate[];
 	},
 	today: string
 ): FamilyMember[] {
-	const named = new Map<string, Omit<FamilyMember, 'age' | 'deceased'>>();
-	const add = (member: Omit<FamilyMember, 'age' | 'deceased'>) => {
+	type Named = Omit<FamilyMember, 'age' | 'ageEstimated' | 'deceased'>;
+	const named = new Map<string, Named>();
+	const add = (member: Named) => {
 		const known = named.get(member.id);
 		if (!known || ROLE_RANK[member.role] < ROLE_RANK[known.role]) named.set(member.id, member);
 	};
@@ -93,8 +105,13 @@ export function closeFamily(
 
 	const members = [...named.values()].map((member): FamilyMember => {
 		const birth = birthdayOf(input.birthdays, member.id);
-		const deceased = birth?.isDeceased ?? false;
-		return { ...member, age: birth && !deceased ? ageOn(birth.date, today) : null, deceased };
+		const estimate = input.birthEstimates.find((e) => e.contactId === member.id);
+		const deceased = birth?.isDeceased ?? estimate?.isDeceased ?? false;
+		const age = birth && !deceased ? ageOn(birth.date, today) : null;
+		// A birthday with a year wins over the estimate, as on the person's page (docs/dev/02 §2.13).
+		const guessed =
+			age === null && estimate && !deceased ? estimatedAge(estimate.year, today) : null;
+		return { ...member, age: age ?? guessed, ageEstimated: guessed !== null, deceased };
 	});
 	return members.sort(
 		(a, b) =>

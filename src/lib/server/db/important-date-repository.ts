@@ -1,4 +1,4 @@
-import { and, eq, inArray, isNotNull } from 'drizzle-orm';
+import { and, eq, inArray, isNotNull, notInArray } from 'drizzle-orm';
 import type { BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
 import { contactBrowsableBy, contactVisibleTo } from '../access/query-scoping';
 import type { Viewer } from '../access/visibility';
@@ -129,6 +129,29 @@ export function createDrizzleImportantDateRepository(
 					derived: false
 				}))
 			];
+		},
+
+		async listBirthEstimatesVisibleTo(viewer: Viewer) {
+			return db
+				.select({
+					contactId: contact.id,
+					year: contact.birthDate,
+					isDeceased: contact.isDeceased
+				})
+				.from(contact)
+				.where(
+					and(
+						contactBrowsableBy(viewer),
+						isNotNull(contact.birthDate),
+						notInArray(contact.birthDatePrecision, [...DAY_PRECISIONS])
+					)
+				)
+				.all()
+				.map((row) => ({
+					contactId: row.contactId,
+					year: row.year!,
+					isDeceased: asBool(row.isDeceased)
+				}));
 		}
 	};
 }

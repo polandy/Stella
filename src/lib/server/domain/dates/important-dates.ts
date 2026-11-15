@@ -38,6 +38,10 @@ export interface ImportantDateRepository {
 	remove(contactId: string, dateId: string): Promise<void>;
 	/** Every date the viewer may see, explicit rows and derived birthdays alike. */
 	listSourcesVisibleTo(viewer: Viewer): Promise<UpcomingSource[]>;
+	/** Every estimated birth year the viewer may see: no day, so never among the sources. */
+	listBirthEstimatesVisibleTo(
+		viewer: Viewer
+	): Promise<{ contactId: string; year: string; isDeceased: boolean }[]>;
 }
 
 export interface ImportantDateDeps {
