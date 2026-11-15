@@ -75,13 +75,7 @@
 	const months = $derived(monthNames(i18n.intlLocale));
 	const order = $derived(segmentOrder(i18n.intlLocale));
 	const problem = $derived(
-		ageOn !== undefined &&
-			age.trim() !== '' &&
-			parts.year === '' &&
-			parts.day !== '' &&
-			parts.month !== ''
-			? 'ageUnreadable'
-			: dateProblem(parts, { allowYearUnknown, max })
+		dateProblem(parts, { allowYearUnknown, max, age: ageOn === undefined ? '' : age })
 	);
 	/*
 	 * Nothing is posted while the segments are faulted. `partsToIso` does not know whether this

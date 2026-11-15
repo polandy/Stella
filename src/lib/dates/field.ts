@@ -68,7 +68,7 @@ export function partsToIso(parts: DateParts): string {
 }
 
 /** What is wrong with the segments as they stand, in the field's own terms. */
-export type DateProblem = 'incomplete' | 'noSuchDay' | 'inFuture';
+export type DateProblem = 'incomplete' | 'noSuchDay' | 'inFuture' | 'ageUnreadable';
 
 /** What the field may be told about the date it is asking for. */
 export interface DateExpectation {
@@ -76,6 +76,8 @@ export interface DateExpectation {
 	allowYearUnknown?: boolean;
 	/** The latest day allowed, as a full ISO day. */
 	max?: string;
+	/** The age typed in place of the year, as typed. */
+	age?: string;
 }
 
 /**
@@ -91,6 +93,9 @@ export function dateProblem(parts: DateParts, expected: DateExpectation = {}): D
 	const month = parts.month.trim();
 	const year = parts.year.trim();
 	if (day === '' && month === '' && year === '') return null;
+	if ((expected.age ?? '').trim() !== '' && year === '' && day !== '' && month !== '') {
+		return 'ageUnreadable';
+	}
 
 	const yearAnswered = expected.allowYearUnknown === true || year !== '';
 	if (day === '' || month === '' || !yearAnswered) return 'incomplete';

@@ -209,3 +209,20 @@ describe('weekdayDate', () => {
 		expect(weekdayDate('', 'de-DE')).toBeNull();
 	});
 });
+
+describe('dateProblem with an age typed', () => {
+	it('calls an age that gave no year unreadable once the day and month are in', () => {
+		expect(dateProblem(parts({ day: '3', month: '4' }), { age: 'abc' })).toBe('ageUnreadable');
+	});
+
+	it('leaves a usable age to the date it worked out', () => {
+		expect(dateProblem(parts({ day: '3', month: '4', year: '1990' }), { age: '36' })).toBeNull();
+	});
+
+	it('asks for the day and month first, and ignores an emptied age', () => {
+		expect(dateProblem(parts({ month: '4' }), { age: '36' })).toBe('incomplete');
+		expect(
+			dateProblem(parts({ day: '3', month: '4' }), { age: ' ', allowYearUnknown: true })
+		).toBeNull();
+	});
+});
