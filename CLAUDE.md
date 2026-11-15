@@ -63,5 +63,8 @@ file per screen in `docs/dev/design/screens/` — *Intent*, *Rules*, *Why*. User
   from `Icon.svelte`, no emoji (`docs/dev/05` §5.2.2, §5.9).
 - All data access flows through `src/lib/server/access/`; never query the DB from routes or components.
 - A model or behaviour change updates the matching `docs/` file in the same change.
+- **`docs/` has exactly two folders**: `docs/user/` (user and operator docs: manual, install,
+  usage, configuration) and `docs/dev/` (ADRs, specs, plan, architecture, reviews, mockups, developer
+  runbooks). A new document goes into one of them; when unsure, `docs/dev/`.
 - **Exact-pinned dependencies**, `bun.lock` committed, installs `--frozen-lockfile` (§8.8);
   **Conventional Commits**, releases by release-please (§8.9).
