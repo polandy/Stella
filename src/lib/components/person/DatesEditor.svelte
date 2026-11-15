@@ -57,11 +57,23 @@
 				isKept(item, 'date.add') && item.command.payload.contactId === c.id
 		)
 	);
+	const keptEstimates = $derived(
+		outbox.mine.filter(
+			(item): item is KeptOf<'contact.birthEstimate'> =>
+				isKept(item, 'contact.birthEstimate') && item.command.payload.contactId === c.id
+		)
+	);
+	// The estimate on its way out (docs/dev/02 §2.23); the row has no id of its own.
+	const ESTIMATE_KEY = 'birth-estimate';
+	const estimate = $derived(
+		removals.isPending(removalKey('date', ESTIMATE_KEY)) ? null : data.estimatedBirthYear
+	);
 	const holdsAny = $derived(
 		visibleDates.length > 0 ||
 			keptDates.length > 0 ||
+			keptEstimates.length > 0 ||
 			data.derivedBirthday !== null ||
-			data.estimatedBirthYear !== null
+			estimate !== null
 	);
 
 	/** The add form: open from the start when there is nothing to list, or after a refusal. */
@@ -69,6 +81,10 @@
 	// A birthday may be given as an age instead of a year (docs/dev/02 §2.13).
 	let addKind = $state<string>();
 	const today = $derived(writersDay(data.today, browser ? deviceDay() : null));
+	// Adding the real birthday starts from the estimate: a day and month then make a full date.
+	const initialAge = $derived(
+		estimate === null || c.isDeceased ? '' : String(estimatedAge(estimate, today) ?? '')
+	);
 	const addOpen = $derived(adding || !holdsAny || (form?.dateError ?? null) !== null);
 
 	let addForm = $state<HTMLFormElement>();
@@ -86,6 +102,16 @@
 					const kind = String(formData.get('kind') ?? '');
 					// The date field posts `--MM-DD` itself when the year was left blank (§2.13).
 					const date = String(formData.get('date') ?? '').trim();
+					// An age alone is an estimated birth year, kept on the person (§2.13.1).
+					const year = String(formData.get('birthYearEstimate') ?? '');
+					if (kind === 'birthday' && !date && year) {
+						return {
+							id,
+							type: 'contact.birthEstimate',
+							payload: { contactId: c.id, year },
+							issuedAt: Date.now()
+						};
+					}
 					if (!isImportantDateKind(kind) || !date) return null;
 					return {
 						id,
@@ -115,8 +141,14 @@
 </script>
 
 <FactEditor icon="calendar" label={t('contact.section.dates')} name="dates" {onclose}>
-	{#if keptDates.length > 0}
+	{#if keptDates.length > 0 || keptEstimates.length > 0}
 		<ul class="flex flex-wrap gap-1.5" data-testid="kept-dates">
+			{#each keptEstimates as item (item.command.id)}
+				<KeptChip
+					{item}
+					label={`${t('contact.facts.ageEstimate')} · ${t('contact.around', { year: item.command.payload.year })}`}
+				/>
+			{/each}
 			{#each keptDates as item (item.command.id)}
 				<KeptChip
 					{item}
@@ -125,20 +157,28 @@
 			{/each}
 		</ul>
 	{/if}
-	{#if data.derivedBirthday || data.estimatedBirthYear || visibleDates.length > 0}
+	{#if data.derivedBirthday || estimate || visibleDates.length > 0}
 		<ul class="flex flex-col gap-1.5 text-sm" data-testid="dates-list">
-			{#if data.estimatedBirthYear}
-				{@const age = c.isDeceased ? null : estimatedAge(data.estimatedBirthYear, today)}
+			{#if estimate}
+				{@const age = c.isDeceased ? null : estimatedAge(estimate, today)}
 				<li class="flex items-center gap-3">
 					<span class="w-24 shrink-0 text-fg-subtle"
 						>{age === null ? t('contact.facts.born') : t('contact.facts.ageEstimate')}</span
 					>
 					<span class="flex-1 truncate text-fg">
 						{age === null
-							? t('contact.around', { year: data.estimatedBirthYear })
+							? t('contact.around', { year: estimate })
 							: t('contact.facts.estimatedAge', { age })}
 					</span>
 					<span class="text-xs text-fg-subtle">{t('contact.estimated')}</span>
+					<RemoveButton
+						kind="date"
+						id={ESTIMATE_KEY}
+						action="?/removeBirthEstimate"
+						fields={{}}
+						label={t('contact.removeDate', { what: t('contact.facts.ageEstimate') })}
+						removed={t('contact.dateRemoved')}
+					/>
 				</li>
 			{/if}
 			{#if data.derivedBirthday}
@@ -202,6 +242,8 @@
 				allowYearUnknown
 				stretch
 				ageOn={addKind === 'birthday' ? today : undefined}
+				estimateName="birthYearEstimate"
+				{initialAge}
 				label={t('contact.day')}
 			/>
 			<input

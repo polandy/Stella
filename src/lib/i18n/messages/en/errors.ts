@@ -70,6 +70,10 @@ export const errors = {
 		`There is no such day in the calendar: ${p.day}.`,
 	'errors.date.needsLabel': 'Give the date a name so it means something later.',
 	'errors.date.couldNotAdd': 'Could not add the date.',
+	'errors.date.estimateOutOfRange': (p: { max: number }) =>
+		`Enter an age from 0 to ${p.max} years.`,
+	'errors.date.birthDayOnRecord':
+		'The profile already has this birthday with its day. Add the birthday with its year instead.',
 
 	'errors.interaction.unknownKind': (p: { kind: string }) => `Unknown interaction kind: ${p.kind}`,
 	'errors.interaction.dayFormat': 'The day must be YYYY-MM-DD.',

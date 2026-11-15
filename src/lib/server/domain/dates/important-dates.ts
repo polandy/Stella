@@ -6,6 +6,7 @@ import type { IdGenerator } from '../../id';
 import type { ContactLookup } from '../contacts/contacts';
 import { ContactGoneError } from '../contacts/require-visible';
 import { DATE_SHAPE, isRealCalendarDay } from '../../../dates/calendar';
+import { partialDateOfDay } from '../../../dates/partial-date';
 import { IMPORTANT_DATE_KINDS, type ImportantDateKind } from '../../../dates/kinds';
 import type { UpcomingSource } from './upcoming';
 
@@ -32,7 +33,11 @@ export interface NewImportantDate {
 export interface ImportantDate extends NewImportantDate {}
 
 export interface ImportantDateRepository {
-	insert(date: NewImportantDate): Promise<void>;
+	/**
+	 * Store a date; with `replacesBirthYear`, clear the contact's birth year alone in the same
+	 * transaction (a birthday with its year supersedes an estimate, docs/dev/02 §2.13.1).
+	 */
+	insert(date: NewImportantDate, options?: { replacesBirthYear?: boolean }): Promise<void>;
 	listForContactVisibleTo(viewer: Viewer, contactId: string): Promise<ImportantDate[]>;
 	/** Remove a date, scoped to its contact (`removeImportantDate` checked it is visible). */
 	remove(contactId: string, dateId: string): Promise<void>;
@@ -42,6 +47,17 @@ export interface ImportantDateRepository {
 	listBirthEstimatesVisibleTo(
 		viewer: Viewer
 	): Promise<{ contactId: string; year: string; isDeceased: boolean }[]>;
+	/**
+	 * Write the contact's estimated birth year, or clear a birth year alone with null — only
+	 * while its birth date names no day. False when the viewer does not see the contact or a
+	 * day is on record.
+	 */
+	setBirthYear(
+		viewer: Viewer,
+		contactId: string,
+		year: string | null,
+		updatedAt: number
+	): Promise<boolean>;
 }
 
 export interface ImportantDateDeps {
@@ -97,17 +113,22 @@ export async function addImportantDate(
 
 	const now = deps.clock.now();
 	const id = deps.ids.next();
-	await deps.dates.insert({
-		id,
-		contactId: input.contactId,
-		kind: input.kind,
-		label,
-		date,
-		recursYearly: input.recursYearly ?? true,
-		remind: input.remind ?? true,
-		createdAt: now,
-		updatedAt: now
-	});
+	const replacesBirthYear =
+		input.kind === 'birthday' && partialDateOfDay(date)?.precision === 'full';
+	await deps.dates.insert(
+		{
+			id,
+			contactId: input.contactId,
+			kind: input.kind,
+			label,
+			date,
+			recursYearly: input.recursYearly ?? true,
+			remind: input.remind ?? true,
+			createdAt: now,
+			updatedAt: now
+		},
+		{ replacesBirthYear }
+	);
 	return id;
 }
 

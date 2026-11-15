@@ -9,6 +9,7 @@ import { requireViewer } from '$lib/server/auth/guards';
 import { getContact } from '$lib/server/domain/contacts/contacts';
 import { ContactGoneError } from '$lib/server/domain/contacts/require-visible';
 import { removeImportantDate } from '$lib/server/domain/dates/important-dates';
+import { setBirthEstimate } from '$lib/server/domain/dates/birth-estimate';
 import { say, translator } from '$lib/server/i18n/say';
 import type { Actions } from '../$types';
 
@@ -20,10 +21,17 @@ export const dateActions = {
 		// The date field posts `--MM-DD` itself when the year was left blank (docs/dev/02 §2.13), and
 		// the two checkboxes are booleans the form leaves out when unticked.
 		const form = await request.formData();
+		// A birthday given as an age alone is an estimated birth year (docs/dev/02 §2.13.1).
+		const estimate = String(form.get('birthYearEstimate') ?? '');
+		const asEstimate = form.get('kind') === 'birthday' && !form.get('date') && estimate !== '';
 		const reading = readCommand({
 			id: form.get('commandId') || ulidGenerator.next(),
-			type: 'date.add',
-			payload: { ...fromFormData(DateAddSchema, form), contactId: params.id },
+			...(asEstimate
+				? { type: 'contact.birthEstimate', payload: { contactId: params.id, year: estimate } }
+				: {
+						type: 'date.add',
+						payload: { ...fromFormData(DateAddSchema, form), contactId: params.id }
+					}),
 			issuedAt: systemClock.now()
 		});
 		if (!reading.ok && reading.part === 'payload') {
@@ -63,6 +71,20 @@ export const dateActions = {
 			await removeImportantDate(locals.services.records.importantDateDeps, viewer, {
 				contactId: params.id,
 				dateId
+			});
+		} catch (err) {
+			if (err instanceof ContactGoneError) throw error(404, say(locals, 'errors.contact.notFound'));
+			throw err;
+		}
+		throw redirect(303, `/contacts/${params.id}`);
+	},
+
+	removeBirthEstimate: async ({ params, locals }) => {
+		const viewer = requireViewer(locals);
+		try {
+			await setBirthEstimate(locals.services.records.importantDateDeps, viewer, {
+				contactId: params.id,
+				year: null
 			});
 		} catch (err) {
 			if (err instanceof ContactGoneError) throw error(404, say(locals, 'errors.contact.notFound'));

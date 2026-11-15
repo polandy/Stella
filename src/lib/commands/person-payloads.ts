@@ -70,6 +70,8 @@ export const ContactAddSchema = v.pipe(
 		metPlace: optionalText,
 		/** ISO `YYYY-MM-DD`, or `--MM-DD` when the year is not known. */
 		birthDate: optionalText,
+		/** A `YYYY` worked out from an age alone; absent from an older build, meaning none. */
+		birthYearEstimate: optionalText,
 		// Left out by a build from before the field, which is the same as none chosen.
 		gender: v.optional(v.nullable(v.picklist(GENDERS)), null),
 		visibility,
@@ -87,6 +89,15 @@ export const FieldAddSchema = v.object({
 	kind: v.picklist(CONTACT_FIELD_KINDS),
 	label: optionalText,
 	value: requiredText
+});
+
+/**
+ * A birth year worked out from an age alone (docs/dev/02 §2.13.1), on the writer's device so a
+ * kept command keeps its year. Whether an age gives it is the use-case's to judge.
+ */
+export const BirthEstimateSchema = v.object({
+	contactId: nonEmpty,
+	year: v.pipe(v.string(), v.regex(/^\d{4}$/))
 });
 
 /**

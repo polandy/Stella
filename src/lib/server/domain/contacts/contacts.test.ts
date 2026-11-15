@@ -9,6 +9,7 @@ import {
 	type ProfilePatch
 } from './contacts';
 import { createContact, NeedsSomethingToKnowThemByError } from './create-contact';
+import { InvalidBirthEstimateError } from './birth-year';
 import {
 	editProfile,
 	setGender,
@@ -189,6 +190,39 @@ describe('createContact birth dates', () => {
 			lastName: 'Brunner'
 		});
 		expect(f.inserted).toMatchObject({ birthDate: null, birthDatePrecision: 'full' });
+	});
+
+	it('keeps an estimated birth year when only an age was given', async () => {
+		const f = fakeRepo();
+		await createContact({ contacts: f.repo, ids: sequentialIds('c1'), clock }, creator, {
+			firstName: 'Mia',
+			lastName: 'Brunner',
+			birthYearEstimate: '1989'
+		});
+		expect(f.inserted).toMatchObject({ birthDate: '1989', birthDatePrecision: 'age' });
+	});
+
+	it('lets a birth date win over an estimate sent beside it', async () => {
+		const f = fakeRepo();
+		await createContact({ contacts: f.repo, ids: sequentialIds('c1'), clock }, creator, {
+			firstName: 'Mia',
+			lastName: 'Brunner',
+			birthDate: '--03-11',
+			birthYearEstimate: '1989'
+		});
+		expect(f.inserted).toMatchObject({ birthDate: '--03-11', birthDatePrecision: 'month_day' });
+	});
+
+	it('refuses an estimate no age from 0 to 150 gives', async () => {
+		const f = fakeRepo();
+		await expect(
+			createContact({ contacts: f.repo, ids: sequentialIds('c1'), clock }, creator, {
+				firstName: 'Mia',
+				lastName: 'Brunner',
+				birthYearEstimate: '2099'
+			})
+		).rejects.toBeInstanceOf(InvalidBirthEstimateError);
+		expect(f.inserted).toBeNull();
 	});
 
 	it('refuses a malformed birth date instead of storing a date nobody can read', async () => {

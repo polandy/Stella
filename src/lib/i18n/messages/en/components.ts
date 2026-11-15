@@ -103,6 +103,8 @@ export const components = {
 	'components.dateField.age': 'Age',
 	'components.dateField.agePlaceholder': 'Age',
 	'components.dateField.ageUnreadable': 'Enter the age as a whole number of years.',
+	'components.dateField.estimate': (p: { age: string; year: string }) =>
+		`Birthday unknown – ${p.age} (around ${p.year})`,
 	'components.toasts': 'Notifications',
 	'components.colour.rosewater': 'Rosewater',
 	'components.colour.flamingo': 'Flamingo',

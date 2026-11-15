@@ -4,6 +4,7 @@
 	import {
 		birthYearFromAge,
 		dateProblem,
+		estimateFromAge,
 		isoToParts,
 		monthNames,
 		partsToIso,
@@ -11,6 +12,7 @@
 		weekdayDate,
 		type DateParts
 	} from '$lib/dates/field';
+	import { estimatedAge } from '$lib/dates/partial-date';
 	import { useI18n } from '$lib/i18n/context.svelte';
 
 	/*
@@ -40,6 +42,14 @@
 		max?: string;
 		/** Today as an ISO day: given, the field also takes an age and works the year out from it. */
 		ageOn?: string;
+		/** The age the field starts with, e.g. the one a kept estimate stands for. */
+		initialAge?: string;
+		/**
+		 * The birth year an age alone stands for, `YYYY`, or empty (docs/dev/02 §2.13.1). Bindable;
+		 * posted under `estimateName` when one is given.
+		 */
+		estimate?: string;
+		estimateName?: string;
 		required?: boolean;
 		id?: string;
 		/**
@@ -57,6 +67,10 @@
 		allowYearUnknown = false,
 		max,
 		ageOn,
+		initialAge = '',
+		// eslint-disable-next-line @typescript-eslint/no-unused-vars -- written for the parent's bind:estimate
+		estimate = $bindable(''),
+		estimateName,
 		required = false,
 		id,
 		stretch = false,
@@ -70,7 +84,7 @@
 	let parts = $state<DateParts>(untrack(() => isoToParts(value)));
 	let dayInput: HTMLInputElement | undefined = $state();
 	// The age as typed; while it holds anything, the year is the one it works out to.
-	let age = $state('');
+	let age = $state(untrack(() => initialAge));
 
 	const months = $derived(monthNames(i18n.intlLocale));
 	const order = $derived(segmentOrder(i18n.intlLocale));
@@ -83,6 +97,18 @@
 	 * hand the form a `--MM-DD` the field has just called incomplete.
 	 */
 	const iso = $derived(problem === null ? partsToIso(parts) : '');
+	const segmentsEmpty = $derived(
+		parts.day.trim() === '' && parts.month.trim() === '' && parts.year.trim() === ''
+	);
+	// An age with every segment empty is an estimate rather than a date.
+	const estimateYear = $derived(
+		ageOn !== undefined && segmentsEmpty ? estimateFromAge(age, ageOn) : ''
+	);
+	const estimateAge = $derived(
+		estimateYear === '' || ageOn === undefined ? null : estimatedAge(estimateYear, ageOn)
+	);
+	// The segments are not asked for once an age alone answers the question.
+	const segmentRequired = $derived(required && estimateYear === '');
 	const problemText = $derived(problem === null ? null : i18n.t(`components.dateField.${problem}`));
 	const weekday = $derived(weekdayDate(iso, i18n.intlLocale));
 
@@ -102,18 +128,21 @@
 		if (part === 'year') age = '';
 		else if (ageOn !== undefined && age !== '') parts.year = birthYearFromAge(parts, age, ageOn);
 		value = iso;
+		estimate = estimateYear;
 	}
 
 	function setAge(next: string) {
 		age = next;
 		parts.year = ageOn === undefined ? parts.year : birthYearFromAge(parts, next, ageOn);
 		value = iso;
+		estimate = estimateYear;
 	}
 </script>
 
 <fieldset class="min-w-0 {className}">
 	<legend class="sr-only">{label}</legend>
 	{#if name}<input type="hidden" {name} value={iso} />{/if}
+	{#if estimateName}<input type="hidden" name={estimateName} value={estimateYear} />{/if}
 
 	<!-- Wraps: in a narrow container the month must keep its name, not collapse to its arrow. -->
 	<div class="flex flex-wrap items-end gap-1.5">
@@ -122,7 +151,7 @@
 				<select
 					bind:value={() => parts.month, (v) => setPart('month', v)}
 					aria-label={i18n.t('components.dateField.month')}
-					{required}
+					required={segmentRequired}
 					class="{FIELD} min-w-0 px-2 py-2 text-sm"
 					class:stretch
 				>
@@ -140,7 +169,7 @@
 					inputmode="numeric"
 					maxlength="2"
 					autocomplete="off"
-					{required}
+					required={segmentRequired}
 					aria-label={i18n.t('components.dateField.day')}
 					placeholder={i18n.t('components.dateField.dayPlaceholder')}
 					class="{FIELD} w-12 px-2 py-2 text-sm"
@@ -152,7 +181,7 @@
 					inputmode="numeric"
 					maxlength="4"
 					autocomplete="off"
-					required={required && !allowYearUnknown}
+					required={segmentRequired && !allowYearUnknown}
 					aria-label={i18n.t('components.dateField.year')}
 					placeholder={i18n.t('components.dateField.yearPlaceholder')}
 					class="{FIELD} w-16 px-2 py-2 text-sm"
@@ -179,7 +208,14 @@
 	{#if weekday}
 		<p class="mt-1 text-xs text-fg-muted" data-testid="date-weekday">{weekday}</p>
 	{/if}
-	{#if allowYearUnknown}
+	{#if estimateAge !== null}
+		<p class="mt-1 text-xs text-fg-muted" data-testid="date-estimate">
+			{i18n.t('components.dateField.estimate', {
+				age: i18n.t('contact.facts.estimatedAge', { age: estimateAge }),
+				year: estimateYear
+			})}
+		</p>
+	{:else if allowYearUnknown}
 		<p class="mt-1 text-xs text-fg-subtle">{i18n.t('components.dateField.yearOptional')}</p>
 	{/if}
 	{#if problemText}

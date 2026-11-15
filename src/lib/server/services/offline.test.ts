@@ -103,6 +103,7 @@ const addAnna: Command = {
 		howWeMet: '',
 		metPlace: '',
 		birthDate: '',
+		birthYearEstimate: '',
 		gender: null,
 		visibility: 'shared',
 		isSelf: false

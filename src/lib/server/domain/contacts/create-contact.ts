@@ -11,6 +11,7 @@ import type {
 	NewContact
 } from './contacts';
 import { checkedGender, orNull } from './profile';
+import { checkBirthEstimate } from './birth-year';
 
 /*
  * Adding a person by hand (docs/dev/02 §2.2): the shown name derived, the birth date parsed, and
@@ -37,6 +38,15 @@ function parseBirthDate(value?: string | null): {
 	return { birthDate: date.value, birthDatePrecision: date.precision };
 }
 
+/** The birth date to store: a day when one was given, else an estimated year (docs/dev/02 §2.13.1). */
+function birthOf(input: CreateContactInput, now: number): ReturnType<typeof parseBirthDate> {
+	const estimate = (input.birthYearEstimate ?? '').trim();
+	if ((input.birthDate ?? '').trim() !== '' || estimate === '')
+		return parseBirthDate(input.birthDate);
+	checkBirthEstimate(estimate, now);
+	return { birthDate: estimate, birthDatePrecision: 'age' };
+}
+
 /**
  * Thrown when a person is being added by a first name alone: with no last name and no line to
  * know them by, they cannot be told from the next person of that name (docs/dev/02 §2.2.3).
@@ -58,9 +68,9 @@ export async function createContact(
 ): Promise<string> {
 	const displayName = deriveDisplayName(input, creator.locale);
 	if (!isKnownByMoreThanAFirstName(input)) throw new NeedsSomethingToKnowThemByError();
-	const { birthDate, birthDatePrecision } = parseBirthDate(input.birthDate);
-	const gender = checkedGender(input.gender);
 	const now = deps.clock.now();
+	const { birthDate, birthDatePrecision } = birthOf(input, now);
+	const gender = checkedGender(input.gender);
 	const id = deps.ids.next();
 
 	const contact: NewContact = {

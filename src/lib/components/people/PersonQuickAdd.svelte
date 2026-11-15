@@ -41,6 +41,7 @@
 			nickname: '',
 			description: suggestedDescription,
 			birthDate: '',
+			birthYearEstimate: '',
 			visibility: 'shared' as Visibility
 		}))
 	);
@@ -132,6 +133,7 @@
 				{t('components.personSearch.birthDate')}
 				<DateField
 					bind:value={draft.birthDate}
+					bind:estimate={draft.birthYearEstimate}
 					label={t('components.personSearch.birthDate')}
 					allowYearUnknown
 					ageOn={deviceDay()}

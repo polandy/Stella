@@ -39,6 +39,9 @@ const KINDS = {
 	'journal.write': 'add',
 	'field.add': 'add',
 	'date.add': 'add',
+	// Sets a birth year only where no day is on record and a replay changes nothing, so it may
+	// wait on a phone; removing an estimate is the dates editor's undoable removal instead.
+	'contact.birthEstimate': 'add',
 	'gallery.add': 'add',
 	'gallery.photo': 'add',
 	'circleGallery.add': 'add',

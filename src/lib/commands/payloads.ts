@@ -20,6 +20,7 @@ import {
 	visibility
 } from './payload-fields';
 import {
+	BirthEstimateSchema,
 	CircleJoinSchema,
 	ContactAddSchema,
 	DateAddSchema,
@@ -172,6 +173,7 @@ export const COMMAND_PAYLOAD_SCHEMAS = {
 	'journal.write': JournalWriteSchema,
 	'field.add': FieldAddSchema,
 	'date.add': DateAddSchema,
+	'contact.birthEstimate': BirthEstimateSchema,
 	'gallery.add': GalleryAddSchema,
 	'gallery.photo': PhotoWireSchema,
 	'circleGallery.add': CircleGalleryAddSchema,

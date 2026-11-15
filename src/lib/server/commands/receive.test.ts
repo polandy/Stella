@@ -103,6 +103,7 @@ function fakes() {
 			}),
 			'field.add': async () => ({ fieldId: 'f' }),
 			'date.add': async () => ({ dateId: 'd' }),
+			'contact.birthEstimate': async () => ({ contactId: 'c' }),
 			'gallery.add': async () => ({ contactId: 'c', visibility: 'shared' as const }),
 			'gallery.photo': async () => 'photo',
 			'circleGallery.add': async () => ({
