@@ -7,6 +7,8 @@
 	import Button from '$lib/components/ui/Button.svelte';
 	import { keepable } from '$lib/pwa/keepable';
 	import DateField from '$lib/components/ui/DateField.svelte';
+	import { browser } from '$app/environment';
+	import { deviceDay, writersDay } from '$lib/dates/today';
 	import { onMount, untrack } from 'svelte';
 	import type { ActionData, PageData } from './$types';
 
@@ -284,7 +286,12 @@
 				</label>
 				<div class={field}>
 					<span class="text-fg-muted">{t('contacts.new.birthday')}</span>
-					<DateField name="birthDate" label={t('contacts.new.birthday')} allowYearUnknown />
+					<DateField
+						name="birthDate"
+						label={t('contacts.new.birthday')}
+						allowYearUnknown
+						ageOn={writersDay(data.today, browser ? deviceDay() : null)}
+					/>
 				</div>
 				<fieldset class={field}>
 					<legend class="mb-1 text-fg-muted">

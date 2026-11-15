@@ -2,11 +2,13 @@
 	import { FIELD } from '$lib/components/ui/field';
 	import { untrack } from 'svelte';
 	import {
+		birthYearFromAge,
 		dateProblem,
 		isoToParts,
 		monthNames,
 		partsToIso,
 		segmentOrder,
+		weekdayDate,
 		type DateParts
 	} from '$lib/dates/field';
 	import { useI18n } from '$lib/i18n/context.svelte';
@@ -36,6 +38,8 @@
 		allowYearUnknown?: boolean;
 		/** The latest day allowed, as an ISO day — for a date that cannot be in the future. */
 		max?: string;
+		/** Today as an ISO day: given, the field also takes an age and works the year out from it. */
+		ageOn?: string;
 		required?: boolean;
 		id?: string;
 		/**
@@ -52,6 +56,7 @@
 		label,
 		allowYearUnknown = false,
 		max,
+		ageOn,
 		required = false,
 		id,
 		stretch = false,
@@ -64,10 +69,20 @@
 	// half-entered segments underneath them.
 	let parts = $state<DateParts>(untrack(() => isoToParts(value)));
 	let dayInput: HTMLInputElement | undefined = $state();
+	// The age as typed; while it holds anything, the year is the one it works out to.
+	let age = $state('');
 
 	const months = $derived(monthNames(i18n.intlLocale));
 	const order = $derived(segmentOrder(i18n.intlLocale));
-	const problem = $derived(dateProblem(parts, { allowYearUnknown, max }));
+	const problem = $derived(
+		ageOn !== undefined &&
+			age.trim() !== '' &&
+			parts.year === '' &&
+			parts.day !== '' &&
+			parts.month !== ''
+			? 'ageUnreadable'
+			: dateProblem(parts, { allowYearUnknown, max })
+	);
 	/*
 	 * Nothing is posted while the segments are faulted. `partsToIso` does not know whether this
 	 * caller allows a year-less day, so on a field that requires the year it would otherwise
@@ -75,6 +90,7 @@
 	 */
 	const iso = $derived(problem === null ? partsToIso(parts) : '');
 	const problemText = $derived(problem === null ? null : i18n.t(`components.dateField.${problem}`));
+	const weekday = $derived(weekdayDate(iso, i18n.intlLocale));
 
 	/*
 	 * The segments are separate controls, so the browser cannot see that together they make an
@@ -89,6 +105,14 @@
 	// an effect would lag a tick behind and re-enter when the caller normalises `value`.
 	function setPart(part: keyof DateParts, next: string) {
 		parts[part] = next;
+		if (part === 'year') age = '';
+		else if (ageOn !== undefined && age !== '') parts.year = birthYearFromAge(parts, age, ageOn);
+		value = iso;
+	}
+
+	function setAge(next: string) {
+		age = next;
+		parts.year = ageOn === undefined ? parts.year : birthYearFromAge(parts, next, ageOn);
 		value = iso;
 	}
 </script>
@@ -141,8 +165,26 @@
 				/>
 			{/if}
 		{/each}
+		{#if ageOn !== undefined}
+			<span class="pb-2 text-sm text-fg-subtle" aria-hidden="true"
+				>{i18n.t('components.dateField.or')}</span
+			>
+			<input
+				bind:value={() => age, setAge}
+				type="text"
+				inputmode="numeric"
+				maxlength="3"
+				autocomplete="off"
+				aria-label={i18n.t('components.dateField.age')}
+				placeholder={i18n.t('components.dateField.agePlaceholder')}
+				class="{FIELD} w-16 px-2 py-2 text-sm"
+			/>
+		{/if}
 	</div>
 
+	{#if weekday}
+		<p class="mt-1 text-xs text-fg-muted" data-testid="date-weekday">{weekday}</p>
+	{/if}
 	{#if allowYearUnknown}
 		<p class="mt-1 text-xs text-fg-subtle">{i18n.t('components.dateField.yearOptional')}</p>
 	{/if}

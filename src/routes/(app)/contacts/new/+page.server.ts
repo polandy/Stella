@@ -8,6 +8,7 @@ import { systemClock } from '$lib/server/clock';
 import { dispatchCommand } from '$lib/server/domain/commands/dispatch';
 import { ulidGenerator } from '$lib/server/id';
 import { readNewPersonRequest } from '$lib/people/new-person';
+import { todayFor } from '$lib/dates/today';
 import type { Actions, PageServerLoad } from './$types';
 
 /*
@@ -21,7 +22,7 @@ import type { Actions, PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ locals, url }) => {
 	requireViewer(locals);
-	return readNewPersonRequest(url.searchParams);
+	return { ...readNewPersonRequest(url.searchParams), today: todayFor(systemClock) };
 };
 
 export const actions: Actions = {

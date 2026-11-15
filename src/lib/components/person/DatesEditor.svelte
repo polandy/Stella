@@ -4,9 +4,11 @@
 	import FormError from '$lib/components/ui/FormError.svelte';
 	import KeptChip from '$lib/components/pwa/KeptChip.svelte';
 	import RemoveButton from '$lib/components/ui/RemoveButton.svelte';
+	import { browser } from '$app/environment';
 	import { enhance } from '$app/forms';
 	import { isImportantDateKind } from '$lib/dates/kinds';
 	import { dayLabel } from '$lib/dates/labels';
+	import { deviceDay, writersDay } from '$lib/dates/today';
 	import { useI18n } from '$lib/i18n/context.svelte';
 	import { hasMessage } from '$lib/i18n/translate';
 	import { keepable } from '$lib/pwa/keepable';
@@ -63,6 +65,9 @@
 
 	/** The add form: open from the start when there is nothing to list, or after a refusal. */
 	let adding = $state(false);
+	// A birthday may be given as an age instead of a year (docs/dev/02 §2.13).
+	let addKind = $state<string>();
+	const today = $derived(writersDay(data.today, browser ? deviceDay() : null));
 	const addOpen = $derived(adding || !holdsAny || (form?.dateError ?? null) !== null);
 
 	let addForm = $state<HTMLFormElement>();
@@ -174,12 +179,25 @@
 			{#if holdsAny}
 				<span class="text-xs font-medium text-fg-muted">{t('contact.dates.another')}</span>
 			{/if}
-			<select data-autofocus name="kind" aria-label={t('contact.kind')} class="w-full {INPUT}">
+			<select
+				data-autofocus
+				name="kind"
+				bind:value={addKind}
+				aria-label={t('contact.kind')}
+				class="w-full {INPUT}"
+			>
 				{#each data.dateKinds as kind (kind)}
 					<option value={kind}>{kindLabel(kind)}</option>
 				{/each}
 			</select>
-			<DateField name="date" required allowYearUnknown stretch label={t('contact.day')} />
+			<DateField
+				name="date"
+				required
+				allowYearUnknown
+				stretch
+				ageOn={addKind === 'birthday' ? today : undefined}
+				label={t('contact.day')}
+			/>
 			<input
 				name="label"
 				placeholder={t('contact.dateNameForCustom')}
