@@ -292,6 +292,11 @@ test may not race — not in `bun test`, not in Playwright.
   something else "intercepts pointer events" may be the app's: Playwright scrolls its target
   into view first, as keyboard focus does, and the jump bar's links once scrolled the page out
   from under themselves that way (`docs/dev/design/screens/person.md`).
+- **`context.setOffline` is not one switch.** Playwright lifts (and sets) it on the pages first
+  and on the service worker after, so a page that hears `online` can have the worker probe a
+  network it does not have yet — a race no phone has, where page and worker share one network.
+  A `pwa` spec that comes back online uses `backOnline` in `e2e/pwa-offline.spec.ts`, which
+  lets the page hear `online` only once both are back.
 
 **Motion is waited on, never timed.** What opens or closes in place glides (docs/dev/05 §5.11), so
 for a moment it is half there — and two alternatives crossing over each other are *both* there,
