@@ -29,7 +29,7 @@ Decide the tier from `gh pr diff <PR> --name-only` and say which one you used in
 
 In both tiers:
 
-- **Trust a green CI for `bun run check` and `bun run test`** — they ran on the PR's head. Run them
+- **Trust a green CI for `bun run lint`, `bun run check` and `bun run test`** — they ran on the PR's head. Run them
   locally only when you push a fix, or when CI is red or has not run on the current head.
 - **Read the diff before any file**, and open the doc *section* the PR touches (`grep -n` for its
   heading, then read that range), never a whole `docs/` file.
@@ -54,6 +54,17 @@ One row per changed file under `src/`, naming the test that drives *that file's 
 - **A write half and a read half are two behaviours** (capture/stream, export/import): each needs its own driving case, and the read half matters more for the household's only copy.
 - **One rule written into N places needs N cases** — check every site the diff touched.
 - **A shared test helper is never the assertion.** One that tolerates both states (`if (await x.isVisible()) return`) stays green when the behaviour is removed.
+- **Every `docs/dev/02` section or `docs/dev/design/screens/` rule the diff adds or changes is a
+  row too**, naming the e2e case that drives it — or one line why unit is the right layer
+  (`⚪ unit: <test>`). A flow across client and server, or a change to a file or the system
+  (upload, export, import, cookie, redirect), needs an e2e; a pure rule does not. A diff adding
+  more than one section's behaviour (a new `docs/dev/features/2.x` subsection) lists each.
+- **The reverse direction**: `grep -rn` `e2e/` for cases that still assert changed or removed
+  behaviour and update them in this PR; an e2e spec whose header cites a section the diff
+  renamed or removed is a finding, and so is a new e2e case with no spec reference in its header.
+- **A privacy or visibility rule needs its e2e case with a positive control** — the second
+  member sees what is shared and not what is private; unit parity alone leaves a route or loader
+  unguarded.
 
 ## Light checks
 
@@ -69,7 +80,8 @@ One line per check; `references/full-tier.md` §1–§5 holds each in depth for 
   `0`/`1` leaking past the adapter; semantic tokens
   only; strict TS, typed errors, no swallowed error; no magic literal, dead code or narrating
   comment; a new dependency exact-pinned with a reason.
-- **Tests** (§4.1): spec-like names, the right layer (real in-memory SQLite for adapters),
+- **Tests** (§4.1): a changed `docs/dev/02` sentence is read against the test body, each promise an
+  assertion (§4.0); spec-like names, the right layer (real in-memory SQLite for adapters),
   failure paths, a positive control for every "not visible", no timing waits, one day per
   `journal_entry` seed, rules in pure functions rather than inline in a route.
 - **UI** (§5): its `docs/dev/design/` file updated; no "UI in a follow-up"; the delivery loop — an
@@ -79,8 +91,8 @@ One line per check; `references/full-tier.md` §1–§5 holds each in depth for 
 
 ## 6. CI status — fix failures
 
-- `gh pr checks <PR>`: **all green** — the `verify` job (`bun run check`, `bun run test`) and `e2e`.
-- Red: fix it on the PR branch, re-run `bun run check` and `bun run test` locally, commit, push, wait for the re-run; repeat until green.
+- `gh pr checks <PR>`: **all green** — the `verify` job (`bun run lint`, `bun run check`, `bun run test`, `scripts/dev-smoke.sh`) and `e2e`.
+- Red: fix it on the PR branch, re-run the failing `verify` steps locally, commit, push, wait for the re-run; repeat until green.
 - Commit types follow **user-facing impact** (release-please, §8.9): a user-visible change committed as `chore:` vanishes from the release notes — a finding.
 
 ## 7. Branch freshness — update if behind
@@ -96,7 +108,10 @@ One line per check; `references/full-tier.md` §1–§5 holds each in depth for 
 2. **The §4.0 table** — posted as a table; an unfilled row is also a finding.
 3. **Findings** — per check: ✅ ok / ⚠️ issue (`file:line`) / 🔧 fixed by me (commit).
 4. **Blockers** — what must change before merge that you could not fix (pending manual verification, design questions).
-5. **Merge readiness** — ready / not ready. Do **not** merge: the maintainer squash-merges on their own command, every time.
+5. **Merge readiness** — ready / not ready. A PR with an e2e still owed (a §4.0 row without its
+   case, or pending sign-off) is **not ready**. If the maintainer merges it anyway, list every debt
+   as `e2e owed: §2.x.y — <what to assert>` and add each to `TODO.md` in a follow-up commit, so
+   none is lost (`gh search prs "e2e owed"`). Do **not** merge: the maintainer squash-merges on their own command, every time.
 
 ## 9. Post the verdict as a PR comment
 
