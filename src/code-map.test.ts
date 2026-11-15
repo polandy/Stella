@@ -3,7 +3,7 @@ import { readdirSync } from 'node:fs';
 import { join } from 'node:path';
 
 /*
- * docs/04 §4.3 is the map agents find code by (CLAUDE.md); a folder missing from it is a feature
+ * docs/dev/04 §4.3 is the map agents find code by (CLAUDE.md); a folder missing from it is a feature
  * nobody finds (review TD-04). The tree is read by its indentation, two spaces a level, so a
  * name listed under another parent does not count.
  */
@@ -11,7 +11,7 @@ const repoRoot = join(import.meta.dir, '..');
 
 async function mappedPaths(): Promise<Set<string>> {
 	const doc = await Bun.file(
-		join(repoRoot, 'docs/architecture/4.3-application-structure.md')
+		join(repoRoot, 'docs/dev/architecture/4.3-application-structure.md')
 	).text();
 	const tree = doc.slice(
 		doc.indexOf('```\nsrc/') + 4,
@@ -41,7 +41,7 @@ const mappedFolders = [
 	'src/routes/(app)'
 ];
 
-describe('docs/04 §4.3 code tree', () => {
+describe('docs/dev/04 §4.3 code tree', () => {
 	it.each(mappedFolders.map((folder) => [folder]))(
 		'names every folder under %s',
 		async (folder) => {

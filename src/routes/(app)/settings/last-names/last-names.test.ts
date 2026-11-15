@@ -10,7 +10,7 @@ import { answerOf, formOf, routeEvent, type FakeServices } from '$lib/server/tes
 import { actions, load } from './+page.server';
 
 /*
- * *Settings → Data quality → Last names* as the edge answers it (docs/02 §2.2.4.2): the list
+ * *Settings → Data quality → Last names* as the edge answers it (docs/dev/02 §2.2.4.2): the list
  * and its two drawers, *Not this name* and *No last name* with their ways back, each refusal
  * turned into a status. The use-cases have their own suites; the household here is Markus
  * Brunner, his son Ben, and Jonas, whom nothing names.

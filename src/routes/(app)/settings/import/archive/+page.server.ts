@@ -11,13 +11,13 @@ import type { Actions, PageServerLoad } from './$types';
 import { say, translator } from '$lib/server/i18n/say';
 
 /*
- * Restoring the household from an archive (docs/02 §2.15). Admin only, like the export: the
+ * Restoring the household from an archive (docs/dev/02 §2.15). Admin only, like the export: the
  * archive carries every member's private records.
  *
  * One step, not a wizard. The Monica import previews first because it *maps* one model onto
  * another and the admin has to agree with the mapping; a restore adds records that are already
  * ours, never overwrites, and is a no-op the second time — so the honest thing is to do it and
- * report exactly what was written (docs/04 §4.9).
+ * report exactly what was written (docs/dev/04 §4.9).
  */
 
 /**

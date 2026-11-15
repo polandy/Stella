@@ -12,7 +12,7 @@ import {
 } from './avatars';
 
 /*
- * Journal photo domain (docs/02 §2.20). Like avatars (§2.14), images are downscaled and
+ * Journal photo domain (docs/dev/02 §2.20). Like avatars (§2.14), images are downscaled and
  * EXIF/GPS-stripped in the browser, so the server needs no native image library; its job is to
  * validate the bytes (magic-byte sniff + size cap) and store them behind the visibility model.
  * A journal photo inherits its entry's visibility, so a private entry's photos stay private.
@@ -88,9 +88,9 @@ export interface JournalPhotoRef {
 	journalEntryId: string;
 }
 
-/** The journal photos a story reads: a read model of the photo table (docs/08 §8.3). */
+/** The journal photos a story reads: a read model of the photo table (docs/dev/08 §8.3). */
 export interface JournalPhotoReads {
-	/** Journal photos on a contact the viewer may see, oldest first (docs/02 §2.20). */
+	/** Journal photos on a contact the viewer may see, oldest first (docs/dev/02 §2.20). */
 	listJournalPhotos(viewer: Viewer, contactId: string): Promise<JournalPhotoRef[]>;
 	/** `listJournalPhotos`, cut to these entries — the ones a story page shows. */
 	listJournalPhotosOfEntries(

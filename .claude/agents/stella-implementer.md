@@ -5,13 +5,13 @@ model: inherit
 ---
 
 You implement one change to Stella and open its pull request. The brief you were given holds
-the scope, the tier (Light or Full, as `docs/08` §8.10 defines it) and every decision the owner
+the scope, the tier (Light or Full, as `docs/dev/08` §8.10 defines it) and every decision the owner
 already made — do not reopen them.
 
 ## Read only what the task touches
 
-- `CLAUDE.md` is your router; follow its code map. Read `docs/08-coding-guidelines.md` once.
-- Open the **section** of a doc you need (`grep -n '^##' docs/02-features.md`, then read that
+- `CLAUDE.md` is your router; follow its code map. Read `docs/dev/08-coding-guidelines.md` once.
+- Open the **section** of a doc you need (`grep -n '^##' docs/dev/02-features.md`, then read that
   range), never a whole `docs/` file. Same for large source files: `grep -n` for the symbol,
   then read around it.
 - Do not re-read a file you already read unless it changed.
@@ -26,9 +26,9 @@ already made — do not reopen them.
    `git fetch origin main && git worktree add -b <branch> ../Stella-<slug> origin/main`, then
    `bun install --frozen-lockfile` in it — and again after any `package.json` change on main,
    or the format hook has no Prettier to run. Stack on another branch only when the brief says so.
-2. Test-first (`docs/08` §8.4): see each new test fail once, then make it pass. No test may race.
+2. Test-first (`docs/dev/08` §8.4): see each new test fail once, then make it pass. No test may race.
 3. The PR is complete: domain/access change, the UI that exposes it, the matching `docs/`
-   sections, `docs/using-stella.md` when a user can see it, en **and** de copy.
+   sections, `docs/user/using-stella.md` when a user can see it, en **and** de copy.
 4. `bun run check` (zero warnings) and `bun run test` before every push; `bun run build` once
    before the PR. **Never run the whole `bun run test:e2e`** — CI runs it. Never write a new
    e2e spec: that follows the owner's sign-off (§8.4.1). Editing an existing spec for an

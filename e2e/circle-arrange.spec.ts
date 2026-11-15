@@ -3,9 +3,9 @@ import { appReady, signIn } from './app';
 import { circleIdOf, seedHousehold } from './seed';
 
 /*
- * Arranging people between a circle and its sub-circles (docs/02 §2.4.2, ADR-127): tapping and
+ * Arranging people between a circle and its sub-circles (docs/dev/02 §2.4.2, ADR-127): tapping and
  * the keyboard, dragging, and the reasons a card gives for refusing. Written at the owner's
- * request (docs/08 §8.4.1). Each case seeds a school of its own name — a school with one class
+ * request (docs/dev/08 §8.4.1). Each case seeds a school of its own name — a school with one class
  * — so no two cases share a circle, and the restore is add-only by id.
  */
 

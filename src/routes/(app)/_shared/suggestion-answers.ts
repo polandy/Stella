@@ -16,7 +16,7 @@ import {
 import { RELATIONS } from '$lib/suggestions/types';
 
 /*
- * Answering a suggestion, wherever it was offered (docs/02 §2.4.1, docs/04 ADR-117).
+ * Answering a suggestion, wherever it was offered (docs/dev/02 §2.4.1, docs/dev/04 ADR-117).
  *
  * The same three answers now reach a household from two screens — the person page's review
  * panel and the household-wide pass in Settings — and they must mean exactly the same thing on
@@ -27,7 +27,7 @@ import { RELATIONS } from '$lib/suggestions/types';
  * here. Each function returns `null` when it wrote what was asked, or a `RefusedAnswer`;
  * neither redirects, because where "back" is belongs to the screen. They take the slices of
  * `locals.services` they reach and the request's translator as arguments, so a route hands
- * them in and a test hands in fakes (docs/08 §8.3).
+ * them in and a test hands in fakes (docs/dev/08 §8.3).
  */
 
 /**

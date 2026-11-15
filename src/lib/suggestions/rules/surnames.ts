@@ -5,9 +5,9 @@ import type { Confidence } from '../types';
 import { buildView } from '../view';
 
 /*
- * Where a last name can come from (docs/02 §2.2.4.1). Each rule reads only what
+ * Where a last name can come from (docs/dev/02 §2.2.4.1). Each rule reads only what
  * one viewer may see and yields a name, a confidence and a reason; `proposeSurname` combines
- * them for one person. The ids continue the F series of docs/02 §2.4.1
+ * them for one person. The ids continue the F series of docs/dev/02 §2.4.1
  * (*The suggestion rules*).
  *
  * Never a source: anything the viewer cannot see (the facts were scoped before they got here),

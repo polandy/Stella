@@ -17,7 +17,7 @@ import type { AuthConfig } from './auth';
 import { createNoteServices, type NoteWiring } from './notes';
 
 /*
- * The notes group of the composition root (docs/08 §8.3), built over a real in-memory SQLite:
+ * The notes group of the composition root (docs/dev/08 §8.3), built over a real in-memory SQLite:
  * what the edge gets from `locals.services.notes` must work end to end — a note written through
  * the group shows on its person, and a person it names finds it under "Mentioned in".
  */

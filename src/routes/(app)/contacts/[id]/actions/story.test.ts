@@ -12,9 +12,9 @@ import {
 import { storyActions as actions } from './story';
 
 /*
- * Removing a touchpoint or a journal entry from the story (docs/02 §2.20). The remove is held
+ * Removing a touchpoint or a journal entry from the story (docs/dev/02 §2.20). The remove is held
  * for the undo window and posted later; a 404 tells that post the item is already gone, which
- * counts as removed (docs/02 §2.23). Gone and someone else's are said alike, as on the journal
+ * counts as removed (docs/dev/02 §2.23). Gone and someone else's are said alike, as on the journal
  * page, so a foreign id reveals nothing — and the story offers Remove only where the rule allows it.
  */
 

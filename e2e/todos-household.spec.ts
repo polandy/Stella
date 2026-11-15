@@ -2,10 +2,10 @@ import { expect, test, type Page } from '@playwright/test';
 import { addPerson, appReady, fillDate, signIn } from './app';
 
 /*
- * The household's to-dos beyond one person (docs/02 §2.26.6–7): Home's *To-dos* band with its
+ * The household's to-dos beyond one person (docs/dev/02 §2.26.6–7): Home's *To-dos* band with its
  * box on the right, ticking there with *Undo*, *Show all* leading to `/todos` and its groups,
  * ticking on `/todos`, *All to-dos* in the palette, and full search finding open and done
- * to-dos. Written after the owner tried them in the app (docs/08 §8.4.1).
+ * to-dos. Written after the owner tried them in the app (docs/dev/08 §8.4.1).
  *
  * The suite shares one database, so every case works on a person of its own, named with letters
  * no other attempt shares. Other specs leave overdue to-dos from 2020 behind; the band's case
@@ -65,7 +65,7 @@ test('an overdue to-do stands in Home’s To-dos band, its box on the right', as
 	await expect(row).toContainText(`Bandolin ${last}`);
 	await expect(row.getByTestId('todo-due')).toHaveText('was due Fri, 5 Jan 1990');
 
-	// Under the right thumb (docs/05 §5.1): the box ends the row, after the line.
+	// Under the right thumb (docs/dev/05 §5.1): the box ends the row, after the line.
 	const line = await row.getByText(title).boundingBox();
 	const box = await tickBox(page, title).boundingBox();
 	expect(box!.x).toBeGreaterThan(line!.x + line!.width);

@@ -2,7 +2,7 @@ import { describe, expect, it } from 'bun:test';
 import { refreshPeopleIfChanged, shellReloads } from './people-freshness';
 
 /*
- * The shell's list of people stays as fresh as a page's own copy would be (docs/04 §4.9):
+ * The shell's list of people stays as fresh as a page's own copy would be (docs/dev/04 §4.9):
  * after a navigation the stamp of what the server would send now is compared with the one the
  * list came with, and only a difference reloads it.
  */

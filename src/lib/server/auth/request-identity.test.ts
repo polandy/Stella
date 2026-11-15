@@ -5,7 +5,7 @@ import { resolveRequestIdentity, type RequestIdentityDeps } from './request-iden
 import { createSession, type SessionRecord } from './session';
 
 /*
- * Who a request is (docs/04 §4.4, docs/02 §2.16.1). Two credentials, two territories: the
+ * Who a request is (docs/dev/04 §4.4, docs/dev/02 §2.16.1). Two credentials, two territories: the
  * session cookie opens the app's pages, an API token opens `/api/v1/`, and neither crosses
  * over. Every refusal below is paired with the same credential being accepted on its own side,
  * so a case cannot pass because nothing signs in at all.

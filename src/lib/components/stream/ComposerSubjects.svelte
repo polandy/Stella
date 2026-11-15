@@ -15,7 +15,7 @@
 	import { tick } from 'svelte';
 
 	/*
-	 * Whom the moment is about (docs/02 §2.20.3): the anchor's chip, the chips added beside it,
+	 * Whom the moment is about (docs/dev/02 §2.20.3): the anchor's chip, the chips added beside it,
 	 * *＋ Person*, and under them the anchor's homes offered in one tap — never preselected.
 	 * Each chip posts as `subjectIds`, so the form reads the same with or without JavaScript.
 	 */

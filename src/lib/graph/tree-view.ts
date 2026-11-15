@@ -1,7 +1,7 @@
 import type { ArrangementKey } from './layout/arrangements';
 
 /*
- * What the family tree decides about how it is looked at (docs/05 §5.8), apart from the
+ * What the family tree decides about how it is looked at (docs/dev/05 §5.8), apart from the
  * drawing itself. Pure.
  *
  * How the Labels switch reads in the tree:

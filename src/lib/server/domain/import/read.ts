@@ -6,7 +6,7 @@ import { parseSqlDump } from './monica/sql-dump';
 import { readVCard, VCardError } from './vcard';
 
 /*
- * Which accepted export an uploaded file is, and reading it whichever it is (docs/02 §2.16).
+ * Which accepted export an uploaded file is, and reading it whichever it is (docs/dev/02 §2.16).
  * The wizard is the same for all three, so the format is worked out from the file rather than
  * asked for, and each says what it is in its first characters: Monica writes JSON as one
  * object, a vCard opens with BEGIN:VCARD, and `mariadb-dump` writes SQL statements.

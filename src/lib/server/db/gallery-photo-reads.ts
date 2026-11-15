@@ -11,8 +11,8 @@ import type * as schema from './schema';
 import { circle, contact, photo } from './schema';
 
 /*
- * Drizzle adapter for the gallery's read model (docs/08 §8.3). Reads are scoped through the
- * central `childRecordVisibleTo`, so a private photo reaches only its author (docs/03 §3.7).
+ * Drizzle adapter for the gallery's read model (docs/dev/08 §8.3). Reads are scoped through the
+ * central `childRecordVisibleTo`, so a private photo reaches only its author (docs/dev/03 §3.7).
  */
 export function createDrizzleGalleryPhotoReads(
 	db: BunSQLiteDatabase<typeof schema>

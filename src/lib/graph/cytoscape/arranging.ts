@@ -10,8 +10,8 @@ import { TUCKED_CLASS } from './canvas-classes';
 
 /*
  * Moving people: every arrangement is worked out first and then glided into, the view travelling
- * with it; an expand's newcomers travel out on their own while nobody else moves (docs/04 §4.11,
- * docs/05 §5.8).
+ * with it; an expand's newcomers travel out on their own while nobody else moves (docs/dev/04 §4.11,
+ * docs/dev/05 §5.8).
  */
 
 /** A line a bundle stands for is aimed this many edge lengths long. */
@@ -37,7 +37,7 @@ function forceLayout({ edgeLength, repulsion }: Spacing) {
 		fit: false,
 		nodeRepulsion: () => repulsion,
 		// A line a bundle stands for still ties its member to the map, but at a longer reach, so
-		// the block its group is packed into stands clear of the circle (docs/02 §2.7).
+		// the block its group is packed into stands clear of the circle (docs/dev/02 §2.7).
 		idealEdgeLength: (edge: EdgeSingular) =>
 			edge.hasClass(TUCKED_CLASS) ? TUCKED_EDGE_FACTOR * edgeLength : edgeLength,
 		nodeDimensionsIncludeLabels: true
@@ -104,7 +104,7 @@ export function arrangeOn(
 			const after = new Map(peopleOn(cy).map((n) => [n.id(), { ...n.position() }] as const));
 			cy.batch(() => peopleOn(cy).forEach((n) => void n.position(before.get(n.id())!)));
 			// The forces spread a group's members as they would anybody; a group stands as one block
-			// where they came to rest (docs/02 §2.7).
+			// where they came to rest (docs/dev/02 §2.7).
 			const groups = cy
 				.nodes()
 				.filter((n) => n.isParent())

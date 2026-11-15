@@ -8,7 +8,7 @@ import {
 import type { SearchResults } from '$lib/server/domain/search/search';
 
 /*
- * Search results as the page shows them (docs/02 §2.9): a note's or moment's body cut to a
+ * Search results as the page shows them (docs/dev/02 §2.9): a note's or moment's body cut to a
  * snippet around what was searched, its mentions named as the chip names them — so the person
  * the search found stays in the line — and only as far as the viewer may see them.
  */

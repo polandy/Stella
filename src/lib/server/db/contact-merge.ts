@@ -27,7 +27,7 @@ import {
 } from './schema';
 
 /*
- * Merging one contact into another (docs/02 §2.2), kept out of the repository file because
+ * Merging one contact into another (docs/dev/02 §2.2), kept out of the repository file because
  * it is the one operation that has to touch every table pointing at `contact`.
  *
  * Which tables, in which order, and what happens where the survivor already has the row are

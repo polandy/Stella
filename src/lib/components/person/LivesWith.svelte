@@ -5,7 +5,7 @@
 	import { livesWithSentence, type Housemate } from '$lib/people/home';
 
 	/*
-	 * *lives with Anna and Peter Brunner* under a shared home's line (docs/02 §2.2), each name a
+	 * *lives with Anna and Peter Brunner* under a shared home's line (docs/dev/02 §2.2), each name a
 	 * way to that person. Only the people the viewer may see ever reach this list.
 	 */
 	let { housemates }: { housemates: readonly Housemate[] } = $props();

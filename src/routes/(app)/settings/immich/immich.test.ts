@@ -18,7 +18,7 @@ import {
 import { actions, load } from './+page.server';
 
 /*
- * *Settings → Immich → Find your people* (docs/02 §2.24.7) as the edge answers it: the page
+ * *Settings → Immich → Find your people* (docs/dev/02 §2.24.7) as the edge answers it: the page
  * exists only with Immich, a post that is not from the page is refused, a refusal is said on the
  * row it was made on, and anything else is ours. The use-cases have their own suites; the
  * household here is just enough Immich for each case.
@@ -310,7 +310,7 @@ describe('ignore', () => {
 		});
 	});
 
-	// 404, which a held Ignore reads as done: the row is for nobody any more (docs/02 §2.23).
+	// 404, which a held Ignore reads as done: the row is for nobody any more (docs/dev/02 §2.23).
 	it('answers 404 when the person is gone or out of sight', async () => {
 		const h = household({});
 		expect(await post('ignore', h.services, row)).toEqual({

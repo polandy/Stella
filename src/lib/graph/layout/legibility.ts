@@ -1,5 +1,5 @@
 /*
- * What keeps a busy relationship map readable (docs/05 §5.8). Pure numbers and decisions, so
+ * What keeps a busy relationship map readable (docs/dev/05 §5.8). Pure numbers and decisions, so
  * the stylesheet and the component read them from one place and the tests pin them down
  * without a canvas.
  */
@@ -61,7 +61,7 @@ export const MAX_NAME_GROWTH = 2;
 const NAME_GROWTH_STEP = 0.125;
 
 /**
- * How much the names of the selected person and their neighbours grow at `zoom` (docs/05
+ * How much the names of the selected person and their neighbours grow at `zoom` (docs/dev/05
  * §5.8). A whole family framed on a phone sits far below full zoom, where an 11-unit name is a
  * 6-pixel smudge; growing the lit names by the inverse of the zoom keeps them at their own size
  * on screen, while the faded rest stays small and out of the way.

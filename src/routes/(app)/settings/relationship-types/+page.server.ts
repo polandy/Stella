@@ -16,7 +16,7 @@ import type { Actions, PageServerLoad } from './$types';
 import { say, translator } from '$lib/server/i18n/say';
 
 /*
- * The household's relationship vocabulary (docs/02 §2.4). Admin only: a type is shared by
+ * The household's relationship vocabulary (docs/dev/02 §2.4). Admin only: a type is shared by
  * everyone's pages, so renaming one rewrites what every member reads.
  */
 

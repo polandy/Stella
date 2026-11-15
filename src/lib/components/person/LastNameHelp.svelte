@@ -15,13 +15,13 @@
 	import type { PersonPageData } from './types';
 
 	/*
-	 * Under the shown name (docs/02 §2.2, §2.2.4.5, §2.2.4.6): Stella's
+	 * Under the shown name (docs/dev/02 §2.2, §2.2.4.5, §2.2.4.6): Stella's
 	 * proposal for a missing last name as a chip (*Brunner?*). A tap saves it at once under the
 	 * shell's activity indicator; once the page has reloaded with the new name, a toast offers
 	 * *Undo* (`chip-give.ts`). When someone is given their first last name — by the chip or the
 	 * name editor — their children and siblings who still have none are offered it right here,
 	 * as a batch with the usual undo window; when a last name is changed, the family still
-	 * carrying the old one is offered the new one, each ticked and untickable. Sized for a finger on a coarse pointer (docs/05 §5.9).
+	 * carrying the old one is offered the new one, each ticked and untickable. Sized for a finger on a coarse pointer (docs/dev/05 §5.9).
 	 */
 	let { data }: { data: PersonPageData } = $props();
 

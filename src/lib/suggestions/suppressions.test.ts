@@ -5,7 +5,7 @@ import { isDerivable, isRefusedByRules } from './suppressions';
 import { buildView } from './view';
 
 /*
- * The universal suppressions (docs/02 §2.4.1, docs/04 ADR-055), tested apart
+ * The universal suppressions (docs/dev/02 §2.4.1, docs/dev/04 ADR-055), tested apart
  * from the rules on purpose: a rule that fires correctly and is then wrongly dropped is
  * invisible in a rule test (-implementation.md §8, §10).
  *
@@ -122,7 +122,7 @@ describe('isDerivable', () => {
  * Suppression 5 — what the write would refuse. A claim Stella offers and then rejects on
  * Accept is worse than one it never made: the household is told a link follows, presses the
  * one button there is, and is answered with an error about a rule nobody broke. The parent
- * cap (docs/02 §2.4) is the one such rule an implication can run into, because both rules
+ * cap (docs/dev/02 §2.4) is the one such rule an implication can run into, because both rules
  * offer parent links and a child already has whatever parents it has.
  */
 describe('isRefusedByRules', () => {

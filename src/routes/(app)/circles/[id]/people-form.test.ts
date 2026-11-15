@@ -3,7 +3,7 @@ import { formOf } from '$lib/server/testing';
 import { readPeopleAndRole } from './people-form';
 
 /*
- * The pick the circle page posts to add people or re-role them (docs/02 §2.4.2): who was
+ * The pick the circle page posts to add people or re-role them (docs/dev/02 §2.4.2): who was
  * chosen, and the role they are to take. A blank role reaches the use-case, which reads it as
  * none; nobody chosen is no pick at all.
  */

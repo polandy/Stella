@@ -5,7 +5,7 @@ import type { GraphModel } from './types';
 
 /*
  * How far a node is from the centre, and how far the map embedded in a person's page is
- * allowed to grow (docs/02 §2.7). The family fixture is the same one the ego-network and path
+ * allowed to grow (docs/dev/02 §2.7). The family fixture is the same one the ego-network and path
  * tests use, so a change to it is caught in one place.
  */
 

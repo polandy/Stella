@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Regenerate the installable app icons (docs/02 §2.18) into `static/icons/`.
+# Regenerate the installable app icons (docs/dev/02 §2.18) into `static/icons/`.
 #
 # The art and its geometry live in `src/lib/pwa/icon-art.ts`, where they are unit-tested;
 # this only turns them into PNGs. The rasterising happens inside the pinned Playwright

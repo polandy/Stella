@@ -136,7 +136,7 @@ describe('seedDemoData', () => {
 		}
 		expect(db.select().from(schema.circleMembership).all().length).toBeGreaterThan(30);
 		// Birthdays come from `contact.birth_date`, never from an important_date row
-		// (docs/02 §2.13.2) — only anniversaries and named dates are seeded.
+		// (docs/dev/02 §2.13.2) — only anniversaries and named dates are seeded.
 		const dates = db.select().from(schema.importantDate).all();
 		expect(dates.length).toBeGreaterThan(0);
 		expect(dates.some((d) => d.kind === 'birthday')).toBe(false);
@@ -260,7 +260,7 @@ describe('seedDemoData', () => {
 		const notes = db.select().from(schema.noteMention).all();
 		const entries = db.select().from(schema.journalMention).all();
 
-		// Both surfaces of the "Mentioned in" list need something to show (docs/02 §2.20.1).
+		// Both surfaces of the "Mentioned in" list need something to show (docs/dev/02 §2.20.1).
 		expect(notes.length).toBeGreaterThan(0);
 		expect(entries.length).toBeGreaterThan(0);
 

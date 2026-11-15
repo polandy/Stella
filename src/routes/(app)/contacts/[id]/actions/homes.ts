@@ -13,9 +13,9 @@ import { say, translator } from '$lib/server/i18n/say';
 import type { Actions, RequestEvent } from '../$types';
 
 /*
- * A shared home on the person page (docs/02 §2.2, *A shared home*): sharing an address with
+ * A shared home on the person page (docs/dev/02 §2.2, *A shared home*): sharing an address with
  * the people picked, rewriting it for everyone or for this person only, and moving out. Not
- * commands: like editing a field, these wait for a connection (docs/02 §2.18).
+ * commands: like editing a field, these wait for a connection (docs/dev/02 §2.18).
  */
 
 /** `field:<id>` or `home:<id>` — which of the person's addresses is being shared. */

@@ -1,5 +1,5 @@
 /*
- * How the outbox paces its sends (docs/02 §2.18.1): one round at a time; a send asked for while
+ * How the outbox paces its sends (docs/dev/02 §2.18.1): one round at a time; a send asked for while
  * one runs goes once more after it; and when the last round is over, whoever still watches a
  * save is told — also when a round threw (a full disk, a database blocked by another tab's
  * upgrade, a corrupt record). Otherwise a form would wait for its save for ever. Pure of

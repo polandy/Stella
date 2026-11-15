@@ -5,9 +5,9 @@ import { isImmichId } from './gateway';
 import { ImmichLinkRefusedError, linkToImmich, type ImmichLinkDeps } from './links';
 
 /*
- * *Assign…* on a row of *New from Immich* (docs/02 §2.24.7): a face Immich names that is nobody
+ * *Assign…* on a row of *New from Immich* (docs/dev/02 §2.24.7): a face Immich names that is nobody
  * in Stella yet goes to someone the member picked — *This is the person* — or to a person added
- * from it. Both end in `linkToImmich`, so every check of the picker holds (docs/04 ADR-096).
+ * from it. Both end in `linkToImmich`, so every check of the picker holds (docs/dev/04 ADR-096).
  * Neither has an undo, like a link made on *Find your people*.
  */
 
@@ -21,7 +21,7 @@ export interface NewcomerName {
 	firstName: string;
 	lastName: string;
 	nickname: string;
-	/** Asked for when there is no last name, so they can be told apart (docs/02 §2.2.3). */
+	/** Asked for when there is no last name, so they can be told apart (docs/dev/02 §2.2.3). */
 	description: string;
 }
 
@@ -44,7 +44,7 @@ const viewerOf = (actor: { userId: string; householdId: string }): Viewer => ({
 /**
  * Add a person from an Immich face and link them to it. The face is checked first — free, and
  * still in Immich and not hidden there — so nobody is added for a face that cannot be theirs.
- * The person is shared, as anyone added by hand starts (docs/02 §2.10). Only a second member
+ * The person is shared, as anyone added by hand starts (docs/dev/02 §2.10). Only a second member
  * linking the same face in the moment between the check and the link leaves the person added
  * and unlinked; the refusal then names who holds the face.
  */

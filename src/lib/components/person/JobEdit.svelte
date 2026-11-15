@@ -12,7 +12,7 @@
 	import type { Snippet } from 'svelte';
 
 	/*
-	 * A person's job, edited where it is read (docs/02 §2.2): the profile card's *Job* row and the
+	 * A person's job, edited where it is read (docs/dev/02 §2.2): the profile card's *Job* row and the
 	 * line under the name in the header both open this one editor — job title and company
 	 * together, because they are usually entered together. Enter saves both, Escape puts the
 	 * trigger back and hands it focus, an emptied field takes that part off the record. Like
@@ -89,7 +89,7 @@
 	});
 </script>
 
-<!-- The line and its editor glide into each other in place (docs/05 §5.11). -->
+<!-- The line and its editor glide into each other in place (docs/dev/05 §5.11). -->
 <Swap when={open}>
 	<form
 		method="POST"

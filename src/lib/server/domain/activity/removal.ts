@@ -5,7 +5,7 @@ import type { RemovedRecordKind } from '../../../stream/notices';
 import { activityRecord, type ActivityOf } from './activity';
 
 /*
- * Removing an authored record (docs/03 §3.7) is the same story for every kind: the repository
+ * Removing an authored record (docs/dev/03 §3.7) is the same story for every kind: the repository
  * finds what the remover may remove, and when that is someone else's work the household is told
  * in the delete's own transaction. This is the telling, so each kind says it once and alike.
  */

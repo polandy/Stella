@@ -1,5 +1,5 @@
 /*
- * Local password hashing adapter. Uses Bun's built-in Argon2id (docs/04 §4.2) so there is
+ * Local password hashing adapter. Uses Bun's built-in Argon2id (docs/dev/04 §4.2) so there is
  * no native dependency to compile. Kept behind intention-revealing names so call sites read
  * clearly and the algorithm can change in one place.
  */

@@ -9,7 +9,7 @@ import {
 } from './menu';
 
 /*
- * The decisions behind the graph toolbar's menus (docs/05 §5.8): what the Filter button says
+ * The decisions behind the graph toolbar's menus (docs/dev/05 §5.8): what the Filter button says
  * about what is shown, where the arrow keys move inside an open menu, and how far an open menu
  * moves to stay on the map.
  */

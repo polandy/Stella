@@ -6,10 +6,10 @@ import type * as schema from './schema';
 import { immichNameIgnore } from './schema';
 
 /*
- * Drizzle adapter for the ImmichNameIgnoreRepository port (docs/08 §8.3). An ignored face of
+ * Drizzle adapter for the ImmichNameIgnoreRepository port (docs/dev/08 §8.3). An ignored face of
  * *New from Immich* names no contact, so there is no contact visibility to check: it is the
  * household's, and every read and removal is held to the viewer's household — the scoping the
- * access layer gives household data (docs/03 §3.7). A face ignored twice keeps its first record.
+ * access layer gives household data (docs/dev/03 §3.7). A face ignored twice keeps its first record.
  */
 export function createDrizzleImmichNameIgnoreRepository(
 	db: BunSQLiteDatabase<typeof schema>

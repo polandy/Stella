@@ -1,5 +1,5 @@
 /*
- * Session expiry policy — pure sliding-expiration rules (docs/02 §2.1, docs/08 §8.3).
+ * Session expiry policy — pure sliding-expiration rules (docs/dev/02 §2.1, docs/dev/08 §8.3).
  * `now` and durations are passed in; nothing here reads the clock or does I/O, so every
  * decision is deterministic and unit-testable.
  */

@@ -31,7 +31,7 @@ import type { AuthConfig } from './auth';
 import { createRecordServices, type RecordWiring } from './records';
 
 /*
- * The records group of the composition root (docs/08 §8.3), built over a real in-memory SQLite:
+ * The records group of the composition root (docs/dev/08 §8.3), built over a real in-memory SQLite:
  * what the edge gets from `locals.services.records` must work end to end — a field, a date and
  * a tag added through the group show on the person they were added to.
  */

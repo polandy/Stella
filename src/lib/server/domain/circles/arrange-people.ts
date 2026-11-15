@@ -9,7 +9,7 @@ import type { NewMembership } from './circles';
 import type { CircleTreeReads } from './tree';
 
 /*
- * Arranging people between a circle and its sub-circles (docs/02 §2.4.2, ADR-127): one batch of
+ * Arranging people between a circle and its sub-circles (docs/dev/02 §2.4.2, ADR-127): one batch of
  * persons × source circle → one target circle, moved or copied, in one transaction.
  *
  * - *Move* gives the person a membership in the target and **deletes** the one at the source (no
@@ -109,7 +109,7 @@ export interface RevertPlan extends ArrangementChange {
 	restoredBy: string;
 }
 
-/** The arrangement's writes: each one transaction (docs/08 §8.3). */
+/** The arrangement's writes: each one transaction (docs/dev/08 §8.3). */
 export interface CircleArrangementRepository {
 	/**
 	 * Delete the `removals` and insert those of the `adds` whose contact is not in that circle yet,
@@ -123,7 +123,7 @@ export interface CircleArrangementRepository {
 	revert(plan: RevertPlan): Promise<RevertOutcome>;
 }
 
-/** What the arrange screen reads, through the access layer (docs/03 §3.7). */
+/** What the arrange screen reads, through the access layer (docs/dev/03 §3.7). */
 export interface CircleArrangementReads {
 	/** The memberships of `circleIds` whose circle and contact the viewer sees, by name. */
 	listMembersOfVisibleTo(viewer: Viewer, circleIds: readonly string[]): Promise<ArrangeMember[]>;

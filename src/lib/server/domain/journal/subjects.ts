@@ -4,7 +4,7 @@ import { allowedForAudience } from '../../../mentions/audience';
 import type { Visibility } from '../../access/visibility';
 
 /*
- * The people a journal entry is about, its subjects (docs/02 §2.20.3, ADR-131): the anchor
+ * The people a journal entry is about, its subjects (docs/dev/02 §2.20.3, ADR-131): the anchor
  * first, as `contact_id`, the rest beside it. The day slot is keyed by the set of them.
  */
 
@@ -22,7 +22,7 @@ export class JournalSubjectNotAllowedError extends TranslatableError {
 	}
 }
 
-/** The slot key of a set of people: their ids sorted and `,`-joined (docs/03 `subject_key`). */
+/** The slot key of a set of people: their ids sorted and `,`-joined (docs/dev/03 `subject_key`). */
 export function subjectKeyOf(subjectIds: readonly string[]): string {
 	return [...new Set(subjectIds)].sort().join(',');
 }

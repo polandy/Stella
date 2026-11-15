@@ -9,7 +9,7 @@
 	import MemoryRow from './MemoryRow.svelte';
 
 	/*
-	 * Home's *On this day* band (docs/02 §2.12.1): last in the rail, quiet — the day's photos in
+	 * Home's *On this day* band (docs/dev/02 §2.12.1): last in the rail, quiet — the day's photos in
 	 * earlier years — the gallery's, then Immich's once it answers — then at most three entries
 	 * under "N years ago". *More* leads to `/on-this-day`, which holds the rest; Home leaves the
 	 * band out while the day has nothing.

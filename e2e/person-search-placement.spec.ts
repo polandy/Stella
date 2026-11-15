@@ -2,7 +2,7 @@ import { expect, test, type Locator, type Page } from '@playwright/test';
 import { openPerson, signIn } from './app';
 
 /*
- * The person search's result list never hides the form's buttons for good (docs/05 §5.7):
+ * The person search's result list never hides the form's buttons for good (docs/dev/05 §5.7):
  * a tap beside it closes it and keeps the picks, and it opens upwards when the room below is
  * tight. Checked on the relationship form, on a phone and on a desktop.
  */

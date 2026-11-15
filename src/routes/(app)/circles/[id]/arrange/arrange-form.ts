@@ -2,7 +2,7 @@ import * as v from 'valibot';
 import { ARRANGE_MODES } from '$lib/circles/arrange';
 
 /*
- * The arrange screen's two posts, read at the edge (docs/02 §2.4.2, ADR-127). The page sends
+ * The arrange screen's two posts, read at the edge (docs/dev/02 §2.4.2, ADR-127). The page sends
  * JSON in one field; the bounds keep a hand-made post from asking for a huge batch. The domain
  * checks every circle and person again, so this only says what shape a post has.
  */

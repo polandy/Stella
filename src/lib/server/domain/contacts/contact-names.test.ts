@@ -6,7 +6,7 @@ import {
 } from './contact-names';
 
 /*
- * The by-id name reads behind the story, the journal, Home and the circle picker (docs/04
+ * The by-id name reads behind the story, the journal, Home and the circle picker (docs/dev/04
  * §4.8). The circle action compares the answer's length with the distinct ids it asked for, so
  * a repeated id has to be asked once, and a page with nobody to name must not read at all.
  */

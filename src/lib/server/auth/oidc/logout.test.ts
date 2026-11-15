@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, spyOn } from 'bun:test';
 import { planRpLogout, type RpLogoutDeps } from './logout';
 
 /*
- * RP-initiated logout orchestration (docs/02 §2.1): ask the provider where to send the
+ * RP-initiated logout orchestration (docs/dev/02 §2.1): ask the provider where to send the
  * browser, or decide there is nowhere to send it. Tested with a fake provider — no HTTP.
  */
 

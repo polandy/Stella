@@ -4,7 +4,7 @@ import { addGalleryPhoto, type GalleryUploadDeps } from './gallery-upload';
 import { InvalidImageError } from './journal-photos';
 
 /*
- * Adding a photo to a person's gallery (docs/02 §2.14). Same browser-processed bytes as a
+ * Adding a photo to a person's gallery (docs/dev/02 §2.14). Same browser-processed bytes as a
  * journal photo, but the photo stands on its own: no entry, and its own visibility.
  */
 

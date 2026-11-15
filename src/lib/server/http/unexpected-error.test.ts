@@ -5,7 +5,7 @@ import { describeUnexpectedError, isUnexpected, requestIdFrom } from './unexpect
 /*
  * An error nobody planned for is logged once, at the edge, with the request's id; the member
  * is shown that id instead of the error, so a report of "it said something went wrong" can be
- * found in the log (docs/04 §4.4, docs/08 §8.2 item 11).
+ * found in the log (docs/dev/04 §4.4, docs/dev/08 §8.2 item 11).
  */
 
 describe('requestIdFrom', () => {

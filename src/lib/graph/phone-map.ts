@@ -1,5 +1,5 @@
 /*
- * The map on a person's page (docs/05 §5.5): a preview in the People card — the phone's small
+ * The map on a person's page (docs/dev/05 §5.5): a preview in the People card — the phone's small
  * ring, a wider card's strip — the map enlarged inside the card — the full explorer, the reader
  * still on the page — or the map full screen. Born on the phone, hence the name; every width
  * runs it now. Pure, so which view follows which tap is tested without a browser; the
@@ -31,7 +31,7 @@ export function mapViewAfter(view: PhoneMapView, event: PhoneMapEvent): PhoneMap
 }
 
 /*
- * Between preview and enlarged map the card animates (docs/05 §5.5): the frame's height glides
+ * Between preview and enlarged map the card animates (docs/dev/05 §5.5): the frame's height glides
  * and the drawing and the live map cross-fade over each other. Two signals say when the live
  * map may show — its frame has reached its height, and it has drawn itself. The live map is
  * mounted only once the frame is tall, so the canvas is built at its final size and never

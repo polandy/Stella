@@ -1,7 +1,7 @@
 import { noteViewed } from './recent';
 
 /*
- * The adapter that keeps, per member and device, who was opened last (docs/02 §2.18.3): the
+ * The adapter that keeps, per member and device, who was opened last (docs/dev/02 §2.18.3): the
  * people the share sheet offers first. What the list means is `recent.ts`; this only reads and
  * writes it, through the slice of `Storage` it is handed, so it tests with a map. A device
  * preference, not a record — lost with the browser's storage, and nothing breaks.

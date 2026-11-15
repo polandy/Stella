@@ -2,7 +2,7 @@ import { describe, expect, it } from 'bun:test';
 import { ARGON2ID_PREFIX, hashPassword, hashPasswordSync, verifyPassword } from './password';
 
 /*
- * Local password hashing (Argon2id via Bun.password — no extra dependency, docs/04 §4.2).
+ * Local password hashing (Argon2id via Bun.password — no extra dependency, docs/dev/04 §4.2).
  * A thin adapter, verified by round-trip: a hash verifies against the right password and
  * rejects the wrong one, and hashing is salted (two hashes of the same password differ).
  */

@@ -12,7 +12,7 @@ import {
 } from './contact-source-repository';
 
 /*
- * Integration spec for the remembered answers of the matching review (docs/02 §2.16): they
+ * Integration spec for the remembered answers of the matching review (docs/dev/02 §2.16): they
  * belong to the household, they say nothing about a person the member may not browse, and the
  * people a card is matched against are only those the member may browse.
  */

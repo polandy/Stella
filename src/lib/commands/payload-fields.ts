@@ -1,11 +1,11 @@
 import * as v from 'valibot';
 
 /*
- * The fields every command payload is built from (docs/04 §4.11.2): ids, days, visibility and
+ * The fields every command payload is built from (docs/dev/04 §4.11.2): ids, days, visibility and
  * text as a form writes it. Pure and client-safe.
  */
 
-/** A ULID, the id format Stella uses everywhere (docs/03 §3.1), made on the device too. */
+/** A ULID, the id format Stella uses everywhere (docs/dev/03 §3.1), made on the device too. */
 export const CommandIdSchema = v.pipe(v.string(), v.regex(/^[0-9A-HJKMNP-TV-Z]{26}$/));
 
 /** An ISO calendar day. */

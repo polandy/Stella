@@ -8,7 +8,7 @@ import {
 import type { StoredPhoto } from './avatars';
 
 /*
- * Journal photo domain (docs/02 §2.20 / §2.14). Images are downscaled + EXIF-stripped in the
+ * Journal photo domain (docs/dev/02 §2.20 / §2.14). Images are downscaled + EXIF-stripped in the
  * browser; the server validates the bytes (magic-byte sniff + size) and stores them behind the
  * visibility model. A journal photo inherits the *entry's* visibility, so a private entry's
  * photos are private too. Pure use-case over storage/repository ports, tested with fakes.

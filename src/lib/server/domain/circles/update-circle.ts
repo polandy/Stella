@@ -10,7 +10,7 @@ import {
 } from './nesting';
 
 /*
- * Editing a circle (docs/02 §2.4.2): its name, kind, colour, description, period and the circle it
+ * Editing a circle (docs/dev/02 §2.4.2): its name, kind, colour, description, period and the circle it
  * belongs to — the one place a parent is chosen, checked as every move is (`./nesting`). Anyone who
  * sees the circle may, as anyone may rename its roles — a circle is a household fact. Its
  * visibility is not among the details: making a shared circle private would hide every

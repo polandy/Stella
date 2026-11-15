@@ -31,11 +31,11 @@ import { createFakeImmichGateway } from '../immich/fake-gateway';
 import { createHttpImmichGateway } from '../immich/http-gateway';
 
 /*
- * The `immich` bounded context of the composition root (docs/08 §8.3): the household's Immich
- * (docs/02 §2.24) — how to ask it, whose it is, where links point, the signer every image URL
+ * The `immich` bounded context of the composition root (docs/dev/08 §8.3): the household's Immich
+ * (docs/dev/02 §2.24) — how to ask it, whose it is, where links point, the signer every image URL
  * goes through, and the links, ignores and name ignores Stella keeps about it. Built once per
  * process by `createServices`; the edge reads it off `locals.services.immich`, which is null
- * when this instance has no Immich — the feature then appears nowhere (docs/04 §4.3).
+ * when this instance has no Immich — the feature then appears nowhere (docs/dev/04 §4.3).
  *
  * What an edge reads of Immich itself sits under its own name (`gateway`, `connection`,
  * `publicUrl`, `signer`); everything else is a use-case's `deps`, named after its type
@@ -47,13 +47,13 @@ export interface ImmichServices {
 	connection: ImmichConnection;
 	/** Immich's address as the browser reaches it. */
 	publicUrl: string;
-	/** Signs every image URL the browser gets for Immich (docs/02 §2.24.4). */
+	/** Signs every image URL the browser gets for Immich (docs/dev/02 §2.24.4). */
 	signer: ImmichMediaSigner;
 	/** The strip of a linked person's photos. */
 	immichGlimpseDeps: ImmichGlimpseDeps;
-	/** The whole library, for the picker beside a photo upload (docs/02 §2.24.9). */
+	/** The whole library, for the picker beside a photo upload (docs/dev/02 §2.24.9). */
 	immichLibraryDeps: ImmichLibraryDeps;
-	/** *On this day* from the whole library (docs/02 §2.12.1). */
+	/** *On this day* from the whole library (docs/dev/02 §2.12.1). */
 	immichMemoryDeps: ImmichMemoryDeps;
 	/** The signed proxy that serves every image from Immich. */
 	immichMediaDeps: ImmichMediaDeps;
@@ -67,12 +67,12 @@ export interface ImmichServices {
 	immichIgnoreDeps: ImmichIgnoreDeps;
 	/**
 	 * Keeping a photo from the Immich viewer as the person's own: the proxy's checks, then the
-	 * path every new avatar takes (docs/02 §2.14).
+	 * path every new avatar takes (docs/dev/02 §2.14).
 	 */
 	useImmichPhotoDeps: UseImmichPhotoDeps;
 	/** Linking a contact to an Immich person. */
 	immichLinkDeps: ImmichLinkDeps;
-	/** Referring to library photos from a journal entry (docs/02 §2.20, ADR-132). */
+	/** Referring to library photos from a journal entry (docs/dev/02 §2.20, ADR-132). */
 	entryImmichPhotoDeps: EntryImmichPhotoDeps;
 }
 

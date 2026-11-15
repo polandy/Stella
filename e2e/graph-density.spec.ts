@@ -12,10 +12,10 @@ import {
 import { LINK, personIdOf, seedHousehold } from './seed';
 
 /*
- * How dense the relationship map reads (docs/05 §5.8, docs/02 §2.7): the "+N" on a node that
+ * How dense the relationship map reads (docs/dev/05 §5.8, docs/dev/02 §2.7): the "+N" on a node that
  * can still grow, the Spacing choice, line names pausing on a busy map, the deceased mark and
  * what the keyboard cursor says. Written after the owner tried them in the running app
- * (docs/08 §8.4.1).
+ * (docs/dev/08 §8.4.1).
  *
  * A canvas has no DOM, so these read the renderer's own state through the instance Cytoscape
  * registers on its container — the classes and data the stylesheet draws from, and the style

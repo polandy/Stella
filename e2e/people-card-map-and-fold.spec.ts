@@ -2,10 +2,10 @@ import { expect, test, type Locator, type Page } from '@playwright/test';
 import { appReady, signIn } from './app';
 
 /*
- * The People card's map strip and its fold (docs/05 §5.5; UX review C8, C9): on a wide card
+ * The People card's map strip and its fold (docs/dev/05 §5.5; UX review C8, C9): on a wide card
  * the map is a preview strip with first names that enlarges in place, the list takes the
  * card's whole width, and a folded card says which groups it hides — each one a way to them.
- * Written after the owner tried it on the preview (docs/08 §8.4.1).
+ * Written after the owner tried it on the preview (docs/dev/08 §8.4.1).
  *
  * Read-only against the demo household. Markus Brunner has seven family, three friends and five
  * worked-out relatives; Daniel Brunner five family and four worked out; Kurt Lehmann three.

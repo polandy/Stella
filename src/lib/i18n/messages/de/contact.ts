@@ -85,7 +85,7 @@ export const contact: ContactMessages = {
 	'contact.address.removed': 'Anschrift entfernt',
 	'contact.address.another': 'Weitere Anschrift hinzufügen',
 
-	// Eine Anschrift, die alle teilen, die dort wohnen (docs/02 §2.2, *A shared home*).
+	// Eine Anschrift, die alle teilen, die dort wohnen (docs/dev/02 §2.2, *A shared home*).
 	'contact.home.livesWith': (p) => `wohnt mit ${p.names} zusammen`,
 	'contact.home.shared': (p) => `Geteilt · ${p.count} Personen`,
 	'contact.home.everyone': (p) => `Alle hier — ${p.names}`,
@@ -315,7 +315,7 @@ export const contact: ContactMessages = {
 	'contact.photos.takenOn': (p) => `Aufgenommen am ${p.date}`,
 	'contact.photos.pin': 'Als Favorit anheften',
 	'contact.photos.unpin': 'Favorit lösen',
-	// Profilbilder aus einem Gruppenfoto (docs/02 §2.14).
+	// Profilbilder aus einem Gruppenfoto (docs/dev/02 §2.14).
 	'contact.photos.cutFrom': (p) => `Aus ${p.circle}`,
 	'contact.photos.onGroupPhotos': 'Auf Gruppenfotos',
 	'contact.photos.groupPhotoOf': (p) => `Gruppenfoto von ${p.circle}`,

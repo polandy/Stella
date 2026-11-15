@@ -6,7 +6,7 @@ import { findForReview, prepareContactReview, reviewedPhotoTarget } from './revi
 import type { ContactSourceRepository, RememberedAnswer } from './source-links';
 
 /*
- * What the review step reads (docs/02 §2.16): the cards to answer with who each may be, a
+ * What the review step reads (docs/dev/02 §2.16): the cards to answer with who each may be, a
  * search among the people the member may browse, and whose photo a reviewed card's picture
  * becomes — decided by the remembered answer, never by the browser.
  */

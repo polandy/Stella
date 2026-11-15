@@ -23,7 +23,7 @@ import {
 } from '../layout/legibility';
 
 /*
- * Palette resolution + stylesheet building (docs/05 §5.6/§5.8), tested with a fake token
+ * Palette resolution + stylesheet building (docs/dev/05 §5.6/§5.8), tested with a fake token
  * reader so no DOM or Cytoscape is needed. Proves categories map to their fixed accents and
  * that every colour is sourced from a token.
  */
@@ -104,7 +104,7 @@ describe('resolvePalette', () => {
 });
 
 /*
- * The real stylesheet against the real tokens (docs/05 §5.9): on the canvas an edge is the
+ * The real stylesheet against the real tokens (docs/dev/05 §5.9): on the canvas an edge is the
  * only carrier of its category once the legend is off screen, so every line the explorer
  * draws has to clear the 3:1 non-text bar on the page ground in both themes.
  */

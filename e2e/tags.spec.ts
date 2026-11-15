@@ -2,15 +2,15 @@ import { expect, test, type Locator, type Page } from '@playwright/test';
 import { addPerson, addTag, openPeople, openPerson, profileRow, recordAction, signIn } from './app';
 
 /*
- * A tag lives exactly as long as someone carries it (docs/02 §2.8). There is no screen to
+ * A tag lives exactly as long as someone carries it (docs/dev/02 §2.8). There is no screen to
  * delete one from — a tag is created by naming it on a person — so the only ways one ever goes
  * are the last carrier putting it down, or that carrier being deleted outright. Both halves
  * end at the same place: the household's chip row above the people list, which must not keep a
  * chip that leads to an empty page. Written after the maintainer verified the flow in the
- * running app (docs/08 §8.4.1).
+ * running app (docs/dev/08 §8.4.1).
  *
  * Every assertion that a chip is *gone* is paired with a chip that must still be there
- * (`KEEPER_TAG`), asserted first — the settled-screen rule in docs/08 §8.4. Without that pair
+ * (`KEEPER_TAG`), asserted first — the settled-screen rule in docs/dev/08 §8.4. Without that pair
  * this file passes together with its own inverse, which is why an earlier attempt at the
  * second case was withdrawn (#101).
  *
@@ -28,7 +28,7 @@ const chip = (page: Page, name: string): Locator =>
 
 /**
  * Takes a tag off the person whose page is open. The removal is deferred behind the undo
- * toast (docs/02 §2.23), so it is not sent yet when this returns; `openPeople` is what commits
+ * toast (docs/dev/02 §2.23), so it is not sent yet when this returns; `openPeople` is what commits
  * it, by navigating client-side. Never wait on the undo window instead — it would be a race.
  */
 async function removeTag(page: Page, name: string): Promise<void> {

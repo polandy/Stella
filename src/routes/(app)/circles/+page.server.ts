@@ -13,7 +13,7 @@ import type { Actions, PageServerLoad } from './$types';
 import { createCircleFromForm } from './create-circle-form';
 
 /*
- * Circles overview (docs/02 §2.4.2, docs/05 §5.5): all visible circles with member counts and
+ * Circles overview (docs/dev/02 §2.4.2, docs/dev/05 §5.5): all visible circles with member counts and
  * cover photos, plus a create form whose colour palette pre-selects a still-unused Catppuccin accent.
  */
 export const load: PageServerLoad = async ({ locals }) => {
@@ -28,7 +28,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 
 	return {
 		circles,
-		// The nesting: top-level circles become cards, their sub-circles rows (docs/02 §2.4.2).
+		// The nesting: top-level circles become cards, their sub-circles rows (docs/dev/02 §2.4.2).
 		tree,
 		// Which sub-circles are over, on the server's clock so both renders agree.
 		today: todayFor(locals.services.circles.circleDeps.clock),

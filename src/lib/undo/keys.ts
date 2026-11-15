@@ -1,5 +1,5 @@
 /*
- * Keys for deferred removals (docs/02 §2.23). A key identifies one thing on screen for as
+ * Keys for deferred removals (docs/dev/02 §2.23). A key identifies one thing on screen for as
  * long as its undo window is open: the list that holds it hides the row whose key is pending,
  * and the store commits at most one removal per key.
  */

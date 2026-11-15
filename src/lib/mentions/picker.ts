@@ -1,7 +1,7 @@
 import { mentionKey, type MentionCandidate } from './mentions';
 
 /*
- * Pure helpers behind the @-mention picker in the moment composer (docs/02 §2.22.1). Kept out
+ * Pure helpers behind the @-mention picker in the moment composer (docs/dev/02 §2.22.1). Kept out
  * of the Svelte component so the caret/handle logic is unit-testable: find the handle being
  * typed at the caret, rank candidates for it, and splice the chosen handle back into the text.
  */
@@ -9,7 +9,7 @@ import { mentionKey, type MentionCandidate } from './mentions';
 /** Max suggestions the picker shows. */
 const PICKER_LIMIT = 5;
 
-/** A handle is `@` + letters/digits. The `@` must sit at a boundary (docs/02 §2.20.1). */
+/** A handle is `@` + letters/digits. The `@` must sit at a boundary (docs/dev/02 §2.20.1). */
 const HANDLE_AT_CARET = /(?<![\p{L}\p{N}@\\])@([\p{L}\p{N}]*)$/u;
 
 export interface ActiveHandle {
@@ -33,7 +33,7 @@ export function handleFor(c: MentionCandidate): string {
 }
 
 /**
- * Whom the picker offers for a moment that already belongs to `anchorId` (docs/02 §2.20.1):
+ * Whom the picker offers for a moment that already belongs to `anchorId` (docs/dev/02 §2.20.1):
  * everyone else, since naming the anchor would be the entry's own subject, not a mention.
  */
 export function pickableBeside<C extends { id: string }>(
@@ -47,7 +47,7 @@ export interface Suggestions<C extends MentionCandidate> {
 	people: C[];
 	/** Name to offer as "Create …", or null while the query is empty. */
 	create: string | null;
-	/** Somebody has that name already, so creating makes another one (docs/02 §2.2.3). */
+	/** Somebody has that name already, so creating makes another one (docs/dev/02 §2.2.3). */
 	createsAnother: boolean;
 }
 

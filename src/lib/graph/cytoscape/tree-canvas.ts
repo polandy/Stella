@@ -10,7 +10,7 @@ import {
 } from './canvas-classes';
 
 /*
- * What the canvas does for the arranged maps beyond moving people (docs/05 §5.8): bending and
+ * What the canvas does for the arranged maps beyond moving people (docs/dev/05 §5.8): bending and
  * routing their lines, and writing the family tree's "Outside the family" caption. Split from
  * `explorer.ts`, which drives the core and calls these; like the controller's other parts, it
  * touches the library only inside `cytoscape/`, and holds no domain rules.

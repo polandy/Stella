@@ -3,8 +3,8 @@ import { addPerson, fromPeopleMenu, openPerson, signIn } from './app';
 import { LINK, seedHousehold } from './seed';
 
 /*
- * The on-demand review on a person page (docs/02 §2.4.1). Written after the flow was verified
- * in the running app (docs/08 §8.4.1).
+ * The on-demand review on a person page (docs/dev/02 §2.4.1). Written after the flow was verified
+ * in the running app (docs/dev/08 §8.4.1).
  *
  * Every other suggestion is raised by a write and is gone on the next page load; this one is
  * asked for. So each case brings its links in by archive, where no form ever raised them, and
@@ -38,7 +38,7 @@ const last = (name: string) => name.split(' ')[1]!;
 
 /**
  * The sentence the rule gives for its claim: both facts it rests on, and every name in it a way
- * to that person (docs/02 §2.4.1). Naming only the sibling pair, as it once did, never mentioned
+ * to that person (docs/dev/02 §2.4.1). Naming only the sibling pair, as it once did, never mentioned
  * the person being offered — the one name the reader is asking about.
  */
 const reasonOf = (f: Family) =>
@@ -121,7 +121,7 @@ test('declining holds the no with who said it, and offering it again puts the cl
 
 	/*
 	 * The row goes at once, but the answer is only *held*: it reaches the drawer when it is sent,
-	 * and leaving the page is what sends it (docs/02 §2.23). The toast is the positive sign that
+	 * and leaving the page is what sends it (docs/dev/02 §2.23). The toast is the positive sign that
 	 * it is waiting rather than written.
 	 */
 	await expect(panel.getByTestId('kin-suggestion').filter({ hasText: claimOf(f) })).toHaveCount(0);

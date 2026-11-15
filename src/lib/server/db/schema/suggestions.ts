@@ -3,10 +3,10 @@ import type { Relation } from '../../../suggestions/types';
 import { now } from './columns';
 import { household, user } from './household';
 
-/* Suggestions the household declined (docs/03 §3.3). */
+/* Suggestions the household declined (docs/dev/03 §3.3). */
 
 /**
- * The claims the household has declined (docs/04 ADR-117).
+ * The claims the household has declined (docs/dev/04 ADR-117).
  *
  * Keyed by the **claim** — a relation over an unordered pair — and never by the rule that
  * surfaced it: declining "Wing Kam is Steve's parent" answers those two people, and the answer
@@ -25,7 +25,7 @@ export const suggestionDismissal = sqliteTable(
 			.references(() => household.id, { onDelete: 'cascade' }),
 		/**
 		 * A relationship claim's relation, `last_name` for a declined surname, or `same_address`
-		 * for a *Not the same* (docs/03 §3.9).
+		 * for a *Not the same* (docs/dev/03 §3.9).
 		 */
 		relation: text('relation').$type<Relation | 'last_name' | 'same_address'>().notNull(),
 		/**

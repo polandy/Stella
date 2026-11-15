@@ -7,7 +7,7 @@ import { fixedClock } from '../testing';
 import { immichMemoriesOn, immichMemoryPage, type ImmichMemoryDeps } from './immich';
 
 /*
- * *On this day* from Immich (docs/02 §2.12.1): any photo of the timeline taken on the day's day
+ * *On this day* from Immich (docs/dev/02 §2.12.1): any photo of the timeline taken on the day's day
  * and month in an earlier year, back to the oldest photo, a year at a time — each signed for the
  * viewer's household, as the library picker's are.
  */

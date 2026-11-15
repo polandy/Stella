@@ -2,7 +2,7 @@ import { describe, expect, it } from 'bun:test';
 import { strandedPlace } from './stranded';
 
 /*
- * An address that leads nowhere still lands inside Stella (docs/design/screens/across-screens.md):
+ * An address that leads nowhere still lands inside Stella (docs/dev/design/screens/across-screens.md):
  * the error screen names what was asked for and offers the way to its list. Pure, so which
  * address gets which way back is stated here.
  */

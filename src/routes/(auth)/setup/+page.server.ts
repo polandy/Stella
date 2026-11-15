@@ -8,11 +8,11 @@ import type { Actions, PageServerLoad } from './$types';
 
 /*
  * First-run setup: create the household and its break-glass admin. Only reachable while
- * no account exists yet (docs/02 §2.1).
+ * no account exists yet (docs/dev/02 §2.1).
  */
 
 /*
- * Validation messages are message keys (docs/02 §2.19): the page turns them into the
+ * Validation messages are message keys (docs/dev/02 §2.19): the page turns them into the
  * visitor's language, so the schema stays a single, language-free description of the form.
  */
 const SetupSchema = v.object({

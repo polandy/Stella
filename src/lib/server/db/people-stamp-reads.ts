@@ -13,7 +13,7 @@ import type * as schema from './schema';
 import { circle, circleMembership, contact, relationship, relationshipType } from './schema';
 
 /*
- * Drizzle adapter for the people stamp's markers (docs/04 §4.9). One statement of aggregates,
+ * Drizzle adapter for the people stamp's markers (docs/dev/04 §4.9). One statement of aggregates,
  * one value per table whatever the size of the household. `total()` beside `max()` catches a
  * change to a row that is not the latest one; `count()` catches an insert or a delete.
  */

@@ -15,9 +15,9 @@ import {
 import { noteActions as actions } from './notes';
 
 /*
- * Removing a note (docs/02 §2.5, docs/03 §3.7). The remove is held for the undo window and
+ * Removing a note (docs/dev/02 §2.5, docs/dev/03 §3.7). The remove is held for the undo window and
  * posted later; gone and not-yours are said alike with a 404, which that post reads as done
- * (docs/02 §2.23). The route only says who is asking — admin or not — and the domain decides.
+ * (docs/dev/02 §2.23). The route only says who is asking — admin or not — and the domain decides.
  */
 
 const t = createTranslator('en');
@@ -84,7 +84,7 @@ describe('removeNote', () => {
 });
 
 /*
- * Editing a note (docs/02 §2.5): the author's alone, online only. Gone and not-yours are said
+ * Editing a note (docs/dev/02 §2.5): the author's alone, online only. Gone and not-yours are said
  * alike with a 404; the route only reads the form and says who is asking.
  */
 function editable(written: { id: string; title: string | null; body: string }[]): FakeServices {

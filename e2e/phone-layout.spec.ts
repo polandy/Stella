@@ -3,8 +3,8 @@ import { signIn } from './app';
 import { clickFrame, clickNode, settled } from './graph-canvas';
 
 /*
- * The app on a phone, tuned for a Pixel 9 Pro (docs/05 §5.5, §5.8). Written after the
- * maintainer checked it on the phone itself (docs/08 §8.4.1).
+ * The app on a phone, tuned for a Pixel 9 Pro (docs/dev/05 §5.5, §5.8). Written after the
+ * maintainer checked it on the phone itself (docs/dev/08 §8.4.1).
  *
  * Read-only against the demo household. What it asks is geometry — which things share a row,
  * what stays on the screen — so every case measures the rendered page rather than trusting
@@ -12,7 +12,7 @@ import { clickFrame, clickNode, settled } from './graph-canvas';
  */
 
 const PIXEL_9_PRO = { width: 412, height: 915 };
-/** The room an open menu keeps from the edge of the map (docs/05 §5.8). */
+/** The room an open menu keeps from the edge of the map (docs/dev/05 §5.8). */
 const EDGE_MARGIN = 12;
 const LENA = 'demo-c-lena';
 const TURNVEREIN = 'demo-circle-turnverein';
@@ -93,7 +93,7 @@ test('a selected person’s panel is a strip along the bottom, above the tab bar
 	await settled(page);
 
 	// The centre is selected on arrival, so its panel is showing. Every link of hers is drawn
-	// already, so it offers no Expand and says why — on a phone too (docs/02 §2.7).
+	// already, so it offers no Expand and says why — on a phone too (docs/dev/02 §2.7).
 	const panel = page.getByRole('complementary').filter({ hasText: 'Lena Brunner' });
 	await expect(panel.getByRole('link', { name: 'Open profile' })).toBeVisible();
 	await expect(panel).toContainText('Everything linked here is already on the map.');

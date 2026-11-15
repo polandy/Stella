@@ -2,8 +2,8 @@ import { describe, expect, it } from 'bun:test';
 import { foundByJob, jobErrorFor, jobOf, jobShortForm } from './job';
 
 /*
- * A person's job title and company (docs/02 §2.2): one short form wherever they are shown, and
- * a tag on a search row that only the job explains (docs/02 §2.9).
+ * A person's job title and company (docs/dev/02 §2.2): one short form wherever they are shown, and
+ * a tag on a search row that only the job explains (docs/dev/02 §2.9).
  */
 
 const at = (p: { job: string; company: string }) => `${p.job} at ${p.company}`;

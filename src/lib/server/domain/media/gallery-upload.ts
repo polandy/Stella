@@ -5,7 +5,7 @@ import type { ImageMime, MediaStore, PhotoRepository } from './avatars';
 import { validateImageUpload, validateTakenAt, type ImageUpload } from './journal-photos';
 
 /*
- * Adding a photo to a person's gallery (docs/02 §2.14). The bytes are downscaled and
+ * Adding a photo to a person's gallery (docs/dev/02 §2.14). The bytes are downscaled and
  * EXIF-stripped in the browser, exactly as for journal photos (§2.20), so the same
  * validation applies here; what differs is that a gallery photo belongs to no entry and
  * carries its own visibility rather than inheriting one.

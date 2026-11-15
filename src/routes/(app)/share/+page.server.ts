@@ -6,7 +6,7 @@ import { sheetAddressFor } from '$lib/share/address';
 import type { Actions, PageServerLoad } from './$types';
 
 /*
- * The share sheet (docs/02 §2.18.3): what another app shared, saved about one person. The
+ * The share sheet (docs/dev/02 §2.18.3): what another app shared, saved about one person. The
  * service worker takes the share and keeps it on the device, so the page itself needs only who
  * was written about last, for whom it offers first; the people come with the shell.
  */

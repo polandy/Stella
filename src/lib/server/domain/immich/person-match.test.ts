@@ -9,7 +9,7 @@ import type { ImmichMediaSigner } from './signed-media';
 import { BERT_ID, CARL_ID, testLibrary } from './test-library';
 
 /*
- * The person page's suggestion (docs/02 §2.24.7): the one face *Find your people* would link in
+ * The person page's suggestion (docs/dev/02 §2.24.7): the one face *Find your people* would link in
  * one tap for this person, read the same way — or nothing. A maybe stays in the settings list.
  */
 

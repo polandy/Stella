@@ -9,7 +9,7 @@ import {
 
 /*
  * Session cookie helpers. The cookie holds the raw session token; it is httpOnly,
- * SameSite=Lax, and Secure only when served over HTTPS (docs/04 §4.7).
+ * SameSite=Lax, and Secure only when served over HTTPS (docs/dev/04 §4.7).
  */
 
 export const SESSION_COOKIE = 'stella_session';
@@ -67,7 +67,7 @@ export function clearOidcTransaction(cookies: Cookies): void {
 }
 
 /*
- * The language cookie (docs/02 §2.19). A signed-in user's profile is the real preference;
+ * The language cookie (docs/dev/02 §2.19). A signed-in user's profile is the real preference;
  * this remembers the same choice for the pages seen before signing in — the login screen
  * above all — and for the very first byte of a request, where `<html lang>` is decided.
  */

@@ -2,9 +2,9 @@ import { expect, test, type Locator, type Page } from '@playwright/test';
 import { WELCOME_EXIT } from '../src/lib/motion/welcome';
 
 /*
- * The welcome on start (docs/05 §5.11.4): once per session the constellation comes together and
+ * The welcome on start (docs/dev/05 §5.11.4): once per session the constellation comes together and
  * docks into the visible logo, or fades in place where there is none. Written after the owner
- * tried it on the phone and the desktop (docs/08 §8.4.1).
+ * tried it on the phone and the desktop (docs/dev/08 §8.4.1).
  *
  * Every context here is fresh, so its first page is a cold start. The overlay plays from the
  * first paint, before any test step could catch it, so an init script holds its animations

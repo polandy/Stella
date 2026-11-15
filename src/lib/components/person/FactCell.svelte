@@ -35,9 +35,9 @@
 	</dt>
 	<dd class="min-w-0 text-sm wrap-break-word text-fg">
 		{#if edit}
-			<!-- The pencil says where to edit, on touch too (docs/05 §5.7). -->
+			<!-- The pencil says where to edit, on touch too (docs/dev/05 §5.7). -->
 			<!-- Text flow, not flex: the pencil follows the value's last word on its last line and
-			     never wraps onto a line alone (docs/05 §5.7, edit-pencil.ts). -->
+			     never wraps onto a line alone (docs/dev/05 §5.7, edit-pencil.ts). -->
 			<button
 				type="button"
 				class="block max-w-full text-left after:absolute after:inset-0 after:rounded-control"

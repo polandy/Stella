@@ -2,7 +2,7 @@ import { describe, expect, it } from 'bun:test';
 import { readApiImportDocument } from './api-document';
 
 /*
- * The import API's front door (docs/02 §2.16.1): an untrusted JSON body in, either a typed
+ * The import API's front door (docs/dev/02 §2.16.1): an untrusted JSON body in, either a typed
  * document or every shape problem at its path. What the document *means* is the planner's
  * business; here it is only whether it is well-formed.
  */

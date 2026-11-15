@@ -9,7 +9,7 @@
 	import type { PersonPageData } from './types';
 
 	/*
-	 * The People card's map (docs/05 §5.5): who this person is connected to as a shape, at the
+	 * The People card's map (docs/dev/05 §5.5): who this person is connected to as a shape, at the
 	 * card's top. A server-drawn preview on every width — a wide strip with first names on a
 	 * wide card, a small ring on a phone — that enlarges into the interactive explorer inside the
 	 * card, or opens it full screen.
@@ -30,7 +30,7 @@
 		new Map(data.graph.nodes.map((node) => [node.id, node.avatarPhotoId ?? null]))
 	);
 	/*
-	 * A removal is held for its undo window before it is sent (docs/02 §2.23), and the list
+	 * A removal is held for its undo window before it is sent (docs/dev/02 §2.23), and the list
 	 * hides the row for that whole window. The map agrees with the list: were it to keep the
 	 * link, it would vanish by itself eight seconds later, which reads as a slow save rather
 	 * than a window that was there to be used.

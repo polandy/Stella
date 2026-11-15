@@ -2,9 +2,9 @@ import { expect, test } from '@playwright/test';
 import { mentionNew, serverToday, signIn } from './app';
 
 /*
- * *On this day* (docs/02 §2.12.1): a moment written on today's date in an earlier year comes
+ * *On this day* (docs/dev/02 §2.12.1): a moment written on today's date in an earlier year comes
  * back in Home's band, and opens its entry. Written after the owner verified the band and the
- * page in the running app (docs/08 §8.4.1).
+ * page in the running app (docs/dev/08 §8.4.1).
  *
  * Ottilie is invented here and absent from the demo dataset. The day is the app's own — the
  * page's picker stops at the server's today — so the spec never reads the runner's clock.

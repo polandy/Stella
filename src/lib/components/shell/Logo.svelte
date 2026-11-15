@@ -6,7 +6,7 @@
 		wordmark?: boolean;
 		/** Show the tagline under the wordmark (implies wordmark). */
 		tagline?: boolean;
-		/** The shell's logo: the welcome on start docks into it (docs/05 §5.11.4, `src/app.html`). */
+		/** The shell's logo: the welcome on start docks into it (docs/dev/05 §5.11.4, `src/app.html`). */
 		welcomeTarget?: boolean;
 	}
 	let { size = 32, wordmark = false, tagline = false, welcomeTarget = false }: Props = $props();

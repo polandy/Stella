@@ -4,10 +4,10 @@ import { appReady, fromPeopleMenu, signIn } from './app';
 import { LINK, seedHousehold } from './seed';
 
 /*
- * Every link that means a person's Relationships card lands on it (docs/05 §5.5): the card's
+ * Every link that means a person's Relationships card lands on it (docs/dev/05 §5.5): the card's
  * own *Check relationships*, and from Settings → Relationships the person's name and *Open
  * all*. They once spelled `#relationships`, an id nothing carries, and opened at the top of the
- * page. Written after the owner tried them on the phone (docs/08 §8.4.1).
+ * page. Written after the owner tried them on the phone (docs/dev/08 §8.4.1).
  *
  * A short window, so the card starts below the fold and only a real jump brings it into view.
  * Markus is read-only here; the Settings case seeds a family of its own (the Imboden surname is

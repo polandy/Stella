@@ -2,7 +2,7 @@
 
 /*
  * Keeping pages before they are read: the `KEPT_AHEAD` pages and every person the member can
- * see (docs/02 §2.18, docs/04 ADR-114). `$lib/pwa/people-ahead` decides; this runs the plan.
+ * see (docs/dev/02 §2.18, docs/dev/04 ADR-114). `$lib/pwa/people-ahead` decides; this runs the plan.
  */
 
 import { KEPT_AHEAD, NETWORK_PATIENCE_MS, cacheKeyFor } from '$lib/pwa/cache-policy';
@@ -39,7 +39,7 @@ let lastPeopleRefresh: number | null = null;
 let peopleRefresh: Promise<void> | null = null;
 
 /**
- * Keep every person the member can see readable offline (docs/02 §2.18, docs/04 ADR-114):
+ * Keep every person the member can see readable offline (docs/dev/02 §2.18, docs/dev/04 ADR-114):
  * drop the pages of anyone no longer visible, then revalidate each person's pages and fetch
  * the avatars not yet kept. One request at a time, in the background, while Stella answers.
  */

@@ -4,7 +4,7 @@ import { foldName } from '../../../import-match/normalise';
 import { fingerprint } from '../import/vcard-lines';
 
 /*
- * What a changed linked card brings in (docs/02 §2.16.3), worked out three ways: the card now,
+ * What a changed linked card brings in (docs/dev/02 §2.16.3), worked out three ways: the card now,
  * the card as Stella last saw it (the base), and the person. Only what changed *on the card*
  * since the base counts — so a value Stella dropped is not brought back because the card still
  * has it, and a name Stella changed is not a conflict because the card still says the old one.

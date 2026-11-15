@@ -15,7 +15,7 @@ import type { Actions, PageServerLoad } from './$types';
 import { readArrangeForm, readUndoForm } from './arrange-form';
 
 /*
- * Arrange people (docs/02 §2.4.2, ADR-127): the circle and every sub-circle below it as cards of
+ * Arrange people (docs/dev/02 §2.4.2, ADR-127): the circle and every sub-circle below it as cards of
  * the people directly in them, and the two posts of the screen — a batch move or copy, and the
  * Undo of one. The answer of a batch carries the receipt, which Undo posts back and the domain
  * checks again.

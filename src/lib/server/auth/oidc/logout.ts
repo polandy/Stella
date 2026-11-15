@@ -2,14 +2,14 @@ import { buildEndSessionUrl } from './logout-url';
 import type { OidcProvider } from './login';
 
 /*
- * RP-initiated logout (docs/02 §2.1). Signing out of Stella always succeeds locally; this
+ * RP-initiated logout (docs/dev/02 §2.1). Signing out of Stella always succeeds locally; this
  * only decides whether to also bounce the browser through the provider so the SSO session
  * ends there too. Everything that can go wrong here degrades to a local sign-out.
  */
 
 /**
  * Where the browser lands once it is signed out, locally or on the way back from the
- * provider. Registered at the provider as the post-logout redirect URI (docs/07).
+ * provider. Registered at the provider as the post-logout redirect URI (docs/dev/07).
  */
 export const SIGNED_OUT_PATH = '/login?signedOut=1';
 

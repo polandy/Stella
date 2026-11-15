@@ -2,15 +2,15 @@ import { expect, test, type Locator, type Page } from '@playwright/test';
 import { appReady, signIn } from './app';
 
 /*
- * The one expand/collapse motion (docs/05 §5.11): a row folding and unfolding in place, turned
+ * The one expand/collapse motion (docs/dev/05 §5.11): a row folding and unfolding in place, turned
  * round mid-way, the People card's list growing and shrinking, and a line gliding into its
- * editor and back. Written after the owner tried it in the running app (docs/08 §8.4.1).
+ * editor and back. Written after the owner tried it in the running app (docs/dev/08 §8.4.1).
  *
  * Read-only against the demo household: Markus Brunner's page, whose rows are only folded and
  * whose name editor is only opened and escaped from (identity-card.spec.ts and
  * people-card.spec.ts read him the same way).
  *
- * Nothing here is timed (docs/08 §8.4.2). The page records every step the motion primitive
+ * Nothing here is timed (docs/dev/08 §8.4.2). The page records every step the motion primitive
  * takes — each `data-motion` a gliding box is given, each reveal that lands or leaves, each
  * pane that turns inert on its way out — and the cases wait on that record, never on 300 ms.
  */

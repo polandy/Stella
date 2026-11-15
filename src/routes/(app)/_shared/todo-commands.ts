@@ -9,8 +9,8 @@ import { requireViewer } from '$lib/server/auth/guards';
 import { say, translator } from '$lib/server/i18n/say';
 
 /*
- * A to-do changed from a form (docs/02 §2.26). The person's To-dos card posts these commands
- * (docs/04 §4.11.2) today; the household's list of every open to-do will post the same ones and
+ * A to-do changed from a form (docs/dev/02 §2.26). The person's To-dos card posts these commands
+ * (docs/dev/04 §4.11.2) today; the household's list of every open to-do will post the same ones and
  * answer the same way, which is why this is shared rather than the card's own.
  */
 
@@ -80,7 +80,7 @@ export async function applyTodoCommand(
 		reading.command
 	);
 	if (outcome.status === 'refused') {
-		// A to-do already gone answers 404: a held remove reads that as done (docs/02 §2.23).
+		// A to-do already gone answers 404: a held remove reads that as done (docs/dev/02 §2.23).
 		const gone = outcome.error instanceof TodoGoneError;
 		return failure(outcome.reason(translator(locals)), gone ? 404 : 400);
 	}

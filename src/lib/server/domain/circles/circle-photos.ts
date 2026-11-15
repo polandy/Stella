@@ -21,15 +21,15 @@ import type { CircleRepository } from './circles';
 import type { CircleMembershipReads } from './memberships';
 
 /*
- * The photos of a circle (docs/02 §2.4.2). A circle photo is a
- * photo like a person's (docs/02 §2.14) — processed in the browser, shared or private, captioned,
+ * The photos of a circle (docs/dev/02 §2.4.2). A circle photo is a
+ * photo like a person's (docs/dev/02 §2.14) — processed in the browser, shared or private, captioned,
  * pinned — that belongs to one circle and to nobody's gallery, and may carry one of the
  * circle's roles.
  *
  * Who may do what differs from the person gallery on purpose (concept §4): the caption, the
  * role and the pin describe the household's view of the circle, so anyone who can see the
  * photo may change them; shared/private and removing stay with whoever added it. Reading is
- * scoped by the repository through the access layer (docs/03 §3.7).
+ * scoped by the repository through the access layer (docs/dev/03 §3.7).
  */
 
 /** A circle photo, resolved for the page. */
@@ -294,7 +294,7 @@ export async function setCirclePhotoRole(
 
 /**
  * Pin a photo as a favourite, or unpin it. A pin is the household's, as on a person's photos
- * (docs/02 §2.14); pinning one that is already pinned keeps its first pin.
+ * (docs/dev/02 §2.14); pinning one that is already pinned keeps its first pin.
  */
 export async function pinCirclePhoto(
 	deps: Pick<CirclePhotoDeps, 'circlePhotos' | 'clock'>,

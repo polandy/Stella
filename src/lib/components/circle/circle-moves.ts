@@ -5,7 +5,7 @@ import type { Removals } from '$lib/undo/context.svelte';
 import { ACTION_HEADER } from '$lib/undo/submit-action';
 
 /*
- * Moving a circle from its page without a form (docs/02 §2.4.2): the sub-circles card's *Add
+ * Moving a circle from its page without a form (docs/dev/02 §2.4.2): the sub-circles card's *Add
  * existing* and *Detach*, and every *Undo* of a move. No confirmation step: the move happens, a
  * toast says where the circle is now, and its *Undo* posts the circle back through the same
  * checked action (ADR-126). An adapter — it holds the fetch and the reload, nothing to decide.

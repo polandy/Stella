@@ -12,7 +12,7 @@ import {
 } from './device-unlock';
 
 /*
- * The browser side of device unlock (docs/02 §2.10.1): WebAuthn for the prompts, the device's
+ * The browser side of device unlock (docs/dev/02 §2.10.1): WebAuthn for the prompts, the device's
  * storage for the fact that it is set up. The rules are in `device-unlock.ts`.
  *
  * A browser that has no passkey on this device's own authenticator — or no WebAuthn at all, as

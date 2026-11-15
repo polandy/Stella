@@ -9,7 +9,7 @@ import { hasNothingTyped, type Distinguishable } from '../../../people/namesakes
 
 /*
  * What a namesake's second line may fall back on when nothing was typed to tell them apart
- * (docs/02 §2.2.3): their relationships and circles, as far as the viewer may see them. The
+ * (docs/dev/02 §2.2.3): their relationships and circles, as far as the viewer may see them. The
  * adapter scopes both reads through the access layer, so the browser is never sent a link or a
  * circle it could not open.
  */

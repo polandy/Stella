@@ -13,7 +13,7 @@
 	import { INPUT } from './inputs';
 
 	/*
-	 * A touchpoint corrected in place (docs/02 §2.6): the log form's fields but who sees it,
+	 * A touchpoint corrected in place (docs/dev/02 §2.6): the log form's fields but who sees it,
 	 * which stays as it was. Its author's alone; online only, like removing.
 	 */
 	let {

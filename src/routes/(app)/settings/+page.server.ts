@@ -10,10 +10,10 @@ import { APP_VERSION } from '$lib/version';
 import type { Actions, PageServerLoad } from './$types';
 
 /**
- * Settings landing (docs/02 §2.17): the language, who you are, privacy, the data-quality checks,
+ * Settings landing (docs/dev/02 §2.17): the language, who you are, privacy, the data-quality checks,
  * the admin "Data" section, Immich when it is configured, and the "About" line.
  *
- * The release check is handed over as a promise on purpose (docs/02 §2.17.1): the page is
+ * The release check is handed over as a promise on purpose (docs/dev/02 §2.17.1): the page is
  * rendered and sent at once, and the line about a newer version fills itself in when GitHub
  * answers — so an instance that cannot reach it still opens Settings immediately.
  */
@@ -36,14 +36,14 @@ export const load: PageServerLoad = async ({ locals }) => {
 		nextcloudConflicts,
 		version: APP_VERSION,
 		update: check?.status() ?? null,
-		// Immich's line (docs/02 §2.24.1), streamed like the release check; null
+		// Immich's line (docs/dev/02 §2.24.1), streamed like the release check; null
 		// when this instance has no Immich, and then the section is not there at all.
 		immich: locals.services.immich?.connection.status() ?? null
 	};
 };
 
 export const actions: Actions = {
-	/* "Which of these people am I?" (docs/02 §2.1.3). An empty pick clears the link. */
+	/* "Which of these people am I?" (docs/dev/02 §2.1.3). An empty pick clears the link. */
 	setSelf: async ({ request, locals }) => {
 		const user = requireUser(locals);
 		const viewer = requireViewer(locals);
@@ -67,7 +67,7 @@ export const actions: Actions = {
 		return { selfSaved: say(locals, 'settings.self.saved') };
 	},
 
-	/* *Blur my private entries* (docs/02 §2.10.1), the member's own. The switch posts `on` or nothing. */
+	/* *Blur my private entries* (docs/dev/02 §2.10.1), the member's own. The switch posts `on` or nothing. */
 	setBlur: async ({ request, locals }) => {
 		const user = requireUser(locals);
 		const on = (await request.formData()).get('blur') === 'on';

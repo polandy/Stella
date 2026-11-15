@@ -20,8 +20,8 @@ const anyOf = (texts: string[]) =>
 	new RegExp(texts.map((text) => text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|'));
 
 /*
- * The photo gallery on a person (docs/02 §2.14). Written after the maintainer verified the
- * flow in the app (docs/08 §8.4.1). Runs against the demo dataset as the demo admin, on a
+ * The photo gallery on a person (docs/dev/02 §2.14). Written after the maintainer verified the
+ * flow in the app (docs/dev/08 §8.4.1). Runs against the demo dataset as the demo admin, on a
  * person no other spec photographs, since the suite shares one database.
  */
 
@@ -103,7 +103,7 @@ test('marks a private photo in the grid and lets its owner share it', async ({ p
 	const grid = page.getByTestId('photo-grid');
 	await expect(grid.getByTitle('Private — only you can see this')).toHaveCount(1);
 
-	// Blurred on its owner's screen until asked for (docs/02 §2.10.1).
+	// Blurred on its owner's screen until asked for (docs/dev/02 §2.10.1).
 	await grid.getByRole('button', { name: 'Private photo, hidden. Show' }).click();
 	await grid.getByRole('button').first().click();
 	const lightbox = page.getByTestId('photo-lightbox');
@@ -136,7 +136,7 @@ test('wears a gallery photo as the avatar, and gives it back when the photo is r
 	// Removing the photo takes the face with it rather than leaving a broken one.
 	await lightbox.getByRole('button', { name: 'Remove' }).click();
 	// The photo is gone from the grid at once, with Undo on offer; the page settles when the
-	// 8-second window closes (docs/02 §2.23).
+	// 8-second window closes (docs/dev/02 §2.23).
 	await expect(lightbox).toBeHidden();
 	await expect(grid.getByRole('button')).toHaveCount(0);
 	await expect(page.getByRole('button', { name: 'Undo' })).toBeVisible();

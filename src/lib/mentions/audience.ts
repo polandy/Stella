@@ -1,5 +1,5 @@
 /*
- * Who a piece of writing is allowed to name (docs/02 §2.20.1). A shared note, entry or moment
+ * Who a piece of writing is allowed to name (docs/dev/02 §2.20.1). A shared note, entry or moment
  * may reference only people the whole household can see — otherwise the mention would leak a
  * private person's existence; a private one may reference anyone its author can see.
  *

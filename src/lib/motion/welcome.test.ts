@@ -12,7 +12,7 @@ import {
 const end = (part: keyof typeof WELCOME_SEQUENCE) =>
 	WELCOME_SEQUENCE[part].delayMs + WELCOME_SEQUENCE[part].durationMs;
 
-describe('whether a start is welcomed (docs/05 §5.11.4)', () => {
+describe('whether a start is welcomed (docs/dev/05 §5.11.4)', () => {
 	it('animates the first start of a session', () => {
 		expect(shouldWelcome(null, false)).toBe('animate');
 	});

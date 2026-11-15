@@ -2,7 +2,7 @@ import type { GlimpseScope, ImmichGlimpse } from '$lib/immich/strip';
 
 /*
  * A page of a linked person's latest photos from Immich, with signed URLs, as the Photos card,
- * the picture's chooser and *Find in Immich* ask for it (docs/02 §2.24.2, §2.24.3, §2.24.6). Null when it
+ * the picture's chooser and *Find in Immich* ask for it (docs/dev/02 §2.24.2, §2.24.3, §2.24.6). Null when it
  * could not be had, which both take quietly: the Photos card's line already says what is wrong.
  */
 export async function fetchGlimpse(

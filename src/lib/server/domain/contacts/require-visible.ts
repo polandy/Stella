@@ -3,10 +3,10 @@ import { phrase } from '../../../i18n/phrase';
 import type { ContactLookup } from './contacts';
 
 /*
- * The check every addition on a person starts with (docs/03 §3.7): the person must be one the
+ * The check every addition on a person starts with (docs/dev/03 §3.7): the person must be one the
  * author can see. Online the page could not have been opened otherwise; a command kept on a
  * phone may arrive after the person was deleted, merged away or made private, and is refused
- * with a reason the member can read (docs/02 §2.18.2).
+ * with a reason the member can read (docs/dev/02 §2.18.2).
  */
 
 /** The person something is being added to is not one the author can see (any more). */

@@ -3,7 +3,7 @@ import { now, type Visibility } from './columns';
 import { household, user } from './household';
 import { contact } from './people';
 
-/* Circles and their members (docs/03 §3.3). */
+/* Circles and their members (docs/dev/03 §3.3). */
 
 export const circle = sqliteTable(
 	'circle',

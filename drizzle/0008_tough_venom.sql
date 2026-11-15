@@ -1,4 +1,4 @@
--- A relationship that is on record holds until someone ends it (docs/02 §2.4), so the
+-- A relationship that is on record holds until someone ends it (docs/dev/02 §2.4), so the
 -- status loses its unset state: rows written before the column meant anything — and any
 -- value the model never knew — carry over as 'current'; only 'former' is kept as said.
 PRAGMA foreign_keys=OFF;--> statement-breakpoint

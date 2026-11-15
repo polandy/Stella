@@ -7,7 +7,7 @@ import {
 } from './members';
 
 /*
- * Who wrote what (docs/02 §2.23): the story names the member behind each item, so a household
+ * Who wrote what (docs/dev/02 §2.23): the story names the member behind each item, so a household
  * of several people can tell "Markus wrote this" from "you wrote this". The rule that matters
  * is the boundary — only the viewer's own household is ever read.
  */
@@ -55,7 +55,7 @@ describe('authorNames', () => {
 		expect(nameOf('u9')).toBeNull();
 	});
 
-	it('still names a member an admin removed, on what they wrote (docs/02 §2.1)', async () => {
+	it('still names a member an admin removed, on what they wrote (docs/dev/02 §2.1)', async () => {
 		const nameOf = await authorNames(deps, 'h1');
 
 		expect(nameOf('u3')).toBe('Nina Brunner');

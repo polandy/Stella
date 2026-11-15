@@ -1,7 +1,7 @@
 import type { GiftState } from './gifts';
 
 /*
- * The *already given* hint (docs/02 §2.25.2). Pure, so the gift form asks it on every keystroke
+ * The *already given* hint (docs/dev/02 §2.25.2). Pure, so the gift form asks it on every keystroke
  * without a round trip — the person page already holds every gift the reader may see. It is a
  * hint, not a block: the second tin of her favourite tea can be on purpose.
  */

@@ -1,6 +1,6 @@
 /*
- * Which Immich person a contact probably is, by name (docs/02 §2.24.7). Pure: the
- * *Find your people* list (docs/02 §2.24.7) reads the household's contacts and Immich's named
+ * Which Immich person a contact probably is, by name (docs/dev/02 §2.24.7). Pure: the
+ * *Find your people* list (docs/dev/02 §2.24.7) reads the household's contacts and Immich's named
  * people through the access layer and the gateway, and this decides what to propose.
  *
  * A name agreeing is a hint, not a proof — the face settles it. So the rules only decide how
@@ -197,7 +197,7 @@ export function matchImmichPeople(input: MatchInput): ImmichMatch[] {
 
 /**
  * The face a person's row offers for one tap, or null: only a `likely` row has one — a maybe
- * asks, so it stays in the settings list (docs/02 §2.24.7). Read off the whole list's rows, so
+ * asks, so it stays in the settings list (docs/dev/02 §2.24.7). Read off the whole list's rows, so
  * a face two people share a full name with is a doubt here as it is there.
  */
 export function likelyMatchFor(rows: readonly ImmichMatch[], contactId: string): string | null {

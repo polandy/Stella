@@ -6,7 +6,7 @@ import type * as schema from './schema';
 import { contact, entryTag, journalEntry, journalEntryTag } from './schema';
 
 /*
- * The write behind an entry's tags (docs/02 §2.20.2), shared by every path that leaves an entry
+ * The write behind an entry's tags (docs/dev/02 §2.20.2), shared by every path that leaves an entry
  * with a body: the journal repository, a restore, and the one-off reading of entries written
  * before tags existed. Which tags an entry has is the domain's reading of its body; this keeps
  * the household's set in step with it.

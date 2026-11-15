@@ -11,7 +11,7 @@
 	import { FocusReturn } from '$lib/ui/focus-return.svelte';
 
 	/*
-	 * Edit one line where it is read (docs/02 §2.2, docs/05 §5.7). Click the value, a field
+	 * Edit one line where it is read (docs/dev/02 §2.2, docs/dev/05 §5.7). Click the value, a field
 	 * appears in its place, Enter saves and Escape puts it back. It is a real form posting to a
 	 * real action, so it works without JavaScript too — then the field is simply always open.
 	 *
@@ -38,7 +38,7 @@
 		/**
 		 * Show the pencil beside the value at full strength, always. For a value that does not
 		 * look editable on its own — a small heading. Without it the pencil is the faint one every
-		 * in-place value carries (docs/05 §5.7): always on touch, on hover or focus elsewhere.
+		 * in-place value carries (docs/dev/05 §5.7): always on touch, on hover or focus elsewhere.
 		 */
 		pencil?: boolean;
 		/**
@@ -75,7 +75,7 @@
 	let draft = $state('');
 	let field = $state<HTMLInputElement | null>(null);
 	const open = $derived(editing || error !== null);
-	// Saving says *Saved* in the toast region like every other form (docs/05 §5.7).
+	// Saving says *Saved* in the toast region like every other form (docs/dev/05 §5.7).
 	const saved = savedEnhance(useRemovals(), t('components.saved'), () => (editing = false));
 
 	function start() {
@@ -156,7 +156,7 @@
 		<!-- The pencil follows the value with no whitespace, which would join a heading's text. A
 		     one-line value is only as wide as its text, so the pencil beside it sits right after
 		     the last word. A clamped value wraps and would push a sibling pencil to the column's
-		     edge, so there the pencil goes inside it, after the last word (docs/05 §5.7); when the clamp cuts the value, the pencil goes with the cut tail —
+		     edge, so there the pencil goes inside it, after the last word (docs/dev/05 §5.7); when the clamp cuts the value, the pencil goes with the cut tail —
 		     the whole value is still the button. -->
 		{#if value && clamp}
 			<span

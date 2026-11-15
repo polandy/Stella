@@ -3,7 +3,7 @@ import { isTakenAt } from '../../../media/taken-at';
 import { isImmichId, type ImmichImageSize } from './gateway';
 
 /*
- * The signature on every Immich image URL Stella hands out (docs/02 §2.24.4, docs/04 ADR-097).
+ * The signature on every Immich image URL Stella hands out (docs/dev/02 §2.24.4, docs/dev/04 ADR-097).
  * The proxy never takes a bare Immich id: it takes a token Stella issued after the access layer
  * let the viewer see a contact, naming that contact, the Immich person and — for a photo — the
  * asset and its size, with an expiry. Guessing ids, or reusing ones seen elsewhere, gets nothing.
@@ -26,18 +26,18 @@ export type SignableImmichMedia =
 			size: ImmichImageSize;
 			/**
 			 * When Immich says it was taken, signed into a preview so *Use as photo* dates the copy
-			 * by what Immich said rather than by what a browser sends (docs/02 §2.24.6). Absent when
+			 * by what Immich said rather than by what a browser sends (docs/dev/02 §2.24.6). Absent when
 			 * Immich does not say, and on a thumbnail, where nothing reads it.
 			 */
 			takenAt?: string;
 			/**
-			 * For a photo of two people together (docs/02 §2.24.8, *You and Julia*): the other person
+			 * For a photo of two people together (docs/dev/02 §2.24.8, *You and Julia*): the other person
 			 * and the Immich person they were linked to when the photo was listed. The photo is then
 			 * served only while the viewer sees both and both links still hold.
 			 */
 			together?: ImmichCompanion;
 			/**
-			 * For a photo of someone else, browsed from a face they hold in *Find in Immich* (docs/02
+			 * For a photo of someone else, browsed from a face they hold in *Find in Immich* (docs/dev/02
 			 * §2.24.2): the contact whose Immich person `personId` is. `contactId` is still the person
 			 * the photo was listed for — the one *Use as photo* gives it to, linked or not. Served only
 			 * while the viewer sees both and `heldBy` is still linked to `personId`.
@@ -52,7 +52,7 @@ export type SignableImmichMedia =
 	  }
 	| {
 			/**
-			 * A face of *New from Immich* (docs/02 §2.24.7): someone Immich names whom no contact
+			 * A face of *New from Immich* (docs/dev/02 §2.24.7): someone Immich names whom no contact
 			 * holds, so there is no contact to sign for. Signed for the member's household instead,
 			 * and served only while nobody holds the face.
 			 */
@@ -62,7 +62,7 @@ export type SignableImmichMedia =
 	  }
 	| {
 			/**
-			 * A photo of the whole library, from the picker beside a photo upload (docs/02 §2.24.9):
+			 * A photo of the whole library, from the picker beside a photo upload (docs/dev/02 §2.24.9):
 			 * any member may browse every photo in it, so it is signed for the member's household,
 			 * whoever is in it. `takenAt` as on a `photo`: signed into a preview, so a gallery copy is
 			 * dated by what Immich said.
@@ -94,7 +94,7 @@ export interface ImmichMediaSigner {
 }
 
 /**
- * How long a token works: a day (docs/02 §2.24.4). The proxy answers `no-store`, so a URL is
+ * How long a token works: a day (docs/dev/02 §2.24.4). The proxy answers `no-store`, so a URL is
  * only ever used by the page that received it; the expiry bounds a page left open, and a URL
  * that escaped the page, not a cache.
  */

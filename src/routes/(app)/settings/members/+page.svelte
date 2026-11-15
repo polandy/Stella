@@ -8,9 +8,9 @@
 	import type { PageData } from './$types';
 
 	/*
-	 * The household's members (docs/02 §2.1): who signs in, and how. An admin removes any other
+	 * The household's members (docs/dev/02 §2.1): who signs in, and how. An admin removes any other
 	 * member from their row, after the confirm step; the member then moves to *Former members*,
-	 * and the toast has no Undo — a removal is confirmed, not held back (docs/05 §5.7). There,
+	 * and the toast has no Undo — a removal is confirmed, not held back (docs/dev/05 §5.7). There,
 	 * *Restore…* brings a former member back, after a confirm step of its own.
 	 */
 	let { data }: { data: PageData } = $props();

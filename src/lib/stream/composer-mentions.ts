@@ -21,7 +21,7 @@ import type {
 } from './composer-state';
 
 /*
- * The composer's @-mentions (docs/02 §2.22.1): the text carrying its picks across an edit, the
+ * The composer's @-mentions (docs/dev/02 §2.22.1): the text carrying its picks across an edit, the
  * list under the caret, a row chosen, and a person created inline. `composerAfter` in
  * `composer-state.ts` routes the events here.
  */
@@ -99,7 +99,7 @@ export function chosen(
 /** Queue the new person with the moment and mention them by their placeholder. */
 export function addCreated(state: ComposerState, key: string): ComposerStep {
 	const { creating } = state;
-	// Stella refuses a first name alone (docs/02 §2.2.3); the button says so by staying off.
+	// Stella refuses a first name alone (docs/dev/02 §2.2.3); the button says so by staying off.
 	if (!creating || !creating.firstName.trim() || !isKnownByMoreThanAFirstName(creating))
 		return only(state);
 	const person: MomentNewPerson = {

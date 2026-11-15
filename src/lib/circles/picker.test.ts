@@ -3,7 +3,7 @@ import { pickerRows, searchPickerRows, subCircleKindFor, type PickerRow } from '
 import { circleTree, type TreeCircle } from './tree';
 
 /*
- * The circle picker (docs/02 §2.4.2): every circle the reader sees, as a tree, with the ones that
+ * The circle picker (docs/dev/02 §2.4.2): every circle the reader sees, as a tree, with the ones that
  * cannot be chosen still there and saying why. Choosing a parent and adding an existing circle
  * rule out different circles; neither lets a circle land inside itself.
  */

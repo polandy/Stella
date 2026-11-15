@@ -17,7 +17,7 @@ import {
 import { removeJournalEntry } from './journal';
 
 /*
- * Removing a journal entry (docs/02 §2.20, docs/03 §3.7): its author always, an admin on a
+ * Removing a journal entry (docs/dev/02 §2.20, docs/dev/03 §3.7): its author always, an admin on a
  * shared one. Wired to the real adapter, because the photos inside it, its mentions and the
  * activity entry in the same transaction live there.
  */

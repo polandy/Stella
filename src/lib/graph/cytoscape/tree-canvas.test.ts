@@ -4,7 +4,7 @@ import { bendLines, CAPTION_ID, writeCaption } from './tree-canvas';
 import { BOWED_CLASS, CAPTION_CLASS, ROUTE_FIELDS, ROUTED_CLASS } from './canvas-classes';
 
 /*
- * The arranged maps' lines and the family tree's caption, against a headless core (docs/05
+ * The arranged maps' lines and the family tree's caption, against a headless core (docs/dev/05
  * §5.8). The controller's own cases (`explorer-arranging.test.ts`) cover how it calls these; here, what
  * each leaves on the canvas.
  */

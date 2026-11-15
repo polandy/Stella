@@ -1,5 +1,5 @@
 /*
- * Where an import came from (docs/02 §2.16). The wizard accepts three files and reads all of
+ * Where an import came from (docs/dev/02 §2.16). The wizard accepts three files and reads all of
  * them into one typed view; this names the three and the prefix each puts on its source ids.
  */
 

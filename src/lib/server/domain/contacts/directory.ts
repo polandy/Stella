@@ -3,19 +3,19 @@ import { isKnownByAFirstNameOnly } from '../../../people/namesakes';
 import type { ContactSummary, DistinguishableContact } from './contacts';
 
 /*
- * The household's people as the screens list them (docs/02 §2.2): the directory, the archive,
+ * The household's people as the screens list them (docs/dev/02 §2.2): the directory, the archive,
  * the first-name-only clean-up and Home's first-run card. A read model, apart from the
- * `ContactRepository` that writes a contact (docs/08 §8.3) — the reads change with the
+ * `ContactRepository` that writes a contact (docs/dev/08 §8.3) — the reads change with the
  * screens, the writes with the record, and a test of a list should not have to fake an insert.
  *
- * Every read is scoped to the viewer by the adapter, through the access layer (docs/03 §3.7).
+ * Every read is scoped to the viewer by the adapter, through the access layer (docs/dev/03 §3.7).
  */
 
 /** The people lists, read through the access layer. */
 export interface ContactDirectoryReads {
-	/** The people the household browses — archived ones left out (docs/02 §2.2) — by name. */
+	/** The people the household browses — archived ones left out (docs/dev/02 §2.2) — by name. */
 	listVisibleTo(viewer: Viewer): Promise<ContactSummary[]>;
-	/** The archived ones, which every other list leaves out (docs/02 §2.2). */
+	/** The archived ones, which every other list leaves out (docs/dev/02 §2.2). */
 	listArchivedVisibleTo(viewer: Viewer): Promise<ContactSummary[]>;
 	/** How many `listArchivedVisibleTo` would list. */
 	countArchivedVisibleTo(viewer: Viewer): Promise<number>;
@@ -24,7 +24,7 @@ export interface ContactDirectoryReads {
 	 * only needs to know whether there is anybody (else), not who (Home's first-run card).
 	 */
 	listSomeBrowsableIdsVisibleTo(viewer: Viewer, limit: number): Promise<string[]>;
-	/** What tells each browsable person apart (docs/02 §2.2.3), without the rest of the record. */
+	/** What tells each browsable person apart (docs/dev/02 §2.2.3), without the rest of the record. */
 	listDistinguishableVisibleTo(viewer: Viewer): Promise<DistinguishableContact[]>;
 }
 
@@ -41,7 +41,7 @@ export async function listContacts(
 }
 
 /**
- * How many browsable people are known by a first name alone (docs/02 §2.2.3) — the number on
+ * How many browsable people are known by a first name alone (docs/dev/02 §2.2.3) — the number on
  * the Settings card — counted by the clean-up list's own rule over just the columns it reads.
  */
 export async function countKnownByAFirstNameOnly(
@@ -55,7 +55,7 @@ export async function countKnownByAFirstNameOnly(
 /**
  * Enough of the household's browsable people to tell whether it holds anybody besides the
  * viewer's own record: two ids, so one more than the self record can ever be. Home's first-run
- * card (docs/02 §2.22.3) asks this on every visit, so it must not read the whole household.
+ * card (docs/dev/02 §2.22.3) asks this on every visit, so it must not read the whole household.
  */
 export async function listPeopleEnoughForFirstRun(
 	deps: ContactDirectoryDeps,

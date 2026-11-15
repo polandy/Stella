@@ -19,7 +19,7 @@ describe('sinceDateFromBirth', () => {
 	});
 
 	it('dates a directed link from the younger one alone, whose birthday may be the only one on file', () => {
-		// "Godparent of" is a household's own type (docs/02 §2.4): the forward side names the
+		// "Godparent of" is a household's own type (docs/dev/02 §2.4): the forward side names the
 		// elder role, so the godparent's own birthday need not be known.
 		expect(sinceDateFromBirth(parentOf, { birthDate: null }, child)).toBe('2015-05-20');
 	});
@@ -52,7 +52,7 @@ describe('sinceDateFromBirth', () => {
 	});
 
 	it('suggests nothing from a birth date that names no whole day', () => {
-		// A day-and-month birthday (docs/03 §3.4) says nothing about *when* the link began,
+		// A day-and-month birthday (docs/dev/03 §3.4) says nothing about *when* the link began,
 		// and an estimated year is not a day at all.
 		expect(sinceDateFromBirth(parentOf, parent, { birthDate: '--05-20' })).toBe('');
 		expect(sinceDateFromBirth(parentOf, parent, { birthDate: '2015' })).toBe('');

@@ -1,8 +1,8 @@
 <!--
   @component
-  The photos of an entry being edited (docs/02 §2.20): its stored ones and the Immich ones it
+  The photos of an entry being edited (docs/dev/02 §2.20): its stored ones and the Immich ones it
   refers to, each with a × that marks it for removal on save, and the ones picked since — from the
-  device, or from Immich as references (docs/04 ADR-132). Taking an Immich photo off never
+  device, or from Immich as references (docs/dev/04 ADR-132). Taking an Immich photo off never
   deletes it in Immich.
 -->
 <script lang="ts">

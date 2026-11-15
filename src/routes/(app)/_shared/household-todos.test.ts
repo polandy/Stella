@@ -7,7 +7,7 @@ import { answerOf, formOf, routeEvent, type FakeServices } from '$lib/server/tes
 import { householdTodoActions, householdTodoView } from './household-todos';
 
 /*
- * The household's to-dos beyond one person (docs/02 §2.26): Home's band and `/todos` show them
+ * The household's to-dos beyond one person (docs/dev/02 §2.26): Home's band and `/todos` show them
  * in the card's words and tick them there. Neither has a person in its URL, so the form names
  * them and the access layer checks it, as on the gift list.
  */

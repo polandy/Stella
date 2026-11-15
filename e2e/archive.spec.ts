@@ -2,8 +2,8 @@ import { expect, test, type Page } from '@playwright/test';
 import { appReady, mention, openPerson, recordAction, signIn } from './app';
 
 /*
- * Putting someone out of the way (docs/02 §2.2). Written after the flow was verified in the
- * running app (docs/08 §8.4.1).
+ * Putting someone out of the way (docs/dev/02 §2.2). Written after the flow was verified in the
+ * running app (docs/dev/08 §8.4.1).
  *
  * The suite shares one demo database and runs serially, and this file runs first, so every
  * case archives and restores within itself — the next spec must find the Brunners exactly as
@@ -94,7 +94,7 @@ test('keeps an archived person in the family, only out of the lists', async ({ p
 
 	// And they are still on the other side of the link: Stella works out grandparents and
 	// cousins *through* people, so forgetting one would make it name the rest wrongly
-	// (docs/04 §4.9). The map is a canvas now (docs/05 §5.8), so the list is where this is
+	// (docs/dev/04 §4.9). The map is a canvas now (docs/dev/05 §5.8), so the list is where this is
 	// read — it is drawn from the same relationships.
 	await openPerson(page, /Thomas Widmer/);
 	await expect(page.locator('#section-relationships')).toContainText(WHO);
@@ -120,7 +120,7 @@ test('keeps their name in something already written about them', async ({ page }
 	await archiveOpenPerson(page);
 
 	// Archiving empties the lists people pick from, not the sentences that name them: the
-	// chip must still read her name and not "@unknown" (docs/02 §2.2).
+	// chip must still read her name and not "@unknown" (docs/dev/02 §2.2).
 	await page.getByRole('link', { name: 'Home' }).first().click();
 	const moment = page.locator('article').filter({ hasText: 'Walked the Aare' }).first();
 	await expect(moment.locator('a.mention', { hasText: WHO })).toHaveCount(1);
@@ -134,7 +134,7 @@ test('stops suggesting an archived person when a new one is added', async ({ pag
 	await openPerson(page, new RegExp(WHO));
 	await archiveOpenPerson(page);
 
-	// The duplicate/relative hint reads its own list of candidates (docs/02 §2.2.1).
+	// The duplicate/relative hint reads its own list of candidates (docs/dev/02 §2.2.1).
 	await page.goto('/contacts/new');
 	await page.getByLabel('Last name').fill('Widmer');
 	await page.getByLabel('Last name').blur();

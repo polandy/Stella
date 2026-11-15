@@ -22,8 +22,8 @@ import type { KinshipGraphReads } from '../domain/relationships/suggestion-revie
 
 /*
  * Integration spec for the relationships' read models: a person's ties, labelled from their
- * side, and the kinship graph the engine infers from (docs/02 §2.4.1). Both show a link only
- * when both endpoints are visible (docs/03 §3.7).
+ * side, and the kinship graph the engine infers from (docs/dev/02 §2.4.1). Both show a link only
+ * when both endpoints are visible (docs/dev/03 §3.7).
  */
 
 const H = 'household-1';
@@ -97,7 +97,7 @@ describe('listForContactVisibleTo', () => {
 		expect(forHans[0]).toMatchObject({ otherDisplayName: 'Bettina', label: 'Child of' });
 	});
 
-	it('carries the specifics back out from both sides (docs/02 §2.4)', async () => {
+	it('carries the specifics back out from both sides (docs/dev/02 §2.4)', async () => {
 		seedContact('kurt', 'Kurt', 'shared');
 		await repo.insert({
 			id: 'rel-partner',
@@ -170,7 +170,7 @@ describe('listForContactVisibleTo', () => {
 	});
 });
 
-describe('loadKinshipGraphVisibleTo (docs/02 §2.4.1)', () => {
+describe('loadKinshipGraphVisibleTo (docs/dev/02 §2.4.1)', () => {
 	/** Bettina is Otto's child and Hans's parent; the private pair is only U2's to see. */
 	beforeEach(async () => {
 		seedContact('otto', 'Otto', 'shared');
@@ -219,7 +219,7 @@ describe('loadKinshipGraphVisibleTo (docs/02 §2.4.1)', () => {
 	});
 
 	it('marks a former partnership, so nothing is derived through it', async () => {
-		// docs/02 §2.4: the link stays on record — it is the derivation that stops, so the
+		// docs/dev/02 §2.4: the link stays on record — it is the derivation that stops, so the
 		// ex-partner is never offered as a stepparent to the children again.
 		db.update(schema.relationship)
 			.set({ status: FORMER_RELATIONSHIP_STATUS })
@@ -234,7 +234,7 @@ describe('loadKinshipGraphVisibleTo (docs/02 §2.4.1)', () => {
 		expect(deriveKinship(graph, 'hans').map((k) => k.personId)).not.toContain('kurt');
 	});
 
-	// Rule L3 tells a step-parent by these two dates (docs/02 §2.4.1).
+	// Rule L3 tells a step-parent by these two dates (docs/dev/02 §2.4.1).
 	it('carries the birth dates and the day a partnership began', async () => {
 		db.update(schema.contact)
 			.set({ birthDate: '2015-05-20' })
@@ -265,7 +265,7 @@ describe('loadKinshipGraphVisibleTo (docs/02 §2.4.1)', () => {
 });
 
 /*
- * Correcting and taking back a link (docs/02 §2.4). Both are scoped through
+ * Correcting and taking back a link (docs/dev/02 §2.4). Both are scoped through
  * `relationshipVisibleTo`, so a relationship touching someone the viewer cannot see is
  * indistinguishable from one that is not there — and neither writes anything in that case.
  */

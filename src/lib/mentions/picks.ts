@@ -3,7 +3,7 @@ import { handleFor } from './picker';
 import { newPersonMentionId, type MomentNewPerson } from '../commands/commands';
 
 /*
- * Remembering whom a picked `@Handle` stands for (docs/02 §2.20.1). The field shows the
+ * Remembering whom a picked `@Handle` stands for (docs/dev/02 §2.20.1). The field shows the
  * readable `@Thomas`, and a handle alone cannot say which of two people called Thomas was
  * meant — so the picker remembers the pick against the range of text it wrote, and on saving
  * that range becomes the person's id token. Pure and client-safe: the pickers carry picks

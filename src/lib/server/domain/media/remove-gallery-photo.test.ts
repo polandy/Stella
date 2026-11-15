@@ -18,7 +18,7 @@ import {
 import { removeGalleryPhoto } from './gallery';
 
 /*
- * Removing a person's photo (docs/02 §2.14, docs/03 §3.7): whoever added it always, an admin on
+ * Removing a person's photo (docs/dev/02 §2.14, docs/dev/03 §3.7): whoever added it always, an admin on
  * a shared one. Wired to the real adapter: its framing, the avatar that wore it and the
  * activity entry in the same transaction live there.
  */

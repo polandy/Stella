@@ -46,26 +46,26 @@
 	import { ulid } from 'ulid';
 
 	/*
-	 * The "What happened?" field (docs/02 §2.22.1). A plain textarea that posts natively; the
+	 * The "What happened?" field (docs/dev/02 §2.22.1). A plain textarea that posts natively; the
 	 * @-picker, inline "Create …" queue and browser-side photo processing are enhancements.
 	 *
 	 * With JavaScript it saves as a named command through the outbox, in reach or not
-	 * (docs/02 §2.18.1, docs/04 ADR-076): in reach it waits for Stella's answer, and
+	 * (docs/dev/02 §2.18.1, docs/dev/04 ADR-076): in reach it waits for Stella's answer, and
 	 * when there is none it keeps the moment on the device. The name is what makes that safe: a
 	 * moment whose answer was lost on the way is recognised when it arrives a second time.
 	 * `editing` opens a kept moment that has not been sent yet.
 	 *
 	 * A person picked in the list is remembered against the `@Handle` it wrote and saved as their
-	 * id token, so two people called Thomas stay two people (docs/02 §2.2.3, `picks.ts`).
+	 * id token, so two people called Thomas stay two people (docs/dev/02 §2.2.3, `picks.ts`).
 	 * Creating somebody opens a small panel for their name and what to know them by; the text
 	 * then mentions them by a placeholder the server swaps for their id once it has them.
 	 *
-	 * With an `anchor` it is written on that person's own page (docs/02 §2.20): the moment
+	 * With an `anchor` it is written on that person's own page (docs/dev/02 §2.20): the moment
 	 * belongs to them without an `@`, shown as a chip above the field, and `@` offers everyone
 	 * else. There it saves in place (`onSaved`), can be cancelled (`onCancel`) and reports what
 	 * is typed (`onDraft`), so the page can keep a draft while the spot holds another form.
 	 *
-	 * `#` offers the household's tags (docs/02 §2.20.2) from a list of its own beside the state
+	 * `#` offers the household's tags (docs/dev/02 §2.20.2) from a list of its own beside the state
 	 * below: a chosen tag comes back as typed text, so the transitions never learn about tags.
 	 */
 
@@ -96,7 +96,7 @@
 		onDraft?: (draft: MomentDraft) => void;
 		/** The tags the author can see, for the `#` list. */
 		tags?: readonly KnownTag[];
-		/** Immich is on the instance: the photo button offers *From Immich* (docs/02 §2.24.9). */
+		/** Immich is on the instance: the photo button offers *From Immich* (docs/dev/02 §2.24.9). */
 		immichLibrary?: boolean;
 		/** The households the author can see, offered in one tap beside the moment's person. */
 		homes?: readonly HomeMembers[];
@@ -195,7 +195,7 @@
 	const fresh = $derived(ui.fresh);
 	const photoCount = $derived(ui.photos.length + ui.immichPhotos.length);
 	/*
-	 * *From Immich* opens on the moment's day as the day field says it now (docs/02 §2.24.9).
+	 * *From Immich* opens on the moment's day as the day field says it now (docs/dev/02 §2.24.9).
 	 */
 	let libraryOpen = $state(false);
 	let libraryDay = $state('');
@@ -517,7 +517,7 @@
 					: reachability.reachable
 						? t('common.save')
 						: t('composer.saveForLater')}
-				<!-- A keyboard's shortcut; a touch screen has no keys to press (docs/05 §5.7). -->
+				<!-- A keyboard's shortcut; a touch screen has no keys to press (docs/dev/05 §5.7). -->
 				<kbd
 					class="rounded border border-primary-fg/40 px-1 text-[10px] font-medium opacity-75 pointer-coarse:hidden"
 					>⌘⏎</kbd

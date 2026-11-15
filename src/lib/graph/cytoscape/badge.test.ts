@@ -3,7 +3,7 @@ import { contrastRatio, AA_TEXT } from '../../design/color';
 import { expandBadge } from './badge';
 
 /*
- * The "+N" a node wears while expanding it would bring more people onto the map (docs/05
+ * The "+N" a node wears while expanding it would bring more people onto the map (docs/dev/05
  * §5.8). The canvas cannot draw a DOM badge, so the badge is a small image; these hold what it
  * says and that it is drawn in the colours it is handed.
  */

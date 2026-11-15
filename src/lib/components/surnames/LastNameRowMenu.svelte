@@ -8,7 +8,7 @@
 	import type { SurnamePersonView } from './types';
 
 	/*
-	 * A row's ⋯ menu on the *Last names* list (docs/02 §2.2.4.2), the same in every section:
+	 * A row's ⋯ menu on the *Last names* list (docs/dev/02 §2.2.4.2), the same in every section:
 	 * whatever the section puts first (the lower-ranked names), then *Not Brunner* for each name
 	 * proposed, then *No last name*, which settles the person. Both answers are saved at once,
 	 * with Undo in the toast.

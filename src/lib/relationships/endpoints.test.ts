@@ -10,7 +10,7 @@ import {
 const relationshipPair = (from: string, to: string, symmetric: boolean): Endpoints =>
 	brandedPair(from, to, symmetric);
 
-/* A relationship's two ends in the order they are stored (docs/03 §3.3 relationship). */
+/* A relationship's two ends in the order they are stored (docs/dev/03 §3.3 relationship). */
 
 describe('relationshipPair', () => {
 	it('keeps the given order for a one-way type: from is the forward-label side', () => {

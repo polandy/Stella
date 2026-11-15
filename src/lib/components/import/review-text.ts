@@ -5,7 +5,7 @@ import type { CardLabel } from '$lib/import-match/card';
 import type { Fact } from '$lib/import-match/merge-plan';
 
 /*
- * How the review step words a card's facts (docs/02 §2.16): one place, so both sides of a
+ * How the review step words a card's facts (docs/dev/02 §2.16): one place, so both sides of a
  * card and the conflicts read alike.
  */
 

@@ -11,7 +11,7 @@ import type { GraphModel } from './model/types';
 import { exportedModel, lifeYearsOf, lifeYearsWords, type ExportChoices } from './tree-export';
 
 /*
- * The family tree as it goes onto a picture or a page (docs/02 §2.7): the tree on screen, less
+ * The family tree as it goes onto a picture or a page (docs/dev/02 §2.7): the tree on screen, less
  * what stays in the household, written for paper. Pure; `cytoscape/tree-image.ts` draws it.
  *
  * It is laid out afresh, so a private person left out leaves no gap, and every caption is read
@@ -26,7 +26,7 @@ export interface SceneInput {
 	centerId: string | null;
 	/** The tree around a person, which writes everybody's role towards them under the name. */
 	rolesInstead: boolean;
-	/** The reader asked for every derived line (docs/02 §2.7). */
+	/** The reader asked for every derived line (docs/dev/02 §2.7). */
 	allKinship: boolean;
 	choices: Pick<ExportChoices, 'dates' | 'withPrivate'>;
 	t: Translate;

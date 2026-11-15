@@ -14,7 +14,7 @@
 	type Item = Extract<PageData['stream'][number], { kind: 'interaction' }>;
 
 	/*
-	 * A call, a visit or another logged contact, as the stream shows it (docs/02 §2.22.2): who
+	 * A call, a visit or another logged contact, as the stream shows it (docs/dev/02 §2.22.2): who
 	 * logged what with whom, its title veiled when private (§2.10.1), and who else was there.
 	 * The row's cells; Home draws the row.
 	 */

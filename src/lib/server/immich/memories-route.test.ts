@@ -7,7 +7,7 @@ import { answerImmichMemories } from './memories-route';
 import { IMMICH_MEDIA_CACHE_CONTROL } from './routes';
 
 /*
- * What `/immich/on-this-day` answers (docs/02 §2.12.1): every earlier year's photos of a day, or a
+ * What `/immich/on-this-day` answers (docs/dev/02 §2.12.1): every earlier year's photos of a day, or a
  * further page of one year. Every refusal is checked against a gateway that records its calls, so
  * "refused" also means "Immich was never asked".
  */

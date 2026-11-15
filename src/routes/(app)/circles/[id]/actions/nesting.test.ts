@@ -10,7 +10,7 @@ import { answerOf, formOf, routeEvent, type FakeServices } from '$lib/server/tes
 import { nestingActions as actions } from './nesting';
 
 /*
- * Moving a circle from the sub-circles card (docs/02 §2.4.2): *Add existing*, *Detach*, and the
+ * Moving a circle from the sub-circles card (docs/dev/02 §2.4.2): *Add existing*, *Detach*, and the
  * *Undo* of each — and of the edit form's *Belongs to* — all post here. The answer carries the
  * move, so the toast's *Undo* puts back exactly what was there; `moveCircle` has its own suite.
  */

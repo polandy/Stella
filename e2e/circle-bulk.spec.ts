@@ -3,7 +3,7 @@ import { addPerson, appReady, signIn } from './app';
 
 /*
  * Filling a circle from one search, and changing the role of several members at once
- * (docs/02 §2.4.2). Written after the screens were seen in the running app (docs/08 §8.4.1).
+ * (docs/dev/02 §2.4.2). Written after the screens were seen in the running app (docs/dev/08 §8.4.1).
  * Every case invents its own people and circle, so none reads another case's data or disturbs
  * the demo household the other specs measure.
  */

@@ -9,7 +9,7 @@ import type { MemoryPhotoView, MemoryRowView, MemoryYearView } from '$lib/memori
 const MEMORY_LINE_LENGTH = 90;
 
 /*
- * *On this day* as Home's band and `/on-this-day` show it (docs/02 §2.12.1): one quiet row per
+ * *On this day* as Home's band and `/on-this-day` show it (docs/dev/02 §2.12.1): one quiet row per
  * memory — the faces, the first line, and where tapping it lands. Shared so the band and the page
  * read a memory the same way; the kind's label and the veil's words are the component's, in the
  * reader's language.

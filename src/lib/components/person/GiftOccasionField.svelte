@@ -4,7 +4,7 @@
 	import { INPUT } from './inputs';
 
 	/*
-	 * A gift's occasion (docs/02 §2.25): Birthday, Christmas, Anniversary as chips, or *Other…*
+	 * A gift's occasion (docs/dev/02 §2.25): Birthday, Christmas, Anniversary as chips, or *Other…*
 	 * with a field for the member's own wording. Two fields — the chip and the text — so the form
 	 * works without JavaScript too; `occasionFromForm` reads them the same way on both sides.
 	 * Optional: a chip pressed again lets go, and nothing chosen stores no occasion.

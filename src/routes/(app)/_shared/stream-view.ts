@@ -9,7 +9,7 @@ import { renderMarkdownWithMentions } from '$lib/server/domain/notes/markdown';
 import type { StreamItem } from '$lib/server/domain/stream/stream';
 
 /*
- * Stream items as a page shows them (docs/02 §2.22.2): a moment's Markdown rendered here, its
+ * Stream items as a page shows them (docs/dev/02 §2.22.2): a moment's Markdown rendered here, its
  * mentions named as the viewer may see them, and its tags leading to the tag's own page
  * (§2.20.2). Shared by Home and a tag's page, so a moment reads the same on both.
  */

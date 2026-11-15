@@ -1,4 +1,4 @@
-/* Private entries blurred on their author's screen until shown (docs/02 §2.10.1). */
+/* Private entries blurred on their author's screen until shown (docs/dev/02 §2.10.1). */
 
 export const privacy = {
 	/* On the veil itself: a tap shows the entry, or asks the device's check first. */

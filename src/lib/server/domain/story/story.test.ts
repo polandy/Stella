@@ -13,7 +13,7 @@ import type { DatedGift } from '../gifts/gifts';
 import type { DoneTodo } from '../todos/todos';
 
 /*
- * The story timeline (docs/02 §2.23): one chronological read over four sources that are
+ * The story timeline (docs/dev/02 §2.23): one chronological read over four sources that are
  * paginated separately. The merge is pure, so every ordering and cursor rule is checked here
  * rather than through a route.
  */

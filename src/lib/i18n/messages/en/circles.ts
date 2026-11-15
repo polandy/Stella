@@ -1,4 +1,4 @@
-/* Circles: the shared contexts people belong to (docs/02 §2.4.2). */
+/* Circles: the shared contexts people belong to (docs/dev/02 §2.4.2). */
 
 export const circles = {
 	'circles.title': 'Circles · Stella',
@@ -23,14 +23,14 @@ export const circles = {
 		p.count === 1 ? '1 member' : `${p.count} members`,
 	'circles.nobodyYet': 'Nobody in it yet',
 	'circles.private': 'private',
-	// The circle page's ⋯ menu and editing a circle's details (docs/02 §2.4.2).
+	// The circle page's ⋯ menu and editing a circle's details (docs/dev/02 §2.4.2).
 	'circles.menu': 'More actions',
 	'circles.edit.open': 'Edit circle',
 	'circles.edit.label': (p: { name: string }) => `Edit ${p.name}`,
 	'circles.edit.period': 'Period (optional)',
 	'circles.edit.start': 'Starts',
 	'circles.edit.end': 'Ends',
-	// Deleting a circle: the ⋯ menu's item and its confirm step (docs/02 §2.4.2).
+	// Deleting a circle: the ⋯ menu's item and its confirm step (docs/dev/02 §2.4.2).
 	'circles.delete.open': 'Delete circle…',
 	'circles.delete.label': (p: { name: string }) => `Delete ${p.name}?`,
 	'circles.delete.counting': 'Counting what goes…',
@@ -100,7 +100,7 @@ export const circles = {
 	'circles.noMembers.add': 'Add the first members',
 	'circles.noMembers.hint':
 		'Add the people who share this context; each of them will show it on their page.',
-	// The circle's photos (docs/02 §2.4.2).
+	// The circle's photos (docs/dev/02 §2.4.2).
 	'circles.photos.title': 'Photos',
 	'circles.photos.none': 'No photos yet.',
 	'circles.photos.add': 'Add photos',
@@ -128,7 +128,7 @@ export const circles = {
 	'circles.photos.ownerOnly': 'Only you can do this, because you added it:',
 	'circles.photos.previous': 'Previous photo',
 	'circles.photos.next': 'Next photo',
-	// A profile picture cut from a group photo (docs/02 §2.14).
+	// A profile picture cut from a group photo (docs/dev/02 §2.14).
 	'circles.cut.use': 'Use as profile picture for …',
 	'circles.cut.dialog': 'Use as profile picture',
 	'circles.cut.whom': 'Whose profile picture is on this photo?',
@@ -169,7 +169,7 @@ export const circles = {
 			: p.count === 1
 				? '1 circle found'
 				: `${p.count} circles found`,
-	// Sub-circles: a circle inside another (docs/02 §2.4.2).
+	// Sub-circles: a circle inside another (docs/dev/02 §2.4.2).
 	'circles.sub.count': (p: { count: number }) =>
 		p.count === 1 ? '1 sub-circle' : `${p.count} sub-circles`,
 	'circles.sub.inside': (p: { count: number }) => `+${p.count} inside`,
@@ -196,7 +196,7 @@ export const circles = {
 	// The name field's example, fitting the kind a new sub-circle is likely to be.
 	'circles.sub.placeholder.class': 'e.g. Class 3a',
 	'circles.sub.placeholder.team': 'e.g. Under-12s',
-	// *Belongs to*: the one place a circle's parent is set (docs/02 §2.4.2).
+	// *Belongs to*: the one place a circle's parent is set (docs/dev/02 §2.4.2).
 	'circles.parent.label': 'Belongs to',
 	'circles.parent.labelOptional': 'Belongs to (optional)',
 	'circles.parent.none': 'None',
@@ -223,7 +223,7 @@ export const circles = {
 	'circles.picker.alreadyIn': 'already in it',
 	'circles.picker.movesFrom': (p: { name: string }) => `now in ${p.name} – will be moved`,
 	'circles.picker.footer': 'A circle can’t sit inside itself or one of its sub-circles.',
-	// Arrange people: move or copy people between a circle and its sub-circles (docs/02 §2.4.2).
+	// Arrange people: move or copy people between a circle and its sub-circles (docs/dev/02 §2.4.2).
 	'circles.arrange.open': 'Arrange people',
 	'circles.arrange.title': (p: { name: string }) => `Arrange people · ${p.name}`,
 	'circles.arrange.heading': 'Arrange people',

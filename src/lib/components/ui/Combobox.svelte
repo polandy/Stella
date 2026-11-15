@@ -5,7 +5,7 @@
 
 	/*
 	 * A plain text field that suggests values already in use — a circle's roles, a household's
-	 * circle names — without ever requiring a pick (docs/05 §5.7, alongside the person search
+	 * circle names — without ever requiring a pick (docs/dev/05 §5.7, alongside the person search
 	 * select and mention field's listbox pattern). It posts one named field, exactly like a bare
 	 * `<input>` would: replaces `<input list=… >` + `<datalist>`, which Mobile Safari never shows
 	 * a dropdown for.

@@ -4,7 +4,7 @@ import { DEFAULT_VIEW_SWITCHES, viewSwitchPreference } from './view-switches';
 
 /*
  * The Filter menu's switches are a habit of the reader's, so this browser keeps them
- * (docs/05 §5.8). The storage is handed in: a map stands in for `localStorage` here.
+ * (docs/dev/05 §5.8). The storage is handed in: a map stands in for `localStorage` here.
  */
 
 function memoryStorage(): PreferenceStorage & { entries: Map<string, string> } {

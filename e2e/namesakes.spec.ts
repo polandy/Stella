@@ -2,9 +2,9 @@ import { expect, test, type Page } from '@playwright/test';
 import { appReady, signIn } from './app';
 
 /*
- * Telling namesakes apart (docs/02 §2.2.3): the second line under a shared name in ⌘K and
+ * Telling namesakes apart (docs/dev/02 §2.2.3): the second line under a shared name in ⌘K and
  * the person pickers, and the nudge for a description when a last name is missing. Written
- * after the maintainer checked both on the phone (docs/08 §8.4.1).
+ * after the maintainer checked both on the phone (docs/dev/08 §8.4.1).
  *
  * The suite shares one database, so every first name here is absent from the demo seed and
  * from every other spec, and each case adds the people it looks for. The relationship form

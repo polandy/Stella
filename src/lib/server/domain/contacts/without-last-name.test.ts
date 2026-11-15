@@ -3,7 +3,7 @@ import type { Contact } from './contacts';
 import { askAgainForLastName, settleWithoutLastName } from './without-last-name';
 
 /*
- * *No last name* on the Last names list (docs/02 §2.2.4.2): the household's answer that a
+ * *No last name* on the Last names list (docs/dev/02 §2.2.4.2): the household's answer that a
  * person has none, kept on the person, and *Ask again*, which takes it back.
  */
 

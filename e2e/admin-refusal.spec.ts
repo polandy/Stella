@@ -4,11 +4,11 @@ import { appReady, signIn } from './app';
 import { personIdOf, seedHousehold } from './seed';
 
 /*
- * The admin-only pages (docs/02 §2.16 import, §2.17 "Data") refuse a member who opens them by
- * hand with a 403 in the member's own language, and still open for the admin (docs/04 §4.4).
- * Deleting and merging a person is the admin's alone too (docs/03 §3.7): a member is offered
+ * The admin-only pages (docs/dev/02 §2.16 import, §2.17 "Data") refuse a member who opens them by
+ * hand with a 403 in the member's own language, and still open for the admin (docs/dev/04 §4.4).
+ * Deleting and merging a person is the admin's alone too (docs/dev/03 §3.7): a member is offered
  * neither, and a hand-made post of either is refused.
- * Written after the owner checked it in the running app (docs/08 §8.4.1). Nina's profile names
+ * Written after the owner checked it in the running app (docs/dev/08 §8.4.1). Nina's profile names
  * no language, so a browser that asks for German is answered in German — no account is changed.
  */
 

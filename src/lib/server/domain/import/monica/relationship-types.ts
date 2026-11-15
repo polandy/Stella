@@ -1,8 +1,8 @@
 import type { RelationshipCategory } from '../../../../relationships/categories';
 
 /*
- * How Monica's relationship type names land in Stella (docs/02 §2.16; the full table is in
- * docs/monica-mapping.md). Monica stores every link twice, once per direction, each with its
+ * How Monica's relationship type names land in Stella (docs/dev/02 §2.16; the full table is in
+ * docs/user/monica-mapping.md). Monica stores every link twice, once per direction, each with its
  * own type name ("parent" on one row, "child" on the mirrored one). Stella stores one row
  * whose type carries both labels, so each Monica name resolves to a Stella type *and* which
  * side of it the `contact_is` person is on.
@@ -98,7 +98,7 @@ export function mapRelationshipType(name: string): MappedRelationshipType {
 
 /**
  * Types an older import created before Stella had them built in, by the id it gave them, and
- * the built-in each now folds into (docs/02 §2.4). New imports land on the built-in directly.
+ * the built-in each now folds into (docs/dev/02 §2.4). New imports land on the built-in directly.
  */
 const REPLACED_BY_BUILT_IN: Readonly<Record<string, string>> = {
 	'monica:reltype:cousin': 'cousin',

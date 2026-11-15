@@ -2,7 +2,7 @@ import { describe, expect, it } from 'bun:test';
 import { LINK_PARAM, linkHintHref } from './link-hint';
 
 /*
- * After a moment naming two people, the stream offers to link them (docs/02 §2.22.1): the
+ * After a moment naming two people, the stream offers to link them (docs/dev/02 §2.22.1): the
  * composer goes back to Home with the pair in the URL, and Home's load reads it from there.
  */
 

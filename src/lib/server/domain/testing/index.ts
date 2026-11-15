@@ -1,5 +1,5 @@
 /*
- * Shared test support for the domain (docs/08 §8.4): the clock and id fakes every use-case test
+ * Shared test support for the domain (docs/dev/08 §8.4): the clock and id fakes every use-case test
  * needs, and one in-memory fake per read-model port. Imported by `*.test.ts` files only — a
  * guard in `testing.test.ts` holds that — so nothing here reaches the build.
  *

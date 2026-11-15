@@ -3,7 +3,7 @@ import { COMMAND_TYPES, isPhotoCommandType } from '../../commands/commands';
 import { parseCommand, parsePhotoCommand, readCommand } from './parse';
 
 /*
- * Reading a command off the wire (docs/04 §4.11.2). The outbox on a phone
+ * Reading a command off the wire (docs/dev/04 §4.11.2). The outbox on a phone
  * sends JSON that may have been written by an older build, or tampered with; anything that is
  * not exactly a known command is refused as a whole rather than half-read.
  */
@@ -43,7 +43,7 @@ describe('parseCommand', () => {
 		expect(parseCommand({ ...good, payload: { ...good.payload, anchorId: '' } })).toBeNull();
 	});
 
-	it('reads the further people a moment is about (docs/02 §2.20.3)', () => {
+	it('reads the further people a moment is about (docs/dev/02 §2.20.3)', () => {
 		const parsed = parseCommand({
 			...good,
 			payload: { ...good.payload, subjectIds: ['sandra', 'lea'] }

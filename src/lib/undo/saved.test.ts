@@ -5,7 +5,7 @@ import { savedEnhance } from './saved';
 const SAVED_NOTICE = 'Saved';
 
 /*
- * The "Saved" toast (docs/05 §5.7): a form that succeeded says so, a form that came back with
+ * The "Saved" toast (docs/dev/05 §5.7): a form that succeeded says so, a form that came back with
  * an error says nothing — the error already has a home in the section that opened it.
  */
 

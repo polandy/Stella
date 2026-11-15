@@ -1,7 +1,7 @@
 import type { GraphModel } from './types';
 
 /*
- * Finding somebody on the explorer route (docs/05 §5.8): the field suggests people from the
+ * Finding somebody on the explorer route (docs/dev/05 §5.8): the field suggests people from the
  * snapshot the route already holds, so typing asks nothing of the server.
  */
 

@@ -8,7 +8,7 @@
 	import type { ActionData } from './$types';
 
 	/*
-	 * Restoring from an archive (docs/02 §2.15). One form and one report: what arrived, what
+	 * Restoring from an archive (docs/dev/02 §2.15). One form and one report: what arrived, what
 	 * was already here, and anything the archive could not give back.
 	 */
 	let { form }: { form: ActionData } = $props();

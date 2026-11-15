@@ -5,7 +5,7 @@ import { PARENT_CHILD_TYPE_KEY, PARTNER_TYPE_KEYS } from './type-keys';
 import type { RelationshipSide } from './type-options';
 
 /*
- * The relationship form with several people picked (docs/02 §2.4, *Several people in one
+ * The relationship form with several people picked (docs/dev/02 §2.4, *Several people in one
  * go*). The type decides how many people
  * the field takes; a person the household's records rule out is marked on their own chip
  * rather than skipped; and the since day is worked out for each pair.

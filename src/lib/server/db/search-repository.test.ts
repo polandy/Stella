@@ -11,7 +11,7 @@ import { createDrizzleSearchRepository } from './search-repository';
 
 /*
  * Integration spec for FTS search: matching via the triggers-maintained index plus the
- * central visibility scoping (private contacts/notes must not leak, docs/02 §2.9, §3.7).
+ * central visibility scoping (private contacts/notes must not leak, docs/dev/02 §2.9, §3.7).
  */
 
 const H = 'household-1';
@@ -100,7 +100,7 @@ describe('searchContacts', () => {
 		expect(secretina.avatarPhotoId).toBeNull();
 	});
 
-	it('matches the job title and the company, and carries them for the row (docs/02 §2.2)', async () => {
+	it('matches the job title and the company, and carries them for the row (docs/dev/02 §2.2)', async () => {
 		db.update(schema.contact)
 			.set({ jobTitle: 'Schreiner', company: 'Holzbau Keller' })
 			.where(eq(schema.contact.id, 'c-hans'))
@@ -149,7 +149,7 @@ describe('searchNotes', () => {
 });
 
 /*
- * A mention is stored as `@{contact:<id>}` (docs/02 §2.20.1), so the raw body is the wrong
+ * A mention is stored as `@{contact:<id>}` (docs/dev/02 §2.20.1), so the raw body is the wrong
  * thing to index: the person's name is gone from it and the word "contact" is in every note
  * that names anyone. The index carries the mentioned names instead of the token.
  */
@@ -200,7 +200,7 @@ describe('searching a note that mentions someone', () => {
 
 /*
  * Gifts are found by their title and their note — not by the link, which is a shop's address,
- * nor by the occasion, which is a preset key in one language (docs/02 §2.9, §2.25.5).
+ * nor by the occasion, which is a preset key in one language (docs/dev/02 §2.9, §2.25.5).
  */
 describe('searchGifts', () => {
 	beforeEach(() => {

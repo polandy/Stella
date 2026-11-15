@@ -15,10 +15,10 @@ import {
 } from './graph-canvas';
 
 /*
- * The map on a person's page (docs/05 §5.5, §5.8): the same explorer the graph route runs,
+ * The map on a person's page (docs/dev/05 §5.5, §5.8): the same explorer the graph route runs,
  * with a narrower brief — this person stays in the middle, the map reaches two hops, and the
  * toolbar drops what is about travelling the household. Written after the maintainer saw it
- * live (docs/08 §8.4.1).
+ * live (docs/dev/08 §8.4.1).
  */
 
 const LENA = 'demo-c-lena';
@@ -75,7 +75,7 @@ test.describe('on a person’s page', () => {
 		page
 	}) => {
 		// The menu is taller than the card-sized map, which cuts off whatever runs past it; the
-		// switches at its foot must still be reachable (docs/05 §5.8). A phone enlarges the map to
+		// switches at its foot must still be reachable (docs/dev/05 §5.8). A phone enlarges the map to
 		// about a screen, so this is a narrow window whose enlarged map is the 24 rem one.
 		await page.setViewportSize({ width: 700, height: 915 });
 		await page.reload();
@@ -225,10 +225,10 @@ test.describe('on a person’s page', () => {
 });
 
 /*
- * The map follows a save (docs/05 §5.8). The explorer used to hold the snapshot it was mounted
+ * The map follows a save (docs/dev/05 §5.8). The explorer used to hold the snapshot it was mounted
  * with, so entering a relationship left the list right and the map a version behind until
  * somebody reloaded the page by hand. Written after the maintainer saw the fix live
- * (docs/08 §8.4.1).
+ * (docs/dev/08 §8.4.1).
  */
 test.describe('when a relationship is entered', () => {
 	test.beforeEach(async ({ page }) => {
@@ -300,7 +300,7 @@ test.describe('when a relationship is entered', () => {
  * SVG preview — on a wide card a strip with every first name — and the engine waits behind
  * *Enlarge map*, so the map is never a blank box waiting on a download, and a browser that
  * never finishes the fetch still shows the shape; the list under it links everybody
- * (docs/05 §5.8).
+ * (docs/dev/05 §5.8).
  */
 test.describe('without JavaScript', () => {
 	test.use({ javaScriptEnabled: false });

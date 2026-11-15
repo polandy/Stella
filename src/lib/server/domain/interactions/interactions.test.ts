@@ -10,7 +10,7 @@ import {
 } from './interactions';
 
 /*
- * Interactions (docs/02 §2.6). The use-case is thin orchestration, so the tests pin what it
+ * Interactions (docs/dev/02 §2.6). The use-case is thin orchestration, so the tests pin what it
  * decides: normalisation, the visibility default, every refused input, and the pure
  * "last contacted" rule the profile header shows.
  */

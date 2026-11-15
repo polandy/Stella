@@ -5,8 +5,8 @@ import { parseVersion } from '../domain/release/version';
 import { createGitHubReleaseFeed } from '../release/github-feed';
 
 /*
- * The `release` bounded context of the composition root (docs/08 §8.3): "is there a newer
- * Stella?" (docs/02 §2.17.1). Built once per process by `createServices` — which is the point,
+ * The `release` bounded context of the composition root (docs/dev/08 §8.3): "is there a newer
+ * Stella?" (docs/dev/02 §2.17.1). Built once per process by `createServices` — which is the point,
  * because the answer the check caches is shared by every request; the edge reads it off
  * `locals.services.release`.
  */

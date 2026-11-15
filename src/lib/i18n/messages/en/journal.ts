@@ -1,4 +1,4 @@
-/* A person's journal: their days, written down (docs/02 §2.20). */
+/* A person's journal: their days, written down (docs/dev/02 §2.20). */
 
 export const journal = {
 	'journal.title': (p: { name: string }) => `${p.name}’s journal · Stella`,
@@ -52,7 +52,7 @@ export const journal = {
 	'journal.tags.showAll': 'Show all',
 	'journal.tags.none': 'No moments with this tag.',
 	'journal.tags.noneHint': 'A tag is a #word in a moment’s text.',
-	// The tags list and a tag's own page (docs/02 §2.20.2).
+	// The tags list and a tag's own page (docs/dev/02 §2.20.2).
 	'journal.tags.allTags': 'All tags',
 	'journal.tags.listTitle': 'Tags',
 	'journal.tags.listIntro': 'What your household files its moments under, most used first.',

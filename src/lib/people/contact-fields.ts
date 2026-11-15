@@ -1,5 +1,5 @@
 /*
- * Contact field kinds (docs/02 §2.3). Pure and framework-free so the domain, the command
+ * Contact field kinds (docs/dev/02 §2.3). Pure and framework-free so the domain, the command
  * vocabulary on a phone and the form all check against one list.
  */
 

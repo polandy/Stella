@@ -3,11 +3,11 @@ import { readFileSync } from 'node:fs';
 import { addPerson, appReady, openPerson, signIn } from './app';
 
 /*
- * What the performance pass promised to keep while reading less (docs/04 §4.9, §4.4): the
+ * What the performance pass promised to keep while reading less (docs/dev/04 §4.9, §4.4): the
  * pickers take their people from the app shell instead of a page-sized copy, a form submit
  * refreshes that shell without a second freshness check, Home resolves `?about=` on its own,
  * German arrives before the first paint, and a full-size photo is streamed. Written after the
- * maintainer checked them in the running app (docs/08 §8.4.1).
+ * maintainer checked them in the running app (docs/dev/08 §8.4.1).
  *
  * The people here (the Quarzbachs) are absent from the demo dataset, and each case adds its
  * own under this attempt's letters, so a retry against the same database finds no earlier

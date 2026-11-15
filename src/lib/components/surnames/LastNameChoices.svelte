@@ -10,7 +10,7 @@
 	import type { SurnamePersonView } from './types';
 
 	/*
-	 * *Choose one* (docs/02 §2.2.4.2): people whose sources disagree at the same
+	 * *Choose one* (docs/dev/02 §2.2.4.2): people whose sources disagree at the same
 	 * confidence — two parents with different names. Each name is a chip and a tap gives that
 	 * one; Stella never picks a winner for them. The row's menu says no to either name, or
 	 * settles the person as having none.

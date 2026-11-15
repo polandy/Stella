@@ -3,13 +3,13 @@ import type { KinshipGraph } from '../../kinship/kinship';
 import { deriveKinshipEdges } from './kinship-edges';
 
 /*
- * Derived-kinship edges for the explorer (docs/02 §2.7, §2.4.1). Pure: the caller hands in the
+ * Derived-kinship edges for the explorer (docs/dev/02 §2.7, §2.4.1). Pure: the caller hands in the
  * people and links the viewer may see, so these tests need no database.
  */
 
 const person = (id: string, displayName: string, gender?: string) => ({ id, displayName, gender });
 
-/** The example from docs/02 §2.4.1: Bettina parents Hans, Otto parents Bettina. */
+/** The example from docs/dev/02 §2.4.1: Bettina parents Hans, Otto parents Bettina. */
 function threeGenerations(): KinshipGraph {
 	return {
 		people: [

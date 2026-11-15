@@ -16,7 +16,7 @@ import type { NextcloudStore, StoredConflict } from './store';
 import type { SyncConflict, SyncConflictKind } from './sync-plan';
 
 /*
- * The conflicts a sync found, waiting under *Data quality* (docs/02 §2.16.3), and their answer:
+ * The conflicts a sync found, waiting under *Data quality* (docs/dev/02 §2.16.3), and their answer:
  * keep Stella's side, or take the card's. Either way the person is written out at the next sync
  * — Stella's side onto the card, or nothing at all when the card's was taken.
  */

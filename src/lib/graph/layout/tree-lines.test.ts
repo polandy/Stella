@@ -5,7 +5,7 @@ import { TREE_LINES, treeRoutes } from './tree-lines';
 import type { GraphEdge, GraphModel, GraphNode } from '../model/types';
 
 /*
- * How the family tree draws its lines (docs/05 §5.8): partners joined by a short bar, one drop
+ * How the family tree draws its lines (docs/dev/05 §5.8): partners joined by a short bar, one drop
  * from the middle of it to a bar over their children, a short drop to each child — right angles
  * everywhere, and never a line through somebody standing on the way.
  */

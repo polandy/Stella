@@ -25,7 +25,7 @@ import {
 } from './schema';
 
 /*
- * Demo/test seed (docs/06 roadmap — test phase). Populates the database with a realistic
+ * Demo/test seed (docs/dev/06 roadmap — test phase). Populates the database with a realistic
  * Swiss family — the Brunners of Bern — their extended family, friends, and their children's
  * clubs and school classes, so every surface (contacts, relationships, the graph explorer,
  * circles, search) has meaningful data to exercise.
@@ -49,7 +49,7 @@ export const DEMO_ADMIN_PASSWORD = 'stella-demo-1234';
 export const DEMO_MEMBER_EMAIL = 'nina@stella.local';
 
 /**
- * A third member, Lukas, whom an admin may remove (docs/02 §2.1) without taking away the member
+ * A third member, Lukas, whom an admin may remove (docs/dev/02 §2.1) without taking away the member
  * the other specs sign in as. Same password; one shared and one private note of his own.
  */
 export const DEMO_THIRD_MEMBER_EMAIL = 'lukas@stella.local';
@@ -608,7 +608,7 @@ const IMPORTANT_DATES: readonly ImportantDateSeed[] = [
 ];
 
 /*
- * The story so far (docs/02 §2.23): journal entries and touchpoints, dated relative to the
+ * The story so far (docs/dev/02 §2.23): journal entries and touchpoints, dated relative to the
  * day the seed runs so "last written about" always has something to say.
  * Lena is deliberately left out — the e2e suite writes her story itself and counts it.
  * Opa Hans carries enough for the timeline to need a second page.
@@ -618,12 +618,12 @@ interface StorySeed {
 	daysAgo: number;
 	/**
 	 * A touchpoint's kind, or `gift` for a gift given that day — once the touchpoint kind the
-	 * gift record replaced (docs/02 §2.25.4). It keeps its place in this list so every seeded
+	 * gift record replaced (docs/dev/02 §2.25.4). It keeps its place in this list so every seeded
 	 * id stays what it was, and an older demo database converted at start is not seeded twice.
 	 */
 	kind?: 'met' | 'call' | 'video' | 'message' | 'letter' | 'gift';
 	text: string;
-	/** Written by the household's second member, so the story shows two names (docs/02 §2.23). */
+	/** Written by the household's second member, so the story shows two names (docs/dev/02 §2.23). */
 	byMember?: true;
 }
 
@@ -719,7 +719,7 @@ const SYMMETRIC_TYPES = new Set([
 ]);
 
 /*
- * *On this day* (docs/02 §2.12.1): what the household wrote on today's date in earlier years,
+ * *On this day* (docs/dev/02 §2.12.1): what the household wrote on today's date in earlier years,
  * so Home's band has a photo-less day to show — two moments and two touchpoints, one more than
  * the band holds, so *More* leads to the page. Dated by whole years from the day the seed runs.
  */
@@ -765,17 +765,17 @@ function sameDayYearsBack(now: number, years: number): string {
 
 /*
  * Seed texts name people by their key (`@{person:lena}`); the stored form is the id-based
- * token the app itself writes (docs/02 §2.20.1), so the demo data goes through the same
+ * token the app itself writes (docs/dev/02 §2.20.1), so the demo data goes through the same
  * grammar the parser, the chip and the "Mentioned in" list read.
  */
 const withMentions = (text: string) =>
 	text.replace(/@\{person:([a-z]+)\}/g, (_match, key: string) => mentionToken(cid(key)));
 
 /**
- * What is still owed Peter, Grosi’s husband (docs/02 §2.26): one overdue, one due this week, one with no
+ * What is still owed Peter, Grosi’s husband (docs/dev/02 §2.26): one overdue, one due this week, one with no
  * day, one private and one already done, so the To-dos card stands at the top of his page and
  * shows every standing. `dueIn` counts days from today, negative for past ones. Two more, on
- * Lena and Beat, give Home's *To-dos* band three faces and *Show all* (docs/02 §2.26.6).
+ * Lena and Beat, give Home's *To-dos* band three faces and *Show all* (docs/dev/02 §2.26.6).
  */
 const TODOS: readonly {
 	key: string;
@@ -801,7 +801,7 @@ const mentionedBy = (row: { contactId: string; body: string }) =>
 	mentionsOtherThan(extractMentionIds(row.body), [row.contactId]);
 
 /**
- * Gifts for Grosi Ursula (docs/02 §2.25): two open ideas, what was given over two years and one
+ * Gifts for Grosi Ursula (docs/dev/02 §2.25): two open ideas, what was given over two years and one
  * present back, so every tab of the Gifts card has something in it. On a grandparent nobody
  * else's demo story reads, so the story's given and received gifts show without shifting a
  * timeline another case counts. `daysAgo` dates the given and received ones.
@@ -987,11 +987,11 @@ export function seedDemoData(
 		.run();
 
 	// An earlier version of this seed wrote a birthday row per person, which now shadows the
-	// derived birthday and silences it (docs/02 §2.13.2). Drop those; they are demo rows.
+	// derived birthday and silences it (docs/dev/02 §2.13.2). Drop those; they are demo rows.
 	db.delete(importantDate).where(like(importantDate.id, 'demo-date-bday-%')).run();
 
 	// No birthday rows: a birthday is derived from `contact.birth_date` and duplicating it
-	// here would shadow the derived one (docs/02 §2.13.2). Only the dates a birth date
+	// here would shadow the derived one (docs/dev/02 §2.13.2). Only the dates a birth date
 	// cannot express are seeded.
 	db.insert(importantDate)
 		.values(

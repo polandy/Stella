@@ -1,7 +1,7 @@
 import type { SelectablePerson } from '../people/select';
 
 /*
- * The people a moment is about as a page draws them (docs/02 §2.20.3): names and faces, the
+ * The people a moment is about as a page draws them (docs/dev/02 §2.20.3): names and faces, the
  * anchor first. Client-safe, so the timeline, the journal page and the editor read one shape.
  */
 

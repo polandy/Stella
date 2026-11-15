@@ -4,7 +4,7 @@ import type { ContactSource, IncomingCard } from './card';
 import type { Conflict, MergePlan } from './merge-plan';
 
 /*
- * The matching review as the wizard shows it (docs/02 §2.16): the cards the server says need
+ * The matching review as the wizard shows it (docs/dev/02 §2.16): the cards the server says need
  * an answer, and the member's answers while they give them. Pure, so the browser's state is
  * unit-tested here and the Svelte component only renders it.
  */

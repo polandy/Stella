@@ -22,7 +22,7 @@
 	import { filterPill } from '$lib/stream/filter-pill';
 
 	/*
-	 * Home's stream filter (docs/02 §2.22.2, docs/design/screens/home.md): What, Who and Tags as
+	 * Home's stream filter (docs/dev/02 §2.22.2, docs/dev/design/screens/home.md): What, Who and Tags as
 	 * chip rows, folded into one pill and a sheet on a phone, and the line that says what the tags
 	 * narrowed the stream to. Tag chips toggle: a moment must carry every chosen tag. The chips are plain links, so a filter survives a reload, the back
 	 * button undoes it, and it works before the page has hydrated.
@@ -50,7 +50,7 @@
 		notice: 'home.filter.kind.notice'
 	};
 	const filtered = $derived(isNarrowed(filter));
-	// The phone's pill: its count, highlight and the short summary beside it (docs/05 §5.5).
+	// The phone's pill: its count, highlight and the short summary beside it (docs/dev/05 §5.5).
 	const pill = $derived(filterPill(filter));
 	const pillSummary = $derived(
 		pill.narrowedTo
@@ -77,14 +77,14 @@
 	const CHIP =
 		'rounded-full px-3 py-1 text-sm font-medium text-fg-muted transition-colors hover:text-fg aria-[current=true]:bg-primary-soft aria-[current=true]:font-semibold aria-[current=true]:text-fg';
 	// Words on a tint, and labels that carry content, are written in --fg / --fg-muted: in Latte
-	// --primary on its own tint and --fg-subtle on the page ground both fall below AA (docs/05 §5.6).
+	// --primary on its own tint and --fg-subtle on the page ground both fall below AA (docs/dev/05 §5.6).
 	// The row's label is quiet sentence case, part of the control: the uppercase label is kept
-	// for dividers inside a list (docs/05 §5.3).
+	// for dividers inside a list (docs/dev/05 §5.3).
 	const CHIP_ROW_LABEL = 'mr-1 min-w-10 text-sm font-medium text-fg-muted';
 </script>
 
 <!-- Below md the rows would wrap to several lines and push the stream past the fold, so they
-     fold into one pill and a sheet (docs/05 §5.5). The sheet is a native popover: the pill opens
+     fold into one pill and a sheet (docs/dev/05 §5.5). The sheet is a native popover: the pill opens
      it, a tap outside, Escape or *Done* closes it, all without JavaScript, and the chips inside
      stay the same links. -->
 <div class="flex min-w-0 items-center gap-2.5 md:hidden" data-testid="stream-filter-pill">
@@ -185,7 +185,7 @@
 	{/if}
 	{#if tagChips.length}
 		<!-- Choosing a tag narrows to moments, the only kind that carries one; each further tag
-		     narrows again, to the moments carrying them all (docs/02 §2.20.2). -->
+		     narrows again, to the moments carrying them all (docs/dev/02 §2.20.2). -->
 		<div class="{CHIP_ROW} gap-y-1.5" data-testid="stream-filter-tags">
 			<span class={CHIP_ROW_LABEL}>{t('home.filter.tag')}</span>
 			{@render chip(t('journal.tags.all'), withoutTags(filter), filter.tags.length === 0)}

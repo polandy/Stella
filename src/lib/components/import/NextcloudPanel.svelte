@@ -6,7 +6,7 @@
 	import { useI18n } from '$lib/i18n/context.svelte';
 
 	/*
-	 * The household's linked Nextcloud book on the import page (docs/02 §2.16.3): when it last
+	 * The household's linked Nextcloud book on the import page (docs/dev/02 §2.16.3): when it last
 	 * synced, *Sync now*, its new cards into the same review a vCard goes through, and the way to
 	 * the differences waiting under Data quality. Opening Stella syncs it too; this is for now.
 	 */

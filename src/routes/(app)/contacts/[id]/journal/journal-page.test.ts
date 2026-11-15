@@ -30,7 +30,7 @@ import {
 import { actions, load } from './+page.server';
 
 /*
- * A person's journal page (docs/02 §2.20) as the edge answers it: the entries of a person the
+ * A person's journal page (docs/dev/02 §2.20) as the edge answers it: the entries of a person the
  * viewer may see, an entry written as a command (its photos are the outbox's, never the form's), an own entry edited
  * or removed — each refusal said in the reader's language, each success back to the journal.
  * How each entry is shown (`journal-view.test.ts`), the journal use-cases and the dispatcher have

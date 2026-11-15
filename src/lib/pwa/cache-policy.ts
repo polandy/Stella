@@ -1,5 +1,5 @@
 /*
- * What a device may keep (docs/02 §2.18).
+ * What a device may keep (docs/dev/02 §2.18).
  *
  * This is the whole of the offline story's judgement, kept pure and away from the service
  * worker so it can be read and tested without a browser. `src/service-worker/` is the adapter
@@ -50,14 +50,14 @@ const NEVER_CACHED = [
 	'/settings/export',
 	// Faces and photos from Immich, through the signed proxy: Immich owns them and may delete,
 	// archive or lock one away, and the device keeps no copy of anything from Immich
-	// (docs/04 ADR-099). The strip that lists them is a question with a query or
+	// (docs/dev/04 ADR-099). The strip that lists them is a question with a query or
 	// none, and neither a page nor media, so it is never kept either. Nor is *Find your people*,
 	// whose rows are Immich's names, counts and signed faces.
 	IMMICH_MEDIA_PATH,
 	'/settings/immich'
 ];
 
-/** The share sheet, and where the phone posts what another app shares (docs/02 §2.18.3). */
+/** The share sheet, and where the phone posts what another app shares (docs/dev/02 §2.18.3). */
 export const SHARE_PATH = '/share';
 
 /**
@@ -72,7 +72,7 @@ export function isShareArrival(request: CacheableRequest): boolean {
 
 /**
  * Pages the service worker keeps as soon as a page opens in reach, rather than once they are
- * read: the places a phone starts from (docs/02 §2.18, *What a device keeps*). Every update
+ * read: the places a phone starts from (docs/dev/02 §2.18, *What a device keeps*). Every update
  * starts from an empty cache, so without these the app is empty on the train the morning after
  * one — and Settings is opened rarely and wanted offline all the same.
  */

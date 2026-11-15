@@ -1,7 +1,7 @@
 import { allowedForAudience, type MentionAudience } from '$lib/mentions/audience';
 
 /*
- * Whom a moment is about beside its anchor, as the composer offers them (docs/02 §2.20.3,
+ * Whom a moment is about beside its anchor, as the composer offers them (docs/dev/02 §2.20.3,
  * ADR-131): the anchor's homes in one tap each, never preselected, and anyone else by
  * *＋ Person*. A shared moment is about household-visible people only, so a private housemate
  * is offered only in a private moment. Pure; `MomentComposer` renders it.

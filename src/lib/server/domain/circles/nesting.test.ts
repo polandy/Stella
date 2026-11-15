@@ -11,7 +11,7 @@ import {
 } from './nesting';
 
 /*
- * Where a circle sits (docs/02 §2.4.2): moving it under another circle or taking it out to stand
+ * Where a circle sits (docs/dev/02 §2.4.2): moving it under another circle or taking it out to stand
  * for itself. Seeing the circle and its new parent is enough; the loop check walks the whole
  * household's nesting, hidden circles included, and never names one (ADR-125).
  */

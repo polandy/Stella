@@ -9,7 +9,7 @@
 	import { INPUT } from './inputs';
 
 	/*
-	 * Noting a to-do, or rewriting one (docs/02 §2.26): one line, and a day only when asked for —
+	 * Noting a to-do, or rewriting one (docs/dev/02 §2.26): one line, and a day only when asked for —
 	 * most things owed someone have none. Enter saves.
 	 */
 	interface Props {

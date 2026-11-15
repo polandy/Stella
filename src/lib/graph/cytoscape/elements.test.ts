@@ -6,7 +6,7 @@ import type { GraphModel } from '../model/types';
 import { nodeDiameter } from '../layout/legibility';
 
 /*
- * Pure GraphModel → Cytoscape element mapping (docs/04 §4.11). No library, no DOM.
+ * Pure GraphModel → Cytoscape element mapping (docs/dev/04 §4.11). No library, no DOM.
  */
 
 const model: GraphModel = {

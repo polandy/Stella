@@ -2,7 +2,7 @@ import type { JsonCommand } from '../commands/commands';
 import { CURRENT_RELATIONSHIP_STATUS, RELATIONSHIP_STATUSES } from './status';
 
 /*
- * The relationships card's add form, read as the command it saves (docs/02 §2.4). One person
+ * The relationships card's add form, read as the command it saves (docs/dev/02 §2.4). One person
  * picked saves exactly as it always has, as `relationship.add`; several save as one
  * `relationship.addMany` batch, all or nothing (ADR-118), the type, status and description
  * shared and the since day per pair.

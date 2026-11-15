@@ -6,7 +6,7 @@
 	import { REVIEW_PARAM } from '$lib/relationships/review-url';
 
 	/*
-	 * The relationships card's ⋯ (docs/05 §5.5): what is asked less often — how two people are
+	 * The relationships card's ⋯ (docs/dev/05 §5.5): what is asked less often — how two people are
 	 * connected, the on-demand review, the whole graph.
 	 */
 	let {
@@ -43,7 +43,7 @@
 			</button>
 		{/if}
 		<!--
-			The on-demand review (docs/02 §2.4.1): nothing runs until it is chosen, and asking what
+			The on-demand review (docs/dev/02 §2.4.1): nothing runs until it is chosen, and asking what
 			else might be true is never what this card is for — so it waits in the menu.
 		-->
 		<a

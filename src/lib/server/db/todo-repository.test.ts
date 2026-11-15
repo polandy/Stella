@@ -8,9 +8,9 @@ import { createDrizzleTodoRepository } from './todo-repository';
 import * as schema from './schema';
 
 /*
- * Integration spec for the Drizzle TodoRepository (docs/02 §2.26): child-record visibility (a
+ * Integration spec for the Drizzle TodoRepository (docs/dev/02 §2.26): child-record visibility (a
  * private to-do reaches only its author, one on a private person only that person's creator —
- * docs/03 §3.7), that the card's list holds only what is open, and that the story's page holds
+ * docs/dev/03 §3.7), that the card's list holds only what is open, and that the story's page holds
  * only what is done, in story order, resuming strictly after its cursor.
  */
 
@@ -137,7 +137,7 @@ describe('createDrizzleTodoRepository', () => {
 			]);
 		});
 
-		it('leaves out an archived person’s, which stay on their page (docs/04 §4.9)', async () => {
+		it('leaves out an archived person’s, which stay on their page (docs/dev/04 §4.9)', async () => {
 			db.insert(schema.contact)
 				.values({ id: 'c-gone', householdId: H, createdBy: U1, displayName: 'G', archivedAt: 5 })
 				.run();

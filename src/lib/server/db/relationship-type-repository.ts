@@ -13,7 +13,7 @@ import type * as schema from './schema';
 import { contact, relationship, relationshipType } from './schema';
 
 /*
- * Drizzle adapter for the RelationshipTypeRepository port (docs/08 §8.3): the household's
+ * Drizzle adapter for the RelationshipTypeRepository port (docs/dev/08 §8.3): the household's
  * relationship vocabulary — the built-in types every household shares, and its own.
  */
 
@@ -42,7 +42,7 @@ const toType = (row: TypeRow): RelationshipType => ({
 /**
  * The types a household may use: the built-in set (`household_id` null, seeded globally) plus
  * the ones this household defined. Another household's custom type is not merely hidden from
- * the picker — it cannot be resolved by id either, so it can never be stored (docs/03 §3.6).
+ * the picker — it cannot be resolved by id either, so it can never be stored (docs/dev/03 §3.6).
  */
 const typeUsableBy = (viewer: Viewer) =>
 	or(isNull(relationshipType.householdId), eq(relationshipType.householdId, viewer.householdId));

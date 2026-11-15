@@ -2,7 +2,7 @@ import { type ApiTokenDeps, type ApiTokenRecord } from './api-tokens';
 import { generateSessionToken, hashSessionToken } from './tokens';
 
 /*
- * The calendar link (docs/02 §2.13.4) — the secret in a member's `/cal/<secret>.ics` URL, which
+ * The calendar link (docs/dev/02 §2.13.4) — the secret in a member's `/cal/<secret>.ics` URL, which
  * their phone's calendar fetches without anyone signing in. It is a token of its own scope in
  * the API token table: it opens only that member's feed, and an API token never opens it.
  *

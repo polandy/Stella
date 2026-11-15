@@ -3,12 +3,12 @@ import type { ContactSummary } from '../contacts/contacts';
 import type { Tag } from './tags';
 
 /*
- * The tags as the screens list them (docs/02 §2.8): the household's chip row, a person's tags,
+ * The tags as the screens list them (docs/dev/02 §2.8): the household's chip row, a person's tags,
  * and the people a chip filters to. A read model, apart from the `TagRepository` that writes a
- * tag and its assignments (docs/08 §8.3).
+ * tag and its assignments (docs/dev/08 §8.3).
  *
  * A person's tags and the people with a tag are scoped to the viewer by the adapter, through the
- * access layer (docs/03 §3.7): a tag on a private contact, and that contact, stay private.
+ * access layer (docs/dev/03 §3.7): a tag on a private contact, and that contact, stay private.
  */
 
 /** The tag lists. */

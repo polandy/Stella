@@ -5,7 +5,7 @@ import type { IdGenerator } from '../id';
 import { generateSessionToken, hashSessionToken } from './tokens';
 
 /*
- * API tokens (docs/02 §2.16.1) — how a script or an agent acts as a household member without
+ * API tokens (docs/dev/02 §2.16.1) — how a script or an agent acts as a household member without
  * a browser. A token *is* its member: whatever it may reach, the member may, and nothing more.
  * It only ever signs in to the API (`/api/v1/`), never to the app's pages.
  *
@@ -33,7 +33,7 @@ export const API_TOKEN_DEFAULT_LIFETIME_DAYS: ApiTokenLifetime = 90;
 export const API_TOKEN_NAME_MAX = 80;
 
 /**
- * What a token opens: the API, or only its member's calendar feed (docs/02 §2.13.4). Neither
+ * What a token opens: the API, or only its member's calendar feed (docs/dev/02 §2.13.4). Neither
  * opens the other's door.
  */
 export type TokenScope = 'api' | 'calendar';

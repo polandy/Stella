@@ -2,10 +2,10 @@ import { expect, test, type Page } from '@playwright/test';
 import { addPerson, appReady, signIn } from './app';
 
 /*
- * What a person's journal says when an edit or a removal cannot be done (docs/02 §2.20):
+ * What a person's journal says when an edit or a removal cannot be done (docs/dev/02 §2.20):
  * text of nothing but spaces, in the reader's language, and an entry someone removed
  * meanwhile in another tab. Written after the maintainer checked both in the running app
- * (docs/08 §8.4.1).
+ * (docs/dev/08 §8.4.1).
  *
  * The suite shares one database, so every case writes on a person of its own.
  */

@@ -2,9 +2,9 @@ import { expect, test, type Locator, type Page } from '@playwright/test';
 import { appReady, mention, mentionNew, signIn } from './app';
 
 /*
- * The day of a moment (docs/02 §2.22.1, docs/05 §5.7): a Today pill offering the last week,
+ * The day of a moment (docs/dev/02 §2.22.1, docs/dev/05 §5.7): a Today pill offering the last week,
  * and a calendar with a year choice for anything older. Written after the flow was verified
- * in the running app (docs/08 §8.4.1).
+ * in the running app (docs/dev/08 §8.4.1).
  *
  * Hortensia and Leopoldine are invented here and absent from the demo dataset. Each case
  * writes its own sentence, so it finds its moment whatever else the suite has written.

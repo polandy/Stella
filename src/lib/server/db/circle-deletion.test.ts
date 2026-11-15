@@ -16,7 +16,7 @@ import { createDrizzleGalleryPhotoReads } from './gallery-photo-reads';
 import * as schema from './schema';
 
 /*
- * Integration spec for deleting a circle (docs/02 §2.4.2, docs/03 `circle`): one transaction
+ * Integration spec for deleting a circle (docs/dev/02 §2.4.2, docs/dev/03 `circle`): one transaction
  * scoped by `circleDeletableBy`, which turns the cuts of the circle's photos into their wearers'
  * own photos, deletes the photos and hands back their files, deletes the circle — its
  * memberships cascade, its children lose their parent — and logs `circle.deleted`. What the
@@ -244,7 +244,7 @@ describe('deleteDeletable', () => {
 			cutFrom: null,
 			filePath: 'cut-anna.jpg'
 		});
-		// Made shared as it leaves the private photo, as when one turns private (docs/03 `photo`).
+		// Made shared as it leaves the private photo, as when one turns private (docs/dev/03 `photo`).
 		expect(photoRow('cut-ben')).toMatchObject({ contactId: 'ben', framingOf: null, cutFrom: null });
 		const gallery = await createDrizzleGalleryPhotoReads(db).listGalleryPhotos(
 			{ id: U1, householdId: H },

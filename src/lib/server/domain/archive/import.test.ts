@@ -15,7 +15,7 @@ import {
 import { ArchiveFormatError, type RestorePlan } from './restore';
 
 /*
- * Restoring an archive (docs/02 §2.15). Orchestration over fakes: what the admin is told
+ * Restoring an archive (docs/dev/02 §2.15). Orchestration over fakes: what the admin is told
  * afterwards, that the images follow the rows rather than the other way round, and that an
  * import leaves the same kind of trail an export does.
  */

@@ -5,12 +5,12 @@
  * `tokens.ts` builds for inline styles. Nothing in the type system ties those two together — a
  * renamed custom property leaves every helper compiling and every colour silently unset. This
  * module parses the stylesheet so a test can assert the halves still agree, and so the
- * documented contrast ratios (docs/05 §5.9) are checked rather than claimed.
+ * documented contrast ratios (docs/dev/05 §5.9) are checked rather than claimed.
  *
  * Test-only: it is not imported by the app, which reads these values through the cascade.
  */
 
-/** The three states a viewer can be in (docs/05 §5.2.2). */
+/** The three states a viewer can be in (docs/dev/05 §5.2.2). */
 export type Theme = 'light' | 'dark' | 'system-dark';
 
 /** The selector that carries each theme's palette. */

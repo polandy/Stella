@@ -3,7 +3,7 @@ import type { LoginPlan, OidcClaims, OidcLookups, OidcPolicy, ProfilePatch } fro
 
 /*
  * Login planner — decides how an authorized OIDC identity maps to a Stella account
- * (docs/02 §2.1.2). Pure and deterministic: given the claims, what the store already has,
+ * (docs/dev/02 §2.1.2). Pure and deterministic: given the claims, what the store already has,
  * and the policy, it returns a plan the orchestrator carries out. It assumes authorization
  * (isAuthorized) has already passed; it only resolves the account.
  */
@@ -21,7 +21,7 @@ export function planLogin(claims: OidcClaims, lookups: OidcLookups, policy: Oidc
 	const profileSync = policy.syncProfile ? profileFrom(claims) : null;
 
 	// A member an admin removed is turned away before anything about them is synced, and their
-	// email links nobody new beside them: a restore is the way back (docs/02 §2.1).
+	// email links nobody new beside them: a restore is the way back (docs/dev/02 §2.1).
 	if (lookups.existingUser?.removed || lookups.userByEmail?.removed) {
 		return { action: 'deny', reason: 'removed' };
 	}

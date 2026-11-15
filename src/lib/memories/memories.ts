@@ -1,10 +1,10 @@
 /*
- * *On this day* (docs/02 §2.12.1): what the household wrote on today's day and month in earlier
+ * *On this day* (docs/dev/02 §2.12.1): what the household wrote on today's day and month in earlier
  * years. Pure and handed the day — the household's, read off the injected clock at the edge —
  * so the 29 February rule and the grouping are tested without a calendar on the wall.
  */
 
-/** Home's band stops after three entries, as *Coming up* and *To-dos* do (docs/05 §5.5.1). */
+/** Home's band stops after three entries, as *Coming up* and *To-dos* do (docs/dev/05 §5.5.1). */
 export const MEMORY_BAND_CAP = 3;
 
 /** The photos that fit one row of the 17 rem rail. */
@@ -69,7 +69,7 @@ export interface MemoryBand<T, P> {
 	photos: P[];
 	/** Whether `/on-this-day` holds more than the band shows — then *More* links there. */
 	more: boolean;
-	/** Nothing to remember: Home leaves the band out (docs/05 §5.5.1). */
+	/** Nothing to remember: Home leaves the band out (docs/dev/05 §5.5.1). */
 	empty: boolean;
 }
 

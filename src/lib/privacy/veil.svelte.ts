@@ -17,7 +17,7 @@ import {
 } from './veil';
 
 /*
- * The veil's state for this tab (docs/02 §2.10.1), handed down through context: which entries
+ * The veil's state for this tab (docs/dev/02 §2.10.1), handed down through context: which entries
  * a tap showed, the window that shows everything, and which veiled entries the page holds, so
  * the header lock can count them. An adapter: the rules are `veil.ts`.
  *

@@ -30,7 +30,7 @@ export interface ExploredMap {
 }
 
 /*
- * The explored model of the explorer (docs/02 §2.7). All exploration runs against the in-memory
+ * The explored model of the explorer (docs/dev/02 §2.7). All exploration runs against the in-memory
  * source — no further requests to the server. Called while a component initialises, since the
  * model is state; `source` is read on every step, so a fresh snapshot is followed.
  */

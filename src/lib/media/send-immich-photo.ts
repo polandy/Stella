@@ -4,7 +4,7 @@ import type { CropRect } from './crop';
 import { processAvatar } from './process-avatar';
 
 /*
- * Sending the square cut from a photo in Immich (docs/02 §2.24.6): rendered and re-encoded in the
+ * Sending the square cut from a photo in Immich (docs/dev/02 §2.24.6): rendered and re-encoded in the
  * browser as any new picture is, so nothing but the pixels leaves it, and posted with the signed
  * token of the preview it was cut from. Shared by the Immich viewer and the picture's chooser.
  * The capture date the browser might read out of the preview is left behind: the server dates the

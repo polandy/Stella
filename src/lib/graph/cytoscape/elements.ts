@@ -7,12 +7,12 @@ import { drawnSlotLine, type ParentSlot } from '../model/missing-parents';
 import type { GraphEdge, GraphModel } from '../model/types';
 
 /*
- * Translate the neutral GraphModel into Cytoscape element definitions (docs/04 §4.11). This
+ * Translate the neutral GraphModel into Cytoscape element definitions (docs/dev/04 §4.11). This
  * is the only place the model's shape meets the renderer's; it is pure data-in/data-out so it
  * unit-tests without loading Cytoscape. No domain rules live here — styling is in stylesheet.ts.
  */
 
-/** The accent a circle node wears; people take the same accent as their avatar (docs/05 §5.10). */
+/** The accent a circle node wears; people take the same accent as their avatar (docs/dev/05 §5.10). */
 const CIRCLE_ACCENT = 'lavender';
 
 /** Minimal Cytoscape element shape (avoids importing the library into pure code/tests). */
@@ -26,15 +26,15 @@ export interface ElementOptions {
 	centerId?: string;
 	/**
 	 * How an edge is worded. The model carries the label as it is stored; the caller knows
-	 * the viewer's language and can translate a built-in relationship type (docs/02 §2.19).
+	 * the viewer's language and can translate a built-in relationship type (docs/dev/02 §2.19).
 	 */
 	edgeLabel?: (edge: GraphEdge) => string;
 	/**
 	 * How many people expanding a node would bring in (`hiddenNeighbourCounts`); a node with
-	 * an entry wears a "+N" badge (docs/05 §5.8).
+	 * an entry wears a "+N" badge (docs/dev/05 §5.8).
 	 */
 	hiddenNeighbours?: ReadonlyMap<string, number>;
-	/** The circles grouped by role (docs/02 §2.7), and how a group and a bundle are named. */
+	/** The circles grouped by role (docs/dev/02 §2.7), and how a group and a bundle are named. */
 	grouping?: {
 		grouping: RoleGrouping;
 		groupLabel: (group: RoleGroup) => string;
@@ -42,7 +42,7 @@ export interface ElementOptions {
 	};
 	/**
 	 * Who each person is to the centre, already in the viewer's language ("Grandfather"); the
-	 * family tree writes it under the name (docs/05 §5.8). Everybody else carries an empty role.
+	 * family tree writes it under the name (docs/dev/05 §5.8). Everybody else carries an empty role.
 	 */
 	roleOf?: (nodeId: string) => string | undefined;
 }
@@ -50,7 +50,7 @@ export interface ElementOptions {
 export function toCytoscapeElements(model: GraphModel, options: ElementOptions = {}): CyElement[] {
 	const present = new Set(model.nodes.map((n) => n.id));
 
-	// degree drives node size (docs/05 §5.8), counting only edges we will actually draw
+	// degree drives node size (docs/dev/05 §5.8), counting only edges we will actually draw
 	const degree = new Map<string, number>();
 	for (const e of model.edges) {
 		if (!present.has(e.source) || !present.has(e.target)) continue;
@@ -134,7 +134,7 @@ export function toCytoscapeElements(model: GraphModel, options: ElementOptions =
 }
 
 /**
- * The family tree's slots for missing parents (docs/05 §5.8): a plus in a dashed ring, and the
+ * The family tree's slots for missing parents (docs/dev/05 §5.8): a plus in a dashed ring, and the
  * one dashed line that ties it in. `name` is what tapping it adds ("Add a parent of Lena"),
  * which the keyboard walk reads out; the plus alone is drawn.
  */

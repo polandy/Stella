@@ -13,7 +13,7 @@ import * as schema from './schema';
 import { seedRelationshipTypes } from './seed';
 
 /*
- * Integration spec for the import adapter (docs/02 §2.16): a plan lands in one transaction,
+ * Integration spec for the import adapter (docs/dev/02 §2.16): a plan lands in one transaction,
  * re-applying the same plan writes nothing new, a tag that already exists by name is reused
  * rather than duplicated, and a plan that cannot be written leaves no partial rows behind.
  */

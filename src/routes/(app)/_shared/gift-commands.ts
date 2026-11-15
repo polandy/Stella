@@ -10,8 +10,8 @@ import { requireViewer } from '$lib/server/auth/guards';
 import { say, translator } from '$lib/server/i18n/say';
 
 /*
- * A gift changed from a form (docs/02 §2.25): the person's Gifts card and the household's list
- * of ideas (§2.25.6) post the same commands (docs/04 §4.11.2) and answer the same way. The
+ * A gift changed from a form (docs/dev/02 §2.25): the person's Gifts card and the household's list
+ * of ideas (§2.25.6) post the same commands (docs/dev/04 §4.11.2) and answer the same way. The
  * occasion comes as two fields — a chip and the text beside *Other* — and is read the way the
  * outbox's `toCommand` reads it.
  */
@@ -80,7 +80,7 @@ export async function applyGiftCommand(
 		reading.command
 	);
 	if (outcome.status === 'refused') {
-		// A gift already gone answers 404: a held remove reads that as done (docs/02 §2.23).
+		// A gift already gone answers 404: a held remove reads that as done (docs/dev/02 §2.23).
 		const gone = outcome.error instanceof GiftGoneError;
 		return failure(outcome.reason(translator(locals)), gone ? 404 : 400);
 	}

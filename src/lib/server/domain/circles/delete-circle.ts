@@ -8,8 +8,8 @@ import { CircleGoneError } from './circle-details';
 import type { Circle, CircleRepository } from './circles';
 
 /*
- * Deleting a circle (docs/02 §2.4.2): its creator always, an admin when it is shared — the
- * authored-record rule with the circle as the record (`canDeleteCircle`, docs/03 §3.7). It takes
+ * Deleting a circle (docs/dev/02 §2.4.2): its creator always, an admin when it is shared — the
+ * authored-record rule with the circle as the record (`canDeleteCircle`, docs/dev/03 §3.7). It takes
  * everything in the circle, what the remover cannot see included: every photo, the memberships
  * of people private to someone else. Profile pictures cut from its photos become their wearer's
  * own, and the circles nested in it stay, without a parent. Confirmed, logged, never undone: the
@@ -59,7 +59,7 @@ export interface DeleteCircleDeps {
 }
 
 /**
- * Whether the circle page offers *Delete circle…* (docs/02 §2.4.2) — the same rule the write
+ * Whether the circle page offers *Delete circle…* (docs/dev/02 §2.4.2) — the same rule the write
  * checks again in its own condition (`circleDeletableBy`).
  */
 export function circleDeletable(
@@ -108,7 +108,7 @@ export async function circleDeletionPreview(
  * Delete `circleId` with everything in it, in one transaction with its log row, then unlink the
  * photos' files — a file left behind is the harmless direction of that failure, a deletion with
  * no trace is not. A circle the remover may not delete, cannot see, or that is gone answers
- * `CircleGoneError`, which the edge reads as done (docs/02 §2.23).
+ * `CircleGoneError`, which the edge reads as done (docs/dev/02 §2.23).
  */
 export async function deleteCircle(
 	deps: DeleteCircleDeps,

@@ -1,5 +1,5 @@
 /*
- * How close together the explorer sets people (docs/05 §5.8). The reader picks one of three
+ * How close together the explorer sets people (docs/dev/05 §5.8). The reader picks one of three
  * densities in the Filter menu, and this browser keeps it; this module only says what each one
  * means, so the canvas and the tests read the same numbers.
  */

@@ -2,7 +2,7 @@ import { describe, expect, it } from 'bun:test';
 import { segmentsOf, textOf, type LinkedSentence } from './linked';
 
 /*
- * A sentence that names people the reader can follow (docs/02 §2.4.1, §2.19).
+ * A sentence that names people the reader can follow (docs/dev/02 §2.4.1, §2.19).
  *
  * The sentence is written whole in each language and handed its names, never assembled from
  * pieces: English says "Otto is a parent of Fabio" where German says "Otto ist ein Elternteil

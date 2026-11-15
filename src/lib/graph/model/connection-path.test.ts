@@ -3,7 +3,7 @@ import { findConnectionPath } from './connection-path';
 import { familySource } from './fixtures';
 
 /*
- * findConnectionPath (docs/02 §2.7): the shortest chain that links two people through
+ * findConnectionPath (docs/dev/02 §2.7): the shortest chain that links two people through
  * relationships and circle co-membership, e.g. "You → Peter → Ski Course → Hans". BFS over
  * the GraphDataSource port; returns exactly the nodes and edges of that chain.
  */

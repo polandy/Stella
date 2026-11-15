@@ -5,7 +5,7 @@ import type { RequestHandler } from './$types';
 
 /*
  * A day of the whole Immich library (`?day=YYYY-MM-DD`), or a search of it by description
- * (`?q=`), for the picker beside every photo upload (docs/02 §2.24.9). What it answers is decided
+ * (`?q=`), for the picker beside every photo upload (docs/dev/02 §2.24.9). What it answers is decided
  * and tested in `$lib/server/immich/routes.ts`; this only wires it.
  */
 export const GET: RequestHandler = async ({ locals, url }) => {

@@ -2,8 +2,8 @@ import { expect, test } from '@playwright/test';
 import { openPerson, signIn } from './app';
 
 /*
- * Who wrote each story item (docs/02 §2.23, docs/05 §5.5). Written after the screens were
- * seen in the running app (docs/08 §8.4.1).
+ * Who wrote each story item (docs/dev/02 §2.23, docs/dev/05 §5.5). Written after the screens were
+ * seen in the running app (docs/dev/08 §8.4.1).
  *
  * The demo household has two members: the admin this suite signs in as, and Nina Brunner,
  * who wrote part of Hans Brunner's story. Read-only — it asserts what the seed already says.
@@ -32,7 +32,7 @@ test('offers the admin to remove a shared item another member wrote', async ({ p
 	const mine = page.locator('[data-story-item]', { hasText: MY_ENTRY });
 	const hers = page.locator('[data-story-item]', { hasText: NINA_ENTRY });
 
-	// Nina's moment is shared and the viewer is the household's admin (docs/03 §3.7).
+	// Nina's moment is shared and the viewer is the household's admin (docs/dev/03 §3.7).
 	await expect(mine.getByRole('button', { name: 'Remove moment' })).toHaveCount(1);
 	await expect(hers.getByRole('button', { name: 'Remove moment' })).toHaveCount(1);
 });

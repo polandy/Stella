@@ -5,11 +5,11 @@ import type { LinkSuggestion, PrimaryLink, Rule, RuleId, Trigger } from '../type
 import type { SuggestionView } from '../view';
 
 /*
- * The link rules (docs/02 §2.4.1, L1, L2 and L3).
+ * The link rules (docs/dev/02 §2.4.1, L1, L2 and L3).
  *
  * Adding one primary link usually implies others: a mother added to one child is the mother
  * of that child's siblings too. Stella works those out and **offers** them — one confirmation
- * each, never a silent write (docs/02 §2.4.1, "suggestions are always opt-in").
+ * each, never a silent write (docs/dev/02 §2.4.1, "suggestions are always opt-in").
  *
  * A rule says only what follows. It does not ask whether the claim is already stored, already
  * derived, or fit to show: the engine applies those suppressions to every rule's output at
@@ -131,14 +131,14 @@ function beganAfter(since: string | null | undefined, birth: string | null | und
  *
  * Nobody when the parent has no current partner or several (the concept's L3b: no basis to pick
  * one); when the partnership began after the child was born, which makes the partner a
- * step-parent, a tie Stella names rather than stores (docs/02 §2.4.1); when the child would end
+ * step-parent, a tie Stella names rather than stores (docs/dev/02 §2.4.1); when the child would end
  * up with more than two parents (the exclusion rules' cap) or the partner already is one; and
  * when the generation guard would refuse the link anyway. The form also asks the page's own
  * `exclusionFor` before it offers anyone, so a rule added there later is honoured too. Missing dates do not rule it out: the
  * claim stays `likely`, and the household answers it.
  *
  * Pure. The engine asks it once a parent link is stored; the relationship form asks it while a
- * parent is only picked (docs/02 §2.4, *Several people in one go*), which is why the
+ * parent is only picked (docs/dev/02 §2.4, *Several people in one go*), which is why the
  * chosen parent counts whether or not their link is on record yet.
  */
 export function likelyCoParent(
@@ -159,7 +159,7 @@ export function likelyCoParent(
 	const parents = new Set(
 		graph.parentEdges.filter((edge) => edge.childId === childId).map((edge) => edge.parentId)
 	);
-	// The exclusion rules' parent cap (docs/02 §2.4), counting the chosen parent. A partner who
+	// The exclusion rules' parent cap (docs/dev/02 §2.4), counting the chosen parent. A partner who
 	// is a parent already fills a slot too, so they are never offered a second time.
 	if (new Set([...parents, parentId]).size >= MAX_PARENTS) return null;
 

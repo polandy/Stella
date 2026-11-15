@@ -1,7 +1,7 @@
 import { compareMonthDay, dayParts, type DayParts } from './calendar';
 
 /*
- * A date that may be known only in part (docs/03 §3.4): the stored text plus how much of it is
+ * A date that may be known only in part (docs/dev/03 §3.4): the stored text plus how much of it is
  * known. A plain value rather than a class, so it crosses a `load` and an import plan unchanged;
  * the storage keeps its two columns, and this is where the rules about them live.
  */

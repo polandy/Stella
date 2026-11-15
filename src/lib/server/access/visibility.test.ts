@@ -17,7 +17,7 @@ import {
 } from './visibility';
 
 /*
- * Behavior specification for the central access-control rules (docs/03 §3.7).
+ * Behavior specification for the central access-control rules (docs/dev/03 §3.7).
  * These are pure functions — no DB, no DI. They are the single source of truth
  * for "who may see what"; every query is filtered through them.
  */
@@ -182,7 +182,7 @@ describe('canViewActivity', () => {
 	});
 });
 
-describe('canRemoveAuthored (docs/03 §3.7: author always, admin on a shared record)', () => {
+describe('canRemoveAuthored (docs/dev/03 §3.7: author always, admin on a shared record)', () => {
 	const author: Remover = { ...viewerOwner, isAdmin: false };
 	const admin: Remover = { ...viewerOther, isAdmin: true };
 	const member: Remover = { ...viewerOther, isAdmin: false };
@@ -219,7 +219,7 @@ describe('canRemoveAuthored (docs/03 §3.7: author always, admin on a shared rec
 	});
 });
 
-describe('canRemoveCirclePhoto (docs/03 §3.7: author always, admin on a shared photo)', () => {
+describe('canRemoveCirclePhoto (docs/dev/03 §3.7: author always, admin on a shared photo)', () => {
 	const author: Remover = { ...viewerOwner, isAdmin: false };
 	const admin: Remover = { ...viewerOther, isAdmin: true };
 	const member: Remover = { ...viewerOther, isAdmin: false };
@@ -260,7 +260,7 @@ describe('canRemoveCirclePhoto (docs/03 §3.7: author always, admin on a shared 
 	});
 });
 
-describe('canDeleteCircle (docs/03 §3.7: creator always, admin on a shared circle)', () => {
+describe('canDeleteCircle (docs/dev/03 §3.7: creator always, admin on a shared circle)', () => {
 	const creator: Remover = { ...viewerOwner, isAdmin: false };
 	const admin: Remover = { ...viewerOther, isAdmin: true };
 	const member: Remover = { ...viewerOther, isAdmin: false };
@@ -290,7 +290,7 @@ describe('canDeleteCircle (docs/03 §3.7: creator always, admin on a shared circ
 	});
 });
 
-describe('canEditAuthored (docs/03 §3.7: the author only)', () => {
+describe('canEditAuthored (docs/dev/03 §3.7: the author only)', () => {
 	const author: Viewer = viewerOwner;
 	const admin: Remover = { ...viewerOther, isAdmin: true };
 	const shared = childOn(contact());
@@ -321,7 +321,7 @@ describe('canEditAuthored (docs/03 §3.7: the author only)', () => {
 	});
 });
 
-describe('canAddRelationshipTo (docs/02 §2.4: every member links the people they see)', () => {
+describe('canAddRelationshipTo (docs/dev/02 §2.4: every member links the people they see)', () => {
 	it('lets any household member add a relationship to a shared person', () => {
 		expect(canAddRelationshipTo(viewerOwner, contact())).toBe(true);
 		expect(canAddRelationshipTo(viewerOther, contact())).toBe(true);

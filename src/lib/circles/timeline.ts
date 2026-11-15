@@ -1,5 +1,5 @@
 /*
- * The geometry of a circle's sub-circles timeline (docs/02 §2.4.2): a month axis from the first
+ * The geometry of a circle's sub-circles timeline (docs/dev/02 §2.4.2): a month axis from the first
  * start to the last end, a bar per dated sub-circle, today's marker and a tick at every new year.
  * All in percent of the track, so the page only places them. Pure and client-safe.
  */

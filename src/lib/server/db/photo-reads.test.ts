@@ -106,7 +106,7 @@ describe('getVisiblePhotoFile', () => {
 	});
 });
 
-describe('the gallery (docs/02 §2.14)', () => {
+describe('the gallery (docs/dev/02 §2.14)', () => {
 	/*
 	 * A gallery photo is one with no journal entry. U1 owns a shared and a private one on
 	 * Mara; U2 owns one of their own. Journal photos must stay out of every gallery read.

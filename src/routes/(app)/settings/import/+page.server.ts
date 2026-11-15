@@ -23,7 +23,7 @@ import { reviewActions, reviewStep } from './actions/review';
 import { photoManifest, stagedStep, VisibilitySchema } from './actions/staged';
 
 /*
- * The import wizard (docs/02 §2.16): upload → preview → confirm → photos. Either of Monica's
+ * The import wizard (docs/dev/02 §2.16): upload → preview → confirm → photos. Either of Monica's
  * exports is accepted — the SQL dump or the JSON file — and a vCard besides, and which one it
  * is comes from the file itself. A vCard is reviewed against the people already here instead
  * of confirmed (`actions/review.ts`). It is staged on disk between steps; every step re-plans from it, so
@@ -120,7 +120,7 @@ export const actions = {
 			inserted: outcome.inserted,
 			photos: photoManifest(plan.photos),
 			// A JSON export carries its pictures; a dump only names them, and the admin has to
-			// point at Monica's folder. The step reads differently for each (docs/02 §2.16).
+			// point at Monica's folder. The step reads differently for each (docs/dev/02 §2.16).
 			photosAreEmbedded: plan.photos.some((p) => p.dataUrl !== null)
 		};
 	},

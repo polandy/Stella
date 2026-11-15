@@ -8,7 +8,7 @@ import { contact, contactTag, tag } from './schema';
 import type * as schema from './schema';
 
 /*
- * Drizzle adapter for the tag lists (docs/08 §8.3). Tags are household-global; assignments are
+ * Drizzle adapter for the tag lists (docs/dev/08 §8.3). Tags are household-global; assignments are
  * read through the central `contactVisibleTo` so tags on a private contact (and that contact)
  * never surface to others.
  */

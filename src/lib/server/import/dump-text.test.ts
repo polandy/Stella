@@ -3,7 +3,7 @@ import { SqlDumpError } from '../domain/import/monica/sql-dump';
 import { dumpTextOf } from './dump-text';
 
 /*
- * The uploaded export as text (docs/02 §2.16): plain or gzipped, and never more than the cap
+ * The uploaded export as text (docs/dev/02 §2.16): plain or gzipped, and never more than the cap
  * in memory — a small gzip bomb is refused while it inflates, not after.
  */
 

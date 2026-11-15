@@ -4,7 +4,7 @@ import type { RelationshipCategory } from './categories';
 import type { RelationshipSide } from './type-options';
 
 /*
- * The since day a new link starts out with (docs/02 §2.4). A family tie begins the day the
+ * The since day a new link starts out with (docs/dev/02 §2.4). A family tie begins the day the
  * younger of the two was born — a child gains a parent, a grandparent and a godparent at
  * birth, and a sibling the day the second of them arrives — and that day is already on file,
  * so the form offers it rather than asking for it a second time. Outside the family a link
@@ -16,7 +16,7 @@ import type { RelationshipSide } from './type-options';
 
 /** What this needs to know about either endpoint; `null` while nobody is picked. */
 export interface BirthDated {
-	/** `YYYY-MM-DD`, a year-less `--MM-DD`, or a bare year — see docs/03 §3.4. */
+	/** `YYYY-MM-DD`, a year-less `--MM-DD`, or a bare year — see docs/dev/03 §3.4. */
 	birthDate?: string | null;
 }
 

@@ -3,10 +3,10 @@ import { identityRow, openPeople, openPerson, pickPerson, signIn } from './app';
 import { seedHousehold } from './seed';
 
 /*
- * A person's job title and company (docs/02 §2.2, §2.9): edited where they are read — among
+ * A person's job title and company (docs/dev/02 §2.2, §2.9): edited where they are read — among
  * the identity card's facts, or in its dashed *Job* slot while nothing is on record — and found by in
  * the People list, the search and the person picker, with a *Job* tag when only the job
- * explains the hit. Written after the owner tried it on the phone (docs/08 §8.4.1).
+ * explains the hit. Written after the owner tried it on the phone (docs/dev/08 §8.4.1).
  *
  * Every case brings its own people, with jobs no demo person has, so no case reads another's
  * data (the restore seed adds each name once).

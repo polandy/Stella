@@ -9,7 +9,7 @@ import type { AuthConfig } from './auth';
 import { createReleaseServices, type ReleaseWiring } from './release';
 
 /*
- * The release group of the composition root (docs/08 §8.3): what the edge gets from
+ * The release group of the composition root (docs/dev/08 §8.3): what the edge gets from
  * `locals.services.release` must answer end to end — over a feed that needs no network (a
  * `data:` URL stands in for GitHub) — and an instance that makes no check gets no check.
  */

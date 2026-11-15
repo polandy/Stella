@@ -9,7 +9,7 @@ import {
 import { isPlausibleTakenAt } from './taken-at';
 
 /*
- * Client-side photo processing (docs/02 §2.20 / §2.14 / §2.4.2). Unlike avatars this does not
+ * Client-side photo processing (docs/dev/02 §2.20 / §2.14 / §2.4.2). Unlike avatars this does not
  * crop: it fits the image within the sizes `./renditions` decides, preserving aspect ratio, and
  * produces a full, a thumbnail and — for a large group photo — a 1600 px view JPEG.
  * Re-encoding via canvas drops all EXIF/GPS metadata (privacy) and keeps uploads small, so the
@@ -83,7 +83,7 @@ async function render(
 
 /**
  * Downscale one picture into a full-size and a thumbnail JPEG. Takes any `Blob`, not only a
- * picked `File`: a Monica JSON import fetches its pictures back from the server (docs/02 §2.16).
+ * picked `File`: a Monica JSON import fetches its pictures back from the server (docs/dev/02 §2.16).
  */
 export function processImage(file: Blob): Promise<ProcessedImage> {
 	return render(file, photoRenditions);

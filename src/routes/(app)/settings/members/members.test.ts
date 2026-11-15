@@ -10,7 +10,7 @@ import { answerOf, formOf, routeEvent, type FakeServices } from '$lib/server/tes
 import { actions, load } from './+page.server';
 
 /*
- * The Members page (docs/02 §2.1) as the edge answers it: every member sees who signs in, an
+ * The Members page (docs/dev/02 §2.1) as the edge answers it: every member sees who signs in, an
  * admin also gets what removing each other member would leave behind, and the `remove` action
  * is an admin's, never on themselves, with a member already gone read as done; `restore` brings a
  * former member back, an admin's too, with one already back read as done. The use-cases

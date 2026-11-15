@@ -2,9 +2,9 @@ import { expect, test, type Page } from '@playwright/test';
 import { signIn } from './app';
 
 /*
- * The third file the import wizard takes: a vCard (docs/02 §2.16, docs/monica-mapping.md).
+ * The third file the import wizard takes: a vCard (docs/dev/02 §2.16, docs/user/monica-mapping.md).
  * Written after a real address-book export went through the wizard and was checked in the app
- * (docs/08 §8.4.1).
+ * (docs/dev/08 §8.4.1).
  *
  * What this file proves that neither Monica spec can: a `.vcf` is recognised with nothing to
  * pick, a format that carries people but no relationships says so instead of leaving the gap to
@@ -91,7 +91,7 @@ test('reviews a vCard, adds the ticked contacts, stores the picture and shows th
 	await page.getByRole('button', { name: 'Finish' }).click();
 	await expect(page).toHaveURL(/\/contacts$/);
 
-	// Her card carries a nickname, which is part of the name it shapes (docs/02 §2.2).
+	// Her card carries a nickname, which is part of the name it shapes (docs/dev/02 §2.2).
 	await page
 		.getByRole('link', { name: /Odile Margrit “Odi” Trachsel/ })
 		.first()

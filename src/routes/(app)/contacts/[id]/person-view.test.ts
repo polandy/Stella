@@ -21,7 +21,7 @@ import {
 } from './person-view';
 
 /*
- * What the person page is handed (docs/02 §2.2), piece by piece. The reads are scoped by the
+ * What the person page is handed (docs/dev/02 §2.2), piece by piece. The reads are scoped by the
  * access layer; this decides what each piece says — including who counts as "you", which is
  * an authorization statement rendered as a control.
  */
@@ -49,14 +49,14 @@ describe('birthdayOf', () => {
 		});
 	});
 
-	it('names no birthday for an estimated year, and offers the year instead (docs/03 §3.4)', () => {
+	it('names no birthday for an estimated year, and offers the year instead (docs/dev/03 §3.4)', () => {
 		expect(birthdayOf({ birthDate: '1980', birthDatePrecision: 'year' }, [])).toEqual({
 			derivedBirthday: null,
 			estimatedBirthYear: '1980'
 		});
 	});
 
-	it('gives way to a birthday entered as a date of its own (docs/02 §2.13.2)', () => {
+	it('gives way to a birthday entered as a date of its own (docs/dev/02 §2.13.2)', () => {
 		const dates = [{ kind: 'birthday' as const }];
 		expect(
 			birthdayOf({ birthDate: '1980-04-12', birthDatePrecision: 'full' }, dates).derivedBirthday
@@ -266,7 +266,7 @@ describe('declinedBy', () => {
 
 /*
  * The person page names people and circles from the visible graph it reads for the map,
- * instead of reading the household's names and circles again (docs/04 §4.11).
+ * instead of reading the household's names and circles again (docs/dev/04 §4.11).
  */
 describe('names out of the visible graph', () => {
 	const graph: GraphModel = {

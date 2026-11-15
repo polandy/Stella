@@ -17,7 +17,7 @@ import type * as schema from './schema';
 import { circle, circleMembership, photo } from './schema';
 
 /*
- * Drizzle adapter for the CircleRepository port (docs/08 §8.3): a circle's writes and the
+ * Drizzle adapter for the CircleRepository port (docs/dev/08 §8.3): a circle's writes and the
  * one-circle reads they rest on, scoped centrally via `circleColumnsVisibleTo` (§3.7). The lists
  * are read models of their own (`circle-directory-reads.ts`, `circle-membership-reads.ts`);
  * deleting a circle lives in `circle-deletion.ts`.
@@ -158,7 +158,7 @@ export function createDrizzleCircleRepository(
 			return deleteDeletableCircle(db, remover, circleId, audit);
 		},
 
-		// The photos are `photo` rows of this circle (docs/03 §photo): a role lives on both
+		// The photos are `photo` rows of this circle (docs/dev/03 §photo): a role lives on both
 		// tables, and one transaction keeps a role's people and its banner under one name.
 		async renameRole(change: RoleRename) {
 			db.transaction((tx) => {

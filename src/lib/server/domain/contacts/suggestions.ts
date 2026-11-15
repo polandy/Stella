@@ -1,7 +1,7 @@
 import type { Viewer } from '../../access/visibility';
 
 /*
- * Duplicate & relative suggestions (docs/02 §2.2.1). Pure ranking over names: no
+ * Duplicate & relative suggestions (docs/dev/02 §2.2.1). Pure ranking over names: no
  * persistence, no visibility — the caller passes only the people the viewer may see.
  * Deliberately simple matching (normalised equality plus one edit of tolerance) rather
  * than a phonetic scheme: the household is small and false positives cost attention.
@@ -131,7 +131,7 @@ export function rankNameCandidates(
 	return ranked.slice(0, limit).map(({ id, displayName, reason }) => ({ id, displayName, reason }));
 }
 
-/** Where quick-add's candidates come from: only people the viewer may see (docs/02 §2.10). */
+/** Where quick-add's candidates come from: only people the viewer may see (docs/dev/02 §2.10). */
 export interface NameCandidateSource {
 	listNameCandidatesVisibleTo(viewer: Viewer): Promise<NameCandidate[]>;
 }

@@ -2,8 +2,8 @@ import { expect, test } from '@playwright/test';
 import { appReady, signIn } from './app';
 
 /*
- * Finding a circle among many (docs/02 §2.4.2, docs/05 §5.5). Written after the screen was
- * seen in the running app (docs/08 §8.4.1). Read-only against the demo dataset: it types and
+ * Finding a circle among many (docs/dev/02 §2.4.2, docs/dev/05 §5.5). Written after the screen was
+ * seen in the running app (docs/dev/08 §8.4.1). Read-only against the demo dataset: it types and
  * clicks chips, and changes nothing another case could depend on.
  */
 

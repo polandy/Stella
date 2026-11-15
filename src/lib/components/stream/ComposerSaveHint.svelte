@@ -3,7 +3,7 @@
 	import type { ComposerReading } from '$lib/stream/composer-reading';
 
 	/*
-	 * The line beside Save: why it is off, or else where the moment will go (docs/02 §2.22.1).
+	 * The line beside Save: why it is off, or else where the moment will go (docs/dev/02 §2.22.1).
 	 */
 
 	interface Props {

@@ -2,7 +2,7 @@ import { describe, expect, it } from 'bun:test';
 import { graphKeyAction, nextInDirection } from './keyboard';
 
 /*
- * Walking the map from the keyboard (docs/05 §5.8): the arrow keys step to whoever stands
+ * Walking the map from the keyboard (docs/dev/05 §5.8): the arrow keys step to whoever stands
  * next in that direction on screen, so the keyboard follows the picture the reader is looking
  * at rather than an order they cannot see.
  */

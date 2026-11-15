@@ -11,7 +11,7 @@ import {
 } from './framing';
 
 /*
- * Wearing a gallery photo as the avatar through a chosen square (docs/02 §2.14). The photo stays
+ * Wearing a gallery photo as the avatar through a chosen square (docs/dev/02 §2.14). The photo stays
  * one photo: the square is remembered on a framing of it, and choosing again replaces that
  * framing rather than piling up copies. Tested over the ports with fakes.
  */

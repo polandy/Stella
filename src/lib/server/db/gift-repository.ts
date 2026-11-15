@@ -7,9 +7,9 @@ import type * as schema from './schema';
 import { contact, gift } from './schema';
 
 /*
- * Drizzle adapter for the GiftRepository port (docs/08 §8.3). Every read joins the person the
+ * Drizzle adapter for the GiftRepository port (docs/dev/08 §8.3). Every read joins the person the
  * gift is for and is scoped through the central `childRecordVisibleTo`, so a private gift — or
- * any gift on a private person — reaches only those allowed to see it (docs/03 §3.7). Writes
+ * any gift on a private person — reaches only those allowed to see it (docs/dev/03 §3.7). Writes
  * act on a gift the use-case has already found through such a read.
  */
 
@@ -115,7 +115,7 @@ export function createDrizzleGiftRepository(db: BunSQLiteDatabase<typeof schema>
 				.where(
 					and(
 						eq(gift.state, 'idea'),
-						// A list to act on is a browsing surface: an archived person is out (docs/04 §4.9).
+						// A list to act on is a browsing surface: an archived person is out (docs/dev/04 §4.9).
 						childRecordBrowsableBy(viewer, {
 							visibility: gift.visibility,
 							createdBy: gift.createdBy

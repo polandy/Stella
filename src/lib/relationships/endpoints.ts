@@ -12,7 +12,7 @@ export interface Endpoints {
 	toContactId: string;
 }
 
-/** A link from a person to themselves, which the table refuses too (docs/03 §relationship). */
+/** A link from a person to themselves, which the table refuses too (docs/dev/03 §relationship). */
 export class SelfRelationshipError extends TranslatableError {
 	constructor() {
 		super(phrase('errors.relationship.toThemselves'), 'SelfRelationshipError');
@@ -25,7 +25,7 @@ declare const canonical: unique symbol;
 export type RelationshipPair = Endpoints & { readonly [canonical]: true };
 
 /**
- * The canonical storage direction (docs/03 §3.3 relationship). A symmetric link is stored with
+ * The canonical storage direction (docs/dev/03 §3.3 relationship). A symmetric link is stored with
  * its ends sorted, so the unique index catches a duplicate whichever end it was entered from; a
  * one-way link keeps the given order (from = forward-label side). A self link is refused.
  */

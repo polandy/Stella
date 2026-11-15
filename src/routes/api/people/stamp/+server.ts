@@ -6,7 +6,7 @@ import type { RequestHandler } from './$types';
  * `GET /api/people/stamp`: the stamp of the people the app shell would send right now — a few
  * aggregates, not the list itself (`$lib/server/domain/contacts/people-stamp`) — so a
  * page that kept the shell across a navigation can tell whether its list is still current
- * (`$lib/sync/people-freshness`, docs/04 §4.9). Signed in by the session cookie, like
+ * (`$lib/sync/people-freshness`, docs/dev/04 §4.9). Signed in by the session cookie, like
  * `/api/offline/people`: the app talking to itself, not the scripting API.
  */
 export const GET: RequestHandler = async ({ locals }) => {

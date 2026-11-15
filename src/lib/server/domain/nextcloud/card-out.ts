@@ -11,7 +11,7 @@ import {
 } from '../import/vcard-lines';
 
 /*
- * A linked person written onto their Nextcloud card (docs/02 §2.16.3). Only the kept-in-step
+ * A linked person written onto their Nextcloud card (docs/dev/02 §2.16.3). Only the kept-in-step
  * facts are Stella's to write — name, phones, emails, addresses, birthday, photo — so the card
  * is rebuilt from the text the book last gave: every other line stays exactly as it was, and a
  * line that already says what Stella holds is kept too, with its label and whatever a phone

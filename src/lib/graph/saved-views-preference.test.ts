@@ -5,7 +5,7 @@ import { saveView } from './model/saved-views';
 import { savedViewsPreference } from './saved-views-preference';
 
 /*
- * Saved views are kept per device (docs/02 §2.7). What a stored list means is decided in
+ * Saved views are kept per device (docs/dev/02 §2.7). What a stored list means is decided in
  * `model/saved-views.ts`; this adapter only reads and writes it. A map stands in for
  * `localStorage`.
  */

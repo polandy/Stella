@@ -7,9 +7,9 @@ import type * as schema from './schema';
 import { contact as contactTable } from './schema';
 
 /*
- * Drizzle adapter for the people lists (docs/08 §8.3). The directory and everything that lists
+ * Drizzle adapter for the people lists (docs/dev/08 §8.3). The directory and everything that lists
  * the household read `contactBrowsableBy`, archived people left out; only the archive itself
- * reads `contactVisibleTo` with `archived_at` set (docs/03 §3.3, `contact`).
+ * reads `contactVisibleTo` with `archived_at` set (docs/dev/03 §3.3, `contact`).
  */
 
 /** What a list row shows; shared so the directory and the archive cannot drift apart. */

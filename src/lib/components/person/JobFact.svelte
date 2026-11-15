@@ -7,7 +7,7 @@
 	import type { PersonForm, PersonPageData } from './types';
 
 	/*
-	 * The job on the identity card, edited where it is read like the name (docs/02 §2.2); empty,
+	 * The job on the identity card, edited where it is read like the name (docs/dev/02 §2.2); empty,
 	 * a slot opens it.
 	 */
 	let {

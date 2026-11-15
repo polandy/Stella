@@ -49,7 +49,7 @@ import {
 } from './visibility';
 
 /*
- * Parity of the two statements of the visibility rules (docs/03 §3.7, AR-19): every rule in
+ * Parity of the two statements of the visibility rules (docs/dev/03 §3.7, AR-19): every rule in
  * `visibility.ts` is restated as SQL in `query-scoping.ts`, because lists are filtered in the
  * database. For one fixed set of rows — shared and private, own and someone else's, across two
  * households, every record kind a rule covers — and several viewers, each pair must pick the
@@ -399,7 +399,7 @@ describe('each hidden row has a visible control', () => {
 });
 
 /*
- * The removal rule (docs/03 §3.7) is no visibility rule but is stated twice the same way:
+ * The removal rule (docs/dev/03 §3.7) is no visibility rule but is stated twice the same way:
  * `canRemoveAuthored` decides one record, `authoredRemovableBy` scopes a delete. Same rows,
  * same answer — over every authored table, so the rule holds before the next kind uses it.
  */

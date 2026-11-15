@@ -5,7 +5,7 @@ import { generateSessionToken, hashSessionToken } from './tokens';
 /*
  * Session service — the use-case layer for the session lifecycle. It composes the pure
  * token hashing and expiry policy with persistence through the SessionRepository port
- * (docs/08 §8.3). It never touches the DB directly; the edge wires a concrete repository.
+ * (docs/dev/08 §8.3). It never touches the DB directly; the edge wires a concrete repository.
  */
 
 /** A persisted session. `id` is the SHA-256 of the token, never the raw token. */
@@ -15,7 +15,7 @@ export interface SessionRecord {
 	expiresAt: number;
 	/**
 	 * The ID token of the OIDC sign-in that opened this session, kept as the
-	 * `id_token_hint` for RP-initiated logout (docs/02 §2.1); null for a local sign-in.
+	 * `id_token_hint` for RP-initiated logout (docs/dev/02 §2.1); null for a local sign-in.
 	 */
 	oidcIdToken: string | null;
 }
@@ -82,7 +82,7 @@ export async function validateSessionToken(
 /**
  * Sign out: revoke the session behind a cookie token and report the OIDC ID token it
  * carried, which the caller needs as the `id_token_hint` for RP-initiated logout
- * (docs/02 §2.1). A token with no session behind it is a no-op.
+ * (docs/dev/02 §2.1). A token with no session behind it is a no-op.
  */
 export async function signOut(
 	deps: SessionDeps,

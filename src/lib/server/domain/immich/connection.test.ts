@@ -16,7 +16,7 @@ function connect() {
 }
 
 describe('isSupportedVersion', () => {
-	it('takes 3.2 and newer, and nothing older (docs/04 ADR-103)', () => {
+	it('takes 3.2 and newer, and nothing older (docs/dev/04 ADR-103)', () => {
 		expect(isSupportedVersion({ major: 3, minor: 2, patch: 0 })).toBe(true);
 		expect(isSupportedVersion({ major: 3, minor: 10, patch: 0 })).toBe(true);
 		expect(isSupportedVersion({ major: 4, minor: 0, patch: 0 })).toBe(true);

@@ -1,14 +1,14 @@
 import { isRealCalendarDay } from './calendar';
 
 /*
- * The pieces a date field is made of (docs/05 §5.7). A native `<input type="date">` takes its
+ * The pieces a date field is made of (docs/dev/05 §5.7). A native `<input type="date">` takes its
  * order, its separators and its month names from the *browser's* locale, which has nothing to
  * do with the language Stella is being read in — a German household on an English browser is
  * asked for `mm/dd/yyyy`. So the field is assembled here instead, from the app's own locale,
  * and this module is the part that can be tested without a browser.
  *
  * The year is a segment like any other, which is also how a birthday whose year nobody
- * remembers becomes expressible at all: leave it blank and the value is `--MM-DD` (docs/03).
+ * remembers becomes expressible at all: leave it blank and the value is `--MM-DD` (docs/dev/03).
  */
 
 /** The three segments, as text exactly as typed — empty means "not filled in yet". */

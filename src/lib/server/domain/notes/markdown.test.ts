@@ -2,7 +2,7 @@ import { describe, expect, it } from 'bun:test';
 import { renderMarkdown, renderMarkdownWithMentions } from './markdown';
 
 /*
- * Server-side Markdown rendering for notes (docs/02 §2.5). Configured so raw HTML is
+ * Server-side Markdown rendering for notes (docs/dev/02 §2.5). Configured so raw HTML is
  * escaped and unsafe link protocols are dropped — no separate sanitizer dependency needed.
  */
 
@@ -28,7 +28,7 @@ describe('renderMarkdown', () => {
 });
 
 /*
- * The chip half of the same renderer (docs/02 §2.20.1): a stored token becomes a link
+ * The chip half of the same renderer (docs/dev/02 §2.20.1): a stored token becomes a link
  * labelled with the person's *current* name, and an id the viewer may not see becomes a
  * neutral marker rather than a name. `nameOf` is the visibility scope, so the marker case is
  * the one that keeps a private person's existence out of a body someone else can read.
@@ -36,7 +36,7 @@ describe('renderMarkdown', () => {
 describe('renderMarkdownWithMentions', () => {
 	const names: Record<string, string> = {
 		'c-anna': 'Anna Weber',
-		// An imported contact keeps its Monica source id, colons and all (docs/02 §2.16).
+		// An imported contact keeps its Monica source id, colons and all (docs/dev/02 §2.16).
 		'monica:contact:9': 'Janosch Rohdewald'
 	};
 	const nameOf = (id: string) => names[id] ?? null;
@@ -77,7 +77,7 @@ describe('renderMarkdownWithMentions', () => {
 });
 
 /*
- * The tag half (docs/02 §2.20.2): a `#word` the parser reads as a tag becomes a chip linking to
+ * The tag half (docs/dev/02 §2.20.2): a `#word` the parser reads as a tag becomes a chip linking to
  * the journal filtered by it — the same words `hashtagsIn` stores, so what shows as a chip is
  * what the entry is filed under. Only a caller that says where a tag leads gets chips; a note
  * keeps its `#` as text.

@@ -2,7 +2,7 @@ import { describe, expect, it } from 'bun:test';
 import { circleNameKey } from './name-key';
 
 /*
- * The shared answer to "is this the circle they meant?" (docs/02 §2.4.2) — kept in one place
+ * The shared answer to "is this the circle they meant?" (docs/dev/02 §2.4.2) — kept in one place
  * because the name is typed by hand on the person's page and looked up again on the server.
  */
 describe('circleNameKey', () => {

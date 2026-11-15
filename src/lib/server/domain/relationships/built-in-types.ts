@@ -1,13 +1,13 @@
 import type { RelationshipType } from './relationships';
 
 /*
- * Built-in relationship types (docs/03 §relationship_type). Stable ids (= key) let the
+ * Built-in relationship types (docs/dev/03 §relationship_type). Stable ids (= key) let the
  * startup seeder upsert them idempotently. `household_id` is NULL for these globals.
  */
 
 export const BUILT_IN_RELATIONSHIP_TYPES: readonly RelationshipType[] = [
 	// Family first, closest first — the family terms Stella works out can each be stored as one
-	// of these once the household confirms it (docs/02 §2.4.1).
+	// of these once the household confirms it (docs/dev/02 §2.4.1).
 	{
 		id: 'parent_child',
 		householdId: null,

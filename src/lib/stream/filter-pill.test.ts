@@ -3,8 +3,8 @@ import { NO_FILTER } from './filter';
 import { filterPill } from './filter-pill';
 
 /*
- * On a phone Home folds the What, Who and Tags chip rows into one *Filter* pill (docs/02 §2.22.2,
- * docs/05 §5.5). The pill has to say whether the stream is narrowed — a narrowed stream must
+ * On a phone Home folds the What, Who and Tags chip rows into one *Filter* pill (docs/dev/02 §2.22.2,
+ * docs/dev/05 §5.5). The pill has to say whether the stream is narrowed — a narrowed stream must
  * never pass for a quiet household — and by what, without opening the sheet.
  */
 

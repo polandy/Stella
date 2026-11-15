@@ -4,7 +4,7 @@ import { contextOfPeople, type PersonContextDeps } from '../contacts/person-cont
 import { AmbiguousMentionError } from './resolve-for-audience';
 
 /*
- * A refused `@Thomas` names each Thomas the way the pickers do (docs/02 §2.2.3), a namesake
+ * A refused `@Thomas` names each Thomas the way the pickers do (docs/dev/02 §2.2.3), a namesake
  * with nothing typed included: by a relationship or a circle the author may see. Those are
  * read only once a text is refused, so a text that names nobody twice costs no extra query.
  */

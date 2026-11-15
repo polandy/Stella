@@ -17,7 +17,7 @@ import {
 import { readCapped } from '../http/read-capped';
 
 /*
- * The Immich adapter (docs/04 §4.3): Immich's REST API over `fetch`, with the
+ * The Immich adapter (docs/dev/04 §4.3): Immich's REST API over `fetch`, with the
  * household's key in the `x-api-key` header. The only file that knows Immich's paths; the
  * use-cases see the port.
  *
@@ -167,8 +167,8 @@ export function createHttpImmichGateway({
 		latestAssets: ({ personIds, match }, limit, cursor) => {
 			if (personIds.length === 0 || !personIds.every(isImmichId))
 				return Promise.resolve(failed('notFound'));
-			// The v3.2 search form (docs/04 ADR-103). Images in the timeline only: archived photos
-			// and the locked folder are never asked for (docs/02 §2.24.3); the parser checks each answer
+			// The v3.2 search form (docs/dev/04 ADR-103). Images in the timeline only: archived photos
+			// and the locked folder are never asked for (docs/dev/02 §2.24.3); the parser checks each answer
 			// again.
 			// A person Immich no longer has makes the search answer 400, like a call about them.
 			return ask('/api/search/metadata', json(readAssetPage), true, {
@@ -182,7 +182,7 @@ export function createHttpImmichGateway({
 			});
 		},
 		takenAssets: ({ from, before }, order, limit, cursor) =>
-			// Anyone's photos, in the timeline only, like a person's (docs/02 §2.24.9). Immich's
+			// Anyone's photos, in the timeline only, like a person's (docs/dev/02 §2.24.9). Immich's
 			// `takenAt` is the file's instant; the order is the camera's clock, so a day reads in turn.
 			ask('/api/search/metadata', json(readAssetPage), false, {
 				filter: {

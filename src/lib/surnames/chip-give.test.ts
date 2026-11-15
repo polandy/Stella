@@ -10,7 +10,7 @@ import {
 } from './chip-give';
 
 /*
- * The profile's last-name chip (docs/02 §2.2.4.6): a tap saves at once under the shell's
+ * The profile's last-name chip (docs/dev/02 §2.2.4.6): a tap saves at once under the shell's
  * activity indicator, the page reloads, and a toast offers *Undo*, which takes the name back
  * the same way. Every step is recorded in order by the fakes, so the spinner's span — from the
  * tap until the reload has landed — is asserted directly rather than waited for.

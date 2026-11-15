@@ -3,7 +3,7 @@ import { COMMAND_TYPES, isCommandType, isQueueable, kindOf, photoCommandFor } fr
 import { COMMAND_PAYLOAD_SCHEMAS } from './payloads';
 
 /*
- * The command vocabulary (docs/04 §4.11.2): which changes exist and what
+ * The command vocabulary (docs/dev/04 §4.11.2): which changes exist and what
  * kind each one is. The kind is what decides whether a device may hold a command back while
  * Stella is out of reach, so the table is the whole of that rule.
  */

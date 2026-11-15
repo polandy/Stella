@@ -24,7 +24,7 @@
 	const t = useTranslate();
 
 	/*
-	 * Duplicate & relative suggestions (docs/02 §2.2.1): once a surname is typed, the people
+	 * Duplicate & relative suggestions (docs/dev/02 §2.2.1): once a surname is typed, the people
 	 * who may already be this person — or a relative — appear under the name fields. Picking
 	 * one as a relative sends the new person straight into the relationship editor.
 	 */
@@ -38,7 +38,7 @@
 	// A name carried over from a search that found nobody (`?name=`), else blank.
 	let firstName = $state(untrack(() => data.name.firstName));
 	let lastName = $state(untrack(() => data.name.lastName));
-	/** Held here so it survives the field moving into the nudge and back (docs/02 §2.2.3). */
+	/** Held here so it survives the field moving into the nudge and back (docs/dev/02 §2.2.3). */
 	let description = $state('');
 	const askForSomethingToKnowThemBy = $derived(wantsSomethingToKnowThemBy({ firstName, lastName }));
 	let suggestions = $state<RankedCandidate[]>([]);
@@ -73,8 +73,8 @@
 	}
 
 	/*
-	 * Saved through the outbox (docs/04 ADR-076). Out of reach, the
-	 * person is kept on this device and added once Stella answers again (docs/02 §2.18). Their
+	 * Saved through the outbox (docs/dev/04 ADR-076). Out of reach, the
+	 * person is kept on this device and added once Stella answers again (docs/dev/02 §2.18). Their
 	 * page cannot open before then, so the form says so and stays here, empty, ready for the
 	 * next one; they show on Home as not sent yet.
 	 */
@@ -313,7 +313,7 @@
 			</div>
 		</details>
 
-		<!-- The composer's switch, so a finger finds it and shared stays the default (docs/05 §5.9). -->
+		<!-- The composer's switch, so a finger finds it and shared stays the default (docs/dev/05 §5.9). -->
 		<div class="flex items-center gap-3 text-sm">
 			<span class="text-fg-muted" aria-hidden="true">{t('contacts.new.visibility')}</span>
 			<ShareSwitch bind:shared name="visibility" />

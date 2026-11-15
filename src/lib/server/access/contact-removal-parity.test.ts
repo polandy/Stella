@@ -7,7 +7,7 @@ import { REMOVERS, seedParityDb } from './visibility-parity.fixture';
 import { canDeleteContact, canMergeContacts, type ContactAccess, type Remover } from './visibility';
 
 /*
- * Who may end a person's record (docs/02 §2.2, docs/03 §3.7): deleting and merging are an
+ * Who may end a person's record (docs/dev/02 §2.2, docs/dev/03 §3.7): deleting and merging are an
  * admin's, on the contacts they see. Stated twice like every rule here and held to the same
  * rows — the parity fixture's contacts, two households, shared and private.
  */

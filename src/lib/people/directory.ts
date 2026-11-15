@@ -1,5 +1,5 @@
 /*
- * The People directory (docs/02 §2.2): who goes under which letter, and who a typed query
+ * The People directory (docs/dev/02 §2.2): who goes under which letter, and who a typed query
  * finds. Pure and client-safe — the page filters as you type without a round trip, so the
  * rule has to live where both the server render and the browser can run it.
  */
@@ -14,7 +14,7 @@ export interface DirectoryPerson {
 	/** A maiden or other earlier name: who someone was is still how some remember them. */
 	formerName?: string | null;
 	description: string | null;
-	/** What they do and where: a teacher is often remembered as "the teacher" (docs/02 §2.2). */
+	/** What they do and where: a teacher is often remembered as "the teacher" (docs/dev/02 §2.2). */
 	jobTitle?: string | null;
 	company?: string | null;
 }

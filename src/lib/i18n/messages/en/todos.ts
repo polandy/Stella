@@ -1,8 +1,8 @@
-/* To-dos: what the household still owes a person, on the person page (docs/02 §2.26). */
+/* To-dos: what the household still owes a person, on the person page (docs/dev/02 §2.26). */
 
 export const todos = {
 	'todos.title': 'To-dos',
-	// The card as one line, with nothing open (docs/05 §5.5).
+	// The card as one line, with nothing open (docs/dev/05 §5.5).
 	'todos.none': 'Nothing open.',
 	'todos.add': 'Add',
 	'todos.form.for': (p: { name: string }) => `To-do for ${p.name}`,
@@ -25,11 +25,11 @@ export const todos = {
 	'todos.recallTick': (p: { title: string }) => `Undo tick: ${p.title}`,
 	// *Undo* on a tick kept on the device came too late: it had just gone out.
 	'todos.tickOnItsWay': 'Already sent: it can be opened again from Activity.',
-	// A done one in the person's Activity (docs/02 §2.23): its label, and unchecking it.
+	// A done one in the person's Activity (docs/dev/02 §2.23): its label, and unchecking it.
 	'todos.story.done': 'Done',
 	'todos.story.reopen': (p: { title: string }) => `Not done yet: ${p.title}`,
 	'todos.story.reopened': (p: { title: string }) => `Open again: ${p.title}`,
-	// Home's band (docs/02 §2.26.6): what is overdue or due within the week.
+	// Home's band (docs/dev/02 §2.26.6): what is overdue or due within the week.
 	'todos.band.title': 'To-dos',
 	// `/todos`: every open to-do of the household, grouped by its day.
 	'todos.list.title': 'To-dos',

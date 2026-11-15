@@ -3,7 +3,7 @@ import { enlargeMap, signIn } from './app';
 import { settled } from './graph-canvas';
 
 /*
- * The graph's full screen on a touch device (docs/05 §5.8): an app-level overlay rather than
+ * The graph's full screen on a touch device (docs/dev/05 §5.8): an app-level overlay rather than
  * the browser's own Fullscreen API, because iPadOS/iOS Safari reads a downward drag inside a
  * real Fullscreen-API element as "swipe to dismiss" — the same gesture that closes a full-screen
  * video — and panning the canvas is exactly that drag. What a touch context here can prove: the

@@ -7,7 +7,7 @@ import { newcomerRows } from './newcomer-rows';
 import type { ImmichMediaSigner } from './signed-media';
 
 /*
- * The rows of *New from Immich* built from what was read already (docs/02 §2.24.7). The tab as a
+ * The rows of *New from Immich* built from what was read already (docs/dev/02 §2.24.7). The tab as a
  * whole is `matching.test.ts`'s; these pin the comparison step's edges: a similar person whose
  * face Immich no longer lists or never named, and the context read for the similar alone.
  */

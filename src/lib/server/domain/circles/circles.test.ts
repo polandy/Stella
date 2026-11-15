@@ -26,7 +26,7 @@ import {
 import { groupMembersByRole, suggestRoles } from './role-groups';
 
 /*
- * Circle validation + use-cases (docs/02 §2.4.2). Pure/fake-driven: colour/kind normalisation,
+ * Circle validation + use-cases (docs/dev/02 §2.4.2). Pure/fake-driven: colour/kind normalisation,
  * find-or-create-then-join, and idempotent membership.
  */
 

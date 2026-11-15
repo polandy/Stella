@@ -1,7 +1,7 @@
 import type { KinshipGraph } from './kinship';
 
 /*
- * The links of a kinship graph as adjacency (docs/02 §2.4.1): who is whose parent, partner
+ * The links of a kinship graph as adjacency (docs/dev/02 §2.4.1): who is whose parent, partner
  * and sibling, read by `kinship.ts`.
  */
 

@@ -11,7 +11,7 @@ import {
 } from './labels';
 
 /*
- * Which words follow the reader and which do not (docs/02 §2.19): the vocabulary Stella
+ * Which words follow the reader and which do not (docs/dev/02 §2.19): the vocabulary Stella
  * ships with is translated by its key; a type the household typed itself is shown exactly
  * as they wrote it, in either language.
  */

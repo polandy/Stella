@@ -9,7 +9,7 @@ import { taskDone, taskLine } from './tasks';
 import { humanise, orNull } from './text';
 
 /*
- * What Monica kept about each person (docs/02 §2.16, docs/monica-mapping.md): notes, gifts,
+ * What Monica kept about each person (docs/dev/02 §2.16, docs/user/monica-mapping.md): notes, gifts,
  * tasks and activities have a record of their own here; life events and pets, which Stella has
  * no home for, become notes, and so does a gift the conversion refuses.
  */
@@ -41,7 +41,7 @@ export function planPersonRecords(exp: SourceExport, ctx: MonicaPlanContext): Pe
 	};
 	for (const n of exp.notes)
 		noteFor(`${prefix}:note:${n.id}`, n.contactId, null, n.body, n.isFavorited);
-	// A Monica gift becomes a gift record (docs/02 §2.25.4) under the id its note had, so a
+	// A Monica gift becomes a gift record (docs/dev/02 §2.25.4) under the id its note had, so a
 	// note left from an earlier import and its gift are one record. One the conversion refuses
 	// — given without a day, a status Monica does not have — stays the note it always was.
 	const gifts: Gift[] = [];
@@ -75,7 +75,7 @@ export function planPersonRecords(exp: SourceExport, ctx: MonicaPlanContext): Pe
 		].filter(Boolean);
 		noteFor(`${prefix}:gift:${g.id}`, g.contactId, wording.gift, lines.join('\n\n'), false, 'gift');
 	}
-	// ── Tasks → to-dos (docs/02 §2.26.8) ───────────────────────────────────
+	// ── Tasks → to-dos (docs/dev/02 §2.26.8) ───────────────────────────────────
 	const todos: Todo[] = [];
 	for (const t of exp.tasks) {
 		if (t.contactId === null) {

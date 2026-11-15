@@ -2,7 +2,7 @@ import { describe, expect, it } from 'bun:test';
 import { readReviewExport } from './review-export';
 
 /*
- * One vCard read both ways the matching review needs (docs/02 §2.16): the cards to compare and
+ * One vCard read both ways the matching review needs (docs/dev/02 §2.16): the cards to compare and
  * the export the import maps. These pin that card i is contact i of the mapping, also when a
  * contact was saved twice.
  */

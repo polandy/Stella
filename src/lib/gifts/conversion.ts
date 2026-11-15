@@ -2,7 +2,7 @@ import { INTL_LOCALES } from '../i18n/locales';
 import { giftLink, type GiftState } from './gifts';
 
 /*
- * Gifts Stella already held in other shapes, made gift records (docs/02 §2.25.4): the notes the
+ * Gifts Stella already held in other shapes, made gift records (docs/dev/02 §2.25.4): the notes the
  * Monica import wrote before gifts existed, and the touchpoints of the dropped kind *gift*. Pure
  * and shared, so the startup job, the restore and the importer decide the same way. Whatever
  * cannot be read back exactly is refused with a reason, never guessed — the caller then leaves

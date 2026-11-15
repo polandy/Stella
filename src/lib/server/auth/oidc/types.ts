@@ -1,7 +1,7 @@
 import type { Role } from '../accounts';
 
 /*
- * OIDC domain types (docs/02 §2.1.2, docs/04 §4.4). Pure data shared by the relying-party
+ * OIDC domain types (docs/dev/02 §2.1.2, docs/dev/04 §4.4). Pure data shared by the relying-party
  * logic; no framework or library types leak in here.
  */
 

@@ -1,11 +1,11 @@
 <script lang="ts">
 	/*
-	 * The one way a form says what went wrong (docs/05 §5.7). An alert, so a screen reader
+	 * The one way a form says what went wrong (docs/dev/05 §5.7). An alert, so a screen reader
 	 * hears the message the moment it appears instead of finding it by chance (WCAG 4.1.3,
 	 * 3.3.1); with an `id`, so the field it is about can point at it with `aria-describedby`.
 	 *
 	 * `banner` is a tinted strip above a form: the words are written in `--fg` on `--danger-soft`,
-	 * since `--danger` on its own tint drops below AA in Latte (docs/05 §5.6), and the red edge
+	 * since `--danger` on its own tint drops below AA in Latte (docs/dev/05 §5.6), and the red edge
 	 * says "error" without relying on the words' colour. `inline` is a line under one field,
 	 * written in `--danger` on the card or page it sits on.
 	 *

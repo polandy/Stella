@@ -15,7 +15,7 @@ import { takenAtField } from '$lib/server/http/taken-at-field';
 import { say, translator } from '$lib/server/i18n/say';
 
 /*
- * One imported photo per request (docs/02 §2.16). The plan is re-derived from the staged
+ * One imported photo per request (docs/dev/02 §2.16). The plan is re-derived from the staged
  * export on every request, so the photo id decides which contact it belongs to and whether it
  * becomes the avatar — the browser cannot choose that. A vCard was reviewed first, so its
  * picture goes where the remembered answer says: to the new person, or as the photo of the

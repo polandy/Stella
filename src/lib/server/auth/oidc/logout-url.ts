@@ -1,5 +1,5 @@
 /*
- * Build the provider's RP-initiated logout redirect (docs/02 §2.1). Pure — given what the
+ * Build the provider's RP-initiated logout redirect (docs/dev/02 §2.1). Pure — given what the
  * discovery document advertised and what the session carries, it either returns the URL to
  * bounce the browser through or null, meaning: sign out locally and be done.
  */

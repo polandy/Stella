@@ -1,7 +1,7 @@
 import { roleKey } from '../../../circles/role-key';
 
 /*
- * The roles people hold in circles (docs/02 §2.4.2), folded into one rule for which roles are
+ * The roles people hold in circles (docs/dev/02 §2.4.2), folded into one rule for which roles are
  * "the same": what to offer when someone joins, and how a circle's members are grouped.
  */
 

@@ -1,5 +1,5 @@
 /*
- * How the person page's Gifts card stands (docs/02 §2.25, docs/05 §5.5). Pure, so which tabs
+ * How the person page's Gifts card stands (docs/dev/02 §2.25, docs/dev/05 §5.5). Pure, so which tabs
  * it shows and how its lists are divided are tested without a browser; the card only renders.
  */
 
@@ -55,7 +55,7 @@ export function byYear<T extends { givenOn: string | null }>(gifts: readonly T[]
 const GIFT_PARAM = 'gift';
 
 /**
- * Where the command palette's *Gift idea for …* lands (docs/05 §5.4): the person's page, its
+ * Where the command palette's *Gift idea for …* lands (docs/dev/05 §5.4): the person's page, its
  * Gifts card's idea form open. No `#section-gifts`: after a client navigation SvelteKit focuses
  * the hash's target, which would take the cursor back out of the form; opening the form scrolls
  * it into view anyway.

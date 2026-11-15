@@ -17,8 +17,8 @@ import { createDemoAddressBook } from '../nextcloud/demo-book';
 import { createHttpAddressBookGateway } from '../nextcloud/http-gateway';
 
 /*
- * The `nextcloud` bounded context of the composition root (docs/08 §8.3): the household's link
- * to its Nextcloud address book (docs/02 §2.16.3) — the sync, the review of the book's new
+ * The `nextcloud` bounded context of the composition root (docs/dev/08 §8.3): the household's link
+ * to its Nextcloud address book (docs/dev/02 §2.16.3) — the sync, the review of the book's new
  * cards, and the answers to what a sync found in conflict. Built once per process by
  * `createServices`; the edge reads it off `locals.services.nextcloud`, which is null when this
  * instance has no address book — the link then appears nowhere. The app password stays inside

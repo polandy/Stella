@@ -12,7 +12,7 @@ import { reviewPerson, type ProposedLink } from './suggestion-review';
 import { inMemoryKinshipGraph, inMemoryRelationshipTies, someTie } from '../testing';
 
 /*
- * The family cards of the person page, read once (docs/04 §4.11). What is pinned here is that
+ * The family cards of the person page, read once (docs/dev/04 §4.11). What is pinned here is that
  * nothing changed for the reader — every answer is the one the separate use-cases give over the
  * same records — and that the store is asked once per thing rather than once per card.
  */
@@ -133,7 +133,7 @@ describe('readFamilyOf', () => {
 
 	it('says how each person at the far end of a tie is worded, for the card to name their role', async () => {
 		const read = await readFamilyOf(deps(), viewer, 'andy', { proposeFor: [], reviewOpen: false });
-		// Mia is on record as female, so the People card can call her his wife (docs/05 §5.5).
+		// Mia is on record as female, so the People card can call her his wife (docs/dev/05 §5.5).
 		expect(read.tieWording).toEqual({ mia: 'female' });
 	});
 

@@ -1,7 +1,7 @@
 import type { Point, Size, SizeOf } from './geometry';
 
 /*
- * A group by role as one block (docs/02 §2.7). Pure geometry: the renderer draws the frame
+ * A group by role as one block (docs/dev/02 §2.7). Pure geometry: the renderer draws the frame
  * around wherever the members stand, so standing them together is what makes a group compact.
  */
 

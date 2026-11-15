@@ -2,7 +2,7 @@ import { describe, expect, it } from 'bun:test';
 import { circleTimeline } from './timeline';
 
 /*
- * The geometry of a circle's sub-circles timeline (docs/02 §2.4.2): one bar per dated
+ * The geometry of a circle's sub-circles timeline (docs/dev/02 §2.4.2): one bar per dated
  * sub-circle on a month axis, an open end running to the axis end, a today marker and a tick at
  * every new year. Percentages, so the page only places them.
  */

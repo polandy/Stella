@@ -2,7 +2,7 @@ import { describe, expect, it } from 'bun:test';
 import { NAMED_RING_FACES, RING_HEIGHT, namedRing } from './named-ring';
 
 /*
- * The People card's map preview on a phone (docs/05 §5.5): the people entered in a ring round
+ * The People card's map preview on a phone (docs/dev/05 §5.5): the people entered in a ring round
  * this person, every face with its first name. A card is narrow, so the ring holds at most a
  * handful of faces and folds the rest into one "+N" disc, and no name may run into a face or
  * another name.

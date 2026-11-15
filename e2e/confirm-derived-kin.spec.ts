@@ -2,8 +2,8 @@ import { expect, test, type Page } from '@playwright/test';
 import { addPerson, editPeople, openPerson, pickPerson, signIn } from './app';
 
 /*
- * A worked-out relative can be confirmed, which stores it as an entered link (docs/02
- * §2.4.1). Written after the owner verified it in the running app (docs/08 §8.4.1).
+ * A worked-out relative can be confirmed, which stores it as an entered link (docs/dev/02
+ * §2.4.1). Written after the owner verified it in the running app (docs/dev/08 §8.4.1).
  *
  * The family is built from scratch: confirming a Brunner relative would take them out of the
  * derived block that `kinship.spec.ts` asserts on in the same serial suite.

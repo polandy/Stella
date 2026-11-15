@@ -2,8 +2,8 @@ import { expect, test } from '@playwright/test';
 import { appReady, pickPerson, signIn } from './app';
 
 /*
- * Circles as cards and a member grid (docs/02 §2.4.2, docs/05 §5.5). Written after the
- * screens were seen in the running app (docs/08 §8.4.1). Runs against the demo dataset,
+ * Circles as cards and a member grid (docs/dev/02 §2.4.2, docs/dev/05 §5.5). Written after the
+ * screens were seen in the running app (docs/dev/08 §8.4.1). Runs against the demo dataset,
  * signed in as the demo admin; the circle created here (Quill Choir) is absent from the seed.
  */
 

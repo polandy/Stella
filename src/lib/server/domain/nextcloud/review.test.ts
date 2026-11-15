@@ -9,7 +9,7 @@ import { BOOK, person } from '../testing/nextcloud-household';
 import { applyBookReview, prepareBookReview, unansweredCards } from './review';
 
 /*
- * The linked book's new cards in the matching review (docs/02 §2.16.3): every card Stella has
+ * The linked book's new cards in the matching review (docs/dev/02 §2.16.3): every card Stella has
  * not met yet is asked about once, under the book's source, against shared people only; what
  * is answered links the card, and a card's picture fills a person who has none.
  */

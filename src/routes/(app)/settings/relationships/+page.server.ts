@@ -38,13 +38,13 @@ import type { Translate } from '$lib/i18n/translate';
 import type { Actions, PageServerLoad } from './$types';
 
 /*
- * The household-wide relationship review (docs/02 §2.4.1), folded for scale (docs/04 ADR-010).
+ * The household-wide relationship review (docs/dev/02 §2.4.1), folded for scale (docs/dev/04 ADR-010).
  *
  * The person page asks what stands around *one* person, which only ever reaches the people
  * somebody thought to open. This asks about everyone the viewer can see, in one pass, because
  * a household that entered or imported its links years ago has opened none of them.
  *
- * The engine computes all of it — there is no cap (docs/04 §4.9) — so what this route does is
+ * The engine computes all of it — there is no cap (docs/dev/04 §4.9) — so what this route does is
  * fold: a page of people, a few claims per person, and the declined log behind its own address
  * once it outgrows a drawer. Every total handed to the screen is taken *before* the slice and
  * describes the household; only the range and `matched` follow the search. Mixing those two is
@@ -52,7 +52,7 @@ import type { Actions, PageServerLoad } from './$types';
  * being counted off whatever ended up on the page.
  *
  * Not admin-only: the dismissal log belongs to the household, any member sees the same answers
- * and any member may take one back (docs/03 §3.9). What it lists is scoped to the viewer's
+ * and any member may take one back (docs/dev/03 §3.9). What it lists is scoped to the viewer's
  * graph like everything else, so two members can see different families and neither can be
  * told about a person they may not see.
  */

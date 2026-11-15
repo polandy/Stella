@@ -14,12 +14,12 @@ import { removeNote } from '$lib/server/domain/notes/remove-note';
 import { say, translator } from '$lib/server/i18n/say';
 import type { Actions } from '../$types';
 
-/** The notes card (docs/02 §2.5). */
+/** The notes card (docs/dev/02 §2.5). */
 export const noteActions = {
 	addNote: async ({ request, params, locals }) => {
 		const viewer = requireViewer(locals);
 
-		// A note is a command (docs/04 §4.11.2): named by the form when it can, so a save whose
+		// A note is a command (docs/dev/04 §4.11.2): named by the form when it can, so a save whose
 		// answer was lost and is then kept on the phone is recognised when it arrives again.
 		const form = await request.formData();
 		const reading = readCommand({
@@ -79,7 +79,7 @@ export const noteActions = {
 
 		let edited: boolean;
 		try {
-			// A handle that could be several people is asked about, not dropped (docs/02 §2.2.3).
+			// A handle that could be several people is asked about, not dropped (docs/dev/02 §2.2.3).
 			edited = await withNamesakeContext(locals.services.people.namesakeContextDeps, viewer, () =>
 				editNote(
 					{
@@ -105,7 +105,7 @@ export const noteActions = {
 	},
 
 	/*
-	 * Held for the undo window and posted when it closes (docs/02 §2.23). Not a command: it
+	 * Held for the undo window and posted when it closes (docs/dev/02 §2.23). Not a command: it
 	 * waits for a connection, so the right to remove is checked at the moment it happens.
 	 */
 	removeNote: async ({ request, params, locals }) => {

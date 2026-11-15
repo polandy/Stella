@@ -6,7 +6,7 @@ import { requireAdmin, requireUser, requireViewer } from './guards';
 import type { AuthUser } from './accounts';
 
 /*
- * Admin-only surfaces (docs/02 §2.16 import, §2.17 "Data") — the guard every such route calls.
+ * Admin-only surfaces (docs/dev/02 §2.16 import, §2.17 "Data") — the guard every such route calls.
  * Both failure paths are asserted, and the admin path proves the guard can pass at all.
  */
 

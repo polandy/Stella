@@ -23,7 +23,7 @@
 	import ReviewCard from './ReviewCard.svelte';
 
 	/*
-	 * The vCard wizard's review step (docs/02 §2.16): one card per incoming contact that needs
+	 * The vCard wizard's review step (docs/dev/02 §2.16): one card per incoming contact that needs
 	 * an answer. The answers stay here until *Import*, which sends them all at once; the
 	 * server checks each again before it writes anything.
 	 */

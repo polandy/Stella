@@ -6,8 +6,8 @@ import { ContactGoneError } from '../contacts/require-visible';
 import { logInteractionChecked, type LogCheckedDeps } from './log-checked';
 
 /*
- * Logging a call or visit (docs/02 §2.6) as one use-case, so the person page and one kept on a
- * phone (docs/02 §2.18.1) are checked the same way: the person must be
+ * Logging a call or visit (docs/dev/02 §2.6) as one use-case, so the person page and one kept on a
+ * phone (docs/dev/02 §2.18.1) are checked the same way: the person must be
  * visible, and so must everyone named as taking part — an unknown participant is refused rather
  * than stored, so nothing outside the author's view is ever attached.
  */

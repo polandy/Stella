@@ -89,7 +89,7 @@ describe('setContactAvatar', () => {
 	});
 });
 
-describe('the gallery (docs/02 §2.14)', () => {
+describe('the gallery (docs/dev/02 §2.14)', () => {
 	/*
 	 * A gallery photo is one with no journal entry. U1 owns a shared and a private one on
 	 * Mara; U2 owns one of their own. Journal photos must stay out of every gallery read.
@@ -214,7 +214,7 @@ describe('the gallery (docs/02 §2.14)', () => {
 	});
 });
 
-describe('framings (docs/02 §2.14)', () => {
+describe('framings (docs/dev/02 §2.14)', () => {
 	/*
 	 * A framing is the square someone chose to wear a gallery photo as the avatar: a photo row of
 	 * its own, pointing at the gallery photo. U1 owns a shared and a private photo on Mara.

@@ -18,10 +18,10 @@
 </script>
 
 <!--
-	Where somebody else names this person (docs/02 §2.20.1). Read-only: each item links
+	Where somebody else names this person (docs/dev/02 §2.20.1). Read-only: each item links
 	to the person whose note or journal it is, because that is where it is written and
 	edited. The list is already scoped to what this viewer may see. Nobody mentioning the
-	person leaves the card off the page (docs/05 §5.5).
+	person leaves the card off the page (docs/dev/05 §5.5).
 -->
 {#if shape !== 'absent'}
 	<Section
@@ -59,7 +59,7 @@
 								{dayLabel(i18n, reference.day)}
 							</span>
 						</div>
-						<!-- A private entry's words stay blurred here too (docs/02 §2.10.1); the link opens it. -->
+						<!-- A private entry's words stay blurred here too (docs/dev/02 §2.10.1); the link opens it. -->
 						<Veil
 							id="mention:{reference.kind}:{reference.entryId}"
 							isPrivate={reference.visibility === 'private'}

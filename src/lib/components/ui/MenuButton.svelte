@@ -13,7 +13,7 @@
 	import type { IconName } from './icons';
 
 	/*
-	 * A pill that opens a small menu below it (docs/05 §5.8) — the graph toolbar's Filter and
+	 * A pill that opens a small menu below it (docs/dev/05 §5.8) — the graph toolbar's Filter and
 	 * Arrange. The menu floats over the canvas and takes no room of its own. It follows the
 	 * menu-button pattern: the arrow keys move between items, Escape closes and hands focus
 	 * back to the pill, and a click anywhere else closes it — bar a near miss just outside the edge. The items are the caller's, marked
@@ -34,14 +34,14 @@
 		/**
 		 * `pill` is the small rounded toggle of a toolbar; `button` frames the trigger like a
 		 * secondary button and drops the chevron, for a ⋯ beside a screen's own actions — the
-		 * person page's identity card (docs/05 §5.5). `icon` is a bare round icon button, and
+		 * person page's identity card (docs/dev/05 §5.5). `icon` is a bare round icon button, and
 		 * `outline` a bordered one with a word beside the icon — the photo button of a moment and
-		 * of a journal entry, which open *From this device* / *From Immich* (docs/02 §2.24.9).
+		 * of a journal entry, which open *From this device* / *From Immich* (docs/dev/02 §2.24.9).
 		 */
 		look?: 'pill' | 'button' | 'icon' | 'outline';
 		/**
 		 * A pill that shows only this icon on a phone, so the graph toolbar keeps one row beside
-		 * its search (docs/05 §5.8); `highlighted` is then a dot on it.
+		 * its search (docs/dev/05 §5.8); `highlighted` is then a dot on it.
 		 */
 		phoneIcon?: IconName;
 	}
@@ -154,7 +154,7 @@
 		all[next].focus();
 	}
 
-	/** How far outside the menu a tap still counts as a thumb that missed an item (docs/05 §5.8). */
+	/** How far outside the menu a tap still counts as a thumb that missed an item (docs/dev/05 §5.8). */
 	const NEAR_MISS = 16;
 
 	function onWindowPointerdown(event: PointerEvent) {

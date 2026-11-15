@@ -3,7 +3,7 @@ import { removalAudit } from '../activity/removal';
 import type { NoteDeps } from './notes';
 
 /*
- * Removing a note (docs/02 §2.5, docs/03 §3.7): its author always, an admin of the household
+ * Removing a note (docs/dev/02 §2.5, docs/dev/03 §3.7): its author always, an admin of the household
  * when it is shared. A removal by someone other than the author is told to the household in
  * the delete's own transaction; an author tidying up their own words is not.
  */

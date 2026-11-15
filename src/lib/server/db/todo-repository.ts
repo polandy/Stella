@@ -7,9 +7,9 @@ import type * as schema from './schema';
 import { contact, todo } from './schema';
 
 /*
- * Drizzle adapter for the TodoRepository port (docs/08 §8.3). Every read joins the person the
+ * Drizzle adapter for the TodoRepository port (docs/dev/08 §8.3). Every read joins the person the
  * to-do is about and is scoped through the central `childRecordVisibleTo`, so a private to-do —
- * or any to-do on a private person — reaches only those allowed to see it (docs/03 §3.7).
+ * or any to-do on a private person — reaches only those allowed to see it (docs/dev/03 §3.7).
  * Writes act on a to-do the use-case has already found through such a read.
  */
 
@@ -91,7 +91,7 @@ export function createDrizzleTodoRepository(db: BunSQLiteDatabase<typeof schema>
 				.where(
 					and(
 						isNull(todo.doneAt),
-						// A list to act on is a browsing surface: an archived person is out (docs/04 §4.9).
+						// A list to act on is a browsing surface: an archived person is out (docs/dev/04 §4.9).
 						childRecordBrowsableBy(viewer, {
 							visibility: todo.visibility,
 							createdBy: todo.createdBy

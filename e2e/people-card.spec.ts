@@ -3,8 +3,8 @@ import { appReady, editPeople, fromPeopleMenu, signIn, unfoldPeople } from './ap
 import { LINK, personIdOf, seedHousehold } from './seed';
 
 /*
- * The person page's compact People card and its jump bar (docs/05 §5.5, docs/02 §2.4). Written
- * after the owner tried them in the running app (docs/08 §8.4.1).
+ * The person page's compact People card and its jump bar (docs/dev/05 §5.5, docs/dev/02 §2.4). Written
+ * after the owner tried them in the running app (docs/dev/08 §8.4.1).
  *
  * Read-only against the demo household: forms are opened and cancelled, never sent, so the
  * seed's links stand as written. Markus Brunner has a wife, two parents, three children and a
@@ -208,7 +208,7 @@ test.describe('the jump bar', () => {
 			/^Notes/,
 			/^Gifts/
 		]);
-		// The bar shows only once the identity card has gone by (docs/05 §5.5).
+		// The bar shows only once the identity card has gone by (docs/dev/05 §5.5).
 		await page
 			.locator('#section-relationships')
 			.evaluate((el) => el.scrollIntoView({ block: 'start' }));

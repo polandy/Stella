@@ -3,7 +3,7 @@
 
 	/*
 	 * *(formerly Widmer)* after a name, when a search found the person by their former name
-	 * rather than by the name they are shown by (`foundByFormerName`, docs/02 §2.9). Nothing
+	 * rather than by the name they are shown by (`foundByFormerName`, docs/dev/02 §2.9). Nothing
 	 * when there is nothing to explain.
 	 */
 	let { name }: { name: string | null | undefined } = $props();

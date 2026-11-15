@@ -4,7 +4,7 @@ import { NOTHING_FOUND, type MomentHit, type NoteHit } from '$lib/server/domain/
 import { searchForView } from './search-view';
 
 /*
- * Search results as the page shows them (docs/02 §2.9): a note's or moment's snippet names the
+ * Search results as the page shows them (docs/dev/02 §2.9): a note's or moment's snippet names the
  * people it mentions the way the chip does, only as far as the viewer may see them.
  */
 

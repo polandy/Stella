@@ -6,7 +6,7 @@ import { ARCHIVE_FORMAT, ARCHIVE_VERSION, buildArchiveDocument } from './documen
 import { planRestore, type RestorePlan, type RestoreTarget } from './restore';
 
 /*
- * Reading back what the household has already answered (docs/02 §2.15): the export writes it
+ * Reading back what the household has already answered (docs/dev/02 §2.15): the export writes it
  * (`document-answers.test.ts`), and this is the other half — each list turned back into the
  * rows its table holds, so a restore asks nothing again and applies no resend twice. A row the
  * file cannot vouch for is left out and named, like everywhere else in a restore.

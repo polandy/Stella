@@ -2,14 +2,14 @@ import type { Viewer } from '../../access/visibility';
 import type { ContactFace, ContactName } from './contacts';
 
 /*
- * Id and name of the people a page is about to name (docs/02 §2.2): the @-mentions in a story
+ * Id and name of the people a page is about to name (docs/dev/02 §2.2): the @-mentions in a story
  * page, a circle's members, the people Home's stream lines mention. A read model, apart from
- * the `ContactRepository` that writes a contact (docs/08 §8.3).
+ * the `ContactRepository` that writes a contact (docs/dev/08 §8.3).
  *
  * Two scopes, on purpose. An @-mention already written resolves through the *visibility* scope:
  * archiving takes someone out of the lists, not out of the sentences that name them, so it must
  * keep reading their name rather than "@unknown". What the household is offered to act on uses
- * the *browsing* scope, archived people left out (docs/03 §3.3, `contact`).
+ * the *browsing* scope, archived people left out (docs/dev/03 §3.3, `contact`).
  */
 
 /** Names of contacts, read through the access layer. */

@@ -2,7 +2,7 @@ import { describe, expect, it } from 'bun:test';
 import { livesAtOffer, type LivesAtInput } from './lives-at';
 
 /*
- * The new child's or partner's address (docs/02 §2.4, *Lives at …*): created from the
+ * The new child's or partner's address (docs/dev/02 §2.4, *Lives at …*): created from the
  * relationship form of someone with one address, they are offered that address — the home
  * itself, so a move later changes it once for everyone.
  */

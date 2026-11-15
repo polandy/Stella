@@ -15,7 +15,7 @@
 	import type { PersonForm, PersonPageData } from './types';
 
 	/*
-	 * The circles someone belongs to, edited under their chips (docs/02 §2.7): each membership
+	 * The circles someone belongs to, edited under their chips (docs/dev/02 §2.7): each membership
 	 * with its role, changed in place, and *Leave*; then the form that joins one — or creates it.
 	 * The chips above stay links to the circle; this is where they are changed.
 	 */

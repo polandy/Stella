@@ -4,7 +4,7 @@ import { say } from '$lib/server/i18n/say';
 import type { RequestHandler } from './$types';
 
 /*
- * A page of the strip of a linked person's latest photos from Immich (docs/02
+ * A page of the strip of a linked person's latest photos from Immich (docs/dev/02
  * §2.24.3), from `?cursor=` on — or, with `?with=`, of the photos they are in
  * together with that other person (§2.24.8); or, with `?of=`, another linked person's photos for
  * *Find in Immich* to offer as this person's picture (§2.24.2). Fetched after the page, so a slow Immich never

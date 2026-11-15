@@ -8,7 +8,7 @@ import { phrase, type Phrase } from '../../../i18n/phrase';
 import { TranslatableError } from '../../../i18n/translatable';
 
 /*
- * Contact field use-cases (docs/02 §2.3). Fields are child records of a contact and have
+ * Contact field use-cases (docs/dev/02 §2.3). Fields are child records of a contact and have
  * no visibility of their own — they inherit the contact's, enforced by the adapter's
  * visibility-scoped reads. Orchestration and link derivation are pure.
  */
@@ -113,7 +113,7 @@ export async function addContactField(
 }
 
 /**
- * Rewrite a field where it is read — the identity card's address (docs/02 §2.2). The kind
+ * Rewrite a field where it is read — the identity card's address (docs/dev/02 §2.2). The kind
  * stays: a phone does not become an address by being edited. An empty value is refused, since
  * taking a field off is removing it, which has its own undo. The caller must have verified the
  * contact is visible.
@@ -133,7 +133,7 @@ export async function editContactField(
 
 /**
  * Remove a contact field. Anyone who sees the person may: a way to reach someone is a household
- * fact, not anyone's authored record (docs/03 §3.7). A person the viewer does not see is refused
+ * fact, not anyone's authored record (docs/dev/03 §3.7). A person the viewer does not see is refused
  * with `ContactGoneError`; a field already gone is not an error, so a second tap changes nothing.
  */
 export async function removeContactField(

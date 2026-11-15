@@ -8,7 +8,7 @@ import { translator } from '$lib/server/i18n/say';
 import type { RequestHandler } from './$types';
 
 /*
- * `POST /api/commands/photo` (docs/04 ADR-111): one photo for a command a
+ * `POST /api/commands/photo` (docs/dev/04 ADR-111): one photo for a command a
  * phone already sent, as multipart — `id`, `type` (`moment.photo`, `gallery.photo` or
  * `circleGallery.photo`), `parentId`, `image`, `thumb`, `width`, `height`, a large circle
  * photo's 1600 px `view`, and `takenAt` when the picture's EXIF said when it was taken — or, for a
@@ -31,7 +31,7 @@ export const POST: RequestHandler = async ({ locals, request }) => {
 		return file instanceof File ? new Uint8Array(await file.arrayBuffer()) : null;
 	};
 	const id = form.get('id');
-	// A copy from Immich is dated by its signed preview, not by the browser (docs/02 §2.24.9).
+	// A copy from Immich is dated by its signed preview, not by the browser (docs/dev/02 §2.24.9).
 	const takenAt = await photoTakenAt(locals.services.immich?.signer ?? null, user, {
 		immichToken: form.get('immichToken'),
 		takenAt: form.get('takenAt')

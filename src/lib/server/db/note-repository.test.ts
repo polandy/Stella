@@ -10,8 +10,8 @@ import { createDrizzleNoteRepository } from './note-repository';
 
 /*
  * Integration spec for the Drizzle NoteRepository: child-record visibility scoping
- * (private notes and notes on private contacts), pinned-first ordering (docs/03 §3.7), and the
- * @-mention links a note carries (docs/02 §2.5, §2.20.1).
+ * (private notes and notes on private contacts), pinned-first ordering (docs/dev/03 §3.7), and the
+ * @-mention links a note carries (docs/dev/02 §2.5, §2.20.1).
  */
 
 const H = 'household-1';
@@ -126,7 +126,7 @@ describe('note mentions', () => {
 	});
 });
 
-describe('updateOwn / findOwn (docs/03 §3.7: the author only, while they see it)', () => {
+describe('updateOwn / findOwn (docs/dev/03 §3.7: the author only, while they see it)', () => {
 	const U3 = 'user-3';
 	const viewerU3: Viewer = { id: U3, householdId: 'household-2' };
 	const edit = {

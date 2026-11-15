@@ -7,7 +7,7 @@ import { buildView } from '../view';
 import { K1 } from './kin';
 
 /*
- * K1 — a worked-out relative, offered for entering (docs/02 §2.4.1, rule K1).
+ * K1 — a worked-out relative, offered for entering (docs/dev/02 §2.4.1, rule K1).
  * The review asks about what Stella works
  * out as well as about what follows, so the household can enter it from the same list.
  */

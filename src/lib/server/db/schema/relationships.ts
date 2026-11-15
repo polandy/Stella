@@ -5,7 +5,7 @@ import { now } from './columns';
 import { household, user } from './household';
 import { contact } from './people';
 
-/* Relationships someone entered between two people (docs/03 §3.3). */
+/* Relationships someone entered between two people (docs/dev/03 §3.3). */
 
 export const relationshipType = sqliteTable('relationship_type', {
 	id: text('id').primaryKey(),
@@ -39,7 +39,7 @@ export const relationship = sqliteTable(
 		note: text('note'),
 		sinceDate: text('since_date'),
 		// A link that is on record holds until someone ends it, so there is no unset status:
-		// a row that says nothing says `current` (docs/03 §relationship).
+		// a row that says nothing says `current` (docs/dev/03 §relationship).
 		status: text('status').notNull().default(CURRENT_RELATIONSHIP_STATUS),
 		createdBy: text('created_by')
 			.notNull()
@@ -54,7 +54,7 @@ export const relationship = sqliteTable(
 		index('relationship_from_idx').on(t.fromContactId),
 		index('relationship_to_idx').on(t.toContactId),
 		index('relationship_type_idx').on(t.typeId),
-		// The newest links first, for the Home stream (docs/04 §4.8).
+		// The newest links first, for the Home stream (docs/dev/04 §4.8).
 		index('relationship_created_idx').on(t.createdAt)
 	]
 );

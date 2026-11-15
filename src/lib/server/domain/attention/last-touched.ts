@@ -1,7 +1,7 @@
 import type { Viewer } from '../../access/visibility';
 
 /*
- * Recorded attention (docs/02 §2.2): the latest day the household wrote anything about a
+ * Recorded attention (docs/dev/02 §2.2): the latest day the household wrote anything about a
  * person, as the People list shows it. It measures what was *recorded*, not contact — Stella
  * cannot know about the phone call nobody logged.
  */

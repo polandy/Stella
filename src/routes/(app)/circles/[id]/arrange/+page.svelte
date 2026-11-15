@@ -4,7 +4,7 @@
 	import type { PageData } from './$types';
 
 	/*
-	 * Arrange people (docs/02 §2.4.2): its own view, reached from the circle's members section,
+	 * Arrange people (docs/dev/02 §2.4.2): its own view, reached from the circle's members section,
 	 * so the circle's page stays about the circle. The board does the arranging.
 	 */
 	let { data }: { data: PageData } = $props();

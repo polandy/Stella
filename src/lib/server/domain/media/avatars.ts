@@ -9,11 +9,11 @@ import type { IdGenerator } from '../../id';
 import { isPlausibleTakenAt, isTakenAt } from '../../../media/taken-at';
 
 /*
- * Avatar media domain (docs/02 §2.14, M1). Images are cropped/resized/EXIF-stripped in the
+ * Avatar media domain (docs/dev/02 §2.14, M1). Images are cropped/resized/EXIF-stripped in the
  * browser (a deliberate choice — no server-side native image dep, runs identically in dev and
  * prod); the server's job here is to *validate* the uploaded bytes and store them behind the
  * visibility model. Pure validation plus the setContactAvatar use-case over storage/repository
- * ports (docs/08 §8.3), tested with fakes — no filesystem or DB.
+ * ports (docs/dev/08 §8.3), tested with fakes — no filesystem or DB.
  */
 
 export type ImageMime = 'image/jpeg' | 'image/png' | 'image/webp';
@@ -73,7 +73,7 @@ export interface AvatarUpload {
 }
 
 /**
- * An upload's capture date as it is stored (docs/02 §2.14): null when the picture carried none,
+ * An upload's capture date as it is stored (docs/dev/02 §2.14): null when the picture carried none,
  * which is normal; refused through `refuse` when it does not read or cannot be real — the phone
  * drops a date like that before sending, so one arriving was not sent by Stella's own pages.
  */
@@ -136,7 +136,7 @@ export interface StoredPhoto {
 
 /**
  * Which size of a photo to serve: the full picture, the 1600 px view a circle photo keeps beside
- * its larger full picture (docs/02 §2.4.2), or the thumbnail. A photo without a view serves its
+ * its larger full picture (docs/dev/02 §2.4.2), or the thumbnail. A photo without a view serves its
  * full picture for it.
  */
 export type PhotoVariant = 'full' | 'view' | 'thumb';
@@ -147,7 +147,7 @@ export interface PhotoFile {
 	mime: string;
 }
 
-/** One photo in a contact's gallery (docs/02 §2.14), resolved for rendering. */
+/** One photo in a contact's gallery (docs/dev/02 §2.14), resolved for rendering. */
 export interface GalleryPhoto {
 	id: string;
 	contactId: string;
@@ -167,7 +167,7 @@ export interface GalleryPhoto {
 	pinnedAt: number | null;
 	/**
 	 * The group photo this one was cut from, once a profile picture of its own
-	 * (docs/02 §2.14); null when it was not, or the viewer cannot see it.
+	 * (docs/dev/02 §2.14); null when it was not, or the viewer cannot see it.
 	 */
 	cutFrom: { photoId: string; circleId: string; circleName: string } | null;
 }
@@ -179,7 +179,7 @@ export interface DeletedPhotoFiles {
 }
 
 /**
- * The photo record's writes (docs/08 §8.3). What a screen reads of photos are read models of
+ * The photo record's writes (docs/dev/08 §8.3). What a screen reads of photos are read models of
  * their own: `PhotoFileReads` below, `GalleryPhotoReads` (`./gallery`) and `JournalPhotoReads`
  * (`./journal-photos`).
  */
@@ -216,9 +216,9 @@ export interface PhotoRepository {
 	): Promise<DeletedPhotoFiles[] | null>;
 }
 
-/** Which stored file `/media/[id]` serves (docs/04 §4.6): a read model of its own. */
+/** Which stored file `/media/[id]` serves (docs/dev/04 §4.6): a read model of its own. */
 export interface PhotoFileReads {
-	/** A photo's file in one of its sizes, only if the viewer may see it (docs/03 §3.7). */
+	/** A photo's file in one of its sizes, only if the viewer may see it (docs/dev/03 §3.7). */
 	getVisiblePhotoFile(
 		viewer: Viewer,
 		photoId: string,

@@ -2,7 +2,7 @@ import type { TreeCircle } from '../../circles/tree';
 import { canViewCircle, type Viewer } from './visibility';
 
 /*
- * The circle nesting as one reader may see it (docs/02 §2.4.2, §3.7). The nesting is read for
+ * The circle nesting as one reader may see it (docs/dev/02 §2.4.2, §3.7). The nesting is read for
  * the whole household in one go, so the visibility rule runs here, on the rows, rather than in
  * the query: a hidden circle still has to be counted under a parent the reader sees.
  */

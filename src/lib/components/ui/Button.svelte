@@ -4,7 +4,7 @@
 	import type { IconName } from './icons';
 
 	/*
-	 * The button family (docs/05 §5.7). Four variants, and each one means something:
+	 * The button family (docs/dev/05 §5.7). Four variants, and each one means something:
 	 *   primary    the one action a screen is for — at most one per view
 	 *   secondary  a real action next to it, outlined so it reads as a control
 	 *   ghost      a quiet action inside a list or a card header

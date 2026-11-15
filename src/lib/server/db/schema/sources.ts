@@ -4,11 +4,11 @@ import type { ContactSource, SourceLinkState } from '../../domain/import/source-
 import { household, user } from './household';
 import { contact } from './people';
 
-/* Other address books: which of their cards is which person (docs/03 §3.3). */
+/* Other address books: which of their cards is which person (docs/dev/03 §3.3). */
 
 /*
  * The household's answer for one card of another address book: it is this person, or it was
- * skipped (docs/02 §2.16, docs/03 §contact_source_link). Keyed by the source and the card's
+ * skipped (docs/dev/02 §2.16, docs/dev/03 §contact_source_link). Keyed by the source and the card's
  * key, so the same export read again finds its answers. Household data like a declined
  * suggestion — anyone may take a skip back. Deleted with the person it names, carried through
  * a merge.

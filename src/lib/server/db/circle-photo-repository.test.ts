@@ -10,8 +10,8 @@ import { createDrizzlePhotoRepository } from './photo-repository';
 import * as schema from './schema';
 
 /*
- * Integration spec for the circle photo adapter (docs/02 §2.4.2): reads are scoped by the
- * circle's visibility and the photo's own (docs/03 §3.7), re-scoping and removing are the
+ * Integration spec for the circle photo adapter (docs/dev/02 §2.4.2): reads are scoped by the
+ * circle's visibility and the photo's own (docs/dev/03 §3.7), re-scoping and removing are the
  * uploader's, and a circle photo never turns up as anyone's gallery photo.
  */
 

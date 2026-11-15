@@ -7,10 +7,10 @@ import { answerOf, formOf, routeEvent, type FakeServices } from '$lib/server/tes
 import { actions } from './+page.server';
 
 /*
- * *Mark as given* on the household's list (docs/02 §2.25.6), as the edge answers it. The list
+ * *Mark as given* on the household's list (docs/dev/02 §2.25.6), as the edge answers it. The list
  * has no person in its URL, so the form names them and the access layer checks it; the answer
  * goes back to the list. The row's answer is held for the undo window, and a 404 tells that
- * post the idea is already gone (docs/02 §2.23).
+ * post the idea is already gone (docs/dev/02 §2.23).
  */
 
 const t = createTranslator('en');

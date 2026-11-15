@@ -1,5 +1,5 @@
 /*
- * What a tap on a face in *Find in Immich* does (docs/02 §2.24.2). One Immich person is one
+ * What a tap on a face in *Find in Immich* does (docs/dev/02 §2.24.2). One Immich person is one
  * contact, so a face someone else holds is never linked again from here; but when the member sees
  * who holds it, their photos are worth looking through — a group photo may hold the person the
  * picker is for, unlinked in Immich or nameless there — and one of them can become this person's

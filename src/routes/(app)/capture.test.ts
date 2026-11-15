@@ -7,7 +7,7 @@ import { answerOf, formOf, MEMBER, routeEvent } from '$lib/server/testing';
 import { actions } from './+page.server';
 
 /*
- * Home's capture (docs/02 §2.22.1) as the edge answers it: the moment read off the form, a
+ * Home's capture (docs/dev/02 §2.22.1) as the edge answers it: the moment read off the form, a
  * refusal said in the composer with the draft kept, then each photo as a command of its own
  * under the moment — and back Home, with the link hint when the moment named two people. The
  * moment and photo use-cases have their own suites; their handlers here only answer.

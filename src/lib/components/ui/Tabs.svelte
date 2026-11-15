@@ -3,7 +3,7 @@
 	import { tabAfterKey } from '$lib/ui/tabs';
 
 	/*
-	 * The pill-shaped tab list (docs/05 §5.7): the Gifts card, the Photos card, the Immich
+	 * The pill-shaped tab list (docs/dev/05 §5.7): the Gifts card, the Photos card, the Immich
 	 * settings page. Tabs in the ARIA sense, so the arrow keys move between them and only the
 	 * chosen one is a Tab stop. The panel stays with the caller, which names it in `panel` and
 	 * labels it with the chosen tab's id, `${idPrefix}-${chosen}`.

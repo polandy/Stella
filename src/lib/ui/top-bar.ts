@@ -1,5 +1,5 @@
 /*
- * When the phone's top bar gets out of the way (docs/05 §5.4): it slides away while the
+ * When the phone's top bar gets out of the way (docs/dev/05 §5.4): it slides away while the
  * reader scrolls down and comes back as soon as they scroll up, so the search and the add
  * button are one flick away without taking a row of the screen all the time. Kept out of the
  * shell so the thresholds test without a browser; the shell only feeds it scroll positions.
@@ -49,7 +49,7 @@ export function followScroll(
 
 /**
  * Whether the bar offers *Add person* on the route `routeId`. Not on the add page itself: two
- * primary actions of one name, and the bar's would only reload the form (docs/05 §5.4).
+ * primary actions of one name, and the bar's would only reload the form (docs/dev/05 §5.4).
  */
 export function offersAddPerson(routeId: string | null): boolean {
 	return routeId !== '/(app)/contacts/new';

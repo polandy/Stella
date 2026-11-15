@@ -4,13 +4,13 @@ import svelte from 'eslint-plugin-svelte';
 import globals from 'globals';
 import ts from 'typescript-eslint';
 
-// The framework's own modules. Business logic is plain TypeScript (docs/08 §8.3), so these
+// The framework's own modules. Business logic is plain TypeScript (docs/dev/08 §8.3), so these
 // may only be imported at the edges: routes, hooks and the browser adapters.
 const frameworkImports = [
 	{
 		group: ['$app', '$app/*', '$env', '$env/*', '@sveltejs/kit', '@sveltejs/kit/*'],
 		message:
-			'Framework-agnostic code: SvelteKit belongs at the edges (routes/hooks), see docs/08 §8.3.'
+			'Framework-agnostic code: SvelteKit belongs at the edges (routes/hooks), see docs/dev/08 §8.3.'
 	}
 ];
 
@@ -25,7 +25,7 @@ const pureImports = [
 ];
 
 // `services/` wires concretes to use-cases; only the SvelteKit edge may reach for it, or a
-// use-case would end up depending on a concrete DB again (docs/08 §8.3). Any module inside the
+// use-case would end up depending on a concrete DB again (docs/dev/08 §8.3). Any module inside the
 // folder counts, not just its index — `../services/app-services` hands out the same wiring —
 // while `import type` stays open: a slice's type is how a helper asks for narrow deps.
 // `boundary.test.ts` says the same under `bun test`, resolving relative paths exactly.
@@ -84,17 +84,17 @@ const frameworkExceptions = [
 ];
 
 // A command's refusal is already an answer; anything it throws is ours, and must reach
-// `handleError` to be logged rather than turn into a form message (docs/04 §4.4).
+// `handleError` to be logged rather than turn into a form message (docs/dev/04 §4.4).
 const failLoudSyntax = [
 	{
 		selector:
 			"CallExpression[callee.property.name='catch'][callee.object.callee.name='dispatchCommand']",
 		message:
-			'Do not catch dispatchCommand: refusals come back as its outcome, everything else must reach handleError (docs/08 §8.2 item 11).'
+			'Do not catch dispatchCommand: refusals come back as its outcome, everything else must reach handleError (docs/dev/08 §8.2 item 11).'
 	}
 ];
 
-// Edge boilerplate that has one shared home (docs/04 §4.4). A copy is a place to get the
+// Edge boilerplate that has one shared home (docs/dev/04 §4.4). A copy is a place to get the
 // status, the path or the household wrong, and a wall-clock read disagrees with the `clock`.
 const edgeBoilerplateSyntax = [
 	{
@@ -107,7 +107,7 @@ const edgeBoilerplateSyntax = [
 		selector:
 			"NewExpression[callee.name='Date'], CallExpression[callee.object.name='Date'][callee.property.name='now']",
 		message:
-			'The edge reads time off the injected clock: todayFor(systemClock) from $lib/dates/today, or clock.now() (docs/08 §8.2 item 10).'
+			'The edge reads time off the injected clock: todayFor(systemClock) from $lib/dates/today, or clock.now() (docs/dev/08 §8.2 item 10).'
 	},
 	{
 		selector:

@@ -8,7 +8,7 @@ import {
 } from './command-palette';
 
 /*
- * The command palette (docs/05 §5.4, docs/02 §2.22.1): what ⌘K offers for a given query.
+ * The command palette (docs/dev/05 §5.4, docs/dev/02 §2.22.1): what ⌘K offers for a given query.
  * Pure, so the order of rows — and the promise that an empty palette still leads to the
  * capture field — is stated here rather than in a component.
  */
@@ -62,7 +62,7 @@ describe('a person found by their former name', () => {
 	});
 });
 
-describe('a person found by their job (docs/02 §2.9)', () => {
+describe('a person found by their job (docs/dev/02 §2.9)', () => {
 	const anna = person('anna', 'Anna Meier', {
 		lastName: 'Meier',
 		jobTitle: 'Lab technician',
@@ -196,7 +196,7 @@ describe('paletteRows', () => {
 	});
 });
 
-describe('a gift idea from the palette (docs/02 §2.25.2)', () => {
+describe('a gift idea from the palette (docs/dev/02 §2.25.2)', () => {
 	it('sits next to writing a moment, and leads to a second step rather than a page', () => {
 		const rows = paletteRows('', people, labels);
 
@@ -217,7 +217,7 @@ describe('a gift idea from the palette (docs/02 §2.25.2)', () => {
 		expect(paletteRows('gift', people, labels).map((r) => r.id)).toContain('gift-idea');
 	});
 
-	it('opens the household’s list of every open idea (docs/02 §2.25.6)', () => {
+	it('opens the household’s list of every open idea (docs/dev/02 §2.25.6)', () => {
 		expect(paletteRows('ideas', people, labels)[0]).toMatchObject({
 			kind: 'action',
 			id: 'gift-ideas',
@@ -225,7 +225,7 @@ describe('a gift idea from the palette (docs/02 §2.25.2)', () => {
 		});
 	});
 
-	it('opens the household’s list of every open to-do (docs/02 §2.26.6)', () => {
+	it('opens the household’s list of every open to-do (docs/dev/02 §2.26.6)', () => {
 		expect(paletteRows('all to-dos', people, labels)[0]).toMatchObject({
 			kind: 'action',
 			id: 'all-todos',
@@ -233,7 +233,7 @@ describe('a gift idea from the palette (docs/02 §2.25.2)', () => {
 		});
 	});
 
-	it('opens *On this day* (docs/02 §2.12.1)', () => {
+	it('opens *On this day* (docs/dev/02 §2.12.1)', () => {
 		expect(paletteRows('on this day', people, labels)[0]).toMatchObject({
 			kind: 'action',
 			id: 'on-this-day',
@@ -256,7 +256,7 @@ describe('a gift idea from the palette (docs/02 §2.25.2)', () => {
 	});
 });
 
-describe('a to-do from the palette (docs/02 §2.26)', () => {
+describe('a to-do from the palette (docs/dev/02 §2.26)', () => {
 	it('sits beside the gift idea, and leads to a second step rather than a page', () => {
 		const rows = paletteRows('to do', people, labels);
 
@@ -278,7 +278,7 @@ describe('a to-do from the palette (docs/02 §2.26)', () => {
 	});
 });
 
-describe('a person’s brief from the palette (docs/02 §2.2.5)', () => {
+describe('a person’s brief from the palette (docs/dev/02 §2.2.5)', () => {
 	it('is found by its name, and leads to a second step rather than a page', () => {
 		expect(paletteRows('brief', people, labels)[0]).toMatchObject({
 			kind: 'step',

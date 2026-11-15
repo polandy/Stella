@@ -11,7 +11,7 @@ import { createDrizzleStreamRepository } from './stream-repository';
 import { writeEntryTags } from './entry-tags';
 
 /*
- * Integration spec for the Drizzle StreamRepository (docs/02 §2.22.2): each source is
+ * Integration spec for the Drizzle StreamRepository (docs/dev/02 §2.22.2): each source is
  * newest-first and visibility-scoped — another member's private moment, person or
  * half-private relationship never reaches the viewer's stream, and mention chips only name
  * people the viewer may see.
@@ -304,7 +304,7 @@ describe('recentNotices', () => {
 	});
 
 	it('reports an export, so the household sees that its archive was taken', async () => {
-		// The archive carries every member's private records (docs/02 §2.15). Admin-only is
+		// The archive carries every member's private records (docs/dev/02 §2.15). Admin-only is
 		// half of what makes that acceptable; the household being able to see it is the other.
 		db.insert(schema.activityLog)
 			.values({
@@ -359,7 +359,7 @@ describe('recentNotices', () => {
 		expect((await repo.recentNotices(asU2, EVERYONE)).map((r) => r.id)).toEqual(['gone']);
 	});
 
-	it('reports last names set for several people at once (docs/02 §2.2.4.4)', async () => {
+	it('reports last names set for several people at once (docs/dev/02 §2.2.4.4)', async () => {
 		// An update, but the one the household is told about: a batch changes how people read.
 		db.insert(schema.activityLog)
 			.values({
@@ -463,7 +463,7 @@ describe('recentNotices', () => {
 	});
 });
 
-describe('narrowed to one member (docs/02 §2.22.2)', () => {
+describe('narrowed to one member (docs/dev/02 §2.22.2)', () => {
 	const byOne: StreamQuery = { limit: 10, memberId: U1 };
 
 	it('returns only what that member did, from every table-backed source', async () => {
@@ -505,7 +505,7 @@ describe('narrowed to one member (docs/02 §2.22.2)', () => {
 	});
 });
 
-describe('narrowed to tags (docs/02 §2.20.2)', () => {
+describe('narrowed to tags (docs/dev/02 §2.20.2)', () => {
 	let n = 0;
 	const ids = { next: () => `tag-${++n}` };
 	const tag = (entryId: string, ...names: string[]) => writeEntryTags(db, ids, entryId, names);

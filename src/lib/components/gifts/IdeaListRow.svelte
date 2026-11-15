@@ -15,7 +15,7 @@
 	import { tick } from 'svelte';
 
 	/*
-	 * One open idea on the household's list (docs/02 §2.25.6): what it is, its note, who noted
+	 * One open idea on the household's list (docs/dev/02 §2.25.6): what it is, its note, who noted
 	 * it — and *Mark as given*, asking only for the day and the occasion, with the occasion the
 	 * group is for already chosen. The answer is held for one undo window before it is sent
 	 * (`heldAnswer`), so a mis-tap costs nothing; until then the row is hidden.

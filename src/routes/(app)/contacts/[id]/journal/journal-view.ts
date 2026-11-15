@@ -10,8 +10,8 @@ import { authorLabel } from '$lib/story/author';
 import { faceLookup, subjectFacesOf, type SubjectFace } from '$lib/story/subjects';
 
 /*
- * The journal's entries as the page shows them (docs/02 §2.20), as plain data so it is tested
- * without a request (docs/08 §8.5): `+page.server.ts` reads the entries, their photos and the
+ * The journal's entries as the page shows them (docs/dev/02 §2.20), as plain data so it is tested
+ * without a request (docs/dev/08 §8.5): `+page.server.ts` reads the entries, their photos and the
  * names they mention, and hands them over.
  */
 
@@ -23,7 +23,7 @@ export interface JournalViewInput {
 	entries: readonly JournalEntry[];
 	/** The visible photos on the contact, oldest first. */
 	photos: readonly JournalPhotoRef[];
-	/** The Immich photos the entries refer to, by entry (docs/04 ADR-132). */
+	/** The Immich photos the entries refer to, by entry (docs/dev/04 ADR-132). */
 	immichPhotos: ReadonlyMap<string, EntryImmichPhoto[]>;
 	/** The people the entries are about or mention that the viewer may see, archived ones included. */
 	names: readonly SubjectFace[];
@@ -69,12 +69,12 @@ export function journalEntriesFor({
 	}
 
 	// Name lookup for @-mention chips, scoped to what the viewer may see — archived people
-	// included, since a mention already written still names them (docs/02 §2.2).
+	// included, since a mention already written still names them (docs/dev/02 §2.2).
 	const nameById = new Map(names.map((c) => [c.id, c.displayName]));
 	const nameOf = (id: string) => nameById.get(id) ?? null;
 	const faceOf = faceLookup(names);
 
-	// An entry carries a tag when its text does — the same reading that filed it (docs/02 §2.20.2).
+	// An entry carries a tag when its text does — the same reading that filed it (docs/dev/02 §2.20.2).
 	const keys = tags.map(tagKey);
 	const shown = entries.filter((e) => {
 		const carried = new Set(hashtagsIn(e.body).map(tagKey));
@@ -83,7 +83,7 @@ export function journalEntriesFor({
 	const tagHref = journalTagHref(contactId);
 
 	// render Markdown, @-mentions and #tags server-side; the output is already safe
-	// (docs/02 §2.5, §2.20.1, §2.20.2)
+	// (docs/dev/02 §2.5, §2.20.1, §2.20.2)
 	return shown.map((e) => ({
 		id: e.id,
 		entryDate: e.entryDate,
@@ -103,7 +103,7 @@ export function journalEntriesFor({
 			visibility: e.visibility,
 			contact: person
 		}),
-		// Who wrote each entry, named the same way the story names it (docs/02 §2.23).
+		// Who wrote each entry, named the same way the story names it (docs/dev/02 §2.23).
 		author: authorLabel(e.createdBy === viewerId, nameOfAuthor(e.createdBy)),
 		photos: photosByEntry.get(e.id) ?? [],
 		immichPhotos: immichPhotos.get(e.id) ?? [],

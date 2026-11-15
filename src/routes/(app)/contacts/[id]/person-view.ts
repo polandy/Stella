@@ -29,7 +29,7 @@ import { authorLabel } from '$lib/story/author';
 import type { LinkSuggestion } from '$lib/suggestions/types';
 
 /*
- * Turn what the person page read into what it renders (docs/02 §2.2). Presentation, so the
+ * Turn what the person page read into what it renders (docs/dev/02 §2.2). Presentation, so the
  * edge's job — Markdown, names, links, who counts as "you" — kept out of `load` so each piece
  * is tested on its own rather than only through a whole page.
  */
@@ -90,7 +90,7 @@ export function fieldView(field: Pick<ContactField, 'id' | 'kind' | 'label' | 'v
 }
 
 /**
- * A gift as the Gifts card shows it (docs/02 §2.25). Who noted it is named by first name, like
+ * A gift as the Gifts card shows it (docs/dev/02 §2.25). Who noted it is named by first name, like
  * an item of the story; `mine` is what offers *Private*, which only the author may set.
  */
 export function giftView(gift: Gift, ctx: PersonViewContext) {
@@ -112,7 +112,7 @@ export function giftView(gift: Gift, ctx: PersonViewContext) {
 }
 
 /**
- * An open to-do as the To-dos card shows it (docs/02 §2.26): who noted it is named by first name,
+ * An open to-do as the To-dos card shows it (docs/dev/02 §2.26): who noted it is named by first name,
  * like a gift; `mine` is what offers *Private*, which only the author may set.
  */
 export function todoView(todo: Todo, ctx: PersonViewContext) {
@@ -130,7 +130,7 @@ export function todoView(todo: Todo, ctx: PersonViewContext) {
 
 /**
  * A gallery photo as the page shows it: *Remove* is offered as the access layer allows
- * (docs/03 §3.7) — its uploader, or an admin on a shared one — never one that would fail.
+ * (docs/dev/03 §3.7) — its uploader, or an admin on a shared one — never one that would fail.
  */
 export function galleryPhotoView(photo: GalleryPhoto, remover: Remover, person: ContactAccess) {
 	return {
@@ -144,8 +144,8 @@ export function galleryPhotoView(photo: GalleryPhoto, remover: Remover, person: 
 }
 
 /**
- * A note, rendered server-side; the output is already safe (docs/02 §2.5). Someone else's is
- * named, and *Remove* and *Edit* are offered as the access layer allows (docs/03 §3.7).
+ * A note, rendered server-side; the output is already safe (docs/dev/02 §2.5). Someone else's is
+ * named, and *Remove* and *Edit* are offered as the access layer allows (docs/dev/03 §3.7).
  */
 export function noteView(
 	note: Note,
@@ -163,7 +163,7 @@ export function noteView(
 		author: mine ? null : authorLabel(false, ctx.nameOfAuthor(note.createdBy)),
 		removable: canRemoveAuthored(remover, access),
 		editable,
-		// The stored source, tokens and all, for the editor; only an author edits (docs/03 §3.7).
+		// The stored source, tokens and all, for the editor; only an author edits (docs/dev/03 §3.7).
 		bodyForEdit: editable ? note.body : null,
 		// What each token in the body reads as — including people the @-picker does not offer,
 		// such as the note's own subject.
@@ -180,7 +180,7 @@ export function noteView(
 }
 
 /**
- * Where this person is named by somebody else (docs/02 §2.20.1). Read-only: the entry belongs
+ * Where this person is named by somebody else (docs/dev/02 §2.20.1). Read-only: the entry belongs
  * to the person it is about, so it links there rather than offering an edit on another page.
  */
 export function mentionedInView(reference: MentionedIn, ctx: PersonViewContext) {

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'bun:test';
 import { rankContext, type MembershipCandidate, type TieCandidate } from './context';
 
-/* docs/02 §2.2.3 — which relationship and which circle a namesake's second line may name. */
+/* docs/dev/02 §2.2.3 — which relationship and which circle a namesake's second line may name. */
 
 const TODAY = '2026-09-29';
 

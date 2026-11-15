@@ -2,7 +2,7 @@ import { describe, expect, it } from 'bun:test';
 import { STRIP_HEIGHT, stripFan } from './strip-fan';
 
 /*
- * The People card's map strip on a wide card (docs/05 §5.5): the people entered in a wide fan
+ * The People card's map strip on a wide card (docs/dev/05 §5.5): the people entered in a wide fan
  * either side of this person, each under or over a first name. The strip is short, so the fan
  * runs sideways in two staggered rows, and the width is what keeps the names legible.
  */

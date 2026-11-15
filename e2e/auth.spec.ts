@@ -1,8 +1,8 @@
 import { expect, test } from '@playwright/test';
 
 /*
- * The split sign-in shell (docs/05 §5.5). Written after the screen was seen in the running
- * app (docs/08 §8.4.1). The demo login itself is exercised by every other spec.
+ * The split sign-in shell (docs/dev/05 §5.5). Written after the screen was seen in the running
+ * app (docs/dev/08 §8.4.1). The demo login itself is exercised by every other spec.
  */
 
 // The suite as a whole runs signed in (`playwright.config.ts`); the sign-in screen only

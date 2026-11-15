@@ -2,10 +2,10 @@ import { expect, test, type Page } from '@playwright/test';
 import { addPerson, appReady, openPeople, signIn } from './app';
 
 /*
- * *Select* → *Set last name* on People (docs/02 §2.2.4.3): with nobody to lose a last name,
+ * *Select* → *Set last name* on People (docs/dev/02 §2.2.4.3): with nobody to lose a last name,
  * *Set* writes straight away; when someone already has a different one, a confirmation names
  * them unticked, and *Replace all* ticks them together. Written after the owner tried it on a
- * preview (docs/08 §8.4.1). The names are used by no other case and not by the demo household.
+ * preview (docs/dev/08 §8.4.1). The names are used by no other case and not by the demo household.
  */
 
 async function addFirstNameOnly(page: Page, first: string): Promise<void> {

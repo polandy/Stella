@@ -14,7 +14,7 @@
 
 	/*
 	 * The Filter menu: the kinds of line and their names live in one menu. It is the legend
-	 * too, each kind drawn in its colour and line style (docs/05 §5.8).
+	 * too, each kind drawn in its colour and line style (docs/dev/05 §5.8).
 	 */
 	interface Props {
 		/** The kinds of line switched on. */
@@ -30,7 +30,7 @@
 		rolesInstead: boolean;
 		density: Density;
 		onChooseDensity: (density: Density) => void;
-		/** The views this device keeps, and the one the map shows now (docs/02 §2.7). */
+		/** The views this device keeps, and the one the map shows now (docs/dev/02 §2.7). */
 		savedViews: readonly SavedView[];
 		currentView: string | null;
 		onApplyView: (view: SavedView) => void;
@@ -58,10 +58,10 @@
 	const uid = $props.id();
 	const hint = $derived(labelsHint(switches.edgeLabels, labelsFit, rolesInstead));
 
-	// The filterable connection kinds, each tied to its category colour (docs/05 §5.6).
-	// Each filter carries the same token the canvas draws that edge kind with (docs/05 §5.6),
+	// The filterable connection kinds, each tied to its category colour (docs/dev/05 §5.6).
+	// Each filter carries the same token the canvas draws that edge kind with (docs/dev/05 §5.6),
 	// so a chip and the line it toggles can never drift apart.
-	// Each chip also draws its line style, so the chips are the legend (docs/05 §5.8).
+	// Each chip also draws its line style, so the chips are the legend (docs/dev/05 §5.8).
 	const FILTERS = [
 		{
 			key: 'family',
@@ -122,7 +122,7 @@
 
 <!-- The line kinds and their names live in one menu: it is the legend too, each kind
      drawn in its colour and line style, and the pill counts what is shown so a narrowed
-     map is never mistaken for a sparse one (docs/05 §5.8). -->
+     map is never mistaken for a sparse one (docs/dev/05 §5.8). -->
 <MenuButton
 	label={t('graph.filter.summary', filters)}
 	highlighted={filters.narrowed}
@@ -205,7 +205,7 @@
 				{@render toggle(switches.allKinship)}
 			</button>
 		{/if}
-		<!-- Drawn in the former line's own dash, so the switch is its legend too (docs/05 §5.8). -->
+		<!-- Drawn in the former line's own dash, so the switch is its legend too (docs/dev/05 §5.8). -->
 		<button
 			type="button"
 			role="menuitemcheckbox"

@@ -1,5 +1,5 @@
 /*
- * Whether the map is framed afresh for a new canvas size (docs/05 §5.8). Entering or leaving full
+ * Whether the map is framed afresh for a new canvas size (docs/dev/05 §5.8). Entering or leaving full
  * screen changes how much room the map has; a view the map framed itself is framed again for
  * the new room, but a view the reader has panned or zoomed to is theirs and is kept. Pure, so the
  * rule is tested without a renderer: the canvas adapter reports what happened and does what this

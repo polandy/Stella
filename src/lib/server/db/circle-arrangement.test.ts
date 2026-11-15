@@ -15,7 +15,7 @@ import * as schema from './schema';
 
 /*
  * Integration spec for the arrangement adapters: the transaction of a batch, the exact restore
- * of an undo, and what the viewer may see of the people listed (docs/03 §3.7, ADR-127).
+ * of an undo, and what the viewer may see of the people listed (docs/dev/03 §3.7, ADR-127).
  */
 
 const H = 'household-1';

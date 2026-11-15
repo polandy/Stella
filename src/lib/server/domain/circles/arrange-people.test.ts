@@ -15,7 +15,7 @@ import {
 } from './arrange-people';
 
 /*
- * Arranging people between a circle and its sub-circles (docs/02 §2.4.2, ADR-127): who may take
+ * Arranging people between a circle and its sub-circles (docs/dev/02 §2.4.2, ADR-127): who may take
  * part, which writes a pick turns into, and what is refused. The writes' transaction and the
  * exact restore are the adapter's, specified against SQLite in `db/circle-arrangement.test.ts`.
  */

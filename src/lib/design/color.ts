@@ -1,6 +1,6 @@
 /*
  * Colour maths for the design system: blending two colours the way CSS `color-mix(in srgb, …)`
- * does, and WCAG 2.1 contrast, so docs/05 §5.9's accessibility promise is a test rather than a
+ * does, and WCAG 2.1 contrast, so docs/dev/05 §5.9's accessibility promise is a test rather than a
  * claim. Pure arithmetic over hex colours — no DOM, no colour library.
  */
 
@@ -67,7 +67,7 @@ const CONTRAST_STEP_PERCENT = 5;
 
 /**
  * The colour itself when it already clears `floor` against `ground`, otherwise the nearest
- * blend toward `toward` that does. Built for the explorer canvas (docs/05 §5.8): in Latte
+ * blend toward `toward` that does. Built for the explorer canvas (docs/dev/05 §5.8): in Latte
  * most accents sit under 3:1 on the page ground, and an edge is the only carrier of its
  * category once the legend is off screen. The hue survives; only the depth changes.
  */

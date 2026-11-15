@@ -7,12 +7,12 @@ import {
 } from './glimpse';
 
 /*
- * *Use as photo* from the Immich viewer (docs/02 §2.24.6): the one
+ * *Use as photo* from the Immich viewer (docs/dev/02 §2.24.6): the one
  * way Immich content enters Stella, as a deliberate copy by a person, never a sync. A person
  * added from *New from Immich* takes the face Immich shows of them the same way (§2.24.7).
  *
  * The browser cuts the square out of the preview the signed proxy served it, in the same cropper
- * and through the same canvas re-encode as any new picture (docs/02 §2.14) — so the server needs
+ * and through the same canvas re-encode as any new picture (docs/dev/02 §2.14) — so the server needs
  * no image library and no EXIF ever reaches it. What the server decides is whether to take that
  * square as a copy of an Immich photo: only with the preview token it signed for this person,
  * while the viewer still sees them (the access layer) and they are still linked to the Immich
@@ -54,7 +54,7 @@ export async function useImmichPhoto(
 		return { ok: false, refusal: 'invalid' };
 	if (media.kind === 'face') {
 		// The face Immich shows of them, as a person added from *New from Immich* starts with
-		// (docs/02 §2.24.7). A face token is also signed for a mere proposal, so it is taken only
+		// (docs/dev/02 §2.24.7). A face token is also signed for a mere proposal, so it is taken only
 		// while they are linked to that very face. Immich does not date a face.
 		const link = await deps.links.findForContactVisibleTo(viewer, copy.contactId);
 		if (link?.immichPersonId !== media.personId) return { ok: false, refusal: 'notLinked' };

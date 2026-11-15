@@ -2,9 +2,9 @@ import { expect, test, type Locator, type Page } from '@playwright/test';
 import { appReady, signIn } from './app';
 
 /*
- * *Settings → Immich → Find your people* (docs/02 §2.24.7): the
+ * *Settings → Immich → Find your people* (docs/dev/02 §2.24.7): the
  * household's people next to the Immich faces their names match. Written after the owner tried
- * #246 in the preview (docs/08 §8.4.1).
+ * #246 in the preview (docs/dev/08 §8.4.1).
  *
  * The e2e server runs with `IMMICH_DEMO=true`, whose faces are named like the demo seed's people
  * (`src/lib/server/immich/demo-library.ts`): full names that agree are *likely*; Luca Widmer's two

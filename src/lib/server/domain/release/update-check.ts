@@ -3,7 +3,7 @@ import type { LatestRelease, ReleaseFeed } from './feed';
 import { isNewerRelease } from './version';
 
 /*
- * "Is there a newer Stella?" (docs/02 §2.17.1). The use-case owns the two things that make
+ * "Is there a newer Stella?" (docs/dev/02 §2.17.1). The use-case owns the two things that make
  * the question cheap: it asks the feed at most once a day, and it remembers the answer
  * across requests. The asking itself is a port, so this file never touches the network.
  */

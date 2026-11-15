@@ -8,8 +8,8 @@ import { household as householdTable, user as userTable } from './schema';
 
 /*
  * Drizzle adapter implementing the auth AccountRepository port over the `user` and
- * `household` tables (docs/08 §8.3). Infrastructure only; the domain depends on the port.
- * A removed member (docs/02 §2.1) is found on neither sign-in path: whatever session or token
+ * `household` tables (docs/dev/08 §8.3). Infrastructure only; the domain depends on the port.
+ * A removed member (docs/dev/02 §2.1) is found on neither sign-in path: whatever session or token
  * of theirs survived signs nobody in, and their password fails like a wrong one.
  */
 

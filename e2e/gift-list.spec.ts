@@ -3,9 +3,9 @@ import { addPerson, appReady, fillDate, isoDaysAfter, serverToday, signIn } from
 import { UNDO_WINDOW_MS } from '../src/lib/undo/pending-removals';
 
 /*
- * The household's list of every open gift idea (docs/02 §2.25.6): reached from the ⌘K palette,
+ * The household's list of every open gift idea (docs/dev/02 §2.25.6): reached from the ⌘K palette,
  * one group per person with whoever's occasion comes next on top, and *Mark as given* right on
- * the row, held for one undo window. Written after the owner tried the page (docs/08 §8.4.1).
+ * the row, held for one undo window. Written after the owner tried the page (docs/dev/08 §8.4.1).
  *
  * The suite shares one database, so every case adds people of its own under first names no
  * demo household and no other spec uses, and the run's letters keep them apart from retries.
@@ -21,7 +21,7 @@ function runLetters(): string {
 /**
  * A new person whose birthday is the server's tomorrow. Tomorrow rather than today: a run that
  * steps over midnight turns it into today, still next on the list, where a birthday of today
- * would become one a year away (docs/08 §8.4.2).
+ * would become one a year away (docs/dev/08 §8.4.2).
  */
 async function addPersonBornTomorrow(page: Page, first: string, last: string): Promise<void> {
 	const tomorrow = isoDaysAfter(await serverToday(page), 1).slice(5);
@@ -77,7 +77,7 @@ test('the palette opens the list, whoever’s occasion comes next on top', async
 	expect(names.map((name) => name.trim()).indexOf(soon)).toBeLessThan(
 		names.map((name) => name.trim()).indexOf(later)
 	);
-	// Tomorrow, or today once a run has stepped over midnight (docs/08 §8.4.2).
+	// Tomorrow, or today once a run has stepped over midnight (docs/dev/08 §8.4.2).
 	await expect(group(page, soon).getByTestId('gift-list-next')).toContainText(/tomorrow|today/);
 	await expect(group(page, later).getByTestId('gift-list-next')).toHaveText(/^\s*Christmas /);
 });

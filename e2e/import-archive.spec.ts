@@ -3,8 +3,8 @@ import { readFileSync } from 'node:fs';
 import { appReady, openPerson, recordAction, signIn } from './app';
 
 /*
- * Reading the household's archive back in (docs/02 §2.15). Written after the maintainer
- * restored a deleted person in the running app (docs/08 §8.4.1).
+ * Reading the household's archive back in (docs/dev/02 §2.15). Written after the maintainer
+ * restored a deleted person in the running app (docs/dev/08 §8.4.1).
  *
  * The shape of the suite is the shape of the promise: one archive is taken while somebody is
  * still here, that person is deleted, and the archive brings them back — with their note and

@@ -7,7 +7,7 @@ import {
 } from './display-name';
 
 /*
- * Pure derivation of a contact's required, never-empty display name (docs/03 §contact).
+ * Pure derivation of a contact's required, never-empty display name (docs/dev/03 §contact).
  * Priority: explicit name → first+last → first → last → nickname → error.
  */
 
@@ -42,7 +42,7 @@ describe('deriveDisplayName', () => {
 });
 
 /*
- * The shown name following a changed name part (docs/02 §2.2, ADR-106): made again when
+ * The shown name following a changed name part (docs/dev/02 §2.2, ADR-106): made again when
  * the parts made it, kept when a member chose it, and never left empty.
  */
 describe('withNameParts', () => {
@@ -168,7 +168,7 @@ describe('shownNameIsChosen', () => {
 });
 
 /*
- * The nickname in the name it shapes (docs/02 §2.2): *Thomas „Tom“ Brunner*, in the quote marks
+ * The nickname in the name it shapes (docs/dev/02 §2.2): *Thomas „Tom“ Brunner*, in the quote marks
  * of the language the name is written in — the stored name is data, so the pair is chosen once,
  * when it is written.
  */

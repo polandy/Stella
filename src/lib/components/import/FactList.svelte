@@ -5,7 +5,7 @@
 	import { factLabel, factValue, labelText } from './review-text';
 
 	/*
-	 * One side of a review card (docs/02 §2.16): what the card says, or what it would add. Tags
+	 * One side of a review card (docs/dev/02 §2.16): what the card says, or what it would add. Tags
 	 * read as one line, the way a person's page lists them.
 	 */
 	interface Props {

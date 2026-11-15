@@ -40,7 +40,7 @@ export interface ExplorerController {
 	 * Reconcile the full (expanded) element set. Nodes already on the canvas stay where they
 	 * are; only the newcomers are placed, clear of everyone, and the view is left alone
 	 * unless it has to step back to show them. With `arrangedNext` the caller lays the whole map
-	 * out again straight after (the family tree, docs/05 §5.8): the newcomers are then set down
+	 * out again straight after (the family tree, docs/dev/05 §5.8): the newcomers are then set down
 	 * on the person they came from and travel with that arrangement, not on their own first.
 	 */
 	setGraph(elements: CyElement[], options?: { arrangedNext?: boolean }): void;
@@ -67,7 +67,7 @@ export interface ExplorerController {
 	 */
 	setCovered(covered: { right: number; bottom: number }): void;
 	/**
-	 * How far apart people are set (docs/05 §5.8). Moves nobody by itself: the next expand and
+	 * How far apart people are set (docs/dev/05 §5.8). Moves nobody by itself: the next expand and
 	 * the next free arrangement use it.
 	 */
 	setSpacing(spacing: Spacing): void;
@@ -79,7 +79,7 @@ export interface ExplorerController {
 	highlightPath(nodeIds: string[] | null): void;
 	/** Smoothly centre and zoom onto a node. */
 	focus(nodeId: string): void;
-	/** Where every node shown stands, in model units — what the keyboard walks (docs/05 §5.8). */
+	/** Where every node shown stands, in model units — what the keyboard walks (docs/dev/05 §5.8). */
 	positions(): Map<string, Point>;
 	/**
 	 * Ring the node the keyboard is on (null clears), and bring it into view if it stands off
@@ -89,13 +89,13 @@ export interface ExplorerController {
 	/**
 	 * Full screen was entered or left. Once the canvas has taken its new size, the map is framed
 	 * afresh for it — unless the reader has panned or zoomed since the map last framed itself,
-	 * in which case their view is kept (docs/05 §5.8).
+	 * in which case their view is kept (docs/dev/05 §5.8).
 	 */
 	screenChanged(): void;
 	/**
 	 * Re-theme the canvas from a freshly-resolved palette. With `growNames`, the names of the
 	 * selected person and their neighbours grow while the map is zoomed out (`nameGrowth`,
-	 * docs/05 §5.8); the family tree leaves it off.
+	 * docs/dev/05 §5.8); the family tree leaves it off.
 	 */
 	setStylesheet(stylesheet: CyStyle[], options?: { growNames?: boolean }): void;
 	/** Tear the canvas down. Idempotent, and every other method no-ops afterwards. */

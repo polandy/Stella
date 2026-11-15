@@ -15,7 +15,7 @@ import type { StoryItemView } from '$lib/story/item';
 import { subjectFacesOf, type SubjectFace } from '$lib/story/subjects';
 
 /*
- * Turn a domain story item into what the timeline renders (docs/02 §2.23). This is the edge's
+ * Turn a domain story item into what the timeline renders (docs/dev/02 §2.23). This is the edge's
  * job, not the domain's — Markdown rendering, photo ids and author names are presentation. It
  * lives here rather than inside either route because the page's first page and the endpoint's
  * later pages must produce exactly the same shape; two copies would drift on the first change.
@@ -53,7 +53,7 @@ export function entryIdsOf(items: readonly StoryItem[]): string[] {
 
 /**
  * The name lookup for @-mention chips. Built from the visibility scope, not the browsing one:
- * an archived person keeps their name in a sentence that already mentions them (docs/02 §2.2).
+ * an archived person keeps their name in a sentence that already mentions them (docs/dev/02 §2.2).
  */
 export function nameLookup(
 	names: readonly { id: string; displayName: string }[]
@@ -84,11 +84,11 @@ export interface StoryViewContext {
 	nameOfAuthor: (userId: string) => string | null;
 	/** Visible journal photo ids, keyed by entry id. */
 	photosByEntry: Map<string, string[]>;
-	/** The Immich photos each entry refers to, keyed by entry id (docs/04 ADR-132). */
+	/** The Immich photos each entry refers to, keyed by entry id (docs/dev/04 ADR-132). */
 	immichPhotosByEntry: ReadonlyMap<string, EntryImmichPhoto[]>;
 	/** Display name for an @-mention target the viewer may see, or null. */
 	nameOf: (contactId: string) => string | null;
-	/** Name and face of a subject the viewer may see, or null (docs/02 §2.20.3). */
+	/** Name and face of a subject the viewer may see, or null (docs/dev/02 §2.20.3). */
 	faceOf: (contactId: string) => SubjectFace | null;
 }
 
@@ -118,12 +118,12 @@ export function toStoryItem(item: StoryItem, ctx: StoryViewContext): StoryItemVi
 			removable: removable(ctx, entry),
 			author: authorLabel(mine, ctx.nameOfAuthor(entry.createdBy)),
 			title: entry.title,
-			// Beyond the journal, a tag leads to its own page (docs/02 §2.20.2).
+			// Beyond the journal, a tag leads to its own page (docs/dev/02 §2.20.2).
 			bodyHtml: renderMarkdownWithMentions(entry.body, ctx.nameOf, { tagHref: tagPageHref }),
 			photos: ctx.photosByEntry.get(entry.id) ?? [],
 			immichPhotos: ctx.immichPhotosByEntry.get(entry.id) ?? [],
 			subjects: subjectFacesOf(entry.subjectIds, ctx.faceOf),
-			// Only an author edits an entry (docs/03 §3.7), so only their own carry the stored body.
+			// Only an author edits an entry (docs/dev/03 §3.7), so only their own carry the stored body.
 			editable: mine,
 			bodyForEdit: mine ? entry.body : null,
 			mentionNames: mine ? mentionNamesIn(entry.body, ctx.nameOf) : {}
@@ -159,7 +159,7 @@ export function toStoryItem(item: StoryItem, ctx: StoryViewContext): StoryItemVi
 			recordedAt: item.recordedAt,
 			visibility: todo.visibility,
 			mine: todo.createdBy === ctx.remover.id,
-			// Whoever may see a to-do may remove it (docs/02 §2.26): the read already decided that.
+			// Whoever may see a to-do may remove it (docs/dev/02 §2.26): the read already decided that.
 			removable: true,
 			// Who ticked it: the story is about what was done, and by whom.
 			author: todo.doneBy === null ? null : authorLabel(tickedByMe, ctx.nameOfAuthor(todo.doneBy)),

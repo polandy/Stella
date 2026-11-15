@@ -4,7 +4,7 @@ import { fixedClock, sequentialIds } from '../testing';
 import { removalAudit, type RemovableRecord } from './removal';
 
 /*
- * The household is told when someone removes another member's record (docs/03 §3.7): the kind,
+ * The household is told when someone removes another member's record (docs/dev/03 §3.7): the kind,
  * the place and both members, never the text. An author tidying up their own record tells nobody.
  */
 

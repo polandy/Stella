@@ -3,7 +3,7 @@ import { groupStoryByDay } from './grouping';
 import type { StoryItemView } from './item';
 
 /*
- * The timeline draws one heading per day and a rail under it (docs/05 §5.5). The grouping is a
+ * The timeline draws one heading per day and a rail under it (docs/dev/05 §5.5). The grouping is a
  * pure pass over an already-ordered list, so it lives here rather than inside the component:
  * a page appended after "Show earlier" must extend the last day rather than repeat its heading.
  */

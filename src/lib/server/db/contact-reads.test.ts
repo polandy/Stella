@@ -13,7 +13,7 @@ import { createDrizzleNameCandidateReads } from './name-candidate-reads';
 /*
  * Integration spec for the read models of the people — the directory, the names a page
  * resolves and quick-add's name candidates: each scoped through the central query-scoping
- * (docs/03 §3.7, docs/08 §8.3). The contact repository only seeds them.
+ * (docs/dev/03 §3.7, docs/dev/08 §8.3). The contact repository only seeds them.
  */
 
 const H1 = 'household-1';
@@ -93,7 +93,7 @@ describe('createDrizzleContactDirectoryReads', () => {
 	});
 
 	it('carries the birth date in the list summary, which is what a family link is dated from', async () => {
-		// The relationship form offers the younger one's birthday as the since day (docs/02
+		// The relationship form offers the younger one's birthday as the since day (docs/dev/02
 		// §2.4), and it reads it off this list rather than fetching each person in it.
 		await repo.insert(contactInput({ id: 'c-born', displayName: 'Lena', birthDate: '2015-05-20' }));
 
@@ -103,7 +103,7 @@ describe('createDrizzleContactDirectoryReads', () => {
 	});
 
 	it('carries where and when they were met in the list summary, which tells namesakes apart', async () => {
-		// Two people called just "Thomas": the pickers say which is which from these (docs/02 §2.2.3).
+		// Two people called just "Thomas": the pickers say which is which from these (docs/dev/02 §2.2.3).
 		await repo.insert(
 			contactInput({
 				id: 'c-met',
@@ -165,7 +165,7 @@ describe('createDrizzleContactDirectoryReads', () => {
 	});
 });
 
-describe('listNameCandidatesVisibleTo (docs/02 §2.2.1)', () => {
+describe('listNameCandidatesVisibleTo (docs/dev/02 §2.2.1)', () => {
 	const linked = (id: string, from: string, to: string) =>
 		db
 			.insert(schema.relationship)

@@ -12,7 +12,7 @@ import {
 } from './saved-views';
 
 /*
- * A saved view is a name for a Filter-menu state (docs/02 §2.7): which kinds of line are
+ * A saved view is a name for a Filter-menu state (docs/dev/02 §2.7): which kinds of line are
  * shown and how the map is looked at. Kept per device; corrupt or outdated entries in the
  * stored list are dropped instead of breaking the menu.
  */

@@ -6,7 +6,7 @@ import { buildArchiveDocument } from './document';
 import { planRestore, type RestoreTarget } from './restore';
 
 /*
- * A shared home through an archive and back (docs/02 §2.15, docs/03 §3.3): the address with
+ * A shared home through an archive and back (docs/dev/02 §2.15, docs/dev/03 §3.3): the address with
  * whoever lives there, and nothing of it that nobody in the archive could reach again.
  */
 

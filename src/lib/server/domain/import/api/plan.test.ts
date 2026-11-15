@@ -20,7 +20,7 @@ import {
 } from './plan.fixture';
 
 /*
- * The import API's planner (docs/02 §2.16.1): a document plus what the household already has,
+ * The import API's planner (docs/dev/02 §2.16.1): a document plus what the household already has,
  * in; the rows to write and what to say about them, out. Pure, so every case here is a value.
  */
 

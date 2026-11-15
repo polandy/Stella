@@ -4,7 +4,7 @@ import { exportScene, type SceneInput } from './tree-export-scene';
 import type { GraphEdge, GraphModel, GraphNode } from './model/types';
 
 /*
- * The family tree as it leaves the household (docs/02 §2.7): the tree on screen, less the
+ * The family tree as it leaves the household (docs/dev/02 §2.7): the tree on screen, less the
  * private people unless asked, with the years under the names when asked.
  */
 

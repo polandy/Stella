@@ -1,7 +1,7 @@
 import type { GraphModel } from './types';
 
 /*
- * The map, minus what is on its way out (docs/02 §2.23, docs/05 §5.7).
+ * The map, minus what is on its way out (docs/dev/02 §2.23, docs/dev/05 §5.7).
  *
  * A removal is held for an undo window before it is sent, and the list hides the row for that
  * whole window. The map has to agree with the list: a link that is visibly gone from one and

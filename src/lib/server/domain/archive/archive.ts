@@ -4,7 +4,7 @@ import { activityRecord, type ActivityOf } from '../activity/activity';
 import { buildArchiveDocument, type ArchiveDocument } from './document';
 
 /*
- * Exporting the household as one archive (docs/02 §2.15).
+ * Exporting the household as one archive (docs/dev/02 §2.15).
  *
  * The archive is a tar of one text file — `household.yaml`, the whole household arranged around
  * its people (`document.ts`) — and the image files beside it under `media/`. Readable with
@@ -14,7 +14,7 @@ import { buildArchiveDocument, type ArchiveDocument } from './document';
  * It carries **everything**, private records included, each with the `visibility` it was
  * written with — a restore that loses a member's private journal is not a restore. That is why
  * exporting is admin-only and why it writes itself into the activity log: the household sees
- * that it happened (docs/04 §4.9).
+ * that it happened (docs/dev/04 §4.9).
  */
 
 /** The one text file in the archive; everything else beside it is an image. */

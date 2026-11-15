@@ -1,5 +1,5 @@
 /*
- * Who wrote a stream row, as a face (docs/05 §5.5). A row leads with its subject's avatar —
+ * Who wrote a stream row, as a face (docs/dev/05 §5.5). A row leads with its subject's avatar —
  * the face one scans for — and names the actor in its sentence. With more than one writing
  * member a reader scanning faces could take the subject for the author, so a small actor
  * avatar overlaps the subject's — but only on rows by somebody else: *You* is what a reader

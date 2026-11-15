@@ -1,5 +1,5 @@
 /*
- * How the canvas makes room for what an expand brought in (docs/05 §5.8). Pure arithmetic over
+ * How the canvas makes room for what an expand brought in (docs/dev/05 §5.8). Pure arithmetic over
  * boxes, so it tests without a renderer. The frame only ever widens: what the reader was
  * looking at stays on screen, and nothing moves relative to anything else — the map is the
  * same map, seen from a little further back.
@@ -109,7 +109,7 @@ export interface Focus {
 
 /**
  * Like {@link frameBelow}, but never zoomed out past `zoom.legible`, where the canvas would stop
- * drawing the names (`legibleZoom`, docs/05 §5.8). When the whole map fits only further out, it
+ * drawing the names (`legibleZoom`, docs/dev/05 §5.8). When the whole map fits only further out, it
  * is shown at the legible zoom instead: the `focus` (else the map) from its top edge down, centred
  * across the free part — or, if wider than that, centred on its `point` — and whatever falls
  * outside, the shelf beneath the tree, is left to pan to.

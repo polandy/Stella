@@ -20,13 +20,13 @@ import type { TodoRepository } from '../domain/todos/todos';
 import type { IdGenerator } from '../id';
 
 /*
- * The `records` bounded context of the composition root (docs/08 §8.3): what a person's page
+ * The `records` bounded context of the composition root (docs/dev/08 §8.3): what a person's page
  * keeps about them besides their story — contact fields, shared homes, important dates and tags. Built once
  * per process by `createServices`; the edge reads it off `locals.services.records`.
  *
  * A repository an edge reads directly sits under its noun (`importantDates`, `tags`);
  * everything else is a use-case's `deps`, named after its type (`tagDeps` is a `TagDeps`).
- * A tag's writes and its lists are separate ports with an adapter each (docs/08 §8.3).
+ * A tag's writes and its lists are separate ports with an adapter each (docs/dev/08 §8.3).
  */
 export interface RecordServices {
 	/** The one important date repository, also the home page's source of upcoming dates. */
@@ -34,13 +34,13 @@ export interface RecordServices {
 	/** The one tag repository, household-wide: naming, assigning and pruning tags. */
 	tags: TagRepository;
 	contactFieldDeps: ContactFieldDeps;
-	/** Sharing an address, rewriting it, moving out (docs/02 §2.2). */
+	/** Sharing an address, rewriting it, moving out (docs/dev/02 §2.2). */
 	homeDeps: HomeDeps;
 	homeListDeps: HomeListDeps;
-	/** *Data quality → Same address*: the check, *Make one home*, *Not the same* (docs/02 §2.17). */
+	/** *Data quality → Same address*: the check, *Make one home*, *Not the same* (docs/dev/02 §2.17). */
 	sameAddressDeps: SameAddressDeps;
 	importantDateDeps: ImportantDateDeps;
-	/** A member's dates as their phone's subscribed calendar (docs/02 §2.13.4). */
+	/** A member's dates as their phone's subscribed calendar (docs/dev/02 §2.13.4). */
 	calendarFeedDeps: CalendarFeedDeps;
 	tagDeps: TagDeps;
 	/** The chip row, each person's tags and the people a chip filters to. */

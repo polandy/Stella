@@ -1,5 +1,5 @@
 /*
- * Keeping the reader's place when a row leaves a list (docs/02 §2.4.1, docs/04 §4.9).
+ * Keeping the reader's place when a row leaves a list (docs/dev/02 §2.4.1, docs/dev/04 §4.9).
  *
  * An answered suggestion goes at once, softly. Its height — 74px in the review, measured —
  * would otherwise be taken out from under everything below it, and the next row would arrive

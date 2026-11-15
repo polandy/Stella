@@ -23,14 +23,14 @@
 		/** Their circles' photos; with none and no Immich, choosing a photo opens the file picker as it always did. */
 		groupPhotos?: readonly GroupPhotoChoice[];
 		/**
-		 * Immich as the page has it (docs/02 §2.24.6): whether the person is linked, or null without
+		 * Immich as the page has it (docs/dev/02 §2.24.6): whether the person is linked, or null without
 		 * Immich or offline. With it, choosing a photo always offers Immich beside a file.
 		 */
 		immich?: { linked: boolean } | null;
 		/** What *Find in Immich* searches for first: the person's first and last name. */
 		immichSearchName?: string;
 		/**
-		 * The person page's portrait (docs/05 §5.5): a square with rounded corners whose size
+		 * The person page's portrait (docs/dev/05 §5.5): a square with rounded corners whose size
 		 * follows the screen — beside the name on a phone, a column of its own on a wide one —
 		 * instead of a round avatar of `size`.
 		 */
@@ -56,8 +56,8 @@
 
 	/*
 	 * Where the picture comes from (`$lib/people/avatar-chooser`): a file at once when there is
-	 * nothing else, else the chooser — a file, their group photos (docs/02 §2.14), their latest
-	 * Immich photos or *Find in Immich* (docs/02 §2.24.6). Every source opens the same cropper;
+	 * nothing else, else the chooser — a file, their group photos (docs/dev/02 §2.14), their latest
+	 * Immich photos or *Find in Immich* (docs/dev/02 §2.24.6). Every source opens the same cropper;
 	 * only how the square is sent differs.
 	 */
 	const choices = $derived(avatarChoices({ groupPhotos: groupPhotos.length, immich }));
@@ -111,7 +111,7 @@
 		source = { kind: 'file', picture: file };
 	}
 
-	/** Post a picked file as the new avatar, with the capture date read out of it (docs/02 §2.14). */
+	/** Post a picked file as the new avatar, with the capture date read out of it (docs/dev/02 §2.14). */
 	async function upload(file: File, crop: CropRect) {
 		const { image, thumb, width, height, takenAt } = await processAvatar(file, crop);
 		const body = new FormData();
@@ -129,7 +129,7 @@
 		source = null;
 		if (!chosen) return;
 		// Captured before the upload settles: replacing an existing photo keeps it in the
-		// gallery (docs/02 §2.14), and only that case earns the reassurance toast.
+		// gallery (docs/dev/02 §2.14), and only that case earns the reassurance toast.
 		const hadPreviousPhoto = avatarPhotoId !== null;
 		busy = true;
 		try {
@@ -215,7 +215,7 @@
 <style>
 	/*
 	 * 88px beside the name in a narrow card, 168px in a column of its own once the identity card
-	 * is 48rem wide (docs/05 §5.5): its own width, not the viewport's.
+	 * is 48rem wide (docs/dev/05 §5.5): its own width, not the viewport's.
 	 */
 	.portrait {
 		display: block;

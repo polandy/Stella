@@ -11,7 +11,7 @@ import { ImmichLinkRefusedError, type ImmichLink } from './links';
 import { BERT_ID, CARL_ID, DORA_ID, testLibrary } from './test-library';
 
 /*
- * *Assign…* on a row of *New from Immich* (docs/02 §2.24.7): the face goes to someone already in
+ * *Assign…* on a row of *New from Immich* (docs/dev/02 §2.24.7): the face goes to someone already in
  * Stella the member picked, or to a person added from it. Either way it goes through the checks of
  * every link; nobody is added for a face that cannot be linked.
  */

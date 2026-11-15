@@ -5,7 +5,7 @@
 	import type { RoleGroup, RoleGrouping } from '$lib/graph/model/role-groups';
 
 	/*
-	 * The element the canvas is drawn into, and the keyboard's way around it (docs/05 §5.8):
+	 * The element the canvas is drawn into, and the keyboard's way around it (docs/dev/05 §5.8):
 	 * the focus frame, the hint, and the line that announces who the keyboard is on. What is
 	 * drawn, and how, stays with the explorer; this only hosts it.
 	 */
@@ -53,7 +53,7 @@
 	const hintId = `${uid}-keyboard-hint`;
 
 	/*
-	 * Walking the map from the keyboard (docs/05 §5.8). The cursor is where the keyboard is,
+	 * Walking the map from the keyboard (docs/dev/05 §5.8). The cursor is where the keyboard is,
 	 * apart from the selection: stepping past people must not select each one in turn, which
 	 * would re-highlight the map on every key. Enter on it does what a click does.
 	 */
@@ -109,7 +109,7 @@
      `absolute inset-0` box and collapse the canvas to zero height — size it directly.
      `touch-none`: Cytoscape reads every pan/zoom gesture itself; left to the browser's own
      default, a pan can be read as an edge-swipe or chrome-reveal gesture instead. -->
-<!-- The canvas is one stop in the tab order and is walked with the arrow keys (docs/05
+<!-- The canvas is one stop in the tab order and is walked with the arrow keys (docs/dev/05
      §5.8); the person under the keyboard is announced, since the canvas has no text.
      `svelte-ignore`: Svelte counts `application` as non-interactive, yet it is the role that
      hands the arrow keys to this element rather than to a screen reader's reading mode. -->

@@ -1,7 +1,7 @@
 import { expect, type Locator, type Page } from '@playwright/test';
 
 /*
- * Reading and driving the relationship canvas from a spec (docs/05 §5.8).
+ * Reading and driving the relationship canvas from a spec (docs/dev/05 §5.8).
  *
  * A canvas has no DOM to address, so these read the renderer's own state through the instance
  * Cytoscape registers on its container: which nodes it holds, which it has filtered out, and
@@ -312,7 +312,7 @@ export async function nodeOwners(page: Page, ids: string[]): Promise<Record<stri
 }
 
 /**
- * The toolbar's Filter menu, opened (docs/05 §5.8): the line kinds are its checkbox items and
+ * The toolbar's Filter menu, opened (docs/dev/05 §5.8): the line kinds are its checkbox items and
  * double as the legend. Open already, it is left open rather than toggled shut.
  */
 export async function filterMenu(scope: Page | Locator): Promise<Locator> {
@@ -355,7 +355,7 @@ async function askCore<T>(page: Page, query: CoreQuery<T>): Promise<T> {
 /** How many lines an arrangement has bent around somebody standing in their way. */
 export const bowedLines = (page: Page) => askCore(page, (cy) => cy.edges('.bowed').length);
 
-/** How many lines the family tree draws at right angles (docs/05 §5.8). */
+/** How many lines the family tree draws at right angles (docs/dev/05 §5.8). */
 export const routedLines = (page: Page) => askCore(page, (cy) => cy.edges('.routed').length);
 
 /** The ids of the circles on the canvas. */

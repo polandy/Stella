@@ -3,8 +3,8 @@ import { isParentSlot, missingParentSlots, withParentSlots } from './missing-par
 import type { GraphEdge, GraphModel, GraphNode } from './types';
 
 /*
- * Where the family tree around a person offers a parent nobody entered (docs/02 §2.7,
- * docs/05 §5.8): only up the centre's own line, three generations deep.
+ * Where the family tree around a person offers a parent nobody entered (docs/dev/02 §2.7,
+ * docs/dev/05 §5.8): only up the centre's own line, three generations deep.
  */
 
 const person = (id: string): GraphNode => ({ id, kind: 'person', label: id });

@@ -4,7 +4,7 @@ import { ImmichPhotos } from './immich-photos.svelte';
 import type { CardEntry, PersonPageData } from './types';
 
 /*
- * What the person page's Photos card shows (docs/02 §2.14, §2.24.3, §2.24.8), shared by its
+ * What the person page's Photos card shows (docs/dev/02 §2.14, §2.24.3, §2.24.8), shared by its
  * header — the tabs and their counts — and its body. The decisions are pure in
  * `$lib/people/photo-card` and `$lib/immich/together`; this is where the page's data, the
  * reader's choices and the Immich lists that load after the page meet.
@@ -15,7 +15,7 @@ export interface PhotoView {
 	tab: PhotoTab;
 	/** Whether *All* was opened out past its first row. */
 	expanded: boolean;
-	/** The pair a relationship row's *Together* asked for (docs/02 §2.24.8). */
+	/** The pair a relationship row's *Together* asked for (docs/dev/02 §2.24.8). */
 	askedByRow: string | null;
 	/** The pair the Immich tab shows; null for the person's own photos. */
 	shown: string | null;
@@ -96,7 +96,7 @@ export class PhotoCardState {
 	/** How many photos Immich has of the person, when it answered and may count them. */
 	readonly immichCount = $derived(this.seen?.state === 'linked' ? this.seen.photoCount : null);
 
-	/** The Immich tab's lists (docs/02 §2.24.8): their own, and the pairs offered. */
+	/** The Immich tab's lists (docs/dev/02 §2.24.8): their own, and the pairs offered. */
 	readonly views = $derived<StripView[]>(
 		this.linked
 			? stripViews({

@@ -4,7 +4,7 @@ import { labelsAfterArranging, labelsOn, toggledLabels, type LabelsState } from 
 import type { ViewSwitches } from './view-switches';
 
 /*
- * How the explorer's map is looked at (docs/05 §5.8, docs/02 §2.7): the arrangement, the
+ * How the explorer's map is looked at (docs/dev/05 §5.8, docs/dev/02 §2.7): the arrangement, the
  * Filter menu's kinds of line, switches, density and saved views, and full screen. The part of
  * `explorer-state.ts` that never changes who is selected or what the map holds. Pure.
  */
@@ -18,7 +18,7 @@ const labelsOf = (state: ExplorerState): LabelsState => ({
 export const labelsSwitchOf = (state: ExplorerState, rolesInstead: boolean): boolean =>
 	labelsOn(labelsOf(state), rolesInstead);
 
-/** The tree's rows are generations, which a group would only pull apart (docs/02 §2.7). */
+/** The tree's rows are generations, which a group would only pull apart (docs/dev/02 §2.7). */
 export const groupingApplies = (state: ExplorerState): boolean =>
 	state.switches.groupRoles && state.arrangedBy !== 'tree';
 

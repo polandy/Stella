@@ -24,7 +24,7 @@ import { createServices } from './app-services';
 import { createRelationshipServices, type RelationshipWiring } from './relationships';
 
 /*
- * The relationships group of the composition root (docs/08 §8.3), built over a real in-memory
+ * The relationships group of the composition root (docs/dev/08 §8.3), built over a real in-memory
  * SQLite: what the edge gets from `locals.services.relationships` must work end to end, and
  * each repository must exist once, so what one use-case writes the next one reads.
  */

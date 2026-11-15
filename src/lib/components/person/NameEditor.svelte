@@ -14,14 +14,14 @@
 	import { savedEnhance } from '$lib/undo/saved';
 
 	/*
-	 * The person's name, edited where it is read (docs/02 §2.2).
+	 * The person's name, edited where it is read (docs/dev/02 §2.2).
 	 * A tap on the name opens one editor for all of it: first name, last name, nickname and,
 	 * below them, *Shown as* — and the gender, which is rarely looked up and exists so kinship
 	 * terms can say *aunt* or *son*, so it has no row of its own on the card. While the shown name follows the parts it changes as they are
 	 * typed; once the member types their own, it stays as typed. The server applies the same rule
 	 * (`withNameEdit`), so a form without JavaScript, or a stale one, ends up the same way.
 	 *
-	 * Built for a finger first (docs/05 §5.9): on a coarse pointer every control here is at least
+	 * Built for a finger first (docs/dev/05 §5.9): on a coarse pointer every control here is at least
 	 * 44 px tall with room between neighbours, and the fields use 16 px text so a phone does not
 	 * zoom into them. Enter saves, Escape puts everything back, and focus returns to the name.
 	 */
@@ -101,7 +101,7 @@
 	const replacing = $derived(
 		name.lastName !== null && lastName.trim() !== '' && lastName.trim() !== name.lastName
 	);
-	// Editing is not queued like adding (docs/02 §2.18), so Save waits for a connection.
+	// Editing is not queued like adding (docs/dev/02 §2.18), so Save waits for a connection.
 	const offline = $derived(!reachability.reachable);
 	const saved = savedEnhance(useRemovals(), t('components.saved'), () => (editing = false));
 
@@ -127,7 +127,7 @@
 	const LABEL = 'flex flex-col gap-1 text-xs text-fg-muted';
 </script>
 
-<!-- The line and its editor glide into each other in place (docs/05 §5.11). -->
+<!-- The line and its editor glide into each other in place (docs/dev/05 §5.11). -->
 <Swap when={open}>
 	<h1
 		class="text-2xl leading-tight font-semibold tracking-tight wrap-break-word text-fg @min-[48rem]/identity:text-[2rem]"
@@ -182,7 +182,7 @@
 				/>
 			</label>
 		</div>
-		<!-- An earlier name finds them and is shown under the name, never in it (docs/02 §2.2). -->
+		<!-- An earlier name finds them and is shown under the name, never in it (docs/dev/02 §2.2). -->
 		<label class={LABEL} for="{uid}-former">
 			{t('contact.nameParts.formerName')}
 			<input
@@ -223,7 +223,7 @@
 				{t('contact.nameParts.keepFormer', { name: name.lastName ?? '' })}
 			</label>
 		{/if}
-		<!-- Relatives are named by it (docs/02 §2.2); "not on record" names them neutrally. -->
+		<!-- Relatives are named by it (docs/dev/02 §2.2); "not on record" names them neutrally. -->
 		<fieldset class="flex flex-col gap-1" aria-describedby="{uid}-gender-hint">
 			<legend class="mb-1 text-xs text-fg-muted">{t('contact.gender')}</legend>
 			<div class="flex flex-wrap gap-1.5 pointer-coarse:gap-2">

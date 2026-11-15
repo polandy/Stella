@@ -9,10 +9,10 @@ import type { ContactLookup } from '../contacts/contacts';
 import { requireVisibleContact } from '../contacts/require-visible';
 
 /*
- * To-do use-cases (docs/02 §2.26). A to-do belongs to the one person it is about: a short
+ * To-do use-cases (docs/dev/02 §2.26). A to-do belongs to the one person it is about: a short
  * line, maybe a day it is due by, open until somebody ticks it.
  *
- * A to-do is a child record of its person, so visibility follows the central rule (docs/03
+ * A to-do is a child record of its person, so visibility follows the central rule (docs/dev/03
  * §3.7): shared with the household unless its author made it private. Whoever may see one may
  * tick it, rewrite it or remove it — *I gave the book back* is said by whoever did. Only its
  * author makes it private or shared again, as for gifts. Every read goes through the adapter's
@@ -24,7 +24,7 @@ export interface Todo {
 	id: string;
 	/** The person it is about. */
 	contactId: string;
-	/** Who noted it; shown as *noted by*. Who is to do it is not recorded (docs/02 §2.26). */
+	/** Who noted it; shown as *noted by*. Who is to do it is not recorded (docs/dev/02 §2.26). */
 	createdBy: string;
 	visibility: Visibility;
 	title: string;
@@ -40,10 +40,10 @@ export interface Todo {
 	updatedAt: number;
 }
 
-/** A ticked to-do, as the person's story reads it (docs/02 §2.26). */
+/** A ticked to-do, as the person's story reads it (docs/dev/02 §2.26). */
 export type DoneTodo = Todo & { doneAt: number; doneOn: string };
 
-/** An open to-do with whom it is about — Home's band and `/todos` (docs/02 §2.26.6). */
+/** An open to-do with whom it is about — Home's band and `/todos` (docs/dev/02 §2.26.6). */
 export type HouseholdTodo = Todo & { contactName: string; avatarPhotoId: string | null };
 
 /** Port the domain owns; the Drizzle adapter implements it with visibility-scoped reads. */
@@ -59,12 +59,12 @@ export interface TodoRepository {
 	listOpenForContactVisibleTo(viewer: Viewer, contactId: string): Promise<Todo[]>;
 	/**
 	 * Every open to-do the viewer may see, in no particular order, on the people the household
-	 * still browses — an archived person's stay on their page only (docs/04 §4.9).
+	 * still browses — an archived person's stay on their page only (docs/dev/04 §4.9).
 	 */
 	listOpenVisibleTo(viewer: Viewer): Promise<HouseholdTodo[]>;
 	/**
 	 * One page of a person's done to-dos the viewer may see, newest first by (`doneOn`, `doneAt`),
-	 * strictly older than `before` when given — the story's fourth source (docs/02 §2.23).
+	 * strictly older than `before` when given — the story's fourth source (docs/dev/02 §2.23).
 	 */
 	listStoryPageForContactVisibleTo(
 		viewer: Viewer,
@@ -199,7 +199,7 @@ export async function editTodo(
 
 /**
  * Tick a to-do off. One already done stays as it was — who ticked it first keeps the credit —
- * so a tick held on a phone and sent twice is harmless (docs/04 §4.11.2).
+ * so a tick held on a phone and sent twice is harmless (docs/dev/04 §4.11.2).
  */
 export async function tickTodo(
 	deps: TodoDeps,

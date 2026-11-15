@@ -6,7 +6,7 @@ import type { ImmichAsset, ImmichGateway } from './gateway';
 import type { ImmichMediaSigner } from './signed-media';
 
 /*
- * The whole Immich library, for the picker beside a photo upload (docs/02 §2.24.9, docs/04
+ * The whole Immich library, for the picker beside a photo upload (docs/dev/02 §2.24.9, docs/dev/04
  * ADR-129): every photo of a day on the camera's clock, whoever is in it, and a search by
  * description. Any member may browse it — the library is open to the household, which Settings
  * tells the admin — so a photo is signed for the viewer's household, not for a contact, and the
@@ -91,7 +91,7 @@ export async function searchLibrary(
 
 /**
  * When a copy made from the library was taken: what Immich said, as signed into the preview it
- * was made from (docs/02 §2.24.9) — not what the browser sends. Null for a token that is not a
+ * was made from (docs/dev/02 §2.24.9) — not what the browser sends. Null for a token that is not a
  * preview of this household's library, and when Immich did not say.
  */
 export async function libraryCopyTakenAt(

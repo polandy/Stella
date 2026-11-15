@@ -3,8 +3,8 @@ import { signIn } from './app';
 import { clickNode, settled, stateOf } from './graph-canvas';
 
 /*
- * Choosing which of a circle's roles to open up on the map (docs/02 §2.7). Written after the
- * maintainer tried it in the running app (docs/08 §8.4.1).
+ * Choosing which of a circle's roles to open up on the map (docs/dev/02 §2.7). Written after the
+ * maintainer tried it in the running app (docs/dev/08 §8.4.1).
  *
  * Read-only against the demo household: it centres Lena, whose Turnverein circle sits one hop
  * out with its members still unopened — Franziska and Beat belong to it, neither is on Lena's

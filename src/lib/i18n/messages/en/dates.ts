@@ -1,5 +1,5 @@
 /*
- * How a date reads on screen (docs/02 §2.13.3): countdowns, occasions and the length of a
+ * How a date reads on screen (docs/dev/02 §2.13.3): countdowns, occasions and the length of a
  * silence. The shapes are computed in `$lib/dates/labels`; only the wording lives here.
  */
 

@@ -15,7 +15,7 @@ import { seedRelationshipTypes } from './seed';
 import * as schema from './schema';
 
 /*
- * A restored relationship against real SQLite (docs/02 §2.15, docs/03 §relationship): it lands
+ * A restored relationship against real SQLite (docs/dev/02 §2.15, docs/dev/03 §relationship): it lands
  * in the stored order every other writer gives it, so the unique index and the duplicate check
  * see it from either end — and a link the household already has stays its own row, untouched,
  * because the restore only adds. The plan's rules are specified in `restore-relationships.test.ts`;

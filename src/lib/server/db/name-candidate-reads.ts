@@ -8,7 +8,7 @@ import type * as schema from './schema';
 import { contact as contactTable, relationship } from './schema';
 
 /*
- * Drizzle adapter for quick-add's name candidates (docs/02 §2.2.1, docs/08 §8.3): the browsable
+ * Drizzle adapter for quick-add's name candidates (docs/dev/02 §2.2.1, docs/dev/08 §8.3): the browsable
  * people with how well connected each is, counted over links the viewer may see.
  */
 

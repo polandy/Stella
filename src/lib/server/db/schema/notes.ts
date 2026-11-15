@@ -3,7 +3,7 @@ import { now, type Visibility } from './columns';
 import { user } from './household';
 import { contact } from './people';
 
-/* Notes: reference facts about a person, and the people they mention (docs/03 §3.3). */
+/* Notes: reference facts about a person, and the people they mention (docs/dev/03 §3.3). */
 
 export const note = sqliteTable(
 	'note',

@@ -4,7 +4,7 @@
 	import { sourceWord, type ContactSource } from '$lib/import-match/card';
 
 	/*
-	 * *Skipped contacts* on the import page (docs/02 §2.16): a skip is for good, so this is the
+	 * *Skipped contacts* on the import page (docs/dev/02 §2.16): a skip is for good, so this is the
 	 * one way back. *Ask again* forgets the skip; the next import of that address book asks.
 	 */
 	interface Props {

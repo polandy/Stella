@@ -1,5 +1,5 @@
 /*
- * What kind of tie a relationship type describes (docs/03 §relationship_type). The category
+ * What kind of tie a relationship type describes (docs/dev/03 §relationship_type). The category
  * groups the picker and gives the link its fixed accent in the graph, so both the domain and
  * the interface need the same closed list — it lives here, beside the type keys, because a
  * component cannot import from `$lib/server`.

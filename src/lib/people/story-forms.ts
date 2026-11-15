@@ -1,5 +1,5 @@
 /*
- * The Activity card's inline spot on a person's page (docs/05 §5.5): *Write a moment* and *Log
+ * The Activity card's inline spot on a person's page (docs/dev/05 §5.5): *Write a moment* and *Log
  * contact* open their form at the top of the card, one at a time. Opening one folds the other
  * away; what was typed in it is kept by its owner until it is saved or cancelled.
  */

@@ -1,5 +1,5 @@
 /*
- * The command vocabulary (docs/04 §4.11.2): every change a member can
+ * The command vocabulary (docs/dev/04 §4.11.2): every change a member can
  * make, by name, with the payload it carries and the kind of change it is. Pure and shared, so
  * the outbox on a phone and the dispatcher on the server agree on one spelling — and on which
  * commands a device may hold back while Stella is out of reach. Not under `server/`, so the
@@ -26,7 +26,7 @@ const KINDS = {
 	'gift.remove': 'remove',
 	'todo.add': 'add',
 	// A tick only ever moves a to-do towards done and a replay changes nothing, so it may wait on
-	// a phone like an addition (docs/02 §2.26). Rewriting, opening again and removing may not.
+	// a phone like an addition (docs/dev/02 §2.26). Rewriting, opening again and removing may not.
 	'todo.tick': 'add',
 	'todo.edit': 'change',
 	'todo.untick': 'change',
@@ -70,7 +70,7 @@ export interface PhotoPayload {
 	parentId: string;
 	image: Uint8Array;
 	thumb: Uint8Array;
-	/** A large circle photo's 1600 px view beside its full picture (docs/02 §2.4.2). */
+	/** A large circle photo's 1600 px view beside its full picture (docs/dev/02 §2.4.2). */
 	view?: Uint8Array;
 	width: number;
 	height: number;
@@ -103,13 +103,13 @@ export type CommandPayloads = {
 		: v.InferOutput<(typeof COMMAND_PAYLOAD_SCHEMAS)[T]>;
 };
 
-/** A moment as the composer hands it over (docs/02 §2.22.1). */
+/** A moment as the composer hands it over (docs/dev/02 §2.22.1). */
 export type MomentCapturePayload = CommandPayloads['moment.capture'];
 
-/** One type of link to several people at once (docs/02 §2.4, ADR-118). */
+/** One type of link to several people at once (docs/dev/02 §2.4, ADR-118). */
 export type RelationshipAddManyPayload = CommandPayloads['relationship.addMany'];
 
-/** A new person, as the *Add person* form hands them over (docs/02 §2.2). */
+/** A new person, as the *Add person* form hands them over (docs/dev/02 §2.2). */
 export type ContactAddPayload = CommandPayloads['contact.add'];
 
 /** One intent from one member. */

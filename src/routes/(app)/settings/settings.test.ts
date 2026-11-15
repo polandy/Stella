@@ -4,7 +4,7 @@ import { answerOf, formOf, MEMBER, routeEvent } from '$lib/server/testing';
 import { actions } from './+page.server';
 
 /*
- * The Settings landing's *Blur my private entries* (docs/02 §2.10.1) as the edge answers it: the
+ * The Settings landing's *Blur my private entries* (docs/dev/02 §2.10.1) as the edge answers it: the
  * switch posts `on` or nothing, the member's own row is written, and the layout re-running in
  * the same request sees the new choice. The use-case has its own suite (`accounts.test.ts`).
  */

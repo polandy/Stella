@@ -1,6 +1,6 @@
 /*
  * Filtering a short list of existing values for a free-text field that suggests them without
- * requiring a pick (docs/05 — a role field offers a circle's roles; typing a new one is fine).
+ * requiring a pick (docs/dev/05 — a role field offers a circle's roles; typing a new one is fine).
  */
 
 /** `options` matching `query`, values that start with it first; everything on an empty query. */

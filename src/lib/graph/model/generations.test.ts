@@ -4,7 +4,7 @@ import type { GraphEdge, GraphModel, GraphNode } from './types';
 
 /*
  * Which generation each person on the map belongs to, read off the family links alone — what
- * the family-tree arrangement puts into rows (docs/02 §2.7, docs/05 §5.8).
+ * the family-tree arrangement puts into rows (docs/dev/02 §2.7, docs/dev/05 §5.8).
  */
 
 const person = (id: string): GraphNode => ({ id, kind: 'person', label: id });

@@ -23,9 +23,9 @@ const EditProfileSchema = v.object({
 });
 
 /**
- * The three name parts and *Shown as*; each may be emptied (docs/02 §2.2) —
+ * The three name parts and *Shown as*; each may be emptied (docs/dev/02 §2.2) —
  * the use-case refuses only a name with nothing left in it. The gender rides along: it is
- * edited with the name (docs/02 §2.2), one of the three or empty for none on record.
+ * edited with the name (docs/dev/02 §2.2), one of the three or empty for none on record.
  */
 const NamePartsSchema = v.object({
 	firstName: v.pipe(v.string(), v.trim()),
@@ -49,9 +49,9 @@ const JobSchema = v.object({
 	company: v.string()
 });
 
-/** The hero: name and gender, description, face, and the job among the facts (docs/02 §2.2). */
+/** The hero: name and gender, description, face, and the job among the facts (docs/dev/02 §2.2). */
 export const profileActions = {
-	/* The hero's description, edited in place; the name has its own editor (docs/02 §2.2). */
+	/* The hero's description, edited in place; the name has its own editor (docs/dev/02 §2.2). */
 	editProfile: async ({ request, params, locals }) => {
 		const viewer = requireViewer(locals);
 
@@ -69,7 +69,7 @@ export const profileActions = {
 		throw redirect(303, `/contacts/${params.id}`);
 	},
 
-	/* The whole name — parts, *Shown as* and gender — from the one editor behind the name (docs/02 §2.2). */
+	/* The whole name — parts, *Shown as* and gender — from the one editor behind the name (docs/dev/02 §2.2). */
 	editNameParts: async ({ request, params, locals }) => {
 		const viewer = requireViewer(locals);
 
@@ -108,7 +108,7 @@ export const profileActions = {
 		throw redirect(303, `/contacts/${params.id}`);
 	},
 
-	/* Job title and company from the profile's one job editor, saved together (docs/02 §2.2). */
+	/* Job title and company from the profile's one job editor, saved together (docs/dev/02 §2.2). */
 	setJob: async ({ request, params, locals }) => {
 		const viewer = requireViewer(locals);
 

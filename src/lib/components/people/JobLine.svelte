@@ -4,7 +4,7 @@
 	import { jobShortForm } from '$lib/people/job';
 
 	/*
-	 * A person's job on its own line under their name in a list (docs/02 §2.2, §2.9): a
+	 * A person's job on its own line under their name in a list (docs/dev/02 §2.2, §2.9): a
 	 * briefcase and "Teacher at Primarschule Muri", cut short with … rather than wrapped, so a
 	 * row keeps its height. Nothing when no job is on record.
 	 */

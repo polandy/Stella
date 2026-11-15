@@ -2,8 +2,8 @@ import { expect, test, type Page } from '@playwright/test';
 import { mention, signIn } from './app';
 
 /*
- * Filtering the household stream by what and who (docs/02 §2.22.2). Written after the chips
- * were seen in the running app (docs/08 §8.4.1).
+ * Filtering the household stream by what and who (docs/dev/02 §2.22.2). Written after the chips
+ * were seen in the running app (docs/dev/08 §8.4.1).
  *
  * The demo household has two members: the admin this suite signs in as, and Nina Brunner,
  * who wrote one journal entry about Hans Brunner. Every other spec writes as the admin, so

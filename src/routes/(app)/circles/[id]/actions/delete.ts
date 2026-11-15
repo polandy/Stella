@@ -5,7 +5,7 @@ import { deleteCircle } from '$lib/server/domain/circles/delete-circle';
 import type { Actions } from '../$types';
 
 /*
- * Deleting a circle from its header's confirm step (docs/02 §2.4.2): its creator always, an admin
+ * Deleting a circle from its header's confirm step (docs/dev/02 §2.4.2): its creator always, an admin
  * when it is shared — checked by the write itself. Afterwards the member lands on the circles
  * list, where the page that posted says *Class 1B deleted*.
  */

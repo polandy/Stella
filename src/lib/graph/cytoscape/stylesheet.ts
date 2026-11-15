@@ -4,7 +4,7 @@ import { markStyles, nodeStyles } from './stylesheet-nodes';
 import type { Palette } from './theme';
 
 /*
- * Build the Cytoscape stylesheet from a resolved Palette (docs/05 §5.8). Pure: palette in,
+ * Build the Cytoscape stylesheet from a resolved Palette (docs/dev/05 §5.8). Pure: palette in,
  * style array out — so it tests without the library and re-themes by swapping the palette.
  * Every colour comes from the semantic tokens; nothing hard-codes a hex.
  */
@@ -20,13 +20,13 @@ export interface StylesheetOptions {
 	/**
 	 * Name every line at once, not just the highlighted, hovered or traced ones. The caller
 	 * decides: the Labels switch is on by default, but past a few dozen lines the names pile
-	 * up around a hub, so it is off whenever they no longer fit (`edgeLabelsFit`, docs/05 §5.8).
+	 * up around a hub, so it is off whenever they no longer fit (`edgeLabelsFit`, docs/dev/05 §5.8).
 	 */
 	edgeLabels?: boolean;
 	/** The reader asked for less motion: a state change (selection, fading) is then instant. */
 	reducedMotion?: boolean;
 	/**
-	 * Drawn as the family tree around a person (docs/05 §5.8): each person's role towards the
+	 * Drawn as the family tree around a person (docs/dev/05 §5.8): each person's role towards the
 	 * centre is written under their name (the `role` the elements carry), the centre is lit
 	 * softly, and no line is named unless `edgeLabels` asks for it — the roles say it instead.
 	 */

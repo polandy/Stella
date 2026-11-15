@@ -1,5 +1,5 @@
 /*
- * How the family tree searches for the order of one family's rows (docs/05 §5.8), for
+ * How the family tree searches for the order of one family's rows (docs/dev/05 §5.8), for
  * `family-rows.ts`. Pure. A row is a list of units — a couple, or a longer chain of partners,
  * moves together. The search starts from the usual barycentre passes, then makes single moves
  * for as long as one draws the bars better, and last turns couples husband-left where that

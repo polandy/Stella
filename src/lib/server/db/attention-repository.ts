@@ -7,7 +7,7 @@ import type * as schema from './schema';
 import { contact, interaction, journalEntry, journalSubject } from './schema';
 
 /*
- * Drizzle adapter for the AttentionRepository port (docs/02 §2.2). Three scoped reads rather
+ * Drizzle adapter for the AttentionRepository port (docs/dev/02 §2.2). Three scoped reads rather
  * than one triple join: the latest journal day and the latest touchpoint day are each grouped
  * per contact under `childRecordVisibleTo`, so a private entry the viewer may not see cannot
  * count as attention from their chair. The contact rows themselves come through
@@ -34,7 +34,7 @@ export function createDrizzleAttentionRepository(
 				.groupBy(journalEntry.contactId)
 				.all();
 
-			// A moment about several people counts for each of them (docs/02 §2.20.3).
+			// A moment about several people counts for each of them (docs/dev/02 §2.20.3).
 			const latestAsFurtherSubject = db
 				.select({ contactId: journalSubject.contactId, day: max(journalEntry.entryDate) })
 				.from(journalSubject)

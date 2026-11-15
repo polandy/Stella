@@ -5,7 +5,7 @@ import { HOVERED_CLASS, LIT_CLASS } from './canvas-classes';
 import { edge, group, tucked, club, core, linkedPair, controller } from './explorer-fixtures';
 
 /*
- * What the canvas lights up (`highlighting.ts`, docs/05 §5.8): a neighbourhood, a traced path,
+ * What the canvas lights up (`highlighting.ts`, docs/dev/05 §5.8): a neighbourhood, a traced path,
  * the node the keyboard is on and the lines under the pointer — and where everyone shown stands,
  * for the keyboard to walk.
  */

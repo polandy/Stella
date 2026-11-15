@@ -1,7 +1,7 @@
 import type { ShareParts } from './shared';
 
 /*
- * A share that reached Stella's server rather than the service worker (docs/02 §2.18.3): the
+ * A share that reached Stella's server rather than the service worker (docs/dev/02 §2.18.3): the
  * app opened before its worker took over. The server cannot hold it for the sheet, so it hands
  * the words back in the sheet's address; photos cannot ride along there, and the sheet says so.
  */

@@ -6,7 +6,7 @@
 	import { processImage } from '$lib/media/process-image';
 
 	/*
-	 * The wizard's last step (docs/02 §2.16), in the browser: the pictures come either from the
+	 * The wizard's last step (docs/dev/02 §2.16), in the browser: the pictures come either from the
 	 * file itself or from Monica's `photos` folder, and each is downscaled here (no native image
 	 * library on the server) and sent one at a time. The server decides whose photo each is.
 	 */

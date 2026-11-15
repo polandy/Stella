@@ -1,5 +1,5 @@
 /*
- * What the app is still waiting for, counted in one place (docs/05 §5.7).
+ * What the app is still waiting for, counted in one place (docs/dev/05 §5.7).
  *
  * Saving something that reloads what is on screen — a relationship change and the graph
  * behind it — can take long enough to read as nothing having happened. One store per tab

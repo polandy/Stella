@@ -9,9 +9,9 @@ import { say } from '$lib/server/i18n/say';
 import type { RequestHandler } from './$types';
 
 /*
- * *Pick someone else* on a review card (docs/02 §2.16): the people whose name holds the
+ * *Pick someone else* on a review card (docs/dev/02 §2.16): the people whose name holds the
  * query, each with what *Same person* would do with that card. Only people the member may
- * browse are found — for the linked Nextcloud book's cards, shared people only (docs/02 §2.16.3).
+ * browse are found — for the linked Nextcloud book's cards, shared people only (docs/dev/02 §2.16.3).
  */
 export const GET: RequestHandler = async ({ url, locals }) => {
 	const user = requireAdmin(locals);

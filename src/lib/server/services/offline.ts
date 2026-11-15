@@ -8,8 +8,8 @@ import type { CommandDeps, CommandReceiptRepository } from '../domain/commands/d
 import type { EntryOwnership } from '../domain/commands/photos';
 
 /*
- * The `offline` bounded context of the composition root (docs/08 §8.3): the command dispatcher
- * every change goes through, from a form or a phone's outbox (docs/04 §4.11.2). Its own
+ * The `offline` bounded context of the composition root (docs/dev/08 §8.3): the command dispatcher
+ * every change goes through, from a form or a phone's outbox (docs/dev/04 §4.11.2). Its own
  * repositories are the receipt book and the entry-ownership read a photo needs; its handler
  * table (`commands/handlers.ts`) calls into the other contexts, which `createServices` hands it.
  */

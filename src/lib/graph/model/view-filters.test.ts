@@ -3,7 +3,7 @@ import { FILTER_KEYS, graphFiltersFor, openingFilterKeys } from './view-filters'
 
 /*
  * The Filter menu's kinds of line, and what the switched-on ones ask of `applyFilters`
- * (docs/05 §5.8). The menu draws them; which lines they keep is decided here.
+ * (docs/dev/05 §5.8). The menu draws them; which lines they keep is decided here.
  */
 
 describe('FILTER_KEYS', () => {

@@ -7,7 +7,7 @@ import { planLogin } from './login-planner';
 import type { KnownUser, LoginDenial, OidcClaims, OidcPolicy, ProfilePatch } from './types';
 
 /*
- * OIDC relying-party orchestration (docs/04 §4.4). Composes the pure pieces (authorization,
+ * OIDC relying-party orchestration (docs/dev/04 §4.4). Composes the pure pieces (authorization,
  * planner, PKCE) with two ports — the provider (token exchange + ID-token verification) and
  * the identity store — so the whole flow is unit-testable with fakes.
  */
@@ -15,7 +15,7 @@ import type { KnownUser, LoginDenial, OidcClaims, OidcPolicy, ProfilePatch } fro
 /** The result of a token exchange: the verified claims plus the ID token they came from. */
 export interface TokenExchange {
 	claims: OidcClaims;
-	/** The raw, verified ID token — kept on the session as the logout hint (docs/02 §2.1). */
+	/** The raw, verified ID token — kept on the session as the logout hint (docs/dev/02 §2.1). */
 	idToken: string;
 }
 

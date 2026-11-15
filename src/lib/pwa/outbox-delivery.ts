@@ -1,12 +1,12 @@
 import type { CommandAnswer, RefusedTarget } from '../commands/commands';
 
 /*
- * A save the member is watching (docs/04 ADR-076): a form saving in reach goes through the
+ * A save the member is watching (docs/dev/04 ADR-076): a form saving in reach goes through the
  * outbox too, and learns here what became of it. Pure, like `outbox.ts`.
  */
 
 /**
- * What became of a save the member is watching (docs/04 ADR-076: online saves go through the
+ * What became of a save the member is watching (docs/dev/04 ADR-076: online saves go through the
  * outbox too). *Applied* hands the form Stella's result; *refused* its reason, for the form to
  * show where the action's own error would be; *kept* means it waits on this device.
  */

@@ -8,7 +8,7 @@ import { createHmac, timingSafeEqual } from 'node:crypto';
  * values and log the visitor into the planter's account. So the value is sealed:
  * `payload.mac`, the payload the transaction as JSON in base64url, the MAC an HMAC-SHA256 over
  * it with `SESSION_SECRET`, bound to this one purpose so no other signed value of Stella's
- * can stand in for it (docs/04 §4.4).
+ * can stand in for it (docs/dev/04 §4.4).
  */
 
 export interface OidcTransaction {

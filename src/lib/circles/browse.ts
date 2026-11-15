@@ -1,5 +1,5 @@
 /*
- * Browsing circles (docs/02 §2.4.2): a typed query over name and description, plus one chip per
+ * Browsing circles (docs/dev/02 §2.4.2): a typed query over name and description, plus one chip per
  * kind that is actually there. Pure and client-safe — a household has few enough circles that
  * the page filters what it already has instead of asking the server on every keystroke.
  */
@@ -63,7 +63,7 @@ export function filterCircles<T extends BrowsableCircle>(
  * a stable order matters more than frequency, which would make the row jump as you type.
  *
  * The wording comes from the caller (`labels`), which keeps this module language-free while
- * the chips still read in the viewer's language (docs/02 §2.19).
+ * the chips still read in the viewer's language (docs/dev/02 §2.19).
  */
 export function kindChips(
 	circles: BrowsableCircle[],

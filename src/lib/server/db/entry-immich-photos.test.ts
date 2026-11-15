@@ -10,7 +10,7 @@ import {
 import { setEntrySubjects } from './journal-subjects';
 import * as schema from './schema';
 
-/* An entry's Immich references as its author edits them and its readers see them (docs/02 §2.20). */
+/* An entry's Immich references as its author edits them and its readers see them (docs/dev/02 §2.20). */
 
 const A1 = '11111111-1111-4111-8111-111111111111';
 const A2 = '22222222-2222-4222-8222-222222222222';

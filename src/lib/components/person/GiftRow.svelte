@@ -18,10 +18,10 @@
 	import type { PersonPageData } from './types';
 
 	/*
-	 * One gift on the Gifts card (docs/02 §2.25): what it is, its note, when and why it was given,
+	 * One gift on the Gifts card (docs/dev/02 §2.25): what it is, its note, when and why it was given,
 	 * who noted it — and what can be done with it. An idea offers *Mark as given*, which asks
 	 * only for the day and the occasion; every gift can be rewritten in place and removed with
-	 * the undo every removal has (docs/02 §2.23).
+	 * the undo every removal has (docs/dev/02 §2.23).
 	 */
 	interface Props {
 		gift: PersonPageData['gifts'][number];

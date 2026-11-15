@@ -1,7 +1,7 @@
 import type { Viewer } from '../../access/visibility';
 
 /*
- * The people who share a household (docs/02 §2.1). Everything they write carries their user
+ * The people who share a household (docs/dev/02 §2.1). Everything they write carries their user
  * id; the story turns that id into a name through here, so a page never has to know how
  * accounts are stored.
  */
@@ -18,7 +18,7 @@ export interface MemberRepository {
 	listMembers(householdId: string): Promise<HouseholdMember[]>;
 	/**
 	 * Everyone who ever wrote in the household: the members, and those an admin removed, whose
-	 * work keeps their name (docs/02 §2.1).
+	 * work keeps their name (docs/dev/02 §2.1).
 	 */
 	listAuthors(householdId: string): Promise<HouseholdMember[]>;
 }
@@ -42,7 +42,7 @@ export async function authorNames(
 
 /**
  * The viewer's household as it is now (a removed member is no longer offered), the viewer first and the rest in the household's order — the order a
- * "who did it" choice reads in, with the viewer shown as "You" (docs/02 §2.22.2).
+ * "who did it" choice reads in, with the viewer shown as "You" (docs/dev/02 §2.22.2).
  */
 export async function membersViewerFirst(
 	deps: MemberDeps,

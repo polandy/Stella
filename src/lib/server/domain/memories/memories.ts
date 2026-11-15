@@ -3,7 +3,7 @@ import { memoryDaysFor, memoryYears, type MemoryYear } from '../../../memories/m
 import type { InteractionRow, MomentRow, StreamPerson } from '../stream/stream';
 
 /*
- * *On this day* (docs/02 §2.12.1): the moments, touchpoints and gallery photos the viewer may
+ * *On this day* (docs/dev/02 §2.12.1): the moments, touchpoints and gallery photos the viewer may
  * see that fall on a day's day and month in earlier years. A query over the existing tables,
  * like the stream (§2.22.2), whose row shapes it shares; the adapter owns the scoped reads, the
  * year grouping is the pure `$lib/memories`.
@@ -12,12 +12,12 @@ import type { InteractionRow, MomentRow, StreamPerson } from '../stream/stream';
 /** A moment written on the day in an earlier year, as the stream reads one. */
 export type MomentMemory = MomentRow & { kind: 'moment' };
 
-/** A touchpoint logged for the day in an earlier year (docs/02 §2.6). */
+/** A touchpoint logged for the day in an earlier year (docs/dev/02 §2.6). */
 export type TouchpointMemory = InteractionRow & { kind: 'touchpoint' };
 
 export type Memory = (MomentMemory | TouchpointMemory) & { date: string };
 
-/** A gallery photo taken on the day in an earlier year (docs/02 §2.14). */
+/** A gallery photo taken on the day in an earlier year (docs/dev/02 §2.14). */
 export interface MemoryPhoto {
 	id: string;
 	/** The capture day, `YYYY-MM-DD`, as the camera's clock read it. */

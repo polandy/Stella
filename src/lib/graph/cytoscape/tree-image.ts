@@ -8,7 +8,7 @@ import { bendLines, writeCaption } from './tree-canvas';
 import { lightPaletteFromDom, type Palette } from './theme';
 
 /*
- * Draws the family tree for export (docs/02 §2.7) on a core of its own, out of sight, so the
+ * Draws the family tree for export (docs/dev/02 §2.7) on a core of its own, out of sight, so the
  * reader's map neither moves nor flickers: laid out afresh from the scene, in the light theme,
  * with every photo loaded before the picture is taken. The title and the date it was made stand
  * above the tree, over a rule. Like the rest of `cytoscape/`, it holds no domain rules.

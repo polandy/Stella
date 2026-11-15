@@ -4,7 +4,7 @@ import type { AuthServices } from '$lib/server/services/auth';
 import type { AppServices } from '$lib/server/services/app-services';
 
 /*
- * The password sign-in action (docs/02 §2.1.1) over a test-wired `locals.services`: the sign-in
+ * The password sign-in action (docs/dev/02 §2.1.1) over a test-wired `locals.services`: the sign-in
  * methods the operator turned on are read off the services, so the refusal is testable without
  * touching the process-wide configuration.
  */

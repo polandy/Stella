@@ -1,7 +1,7 @@
 import { parseDensity, type Density } from './layout/density';
 
 /*
- * The adapter that keeps the graph's density per device (docs/05 §5.8). What a stored value
+ * The adapter that keeps the graph's density per device (docs/dev/05 §5.8). What a stored value
  * means is decided in `layout/density.ts`; this only reads and writes it, through the slice of
  * `Storage` it is handed, so it tests with a map instead of a browser.
  */

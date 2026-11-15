@@ -8,7 +8,7 @@ import type { ImportantDateRepository } from './important-dates';
 import { datesOnTheRadar, type UpcomingSource } from './upcoming';
 
 /*
- * A member's dates as a subscribed calendar (docs/02 §2.13.4): what *Coming up* would show
+ * A member's dates as a subscribed calendar (docs/dev/02 §2.13.4): what *Coming up* would show
  * them, without its 30-day horizon — every date on the radar of every person they may see,
  * read through the same scoped port — and every open to-do of theirs with a day, on that day.
  * The phone's calendar then does the reminding.

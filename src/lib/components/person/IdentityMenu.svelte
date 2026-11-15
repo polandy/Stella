@@ -6,7 +6,7 @@
 	import { briefPath } from '$lib/people/sections';
 
 	/*
-	 * The identity card's ⋯ menu: everything that is not the one thing to do here (docs/05
+	 * The identity card's ⋯ menu: everything that is not the one thing to do here (docs/dev/05
 	 * §5.5). Which entries it holds is `recordMenu`'s choice; the confirm steps it opens are
 	 * the card's.
 	 */
@@ -44,7 +44,7 @@
 					<Icon name="met" size={14} />{t('contact.logContact')}
 				</button>
 			{:else if entry === 'brief'}
-				<!-- What to know before a visit, on a page of its own (docs/02 §2.2.5). -->
+				<!-- What to know before a visit, on a page of its own (docs/dev/02 §2.2.5). -->
 				<a
 					href={briefPath(contactId)}
 					role="menuitem"
@@ -55,7 +55,7 @@
 					<Icon name="brief" size={14} />{t('brief.open')}
 				</a>
 			{:else if entry === 'thisIsMe' || entry === 'notMe'}
-				<!-- Which of these people you are (docs/02 §2.1.3); the same item lets go again. -->
+				<!-- Which of these people you are (docs/dev/02 §2.1.3); the same item lets go again. -->
 				<form method="POST" action="?/setSelf" class="contents">
 					<button
 						type="submit"

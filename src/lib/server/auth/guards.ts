@@ -7,7 +7,7 @@ import type { AuthUser } from './accounts';
  * Route guards for the SvelteKit edge — one line per route instead of a hand-written check.
  * An anonymous visitor is sent to the login page (the `(app)` layout already does this, so
  * here it is mostly the narrowing a route needs; the redirect keeps a form action that is
- * posted to directly from answering with a crash). Admin-only surfaces (docs/02 §2.17
+ * posted to directly from answering with a crash). Admin-only surfaces (docs/dev/02 §2.17
  * "Data") answer 403 to a signed-in member rather than hiding — the page exists, it is just
  * not theirs to use.
  */
@@ -18,14 +18,14 @@ export function requireUser(locals: Pick<App.Locals, 'user'>): AuthUser {
 	return locals.user;
 }
 
-/** Who is asking, as the access layer takes it (docs/03 §3.7). */
+/** Who is asking, as the access layer takes it (docs/dev/03 §3.7). */
 export function requireViewer(locals: Pick<App.Locals, 'user'>): Viewer {
 	const { id, householdId } = requireUser(locals);
 	return { id, householdId };
 }
 
 /**
- * Who is asking to remove something (docs/03 §3.7): the viewer, and whether they are an admin
+ * Who is asking to remove something (docs/dev/03 §3.7): the viewer, and whether they are an admin
  * — the only rule in the access layer that looks at the role.
  */
 export function requireRemover(locals: Pick<App.Locals, 'user'>): Remover {

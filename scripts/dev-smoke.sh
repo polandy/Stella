@@ -4,7 +4,7 @@
 # It is the one runtime nothing else in CI covers: Vite's module runner under Bun, where a
 # module resolution that works in the built server and in `bun test` can still be dead. It
 # was — `getDb`'s bare `require` left every page 500ing while both other runtimes stayed
-# green (docs/04 §4.9).
+# green (docs/dev/04 §4.9).
 #
 #   ./scripts/dev-smoke.sh          # defaults to port 5199
 #   DEV_SMOKE_PORT=5300 ./scripts/dev-smoke.sh

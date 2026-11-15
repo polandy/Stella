@@ -7,7 +7,7 @@ import {
 import { readCapped } from '../http/read-capped';
 
 /*
- * The Nextcloud adapter (docs/04 §4.5): one CardDAV address book over WebDAV, as a client —
+ * The Nextcloud adapter (docs/dev/04 §4.5): one CardDAV address book over WebDAV, as a client —
  * `sync-collection` (RFC 6578) for what changed, `addressbook-multiget` (RFC 6352) for the
  * cards themselves, and `PUT` with `If-Match` for a write that never overwrites a newer card.
  * The only file that knows the protocol. The app password goes in a Basic header and nowhere

@@ -1,5 +1,5 @@
 /*
- * *On this day* (docs/02 §2.12.1): Home's band and `/on-this-day`, what the household wrote on
+ * *On this day* (docs/dev/02 §2.12.1): Home's band and `/on-this-day`, what the household wrote on
  * a day's date in earlier years.
  */
 

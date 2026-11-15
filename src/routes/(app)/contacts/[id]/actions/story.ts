@@ -16,12 +16,12 @@ import { contactSectionPath } from '$lib/people/sections';
 import { say, translator } from '$lib/server/i18n/say';
 import type { Actions } from '../$types';
 
-/** The story card: touchpoints logged and corrected, and entries taken back (docs/02 §2.23). */
+/** The story card: touchpoints logged and corrected, and entries taken back (docs/dev/02 §2.23). */
 export const storyActions = {
 	logInteraction: async ({ request, params, locals }) => {
 		const viewer = requireViewer(locals);
 
-		// A touchpoint is a command (docs/04 §4.11.2), named by the form when it can, so one
+		// A touchpoint is a command (docs/dev/04 §4.11.2), named by the form when it can, so one
 		// kept on the phone after a lost answer is recognised when it arrives again. The form
 		// names the people with it `participants`, one field each.
 		const form = await request.formData();
@@ -121,7 +121,7 @@ export const storyActions = {
 			interactionId
 		);
 		// Gone meanwhile or not theirs to remove: said alike, so a foreign id reveals nothing. A
-		// 404 is what a held remove reads as done (docs/02 §2.23).
+		// 404 is what a held remove reads as done (docs/dev/02 §2.23).
 		if (!removed) return fail(404, { interactionError: say(locals, 'errors.interaction.gone') });
 		throw redirect(303, `/contacts/${params.id}`);
 	},

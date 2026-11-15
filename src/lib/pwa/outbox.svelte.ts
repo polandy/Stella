@@ -26,7 +26,7 @@ import { postCommands, postPhoto } from './outbox-wire';
 import { sendRounds } from './send-rounds';
 
 /*
- * The outbox on this device, as a rune the page reads (docs/02 §2.18.1).
+ * The outbox on this device, as a rune the page reads (docs/dev/02 §2.18.1).
  * An adapter: what each step *means* is `outbox.ts` and `outbox-photos.ts`, where it is tested;
  * this file keeps the list in IndexedDB, sends it through `outbox-wire.ts`, and mirrors it for
  * the page.
@@ -36,7 +36,7 @@ import { sendRounds } from './send-rounds';
  * gets no answer puts everything back as it was; Stella knows every command's id, so trying
  * again can never save anything twice.
  *
- * A form saving while Stella is in reach goes through here too (docs/04 ADR-076) and *watches*
+ * A form saving while Stella is in reach goes through here too (docs/dev/04 ADR-076) and *watches*
  * its save: `submit` resolves once Stella has answered for it, or with *kept* when the round
  * ended without an answer. While watched, the item is not in `mine`, so a save that goes
  * through never flashes up as kept.

@@ -5,8 +5,8 @@ import type { ImportWording, MonicaPlanContext } from './plan';
 import { orNull } from './text';
 
 /*
- * Monica's contact fields and addresses as Stella's contact fields (docs/02 §2.16,
- * docs/monica-mapping.md), in the order the export lists them.
+ * Monica's contact fields and addresses as Stella's contact fields (docs/dev/02 §2.16,
+ * docs/user/monica-mapping.md), in the order the export lists them.
  */
 
 /** A card's label in words: a known one in the member's language, a typed one as written. */

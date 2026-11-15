@@ -13,7 +13,7 @@ import { household, user } from './household';
 import { contact } from './people';
 import { journalEntry } from './story';
 
-/* Photos: galleries, framings, cuts and journal pictures (docs/03 §photo). */
+/* Photos: galleries, framings, cuts and journal pictures (docs/dev/03 §photo). */
 
 export const photo = sqliteTable(
 	'photo',
@@ -23,17 +23,17 @@ export const photo = sqliteTable(
 			.notNull()
 			.references(() => household.id, { onDelete: 'cascade' }),
 		contactId: text('contact_id').references(() => contact.id, { onDelete: 'cascade' }),
-		// When set, this photo belongs to a journal entry (docs/02 §2.20) rather than the
+		// When set, this photo belongs to a journal entry (docs/dev/02 §2.20) rather than the
 		// gallery; it is removed with the entry — by the repository, not by the database.
 		// The migration that added this column (`0002`) could not carry a cascade, and
 		// rebuilding the table to add one would have to drop `photo` while `contact` still
-		// points at it. The declaration says what the database enforces (docs/03 §photo).
+		// points at it. The declaration says what the database enforces (docs/dev/03 §photo).
 		journalEntryId: text('journal_entry_id').references(() => journalEntry.id),
-		// When set, this row is the avatar framing of that gallery photo (docs/02 §2.14): the
+		// When set, this row is the avatar framing of that gallery photo (docs/dev/02 §2.14): the
 		// square someone chose, rendered once, never shown in the gallery itself. No foreign
 		// key, like `avatar_photo_id`: the repository removes a framing with its photo.
 		framingOf: text('framing_of'),
-		// When set, this photo belongs to that circle's gallery (docs/02 §2.4.2) and to nobody's
+		// When set, this photo belongs to that circle's gallery (docs/dev/02 §2.4.2) and to nobody's
 		// person gallery. No foreign key, like `framing_of`: SQLite cannot add one with a cascade
 		// to an existing table, so the repository removes a circle's photos with the circle.
 		circleId: text('circle_id'),
@@ -41,7 +41,7 @@ export const photo = sqliteTable(
 		// by case when matched); null = the circle as a whole, a candidate for its cover.
 		circleRole: text('circle_role'),
 		// When set, this photo is a profile picture that was cut from that circle photo and is now
-		// a photo of its own (docs/02 §2.14): a reference, never a copy. No
+		// a photo of its own (docs/dev/02 §2.14): a reference, never a copy. No
 		// foreign key, like `framing_of`; the repository clears it when the group photo goes.
 		cutFrom: text('cut_from'),
 		// The chosen square, in the full-size picture's pixels, so choosing again starts there.
@@ -55,7 +55,7 @@ export const photo = sqliteTable(
 		filePath: text('file_path').notNull(),
 		thumbPath: text('thumb_path').notNull(),
 		// A 1600 px rendition beside a larger full picture, which the grid and the lightbox load
-		// instead of it; null when the full picture is already that small (docs/02 §2.4.2).
+		// instead of it; null when the full picture is already that small (docs/dev/02 §2.4.2).
 		viewPath: text('view_path'),
 		mime: text('mime').notNull(),
 		width: integer('width'),
@@ -65,7 +65,7 @@ export const photo = sqliteTable(
 		takenAt: text('taken_at'),
 		takenMonthDay: monthDayOf('taken_month_day', 'taken_at'),
 		// When the household pinned this gallery photo as one of the person's favourites
-		// (docs/02 §2.14); null when it is not one. A moment rather than a flag, because the
+		// (docs/dev/02 §2.14); null when it is not one. A moment rather than a flag, because the
 		// pins are shown most recently pinned first (domain/media/gallery-order.ts).
 		pinnedAt: integer('pinned_at'),
 		createdAt: integer('created_at').notNull().default(now)
@@ -79,12 +79,12 @@ export const photo = sqliteTable(
 			.on(t.framingOf, t.contactId)
 			.where(sql`${t.framingOf} IS NOT NULL`),
 		index('photo_circle_idx').on(t.circleId),
-		// The photos taken on a day and month in every year, for *On this day* (docs/02 §2.12.1).
+		// The photos taken on a day and month in every year, for *On this day* (docs/dev/02 §2.12.1).
 		index('photo_taken_month_day_idx').on(t.takenMonthDay)
 	]
 );
 
-/** An Immich photo a journal entry refers to, never a copy (docs/04 ADR-132). */
+/** An Immich photo a journal entry refers to, never a copy (docs/dev/04 ADR-132). */
 export const journalImmichPhoto = sqliteTable(
 	'journal_immich_photo',
 	{

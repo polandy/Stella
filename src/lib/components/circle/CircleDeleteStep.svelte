@@ -9,7 +9,7 @@
 	import type { SubmitFunction } from '@sveltejs/kit';
 
 	/*
-	 * Deleting a circle (docs/02 §2.4.2): the inline confirm step under the header, the person
+	 * Deleting a circle (docs/dev/02 §2.4.2): the inline confirm step under the header, the person
 	 * page's sunken box rather than a modal. It says what goes and what stays, from counts it asks
 	 * for only now that it is open. The cursor starts on *Keep it*, so a second Enter never deletes
 	 * anything. No Undo: the files go, and so does the page the reader is on — they land on the

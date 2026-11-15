@@ -3,7 +3,7 @@ import { immichMediaUrl } from '../immich/media-url';
 import { copyImmichPhoto } from './copy-immich-photo';
 
 /*
- * A photo from the Immich library, copied through the signed proxy (docs/02 §2.24.9): the file
+ * A photo from the Immich library, copied through the signed proxy (docs/dev/02 §2.24.9): the file
  * goes on to the image pipeline, and its token to the server, which dates the copy by it.
  */
 

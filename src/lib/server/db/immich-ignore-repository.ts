@@ -7,9 +7,9 @@ import type * as schema from './schema';
 import { contact, immichIgnore } from './schema';
 
 /*
- * Drizzle adapter for the ImmichIgnoreRepository port (docs/08 §8.3). An ignored pair has no
+ * Drizzle adapter for the ImmichIgnoreRepository port (docs/dev/08 §8.3). An ignored pair has no
  * visibility of its own: reads and removals join the contact and are scoped through the central
- * `contactVisibleTo`, like a link (docs/02 §2.24.2). A pair ignored twice keeps its
+ * `contactVisibleTo`, like a link (docs/dev/02 §2.24.2). A pair ignored twice keeps its
  * first record — who said so first, and when.
  */
 export function createDrizzleImmichIgnoreRepository(

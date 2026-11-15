@@ -9,7 +9,7 @@ import { createDrizzleContactFieldRepository } from './contact-field-repository'
 
 /*
  * Integration spec for the Drizzle ContactFieldRepository: fields inherit the contact's
- * visibility (docs/02 §2.3), ordering, and scoped removal.
+ * visibility (docs/dev/02 §2.3), ordering, and scoped removal.
  */
 
 const H = 'household-1';

@@ -5,7 +5,7 @@
 	import type { UnclearHandle } from '$lib/mentions/unclear';
 
 	/*
-	 * Asks which one a typed `@Thomas` means while the text is written (docs/02 §2.2.3): one line,
+	 * Asks which one a typed `@Thomas` means while the text is written (docs/dev/02 §2.2.3): one line,
 	 * with who is who folded away — the @-list shows the same lines where the pick is made. The
 	 * form holding it keeps saving off meanwhile.
 	 */

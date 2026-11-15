@@ -5,7 +5,7 @@ import { createContact } from './create-contact';
 import type { ContactDeps } from './contacts';
 
 /*
- * The `contact.add` command's use-case (docs/02 §2.2): add a person, and — when the member
+ * The `contact.add` command's use-case (docs/dev/02 §2.2): add a person, and — when the member
  * said this person is them — record that too (§2.1.3). One step, so the first-run card's
  * "Start with yourself" leaves nothing to finish in Settings, and a phone that queued it
  * while out of reach gets the same result as a form posted online.
@@ -19,7 +19,7 @@ export interface AddPersonDeps extends ContactDeps {
 export interface PersonAdder {
 	userId: string;
 	householdId: string;
-	/** Their language: a nickname in the shown name takes its quote marks (docs/02 §2.2). */
+	/** Their language: a nickname in the shown name takes its quote marks (docs/dev/02 §2.2). */
 	locale: Locale;
 }
 

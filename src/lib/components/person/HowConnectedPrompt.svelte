@@ -8,7 +8,7 @@
 	/*
 	 * "How are we connected?" is a question the relationships card cannot answer: it holds two
 	 * hops of the household and the chain usually runs further. So it asks who, and hands both
-	 * ends to the explorer, which holds the whole graph (docs/05 §5.5). The picker is on the page
+	 * ends to the explorer, which holds the whole graph (docs/dev/05 §5.5). The picker is on the page
 	 * rather than in the canvas, since the app's own person picker is what every other "which
 	 * person?" question on this page uses.
 	 */

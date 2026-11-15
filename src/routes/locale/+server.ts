@@ -6,7 +6,7 @@ import { setLocaleCookie } from '$lib/server/auth/cookies';
 import { safeDestination } from '$lib/server/http/safe-redirect';
 
 /*
- * The one place the interface language is chosen (docs/02 §2.19). It answers the picker in
+ * The one place the interface language is chosen (docs/dev/02 §2.19). It answers the picker in
  * Settings and the one on the login screen alike, which is why it lives outside both route
  * groups: a visitor with no account has to be able to read the sign-in page too.
  *

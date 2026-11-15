@@ -10,7 +10,7 @@
 	import { KIND_PRESENTATION } from '$lib/story/interaction-kinds';
 
 	/*
-	 * Everything this member kept on this device while Stella was out of reach (docs/02 §2.18.1),
+	 * Everything this member kept on this device while Stella was out of reach (docs/dev/02 §2.18.1),
 	 * under Home's capture field, each looking like what it will become. A moment opens in Home's
 	 * composer (`onedit`); the rest are edited on the page they belong to.
 	 */

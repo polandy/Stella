@@ -2,13 +2,13 @@ import type { PartialDate } from '../dates/partial-date';
 import type { ContactFieldKind } from '../people/contact-fields';
 
 /*
- * The two sides of a matching review (docs/02 §2.16.2): a contact from
+ * The two sides of a matching review (docs/dev/02 §2.16.2): a contact from
  * another address book, and a person already in Stella. Plain values, so the reader on the
  * server, the review step in the browser and the use-case all share them.
  */
 
 /**
- * The address book a card came from: an exported file, read from the file itself (docs/02
+ * The address book a card came from: an exported file, read from the file itself (docs/dev/02
  * §2.16), or the household's linked Nextcloud book (§2.16.3). Here, not beside the reader,
  * because the activity log and the review step name it too.
  */
@@ -87,7 +87,7 @@ export interface StellaPerson {
 	birthday: PartialDate | null;
 	hasPhoto: boolean;
 	fields: { kind: ContactFieldKind; value: string }[];
-	/** The lines of the homes they live in, which count as their addresses (docs/03 §3.3). */
+	/** The lines of the homes they live in, which count as their addresses (docs/dev/03 §3.3). */
 	homeLines: string[];
 	tags: string[];
 }

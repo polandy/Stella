@@ -1,5 +1,5 @@
 /*
- * The lanes the family tree's bars run on (docs/05 §5.8), for `tree-lines.ts`. Pure. Where two
+ * The lanes the family tree's bars run on (docs/dev/05 §5.8), for `tree-lines.ts`. Pure. Where two
  * bars would run along the same stretch of one gap between rows, they are set a lane apart.
  */
 

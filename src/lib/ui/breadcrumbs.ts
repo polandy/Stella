@@ -9,7 +9,7 @@ export type CrumbData = {
 	circle?: { name?: string };
 	/** A circle page's enclosing circles the viewer may see, outermost first. */
 	nesting?: { ancestors?: { id: string; name: string }[] };
-	/** A tag's page names its tag (docs/02 §2.20.2). */
+	/** A tag's page names its tag (docs/dev/02 §2.20.2). */
 	tag?: { name?: string };
 };
 
@@ -40,7 +40,7 @@ const UNDER_SETTINGS: Record<string, PlainKey> = {
 };
 
 /**
- * The top bar's breadcrumb trail for a route (docs/05 §5.4). A desktop shows all of it; a
+ * The top bar's breadcrumb trail for a route (docs/dev/05 §5.4). A desktop shows all of it; a
  * phone shows only the step before the last as its back link, so a sub-circle's phone back
  * link leads to its direct parent.
  */

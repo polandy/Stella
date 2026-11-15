@@ -2,7 +2,7 @@ import type { ContactSource, StellaPerson } from '../../../import-match/card';
 import type { Viewer } from '../../access/visibility';
 
 /*
- * The answers the household gave for the cards of another address book (docs/02 §2.16, the
+ * The answers the household gave for the cards of another address book (docs/dev/02 §2.16, the
  * matching review): this card is that person, or it was skipped. Kept per source and card key,
  * so a re-run of the same export asks only about what is new or changed, and a skip holds.
  *
@@ -52,7 +52,7 @@ export interface SkippedCard {
 
 /** Whom a card may be matched against. */
 export interface MatchOptions {
-	/** Only shared people (docs/02 §2.16.3: a private person is never linked to the book). */
+	/** Only shared people (docs/dev/02 §2.16.3: a private person is never linked to the book). */
 	sharedOnly?: boolean;
 }
 

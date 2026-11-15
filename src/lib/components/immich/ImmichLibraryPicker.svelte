@@ -1,10 +1,10 @@
 <!--
   @component
-  *From Immich* (docs/02 §2.24.9, docs/design/screens/immich-library.md): a sheet from the bottom
+  *From Immich* (docs/dev/02 §2.24.9, docs/dev/design/screens/immich-library.md): a sheet from the bottom
   with every photo Immich has from one day, whoever is in it, and a smart search across the whole
   library. Taps tick photos, numbered in order; *Add N photos* copies them through Stella's signed
   proxy and hands them over as files, for the same pipeline as a pick from the device — or, with
-  `onlink`, hands the photos themselves over, to be kept as references (docs/04 ADR-132).
+  `onlink`, hands the photos themselves over, to be kept as references (docs/dev/04 ADR-132).
 -->
 <script lang="ts">
 	import { FIELD } from '$lib/components/ui/field';

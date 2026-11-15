@@ -1,7 +1,7 @@
 import type { Relation } from '../suggestions/types';
 
 /*
- * The keys of the relationship types Stella seeds (docs/02 §2.4). Most types are just rows,
+ * The keys of the relationship types Stella seeds (docs/dev/02 §2.4). Most types are just rows,
  * but a few are reasoned about by name — which links count as primary for kinship inference,
  * and which type a propagation suggestion stores — so the literals have one home instead of
  * being written out again in every caller.
@@ -20,7 +20,7 @@ export const GRANDPARENT_GRANDCHILD_TYPE_KEY = 'grandparent_grandchild';
 export const SIBLING_TYPE_KEY = 'sibling';
 
 /*
- * The family terms Stella works out (docs/02 §2.4.1), as the types a household stores when it
+ * The family terms Stella works out (docs/dev/02 §2.4.1), as the types a household stores when it
  * confirms one. None of them is read back as a primary link — a stored cousin is a fact about
  * that pair, not something to reason onward from — so they stay out of `RESERVED_TYPE_KEYS`.
  */
@@ -71,7 +71,7 @@ export const PARTNER_TYPE_KEYS: readonly string[] = ['partner', 'spouse'];
 
 /**
  * The types that run down the generations, where the flipped pair cannot be true: nobody is
- * their own parent's parent (docs/02 §2.4). A household's own directed type is left out on
+ * their own parent's parent (docs/dev/02 §2.4). A household's own directed type is left out on
  * purpose — two people really can each be the other's landlord, and Stella does not know
  * enough about a type somebody named to call that a mistake.
  */

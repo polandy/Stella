@@ -14,7 +14,7 @@ import * as schema from './schema';
 import { seedRelationshipTypes } from './seed';
 
 /*
- * Integration spec for the bulk visible-graph loader (docs/04 §4.11). It must apply the same
+ * Integration spec for the bulk visible-graph loader (docs/dev/04 §4.11). It must apply the same
  * access scoping as the rest of the app (contact visible per §3.7; a relationship edge only
  * when both endpoints are visible) and produce a snapshot the pure builders explore unchanged.
  */
@@ -171,7 +171,7 @@ describe('loadVisibleGraph', () => {
 		const ego = await buildEgoNetwork(source, 'mara', 1);
 		expect(new Set(ego.nodes.map((n) => n.id))).toEqual(new Set(['mara', 'jonas', 'lio']));
 
-		// Path finding runs over stored links only, as the explorer does (docs/02 §2.7).
+		// Path finding runs over stored links only, as the explorer does (docs/dev/02 §2.7).
 		const path = await findConnectionPath(
 			inMemoryGraphSource(withoutDerivedLinks(graph)),
 			'jonas',
@@ -251,7 +251,7 @@ describe('loadVisibleGraph — circles', () => {
 });
 
 /*
- * Derived kinship (docs/02 §2.4.1) joins the snapshot as its own edge kind, under the same
+ * Derived kinship (docs/dev/02 §2.4.1) joins the snapshot as its own edge kind, under the same
  * scoping as everything else: it is inferred from the links the viewer may see, and no further.
  */
 describe('loadVisibleGraph — derived kinship', () => {
@@ -289,7 +289,7 @@ describe('loadVisibleGraph — derived kinship', () => {
 
 	it('keeps an archived contact, because the kinship in between is read through them', async () => {
 		// Archiving takes someone out of the lists the household browses, never out of the
-		// shape of the family (docs/04 §4.9): drop Rosa here and Mara and Nina stop being
+		// shape of the family (docs/dev/04 §4.9): drop Rosa here and Mara and Nina stop being
 		// sisters, so Stella would not say less — it would say something untrue.
 		db.update(schema.contact)
 			.set({ archivedAt: 1_700_000_000_000 })
@@ -368,7 +368,7 @@ describe('loadVisibleGraphWithKinship', () => {
 		expect(sent).toHaveLength(4);
 	});
 
-	// Rule L3 (docs/02 §2.4.1) reads these through this reader
+	// Rule L3 (docs/dev/02 §2.4.1) reads these through this reader
 	// when the person page asks for kinship via `loadVisibleGraphWithKinship` — the second of
 	// the two places that select them (the other is `kinship-graph-read.ts`, covered in
 	// `relationship-repository.test.ts`). Both must carry the values, not just agree on `null`.

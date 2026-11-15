@@ -31,7 +31,7 @@ import {
 import { photoActions as actions } from './photos';
 
 /*
- * The circle lightbox's actions (docs/02 §2.4.2) as the edge answers them: the circle the address
+ * The circle lightbox's actions (docs/dev/02 §2.4.2) as the edge answers them: the circle the address
  * names, the form read, a photo that is not there or not the viewer's, a refusal of the use-case
  * said in the reader's language, and a save that answers with data so the lightbox stays open.
  * The use-cases have their own suites; the ports here only answer the way the case needs.

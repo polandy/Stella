@@ -1,5 +1,5 @@
 /*
- * Where to edit (docs/05 §5.7): the pencil of a value that edits in place sits directly after
+ * Where to edit (docs/dev/05 §5.7): the pencil of a value that edits in place sits directly after
  * the value's last word, on the text's last line — never at the column's edge, never on a line
  * of its own. The value is an inline box that reserves the pencil's room as end padding, which
  * the browser keeps on the same line as the last word; the pencil is placed absolutely in that

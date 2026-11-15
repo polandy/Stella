@@ -16,7 +16,7 @@ import { lastNameActions, lastNameTakeBackActions } from '../../_shared/last-nam
 import type { Actions } from './$types';
 
 /*
- * The person page (docs/02 §2.2, docs/05 §5.5). What it reads is `load.ts`; what its forms
+ * The person page (docs/dev/02 §2.2, docs/dev/05 §5.5). What it reads is `load.ts`; what its forms
  * post is grouped in `actions/` the way the page groups its cards, so each card's actions sit
  * in one short file rather than in one long list.
  */
@@ -27,21 +27,21 @@ export const actions = {
 	...recordActions,
 	...relationshipActions,
 	...noteActions,
-	// The Gifts card (docs/02 §2.25).
+	// The Gifts card (docs/dev/02 §2.25).
 	...giftActions,
-	// The To-dos card (docs/02 §2.26).
+	// The To-dos card (docs/dev/02 §2.26).
 	...todoActions,
 	...fieldActions,
-	// A shared home: share, rewrite, move out (docs/02 §2.2).
+	// A shared home: share, rewrite, move out (docs/dev/02 §2.2).
 	...homeActions,
 	...dateActions,
 	...storyActions,
 	...tagActions,
 	...photoActions,
 	...circleActions,
-	// Which Immich person they are (docs/02 §2.24.2).
+	// Which Immich person they are (docs/dev/02 §2.24.2).
 	...immichActions,
-	// The chip under the name, its *Undo*, and passing a name on (docs/02 §2.2.4.5, §2.2.4.6).
+	// The chip under the name, its *Undo*, and passing a name on (docs/dev/02 §2.2.4.5, §2.2.4.6).
 	...lastNameActions,
 	...lastNameTakeBackActions
 } satisfies Actions;

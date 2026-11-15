@@ -16,7 +16,7 @@ import {
 } from './review';
 
 /*
- * The review step's state in the browser (docs/02 §2.16): a sure match starts as *Same
+ * The review step's state in the browser (docs/dev/02 §2.16): a sure match starts as *Same
  * person*, one button folds all of them, *Skip the rest* answers what is left, and the import
  * waits until every card has an answer.
  */

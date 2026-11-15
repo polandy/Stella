@@ -3,7 +3,7 @@ import { createTranslator } from '$lib/i18n/translate';
 import { captionWords } from './caption-words';
 
 /*
- * The shelf's captions in the viewer's language (docs/05 §5.8): "Friend of Sandra",
+ * The shelf's captions in the viewer's language (docs/dev/05 §5.8): "Friend of Sandra",
  * "Freundin von Sandra", "Lena, Noah +2".
  */
 

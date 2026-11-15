@@ -4,7 +4,7 @@
 	import type { IconName } from './icons';
 
 	/*
-	 * An empty screen is an invitation, not a dead end (docs/05 §5.10): one large icon in the
+	 * An empty screen is an invitation, not a dead end (docs/dev/05 §5.10): one large icon in the
 	 * subtle text colour, a line that says what belongs here, and the one action that starts
 	 * it. A band that is absent when empty (Coming up) does not use this.
 	 *

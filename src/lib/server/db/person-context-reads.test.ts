@@ -7,7 +7,7 @@ import { createDrizzlePersonContextReads } from './person-context-reads';
 import * as schema from './schema';
 
 /*
- * Integration spec for the reads behind a namesake's context line (docs/02 §2.2.3), against
+ * Integration spec for the reads behind a namesake's context line (docs/dev/02 §2.2.3), against
  * real in-memory SQLite: a link is read from the listed person's end and only when the viewer
  * may see both ends; a membership only in a visible, unarchived circle (§3.7).
  */

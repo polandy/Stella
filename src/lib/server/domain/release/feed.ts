@@ -1,6 +1,6 @@
 /*
  * What "the latest release" is, and how it is read out of an answer nobody here wrote
- * (docs/02 §2.17.1, docs/04 §4.9). The reading is pure so the untrusted-payload rules can
+ * (docs/dev/02 §2.17.1, docs/dev/04 §4.9). The reading is pure so the untrusted-payload rules can
  * be tested without a network.
  */
 

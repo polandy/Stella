@@ -6,7 +6,7 @@ import { composerReading } from './composer-reading';
 import type { ComposerState } from './composer-state';
 
 /*
- * Why Save is off, and the line that says so beside it (docs/02 §2.22.1). A moment needs words,
+ * Why Save is off, and the line that says so beside it (docs/dev/02 §2.22.1). A moment needs words,
  * a person — the page's own or an @mention — and no namesake left open; a photo alone is not one.
  * The field itself is `composer-state.test.ts`'s.
  */

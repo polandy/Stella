@@ -9,7 +9,7 @@
 	import type { ActionData, PageData } from './$types';
 
 	/*
-	 * People known by a first name only (docs/02 §2.2.3). Each row takes a description in place
+	 * People known by a first name only (docs/dev/02 §2.2.3). Each row takes a description in place
 	 * and leaves the list once it has one; the name opens their page, where merging and
 	 * archiving already live.
 	 */

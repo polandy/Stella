@@ -4,7 +4,7 @@ import type { GraphEdge, GraphModel, GraphNode } from './types';
 
 /*
  * What the family tree writes under the people and circles on its "Outside the family" shelf
- * (docs/05 §5.8): without lines to read, a friend of Sandra's has to say so, and a circle which
+ * (docs/dev/05 §5.8): without lines to read, a friend of Sandra's has to say so, and a circle which
  * of the people on the map are in it.
  */
 

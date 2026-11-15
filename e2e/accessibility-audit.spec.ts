@@ -3,8 +3,8 @@ import { UNDO_WINDOW_MS } from '../src/lib/undo/pending-removals';
 import { addPerson, addTag, appReady, profileRow, signIn } from './app';
 
 /*
- * The keyboard and screen-reader promises of the accessibility audit (docs/05 §5.9, docs/02
- * §2.19). Written after the owner checked them in the running app (docs/08 §8.4.1).
+ * The keyboard and screen-reader promises of the accessibility audit (docs/dev/05 §5.9, docs/dev/02
+ * §2.19). Written after the owner checked them in the running app (docs/dev/08 §8.4.1).
  *
  * Everything this file writes lands on people it invents, so no other spec's counts move.
  * Searches read the demo household (Kurt and Heidi Lehmann are the two Lehmanns) without
@@ -76,7 +76,7 @@ test.describe('the moment composer', () => {
 		await expect(shared).toBeChecked();
 
 		// The photo button is a real stop in the tab order — with Immich on, the menu of where the
-		// photos come from (docs/02 §2.24.9), whose hidden file field takes no stop of its own.
+		// photos come from (docs/dev/02 §2.24.9), whose hidden file field takes no stop of its own.
 		await page.keyboard.press('Tab');
 		await expect(page.getByRole('button', { name: 'Add photos' })).toBeFocused();
 	});

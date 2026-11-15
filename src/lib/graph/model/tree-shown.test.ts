@@ -3,7 +3,7 @@ import { hiddenInTree } from './tree-shown';
 import type { GraphEdge, GraphModel, GraphNode } from './types';
 
 /*
- * Which lines the family tree leaves off (docs/05 §5.8). Its bars already say who is whose
+ * Which lines the family tree leaves off (docs/dev/05 §5.8). Its bars already say who is whose
  * grandparent, aunt, cousin or sibling, so a line saying it again only stacks lines between the
  * rows; and the people outside the family stand on their shelf without a line up to the tree,
  * until one of the two ends is selected.

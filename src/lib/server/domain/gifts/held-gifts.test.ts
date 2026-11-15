@@ -9,7 +9,7 @@ import {
 
 /*
  * The one-time conversion of gifts Stella already held as Monica notes and as touchpoints of
- * the dropped kind *gift* (docs/02 §2.25.4). Driven against an in-memory port that behaves like
+ * the dropped kind *gift* (docs/dev/02 §2.25.4). Driven against an in-memory port that behaves like
  * the adapter: each replacement writes its gifts and removes the original together, and a gift
  * whose id is already there is left as it is.
  */

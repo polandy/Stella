@@ -4,7 +4,7 @@ import { isImmichId } from '../immich/gateway';
 import { ms, records, str, type Row } from './restore-fields';
 
 /*
- * Reading back what the household has already answered (docs/02 §2.15): the Immich faces it
+ * Reading back what the household has already answered (docs/dev/02 §2.15): the Immich faces it
  * set aside, the address-book cards it linked or skipped, the suggestions it declined and the
  * commands it applied. Part of `planRestore`, and pure like it — the document in, rows out.
  * Left out, each is a question a restore would ask again, or a resend it would apply twice.

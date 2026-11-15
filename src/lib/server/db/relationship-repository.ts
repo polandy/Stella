@@ -14,9 +14,9 @@ import type * as schema from './schema';
 import { contact, relationship, relationshipType } from './schema';
 
 /*
- * Drizzle adapter for the RelationshipRepository port (docs/08 §8.3): the links between people
+ * Drizzle adapter for the RelationshipRepository port (docs/dev/08 §8.3): the links between people
  * as they are written. Every write to a stored link asks `relationshipVisibleTo` first (both
- * endpoints must be visible, docs/03 §3.7). What the pages list are read models of their own:
+ * endpoints must be visible, docs/dev/03 §3.7). What the pages list are read models of their own:
  * `relationship-tie-reads.ts`, `kinship-graph-read.ts`, and the vocabulary with its usage,
  * `relationship-type-repository.ts` and `relationship-type-usage-reads.ts`.
  */
@@ -46,7 +46,7 @@ function visibleToViewer(
 type Tx = Pick<BunSQLiteDatabase<typeof schema>, 'select'>;
 
 /**
- * Refuse a generation link whose flipped pair is stored (docs/02 §2.4). The use-case asks the
+ * Refuse a generation link whose flipped pair is stored (docs/dev/02 §2.4). The use-case asks the
  * same before it writes; asked here, inside the write's transaction, it is the database's
  * answer too — two members adding *parent of* in opposite directions at once cannot both land,
  * the way the `relationship_unique` index holds a duplicate.
@@ -73,7 +73,7 @@ function refuseFlippedGeneration(
 	if (flipped) throw new ContradictoryRelationshipError();
 }
 
-/** A link as its row; the domain's `description` is the table's `note` (docs/03 §relationship). */
+/** A link as its row; the domain's `description` is the table's `note` (docs/dev/03 §relationship). */
 const toRow = (rel: NewRelationship) => ({
 	id: rel.id,
 	householdId: rel.householdId,

@@ -8,7 +8,7 @@
 	import ImmichMemoryLightbox from './ImmichMemoryLightbox.svelte';
 
 	/*
-	 * The day's photos in earlier years (docs/02 §2.12.1): square thumbnails, the gallery's first,
+	 * The day's photos in earlier years (docs/dev/02 §2.12.1): square thumbnails, the gallery's first,
 	 * each opening the person's Photos card — a private one stays blurred (§2.10.1) — then Immich's,
 	 * pilled *Immich*, each opening the lightbox. Grey tiles hold Immich's place while it is asked.
 	 * Home's band is one row with each photo's year; a year card on the page runs wider.

@@ -1,10 +1,10 @@
 import { integer, sqliteTable, text } from 'drizzle-orm/sqlite-core';
 import { household, user } from './household';
 
-/* Command receipts: each command applied once (docs/03 §3.3). */
+/* Command receipts: each command applied once (docs/dev/03 §3.3). */
 
 /*
- * A command id that has been claimed or applied (docs/03 §3.3). The
+ * A command id that has been claimed or applied (docs/dev/03 §3.3). The
  * dispatcher claims an id before running its handler and keeps the result when done, so a
  * command sent twice — a phone that lost its connection after Stella saved — is applied once.
  * Never replayed and nothing is derived from it; it holds ids, not content, and is kept for

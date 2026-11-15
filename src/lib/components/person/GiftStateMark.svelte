@@ -4,7 +4,7 @@
 
 	/*
 	 * The square beside a gift: a yellow bulb while it is an idea, the gift colour once it was
-	 * given or received — the same on the Gifts card and in a search hit (docs/02 §2.25).
+	 * given or received — the same on the Gifts card and in a search hit (docs/dev/02 §2.25).
 	 */
 	let { state }: { state: GiftState } = $props();
 </script>

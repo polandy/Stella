@@ -6,7 +6,7 @@ import type * as schema from './schema';
 import { circle } from './schema';
 
 /*
- * Drizzle adapter for the household's stored nesting (docs/08 §8.3): every circle's id and parent,
+ * Drizzle adapter for the household's stored nesting (docs/dev/08 §8.3): every circle's id and parent,
  * hidden ones included, because a hidden circle can sit between two the viewer sees and a loop
  * through it is a loop all the same (ADR-125, ADR-126). Ids only: the domain's loop check answers
  * yes or no from it, and nothing of a hidden circle reaches a screen.

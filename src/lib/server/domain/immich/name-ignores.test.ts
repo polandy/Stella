@@ -9,7 +9,7 @@ import {
 import { BERT_ID, CARL_ID } from './test-library';
 
 /*
- * Ignoring a face of *New from Immich* (docs/02 §2.24.7): there is no contact to hang it on, so it
+ * Ignoring a face of *New from Immich* (docs/dev/02 §2.24.7): there is no contact to hang it on, so it
  * is the household's — kept with who said so and when, and any member may propose it again.
  */
 

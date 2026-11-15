@@ -13,7 +13,7 @@ import { answerOf, formOf, routeEvent, type EdgeAnswer } from '$lib/server/testi
 import { circleActions as actions } from './circles';
 
 /*
- * Re-roling and leaving a circle from the person's profile card (docs/02 §2.4.2): only a
+ * Re-roling and leaving a circle from the person's profile card (docs/dev/02 §2.4.2): only a
  * membership the viewer can see is changed or ended (§3.7), and the page is shown again either
  * way. The use-cases have their own suite (`circles.test.ts`); the ports here only answer the way
  * the case needs.

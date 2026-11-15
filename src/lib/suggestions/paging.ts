@@ -1,7 +1,7 @@
 import { groupBySubject, type NamedClaim, type SubjectGroup } from './grouping';
 
 /*
- * Paging and folding a review (docs/04 ADR-010).
+ * Paging and folding a review (docs/dev/04 ADR-010).
  *
  * The engine computes everything a household's graph implies — there is no cap, deliberately.
  * What has to stay finite is the *screen*, and the rule the whole module follows is: nothing is
@@ -40,7 +40,7 @@ export const declinedFitsInline = (count: number): boolean => count <= DECLINED_
 /**
  * Separator inside a composite sort key, and the reason a cursor survives a URL.
  *
- * Ids are ULIDs (docs/03 §3.1) — Crockford base32, so an id can never contain this
+ * Ids are ULIDs (docs/dev/03 §3.1) — Crockford base32, so an id can never contain this
  * character. That is what keeps two keys unambiguous even when a *name* contains one, and it
  * lets the cursor travel in a query string as itself rather than as an encoded control byte.
  */

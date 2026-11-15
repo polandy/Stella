@@ -2,9 +2,9 @@ import type { TreeCircle } from '../../../circles/tree';
 import type { Viewer } from '../../access/visibility';
 
 /*
- * The household's circle nesting (docs/02 §2.4.2) as the Circles list and a circle's page show
+ * The household's circle nesting (docs/dev/02 §2.4.2) as the Circles list and a circle's page show
  * it: every circle the reader sees, with its visible parent, its direct member count and its
- * hidden sub-circles counted. A read model of its own (docs/08 §8.3), read in one query and built
+ * hidden sub-circles counted. A read model of its own (docs/dev/08 §8.3), read in one query and built
  * into a tree in memory (`$lib/circles/tree`), so no card or row asks again.
  */
 

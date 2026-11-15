@@ -2,7 +2,7 @@ import type { SubmitFunction } from '@sveltejs/kit';
 import { submitAction, type ActionFetch } from './submit-action';
 
 /*
- * Answering a suggestion without leaving the page (docs/02 §2.4.1, §2.23).
+ * Answering a suggestion without leaving the page (docs/dev/02 §2.4.1, §2.23).
  *
  * `savedEnhance` submits and then reports; this one does not submit at all. The answer is
  * handed to the removals store, which holds it for one undo window and sends it when the

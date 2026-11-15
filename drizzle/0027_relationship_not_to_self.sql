@@ -1,5 +1,5 @@
 -- A link from a person to themselves is not copied across, and goes unreported: it means
--- nothing and shows on no profile (docs/03 §relationship).
+-- nothing and shows on no profile (docs/dev/03 §relationship).
 PRAGMA foreign_keys=OFF;--> statement-breakpoint
 CREATE TABLE `__new_relationship` (
 	`id` text PRIMARY KEY NOT NULL,

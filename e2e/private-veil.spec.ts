@@ -2,9 +2,9 @@ import { expect, test, type Locator, type Page } from '@playwright/test';
 import { addPerson, appReady, signIn } from './app';
 
 /*
- * Private entries veiled on their author's screen (docs/02 §2.10.1), and a note made private
+ * Private entries veiled on their author's screen (docs/dev/02 §2.10.1), and a note made private
  * afterwards or shared again (§2.5). Written after the flow was verified in the running app
- * (docs/08 §8.4.1). The person is the spec's own; the Settings switch is put back on before
+ * (docs/dev/08 §8.4.1). The person is the spec's own; the Settings switch is put back on before
  * the spec ends, since every other spec reads its private entries through the veil.
  */
 

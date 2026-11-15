@@ -4,7 +4,7 @@ import { isoDaysAfter, serverToday, signIn } from './app';
 /*
  * The first half of review 2026-11's UX polish (UX-02, UX-09, UX-11, UX-18, UX-24): back
  * links, the On this day picker, a new circle's focus, Settings' Household section and an age
- * that keeps to its line. Written after the owner's hand test (docs/08 §8.4.1). Nothing is
+ * that keeps to its line. Written after the owner's hand test (docs/dev/08 §8.4.1). Nothing is
  * saved; the pure parts (`breadcrumbs`, `dayHeading`, `installRouteFor`) have their unit tests.
  */
 
@@ -16,7 +16,7 @@ const section = (page: Page, heading: string) =>
 	page.locator('section', { has: page.getByRole('heading', { name: heading, exact: true }) });
 
 test('On this day visits a day picked in its date field', async ({ page }) => {
-	// Counted from the server's day, so only one clock is in play (docs/08 §8.4.2).
+	// Counted from the server's day, so only one clock is in play (docs/dev/08 §8.4.2).
 	const day = isoDaysAfter(await serverToday(page), -400);
 	const [year, month, date] = day.split('-');
 

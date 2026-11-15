@@ -4,8 +4,8 @@ import { addPerson, appReady, openPerson, signIn } from './app';
 import { DEMO_ADMIN_PASSWORD, DEMO_MEMBER_EMAIL } from '../src/lib/server/db/demo-seed';
 
 /*
- * Pinning a person's photos as favourites (docs/02 §2.14). Written after the owner tried the
- * pins in the running app (docs/08 §8.4.1).
+ * Pinning a person's photos as favourites (docs/dev/02 §2.14). Written after the owner tried the
+ * pins in the running app (docs/dev/08 §8.4.1).
  *
  * The suite shares one database and runs serially, so every case photographs a person of its
  * own, added here under a name the demo households do not use. Each photo gets a caption,
@@ -30,7 +30,7 @@ async function addCaptionedPhoto(
 	if (visibility === 'private') await form.getByText('Private', { exact: true }).click();
 	await form.getByRole('button', { name: 'Add', exact: true }).click();
 	await expect(grid.locator('img')).toHaveCount(before + 1);
-	// A private photo is blurred on its owner's screen until asked for (docs/02 §2.10.1).
+	// A private photo is blurred on its owner's screen until asked for (docs/dev/02 §2.10.1).
 	if (visibility === 'private')
 		await grid.getByRole('button', { name: 'Private photo, hidden. Show' }).click();
 
@@ -128,7 +128,7 @@ test('shows the other member the same favourites first, lets them unpin, and hid
 	await addCaptionedPhoto(page, 'Shared plain');
 	await addCaptionedPhoto(page, 'Private pin', 'private');
 	await togglePin(page, 'Shared pin', 'Pin as favourite');
-	// Pinning reloaded the page, which blurs the private photo again (docs/02 §2.10.1).
+	// Pinning reloaded the page, which blurs the private photo again (docs/dev/02 §2.10.1).
 	await page
 		.getByTestId('photo-grid')
 		.getByRole('button', { name: 'Private photo, hidden. Show' })

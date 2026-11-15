@@ -3,10 +3,10 @@ import { addPerson, appReady, signIn } from './app';
 import { DEMO_ADMIN_PASSWORD, DEMO_MEMBER_EMAIL } from '../src/lib/server/db/demo-seed';
 
 /*
- * Gifts in the full search (docs/02 §2.9, §2.25.5): found on the search page by their title or
+ * Gifts in the full search (docs/dev/02 §2.9, §2.25.5): found on the search page by their title or
  * their note — not their link — in a group of their own, each hit naming the person and where
  * the gift stands and leading to that person's Gifts card; a private gift only for whoever
- * noted it. Written after the owner tried it in the app (docs/08 §8.4.1).
+ * noted it. Written after the owner tried it in the app (docs/dev/08 §8.4.1).
  *
  * The suite shares one database, so each case works on a person of its own and names its gifts
  * with letters no other attempt shares — the searched word is those letters alone.

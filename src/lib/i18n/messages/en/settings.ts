@@ -1,4 +1,4 @@
-/* The settings landing page, including the language picker (docs/02 §2.17, §2.19). */
+/* The settings landing page, including the language picker (docs/dev/02 §2.17, §2.19). */
 
 export const settings = {
 	'settings.title': 'Settings',
@@ -88,7 +88,7 @@ export const settings = {
 	'settings.data.adminOnly':
 		'Importing, backups and the relationship types are for the household admin.',
 	/*
-	 * The household-wide relationship review (docs/02 §2.4.1) — for every member, not only the admin:
+	 * The household-wide relationship review (docs/dev/02 §2.4.1) — for every member, not only the admin:
 	 * the dismissal log belongs to the household and any member may answer or take one back.
 	 */
 	'settings.quality.heading': 'Data quality',
@@ -100,7 +100,7 @@ export const settings = {
 	'settings.firstNameOnly.knowThemBy': (p: { name: string }) => `What will you know ${p.name} by?`,
 	'settings.firstNameOnly.empty.title': 'Everyone can be told apart',
 	'settings.firstNameOnly.empty.hint': 'Nobody left with a first name only and nothing else.',
-	// *Same address* (docs/02 §2.17): people at one address made one home, on a tap.
+	// *Same address* (docs/dev/02 §2.17): people at one address made one home, on a tap.
 	'settings.sameAddress.pageTitle': 'Same address · Stella',
 	'settings.sameAddress.title': 'Same address',
 	'settings.sameAddress.blurb': 'People who live at the same address but are not one home yet.',
@@ -138,7 +138,7 @@ export const settings = {
 	'settings.relationships.nothing':
 		'Nothing open. Stella finds nothing across your household that is not on record already.',
 	/*
-	 * The folds (docs/04 ADR-010). Each one names the number it
+	 * The folds (docs/dev/04 ADR-010). Each one names the number it
 	 * is holding back — "22 more for Bettina Meier", not "show more" — because a number the
 	 * reader can check is the difference between folding a list and quietly truncating it.
 	 */
@@ -207,7 +207,7 @@ export const settings = {
 	'settings.apiTokens.notFound': 'That token is already gone.',
 	'settings.about.off':
 		'Stella is not checking for new releases. Set UPDATE_CHECK=true to switch it on.',
-	// *Settings → Calendar* (docs/02 §2.13.4): the member's dates as a subscribed calendar.
+	// *Settings → Calendar* (docs/dev/02 §2.13.4): the member's dates as a subscribed calendar.
 	'settings.calendar.heading': 'Calendar',
 	'settings.calendar.title': 'Calendar',
 	'settings.calendar.blurb': 'Birthdays, anniversaries and to-dos in your phone’s own calendar.',

@@ -18,7 +18,7 @@ import { planPersonRecords } from './plan-records';
 import { planRelationships } from './plan-relationships';
 
 /*
- * The Monica → Stella mapping (docs/02 §2.16; the table is docs/monica-mapping.md). Pure:
+ * The Monica → Stella mapping (docs/dev/02 §2.16; the table is docs/user/monica-mapping.md). Pure:
  * given the typed export it decides every row the import will write and reports what it
  * approximated or left out; each table group is planned by its own `plan-*.ts` module. Ids are stable *source ids* (`monica:contact:12`), so importing
  * the same export twice cannot duplicate — the adapter inserts with "do nothing on conflict".
@@ -34,7 +34,7 @@ export interface ImportOptions {
 	/**
 	 * The words the importer *writes into the data* — a gift note's title, the day a life
 	 * event happened. Unlike the report, this is content the household keeps, so it is
-	 * written in the language of the member running the import (docs/02 §2.19).
+	 * written in the language of the member running the import (docs/dev/02 §2.19).
 	 */
 	wording: ImportWording;
 	/** The importing member's language: a nickname in a shown name takes its quote marks. */
@@ -89,7 +89,7 @@ export interface ImportedPhoto {
 	isAvatar: boolean;
 	/**
 	 * The picture itself when the export carried it (JSON), so the browser can fetch it back
-	 * and downscale it there — the server has no image library (docs/04 §4.9). Null for a
+	 * and downscale it there — the server has no image library (docs/dev/04 §4.9). Null for a
 	 * dump, where the admin points at Monica's storage folder instead.
 	 */
 	dataUrl: string | null;
@@ -145,7 +145,7 @@ export interface SkippedRecords {
 	detail?: string;
 }
 
-/** Something worth saying about the export, as a code the wizard words (docs/02 §2.19). */
+/** Something worth saying about the export, as a code the wizard words (docs/dev/02 §2.19). */
 export type ImportWarning =
 	| { code: 'customType'; name: string }
 	| { code: 'manyUsers'; count: number }
@@ -238,7 +238,7 @@ export function planMonicaImport(exp: SourceExport, opts: ImportOptions): Import
 	}
 	if (exp.source === 'json') {
 		// Monica's export resource for a contact lists neither field, so they are not in the
-		// file at all — nothing the mapping can do but say so (docs/02 §2.16).
+		// file at all — nothing the mapping can do but say so (docs/dev/02 §2.16).
 		warnings.push({ code: 'jsonNoHowWeMet' });
 	}
 

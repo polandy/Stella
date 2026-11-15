@@ -12,7 +12,7 @@ import { say, translator } from '$lib/server/i18n/say';
 import type { Actions, PageServerLoad } from './$types';
 
 /*
- * *Settings → Data quality → Same address* (docs/02 §2.17): people whose own address lines say
+ * *Settings → Data quality → Same address* (docs/dev/02 §2.17): people whose own address lines say
  * the same, offered as one home. The check runs only when asked (`?check`), like the
  * relationship check; every answer is the use-case's, which runs the check again on fresh data.
  */

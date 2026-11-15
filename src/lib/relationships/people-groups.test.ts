@@ -10,7 +10,7 @@ import {
 import type { RoleTerm } from './roles';
 
 /*
- * The People card's list (docs/05 §5.5): the ties grouped by the kind the household gave them,
+ * The People card's list (docs/dev/05 §5.5): the ties grouped by the kind the household gave them,
  * family first, and folded to a handful once there are enough of them to push the photos away.
  */
 

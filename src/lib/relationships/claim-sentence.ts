@@ -33,7 +33,7 @@ export const claimSentence = (
 			});
 		default:
 			// A worked-out relation, naming the elder where it has one and the relative (`to`)
-			// otherwise, in the gender on record (docs/02 §2.4.1).
+			// otherwise, in the gender on record (docs/dev/02 §2.4.1).
 			return (t) => ({
 				people: { from, to },
 				say: (names) =>

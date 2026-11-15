@@ -2,7 +2,7 @@ import { ALL_KINDS, matchesCircleQuery } from './browse';
 import { isPastCircle, type CircleTree, type TreeCircle } from './tree';
 
 /*
- * The Circles list as families (docs/02 §2.4.2): a card per top-level circle, its direct
+ * The Circles list as families (docs/dev/02 §2.4.2): a card per top-level circle, its direct
  * sub-circles as rows inside it — current and future ones shown, past ones behind a toggle.
  * Search and the kind chips reach into every family at any depth. Pure and client-safe, like
  * the rest of browsing.

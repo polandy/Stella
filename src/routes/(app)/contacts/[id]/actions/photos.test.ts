@@ -26,7 +26,7 @@ import {
 import { photoActions as actions } from './photos';
 
 /*
- * The gallery card's actions and its lightbox's (docs/02 §2.14) as the edge answers them: the
+ * The gallery card's actions and its lightbox's (docs/dev/02 §2.14) as the edge answers them: the
  * form read, who may change a photo, a photo that is not there, a refusal of the use-case said
  * in the reader's language, and where a success goes back to. The use-cases have their own
  * suites; the ports here only answer the way the case under test needs.

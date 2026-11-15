@@ -15,7 +15,7 @@ import {
 } from './suggestion-answers';
 
 /*
- * The three answers a suggestion takes, on whichever screen it was offered (docs/02 §2.4.1).
+ * The three answers a suggestion takes, on whichever screen it was offered (docs/dev/02 §2.4.1).
  * The use-cases have their own suites; what is pinned here is the edge's part — the form read,
  * the refusal and its status — against fakes of the few ports the answers reach.
  */

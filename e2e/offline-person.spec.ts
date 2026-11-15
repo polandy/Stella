@@ -2,8 +2,8 @@ import { expect, test, type Page } from '@playwright/test';
 import { addPerson, appReady, factEditor, openPerson, pickPerson, profileRow, signIn } from './app';
 
 /*
- * What a person's page and *Add person* keep while Stella is out of reach (docs/02 §2.18).
- * Written after the flow was verified in the running app (docs/08 §8.4.1).
+ * What a person's page and *Add person* keep while Stella is out of reach (docs/dev/02 §2.18).
+ * Written after the flow was verified in the running app (docs/dev/08 §8.4.1).
  *
  * As in `offline-capture.spec.ts`, service workers are blocked, so the page does not know it
  * is offline: `context.setOffline` makes the post fail, and the form keeps it instead.

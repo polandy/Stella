@@ -10,12 +10,12 @@ import { contact, interaction, journalEntry, photo, user } from './schema';
 import { momentColumns, momentRowsOf, touchpointColumns, touchpointRowsOf } from './story-rows';
 
 /*
- * Drizzle adapter for the MemoryRepository port (docs/02 §2.12.1). Each kind is one read on its
- * `MM-DD` column, answered from that column's index (docs/03 §3.4), and scoped like the stream:
+ * Drizzle adapter for the MemoryRepository port (docs/dev/02 §2.12.1). Each kind is one read on its
+ * `MM-DD` column, answered from that column's index (docs/dev/03 §3.4), and scoped like the stream:
  * `childRecordVisibleTo` on the person the row hangs off. The day's rows are walked first — a
  * `CROSS JOIN` keeps SQLite from starting at the household's people instead, which would read
  * every entry they have. A person the household archived is out
- * of it, as out of every Home band (docs/04 §4.9); one who died stays, and so do their days.
+ * of it, as out of every Home band (docs/dev/04 §4.9); one who died stays, and so do their days.
  */
 
 /** Scoped to the viewer, and to a person the household still browses. */

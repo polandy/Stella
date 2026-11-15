@@ -1,4 +1,4 @@
-/* Sign-in, first-run setup and the auth shell (docs/02 §2.1). */
+/* Sign-in, first-run setup and the auth shell (docs/dev/02 §2.1). */
 
 export const auth = {
 	'auth.signIn': 'Sign in',

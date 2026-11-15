@@ -1,6 +1,6 @@
 <!--
   @component
-  *Belongs to* (docs/02 §2.4.2): the circle a circle sits inside, chosen in the circle picker and
+  *Belongs to* (docs/dev/02 §2.4.2): the circle a circle sits inside, chosen in the circle picker and
   posted as `parent` (empty for none). The edit form, the list's *New circle* and the sub-circles
   card's *New sub-circle* all show it, so a parent is chosen the same way everywhere. Nothing is
   saved until the form is.

@@ -9,7 +9,7 @@ import { createDrizzleTagListReads } from './tag-list-reads';
 /*
  * Integration spec for the Drizzle TagListReads: the household's tags, a person's tags and the
  * people with a tag, each read through the access layer — tags on a private contact, and that
- * contact, stay with its owner (docs/03 §3.7).
+ * contact, stay with its owner (docs/dev/03 §3.7).
  */
 
 const H = 'household-1';

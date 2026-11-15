@@ -17,7 +17,7 @@ import { sequentialIds } from '../domain/testing';
 /*
  * Account use-cases: first-run admin registration and local authentication. Pure logic
  * over an AccountRepository port, with password hashing and id generation injected so the
- * tests are fast and deterministic (docs/08 §8.3).
+ * tests are fast and deterministic (docs/dev/08 §8.3).
  */
 
 function fakeRepo(seed: { user: AuthUser; passwordHash: string | null }[] = []) {

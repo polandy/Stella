@@ -9,7 +9,7 @@
 	import type { PageData } from './$types';
 
 	/*
-	 * A tag's own page (docs/02 §2.20.2, docs/design/screens/tags.md): the moments carrying it,
+	 * A tag's own page (docs/dev/02 §2.20.2, docs/dev/design/screens/tags.md): the moments carrying it,
 	 * by day as on Home. A person's name opens their journal narrowed to the same tag.
 	 */
 	let { data }: { data: PageData } = $props();

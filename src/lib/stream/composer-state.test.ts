@@ -12,7 +12,7 @@ import {
 } from './composer-state';
 
 /*
- * The moment composer's field (docs/02 §2.22.1): what typing an `@` offers, how a pick or an
+ * The moment composer's field (docs/dev/02 §2.22.1): what typing an `@` offers, how a pick or an
  * unclear namesake reads, a person created inline, photos, the day and the share switch. Saving
  * is in `composer-send.test.ts`.
  */
@@ -280,7 +280,7 @@ describe('cancelling', () => {
 });
 
 /*
- * The people a moment is about beside its anchor (docs/02 §2.20.3): chips the offer or
+ * The people a moment is about beside its anchor (docs/dev/02 §2.20.3): chips the offer or
  * *＋ Person* adds, each removable, carried by the draft and the save.
  */
 describe('the moment’s further subjects', () => {

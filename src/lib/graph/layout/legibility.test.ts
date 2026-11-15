@@ -16,7 +16,7 @@ import {
 } from './legibility';
 
 /*
- * What keeps a busy map readable (docs/05 §5.8): how many line names it can carry at once, and
+ * What keeps a busy map readable (docs/dev/05 §5.8): how many line names it can carry at once, and
  * how big a person is drawn for how connected they are.
  */
 

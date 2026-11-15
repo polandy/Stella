@@ -9,7 +9,7 @@ import type * as schema from './schema';
 import { activityLog, circle, circleMembership, contact, photo } from './schema';
 
 /*
- * Deleting a circle (docs/02 §2.4.2, docs/03 `circle`), the half of `CircleRepository` that
+ * Deleting a circle (docs/dev/02 §2.4.2, docs/dev/03 `circle`), the half of `CircleRepository` that
  * reads what goes and takes it. Both are scoped by `circleDeletableBy`; past that check they
  * see the whole circle, because the deletion takes the photos and memberships the remover
  * cannot see as well.
@@ -76,7 +76,7 @@ export function readCircleDeletion(
 /**
  * Delete `circleId` in one transaction, if `remover` may: the rule is the `DELETE`'s own
  * condition. The circle row goes first only because that is where the rule sits; the photos
- * carry no foreign key to it (docs/03 `photo`), so the cuts are still turned before any photo
+ * carry no foreign key to it (docs/dev/03 `photo`), so the cuts are still turned before any photo
  * goes. Returns the photos' files, or null when nothing was deleted.
  */
 export function deleteDeletableCircle(

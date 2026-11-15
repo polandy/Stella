@@ -6,7 +6,7 @@ import {
 import type { GraphEdge, GraphModel } from './types';
 
 /*
- * Which derived kinship lines the map already says (docs/02 §2.7).
+ * Which derived kinship lines the map already says (docs/dev/02 §2.7).
  *
  * A derived line is shorthand for a chain of entered links: Frederick is Andy's nephew because
  * Frederick is Steve's son and Steve is Andy's brother. When that chain is drawn, the dotted

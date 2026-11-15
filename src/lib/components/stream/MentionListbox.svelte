@@ -5,7 +5,7 @@
 	import type { Distinction } from '$lib/people/namesakes';
 
 	/*
-	 * The `@` list under a note's or a journal entry's field (docs/02 §2.20.1). A textarea cannot
+	 * The `@` list under a note's or a journal entry's field (docs/dev/02 §2.20.1). A textarea cannot
 	 * take the combobox role, so the field points at this list with aria-controls and at the
 	 * highlighted person with aria-activedescendant; the field keeps focus throughout.
 	 */

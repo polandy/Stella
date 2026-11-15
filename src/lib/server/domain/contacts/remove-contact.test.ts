@@ -9,7 +9,7 @@ import { contactRepositoryWith, fixedClock, sequentialIds } from '../testing';
 const NOW = 1_700_000_000_000;
 const clock = fixedClock(NOW);
 
-// Deleting and merging are an admin's (docs/02 §2.2); `member` is the one refused for the role.
+// Deleting and merging are an admin's (docs/dev/02 §2.2); `member` is the one refused for the role.
 const viewer = { id: 'user-1', householdId: 'household-1', isAdmin: true };
 const member = { ...viewer, isAdmin: false };
 
@@ -40,7 +40,7 @@ const existing: Contact = {
 };
 
 /*
- * Deleting a person for good (docs/02 §2.2). The row goes with everything hanging off it, so
+ * Deleting a person for good (docs/dev/02 §2.2). The row goes with everything hanging off it, so
  * the log entry is written in the same breath — once the contact is gone, nothing else can
  * say they were ever there.
  */
@@ -172,7 +172,7 @@ describe('deleteContact', () => {
 });
 
 /*
- * Merging duplicates (docs/02 §2.2). The use-case decides what the log says and which record's
+ * Merging duplicates (docs/dev/02 §2.2). The use-case decides what the log says and which record's
  * answers win; every collision belongs to the repository, which the integration spec covers.
  */
 describe('mergeContacts', () => {

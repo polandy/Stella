@@ -12,8 +12,8 @@ import {
 import { circleIdOf, LINK, personIdOf, seedHousehold } from './seed';
 
 /*
- * Grouping a circle's members by role on the map (docs/02 §2.7, docs/05 §5.8). Written after
- * the maintainer tried it in the running app (docs/08 §8.4.1).
+ * Grouping a circle's members by role on the map (docs/dev/02 §2.7, docs/dev/05 §5.8). Written after
+ * the maintainer tried it in the running app (docs/dev/08 §8.4.1).
  *
  * Read-only against the demo household, save the last case, which seeds its own family: the
  * others centre Lena and open her Turnverein, whose two
@@ -237,7 +237,7 @@ test('leaves the family tree ungrouped, and groups again on leaving it', async (
 			parents: { a: null, b: null },
 			circleToMembers: 0
 		});
-	// The tree draws a circle's lines only around the person the reader selects (docs/05 §5.8):
+	// The tree draws a circle's lines only around the person the reader selects (docs/dev/05 §5.8):
 	// none before the tap, then Sandra's to the club, not Franziska's.
 	await clickNode(page, SANDRA);
 	await expect
@@ -274,7 +274,7 @@ test('remembers the switch on this device', async ({ page }) => {
 
 /*
  * A derived kinship line the map leaves off, because the chain of entered links it abbreviates
- * is drawn, is never counted in a bundle between two groups (docs/02 §2.7) — the count would
+ * is drawn, is never counted in a bundle between two groups (docs/dev/02 §2.7) — the count would
  * name lines the map does not draw. This case brings its own household, seeded through the
  * archive as its setting, with names the demo household and the other specs do not use:
  * Brigitte is the mother of Cla and Dario and Arnold's sister, so Arnold is their uncle through

@@ -1,7 +1,7 @@
 import type { Endpoints } from './endpoints';
 
 /*
- * Picking a relationship *direction*, not just a type (docs/02 §2.4). A row is stored one
+ * Picking a relationship *direction*, not just a type (docs/dev/02 §2.4). A row is stored one
  * way round — from = the forward-label side — but somebody adding a link says it from the
  * person they are looking at: "Anna is a child of Bert" just as often as "Bert is a parent
  * of Anna". So an asymmetric type is offered from both sides and the chosen side decides
@@ -77,7 +77,7 @@ export function relationshipTypeOptions<T extends SelectableType>(
 }
 
 /**
- * The entry a link asked the picker to stand on (`?as=`, docs/02 §2.7), when the picker offers
+ * The entry a link asked the picker to stand on (`?as=`, docs/dev/02 §2.7), when the picker offers
  * it; otherwise none, and the picker stands on its first entry as usual.
  */
 export function offeredChoice<T extends SelectableType>(

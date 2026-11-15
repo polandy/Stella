@@ -5,11 +5,11 @@ import type * as schema from './schema';
 import { activityLog } from './schema';
 
 /*
- * Drizzle adapter for the ArchiveRepository port (docs/08 §8.3).
+ * Drizzle adapter for the ArchiveRepository port (docs/dev/08 §8.3).
  *
  * This is the one read in Stella that does **not** go through `access/`. An export is not a
  * viewer looking at records — it is the household taking its own data out, private rows
- * included, which is exactly what makes it a backup (docs/04 §4.9). The scoping here is by
+ * included, which is exactly what makes it a backup (docs/dev/04 §4.9). The scoping here is by
  * household, and the authorisation is the admin check at the edge.
  *
  * Rows are read as raw SQL rather than through the typed schema so the archive carries the
@@ -58,7 +58,7 @@ export const EXPORTED_TABLES: readonly Scoped[] = [
 		table: 'journal_mention',
 		where: `t.journal_entry_id IN (SELECT j.id FROM journal_entry j JOIN contact c ON c.id = j.contact_id WHERE c.household_id = ?)`
 	},
-	// References to Immich photos; the photos themselves stay in Immich (docs/04 ADR-132).
+	// References to Immich photos; the photos themselves stay in Immich (docs/dev/04 ADR-132).
 	{
 		table: 'journal_immich_photo',
 		where: `t.journal_entry_id IN (SELECT j.id FROM journal_entry j JOIN contact c ON c.id = j.contact_id WHERE c.household_id = ?)`
@@ -69,21 +69,21 @@ export const EXPORTED_TABLES: readonly Scoped[] = [
 		where: `t.interaction_id IN (SELECT i.id FROM interaction i JOIN contact c ON c.id = i.contact_id WHERE c.household_id = ?)`
 	},
 	{ table: 'important_date', where: viaContact() },
-	// Ideas, given and received gifts (docs/02 §2.25).
+	// Ideas, given and received gifts (docs/dev/02 §2.25).
 	{ table: 'gift', where: viaContact() },
-	// What the household still owes a person, open or ticked (docs/02 §2.26).
+	// What the household still owes a person, open or ticked (docs/dev/02 §2.26).
 	{ table: 'todo', where: viaContact() },
 	{ table: 'photo', where: 't.household_id = ?' },
 	{ table: 'tag', where: 't.household_id = ?' },
 	{ table: 'contact_tag', where: viaContact() },
-	// Which Immich person a contact is; the photos themselves stay in Immich (docs/02 §2.24.5).
+	// Which Immich person a contact is; the photos themselves stay in Immich (docs/dev/02 §2.24.5).
 	{ table: 'immich_link', where: viaContact() },
 	// The Immich faces a member said a contact is not; left out, a restore would propose them again.
 	{ table: 'immich_ignore', where: viaContact() },
 	// The Immich faces the household ignored under *New from Immich*; left out, a restore would
 	// offer them again.
 	{ table: 'immich_name_ignore', where: 't.household_id = ?' },
-	// Which card of another address book is whom, and which were skipped (docs/02 §2.16); left
+	// Which card of another address book is whom, and which were skipped (docs/dev/02 §2.16); left
 	// out, the next import of that book would ask about every card again.
 	{ table: 'contact_source_link', where: 't.household_id = ?' },
 	{ table: 'circle', where: 't.household_id = ?' },
@@ -93,10 +93,10 @@ export const EXPORTED_TABLES: readonly Scoped[] = [
 	},
 	{ table: 'activity_log', where: 't.household_id = ?' },
 	// The claims the household declined. Left out, a restore would re-offer every suggestion
-	// they have already said no to (docs/04 ADR-117).
+	// they have already said no to (docs/dev/04 ADR-117).
 	{ table: 'suggestion_dismissal', where: 't.household_id = ?' },
 	// Which commands were applied. Left out, a phone still holding unsent items could send
-	// them twice to a household restored onto a new server (docs/03 §3.3).
+	// them twice to a household restored onto a new server (docs/dev/03 §3.3).
 	{ table: 'command_receipt', where: 't.household_id = ?' }
 ];
 

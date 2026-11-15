@@ -7,8 +7,8 @@ import type * as schema from './schema';
 import { contact, journalEntry, journalMention, note, noteMention } from './schema';
 
 /*
- * Drizzle adapter for the MentionedInRepository port (docs/08 §8.3) — the reverse lookup from
- * a person to what names them (docs/02 §2.20.1).
+ * Drizzle adapter for the MentionedInRepository port (docs/dev/08 §8.3) — the reverse lookup from
+ * a person to what names them (docs/dev/02 §2.20.1).
  *
  * Each read starts at the mention table, joins the entry and then the person it is about, and
  * is scoped through the central `childRecordVisibleTo`: the source contact must be visible and

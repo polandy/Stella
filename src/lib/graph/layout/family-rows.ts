@@ -5,7 +5,7 @@ import { barSpans, crossingBars } from './tree-lines';
 import { barycentreOrder, husbandsLeft, improve, mirrored, type Rows } from './row-order';
 
 /*
- * The order of each row of one family in the family tree (docs/05 §5.8). Pure. A row is a list
+ * The order of each row of one family in the family tree (docs/dev/05 §5.8). Pure. A row is a list
  * of units — a couple, or a longer chain of partners, moves together — and the order is chosen
  * so that every couple's bar over their children stands clear of every other couple's: then no
  * family's drop runs through another family's bar, siblings stand side by side, and each

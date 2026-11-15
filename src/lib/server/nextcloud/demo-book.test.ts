@@ -3,7 +3,7 @@ import { createDemoAddressBook, DEMO_DRIFT } from './demo-book';
 import { FAKE_BOOK_PATH } from './fake-gateway';
 
 /*
- * The demo book (docs/02 §2.16.3) stands for the household's phones too: once Stella has written
+ * The demo book (docs/dev/02 §2.16.3) stands for the household's phones too: once Stella has written
  * Markus's card, a phone changes it a single time, so the demo shows a card that fills a gap and
  * one that disagrees.
  */

@@ -2,8 +2,8 @@ import { expect, test, type Page } from '@playwright/test';
 import { factEditor, signIn } from './app';
 
 /*
- * The Monica import wizard (docs/02 §2.16, docs/monica-mapping.md). Written after a real
- * 300-person dump was migrated through the wizard and checked in the app (docs/08 §8.4.1).
+ * The Monica import wizard (docs/dev/02 §2.16, docs/user/monica-mapping.md). Written after a real
+ * 300-person dump was migrated through the wizard and checked in the app (docs/dev/08 §8.4.1).
  * Runs against the demo dataset as the demo admin, with a hand-written mini dump whose
  * people (the Vogelsangs) no seeded data uses. Photos go through the same browser resize
  * pipeline as a real folder upload.
@@ -72,7 +72,7 @@ test('previews the dump, imports it, attaches the photos and shows the people in
 	// The mirrored Monica rows became one relationship, listed under the People tab.
 	await expect(page.getByRole('link', { name: 'Kaspar Vogelsang', exact: true })).toBeVisible();
 	await expect(page.getByText('Prefers the harbour walk in Tallinn.')).toBeVisible();
-	// Monica's tasks (docs/02 §2.26.8): the open one on the card, the description after its
+	// Monica's tasks (docs/dev/02 §2.26.8): the open one on the card, the description after its
 	// title; the completed one done in Activity on the day Monica completed it.
 	await expect(todoRow(page, 'Buch zurückgeben — das rote, von Weihnachten')).toHaveCount(1);
 	await expect(doneOn(page, 'Monday, 6 May 2024', 'Rezept schicken')).toContainText('Done');

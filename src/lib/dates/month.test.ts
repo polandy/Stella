@@ -11,7 +11,7 @@ import {
 	weekdayNames
 } from './month';
 
-// The calendar behind the composer's *Another day…* (docs/05 §5.7).
+// The calendar behind the composer's *Another day…* (docs/dev/05 §5.7).
 
 describe('monthGrid', () => {
 	test('lays September 2026 out in Monday-first weeks, padding before the 1st', () => {

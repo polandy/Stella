@@ -11,7 +11,7 @@
 	import { useRemovals } from '$lib/undo/context.svelte';
 
 	/*
-	 * Settings · Privacy (docs/02 §2.10.1): *Blur my private entries*, the member's own and on
+	 * Settings · Privacy (docs/dev/02 §2.10.1): *Blur my private entries*, the member's own and on
 	 * by default, and below it — only while it is on — this device's unlock in its three states.
 	 * The switch is a form so it works before the page has loaded; device unlock is this
 	 * browser's alone, so it never reaches the server.

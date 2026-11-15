@@ -1,5 +1,5 @@
 /*
- * Which control a freshly opened form should put the cursor in (docs/05 §5.7).
+ * Which control a freshly opened form should put the cursor in (docs/dev/05 §5.7).
  *
  * Stated here rather than inside `Section.svelte` because getting it wrong fails silently:
  * several of the app's forms open with `<input type="hidden">` rows, and focusing one of

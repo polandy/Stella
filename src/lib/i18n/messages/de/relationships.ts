@@ -45,7 +45,7 @@ export const relationships: RelationshipsMessages = {
 	'relationships.status.current': 'aktuell',
 	'relationships.status.former': 'ehemalig',
 
-	// Wer jemand für die Person ist, auf deren Seite er steht (docs/05 §5.5).
+	// Wer jemand für die Person ist, auf deren Seite er steht (docs/dev/05 §5.5).
 
 	'relationships.role.parent.male': 'Vater',
 	'relationships.role.parent.female': 'Mutter',

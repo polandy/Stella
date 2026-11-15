@@ -5,7 +5,7 @@
 	import type { RoleGroup } from '$lib/graph/model/role-groups';
 	import type { GraphNode } from '$lib/graph/model/types';
 
-	/** The peek panel for a group of people standing together by role (docs/02 §2.7). */
+	/** The peek panel for a group of people standing together by role (docs/dev/02 §2.7). */
 	interface Props {
 		group: RoleGroup;
 		/** The group's name, as its frame on the canvas reads. */

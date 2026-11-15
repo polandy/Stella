@@ -2,8 +2,8 @@ import { expect, test, type Page } from '@playwright/test';
 import { appReady, mention, mentionNew, openPerson, signIn } from './app';
 
 /*
- * Moments capture and the household stream (docs/02 §2.22). Written after the flow was
- * verified in the running app (docs/08 §8.4.1). The suite runs against a fresh database
+ * Moments capture and the household stream (docs/dev/02 §2.22). Written after the flow was
+ * verified in the running app (docs/dev/08 §8.4.1). The suite runs against a fresh database
  * seeded with the demo dataset, signed in as the demo admin.
  *
  * People invented here (Zelda, Yorick, Quill, Ulric, Vesna) are deliberately absent from the
@@ -92,7 +92,7 @@ test('says why Save is off when there are photos but no words, then no person', 
 	// An empty field needs no telling.
 	await expect(saveHint).toHaveCount(0);
 
-	// Immich is on in this suite, so *Add photos* is a menu (docs/02 §2.24.9).
+	// Immich is on in this suite, so *Add photos* is a menu (docs/dev/02 §2.24.9).
 	await page.getByRole('button', { name: 'Add photos' }).click();
 	const chooser = page.waitForEvent('filechooser');
 	await page.getByRole('menuitem', { name: 'From this device' }).click();

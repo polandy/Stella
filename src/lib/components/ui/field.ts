@@ -1,5 +1,5 @@
 /*
- * The one look of a text field (docs/05 §5.7): its edge, surface and text, and — through the
+ * The one look of a text field (docs/dev/05 §5.7): its edge, surface and text, and — through the
  * `field` class in app.css — the focus ring drawn on that edge (§5.9). Padding, text size and
  * width are the caller's, since an inline edit is denser than a form; the look is not.
  */

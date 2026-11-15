@@ -3,7 +3,7 @@ import { SESSION_DURATION_MS, newExpiry, validateExpiry } from './session-policy
 
 /*
  * Pure session expiry policy (sliding expiration). No I/O, no clock dependency —
- * `now` is passed in, so behavior is fully deterministic. See docs/08 §8.3.
+ * `now` is passed in, so behavior is fully deterministic. See docs/dev/08 §8.3.
  */
 
 const DAY = 1000 * 60 * 60 * 24;

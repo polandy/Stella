@@ -20,7 +20,7 @@ import { createStoryServices, type StoryServices, type StoryWiring } from './sto
 import { createTodoServices, type TodoServices, type TodoWiring } from './todos';
 
 /*
- * The application's object graph, grouped by bounded context (docs/04 §4.3, docs/08 §8.3).
+ * The application's object graph, grouped by bounded context (docs/dev/04 §4.3, docs/dev/08 §8.3).
  * `hooks.server.ts` hands it to every request as `locals.services`; a route reads
  * `locals.services.auth.sessionDeps` instead of importing a factory.
  *

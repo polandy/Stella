@@ -1,5 +1,5 @@
 /*
- * Shared geometry of the explorer's arrangements (docs/05 §5.8). Pure: the layouts in this
+ * Shared geometry of the explorer's arrangements (docs/dev/05 §5.8). Pure: the layouts in this
  * folder compute positions in model units, and the Cytoscape adapter only moves nodes there.
  */
 
@@ -171,7 +171,7 @@ const GOLDEN_ANGLE = Math.PI * (3 - Math.sqrt(5));
  * `positions` with everyone who shares a spot with somebody set apart around it, on a
  * sunflower spiral at least `spacing` between neighbours; whoever stands alone stays put.
  * Spread in the order of their ids, so the force layout, which parts two nodes on one spot in
- * a random direction, has no tie left to break (docs/04 §4.11).
+ * a random direction, has no tie left to break (docs/dev/04 §4.11).
  */
 export function spreadCoincident(
 	positions: ReadonlyMap<string, Point>,
@@ -199,7 +199,7 @@ export function spreadCoincident(
 
 /**
  * Who in `arrangement` stands in the family: everyone above the shelf of people outside it, or
- * everyone when there is no such shelf. The family is what framing keeps first (docs/05 §5.8).
+ * everyone when there is no such shelf. The family is what framing keeps first (docs/dev/05 §5.8).
  */
 export function familyIn({
 	positions,

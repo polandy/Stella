@@ -2,7 +2,7 @@ import { index, integer, sqliteTable, text, unique } from 'drizzle-orm/sqlite-co
 import type { Locale } from '../../../i18n/locales';
 import { now } from './columns';
 
-/* Identity and household: the household, its members and how they sign in (docs/03 §3.3). */
+/* Identity and household: the household, its members and how they sign in (docs/dev/03 §3.3). */
 
 type Role = 'admin' | 'member';
 
@@ -23,12 +23,12 @@ export const user = sqliteTable('user', {
 	passwordHash: text('password_hash'), // null for SSO-only users
 	role: text('role').$type<Role>().notNull().default('member'),
 	// `system` is no one who signs in but what the activity log names when a change came from
-	// elsewhere — the linked Nextcloud book (docs/02 §2.16.3). No password, no session, never
+	// elsewhere — the linked Nextcloud book (docs/dev/02 §2.16.3). No password, no session, never
 	// listed among the members; its email is under `.invalid`, so no sign-in can reach it.
 	kind: text('kind').$type<'member' | 'system'>().notNull().default('member'),
 	roleLocked: integer('role_locked').notNull().default(0),
 	avatarPhotoId: text('avatar_photo_id'),
-	// The contact this member *is*, or null while they have not said (docs/02 §2.1.3).
+	// The contact this member *is*, or null while they have not said (docs/dev/02 §2.1.3).
 	// No foreign key, like `avatar_photo_id` above: SQLite cannot add one with an ON DELETE
 	// action through ALTER TABLE, and a plain reference would refuse to delete that person.
 	// Deleting the contact clears the link and a merge repoints it (contact-repository.ts,
@@ -38,10 +38,10 @@ export const user = sqliteTable('user', {
 	localePref: text('locale_pref').$type<Locale>(),
 	themePref: text('theme_pref').$type<'system' | 'light' | 'dark'>().notNull().default('system'),
 	accentPref: text('accent_pref').notNull().default('mauve'),
-	// *Blur my private entries* (docs/02 §2.10.1): 1 until the member turns it off.
+	// *Blur my private entries* (docs/dev/02 §2.10.1): 1 until the member turns it off.
 	blurPrivate: integer('blur_private').notNull().default(1),
 	totpSecret: text('totp_secret'),
-	// When an admin removed this member, or null while they belong (docs/02 §2.1). The row stays:
+	// When an admin removed this member, or null while they belong (docs/dev/02 §2.1). The row stays:
 	// everything they wrote keeps its author, and a removed member signs nobody in.
 	removedAt: integer('removed_at'),
 	createdAt: integer('created_at').notNull().default(now),
@@ -66,10 +66,10 @@ export const session = sqliteTable(
 );
 
 /*
- * A member's API token (docs/02 §2.16.1, docs/03 §3.2). Stored as the SHA-256 of the secret,
+ * A member's API token (docs/dev/02 §2.16.1, docs/dev/03 §3.2). Stored as the SHA-256 of the secret,
  * like a session; unlike one it has a name, a fixed last day and a record of its last use.
  * Its `scope` says what it opens: the API (`api`), or only its member's calendar feed
- * (`calendar`, docs/02 §2.13.4), which has no last day — it lasts until revoked.
+ * (`calendar`, docs/dev/02 §2.13.4), which has no last day — it lasts until revoked.
  */
 export const apiToken = sqliteTable(
 	'api_token',

@@ -6,8 +6,8 @@ import { ARCHIVE_FORMAT, ARCHIVE_VERSION } from '../src/lib/server/domain/archiv
 
 /*
  * Rows a restore cannot hang anywhere are named as left out, never counted as already here
- * (docs/02 §2.15). Written after the owner checked the restore in the running app
- * (docs/08 §8.4.1).
+ * (docs/dev/02 §2.15). Written after the owner checked the restore in the running app
+ * (docs/dev/08 §8.4.1).
  *
  * A hand-edited archive with two circles nested in each other: neither has a parent the
  * database can hold, so both are left out, while a third circle beside them comes in. The ids

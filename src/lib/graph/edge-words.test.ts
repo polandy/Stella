@@ -3,7 +3,7 @@ import { createTranslator } from '$lib/i18n/translate';
 import { edgeWords, treeRoleWords } from './edge-words';
 
 /*
- * How a line and a role under a name read in the viewer's language (docs/02 §2.7, §2.19): a
+ * How a line and a role under a name read in the viewer's language (docs/dev/02 §2.7, §2.19): a
  * built-in type translated, a household's own as typed, a worked-out term by its kinship word —
  * and a link marked former says so, since on the canvas its name is all a reader hears.
  */

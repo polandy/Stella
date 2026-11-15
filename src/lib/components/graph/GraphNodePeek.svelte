@@ -6,7 +6,7 @@
 	import type { CircleRole, CircleRoleOption } from '$lib/graph/model/ego-network';
 	import type { GraphNode } from '$lib/graph/model/types';
 
-	/** The peek panel for the selected person or circle (docs/05 §5.8). */
+	/** The peek panel for the selected person or circle (docs/dev/05 §5.8). */
 	interface Props {
 		node: GraphNode;
 		compact: boolean;

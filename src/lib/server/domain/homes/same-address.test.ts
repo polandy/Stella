@@ -13,7 +13,7 @@ import {
 } from './same-address';
 
 /*
- * *Data quality → Same address* (docs/02 §2.17): making one home of the people found, joining
+ * *Data quality → Same address* (docs/dev/02 §2.17): making one home of the people found, joining
  * the home that has the line, and *Not the same* — never for anyone the viewer may not see,
  * and never from a screen gone stale.
  */

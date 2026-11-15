@@ -3,7 +3,7 @@ import { CURSOR_CLASS, HOVERED_CLASS, LIT_CLASS, TUCKED_CLASS } from './canvas-c
 
 /*
  * What the canvas lights up and what it dims: a neighbourhood, a connection path, the node the
- * keyboard is on, and the lines under the pointer (docs/05 §5.8). Classes only — the stylesheet
+ * keyboard is on, and the lines under the pointer (docs/dev/05 §5.8). Classes only — the stylesheet
  * says what they look like, and nobody moves.
  */
 
@@ -62,7 +62,7 @@ export function markCursor(cy: Core, nodeId: string | null): NodeSingular | null
 }
 
 /**
- * Pointing at a line, or at a person, names those lines (docs/05 §5.8): with the names of a
+ * Pointing at a line, or at a person, names those lines (docs/dev/05 §5.8): with the names of a
  * busy map switched off, this is how one is read without selecting anybody.
  */
 export function nameLinesUnderPointer(cy: Core): void {

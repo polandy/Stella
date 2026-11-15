@@ -4,7 +4,7 @@ import { placeNewcomers, type Point } from './placement';
 /*
  * Where an expand puts the people it brings in. The canvas the reader has been looking at is
  * their map of it: the newcomers have to arrive next to the person they were opened from and
- * leave everyone else exactly where they stood (docs/05 §5.8).
+ * leave everyone else exactly where they stood (docs/dev/05 §5.8).
  */
 
 const SPACING = 90;

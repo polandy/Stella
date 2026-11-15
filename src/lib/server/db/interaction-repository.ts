@@ -21,7 +21,7 @@ import type * as schema from './schema';
 import { activityLog, contact, interaction, interactionParticipant, user } from './schema';
 
 /*
- * Drizzle adapter for the InteractionRepository port (docs/08 §8.3). Reads join the subject
+ * Drizzle adapter for the InteractionRepository port (docs/dev/08 §8.3). Reads join the subject
  * contact and are scoped through the central `childRecordVisibleTo`, so a private interaction
  * — or any interaction on a private contact — is only returned to those allowed to see it.
  * Participants are resolved in a second query scoped through `contactColumnsVisibleTo`: a
@@ -89,7 +89,7 @@ export function createDrizzleInteractionRepository(
 		return byInteraction;
 	}
 
-	/** The one visibility rule both reads go through (docs/03 §3.7). */
+	/** The one visibility rule both reads go through (docs/dev/03 §3.7). */
 	const visibleToViewer = (viewer: Viewer) =>
 		childRecordVisibleTo(viewer, {
 			visibility: interaction.visibility,

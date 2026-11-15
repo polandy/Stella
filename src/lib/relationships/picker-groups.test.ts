@@ -4,7 +4,7 @@ import { firstPickable, groupByExclusion } from './picker-groups';
 import { relationshipTypeOptions } from './type-options';
 
 /*
- * Why the reason is not written into the entry (docs/02 §2.4). "Grandparent of — already
+ * Why the reason is not written into the entry (docs/dev/02 §2.4). "Grandparent of — already
  * Godchild of Bert Weber" puts two "X of Y" phrases in one line, and a reader takes the
  * second as a statement about the first: it looks as though Stella is calling the entry a
  * godchild. The entries keep their own words and the reason is said once, above the run of

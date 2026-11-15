@@ -4,7 +4,7 @@ import { findPeople } from '$lib/server/domain/import/api/lookup';
 import type { RequestHandler } from './$types';
 
 /*
- * `GET /api/v1/people?q=…` (docs/02 §2.16.1): the people the member may see whose name or
+ * `GET /api/v1/people?q=…` (docs/dev/02 §2.16.1): the people the member may see whose name or
  * description matches — how a script finds the id to name as `existingId`.
  */
 export const GET: RequestHandler = async ({ locals, url }) => {

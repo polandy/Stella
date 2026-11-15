@@ -15,7 +15,7 @@ import { storablePicture } from './card-photo';
 import type { NextcloudStore } from './store';
 
 /*
- * The linked book's new cards in the matching review (docs/02 §2.16.3). Every card of the book
+ * The linked book's new cards in the matching review (docs/dev/02 §2.16.3). Every card of the book
  * Stella has not met yet is asked about once, as a card of an uploaded file would be, but read
  * from what the sync holds rather than from a file, remembered under the book's source, and
  * matched against shared people only: a private person never reaches the book. A new person

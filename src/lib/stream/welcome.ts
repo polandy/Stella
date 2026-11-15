@@ -1,7 +1,7 @@
 import { newPersonHref } from '../people/new-person';
 
 /*
- * The first-run card on Home (docs/02 §2.22.3). A household fresh out of setup lands on an
+ * The first-run card on Home (docs/dev/02 §2.22.3). A household fresh out of setup lands on an
  * empty stream with nothing to act on; the card names the three ways in instead. Pure, so the
  * rule for when it shows and what counts as done is tested here rather than read off markup.
  */
@@ -23,7 +23,7 @@ export interface HouseholdSoFar {
 	 */
 	peopleIds: readonly string[];
 	selfContactId: string | null;
-	/** The Monica import is admin-only (docs/02 §2.16), so only an admin is offered it. */
+	/** The Monica import is admin-only (docs/dev/02 §2.16), so only an admin is offered it. */
 	isAdmin: boolean;
 }
 

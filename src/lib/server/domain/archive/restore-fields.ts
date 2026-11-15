@@ -1,5 +1,5 @@
 /*
- * Reading one field of an archive document (docs/02 §2.15). The document is a file somebody
+ * Reading one field of an archive document (docs/dev/02 §2.15). The document is a file somebody
  * hands us, so each reader takes what is there in the shape it should have and turns anything
  * else into null — the caller decides whether a row without it is still worth restoring.
  */

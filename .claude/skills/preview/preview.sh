@@ -62,7 +62,7 @@ bun run build
 IP="$(lan_ip)"
 ORIGIN_URL="http://${IP:-localhost}:$PORT"
 
-# ORIGIN must equal exactly what the browser opens (docs/07 §7.6): adapter-node
+# ORIGIN must equal exactly what the browser opens (docs/dev/07 §7.6): adapter-node
 # checks it against every POST's Origin header and refuses a mismatch with
 # "Cross-site POST form submissions are forbidden" — including the login form.
 # The image's request cap (Dockerfile): adapter-node's 512K default refuses a 4096 px circle photo.

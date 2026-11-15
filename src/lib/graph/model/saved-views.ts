@@ -2,7 +2,7 @@ import { DEFAULT_VIEW_SWITCHES, type ViewSwitches } from '../view-switches';
 import { FILTER_KEYS, type FilterKey } from './view-filters';
 
 /*
- * Saved views (docs/02 §2.7): a name the reader gives to a Filter-menu state — the kinds of
+ * Saved views (docs/dev/02 §2.7): a name the reader gives to a Filter-menu state — the kinds of
  * line shown and the switches for looking at them — so a way of reading the map is one tap
  * away. Not the centre person and not where anybody stands: a view is how to look, not where.
  * Kept per device; `saved-views-preference.ts` only reads and writes what this decides.

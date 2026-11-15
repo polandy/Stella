@@ -13,7 +13,7 @@ import {
 } from './gallery';
 
 /*
- * The photo gallery on a person (docs/02 §2.14): list, caption, re-scope,
+ * The photo gallery on a person (docs/dev/02 §2.14): list, caption, re-scope,
  * delete. Every rule that decides *who may do what* lives here, over the repository port,
  * so it is tested with fakes rather than through a route.
  */

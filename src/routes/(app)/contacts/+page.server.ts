@@ -12,7 +12,7 @@ import { systemClock } from '$lib/server/clock';
 import { todayFor } from '$lib/dates/today';
 
 /*
- * People (docs/02 §2.2): every person the viewer may see, with the last day anything was
+ * People (docs/dev/02 §2.2): every person the viewer may see, with the last day anything was
  * written about them. That day comes from the attention repository, a scoped read, so a
  * private entry the viewer may not see never dates anyone.
  */
@@ -62,10 +62,10 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 		// claim a filter that is not being applied.
 		activeTag: showArchived ? null : activeTag,
 		today: todayFor(systemClock),
-		// Whom a last name set here is offered on to (docs/02 §2.2.4.5).
+		// Whom a last name set here is offered on to (docs/dev/02 §2.2.4.5).
 		passOn: surnameHelp.passOn
 	};
 };
 
-/* *Select* → *Set last name* (docs/02 §2.2.4.3), the one batch write. */
+/* *Select* → *Set last name* (docs/dev/02 §2.2.4.3), the one batch write. */
 export const actions: Actions = { ...lastNameActions };

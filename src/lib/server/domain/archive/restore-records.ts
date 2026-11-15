@@ -8,7 +8,7 @@ import { subjectKeyOf } from '../journal/subjects';
 import { isImmichId } from '../immich/gateway';
 
 /*
- * What each restored person carries (docs/02 §2.15): contact fields, dates, notes, journal
+ * What each restored person carries (docs/dev/02 §2.15): contact fields, dates, notes, journal
  * entries, touchpoints, gifts, to-dos and photos. A record without the one thing that makes it
  * one — a note without text, a gift without its name — is left out and named in the report.
  */

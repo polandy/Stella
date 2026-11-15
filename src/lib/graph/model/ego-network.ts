@@ -2,7 +2,7 @@ import { emptyModel, mergeModels } from './graph-model';
 import type { GraphDataSource, GraphEdge, GraphModel, Neighborhood } from './types';
 
 /*
- * Ego-network builders (docs/04 §4.11, docs/02 §2.7). These grow a GraphModel hop by hop
+ * Ego-network builders (docs/dev/04 §4.11, docs/dev/02 §2.7). These grow a GraphModel hop by hop
  * through the GraphDataSource port; the port applies visibility scoping, so only nodes and
  * edges the viewer may see ever enter the model. Pure otherwise — deterministic given a source.
  */

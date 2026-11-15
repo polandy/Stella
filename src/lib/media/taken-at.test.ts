@@ -2,7 +2,7 @@ import { describe, expect, test } from 'bun:test';
 import { datedAt, isPlausibleTakenAt, isTakenAt, photoDay, takenAtMs } from './taken-at';
 
 /*
- * A photo's capture date (docs/02 §2.14, docs/03 §photo): the wall-clock time the camera wrote,
+ * A photo's capture date (docs/dev/02 §2.14, docs/dev/03 §photo): the wall-clock time the camera wrote,
  * with its offset when the camera wrote one. The same rules on the phone and on the server.
  */
 

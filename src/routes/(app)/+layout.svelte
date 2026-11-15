@@ -66,7 +66,7 @@
 	// The trail from the route id + merged page data (contact/circle names, a circle's ancestors).
 	const crumbs = $derived(breadcrumbs(page.route.id ?? '', page.data as CrumbData, page.params, t));
 
-	// ⌘K / Ctrl+K opens the palette from anywhere (docs/05 §5.4); its first row is the
+	// ⌘K / Ctrl+K opens the palette from anywhere (docs/dev/05 §5.4); its first row is the
 	// capture field, so the old "jump to What happened?" is still two keystrokes away.
 	let paletteOpen = $state(false);
 	// The palette is the one control here that does nothing at all without JavaScript, and the
@@ -76,7 +76,7 @@
 	onMount(() => (paletteReady = true));
 
 	// A phone's top bar slides away while the page scrolls down and back as it scrolls up
-	// (docs/05 §5.4); `followScroll` decides, this only feeds it and slides the bar.
+	// (docs/dev/05 §5.4); `followScroll` decides, this only feeds it and slides the bar.
 	let topBar = $state(SHOWN_TOP_BAR);
 	let topBarHeight = $state(0);
 	let scroller: HTMLDivElement | undefined = $state();
@@ -88,7 +88,7 @@
 		paletteOpen = !paletteOpen;
 	}
 
-	// A cross-fade between screens (docs/05 §5.5), so a list and the person it opens read as
+	// A cross-fade between screens (docs/dev/05 §5.5), so a list and the person it opens read as
 	// one place. Browsers without the API and people who asked for less motion get a cut.
 	onNavigate((navigation) => {
 		if (!document.startViewTransition) return;
@@ -102,7 +102,7 @@
 	});
 
 	/*
-	 * Everything the app is waiting for, in one place (docs/05 §5.7): a page still loading, and
+	 * Everything the app is waiting for, in one place (docs/dev/05 §5.7): a page still loading, and
 	 * any change a page reported — a relationship save reloads the person's graph, and on a
 	 * large household that takes long enough to read as nothing having happened.
 	 */
@@ -121,7 +121,7 @@
 	const i18n = useI18n();
 	const palettePeople = $derived(withGivenNames(data.people, given.names, i18n.locale));
 	providePeopleContext(() => data.peopleContext);
-	// The member's private entries stay blurred until asked for (docs/02 §2.10.1). A tap shows
+	// The member's private entries stay blurred until asked for (docs/dev/02 §2.10.1). A tap shows
 	// one until the page is left; a new page starts blurred again, the five-minute window aside.
 	const veil = provideVeil({
 		enabled: () => data.user.blurPrivate,
@@ -158,7 +158,7 @@
 <svelte:window onkeydown={onGlobalKeydown} />
 
 <!--
-	One indicator for the whole app (docs/05 §5.7): a page still loading, and any change a page
+	One indicator for the whole app (docs/dev/05 §5.7): a page still loading, and any change a page
 	reported through the pending-work store — a relationship save and the graph reload behind
 	it. It is fixed to the top of the window, so it never moves the page it reports on.
 -->
@@ -169,7 +169,7 @@
 <!-- The visible height, not 100vh: a phone browser counts 100vh with its address bar hidden,
      so a shell that tall runs its foot under the fixed tab bar while the bar is showing. The
      body is held to the same height (`app.css`), so the document never scrolls: only `#content`
-     does, and the motion helpers scroll it alone (`scrollTopToShow`, docs/05 §5.11) — a scrolled
+     does, and the motion helpers scroll it alone (`scrollTopToShow`, docs/dev/05 §5.11) — a scrolled
      document would carry the top bar and the sticky jump bar off the top of the screen. -->
 <!-- The first stop for a keyboard: past the sidebar and the top bar to the page itself. -->
 <a
@@ -229,7 +229,7 @@
 				>
 			{:else}
 				<!-- A phone shows only the way back: the page's own name is its card's headline, and the
-				     whole trail would wrap a long one onto a second line (docs/05 §5.4). -->
+				     whole trail would wrap a long one onto a second line (docs/dev/05 §5.4). -->
 				{@const parent = crumbs[crumbs.length - 2]}
 				<nav aria-label={t('nav.breadcrumb')} class="min-w-0 text-sm md:hidden">
 					<a
@@ -257,7 +257,7 @@
 			<div class="ml-auto flex items-center gap-2">
 				<VeilLock />
 				<!-- On a phone's Home the *Find a person* field under the bar is the search, so a second
-				     door to the same list would only have to be learned as the same (docs/05 §5.4).
+				     door to the same list would only have to be learned as the same (docs/dev/05 §5.4).
 				     ⌘K still opens the palette there. -->
 				<button
 					type="button"
@@ -278,7 +278,7 @@
 					>
 				</button>
 				<!-- Secondary, not primary: the one filled action on a screen is the page's own — the
-				     pencil on Home, *Write a moment* on a person (docs/05 §5.1, §5.4). -->
+				     pencil on Home, *Write a moment* on a person (docs/dev/05 §5.1, §5.4). -->
 				{#if offersAddPerson(page.route.id)}
 					<Button
 						variant="secondary"

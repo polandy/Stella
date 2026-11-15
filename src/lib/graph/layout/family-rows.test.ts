@@ -6,7 +6,7 @@ import { brunnerKeller, brunnerKellerWidened, twoFamilies, twoHouseholds } from 
 import type { GraphModel } from '../model/types';
 
 /*
- * The order of each family's rows in the family tree (docs/05 §5.8, `family-rows.ts`): no bar
+ * The order of each family's rows in the family tree (docs/dev/05 §5.8, `family-rows.ts`): no bar
  * crosses another, an only child hangs straight under the drop, the father's side on the left.
  * Read through the whole arrangement, as the map draws it.
  */

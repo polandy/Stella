@@ -2,8 +2,8 @@ import { describe, expect, it } from 'bun:test';
 import { buildEndSessionUrl } from './logout-url';
 
 /*
- * RP-initiated logout URL (docs/02 §2.1). Pure — the decision whether to bounce the browser
- * through the provider at all lives here, so the route only carries it out (docs/08 §8.3).
+ * RP-initiated logout URL (docs/dev/02 §2.1). Pure — the decision whether to bounce the browser
+ * through the provider at all lives here, so the route only carries it out (docs/dev/08 §8.3).
  */
 
 const base = {

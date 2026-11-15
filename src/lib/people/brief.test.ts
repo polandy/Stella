@@ -10,7 +10,7 @@ import {
 } from './brief';
 
 /*
- * A person's brief (docs/02 §2.2.5): who belongs to them and how old they are, which blocks
+ * A person's brief (docs/dev/02 §2.2.5): who belongs to them and how old they are, which blocks
  * stand on it and in what order, and that an empty one is left out rather than shown bare.
  */
 

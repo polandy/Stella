@@ -21,19 +21,19 @@
 	import { BLUR_CLOSE_MS } from '$lib/components/ui/blur-close';
 
 	/*
-	 * A textarea that offers people while you type `@` (docs/02 §2.20.1). The picker is an
+	 * A textarea that offers people while you type `@` (docs/dev/02 §2.20.1). The picker is an
 	 * enhancement over a plain field: the form posts the text either way, and the server resolves
 	 * whatever handles it finds. Unlike the moment composer it cannot create a person on the fly —
 	 * a note or a journal entry is written about people who already exist.
 	 *
 	 * `value` is the text as stored: a person picked in the list is written as their id token, so
-	 * two people called Thomas stay two people (docs/02 §2.2.3). The field itself shows the
+	 * two people called Thomas stay two people (docs/dev/02 §2.2.3). The field itself shows the
 	 * readable `@Thomas` and remembers the pick against it (`picks.ts`); posting the form sends
 	 * the stored form, and without JavaScript the typed text goes and the server asks about any
 	 * handle that could be more than one person.
 	 *
 	 * Given `tags`, the field offers the household's tags while you type `#` as well, and says
-	 * under it what the text will be filed under (docs/02 §2.20.2) — a journal entry has tags, a
+	 * under it what the text will be filed under (docs/dev/02 §2.20.2) — a journal entry has tags, a
 	 * note does not.
 	 */
 
@@ -43,7 +43,7 @@
 		firstName: string | null;
 		lastName: string | null;
 		visibility: 'shared' | 'private';
-		/** What tells namesakes apart in the list (docs/02 §2.2.3). */
+		/** What tells namesakes apart in the list (docs/dev/02 §2.2.3). */
 		description?: string | null;
 		metPlace?: string | null;
 		metDate?: string | null;
@@ -136,7 +136,7 @@
 	// The second line counts everyone the list could offer, not only what the query left.
 	const peopleContext = usePeopleContext();
 	const namesakes = $derived(tellApart(audience, peopleContext()));
-	// Asked the way the server would refuse it, before saving is offered (docs/02 §2.2.3).
+	// Asked the way the server would refuse it, before saving is offered (docs/dev/02 §2.2.3).
 	const unclearNow = $derived(unclearHandles(value, audience, peopleContext()));
 	// What the field does not change itself — the audience a parent's visibility switch narrows,
 	// a text set from outside — is followed before the next paint, never a frame late.
@@ -225,7 +225,7 @@
 			void choose(selected);
 		} else if (event.key === 'Escape') {
 			// Consumed — see PersonSearchSelect: Escape closes the suggestion list, not the
-			// form it sits in (docs/05 §5.7).
+			// form it sits in (docs/dev/05 §5.7).
 			event.preventDefault();
 			active = null;
 		}

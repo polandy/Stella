@@ -20,7 +20,7 @@
 	const checkedAt = (at: number) =>
 		new Date(at).toLocaleString(i18n.intlLocale, { dateStyle: 'short', timeStyle: 'short' });
 
-	/* What the Immich line says about a key lacking a scope Stella reads with (docs/02 §2.24.1). */
+	/* What the Immich line says about a key lacking a scope Stella reads with (docs/dev/02 §2.24.1). */
 	const SCOPE_MESSAGE = {
 		'user.read': 'immich.settings.scope.user.read',
 		'person.read': 'immich.settings.scope.person.read',
@@ -30,7 +30,7 @@
 	} as const;
 
 	/*
-	 * Who the member says they are (docs/02 §2.1.3). The picker holds an unsaved pick; whenever
+	 * Who the member says they are (docs/dev/02 §2.1.3). The picker holds an unsaved pick; whenever
 	 * what is stored changes, it follows that again.
 	 */
 	let selfIds = $derived(data.user.selfContactId ? [data.user.selfContactId] : []);
@@ -135,7 +135,7 @@
 	</section>
 
 	<!--
-		Checks over what the household has entered: the relationship review (docs/02 §2.4.1) and
+		Checks over what the household has entered: the relationship review (docs/dev/02 §2.4.1) and
 		the people known by a first name only (§2.2.3). Their own section rather than part of Data,
 		because they are for every member: the answers belong to the household, not to the admin
 		who happened to click.
@@ -181,7 +181,7 @@
 		{/if}
 	</section>
 
-	<!-- Every member's: the feed shows what its member may see (docs/02 §2.13.4). -->
+	<!-- Every member's: the feed shows what its member may see (docs/dev/02 §2.13.4). -->
 	<section class="flex flex-col gap-3">
 		<h2 class="text-sm font-medium text-fg-muted">{t('settings.calendar.heading')}</h2>
 		<SettingsLink
@@ -192,7 +192,7 @@
 		/>
 	</section>
 
-	<!-- Every member's, not only the admin's: a token acts as whoever made it (docs/02 §2.16.1). -->
+	<!-- Every member's, not only the admin's: a token acts as whoever made it (docs/dev/02 §2.16.1). -->
 	<section class="flex flex-col gap-3">
 		<h2 class="text-sm font-medium text-fg-muted">{t('settings.api.heading')}</h2>
 		<SettingsLink
@@ -239,7 +239,7 @@
 		{/if}
 	</section>
 
-	<!-- Every member sees the line; the admin also reads what the key means (docs/02 §2.24.1). -->
+	<!-- Every member sees the line; the admin also reads what the key means (docs/dev/02 §2.24.1). -->
 	{#if data.immich}
 		<section class="flex flex-col gap-3" data-testid="immich-settings">
 			<h2 class="text-sm font-medium text-fg-muted">{t('immich.settings.heading')}</h2>

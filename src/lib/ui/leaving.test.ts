@@ -2,7 +2,7 @@ import { describe, expect, it } from 'bun:test';
 import { leavingStyle, LEAVE_MS, type LeavingBox } from './leaving';
 
 /*
- * The shape a leaving row has at each point of its way out (docs/05 §5.4).
+ * The shape a leaving row has at each point of its way out (docs/dev/05 §5.4).
  *
  * The transition itself belongs to the browser, but the shape it hands the row at each point
  * does not. How much the list gives back is deliberately *not* computed from that shape — it is

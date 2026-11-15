@@ -18,7 +18,7 @@ import {
 
 /*
  * The people linked to a card of the Nextcloud book, with what the sync reads and writes of them
- * (docs/02 §2.16.3): only those `viewer` may browse, and their avatar only when it is shared.
+ * (docs/dev/02 §2.16.3): only those `viewer` may browse, and their avatar only when it is shared.
  */
 
 type Db = BunSQLiteDatabase<typeof schema>;

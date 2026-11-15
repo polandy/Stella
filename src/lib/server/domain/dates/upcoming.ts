@@ -2,7 +2,7 @@ import { dayParts, type DayParts } from '../../../dates/calendar';
 import type { ImportantDateKind } from '../../../dates/kinds';
 
 /*
- * Upcoming important dates (docs/02 §2.13). Pure date arithmetic: given every date the viewer
+ * Upcoming important dates (docs/dev/02 §2.13). Pure date arithmetic: given every date the viewer
  * may see, work out the next occurrence of each and keep the ones inside the horizon. There is
  * no reminder object — a date is either on the household's radar (`remind`) or it is not.
  *
@@ -19,7 +19,7 @@ export const UPCOMING_LIMIT = 5;
 
 /**
  * How close a date has to be for the rail to be worth the top of a phone screen
- * (docs/05 §5.5). Beyond it the rail follows the stream instead of preceding it.
+ * (docs/dev/05 §5.5). Beyond it the rail follows the stream instead of preceding it.
  */
 export const IMMINENT_HORIZON_DAYS = 14;
 
@@ -81,7 +81,7 @@ function nextRecurrence(source: DayParts, from: DayParts): { ms: number; year: n
 /**
  * The dates on the household's radar, whenever they fall: deceased people and muted dates are
  * left out, and the derived birthday of a contact that also has an explicit birthday row is
- * dropped in favour of the explicit one. *Coming up* and the calendar feed (docs/02 §2.13.4)
+ * dropped in favour of the explicit one. *Coming up* and the calendar feed (docs/dev/02 §2.13.4)
  * both start from here, so muting a date means the same in both.
  */
 export function datesOnTheRadar(sources: readonly UpcomingSource[]): UpcomingSource[] {

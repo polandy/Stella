@@ -2,7 +2,7 @@ import { describe, expect, it } from 'bun:test';
 import { FOLLOWING, followView, type ViewEvent, type ViewFollow } from './view-follow';
 
 /*
- * Whether the map is framed afresh when full screen is entered or left (docs/05 §5.8): only
+ * Whether the map is framed afresh when full screen is entered or left (docs/dev/05 §5.8): only
  * while the view is still the one the map framed itself, and only for a size the canvas has
  * actually measured — whichever of the two, the full-screen change or the new size, is heard of
  * first.

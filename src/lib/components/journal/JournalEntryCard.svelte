@@ -16,7 +16,7 @@
 	type EditorProps = ComponentProps<typeof JournalEntryEditor>;
 
 	/*
-	 * One entry on the journal's timeline (docs/02 §2.20): its title, author and text, its photos,
+	 * One entry on the journal's timeline (docs/dev/02 §2.20): its title, author and text, its photos,
 	 * and the author's pencil and the ×. Editing turns the card into the editor in place.
 	 */
 	let {
@@ -35,7 +35,7 @@
 			author: string | null;
 			mine: boolean;
 			removable: boolean;
-			/** Server-rendered, already-safe Markdown (docs/02 §2.5). */
+			/** Server-rendered, already-safe Markdown (docs/dev/02 §2.5). */
 			bodyHtml: string;
 			photos: string[];
 			subjects: SubjectFace[];
@@ -57,7 +57,7 @@
 
 	const t = useI18n().t;
 
-	// A private entry's title, text and photos stay blurred until asked for (docs/02 §2.10.1).
+	// A private entry's title, text and photos stay blurred until asked for (docs/dev/02 §2.10.1).
 	const veil = useVeil();
 	const veilId = $derived(`journal:${entry.id}`);
 	const titleShown = $derived(entry.visibility !== 'private' || !veil.isVeiled(veilId));
@@ -68,7 +68,7 @@
 	}
 </script>
 
-<!-- Its id is where *On this day* lands (docs/02 §2.12.1). -->
+<!-- Its id is where *On this day* lands (docs/dev/02 §2.12.1). -->
 <article id={journalEntryAnchor(entry.id)} class="scroll-mt-20 rounded-app bg-card p-5 shadow-card">
 	<div class="mb-2 flex items-center gap-2">
 		{#if entry.title && titleShown}
@@ -84,7 +84,7 @@
 			<PrivateMark {veilId} tone="pill" />
 		{/if}
 		<!-- 24 px drawn, a finger's square on a touch screen; the gap keeps the pencil
-		     and the × from sharing one there (docs/05 §5.9). -->
+		     and the × from sharing one there (docs/dev/05 §5.9). -->
 		<div class="ml-auto flex items-center gap-2 pointer-coarse:gap-5">
 			{#if entry.mine}
 				<button
@@ -113,7 +113,7 @@
 		</div>
 	</div>
 	<MomentWith others={othersThan(entry.subjects, contact.id)} />
-	<!-- The entry and its editor glide into each other in place (docs/05 §5.11). -->
+	<!-- The entry and its editor glide into each other in place (docs/dev/05 §5.11). -->
 	<Swap when={editing}>
 		<JournalEntryEditor
 			contactId={contact.id}
@@ -132,7 +132,7 @@
 					{/if}
 					<p class="whitespace-pre-line text-fg">{placeholderFor(entry.bodyHtml)}</p>
 				{/snippet}
-				<!-- server-rendered, already-safe Markdown (docs/02 §2.5) -->
+				<!-- server-rendered, already-safe Markdown (docs/dev/02 §2.5) -->
 				<div class="note-body text-fg">{@html entry.bodyHtml}</div>
 			</Veil>
 		{/snippet}

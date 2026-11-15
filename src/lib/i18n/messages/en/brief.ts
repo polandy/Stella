@@ -1,5 +1,5 @@
 /*
- * A person's brief (docs/02 §2.2.5): what to know before a visit, on one page that also prints.
+ * A person's brief (docs/dev/02 §2.2.5): what to know before a visit, on one page that also prints.
  */
 
 export const brief = {
@@ -18,7 +18,7 @@ export const brief = {
 	'brief.lately.title': 'Lately',
 	'brief.gifts.title': 'Gift ideas',
 	'brief.met.title': 'How we met',
-	/* The record menu's entry (docs/02 §2.15); the palette's words are in `components`. */
+	/* The record menu's entry (docs/dev/02 §2.15); the palette's words are in `components`. */
 	'brief.open': 'Brief before a visit'
 };
 

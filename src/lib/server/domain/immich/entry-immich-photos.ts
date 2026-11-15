@@ -5,8 +5,8 @@ import type { Viewer } from '../../access/visibility';
 import type { ImmichMediaSigner } from './signed-media';
 
 /*
- * Immich photos on a journal entry, kept as references to the asset rather than copied (docs/02
- * §2.20, docs/04 ADR-132). A pick names its photos by the tokens the library picker handed out
+ * Immich photos on a journal entry, kept as references to the asset rather than copied (docs/dev/02
+ * §2.20, docs/dev/04 ADR-132). A pick names its photos by the tokens the library picker handed out
  * (§2.24.9), so an entry only ever refers to a photo Stella listed for the member's household.
  * Nothing here asks Immich anything, and taking a reference off deletes only Stella's row: the
  * photo stays in Immich.

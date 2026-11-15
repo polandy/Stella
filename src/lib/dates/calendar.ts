@@ -22,7 +22,7 @@ export interface DayParts {
 
 /**
  * The parts of a full ISO day or a year-less `--MM-DD`; null for anything else — a bare year or
- * an age estimate has no day in it (docs/03 §3.4). Shape only: `2026-02-30` still reads.
+ * an age estimate has no day in it (docs/dev/03 §3.4). Shape only: `2026-02-30` still reads.
  */
 export function dayParts(value: string): DayParts | null {
 	const m = DATE_SHAPE.exec(value);

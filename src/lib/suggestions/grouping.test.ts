@@ -4,7 +4,7 @@ import type { Relation } from './types';
 
 /*
  * Grouping a household-wide list by the person each claim is about
- * (docs/02 §2.4.1).
+ * (docs/dev/02 §2.4.1).
  *
  * The household pass answers about everyone at once, so the list only reads as help if the
  * claims about one person arrive together. Which person that is, is a property of the claim

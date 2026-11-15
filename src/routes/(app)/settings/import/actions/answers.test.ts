@@ -2,7 +2,7 @@ import { describe, expect, it } from 'bun:test';
 import { parseAnswers } from './answers';
 
 /*
- * The review's answers arrive as one JSON field (docs/02 §2.16). Anything that is not a set
+ * The review's answers arrive as one JSON field (docs/dev/02 §2.16). Anything that is not a set
  * of well-formed answers is refused whole, never half applied.
  */
 

@@ -3,7 +3,7 @@ import { commandDepsWith } from '$lib/server/domain/testing';
 import { answerOf, formOf, routeEvent } from '$lib/server/testing';
 import { actions } from './+page.server';
 
-/* A tick on `/todos` (docs/02 §2.26.6) names its person in the form and returns to the list. */
+/* A tick on `/todos` (docs/dev/02 §2.26.6) names its person in the form and returns to the list. */
 
 describe('tickTodo on the list', () => {
 	it('ticks the to-do of the person the form names and returns to /todos', async () => {

@@ -8,7 +8,7 @@ import type { CircleRepository } from './circles';
 import type { CircleMembershipReads } from './memberships';
 
 /*
- * Renaming one role of a circle (docs/02 §2.4.2). A role is free text on each membership and on
+ * Renaming one role of a circle (docs/dev/02 §2.4.2). A role is free text on each membership and on
  * each circle photo, so a rename is a rewrite of every one that carries it — folded by case, the
  * rule the members list groups by. The rename stays inside the one circle: a "Teacher" elsewhere
  * is another circle's word. Like re-roling, it touches only what the viewer can see (§3.7).

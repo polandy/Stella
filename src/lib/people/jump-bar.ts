@@ -1,7 +1,7 @@
 import type { ContactSection } from './sections';
 
 /*
- * The person page's jump bar (docs/05 §5.5): under the identity card, sticking under the top
+ * The person page's jump bar (docs/dev/05 §5.5): under the identity card, sticking under the top
  * bar once that card has gone by, one link per card worth jumping to — People, Photos, Story,
  * Notes, Gifts — and the card being read marked. *Mentioned in* is left out: it is the page's
  * quiet foot, reached by scrolling on, a sixth link does not fit a phone's width, and with nobody
@@ -25,7 +25,7 @@ export type JumpSection = (typeof JUMP_SECTIONS)[number];
 
 /**
  * The counts the cards carry in their own headers. The story is paged and has none; the Gifts
- * card counts its open ideas on its *Ideas* tab instead (docs/02 §2.25).
+ * card counts its open ideas on its *Ideas* tab instead (docs/dev/02 §2.25).
  */
 export interface JumpCounts {
 	relationships: number;
@@ -111,7 +111,7 @@ export interface BarPlace {
 }
 
 /**
- * Whether the bar shows (docs/05 §5.5). At rest nothing stands between the identity card and
+ * Whether the bar shows (docs/dev/05 §5.5). At rest nothing stands between the identity card and
  * the People card: the bar shows only once it sticks, which is when the card's bottom has
  * passed under the bar's foot. That is also where a jump leaves it — a jump to People stops
  * below the bar, with the card's foot still just in view — so a bar that was tapped never

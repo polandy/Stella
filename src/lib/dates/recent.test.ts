@@ -4,7 +4,7 @@ import { createTranslator } from '$lib/i18n/translate';
 import type { DateLanguage } from './labels';
 import { pickedDayLabel, recentDays } from './recent';
 
-// The composer's day pill (docs/02 §2.22.1). Tuesday, 29 September 2026 is "today" throughout.
+// The composer's day pill (docs/dev/02 §2.22.1). Tuesday, 29 September 2026 is "today" throughout.
 const en: DateLanguage = { t: createTranslator('en'), intlLocale: INTL_LOCALES.en };
 const de: DateLanguage = { t: createTranslator('de'), intlLocale: INTL_LOCALES.de };
 const TODAY = '2026-09-29';

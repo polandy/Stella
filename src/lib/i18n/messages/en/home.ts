@@ -1,5 +1,5 @@
 /*
- * The home screen (docs/02 §2.22.1): the capture field (a person search on a phone), the household's stream and the rail.
+ * The home screen (docs/dev/02 §2.22.1): the capture field (a person search on a phone), the household's stream and the rail.
  *
  * A stream line reads "<Actor> wrote in <Name>'s journal", with the names as links; the
  * sentence is therefore split into the words *around* the links rather than kept whole. The
@@ -18,7 +18,7 @@ export const home = {
 	'home.atAGlance': 'At a glance',
 	'home.comingUp': 'Coming up',
 	'home.writeMoment': 'Write a moment',
-	// A person in *Coming up* with open gift ideas (docs/02 §2.13.3): links to their Gifts card.
+	// A person in *Coming up* with open gift ideas (docs/dev/02 §2.13.3): links to their Gifts card.
 	'home.giftIdeas': (p: { count: number }) => (p.count === 1 ? '1 idea' : `${p.count} ideas`),
 	'home.giftIdeasFor': (p: { count: number; name: string }) =>
 		p.count === 1 ? `1 gift idea for ${p.name}` : `${p.count} gift ideas for ${p.name}`,
@@ -58,7 +58,7 @@ export const home = {
 	'home.outbox.todoFor': (p: { name: string }) => `· to-do for ${p.name}`,
 	// A tick kept on the device; it names the to-do, since the tick says nothing else.
 	'home.outbox.todoDone': '· to-do ticked',
-	// The first-run card (docs/02 §2.22.3).
+	// The first-run card (docs/dev/02 §2.22.3).
 	'home.welcome.label': 'Getting started',
 	'home.welcome.title': 'Welcome to Stella',
 	'home.welcome.intro':
@@ -88,7 +88,7 @@ export const home = {
 	'home.stream.logged': 'logged',
 	'home.stream.loggedWith': 'with',
 	'home.stream.loggedAfter': '',
-	// The activity log's lines about people still here, said in the reader's language (docs/02 §2.11).
+	// The activity log's lines about people still here, said in the reader's language (docs/dev/02 §2.11).
 	'home.stream.lastNames': (p: { name: string; count: number }) =>
 		p.count === 1
 			? `set the last name ${p.name} on 1 person`

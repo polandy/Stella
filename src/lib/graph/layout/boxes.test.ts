@@ -2,7 +2,7 @@ import { describe, expect, it } from 'bun:test';
 import { boxAroundPoints, unionBox, withinScreen } from './boxes';
 
 /*
- * The boxes the canvas frames by (docs/05 §5.8): what a framing takes in, and whether something
+ * The boxes the canvas frames by (docs/dev/05 §5.8): what a framing takes in, and whether something
  * already stands in view below the toolbar.
  */
 

@@ -2,7 +2,7 @@ import { describe, expect, it } from 'bun:test';
 import { held, hiddenIds, sending, settle, takenBack, type Batches } from './batches';
 
 /*
- * Last names held for the undo window before they are sent (docs/02 §2.2.4.4,
+ * Last names held for the undo window before they are sent (docs/dev/02 §2.2.4.4,
  * §2.23). The rows a batch names leave the list at once and come back only when the
  * batch is taken back or fails; what reaches the server waits for the window.
  */

@@ -24,7 +24,7 @@
 	import type { PersonPageData } from './types';
 
 	/*
-	 * What the relationships card works out rather than holds (docs/02 §2.4.1): the links the
+	 * What the relationships card works out rather than holds (docs/dev/02 §2.4.1): the links the
 	 * one just added implies, the on-demand review, and the kin derived from the entered links.
 	 */
 	let {
@@ -43,7 +43,7 @@
 	const t = i18n.t;
 	const c = $derived(data.contact);
 	const removals = useRemovals();
-	// The shell's one activity indicator, which every change to the graph reports to (docs/05 §5.7).
+	// The shell's one activity indicator, which every change to the graph reports to (docs/dev/05 §5.7).
 	const graphPending = usePending();
 	const shownKin = $derived(data.derivedKin.slice(0, kinShown));
 	// A worked-out relative is often on the map too, wearing their face there.
@@ -63,7 +63,7 @@
 	});
 
 	/*
-	 * *Add all* (docs/02 §2.4, *Several people in one go*): the claims of the *Also true?*
+	 * *Add all* (docs/dev/02 §2.4, *Several people in one go*): the claims of the *Also true?*
 	 * block that one batch can store, still listed and answerable row by row above. Worked out
 	 * from the rows still standing — one already answered in its undo window is not sent twice.
 	 */
@@ -137,7 +137,7 @@
 </script>
 
 <!--
-	Propagation suggestions (docs/02 §2.4.1): what the link just added implies.
+	Propagation suggestions (docs/dev/02 §2.4.1): what the link just added implies.
 	Each is one confirmation of its own — Stella never writes them by itself.
 -->
 {#if data.proposals.length > 0}
@@ -187,7 +187,7 @@
 {/if}
 
 <!--
-	The on-demand review (docs/02 §2.4.1). Every
+	The on-demand review (docs/dev/02 §2.4.1). Every
 	other suggestion in Stella lives for one page load after a write; this is the
 	control that asks the same rules what stands around this person *now*, which
 	is the only way a household ever sees what follows from links entered years
@@ -224,7 +224,7 @@
 {/if}
 
 <!--
-	Derived kinship (docs/02 §2.4.1): worked out from the entered links, and
+	Derived kinship (docs/dev/02 §2.4.1): worked out from the entered links, and
 	stored only when the household says so. Kept visually apart and labelled, so
 	nobody mistakes an inference for something the household wrote down.
 -->

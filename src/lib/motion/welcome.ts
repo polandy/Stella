@@ -1,5 +1,5 @@
 /*
- * The welcome on start (docs/05 §5.11.4): once per session, the logo's constellation comes
+ * The welcome on start (docs/dev/05 §5.11.4): once per session, the logo's constellation comes
  * together and docks into the logo on the page.
  *
  * It has to run before the app's JavaScript has arrived, so it lives as inline SVG, CSS and

@@ -2,10 +2,10 @@ import { expect, test, type Locator, type Page } from '@playwright/test';
 import { addPerson, appReady, signIn } from './app';
 
 /*
- * Photos from the whole Immich library wherever a photo can be added (docs/02 §2.24.9): the
+ * Photos from the whole Immich library wherever a photo can be added (docs/dev/02 §2.24.9): the
  * photo menu of a moment and of a journal entry, *or From Immich* beside a person's and a
  * circle's gallery, the sheet's day arrows, ticks and smart search. Written after the owner
- * tried #407 in the preview (docs/08 §8.4.1). Offline, *From Immich* is greyed out; that needs
+ * tried #407 in the preview (docs/dev/08 §8.4.1). Offline, *From Immich* is greyed out; that needs
  * the service worker's reachability, so it is a case of `pwa-offline.spec.ts`.
  *
  * The e2e server runs with `IMMICH_DEMO=true`: the in-memory demo library, whose newest photos

@@ -17,8 +17,8 @@ import type * as schema from './schema';
 import { suggestionDismissal } from './schema';
 
 /*
- * Drizzle adapter for the SuggestionDismissalRepository port (docs/08 §8.3) — the claims a
- * household has declined (docs/04 ADR-117).
+ * Drizzle adapter for the SuggestionDismissalRepository port (docs/dev/08 §8.3) — the claims a
+ * household has declined (docs/dev/04 ADR-117).
  *
  * Scoping is the household and nothing finer: the household decided, so any member sees the
  * same answers and any member may take one back. There is no per-contact visibility question
@@ -74,14 +74,14 @@ export function createDrizzleSuggestionDismissalRepository(
 	};
 }
 
-/** The relation a declined last name is stored under (docs/03 §3.9). */
+/** The relation a declined last name is stored under (docs/dev/03 §3.9). */
 const LAST_NAME = 'last_name';
 
 /** Person and folded name in one key; an id holds no space, so the first one splits them. */
 const surnameKey = (contactId: string, folded: string) => `${contactId} ${folded}`;
 
 /*
- * Drizzle adapter for the household's *not this name* (docs/02 §2.2.4.2): the same
+ * Drizzle adapter for the household's *not this name* (docs/dev/02 §2.2.4.2): the same
  * log as the relationship claims, under `last_name`, keyed by the person and the folded name.
  * Scoped to the household; the use-case has checked the person is visible before writing.
  */
@@ -138,11 +138,11 @@ export function createDrizzleSurnameDismissalRepository(
 	};
 }
 
-/** The relation a *Not the same* is stored under (docs/03 §3.9). */
+/** The relation a *Not the same* is stored under (docs/dev/03 §3.9). */
 const SAME_ADDRESS = 'same_address';
 
 /*
- * Drizzle adapter for the household's *Not the same* (docs/02 §2.17, *Same address*): the same
+ * Drizzle adapter for the household's *Not the same* (docs/dev/02 §2.17, *Same address*): the same
  * log again, under `same_address`, keyed by `sameAddressKey`. Scoped to the household; the
  * use-case has checked every person in a key is visible before writing or taking one back.
  */

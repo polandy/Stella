@@ -11,7 +11,7 @@
 	import type { CardEntry, PersonPageData } from './types';
 
 	/*
-	 * The Photos card's photos (docs/design/screens/person.md): the tab's grid, *Show more* under
+	 * The Photos card's photos (docs/dev/design/screens/person.md): the tab's grid, *Show more* under
 	 * Immich's, and the one lightbox, which walks the list its tile was opened from.
 	 */
 	interface Props {

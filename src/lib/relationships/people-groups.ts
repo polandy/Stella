@@ -1,7 +1,7 @@
 import type { RoleTerm } from './roles';
 
 /*
- * How a person's People card lists their ties (docs/05 §5.5): grouped by the kind of tie the
+ * How a person's People card lists their ties (docs/dev/05 §5.5): grouped by the kind of tie the
  * household chose when it entered them — the type's category, nothing worked out — family
  * first, and folded to a handful once there are enough of them to push the photos a screen
  * further down.
@@ -88,7 +88,7 @@ export function groupPeople<T extends Groupable>(rows: readonly T[]): PeopleGrou
 /** How many people a folded card shows (two rows of three, three of two on a phone). */
 export const SHOWN_WHEN_FOLDED = 6;
 
-/** The worked-out relatives (docs/02 §2.4.1) as one more group on the fold's collapsed line. */
+/** The worked-out relatives (docs/dev/02 §2.4.1) as one more group on the fold's collapsed line. */
 export const WORKED_OUT = 'derived';
 
 /** A group the fold hides whole, and how many people are in it. */
@@ -117,7 +117,7 @@ function folds(entered: number, workedOut: number, expanded: boolean): boolean {
 }
 
 /**
- * The card as it shows its people (docs/05 §5.5): everybody when `expanded`, else the first
+ * The card as it shows its people (docs/dev/05 §5.5): everybody when `expanded`, else the first
  * `SHOWN_WHEN_FOLDED` entered people in group order. The worked-out relatives take no folded
  * place — the household's own entries come first, and an inference never pushes one of them
  * behind the fold — so a folding card hides them all, and says which groups it hid whole.

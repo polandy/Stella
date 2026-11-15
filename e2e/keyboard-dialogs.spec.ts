@@ -3,9 +3,9 @@ import { readFileSync } from 'node:fs';
 import { addPerson, signIn } from './app';
 
 /*
- * The shell's way past itself and the two overlays that are real modal dialogs (docs/05 §5.9):
+ * The shell's way past itself and the two overlays that are real modal dialogs (docs/dev/05 §5.9):
  * the skip link, the photo viewer and the phone's composer sheet. Written after the owner
- * signed the change off in the running app (docs/08 §8.4.1). The contrast half of that change
+ * signed the change off in the running app (docs/dev/08 §8.4.1). The contrast half of that change
  * is held by `color.test.ts` and `tokens.test.ts`.
  *
  * The photo cases work on a person they invent, so no other spec's gallery moves.

@@ -17,7 +17,7 @@ import type { CircleMembershipReads } from './memberships';
 import { CircleParentGoneError } from './nesting';
 
 /*
- * Circles = shared contexts (docs/02 §2.4.2): a named group contacts belong to over a period
+ * Circles = shared contexts (docs/dev/02 §2.4.2): a named group contacts belong to over a period
  * (class, club, team, workplace, friend group…). A first-class shareable record — distinct
  * from tags. Two contacts in the same circle are connected "via {circle}". Pure validation +
  * use-cases over a repository port; all reads are visibility-scoped in the adapter (§3.7). What
@@ -62,7 +62,7 @@ export interface Circle extends CircleDetails {
 }
 
 export interface NewCircle extends Circle {
-	/** The circle it belongs to (docs/02 §2.4.2); null stands on its own. */
+	/** The circle it belongs to (docs/dev/02 §2.4.2); null stands on its own. */
 	parentCircleId: string | null;
 	createdAt: number;
 	updatedAt: number;
@@ -81,7 +81,7 @@ export interface MemberPreview {
 /** A circle as the overview lists it: with how many, and which faces, the viewer may see. */
 export interface CircleWithCount extends Circle {
 	memberCount: number;
-	/** The first `CIRCLE_PREVIEW_SIZE` visible members by name (docs/05 §5.5). */
+	/** The first `CIRCLE_PREVIEW_SIZE` visible members by name (docs/dev/05 §5.5). */
 	preview: MemberPreview[];
 }
 

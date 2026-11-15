@@ -7,7 +7,7 @@ import { datedAt, isTakenAt, type Dated } from '../../media/taken-at';
 import { photoDatedAt } from './photo-dated-at';
 
 /*
- * Parity of the two statements of when a photo is dated (docs/03 §photo): `datedAt` orders a
+ * Parity of the two statements of when a photo is dated (docs/dev/03 §photo): `datedAt` orders a
  * page in TS, `photoDatedAt` orders a read in SQL, and nothing but this test keeps them alike.
  * A table of just the two columns, so the rule is all that is exercised.
  */

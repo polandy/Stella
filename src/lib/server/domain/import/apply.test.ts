@@ -6,7 +6,7 @@ import type { ImportPlan } from './monica/plan';
 import { MonicaJsonError } from './monica/json-export';
 
 /*
- * The import use-cases (docs/02 §2.16): a preview plans without writing, an apply hands that
+ * The import use-cases (docs/dev/02 §2.16): a preview plans without writing, an apply hands that
  * same plan to the repository in one go. The plan itself is `monica/plan.test.ts`'s.
  */
 

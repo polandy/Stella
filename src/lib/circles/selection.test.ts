@@ -2,7 +2,7 @@ import { describe, expect, it } from 'bun:test';
 import { allChosen, toggleEveryone, toggleGroup, toggleMember } from './selection';
 
 /*
- * Choosing several members of a circle to re-role or remove them together (docs/02 §2.4.2).
+ * Choosing several members of a circle to re-role or remove them together (docs/dev/02 §2.4.2).
  * The page holds the selection as a list of contact ids; these are the rules for changing it.
  */
 

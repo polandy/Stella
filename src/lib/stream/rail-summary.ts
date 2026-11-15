@@ -1,7 +1,7 @@
 import type { CardTodo } from '$lib/todos/todos';
 
 /*
- * The phone's one line per rail section (docs/05 §5.5.1): Home's rail folds to *To-dos*,
+ * The phone's one line per rail section (docs/dev/05 §5.5.1): Home's rail folds to *To-dos*,
  * *Coming up* and *On this day*, each reading how many and the first of them, so the stream
  * starts near the top. The first is never words a veil would hide: a private item is skipped,
  * and with nothing else the count stands alone. Pure.

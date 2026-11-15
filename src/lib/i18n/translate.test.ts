@@ -12,7 +12,7 @@ import {
 } from './translate';
 
 /*
- * The translator's own rules (docs/02 §2.19): a message missing from a translation falls
+ * The translator's own rules (docs/dev/02 §2.19): a message missing from a translation falls
  * back to English rather than showing a raw key, and a key missing everywhere is a
  * programming error that must be loud rather than silent.
  */
@@ -64,7 +64,7 @@ describe('hasMessage', () => {
 });
 
 /*
- * Only English ships with every page; another language is fetched on demand (docs/04 §4.4),
+ * Only English ships with every page; another language is fetched on demand (docs/dev/04 §4.4),
  * so the browser of someone who reads English never downloads German. The shelf is built
  * here over a hand-made German so each case controls exactly when the "download" lands.
  */
@@ -140,7 +140,7 @@ describe('messageKey', () => {
 	});
 });
 
-describe('the line for a note someone else removed (docs/02 §2.11)', () => {
+describe('the line for a note someone else removed (docs/dev/02 §2.11)', () => {
 	it('puts the author in the German genitive, with an apostrophe after s, ß, x or z', () => {
 		const sayDe = createTranslator('de');
 		expect(sayDe('home.stream.removedNoteOf', { author: 'Nina' })).toBe('entfernte Ninas Notiz zu');

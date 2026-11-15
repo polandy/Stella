@@ -2,9 +2,9 @@ import { isLocale, type Locale } from '../../i18n/locales';
 import type { IdGenerator } from '../id';
 
 /*
- * Account use-cases: first-run admin registration and local authentication (docs/02 §2.1).
+ * Account use-cases: first-run admin registration and local authentication (docs/dev/02 §2.1).
  * Pure orchestration over the AccountRepository port; password hashing and id generation
- * are injected so the logic is deterministic and fast to test (docs/08 §8.3).
+ * are injected so the logic is deterministic and fast to test (docs/dev/08 §8.3).
  */
 
 export type Role = 'admin' | 'member';
@@ -18,9 +18,9 @@ export interface AuthUser {
 	role: Role;
 	/** The language this user reads Stella in, or null while they have not picked one. */
 	locale: Locale | null;
-	/** The contact this user *is*, or null while they have not said (docs/02 §2.1.3). */
+	/** The contact this user *is*, or null while they have not said (docs/dev/02 §2.1.3). */
 	selfContactId: string | null;
-	/** *Blur my private entries* (docs/02 §2.10.1): on until the member turns it off. */
+	/** *Blur my private entries* (docs/dev/02 §2.10.1): on until the member turns it off. */
 	blurPrivate: boolean;
 }
 
@@ -46,9 +46,9 @@ export interface AccountRepository {
 	insertHouseholdWithAdmin(data: NewAdmin): Promise<boolean>;
 	/** Persist the user's interface language. */
 	updateLocale(userId: string, locale: Locale): Promise<void>;
-	/** Persist which contact the user is, or clear it with `null` (docs/02 §2.1.3). */
+	/** Persist which contact the user is, or clear it with `null` (docs/dev/02 §2.1.3). */
 	updateSelfContact(userId: string, contactId: string | null): Promise<void>;
-	/** Persist *Blur my private entries* (docs/02 §2.10.1). */
+	/** Persist *Blur my private entries* (docs/dev/02 §2.10.1). */
 	updateBlurPrivate(userId: string, on: boolean): Promise<void>;
 }
 
@@ -77,7 +77,7 @@ export class UnsupportedLocaleError extends Error {
 }
 
 /**
- * Change the language a user reads Stella in (docs/02 §2.19). An unsupported language is
+ * Change the language a user reads Stella in (docs/dev/02 §2.19). An unsupported language is
  * refused rather than stored: a value nothing can translate would leave the interface
  * silently English on every later request.
  */
@@ -92,7 +92,7 @@ export async function changeLocale(
 }
 
 /**
- * Turn *Blur my private entries* on or off (docs/02 §2.10.1). A display preference of the
+ * Turn *Blur my private entries* on or off (docs/dev/02 §2.10.1). A display preference of the
  * member's own, not a default visibility: nothing anyone else sees changes.
  */
 export async function changeBlurPrivate(
@@ -115,7 +115,7 @@ export class SetupAlreadyDoneError extends Error {
 /**
  * Create the household and its first, admin user. Only allowed while no users exist (the
  * one-time first-run setup). The admin is `roleLocked` so IdP group-sync can never demote
- * this break-glass account (docs/02 §2.1.2).
+ * this break-glass account (docs/dev/02 §2.1.2).
  */
 export async function registerFirstAdmin(
 	deps: AccountDeps,

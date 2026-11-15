@@ -11,7 +11,7 @@ import * as schema from './schema';
 import { createDrizzleSystemActors } from './system-actor-repository';
 
 /*
- * The Nextcloud actor (docs/02 §2.16.3): what the activity log names for a change that came
+ * The Nextcloud actor (docs/dev/02 §2.16.3): what the activity log names for a change that came
  * from the linked book. Made once per household, it is no one who signs in and never one of
  * the members — only an author.
  */

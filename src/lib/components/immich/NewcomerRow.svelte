@@ -52,7 +52,7 @@
 	import type { SelectablePerson } from '$lib/people/select';
 
 	/*
-	 * One face of *New from Immich* (docs/02 §2.24.7) and the steps *Assign…* opens in place.
+	 * One face of *New from Immich* (docs/dev/02 §2.24.7) and the steps *Assign…* opens in place.
 	 *
 	 * **Compare** comes first whenever Stella has people of a similar name: the new face beside
 	 * each one's own photo — their avatar, or the face they are linked to already — with their

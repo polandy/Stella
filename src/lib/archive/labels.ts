@@ -1,10 +1,10 @@
 import { hasMessage, type Translate } from '$lib/i18n/translate';
 
 /*
- * What a restored table is called on screen (docs/02 §2.15). The report comes back keyed by
+ * What a restored table is called on screen (docs/dev/02 §2.15). The report comes back keyed by
  * table name, and "journal_entry: 4" is not something to show a household. The order lives
  * here; the words live in the message catalogue, so the report reads in the viewer's
- * language (docs/02 §2.19).
+ * language (docs/dev/02 §2.19).
  */
 
 /** Every table a report can mention, in the order a report reads best. */

@@ -7,7 +7,7 @@
 	import type { HTMLAttributes } from 'svelte/elements';
 
 	/*
-	 * Naming somebody new without leaving the field that found no one (docs/02 §2.2.2): the
+	 * Naming somebody new without leaving the field that found no one (docs/dev/02 §2.2.2): the
 	 * moment composer and the person picker both open it. Plain inputs, never a nested `<form>` —
 	 * both callers sit inside one. What each adds below the names (more fields, its buttons) is
 	 * `children`; Enter and Escape are the caller's, through `onkeydown`.

@@ -1,7 +1,7 @@
 import type { GraphEdge, GraphFilters, GraphModel, GraphNode } from './types';
 
 /*
- * Pure value operations over GraphModel (docs/04 §4.11). Every function returns a fresh model
+ * Pure value operations over GraphModel (docs/dev/04 §4.11). Every function returns a fresh model
  * and never mutates its input, so the rendering adapter can treat models as immutable
  * snapshots and re-render from whatever a builder or filter returns.
  */
@@ -29,7 +29,7 @@ function dedupeById<T extends { id: string }>(items: T[]): T[] {
 }
 
 /**
- * The model stripped of derived links (docs/02 §2.7). A derived edge is a *name for a chain
+ * The model stripped of derived links (docs/dev/02 §2.7). A derived edge is a *name for a chain
  * that already exists* — "Cousin" restates a route through the shared grandparent. Letting a
  * connection path travel one would answer "how do we know each other?" with the label instead
  * of the chain, so path finding searches this projection. Nodes are kept: a person is not

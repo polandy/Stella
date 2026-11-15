@@ -3,10 +3,10 @@ import { addPerson, pickPerson, signIn } from './app';
 import { arrangeBy, settled, stateOf } from './graph-canvas';
 
 /*
- * The family tree's slots for missing parents (docs/02 §2.7, docs/05 §5.8): a "+" where a
+ * The family tree's slots for missing parents (docs/dev/02 §2.7, docs/dev/05 §5.8): a "+" where a
  * parent of the centre's line is missing, read by the keyboard walk as the button it is, and
  * opening the child's page with the relationship form on *Child of*. Only in the tree, and no
- * kind of line the Filter counts. Written after the owner tried it on #376 (docs/08 §8.4.1).
+ * kind of line the Filter counts. Written after the owner tried it on #376 (docs/dev/08 §8.4.1).
  *
  * The pair is made from scratch so nothing the demo family asserts elsewhere in the serial
  * suite shifts.

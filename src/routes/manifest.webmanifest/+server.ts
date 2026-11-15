@@ -3,7 +3,7 @@ import { createTranslator } from '$lib/i18n/translate';
 import { buildManifest } from '$lib/pwa/manifest';
 
 /*
- * The install manifest (docs/02 §2.18). A route rather than a file in `static/` because the
+ * The install manifest (docs/dev/02 §2.18). A route rather than a file in `static/` because the
  * launcher name and description are translated, and `locals.locale` is the only place that
  * knows which language this reader gets.
  *

@@ -2,7 +2,7 @@ import { describe, expect, it } from 'bun:test';
 import { draftWorthUndo, withLogAsked, withMomentAsked } from './story-forms';
 
 /*
- * The Activity card's one inline spot (docs/05 §5.5): the moment composer and the log form
+ * The Activity card's one inline spot (docs/dev/05 §5.5): the moment composer and the log form
  * share it, one at a time.
  */
 

@@ -8,7 +8,7 @@
 	import { useI18n } from '$lib/i18n/context.svelte';
 
 	/*
-	 * The day of a moment, as one pill beside Shared and Photo (docs/02 §2.22.1, docs/05 §5.7).
+	 * The day of a moment, as one pill beside Shared and Photo (docs/dev/02 §2.22.1, docs/dev/05 §5.7).
 	 * Almost every moment is from today, so the pill stays quiet until another day is picked;
 	 * the last week is one tap away, and *Another day…* opens a calendar for any earlier one.
 	 */

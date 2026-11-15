@@ -7,9 +7,9 @@ import { answerOf, formOf, routeEvent, type FakeServices } from '$lib/server/tes
 import { giftActions as actions } from './gifts';
 
 /*
- * Removing a gift from its row (docs/02 §2.21), as the edge answers it. The row's remove is
+ * Removing a gift from its row (docs/dev/02 §2.21), as the edge answers it. The row's remove is
  * held for the undo window and posted later; a 404 tells that post the gift is already gone,
- * which counts as removed (docs/02 §2.23) — any other refusal brings the row back.
+ * which counts as removed (docs/dev/02 §2.23) — any other refusal brings the row back.
  */
 
 const t = createTranslator('en');

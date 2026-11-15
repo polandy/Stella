@@ -1,7 +1,7 @@
 import { dueStanding, type CardTodo } from './todos';
 
 /*
- * The household's to-dos beyond one person (docs/02 §2.26.6): what Home's *To-dos* band holds
+ * The household's to-dos beyond one person (docs/dev/02 §2.26.6): what Home's *To-dos* band holds
  * and how `/todos` groups them. Pure and handed *today*, the household's day; both take the
  * card's rows (`cardTodos`), so a row just ticked stays where it stood while its toast does.
  */
@@ -21,7 +21,7 @@ export interface HouseholdTodoView {
 	createdAt: number;
 }
 
-/** The band stops after three rows, as *Coming up* does (docs/05 §5.5.1). */
+/** The band stops after three rows, as *Coming up* does (docs/dev/05 §5.5.1). */
 const BAND_CAP = 3;
 
 type Dated = { dueOn: string | null };
@@ -55,7 +55,7 @@ export function todoBand<T extends Dated>(
 
 /**
  * Whether a to-do is overdue or due today — then, below `lg`, the rail stands above the stream,
- * as it does for a date within 14 days (docs/05 §5.5.1).
+ * as it does for a date within 14 days (docs/dev/05 §5.5.1).
  */
 export function hasPressingTodo(todos: readonly Dated[], today: string): boolean {
 	return todos.some((todo) => todo.dueOn !== null && todo.dueOn <= today);

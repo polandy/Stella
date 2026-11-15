@@ -16,7 +16,7 @@ import {
 
 const css = await Bun.file(new URL('../../app.css', import.meta.url)).text();
 
-describe('the motion tokens (docs/05 §5.11)', () => {
+describe('the motion tokens (docs/dev/05 §5.11)', () => {
 	it('glides a height in 300 ms and fades in 200 ms, on one easing', () => {
 		expect(MOTION.expandMs).toBe(300);
 		expect(MOTION.fadeMs).toBe(200);

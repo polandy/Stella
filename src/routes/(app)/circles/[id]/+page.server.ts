@@ -33,7 +33,7 @@ import type { Actions, PageServerLoad } from './$types';
 import { say, translator } from '$lib/server/i18n/say';
 
 /*
- * Circle detail (docs/02 §2.4.2): the circle, its visible members grouped by role, and a picker to
+ * Circle detail (docs/dev/02 §2.4.2): the circle, its visible members grouped by role, and a picker to
  * add one or more other visible contacts at once. Both endpoints of a membership must be visible (§3.7).
  */
 export const load: PageServerLoad = async ({ locals, params }) => {
@@ -56,7 +56,7 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 
 	return {
 		circle,
-		// Where the circle sits (docs/02 §2.4.2): the way up, the siblings either side, and its
+		// Where the circle sits (docs/dev/02 §2.4.2): the way up, the siblings either side, and its
 		// direct sub-circles with their own members and what lies further inside each.
 		nesting: {
 			ancestors: tree.ancestors(circle.id),
@@ -78,7 +78,7 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 		),
 		// Where the timeline's today marker stands, on the server's clock.
 		today: todayFor(locals.services.circles.circleDeps.clock),
-		// What the header's edit form offers (docs/02 §2.4.2), as the create form does.
+		// What the header's edit form offers (docs/dev/02 §2.4.2), as the create form does.
 		kinds: CIRCLE_KINDS,
 		colors: CIRCLE_COLORS,
 		// *Delete circle…* is only in the ⋯ menu of whoever may: its creator, an admin on a shared one.
@@ -87,7 +87,7 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 		memberGroups: groupMembersByRole(members),
 		// What this circle already calls its people, offered while adding the next one.
 		roleSuggestions: roles,
-		// The cover, the banner over each role group, and the Photos section (docs/02 §2.4.2).
+		// The cover, the banner over each role group, and the Photos section (docs/dev/02 §2.4.2).
 		photos: circlePhotoView(
 			// Each photo's role picker: the circle's roles, and its own once nobody has it (§4).
 			photos.map((p) => ({
@@ -104,7 +104,7 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 		viewerId: viewer.id,
 		// Who is in already, so the picker offers the rest of the shell's people.
 		memberIds: members.map((m) => m.contactId),
-		// Whom a last name set here is offered on to (docs/02 §2.2.4.5).
+		// Whom a last name set here is offered on to (docs/dev/02 §2.2.4.5).
 		passOn: surnameHelp.passOn
 	};
 };
@@ -129,7 +129,7 @@ export const actions: Actions = {
 		// Every chosen person must be visible to the actor — one that is not fails the whole
 		// pick rather than being dropped silently from it (§3.7). Visible, not browsable: the
 		// picker leaves archived people out, but archiving tidies the lists, it does not hide
-		// (docs/02 §2.2), so someone archived while the pick was made still joins.
+		// (docs/dev/02 §2.2), so someone archived while the pick was made still joins.
 		const chosen = new Set(pick.contactIds);
 		const visible = await listContactNamesAmong(locals.services.people.contactNameDeps, viewer, [
 			...chosen
@@ -148,7 +148,7 @@ export const actions: Actions = {
 		throw redirect(303, `/circles/${params.id}`);
 	},
 
-	// Re-roles several members at once; a blank role takes the role away (docs/02 §2.4.2).
+	// Re-roles several members at once; a blank role takes the role away (docs/dev/02 §2.4.2).
 	setRole: async ({ request, params, locals }) => {
 		const viewer = requireViewer(locals);
 
@@ -168,7 +168,7 @@ export const actions: Actions = {
 		throw redirect(303, `/circles/${params.id}`);
 	},
 
-	// Renames one role for everyone and every photo of this circle that has it (docs/02 §2.4.2).
+	// Renames one role for everyone and every photo of this circle that has it (docs/dev/02 §2.4.2).
 	renameRole: async ({ request, params, locals }) => {
 		const viewer = requireViewer(locals);
 

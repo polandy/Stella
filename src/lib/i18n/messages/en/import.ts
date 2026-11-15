@@ -1,5 +1,5 @@
 /*
- * Bringing another address book in (docs/02 §2.16): the wizard, what the plan leaves out,
+ * Bringing another address book in (docs/dev/02 §2.16): the wizard, what the plan leaves out,
  * and the words the importer writes into the notes it creates.
  *
  * The plan itself stays language-free — it reports codes — so these are read twice: once by
@@ -129,7 +129,7 @@ export const importer = {
 	'import.api.circleCount': (p: { count: number }): string =>
 		p.count === 1 ? '1 circle' : `${p.count} circles`,
 
-	// The matching review of a vCard (docs/02 §2.16): the activity line names where it came from.
+	// The matching review of a vCard (docs/dev/02 §2.16): the activity line names where it came from.
 	'import.review.loggedSummary': (p: { list: string; source: string }) =>
 		`${p.list} from ${p.source}`,
 	'import.review.source.google': 'a Google export',

@@ -3,10 +3,10 @@ import { addPerson, appReady, fillDate, openPerson, signIn } from './app';
 import { DEMO_ADMIN_PASSWORD, DEMO_MEMBER_EMAIL } from '../src/lib/server/db/demo-seed';
 
 /*
- * Tags on moments (docs/02 §2.20.2): written as `#word` with the `#` list, drawn as chips, a
+ * Tags on moments (docs/dev/02 §2.20.2): written as `#word` with the `#` list, drawn as chips, a
  * person's journal and Home's stream filtered by several through the address — a moment must
  * carry them all — a page per tag and the list of all tags, and full search finding the moments
- * carrying one (§2.9). Written after the maintainer tried it in the running app (docs/08 §8.4.1).
+ * carrying one (§2.9). Written after the maintainer tried it in the running app (docs/dev/08 §8.4.1).
  *
  * The suite shares one demo database, so the person and the tags are invented and appear in
  * no seed and no other spec: the counts asserted here are exact. Each moment gets its own day,

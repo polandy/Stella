@@ -2,10 +2,10 @@ import { expect, test, type Page } from '@playwright/test';
 import { addPerson, appReady, signIn } from './app';
 
 /*
- * Empty cards on the person page (docs/05 §5.5.2, *Empty cards*): an empty Photos or Notes is
+ * Empty cards on the person page (docs/dev/05 §5.5.2, *Empty cards*): an empty Photos or Notes is
  * one line — title, one sentence, its actions — that grows into the card when *+ Add* is
  * pressed; an empty Activity keeps one dashed sentence; an empty *Mentioned in* is not on the
- * page. Written after the owner tried it in the app (docs/08 §8.4.1).
+ * page. Written after the owner tried it in the app (docs/dev/08 §8.4.1).
  *
  * The empty cases run on a person this attempt adds under its own letters, so nothing another
  * spec writes can fill a card. The full case reads Noah Brunner, whose seed note and the stories

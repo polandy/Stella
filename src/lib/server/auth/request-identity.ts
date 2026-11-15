@@ -8,8 +8,8 @@ import {
 import { validateSessionToken, type SessionDeps } from './session';
 
 /*
- * Who a request is (docs/04 §4.4). Two credentials, each with its own territory: the session
- * cookie signs in to the app's pages, an API token to `/api/v1/` (docs/02 §2.16.1) — and
+ * Who a request is (docs/dev/04 §4.4). Two credentials, each with its own territory: the session
+ * cookie signs in to the app's pages, an API token to `/api/v1/` (docs/dev/02 §2.16.1) — and
  * neither is read on the other's side. On the API the cookie is ignored, so a signed-in
  * browser cannot be steered into it by another site; on a page a token is ignored, so a token
  * handed to a script opens nothing but the API.

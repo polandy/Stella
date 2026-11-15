@@ -1,5 +1,5 @@
 /*
- * Which of the navigations a layout has seen is the latest (docs/04 §4.9). The layout holds a
+ * Which of the navigations a layout has seen is the latest (docs/dev/04 §4.9). The layout holds a
  * navigation back while it sends the pending removals and issues it again afterwards; by then
  * the reader may have gone somewhere else, and issuing the old one would take them back.
  */

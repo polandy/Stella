@@ -10,7 +10,7 @@ import {
 import { DEFAULT_VIEW_SWITCHES } from './view-switches';
 
 /*
- * How the explorer is looked at (docs/05 §5.8, docs/02 §2.7): the arrangement, the Filter
+ * How the explorer is looked at (docs/dev/05 §5.8, docs/dev/02 §2.7): the arrangement, the Filter
  * menu's kinds, switches, density and saved views, and full screen. Selection and the path are
  * in `explorer-state.test.ts`; both go through `explorerAfter`, as the component does.
  */

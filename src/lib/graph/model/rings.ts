@@ -1,7 +1,7 @@
 import type { GraphModel } from './types';
 
 /*
- * How far each node sits from the centre, counted in hops (docs/02 §2.7).
+ * How far each node sits from the centre, counted in hops (docs/dev/02 §2.7).
  *
  * The map embedded in a person's page is theirs: it shows their people and their people's
  * people, and stops. Without a distance the embedded explorer could be walked hop by hop into
@@ -63,7 +63,7 @@ export function canExpand(
  * Whether expanding `nodeId` would add anything to `shown`: a link of it in `graph` — between
  * two nodes the graph holds, as the in-memory source reads it — that the map does not draw yet.
  * Without this the peek panel offered *Expand* on somebody with no links, and pressing it did
- * nothing (docs/02 §2.7).
+ * nothing (docs/dev/02 §2.7).
  */
 export function hasMoreAround(graph: GraphModel, shown: GraphModel, nodeId: string): boolean {
 	const inGraph = new Set(graph.nodes.map((node) => node.id));

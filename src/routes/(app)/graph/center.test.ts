@@ -2,7 +2,7 @@ import { describe, expect, it } from 'bun:test';
 import { chooseCenter, chosenPathTarget, wayBackTo, type CentrableNode } from './center';
 
 /*
- * Where the explorer opens (docs/02 §2.7, §2.1.3): what was asked for, else me, else anyone.
+ * Where the explorer opens (docs/dev/02 §2.7, §2.1.3): what was asked for, else me, else anyone.
  */
 
 const nodes: CentrableNode[] = [

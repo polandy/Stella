@@ -3,7 +3,7 @@
 	import type { StripView } from '$lib/immich/together';
 
 	/*
-	 * Photos together (docs/02 §2.24.8): which of the person's Immich lists the Immich tab shows —
+	 * Photos together (docs/dev/02 §2.24.8): which of the person's Immich lists the Immich tab shows —
 	 * their own, *You and Julia*, or the pair a relationship row's *Together* asked for. A second
 	 * row under the tabs rather than more tabs: whose photos is a question about Immich alone, and
 	 * five segments do not fit a phone's card.

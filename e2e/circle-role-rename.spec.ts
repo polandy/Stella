@@ -3,8 +3,8 @@ import { appReady, signIn } from './app';
 import { circleIdOf, seedHousehold, type SeedCircle } from './seed';
 
 /*
- * Renaming a circle's role from its heading (docs/02 §2.4.2). Written after the owner tried it
- * in the running app (docs/08 §8.4.1). Each case seeds its own circle and people through the
+ * Renaming a circle's role from its heading (docs/dev/02 §2.4.2). Written after the owner tried it
+ * in the running app (docs/dev/08 §8.4.1). Each case seeds its own circle and people through the
  * archive restore — the setting — and drives the rename itself through the heading.
  */
 

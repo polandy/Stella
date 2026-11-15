@@ -12,11 +12,11 @@ import {
 } from './geometry';
 
 /*
- * The arrangement by circles (docs/02 §2.7, docs/05 §5.8). Pure: positions from the model, no
+ * The arrangement by circles (docs/dev/02 §2.7, docs/dev/05 §5.8). Pure: positions from the model, no
  * renderer. Each circle stands with its members in a ring around it and the groups keep their
  * distance, largest first; whoever is in no circle is shelved beneath. Someone in several
  * circles stands with the biggest one — their other memberships still show as lines. With the
- * circles grouped by role (docs/02 §2.7) a group stands on the ring as one block, its members
+ * circles grouped by role (docs/dev/02 §2.7) a group stands on the ring as one block, its members
  * in rows inside it, in place of each of them standing there alone.
  */
 

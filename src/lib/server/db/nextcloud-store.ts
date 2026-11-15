@@ -17,7 +17,7 @@ import {
 } from './schema';
 
 /*
- * What the Nextcloud sync keeps (docs/02 §2.16.3, docs/03 §3.3): the sync token, the mirror of
+ * What the Nextcloud sync keeps (docs/dev/02 §2.16.3, docs/dev/03 §3.3): the sync token, the mirror of
  * the book, and the waiting conflicts. Whom a link or a conflict may name follows the person,
  * through `contactInBookFor`: a private or archived person is never read for the book.
  */

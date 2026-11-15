@@ -3,7 +3,7 @@ import type { PersonOnCard } from './card-out';
 import type { LinkedPerson } from './store';
 
 /*
- * A linked person both ways a sync needs them (docs/02 §2.16.3): as the person a card is merged
+ * A linked person both ways a sync needs them (docs/dev/02 §2.16.3): as the person a card is merged
  * against, and as what their card holds. Pure.
  */
 

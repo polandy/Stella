@@ -2,7 +2,7 @@ import { describe, expect, it } from 'bun:test';
 import { placeAfter, scrollingAncestor, type Scrollable } from './keep-place';
 
 /*
- * Keeping the reader's place when a row leaves a list (docs/02 §2.4.1, docs/05 §5.4).
+ * Keeping the reader's place when a row leaves a list (docs/dev/02 §2.4.1, docs/dev/05 §5.4).
  *
  * An answered suggestion goes at once. Everything below it would then move up by the height it
  * gave back — 74px, measured — and the next row would land under the finger that was already

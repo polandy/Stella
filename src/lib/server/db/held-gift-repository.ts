@@ -5,7 +5,7 @@ import type * as schema from './schema';
 import { gift, interaction, interactionParticipant, note, user } from './schema';
 
 /*
- * Drizzle adapter for the HeldGiftsPort (docs/02 §2.25.4): the gift notes the Monica import
+ * Drizzle adapter for the HeldGiftsPort (docs/dev/02 §2.25.4): the gift notes the Monica import
  * wrote and the touchpoints of the dropped kind *gift*, across every household — the conversion
  * is the installation's own upkeep, not a member's read, so it is not scoped to a viewer. Each
  * replacement is one transaction: the gifts are in before the original goes, or neither.

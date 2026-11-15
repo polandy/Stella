@@ -4,7 +4,7 @@ import { builtInReplacingImportedType } from './relationship-types';
 
 /*
  * An older Monica import created its own *Cousin of* and *Uncle/aunt of*; Stella has both
- * built in now, so Settings offers to fold each into the built-in (docs/monica-mapping.md).
+ * built in now, so Settings offers to fold each into the built-in (docs/user/monica-mapping.md).
  */
 
 describe('builtInReplacingImportedType', () => {

@@ -11,7 +11,7 @@ import * as schema from './schema';
 import { seedRelationshipTypes } from './seed';
 
 /*
- * Integration spec for homes in the import API (docs/02 §2.16.1): the homes a named person
+ * Integration spec for homes in the import API (docs/dev/02 §2.16.1): the homes a named person
  * lives in are read, and a home made of somebody's address, its residents and the own lines
  * that give way land in the same transaction as the rest — once, however often it is sent.
  */

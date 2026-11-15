@@ -7,7 +7,7 @@ import { TAG_COLORS } from '../design/tag-colors';
 import { nonEmpty, optionalText, requiredText, visibility } from './payload-fields';
 
 /*
- * What the commands about a person themselves carry (docs/04 §4.11.2) — adding them, their
+ * What the commands about a person themselves carry (docs/dev/04 §4.11.2) — adding them, their
  * tags, circles, links, ways to reach them and dates — one Valibot schema each.
  */
 
@@ -25,7 +25,7 @@ export const CircleJoinSchema = v.object({
 	role: optionalText
 });
 
-/** A link between the person whose page it was entered on and someone else (docs/02 §2.4). */
+/** A link between the person whose page it was entered on and someone else (docs/dev/02 §2.4). */
 export const RelationshipAddSchema = v.object({
 	contactId: nonEmpty,
 	targetId: nonEmpty,
@@ -38,7 +38,7 @@ export const RelationshipAddSchema = v.object({
 
 /**
  * One type of link between the person whose page it was entered on and several others at once
- * (docs/02 §2.4, ADR-118). The type, status and description are shared; each pair keeps its
+ * (docs/dev/02 §2.4, ADR-118). The type, status and description are shared; each pair keeps its
  * own since day. Applied all or nothing: one person refused, and none of the links is stored.
  */
 export const RelationshipAddManySchema = v.object({
@@ -59,7 +59,7 @@ export const RelationshipAddManySchema = v.object({
 	links: v.pipe(v.array(v.object({ targetId: nonEmpty, sinceDate: optionalText })), v.minLength(1))
 });
 
-/** A new person, as the *Add person* form hands them over (docs/02 §2.2). */
+/** A new person, as the *Add person* form hands them over (docs/dev/02 §2.2). */
 export const ContactAddSchema = v.pipe(
 	v.object({
 		firstName: optionalText,
@@ -73,15 +73,15 @@ export const ContactAddSchema = v.pipe(
 		// Left out by a build from before the field, which is the same as none chosen.
 		gender: v.optional(v.nullable(v.picklist(GENDERS)), null),
 		visibility,
-		// "This is me" (docs/02 §2.1.3): Stella records this person as who the member is. Absent
+		// "This is me" (docs/dev/02 §2.1.3): Stella records this person as who the member is. Absent
 		// from a build that predates it, which means no.
 		isSelf: v.optional(v.boolean(), false)
 	}),
-	// A person needs something to be called by (docs/02 §2.2).
+	// A person needs something to be called by (docs/dev/02 §2.2).
 	v.check((p) => Boolean(p.firstName || p.lastName || p.nickname))
 );
 
-/** A phone number, address or other way to reach a person (docs/02 §2.3). */
+/** A phone number, address or other way to reach a person (docs/dev/02 §2.3). */
 export const FieldAddSchema = v.object({
 	contactId: nonEmpty,
 	kind: v.picklist(CONTACT_FIELD_KINDS),
@@ -90,7 +90,7 @@ export const FieldAddSchema = v.object({
 });
 
 /**
- * An important date on a person (docs/02 §2.13). The day — ISO `YYYY-MM-DD`, or `--MM-DD`
+ * An important date on a person (docs/dev/02 §2.13). The day — ISO `YYYY-MM-DD`, or `--MM-DD`
  * when the year is not known — is the use-case's to judge, with a reason to show.
  */
 export const DateAddSchema = v.object({

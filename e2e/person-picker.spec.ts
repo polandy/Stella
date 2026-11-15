@@ -2,7 +2,7 @@ import { expect, test } from '@playwright/test';
 import { openPerson, pickPerson, signIn } from './app';
 
 /*
- * What the person picker promises a screen reader (docs/05 §5.7, §5.9).
+ * What the person picker promises a screen reader (docs/dev/05 §5.7, §5.9).
  *
  * A `<label>` names its first labelable descendant, and in multiple mode the first one is a
  * chip's remove button rather than the search input — so the field silently lost its name the

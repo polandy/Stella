@@ -2,8 +2,8 @@ import { expect, test, type Locator, type Page } from '@playwright/test';
 import { appReady, factEditor, recordAction, signIn } from './app';
 
 /*
- * The identity card at the top of a person's page and its ⋯ menu (docs/05 §5.5). Written after
- * the owner tried the redesign in the running app (docs/08 §8.4.1).
+ * The identity card at the top of a person's page and its ⋯ menu (docs/dev/05 §5.5). Written after
+ * the owner tried the redesign in the running app (docs/dev/08 §8.4.1).
  *
  * Read-only against the demo household: the confirm steps are opened and closed, never
  * pressed (archive.spec.ts and delete.spec.ts own that), and the rows are revealed, not

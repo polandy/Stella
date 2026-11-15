@@ -14,7 +14,7 @@
 	type MomentItem = Extract<PageData['stream'][number], { kind: 'moment' }>;
 
 	/*
-	 * A moment in a stream (docs/02 §2.22.2): who wrote it in whose journal, its words and photos,
+	 * A moment in a stream (docs/dev/02 §2.22.2): who wrote it in whose journal, its words and photos,
 	 * a private one veiled (§2.10.1). The row's cells, for Home and a tag's page alike; the page
 	 * draws the row around them.
 	 */
@@ -22,7 +22,7 @@
 		item: MomentItem;
 		members: readonly unknown[];
 		when: StreamTime;
-		/** On a tag's page, the tag the person's journal opens filtered by (docs/02 §2.20.2). */
+		/** On a tag's page, the tag the person's journal opens filtered by (docs/dev/02 §2.20.2). */
 		tag?: string;
 	}
 	let { item, members, when, tag }: Props = $props();
@@ -81,7 +81,7 @@
 	<!-- A full-width stream would run a line past 1000 px; ~72 characters
 	     keep it readable. -->
 	<!-- A private moment's words and photos stay blurred until asked for
-	     (docs/02 §2.10.1); one veil id, so a tap shows both. -->
+	     (docs/dev/02 §2.10.1); one veil id, so a tap shows both. -->
 	<Veil
 		id="journal:{item.id}"
 		isPrivate={item.visibility === 'private'}

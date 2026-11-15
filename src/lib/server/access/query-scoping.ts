@@ -4,7 +4,7 @@ import type { Remover, Viewer } from './visibility';
 
 /*
  * Query-scoping adapter — the SQL expression of the pure rules in `visibility.ts`
- * (docs/03 §3.7, docs/08 §8.3). It produces Drizzle WHERE conditions so list queries
+ * (docs/dev/03 §3.7, docs/dev/08 §8.3). It produces Drizzle WHERE conditions so list queries
  * are filtered in the database instead of loading everything and filtering in memory.
  *
  * These builders are the *adapter*; `visibility.ts` is the domain rule.
@@ -39,7 +39,7 @@ export function contactVisibleTo(viewer: Viewer): SQL {
  * Condition for the surfaces the household *browses*: visible, and not archived. Archiving
  * takes someone out of the directory, the search, the pickers and the Home bands — but not
  * out of the graph or the relatives Stella works out, which keep reading `contactVisibleTo`
- * (docs/04 §4.9). Anything that lists people to choose from or to be reminded of uses this;
+ * (docs/dev/04 §4.9). Anything that lists people to choose from or to be reminded of uses this;
  * anything that reasons about the household's shape does not.
  */
 export function contactBrowsableBy(viewer: Viewer): SQL {
@@ -64,7 +64,7 @@ export function contactMergeableBy(remover: Remover): SQL {
 }
 
 /**
- * Condition for a person the linked address book may hold (docs/02 §2.16.3): one `viewer` may
+ * Condition for a person the linked address book may hold (docs/dev/02 §2.16.3): one `viewer` may
  * browse, and shared — a private person never reaches the book, not even through the member
  * who made them.
  */
@@ -90,7 +90,7 @@ export function childRecordVisibleTo(
 /**
  * Condition for a child record on a surface the household *browses* (the search, a list to act
  * on): visible as `childRecordVisibleTo`, and its person not archived, so a note, moment, gift
- * or to-do cannot bring an archived person back into view (docs/04 §4.9). The query must join
+ * or to-do cannot bring an archived person back into view (docs/dev/04 §4.9). The query must join
  * `contact`.
  */
 export function childRecordBrowsableBy(
@@ -225,7 +225,7 @@ export function activityVisibleTo(viewer: Viewer): SQL {
 
 /**
  * Condition for a `user` row being a member — someone who signs in — and not the system actor
- * the activity log names for the linked address book (docs/02 §2.16.3).
+ * the activity log names for the linked address book (docs/dev/02 §2.16.3).
  */
 export function isMemberAccount(): SQL {
 	return eq(user.kind, 'member');

@@ -23,7 +23,7 @@ import { todayFor } from '$lib/dates/today';
 import { newcomerOf, newcomerToAdd, pairsOf, rowOf } from './immich-form';
 
 /*
- * *Settings → Immich → Find your people* (docs/02 §2.24.7): every
+ * *Settings → Immich → Find your people* (docs/dev/02 §2.24.7): every
  * person the viewer sees, next to the Immich face their name matches. Any member may use it — a
  * link is household data (§2.24.2). Without Immich it does not exist.
  *
@@ -114,7 +114,7 @@ export const actions: Actions = {
 	link: linking,
 	linkAll: linking,
 
-	/* Ignore a row: the contact with every face the row showed (docs/02 §2.24.7). */
+	/* Ignore a row: the contact with every face the row showed (docs/dev/02 §2.24.7). */
 	ignore: async ({ request, locals }) => {
 		const actor = actorOf(locals);
 		const deps = locals.services.immich?.immichIgnoreDeps;
@@ -190,7 +190,7 @@ export const actions: Actions = {
 	/*
 	 * *Add and link*: a new person from the face, shared like anyone added by hand. With *Use the
 	 * face as photo*, the answer carries the face signed for the new person; the browser keeps it
-	 * as their photo through *Use as photo* (docs/02 §2.24.6), re-encoded like any new picture.
+	 * as their photo through *Use as photo* (docs/dev/02 §2.24.6), re-encoded like any new picture.
 	 */
 	addNewcomer: async ({ request, locals }) => {
 		const actor = actorOf(locals);

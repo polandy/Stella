@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 import { appReady } from './app';
 
 /*
- * The person page's Photos card, for the specs that build one of their own (docs/02 §2.14,
+ * The person page's Photos card, for the specs that build one of their own (docs/dev/02 §2.14,
  * §2.24.3): gallery photos uploaded, and a link to the demo Immich face "Luca Widmer" with 210
  * photos. That face is the one no spec keeps linked — the others link a person to it and let go
  * again — so a case here that links it unlinks it afterwards too (`unlinkFace`).

@@ -7,12 +7,12 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
 /*
- * The status column lost its unset state (docs/02 §2.4): every link that is on record holds
+ * The status column lost its unset state (docs/dev/02 §2.4): every link that is on record holds
  * unless it says `former`. The column is now NOT NULL, which makes this the first migration in
  * Stella that rebuilds a table rather than adding to one — the rows are copied into a new table
  * and the old one is dropped. A null left behind, or a copy that the foreign keys refuse, would
  * stop the app from starting against the household's real database, so this is driven rather
- * than trusted (docs/08 §8.4.2).
+ * than trusted (docs/dev/08 §8.4.2).
  *
  * It runs the way `db/index.ts` does: Drizzle's own migrator, foreign keys on, over a database
  * that already holds rows. Applying the statements by hand would prove far less — the pragma

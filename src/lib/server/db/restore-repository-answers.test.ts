@@ -16,7 +16,7 @@ import { seedRelationshipTypes } from './seed';
 import * as schema from './schema';
 
 /*
- * The round trip for what the household has already answered (docs/02 §2.15), against real
+ * The round trip for what the household has already answered (docs/dev/02 §2.15), against real
  * SQLite: one installation exports its declined faces, answered cards, declined suggestions
  * and applied commands; another imports them, and each table holds them again — once, however
  * often the same archive is imported.

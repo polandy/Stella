@@ -8,7 +8,7 @@ import {
 } from './composer-subjects';
 
 /*
- * The people a moment is about, as the composer offers them (docs/02 §2.20.3): the anchor's
+ * The people a moment is about, as the composer offers them (docs/dev/02 §2.20.3): the anchor's
  * homes, offered never preselected; a private person only in a private moment.
  */
 

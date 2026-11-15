@@ -2,11 +2,11 @@ import { expect, test, type Page } from '@playwright/test';
 import { signIn } from './app';
 
 /*
- * A quieter phone Home (docs/05 §5.4, §5.5; docs/02 §2.22.2): *Add person* is a secondary icon
+ * A quieter phone Home (docs/dev/05 §5.4, §5.5; docs/dev/02 §2.22.2): *Add person* is a secondary icon
  * button, the top bar has no search button on Home (the page's own field is the search), and the
  * stream's What/Who chip rows fold into one *Filter* pill opening a sheet. The desktop keeps the
  * rows and the labelled button. Written after the maintainer tried it on the phone (#255,
- * docs/08 §8.4.1). What the pill says is `filter-pill.test.ts`'s; this asks what the screen does.
+ * docs/dev/08 §8.4.1). What the pill says is `filter-pill.test.ts`'s; this asks what the screen does.
  *
  * The demo household has two members: the admin this suite signs in as ("You") and Nina Brunner.
  * Only the URL's filter changes here; nothing is written.

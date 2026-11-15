@@ -1,7 +1,7 @@
 import type * as v from 'valibot';
 
 /*
- * A form's fields as the payload a command schema reads (docs/04 §4.11.2), so a form action
+ * A form's fields as the payload a command schema reads (docs/dev/04 §4.11.2), so a form action
  * parses its command once, with the schema the outbox's commands are parsed with, instead of
  * declaring the same fields again. Not a parse: the result is still untrusted, and the schema
  * judges it. The rules are spelled out in the test beside this file.

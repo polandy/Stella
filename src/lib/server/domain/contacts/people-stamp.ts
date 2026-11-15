@@ -1,7 +1,7 @@
 import type { Viewer } from '../../access/visibility';
 
 /*
- * The stamp of the people the app shell carries (docs/04 §4.9). A page that kept the shell
+ * The stamp of the people the app shell carries (docs/dev/04 §4.9). A page that kept the shell
  * across a navigation asks for it to tell whether its list is still current, so it has to be
  * cheap — far cheaper than reading the list it stands for — and it has to move with every
  * write that would change that list or the namesake context sent with it.

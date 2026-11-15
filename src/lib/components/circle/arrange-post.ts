@@ -3,7 +3,7 @@ import type { ArrangeMode, ArrangePickRef } from '$lib/circles/arrange';
 import { ACTION_HEADER } from '$lib/undo/submit-action';
 
 /*
- * The arrange screen's two posts, without the navigation a form would make (docs/02 §2.4.2,
+ * The arrange screen's two posts, without the navigation a form would make (docs/dev/02 §2.4.2,
  * ADR-127). An adapter: it holds the fetch and reads the answer, nothing to decide. What the
  * server answered is trusted only as far as the shapes below; the server checks every post again.
  */

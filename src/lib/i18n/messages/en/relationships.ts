@@ -1,6 +1,6 @@
 /*
  * Relationships: the categories, the built-in vocabulary and whether a tie still holds
- * (docs/02 §2.4). A household's own types are stored text and read as they were typed; the
+ * (docs/dev/02 §2.4). A household's own types are stored text and read as they were typed; the
  * built-in ones have stable keys, so they are translated here and shown in the viewer's
  * language wherever they appear.
  */
@@ -41,7 +41,7 @@ export const relationships = {
 	'relationships.category.other': 'Other',
 
 	/*
-	 * Why an entry of the picker is greyed out (docs/02 §2.4) — a few words beside the label,
+	 * Why an entry of the picker is greyed out (docs/dev/02 §2.4) — a few words beside the label,
 	 * where the refusal at the write is a whole sentence saying what to do about it
 	 * (`errors.relationship.*`).
 	 */
@@ -60,7 +60,7 @@ export const relationships = {
 	'relationships.status.former': 'former',
 
 	/*
-	 * Who somebody is to the person whose page lists them (docs/05 §5.5): the far end of a tie as
+	 * Who somebody is to the person whose page lists them (docs/dev/05 §5.5): the far end of a tie as
 	 * a noun, gendered where their gender is on record. Family terms the kinship engine also
 	 * uses are said in its words (`kinship.term.*`); these are the rest.
 	 */
@@ -138,7 +138,7 @@ export const relationships = {
 	'relationships.type.knows.reverse': 'Knows',
 	'relationships.type.other.forward': 'Connected to',
 	'relationships.type.other.reverse': 'Connected to',
-	// The same link when its other end is the viewer's own person (docs/02 §2.2.3).
+	// The same link when its other end is the viewer's own person (docs/dev/02 §2.2.3).
 	'relationships.towardsYou.parent_child.forward': 'Your parent',
 	'relationships.towardsYou.parent_child.reverse': 'Your child',
 	'relationships.towardsYou.grandparent_grandchild.forward': 'Your grandparent',

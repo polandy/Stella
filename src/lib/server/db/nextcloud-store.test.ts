@@ -10,7 +10,7 @@ import { createDrizzleNextcloudStore } from './nextcloud-store';
 import * as schema from './schema';
 
 /*
- * Integration spec for what the Nextcloud sync keeps (docs/02 §2.16.3): the token, the mirror,
+ * Integration spec for what the Nextcloud sync keeps (docs/dev/02 §2.16.3): the token, the mirror,
  * the links it reads people through and the conflicts — never about a private or archived
  * person, and never across households.
  */

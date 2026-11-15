@@ -2,8 +2,8 @@ import { cubicOut } from 'svelte/easing';
 import { placeAfter, scrollingAncestor } from './keep-place';
 
 /*
- * How an answered row leaves a list (docs/02 §2.4.1, docs/05 §5.4,
- * docs/04 ADR-012).
+ * How an answered row leaves a list (docs/dev/02 §2.4.1, docs/dev/05 §5.4,
+ * docs/dev/04 ADR-012).
  *
  * It goes at once rather than standing there answered: fading as it closes, over a fifth of a
  * second. Frame by frame, the list gives back to its own scroll offset exactly the height it

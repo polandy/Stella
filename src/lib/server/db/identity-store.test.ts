@@ -7,7 +7,7 @@ import { createDrizzleIdentityStore } from './identity-store';
 import * as schema from './schema';
 
 /*
- * The lookups an SSO sign-in starts from (docs/02 §2.1.2): the user behind an identity, or
+ * The lookups an SSO sign-in starts from (docs/dev/02 §2.1.2): the user behind an identity, or
  * behind an email — each saying whether an admin removed them, so the planner can turn the
  * member away instead of provisioning a fresh account (§2.1).
  */

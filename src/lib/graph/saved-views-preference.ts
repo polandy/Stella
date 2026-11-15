@@ -2,7 +2,7 @@ import type { PreferenceStorage } from './density-preference';
 import { parseSavedViews, serializeSavedViews, type SavedView } from './model/saved-views';
 
 /*
- * The adapter that keeps the explorer's saved views per device (docs/02 §2.7). What a stored
+ * The adapter that keeps the explorer's saved views per device (docs/dev/02 §2.7). What a stored
  * list means — and which entries are too old to honour — is decided in `model/saved-views.ts`;
  * this only reads and writes it, through the slice of `Storage` it is handed.
  */

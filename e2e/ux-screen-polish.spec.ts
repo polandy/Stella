@@ -5,7 +5,7 @@ import { addPerson, appReady, signIn } from './app';
  * The second half of review 2026-11's UX polish (UX-16, UX-19, UX-22, UX-25): the Tags page's
  * way to a first tag, an empty Share page, *Add person* off its own page, People's quiet dates
  * and a last name found while its Undo is still open. Written after the owner's hand test
- * (docs/08 §8.4.1).
+ * (docs/dev/08 §8.4.1).
  *
  * The suite runs on the demo household, which has tags, so the empty Tags page itself is not
  * reachable here; what its button opens is. Every name carries this attempt's letters, so a
@@ -25,7 +25,7 @@ const named = (stem: string) => `${stem}${runLetters()}`;
 async function addFirstNameOnly(page: Page, first: string): Promise<void> {
 	await page.goto('/contacts/new');
 	await page.getByLabel('First name').fill(first);
-	// A first name alone needs a word on who they are (docs/02 §2.2.1).
+	// A first name alone needs a word on who they are (docs/dev/02 §2.2.1).
 	await page.getByLabel('Description').fill('Met at the Klausen pass');
 	await page.getByRole('button', { name: 'Add person' }).click();
 	await expect(page.getByRole('heading', { name: first })).toBeVisible();

@@ -2,8 +2,8 @@ import { expect, test } from '@playwright/test';
 import { openPerson, signIn } from './app';
 
 /*
- * Editing the name and description where they are read (docs/02 §2.2, docs/05 §5.7). Written
- * after the screen was seen in the running app (docs/08 §8.4.1).
+ * Editing the name and description where they are read (docs/dev/02 §2.2, docs/dev/05 §5.7). Written
+ * after the screen was seen in the running app (docs/dev/08 §8.4.1).
  *
  * Runs on Reto Hofer, whom no other case names, and puts his name back before it finishes —
  * the suite shares one database and later files look people up by name.

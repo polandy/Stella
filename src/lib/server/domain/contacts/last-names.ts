@@ -22,7 +22,7 @@ import { withNameParts, type StoredName } from '../../../people/display-name';
 import { noLastNameAfter, type NameDeps, type NameWrite } from './name-parts';
 
 /*
- * Last names for several people at once (docs/02 §2.2.4.4). One write
+ * Last names for several people at once (docs/dev/02 §2.2.4.4). One write
  * behind every bulk path — the *Last names* list, *Select* on People and on a circle, passing a
  * name on — and the household's *not this name*. Nothing is written without a tap, and nothing
  * already there is overwritten unless that person was ticked by hand.
@@ -34,7 +34,7 @@ export interface SurnameListPerson extends ReviewPerson {
 	isDeceased: boolean;
 }
 
-/** What the rules read beyond the kinship graph, scoped to one viewer (docs/03 §3.7). */
+/** What the rules read beyond the kinship graph, scoped to one viewer (docs/dev/03 §3.7). */
 export interface SurnameFactsSource {
 	loadSurnameFactsVisibleTo(viewer: Viewer): Promise<{
 		people: SurnameListPerson[];
@@ -43,7 +43,7 @@ export interface SurnameFactsSource {
 }
 
 /**
- * The kinship graph the rules read a name along, as this viewer may see it (docs/03 §3.7).
+ * The kinship graph the rules read a name along, as this viewer may see it (docs/dev/03 §3.7).
  * Declared here rather than borrowed from `relationships`, so the two contexts do not import
  * each other: the relationships context's `KinshipGraphReads` adapter fulfils it as it is.
  */
@@ -59,7 +59,7 @@ export interface NewSurnameDismissal extends SurnameDismissal {
 	dismissedAt: number;
 }
 
-/** The household's *not this name* answers (docs/03 §3.9). */
+/** The household's *not this name* answers (docs/dev/03 §3.9). */
 export interface SurnameDismissalRepository {
 	listForHousehold(viewer: Viewer): Promise<SurnameDismissal[]>;
 	/** A second *no* is the same *no*: one answer, one row. */

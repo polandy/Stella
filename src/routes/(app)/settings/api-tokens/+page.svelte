@@ -10,7 +10,7 @@
 	import type { ActionData, PageData } from './$types';
 
 	/*
-	 * A member's API tokens (docs/02 §2.16.1). A new token is shown once, on the answer to the
+	 * A member's API tokens (docs/dev/02 §2.16.1). A new token is shown once, on the answer to the
 	 * form that made it, and never again: the server keeps only its hash.
 	 */
 	let { data, form }: { data: PageData; form: ActionData } = $props();

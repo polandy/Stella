@@ -1,5 +1,5 @@
 /*
- * A page of a linked person's latest photos from Immich (docs/02 §2.24.3), as the
+ * A page of a linked person's latest photos from Immich (docs/dev/02 §2.24.3), as the
  * browser receives it from `/contacts/{id}/immich/photos`. Shared by the server, which builds it,
  * and the Photos card, which shows it; pure, so the one decision in it is tested without either.
  */
@@ -14,13 +14,13 @@ export interface GlimpsePhoto {
 	thumbnailUrl: string;
 	/** Signed, at Immich's `preview` size: the viewer's picture. */
 	previewUrl: string;
-	/** The photo in Immich's web app, for every member who sees the person (docs/04 ADR-102). */
+	/** The photo in Immich's web app, for every member who sees the person (docs/dev/04 ADR-102). */
 	openUrl: string;
 }
 
 /**
  * Whose photos a page of the strip lists, besides the person's own: those they are in together
- * with someone else (`with`, docs/02 §2.24.8), or someone else's own, browsed from a face that
+ * with someone else (`with`, docs/dev/02 §2.24.8), or someone else's own, browsed from a face that
  * person holds in *Find in Immich* (`of`, §2.24.2). Null for the person's own photos.
  */
 export type GlimpseScope = { with: string } | { of: string } | null;

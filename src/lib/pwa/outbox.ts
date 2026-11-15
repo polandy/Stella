@@ -1,7 +1,7 @@
 import type { CommandAnswer, CommandPayloads, JsonCommand } from '../commands/commands';
 
 /*
- * The outbox (docs/02 §2.18.1): what a phone holds back while Stella is
+ * The outbox (docs/dev/02 §2.18.1): what a phone holds back while Stella is
  * out of reach, and what becomes of it. Pure; `outbox-store.ts` keeps it on the device,
  * `outbox.svelte.ts` sends it, and `outbox-photos.ts` sends the photos that follow an item. Every function returns a new list and leaves its input alone.
  *
@@ -31,17 +31,17 @@ export interface KeptPhoto {
 	id: string;
 	image: Blob;
 	thumb: Blob;
-	/** A large group photo's 1600 px view, sent beside its full picture (docs/02 §2.4.2). */
+	/** A large group photo's 1600 px view, sent beside its full picture (docs/dev/02 §2.4.2). */
 	view?: Blob;
 	width: number;
 	height: number;
 	/**
-	 * When it was taken, read from its EXIF before the re-encode dropped it (docs/02 §2.14), so a
+	 * When it was taken, read from its EXIF before the re-encode dropped it (docs/dev/02 §2.14), so a
 	 * photo kept for later still sorts where it belongs. Absent on photos kept by an older build.
 	 */
 	takenAt?: string | null;
 	/**
-	 * For a copy of a photo from Immich (docs/02 §2.24.9): the signed token of the preview it was
+	 * For a copy of a photo from Immich (docs/dev/02 §2.24.9): the signed token of the preview it was
 	 * made from, by which the server dates it as Immich did — `takenAt` is then not read.
 	 */
 	immichToken?: string;

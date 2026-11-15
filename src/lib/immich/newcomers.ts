@@ -2,13 +2,13 @@ import { splitTypedName } from '../people/new-person';
 import { foldName, type MatchableImmichPerson } from './match';
 
 /*
- * *New from Immich* — the other way round from *Find your people* (docs/02 §2.24.7): the
+ * *New from Immich* — the other way round from *Find your people* (docs/dev/02 §2.24.7): the
  * people Immich knows by name who have no Stella person yet,
  * so a member can add them. Pure: the use-case reads Immich, the links and the ignores, and this
  * decides who is new, in which order, and what name a new person starts with.
  *
  * "No Stella person yet" means nobody holds the face — not even someone the member cannot see,
- * whose link takes the face all the same (docs/04 ADR-096) — and *Find your people* proposes it for
+ * whose link takes the face all the same (docs/dev/04 ADR-096) — and *Find your people* proposes it for
  * nobody: a face whose name agrees with somebody's is theirs to confirm there, and offering it
  * here as well would put one person in both tabs.
  */
@@ -69,7 +69,7 @@ export function mostPhotosFirst<
 /**
  * Words for a relative that people put in front of a name when they name a face — *Opa
  * Manfred*, *Aunt Rose*. They say who the person is to the family, which is what a nickname is
- * for in Stella (docs/02 §2.2), not part of their name. Compared folded, so case and accents do
+ * for in Stella (docs/dev/02 §2.2), not part of their name. Compared folded, so case and accents do
  * not matter.
  */
 const KIN_WORDS = new Set(
@@ -138,7 +138,7 @@ export interface NameFromImmich {
 
 /**
  * The name a person added from Immich starts with. The first word is the first name and the rest
- * the last name, as when a name is typed into a picker (docs/02 §2.2.2) — `van der Berg` stays one
+ * the last name, as when a name is typed into a picker (docs/dev/02 §2.2.2) — `van der Berg` stays one
  * last name. A leading kin word becomes the nickname (*Opa Manfred*: Manfred, called Opa), unless
  * it is all there is; a trailing initial is dropped, since *B.* is not anybody's last name.
  */

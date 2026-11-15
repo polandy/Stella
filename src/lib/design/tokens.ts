@@ -1,5 +1,5 @@
 /*
- * The design-token table (docs/05 §5.2.2), in TypeScript.
+ * The design-token table (docs/dev/05 §5.2.2), in TypeScript.
  *
  * Components colour themselves through these helpers only. The raw Catppuccin flavour
  * variables (`--ctp-*`) never leave `app.css`: every accent a component can reach is
@@ -40,7 +40,7 @@ export type Accent = (typeof ACCENTS)[number];
 export const AVATAR_ACCENTS = ACCENTS.filter((accent) => accent !== 'red');
 
 /**
- * How strongly a tinted surface mixes its accent in, per flavour (docs/05 §5.2.2) — one number
+ * How strongly a tinted surface mixes its accent in, per flavour (docs/dev/05 §5.2.2) — one number
  * per theme, never per component. `app.css` publishes them as `--tint-avatar`, `--tint-chip`
  * and `--tint-chip-active` in each theme block, so the inline styles below stay theme-blind;
  * `color.test.ts` holds the two halves together and every accent to AA at these strengths.
@@ -74,7 +74,7 @@ export function categoryVar(category: RelationshipCategory): string {
  * The label deliberately does *not* take the accent. Catppuccin's accents are picked to sing
  * against the page, and in Latte most of them land between 2.6:1 and 3.7:1 against a tint of
  * themselves — below AA at any size. So the accent identifies the chip and the foreground
- * reads it (docs/05 §5.6); `contrast.test.ts` holds that pairing to 4.5:1 in both themes.
+ * reads it (docs/dev/05 §5.6); `contrast.test.ts` holds that pairing to 4.5:1 in both themes.
  */
 export function accentChipStyle(accent: Accent, options?: { active?: boolean }): string {
 	// The active chip is laid over --card rather than see-through: Latte's red at the active
@@ -101,7 +101,7 @@ export function accentAvatarStyle(accent: Accent): string {
 /**
  * The fill of an SVG initials disc in a person's accent: the avatar's tint, so a face keeps its
  * colour between the list, the map preview and the map, and the initials on it are written in
- * `--fg` — white on the flat accent fell to 1.5:1 in Mocha (docs/05 §5.9).
+ * `--fg` — white on the flat accent fell to 1.5:1 in Mocha (docs/dev/05 §5.9).
  */
 export function accentDiscFill(accent: Accent): string {
 	return `color-mix(in srgb, ${accentVar(accent)} var(--tint-avatar), var(--card))`;
@@ -113,7 +113,7 @@ export function accentDotStyle(accent: Accent): string {
 }
 
 /**
- * The one motion everything that opens or closes in place moves with (docs/05 §5.11): a height
+ * The one motion everything that opens or closes in place moves with (docs/dev/05 §5.11): a height
  * glides in `expandMs`, content fades in `fadeMs`, both on `easing` — quick to start, gentle to
  * land. `app.css` publishes the same three values as `--motion-expand`, `--motion-fade` and
  * `--ease-standard`; `src/lib/motion/motion.test.ts` holds the two halves together.

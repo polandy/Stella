@@ -3,10 +3,10 @@ import { addPerson, appReady, showPrivate, signIn } from './app';
 import { DEMO_ADMIN_PASSWORD, DEMO_MEMBER_EMAIL } from '../src/lib/server/db/demo-seed';
 
 /*
- * Removing a note (docs/02 §2.5, §2.11, §2.23, docs/03 §3.7): its author always, an admin on a
+ * Removing a note (docs/dev/02 §2.5, §2.11, §2.23, docs/dev/03 §3.7): its author always, an admin on a
  * shared one, never on a private one; held for the undo window; an admin's removal of someone
  * else's note is told in What's new, an author's own is not. Written after the flow was
- * verified in the running app (docs/08 §8.4.1). The person is the spec's own, so no other
+ * verified in the running app (docs/dev/08 §8.4.1). The person is the spec's own, so no other
  * case's notes or notices move.
  */
 
@@ -41,7 +41,7 @@ async function writeNote(page: Page, body: string, visibility: 'Shared' | 'Priva
 	await page.getByRole('textbox', { name: 'Note' }).fill(body);
 	await notesCard(page).getByText(visibility, { exact: true }).click();
 	await notesCard(page).getByRole('button', { name: 'Add note' }).click();
-	// Blurred on its author's screen until asked for (docs/02 §2.10.1).
+	// Blurred on its author's screen until asked for (docs/dev/02 §2.10.1).
 	if (visibility === 'Private') await showPrivate(page);
 	await expect(note(page, body)).toHaveCount(1);
 }

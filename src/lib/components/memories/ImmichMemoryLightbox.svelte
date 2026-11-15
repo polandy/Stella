@@ -8,7 +8,7 @@
 	import { photoAfterKey } from '$lib/media/photo-walk';
 
 	/*
-	 * An Immich photo of *On this day* (docs/02 §2.12.1), opened from the band or a year card: when
+	 * An Immich photo of *On this day* (docs/dev/02 §2.12.1), opened from the band or a year card: when
 	 * it was taken, where it is in its row, and *Open in Immich*. It walks the Immich photos of the
 	 * row it was opened from, wrapping at either end. Any photo of the day counts, so there is no
 	 * person it belongs to — nor a *Use as photo*.

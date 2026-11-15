@@ -1,5 +1,5 @@
 /*
- * The pointer Home gives a moment just saved from its composer (docs/02 §2.22.1): the sheet
+ * The pointer Home gives a moment just saved from its composer (docs/dev/02 §2.22.1): the sheet
  * closes over a stream the moment may have landed anywhere in, so a short toast says it was
  * saved and *Show* jumps to it — a plain `#` link, its row flashing once as the target.
  */

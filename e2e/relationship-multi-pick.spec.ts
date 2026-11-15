@@ -3,8 +3,8 @@ import { addPerson, appReady, pickPerson, signIn } from './app';
 import { LINK, personIdOf, seedHousehold } from './seed';
 
 /*
- * The relationship form with several people picked (docs/02 §2.4). Written after the flow was
- * verified in the running app (docs/08 §8.4.1).
+ * The relationship form with several people picked (docs/dev/02 §2.4). Written after the flow was
+ * verified in the running app (docs/dev/08 §8.4.1).
  *
  * The suite shares one demo database, so every case seeds the family it works on, under names
  * no other spec uses; the demo people are left as they are.

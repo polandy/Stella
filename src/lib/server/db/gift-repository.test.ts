@@ -8,10 +8,10 @@ import { createDrizzleGiftRepository } from './gift-repository';
 import * as schema from './schema';
 
 /*
- * Integration spec for the Drizzle GiftRepository (docs/02 §2.25): child-record visibility
+ * Integration spec for the Drizzle GiftRepository (docs/dev/02 §2.25): child-record visibility
  * (a private gift reaches only its author, a gift on a private person only that person's
- * creator — docs/03 §3.7), the card's order, and the story's keyset page of given and received
- * gifts (docs/02 §2.23).
+ * creator — docs/dev/03 §3.7), the card's order, and the story's keyset page of given and received
+ * gifts (docs/dev/02 §2.23).
  */
 
 const H = 'household-1';

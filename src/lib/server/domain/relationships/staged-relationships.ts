@@ -11,7 +11,7 @@ import {
 } from './relationships';
 
 /*
- * Links held back while a batch is checked (docs/02 §2.4, ADR-118). It stands in front of the
+ * Links held back while a batch is checked (docs/dev/02 §2.4, ADR-118). It stands in front of the
  * store and reads as though the
  * links staged so far were already on record, so `createRelationship` judges each new link
  * against the household *and* the earlier links of the same batch — a third parent, a second

@@ -2,7 +2,7 @@ import { deserialize } from '$app/forms';
 import { ACTION_HEADER } from '$lib/undo/submit-action';
 
 /*
- * Moving the people just created into the address the relationship form offered them (docs/02
+ * Moving the people just created into the address the relationship form offered them (docs/dev/02
  * §2.4, *Lives at …*). An adapter: it posts what *Also lives here …* posts, to the same action,
  * and only says whether it went through. Already decided — someone just created has no address
  * of their own to ask about.

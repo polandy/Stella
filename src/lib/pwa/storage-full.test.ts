@@ -2,7 +2,7 @@ import { describe, expect, it } from 'bun:test';
 import { isStorageFull, mediaToEvict } from './storage-full';
 
 /*
- * The device's storage running out under the kept pages (docs/02 §2.18): which failure that
+ * The device's storage running out under the kept pages (docs/dev/02 §2.18): which failure that
  * is, and which kept photos make room first.
  */
 

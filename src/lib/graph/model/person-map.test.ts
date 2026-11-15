@@ -5,7 +5,7 @@ import { ringsFrom } from './rings';
 import type { GraphModel } from './types';
 
 /*
- * What a person's page is handed (docs/05 §5.5). The point of the slice is what it leaves
+ * What a person's page is handed (docs/dev/05 §5.5). The point of the slice is what it leaves
  * behind: the whole household travels to the explorer route, never to a profile.
  */
 

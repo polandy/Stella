@@ -2,9 +2,9 @@ import { expect, test, type Page } from '@playwright/test';
 import { appReady, signIn, unfoldPeople } from './app';
 
 /*
- * The People card's map on a phone (docs/05 §5.5): a small preview with two ways in, the map
+ * The People card's map on a phone (docs/dev/05 §5.5): a small preview with two ways in, the map
  * enlarged inside the card, and back. Written after the owner tried it on the phone itself
- * (docs/08 §8.4.1).
+ * (docs/dev/08 §8.4.1).
  *
  * Read-only against the demo household (Markus Brunner, whom no other spec writes a link onto).
  * Every wait is on an end state — the live map there or gone, the cursor where it goes — never

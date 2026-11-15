@@ -5,7 +5,7 @@ import { groupByRole } from '../model/role-groups';
 import type { GraphEdge, GraphModel, GraphNode } from '../model/types';
 
 /*
- * The arrangement by circles (docs/02 §2.7, docs/05 §5.8): each circle with its members
+ * The arrangement by circles (docs/dev/02 §2.7, docs/dev/05 §5.8): each circle with its members
  * around it, the circles apart from each other, and everyone in no circle set to one side.
  */
 

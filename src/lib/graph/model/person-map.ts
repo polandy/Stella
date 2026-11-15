@@ -3,7 +3,7 @@ import { inMemoryGraphSource } from './in-memory-source';
 import type { GraphModel } from './types';
 
 /*
- * The slice of the household's graph that a person's page carries (docs/05 §5.5, docs/02 §2.7).
+ * The slice of the household's graph that a person's page carries (docs/dev/05 §5.5, docs/dev/02 §2.7).
  *
  * The full explorer route ships the whole visible graph, because wandering is what it is for.
  * A profile is about one person, so it ships their neighbourhood and their neighbours'
@@ -28,7 +28,7 @@ export function personMap(graph: GraphModel, centerId: string): Promise<GraphMod
 /**
  * The people `centerId` is joined to by former links alone — an ex-partner with no tie left
  * that is current. The People card's preview draws their line dashed, as the map does
- * (docs/05 §5.8); a person with a current link beside a former one keeps a solid line.
+ * (docs/dev/05 §5.8); a person with a current link beside a former one keeps a solid line.
  */
 export function formerOnlyNeighbours(graph: GraphModel, centerId: string): Set<string> {
 	const former = new Set<string>();

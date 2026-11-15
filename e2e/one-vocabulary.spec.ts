@@ -2,10 +2,10 @@ import { expect, test, type Page } from '@playwright/test';
 import { addPerson, appReady, signIn } from './app';
 
 /*
- * One vocabulary for what the household writes down (UX review A3, docs/02 §2.20, §2.23): a
+ * One vocabulary for what the household writes down (UX review A3, docs/dev/02 §2.20, §2.23): a
  * single thing is a *moment*, the person page's running record is *Activity*, and the *Journal*
  * is the place the moments are kept. Written after the owner tried the renamed screens in the
- * preview (docs/08 §8.4.1).
+ * preview (docs/dev/08 §8.4.1).
  *
  * Each case adds its own person, so the moment it writes lands on nobody another spec reads.
  * The German case changes the profile's language, which every spec shares, so it hands the
@@ -46,7 +46,7 @@ test('the person page writes a moment, and the journal keeps it as one', async (
 	).toBeVisible();
 
 	// The card's *Open journal* leads to the journal, where an empty one invites the first
-	// moment (the primary opens the composer in place, docs/05 §5.5).
+	// moment (the primary opens the composer in place, docs/dev/05 §5.5).
 	await page.getByRole('link', { name: 'Open journal' }).click();
 	await expect(page.getByRole('heading', { name: 'Journal' })).toBeVisible();
 	await appReady(page);

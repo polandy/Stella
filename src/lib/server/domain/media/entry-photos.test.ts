@@ -9,7 +9,7 @@ import {
 import { InvalidImageError, type ImageUpload } from './journal-photos';
 
 /*
- * Adding and removing photos while editing a journal entry (docs/02 §2.20): only the entry's
+ * Adding and removing photos while editing a journal entry (docs/dev/02 §2.20): only the entry's
  * author may, a new photo inherits the entry's anchor and audience, and removing deletes the row
  * before the bytes. Tested over fake ports.
  */

@@ -13,7 +13,7 @@
 	import { nextMenuIndex } from '$lib/ui/menu';
 
 	/*
-	 * The home screen's search field (docs/02 §2.22.1, docs/05 §5.4): people matching the
+	 * The home screen's search field (docs/dev/02 §2.22.1, docs/dev/05 §5.4): people matching the
 	 * typed name, straight under the field, then a way into full search. It matches against the
 	 * people the shell already carries, so it answers as you type and keeps working while
 	 * Stella is out of reach. The rows come from the pure `personSearchRows`; this only draws

@@ -2,7 +2,7 @@ import { describe, expect, it } from 'bun:test';
 import { readVCard, VCardError } from './vcard';
 
 /*
- * Reading a vCard into the importer's typed view (docs/02 §2.16). A vCard is contacts only,
+ * Reading a vCard into the importer's typed view (docs/dev/02 §2.16). A vCard is contacts only,
  * and it is the one accepted format Monica did not write — so the tests here are about the
  * format's own quirks: folded lines, escaped text, structured values and inline pictures.
  */

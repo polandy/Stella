@@ -14,7 +14,7 @@ import {
 import type { RelationshipType } from './relationships';
 
 /*
- * Custom relationship types (docs/02 §2.4): a household names a kind of link the built-in
+ * Custom relationship types (docs/dev/02 §2.4): a household names a kind of link the built-in
  * set does not cover — godparent, choir mate, landlord. The built-in types stay read-only
  * for everyone, so a deployment's vocabulary can grow without anyone being able to redefine
  * what "Parent of" means.
@@ -156,11 +156,11 @@ export interface NewRelationshipType extends RelationshipTypeFields {
 	sortOrder: number;
 }
 
-/** Reading and writing the relationship vocabulary (docs/08 §8.3). */
+/** Reading and writing the relationship vocabulary (docs/dev/08 §8.3). */
 export interface RelationshipTypeRepository {
 	/** The built-in types plus the viewer's own household's; never another household's. */
 	listTypes(viewer: Viewer): Promise<RelationshipType[]>;
-	/** Resolves a type the viewer's household may use, else null (docs/03 §3.6). */
+	/** Resolves a type the viewer's household may use, else null (docs/dev/03 §3.6). */
 	getType(viewer: Viewer, typeId: string): Promise<RelationshipType | null>;
 	insertType(type: NewRelationshipType): Promise<void>;
 	/** Rewrites a custom type of the viewer's household; false when there is none to rewrite. */

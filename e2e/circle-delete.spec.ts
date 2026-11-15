@@ -4,11 +4,11 @@ import { circleIdOf, seedHousehold } from './seed';
 import { DEMO_ADMIN_PASSWORD, DEMO_MEMBER_EMAIL } from '../src/lib/server/db/demo-seed';
 
 /*
- * Deleting a circle (docs/02 §2.4.2): its creator always, an admin when it is shared. The confirm
+ * Deleting a circle (docs/dev/02 §2.4.2): its creator always, an admin when it is shared. The confirm
  * step says what goes and what stays and starts on *Keep it*; afterwards the reader is on the
  * Circles page with a toast, a profile picture cut from the circle's photo is its wearer's own,
  * a nested circle stays without a parent, and Home tells the household. Written after the owner
- * tried it in the running app (docs/08 §8.4.1).
+ * tried it in the running app (docs/dev/08 §8.4.1).
  *
  * The suite shares one database and runs serially, so the case brings in a circle of its own,
  * with a child, out of people it invents. Nesting has no form (it is import-only), so they come

@@ -1,7 +1,7 @@
 import type { ImmichAsset, ImmichTakenWindow } from './gateway';
 
 /*
- * Days on the camera's clock (docs/02 §2.24.9). Immich filters on the instant a photo was taken,
+ * Days on the camera's clock (docs/dev/02 §2.24.9). Immich filters on the instant a photo was taken,
  * not on the clock it was taken by, so a day on that clock is asked for wider and each photo's
  * `takenAt` read back.
  */

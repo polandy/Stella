@@ -17,7 +17,7 @@ import {
 import { removeCirclePhoto } from './circle-photos';
 
 /*
- * Removing a circle's photo (docs/02 §2.4.2, docs/03 §3.7): whoever added it always, an admin
+ * Removing a circle's photo (docs/dev/02 §2.4.2, docs/dev/03 §3.7): whoever added it always, an admin
  * on a shared one in a circle they may see. Wired to the real adapter, where the activity entry
  * shares the delete's transaction.
  */

@@ -3,7 +3,7 @@ import cytoscape, { type Core } from 'cytoscape';
 import { controller } from './explorer-fixtures';
 
 /*
- * Entering or leaving full screen frames the map afresh for its new room (docs/05 §5.8) — once
+ * Entering or leaving full screen frames the map afresh for its new room (docs/dev/05 §5.8) — once
  * the canvas has actually resized, and only while the view is still the one the map framed
  * itself. Exercised against a headless core whose size the test sets, standing in for the
  * container growing to fill the screen.

@@ -5,7 +5,7 @@
 	import type { ReviewCandidate } from '$lib/import-match/review';
 
 	/*
-	 * *Pick someone else* on a review card (docs/02 §2.16): a name search among the people the
+	 * *Pick someone else* on a review card (docs/dev/02 §2.16): a name search among the people the
 	 * member may browse. The server answers with what *Same person* would do to each.
 	 */
 	interface Props {

@@ -3,7 +3,7 @@ import type { PersonContext } from './context';
 
 /*
  * The app shell loads, once per navigation, what the viewer may see of the relationships and
- * circles of people with nothing typed to tell them apart (docs/02 §2.2.3), and hands it down
+ * circles of people with nothing typed to tell them apart (docs/dev/02 §2.2.3), and hands it down
  * through context: every picker that tells namesakes apart reads the same map, whichever page's
  * list of people it was given.
  */

@@ -20,7 +20,7 @@ import { addToJournalDay, type JournalAuthor, type JournalRepository } from '../
 import { subjectsForAudience } from '../journal/subjects';
 
 /*
- * Moments (docs/02 §2.22.1): the one-sentence capture. A moment *is* a journal entry — the
+ * Moments (docs/dev/02 §2.22.1): the one-sentence capture. A moment *is* a journal entry — the
  * first person mentioned is the entry's contact (the anchor whose journal it lands in), every
  * other mention is stored as a journal_mention. People the composer queued for inline creation
  * are created first, so their handle resolves like anyone else's. Pure orchestration over the
@@ -119,7 +119,7 @@ export async function captureMoment(
 	const contactDeps = { contacts: deps.contacts, ids: deps.ids, clock: deps.clock };
 
 	// A person named with what tells them apart is created by their placeholder, never by name:
-	// a second Thomas is as welcome as the first (docs/02 §2.2.3).
+	// a second Thomas is as welcome as the first (docs/dev/02 §2.2.3).
 	let written = body;
 	for (const person of input.newPeople) {
 		if (typeof person === 'string') continue;

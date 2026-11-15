@@ -13,7 +13,7 @@
 	import type { ActionData, PageData } from './$types';
 
 	/*
-	 * Every open gift idea of the household (docs/02 §2.25.6), one card per person, whoever's
+	 * Every open gift idea of the household (docs/dev/02 §2.25.6), one card per person, whoever's
 	 * occasion comes next on top. An idea given here leaves the list while its undo window runs
 	 * and for as long as its answer is on the way.
 	 */

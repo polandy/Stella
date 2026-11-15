@@ -8,11 +8,11 @@ import { systemClock } from './clock';
 import { todayFor } from '$lib/dates/today';
 
 /*
- * The people the app shell carries for the ⌘K palette and every picker (docs/05 §5.4), with
+ * The people the app shell carries for the ⌘K palette and every picker (docs/dev/05 §5.4), with
  * what the viewer may see of the links and circles of namesakes with nothing typed to tell
- * them apart (docs/02 §2.2.3). One scoped read, sent once rather than again in each page's
+ * them apart (docs/dev/02 §2.2.3). One scoped read, sent once rather than again in each page's
  * data; the stamp lets a page that kept the shell tell whether it is still current
- * (`$lib/sync/people-freshness`, docs/04 §4.9).
+ * (`$lib/sync/people-freshness`, docs/dev/04 §4.9).
  */
 
 /** What the shell's people are read with; the edge hands in `locals.services.people`. */
@@ -42,18 +42,18 @@ export async function readShellPeople(deps: ShellPeopleDeps, user: AuthUser) {
 		firstName: p.firstName,
 		lastName: p.lastName,
 		nickname: p.nickname,
-		// Found by an earlier name too, in ⌘K and every picker (docs/02 §2.2).
+		// Found by an earlier name too, in ⌘K and every picker (docs/dev/02 §2.2).
 		formerName: p.formerName,
 		avatarPhotoId: p.avatarPhotoId,
-		// A shared text may only mention shared people (docs/02 §2.20.1).
+		// A shared text may only mention shared people (docs/dev/02 §2.20.1).
 		visibility: p.visibility,
-		// What the relationship form's *since* suggestion starts from (docs/02 §2.4).
+		// What the relationship form's *since* suggestion starts from (docs/dev/02 §2.4).
 		birthDate: p.birthDate,
-		// What tells two people of the same name apart in ⌘K and the pickers (docs/02 §2.2.3).
+		// What tells two people of the same name apart in ⌘K and the pickers (docs/dev/02 §2.2.3).
 		description: p.description,
 		metPlace: p.metPlace,
 		metDate: p.metDate,
-		// Found by and shown on its own line in ⌘K and every picker (docs/02 §2.2).
+		// Found by and shown on its own line in ⌘K and every picker (docs/dev/02 §2.2).
 		jobTitle: p.jobTitle,
 		company: p.company
 	}));
@@ -62,7 +62,7 @@ export async function readShellPeople(deps: ShellPeopleDeps, user: AuthUser) {
 
 /**
  * The stamp alone, for `GET /api/people/stamp`: a few aggregates instead of the list and its
- * context, because it is asked after every client-side navigation (docs/04 §4.9).
+ * context, because it is asked after every client-side navigation (docs/dev/04 §4.9).
  */
 export function readPeopleStamp(deps: ShellPeopleDeps, user: AuthUser): Promise<string> {
 	return stampFor(deps, user, todayFor(systemClock));

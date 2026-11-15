@@ -9,7 +9,7 @@ import {
 } from './memories';
 
 /*
- * *On this day* over an in-memory port (docs/02 §2.12.1): what is asked of the reads, and how
+ * *On this day* over an in-memory port (docs/dev/02 §2.12.1): what is asked of the reads, and how
  * moments, touchpoints and photos come back under their years. The scoping itself — private,
  * archived, another household — is the Drizzle adapter's to prove (`db/memory-repository.test.ts`).
  */

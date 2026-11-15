@@ -1,5 +1,5 @@
 /*
- * Picking from the whole Immich library (docs/02 §2.24.9): which photos are ticked, numbered in
+ * Picking from the whole Immich library (docs/dev/02 §2.24.9): which photos are ticked, numbered in
  * the order they were tapped, and what the picker asks Stella for. Pure; the sheet is
  * `$lib/components/immich/ImmichLibraryPicker.svelte`.
  */

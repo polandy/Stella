@@ -12,7 +12,7 @@ import {
 } from './schema';
 
 /*
- * Drizzle adapter for the OIDC IdentityStore port (docs/02 §2.1.2, docs/08 §8.3). Maps
+ * Drizzle adapter for the OIDC IdentityStore port (docs/dev/02 §2.1.2, docs/dev/08 §8.3). Maps
  * federated identities to users and provisions/links them. If no household exists yet, the
  * first SSO user bootstraps it and becomes admin so the household always has one.
  */

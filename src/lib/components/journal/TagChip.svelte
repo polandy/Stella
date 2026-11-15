@@ -6,7 +6,7 @@
 	import { useI18n } from '$lib/i18n/context.svelte';
 
 	/*
-	 * A tag the viewer can see, as a link (docs/02 §2.20.2): its colour, its count, and a lock
+	 * A tag the viewer can see, as a link (docs/dev/02 §2.20.2): its colour, its count, and a lock
 	 * when it is only on their private moments. One chip for a journal's filter, Home's Tags row
 	 * and the list of all tags, so a tag looks the same wherever it is chosen.
 	 */

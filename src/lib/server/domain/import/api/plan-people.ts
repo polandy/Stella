@@ -20,7 +20,7 @@ import type {
 import { orNull } from './text';
 
 /*
- * The people half of an API import plan (docs/02 §2.16.1): each entry either names someone
+ * The people half of an API import plan (docs/dev/02 §2.16.1): each entry either names someone
  * already in Stella, whose missing fields it completes, or is a new person, created once under
  * an id derived from the sender's ref. A new name that matches someone here is only reported.
  */

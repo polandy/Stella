@@ -2,7 +2,7 @@ import { describe, expect, it } from 'bun:test';
 import { searchedTag, toFtsQuery } from './query';
 
 /*
- * Turn free user input into a safe FTS5 MATCH expression (docs/02 §2.9): per-token prefix
+ * Turn free user input into a safe FTS5 MATCH expression (docs/dev/02 §2.9): per-token prefix
  * search, with special characters stripped and operator keywords neutralised (lowercased).
  */
 

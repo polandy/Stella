@@ -13,7 +13,7 @@ import {
 } from './important-dates';
 
 /*
- * Important dates (docs/02 §2.13). The use-cases are thin orchestration, so the tests cover
+ * Important dates (docs/dev/02 §2.13). The use-cases are thin orchestration, so the tests cover
  * what they actually decide: normalisation, the defaults, and every way an input is refused.
  */
 

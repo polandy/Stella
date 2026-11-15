@@ -7,11 +7,11 @@ import {
 import { appReady, openPerson, signIn } from './app';
 
 /*
- * Removing a member from the household and restoring them (docs/02 §2.1, §2.22): an admin
+ * Removing a member from the household and restoring them (docs/dev/02 §2.1, §2.22): an admin
  * removes one from Settings → Members; every device signed in as them is signed out, Home
  * tells it, and what they shared keeps their name. Restored from *Former members*, they sign in
  * again with their old password. A member who is no admin sees the list without *Remove…*.
- * Written after the flow was verified in the running app (docs/08 §8.4.1).
+ * Written after the flow was verified in the running app (docs/dev/08 §8.4.1).
  *
  * The member removed is Lukas Brunner, whom the seed adds for this spec alone: no other spec
  * signs in as him, so removing him takes nothing from them.

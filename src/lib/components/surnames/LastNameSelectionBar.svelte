@@ -5,9 +5,9 @@
 	import SetLastNamePanel from './SetLastNamePanel.svelte';
 
 	/*
-	 * The bar that acts on the people selected in a list (docs/02 §2.2.4.3): how
+	 * The bar that acts on the people selected in a list (docs/dev/02 §2.2.4.3): how
 	 * many are chosen, everyone or no one, and *Set last name*. Fixed to the bottom like the
-	 * circle members' bar (docs/02 §2.4.2) and offset the same way above the phone's tab bar.
+	 * circle members' bar (docs/dev/02 §2.4.2) and offset the same way above the phone's tab bar.
 	 */
 	let {
 		chosen,

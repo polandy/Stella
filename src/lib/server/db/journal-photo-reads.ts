@@ -8,15 +8,15 @@ import { journalAbout } from './journal-subjects';
 import { contact, journalEntry, photo } from './schema';
 
 /*
- * Drizzle adapter for the journal photos a story reads (docs/08 §8.3), scoped through the
+ * Drizzle adapter for the journal photos a story reads (docs/dev/08 §8.3), scoped through the
  * central `childRecordVisibleTo`: the person must be visible and a private photo only to its
- * author (docs/03 §3.7).
+ * author (docs/dev/03 §3.7).
  */
 export function createDrizzleJournalPhotoReads(
 	db: BunSQLiteDatabase<typeof schema>
 ): JournalPhotoReads {
 	/**
-	 * The photos of entries about a person (anchor or subject, docs/02 §2.20.3) the viewer may
+	 * The photos of entries about a person (anchor or subject, docs/dev/02 §2.20.3) the viewer may
 	 * see, oldest first, among the entries `entries` picks. A photo's `contact_id` is the anchor.
 	 */
 	function journalPhotosWhere(viewer: Viewer, contactId: string, entries: SQL): JournalPhotoRef[] {

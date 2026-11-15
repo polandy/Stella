@@ -4,10 +4,10 @@ import { seedHousehold } from './seed';
 import { DEMO_ADMIN_PASSWORD, DEMO_MEMBER_EMAIL } from '../src/lib/server/db/demo-seed';
 
 /*
- * Sub-circles shown, read-only (docs/02 §2.4.2): the Circles page as families — a card per
+ * Sub-circles shown, read-only (docs/dev/02 §2.4.2): the Circles page as families — a card per
  * top-level circle, its sub-circles as rows inside it — and on a circle's page the way up, the
  * siblings either side and the Sub-circles card. Written after the owner saw it in the running
- * app (docs/08 §8.4.1).
+ * app (docs/dev/08 §8.4.1).
  *
  * The demo's Schule Breitenrain with Klasse 5b and Klasse 3a is read as it is. What the demo has
  * no example of — a sub-circle whose period is over, one private to its creator — comes from a

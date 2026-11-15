@@ -2,7 +2,7 @@ import type { SubmitFunction } from '@sveltejs/kit';
 import type { PendingSink } from './pending-work';
 
 /*
- * Reporting work to the shell's pending-work store (`pending-work.ts`, docs/05 §5.7): the three
+ * Reporting work to the shell's pending-work store (`pending-work.ts`, docs/dev/05 §5.7): the three
  * shapes it arrives in — an enhanced form's submit, a plain async job, and the page load a
  * navigation sets off.
  */

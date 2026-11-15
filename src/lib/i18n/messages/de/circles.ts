@@ -25,14 +25,14 @@ export const circles: CirclesMessages = {
 	'circles.memberCount': (p) => (p.count === 1 ? '1 Mitglied' : `${p.count} Mitglieder`),
 	'circles.nobodyYet': 'Noch niemand darin',
 	'circles.private': 'privat',
-	// Das ⋯-Menü der Kreisseite und das Bearbeiten eines Kreises (docs/02 §2.4.2).
+	// Das ⋯-Menü der Kreisseite und das Bearbeiten eines Kreises (docs/dev/02 §2.4.2).
 	'circles.menu': 'Weitere Aktionen',
 	'circles.edit.open': 'Kreis bearbeiten',
 	'circles.edit.label': (p) => `${p.name} bearbeiten`,
 	'circles.edit.period': 'Zeitraum (optional)',
 	'circles.edit.start': 'Beginnt',
 	'circles.edit.end': 'Endet',
-	// Einen Kreis löschen: der Eintrag im ⋯-Menü und sein Bestätigungsschritt (docs/02 §2.4.2).
+	// Einen Kreis löschen: der Eintrag im ⋯-Menü und sein Bestätigungsschritt (docs/dev/02 §2.4.2).
 	'circles.delete.open': 'Kreis löschen…',
 	'circles.delete.label': (p) => `${p.name} löschen?`,
 	'circles.delete.counting': 'Zähle, was wegfällt…',
@@ -102,7 +102,7 @@ export const circles: CirclesMessages = {
 	'circles.noMembers.add': 'Erste Mitglieder hinzufügen',
 	'circles.noMembers.hint':
 		'Füge die Menschen hinzu, die diesen Zusammenhang teilen; bei jedem von ihnen erscheint er auf der Seite.',
-	// Die Fotos eines Kreises (docs/02 §2.4.2).
+	// Die Fotos eines Kreises (docs/dev/02 §2.4.2).
 	'circles.photos.title': 'Fotos',
 	'circles.photos.none': 'Noch keine Fotos.',
 	'circles.photos.add': 'Fotos hinzufügen',
@@ -134,7 +134,7 @@ export const circles: CirclesMessages = {
 	'circles.photos.ownerOnly': 'Nur du kannst das, weil du es hinzugefügt hast:',
 	'circles.photos.previous': 'Vorheriges Foto',
 	'circles.photos.next': 'Nächstes Foto',
-	// Ein Profilbild, aus einem Gruppenfoto geschnitten (docs/02 §2.14).
+	// Ein Profilbild, aus einem Gruppenfoto geschnitten (docs/dev/02 §2.14).
 	'circles.cut.use': 'Als Profilbild verwenden für …',
 	'circles.cut.dialog': 'Als Profilbild verwenden',
 	'circles.cut.whom': 'Wessen Profilbild ist auf diesem Foto?',

@@ -21,7 +21,7 @@
 	import type { SubmitFunction } from '@sveltejs/kit';
 
 	/*
-	 * The circle page's header (docs/02 §2.4.2, docs/design/screens/circles.md): its colour, name
+	 * The circle page's header (docs/dev/02 §2.4.2, docs/dev/design/screens/circles.md): its colour, name
 	 * and one line of facts, *Open in the graph*, and a ⋯ menu. *Edit circle* turns the header
 	 * into a form in place with the create form's fields plus the period, which only editing
 	 * sets, and *Belongs to* — the one place a circle's parent is chosen. A changed parent is said
@@ -102,7 +102,7 @@
 
 	/**
 	 * Saves as every in-place editor does, then says *Saved* — or, when the parent changed, where
-	 * the circle is now, with *Undo* putting it back where it was (docs/02 §2.4.2).
+	 * the circle is now, with *Undo* putting it back where it was (docs/dev/02 §2.4.2).
 	 */
 	const saved: SubmitFunction = ({ formData }) => {
 		const before = parentId;
@@ -133,7 +133,7 @@
 
 	/*
 	 * The period's fields take whole days. A period imported through the API may stop at the
-	 * month or the year (docs/03 `circle`); that one is offered as typed text instead, so opening
+	 * month or the year (docs/dev/03 `circle`); that one is offered as typed text instead, so opening
 	 * the form and saving something else never wipes it.
 	 */
 	const isDay = (value: string | null) => value === null || /^\d{4}-\d{2}-\d{2}$/.test(value);
@@ -148,7 +148,7 @@
 
 <div bind:this={root} data-testid="circle-header">
 	{#if showForm}
-		<!-- Escape anywhere in the form leaves it unchanged, as every in-place editor does (docs/05 §5.7). -->
+		<!-- Escape anywhere in the form leaves it unchanged, as every in-place editor does (docs/dev/05 §5.7). -->
 		<!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
 		<form
 			transition:reveal
@@ -256,7 +256,7 @@
 				</div>
 			</div>
 			<div class="ml-auto flex items-center gap-2">
-				<!-- The circle is a node of the graph, so it opens there like a person does (docs/02 §2.7). -->
+				<!-- The circle is a node of the graph, so it opens there like a person does (docs/dev/02 §2.7). -->
 				<Button size="sm" icon="graph" href="/graph?center={circle.id}"
 					>{t('graph.openInGraph')}</Button
 				>

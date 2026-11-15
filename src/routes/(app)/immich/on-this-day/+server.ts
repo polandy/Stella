@@ -5,7 +5,7 @@ import type { RequestHandler } from './$types';
 
 /*
  * *On this day* from Immich (`?day=YYYY-MM-DD`, and for *Show more* `&year=&from=`), loaded by
- * Home's band and `/on-this-day` after they are drawn (docs/02 §2.12.1). What it answers is
+ * Home's band and `/on-this-day` after they are drawn (docs/dev/02 §2.12.1). What it answers is
  * decided and tested in `$lib/server/immich/memories-route.ts`; this only wires it.
  */
 export const GET: RequestHandler = async ({ locals, url }) => {

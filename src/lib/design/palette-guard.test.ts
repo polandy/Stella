@@ -3,7 +3,7 @@ import { Glob } from 'bun';
 import { readFileSync } from 'node:fs';
 
 /*
- * Components colour themselves through semantic tokens only (docs/05 §5.2.2). Tailwind still
+ * Components colour themselves through semantic tokens only (docs/dev/05 §5.2.2). Tailwind still
  * ships its own palette, and `bg-black/60` compiles as happily as `bg-scrim/60` — so this reads
  * the markup and fails on a palette utility, which would bypass the theme and the token table.
  */

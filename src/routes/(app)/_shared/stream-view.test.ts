@@ -4,7 +4,7 @@ import type { StreamItem } from '$lib/server/domain/stream/stream';
 import { streamForView } from './stream-view';
 
 /*
- * A moment as Home and a tag's page show it (docs/02 §2.22.2, §2.20.2): rendered once, its
+ * A moment as Home and a tag's page show it (docs/dev/02 §2.22.2, §2.20.2): rendered once, its
  * mentions named only as far as the viewer may see, its tags leading to the tag's page.
  */
 

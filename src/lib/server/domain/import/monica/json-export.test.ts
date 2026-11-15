@@ -2,7 +2,7 @@ import { describe, expect, test } from 'bun:test';
 import { MonicaJsonError, readMonicaJsonExport } from './json-export';
 
 /*
- * Reading Monica's JSON export (docs/02 §2.16). The fixtures below are shaped exactly like
+ * Reading Monica's JSON export (docs/dev/02 §2.16). The fixtures below are shaped exactly like
  * Monica's own export resources (`app/ExportResources/*`, v4.1.2): every record carries a
  * `uuid` plus a `properties` object, and a record's children arrive as `{count, type, values}`
  * entries in a `data` list — a list that *omits* empty collections rather than carrying them

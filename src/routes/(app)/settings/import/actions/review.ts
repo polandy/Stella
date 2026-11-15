@@ -15,10 +15,10 @@ import { parseAnswers } from './answers';
 import { photoManifest, stagedStep, type StagedStep } from './staged';
 
 /*
- * The vCard wizard's review step (docs/02 §2.16): who each incoming contact is, answered by
+ * The vCard wizard's review step (docs/dev/02 §2.16): who each incoming contact is, answered by
  * the member, then written as one. The answers live in the browser until *Import*; the server
  * re-reads the staged file and re-checks every answer against who the member may browse.
- * The linked Nextcloud book's new cards take the same step (docs/02 §2.16.3), matched against
+ * The linked Nextcloud book's new cards take the same step (docs/dev/02 §2.16.3), matched against
  * shared people only, and need no photo step: a card's picture is stored by the server.
  */
 

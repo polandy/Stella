@@ -1,7 +1,7 @@
 import type { UnlockStatus } from './veil';
 
 /*
- * Device unlock (docs/02 §2.10.1): before the veil lifts, the device's own fingerprint, face or
+ * Device unlock (docs/dev/02 §2.10.1): before the veil lifts, the device's own fingerprint, face or
  * PIN, asked through a passkey. The check stays on the device: the assertion is not sent
  * anywhere, so it works offline and needs nothing on the server. That makes it a guard for the
  * screen, not for the data, which is all the veil is for.

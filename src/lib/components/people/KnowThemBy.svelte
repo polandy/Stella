@@ -3,7 +3,7 @@
 	import { useTranslate } from '$lib/i18n/context.svelte';
 
 	/*
-	 * The nudge for a person being added with a first name only (docs/02 §2.2.3): a first name
+	 * The nudge for a person being added with a first name only (docs/dev/02 §2.2.3): a first name
 	 * alone will not tell them from the next person of that name, so the description field is
 	 * brought forward with a word on why. Without a last name it is needed: Stella refuses a
 	 * person known by a first name alone (`createContact`).

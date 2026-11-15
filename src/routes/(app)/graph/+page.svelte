@@ -27,7 +27,7 @@
 			: 'max-sm:hidden'}"
 	>
 		{#if data.cameFrom}
-			<!-- Back to the page this centre was opened from — a profile or a circle (docs/05 §5.5). -->
+			<!-- Back to the page this centre was opened from — a profile or a circle (docs/dev/05 §5.5). -->
 			<a
 				href={data.cameFrom.href}
 				class="inline-flex items-center gap-1 font-medium text-link hover:underline"

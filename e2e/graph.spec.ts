@@ -21,8 +21,8 @@ import {
 } from './graph-canvas';
 
 /*
- * The explorer's toolbar and peek panel (docs/05 §5.8). Written after the screen was seen in
- * the running app (docs/08 §8.4.1). What the canvas draws is held by `theme.test.ts` and
+ * The explorer's toolbar and peek panel (docs/dev/05 §5.8). Written after the screen was seen in
+ * the running app (docs/dev/08 §8.4.1). What the canvas draws is held by `theme.test.ts` and
  * `elements.test.ts`; this covers what surrounds it.
  */
 
@@ -120,7 +120,7 @@ test('in Free, expanding moves nobody already on the map, and arranging it freel
 	await settled(page);
 
 	// Peter came in, and everyone who was already there stands exactly where they stood. (The
-	// map opens in Free; in the Tree an expand lays the whole tree out again, docs/05 §5.8.)
+	// map opens in Free; in the Tree an expand lays the whole tree out again, docs/dev/05 §5.8.)
 	const grown = await arrangement(page);
 	expect(grown.has('demo-c-peter')).toBe(true);
 	for (const [id, point] of before) expect(grown.get(id), id).toEqual(point);
@@ -182,9 +182,9 @@ test('Tree sets each generation on a row of its own and draws the family lines a
 });
 
 /*
- * The family tree around a person (docs/05 §5.8): roles under the names instead of names on
+ * The family tree around a person (docs/dev/05 §5.8): roles under the names instead of names on
  * the lines, an "Outside the family" shelf beneath that says who is who, and an expand that
- * lays the tree out again. Written after the owner tried it on #310 (docs/08 §8.4.1).
+ * lays the tree out again. Written after the owner tried it on #310 (docs/dev/08 §8.4.1).
  */
 
 const LENA = 'demo-c-lena';
@@ -331,7 +331,7 @@ test('leaves a derived line off while the links it abbreviates are on the map', 
 	page
 }) => {
 	// Markus and Daniel are brothers; Lena is Markus's daughter, so Daniel's niece, and Timo,
-	// Daniel's son, is Markus's nephew (docs/02 §2.7).
+	// Daniel's son, is Markus's nephew (docs/dev/02 §2.7).
 	const niece = kinshipLineId('demo-c-daniel', 'demo-c-lena');
 	const nephew = kinshipLineId('demo-c-markus', 'demo-c-timo');
 	await page.goto('/graph?center=demo-c-daniel');
@@ -448,7 +448,7 @@ test('names the lines around the selected person, and only while they are select
 });
 
 /*
- * The toolbar's search (docs/05 §5.8). On a narrow window the chip row wraps under the field,
+ * The toolbar's search (docs/dev/05 §5.8). On a narrow window the chip row wraps under the field,
  * and the suggested names were painted behind the chips — so this reads what is actually on
  * top at each name's own position, not merely whether the list is in the DOM.
  */
@@ -480,7 +480,7 @@ test('keeps the phone toolbar to the search field’s row, clear of the suggeste
 	const list = page.getByTestId('graph-suggestions');
 	await expect(list.getByRole('button', { name: 'Hans Brunner' })).toBeVisible();
 
-	// On a phone every tool is an icon beside the field (docs/05 §5.8), even at 320 pixels: the
+	// On a phone every tool is an icon beside the field (docs/dev/05 §5.8), even at 320 pixels: the
 	// last of them, the connection path, sits in the field's row and above the list.
 	const fieldBox = await field.boundingBox();
 	const chipBox = await page.getByRole('button', { name: 'Connection path' }).boundingBox();
@@ -507,7 +507,7 @@ test('keeps the phone toolbar to the search field’s row, clear of the suggeste
 });
 
 /*
- * The phone layout of the explorer (docs/05 §5.8, screens/graph.md), at the reference
+ * The phone layout of the explorer (docs/dev/05 §5.8, screens/graph.md), at the reference
  * Pixel 9 Pro's width.
  */
 

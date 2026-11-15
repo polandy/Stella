@@ -2,8 +2,8 @@ import { expect, test, type Locator, type Page } from '@playwright/test';
 import { editPeople, fillDate, openPerson, pickPerson, signIn, unfoldPeople } from './app';
 
 /*
- * What a relationship carries beyond its type, and taking one back (docs/02 §2.4). Written
- * after the flow was verified in the running app (docs/08 §8.4.1).
+ * What a relationship carries beyond its type, and taking one back (docs/dev/02 §2.4). Written
+ * after the flow was verified in the running app (docs/dev/08 §8.4.1).
  *
  * The suite shares one demo database and runs serially, so these cases work on Bettina Roth,
  * who has no relationships at all and whom no other spec names, each enters the link it needs
@@ -65,7 +65,7 @@ test('enters a link with how they connect, since when, and whether it still hold
 });
 
 /*
- * The status has no unset state (docs/02 §2.4): a link being entered is one that holds, so the
+ * The status has no unset state (docs/dev/02 §2.4): a link being entered is one that holds, so the
  * form stands on *current* and there is no "not said" to pick. This is the case that owns the
  * defect — the picker used to stand on "Not said", so the commonest way to enter a link stored
  * the one answer that means nothing.
@@ -111,7 +111,7 @@ test('enters a link from the other side: "child of" needs no detour via the othe
 }) => {
 	await openPeopleTab(page, /Bettina Roth/);
 	// The reverse side of an asymmetric type is on offer, so the sentence can be said the way
-	// round it is being read here (docs/02 §2.4).
+	// round it is being read here (docs/dev/02 §2.4).
 	await addLink(page, { type: 'Child of', person: 'Kurt Lehmann' });
 	await expect(enteredRow(page, 'Kurt Lehmann')).toContainText('Father');
 
@@ -121,7 +121,7 @@ test('enters a link from the other side: "child of" needs no detour via the othe
 });
 
 /*
- * The contradiction guard (docs/02 §2.4). Runs on Nicole Frei and Heidi Lehmann, who are not
+ * The contradiction guard (docs/dev/02 §2.4). Runs on Nicole Frei and Heidi Lehmann, who are not
  * linked to each other by the seed or by any other case, and enters the link it contradicts
  * itself rather than leaning on the case above.
  */
@@ -162,7 +162,7 @@ test('corrects the specifics from the row, the type picker preset to the link', 
 	await row.getByRole('button', { name: 'Edit' }).click();
 
 	const editor = page.locator('form[action="?/editRelationship"]');
-	// The type is on offer again, preset to what the link says today (docs/02 §2.4).
+	// The type is on offer again, preset to what the link says today (docs/dev/02 §2.4).
 	await expect(editor.locator('select[name=typeChoice]')).toHaveValue(/./);
 	await expect(editor.locator('select[name=typeChoice] option:checked')).toHaveText('Knows');
 	await expect(editor.locator('input[name=description]')).toHaveValue(HOW);
@@ -215,8 +215,8 @@ test('takes a link back with Undo, and the worked-out name returns with it', asy
 });
 
 /*
- * Changing the type of a link that is already there (docs/02 §2.4). Written after the flow
- * was verified in the running app (docs/08 §8.4.1).
+ * Changing the type of a link that is already there (docs/dev/02 §2.4). Written after the flow
+ * was verified in the running app (docs/dev/08 §8.4.1).
  */
 
 /** Opens one row's editor and hands back the form inside it. */

@@ -5,10 +5,10 @@ import {
 } from '../../../relationships/endpoints';
 
 /*
- * Where a link of the record being merged away lands (docs/02 §2.2). Repointing one column
+ * Where a link of the record being merged away lands (docs/dev/02 §2.2). Repointing one column
  * at a time would leave a symmetric link unsorted whenever the third person's id sorts between
  * the two records', and the unique index and the duplicate check would then miss it from the
- * other end (docs/03 §relationship). So the new ends come from `relationshipPair`, like every
+ * other end (docs/dev/03 §relationship). So the new ends come from `relationshipPair`, like every
  * other writer's; `db/contact-merge.ts` runs this in the merge's transaction.
  */
 

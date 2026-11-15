@@ -14,10 +14,10 @@ import { say, translator } from '$lib/server/i18n/say';
 import type { Actions } from '../$types';
 
 /*
- * The Photos card's Immich menu (docs/02 §2.24.2). Any member who can see the person
+ * The Photos card's Immich menu (docs/dev/02 §2.24.2). Any member who can see the person
  * may link or unlink them; without Immich configured, neither exists. *Use as photo* in the
- * Immich viewer keeps a square of one of their photos as their own (docs/02 §2.24.6).
- * *Ignore* on the card's suggestion is the matching list's lasting no (docs/02 §2.24.7), through
+ * Immich viewer keeps a square of one of their photos as their own (docs/dev/02 §2.24.6).
+ * *Ignore* on the card's suggestion is the matching list's lasting no (docs/dev/02 §2.24.7), through
  * the same use-case; its *Link* is `linkImmich`.
  */
 export const immichActions = {
@@ -43,7 +43,7 @@ export const immichActions = {
 		throw redirect(303, contactSectionPath(params.id, 'photos'));
 	},
 
-	/* Held for the undo window by the card first, like any removal (docs/02 §2.23). */
+	/* Held for the undo window by the card first, like any removal (docs/dev/02 §2.23). */
 	ignoreImmichMatch: async ({ request, params, locals }) => {
 		const viewer = requireViewer(locals);
 		const deps = locals.services.immich?.immichIgnoreDeps;

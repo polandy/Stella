@@ -1,5 +1,5 @@
 /*
- * The arrange screen's decisions, pure (docs/02 §2.4.2, ADR-127): what a drop on a card would do,
+ * The arrange screen's decisions, pure (docs/dev/02 §2.4.2, ADR-127): what a drop on a card would do,
  * what a drag carries, and what to say afterwards. The server decides again from its own
  * reading; this only keeps the screen from offering what would be refused.
  */

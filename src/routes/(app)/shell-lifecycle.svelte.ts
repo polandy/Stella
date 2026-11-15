@@ -25,7 +25,7 @@ export function keepShellCurrent({ data, removals, outboxPhrases }: ShellLifecyc
 	 * The people every picker reads come with the shell, which a client-side navigation keeps,
 	 * and so does a tab left open while someone else adds a person. After a navigation, and
 	 * whenever the tab comes back into view, they are reloaded if anyone changed them
-	 * (docs/04 §4.9).
+	 * (docs/dev/04 §4.9).
 	 */
 	const refreshPeople = () =>
 		void refreshPeopleIfChanged(
@@ -46,7 +46,7 @@ export function keepShellCurrent({ data, removals, outboxPhrases }: ShellLifecyc
 		if (navigation.type !== 'enter') refreshPeople();
 	});
 
-	// Removals are held back for an undo window (docs/04 §4.9). Leaving the page ends the
+	// Removals are held back for an undo window (docs/dev/04 §4.9). Leaving the page ends the
 	// window: a client-side navigation waits for the requests so the next screen cannot read
 	// the item back; an unload — or a native form post, which must not be replayed as a GET —
 	// sends them with keepalive alongside and hopes for the best.
@@ -74,7 +74,7 @@ export function keepShellCurrent({ data, removals, outboxPhrases }: ShellLifecyc
 	});
 
 	/*
-	 * What this member saved while Stella was out of reach (docs/02 §2.18.1) is sent when the app
+	 * What this member saved while Stella was out of reach (docs/dev/02 §2.18.1) is sent when the app
 	 * opens, when Stella answers again, when the tab comes back into view and when the device
 	 * joins a network — never on a timer. What Stella took is read back by reloading the page's
 	 * data.

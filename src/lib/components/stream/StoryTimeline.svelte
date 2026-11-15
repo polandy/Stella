@@ -33,7 +33,7 @@
 	import type { ComponentProps } from 'svelte';
 
 	/*
-	 * A person's story (docs/02 §2.23): what people wrote about them, the times they were in
+	 * A person's story (docs/dev/02 §2.23): what people wrote about them, the times they were in
 	 * touch, the gifts that changed hands and the to-dos ticked off, in one order. Older pages load on demand from the story endpoint, which merges the
 	 * sources server-side — the client only ever appends what it is handed.
 	 */
@@ -85,7 +85,7 @@
 		}
 	}
 
-	// Removing is held back for an undo window (docs/02 §2.23): the item leaves the list at
+	// Removing is held back for an undo window (docs/dev/02 §2.23): the item leaves the list at
 	// once, the toast offers Undo, and the form is posted only when the window closes.
 	const removals = useRemovals();
 	const removalKey = (item: StoryItemView) => buildKey(item.kind, item.id);
@@ -93,7 +93,7 @@
 	const days = $derived(groupStoryByDay(shown));
 
 	/*
-	 * A given or received gift (docs/02 §2.25) reads like a touchpoint: the gift icon and
+	 * A given or received gift (docs/dev/02 §2.25) reads like a touchpoint: the gift icon and
 	 * `--kind-gift` — the gift's alone since the touchpoint kind went (§2.25.4) — and what
 	 * happened as its label.
 	 */
@@ -102,7 +102,7 @@
 		received: { label: 'gifts.story.received', icon: 'gift', accent: 'var(--kind-gift)' }
 	} as const;
 
-	/* A to-do ticked off (docs/02 §2.26): the check icon and `--success`, *Done* as its label. */
+	/* A to-do ticked off (docs/dev/02 §2.26): the check icon and `--success`, *Done* as its label. */
 	const TODO_PRESENTATION = {
 		label: 'todos.story.done',
 		icon: 'done',
@@ -128,10 +128,10 @@
 		await invalidateAll();
 	}
 
-	// One touchpoint or moment is corrected at a time, in its place (docs/02 §2.6, §2.20).
+	// One touchpoint or moment is corrected at a time, in its place (docs/dev/02 §2.6, §2.20).
 	let editingId = $state<string | null>(null);
 
-	// A private item's words and photos stay blurred until asked for (docs/02 §2.10.1); its
+	// A private item's words and photos stay blurred until asked for (docs/dev/02 §2.10.1); its
 	// kind, author and day stay readable, so the story still reads in order.
 	const veil = useVeil();
 	const veilId = (item: StoryItemView) => `${item.kind}:${item.id}`;
@@ -201,7 +201,7 @@
 {/snippet}
 
 {#if items.length === 0}
-	<!-- One sentence: *Log contact* is already in the card's header (docs/05 §5.5). -->
+	<!-- One sentence: *Log contact* is already in the card's header (docs/dev/05 §5.5). -->
 	<p
 		class="rounded-app border border-dashed border-border px-4 py-5 text-center text-sm text-fg-muted"
 	>
@@ -261,7 +261,7 @@
 											? 'opacity-100'
 											: 'opacity-0 group-hover/item:opacity-100 focus-within:opacity-100 pointer-coarse:opacity-100'}"
 									>
-										<!-- Its author's alone (docs/03 §3.7). Online only. -->
+										<!-- Its author's alone (docs/dev/03 §3.7). Online only. -->
 										{#if (item.kind === 'interaction' || item.kind === 'journal') && item.editable}
 											{@const editLabel =
 												item.kind === 'journal' ? t('story.editEntry') : t('story.editInteraction')}
@@ -286,7 +286,7 @@
 							{#if item.kind === 'journal'}
 								<MomentWith others={othersThan(item.subjects, contactId)} />
 								<!-- The moment and the journal's own editor glide into each other in place
-								     (docs/05 §5.11); its day and photos stay as they are. -->
+								     (docs/dev/05 §5.11); its day and photos stay as they are. -->
 								<Swap when={editingId === item.id}>
 									<div class="mt-1">
 										<JournalEntryEditor
@@ -326,7 +326,7 @@
 											{#if item.title}
 												<h4 class="mt-1 font-semibold text-fg">{item.title}</h4>
 											{/if}
-											<!-- server-rendered, already-safe Markdown (docs/02 §2.5) -->
+											<!-- server-rendered, already-safe Markdown (docs/dev/02 §2.5) -->
 											<div class="note-body mt-0.5 max-w-[65ch] text-fg">{@html item.bodyHtml}</div>
 											{#if item.photos.length || item.immichPhotos.length}
 												{@const count = item.photos.length + item.immichPhotos.length}
@@ -373,7 +373,7 @@
 							{:else if item.kind === 'todo'}
 								<div class="mt-0.5 flex items-start gap-2">
 									<!-- Still checked: unchecking it opens the to-do again, as on the card. The box
-									     stands on the right, under the thumb (docs/05 §5.1). -->
+									     stands on the right, under the thumb (docs/dev/05 §5.1). -->
 									<label
 										for="story-todo-{item.id}"
 										class="min-w-0 flex-1 cursor-pointer font-medium text-fg">{item.title}</label
@@ -396,7 +396,7 @@
 									/>
 								</div>
 							{:else}
-								<!-- The touchpoint and its editor glide into each other in place (docs/05 §5.11). -->
+								<!-- The touchpoint and its editor glide into each other in place (docs/dev/05 §5.11). -->
 								<Swap when={editingId === item.id}>
 									<InteractionEditor
 										{item}

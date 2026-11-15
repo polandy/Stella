@@ -15,7 +15,7 @@
 	import type { ActionData, PageData } from './$types';
 
 	/*
-	 * The household's relationship vocabulary (docs/02 §2.4). The built-in types are listed
+	 * The household's relationship vocabulary (docs/dev/02 §2.4). The built-in types are listed
 	 * as what they are — part of the app — so it is visible that the twelve are not missing
 	 * from the editable list by accident.
 	 */
@@ -131,7 +131,7 @@
 						{/if}
 
 						{#if editing === type.id}
-							<!-- Both forms unfold under the row as one (docs/05 §5.11). -->
+							<!-- Both forms unfold under the row as one (docs/dev/05 §5.11). -->
 							<div class="flex flex-col gap-1" transition:reveal>
 								<!-- The machine key stays as it was: it is what the type *is*, and rewriting it
 							     would make the row a different type to everything already stored. -->

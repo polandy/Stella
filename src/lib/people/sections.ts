@@ -3,20 +3,20 @@ import { PARENT_CHILD_TYPE_KEY } from '../relationships/type-keys';
 import { encodeRelationshipChoice } from '../relationships/type-options';
 
 /*
- * The cards a person's page can be pointed at (docs/05 §5.5). Here rather than in the page
+ * The cards a person's page can be pointed at (docs/dev/05 §5.5). Here rather than in the page
  * component because the ids are a shared vocabulary: a form action redirects back to the card
- * it acted on, the passive "Mentioned in" list builds such a link per reference (docs/02
+ * it acted on, the passive "Mentioned in" list builds such a link per reference (docs/dev/02
  * §2.20.1), and the card itself carries the id as its anchor. Three spellings of "notes" in
  * three files would drift on the first rename.
  *
- * These were tabs until the person's page put its content in one column (docs/05 §5.5). Links
+ * These were tabs until the person's page put its content in one column (docs/dev/05 §5.5). Links
  * with the old `?tab=` are still answered — see `sectionForLegacyTab`.
  */
 
 /**
  * Every addressable card, in the order the page shows them under the identity card: who they
  * belong with, what was taken, then the story and the notes (side by side on a wide screen),
- * the gifts (docs/02 §2.25), and last where somebody else named them. The To-dos card (docs/02
+ * the gifts (docs/dev/02 §2.25), and last where somebody else named them. The To-dos card (docs/dev/02
  * §2.26) moves: right under the identity card while something is open, here at the end, before
  * *Mentioned in*, while nothing is. The identity card itself is the page's top and needs no
  * anchor.
@@ -57,7 +57,7 @@ export function journalEntryAnchor(entryId: string): string {
 	return `entry-${entryId}`;
 }
 
-/** A person's brief: what to know before a visit, on a page of its own (docs/02 §2.2.5). */
+/** A person's brief: what to know before a visit, on a page of its own (docs/dev/02 §2.2.5). */
 export function briefPath(contactId: string): string {
 	return `/contacts/${contactId}/brief`;
 }
@@ -102,7 +102,7 @@ export function sectionForLegacyTab(value: string | null): ContactSection | null
 }
 
 /**
- * A person's page with the relationship form already open and nobody chosen (docs/02 §2.4) —
+ * A person's page with the relationship form already open and nobody chosen (docs/dev/02 §2.4) —
  * where every "link them to somebody" invitation leads. `?relate=<id>` names the other end;
  * left empty, it only opens the form.
  */
@@ -116,7 +116,7 @@ export const RELATE_AS_PARAM = 'as';
 /**
  * The relationship form on a person's page with the type preset to *Child of*, so whoever is
  * picked or created becomes their parent — where the family tree's slot for a missing parent
- * leads (docs/02 §2.7).
+ * leads (docs/dev/02 §2.7).
  */
 export function addParentPath(contactId: string): string {
 	const childOf = encodeRelationshipChoice(PARENT_CHILD_TYPE_KEY, 'reverse');

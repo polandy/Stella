@@ -11,7 +11,7 @@ import type { ImmichNameIgnore } from './name-ignores';
 import type { ImmichMediaSigner } from './signed-media';
 
 /*
- * The rows of *New from Immich* (docs/02 §2.24.7), built from what `findImmichMatches` already
+ * The rows of *New from Immich* (docs/dev/02 §2.24.7), built from what `findImmichMatches` already
  * read: Immich's people, the links, the ignores. Each face comes with the people in Stella of a
  * similar name — the comparison step *Assign…* opens — so the member decides, face beside face,
  * before anyone is added: two people of one name are real, and nothing is decided for them.

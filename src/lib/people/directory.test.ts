@@ -2,7 +2,7 @@ import { describe, expect, it } from 'bun:test';
 import { groupByLetter, matchesQuery, startsWithQuery, type DirectoryPerson } from './directory';
 
 /*
- * The People directory (docs/02 §2.2): letter groups and the find-as-you-type filter. Pure
+ * The People directory (docs/dev/02 §2.2): letter groups and the find-as-you-type filter. Pure
  * and client-safe, so what a letter heading means and what a query matches are stated here
  * rather than left to whatever the template happened to do.
  */
@@ -67,7 +67,7 @@ describe('matchesQuery', () => {
 		expect(matchesQuery(person({ description: 'Neighbour with the dog' }), 'dog')).toBe(true);
 	});
 
-	it('matches a former name, so a married name does not hide who someone was (docs/02 §2.2)', () => {
+	it('matches a former name, so a married name does not hide who someone was (docs/dev/02 §2.2)', () => {
 		expect(
 			matchesQuery(
 				person({ displayName: 'Franziska Abab', lastName: 'Abab', formerName: 'Widmer' }),
@@ -76,7 +76,7 @@ describe('matchesQuery', () => {
 		).toBe(true);
 	});
 
-	it('matches the job title and the company (docs/02 §2.2)', () => {
+	it('matches the job title and the company (docs/dev/02 §2.2)', () => {
 		expect(matchesQuery(person({ jobTitle: 'Lehrerin', company: null }), 'lehr')).toBe(true);
 		expect(matchesQuery(person({ jobTitle: null, company: 'Roche Diagnostics' }), 'roche')).toBe(
 			true

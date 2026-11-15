@@ -7,7 +7,7 @@ import type { TreeRole } from './model/tree-roles';
 import type { GraphEdge } from './model/types';
 
 /*
- * How a line on the map and a role under a name read in the viewer's language (docs/02 §2.7,
+ * How a line on the map and a role under a name read in the viewer's language (docs/dev/02 §2.7,
  * §2.19). A built-in relationship type is translated, a household's own reads as somebody typed
  * it, a worked-out line takes its kinship word. A link marked former says so in its words: on
  * the canvas a line has no DOM, so its name is what the hover, the Labels switch and a screen

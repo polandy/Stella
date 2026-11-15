@@ -23,7 +23,7 @@ import type {
 import { orNull } from './text';
 
 /*
- * The circles of an API import (docs/02 §2.16.1): new ones created, existing ones given members
+ * The circles of an API import (docs/dev/02 §2.16.1): new ones created, existing ones given members
  * and — for a circle already in Stella — the details its entry names set. A circle this document
  * created before is left as it is now, hand edits and all.
  *

@@ -10,7 +10,7 @@ import {
 import { readImportFile } from './read';
 
 /*
- * Import use-cases (docs/02 §2.16): preview an export, then apply its plan. Either of
+ * Import use-cases (docs/dev/02 §2.16): preview an export, then apply its plan. Either of
  * Monica's formats arrives here as text and is recognised by `readImportFile`. The plan is pure;
  * writing it is the repository's job and happens in one transaction, so a failure half-way
  * leaves nothing behind. Because every row carries a stable source id, applying the same
@@ -37,7 +37,7 @@ export interface ImportRequest {
 	householdId: string;
 	userId: string;
 	visibility: Visibility;
-	/** The words the plan writes into the imported records (docs/02 §2.19). */
+	/** The words the plan writes into the imported records (docs/dev/02 §2.19). */
 	wording: ImportWording;
 	/** The member's language: a nickname in a shown name takes its quote marks. */
 	locale: Locale;

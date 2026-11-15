@@ -1,7 +1,7 @@
 import { isTakenAt } from './taken-at';
 
 /*
- * The capture date out of a JPEG's EXIF (docs/02 §2.14), read before the browser re-encodes the
+ * The capture date out of a JPEG's EXIF (docs/dev/02 §2.14), read before the browser re-encodes the
  * picture and so drops every tag. Only the date is taken: GPS and everything else are never read,
  * and are gone with the re-encode as before.
  *

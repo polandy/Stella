@@ -1,7 +1,7 @@
 import { AVATAR_ACCENTS } from '../design/tokens';
 
 /*
- * The grammar of a tag on a journal entry (docs/02 §2.20.2). A tag is written into the text as
+ * The grammar of a tag on a journal entry (docs/dev/02 §2.20.2). A tag is written into the text as
  * `#word`; the entry's tags are what its text says, so the server reads them from the body on
  * every write and the renderer turns the same words into chips. One reading, shared by both.
  */
@@ -70,7 +70,7 @@ export function journalTagToggle(chosen: readonly string[], key: string): string
 	return `?${new URLSearchParams(keys.map((k) => ['tag', k]))}`;
 }
 
-/** The list of every tag the viewer can see (docs/02 §2.20.2). */
+/** The list of every tag the viewer can see (docs/dev/02 §2.20.2). */
 export const TAGS_PAGE = '/tags';
 
 /**

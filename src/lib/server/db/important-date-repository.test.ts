@@ -12,7 +12,7 @@ import { createDrizzleImportantDateRepository } from './important-date-repositor
 
 /*
  * Integration spec for the Drizzle ImportantDateRepository: dates inherit the contact's
- * visibility (docs/02 §2.13), the flags survive the round-trip through SQLite's 0/1
+ * visibility (docs/dev/02 §2.13), the flags survive the round-trip through SQLite's 0/1
  * integers, and the upcoming sources include birthdays derived from `contact.birth_date`.
  */
 

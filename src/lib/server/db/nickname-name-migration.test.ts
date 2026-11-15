@@ -9,7 +9,7 @@ import { nameWithNickname } from '../../people/display-name';
 import { ensureSearchIndex } from './search-index';
 
 /*
- * The nickname joins the shown name it shapes (docs/02 §2.2, docs/03 §contact): *Thomas „Tom“
+ * The nickname joins the shown name it shapes (docs/dev/02 §2.2, docs/dev/03 §contact): *Thomas „Tom“
  * Brunner*. Names stored before that are updated once, where the old rule made them (first and
  * last name) and a nickname is set; a name somebody chose (*Opa Kurt*) is left alone. The quote
  * marks are those of the language the member who added the person picked, else of any member

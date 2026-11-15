@@ -4,7 +4,7 @@ import { NOTHING_FOUND, search, type MomentHit, type SearchRepository } from './
 
 /*
  * The search use-case turns input into an FTS query and delegates to the port. A blank
- * query must not hit the index at all (docs/02 §2.9).
+ * query must not hit the index at all (docs/dev/02 §2.9).
  */
 
 const viewer: Viewer = { id: 'u', householdId: 'h' };

@@ -17,22 +17,22 @@ import { activityWording } from '../i18n/activity-wording';
 import type { IdGenerator } from '../id';
 
 /*
- * The `archive` bounded context of the composition root (docs/08 §8.3): moving a household in
+ * The `archive` bounded context of the composition root (docs/dev/08 §8.3): moving a household in
  * or out — the archive export, the archive restore, the Monica import and the matching
- * review of another address book (docs/02 §2.15, §2.16). Built once per process by `createServices`; the edge reads it off
+ * review of another address book (docs/dev/02 §2.15, §2.16). Built once per process by `createServices`; the edge reads it off
  * `locals.services.archive`.
  *
  * No edge reads a repository of it directly, so it holds only use-cases' `deps`, each named
  * after its type (`archiveDeps` is an `ArchiveDeps`).
  */
 export interface ArchiveServices {
-	/** Exporting the household as one archive (docs/02 §2.15). */
+	/** Exporting the household as one archive (docs/dev/02 §2.15). */
 	archiveDeps: ArchiveDeps;
 	/** Restoring a household from an archive, its images into the one media store. */
 	importArchiveDeps: ImportArchiveDeps;
-	/** The Monica import (docs/02 §2.16); the wizard is the only caller. */
+	/** The Monica import (docs/dev/02 §2.16); the wizard is the only caller. */
 	importDeps: ImportDeps;
-	/** The matching review of another address book's vCard: what it asks (docs/02 §2.16). */
+	/** The matching review of another address book's vCard: what it asks (docs/dev/02 §2.16). */
 	reviewViewDeps: ReviewViewDeps;
 	/** … and applying the answers. */
 	contactReviewDeps: ContactReviewDeps;

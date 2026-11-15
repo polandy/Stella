@@ -4,7 +4,7 @@ import { frameAround } from '../layout/group-blocks';
 import { group, inGroup, linkedPair, styledCore, controller } from './explorer-fixtures';
 
 /*
- * Framing the map (`framing.ts`, docs/05 §5.8): below the toolbar, clear of a panel, and never
+ * Framing the map (`framing.ts`, docs/dev/05 §5.8): below the toolbar, clear of a panel, and never
  * so far out that the family tree's names stop being drawn.
  */
 

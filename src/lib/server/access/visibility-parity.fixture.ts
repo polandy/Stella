@@ -36,7 +36,7 @@ export const VIEWERS: Record<string, Viewer> = {
 	u4: { id: U4, householdId: H2 }
 };
 
-/** The same members as removers (docs/03 §3.7): one admin and one member per household. */
+/** The same members as removers (docs/dev/03 §3.7): one admin and one member per household. */
 export const REMOVERS: Record<string, Remover> = {
 	u1Admin: { ...VIEWERS.u1, isAdmin: true },
 	u2: { ...VIEWERS.u2, isAdmin: false },

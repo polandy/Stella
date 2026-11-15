@@ -5,7 +5,7 @@ import type { OidcClaims, OidcLookups, OidcPolicy } from './types';
 /*
  * The login planner decides how an incoming OIDC identity maps to a Stella user: reuse a
  * linked identity, link to an existing user by email, JIT-provision, or deny. Pure and
- * deterministic — the heart of "identity linking + JIT + group→role" (docs/02 §2.1.2).
+ * deterministic — the heart of "identity linking + JIT + group→role" (docs/dev/02 §2.1.2).
  */
 
 const claims: OidcClaims = {
@@ -90,7 +90,7 @@ describe('planLogin', () => {
 		expect(plan).toEqual({ action: 'deny', reason: 'no-account' });
 	});
 
-	it('turns away a member an admin removed, before any sync (docs/02 §2.1)', () => {
+	it('turns away a member an admin removed, before any sync (docs/dev/02 §2.1)', () => {
 		const removed = { id: 'user-9', removed: true };
 		expect(planLogin(claims, { existingUser: removed, userByEmail: null }, basePolicy)).toEqual({
 			action: 'deny',

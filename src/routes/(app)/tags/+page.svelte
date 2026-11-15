@@ -9,7 +9,7 @@
 	import type { PageData } from './$types';
 
 	/*
-	 * Every tag the viewer can see, most used first (docs/02 §2.20.2): the layout has already
+	 * Every tag the viewer can see, most used first (docs/dev/02 §2.20.2): the layout has already
 	 * read them, scoped and counted, for the tag picker, so this page needs no load of its own.
 	 */
 	let { data }: { data: PageData } = $props();

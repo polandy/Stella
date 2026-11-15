@@ -15,7 +15,7 @@ export interface PreferenceStores {
 }
 
 /*
- * The habits this browser keeps (docs/05 §5.8, docs/02 §2.7): the Filter menu's switches, the
+ * The habits this browser keeps (docs/dev/05 §5.8, docs/dev/02 §2.7): the Filter menu's switches, the
  * density, and the saved views — named Filter-menu states, never the centre or anybody's
  * position, since a view is how to look, not where. `storage` is a getter because merely reading
  * `localStorage` throws where storage is blocked; the defaults then stand.

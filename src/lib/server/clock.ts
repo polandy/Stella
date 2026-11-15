@@ -1,6 +1,6 @@
 /*
  * Clock port — injected wherever logic needs the current time, so units stay
- * deterministic (docs/08 §8.2, §8.3). Production wires `systemClock`; tests pass a fake.
+ * deterministic (docs/dev/08 §8.2, §8.3). Production wires `systemClock`; tests pass a fake.
  */
 
 export interface Clock {

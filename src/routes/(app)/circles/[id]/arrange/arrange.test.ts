@@ -15,7 +15,7 @@ import { answerOf, formOf, routeEvent, type FakeServices } from '$lib/server/tes
 import { actions, load } from './+page.server';
 
 /*
- * The arrange screen's edge (docs/02 §2.4.2, ADR-127): what it loads, and how a post is read and
+ * The arrange screen's edge (docs/dev/02 §2.4.2, ADR-127): what it loads, and how a post is read and
  * answered. The rules are `arrange-people.test.ts`'s; here a refusal must come back as the
  * reader's words with nothing written, which the recorded plans and reverts prove.
  */

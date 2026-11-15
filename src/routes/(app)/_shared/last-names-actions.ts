@@ -17,7 +17,7 @@ import { LAST_NAME_CHANGED_STATUS } from '$lib/surnames/chip-give';
 
 /*
  * The one form action behind every path that gives several people a last name
- * (docs/02 §2.2.4): the *Last names* list, *Select* on People and on a
+ * (docs/dev/02 §2.2.4): the *Last names* list, *Select* on People and on a
  * circle, and passing a name on. Each page spreads it into its own actions, so the rule — every
  * id visible or nothing written, no silent overwrite, one log line — lives in one place.
  */
@@ -37,7 +37,7 @@ export interface LastNameServices {
 /**
  * Apply one submitted form: the people's last names, or a form message saying why not. Takes
  * its deps and the request's translator as arguments, so the action below hands in
- * `locals.services.people` and a test hands in a fake (docs/08 §8.3).
+ * `locals.services.people` and a test hands in a fake (docs/dev/08 §8.3).
  */
 export async function setLastNamesFromForm(
 	people: LastNameServices,
@@ -91,7 +91,7 @@ const TakeBackLastNameSchema = v.object({
 });
 
 /**
- * *Undo* on the profile chip's toast (docs/02 §2.2.4.6): the person's name as it was before the
+ * *Undo* on the profile chip's toast (docs/dev/02 §2.2.4.6): the person's name as it was before the
  * chip gave a last name, or a `LAST_NAME_CHANGED_STATUS` form message when it was changed
  * meanwhile and nothing was written.
  */

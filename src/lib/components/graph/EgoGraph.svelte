@@ -1,12 +1,12 @@
 <script lang="ts">
 	/*
-	 * A picture of a person's map (docs/05 §5.5): the viewed contact at the centre, their
+	 * A picture of a person's map (docs/dev/05 §5.5): the viewed contact at the centre, their
 	 * directly connected people around them. Pure presentation over the relationships the page
 	 * already loaded — no graph engine, no extra fetch — and drawn by the server, so the People
 	 * card shows the shape at once and keeps it where the engine never arrives. It is a picture
 	 * rather than the map: no links, hidden from a screen reader (the list beside it names and
 	 * links everybody), one button as a whole in the card. As on the map, a face wears the
-	 * person's own accent, the one their avatar has (docs/05 §5.10), so nobody changes colour when
+	 * person's own accent, the one their avatar has (docs/dev/05 §5.10), so nobody changes colour when
 	 * the map takes over; a line wears its relationship category (§5.6).
 	 *
 	 * Two shapes, both drawn at their own size, so a narrow card crops their ends rather than
@@ -110,7 +110,7 @@
 >
 	<!--
 		One clip per disc: an SVG image is a rectangle until something rounds it, and the
-		interactive map draws the same faces as circles (docs/05 §5.8).
+		interactive map draws the same faces as circles (docs/dev/05 §5.8).
 	-->
 	<defs>
 		<clipPath id="{uid}-center"><circle cx={c.x} cy={c.y} r={c.r} /></clipPath>

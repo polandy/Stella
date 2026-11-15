@@ -15,7 +15,7 @@ import type {
 } from './source-links';
 
 /*
- * What the wizard's review step reads (docs/02 §2.16): the cards that need an answer with who
+ * What the wizard's review step reads (docs/dev/02 §2.16): the cards that need an answer with who
  * each may be, a search for someone else, whose photo a reviewed card's picture becomes, and
  * the skipped cards with their *Ask again*. Every person here comes from `matchablePeople`, so
  * the member only ever sees people they may browse.

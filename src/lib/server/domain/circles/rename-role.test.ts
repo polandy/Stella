@@ -6,7 +6,7 @@ import type { RoleRename } from './circles';
 import { BlankRoleNameError, renameCircleRole, type RenameRoleDeps } from './rename-role';
 
 /*
- * Renaming one role of a circle (docs/02 §2.4.2): every visible member and every visible photo of
+ * Renaming one role of a circle (docs/dev/02 §2.4.2): every visible member and every visible photo of
  * this circle that carries the role — folded by case — gets the new name, in one write.
  */
 

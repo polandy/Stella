@@ -10,7 +10,7 @@
 	type Item = Extract<PageData['stream'][number], { kind: 'relationship' }>;
 
 	/*
-	 * A relationship recorded between two people, as the stream shows it (docs/02 §2.22.2):
+	 * A relationship recorded between two people, as the stream shows it (docs/dev/02 §2.22.2):
 	 * *Anna linked Ben → father of → Carl*. The row's cells; Home draws the row.
 	 */
 	let {

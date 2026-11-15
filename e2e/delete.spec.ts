@@ -2,8 +2,8 @@ import { expect, test, type Page } from '@playwright/test';
 import { addPerson, mention, openPerson, recordAction, signIn } from './app';
 
 /*
- * Removing a person for good (docs/02 §2.2). Written after the flow was verified in the
- * running app (docs/08 §8.4.1).
+ * Removing a person for good (docs/dev/02 §2.2). Written after the flow was verified in the
+ * running app (docs/dev/08 §8.4.1).
  *
  * The suite shares one demo database, so these cases invent the person they delete rather
  * than taking one of the Brunners with them — Ophelia Trask is in no other spec and in no

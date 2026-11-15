@@ -22,7 +22,7 @@ import { INTERACTION_KINDS } from '../story/interaction-kinds';
 /*
  * The design system lives in two files that TypeScript cannot tie together: the custom
  * properties in `app.css` and the names `tokens.ts` builds for inline styles. These tests hold
- * them to each other, and hold the contrast ratios docs/05 §5.9 promises to their floors — a
+ * them to each other, and hold the contrast ratios docs/dev/05 §5.9 promises to their floors — a
  * renamed token or a re-picked grey now fails here instead of silently unsetting a colour or
  * quietly dropping text below AA.
  */
@@ -147,7 +147,7 @@ describe('app.css declares every token the helpers build', () => {
 	});
 });
 
-describe('AA contrast, both themes (docs/05 §5.9)', () => {
+describe('AA contrast, both themes (docs/dev/05 §5.9)', () => {
 	/** The pairs the interface actually puts on screen, and the floor each has to clear. */
 	const PAIRS: { text: string; on: string; floor: number }[] = [
 		{ text: '--fg', on: '--card', floor: AA_TEXT },
@@ -178,7 +178,7 @@ describe('AA contrast, both themes (docs/05 §5.9)', () => {
 		{ text: '--focus-ring', on: '--card', floor: AA_LARGE },
 		{ text: '--focus-ring', on: '--bg', floor: AA_LARGE },
 		{ text: '--focus-ring', on: '--bg-sunken', floor: AA_LARGE },
-		// The explorer's lines are non-text boundaries on the page ground (docs/05 §5.8). These
+		// The explorer's lines are non-text boundaries on the page ground (docs/dev/05 §5.8). These
 		// tokens are drawn as they are, at full opacity: the inferred kinship line, and a line of
 		// no known category with its arrowhead. The accent-coloured lines are deepened on the
 		// canvas instead, and held to the same floor as drawn in `graph/cytoscape/theme.test.ts`.
@@ -207,7 +207,7 @@ describe('AA contrast, both themes (docs/05 §5.9)', () => {
  * Chips and avatars tint a surface with an accent and write on top of it. The accent is *not*
  * the label colour: in Latte most accents land between 2.6:1 and 3.7:1 against a tint of
  * themselves, below AA at any size, which is why `accentChipStyle` and `accentAvatarStyle`
- * write in `--fg` (docs/05 §5.6). These cases hold that pairing to the AA floor, so a future
+ * write in `--fg` (docs/dev/05 §5.6). These cases hold that pairing to the AA floor, so a future
  * change back to a coloured label fails here rather than in a screenshot.
  */
 describe('text on an accent tint', () => {
@@ -257,7 +257,7 @@ describe('text on an accent tint', () => {
 			});
 		}
 
-		// The ego graph's initials discs: a category tint, initials in --fg (docs/05 §5.9).
+		// The ego graph's initials discs: a category tint, initials in --fg (docs/dev/05 §5.9).
 		it(`reads --fg on every category disc over --card in ${theme}`, () => {
 			const fg = resolveColor(tokens, '--fg');
 			const card = resolveColor(tokens, '--card');
@@ -300,7 +300,7 @@ describe('accents as fills', () => {
 });
 
 /*
- * The offline line (docs/05 §5.7) is tinted with `--warning` so it is not missed, but the
+ * The offline line (docs/dev/05 §5.7) is tinted with `--warning` so it is not missed, but the
  * yellow is only the ground and the icon: the words stay in `--fg`, which has to read on the
  * tint in every theme. The percentage mirrors `--warning-soft` in app.css.
  */
@@ -331,7 +331,7 @@ describe('text on the offline tint', () => {
 
 /*
  * Words on a state tint — the error banner on `--danger-soft`, an active filter chip or the
- * highlighted Filter pill on `--primary-soft` — are written in `--fg` (docs/05 §5.6): the state
+ * highlighted Filter pill on `--primary-soft` — are written in `--fg` (docs/dev/05 §5.6): the state
  * colour itself drops below AA on its own tint in Latte (danger 4.0:1, primary 3.8:1 over the
  * page ground). The percentages mirror app.css and MenuButton.svelte.
  */

@@ -7,7 +7,7 @@
 	import { MEMORY_FACES, type MemoryRowView } from '$lib/memories/view';
 
 	/*
-	 * One memory of *On this day* (docs/02 §2.12.1): the faces, the first line, who wrote it.
+	 * One memory of *On this day* (docs/dev/02 §2.12.1): the faces, the first line, who wrote it.
 	 * The whole row opens the entry; a private one stays veiled, and its veil passive, since the
 	 * row is already the link.
 	 */

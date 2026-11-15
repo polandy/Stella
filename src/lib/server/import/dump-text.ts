@@ -3,7 +3,7 @@ import { SqlDumpError } from '../domain/import/monica/sql-dump';
 import { BodyTooLargeError, readCapped } from '../http/read-capped';
 
 /*
- * The uploaded export as text (docs/02 §2.16), whether it arrived plain or gzipped. A gzip is
+ * The uploaded export as text (docs/dev/02 §2.16), whether it arrived plain or gzipped. A gzip is
  * inflated as a stream and refused once it passes the cap, so a few megabytes on the wire
  * cannot expand into gigabytes in memory before the size is known.
  */

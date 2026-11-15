@@ -11,7 +11,7 @@ import { applyGiftCommand, occasionOf, type GiftCommand } from '../../../_shared
 import type { Actions } from '../$types';
 
 /*
- * The Gifts card (docs/02 §2.25). Every change is a command (docs/04 §4.11.2): noting a gift may
+ * The Gifts card (docs/dev/02 §2.25). Every change is a command (docs/dev/04 §4.11.2): noting a gift may
  * wait on a phone like any addition; changing, giving and removing one go straight to Stella.
  */
 

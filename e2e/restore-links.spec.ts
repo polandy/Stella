@@ -5,9 +5,9 @@ import { tarEntry, tarTrailer } from '../src/lib/archive/tar';
 import { ARCHIVE_FORMAT, ARCHIVE_VERSION } from '../src/lib/server/domain/archive/document';
 
 /*
- * The relationships an archive brings, stored the way the app stores them (docs/02 §2.15,
- * docs/03 §relationship). Written after the owner restored such an archive in the running app
- * (docs/08 §8.4.1).
+ * The relationships an archive brings, stored the way the app stores them (docs/dev/02 §2.15,
+ * docs/dev/03 §relationship). Written after the owner restored such an archive in the running app
+ * (docs/dev/08 §8.4.1).
  *
  * The archive is an older or hand-edited one: a symmetric link the wrong way round, the same
  * friendship from both ends, a person linked to themselves. `seedHousehold` cannot write it — it

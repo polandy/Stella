@@ -3,7 +3,7 @@ import { LABEL_MIN_ZOOMED_FONT_SIZE, SMALLEST_LABEL_FONT_SIZE } from '../layout/
 import { BOW_FIELD, BOWED_CLASS, ROUTE_FIELDS, ROUTED_CLASS } from './canvas-classes';
 import type { CyStyle, StyleContext, StyledElement } from './stylesheet';
 
-/* The lines of the graph stylesheet (docs/05 §5.8): their kinds, bends and routes. */
+/* The lines of the graph stylesheet (docs/dev/05 §5.8): their kinds, bends and routes. */
 
 /**
  * How far up a routed line's name sits from the person its last drop comes down to, in model
@@ -12,7 +12,7 @@ import type { CyStyle, StyleContext, StyledElement } from './stylesheet';
  */
 const ROUTE_NAME_OFFSET = 22;
 
-/** Each line is drawn in one colour, its arrowhead included (docs/05 §5.8). */
+/** Each line is drawn in one colour, its arrowhead included (docs/dev/05 §5.8). */
 export const lineColour = (hex: string) => ({ 'line-color': hex, 'target-arrow-color': hex });
 
 export function edgeStyles({ p, options, transition }: StyleContext): CyStyle[] {
@@ -24,7 +24,7 @@ export function edgeStyles({ p, options, transition }: StyleContext): CyStyle[] 
 	return [
 		// ── Edges ─────────────────────────────────────────────────────────────
 		// Opaque on purpose: each line colour is deepened until it clears 3:1 on the page ground
-		// (docs/05 §5.8), and drawing it see-through would undo exactly that.
+		// (docs/dev/05 §5.8), and drawing it see-through would undo exactly that.
 		{
 			selector: 'edge',
 			style: {
@@ -70,7 +70,7 @@ export function edgeStyles({ p, options, transition }: StyleContext): CyStyle[] 
 			selector: 'edge[kind = "kinship"]',
 			style: { ...lineColour(p.lines.kinship), 'line-style': 'dotted', width: 1.2 }
 		},
-		// A link marked former (docs/02 §2.7): still a link, so still in its category's hue, but
+		// A link marked former (docs/dev/02 §2.7): still a link, so still in its category's hue, but
 		// muted toward the grey, thinner, and dashed longer than a circle's line so the two never
 		// read alike. Its name says "former" too, so the mark holds without colour.
 		{
@@ -85,13 +85,13 @@ export function edgeStyles({ p, options, transition }: StyleContext): CyStyle[] 
 			selector: 'edge[directed = 1]',
 			style: { 'target-arrow-shape': 'triangle', 'arrow-scale': 0.8 }
 		},
-		// One line standing in for several (docs/02 §2.7): thicker the more it carries, and it
+		// One line standing in for several (docs/dev/02 §2.7): thicker the more it carries, and it
 		// always says how many, since that count is the one thing the bundle adds.
 		{
 			selector: 'edge.bundle',
 			style: { width: 'mapData(count, 2, 12, 3, 7)', 'text-opacity': 1 }
 		},
-		// A line an arrangement bends around whoever stands in its way (docs/05 §5.8): its bow
+		// A line an arrangement bends around whoever stands in its way (docs/dev/05 §5.8): its bow
 		// is the control point's sideways offset, set by the controller.
 		{
 			selector: `edge.${BOWED_CLASS}`,
@@ -101,7 +101,7 @@ export function edgeStyles({ p, options, transition }: StyleContext): CyStyle[] 
 				'control-point-weights': 0.5
 			}
 		},
-		// A family line the tree draws at right angles (docs/05 §5.8): straight pieces through the
+		// A family line the tree draws at right angles (docs/dev/05 §5.8): straight pieces through the
 		// bends the controller set, measured from the node centres. Up and down already say who is
 		// whose parent, so no arrowhead; its colour, dots and width stay those of its kind.
 		{

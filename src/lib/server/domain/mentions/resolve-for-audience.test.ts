@@ -8,7 +8,7 @@ import {
 } from './resolve-for-audience';
 
 /*
- * Resolving what a text names against who its audience may name (docs/02 §2.20.1), and asking
+ * Resolving what a text names against who its audience may name (docs/dev/02 §2.20.1), and asking
  * rather than guessing when a typed handle is two people (§2.2.3). A picked mention arrives as
  * an id token and never reaches this question; a hand-typed `@Thomas` does.
  */

@@ -7,10 +7,10 @@ import { resolveForAudience } from '../mentions/resolve-for-audience';
 import { createNote, setNoteMentions, type NoteDeps } from './notes';
 
 /*
- * Writing a note on a person (docs/02 §2.5, §2.20.1), whole: the person must be one the author
+ * Writing a note on a person (docs/dev/02 §2.5, §2.20.1), whole: the person must be one the author
  * can see, @-mentions resolve against the note's audience only — so a mention never widens
  * access — and a note naming its own subject does not list them as a mention. One use-case,
- * so the person page and a note kept on a phone (`note.add`, docs/02 §2.18.1)
+ * so the person page and a note kept on a phone (`note.add`, docs/dev/02 §2.18.1)
  * cannot drift apart.
  */
 

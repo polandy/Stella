@@ -15,7 +15,7 @@ import { newcomerRows, type IgnoredNewcomer, type NewcomerRow } from './newcomer
 import type { ImmichMediaSigner } from './signed-media';
 
 /*
- * *Settings → Immich → Find your people* (docs/02 §2.24.7): the
+ * *Settings → Immich → Find your people* (docs/dev/02 §2.24.7): the
  * people the viewer sees, next to the faces Immich has named, matched by name in
  * `src/lib/immich/match.ts`. Any member may use it — a link is household data (§2.24.2) — and it
  * only ever lists contacts the access layer lets the viewer see. Linking itself is
@@ -72,7 +72,7 @@ export interface MatchFace {
 	strength: MatchStrength;
 	/** How many photos they are in, or null when the key may not count them. */
 	photoCount: number | null;
-	/** The face through the signed proxy, signed for this contact (docs/04 ADR-097). */
+	/** The face through the signed proxy, signed for this contact (docs/dev/04 ADR-097). */
 	faceUrl: string;
 }
 
@@ -156,7 +156,7 @@ export async function matchListed(
 	const named = read.listed.filter((person) => !person.hidden && person.name !== '');
 	const [holders, ignores] = await Promise.all([
 		// Unscoped on the Immich side: a face held by someone the viewer cannot see is taken all
-		// the same, and is simply not offered (docs/04 ADR-096). Unnamed faces are asked about too:
+		// the same, and is simply not offered (docs/dev/04 ADR-096). Unnamed faces are asked about too:
 		// the comparison step shows the face a similar person is linked to, named or not.
 		deps.links.holdersOf(
 			viewer,

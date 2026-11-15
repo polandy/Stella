@@ -11,12 +11,12 @@ import {
 } from './archive-repository';
 
 /*
- * Integration spec for the export read (docs/02 §2.15). The first case is the one that keeps
+ * Integration spec for the export read (docs/dev/02 §2.15). The first case is the one that keeps
  * the backup honest over time: it holds the exported table list against the schema itself, so
  * a table added next year cannot quietly stay out of the archive.
  *
  * Unlike every other read in Stella this one is not scoped through `access/` — an export is
- * the household taking its own data out, private rows included (docs/04 §4.9). What it *is*
+ * the household taking its own data out, private rows included (docs/dev/04 §4.9). What it *is*
  * scoped by is the household, and that is what the rest of these cases check.
  */
 

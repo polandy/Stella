@@ -10,7 +10,7 @@ import type * as schema from './schema';
 import { circle, circleMembership, user } from './schema';
 
 /*
- * Drizzle adapter for the arrangement's writes (docs/08 §8.3, ADR-127): each of `arrange` and
+ * Drizzle adapter for the arrangement's writes (docs/dev/08 §8.3, ADR-127): each of `arrange` and
  * `revert` is one transaction, so a batch lands whole or not at all. What is deleted is read
  * back first, in the same transaction, so the receipt holds the rows as they really were.
  */

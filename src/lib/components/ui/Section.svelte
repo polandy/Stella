@@ -12,7 +12,7 @@
 	import type { IconName } from './icons';
 
 	/*
-	 * A card with one thing in it and one way to add to it (docs/05 §5.5).
+	 * A card with one thing in it and one way to add to it (docs/dev/05 §5.5).
 	 *
 	 * The form stays closed until asked for. The person page used to show six of them open at
 	 * once, so reading about someone meant scrolling past a wall of empty inputs. A form that
@@ -20,10 +20,10 @@
 	 *
 	 * It opens *directly under the header it was asked for from*, never at the foot of the card:
 	 * a person with twelve relationships would otherwise press "Add" and watch nothing happen,
-	 * because the form appeared a screen and a half below the button (docs/05 §5.7).
+	 * because the form appeared a screen and a half below the button (docs/dev/05 §5.7).
 	 *
 	 * `as="row"` is the same thing without the card around it: a disclosure line inside somebody
-	 * else's card, closed until asked for, used for the person page's profile column (docs/05
+	 * else's card, closed until asked for, used for the person page's profile column (docs/dev/05
 	 * §5.5). One component rather than two, so the rules above cannot come to differ between a
 	 * card and a row.
 	 */
@@ -32,7 +32,7 @@
 		title?: string;
 		/** `row` renders as a disclosure line inside another card instead of a card of its own. */
 		as?: 'card' | 'row';
-		/** The anchor a link may point at (docs/05 §5.5); cards only. */
+		/** The anchor a link may point at (docs/dev/05 §5.5); cards only. */
 		id?: string;
 		/** What a closed row is worth reading for — a value or a short list. Rows only. */
 		summary?: string;
@@ -40,7 +40,7 @@
 		 * Whether a row starts unfolded. Rows only, and the caller answers it with "is there
 		 * anything in me": an empty row folds away, a row holding a birthday does not hide it
 		 * behind a click. What was too loud about the profile column was four cards with
-		 * shadows, not the facts in them (docs/05 §5.5).
+		 * shadows, not the facts in them (docs/dev/05 §5.5).
 		 */
 		startOpen?: boolean;
 		/** Shown next to the title when the section holds something countable. */
@@ -57,7 +57,7 @@
 		/**
 		 * The disclosure as an icon alone, its label its accessible name and tooltip — for a card
 		 * whose header also holds a ⋯ menu and an *Edit*, where three worded buttons would wrap
-		 * on a phone (docs/05 §5.5).
+		 * on a phone (docs/dev/05 §5.5).
 		 */
 		iconAdd?: boolean;
 		/** Bindable, so another control — a hero button, say — can open the form. */
@@ -68,13 +68,13 @@
 		/**
 		 * What a card that holds nothing says, in one sentence. Given, the card stands as one
 		 * line — its title, this sentence, its actions — and its body is not drawn, until its
-		 * form is opened (docs/05 §5.5). Cards only.
+		 * form is opened (docs/dev/05 §5.5). Cards only.
 		 */
 		empty?: string;
 		/**
 		 * Last in the card, in either shape — under a one-line card too, without making it a full
 		 * one: something that arrives after the page, like the Photos card's Immich suggestion,
-		 * must not reshape a card already read (docs/05 §5.5). Cards only.
+		 * must not reshape a card already read (docs/dev/05 §5.5). Cards only.
 		 */
 		footer?: Snippet;
 	}
@@ -156,7 +156,7 @@
 	});
 
 	/*
-	 * Opening brings the card into view the one way every card form does (docs/05 §5.11), and
+	 * Opening brings the card into view the one way every card form does (docs/dev/05 §5.11), and
 	 * settles it once the form has grown.
 	 */
 	const openGlide = openedFormGlide();
@@ -236,7 +236,7 @@
 	<!--
 		Named in the DOM, so a row can be addressed without guessing at nesting. Two columns — the line, then its actions — rather than one flex line: a list of rows can
 		make that a subgrid, so every row's actions start at one edge and their icons stand in a
-		column instead of following each label's length (docs/05 §5.5).
+		column instead of following each label's length (docs/dev/05 §5.5).
 	-->
 	<section
 		bind:this={card}
@@ -270,7 +270,7 @@
 		</div>
 
 		{#if shown}
-			<!-- Unfolds and folds in place (docs/05 §5.11); the line above it never moves. -->
+			<!-- Unfolds and folds in place (docs/dev/05 §5.11); the line above it never moves. -->
 			<div class="col-span-full pb-3 pl-5" transition:reveal>{@render body()}</div>
 		{/if}
 	</section>

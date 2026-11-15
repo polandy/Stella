@@ -17,7 +17,7 @@ import {
 } from './veil';
 
 /*
- * The private-entry veil (docs/02 §2.10.1): whether a private entry's content is blurred on
+ * The private-entry veil (docs/dev/02 §2.10.1): whether a private entry's content is blurred on
  * its author's screen, and what a tap on it or on the header lock does. "Now" is handed in.
  */
 const NOW = 1_000_000;

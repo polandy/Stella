@@ -34,7 +34,7 @@ export async function signIn(page: Page): Promise<void> {
  * bar's search button is enabled once the shell has mounted; on a phone's Home it is hidden
  * (the page's own field is the search there), so it is read whether shown or not.
  *
- * It also waits out the welcome on start (docs/05 §5.11.4), which a fresh context's first page
+ * It also waits out the welcome on start (docs/dev/05 §5.11.4), which a fresh context's first page
  * shows: a click waits for it by itself, but a wheel or a raw `page.mouse` press would land on
  * the overlay instead of the page.
  */
@@ -46,7 +46,7 @@ export async function appReady(page: Page): Promise<void> {
 }
 
 /**
- * Shows every private entry on the page for the veil's window (docs/02 §2.10.1), through the
+ * Shows every private entry on the page for the veil's window (docs/dev/02 §2.10.1), through the
  * header lock: a member's own private text is blurred on their screen until asked for.
  */
 export async function showPrivate(page: Page): Promise<void> {
@@ -79,7 +79,7 @@ export async function openPerson(page: Page, name: RegExp): Promise<void> {
 }
 
 /**
- * Turns on the People card's edit mode (docs/05 §5.5), which puts *Edit*, remove and *Confirm*
+ * Turns on the People card's edit mode (docs/dev/05 §5.5), which puts *Edit*, remove and *Confirm*
  * on every row. The toggle is a script control, so a press that lands before the page has
  * hydrated is pressed again — but only while the card still says it is not editing.
  */
@@ -91,7 +91,7 @@ export async function editPeople(page: Page): Promise<void> {
 	}).toPass();
 }
 
-/** Unfolds the People card, whose list and worked-out relatives fold to a handful (docs/05 §5.5). */
+/** Unfolds the People card, whose list and worked-out relatives fold to a handful (docs/dev/05 §5.5). */
 export async function unfoldPeople(page: Page): Promise<void> {
 	const card = page.locator('#section-relationships');
 	await card.getByRole('button', { name: /^Show \d+ more$/ }).click();
@@ -100,7 +100,7 @@ export async function unfoldPeople(page: Page): Promise<void> {
 
 /**
  * Enlarges the People card's map: the card shows a preview on every width and the live map is
- * one *Enlarge map* away (docs/05 §5.5). Done once the live map shows and holds the cursor.
+ * one *Enlarge map* away (docs/dev/05 §5.5). Done once the live map shows and holds the cursor.
  */
 export async function enlargeMap(page: Page): Promise<void> {
 	const enlarge = page
@@ -114,7 +114,7 @@ export async function enlargeMap(page: Page): Promise<void> {
 	).toBeFocused();
 }
 
-/** Chooses one of the People card's rarer actions from its ⋯ menu (docs/05 §5.5). */
+/** Chooses one of the People card's rarer actions from its ⋯ menu (docs/dev/05 §5.5). */
 export async function fromPeopleMenu(page: Page, item: string): Promise<void> {
 	const trigger = page
 		.locator('#section-relationships')
@@ -141,7 +141,7 @@ export async function addPerson(page: Page, first: string, last: string): Promis
 
 /**
  * A row of the person page's identity card, on the card: an empty one waits behind the card's
- * one quiet button (docs/05 §5.5), which is pressed when the row is not there yet.
+ * one quiet button (docs/dev/05 §5.5), which is pressed when the row is not there yet.
  */
 export async function identityRow(page: Page, row: Locator): Promise<Locator> {
 	const addMore = page.getByTestId('identity-add-more');
@@ -152,7 +152,7 @@ export async function identityRow(page: Page, row: Locator): Promise<Locator> {
 }
 
 /**
- * A row of the person page's identity card, unfolded (docs/05 §5.5). A row holding nothing
+ * A row of the person page's identity card, unfolded (docs/dev/05 §5.5). A row holding nothing
  * waits behind the card's quiet button and arrives folded, so the content under test is only
  * on the page once both have been opened.
  */
@@ -166,7 +166,7 @@ export async function profileRow(page: Page, title: string): Promise<Locator> {
 
 /**
  * Opens the editor of one of the identity card's facts — the dates, the address or the circles
- * — where it is read (docs/05 §5.5). A fact the record does not hold yet waits behind the
+ * — where it is read (docs/dev/05 §5.5). A fact the record does not hold yet waits behind the
  * card's quiet button as a slot, which is pressed when it is not there yet.
  */
 export async function factEditor(
@@ -182,7 +182,7 @@ export async function factEditor(
 }
 
 /**
- * Picks an entry of the ⋯ menu on the person page's identity card (docs/05 §5.5) — where
+ * Picks an entry of the ⋯ menu on the person page's identity card (docs/dev/05 §5.5) — where
  * logging a touchpoint and the record-keeping actions live. Archiving, merging and deleting
  * open a confirm step on the card; the caller presses its button.
  */
@@ -208,7 +208,7 @@ export async function mention(page: Page, query: string, label: RegExp): Promise
 
 /**
  * Mentions somebody new in the moment composer: "Create …" opens a small panel with the name
- * filled in (docs/02 §2.22.1), and adding from it writes the mention. A first name alone needs a
+ * filled in (docs/dev/02 §2.22.1), and adding from it writes the mention. A first name alone needs a
  * line to know them by (§2.2.3), so one is given.
  */
 export async function mentionNew(
@@ -267,7 +267,7 @@ export async function releaseSelfClaim(page: Page): Promise<void> {
 /**
  * The server's today, `YYYY-MM-DD`: `/on-this-day` without a day shows today, and its day
  * picker posts that day in a hidden field. A spec that dates something "today" counts from here
- * rather than from the runner's own clock, so only one clock is in play (docs/08 §8.4.2).
+ * rather than from the runner's own clock, so only one clock is in play (docs/dev/08 §8.4.2).
  * Navigates away from the current page.
  */
 export async function serverToday(page: Page): Promise<string> {

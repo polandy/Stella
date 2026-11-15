@@ -3,7 +3,7 @@ import { frameAround, groupBlock, packGroups } from './group-blocks';
 import type { Point } from './geometry';
 
 /*
- * A group by role as one block (docs/02 §2.7): its members in rows as near square as they go,
+ * A group by role as one block (docs/dev/02 §2.7): its members in rows as near square as they go,
  * inside a frame with its name on top — wherever the arrangement set the group down.
  */
 

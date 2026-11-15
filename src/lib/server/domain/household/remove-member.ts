@@ -7,7 +7,7 @@ import type { IdGenerator } from '../../id';
 import { activityRecord, type ActivityOf } from '../activity/activity';
 
 /*
- * The household's members as accounts, and removing and restoring one (docs/02 §2.1). A
+ * The household's members as accounts, and removing and restoring one (docs/dev/02 §2.1). A
  * removed member is marked, not deleted: everything they wrote keeps its author, their private
  * records stay sealed, and they sign nobody in until an admin restores them. Who may remove or
  * restore whom is `canRemoveMember` / `canRestoreMember` and their SQL (access/), checked by the

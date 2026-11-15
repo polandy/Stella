@@ -11,7 +11,7 @@ import type { StoryItem } from '$lib/server/domain/story/story';
 import type { Todo } from '$lib/server/domain/todos/todos';
 
 /*
- * The brief's blocks as the page renders them (docs/02 §2.2.5): one short line per row and the
+ * The brief's blocks as the page renders them (docs/dev/02 §2.2.5): one short line per row and the
  * place it is edited, so tapping any row lands where it can be changed. The words around them —
  * *turns 13*, *daughter*, a veil's label — are the component's, in the reader's language.
  */

@@ -3,7 +3,7 @@ import type { AnswerWarning } from './restore-answers';
 import type { Row } from './restore-fields';
 
 /*
- * What every part of `planRestore` shares (docs/02 §2.15): the warnings it can raise, and the
+ * What every part of `planRestore` shares (docs/dev/02 §2.15): the warnings it can raise, and the
  * household the rows go into with its rules for authorship and stamps. Each `restore-*.ts`
  * planner takes one table group's records and this context, and hands back rows.
  */
@@ -13,7 +13,7 @@ export type MentionKind =
 	'noteMentions' | 'journalMentions' | 'journalSubjects' | 'touchpointParticipants';
 
 /**
- * Something the restore left out, as a code the page words (docs/02 §2.19). The plan is a
+ * Something the restore left out, as a code the page words (docs/dev/02 §2.19). The plan is a
  * domain module and has no language of its own; the report says *what* happened and the
  * wizard says it in the reader's.
  */
@@ -44,7 +44,7 @@ export type RestoreWarning =
 	| { code: 'relationshipMissingEnd' }
 	| { code: 'relationshipsMissingPeople' }
 	| { code: 'relationshipUnknownType' }
-	/** The same symmetric link from both ends, restored once (docs/03 §relationship). */
+	/** The same symmetric link from both ends, restored once (docs/dev/03 §relationship). */
 	| { code: 'relationshipTwinFolded' }
 	| { code: 'relationshipToItself' }
 	| { code: 'imagesMissing'; count: number }
@@ -52,7 +52,7 @@ export type RestoreWarning =
 	| { code: 'imagesNotStored'; count: number }
 	/** Rows of `table` whose person, entry or circle is not here, so they were left out. */
 	| { code: 'rowsWithoutParent'; table: string; count: number }
-	/** Gift notes or gift touchpoints the archive held, made gift records (docs/02 §2.25.4). */
+	/** Gift notes or gift touchpoints the archive held, made gift records (docs/dev/02 §2.25.4). */
 	| { code: 'giftsConverted'; count: number }
 	| AnswerWarning;
 

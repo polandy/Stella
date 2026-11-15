@@ -2,7 +2,7 @@ import { PAGE_MARGIN_MM, printedSize, type Paper } from '$lib/graph/tree-export'
 import type { TreeImage } from '$lib/graph/cytoscape/tree-image';
 
 /*
- * Prints the family tree through the browser's own print dialog (docs/02 §2.7) — a printer, or
+ * Prints the family tree through the browser's own print dialog (docs/dev/02 §2.7) — a printer, or
  * Save as PDF — with no PDF library: for the one print, the page holds nothing but the picture,
  * at the size `printedSize` gives it on the paper, and is handed back afterwards.
  */

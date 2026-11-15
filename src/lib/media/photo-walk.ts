@@ -1,7 +1,7 @@
 /*
- * Walking the gallery from the open photo (docs/02 §2.14). The arrow keys wrap at either end
+ * Walking the gallery from the open photo (docs/dev/02 §2.14). The arrow keys wrap at either end
  * and are left alone while a text field has focus, so typing a caption moves its caret rather
- * than the photo (docs/05 §5.9).
+ * than the photo (docs/dev/05 §5.9).
  */
 
 /** What the decision reads from a key press in the open photo. */

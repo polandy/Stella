@@ -10,7 +10,7 @@
 	import RailSection from './RailSection.svelte';
 
 	/*
-	 * Home's *Coming up* (docs/02 §2.13): the birthdays and anniversaries close ahead, each with
+	 * Home's *Coming up* (docs/dev/02 §2.13): the birthdays and anniversaries close ahead, each with
 	 * *Write a moment* and the gift ideas noted for it, in the rail beside or above the stream.
 	 */
 	let { upcoming }: { upcoming: PageData['upcoming'] } = $props();
@@ -24,12 +24,12 @@
 	const ROW =
 		'grid grid-cols-[28px_1fr] items-center gap-2.5 rounded-app px-1.5 py-1.5 transition-colors hover:bg-card';
 	// A phone shows the first few rows and keeps the rest one tap away; from lg the whole list
-	// is there (docs/05 §5.5).
+	// is there (docs/dev/05 §5.5).
 	const CAP = 3;
 	const OVERFLOW = 'max-lg:hidden';
 	let showAll = $state(false);
 
-	/** The folded line on a phone: *3 · Mia turns 7 · on Saturday* (docs/05 §5.5.1). */
+	/** The folded line on a phone: *3 · Mia turns 7 · on Saturday* (docs/dev/05 §5.5.1). */
 	const summary = $derived.by(() => {
 		const [first] = upcoming;
 		if (!first) return '';
@@ -42,7 +42,7 @@
 </script>
 
 <RailSection icon="calendar" title={t('home.comingUp')} {summary} testid="coming-up">
-	<!-- *Show all* opens the rest of the list in place (docs/05 §5.11). -->
+	<!-- *Show all* opens the rest of the list in place (docs/dev/05 §5.11). -->
 	<ul class={LIST} use:glide={{ key: showAll }}>
 		{#each upcoming as item, i (item.contactId + item.date + item.kind)}
 			<li class="{ROW} {i >= CAP && !showAll ? OVERFLOW : ''}">
@@ -61,7 +61,7 @@
 						{whenLabel(i18n, item.daysUntil, item.date)}
 						<span aria-hidden="true">·</span>
 						<!-- A line of its own height on a touch screen, so the name above stays
-							     its own target (docs/05 §5.9). -->
+							     its own target (docs/dev/05 §5.9). -->
 						<a
 							href="/?about={item.contactId}"
 							class="text-link hover:underline pointer-coarse:inline-flex pointer-coarse:min-h-6 pointer-coarse:items-center"
@@ -69,7 +69,7 @@
 						>
 					</span>
 					{#if item.giftIdeas > 0}
-						<!-- The occasion is the moment an idea was noted for (docs/02 §2.13.3). -->
+						<!-- The occasion is the moment an idea was noted for (docs/dev/02 §2.13.3). -->
 						<a
 							href={contactSectionPath(item.contactId, 'gifts')}
 							class="mt-0.5 inline-flex items-center gap-1 text-xs text-link hover:underline"

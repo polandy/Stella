@@ -2,7 +2,7 @@ import type { OpenIdea } from '$lib/server/domain/gifts/gifts';
 import { authorLabel } from '$lib/story/author';
 
 /*
- * An open idea as the household's list shows it (docs/02 §2.25.6) — the same words as on the
+ * An open idea as the household's list shows it (docs/dev/02 §2.25.6) — the same words as on the
  * person's Gifts card: who noted it by first name, its link, and whether only the viewer sees it.
  */
 export function openIdeaView(

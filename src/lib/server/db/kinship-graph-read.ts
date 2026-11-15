@@ -10,12 +10,12 @@ import type * as schema from './schema';
 import { contact, relationship, relationshipType } from './schema';
 
 /*
- * The one read that feeds the pure kinship engine (docs/02 §2.4.1). Both the person page
+ * The one read that feeds the pure kinship engine (docs/dev/02 §2.4.1). Both the person page
  * (through `KinshipGraphReads` below) and the explorer (through the graph repository) infer
  * from exactly this snapshot, so the two can never disagree about who is related to whom.
  *
  * Scoping happens here, before inference: only contacts the viewer may see and only
- * relationships whose endpoints are both visible (docs/03 §3.7).
+ * relationships whose endpoints are both visible (docs/dev/03 §3.7).
  */
 export function loadKinshipGraph(
 	db: BunSQLiteDatabase<typeof schema>,
@@ -52,7 +52,7 @@ export function loadKinshipGraph(
 	return kinshipGraphOf(people, rows);
 }
 
-/** Drizzle adapter for the `KinshipGraphReads` port (docs/08 §8.3): `loadKinshipGraph` itself. */
+/** Drizzle adapter for the `KinshipGraphReads` port (docs/dev/08 §8.3): `loadKinshipGraph` itself. */
 export function createDrizzleKinshipGraphReads(
 	db: BunSQLiteDatabase<typeof schema>
 ): KinshipGraphReads {

@@ -4,7 +4,7 @@ import { arrangeBy, settled } from './graph-canvas';
 
 /*
  * Entering or leaving full screen frames the map afresh for its new size — unless the reader has
- * panned or zoomed since the map last framed itself, then their view is kept (docs/05 §5.8).
+ * panned or zoomed since the map last framed itself, then their view is kept (docs/dev/05 §5.8).
  * Desktop Chromium, so this is the browser's own Fullscreen API.
  *
  * The canvas re-measures its container only once the container has settled (Cytoscape's own

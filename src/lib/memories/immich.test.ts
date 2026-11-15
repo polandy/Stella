@@ -4,7 +4,7 @@ import { immichStrip, memoryCardsWithImmich, withNextPage } from './immich';
 import type { MemoryYearView } from './view';
 
 /*
- * Immich's photos of the day beside Stella's own (docs/02 §2.12.1): the gallery's come first, then
+ * Immich's photos of the day beside Stella's own (docs/dev/02 §2.12.1): the gallery's come first, then
  * Immich's, newest year first — on Home's one row, and in the page's year cards.
  */
 

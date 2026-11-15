@@ -6,7 +6,7 @@ import { tarEntry, tarTrailer } from '../src/lib/archive/tar';
 import { ARCHIVE_FORMAT, ARCHIVE_VERSION } from '../src/lib/server/domain/archive/document';
 
 /*
- * Seeding people and links through the archive restore (docs/02 §2.15) instead of the forms.
+ * Seeding people and links through the archive restore (docs/dev/02 §2.15) instead of the forms.
  *
  * A family entered through the UI costs a page load and a form post per person and per link —
  * a spec that needs nine people and eight links spent twenty seconds getting to its first
@@ -139,7 +139,7 @@ export async function seedHousehold(
 			from: idOf(link.from),
 			to: idOf(link.to),
 			type: link.type,
-			// The status a link entered through the form gets (docs/03 §relationship).
+			// The status a link entered through the form gets (docs/dev/03 §relationship).
 			status: 'current' satisfies RelationshipStatus
 		})),
 		circles: circles.map((circle) => ({

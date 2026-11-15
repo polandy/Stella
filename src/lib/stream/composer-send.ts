@@ -7,7 +7,7 @@ import type { ComposerCommand, ComposerState, ComposerStep } from './composer-st
 import { linkHintHref } from './link-hint';
 
 /*
- * Saving a moment (docs/02 §2.18.1, docs/04 ADR-076): the part of `composer-state.ts` from Save
+ * Saving a moment (docs/dev/02 §2.18.1, docs/dev/04 ADR-076): the part of `composer-state.ts` from Save
  * to Stella's answer. With JavaScript a moment always goes through the outbox, named once per
  * draft: in reach it waits for the answer, out of reach it is kept on the device. A moment whose
  * answer was lost on the way is recognised by its name when it arrives a second time, so the

@@ -2,7 +2,7 @@ import { segmentMentions } from './mentions';
 
 /*
  * The one-line preview of a body, for the places that list an entry rather than render it
- * (docs/02 §2.20.1). Shared rather than server-only: it is plain string work over the same
+ * (docs/dev/02 §2.20.1). Shared rather than server-only: it is plain string work over the same
  * token grammar the picker and the chip already use.
  */
 
@@ -81,7 +81,7 @@ function firstMatch(text: string, words: readonly string[]): number {
 }
 
 /**
- * A search hit's body as one line, cut around the first word the query found (docs/02 §2.9).
+ * A search hit's body as one line, cut around the first word the query found (docs/dev/02 §2.9).
  * Built here rather than by the index, so a mention reads as the person's name exactly as the
  * chip does — the index only knows the name sits somewhere in the entry. `nameOf` is scoped to
  * the viewer, as for {@link mentionSnippet}; a body matched only by its title shows its start.

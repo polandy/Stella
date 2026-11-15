@@ -1,5 +1,5 @@
 /*
- * The colours a tag may have (docs/02 §2.8), one per Catppuccin accent. Pure and client-safe,
+ * The colours a tag may have (docs/dev/02 §2.8), one per Catppuccin accent. Pure and client-safe,
  * so the command schema a phone's outbox is read with checks against the same list the
  * domain stores.
  */

@@ -3,7 +3,7 @@ import { MEMORY_STRIP_CAP } from './memories';
 import type { MemoryYearView } from './view';
 
 /*
- * Immich's photos of the day beside Stella's own (docs/02 §2.12.1). They arrive after the page is
+ * Immich's photos of the day beside Stella's own (docs/dev/02 §2.12.1). They arrive after the page is
  * drawn, so Home's band and the page fold them into what the server already gave: the gallery's
  * photos first, then Immich's, newest year first.
  */

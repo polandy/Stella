@@ -4,8 +4,8 @@ import { filterMenu } from './graph-canvas';
 
 /*
  * The Filter menu's saved views, its near-miss tolerance and its phone-sized line-kind chips
- * (docs/02 §2.7, docs/05 §5.8). Written after the owner tried them in the running app
- * (docs/08 §8.4.1).
+ * (docs/dev/02 §2.7, docs/dev/05 §5.8). Written after the owner tried them in the running app
+ * (docs/dev/08 §8.4.1).
  *
  * Saved views live in this device's storage; each test gets a fresh browser context, so every
  * test starts with none.

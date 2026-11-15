@@ -4,9 +4,9 @@ import { circleIdOf, personIdOf, seedHousehold } from './seed';
 
 /*
  * What a circle's page and a person's circles card say to a form they would not expect
- * (docs/02 §2.4.2): one that names no member or no circle is asked to be checked, in a sentence,
+ * (docs/dev/02 §2.4.2): one that names no member or no circle is asked to be checked, in a sentence,
  * and nothing is taken out. Written after the owner checked the circle editors in the running
- * app (docs/08 §8.4.1). Each case seeds a circle of its own through the archive restore.
+ * app (docs/dev/08 §8.4.1). Each case seeds a circle of its own through the archive restore.
  */
 
 const CHECK = 'Please check the form and try again.';

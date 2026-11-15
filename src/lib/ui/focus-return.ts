@@ -1,5 +1,5 @@
 /*
- * Where keyboard focus goes when the control holding it disappears (WCAG 2.4.3, docs/05 §5.7).
+ * Where keyboard focus goes when the control holding it disappears (WCAG 2.4.3, docs/dev/05 §5.7).
  *
  * A form that closes after Save or Cancel takes its focused field with it; a row that leaves
  * its list on Remove takes its focused button. Either way the browser drops focus on the page

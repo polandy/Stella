@@ -5,8 +5,8 @@ import type { RestoreContext } from './restore-context';
 import { bool, int, records, str, type Row } from './restore-fields';
 
 /*
- * The relationship types and the relationships an archive brings (docs/03 §relationship,
- * docs/02 §2.15). A link only survives when both its people and its type are here.
+ * The relationship types and the relationships an archive brings (docs/dev/03 §relationship,
+ * docs/dev/02 §2.15). A link only survives when both its people and its type are here.
  */
 
 export interface RelationshipTypesHere {
@@ -51,7 +51,7 @@ export function planRelationships(
 
 	const relationships: Row[] = [];
 	/*
-	 * Each link takes its ends from `relationshipPair`, like every other writer's (docs/03
+	 * Each link takes its ends from `relationshipPair`, like every other writer's (docs/dev/03
 	 * §relationship): an archive from before migration 0025, or one edited by hand, can hold a
 	 * symmetric link the wrong way round, and the unique index and the duplicate check would miss
 	 * it from the other end. The same link from both ends is restored once, as 0025 folded it:
@@ -98,7 +98,7 @@ export function planRelationships(
 			note: str(link, 'description'),
 			since_date: str(link, 'since'),
 			// An archive from before the status meant anything carries none; a link that is on
-			// record holds until someone ends it (docs/02 §2.4).
+			// record holds until someone ends it (docs/dev/02 §2.4).
 			status: str(link, 'status') ?? CURRENT_RELATIONSHIP_STATUS,
 			created_by: ctx.author(link),
 			...ctx.stamps(link)

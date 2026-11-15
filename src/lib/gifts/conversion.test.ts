@@ -9,7 +9,7 @@ import {
 } from './conversion';
 
 /*
- * Gifts Stella already held in other shapes become gift records (docs/02 §2.25.4): the notes
+ * Gifts Stella already held in other shapes become gift records (docs/dev/02 §2.25.4): the notes
  * the Monica import wrote, and the touchpoints of the dropped kind *gift*. Pure, so the startup
  * job, the restore and the importer decide the same way — and nothing written by hand is lost.
  */

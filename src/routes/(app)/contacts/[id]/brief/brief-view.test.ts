@@ -5,7 +5,7 @@ import type { UpcomingDate } from '$lib/server/domain/dates/upcoming';
 import { briefBlockView, briefHomes, type BriefViewContext } from './brief-view';
 
 /*
- * What the brief's blocks say and where each row leads (docs/02 §2.2.5). Which blocks stand and
+ * What the brief's blocks say and where each row leads (docs/dev/02 §2.2.5). Which blocks stand and
  * in what order is `$lib/people/brief`'s; this is only the last step to the page.
  */
 

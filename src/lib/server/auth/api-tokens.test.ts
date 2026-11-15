@@ -13,7 +13,7 @@ import {
 import { hashSessionToken } from './tokens';
 
 /*
- * API tokens (docs/02 §2.16.1): a member mints one for a script, it is shown once and stored
+ * API tokens (docs/dev/02 §2.16.1): a member mints one for a script, it is shown once and stored
  * only as a hash, it lapses on the day it was given, and it can be withdrawn at any time. The
  * repository is an in-memory fake, so every outcome is read back from what it holds.
  */

@@ -4,12 +4,12 @@ import type { CircleDirectoryReads } from '../../circles/directory';
 import { search, type SearchDeps } from '../../search/search';
 
 /*
- * The API's lookups (docs/02 §2.16.1): how a script finds the ids it then names as
+ * The API's lookups (docs/dev/02 §2.16.1): how a script finds the ids it then names as
  * `existingId`. Both go through the household's own reads, so a script finds exactly what its
  * member would find in the app — no more.
  */
 
-/** A person as the API lists them (docs/02 §2.16.1). */
+/** A person as the API lists them (docs/dev/02 §2.16.1). */
 export interface PersonMatch {
 	id: string;
 	displayName: string;

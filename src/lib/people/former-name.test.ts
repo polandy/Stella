@@ -3,7 +3,7 @@ import { foundByFormerName } from './former-name';
 
 /*
  * Whether a person was found by their former name rather than by the name they are shown by
- * (docs/02 §2.9): then a result says *Franziska Abab (formerly Widmer)*, so finding someone
+ * (docs/dev/02 §2.9): then a result says *Franziska Abab (formerly Widmer)*, so finding someone
  * under a name they no longer carry is not a puzzle. Shared by every place that finds people.
  */
 

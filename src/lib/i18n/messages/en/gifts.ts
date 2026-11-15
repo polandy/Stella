@@ -1,14 +1,14 @@
-/* Gifts: ideas, gifts given and gifts received, on the person page (docs/02 §2.25). */
+/* Gifts: ideas, gifts given and gifts received, on the person page (docs/dev/02 §2.25). */
 
 export const gifts = {
 	'gifts.title': 'Gifts',
-	// The card as one line, with nothing noted yet (docs/05 §5.5).
+	// The card as one line, with nothing noted yet (docs/dev/05 §5.5).
 	'gifts.none': 'No gift ideas yet.',
 	'gifts.addIdea': 'Idea',
 	'gifts.addGiven': 'Given',
 	'gifts.addReceived': 'Received',
 	'gifts.menu': 'More for gifts',
-	// The title of a gift made from a touchpoint that said nothing (docs/02 §2.25.4).
+	// The title of a gift made from a touchpoint that said nothing (docs/dev/02 §2.25.4).
 	'gifts.untitled': 'Gift',
 
 	'gifts.tabs.label': 'Gifts by kind',
@@ -54,7 +54,7 @@ export const gifts = {
 	'gifts.remove': (p: { title: string }) => `Remove “${p.title}”`,
 	'gifts.removed': 'Gift removed',
 
-	// The household's list of every open idea (docs/02 §2.25.6).
+	// The household's list of every open idea (docs/dev/02 §2.25.6).
 	'gifts.allIdeas': 'All gift ideas',
 	'gifts.list.title': 'Gift ideas',
 	'gifts.list.intro':
@@ -67,12 +67,12 @@ export const gifts = {
 	'gifts.list.empty': 'No open gift ideas.',
 	'gifts.list.emptyHint': 'Note one on a person’s Gifts card, and it shows up here.',
 
-	// Where a gift stands, as a search hit says it (docs/02 §2.9).
+	// Where a gift stands, as a search hit says it (docs/dev/02 §2.9).
 	'gifts.state.idea': 'Idea',
 	'gifts.state.given': (p: { day: string }) => `Given on ${p.day}`,
 	'gifts.state.received': (p: { day: string }) => `Received on ${p.day}`,
 
-	// In the story (docs/02 §2.23): what happened on the day.
+	// In the story (docs/dev/02 §2.23): what happened on the day.
 	'gifts.story.given': 'Given',
 	'gifts.story.received': 'Received'
 };

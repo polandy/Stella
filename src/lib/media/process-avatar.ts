@@ -3,7 +3,7 @@ import { encodeJpeg } from './encode-jpeg';
 import { readCaptureDate } from './process-image';
 
 /*
- * Client-side avatar processing (docs/02 §2.14). The browser applies EXIF orientation, cuts the
+ * Client-side avatar processing (docs/dev/02 §2.14). The browser applies EXIF orientation, cuts the
  * square the person chose in the cropper (`./crop`), and renders a full (512px) and a thumbnail
  * (128px) JPEG. Re-encoding via canvas drops all EXIF/GPS metadata (a privacy win) and keeps the
  * upload small — so the server needs no native image library. Only the capture date is read out
@@ -14,7 +14,7 @@ import { readCaptureDate } from './process-image';
 const AVATAR_SIZE = 512;
 /**
  * A profile picture cut from a group photo is rendered larger, so it stays sharp once it stands
- * on its own as a photo in the person's gallery (docs/02 §2.14).
+ * on its own as a photo in the person's gallery (docs/dev/02 §2.14).
  */
 export const CUT_SIZE = 1024;
 const THUMB_SIZE = 128;

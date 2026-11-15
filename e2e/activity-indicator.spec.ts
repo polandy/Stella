@@ -5,8 +5,8 @@ import { stateOf } from './graph-canvas';
 
 /*
  * The app saying it is still working, and the map keeping step with the list while a removal
- * waits out its undo window (docs/05 §5.7, docs/02 §2.23). Written after the flow was verified
- * in the running app (docs/08 §8.4.1).
+ * waits out its undo window (docs/dev/05 §5.7, docs/dev/02 §2.23). Written after the flow was verified
+ * in the running app (docs/dev/08 §8.4.1).
  *
  * Neither case waits and hopes. The indicator only shows for work that lasts, so the save here
  * is **held open by the test**: the request cannot finish until the test releases it, which is
@@ -30,7 +30,7 @@ const DORA_ID = 'e2e-dora-wildbach';
 
 /**
  * Holds every save until the returned `release` is called: a form post, and an addition sent
- * as a command through the outbox (docs/04 §4.11.2).
+ * as a command through the outbox (docs/dev/04 §4.11.2).
  */
 async function holdSaves(page: Page): Promise<() => void> {
 	let release!: () => void;
@@ -125,7 +125,7 @@ test('takes a removed link out of the map at once, before it is sent', async ({ 
 
 /*
  * The workbench is development scaffolding: it is served in `bun run dev`, and in a build only
- * to a server that sets `DEBUG_PAGES` (docs/07). The suite runs a build without it, so here the
+ * to a server that sets `DEBUG_PAGES` (docs/dev/07). The suite runs a build without it, so here the
  * route must not exist at all.
  */
 test('does not serve the workbench from a build that did not ask for it', async ({ page }) => {

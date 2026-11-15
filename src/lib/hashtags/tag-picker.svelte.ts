@@ -12,7 +12,7 @@ import {
 } from './picker';
 
 /*
- * The `#` list's state beside whatever field hosts it (docs/02 §2.20.2) — the browser half of
+ * The `#` list's state beside whatever field hosts it (docs/dev/02 §2.20.2) — the browser half of
  * `picker.ts`, which holds every decision. It only reads the text and caret it is handed and
  * gives back the text a choice makes, so a host keeps owning its text: the journal's field and
  * the moment composer both use it next to their `@` list. The two never open together — a

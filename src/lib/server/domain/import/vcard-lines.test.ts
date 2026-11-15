@@ -20,7 +20,7 @@ import {
 } from './vcard-lines';
 
 /*
- * The vCard format itself (docs/02 §2.16): content lines, folding, escapes, parameters and
+ * The vCard format itself (docs/dev/02 §2.16): content lines, folding, escapes, parameters and
  * cards. Both readers stand on it, and an export from another app is the one input Stella does
  * not control, so malformed lines are tested as hard as well-formed ones.
  */

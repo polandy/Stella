@@ -7,7 +7,7 @@ import { hashSessionToken } from '$lib/server/auth/tokens';
 import type { SessionRecord, SessionRepository } from '$lib/server/auth/session';
 
 /*
- * The sign-out edge (docs/02 §2.1) over a test-wired `locals.services` (AR-01): the route
+ * The sign-out edge (docs/dev/02 §2.1) over a test-wired `locals.services` (AR-01): the route
  * reads its collaborators off the request, so its branching is testable without a database
  * or a provider. The cookie helpers read the configuration, whose `$env` only SvelteKit
  * provides; `env-test-preload.ts` (bunfig.toml) stubs it to the defaults for every test file.

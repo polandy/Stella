@@ -13,8 +13,8 @@ import type {
 import { checkedGender, orNull } from './profile';
 
 /*
- * Adding a person by hand (docs/02 §2.2): the shown name derived, the birth date parsed, and
- * someone known by a first name alone refused (docs/02 §2.2.3).
+ * Adding a person by hand (docs/dev/02 §2.2): the shown name derived, the birth date parsed, and
+ * someone known by a first name alone refused (docs/dev/02 §2.2.3).
  */
 
 /** Thrown when a birth date is not a shape we can compute a birthday from. */
@@ -39,7 +39,7 @@ function parseBirthDate(value?: string | null): {
 
 /**
  * Thrown when a person is being added by a first name alone: with no last name and no line to
- * know them by, they cannot be told from the next person of that name (docs/02 §2.2.3).
+ * know them by, they cannot be told from the next person of that name (docs/dev/02 §2.2.3).
  */
 export class NeedsSomethingToKnowThemByError extends TranslatableError {
 	constructor() {

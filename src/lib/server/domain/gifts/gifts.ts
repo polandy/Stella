@@ -9,11 +9,11 @@ import type { ContactLookup } from '../contacts/contacts';
 import { requireVisibleContact } from '../contacts/require-visible';
 
 /*
- * Gift use-cases (docs/02 §2.25). A gift belongs to the one person it is for: an idea, a
+ * Gift use-cases (docs/dev/02 §2.25). A gift belongs to the one person it is for: an idea, a
  * gift the household gave, or one it received. An idea and the gift it became are the same
  * record — *Mark as given* only adds the day and the occasion.
  *
- * A gift is a child record of its person, so visibility follows the central rule (docs/03
+ * A gift is a child record of its person, so visibility follows the central rule (docs/dev/03
  * §3.7): shared with the household unless its author made it private. Whoever may see a gift
  * may change it, mark it given or remove it — a present is the household's, and the member who
  * buys the teapot is rarely the one who noted it. Only its author may make it private, so
@@ -47,7 +47,7 @@ export interface Gift {
 /** A given or received gift: one with a day, as the story shows it. */
 export type DatedGift = Gift & { state: 'given' | 'received'; givenOn: string };
 
-/** An open idea with the person it is for, as the household's list shows it (docs/02 §2.25.6). */
+/** An open idea with the person it is for, as the household's list shows it (docs/dev/02 §2.25.6). */
 export type OpenIdea = Gift & { contactName: string; avatarPhotoId: string | null };
 
 /** Where a page of the story's gifts resumes: strictly older than this. */
@@ -72,7 +72,7 @@ export interface GiftRepository {
 	listForContactVisibleTo(viewer: Viewer, contactId: string): Promise<Gift[]>;
 	/**
 	 * How many open ideas the viewer may see on each of `contactIds` — Home's *Coming up* hint
-	 * (docs/02 §2.13.3). A person with none is left out.
+	 * (docs/dev/02 §2.13.3). A person with none is left out.
 	 */
 	countOpenIdeasVisibleTo(
 		viewer: Viewer,
@@ -80,12 +80,12 @@ export interface GiftRepository {
 	): Promise<Map<string, number>>;
 	/**
 	 * Every open idea the viewer may see, newest noted first, on the people the household still
-	 * browses — an archived person's ideas stay on their page only (docs/02 §2.25.6).
+	 * browses — an archived person's ideas stay on their page only (docs/dev/02 §2.25.6).
 	 */
 	listOpenIdeasVisibleTo(viewer: Viewer): Promise<OpenIdea[]>;
 	/**
 	 * One keyset page of the person's given and received gifts, newest day first, then latest
-	 * noted — the story's order (docs/02 §2.23). Ideas are never in it.
+	 * noted — the story's order (docs/dev/02 §2.23). Ideas are never in it.
 	 */
 	listStoryPageForContactVisibleTo(
 		viewer: Viewer,
@@ -247,7 +247,7 @@ export async function editGift(
 	return { giftId: gift.id };
 }
 
-/** An idea given (docs/02 §2.25): the same record, now with its day and occasion. */
+/** An idea given (docs/dev/02 §2.25): the same record, now with its day and occasion. */
 export async function markGiftGiven(
 	deps: GiftDeps,
 	actor: GiftActor,

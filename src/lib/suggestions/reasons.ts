@@ -1,7 +1,7 @@
 import type { LinkedPhrase, PersonRef } from '$lib/i18n/linked';
 
 /*
- * The sentence a suggestion carries (docs/04 ADR-014). A rule knows *why* it fires long
+ * The sentence a suggestion carries (docs/dev/04 ADR-014). A rule knows *why* it fires long
  * before anything knows who will read it, so the reason
  * leaves the domain unsaid — the sentence's slots and the people in them — and the edge renders
  * it in the reader's language, with every name still a way to that person's page.

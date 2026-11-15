@@ -2,8 +2,8 @@ import { expect, test } from '@playwright/test';
 import { appReady, signIn } from './app';
 
 /*
- * Tidying up the people known by a first name only (docs/02 §2.2.3), from Settings → Data
- * quality. Written after the screen was seen in the running app (docs/08 §8.4.1).
+ * Tidying up the people known by a first name only (docs/dev/02 §2.2.3), from Settings → Data
+ * quality. Written after the screen was seen in the running app (docs/dev/08 §8.4.1).
  *
  * A first name alone can no longer be added by hand, so the case makes one the way older
  * data got there: added with a description, which is then emptied on their page. Theobald

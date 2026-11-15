@@ -1,7 +1,7 @@
 import { keptAt } from './cache-policy';
 
 /*
- * The device's storage running out under the kept pages (docs/02 §2.18). Pure: which failure
+ * The device's storage running out under the kept pages (docs/dev/02 §2.18). Pure: which failure
  * that is, and which kept photos make room. `src/service-worker/keep.ts` does the deleting.
  */
 

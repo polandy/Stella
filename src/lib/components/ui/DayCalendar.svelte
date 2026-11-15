@@ -15,7 +15,7 @@
 	import { useI18n } from '$lib/i18n/context.svelte';
 
 	/*
-	 * A month to pick a day from, in the language Stella is read in (docs/05 §5.7) — not the
+	 * A month to pick a day from, in the language Stella is read in (docs/dev/05 §5.7) — not the
 	 * browser's calendar, which speaks the browser's language. Days after `max` cannot be
 	 * picked. The arrow keys move a day or a week, Page Up/Down a month, Escape cancels.
 	 */

@@ -4,7 +4,7 @@
 	import { LOCALE_NAMES, LOCALES } from '$lib/i18n/locales';
 
 	/*
-	 * Choosing the interface language (docs/02 §2.19). A segmented control of plain submit
+	 * Choosing the interface language (docs/dev/02 §2.19). A segmented control of plain submit
 	 * buttons — one form post per language, so it works with JavaScript off, and the answer
 	 * comes back rendered in the language just chosen.
 	 */

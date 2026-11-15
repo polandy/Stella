@@ -15,7 +15,7 @@ import { say, translator } from '$lib/server/i18n/say';
 import type { Actions, PageServerLoad } from './$types';
 
 /*
- * A member's API tokens (docs/02 §2.16.1). Every member manages their own: a token acts as the
+ * A member's API tokens (docs/dev/02 §2.16.1). Every member manages their own: a token acts as the
  * member who made it, so nobody — an admin included — mints or withdraws one for someone else.
  *
  * Revoking is immediate, without the undo other removals offer: a token is withdrawn because

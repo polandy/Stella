@@ -1,6 +1,6 @@
 /*
  * Which devices cannot be trusted with the browser's own Fullscreen API for the graph
- * (docs/05 §5.8, docs/04 §4.9).
+ * (docs/dev/05 §5.8, docs/dev/04 §4.9).
  *
  * iPadOS/iOS Safari reads a downward drag on a Fullscreen-API element as "swipe to dismiss",
  * and panning the canvas is exactly that drag. There is no feature-detectable signal for the

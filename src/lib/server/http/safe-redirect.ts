@@ -1,7 +1,7 @@
 /*
  * Where a form post may send the browser afterwards. A `redirectTo` field travels in plain
  * form data, so it is attacker-controlled: anything but a path on this origin is discarded
- * rather than turned into an open redirect (docs/04 §4.7).
+ * rather than turned into an open redirect (docs/dev/04 §4.7).
  */
 
 /** Where a missing or unsafe destination lands instead. */

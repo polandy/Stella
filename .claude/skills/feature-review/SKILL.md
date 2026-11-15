@@ -20,7 +20,7 @@ merging the base branch in, the decision-log deep check, the whole e2e suite. It
 - `git diff --stat origin/main...HEAD` plus uncommitted work (`git status --short`), and
   `git log --oneline origin/main..HEAD`. If a PR exists (`gh pr view`), read its description: the
   review checks the implementation against its stated intent. Nothing else in the repo is in scope.
-- Decide the **phase** — it decides what may happen to the e2e (`docs/08` §8.4.1):
+- Decide the **phase** — it decides what may happen to the e2e (`docs/dev/08` §8.4.1):
   - **pre-sign-off**: the owner has not yet confirmed the behaviour in the running app. Run the
     *existing* affected specs as a regression check. **Do not write the new e2e.**
   - **post-sign-off**: the owner has said the behaviour is right ("OK", "weiter mit dem e2e", …).
@@ -29,12 +29,12 @@ merging the base branch in, the decision-log deep check, the whole e2e suite. It
 
 ## 1. Standards, against the diff only
 
-`CLAUDE.md` (Golden rules, Non-negotiables) and `docs/08-coding-guidelines.md` are the standard —
+`CLAUDE.md` (Golden rules, Non-negotiables) and `docs/dev/08-coding-guidelines.md` are the standard —
 apply them to the changed lines rather than re-deriving them. The highest-signal checks:
 
-- **Docs move with behaviour**: `docs/02` (owning section), `docs/03` (model), `docs/05` (a new
-  screen / component / interaction pattern — select modes, bars, pickers), `docs/using-stella.md`
-  (anything a user does differently), `docs/07` + `docs/install.md` (operators). A stale sentence
+- **Docs move with behaviour**: `docs/dev/02` (owning section), `docs/dev/03` (model), `docs/dev/05` (a new
+  screen / component / interaction pattern — select modes, bars, pickers), `docs/user/using-stella.md`
+  (anything a user does differently), `docs/dev/07` + `docs/user/install.md` (operators). A stale sentence
   about behaviour this feature changed is a finding.
 - **English and German both** for every new user-visible string (`useI18n()` in components,
   `say(locals, …)` in routes); no raw strings, no emoji, icons from `Icon.svelte`.

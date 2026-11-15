@@ -6,7 +6,7 @@ import { journalEntry, photo } from './schema';
 
 /*
  * Drizzle adapter for the OwnEntries port: an entry's photos as its author edits them
- * (docs/02 §2.20). Ownership rather than visibility, because only its author edits an entry.
+ * (docs/dev/02 §2.20). Ownership rather than visibility, because only its author edits an entry.
  */
 export function createDrizzleOwnEntries(db: BunSQLiteDatabase<typeof schema>): OwnEntries {
 	const ownedBy = (authorId: string, entryId: string) =>

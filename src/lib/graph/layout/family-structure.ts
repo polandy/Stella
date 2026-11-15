@@ -4,7 +4,7 @@ import type { GraphEdge } from '../model/types';
 import type { Point } from './geometry';
 
 /*
- * What the family tree's lines and their crossings are both read from (docs/05 §5.8), for
+ * What the family tree's lines and their crossings are both read from (docs/dev/05 §5.8), for
  * `tree-lines.ts`. Pure: the positions are worked out already.
  */
 
@@ -46,7 +46,7 @@ export function familyStructure(
 	};
 	for (const e of familyLines) {
 		// A former partnership is still a line, but never the couple a child hangs from: their
-		// children drop from each parent, not from a bar saying the two are together (docs/02 §2.7).
+		// children drop from each parent, not from a bar saying the two are together (docs/dev/02 §2.7).
 		if (isPartnerLine(e) && !e.former) {
 			link(partners, e.source, e.target);
 			link(partners, e.target, e.source);

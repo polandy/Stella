@@ -9,7 +9,7 @@ import {
 } from './tree-view';
 
 /*
- * How the Labels switch reads in the family tree (docs/05 §5.8). Elsewhere it is the reader's
+ * How the Labels switch reads in the family tree (docs/dev/05 §5.8). Elsewhere it is the reader's
  * habit, kept per device; in the tree the roles under the names already say what the line names
  * would, so the tree starts with them off — and the switch still turns them on and off there,
  * without touching the habit the other arrangements go back to.

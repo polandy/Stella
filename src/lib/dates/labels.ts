@@ -1,7 +1,7 @@
 import type { Translate } from '$lib/i18n/translate';
 
 /*
- * How a date reads on screen (docs/02 §2.13.3). Pure and framework-free so the wording is
+ * How a date reads on screen (docs/dev/02 §2.13.3). Pure and framework-free so the wording is
  * unit-tested rather than eyeballed in a component: an upcoming date is a countdown, not a
  * calendar entry, and a named anniversary says more than a bare count.
  *
@@ -9,7 +9,7 @@ import type { Translate } from '$lib/i18n/translate';
  * `Intl`, both handed in as `DateLanguage` — the viewer's `I18n` satisfies it as it is.
  */
 
-/** What these labels need of the viewer's language (docs/02 §2.19). */
+/** What these labels need of the viewer's language (docs/dev/02 §2.19). */
 export interface DateLanguage {
 	t: Translate;
 	/** The BCP-47 tag `Intl` formats with, e.g. "de-DE". */

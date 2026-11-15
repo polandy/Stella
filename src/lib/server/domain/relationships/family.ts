@@ -17,7 +17,7 @@ import {
 } from './suggestion-review';
 
 /*
- * The family cards of the person page in one read (docs/04 §4.11). Each card has its own
+ * The family cards of the person page in one read (docs/dev/04 §4.11). Each card has its own
  * use-case — derived kin and proposals, the review, what the picker greys out, the map — and
  * each of those reads the whole visible kinship graph for itself. Asked one after the other
  * they read it four times in a request; here it is read once, together with the drawing the
@@ -30,7 +30,7 @@ export interface VisibleFamily {
 	kinship: KinshipGraph;
 }
 
-/** Where the visible family comes from, already scoped to the viewer (docs/03 §3.7). */
+/** Where the visible family comes from, already scoped to the viewer (docs/dev/03 §3.7). */
 export interface VisibleFamilySource {
 	loadVisibleGraphWithKinship(viewer: Viewer): Promise<VisibleFamily>;
 }
@@ -53,7 +53,7 @@ export interface FamilyRead {
 	ties: RelationshipView[];
 	/**
 	 * How each person at the far end of a tie is worded — gendered where their gender is on
-	 * record — so the People card can say *his wife* rather than *Spouse of* (docs/05 §5.5).
+	 * record — so the People card can say *his wife* rather than *Spouse of* (docs/dev/05 §5.5).
 	 * Keyed by contact id; read from the kinship graph already loaded, so it costs no query.
 	 */
 	tieWording: Record<string, KinVariant>;

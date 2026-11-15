@@ -2,7 +2,7 @@ import { describe, expect, it } from 'bun:test';
 import { removalKey, REMOVAL_KINDS } from './keys';
 
 /*
- * Every deferred removal is identified by one key, built here (docs/02 §2.23). The key is
+ * Every deferred removal is identified by one key, built here (docs/dev/02 §2.23). The key is
  * what a list checks to hide a row, so two different things must never produce the same one.
  */
 

@@ -2,9 +2,9 @@ import { expect, test, type Page } from '@playwright/test';
 import { signIn } from './app';
 
 /*
- * The second of Monica's own exports: the JSON file (docs/02 §2.16, docs/monica-mapping.md).
+ * The second of Monica's own exports: the JSON file (docs/dev/02 §2.16, docs/user/monica-mapping.md).
  * Written after a real export from the maintainer's Monica went through the wizard and was
- * checked in the app (docs/08 §8.4.1).
+ * checked in the app (docs/dev/08 §8.4.1).
  *
  * What this file proves that `monica-import.spec.ts` cannot: the format is recognised from the
  * file itself with nothing to pick, the pictures travel *inside* the export instead of a folder,
@@ -79,7 +79,7 @@ test('imports a JSON export, stores the pictures it carries and shows the people
 	// The link names its type in words only, and still found Stella's built-in type.
 	await expect(page.getByRole('link', { name: 'Marlis Hauenstein', exact: true })).toBeVisible();
 	await expect(page.getByText('Bringt an Silvester immer die Rösti mit.')).toBeVisible();
-	// Monica's tasks (docs/02 §2.26.8): the open one on the card, the description after its
+	// Monica's tasks (docs/dev/02 §2.26.8): the open one on the card, the description after its
 	// title; the completed one done in Activity on the day Monica completed it.
 	await expect(todoRow(page, 'Buch zurückgeben — das rote, von Weihnachten')).toHaveCount(1);
 	await expect(doneOn(page, 'Monday, 6 May 2024', 'Rezept schicken')).toContainText('Done');

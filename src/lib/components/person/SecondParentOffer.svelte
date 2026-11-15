@@ -4,7 +4,7 @@
 	import { useTranslate } from '$lib/i18n/context.svelte';
 
 	/*
-	 * The likely second parent (rule L3, docs/02 §2.4.1), offered under the person field while
+	 * The likely second parent (rule L3, docs/dev/02 §2.4.1), offered under the person field while
 	 * one parent is picked for "Child of": one tap makes them a chip, nothing is preselected.
 	 */
 

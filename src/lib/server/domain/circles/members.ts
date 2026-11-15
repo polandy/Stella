@@ -2,8 +2,8 @@ import type { Viewer } from '../../access/visibility';
 import type { CircleCreator, CircleDeps, MemberRemovalDeps, MemberRoleDeps } from './circles';
 
 /*
- * Who is in a circle (docs/02 §2.4.2): adding people, giving them a role and taking them out.
- * Only memberships the viewer can see are re-roled or removed (docs/03 §3.7).
+ * Who is in a circle (docs/dev/02 §2.4.2): adding people, giving them a role and taking them out.
+ * Only memberships the viewer can see are re-roled or removed (docs/dev/03 §3.7).
  */
 
 const orNull = (value?: string | null): string | null => {

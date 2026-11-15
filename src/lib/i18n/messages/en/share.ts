@@ -1,4 +1,4 @@
-/* The share sheet: what another app shared, saved about one person (docs/02 §2.18.3). */
+/* The share sheet: what another app shared, saved about one person (docs/dev/02 §2.18.3). */
 
 export const share = {
 	'share.title': 'Share to Stella',

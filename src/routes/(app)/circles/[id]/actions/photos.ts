@@ -18,7 +18,7 @@ import { readCutForm } from '$lib/server/http/cut-form';
 import type { Actions } from '../$types';
 
 /*
- * The lightbox of a circle's photos (docs/02 §2.4.2). Caption, role and pin are for anyone who
+ * The lightbox of a circle's photos (docs/dev/02 §2.4.2). Caption, role and pin are for anyone who
  * sees the photo; shared/private and removing for whoever added it (concept §4) — the
  * use-cases decide, these only read the form. A save answers with data rather than a redirect,
  * so the lightbox stays open on the photo and the page keeps its scroll.

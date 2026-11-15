@@ -3,7 +3,7 @@ import { createTranslator } from '$lib/i18n/translate';
 import { otherEndRole, relationshipRoleLabel, roleTermLabel } from './roles';
 
 /*
- * Who somebody on a person's People card is *to that person* (docs/05 §5.5): Lena on her
+ * Who somebody on a person's People card is *to that person* (docs/dev/05 §5.5): Lena on her
  * father's page is his daughter, not "Parent of". The row is read from the page's side, so the
  * role is the type's other side, said as a noun.
  */

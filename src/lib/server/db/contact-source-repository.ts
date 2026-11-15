@@ -19,7 +19,7 @@ import {
 } from './schema';
 
 /*
- * The remembered answers of the matching review (docs/02 §2.16, docs/03 `contact_source_link`)
+ * The remembered answers of the matching review (docs/dev/02 §2.16, docs/dev/03 `contact_source_link`)
  * and the people a card is matched against. Answers belong to the household; what one may
  * say follows the person it names, through `contactBrowsableBy`.
  */

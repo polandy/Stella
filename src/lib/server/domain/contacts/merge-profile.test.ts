@@ -2,7 +2,7 @@ import { describe, expect, it } from 'bun:test';
 import { mergeProfiles, type MergeableProfile } from './merge-profile';
 
 /*
- * Combining two profiles into one (docs/02 §2.2). The survivor keeps everything it says; the
+ * Combining two profiles into one (docs/dev/02 §2.2). The survivor keeps everything it says; the
  * record being merged away only ever fills blanks — except for the two pairs of fields that
  * would lie if they were filled one at a time.
  */
@@ -45,7 +45,7 @@ describe('mergeProfiles', () => {
 	});
 
 	it('takes the birth date and its precision as one, never one from each', () => {
-		// Half of each would claim a day nobody entered (docs/03 §3.4).
+		// Half of each would claim a day nobody entered (docs/dev/03 §3.4).
 		const merged = mergeProfiles(
 			profile({ birthDate: null, birthDatePrecision: 'year' }),
 			profile({ birthDate: '--04-23', birthDatePrecision: 'month_day' })

@@ -11,7 +11,7 @@ import type { SyncConflictKind } from '../../domain/nextcloud/sync-plan';
 import { household } from './household';
 import { contact } from './people';
 
-/* The household's linked Nextcloud address book (docs/02 §2.16.3, docs/03 §3.3). */
+/* The household's linked Nextcloud address book (docs/dev/02 §2.16.3, docs/dev/03 §3.3). */
 
 /**
  * Where the last sync of a book stopped: the server's sync token, so the next one asks only for
@@ -62,7 +62,7 @@ export const nextcloudCard = sqliteTable(
 );
 
 /**
- * A fact a linked card changed to something else than Stella holds (docs/02 §2.16.3), waiting
+ * A fact a linked card changed to something else than Stella holds (docs/dev/02 §2.16.3), waiting
  * under *Data quality*. Stella's value stays, and the person is not written out, until someone
  * answers. One per person and fact; a newer change replaces it. Follows the person it names.
  */

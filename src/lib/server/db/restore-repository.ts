@@ -19,10 +19,10 @@ import type * as schema from './schema';
 import { activityLog } from './schema';
 
 /*
- * Drizzle adapter for the RestoreRepository port (docs/02 §2.15). The counterpart of
+ * Drizzle adapter for the RestoreRepository port (docs/dev/02 §2.15). The counterpart of
  * `archive-repository.ts`, and like it the one write in Stella that does not go through a
  * use-case per record: an import is the household putting its own data back, private rows
- * included (docs/04 §4.9). The authorisation is the admin check at the edge, the scoping is
+ * included (docs/dev/04 §4.9). The authorisation is the admin check at the edge, the scoping is
  * the household id the plan was built with.
  *
  * Rows arrive as columns and values, the way they were read out. Nothing here comes from the
@@ -243,7 +243,7 @@ export function createDrizzleRestoreRepository(
 					counts[table] = { added, skipped: rows.length - added - withoutParent, withoutParent };
 				}
 
-				// An entry's tags are its text's (docs/02 §2.20.2), so the archive carries no tag
+				// An entry's tags are its text's (docs/dev/02 §2.20.2), so the archive carries no tag
 				// rows: each entry is read again here, from the text it has now — one already here by
 				// its id keeps its own, and one skipped for a taken day slot is not there at all.
 				const entries = plan.tables.find((t) => t.table === 'journal_entry')?.rows ?? [];

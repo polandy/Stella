@@ -4,7 +4,7 @@ import type { KnownCircle } from './plan';
 import { context, doc, knownCircle, NOW, planned, refused, SOURCE } from './plan.fixture';
 
 /*
- * Changing a circle already in Stella (docs/02 §2.16.1): a school career put in order after the
+ * Changing a circle already in Stella (docs/dev/02 §2.16.1): a school career put in order after the
  * fact — the old class renamed and moved, with the kindergarten years, inside one new circle. A
  * detail the entry names is set, one it leaves out is kept, and the household's nesting is read
  * whole, so no move can put a circle inside itself.

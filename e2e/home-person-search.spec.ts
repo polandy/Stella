@@ -2,8 +2,8 @@ import { expect, test, type Page } from '@playwright/test';
 import { signIn } from './app';
 
 /*
- * The top of a phone's Home finds a person (docs/02 §2.22.1); the desktop keeps the composer
- * there. Written after the maintainer checked it on the phone (docs/08 §8.4.1).
+ * The top of a phone's Home finds a person (docs/dev/02 §2.22.1); the desktop keeps the composer
+ * there. Written after the maintainer checked it on the phone (docs/dev/08 §8.4.1).
  *
  * Read-only against the demo household.
  */
@@ -91,7 +91,7 @@ test.describe('on a phone', () => {
 	test('keeps the breadcrumb, not the logo, everywhere but Home', async ({ page }) => {
 		await page.getByRole('link', { name: 'People' }).last().click();
 
-		// A phone's trail is only the way back: on People that is Home (docs/05 §5.4).
+		// A phone's trail is only the way back: on People that is Home (docs/dev/05 §5.4).
 		await expect(page.getByRole('navigation', { name: 'Breadcrumb' })).toContainText('Home');
 		await expect(page.getByRole('banner').getByRole('link', { name: 'Stella home' })).toHaveCount(
 			0

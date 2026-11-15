@@ -4,7 +4,7 @@ import { createTranslator } from '$lib/i18n/translate';
 import { claimSentence } from './claim-sentence';
 
 /*
- * The claim a row makes, said so that both people in it stay followable (docs/02 §2.4.1).
+ * The claim a row makes, said so that both people in it stay followable (docs/dev/02 §2.4.1).
  *
  * The same sentence the row has always shown — it is the names inside it that change, from
  * text into a way to that person's page. Which is why it is built here and not written into

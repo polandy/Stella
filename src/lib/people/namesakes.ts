@@ -1,5 +1,5 @@
 /*
- * Telling namesakes apart (docs/02 §2.2.3). A household ends up with several people called
+ * Telling namesakes apart (docs/dev/02 §2.2.3). A household ends up with several people called
  * just "Thomas" — met once, first name only — and a list of five identical names is no help
  * choosing one. Every person whose name another person on the list shares gets a second line
  * saying which one they are. Pure and client-safe: the pickers work it out as they render.
@@ -20,7 +20,7 @@ export interface Distinguishable {
 	lastName?: string | null;
 }
 
-/** The second line under a namesake, wording left to the component (docs/02 §2.19). */
+/** The second line under a namesake, wording left to the component (docs/dev/02 §2.19). */
 export type Distinction =
 	| { kind: 'description'; text: string }
 	/** At least one of the two is present. */
@@ -123,7 +123,7 @@ export function hasNothingTyped(person: Distinguishable): boolean {
 }
 
 /**
- * Whether someone is known by a first name alone (docs/02 §2.2.3): no last name, neither in its
+ * Whether someone is known by a first name alone (docs/dev/02 §2.2.3): no last name, neither in its
  * field nor in the name they are shown by, and nothing for the namesake line to say either. The
  * people the clean-up list gathers, by the same rule that would give them *Nothing yet*.
  */

@@ -2,9 +2,9 @@ import { expect, test } from '@playwright/test';
 import { fromPeopleMenu, openPerson, signIn } from './app';
 
 /*
- * Out of a person's page into the household's graph, and back again (docs/02 §2.7,
- * docs/05 §5.5). The map on a profile reaches two hops; this is the way past it, and the way
- * home from it. Written after the maintainer walked it in the running app (docs/08 §8.4.1).
+ * Out of a person's page into the household's graph, and back again (docs/dev/02 §2.7,
+ * docs/dev/05 §5.5). The map on a profile reaches two hops; this is the way past it, and the way
+ * home from it. Written after the maintainer walked it in the running app (docs/dev/08 §8.4.1).
  */
 
 test.beforeEach(async ({ page }) => {

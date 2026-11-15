@@ -1,6 +1,6 @@
 /**
  * Where an address that led nowhere was meant to go, so the error screen can offer the way
- * back to its list (docs/design/screens/across-screens.md): a stale link to a merged or
+ * back to its list (docs/dev/design/screens/across-screens.md): a stale link to a merged or
  * deleted person, a circle that was dissolved, or `/settings/immich` on a Stella without
  * Immich. Any failure other than *not found* is `failed` — the server's own message says why.
  */

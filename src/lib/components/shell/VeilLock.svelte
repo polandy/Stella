@@ -5,7 +5,7 @@
 	import { useVeil } from '$lib/privacy/veil.svelte';
 
 	/*
-	 * The page header's lock (docs/02 §2.10.1, docs/05 §5.4): *3 private* while the page holds
+	 * The page header's lock (docs/dev/02 §2.10.1, docs/dev/05 §5.4): *3 private* while the page holds
 	 * blurred entries, a tap shows them all for five minutes — after the device's check where it
 	 * is set up — and *Private shown · 4:59* meanwhile, a tap blurring them again. Absent on a
 	 * page with nothing private, and for a member who does not blur.

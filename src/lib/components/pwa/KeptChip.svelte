@@ -6,7 +6,7 @@
 	import Icon from '../ui/Icon.svelte';
 
 	/*
-	 * A tag or circle added while Stella was out of reach, kept on this device (docs/02 §2.18):
+	 * A tag or circle added while Stella was out of reach, kept on this device (docs/dev/02 §2.18):
 	 * the chip it will become, in a dashed outline, beside the real ones. A single word is
 	 * quicker typed again than edited, so it offers only *Discard*, and without asking twice —
 	 * what is lost is the word on the chip. A refused one turns to `--danger` and says why.

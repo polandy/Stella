@@ -3,7 +3,7 @@ import type { Viewer } from '../../access/visibility';
 import { setSelfContact, UnknownSelfContactError, type SelfContactDeps } from './self-contact';
 
 /*
- * Choosing which person you are (docs/02 §2.1.3). The rules that matter: only a contact the
+ * Choosing which person you are (docs/dev/02 §2.1.3). The rules that matter: only a contact the
  * member may actually see can be stored, and the link can always be taken back.
  */
 

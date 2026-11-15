@@ -24,10 +24,10 @@
 	import type { PersonForm, PersonPageData } from './types';
 
 	/*
-	 * The Gifts card (docs/02 §2.25): open ideas, what was given and what was received, one tab
+	 * The Gifts card (docs/dev/02 §2.25): open ideas, what was given and what was received, one tab
 	 * each — *Received* only once there is one. *+ Idea* is the card's own button, *+ Given* sits
 	 * beside it, *+ Received* waits in the ⋯ menu. With nothing noted the card is one line
-	 * (docs/05 §5.5), and *+ Given* joins *+ Received* in the menu so the line stays one line.
+	 * (docs/dev/05 §5.5), and *+ Given* joins *+ Received* in the menu so the line stays one line.
 	 */
 	let { data, form }: { data: PersonPageData; form: PersonForm } = $props();
 
@@ -38,7 +38,7 @@
 	// The writer's day, as the story's forms take it.
 	const today = $derived(writersDay(data.today, browser ? deviceDay() : null));
 
-	// A gift on its way out (docs/02 §2.23) is gone from the card while its undo window is open.
+	// A gift on its way out (docs/dev/02 §2.23) is gone from the card while its undo window is open.
 	const shown = $derived(data.gifts.filter((g) => !removals.isPending(removalKey('gift', g.id))));
 	const ideas = $derived(shown.filter((g) => g.state === 'idea'));
 	const given = $derived(shown.filter((g) => g.state === 'given'));
@@ -51,7 +51,7 @@
 	// The Received tab leaves with its last gift; the card falls back to the ideas.
 	const current = $derived(tabs.some((entry) => entry.tab === tab) ? tab : 'ideas');
 
-	/** Gifts noted here while Stella was out of reach (docs/02 §2.18), until they are sent. */
+	/** Gifts noted here while Stella was out of reach (docs/dev/02 §2.18), until they are sent. */
 	const kept = $derived(
 		outbox.mine.filter(
 			(item): item is KeptOf<'gift.add'> =>
@@ -72,7 +72,7 @@
 		adding = kind;
 		open = true;
 	}
-	// The palette's *Gift idea for …* lands here with the idea form open (docs/05 §5.4). On a
+	// The palette's *Gift idea for …* lands here with the idea form open (docs/dev/05 §5.4). On a
 	// navigation, not on every load: a save reloads the page, and must not open it again.
 	afterNavigate(({ to }) => {
 		if (to && asksForGiftIdea(to.url)) startAdding('idea');
@@ -185,7 +185,7 @@
 				>
 					<Icon name="add" size={14} />{t('gifts.addReceived')}
 				</button>
-				<!-- Every idea of the household on one page (docs/02 §2.25.6). -->
+				<!-- Every idea of the household on one page (docs/dev/02 §2.25.6). -->
 				<a href="/gifts" role="menuitem" class={MENU_ITEM} onclick={close}>
 					<Icon name="idea" size={14} />{t('gifts.allIdeas')}
 				</a>

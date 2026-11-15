@@ -5,7 +5,7 @@ import { EmptyContactNameError } from './profile';
 import type { ActivityOf } from '../activity/activity';
 
 /*
- * Editing a person's name parts on their profile (docs/02 §2.2, ADR-106): first
+ * Editing a person's name parts on their profile (docs/dev/02 §2.2, ADR-106): first
  * name, last name and nickname, which until now could only be given when the person was added.
  * The shown name follows the parts when the parts made it, and a changed last name may be kept
  * as the former one.
@@ -85,7 +85,7 @@ describe('editNameParts', () => {
 						lastName: 'Brunner',
 						nickname: 'Tom',
 						formerName: null,
-						// A last name ends *no last name* (docs/02 §2.2.4.2).
+						// A last name ends *no last name* (docs/dev/02 §2.2.4.2).
 						withoutLastNameAt: null,
 						updatedAt: NOW
 					}
@@ -256,7 +256,7 @@ describe('editNameParts', () => {
 	});
 
 	/*
-	 * *Shown as* is in the same editor (docs/02 §2.2): while it follows the parts it is made
+	 * *Shown as* is in the same editor (docs/dev/02 §2.2): while it follows the parts it is made
 	 * again from them; once a member types their own, that is what is stored.
 	 */
 	it('makes a following shown name again from the new parts when it comes back untouched', async () => {
@@ -369,7 +369,7 @@ describe('editNameParts', () => {
 	});
 
 	/*
-	 * Home is told (docs/02 §2.11): one line per save that changes the name, no more visible than
+	 * Home is told (docs/dev/02 §2.11): one line per save that changes the name, no more visible than
 	 * the person.
 	 */
 	it('tells the household nothing when the save changed nothing', async () => {
@@ -422,7 +422,7 @@ describe('editNameParts', () => {
 	});
 
 	/*
-	 * The former name is a part of its own (docs/02 §2.2): typed, cleared, or filled by *Keep …
+	 * The former name is a part of its own (docs/dev/02 §2.2): typed, cleared, or filled by *Keep …
 	 * as former name*, and never in the shown name.
 	 */
 	it('stores a typed former name, trimmed, and clears an emptied one', async () => {

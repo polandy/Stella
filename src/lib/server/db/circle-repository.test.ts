@@ -135,7 +135,7 @@ describe('memberships', () => {
 });
 
 /*
- * `addMemberships` is the atomic seam behind the multi-pick (docs/02 §2.4.2): one transaction
+ * `addMemberships` is the atomic seam behind the multi-pick (docs/dev/02 §2.4.2): one transaction
  * decides who is already a member and inserts the rest, so a pick either lands whole or not at
  * all. The skip has to happen inside that transaction — deciding it outside would let a
  * concurrent join slip in between the check and the insert.

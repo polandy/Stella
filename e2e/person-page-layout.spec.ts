@@ -2,11 +2,11 @@ import { expect, test } from '@playwright/test';
 import { fillDate, openPerson, signIn } from './app';
 
 /*
- * The landing view of a person's page (docs/05 §5.5). The page is one column of cards in a
+ * The landing view of a person's page (docs/dev/05 §5.5). The page is one column of cards in a
  * fixed order — the identity card, relationships, photos, then story and notes, gifts, then
  * mentions —
  * with no tabs to open: what a reader came for is on the page when they arrive. Written after
- * the maintainer saw the reordered page live, on the family instance itself (docs/08 §8.4.1);
+ * the maintainer saw the reordered page live, on the family instance itself (docs/dev/08 §8.4.1);
  * the identity card's cases were updated for its redesign.
  */
 
@@ -21,7 +21,7 @@ test('lands with every card on the page, relationships first and the map above i
 	page
 }) => {
 	// Noah: others' stories name him, so *Mentioned in* is on the page too — at zero it is not
-	// (docs/05 §5.5).
+	// (docs/dev/05 §5.5).
 	await openPerson(page, /Noah Brunner/);
 
 	// Nothing waits behind a click any more, so there is no tablist left to click.
@@ -40,7 +40,7 @@ test('lands with every card on the page, relationships first and the map above i
 	expect(tops).toEqual([...tops].sort((a, b) => a - b));
 
 	// Inside the relationships card the map is a preview strip across the top, and the list
-	// takes the card's whole width beneath it (docs/05 §5.5).
+	// takes the card's whole width beneath it (docs/dev/05 §5.5).
 	const map = page.getByTestId('person-map-preview');
 	await expect(map).toBeVisible();
 	const mapBox = (await map.boundingBox())!;
@@ -99,7 +99,7 @@ test('a bookmark still holding the old ?tab= is answered with the card it meant'
 	await openPerson(page, /Lena Brunner/);
 	const id = new URL(page.url()).pathname.split('/').pop()!;
 
-	// The tabs are gone, but the links people saved are not (docs/05 §5.5).
+	// The tabs are gone, but the links people saved are not (docs/dev/05 §5.5).
 	await page.goto(`/contacts/${id}?tab=photos`);
 
 	await expect(page).toHaveURL(`/contacts/${id}#section-photos`);

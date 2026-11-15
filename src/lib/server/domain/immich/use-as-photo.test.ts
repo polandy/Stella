@@ -13,7 +13,7 @@ import { BERT_AND_CARL_ID, BERT_ID, CARL_ID, DORA_ID } from './test-library';
 import { useImmichPhoto, type UseImmichPhotoDeps } from './use-as-photo';
 
 /*
- * *Use as photo* from the Immich viewer (docs/02 §2.24.6): the one way
+ * *Use as photo* from the Immich viewer (docs/dev/02 §2.24.6): the one way
  * Immich content enters Stella. The square comes from the browser, cut from the preview the proxy
  * served; the server takes it only for a preview token it signed for this person, while the
  * viewer still sees them and they are still linked to the Immich person the photo was listed for.
@@ -142,7 +142,7 @@ describe('useImmichPhoto', () => {
 	});
 
 	/*
-	 * A photo of someone else, browsed from a taken face in *Find in Immich* (docs/02 §2.24.2):
+	 * A photo of someone else, browsed from a taken face in *Find in Immich* (docs/dev/02 §2.24.2):
 	 * Ella is visible and not linked; the photo was listed from Cleo's Immich person, for Ella.
 	 */
 	const fromCleoForElla = { contactId: 'c-ella', personId: CARL_ID, heldBy: 'c-cleo' };
@@ -236,7 +236,7 @@ describe('useImmichPhoto', () => {
 			householdId: 'h1',
 			personId: BERT_ID
 		});
-		// A photo of the whole library is for an upload's copy, never someone's photo (docs/02 §2.24.9).
+		// A photo of the whole library is for an upload's copy, never someone's photo (docs/dev/02 §2.24.9).
 		const library = await deps.signer.sign({
 			kind: 'library',
 			householdId: 'h1',

@@ -4,7 +4,7 @@ import { planMonicaImport } from './plan';
 import { NOW, contact, emptyExport, opts } from './plan.fixture';
 
 /*
- * Monica's tasks become to-dos on the person they belong to (docs/02 §2.26.8): open ones open,
+ * Monica's tasks become to-dos on the person they belong to (docs/dev/02 §2.26.8): open ones open,
  * completed ones done on their completion day, so they show in that person's Activity.
  */
 

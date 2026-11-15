@@ -16,14 +16,14 @@
 	import { INPUT } from './inputs';
 	import type { PersonForm, PersonPageData } from './types';
 
-	// Someone's tags (docs/02 §2.8): a row of the person page's profile card.
+	// Someone's tags (docs/dev/02 §2.8): a row of the person page's profile card.
 	let { data, form }: { data: PersonPageData; form: PersonForm } = $props();
 
 	const i18n = useI18n();
 	const t = i18n.t;
 	const c = $derived(data.contact);
 
-	// A row on its way out (docs/02 §2.23) is gone from the list while its undo window is open,
+	// A row on its way out (docs/dev/02 §2.23) is gone from the list while its undo window is open,
 	// and back in it the moment Undo is pressed. The counts follow, so a section never says two
 	// tags over one chip.
 	const removals = useRemovals();
@@ -47,7 +47,7 @@
 	};
 	/*
 	 * Tags and circles added here while Stella was out of reach: kept on the device and shown as
-	 * dashed chips beside the real ones until they are sent (docs/02 §2.18).
+	 * dashed chips beside the real ones until they are sent (docs/dev/02 §2.18).
 	 */
 	const keptTags = $derived(
 		outbox.mine.filter(

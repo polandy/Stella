@@ -2,9 +2,9 @@ import { expect, test, type Locator, type Page } from '@playwright/test';
 import { addPerson, appReady, pickPerson, signIn } from './app';
 
 /*
- * A person with a photo wears it wherever they are listed to be found or picked (docs/05
- * §5.10, docs/02 §2.9): the person pickers, the @-lists and the search results. Written after
- * the maintainer verified it in the app (docs/08 §8.4.1).
+ * A person with a photo wears it wherever they are listed to be found or picked (docs/dev/05
+ * §5.10, docs/dev/02 §2.9): the person pickers, the @-lists and the search results. Written after
+ * the maintainer verified it in the app (docs/dev/08 §8.4.1).
  *
  * The suite shares one database, so the person is new and uniquely named, and each case
  * expects exactly the thumbnail their own page shows — not merely some photo.

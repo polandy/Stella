@@ -3,9 +3,9 @@ import { addPerson, factEditor, fillDate, profileRow, signIn } from './app';
 
 /*
  * The additions a person's page and their journal keep while Stella is out of reach, and what
- * saving through the outbox means while it is in reach (docs/02 §2.18.1, §2.20;
- * docs/04 ADR-076). The maintainer chose to verify these in the
- * released app rather than a preview, and asked for the e2e to go ahead (docs/08 §8.4.1).
+ * saving through the outbox means while it is in reach (docs/dev/02 §2.18.1, §2.20;
+ * docs/dev/04 ADR-076). The maintainer chose to verify these in the
+ * released app rather than a preview, and asked for the e2e to go ahead (docs/dev/08 §8.4.1).
  *
  * As in `offline-person.spec.ts`, service workers are blocked, so the page does not know it is
  * offline: `context.setOffline` makes the save fail on the way, and the form keeps it instead.
@@ -95,7 +95,7 @@ test('keeps a journal entry offline above the timeline, and sends it with its ph
 	await openJournal(page);
 	await context.setOffline(true);
 
-	// With Immich on, the photo button is a menu (docs/02 §2.24.9); the device needs no connection.
+	// With Immich on, the photo button is a menu (docs/dev/02 §2.24.9); the device needs no connection.
 	await page.getByRole('button', { name: 'Add photos' }).click();
 	const chooser = page.waitForEvent('filechooser');
 	await page.getByRole('menuitem', { name: 'From this device' }).click();

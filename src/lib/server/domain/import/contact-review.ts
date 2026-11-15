@@ -18,7 +18,7 @@ import type { ContactSourceRepository, ReviewScope, SourceLink } from './source-
 import { readReviewExport } from './review-export';
 
 /*
- * Applying the matching review of another address book's export (docs/02 §2.16). The member
+ * Applying the matching review of another address book's export (docs/dev/02 §2.16). The member
  * answered each card the review asked about — *Same person* (possibly someone they picked),
  * *New person* or *Skip* — and the answers are written as one: the new people through the
  * import's own mapping, what the people already here are missing, and every answer to

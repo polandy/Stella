@@ -10,7 +10,7 @@ import type { AuthConfig } from '../services/auth';
 import { createCommandHandlers } from './handlers';
 
 /*
- * The command handler table (docs/04 §4.11.2): one handler per command Stella knows, no more.
+ * The command handler table (docs/dev/04 §4.11.2): one handler per command Stella knows, no more.
  * The type system already says so; this keeps the extension point honest on its own.
  */
 

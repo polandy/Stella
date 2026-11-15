@@ -1,4 +1,4 @@
-/* The household's linked Nextcloud address book: its panel and its conflicts (docs/02 §2.16.3). */
+/* The household's linked Nextcloud address book: its panel and its conflicts (docs/dev/02 §2.16.3). */
 
 export const nextcloud = {
 	'nextcloud.error.notLinked': 'No Nextcloud address book is linked to Stella.',

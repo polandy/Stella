@@ -5,7 +5,7 @@ import { signOut } from '$lib/server/auth/session';
 import type { RequestHandler } from './$types';
 
 /*
- * Sign out (docs/02 §2.1). The Stella session is revoked and its cookie cleared first and
+ * Sign out (docs/dev/02 §2.1). The Stella session is revoked and its cookie cleared first and
  * unconditionally; only then do we consider bouncing the browser through the provider's
  * end_session_endpoint so the SSO session ends too. If that is unavailable, the user is
  * still signed out here.

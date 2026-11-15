@@ -7,9 +7,9 @@ import type * as schema from './schema';
 import { contact as contactTable } from './schema';
 
 /*
- * Drizzle adapter for the names a page resolves (docs/08 §8.3). `contactVisibleTo`, not
+ * Drizzle adapter for the names a page resolves (docs/dev/08 §8.3). `contactVisibleTo`, not
  * `contactBrowsableBy`, for a mention already written: it has to keep rendering an archived
- * person's name (docs/02 §2.2).
+ * person's name (docs/dev/02 §2.2).
  */
 
 const nameColumns = { id: contactTable.id, displayName: contactTable.displayName };

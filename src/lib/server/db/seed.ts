@@ -5,7 +5,7 @@ import type * as schema from './schema';
 import { relationshipType as relationshipTypeTable } from './schema';
 
 /*
- * Idempotent seeding of the built-in, global relationship types (docs/03 §3.6). Runs on
+ * Idempotent seeding of the built-in, global relationship types (docs/dev/03 §3.6). Runs on
  * startup after migrations, keyed on the stable ids: a type added in a release arrives on the
  * next boot, and the sort order is brought up to date so a new type lands in its group rather
  * than after the ones an older install already had. Nothing else is overwritten.

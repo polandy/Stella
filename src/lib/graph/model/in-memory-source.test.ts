@@ -6,7 +6,7 @@ import { familyEdges, familyNodes } from './fixtures';
 import type { GraphModel } from './types';
 
 /*
- * The in-memory GraphDataSource (docs/04 §4.11) — the browser's data source. It must satisfy
+ * The in-memory GraphDataSource (docs/dev/04 §4.11) — the browser's data source. It must satisfy
  * the same port contract as the Drizzle-fed one, so the pure builders run over it unchanged.
  */
 

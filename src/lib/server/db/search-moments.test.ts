@@ -11,7 +11,7 @@ import { ensureSearchIndex } from './search-index';
 import { createDrizzleSearchRepository } from './search-repository';
 
 /*
- * Moments in full search (docs/02 §2.9, §2.20.2): the journal index the triggers keep, a tag
+ * Moments in full search (docs/dev/02 §2.9, §2.20.2): the journal index the triggers keep, a tag
  * found as a plain word and as `#tag`, and the same visibility scoping as notes — another
  * member's private moment never appears.
  */

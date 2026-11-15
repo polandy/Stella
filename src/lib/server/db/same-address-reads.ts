@@ -7,7 +7,7 @@ import type * as schema from './schema';
 import { contact, contactField, home, homeMember } from './schema';
 
 /*
- * Drizzle adapter for what *Data quality → Same address* reads (docs/02 §2.17): everyone the
+ * Drizzle adapter for what *Data quality → Same address* reads (docs/dev/02 §2.17): everyone the
  * viewer may browse, their own address lines, and the homes they live in. Scoped through the
  * central `contactBrowsableBy` — archived people are out, as on every list to act on — so a
  * private person the viewer does not own is never read, and a home's members are only ever

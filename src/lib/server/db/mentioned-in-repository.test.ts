@@ -8,7 +8,7 @@ import * as schema from './schema';
 import { createDrizzleMentionedInRepository } from './mentioned-in-repository';
 
 /*
- * Integration spec for the Drizzle MentionedInRepository (docs/02 §2.20.1): the reverse lookup
+ * Integration spec for the Drizzle MentionedInRepository (docs/dev/02 §2.20.1): the reverse lookup
  * from a person to the notes and journal entries elsewhere that name them, scoped through the
  * central `childRecordVisibleTo` so a passive item never shows a viewer something the entry
  * itself would have hidden.

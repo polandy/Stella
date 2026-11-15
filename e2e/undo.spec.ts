@@ -2,8 +2,8 @@ import { expect, test } from '@playwright/test';
 import { fillDate, openPerson, signIn } from './app';
 
 /*
- * Removing with undo (docs/02 §2.23, docs/05 §5.7). Written after the flow was verified in the
- * running app (docs/08 §8.4.1). The touchpoint removed here is logged by the test itself, on
+ * Removing with undo (docs/dev/02 §2.23, docs/dev/05 §5.7). Written after the flow was verified in the
+ * running app (docs/dev/08 §8.4.1). The touchpoint removed here is logged by the test itself, on
  * a title no seeded data uses, so no other case's counts move.
  */
 

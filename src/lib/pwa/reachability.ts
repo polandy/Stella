@@ -1,5 +1,5 @@
 /*
- * How a page learns that Stella is out of reach (docs/02 §2.18).
+ * How a page learns that Stella is out of reach (docs/dev/02 §2.18).
  *
  * Not `navigator.onLine`: it answers "is this device on a network", which is not the
  * question. Stella is on the household's own network, so a phone on mobile data is perfectly

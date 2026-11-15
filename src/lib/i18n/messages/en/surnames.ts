@@ -1,7 +1,7 @@
-/* Last names for several people at once, and where Stella proposes one (docs/02 §2.2.4). */
+/* Last names for several people at once, and where Stella proposes one (docs/dev/02 §2.2.4). */
 
 export const surnames = {
-	// Why a last name is proposed: one sentence per rule (docs/02 §2.2.4.1).
+	// Why a last name is proposed: one sentence per rule (docs/dev/02 §2.2.4.1).
 	'surnames.reason.child': (p: { parent: string }) => `Child of ${p.parent}`,
 	'surnames.reason.sibling': (p: { sibling: string }) => `Sibling of ${p.sibling}`,
 	'surnames.reason.partner': (p: { partner: string }) => `Partner of ${p.partner}`,
@@ -11,7 +11,7 @@ export const surnames = {
 	'surnames.reason.parent': (p: { child: string }) => `Parent of ${p.child}`,
 	'surnames.reason.circle': (p: { circle: string }) => `In the circle ${p.circle}`,
 
-	// The undo toast of a batch, and its failure (docs/02 §2.23).
+	// The undo toast of a batch, and its failure (docs/dev/02 §2.23).
 	'surnames.toast.set': (p: { name: string; count: number }) =>
 		p.count === 1 ? `Last name ${p.name} set` : `Last name ${p.name} set for ${p.count} people`,
 	'surnames.toast.failed': 'Could not save the last names. The people are back in the list.',
@@ -19,7 +19,7 @@ export const surnames = {
 	'surnames.namesake': (p: { name: string }) => `There is already a ${p.name}`,
 	'surnames.namesakeAsk': 'The same person?',
 
-	// The *Last names* page (docs/02 §2.2.4) and the bars that set one for several people.
+	// The *Last names* page (docs/dev/02 §2.2.4) and the bars that set one for several people.
 	'surnames.page.pageTitle': 'Last names · Stella',
 	'surnames.page.title': 'Last names',
 	'surnames.page.intro':
@@ -40,7 +40,7 @@ export const surnames = {
 	'surnames.declined': (p: { count: number }) => `Names you said no to (${p.count})`,
 	'surnames.declinedRow': (p: { person: string; name: string }) => `${p.person} — not ${p.name}`,
 	'surnames.offerAgain': 'Offer again',
-	// *No last name* and its drawer (docs/02 §2.2.4.2).
+	// *No last name* and its drawer (docs/dev/02 §2.2.4.2).
 	'surnames.noLastName': 'No last name',
 	'surnames.noLastNameHint': 'They have none, and that’s fine. Stella stops asking.',
 	'surnames.settled': (p: { count: number }) => `Without a last name (${p.count})`,
@@ -67,7 +67,7 @@ export const surnames = {
 	'surnames.toast.passOn': (p: { people: string; count: number; name: string }) =>
 		`Last name saved. ${p.people} ${p.count === 1 ? 'has' : 'have'} none yet — ${p.name} too?`,
 	'surnames.toast.yes': 'Yes',
-	// The profile's chip (docs/02 §2.2).
+	// The profile's chip (docs/dev/02 §2.2).
 	'surnames.chip': (p: { name: string }) => `${p.name}?`,
 	'surnames.chipHint': (p: { name: string }) => `Give the last name ${p.name}`,
 	'surnames.chipGiven': (p: { name: string; person: string }) =>

@@ -16,8 +16,8 @@ const anyOf = (texts: string[]) =>
 	new RegExp(texts.map((text) => text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|'));
 
 /*
- * The passive side of an @-mention (docs/02 §2.20.1): the list on the person who was named.
- * Written after the maintainer read it in the running app (docs/08 §8.4.1).
+ * The passive side of an @-mention (docs/dev/02 §2.20.1): the list on the person who was named.
+ * Written after the maintainer read it in the running app (docs/dev/08 §8.4.1).
  *
  * The suite shares one demo database, so the two people here are invented and appear in no
  * seed and in no other spec: everything the list must show is written by these cases, and the
@@ -99,7 +99,7 @@ async function writeEntry(
 		await page.getByRole('radio', { name: /Private/ }).check();
 	}
 	await page.getByRole('button', { name: 'Save moment' }).click();
-	// Blurred on its author's screen until asked for (docs/02 §2.10.1).
+	// Blurred on its author's screen until asked for (docs/dev/02 §2.10.1).
 	if (visibility === 'private') await showPrivate(page);
 	await expect(page.getByText(text)).toBeVisible();
 }
@@ -112,7 +112,7 @@ test('leaves the card off the page while nobody has named this person', async ({
 	await addPerson(page, 'Fabian', 'Ineichen');
 	await addPerson(page, 'Rosmarie', 'Tschopp');
 
-	// Passive, with nothing to add there: an empty card would only say "nothing" (docs/05 §5.5).
+	// Passive, with nothing to add there: an empty card would only say "nothing" (docs/dev/05 §5.5).
 	await expect(page.locator('#section-notes')).toBeVisible();
 	await expect(page.locator('#section-mentions')).toHaveCount(0);
 });
@@ -125,7 +125,7 @@ test('puts a note on the page of the person it names, not of the person it is ab
 	await writeNote(page, NOTE_MARKER);
 
 	// The writer's own list stays empty: the note is *about* him, which is not a reference —
-	// and an empty list is not on the page (docs/05 §5.5).
+	// and an empty list is not on the page (docs/dev/05 §5.5).
 	await expect(page.locator('#section-mentions')).toHaveCount(0);
 
 	await openPerson(page, new RegExp(NAMED));
@@ -183,7 +183,7 @@ test('marks a private entry as private in the list of the person it names', asyn
 	await expect(references(page).filter({ hasText: ENTRY_MARKER })).not.toContainText('private');
 
 	/*
-	 * Measured rather than read off the markup (docs/05 §5.5): the day ends the row, and the
+	 * Measured rather than read off the markup (docs/dev/05 §5.5): the day ends the row, and the
 	 * private mark must not push it off that edge. Both boxes are laid out by the time the
 	 * assertions above have passed, so there is nothing to wait for.
 	 */

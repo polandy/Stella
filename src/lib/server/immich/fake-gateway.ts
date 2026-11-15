@@ -11,7 +11,7 @@ import type {
 import { solidPng } from './png';
 
 /*
- * An Immich that lives in memory (docs/02 §2.24.5): the use-case tests drive it, and
+ * An Immich that lives in memory (docs/dev/02 §2.24.5): the use-case tests drive it, and
  * the demo/e2e server wires it with `IMMICH_DEMO=true`, so the feature can be tried and tested
  * without a real Immich. It answers the way the HTTP adapter does — hidden people never come
  * back from a listing or a search — and any call can be made to fail with a given outcome.
@@ -37,7 +37,7 @@ export interface FakeImmichPerson extends ImmichPerson {
 }
 
 /**
- * Photos several people are in together, listed only when they are asked for together (docs/02
+ * Photos several people are in together, listed only when they are asked for together (docs/dev/02
  * §2.24.8). Their ids are worked out like a person's, from `id`, so it must not be a person's id.
  */
 export interface FakeImmichGroupPhotos {

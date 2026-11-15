@@ -3,7 +3,7 @@ import { planMonicaImport } from './plan';
 import { NOW, contact, emptyExport, opts } from './plan.fixture';
 
 /*
- * Monica → Stella mapping (docs/02 §2.16, docs/monica-mapping.md). The plan is pure: given
+ * Monica → Stella mapping (docs/dev/02 §2.16, docs/user/monica-mapping.md). The plan is pure: given
  * the typed export it decides every row the import will write, with stable source ids so
  * running it twice cannot duplicate, and a report of what was approximated or left out.
  */

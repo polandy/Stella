@@ -4,8 +4,8 @@ import { AUTH_STATE_PATH } from './auth-state';
 import { signIn } from './app';
 
 /*
- * Choosing the interface language (docs/02 §2.19). Written after the maintainer saw the
- * screens in the running app (docs/08 §8.4.1).
+ * Choosing the interface language (docs/dev/02 §2.19). Written after the maintainer saw the
+ * screens in the running app (docs/dev/08 §8.4.1).
  *
  * The rest of the suite asserts English strings and shares one database with this file, so
  * every case here either runs in a throwaway signed-out context or hands the demo account

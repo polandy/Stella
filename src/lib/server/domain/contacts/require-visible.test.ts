@@ -4,7 +4,7 @@ import { ContactGoneError, onVisibleContact, requireVisibleContact } from './req
 
 /*
  * Every addition on a person — a note, a call, a tag, a circle — first needs that person to be
- * one the author can see (docs/03 §3.7). Arriving from a phone days later, they may not be.
+ * one the author can see (docs/dev/03 §3.7). Arriving from a phone days later, they may not be.
  */
 
 const contacts = {

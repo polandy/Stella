@@ -16,8 +16,8 @@ import {
 
 import { inMemoryKinshipGraph, inMemoryRelationshipTies } from '../testing';
 /*
- * Linking two people from one of their pages (docs/02 §2.4) as one use-case, so a link kept on
- * a phone (docs/02 §2.18.2) is judged exactly like one entered online:
+ * Linking two people from one of their pages (docs/dev/02 §2.4) as one use-case, so a link kept on
+ * a phone (docs/dev/02 §2.18.2) is judged exactly like one entered online:
  * both people must still be visible, the type must still exist, and every guardrail — no
  * duplicate, no contradiction, no excluded tie — answers with a reason, never a crash that
  * the phone would retry for ever.

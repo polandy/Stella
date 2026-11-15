@@ -22,7 +22,7 @@ import {
 } from './schema';
 
 /*
- * Drizzle adapter for the MemberAccountRepository port (docs/02 §2.1, docs/08 §8.3). A removal
+ * Drizzle adapter for the MemberAccountRepository port (docs/dev/02 §2.1, docs/dev/08 §8.3). A removal
  * stamps `removed_at` and keeps the row: every `created_by` still names a real author, the
  * identity lets the next SSO sign-in be turned away, and the password hash waits, unchecked,
  * for a restore, which clears the stamp again.

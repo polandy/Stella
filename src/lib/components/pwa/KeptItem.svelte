@@ -8,8 +8,8 @@
 	import Icon from '../ui/Icon.svelte';
 
 	/*
-	 * Something written while Stella was out of reach and kept on this device (docs/02 §2.18,
-	 * docs/05 "Kept moments"): a moment on Home, a note, a call or photos on a person's page, an
+	 * Something written while Stella was out of reach and kept on this device (docs/dev/02 §2.18,
+	 * docs/dev/05 "Kept moments"): a moment on Home, a note, a call or photos on a person's page, an
 	 * entry on their journal page. It looks like the item it will become, inside a dashed
 	 * outline, and says where it stands. Until it is on its way it can be edited — `onEdit`
 	 * here, or `editHref` on the page that owns it — and discarded, which asks twice because

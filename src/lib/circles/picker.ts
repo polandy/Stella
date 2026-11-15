@@ -1,5 +1,5 @@
 /*
- * The circle picker (docs/02 §2.4.2): every circle the reader sees, indented as the tree nests
+ * The circle picker (docs/dev/02 §2.4.2): every circle the reader sees, indented as the tree nests
  * them, for *Belongs to* (choosing a parent) and for the sub-circles card's *Add existing*. A
  * circle that cannot be chosen stays in the list and says why, so nobody wonders where it went.
  * Pure and client-safe; the server checks every move again (ADR-126).
