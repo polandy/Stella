@@ -62,6 +62,21 @@ async function neverAnswer(context: BrowserContext): Promise<void> {
 	await context.route('**/*', () => {});
 }
 
+/** Back online; the page hears `online` only once Playwright has lifted offline from the worker too. */
+async function backOnline(page: Page, context: BrowserContext): Promise<void> {
+	await page.evaluate(() => {
+		const held = (event: Event) => event.stopImmediatePropagation();
+		window.addEventListener('online', held, { capture: true });
+		(window as Window & { releaseOnline?: () => void }).releaseOnline = () =>
+			window.removeEventListener('online', held, { capture: true });
+	});
+	await context.setOffline(false);
+	await page.evaluate(() => {
+		(window as Window & { releaseOnline?: () => void }).releaseOnline?.();
+		window.dispatchEvent(new Event('online'));
+	});
+}
+
 /** The phone's People tab — the sidebar link of the same name is hidden at this width. */
 const peopleTab = (page: Page) => page.locator('a[href="/contacts"]:visible').first();
 /**
@@ -226,7 +241,7 @@ test('greys out From Immich offline, and offers it again once back', async ({ pa
 		await expect(fromImmich).toContainText('Needs a connection');
 		await expect(page.getByRole('menuitem', { name: 'From this device' })).toBeVisible();
 
-		await context.setOffline(false);
+		await backOnline(page, context);
 		await expect(fromImmich).toHaveAttribute('aria-disabled', 'false');
 		await expect(fromImmich).not.toContainText('Needs a connection');
 	} finally {
