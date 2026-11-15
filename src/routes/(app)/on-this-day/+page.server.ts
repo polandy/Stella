@@ -7,7 +7,7 @@ import { memoryYearsForView } from '../_shared/memories-view';
 import type { PageServerLoad } from './$types';
 
 /*
- * *On this day* in full (docs/02 §2.12.1): every moment, touchpoint and gallery photo the reader
+ * *On this day* in full (docs/dev/02 §2.12.1): every moment, touchpoint and gallery photo the reader
  * may see on a day's date in earlier years, one card per year. The day is today, or the one
  * `?day=` picks — never one still to come.
  */

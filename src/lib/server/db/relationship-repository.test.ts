@@ -18,7 +18,7 @@ import {
 /*
  * Integration spec for the Drizzle RelationshipRepository: duplicate checks, the batch and its
  * undo in one transaction, and writes scoped by visibility — a relationship needs both
- * endpoints visible (docs/03 §3.7), and one out of sight cannot be changed or removed.
+ * endpoints visible (docs/dev/03 §3.7), and one out of sight cannot be changed or removed.
  */
 
 const H = 'household-1';
@@ -97,7 +97,7 @@ describe('exists / insert', () => {
 	});
 
 	/*
-	 * The contradiction guard asks the same question with the endpoints swapped (docs/02 §2.4),
+	 * The contradiction guard asks the same question with the endpoints swapped (docs/dev/02 §2.4),
 	 * so the query must answer per direction rather than per pair — a normalising `where` would
 	 * make the guard fire on every second link instead of on a real contradiction.
 	 */
@@ -110,7 +110,7 @@ describe('exists / insert', () => {
 		expect(await repo.exists('bettina', 'hans', 'parent_child')).toBe(false);
 	});
 
-	/* Retyping a link asks the guards about its own pair, so it must be left out (docs/02 §2.4). */
+	/* Retyping a link asks the guards about its own pair, so it must be left out (docs/dev/02 §2.4). */
 	it('leaves the named relationship out of the answer', async () => {
 		seedContact('hans', 'Hans', 'shared');
 		seedContact('bettina', 'Bettina', 'shared');
@@ -125,7 +125,7 @@ describe('exists / insert', () => {
 
 	/*
 	 * The domain refuses a self link before it writes (`relationshipPair`); the table refuses it
-	 * too, so a writer that skips the constructor cannot store one (docs/03 §relationship).
+	 * too, so a writer that skips the constructor cannot store one (docs/dev/03 §relationship).
 	 */
 	it('refuses a link from a person to themselves, and stores one between two people', async () => {
 		seedContact('hans', 'Hans', 'shared');
@@ -140,7 +140,7 @@ describe('exists / insert', () => {
 	});
 });
 
-describe('insertAll (docs/02 §2.4, several people in one go)', () => {
+describe('insertAll (docs/dev/02 §2.4, several people in one go)', () => {
 	const stored = () =>
 		db
 			.select({ id: schema.relationship.id })
@@ -314,7 +314,7 @@ describe('findVisibleTo / updateVisibleTo / removeVisibleTo', () => {
 		expect(await repo.findVisibleTo(viewerU1, 'no-such-relationship')).toBeNull();
 	});
 
-	/* A retype can move the row's endpoints as well as its type (docs/02 §2.4). */
+	/* A retype can move the row's endpoints as well as its type (docs/dev/02 §2.4). */
 	it('writes the new type and stored direction together with the specifics', async () => {
 		const written = await repo.updateVisibleTo(
 			viewerU1,
@@ -374,7 +374,7 @@ describe('findVisibleTo / updateVisibleTo / removeVisibleTo', () => {
 });
 
 /*
- * A generation runs one way (docs/02 §2.4). The use-case asks before it writes; the write asks
+ * A generation runs one way (docs/dev/02 §2.4). The use-case asks before it writes; the write asks
  * again inside its own transaction, so two members adding *parent of* in opposite directions
  * at the same moment cannot both land (SV-07).
  */

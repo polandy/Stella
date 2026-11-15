@@ -30,7 +30,7 @@ import type { KinshipGraphReads } from './suggestion-review';
 import { inMemoryKinshipGraph, someTie } from '../testing';
 
 /*
- * Pure relationship logic (docs/02 §2.4): canonical storage direction (symmetric links are
+ * Pure relationship logic (docs/dev/02 §2.4): canonical storage direction (symmetric links are
  * order-independent; self-links are rejected) and perspective-aware label resolution.
  */
 
@@ -141,7 +141,7 @@ function fakeRepo(opts: {
 	visible?: boolean;
 	/** The link an edit reads back; null stands for one the viewer may not see. */
 	stored?: StoredRelationship | null;
-	/** What the subject already carries, for the exclusion rules (docs/02 §2.4). */
+	/** What the subject already carries, for the exclusion rules (docs/dev/02 §2.4). */
 	ties?: RelationshipView[];
 	/** What the household already carries, for the same rules. */
 	graph?: Partial<KinshipGraph>;
@@ -270,7 +270,7 @@ describe('createRelationship', () => {
 	});
 
 	/*
-	 * The contradiction guard (docs/02 §2.4). A generation runs one way: nobody is their own
+	 * The contradiction guard (docs/dev/02 §2.4). A generation runs one way: nobody is their own
 	 * parent's parent. The picker offers both sides of a type from one screen, so the flipped
 	 * pair is one wrong click away and has to be refused rather than stored as nonsense the
 	 * kinship engine then reads.
@@ -472,7 +472,7 @@ describe('readKinship', () => {
 	});
 
 	/*
-	 * A batch stored together (docs/02 §2.4, *Several people in one go*): one list for all
+	 * A batch stored together (docs/dev/02 §2.4, *Several people in one go*): one list for all
 	 * of its links, each claim once — not the list of whichever link happened to come last.
 	 */
 	it('proposes across every pair of a batch at once, each claim once', async () => {
@@ -497,7 +497,7 @@ describe('readKinship', () => {
 	});
 
 	/*
-	 * L3 after a write (docs/02 §2.4.1). The page the link was
+	 * L3 after a write (docs/dev/02 §2.4.1). The page the link was
 	 * entered on decides: the child's page offered the partner in the form already.
 	 */
 	describe('the likely second parent', () => {
@@ -526,7 +526,7 @@ describe('readKinship', () => {
 });
 
 /*
- * The specifics a relationship carries (docs/02 §2.4): free text for how these two connect,
+ * The specifics a relationship carries (docs/dev/02 §2.4): free text for how these two connect,
  * an optional since-day and whether the link still holds. Pure — no deps, no clock.
  */
 describe('parseRelationshipDetails', () => {
@@ -552,7 +552,7 @@ describe('parseRelationshipDetails', () => {
 	});
 
 	// A link that exists holds until someone ends it, so there is no third answer to store
-	// (docs/02 §2.4): a form that says nothing about the status says `current`.
+	// (docs/dev/02 §2.4): a form that says nothing about the status says `current`.
 	it('reads a status left unsaid as current, never as unset', () => {
 		expect(parseRelationshipDetails({}).status).toBe('current');
 		expect(parseRelationshipDetails({ status: null }).status).toBe('current');
@@ -567,7 +567,7 @@ describe('parseRelationshipDetails', () => {
 	});
 
 	it('wants the whole day, not a recurring one', () => {
-		// `--06-01` is legal for a birthday (docs/03), but "since" names a point in time.
+		// `--06-01` is legal for a birthday (docs/dev/03), but "since" names a point in time.
 		expect(() => parseRelationshipDetails({ sinceDate: '--06-01' })).toThrow(
 			InvalidRelationshipDetailsError
 		);
@@ -909,7 +909,7 @@ describe('removeRelationships', () => {
 });
 
 /*
- * The exclusion rules at the write (docs/02 §2.4). The picker greys the entry out, but the
+ * The exclusion rules at the write (docs/dev/02 §2.4). The picker greys the entry out, but the
  * picker is a suggestion — a hand-written POST reaches the same use-case, so the refusal has
  * to live here as well. The rules themselves are tested in `exclusions.test.ts`; what these
  * tests hold is that the use-case reads what is on record and refuses on it.

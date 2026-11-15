@@ -14,7 +14,7 @@
 					}
 				} catch (e) {}
 			})();
-			// The welcome on start, once per session (docs/05 §5.11.4): mirrors `shouldWelcome` in
+			// The welcome on start, once per session (docs/dev/05 §5.11.4): mirrors `shouldWelcome` in
 			// src/lib/motion/welcome.ts. Without the attribute the overlay is never drawn.
 			(function () {
 				try {
@@ -27,11 +27,11 @@
 			})();
 		</script>
 		<style>
-			/* The welcome on start (docs/05 §5.11.4). Its timings are the ones in
+			/* The welcome on start (docs/dev/05 §5.11.4). Its timings are the ones in
 			   src/lib/motion/welcome.ts; welcome-overlay.test.ts holds the two together. */
 			#stella-welcome {
 				display: none;
-				/* The one easing of its own (docs/05 §5.11.4): a node's pop overshoots a little. */
+				/* The one easing of its own (docs/dev/05 §5.11.4): a node's pop overshoots a little. */
 				--welcome-overshoot: cubic-bezier(0.34, 1.5, 0.64, 1);
 			}
 			[data-welcome] #stella-welcome {
@@ -247,7 +247,7 @@
 			<div class="word">Stella</div>
 		</div>
 		<script nonce="%sveltekit.nonce%">
-			// Plays the welcome's exit and takes the overlay away (docs/05 §5.11.4). Where the mark
+			// Plays the welcome's exit and takes the overlay away (docs/dev/05 §5.11.4). Where the mark
 			// docks mirrors `dockMove` in src/lib/motion/welcome.ts; it is measured only now, when the
 			// page's CSS has long arrived.
 			(function () {

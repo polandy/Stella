@@ -1,6 +1,6 @@
 <!--
   @component
-  Where a photo comes from, once Immich is on the instance (docs/02 §2.24.9): the photo button of
+  Where a photo comes from, once Immich is on the instance (docs/dev/02 §2.24.9): the photo button of
   a moment or a journal entry opens *From this device* and *From Immich*. Offline, *From Immich*
   stays in the menu, greyed out, and says it needs a connection — nothing from Immich is kept for
   later. The file field is the caller's no longer: it lives here, out of sight, and the first item

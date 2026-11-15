@@ -4,7 +4,7 @@ import type { RelationshipStatus } from '$lib/relationships/status';
 import { removalKey } from '$lib/undo/keys';
 
 /*
- * A shared home as the person page shows and edits it (docs/02 §2.2, *A shared home*): whom
+ * A shared home as the person page shows and edits it (docs/dev/02 §2.2, *A shared home*): whom
  * someone lives with, who is moving out right now, and whom *Also lives here …* offers first.
  */
 
@@ -32,7 +32,7 @@ export const movingOutKey = (homeId: string, contactId: string): string =>
 
 /**
  * The homes as they read right now: one this person is moving out of is gone, and so is a
- * housemate moving out, while the undo window is open (docs/02 §2.23).
+ * housemate moving out, while the undo window is open (docs/dev/02 §2.23).
  */
 export function homesShown<H extends { id: string; livesWith: readonly Housemate[] }>(
 	homes: readonly H[],

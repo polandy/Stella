@@ -17,7 +17,7 @@ import type { Locale } from '$lib/i18n/locales';
 import { profileActions as actions } from './profile';
 
 /*
- * The hero's actions on a person's page (docs/02 §2.2) as the edge answers them: the form read,
+ * The hero's actions on a person's page (docs/dev/02 §2.2) as the edge answers them: the form read,
  * a person the viewer cannot see, a refusal of the use-case said in the reader's language, and a
  * success that goes back to the page. The use-cases have their own suites (`contacts.test.ts`,
  * `name-parts.test.ts`, `avatars.test.ts`); the ports here only answer the way the case needs.

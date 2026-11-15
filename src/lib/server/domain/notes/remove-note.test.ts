@@ -10,7 +10,7 @@ import { fixedClock, sequentialIds } from '../testing';
 import { removeNote } from './remove-note';
 
 /*
- * Removing a note (docs/02 §2.5, docs/03 §3.7): its author always, an admin on a shared one.
+ * Removing a note (docs/dev/02 §2.5, docs/dev/03 §3.7): its author always, an admin on a shared one.
  * Wired to the real Drizzle adapter on an in-memory database, because what the removal takes
  * with it — mentions, the search row, the activity entry in the same transaction — lives there.
  */

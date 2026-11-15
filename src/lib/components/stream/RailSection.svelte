@@ -5,7 +5,7 @@
 	import { glide } from '$lib/motion/motion.svelte';
 
 	/*
-	 * One section of Home's rail (docs/05 §5.5.1). From `lg` it stands open beside the stream
+	 * One section of Home's rail (docs/dev/05 §5.5.1). From `lg` it stands open beside the stream
 	 * under its heading. Below, the rail sits in the stream's way, so each section folds to one
 	 * line — icon, title, *how many · the first*, chevron — and a tap opens it in place. Folded by
 	 * default and per tab only: the stream is what a phone's Home is for.

@@ -4,7 +4,7 @@ import type { GraphEdge, GraphModel } from './types';
 
 /*
  * What the family tree writes under the people and circles on its "Outside the family" shelf
- * (docs/05 §5.8). Pure. The shelf stands without lines, so each one says who they are:
+ * (docs/dev/05 §5.8). Pure. The shelf stands without lines, so each one says who they are:
  *
  * - somebody tied to the centre has their role already (`tree-roles.ts`) and needs nothing more;
  * - anybody else says what they are to the person on the map they hang off — "Friend of

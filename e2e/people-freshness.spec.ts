@@ -3,9 +3,9 @@ import { addPerson, openPerson, signIn } from './app';
 
 /*
  * The people every picker and ⌘K read come with the app shell, which a client-side navigation
- * and a tab left open both keep (docs/04 §4.9). Someone added elsewhere still reaches them:
+ * and a tab left open both keep (docs/dev/04 §4.9). Someone added elsewhere still reaches them:
  * after a navigation, and when the tab comes back into view. Written after the maintainer
- * checked it with two tabs (docs/08 §8.4.1).
+ * checked it with two tabs (docs/dev/08 §8.4.1).
  *
  * Every name carries this attempt's letters, so a retry against the same database never finds
  * an earlier attempt's person.

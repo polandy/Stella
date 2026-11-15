@@ -1,5 +1,5 @@
 /*
- * The app icon, drawn once (docs/02 §2.18).
+ * The app icon, drawn once (docs/dev/02 §2.18).
  *
  * `static/logo.svg` cannot be used directly: it is transparent and swaps its palette with
  * `prefers-color-scheme`, while a launcher icon has to be opaque and to look the same on

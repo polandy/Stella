@@ -38,7 +38,7 @@
 	import type { PageData } from './$types';
 
 	/*
-	 * The share sheet (docs/02 §2.18.3, docs/design/screens/share.md): what another app shared,
+	 * The share sheet (docs/dev/02 §2.18.3, docs/dev/design/screens/share.md): what another app shared,
 	 * saved about one person as photos, a profile photo, a moment, a gift idea or a to-do. The
 	 * service worker kept the share on the device and opened this page on `?pending=<id>`; a
 	 * share the server took instead arrives as words in the address. Everything but the profile
@@ -255,7 +255,7 @@
 				{gone ? t('share.gone') : t('share.nothing')}
 			</p>
 			<!-- An empty page is mostly someone who opened it by hand: say where sharing starts, and
-			     offer the install it needs while there is one to do (docs/02 §2.18). -->
+			     offer the install it needs while there is one to do (docs/dev/02 §2.18). -->
 			{#if !gone}
 				<p class="text-sm text-fg-muted" data-testid="share-where-from">
 					{t('share.whereFrom')}{#if install.state !== 'installed'}

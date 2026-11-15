@@ -4,8 +4,8 @@ import { settled } from './graph-canvas';
 import { nextInDirection, type Direction } from '../src/lib/graph/keyboard';
 
 /*
- * Walking the relationship map from the keyboard (docs/05 §5.8). Written after the owner
- * signed the change off in the running app (docs/08 §8.4.1).
+ * Walking the relationship map from the keyboard (docs/dev/05 §5.8). Written after the owner
+ * signed the change off in the running app (docs/dev/08 §8.4.1).
  *
  * A canvas has no DOM to read, so every case reads what the page says aloud — the live line
  * that names who the keyboard is on, the peek panel, the path prompt — and, for which node

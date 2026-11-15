@@ -15,7 +15,7 @@ import {
 import type { GalleryPhotoReads } from './gallery';
 
 /*
- * Wearing a gallery photo as the avatar through a chosen square (docs/02 §2.14). The photo stays
+ * Wearing a gallery photo as the avatar through a chosen square (docs/dev/02 §2.14). The photo stays
  * one photo in the gallery; the square is remembered on a *framing* of it — its own row and id,
  * rendered once in the browser like any avatar. Its own id is what lets media stay cached as
  * immutable: choosing a new square makes a new framing with a new address, never new bytes
@@ -46,7 +46,7 @@ export interface FramingRepository {
 	replaceFraming(framing: StoredFraming): Promise<DeletedPhotoFiles[]>;
 }
 
-/** Ports for `frameAsAvatar` (docs/08 §8.3). */
+/** Ports for `frameAsAvatar` (docs/dev/08 §8.3). */
 export interface FramingDeps {
 	/** The photo to frame, found only on that person and only when the viewer may see it. */
 	gallery: Pick<GalleryPhotoReads, 'findVisibleGalleryPhoto'>;

@@ -30,7 +30,7 @@ import type { CutDeps, CutRepository } from '../domain/media/cuts';
 import type { IdGenerator } from '../id';
 
 /*
- * The `circles` bounded context of the composition root (docs/08 §8.3): the groups people
+ * The `circles` bounded context of the composition root (docs/dev/08 §8.3): the groups people
  * belong to and the roles they hold there, the circle's photos, and the profile pictures cut
  * from them. Built once per process by `createServices`; the edge reads it off
  * `locals.services.circles`.
@@ -38,21 +38,21 @@ import type { IdGenerator } from '../id';
  * A repository an edge — or another context — reads directly sits under its plural noun
  * (`circles`); everything else is a use-case's `deps`, named after its type
  * (`circleDeps` is a `CircleDeps`). A circle's writes and its lists are separate ports with an
- * adapter each (docs/08 §8.3): the overview (`circleDirectoryDeps`) and who is in which circle
+ * adapter each (docs/dev/08 §8.3): the overview (`circleDirectoryDeps`) and who is in which circle
  * (`circleMembershipDeps`), which re-roling, removing, renaming a role and the photos read too.
  */
 export interface CircleServices {
 	/** A circle's writes and one-circle reads: every use-case below, and the command handlers. */
 	circles: CircleRepository;
-	/** The one circle photo repository (docs/02 §2.4.2). */
+	/** The one circle photo repository (docs/dev/02 §2.4.2). */
 	circlePhotos: CirclePhotoRepository;
-	/** The one cut repository: who wears a picture cut from which group photo (docs/02 §2.14). */
+	/** The one cut repository: who wears a picture cut from which group photo (docs/dev/02 §2.14). */
 	cuts: CutRepository;
 	circleDeps: CircleDeps;
 	circleDirectoryDeps: CircleDirectoryDeps;
-	/** The nesting the Circles list and a circle's page show (docs/02 §2.4.2). */
+	/** The nesting the Circles list and a circle's page show (docs/dev/02 §2.4.2). */
 	circleTreeDeps: CircleTreeDeps;
-	/** Moving a circle under another or out on its own, and every Undo of it (docs/02 §2.4.2). */
+	/** Moving a circle under another or out on its own, and every Undo of it (docs/dev/02 §2.4.2). */
 	circleNestingDeps: CircleNestingDeps;
 	/** The edit form: its details and the circle it belongs to, checked as every move is. */
 	updateCircleDeps: UpdateCircleDeps;

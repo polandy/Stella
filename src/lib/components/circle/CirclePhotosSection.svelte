@@ -23,7 +23,7 @@
 	import type { CirclePageData, OpenPhotos } from './types';
 
 	/*
-	 * The Photos section of a circle (docs/02 §2.4.2, concept §3.1): a square grid in the gallery's
+	 * The Photos section of a circle (docs/dev/02 §2.4.2, concept §3.1): a square grid in the gallery's
 	 * order, role chips over it when there is more than one group to choose between, and *Add
 	 * photos* for several files at once. An upload asks for the role — preset to the chip that is
 	 * active, offering only roles the circle's members have — and for shared or private.
@@ -50,7 +50,7 @@
 	// whose last photo went away falls back to *All*.
 	let chosen = $state<string | null | undefined>(undefined);
 	const active = $derived(view.chips.some((c) => c.key === chosen) ? chosen : undefined);
-	// A photo whose removal is held (docs/02 §2.23) is already gone from the grid.
+	// A photo whose removal is held (docs/dev/02 §2.23) is already gone from the grid.
 	const removals = useRemovals();
 	const shown = $derived(
 		view.photos.filter(
@@ -62,7 +62,7 @@
 
 	let open = $state(false);
 	let picked = $state<File[]>([]);
-	/** Copied from Immich (docs/02 §2.24.9), each with the token that dates it on the server. */
+	/** Copied from Immich (docs/dev/02 §2.24.9), each with the token that dates it on the server. */
 	let fromImmich = $state<ImmichCopy[]>([]);
 	let uploadRole = $state('');
 	let uploading = $state(false);
@@ -74,7 +74,7 @@
 		uploadRole = data.roleSuggestions.find((role) => roleKey(role) === key) ?? '';
 	}
 
-	// An upload goes through the outbox like a person's photos (docs/02 §2.18.1), kept on the
+	// An upload goes through the outbox like a person's photos (docs/dev/02 §2.18.1), kept on the
 	// device while Stella cannot take it and shown here until it is sent.
 	const kept = $derived(
 		outbox.mine.filter(
@@ -202,7 +202,7 @@
 								loading="lazy"
 							/>
 							{#if p.pinnedAt !== null}
-								<!-- A star, not a tint: the pin reads without colour (docs/05 §5.10). -->
+								<!-- A star, not a tint: the pin reads without colour (docs/dev/05 §5.10). -->
 								<span
 									class="pointer-events-none absolute top-1 left-1 rounded-full bg-bg/80 p-1 text-primary"
 								>

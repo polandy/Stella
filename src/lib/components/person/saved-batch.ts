@@ -6,9 +6,9 @@ import type { Removals } from '$lib/undo/context.svelte';
 import { submitAction } from '$lib/undo/submit-action';
 
 /*
- * A batch of links stored together (`relationship.addMany`, docs/02 §2.4) gets one toast and
+ * A batch of links stored together (`relationship.addMany`, docs/dev/02 §2.4) gets one toast and
  * one *Undo*, wherever it was saved from: the relationship form, or *Add all* on the *Also
- * true?* block (docs/02 §2.4, *Several people in one go*; ADR-118). An adapter — it holds the
+ * true?* block (docs/dev/02 §2.4, *Several people in one go*; ADR-118). An adapter — it holds the
  * fetch and the reload, nothing to decide.
  */
 

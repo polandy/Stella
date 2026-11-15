@@ -8,7 +8,7 @@ import {
 } from './tree';
 
 /*
- * The nesting of circles as every screen reads it (docs/02 §2.4.2): who is whose child, in
+ * The nesting of circles as every screen reads it (docs/dev/02 §2.4.2): who is whose child, in
  * which order, how far down a family goes, and which circles are over — without ever looping on
  * bad data.
  */

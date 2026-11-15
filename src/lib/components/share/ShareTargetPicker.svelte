@@ -6,7 +6,7 @@
 	import Icon from '../ui/Icon.svelte';
 
 	/*
-	 * Where a share goes (docs/02 §2.18.3): one of the targets `choicesFor` offers, as a radio
+	 * Where a share goes (docs/dev/02 §2.18.3): one of the targets `choicesFor` offers, as a radio
 	 * group of rows. A target that cannot be picked stays in the list, dimmed, and says why, so
 	 * the profile photo is not simply missing when several photos came or Stella is out of reach.
 	 */

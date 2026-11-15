@@ -14,7 +14,7 @@ import { LIBRARY_DAY_LIMIT, signLibraryPhotos } from '../immich/library';
 import type { ImmichMediaSigner } from '../immich/signed-media';
 
 /*
- * *On this day* from Immich (docs/02 §2.12.1): any photo of the timeline taken on the day's day
+ * *On this day* from Immich (docs/dev/02 §2.12.1): any photo of the timeline taken on the day's day
  * and month in an earlier year, whoever is in it — the library is open to the household, as the
  * picker beside an upload has it (§2.24.9), so each photo is signed for the viewer's household.
  * Read apart from `memoriesOn`, after the page is drawn, so Home never waits on Immich.

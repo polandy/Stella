@@ -10,7 +10,7 @@ import type {
 } from '$lib/server/domain/import/api/document';
 
 /*
- * The import API's front door (docs/02 §2.16.1). The body is untrusted JSON from a script, so
+ * The import API's front door (docs/dev/02 §2.16.1). The body is untrusted JSON from a script, so
  * its shape is settled here, at the boundary, before the domain sees a typed document. Objects
  * are strict: a field Stella does not know is refused rather than dropped, because `birthday`
  * for `birthDate` would otherwise vanish without a word and the caller would never find out.

@@ -13,7 +13,7 @@ import { seedRelationshipTypes } from './seed';
 import * as schema from './schema';
 
 /*
- * A table that points at itself, against real SQLite (docs/02 §2.15, issue #373). The circle is
+ * A table that points at itself, against real SQLite (docs/dev/02 §2.15, issue #373). The circle is
  * the one Stella has (a class nested in its school): a child's parent arrives in the same batch,
  * so it counts as present when it is written there too, and the rows go in parents-first
  * whatever order the archive lists them in. A parent that is nowhere — not in the database,

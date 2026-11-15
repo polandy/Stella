@@ -5,10 +5,10 @@
 	import type { PairSince } from '$lib/relationships/multi-pick';
 
 	/*
-	 * The add form's since day (docs/02 §2.4): one field, or — with several people picked whose
+	 * The add form's since day (docs/dev/02 §2.4): one field, or — with several people picked whose
 	 * days differ, several children say — one per pair, each prefilled from the birthday rule and
 	 * clearable. *Use one date for all* folds them back into one. The two glide into each other in
-	 * place (docs/05 §5.11).
+	 * place (docs/dev/05 §5.11).
 	 */
 
 	interface Props {

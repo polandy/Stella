@@ -9,7 +9,7 @@ import type * as schema from './schema';
 import { circle, circleMembership, contact } from './schema';
 
 /*
- * Drizzle adapter for the circle nesting (docs/08 §8.3): the household's circles in one query,
+ * Drizzle adapter for the circle nesting (docs/dev/08 §8.3): the household's circles in one query,
  * each with its direct members the reader may see counted (the contact's visibility in the JOIN,
  * as on the cards). The rows are the whole household's, because a hidden sub-circle is still
  * counted under its parent; `circleTreeVisibleTo` drops everything else of it before the rows

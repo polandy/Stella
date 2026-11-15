@@ -1,6 +1,6 @@
 <!--
   @component
-  *or From Immich* beside a gallery's file field (docs/02 §2.24.9): the picker opens on today, a
+  *or From Immich* beside a gallery's file field (docs/dev/02 §2.24.9): the picker opens on today, a
   gallery having no day of its own, and what it copies waits beside the field for the upload.
   Offline the button is greyed out and says it needs a connection.
 -->

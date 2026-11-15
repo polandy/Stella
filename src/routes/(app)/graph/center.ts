@@ -1,7 +1,7 @@
 import type { NodeKind } from '$lib/graph/model/types';
 
 /*
- * Which node the explorer opens on — a person or a circle (docs/02 §2.7). Pure, so the order
+ * Which node the explorer opens on — a person or a circle (docs/dev/02 §2.7). Pure, so the order
  * of preference is stated once and tested without a graph or a database.
  */
 
@@ -18,7 +18,7 @@ export interface Center {
 	id: string | null;
 	/**
 	 * True only when the centre is the one the link named. A profile links here with its own
-	 * person (docs/05 §5.5), so this is also what says a way back to that page is owed — the
+	 * person (docs/dev/05 §5.5), so this is also what says a way back to that page is owed — the
 	 * member's own person, chosen because nothing was asked for, is not somewhere they came
 	 * from.
 	 */
@@ -26,7 +26,7 @@ export interface Center {
 }
 
 /**
- * The asked-for node wins; otherwise the member's own person (docs/02 §2.1.3), which is the
+ * The asked-for node wins; otherwise the member's own person (docs/dev/02 §2.1.3), which is the
  * view they almost always want; otherwise the first visible person, so the page is never
  * empty for a household that has one. Anyone the viewer cannot see is skipped rather than
  * honoured — a link may name a person this member has no business seeing.
@@ -70,7 +70,7 @@ export function wayBackTo(nodes: readonly CentrableNode[], center: Center): WayB
  *
  * A person's page cannot answer "how are we connected?" itself: it holds two hops of the
  * household, and the answer usually runs further than that. So it hands the question here,
- * with both ends named (docs/05 §5.5). Anyone the viewer cannot see is refused rather than
+ * with both ends named (docs/dev/05 §5.5). Anyone the viewer cannot see is refused rather than
  * traced — the same rule the centre follows — and so is the centre itself, which would trace
  * a chain of one.
  */

@@ -15,7 +15,7 @@ import type { GraphEdge, GraphModel } from './types';
 
 /*
  * Which generation each person on the map belongs to — the rows of the family-tree
- * arrangement (docs/02 §2.7, docs/05 §5.8). Pure: read off the family links the model already
+ * arrangement (docs/dev/02 §2.7, docs/dev/05 §5.8). Pure: read off the family links the model already
  * carries. The links a household enters decide first; the worked-out kinship lines only place
  * a relative the entered ones cannot reach, since on a partial map a cousin can arrive with
  * nothing but the dotted line.

@@ -7,7 +7,7 @@ import { createDrizzleHeldGiftRepository } from './held-gift-repository';
 import * as schema from './schema';
 
 /*
- * Integration spec for the held-gifts adapter (docs/02 §2.25.4), driven through the use-case
+ * Integration spec for the held-gifts adapter (docs/dev/02 §2.25.4), driven through the use-case
  * over a migrated database: the gift notes are found by their import id and nothing else, a
  * touchpoint's participants come with it, and each original goes only with its gifts.
  */

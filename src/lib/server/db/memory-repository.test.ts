@@ -8,7 +8,7 @@ import { createDrizzleMemoryRepository } from './memory-repository';
 import * as schema from './schema';
 
 /*
- * Integration spec for the Drizzle MemoryRepository (docs/02 §2.12.1): each kind reads its
+ * Integration spec for the Drizzle MemoryRepository (docs/dev/02 §2.12.1): each kind reads its
  * `MM-DD` column, before the day, newest first — and only what the viewer may see: another
  * member's private entry, a person the household archived, another household's day never come
  * back; a person who died keeps theirs.

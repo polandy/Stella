@@ -6,7 +6,7 @@ import type { ContactDirectoryReads } from '../contacts/directory';
  * In-memory read models of the household's people. The people a fake is built over are the
  * ones the viewer may see: deciding *that* is the access layer's job, covered against SQLite in
  * `db/*-reads.test.ts`, so a fake does not re-implement it. What it does keep is the one rule
- * every list depends on — archived people are out of the browsing scope (docs/03 §3.3).
+ * every list depends on — archived people are out of the browsing scope (docs/dev/03 §3.3).
  */
 
 /** One person a fake holds: their list row, and whether they are archived. */

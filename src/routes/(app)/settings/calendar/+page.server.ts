@@ -8,7 +8,7 @@ import {
 import type { Actions, PageServerLoad } from './$types';
 
 /*
- * A member's calendar link (docs/02 §2.13.4). Every member manages their own: the feed shows
+ * A member's calendar link (docs/dev/02 §2.13.4). Every member manages their own: the feed shows
  * what its member may see, so nobody — an admin included — makes or withdraws one for someone
  * else.
  *

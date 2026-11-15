@@ -4,7 +4,7 @@ import { MonicaJsonError } from './monica/json-export';
 import { SqlDumpError } from './monica/sql-dump';
 import { VCardError } from './vcard';
 
-/* Which of Monica's two exports a file is, decided from the file itself (docs/02 §2.16). */
+/* Which of Monica's two exports a file is, decided from the file itself (docs/dev/02 §2.16). */
 
 const VCARD = ['BEGIN:VCARD', 'VERSION:4.0', 'UID:u1', 'FN:Severin Hauenstein', 'END:VCARD'].join(
 	'\r\n'

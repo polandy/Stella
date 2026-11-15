@@ -10,7 +10,7 @@ import {
 import { cardShape } from './empty-cards';
 
 /*
- * The person page's jump bar (docs/05 §5.5): one link per card worth jumping to, with the
+ * The person page's jump bar (docs/dev/05 §5.5): one link per card worth jumping to, with the
  * card's own count, and the card being read marked as current.
  */
 
@@ -28,7 +28,7 @@ describe('jumpEntries', () => {
 	});
 
 	it('carries each card’s count, but none for the story, which is paged, or the gifts', () => {
-		// The Gifts card counts its open ideas on its tab, not in its header (docs/02 §2.25).
+		// The Gifts card counts its open ideas on its tab, not in its header (docs/dev/02 §2.25).
 		expect(jumpEntries({ relationships: 10, photos: 23, notes: 2 }).map((e) => e.count)).toEqual([
 			10,
 			23,

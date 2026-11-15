@@ -6,7 +6,7 @@
 	import { useTranslate } from '$lib/i18n/context.svelte';
 
 	/*
-	 * The `#` list (docs/02 §2.20.2): the household's tags matching what is typed, then the typed
+	 * The `#` list (docs/dev/02 §2.20.2): the household's tags matching what is typed, then the typed
 	 * word as a new tag. The field keeps focus and points here with aria-activedescendant, as with
 	 * the `@` list; where the list sits is the host's (`class`).
 	 */

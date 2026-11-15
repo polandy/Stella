@@ -18,7 +18,7 @@ import {
 } from './outbox';
 
 /*
- * The outbox (docs/02 §2.18.1): what a phone holds back while Stella is out
+ * The outbox (docs/dev/02 §2.18.1): what a phone holds back while Stella is out
  * of reach. Pure — the IndexedDB store and the fetch that sends are adapters around it. The
  * rule it keeps: nothing leaves until Stella has confirmed it or the member discards it, and an
  * item being edited is never sent from under the editor.

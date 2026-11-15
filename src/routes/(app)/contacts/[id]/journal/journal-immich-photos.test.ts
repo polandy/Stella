@@ -14,7 +14,7 @@ import { answerOf, formOf, routeEvent, type FakeServices } from '$lib/server/tes
 import { actions } from './+page.server';
 
 /*
- * Immich photos on an entry as references (docs/02 §2.20, docs/04 ADR-132): `linkImmichPhotos`
+ * Immich photos on an entry as references (docs/dev/02 §2.20, docs/dev/04 ADR-132): `linkImmichPhotos`
  * refers to the picker's signed photos from the author's own entry, `edit` takes the marked ones
  * off. Without Immich a pick is refused while taking a reference off still works, since it never
  * reaches Immich.

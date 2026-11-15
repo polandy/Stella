@@ -26,14 +26,14 @@ import {
 } from './schema';
 
 /*
- * Drizzle adapter for the ContactRepository port (docs/08 §8.3): the record's writes and the
+ * Drizzle adapter for the ContactRepository port (docs/dev/08 §8.3): the record's writes and the
  * one-record reads they rest on. Reads and writes are scoped through the central
  * `contactVisibleTo` condition so access control is enforced in one place. The lists are read
  * models of their own (`contact-directory-reads.ts`, `contact-name-reads.ts`,
  * `name-candidate-reads.ts`).
  */
 
-/** The profile columns a merge combines (docs/02 §2.2) — every one that can be empty. */
+/** The profile columns a merge combines (docs/dev/02 §2.2) — every one that can be empty. */
 const mergeableColumns = {
 	firstName: contactTable.firstName,
 	lastName: contactTable.lastName,
@@ -89,7 +89,7 @@ export function createDrizzleContactRepository(
 	/**
 	 * Write `values` to the contact when the viewer sees them, and say whether it did. The rule
 	 * is in the statement itself, not left to a read before it: a person made private since that
-	 * read is not written (docs/03 §3.7).
+	 * read is not written (docs/dev/03 §3.7).
 	 */
 	function writeVisible(
 		viewer: Viewer,
@@ -137,7 +137,7 @@ export function createDrizzleContactRepository(
 				replaceSubjectEverywhere(tx, id, null, audit.createdAt);
 				// Every photo the contact carries — their own and those inside their journal
 				// entries — goes first and explicitly. The entries cascade with the contact, but
-				// `photo.journal_entry_id` carries no cascade in the database (docs/03 §photo),
+				// `photo.journal_entry_id` carries no cascade in the database (docs/dev/03 §photo),
 				// so the delete below would be refused; and their bytes have to be unlinked.
 				const journalPhotoIds = tx
 					.select({ id: photo.id })
@@ -157,7 +157,7 @@ export function createDrizzleContactRepository(
 					.returning({ filePath: photo.filePath, thumbPath: photo.thumbPath })
 					.all();
 
-				// `user.self_contact_id` carries no cascade (docs/03 §user), so a member who said
+				// `user.self_contact_id` carries no cascade (docs/dev/03 §user), so a member who said
 				// they are this person has to be let go of explicitly.
 				tx.update(userTable)
 					.set({ selfContactId: null })
@@ -166,7 +166,7 @@ export function createDrizzleContactRepository(
 
 				tx.delete(contactTable).where(eq(contactTable.id, id)).run();
 				// Same transaction as the delete: a removal with no trace is the thing the log
-				// exists to prevent (docs/04 §4.9).
+				// exists to prevent (docs/dev/04 §4.9).
 				tx.insert(activityLog).values(activityEntry(audit)).run();
 				return files;
 			});
@@ -262,7 +262,7 @@ export function createDrizzleContactRepository(
 			audit: ActivityOf<'contact.renamed' | 'lastNames.given'> | null
 		) {
 			// One transaction: a batch of last names lands whole, with the line that tells the
-			// household about it, or not at all (docs/02 §2.2.4.4) — also when one person has
+			// household about it, or not at all (docs/dev/02 §2.2.4.4) — also when one person has
 			// gone out of the writer's sight since the read.
 			try {
 				db.transaction((tx) => {

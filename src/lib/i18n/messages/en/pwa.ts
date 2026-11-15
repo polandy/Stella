@@ -1,4 +1,4 @@
-/* Installing Stella on a device, and what it can still show when the network is gone (docs/02 §2.18). */
+/* Installing Stella on a device, and what it can still show when the network is gone (docs/dev/02 §2.18). */
 
 export const pwa = {
 	'pwa.name': 'Stella',

@@ -16,7 +16,7 @@ import { createDrizzleJournalRepository } from './journal-repository';
 import * as schema from './schema';
 
 /*
- * Tags on journal entries against SQLite (docs/02 §2.20.2): the household's set follows what the
+ * Tags on journal entries against SQLite (docs/dev/02 §2.20.2): the household's set follows what the
  * entries say — one tag per key in its first spelling, swept once nothing carries it — and a tag
  * is seen only by whoever can read an entry carrying it.
  */

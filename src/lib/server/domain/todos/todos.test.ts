@@ -18,7 +18,7 @@ import {
 } from './todos';
 
 /*
- * The to-do use-cases (docs/02 §2.26), over an in-memory port. What the database scopes — a
+ * The to-do use-cases (docs/dev/02 §2.26), over an in-memory port. What the database scopes — a
  * private to-do reaching only its author, one on a person the viewer cannot see — is the
  * Drizzle adapter's to prove (`db/todo-repository.test.ts`); the fake keeps the same rule.
  */

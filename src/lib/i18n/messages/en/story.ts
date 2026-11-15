@@ -1,4 +1,4 @@
-/* A person's story: the journal entries and interactions on their page (docs/02 §2.23). */
+/* A person's story: the journal entries and interactions on their page (docs/dev/02 §2.23). */
 
 export const story = {
 	'story.empty': 'Nothing written down yet — calls, visits and moments land here.',

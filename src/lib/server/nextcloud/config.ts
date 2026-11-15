@@ -1,7 +1,7 @@
 import type { NextcloudSource } from '../../import-match/card';
 
 /*
- * The Nextcloud link's settings (docs/02 §2.16.3, docs/07): pure, so the all-or-nothing rule is
+ * The Nextcloud link's settings (docs/dev/02 §2.16.3, docs/dev/07): pure, so the all-or-nothing rule is
  * tested without an environment. `config.ts` hands the raw variables over; this decides.
  * Without `NEXTCLOUD_ADDRESS_BOOK_URL` the link appears nowhere. The app password lives in the
  * environment only — never in the database, so never in the archive either.

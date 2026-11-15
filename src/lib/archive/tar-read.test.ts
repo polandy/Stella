@@ -5,7 +5,7 @@ import { join } from 'node:path';
 import { TAR_BLOCK, TarFormatError, readTar, tarEntry, tarTrailer } from './tar';
 
 /*
- * Reading an archive back (docs/02 §2.15). The writer's counterpart: a restore starts by
+ * Reading an archive back (docs/dev/02 §2.15). The writer's counterpart: a restore starts by
  * taking a `.tar` apart, and the household may well hand back an archive that `tar` itself
  * repacked rather than the exact bytes Stella wrote.
  *

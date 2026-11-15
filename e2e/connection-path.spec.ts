@@ -2,10 +2,10 @@ import { expect, test } from '@playwright/test';
 import { fromPeopleMenu, openPerson, pickPerson, signIn } from './app';
 
 /*
- * "How are we connected?" asked from a person's card (docs/02 §2.7, docs/05 §5.5). The card
+ * "How are we connected?" asked from a person's card (docs/dev/02 §2.7, docs/dev/05 §5.5). The card
  * holds two hops of the household and the chain usually runs further, so it asks who and
  * hands both ends to the explorer, which traces it on arrival. Written after the maintainer
- * walked it in the running app (docs/08 §8.4.1).
+ * walked it in the running app (docs/dev/08 §8.4.1).
  */
 
 test.beforeEach(async ({ page }) => {

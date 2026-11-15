@@ -14,7 +14,7 @@ import {
 } from './homes';
 
 /*
- * The shared home (docs/02 §2.2, *A shared home*): sharing an address, rewriting it for
+ * The shared home (docs/dev/02 §2.2, *A shared home*): sharing an address, rewriting it for
  * everyone or one person, moving out — and the members the viewer may not see, who are never
  * moved by someone who cannot see them.
  */

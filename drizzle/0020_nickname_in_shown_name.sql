@@ -1,4 +1,4 @@
--- The nickname joins the shown name it shapes (docs/02 §2.2, docs/03 §contact):
+-- The nickname joins the shown name it shapes (docs/dev/02 §2.2, docs/dev/03 §contact):
 -- *Thomas „Tom“ Brunner*. Updates once the names the old rule made — first and last name, or
 -- the nickname alone — where a nickname is set and is not the first name again; a name somebody
 -- chose (*Opa Kurt*) does not equal the old rule and is left alone. The rule is the one of

@@ -1,7 +1,7 @@
 import { AVATAR_ACCENTS, type Accent } from '../design/tokens';
 
 /*
- * Avatar fallback helpers (docs/05 §5.10): when a contact has no photo, show their initials on
+ * Avatar fallback helpers (docs/dev/05 §5.10): when a contact has no photo, show their initials on
  * a colour deterministically derived from their id, so the same person always gets the same
  * accent across the list, profile, and graph. Pure and framework-free.
  */

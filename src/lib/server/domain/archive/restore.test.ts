@@ -12,7 +12,7 @@ import {
 } from './restore';
 
 /*
- * Reading an archive back into rows (docs/02 §2.15). The case this file exists for is the
+ * Reading an archive back into rows (docs/dev/02 §2.15). The case this file exists for is the
  * round trip: what the export writes, the import must read back column for column, because
  * anything the pair loses is lost for good.
  */
@@ -241,7 +241,7 @@ function fullHousehold(): HouseholdSnapshot {
 					pinned_at: EXPORTED,
 					created_at: EXPORTED
 				},
-				// The square Hans's lake photo is worn through (docs/02 §2.14): a photo row of its own.
+				// The square Hans's lake photo is worn through (docs/dev/02 §2.14): a photo row of its own.
 				{
 					id: 'p-framing',
 					household_id: 'h-1',
@@ -280,7 +280,7 @@ function fullHousehold(): HouseholdSnapshot {
 					taken_at: null,
 					created_at: EXPORTED
 				},
-				// The club's team photo (docs/02 §2.4.2): it belongs to the circle, not to anyone.
+				// The club's team photo (docs/dev/02 §2.4.2): it belongs to the circle, not to anyone.
 				{
 					id: 'p-circle',
 					household_id: 'h-1',
@@ -302,7 +302,7 @@ function fullHousehold(): HouseholdSnapshot {
 					pinned_at: EXPORTED,
 					created_at: EXPORTED
 				},
-				// Hans's profile picture, cut from the team photo (docs/02 §2.14).
+				// Hans's profile picture, cut from the team photo (docs/dev/02 §2.14).
 				{
 					id: 'p-cut',
 					household_id: 'h-1',
@@ -771,7 +771,7 @@ describe('an archive that does not add up', () => {
 	});
 
 	// An archive written before the status column meant anything carries no status at all, and
-	// the column no longer takes one: a link that is on record holds (docs/02 §2.4).
+	// the column no longer takes one: a link that is on record holds (docs/dev/02 §2.4).
 	it('reads a link with no status as current', () => {
 		const plan = planRestore(
 			deps(),

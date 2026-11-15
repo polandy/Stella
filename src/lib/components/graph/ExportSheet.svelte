@@ -1,6 +1,6 @@
 <!--
   @component
-  The export dialog's preview (docs/design/screens/graph.md): the sheet as it comes out — the
+  The export dialog's preview (docs/dev/design/screens/graph.md): the sheet as it comes out — the
   page and its margins for a print, the picture alone for a PNG. The picture is drawn with its
   header's room blank and the title typed over it at the picture's own measures, so a keystroke
   in the title never draws the tree again.

@@ -2,8 +2,8 @@ import { expect, test, type Page } from '@playwright/test';
 import { fillDate, openPeople, pickPerson, signIn } from './app';
 
 /*
- * Touchpoints on the story timeline and "last contacted" (docs/02 §2.6, §2.23). Written after
- * the flow was verified in the running app (docs/08 §8.4.1). Runs against the demo dataset,
+ * Touchpoints on the story timeline and "last contacted" (docs/dev/02 §2.6, §2.23). Written after
+ * the flow was verified in the running app (docs/dev/08 §8.4.1). Runs against the demo dataset,
  * signed in as the demo admin; the touchpoints logged here use a title no seeded data contains.
  */
 
@@ -26,7 +26,7 @@ const storyItems = (page: Page) => page.locator('[data-story-item]');
 
 const TITLE = 'Quill call about the harbour trip';
 
-/** One page of the story (docs/02 §2.23); Opa Hans is seeded with more than this. */
+/** One page of the story (docs/dev/02 §2.23); Opa Hans is seeded with more than this. */
 const STORY_PAGE_SIZE = 12;
 
 test.beforeEach(async ({ page }) => {
@@ -125,7 +125,7 @@ test('removes an own interaction and last contacted moves to the remaining one',
 	await expect(timeline).not.toContainText(TITLE);
 	await expect(timeline).toContainText('Quill lunch, the earlier one');
 
-	// The removal is held back for the undo window (docs/02 §2.23). Leaving through the app's own
+	// The removal is held back for the undo window (docs/dev/02 §2.23). Leaving through the app's own
 	// link sends it and waits for it; the `page.goto` in `openPerson` alone would race it.
 	await openPeople(page);
 	await openPerson(page, /Lena Brunner/);

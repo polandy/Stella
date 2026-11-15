@@ -1,13 +1,13 @@
 import type { Viewer, Visibility } from '../../access/visibility';
 
 /*
- * The passive side of an @-mention (docs/02 §2.20.1): not the chip that points forward, but
+ * The passive side of an @-mention (docs/dev/02 §2.20.1): not the chip that points forward, but
  * the list on the person who was named — every note and journal entry elsewhere that refers
  * to them, newest first.
  *
  * Notes and journal entries are stored and read separately, so the merge is a pure function
  * over the two lists and the use-case is only the part that fetches them — the same cut the
- * story timeline uses (docs/08 §8.3). Whether a viewer may see a reference at all is decided
+ * story timeline uses (docs/dev/08 §8.3). Whether a viewer may see a reference at all is decided
  * in the adapter, through the central scoping in `access/`.
  */
 

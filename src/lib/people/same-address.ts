@@ -1,5 +1,5 @@
 /*
- * When two address lines are one address (docs/02 §2.2, *A shared home*): equal after folding
+ * When two address lines are one address (docs/dev/02 §2.2, *A shared home*): equal after folding
  * case, spaces and punctuation, and nothing looser — an accent or an abbreviation is a
  * different line, because a near-match merged by mistake moves someone without being asked.
  */

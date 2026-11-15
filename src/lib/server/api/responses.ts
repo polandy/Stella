@@ -1,7 +1,7 @@
 import { json } from '@sveltejs/kit';
 
 /*
- * What the API answers when it cannot get as far as the request (docs/02 §2.16.1). Bodies carry
+ * What the API answers when it cannot get as far as the request (docs/dev/02 §2.16.1). Bodies carry
  * a `code` a program can branch on; the API has no reader to put a sentence in front of.
  */
 

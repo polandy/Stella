@@ -1,5 +1,5 @@
 /*
- * The decisions behind a toolbar menu (docs/05 §5.8), kept out of the component so they test
+ * The decisions behind a toolbar menu (docs/dev/05 §5.8), kept out of the component so they test
  * without a browser: what a Filter button says about what is shown, and where the arrow keys
  * move inside an open menu.
  */

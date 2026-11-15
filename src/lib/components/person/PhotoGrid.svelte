@@ -9,7 +9,7 @@
 	import type { CardEntry } from './types';
 
 	/*
-	 * The Photos card's grid (docs/design/screens/person.md): square tiles, three to a row on a
+	 * The Photos card's grid (docs/dev/design/screens/person.md): square tiles, three to a row on a
 	 * phone and seven from `sm`, never a strip that scrolls sideways. As a *glance* it is one row
 	 * on a wide card and two on a phone, its last tile *All 1,769 photos* once there are more;
 	 * otherwise it holds the whole list and grows downward.
@@ -92,7 +92,7 @@
 		{#each shown as entry, index (photoKey(entry))}
 			{@const day = dayOf(entry)}
 			<li class="relative {narrowHidden(index) ? 'max-sm:hidden' : ''}" data-source={entry.source}>
-				<!-- A private photo stays blurred until asked for (docs/02 §2.10.1); a tap shows it, the next opens it. -->
+				<!-- A private photo stays blurred until asked for (docs/dev/02 §2.10.1); a tap shows it, the next opens it. -->
 				<Veil
 					id="photo:{entry.source === 'stella' ? entry.photo.id : ''}"
 					isPrivate={entry.source === 'stella' && entry.photo.visibility === 'private'}
@@ -115,7 +115,7 @@
 							loading="lazy"
 						/>
 						{#if entry.source === 'stella' && entry.photo.pinnedAt !== null}
-							<!-- A star, not a tint: the pin reads without colour (docs/05 §5.10). -->
+							<!-- A star, not a tint: the pin reads without colour (docs/dev/05 §5.10). -->
 							<span class="{BADGE} top-1 left-1 text-primary" data-testid="photo-favourite">
 								<Icon name="pinned" size={11} />
 							</span>

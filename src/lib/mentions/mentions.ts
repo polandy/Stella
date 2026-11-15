@@ -1,5 +1,5 @@
 /*
- * Shared @-mention parser/resolver for notes and journal (docs/02 §2.20.1).
+ * Shared @-mention parser/resolver for notes and journal (docs/dev/02 §2.20.1).
  *
  * Pure and framework-agnostic — no DB, no SvelteKit. The stored form of a mention is a stable,
  * id-based token `@{contact:<id>}`, so it survives a rename and never resolves to the wrong
@@ -17,7 +17,7 @@ export const MENTION_TOKEN_PREFIX = '@{contact:';
 
 /**
  * The character set a contact id can use inside a token. Colons are part of it because an
- * imported contact keeps its source id (`monica:contact:9`, docs/02 §2.16) — without them a
+ * imported contact keeps its source id (`monica:contact:9`, docs/dev/02 §2.16) — without them a
  * mention of an imported person would be written but never read back as a token.
  */
 const ID_CHARS = '[A-Za-z0-9_:-]+';
@@ -94,7 +94,7 @@ export interface AmbiguousHandle {
  * resolver finds exactly one person, leave unknown and ambiguous handles and escaped `\@` as
  * literal text, and pass existing canonical tokens through. Returns the rewritten body, the
  * unique referenced contact ids (in first-seen order) for persisting the mention links, and the
- * ambiguous handles — which a caller refuses rather than silently dropping (docs/02 §2.2.3).
+ * ambiguous handles — which a caller refuses rather than silently dropping (docs/dev/02 §2.2.3).
  */
 export function resolveMentions(
 	body: string,
@@ -167,7 +167,7 @@ export function segmentMentions(body: string): MentionSegment[] {
 }
 
 /**
- * The people a body references other than the ones it is about (docs/02 §2.20.1, §2.20.3).
+ * The people a body references other than the ones it is about (docs/dev/02 §2.20.1, §2.20.3).
  * Naming a person whose note or journal entry this is says nothing new — they are its subject,
  * not a passive reference — so that id never becomes a link.
  */

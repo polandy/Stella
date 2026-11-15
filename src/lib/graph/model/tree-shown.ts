@@ -3,7 +3,7 @@ import { familiesOf, isFamilyLink } from './generations';
 import type { GraphEdge, GraphModel } from './types';
 
 /*
- * Which lines the family tree leaves off (docs/05 §5.8). Pure.
+ * Which lines the family tree leaves off (docs/dev/05 §5.8). Pure.
  *
  * The tree is drawn from two kinds of line: a parent's line to a child, and the bar between
  * partners. Every other family line — a grandparent, an aunt, a cousin, a sibling, an in-law,

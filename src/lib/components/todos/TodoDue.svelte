@@ -3,7 +3,7 @@
 	import { dueLabel, dueStanding } from '$lib/todos/todos';
 
 	/*
-	 * The day a to-do is due by, as every list of to-dos says it (docs/02 §2.26): weighted while
+	 * The day a to-do is due by, as every list of to-dos says it (docs/dev/02 §2.26): weighted while
 	 * it is overdue or within the week, quiet when later. Nothing for a to-do with no day.
 	 */
 	let { dueOn, today }: { dueOn: string | null; today: string } = $props();

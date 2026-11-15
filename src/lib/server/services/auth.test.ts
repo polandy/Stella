@@ -12,7 +12,7 @@ import { createAuthServices, type AuthConfig } from './auth';
 import { createServices } from './app-services';
 
 /*
- * The auth group of the composition root (docs/08 §8.3), built over a real in-memory SQLite:
+ * The auth group of the composition root (docs/dev/08 §8.3), built over a real in-memory SQLite:
  * what the edge gets from `locals.services.auth` must work end to end, and each repository
  * must exist once, so the raw `accounts` an edge reads is the one the use-cases write.
  */

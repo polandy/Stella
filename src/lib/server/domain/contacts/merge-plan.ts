@@ -1,5 +1,5 @@
 /*
- * What a merge does to everything that points at the record being merged away (docs/02 §2.2),
+ * What a merge does to everything that points at the record being merged away (docs/dev/02 §2.2),
  * as data: the tables in the order they are walked, and per column what happens where the
  * survivor already has that row. `db/contact-merge.ts` runs this list in its one transaction
  * and owns the SQL; the decisions are here, so a new table that points at a person is one line
@@ -66,7 +66,7 @@ const settle = (settlement: MergeSettlement, table: string): MergeStep => ({
 	table
 });
 
-/** In the order it runs. Table and column names are the database's (docs/03). */
+/** In the order it runs. Table and column names are the database's (docs/dev/03). */
 export const MERGE_PLAN: readonly MergeStep[] = [
 	settle('move-journal-subjects', 'journal_entry'),
 	repoint('journal_entry', 'contact_id', 'cannot-collide'),
@@ -86,7 +86,7 @@ export const MERGE_PLAN: readonly MergeStep[] = [
 	repoint('contact_tag', 'contact_id', 'survivor-keeps'),
 	// A home both lived in keeps the survivor; the merged record's homes become theirs.
 	repoint('home_member', 'contact_id', 'survivor-keeps'),
-	// One Immich link per person: a survivor that has one keeps it (docs/02 §2.24.5).
+	// One Immich link per person: a survivor that has one keeps it (docs/dev/02 §2.24.5).
 	repoint('immich_link', 'contact_id', 'survivor-keeps'),
 	// An ignored proposal follows the person; the survivor's own record of a pair wins.
 	repoint('immich_ignore', 'contact_id', 'survivor-keeps'),
@@ -127,7 +127,7 @@ export const MERGE_LEAVES_BEHIND: readonly { table: string; column: string; why:
 
 /**
  * Whether a merge leaves everything written about the two where its readers still see it
- * (docs/02 §2.2). It all follows the survivor, and what hangs off a private person is seen by
+ * (docs/dev/02 §2.2). It all follows the survivor, and what hangs off a private person is seen by
  * their owner alone: a shared record merged into a private one would take every note, photo,
  * gift and to-do the household wrote about them out of everyone else's view — and the log of
  * the merge, private like the survivor, would not even tell them. The admin makes the survivor

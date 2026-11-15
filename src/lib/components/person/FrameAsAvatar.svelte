@@ -9,7 +9,7 @@
 	import PhotoCropper from '../ui/PhotoCropper.svelte';
 
 	/*
-	 * Wearing a gallery photo as the person's avatar through a chosen square (docs/02 §2.14).
+	 * Wearing a gallery photo as the person's avatar through a chosen square (docs/dev/02 §2.14).
 	 * The full picture is fetched back for the cropper, the square is rendered in the browser as
 	 * any avatar is, and the server remembers it on a framing of this photo — so the gallery keeps
 	 * one photo, and choosing again starts from the square chosen last time.

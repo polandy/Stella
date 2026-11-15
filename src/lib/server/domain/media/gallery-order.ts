@@ -1,7 +1,7 @@
 import { datedAt } from '../../../media/taken-at';
 
 /*
- * The order a person's photos are shown in (docs/02 §2.14) — one rule, so the gallery and
+ * The order a person's photos are shown in (docs/dev/02 §2.14) — one rule, so the gallery and
  * anything else that lists a person's photos can never disagree about it.
  *
  * Favourites come first, the one pinned most recently leading: pinning a photo visibly puts it

@@ -11,12 +11,12 @@ import { unassignTag } from '$lib/server/domain/tags/tags';
 import { say, translator } from '$lib/server/i18n/say';
 import type { Actions } from '../$types';
 
-/** The profile card's tags (docs/02 §2.8). */
+/** The profile card's tags (docs/dev/02 §2.8). */
 export const tagActions = {
 	addTag: async ({ request, params, locals }) => {
 		const viewer = requireViewer(locals);
 
-		// A command (docs/04 §4.11.2), named by the form so one kept on the phone is recognised.
+		// A command (docs/dev/04 §4.11.2), named by the form so one kept on the phone is recognised.
 		const form = await request.formData();
 		const reading = readCommand({
 			id: form.get('commandId') || ulidGenerator.next(),

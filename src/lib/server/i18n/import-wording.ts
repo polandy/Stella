@@ -6,7 +6,7 @@ import type { ImportWording } from '$lib/server/domain/import/monica/plan';
 import type { KnownLabelOf } from '$lib/server/domain/nextcloud/linked-person';
 
 /*
- * The words the importer writes *into* the household's data (docs/02 §2.16): a gift note's
+ * The words the importer writes *into* the household's data (docs/dev/02 §2.16): a gift note's
  * title, the day a life event happened. They are content rather than interface, so they are
  * written once, in the language of the member running the import, and stay as written.
  */
@@ -44,7 +44,7 @@ const wordsOfKnownLabels = () =>
 
 /**
  * The shared label a label typed in Stella is, in whichever language it was typed: written to
- * the linked book the way every address book writes it (docs/02 §2.16.3).
+ * the linked book the way every address book writes it (docs/dev/02 §2.16.3).
  */
 export const knownLabel: KnownLabelOf = (text) =>
 	wordsOfKnownLabels().get(text.trim().toLowerCase()) ?? null;

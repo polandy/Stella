@@ -3,7 +3,7 @@ import type { KitConfig } from '@sveltejs/kit';
 type CspDirectives = NonNullable<NonNullable<KitConfig['csp']>['directives']>;
 
 /*
- * The Content-Security-Policy (docs/04 §4.7). SvelteKit sends it from these directives and adds
+ * The Content-Security-Policy (docs/dev/04 §4.7). SvelteKit sends it from these directives and adds
  * a per-request nonce to `script-src` for every inline script, its own and the two in
  * `app.html`. Styles stay `unsafe-inline`: Svelte transitions, `style=` bindings and the print
  * sheet write inline styles, and a style cannot run code. Everything is Stella's own origin —

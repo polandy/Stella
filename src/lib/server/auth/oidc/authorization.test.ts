@@ -2,7 +2,7 @@ import { describe, expect, it } from 'bun:test';
 import { isAuthorized, mapRole } from './authorization';
 
 /*
- * Group→role mapping and the sign-in authorization gate (docs/02 §2.1.2). Pure functions.
+ * Group→role mapping and the sign-in authorization gate (docs/dev/02 §2.1.2). Pure functions.
  */
 
 describe('mapRole', () => {

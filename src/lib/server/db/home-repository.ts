@@ -13,7 +13,7 @@ import type * as schema from './schema';
 import { contact, contactField, home, homeMember } from './schema';
 
 /*
- * Drizzle adapters for the home ports (docs/08 §8.3). A home has no visibility of its own: it
+ * Drizzle adapters for the home ports (docs/dev/08 §8.3). A home has no visibility of its own: it
  * is reached through a member, and that member is scoped through the central
  * `contactVisibleTo` — so is everyone named beside them. The database deletes a home with its
  * last member (migration 0031), so no write here has to remember to.

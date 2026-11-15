@@ -4,8 +4,8 @@ import type { Answer } from './claims';
 import type { SuggestionView } from './view';
 
 /*
- * The vocabulary the suggestion engine speaks (docs/02 §2.4.1,
- * docs/04 ADR-055).
+ * The vocabulary the suggestion engine speaks (docs/dev/02 §2.4.1,
+ * docs/dev/04 ADR-055).
  *
  * A rule never names a message key, a repository or a route: it answers a `Trigger` by reading
  * the view and returning `Suggestion`s. Keeping that vocabulary in one file is what lets a new
@@ -24,7 +24,7 @@ export interface PrimaryLink {
  * (L1, L2); the rest are the relatives Stella works out, offered for entering (K1). A partner
  * tie is never *suggested*, and neither is a step term: a partner's tie to existing children
  * is a step relationship, which the profile corrects in place rather than stores
- * (docs/02 §2.4.1). Each relation is stored as one built-in type (`TYPE_KEY_FOR_RELATION`).
+ * (docs/dev/02 §2.4.1). Each relation is stored as one built-in type (`TYPE_KEY_FOR_RELATION`).
  */
 export const RELATIONS = [
 	'parent',
@@ -58,7 +58,7 @@ export const isDirected = (relation: Relation): boolean => DIRECTED.has(relation
 
 /**
  * Which rule produced a suggestion, from the catalogue in
- * docs/02 §2.4.1 (*The suggestion rules*). Carried so the household can be told what
+ * docs/dev/02 §2.4.1 (*The suggestion rules*). Carried so the household can be told what
  * kind of claim it is looking at, and so ordering stays deterministic between rules.
  */
 export type RuleId = 'L1' | 'L2' | 'L3' | 'K1';
@@ -77,7 +77,7 @@ export type Confidence = 'certain' | 'likely' | 'possible';
  * `person-reviewed` is the one trigger no write raises: a member asks, on request, what stands
  * around this person right now. It is what makes the rule set reachable at all — every other
  * trigger only exists in the instant after a link is stored
- * (docs/02 §2.4.1).
+ * (docs/dev/02 §2.4.1).
  *
  * `household-reviewed` widens that ask to everyone the viewer can see (§6.6). It is a
  * different question rather than a wider `where`: a per-person review only ever reaches the
@@ -121,7 +121,7 @@ export interface LinkSuggestion {
 	 * The household's *no* — who declined this claim and when — or null while it stands. A rule
 	 * never sets it: the engine drops a dismissed suggestion outright, and only fills this in
 	 * when the caller asked to see what was declined
-	 * (docs/02 §2.4.1).
+	 * (docs/dev/02 §2.4.1).
 	 */
 	dismissed: Answer | null;
 }

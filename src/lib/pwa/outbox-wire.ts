@@ -3,7 +3,7 @@ import { COMMAND_PATIENCE_MS } from './outbox';
 import { PHOTO_PATIENCE_MS, photoAnswer, type PhotoUpload } from './outbox-photos';
 
 /*
- * The two requests the outbox sends (docs/02 §2.18.1, docs/04 §4.11.2): a batch of commands
+ * The two requests the outbox sends (docs/dev/02 §2.18.1, docs/dev/04 §4.11.2): a batch of commands
  * to `POST /api/commands`, and one photo to `POST /api/commands/photo`. An adapter, like
  * `outbox-store.ts`; what an answer does to the list is `outbox.ts`'s and `outbox-photos.ts`'s.
  * Null always means "no answer from Stella": out of reach, too slow, or someone else answering.

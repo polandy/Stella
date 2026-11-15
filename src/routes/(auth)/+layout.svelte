@@ -5,10 +5,10 @@
 	import type { Snippet } from 'svelte';
 
 	/*
-	 * The auth shell (docs/05 §5.5): the brand on one side, the form on the other. On a
+	 * The auth shell (docs/dev/05 §5.5): the brand on one side, the form on the other. On a
 	 * phone the brand panel shrinks to a header so the form is the first thing on screen.
 	 * The language picker sits here too — the first screen a visitor sees has to be readable
-	 * before there is a profile to remember a preference in (docs/02 §2.19).
+	 * before there is a profile to remember a preference in (docs/dev/02 §2.19).
 	 */
 	let { children }: { children: Snippet } = $props();
 	const t = useTranslate();

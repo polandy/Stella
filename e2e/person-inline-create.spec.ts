@@ -2,8 +2,8 @@ import { expect, test, type Locator, type Page } from '@playwright/test';
 import { appReady, recordAction, signIn } from './app';
 
 /*
- * Naming a new person from inside a person picker (docs/02 §2.2.2). Written after the panel
- * was seen in the running app (docs/08 §8.4.1).
+ * Naming a new person from inside a person picker (docs/dev/02 §2.2.2). Written after the panel
+ * was seen in the running app (docs/dev/08 §8.4.1).
  *
  * The suite shares one database, so every name here is absent from the demo seed and from
  * every other spec, and each case adds the person whose page it works on. Nothing this file

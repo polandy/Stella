@@ -13,7 +13,7 @@ import { planPersonRecords } from './restore-records';
 import { planRelationships } from './restore-relationships';
 
 /*
- * Reading an archive back (docs/02 §2.15): the document turned into rows this installation can
+ * Reading an archive back (docs/dev/02 §2.15): the document turned into rows this installation can
  * hold. The inverse of `document.ts`, and pure in the same way — a parsed document in, a plan
  * out, nothing written.
  *

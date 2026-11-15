@@ -1,4 +1,4 @@
-/* Full search across people, notes, gifts, to-dos and moments (docs/02 §2.9), and the graph screen. */
+/* Full search across people, notes, gifts, to-dos and moments (docs/dev/02 §2.9), and the graph screen. */
 
 export const search = {
 	'search.title': 'Search',
@@ -15,11 +15,11 @@ export const search = {
 	'search.giftFor': (p: { name: string }) => `for ${p.name}`,
 	'search.todos': 'To-dos',
 	'search.todoFor': (p: { name: string }) => `for ${p.name}`,
-	// A done one stays findable, marked as done (docs/02 §2.9).
+	// A done one stays findable, marked as done (docs/dev/02 §2.9).
 	'search.todoDone': 'done',
 	'search.moments': 'Moments',
 	'search.momentOn': (p: { date: string; name: string }) => `${p.date} · on ${p.name}`,
-	// A `#tag` query finds the moments carrying the tag and nothing else (docs/02 §2.20.2).
+	// A `#tag` query finds the moments carrying the tag and nothing else (docs/dev/02 §2.20.2).
 	'search.tagNone': (p: { tag: string }) => `No moment carries #${p.tag}.`,
 	'search.tagNoneHint':
 		'A tag lives in the text of a moment: write #word into one, and it is found here.',
@@ -79,13 +79,13 @@ export const search = {
 	'graph.tree.ownWords': (p: { words: string; name: string }) => `${p.words} ${p.name}`,
 	'graph.tree.namePair': (p: { first: string; second: string }) => `${p.first}, ${p.second}`,
 	'graph.tree.andMore': (p: { text: string; count: number }) => `${p.text} +${p.count}`,
-	// A slot for a missing parent in the tree (docs/02 §2.7): what tapping it adds.
+	// A slot for a missing parent in the tree (docs/dev/02 §2.7): what tapping it adds.
 	'graph.tree.addParent': (p: { name: string }) => `Add a parent of ${p.name}`,
 	'graph.tree.addOtherParent': (p: { name: string }) => `Add ${p.name}’s other parent`,
 	'graph.arrange.circles': 'By circle',
 	'graph.arrange.circles.hint': 'Each circle with its members around it',
 	'graph.loading': 'Loading the graph…',
-	// Walking the map from the keyboard (docs/05 §5.8).
+	// Walking the map from the keyboard (docs/dev/05 §5.8).
 	'graph.canvas': 'Relationship map',
 	'graph.keyboard.hint':
 		'Arrow keys move between people. Enter selects, and pressed again opens up their connections. Home goes back to the selected person or the centre, Escape lets go.',
@@ -103,7 +103,7 @@ export const search = {
 	'graph.peek.expand': 'Expand connections',
 	'graph.peek.openProfile': 'Open profile',
 	'graph.peek.openCircle': 'Open the circle',
-	// The phone's one-row strip has room for a word each (docs/05 §5.8).
+	// The phone's one-row strip has room for a word each (docs/dev/05 §5.8).
 	'graph.peek.expandShort': 'Expand',
 	'graph.peek.openProfileShort': 'Profile',
 	'graph.peek.openCircleShort': 'Circle',
@@ -112,15 +112,15 @@ export const search = {
 	'graph.peek.showIndividually': 'Show individually',
 	'graph.peek.tip':
 		'Tip: click a selected node to expand it, or use the connection path to see how two people are linked.',
-	// The map on a person's page reaches two steps and no further (docs/05 §5.5).
-	// The way into the whole household, offered wherever a map stops (docs/05 §5.5, §5.8).
+	// The map on a person's page reaches two steps and no further (docs/dev/05 §5.5).
+	// The way into the whole household, offered wherever a map stops (docs/dev/05 §5.5, §5.8).
 	'graph.openInGraph': 'Open in the graph',
 	'graph.backToPerson': (p: { name: string }) => `Back to ${p.name}`,
 	'graph.backToCircle': (p: { name: string }) => `Back to the ${p.name} circle`,
 	'graph.peek.tipCompact': 'Tip: tap a selected person again to open up their own connections.',
 	'graph.peek.edgeOfMap': 'This is as far as this map goes. The graph carries the rest.',
 	'graph.peek.allShown': 'Everything linked here is already on the map.',
-	// A centre with no links at all (docs/02 §2.7): an invitation instead of a lone dot.
+	// A centre with no links at all (docs/dev/02 §2.7): an invitation instead of a lone dot.
 	'graph.alone.title': (p: { name: string }) => `${p.name} is not linked to anyone yet`,
 	'graph.alone.hint':
 		'Add a parent, a partner, a friend or a colleague, and the map grows from there.',
@@ -129,7 +129,7 @@ export const search = {
 	'graph.aloneCircle.hint': 'Add the people who share this circle, and the map grows from there.',
 	'graph.onPerson.label': (p: { name: string }) => `The people around ${p.name}`,
 	// A phone's small preview of a person's map, grown inside the People card and back
-	// (docs/05 §5.5) — not full screen, which is `graph.fullscreen.enter` on the same preview.
+	// (docs/dev/05 §5.5) — not full screen, which is `graph.fullscreen.enter` on the same preview.
 	'graph.onPerson.enlarge': 'Enlarge map',
 	'graph.onPerson.shrink': 'Shrink map',
 	'graph.fullscreen.enter': 'Full screen',

@@ -2,7 +2,7 @@ import { foldName, type MatchableContact } from './match';
 import { isInitial, isKinWord } from './newcomers';
 
 /*
- * Who in Stella a face of *New from Immich* might already be (docs/02 §2.24.7). Before a person
+ * Who in Stella a face of *New from Immich* might already be (docs/dev/02 §2.24.7). Before a person
  * is added from an Immich name, the member is shown the people of the same or a similar name, so
  * nobody is added twice — and nothing is decided for them, because two people of one name are
  * real. Pure: the use-case hands over the contacts the member sees.

@@ -23,7 +23,7 @@ import {
 import { detectSource, ownCategories, type VCardSource } from './vcard-source';
 
 /*
- * A vCard read for the matching review (docs/02 §2.16.2): each card
+ * A vCard read for the matching review (docs/dev/02 §2.16.2): each card
  * as the facts the review compares, under a key that stays the same from one export of the
  * address book to the next. A new person is still created through `readVCard` and the mapping.
  */

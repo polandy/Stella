@@ -11,7 +11,7 @@ import { seedRelationshipTypes } from './seed';
 
 /*
  * Before a merge put moved links into stored order, it repointed one column at a time and could
- * leave a symmetric link unsorted — next to a sorted twin the survivor already had (docs/03
+ * leave a symmetric link unsorted — next to a sorted twin the survivor already had (docs/dev/03
  * §relationship). The migration puts what such merges left right once: a twin keeps its row
  * and takes the blanks the unsorted copy can fill (the merge's own rule, `foldedLinkDetails`),
  * the copy goes, and every other unsorted symmetric link is turned round. Directed links are

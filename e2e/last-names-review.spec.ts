@@ -2,9 +2,9 @@ import { expect, test } from '@playwright/test';
 import { appReady, signIn } from './app';
 
 /*
- * The *Last names* review (docs/02 §2.2.4.2): *Not …* drops one proposal and never the person,
+ * The *Last names* review (docs/dev/02 §2.2.4.2): *Not …* drops one proposal and never the person,
  * and *No last name* settles someone until *Ask again*. Written after the owner tried it on a
- * preview (docs/08 §8.4.1).
+ * preview (docs/dev/08 §8.4.1).
  *
  * Wendelin is added with a description (a first name alone is refused) and shown as *Wendelin
  * Zwahlenried* with his last name empty, so Stella's one proposal is *Zwahlenried*, read off

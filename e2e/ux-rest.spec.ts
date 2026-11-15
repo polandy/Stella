@@ -3,10 +3,10 @@ import { appReady, signIn } from './app';
 import { personIdOf, seedHousehold } from './seed';
 
 /*
- * The rest of the UX review in #292 (docs/05 §5.5, §5.7; docs/02 §2.24): a stream row another
+ * The rest of the UX review in #292 (docs/dev/05 §5.5, §5.7; docs/dev/02 §2.24): a stream row another
  * member wrote carries that member's small face on its subject's, the Photos card's menu is
  * named for the photo library, and an in-place value's pencil follows its last word. Written
- * after the owner tried it in the app (docs/08 §8.4.1).
+ * after the owner tried it in the app (docs/dev/08 §8.4.1).
  *
  * The demo household has two members, the admin this suite signs in as and Nina Brunner, who
  * wrote a journal entry and logged a video call about Hans Brunner; every other spec writes as
@@ -59,7 +59,7 @@ test.describe('who wrote a stream row', () => {
 		await chip(page, 'Moments').click();
 		await expect(chip(page, 'Moments')).toHaveAttribute('aria-current', 'true');
 
-		// The rows must be there before their badges can be said to be missing (docs/08 §8.4).
+		// The rows must be there before their badges can be said to be missing (docs/dev/08 §8.4).
 		await expect(streamItems(page).first()).toBeVisible();
 		await expect(page.getByTestId('stream').getByTestId('actor-badge')).toHaveCount(0);
 	});

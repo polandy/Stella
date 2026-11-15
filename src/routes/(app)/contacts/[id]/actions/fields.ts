@@ -16,14 +16,14 @@ import { ContactGoneError } from '$lib/server/domain/contacts/require-visible';
 import { say, translator } from '$lib/server/i18n/say';
 import type { Actions } from '../$types';
 
-/** An address rewritten where it is read; its kind stays (docs/02 §2.2). */
+/** An address rewritten where it is read; its kind stays (docs/dev/02 §2.2). */
 const EditFieldSchema = v.object({
 	fieldId: v.pipe(v.string(), v.minLength(1)),
 	label: v.optional(v.pipe(v.string(), v.trim())),
 	value: v.pipe(v.string(), v.trim(), v.minLength(1))
 });
 
-/** The profile card's ways to reach someone (docs/02 §2.2). */
+/** The profile card's ways to reach someone (docs/dev/02 §2.2). */
 export const fieldActions = {
 	addField: async ({ request, params, locals }) => {
 		const viewer = requireViewer(locals);
@@ -62,7 +62,7 @@ export const fieldActions = {
 	},
 
 	/*
-	 * Not a command: editing is not kept on the phone like adding (docs/02 §2.18), so the
+	 * Not a command: editing is not kept on the phone like adding (docs/dev/02 §2.18), so the
 	 * editor's Save waits for a connection, as the name's does.
 	 */
 	editField: async ({ request, params, locals }) => {

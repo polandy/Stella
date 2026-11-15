@@ -10,12 +10,12 @@ import { ArchiveFormatError, planRestore, type RestorePlan, type RestoreTarget }
 import type { RestoreWarning } from './restore-context';
 
 /*
- * Reading an archive back into the household (docs/02 §2.15) — the other half of the export.
+ * Reading an archive back into the household (docs/dev/02 §2.15) — the other half of the export.
  *
  * What it is: a way to get a household's own data back after a mishap, and the way to move a
  * household from one Stella to another. What it is not: a merge tool. It **adds what is
  * missing and never overwrites what is here**, which makes importing the same archive twice a
- * no-op and means no import can quietly rewrite a note somebody has since edited (docs/04
+ * no-op and means no import can quietly rewrite a note somebody has since edited (docs/dev/04
  * §4.9).
  *
  * Admin-only, like the export, because an archive carries every member's private records; and
@@ -65,7 +65,7 @@ export interface ImportArchiveDeps {
 	ids: IdGenerator;
 	/**
 	 * Makes gift records of the gift notes and gift touchpoints an older archive brings back
-	 * (docs/02 §2.25.4) — the same conversion every start runs, so a restore and a start agree.
+	 * (docs/dev/02 §2.25.4) — the same conversion every start runs, so a restore and a start agree.
 	 */
 	convertHeldGifts: () => Promise<HeldGiftsReport>;
 }

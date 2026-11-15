@@ -5,7 +5,7 @@ import { migrate } from 'drizzle-orm/bun-sqlite/migrator';
 import { createDrizzleOwnEntries } from './own-entry-photos';
 import * as schema from './schema';
 
-/* An entry's photos as its author edits them (docs/02 §2.20). */
+/* An entry's photos as its author edits them (docs/dev/02 §2.20). */
 
 describe('own entry photos', () => {
 	it('finds the author’s own entry, and deletes a photo only off their own entry', async () => {

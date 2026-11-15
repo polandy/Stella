@@ -1,5 +1,5 @@
 /*
- * Who a share is offered to before anything is typed (docs/02 §2.18.3): the people last opened
+ * Who a share is offered to before anything is typed (docs/dev/02 §2.18.3): the people last opened
  * on this device, then whoever the household last touched. Pure; the device's list is kept by
  * `recent.svelte.ts`, the last touches come from the server.
  */

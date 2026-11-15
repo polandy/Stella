@@ -3,7 +3,7 @@ import type { IdGenerator } from '../../id';
 import { TAG_COLORS, type TagColor } from '../../../design/tag-colors';
 
 /*
- * Tag use-cases (docs/02 §2.8). Tags are household-global labels; assignments to contacts
+ * Tag use-cases (docs/dev/02 §2.8). Tags are household-global labels; assignments to contacts
  * are visibility-scoped in the adapter. Colour validation and orchestration are pure. What the
  * screens list is a read model of its own (`tag-lists.ts`).
  */
@@ -90,7 +90,7 @@ export async function assignTagByName(
  * an orphan would sit in the household's chip row forever, filtering to an empty page. The
  * count deliberately spans the whole household rather than what the actor may see — a tag
  * still on someone else's private contact is still in use, and deleting it there would take
- * it off that contact behind their back (docs/02 §2.8).
+ * it off that contact behind their back (docs/dev/02 §2.8).
  *
  * `householdId` is the actor's, and scopes the delete: the caller takes `tagId` from a form,
  * where a forged id would otherwise reach a tag of an entirely different household.
@@ -110,7 +110,7 @@ export async function unassignTag(
 /**
  * Sweep up the tags nobody carries any more. A deleted contact takes its assignments with it
  * by cascade rather than through `unassignTag`, so the tags it was the last carrier of have to
- * be collected afterwards (docs/02 §2.8). Answers how many went, and is safe to call when
+ * be collected afterwards (docs/dev/02 §2.8). Answers how many went, and is safe to call when
  * nothing is orphaned.
  */
 export async function pruneOrphanTags(

@@ -2,8 +2,8 @@ import { expect, test, type Page } from '@playwright/test';
 import { appReady, openPerson, signIn } from './app';
 
 /*
- * Naming a person inside a note (docs/02 §2.5, §2.20.1). Written after the flow was verified
- * in the running app (docs/08 §8.4.1).
+ * Naming a person inside a note (docs/dev/02 §2.5, §2.20.1). Written after the flow was verified
+ * in the running app (docs/dev/08 §8.4.1).
  *
  * The suite shares one demo database and runs serially, so this file puts back what it
  * changes: the note it writes lives on Heidi Lehmann, whom no other case reads, and the

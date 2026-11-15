@@ -28,11 +28,11 @@
 	import type { PersonForm, PersonPageData } from './types';
 
 	/*
-	 * Who someone is connected to (docs/02 §2.4): the person page's first card. It holds the
+	 * Who someone is connected to (docs/dev/02 §2.4): the person page's first card. It holds the
 	 * add form's state, so what was being entered outlives closing the form, as it did when the
 	 * page held it; the map and list, the worked-out kin and the form itself are its children.
 	 *
-	 * Its header is three quiet controls (docs/05 §5.5): *Edit*, which puts the corrections on
+	 * Its header is three quiet controls (docs/dev/05 §5.5): *Edit*, which puts the corrections on
 	 * every row at once, `+` for a new link, and a ⋯ for what is asked less often — how two
 	 * people are connected, the on-demand review, the whole graph.
 	 */
@@ -72,7 +72,7 @@
 		expanded = false;
 	});
 
-	// A row on its way out (docs/02 §2.23) is gone from the list while its undo window is open,
+	// A row on its way out (docs/dev/02 §2.23) is gone from the list while its undo window is open,
 	// and back in it the moment Undo is pressed. The counts follow, so a section never says two
 	// tags over one chip.
 	const removals = useRemovals();
@@ -93,7 +93,7 @@
 	});
 	/*
 	 * What the fold leaves out, entered or worked out, and the groups it hides whole — the same
-	 * pure fold the list cuts its rows by (docs/05 §5.5). Edit mode unfolds it: a row that cannot
+	 * pure fold the list cuts its rows by (docs/dev/05 §5.5). Edit mode unfolds it: a row that cannot
 	 * be seen cannot be corrected.
 	 */
 	const unfolded = $derived(expanded || editing);
@@ -121,7 +121,7 @@
 	}
 	/*
 	 * The specifics of the link being entered, watched so the form can fill in what it already
-	 * knows: a family link began on the younger one's birthday (docs/02 §2.4).
+	 * knows: a family link began on the younger one's birthday (docs/dev/02 §2.4).
 	 */
 	const relationshipChoices = $derived(relationshipTypeOptions(data.relationshipTypes));
 	/** "Child of Anna Brunner and Bert Brunner", for a kept link or batch. */
@@ -157,7 +157,7 @@
 			relationshipChoice = offeredChoice(relationshipChoices, data.relateAs);
 		});
 	});
-	/** People named through the picker itself are not in `otherContacts` yet (docs/02 §2.2.2). */
+	/** People named through the picker itself are not in `otherContacts` yet (docs/dev/02 §2.2.2). */
 	let pickedTargets = $state<SelectablePerson[]>([]);
 	/*
 	 * A refused batch names each refused person; the open form marks them on their chips and
@@ -168,7 +168,7 @@
 		form && 'refusals' in form && Array.isArray(form.refusals) ? form.refusals.length : 0
 	);
 	/*
-	 * What the household's own records rule out (docs/02 §2.4). The same pure rules the
+	 * What the household's own records rule out (docs/dev/02 §2.4). The same pure rules the
 	 * use-case is guarded by, run over the facts the load sent: an entry that would be refused
 	 * is greyed out with its reason rather than offered and then rejected.
 	 */
@@ -201,7 +201,7 @@
 
 	/*
 	 * *Show fewer* sits under the list it folds, so folding pulls it up the page; once the list
-	 * has glided shut the page follows it if it went past the top (docs/05 §5.11). Only when it
+	 * has glided shut the page follows it if it went past the top (docs/dev/05 §5.11). Only when it
 	 * was the button pressed: *Done* in the header folds the list too, and must not move the page.
 	 */
 	let peopleColumn = $state<HTMLElement>();
@@ -213,7 +213,7 @@
 	/*
 	 * A group on the fold's collapsed line unfolds the whole card — the one *Show more* state,
 	 * no fold per group — and once the glide has settled the page brings that group into view
-	 * (only the shell scrolls, docs/05 §5.11), with a brief tint to say where it landed and the
+	 * (only the shell scrolls, docs/dev/05 §5.11), with a brief tint to say where it landed and the
 	 * cursor on its heading, since the button that was pressed is gone with the fold.
 	 */
 	let landOnGroup: HiddenGroup['group'] | null = null;
@@ -294,7 +294,7 @@
 	<HowConnectedPrompt bind:open={tracingPath} contact={c} people={otherContacts} />
 
 	<!--
-			The map and the list (docs/05 §5.5). The map is a preview across the card's top on
+			The map and the list (docs/dev/05 §5.5). The map is a preview across the card's top on
 			every width — a strip with first names on a wide card, a small ring on a phone — that
 			enlarges in place; the list takes the card's whole width beneath it.
 		-->
@@ -304,7 +304,7 @@
 		{/if}
 		<div class="min-w-0" bind:this={peopleColumn}>
 			<!-- Unfolding and edit mode change the rows; the box glides between the two heights
-				     and *Show more* rides on its lower edge (docs/05 §5.11). -->
+				     and *Show more* rides on its lower edge (docs/dev/05 §5.11). -->
 			<div
 				use:glide={{ key: `${unfolded}:${editing}`, onsettled: settled }}
 				data-testid="people-rows"

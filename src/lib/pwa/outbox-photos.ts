@@ -2,7 +2,7 @@ import { photoCommandFor, type CommandAnswer, type PhotoCommandType } from '../c
 import type { KeptPhoto, OutboxItem } from './outbox';
 
 /*
- * The photos kept with an outbox item (docs/02 §2.18.1): sent one at a time once Stella has the
+ * The photos kept with an outbox item (docs/dev/02 §2.18.1): sent one at a time once Stella has the
  * item they follow, and what an upload's answer does to it. Pure, like `outbox.ts`.
  */
 
@@ -11,7 +11,7 @@ export const PHOTO_PATIENCE_MS = 60_000;
 
 /**
  * What a photo upload's response says. A 413 comes from the server in front of Stella, not
- * Stella itself: the photo is over its request cap (`BODY_SIZE_LIMIT`, docs/07) and would be
+ * Stella itself: the photo is over its request cap (`BODY_SIZE_LIMIT`, docs/dev/07) and would be
  * turned away on every try, so it is refused with `tooLarge` instead of waiting for ever.
  * Anything else that is not Stella's answer may pass next time, so it waits (null).
  */

@@ -2,10 +2,10 @@ import { expect, test, type Page } from '@playwright/test';
 import { addPerson, appReady, fillDate, signIn } from './app';
 
 /*
- * The calendar link (docs/02 §2.13.4), end to end: a member makes it on Settings → Calendar,
+ * The calendar link (docs/dev/02 §2.13.4), end to end: a member makes it on Settings → Calendar,
  * sees it once, a calendar app fetches the household's dates and the member's open to-dos with
  * a day through it, and it stops the moment it is replaced or revoked. Written after the owner subscribed a phone to it with
- * ICSx⁵ on Android (docs/08 §8.4.1).
+ * ICSx⁵ on Android (docs/dev/08 §8.4.1).
  *
  * Every refusal is paired with the same link answering first, so no case can pass because
  * the feed answers nothing at all; a to-do left out is paired with one let in.

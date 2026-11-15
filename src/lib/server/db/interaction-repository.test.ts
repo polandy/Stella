@@ -282,7 +282,7 @@ describe('interaction repository', () => {
 /*
  * The edit rule is checked again when the write lands, not only by the use-case's `findOwn`:
  * a touchpoint whose person turned private between the two, or a caller that skips the read,
- * still cannot be rewritten (docs/03 §3.7).
+ * still cannot be rewritten (docs/dev/03 §3.7).
  */
 describe('updateOwn (the author only, while they see it)', () => {
 	const edit = {

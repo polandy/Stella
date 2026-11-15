@@ -11,19 +11,19 @@ import type { Locale } from '../../../i18n/locales';
 import type { DatePrecision } from '../../../dates/partial-date';
 
 /*
- * Contact use-cases (docs/02 §2.2). Framework-agnostic orchestration over the
- * ContactRepository port; ids, clock, and persistence are injected (docs/08 §8.3). Adding a
+ * Contact use-cases (docs/dev/02 §2.2). Framework-agnostic orchestration over the
+ * ContactRepository port; ids, clock, and persistence are injected (docs/dev/08 §8.3). Adding a
  * person lives in `create-contact.ts`, editing a profile in place in `profile.ts`.
  */
 
-/** How much of a birth date is actually known (docs/03 §3.4). */
+/** How much of a birth date is actually known (docs/dev/03 §3.4). */
 export type BirthDatePrecision = DatePrecision;
 
 export interface ContactCreator {
 	userId: string;
 	householdId: string;
 	defaultVisibility: Visibility;
-	/** The language the shown name is written in — its nickname's quote marks (docs/02 §2.2). */
+	/** The language the shown name is written in — its nickname's quote marks (docs/dev/02 §2.2). */
 	locale: Locale;
 }
 
@@ -66,9 +66,9 @@ export interface NewContact {
 
 /** Full contact as read back for a profile. */
 export interface Contact extends NewContact {
-	/** A maiden or earlier last name (docs/02 §2.2); kept when a last name changes on request. */
+	/** A maiden or earlier last name (docs/dev/02 §2.2); kept when a last name changes on request. */
 	formerName: string | null;
-	/** What they do and where, both free text (docs/02 §2.2). */
+	/** What they do and where, both free text (docs/dev/02 §2.2). */
 	jobTitle: string | null;
 	company: string | null;
 	avatarPhotoId: string | null;
@@ -83,12 +83,12 @@ export interface ContactName {
 	displayName: string;
 }
 
-/** A name with the face beside it, for the people a page draws (docs/02 §2.20.3). */
+/** A name with the face beside it, for the people a page draws (docs/dev/02 §2.20.3). */
 export interface ContactFace extends ContactName {
 	avatarPhotoId: string | null;
 }
 
-/** What tells namesakes apart (docs/02 §2.2.3), as stored. */
+/** What tells namesakes apart (docs/dev/02 §2.2.3), as stored. */
 export interface DistinguishableContact extends ContactName {
 	lastName: string | null;
 	description: string | null;
@@ -103,20 +103,20 @@ export interface ContactSummary {
 	firstName: string | null;
 	lastName: string | null;
 	nickname: string | null;
-	/** A maiden or other earlier name, which finds them too (docs/02 §2.2). */
+	/** A maiden or other earlier name, which finds them too (docs/dev/02 §2.2). */
 	formerName: string | null;
 	description: string | null;
-	/** Where and when they were met — with the description, what tells namesakes apart (docs/02 §2.2.3). */
+	/** Where and when they were met — with the description, what tells namesakes apart (docs/dev/02 §2.2.3). */
 	metPlace: string | null;
 	metDate: string | null;
 	visibility: Visibility;
 	avatarPhotoId: string | null;
 	/**
-	 * The stored birth date, at whatever precision it was entered (docs/03 §3.4) — a list
+	 * The stored birth date, at whatever precision it was entered (docs/dev/03 §3.4) — a list
 	 * entry says who somebody is, and for a child that includes when they were born.
 	 */
 	birthDate: string | null;
-	/** What they do and where: shown on its own line, and found by (docs/02 §2.2). */
+	/** What they do and where: shown on its own line, and found by (docs/dev/02 §2.2). */
 	jobTitle: string | null;
 	company: string | null;
 }
@@ -129,7 +129,7 @@ export interface ProfilePatch {
 }
 
 /**
- * The contact record's writes, and the one-record reads they rest on (docs/08 §8.3). The lists
+ * The contact record's writes, and the one-record reads they rest on (docs/dev/08 §8.3). The lists
  * are read models of their own: `ContactDirectoryReads` (directory.ts) and `ContactNameReads`
  * (contact-names.ts). It writes names and *no last name* too, so it is the `NameRepository` and
  * the `WithoutLastNameRepository` the name use-cases take.
@@ -140,7 +140,7 @@ export interface ContactRepository extends NameRepository, WithoutLastNameReposi
 	/*
 	 * The record's field writes. Each asks visibility again in its own statement and returns
 	 * false when the viewer does not see the contact — the read a use-case makes first may be
-	 * a moment old (docs/03 §3.7).
+	 * a moment old (docs/dev/03 §3.7).
 	 */
 	/** Write the hero's own fields. */
 	updateProfile(viewer: Viewer, id: string, patch: ProfilePatch): Promise<boolean>;
@@ -186,7 +186,7 @@ export interface ContactDeps {
 
 /**
  * Looking one person up, visibility applied — the one port other contexts read contacts
- * through, so none of them needs the repository's writes (AR-06, docs/08 §8.3).
+ * through, so none of them needs the repository's writes (AR-06, docs/dev/08 §8.3).
  */
 export type ContactLookup = Pick<ContactRepository, 'findByIdVisibleTo'>;
 
@@ -226,7 +226,7 @@ export async function getContact(
 /**
  * Put a contact out of the way, or bring them back. Archiving hides someone from the
  * surfaces the household browses; it does not hide them from the graph or from the
- * relatives Stella works out (docs/04 §4.9). Returns false when the contact is not visible
+ * relatives Stella works out (docs/dev/04 §4.9). Returns false when the contact is not visible
  * to the viewer, so the route answers as it does for one that is not there.
  */
 async function setArchived(

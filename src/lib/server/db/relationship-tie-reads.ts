@@ -17,8 +17,8 @@ import type * as schema from './schema';
 import { contact, relationship, relationshipType } from './schema';
 
 /*
- * Drizzle adapter for a person's links as their page lists them (docs/08 §8.3). Scoped through
- * the central `relationshipVisibleTo` (both endpoints must be visible, docs/03 §3.7); each row is
+ * Drizzle adapter for a person's links as their page lists them (docs/dev/08 §8.3). Scoped through
+ * the central `relationshipVisibleTo` (both endpoints must be visible, docs/dev/03 §3.7); each row is
  * labelled from the person's side by the pure `describeRelationshipFor`.
  */
 

@@ -5,7 +5,7 @@ import { translator } from '$lib/server/i18n/say';
 import type { RequestHandler } from './$types';
 
 /*
- * `POST /api/commands` (docs/04 §4.11.2, ADR-108): where a phone's outbox sends what
+ * `POST /api/commands` (docs/dev/04 §4.11.2, ADR-108): where a phone's outbox sends what
  * it held back while Stella was out of reach. `{ commands: [...] }` in, one answer per command
  * out, in the same order. Signed in by the session cookie like any page — this is the app
  * talking to itself, not the scripting API under `/api/v1/`. Only `application/json` is read:

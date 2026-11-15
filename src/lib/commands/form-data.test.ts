@@ -3,7 +3,7 @@ import * as v from 'valibot';
 import { fromFormData } from './form-data';
 
 /*
- * A form's fields as the payload a command schema reads (docs/04 §4.11.2). The schema names
+ * A form's fields as the payload a command schema reads (docs/dev/04 §4.11.2). The schema names
  * the keys and says what each one is; the form only posts strings, files and absent fields.
  * The rules, one per case below:
  * - only the schema's keys are read: a form-only field (`commandId`, `return`) never lands

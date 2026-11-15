@@ -27,7 +27,7 @@ const PhotoPinSchema = v.object({
 	pinned: v.picklist(['true', 'false'])
 });
 
-/** The gallery card and its lightbox (docs/02 §2.14). */
+/** The gallery card and its lightbox (docs/dev/02 §2.14). */
 export const photoActions = {
 	/** Caption a gallery photo; blank clears it. Only its uploader may. */
 	captionPhoto: async ({ request, params, locals }) => {
@@ -96,7 +96,7 @@ export const photoActions = {
 
 	/**
 	 * Wear a gallery photo as this contact's avatar through the square chosen in the cropper
-	 * (docs/02 §2.14). The browser sends the square and its rendering, as for a new avatar.
+	 * (docs/dev/02 §2.14). The browser sends the square and its rendering, as for a new avatar.
 	 */
 	framePhotoAsAvatar: async ({ request, params, locals }) => {
 		const viewer = requireViewer(locals);
@@ -139,7 +139,7 @@ export const photoActions = {
 
 	/**
 	 * Cut this person's profile picture out of a photo of one of their circles
-	 * (docs/02 §2.14). The browser sends the square and its rendering.
+	 * (docs/dev/02 §2.14). The browser sends the square and its rendering.
 	 */
 	cutFromGroupPhoto: async ({ request, params, locals }) => {
 		const viewer = requireViewer(locals);

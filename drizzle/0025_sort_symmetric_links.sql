@@ -1,5 +1,5 @@
 -- A merge used to repoint a link one column at a time, which could leave a symmetric link
--- unsorted (docs/03 §relationship) — beside a sorted twin the survivor already had. The twin
+-- unsorted (docs/dev/03 §relationship) — beside a sorted twin the survivor already had. The twin
 -- keeps its row and takes what the copy can fill of its blanks (`foldedLinkDetails`), the copy
 -- goes, and every other unsorted symmetric link is turned round. Directed links keep their order.
 UPDATE `relationship` AS `twin`

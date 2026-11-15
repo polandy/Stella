@@ -13,7 +13,7 @@ import {
 } from './composer-state';
 
 /*
- * The moment composer's browser half (docs/02 §2.22.1): it holds the state `composer-state.ts`
+ * The moment composer's browser half (docs/dev/02 §2.22.1): it holds the state `composer-state.ts`
  * moves on, and carries out the commands each step hands back — the outbox, photo processing
  * and fresh command names here, everything that touches the page through its `host`.
  */

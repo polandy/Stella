@@ -3,7 +3,7 @@ import { fixedClock } from '../../domain/testing';
 import { createOidcProvider, DISCOVERY_TTL_MS } from './provider';
 
 /*
- * The provider's discovery document (docs/04 §4.4): parsed, not cast, and kept for a while
+ * The provider's discovery document (docs/dev/04 §4.4): parsed, not cast, and kept for a while
  * rather than for the life of the process — an IdP that rotates its endpoints is followed
  * without a restart. The token exchange and ID-token checks are covered end to end.
  */

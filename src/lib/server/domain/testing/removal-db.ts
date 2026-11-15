@@ -6,7 +6,7 @@ import * as schema from '../../db/schema';
 import { ensureSearchIndex } from '../../db/search-index';
 
 /*
- * A real migrated in-memory database for the tests of removing an authored record (docs/03
+ * A real migrated in-memory database for the tests of removing an authored record (docs/dev/03
  * §3.7): what a removal takes with it, and the activity entry written in the same transaction,
  * live in the adapter. Two households; in the first, Nina authors, Andy is an admin and Mia a
  * plain member; Kurt and Lea are shared people, Secret a private one of Andy's; a shared circle

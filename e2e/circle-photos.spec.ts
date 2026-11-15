@@ -4,9 +4,9 @@ import { addPerson, appReady, pickPerson, signIn } from './app';
 import { DEMO_ADMIN_PASSWORD, DEMO_MEMBER_EMAIL } from '../src/lib/server/db/demo-seed';
 
 /*
- * A circle's photos by role (docs/02 §2.4.2): a photo without a role is the circle's cover, a
+ * A circle's photos by role (docs/dev/02 §2.4.2): a photo without a role is the circle's cover, a
  * photo with one is the banner above that role's people. Written after the owner tried it in
- * the running app (docs/08 §8.4.1).
+ * the running app (docs/dev/08 §8.4.1).
  *
  * The suite shares one database and runs serially, so every case builds a circle of its own out
  * of people it invents. Tiles, the cover and the banners are told apart by the photo id each one
@@ -304,7 +304,7 @@ test('the stream says who added how many photos to which circle, under the Circl
 });
 
 /*
- * Profile pictures cut from a group photo (docs/02 §2.14). The picture is
+ * Profile pictures cut from a group photo (docs/dev/02 §2.14). The picture is
  * drawn in the browser rather than read from a fixture: the cropper needs something larger
  * than a pixel to frame, and a cut is rendered from the full picture the cropper loads.
  */

@@ -4,7 +4,7 @@ import { discard, hold, queue, settle, takeBatch } from './outbox';
 import { photoAnswer, settlePhoto, takePhoto } from './outbox-photos';
 
 /*
- * The photos kept with an outbox item (docs/02 §2.18.1): sent one at a time after the item,
+ * The photos kept with an outbox item (docs/dev/02 §2.18.1): sent one at a time after the item,
  * and dropped only once Stella has each.
  */
 

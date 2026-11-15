@@ -15,7 +15,7 @@
 	import type { PageData } from './$types';
 
 	/*
-	 * A person's brief (docs/02 §2.2.5): what to know before a visit, read in a minute on the
+	 * A person's brief (docs/dev/02 §2.2.5): what to know before a visit, read in a minute on the
 	 * phone or taken along on paper. Nothing here is edited — every row leads to where it is.
 	 */
 	let { data }: { data: PageData } = $props();

@@ -70,7 +70,7 @@ describe('tellApart', () => {
 	});
 });
 
-/* The clean-up list's rule (docs/02 §2.2.3): the namesake line's "nothing yet" case, for anyone. */
+/* The clean-up list's rule (docs/dev/02 §2.2.3): the namesake line's "nothing yet" case, for anyone. */
 describe('namesakesOn', () => {
 	it('keeps exactly the people who share their name with another on the list', () => {
 		const people = [
@@ -109,7 +109,7 @@ describe('isKnownByAFirstNameOnly', () => {
 	});
 });
 
-/* The further fallbacks (docs/02 §2.2.3): a relationship, then a circle, as the server ranked them. */
+/* The further fallbacks (docs/dev/02 §2.2.3): a relationship, then a circle, as the server ranked them. */
 const tie = (otherName: string, extra: Partial<ContextTie> = {}): ContextTie => ({
 	typeKey: 'sibling',
 	side: 'forward',

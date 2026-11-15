@@ -1,6 +1,6 @@
 <!--
   @component
-  The circle picker (docs/02 §2.4.2, docs/design/screens/circles.md): a sheet from the bottom with
+  The circle picker (docs/dev/02 §2.4.2, docs/dev/design/screens/circles.md): a sheet from the bottom with
   every circle the reader sees, indented as they nest, and a search that turns it into a flat list
   with each circle's path. Used to choose where a circle belongs (`parent`) and to put an existing
   circle into this one (`add`). A row that cannot be chosen stays and says why.

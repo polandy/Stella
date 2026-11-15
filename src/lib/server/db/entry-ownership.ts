@@ -7,7 +7,7 @@ import { journalEntry } from './schema';
 /*
  * Drizzle adapter for the EntryOwnership port: whether a journal entry is still there and was
  * written by the member asking. Ownership rather than visibility, because only its author may
- * add photos to an entry (docs/02 §2.20).
+ * add photos to an entry (docs/dev/02 §2.20).
  */
 export function createDrizzleEntryOwnership(db: BunSQLiteDatabase<typeof schema>): EntryOwnership {
 	return {

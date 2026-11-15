@@ -11,7 +11,7 @@ import {
 } from './arrange';
 
 /*
- * The arrange screen's decisions (docs/02 §2.4.2, ADR-127): what a drop would do, what a drag
+ * The arrange screen's decisions (docs/dev/02 §2.4.2, ADR-127): what a drop would do, what a drag
  * carries, and the toast. Cards: School holds Keller and Lena, Class holds Lena and Mia.
  */
 

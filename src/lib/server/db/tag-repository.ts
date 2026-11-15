@@ -6,7 +6,7 @@ import { contactTag, tag } from './schema';
 import type * as schema from './schema';
 
 /*
- * Drizzle adapter for the TagRepository port (docs/08 §8.3): a tag's writes and the lookups they
+ * Drizzle adapter for the TagRepository port (docs/dev/08 §8.3): a tag's writes and the lookups they
  * rest on. Tags are household-global, and so is the count behind deleting one nobody carries.
  * The lists are a read model of their own (`tag-list-reads.ts`).
  */

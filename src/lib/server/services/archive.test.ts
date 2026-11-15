@@ -22,7 +22,7 @@ import { createGiftServices } from './gifts';
 import type { AuthConfig } from './auth';
 
 /*
- * The archive group of the composition root (docs/08 §8.3), built over a real in-memory
+ * The archive group of the composition root (docs/dev/08 §8.3), built over a real in-memory
  * SQLite and a media directory on disk: what the edge gets from `locals.services.archive`
  * must work end to end — an archive exported through it restores through it, and the restore
  * writes its images into the one media store.

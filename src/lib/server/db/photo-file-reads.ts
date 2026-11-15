@@ -7,9 +7,9 @@ import type * as schema from './schema';
 import { circle, contact, photo } from './schema';
 
 /*
- * Drizzle adapter for which file `/media/[id]` serves (docs/08 §8.3). Serving a photo file is
+ * Drizzle adapter for which file `/media/[id]` serves (docs/dev/08 §8.3). Serving a photo file is
  * scoped through the central `childRecordVisibleTo`: the photo's contact must be visible and a
- * private photo only to its author (docs/03 §3.7) — so private media is never served to others.
+ * private photo only to its author (docs/dev/03 §3.7) — so private media is never served to others.
  * A circle's photo has no contact; it is served by `circlePhotoVisibleTo`, its circle's rule.
  */
 export function createDrizzlePhotoFileReads(db: BunSQLiteDatabase<typeof schema>): PhotoFileReads {

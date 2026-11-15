@@ -3,9 +3,9 @@ import { appReady, pickPerson, signIn } from './app';
 import { LINK, personIdOf, seedHousehold } from './seed';
 
 /*
- * A shared home (docs/02 §2.2, *A shared home*): one address for the people who live together,
+ * A shared home (docs/dev/02 §2.2, *A shared home*): one address for the people who live together,
  * entered with *Also lives here …* in the address's own frame, changed for everyone or for one,
- * and left with *Moved out*. Written after the owner tried it in the running app (docs/08
+ * and left with *Moved out*. Written after the owner tried it in the running app (docs/dev/08
  * §8.4.1). Each case brings its own family, whom no other spec names; the homes themselves are
  * made through the editor, since sharing is what the first case is about.
  */

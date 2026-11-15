@@ -1,5 +1,5 @@
 /*
- * The "+N" a node wears while expanding it would bring more people onto the map (docs/05
+ * The "+N" a node wears while expanding it would bring more people onto the map (docs/dev/05
  * §5.8). The canvas draws no DOM, so the badge is a tiny SVG image the stylesheet lays over the
  * node's corner. Pure: a count and resolved colours in, a data URI out — no request, and no
  * colour of its own, so it follows the theme with the rest of the palette.

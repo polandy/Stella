@@ -2,7 +2,7 @@ import type { IncomingCard } from './card';
 import type { Fact } from './merge-plan';
 
 /*
- * The incoming side of a review card (docs/02 §2.16), as facts like the ones a merge plan
+ * The incoming side of a review card (docs/dev/02 §2.16), as facts like the ones a merge plan
  * adds, so the review step lists both sides with one component. The picture is not a fact
  * here: the step says whether it is on the card or only a link.
  */

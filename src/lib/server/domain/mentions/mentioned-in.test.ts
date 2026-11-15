@@ -7,7 +7,7 @@ import {
 	type MentionedInRepository
 } from './mentioned-in';
 
-/* The reverse side of an @-mention: who names this person (docs/02 §2.20.1). */
+/* The reverse side of an @-mention: who names this person (docs/dev/02 §2.20.1). */
 
 const viewer: Viewer = { id: 'u-1', householdId: 'h-1' };
 

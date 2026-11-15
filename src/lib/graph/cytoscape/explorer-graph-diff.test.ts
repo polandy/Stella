@@ -17,7 +17,7 @@ import {
 } from './explorer-fixtures';
 
 /*
- * Reconciling the canvas with a fresh element set (`graph-diff.ts`, docs/05 §5.8): who stays keeps
+ * Reconciling the canvas with a fresh element set (`graph-diff.ts`, docs/dev/05 §5.8): who stays keeps
  * their place and takes on what the elements now say, and only the newcomers are placed.
  */
 

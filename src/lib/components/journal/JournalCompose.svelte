@@ -17,7 +17,7 @@
 	import type { ComponentProps } from 'svelte';
 
 	/*
-	 * Writing a new journal entry (docs/02 §2.20). Mounted for the page's whole visit and shown
+	 * Writing a new journal entry (docs/dev/02 §2.20). Mounted for the page's whole visit and shown
 	 * while `open`, so the photos picked and the audience chosen outlive closing the form.
 	 */
 	let {
@@ -37,7 +37,7 @@
 		candidates: ComponentProps<typeof MentionTextarea>['candidates'];
 		tags: ComponentProps<typeof MentionTextarea>['tags'];
 		today: string;
-		/** A photo can come from Immich beside an upload (docs/02 §2.24.9). */
+		/** A photo can come from Immich beside an upload (docs/dev/02 §2.24.9). */
 		immichLibrary: boolean;
 		/** The save action's refusal, when the form posted without JavaScript or was refused. */
 		error: string | null | undefined;
@@ -47,7 +47,7 @@
 
 	const t = useI18n().t;
 
-	// The entry's audience narrows whom the @-picker offers (docs/02 §2.20.1).
+	// The entry's audience narrows whom the @-picker offers (docs/dev/02 §2.20.1).
 	let entryVisibility = $state<'shared' | 'private'>('shared');
 	// A typed @Thomas that could be several people keeps saving off until one is picked.
 	let entryUnclear = $state(false);
@@ -63,7 +63,7 @@
 	}
 
 	/*
-	 * Photos copied from Immich (docs/02 §2.24.9) add to the entry's, and a new pick on the device
+	 * Photos copied from Immich (docs/dev/02 §2.24.9) add to the entry's, and a new pick on the device
 	 * keeps them. The picker opens on the day the entry's field says.
 	 */
 	let fromImmich = $state<File[]>([]);
@@ -76,7 +76,7 @@
 	}
 
 	/*
-	 * An entry is saved as a command through the outbox, in reach or not (docs/02 §2.18.1, docs/04
+	 * An entry is saved as a command through the outbox, in reach or not (docs/dev/02 §2.18.1, docs/dev/04
 	 * ADR-076): its photos are processed first (downscaled, location
 	 * stripped) and follow it. Kept on the device when Stella cannot take it, it shows above the
 	 * timeline until it is sent. Without JavaScript the form posts to its action as before.

@@ -4,7 +4,7 @@ import { isGiftOccasionPreset, type GiftState } from './gifts';
 import type { NextOccasion } from './idea-list';
 
 /*
- * How a gift's occasion reads (docs/02 §2.25). A preset is stored as its key and worded in the
+ * How a gift's occasion reads (docs/dev/02 §2.25). A preset is stored as its key and worded in the
  * reader's language, so a gift noted in German says *Christmas* to an English reader; an
  * occasion of the member's own wording is shown as typed.
  */
@@ -26,7 +26,7 @@ export function addedLabel(lang: DateLanguage, createdAt: number, timeZone: stri
 
 /**
  * Where a gift stands, in one phrase: *Idea*, *Given on 24 December 2025*, *Received on …* —
- * how a search hit says which of a person's gifts it is (docs/02 §2.9).
+ * how a search hit says which of a person's gifts it is (docs/dev/02 §2.9).
  */
 export function stateLabel(
 	lang: DateLanguage,
@@ -38,7 +38,7 @@ export function stateLabel(
 
 /**
  * The occasion a person's ideas on the household's list are for: *Birthday in 12 days · 11 Nov*,
- * *Christmas tomorrow · 24 Dec* (docs/02 §2.25.6).
+ * *Christmas tomorrow · 24 Dec* (docs/dev/02 §2.25.6).
  */
 export function nextOccasionLabel(lang: DateLanguage, next: NextOccasion): string {
 	const when =

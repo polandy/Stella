@@ -3,7 +3,7 @@ import { phrase } from '../../../i18n/phrase';
 
 /*
  * What a circle says about itself — name, kind, colour, description, period — read and checked
- * once for both creating and editing it (docs/02 §2.4.2), so the two forms never disagree on
+ * once for both creating and editing it (docs/dev/02 §2.4.2), so the two forms never disagree on
  * what a valid circle is.
  */
 
@@ -101,7 +101,7 @@ const orNull = (value?: string | null): string | null => {
 
 /**
  * Whether `end` lies before `start`. Both are ISO dates, but an imported one may stop at the
- * month or the year (docs/03 `circle`), so they are compared at the coarser of the two
+ * month or the year (docs/dev/03 `circle`), so they are compared at the coarser of the two
  * precisions: `2025` does not end before `2025-08-18`.
  */
 export function endsBeforeItStarts(start: string, end: string): boolean {

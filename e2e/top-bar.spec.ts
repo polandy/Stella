@@ -3,8 +3,8 @@ import { signIn } from './app';
 
 /*
  * A phone's top bar slides away while the page scrolls down and comes back as it scrolls up
- * (docs/05 §5.4); the desktop keeps it. Written after the maintainer tried it on the phone
- * (docs/08 §8.4.1). The thresholds are `top-bar.test.ts`'s; this asks what the screen does.
+ * (docs/dev/05 §5.4); the desktop keeps it. Written after the maintainer tried it on the phone
+ * (docs/dev/08 §8.4.1). The thresholds are `top-bar.test.ts`'s; this asks what the screen does.
  *
  * Read-only against the demo household, whose Home stream is long enough to scroll.
  */

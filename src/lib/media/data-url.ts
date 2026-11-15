@@ -1,6 +1,6 @@
 /*
  * Reading a `data:` URL back into bytes. Monica's JSON export embeds every picture that way
- * (docs/02 §2.16), so the importer needs the inverse of what a browser does when it renders one.
+ * (docs/dev/02 §2.16), so the importer needs the inverse of what a browser does when it renders one.
  */
 
 /** A string that is not a base64 `data:` URL this can decode. */

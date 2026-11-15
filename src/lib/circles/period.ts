@@ -1,7 +1,7 @@
 import type { DateLanguage } from '$lib/dates/labels';
 
 /*
- * A circle's period as its page's header line shows it (docs/02 §2.4.2). A circle's period is
+ * A circle's period as its page's header line shows it (docs/dev/02 §2.4.2). A circle's period is
  * a school year or a season, so months say it better than days: *Aug 2025 – Jul 2026*.
  */
 

@@ -3,10 +3,10 @@ import { addPerson, appReady, fillDate, pickPerson, signIn } from './app';
 import { DEMO_ADMIN_PASSWORD, DEMO_MEMBER_EMAIL } from '../src/lib/server/db/demo-seed';
 
 /*
- * Editing a touchpoint (docs/02 §2.6, docs/03 §3.7): its author alone corrects the day, the kind,
+ * Editing a touchpoint (docs/dev/02 §2.6, docs/dev/03 §3.7): its author alone corrects the day, the kind,
  * the text and who took part, in place in Activity; an admin keeps Remove on a shared one but
  * never Edit, and a hand-made edit from them is refused. Written after the owner verified the
- * flow in the running app (docs/08 §8.4.1). The people and titles carry letters no other run
+ * flow in the running app (docs/dev/08 §8.4.1). The people and titles carry letters no other run
  * shares.
  */
 

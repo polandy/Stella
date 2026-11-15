@@ -3,9 +3,9 @@ import { appReady, pickPerson, signIn } from './app';
 import { personIdOf, seedHousehold } from './seed';
 
 /*
- * *Lives at …* (docs/02 §2.4.1): a child or partner created in the relationship picker is
+ * *Lives at …* (docs/dev/02 §2.4.1): a child or partner created in the relationship picker is
  * offered the address of the person whose page it is, ticked, and moves into that home on *Add*.
- * Written after the owner tried it in the running app (docs/08 §8.4.1). Each case brings its
+ * Written after the owner tried it in the running app (docs/dev/08 §8.4.1). Each case brings its
  * own family, whom no other spec names, and names its new people only here.
  */
 

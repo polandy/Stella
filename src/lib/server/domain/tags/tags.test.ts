@@ -11,7 +11,7 @@ import {
 } from './tags';
 
 /*
- * Tags (docs/02 §2.8): household-global labels with a Catppuccin accent colour. Pure colour
+ * Tags (docs/dev/02 §2.8): household-global labels with a Catppuccin accent colour. Pure colour
  * validation and the find-or-create-then-assign use-case, tested with fakes.
  */
 

@@ -2,7 +2,7 @@ import { describe, expect, it } from 'bun:test';
 import { welcomeSteps, type HouseholdSoFar } from './welcome';
 
 /*
- * The first-run card on Home (docs/02 §2.22.3): when it shows, which steps it offers, and which
+ * The first-run card on Home (docs/dev/02 §2.22.3): when it shows, which steps it offers, and which
  * of them are already done.
  */
 

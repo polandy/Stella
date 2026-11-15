@@ -13,7 +13,7 @@ import {
 } from './identity-card';
 
 /*
- * The identity card at the top of a person's page (docs/05 §5.5): which facts it states, which
+ * The identity card at the top of a person's page (docs/dev/05 §5.5): which facts it states, which
  * empty ones wait behind its one quiet button and what that button says, which rows stand
  * below, and what its ⋯ menu offers.
  */

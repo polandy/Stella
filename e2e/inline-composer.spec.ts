@@ -2,10 +2,10 @@ import { expect, test, type Page } from '@playwright/test';
 import { addPerson, appReady, signIn } from './app';
 
 /*
- * Writing a moment on a person's own page (UX review C6, docs/02 §2.20, §2.22.1, docs/05 §5.5):
+ * Writing a moment on a person's own page (UX review C6, docs/dev/02 §2.20, §2.22.1, docs/dev/05 §5.5):
  * *Write a moment* opens Home's composer at the top of the Activity card, anchored on that
  * person, and *Log contact* takes turns with it in the same spot. Written after the owner tried
- * it in the app (docs/08 §8.4.1).
+ * it in the app (docs/dev/08 §8.4.1).
  *
  * Each case that writes adds its own person, so what it saves lands on nobody another spec
  * reads. The phone and jump-bar cases only open forms on a demo person and save nothing.
@@ -164,7 +164,7 @@ test.describe('the jump bar', () => {
 		await page.goto('/contacts/demo-c-markus');
 		await appReady(page);
 		const bar = page.getByRole('navigation', { name: 'Parts of this page' });
-		// The bar shows only once the identity card has gone by (docs/05 §5.5).
+		// The bar shows only once the identity card has gone by (docs/dev/05 §5.5).
 		await page
 			.locator('#section-relationships')
 			.evaluate((el) => el.scrollIntoView({ block: 'start' }));
@@ -200,7 +200,7 @@ test.describe('on a phone whose address bar is showing', () => {
 	/*
 	 * A phone browser counts 100vh with its address bar hidden, so while the bar shows the
 	 * document can be a little taller than the screen. Then a glide that scrolled the document
-	 * too carried the sticky bars off the top (docs/05 §5.11). The body is pinned to that taller
+	 * too carried the sticky bars off the top (docs/dev/05 §5.11). The body is pinned to that taller
 	 * height here as a stand-in for the bar, and the glides run as a reader sees them.
 	 */
 	test.use({

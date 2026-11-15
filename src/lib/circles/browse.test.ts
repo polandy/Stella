@@ -12,7 +12,7 @@ import {
 const labels: KindLabels = { all: 'All', kind: (kind) => kind };
 
 /*
- * Finding a circle among many (docs/02 §2.4.2): what a typed query matches and what the kind
+ * Finding a circle among many (docs/dev/02 §2.4.2): what a typed query matches and what the kind
  * chips offer. Pure and client-safe, because the page filters as you type without a round
  * trip — the rule has to run in the browser as well as on the server render.
  */

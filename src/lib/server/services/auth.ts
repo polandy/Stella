@@ -19,7 +19,7 @@ import { activityWording } from '../i18n/activity-wording';
 import type { IdGenerator } from '../id';
 
 /*
- * The `auth` bounded context of the composition root (docs/08 §8.3): who is asking and how
+ * The `auth` bounded context of the composition root (docs/dev/08 §8.3): who is asking and how
  * they prove it — accounts, sessions, API tokens and the import they authorise, and the OIDC
  * sign-in. Built once per process by `createServices`; the edge reads it off
  * `locals.services.auth`.

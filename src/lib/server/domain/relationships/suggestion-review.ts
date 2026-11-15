@@ -8,8 +8,8 @@ import type { Clock } from '../../clock';
 import type { IdGenerator } from '../../id';
 
 /*
- * The on-demand review and the dismissal log (docs/02 §2.4.1,
- * docs/04 ADR-117).
+ * The on-demand review and the dismissal log (docs/dev/02 §2.4.1,
+ * docs/dev/04 ADR-117).
  *
  * Every other suggestion in Stella is a consequence of a write: something was stored, so the
  * page says what follows, and reloading loses it. That makes the whole rule set unreachable
@@ -28,7 +28,7 @@ import type { IdGenerator } from '../../id';
 
 /**
  * The read model the kinship engine runs on: the primary links this viewer may see, with the
- * people at their ends (docs/02 §2.4.1, docs/03 §3.7). A review needs nothing else.
+ * people at their ends (docs/dev/02 §2.4.1, docs/dev/03 §3.7). A review needs nothing else.
  */
 export interface KinshipGraphReads {
 	loadKinshipGraphVisibleTo(viewer: Viewer): Promise<KinshipGraph>;
@@ -41,7 +41,7 @@ export interface NewDismissal extends Dismissal {
 	dismissedBy: string;
 }
 
-/** The household's log of declined claims (docs/03 §3.9). */
+/** The household's log of declined claims (docs/dev/03 §3.9). */
 export interface SuggestionDismissalRepository {
 	/** Every claim this viewer's household has declined. */
 	listForHousehold(viewer: Viewer): Promise<Dismissal[]>;

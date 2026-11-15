@@ -2,7 +2,7 @@ import type { Locale } from '../i18n/locales';
 import { withNameParts, type StoredName } from '../people/display-name';
 
 /*
- * Last names given but not written yet (docs/02 §2.2.4.4). A batch waits out its undo window
+ * Last names given but not written yet (docs/dev/02 §2.2.4.4). A batch waits out its undo window
  * before it is sent, and the page reloads only after that; until then every list and search
  * would still read the old name, so *Brunner* typed into a search right after giving it found
  * nobody. The shell keeps one `Given` for the whole app, and a list reads its people through

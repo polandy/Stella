@@ -3,7 +3,7 @@ import { cardTodos, type CardTodo, type JustDone } from './todos';
 
 /*
  * The browser side of `cardTodos`: the to-dos ticked on this page, held until their toast is
- * gone (docs/02 §2.26.2). The person page owns one, because the card's place on the page — top
+ * gone (docs/dev/02 §2.26.2). The person page owns one, because the card's place on the page — top
  * while anything is in it — has to count them too.
  */
 

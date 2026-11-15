@@ -3,7 +3,7 @@ import MarkdownIt from 'markdown-it';
 import { hashtagPlugin, type TagRenderEnv } from './markdown-hashtags';
 
 /*
- * Tags as chips in a rendered entry (docs/02 §2.20.2), on a bare markdown-it so only the rule is
+ * Tags as chips in a rendered entry (docs/dev/02 §2.20.2), on a bare markdown-it so only the rule is
  * under test. Which `#word` is a tag is `hashtagAt`'s call; this pins where a chip may appear
  * and that nothing a member typed reaches the HTML unescaped.
  */

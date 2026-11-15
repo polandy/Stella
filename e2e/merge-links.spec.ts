@@ -3,8 +3,8 @@ import { appReady, fillDate, pickPerson, recordAction, signIn } from './app';
 import { LINK, personIdOf, seedHousehold } from './seed';
 
 /*
- * What a merge does to links both records had (docs/02 §2.2, docs/03 §relationship). Written
- * after the owner verified the flow in the running app (docs/08 §8.4.1).
+ * What a merge does to links both records had (docs/dev/02 §2.2, docs/dev/03 §relationship). Written
+ * after the owner verified the flow in the running app (docs/dev/08 §8.4.1).
  *
  * The ids follow the names (`e2e-agnes-…` < `e2e-mauro-…`, `e2e-nina-…` < `e2e-zilla-…`), so
  * the third people sort between the record merged away and the survivor — the case in which a

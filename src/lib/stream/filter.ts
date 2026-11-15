@@ -1,7 +1,7 @@
 import { tagKey } from '../hashtags/hashtags';
 
 /*
- * The household stream's filter (docs/02 §2.22.2) and how the URL carries it. Pure and
+ * The household stream's filter (docs/dev/02 §2.22.2) and how the URL carries it. Pure and
  * framework-free, so the domain narrows its reads by the same kinds Home offers as chips, and
  * Home's chips and its `load` agree on one spelling of the query string.
  */
@@ -25,7 +25,7 @@ export interface StreamFilter {
 	/** The household member who did it — the item's actor. */
 	memberId: string | null;
 	/**
-	 * The keys of the tags a moment must all carry (docs/02 §2.20.2), in the order chosen; only
+	 * The keys of the tags a moment must all carry (docs/dev/02 §2.20.2), in the order chosen; only
 	 * ever non-empty with `kind: 'moment'`.
 	 */
 	tags: readonly string[];

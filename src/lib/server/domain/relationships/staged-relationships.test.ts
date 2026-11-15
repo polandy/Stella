@@ -11,7 +11,7 @@ import type { NewRelationship } from './relationships';
 import { stageRelationships } from './staged-relationships';
 
 /*
- * The staging a batch of links is checked through (docs/02 §2.4, ADR-118): nothing reaches the
+ * The staging a batch of links is checked through (docs/dev/02 §2.4, ADR-118): nothing reaches the
  * store, and every read sees the links staged so far as though they were on record. The batch's
  * guardrails are `add-many.test.ts`'s; these pin the staging itself.
  */

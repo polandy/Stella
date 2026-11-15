@@ -1,6 +1,6 @@
 /*
  * A share waits on the device between the service worker taking it and the sheet saving it
- * (docs/02 §2.18.3). One that is never finished — the sheet closed, the phone put away — must
+ * (docs/dev/02 §2.18.3). One that is never finished — the sheet closed, the phone put away — must
  * not hold its photos for ever.
  */
 

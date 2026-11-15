@@ -3,11 +3,11 @@ import { COMMAND_PATIENCE_MS } from '../src/lib/pwa/outbox';
 import { addPerson, signIn } from './app';
 
 /*
- * Sharing into Stella from another app (docs/02 §2.18.3). The phone's share sheet posts a
+ * Sharing into Stella from another app (docs/dev/02 §2.18.3). The phone's share sheet posts a
  * multipart form to `/share`; here a form of the same shape posts it from a page, so the
  * service worker takes it exactly as it takes the system's. Belongs to the `pwa` project, the
  * only one that lets the worker run (`playwright.config.ts`). Written after the flow was
- * verified on a phone (docs/08 §8.4.1).
+ * verified on a phone (docs/dev/08 §8.4.1).
  *
  * Teilina Linkmann, Gabrina Drachen, Fotara Teilberg, Avara Einzeln and Stillara Funkstill are
  * invented here and in no seed.

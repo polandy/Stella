@@ -1,17 +1,17 @@
 /*
  * Filtering a person list by a typed query, for any picker where someone chooses a person by
- * name rather than scrolling a full list (docs/02 — search wherever a person is selected).
+ * name rather than scrolling a full list (docs/dev/02 — search wherever a person is selected).
  */
 import { matchesQuery, startsWithQuery, type DirectoryPerson } from './directory';
 
 /** The person fields a search picker needs — the same shape the directory already filters on. */
 export interface SelectablePerson extends DirectoryPerson {
 	/**
-	 * The stored birth date (docs/03 §3.4). Carried only by the pickers whose form reads
-	 * something off it — the relationship form dates a family link from it (docs/02 §2.4).
+	 * The stored birth date (docs/dev/03 §3.4). Carried only by the pickers whose form reads
+	 * something off it — the relationship form dates a family link from it (docs/dev/02 §2.4).
 	 */
 	birthDate?: string | null;
-	/** Where and when they were met: with the description, what tells namesakes apart (docs/02 §2.2.3). */
+	/** Where and when they were met: with the description, what tells namesakes apart (docs/dev/02 §2.2.3). */
 	metPlace?: string | null;
 	metDate?: string | null;
 	/** Required, so no picker's list forgets it and shows initials for someone with a photo. */

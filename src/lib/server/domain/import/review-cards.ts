@@ -11,7 +11,7 @@ import { fieldLabelText } from './monica/plan-fields';
 import type { RememberedAnswer } from './source-links';
 
 /*
- * The pure half of the matching review (docs/02 §2.16): which cards of an export still need an
+ * The pure half of the matching review (docs/dev/02 §2.16): which cards of an export still need an
  * answer, and what *Same person* writes onto the person. No I/O; the use-case reads the answers
  * and people, and the writer applies the result in one transaction.
  */
@@ -152,7 +152,7 @@ export function completionOf(
 	}
 
 	// A name part goes through the one rule every name change follows, so a shown name the parts
-	// made follows them and one a member chose stays (docs/02 §2.2).
+	// made follows them and one a member chose stays (docs/dev/02 §2.2).
 	if (Object.keys(names).length > 0) {
 		Object.assign(completion.set, withNameParts(person, names, ctx.locale));
 	}

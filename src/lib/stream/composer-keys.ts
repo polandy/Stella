@@ -1,5 +1,5 @@
 /*
- * What a key does in the moment composer (docs/05 §5.7). The open @-list takes the arrows,
+ * What a key does in the moment composer (docs/dev/05 §5.7). The open @-list takes the arrows,
  * Enter, Tab and Escape first; with it closed, Escape cancels where the page offers a Cancel and
  * ⌘⏎ saves. Pure; `MomentComposer` calls `preventDefault` when the key is `consumed`.
  */

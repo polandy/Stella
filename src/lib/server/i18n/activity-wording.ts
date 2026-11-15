@@ -4,7 +4,7 @@ import type { ActivityWording } from '$lib/server/domain/activity/activity';
 import { sourceWord } from '$lib/import-match/card';
 
 /*
- * The activity log's localized lines (docs/02 §2.19), from the catalogues. The entry is data the
+ * The activity log's localized lines (docs/dev/02 §2.19), from the catalogues. The entry is data the
  * household keeps, so it is written once, in the language of the member who caused it, and stays
  * as written.
  */

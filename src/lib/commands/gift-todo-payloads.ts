@@ -2,10 +2,10 @@ import * as v from 'valibot';
 import { GIFT_STATES } from '../gifts/gifts';
 import { ISO_DAY, nonEmpty, optionalText, requiredText, visibility } from './payload-fields';
 
-/* What the gift and to-do commands carry (docs/04 §4.11.2), one Valibot schema each. */
+/* What the gift and to-do commands carry (docs/dev/04 §4.11.2), one Valibot schema each. */
 
 /**
- * What a gift says (docs/02 §2.25). Only the title is required; whether the day is — and
+ * What a gift says (docs/dev/02 §2.25). Only the title is required; whether the day is — and
  * whether it is real — is the use-case's to judge by the gift's state, and so is the link.
  */
 const giftContent = {
@@ -19,7 +19,7 @@ const giftContent = {
 	visibility
 };
 
-/** A gift noted on a person: an idea, or one given or received (docs/02 §2.25). */
+/** A gift noted on a person: an idea, or one given or received (docs/dev/02 §2.25). */
 export const GiftAddSchema = v.object({
 	contactId: nonEmpty,
 	state: v.picklist(GIFT_STATES),
@@ -47,7 +47,7 @@ export const GiftRemoveSchema = v.object({
 	giftId: nonEmpty
 });
 
-/** What a to-do says (docs/02 §2.26); whether the day is real is the use-case's to judge. */
+/** What a to-do says (docs/dev/02 §2.26); whether the day is real is the use-case's to judge. */
 const todoContent = {
 	title: requiredText,
 	/** ISO `YYYY-MM-DD` it is due by; empty for none. */

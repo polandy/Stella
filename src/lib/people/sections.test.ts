@@ -13,7 +13,7 @@ import {
 	sectionForLegacyTab
 } from './sections';
 
-/* The card vocabulary a link may name (docs/05 §5.5, docs/02 §2.20.1). */
+/* The card vocabulary a link may name (docs/dev/05 §5.5, docs/dev/02 §2.20.1). */
 
 describe('CONTACT_SECTIONS', () => {
 	test('lists the cards in the order the page stacks them: relationships, then photos', () => {
@@ -77,7 +77,7 @@ describe('journalEntryHref', () => {
 });
 
 describe('briefPath', () => {
-	test('is the person’s brief, a page of its own beside theirs (docs/02 §2.2.5)', () => {
+	test('is the person’s brief, a page of its own beside theirs (docs/dev/02 §2.2.5)', () => {
 		expect(briefPath('c1')).toBe('/contacts/c1/brief');
 	});
 });

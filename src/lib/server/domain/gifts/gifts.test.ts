@@ -18,7 +18,7 @@ import {
 } from './gifts';
 
 /*
- * The gift use-cases (docs/02 §2.25), over an in-memory port. What the database scopes — a
+ * The gift use-cases (docs/dev/02 §2.25), over an in-memory port. What the database scopes — a
  * private gift reaching only its author, a gift on a person the viewer cannot see — is the
  * Drizzle adapter's to prove (`db/gift-repository.test.ts`); here the fake keeps the same rule
  * so the use-cases can be seen relying on it.

@@ -9,14 +9,14 @@ import { contact, importantDate } from './schema';
 import { DAY_PRECISIONS } from '../../dates/partial-date';
 
 /*
- * Drizzle adapter for the ImportantDateRepository port (docs/08 §8.3). Dates have no
+ * Drizzle adapter for the ImportantDateRepository port (docs/dev/08 §8.3). Dates have no
  * visibility of their own; every read joins the parent contact and is scoped through the
  * central `contactVisibleTo`, so a date is only ever returned with a contact the viewer sees.
  *
  * `listSourcesVisibleTo` unions two things the domain treats alike: the explicit rows, and
  * the birthdays derived from `contact.birth_date` — which is why a birthday is never stored
- * twice (docs/02 §2.13). Only a birth date that names a day can become a birthday: an
- * estimated year (`age`/`year` precision, docs/03 §3.4) is a fact about the person, not a
+ * twice (docs/dev/02 §2.13). Only a birth date that names a day can become a birthday: an
+ * estimated year (`age`/`year` precision, docs/dev/03 §3.4) is a fact about the person, not a
  * date to look forward to.
  */
 

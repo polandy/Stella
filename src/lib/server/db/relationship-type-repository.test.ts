@@ -20,7 +20,7 @@ import { createDrizzleRelationshipTypeUsageReads } from './relationship-type-usa
 
 /*
  * Integration spec for the Drizzle RelationshipTypeRepository: the built-in vocabulary and a
- * household's own types, which no other household can resolve (docs/03 §3.6), the guards on
+ * household's own types, which no other household can resolve (docs/dev/03 §3.6), the guards on
  * changing a type in use, and folding one type into another.
  */
 

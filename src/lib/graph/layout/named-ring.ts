@@ -1,5 +1,5 @@
 /*
- * The People card's map preview on a phone (docs/05 §5.5): a picture of the people entered,
+ * The People card's map preview on a phone (docs/dev/05 §5.5): a picture of the people entered,
  * drawn by the server before — and instead of — the live map. A ring of bare faces said nothing
  * the list below did not, so every face carries its first name: over it in the upper half,
  * under it in the lower. A phone card has room for a handful of names, so past

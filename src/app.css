@@ -1,7 +1,7 @@
 @import 'tailwindcss';
 
 /*
- * Stella design system — Catppuccin (docs/05).
+ * Stella design system — Catppuccin (docs/dev/05).
  * Light = Latte, Dark = Mocha.
  *
  * Three layers, and components may only touch the third:
@@ -47,7 +47,7 @@
 	/*
 	 * Surfaces. Latte's lightest step is #eff1f5, too close to its neighbours to read as a
 	 * raised card, so the card is plain white and the page drops to `mantle` beneath it
-	 * (docs/05 §5.2.2). Shadows are tinted with the text colour, never black.
+	 * (docs/dev/05 §5.2.2). Shadows are tinted with the text colour, never black.
 	 */
 	--card: #ffffff;
 	--card-hover: #f7f8fb;
@@ -204,7 +204,7 @@
 	/* The ground of the offline line: noticed at a glance, but not mistaken for an error. */
 	--warning-soft: color-mix(in srgb, var(--warning) 18%, transparent);
 	/* The ground of an error banner. Its words are written in `--fg`: `--danger` on this tint
-	   is 4.0:1 over the page ground in Latte (docs/05 §5.6). */
+	   is 4.0:1 over the page ground in Latte (docs/dev/05 §5.6). */
 	--danger-soft: color-mix(in srgb, var(--danger) 10%, transparent);
 
 	/* Accents, addressable by name: tags, circles and generated avatars pick from these. */
@@ -223,14 +223,14 @@
 	--accent-blue: var(--ctp-blue);
 	--accent-lavender: var(--ctp-lavender);
 
-	/* Relationship categories → a fixed accent each (docs/05 §5.6) */
+	/* Relationship categories → a fixed accent each (docs/dev/05 §5.6) */
 	--cat-family: var(--accent-green);
 	--cat-romantic: var(--accent-pink);
 	--cat-social: var(--accent-blue);
 	--cat-professional: var(--accent-peach);
 	--cat-other: var(--fg-subtle);
 
-	/* Interaction kinds → a fixed accent each (docs/05 §5.6) */
+	/* Interaction kinds → a fixed accent each (docs/dev/05 §5.6) */
 	--kind-met: var(--accent-green);
 	--kind-call: var(--accent-blue);
 	--kind-video: var(--accent-sapphire);
@@ -239,17 +239,17 @@
 	--kind-gift: var(--accent-pink);
 	--kind-other: var(--fg-subtle);
 
-	/* Circle membership and derived kinship, as drawn in the explorer (docs/05 §5.8) */
+	/* Circle membership and derived kinship, as drawn in the explorer (docs/dev/05 §5.8) */
 	--edge-membership: var(--accent-lavender);
 	--edge-kinship: var(--fg-subtle);
 
-	/* A shade over a photo so the words on it read (docs/05 §5.2.2). A photo looks the same in
+	/* A shade over a photo so the words on it read (docs/dev/05 §5.2.2). A photo looks the same in
 	   every theme, so this does not follow the palette; each overlay picks its own strength,
 	   `bg-scrim/60`. */
 	--scrim: #000000;
 	--scrim-fg: #ffffff;
 
-	/* Motion: one glide and one fade for everything that opens in place (docs/05 §5.11).
+	/* Motion: one glide and one fade for everything that opens in place (docs/dev/05 §5.11).
 	   Mirrored by `MOTION` in src/lib/design/tokens.ts. */
 	--motion-expand: 300ms;
 	--motion-fade: 200ms;
@@ -259,7 +259,7 @@
 	--radius: 0.75rem;
 	--radius-control: 0.5rem;
 
-	/* Type: one sans for the interface, one serif for what people wrote (docs/05 §5.3) */
+	/* Type: one sans for the interface, one serif for what people wrote (docs/dev/05 §5.3) */
 	--font-sans:
 		'Instrument Sans Variable', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto,
 		sans-serif;
@@ -347,7 +347,7 @@ body {
 
 /*
  * Prose written by a person — note bodies, journal entries, moments — is set in the serif
- * (docs/05 §5.3), so a written line never reads like a data field. Preflight resets the
+ * (docs/dev/05 §5.3), so a written line never reads like a data field. Preflight resets the
  * defaults, so restore the basics.
  */
 .note-body {
@@ -365,7 +365,7 @@ body {
 	color: var(--link);
 	text-decoration: underline;
 }
-/* @-mention chips (docs/02 §2.20.1): a person reference, not a plain link. */
+/* @-mention chips (docs/dev/02 §2.20.1): a person reference, not a plain link. */
 .mention {
 	font-family: var(--font-sans);
 	font-size: 0.9em;
@@ -384,7 +384,7 @@ body {
 	color: var(--fg-subtle);
 	background: color-mix(in srgb, var(--fg-subtle) 12%, transparent);
 }
-/* #tag chips (docs/02 §2.20.2): the accent and label come inline from accentChipStyle, so a
+/* #tag chips (docs/dev/02 §2.20.2): the accent and label come inline from accentChipStyle, so a
    tag looks the same in the text, the journal's filter and search. */
 .note-body a.hashtag {
 	font-family: var(--font-sans);
@@ -424,7 +424,7 @@ body {
 }
 
 /*
- * One tick box in both themes (docs/05 §5.7): a 2 px `--fg-muted` frame that holds its 3:1
+ * One tick box in both themes (docs/dev/05 §5.7): a 2 px `--fg-muted` frame that holds its 3:1
  * against Latte's white card and Mocha's dark one, where the browser's own 1 px box all but
  * vanished; ticked, it fills with the primary colour and a check. In the base layer, so a
  * control's size and margin utilities still apply; a box hidden behind a styled peer
@@ -470,7 +470,7 @@ body {
 	}
 }
 
-/* Where to edit (docs/05 §5.7): a value that edits in place carries a faint pencil inside its
+/* Where to edit (docs/dev/05 §5.7): a value that edits in place carries a faint pencil inside its
    trigger — always on a touch screen, where no hover ever says so, and on hover or keyboard
    focus elsewhere. A plain rule rather than utilities, so no static class fights a variant. */
 .edit-pencil {
@@ -489,7 +489,7 @@ button:focus-visible .edit-pencil {
 	}
 }
 
-/* A finger's reach (docs/05 §5.9): on a touch screen a small control answers a 44 px square
+/* A finger's reach (docs/dev/05 §5.9): on a touch screen a small control answers a 44 px square
    centred on it, so its drawn size can stay. A plain rule, unlayered, so it sets `position`
    over any utility — never put it on a control that is itself placed `absolute` or `fixed`. */
 @media (pointer: coarse) {
@@ -547,7 +547,7 @@ button:focus-visible .edit-pencil {
 	}
 }
 
-/* Screen-to-screen cross-fade (docs/05 §5.5); the shell opts out under reduced motion. */
+/* Screen-to-screen cross-fade (docs/dev/05 §5.5); the shell opts out under reduced motion. */
 ::view-transition-old(root),
 ::view-transition-new(root) {
 	animation-duration: 160ms;

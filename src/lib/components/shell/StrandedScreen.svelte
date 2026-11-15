@@ -8,7 +8,7 @@
 	import { strandedPlace, type StrandedPlace } from '$lib/ui/stranded';
 
 	/*
-	 * Where an address that leads nowhere lands (docs/design/screens/across-screens.md): an
+	 * Where an address that leads nowhere lands (docs/dev/design/screens/across-screens.md): an
 	 * empty state naming what was asked for and the way to its list, never the bare status.
 	 * Inside the app it sits in the shell, so the tab bar and the parent crumb stay in reach.
 	 */

@@ -4,7 +4,7 @@ import { give, namesGiven, release, type Given } from './given-names';
 /*
  * The browser half of `given-names.ts`: one store in the app shell, so a name given on People
  * reads the same in ⌘K and on whatever page comes next until the reload brings it from the
- * server (docs/02 §2.2.4.4).
+ * server (docs/dev/02 §2.2.4.4).
  */
 
 export interface GivenNames {

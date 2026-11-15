@@ -1,5 +1,5 @@
 /*
- * Choosing several members of a circle to re-role or remove them together (docs/02 §2.4.2).
+ * Choosing several members of a circle to re-role or remove them together (docs/dev/02 §2.4.2).
  * The selection is a list of contact ids in the order they were chosen; the page owns it and
  * these say how one gesture changes it.
  */

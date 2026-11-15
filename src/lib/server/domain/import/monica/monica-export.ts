@@ -5,13 +5,13 @@ import { SqlDumpError, type SqlDump, type SqlRow, type SqlValue } from './sql-du
 
 /**
  * How a Monica record is identified. The SQL dump keys everything by an auto-increment
- * number; the JSON export keys the same records by uuid (docs/02 §2.16). Nothing in the
+ * number; the JSON export keys the same records by uuid (docs/dev/02 §2.16). Nothing in the
  * mapping cares which — an id is compared, looked up and printed, never counted with.
  */
 export type MonicaId = string | number;
 
 /*
- * A typed view over the Monica tables the migration reads (docs/02 §2.16). Nothing is
+ * A typed view over the Monica tables the migration reads (docs/dev/02 §2.16). Nothing is
  * interpreted here — that is the plan's job — this only names columns and narrows types so
  * the mapping reads like the documented table rather than like SQL rows.
  */

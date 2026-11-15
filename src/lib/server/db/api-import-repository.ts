@@ -34,9 +34,9 @@ import {
 } from './schema';
 
 /*
- * Drizzle adapter for the import API's port (docs/02 §2.16.1).
+ * Drizzle adapter for the import API's port (docs/dev/02 §2.16.1).
  *
- * Reading: every row the planner is shown passes the central scoping (docs/03 §3.7), so a
+ * Reading: every row the planner is shown passes the central scoping (docs/dev/03 §3.7), so a
  * document can neither link to nor be told about somebody the member may not see. Two things are
  * read past that scope, each only ever answering yes or no and never shown: whether an id is
  * *taken*, so a new record is refused rather than colliding with a hidden one, and the

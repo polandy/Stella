@@ -1,5 +1,5 @@
 /*
- * The relatives Stella works out rather than being told about (docs/02 §2.4.1). The engine
+ * The relatives Stella works out rather than being told about (docs/dev/02 §2.4.1). The engine
  * decides the term and whether it is worded male, female or neutrally; the words are here.
  */
 
@@ -51,7 +51,7 @@ export const kinship = {
 	'kinship.term.sibling-in-law.neutral': 'Sibling-in-law',
 
 	/*
-	 * Why a link is being offered (docs/02 §2.4.1). Both facts it follows from, in one
+	 * Why a link is being offered (docs/dev/02 §2.4.1). Both facts it follows from, in one
 	 * sentence, written whole here rather than assembled from pieces: German puts the same
 	 * three names in a different order, and every one of them is a link on screen
 	 * (`src/lib/i18n/linked.ts`).

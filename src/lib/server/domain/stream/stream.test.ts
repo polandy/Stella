@@ -16,7 +16,7 @@ import {
 import { NO_FILTER } from '../../../stream/filter';
 
 /*
- * Household stream assembly (docs/02 §2.22.2): merge scoped sources newest-first, stable on
+ * Household stream assembly (docs/dev/02 §2.22.2): merge scoped sources newest-first, stable on
  * ties, mark the viewer's own items, respect the limit.
  */
 

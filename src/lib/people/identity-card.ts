@@ -1,5 +1,5 @@
 /*
- * The identity card at the top of a person's page (docs/05 §5.5): who they are, as a few
+ * The identity card at the top of a person's page (docs/dev/05 §5.5): who they are, as a few
  * labelled facts each edited where it is read, the rows that have no fact, and one quiet button
  * for what the record does not hold yet. Pure, so what the card shows is decided here rather
  * than in its markup.
@@ -53,7 +53,7 @@ const isFillable = (fact: IdentityFact | ProfileRow): fact is Fillable =>
 	(FILLABLE as readonly string[]).includes(fact);
 
 /**
- * What the identity card shows (docs/05 §5.5): the facts the record holds, each edited where it
+ * What the identity card shows (docs/dev/05 §5.5): the facts the record holds, each edited where it
  * is read, and below them only the rows that have no fact — *Contact* and *Tags*. Anything empty
  * waits behind one quiet button: six invitations read as a form, one button naming them reads as
  * a person. Pressed, the empty facts appear in their places as slots and the empty rows below.
@@ -200,7 +200,7 @@ export function addressLines(
  * *same person?* link sent an admin here, or a merge they asked for came back refused,
  * otherwise none. Used both at mount and whenever the
  * page keeps its identity card across a client-side navigation to somebody else's page — so an
- * open step does not follow a reader from the person who opened it to the next (docs/05 §5.5).
+ * open step does not follow a reader from the person who opened it to the next (docs/dev/05 §5.5).
  */
 export function initialPanel(
 	mergeTargetId: string | null,
@@ -224,7 +224,7 @@ export type RecordMenuEntry =
 
 /**
  * What the ⋯ menu offers: logging a touchpoint and the brief before a visit (§2.2.5), then the
- * actions about the record rather than the person (docs/02 §2.2, §2.1.3). Merging and deleting end a record, so they are an admin's;
+ * actions about the record rather than the person (docs/dev/02 §2.2, §2.1.3). Merging and deleting end a record, so they are an admin's;
  * the connection question needs somebody else in the household to ask about.
  */
 export function recordMenu(viewer: {

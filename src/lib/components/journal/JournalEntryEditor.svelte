@@ -15,8 +15,8 @@
 	import EntryEditorPhotos from './EntryEditorPhotos.svelte';
 
 	/*
-	 * A journal entry corrected in place (docs/02 §2.20): its title and text, its photos — stored
-	 * ones and Immich references (docs/04 ADR-132) — and the
+	 * A journal entry corrected in place (docs/dev/02 §2.20): its title and text, its photos — stored
+	 * ones and Immich references (docs/dev/04 ADR-132) — and the
 	 * people it is about (§2.20.3); the day and who sees it stay. One editor for the journal page
 	 * and the person's Activity card, so both save the same way. Its author's alone; online only,
 	 * like removing.
@@ -121,7 +121,7 @@
 		return true;
 	}
 
-	/** Refer to the Immich photos picked, all at once, before the text (docs/04 ADR-132). */
+	/** Refer to the Immich photos picked, all at once, before the text (docs/dev/04 ADR-132). */
 	async function storeLinked(): Promise<boolean> {
 		if (!linking.length) return true;
 		const body = new FormData();
@@ -148,7 +148,7 @@
 		try {
 			if (!(await storeAdded()) || !(await storeLinked())) return;
 			const result = await post('edit', form);
-			// A refusal says why — a namesake to pick, say (docs/02 §2.2.3) — and keeps the text.
+			// A refusal says why — a namesake to pick, say (docs/dev/02 §2.2.3) — and keeps the text.
 			if (result.type === 'failure') {
 				error = (result.data?.journalError as string | undefined) ?? t('journal.editSaveFailed');
 				// The photos stored before it are the entry's now; show them so.

@@ -6,7 +6,7 @@ import type { RelationshipRepository } from './relationships';
 import { stageRelationships } from './staged-relationships';
 
 /*
- * Linking several people in one go (docs/02 §2.4, ADR-118): one type, one status, one
+ * Linking several people in one go (docs/dev/02 §2.4, ADR-118): one type, one status, one
  * description, a since day per pair. Each link passes
  * through `addRelationshipChecked` — the very checks a single link meets — against a staging
  * that already holds the links picked before it, so the batch is judged as a whole. Every

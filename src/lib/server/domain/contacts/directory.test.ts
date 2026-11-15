@@ -11,7 +11,7 @@ import {
 } from './directory';
 
 /*
- * The people lists (docs/02 §2.2): what each screen asks the directory read model, over the
+ * The people lists (docs/dev/02 §2.2): what each screen asks the directory read model, over the
  * shared in-memory fake. Which people the viewer may see is the adapter's, covered against
  * SQLite in `db/contact-reads.test.ts`.
  */
@@ -58,7 +58,7 @@ describe('countKnownByAFirstNameOnly', () => {
 });
 
 /*
- * Home's first-run card (docs/02 §2.22.3) only needs to know whether the household holds
+ * Home's first-run card (docs/dev/02 §2.22.3) only needs to know whether the household holds
  * anybody besides the member's own record, so it must not read the whole household to learn it.
  */
 describe('listPeopleEnoughForFirstRun', () => {

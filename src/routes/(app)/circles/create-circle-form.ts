@@ -5,7 +5,7 @@ import { CircleParentGoneError } from '$lib/server/domain/circles/nesting';
 import { say, translator } from '$lib/server/i18n/say';
 
 /*
- * The one way a new circle is made from a screen (docs/02 §2.4.2): the circles list's *New
+ * The one way a new circle is made from a screen (docs/dev/02 §2.4.2): the circles list's *New
  * circle* and the sub-circles card's *New sub-circle* post the same fields — name, kind, colour,
  * description, and *Belongs to* (a circle's id, empty for none). Each action wraps the refusal
  * under its own key, so the card's never lands in the circle page's member section.

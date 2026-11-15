@@ -5,7 +5,7 @@ import type * as schema from './schema';
 import { journalEntry, journalMention, journalSubject, photo } from './schema';
 
 /*
- * Writing the people a journal entry is about (docs/02 §2.20.3, docs/03 §journal_subject): the
+ * Writing the people a journal entry is about (docs/dev/02 §2.20.3, docs/dev/03 §journal_subject): the
  * anchor in `contact_id`, the rest in `journal_subject`, the slot in `subject_key`. One place,
  * so an edit, a merge and a deleted person keep the three in step and join entries alike.
  */
@@ -89,7 +89,7 @@ function joinInto(tx: Db, fromId: string, into: { id: string; anchor: string }, 
 /**
  * Give an entry exactly these subjects, the first its anchor (its photos follow). When the
  * author already has an entry about the same people that day and visibility, the two are joined
- * into that one (docs/02 §2.20.3). Returns the id that holds the entry afterwards.
+ * into that one (docs/dev/02 §2.20.3). Returns the id that holds the entry afterwards.
  */
 export function setEntrySubjects(
 	tx: Db,
@@ -141,7 +141,7 @@ export function setEntrySubjects(
 	return entryId;
 }
 
-/** A subject is never also a mention of the same entry (docs/03 §journal_mention). */
+/** A subject is never also a mention of the same entry (docs/dev/03 §journal_mention). */
 function dropSubjectMentions(tx: Db, entryId: string, subjects: readonly string[]) {
 	tx.delete(journalMention)
 		.where(

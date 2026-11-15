@@ -2,8 +2,8 @@ import { expect, test, type Page } from '@playwright/test';
 import { addPerson, appReady, recordAction, releaseSelfClaim, signIn } from './app';
 
 /*
- * Empty screens as invitations, and adding yourself (docs/02 §2.1.3, §2.22.3, docs/05 §5.10).
- * Written after the maintainer checked the screens in the running app (docs/08 §8.4.1).
+ * Empty screens as invitations, and adding yourself (docs/dev/02 §2.1.3, §2.22.3, docs/dev/05 §5.10).
+ * Written after the maintainer checked the screens in the running app (docs/dev/08 §8.4.1).
  *
  * The suite runs on the demo household, so the first-run welcome card itself — shown only
  * while the household holds nobody but the member — is not reachable here; its rule is the
@@ -150,7 +150,7 @@ test('a new person’s page keeps its empty sections short and opens the relatio
 	await addPerson(page, 'Tobiah', name.split(' ')[1]);
 
 	// Empty Photos and Notes are one line each; nobody mentions a new person, so that card is
-	// not on the page at all (docs/05 §5.5).
+	// not on the page at all (docs/dev/05 §5.5).
 	await expect(page.locator('#section-notes').getByText('Nothing noted yet.')).toBeVisible();
 	await expect(page.locator('#section-photos').getByText('No photos yet.')).toBeVisible();
 	await expect(page.locator('#section-mentions')).toHaveCount(0);

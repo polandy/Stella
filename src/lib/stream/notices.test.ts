@@ -11,7 +11,7 @@ import {
 } from './notices';
 
 /*
- * What a stream notice says (docs/02 §2.11). A line about something that still exists is stored
+ * What a stream notice says (docs/dev/02 §2.11). A line about something that still exists is stored
  * as facts and said at read time in the reader's language; a removal keeps the prose written
  * when the record went, since nothing is left to say it from.
  */

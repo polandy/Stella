@@ -2,9 +2,9 @@ import { expect, test, type Page } from '@playwright/test';
 import { addPerson, appReady, pickPerson, recordAction, signIn } from './app';
 
 /*
- * Two rules that keep the household's records where they belong (docs/02 §2.2, §2.12): a
+ * Two rules that keep the household's records where they belong (docs/dev/02 §2.2, §2.12): a
  * shared person is never merged into a private one, and an archived person's notes leave the
- * search with them. Written after the owner's OK (docs/08 §8.4.1). The people are the spec's
+ * search with them. Written after the owner's OK (docs/dev/08 §8.4.1). The people are the spec's
  * own and their surnames carry letters no other run shares.
  */
 

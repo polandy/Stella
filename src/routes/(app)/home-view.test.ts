@@ -3,7 +3,7 @@ import { mentionToken } from '$lib/mentions/mentions';
 import { composerFor, linkSuggestionAmong, peopleNamedBy, photosPosted } from './home-view';
 
 /*
- * What Home reads off its address and its capture form (docs/02 §2.22): the people a link hint
+ * What Home reads off its address and its capture form (docs/dev/02 §2.22): the people a link hint
  * or `?about=` names, kept only when the viewer may still act on them, and the photos a moment
  * carries, field by field in step.
  */

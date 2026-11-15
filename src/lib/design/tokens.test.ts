@@ -96,7 +96,7 @@ describe('accent styles', () => {
 	});
 });
 
-describe('tint strength per theme (docs/05 §5.2.2)', () => {
+describe('tint strength per theme (docs/dev/05 §5.2.2)', () => {
 	it('keeps Latte at 22 / 16 / 28 and lifts Mocha to 28 / 22 / 28', () => {
 		expect(TINT_PERCENT.light).toEqual({ avatar: 22, chip: 16, chipActive: 28 });
 		expect(TINT_PERCENT.dark).toEqual({ avatar: 28, chip: 22, chipActive: 28 });

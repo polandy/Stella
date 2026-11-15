@@ -14,7 +14,7 @@ import {
 } from './contact-fields';
 
 /*
- * Contact fields (docs/02 §2.3): repeatable contact methods. Pure link derivation
+ * Contact fields (docs/dev/02 §2.3): repeatable contact methods. Pure link derivation
  * (tap-to-call/mail/map) and the addContactField use-case, tested with fakes.
  */
 

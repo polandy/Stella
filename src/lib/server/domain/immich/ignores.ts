@@ -5,7 +5,7 @@ import { isImmichId } from './gateway';
 import { ImmichLinkRefusedError, type LinkVisibleContacts } from './links';
 
 /*
- * Proposals of *Find your people* a member turned down (docs/02 §2.24.7): "this contact is not
+ * Proposals of *Find your people* a member turned down (docs/dev/02 §2.24.7): "this contact is not
  * that Immich person". Household data like a link — any member
  * who sees the contact may ignore a pair or take it back, and the record has no visibility of its
  * own: whoever sees the contact sees it. It says who ignored the pair and when, so the list can

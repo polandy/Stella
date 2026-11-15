@@ -1,5 +1,5 @@
 /*
- * Reading and comparing release numbers (docs/02 §2.17.1). Pure — no clock, no network.
+ * Reading and comparing release numbers (docs/dev/02 §2.17.1). Pure — no clock, no network.
  *
  * Stella's releases are cut by release-please and are always `X.Y.Z`, so that is the whole
  * grammar here. Anything else — a development build, a pre-release tag, a hand-made tag —

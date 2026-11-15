@@ -13,7 +13,7 @@ import {
 } from './crop';
 
 /*
- * The square a person's photo is cut to (docs/02 §2.14). The cropper shows the picture behind a
+ * The square a person's photo is cut to (docs/dev/02 §2.14). The cropper shows the picture behind a
  * square window; these rules decide which part of the picture the window holds, so what the
  * dialog shows and what the canvas cuts can never disagree.
  */
@@ -78,7 +78,7 @@ describe('zooming in', () => {
 });
 
 describe('how far the picture lets you zoom', () => {
-	// docs/02 §2.14: the square may shrink to about 256 px of the original, so a
+	// docs/dev/02 §2.14: the square may shrink to about 256 px of the original, so a
 	// face in a class photo can fill the frame without being blown up past its detail.
 	it('lets the square shrink to 256 px of the picture', () => {
 		const classPhoto: ImageSize = { width: 4096, height: 2731 };

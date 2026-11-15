@@ -18,7 +18,7 @@ import { editInteraction, type EditInteractionInput } from './edit-interaction';
 import { InvalidInteractionError } from './interactions';
 
 /*
- * Editing a touchpoint (docs/02 §2.6, docs/03 §3.7): its author alone — an admin removes another
+ * Editing a touchpoint (docs/dev/02 §2.6, docs/dev/03 §3.7): its author alone — an admin removes another
  * member's, never rewrites it. Wired to the real adapter: the rule, and which participants an
  * edit may touch, live in its SQL.
  */

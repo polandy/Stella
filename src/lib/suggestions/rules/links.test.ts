@@ -7,7 +7,7 @@ import type { Trigger } from '../types';
 import { buildView } from '../view';
 
 /*
- * The link rules on their own (docs/02 §2.4.1, L1 and L2).
+ * The link rules on their own (docs/dev/02 §2.4.1, L1 and L2).
  *
  * A rule says what *follows* from a trigger and nothing else: it does not decide whether the
  * claim is already known, already derived, or fit to show. That is the engine's job, and the
@@ -125,7 +125,7 @@ describe('L2 — new siblings share the parents each side already has', () => {
 });
 
 /*
- * The review trigger (docs/02 §2.4.1). The rules are the same
+ * The review trigger (docs/dev/02 §2.4.1). The rules are the same
  * ones; what changes is how many links they are pointed at — one, or every link the subject
  * stands in. This is the whole reason a suggestion outlives the instant it was written.
  */
@@ -173,7 +173,7 @@ describe('a person-scoped review runs the same rules over the links already ther
 });
 
 /*
- * The household pass (docs/02 §2.4.1). Same rules again —
+ * The household pass (docs/dev/02 §2.4.1). Same rules again —
  * what changes is the scope: every primary link in the graph rather than the ones around one
  * person. It is the only scope that reaches a family nobody has thought to open.
  */
@@ -221,9 +221,9 @@ describe('a household-wide pass runs the same rules over every link there is', (
 });
 
 /*
- * L3 — the likely second parent (docs/02 §2.4.1). Not a
+ * L3 — the likely second parent (docs/dev/02 §2.4.1). Not a
  * logical consequence, so it is a pure question of its own before it is a rule: the form asks
- * it while a parent is picked but not stored yet (docs/02 §2.4), and the engine
+ * it while a parent is picked but not stored yet (docs/dev/02 §2.4), and the engine
  * asks it once the link is stored.
  */
 describe('likelyCoParent — the chosen parent’s one current partner', () => {

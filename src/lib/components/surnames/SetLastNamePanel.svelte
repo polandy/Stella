@@ -8,7 +8,7 @@
 	import { planLastName, replaceAll } from '$lib/surnames/plan';
 
 	/*
-	 * *Set last name* for the people selected (docs/02 §2.2.4.3): one field, with
+	 * *Set last name* for the people selected (docs/dev/02 §2.2.4.3): one field, with
 	 * the household's surnames offered, then a short confirmation. Whoever already has a
 	 * different last name is named and left unticked, so a bulk action never overwrites
 	 * silently; whoever already carries this one is left alone and not counted.

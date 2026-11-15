@@ -30,7 +30,7 @@
 {#if rows.length > 0 || metLine}
 	<div class="identity-rows grid gap-x-8" transition:reveal>
 		{#each rows as row (row)}
-			<!-- Rows the quiet button brings unfold in place (docs/05 §5.11). -->
+			<!-- Rows the quiet button brings unfold in place (docs/dev/05 §5.11). -->
 			<div data-identity-row={row} class="min-w-0" transition:reveal>
 				{#if row === 'contact'}
 					<ContactFieldsRow {data} {form} />

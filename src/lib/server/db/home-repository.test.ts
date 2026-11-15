@@ -11,7 +11,7 @@ import { createDrizzleHomeReads, createDrizzleHomeRepository } from './home-repo
 /*
  * Integration spec for the home adapters: a home is reached only through a member the viewer
  * may see, names only the members they may see, applies a change in one transaction, and goes
- * with its last member however they leave (docs/03 §3.3).
+ * with its last member however they leave (docs/dev/03 §3.3).
  */
 
 const H = 'household-1';

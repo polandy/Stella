@@ -12,7 +12,7 @@ import { familyEdges, familyNodes, familySource } from './fixtures';
 import type { GraphModel } from './types';
 
 /*
- * Pure value operations over GraphModel (docs/04 §4.11) — merging, adjacency, reachability
+ * Pure value operations over GraphModel (docs/dev/04 §4.11) — merging, adjacency, reachability
  * and applyFilters. No I/O; every function returns a fresh model and never mutates its input.
  */
 

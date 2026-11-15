@@ -3,9 +3,9 @@ import { addPerson, appReady, openPeople, signIn } from './app';
 import { DEMO_ADMIN_PASSWORD, DEMO_MEMBER_EMAIL } from '../src/lib/server/db/demo-seed';
 
 /*
- * The Gifts card on the person page (docs/02 §2.25): ideas noted the moment they come, marked
+ * The Gifts card on the person page (docs/dev/02 §2.25): ideas noted the moment they come, marked
  * as given with an occasion, gifts received, and the story that shows what changed hands.
- * Written after the owner tried the card in the app (docs/08 §8.4.1).
+ * Written after the owner tried the card in the app (docs/dev/08 §8.4.1).
  *
  * The suite shares one database, so every case works on a person of its own, added under a
  * first name no demo household and no other spec uses — a picker or search elsewhere must

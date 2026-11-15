@@ -2,7 +2,7 @@ import { describe, expect, test } from 'bun:test';
 import { readExifCaptureDate } from './exif-date';
 
 /*
- * The capture date read out of a picture before the browser re-encodes it (docs/02 §2.14).
+ * The capture date read out of a picture before the browser re-encodes it (docs/dev/02 §2.14).
  * Three files were written by real tools (ImageMagick + exiftool): a camera-like JPEG in
  * Motorola byte order with a JFIF segment ahead of its EXIF, one in Intel order carrying only
  * the digitised date, and one with no EXIF at all. The edge cases are built byte by byte.

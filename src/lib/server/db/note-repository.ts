@@ -12,7 +12,7 @@ import type * as schema from './schema';
 import { activityLog, contact, note, noteMention, user } from './schema';
 
 /*
- * Drizzle adapter for the NoteRepository port (docs/08 §8.3). Reads join the parent contact
+ * Drizzle adapter for the NoteRepository port (docs/dev/08 §8.3). Reads join the parent contact
  * and are scoped through the central `childRecordVisibleTo` so a private note — or any note
  * on a private contact — is only returned to those allowed to see it.
  */

@@ -8,13 +8,13 @@ import { orNull } from './text';
 
 /*
  * The Monica contacts that were not deleted there, with the tags on them and their photos
- * (docs/02 §2.16, docs/monica-mapping.md).
+ * (docs/dev/02 §2.16, docs/user/monica-mapping.md).
  */
 
 /** Monica's gender codes → Stella's gender. "Prefer not to say" stays empty. */
 const GENDER: Record<string, Gender> = { M: 'male', F: 'female' };
 
-/** A Monica special date → Stella's stored value plus precision (docs/03 §3.4). */
+/** A Monica special date → Stella's stored value plus precision (docs/dev/03 §3.4). */
 function birthDateOf(date: MonicaSpecialDate | undefined): {
 	birthDate: string | null;
 	birthDatePrecision: BirthDatePrecision;

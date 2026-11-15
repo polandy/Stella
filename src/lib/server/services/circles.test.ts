@@ -22,7 +22,7 @@ import { createServices } from './app-services';
 import { createCircleServices, type CircleWiring } from './circles';
 
 /*
- * The circles group of the composition root (docs/08 §8.3), built over a real in-memory
+ * The circles group of the composition root (docs/dev/08 §8.3), built over a real in-memory
  * SQLite: what the edge gets from `locals.services.circles` must work end to end, and each
  * repository must exist once, so what one use-case writes the next one reads.
  */

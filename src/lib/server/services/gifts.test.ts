@@ -17,7 +17,7 @@ import type { AuthConfig } from './auth';
 import { createGiftServices, type GiftWiring } from './gifts';
 
 /*
- * The gifts group of the composition root (docs/08 §8.3), built over a real in-memory SQLite:
+ * The gifts group of the composition root (docs/dev/08 §8.3), built over a real in-memory SQLite:
  * what the edge gets from `locals.services.gifts` must work end to end — a gift noted through
  * the group shows on its person, and once given it is in their story, read from the same row.
  */

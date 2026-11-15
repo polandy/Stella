@@ -1,5 +1,5 @@
 /*
- * A `<dialog>` that opens and shuts with a prop (docs/05 §5.7). The component's effect says
+ * A `<dialog>` that opens and shuts with a prop (docs/dev/05 §5.7). The component's effect says
  * *whether* it should be open; this tells the element only what changed, because `showModal()`
  * on an open dialog throws, and runs the opener's fresh start once per opening.
  *

@@ -3,10 +3,10 @@ import { appReady, recordAction, showPrivate, signIn } from './app';
 import { LINK, personIdOf, seedHousehold } from './seed';
 
 /*
- * A person's brief (docs/02 §2.2.5): what to know before a visit, read from the person's ⋯
+ * A person's brief (docs/dev/02 §2.2.5): what to know before a visit, read from the person's ⋯
  * menu or *Brief for …* in the palette. Its blocks stand in their order, a row leads to where
  * it is edited, and a private note stays veiled. Written after the owner tried the page in the
- * running app (docs/08 §8.4.1); print and offline stay owner hand checks.
+ * running app (docs/dev/08 §8.4.1); print and offline stay owner hand checks.
  *
  * The suite shares one database, so every case seeds a family of its own, named with letters no
  * other attempt shares. Ages and the coming birthday hang on the server's today, so the spec

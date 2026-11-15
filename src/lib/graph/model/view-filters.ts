@@ -1,7 +1,7 @@
 import type { GraphFilters } from './types';
 
 /*
- * The kinds of line the Filter menu switches (docs/05 §5.8), and what the switched-on ones
+ * The kinds of line the Filter menu switches (docs/dev/05 §5.8), and what the switched-on ones
  * ask of `applyFilters`. The menu draws each in its colour and line style; this decides which
  * lines a set of switches keeps, so it tests without the menu.
  */
@@ -21,7 +21,7 @@ export type FilterKey = (typeof FILTER_KEYS)[number];
 /*
  * Circles are people's shared contexts, not people: on the route they belong in the picture,
  * on a person's card they double the node count for something the profile already lists.
- * The chip is there either way, so switching them on is one click (docs/05 §5.5).
+ * The chip is there either way, so switching them on is one click (docs/dev/05 §5.5).
  */
 export function openingFilterKeys(compact: boolean): ReadonlySet<string> {
 	return new Set(FILTER_KEYS.filter((key) => !(compact && key === 'circles')));
@@ -29,7 +29,7 @@ export function openingFilterKeys(compact: boolean): ReadonlySet<string> {
 
 /**
  * What `applyFilters` keeps for the kinds switched on in `active`, never dropping the centre.
- * Former links are shown unless their switch is off (docs/02 §2.7).
+ * Former links are shown unless their switch is off (docs/dev/02 §2.7).
  */
 export function graphFiltersFor(
 	active: ReadonlySet<string>,

@@ -3,7 +3,7 @@ import type { Endpoints } from '../../../relationships/endpoints';
 import { linkAfterMerge } from './merge-links';
 
 /*
- * Where a link of the record merged away lands (docs/02 §2.2, docs/03 §relationship): in the
+ * Where a link of the record merged away lands (docs/dev/02 §2.2, docs/dev/03 §relationship): in the
  * survivor's stored order, so the unique index and the duplicate check see it from either end.
  * The adapter runs these rules in the merge's transaction; the SQL is covered there.
  */

@@ -3,7 +3,7 @@ import { rolesTowards } from './tree-roles';
 import type { GraphEdge, GraphModel, GraphNode } from './types';
 
 /*
- * Who everybody on the family tree is to the person it is centred on (docs/05 §5.8): written
+ * Who everybody on the family tree is to the person it is centred on (docs/dev/05 §5.8): written
  * under each name instead of a name on every line. Read off the links the map already carries —
  * an entered tie from its far end, a worked-out relative by the kinship engine's term.
  */

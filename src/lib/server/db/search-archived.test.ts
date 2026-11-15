@@ -10,7 +10,7 @@ import { ensureSearchIndex } from './search-index';
 import { createDrizzleSearchRepository } from './search-repository';
 
 /*
- * Archiving takes a person out of the search (docs/02 §2.2) — and with them every record about
+ * Archiving takes a person out of the search (docs/dev/02 §2.2) — and with them every record about
  * them: a note, moment, gift or to-do of an archived person must not bring them back into the
  * results. Each case keeps a positive control: the same word on a person still in the book is
  * found.

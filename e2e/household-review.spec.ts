@@ -4,8 +4,8 @@ import { openPerson, signIn } from './app';
 import { LINK, seedHousehold } from './seed';
 
 /*
- * The household-wide relationship review (docs/02 §2.4.1), folded for scale (docs/04 ADR-010).
- * Written after the flow was verified in the running app (docs/08 §8.4.1).
+ * The household-wide relationship review (docs/dev/02 §2.4.1), folded for scale (docs/dev/04 ADR-010).
+ * Written after the flow was verified in the running app (docs/dev/08 §8.4.1).
  *
  * The screen answers about *everyone*, so this file never asserts a household total: the suite
  * shares one database, and other specs add people whose claims land in the same list. Since the
@@ -42,7 +42,7 @@ const claimOf = (f: Family) => `${f.parent} is a parent of ${f.other}`;
 
 /**
  * The sentence the rule gives for its claim: both facts it rests on, and every name in it a way
- * to that person (docs/02 §2.4.1). Naming only the sibling pair, as it once did, never mentioned
+ * to that person (docs/dev/02 §2.4.1). Naming only the sibling pair, as it once did, never mentioned
  * the person being offered — the one name the reader is asking about.
  */
 const reasonOf = (f: Family) =>
@@ -131,7 +131,7 @@ test('finds a claim from Settings that no member opened a profile for', async ({
 	/*
 	 * Filed under the person it is about — the child, whose parents were in question — and every
 	 * way their name appears leads to their page: the card's heading, the claim, and the reason
-	 * (docs/02 §2.4.1). All of them, not just the first, or a name could be text in one place and
+	 * (docs/dev/02 §2.4.1). All of them, not just the first, or a name could be text in one place and
 	 * a link in another.
 	 */
 	const card = page.locator('main section').filter({ hasText: claimOf(f) });
@@ -226,7 +226,7 @@ test('folds a person carrying more claims than a group renders, and names what i
 	page
 }) => {
 	/*
-	 * Fold 2 (docs/04 ADR-010). Seven parents on one sibling make seven claims about the other — the shape an import leaves behind. The screen renders
+	 * Fold 2 (docs/dev/04 ADR-010). Seven parents on one sibling make seven claims about the other — the shape an import leaves behind. The screen renders
 	 * five, says how many it is holding back and links to the rest. Nothing is dropped: the
 	 * number in the fold is what the rules actually found, minus what is on the page.
 	 */
@@ -263,8 +263,8 @@ test('folds a person carrying more claims than a group renders, and names what i
 
 test('keeps the declined log answerable at its own address', async ({ page }) => {
 	/*
-	 * Fold 3 (docs/04 ADR-010). Past ten answers the log leaves the drawer for its own page; that threshold is a unit case (`declinedFitsInline`), but the
-	 * page it moves to is a screen, and `docs/using-stella.md` promises a member can still offer
+	 * Fold 3 (docs/dev/04 ADR-010). Past ten answers the log leaves the drawer for its own page; that threshold is a unit case (`declinedFitsInline`), but the
+	 * page it moves to is a screen, and `docs/user/using-stella.md` promises a member can still offer
 	 * one again from there. Reached by its address rather than by declining eleven claims, so the
 	 * promise is checked without a minute of setup on every run.
 	 */

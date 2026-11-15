@@ -10,7 +10,7 @@ import { JournalSubjectNotAllowedError } from '../journal/subjects';
 import { contactRepositoryWith } from '../testing';
 
 /*
- * Moment capture (docs/02 §2.22.1). A moment is a journal entry anchored on the first person
+ * Moment capture (docs/dev/02 §2.22.1). A moment is a journal entry anchored on the first person
  * mentioned; other mentions become journal_mention links; queued names are created inline
  * before resolution. Fakes are in-memory ports; visibility scoping of reads is faked by the
  * same rule the adapters implement (household + shared-or-own).
@@ -181,7 +181,7 @@ describe('captureMoment', () => {
 		expect(f.entries[0].body).toBe(`@{contact:${julia.id}} is @{contact:marco}’s sister`);
 	});
 
-	it('refuses a bare first name an older build queued, saving nothing (docs/02 §2.2.3)', async () => {
+	it('refuses a bare first name an older build queued, saving nothing (docs/dev/02 §2.2.3)', async () => {
 		const f = fakes([{ id: 'marco', displayName: 'Marco' }]);
 		await expect(
 			captureMoment(f.deps, author, {
@@ -347,7 +347,7 @@ describe('captureMoment', () => {
 });
 
 /*
- * A moment written on a person's own page (docs/02 §2.22.1): it belongs to that person without
+ * A moment written on a person's own page (docs/dev/02 §2.22.1): it belongs to that person without
  * an `@`, and anyone it does name is a mention beside them.
  */
 describe('captureMoment with an anchor', () => {
@@ -415,7 +415,7 @@ describe('captureMoment with an anchor', () => {
 
 	it('lets a shared moment land on an anchor only its author can see, as the journal page does', async () => {
 		// The audience rule (§2.20.1) is for mentions; the anchor's own visibility already bounds
-		// who can read an entry in their journal (docs/03 §3.7).
+		// who can read an entry in their journal (docs/dev/03 §3.7).
 		const f = fakes([
 			...people,
 			{ id: 'mine', displayName: 'Mine Only', visibility: 'private', createdBy: author.userId }
@@ -443,7 +443,7 @@ describe('captureMoment with an anchor', () => {
 });
 
 /*
- * A moment about several people (docs/02 §2.20.3): the composer's chips are its further
+ * A moment about several people (docs/dev/02 §2.20.3): the composer's chips are its further
  * subjects, beside the anchor; an `@` stays a mention.
  */
 describe('captureMoment with further subjects', () => {

@@ -14,7 +14,7 @@
 	import { refusedMergeOf, type PersonForm, type PersonPageData } from './types';
 
 	/*
-	 * The confirm step of the identity card's record-keeping actions (docs/02 §2.2). The ⋯ menu
+	 * The confirm step of the identity card's record-keeping actions (docs/dev/02 §2.2). The ⋯ menu
 	 * only names them; what each one does to the record is said here, once it was asked for,
 	 * beside the button that does it — never as standing prose on the page.
 	 */
@@ -42,7 +42,7 @@
 	const savedArchive = savedEnhance(removals, t('components.saved'), () => (panel = null));
 	/*
 	 * `?merge=<id>` arrives from *There is already a Lea Brunner — the same person?* after a
-	 * last name was given (docs/02 §2.2.4.4): the card opens this step with that
+	 * last name was given (docs/dev/02 §2.2.4.4): the card opens this step with that
 	 * person in it, and the merge still waits for the admin's own click. A refused merge comes
 	 * back with its pick the same way.
 	 */
@@ -92,7 +92,7 @@
 		data-testid="record-confirm"
 	>
 		{#if panel === 'archive'}
-			<!-- Archiving takes someone out of the lists, it does not undo them (docs/02 §2.2). -->
+			<!-- Archiving takes someone out of the lists, it does not undo them (docs/dev/02 §2.2). -->
 			<form
 				method="POST"
 				action={archived ? '?/restore' : '?/archive'}
@@ -116,7 +116,7 @@
 			<form method="POST" action="?/merge" class="flex flex-col gap-2">
 				<p class="text-sm text-fg">{t('contact.merge.explain', { name: c.displayName })}</p>
 				<!-- The label names the field only: wrapped around the picker, it would also
-				     take in the chips' remove buttons and the list (docs/05 §5.7). -->
+				     take in the chips' remove buttons and the list (docs/dev/05 §5.7). -->
 				<div class="flex flex-col gap-1">
 					<label for="merge-target" class="text-xs text-fg-muted">{t('contact.merge.who')}</label>
 					<PersonSearchSelect

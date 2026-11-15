@@ -4,7 +4,7 @@ import { InvalidImageError } from '../../media/journal-photos';
 import { attachImportedPhoto, type ImportedPhotoDeps } from './photos';
 
 /*
- * Imported photos (docs/02 §2.16): the bytes arrive browser-resized like every other upload,
+ * Imported photos (docs/dev/02 §2.16): the bytes arrive browser-resized like every other upload,
  * are validated the same way, stored once under the plan's stable photo id, and become the
  * contact's avatar when Monica used them as one. Attaching the same photo twice is a no-op.
  */

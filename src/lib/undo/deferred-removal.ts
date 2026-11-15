@@ -5,10 +5,10 @@ import type { Removal } from './pending-removals';
 import { ActionFailedError, submitAction, type ActionFetch } from './submit-action';
 
 /*
- * What a RemoveButton hands to the undo store (docs/02 §2.23): the item's key, what the toast
+ * What a RemoveButton hands to the undo store (docs/dev/02 §2.23): the item's key, what the toast
  * says, and the work to do once the window has closed. It lives here rather than inside the
  * component because it holds a rule of its own — which part of a removal is work the app
- * should say it is doing (docs/05 §5.7) — and a rule inside a `<script>` is a rule no unit
+ * should say it is doing (docs/dev/05 §5.7) — and a rule inside a `<script>` is a rule no unit
  * test can reach.
  */
 
@@ -40,7 +40,7 @@ export interface DeferredRemovalDeps {
 /**
  * Posts one held removal to its form action. A 404 means the item is already gone — another
  * tab or another member removed it first — so the goal is reached: it resolves, the screen is
- * reloaded, and the reader is not told something failed (docs/02 §2.23). Every other refusal
+ * reloaded, and the reader is not told something failed (docs/dev/02 §2.23). Every other refusal
  * rejects, and the undo store brings the row back.
  */
 export async function removeThroughAction(

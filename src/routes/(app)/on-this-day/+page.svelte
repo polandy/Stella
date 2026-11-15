@@ -16,7 +16,7 @@
 	import type { PageData } from './$types';
 
 	/*
-	 * Every memory of a day's date in earlier years (docs/02 §2.12.1), newest year first. The
+	 * Every memory of a day's date in earlier years (docs/dev/02 §2.12.1), newest year first. The
 	 * picker walks a day back or on, or jumps to any day up to today; Home's band leads here.
 	 * Immich's photos of the day join the cards once it answers, a year only Immich has its own.
 	 */

@@ -4,7 +4,7 @@ import { circleKindLabel } from './labels';
 
 /*
  * A circle's kind is a closed vocabulary in the domain but plain text in the database
- * (docs/02 §2.4.2), so it is translated by name with the stored value as the fallback.
+ * (docs/dev/02 §2.4.2), so it is translated by name with the stored value as the fallback.
  */
 
 describe('circleKindLabel', () => {

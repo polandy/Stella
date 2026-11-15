@@ -10,7 +10,7 @@ import { createDrizzleApiImportRepository } from './api-import-repository';
 import * as schema from './schema';
 
 /*
- * Integration spec for changing circles through the import API (docs/02 §2.16.1): the details
+ * Integration spec for changing circles through the import API (docs/dev/02 §2.16.1): the details
  * and the household's nesting are read with the member's scope — the nesting whole, for the
  * loop check alone — and a change is written once, scoped as the circle's edit form writes it.
  */

@@ -23,7 +23,7 @@ import type { AuthConfig } from './auth';
 import { createStoryServices, type StoryWiring } from './story';
 
 /*
- * The story group of the composition root (docs/08 §8.3), built over a real in-memory SQLite:
+ * The story group of the composition root (docs/dev/08 §8.3), built over a real in-memory SQLite:
  * what the edge gets from `locals.services.story` must work end to end, and the journal and
  * interaction repositories must each exist once, so what capturing a moment or logging a
  * touchpoint writes, the story timeline reads.

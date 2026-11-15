@@ -3,14 +3,14 @@ import { monthDayOf, now, type Visibility } from './columns';
 import { household, user } from './household';
 import { contact } from './people';
 
-/* What makes up a person's story: journal entries, touchpoints, gifts and to-dos (docs/03 §3.0). */
+/* What makes up a person's story: journal entries, touchpoints, gifts and to-dos (docs/dev/03 §3.0). */
 
 /*
- * A per-person diary (docs/02 §2.20). Each entry belongs to a contact, is authored by a
+ * A per-person diary (docs/dev/02 §2.20). Each entry belongs to a contact, is authored by a
  * household member, and is *about* a specific day (`entry_date`, an ISO YYYY-MM-DD string,
  * distinct from the created_at timestamp). Body is Markdown. Visibility follows the child-record
  * rule (private ⇒ only the author). `contact_id` is the anchor; further people it is about sit in
- * `journal_subject` (docs/02 §2.20.3). One entry per (people, author, day, visibility) slot, the
+ * `journal_subject` (docs/dev/02 §2.20.3). One entry per (people, author, day, visibility) slot, the
  * people being `subject_key` — the sorted subject ids, kept by the repository.
  */
 export const journalEntry = sqliteTable(
@@ -33,16 +33,16 @@ export const journalEntry = sqliteTable(
 		updatedAt: integer('updated_at').notNull().default(now)
 	},
 	(t) => [
-		// In the story's order, so a page of it is read rather than sorted (docs/02 §2.23).
+		// In the story's order, so a page of it is read rather than sorted (docs/dev/02 §2.23).
 		index('journal_contact_day_idx').on(t.contactId, t.entryDate, t.createdAt),
 		index('journal_updated_idx').on(t.updatedAt),
-		// The entries of a day and month in every year, for *On this day* (docs/02 §2.12.1).
+		// The entries of a day and month in every year, for *On this day* (docs/dev/02 §2.12.1).
 		index('journal_month_day_idx').on(t.entryMonthDay),
 		unique('journal_day_slot').on(t.subjectKey, t.createdBy, t.entryDate, t.visibility)
 	]
 );
 
-/* The further people a journal entry is about, beside its anchor (docs/02 §2.20.3, docs/03). */
+/* The further people a journal entry is about, beside its anchor (docs/dev/02 §2.20.3, docs/dev/03). */
 export const journalSubject = sqliteTable(
 	'journal_subject',
 	{
@@ -60,7 +60,7 @@ export const journalSubject = sqliteTable(
 );
 
 /*
- * A tag written into journal entries as `#word` (docs/02 §2.20.2) — the household's own set,
+ * A tag written into journal entries as `#word` (docs/dev/02 §2.20.2) — the household's own set,
  * apart from the people tags. `key` is the name with case and composition folded, so `#Lake`
  * and `#lake` are one tag; `name` keeps the spelling it was first written in. No colour is
  * stored: it is derived from the key. Read from the entry bodies, never edited on its own; a
@@ -98,7 +98,7 @@ export const journalEntryTag = sqliteTable(
 );
 
 /*
- * A person referenced from a journal entry via an @-mention (docs/02 §2.20.1). Denormalises the
+ * A person referenced from a journal entry via an @-mention (docs/dev/02 §2.20.1). Denormalises the
  * mention for the reverse "Mentioned in" lookup on the referenced contact; the source person and
  * author are read from the parent entry. Rebuilt from the entry body on each save; cascades away
  * with the entry or the contact. Self-references are not stored.
@@ -139,11 +139,11 @@ export const interaction = sqliteTable(
 		updatedAt: integer('updated_at').notNull().default(now)
 	},
 	(t) => [
-		// A person's touchpoints in story order, and the day of their last one (docs/04 §4.8).
+		// A person's touchpoints in story order, and the day of their last one (docs/dev/04 §4.8).
 		index('interaction_contact_happened_idx').on(t.contactId, t.happenedAt, t.createdAt),
 		// The newest touchpoints first, for the Home stream.
 		index('interaction_created_idx').on(t.createdAt),
-		// The touchpoints of a day and month in every year, for *On this day* (docs/02 §2.12.1).
+		// The touchpoints of a day and month in every year, for *On this day* (docs/dev/02 §2.12.1).
 		index('interaction_month_day_idx').on(t.happenedMonthDay)
 	]
 );
@@ -165,7 +165,7 @@ export const interactionParticipant = sqliteTable(
 );
 
 /*
- * A present for one person (docs/02 §2.25): an idea, a gift the household gave, or one it
+ * A present for one person (docs/dev/02 §2.25): an idea, a gift the household gave, or one it
  * received. An idea and the gift it became are one row — *Mark as given* sets `state` and the
  * day. Visibility follows the child-record rule (private ⇒ only the author).
  */
@@ -198,7 +198,7 @@ export const gift = sqliteTable(
 );
 
 /*
- * Something the household still owes one person (docs/02 §2.26): a line, maybe a day it is due
+ * Something the household still owes one person (docs/dev/02 §2.26): a line, maybe a day it is due
  * by, open until somebody ticks it — then `done_at`, `done_on` and `done_by` say when, on which
  * day and who. Visibility follows the child-record rule (private ⇒ only the author).
  */

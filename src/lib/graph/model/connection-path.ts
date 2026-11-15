@@ -1,7 +1,7 @@
 import type { ConnectionPath, GraphDataSource, GraphEdge, GraphNode } from './types';
 
 /*
- * findConnectionPath (docs/02 §2.7): the shortest chain linking two people through
+ * findConnectionPath (docs/dev/02 §2.7): the shortest chain linking two people through
  * relationships and circle co-membership — "how do we know each other?". Breadth-first over
  * the GraphDataSource port (so the first path found is a shortest one), returning exactly the
  * ordered nodes and connecting edges of that chain. Bounded by `maxDepth` for large graphs.

@@ -17,7 +17,7 @@ import { eq } from 'drizzle-orm';
 /*
  * Integration spec for the circles' read models: the overview with its member counts and
  * faces, and the memberships the circle page and a person's page list. A membership is visible
- * only when its circle AND its contact are (docs/03 §3.7). Written through the repository's
+ * only when its circle AND its contact are (docs/dev/03 §3.7). Written through the repository's
  * use-cases, so the rows are the ones the app writes.
  */
 

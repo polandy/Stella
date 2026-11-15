@@ -17,7 +17,7 @@ import {
 import type { RelationshipType } from './relationships';
 
 /*
- * A household names its own kind of link (docs/02 §2.4). The rules that matter: a machine
+ * A household names its own kind of link (docs/dev/02 §2.4). The rules that matter: a machine
  * key is derived rather than typed, it may never be one the kinship engine reasons about,
  * the built-in set is read-only, and a type still in use is not deleted out from under the
  * relationships that point at it.

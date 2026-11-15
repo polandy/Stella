@@ -4,7 +4,7 @@ import type { KnownField } from './plan';
 import { context, doc, NOW, planned, SOURCE } from './plan.fixture';
 
 /*
- * Completing someone already in Stella (docs/02 §2.16.1): a class list names a child the
+ * Completing someone already in Stella (docs/dev/02 §2.16.1): a class list names a child the
  * household has, with an address it lacks. The document may hand that person fields; the
  * planner adds what is missing and never touches what is there.
  */

@@ -1,7 +1,7 @@
 import type { Role } from '../accounts';
 
 /*
- * Sign-in authorization gate and group→role mapping (docs/02 §2.1.2). Pure functions —
+ * Sign-in authorization gate and group→role mapping (docs/dev/02 §2.1.2). Pure functions —
  * the only place that decides who may enter via SSO and with what role.
  */
 

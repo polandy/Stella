@@ -5,7 +5,7 @@
 	import { useTranslate } from '$lib/i18n/context.svelte';
 
 	/*
-	 * Removing a member (docs/02 §2.1): what the removal ends and what it keeps. Focus starts on
+	 * Removing a member (docs/dev/02 §2.1): what the removal ends and what it keeps. Focus starts on
 	 * *Keep*, so a second Enter removes nobody.
 	 */
 	interface Preview {

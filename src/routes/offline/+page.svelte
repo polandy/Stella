@@ -5,7 +5,7 @@
 
 	/*
 	 * The page the service worker falls back to when a request can be answered neither by the
-	 * network nor from the cache (docs/02 §2.18).
+	 * network nor from the cache (docs/dev/02 §2.18).
 	 *
 	 * It sits outside both route groups and loads nothing: it is fetched and cached while the
 	 * connection still works, and shown much later, so anything it read then would be stale by

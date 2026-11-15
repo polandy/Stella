@@ -2,7 +2,7 @@ import { browser } from '$app/environment';
 import { ASK_REACHABILITY, checkMessage, isReachabilityReport } from './reachability';
 
 /*
- * Whether Stella answers, as one rune the whole page reads (docs/02 §2.18). The offline line,
+ * Whether Stella answers, as one rune the whole page reads (docs/dev/02 §2.18). The offline line,
  * the composer's *Save for later* and the outbox all follow the same report, so they never
  * disagree about where things stand. An adapter: the protocol is `reachability.ts`.
  *
@@ -25,7 +25,7 @@ if (browser && 'serviceWorker' in navigator) {
 	void worker.ready.then(() => worker.controller?.postMessage(ASK_REACHABILITY));
 
 	// The worker only notices on a request, and a page left open makes none: these are the
-	// moments the answer may have changed under it. Events, not a timer (docs/04 §4.9).
+	// moments the answer may have changed under it. Events, not a timer (docs/dev/04 §4.9).
 	const check = () => worker.controller?.postMessage(checkMessage(navigator.onLine));
 	window.addEventListener('offline', check);
 	window.addEventListener('online', check);

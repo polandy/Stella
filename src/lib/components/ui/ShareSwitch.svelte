@@ -3,7 +3,7 @@
 	import { useI18n } from '$lib/i18n/context.svelte';
 
 	/*
-	 * Shared or private, as a switch, because it is one (docs/05 §5.7): a checkbox in the switch
+	 * Shared or private, as a switch, because it is one (docs/dev/05 §5.7): a checkbox in the switch
 	 * role whose name stays put — "Share with household", on or off — so a screen reader hears one
 	 * control changing state rather than a label that swaps under it. The visible word is the
 	 * state with its icon, for the eye. On a touch screen the whole pill is a finger's height

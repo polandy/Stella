@@ -2,7 +2,7 @@ import { describe, expect, it } from 'bun:test';
 import { allowedForAudience } from './audience';
 
 /*
- * The one rule behind both the @-picker and the save-time resolver (docs/02 §2.20.1): a shared
+ * The one rule behind both the @-picker and the save-time resolver (docs/dev/02 §2.20.1): a shared
  * text may only name people the whole household can see.
  */
 

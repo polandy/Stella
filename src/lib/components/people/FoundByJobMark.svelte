@@ -3,7 +3,7 @@
 
 	/*
 	 * A small *Job* tag after a name, when a search found the person by their job title or
-	 * company and by nothing else on the row (`foundByJob`, docs/02 §2.9). Nothing otherwise.
+	 * company and by nothing else on the row (`foundByJob`, docs/dev/02 §2.9). Nothing otherwise.
 	 */
 	let { found }: { found: boolean } = $props();
 	const t = useTranslate();

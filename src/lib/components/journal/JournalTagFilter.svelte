@@ -5,7 +5,7 @@
 	import { useI18n } from '$lib/i18n/context.svelte';
 
 	/*
-	 * The journal filtered by tags (docs/02 §2.20.2, docs/design/screens/person.md). Each chip is
+	 * The journal filtered by tags (docs/dev/02 §2.20.2, docs/dev/design/screens/person.md). Each chip is
 	 * a link that adds its tag to `?tag=` or takes it off — an entry must carry every chosen tag — so the filter is an address: it survives a reload, can be shared within
 	 * the household, and Back undoes it. No row while nothing on this journal is tagged.
 	 */

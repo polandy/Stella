@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'bun:test';
 import { foldedLinkDetails } from './fold';
 
-/* Where two rows are one link, what the kept row takes from the copy (docs/03 §relationship). */
+/* Where two rows are one link, what the kept row takes from the copy (docs/dev/03 §relationship). */
 
 describe('the details a folded link gives the kept one', () => {
 	it('fills the kept row’s blank description and since date from the copy', () => {

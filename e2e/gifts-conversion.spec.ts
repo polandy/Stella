@@ -3,9 +3,9 @@ import { tarEntry, tarTrailer } from '../src/lib/archive/tar';
 import { appReady, signIn } from './app';
 
 /*
- * Gifts from before the gift record (docs/02 §2.25.4): Monica gift notes and touchpoints of the
+ * Gifts from before the gift record (docs/dev/02 §2.25.4): Monica gift notes and touchpoints of the
  * former kind *gift* become gift records, and *Log contact* no longer offers *Gift*. Written
- * after the owner tried the conversion in the app (docs/08 §8.4.1).
+ * after the owner tried the conversion in the app (docs/dev/08 §8.4.1).
  *
  * The e2e database starts from today's seed, which holds no such rows; the way to put them in
  * front of the running app is the one an operator has too — restoring an archive from before,

@@ -1,4 +1,4 @@
-/* The app shell: sidebar, breadcrumbs, top bar and the phone's tab bar (docs/05 §5.5). */
+/* The app shell: sidebar, breadcrumbs, top bar and the phone's tab bar (docs/dev/05 §5.5). */
 
 export const nav = {
 	'nav.home': 'Home',

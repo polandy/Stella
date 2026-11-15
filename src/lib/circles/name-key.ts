@@ -1,5 +1,5 @@
 /*
- * Which typed circle name means which circle (docs/02 §2.4.2). Joining a circle is one
+ * Which typed circle name means which circle (docs/dev/02 §2.4.2). Joining a circle is one
  * free-text field, so the same question is asked in three places — the repository's lookup,
  * the role suggestions keyed by name, and the field offering them as you type. This is the
  * one spelling of the rule the TypeScript sides share; the repository asks it in SQL

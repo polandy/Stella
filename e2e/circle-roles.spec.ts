@@ -2,8 +2,8 @@ import { expect, test, type Locator, type Page } from '@playwright/test';
 import { addPerson, appReady, factEditor, pickPerson, signIn } from './app';
 
 /*
- * The roles a circle already uses are offered to whoever joins it next (docs/02 §2.4.2).
- * Written after the screens were seen in the running app (docs/08 §8.4.1). Every case builds
+ * The roles a circle already uses are offered to whoever joins it next (docs/dev/02 §2.4.2).
+ * Written after the screens were seen in the running app (docs/dev/08 §8.4.1). Every case builds
  * its own circles out of people it invents, so none of it reads back another case's data or
  * disturbs the demo household the other specs measure.
  */

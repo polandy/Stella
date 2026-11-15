@@ -5,7 +5,7 @@ import { readApiImportDocument } from '$lib/server/import/api-document';
 import type { RequestHandler } from './$types';
 
 /*
- * `POST /api/v1/import` (docs/02 §2.16.1): people, their contact details, the links between
+ * `POST /api/v1/import` (docs/dev/02 §2.16.1): people, their contact details, the links between
  * them and the circles they belong to, in one JSON document, as the member whose token signs
  * the request. `?dryRun=true` answers with exactly what would be written and writes nothing.
  *

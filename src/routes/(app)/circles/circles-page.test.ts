@@ -12,7 +12,7 @@ import { actions } from './+page.server';
 import { actions as circlePageActions } from './[id]/+page.server';
 
 /*
- * Making a circle from a screen (docs/02 §2.4.2) as the edge answers it: the list's *New circle*
+ * Making a circle from a screen (docs/dev/02 §2.4.2) as the edge answers it: the list's *New circle*
  * and the sub-circles card's *New sub-circle*, each with an optional *Belongs to*. The checks are
  * `createCircle`'s; the ports here only answer as the case needs.
  */

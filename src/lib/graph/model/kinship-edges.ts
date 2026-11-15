@@ -2,7 +2,7 @@ import { deriveKinshipForAll, type KinshipGraph, type KinTerm } from '../../kins
 import type { GraphEdge } from './types';
 
 /*
- * Turns inferred kinship into graph edges (docs/02 §2.7, §2.4.1).
+ * Turns inferred kinship into graph edges (docs/dev/02 §2.7, §2.4.1).
  *
  * The person page names derived relatives one subject at a time; the explorer needs the same
  * knowledge as lines. So every person is asked once and the answers are folded into one edge

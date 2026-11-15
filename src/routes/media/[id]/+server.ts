@@ -3,7 +3,7 @@ import type { RequestHandler } from './$types';
 import { say } from '$lib/server/i18n/say';
 
 /*
- * Authenticated media delivery (docs/04 §4.6). Media is never exposed as static files; every
+ * Authenticated media delivery (docs/dev/04 §4.6). Media is never exposed as static files; every
  * request re-checks visibility through `PhotoFileReads` (contact visible + photo shared-or-
  * owned, §3.7) so private media can't leak. `?thumb` serves the small variant, `?view`
  * a group photo's 1600 px view. Files are

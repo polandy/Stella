@@ -5,7 +5,7 @@ import type { OidcProvider, TokenExchange } from './login';
 import type { OidcClaims } from './types';
 
 /*
- * OIDC provider adapter (docs/04 §4.4) — the HTTP/crypto edge of the relying party. Uses
+ * OIDC provider adapter (docs/dev/04 §4.4) — the HTTP/crypto edge of the relying party. Uses
  * the discovery document, exchanges the code at the token endpoint (client_secret_post),
  * and verifies the ID token's signature and standard claims via the provider's JWKS.
  * Confined here so the orchestration logic stays pure and testable.

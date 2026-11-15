@@ -13,7 +13,7 @@ import type { ImmichLinkRepository, LinkVisibleContacts } from './links';
 import type { ImmichCompanion, ImmichMediaSigner, SignedImmichMedia } from './signed-media';
 
 /*
- * A glimpse of a linked person's photos (docs/02 §2.24.3, §2.24.4): their photos on the
+ * A glimpse of a linked person's photos (docs/dev/02 §2.24.3, §2.24.4): their photos on the
  * Photos card, and what the proxy serves for each picture in it. Every image URL handed out is
  * signed, and only after the access layer let the viewer see the contact; the proxy checks the
  * signature, the viewer and the link again on every request, so a token outlives none of them.
@@ -44,7 +44,7 @@ interface GlimpseSource {
  * read photos reads as "Immich didn't answer", as everywhere on the person page; Settings names
  * the scope it lacks.
  *
- * With `with`, only the photos both people are in (docs/02 §2.24.8, *You and Julia*): the
+ * With `with`, only the photos both people are in (docs/dev/02 §2.24.8, *You and Julia*): the
  * other person must be someone else the viewer sees and who is linked too, or there is no
  * strip, and Immich is not asked. Which pairs the page offers is the page's choice; what is
  * checked here is only what the viewer could already see of each of them.
@@ -132,7 +132,7 @@ async function glimpseSource(
 }
 
 /**
- * Of `candidates`, the people the page may offer photos together with (docs/02 §2.24.8): those the
+ * Of `candidates`, the people the page may offer photos together with (docs/dev/02 §2.24.8): those the
  * viewer sees who are linked too, in the order given — and nobody when the page's own person is
  * not linked. Immich is asked nothing; the page offers, the strip's own request checks again.
  */
@@ -153,7 +153,7 @@ export async function readTogetherOffers(
 
 /**
  * The signed URL of a face the picker offers while linking `contactId`. Faces go through the
- * same proxy as photos (docs/04 ADR-097): the picker's route has checked the viewer may see the
+ * same proxy as photos (docs/dev/04 ADR-097): the picker's route has checked the viewer may see the
  * contact, and the proxy checks it again.
  */
 export async function faceUrlFor(
@@ -165,7 +165,7 @@ export async function faceUrlFor(
 }
 
 /**
- * The signed URL of a face on *New from Immich* (docs/02 §2.24.7): someone Immich names whom
+ * The signed URL of a face on *New from Immich* (docs/dev/02 §2.24.7): someone Immich names whom
  * no contact holds. There is no contact to sign for, so it is signed for the viewer's household;
  * the proxy serves it only to a member of that household, and only while nobody holds the face.
  */
@@ -230,7 +230,7 @@ export async function admitImmichMedia(
 	if (!verified.ok) return { ok: false, refusal: verified.reason };
 	const { media } = verified;
 
-	// Any member browses the whole library (docs/02 §2.24.9, docs/04 ADR-129): the household is
+	// Any member browses the whole library (docs/dev/02 §2.24.9, docs/dev/04 ADR-129): the household is
 	// the only question.
 	if (media.kind === 'library')
 		return media.householdId === viewer.householdId
@@ -249,7 +249,7 @@ export async function admitImmichMedia(
 
 	const { together, heldBy } = media;
 	if (heldBy !== undefined) {
-		// Someone else's photo, for this person's page (docs/02 §2.24.2): it rests on the other
+		// Someone else's photo, for this person's page (docs/dev/02 §2.24.2): it rests on the other
 		// person's link alone, whether or not this person is linked.
 		if (!(await deps.contacts.findByIdVisibleTo(viewer, heldBy)))
 			return { ok: false, refusal: 'notVisible' };
@@ -263,7 +263,7 @@ export async function admitImmichMedia(
 	}
 	const link = await deps.links.findForContactVisibleTo(viewer, media.contactId);
 	if (link?.immichPersonId !== media.personId) return { ok: false, refusal: 'notLinked' };
-	// A photo of two people together is theirs only while both links hold (docs/02 §2.24.8).
+	// A photo of two people together is theirs only while both links hold (docs/dev/02 §2.24.8).
 	if (together) {
 		const otherLink = await deps.links.findForContactVisibleTo(viewer, together.contactId);
 		if (otherLink?.immichPersonId !== together.personId) return { ok: false, refusal: 'notLinked' };

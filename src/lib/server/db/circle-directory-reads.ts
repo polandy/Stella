@@ -17,7 +17,7 @@ import type * as schema from './schema';
 import { circle, circleMembership, contact } from './schema';
 
 /*
- * Drizzle adapter for the circles overview (docs/08 §8.3). A circle is scoped by
+ * Drizzle adapter for the circles overview (docs/dev/08 §8.3). A circle is scoped by
  * `circleColumnsVisibleTo`, a face by `membershipVisibleTo` (circle AND contact visible, §3.7).
  * Member counts only include members the viewer may see — the contact visibility lives in the
  * JOIN condition so a circle with only hidden members still lists (as 0).

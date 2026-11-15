@@ -14,11 +14,11 @@
 	import type { PageData } from './$types';
 
 	/*
-	 * *Settings → Data quality → Same address* (docs/02 §2.17).
+	 * *Settings → Data quality → Same address* (docs/dev/02 §2.17).
 	 * Nothing is read until *Check addresses*. Each finding is a card: the line, the home that
 	 * already has it if one does, everyone with it as an own line in their own spelling, and the
 	 * two answers. An answer leaves at once and is held for the undo window like the relationship
-	 * checks' (docs/02 §2.4.1); once sent the page reloads, so *Not the same* lands in its drawer.
+	 * checks' (docs/dev/02 §2.4.1); once sent the page reloads, so *Not the same* lands in its drawer.
 	 */
 	let { data }: { data: PageData } = $props();
 

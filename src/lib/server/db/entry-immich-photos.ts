@@ -12,9 +12,9 @@ import { journalAbout } from './journal-subjects';
 import { contact, journalEntry, journalImmichPhoto } from './schema';
 
 /*
- * Drizzle adapters for an entry's Immich references (docs/02 §2.20, docs/04 ADR-132): the
+ * Drizzle adapters for an entry's Immich references (docs/dev/02 §2.20, docs/dev/04 ADR-132): the
  * author edits their own; a reader sees those of the entries visible to them, scoped through the
- * central `childRecordVisibleTo` on the entry (docs/03 §3.7).
+ * central `childRecordVisibleTo` on the entry (docs/dev/03 §3.7).
  */
 type Db = BunSQLiteDatabase<typeof schema>;
 

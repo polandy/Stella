@@ -1,4 +1,4 @@
-/* One person's page: the profile beside their story (docs/02 §2.2, docs/05 §5.5). */
+/* One person's page: the profile beside their story (docs/dev/02 §2.2, docs/dev/05 §5.5). */
 
 export const contact = {
 	'contact.title': (p: { name: string }) => `${p.name} · Stella`,
@@ -6,7 +6,7 @@ export const contact = {
 	'contact.editDescription': 'Edit description',
 	'contact.descriptionPlaceholder': 'A line about them',
 	'contact.addDescription': 'Add a description',
-	// The parts the shown name is made of (docs/02 §2.2).
+	// The parts the shown name is made of (docs/dev/02 §2.2).
 	'contact.nameParts.firstName': 'First name',
 	'contact.nameParts.lastName': 'Last name',
 	'contact.nameParts.nickname': 'Nickname',
@@ -27,12 +27,12 @@ export const contact = {
 	'contact.openJournal': 'Open journal',
 	'contact.story.title': 'Activity',
 
-	// The cards of the main column, in the order the page stacks them (docs/05 §5.5).
+	// The cards of the main column, in the order the page stacks them (docs/dev/05 §5.5).
 	'contact.section.relationships': 'People',
 	'contact.section.notes': 'Notes',
 	'contact.section.photos': 'Photos',
 	'contact.section.mentions': 'Mentioned in',
-	// The identity card at the top of the page (docs/05 §5.5): its facts, its quiet button, its ⋯ menu.
+	// The identity card at the top of the page (docs/dev/05 §5.5): its facts, its quiet button, its ⋯ menu.
 	// The quiet button names what is behind it: "Add address, phone, email …".
 	'contact.identity.addThings': (p: { things: string }) => `Add ${p.things}`,
 	'contact.identity.missing.address': 'address',
@@ -58,7 +58,7 @@ export const contact = {
 	'contact.gender.hint':
 		'With female or male, relatives are named by gender, such as aunt or uncle; otherwise neutrally.',
 
-	// What they do and where (docs/02 §2.2): two free-text fields, one row, one short form.
+	// What they do and where (docs/dev/02 §2.2): two free-text fields, one row, one short form.
 	'contact.job': 'Job',
 	'contact.job.edit': 'Edit job',
 	'contact.job.title': 'Job title',
@@ -83,13 +83,13 @@ export const contact = {
 	'contact.fieldKind.date': 'Date',
 	'contact.fieldKind.custom': 'Custom',
 
-	// Where they live: a fact of the identity card, edited where it is read (docs/02 §2.2).
+	// Where they live: a fact of the identity card, edited where it is read (docs/dev/02 §2.2).
 	'contact.address.placeholder': 'Street, postcode, town',
 	'contact.address.remove': 'Remove address',
 	'contact.address.removed': 'Address removed',
 	'contact.address.another': 'Add another address',
 
-	// A home shared by everyone who lives there (docs/02 §2.2, *A shared home*).
+	// A home shared by everyone who lives there (docs/dev/02 §2.2, *A shared home*).
 	'contact.home.livesWith': (p: { names: string }) => `lives with ${p.names}`,
 	'contact.home.shared': (p: { count: number }) => `Shared · ${p.count} people`,
 	'contact.home.everyone': (p: { names: string }) => `Everyone here — ${p.names}`,
@@ -193,7 +193,7 @@ export const contact = {
 	'contact.relationships.remove': (p: { name: string }) => `Remove the link to ${p.name}`,
 	'contact.relationships.removed': 'Relationship removed',
 	/*
-	 * The People card as a compact list (docs/05 §5.5): grouped by the kind of tie, folded to a
+	 * The People card as a compact list (docs/dev/05 §5.5): grouped by the kind of tie, folded to a
 	 * handful, its corrections behind one *Edit* for the whole card.
 	 */
 	'contact.relationships.group.family': 'Family',
@@ -202,7 +202,7 @@ export const contact = {
 	'contact.relationships.group.other': 'Other',
 	'contact.relationships.showMore': (p: { count: number }) => `Show ${p.count} more`,
 	'contact.relationships.showFewer': 'Show fewer',
-	/** The fold's collapsed line (docs/05 §5.5): the groups it hides whole. */
+	/** The fold's collapsed line (docs/dev/05 §5.5): the groups it hides whole. */
 	'contact.relationships.foldedAway': 'Folded away',
 	'contact.relationships.showGroup': (p: { group: string; count: number }) =>
 		`Show ${p.group} · ${p.count}`,
@@ -212,7 +212,7 @@ export const contact = {
 	'contact.relationships.editModeDone': 'Done',
 	'contact.relationships.editLink': (p: { name: string }) => `Edit the link to ${p.name}`,
 	'contact.relationships.menu': 'More for these relationships',
-	// The person page's jump bar (docs/05 §5.5).
+	// The person page's jump bar (docs/dev/05 §5.5).
 	'contact.jumpBar.label': 'Parts of this page',
 	'contact.relationships.since': (p: { day: string }) => `since ${p.day}`,
 	'contact.relationships.howConnect': 'How they connect',
@@ -225,7 +225,7 @@ export const contact = {
 	'contact.relationships.person': 'Person',
 	'contact.relationships.addSomeoneFirst': 'Add another person first, then link them here.',
 	/*
-	 * Several people picked in the relationship form (docs/02 §2.4, *Several people in one
+	 * Several people picked in the relationship form (docs/dev/02 §2.4, *Several people in one
 	 * go*): how many the type takes, who is refused.
 	 */
 	'contact.relationships.parentsRoom': (p: { count: number }): string =>
@@ -257,14 +257,14 @@ export const contact = {
 	'contact.relationships.undoLinksFailed':
 		'Could not take the links back. They are still on the page.',
 	/*
-	 * The likely second parent, offered under the person field for "Child of" (docs/02 §2.4,
+	 * The likely second parent, offered under the person field for "Child of" (docs/dev/02 §2.4,
 	 * *Several people in one go*; rule L3, §2.4.1): one tap makes them a chip.
 	 */
 	'contact.relationships.secondParentAlso': 'Also',
 	'contact.relationships.secondParentAdd': (p: { name: string }) =>
 		`Add ${p.name} as the other parent`,
 	'contact.relationships.secondParentWhy': (p: { name: string }) => `${p.name}’s partner`,
-	// A new child or partner offered the address of the person whose page it is (docs/02 §2.4).
+	// A new child or partner offered the address of the person whose page it is (docs/dev/02 §2.4).
 	'contact.relationships.livesAt': (p: { line: string }) => `Lives at ${p.line}`,
 	'contact.relationships.livesAtWith': (p: { names: string }) => `with ${p.names}`,
 	'contact.relationships.livesAtFailed':
@@ -285,7 +285,7 @@ export const contact = {
 		`${p.one} and ${p.other} are siblings`,
 	'contact.relationships.addThisToo': 'Add this too',
 	/*
-	 * The undo window's wording (docs/02 §2.23). The toast says what was done rather than that
+	 * The undo window's wording (docs/dev/02 §2.23). The toast says what was done rather than that
 	 * something was done — several answers can be in flight at once, and "Saved" four times over
 	 * tells a member nothing about which one they are about to take back.
 	 */
@@ -298,7 +298,7 @@ export const contact = {
 	'contact.relationships.accept': 'Accept',
 	'contact.relationships.decline': 'Decline',
 	/*
-	 * The on-demand review (docs/02 §2.4.1) — the one place a
+	 * The on-demand review (docs/dev/02 §2.4.1) — the one place a
 	 * member can ask what follows from links entered long ago, rather than being told in the
 	 * instant after a write.
 	 */
@@ -318,7 +318,7 @@ export const contact = {
 		`declined on ${p.day} by ${p.who}`,
 	'contact.relationships.askAgain': 'Offer again',
 	'contact.relationships.derived': 'Also related · worked out, not entered',
-	/** Stores a worked-out relative as an entered link (docs/02 §2.4.1). */
+	/** Stores a worked-out relative as an entered link (docs/dev/02 §2.4.1). */
 	'contact.relationships.confirmKin': 'Confirm',
 	'contact.relationships.confirmKinLabel': (p: { name: string; term: string }) =>
 		`Enter ${p.name} as ${p.term}`,
@@ -360,7 +360,7 @@ export const contact = {
 	'contact.photos.takenOn': (p: { date: string }) => `Taken ${p.date}`,
 	'contact.photos.pin': 'Pin as favourite',
 	'contact.photos.unpin': 'Unpin favourite',
-	// Profile pictures cut from a group photo (docs/02 §2.14).
+	// Profile pictures cut from a group photo (docs/dev/02 §2.14).
 	'contact.photos.cutFrom': (p: { circle: string }) => `From ${p.circle}`,
 	'contact.photos.onGroupPhotos': 'On group photos',
 	'contact.photos.groupPhotoOf': (p: { circle: string }) => `Group photo of ${p.circle}`,

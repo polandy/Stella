@@ -1,5 +1,5 @@
 /*
- * The vCard wizard's review step (docs/02 §2.16): who each incoming contact is, answered
+ * The vCard wizard's review step (docs/dev/02 §2.16): who each incoming contact is, answered
  * before anything is written, and the skipped contacts that can be asked about again.
  */
 

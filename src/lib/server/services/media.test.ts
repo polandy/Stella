@@ -20,7 +20,7 @@ import type { AuthConfig } from './auth';
 import { createMediaServices, type MediaWiring } from './media';
 
 /*
- * The media group of the composition root (docs/08 §8.3), built over a real in-memory SQLite
+ * The media group of the composition root (docs/dev/08 §8.3), built over a real in-memory SQLite
  * and a throw-away media directory: what the edge gets from `locals.services.media` must work
  * end to end, and the photo repository and the store must each exist once, so what one
  * use-case writes the next one reads.

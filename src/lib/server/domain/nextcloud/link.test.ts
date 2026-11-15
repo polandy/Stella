@@ -6,7 +6,7 @@ import { createFakeAddressBook } from '../../nextcloud/fake-gateway';
 import { createNextcloudLink, FAILURE_RETRY_MS, SYNC_ON_OPEN_INTERVAL_MS } from './link';
 
 /*
- * The household's link to its Nextcloud book (docs/02 §2.16.3): synced by *Sync now* and on
+ * The household's link to its Nextcloud book (docs/dev/02 §2.16.3): synced by *Sync now* and on
  * opening Stella — the latter at most every few minutes, sooner again after a failure — never
  * twice at once, and always as the Nextcloud actor.
  */

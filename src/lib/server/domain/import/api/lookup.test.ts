@@ -3,7 +3,7 @@ import { inMemoryCircleDirectory, someCircle } from '../../testing';
 import { findCircles, findPeople } from './lookup';
 
 /*
- * The API's two lookups (docs/02 §2.16.1): how a script finds the ids it names as `existingId`.
+ * The API's two lookups (docs/dev/02 §2.16.1): how a script finds the ids it names as `existingId`.
  * Both read through repositories that already scope to the member, so only matching is tested.
  */
 

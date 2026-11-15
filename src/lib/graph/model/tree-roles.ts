@@ -3,7 +3,7 @@ import { otherEndRole, type RoleTerm } from '../../relationships/roles';
 import type { GraphEdge, GraphModel } from './types';
 
 /*
- * Who everybody on the family tree is to the person it is centred on (docs/05 §5.8): the tree
+ * Who everybody on the family tree is to the person it is centred on (docs/dev/05 §5.8): the tree
  * writes it under each name instead of naming every line. Pure: read off the links the snapshot
  * already carries. An entered tie is read from its far end, as the People card reads it; a
  * worked-out relative takes the kinship engine's term, turned round when the line was drawn from
@@ -14,7 +14,7 @@ import type { GraphEdge, GraphModel } from './types';
 export interface TreeRole {
 	term: RoleTerm;
 	variant: KinVariant;
-	/** The tie it is read from is marked former: "Wife · former" (docs/02 §2.7). */
+	/** The tie it is read from is marked former: "Wife · former" (docs/dev/02 §2.7). */
 	former?: true;
 }
 

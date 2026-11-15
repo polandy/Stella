@@ -41,11 +41,11 @@ import type { PageServerLoad } from './$types';
 export const load = (async ({ locals, params, url }) => {
 	const user = requireUser(locals);
 	const viewer = requireViewer(locals);
-	// Whether *Remove* shows on someone else's note turns on the role (docs/03 §3.7).
+	// Whether *Remove* shows on someone else's note turns on the role (docs/dev/03 §3.7).
 	const remover = requireRemover(locals);
 
 	/*
-	 * The page had tabs until its content became one column of cards (docs/05 §5.5). A
+	 * The page had tabs until its content became one column of cards (docs/dev/05 §5.5). A
 	 * bookmark or a history entry still carrying `?tab=` is answered with the card it meant,
 	 * rather than silently landing at the top of the page. After the sign-in check, so an
 	 * old link cannot bounce a signed-out reader anywhere but the login page.
@@ -63,7 +63,7 @@ export const load = (async ({ locals, params, url }) => {
 		reviewOpen,
 		proposeFor: parseProposePairs(proposeFor)
 	});
-	// Which Immich person they are, when this instance has Immich (docs/02 §2.24.2).
+	// Which Immich person they are, when this instance has Immich (docs/dev/02 §2.24.2).
 	const { immich } = locals.services;
 	const immichLinkDeps = immich?.immichLinkDeps;
 	const immichLink = immichLinkDeps
@@ -107,7 +107,7 @@ export const load = (async ({ locals, params, url }) => {
 	const ctx: PersonViewContext = {
 		viewerId: viewer.id,
 		// The visible graph holds everyone the viewer may see, archived people included, so a
-		// mention already written keeps its name (docs/02 §2.2) without a second read of them.
+		// mention already written keeps its name (docs/dev/02 §2.2) without a second read of them.
 		nameOf: nameLookup(named),
 		nameOfAuthor: read.nameOfAuthor
 	};
@@ -132,7 +132,7 @@ export const load = (async ({ locals, params, url }) => {
 		// A shown name a member chose does not follow its parts; the name editor says so (§2.2).
 		shownNameChosen: shownNameIsChosen(contact),
 		/*
-		 * Last names (docs/02 §2.2.4.5, §2.2.4.6): the proposal for this person, as
+		 * Last names (docs/dev/02 §2.2.4.5, §2.2.4.6): the proposal for this person, as
 		 * chips under the name, and whom a name given here is offered on to afterwards.
 		 */
 		lastNameHelp: {
@@ -143,7 +143,7 @@ export const load = (async ({ locals, params, url }) => {
 		...birthdayOf(contact, read.dates),
 		dates: read.dates,
 		fields: read.fields.map(fieldView),
-		// The addresses they share with others, and whom with (docs/02 §2.2).
+		// The addresses they share with others, and whom with (docs/dev/02 §2.2).
 		homes: read.homes,
 		tags: read.tags,
 		circles: read.contactCircles,
@@ -162,40 +162,40 @@ export const load = (async ({ locals, params, url }) => {
 				visibility: contact.visibility
 			})
 		),
-		// Ideas, given and received gifts (docs/02 §2.25), already visibility-scoped.
+		// Ideas, given and received gifts (docs/dev/02 §2.25), already visibility-scoped.
 		gifts: read.gifts.map((gift) => giftView(gift, ctx)),
-		// What is still to do for them (docs/02 §2.26): open ones, those with a day first.
+		// What is still to do for them (docs/dev/02 §2.26): open ones, those with a day first.
 		todos: orderOpenTodos(read.todos).map((todo) => todoView(todo, ctx)),
 		// The household's day, which the card's *overdue* and *by Fri, 6 Nov* are read against.
 		today: todayFor(systemClock),
 		mentionedIn: read.mentionedIn.map((reference) => mentionedInView(reference, ctx)),
-		// The person's photo gallery (docs/02 §2.14), favourites first, already visibility-scoped.
+		// The person's photo gallery (docs/dev/02 §2.14), favourites first, already visibility-scoped.
 		gallery: read.gallery.map((photo) => galleryPhotoView(photo, remover, person)),
 		/*
-		 * Immich (docs/02 §2.24.2): null when this instance has none, so the menu and
+		 * Immich (docs/dev/02 §2.24.2): null when this instance has none, so the menu and
 		 * the line never appear. What Immich says about a linked person is a promise on purpose —
 		 * the page is sent at once and the line fills itself in, so a slow or absent Immich never
-		 * holds the page up (docs/02 §2.24.3). `togetherWith` is whom the strip and the relationship
-		 * rows offer photos together with (docs/02 §2.24.8).
+		 * holds the page up (docs/dev/02 §2.24.3). `togetherWith` is whom the strip and the relationship
+		 * rows offer photos together with (docs/dev/02 §2.24.8).
 		 */
 		immich: immich ? { linked: immichLink !== null, togetherWith: immichTogether } : null,
 		immichPerson: immich && immichLink ? readLinkedPerson(immich, immichLink.immichPersonId) : null,
-		// Every group photo they were cut from, now and before (docs/02 §2.14).
+		// Every group photo they were cut from, now and before (docs/dev/02 §2.14).
 		groupPhotos: read.groupPhotos,
 		// Their circles' photos a profile picture can be cut from; none means choosing looks as before.
 		groupPhotosToCut: read.groupPhotosToCut,
 
 		// Who they belong with.
 		relationships: read.family.ties,
-		// How each of them is worded, so the card can say *daughter* rather than *Child* (docs/05 §5.5).
+		// How each of them is worded, so the card can say *daughter* rather than *Child* (docs/dev/05 §5.5).
 		tieWording: read.family.tieWording,
-		// Inferred, never stored (docs/02 §2.4.1); shown apart from the entered links.
+		// Inferred, never stored (docs/dev/02 §2.4.1); shown apart from the entered links.
 		derivedKin: read.family.kinship.derived,
 		// Links implied by the ones just added — one, or a whole batch — offered for a confirmation each.
 		proposals: withReasonsSaid(read.family.kinship.proposals, t),
 		proposeFor,
 		/*
-		 * The on-demand review (docs/02 §2.4.1): what stands
+		 * The on-demand review (docs/dev/02 §2.4.1): what stands
 		 * around this person right now, asked for rather than raised by a write. Closed, it
 		 * costs nothing — no rule runs until somebody presses the control.
 		 */
@@ -205,12 +205,12 @@ export const load = (async ({ locals, params, url }) => {
 			memberNames: declinedBy(read.family.reviewed, ctx.nameOfAuthor)
 		},
 		/*
-		 * What the household's own records already rule out (docs/02 §2.4), so the picker can
+		 * What the household's own records already rule out (docs/dev/02 §2.4), so the picker can
 		 * grey an entry out with the reason rather than let it be saved and refused. The rules
 		 * are the ones the use-case is guarded by, run over the same facts.
 		 */
 		exclusionFacts: read.family.exclusionFacts,
-		/** The person's own slice of the visible graph, for the map on their page (docs/05 §5.5). */
+		/** The person's own slice of the visible graph, for the map on their page (docs/dev/05 §5.5). */
 		graph: await personMap(read.family.graph, params.id),
 
 		// What the forms on the page offer.
@@ -230,7 +230,7 @@ export const load = (async ({ locals, params, url }) => {
 		tagColors: TAG_COLORS,
 
 		// Who is looking: the gallery only offers caption/remove on your own photos, and
-		// deleting a person for good is admin-only (docs/02 §2.2); archiving is for everyone.
+		// deleting a person for good is admin-only (docs/dev/02 §2.2); archiving is for everyone.
 		viewerId: viewer.id,
 		isAdmin: user.role === 'admin'
 	};

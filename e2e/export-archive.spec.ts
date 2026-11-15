@@ -3,8 +3,8 @@ import { readFile } from 'node:fs/promises';
 import { appReady, signIn } from './app';
 
 /*
- * Taking the household's data out (docs/02 §2.15). Written after the archive was unpacked and
- * read in the running app (docs/08 §8.4.1).
+ * Taking the household's data out (docs/dev/02 §2.15). Written after the archive was unpacked and
+ * read in the running app (docs/dev/08 §8.4.1).
  *
  * The cases read the downloaded bytes rather than trusting the response, because the promise
  * this feature makes is about what is *inside* the file: one readable document, the images

@@ -2,7 +2,7 @@ import { browser } from '$app/environment';
 import { installStateFrom, type InstallState } from './install-state';
 
 /*
- * Whether this device can be offered an install, and doing it (docs/02 §2.18).
+ * Whether this device can be offered an install, and doing it (docs/dev/02 §2.18).
  *
  * Chromium fires `beforeinstallprompt` once, early, and only when it considers the app
  * installable — long before anyone opens Settings. So the event is caught at module load and

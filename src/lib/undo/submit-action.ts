@@ -19,7 +19,7 @@ export const ACTION_HEADER = 'x-sveltekit-action';
 /**
  * Sends `body` to a form action the way the browser would have, minus the navigation.
  * `keepalive` lets the request finish after the page is left, which is when a deferred
- * removal is most often sent (docs/04 §4.9). Browsers refuse it for a body over 64 KB, so a
+ * removal is most often sent (docs/dev/04 §4.9). Browsers refuse it for a body over 64 KB, so a
  * request carrying a picture turns it off.
  */
 export async function submitAction(

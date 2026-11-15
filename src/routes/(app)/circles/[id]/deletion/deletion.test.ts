@@ -6,7 +6,7 @@ import { answerOf, routeEvent, type FakeServices } from '$lib/server/testing';
 import { GET } from './+server';
 
 /*
- * What deleting a circle would take (docs/02 §2.4.2), read only when its confirm step opens:
+ * What deleting a circle would take (docs/dev/02 §2.4.2), read only when its confirm step opens:
  * the counts as JSON, or 404 for a circle the viewer may not delete, cannot see, or that is
  * gone. `circleDeletionPreview` has its own suite; the port here answers as the case needs.
  */

@@ -3,11 +3,11 @@ import { hasMessage, type Translate } from '../i18n/translate';
 import type { KinTerm, KinVariant } from '../kinship/kinship';
 
 /*
- * Who somebody on a person's People card is *to that person* (docs/05 §5.5). A row is read
+ * Who somebody on a person's People card is *to that person* (docs/dev/05 §5.5). A row is read
  * from the page's side — "Parent of" Lena on her father's page — and the card names Lena by
  * what she is to him: his daughter. That is the type's other side, said as a noun, and
  * gendered where the other person's gender is on record, as the worked-out relatives are
- * (docs/02 §2.4.1).
+ * (docs/dev/02 §2.4.1).
  */
 
 /** The roles a stored tie names that the worked-out relatives do not. */

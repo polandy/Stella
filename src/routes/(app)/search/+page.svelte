@@ -33,12 +33,12 @@
 			data.results.moments.length
 	);
 
-	/** A moment opens on its own entry; found by a tag, in the journal filtered by it (docs/02 §2.20.2). */
+	/** A moment opens on its own entry; found by a tag, in the journal filtered by it (docs/dev/02 §2.20.2). */
 	function momentHref(contactId: string, entryId: string): string {
 		return journalEntryHref(contactId, entryId, data.results.tag ?? undefined);
 	}
 
-	/** A `#tag` query's moments head with the tag's own page (docs/02 §2.9). */
+	/** A `#tag` query's moments head with the tag's own page (docs/dev/02 §2.9). */
 	const tagHead = $derived(
 		searchTagHead(data.results.tag, data.entryTags, data.results.moments.length)
 	);
@@ -98,7 +98,7 @@
 							class="flex items-center gap-3 rounded-app px-3 py-2 transition-colors hover:bg-card hover:shadow-card"
 						>
 							<Avatar id={c.id} name={c.displayName} avatarPhotoId={c.avatarPhotoId} size={32} />
-							<!-- The job gets its own line under the name and description (docs/02 §2.9). -->
+							<!-- The job gets its own line under the name and description (docs/dev/02 §2.9). -->
 							<span class="flex min-w-0 flex-col">
 								<span class="flex min-w-0 items-center gap-1">
 									<span class="shrink-0 text-fg"
@@ -133,7 +133,7 @@
 								>
 								{#if n.visibility === 'private'}<PrivateMark class="text-xs" />{/if}
 							</span>
-							<!-- Search finds private words, it is the author's search; they stay blurred (docs/02 §2.10.1). -->
+							<!-- Search finds private words, it is the author's search; they stay blurred (docs/dev/02 §2.10.1). -->
 							<Veil
 								id="note:{n.noteId}"
 								isPrivate={n.visibility === 'private'}
@@ -150,7 +150,7 @@
 			{/if}
 
 			{#if data.results.gifts.length > 0}
-				<!-- A gift leads to the card it lives on, not just the person (docs/02 §2.25.5). -->
+				<!-- A gift leads to the card it lives on, not just the person (docs/dev/02 §2.25.5). -->
 				<section class="flex flex-col gap-1">
 					<h2 class="text-sm font-medium text-fg-muted">{t('search.gifts')}</h2>
 					{#each data.results.gifts as g (g.giftId)}
@@ -173,7 +173,7 @@
 
 			{#if data.results.todos.length > 0}
 				<!-- A to-do leads to the card it lives on; a done one is still found, marked done
-				     (docs/02 §2.9, §2.26.6). -->
+				     (docs/dev/02 §2.9, §2.26.6). -->
 				<section class="flex flex-col gap-1" data-testid="search-todos">
 					<h2 class="text-sm font-medium text-fg-muted">{t('search.todos')}</h2>
 					{#each data.results.todos as todo (todo.todoId)}

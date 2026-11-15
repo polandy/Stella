@@ -6,8 +6,8 @@ import type { TodoDeps } from '../domain/todos/todos';
 import type { IdGenerator } from '../id';
 
 /*
- * The `todos` bounded context of the composition root (docs/08 §8.3): what the household still
- * owes a person (docs/02 §2.26). Built once per process by `createServices`; the edge reads it
+ * The `todos` bounded context of the composition root (docs/dev/08 §8.3): what the household still
+ * owes a person (docs/dev/02 §2.26). Built once per process by `createServices`; the edge reads it
  * off `locals.services.todos`.
  */
 export interface TodoServices {

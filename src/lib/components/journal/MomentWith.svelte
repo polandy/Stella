@@ -6,7 +6,7 @@
 	import type { SubjectFace } from '$lib/story/subjects';
 
 	/*
-	 * *with Sandra, Lea and Tim* under a moment's kind line (docs/02 §2.20.3): the others it is
+	 * *with Sandra, Lea and Tim* under a moment's kind line (docs/dev/02 §2.20.3): the others it is
 	 * about, small faces and linked names. The names say who; the faces are decorative.
 	 */
 	let { others }: { others: readonly SubjectFace[] } = $props();

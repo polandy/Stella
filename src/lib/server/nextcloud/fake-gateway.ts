@@ -7,7 +7,7 @@ import {
 } from '../domain/nextcloud/address-book';
 
 /*
- * A Nextcloud address book that lives in memory (docs/02 §2.16.3): the sync's tests drive it,
+ * A Nextcloud address book that lives in memory (docs/dev/02 §2.16.3): the sync's tests drive it,
  * and the demo/e2e server wires it with `NEXTCLOUD_DEMO=true`, so linking can be tried without a
  * real Nextcloud. It answers the way the HTTP adapter does — a token is a revision, a write names
  * the etag it read — and `phone` stands for the household's phones, editing the book from aside.

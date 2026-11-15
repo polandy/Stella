@@ -6,7 +6,7 @@ import { JOB_FIELD_MAX_LENGTH, type Job } from '../../../people/job';
 import type { ContactDeps } from './contacts';
 
 /*
- * Edits to a contact's profile in place (docs/02 §2.2): description, gender and job. Each one
+ * Edits to a contact's profile in place (docs/dev/02 §2.2): description, gender and job. Each one
  * reads the contact through the viewer first, so a hidden one answers like a missing one.
  */
 
@@ -16,7 +16,7 @@ export const orNull = (value?: string | null): string | null => {
 	return trimmed.length > 0 ? trimmed : null;
 };
 
-/** Thrown when a gender is not one of the three Stella records (docs/02 §2.2). */
+/** Thrown when a gender is not one of the three Stella records (docs/dev/02 §2.2). */
 export class InvalidGenderError extends TranslatableError {
 	constructor() {
 		super(phrase('errors.contact.invalidGender'), 'InvalidGenderError');
@@ -37,7 +37,7 @@ export class EmptyContactNameError extends TranslatableError {
 	}
 }
 
-/** What the hero's description edit sends (docs/02 §2.2); the name has its own editor. */
+/** What the hero's description edit sends (docs/dev/02 §2.2); the name has its own editor. */
 export interface ProfileEdit {
 	description: string | null;
 }
@@ -46,7 +46,7 @@ export interface ProfileEdit {
  * Reword a contact's description, in place; the name is kept as stored — renaming goes through
  * `editNameParts`, so there is one way to do it. Returns false when the contact is not visible
  * to the viewer, so a route answers 404 the same way it does for a missing one — the visibility
- * check is the read, exactly as everywhere else (docs/03 §3.7).
+ * check is the read, exactly as everywhere else (docs/dev/03 §3.7).
  */
 export async function editProfile(
 	deps: Pick<ContactDeps, 'contacts' | 'clock'>,
@@ -65,7 +65,7 @@ export async function editProfile(
 }
 
 /**
- * Record a person's gender, or take it off the record with null (docs/02 §2.2). Returns false
+ * Record a person's gender, or take it off the record with null (docs/dev/02 §2.2). Returns false
  * when the contact is not visible to the viewer, like `editProfile`.
  */
 export async function setGender(
@@ -81,7 +81,7 @@ export async function setGender(
 	return deps.contacts.setGender(viewer, id, checked, deps.clock.now());
 }
 
-/** Thrown when a job title or company is longer than Stella keeps (docs/02 §2.2). */
+/** Thrown when a job title or company is longer than Stella keeps (docs/dev/02 §2.2). */
 export class JobFieldTooLongError extends TranslatableError {
 	constructor() {
 		super(
@@ -99,7 +99,7 @@ function checkedJobField(value: string | null): string | null {
 }
 
 /**
- * Record what a person does and where, from the profile card's one editor (docs/02 §2.2): both
+ * Record what a person does and where, from the profile card's one editor (docs/dev/02 §2.2): both
  * fields at once, each trimmed, an emptied one taken off the record. Returns false when the
  * contact is not visible to the viewer, like `editProfile`.
  */
@@ -127,7 +127,7 @@ export class EmptyDescriptionError extends TranslatableError {
 
 /**
  * Give someone a description and nothing else — the clean-up list's one field, for people
- * known by a first name only (docs/02 §2.2.3). Their name stays as it is. Returns false when
+ * known by a first name only (docs/dev/02 §2.2.3). Their name stays as it is. Returns false when
  * the contact is not visible to the viewer, like `editProfile`.
  */
 export async function describeContact(

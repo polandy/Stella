@@ -10,9 +10,9 @@
 	import type { ActionData, PageData } from './$types';
 
 	/*
-	 * Every open to-do of the household (docs/02 §2.26.6), grouped by its day: *Overdue*, *This
+	 * Every open to-do of the household (docs/dev/02 §2.26.6), grouped by its day: *Overdue*, *This
 	 * week*, *Later*, *No day*. A row ticked here stays, struck through, while its toast stands,
-	 * as on the person's card; the box is on the right, under the thumb (docs/05 §5.1).
+	 * as on the person's card; the box is on the right, under the thumb (docs/dev/05 §5.1).
 	 */
 	let { data, form }: { data: PageData; form: ActionData } = $props();
 

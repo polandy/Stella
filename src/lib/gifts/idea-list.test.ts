@@ -2,7 +2,7 @@ import { describe, expect, it } from 'bun:test';
 import { christmasFrom, ideaListGroups } from './idea-list';
 
 /*
- * The household's list of open gift ideas (docs/02 §2.25.6): one group per person, whoever's
+ * The household's list of open gift ideas (docs/dev/02 §2.25.6): one group per person, whoever's
  * occasion comes next on top — their next birthday, or Christmas when that comes first or no
  * birthday is on the radar.
  */

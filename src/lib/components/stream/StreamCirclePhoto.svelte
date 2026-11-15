@@ -13,7 +13,7 @@
 	type CirclePhotoItem = Extract<PageData['stream'][number], { kind: 'circlePhoto' }>;
 
 	/*
-	 * Photos added to a circle, as the household stream shows them (docs/02 §2.11, §2.4.2):
+	 * Photos added to a circle, as the household stream shows them (docs/dev/02 §2.11, §2.4.2):
 	 * *Anna added 3 photos to Class 1B*, with their thumbnails, linking to the circle. Only the
 	 * addition is listed, never a later change; a private photo reaches its uploader's stream only.
 	 */
@@ -35,7 +35,7 @@
 	const SHOWN = 4;
 	const href = $derived(`/circles/${item.circle.id}#photos`);
 
-	// Private photos stay blurred until asked for (docs/02 §2.10.1), the face beside the line too.
+	// Private photos stay blurred until asked for (docs/dev/02 §2.10.1), the face beside the line too.
 	const veil = useVeil();
 	const veilId = $derived(`circlePhoto:${item.id}`);
 	const isPrivate = $derived(item.visibility === 'private');

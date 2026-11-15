@@ -5,9 +5,9 @@ import { homeIdFor, type ApiImportDocument, type ApiPerson } from './document';
 import type { ApiImportContext, ApiImportProblem, ApiImportReport, PlannedResident } from './plan';
 
 /*
- * Who lives together, in an API import (docs/02 §2.16.1): an entry's `home: { with: ref }`
+ * Who lives together, in an API import (docs/dev/02 §2.16.1): an entry's `home: { with: ref }`
  * moves it in with the person that ref names, as *Also lives here …* does on a person page
- * (docs/02 §2.2, *A shared home*). That person — the holder — must have exactly one address to
+ * (docs/dev/02 §2.2, *A shared home*). That person — the holder — must have exactly one address to
  * share: the one home they live in, or else their one own address, which becomes a home and
  * leaves their fields. Two of either is refused rather than guessed, and so is a holder who
  * lives with somebody else in turn, so the document says plainly whose address it is.

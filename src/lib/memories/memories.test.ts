@@ -10,7 +10,7 @@ import {
 } from './memories';
 
 /*
- * *On this day* (docs/02 §2.12.1): which calendar days a day remembers, the years they fall in,
+ * *On this day* (docs/dev/02 §2.12.1): which calendar days a day remembers, the years they fall in,
  * and what Home's band keeps of them — handed the day, never the clock.
  */
 

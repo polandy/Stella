@@ -1,5 +1,5 @@
 /*
- * Turning what someone typed into a person picker into the start of a new person (docs/02
+ * Turning what someone typed into a person picker into the start of a new person (docs/dev/02
  * §2.2.2): when the search finds no one, the query itself is already the name. Pure and
  * client-safe — the picker pre-fills its create form without a round trip.
  */
@@ -28,7 +28,7 @@ export function isNameWorthCreating(query: string): boolean {
 }
 
 /**
- * Whether to ask for a line to know the new person by (docs/02 §2.2.3): a first name alone
+ * Whether to ask for a line to know the new person by (docs/dev/02 §2.2.3): a first name alone
  * will not tell them apart from the next person of that name. Only a nudge — saving without
  * one stays allowed, a name is all a person needs.
  */
@@ -55,7 +55,7 @@ export interface PersonBeingAdded {
 }
 
 /**
- * Whether a person being added by hand can be told from the next one of that name (docs/02
+ * Whether a person being added by hand can be told from the next one of that name (docs/dev/02
  * §2.2.3): a last name, or a description to know them by. A name given whole — `Thomas Widmer`
  * as the display name — carries its last name in it. The one rule the forms and `createContact`
  * both read, so a form never offers what the server refuses.
@@ -66,11 +66,11 @@ export function isKnownByMoreThanAFirstName(person: PersonBeingAdded): boolean {
 	return (person.displayName ?? '').trim().split(/\s+/).length > 1;
 }
 
-/** What the *Add person* form can be opened with (docs/02 §2.2). */
+/** What the *Add person* form can be opened with (docs/dev/02 §2.2). */
 export interface NewPersonRequest {
 	/** A name typed elsewhere — a search that found nobody — to start the form from. */
 	name?: string;
-	/** The person being added is the member themselves (docs/02 §2.1.3). */
+	/** The person being added is the member themselves (docs/dev/02 §2.1.3). */
 	self?: boolean;
 }
 

@@ -4,7 +4,7 @@ import { circleFamilies, type CircleFamily } from './families';
 import { circleTree, type TreeCircle } from './tree';
 
 /*
- * The Circles list as families (docs/02 §2.4.2): one card per top-level circle with its direct
+ * The Circles list as families (docs/dev/02 §2.4.2): one card per top-level circle with its direct
  * sub-circles as rows, the past ones behind a toggle, and search and the kind chips reaching
  * into every family.
  */

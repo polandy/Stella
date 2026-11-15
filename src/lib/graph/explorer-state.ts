@@ -10,7 +10,7 @@ import type { SelectionCause } from './tree-view';
 import { DEFAULT_VIEW_SWITCHES, type ViewSwitches } from './view-switches';
 
 /*
- * What the explorer is doing (docs/05 §5.8, docs/02 §2.7): who is selected and why, the
+ * What the explorer is doing (docs/dev/05 §5.8, docs/dev/02 §2.7): who is selected and why, the
  * connection path being picked, how the map is looked at, and what the canvas last heard of
  * full screen; how the map is looked at is answered in `explorer-look.ts`. Pure, so which tap
  * leads where is tested without a browser. `GraphExplorer` holds one of these, renders it, and
@@ -77,7 +77,7 @@ export type ExplorerEvent =
 	| { type: 'treeRelaid' }
 	| { type: 'pathToggled' }
 	| { type: 'pathTraced'; path: ConnectionPath | null }
-	/** A link arrived with the question already asked (docs/05 §5.5). */
+	/** A link arrived with the question already asked (docs/dev/05 §5.5). */
 	| { type: 'tracedOnOpen'; path: ConnectionPath | null }
 	/** A fresh snapshot of the graph is being explored to the same extent. */
 	| { type: 'snapshotChanged' }

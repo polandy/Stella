@@ -5,7 +5,7 @@
 	import Icon from '../ui/Icon.svelte';
 
 	/*
-	 * Says when the page being read came off this device rather than from Stella (docs/02
+	 * Says when the page being read came off this device rather than from Stella (docs/dev/02
 	 * §2.18). Without it a cached person page is indistinguishable from a live one, and a note
 	 * somebody added ten minutes ago looks like it was never written.
 	 *
@@ -14,7 +14,7 @@
 	 * polled: the worker reports when the answer changes.
 	 *
 	 * When the worker knows when the page on screen was kept, the line says so: an old copy is
-	 * normal offline, but it must never look current (docs/02 §2.18, *Saying so*).
+	 * normal offline, but it must never look current (docs/dev/02 §2.18, *Saying so*).
 	 */
 	const i18n = useI18n();
 	const t = i18n.t;

@@ -1,5 +1,5 @@
 /*
- * How something opens and closes in place (docs/05 §5.11): one glide for a height, one fade for
+ * How something opens and closes in place (docs/dev/05 §5.11): one glide for a height, one fade for
  * what appears or goes, one easing for both. Pure, so the timing is tested without a browser;
  * `motion.svelte.ts` is the adapter that moves the DOM by it, and `Reveal.svelte` the component
  * most places use.
@@ -147,7 +147,7 @@ export function gapToTakeUp(input: {
 }
 
 /**
- * Whether opening a form glides its card to the top of the view (docs/05 §5.11). A form opens
+ * Whether opening a form glides its card to the top of the view (docs/dev/05 §5.11). A form opens
  * under its card's header and grows downwards, so the card holds still while its top is in the
  * upper half of the view — there is room for the form, and a jump would only unsettle the
  * reader. A top lower than that, under the bar, or off screen would leave the form below the
@@ -163,7 +163,7 @@ export function glideToOpenedForm(input: {
 }
 
 /**
- * What an opened form owes its card once it has grown (`settleOpenedForm`, docs/05 §5.11): the
+ * What an opened form owes its card once it has grown (`settleOpenedForm`, docs/dev/05 §5.11): the
  * glide its opening made, if any. The two land in either order — with reduced motion the reveal
  * ends at once, before the opener has measured the card — so each opening starts owing nothing,
  * and a settle uses up what is owed.
@@ -190,7 +190,7 @@ export function openedFormGlide(): {
 }
 
 /**
- * Where the shell's scroller goes to show an element (docs/05 §5.11) — computed rather than
+ * Where the shell's scroller goes to show an element (docs/dev/05 §5.11) — computed rather than
  * left to `scrollIntoView`, which scrolls every scrollable ancestor, the document included, and
  * on a phone drags the sticky bars off the top of the screen. Positions are on screen: the band
  * the reader sees (under the scroller's scroll padding, above a keyboard) and the element's

@@ -57,7 +57,7 @@
 
 	const i18n = useI18n();
 	const t = i18n.t;
-	// A private photo and its caption stay blurred until asked for (docs/02 §2.10.1), shared
+	// A private photo and its caption stay blurred until asked for (docs/dev/02 §2.10.1), shared
 	// with the grid's tile.
 	const veil = useVeil();
 	const veilId = $derived(`circlePhoto:${photo.id}`);
@@ -81,10 +81,10 @@
 </script>
 
 <!--
-	The lightbox of a circle photo (docs/02 §2.4.2, concept §3.1). Anyone who sees the photo may
+	The lightbox of a circle photo (docs/dev/02 §2.4.2, concept §3.1). Anyone who sees the photo may
 	caption it, give it a role and pin it; shared/private and Remove are for whoever added it, set
 	apart below. Escape closes, the arrow keys and the two step buttons walk only the photos it was
-	opened among. A modal <dialog>, so focus stays inside and returns on the way out (docs/05 §5.9).
+	opened among. A modal <dialog>, so focus stays inside and returns on the way out (docs/dev/05 §5.9).
 -->
 {#snippet removeButton(label: string, className: string)}
 	<RemoveButton

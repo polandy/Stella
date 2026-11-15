@@ -3,7 +3,7 @@ import { INTL_LOCALES, type Locale } from './locales';
 import { createTranslator, type Translate } from './translate';
 
 /*
- * How a component reaches the viewer's language (docs/04 §4.4). The root layout provides it
+ * How a component reaches the viewer's language (docs/dev/04 §4.4). The root layout provides it
  * from the server-resolved locale; components read it and stay unaware of where it came from.
  * The getter — rather than a captured value — keeps `t(…)` reactive to a language change.
  */

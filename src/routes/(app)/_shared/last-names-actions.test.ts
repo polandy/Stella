@@ -12,7 +12,7 @@ import {
 } from './last-names-actions';
 
 /*
- * The one action behind every path that gives several people a last name (docs/02 §2.2.4).
+ * The one action behind every path that gives several people a last name (docs/dev/02 §2.2.4).
  * `setLastNames` has its own suite; pinned here is the edge's part — the form read, which
  * failure becomes a form message and which a 404 — against a fake of the one port it writes.
  */

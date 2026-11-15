@@ -9,7 +9,7 @@ import { createDrizzleStreamRepository } from './stream-repository';
 
 /*
  * The lookups a page or a delete repeats are answered from an index, not by reading the whole
- * table (docs/04 §4.8). Checked against SQLite's own query plan on the migrated schema, so a
+ * table (docs/dev/04 §4.8). Checked against SQLite's own query plan on the migrated schema, so a
  * dropped or mistyped index shows up here rather than as a slow page in a large household.
  */
 

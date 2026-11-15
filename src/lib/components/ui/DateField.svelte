@@ -12,7 +12,7 @@
 	import { useI18n } from '$lib/i18n/context.svelte';
 
 	/*
-	 * A date field in the language Stella is being read in (docs/05 §5.7).
+	 * A date field in the language Stella is being read in (docs/dev/05 §5.7).
 	 *
 	 * It replaces `<input type="date">`, which takes its segment order, separators and month
 	 * names from the *browser's* locale rather than the app's — so a German household on an
@@ -32,7 +32,7 @@
 		value?: string;
 		/** Names the group for a screen reader; each segment is labelled on its own besides. */
 		label: string;
-		/** Let the year be left blank, for a birthday whose year nobody remembers (docs/03). */
+		/** Let the year be left blank, for a birthday whose year nobody remembers (docs/dev/03). */
 		allowYearUnknown?: boolean;
 		/** The latest day allowed, as an ISO day — for a date that cannot be in the future. */
 		max?: string;

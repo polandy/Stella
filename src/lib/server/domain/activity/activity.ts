@@ -17,13 +17,13 @@ import {
 } from '../../../stream/notices';
 
 /*
- * The household's activity log (docs/03 §activity_log). The stream is otherwise a query over
- * the tables that still exist (docs/02 §2.11) — which is why only what leaves nothing else to
+ * The household's activity log (docs/dev/03 §activity_log). The stream is otherwise a query over
+ * the tables that still exist (docs/dev/02 §2.11) — which is why only what leaves nothing else to
  * query is logged: a deletion, a merge, an export or import, a name changed in passing.
  *
  * The other contexts report what happened as an `ActivityEvent` — data, no wording — and hand
  * it to the write it belongs to, so the adapter puts the row in the same transaction as the
- * change (docs/04 ADR-048). How an event becomes a row, and what its line says, is decided
+ * change (docs/dev/04 ADR-048). How an event becomes a row, and what its line says, is decided
  * here and nowhere else.
  */
 
@@ -94,20 +94,20 @@ export type PlainActivityEvent =
 	| ({ kind: 'immich.unlinked' } & LinkedPerson)
 	| { kind: 'archive.exported'; people: number }
 	| {
-			/** An admin removed a member from the household (docs/02 §2.1). */
+			/** An admin removed a member from the household (docs/dev/02 §2.1). */
 			kind: 'member.removed';
 			memberId: string;
 			/** Kept as written then, like every other line here. */
 			name: string;
 	  }
 	| {
-			/** An admin restored a former member to the household (docs/02 §2.1). */
+			/** An admin restored a former member to the household (docs/dev/02 §2.1). */
 			kind: 'member.restored';
 			memberId: string;
 			name: string;
 	  }
 	| {
-			/** A circle deleted, with its memberships and photos (docs/02 §2.4.2). */
+			/** A circle deleted, with its memberships and photos (docs/dev/02 §2.4.2). */
 			kind: 'circle.deleted';
 			circleId: string;
 			/** Kept because the row it names is not. */
@@ -116,7 +116,7 @@ export type PlainActivityEvent =
 			visibility: Visibility;
 	  }
 	| {
-			/** An authored record removed by someone other than its author (docs/03 §3.7). */
+			/** An authored record removed by someone other than its author (docs/dev/03 §3.7). */
 			kind: 'record.removed';
 			recordKind: RemovedRecordKind;
 			recordId: string;
@@ -132,7 +132,7 @@ export type PlainActivityEvent =
 
 /**
  * An event whose line is written in the language of the member who caused it, because the
- * household keeps it as data (docs/02 §2.19).
+ * household keeps it as data (docs/dev/02 §2.19).
  */
 export type LocalizedActivityEvent =
 	| { kind: 'archive.restored'; people: number; household: string; locale: Locale }
@@ -149,7 +149,7 @@ export type LocalizedActivityEvent =
 			locale: Locale;
 	  }
 	| {
-			/** The matching review of another address book's export (docs/02 §2.16). */
+			/** The matching review of another address book's export (docs/dev/02 §2.16). */
 			kind: 'contacts.reviewed';
 			people: number;
 			/** People already in Stella a card was said to be, who gained what they lacked. */
@@ -175,7 +175,7 @@ export type ActivityOf<K extends ActivityEvent['kind']> = ActivityRecord<
 
 /**
  * The lines of the localized events — a port the composition root fills from the catalogues
- * (docs/02 §2.19), so the wording is decided here without the domain loading a translator.
+ * (docs/dev/02 §2.19), so the wording is decided here without the domain loading a translator.
  */
 export interface ActivityWording {
 	/** "restored 12 people from an archive of Pollari". */
@@ -238,7 +238,7 @@ function plainRow(event: PlainActivityEvent, householdId: string): Described {
 				entityId: event.contactId,
 				contactId: event.contactId,
 				visibility: event.visibility,
-				// Facts, said at read time in each reader's language (docs/02 §2.11).
+				// Facts, said at read time in each reader's language (docs/dev/02 §2.11).
 				summary: renameFacts(event.from, event.to)
 			};
 		case 'lastNames.given':
@@ -254,7 +254,7 @@ function plainRow(event: PlainActivityEvent, householdId: string): Described {
 		case 'immich.unlinked':
 			return {
 				// An update to the person, not a record of its own: the stream shows deletions, and
-				// a link removed is not a person removed (docs/02 §2.11).
+				// a link removed is not a person removed (docs/dev/02 §2.11).
 				action: 'update',
 				entityType: IMMICH_LINK_ENTITY,
 				entityId: event.contactId,
@@ -294,7 +294,7 @@ function plainRow(event: PlainActivityEvent, householdId: string): Described {
 				// A circle is no person, and it is gone: the line links nowhere.
 				contactId: null,
 				visibility: event.visibility,
-				// Facts, said at read time in each reader's language (docs/02 §2.11).
+				// Facts, said at read time in each reader's language (docs/dev/02 §2.11).
 				summary: circleFacts(event.name)
 			};
 		case 'member.restored':

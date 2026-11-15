@@ -3,7 +3,7 @@ import { error, fail, redirect, type RequestEvent } from '@sveltejs/kit';
 import { answerOf, formOf, MEMBER, routeEvent } from '.';
 
 /*
- * The fake request event route tests hand a load or an action (docs/08 §8.5), and the one
+ * The fake request event route tests hand a load or an action (docs/dev/08 §8.5), and the one
  * reading of what the edge answered — data, a `fail`, a redirect or an `error`.
  */
 

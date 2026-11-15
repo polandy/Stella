@@ -11,7 +11,7 @@ import {
 } from './mentions';
 
 /*
- * The shared mention parser/resolver (docs/02 §2.20.1). Pure and framework-agnostic: it turns
+ * The shared mention parser/resolver (docs/dev/02 §2.20.1). Pure and framework-agnostic: it turns
  * typed `@FirstnameLastname` handles into a stable, id-based canonical token, extracts the
  * referenced contact ids for persistence, and segments a body for chip rendering. Resolution is
  * caller-supplied (the edge builds it from the contacts visible to the entry's audience), so a
@@ -22,7 +22,7 @@ const CONTACTS: MentionCandidate[] = [
 	{ id: 'anna', firstName: 'Anna', lastName: 'Weber', displayName: 'Anna Weber' },
 	{ id: 'sandra', firstName: 'Sandra', lastName: 'Brunner', displayName: 'Sandra Brunner' },
 	{ id: 'sabine-mueller', firstName: 'Sabine', lastName: 'Müller', displayName: 'Sabine Müller' },
-	// An imported contact keeps its source id, which carries ':' separators (docs/02 §2.16).
+	// An imported contact keeps its source id, which carries ':' separators (docs/dev/02 §2.16).
 	{
 		id: 'monica:contact:9',
 		firstName: 'Janosch',
@@ -201,7 +201,7 @@ describe('mentionsOtherThan', () => {
 		expect(mentionsOtherThan(['sandra', 'lena'], ['beat'])).toEqual(['sandra', 'lena']);
 	});
 
-	it('drops every subject of a moment about several people (docs/02 §2.20.3)', () => {
+	it('drops every subject of a moment about several people (docs/dev/02 §2.20.3)', () => {
 		expect(mentionsOtherThan(['sandra', 'beat', 'lena'], ['markus', 'sandra', 'lena'])).toEqual([
 			'beat'
 		]);

@@ -4,7 +4,7 @@ import { phrase } from '$lib/i18n/phrase';
 import { TranslatableError } from './translatable';
 
 /*
- * A domain refusal travels without a language (docs/02 §2.19): it carries the message and
+ * A domain refusal travels without a language (docs/dev/02 §2.19): it carries the message and
  * its values, the edge says them. `Error.message` stays English so a log reads the same
  * everywhere, whoever hit the error.
  */

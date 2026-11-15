@@ -3,7 +3,7 @@ import type { IncomingCard } from './card';
 import { cardFacts } from './card-facts';
 
 /*
- * What the review step lists of an incoming contact (docs/02 §2.16): the card's own side,
+ * What the review step lists of an incoming contact (docs/dev/02 §2.16): the card's own side,
  * in the same shape as what *Same person* would add, so both sides read alike.
  */
 

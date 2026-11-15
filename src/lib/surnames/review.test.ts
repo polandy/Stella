@@ -4,7 +4,7 @@ import type { SurnameDismissal } from '$lib/suggestions/rules/surnames';
 import { awaitsLastName, clearsNoLastName, reviewList, type ReviewPerson } from './review';
 
 /*
- * Who the *Last names* list asks about (docs/02 §2.2.4.2): a declined name drops only that
+ * Who the *Last names* list asks about (docs/dev/02 §2.2.4.2): a declined name drops only that
  * proposal, and a person the household settled as having no last name leaves the list for its
  * drawer. Pure: the facts are what one viewer may see.
  */

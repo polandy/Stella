@@ -4,7 +4,7 @@ import { createTranslator } from '../i18n/translate';
 import { addedLabel, nextOccasionLabel, occasionLabel, stateLabel } from './labels';
 
 /*
- * An occasion as the reader reads it (docs/02 §2.25): a preset in their language, whoever
+ * An occasion as the reader reads it (docs/dev/02 §2.25): a preset in their language, whoever
  * chose it; anything typed as it was typed.
  */
 

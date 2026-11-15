@@ -3,9 +3,9 @@ import { addPerson, appReady, signIn } from './app';
 import { DEMO_ADMIN_PASSWORD, DEMO_MEMBER_EMAIL } from '../src/lib/server/db/demo-seed';
 
 /*
- * Editing a note (docs/02 §2.5, docs/03 §3.7): its author alone, title and body, in place; an
+ * Editing a note (docs/dev/02 §2.5, docs/dev/03 §3.7): its author alone, title and body, in place; an
  * admin keeps Remove on a shared note but never Edit; the @-mentions and the search row follow
- * the new text. Written after the flow was verified in the running app (docs/08 §8.4.1). The
+ * the new text. Written after the flow was verified in the running app (docs/dev/08 §8.4.1). The
  * people are the spec's own and the searched words are letters no other run shares.
  */
 

@@ -145,7 +145,7 @@ describe('completionOf', () => {
 
 		expect(completion.set).toEqual({
 			nickname: 'Anni',
-			// The nickname joins the shown name the parts make (docs/02 §2.2).
+			// The nickname joins the shown name the parts make (docs/dev/02 §2.2).
 			displayName: 'Anna “Anni” Example',
 			firstName: 'Anna',
 			lastName: 'Example',

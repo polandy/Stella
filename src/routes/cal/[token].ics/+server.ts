@@ -8,7 +8,7 @@ import { say } from '$lib/server/i18n/say';
 import type { RequestHandler } from './$types';
 
 /*
- * A member's subscribed calendar (docs/02 §2.13.4), fetched by their phone without a session:
+ * A member's subscribed calendar (docs/dev/02 §2.13.4), fetched by their phone without a session:
  * the secret in the path is the member. An unknown or revoked one is a plain 404, so the
  * address gives nothing away. Tagged with its content, so the calendar's hourly look costs a
  * 304 when nothing changed.

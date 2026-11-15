@@ -14,8 +14,8 @@ import type * as schema from './schema';
 import { activityLog, circle, photo, user } from './schema';
 
 /*
- * Drizzle adapter for the circle photo port (docs/02 §2.4.2, docs/08 §8.3). Every read joins the
- * photo's circle and is scoped by the central `circlePhotoVisibleTo` (docs/03 §3.7): the circle
+ * Drizzle adapter for the circle photo port (docs/dev/02 §2.4.2, docs/dev/08 §8.3). Every read joins the
+ * photo's circle and is scoped by the central `circlePhotoVisibleTo` (docs/dev/03 §3.7): the circle
  * must be visible and a private photo only to whoever added it. Writes that are the uploader's
  * carry the author in their WHERE, so a forged id changes nothing.
  */

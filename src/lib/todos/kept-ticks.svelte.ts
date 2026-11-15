@@ -2,7 +2,7 @@ import { isKept, type KeptOf } from '$lib/pwa/outbox';
 import { outbox } from '$lib/pwa/outbox.svelte';
 
 /*
- * The browser side of a tick kept on the device while Stella was out of reach (docs/02 §2.18):
+ * The browser side of a tick kept on the device while Stella was out of reach (docs/dev/02 §2.18):
  * every list of to-dos strikes such a row through and offers *Undo* until it is sent.
  */
 

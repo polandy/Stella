@@ -3,7 +3,7 @@ import { roleKey } from '../../../circles/role-key';
 import { orderGallery, type Orderable } from '../media/gallery-order';
 
 /*
- * How a circle's photos are laid out on its page (docs/02 §2.4.2): the cover, a banner over each
+ * How a circle's photos are laid out on its page (docs/dev/02 §2.4.2): the cover, a banner over each
  * role group, the grid and its role chips, and the roles a photo may be given. One rule decides
  * which photo leads a group — the favourite pinned most recently, otherwise the newest — and it is
  * the gallery's own order (`gallery-order.ts`), so the strip and the grid can never disagree about
@@ -131,7 +131,7 @@ export function matchRoleOption(
 }
 
 /**
- * Whether the page offers Remove on a circle photo (docs/03 §3.7): its uploader, or an admin
+ * Whether the page offers Remove on a circle photo (docs/dev/03 §3.7): its uploader, or an admin
  * on a shared one — the same rule the action checks again when the held removal goes through.
  */
 export function circlePhotoRemovable(

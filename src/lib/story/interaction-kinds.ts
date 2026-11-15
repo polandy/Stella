@@ -1,7 +1,7 @@
 /*
- * Interaction kinds (docs/02 §2.6) and how each reads on screen. Pure and framework-free so
+ * Interaction kinds (docs/dev/02 §2.6) and how each reads on screen. Pure and framework-free so
  * the domain can validate against the same list the timeline renders — one table, no drift.
- * Accents follow docs/05 §5.6: a fixed hue per kind, consistent across timeline and stream.
+ * Accents follow docs/dev/05 §5.6: a fixed hue per kind, consistent across timeline and stream.
  */
 
 import type { MessageKey } from '../i18n/translate';
@@ -19,7 +19,7 @@ export function isInteractionKind(value: string): value is InteractionKind {
 
 /** How a kind reads on screen. */
 export interface KindPresentation {
-	/** The message naming the kind; the wording lives in the catalogue (docs/02 §2.19). */
+	/** The message naming the kind; the wording lives in the catalogue (docs/dev/02 §2.19). */
 	label: MessageKey;
 	/**
 	 * Name of the icon for the timeline dot; decorative, always paired with the label.
@@ -28,7 +28,7 @@ export interface KindPresentation {
 	 * The registry declares one icon per kind, so `bun run check` still catches a missing one.
 	 */
 	icon: InteractionKind;
-	/** The kind's semantic colour token (docs/05 §5.6), for the dot and the kind label. */
+	/** The kind's semantic colour token (docs/dev/05 §5.6), for the dot and the kind label. */
 	accent: string;
 }
 

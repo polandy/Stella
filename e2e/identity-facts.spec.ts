@@ -3,8 +3,8 @@ import { appReady, fillDate, openPerson, profileRow, signIn } from './app';
 import { seedHousehold } from './seed';
 
 /*
- * The identity card's facts, each edited where it is read (docs/05 §5.5, docs/02 §2.2; UX
- * review C1, C5). Written after the owner tried it in the running app (docs/08 §8.4.1).
+ * The identity card's facts, each edited where it is read (docs/dev/05 §5.5, docs/dev/02 §2.2; UX
+ * review C1, C5). Written after the owner tried it in the running app (docs/dev/08 §8.4.1).
  *
  * The demo household is only read here — Markus Brunner's and Kurt Lehmann's pages are opened
  * by id, editors opened and the quiet button pressed, nothing saved. Every case that writes
@@ -201,7 +201,7 @@ test('a removed date and a removed phone number are gone once the page is left',
 	await contact.getByRole('button', { name: 'Remove Atelier' }).click();
 	await expect(undoToast(page).filter({ hasText: 'Contact detail removed' })).toBeVisible();
 
-	// Leaving through Home sends both held removals before Home loads (docs/02 §2.23).
+	// Leaving through Home sends both held removals before Home loads (docs/dev/02 §2.23).
 	await page.getByRole('link', { name: 'Home', exact: true }).first().click();
 	await expect(page.getByRole('heading', { name: 'What happened?' })).toBeVisible();
 	await page.goto(personUrl);
@@ -351,7 +351,7 @@ async function cardLayout(page: Page) {
 	});
 }
 
-// The card follows its own width, not the viewport's (docs/design/screens/person.md).
+// The card follows its own width, not the viewport's (docs/dev/design/screens/person.md).
 test.describe('on a tablet held upright, its sidebar shown', () => {
 	test.use({ viewport: { width: 820, height: 1180 }, hasTouch: true });
 

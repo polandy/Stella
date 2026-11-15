@@ -3,7 +3,7 @@ import type { CircleRole } from './ego-network';
 import type { EdgeKind, GraphEdge, GraphModel } from './types';
 
 /*
- * Grouping a circle's members by role (docs/02 §2.7). Pure: a model in, the groups and the
+ * Grouping a circle's members by role (docs/dev/02 §2.7). Pure: a model in, the groups and the
  * lines standing in for others out — the renderer draws a group as a frame around its members.
  * A big circle otherwise hangs every member off one node on a line of their own; grouped, one
  * line joins each role to the circle, and the links between two groups travel as one line.
@@ -43,13 +43,13 @@ export interface RoleGrouping {
 }
 
 export interface RoleGroupOptions {
-	/** Draw the links between members of one group (docs/02 §2.7: on by default). */
+	/** Draw the links between members of one group (docs/dev/02 §2.7: on by default). */
 	innerLinks: boolean;
 	/** Groups the reader asked to see individually, by id. */
 	dissolved?: ReadonlySet<string>;
 	/**
 	 * Edges the map leaves off unless their person is selected — the derived kinship lines its
-	 * chains already say (docs/02 §2.7). A bundle never stands for one, or its count would name
+	 * chains already say (docs/dev/02 §2.7). A bundle never stands for one, or its count would name
 	 * lines the map does not draw; each stays its person's own, shown as they are selected.
 	 */
 	leftOff?: ReadonlySet<string>;
@@ -173,7 +173,7 @@ export function groupByRole(model: GraphModel, options: RoleGroupOptions): RoleG
 /**
  * The links of grouped people to anybody else on the map, from the whole `snapshot`. The map
  * holds only what the reader opened up, so a circle's members arrive without their links to
- * one another — and a group is about how its people belong together (docs/02 §2.7).
+ * one another — and a group is about how its people belong together (docs/dev/02 §2.7).
  */
 export function linksOfGrouped(
 	snapshot: GraphModel,

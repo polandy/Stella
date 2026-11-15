@@ -1,7 +1,7 @@
 import type { Point } from './geometry';
 
 /*
- * The boxes the canvas frames by (docs/05 §5.8). Pure arithmetic, so the renderer only measures
+ * The boxes the canvas frames by (docs/dev/05 §5.8). Pure arithmetic, so the renderer only measures
  * and these decide: what a framing takes in, and whether something already stands in view.
  */
 

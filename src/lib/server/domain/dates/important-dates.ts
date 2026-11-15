@@ -10,7 +10,7 @@ import { IMPORTANT_DATE_KINDS, type ImportantDateKind } from '../../../dates/kin
 import type { UpcomingSource } from './upcoming';
 
 /*
- * Important date use-cases (docs/02 §2.13). Dates are child records of a contact and have no
+ * Important date use-cases (docs/dev/02 §2.13). Dates are child records of a contact and have no
  * visibility of their own — they inherit the contact's, enforced by the adapter's
  * visibility-scoped reads. Birthdays are usually derived from `contact.birth_date`; an
  * explicit row is for anniversaries, one-offs, and for overriding or muting a birthday.
@@ -118,7 +118,7 @@ export async function listImportantDates(
 
 /**
  * Whether these explicit dates take over the birthday derived from the contact's birth date
- * (docs/02 §2.13.2). The same rule decides what the person page shows and what `upcomingDates`
+ * (docs/dev/02 §2.13.2). The same rule decides what the person page shows and what `upcomingDates`
  * keeps, so it is stated once here.
  */
 export function overridesDerivedBirthday(dates: readonly Pick<ImportantDate, 'kind'>[]): boolean {
@@ -127,7 +127,7 @@ export function overridesDerivedBirthday(dates: readonly Pick<ImportantDate, 'ki
 
 /**
  * Remove an important date. Anyone who sees the person may: a date is a household fact, not
- * anyone's authored record (docs/03 §3.7). A person the viewer does not see is refused with
+ * anyone's authored record (docs/dev/03 §3.7). A person the viewer does not see is refused with
  * `ContactGoneError`; a date already gone is not an error, so a second tap changes nothing.
  */
 export async function removeImportantDate(

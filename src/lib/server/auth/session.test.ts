@@ -13,7 +13,7 @@ import {
 /*
  * Session service — orchestrates token hashing, the expiry policy, and persistence via a
  * SessionRepository port. Tested test-first with an in-memory fake repo and a controllable
- * clock (no DB, deterministic). See docs/08 §8.3.
+ * clock (no DB, deterministic). See docs/dev/08 §8.3.
  */
 
 const DAY = 1000 * 60 * 60 * 24;

@@ -1,5 +1,5 @@
 /*
- * The nesting of circles (docs/02 §2.4.2), built once in memory from one flat read and asked by
+ * The nesting of circles (docs/dev/02 §2.4.2), built once in memory from one flat read and asked by
  * every screen that shows it: the list's families, a circle's breadcrumb, its siblings and its
  * sub-circles. Pure and client-safe.
  *

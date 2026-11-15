@@ -2,7 +2,7 @@ import { describe, expect, it } from 'bun:test';
 import { cameraDayOf, cameraDaysWindow } from './camera-day';
 
 /*
- * Days on the camera's clock (docs/02 §2.24.9). Immich filters on the instant, so a day is asked
+ * Days on the camera's clock (docs/dev/02 §2.24.9). Immich filters on the instant, so a day is asked
  * for as wide as the world's offsets reach, and each photo's day is read off its own clock.
  */
 

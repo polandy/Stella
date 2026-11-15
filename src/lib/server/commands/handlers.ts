@@ -29,7 +29,7 @@ import { addTodo, editTodo, removeTodo, tickTodo, untickTodo } from '../domain/t
 import type { AppServices } from '../services/app-services';
 
 /*
- * The command handler table (docs/04 §4.11.2): which use-case applies each command, wired from
+ * The command handler table (docs/dev/04 §4.11.2): which use-case applies each command, wired from
  * the grouped contexts once per process by the `offline` group (`services/offline.ts`). Adding
  * a command adds its handler here; the `CommandHandlers` type and `handlers.test.ts` catch one
  * left out.
@@ -123,12 +123,12 @@ export function createCommandHandlers(
 			addRelationshipsOrRefuse(relationshipDeps, actor, payload),
 		'interaction.log': (actor, payload) =>
 			logInteractionChecked({ ...interactionDeps, contacts, contactNames }, actor, payload),
-		// A gift (docs/02 §2.25): noted on a phone or online alike; the rest wait for Stella.
+		// A gift (docs/dev/02 §2.25): noted on a phone or online alike; the rest wait for Stella.
 		'gift.add': (actor, payload) => addGift(gifts.giftDeps, actor, payload),
 		'gift.edit': (actor, payload) => editGift(gifts.giftDeps, actor, payload),
 		'gift.markGiven': (actor, payload) => markGiftGiven(gifts.giftDeps, actor, payload),
 		'gift.remove': (actor, payload) => removeGift(gifts.giftDeps, actor, payload),
-		// A to-do (docs/02 §2.26): noted and ticked on a phone or online; the rest wait for Stella.
+		// A to-do (docs/dev/02 §2.26): noted and ticked on a phone or online; the rest wait for Stella.
 		'todo.add': (actor, payload) => addTodo(todos.todoDeps, actor, payload),
 		'todo.tick': (actor, payload) => tickTodo(todos.todoDeps, actor, payload),
 		'todo.edit': (actor, payload) => editTodo(todos.todoDeps, actor, payload),

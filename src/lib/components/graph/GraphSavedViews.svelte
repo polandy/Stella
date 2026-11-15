@@ -6,7 +6,7 @@
 	import { MENU_ITEM } from './menu-item';
 
 	/*
-	 * The Filter menu's saved views (docs/05 §5.8): one tap shows a view, the cross beside it
+	 * The Filter menu's saved views (docs/dev/05 §5.8): one tap shows a view, the cross beside it
 	 * deletes it, and "Save this view…" names what the menu shows now. It lives inside the open
 	 * menu, so a half-typed name is forgotten when the menu closes.
 	 */

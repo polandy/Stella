@@ -2,7 +2,7 @@ import { applyFilters } from './graph-model';
 import type { GraphFilters, GraphModel } from './types';
 
 /*
- * How many people (or circles) expanding a node would bring onto the map (docs/05 §5.8) — the
+ * How many people (or circles) expanding a node would bring onto the map (docs/dev/05 §5.8) — the
  * count behind the "+N" a node wears while it can still grow. Pure over the snapshot the
  * explorer already holds, so it costs no request and tests without a canvas.
  */

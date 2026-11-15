@@ -38,7 +38,7 @@ describe('suggest', () => {
 	});
 	it('offers creation for any typed name, as another one when somebody has it already', () => {
 		expect(suggest('Lena', people)).toMatchObject({ create: 'Lena', createsAnother: false });
-		// A second Julia Meier is a person like any other (docs/02 §2.2.3).
+		// A second Julia Meier is a person like any other (docs/dev/02 §2.2.3).
 		expect(suggest('JuliaMeier', people)).toMatchObject({
 			create: 'JuliaMeier',
 			createsAnother: true
@@ -63,7 +63,7 @@ describe('handleFor / insertHandle', () => {
 	});
 });
 
-/* The list must stay on screen, also in the phone's composer sheet at the bottom (docs/05). */
+/* The list must stay on screen, also in the phone's composer sheet at the bottom (docs/dev/05). */
 describe('listPlacement', () => {
 	it('opens below the field when the list fits there', () => {
 		expect(listPlacement({ above: 600, below: 300 }, 250)).toEqual({

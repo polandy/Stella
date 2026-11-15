@@ -21,7 +21,7 @@ import { planPeople, possibleDuplicates } from './plan-people';
 import { planRelationships } from './plan-relationships';
 
 /*
- * Planning an API import (docs/02 §2.16.1). Pure: the document, plus what the household already
+ * Planning an API import (docs/dev/02 §2.16.1). Pure: the document, plus what the household already
  * holds as the member may see it, in; every row to write and what to tell the caller, out.
  *
  * All or nothing. A document is either planned whole or refused with **every** problem named at
@@ -34,7 +34,7 @@ import { planRelationships } from './plan-relationships';
  * not an identity (two people can share one). It points out the look-alikes and leaves the call
  * to whoever sent the document.
  *
- * Links pass the same guardrails as a link entered by hand (`exclusionFor`, docs/02 §2.4), read
+ * Links pass the same guardrails as a link entered by hand (`exclusionFor`, docs/dev/02 §2.4), read
  * against the household's record *and* the links earlier in the same document, so a document
  * cannot slip in, three lines apart, what the person page would refuse.
  */

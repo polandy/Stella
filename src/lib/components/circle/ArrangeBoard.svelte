@@ -22,7 +22,7 @@
 	import { useRemovals } from '$lib/undo/context.svelte';
 
 	/*
-	 * Arrange people (docs/02 §2.4.2, ADR-127): one card per circle — the circle itself and each
+	 * Arrange people (docs/dev/02 §2.4.2, ADR-127): one card per circle — the circle itself and each
 	 * sub-circle — holding the people directly in it. People move or copy between cards by
 	 * dragging, or without dragging: tap people, pick *Move to…* or *Copy to…*, tap a card. Both
 	 * routes end in the same checked post, and every change is made at once with an *Undo* toast.

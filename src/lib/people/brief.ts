@@ -1,5 +1,5 @@
 /*
- * A person's brief (docs/02 §2.2.5): one compact view for "we're going over in ten minutes" —
+ * A person's brief (docs/dev/02 §2.2.5): one compact view for "we're going over in ten minutes" —
  * everything worth knowing at a glance, nothing to fill in. Pure, so who counts as their family,
  * which blocks stand and in what order is decided and tested here, not in markup. Every row is
  * handed in already read through the access layer; nothing here widens what a reader may see.
@@ -22,7 +22,7 @@ export interface BriefTie {
 	status: string;
 }
 
-/** A relative the kinship engine worked out (docs/02 §2.4.1). */
+/** A relative the kinship engine worked out (docs/dev/02 §2.4.1). */
 export interface BriefKin {
 	personId: string;
 	displayName: string;
@@ -35,7 +35,7 @@ export interface BirthdaySource {
 	contactId: string;
 	kind: string;
 	date: string;
-	/** True for the profile's birth date, which an entered birthday overrides (docs/02 §2.13). */
+	/** True for the profile's birth date, which an entered birthday overrides (docs/dev/02 §2.13). */
 	derived: boolean;
 	isDeceased: boolean;
 }
@@ -58,7 +58,7 @@ export interface FamilyMember {
 }
 
 /**
- * The partner and the children, with their ages (docs/02 §2.2.5). Stored ties name them; the
+ * The partner and the children, with their ages (docs/dev/02 §2.2.5). Stored ties name them; the
  * kinship engine adds a stepchild nobody entered. An ended partnership is not the family one
  * visits, and somebody tied twice — partner and spouse — is named once, by the closer word.
  */
@@ -105,7 +105,7 @@ export function closeFamily(
 	);
 }
 
-/** An entered birthday wins over the profile's, as everywhere else (docs/02 §2.13). */
+/** An entered birthday wins over the profile's, as everywhere else (docs/dev/02 §2.13). */
 function birthdayOf(sources: readonly BirthdaySource[], contactId: string) {
 	const theirs = sources.filter((s) => s.contactId === contactId && s.kind === 'birthday');
 	return theirs.find((s) => !s.derived) ?? theirs[0] ?? null;
@@ -136,7 +136,7 @@ export interface BriefParts<R extends BriefRows> {
 	family: readonly FamilyMember[];
 	homes: readonly R['home'][];
 	notes: readonly R['note'][];
-	/** The story, newest first: moments, touchpoints, gifts and ticked to-dos (docs/02 §2.23). */
+	/** The story, newest first: moments, touchpoints, gifts and ticked to-dos (docs/dev/02 §2.23). */
 	story: readonly R['moment'][];
 	/** Open to-dos, in the order the person page shows them. */
 	todos: readonly R['todo'][];

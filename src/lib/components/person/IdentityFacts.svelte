@@ -21,7 +21,7 @@
 	import type { PersonForm, PersonPageData } from './types';
 
 	/*
-	 * The facts one looks up on the identity card (docs/05 §5.5), only those the record holds,
+	 * The facts one looks up on the identity card (docs/dev/05 §5.5), only those the record holds,
 	 * each edited in place. Which facts and slots show is decided in `identity-card.ts`; this
 	 * only renders them.
 	 */
@@ -56,7 +56,7 @@
 			years: number | null;
 		}[];
 		addresses: { id: string; line: string }[];
-		/** Their homes as they read now, shared ones with who lives there (docs/02 §2.2). */
+		/** Their homes as they read now, shared ones with who lives there (docs/dev/02 §2.2). */
 		homes: PersonPageData['homes'];
 		jobLine: string | null;
 		circles: PersonPageData['circles'];
@@ -128,7 +128,7 @@
 				/>
 			{/if}
 		{:else if entry.name === 'dates'}
-			<!-- Every other date is its own fact, beside the birthday (docs/02 §2.13). -->
+			<!-- Every other date is its own fact, beside the birthday (docs/dev/02 §2.13). -->
 			{#each otherDates as date (date.id)}
 				{#snippet dateValue()}
 					{dayLabel(i18n, date.date)}

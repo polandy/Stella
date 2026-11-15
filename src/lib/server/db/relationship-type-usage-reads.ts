@@ -8,9 +8,9 @@ import type * as schema from './schema';
 import { contact, relationship } from './schema';
 
 /*
- * Drizzle adapter for how much each relationship type is used (docs/08 §8.3) — the settings
+ * Drizzle adapter for how much each relationship type is used (docs/dev/08 §8.3) — the settings
  * screen offers *remove* only where the count is nought. Only links the viewer may see are
- * counted (both endpoints visible, docs/03 §3.7), the same as `countRelationshipsOfType`.
+ * counted (both endpoints visible, docs/dev/03 §3.7), the same as `countRelationshipsOfType`.
  */
 
 export function createDrizzleRelationshipTypeUsageReads(

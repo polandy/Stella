@@ -16,7 +16,7 @@ import {
  * canvas adapter drives, minus the renderer. What is under test is not the drawing but the
  * teardown: a graph lives inside a page that can be navigated away from at any moment, and a
  * call still in flight when that happens must find a closed door rather than a half-demolished
- * one. Unguarded, Cytoscape throws on the renderer it no longer has (docs/04 §4.11).
+ * one. Unguarded, Cytoscape throws on the renderer it no longer has (docs/dev/04 §4.11).
  *
  * Layouts overlap: tidying the map up re-arranges it while the opening arrangement may still
  * be moving the nodes. Both of them are still running, so both have to be accounted for — at

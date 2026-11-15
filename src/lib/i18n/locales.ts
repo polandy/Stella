@@ -1,5 +1,5 @@
 /*
- * The languages Stella speaks (docs/02 §2.19). Pure and framework-free: the same list backs
+ * The languages Stella speaks (docs/dev/02 §2.19). Pure and framework-free: the same list backs
  * the `user.locale_pref` column, the cookie an anonymous visitor carries, and the language
  * picker — so a new language is added here once rather than in every layer.
  */

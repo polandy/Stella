@@ -1,7 +1,7 @@
 import type { Translate } from './translate';
 
 /*
- * Sentences that name people the reader can follow (docs/02 §2.4.1, §2.19).
+ * Sentences that name people the reader can follow (docs/dev/02 §2.4.1, §2.19).
  *
  * A suggestion's claim and its reason each name two or three members of the household, and
  * every one of those names is a way to that person's page. The sentence still has to be

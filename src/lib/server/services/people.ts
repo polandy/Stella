@@ -29,7 +29,7 @@ import type { NamesakeContextDeps } from '../domain/mentions/namesake-context';
 import type { IdGenerator } from '../id';
 
 /*
- * The `people` bounded context of the composition root (docs/08 §8.3): the contacts
+ * The `people` bounded context of the composition root (docs/dev/08 §8.3): the contacts
  * themselves — creating, naming and deleting them, their last names and the surnames Stella
  * proposes, what tells namesakes apart, the shell's people stamp, which contact a member is,
  * and quick-add's suggestions. Built once per process by `createServices`; the edge reads it
@@ -38,7 +38,7 @@ import type { IdGenerator } from '../id';
  * A repository or read model another context is wired with sits under its own name
  * (`contacts`, `directory`, `contactNames`); everything else is a use-case's `deps`, named
  * after its type (`contactDeps` is a `ContactDeps`). The record's writes and the lists are
- * separate ports with an adapter each (docs/08 §8.3).
+ * separate ports with an adapter each (docs/dev/08 §8.3).
  */
 export interface PeopleServices {
 	/** The contact record's writes and one-record reads: every context writes through this one. */

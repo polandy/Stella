@@ -1,5 +1,5 @@
 /*
- * How a story item names who wrote it (docs/02 §2.23, docs/05 §5.5). The viewer is "you";
+ * How a story item names who wrote it (docs/dev/02 §2.23, docs/dev/05 §5.5). The viewer is "you";
  * anyone else is called by the first part of their name, which is what a household says out
  * loud. A member who has since been removed leaves an item with no name, and the item says
  * nothing rather than inventing one.

@@ -5,7 +5,7 @@ import { join } from 'node:path';
 import { TAR_BLOCK, TarNameTooLongError, tarEntry, tarTrailer } from './tar';
 
 /*
- * The tar writer behind the export archive (docs/02 §2.15). Written by hand rather than with a
+ * The tar writer behind the export archive (docs/dev/02 §2.15). Written by hand rather than with a
  * dependency, so the cases that matter are the ones a hand-written header gets wrong: block
  * alignment, the octal fields, and the checksum. The last case is the one that counts — it
  * hands the bytes to the system's own tar and asks whether it can read them.

@@ -5,7 +5,7 @@ import { faceUrlFor } from './glimpse';
 import { allPeople, matchListed, type ImmichMatchingDeps } from './matching';
 
 /*
- * The person page's suggestion (docs/02 §2.24.7): for one unlinked person, the face *Find your
+ * The person page's suggestion (docs/dev/02 §2.24.7): for one unlinked person, the face *Find your
  * people* would link in one tap — or nothing. It is that list, read the same way and cut to one
  * person, rather than a matcher of its own: whether a match is likely depends on everyone else
  * the viewer sees (a full name two people share is a doubt), and on the household's ignored
@@ -27,7 +27,7 @@ export interface PersonMatch {
 	name: string;
 	/** How many photos they are in, or null when the key may not count them. */
 	photoCount: number | null;
-	/** The face through the signed proxy, signed for this person (docs/04 ADR-097). */
+	/** The face through the signed proxy, signed for this person (docs/dev/04 ADR-097). */
 	faceUrl: string;
 }
 

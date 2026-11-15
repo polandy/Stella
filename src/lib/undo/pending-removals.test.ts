@@ -2,7 +2,7 @@ import { describe, expect, it } from 'bun:test';
 import { createPendingRemovals, UNDO_WINDOW_MS, type Scheduler } from './pending-removals';
 
 /*
- * Removing with undo (docs/02 §2.23, docs/05 §5.7): a removal is held back for one window
+ * Removing with undo (docs/dev/02 §2.23, docs/dev/05 §5.7): a removal is held back for one window
  * and only reaches the server when the window closes or the page is left. Pure, with the
  * timer injected, so every rule about the window is asserted here without waiting for it.
  */
@@ -220,7 +220,7 @@ describe('createPendingRemovals', () => {
 });
 
 /*
- * Something just added that can be taken back (docs/02 §2.4: several links saved in one go).
+ * Something just added that can be taken back (docs/dev/02 §2.4: several links saved in one go).
  * The addition is already stored, so the notice carries *Undo* the other way round from a
  * removal: nothing happens when its window closes, and pressing it sends the taking back.
  */
@@ -377,7 +377,7 @@ async function settled() {
 }
 
 /*
- * An offer beside Undo (docs/02 §2.2.4.5): *Lea and Max have none yet — Brunner
+ * An offer beside Undo (docs/dev/02 §2.2.4.5): *Lea and Max have none yet — Brunner
  * too? [Yes]*. Taking it runs once and leaves the toast with Undo alone; the window itself is
  * untouched, so the save it belongs to is still sent when it closes.
  */

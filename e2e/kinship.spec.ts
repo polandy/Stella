@@ -3,8 +3,8 @@ import { openPerson, pickPerson, signIn, unfoldPeople } from './app';
 import { LINK, seedHousehold } from './seed';
 
 /*
- * Derived kinship and propagation suggestions (docs/02 §2.4.1). Written after the flow was
- * verified in the running app (docs/08 §8.4.1). Runs against the demo dataset, whose
+ * Derived kinship and propagation suggestions (docs/dev/02 §2.4.1). Written after the flow was
+ * verified in the running app (docs/dev/08 §8.4.1). Runs against the demo dataset, whose
  * Brunner/Keller family carries three generations, as the demo admin.
  */
 
@@ -57,7 +57,7 @@ test('says nothing it cannot back: no derived relatives for someone with no fami
 
 /*
  * The propagation flow needs a family with room for the parent being added: every Brunner
- * child already has the two parents Stella allows (docs/02 §2.4), and a claim the write would
+ * child already has the two parents Stella allows (docs/dev/02 §2.4), and a claim the write would
  * refuse is not offered at all. So this case brings its own siblings — names the demo
  * household does not use — seeded through the archive, since they are the setting and the
  * parent link entered below is the step under test. No other spec may use them either: the
@@ -100,7 +100,7 @@ test('offers the links a new parent implies, and writes only the one confirmed',
 		.click();
 
 	/*
-	 * Held rather than written (docs/02 §2.23): the confirmed row leaves the block at once while
+	 * Held rather than written (docs/dev/02 §2.23): the confirmed row leaves the block at once while
 	 * the untouched one stays exactly where it was, and nothing has been stored yet. Confirming
 	 * used to reload the page, which is what made the block jump away under the reader.
 	 */

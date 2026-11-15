@@ -3,7 +3,7 @@ import { ids, ms, records, str, visibilityOf, type Row } from './restore-fields'
 import type { PhotoPlan } from './restore-photos';
 
 /*
- * What gathers people together in an archive (docs/02 §2.15): the tags on them, the circles
+ * What gathers people together in an archive (docs/dev/02 §2.15): the tags on them, the circles
  * they belong to and the homes they share. Each only keeps the people the archive brought.
  */
 
@@ -126,7 +126,7 @@ export function planCircles(
 }
 
 /**
- * A home is only ever reached through who lives there (docs/03 §3.3): one with nobody of this
+ * A home is only ever reached through who lives there (docs/dev/03 §3.3): one with nobody of this
  * archive in it would be an address nobody could see or remove, so it is left out.
  */
 export function planHomes(

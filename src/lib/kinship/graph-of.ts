@@ -7,7 +7,7 @@ import {
 import type { KinPerson, KinshipGraph, Pair, ParentEdge, PartnerEdge } from './kinship';
 
 /*
- * Stored links, as the kinship engine reads them (docs/02 §2.4.1). Pure, so the read that
+ * Stored links, as the kinship engine reads them (docs/dev/02 §2.4.1). Pure, so the read that
  * feeds the person page and the explorer (`server/db/kinship-graph-read.ts`) and a batch of
  * links still being checked before it is written (`domain/relationships/add-many.ts`) build
  * the graph by the one rule.

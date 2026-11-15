@@ -20,7 +20,7 @@
 	import type { ActionData, PageData } from './$types';
 
 	/*
-	 * A person's page (docs/05 §5.5): one column of full-width cards in the order a reader asks
+	 * A person's page (docs/dev/05 §5.5): one column of full-width cards in the order a reader asks
 	 * their questions — who this is, who they belong with, what was taken — then what happened
 	 * and what was written down, side by side on a wide screen, and last, quietly, where somebody
 	 * else named them. Everything about the record rather than the person is in the identity
@@ -55,12 +55,12 @@
 		tracingPath = true;
 		await tick();
 		const card = document.getElementById(sectionAnchor('relationships'));
-		// Opens like every card form (docs/05 §5.11): the card glides into view when it must.
+		// Opens like every card form (docs/dev/05 §5.11): the card glides into view when it must.
 		if (card) showOpenedForm(card, document.getElementById('path-target'));
 	}
 
 	/*
-	 * The Photos card's tab and, from Immich (docs/02 §2.24.8), the pair a relationship row's
+	 * The Photos card's tab and, from Immich (docs/dev/02 §2.24.8), the pair a relationship row's
 	 * *Together* asked for and the pair the Immich tab shows. All of it belongs to this person,
 	 * so another person's page starts on *All* and their own photos again.
 	 */
@@ -77,7 +77,7 @@
 		void contactId;
 		photoView = { ...PHOTO_VIEW_AT_START };
 	});
-	// Who was opened here is who a share from another app is offered to first (docs/02 §2.18.3).
+	// Who was opened here is who a share from another app is offered to first (docs/dev/02 §2.18.3).
 	$effect(() => {
 		openedHere(deviceStorage, data.user.id).note(contactId);
 	});
@@ -96,12 +96,12 @@
 
 	/** Archived or not decides the action, the wording and the marker; asked once. */
 	const archived = $derived(c.archivedAt !== null);
-	/** This record is the viewer's own person (docs/02 §2.1.3). */
+	/** This record is the viewer's own person (docs/dev/02 §2.1.3). */
 	const isSelf = $derived(data.user.selfContactId === c.id);
 
 	/*
-	 * The To-dos card (docs/02 §2.26) is read first while something is open — right under the
-	 * identity card — and waits at the page's end, as one line, while nothing is (docs/05 §5.5).
+	 * The To-dos card (docs/dev/02 §2.26) is read first while something is open — right under the
+	 * identity card — and waits at the page's end, as one line, while nothing is (docs/dev/05 §5.5).
 	 * One just ticked counts while its toast stands, so the last one does not move the card away
 	 * under the reader's thumb.
 	 */
@@ -125,7 +125,7 @@
 		{tracePath}
 	/>
 
-	<!-- Shows, sticking under the top bar, only once the identity card has gone by (docs/05 §5.5). -->
+	<!-- Shows, sticking under the top bar, only once the identity card has gone by (docs/dev/05 §5.5). -->
 	<JumpBar {data} />
 
 	{#if todosFirst}<TodosSection {data} {form} rows={todoRows} {justDone} />{/if}
@@ -140,7 +140,7 @@
 		<NotesSection {data} {form} {otherContacts} />
 	</div>
 
-	<!-- Ideas, and what was given and received (docs/02 §2.25). -->
+	<!-- Ideas, and what was given and received (docs/dev/02 §2.25). -->
 	<GiftsSection {data} {form} />
 
 	{#if !todosFirst}<TodosSection {data} {form} rows={todoRows} {justDone} />{/if}

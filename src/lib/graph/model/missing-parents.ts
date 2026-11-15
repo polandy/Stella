@@ -2,8 +2,8 @@ import { PARENT_CHILD_TYPE_KEY } from '../../relationships/type-keys';
 import type { GraphEdge, GraphModel } from './types';
 
 /*
- * Where the family tree around a person offers a parent nobody entered (docs/02 §2.7,
- * docs/05 §5.8). Pure. A slot is not somebody: it never enters the model the filters, the
+ * Where the family tree around a person offers a parent nobody entered (docs/dev/02 §2.7,
+ * docs/dev/05 §5.8). Pure. A slot is not somebody: it never enters the model the filters, the
  * "+N" counts or the path read — only the tree's layout and its drawing take it in.
  *
  * Only the centre's own line asks: the centre, their parents and their grandparents. A gap is

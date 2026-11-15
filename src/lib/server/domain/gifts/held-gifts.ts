@@ -4,7 +4,7 @@ import type { Visibility } from '../../access/visibility';
 import type { Gift } from './gifts';
 
 /*
- * The gifts Stella already held in other shapes, made gift records once (docs/02 §2.25.4): the
+ * The gifts Stella already held in other shapes, made gift records once (docs/dev/02 §2.25.4): the
  * notes the Monica import wrote before gifts existed (id `<source>:gift:<monica id>`), and the
  * touchpoints of the dropped kind *gift*. Runs at every start and after every restore; once
  * nothing is left to convert it writes nothing, and names only the notes it keeps leaving alone.

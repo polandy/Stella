@@ -4,7 +4,7 @@ import { unclearHandles } from './unclear';
 
 /*
  * While a text is written, a typed `@Thomas` several people answer to is asked about there and
- * then (docs/02 §2.2.3), naming each Thomas with the line the pickers show — the same question
+ * then (docs/dev/02 §2.2.3), naming each Thomas with the line the pickers show — the same question
  * the server would refuse the text with.
  */
 

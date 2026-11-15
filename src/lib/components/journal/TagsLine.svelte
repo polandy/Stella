@@ -5,7 +5,7 @@
 	import { useTranslate } from '$lib/i18n/context.svelte';
 
 	/*
-	 * What saving the text will file it under (docs/02 §2.20.2), read the way the server reads it:
+	 * What saving the text will file it under (docs/dev/02 §2.20.2), read the way the server reads it:
 	 * each tag in the household's spelling, a new one marked. Without a tag, a line saying how to
 	 * add one — the only place a writer learns that `#` does something.
 	 */

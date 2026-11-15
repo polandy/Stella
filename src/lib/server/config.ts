@@ -6,7 +6,7 @@ import { readNextcloudConfig } from './nextcloud/config';
 
 /**
  * Central, validated runtime configuration. Parsed once at startup.
- * See docs/04-architecture.md §4.5 and docs/07-deployment.md.
+ * See docs/dev/04-architecture.md §4.5 and docs/dev/07-deployment.md.
  */
 
 const boolFrom = (fallback: boolean) =>
@@ -41,16 +41,16 @@ const RawSchema = v.object({
 	// Populate the database with the demo dataset on startup (test phase only). Idempotent.
 	SEED_DEMO: boolFrom(false),
 
-	// Ask GitHub once a day whether a newer Stella has been released (docs/02 §2.17.1).
+	// Ask GitHub once a day whether a newer Stella has been released (docs/dev/02 §2.17.1).
 	// On by default; it is the only request an instance makes on its own, and a household
 	// can opt out with UPDATE_CHECK=false.
 	UPDATE_CHECK: boolFrom(true),
 
 	// Which feed that asks. Empty means Stella's own releases; a fork points this at its
-	// own, and the e2e suite at a local stub (docs/07 §7.4).
+	// own, and the e2e suite at a local stub (docs/dev/07 §7.4).
 	UPDATE_FEED_URL: v.optional(v.string(), ''),
 
-	// A person's photos from Immich (docs/02 §2.24, docs/04 §4.5). URL and key together or not
+	// A person's photos from Immich (docs/dev/02 §2.24, docs/dev/04 §4.5). URL and key together or not
 	// at all; without IMMICH_URL the feature appears nowhere. IMMICH_PUBLIC_URL is what links
 	// for the browser point at and defaults to IMMICH_URL. IMMICH_DEMO wires an in-memory
 	// stand-in for the demo/e2e server instead (SEED_DEMO only).
@@ -59,7 +59,7 @@ const RawSchema = v.object({
 	IMMICH_API_KEY: v.optional(v.string(), ''),
 	IMMICH_DEMO: boolFrom(false),
 
-	// The household's Nextcloud address book, linked both ways (docs/02 §2.16.3). All three or
+	// The household's Nextcloud address book, linked both ways (docs/dev/02 §2.16.3). All three or
 	// none; the app password stays here, out of the database. NEXTCLOUD_DEMO wires an in-memory
 	// book for the demo/e2e server instead (SEED_DEMO only).
 	NEXTCLOUD_ADDRESS_BOOK_URL: v.optional(v.string(), ''),
@@ -83,7 +83,7 @@ const RawSchema = v.object({
 	OIDC_RP_LOGOUT: boolFrom(true)
 });
 
-/** Every variable the schema reads — `.env.example` and docs/04 §4.5 list each one. */
+/** Every variable the schema reads — `.env.example` and docs/dev/04 §4.5 list each one. */
 export const configKeys = Object.keys(RawSchema.entries);
 
 function build() {
@@ -109,7 +109,7 @@ function build() {
 		url: raw.STELLA_URL.replace(/\/$/, ''),
 		databasePath: raw.DATABASE_PATH,
 		mediaDir: raw.MEDIA_DIR,
-		// Uploaded dumps wait here between the wizard's preview and confirm steps (docs/02 §2.16).
+		// Uploaded dumps wait here between the wizard's preview and confirm steps (docs/dev/02 §2.16).
 		importDir: join(dirname(raw.DATABASE_PATH), 'import'),
 		sessionSecret: raw.SESSION_SECRET,
 		isProd,

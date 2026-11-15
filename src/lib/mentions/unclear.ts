@@ -3,7 +3,7 @@ import { tellApart, type Distinction, type Distinguishable } from '../people/nam
 import { createHandleResolver, resolveMentions, type MentionCandidate } from './mentions';
 
 /*
- * A typed `@Thomas` several people answer to, asked about while the text is written (docs/02
+ * A typed `@Thomas` several people answer to, asked about while the text is written (docs/dev/02
  * §2.2.3): the same question the server refuses the text with, asked before saving is offered.
  */
 

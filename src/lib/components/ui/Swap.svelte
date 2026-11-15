@@ -4,7 +4,7 @@
 
 	/*
 	 * Two alternatives in one place — a line and the form that edits it, a question and its
-	 * confirmation (docs/05 §5.11). The box glides from the height of the one to the height of
+	 * confirmation (docs/dev/05 §5.11). The box glides from the height of the one to the height of
 	 * the other while the two fade over each other, so nothing below jumps and no frame is blank.
 	 *
 	 * Both stand in one grid cell while they cross, so the one leaving keeps its place and adds

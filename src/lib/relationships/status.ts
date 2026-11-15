@@ -1,5 +1,5 @@
 /*
- * Whether a relationship still holds (docs/02 §2.4, docs/03 §relationship). Free text would
+ * Whether a relationship still holds (docs/dev/02 §2.4, docs/dev/03 §relationship). Free text would
  * make "ex", "former" and "past" three different things and nothing could group them, so the
  * model knows exactly two — and no third, unset state: a link that exists is current until
  * someone ends it, so "not said" would be a question no one can answer.

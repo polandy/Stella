@@ -3,7 +3,7 @@
 	import { describeDistinction, type Distinction } from '$lib/people/namesakes';
 
 	/*
-	 * The second line under a person in a list where someone else shares their name (docs/02
+	 * The second line under a person in a list where someone else shares their name (docs/dev/02
 	 * §2.2.3): the description, else where and when they were met, else a link or a circle the
 	 * viewer may see, else a quiet admission that nothing tells them apart yet — which is itself
 	 * the cue to add something.

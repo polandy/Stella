@@ -1,7 +1,7 @@
 import { dayHeading, type DateLanguage } from '$lib/dates/labels';
 
 /*
- * Home's stream by day (docs/02 §2.22.2): newest first under a heading per calendar day —
+ * Home's stream by day (docs/dev/02 §2.22.2): newest first under a heading per calendar day —
  * *Today*, *Yesterday*, then the weekday and date — and, beside each item, what that heading
  * does not already say. Under *Today* and *Yesterday* that is the time of day it was written;
  * under an older date it is nothing, since the heading is as precise as anything a row could

@@ -1,8 +1,8 @@
 import { expect, test, type Page } from '@playwright/test';
 
 /*
- * Signing out (docs/02 §2.1). Written after the flow was verified in the running app against
- * Authelia (docs/08 §8.4.1).
+ * Signing out (docs/dev/02 §2.1). Written after the flow was verified in the running app against
+ * Authelia (docs/dev/08 §8.4.1).
  *
  * Sign-out revokes the session on the server, and the rest of the suite runs on one shared
  * session — so this spec opts out of it and signs in for itself. Revoking its own session

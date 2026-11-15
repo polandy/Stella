@@ -3,7 +3,7 @@ import type { SourceExport } from './monica/monica-export';
 import { readVCard } from './vcard';
 
 /*
- * A vCard read both ways the matching review needs it (docs/02 §2.16): as cards to compare,
+ * A vCard read both ways the matching review needs it (docs/dev/02 §2.16): as cards to compare,
  * and as the export the import's own mapping turns a *New person* into. Both readers walk
  * the same cards in order, so card i is the i-th contact of the mapping.
  */

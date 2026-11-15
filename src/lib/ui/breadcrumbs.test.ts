@@ -3,7 +3,7 @@ import { createTranslator } from '$lib/i18n/translate';
 import { breadcrumbs } from './breadcrumbs';
 
 /*
- * The top bar's trail (docs/05 §5.4): from the route and the page's data. A phone shows only
+ * The top bar's trail (docs/dev/05 §5.4): from the route and the page's data. A phone shows only
  * the crumb before the last, so whatever stands there is where its back link goes.
  */
 

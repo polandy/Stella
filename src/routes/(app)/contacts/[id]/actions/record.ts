@@ -9,10 +9,10 @@ import { setSelfContact, UnknownSelfContactError } from '$lib/server/domain/hous
 import { say, translator } from '$lib/server/i18n/say';
 import type { Actions } from '../$types';
 
-/** The record itself, from the foot of the profile card (docs/02 §2.2, §2.1.3). */
+/** The record itself, from the foot of the profile card (docs/dev/02 §2.2, §2.1.3). */
 export const recordActions = {
 	/*
-	 * Merging a duplicate into this person (docs/02 §2.2). Admin only for the same reason as
+	 * Merging a duplicate into this person (docs/dev/02 §2.2). Admin only for the same reason as
 	 * deleting: it ends a record, and there is no way back. The 403 here says so in words; the
 	 * use-case holds the rule itself (`canMergeContacts`).
 	 */
@@ -35,7 +35,7 @@ export const recordActions = {
 			);
 		} catch (err) {
 			if (!(err instanceof MergeWouldHideRecordsError)) throw err;
-			// The pick comes back, so the step reopens with it and says why (docs/05 §5.5).
+			// The pick comes back, so the step reopens with it and says why (docs/dev/05 §5.5).
 			const mergedId = parsed.output.mergedId;
 			return fail(400, { mergeError: err.phrase(translator(locals)), mergedId });
 		}
@@ -47,7 +47,7 @@ export const recordActions = {
 	},
 
 	/*
-	 * Deleting for good (docs/02 §2.2). Admin only, like the other irreversible tools in
+	 * Deleting for good (docs/dev/02 §2.2). Admin only, like the other irreversible tools in
 	 * Settings → Data: archiving is there for everyone, and this is the one that cannot be
 	 * taken back. The visibility scope still applies, so an admin cannot reach another
 	 * member's private contact. As for merging, the use-case holds the rule (`canDeleteContact`).
@@ -58,15 +58,15 @@ export const recordActions = {
 		const done = await deleteContact(locals.services.people.deleteContactDeps, remover, params.id);
 		if (!done) throw error(404, say(locals, 'errors.contact.notFound'));
 		// Their tag assignments went with them by cascade, so a tag they were the last
-		// carrier of is orphaned here rather than by `unassignTag` (docs/02 §2.8).
+		// carrier of is orphaned here rather than by `unassignTag` (docs/dev/02 §2.8).
 		await pruneOrphanTags(locals.services.records.tagDeps, user.householdId);
 		throw redirect(303, '/contacts');
 	},
 
 	/*
-	 * Archiving (docs/02 §2.2): out of the household's lists, not out of its history. An
+	 * Archiving (docs/dev/02 §2.2): out of the household's lists, not out of its history. An
 	 * archived person keeps their page — this is where they are brought back from — and stays
-	 * in the graph and the kinship Stella works out (docs/04 §4.9).
+	 * in the graph and the kinship Stella works out (docs/dev/04 §4.9).
 	 */
 	archive: async ({ params, locals }) => {
 		const viewer = requireViewer(locals);
@@ -76,7 +76,7 @@ export const recordActions = {
 	},
 
 	/*
-	 * "This is me" (docs/02 §2.1.3), from the page of the person it is about. It toggles: the
+	 * "This is me" (docs/dev/02 §2.1.3), from the page of the person it is about. It toggles: the
 	 * same button lets go of the link again, so a wrong pick is undone where it was made.
 	 */
 	setSelf: async ({ params, locals }) => {

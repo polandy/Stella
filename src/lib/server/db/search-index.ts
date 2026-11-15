@@ -2,7 +2,7 @@ import type { Database } from 'bun:sqlite';
 import { MENTION_TOKEN_PREFIX } from '../../mentions/mentions';
 
 /*
- * Full-text search index (docs/03 §3.5). Creates the FTS5 virtual tables and the triggers that
+ * Full-text search index (docs/dev/03 §3.5). Creates the FTS5 virtual tables and the triggers that
  * keep them in sync with `contact`, `note`, `gift`, `journal_entry` and `todo`, and builds the rows for everything already
  * stored. Runs on every startup and does nothing when the index on disk was built from the
  * same definitions — see `fingerprint`. Kept as raw SQL because FTS5 virtual tables are
@@ -16,7 +16,7 @@ const contactContent = (t: string) =>
  * A body with its @-mention tokens cut out, as one SQL expression. The tokens are the wrong
  * thing to index: the name the author typed is gone, and what is left is the contact id — the
  * literal word "contact" in every note that names anyone, plus, for an imported contact whose
- * id is a source id (`monica:contact:9`, docs/02 §2.16), the words "monica" and "contact"
+ * id is a source id (`monica:contact:9`, docs/dev/02 §2.16), the words "monica" and "contact"
  * again, which are words someone really does type into the search box. SQLite has no regex, so
  * the cut is a recursive strip of one token at a time: find the opening, find the `}` that
  * closes it, keep what is on either side. It stops on a body with no token left and on a
@@ -40,14 +40,14 @@ const noteContent = (t: string) =>
 /*
  * What of a gift is searchable: its title and its note. Not the link — a shop's address, whose
  * words nobody means — and not the occasion, a preset key that reads differently per language
- * (docs/02 §2.25.5).
+ * (docs/dev/02 §2.25.5).
  */
 const giftContent = (t: string) => `coalesce(${t}.title,'')||' '||coalesce(${t}.note,'')`;
 
 /*
  * What of a moment is searchable: the same as a note — its title, its body without the mention
  * tokens, and the mentioned people's current names. Its `#tags` are words of the body, so a tag
- * is found by its plain word too (docs/02 §2.20.2).
+ * is found by its plain word too (docs/dev/02 §2.20.2).
  */
 const journalContent = (t: string) =>
 	`coalesce(${t}.title,'')||' '||${strippedBody(t)}||' '||coalesce((SELECT group_concat(c.display_name,' ') FROM journal_mention m JOIN contact c ON c.id = m.contact_id WHERE m.journal_entry_id = ${t}.id),'')`;
@@ -93,7 +93,7 @@ const TRIGGERS: Record<string, string> = {
 	note_fts_mention_ad: `AFTER DELETE ON note_mention BEGIN${reindexNotes('n.id = old.note_id')}
 		END`,
 	// Renaming someone renames them in every note that mentions them, because only the id
-	// is stored (docs/02 §2.20.1) and the chip already reads the current name.
+	// is stored (docs/dev/02 §2.20.1) and the chip already reads the current name.
 	note_fts_contact_au: `AFTER UPDATE OF display_name ON contact BEGIN${reindexNotes(
 		'n.id IN (SELECT note_id FROM note_mention WHERE contact_id = new.id)'
 	)}
@@ -120,7 +120,7 @@ const TRIGGERS: Record<string, string> = {
 };
 
 /*
- * What of a to-do is searchable: its title, the only words it has (docs/02 §2.26). Done ones
+ * What of a to-do is searchable: its title, the only words it has (docs/dev/02 §2.26). Done ones
  * stay in the index; the search marks them done.
  */
 const todoContent = (t: string) => `coalesce(${t}.title,'')`;

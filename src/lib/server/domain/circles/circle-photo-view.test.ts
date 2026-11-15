@@ -8,7 +8,7 @@ import {
 } from './circle-photo-view';
 
 /*
- * What a circle's photos look like on its page (docs/02 §2.4.2): the cover, the banner over
+ * What a circle's photos look like on its page (docs/dev/02 §2.4.2): the cover, the banner over
  * each role group, the grid's order, the role chips, and the roles a photo can be given.
  * Pure: photos and the members' roles in, decisions out.
  */

@@ -14,7 +14,7 @@ import {
 } from './suggestion-review';
 
 /*
- * The review and the dismissal log as use-cases (docs/02 §2.4.1, docs/04 ADR-117). The rules
+ * The review and the dismissal log as use-cases (docs/dev/02 §2.4.1, docs/dev/04 ADR-117). The rules
  * and suppressions have their own suites; what is asserted here is the
  * seam — that the graph is asked for *this viewer*, that a claim about someone the viewer
  * cannot see is refused, and that a declined claim stops being offered and comes back when
@@ -157,7 +157,7 @@ describe('reviewPerson', () => {
 });
 
 /*
- * The household-wide pass (docs/02 §2.4.1). It asks the same
+ * The household-wide pass (docs/dev/02 §2.4.1). It asks the same
  * question `reviewPerson` asks, about everyone at once — the only scope that reaches a family
  * nobody has thought to open, which is every family in a household that imported its links.
  */

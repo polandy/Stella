@@ -8,7 +8,7 @@ import type { NoteDeps, NoteRepository } from '../domain/notes/notes';
 import type { IdGenerator } from '../id';
 
 /*
- * The `notes` bounded context of the composition root (docs/08 §8.3): the notes kept on a
+ * The `notes` bounded context of the composition root (docs/dev/08 §8.3): the notes kept on a
  * person, and the passive "Mentioned in" list that reads them — with journal entries — back on
  * whom they name. Built once per process by `createServices`; the edge reads it off
  * `locals.services.notes`.

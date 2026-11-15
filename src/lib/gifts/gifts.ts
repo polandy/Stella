@@ -1,5 +1,5 @@
 /*
- * The words a gift is made of (docs/02 §2.25). Pure and client-safe, so the form, the command's
+ * The words a gift is made of (docs/dev/02 §2.25). Pure and client-safe, so the form, the command's
  * payload schema and the use-case read one list of states, one list of occasions and one rule
  * for a link.
  */
@@ -51,7 +51,7 @@ const WEB_SCHEME = /^https?:\/\//i;
 const ANY_SCHEME = /^[a-z][a-z0-9+.-]*:/i;
 
 /**
- * The link a gift may carry (docs/02 §2.25): the shop page. Only a web address is kept, because
+ * The link a gift may carry (docs/dev/02 §2.25): the shop page. Only a web address is kept, because
  * the card renders it as a link and a `javascript:` one would run when tapped. An address pasted
  * without its scheme — `shop.example/teapot` — is read as `https://`.
  */

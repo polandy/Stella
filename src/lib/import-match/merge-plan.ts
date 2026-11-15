@@ -4,8 +4,8 @@ import type { CardField, CardLabel, IncomingCard, StellaPerson } from './card';
 import { foldName, foldText, normaliseEmail, normalisePhone, samePhone } from './normalise';
 
 /*
- * What *Same person* writes (docs/02 §2.16.2): only what the person is
- * missing, compared the API import's way (docs/02 §2.16.1, *Fields complete, never change*).
+ * What *Same person* writes (docs/dev/02 §2.16.2): only what the person is
+ * missing, compared the API import's way (docs/dev/02 §2.16.1, *Fields complete, never change*).
  * A differing birthday or name is asked about; anything else that differs stays out, said so.
  */
 

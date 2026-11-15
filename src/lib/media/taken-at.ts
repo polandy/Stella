@@ -1,5 +1,5 @@
 /*
- * A photo's capture date (docs/02 §2.14, docs/03 §photo). Pure, so the phone that reads it out
+ * A photo's capture date (docs/dev/02 §2.14, docs/dev/03 §photo). Pure, so the phone that reads it out
  * of a picture and the server that stores it judge it by the same rules.
  *
  * It is kept as the camera wrote it: the wall-clock time, `YYYY-MM-DDTHH:MM:SS`, followed by the

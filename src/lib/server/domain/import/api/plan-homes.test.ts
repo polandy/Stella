@@ -4,7 +4,7 @@ import type { KnownField, KnownHome } from './plan';
 import { context, doc, idOf, ME, NOW, person, planned, refused, SOURCE } from './plan.fixture';
 
 /*
- * Who lives together (docs/02 §2.16.1, *A shared home*): an entry says `home: { with: ref }`
+ * Who lives together (docs/dev/02 §2.16.1, *A shared home*): an entry says `home: { with: ref }`
  * instead of repeating an address, and moves in with that person — into the home they live
  * in, or into a home made of their one address, as *Also lives here …* does on a person page.
  */

@@ -3,7 +3,7 @@ import type { LinkSyncResult, NextcloudLink } from '../domain/nextcloud/link';
 import { syncOnOpen } from './sync-on-open';
 
 /*
- * Opening Stella syncs the linked book when it is due (docs/02 §2.16.3) without making the page
+ * Opening Stella syncs the linked book when it is due (docs/dev/02 §2.16.3) without making the page
  * wait, and nothing it runs into reaches the member: a book out of reach or a failing sync is
  * only logged, by what went wrong and never by what was sent.
  */

@@ -3,8 +3,8 @@ import type { ConfirmedMatch } from '$lib/server/domain/immich/links';
 import type { NewcomerName } from '$lib/server/domain/immich/add-from-immich';
 
 /*
- * What the forms of *Find your people* post (docs/02 §2.24.7), read as plain data so it is
- * tested without a request (docs/08 §8.5). Each reader answers null for a post that is not from
+ * What the forms of *Find your people* post (docs/dev/02 §2.24.7), read as plain data so it is
+ * tested without a request (docs/dev/08 §8.5). Each reader answers null for a post that is not from
  * the page; `+page.server.ts` refuses it.
  */
 

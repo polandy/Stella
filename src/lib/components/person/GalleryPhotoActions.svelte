@@ -6,10 +6,10 @@
 	import type { PersonPageData } from './types';
 
 	/*
-	 * What the lightbox offers on a gallery photo besides *Use as photo* (docs/02 §2.14): the pin,
+	 * What the lightbox offers on a gallery photo besides *Use as photo* (docs/dev/02 §2.14): the pin,
 	 * which is the household's, and — only on a photo you added — its caption and its scope. Its
 	 * removal sits last so it is never the button next to the one you meant; an admin has it on a
-	 * shared photo too (docs/03 §3.7), held for a few seconds so it can be undone (§2.23).
+	 * shared photo too (docs/dev/03 §3.7), held for a few seconds so it can be undone (§2.23).
 	 */
 	interface Props {
 		photo: PersonPageData['gallery'][number];
@@ -25,7 +25,7 @@
 	const t = useI18n().t;
 </script>
 
-<!-- Anyone who sees the photo may pin it: a favourite is the household's (docs/02 §2.14). -->
+<!-- Anyone who sees the photo may pin it: a favourite is the household's (docs/dev/02 §2.14). -->
 <form method="POST" action="?/pinPhoto" class="contents">
 	<input type="hidden" name="photoId" value={photo.id} />
 	<input type="hidden" name="pinned" value={photo.pinnedAt === null ? 'true' : 'false'} />

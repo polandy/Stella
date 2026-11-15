@@ -13,7 +13,7 @@ import {
 } from './delete-circle';
 
 /*
- * Deleting a circle (docs/02 §2.4.2): its creator always, an admin when it is shared. The
+ * Deleting a circle (docs/dev/02 §2.4.2): its creator always, an admin when it is shared. The
  * preview counts what goes — members the remover sees, every photo, every wearer — and names
  * the children that stay; the deletion logs `circle.deleted` with the write and unlinks the
  * photo files only once the write has committed. Who may is the repository's SQL condition

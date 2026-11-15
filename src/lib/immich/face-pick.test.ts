@@ -2,7 +2,7 @@ import { describe, expect, it } from 'bun:test';
 import { faceChoice } from './face-pick';
 
 /*
- * What a tap on a face in *Find in Immich* does (docs/02 §2.24.2): a free face links, a face held
+ * What a tap on a face in *Find in Immich* does (docs/dev/02 §2.24.2): a free face links, a face held
  * by someone the member sees opens that person's photos, and one held out of the member's reach
  * does nothing at all.
  */

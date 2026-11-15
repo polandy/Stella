@@ -2,7 +2,7 @@ import { describe, expect, it } from 'bun:test';
 import { exclusionFor, MAX_PARENTS, type ExclusionFacts } from './exclusions';
 
 /*
- * Which ties cannot be claimed beside the ties already on record (docs/02 §2.4). The
+ * Which ties cannot be claimed beside the ties already on record (docs/dev/02 §2.4). The
  * facts are written out per test rather than built by a helper: a rule about what may not
  * be stored is only convincing when the starting point is readable at a glance.
  */

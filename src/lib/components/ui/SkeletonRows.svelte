@@ -2,7 +2,7 @@
 	/*
 	 * Grey rows shaped like the rows a list is about to show — a round picture, a name, a line
 	 * under it, a button — so the page says where the list will appear while it is still being
-	 * read (docs/05 §5.7). Decorative: the shell's activity indicator says in words what is being
+	 * read (docs/dev/05 §5.7). Decorative: the shell's activity indicator says in words what is being
 	 * waited for, so these are hidden from assistive technology. They pulse unless motion is
 	 * reduced.
 	 */

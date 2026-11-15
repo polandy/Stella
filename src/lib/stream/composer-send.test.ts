@@ -11,7 +11,7 @@ import {
 import { linkHintHref } from './link-hint';
 
 /*
- * Saving a moment (docs/02 §2.18.1, §2.22.1): online it waits for Stella's answer, out of reach
+ * Saving a moment (docs/dev/02 §2.18.1, §2.22.1): online it waits for Stella's answer, out of reach
  * it is kept in the outbox, a refusal keeps the draft, and a save starts the field afresh.
  */
 

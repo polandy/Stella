@@ -1,4 +1,4 @@
-/* Das verknüpfte Nextcloud-Adressbuch des Haushalts: sein Bereich und seine Abweichungen (docs/02 §2.16.3). */
+/* Das verknüpfte Nextcloud-Adressbuch des Haushalts: sein Bereich und seine Abweichungen (docs/dev/02 §2.16.3). */
 
 export const nextcloud = {
 	'nextcloud.error.notLinked': 'Mit Stella ist kein Nextcloud-Adressbuch verknüpft.',

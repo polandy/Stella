@@ -3,7 +3,7 @@ import { circleTreeVisibleTo, type CircleTreeRow } from './circle-tree';
 import type { Viewer } from './visibility';
 
 /*
- * The nesting as one reader may see it (docs/02 §2.4.2, docs/03 §3.7): a private circle of
+ * The nesting as one reader may see it (docs/dev/02 §2.4.2, docs/dev/03 §3.7): a private circle of
  * someone else is left out and only counted under a parent the reader sees, and a circle whose
  * parent is hidden stands on top.
  */

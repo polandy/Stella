@@ -4,7 +4,7 @@
 	import type { Conflict } from '$lib/import-match/merge-plan';
 
 	/*
-	 * One fact Stella and the card disagree on (docs/02 §2.16): two chips side by side, Stella's
+	 * One fact Stella and the card disagree on (docs/dev/02 §2.16): two chips side by side, Stella's
 	 * value picked at the start. A slim row rather than a box, so three conflicts stay readable.
 	 */
 	interface Props {

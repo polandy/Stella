@@ -2,7 +2,7 @@ import { describe, expect, it } from 'bun:test';
 import { parseStoryCursor } from './cursor';
 
 /*
- * The story cursor crosses the wire (docs/02 §2.23): the client posts back whatever the last
+ * The story cursor crosses the wire (docs/dev/02 §2.23): the client posts back whatever the last
  * page handed it. Anything else has to be refused rather than coerced — a cursor read as
  * "start from the top" would quietly re-serve the whole story from the beginning, and one read
  * as "finished" would silently truncate it.

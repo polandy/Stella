@@ -37,7 +37,7 @@
 	import { refusedMergeOf, type PersonForm, type PersonPageData } from './types';
 
 	/*
-	 * The top of a person's page (docs/05 §5.5): who this is. Portrait, name and description, a
+	 * The top of a person's page (docs/dev/05 §5.5): who this is. Portrait, name and description, a
 	 * few labelled facts — only what the record holds, each edited where it is read — and below
 	 * them the rows that have no fact (*Contact*, *Tags*, *How we met*). What the record does not
 	 * hold yet waits behind one quiet button that names it. One thing to do here (write a
@@ -74,7 +74,7 @@
 	const t = useTranslate();
 
 	/*
-	 * *Write a moment* opens the composer on this page (docs/05 §5.5). It stays a link to the
+	 * *Write a moment* opens the composer on this page (docs/dev/05 §5.5). It stays a link to the
 	 * journal page underneath: without JavaScript, or opened in a new tab, it still leads
 	 * somewhere a moment can be written.
 	 */
@@ -89,7 +89,7 @@
 	/** The viewer's day, for the age beside a birthday and the years since a date. */
 	const today = $derived(writersDay(data.today, browser ? deviceDay() : null));
 
-	// Something on its way out (docs/02 §2.23) is gone from the facts while its undo window is open.
+	// Something on its way out (docs/dev/02 §2.23) is gone from the facts while its undo window is open.
 	const removals = useRemovals();
 	const dates = $derived(data.dates.filter((d) => !removals.isPending(removalKey('date', d.id))));
 	const fields = $derived(
@@ -101,7 +101,7 @@
 
 	/*
 	 * Circles joined while Stella was out of reach: kept on the device and shown as dashed chips
-	 * beside the real ones until they are sent (docs/02 §2.18).
+	 * beside the real ones until they are sent (docs/dev/02 §2.18).
 	 */
 	const keptCircles = $derived(
 		outbox.mine.filter(
@@ -122,9 +122,9 @@
 	);
 	const otherDates = $derived(otherDateFacts(dates, today));
 	const addresses = $derived(addressLines(fields));
-	// The addresses they share with others (docs/02 §2.2), read beside their own.
+	// The addresses they share with others (docs/dev/02 §2.2), read beside their own.
 	const homes = $derived(homesShown(data.homes, c.id, removals.isPending));
-	/** "Teacher at Primarschule Muri" (docs/02 §2.2). */
+	/** "Teacher at Primarschule Muri" (docs/dev/02 §2.2). */
 	const jobLine = $derived(jobShortForm(c, (parts) => t('contact.job.at', parts)));
 
 	/*
@@ -210,7 +210,7 @@
 		recordMenu({ isAdmin: data.isAdmin, archived, isSelf, canTracePath: otherContacts.length > 0 })
 	);
 	/**
-	 * The confirm step the menu opened; `?merge=` opens merging (docs/02 §2.2.4.4), and so does a
+	 * The confirm step the menu opened; `?merge=` opens merging (docs/dev/02 §2.2.4.4), and so does a
 	 * merge the server refused, to say why.
 	 */
 	let panel = $state<'archive' | 'merge' | 'delete' | null>(
@@ -253,14 +253,14 @@
 		</div>
 
 		<div class="min-w-0">
-			<!-- Name and description are edited where they are read (docs/02 §2.2). -->
+			<!-- Name and description are edited where they are read (docs/dev/02 §2.2). -->
 			<NameEditor
 				name={c}
 				gender={c.gender}
 				shownNameChosen={data.shownNameChosen}
 				error={form?.namePartsError ?? null}
 			/>
-			<!-- An earlier name, neutral on purpose: a maiden name and any other alike (docs/02 §2.2). -->
+			<!-- An earlier name, neutral on purpose: a maiden name and any other alike (docs/dev/02 §2.2). -->
 			{#if c.formerName}
 				<p class="text-sm text-fg-muted" data-testid="former-name">
 					{t('contact.formerly', { name: c.formerName })}
@@ -290,7 +290,7 @@
 			<FormError message={form?.avatarError} variant="inline" size="xs" class="mt-1" />
 		</div>
 
-		<!-- The one thing to do here, and the rest behind ⋯ (docs/05 §5.5). -->
+		<!-- The one thing to do here, and the rest behind ⋯ (docs/dev/05 §5.5). -->
 		<div
 			class="col-span-2 flex items-center gap-2 @min-[48rem]/identity:col-span-1"
 			data-testid="identity-actions"

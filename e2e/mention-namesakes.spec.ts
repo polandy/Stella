@@ -2,9 +2,9 @@ import { expect, test, type Locator, type Page } from '@playwright/test';
 import { appReady, signIn } from './app';
 
 /*
- * Namesakes in the @-picker and when someone is named for the first time (docs/02 §2.2.3,
+ * Namesakes in the @-picker and when someone is named for the first time (docs/dev/02 §2.2.3,
  * §2.20.1, §2.22.1). Written after the maintainer checked the flows in the running app
- * (docs/08 §8.4.1).
+ * (docs/dev/08 §8.4.1).
  *
  * The suite shares one database, so every case makes its own people under a name no other
  * attempt shares: two people called the same, told apart only by their description, and a

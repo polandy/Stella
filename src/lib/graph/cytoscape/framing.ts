@@ -11,7 +11,7 @@ import type { Point } from './placement';
 /*
  * Where the view stands: framing the map below the toolbar and clear of a panel, stepping back to
  * show newcomers, following a node the keyboard or a search went to, and framing afresh after a
- * full-screen change unless the reader has taken the view over (docs/05 §5.8).
+ * full-screen change unless the reader has taken the view over (docs/dev/05 §5.8).
  */
 
 /** The margin kept around the map, in screen pixels, when it is framed or widened. */
@@ -76,7 +76,7 @@ export function frameOn(cy: Core, motion: Motion, opts: FramingOptions): Framing
 		const shown = peopleOn(cy).filter((n) => !n.hasClass('filtered-out')) as NodeCollection;
 		const boxOf = (nodes: NodeCollection) =>
 			boxAround(nodes.map((n) => ({ at: placeOf(n), size: sizeOf(n) })));
-		// A group's frame reaches past its members, its name above them (docs/02 §2.7).
+		// A group's frame reaches past its members, its name above them (docs/dev/02 §2.7).
 		const frames = shown
 			.parents()
 			.map((frame) => frameAround(boxOf(frame.children().intersection(shown) as NodeCollection)));
@@ -111,7 +111,7 @@ export function frameOn(cy: Core, motion: Motion, opts: FramingOptions): Framing
 
 	/*
 	 * Frames the map afresh where everyone stands now, keeping the family first as the last
-	 * framing did (docs/05 §5.8). At once: the canvas has just jumped to its new size, and a
+	 * framing did (docs/dev/05 §5.8). At once: the canvas has just jumped to its new size, and a
 	 * glide would only replay that jump. While the canvas still moves, the glide under way is
 	 * aiming at the old size, so the reframe waits until it has come to rest.
 	 */

@@ -11,7 +11,7 @@ import { answerOf, formOf, routeEvent, type FakeServices } from '$lib/server/tes
 import { detailsActions as actions } from './details';
 
 /*
- * Editing a circle's details from its header (docs/02 §2.4.2) as the edge answers it: the save,
+ * Editing a circle's details from its header (docs/dev/02 §2.4.2) as the edge answers it: the save,
  * the circle it belongs to, a refusal said in the reader's language under the form, a circle that
  * is gone, and a form the page did not make. `updateCircle` and `moveCircle` have their own
  * suites; the ports here only answer as the case needs.

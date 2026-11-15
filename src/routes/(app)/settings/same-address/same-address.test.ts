@@ -8,7 +8,7 @@ import { answerOf, formOf, routeEvent, type FakeServices } from '$lib/server/tes
 import { actions, load } from './+page.server';
 
 /*
- * *Settings → Data quality → Same address* as the edge answers it (docs/02 §2.17): nothing read
+ * *Settings → Data quality → Same address* as the edge answers it (docs/dev/02 §2.17): nothing read
  * until the check is asked for, the posted finding handed to the use-case, a finding gone since
  * the screen was drawn turned into a 404. The use-cases have their own suite; here Lea and Reto
  * share a line.

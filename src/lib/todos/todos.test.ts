@@ -13,7 +13,7 @@ import {
 } from './todos';
 
 /*
- * How an open to-do stands and reads (docs/02 §2.26): the card's order, whether a day is
+ * How an open to-do stands and reads (docs/dev/02 §2.26): the card's order, whether a day is
  * overdue, and its label — all handed *today*, never reading the clock.
  */
 

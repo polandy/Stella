@@ -12,7 +12,7 @@ import type { StoryDeps } from '../domain/story/story';
 import type { IdGenerator } from '../id';
 
 /*
- * The `story` bounded context of the composition root (docs/08 §8.3): what happened with a
+ * The `story` bounded context of the composition root (docs/dev/08 §8.3): what happened with a
  * person — journal entries and the moments that write them, logged touchpoints, and the story
  * timeline that shows them beside the gifts and done to-dos other contexts own. Built once per process by `createServices`; the edge reads it off
  * `locals.services.story`.

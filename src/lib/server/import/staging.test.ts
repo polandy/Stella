@@ -5,7 +5,7 @@ import { join } from 'node:path';
 import { discardStagedDump, pruneStagedDumps, readStagedDump, stageDump } from './staging';
 
 /*
- * Dump staging between wizard steps (docs/02 §2.16): a token finds the dump again, a forged
+ * Dump staging between wizard steps (docs/dev/02 §2.16): a token finds the dump again, a forged
  * token finds nothing and names no path, and dumps left behind by an abandoned wizard are
  * pruned by age so the data directory cannot fill up silently.
  */

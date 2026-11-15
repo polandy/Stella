@@ -2,7 +2,7 @@ import { withPage, type GlimpsePhoto, type GlimpseScope } from '$lib/immich/stri
 import { fetchGlimpse } from './immich-glimpse';
 
 /*
- * One list of a linked person's photos from Immich, as the Photos card shows it (docs/02
+ * One list of a linked person's photos from Immich, as the Photos card shows it (docs/dev/02
  * §2.24.3, §2.24.8): their own latest, or those of them with someone else, twelve at a time — or,
  * in *Find in Immich*, someone else's for their picture (§2.24.2).
  * Asked for after the page has loaded, so a slow Immich never holds the page up; nothing of it is

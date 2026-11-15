@@ -3,7 +3,7 @@ import { inMemoryCircleMemberships, membership } from '../testing';
 import { listCirclesForContact, listMembers, listRoleSuggestionsByCircleName } from './memberships';
 
 /*
- * Who is in which circle, as the circle page and a person's page list it (docs/02 §2.4.2) —
+ * Who is in which circle, as the circle page and a person's page list it (docs/dev/02 §2.4.2) —
  * over the in-memory membership read model.
  */
 

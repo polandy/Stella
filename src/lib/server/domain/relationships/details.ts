@@ -8,11 +8,11 @@ import {
 } from '../../../relationships/status';
 
 /*
- * What a relationship carries beyond its type (docs/02 §2.4), and the one check every writer
+ * What a relationship carries beyond its type (docs/dev/02 §2.4), and the one check every writer
  * of it — creating, editing, importing — runs before anything is stored.
  */
 
-/** The specifics a relationship carries beyond its type (docs/02 §2.4). */
+/** The specifics a relationship carries beyond its type (docs/dev/02 §2.4). */
 export interface RelationshipDetails {
 	/** Free text: how these two connect, e.g. "met through Peter at the ski course". */
 	description: string | null;
@@ -25,7 +25,7 @@ export interface RelationshipDetails {
 /**
  * The same three as they arrive from a form. For the two free fields, absent, blank and null
  * all mean "not said"; for the status they mean `current`, the only state a link that exists
- * can be in until it is explicitly ended (docs/02 §2.4).
+ * can be in until it is explicitly ended (docs/dev/02 §2.4).
  */
 export interface RelationshipDetailsInput {
 	description?: string | null;

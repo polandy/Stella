@@ -13,7 +13,7 @@ import { editNote, type EditNoteDeps } from './edit-note';
 import { EmptyNoteError } from './notes';
 
 /*
- * Editing a note (docs/02 §2.5, docs/03 §3.7): its author alone, title and body. Wired to the
+ * Editing a note (docs/dev/02 §2.5, docs/dev/03 §3.7): its author alone, title and body. Wired to the
  * real Drizzle adapter on an in-memory database, because what an edit rebuilds — mentions and
  * the search row — lives there.
  */
@@ -267,7 +267,7 @@ describe('editNote: search and activity', () => {
 		expect(found('Anna')).toEqual(['n']);
 	});
 
-	it('writes no activity entry (docs/02 §2.11)', async () => {
+	it('writes no activity entry (docs/dev/02 §2.11)', async () => {
 		addNote('n');
 		await editNote(deps, nina, { id: 'n', title: 'T', body: 'edited' });
 		expect(db.select().from(schema.activityLog).all()).toEqual([]);

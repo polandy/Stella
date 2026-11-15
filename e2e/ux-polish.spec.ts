@@ -2,11 +2,11 @@ import { expect, test, type Locator, type Page } from '@playwright/test';
 import { appReady, mention, pickPerson, signIn } from './app';
 
 /*
- * The UX polish of #290 (docs/05 §5.4, §5.5, §5.7; docs/02 §2.22.2): the person page's jump bar
+ * The UX polish of #290 (docs/dev/05 §5.4, §5.5, §5.7; docs/dev/02 §2.22.2): the person page's jump bar
  * shows only once it sticks, an in-place value carries a pencil, a phone wraps a long
  * description and shows only the way back in its top bar, the stream says the time of day
  * where its day heading does not, and the composer's controls are a switch, a photo button and
- * the day pill. Written after the owner tried it in the app (docs/08 §8.4.1).
+ * the day pill. Written after the owner tried it in the app (docs/dev/08 §8.4.1).
  *
  * Only what the cases write themselves is changed: a description on Heidi Lehmann, a moment on
  * Bettina Roth mentioning Jan Steiner and a touchpoint on Reto Hofer with Kurt Lehmann — people
@@ -176,7 +176,7 @@ test.describe('a long description', () => {
 		const field = page.getByRole('textbox', { name: 'Edit description' });
 		await field.fill(text);
 		await field.press('Enter');
-		// The clamped box itself: the pencil's room is an inner span inside it (docs/05 §5.7).
+		// The clamped box itself: the pencil's room is an inner span inside it (docs/dev/05 §5.7).
 		const value = trigger.locator(':scope > span', { hasText: text.trim() });
 		await expect(value).toBeVisible();
 		return value;
@@ -307,7 +307,7 @@ test.describe('the composer’s controls', () => {
 		await expect(page.getByText('Shared', { exact: true })).toBeVisible();
 
 		// The photo control is a button — with Immich on, a menu of where the photos come from
-		// (docs/02 §2.24.9); its badge counts what was picked.
+		// (docs/dev/02 §2.24.9); its badge counts what was picked.
 		const photos = page.getByRole('button', { name: 'Add photos' });
 		await expect(photos).toBeVisible();
 		await expect(page.getByTestId('photo-count')).toHaveCount(0);

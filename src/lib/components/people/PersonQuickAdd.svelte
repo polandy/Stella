@@ -10,7 +10,7 @@
 	import { untrack } from 'svelte';
 
 	/*
-	 * The person picker's create panel (docs/02 §2.2.2): the typed name split into first and last,
+	 * The person picker's create panel (docs/dev/02 §2.2.2): the typed name split into first and last,
 	 * a little more on request, and a save that posts to the quick-add endpoint and hands the
 	 * picker the person it answers with.
 	 */
@@ -62,7 +62,7 @@
 	});
 
 	async function submitCreate() {
-		// Stella refuses a first name alone (docs/02 §2.2.3); Enter must not get past the button.
+		// Stella refuses a first name alone (docs/dev/02 §2.2.3); Enter must not get past the button.
 		if (saving || !isKnownByMoreThanAFirstName(draft)) return;
 		saving = true;
 		createError = null;

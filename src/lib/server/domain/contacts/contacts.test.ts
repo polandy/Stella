@@ -23,7 +23,7 @@ import { contactRepositoryWith, fixedClock, sequentialIds } from '../testing';
 /*
  * The createContact use-case: derive the display name, apply the creator's default
  * visibility, normalise optional fields, and persist via the repository port. Pure
- * orchestration tested with fakes (docs/08 §8.3).
+ * orchestration tested with fakes (docs/dev/08 §8.3).
  */
 
 const NOW = 1_700_000_000_000;
@@ -102,7 +102,7 @@ describe('createContact', () => {
 		expect(f.inserted?.nickname).toBeNull();
 	});
 
-	it('refuses a first name alone, with no last name and nothing to know them by (docs/02 §2.2.3)', async () => {
+	it('refuses a first name alone, with no last name and nothing to know them by (docs/dev/02 §2.2.3)', async () => {
 		const f = fakeRepo();
 		await expect(
 			createContact(deps(f.repo), creator, {
@@ -204,7 +204,7 @@ describe('createContact birth dates', () => {
 });
 
 /*
- * Editing a name or a description in place (docs/02 §2.2): the hero's own fields, saved
+ * Editing a name or a description in place (docs/dev/02 §2.2): the hero's own fields, saved
  * without a form. A name may never become empty — display_name is required, and a person
  * with no name is unreachable in every list that sorts by it.
  */
@@ -272,7 +272,7 @@ const existing: Contact = {
 describe('editProfile', () => {
 	/*
 	 * Only the description now: the name is edited with its parts in one editor
-	 * (`editNameParts`), so there is one way to rename, not two (docs/02 §2.2).
+	 * (`editNameParts`), so there is one way to rename, not two (docs/dev/02 §2.2).
 	 */
 	it('saves a trimmed description, keeps the name as stored, and stamps the change', async () => {
 		const f = editableRepo(existing);
@@ -314,7 +314,7 @@ describe('editProfile', () => {
 });
 
 /*
- * Setting a gender from the profile (docs/02 §2.2): one tap on one of three, and a tap on the
+ * Setting a gender from the profile (docs/dev/02 §2.2): one tap on one of three, and a tap on the
  * chosen one again takes it off the record.
  */
 describe('setGender', () => {
@@ -359,7 +359,7 @@ describe('setGender', () => {
 });
 
 /*
- * A job title and company from the profile card (docs/02 §2.2): two free-text fields saved
+ * A job title and company from the profile card (docs/dev/02 §2.2): two free-text fields saved
  * together, trimmed, a blank one taken off the record.
  */
 describe('setJob', () => {
@@ -439,7 +439,7 @@ describe('setJob', () => {
 });
 
 /*
- * Tidying up the people known by a first name only (docs/02 §2.2.3): a description written
+ * Tidying up the people known by a first name only (docs/dev/02 §2.2.3): a description written
  * straight from the list, the name left as it is.
  */
 describe('describeContact', () => {
@@ -490,7 +490,7 @@ describe('describeContact', () => {
 });
 
 /*
- * Archiving (docs/02 §2.2): the household puts someone out of the way without losing them.
+ * Archiving (docs/dev/02 §2.2): the household puts someone out of the way without losing them.
  * The stamp comes from the clock port, never from the adapter, so the test can name it.
  */
 describe('archiveContact / restoreContact', () => {
@@ -523,7 +523,7 @@ describe('archiveContact / restoreContact', () => {
 });
 
 /*
- * The read before a write may be a moment old: the write asks visibility again (docs/03 §3.7),
+ * The read before a write may be a moment old: the write asks visibility again (docs/dev/03 §3.7),
  * and a person made private in between is answered for as one that is not there (SV-06).
  */
 describe('a person gone from sight between the read and the write', () => {

@@ -11,7 +11,7 @@
 	import type { ActionData, PageData } from './$types';
 
 	/*
-	 * The differences a sync of the linked Nextcloud book found (docs/02 §2.16.3). Each row is one
+	 * The differences a sync of the linked Nextcloud book found (docs/dev/02 §2.16.3). Each row is one
 	 * fact with both sides as buttons: the answer is one tap, and the row leaves the list.
 	 */
 

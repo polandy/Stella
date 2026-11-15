@@ -4,7 +4,7 @@ import { asStellaPerson, cardAvatar, onCard } from './linked-person';
 import type { LinkedPerson } from './store';
 
 /*
- * A linked person both ways a sync reads them (docs/02 §2.16.3): as the person a card is merged
+ * A linked person both ways a sync reads them (docs/dev/02 §2.16.3): as the person a card is merged
  * against, and as what their card holds — labels in the words address books share, the home
  * they live in as their home address, and a picture only in a format a phone shows.
  */

@@ -1,9 +1,9 @@
 import { expect, test } from '@playwright/test';
 
 /*
- * The security baseline a browser actually receives (docs/04 §4.7): the page's
+ * The security baseline a browser actually receives (docs/dev/04 §4.7): the page's
  * Content-Security-Policy, and a setup form that stays shut once a household exists.
- * Written after the owner's hand test (docs/08 §8.4.1).
+ * Written after the owner's hand test (docs/dev/08 §8.4.1).
  */
 
 // A visitor, not the suite's signed-in member: both checks are about what a stranger meets.

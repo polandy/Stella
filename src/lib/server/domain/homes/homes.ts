@@ -9,7 +9,7 @@ import type { ContactLookup } from '../contacts/contacts';
 import { ContactGoneError } from '../contacts/require-visible';
 
 /*
- * A shared home (docs/02 §2.2, *A shared home*; docs/03 §3.3): one address and the people who
+ * A shared home (docs/dev/02 §2.2, *A shared home*; docs/dev/03 §3.3): one address and the people who
  * live there, so a family's address is typed once. A home has no visibility of its own — it is
  * only ever reached through a member the viewer may see — and the database deletes it with its
  * last member.
@@ -66,7 +66,7 @@ export interface HomeChange {
 	dropFields: { contactId: string; fieldId: string }[];
 	addFields: NewContactField[];
 	join: { homeId: string; contactId: string; createdBy: string; createdAt: number }[];
-	/** A home left with nobody in it is deleted by the database (docs/03 §3.3). */
+	/** A home left with nobody in it is deleted by the database (docs/dev/03 §3.3). */
 	leave: { homeId: string; contactId: string }[];
 }
 
@@ -265,7 +265,7 @@ export interface ChangeLineInput {
 /**
  * Rewrite a home's address. For everyone, the members the viewer may not see are split off
  * first and keep the old line as their own — their records change only by their owner
- * (docs/03 §3.7). Only for this person moves them out with the new line as their own, unless
+ * (docs/dev/03 §3.7). Only for this person moves them out with the new line as their own, unless
  * nobody else lives there. Answers how many people's address changed, for the toast.
  */
 export async function changeHomeLine(
@@ -338,7 +338,7 @@ export async function leaveHome(
 	await deps.homes.apply(change);
 }
 
-/** The household's homes as the moment composer offers them (docs/02 §2.20.3). */
+/** The household's homes as the moment composer offers them (docs/dev/02 §2.20.3). */
 export async function listHomeMembers(deps: HomeListDeps, viewer: Viewer): Promise<HomeMembers[]> {
 	return deps.homeReads.listMembersVisibleTo(viewer);
 }

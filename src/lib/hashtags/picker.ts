@@ -1,7 +1,7 @@
 import { hashtagAt, hashtagsIn, tagKey } from './hashtags';
 
 /*
- * Pure helpers behind the `#` picker (docs/02 §2.20.2), the `@` picker's sibling: find the tag
+ * Pure helpers behind the `#` picker (docs/dev/02 §2.20.2), the `@` picker's sibling: find the tag
  * being typed at the caret, rank the household's tags for it, and splice the choice back in.
  */
 

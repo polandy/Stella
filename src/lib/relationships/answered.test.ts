@@ -2,7 +2,7 @@ import { describe, expect, it } from 'bun:test';
 import { allSent, answeredCount, wasTakenBack, type AnsweredClaims } from './answered';
 
 /*
- * Held versus sent (docs/02 §2.4.1). The distinction exists because of one defect: a screen
+ * Held versus sent (docs/dev/02 §2.4.1). The distinction exists because of one defect: a screen
  * that treats "answered and no longer held" as sent hides a row the moment it is taken back,
  * since an undone answer is also no longer held.
  */

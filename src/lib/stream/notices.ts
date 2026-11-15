@@ -1,25 +1,25 @@
 import * as v from 'valibot';
 
 /*
- * What a stream notice says (docs/02 §2.11, docs/03 §activity_log). A removal is stored as the
+ * What a stream notice says (docs/dev/02 §2.11, docs/dev/03 §activity_log). A removal is stored as the
  * prose written when the record went — nothing is left to say it from later. A line about
  * people who are still there (last names given, a rename) is stored as **facts** instead, in
  * `summary` as JSON, and said at read time in the reader's language, so a German member's
  * batch never reads half in German on an English Home.
  */
 
-/** The batch of last names (docs/02 §2.2.4.4). */
+/** The batch of last names (docs/dev/02 §2.2.4.4). */
 export const LAST_NAMES_ENTITY = 'last_name';
-/** A name edited on the profile (docs/02 §2.2). */
+/** A name edited on the profile (docs/dev/02 §2.2). */
 export const RENAME_ENTITY = 'contact_name';
-/** A member removed from the household (`delete`), or restored to it (`update`) (docs/02 §2.1). */
+/** A member removed from the household (`delete`), or restored to it (`update`) (docs/dev/02 §2.1). */
 export const MEMBER_ENTITY = 'member';
-/** A circle deleted, with everything in it (docs/03 §activity_log). */
+/** A circle deleted, with everything in it (docs/dev/03 §activity_log). */
 export const CIRCLE_ENTITY = 'circle';
 
 /**
- * The authored records a member other than the author may remove (docs/03 §3.7). A removal of
- * one is logged under its kind as entity type, with facts — never its text (docs/02 §2.11).
+ * The authored records a member other than the author may remove (docs/dev/03 §3.7). A removal of
+ * one is logged under its kind as entity type, with facts — never its text (docs/dev/02 §2.11).
  */
 const REMOVED_RECORD_KINDS = [
 	'note',

@@ -1,7 +1,7 @@
 import type { KnownTag } from './picker';
 
 /*
- * Reading a tag across the household (docs/02 §2.20.2): Home's Tags row and the line under it,
+ * Reading a tag across the household (docs/dev/02 §2.20.2): Home's Tags row and the line under it,
  * and the head of a tag's own page. Pure; the tags arrive scoped and counted, most used first
  * (`EntryTagReads.listVisibleTo`), and the moments scoped by the stream's read.
  */
@@ -94,7 +94,7 @@ export function tagSummary(
 }
 
 /**
- * The head row of a search for one `#tag`, leading to the tag's page (docs/02 §2.9): the count
+ * The head row of a search for one `#tag`, leading to the tag's page (docs/dev/02 §2.9): the count
  * is the household's, which the search's own limit may cut short. Null when the query was no
  * tag or found nothing.
  */

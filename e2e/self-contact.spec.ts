@@ -2,8 +2,8 @@ import { expect, test, type Page } from '@playwright/test';
 import { openPerson, pickPerson, recordAction, releaseSelfClaim, signIn } from './app';
 
 /*
- * Saying which of these people you are (docs/02 §2.1.3). Written after the screens were seen
- * in the running app (docs/08 §8.4.1).
+ * Saying which of these people you are (docs/dev/02 §2.1.3). Written after the screens were seen
+ * in the running app (docs/dev/08 §8.4.1).
  *
  * The link lives in the profile and the whole suite shares one database, so every case takes
  * it back again — left standing, it would put Sandra in the middle of the map and in the

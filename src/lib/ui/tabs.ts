@@ -1,5 +1,5 @@
 /*
- * The keyboard of a tab list (docs/05 §5.7, WAI-ARIA tabs pattern): only the chosen tab is a
+ * The keyboard of a tab list (docs/dev/05 §5.7, WAI-ARIA tabs pattern): only the chosen tab is a
  * Tab stop, and left and right step along the list, wrapping at either end.
  */
 

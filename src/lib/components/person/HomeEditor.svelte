@@ -11,7 +11,7 @@
 	import type { PersonForm, PersonPageData } from './types';
 
 	/*
-	 * One home in the address editor, in a frame of its own (docs/02 §2.2, *A shared home*): its
+	 * One home in the address editor, in a frame of its own (docs/dev/02 §2.2, *A shared home*): its
 	 * line for everyone who lives there, who they are — the × on a chip moves that person out, the
 	 * “+” after them adds someone — and *Moved out* for this person. A changed line asks once whom
 	 * it is for, *Everyone here* preselected.

@@ -4,7 +4,7 @@
 	import { useI18n } from '$lib/i18n/context.svelte';
 
 	/*
-	 * *Lives at …* (docs/02 §2.4): the address offered to new children or a partner created in
+	 * *Lives at …* (docs/dev/02 §2.4): the address offered to new children or a partner created in
 	 * the add form, ticked, with everyone they would live with.
 	 */
 

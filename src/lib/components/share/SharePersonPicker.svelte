@@ -6,7 +6,7 @@
 	import { INPUT } from '../person/inputs';
 
 	/*
-	 * Whom a share is about (docs/02 §2.18.3): one person. Before anything is typed, the few
+	 * Whom a share is about (docs/dev/02 §2.18.3): one person. Before anything is typed, the few
 	 * the sheet offers first — opened last on this device, then last written about; a name typed
 	 * searches everyone the viewer may see, from the shell's list, offline too.
 	 */

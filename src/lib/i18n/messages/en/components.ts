@@ -1,8 +1,8 @@
-/* Copy that belongs to the design-system components themselves (docs/05). */
+/* Copy that belongs to the design-system components themselves (docs/dev/05). */
 
 export const components = {
 	'components.foundByFormerName': (p: { name: string }) => `(formerly ${p.name})`,
-	// A search row matched by the job alone says so (docs/02 §2.9).
+	// A search row matched by the job alone says so (docs/dev/02 §2.9).
 	'components.foundByJob': 'Job',
 	'components.foundByJobHint': 'Found by their job or company',
 	'components.saved': 'Saved',
@@ -23,7 +23,7 @@ export const components = {
 		'Drag to move, pinch or scroll to zoom. Arrow keys and + / − work too.',
 	'components.cropper.zoom': 'Zoom',
 	'components.cropper.use': 'Use photo',
-	// Choosing a profile picture when the person's circles have photos (docs/02 §2.14).
+	// Choosing a profile picture when the person's circles have photos (docs/dev/02 §2.14).
 	'components.photo.choose': 'Choose a profile picture',
 	'components.photo.fromFile': 'Choose a picture…',
 	'components.photo.fromGroupPhoto': 'From a group photo',

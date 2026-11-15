@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'bun:test';
 import { isImportantDateKind } from './kinds';
 
-/* Important date kinds (docs/02 §2.13): a form field is one only if the list names it. */
+/* Important date kinds (docs/dev/02 §2.13): a form field is one only if the list names it. */
 
 describe('isImportantDateKind', () => {
 	it('knows the kinds a date can have, and nothing else', () => {

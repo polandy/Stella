@@ -99,7 +99,7 @@ export const search: SearchMessages = {
 	'graph.peek.expand': 'Verbindungen aufklappen',
 	'graph.peek.openProfile': 'Profil öffnen',
 	'graph.peek.openCircle': 'Kreis öffnen',
-	// The phone's one-row strip has room for a word each (docs/05 §5.8).
+	// The phone's one-row strip has room for a word each (docs/dev/05 §5.8).
 	'graph.peek.expandShort': 'Aufklappen',
 	'graph.peek.openProfileShort': 'Profil',
 	'graph.peek.openCircleShort': 'Kreis',

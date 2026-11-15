@@ -21,13 +21,13 @@
 
 	/*
 	 * A person picker that filters by name as you type, for any form field where someone chooses
-	 * one or more people from a list too long to scan (docs/02 — search wherever a person is
+	 * one or more people from a list too long to scan (docs/dev/02 — search wherever a person is
 	 * selected). Posts the same hidden `name` field(s) a plain `<select>` would, so it drops into
 	 * an existing form action without changing what the server reads.
 	 *
 	 * With `allowCreate`, a search that finds no one is not a dead end: the typed name becomes a
 	 * create option, and the person is named right here rather than on the quick-add page
-	 * (docs/02 §2.2.2, `PersonQuickAdd`).
+	 * (docs/dev/02 §2.2.2, `PersonQuickAdd`).
 	 */
 
 	interface Props {
@@ -46,7 +46,7 @@
 		allowCreate?: boolean;
 		/**
 		 * What to fill the new person's description with, from what the form around the picker
-		 * already says about them — "Child of Hans Meyer" in a relationship form (docs/02 §2.2.3).
+		 * already says about them — "Child of Hans Meyer" in a relationship form (docs/dev/02 §2.2.3).
 		 */
 		suggestedDescription?: string;
 		/** Called with the person a pick lands on, for a form that reads more off them than the id. */
@@ -62,7 +62,7 @@
 		min?: number;
 		/** What the closed search says once `max` is reached. */
 		fullPlaceholder?: string;
-		/** Chips to mark as refused — the form says why under the field (docs/02 §2.4). */
+		/** Chips to mark as refused — the form says why under the field (docs/dev/02 §2.4). */
 		markedIds?: readonly string[];
 		/** Read out on a marked chip, after the name. */
 		markedLabel?: string;
@@ -244,7 +244,7 @@
 			else choose(matches[highlighted]);
 		} else if (event.key === 'Escape') {
 			// Consumed, so the form around the picker keeps its own Escape for itself: the
-			// section's disclosure closes on Escape (docs/05 §5.7), and dismissing a suggestion
+			// section's disclosure closes on Escape (docs/dev/05 §5.7), and dismissing a suggestion
 			// list must not throw away the half-filled form behind it.
 			event.preventDefault();
 			open = false;
@@ -376,7 +376,7 @@
 </div>
 
 <style>
-	/* A refused person (docs/02 §2.4): tinted and outlined in the danger colour, never removed. */
+	/* A refused person (docs/dev/02 §2.4): tinted and outlined in the danger colour, never removed. */
 	.chip-marked {
 		background: color-mix(in srgb, var(--danger) 12%, var(--card));
 		outline: 1px solid color-mix(in srgb, var(--danger) 55%, transparent);

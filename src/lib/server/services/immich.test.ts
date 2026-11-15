@@ -22,7 +22,7 @@ import type { AuthConfig } from './auth';
 import { createImmichServices, type ImmichWiring } from './immich';
 
 /*
- * The immich group of the composition root (docs/08 §8.3), built over a real in-memory SQLite
+ * The immich group of the composition root (docs/dev/08 §8.3), built over a real in-memory SQLite
  * and the demo's in-memory Immich: what the edge gets from `locals.services.immich` must work
  * end to end — a person added from a face is linked through the one link repository every
  * other Immich deps reads — and without a configured Immich the whole group is null.

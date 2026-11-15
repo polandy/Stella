@@ -37,7 +37,7 @@ import { createFileMediaStore } from '../media/file-store';
 import { createFileMediaStreamSource } from '../media/file-stream-source';
 
 /*
- * The `media` bounded context of the composition root (docs/08 §8.3): a person's photos — the
+ * The `media` bounded context of the composition root (docs/dev/08 §8.3): a person's photos — the
  * avatar, the gallery, the square a gallery photo is worn through, journal photos and the ones
  * an import brings — the store their bytes live in, and the home stream that shows them.
  * Built once per process by `createServices`; the edge reads it off `locals.services.media`.
@@ -53,7 +53,7 @@ export interface MediaServices {
 	/** Which file `/media/[id]` serves, only when the viewer may see the photo. */
 	photoFiles: PhotoFileReads;
 	/**
-	 * The one media store under `MEDIA_DIR` (docs/04 §4.6): the people and circles contexts
+	 * The one media store under `MEDIA_DIR` (docs/dev/04 §4.6): the people and circles contexts
 	 * unlink and keep their files through it too.
 	 */
 	store: MediaStore;
@@ -65,9 +65,9 @@ export interface MediaServices {
 	framingDeps: FramingDeps;
 	galleryUploadDeps: GalleryUploadDeps;
 	journalPhotoDeps: JournalPhotoDeps;
-	/** An entry's photos as its author edits it (docs/02 §2.20). */
+	/** An entry's photos as its author edits it (docs/dev/02 §2.20). */
 	entryPhotoDeps: EntryPhotoDeps;
-	/** The Immich references on the entries a story page reads (docs/04 ADR-132). */
+	/** The Immich references on the entries a story page reads (docs/dev/04 ADR-132). */
 	entryImmichPhotos: EntryImmichPhotoReads;
 	/** An entry's Immich references as its author edits it; taking one off needs no Immich. */
 	ownEntryImmichPhotos: OwnEntryImmichPhotos;

@@ -2,12 +2,12 @@ import { expect, test, type Page } from '@playwright/test';
 import { signIn } from './app';
 
 /*
- * API tokens and the import API (docs/02 §2.16.1), end to end: a token is made on its settings
+ * API tokens and the import API (docs/dev/02 §2.16.1), end to end: a token is made on its settings
  * page, shown once, signs the API in, and stops the moment it is revoked; and what a script
  * sends through it lands in the household as a person with a page and a circle, completes a
  * person already there with the details they lack, once, or renames and nests circles already
  * there. Written after the flow
- * was verified in the running app (docs/08 §8.4.1).
+ * was verified in the running app (docs/dev/08 §8.4.1).
  *
  * Every refusal is paired with the same thing succeeding first — the token answering before it
  * is revoked, the page being signed in while its cookie is refused by the API — so no case can

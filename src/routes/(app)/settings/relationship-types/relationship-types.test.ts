@@ -21,7 +21,7 @@ import type { Locale } from '$lib/i18n/locales';
 import { actions, load } from './+page.server';
 
 /*
- * The household's relationship vocabulary (docs/02 §2.4) as the edge answers it: admin only, the
+ * The household's relationship vocabulary (docs/dev/02 §2.4) as the edge answers it: admin only, the
  * form read, a type that is gone, a refusal of the use-case said in the reader's language, and a
  * success that sends the page back to itself. The use-cases have their own suite
  * (`relationship-types.test.ts` in the domain); the port here only answers the way the case needs.

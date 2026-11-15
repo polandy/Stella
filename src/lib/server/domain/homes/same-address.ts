@@ -15,11 +15,11 @@ import type { IdGenerator } from '../../id';
 import { HomeGoneError, type HomeChange, type HomeRepository } from './homes';
 
 /*
- * *Settings → Data quality → Same address* (docs/02 §2.17; docs/02 §2.2, *A shared home*):
+ * *Settings → Data quality → Same address* (docs/dev/02 §2.17; docs/dev/02 §2.2, *A shared home*):
  * people whose own address lines are one address become one home, or join the home that
  * already has the line — only on a tap, and only ever people the viewer may see, so a private
- * person changes by their owner alone (docs/03 §3.7). *Not the same* is the household's answer,
- * kept beside the relationship checks' (docs/03 §3.9).
+ * person changes by their owner alone (docs/dev/03 §3.7). *Not the same* is the household's answer,
+ * kept beside the relationship checks' (docs/dev/03 §3.9).
  *
  * Every write runs the check again on fresh data and acts only on what it still finds, so a
  * screen gone stale can never move someone who no longer has the line.
@@ -50,7 +50,7 @@ export interface NewSameAddressDismissal {
 	dismissedAt: number;
 }
 
-/** The household's *Not the same* answers, as `sameAddressKey` keys (docs/03 §3.9). */
+/** The household's *Not the same* answers, as `sameAddressKey` keys (docs/dev/03 §3.9). */
 export interface SameAddressDismissalRepository {
 	listForHousehold(viewer: Viewer): Promise<string[]>;
 	/** A second *no* is the same *no*. */

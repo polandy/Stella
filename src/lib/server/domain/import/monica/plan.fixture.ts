@@ -2,7 +2,7 @@ import type { SourceExport } from './monica-export';
 import type { ImportOptions } from './plan';
 import { englishWording } from './wording.fixture';
 
-/* The export and options the plan specs start from (docs/02 §2.16). */
+/* The export and options the plan specs start from (docs/dev/02 §2.16). */
 
 export const NOW = 1_700_000_000_000;
 export const opts: ImportOptions = {

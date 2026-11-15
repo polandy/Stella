@@ -2,9 +2,9 @@ import { expect, test, type Page } from '@playwright/test';
 import { appReady, openPerson, signIn } from './app';
 
 /*
- * The household's linked Nextcloud book (docs/02 §2.16.3): its new cards through the review,
+ * The household's linked Nextcloud book (docs/dev/02 §2.16.3): its new cards through the review,
  * a linked person written out, and the card coming back with a fact to add and one that
- * disagrees. Written after the owner tried it on a preview (docs/08 §8.4.1).
+ * disagrees. Written after the owner tried it on a preview (docs/dev/08 §8.4.1).
  *
  * The e2e server runs with `NEXTCLOUD_DEMO=true`, so the book is the in-memory demo book
  * (`src/lib/server/nextcloud/demo-book.ts`): once Stella has written Markus's card, a "phone"

@@ -21,13 +21,13 @@
 	import { removalKey, type RemovalKind } from '$lib/undo/keys';
 
 	/*
-	 * The *New from Immich* tab of *Find your people* (docs/02 §2.24.7): faces named in Immich
+	 * The *New from Immich* tab of *Find your people* (docs/dev/02 §2.24.7): faces named in Immich
 	 * that are nobody in Stella yet, most photos first. Immich can name hundreds of people, so the
 	 * list shows a page of them and *Show more* adds the next; the whole list came with the page.
 	 *
 	 * A face assigned or added leaves the list here, with a toast — *Lena Köhler added · Open* —
 	 * and the member stays in the list. Neither has an undo, like a link on the Matching tab.
-	 * *Ignore* is held for the undo window like any removal (docs/02 §2.23), then kept for the
+	 * *Ignore* is held for the undo window like any removal (docs/dev/02 §2.23), then kept for the
 	 * household; ignored faces close the tab, folded, with who and when, and *Propose again*.
 	 */
 	interface IgnoredFace {

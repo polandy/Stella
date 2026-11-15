@@ -2,7 +2,7 @@
 
 /*
  * Whether Stella is in reach, as the worker has seen it, and how old the page in each window
- * is — told to the pages so the offline banner matches reality (docs/02 §2.18, *Saying so*).
+ * is — told to the pages so the offline banner matches reality (docs/dev/02 §2.18, *Saying so*).
  */
 
 import { isPageData, keptAt } from '$lib/pwa/cache-policy';
@@ -26,7 +26,7 @@ export const isReachable = (): boolean => reachable;
 
 /*
  * When the page each open window shows was kept, if it came off the device: the offline line
- * says how old it is (docs/02 §2.18, *Saying so*). Null once Stella answered it.
+ * says how old it is (docs/dev/02 §2.18, *Saying so*). Null once Stella answered it.
  * Keyed by client id, because two windows can show copies of different ages. Never pruned: a
  * window being navigated is not yet among the open ones, so pruning could drop the entry it is
  * about to ask for; and the browser stops an idle worker, map and all, within minutes.

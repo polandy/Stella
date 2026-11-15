@@ -22,9 +22,9 @@
 	import type { PersonForm, PersonPageData } from './types';
 
 	/*
-	 * The To-dos card (docs/02 §2.26): what is still owed this person, those with a day first.
+	 * The To-dos card (docs/dev/02 §2.26): what is still owed this person, those with a day first.
 	 * The page sets it right under the identity card while something is open and at its end, as
-	 * one line, while nothing is (docs/05 §5.5) — so a to-do is the first thing read about
+	 * one line, while nothing is (docs/dev/05 §5.5) — so a to-do is the first thing read about
 	 * somebody exactly as long as there is one.
 	 */
 	type Todo = PersonPageData['todos'][number];
@@ -42,12 +42,12 @@
 	const removals = useRemovals();
 	const c = $derived(data.contact);
 
-	// A to-do on its way out (docs/02 §2.23) is gone from the card while its undo window is open.
+	// A to-do on its way out (docs/dev/02 §2.23) is gone from the card while its undo window is open.
 	const shown = $derived(
 		rows.filter((row) => !removals.isPending(removalKey('todo', row.todo.id)))
 	);
 
-	/** To-dos noted here while Stella was out of reach (docs/02 §2.18), until they are sent. */
+	/** To-dos noted here while Stella was out of reach (docs/dev/02 §2.18), until they are sent. */
 	const kept = $derived(
 		outbox.mine.filter(
 			(item): item is KeptOf<'todo.add'> =>
@@ -59,7 +59,7 @@
 	const line = $derived(cardShape('todos', shown.length > 0 || kept.length > 0) === 'line');
 
 	let open = $state(false);
-	// The palette's *To-do for …* lands here with the form open (docs/05 §5.4). On a navigation,
+	// The palette's *To-do for …* lands here with the form open (docs/dev/05 §5.4). On a navigation,
 	// not on every load: a save reloads the page, and must not open it again.
 	afterNavigate(({ to }) => {
 		if (to && asksForNewTodo(to.url)) open = true;

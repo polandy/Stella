@@ -8,7 +8,7 @@ import { CAPTION_ID } from './tree-canvas';
 /*
  * Reconciling the canvas with a fresh element set: who stays keeps their place and takes on what
  * the elements now say about them, who is gone leaves, and the newcomers are placed clear of
- * everyone (docs/05 §5.8). Nobody is moved here beyond setting the newcomers down.
+ * everyone (docs/dev/05 §5.8). Nobody is moved here beyond setting the newcomers down.
  */
 
 /** The classes the elements decide, which an element already on the canvas takes on afresh. */

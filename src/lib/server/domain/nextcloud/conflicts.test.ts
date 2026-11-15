@@ -5,7 +5,7 @@ import { answerConflict, conflictsToShow, type ConflictAnswer } from './conflict
 import { anna, b64, cardOf, JPEG, linkedAnna, wording } from '../testing/nextcloud-book';
 
 /*
- * Answering what a linked card said otherwise (docs/02 §2.16.3): Stella's side stays, or the
+ * Answering what a linked card said otherwise (docs/dev/02 §2.16.3): Stella's side stays, or the
  * card's is taken; either way the conflict is gone and the person is in step with the card at
  * the next sync.
  */

@@ -14,7 +14,7 @@ import {
 } from './archive';
 
 /*
- * Describing the export archive (docs/02 §2.15). Pure orchestration with a fake repository:
+ * Describing the export archive (docs/dev/02 §2.15). Pure orchestration with a fake repository:
  * what goes in the manifest, what the file is called, which media paths the archive refuses to
  * carry, and that an export leaves a trail the household can see.
  */

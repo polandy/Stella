@@ -3,7 +3,7 @@ import { PARENT_CHILD_TYPE_KEY, PARTNER_TYPE_KEYS } from './type-keys';
 import type { RelationshipSide } from './type-options';
 
 /*
- * Which ties cannot be claimed beside the ties already on record (docs/02 §2.4).
+ * Which ties cannot be claimed beside the ties already on record (docs/dev/02 §2.4).
  *
  * Stella's older guards ask whether *this exact row* is already there — same pair, same
  * type, same direction. That lets a household state two things that cannot both be true:

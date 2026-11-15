@@ -3,9 +3,9 @@
 	import type { Snippet } from 'svelte';
 
 	/*
-	 * A phone's composer, as a sheet over the stream (docs/05 §5.5). A modal <dialog>, so the
+	 * A phone's composer, as a sheet over the stream (docs/dev/05 §5.5). A modal <dialog>, so the
 	 * platform keeps focus inside, Escape closes and the stream behind is out of reach for a
-	 * screen reader too (docs/05 §5.9). Not a scroll box: the day calendar and the @-picker open
+	 * screen reader too (docs/dev/05 §5.9). Not a scroll box: the day calendar and the @-picker open
 	 * past its top edge. Closing is the page's: it hands the URL back.
 	 */
 	let { onclose, children }: { onclose: () => void; children: Snippet } = $props();

@@ -2,7 +2,7 @@ import { prefersReducedMotion } from 'svelte/motion';
 import { glideToOpenedForm, scrollTopToShow, scrollBehavior } from './motion';
 
 /*
- * The adapter that scrolls the shell to show a card or a form (docs/05 §5.11): it measures the
+ * The adapter that scrolls the shell to show a card or a form (docs/dev/05 §5.11): it measures the
  * DOM and scrolls, the rules come from `motion.ts`. `showOpenedForm` and `settleOpenedForm`: a
  * form that just opened in its card is brought into view and takes the cursor, one way for
  * every card (Section's add forms, the story card's composer); `bringCardIntoView` is the same

@@ -3,10 +3,10 @@ import { appReady, signIn } from './app';
 import { LINK, seedHousehold } from './seed';
 
 /*
- * A namesake with nothing typed to tell them apart falls back on a relationship (docs/02
+ * A namesake with nothing typed to tell them apart falls back on a relationship (docs/dev/02
  * §2.2.3) in ⌘K, in every picker and in the refusal of a text sent later, and the clean-up list fills their description in from it; the @-picker's list stays
- * on screen in the phone's composer sheet (docs/05). Written after the maintainer checked both
- * on the phone (docs/08 §8.4.1).
+ * on screen in the phone's composer sheet (docs/dev/05). Written after the maintainer checked both
+ * on the phone (docs/dev/08 §8.4.1).
  *
  * The first-name-only person comes through the archive restore, the way older data got there:
  * a first name alone can no longer be added by hand. Which link wins among several, the circle
@@ -57,7 +57,7 @@ test('names a namesake by their relationship when a text sent later is refused f
 	const sister = `Sabine${letters} Keller`;
 	await seedNamesakes(page, name, sister);
 
-	// What a phone's outbox sends once Stella is in reach again (docs/02 §2.18.1): the writing
+	// What a phone's outbox sends once Stella is in reach again (docs/dev/02 §2.18.1): the writing
 	// screen asks first, but a text kept on the phone meets the server's
 	// question — a note, a moment and a journal entry each.
 	const body = `Called @${name}`;
@@ -143,7 +143,7 @@ test('says who a namesake is by their relationship, and offers it as their descr
 test('offers a description from a link to someone whose first name nobody else has', async ({
 	page
 }) => {
-	// The shell sends relationship context for namesakes only (docs/04 §4.8); the clean-up list
+	// The shell sends relationship context for namesakes only (docs/dev/04 §4.8); the clean-up list
 	// reads its own, so a name that is unique still gets its suggestion.
 	const letters = runLetters();
 	const name = `Ottilie${letters}`;

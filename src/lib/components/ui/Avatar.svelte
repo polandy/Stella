@@ -12,7 +12,7 @@
 		deceased?: boolean;
 		/**
 		 * Fill the box it sits in and take its corners, instead of a fixed round `size`: the
-		 * person page's portrait, whose size follows the screen (docs/05 §5.5).
+		 * person page's portrait, whose size follows the screen (docs/dev/05 §5.5).
 		 */
 		fill?: boolean;
 	}

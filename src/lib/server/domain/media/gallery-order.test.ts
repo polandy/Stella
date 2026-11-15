@@ -2,7 +2,7 @@ import { describe, expect, it } from 'bun:test';
 import { orderGallery } from './gallery-order';
 
 /*
- * The one rule for the order a person's photos are shown in (docs/02 §2.14): favourites
+ * The one rule for the order a person's photos are shown in (docs/dev/02 §2.14): favourites
  * first, the most recently pinned leading, then everything else newest first.
  */
 

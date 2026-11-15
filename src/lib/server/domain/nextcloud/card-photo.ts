@@ -3,8 +3,8 @@ import { sniffImageMime, THUMB_MAX_BYTES, type ImageMime } from '../media/avatar
 import { readPhoto, splitCards } from '../import/vcard-lines';
 
 /*
- * A card's picture as Stella can store it (docs/02 §2.16.3). Every other picture reaches the
- * server already downscaled by the browser (docs/04: no image library on the server); a sync has
+ * A card's picture as Stella can store it (docs/dev/02 §2.16.3). Every other picture reaches the
+ * server already downscaled by the browser (docs/dev/04: no image library on the server); a sync has
  * no browser, so it takes a card's picture as it is — which a phone keeps small — and only when
  * its size reads from its header and it fits as its own thumbnail. Anything else stays on the
  * card. Pure.

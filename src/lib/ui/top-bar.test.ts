@@ -9,7 +9,7 @@ import {
 
 /*
  * The phone's top bar slides away while the reader scrolls down and comes back as soon as
- * they scroll up (docs/05 §5.4). Pure, so the thresholds are stated here rather than felt out
+ * they scroll up (docs/dev/05 §5.4). Pure, so the thresholds are stated here rather than felt out
  * on a device.
  */
 

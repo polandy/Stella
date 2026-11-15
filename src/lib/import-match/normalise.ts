@@ -1,5 +1,5 @@
 /*
- * The spellings two address books share (docs/02 §2.16.2). Matching
+ * The spellings two address books share (docs/dev/02 §2.16.2). Matching
  * compares these and nothing looser: a near-match taken for the same person would write one
  * person's facts onto another without anyone noticing.
  */
@@ -46,7 +46,7 @@ export function samePhone(a: NormalisedPhone, b: NormalisedPhone): 'same' | 'ali
 
 /**
  * A name reduced to what two spellings of it share: no case, no accents, any word order — the
- * API import's folding for its possible duplicates (docs/02 §2.16.1).
+ * API import's folding for its possible duplicates (docs/dev/02 §2.16.1).
  */
 export function foldName(name: string): string {
 	return name

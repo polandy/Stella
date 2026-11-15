@@ -1,5 +1,5 @@
 /*
- * The post-save "link these two?" hint (docs/02 §2.22.1): the composer hands the first two
+ * The post-save "link these two?" hint (docs/dev/02 §2.22.1): the composer hands the first two
  * people of a moment to Home in the URL, so the offer survives the navigation back and a
  * reload. Home's load decides whether to show it — only for people the viewer may see.
  */

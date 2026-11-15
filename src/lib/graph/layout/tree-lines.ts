@@ -5,7 +5,7 @@ import { LINE_CLEARANCE, type Point, type Route, type SizeOf } from './geometry'
 import { laneKey, laneOffsets, type Leg } from './tree-lanes';
 
 /*
- * The lines of the family tree (docs/05 §5.8), drawn the way a family tree is drawn on paper:
+ * The lines of the family tree (docs/dev/05 §5.8), drawn the way a family tree is drawn on paper:
  * partners joined by a short bar, one drop from the middle of it to a bar over their children,
  * and a short drop from that bar to each child — right angles instead of diagonals. Pure: the
  * positions are worked out already, and this only says where each family line bends.

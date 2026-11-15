@@ -11,7 +11,7 @@ import ts from 'typescript';
  * changed without the other. A type-only import counts as much as a value one: it is the same
  * coupling, only erased at runtime. Where two contexts need each other, the one that is read
  * declares the narrow port it needs itself, and the other side's adapter fulfils it
- * structurally (docs/08 §8.3).
+ * structurally (docs/dev/08 §8.3).
  *
  * Tests are left out: a test may reach for another context's fakes without the code doing so.
  */

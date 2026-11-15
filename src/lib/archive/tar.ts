@@ -3,10 +3,10 @@
 import { TranslatableError } from '../i18n/translatable';
 import { phrase, type Phrase } from '../i18n/phrase';
 /*
- * A minimal ustar (POSIX tar) writer and reader for the household archive (docs/02 §2.15).
+ * A minimal ustar (POSIX tar) writer and reader for the household archive (docs/dev/02 §2.15).
  *
  * Hand-written rather than pulled in: the format is one 512-byte header per file and the
- * project prefers a Bun/Web API or a few lines of its own over a dependency (docs/08 §8.8).
+ * project prefers a Bun/Web API or a few lines of its own over a dependency (docs/dev/08 §8.8).
  * Only what an archive needs is here — regular files, no symlinks, no long names. Writing is a
  * pure function over bytes, so the export route can stream entry after entry without ever
  * holding the whole archive; reading takes the uploaded bytes apart in one go.

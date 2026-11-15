@@ -2,7 +2,7 @@ import { readCapped } from '../http/read-capped';
 import { readLatestRelease, type LatestRelease, type ReleaseFeed } from '../domain/release/feed';
 
 /*
- * The release feed adapter (docs/04 §4.9): GitHub's `releases/latest` endpoint, unauthenticated.
+ * The release feed adapter (docs/dev/04 §4.9): GitHub's `releases/latest` endpoint, unauthenticated.
  * The only file that knows Stella's releases live on GitHub — the use-case sees a port.
  *
  * Deliberately not given the browser request's abort signal: the answer is cached for a day

@@ -4,9 +4,9 @@ import type { MediaStore, PhotoRepository } from '../../media/avatars';
 import { validateImageUpload, validateTakenAt, type ImageUpload } from '../../media/journal-photos';
 
 /*
- * Photos of a Monica import (docs/02 §2.16). The dump only names the files; their bytes are
+ * Photos of a Monica import (docs/dev/02 §2.16). The dump only names the files; their bytes are
  * picked from Monica's storage folder in the browser, downscaled there like every other
- * upload (docs/04: no native image library on the server), and sent one by one. Each lands
+ * upload (docs/dev/04: no native image library on the server), and sent one by one. Each lands
  * under the plan's stable photo id, so a retried upload is a no-op rather than a duplicate.
  */
 

@@ -8,7 +8,7 @@ import { createDrizzleAccountRepository } from './account-repository';
 
 /*
  * Integration spec for the Drizzle adapter implementing the AccountRepository port
- * (docs/08 §8.3), against a real in-memory SQLite so the household/user insert and the
+ * (docs/dev/08 §8.3), against a real in-memory SQLite so the household/user insert and the
  * unique-email constraint are exercised for real.
  */
 
@@ -86,7 +86,7 @@ describe('createDrizzleAccountRepository', () => {
 		});
 	});
 
-	it('finds a removed member on neither path, so they sign nobody in (docs/02 §2.1)', async () => {
+	it('finds a removed member on neither path, so they sign nobody in (docs/dev/02 §2.1)', async () => {
 		await seedAdmin();
 		db.update(schema.user).set({ removedAt: 1 }).run();
 

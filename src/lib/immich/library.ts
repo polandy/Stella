@@ -1,5 +1,5 @@
 /*
- * The whole Immich library as the photo picker beside an upload browses it (docs/02 §2.24.9), as
+ * The whole Immich library as the photo picker beside an upload browses it (docs/dev/02 §2.24.9), as
  * the browser receives it from `/immich/library`. Shared by the server, which builds it, and the
  * picker, which shows it.
  */
@@ -33,7 +33,7 @@ export type LibraryView =
 	| { state: 'unreachable' };
 
 /**
- * An Immich photo on a journal entry, kept as a reference (docs/02 §2.20, docs/04 ADR-132): both
+ * An Immich photo on a journal entry, kept as a reference (docs/dev/02 §2.20, docs/dev/04 ADR-132): both
  * URLs signed for the reader's household, or null when Immich is not on the instance any more.
  */
 export interface EntryImmichPhoto {

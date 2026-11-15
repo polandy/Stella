@@ -3,7 +3,7 @@ import { serialiseDocument, type HouseholdSnapshot } from './archive';
 import { ARCHIVE_FORMAT, ARCHIVE_VERSION, buildArchiveDocument } from './document';
 
 /*
- * The export document (docs/02 §2.15): the household arranged around its people, so another
+ * The export document (docs/dev/02 §2.15): the household arranged around its people, so another
  * program can read it. The case this file exists for is the last one — two people with the
  * same name — because a document that joins on names silently merges them.
  */
@@ -355,7 +355,7 @@ describe('what a restore would otherwise lose', () => {
 	/*
 	 * Every column that carries meaning is in the document, because whatever is missing here
 	 * is gone for good the day the archive is read back. The `updated_at` bookkeeping columns
-	 * are the deliberate exception (docs/02 §2.15).
+	 * are the deliberate exception (docs/dev/02 §2.15).
 	 */
 	const filled: HouseholdSnapshot = {
 		householdName: 'H',

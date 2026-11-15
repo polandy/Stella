@@ -2,8 +2,8 @@ import { expect, test, type Page } from '@playwright/test';
 import { addTag, openPerson, profileRow, signIn } from './app';
 
 /*
- * Undo for the leaf records, and the *Saved* toast (docs/02 §2.23, docs/05 §5.7). Written
- * after the flows were seen in the running app (docs/08 §8.4.1). `e2e/undo.spec.ts` covers a
+ * Undo for the leaf records, and the *Saved* toast (docs/dev/02 §2.23, docs/dev/05 §5.7). Written
+ * after the flows were seen in the running app (docs/dev/08 §8.4.1). `e2e/undo.spec.ts` covers a
  * story item; this covers what the second PR added — a tag, and a circle membership.
  *
  * Everything removed here is created by the test itself, on a person and a tag name the seed
@@ -89,7 +89,7 @@ test('a member removed from a circle leaves the grid and comes back with Undo', 
 	await expect(members.getByRole('link', { name: 'Beat Steiner' })).toBeVisible();
 	await expect(heading).toContainText('4');
 
-	// A member leaves through Select: no row carries a × of its own (docs/05 §5.5).
+	// A member leaves through Select: no row carries a × of its own (docs/dev/05 §5.5).
 	await page.getByRole('button', { name: 'Select', exact: true }).click();
 	await page.getByLabel('Select Beat Steiner').check();
 	await page.getByTestId('selection-bar').getByRole('button', { name: 'Remove' }).click();

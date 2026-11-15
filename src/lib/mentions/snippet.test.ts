@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'bun:test';
 import { matchSnippet, mentionSnippet, SNIPPET_LENGTH } from './snippet';
 
-/* The one-line preview a passive reference shows (docs/02 §2.20.1). */
+/* The one-line preview a passive reference shows (docs/dev/02 §2.20.1). */
 
 const names = (id: string) => (id === 'c-sandra' ? 'Sandra Brunner' : null);
 

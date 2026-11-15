@@ -5,7 +5,7 @@ import type { Viewer } from '../../access/visibility';
 import type { SyncConflict, SyncConflictKind } from './sync-plan';
 
 /*
- * What the Nextcloud sync keeps (docs/02 §2.16.3, docs/03 §3.3): where the last sync stopped,
+ * What the Nextcloud sync keeps (docs/dev/02 §2.16.3, docs/dev/03 §3.3): where the last sync stopped,
  * every card of the book as it was then, and the conflicts waiting for an answer. The links
  * themselves are the matching review's (`contact_source_link`), written through its writer.
  */

@@ -9,7 +9,7 @@ import type { Contact } from './contacts';
 import { clearsNoLastName } from '../../../surnames/review';
 
 /*
- * Changing the parts of a person's name after they were added (docs/02 §2.2, §2.2.4.4,
+ * Changing the parts of a person's name after they were added (docs/dev/02 §2.2, §2.2.4.4,
  * ADR-106). Every path goes through `withNameParts`, so the shown name follows its parts the
  * same way wherever they change.
  */
@@ -28,7 +28,7 @@ export function noLastNameAfter(lastName: string | null): Pick<NameWrite, 'witho
 	return clearsNoLastName(lastName) ? { withoutLastNameAt: null } : {};
 }
 
-/** The port the name use-cases write through (docs/08 §8.3). */
+/** The port the name use-cases write through (docs/dev/08 §8.3). */
 export interface NameRepository {
 	findByIdVisibleTo(viewer: Viewer, id: string): Promise<Contact | null>;
 	/**
@@ -46,7 +46,7 @@ export interface NameRepository {
 export interface NameDeps {
 	names: NameRepository;
 	clock: Clock;
-	/** For the stream line a rename writes (docs/02 §2.11). */
+	/** For the stream line a rename writes (docs/dev/02 §2.11). */
 	ids: IdGenerator;
 }
 
@@ -75,7 +75,7 @@ export async function editNameParts(
 	viewer: Viewer,
 	id: string,
 	edit: NamePartsEdit,
-	/** The editor's language: a nickname in the shown name takes its quote marks (docs/02 §2.2). */
+	/** The editor's language: a nickname in the shown name takes its quote marks (docs/dev/02 §2.2). */
 	locale: Locale
 ): Promise<boolean> {
 	const contact = await deps.names.findByIdVisibleTo(viewer, id);

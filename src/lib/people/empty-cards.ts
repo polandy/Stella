@@ -1,7 +1,7 @@
 import type { ContactSection } from './sections';
 
 /*
- * How a card of the person page stands while it holds nothing (docs/05 §5.5). Most people in a
+ * How a card of the person page stands while it holds nothing (docs/dev/05 §5.5). Most people in a
  * household are reference records, and a page of boxes that each say "nothing" teaches the
  * reader to stop looking — the rule *Coming up* already follows.
  *

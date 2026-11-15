@@ -2,9 +2,9 @@ import { expect, test, type Page } from '@playwright/test';
 import { addPerson, signIn } from './app';
 
 /*
- * When a note was written (docs/02 §2.5, docs/05 §5.5): a relative word next to the title/author
+ * When a note was written (docs/dev/02 §2.5, docs/dev/05 §5.5): a relative word next to the title/author
  * chain, and the exact day behind it on tap — a small bubble, dismissed like a menu. Written
- * after the flow was verified in the running app (docs/08 §8.4.1).
+ * after the flow was verified in the running app (docs/dev/08 §8.4.1).
  */
 
 function runLetters(): string {
@@ -43,7 +43,7 @@ test('a note names when it was written, and the exact day on tap', async ({ page
 	await writeNote(page, text);
 	// A run that steps over midnight around the write has two honest answers — the note dated
 	// the day before and called *yesterday*, or the day after and called *today* — and accepts
-	// either; on any other run both collapse into today (docs/08 §8.4.2).
+	// either; on any other run both collapse into today (docs/dev/08 §8.4.2).
 	const days = [...new Set([before, exactDay()])];
 	const words = days.length === 1 ? ['today'] : ['today', 'yesterday'];
 

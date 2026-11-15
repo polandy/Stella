@@ -1,5 +1,5 @@
 /*
- * The Drizzle schema, one file per bounded context (docs/03 §3.0); drizzle.config.ts reads
+ * The Drizzle schema, one file per bounded context (docs/dev/03 §3.0); drizzle.config.ts reads
  * this barrel, and every `from './schema'` import resolves here.
  */
 

@@ -3,7 +3,7 @@ import { showsActorBadge } from './actor-badge';
 
 /*
  * A stream row leads with its subject's face; who wrote it is in the sentence. The small actor
- * badge on that face (docs/05 §5.5) is for telling members apart, so it only appears where
+ * badge on that face (docs/dev/05 §5.5) is for telling members apart, so it only appears where
  * there is somebody to tell apart from the reader.
  */
 const me = { id: 'u-me' };

@@ -7,7 +7,7 @@ import type { AuthServices } from '$lib/server/services/auth';
 import type { AppServices } from '$lib/server/services/app-services';
 
 /*
- * The SSO callback (docs/04 §4.4) over a test-wired `locals.services`: the provider is a fake,
+ * The SSO callback (docs/dev/04 §4.4) over a test-wired `locals.services`: the provider is a fake,
  * so the branches — SSO off, already signed in, a planted cookie, a failing exchange — are
  * testable without an IdP. The transaction cookie is sealed by the real helper with the test
  * configuration's secret (`env-test-preload.ts`), as `/login/sso` would have set it.

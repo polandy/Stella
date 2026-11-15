@@ -8,7 +8,7 @@ import {
 } from './journal-photos';
 
 /*
- * Photos added to or taken off a journal entry while it is edited (docs/02 §2.20). Only the
+ * Photos added to or taken off a journal entry while it is edited (docs/dev/02 §2.20). Only the
  * entry's author edits it, so only they add or remove its photos; a photo added inherits the
  * entry's anchor and audience, as one written with the entry does.
  */

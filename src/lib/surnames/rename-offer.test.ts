@@ -2,7 +2,7 @@ import { describe, expect, it } from 'bun:test';
 import { renameOffer, type NamedKin } from './rename-offer';
 
 /*
- * Correcting a last name (docs/02 §2.2.4.7): after a person's last name is changed, their
+ * Correcting a last name (docs/dev/02 §2.2.4.7): after a person's last name is changed, their
  * family who still carry the old one are offered the new one — never anyone with another name,
  * nor a name the household declined for them.
  */

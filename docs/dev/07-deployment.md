@@ -1,0 +1,452 @@
+# 07 — Deployment Guide
+
+How to self-host **Stella** with Docker, behind your existing reverse proxy, using
+**Authelia** as the OIDC single-sign-on provider.
+
+## 7.1 Overview
+
+```
+                        ┌────────────────────────────────────────┐
+  Browser ──HTTPS──▶    │  Reverse proxy (Traefik/Caddy/Nginx)    │
+                        │   ├── auth.example.home  → Authelia      │
+                        │   └── stella.example.home → Stella :3000 │
+                        └────────────────────────────────────────┘
+                                        │
+                             OIDC (auth code + PKCE)
+                                        │
+                        Stella (Bun) ──▶ Authelia  (issues ID token)
+                             │
+                        /data volume  (kith… → stella.db + media/)
+```
+
+Stella is a single container. It keeps its state in one mounted volume (`/data`):
+the SQLite database file and the media directory. It expects to sit **behind** a
+reverse proxy that terminates TLS and also fronts Authelia.
+
+## 7.1.1 Quick local trial (no proxy, no SSO)
+
+To run the current build on your own machine for testing/review — no reverse proxy, no
+Authelia — use the committed `Dockerfile` + `docker-compose.yml`:
+
+```bash
+cp .env.example .env                 # then set SESSION_SECRET and STELLA_URL=http://localhost:3000
+openssl rand -hex 32                 # paste into SESSION_SECRET
+./deploy.sh                          # build image + start; waits until healthy
+```
+
+`./deploy.sh` (also `bun run deploy`) rebuilds the image from the working tree and
+restarts the container, so re-running it redeploys the latest code. `./deploy.sh logs`
+follows logs, `./deploy.sh down` stops it. Open `http://localhost:3000` — the first visit
+lands on `/setup` to create the local admin. State lives in `./data` (SQLite + media);
+delete it to start clean.
+
+> `docker-compose.yml` sets `ORIGIN=${STELLA_URL}`. adapter-node checks the browser's
+> `Origin` header against `ORIGIN` on every POST, so if it doesn't match the URL you open,
+> **all form submissions fail with 403**. Keep `STELLA_URL` equal to the address you browse to.
+
+## 7.1.2 Trying an unreleased branch/PR on the real family instance
+
+Sometimes the fastest way to sign off on a feature is to try it where it's actually used,
+before it's merged/released — as opposed to the local trial above, which needs no special
+care. The procedure (host layout, safe steps, guardrails) is the **`prod-trial` skill**
+(`.claude/commands/prod-trial.md`) — that file is the single source of truth for it, kept
+there rather than here so an agent session finds it by intent ("test this on prod/the
+family instance") without needing a pointer into this doc first.
+
+## 7.2 Prerequisites
+
+- A host with Docker + Docker Compose.
+- A reverse proxy already terminating TLS for your domains.
+- A running **Authelia** instance reachable at a public issuer URL
+  (e.g. `https://auth.example.home`).
+- A DNS name for Stella (e.g. `https://stella.example.home`).
+
+## 7.3 Directory layout on the host
+
+```
+/opt/stella/
+├── docker-compose.yml
+├── .env
+└── data/                 # persistent volume (created on first run)
+    ├── stella.db         # + stella.db-wal / stella.db-shm
+    └── media/            # originals + thumbnails
+```
+
+## 7.4 `.env`
+
+Copy `.env.example` (shipped in the repo) to `.env` and fill in secrets. Never commit
+`.env`.
+
+```dotenv
+# --- Core ---
+STELLA_URL=https://stella.example.home       # public base URL (used to build redirect URIs)
+DATABASE_PATH=/data/stella.db
+MEDIA_DIR=/data/media
+SESSION_SECRET=change-me-64-hex-chars        # `openssl rand -hex 32`
+TZ=Europe/Zurich
+BODY_SIZE_LIMIT=250M                          # request cap (uploads: restored archive, Monica dump, photos); the image sets it
+
+# --- Auth toggles ---
+AUTH_LOCAL_ENABLED=true                       # keep true for a break-glass admin
+AUTH_OIDC_ENABLED=true
+
+# --- Diagnostics (off by default) ---
+DEBUG_PAGES=false                             # serves the workbench pages under /settings/debug from a build.
+                                              # Development has them anyway; a household's instance never needs
+                                              # them (they are diagnostics and untranslated), and with this off
+                                              # the routes answer 404 (docs/dev/05 §5.7).
+
+# --- Release check (on by default) ---
+UPDATE_CHECK=true                             # Settings → About says when a newer Stella has been released;
+                                              # the server asks GitHub at most once a day, sends nothing about the
+                                              # household, and never installs anything (docs/dev/02 §2.17.1). Set to
+                                              # false to keep the instance from making that request at all.
+UPDATE_FEED_URL=                              # leave empty: Stella's own releases. A fork points this at its own
+                                              # `releases/latest`; the e2e suite points it at a local stub
+
+# --- Immich (optional; docs/dev/02 §2.24, install.md) ---
+IMMICH_URL=                                   # empty: no Immich, and the feature appears nowhere. Otherwise how the
+                                              # server reaches Immich — best its internal address on a shared
+                                              # network, e.g. http://immich-server:2283. Set together with the key;
+                                              # one without the other stops the server at start.
+IMMICH_PUBLIC_URL=                            # what "Open in Immich" links point at, e.g. https://immich.example.com;
+                                              # empty: the same as IMMICH_URL
+IMMICH_API_KEY=                               # created in the admin's own Immich account, read scopes only:
+                                              # user.read, person.read, person.statistics, asset.read,
+                                              # asset.view. Never logged.
+IMMICH_DEMO=false                             # true → an in-memory Immich for the demo household (needs SEED_DEMO=true;
+                                              # the e2e server uses it). Never beside IMMICH_URL.
+
+# --- Nextcloud address book (optional; docs/dev/02 §2.16.3, install.md) ---
+NEXTCLOUD_ADDRESS_BOOK_URL=                   # empty: no link, and it appears nowhere. Otherwise the household
+                                              # book's CardDAV address, e.g.
+                                              # https://cloud.example.com/remote.php/dav/addressbooks/users/family/contacts/
+NEXTCLOUD_USER=                               # the Nextcloud user that owns (or was shared) that book
+NEXTCLOUD_APP_PASSWORD=                       # an app password of that user (Settings → Security in Nextcloud).
+                                              # Never logged, never in the database or the archive. The three are
+                                              # set together; one or two alone stop the server at start.
+NEXTCLOUD_DEMO=false                          # true → an in-memory book for the demo household (needs SEED_DEMO=true;
+                                              # the e2e server uses it). Once Stella has written Markus's card, the
+                                              # next sync finds it changed by a "phone": a new email, a birthday a
+                                              # day off — one fill-in, one difference. Never beside a real book.
+
+# --- Test phase (leave off for real use) ---
+SEED_DEMO=false                               # true → seed the Brunner demo dataset on startup (idempotent);
+                                              # on a fresh DB also creates admin demo@stella.local / stella-demo-1234
+                                              # plus a second member, nina@stella.local (same password), who wrote part of the story
+                                              # and shows a one-click "Sign in as demo user" button on /login
+
+# --- OIDC / Authelia ---
+OIDC_ISSUER=https://auth.example.home         # discovery: {issuer}/.well-known/openid-configuration
+OIDC_CLIENT_ID=stella
+OIDC_CLIENT_SECRET=change-me                  # must match Authelia's stored hash (see 7.7)
+OIDC_REDIRECT_URI=https://stella.example.home/login/sso/callback
+OIDC_SCOPES=openid profile email groups
+OIDC_PROVIDER_NAME=authelia
+
+# --- OIDC authorization & mapping ---
+OIDC_ALLOWED_GROUPS=stella-users              # only members of this group may sign in
+OIDC_ADMIN_GROUPS=stella-admins               # these groups become Stella admins
+OIDC_ALLOWED_EMAILS=                          # optional explicit allowlist (comma list)
+OIDC_JIT_PROVISION=true                       # auto-create users on first SSO login
+OIDC_LINK_BY_EMAIL=true                       # link to an existing local user by verified email (first login only)
+OIDC_SYNC_ROLES=true                          # re-apply group→role each login
+OIDC_SYNC_PROFILE=true                        # refresh name/email each login
+OIDC_RP_LOGOUT=true                           # also end the Authelia session on logout (needs the post-logout URI below)
+```
+
+Generate secrets:
+
+```bash
+openssl rand -hex 32   # SESSION_SECRET
+openssl rand -hex 32   # OIDC_CLIENT_SECRET (plaintext; Authelia stores its hash)
+```
+
+## 7.5 `docker-compose.yml`
+
+### 7.5.0 Where the image comes from
+
+Releases are cut by release-please. When it publishes a release, the same workflow run
+calls `publish`, which builds the image and pushes it to `ghcr.io/polandy/stella` as
+`X.Y.Z`, `X.Y` and `latest`. The run's summary prints the line to pin. (The build is called
+from the release run rather than triggered by the tag, so it runs once whichever token
+release-please pushed the tag with.)
+
+Every build upgrades the base image's Debian packages and is scanned with Trivy
+(`scripts/scan-image.sh`) before anything is pushed: a CRITICAL vulnerability that has a fix
+stops the push. CI runs the same build and scan on every pull request. Each Sunday night the
+`rebuild` workflow rebuilds the **latest release** the same way, so its `X.Y.Z` tag moves to
+a new digest carrying the current security fixes — same code, same version. A rebuild whose
+scan still fails (a fix that needs a dependency bump or a newer Bun) pushes nothing.
+
+Pin the **digest**, not a tag — a tag can be moved, a digest cannot:
+
+```yaml
+image: ghcr.io/polandy/stella:0.0.3@sha256:…
+```
+
+`latest` is fine for a hobby setup where an unattended restart may pick up a new version;
+anywhere the running version matters, pin the digest and bump it deliberately — including
+the weekly rebuild's digest, which brings only security updates.
+
+### 7.5.1 The file
+
+Minimal, proxy-agnostic version (expose the port to your proxy network):
+
+```yaml
+services:
+  stella:
+    image: ghcr.io/polandy/stella:latest       # pin the digest — see 7.5.0
+    container_name: stella
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      - ORIGIN=${STELLA_URL}    # adapter-node CSRF: must equal the public URL (7.6)
+    volumes:
+      - ./data:/data
+    expose:
+      - "3000"                # reachable by the reverse proxy on the shared network
+    # ports:
+    #   - "127.0.0.1:3000:3000"   # uncomment to test locally without a proxy
+    healthcheck:             # the image has no wget/curl; Bun itself asks
+      test: ["CMD", "bun", "-e", "fetch('http://localhost:3000/healthz').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+    networks:
+      - proxy
+
+networks:
+  proxy:
+    external: true            # the network your reverse proxy already uses
+```
+
+The server runs as the image's unprivileged `bun` user (uid 1000), not as root, so `/data`
+must be writable by uid 1000. A host folder as above is created by Docker as root; create it
+yourself first, and hand it over once:
+
+```bash
+mkdir -p data && sudo chown -R 1000:1000 data
+```
+
+A fresh named volume (the repo's own `docker-compose.yml`) needs nothing: Docker copies the
+image's ownership into it on first use.
+
+### 7.5.2 Traefik labels (optional)
+
+If you use Traefik, add labels instead of a separate proxy config:
+
+```yaml
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.stella.rule=Host(`stella.example.home`)"
+      - "traefik.http.routers.stella.entrypoints=websecure"
+      - "traefik.http.routers.stella.tls.certresolver=le"
+      - "traefik.http.services.stella.loadbalancer.server.port=3000"
+```
+
+> Note: Stella does **not** need Authelia's forward-auth middleware — it authenticates
+> via OIDC itself. Do not put a `forwardauth` middleware in front of it, or users would
+> be asked to log in twice.
+
+## 7.6 Reverse proxy notes
+
+- Terminate TLS at the proxy; forward plain HTTP to the container on port 3000.
+- Pass through the `Host` header and `X-Forwarded-*` headers; Stella builds redirect URIs
+  from `STELLA_URL`, so that must match the public URL exactly (scheme + host).
+- adapter-node validates the browser `Origin` on POSTs against `ORIGIN` (compose sets it to
+  `STELLA_URL`). A mismatch yields 403 on every form submit — keep the two in lockstep.
+- **The proxy throttles sign-in and sends HSTS** — Stella does neither (docs/dev/04 §4.7). Limit
+  `POST /login` per client address (e.g. Traefik's `ratelimit` middleware, nginx's
+  `limit_req`, Caddy's `rate_limit`), so an exposed instance cannot be guessed at, nor kept
+  busy hashing passwords; with SSO only, Authelia's own regulation covers it. Add
+  `Strict-Transport-Security` once the domain is HTTPS-only.
+- Ensure both `stella.example.home` and `auth.example.home` are reachable from the user's
+  browser (OIDC redirects happen in the browser).
+- **Installing Stella on a phone needs TLS.** A browser registers a service worker only in a
+  secure context, so the home-screen install and the offline pages (docs/dev/02 §2.18) work over
+  `https://…` and over `http://localhost`, and nowhere else. Reaching Stella by plain HTTP on
+  a LAN address still works as an ordinary site — it simply cannot be installed and keeps
+  nothing for later. The quick local trial in §7.1.2 is the one case where this shows up.
+
+## 7.7 Authelia OIDC client configuration
+
+Register Stella as a **confidential** OIDC client in Authelia's configuration.
+
+First, hash the client secret with Authelia's helper (use the **plaintext** you put in
+`OIDC_CLIENT_SECRET`):
+
+```bash
+docker run --rm authelia/authelia:latest \
+  authelia crypto hash generate pbkdf2 --variant sha512 --password 'your-oidc-client-secret'
+```
+
+Then add the client under `identity_providers.oidc.clients` in Authelia
+(`configuration.yml`):
+
+```yaml
+identity_providers:
+  oidc:
+    # ... hmac_secret, issuer_private_key, etc. already configured ...
+    clients:
+      - client_id: stella
+        client_name: Stella
+        client_secret: '$pbkdf2-sha512$310000$...'   # the HASH from the command above
+        public: false
+        authorization_policy: two_factor              # or one_factor, your choice
+        require_pkce: true
+        pkce_challenge_method: S256
+        redirect_uris:
+          - https://stella.example.home/login/sso/callback
+        # Only on an Authelia that implements RP-initiated logout. 4.39 does not: it has no
+        # end-session endpoint, rejects this key outright ("configuration key not expected")
+        # and then refuses to start. Leave it out there — Stella signs out locally anyway.
+        # post_logout_redirect_uris:
+        #   - https://stella.example.home/login?signedOut=1
+        scopes:
+          - openid
+          - profile
+          - email
+          - groups
+        grant_types:
+          - authorization_code
+        response_types:
+          - code
+        userinfo_signed_response_alg: none
+        token_endpoint_auth_method: client_secret_post
+```
+
+### 7.7.1 Groups
+
+Create the groups Stella expects and assign your family members. In Authelia's user
+database (`users_database.yml`):
+
+```yaml
+users:
+  andy:
+    displayname: "Andy"
+    password: "$argon2id$..."
+    email: andy@example.home
+    groups:
+      - stella-users
+      - stella-admins        # → Stella admin
+  partner:
+    displayname: "Partner"
+    password: "$argon2id$..."
+    email: partner@example.home
+    groups:
+      - stella-users         # → Stella member
+```
+
+- `stella-users` → may sign in (gate).
+- `stella-admins` → granted the Stella **admin** role (via `OIDC_ADMIN_GROUPS`).
+- Users without `stella-users` are rejected by Stella with a clear message.
+
+After editing Authelia config, restart/reload Authelia.
+
+## 7.8 First run
+
+1. `cd /opt/stella`, create `.env` (7.4) and `docker-compose.yml` (7.5).
+2. `docker compose up -d`.
+3. Watch logs: `docker compose logs -f stella`. Migrations run automatically on boot.
+4. Open `https://stella.example.home`.
+   - **With SSO:** click **“Sign in with SSO”**, authenticate at Authelia. The first
+     user in `stella-admins` becomes the household admin; the household is created on
+     first admin login.
+   - **Break-glass / local:** if `AUTH_LOCAL_ENABLED=true`, the very first run also lets
+     you create a local admin account (kept as `role_locked` so IdP sync can't demote it).
+5. Invite the rest of the family (Settings → Household → Members), or just have them sign
+   in via SSO if `OIDC_JIT_PROVISION=true` and they’re in `stella-users`.
+
+## 7.9 Backups
+
+State is entirely in `/data`.
+
+- **Database (WAL-safe):**
+  ```bash
+  docker compose exec stella sqlite3 /data/stella.db ".backup '/data/backup-$(date +%F).db'"
+  ```
+  This is the byte-for-byte backup, and the one to restore from.
+
+  The admin button **Settings → Data → Download the archive** is a different thing: a portable
+  `.tar` of `household.yaml` plus the images, readable by anything (docs/dev/02 §2.15). Keep it for
+  taking the data elsewhere, or for moving a household to another Stella — **Settings → Restore
+  from an archive** reads one back in. Note what that restore is: it *adds* what the household
+  no longer has and never overwrites what it does have, so it brings deleted records back but
+  does not undo edits. Rolling the whole installation back to a point in time is what the
+  SQLite snapshot above is for. The upload goes through `BODY_SIZE_LIMIT` (250M in the image)
+  and the importer's own 200 MB ceiling; a household bigger than that restores from the snapshot.
+- **Media:** back up `/data/media` (rsync/snapshot).
+- **Whole volume:** stopping the container and copying `./data` is always safe.
+- Automate with a cron job or your existing backup tooling. Test a restore periodically.
+
+Restore = stop container, replace `./data` contents, start container.
+
+## 7.10 Updates
+
+```bash
+cd /opt/stella
+docker compose pull
+docker compose up -d
+```
+
+**Once, when updating from 0.1.0 or earlier:** those images ran as root, so the existing
+`/data` belongs to root and the new non-root server cannot write to it — the container stops
+at start-up with `SQLiteError: attempt to write a readonly database`. Hand it to uid 1000 before starting:
+
+```bash
+docker compose down
+sudo chown -R 1000:1000 ./data                       # a host folder, as in 7.5.1
+# or, for a named volume:
+docker run --rm -v <volume>:/data alpine chown -R 1000:1000 /data
+docker compose up -d
+```
+
+Migrations run automatically on startup and are forward-only. Take a backup (7.9)
+before major version bumps.
+
+After the migrations, a start may convert data the new version reads differently, and says so
+in the server log (`docker compose logs stella`). The gift records (docs/dev/02 §2.25.4) are such a
+step: the first start of a version with them turns Monica gift notes and gift touchpoints into
+gifts and logs one line —
+
+```
+gifts: converted 41 Monica gift notes and 3 gift touchpoints into 45 gifts; 2 notes left as they are
+```
+
+— plus one line per note it leaves alone, naming the note and the person
+(`gifts: left the Monica gift note monica:gift:17 on /contacts/<id> as it is (edited)`). Those
+notes stay notes; the reason is `edited` (written in since the import), `unparseable` (its first
+line no longer reads as the import wrote it), `noDay` (given or received without a day),
+`unknownStatus` or `noTitle`. They are named again at each start until somebody moves them onto
+the Gifts card by hand or removes them. Check `docs/dev/06-roadmap.md` / release notes for breaking
+changes.
+
+## 7.11 Running without SSO (local-only)
+
+For a quick trial or an environment without Authelia:
+
+```dotenv
+AUTH_LOCAL_ENABLED=true
+AUTH_OIDC_ENABLED=false
+```
+
+The login page then shows only the email/password form; the first account created is the
+admin. Everything else works identically.
+
+## 7.12 Troubleshooting
+
+| Symptom | Likely cause |
+|---|---|
+| Redirect loop / "invalid redirect_uri" | `OIDC_REDIRECT_URI` ≠ the URI registered in Authelia, or `STELLA_URL` mismatch. |
+| "You are not authorized" after SSO login | User not in `OIDC_ALLOWED_GROUPS` (`stella-users`). |
+| Logged in but not admin | User missing from `OIDC_ADMIN_GROUPS`, or `OIDC_SYNC_ROLES=false`. |
+| Asked to log in twice | A `forwardauth` middleware is wrongly in front of Stella (7.5.2). |
+| "invalid_client" at token exchange | `OIDC_CLIENT_SECRET` plaintext ≠ the hash stored in Authelia. |
+| Signed out of Stella but still signed in to Authelia | `OIDC_RP_LOGOUT=false`, or the provider advertises no `end_session_endpoint` — Authelia 4.39 advertises none, so this is expected there. |
+| Authelia will not start after adding the client | `post_logout_redirect_uris` on a version that does not know it (4.39): remove the key. |
+| Logout ends on a provider error page | `post_logout_redirect_uris` set but missing the `https://…/login?signedOut=1` entry. |
+| Images 404 / not persisted | `/data` volume not mounted, or `MEDIA_DIR` misconfigured. |
+| Exits at start-up: `attempt to write a readonly database` (`SQLITE_READONLY`) | `/data` not writable by uid 1000 (the server is not root) — `chown -R 1000:1000` it once (7.5.1, 7.10). |
+| Locked out (IdP misconfig) | Sign in with the local break-glass admin (7.11 / `AUTH_LOCAL_ENABLED`). |

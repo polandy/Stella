@@ -4,7 +4,7 @@
 	import Tabs from '$lib/components/ui/Tabs.svelte';
 
 	/*
-	 * The Photos card's segmented control (docs/design/screens/person.md): *All · Stella 5 ·
+	 * The Photos card's segmented control (docs/dev/design/screens/person.md): *All · Stella 5 ·
 	 * Immich 1,764*: the shared tab list, small, with each source's count.
 	 */
 	interface Props {

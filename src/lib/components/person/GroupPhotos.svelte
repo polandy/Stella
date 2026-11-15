@@ -6,7 +6,7 @@
 	import type { PersonPageData } from './types';
 
 	/*
-	 * *On group photos* (docs/02 §2.14): every group photo the person's picture was cut from, now
+	 * *On group photos* (docs/dev/02 §2.14): every group photo the person's picture was cut from, now
 	 * and before, each a link to its circle. A grid that wraps, never a strip that scrolls sideways.
 	 */
 	let { photos }: { photos: PersonPageData['groupPhotos'] } = $props();

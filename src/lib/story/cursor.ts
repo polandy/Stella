@@ -2,7 +2,7 @@ import * as v from 'valibot';
 import type { StoryCursorView } from './item';
 
 /*
- * The wire format of the story cursor (docs/02 §2.23). The client posts back exactly what the
+ * The wire format of the story cursor (docs/dev/02 §2.23). The client posts back exactly what the
  * previous page handed it, so anything else is refused rather than coerced: a cursor silently
  * read as "from the top" re-serves the whole story, and one read as "finished" truncates it.
  * Both failures look like a rendering glitch and are impossible to diagnose from the screen.
@@ -17,7 +17,7 @@ const PointSchema = v.object({
 const ResumeSchema = v.union([v.literal('top'), v.literal('finished'), PointSchema]);
 
 /*
- * Every source is required, gifts and to-dos included (docs/02 §2.25, §2.26): a page opened
+ * Every source is required, gifts and to-dos included (docs/dev/02 §2.25, §2.26): a page opened
  * before a source joined the story posts a cursor without it, and reading that as "from the
  * top" or "finished" would repeat or drop its items. It is refused, and the page's *Show
  * earlier* says so; a reload hands it a whole cursor.

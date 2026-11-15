@@ -7,7 +7,7 @@ import * as schema from './schema';
 import { createDrizzleSameAddressSource } from './same-address-reads';
 
 /*
- * Integration spec for what *Same address* reads (docs/02 §2.17): only people the viewer may
+ * Integration spec for what *Same address* reads (docs/dev/02 §2.17): only people the viewer may
  * browse, their own lines, and the homes they live in naming only them — a private person of
  * another member, an archived person and another household never appear.
  */

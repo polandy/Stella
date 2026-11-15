@@ -3,7 +3,7 @@ import { phrase } from '../../../i18n/phrase';
 import type { Viewer } from '../../access/visibility';
 
 /*
- * "Which of these people am I?" (docs/02 §2.1.3). Every household member may point their
+ * "Which of these people am I?" (docs/dev/02 §2.1.3). Every household member may point their
  * account at one contact — the record that is them. Stella then knows whose story the graph
  * opens on and which row to mark as you.
  *

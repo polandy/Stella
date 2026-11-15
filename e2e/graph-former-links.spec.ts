@@ -3,10 +3,10 @@ import { addPerson, editPeople, pickPerson, signIn } from './app';
 import { arrangeBy, filterMenu, nodeLabel, settled } from './graph-canvas';
 
 /*
- * A link marked former on the map (docs/02 §2.7, docs/05 §5.8): still drawn, dashed and named
+ * A link marked former on the map (docs/dev/02 §2.7, docs/dev/05 §5.8): still drawn, dashed and named
  * "· former", behind a Filter switch that is remembered and that the pill owns up to, and read
  * as "· former" under the name in the family tree. Written after the owner tried it on #375
- * (docs/08 §8.4.1).
+ * (docs/dev/08 §8.4.1).
  *
  * The pair is made from scratch so nothing the demo family asserts elsewhere in the serial
  * suite shifts.

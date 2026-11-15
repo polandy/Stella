@@ -19,7 +19,7 @@ import type { RequestHandler } from './$types';
 import { say } from '$lib/server/i18n/say';
 
 /*
- * Older pages of the story timeline (docs/02 §2.23). The first page comes with the person's
+ * Older pages of the story timeline (docs/dev/02 §2.23). The first page comes with the person's
  * page; this hands back the next one when the reader asks for it. Same visibility scoping as
  * everywhere else — a private entry or touchpoint only ever reaches its author.
  *

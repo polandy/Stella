@@ -2,7 +2,7 @@ import { describe, expect, it } from 'bun:test';
 import { planLastName, replaceAll } from './plan';
 
 /*
- * The confirmation of *Set last name* (docs/02 §2.2.4.3): a bulk action never
+ * The confirmation of *Set last name* (docs/dev/02 §2.2.4.3): a bulk action never
  * overwrites silently, and whoever already carries the name is left alone and not counted.
  * The confirmation is asked only when someone would lose a last name.
  */

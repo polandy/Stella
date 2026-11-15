@@ -21,10 +21,10 @@
 	import type { PersonForm, PersonPageData } from './types';
 
 	/*
-	 * Where someone lives, edited where it is read (docs/02 §2.2): each address on record as a
+	 * Where someone lives, edited where it is read (docs/dev/02 §2.2): each address on record as a
 	 * label and the address itself, saved or removed in place, and a new one added here — the
 	 * *Contact* row no longer holds addresses. Editing is not kept on the phone like adding
-	 * (docs/02 §2.18), so Save waits for a connection; adding one is kept like any other field.
+	 * (docs/dev/02 §2.18), so Save waits for a connection; adding one is kept like any other field.
 	 * A home shared with others comes first, edited for everyone who lives there. Each address
 	 * stands in a frame of its own; adding another and *Cancel* concern the list, so sit below.
 	 */

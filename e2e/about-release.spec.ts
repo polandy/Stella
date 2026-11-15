@@ -5,8 +5,8 @@ import packageJson from '../package.json' with { type: 'json' };
 import { STUB_RELEASE_TAG, STUB_RELEASE_URL } from './release-feed';
 
 /*
- * The About card, and the notice that a newer release exists (docs/02 §2.17.1). Written
- * after the card was seen in the running app (docs/08 §8.4.1).
+ * The About card, and the notice that a newer release exists (docs/dev/02 §2.17.1). Written
+ * after the card was seen in the running app (docs/dev/08 §8.4.1).
  *
  * The suite's server runs with the check on, pointed at `release-feed-stub.ts` rather than
  * at GitHub — so the answer is a fixed version instead of whatever is published today, and

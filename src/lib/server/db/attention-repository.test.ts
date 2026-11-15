@@ -9,7 +9,7 @@ import * as schema from './schema';
 
 /*
  * Integration spec for the attention adapter: the day each person was last written about, as
- * the People list shows it (docs/02 §2.2). The rule that needs a real database is the one that
+ * the People list shows it (docs/dev/02 §2.2). The rule that needs a real database is the one that
  * decides *which* touches count: only the journal entries and touchpoints the viewer may see.
  * A private entry someone else wrote must not date a person from that viewer's chair.
  */

@@ -4,7 +4,7 @@ import { householdTodoActions, readHouseholdTodos } from '../_shared/household-t
 import type { Actions, PageServerLoad } from './$types';
 
 /*
- * Every open to-do of the household on one page (docs/02 §2.26.6), grouped by its day as Home's
+ * Every open to-do of the household on one page (docs/dev/02 §2.26.6), grouped by its day as Home's
  * band reads it. A to-do is ticked right here; rewriting and removing it stay on the person's
  * card.
  */

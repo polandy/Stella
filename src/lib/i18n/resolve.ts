@@ -1,7 +1,7 @@
 import { isLocale, negotiateLocale, type Locale } from './locales';
 
 /*
- * Which language a request is answered in (docs/02 §2.19). Pure, so the precedence is a
+ * Which language a request is answered in (docs/dev/02 §2.19). Pure, so the precedence is a
  * unit test rather than something to reason about while reading `hooks.server.ts`.
  */
 

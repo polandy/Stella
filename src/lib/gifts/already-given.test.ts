@@ -2,7 +2,7 @@ import { describe, expect, it } from 'bun:test';
 import { alreadyGiven, type GiftOnRecord } from './already-given';
 
 /*
- * The *already given* hint (docs/02 §2.25.2): a title being typed that matches a gift already
+ * The *already given* hint (docs/dev/02 §2.25.2): a title being typed that matches a gift already
  * given to the same person — case and accents folded, either inside the other — names that
  * gift, so the same book does not arrive twice. A hint, never a block.
  */

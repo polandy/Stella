@@ -2,7 +2,7 @@ import type { Viewer } from '../access/visibility';
 import type { LinkSyncRequest, NextcloudLink } from '../domain/nextcloud/link';
 
 /*
- * Opening Stella syncs the household's linked book when it is due (docs/02 §2.16.3). The page
+ * Opening Stella syncs the household's linked book when it is due (docs/dev/02 §2.16.3). The page
  * never waits for it: what the sync brings shows on the next page, and nothing it runs into
  * reaches the member — a book out of reach is said on the import page, a failing sync only in
  * the log, by its message alone (the app password is in a header, never in a message).

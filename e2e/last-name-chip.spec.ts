@@ -3,7 +3,7 @@ import { appReady, signIn } from './app';
 import { LINK, personIdOf, seedHousehold } from './seed';
 
 /*
- * The last-name chip on a profile (docs/02 §2.2.4.6): a tap saves at once under the shell's
+ * The last-name chip on a profile (docs/dev/02 §2.2.4.6): a tap saves at once under the shell's
  * activity indicator, the new name is on screen once the page has reloaded, the offer to pass
  * the name on appears under it, and the toast's *Undo* puts the name back as it was.
  *

@@ -13,7 +13,7 @@ import { createDrizzleContactSourceRepository } from './contact-source-repositor
 import * as schema from './schema';
 
 /*
- * Integration spec for applying the matching review (docs/02 §2.16) against a real schema: one
+ * Integration spec for applying the matching review (docs/dev/02 §2.16) against a real schema: one
  * transaction writes the new people, what the people here gain, the remembered answers and one
  * activity row — or nothing at all — and a second run of the same export writes nothing.
  */

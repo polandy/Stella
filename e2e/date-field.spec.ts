@@ -2,8 +2,8 @@ import { expect, test, type Locator, type Page } from '@playwright/test';
 import { signIn } from './app';
 
 /*
- * Entering a date in the language Stella is read in (docs/05 §5.7, docs/02 §2.13.1). Written
- * after the field was seen in the running app (docs/08 §8.4.1).
+ * Entering a date in the language Stella is read in (docs/dev/05 §5.7, docs/dev/02 §2.13.1). Written
+ * after the field was seen in the running app (docs/dev/08 §8.4.1).
  *
  * The browser these cases run in is en-US, which writes the month first. That is the whole
  * point: every assertion below would also hold if the field simply followed the browser —

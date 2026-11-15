@@ -17,19 +17,19 @@ import { findLikelyMatchFor, type PersonMatchDeps } from '../domain/immich/perso
 import type { ImmichMediaSigner } from '../domain/immich/signed-media';
 
 /*
- * What the Immich routes answer (docs/02 §2.24.3, §2.24.4), decided here so
+ * What the Immich routes answer (docs/dev/02 §2.24.3, §2.24.4), decided here so
  * it can be tested without a server; `src/routes/media/immich/[token]` and
  * `src/routes/(app)/contacts/[id]/immich/{faces,match,photos}` only wire the services and say a
  * refusal in the reader's language.
  *
  * Every image from Immich — a face in the picker, a photo in the strip or the viewer — comes
  * through one proxy, and only for a token Stella signed after the access layer let the viewer
- * see the contact (docs/04 ADR-097). Nothing from it is kept: not by the browser, not by the
- * service worker (docs/04 ADR-099).
+ * see the contact (docs/dev/04 ADR-097). Nothing from it is kept: not by the browser, not by the
+ * service worker (docs/dev/04 ADR-099).
  */
 
 /**
- * Nothing from Immich is kept on a device (docs/04 ADR-099): Immich owns the photos and may delete,
+ * Nothing from Immich is kept on a device (docs/dev/04 ADR-099): Immich owns the photos and may delete,
  * archive or lock one away at any moment, and a signed URL is only ever meant for the page that
  * received it.
  */
@@ -104,7 +104,7 @@ function glimpseScope(query: GlimpseQuery): GlimpseScope | 'invalid' {
 /**
  * `GET /contacts/{id}/immich/photos?cursor=&with=&of=`: a page of the strip under a linked
  * person's gallery, with signed URLs — with `with`, of the photos they are in together with that
- * other person (docs/02 §2.24.8); with `of`, of that other, linked person's own photos, listed
+ * other person (docs/dev/02 §2.24.8); with `of`, of that other, linked person's own photos, listed
  * for this person's page so one can become their picture (§2.24.2). Only for people the member
  * can see and who are linked as the case needs; a failure in Immich is said in the body — the
  * strip then quietly is not there — rather than failing the request.
@@ -133,7 +133,7 @@ export interface LibraryQuery {
 
 /**
  * `GET /immich/library?day=` or `?q=`: a day of the whole library, or a search of it, for the
- * picker beside a photo upload (docs/02 §2.24.9) — for any member, every photo signed for their
+ * picker beside a photo upload (docs/dev/02 §2.24.9) — for any member, every photo signed for their
  * household. A failure in Immich is said in the body; the picker shows it.
  */
 export async function answerLibrary(
@@ -201,7 +201,7 @@ export async function answerFaceSearch(
 
 /**
  * `GET /contacts/{id}/immich/match`: the face the Photos card suggests for an unlinked person —
- * the one *Find your people* would link in one tap (docs/02 §2.24.7) — or `null`. Only for a
+ * the one *Find your people* would link in one tap (docs/dev/02 §2.24.7) — or `null`. Only for a
  * person the member can see. Immich not answering is no suggestion rather than an error: the
  * card simply offers nothing, and *Find in Immich* says what is wrong when asked.
  */

@@ -1,5 +1,5 @@
 /*
- * The iCalendar text of a subscribed calendar (RFC 5545; docs/02 §2.13.4). Pure: the events
+ * The iCalendar text of a subscribed calendar (RFC 5545; docs/dev/02 §2.13.4). Pure: the events
  * arrive already worded in the member's language, and the stamp is the caller's reading of
  * the clock, so the same input always gives the same bytes — which is what the feed's ETag
  * relies on.

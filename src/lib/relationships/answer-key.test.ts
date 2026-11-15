@@ -3,10 +3,10 @@ import { ANSWER_ANCHOR_PATTERN, answerAnchor, answerKey, withAnchor } from './an
 
 /*
  * The key an answered suggestion is held under while its undo window is open
- * (docs/02 §2.4.1, §2.23).
+ * (docs/dev/02 §2.4.1, §2.23).
  *
  * A claim is `(relation, pair)` and never a rule — that is what makes one *no* hold however
- * another rule reaches the same two people later (docs/04 ADR-117). The undo key has to
+ * another rule reaches the same two people later (docs/dev/04 ADR-117). The undo key has to
  * inherit that exactly: the household screen can reach the same
  * claim from either end of a sibling group, and two keys for one claim would let a member
  * answer it twice and undo only half of it.

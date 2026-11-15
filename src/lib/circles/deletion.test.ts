@@ -4,7 +4,7 @@ import { createTranslator } from '$lib/i18n/translate';
 import { circleDeletionSentences, type CircleDeletionCounts } from './deletion';
 
 /*
- * What a circle's confirm step says goes and what stays (docs/02 §2.4.2): the members and
+ * What a circle's confirm step says goes and what stays (docs/dev/02 §2.4.2): the members and
  * photos, the profile pictures that become their wearer's own, and the nested circles that stay
  * without a parent — named when the reader sees them, else only counted.
  */

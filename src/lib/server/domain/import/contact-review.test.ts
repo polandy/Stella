@@ -15,7 +15,7 @@ import { englishWording } from './monica/wording.fixture';
 import type { ContactSourceRepository, RememberedAnswer } from './source-links';
 
 /*
- * Applying the matching review (docs/02 §2.16): every card the review asked about needs an
+ * Applying the matching review (docs/dev/02 §2.16): every card the review asked about needs an
  * answer, and the answers are handed to the writer as one write — the new people, what the
  * people already here gain, and the answers to remember.
  */

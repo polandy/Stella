@@ -1,12 +1,12 @@
 import { LOCALES, type Locale } from '../i18n/locales';
 
 /*
- * Derive a contact's display name — pure (docs/03 §contact: display_name is required and
+ * Derive a contact's display name — pure (docs/dev/03 §contact: display_name is required and
  * never empty). Priority: explicit name → what the parts make → error. The parts make
- * *Thomas „Tom“ Brunner*: first name, the nickname in quotes, last name (docs/02 §2.2).
+ * *Thomas „Tom“ Brunner*: first name, the nickname in quotes, last name (docs/dev/02 §2.2).
  *
  * Shared by the server and the profile's name editor, which shows *Shown as* following the
- * parts while they are typed by the very rule the server applies on save (docs/02 §2.2).
+ * parts while they are typed by the very rule the server applies on save (docs/dev/02 §2.2).
  */
 
 export interface NameParts {
@@ -74,7 +74,7 @@ export function deriveDisplayName(parts: NameParts, locale: Locale): string {
 }
 
 /**
- * The one-off update of the names stored before the nickname joined them (docs/03 §contact):
+ * The one-off update of the names stored before the nickname joined them (docs/dev/03 §contact):
  * the new name for a row whose shown name the old rule made and whose nickname now shows, or
  * null for a row to leave alone — a chosen name (*Opa Kurt*), no nickname, or a nickname that
  * is the first name again. The migration applies this rule; its test holds the two together.
@@ -99,7 +99,7 @@ export type NamePartsChange = Partial<Pick<StoredName, 'firstName' | 'lastName' 
 const orNull = (value: string | null): string | null => clean(value) || null;
 
 /**
- * The name after its parts change (docs/02 §2.2, ADR-106), the one rule every path that
+ * The name after its parts change (docs/dev/02 §2.2, ADR-106), the one rule every path that
  * changes a part goes through — the profile and the bulk paths alike, so a shown name follows
  * its parts the same way wherever they change.
  *
@@ -145,7 +145,7 @@ export function shownNameIsChosen(name: StoredName): boolean {
 }
 
 /**
- * The whole name as the profile's one editor sends it (docs/02 §2.2): the parts and *Shown as*.
+ * The whole name as the profile's one editor sends it (docs/dev/02 §2.2): the parts and *Shown as*.
  * A shown name that comes back as it was stored, while it was following the parts, is made
  * again from the new parts (`withNameParts`) — so a form without the live update, or one left
  * open while the parts were typed, still follows them. A shown name typed by the member is

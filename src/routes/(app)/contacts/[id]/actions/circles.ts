@@ -18,12 +18,12 @@ const RoleSchema = v.object({
 	role: v.pipe(v.string(), v.trim())
 });
 
-/** The profile card's circles (docs/02 §2.7). */
+/** The profile card's circles (docs/dev/02 §2.7). */
 export const circleActions = {
 	joinCircle: async ({ request, params, locals }) => {
 		const viewer = requireViewer(locals);
 
-		// A command (docs/04 §4.11.2), named by the form so one kept on the phone is recognised.
+		// A command (docs/dev/04 §4.11.2), named by the form so one kept on the phone is recognised.
 		const form = await request.formData();
 		const reading = readCommand({
 			id: form.get('commandId') || ulidGenerator.next(),
@@ -51,7 +51,7 @@ export const circleActions = {
 		throw redirect(303, `/contacts/${params.id}`);
 	},
 
-	/* Their role in one circle, changed where their circles are read (docs/02 §2.2). */
+	/* Their role in one circle, changed where their circles are read (docs/dev/02 §2.2). */
 	setCircleRole: async ({ request, params, locals }) => {
 		const viewer = requireViewer(locals);
 

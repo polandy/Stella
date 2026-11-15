@@ -7,7 +7,7 @@ import type { Clock } from '../../clock';
 import type { IdGenerator } from '../../id';
 
 /*
- * Note use-cases (docs/02 §2.5). Notes are child records of a contact; their visibility is
+ * Note use-cases (docs/dev/02 §2.5). Notes are child records of a contact; their visibility is
  * enforced through the central access scoping in the adapter. Orchestration is pure.
  */
 
@@ -39,7 +39,7 @@ export interface NewNote {
 /** A note as read back for display (the body is Markdown source). */
 export interface Note extends NewNote {}
 
-/** What an edit needs to know of a note its author may edit (docs/03 §3.7). */
+/** What an edit needs to know of a note its author may edit (docs/dev/03 §3.7). */
 export interface EditableNote {
 	id: string;
 	contactId: string;
@@ -50,7 +50,7 @@ export interface NoteRepository {
 	insert(note: NewNote): Promise<void>;
 	/** Notes on a contact the viewer may see, pinned first then newest. */
 	listForContactVisibleTo(viewer: Viewer, contactId: string): Promise<Note[]>;
-	/** Rebuild a note's @-mention links to exactly these contacts (docs/02 §2.20.1). */
+	/** Rebuild a note's @-mention links to exactly these contacts (docs/dev/02 §2.20.1). */
 	replaceMentions(noteId: string, contactIds: string[]): Promise<void>;
 	/** The people a note references, for the reverse lookup. */
 	listMentionedContactIds(noteId: string): Promise<string[]>;
@@ -133,7 +133,7 @@ export async function listNotesForContact(
 }
 
 /**
- * Point a note's @-mention links at exactly the people its body names (docs/02 §2.20.1). Called
+ * Point a note's @-mention links at exactly the people its body names (docs/dev/02 §2.20.1). Called
  * after the note is written, with the ids the shared resolver found; duplicates in the body
  * collapse to one link.
  */

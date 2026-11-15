@@ -4,7 +4,7 @@
 	import { outbox } from '$lib/pwa/outbox.svelte';
 
 	/*
-	 * Links entered on this person while Stella was out of reach, kept until they are sent (docs/02
+	 * Links entered on this person while Stella was out of reach, kept until they are sent (docs/dev/02
 	 * §2.18). The guardrails are the server's: a link that has meanwhile become a duplicate or a
 	 * contradiction comes back refused, with the reason. Named the way the picker names them.
 	 */

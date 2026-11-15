@@ -12,7 +12,7 @@ import type { PageServerLoad } from './$types';
  * 404, as if it did not exist.
  *
  * Its copy, this 404 included, stays plain English and outside the catalogue: no household ever
- * reaches it (docs/02 §2.19).
+ * reaches it (docs/dev/02 §2.19).
  */
 export const load: PageServerLoad = () => {
 	if (!dev && !getConfig().debugPages) throw error(404, 'Not found');

@@ -3,9 +3,9 @@ import { appReady, mention, mentionNew, openPerson, signIn } from './app';
 
 /*
  * A moment's polish (review 2026-11, UX-03, UX-10, UX-12): edited in place from a person's
- * Activity card (docs/02 §2.23), pointed to after a save from the phone's sheet (§2.22.1), and
+ * Activity card (docs/dev/02 §2.23), pointed to after a save from the phone's sheet (§2.22.1), and
  * found by search with the people it mentions named (§2.9). Written after the owner's hand test
- * (docs/08 §8.4.1). Each case writes its own moment under letters no other run shares, so the
+ * (docs/dev/08 §8.4.1). Each case writes its own moment under letters no other run shares, so the
  * seed's entries stay as other specs expect them.
  */
 
@@ -107,7 +107,7 @@ test.describe('on a phone', () => {
 		await expect(page).toHaveURL(/#moment-[^/]+$/);
 		const row = page.locator('article', { hasText: words });
 		await expect(row).toBeInViewport();
-		// The row the hash names is the one flashed (`:target`, docs/05 §5.7).
+		// The row the hash names is the one flashed (`:target`, docs/dev/05 §5.7).
 		expect(await row.evaluate((el) => el.matches(':target'))).toBe(true);
 	});
 });

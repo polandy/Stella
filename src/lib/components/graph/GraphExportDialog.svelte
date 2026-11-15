@@ -1,6 +1,6 @@
 <!--
   @component
-  Export the family tree (docs/02 §2.7, docs/design/screens/graph.md): a title, a picture or a
+  Export the family tree (docs/dev/02 §2.7, docs/dev/design/screens/graph.md): a title, a picture or a
   printed page, the paper, the years and the private people — beside a preview of the sheet as it
   comes out. The tree is drawn by `cytoscape/tree-image.ts`; this only asks and hands it on.
 -->

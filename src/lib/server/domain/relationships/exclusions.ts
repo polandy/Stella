@@ -15,7 +15,7 @@ import type { RelationshipTieReads, RelationshipType, RelationshipView } from '.
 import type { KinshipGraphReads } from './suggestion-review';
 
 /*
- * What is already on record, and what that rules out (docs/02 §2.4). The rules themselves
+ * What is already on record, and what that rules out (docs/dev/02 §2.4). The rules themselves
  * are pure and live in `$lib/relationships/exclusions`; here they are handed the household's
  * links. The person page is given the very same reading, so the picker greys out exactly
  * what this use-case would refuse.
@@ -50,7 +50,7 @@ const PHRASE_FOR_REASON: Record<ExclusionReason, (e: Exclusion, nameOf: NameOf) 
 		})
 };
 
-/** A tie that cannot hold beside the ties already on record (docs/02 §2.4). */
+/** A tie that cannot hold beside the ties already on record (docs/dev/02 §2.4). */
 export class RelationshipExcludedError extends TranslatableError {
 	/** Which rule refused — a caller reacts to the kind, never to the wording. */
 	readonly reason: ExclusionReason;

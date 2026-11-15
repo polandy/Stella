@@ -6,7 +6,7 @@ import { streamDays, streamTime } from './days';
 
 /*
  * Home's stream, grouped by the day a thing was written, and the time an item shows under its
- * day (docs/02 §2.22.2). Days are the household's, in the zone handed in; every instant is
+ * day (docs/dev/02 §2.22.2). Days are the household's, in the zone handed in; every instant is
  * written in UTC against Zurich's summer time (UTC+2), so the cases hold in any zone the
  * runner happens to be in.
  */

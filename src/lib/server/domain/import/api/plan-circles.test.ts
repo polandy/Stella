@@ -5,7 +5,7 @@ import { planCircles } from './plan-circles';
 import { context, doc, knownCircle, ME, NOW, SOURCE } from './plan.fixture';
 
 /*
- * The circles of an API import, planned on their own (docs/02 §2.16.1). The whole planner's
+ * The circles of an API import, planned on their own (docs/dev/02 §2.16.1). The whole planner's
  * tests (`plan.test.ts`, `plan-circle-changes.test.ts`) cover moves, loops and periods; these
  * pin what a circle entry becomes and the refusals only a circle can raise.
  */

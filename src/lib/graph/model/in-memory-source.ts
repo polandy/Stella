@@ -1,7 +1,7 @@
 import type { GraphDataSource, GraphEdge, GraphModel, GraphNode, Neighborhood } from './types';
 
 /*
- * A GraphDataSource backed by an in-memory GraphModel (docs/04 §4.11). This is the key to
+ * A GraphDataSource backed by an in-memory GraphModel (docs/dev/04 §4.11). This is the key to
  * running the explorer entirely in the browser: the server delivers one slim, access-scoped
  * snapshot of the visible graph, the client wraps it here, and the isomorphic builders
  * (buildEgoNetwork / expandNode / findConnectionPath) then explore it with zero further

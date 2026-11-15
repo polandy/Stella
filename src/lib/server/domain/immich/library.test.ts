@@ -21,7 +21,7 @@ import {
 import { fixedClock } from '../testing';
 
 /*
- * The whole library, for the picker beside a photo upload (docs/02 §2.24.9): a day on the
+ * The whole library, for the picker beside a photo upload (docs/dev/02 §2.24.9): a day on the
  * camera's clock with its nearest neighbours, and a search by description. Every photo is
  * signed for the viewer's household, whoever is in it.
  */

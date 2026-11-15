@@ -1,6 +1,6 @@
 <!--
   @component
-  An Immich photo an entry refers to (docs/04 ADR-132), shown through Stella's signed proxy and
+  An Immich photo an entry refers to (docs/dev/04 ADR-132), shown through Stella's signed proxy and
   opening at preview size. When Immich is not connected, cannot be reached or no longer has the
   photo, the tile says so in place of a broken image.
 -->

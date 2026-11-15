@@ -7,7 +7,7 @@
 	import type { MatchHintFace } from './immich-match-hint.svelte';
 
 	/*
-	 * The Photos card's suggestion (docs/02 §2.24.7): one quiet row, the Immich face beside a
+	 * The Photos card's suggestion (docs/dev/02 §2.24.7): one quiet row, the Immich face beside a
 	 * question — *Is this Lena? Immich has “Lena Brunner” with 1,764 photos.* — and the three
 	 * answers. It arrives after the page and stands at the card's foot, so nothing above it moves.
 	 *

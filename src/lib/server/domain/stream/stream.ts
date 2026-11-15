@@ -9,9 +9,9 @@ import {
 } from '../../../stream/filter';
 
 /*
- * Household stream (docs/02 §2.22.2): what the family did, newest first. It is a *query* over
+ * Household stream (docs/dev/02 §2.22.2): what the family did, newest first. It is a *query* over
  * the existing tables — moments (journal entries), new people, new relationships, logged
- * interactions (docs/02 §2.6) and photos added to circles (§2.4.2) — merged here; nothing is
+ * interactions (docs/dev/02 §2.6) and photos added to circles (§2.4.2) — merged here; nothing is
  * logged twice.
  *
  * The viewer can narrow it by kind and by member (`StreamFilter`). Both narrow the *reads*, not
@@ -19,7 +19,7 @@ import {
  * items pushed out by everyone else's.
  *
  * The one exception is a **removal**, which no table can report once its row is gone; that
- * one comes from `activity_log` (docs/04 §4.9). The adapter owns the visibility-scoped reads;
+ * one comes from `activity_log` (docs/dev/04 §4.9). The adapter owns the visibility-scoped reads;
  * this module only merges, orders and limits, so it stays pure.
  */
 
@@ -42,7 +42,7 @@ export interface MomentRow {
 	at: number;
 	actor: StreamActor;
 	anchor: StreamPerson;
-	/** The further people it is about that the viewer sees, in order (docs/02 §2.20.3). */
+	/** The further people it is about that the viewer sees, in order (docs/dev/02 §2.20.3). */
 	others: StreamPerson[];
 	entryDate: string;
 	visibility: Visibility;
@@ -73,7 +73,7 @@ export interface RelationshipRow {
 	typeKey: string;
 }
 
-/** A logged interaction as the stream shows it (docs/02 §2.6). */
+/** A logged interaction as the stream shows it (docs/dev/02 §2.6). */
 export interface InteractionRow {
 	id: string;
 	at: number;
@@ -90,7 +90,7 @@ export interface InteractionRow {
 
 /**
  * Something only the activity log can report: a name that stopped existing — deleted outright
- * or merged into someone else (docs/02 §2.2) — or an archive of the household being taken
+ * or merged into someone else (docs/dev/02 §2.2) — or an archive of the household being taken
  * (§2.15). In every case the tables cannot say it, either because the row is gone or because
  * there never was one.
  */
@@ -112,7 +112,7 @@ export interface StreamCircle {
 	name: string;
 }
 
-/** One photo added to a circle (docs/02 §2.4.2), as the source reads it. */
+/** One photo added to a circle (docs/dev/02 §2.4.2), as the source reads it. */
 export interface CirclePhotoUploadRow {
 	/** The photo's id — also what the stream shows of it. */
 	id: string;
@@ -194,7 +194,7 @@ export interface StreamRepository {
 	recentInteractions(viewer: Viewer, query: StreamQuery): Promise<InteractionRow[]>;
 	/** The one source that is the log itself, for what no table can report. */
 	recentNotices(viewer: Viewer, query: StreamQuery): Promise<NoticeRow[]>;
-	/** Photos added to circles, newest first, one row per photo (docs/02 §2.4.2). */
+	/** Photos added to circles, newest first, one row per photo (docs/dev/02 §2.4.2). */
 	recentCirclePhotos(viewer: Viewer, query: StreamQuery): Promise<CirclePhotoUploadRow[]>;
 }
 

@@ -1,5 +1,5 @@
 /*
- * The People card's map strip on a wide card (docs/05 §5.5): a short, wide picture of the
+ * The People card's map strip on a wide card (docs/dev/05 §5.5): a short, wide picture of the
  * people entered, drawn by the server before — and instead of — the live map. The strip is
  * 7.5 rem tall, so a ring would shrink the faces past reading; the fan runs sideways instead,
  * half the people to the left of this person and half to the right, each side in two

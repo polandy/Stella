@@ -3,9 +3,9 @@ import { readFileSync } from 'node:fs';
 import { addPerson, appReady, signIn } from './app';
 
 /*
- * A photo from Immich as the person's own photo (docs/02 §2.24.6):
+ * A photo from Immich as the person's own photo (docs/dev/02 §2.24.6):
  * *Use as photo* in the lightbox on an Immich photo, and *From Immich* in the picture's chooser. Written after
- * the owner tried #245 in the preview (docs/08 §8.4.1).
+ * the owner tried #245 in the preview (docs/dev/08 §8.4.1).
  *
  * The e2e server runs with `IMMICH_DEMO=true`: Immich is the in-memory demo library, whose
  * photos are solid tiles dated a day apart, newest first. One Immich face links to one person

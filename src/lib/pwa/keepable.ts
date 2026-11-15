@@ -10,7 +10,7 @@ import { outbox } from './outbox.svelte';
 import { reachability } from './reachability.svelte';
 
 /*
- * An adding form, saved as a command through the outbox (docs/02 §2.18.1, docs/04
+ * An adding form, saved as a command through the outbox (docs/dev/02 §2.18.1, docs/dev/04
  * ADR-076): the same path whether Stella is in reach or not. In reach, the form waits for the
  * answer — applied, or refused with a reason it shows where the action's own error would be —
  * and an answer that never comes leaves the command kept on the device, as it is when Stella is
@@ -61,7 +61,7 @@ export function keepable(keep: Keepable, invalid: SubmitFunction): SubmitFunctio
 		await whilePending(keep.pending ?? NOTHING_PENDING, async () => {
 			const delivery = await outbox.submit(command, photos, about);
 			if (delivery.status === 'refused') {
-				// A refused batch also names each refused person, for the form to mark (docs/02 §2.4).
+				// A refused batch also names each refused person, for the form to mark (docs/dev/02 §2.4).
 				const refusals = delivery.refusals ? { refusals: delivery.refusals } : {};
 				await applyAction({
 					type: 'failure',

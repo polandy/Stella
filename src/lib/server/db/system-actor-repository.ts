@@ -4,7 +4,7 @@ import type * as schema from './schema';
 import { user } from './schema';
 
 /*
- * The household's Nextcloud actor (docs/02 §2.16.3, docs/03 `user.kind`). Its id follows from
+ * The household's Nextcloud actor (docs/dev/02 §2.16.3, docs/dev/03 `user.kind`). Its id follows from
  * the household, so asking twice — or two syncs at once — makes one. No password and an email
  * under `.invalid`: no sign-in path can reach it, and every one also skips `kind = 'system'`.
  */

@@ -19,7 +19,7 @@
 
 	let { data, form }: { data: PageData; form: ActionData } = $props();
 	// People the @-picker may offer — the shell's list — minus the person whose journal this is:
-	// naming them here is not a mention, it is the entry's own subject (docs/02 §2.20.1).
+	// naming them here is not a mention, it is the entry's own subject (docs/dev/02 §2.20.1).
 	const candidates = $derived(data.people.filter((p) => p.id !== data.contact.id));
 
 	const i18n = useI18n();
@@ -35,7 +35,7 @@
 		)
 	);
 
-	// Removing is held back for an undo window (docs/02 §2.23), same as on the story.
+	// Removing is held back for an undo window (docs/dev/02 §2.23), same as on the story.
 	const removals = useRemovals();
 	const removalKey = (entry: { id: string }) => buildKey('journal', entry.id);
 	function deferRemoval(
@@ -62,7 +62,7 @@
 		});
 	}
 
-	// Editing an entry in place: only one at a time (docs/02 §2.20).
+	// Editing an entry in place: only one at a time (docs/dev/02 §2.20).
 	let editingId = $state<string | null>(null);
 
 	// Group the (already newest-first) entries by their day for the timeline.

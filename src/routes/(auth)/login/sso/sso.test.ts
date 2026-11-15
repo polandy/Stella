@@ -5,7 +5,7 @@ import type { AuthServices } from '$lib/server/services/auth';
 import type { AppServices } from '$lib/server/services/app-services';
 
 /*
- * The start of the SSO flow (docs/04 §4.4) over a test-wired `locals.services`: it leaves the
+ * The start of the SSO flow (docs/dev/04 §4.4) over a test-wired `locals.services`: it leaves the
  * one-time values behind in the sealed cookie the callback opens, and only while SSO is on.
  */
 const { GET } = await import('./+server');

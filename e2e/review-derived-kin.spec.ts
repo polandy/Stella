@@ -3,8 +3,8 @@ import { fromPeopleMenu, openPerson, signIn, unfoldPeople } from './app';
 import { LINK, seedHousehold } from './seed';
 
 /*
- * Check relationships also offers the relatives Stella works out and nobody entered (docs/02
- * §2.4.1, rule K1). Written after the owner verified it in the running app (docs/08 §8.4.1).
+ * Check relationships also offers the relatives Stella works out and nobody entered (docs/dev/02
+ * §2.4.1, rule K1). Written after the owner verified it in the running app (docs/dev/08 §8.4.1).
  *
  * Each case seeds a three-generation family of its own — a grandfather, his two children and
  * a grandchild — so it answers nothing about the Brunners that other specs read.

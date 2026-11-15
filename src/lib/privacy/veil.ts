@@ -1,5 +1,5 @@
 /*
- * The private-entry veil (docs/02 §2.10.1): the title, text and picture of a member's own
+ * The private-entry veil (docs/dev/02 §2.10.1): the title, text and picture of a member's own
  * private entries stay blurred on their screen until they ask for them, so a glance over the
  * shoulder shows *that* something private is there, never *what*. It guards the screen, not the
  * data: the access layer already keeps everyone else out.

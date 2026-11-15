@@ -14,7 +14,7 @@ import * as schema from './schema';
 import { seedRelationshipTypes } from './seed';
 
 /*
- * Merging duplicates (docs/02 §2.2). Everything hanging off the record merged away has to
+ * Merging duplicates (docs/dev/02 §2.2). Everything hanging off the record merged away has to
  * arrive at the survivor, and every constraint that says "the survivor already has that" has
  * to be settled without losing what somebody wrote.
  */
@@ -22,7 +22,7 @@ import { seedRelationshipTypes } from './seed';
 const H = 'household-1';
 const U1 = 'user-1';
 const U2 = 'user-2';
-// Merging is an admin's (docs/02 §2.2); both are, so a case about reach is about reach alone.
+// Merging is an admin's (docs/dev/02 §2.2); both are, so a case about reach is about reach alone.
 const viewer: Remover = { id: U1, householdId: H, isAdmin: true };
 const viewerU2: Remover = { id: U2, householdId: H, isAdmin: true };
 
@@ -141,7 +141,7 @@ describe('what follows the person', () => {
 		expect(db.select().from(schema.contact).all()[0].description).toBe('the merged one');
 	});
 
-	it('brings their gifts across, ideas and given alike (docs/02 §2.25)', () => {
+	it('brings their gifts across, ideas and given alike (docs/dev/02 §2.25)', () => {
 		db.insert(schema.gift)
 			.values([
 				{ id: 'g1', contactId: 'dup', createdBy: U1, state: 'idea', title: 'Teapot' },
@@ -167,7 +167,7 @@ describe('what follows the person', () => {
 		).toEqual(['keep', 'keep']);
 	});
 
-	it('brings their to-dos across, open and ticked alike (docs/02 §2.26)', () => {
+	it('brings their to-dos across, open and ticked alike (docs/dev/02 §2.26)', () => {
 		db.insert(schema.todo)
 			.values([
 				{ id: 't1', contactId: 'dup', createdBy: U1, title: 'Give the book back' },
@@ -496,7 +496,7 @@ describe('what would collide', () => {
 	});
 });
 
-describe('links in their stored order (docs/03 §relationship)', () => {
+describe('links in their stored order (docs/dev/03 §relationship)', () => {
 	// 'dup' < 'elias' < 'keep': a symmetric link of dup's to Elias is stored (dup, elias) and,
 	// moved by a plain repoint, would read (keep, elias) — the wrong way round for the index.
 	const link = (
@@ -679,7 +679,7 @@ describe('the link to Immich', () => {
 		]);
 	});
 
-	it('keeps the survivor’s link when both records were linked (docs/02 §2.24.5)', () => {
+	it('keeps the survivor’s link when both records were linked (docs/dev/02 §2.24.5)', () => {
 		linkOf('keep', PERSON_A);
 		linkOf('dup', PERSON_B);
 		expect(merge()).toBe(true);
@@ -721,7 +721,7 @@ describe('ignored Immich proposals', () => {
 });
 
 describe('profile pictures cut from a group photo', () => {
-	// docs/02 §2.14: one cut per person and photo, and a cut nobody wears
+	// docs/dev/02 §2.14: one cut per person and photo, and a cut nobody wears
 	// any more is a photo of its own. Both records cut from one class photo would otherwise clash.
 	function seedCut(id: string, contactId: string) {
 		db.insert(schema.photo)

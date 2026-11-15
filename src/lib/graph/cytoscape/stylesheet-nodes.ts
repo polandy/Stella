@@ -12,7 +12,7 @@ import { lineColour } from './stylesheet-edges';
 import type { CyStyle, StyleContext, StyledElement } from './stylesheet';
 
 /*
- * The nodes of the graph stylesheet (docs/05 §5.8): people, circles, role frames, the "+N"
+ * The nodes of the graph stylesheet (docs/dev/05 §5.8): people, circles, role frames, the "+N"
  * badge, a missing parent's slot and the canvas caption.
  */
 
@@ -68,7 +68,7 @@ export function nodeStyles({ p, tree, transition }: StyleContext): CyStyle[] {
 				'transition-duration': transition
 			}
 		},
-		// The same disc as the avatar component (docs/05 §5.10): the accent tints the card and
+		// The same disc as the avatar component (docs/dev/05 §5.10): the accent tints the card and
 		// rings the node, so a face keeps its colour between the list and the map.
 		...Object.entries(p.accents).map(([name, hex]) => ({
 			selector: `node.person[accent = "${name}"]`,
@@ -140,7 +140,7 @@ export function nodeStyles({ p, tree, transition }: StyleContext): CyStyle[] {
 				'min-zoomed-font-size': LABEL_MIN_ZOOMED_FONT_SIZE
 			}
 		},
-		// ── Groups by role (docs/02 §2.7) — a frame around the members ─────────
+		// ── Groups by role (docs/dev/02 §2.7) — a frame around the members ─────────
 		// Cytoscape sizes a compound node around its members; the role and count sit on top.
 		{
 			selector: 'node.role-group',
@@ -209,7 +209,7 @@ export function nodeStyles({ p, tree, transition }: StyleContext): CyStyle[] {
 /** A missing parent's slot and the canvas caption, drawn over the lines. */
 export function markStyles({ p }: StyleContext): CyStyle[] {
 	return [
-		// ── A missing parent's slot in the family tree (docs/05 §5.8) ─────────
+		// ── A missing parent's slot in the family tree (docs/dev/05 §5.8) ─────────
 		// Room for somebody not entered yet: a plus in a dashed ring, hollow so it never reads as
 		// a person, and one dashed line tying it in. Muted, yet at 3:1 like every other line.
 		{
@@ -263,7 +263,7 @@ export function markStyles({ p }: StyleContext): CyStyle[] {
 }
 
 /**
- * The lit names grown by `growth` (`nameGrowth`, docs/05 §5.8), laid over the stylesheet while
+ * The lit names grown by `growth` (`nameGrowth`, docs/dev/05 §5.8), laid over the stylesheet while
  * the map is zoomed out: the selected person and their neighbours stay readable on a phone, the
  * faded rest keeps its size. Nothing at full size, and never in the family tree, whose names
  * wrap over their roles and whose pills grow to them already.

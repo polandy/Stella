@@ -12,7 +12,7 @@ import {
 import { fixedClock, sequentialIds } from '../testing';
 
 /*
- * Avatar validation + the setContactAvatar use-case (docs/02 §2.14). Pure and fake-driven —
+ * Avatar validation + the setContactAvatar use-case (docs/dev/02 §2.14). Pure and fake-driven —
  * no filesystem, no DB. Proves magic-byte sniffing, the size/format guards, and that a valid
  * upload is stored and wired up as the contact's avatar.
  */

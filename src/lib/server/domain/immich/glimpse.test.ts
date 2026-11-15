@@ -21,7 +21,7 @@ import { BERT_AND_CARL_ID, BERT_ID, CARL_ID, DORA_ID, testLibrary } from './test
 import { fixedClock } from '../testing';
 
 /*
- * The glimpse of a linked person's photos (docs/02 §2.24.3, §2.24.4): the strip's signed
+ * The glimpse of a linked person's photos (docs/dev/02 §2.24.3, §2.24.4): the strip's signed
  * URLs, and what the proxy serves for one. Every refusal is checked against a gateway that
  * records its calls, so "refused" also means "Immich was never asked".
  */

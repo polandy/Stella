@@ -16,7 +16,7 @@ import {
 } from './explorer-fixtures';
 
 /*
- * Moving people (`arranging.ts`, docs/05 §5.8): every arrangement is worked out, then glided
+ * Moving people (`arranging.ts`, docs/dev/05 §5.8): every arrangement is worked out, then glided
  * into; the lines it says to bend or route are drawn so, and the shelf outside the family named.
  */
 

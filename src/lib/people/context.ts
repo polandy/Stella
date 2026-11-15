@@ -3,7 +3,7 @@ import { CURRENT_RELATIONSHIP_STATUS } from '../relationships/status';
 
 /*
  * What else says who a namesake is, when nobody typed a description or where they met
- * (docs/02 §2.2.3): one of their relationships, or a circle they are in. The server reads the
+ * (docs/dev/02 §2.2.3): one of their relationships, or a circle they are in. The server reads the
  * candidates the viewer may see and ranks them here; the browser picks the line from what it
  * is sent (`tellApart`), since only it knows which other names are shared on the list.
  */

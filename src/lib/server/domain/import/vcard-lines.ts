@@ -6,7 +6,7 @@ import type { MonicaPhoto } from './monica/monica-export';
 /*
  * The vCard format itself (RFC 6350 for 4.0, RFC 2426 for 3.0, and 2.1's quoted-printable):
  * cards, content lines, escapes. Both readers stand on it — `readVCard` for a fresh import,
- * `readContactCards` for the matching review (docs/02 §2.16).
+ * `readContactCards` for the matching review (docs/dev/02 §2.16).
  *
  * Hand-rolled rather than pulled from a package: the subset a contacts export uses is small
  * and stable, and every published parser brings a dependency far larger than the two dozen

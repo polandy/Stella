@@ -8,7 +8,7 @@
 	import type { ActionData, PageData } from './$types';
 
 	/*
-	 * A member's calendar link (docs/02 §2.13.4). A new link is shown once, on the answer to the
+	 * A member's calendar link (docs/dev/02 §2.13.4). A new link is shown once, on the answer to the
 	 * form that made it, with how to add it on each kind of phone; until *Done* it stands in for
 	 * the link's row, which afterwards says only when it was made and last fetched. Replacing and revoking each pass a confirm step, since a calendar
 	 * that silently stopped updating is noticed only when a birthday goes unremarked.

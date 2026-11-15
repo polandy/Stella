@@ -17,7 +17,7 @@ import type { IdGenerator } from '../id';
 import { createNextcloudServices, type NextcloudWiring } from './nextcloud';
 
 /*
- * The nextcloud group of the composition root (docs/08 §8.3), over a real in-memory SQLite and
+ * The nextcloud group of the composition root (docs/dev/08 §8.3), over a real in-memory SQLite and
  * the demo's in-memory book: the link syncs as the household's Nextcloud actor, its new cards
  * reach the review the group hands the import page, and without a configured book the whole
  * group is null.

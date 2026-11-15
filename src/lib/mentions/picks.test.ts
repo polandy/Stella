@@ -9,7 +9,7 @@ import {
 } from './picks';
 
 /*
- * Remembering which person a picked `@Handle` stands for (docs/02 §2.20.1). The field shows
+ * Remembering which person a picked `@Handle` stands for (docs/dev/02 §2.20.1). The field shows
  * `@Thomas`; the pick carries the id, so two people called Thomas stay two people. A pick lives
  * on a range of the text and must follow it through edits — or let go once the name changes.
  */

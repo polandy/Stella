@@ -1,9 +1,9 @@
 /*
- * Removing with undo (docs/02 §2.23, docs/05 §5.7).
+ * Removing with undo (docs/dev/02 §2.23, docs/dev/05 §5.7).
  *
  * A removal is not sent to the server when the button is pressed. It is held here, hidden
  * from the screen, for one window in which a toast offers *Undo*; the request goes out only
- * when the window closes or the page is left (docs/04 §4.9). Nothing in this module knows
+ * when the window closes or the page is left (docs/dev/04 §4.9). Nothing in this module knows
  * about Svelte, forms or fetch: the timer is injected and the request is a callback, so the
  * rules of the window are unit-tested without waiting for it.
  */
@@ -19,7 +19,7 @@ export interface Scheduler {
 
 /**
  * Something the toast offers beside Undo — *Brunner too? [Yes]* after a last name was saved
- * (docs/02 §2.2.4.5). Taken at most once.
+ * (docs/dev/02 §2.2.4.5). Taken at most once.
  */
 export interface Offer {
 	label: string;

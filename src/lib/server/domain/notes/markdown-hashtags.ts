@@ -4,7 +4,7 @@ import { hashtagAt, tagAccent, tagKey } from '../../../hashtags/hashtags';
 import { accentChipStyle } from '../../../design/tokens';
 
 /*
- * Tags as chips in a rendered entry (docs/02 §2.20.2). An inline rule rather than a pass over
+ * Tags as chips in a rendered entry (docs/dev/02 §2.20.2). An inline rule rather than a pass over
  * the HTML, so markdown-it has already set aside code, escapes (`\#`) and entities, and a `#`
  * inside a link's text stays text. Which `#word` is a tag is `hashtagAt`'s call, the same one
  * that files the entry under it.

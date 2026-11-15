@@ -9,7 +9,7 @@ import { journalAbout } from './journal-subjects';
 import { contact, entryTag, journalEntry, journalEntryTag } from './schema';
 
 /*
- * Drizzle adapter for the EntryTagReads port (docs/08 §8.3). A tag is counted over the entries
+ * Drizzle adapter for the EntryTagReads port (docs/dev/08 §8.3). A tag is counted over the entries
  * carrying it that the viewer may read — the central `childRecordVisibleTo` — so a tag on no
  * such entry is not returned at all. The private mark is read from those same entries, anywhere
  * in the household: an entry the viewer cannot read never changes it, or it would tell them that

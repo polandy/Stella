@@ -24,7 +24,7 @@
 	import { heldAnswer } from '$lib/undo/held-answer';
 
 	/*
-	 * The rows of a suggestion block (docs/02 §2.4.1). One component for both places a
+	 * The rows of a suggestion block (docs/dev/02 §2.4.1). One component for both places a
 	 * suggestion appears — the *Also true?* block in the
 	 * instant after a link is stored, and the review panel a member opens themselves — because
 	 * they are the same claim asking the same question, and a household should not have to learn
@@ -36,7 +36,7 @@
 	 *
 	 * No bulk accept here, deliberately: a sweep of *yes* over a family is how one wrong parent
 	 * gets written across a tree. The one exception sits beside this list rather than in it —
-	 * *Add all* on the *Also true?* block (`KinPanels`, docs/02 §2.4, *Several people in one
+	 * *Add all* on the *Also true?* block (`KinPanels`, docs/dev/02 §2.4, *Several people in one
 	 * go*) stores a batch as one `relationship.addMany`, so its one *Undo* takes the whole sweep
 	 * back. The review keeps answering one claim at a time.
 	 *
@@ -44,7 +44,7 @@
 	 * works with no JavaScript at all. With JavaScript, an answered row *goes at once* — fading
 	 * as it closes, while the list gives its height back to the scroll offset so the rows below
 	 * stay under the reader's hand (`$lib/ui/leaving.ts`). The answer itself is still held for
-	 * one undo window and sent only when that window closes (docs/02 §2.23): what leaves the
+	 * one undo window and sent only when that window closes (docs/dev/02 §2.23): what leaves the
 	 * screen and what reaches the server are two different promises.
 	 *
 	 * Keyboard focus is kept as the scroll offset is: the button that had it leaves with its
@@ -63,7 +63,7 @@
 		toName: string;
 		/**
 		 * Why the claim is offered, already said in the reader's language and already cut into
-		 * words and people, so every name in it can be followed (docs/02 §2.4.1).
+		 * words and people, so every name in it can be followed (docs/dev/02 §2.4.1).
 		 */
 		reason: readonly Segment[];
 		/** Who declined this claim and when; null while it stands unanswered. */
@@ -83,7 +83,7 @@
 		nameOfMember?: (id: string) => string | null;
 		/**
 		 * Whether the declined drawer starts open. A page whose whole purpose *is* the log
-		 * (docs/05 §5.5) would otherwise open on a closed disclosure with nothing else on it.
+		 * (docs/dev/05 §5.5) would otherwise open on a closed disclosure with nothing else on it.
 		 */
 		declinedOpen?: boolean;
 		/**
@@ -189,7 +189,7 @@
 	/*
 	 * An answered row goes immediately, whether or not its undo window has closed: it is the
 	 * reader's *answer* that takes it out of the list, and the window is a promise about what
-	 * reaches the server, not about what stays on screen (docs/02 §2.23). A claim taken back
+	 * reaches the server, not about what stays on screen (docs/dev/02 §2.23). A claim taken back
 	 * comes straight back here, because `answered` forgets it.
 	 */
 	const standing = $derived(suggestions.filter((s) => s.dismissed === null && !answered[keyOf(s)]));
@@ -341,7 +341,7 @@
 					Confidence is a word rather than a colour bar: "certain" here means a logical
 					consequence of what the household entered, not a strong hunch. The word is in
 					`--fg` and only the outline carries the colour — green and yellow text sat
-					below AA on Latte's card (docs/05 §5.9).
+					below AA on Latte's card (docs/dev/05 §5.9).
 				-->
 				<span
 					class="rounded-full border px-1.5 text-[0.6875rem] font-semibold tracking-wide text-fg"

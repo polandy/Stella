@@ -1,5 +1,5 @@
 /*
- * Where the people an expand brings in first appear (docs/05 §5.8). Pure geometry, so it tests
+ * Where the people an expand brings in first appear (docs/dev/05 §5.8). Pure geometry, so it tests
  * without Cytoscape: the canvas the reader has been looking at is their map of it, and an
  * expand that re-arranged everything made them find their way again. Instead every newcomer
  * is set down one edge length from the person it hangs off, fanned out into the open side of

@@ -15,8 +15,8 @@
 	import type { SubmitFunction } from '@sveltejs/kit';
 
 	/*
-	 * A to-do's tick box, wherever a to-do is listed (docs/02 §2.26): on the right of its row,
-	 * where a right thumb finds it (docs/05 §5.1). Ticking saves at once through the outbox, so it
+	 * A to-do's tick box, wherever a to-do is listed (docs/dev/02 §2.26): on the right of its row,
+	 * where a right thumb finds it (docs/dev/05 §5.1). Ticking saves at once through the outbox, so it
 	 * works on a phone out of reach too; the toast offers *Undo*, which opens it again, and the
 	 * row stays, struck through, while the toast does (`justDone`). The page posts to its own
 	 * `tickTodo` and `untickTodo`, which take the person from the form.
@@ -64,7 +64,7 @@
 		justDone.reopened(todo.id);
 	}
 
-	// A tick saves through the outbox, kept when Stella cannot take it (docs/02 §2.18).
+	// A tick saves through the outbox, kept when Stella cannot take it (docs/dev/02 §2.18).
 	const keepTick = $derived(
 		keepable(
 			{
@@ -105,7 +105,7 @@
 	<input type="hidden" name="todoId" value={todo.id} />
 	<input type="hidden" name="contactId" value={contactId} />
 	<!-- The row's right end is the box: on a touch screen a finger's square around it ticks,
-	     its drawn size stays (docs/05 §5.9). -->
+	     its drawn size stays (docs/dev/05 §5.9). -->
 	<label class="tap-target flex cursor-pointer">
 		<input
 			{id}

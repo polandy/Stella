@@ -1,5 +1,5 @@
 /*
- * A month as a calendar shows it (docs/05 §5.7): the grid behind the composer's
+ * A month as a calendar shows it (docs/dev/05 §5.7): the grid behind the composer's
  * *Another day…*. Built here rather than taken from `<input type="date">`, whose calendar
  * speaks the browser's language instead of the app's — the reason the date field exists.
  *

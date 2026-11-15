@@ -3,7 +3,7 @@
 	import { useTranslate } from '$lib/i18n/context.svelte';
 
 	/*
-	 * A circle's colour as round swatches (docs/05 §5.5), shared by the create form and the
+	 * A circle's colour as round swatches (docs/dev/05 §5.5), shared by the create form and the
 	 * circle page's edit form so both offer the palette the same way. Each swatch is named for a
 	 * screen reader and shows a focus ring of its own: the radio under it is visually hidden, so
 	 * it cannot show one (WCAG 1.1.1, 2.4.7).

@@ -2,8 +2,8 @@ import { expect, test, type Locator, type Page } from '@playwright/test';
 import { addPerson, signIn } from './app';
 
 /*
- * Choosing the square of a new profile photo (docs/02 §2.14). Written after the maintainer
- * verified the cropper in the app (docs/08 §8.4.1). Each case adds a person of its own, since
+ * Choosing the square of a new profile photo (docs/dev/02 §2.14). Written after the maintainer
+ * verified the cropper in the app (docs/dev/08 §8.4.1). Each case adds a person of its own, since
  * the suite shares one database.
  *
  * The picture is a test card drawn in the browser — red, green and blue thirds of a 1200×800

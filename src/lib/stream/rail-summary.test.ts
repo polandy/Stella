@@ -2,7 +2,7 @@ import { describe, expect, it } from 'bun:test';
 import { memoryRail, railSummary, todoRailFirst } from './rail-summary';
 
 /*
- * The phone's one line per rail section (docs/05 §5.5.1): how many, and the first of them —
+ * The phone's one line per rail section (docs/dev/05 §5.5.1): how many, and the first of them —
  * never words a veil would hide.
  */
 

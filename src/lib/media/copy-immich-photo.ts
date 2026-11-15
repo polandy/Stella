@@ -2,7 +2,7 @@ import { immichMediaToken } from '../immich/media-url';
 
 /*
  * A photo from the whole Immich library, fetched through Stella's signed proxy at Immich's preview
- * size (docs/02 §2.24.9). It is handed on as a file, so it runs the very pipeline a photo from
+ * size (docs/dev/02 §2.24.9). It is handed on as a file, so it runs the very pipeline a photo from
  * the device runs — downscaled, re-encoded, no EXIF or GPS — and the token goes with it, for the
  * server to date a gallery's copy by what Immich said (signed, never taken from the browser).
  */

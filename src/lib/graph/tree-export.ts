@@ -4,7 +4,7 @@ import type { Size } from './layout/geometry';
 import type { GraphModel, GraphNode } from './model/types';
 
 /*
- * The family tree as a picture or a printed page (docs/02 §2.7): what goes on it, and how big it
+ * The family tree as a picture or a printed page (docs/dev/02 §2.7): what goes on it, and how big it
  * comes out. Pure; drawing it is `cytoscape/tree-image.ts`, and the dialog only asks.
  */
 

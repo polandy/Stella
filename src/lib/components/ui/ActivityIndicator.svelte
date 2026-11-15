@@ -1,6 +1,6 @@
 <script lang="ts">
 	/*
-	 * "Still working", said once for the whole app (docs/05 §5.7).
+	 * "Still working", said once for the whole app (docs/dev/05 §5.7).
 	 *
 	 * A change that reloads what is on screen — a relationship and the graph behind it — or a
 	 * page that is still loading, shows as a small label under the top edge of the window. It is

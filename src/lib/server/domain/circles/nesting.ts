@@ -6,7 +6,7 @@ import { CircleGoneError } from './circle-details';
 import type { CircleRepository } from './circles';
 
 /*
- * Where a circle sits (docs/02 §2.4.2): under another circle, or standing for itself. The edit
+ * Where a circle sits (docs/dev/02 §2.4.2): under another circle, or standing for itself. The edit
  * form's *Belongs to*, the sub-circles card's *Add existing* and *Detach*, and every *Undo* of
  * them move a circle through `moveCircle`, and the API import refuses a loop with the same
  * `closesLoop` (ADR-125, ADR-126).

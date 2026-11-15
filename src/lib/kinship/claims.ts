@@ -12,7 +12,7 @@ import {
 import type { KinTerm } from './kinship';
 
 /*
- * Turning a worked-out relative into an entered one (docs/02 §2.4.1).
+ * Turning a worked-out relative into an entered one (docs/dev/02 §2.4.1).
  *
  * Every row of the derived block can be stored, in one of two ways:
  *

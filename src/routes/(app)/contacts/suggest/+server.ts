@@ -4,7 +4,7 @@ import { suggestNameCandidates } from '$lib/server/domain/contacts/suggestions';
 import type { RequestHandler } from './$types';
 
 /*
- * Duplicate & relative suggestions for quick-add (docs/02 §2.2.1): the people the viewer
+ * Duplicate & relative suggestions for quick-add (docs/dev/02 §2.2.1): the people the viewer
  * may see whose name looks like the one being typed. Read-only, visibility-scoped through
  * the same access layer as every other read.
  */

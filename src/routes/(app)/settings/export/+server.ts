@@ -11,7 +11,7 @@ import type { RequestHandler } from './$types';
 import { say } from '$lib/server/i18n/say';
 
 /*
- * Downloading the household archive (docs/02 §2.15).
+ * Downloading the household archive (docs/dev/02 §2.15).
  *
  * POST rather than GET: the export writes itself into the activity log, and a link a browser
  * may prefetch is the wrong shape for something that leaves a trail.
@@ -25,7 +25,7 @@ const MIME = 'application/x-tar';
 export const POST: RequestHandler = async ({ locals }) => {
 	const user = requireUser(locals);
 	// The archive carries every member's private records, so only the household admin may take
-	// it (docs/02 §2.15). This is the authorisation; the repository scopes by household.
+	// it (docs/dev/02 §2.15). This is the authorisation; the repository scopes by household.
 	if (user.role !== 'admin') throw error(403, say(locals, 'errors.export.adminOnly'));
 
 	const { fileName, document, mediaPaths, exportedAt } = await exportHousehold(

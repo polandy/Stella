@@ -1,6 +1,6 @@
 <!--
   @component
-  The circle page's "Sub-circles · N" card (docs/02 §2.4.2): one row per direct sub-circle, each
+  The circle page's "Sub-circles · N" card (docs/dev/02 §2.4.2): one row per direct sub-circle, each
   a link to it, with its period on a shared timeline. An undated row has no bar; with no dated
   row at all the card is a plain list. The bars are decoration — the label says the period.
 

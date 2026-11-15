@@ -16,7 +16,7 @@ import { replaceSubjectEverywhere } from './journal-subjects';
 import * as schema from './schema';
 
 /*
- * A moment about several people against real SQLite (docs/02 §2.20.3, ADR-131): it reads on
+ * A moment about several people against real SQLite (docs/dev/02 §2.20.3, ADR-131): it reads on
  * every subject's page, an edit of its people re-anchors it or joins it with the author's entry
  * about the same people, and a merge or a deleted person takes one subject out and leaves the
  * moment to the rest.

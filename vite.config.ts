@@ -17,7 +17,7 @@ export default defineConfig({
 			// (`bun ./build/index.js`), giving us bun:sqlite + a low footprint
 			// on a well-supported adapter.
 			adapter: adapter(),
-			// Nonces, not hashes: every page is rendered per request (docs/04 §4.7).
+			// Nonces, not hashes: every page is rendered per request (docs/dev/04 §4.7).
 			csp: { mode: 'nonce', directives: CSP_DIRECTIVES }
 		})
 	]

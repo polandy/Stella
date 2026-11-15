@@ -3,7 +3,7 @@ import { groupByRole, isRoleGroupId, linksOfGrouped } from './role-groups';
 import type { GraphEdge, GraphModel, GraphNode } from './types';
 
 /*
- * Grouping a circle's members by role (docs/02 §2.7): everyone holding the same role in a
+ * Grouping a circle's members by role (docs/dev/02 §2.7): everyone holding the same role in a
  * circle stands in one group, joined to the circle by one line; links between two groups are
  * bundled, links to the outside stay with the person.
  */

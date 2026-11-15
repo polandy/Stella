@@ -2,9 +2,9 @@ import { expect, test, type Page } from '@playwright/test';
 import { addPerson, appReady, recordAction, signIn } from './app';
 
 /*
- * *Settings → Immich → Find your people → New from Immich* (docs/02 §2.24.7): the faces Immich
+ * *Settings → Immich → Find your people → New from Immich* (docs/dev/02 §2.24.7): the faces Immich
  * has a name for that are nobody in Stella yet. Written after the owner tried #252 in the preview
- * (docs/08 §8.4.1).
+ * (docs/dev/08 §8.4.1).
  *
  * The e2e server runs with `IMMICH_DEMO=true`, whose library ends in four faces made for this
  * tab (`src/lib/server/immich/demo-library.ts`): Grosi Ursula (420 photos) and Thomas W. (12)
@@ -223,7 +223,7 @@ test('Assign… compares the face with the person of a similar name; adding a ne
 	await expect(
 		grosi.getByRole('checkbox', { name: 'Use the face from Immich as photo' })
 	).toBeChecked();
-	// A first name alone is asked to be told apart (docs/02 §2.2.3).
+	// A first name alone is asked to be told apart (docs/dev/02 §2.2.3).
 	await grosi.getByLabel('Description').fill('Grandmother of the e2e suite');
 
 	const photoSent = page.waitForResponse(

@@ -6,7 +6,7 @@ import { planRestore, type RestoreTarget } from './restore';
 
 /*
  * The relationships an archive brings, in the stored order every other writer gives them
- * (docs/03 §relationship, docs/02 §2.15). An archive from before migration 0025, or one edited
+ * (docs/dev/03 §relationship, docs/dev/02 §2.15). An archive from before migration 0025, or one edited
  * by hand, can hold a symmetric link the wrong way round, the same link from both ends, or a
  * person linked to themselves; the plan puts each right before the adapter writes a row.
  * Directed links are never turned round: their order is their meaning.

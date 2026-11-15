@@ -12,7 +12,7 @@ import type * as schema from './schema';
 import { circle, circleMembership, contact, relationship, relationshipType } from './schema';
 
 /*
- * Drizzle adapter for the reads behind a namesake's context line (docs/02 §2.2.3). A link is
+ * Drizzle adapter for the reads behind a namesake's context line (docs/dev/02 §2.2.3). A link is
  * scoped through `relationshipVisibleTo` (both ends visible), a membership through
  * `membershipVisibleTo` (circle and contact visible), so nothing the viewer may not open is
  * ever handed to the browser.

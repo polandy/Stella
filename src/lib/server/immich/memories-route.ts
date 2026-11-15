@@ -8,7 +8,7 @@ import {
 import { IMMICH_MEDIA_CACHE_CONTROL, type RouteRefusal } from './routes';
 
 /*
- * What `/immich/on-this-day` answers (docs/02 §2.12.1), decided here so it can be tested without a
+ * What `/immich/on-this-day` answers (docs/dev/02 §2.12.1), decided here so it can be tested without a
  * server; `src/routes/(app)/immich/on-this-day/+server.ts` only wires it.
  */
 

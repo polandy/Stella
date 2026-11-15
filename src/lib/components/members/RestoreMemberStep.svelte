@@ -5,7 +5,7 @@
 	import { useTranslate } from '$lib/i18n/context.svelte';
 
 	/*
-	 * Restoring a former member (docs/02 §2.1): how they sign in again, that nothing signs them
+	 * Restoring a former member (docs/dev/02 §2.1): how they sign in again, that nothing signs them
 	 * in on its own, and what of theirs comes back. Focus starts on *Cancel*: restoring opens a
 	 * door again, so it is confirmed like the removal that closed it.
 	 */

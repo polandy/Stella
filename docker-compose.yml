@@ -1,5 +1,5 @@
 # Simple, self-contained setup: builds the image and binds the port to localhost.
-# For the reverse-proxy + Authelia SSO deployment, see docs/07-deployment.md §7.5.
+# For the reverse-proxy + Authelia SSO deployment, see docs/dev/07-deployment.md §7.5.
 services:
   stella:
     build: .

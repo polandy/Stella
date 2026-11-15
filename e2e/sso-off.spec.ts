@@ -2,9 +2,9 @@ import { expect, test } from '@playwright/test';
 import { signIn } from './app';
 
 /*
- * The sign-in switches hold at the edge while SSO is off, the e2e default (docs/04 §4.4): the
+ * The sign-in switches hold at the edge while SSO is off, the e2e default (docs/dev/04 §4.4): the
  * callback answers 404 instead of exchanging anything, and a member who follows a crafted
- * callback link keeps their session. Written after the owner's OK (docs/08 §8.4.1). There is
+ * callback link keeps their session. Written after the owner's OK (docs/dev/08 §8.4.1). There is
  * no IdP in the e2e stack, so the sealed transaction cookie is covered by the unit tests.
  */
 

@@ -3,7 +3,7 @@ import { ACCENTS, categoryVar } from '../../design/tokens';
 import { RELATIONSHIP_CATEGORIES, type RelationshipCategory } from '../../relationships/categories';
 
 /*
- * Resolve the semantic design tokens (docs/05) into concrete hex values for the Cytoscape
+ * Resolve the semantic design tokens (docs/dev/05) into concrete hex values for the Cytoscape
  * canvas, which cannot read CSS custom properties itself. `resolvePalette` is pure — it takes
  * a token reader — so it unit-tests with a fake and works identically in light/dark; the DOM
  * helper wires it to the live computed styles and must be re-run when the theme changes.
@@ -11,7 +11,7 @@ import { RELATIONSHIP_CATEGORIES, type RelationshipCategory } from '../../relati
 
 /** The semantic tokens the canvas needs, resolved to hex once per theme. */
 export interface Palette {
-	/** The interface font stack, so canvas labels match the page (docs/05 §5.3). */
+	/** The interface font stack, so canvas labels match the page (docs/dev/05 §5.3). */
 	fontSans: string;
 	fg: string;
 	fgMuted: string;
@@ -28,7 +28,7 @@ export interface Palette {
 	categories: Record<RelationshipCategory, string>;
 	membership: string;
 	kinship: string;
-	/** The edge colours deepened until they clear 3:1 on the canvas (docs/05 §5.8). */
+	/** The edge colours deepened until they clear 3:1 on the canvas (docs/dev/05 §5.8). */
 	lines: {
 		categories: Record<RelationshipCategory, string>;
 		membership: string;
@@ -37,7 +37,7 @@ export interface Palette {
 		path: string;
 		/**
 		 * A link marked former, per category: its colour taken halfway to `--fg-subtle`, then
-		 * deepened to the same floor — muted, the hue still there (docs/05 §5.8).
+		 * deepened to the same floor — muted, the hue still there (docs/dev/05 §5.8).
 		 */
 		former: Record<RelationshipCategory, string>;
 	};
@@ -68,7 +68,7 @@ export function resolvePalette(read: TokenReader): Palette {
 
 	const fg = read('--fg');
 	const bg = read('--bg');
-	// relationship categories → fixed accents (docs/05 §5.6)
+	// relationship categories → fixed accents (docs/dev/05 §5.6)
 	const categories: Record<RelationshipCategory, string> = {
 		family: read(propertyOf(categoryVar('family'))),
 		romantic: read(propertyOf(categoryVar('romantic'))),
@@ -129,7 +129,7 @@ export function paletteFromDom(root: Element = document.documentElement): Palett
 
 /**
  * The light palette whatever the reader's theme: a family tree on paper or shared as a picture
- * is dark on white (docs/02 §2.7). The light tokens are read by switching the page to light for
+ * is dark on white (docs/dev/02 §2.7). The light tokens are read by switching the page to light for
  * the one synchronous read and straight back, so nothing is painted in between.
  */
 export function lightPaletteFromDom(root: HTMLElement = document.documentElement): Palette {

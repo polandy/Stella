@@ -3,7 +3,7 @@ import type { RestoreContext } from './restore-context';
 import { int, ms, real, record, str, visibilityOf, type Row } from './restore-fields';
 
 /*
- * The photos an archive brings (docs/02 §2.14, §2.15), wherever they hang: a person's gallery,
+ * The photos an archive brings (docs/dev/02 §2.14, §2.15), wherever they hang: a person's gallery,
  * a journal entry, or a circle. The person and circle planners add them as they meet them; the
  * plan takes the survivors once every photo is in, since a framing needs its photo restored too.
  */
@@ -76,7 +76,7 @@ export function photoPlan(ctx: RestoreContext): PhotoPlan {
 	};
 
 	// A framing whose photo was refused above would be worn by nobody's gallery and could never
-	// be removed from the interface; it goes with its photo, files included (docs/02 §2.14).
+	// be removed from the interface; it goes with its photo, files included (docs/dev/02 §2.14).
 	// A profile picture cut from a group photo is such a framing too (concept §6). A photo that
 	// was cut from one before only remembers it, so it stays and forgets a group photo refused.
 	const finish = () => {

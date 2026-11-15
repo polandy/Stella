@@ -7,7 +7,7 @@ import { createDrizzleSessionRepository } from './session-repository';
 
 /*
  * Integration spec for the Drizzle adapter implementing the SessionRepository port
- * (docs/08 §8.3). Runs against a real in-memory SQLite so the mapping and the FK to `user`
+ * (docs/dev/08 §8.3). Runs against a real in-memory SQLite so the mapping and the FK to `user`
  * are exercised for real.
  */
 

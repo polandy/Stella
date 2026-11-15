@@ -1,5 +1,5 @@
 /*
- * *On this day* from Immich (docs/02 §2.12.1): every photo of the timeline taken on the day's day
+ * *On this day* from Immich (docs/dev/02 §2.12.1): every photo of the timeline taken on the day's day
  * and month in an earlier year, as the browser receives it from `/immich/on-this-day`. Shared by
  * the server, which builds it, and Home's band and the page, which show it.
  */

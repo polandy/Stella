@@ -9,7 +9,7 @@ import { INTERACTION_KINDS, type InteractionKind } from '../../../story/interact
 import { FULL_DATE_SHAPE, isRealCalendarDay } from '../../../dates/calendar';
 
 /*
- * Interaction use-cases (docs/02 §2.6). An interaction is a touchpoint with a person — a
+ * Interaction use-cases (docs/dev/02 §2.6). An interaction is a touchpoint with a person — a
  * call, a visit, a gift — logged against one *subject* contact, optionally with other
  * contacts who were there. It is a child record of the subject: visibility follows the
  * central rule (private ⇒ only the author), enforced by the adapter's scoped reads. The
@@ -71,7 +71,7 @@ export interface InteractionRepository {
 	 * One keyset page of visible interactions, most recent day first. `before` excludes
 	 * everything at or after that (happenedAt, createdAt) point, so passing the previous page's
 	 * last row walks backwards through time without gaps or repeats. Same contract as the
-	 * journal's page read, because the story timeline merges the two (docs/02 §2.23).
+	 * journal's page read, because the story timeline merges the two (docs/dev/02 §2.23).
 	 */
 	listPageForContactVisibleTo(
 		viewer: Viewer,
@@ -217,7 +217,7 @@ export async function listInteractions(
 }
 
 /**
- * Remove a touchpoint — its author's always, an admin's when it is shared (docs/03 §3.7). A
+ * Remove a touchpoint — its author's always, an admin's when it is shared (docs/dev/03 §3.7). A
  * removal by someone other than the author is told to the household in the delete's own
  * transaction. Whether it went; one that is gone and one the remover may not touch answer alike.
  */

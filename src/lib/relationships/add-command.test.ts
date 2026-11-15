@@ -2,7 +2,7 @@ import { describe, expect, it } from 'bun:test';
 import { addRelationshipCommand } from './add-command';
 
 /*
- * The relationships card's add form as a command (docs/02 §2.4): one person picked saves as
+ * The relationships card's add form as a command (docs/dev/02 §2.4): one person picked saves as
  * `relationship.add`, several as one `relationship.addMany` batch, the since day per pair.
  */
 

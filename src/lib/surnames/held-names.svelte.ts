@@ -10,7 +10,7 @@ import { useGivenNames } from './given-names.svelte';
 import { passOnOffer, type PassOnMap } from './pass-on';
 
 /*
- * Giving last names with an undo window (docs/02 §2.2.4.4, §2.2.4.5, §2.23):
+ * Giving last names with an undo window (docs/dev/02 §2.2.4.4, §2.2.4.5, §2.23):
  * the adapter between a page's forms and the removals store. The form is not posted when it is
  * submitted; its people leave the lists at once, a toast offers *Undo* for eight seconds, and the
  * batch goes out only when that window closes or the page is left — under the shell's activity

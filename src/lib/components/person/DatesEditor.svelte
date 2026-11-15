@@ -21,7 +21,7 @@
 	import type { PersonForm, PersonPageData } from './types';
 
 	/*
-	 * Every date of a person in one editor (docs/02 §2.13), opened from any of the identity
+	 * Every date of a person in one editor (docs/dev/02 §2.13), opened from any of the identity
 	 * card's date facts: the birthday — the profile's included — and the rest, each with what
 	 * sets it apart (once, kept off Home) and a way to remove it, then *Add a date*. Opened on a
 	 * person with no dates, it starts on the form.
@@ -39,14 +39,14 @@
 		return hasMessage(key) ? t(key) : kind;
 	};
 
-	// A date on its way out (docs/02 §2.23) is gone from the list while its undo window is open.
+	// A date on its way out (docs/dev/02 §2.23) is gone from the list while its undo window is open.
 	const removals = useRemovals();
 	const visibleDates = $derived(
 		data.dates.filter((date) => !removals.isPending(removalKey('date', date.id)))
 	);
 	/*
 	 * Dates added while Stella was out of reach: kept on the device and shown as dashed chips
-	 * above the real ones until they are sent (docs/02 §2.18).
+	 * above the real ones until they are sent (docs/dev/02 §2.18).
 	 */
 	const keptDates = $derived(
 		outbox.mine.filter(

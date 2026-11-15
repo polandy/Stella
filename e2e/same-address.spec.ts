@@ -3,9 +3,9 @@ import { appReady, signIn } from './app';
 import { personIdOf, seedHousehold } from './seed';
 
 /*
- * *Settings → Data quality → Same address* (docs/02 §2.2, *Getting homes in*; §2.17): people
+ * *Settings → Data quality → Same address* (docs/dev/02 §2.2, *Getting homes in*; §2.17): people
  * whose own address lines say the same once case, spaces and punctuation are folded, offered as
- * one home. Written after the owner tried it on a preview (docs/08 §8.4.1).
+ * one home. Written after the owner tried it on a preview (docs/dev/08 §8.4.1).
  *
  * Each case brings its own family, whom no other spec names, and finds its card by a person in
  * it: the suite's household is shared, so other findings may be on the page too. An answer is

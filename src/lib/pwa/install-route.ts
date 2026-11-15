@@ -1,5 +1,5 @@
 /*
- * Which menu path installs Stella by hand on this browser (docs/02 §2.18).
+ * Which menu path installs Stella by hand on this browser (docs/dev/02 §2.18).
  *
  * Only asked when the browser handed us no install prompt. Sniffing the user agent is a guess,
  * and that is fine here: a wrong guess shows a hint for another browser, never a broken button,

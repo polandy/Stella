@@ -2,7 +2,7 @@ import { describe, expect, it } from 'bun:test';
 import { factsOf, printOf, readCard } from './card-read';
 
 /*
- * A card of the linked book as the sync reads it (docs/02 §2.16.3). The sync's own specs drive it
+ * A card of the linked book as the sync reads it (docs/dev/02 §2.16.3). The sync's own specs drive it
  * through whole books; these pin the edges: a card that does not read is left alone, and only the
  * facts of a person, not a card's bookkeeping, tell a rewrite apart.
  */

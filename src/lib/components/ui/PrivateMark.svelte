@@ -4,8 +4,8 @@
 	import { useVeil } from '$lib/privacy/veil.svelte';
 
 	/*
-	 * The *Private* mark beside an entry only its author sees (docs/02 §2.10). When a tap of its
-	 * own showed it (docs/02 §2.10.1), a *Hide* beside the mark blurs it again.
+	 * The *Private* mark beside an entry only its author sees (docs/dev/02 §2.10). When a tap of its
+	 * own showed it (docs/dev/02 §2.10.1), a *Hide* beside the mark blurs it again.
 	 */
 	interface Props {
 		/** The entry's veil, when it has one: the same id its `Veil` carries. */

@@ -1,7 +1,7 @@
 import { dayParts } from '../dates/calendar';
 
 /*
- * The household's list of open gift ideas (docs/02 §2.25.6), a Christmas shopping list. Pure, so
+ * The household's list of open gift ideas (docs/dev/02 §2.25.6), a Christmas shopping list. Pure, so
  * its order is tested without a database: one group per person, whoever's occasion comes next
  * on top. A person's occasion is their next birthday, or Christmas Eve when that comes first or
  * no birthday is on the household's radar.
@@ -43,7 +43,7 @@ export interface IdeaGroup<I extends IdeaOnList> {
 const DAY_MS = 86_400_000;
 const iso = (ms: number) => new Date(ms).toISOString().slice(0, 10);
 
-/** The next Christmas Eve on or after `today` — the evening presents are given (docs/02 §2.25.6). */
+/** The next Christmas Eve on or after `today` — the evening presents are given (docs/dev/02 §2.25.6). */
 export function christmasFrom(today: string): Omit<NextOccasion, 'kind'> {
 	const from = dayParts(today);
 	if (!from || from.year === null) throw new Error(`Not a calendar day: ${today}`);

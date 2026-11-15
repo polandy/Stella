@@ -12,7 +12,7 @@ import { openIdeaView } from './idea-view';
 import type { Actions, PageServerLoad } from './$types';
 
 /*
- * Every open gift idea of the household on one page (docs/02 §2.25.6) — a Christmas shopping
+ * Every open gift idea of the household on one page (docs/dev/02 §2.25.6) — a Christmas shopping
  * list. One group per person, whoever's next birthday or Christmas Eve comes first on top. An
  * idea is given right here; everything else about it stays on the person's Gifts card.
  */

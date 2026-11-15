@@ -4,7 +4,7 @@ import { todayFor, writersDay } from './today';
 /*
  * "Today" is the server's calendar day, read off the injected clock. The instants are built
  * with the local-time Date constructor, so each case means the same wall-clock moment in
- * whatever `TZ` the run is pinned to (docs/08 §8.4.2) — the assertion never depends on it.
+ * whatever `TZ` the run is pinned to (docs/dev/08 §8.4.2) — the assertion never depends on it.
  */
 
 const at = (...parts: [number, number, number, number, number]) => ({

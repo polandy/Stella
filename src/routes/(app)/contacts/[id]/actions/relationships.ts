@@ -25,7 +25,7 @@ import { say, translator } from '$lib/server/i18n/say';
 import { reviewPath } from '../review-path';
 import type { Actions } from '../$types';
 
-/** The specifics of a link (docs/02 §2.4); the domain has the last word on what is real. */
+/** The specifics of a link (docs/dev/02 §2.4); the domain has the last word on what is real. */
 const RelationshipDetailsSchema = {
 	description: v.optional(v.pipe(v.string(), v.trim())),
 	sinceDate: v.optional(v.pipe(v.string(), v.trim())),
@@ -39,12 +39,12 @@ const EditRelationshipSchema = v.object({
 	...RelationshipDetailsSchema
 });
 
-/** The relationships card: links, their corrections, and the answers to suggestions (docs/02 §2.4). */
+/** The relationships card: links, their corrections, and the answers to suggestions (docs/dev/02 §2.4). */
 export const relationshipActions = {
 	addRelationship: async ({ request, params, locals }) => {
 		const viewer = requireViewer(locals);
 
-		// A command (docs/04 §4.11.2), named by the form so one kept on the phone is recognised;
+		// A command (docs/dev/04 §4.11.2), named by the form so one kept on the phone is recognised;
 		// `addRelationshipChecked` holds every check the page used to make here.
 		const form = await request.formData();
 		const reading = readCommand({
@@ -77,7 +77,7 @@ export const relationshipActions = {
 	},
 
 	/**
-	 * Link several people in one go (docs/02 §2.4, ADR-118): the shared fields once, then
+	 * Link several people in one go (docs/dev/02 §2.4, ADR-118): the shared fields once, then
 	 * `targetId` and `sinceDate` once per picked person, in
 	 * the same order. All or nothing; a refusal names each refused person so the form can mark
 	 * them. Applied, it answers the new ids, so one *Undo* can take the whole batch back
@@ -130,7 +130,7 @@ export const relationshipActions = {
 	},
 
 	/**
-	 * Take back a batch added together, in one step (docs/02 §2.4): every `relationshipId`
+	 * Take back a batch added together, in one step (docs/dev/02 §2.4): every `relationshipId`
 	 * posted, or — when any is gone or out of sight — none.
 	 */
 	removeRelationships: async ({ request, params, locals }) => {
@@ -146,7 +146,7 @@ export const relationshipActions = {
 		throw redirect(303, contactSectionPath(params.id, 'relationships'));
 	},
 
-	/** Correct a link: its specifics, and its type where the tie was named wrongly (docs/02 §2.4). */
+	/** Correct a link: its specifics, and its type where the tie was named wrongly (docs/dev/02 §2.4). */
 	editRelationship: async ({ request, params, locals }) => {
 		const viewer = requireViewer(locals);
 
@@ -199,7 +199,7 @@ export const relationshipActions = {
 		throw redirect(303, contactSectionPath(params.id, 'relationships'));
 	},
 
-	/** Take back a link that was entered wrong (docs/02 §2.4). Undo is the page's own. */
+	/** Take back a link that was entered wrong (docs/dev/02 §2.4). Undo is the page's own. */
 	removeRelationship: async ({ request, params, locals }) => {
 		const viewer = requireViewer(locals);
 
@@ -220,7 +220,7 @@ export const relationshipActions = {
 	},
 
 	/**
-	 * Store one propagation suggestion (docs/02 §2.4.1). Both endpoints are checked against
+	 * Store one propagation suggestion (docs/dev/02 §2.4.1). Both endpoints are checked against
 	 * the viewer, and the pair is carried on so the remaining suggestions stay on screen.
 	 */
 	addProposedRelationship: async ({ request, params, locals }) => {
@@ -238,7 +238,7 @@ export const relationshipActions = {
 
 	/**
 	 * Decline a claim, so it stops being offered however a rule reaches it later
-	 * (docs/04 ADR-117). The household decided, so the *no*
+	 * (docs/dev/04 ADR-117). The household decided, so the *no*
 	 * holds for every member — and `restoreSuggestion` takes it back.
 	 */
 	dismissSuggestion: async ({ request, params, locals }) => {

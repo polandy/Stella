@@ -14,7 +14,7 @@
 	import { dateText, factValue } from './review-text';
 
 	/*
-	 * One incoming contact of the review (docs/02 §2.16): the card on one side, who it may be
+	 * One incoming contact of the review (docs/dev/02 §2.16): the card on one side, who it may be
 	 * on the other, and the four answers. An answer folds the card to one line; *Change* opens
 	 * it again with the answer kept.
 	 */

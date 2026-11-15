@@ -31,7 +31,7 @@ import {
 } from './remove-member';
 
 /*
- * Removing and restoring a member (docs/02 §2.1). Wired to the real Drizzle adapter
+ * Removing and restoring a member (docs/dev/02 §2.1). Wired to the real Drizzle adapter
  * on an in-memory database, because what a removal ends and what it keeps — sessions, tokens,
  * the identity, the password hash, every record — lives there. In the household, Nina is the
  * member removed, Andy the admin removing her, Mia a plain member.

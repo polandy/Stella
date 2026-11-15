@@ -14,7 +14,7 @@
 	import { INPUT } from './inputs';
 
 	/*
-	 * Noting a gift, or rewriting one (docs/02 §2.25). An idea asks only for what it is — the note
+	 * Noting a gift, or rewriting one (docs/dev/02 §2.25). An idea asks only for what it is — the note
 	 * and the link fold away until asked for; a given or received gift asks for its day and its
 	 * occasion too. Saving needs only the title, and the day where there is one. A title that
 	 * looks like a gift already given to them says so underneath — a hint, never a block.

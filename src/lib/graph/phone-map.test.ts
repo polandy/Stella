@@ -11,7 +11,7 @@ import {
 } from './phone-map';
 
 /*
- * The map on a person's page, on every width (docs/05 §5.5): a preview, the map enlarged inside the
+ * The map on a person's page, on every width (docs/dev/05 §5.5): a preview, the map enlarged inside the
  * card, or the map full screen. Leaving full screen goes back to where the reader came from.
  */
 
@@ -37,7 +37,7 @@ describe('mapViewAfter', () => {
 			if (view !== 'enlarged') expect(mapViewAfter(view, 'shrink')).toBe(view);
 			if (view !== 'preview') expect(mapViewAfter(view, 'enlarge')).toBe(view);
 			// openFullscreen is the preview's own link; the enlarged map and full screen itself
-			// never wire it up, so it is a no-op there (docs/05 §5.5).
+			// never wire it up, so it is a no-op there (docs/dev/05 §5.5).
 			if (view !== 'preview') expect(mapViewAfter(view, 'openFullscreen')).toBe(view);
 		}
 		expect(mapViewAfter('preview', 'leftFullscreen')).toBe('preview');

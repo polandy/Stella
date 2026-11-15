@@ -12,7 +12,7 @@ import {
 } from './entry-immich-photos';
 
 /*
- * Immich photos on a journal entry as references (docs/02 §2.20, docs/04 ADR-132): a pick names
+ * Immich photos on a journal entry as references (docs/dev/02 §2.20, docs/dev/04 ADR-132): a pick names
  * its photos by the picker's signed tokens, a reference is shown through the signed proxy, and
  * taking one off never reaches Immich.
  */

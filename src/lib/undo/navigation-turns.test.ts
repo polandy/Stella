@@ -3,7 +3,7 @@ import { navigationTurns } from './navigation-turns';
 
 /*
  * Leaving a page ends its undo window: the layout holds the navigation back, sends what was
- * pending, then issues it again (docs/04 §4.9). Only the latest navigation may be issued again —
+ * pending, then issues it again (docs/dev/04 §4.9). Only the latest navigation may be issued again —
  * one the reader has since moved on from would pull them back to where they no longer are.
  */
 

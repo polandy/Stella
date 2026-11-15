@@ -15,7 +15,7 @@ import type * as schema from './schema';
 import { activityLog, contact, contactField, contactTag, tag } from './schema';
 
 /*
- * Drizzle adapter for the matching review's write (docs/02 §2.16). One transaction: the
+ * Drizzle adapter for the matching review's write (docs/dev/02 §2.16). One transaction: the
  * people the review names are checked first — still ones the member may browse — so a person
  * made private or archived meanwhile refuses the whole review rather than half of it. Then the
  * new people through the import's own write, what the others gain, the answers, and the log.

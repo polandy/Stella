@@ -7,7 +7,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
 /*
- * The day slot moved from the anchor to the set of people (docs/02 §2.20.3, ADR-131): a stored
+ * The day slot moved from the anchor to the set of people (docs/dev/02 §2.20.3, ADR-131): a stored
  * entry must come through with `subject_key` = its `contact_id`, or the household's journals
  * would not start. Driven on Drizzle's own migrator over rows, as `db/index.ts` runs it.
  */

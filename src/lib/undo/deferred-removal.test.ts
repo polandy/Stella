@@ -5,7 +5,7 @@ import type { ActionFetch } from './submit-action';
 import type { PendingSink } from '../sync/pending-work';
 
 /*
- * What a RemoveButton hands to the undo store (docs/02 §2.23, docs/05 §5.7). The rule worth
+ * What a RemoveButton hands to the undo store (docs/dev/02 §2.23, docs/dev/05 §5.7). The rule worth
  * defending is which part of a removal counts as work: the undo window is the reader's own
  * time and nothing is on its way to the server yet, so only the commit — the request plus the
  * reload behind it — is reported to the activity indicator.

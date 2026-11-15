@@ -16,7 +16,7 @@ import type { AuthConfig } from './auth';
 import { createOfflineServices } from './offline';
 
 /*
- * The offline group of the composition root (docs/08 §8.3, docs/04 §4.11.2), built over a real
+ * The offline group of the composition root (docs/dev/08 §8.3, docs/dev/04 §4.11.2), built over a real
  * in-memory SQLite: what the edge gets from `locals.services.offline` must apply a command end
  * to end, and once — a resend answers with what the first run did, not a second person.
  */

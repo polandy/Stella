@@ -3,7 +3,7 @@ import type { MonicaTask } from './monica-export';
 import { taskDone, taskLine } from './tasks';
 
 /*
- * A Monica task as a Stella to-do (docs/02 §2.26.8): one line from its title and description,
+ * A Monica task as a Stella to-do (docs/dev/02 §2.26.8): one line from its title and description,
  * and — once completed — the moment and the day it was done, so it lands in Activity.
  */
 

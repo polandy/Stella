@@ -3,7 +3,7 @@
 	import { viewUrl } from '$lib/media/urls';
 
 	/*
-	 * A circle photo as a wide strip (docs/02 §2.4.2, docs/05 §5.5): the circle's cover at the top
+	 * A circle photo as a wide strip (docs/dev/02 §2.4.2, docs/dev/05 §5.5): the circle's cover at the top
 	 * of its page, or a role's banner above that role's group. Filled from the centre with no
 	 * cropping step — about 3:1 on a phone, a fixed and flatter height on a wide screen so the
 	 * members stay in view. The whole strip is the button that opens the lightbox; the badge says

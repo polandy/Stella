@@ -5,7 +5,7 @@ import type { ActivityOf } from '../activity/activity';
 import type { RemovableRecord } from '../activity/removal';
 import type { DeletedPhotoFiles, MediaStore } from '../media/avatars';
 
-/* The journal's shapes and its port (docs/02 §2.20, docs/08 §8.3); the use-cases are `journal.ts`. */
+/* The journal's shapes and its port (docs/dev/02 §2.20, docs/dev/08 §8.3); the use-cases are `journal.ts`. */
 
 export interface JournalAuthor {
 	userId: string;
@@ -50,7 +50,7 @@ export interface JournalRepository {
 	}): Promise<void>;
 	/**
 	 * Edit the title/body of an entry the author owns; the day and visibility are part of an
-	 * entry's identity (docs/02 §2.20) and stay put here. Returns whether such an entry existed.
+	 * entry's identity (docs/dev/02 §2.20) and stay put here. Returns whether such an entry existed.
 	 */
 	updateOwn(params: {
 		authorId: string;
@@ -94,12 +94,12 @@ export interface JournalRepository {
 		id: string,
 		audit: ActivityOf<'record.removed'> | null
 	): Promise<DeletedPhotoFiles[] | null>;
-	/** Replace an entry's @-mention links with exactly these contact ids (docs/02 §2.20.1). */
+	/** Replace an entry's @-mention links with exactly these contact ids (docs/dev/02 §2.20.1). */
 	replaceMentions(journalEntryId: string, contactIds: string[]): Promise<void>;
 	/** Contact ids an entry mentions. */
 	listMentionedContactIds(journalEntryId: string): Promise<string[]>;
 	/**
-	 * Give an entry exactly these tags (docs/02 §2.20.2): each found in the household's set by
+	 * Give an entry exactly these tags (docs/dev/02 §2.20.2): each found in the household's set by
 	 * its key, or added to it in this spelling; a tag no entry carries any more is swept.
 	 */
 	replaceTags(journalEntryId: string, names: string[]): Promise<void>;

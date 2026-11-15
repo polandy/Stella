@@ -6,7 +6,7 @@ import { reviewStep } from './review';
 import { bookStep } from './staged';
 
 /*
- * The linked Nextcloud book on the import page (docs/02 §2.16.3): when it last synced, *Sync
+ * The linked Nextcloud book on the import page (docs/dev/02 §2.16.3): when it last synced, *Sync
  * now*, and its new cards in the matching review. Without a linked book none of it exists, and
  * an action posted anyway is refused as not found.
  */

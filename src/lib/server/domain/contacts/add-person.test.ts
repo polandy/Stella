@@ -7,7 +7,7 @@ import type { Contact, NewContact } from './contacts';
 import { contactRepositoryWith, fixedClock, sequentialIds } from '../testing';
 
 /*
- * Adding a person from the *Add person* form (docs/02 §2.2), and adding yourself (§2.1.3):
+ * Adding a person from the *Add person* form (docs/dev/02 §2.2), and adding yourself (§2.1.3):
  * "Start with yourself" on the first-run card creates the member's own record and points their
  * account at it in the same step, so nobody has to find Settings afterwards to say who they are.
  */

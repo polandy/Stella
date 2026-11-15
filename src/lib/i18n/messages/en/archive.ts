@@ -1,4 +1,4 @@
-/* The archive: what a restore brings back, and what it could not (docs/02 §2.15). */
+/* The archive: what a restore brings back, and what it could not (docs/dev/02 §2.15). */
 
 export const archive = {
 	'archive.restore.title': 'Restore from an archive',

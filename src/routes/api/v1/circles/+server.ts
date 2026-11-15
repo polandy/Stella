@@ -4,7 +4,7 @@ import { findCircles } from '$lib/server/domain/import/api/lookup';
 import type { RequestHandler } from './$types';
 
 /*
- * `GET /api/v1/circles?q=…` (docs/02 §2.16.1): the circles the member may see whose name
+ * `GET /api/v1/circles?q=…` (docs/dev/02 §2.16.1): the circles the member may see whose name
  * contains the query, or all of them without one.
  */
 export const GET: RequestHandler = async ({ locals, url }) => {

@@ -3,7 +3,7 @@ import type { StoredName } from '../people/display-name';
 import { give, namesGiven, release, withGivenNames, type Given } from './given-names';
 
 /*
- * A last name held for its undo window is already the person's name on screen (docs/02
+ * A last name held for its undo window is already the person's name on screen (docs/dev/02
  * §2.2.4.4): every list and search reads it at once, not only once the batch is sent and the
  * page has reloaded.
  */

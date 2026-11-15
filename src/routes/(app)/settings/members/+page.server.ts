@@ -16,7 +16,7 @@ import { say, translator } from '$lib/server/i18n/say';
 import type { Actions, PageServerLoad } from './$types';
 
 /**
- * The household's members (docs/02 §2.1): who signs in, and how. Every member sees the page;
+ * The household's members (docs/dev/02 §2.1): who signs in, and how. Every member sees the page;
  * an admin also gets, for each other member, what removing them would leave behind, and for
  * each former member what restoring them would bring back — a household has a handful of
  * members, so neither confirm step needs a second request.

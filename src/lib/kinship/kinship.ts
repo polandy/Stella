@@ -1,5 +1,5 @@
 /*
- * Kinship inference (docs/02 §2.4.1).
+ * Kinship inference (docs/dev/02 §2.4.1).
  *
  * Households enter the few links they actually think in — parent/child, sibling, partner —
  * and Stella names the rest: grandparents, aunts and uncles, cousins, in-laws, step-family.
@@ -17,7 +17,7 @@ export interface KinPerson {
 	id: string;
 	displayName: string;
 	gender?: string | null;
-	/** `YYYY-MM-DD`, a year, or a year-less `--MM-DD` (docs/03 §3.4); read by rule L3 only. */
+	/** `YYYY-MM-DD`, a year, or a year-less `--MM-DD` (docs/dev/03 §3.4); read by rule L3 only. */
 	birthDate?: string | null;
 }
 
@@ -35,7 +35,7 @@ export interface Pair {
 /**
  * A partner link. `former` says the household has marked the partnership as over: it stays
  * on record, but nothing is derived through it any more — an ex-partner is no stepparent to
- * the children and no in-law to the family (docs/02 §2.4).
+ * the children and no in-law to the family (docs/dev/02 §2.4).
  */
 export interface PartnerEdge extends Pair {
 	former?: boolean;
@@ -49,7 +49,7 @@ export interface KinshipGraph {
 	parentEdges: readonly ParentEdge[];
 	siblingEdges: readonly Pair[];
 	partnerEdges: readonly PartnerEdge[];
-	/** Pairs already carrying a stored relationship of any type (docs/02 §2.4). */
+	/** Pairs already carrying a stored relationship of any type (docs/dev/02 §2.4). */
 	storedPairs: readonly Pair[];
 }
 
@@ -77,7 +77,7 @@ export interface DerivedKin {
 	term: KinTerm;
 	/**
 	 * Which wording the term takes: gendered where the gender is recorded, neutral
-	 * otherwise. The word itself lives in the message catalogue (docs/02 §2.19), so the
+	 * otherwise. The word itself lives in the message catalogue (docs/dev/02 §2.19), so the
 	 * engine stays language-free.
 	 */
 	variant: KinVariant;

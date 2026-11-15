@@ -16,7 +16,7 @@ import { seedRelationshipTypes } from './seed';
 import * as schema from './schema';
 
 /*
- * Integration spec for the restore write (docs/02 §2.15), against real SQLite.
+ * Integration spec for the restore write (docs/dev/02 §2.15), against real SQLite.
  *
  * The shape of it is the shape of the feature: one installation exports, another imports, and
  * what arrives is what left. The rest of the cases are the promises around that — importing

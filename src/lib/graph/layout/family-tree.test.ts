@@ -7,7 +7,7 @@ import { missingParentSlots, withParentSlots } from '../model/missing-parents';
 import type { GraphEdge, GraphModel, GraphNode } from '../model/types';
 
 /*
- * The family-tree arrangement (docs/02 §2.7, docs/05 §5.8): every generation one row, the
+ * The family-tree arrangement (docs/dev/02 §2.7, docs/dev/05 §5.8): every generation one row, the
  * oldest at the top, partners side by side and children under their parents.
  */
 
@@ -232,7 +232,7 @@ describe('familyTreeLayout', () => {
 		expect(TREE_LINES.lane).toBeGreaterThanOrEqual(14);
 	});
 
-	describe('with the slots of missing parents (docs/05 §5.8)', () => {
+	describe('with the slots of missing parents (docs/dev/05 §5.8)', () => {
 		const laidOut = (model: GraphModel, centre: string) =>
 			familyTreeLayout(withParentSlots(model, missingParentSlots(model, model, centre))).positions;
 

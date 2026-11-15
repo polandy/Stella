@@ -11,7 +11,7 @@ import {
 } from './filter';
 
 /*
- * The stream filter as the URL carries it (docs/02 §2.22.2): `?kind=` narrows to one kind of
+ * The stream filter as the URL carries it (docs/dev/02 §2.22.2): `?kind=` narrows to one kind of
  * item, `?by=` to one member, `?tag=` (once per tag) to the moments carrying
  * every one of them (§2.20.2). Anything the viewer could not have picked from the chips is dropped rather than trusted, so a stale or hand-edited link falls back to the whole stream.
  */

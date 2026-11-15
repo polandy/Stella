@@ -3,7 +3,7 @@ import { anna, b64, cardOf, JPEG, linkedAnna, setup, vcf } from '../testing/next
 import { BOOK, SYSTEM } from '../testing/nextcloud-household';
 
 /*
- * The sync both ways (docs/02 §2.16.3), driven through a book in memory whose `phone` edits it
+ * The sync both ways (docs/dev/02 §2.16.3), driven through a book in memory whose `phone` edits it
  * from aside, as the household's phones would.
  */
 

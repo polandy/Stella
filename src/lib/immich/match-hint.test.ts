@@ -2,7 +2,7 @@ import { describe, expect, it } from 'bun:test';
 import { asksForMatchHint, matchHintName, shownMatchHint } from './match-hint';
 
 /*
- * The Photos card's suggestion (docs/02 §2.24.7): asked for only where it could be shown, and
+ * The Photos card's suggestion (docs/dev/02 §2.24.7): asked for only where it could be shown, and
  * shown only while it still holds — never offline, never for a linked person, never once ignored.
  */
 

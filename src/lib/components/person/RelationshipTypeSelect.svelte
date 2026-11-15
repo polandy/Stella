@@ -8,7 +8,7 @@
 
 	/*
 	 * The add form's type field: both directions of an asymmetric type, so "is a child of" needs
-	 * no detour via the other profile (docs/02 §2.4), with the entries the records rule out for
+	 * no detour via the other profile (docs/dev/02 §2.4), with the entries the records rule out for
 	 * everyone picked grouped under why, greyed out.
 	 *
 	 * Read, not bound: binding would hand the select a value of its own before anybody has

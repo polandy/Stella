@@ -2,8 +2,8 @@ import { expect, test, type Page } from '@playwright/test';
 import { addPerson, signIn } from './app';
 
 /*
- * Editing a journal entry, a photo from Immich is a reference, not a copy (docs/02 §2.20,
- * docs/04 ADR-132): it shows through the signed proxy, a placeholder stands in when Immich no
+ * Editing a journal entry, a photo from Immich is a reference, not a copy (docs/dev/02 §2.20,
+ * docs/dev/04 ADR-132): it shows through the signed proxy, a placeholder stands in when Immich no
  * longer serves it, and its × takes only Stella's reference off. The e2e server runs with
  * `IMMICH_DEMO=true`, whose newest photos are from 1 September 2026 (see immich-library.spec.ts).
  */

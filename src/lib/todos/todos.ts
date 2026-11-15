@@ -2,7 +2,7 @@ import type { DateLanguage } from '$lib/dates/labels';
 import { addDays } from '$lib/dates/month';
 
 /*
- * How an open to-do stands and reads (docs/02 §2.26). Pure and handed *today* — the server's
+ * How an open to-do stands and reads (docs/dev/02 §2.26). Pure and handed *today* — the server's
  * day, never the wall clock — so the card's order, the overdue mark and the label are tested
  * without a browser; the card only renders.
  *
@@ -86,7 +86,7 @@ export interface CardTodo<T> {
 /**
  * What the card shows: the open to-dos, and each one just ticked where it stood, struck
  * through, while its toast stands — so ticking the last one does not take the card away under
- * the reader's thumb, as a removal waits for its window (docs/02 §2.23). `standing` holds the
+ * the reader's thumb, as a removal waits for its window (docs/dev/02 §2.23). `standing` holds the
  * ids of the notices still shown.
  */
 export function cardTodos<T extends { id: string; dueOn: string | null; createdAt: number }>(
@@ -110,7 +110,7 @@ export function cardTodos<T extends { id: string; dueOn: string | null; createdA
 const TODO_PARAM = 'todo';
 
 /**
- * Where the command palette's *To-do for …* lands (docs/05 §5.4): the person's page with the
+ * Where the command palette's *To-do for …* lands (docs/dev/05 §5.4): the person's page with the
  * card's add field open. No hash, for the reason `giftIdeaPath` gives.
  */
 export function newTodoPath(contactId: string): string {

@@ -20,7 +20,7 @@
 	import { INPUT } from './inputs';
 	import type { PersonForm, PersonPageData } from './types';
 
-	// What was written down about someone (docs/02 §2.5): the person page's notes card.
+	// What was written down about someone (docs/dev/02 §2.5): the person page's notes card.
 	let {
 		data,
 		form,
@@ -42,7 +42,7 @@
 	// page's story, so the reloaded data hands it the new item as a fresh first page.
 	let openSection = $state({ note: false });
 	type SectionName = keyof typeof openSection;
-	// The note's audience narrows whom the @-picker offers (docs/02 §2.20.1).
+	// The note's audience narrows whom the @-picker offers (docs/dev/02 §2.20.1).
 	let noteVisibility = $state<'shared' | 'private'>('shared');
 	let noteBody = $state('');
 	let notePinned = $state(false);
@@ -52,7 +52,7 @@
 	let editingNoteId = $state<string | null>(null);
 
 	/*
-	 * Notes written here while Stella was out of reach (docs/02 §2.18): kept on the device and
+	 * Notes written here while Stella was out of reach (docs/dev/02 §2.18): kept on the device and
 	 * shown at the top of this person's notes until they are sent. One can be opened in the
 	 * note form again until it is on its way; the form then saves into the kept copy.
 	 */
@@ -143,11 +143,11 @@
 		input.cancel();
 		void saveKeptNote(editingNote);
 	};
-	// A note being removed leaves at once; the undo toast can bring it back (docs/02 §2.23).
+	// A note being removed leaves at once; the undo toast can bring it back (docs/dev/02 §2.23).
 	const notes = $derived(
 		data.notes.filter((note) => !removals.isPending(removalKey('note', note.id)))
 	);
-	// Nothing noted and nothing waiting to be sent: the card is one line (docs/05 §5.5).
+	// Nothing noted and nothing waiting to be sent: the card is one line (docs/dev/05 §5.5).
 	const holdsSomething = $derived(notes.length > 0 || keptNotes.length > 0);
 </script>
 

@@ -2,7 +2,7 @@ import { describe, expect, it } from 'bun:test';
 import { MAX_PAIRS, newcomerOf, newcomerToAdd, pairsOf, rowOf } from './immich-form';
 
 /*
- * What the forms of *Find your people* post (docs/02 §2.24.7), read before any use-case runs: a
+ * What the forms of *Find your people* post (docs/dev/02 §2.24.7), read before any use-case runs: a
  * post that is not from the page is refused whole, never guessed at.
  */
 

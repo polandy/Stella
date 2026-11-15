@@ -1,7 +1,7 @@
 import type { Translate } from '$lib/i18n/translate';
 
 /*
- * What a circle's confirm step says goes and what stays (docs/02 §2.4.2), from the counts the
+ * What a circle's confirm step says goes and what stays (docs/dev/02 §2.4.2), from the counts the
  * page reads when the step opens. Members are only the ones the reader sees; photos and wearers
  * are all of them, since all of them go. Nested circles stay without a parent: named when the
  * reader sees them, else only counted.
@@ -17,7 +17,7 @@ export interface CircleDeletionCounts {
 	children: { named: { id: string; name: string }[]; unnamed: number };
 }
 
-/** What the sentences need of the reader's language (docs/02 §2.19). */
+/** What the sentences need of the reader's language (docs/dev/02 §2.19). */
 export interface DeletionLanguage {
 	t: Translate;
 	/** The BCP-47 tag `Intl` joins the names with, e.g. "de-DE". */

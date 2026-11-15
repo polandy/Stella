@@ -1,7 +1,7 @@
 import type { Point, Route } from '../layout/geometry';
 
 /*
- * A routed line in the terms Cytoscape draws it in (docs/05 §5.8). Pure, so it tests without
+ * A routed line in the terms Cytoscape draws it in (docs/dev/05 §5.8). Pure, so it tests without
  * the library. A `segments` edge places each bend by a weight along the line between the two
  * node centres and a distance off it, towards that line's left-hand normal (-dy, dx) — with
  * `edge-distances: node-position`, which the stylesheet sets, so the centres and not the node

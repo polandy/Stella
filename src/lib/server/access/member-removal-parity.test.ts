@@ -7,7 +7,7 @@ import { H1, REMOVERS, seedParityDb, U1, U2, U3, U4 } from './visibility-parity.
 import { canRemoveMember, canRestoreMember, type Remover } from './visibility';
 
 /*
- * Who may remove a member (docs/02 §2.1): an admin, any other current member of their own
+ * Who may remove a member (docs/dev/02 §2.1): an admin, any other current member of their own
  * household; and who may restore one: an admin, any former member of their own household.
  * Stated twice like every rule here, and held to the same rows: the parity fixture's four
  * members, plus one member of household 1 already removed.

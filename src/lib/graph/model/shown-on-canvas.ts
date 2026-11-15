@@ -9,7 +9,7 @@ export interface ShownIds {
 
 /**
  * What the canvas shows: the filtered map, less the derived lines `implied` by a chain already
- * drawn, plus the frames and bundles grouping adds (docs/05 §5.8).
+ * drawn, plus the frames and bundles grouping adds (docs/dev/05 §5.8).
  */
 export function shownOnCanvas(
 	drawnVisible: GraphModel,

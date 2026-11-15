@@ -10,7 +10,7 @@ import type * as schema from './schema';
 import { activityLog, contact, photo, user } from './schema';
 
 /*
- * Drizzle adapter for the PhotoRepository port (docs/08 §8.3): the photo record's writes. A
+ * Drizzle adapter for the PhotoRepository port (docs/dev/08 §8.3): the photo record's writes. A
  * write to a gallery photo touches only a gallery photo (`isGalleryPhoto`) and only the
  * author's own; the reads are read models of their own (`gallery-photo-reads.ts`,
  * `journal-photo-reads.ts`, `photo-file-reads.ts`) and framings are `framing-repository.ts`.

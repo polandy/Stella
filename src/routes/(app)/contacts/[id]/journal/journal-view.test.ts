@@ -8,7 +8,7 @@ import type { EntryImmichPhoto } from '$lib/immich/library';
 import { activeTagsFor, journalEntriesFor } from './journal-view';
 
 /*
- * The journal's entries as the page shows them (docs/02 §2.20): what only the author gets, who
+ * The journal's entries as the page shows them (docs/dev/02 §2.20): what only the author gets, who
  * wrote each, its photos, and the names its mentions carry. Rendering Markdown has its own suite.
  */
 
@@ -140,7 +140,7 @@ describe('journalEntriesFor', () => {
 });
 
 /*
- * The journal filtered by tags (docs/02 §2.20.2): `?tag=` carries a key, once per chosen tag, so
+ * The journal filtered by tags (docs/dev/02 §2.20.2): `?tag=` carries a key, once per chosen tag, so
  * any spelling of the tag finds the entry, and an entry's own chips link back to the filter.
  */
 describe('journalEntriesFor with tags', () => {

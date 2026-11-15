@@ -13,7 +13,7 @@ import type { Visibility } from '../../access/visibility';
 import type { ContactSummary } from '../contacts/contacts';
 
 /*
- * Resolving what a text names (docs/02 §2.20.1) — a moment, a note, a journal entry and its
+ * Resolving what a text names (docs/dev/02 §2.20.1) — a moment, a note, a journal entry and its
  * edit alike. Only the people the text's audience may name count, so a mention never widens
  * access; and a typed handle that is several of them is asked about, never guessed or silently
  * dropped (§2.2.3). A mention picked in the @-picker arrives as an id token and is not a
@@ -23,7 +23,7 @@ import type { ContactSummary } from '../contacts/contacts';
 type Candidate = MentionCandidate & Distinguishable;
 
 /**
- * People an entry of the given visibility may reference (docs/02 §2.20.1): a shared entry only
+ * People an entry of the given visibility may reference (docs/dev/02 §2.20.1): a shared entry only
  * household-visible contacts, a private entry anyone the author can see — so a mention never
  * widens access.
  */

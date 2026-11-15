@@ -12,7 +12,7 @@ import { say, translator } from '$lib/server/i18n/say';
 import type { Actions } from '../$types';
 
 /*
- * Editing a circle's details from its header (docs/02 §2.4.2): name, kind, colour, description,
+ * Editing a circle's details from its header (docs/dev/02 §2.4.2): name, kind, colour, description,
  * period and the circle it belongs to, for anyone who sees the circle. The use-case validates;
  * this only reads the form and says a refusal under it — a parent's under *Belongs to*.
  */

@@ -6,9 +6,9 @@ import { resolveForAudience } from '../mentions/resolve-for-audience';
 import { EmptyNoteError, orNull, setNoteMentions, type NoteRepository } from './notes';
 
 /*
- * Editing a note (docs/02 §2.5, docs/03 §3.7), whole: its author alone, title, body and whether
+ * Editing a note (docs/dev/02 §2.5, docs/dev/03 §3.7), whole: its author alone, title, body and whether
  * it is shared or private. The mentions are resolved against the audience the note has after the
- * edit — as when it was written — so an edit never widens access. Edits are not in the activity feed (docs/02 §2.11); the search
+ * edit — as when it was written — so an edit never widens access. Edits are not in the activity feed (docs/dev/02 §2.11); the search
  * row follows the UPDATE and the rewritten mentions by triggers.
  */
 

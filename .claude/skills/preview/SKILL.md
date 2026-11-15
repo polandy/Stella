@@ -7,7 +7,7 @@ argument-hint: [--stop]
 # Preview
 
 A running instance with data already in it, for the owner to click around in — never make them
-create a household first. Used for the manual-verification half of the delivery loop (`docs/08`
+create a household first. Used for the manual-verification half of the delivery loop (`docs/dev/08`
 §8.4.1), and for anything the unit/e2e suites can't exercise because it depends on a real browser
 (the native Fullscreen API, touch gestures, install/offline behaviour).
 
@@ -53,7 +53,7 @@ demo" button.
 
 ## The one gotcha if you ever run this by hand instead
 
-`ORIGIN` must equal exactly the URL the browser opens (`docs/07` §7.6) — adapter-node checks the
+`ORIGIN` must equal exactly the URL the browser opens (`docs/dev/07` §7.6) — adapter-node checks the
 browser's `Origin` header against it on every POST, login included, and refuses a mismatch with
 *"Cross-site POST form submissions are forbidden"*. The script sets it from the detected LAN IP
 automatically; if you override `PORT` or run on a machine with more than one network interface,

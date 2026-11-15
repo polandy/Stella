@@ -11,7 +11,7 @@ import { directClaimLabel, kinshipLabel } from './labels';
 import { directClaimFor } from './claims';
 
 /*
- * Derived kinship (docs/02 §2.4.1). From the primary links a household actually enters —
+ * Derived kinship (docs/dev/02 §2.4.1). From the primary links a household actually enters —
  * parent/child, sibling, partner — Stella names the extended relatives *for display only*:
  * nothing here is stored, and a pair that already has a stored link is never re-derived.
  *

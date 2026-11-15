@@ -1,7 +1,7 @@
 import { foldSurname } from '$lib/suggestions/rules/surnames';
 
 /*
- * Correcting a last name (docs/02 §2.2.4.7), on the screen's side: the profile is handed the
+ * Correcting a last name (docs/dev/02 §2.2.4.7), on the screen's side: the profile is handed the
  * person's family who carry a last name, and this decides whom it offers a changed name to —
  * those who still carry the old one, folded, so a family name typed wrong is put right for all
  * of them in one confirmed step. A first name given passes on instead (`pass-on.ts`).

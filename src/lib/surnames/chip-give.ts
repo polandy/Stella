@@ -4,7 +4,7 @@ import type { PendingSink } from '../sync/pending-work';
 import { ActionFailedError } from '../undo/submit-action';
 
 /*
- * The profile's last-name chip (docs/02 §2.2.4.6). Unlike the bulk paths, which hold a batch
+ * The profile's last-name chip (docs/dev/02 §2.2.4.6). Unlike the bulk paths, which hold a batch
  * for the undo window, a tap here saves at once: the shell's activity indicator shows from the
  * tap until the server has answered and the page has reloaded, so the new name is on screen
  * when it goes. Then a toast says so and offers *Undo*, which takes the name back the same way —

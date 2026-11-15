@@ -3,7 +3,7 @@ import { mention, signIn } from './app';
 
 /*
  * A moment shown as a row — Home, a search hit — opens its own entry on tap
- * (docs/05 §5.5). Each case writes its own sentence, so it finds its row whatever else
+ * (docs/dev/05 §5.5). Each case writes its own sentence, so it finds its row whatever else
  * the suite has written.
  */
 

@@ -15,7 +15,7 @@ import { arrangeFamily } from './family-rows';
 import { treeRoutes } from './tree-lines';
 
 /*
- * The family-tree arrangement (docs/02 §2.7, docs/05 §5.8). Pure: positions from the model, no
+ * The family-tree arrangement (docs/dev/02 §2.7, docs/dev/05 §5.8). Pure: positions from the model, no
  * renderer. Every generation is one row, the oldest at the top; partners stand side by side;
  * a row is ordered so children sit under their parents, which keeps family lines from crossing.
  * Separate families stand side by side, and whoever has no family link — friends, colleagues,
@@ -76,7 +76,7 @@ export function familyTreeLayout(model: GraphModel, sizeOf: SizeOf = defaultSize
 	const rest = model.nodes.filter((n) => !positions.has(n.id));
 	// Circles first, so the people shelved after them read as the loose ends they are.
 	rest.sort((a, b) => Number(b.kind === 'circle') - Number(a.kind === 'circle'));
-	// One row beneath the youngest generation: no line runs down to the shelf (docs/05 §5.8).
+	// One row beneath the youngest generation: no line runs down to the shelf (docs/dev/05 §5.8).
 	const shelfTop = (deepest + 1) * TREE_SPACING.row;
 	// No wider than the family above it, so the shelf never sets how far out the map is framed;
 	// with no family at all it is laid out at a readable width of its own.

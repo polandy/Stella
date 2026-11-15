@@ -2,11 +2,11 @@ import { expect, test } from '@playwright/test';
 import { openPerson, signIn } from './app';
 
 /*
- * Where a card's add-form opens, and what happens to the cursor (docs/05 §5.7). The defect
+ * Where a card's add-form opens, and what happens to the cursor (docs/dev/05 §5.7). The defect
  * this guards against is invisible from the source: on a person with a dozen relationships
  * the form rendered below the list, a screen and a half under the button that asked for it,
  * so pressing *Add relationship* looked like it did nothing. Written after the maintainer
- * saw the change live (docs/08 §8.4.1).
+ * saw the change live (docs/dev/08 §8.4.1).
  */
 
 test.beforeEach(async ({ page }) => {

@@ -1,5 +1,5 @@
 /*
- * A person's gender (docs/02 §2.2): one of three, or nothing on record. Pure and client-safe —
+ * A person's gender (docs/dev/02 §2.2): one of three, or nothing on record. Pure and client-safe —
  * the profile's chips, the new-person form and the server all read the same list. Only female
  * and male make relatives' wording gendered; diverse, like nothing, names them neutrally
  * (`src/lib/kinship`).

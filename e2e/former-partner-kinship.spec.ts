@@ -2,8 +2,8 @@ import { expect, test, type Page } from '@playwright/test';
 import { addPerson, editPeople, openPerson, pickPerson, signIn } from './app';
 
 /*
- * A partnership marked *former* stops carrying step-family (docs/02 §2.4, §2.4.1). Written
- * after the fix was verified in the running app (docs/08 §8.4.1).
+ * A partnership marked *former* stops carrying step-family (docs/dev/02 §2.4, §2.4.1). Written
+ * after the fix was verified in the running app (docs/dev/08 §8.4.1).
  *
  * The family is built from scratch — the demo dataset has no step-family, and inventing
  * three people keeps this case from colliding with anything the Brunners assert elsewhere in

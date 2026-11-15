@@ -5,7 +5,7 @@ import type { DateLanguage } from '$lib/dates/labels';
 import { circlePeriodLabel, circleShortPeriodLabel } from './period';
 
 /*
- * A circle's period on its page's header line (docs/02 §2.4.2): months, not days — a school
+ * A circle's period on its page's header line (docs/dev/02 §2.4.2): months, not days — a school
  * year reads as *Aug 2025 – Jul 2026* — in the reader's language.
  */
 

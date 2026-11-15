@@ -7,11 +7,11 @@ import { MergeWouldHideRecordsError, mergeKeepsRecordsInView } from './merge-pla
 import { mergeProfiles } from './merge-profile';
 
 /*
- * Ending a record: deleting a person for good, or merging a duplicate into them (docs/02 §2.2).
+ * Ending a record: deleting a person for good, or merging a duplicate into them (docs/dev/02 §2.2).
  *
  * What hangs off a contact — notes, photos, dates, links, journal — goes with it through the
  * database's `ON DELETE CASCADE` and the repository's one transaction, not through the sibling
- * contexts: this module knows none of them (docs/04 ADR-121). The one cascade the domain runs
+ * contexts: this module knows none of them (docs/dev/04 ADR-121). The one cascade the domain runs
  * itself is unlinking the photo bytes, which no transaction can take back, through a port this
  * context declares — so `contacts` depends on nothing in `media`.
  */
@@ -21,7 +21,7 @@ export interface PhotoFileCascade {
 	delete(path: string): Promise<void>;
 }
 
-/** Deleting a person also unlinks the bytes of their photos (docs/02 §2.2). */
+/** Deleting a person also unlinks the bytes of their photos (docs/dev/02 §2.2). */
 export interface DeleteContactDeps {
 	contacts: Pick<ContactRepository, 'findByIdVisibleTo' | 'deleteDeletableBy'>;
 	photoFiles: PhotoFileCascade;
@@ -40,9 +40,9 @@ export interface MergeContactDeps {
  * Delete a person and everything that hangs off them — notes, photos, dates, relationships,
  * journal — for good. The row and its log entry go in one transaction; the bytes follow,
  * because a file left behind is the harmless direction of that failure while a delete with
- * no trace is not (docs/02 §2.2).
+ * no trace is not (docs/dev/02 §2.2).
  *
- * Admin only (`canDeleteContact`, docs/02 §2.2): returns false when the remover may not
+ * Admin only (`canDeleteContact`, docs/dev/02 §2.2): returns false when the remover may not
  * delete the contact — a member, or a contact they cannot see — exactly as for one that is
  * not there. The write asks the same rule again in its own condition.
  */
@@ -83,9 +83,9 @@ export async function deleteContact(
  * Merge one person into another: the survivor keeps their name and their visibility, gains
  * whatever the other record said that they did not (`mergeProfiles`), and takes over every
  * note, photo, date, link and journal entry. The emptied record is then deleted and the merge
- * written to the log — the only trace left of a name that used to exist (docs/02 §2.2).
+ * written to the log — the only trace left of a name that used to exist (docs/dev/02 §2.2).
  *
- * Admin only (`canMergeContacts`, docs/02 §2.2): returns false when the remover may not merge
+ * Admin only (`canMergeContacts`, docs/dev/02 §2.2): returns false when the remover may not merge
  * the two — a member, or either record out of their reach — or when the two are the same.
  * Throws `MergeWouldHideRecordsError` for a shared record merged into a private survivor.
  */

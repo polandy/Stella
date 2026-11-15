@@ -3,7 +3,7 @@ import type { MediaStore } from '../domain/media/avatars';
 import { mediaFileIn } from './media-path';
 
 /*
- * Filesystem MediaStore over MEDIA_DIR (docs/04 §4.6). Files are addressed by a relative key
+ * Filesystem MediaStore over MEDIA_DIR (docs/dev/04 §4.6). Files are addressed by a relative key
  * (e.g. "photo-id.jpg"); that relative path is what the DB stores, so the volume can move
  * without rewriting rows. Uses Bun's file APIs; Bun.write creates parent directories. Serving
  * a file whole to the browser is its own port, over the same directory (`file-stream-source.ts`).

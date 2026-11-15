@@ -2,7 +2,7 @@ import { describe, expect, it } from 'bun:test';
 import { avatarChoices } from './avatar-chooser';
 
 /*
- * What tapping a person's picture offers (docs/02 §2.14, §2.24.6): a file straight away when there
+ * What tapping a person's picture offers (docs/dev/02 §2.14, §2.24.6): a file straight away when there
  * is nothing else to choose from, else a chooser with a file, their group photos and Immich.
  */
 

@@ -1,7 +1,7 @@
 import * as v from 'valibot';
 
 /*
- * The pick the circle page posts to add people or re-role them (docs/02 §2.4.2): the people
+ * The pick the circle page posts to add people or re-role them (docs/dev/02 §2.4.2): the people
  * chosen, one `contactId` field each, and the role they are to take. A blank role is handed on
  * as it came; the use-cases read it as none.
  */

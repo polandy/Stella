@@ -3,7 +3,7 @@ import { DEFAULT_DENSITY, DENSITIES, parseDensity, spacingFor } from './density'
 import { NODE_LABEL_WIDTH } from './legibility';
 
 /*
- * How close together the explorer sets people (docs/05 §5.8): a reader's choice between
+ * How close together the explorer sets people (docs/dev/05 §5.8): a reader's choice between
  * Compact, Comfortable and Spacious, remembered per device. The canvas reads the spacing from
  * here, so these are the numbers the map is drawn at.
  */

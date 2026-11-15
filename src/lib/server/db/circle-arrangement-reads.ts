@@ -7,7 +7,7 @@ import type * as schema from './schema';
 import { circle, circleMembership, contact } from './schema';
 
 /*
- * Drizzle adapter for what the arrange screen reads (docs/08 §8.3): the people directly in a set
+ * Drizzle adapter for what the arrange screen reads (docs/dev/08 §8.3): the people directly in a set
  * of circles, scoped by `membershipVisibleTo` — a membership shows only when its circle AND its
  * contact are visible (§3.7).
  */

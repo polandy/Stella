@@ -13,7 +13,7 @@ import { createDrizzleTodoRepository } from './todo-repository';
 import * as schema from './schema';
 
 /*
- * Integration spec for the story read (docs/02 §2.23) over its adapters. `mergeStory` is
+ * Integration spec for the story read (docs/dev/02 §2.23) over its adapters. `mergeStory` is
  * unit-tested on its own; what needs a database is the half in between — translating one story
  * cursor into two keyset cursors of different shapes, and keeping the merged page scoped to
  * what the viewer may see. Getting that wrong repeats or swallows entries, which is invisible

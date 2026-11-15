@@ -1,4 +1,4 @@
-/* The people directory and the "add a person" form (docs/02 §2.2). */
+/* The people directory and the "add a person" form (docs/dev/02 §2.2). */
 
 export const contacts = {
 	'contacts.title': 'People · Stella',
@@ -31,7 +31,7 @@ export const contacts = {
 		`Stella is out of reach, so ${p.name || 'this person'} is kept on this device and added once it answers again.`,
 	'contacts.new.heading': 'Add a person',
 	'contacts.new.intro': 'A name is enough. Everything else can wait for their page.',
-	// Adding yourself (docs/02 §2.1.3): the same form, saying what it will do with the record.
+	// Adding yourself (docs/dev/02 §2.1.3): the same form, saying what it will do with the record.
 	'contacts.new.selfHeading': 'Add yourself',
 	'contacts.new.selfIntro':
 		'This record is you: Stella links it to your account, so the map opens on you and your people can be linked to you.',

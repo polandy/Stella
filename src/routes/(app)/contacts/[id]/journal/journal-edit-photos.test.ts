@@ -15,7 +15,7 @@ import { answerOf, formOf, routeEvent, type FakeServices } from '$lib/server/tes
 import { actions } from './+page.server';
 
 /*
- * Photos added and taken off while an entry is edited (docs/02 §2.20): `addPhoto` stores one
+ * Photos added and taken off while an entry is edited (docs/dev/02 §2.20): `addPhoto` stores one
  * picture on the author's own entry, `edit` removes the ones the editor marked. A foreign or
  * vanished entry is answered as gone; a picture that is no image or too large is refused in the
  * reader's language and nothing is stored.

@@ -8,7 +8,7 @@ import {
 
 /*
  * The order a merge walks the tables that point at a person, and what it does where the
- * survivor already has the row (docs/02 §2.2). The adapter only runs this list; the rules
+ * survivor already has the row (docs/dev/02 §2.2). The adapter only runs this list; the rules
  * that make it safe to run are the ones below.
  */
 
@@ -52,7 +52,7 @@ describe('the merge plan', () => {
 	});
 
 	it('drops the links between the two before either end is repointed, which would make them self links', () => {
-		// The table refuses a link from a person to themselves (docs/03 §relationship).
+		// The table refuses a link from a person to themselves (docs/dev/03 §relationship).
 		const from = repointOf('relationship', 'from_contact_id');
 		const to = repointOf('relationship', 'to_contact_id');
 		expect(settling('drop-links-between-the-two')).toBeLessThan(Math.min(from, to));
@@ -62,7 +62,7 @@ describe('the merge plan', () => {
 	});
 
 	it('moves the links to third people in stored order before the columns are repointed', () => {
-		// A plain repoint would leave a symmetric link unsorted (docs/03 §relationship).
+		// A plain repoint would leave a symmetric link unsorted (docs/dev/03 §relationship).
 		expect(settling('move-links-in-stored-order')).toBeLessThan(
 			repointOf('relationship', 'from_contact_id')
 		);

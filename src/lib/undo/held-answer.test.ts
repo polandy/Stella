@@ -5,7 +5,7 @@ import { heldAnswer, type Holder } from './held-answer';
 type EnhanceEvent = Parameters<ReturnType<typeof heldAnswer>>[0];
 
 /*
- * Answering a suggestion without leaving the page (docs/02 §2.4.1).
+ * Answering a suggestion without leaving the page (docs/dev/02 §2.4.1).
  *
  * Two things have to hold, and both are invisible from the screen: the answer must not be sent
  * when the button is pressed — otherwise *Undo* is undoing a write rather than preventing one —

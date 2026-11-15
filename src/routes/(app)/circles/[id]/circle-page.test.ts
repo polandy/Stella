@@ -30,7 +30,7 @@ import { actions, load } from './+page.server';
 import type { PageServerData } from './$types';
 
 /*
- * The circle page (docs/02 §2.4.2) as the edge answers it: the circle the address names, its
+ * The circle page (docs/dev/02 §2.4.2) as the edge answers it: the circle the address names, its
  * members grouped by role, the people picked to add or re-role, a role renamed, a member taken
  * out — each refusal said in the reader's language, each success back to the page. The photo
  * actions (`actions/photos.test.ts`), the last-name ones (`_shared/last-names-actions.test.ts`)

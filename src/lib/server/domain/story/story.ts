@@ -5,8 +5,8 @@ import type { JournalEntry, JournalRepository } from '../journal/journal';
 import type { DoneTodo, TodoRepository } from '../todos/todos';
 
 /*
- * The story of a person (docs/02 §2.23): the journal someone wrote about them, the
- * touchpoints someone had with them, the gifts given to them or received from them (docs/02
+ * The story of a person (docs/dev/02 §2.23): the journal someone wrote about them, the
+ * touchpoints someone had with them, the gifts given to them or received from them (docs/dev/02
  * §2.25) and the to-dos ticked off for them (§2.26), read as one thing in one order — because that is how it happened. Lists side by side
  * made the reader do the merging.
  *

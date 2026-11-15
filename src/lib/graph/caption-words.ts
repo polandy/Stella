@@ -4,7 +4,7 @@ import { roleTermLabel } from '../relationships/roles';
 import type { ShelfCaption } from './model/shelf-captions';
 
 /*
- * The family tree's shelf captions in the viewer's language (docs/05 §5.8, docs/02 §2.19):
+ * The family tree's shelf captions in the viewer's language (docs/dev/05 §5.8, docs/dev/02 §2.19):
  * "Friend of Sandra", "Freundin von Sandra +1", "Lena, Noah +2". `nameOf` gives the name a
  * person is called by on the map.
  */

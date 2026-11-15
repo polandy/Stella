@@ -8,7 +8,7 @@ import {
 } from './gifts';
 
 /*
- * The words a gift is made of (docs/02 §2.25): its states, the occasions the form offers, and
+ * The words a gift is made of (docs/dev/02 §2.25): its states, the occasions the form offers, and
  * the link it may carry. Pure, so the form, the command schema and the use-case agree on them.
  */
 

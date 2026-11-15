@@ -16,7 +16,7 @@ import {
 import { NoJournalSubjectError } from './subjects';
 
 /*
- * Journal use-cases (docs/02 §2.20). A journal entry is a per-person, per-day diary entry
+ * Journal use-cases (docs/dev/02 §2.20). A journal entry is a per-person, per-day diary entry
  * authored by a household member. Uniqueness is per (contact, author, day, visibility): each
  * member gets at most one shared and one private entry for a given contact on a given day, so
  * saving the same slot again *edits* it rather than piling up duplicates. Visibility follows
@@ -224,7 +224,7 @@ describe('saveJournalEntry', () => {
 });
 
 /*
- * An entry's tags are what its text says (docs/02 §2.20.2): every write reads them from the
+ * An entry's tags are what its text says (docs/dev/02 §2.20.2): every write reads them from the
  * body it leaves behind and hands them to the port, which keeps the household's tag set.
  */
 describe('tags from the text', () => {
@@ -299,7 +299,7 @@ describe('listJournalForContact', () => {
 
 /*
  * Editing changes the text of an existing entry in place; the day and visibility stay put,
- * since those are the slot the entry occupies (docs/02 §2.20).
+ * since those are the slot the entry occupies (docs/dev/02 §2.20).
  */
 describe('editJournalEntry', () => {
 	it('updates the title and body of an owned entry', async () => {
@@ -384,7 +384,7 @@ describe('editJournalEntry', () => {
 });
 
 /*
- * A moment about several people (docs/02 §2.20.3, ADR-131): the first is the anchor, the slot
+ * A moment about several people (docs/dev/02 §2.20.3, ADR-131): the first is the anchor, the slot
  * is the set of them, and a subject is never also a mention.
  */
 describe('a moment about several people', () => {

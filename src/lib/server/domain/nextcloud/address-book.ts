@@ -1,5 +1,5 @@
 /*
- * What Stella asks of the household's Nextcloud address book (docs/02 §2.16.3, docs/04 §4.5).
+ * What Stella asks of the household's Nextcloud address book (docs/dev/02 §2.16.3, docs/dev/04 §4.5).
  * Stella is a CardDAV *client* of it, never a server. The port is narrow and owned here;
  * `src/lib/server/nextcloud/http-gateway.ts` implements it over WebDAV and `fake-gateway.ts` in
  * memory. A card's text is another program's: it is read by the vCard reader, which refuses

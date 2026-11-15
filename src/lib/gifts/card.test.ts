@@ -2,7 +2,7 @@ import { describe, expect, it } from 'bun:test';
 import { asksForGiftIdea, byYear, giftIdeaPath, giftTabs } from './card';
 
 /*
- * How the person page's Gifts card stands (docs/02 §2.25, docs/05 §5.5): which tabs it shows,
+ * How the person page's Gifts card stands (docs/dev/02 §2.25, docs/dev/05 §5.5): which tabs it shows,
  * what they count, and how a list of given or received gifts is divided by year.
  */
 

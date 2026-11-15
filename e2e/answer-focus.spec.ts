@@ -3,10 +3,10 @@ import { signIn } from './app';
 import { LINK, seedHousehold } from './seed';
 
 /*
- * A keyboard answer keeps its place (docs/05 §5.5, issue #127). The focused *Accept* or
+ * A keyboard answer keeps its place (docs/dev/05 §5.5, issue #127). The focused *Accept* or
  * *Decline* leaves the page with its row, and without a decision the browser drops focus on
  * `<body>` — the next Tab starts again at the top of the document. Written after the owner
- * checked the behaviour in the running app (docs/08 §8.4.1).
+ * checked the behaviour in the running app (docs/dev/08 §8.4.1).
  *
  * Every case asserts *which* control has focus, never merely that it is not the body: "not
  * body" would pass on almost anything. The row leaves after a short transition (or at once

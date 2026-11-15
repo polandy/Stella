@@ -30,7 +30,7 @@ import { detectSource, ownCategories } from './vcard-source';
 export { VCardError } from './vcard-lines';
 
 /*
- * Reading a vCard into the importer's typed view (docs/02 §2.16). A vCard is the one accepted
+ * Reading a vCard into the importer's typed view (docs/dev/02 §2.16). A vCard is the one accepted
  * source Monica did not write: contacts only — no relationships, no activities, no journal —
  * so it fills the same view sparsely and the mapping downstream is unchanged. The format
  * itself is read in `vcard-lines.ts`.

@@ -31,7 +31,7 @@
 	// A failed submit keeps the form open, so the error has somewhere to be read.
 	const showForm = $derived(wantForm || form?.error !== undefined);
 
-	// Find as you type over what is already loaded (docs/02 §2.4.2): a household has few enough
+	// Find as you type over what is already loaded (docs/dev/02 §2.4.2): a household has few enough
 	// circles that a round trip per keystroke would only add latency.
 	let query = $state('');
 	let chosenKind = $state<string>(ALL_KINDS);
@@ -46,7 +46,7 @@
 	// What the live region announces: the circles found, sub-circles counted like cards.
 	const found = $derived(chips.find((chip) => chip.kind === kind)?.count ?? 0);
 
-	// A card per top-level circle, its sub-circles as rows (docs/02 §2.4.2).
+	// A card per top-level circle, its sub-circles as rows (docs/dev/02 §2.4.2).
 	const tree = $derived(circleTree(data.tree));
 	const shown = $derived(circleFamilies(tree, { query, kind, today: data.today }));
 	// The faces on a card come from the overview's read, by circle.
@@ -200,7 +200,7 @@
 						class="flex flex-1 flex-col transition-colors hover:bg-card-hover"
 					>
 						{#if cover}
-							<!-- The cover as a flat strip, filled from the centre (docs/05 §5.5); decoration, the name says it. -->
+							<!-- The cover as a flat strip, filled from the centre (docs/dev/05 §5.5); decoration, the name says it. -->
 							<img
 								src={thumbnailUrl(cover)}
 								alt=""

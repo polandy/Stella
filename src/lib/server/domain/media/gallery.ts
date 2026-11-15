@@ -8,11 +8,11 @@ import type { GalleryPhoto, MediaStore, PhotoRepository } from './avatars';
 import { orderGallery } from './gallery-order';
 
 /*
- * The photo gallery on a person (docs/02 §2.14).
+ * The photo gallery on a person (docs/dev/02 §2.14).
  *
  * Reading is scoped by the repository through the central visibility rules; writing is
  * editing is the uploader's alone, removing is the uploader's or an admin's on a shared photo
- * (§2.14, docs/03 §3.7). Use-cases over the ports, so every rule is testable without a route.
+ * (§2.14, docs/dev/03 §3.7). Use-cases over the ports, so every rule is testable without a route.
  */
 
 /** Longest caption accepted; a caption is a line under a photo, not a note. */
@@ -24,9 +24,9 @@ export class CaptionTooLongError extends TranslatableError {
 	}
 }
 
-/** The gallery as a person page reads it: a read model of the photo table (docs/08 §8.3). */
+/** The gallery as a person page reads it: a read model of the photo table (docs/dev/08 §8.3). */
 export interface GalleryPhotoReads {
-	/** Gallery photos on a contact the viewer may see, newest taken-or-added first (docs/02 §2.14). */
+	/** Gallery photos on a contact the viewer may see, newest taken-or-added first (docs/dev/02 §2.14). */
 	listGalleryPhotos(viewer: Viewer, contactId: string): Promise<GalleryPhoto[]>;
 	/** One gallery photo, only if it belongs to that contact and the viewer may see it. */
 	findVisibleGalleryPhoto(
@@ -60,8 +60,8 @@ export async function listGallery(
 }
 
 /**
- * Pin a photo as one of a person's favourites, or unpin it (docs/02 §2.14). A pin belongs to
- * the household, like the photo itself (docs/04 §4.9): anyone who can see the photo may pin
+ * Pin a photo as one of a person's favourites, or unpin it (docs/dev/02 §2.14). A pin belongs to
+ * the household, like the photo itself (docs/dev/04 §4.9): anyone who can see the photo may pin
  * it, and everyone who sees it sees it pinned. Pinning a photo that is already pinned keeps
  * its first pin, so sending the same pin twice changes nothing. False when the viewer cannot
  * see the photo — the same answer whether or not it exists.

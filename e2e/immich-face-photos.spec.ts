@@ -4,10 +4,10 @@ import { addPerson, appReady, signIn } from './app';
 import { DEMO_ADMIN_PASSWORD, DEMO_MEMBER_EMAIL } from '../src/lib/server/db/demo-seed';
 
 /*
- * A taken face in *Find in Immich* opens its holder's photos (docs/02 §2.24.2, §2.24.6, docs/04
+ * A taken face in *Find in Immich* opens its holder's photos (docs/dev/02 §2.24.2, §2.24.6, docs/dev/04
  * ADR-124): a group photo of someone else may hold this person, unnamed in Immich, and its
  * square becomes their picture. Written after the owner tried #377 in the preview
- * (docs/08 §8.4.1).
+ * (docs/dev/08 §8.4.1).
  *
  * The e2e server runs with `IMMICH_DEMO=true`, whose library holds faces made for this spec
  * (`src/lib/server/immich/demo-library.ts`): the Bilderbogens and the Schattenwurfs, which no

@@ -26,7 +26,7 @@ import type { PageServerLoad } from './$types';
 const NEXT_DATE_HORIZON_DAYS = 366;
 
 /*
- * A person's brief (docs/02 §2.2.5): what to know before a visit, read-only, on one page that
+ * A person's brief (docs/dev/02 §2.2.5): what to know before a visit, read-only, on one page that
  * also prints. Every read is the person page's own use-case, scoped to the viewer; this only
  * picks from them.
  */

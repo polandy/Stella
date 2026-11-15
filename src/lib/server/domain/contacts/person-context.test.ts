@@ -8,9 +8,9 @@ import {
 } from './person-context';
 
 /*
- * What a namesake's second line may fall back on (docs/02 §2.2.3): only asked for people with
+ * What a namesake's second line may fall back on (docs/dev/02 §2.2.3): only asked for people with
  * nothing typed to tell them apart, read through reads the adapter scopes to the viewer, and
- * ranked by the pure `rankContext`. Tested with a recording fake (docs/08 §8.3).
+ * ranked by the pure `rankContext`. Tested with a recording fake (docs/dev/08 §8.3).
  */
 
 const viewer: Viewer = { id: 'u-andy', householdId: 'h1' };

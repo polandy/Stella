@@ -9,10 +9,10 @@ import { readStagedDump } from '$lib/server/import/staging';
 import { say } from '$lib/server/i18n/say';
 
 /*
- * What the wizard's steps share (docs/02 §2.16): the staging token every step after the upload
+ * What the wizard's steps share (docs/dev/02 §2.16): the staging token every step after the upload
  * posts, the export it names, and the photo list the last step walks.
  *
- * The linked Nextcloud book's review (docs/02 §2.16.3) runs through the same steps under one
+ * The linked Nextcloud book's review (docs/dev/02 §2.16.3) runs through the same steps under one
  * fixed token instead of a staged file's: its cards are read from what the sync holds at every
  * step, its people are always shared, and as a staged token is a ULID, no upload can pose as it.
  */

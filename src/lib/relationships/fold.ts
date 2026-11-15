@@ -1,5 +1,5 @@
 /*
- * Two rows that turn out to be one link (docs/03 §relationship): the merge meets them when both
+ * Two rows that turn out to be one link (docs/dev/03 §relationship): the merge meets them when both
  * records had the same tie, the restore when an archive holds one tie from both ends. One row
  * stays — its status included — and the other gives only what the kept one left blank, the
  * rule the profile follows.

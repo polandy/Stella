@@ -7,7 +7,7 @@ import * as schema from './schema';
 import { ensureSearchIndex } from './search-index';
 
 /*
- * The one-off backfill in `ensureSearchIndex` (docs/03 §3.5). Every other search test creates
+ * The one-off backfill in `ensureSearchIndex` (docs/dev/03 §3.5). Every other search test creates
  * the index *before* it writes anything, so the triggers do the work and this branch never
  * runs — yet it is the branch that decides what an existing database looks like after an
  * upgrade, and it has to build the same content the triggers do, mentions included.
@@ -95,7 +95,7 @@ describe('ensureSearchIndex backfill', () => {
 
 	it("keeps an imported contact's source id out of the index, tokens and all", () => {
 		// An imported contact keeps its source id, whose ':' separators the FTS tokenizer would
-		// otherwise read as the searchable words "monica", "contact" and "9" (docs/02 §2.16).
+		// otherwise read as the searchable words "monica", "contact" and "9" (docs/dev/02 §2.16).
 		db.insert(schema.contact)
 			.values({
 				id: 'monica:contact:9',

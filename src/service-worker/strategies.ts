@@ -91,7 +91,7 @@ export async function networkFirst(event: FetchEvent, key: string): Promise<Resp
 }
 
 /**
- * A share from another app (docs/02 §2.18.3): kept on the device and the sheet opened on it,
+ * A share from another app (docs/dev/02 §2.18.3): kept on the device and the sheet opened on it,
  * whether Stella is in reach or not — the sheet saves through the outbox, which waits when it
  * must. A 303, so the sheet is a GET the cache can answer and a reload does not post again.
  */

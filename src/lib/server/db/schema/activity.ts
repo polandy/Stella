@@ -2,7 +2,7 @@ import { index, integer, sqliteTable, text } from 'drizzle-orm/sqlite-core';
 import { now, type Visibility } from './columns';
 import { household, user } from './household';
 
-/* The household's activity log (docs/03 §activity_log). */
+/* The household's activity log (docs/dev/03 §activity_log). */
 
 export const activityLog = sqliteTable(
 	'activity_log',

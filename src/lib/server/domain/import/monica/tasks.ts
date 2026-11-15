@@ -1,7 +1,7 @@
 import type { MonicaTask } from './monica-export';
 
 /*
- * A Monica task, read as a Stella to-do (docs/02 §2.26.8). Pure. A to-do is one short line, so
+ * A Monica task, read as a Stella to-do (docs/dev/02 §2.26.8). Pure. A to-do is one short line, so
  * a task's description goes after its title on that line rather than being lost; a completed
  * task is done on the day Monica completed it, so it takes its place in the person's Activity.
  */

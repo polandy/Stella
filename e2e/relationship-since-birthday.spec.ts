@@ -2,8 +2,8 @@ import { expect, test, type Locator, type Page } from '@playwright/test';
 import { appReady, openPerson, pickPerson, signIn } from './app';
 
 /*
- * The since day a new family link starts out with (docs/02 §2.4). Written after the flow was
- * verified in the running app (docs/08 §8.4.1).
+ * The since day a new family link starts out with (docs/dev/02 §2.4). Written after the flow was
+ * verified in the running app (docs/dev/08 §8.4.1).
  *
  * The suite shares one demo database, so the cases that only read the suggestion never submit
  * the form — they fill nothing in but the picker and read the day back out. The one case that

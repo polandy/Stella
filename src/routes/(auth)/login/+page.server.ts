@@ -11,7 +11,7 @@ import { DEMO_ADMIN_EMAIL, DEMO_ADMIN_PASSWORD } from '$lib/server/db/demo-seed'
 import type { Actions, PageServerLoad } from './$types';
 
 /*
- * Local email/password login (docs/02 §2.1.1). SSO is offered separately when enabled.
+ * Local email/password login (docs/dev/02 §2.1.1). SSO is offered separately when enabled.
  */
 
 const LoginSchema = v.object({

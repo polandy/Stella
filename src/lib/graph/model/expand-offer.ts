@@ -5,7 +5,7 @@ import type { GraphFilters, GraphModel } from './types';
  * Whether expanding `nodeId` would put anything new on the map `shown` under `filters`: a
  * person or circle it is linked to that the map does not hold yet (its "+N"), or a line of it
  * between people the map already shows but does not draw. The peek panel offers *Expand*
- * exactly then (docs/02 §2.7) — the "+N" alone missed the second case, so a circle whose
+ * exactly then (docs/dev/02 §2.7) — the "+N" alone missed the second case, so a circle whose
  * members were all on the map could never have its roles drawn; a bare "any undrawn link"
  * offered a button the filters made do nothing.
  */

@@ -2,7 +2,7 @@ import { describe, expect, it } from 'bun:test';
 import { bowsAround, familyIn, shelve, spreadCoincident, type Point, type Size } from './geometry';
 
 /*
- * The shared geometry of the arrangements (docs/05 §5.8): shelving by real width, and bending
+ * The shared geometry of the arrangements (docs/dev/05 §5.8): shelving by real width, and bending
  * a line around whoever stands on it, so a label is never hidden under a node and two lines
  * never lie on top of each other.
  */

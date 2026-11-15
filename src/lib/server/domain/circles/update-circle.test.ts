@@ -11,7 +11,7 @@ import { CircleLoopError, CircleParentGoneError } from './nesting';
 import { updateCircle } from './update-circle';
 
 /*
- * Editing a circle's details (docs/02 §2.4.2): name, kind, colour, description and period, for
+ * Editing a circle's details (docs/dev/02 §2.4.2): name, kind, colour, description and period, for
  * anyone who sees the circle. The validation is the one `createCircle` uses.
  */
 

@@ -49,7 +49,7 @@
 		/**
 		 * Embedded in somebody's page rather than filling the route: the toolbar drops what is
 		 * about travelling the household (finding a person elsewhere), because the page it sits
-		 * on is about one person (docs/05 §5.5).
+		 * on is about one person (docs/dev/05 §5.5).
 		 */
 		compact?: boolean;
 		/**
@@ -63,12 +63,12 @@
 		/**
 		 * Trace the chain from the centre to this person as soon as the canvas is up. A
 		 * person's page asks for this when somebody wanted to know how they are connected to
-		 * somebody the page's own two hops do not reach (docs/05 §5.5).
+		 * somebody the page's own two hops do not reach (docs/dev/05 §5.5).
 		 */
 		tracePathTo?: string | null;
 		/**
 		 * Open straight into full screen. A phone shows a person's map as a small preview, and
-		 * tapping it means "show me the map" (docs/05 §5.5) — the frame is mounted for that tap,
+		 * tapping it means "show me the map" (docs/dev/05 §5.5) — the frame is mounted for that tap,
 		 * so it asks while the tap still counts as the reader's own gesture.
 		 */
 		startFullscreen?: boolean;
@@ -77,7 +77,7 @@
 		/**
 		 * A phone's map enlarged inside a person's card asks to be a preview again. Given, the
 		 * toolbar carries a *Shrink map* icon just left of full screen — inside the map, where
-		 * the preview's own *Enlarge map* sits (docs/05 §5.5).
+		 * the preview's own *Enlarge map* sits (docs/dev/05 §5.5).
 		 */
 		onShrink?: () => void;
 		/** Told once the canvas has drawn itself, so a picture standing in for it can fade out. */
@@ -85,7 +85,7 @@
 		/**
 		 * The reader may add a relationship (the access layer's `canAddRelationshipTo`, decided by
 		 * the page): the family tree around a person then offers a slot for each missing parent
-		 * up their line (docs/02 §2.7).
+		 * up their line (docs/dev/02 §2.7).
 		 */
 		mayAddParents?: boolean;
 	}
@@ -109,7 +109,7 @@
 	// save, and the map follows it (see the resync effect below).
 	const source = $derived(inMemoryGraphSource(graph));
 	// Path finding travels stored links only: a derived edge names a chain rather than being
-	// one, so hopping it would answer "how do we know each other?" with the label (docs/02 §2.7).
+	// one, so hopping it would answer "how do we know each other?" with the label (docs/dev/02 §2.7).
 	const pathSource = $derived(inMemoryGraphSource(withoutDerivedLinks(graph)));
 
 	const reducedMotion =
@@ -199,7 +199,7 @@
 		},
 		t
 	);
-	// The tree goes out as it is shown, in the tree arrangement only (docs/02 §2.7).
+	// The tree goes out as it is shown, in the tree arrangement only (docs/dev/02 §2.7).
 	let exporting = $state(false);
 
 	/*
@@ -222,7 +222,7 @@
 	/*
 	 * Follow a new snapshot. A person's page re-runs its load after every save (a relationship
 	 * added, retyped or removed), so the map above the list shows the same links the list
-	 * does — without a reload, and keeping whatever the reader had expanded (docs/05 §5.5).
+	 * does — without a reload, and keeping whatever the reader had expanded (docs/dev/05 §5.5).
 	 */
 	$effect(() => {
 		const next = graph;
@@ -243,7 +243,7 @@
 	/*
 	 * Who stood in which group when the canvas last took the map in. Someone joining a group —
 	 * grouping switched on, a circle expanded — needs the map settled afresh, because a group's
-	 * members must stand together and newcomers are set down one by one (docs/02 §2.7).
+	 * members must stand together and newcomers are set down one by one (docs/dev/02 §2.7).
 	 */
 	let placedInGroups = new Map<string, string>();
 	/** Set when joining a group settled the map, so an arrangement asked for then is not run twice. */
@@ -305,7 +305,7 @@
 				});
 
 	/*
-	 * A slot opens the child's page with the relationship form on *Child of* (docs/02 §2.7).
+	 * A slot opens the child's page with the relationship form on *Child of* (docs/dev/02 §2.7).
 	 * Full screen is left first, or the form would open underneath the map.
 	 */
 	async function openSlot(id: string) {
@@ -318,7 +318,7 @@
 
 	async function expand(id: string) {
 		// The embedded map is one person's neighbourhood, not a way into the whole household:
-		// past its last ring the reader is sent to the explorer route instead (docs/02 §2.7).
+		// past its last ring the reader is sent to the explorer route instead (docs/dev/02 §2.7).
 		if (centerId !== null && !canExpand(view.rings, id, maxRings)) return;
 		// Until the circle's roles have arrived there is nothing to narrow by: open it whole.
 		const narrowed = peekCircleId === id && roleOptions.length > 0;
@@ -423,7 +423,7 @@
 	/*
 	 * Leaving full screen is told to the page, so a preview can take the frame's place again;
 	 * entering or leaving it gives the map a different room, which the canvas frames afresh once
-	 * it has resized, unless the reader has moved the view (docs/05 §5.8).
+	 * it has resized, unless the reader has moved the view (docs/dev/05 §5.8).
 	 */
 	$effect(() => {
 		void dispatch({ type: 'screen', on: screen.on, canvasReady: ready && controller !== null });
@@ -435,7 +435,7 @@
 		// Build the initial ego view around the centre from the in-memory snapshot.
 		if (centerId) await explored.open(centerId);
 
-		// A link may arrive with the question already asked (docs/05 §5.5): trace it before the
+		// A link may arrive with the question already asked (docs/dev/05 §5.5): trace it before the
 		// canvas is built, so the chain is what the first layout lays out rather than a jump.
 		if (centerId && tracePathTo) {
 			const found = await findConnectionPath(pathSource, centerId, tracePathTo);

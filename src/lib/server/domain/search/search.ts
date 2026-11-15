@@ -5,21 +5,21 @@ import type { Viewer, Visibility } from '../../access/visibility';
 import { searchedTag, toFtsQuery } from './query';
 
 /*
- * Global search (docs/02 §2.9). Turns input into a safe FTS query and delegates to the
+ * Global search (docs/dev/02 §2.9). Turns input into a safe FTS query and delegates to the
  * repository port, which applies the central visibility scoping. Results are grouped by type:
  * people, notes, gifts, moments and to-dos. A query that is one `#tag` asks for that tag alone, so it
- * finds only the moments carrying it (docs/02 §2.20.2).
+ * finds only the moments carrying it (docs/dev/02 §2.20.2).
  */
 
 export interface ContactHit {
 	id: string;
 	displayName: string;
 	description: string | null;
-	/** So a result shows the person's face rather than their initials (docs/02 §2.9). */
+	/** So a result shows the person's face rather than their initials (docs/dev/02 §2.9). */
 	avatarPhotoId: string | null;
-	/** An earlier name, which the index matches too (docs/02 §2.2). */
+	/** An earlier name, which the index matches too (docs/dev/02 §2.2). */
 	formerName: string | null;
-	/** What they do and where, which the index matches too and the row shows (docs/02 §2.2). */
+	/** What they do and where, which the index matches too and the row shows (docs/dev/02 §2.2). */
 	jobTitle: string | null;
 	company: string | null;
 }
@@ -38,13 +38,13 @@ export interface NoteHit {
 	title: string | null;
 	/** As stored, mention tokens and all — the page cuts the snippet and names the people. */
 	body: string;
-	/** A private one's snippet stays blurred on its author's screen (docs/02 §2.10.1). */
+	/** A private one's snippet stays blurred on its author's screen (docs/dev/02 §2.10.1). */
 	visibility: Visibility;
 	contactId: string;
 	contactName: string;
 }
 
-/** A gift found by its title or note, with the person it is for (docs/02 §2.25.5). */
+/** A gift found by its title or note, with the person it is for (docs/dev/02 §2.25.5). */
 export interface GiftHit {
 	giftId: string;
 	title: string;
@@ -55,7 +55,7 @@ export interface GiftHit {
 	contactName: string;
 }
 
-/** A moment found by its words or its tag, with the person it is on (docs/02 §2.20.2). */
+/** A moment found by its words or its tag, with the person it is on (docs/dev/02 §2.20.2). */
 export interface MomentHit {
 	entryId: string;
 	title: string | null;
@@ -67,11 +67,11 @@ export interface MomentHit {
 	entryDate: string;
 	contactId: string;
 	contactName: string;
-	/** The further people it is about that the viewer sees (docs/02 §2.20.3). */
+	/** The further people it is about that the viewer sees (docs/dev/02 §2.20.3). */
 	otherNames: string[];
 }
 
-/** A to-do found by its title, open or done, with the person it is about (docs/02 §2.26). */
+/** A to-do found by its title, open or done, with the person it is about (docs/dev/02 §2.26). */
 export interface TodoHit {
 	todoId: string;
 	title: string;

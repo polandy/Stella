@@ -18,7 +18,7 @@ import type * as schema from './schema';
 import { circle, circleMembership, contact, relationship, relationshipType } from './schema';
 
 /*
- * Loads the whole *visible* graph for a viewer in one slim, access-scoped snapshot (docs/04
+ * Loads the whole *visible* graph for a viewer in one slim, access-scoped snapshot (docs/dev/04
  * §4.11). The browser wraps this in an in-memory source and runs all exploration (ego build,
  * expand, path) client-side with no further requests — the server does one bulk read instead
  * of a round-trip per node. Only the projection the graph needs is sent (id/label/kind + typed
@@ -75,7 +75,7 @@ export function createDrizzleGraphRepository(
 			wording: variantFor(r),
 			shortName: r.firstName?.trim() || r.label,
 			...(r.visibility === 'private' ? { private: true as const } : {}),
-			// The years a printed family tree may write under the name (docs/02 §2.7); a year
+			// The years a printed family tree may write under the name (docs/dev/02 §2.7); a year
 			// worked out from an age is a guess, and a print would state it as fact.
 			...yearField('born', r.birthDatePrecision === 'age' ? null : r.birthDate),
 			...yearField('died', r.deathDate)
@@ -115,7 +115,7 @@ export function createDrizzleGraphRepository(
 		}));
 
 		// Circles (shared contexts) become their own node kind; memberships become edges
-		// connecting a contact to its circle (docs/02 §2.4.2). Both are visibility-scoped.
+		// connecting a contact to its circle (docs/dev/02 §2.4.2). Both are visibility-scoped.
 		const circleRows = db
 			.select({ id: circle.id, name: circle.name, visibility: circle.visibility })
 			.from(circle)
@@ -167,7 +167,7 @@ export function createDrizzleGraphRepository(
 				sinceDate: r.sinceDate
 			}))
 		);
-		// Derived kinship (docs/02 §2.4.1) as its own edge kind: what the primary links imply
+		// Derived kinship (docs/dev/02 §2.4.1) as its own edge kind: what the primary links imply
 		// but nobody entered — grandparents, aunts, cousins, in-laws — drawn once per pair.
 		edges.push(...deriveKinshipEdges(kinship));
 

@@ -3,7 +3,7 @@ import { hasPressingTodo, todoBand, todoListGroups } from './household';
 import type { CardTodo } from './todos';
 
 /*
- * The household's to-dos beyond one person (docs/02 §2.26.6): Home's band and the `/todos`
+ * The household's to-dos beyond one person (docs/dev/02 §2.26.6): Home's band and the `/todos`
  * groups, both handed *today* and the card's rows (`cardTodos`), so a struck row stays put.
  */
 

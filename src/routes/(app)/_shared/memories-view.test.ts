@@ -2,7 +2,7 @@ import { describe, expect, it } from 'bun:test';
 import type { Memory, MemoryPhoto } from '$lib/server/domain/memories/memories';
 import { memoryBandForView, memoryRowOf, memoryYearsForView } from './memories-view';
 
-/* *On this day* rows (docs/02 §2.12.1): faces, the first line, the link and the veil key. */
+/* *On this day* rows (docs/dev/02 §2.12.1): faces, the first line, the link and the veil key. */
 
 const hilde = { id: 'hilde', name: 'Hilde', avatarPhotoId: null };
 const karl = { id: 'karl', name: 'Karl', avatarPhotoId: 'k.jpg' };

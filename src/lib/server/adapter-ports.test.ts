@@ -12,7 +12,7 @@ import ts from 'typescript';
  * a `Promise<A & B>` is read for what it is.
  *
  * It reads the declared return type only: a factory left to infer its type is not caught, which
- * is why adapters here state the port they implement (docs/08 §8.3).
+ * is why adapters here state the port they implement (docs/dev/08 §8.3).
  */
 
 const INFRASTRUCTURE = new Glob('src/lib/server/**/*.ts');

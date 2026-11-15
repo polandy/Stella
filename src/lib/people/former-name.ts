@@ -1,6 +1,6 @@
 /*
  * Was a person found by their former name rather than by the name they are shown by
- * (docs/02 §2.9)? Then a result says *Franziska Abab (formerly Widmer)*: finding someone under a
+ * (docs/dev/02 §2.9)? Then a result says *Franziska Abab (formerly Widmer)*: finding someone under a
  * name they no longer carry is otherwise a puzzle. Pure and client-safe — the People list,
  * ⌘K, the pickers and the search page all ask this one function.
  */

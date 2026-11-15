@@ -19,14 +19,14 @@
 	import type { PersonPageData } from './types';
 
 	/*
-	 * The person page's jump bar (docs/05 §5.5): People, Photos, Story, Notes, Gifts, each with its
+	 * The person page's jump bar (docs/dev/05 §5.5): People, Photos, Story, Notes, Gifts, each with its
 	 * card's count, the one being read marked. It shows only once it sticks — when the identity
 	 * card has scrolled by — and fades in there; at rest it sits in a zero-height slot, so nothing
 	 * stands between the identity card and the People card. `barVisible` and `currentSection`
 	 * decide; this only measures where the cards stand.
 	 *
 	 * It sticks to the top of the shell's scroller, which starts under the top bar wherever that
-	 * bar is, so a phone's sliding bar (docs/05 §5.4) takes it along by itself. The scroller is
+	 * bar is, so a phone's sliding bar (docs/dev/05 §5.4) takes it along by itself. The scroller is
 	 * told the bar's height as its scroll padding: a jump, an anchor in a link, or the cursor
 	 * moving down the page stops below the bar rather than behind it. That padding is the strip
 	 * the stuck bar itself sits in, so the browser counts the bar's own links as out of sight
@@ -74,7 +74,7 @@
 	const visible = $derived(barVisible({ cardBottom, barHeight }));
 
 	/*
-	 * A plain click glides to the card the way an opened form does (docs/05 §5.11) instead of
+	 * A plain click glides to the card the way an opened form does (docs/dev/05 §5.11) instead of
 	 * the anchor's jump. The link stays a link: without JavaScript, in a new tab or copied, it is
 	 * the anchor it always was. The card takes the cursor, and the address names it, without a
 	 * second scroll.

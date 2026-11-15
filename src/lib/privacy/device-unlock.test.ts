@@ -11,7 +11,7 @@ import {
 } from './device-unlock';
 
 /*
- * Device unlock (docs/02 §2.10.1): a passkey checked on the device alone, asked before the
+ * Device unlock (docs/dev/02 §2.10.1): a passkey checked on the device alone, asked before the
  * veil lifts. Being set up is a fact about this device, kept in its storage under the member.
  */
 const MEMBER = { id: 'u-1', name: 'Andy', email: 'andy@example.com' };

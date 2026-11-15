@@ -12,12 +12,12 @@ import { removeImportantDate } from '$lib/server/domain/dates/important-dates';
 import { say, translator } from '$lib/server/i18n/say';
 import type { Actions } from '../$types';
 
-/** The profile card's dates (docs/02 §2.13). */
+/** The profile card's dates (docs/dev/02 §2.13). */
 export const dateActions = {
 	addDate: async ({ request, params, locals }) => {
 		const viewer = requireViewer(locals);
 
-		// The date field posts `--MM-DD` itself when the year was left blank (docs/02 §2.13), and
+		// The date field posts `--MM-DD` itself when the year was left blank (docs/dev/02 §2.13), and
 		// the two checkboxes are booleans the form leaves out when unticked.
 		const form = await request.formData();
 		const reading = readCommand({

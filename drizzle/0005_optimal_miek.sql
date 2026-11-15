@@ -1,4 +1,4 @@
--- The interface language each member reads Stella in (docs/03 §user, docs/02 §2.19).
+-- The interface language each member reads Stella in (docs/dev/03 §user, docs/dev/02 §2.19).
 -- Nullable on purpose: NULL means "has not chosen yet", so the browser's own preference
 -- still decides and only a real choice outranks it.
 -- drizzle-kit also proposed rebuilding `photo` here, because the snapshots from `0003` on

@@ -1,7 +1,7 @@
-/* People's photos from Immich: the connection, the link on a person, the face picker (docs/02 §2.24). */
+/* People's photos from Immich: the connection, the link on a person, the face picker (docs/dev/02 §2.24). */
 
 export const immich = {
-	// Why a link was refused, or a call failed (docs/02 §2.24.2, §2.24.3).
+	// Why a link was refused, or a call failed (docs/dev/02 §2.24.2, §2.24.3).
 	'immich.error.personGone': 'This person is no longer in Immich.',
 	'immich.error.linkedTo': (p: { name: string }) => `This face is already linked to ${p.name}.`,
 	'immich.error.contactLinked': (p: { name: string }) => `${p.name} is linked already.`,

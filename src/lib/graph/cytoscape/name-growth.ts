@@ -5,7 +5,7 @@ import type { CyStyle } from './stylesheet';
 
 /**
  * Lays the grown lit names over the stylesheet as the zoom crosses a step (`nameGrowth`,
- * docs/05 §5.8). Stepped, so a pinch restyles the canvas a few times rather than every frame.
+ * docs/dev/05 §5.8). Stepped, so a pinch restyles the canvas a few times rather than every frame.
  */
 export function growNamesOn(cy: Core) {
 	let sheet: CyStyle[] | undefined;

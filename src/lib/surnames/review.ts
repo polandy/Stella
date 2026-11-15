@@ -11,7 +11,7 @@ import {
 } from '$lib/suggestions/surname-groups';
 
 /*
- * Who the *Last names* list asks about (docs/02 §2.2.4.2). A declined name drops only that
+ * Who the *Last names* list asks about (docs/dev/02 §2.2.4.2). A declined name drops only that
  * proposal — the person stays, under their next name or with a field — and a person the
  * household settled as having **no last name** leaves the list for its drawer, where *Ask
  * again* puts them back. Pure: the facts are what one viewer may see.

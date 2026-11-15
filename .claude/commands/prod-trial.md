@@ -1,10 +1,10 @@
 Trial an unreleased branch or open PR live on the real family Stella instance, before it is
-merged/released — because "the maintainer verifies it in the running app" (`docs/08` §8.4.1)
+merged/released — because "the maintainer verifies it in the running app" (`docs/dev/08` §8.4.1)
 sometimes means the real app, not a local build. Use this when asked to deploy, try out, or test
 a feature/branch/PR "on prod", "auf der family-instanz", "live", or similar — as opposed to a
-local trial (`docs/07` §7.1.1), which needs no special care.
+local trial (`docs/dev/07` §7.1.1), which needs no special care.
 
-This file is the source of truth for the procedure; `docs/07-deployment.md` §7.1.2 just points
+This file is the source of truth for the procedure; `docs/dev/07-deployment.md` §7.1.2 just points
 here for anyone reading the deployment guide top to bottom.
 
 1. **Backup first.** Confirm a recent DB snapshot exists (the app's own `/data/db-dump/*.db`, or

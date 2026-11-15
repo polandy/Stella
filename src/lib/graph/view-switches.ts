@@ -1,7 +1,7 @@
 import type { PreferenceStorage } from './density-preference';
 
 /*
- * The adapter that keeps the Filter menu's switches per device (docs/05 §5.8): how a map is
+ * The adapter that keeps the Filter menu's switches per device (docs/dev/05 §5.8): how a map is
  * looked at is a habit, not a filter, so this browser keeps it. Like `density-preference.ts`
  * it only reads and writes, through the slice of `Storage` it is handed.
  */
@@ -13,14 +13,14 @@ export interface ViewSwitches {
 	 * names left are what the map is read by.
 	 */
 	edgeLabels: boolean;
-	/** The circles grouped by role (docs/02 §2.7): off by default. */
+	/** The circles grouped by role (docs/dev/02 §2.7): off by default. */
 	groupRoles: boolean;
 	/** The links between members of one group, while grouping is on. */
 	innerLinks: boolean;
 	/** Every derived line, including those whose chain is already drawn — for reading the whole family. */
 	allKinship: boolean;
 	/**
-	 * The links marked former (docs/02 §2.7). On by default: an ex-partner is still part of how
+	 * The links marked former (docs/dev/02 §2.7). On by default: an ex-partner is still part of how
 	 * a family hangs together; the switch is for reading only what holds today.
 	 */
 	formerLinks: boolean;

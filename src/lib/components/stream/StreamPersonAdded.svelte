@@ -10,7 +10,7 @@
 	type Item = Extract<PageData['stream'][number], { kind: 'person' }>;
 
 	/*
-	 * Somebody new in the household's book, as the stream shows it (docs/02 §2.22.2): *Anna
+	 * Somebody new in the household's book, as the stream shows it (docs/dev/02 §2.22.2): *Anna
 	 * added Ben*, marked new, with what they are known by. The row's cells; Home draws the row.
 	 */
 	let {

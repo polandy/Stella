@@ -4,13 +4,13 @@ import { suggestRoles } from './role-groups';
 import type { CircleRoleUse, ContactCircleView, MemberView } from './circles';
 
 /*
- * Who is in which circle, and under which role (docs/02 §2.4.2): a circle's members, a person's
+ * Who is in which circle, and under which role (docs/dev/02 §2.4.2): a circle's members, a person's
  * circles, and the roles the household already uses. A read model, apart from the
- * `CircleRepository` that writes the memberships (docs/08 §8.3) — re-roling and renaming a role
+ * `CircleRepository` that writes the memberships (docs/dev/08 §8.3) — re-roling and renaming a role
  * read it to learn whom they may touch.
  *
  * A membership is visible only when its circle AND its contact are; the adapter scopes every
- * read through the access layer (docs/03 §3.7).
+ * read through the access layer (docs/dev/03 §3.7).
  */
 
 /** The memberships, read through the access layer. */

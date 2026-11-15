@@ -28,11 +28,11 @@
 	import type { ExclusionOf, PersonPageData, RelationshipChoices } from './types';
 
 	/*
-	 * The People card's list (docs/05 §5.5): everybody this person is tied to, as a face, a name
+	 * The People card's list (docs/dev/05 §5.5): everybody this person is tied to, as a face, a name
 	 * and what they are to this person — grouped by the kind of tie, two abreast on a phone and
 	 * more on a wide card, folded to a handful once there are enough of them to push the photos
 	 * away. The rows are quiet: correcting or removing one is the card's *Edit* mode, which puts
-	 * both on every row at once (docs/02 §2.4).
+	 * both on every row at once (docs/dev/02 §2.4).
 	 */
 	let {
 		data,
@@ -46,7 +46,7 @@
 		relateOpen = $bindable()
 	}: {
 		data: PersonPageData;
-		/** The person's links, less any on its way out (docs/02 §2.23). */
+		/** The person's links, less any on its way out (docs/dev/02 §2.23). */
 		visibleRelationships: PersonPageData['relationships'];
 		relationshipChoices: RelationshipChoices;
 		exclusionOf: ExclusionOf;
@@ -70,7 +70,7 @@
 	 * Changing a relationship reloads the person's graph, and on a household with many links
 	 * that reload is slow enough to look like nothing happened. Every path that changes it —
 	 * the add form, a correction, a removal once its undo window has passed — is reported to
-	 * the shell, which shows one activity indicator for the whole app (docs/05 §5.7). Nothing
+	 * the shell, which shows one activity indicator for the whole app (docs/dev/05 §5.7). Nothing
 	 * on this page moves while it runs.
 	 */
 	const graphPending = usePending();
@@ -116,7 +116,7 @@
 	);
 
 	/*
-	 * *Together* (docs/02 §2.24.8): on the row of a partner, a spouse, a parent or a child who is in
+	 * *Together* (docs/dev/02 §2.24.8): on the row of a partner, a spouse, a parent or a child who is in
 	 * Immich too, a quiet photo button that switches the Photos card's strip to the photos of the two
 	 * of them. Icon-only, like the row's edit buttons, so a phone's two columns keep the name; its
 	 * label says whose photos. Not offline, where nothing from Immich is shown, and not in edit mode.
@@ -257,7 +257,7 @@
 										<span class="text-xs text-fg-muted">{t('contact.relationships.typeLabel')}</span
 										>
 										<!-- Both sides again, so a partner who became a spouse — or a generation
-										     entered the wrong way round — is one pick, not a re-entry (docs/02 §2.4). -->
+										     entered the wrong way round — is one pick, not a re-entry (docs/dev/02 §2.4). -->
 										<select name="typeChoice" class={INPUT}>
 											{#each groupByExclusion( relationshipChoices, (option) => exclusionOf(option, rel.otherContactId, rel.id) ) as choices (choices.options[0].value)}
 												{#if choices.exclusion}

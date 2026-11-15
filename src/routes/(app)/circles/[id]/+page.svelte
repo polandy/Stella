@@ -48,11 +48,11 @@
 	});
 	const t = i18n.t;
 	const circle = $derived(data.circle);
-	// Where the circle sits among the others (docs/02 §2.4.2).
+	// Where the circle sits among the others (docs/dev/02 §2.4.2).
 	const nesting = $derived(data.nesting);
 
 	/*
-	 * The circle's photos (docs/02 §2.4.2): the cover, a banner over each role group and the
+	 * The circle's photos (docs/dev/02 §2.4.2): the cover, a banner over each role group and the
 	 * Photos section all open one lightbox, which walks only the photos it was opened among —
 	 * one role's, or the grid as filtered. It follows the photo by id, so a save that reloads
 	 * the page keeps it open, and a photo that went away closes it.
@@ -122,7 +122,7 @@
 		bulkRole = '';
 	});
 	/*
-	 * *Set last name* for the chosen members (docs/02 §2.2.4.3): *Family Brunner*
+	 * *Set last name* for the chosen members (docs/dev/02 §2.2.4.3): *Family Brunner*
 	 * is the natural place to give the family its name. The last names come from the shell's
 	 * people, which carry them for every picker already.
 	 */
@@ -200,7 +200,7 @@
 <svelte:head><title>{t('circles.detail.title', { name: circle.name })}</title></svelte:head>
 
 <main class="mx-auto flex w-full max-w-4xl flex-col gap-6 px-4 py-6 md:px-6 md:py-10">
-	<!-- A sub-circle's path is the top bar's trail (docs/05 §5.4), so the page repeats none. -->
+	<!-- A sub-circle's path is the top bar's trail (docs/dev/05 §5.4), so the page repeats none. -->
 	{#if photos.cover}
 		{@const ids = ofRole(null)}
 		<PhotoStrip

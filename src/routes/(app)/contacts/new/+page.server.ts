@@ -11,7 +11,7 @@ import { readNewPersonRequest } from '$lib/people/new-person';
 import type { Actions, PageServerLoad } from './$types';
 
 /*
- * Quick-add: create a person from a minimal form (docs/02 §2.2). A name is required; the
+ * Quick-add: create a person from a minimal form (docs/dev/02 §2.2). A name is required; the
  * display name is derived server-side. Visibility defaults to shared. Saved as a `contact.add`
  * command, which is what lets the form keep a person on the phone out of reach (§2.18).
  *
@@ -28,7 +28,7 @@ export const actions: Actions = {
 	default: async ({ request, locals }) => {
 		const viewer = requireViewer(locals);
 
-		// A command (docs/04 §4.11.2), named by the form so one kept on the phone is recognised.
+		// A command (docs/dev/04 §4.11.2), named by the form so one kept on the phone is recognised.
 		// `isSelf` is a hidden field the form posts only for the member adding themselves.
 		const form = await request.formData();
 		const reading = readCommand({
@@ -38,7 +38,7 @@ export const actions: Actions = {
 			issuedAt: systemClock.now()
 		});
 		// The reader's language: everything this action can say back is a message key rendered
-		// here, where the request's locale is known (docs/02 §2.19).
+		// here, where the request's locale is known (docs/dev/02 §2.19).
 		const t = createTranslator(locals.locale);
 		if (!reading.ok) {
 			// A field that does not read is the form's to fix; a person with nothing to be called
@@ -49,7 +49,7 @@ export const actions: Actions = {
 			});
 		}
 		const { command } = reading;
-		// An existing person to link right after creating (docs/02 §2.2.1); not the command's.
+		// An existing person to link right after creating (docs/dev/02 §2.2.1); not the command's.
 		const relate = form.get('relateTo');
 		const relateTo = typeof relate === 'string' ? relate.trim() : '';
 		const author = {

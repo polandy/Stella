@@ -19,7 +19,7 @@ import {
 } from './relationships';
 
 /*
- * Correcting a link that is already there (docs/02 §2.4): its specifics, and its type. A
+ * Correcting a link that is already there (docs/dev/02 §2.4): its specifics, and its type. A
  * retype can move the stored direction, so it passes the same guards creating a link does.
  */
 
@@ -47,7 +47,7 @@ function otherEndpointOf(link: StoredRelationship, contactId: string): string | 
 }
 
 /**
- * Where a link lands once it carries another type (docs/02 §2.4): the chosen side is read
+ * Where a link lands once it carries another type (docs/dev/02 §2.4): the chosen side is read
  * from the profile the edit was made on, and the type decides whether the pair is stored
  * order-independently — so a partner becoming a spouse, and a generation entered the wrong
  * way round, both come out canonical. Null when the viewer is editing from a profile that is
@@ -101,7 +101,7 @@ async function planRetype(
 }
 
 /**
- * Correct a link that is already there (docs/02 §2.4): its specifics, and its type where a
+ * Correct a link that is already there (docs/dev/02 §2.4): its specifics, and its type where a
  * tie was named wrongly or has moved on — a partner who became a spouse. Changing the type
  * can flip the stored direction, so the same duplicate and contradiction guards that creating
  * a link passes are re-run here.

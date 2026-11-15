@@ -2,9 +2,9 @@ import { expect, test, type Page } from '@playwright/test';
 import { signIn } from './app';
 
 /*
- * Where the graph's peek panel sits (docs/05 §5.8): the bottom strip below `lg` (1024px) — a
+ * Where the graph's peek panel sits (docs/dev/05 §5.8): the bottom strip below `lg` (1024px) — a
  * tablet included, which a side panel would rob of a third of the map — and beside the map from
- * there up. Written after the owner tried it (docs/08 §8.4.1). Read-only against the demo
+ * there up. Written after the owner tried it (docs/dev/08 §8.4.1). Read-only against the demo
  * household.
  */
 

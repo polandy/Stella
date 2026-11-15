@@ -2,7 +2,7 @@
 	import { ICONS, type IconName } from './icons';
 
 	/*
-	 * One icon, one stroke weight, one grid (docs/05 §5.10). Everything renders through here so
+	 * One icon, one stroke weight, one grid (docs/dev/05 §5.10). Everything renders through here so
 	 * the set stays visually consistent; components pass a meaning, never a glyph.
 	 *
 	 * Icons are decorative by default: they sit next to a label, and a screen reader that read

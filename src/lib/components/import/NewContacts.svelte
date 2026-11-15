@@ -5,7 +5,7 @@
 	import type { ReviewCard } from '$lib/import-match/review';
 
 	/*
-	 * The contacts nobody in Stella matches (docs/02 §2.16), as one checklist: an address
+	 * The contacts nobody in Stella matches (docs/dev/02 §2.16), as one checklist: an address
 	 * book holds plenty of people the family does not keep, so the member ticks the ones to
 	 * add and the others are skipped. Nothing is ticked at the start.
 	 */

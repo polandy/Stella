@@ -6,7 +6,7 @@ import { session as sessionTable } from './schema';
 
 /*
  * Drizzle adapter implementing the auth SessionRepository port over the `session` table
- * (docs/08 §8.3). This is the concrete infrastructure; the domain depends only on the port.
+ * (docs/dev/08 §8.3). This is the concrete infrastructure; the domain depends only on the port.
  */
 
 export function createDrizzleSessionRepository(

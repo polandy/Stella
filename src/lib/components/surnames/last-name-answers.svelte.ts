@@ -5,7 +5,7 @@ import { useRemovals } from '$lib/undo/context.svelte';
 import { submitAction } from '$lib/undo/submit-action';
 
 /*
- * The *Last names* list's two answers (docs/02 §2.2.4.2), as the browser gives them: *Not
+ * The *Last names* list's two answers (docs/dev/02 §2.2.4.2), as the browser gives them: *Not
  * Brunner* and *No last name* are saved at once — the person moves to their next name or into
  * the drawer while the list reloads — and the toast's *Undo* posts the answer's way back
  * (*Offer again*, *Ask again*). Unlike a name, an answer is not held for the window: it writes

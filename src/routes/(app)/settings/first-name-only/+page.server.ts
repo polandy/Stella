@@ -11,7 +11,7 @@ import { systemClock } from '$lib/server/clock';
 import { todayFor } from '$lib/dates/today';
 
 /*
- * Tidying up the people known by a first name only (docs/02 §2.2.3): everyone the viewer may
+ * Tidying up the people known by a first name only (docs/dev/02 §2.2.3): everyone the viewer may
  * see with nothing yet to tell them apart, to be given a description where they are listed.
  * Archived people are left out — they are out of the way already. Where a link or a circle
  * says who someone is, the field starts out filled with it, in words fit to be stored for

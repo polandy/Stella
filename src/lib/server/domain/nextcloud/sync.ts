@@ -18,7 +18,7 @@ import { changedOnCard, syncConflicts, type PhotoPrints } from './sync-plan';
 import type { LinkedPerson, MirroredCard, NextcloudStore } from './store';
 
 /*
- * One sync of the household's Nextcloud address book (docs/02 §2.16.3). In first: what changed
+ * One sync of the household's Nextcloud address book (docs/dev/02 §2.16.3). In first: what changed
  * in the book since the last sync, against the card as Stella last saw it — a linked card adds
  * what its person is missing and asks about what it says otherwise; a new card waits for the
  * matching review; a deleted one only unlinks. Then out: each linked, shared person Stella

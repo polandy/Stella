@@ -10,7 +10,7 @@ import {
 import type { ConnectionPath } from './model/types';
 
 /*
- * The explorer's selection, peek panel and connection path (docs/05 §5.8): which tap selects,
+ * The explorer's selection, peek panel and connection path (docs/dev/05 §5.8): which tap selects,
  * which opens up, which picks the ends of a path, and what Escape lets go of first. The
  * arrangement, filters and full screen are in `explorer-look.test.ts`.
  */

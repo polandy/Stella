@@ -3,7 +3,7 @@ import type { CircleKind } from '../../circles/circles';
 import type { ContactFieldKind } from '../../../../people/contact-fields';
 
 /*
- * The document the import API accepts (docs/02 §2.16.1), as the domain reads it once the edge
+ * The document the import API accepts (docs/dev/02 §2.16.1), as the domain reads it once the edge
  * has validated its shape. It is written by another program — a script, an agent reading a
  * class list — so it names people by **refs** it chose itself and never by row ids it would have
  * to invent. A ref is local to the document; together with `source` it becomes the stable id of
@@ -23,7 +23,7 @@ export interface ApiContactField {
 
 /**
  * Living with somebody else the document names, by their ref: in place of typing their address
- * again, the person moves into their home (docs/02 §2.2, *A shared home*).
+ * again, the person moves into their home (docs/dev/02 §2.2, *A shared home*).
  */
 export interface ApiHome {
 	with: string;
@@ -134,7 +134,7 @@ export const isExistingCircle = (circle: ApiCircle): circle is ApiExistingCircle
 /*
  * The ids a document's records are stored under. Readable on purpose — a person's page URL
  * says which import they came from — and joined with `~`, which is unreserved in a URL and so
- * survives being a path segment (the reason the vCard import uses it too, docs/04 §4.9).
+ * survives being a path segment (the reason the vCard import uses it too, docs/dev/04 §4.9).
  */
 const ID_SEPARATOR = '~';
 const ID_PREFIX = 'api';

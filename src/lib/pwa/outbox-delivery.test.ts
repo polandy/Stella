@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'bun:test';
 import { deliveryFor, deliveryLeftOver } from './outbox-delivery';
 
-describe('what a save someone is watching learns (online saves, docs/04 ADR-076)', () => {
+describe('what a save someone is watching learns (online saves, docs/dev/04 ADR-076)', () => {
 	it('is done once Stella applied it and no photo of it waits', () => {
 		expect(deliveryFor({ id: 'a', status: 'applied', result: { noteId: 'n' } }, false)).toEqual({
 			status: 'applied',

@@ -12,7 +12,7 @@ import { addCreated, chosen, only, withPicker, withText } from './composer-menti
 import { subjectsAdded } from './composer-subjects';
 
 /*
- * What the moment composer is doing (docs/02 §2.22.1): the text and whom its picked handles
+ * What the moment composer is doing (docs/dev/02 §2.22.1): the text and whom its picked handles
  * stand for, the @-list under the caret, a person being created inline, the photos, and a save
  * on its way; saving is answered in `composer-send.ts`. Pure, so which keystroke or answer
  * leads where is tested without a browser. `MomentComposer` holds one of these, renders it, and
@@ -66,7 +66,7 @@ export interface ComposerState {
 	fresh: number;
 	/** Picked on the device; a new pick there replaces them. */
 	photos: readonly File[];
-	/** Copied from Immich (docs/02 §2.24.9); each pick adds to them. */
+	/** Copied from Immich (docs/dev/02 §2.24.9); each pick adds to them. */
 	immichPhotos: readonly File[];
 	/** The handle under the caret, while the list is open for it. */
 	active: ActiveHandle | null;

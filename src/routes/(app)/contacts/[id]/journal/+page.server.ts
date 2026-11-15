@@ -37,7 +37,7 @@ import { activeTagsFor, journalEntriesFor } from './journal-view';
 
 export const load: PageServerLoad = async ({ locals, params, url }) => {
 	const viewer = requireViewer(locals);
-	// Whether *Remove* shows on someone else's entry turns on the role (docs/03 §3.7).
+	// Whether *Remove* shows on someone else's entry turns on the role (docs/dev/03 §3.7).
 	const remover = requireRemover(locals);
 
 	const contact = await getContact(locals.services.people.contactDeps, viewer, params.id);
@@ -48,7 +48,7 @@ export const load: PageServerLoad = async ({ locals, params, url }) => {
 		locals.services.media.journalPhotos.listJournalPhotos(viewer, params.id),
 		locals.services.story.entryTags.listOnContactVisibleTo(viewer, params.id)
 	]);
-	// The filter lives in the address, so a tag chip is a link and Back undoes it (docs/02 §2.20.2).
+	// The filter lives in the address, so a tag chip is a link and Back undoes it (docs/dev/02 §2.20.2).
 	const activeTags = activeTagsFor(url.searchParams.getAll('tag'), tags);
 	// Names for the people the entries are about or mention, not for the whole household.
 	const contactNames = await listContactNamesAmong(
@@ -124,7 +124,7 @@ export const actions: Actions = {
 		const contact = await getContact(locals.services.people.contactDeps, viewer, params.id);
 		if (!contact) throw error(404, say(locals, 'errors.contact.notFound'));
 
-		// Writing is an addition (§2.20) and a command (docs/04 §4.11.2): named by the form when it
+		// Writing is an addition (§2.20) and a command (docs/dev/04 §4.11.2): named by the form when it
 		// can, so a save whose answer was lost and is kept on the phone is recognised on arrival.
 		const form = await request.formData();
 		const reading = readCommand({
@@ -151,7 +151,7 @@ export const actions: Actions = {
 		}
 
 		// Photos are not the form's: with JavaScript they follow the command through the outbox
-		// (docs/04 §4.11.2); without it the page has none to send.
+		// (docs/dev/04 §4.11.2); without it the page has none to send.
 		throw redirect(303, `/contacts/${params.id}/journal`);
 	},
 
@@ -172,7 +172,7 @@ export const actions: Actions = {
 		}
 
 		// Need the entry's own visibility to scope the @-picker candidates the same way `save`
-		// does — editing never changes the day/visibility slot (docs/02 §2.20).
+		// does — editing never changes the day/visibility slot (docs/dev/02 §2.20).
 		const entries = await listJournalForContact(
 			locals.services.story.journalDeps,
 			viewer,
@@ -193,7 +193,7 @@ export const actions: Actions = {
 
 		let kept: string | null;
 		try {
-			// A handle that could be several people is asked about, not dropped (docs/02 §2.2.3).
+			// A handle that could be several people is asked about, not dropped (docs/dev/02 §2.2.3).
 			const resolved = await withNamesakeContext(
 				locals.services.people.namesakeContextDeps,
 				viewer,
@@ -242,7 +242,7 @@ export const actions: Actions = {
 	},
 
 	/**
-	 * Immich photos picked while an own entry is edited, kept as references to the asset (docs/04
+	 * Immich photos picked while an own entry is edited, kept as references to the asset (docs/dev/04
 	 * ADR-132). The picker's signed tokens name them; the editor sends its edit after.
 	 */
 	linkImmichPhotos: async ({ request, locals }) => {
@@ -270,7 +270,7 @@ export const actions: Actions = {
 	},
 
 	/**
-	 * One photo added to an own entry while it is edited (docs/02 §2.20), processed in the
+	 * One photo added to an own entry while it is edited (docs/dev/02 §2.20), processed in the
 	 * browser like any journal photo. Answers the new photo's id; the editor sends its edit after.
 	 */
 	addPhoto: async ({ request, locals }) => {

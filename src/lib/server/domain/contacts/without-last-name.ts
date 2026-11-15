@@ -4,13 +4,13 @@ import { clearsNoLastName } from '../../../surnames/review';
 import type { NameRepository } from './name-parts';
 
 /*
- * *No last name* (docs/02 §2.2.4.2): the household's answer that a person has none and that
+ * *No last name* (docs/dev/02 §2.2.4.2): the household's answer that a person has none and that
  * this is fine, so the *Last names* list stops asking about them. Kept on the person
- * (`contact.without_last_name_at`, docs/03), so it is one answer for every member and travels
+ * (`contact.without_last_name_at`, docs/dev/03), so it is one answer for every member and travels
  * with them in the archive. *Ask again* takes it back; a last name given later clears it.
  */
 
-/** The port the mark is written through (docs/08 §8.3). */
+/** The port the mark is written through (docs/dev/08 §8.3). */
 export interface WithoutLastNameRepository extends Pick<NameRepository, 'findByIdVisibleTo'> {
 	/** Set the mark to `at`, or clear it with null; false when the viewer does not see them. */
 	markWithoutLastName(viewer: Viewer, id: string, at: number | null): Promise<boolean>;

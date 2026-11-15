@@ -1,7 +1,7 @@
 import type { GraphEdge, GraphModel, GraphNode } from '../model/types';
 
 /*
- * Test support: households shaped like the demo's, for the family tree's tests (docs/05 §5.8).
+ * Test support: households shaped like the demo's, for the family tree's tests (docs/dev/05 §5.8).
  * Kept out of *.test.ts so the layout and the line tests can share them. Listed in an unhelpful
  * order on purpose — in-laws first, a sister between the brothers — so the arrangement has to
  * find the order itself.

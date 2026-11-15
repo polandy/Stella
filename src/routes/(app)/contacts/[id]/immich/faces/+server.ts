@@ -5,7 +5,7 @@ import { say } from '$lib/server/i18n/say';
 import type { RequestHandler } from './$types';
 
 /*
- * The faces *Find in Immich* offers for one person (docs/02 §2.24.2), searched by `?q=`. What it
+ * The faces *Find in Immich* offers for one person (docs/dev/02 §2.24.2), searched by `?q=`. What it
  * answers is decided and tested in `$lib/server/immich/routes.ts`; this only wires it.
  */
 export const GET: RequestHandler = async ({ locals, params, url }) => {

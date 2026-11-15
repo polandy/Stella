@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'bun:test';
 import { compareMonthDay, dayParts, isRealCalendarDay, isWholeDay } from './calendar';
 
-/* The calendar-day reading every stored day goes through (docs/03 §3.4). */
+/* The calendar-day reading every stored day goes through (docs/dev/03 §3.4). */
 
 describe('dayParts', () => {
 	it('reads a full ISO day', () => {

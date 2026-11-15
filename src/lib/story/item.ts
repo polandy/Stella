@@ -3,7 +3,7 @@ import type { EntryImmichPhoto } from '$lib/immich/library';
 import type { SubjectFace } from '$lib/story/subjects';
 
 /*
- * What the story timeline renders (docs/02 §2.23). Client-safe: the type lives here so the
+ * What the story timeline renders (docs/dev/02 §2.23). Client-safe: the type lives here so the
  * component and the two server routes that build it agree on one shape, without dragging the
  * server's Markdown renderer into the browser bundle.
  */
@@ -17,7 +17,7 @@ interface StoryItemBase {
 	visibility: 'shared' | 'private';
 	/** Whether the viewer wrote it. */
 	mine: boolean;
-	/** Whether *Remove* is offered: the author, or an admin on a shared item (docs/03 §3.7). */
+	/** Whether *Remove* is offered: the author, or an admin on a shared item (docs/dev/03 §3.7). */
 	removable: boolean;
 	/** Who wrote it: "you", a member's first name, or null when nobody can be named. */
 	author: string | null;
@@ -27,14 +27,14 @@ interface StoryItemBase {
 export interface StoryJournalItem extends StoryItemBase {
 	kind: 'journal';
 	title: string | null;
-	/** Server-rendered, already-safe Markdown (docs/02 §2.5). */
+	/** Server-rendered, already-safe Markdown (docs/dev/02 §2.5). */
 	bodyHtml: string;
 	photos: string[];
-	/** The Immich photos it refers to, shown through the signed proxy (docs/04 ADR-132). */
+	/** The Immich photos it refers to, shown through the signed proxy (docs/dev/04 ADR-132). */
 	immichPhotos: EntryImmichPhoto[];
-	/** Whom it is about, the anchor first (docs/02 §2.20.3). */
+	/** Whom it is about, the anchor first (docs/dev/02 §2.20.3). */
 	subjects: SubjectFace[];
-	/** Whether *Edit* is offered: the author alone, as on the journal page (docs/02 §2.20). */
+	/** Whether *Edit* is offered: the author alone, as on the journal page (docs/dev/02 §2.20). */
 	editable: boolean;
 	/** The stored body for the editor — its author's alone, null for anyone else's. */
 	bodyForEdit: string | null;
@@ -46,7 +46,7 @@ export interface StoryJournalItem extends StoryItemBase {
 export interface StoryInteractionItem extends StoryItemBase {
 	kind: 'interaction';
 	interactionKind: InteractionKind;
-	/** Whether *Edit* is offered: the author alone (docs/03 §3.7). */
+	/** Whether *Edit* is offered: the author alone (docs/dev/03 §3.7). */
 	editable: boolean;
 	title: string | null;
 	description: string | null;
@@ -54,7 +54,7 @@ export interface StoryInteractionItem extends StoryItemBase {
 }
 
 /**
- * A gift given to this person or received from them (docs/02 §2.25), read from the gift
+ * A gift given to this person or received from them (docs/dev/02 §2.25), read from the gift
  * itself. It is changed and removed on the Gifts card, so the story offers no removal of its own.
  */
 export interface StoryGiftItem extends StoryItemBase {
@@ -66,7 +66,7 @@ export interface StoryGiftItem extends StoryItemBase {
 }
 
 /**
- * A to-do ticked off for this person (docs/02 §2.26), on the day it was ticked and read from the
+ * A to-do ticked off for this person (docs/dev/02 §2.26), on the day it was ticked and read from the
  * to-do itself: unticking it here opens it again on the card, and removing it erases it. Whoever
  * may see it may do either; the author named is the member who ticked it.
  */

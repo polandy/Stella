@@ -16,8 +16,8 @@
 	import type { ActionData, PageData } from './$types';
 
 	/*
-	 * The household-wide relationship review (docs/02 §2.4.1; folded for scale,
-	 * docs/04 ADR-010).
+	 * The household-wide relationship review (docs/dev/02 §2.4.1; folded for scale,
+	 * docs/dev/04 ADR-010).
 	 *
 	 * The rows are the person page's rows — one component for every place a suggestion is
 	 * answered, so a household does not have to learn the same question twice. What this screen

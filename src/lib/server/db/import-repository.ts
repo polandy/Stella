@@ -18,7 +18,7 @@ import {
 } from './schema';
 
 /*
- * Drizzle adapter for the ImportRepository port (docs/02 §2.16). One transaction writes the
+ * Drizzle adapter for the ImportRepository port (docs/dev/02 §2.16). One transaction writes the
  * whole plan; every insert is "do nothing on conflict" over the plan's stable source ids, so
  * re-applying a dump is a no-op that the returned counts make visible. Tags are the one
  * exception to id-based idempotence: they are unique by name per household, so a tag the
@@ -38,7 +38,7 @@ export function createDrizzleImportRepository(db: Db): ImportRepository {
 
 /**
  * Write a plan inside the handle it is given — the import's own transaction, or the matching
- * review's, which writes its new people the same way (docs/02 §2.16).
+ * review's, which writes its new people the same way (docs/dev/02 §2.16).
  */
 export function writeImportPlan(tx: Db, plan: ImportPlan): ImportCounts {
 	// The Bun driver types `run()` as void, so rows are counted through `returning()`.
@@ -114,7 +114,7 @@ export function writeImportPlan(tx: Db, plan: ImportPlan): ImportCounts {
 	}
 
 	// A gift whose note an earlier import wrote, and that was left a note because someone
-	// wrote in it (docs/02 §2.25.4), shares its id: it is already here, as that note.
+	// wrote in it (docs/dev/02 §2.25.4), shares its id: it is already here, as that note.
 	let gifts = 0;
 	for (const g of plan.gifts) {
 		const keptAsNote = tx.select({ id: note.id }).from(note).where(eq(note.id, g.id)).get();

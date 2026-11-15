@@ -20,7 +20,7 @@ import {
 
 /*
  * Imperative Cytoscape controller — the entry to `cytoscape/`, the one folder the library is
- * touched in, and it is dynamically imported so the ~400 KB engine only loads on the explorer route (docs/04 §4.11). It holds no
+ * touched in, and it is dynamically imported so the ~400 KB engine only loads on the explorer route (docs/dev/04 §4.11). It holds no
  * domain rules: callers pass in already-built elements/visibility (from the pure model
  * operations) and it renders, lays out, highlights, and reports taps back. Swapping renderers
  * would touch only this folder.
@@ -47,7 +47,7 @@ const MAX_ZOOM = 2.5;
  */
 export function explorerFromCore(cy: Core, opts: ControllerOptions): ExplorerController {
 	const duration = opts.reducedMotion ? 0 : 350;
-	// How far apart people are set: the reader's density (docs/05 §5.8).
+	// How far apart people are set: the reader's density (docs/dev/05 §5.8).
 	let spacing = opts.spacing ?? spacingFor(DEFAULT_DENSITY);
 
 	const motion = trackMotion(cy);
@@ -84,7 +84,7 @@ export function explorerFromCore(cy: Core, opts: ControllerOptions): ExplorerCon
 			});
 			// Nobody is moved for a removal, nor when the component pushes the same set again on
 			// mount — a settled graph that jumps for no reason the viewer can see. An expand moves
-			// only the people it brought in (docs/05 §5.8); a canvas that was empty has nothing
+			// only the people it brought in (docs/dev/05 §5.8); a canvas that was empty has nothing
 			// to keep, and gets a full arrangement.
 			if (newcomers === 0) return;
 			if (wasEmpty) arranging.glideTo(arranging.forcePositions(), false);

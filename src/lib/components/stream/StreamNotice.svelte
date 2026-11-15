@@ -6,7 +6,7 @@
 	import type { NoticeContent, RemovedRecordKind } from '$lib/stream/notices';
 
 	/*
-	 * A line of Home's stream that the activity log holds (docs/02 §2.11). A removal is shown as
+	 * A line of Home's stream that the activity log holds (docs/dev/02 §2.11). A removal is shown as
 	 * written — nobody is left to link to. Last names given, a name edited, a note someone else
 	 * removed, a member removed from or restored to the household and a circle deleted are stored
 	 * as facts and said here, in the reader's language; a person the reader can see is a link.

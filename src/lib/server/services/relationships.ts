@@ -22,7 +22,7 @@ import type {
 import type { IdGenerator } from '../id';
 
 /*
- * The `relationships` bounded context of the composition root (docs/08 §8.3): the links
+ * The `relationships` bounded context of the composition root (docs/dev/08 §8.3): the links
  * between people and the vocabulary they are typed in, the suggestions the kinship graph
  * offers and the ones the household declined, the family cards of the person page and the
  * map. Built once per process by `createServices`; the edge reads it off
@@ -33,17 +33,17 @@ import type { IdGenerator } from '../id';
  * (`relationshipDeps` is a `RelationshipDeps`).
  */
 export interface RelationshipServices {
-	/** The relationship vocabulary (docs/02 §2.4): the person page's picker, the settings list. */
+	/** The relationship vocabulary (docs/dev/02 §2.4): the person page's picker, the settings list. */
 	relationshipTypes: RelationshipTypeRepository;
 	/** How much each type is used, so the settings page offers *remove* only where it succeeds. */
 	relationshipTypeUsage: RelationshipTypeUsageReads;
 	/** The visible kinship graph: the people context's surname proposals follow it. */
 	kinship: KinshipGraphReads;
-	/** The visible graph the map loads in one go and the family cards read (docs/04 §4.11). */
+	/** The visible graph the map loads in one go and the family cards read (docs/dev/04 §4.11). */
 	graph: GraphRepository;
 	relationshipDeps: RelationshipDeps;
 	relationshipTypeDeps: RelationshipTypeDeps;
-	/** The on-demand suggestion review and the dismissal log (docs/04 ADR-117). */
+	/** The on-demand suggestion review and the dismissal log (docs/dev/04 ADR-117). */
 	suggestionReviewDeps: SuggestionReviewDeps;
 	familyReadDeps: FamilyReadDeps;
 }

@@ -2,7 +2,7 @@ import { describe, expect, it } from 'bun:test';
 import { takenAtField } from './taken-at-field';
 
 /*
- * The capture date an upload form carries (docs/02 §2.14). Absent is normal; what is there is
+ * The capture date an upload form carries (docs/dev/02 §2.14). Absent is normal; what is there is
  * handed on to be judged by the use-case, so a field that is not text is refused, not ignored.
  */
 

@@ -1,5 +1,5 @@
 /*
- * Last names held for one undo window before they are sent (docs/02 §2.2.4.4,
+ * Last names held for one undo window before they are sent (docs/dev/02 §2.2.4.4,
  * §2.23). Pure: the screen keeps a `Batches` value and asks it which people to leave
  * out of its lists. Undo is pressed in the toast, which knows nothing of the list, so the way
  * back is observed: a batch the removals store no longer holds, and that never got as far as

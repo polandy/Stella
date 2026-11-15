@@ -6,7 +6,7 @@ import { user } from './schema';
 import type * as schema from './schema';
 
 /*
- * Drizzle adapter for the MemberRepository port (docs/08 §8.3). It reads the `user` table by
+ * Drizzle adapter for the MemberRepository port (docs/dev/08 §8.3). It reads the `user` table by
  * household and hands out nothing but id and name — the story needs a name for an author, not
  * an account.
  */

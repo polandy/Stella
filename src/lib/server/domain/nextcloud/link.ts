@@ -11,7 +11,7 @@ import {
 import type { SystemActors } from './system-actor';
 
 /*
- * The household's link to its Nextcloud address book (docs/02 §2.16.3): synced when a member
+ * The household's link to its Nextcloud address book (docs/dev/02 §2.16.3): synced when a member
  * asks (*Sync now*) and when Stella is opened — the latter at most every few minutes, and sooner
  * again after the book could not be reached. A sync already running for the household is joined,
  * never started twice, and every sync runs as the Nextcloud actor. Built once per process; what

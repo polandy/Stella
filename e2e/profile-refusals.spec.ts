@@ -2,10 +2,10 @@ import { expect, test } from '@playwright/test';
 import { addPerson, appReady, signIn } from './app';
 
 /*
- * What the hero of a person's page does with a form it would not expect (docs/02 §2.2): the
+ * What the hero of a person's page does with a form it would not expect (docs/dev/02 §2.2): the
  * description is trimmed by the save itself, and a gender other than the three refuses the whole
  * name edit before anything is written. Written after the maintainer checked the editors in the
- * running app (docs/08 §8.4.1).
+ * running app (docs/dev/08 §8.4.1).
  *
  * The suite shares one database, so every case writes on a person of its own.
  */

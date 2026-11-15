@@ -4,8 +4,8 @@ import { signIn } from './app';
 import { arrangeBy, settled } from './graph-canvas';
 
 /*
- * Exporting the family tree as a picture (docs/02 §2.7, docs/design/screens/graph.md).
- * Written after the owner tried the Export dialog in the running app (docs/08 §8.4.1).
+ * Exporting the family tree as a picture (docs/dev/02 §2.7, docs/dev/design/screens/graph.md).
+ * Written after the owner tried the Export dialog in the running app (docs/dev/08 §8.4.1).
  *
  * The print path hands the picture to the browser's own print dialog, which a spec cannot
  * drive; the PNG download draws the very same scene, so it stands for both.

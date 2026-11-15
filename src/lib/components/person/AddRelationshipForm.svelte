@@ -45,10 +45,10 @@
 	import type { ExclusionOf, PersonForm, PersonPageData, RelationshipChoices } from './types';
 
 	/*
-	 * The relationships card's add form (docs/02 §2.4). What is being entered — the other ends,
+	 * The relationships card's add form (docs/dev/02 §2.4). What is being entered — the other ends,
 	 * the picked entry — is bound to the card, which outlives this form being opened and closed.
 	 *
-	 * The person field takes several people (docs/02 §2.4, *Several people in one go*): the
+	 * The person field takes several people (docs/dev/02 §2.4, *Several people in one go*): the
 	 * type, status and description are shared, the since day is worked out per pair, and the type
 	 * decides how many people the field takes. One person picked saves exactly as it always has
 	 * (`relationship.add`, then *Also true?* for the pair); several save as one batch
@@ -92,7 +92,7 @@
 	const t = useTranslate();
 	const c = $derived(data.contact);
 	const removals = useRemovals();
-	// The shell's one activity indicator, which every change to the graph reports to (docs/05 §5.7).
+	// The shell's one activity indicator, which every change to the graph reports to (docs/dev/05 §5.7).
 	const graphPending = usePending();
 	const picked = $derived(relationshipTargetId);
 	const several = $derived(picked.length > 1);
@@ -102,7 +102,7 @@
 
 	/** The people the picker created while this form is open: only they are offered the address. */
 	let createdIds = $state<string[]>([]);
-	/** *Lives at …* (docs/02 §2.4): ticked, so a new child moves in unless told otherwise. */
+	/** *Lives at …* (docs/dev/02 §2.4): ticked, so a new child moves in unless told otherwise. */
 	let livesAtTaken = $state(true);
 	/**
 	 * The move-in the last submit asked for, made once its links are saved. Kept offline, it is
@@ -276,7 +276,7 @@
 		const partner = offer && otherContacts.find((person) => person.id === offer.partnerId);
 		return offer && partner ? { partner, parentName: nameOfPicked(offer.parentId) } : null;
 	});
-	/** *Lives at …*: the address offered to the new children or partner (docs/02 §2.4). */
+	/** *Lives at …*: the address offered to the new children or partner (docs/dev/02 §2.4). */
 	const livesAt = $derived(
 		livesAtOffer({
 			choice: chosen,
@@ -294,7 +294,7 @@
 	const hasHints = $derived(capHint !== null || overCapLine !== null || refusals.length > 0);
 
 	// Someone named in the picker for the first time is known by this link until they have more
-	// (docs/02 §2.2.3): on Hans's page, "Parent of" makes them "Child of Hans Meyer".
+	// (docs/dev/02 §2.2.3): on Hans's page, "Parent of" makes them "Child of Hans Meyer".
 	const suggestedTargetDescription = $derived(
 		chosen ? towardsSubject(t, chosen.type, chosen.side, c.displayName) : ''
 	);
@@ -407,7 +407,7 @@
 		<label class="flex flex-col gap-1 text-sm">
 			<span class="text-fg-muted">{t('contact.relationships.status')}</span>
 			<!-- A link being entered is one that holds, so `current` is preselected and
-			     "not said" is not on offer (docs/02 §2.4). Shared by every pair. -->
+			     "not said" is not on offer (docs/dev/02 §2.4). Shared by every pair. -->
 			<select name="status" class={INPUT}>
 				{#each RELATIONSHIP_STATUSES as status (status)}
 					<option value={status} selected={status === CURRENT_RELATIONSHIP_STATUS}>

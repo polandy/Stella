@@ -17,7 +17,7 @@ import { createServices } from './app-services';
 import { createPeopleServices, type PeopleWiring } from './people';
 
 /*
- * The people group of the composition root (docs/08 §8.3), built over a real in-memory
+ * The people group of the composition root (docs/dev/08 §8.3), built over a real in-memory
  * SQLite: what the edge gets from `locals.services.people` must work end to end, and the
  * contact repository must exist once, so what one use-case writes the next one reads.
  */

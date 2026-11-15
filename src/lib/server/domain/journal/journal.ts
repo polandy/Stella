@@ -27,7 +27,7 @@ export type {
 } from './journal-port';
 
 /*
- * Journal use-cases (docs/02 §2.20). A journal is a per-person diary: household members record
+ * Journal use-cases (docs/dev/02 §2.20). A journal is a per-person diary: household members record
  * a contact's moments day by day, in Markdown, optionally with photos (added separately). An
  * entry is a child record of a contact — its visibility follows the central rule (private ⇒
  * only the author). Uniqueness is per (people, author, day, visibility) — the people being its
@@ -128,7 +128,7 @@ export interface EditJournalEntryInput {
 
 /**
  * Edit the text and people of one of the author's own journal entries in place. The day and
- * visibility are part of an entry's identity (docs/02 §2.20) — changing either means writing a
+ * visibility are part of an entry's identity (docs/dev/02 §2.20) — changing either means writing a
  * new entry instead. People made equal to another of the author's entries that day join it
  * (§2.20.3). Returns the id holding the entry afterwards, or null when no such owned entry
  * existed.
@@ -201,7 +201,7 @@ export async function listJournalPage(
 }
 
 /**
- * Persist the people an entry references (docs/02 §2.20.1). The caller resolves the body to
+ * Persist the people an entry references (docs/dev/02 §2.20.1). The caller resolves the body to
  * contact ids with the shared mention module, scoping candidates to the entry's audience, and
  * drops any self-reference before calling this. Rebuilds the entry's mention links wholesale.
  */
@@ -214,7 +214,7 @@ export async function setJournalMentions(
 }
 
 /**
- * Remove a journal entry — its author's always, an admin's when it is shared (docs/03 §3.7) —
+ * Remove a journal entry — its author's always, an admin's when it is shared (docs/dev/03 §3.7) —
  * and the bytes of the photos inside it. The rows go first: a file left behind is the harmless
  * direction of that failure. A removal by someone other than the author is told to the
  * household in the delete's own transaction.

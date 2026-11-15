@@ -4,7 +4,7 @@ import { readFileSync } from 'node:fs';
 import { FIELD, FIELD_FRAME, FIELD_ON_BG } from '../components/ui/field';
 
 /*
- * Every text field shares one look and one focus ring (docs/05 §5.7, §5.9), set in
+ * Every text field shares one look and one focus ring (docs/dev/05 §5.7, §5.9), set in
  * `ui/field.ts`. A form that rebuilds the frame by hand drifts — three focus looks grew that way —
  * so this reads the markup and fails on the field's edge spelled out anywhere else. A round
  * element may keep that edge: an empty colour swatch or a toggle pill is not a field.

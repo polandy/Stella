@@ -19,7 +19,7 @@
 	import { INPUT } from './inputs';
 	import type { PersonPageData } from './types';
 
-	// One note on the person page (docs/02 §2.5): the text, and its editor in place.
+	// One note on the person page (docs/dev/02 §2.5): the text, and its editor in place.
 	let {
 		note,
 		contactId,
@@ -45,7 +45,7 @@
 	const veil = useVeil();
 	const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
 
-	// A private note's title and text stay blurred until asked for (docs/02 §2.10.1); while
+	// A private note's title and text stay blurred until asked for (docs/dev/02 §2.10.1); while
 	// they are, the title moves under the veil with the text instead of sitting in the line.
 	const isPrivate = $derived(note.visibility === 'private');
 	const veilId = $derived(`note:${note.id}`);
@@ -53,14 +53,14 @@
 
 	let title = $state('');
 	let body = $state('');
-	// Shared or private can change afterwards too (docs/02 §2.5); the @-picker follows it.
+	// Shared or private can change afterwards too (docs/dev/02 §2.5); the @-picker follows it.
 	let visibility = $state<'shared' | 'private'>('shared');
 	let saving = $state(false);
 	// A typed @Thomas that could be several people keeps saving off until one is picked.
 	let unclear = $state(false);
 	let error = $state<string | null>(null);
 
-	// The absolute date behind the relative one, tapped open like a tooltip (docs/05 §5.5).
+	// The absolute date behind the relative one, tapped open like a tooltip (docs/dev/05 §5.5).
 	// Opens above the date, over the gap between notes, rather than below where it would sit
 	// on top of the note's own text; only the rare note right at the top of the screen opens
 	// downward instead, when there truly is no room above it.
@@ -132,7 +132,7 @@
 				headers: { 'x-sveltekit-action': 'true' }
 			});
 			const result = deserialize(await res.text());
-			// A refusal says why — a namesake to pick, say (docs/02 §2.2.3) — and keeps the text.
+			// A refusal says why — a namesake to pick, say (docs/dev/02 §2.2.3) — and keeps the text.
 			if (result.type === 'failure') {
 				error = (result.data?.noteError as string | undefined) ?? t('contact.notes.saveFailed');
 				return;
@@ -193,7 +193,7 @@
 		</span>
 		<span class="ml-auto inline-flex items-center gap-2">
 			{#if isPrivate}<PrivateMark {veilId} class="text-xs" />{/if}
-			<!-- Its author's alone (docs/03 §3.7). Online only. -->
+			<!-- Its author's alone (docs/dev/03 §3.7). Online only. -->
 			{#if note.editable}
 				<Button
 					variant="ghost"
@@ -206,7 +206,7 @@
 					onclick={toggle}
 				/>
 			{/if}
-			<!-- Its author's, or an admin's on a shared one (docs/03 §3.7). Online only. -->
+			<!-- Its author's, or an admin's on a shared one (docs/dev/03 §3.7). Online only. -->
 			{#if note.removable}
 				<RemoveButton
 					kind="note"
@@ -219,7 +219,7 @@
 			{/if}
 		</span>
 	</div>
-	<!-- The note and its editor glide into each other in place (docs/05 §5.11). -->
+	<!-- The note and its editor glide into each other in place (docs/dev/05 §5.11). -->
 	<Swap when={editing}>
 		<form method="POST" action="?/editNote" onsubmit={save} class="flex flex-col gap-3">
 			<input type="hidden" name="id" value={note.id} />
@@ -265,7 +265,7 @@
 					{#if note.title}<p class="font-medium text-fg">{placeholderFor(note.title)}</p>{/if}
 					<p class="whitespace-pre-line text-fg">{placeholderFor(note.bodyHtml)}</p>
 				{/snippet}
-				<!-- server-rendered, already-safe Markdown (docs/02 §2.5) -->
+				<!-- server-rendered, already-safe Markdown (docs/dev/02 §2.5) -->
 				<div class="note-body text-fg">{@html note.bodyHtml}</div>
 			</Veil>
 		{/snippet}

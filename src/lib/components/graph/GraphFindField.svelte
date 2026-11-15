@@ -19,7 +19,7 @@
 </script>
 
 <!-- On a phone the field takes whatever Filter and Arrange leave, so the three share a
-     row (docs/05 §5.8). -->
+     row (docs/dev/05 §5.8). -->
 <div class="pointer-events-auto relative z-20 min-w-0 flex-1 sm:flex-none">
 	<input
 		bind:value={query}

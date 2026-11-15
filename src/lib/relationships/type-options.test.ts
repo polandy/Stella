@@ -9,7 +9,7 @@ import {
 } from './type-options';
 
 /*
- * Both directions of an asymmetric type are pickable (docs/02 §2.4): saying "Anna is a
+ * Both directions of an asymmetric type are pickable (docs/dev/02 §2.4): saying "Anna is a
  * child of Bert" must not mean opening Bert's profile to say he is her parent.
  */
 
@@ -65,7 +65,7 @@ describe('decodeRelationshipChoice', () => {
 });
 
 /*
- * What the edit form preselects (docs/02 §2.4). A select with no matching option falls back
+ * What the edit form preselects (docs/dev/02 §2.4). A select with no matching option falls back
  * to its first entry, so a link that points at no entry would be retyped by a save that only
  * meant to correct the specifics — the symmetric case below is exactly that trap.
  */

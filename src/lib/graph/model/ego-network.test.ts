@@ -11,7 +11,7 @@ import { fakeGraphSource, familyEdges, familyNodes, familySource } from './fixtu
 import type { GraphModel } from './types';
 
 /*
- * buildEgoNetwork / expandNode (docs/04 §4.11). Lazy, hop-by-hop growth over the
+ * buildEgoNetwork / expandNode (docs/dev/04 §4.11). Lazy, hop-by-hop growth over the
  * GraphDataSource port, tested against an in-memory fake — no DB, fully deterministic.
  */
 

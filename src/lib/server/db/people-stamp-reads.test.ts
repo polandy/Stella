@@ -13,7 +13,7 @@ import { createDrizzleRelationshipTypeRepository } from './relationship-type-rep
 import * as schema from './schema';
 
 /*
- * The stamp behind the shell's freshness check (docs/04 §4.9). The shell's people list is
+ * The stamp behind the shell's freshness check (docs/dev/04 §4.9). The shell's people list is
  * reloaded only when the stamp differs, so a write that changes what the shell would send and
  * leaves the stamp alone is a stale picker. Every write the list and the namesake context are
  * made of is driven here through the repository that makes it, and each must move the stamp.

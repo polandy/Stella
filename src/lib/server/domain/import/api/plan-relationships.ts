@@ -13,7 +13,7 @@ import { relationshipIdFor, type ApiImportDocument } from './document';
 import type { ApiImportContext, ApiImportProblem } from './plan';
 
 /*
- * The relationships half of an API import plan (docs/02 §2.16.1). Each link passes the same
+ * The relationships half of an API import plan (docs/dev/02 §2.16.1). Each link passes the same
  * guardrails as one entered by hand — duplicate, contradiction, exclusion — measured against
  * the household's links and the ones accepted earlier in the same document.
  */

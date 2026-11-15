@@ -13,7 +13,7 @@ import { createDrizzleContactRepository } from './contact-repository';
 
 /*
  * Integration spec for the Drizzle ContactRepository adapter: the writes, and the one-record
- * reads they rest on, scoped via the central query-scoping (docs/03 §3.7, docs/08 §8.3). The
+ * reads they rest on, scoped via the central query-scoping (docs/dev/03 §3.7, docs/dev/08 §8.3). The
  * lists and names are read models of their own, specified in `contact-reads.test.ts`.
  */
 
@@ -22,7 +22,7 @@ const U1 = 'user-1';
 const U2 = 'user-2';
 const viewerU1: Viewer = { id: U1, householdId: H1 };
 const viewerU2: Viewer = { id: U2, householdId: H1 };
-// Deleting is an admin's (docs/02 §2.2): both may, so a case about reach is about reach alone.
+// Deleting is an admin's (docs/dev/02 §2.2): both may, so a case about reach is about reach alone.
 const adminU1: Remover = { ...viewerU1, isAdmin: true };
 const adminU2: Remover = { ...viewerU2, isAdmin: true };
 
@@ -294,7 +294,7 @@ describe('archiving', () => {
 });
 
 /*
- * Every write asks visibility again in its own statement (docs/03 §3.7): a person made private
+ * Every write asks visibility again in its own statement (docs/dev/03 §3.7): a person made private
  * between a member's read and their save is not written, and a new caller cannot skip the read.
  */
 describe('a write to a person the writer cannot see (SV-06)', () => {
@@ -368,7 +368,7 @@ describe('a write to a person the writer cannot see (SV-06)', () => {
 });
 
 /*
- * Deleting a person for good (docs/02 §2.2): the row goes with everything hanging off it,
+ * Deleting a person for good (docs/dev/02 §2.2): the row goes with everything hanging off it,
  * the bytes to unlink come back, and the log entry is written in the same transaction.
  */
 describe('deleting a contact', () => {
@@ -546,7 +546,7 @@ describe('deleting a contact', () => {
 
 /*
  * Reads that answer for a handful of people, or with one number, where a page used to read
- * the whole household and look the few up or count them itself (docs/04 §4.8).
+ * the whole household and look the few up or count them itself (docs/dev/04 §4.8).
  */
 describe('writeNames', () => {
 	const write = (id: string, lastName: string) => ({
@@ -612,7 +612,7 @@ describe('writeNames', () => {
 });
 
 /*
- * The owner's case from the preview (docs/02 §2.2, ADR-106): Franziska — first name
+ * The owner's case from the preview (docs/dev/02 §2.2, ADR-106): Franziska — first name
  * Franziska, no last name, shown as "Franziska" — given Widmer by a batch must read "Franziska
  * Widmer". Driven through the real adapter and the use-case, the way the batch action runs it.
  */

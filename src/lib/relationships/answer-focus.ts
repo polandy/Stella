@@ -1,7 +1,7 @@
 import { neighbourAfterLeaving, type ListedRow } from '../ui/focus-return';
 
 /*
- * Where keyboard focus goes once an answered suggestion row has left its list (docs/05 §5.5).
+ * Where keyboard focus goes once an answered suggestion row has left its list (docs/dev/05 §5.5).
  *
  * The *Accept* and *Decline* buttons live inside the row, and the row leaves the moment it is
  * answered — so the focused button leaves with it, and the browser drops focus on the page
@@ -46,7 +46,7 @@ export function focusAfterAnswer(
  * Whether an answer owes focus back at all: only when it was given from the answer button
  * itself, with focus the reader can see — a keyboard. A click focuses the button too in most
  * browsers, but without a ring; moving focus for a pointer reader could scroll the page towards
- * the heading and undo the hold that keeps the list still under their hand (docs/05 §5.5).
+ * the heading and undo the hold that keeps the list still under their hand (docs/dev/05 §5.5).
  */
 export function owesFocus(focus: { inAnswer: boolean; visible: boolean }): boolean {
 	return focus.inAnswer && focus.visible;

@@ -1,6 +1,6 @@
 /*
  * The app shell sends the people the viewer may see once, and every picker reads that list
- * rather than a copy in each page's data (docs/04 §4.9). A client-side navigation does not
+ * rather than a copy in each page's data (docs/dev/04 §4.9). A client-side navigation does not
  * reload the shell, so after one the stamp of what the server would send now is asked for —
  * a few bytes — and the list is reloaded only when it differs: someone added, renamed,
  * archived or made private in the meantime, by anyone in the household.

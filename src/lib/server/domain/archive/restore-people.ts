@@ -3,8 +3,8 @@ import type { RestoreContext } from './restore-context';
 import { bool, ms, record, records, str, visibilityOf, type Row } from './restore-fields';
 
 /*
- * The people an archive brings (docs/02 §2.15), and which Immich person each of them is or was
- * said not to be (docs/02 §2.24.5). Everything else hangs off the ids collected here: a record
+ * The people an archive brings (docs/dev/02 §2.15), and which Immich person each of them is or was
+ * said not to be (docs/dev/02 §2.24.5). Everything else hangs off the ids collected here: a record
  * pointing at a person outside `knownPeople` is a person this archive did not bring along.
  */
 

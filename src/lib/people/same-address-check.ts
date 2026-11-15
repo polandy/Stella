@@ -1,7 +1,7 @@
 import { foldAddress } from './same-address';
 
 /*
- * *Settings → Data quality → Same address* (docs/02 §2.17, §2.2 *A shared home*): people whose
+ * *Settings → Data quality → Same address* (docs/dev/02 §2.17, §2.2 *A shared home*): people whose
  * own address lines are one address after folding, offered as one home. Exact only (Q3): the
  * fold is `foldAddress`, nothing looser. A home that already has the line is offered to join
  * instead of a new one. Nothing here writes; the caller passes only people the viewer may see.

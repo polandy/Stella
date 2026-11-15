@@ -1,5 +1,5 @@
 /*
- * The square a person's photo is cut to (docs/02 §2.14). Pure geometry, no DOM: the cropper
+ * The square a person's photo is cut to (docs/dev/02 §2.14). Pure geometry, no DOM: the cropper
  * dialog draws the picture with `imagePlacement` and the canvas cuts with `cropRect`, both from
  * the same `Crop`, so what the dialog shows is exactly what gets uploaded.
  *
@@ -11,7 +11,7 @@
 /**
  * The smallest square, in picture pixels, the cropper zooms down to. Below it the square holds
  * less detail than the avatar is drawn with, so zooming further only shows the camera's noise
- * (docs/02 §2.14). A limit in pixels rather than a fixed factor is what
+ * (docs/dev/02 §2.14). A limit in pixels rather than a fixed factor is what
  * lets a face in a 4096 px class photo fill the frame while a small picture barely zooms.
  */
 const SMALLEST_SQUARE_PX = 256;

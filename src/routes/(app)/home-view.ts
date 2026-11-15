@@ -2,8 +2,8 @@ import { mentionToken } from '$lib/mentions/mentions';
 import { LINK_PARAM } from '$lib/stream/link-hint';
 
 /*
- * What Home reads off its address and its capture form (docs/02 §2.22), as plain data so it is
- * tested without a request (docs/08 §8.5): `+page.server.ts` asks the household for the people
+ * What Home reads off its address and its capture form (docs/dev/02 §2.22), as plain data so it is
+ * tested without a request (docs/dev/08 §8.5): `+page.server.ts` asks the household for the people
  * named here and hands the answer back.
  */
 
@@ -54,7 +54,7 @@ export function composerFor(
 	const about = onList.find((c) => c.id === named.about);
 	return {
 		compose: params.has('compose') || about !== undefined,
-		// As stored, so the composer takes the person as picked — a namesake too (docs/02 §2.2.3).
+		// As stored, so the composer takes the person as picked — a namesake too (docs/dev/02 §2.2.3).
 		draft: about ? `${mentionToken(about.id)} ` : params.get('compose') === 'tag' ? '#' : null
 	};
 }

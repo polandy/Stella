@@ -6,7 +6,7 @@ import type {
 import { withNextPage } from '$lib/memories/immich';
 
 /*
- * *On this day* from Immich (docs/02 §2.12.1), as Home's band and `/on-this-day` load it: asked
+ * *On this day* from Immich (docs/dev/02 §2.12.1), as Home's band and `/on-this-day` load it: asked
  * for after the page is drawn, so a slow Immich never holds Home up, and nothing of it kept on the
  * device. Quiet on failure — an instance without Immich, or an Immich that did not answer, simply
  * adds nothing; the server log and Settings say why.

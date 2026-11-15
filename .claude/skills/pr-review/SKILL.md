@@ -16,7 +16,7 @@ A review costs as much as what it reads, so its depth follows the PR's risk, not
 Decide the tier from `gh pr diff <PR> --name-only` and say which one you used in the verdict.
 
 - **None** — every changed file is under `docs/` or `.claude/`, or is a `*.md`: the owner reads
-  it, no review is owed (`docs/08` §8.10). Unless the review was asked for explicitly, say so
+  it, no review is owed (`docs/dev/08` §8.10). Unless the review was asked for explicitly, say so
   and stop.
 - **Full** — any of: a schema or `drizzle/` change, anything under `src/lib/server/access/`, a
   visibility or authz rule, the offline command path (`src/lib/commands/`,
@@ -45,7 +45,7 @@ In both tiers:
 - `gh pr view <PR> --json title,body,baseRefName,headRefName,mergeStateStatus,statusCheckRollup` for metadata and CI status.
 - `gh pr diff <PR>`. Where the tier needs a checkout, use the author's clean worktree, else **its own worktree** (`git worktree add ../Stella-review-<PR> <branch>`, never under `.claude/`); never switch branches under someone else's uncommitted work.
 - Read the PR description first — the review checks the implementation *against its stated intent*.
-- `CLAUDE.md` and `docs/08` are binding; these checks distill them, and the *files* win where they disagree.
+- `CLAUDE.md` and `docs/dev/08` are binding; these checks distill them, and the *files* win where they disagree.
 
 ## 4.0 The review scope is the diff, not the PR description — build the table first
 
@@ -59,7 +59,7 @@ One row per changed file under `src/`, naming the test that drives *that file's 
 
 One line per check; `references/full-tier.md` §1–§5 holds each in depth for the Full tier.
 
-- **Docs move with the change** (§1): a behaviour change updates its section file (`docs/02`,
+- **Docs move with the change** (§1): a behaviour change updates its section file (`docs/dev/02`,
   `03`, `04`, `05` via their indexes; `07` + `install.md` for operators; `using-stella.md` for
   users) in the same PR; no doc still describes removed behaviour; a schema change ships its
   `drizzle/` migration; exported symbols keep an accurate doc comment.
@@ -72,7 +72,7 @@ One line per check; `references/full-tier.md` §1–§5 holds each in depth for 
 - **Tests** (§4.1): spec-like names, the right layer (real in-memory SQLite for adapters),
   failure paths, a positive control for every "not visible", no timing waits, one day per
   `journal_entry` seed, rules in pure functions rather than inline in a route.
-- **UI** (§5): its `docs/design/` file updated; no "UI in a follow-up"; the delivery loop — an
+- **UI** (§5): its `docs/dev/design/` file updated; no "UI in a follow-up"; the delivery loop — an
   e2e before the owner's OK is a finding, none before it is "e2e pending sign-off"; theming in
   light and dark; a11y warning-free. Render, measure and mutation-prove only when the PR's
   headline is visual.

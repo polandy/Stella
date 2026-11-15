@@ -2,7 +2,7 @@
 /// <reference lib="webworker" />
 
 /*
- * The offline shell (docs/02 §2.18).
+ * The offline shell (docs/dev/02 §2.18).
  *
  * A thin adapter: every question of *what* may be kept is answered by the pure
  * `$lib/pwa/cache-policy`, which is unit-tested; this folder only asks those questions of real

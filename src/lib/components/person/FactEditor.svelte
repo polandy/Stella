@@ -6,7 +6,7 @@
 	import { EDIT_FRAME } from './inputs';
 
 	/*
-	 * A fact of the identity card being edited where it is read (docs/05 §5.5): its label over
+	 * A fact of the identity card being edited where it is read (docs/dev/05 §5.5): its label over
 	 * the editor, across the grid's whole width, as the job's form already stands. The cursor
 	 * moves in when it opens, so a tap or Enter on the fact lands in what it opened; Escape
 	 * closes it, and the card hands focus back to the fact (WCAG 2.4.3).

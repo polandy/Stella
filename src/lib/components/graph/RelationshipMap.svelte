@@ -17,7 +17,7 @@
 	import type { GraphModel } from '$lib/graph/model/types';
 
 	/*
-	 * The map on a person's page (docs/05 §5.5): the same explorer the graph route runs, with a
+	 * The map on a person's page (docs/dev/05 §5.5): the same explorer the graph route runs, with a
 	 * narrower brief — this person stays in the middle and the map reaches two steps.
 	 *
 	 * The plain SVG ego graph is what the server renders and what the reader sees first; the
@@ -30,7 +30,7 @@
 	 * to read, too easy to pan by accident while scrolling past it, and as a column it squeezed
 	 * the list beside it. A phone's is a 9.5 rem ring, a wider card's a 7.5 rem strip, both with
 	 * every first name (`EgoGraph`). The preview offers two ways in, two icons in its corner
-	 * (docs/05 §5.5): *Enlarge map* grows this same explorer inside the card — about a screen's
+	 * (docs/dev/05 §5.5): *Enlarge map* grows this same explorer inside the card — about a screen's
 	 * height on a phone, 24 rem wider up — the reader still on the page, and *Shrink map* in the
 	 * map's own toolbar puts the preview back; *Full screen* opens it full screen, and leaving
 	 * full screen brings the preview back. Without full screen — or before the engine has
@@ -84,7 +84,7 @@
 		onReady?: () => void;
 	}> | null>(null);
 
-	/** Below `sm` (Tailwind's breakpoint, docs/05 §5.4) the enlarged map is about a screen tall. */
+	/** Below `sm` (Tailwind's breakpoint, docs/dev/05 §5.4) the enlarged map is about a screen tall. */
 	const phone = new MediaQuery('(width < 40rem)', false);
 	let mapState = $state(PHONE_MAP_AT_REST);
 	const view = $derived(mapState.view);
@@ -188,7 +188,7 @@
 {:else}
 	<!--
 		One frame on every width: the preview and, once enlarged, the live map under it; its
-		height glides between the two and the layers cross-fade (`mapLayers`, docs/05 §5.5).
+		height glides between the two and the layers cross-fade (`mapLayers`, docs/dev/05 §5.5).
 		Its border lies outside its height (`box-content`), so the live map, mounted at that same
 		height, fills it exactly: a frame overflowing by its border would pass for the page's
 		scroller, and full screen on touch would lock it instead of the page.

@@ -3,7 +3,7 @@ import { matchPeople, peopleOf, SUGGESTION_LIMIT } from './people-search';
 import type { GraphModel } from './types';
 
 /*
- * Finding somebody on the explorer route (docs/05 §5.8): the people the graph holds, and the
+ * Finding somebody on the explorer route (docs/dev/05 §5.8): the people the graph holds, and the
  * handful the find field suggests for what was typed.
  */
 

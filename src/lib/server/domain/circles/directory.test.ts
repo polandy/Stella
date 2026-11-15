@@ -2,7 +2,7 @@ import { describe, expect, it } from 'bun:test';
 import { inMemoryCircleDirectory, someCircle } from '../testing';
 import { listCircles } from './directory';
 
-/* The circles overview (docs/02 §2.4.2), over the in-memory directory read model. */
+/* The circles overview (docs/dev/02 §2.4.2), over the in-memory directory read model. */
 
 describe('listCircles', () => {
 	it('lists the circles the viewer may see, by name', async () => {

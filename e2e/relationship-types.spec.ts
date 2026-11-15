@@ -3,8 +3,8 @@ import { appReady, editPeople, openPerson, pickPerson, signIn } from './app';
 import { seedHousehold } from './seed';
 
 /*
- * A household naming its own kinds of link (docs/02 §2.4). Written after the flow was
- * verified in the running app (docs/08 §8.4.1).
+ * A household naming its own kinds of link (docs/dev/02 §2.4). Written after the flow was
+ * verified in the running app (docs/dev/08 §8.4.1).
  *
  * The suite shares one demo database and runs serially, so every case invents its own type
  * name — the Brunners' vocabulary is the twelve built-in ones — and puts back whatever it

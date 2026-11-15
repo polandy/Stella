@@ -3,10 +3,10 @@ import { addPerson, appReady, signIn } from './app';
 import { photoTab } from './photo-card';
 
 /*
- * The Photos card's suggestion (docs/02 §2.24.7, docs/design/screens/person.md): an unlinked
+ * The Photos card's suggestion (docs/dev/02 §2.24.7, docs/dev/design/screens/person.md): an unlinked
  * person whose full name a face in Immich carries is asked about on their own page — *Is this
  * Waltraud?* — with Link, Choose another and Ignore. Written after the owner tried #313 in the
- * preview (docs/08 §8.4.1).
+ * preview (docs/dev/08 §8.4.1).
  *
  * The e2e server runs with `IMMICH_DEMO=true`. Every other demo face is linked by some spec at
  * some point, so this one has three of its own (`src/lib/server/immich/demo-library.ts`), named

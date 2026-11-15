@@ -35,7 +35,7 @@ import type { ClaimAnswerServices } from '../../../_shared/suggestion-answers';
 import { relationshipActions as actions } from './relationships';
 
 /*
- * The relationships card's actions (docs/02 §2.4) as the edge answers them: the form read, each
+ * The relationships card's actions (docs/dev/02 §2.4) as the edge answers them: the form read, each
  * outcome of the command or the use-case turned into a status and a sentence, and where a
  * success goes back to. The use-cases have their own suites; the fakes here only answer the way
  * the case under test needs.

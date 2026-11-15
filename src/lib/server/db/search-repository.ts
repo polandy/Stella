@@ -17,10 +17,10 @@ import type * as schema from './schema';
 import { contactFts, giftFts, journalFts, noteFts, todoFts } from './search-schema';
 
 /*
- * Drizzle adapter for the SearchRepository port (docs/08 §8.3). Matches via the FTS5 tables,
+ * Drizzle adapter for the SearchRepository port (docs/dev/08 §8.3). Matches via the FTS5 tables,
  * joins the base rows, and applies the central visibility scoping so private records never
  * appear in another member's results; a record of an archived person is left out with them
- * (`childRecordBrowsableBy`, docs/02 §2.2). Ranked by bm25 (best first).
+ * (`childRecordBrowsableBy`, docs/dev/02 §2.2). Ranked by bm25 (best first).
  */
 
 export function createDrizzleSearchRepository(

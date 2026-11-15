@@ -12,7 +12,7 @@ import type { ApiImportDocument } from './document';
 import type { ApiImportPlan } from './plan';
 
 /*
- * The import API's use-case (docs/02 §2.16.1): read what the document touches, plan, and either
+ * The import API's use-case (docs/dev/02 §2.16.1): read what the document touches, plan, and either
  * report (dry run) or write the plan in one go and log it. The repository is a recording fake,
  * so "nothing was written" is asserted against the calls it saw, not against an absence.
  */

@@ -12,7 +12,7 @@ import type { Viewer } from '../../access/visibility';
 import { nameProposals, type ProposedLink, type SuggestionReviewSource } from './suggestion-review';
 
 /**
- * Everything the person page shows about inferred kinship (docs/02 §2.4.1): the relatives
+ * Everything the person page shows about inferred kinship (docs/dev/02 §2.4.1): the relatives
  * derived for `subjectId`, and — when primary links have just been stored between the pairs of
  * `proposeFor`, one or a whole batch — the links that follow from them and are not stored yet.
  *

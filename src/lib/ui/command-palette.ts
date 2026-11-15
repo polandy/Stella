@@ -9,18 +9,18 @@ import type { PersonContext } from '$lib/people/context';
 import { tellApart, type Distinction } from '$lib/people/namesakes';
 
 /*
- * The command palette (docs/05 §5.4): the rows ⌘K shows for a query. The first row on an
+ * The command palette (docs/dev/05 §5.4): the rows ⌘K shows for a query. The first row on an
  * empty query is always "Write a moment", which keeps the shortcut's original promise —
  * ⌘K then Enter lands in the capture field — while letting the same keys reach a person or
  * an action. Notes are not searched here; a typed query always ends in the full search.
  *
  * Most rows go somewhere. *Gift idea for …*, *To-do for …* and *Brief for …* ask something
  * first: each turns the palette into a second step, `giftIdea`, `todo` or `brief`, which lists
- * only people, each leading to their idea form, their To-dos card's form (docs/02 §2.26) or their
- * brief (docs/02 §2.2.5).
+ * only people, each leading to their idea form, their To-dos card's form (docs/dev/02 §2.26) or their
+ * brief (docs/dev/02 §2.2.5).
  *
  * The wording arrives as `PaletteLabels` rather than being written here: this module is
- * pure and language-free, and the component hands it the viewer's language (docs/02 §2.19).
+ * pure and language-free, and the component hands it the viewer's language (docs/dev/02 §2.19).
  */
 
 /** An action's label as typed: *to do*, *to-do* and *todo* all find *To-do for …*. */
@@ -28,7 +28,7 @@ const foldAction = (text: string): string => text.toLowerCase().replace(/[\s-]+/
 
 /**
  * A person as the palette needs them: names to match on, an avatar to draw, and what tells
- * them apart from a namesake (docs/02 §2.2.3).
+ * them apart from a namesake (docs/dev/02 §2.2.3).
  */
 export interface PalettePerson {
 	id: string;
@@ -36,13 +36,13 @@ export interface PalettePerson {
 	firstName: string | null;
 	lastName: string | null;
 	nickname: string | null;
-	/** An earlier name, which finds them too (docs/02 §2.2). */
+	/** An earlier name, which finds them too (docs/dev/02 §2.2). */
 	formerName?: string | null;
 	avatarPhotoId: string | null;
 	description?: string | null;
 	metPlace?: string | null;
 	metDate?: string | null;
-	/** What they do and where, which finds them too and is shown on its own line (docs/02 §2.2). */
+	/** What they do and where, which finds them too and is shown on its own line (docs/dev/02 §2.2). */
 	jobTitle?: string | null;
 	company?: string | null;
 }
@@ -68,11 +68,11 @@ export type PaletteRow =
 			avatarPhotoId: string | null;
 			/** The second line, only when someone else in the household shares the name. */
 			distinction: Distinction | null;
-			/** The former name the query found them by, said after the name (docs/02 §2.9). */
+			/** The former name the query found them by, said after the name (docs/dev/02 §2.9). */
 			formerly: string | null;
 			/** Their job, for its own line under the name, or null when none is on record. */
 			job: Job | null;
-			/** Only the job explains the match, so the row says *Job* (docs/02 §2.9). */
+			/** Only the job explains the match, so the row says *Job* (docs/dev/02 §2.9). */
 			foundByJob: boolean;
 			href: string;
 	  }
@@ -88,15 +88,15 @@ export const PALETTE_PEOPLE_LIMIT = 6;
 export interface PaletteLabels {
 	write: string;
 	giftIdea: string;
-	/** The household's list of every open idea (docs/02 §2.25.6). */
+	/** The household's list of every open idea (docs/dev/02 §2.25.6). */
 	giftIdeas: string;
-	/** *To-do for …*, a to-do on a person (docs/02 §2.26). */
+	/** *To-do for …*, a to-do on a person (docs/dev/02 §2.26). */
 	todoFor: string;
-	/** *Brief for …*, what to know before a visit (docs/02 §2.2.5). */
+	/** *Brief for …*, what to know before a visit (docs/dev/02 §2.2.5). */
 	briefFor: string;
-	/** The household's list of every open to-do (docs/02 §2.26.6). */
+	/** The household's list of every open to-do (docs/dev/02 §2.26.6). */
 	allTodos: string;
-	/** *On this day*, the household's earlier years on today's date (docs/02 §2.12.1). */
+	/** *On this day*, the household's earlier years on today's date (docs/dev/02 §2.12.1). */
 	onThisDay: string;
 	addPerson: string;
 	/** The last row of a non-empty query: "Search everything for …". */
@@ -124,7 +124,7 @@ export function paletteRows(
 	query: string,
 	people: PalettePerson[],
 	labels: PaletteLabels,
-	/** What the namesake line falls back on, by person (docs/02 §2.2.3). */
+	/** What the namesake line falls back on, by person (docs/dev/02 §2.2.3). */
 	contexts: ReadonlyMap<string, PersonContext> = new Map(),
 	step: PaletteStep = 'start'
 ): PaletteRow[] {
@@ -158,7 +158,7 @@ export function paletteRows(
 }
 
 /**
- * The rows of a search for people alone — the home screen's search field (docs/02 §2.22.1):
+ * The rows of a search for people alone — the home screen's search field (docs/dev/02 §2.22.1):
  * the people whose name matches, then a way into full search. The palette adds its actions
  * on top; the home field has none, and offers nothing until something is typed.
  */

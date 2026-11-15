@@ -11,7 +11,7 @@
 	import type { ActionData, PageData } from './$types';
 
 	/*
-	 * The import wizard (docs/02 §2.16), which takes either Monica export or a vCard. The steps
+	 * The import wizard (docs/dev/02 §2.16), which takes either Monica export or a vCard. The steps
 	 * are plain form posts, a vCard's with a review of who each contact is; the photos are
 	 * stored from the browser (`ImportPhotos`).
 	 */

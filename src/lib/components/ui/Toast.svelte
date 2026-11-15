@@ -4,7 +4,7 @@
 	import { useRemovals } from '$lib/undo/context.svelte';
 
 	/*
-	 * The toast region (docs/05 §5.7): bottom-left, one card per message. A removal's card
+	 * The toast region (docs/dev/05 §5.7): bottom-left, one card per message. A removal's card
 	 * carries Undo for as long as the removal is held back; a notice is read-only and goes on
 	 * its own. A polite live region (no `status` role, which would make it the page's second
 	 * status and steal `getByRole('status')` from inline hints) so a screen reader hears

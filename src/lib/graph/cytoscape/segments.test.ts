@@ -3,7 +3,7 @@ import { segmentsOf } from './segments';
 import type { Point } from '../layout/geometry';
 
 /*
- * A routed line handed to Cytoscape (docs/05 §5.8). Cytoscape places each bend of a `segments`
+ * A routed line handed to Cytoscape (docs/dev/05 §5.8). Cytoscape places each bend of a `segments`
  * edge by a weight along the line between the two node centres and a distance off it, to the
  * left-hand normal (-dy, dx) of that line — so the bends worked out in model units have to be
  * said that way, and must come back out exactly where they were worked out.

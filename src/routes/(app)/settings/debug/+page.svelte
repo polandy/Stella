@@ -1,6 +1,6 @@
 <script lang="ts">
 	/*
-	 * The activity-indicator workbench (docs/05 §5.7). Development only — `+page.server.ts` answers
+	 * The activity-indicator workbench (docs/dev/05 §5.7). Development only — `+page.server.ts` answers
 	 * 404 in a build — which is also why its copy is English in place and not in the message
 	 * catalogues: nobody in a household can reach it, so there is nothing to translate.
 	 */

@@ -31,7 +31,7 @@
 	import PhotoTabs from './PhotoTabs.svelte';
 	import type { PersonForm, PersonPageData } from './types';
 
-	// What was taken (docs/02 §2.14, §2.24.3): the person page's Photos card and its lightbox.
+	// What was taken (docs/dev/02 §2.14, §2.24.3): the person page's Photos card and its lightbox.
 	let {
 		data,
 		form,
@@ -41,7 +41,7 @@
 		form: PersonForm;
 		/**
 		 * Which tab the card shows, whether *All* was opened out, and which pair a relationship
-		 * row asked for and the Immich tab shows (docs/02 §2.24.8) — the page's, so a row's
+		 * row asked for and the Immich tab shows (docs/dev/02 §2.24.8) — the page's, so a row's
 		 * *Together* can switch it and another person's page starts afresh.
 		 */
 		view?: PhotoView;
@@ -60,17 +60,17 @@
 	const PANEL = 'photo-panel';
 
 	/*
-	 * The upload (docs/02 §2.14). Photos are downscaled and EXIF-stripped in the browser before
+	 * The upload (docs/dev/02 §2.14). Photos are downscaled and EXIF-stripped in the browser before
 	 * upload, so nothing leaves the device carrying a location.
 	 */
 	let picked = $state<File[]>([]);
-	/** Copied from Immich (docs/02 §2.24.9), each with the token that dates it on the server. */
+	/** Copied from Immich (docs/dev/02 §2.24.9), each with the token that dates it on the server. */
 	let fromImmich = $state<ImmichCopy[]>([]);
 	let uploading = $state(false);
 	let uploadError = $state<string | null>(null);
 
 	/*
-	 * An upload is saved through the outbox like every addition (docs/04 ADR-076):
+	 * An upload is saved through the outbox like every addition (docs/dev/04 ADR-076):
 	 * the photos, processed first, go with a `gallery.add` naming the person, and are
 	 * kept on the device when Stella cannot take them — shown above the grid until they are sent.
 	 */
@@ -121,10 +121,10 @@
 	}
 
 	/*
-	 * Immich (docs/02 §2.24.2, §2.24.3): a quiet menu on the card — *Find in Immich*, or
+	 * Immich (docs/dev/02 §2.24.2, §2.24.3): a quiet menu on the card — *Find in Immich*, or
 	 * *Unlink* once linked — and, for a linked person, their latest photos in *All* and the
 	 * Immich tab, and a line under them. None of it exists without Immich, and none offline,
-	 * where nothing from Immich is shown (docs/02 §2.24.3).
+	 * where nothing from Immich is shown (docs/dev/02 §2.24.3).
 	 */
 	let pickerOpen = $state(false);
 	const showImmich = $derived(card.showImmich);
@@ -134,10 +134,10 @@
 	);
 
 	/*
-	 * The suggestion for an unlinked person (docs/02 §2.24.7): the face *Find your people* would
+	 * The suggestion for an unlinked person (docs/dev/02 §2.24.7): the face *Find your people* would
 	 * link in one tap, asked for after the page has loaded. Nothing is reserved for it; it
 	 * arrives at the card's foot. *Ignore* is the list's lasting no, held for the undo window
-	 * like any removal (docs/02 §2.23) — the row goes at once and comes back on *Undo*.
+	 * like any removal (docs/dev/02 §2.23) — the row goes at once and comes back on *Undo*.
 	 */
 	const hintSituation = $derived({
 		immichOn: data.immich !== null,
@@ -188,7 +188,7 @@
 
 	/*
 	 * No photo, none waiting to be sent, no group photo and no Immich line under them: the card
-	 * is one line (docs/05 §5.5). The Immich menu stays in that line, beside the add button.
+	 * is one line (docs/dev/05 §5.5). The Immich menu stays in that line, beside the add button.
 	 * The suggestion is not content: it arrives late, and a line turning into a card under the
 	 * reader's eyes would move its own header — so it hangs under the line instead (`footer`).
 	 */

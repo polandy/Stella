@@ -1,5 +1,5 @@
 /*
- * Important date kinds (docs/02 §2.13). Pure and framework-free so the domain, the command
+ * Important date kinds (docs/dev/02 §2.13). Pure and framework-free so the domain, the command
  * vocabulary on a phone and the form all check against one list.
  */
 

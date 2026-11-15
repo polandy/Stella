@@ -10,8 +10,8 @@ import { ensureSearchIndex } from './search-index';
 import { createDrizzleSearchRepository } from './search-repository';
 
 /*
- * Full search finds to-dos by their title, done ones too and marked so (docs/02 §2.26), within
- * the central visibility scoping (docs/03 §3.7).
+ * Full search finds to-dos by their title, done ones too and marked so (docs/dev/02 §2.26), within
+ * the central visibility scoping (docs/dev/03 §3.7).
  */
 
 const H = 'household-1';

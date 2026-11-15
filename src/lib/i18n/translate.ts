@@ -2,7 +2,7 @@ import { en } from './messages/en';
 import { DEFAULT_LOCALE, type Locale } from './locales';
 
 /*
- * The translator (docs/02 §2.19). Messages live in typed catalogues keyed by dotted names;
+ * The translator (docs/dev/02 §2.19). Messages live in typed catalogues keyed by dotted names;
  * a message that needs values is a function, so its parameters are checked by the compiler
  * instead of being interpolated by hand at every call site.
  */

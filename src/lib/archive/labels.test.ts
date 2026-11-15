@@ -3,7 +3,7 @@ import { createTranslator } from '$lib/i18n/translate';
 import { countLabel, summariseRestore, tableLabel } from './labels';
 
 /*
- * The words the restore report is read in (docs/02 §2.15) — the report comes back keyed by
+ * The words the restore report is read in (docs/dev/02 §2.15) — the report comes back keyed by
  * table name, and nobody reads "journal_entry: 4". The real catalogues are used, so a
  * wording change has to be made in both languages at once.
  */

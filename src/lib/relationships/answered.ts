@@ -1,5 +1,5 @@
 /*
- * Claims answered during one visit to a review (docs/02 §2.4.1, §2.23).
+ * Claims answered during one visit to a review (docs/dev/02 §2.4.1, §2.23).
  *
  * An answer passes through two states that look alike from the outside and must not be
  * confused: *held*, while its undo window is open and the row is still on screen, and *sent*,

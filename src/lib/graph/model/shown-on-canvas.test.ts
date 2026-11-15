@@ -4,7 +4,7 @@ import type { RoleGrouping } from './role-groups';
 import type { GraphModel } from './types';
 
 /*
- * What the canvas shows (docs/05 §5.8): the filtered map, less the derived lines that only
+ * What the canvas shows (docs/dev/05 §5.8): the filtered map, less the derived lines that only
  * repeat a chain already drawn, plus the frames and bundles grouping adds.
  */
 

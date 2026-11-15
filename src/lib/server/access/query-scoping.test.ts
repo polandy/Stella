@@ -10,7 +10,7 @@ import type { Viewer } from './visibility';
 
 /*
  * The two conditions of the query-scoping adapter with no twin in `visibility.ts`:
- * `contactBrowsableBy` and `childRecordBrowsableBy` (docs/04 §4.9). Every other condition is
+ * `contactBrowsableBy` and `childRecordBrowsableBy` (docs/dev/04 §4.9). Every other condition is
  * held to its pure rule by `visibility-parity.test.ts`.
  */
 

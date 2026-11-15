@@ -9,7 +9,7 @@ import * as schema from './schema';
 import { seedRelationshipTypes } from './seed';
 
 /*
- * The relationship table refuses a link from a person to themselves (docs/03 §relationship).
+ * The relationship table refuses a link from a person to themselves (docs/dev/03 §relationship).
  * SQLite adds a CHECK only by rebuilding the table, and a self link already stored would stop
  * the copy; so the rebuild leaves such a link behind and carries every other row across as it
  * was, with the indexes that guard against duplicates.

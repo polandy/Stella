@@ -3,7 +3,7 @@ import type { HouseholdSnapshot } from './archive';
 import { buildArchiveDocument } from './document';
 
 /*
- * What the household has already answered (docs/02 §2.15): the Immich faces it set aside, the
+ * What the household has already answered (docs/dev/02 §2.15): the Immich faces it set aside, the
  * address-book cards it linked or skipped, the suggestions it declined and the commands it has
  * applied. None of it is a record anybody reads, but each one left out of the archive is a
  * question a restore would ask again, or a phone's resend it would apply twice.

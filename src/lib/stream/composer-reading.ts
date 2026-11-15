@@ -12,7 +12,7 @@ import type { PersonContext } from '$lib/people/context';
 import type { ComposerCandidate, ComposerState, PickerRow } from './composer-state';
 
 /*
- * What the composer's state reads as (docs/02 §2.22.1): whom the @-list may offer, its rows,
+ * What the composer's state reads as (docs/dev/02 §2.22.1): whom the @-list may offer, its rows,
  * the people the text references — the way the server will read it — and whether it can be
  * saved. Pure; `MomentComposer` derives each of these from its state.
  */

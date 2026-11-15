@@ -11,7 +11,7 @@
 	import { tick } from 'svelte';
 
 	/*
-	 * The one way to remove something with undo (docs/02 §2.23). It is a real form with the
+	 * The one way to remove something with undo (docs/dev/02 §2.23). It is a real form with the
 	 * action's own fields, so it still works without JavaScript; with JavaScript the submit is
 	 * held back and the toast offers Undo. The list around it hides the row whose key is
 	 * pending — `removalKey(kind, id)` builds the same key on both sides.
@@ -37,7 +37,7 @@
 		/**
 		 * Counts the commit — the real request plus the reload behind it — for a section that
 		 * shows how long it is taking. The undo window itself is not counted: nothing is on its
-		 * way to the server yet (docs/05 §5.7).
+		 * way to the server yet (docs/dev/05 §5.7).
 		 */
 		pending?: PendingSink;
 		/** Runs as the removal is held, e.g. to close a lightbox the removed thing was open in. */

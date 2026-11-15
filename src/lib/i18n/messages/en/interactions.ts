@@ -1,4 +1,4 @@
-/* The kinds of contact an interaction can record (docs/02 §2.6). */
+/* The kinds of contact an interaction can record (docs/dev/02 §2.6). */
 
 export const interactions = {
 	'interactions.kind.met': 'Met in person',

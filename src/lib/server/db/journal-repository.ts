@@ -26,11 +26,11 @@ import {
 } from './schema';
 
 /*
- * Drizzle adapter for the JournalRepository port (docs/08 §8.3). Reads join the parent contact
+ * Drizzle adapter for the JournalRepository port (docs/dev/08 §8.3). Reads join the parent contact
  * and are scoped through the central `childRecordVisibleTo`, so a private entry — or any entry
  * on a private contact — is only returned to those allowed to see it. The `journal_day_slot`
  * unique index backs the per-day/visibility upsert done in the domain use-case. An entry is read
- * in each of its subjects' journals (docs/02 §2.20.3); its visibility is its anchor's.
+ * in each of its subjects' journals (docs/dev/02 §2.20.3); its visibility is its anchor's.
  */
 
 const columns = {
@@ -249,7 +249,7 @@ export function createDrizzleJournalRepository(
 
 				// The photos go first and explicitly: the migration that added
 				// `photo.journal_entry_id` never carried a cascade (schema/media.ts), so
-				// the database refuses to delete an entry that still has them (docs/03 §photo).
+				// the database refuses to delete an entry that still has them (docs/dev/03 §photo).
 				// Their bytes go back to the caller to unlink.
 				const files = tx
 					.delete(photo)

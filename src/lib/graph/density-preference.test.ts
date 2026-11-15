@@ -3,7 +3,7 @@ import { DEFAULT_DENSITY } from './layout/density';
 import { densityPreference, type PreferenceStorage } from './density-preference';
 
 /*
- * The graph's density is a habit of the reader's, so this browser keeps it (docs/05 §5.8).
+ * The graph's density is a habit of the reader's, so this browser keeps it (docs/dev/05 §5.8).
  * The storage is handed in: a map stands in for `localStorage` here.
  */
 

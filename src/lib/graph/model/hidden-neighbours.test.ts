@@ -4,7 +4,7 @@ import { hiddenNeighbourCounts } from './hidden-neighbours';
 import type { GraphModel } from './types';
 
 /*
- * The "+N" on a node that can still grow (docs/05 §5.8): how many people or circles expanding
+ * The "+N" on a node that can still grow (docs/dev/05 §5.8): how many people or circles expanding
  * it would bring onto the map, so the reader can see where the map goes on before tapping.
  */
 

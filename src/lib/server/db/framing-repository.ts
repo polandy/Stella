@@ -7,8 +7,8 @@ import type * as schema from './schema';
 import { contact, photo } from './schema';
 
 /*
- * Drizzle adapter for the FramingRepository port (docs/08 §8.3): a framing is a photo row of its
- * own that points at the gallery photo it frames (docs/02 §2.14). Unscoped: `frameAsAvatar` has
+ * Drizzle adapter for the FramingRepository port (docs/dev/08 §8.3): a framing is a photo row of its
+ * own that points at the gallery photo it frames (docs/dev/02 §2.14). Unscoped: `frameAsAvatar` has
  * already found the photo visible to whoever chose the square.
  */
 export function createDrizzleFramingRepository(

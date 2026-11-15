@@ -197,7 +197,7 @@ export const settings: SettingsMessages = {
 	'settings.apiTokens.notFound': 'Dieses Token gibt es schon nicht mehr.',
 	'settings.about.off':
 		'Stella sucht nicht nach neuen Versionen. Mit UPDATE_CHECK=true schaltest du die Suche ein.',
-	// *Settings → Calendar* (docs/02 §2.13.4): the member's dates as a subscribed calendar.
+	// *Settings → Calendar* (docs/dev/02 §2.13.4): the member's dates as a subscribed calendar.
 	'settings.calendar.heading': 'Kalender',
 	'settings.calendar.title': 'Kalender',
 	'settings.calendar.blurb': 'Geburtstage, Jahrestage und Todos im eigenen Kalender deines Handys.',

@@ -1,7 +1,7 @@
 import type { Point } from './layout/geometry';
 
 /*
- * Walking the map from the keyboard (docs/05 §5.8). Pure: positions in, the next step out, so
+ * Walking the map from the keyboard (docs/dev/05 §5.8). Pure: positions in, the next step out, so
  * the canvas adapter only reports where everyone stands and carries the step out.
  */
 

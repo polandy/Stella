@@ -2,9 +2,9 @@ import { expect, test, type Page } from '@playwright/test';
 import { addPerson, appReady, fillDate, isoDaysAfter, serverToday, signIn } from './app';
 
 /*
- * What helps before an occasion (docs/02 §2.25.2, §2.25.5): the *already given* hint under a
+ * What helps before an occasion (docs/dev/02 §2.25.2, §2.25.5): the *already given* hint under a
  * gift's title, the open ideas in Home's *Coming up*, and *Gift idea for …* in the command
- * palette. Written after the owner tried them in the app (docs/08 §8.4.1).
+ * palette. Written after the owner tried them in the app (docs/dev/08 §8.4.1).
  *
  * The suite shares one database, so each case works on a person of its own, named with letters
  * no other attempt shares.
@@ -64,7 +64,7 @@ test('a person coming up with open ideas says how many, linking to their gifts',
 	const last = `Imhof${runLetters()}`;
 	// The server's tomorrow, so they lead the band whatever else the shared database has coming
 	// up — and still do as today when a run steps over midnight, where a birthday of today would
-	// drop out of the band (docs/08 §8.4.2).
+	// drop out of the band (docs/dev/08 §8.4.2).
 	const tomorrow = isoDaysAfter(await serverToday(page), 1).slice(5);
 	await page.goto('/contacts/new');
 	await page.getByLabel('First name').fill('Severin');

@@ -14,7 +14,7 @@ import {
 } from './plan';
 
 /*
- * The import API's use-case (docs/02 §2.16.1). The member's token has already been resolved to
+ * The import API's use-case (docs/dev/02 §2.16.1). The member's token has already been resolved to
  * them at the edge; from here on an API import is that member adding people, so every read is
  * scoped to what they may see and every record is written as theirs.
  *

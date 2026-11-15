@@ -1,6 +1,6 @@
 /*
  * Build the provider authorization redirect URL for the Authorization Code + PKCE flow
- * (docs/04 §4.4). Pure — given the endpoint and parameters, returns the URL string.
+ * (docs/dev/04 §4.4). Pure — given the endpoint and parameters, returns the URL string.
  */
 
 export interface AuthorizationUrlParams {

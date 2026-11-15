@@ -1,7 +1,7 @@
 import { CommandFailedError } from '../domain/commands/dispatch';
 
 /*
- * What `handleError` in `hooks.server.ts` decides, kept pure (docs/04 §4.4). An error nobody
+ * What `handleError` in `hooks.server.ts` decides, kept pure (docs/dev/04 §4.4). An error nobody
  * planned for is logged once, here at the edge, under the request's id; the member sees the id
  * rather than the error, so "it said something went wrong" can be found in the log.
  */

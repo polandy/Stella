@@ -10,7 +10,7 @@
 	import type { PersonForm, PersonPageData } from './types';
 
 	/*
-	 * *Also lives here …* inside one address's frame (docs/02 §2.2, *A shared home*): a dashed
+	 * *Also lives here …* inside one address's frame (docs/dev/02 §2.2, *A shared home*): a dashed
 	 * “+” after the people who live there already — spelled out while nobody does — opens the
 	 * picker, family and partners first. Someone with an own address that differs is asked about
 	 * once — kept as a second address unless *replace* is ticked.

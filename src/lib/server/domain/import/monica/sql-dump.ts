@@ -1,7 +1,7 @@
 import { TranslatableError } from '../../../../i18n/translatable';
 import { phrase, type Phrase } from '../../../../i18n/phrase';
 /*
- * A minimal reader for `mariadb-dump` / `mysqldump` output (docs/02 §2.16, "SQL dump").
+ * A minimal reader for `mariadb-dump` / `mysqldump` output (docs/dev/02 §2.16, "SQL dump").
  * It recovers each table's rows keyed by column name and nothing else: `CREATE TABLE` gives
  * the column order, `INSERT INTO … VALUES` gives the data. It is deliberately not an SQL
  * parser — a dump is a flat, regular text, and reading only what the mapping needs keeps

@@ -11,7 +11,7 @@ import {
 import { deleteActions as actions } from './delete';
 
 /*
- * Deleting a circle from its header (docs/02 §2.4.2) as the edge answers it: a deletion lands
+ * Deleting a circle from its header (docs/dev/02 §2.4.2) as the edge answers it: a deletion lands
  * on the circles list, and so does one whose circle is already gone — a gone item is never a
  * failure (§2.23). Who may is `deleteCircle`'s and the repository's; the port here answers as
  * that condition would.

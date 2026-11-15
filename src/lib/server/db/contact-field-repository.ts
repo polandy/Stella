@@ -10,7 +10,7 @@ import type * as schema from './schema';
 import { contact, contactField } from './schema';
 
 /*
- * Drizzle adapter for the ContactFieldRepository port (docs/08 §8.3). Fields have no
+ * Drizzle adapter for the ContactFieldRepository port (docs/dev/08 §8.3). Fields have no
  * visibility of their own; reads join the parent contact and are scoped through the central
  * `contactVisibleTo`, so fields are only returned when their contact is visible.
  */

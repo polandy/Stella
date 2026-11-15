@@ -6,7 +6,7 @@ import type { CardPicture } from './card-out';
 import { cardPicture } from './card-photo';
 import { photoPrint } from './sync-plan';
 
-/* A card of the linked book as the sync and the conflict answers read it (docs/02 §2.16.3). */
+/* A card of the linked book as the sync and the conflict answers read it (docs/dev/02 §2.16.3). */
 
 /** The review writer's new people, of which a sync makes none. */
 export const NOBODY_NEW: ImportPlan = {

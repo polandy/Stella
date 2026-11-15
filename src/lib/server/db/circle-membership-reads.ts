@@ -13,7 +13,7 @@ import type * as schema from './schema';
 import { circle, circleMembership, contact } from './schema';
 
 /*
- * Drizzle adapter for who is in which circle (docs/08 §8.3). Every read is scoped by
+ * Drizzle adapter for who is in which circle (docs/dev/08 §8.3). Every read is scoped by
  * `membershipVisibleTo`: a membership is visible only when its circle AND its contact are (§3.7).
  */
 

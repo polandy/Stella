@@ -6,7 +6,7 @@ import type { RelationshipTypeOption } from '$lib/relationships/type-options';
 import type { ActionData, PageData } from '../../../routes/(app)/contacts/[id]/$types';
 
 /*
- * The person page's sections (docs/05 §5.5) are that one page cut at its seams, so they read
+ * The person page's sections (docs/dev/05 §5.5) are that one page cut at its seams, so they read
  * the page's own data and form result rather than restating every shape: what its `load` and
  * actions produce stays the single definition, and a section reading something `load` no
  * longer sends fails `bun run check` instead of rendering nothing.
@@ -18,7 +18,7 @@ export type PersonPageData = PageData;
 /** The result of the page's last form action, carrying each section's error. */
 export type PersonForm = ActionData;
 
-/** The person a refused merge came back with, so its step reopens on them (docs/05 §5.5). */
+/** The person a refused merge came back with, so its step reopens on them (docs/dev/05 §5.5). */
 export function refusedMergeOf(form: PersonForm): string | null {
 	return form && 'mergedId' in form && typeof form.mergedId === 'string' ? form.mergedId : null;
 }

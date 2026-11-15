@@ -2,9 +2,9 @@ import { expect, test, type Page } from '@playwright/test';
 import { appReady, fillDate, isoDaysAfter, serverToday, signIn } from './app';
 
 /*
- * Home's rail, the People directory and the ⌘K palette (docs/02 §2.12, §2.2, §2.22.1;
- * docs/05 §5.4). Written after the screens were merged and seen in the running app
- * (docs/08 §8.4.1). Runs against the demo dataset, signed in as the demo admin; the person
+ * Home's rail, the People directory and the ⌘K palette (docs/dev/02 §2.12, §2.2, §2.22.1;
+ * docs/dev/05 §5.4). Written after the screens were merged and seen in the running app
+ * (docs/dev/08 §8.4.1). Runs against the demo dataset, signed in as the demo admin; the person
  * created here (Xenia Quillford) is absent from the seed.
  */
 
@@ -23,7 +23,7 @@ test.beforeEach(async ({ page }) => {
  * takes `firstInDays: 1` and is sorted in front of everybody else's.
  */
 async function addBirthdaysSoon(page: Page, names: string[], firstInDays = 2): Promise<void> {
-	// Counted from the server's day, not the runner's: one clock (docs/08 §8.4.2). Every day is at
+	// Counted from the server's day, not the runner's: one clock (docs/dev/08 §8.4.2). Every day is at
 	// least a day ahead, so a run that steps over midnight still finds it inside the horizon.
 	const today = await serverToday(page);
 	for (const [i, name] of names.entries()) {
@@ -55,12 +55,12 @@ test('holds no band about who has gone quiet in the rail', async ({ page }) => {
 	for (const heading of await rail.getByRole('heading', { level: 2 }).allInnerTexts()) {
 		expect(['To-dos', 'Coming up', 'On this day']).toContain(heading.trim());
 	}
-	// A band's heading, not a divider inside a list: sentence case (docs/05 §5.3).
+	// A band's heading, not a divider inside a list: sentence case (docs/dev/05 §5.3).
 	await expect(comingUp).toHaveCSS('text-transform', 'none');
 });
 
 test('sets the rail beside the stream while something is coming up', async ({ page }) => {
-	// From lg the rail's column is there only while it has rows (docs/05 §5.5). The other side —
+	// From lg the rail's column is there only while it has rows (docs/dev/05 §5.5). The other side —
 	// the stream taking the width — needs an empty calendar, which nothing here can make
 	// deterministically: the seed's dates drift with the calendar and every spec shares them.
 	await addBirthdaysSoon(page, ['Nadia Quellmatt']);
@@ -79,7 +79,7 @@ test('finds a person by the nickname given when they were added', async ({ page 
 	await page.getByText('More — nickname, birthday').click();
 	await page.getByLabel('Nickname').fill('Xeni');
 	await page.getByRole('button', { name: 'Add person' }).click();
-	// The nickname is part of the name it shapes (docs/02 §2.2).
+	// The nickname is part of the name it shapes (docs/dev/02 §2.2).
 	await expect(page.getByRole('heading', { name: 'Xenia “Xeni” Quillford' })).toBeVisible();
 
 	await page.goto('/contacts');
@@ -122,7 +122,7 @@ test.describe('on a phone', () => {
 		page
 	}) => {
 		// The band used to be a strip of cards scrolling sideways, so most of it sat off the
-		// screen with nothing to say so (docs/05 §5.5). Enough people to fill the strip,
+		// screen with nothing to say so (docs/dev/05 §5.5). Enough people to fill the strip,
 		// because an empty band cannot overflow and would pass this without the fix.
 		await addBirthdaysSoon(page, ['Ilona Weber', 'Jonas Xavier', 'Karin Yerly', 'Livio Zbinden']);
 		await expect(page.getByTestId('coming-up')).toBeVisible();

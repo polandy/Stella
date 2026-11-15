@@ -109,7 +109,7 @@ export function explorerView(input: ExplorerViewInput, t: Translate): ExplorerVi
 	const arrangedBy = $derived(input.ui().arrangedBy);
 
 	// A built-in relationship type reads in the viewer's language, a household's own type as
-	// somebody typed it, and a former link says so (docs/02 §2.19, §2.7).
+	// somebody typed it, and a former link says so (docs/dev/02 §2.19, §2.7).
 	const edgeLabel = (edge: GraphEdge): string => edgeWords(t, edge);
 
 	function buildFilters(): GraphFilters {
@@ -118,7 +118,7 @@ export function explorerView(input: ExplorerViewInput, t: Translate): ExplorerVi
 
 	/*
 	 * The family tree around a person says who everybody is to them under each name — Father,
-	 * Grandmother — instead of naming every line (docs/05 §5.8). Around a circle there is nobody
+	 * Grandmother — instead of naming every line (docs/dev/05 §5.8). Around a circle there is nobody
 	 * to be anybody's father, and the lines keep their names as in every other arrangement.
 	 */
 	const rolesInstead = $derived(
@@ -143,7 +143,7 @@ export function explorerView(input: ExplorerViewInput, t: Translate): ExplorerVi
 
 	const visible = $derived(applyFilters(model(), buildFilters()));
 	// Grouping reads what is shown, so the Circles chip off leaves no membership to group by;
-	// the tree's rows are generations, which a group would only pull apart (docs/02 §2.7).
+	// the tree's rows are generations, which a group would only pull apart (docs/dev/02 §2.7).
 	const groupingOn = $derived(groupingApplies(input.ui()));
 	// Who is grouped depends only on the memberships shown; it decides whose links come along.
 	const grouped = $derived(
@@ -154,9 +154,9 @@ export function explorerView(input: ExplorerViewInput, t: Translate): ExplorerVi
 	/*
 	 * The map as drawn: what was opened up, plus the links of grouped people to anyone else on
 	 * it. Opening a circle brings its members without their links to each other, and a group is
-	 * about how its people belong together (docs/02 §2.7). The family tree likewise draws the
+	 * about how its people belong together (docs/dev/02 §2.7). The family tree likewise draws the
 	 * family links among the people on it — the parents' marriage, both parents' lines to a
-	 * child — or a map grown from one person would be a star rather than a tree (docs/05 §5.8).
+	 * child — or a map grown from one person would be a star rather than a tree (docs/dev/05 §5.8).
 	 */
 	const drawn = $derived.by(() => {
 		const opened = model();
@@ -177,7 +177,7 @@ export function explorerView(input: ExplorerViewInput, t: Translate): ExplorerVi
 	});
 	/*
 	 * The derived lines whose chain of entered links is on the map only repeat it, so they stay
-	 * off unless the reader asks for every one of them (docs/02 §2.7). Read without the
+	 * off unless the reader asks for every one of them (docs/dev/02 §2.7). Read without the
 	 * selection, so a bundle between two groups counts only the lines the map draws, and
 	 * selecting someone neither rebuilds the canvas nor moves anybody.
 	 */
@@ -205,14 +205,14 @@ export function explorerView(input: ExplorerViewInput, t: Translate): ExplorerVi
 		...slotElements(slots, slotName)
 	];
 	/*
-	 * Every line is named only while the names fit (docs/05 §5.8); past that they pile up
+	 * Every line is named only while the names fit (docs/dev/05 §5.8); past that they pile up
 	 * around a hub, and pointing at a line or selecting somebody names theirs. Counted without
 	 * the selection, so selecting somebody never switches every name on or off.
 	 */
 	/*
 	 * The Labels switch as it stands now: the reader's habit, or — in the tree around a person,
 	 * where the roles under the names say it — the tree's own choice, off each time the tree is
-	 * entered (`tree-view.ts`, docs/05 §5.8).
+	 * entered (`tree-view.ts`, docs/dev/05 §5.8).
 	 */
 	const labelsSwitch = $derived(labelsSwitchOf(input.ui(), rolesInstead));
 	// The lines the tree leaves off are no more drawn than the left-off kinship.
@@ -231,7 +231,7 @@ export function explorerView(input: ExplorerViewInput, t: Translate): ExplorerVi
 	);
 	// The same lines, but the selected person's own are drawn: selecting names every line. The
 	// family tree also leaves off the lines its bars already draw, and the shelf's lines until
-	// one end is selected (docs/05 §5.8); a traced path shows every line it runs along.
+	// one end is selected (docs/dev/05 §5.8); a traced path shows every line it runs along.
 	const implied = $derived.by(() => {
 		const left = switches.allKinship
 			? new Set<string>()
@@ -245,7 +245,7 @@ export function explorerView(input: ExplorerViewInput, t: Translate): ExplorerVi
 		for (const id of hiddenInTree(drawnVisible, asked, onPath)) left.add(id);
 		return left;
 	});
-	// The tree goes out as it is shown, in the tree arrangement only (docs/02 §2.7).
+	// The tree goes out as it is shown, in the tree arrangement only (docs/dev/02 §2.7).
 	const exportable = $derived(arrangedBy === 'tree' && drawnVisible.nodes.length > 0);
 	const exportTitle = $derived.by(() => {
 		const centreId = centerId();
@@ -290,7 +290,7 @@ export function explorerView(input: ExplorerViewInput, t: Translate): ExplorerVi
 	});
 	/*
 	 * The slots for missing parents up the centre's line, while the tree writes roles around a
-	 * person (docs/02 §2.7). Never part of `model`: no filter, "+N" or path counts them. A
+	 * person (docs/dev/02 §2.7). Never part of `model`: no filter, "+N" or path counts them. A
 	 * person's page carries two hops, so whose parents it holds is whoever an expand could open.
 	 */
 	const slots = $derived.by(() => {
@@ -304,12 +304,12 @@ export function explorerView(input: ExplorerViewInput, t: Translate): ExplorerVi
 			name: shortNameOf(slot.childId)
 		});
 	// Inside the map's reach, and with something left to open — Expand on somebody whose every
-	// link is drawn already, or who has none, was a button that did nothing (docs/02 §2.7).
+	// link is drawn already, or who has none, was a button that did nothing (docs/dev/02 §2.7).
 	const peekWithinReach = $derived(
 		peekNode !== null && (centerId() === null || canExpand(rings, peekNode.id, maxRings()))
 	);
 	// The "+N" on a node that can still grow: who an expand would bring in under the current
-	// filters, and none past the embedded map's last ring (docs/05 §5.8).
+	// filters, and none past the embedded map's last ring (docs/dev/05 §5.8).
 	const hidden = $derived(
 		hiddenNeighbourCounts(graph(), drawnVisible, {
 			filters: buildFilters(),
@@ -318,7 +318,7 @@ export function explorerView(input: ExplorerViewInput, t: Translate): ExplorerVi
 	);
 	// Expand is offered exactly when it would add something under the current filters: somebody
 	// behind the "+N", or a line among people already shown — never a button that does nothing,
-	// and never missing where a circle's roles are still to be drawn (docs/02 §2.7).
+	// and never missing where a circle's roles are still to be drawn (docs/dev/02 §2.7).
 	const peekHasMore = $derived(
 		peekNode !== null && expandWouldAdd(graph(), drawn, peekNode.id, buildFilters())
 	);

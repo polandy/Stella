@@ -12,7 +12,7 @@
 	import type { PageData } from '../../../routes/(app)/$types';
 
 	/*
-	 * Home's rail (docs/05 §5.5): what is to do, what is coming up, and what happened on this day
+	 * Home's rail (docs/dev/05 §5.5): what is to do, what is coming up, and what happened on this day
 	 * in earlier years. Home mounts it only while one of them has something, and places it.
 	 */
 	interface Props {
@@ -42,7 +42,7 @@
 
 	const t = useTranslate();
 
-	// A phone folds each rail section to one line: how many, and the first (docs/05 §5.5.1).
+	// A phone folds each rail section to one line: how many, and the first (docs/dev/05 §5.5.1).
 	const todoSummary = $derived(railSummary(band.due, todoRailFirst(band.rows)));
 	const memorySummary = $derived.by(() => {
 		const { count, first } = memoryRail(

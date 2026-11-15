@@ -1,7 +1,7 @@
 import { datedAt, type Dated } from '../media/taken-at';
 
 /*
- * The person page's Photos card (docs/02 §2.14, §2.24.3, docs/design/screens/person.md): what
+ * The person page's Photos card (docs/dev/02 §2.14, §2.24.3, docs/dev/design/screens/person.md): what
  * *All* shows — the gallery and the person's latest photos from Immich in one list — and how
  * much of it the card's first row holds. Pure, so the order and the cap are decided and tested
  * without a page.

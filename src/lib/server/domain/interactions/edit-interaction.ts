@@ -10,11 +10,11 @@ import {
 } from './interactions';
 
 /*
- * Correcting a touchpoint (docs/02 §2.6, docs/03 §3.7): its author alone — an admin removes
+ * Correcting a touchpoint (docs/dev/02 §2.6, docs/dev/03 §3.7): its author alone — an admin removes
  * another member's shared one but never rewrites it — for the day, the kind, the text and who
  * took part. Who sees it stays out of the editor, as with a journal entry. Not a command:
  * editing waits for a connection, like removing, so the right is checked when the edit lands.
- * Edits are not in the activity feed (docs/02 §2.11).
+ * Edits are not in the activity feed (docs/dev/02 §2.11).
  */
 
 export interface EditInteractionDeps {

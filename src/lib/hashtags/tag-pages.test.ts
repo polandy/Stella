@@ -3,7 +3,7 @@ import type { KnownTag } from './picker';
 import { HOME_TAG_LIMIT, homeTagChips, searchTagHead, tagNarrowing, tagSummary } from './tag-pages';
 
 /*
- * Where a tag is read across the household (docs/02 §2.20.2): Home's Tags row and the line under
+ * Where a tag is read across the household (docs/dev/02 §2.20.2): Home's Tags row and the line under
  * it, and the head of a tag's own page. The tags come scoped and counted from the shell, most
  * used first; nothing here widens what the viewer may see.
  */

@@ -1,7 +1,7 @@
 import type { StreamFilter, StreamKind } from './filter';
 
 /*
- * What Home's *Filter* pill says on a phone (docs/02 §2.22.2, docs/05 §5.5), where the What, Who
+ * What Home's *Filter* pill says on a phone (docs/dev/02 §2.22.2, docs/dev/05 §5.5), where the What, Who
  * and Tags chip rows fold into one pill and a sheet. Pure, so the count and the highlight are decided
  * once and tested without a browser; the component only translates what it is handed.
  */

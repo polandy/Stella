@@ -1,7 +1,7 @@
 import type { DateLanguage } from '$lib/dates/labels';
 
 /*
- * How old the page on screen is, as the offline line says it (docs/02 §2.18,
+ * How old the page on screen is, as the offline line says it (docs/dev/02 §2.18,
  * *Saying so*): "yesterday 18:04". An old copy is normal offline; what must not happen is that it
  * looks current. Pure: the moment, "now" and the viewer's time zone are handed in.
  */

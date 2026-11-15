@@ -30,7 +30,7 @@ import {
 } from './person-payloads';
 
 /*
- * What each command carries (docs/04 §4.11.2), as the one Valibot schema it is read with —
+ * What each command carries (docs/dev/04 §4.11.2), as the one Valibot schema it is read with —
  * by `POST /api/commands` for a phone's outbox and by the form action that builds the same
  * command. The payload types in `commands.ts` are what these schemas read, so a field is
  * added in one place. Pure and client-safe; the browser imports only the types. The gift and
@@ -38,7 +38,7 @@ import {
  * file holds the moment's, the journal's and the gallery's, and the table of them all.
  */
 
-/** A person named for the first time in a moment, with what tells them apart (docs/02 §2.2.3). */
+/** A person named for the first time in a moment, with what tells them apart (docs/dev/02 §2.2.3). */
 export const MomentNewPersonSchema = v.object({
 	/**
 	 * Made on the device; the mention's placeholder id is `newPersonMentionId(key)`. Inside a
@@ -50,7 +50,7 @@ export const MomentNewPersonSchema = v.object({
 	description: optionalText
 });
 
-/** A moment as the composer hands it over (docs/02 §2.22.1). */
+/** A moment as the composer hands it over (docs/dev/02 §2.22.1). */
 export const MomentCaptureSchema = v.object({
 	/** Markdown body with typed `@Handle`s and/or canonical mention tokens. */
 	body: requiredText,
@@ -64,19 +64,19 @@ export const MomentCaptureSchema = v.object({
 	 */
 	newPeople: v.optional(v.array(v.union([requiredText, MomentNewPersonSchema])), []),
 	/**
-	 * The person whose page the moment was written on (docs/02 §2.20): it lands in their journal
+	 * The person whose page the moment was written on (docs/dev/02 §2.20): it lands in their journal
 	 * without an `@`. Absent, the first person mentioned is the anchor; a phone that queued the
 	 * moment before the field existed sends none.
 	 */
 	anchorId: v.optional(nonEmpty),
 	/**
-	 * Further people it is about, beside the anchor (docs/02 §2.20.3): the composer's chips. A
+	 * Further people it is about, beside the anchor (docs/dev/02 §2.20.3): the composer's chips. A
 	 * phone that queued the moment before the field existed sends none, a moment about one.
 	 */
 	subjectIds: v.optional(v.array(nonEmpty))
 });
 
-/** A note on a person (docs/02 §2.5), as the person page's note form hands it over. */
+/** A note on a person (docs/dev/02 §2.5), as the person page's note form hands it over. */
 export const NoteAddSchema = v.object({
 	contactId: nonEmpty,
 	/** Markdown with typed `@Handle`s and/or canonical mention tokens. */
@@ -85,7 +85,7 @@ export const NoteAddSchema = v.object({
 	isPinned: v.optional(v.boolean(), false)
 });
 
-/** A call, visit or other touchpoint with a person (docs/02 §2.6). */
+/** A call, visit or other touchpoint with a person (docs/dev/02 §2.6). */
 export const InteractionLogSchema = v.object({
 	contactId: nonEmpty,
 	kind: v.picklist(INTERACTION_KINDS),
@@ -97,7 +97,7 @@ export const InteractionLogSchema = v.object({
 	participantIds: v.optional(v.array(nonEmpty), [])
 });
 
-/** An entry written on a person's journal page (docs/02 §2.20); its photos follow it. */
+/** An entry written on a person's journal page (docs/dev/02 §2.20); its photos follow it. */
 export const JournalWriteSchema = v.object({
 	contactId: nonEmpty,
 	/** ISO `YYYY-MM-DD` day the entry is about. */
@@ -109,7 +109,7 @@ export const JournalWriteSchema = v.object({
 });
 
 /**
- * Photos going into a person's gallery (docs/02 §2.14). Carries no bytes itself: it checks
+ * Photos going into a person's gallery (docs/dev/02 §2.14). Carries no bytes itself: it checks
  * the person once, and each photo follows as a `gallery.photo` naming it.
  */
 export const GalleryAddSchema = v.object({
@@ -118,7 +118,7 @@ export const GalleryAddSchema = v.object({
 });
 
 /**
- * Photos going into a circle's gallery (docs/02 §2.4.2). Like a person's gallery upload it
+ * Photos going into a circle's gallery (docs/dev/02 §2.4.2). Like a person's gallery upload it
  * carries no bytes: it checks the circle and the role once, and each photo follows as a
  * `circleGallery.photo` naming it. A role is picked, not typed; whether the circle has it is
  * the use-case's to judge.
@@ -139,11 +139,11 @@ export const PhotoWireSchema = v.object({
 	parentId: CommandIdSchema,
 	image: v.instance(Uint8Array),
 	thumb: v.instance(Uint8Array),
-	// A large circle photo's 1600 px view (docs/02 §2.4.2); every other photo is its own view.
+	// A large circle photo's 1600 px view (docs/dev/02 §2.4.2); every other photo is its own view.
 	view: v.nullish(v.instance(Uint8Array)),
 	width: v.pipe(v.number(), v.integer(), v.minValue(1)),
 	height: v.pipe(v.number(), v.integer(), v.minValue(1)),
-	// When the picture was taken, read from its EXIF on the phone (docs/02 §2.14). Most photos
+	// When the picture was taken, read from its EXIF on the phone (docs/dev/02 §2.14). Most photos
 	// carry none, which is normal; one that is sent and does not read is refused. Whether it
 	// could be real is the use-case's to judge, against its clock.
 	takenAt: v.nullish(v.pipe(v.string(), v.check(isTakenAt)))

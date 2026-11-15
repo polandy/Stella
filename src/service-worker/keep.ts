@@ -2,7 +2,7 @@
 
 /*
  * Writing to the pages cache: the one `put` every copy goes through, so a full device gives up
- * its oldest photos wherever the write came from (docs/02 §2.18).
+ * its oldest photos wherever the write came from (docs/dev/02 §2.18).
  */
 
 import { holdsPageData } from '$lib/pwa/cache-policy';
@@ -27,7 +27,7 @@ export async function keepCopy(
 
 /**
  * Keep `response` under `key`. A full device gives up its oldest photos and tries once more
- * (docs/02 §2.18); still full, nothing is kept and false says so, so a refresh stops there
+ * (docs/dev/02 §2.18); still full, nothing is kept and false says so, so a refresh stops there
  * instead of failing. Any other failure is thrown.
  */
 export async function put(cache: Cache, key: string, response: Response): Promise<boolean> {

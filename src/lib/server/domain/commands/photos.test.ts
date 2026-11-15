@@ -15,7 +15,7 @@ import {
 } from './photos';
 
 /*
- * A photo sent after the command it belongs to (docs/04 ADR-111): it
+ * A photo sent after the command it belongs to (docs/dev/04 ADR-111): it
  * names that command by id, and lands where the command's receipt says — on the journal entry
  * a moment or a journal-page entry went into, or in the gallery of the person a gallery upload
  * was for. Only if that command is the same member's, was applied, and where it points is
@@ -94,7 +94,7 @@ function galleryFakes(receipt: CommandReceipt | null = gallery, visible = true) 
 }
 
 const payload = { parentId: 'm1', image: JPEG, thumb: JPEG, width: 4, height: 3 };
-/** A photo whose EXIF named the moment it was taken (docs/02 §2.14). */
+/** A photo whose EXIF named the moment it was taken (docs/dev/02 §2.14). */
 const TAKEN_AT = '2026-09-27T18:04:00+02:00';
 
 describe('attachMomentPhoto', () => {

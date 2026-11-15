@@ -13,7 +13,7 @@ import { createDrizzleContactRepository } from './contact-repository';
 import { createDrizzleSurnameFacts } from './surname-facts';
 
 /*
- * Integration spec for *no last name* (docs/02 §2.2.4.2) on the real schema: the mark is
+ * Integration spec for *no last name* (docs/dev/02 §2.2.4.2) on the real schema: the mark is
  * written on the person, read back by the list, taken back by *Ask again*, and ended by any
  * write that gives a last name — the list's batch as much as the profile's name editor.
  */

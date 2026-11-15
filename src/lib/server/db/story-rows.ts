@@ -17,7 +17,7 @@ import {
 
 /*
  * A moment and a touchpoint as a list of them reads one — the household stream
- * (docs/02 §2.22.2) and *On this day* (§2.12.1) alike: the columns to select, joined with the
+ * (docs/dev/02 §2.22.2) and *On this day* (§2.12.1) alike: the columns to select, joined with the
  * author and the person, and what comes after the scoped read — the mention chips, the photos,
  * the further people a moment is about, the participants. Those last are limited to people the
  * viewer may see, so they never widen the read they hang off.

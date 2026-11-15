@@ -10,7 +10,7 @@ import {
 import type { Actions } from '../$types';
 
 /*
- * The To-dos card (docs/02 §2.26). Every change is a command (docs/04 §4.11.2): noting and
+ * The To-dos card (docs/dev/02 §2.26). Every change is a command (docs/dev/04 §4.11.2): noting and
  * ticking a to-do may wait on a phone like any addition; rewriting, reopening and removing one
  * go straight to Stella.
  */

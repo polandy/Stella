@@ -2,7 +2,7 @@ import { describe, expect, it } from 'bun:test';
 import { parseSqlDump, SqlDumpError } from './sql-dump';
 
 /*
- * The mariadb-dump reader behind the Monica import (docs/02 §2.16, "SQL dump"). It reads
+ * The mariadb-dump reader behind the Monica import (docs/dev/02 §2.16, "SQL dump"). It reads
  * enough SQL to recover tables as rows keyed by column name and nothing more: CREATE TABLE
  * for the column order, INSERT … VALUES for the data. Everything else in a dump is ignored.
  */

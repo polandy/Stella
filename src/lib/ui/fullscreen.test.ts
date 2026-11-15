@@ -2,8 +2,8 @@ import { describe, expect, it } from 'bun:test';
 import { dismissesFullscreenOnDrag, leavesOverlayOn } from './fullscreen';
 
 /*
- * Which devices get the graph's app-level full screen instead of the browser's (docs/05 §5.8,
- * docs/04 §4.9): only iPadOS/iOS, where Safari reads a downward drag on a Fullscreen-API
+ * Which devices get the graph's app-level full screen instead of the browser's (docs/dev/05 §5.8,
+ * docs/dev/04 §4.9): only iPadOS/iOS, where Safari reads a downward drag on a Fullscreen-API
  * element as "swipe to dismiss". Any other touch device keeps the native Fullscreen API.
  */
 

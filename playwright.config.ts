@@ -2,7 +2,7 @@ import { defineConfig, devices } from '@playwright/test';
 import { AUTH_STATE_PATH } from './e2e/auth-state';
 
 /*
- * End-to-end suite (docs/08 §8.4.1). The browser runs in the pinned Playwright container
+ * End-to-end suite (docs/dev/08 §8.4.1). The browser runs in the pinned Playwright container
  * (`./e2e/run.sh`), the app server runs on the host under Bun — hence `reuseExistingServer`
  * and a loopback base URL both sides can reach via `--network host`.
  */
@@ -54,8 +54,8 @@ const NO_SERVICE_WORKER = 'block' as const;
 
 /*
  * The suite reads the app the way a reader who asked for less motion sees it: what opens and
- * closes in place switches at once (docs/05 §5.11), exactly as it did before it glided. A spec
- * waits on end states either way (docs/08 §8.4.2), but a disclosure caught mid-crossfade holds
+ * closes in place switches at once (docs/dev/05 §5.11), exactly as it did before it glided. A spec
+ * waits on end states either way (docs/dev/08 §8.4.2), but a disclosure caught mid-crossfade holds
  * both alternatives for a fifth of a second, and a locator that finds two of something fails
  * instead of retrying. A spec that is *about* the motion opts back in with
  * `test.use({ contextOptions: { reducedMotion: 'no-preference' } })` — `e2e/phone-map.spec.ts` does.

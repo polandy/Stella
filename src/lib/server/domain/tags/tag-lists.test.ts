@@ -2,7 +2,7 @@ import { describe, expect, it } from 'bun:test';
 import { inMemoryTagLists, somebody, someTag } from '../testing';
 import { listContactsByTag, listTags, listTagsForContact } from './tag-lists';
 
-/* The tags as the screens list them (docs/02 §2.8), over the in-memory tag read model. */
+/* The tags as the screens list them (docs/dev/02 §2.8), over the in-memory tag read model. */
 
 const viewer = { id: 'u1', householdId: 'h' };
 const deps = {

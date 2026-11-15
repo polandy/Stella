@@ -19,7 +19,7 @@ import type { AuthConfig } from './auth';
 import { createHouseholdServices, type HouseholdWiring } from './household';
 
 /*
- * The household group of the composition root (docs/08 §8.3), built over a real in-memory
+ * The household group of the composition root (docs/dev/08 §8.3), built over a real in-memory
  * SQLite: what the edge gets from `locals.services.household` must work end to end — the
  * members, the search and the attention list all read the same household.
  */

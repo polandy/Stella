@@ -1,4 +1,4 @@
--- Which card of another address book is which person, or that it was skipped (docs/03 §3.3).
+-- Which card of another address book is which person, or that it was skipped (docs/dev/03 §3.3).
 CREATE TABLE `contact_source_link` (
 	`household_id` text NOT NULL,
 	`source` text NOT NULL,

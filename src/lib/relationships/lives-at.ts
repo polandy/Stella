@@ -3,10 +3,10 @@ import type { CapChoice } from './multi-pick';
 import { PARENT_CHILD_TYPE_KEY, PARTNER_TYPE_KEYS } from './type-keys';
 
 /*
- * *Lives at Lindenweg 4 with Anna and Peter* (docs/02 §2.4): a child or partner created right
+ * *Lives at Lindenweg 4 with Anna and Peter* (docs/dev/02 §2.4): a child or partner created right
  * in the relationship form most likely lives where the person whose page it is lives, so that
  * address is offered under the picker, ticked. Taken, the new people move into the home —
- * linked, not copied, so a move later changes one line for all of them (docs/02 §2.2, *A shared
+ * linked, not copied, so a move later changes one line for all of them (docs/dev/02 §2.2, *A shared
  * home*).
  *
  * Only people created here: someone already in Stella may live anywhere, and their own page

@@ -3,7 +3,7 @@ import type { Viewer } from '../../access/visibility';
 import { suggestNameCandidates, type NameCandidateSource } from './suggestions';
 
 /*
- * The use-case behind quick-add's suggestions (docs/02 §2.2.1): asks the candidate source
+ * The use-case behind quick-add's suggestions (docs/dev/02 §2.2.1): asks the candidate source
  * for what the viewer may see and ranks it. Tested with a fake source that records the
  * viewer it was asked for, so scoping is asserted rather than assumed.
  */

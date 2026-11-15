@@ -17,7 +17,7 @@
 	import type { PersonForm, PersonPageData } from './types';
 
 	/*
-	 * The profile's ways to reach someone (docs/02 §2.2): a row of the identity card. Addresses
+	 * The profile's ways to reach someone (docs/dev/02 §2.2): a row of the identity card. Addresses
 	 * are not among them — the card states where someone lives as a fact, edited there.
 	 */
 	let { data, form }: { data: PersonPageData; form: PersonForm } = $props();
@@ -32,7 +32,7 @@
 		return hasMessage(key) ? t(key) : kind;
 	};
 
-	// A row on its way out (docs/02 §2.23) is gone from the list while its undo window is open,
+	// A row on its way out (docs/dev/02 §2.23) is gone from the list while its undo window is open,
 	// and back in it the moment Undo is pressed. The counts follow, so a section never says two
 	// tags over one chip.
 	const removals = useRemovals();
@@ -59,7 +59,7 @@
 	};
 	/*
 	 * Ways to reach someone and their dates, added while Stella was out of reach: kept on the
-	 * device and shown as dashed chips above the real ones until they are sent (docs/02 §2.18).
+	 * device and shown as dashed chips above the real ones until they are sent (docs/dev/02 §2.18).
 	 */
 	const keptFields = $derived(
 		outbox.mine.filter(

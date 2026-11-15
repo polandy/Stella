@@ -18,7 +18,7 @@
 	import { tick, untrack } from 'svelte';
 
 	/*
-	 * ⌘K (docs/05 §5.4). A native <dialog> so focus trapping, Escape and the backdrop come
+	 * ⌘K (docs/dev/05 §5.4). A native <dialog> so focus trapping, Escape and the backdrop come
 	 * from the platform; the rows come from the pure `paletteRows`, this only draws and
 	 * navigates. Arrow keys move, Enter follows, and the list resets on every open so a stale
 	 * query from last time never greets the next keystroke.
@@ -62,7 +62,7 @@
 		)
 	);
 
-	// A second step asks only whom it is for (docs/05 §5.4).
+	// A second step asks only whom it is for (docs/dev/05 §5.4).
 	const STEP_QUESTION = $derived({
 		giftIdea: t('components.palette.giftIdeaFor'),
 		todo: t('components.palette.todoForWhom'),

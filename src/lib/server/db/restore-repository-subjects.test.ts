@@ -14,7 +14,7 @@ import { seedRelationshipTypes } from './seed';
 import * as schema from './schema';
 
 /*
- * A moment about several people through an archive and back (docs/02 §2.15, §2.20.3): the
+ * A moment about several people through an archive and back (docs/dev/02 §2.15, §2.20.3): the
  * entry sits under its anchor with the others as `subjects`, and arrives with the same people
  * and the same slot. An archive from before ADR-131 has no `subjects` and restores as it did.
  */

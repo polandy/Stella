@@ -16,7 +16,7 @@
 	import type { CardEntry, PersonPageData } from './types';
 
 	/*
-	 * The person page's one lightbox (docs/02 §2.14, §2.24.3), for a gallery photo and a photo
+	 * The person page's one lightbox (docs/dev/02 §2.14, §2.24.3), for a gallery photo and a photo
 	 * from Immich alike. It walks the list its tile was opened from — *All*, the gallery, Immich, or
 	 * the photos of two people together — with the buttons or the arrow keys, wrapping at either
 	 * end, and says where each photo lives. *Use as photo* leads for both: a gallery photo is
@@ -40,7 +40,7 @@
 	const t = i18n.t;
 	const c = $derived(data.contact);
 	const entry = $derived(photos[at]);
-	// A private photo's picture and caption stay blurred until asked for (docs/02 §2.10.1); the
+	// A private photo's picture and caption stay blurred until asked for (docs/dev/02 §2.10.1); the
 	// grid's tile and this view share the veil, so a tap on either shows both.
 	const veil = useVeil();
 	const isPrivate = $derived(entry?.source === 'stella' && entry.photo.visibility === 'private');
@@ -76,7 +76,7 @@
 
 	function onkeydown(event: KeyboardEvent) {
 		const target = event.target as HTMLElement;
-		// A caption field owns the arrows: they move its caret, not the photo (docs/05 §5.9).
+		// A caption field owns the arrows: they move its caret, not the photo (docs/dev/05 §5.9).
 		step(event.key, target.matches('input, textarea') || target.isContentEditable);
 	}
 </script>
@@ -139,7 +139,7 @@
 			/>
 		</Veil>
 		{#if entry.source === 'stella' && entry.photo.cutFrom}
-			<!-- A profile picture cut from a group photo, kept as a photo of their own (docs/02 §2.14). -->
+			<!-- A profile picture cut from a group photo, kept as a photo of their own (docs/dev/02 §2.14). -->
 			<a
 				href="/circles/{entry.photo.cutFrom.circleId}"
 				class="inline-flex items-center gap-1 self-start text-xs text-primary underline-offset-2 hover:underline"

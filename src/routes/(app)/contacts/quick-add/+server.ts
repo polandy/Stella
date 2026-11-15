@@ -9,7 +9,7 @@ import { say, translator } from '$lib/server/i18n/say';
 import type { RequestHandler } from './$types';
 
 /*
- * Creating a person from inside a person picker (docs/02 §2.2.2). The same use-case the
+ * Creating a person from inside a person picker (docs/dev/02 §2.2.2). The same use-case the
  * quick-add page runs, answered as JSON so the picker can name someone new without leaving
  * the form it sits in — and hand back a person in exactly the shape it already renders for
  * a search hit.
@@ -39,7 +39,7 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 		userId: viewer.id,
 		householdId: viewer.householdId,
 		locale: locals.locale,
-		// New people are shared unless picked private (docs/02 §2.10).
+		// New people are shared unless picked private (docs/dev/02 §2.10).
 		defaultVisibility: 'shared' as const
 	};
 

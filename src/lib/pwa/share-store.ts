@@ -2,7 +2,7 @@ import { MAX_SHARED_PHOTOS } from '$lib/share/shared';
 import { stalePendingShares } from '$lib/share/pending';
 
 /*
- * Keeps a share from another app on the device (docs/02 §2.18.3), from the moment the service
+ * Keeps a share from another app on the device (docs/dev/02 §2.18.3), from the moment the service
  * worker takes it to the moment the share sheet has saved it. An adapter like `outbox-store`:
  * IndexedDB, and nothing decided here. The worker writes, the sheet reads and lets go.
  *

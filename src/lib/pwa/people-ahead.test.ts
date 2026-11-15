@@ -9,7 +9,7 @@ import {
 } from './people-ahead';
 
 /*
- * Every person the member can see, readable out of reach (docs/02 §2.18, docs/04 ADR-114):
+ * Every person the member can see, readable out of reach (docs/dev/02 §2.18, docs/dev/04 ADR-114):
  * which pages are kept ahead, which kept pages must go, and when to look again.
  */
 

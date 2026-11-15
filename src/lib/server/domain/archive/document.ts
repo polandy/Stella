@@ -1,7 +1,7 @@
 import type { HouseholdSnapshot, TableRows } from './archive';
 
 /*
- * The export document (docs/02 §2.15): everything the household owns, arranged around the
+ * The export document (docs/dev/02 §2.15): everything the household owns, arranged around the
  * people it is about rather than around Stella's tables — so another program, or a person with
  * a text editor in ten years, can read it without knowing this schema.
  *
@@ -91,7 +91,7 @@ export interface ArchiveDocument {
 	relationship_types: Record<string, unknown>[];
 	tags: Record<string, unknown>[];
 	circles: Record<string, unknown>[];
-	/** Addresses several people share (docs/02 §2.2), each with whoever lives there. */
+	/** Addresses several people share (docs/dev/02 §2.2), each with whoever lives there. */
 	homes: Record<string, unknown>[];
 	people: Record<string, unknown>[];
 	relationships: Record<string, unknown>[];
@@ -100,13 +100,13 @@ export interface ArchiveDocument {
 	 * What the household has already answered. Nobody reads these as records, but each one a
 	 * restore lost is a question asked again — or, for a command, a phone's resend applied twice.
 	 */
-	/** The Immich faces ignored under *New from Immich* (docs/02 §2.24.7). */
+	/** The Immich faces ignored under *New from Immich* (docs/dev/02 §2.24.7). */
 	immich_names_ignored: Record<string, unknown>[];
-	/** Which card of another address book is whom, and which were skipped (docs/02 §2.16). */
+	/** Which card of another address book is whom, and which were skipped (docs/dev/02 §2.16). */
 	address_book_cards: Record<string, unknown>[];
-	/** The suggestions the household said no to (docs/04 ADR-117). */
+	/** The suggestions the household said no to (docs/dev/04 ADR-117). */
 	declined_suggestions: Record<string, unknown>[];
-	/** The commands already applied, so a resend is answered rather than applied again (docs/03 §3.3). */
+	/** The commands already applied, so a resend is answered rather than applied again (docs/dev/03 §3.3). */
 	command_receipts: Record<string, unknown>[];
 }
 
@@ -127,7 +127,7 @@ export function buildArchiveDocument(
 		t('photo').filter((p) => text(p, 'journal_entry_id') === null && text(p, 'circle_id') === null),
 		'contact_id'
 	);
-	// A circle's photos belong to the circle, not to anybody's gallery (docs/02 §2.4.2).
+	// A circle's photos belong to the circle, not to anybody's gallery (docs/dev/02 §2.4.2).
 	const circlePhotos = groupBy(
 		t('photo').filter((p) => text(p, 'circle_id') !== null),
 		'circle_id'
@@ -138,16 +138,16 @@ export function buildArchiveDocument(
 	);
 	const noteMentions = linksBy(t('note_mention'), 'note_id', 'contact_id');
 	const entryMentions = linksBy(t('journal_mention'), 'journal_entry_id', 'contact_id');
-	// The further people of an entry; the entry itself sits under its anchor (docs/02 §2.20.3).
+	// The further people of an entry; the entry itself sits under its anchor (docs/dev/02 §2.20.3).
 	const entrySubjects = linksBy(t('journal_subject'), 'journal_entry_id', 'contact_id');
 	const entryImmichPhotos = linksBy(t('journal_immich_photo'), 'journal_entry_id', 'asset_id');
 	const participants = linksBy(t('interaction_participant'), 'interaction_id', 'contact_id');
 	const contactTags = linksBy(t('contact_tag'), 'contact_id', 'tag_id');
 	const circleMembers = groupBy(t('circle_membership'), 'circle_id');
 	const homeMembers = linksBy(t('home_member'), 'home_id', 'contact_id');
-	// One per person at most: the table's key is the contact (docs/03 §immich_link).
+	// One per person at most: the table's key is the contact (docs/dev/03 §immich_link).
 	const immichLinks = new Map(t('immich_link').map((row) => [id(row, 'contact_id'), row]));
-	// The Immich faces a member said this person is not (docs/02 §2.24.7), oldest first.
+	// The Immich faces a member said this person is not (docs/dev/02 §2.24.7), oldest first.
 	const immichIgnores = groupBy(t('immich_ignore'), 'contact_id');
 	const immichIgnoredOf = (person: string) => {
 		const rows = immichIgnores.get(person);
@@ -177,7 +177,7 @@ export function buildArchiveDocument(
 			id: id(row),
 			file: text(row, 'file_path'),
 			thumb: text(row, 'thumb_path'),
-			// A group photo's 1600 px view beside its larger full picture (docs/02 §2.4.2).
+			// A group photo's 1600 px view beside its larger full picture (docs/dev/02 §2.4.2).
 			view: text(row, 'view_path'),
 			mime: text(row, 'mime'),
 			width: num(row, 'width'),
@@ -185,14 +185,14 @@ export function buildArchiveDocument(
 			bytes: num(row, 'size_bytes'),
 			caption: text(row, 'caption'),
 			taken_at: text(row, 'taken_at'),
-			// Set on the square a photo is worn through as the avatar (docs/02 §2.14).
+			// Set on the square a photo is worn through as the avatar (docs/dev/02 §2.14).
 			framing_of: text(row, 'framing_of'),
 			crop: framingCrop(row),
-			// The group photo a profile picture was cut from (docs/02 §2.14).
+			// The group photo a profile picture was cut from (docs/dev/02 §2.14).
 			cut_from: text(row, 'cut_from'),
-			// The circle role a circle's photo shows (docs/02 §2.4.2).
+			// The circle role a circle's photo shows (docs/dev/02 §2.4.2).
 			role: text(row, 'circle_role'),
-			// When the household made it one of the person's favourites (docs/02 §2.14).
+			// When the household made it one of the person's favourites (docs/dev/02 §2.14).
 			pinned_at: moment(row, 'pinned_at'),
 			visibility: text(row, 'visibility'),
 			author: text(row, 'created_by'),
@@ -222,7 +222,7 @@ export function buildArchiveDocument(
 			how_we_met: text(c, 'how_we_met'),
 			met_date: text(c, 'met_date'),
 			met_place: text(c, 'met_place'),
-			// The household's *no last name* (docs/02 §2.2.4.2), so a restore does not ask again.
+			// The household's *no last name* (docs/dev/02 §2.2.4.2), so a restore does not ask again.
 			without_last_name_at: moment(c, 'without_last_name_at'),
 			avatar: text(c, 'avatar_photo_id'),
 			visibility: text(c, 'visibility'),
@@ -294,7 +294,7 @@ export function buildArchiveDocument(
 					participants: participants.get(id(i)) ?? null
 				})
 			),
-			// Ideas, and what was given to them or received from them (docs/02 §2.25).
+			// Ideas, and what was given to them or received from them (docs/dev/02 §2.25).
 			gifts: (gifts.get(person) ?? []).map((g) =>
 				present({
 					id: id(g),
@@ -309,7 +309,7 @@ export function buildArchiveDocument(
 					created_at: moment(g, 'created_at')
 				})
 			),
-			// What the household still owes them, open or ticked (docs/02 §2.26).
+			// What the household still owes them, open or ticked (docs/dev/02 §2.26).
 			todos: (todos.get(person) ?? []).map((td) =>
 				present({
 					id: id(td),

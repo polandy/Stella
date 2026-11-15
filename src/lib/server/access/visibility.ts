@@ -1,6 +1,6 @@
 /*
  * Central access-control rules — the single source of truth for "who may see what"
- * (docs/03-data-model.md §3.7, docs/02-features.md §2.10).
+ * (docs/dev/03-data-model.md §3.7, docs/dev/02-features.md §2.10).
  *
  * These are pure functions with no dependencies: they operate on minimal access
  * descriptors, not DB rows or the framework. Every read/write in the domain layer is
@@ -18,7 +18,7 @@ export interface Viewer {
 }
 
 /**
- * Who is removing a record (docs/03 §3.7): a viewer, plus whether they are an admin of the
+ * Who is removing a record (docs/dev/03 §3.7): a viewer, plus whether they are an admin of the
  * household — the one thing about a member the visibility rules never look at.
  */
 export interface Remover extends Viewer {
@@ -67,7 +67,7 @@ export function canViewChildRecord(viewer: Viewer, record: ChildRecordAccess): b
 /**
  * An authored record (note, journal entry, touchpoint, person photo) may be removed by its
  * author, always, and by an admin when it is shared. Both must see it first: an admin gains
- * nothing on a private record, which they cannot see (docs/02 §2.10).
+ * nothing on a private record, which they cannot see (docs/dev/02 §2.10).
  */
 export function canRemoveAuthored(remover: Remover, record: ChildRecordAccess): boolean {
 	if (!canViewChildRecord(remover, record)) return false;
@@ -78,7 +78,7 @@ export function canRemoveAuthored(remover: Remover, record: ChildRecordAccess): 
 /**
  * A person may be deleted by an admin, and only one who sees them: it ends a record for good,
  * so it is no member's call, and an admin gains nothing on another member's private contact
- * (docs/02 §2.2).
+ * (docs/dev/02 §2.2).
  */
 export function canDeleteContact(remover: Remover, contact: ContactAccess): boolean {
 	return remover.isAdmin && canViewContact(remover, contact);
@@ -86,7 +86,7 @@ export function canDeleteContact(remover: Remover, contact: ContactAccess): bool
 
 /**
  * Two people may be merged by an admin who sees both — the delete rule, since the merged
- * record ends (docs/02 §2.2). Whether the survivor's visibility keeps the household's records
+ * record ends (docs/dev/02 §2.2). Whether the survivor's visibility keeps the household's records
  * in view is the domain's own question (`mergeKeepsRecordsInView`).
  */
 export function canMergeContacts(
@@ -99,7 +99,7 @@ export function canMergeContacts(
 
 /**
  * An authored record may be edited by its author alone, and only while they still see it: an
- * admin removes another member's shared record but never rewrites it (docs/02 §2.5).
+ * admin removes another member's shared record but never rewrites it (docs/dev/02 §2.5).
  */
 export function canEditAuthored(viewer: Viewer, record: ChildRecordAccess): boolean {
 	return canViewChildRecord(viewer, record) && record.ownerId === viewer.id;
@@ -115,7 +115,7 @@ export function canViewRelationship(
 
 /**
  * Whether the viewer may add a relationship to this person — from their page, or from a slot
- * the family tree offers for a missing parent (docs/02 §2.4, §2.7). Seeing them is enough:
+ * the family tree offers for a missing parent (docs/dev/02 §2.4, §2.7). Seeing them is enough:
  * there is no read-only member, and the other end must be visible too, which the picker only
  * ever offers and `addRelationshipChecked` refuses otherwise.
  */
@@ -145,7 +145,7 @@ export function canViewMembership(
 	return canViewCircle(viewer, membership.circle) && canViewContact(viewer, membership.contact);
 }
 
-/** A photo in a circle's gallery (docs/02 §2.4.2): it hangs off the circle, not a contact. */
+/** A photo in a circle's gallery (docs/dev/02 §2.4.2): it hangs off the circle, not a contact. */
 export interface CirclePhotoAccess {
 	/** `created_by` — who added the photo. */
 	ownerId: UserId;
@@ -176,7 +176,7 @@ export function canRemoveCirclePhoto(remover: Remover, photo: CirclePhotoAccess)
 /**
  * A circle may be deleted by its creator, always, and by an admin when it is shared — the
  * authored-record rule with the circle as the record. Both must see it, so a private circle is
- * its creator's alone (docs/03 §3.7).
+ * its creator's alone (docs/dev/03 §3.7).
  */
 export function canDeleteCircle(remover: Remover, circle: CircleAccess): boolean {
 	if (!canViewCircle(remover, circle)) return false;
@@ -185,7 +185,7 @@ export function canDeleteCircle(remover: Remover, circle: CircleAccess): boolean
 }
 
 /**
- * An activity-log entry (docs/03 §activity_log). It outlives what it describes — a deleted or
+ * An activity-log entry (docs/dev/03 §activity_log). It outlives what it describes — a deleted or
  * merged contact, an export that never had a row — so there is no record left to scope through;
  * the entry carries the visibility the affected record had, and `actorId` is its author.
  */
@@ -202,7 +202,7 @@ export function canViewActivity(viewer: Viewer, entry: ActivityAccess): boolean 
 	return entry.visibility === 'shared' || entry.actorId === viewer.id;
 }
 
-/** A household member, as far as removing them goes (docs/02 §2.1). */
+/** A household member, as far as removing them goes (docs/dev/02 §2.1). */
 export interface MemberAccess {
 	id: UserId;
 	householdId: HouseholdId;

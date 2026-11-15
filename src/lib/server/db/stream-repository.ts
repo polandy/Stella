@@ -43,8 +43,8 @@ import {
 } from './schema';
 
 /*
- * Drizzle adapter for the StreamRepository port (docs/02 §2.22.2). Every read is scoped by the
- * central conditions (docs/03 §3.7): moments via `childRecordVisibleTo` (anchor contact visible
+ * Drizzle adapter for the StreamRepository port (docs/dev/02 §2.22.2). Every read is scoped by the
+ * central conditions (docs/dev/03 §3.7): moments via `childRecordVisibleTo` (anchor contact visible
  * + shared-or-own entry), people via `contactVisibleTo`, relationships via
  * `relationshipVisibleTo` (both ends visible), interactions via `childRecordVisibleTo` on the
  * subject, circle photos via `circlePhotoVisibleTo` (circle visible + shared-or-own photo). A
@@ -53,7 +53,7 @@ import {
  * member as the author on top of the scope; moments narrowed to tags add each tag the same way.
  */
 /**
- * The member narrowing (docs/02 §2.22.2): only rows `memberId` wrote, or no condition at all.
+ * The member narrowing (docs/dev/02 §2.22.2): only rows `memberId` wrote, or no condition at all.
  * Always `and`-ed onto the visibility scope, never in place of it, so it can only narrow.
  */
 function byMember(authorColumn: SQLiteColumn, memberId: string | null) {
@@ -104,8 +104,8 @@ export function createDrizzleStreamRepository(
 		async recentNotices(viewer: Viewer, { limit, memberId }: StreamQuery): Promise<NoticeRow[]> {
 			// The only source that is not a table of things that still exist. Once a contact is
 			// deleted — outright, or by being merged into someone else — the log entry is all
-			// that is left of that name (docs/04 §4.9); an export never had a row at all
-			// (docs/02 §2.15), and the household is meant to see that one was taken. Scoped by
+			// that is left of that name (docs/dev/04 §4.9); an export never had a row at all
+			// (docs/dev/02 §2.15), and the household is meant to see that one was taken. Scoped by
 			// the entry itself, through `activityVisibleTo` — there is no contact to scope through.
 			const rows = db
 				.select({
@@ -126,8 +126,8 @@ export function createDrizzleStreamRepository(
 						or(
 							inArray(activityLog.action, ['delete', 'merge', 'export', 'import']),
 							// The updates the household is told about: a batch of last names changes
-							// how several people read at once (docs/02 §2.2.4.4), a rename, and a
-							// member restored (docs/02 §2.1).
+							// how several people read at once (docs/dev/02 §2.2.4.4), a rename, and a
+							// member restored (docs/dev/02 §2.1).
 							and(
 								eq(activityLog.action, 'update'),
 								inArray(activityLog.entityType, [LAST_NAMES_ENTITY, RENAME_ENTITY, MEMBER_ENTITY])

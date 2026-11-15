@@ -3,8 +3,8 @@ import { AUTH_STATE_PATH } from './auth-state';
 import { addPerson, mention, openPerson, recordAction, signIn } from './app';
 
 /*
- * Keeping a moment for later (docs/02 §2.18.1). Written after
- * the flow was verified in the running app (docs/08 §8.4.1).
+ * Keeping a moment for later (docs/dev/02 §2.18.1). Written after
+ * the flow was verified in the running app (docs/dev/08 §8.4.1).
  *
  * The suite blocks service workers (playwright.config.ts), so the page never *knows* it is
  * offline: `context.setOffline` makes the save fail on the way, which is the "Stella stops

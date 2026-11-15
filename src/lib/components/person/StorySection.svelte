@@ -43,8 +43,8 @@
 	import type { PersonForm, PersonPageData } from './types';
 
 	/*
-	 * What has happened with someone (docs/02 §2.23): the person page's story card, with the
-	 * moment composer and the log form sharing the spot at its top, one at a time (docs/05 §5.5).
+	 * What has happened with someone (docs/dev/02 §2.23): the person page's story card, with the
+	 * moment composer and the log form sharing the spot at its top, one at a time (docs/dev/05 §5.5).
 	 * The identity card opens either through `writeMoment` and `logContact`.
 	 */
 	let {
@@ -80,7 +80,7 @@
 	}
 
 	/*
-	 * The moment composer, anchored on this person (docs/02 §2.20). Its draft lives here, so it
+	 * The moment composer, anchored on this person (docs/dev/02 §2.20). Its draft lives here, so it
 	 * survives the composer folding away for the log form; `composerRun` starts a fresh composer
 	 * from it, which an *Undo* needs while the old one may still be folding away.
 	 */
@@ -106,7 +106,7 @@
 		if (next.opened) await tick();
 		const card = document.getElementById(sectionAnchor('story'));
 		const field = card?.querySelector<HTMLTextAreaElement>('[data-moment-body]');
-		// The way every card form opens (docs/05 §5.11): a card low in the view or off screen
+		// The way every card form opens (docs/dev/05 §5.11): a card low in the view or off screen
 		// glides to just under the top bar, so on a phone the field sits above the keyboard.
 		if (card) composerGlide.opened(showOpenedForm(card, field));
 		field?.setSelectionRange(field.value.length, field.value.length);
@@ -190,7 +190,7 @@
 	});
 
 	/*
-	 * Calls and visits logged here while Stella was out of reach (docs/02 §2.18): kept on the
+	 * Calls and visits logged here while Stella was out of reach (docs/dev/02 §2.18): kept on the
 	 * device and shown at the top of this person's story until they are sent. Editing one
 	 * reopens the log form on it, which then saves into the kept copy.
 	 */
@@ -308,7 +308,7 @@
 		>
 	{/snippet}
 	{#if openForm === 'moment'}
-		<!-- Unfolds in place (docs/05 §5.11); keyed so an Undo starts from the draft it offers. -->
+		<!-- Unfolds in place (docs/dev/05 §5.11); keyed so an Undo starts from the draft it offers. -->
 		<div
 			bind:this={composerBox}
 			transition:reveal

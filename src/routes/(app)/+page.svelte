@@ -39,7 +39,7 @@
 	const i18n = useI18n();
 	const t = i18n.t;
 
-	// The stream by day, read against the clock at the moment it is drawn (docs/02 §2.22.2).
+	// The stream by day, read against the clock at the moment it is drawn (docs/dev/02 §2.22.2).
 	const stream = $derived.by(() => {
 		const now = Date.now();
 		return {
@@ -58,17 +58,17 @@
 
 	// Below `lg` the page is one column: heading, capture field, then either the rail and the
 	// stream or the stream and the rail — the rail earns the place above the stream only while
-	// a date is close (`railFirst`, docs/05 §5.5). The capture field stays on top either way.
+	// a date is close (`railFirst`, docs/dev/05 §5.5). The capture field stays on top either way.
 	const RAIL_BEFORE_STREAM = 'max-lg:order-2';
 	const RAIL_AFTER_STREAM = 'max-lg:order-4';
 	const railOrder = $derived(data.railFirst ? RAIL_BEFORE_STREAM : RAIL_AFTER_STREAM);
 
-	// The *To-dos* band (docs/02 §2.26.6): a row just ticked stays, struck through, while its
+	// The *To-dos* band (docs/dev/02 §2.26.6): a row just ticked stays, struck through, while its
 	// toast stands, as on the person's card.
 	const justDone = new JustDoneTodos<PageData['todos'][number]>(useRemovals());
 	const band = $derived(todoBand(justDone.rows(data.todos), data.today));
 	const ticksKept = $derived(keptTicks());
-	// *On this day* from Immich (docs/02 §2.12.1), asked for once Home is drawn; without Immich it
+	// *On this day* from Immich (docs/dev/02 §2.12.1), asked for once Home is drawn; without Immich it
 	// stays idle and empty.
 	const immichMemories = new ImmichMemories();
 	$effect(() => {
@@ -106,7 +106,7 @@
 	}
 
 	/*
-	 * Moments kept on this device while Stella was out of reach (docs/02 §2.18.1), shown where they
+	 * Moments kept on this device while Stella was out of reach (docs/dev/02 §2.18.1), shown where they
 	 * will land: under the capture field, marked as not sent yet. One can
 	 * be opened in the composer until it is on its way; discarding asks twice, because the
 	 * device holds the only copy.
@@ -145,7 +145,7 @@
 {/snippet}
 
 <!-- From lg the rail's 17 rem column is there only while a date or a to-do is close; otherwise the stream
-     takes the width (docs/05 §5.5). One class either way, never a static and a toggled one. -->
+     takes the width (docs/dev/05 §5.5). One class either way, never a static and a toggled one. -->
 <main
 	class="mx-auto grid w-full max-w-6xl gap-x-10 gap-y-6 px-4 py-6 md:px-6 md:py-10 lg:grid-rows-[auto_auto_1fr] {hasRail
 		? 'lg:grid-cols-[minmax(0,1fr)_17rem]'

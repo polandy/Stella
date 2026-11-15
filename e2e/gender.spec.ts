@@ -4,8 +4,8 @@ import { AUTH_STATE_PATH } from './auth-state';
 import { LINK, seedHousehold } from './seed';
 
 /*
- * A person's gender, set in the editor behind their name and while adding them (docs/02 §2.2). Written
- * after the owner tried it in the running app (docs/08 §8.4.1).
+ * A person's gender, set in the editor behind their name and while adding them (docs/dev/02 §2.2). Written
+ * after the owner tried it in the running app (docs/dev/08 §8.4.1).
  *
  * The profile case brings its own family, which no other spec names: Olga is the sister of
  * Kim's mother Ines, so Kim's page works out an aunt — or, with no gender on record, an aunt or
@@ -22,7 +22,7 @@ test.beforeEach(async ({ page, javaScriptEnabled }) => {
 	if (javaScriptEnabled) await signIn(page);
 });
 
-/** Opens the editor behind the name, where the gender is set (docs/02 §2.2). */
+/** Opens the editor behind the name, where the gender is set (docs/dev/02 §2.2). */
 async function openNameEditor(page: Page): Promise<Locator> {
 	await page.getByTitle('Edit name').click();
 	const editor = page.getByTestId('name-editor');
@@ -145,7 +145,7 @@ test('asks for a gender while adding someone, and lets a second tap take the cho
 	await appReady(page);
 	await page.getByLabel('First name').fill('Nora');
 	await page.getByLabel('Last name').fill('Zumstein');
-	// Behind *More*, with the nickname and the birthday (docs/design/screens/add-person.md).
+	// Behind *More*, with the nickname and the birthday (docs/dev/design/screens/add-person.md).
 	await page.locator('summary', { hasText: 'More' }).click();
 
 	const male = page.getByRole('radio', { name: 'Male', exact: true });

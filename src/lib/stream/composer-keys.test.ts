@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'bun:test';
 import { createPanelKey, keyupAsksPicker, textKey } from './composer-keys';
 
-/* The composer's keys (docs/05 §5.7): the @-list's first, then Escape and the save shortcut. */
+/* The composer's keys (docs/dev/05 §5.7): the @-list's first, then Escape and the save shortcut. */
 
 const at = { listOpen: true, cancellable: true, canSave: true };
 const press = (key: string, mod = false) => ({ key, mod });

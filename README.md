@@ -13,7 +13,7 @@ running on your own hardware, seen by nobody else.
 
 <br>
 
-<img src="docs/images/home-light.png" alt="Stella's home screen: a capture field above the household stream">
+<img src="docs/user/images/home-light.png" alt="Stella's home screen: a capture field above the household stream">
 
 <br>
 
@@ -38,7 +38,7 @@ than a single user.
 So Stella keeps what Monica taught us and leaves the rest: one capture field instead of a
 dashboard, sharing by default within the family, and a graph of relationships you can
 actually see. If you are already using Monica, the guided
-[import](docs/using-stella.md) brings your people, relationships, notes, activities, tags
+[import](docs/user/using-stella.md) brings your people, relationships, notes, activities, tags
 and photos across — from either of Monica's own exports, or from a vCard if your people live
 in an address book instead.
 
@@ -55,7 +55,7 @@ stays private — including the people you add privately.
 **See how everyone connects.** Every person carries their own little constellation: who
 they belong to, who they grew up with, who they play football with.
 
-<img src="docs/images/relationships.png" width="620" alt="A person's relationships shown as a small graph of connected people">
+<img src="docs/user/images/relationships.png" width="620" alt="A person's relationships shown as a small graph of connected people">
 
 **Circles for the contexts people share.** A class, a team, a choir. People come and go
 from them over the years, and Stella remembers who was there when.
@@ -67,12 +67,12 @@ whole year with someone.
 gets out of the way.
 
 <div align="center">
-<img src="docs/images/mobile.png" width="300" alt="Stella on a phone: the stream with the capture field pinned above the tab bar">
+<img src="docs/user/images/mobile.png" width="300" alt="Stella on a phone: the stream with the capture field pinned above the tab bar">
 </div>
 
 **Light and dark, both done properly.**
 
-<img src="docs/images/home-dark.png" alt="The same home screen in dark mode">
+<img src="docs/user/images/home-dark.png" alt="The same home screen in dark mode">
 
 ## Yours, on your own hardware
 
@@ -89,25 +89,25 @@ cp .env.example .env      # set SESSION_SECRET and STELLA_URL
 
 Or skip the build: every release is published to `ghcr.io/polandy/stella`.
 
-The [installation guide](docs/install.md) walks through it properly, including running it
+The [installation guide](docs/user/install.md) walks through it properly, including running it
 behind your own domain and signing in with your existing single sign-on.
 
 ## Documentation
 
 **For everyone**
 
-- [Installation & first run](docs/install.md) — get Stella running and keep it running.
-- [Using Stella](docs/using-stella.md) — moments, people, privacy, circles, the journal.
+- [Installation & first run](docs/user/install.md) — get Stella running and keep it running.
+- [Using Stella](docs/user/using-stella.md) — moments, people, privacy, circles, the journal.
 
 **For contributors** — the specification suite the project is built from:
-[vision](docs/01-vision-and-scope.md) ·
-[features](docs/02-features.md) ·
-[data model](docs/03-data-model.md) ·
-[architecture](docs/04-architecture.md) ·
-[design system](docs/05-ui-design-system.md) ·
-[roadmap](docs/06-roadmap.md) ·
-[deployment reference](docs/07-deployment.md) ·
-[coding guidelines](docs/08-coding-guidelines.md)
+[vision](docs/dev/01-vision-and-scope.md) ·
+[features](docs/dev/02-features.md) ·
+[data model](docs/dev/03-data-model.md) ·
+[architecture](docs/dev/04-architecture.md) ·
+[design system](docs/dev/05-ui-design-system.md) ·
+[roadmap](docs/dev/06-roadmap.md) ·
+[deployment reference](docs/dev/07-deployment.md) ·
+[coding guidelines](docs/dev/08-coding-guidelines.md)
 
 ## Where it stands
 
@@ -116,7 +116,7 @@ shared household stream — with important dates, interactions and a guided **im
 people, relationships, notes, activities, tags and photos from either Monica export, or of
 contacts from a vCard.
 Stella speaks **English and German**, chosen per family member and kept with their profile.
-A photo gallery is next. See the [roadmap](docs/06-roadmap.md).
+A photo gallery is next. See the [roadmap](docs/dev/06-roadmap.md).
 
 <div align="center">
 <sub><em>stella</em> — Latin for “star”. Every person is one; their relationships are the constellations.</sub>

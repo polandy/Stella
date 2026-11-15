@@ -12,8 +12,8 @@ import { AmbiguousMentionError, resolveForAudience } from './resolve-for-audienc
 
 /*
  * A refused `@Thomas` names a namesake with nothing typed by a relationship or a circle, as the
- * pickers do (docs/02 §2.2.3) — read only once a text is refused. Tested with recording fakes
- * (docs/08 §8.3).
+ * pickers do (docs/dev/02 §2.2.3) — read only once a text is refused. Tested with recording fakes
+ * (docs/dev/08 §8.3).
  */
 
 const viewer: Viewer = { id: 'u-andy', householdId: 'h1' };

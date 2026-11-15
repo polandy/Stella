@@ -10,7 +10,7 @@ import {
 import type { StoryItem } from '$lib/server/domain/story/story';
 
 /*
- * What the story timeline is handed (docs/02 §2.23). The merge decides the order; this decides
+ * What the story timeline is handed (docs/dev/02 §2.23). The merge decides the order; this decides
  * what each item says — including which of them offers a remove button, which is an
  * authorization statement rendered as a control.
  */
@@ -84,7 +84,7 @@ describe('toStoryItem, journal entries', () => {
 		expect(view.bodyHtml).not.toContain('<script');
 	});
 
-	it("links a #tag to the tag's page across the household (docs/02 §2.20.2)", () => {
+	it("links a #tag to the tag's page across the household (docs/dev/02 §2.20.2)", () => {
 		const view = toStoryItem(journalItem({ body: 'Up the #Gurten again.' }), context());
 
 		if (view.kind !== 'journal') throw new Error('expected a journal item');

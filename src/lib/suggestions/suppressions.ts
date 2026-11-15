@@ -4,7 +4,7 @@ import type { Relation } from './types';
 import type { SuggestionView } from './view';
 
 /*
- * The universal suppressions (docs/02 §2.4.1, docs/04 ADR-055).
+ * The universal suppressions (docs/dev/02 §2.4.1, docs/dev/04 ADR-055).
  *
  * They are applied by the engine to every rule's output, never inside a rule: a rule that
  * filters is a rule that can forget to, and the consequence of forgetting is not a stray row
@@ -52,7 +52,7 @@ export function isDerivable(
 }
 
 /**
- * Whether storing this claim would be **refused** (suppression 5, docs/02 §2.4). Offering
+ * Whether storing this claim would be **refused** (suppression 5, docs/dev/02 §2.4). Offering
  * something and then rejecting it on *Accept* is worse than never offering it: the household
  * is told a link follows, presses the only button there is, and gets an error about a rule it
  * never broke. The parent cap is the one such rule an implication can reach, since both link

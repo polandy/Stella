@@ -1,9 +1,9 @@
 /*
- * The web app manifest (docs/02 §2.18), built rather than shipped as a static file.
+ * The web app manifest (docs/dev/02 §2.18), built rather than shipped as a static file.
  *
  * Its name and description are read by the launcher and the install prompt, so they are
  * strings a person sees — which means they come from the catalogue like every other one
- * (docs/08 §8.7). Pure: the route hands it a translator and serialises what comes back.
+ * (docs/dev/08 §8.7). Pure: the route hands it a translator and serialises what comes back.
  */
 
 import { DEFAULT_APP_BACKGROUND } from '$lib/design/app-colors';
@@ -37,7 +37,7 @@ export interface WebAppManifest {
 }
 
 /**
- * The Web Share Target entry that puts Stella in the phone's share sheet (docs/02 §2.18.3).
+ * The Web Share Target entry that puts Stella in the phone's share sheet (docs/dev/02 §2.18.3).
  * A POST, so photos can come along; the service worker takes it, Stella's server never sees it
  * unless the app is not installed.
  */

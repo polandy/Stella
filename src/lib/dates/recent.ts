@@ -2,7 +2,7 @@ import type { DateLanguage } from './labels';
 import { addDays } from './month';
 
 /*
- * The days the composer's day pill offers (docs/02 §2.22.1). Almost every moment is from
+ * The days the composer's day pill offers (docs/dev/02 §2.22.1). Almost every moment is from
  * today or the last few days, so those are one tap away and any other day is left to the
  * full date field.
  *

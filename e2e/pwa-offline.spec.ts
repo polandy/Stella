@@ -6,10 +6,10 @@ import { addPerson, signIn } from './app';
 import { linkCardFace, photoTab, unlinkFace, uploadPhotos } from './photo-card';
 
 /*
- * Reading and adding while Stella is out of reach, with the service worker running (docs/02
+ * Reading and adding while Stella is out of reach, with the service worker running (docs/dev/02
  * §2.18). The only specs that let it run: they belong to the `pwa` project, which allows it,
  * while the rest of the suite blocks it (`playwright.config.ts`). Written after the flow was
- * verified on a phone (docs/08 §8.4.1).
+ * verified on a phone (docs/dev/08 §8.4.1).
  *
  * Out of reach comes in two shapes. `context.setOffline` fails every request at once; a phone
  * in flight mode behind a VPN instead sends the request and never hears back, which is the
@@ -66,7 +66,7 @@ async function neverAnswer(context: BrowserContext): Promise<void> {
 const peopleTab = (page: Page) => page.locator('a[href="/contacts"]:visible').first();
 /**
  * The phone's Home tab. Not the breadcrumb's Home: the top bar slides away once a long list
- * has been scrolled (docs/05 §5.4), while the tab bar stays; it comes last in the page.
+ * has been scrolled (docs/dev/05 §5.4), while the tab bar stays; it comes last in the page.
  */
 const homeTab = (page: Page) => page.locator('a[href="/"]:visible').last();
 
@@ -132,7 +132,7 @@ test('opens a page offline that was only ever reached by tapping', async ({ page
 });
 
 test('finds a person from Home offline and opens them', async ({ page, context }) => {
-	// The search reads the people the shell already carries (docs/02 §2.22.1); the page it
+	// The search reads the people the shell already carries (docs/dev/02 §2.22.1); the page it
 	// opens comes from the worker's cache, which the tap to Lena has filled.
 	await tapToLena(page);
 	await homeTab(page).click();
@@ -201,7 +201,7 @@ test('drops the Immich tab offline and keeps the gallery', async ({ page, contex
 		const all = page.getByTestId('photo-grid').and(page.locator('[data-view="all"]'));
 		await expect(all.locator('li[data-source="immich"]').first()).toBeVisible();
 
-		// Nothing from Immich is shown offline (docs/02 §2.24.3): the tab and its photos in All go.
+		// Nothing from Immich is shown offline (docs/dev/02 §2.24.3): the tab and its photos in All go.
 		await context.setOffline(true);
 		await expect(photoTab(page, 'Immich')).toHaveCount(0);
 		await expect(photoTab(page, 'Stella')).toBeVisible();
@@ -214,7 +214,7 @@ test('drops the Immich tab offline and keeps the gallery', async ({ page, contex
 });
 
 test('greys out From Immich offline, and offers it again once back', async ({ page, context }) => {
-	// Nothing from Immich is kept for later (docs/02 §2.24.9): the item stays, saying why it waits.
+	// Nothing from Immich is kept for later (docs/dev/02 §2.24.9): the item stays, saying why it waits.
 	await page.locator('nav a[aria-label="Write a moment"]').click();
 	const sheet = page.getByTestId('compose-sheet');
 	await expect(sheet).toBeVisible();

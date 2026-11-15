@@ -11,7 +11,7 @@ import type { Actions } from '../$types';
 import { createCircleFromForm } from '../../create-circle-form';
 
 /*
- * Moving a circle without its edit form (docs/02 §2.4.2): the sub-circles card's *Add existing*
+ * Moving a circle without its edit form (docs/dev/02 §2.4.2): the sub-circles card's *Add existing*
  * and *Detach*, and every *Undo* of a move — the edit form's included. No confirmation: the page
  * stays, and the answer carries the move so the toast's *Undo* posts back exactly where it was
  * (ADR-126). The circle moved need not be the page's own: *Detach* moves one of its children.

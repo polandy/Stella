@@ -1,6 +1,6 @@
 /*
  * What the interface says when something cannot be saved. Domain errors carry these as a
- * `Phrase` and the edge renders them in the reader's language (docs/08 §8.3).
+ * `Phrase` and the edge renders them in the reader's language (docs/dev/08 §8.3).
  */
 
 export const errors = {
@@ -39,7 +39,7 @@ export const errors = {
 		`${p.name} already has ${p.max} parents. Correct one of them instead of adding another.`,
 	'errors.relationship.noSuchDay': (p: { day: string }) => `${p.day} is not a day that exists.`,
 	'errors.relationship.currentOrFormer': 'A relationship is either current or former.',
-	/** One refused person of a batch, by name, before the reason (docs/02 §2.4). */
+	/** One refused person of a batch, by name, before the reason (docs/dev/02 §2.4). */
 	'errors.relationship.refusedFor': (p: { name: string; reason: string }) =>
 		`${p.name}: ${p.reason}`,
 
@@ -182,7 +182,7 @@ export const errors = {
 	'errors.journal.noSubject': 'A moment is about at least one person. To drop it, remove it.',
 	'errors.journal.subjectNotAllowed':
 		'A shared moment can only be about people the whole household sees.',
-	// The screen an address that leads nowhere lands on (docs/design/screens/across-screens.md).
+	// The screen an address that leads nowhere lands on (docs/dev/design/screens/across-screens.md).
 	'errors.stranded.person': 'This person is no longer here',
 	'errors.stranded.personHint':
 		'The link may be old: they were merged into someone else, or removed.',

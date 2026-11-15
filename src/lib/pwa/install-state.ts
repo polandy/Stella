@@ -1,5 +1,5 @@
 /*
- * How the install offer stands on a device (docs/02 §2.18).
+ * How the install offer stands on a device (docs/dev/02 §2.18).
  *
  * Pure, and separate from the rune that holds the browser events, because this is the part
  * with branches in it: three states, one of which is reached only on Safari and another only

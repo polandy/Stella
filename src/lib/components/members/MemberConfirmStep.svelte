@@ -21,7 +21,7 @@
 	import { reveal } from '$lib/motion/motion.svelte';
 
 	/*
-	 * The confirm step under a member's row (docs/02 §2.1): the person page's sunken box, not a
+	 * The confirm step under a member's row (docs/dev/02 §2.1): the person page's sunken box, not a
 	 * modal, for removing a member and for restoring one. It says what the step ends and what it
 	 * keeps, and its focus starts on the way out, so a second Enter changes nobody. A member the
 	 * step no longer applies to (404: gone already, back already) reads as done.

@@ -4,7 +4,7 @@ import { familyEdges, familyNodes } from './fixtures';
 import type { GraphModel } from './types';
 
 /*
- * Whether the peek panel offers *Expand* (docs/02 §2.7): exactly when expanding the node under
+ * Whether the peek panel offers *Expand* (docs/dev/02 §2.7): exactly when expanding the node under
  * the current filters would put something new on the map — a person or circle, or a line
  * between people already shown.
  */

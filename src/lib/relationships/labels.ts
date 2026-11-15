@@ -1,10 +1,10 @@
 // Imported relatively rather than through `$lib`: the domain words its refusals with
-// `exclusionLabel`, and domain code carries no SvelteKit alias in its path (docs/08 §8.3).
+// `exclusionLabel`, and domain code carries no SvelteKit alias in its path (docs/dev/08 §8.3).
 import { hasMessage, type Translate } from '../i18n/translate';
 import { MAX_PARENTS, type Exclusion } from './exclusions';
 
 /*
- * How a relationship reads in the viewer's language (docs/02 §2.19). The types Stella ships
+ * How a relationship reads in the viewer's language (docs/dev/02 §2.19). The types Stella ships
  * with have stable keys, so their labels are translated; a household's own types are text
  * somebody typed and are shown exactly as they wrote them.
  */
@@ -32,7 +32,7 @@ export function relationshipTypeLabel(
 /**
  * Who the other person is to `subjectName`, read from their end of a link being entered on the
  * subject's page: "Hans is Parent of …" makes them "Child of Hans Meyer". What someone new is
- * first known by, before the link itself exists (docs/02 §2.2.3).
+ * first known by, before the link itself exists (docs/dev/02 §2.2.3).
  */
 export function towardsSubject(
 	t: Translate,
@@ -70,7 +70,7 @@ export function relationshipCategoryLabel(t: Translate, category: string): strin
 }
 
 /**
- * Why an entry of the picker cannot be chosen (docs/02 §2.4), in the few words that fit
+ * Why an entry of the picker cannot be chosen (docs/dev/02 §2.4), in the few words that fit
  * beside the label — `nameOf` resolves the person the reason is about. The sentence saying
  * what to do instead is the refusal at the write (`errors.relationship.*`).
  */

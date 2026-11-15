@@ -4,7 +4,7 @@ import type { Core, EventObject, Layouts } from 'cytoscape';
  * Whether the canvas is still moving: every layout running and every glide under way. Written
  * onto the container while anything moves and when it has all come to rest, so a caller can
  * tell a canvas that is still moving from one that has come to rest — the e2e suite reads node
- * positions as soon as it says `settled` (`e2e/graph-canvas.ts`, docs/04 §4.11).
+ * positions as soon as it says `settled` (`e2e/graph-canvas.ts`, docs/dev/04 §4.11).
  */
 
 const LAYOUT_STATE_ATTRIBUTE = 'data-layout';

@@ -8,8 +8,8 @@
 	import { useTranslate } from '$lib/i18n/context.svelte';
 
 	/*
-	 * The bar that acts on the members selected on a circle's page (docs/02 §2.4.2): one role for
-	 * all of them, one last name for all of them (docs/02 §2.2.4.3), or removing them. Fixed to the bottom so it stays in reach however long the
+	 * The bar that acts on the members selected on a circle's page (docs/dev/02 §2.4.2): one role for
+	 * all of them, one last name for all of them (docs/dev/02 §2.2.4.3), or removing them. Fixed to the bottom so it stays in reach however long the
 	 * circle is; offset above the mobile bottom tab bar (src/routes/(app)/+layout.svelte) so the
 	 * two never overlap, and below Toast's z-30 so a save/undo toast is never hidden behind it.
 	 */

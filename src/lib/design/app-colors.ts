@@ -1,5 +1,5 @@
 /*
- * The two page backgrounds as literal hex (docs/05 §5.2.1).
+ * The two page backgrounds as literal hex (docs/dev/05 §5.2.1).
  *
  * Everything that colours itself inside the document reads the semantic tokens from
  * `app.css`; these exist for the places outside it, where a CSS variable cannot reach —

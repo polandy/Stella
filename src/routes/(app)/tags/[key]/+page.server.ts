@@ -7,7 +7,7 @@ import type { PageServerLoad } from './$types';
 import { streamForView } from '../../_shared/stream-view';
 
 /*
- * A tag's own page (docs/02 §2.20.2): every moment the viewer may see that carries it, across
+ * A tag's own page (docs/dev/02 §2.20.2): every moment the viewer may see that carries it, across
  * everyone's journals, newest first. The moments are the stream's own read narrowed to the tag,
  * so they are scoped exactly as Home's are; one on a private moment of someone else's never
  * shows, and a tag only there reads as unknown.

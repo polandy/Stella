@@ -16,7 +16,7 @@ import { getConfig } from '$lib/server/config';
 import { getServices } from '$lib/server/services';
 
 /*
- * Request entry point (docs/04 §4.4). Resolves the session cookie to `locals.user`, settles
+ * Request entry point (docs/dev/04 §4.4). Resolves the session cookie to `locals.user`, settles
  * the language the answer is written in, and sets baseline security headers. Route
  * protection lives in the (app) group's load guard, not here.
  *
@@ -26,7 +26,7 @@ import { getServices } from '$lib/server/services';
 
 /*
  * Every message catalogue, loaded once before the first request. Only the browser fetches a
- * language on demand (docs/04 §4.4); the server speaks them all, and its routes, actions and
+ * language on demand (docs/dev/04 §4.4); the server speaks them all, and its routes, actions and
  * `say()` translate synchronously from here on.
  */
 export const init: ServerInit = async () => {
@@ -34,7 +34,7 @@ export const init: ServerInit = async () => {
 	// the server at start rather than on the first page somebody opens.
 	getConfig();
 	await Promise.all(LOCALES.map((locale) => loadCatalog(locale)));
-	// Gifts still held as Monica notes or gift touchpoints become gift records (docs/02
+	// Gifts still held as Monica notes or gift touchpoints become gift records (docs/dev/02
 	// §2.25.4) before anyone reads them; once nothing is left, this finds nothing and says nothing.
 	await getServices().gifts.convertHeldGifts();
 };
@@ -44,7 +44,7 @@ export const handle: Handle = async ({ event, resolve }) => {
 	event.locals.requestId = requestIdFrom(event.request.headers.get('x-request-id'), () =>
 		crypto.randomUUID()
 	);
-	// The process's one object graph, built on the first request (docs/08 §8.3).
+	// The process's one object graph, built on the first request (docs/dev/08 §8.3).
 	event.locals.services = getServices();
 	const { auth } = event.locals.services;
 	const identity = await resolveRequestIdentity(
@@ -94,7 +94,7 @@ export const handle: Handle = async ({ event, resolve }) => {
 /**
  * Every error nobody planned for ends here: a bug, a constraint violation, a full disk — and a
  * command that broke, named by its type (`CommandFailedError`). Refusals the member can act on
- * never get this far; their edge answers them (docs/04 §4.4). It is logged once, under the
+ * never get this far; their edge answers them (docs/dev/04 §4.4). It is logged once, under the
  * request's id, and the member is told only that it was ours, with the id to quote.
  */
 export const handleError: HandleServerError = ({ error, event, status, message }) => {
@@ -115,7 +115,7 @@ export const handleError: HandleServerError = ({ error, event, status, message }
 	return { message: t('errors.unexpected', { requestId }), requestId };
 };
 
-/** Sign-out may hand over to the identity provider's end-session endpoint (docs/04 §4.4). */
+/** Sign-out may hand over to the identity provider's end-session endpoint (docs/dev/04 §4.4). */
 function signOutFormAction(): string {
 	const { auth, oidc } = getConfig();
 	return formActionDirective(auth.oidc && oidc.rpLogout ? oidc.issuer : null);
@@ -123,7 +123,7 @@ function signOutFormAction(): string {
 
 /**
  * A page's data, tagged with its content — or, when the device already holds exactly that, a
- * bodiless 304 (docs/04 ADR-074). The page is still worked out in full;
+ * bodiless 304 (docs/dev/04 ADR-074). The page is still worked out in full;
  * what is saved is the phone's data, not the server's time.
  */
 async function withEtag(request: Request, response: Response): Promise<Response> {

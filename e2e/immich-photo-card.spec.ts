@@ -3,10 +3,10 @@ import { addPerson, signIn } from './app';
 import { CARD_FACE, linkCardFace, photoTab, unlinkFace, uploadPhotos } from './photo-card';
 
 /*
- * The person page's Photos card (docs/02 §2.14, §2.24.3, docs/design/screens/person.md): the
+ * The person page's Photos card (docs/dev/02 §2.14, §2.24.3, docs/dev/design/screens/person.md): the
  * tabs *All · Stella n · Immich n* over one grid, *All*'s glance of one row with its last tile
  * *All n photos*, *Show more* under Immich's, and the one lightbox that walks the list its tile
- * was opened from. Written after the owner tried #309 in the preview (docs/08 §8.4.1).
+ * was opened from. Written after the owner tried #309 in the preview (docs/dev/08 §8.4.1).
  *
  * The e2e server runs with `IMMICH_DEMO=true`. Every case adds a person of its own, gives them two
  * gallery photos and links them to the demo face Luca Widmer (210 photos), which it unlinks again

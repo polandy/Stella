@@ -8,7 +8,7 @@ import { ulidGenerator } from '../id';
 /*
  * Composition root — the single place that wires concrete adapters (Drizzle repositories,
  * system clock, ULID generator, Bun password hashing) into the domain use-cases' `deps`
- * (docs/08 §8.3). Everything is lazy so importing this module has no side effects and the
+ * (docs/dev/08 §8.3). Everything is lazy so importing this module has no side effects and the
  * build's route analysis never touches the Bun-only database (see db/index.ts).
  *
  * The object graph is `AppServices`, grouped by bounded context: `createServices` builds it once

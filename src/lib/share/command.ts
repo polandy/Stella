@@ -1,7 +1,7 @@
 import type { JsonCommand } from '$lib/commands/commands';
 
 /*
- * The command a share is saved with (docs/02 §2.18.3): the same ones the person page sends,
+ * The command a share is saved with (docs/dev/02 §2.18.3): the same ones the person page sends,
  * so the outbox keeps and sends a share exactly as it would a moment, an idea, a to-do or
  * photos added there. The profile photo is not one: it is cropped and posted on its own.
  */

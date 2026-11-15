@@ -8,7 +8,7 @@ import { mapRelationshipType } from './relationship-types';
 
 /*
  * Monica's relationships, each mapped onto a built-in type where Stella has one and onto a
- * custom type created for it otherwise (docs/02 §2.16, docs/monica-mapping.md).
+ * custom type created for it otherwise (docs/dev/02 §2.16, docs/user/monica-mapping.md).
  */
 
 export function planRelationships(
@@ -66,7 +66,7 @@ export function planRelationships(
 			typeId,
 			description: null,
 			// Monica records neither of these, so there is nothing to carry over. A link it did
-			// record is one that holds, which is what `current` says (docs/02 §2.4).
+			// record is one that holds, which is what `current` says (docs/dev/02 §2.4).
 			sinceDate: null,
 			status: CURRENT_RELATIONSHIP_STATUS,
 			createdBy: opts.userId,

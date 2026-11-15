@@ -5,7 +5,7 @@ import type * as schema from './schema';
 import { apiToken } from './schema';
 
 /*
- * Drizzle adapter for the ApiTokenRepository port (docs/02 §2.16.1). Every write that names a
+ * Drizzle adapter for the ApiTokenRepository port (docs/dev/02 §2.16.1). Every write that names a
  * token by id also names its member, so one member can never withdraw another's token.
  */
 

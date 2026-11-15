@@ -3,7 +3,7 @@ import { now, type Visibility } from './columns';
 import { household, user } from './household';
 import type { DatePrecision } from '../../../dates/partial-date';
 
-/* People and what is kept on each: fields, important dates, tags (docs/03 §3.3). */
+/* People and what is kept on each: fields, important dates, tags (docs/dev/03 §3.3). */
 
 export const contact = sqliteTable(
 	'contact',
@@ -39,7 +39,7 @@ export const contact = sqliteTable(
 		howWeMet: text('how_we_met'),
 		metDate: text('met_date'),
 		metPlace: text('met_place'),
-		// When the household said this person has no last name (docs/02 §2.2.4.2); a last name
+		// When the household said this person has no last name (docs/dev/02 §2.2.4.2); a last name
 		// given later clears it.
 		withoutLastNameAt: integer('without_last_name_at'),
 		archivedAt: integer('archived_at'),
@@ -48,7 +48,7 @@ export const contact = sqliteTable(
 	},
 	(t) => [
 		// Every household-scoped read, and the newest people first for the Home stream
-		// (docs/04 §4.8); a lookup by household alone is served by its first column.
+		// (docs/dev/04 §4.8); a lookup by household alone is served by its first column.
 		index('contact_household_created_idx').on(t.householdId, t.createdAt)
 	]
 );
@@ -74,7 +74,7 @@ export const contactField = sqliteTable(
 );
 
 /*
- * One address shared by everyone who lives there (docs/03 §3.3). It has no visibility of its
+ * One address shared by everyone who lives there (docs/dev/03 §3.3). It has no visibility of its
  * own: it is only ever reached through a member the viewer may see, and it goes with its last
  * member.
  */

@@ -1,20 +1,20 @@
 import type { KinTerm, KinVariant } from '../../kinship/kinship';
 /*
- * Pure graph domain — value types (docs/04 §4.11, docs/02 §2.7).
+ * Pure graph domain — value types (docs/dev/04 §4.11, docs/dev/02 §2.7).
  *
  * This is the neutral model the explorer reasons over: framework- and library-agnostic,
  * with no Cytoscape (or any renderer) types leaking in. The Drizzle-backed adapter feeds it
- * through the `GraphDataSource` port and applies access scoping (docs/03 §3.7); the pure
+ * through the `GraphDataSource` port and applies access scoping (docs/dev/03 §3.7); the pure
  * builders in this folder never touch the database.
  */
 
-/** A node is either a person (contact) or a circle / shared context (docs/02 §2.4.2). */
+/** A node is either a person (contact) or a circle / shared context (docs/dev/02 §2.4.2). */
 export type NodeKind = 'person' | 'circle';
 
 /**
  * Edge kinds carried by the model. `relationship` is a typed pairwise link (its `category`
  * drives colour); `membership` connects a person to a circle; `kinship` is a derived,
- * clearly-inferred link (docs/02 §2.4.1) — added as its own kind so filters and rendering
+ * clearly-inferred link (docs/dev/02 §2.4.1) — added as its own kind so filters and rendering
  * treat it distinctly without special-casing.
  */
 import type { RelationshipCategory } from '../../relationships/categories';
@@ -26,23 +26,23 @@ export interface GraphNode {
 	kind: NodeKind;
 	/** Display label: a person's name or a circle's name. */
 	label: string;
-	/** Person only: deceased contacts are rendered subtly desaturated (docs/05 §5.8). */
+	/** Person only: deceased contacts are rendered subtly desaturated (docs/dev/05 §5.8). */
 	deceased?: boolean;
-	/** Person only: the avatar photo the node wears, when there is one (docs/05 §5.8). */
+	/** Person only: the avatar photo the node wears, when there is one (docs/dev/05 §5.8). */
 	avatarPhotoId?: string | null;
 	/**
 	 * Person only: how a role word for this person is worded — gendered where a gender is on
-	 * record — so the family tree can call them Father rather than Parent (docs/05 §5.8).
+	 * record — so the family tree can call them Father rather than Parent (docs/dev/05 §5.8).
 	 */
 	wording?: KinVariant;
 	/**
 	 * Person only: the first name a caption calls them by ("Friend of Sandra"), or the full
-	 * name where no first name is on record (docs/05 §5.8).
+	 * name where no first name is on record (docs/dev/05 §5.8).
 	 */
 	shortName?: string;
 	/**
-	 * Marked private by its author (docs/03 §3.7): the reader may see it, but a family tree that
-	 * leaves the household carries it only when asked (docs/02 §2.7).
+	 * Marked private by its author (docs/dev/03 §3.7): the reader may see it, but a family tree that
+	 * leaves the household carries it only when asked (docs/dev/02 §2.7).
 	 */
 	private?: true;
 	/** Person only: the year they were born, where the whole year is on record. */
@@ -57,7 +57,7 @@ export interface GraphEdge {
 	source: string;
 	target: string;
 	kind: EdgeKind;
-	/** Present for `relationship` edges; drives the category colour (docs/05 §5.6). */
+	/** Present for `relationship` edges; drives the category colour (docs/dev/05 §5.6). */
 	category?: RelationshipCategory;
 	/** Perspective-neutral label, e.g. "Mother", "via Ski Course", or a derived-kinship term. */
 	label?: string;
@@ -65,12 +65,12 @@ export interface GraphEdge {
 	typeKey?: string;
 	/** For a derived kinship edge: the term and how it is worded, translated at the edge. */
 	kin?: { term: KinTerm; variant: KinVariant };
-	/** `true` when the link is derived/inferred rather than stored (docs/02 §2.4.1). */
+	/** `true` when the link is derived/inferred rather than stored (docs/dev/02 §2.4.1). */
 	derived?: boolean;
 	/** `true` when direction is meaningful (asymmetric relationship, source → target). */
 	directed?: boolean;
 	/**
-	 * `true` for an entered link marked former — an ex-partner, a former colleague (docs/03
+	 * `true` for an entered link marked former — an ex-partner, a former colleague (docs/dev/03
 	 * §3.3). Still a link, drawn muted and dashed; absent on every current one.
 	 */
 	former?: true;
@@ -94,7 +94,7 @@ export interface Neighborhood {
 /**
  * Port through which the pure builders obtain graph data. An adapter (Drizzle) implements it
  * and returns only what the viewer may see; `null` means the node is missing or not visible —
- * indistinguishable on purpose, so existence is never revealed (docs/03 §3.7).
+ * indistinguishable on purpose, so existence is never revealed (docs/dev/03 §3.7).
  */
 export interface GraphDataSource {
 	neighborhood(nodeId: string): Promise<Neighborhood | null>;

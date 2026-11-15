@@ -2,7 +2,7 @@ import { expect, test, type Page } from '@playwright/test';
 import { signIn } from './app';
 
 /*
- * What a Google Contacts export brings to the vCard import (docs/02 §2.16) that a tidy address
+ * What a Google Contacts export brings to the vCard import (docs/dev/02 §2.16) that a tidy address
  * book does not: a merged contact's repeated values, contacts that are only a number or a firm,
  * a contact saved twice, and Google's own CSV offered first. Written after a ~400-contact Google
  * file stopped at its first nameless card every time. Its people (Aaron Doppelt, Ueli Zwilling,

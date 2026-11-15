@@ -2,8 +2,8 @@ import { expect, test } from '@playwright/test';
 import { signIn } from './app';
 
 /*
- * Duplicate & relative suggestions in quick-add (docs/02 §2.2.1). Written after the flow
- * was verified in the running app (docs/08 §8.4.1). Runs against the demo dataset as the
+ * Duplicate & relative suggestions in quick-add (docs/dev/02 §2.2.1). Written after the flow
+ * was verified in the running app (docs/dev/08 §8.4.1). Runs against the demo dataset as the
  * demo admin; the people added here carry a first name (Quill) no seeded person uses.
  */
 
@@ -78,7 +78,7 @@ test('link as relative creates the person and opens their relationship editor wi
 	await editor.getByRole('button', { name: 'Add', exact: true }).click();
 	await await expect(page.locator('#section-relationships > header')).toContainText('1');
 	// In the stored list, not just anywhere on the page: a suggestion's claim and its reason name
-	// the same person too, and every one of those names is a link now (docs/02 §2.4.1).
+	// the same person too, and every one of those names is a link now (docs/dev/02 §2.4.1).
 	await expect(
 		page.getByTestId('relationship-list').getByRole('link', { name: 'Lena Brunner' })
 	).toBeVisible();

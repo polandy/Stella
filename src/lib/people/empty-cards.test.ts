@@ -3,7 +3,7 @@ import { cardShape } from './empty-cards';
 import { CONTACT_SECTIONS } from './sections';
 
 /*
- * How a card of the person page stands while it holds nothing (docs/05 §5.5): most people in a
+ * How a card of the person page stands while it holds nothing (docs/dev/05 §5.5): most people in a
  * household are reference records, and four boxes that each say "nothing" teach the reader to
  * stop looking.
  */

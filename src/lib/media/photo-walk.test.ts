@@ -2,9 +2,9 @@ import { describe, expect, it } from 'bun:test';
 import { photoAfterKey } from './photo-walk';
 
 /*
- * Walking the gallery from the open photo with the arrow keys (docs/02 §2.14). The arrows wrap
+ * Walking the gallery from the open photo with the arrow keys (docs/dev/02 §2.14). The arrows wrap
  * at either end, and they belong to a text field when one has focus: a caption being typed moves
- * its caret, never the photo out from under it (docs/05 §5.9).
+ * its caret, never the photo out from under it (docs/dev/05 §5.9).
  */
 
 describe('photoAfterKey', () => {

@@ -2,7 +2,7 @@ import type { Exclusion } from './exclusions';
 import type { RelationshipTypeOption, SelectableType } from './type-options';
 
 /*
- * How the picker shows what it cannot offer (docs/02 §2.4).
+ * How the picker shows what it cannot offer (docs/dev/02 §2.4).
  *
  * The reason deliberately does **not** go into the entry's own label. An entry reads "X of",
  * and so does the link standing in the way, so writing both in one line — "Grandparent of —

@@ -17,7 +17,7 @@ import {
 import { removeInteraction } from './interactions';
 
 /*
- * Removing a touchpoint (docs/02 §2.6, docs/03 §3.7): its author always, an admin on a shared
+ * Removing a touchpoint (docs/dev/02 §2.6, docs/dev/03 §3.7): its author always, an admin on a shared
  * one. Wired to the real adapter: its participants and the activity entry in the same
  * transaction live there.
  */

@@ -2,7 +2,7 @@ import { describe, expect, it } from 'bun:test';
 import { glanceTiles, mixPhotos, photoKey, photoTabs } from './photo-card';
 
 /*
- * The person page's Photos card (docs/02 §2.14, §2.24.3): what *All* shows — the gallery and
+ * The person page's Photos card (docs/dev/02 §2.14, §2.24.3): what *All* shows — the gallery and
  * the latest Immich photos in one list — and how much of it fits the card's first row.
  */
 

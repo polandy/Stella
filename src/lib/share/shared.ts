@@ -1,5 +1,5 @@
 /*
- * What another app shared into Stella (docs/02 §2.18.3), and where it can go. Pure: the share
+ * What another app shared into Stella (docs/dev/02 §2.18.3), and where it can go. Pure: the share
  * sheet reads it on the device, offline too, and the service worker only hands over the parts.
  *
  * Android is loose about the fields: a browser sharing a page often sends its title as `title`
@@ -82,7 +82,7 @@ export function todoTitleFrom(shared: SharedWords): string {
 
 /**
  * The targets a share can go to, the one picked at first leading. Every target but the
- * profile photo waits in the outbox when Stella cannot be reached (docs/02 §2.18.1); a profile
+ * profile photo waits in the outbox when Stella cannot be reached (docs/dev/02 §2.18.1); a profile
  * photo is cropped and sent at once, so it needs the connection.
  */
 export function choicesFor(shared: Shared, { reachable }: { reachable: boolean }): ShareChoice[] {

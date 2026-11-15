@@ -1,6 +1,6 @@
 /*
- * A person's job title and company (docs/02 §2.2): two free-text fields, shown together as one
- * short form, and searched like a name (docs/02 §2.9). Pure and client-safe — the profile, the
+ * A person's job title and company (docs/dev/02 §2.2): two free-text fields, shown together as one
+ * short form, and searched like a name (docs/dev/02 §2.9). Pure and client-safe — the profile, the
  * People list, ⌘K, the pickers and the search page all ask these functions, so the wording and
  * the "found by the job" rule cannot drift between them.
  */

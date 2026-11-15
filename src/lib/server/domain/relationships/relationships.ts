@@ -19,7 +19,7 @@ import type { Clock } from '../../clock';
 import type { IdGenerator } from '../../id';
 
 /*
- * Relationship domain (docs/02 §2.4). Pure helpers for canonical storage direction and
+ * Relationship domain (docs/dev/02 §2.4). Pure helpers for canonical storage direction and
  * perspective-aware labels, the repository port, and creating and removing a link. Beside it:
  * `details.ts` checks what a link carries, `exclusions.ts` what the records rule out,
  * `edit.ts` corrects a link, and `kinship.ts` reads the kin that follow from the links.
@@ -27,7 +27,7 @@ import type { IdGenerator } from '../../id';
 
 export interface RelationshipType {
 	id: string;
-	/** null for the built-in set; the owning household for a custom type (docs/03 §3.6). */
+	/** null for the built-in set; the owning household for a custom type (docs/dev/03 §3.6). */
 	householdId: string | null;
 	key: string;
 	forwardLabel: string;
@@ -127,7 +127,7 @@ export interface RelationshipUpdate extends RelationshipDetails {
 
 /**
  * The links between people, as the store writes them, plus the one-record reads those writes
- * rest on (docs/08 §8.3). What a screen lists is a read model: a person's ties
+ * rest on (docs/dev/08 §8.3). What a screen lists is a read model: a person's ties
  * (`RelationshipTieReads`), the kinship graph (`KinshipGraphReads`).
  */
 export interface RelationshipRepository {
@@ -142,7 +142,7 @@ export interface RelationshipRepository {
 		exceptId?: string
 	): Promise<boolean>;
 	insert(relationship: NewRelationship): Promise<void>;
-	/** Stores every one of them or, should any fail, none: one transaction (docs/02 §2.4). */
+	/** Stores every one of them or, should any fail, none: one transaction (docs/dev/02 §2.4). */
 	insertAll(relationships: readonly NewRelationship[]): Promise<void>;
 	/** The stored link, or null when the viewer may not see it (or it is not there). */
 	findVisibleTo(viewer: Viewer, id: string): Promise<StoredRelationship | null>;
@@ -243,7 +243,7 @@ export async function createRelationship(
 	}
 
 	// A generation runs one way, and the picker offers both of its sides from one screen, so
-	// the flipped pair is one wrong click away (docs/02 §2.4).
+	// the flipped pair is one wrong click away (docs/dev/02 §2.4).
 	if (
 		GENERATION_TYPE_KEYS.includes(type.key) &&
 		(await deps.relationships.exists(toContactId, fromContactId, input.typeId))
@@ -278,7 +278,7 @@ export async function createRelationship(
 }
 
 /**
- * Take back several links at once — the undo of a batch added together (docs/02 §2.4), so one
+ * Take back several links at once — the undo of a batch added together (docs/dev/02 §2.4), so one
  * *Undo* removes them all or, when any is gone or out of sight, none.
  */
 export async function removeRelationships(

@@ -6,7 +6,7 @@ import type { OidcClaims, OidcPolicy } from './types';
 /*
  * Orchestration of an OIDC callback: verify claims (via the provider port), authorize,
  * resolve/provision the account (via the identity-store port), and report the user id.
- * Tested with fakes — deterministic, no HTTP, no DB (docs/08 §8.3).
+ * Tested with fakes — deterministic, no HTTP, no DB (docs/dev/08 §8.3).
  */
 
 const claims: OidcClaims = {

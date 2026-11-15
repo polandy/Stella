@@ -19,7 +19,7 @@ export const common = {
 	'common.search': 'Search',
 	'common.loading': 'Loading…',
 	'common.undo': 'Undo',
-	/** The mark on the person a member has said they are (docs/02 §2.1.3). */
+	/** The mark on the person a member has said they are (docs/dev/02 §2.1.3). */
 	'common.you': 'You',
 	'common.optional': 'optional',
 	'common.today': 'today',

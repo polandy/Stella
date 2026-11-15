@@ -2,7 +2,7 @@ import { describe, expect, it } from 'bun:test';
 import { rankNameCandidates, type NameCandidate } from './suggestions';
 
 /*
- * Duplicate & relative suggestions (docs/02 §2.2.1). A pure ranker: given the name being
+ * Duplicate & relative suggestions (docs/dev/02 §2.2.1). A pure ranker: given the name being
  * typed and the people the user may see, it returns the likely duplicates and relatives,
  * best first, each with the reason it was picked. Visibility is the caller's job (§2.10).
  */

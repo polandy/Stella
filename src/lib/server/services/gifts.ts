@@ -10,8 +10,8 @@ import { convertHeldGifts, type HeldGiftsReport } from '../domain/gifts/held-gif
 import type { IdGenerator } from '../id';
 
 /*
- * The `gifts` bounded context of the composition root (docs/08 §8.3): the ideas, given and
- * received gifts kept on a person (docs/02 §2.25). Built once per process by `createServices`;
+ * The `gifts` bounded context of the composition root (docs/dev/08 §8.3): the ideas, given and
+ * received gifts kept on a person (docs/dev/02 §2.25). Built once per process by `createServices`;
  * the edge reads it off `locals.services.gifts`, and the story context reads its repository for
  * the given and received gifts it shows.
  *
@@ -23,7 +23,7 @@ export interface GiftServices {
 	gifts: GiftRepository;
 	giftDeps: GiftDeps;
 	/**
-	 * Makes gift records of the gifts still held as Monica notes or gift touchpoints (docs/02
+	 * Makes gift records of the gifts still held as Monica notes or gift touchpoints (docs/dev/02
 	 * §2.25.4); run at start and after a restore, writing what it did to the server log.
 	 */
 	convertHeldGifts: () => Promise<HeldGiftsReport>;

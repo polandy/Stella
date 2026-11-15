@@ -4,7 +4,7 @@ import type { DirectClaim } from './claims';
 import type { KinTerm, KinVariant } from './kinship';
 
 /*
- * What a worked-out relative is called (docs/02 §2.4.1). The kinship engine is pure and
+ * What a worked-out relative is called (docs/dev/02 §2.4.1). The kinship engine is pure and
  * language-free: it decides the term and whether the person is named male, female or
  * neutrally, and the wording is looked up here.
  */

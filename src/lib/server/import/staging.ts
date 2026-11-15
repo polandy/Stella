@@ -3,7 +3,7 @@ import { join } from 'node:path';
 import { ulid } from 'ulid';
 
 /*
- * Staging for uploaded Monica dumps (docs/02 §2.16). The wizard previews first and imports on
+ * Staging for uploaded Monica dumps (docs/dev/02 §2.16). The wizard previews first and imports on
  * confirm, in two requests; the dump waits on disk in between under an opaque token rather
  * than travelling back through the browser. Photo uploads reuse the token to re-plan and find
  * which contact a file belongs to. Files are removed when the import is finished; the ones an

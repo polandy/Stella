@@ -4,9 +4,9 @@
 	import { useTranslate } from '$lib/i18n/context.svelte';
 
 	/*
-	 * The moment composer's photo button: an icon button, as it acts at once (docs/05 §5.7),
+	 * The moment composer's photo button: an icon button, as it acts at once (docs/dev/05 §5.7),
 	 * with a badge counting what was picked. With Immich on the instance it opens a menu that
-	 * also offers *From Immich* (docs/02 §2.24.9).
+	 * also offers *From Immich* (docs/dev/02 §2.24.9).
 	 */
 
 	interface Props {

@@ -2,7 +2,7 @@
 	import type { Segment } from '$lib/i18n/linked';
 
 	/*
-	 * A sentence whose names are ways to those people (docs/05 §5.4, docs/02 §2.4.1).
+	 * A sentence whose names are ways to those people (docs/dev/05 §5.4, docs/dev/02 §2.4.1).
 	 *
 	 * The sentence arrives already said and already cut up — the language decided where each
 	 * person landed (`src/lib/i18n/linked.ts`) — so there is nothing to interpolate here.

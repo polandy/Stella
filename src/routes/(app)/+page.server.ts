@@ -30,7 +30,7 @@ import { memoriesOn } from '$lib/server/domain/memories/memories';
 import { MEMORY_BAND_CAP, MEMORY_STRIP_CAP } from '$lib/memories/memories';
 
 /*
- * Home (docs/02 §2.22, §2.12): the "What happened?" capture field, the household stream, and
+ * Home (docs/dev/02 §2.22, §2.12): the "What happened?" capture field, the household stream, and
  * the rail beside it — what is to do and what is coming up. Everything on it is a scoped query over existing
  * tables; capture is the moments use-case. The layout guard already ensures `locals.user`.
  */
@@ -58,24 +58,24 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 			// Who the household can still act on — the browsing scope — among just those.
 			listBrowsableNamesAmong(locals.services.people.contactNameDeps, viewer, named.ids),
 			locals.services.records.importantDates.listSourcesVisibleTo(viewer),
-			// Just enough of the household to tell whether it has begun (docs/02 §2.22.3).
+			// Just enough of the household to tell whether it has begun (docs/dev/02 §2.22.3).
 			listPeopleEnoughForFirstRun(locals.services.people.contactDirectoryDeps, viewer),
-			// For the Tags row and the line over a stream narrowed by tags (docs/02 §2.20.2).
+			// For the Tags row and the line over a stream narrowed by tags (docs/dev/02 §2.20.2).
 			locals.services.story.entryTags.listVisibleTo(viewer),
 			// Every open one: the band picks the pressing ones, and counts the rest for *Show all*.
 			readHouseholdTodos(locals),
-			// One past each cap, so the band knows whether *More* has more (docs/02 §2.12.1).
+			// One past each cap, so the band knows whether *More* has more (docs/dev/02 §2.12.1).
 			memoriesOn(locals.services.media.memoryDeps, viewer, day, {
 				entries: MEMORY_BAND_CAP + 1,
 				photos: MEMORY_STRIP_CAP + 1
 			}),
-			// The composer offers whoever shares the moment's person's home (docs/02 §2.20.3).
+			// The composer offers whoever shares the moment's person's home (docs/dev/02 §2.20.3).
 			listHomeMembers(locals.services.records.homeListDeps, viewer)
 		]);
 	const stream = await streamForView(locals.services.people.contactNameDeps, viewer, items);
 
 	const dates = upcomingDates(dateSources, day);
-	// A person coming up with open gift ideas says how many (docs/02 §2.13.3).
+	// A person coming up with open gift ideas says how many (docs/dev/02 §2.13.3).
 	const ideas = await countOpenIdeas(
 		locals.services.gifts.giftDeps,
 		viewer,
@@ -91,10 +91,10 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 		todos,
 		memories: memoryBandForView(memories),
 		// Below `lg` the rail only precedes the stream when a date is close or a to-do is due
-		// (docs/05 §5.5.1).
+		// (docs/dev/05 §5.5.1).
 		railFirst: hasImminentDate(upcoming) || hasPressingTodo(todos, day),
 		linkSuggestion: linkSuggestionAmong(named, onList),
-		// The first-run card (docs/02 §2.22.3), or null once the household has begun.
+		// The first-run card (docs/dev/02 §2.22.3), or null once the household has begun.
 		welcome: welcomeSteps({
 			peopleIds: firstPeople,
 			selfContactId: user.selfContactId,
@@ -116,7 +116,7 @@ function captureProblem(field: string | null): MessageKey {
 }
 
 export const actions: Actions = {
-	// The *To-dos* band ticks here (docs/02 §2.26.6).
+	// The *To-dos* band ticks here (docs/dev/02 §2.26.6).
 	...householdTodoActions('/'),
 	capture: async ({ request, locals }) => {
 		const viewer = requireViewer(locals);

@@ -10,7 +10,7 @@ import { CommandIdSchema } from '../../commands/payload-fields';
 import { COMMAND_PAYLOAD_SCHEMAS, PhotoWireSchema } from '../../commands/payloads';
 
 /*
- * Reading a command off the wire (docs/04 §4.11.2). The edge's half of the
+ * Reading a command off the wire (docs/dev/04 §4.11.2). The edge's half of the
  * vocabulary: what the domain may assume about a command, checked once here for the form
  * actions and for `POST /api/commands` alike, with the payload schemas `lib/commands/payloads.ts`
  * owns. Anything that is not exactly a known command is refused whole; a queued item written

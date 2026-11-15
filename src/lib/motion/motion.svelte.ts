@@ -4,7 +4,7 @@ import type { TransitionConfig } from 'svelte/transition';
 import { expandMs, fadeMs, gapToTakeUp, glidePlan, revealFrame, standardEasing } from './motion';
 
 /*
- * The adapter between the motion rules (`motion.ts`, docs/05 §5.11) and the DOM. It holds the
+ * The adapter between the motion rules (`motion.ts`, docs/dev/05 §5.11) and the DOM. It holds the
  * browser APIs — computed styles, the Web Animations API, a ResizeObserver — and decides
  * nothing: every duration and every frame comes from the pure module.
  *
@@ -135,7 +135,7 @@ export interface GlideOptions {
  * A box whose content changes under it glides from the height on screen to the new one. Only a
  * change of `key` glides: a window resized or a photo loading moves the box the way it always
  * did. The box says where it is in `data-motion` — `moving` or `settled` — which is what a test
- * waits on instead of a duration (docs/08 §8.4.2).
+ * waits on instead of a duration (docs/dev/08 §8.4.2).
  */
 export function glide(node: HTMLElement, options: GlideOptions): ActionReturn<GlideOptions> {
 	let key = options.key;
@@ -199,7 +199,7 @@ export function glide(node: HTMLElement, options: GlideOptions): ActionReturn<Gl
 }
 
 /**
- * A veiled private entry shown (docs/02 §2.10.1): its blur clears rather than the text popping
+ * A veiled private entry shown (docs/dev/02 §2.10.1): its blur clears rather than the text popping
  * in over the stand-in. With reduced motion it is simply there.
  */
 export function unveil(_node: Element): TransitionConfig {

@@ -8,27 +8,27 @@ before §4.1.
 
 Every behaviour change is reflected in its doc **in the same PR** — never as a follow-up. `CLAUDE.md` states it as a non-negotiable: "When you change the model or a behavior, update the matching `docs/` file in the same change."
 
-`docs/02-features.md`, `docs/04-architecture.md` and `docs/05-ui-design-system.md` are each
-just an index now — one line per `§` linking to its own file under `docs/features/`,
-`docs/architecture/` or `docs/design/`. Find the owning `§` in the index, then edit its
+`docs/dev/02-features.md`, `docs/dev/04-architecture.md` and `docs/dev/05-ui-design-system.md` are each
+just an index now — one line per `§` linking to its own file under `docs/dev/features/`,
+`docs/dev/architecture/` or `docs/dev/design/`. Find the owning `§` in the index, then edit its
 section file directly.
 
 | Change | Doc that must move with it |
 |---|---|
-| New or changed feature behaviour | the owning section file under `docs/features/` (via `docs/02-features.md`'s index) |
-| Tables, columns, constraints, the visibility model | `docs/03-data-model.md` |
-| Structure, wiring, a new port/adapter, config, a real decision | the owning section file under `docs/architecture/` (via `docs/04-architecture.md`'s index); real decisions go in `docs/architecture/4.9-decision-log.md` |
-| A new screen, component or interaction pattern | the owning section file under `docs/design/` (via `docs/05-ui-design-system.md`'s index); a screen's rules go in its `docs/design/screens/` file, under *Rules* |
-| Milestone scope moving | `docs/06-roadmap.md` |
-| Anything an operator must do differently | `docs/07-deployment.md` **and** `docs/install.md` |
-| Anything a user does differently | `docs/using-stella.md`, and `README.md` if it is on the front page |
+| New or changed feature behaviour | the owning section file under `docs/dev/features/` (via `docs/dev/02-features.md`'s index) |
+| Tables, columns, constraints, the visibility model | `docs/dev/03-data-model.md` |
+| Structure, wiring, a new port/adapter, config, a real decision | the owning section file under `docs/dev/architecture/` (via `docs/dev/04-architecture.md`'s index); real decisions go in `docs/dev/architecture/4.9-decision-log.md` |
+| A new screen, component or interaction pattern | the owning section file under `docs/dev/design/` (via `docs/dev/05-ui-design-system.md`'s index); a screen's rules go in its `docs/dev/design/screens/` file, under *Rules* |
+| Milestone scope moving | `docs/dev/06-roadmap.md` |
+| Anything an operator must do differently | `docs/dev/07-deployment.md` **and** `docs/user/install.md` |
+| Anything a user does differently | `docs/user/using-stella.md`, and `README.md` if it is on the front page |
 
-- `src/lib/server/db/schema/` plus the generated `drizzle/` migration are the source of truth for the schema; `docs/03` describes it. Flag a schema change that ships without its migration or without a `--name` (docs/08 §8.11), and a doc that redefines columns rather than describing them.
+- `src/lib/server/db/schema/` plus the generated `drizzle/` migration are the source of truth for the schema; `docs/dev/03` describes it. Flag a schema change that ships without its migration or without a `--name` (docs/dev/08 §8.11), and a doc that redefines columns rather than describing them.
 - Check the reverse too: no doc may still describe behaviour this PR removed or changed. A stale sentence is a finding.
-- **User docs are promises.** `docs/install.md` and `docs/using-stella.md` are read by someone deciding whether to trust the app. A PR that changes a shortcut, a default, an env var or a screen and leaves those files describing the old behaviour has published something untrue.
+- **User docs are promises.** `docs/user/install.md` and `docs/user/using-stella.md` are read by someone deciding whether to trust the app. A PR that changes a shortcut, a default, an env var or a screen and leaves those files describing the old behaviour has published something untrue.
 - Doc comments on exported symbols must match actual behaviour, and every exported symbol has one (`CLAUDE.md`, §8.6).
 
-## 2. Decisions (`docs/architecture/4.9-decision-log.md`, linked from `docs/04-architecture.md` §4.9)
+## 2. Decisions (`docs/dev/architecture/4.9-decision-log.md`, linked from `docs/dev/04-architecture.md` §4.9)
 
 Stella keeps an **ADR-lite decision log** rather than separate ADR files.
 
@@ -38,16 +38,16 @@ Stella keeps an **ADR-lite decision log** rather than separate ADR files.
 
 ## 3. Implementation quality — against the project standard
 
-Apply `CLAUDE.md` and `docs/08` to the diff rather than re-deriving them. Flag freshly introduced violations.
+Apply `CLAUDE.md` and `docs/dev/08` to the diff rather than re-deriving them. Flag freshly introduced violations.
 
 - **Framework-agnostic domain** — the invariant most worth checking every time. `src/lib/server/{domain,access}` is plain TypeScript: no `@sveltejs/kit`, no `$env`, no `$app`, no `$lib/...` alias reaching sideways into the edge. A single SvelteKit import there destroys the testability those directories exist for. Same for `src/lib/graph/model/`, which must stay free of Cytoscape.
 - **Ports & Adapters + DI** (§8.3): a use-case takes a narrow `deps` argument (repository / `clock` / `idGenerator`); pure logic takes none. A domain function that reaches for a singleton, a concrete Drizzle handle, `Date.now()` or `crypto.randomUUID()` ambiently is a finding — that is the seam its test needs.
 - **The access layer is the only authz path**: every read is scoped through `src/lib/server/access/` (`contactVisibleTo`, `childRecordVisibleTo`, `relationshipVisibleTo`, …). A route or component querying the DB directly, or a repository filtering visibility with its own hand-rolled `where`, is a blocker, not a note. Private means private *including from search, the stream and other people's pages*.
 - **Adapters map at the boundary**: SQLite has no booleans; a `0`/`1` that escapes into domain types is a finding, as is a row shape leaking out of `src/lib/server/db/`.
-- **Semantic tokens only** in UI: `--fg`, `--bg`, `--primary`, `--border`, … never a raw `--ctp-*` or a hex literal in a component. The exception is documented and narrow — the Cytoscape adapter resolves tokens to hex because a canvas cannot read CSS variables (`docs/05` §5.8).
+- **Semantic tokens only** in UI: `--fg`, `--bg`, `--primary`, `--border`, … never a raw `--ctp-*` or a hex literal in a component. The exception is documented and narrow — the Cytoscape adapter resolves tokens to hex because a canvas cannot read CSS variables (`docs/dev/05` §5.8).
 - **Strict TS, no `any`**, fail loud with typed `Error` subclasses carrying actionable messages, and never a silently discarded error (`_ = fn()`) on a path that persists state.
 - No magic strings or numbers — hoist a literal to a named constant once it is repeated across files or compared against. No dead code kept "for later". No global mutable state.
-- **Comment verbosity**: the non-obvious *what* plus the one *why*. Flag comments that narrate the change, restate the code, or duplicate a doc's rationale — a `docs/02 §2.x` pointer beats a paragraph. Flag comments a well-named variable would make unnecessary.
+- **Comment verbosity**: the non-obvious *what* plus the one *why*. Flag comments that narrate the change, restate the code, or duplicate a doc's rationale — a `docs/dev/02 §2.x` pointer beats a paragraph. Flag comments a well-named variable would make unnecessary.
 - **New dependency?** It needs a one-line justification and must be **exact-pinned** — no `^`, no `~` — with `bun.lock` committed (§8.8). Prefer Bun/Web APIs over a package. Docker base images and Actions pinned the same way.
 - Run `bun run check`. It must be clean: zero errors *and* zero warnings.
 
@@ -59,7 +59,7 @@ Test-first is non-negotiable for unit and integration tests: every new behaviour
 
 ### 4.1 What the tests must look like
 
-- **Naming as specification** — `rejects a moment mentioning nobody without creating or saving anything`, not `test capture 2`. Reference the `docs/02 §2.x` id in the file's header comment where one applies.
+- **Naming as specification** — `rejects a moment mentioning nobody without creating or saving anything`, not `test capture 2`. Reference the `docs/dev/02 §2.x` id in the file's header comment where one applies.
 - **The right layer** (§8.5): pure domain logic and visibility rules are unit-tested with hand-written fakes; adapters get an integration test against **real in-memory SQLite** (`new Database(':memory:')` + `migrate()`), never a DB mock. Routes, hooks and component markup stay thin enough to be covered by integration and e2e.
 - **Failure paths**, not just the happy path, wherever the code enforces a correctness or authorization rule. `CLAUDE.md`: safety-critical code needs failure-path coverage.
 - **A test asserting something did NOT happen needs a positive signal** — recorded calls, settled state, a counter — otherwise it is false-green by construction. The visibility tests are the archetype: asserting that member B cannot see A's private contact is worthless unless the same assertion also proves B *can* see the shared one. Check every "is not visible" test for its positive control.
@@ -72,16 +72,16 @@ Test-first is non-negotiable for unit and integration tests: every new behaviour
 
 If the PR touches `src/routes/` or `src/lib/components/`:
 
-- **The owning section file under `docs/design/` must be updated** (via `docs/05-ui-design-system.md`'s index) in the same PR for a new screen, component or interaction pattern.
+- **The owning section file under `docs/dev/design/` must be updated** (via `docs/dev/05-ui-design-system.md`'s index) in the same PR for a new screen, component or interaction pattern.
 - **The feature's UI ships with the feature.** A backend capability with "UI in a follow-up" is a blocker, not a note.
 - **The delivery loop is part of the review** (§8.4.1). The order is: implement with unit/integration tests → the maintainer verifies it in the running app → **on their OK** the Playwright e2e is added. So:
   - A PR whose e2e was written *before* any manual verification is a finding — an unverified e2e encodes a guess and passes, which is worse than no e2e.
   - A PR with no e2e is **not** automatically a finding. Check whether the maintainer has signed off yet. If they have not, the correct verdict is "e2e pending sign-off", named as a blocker for merge-readiness, not a missing test.
   - If they have signed off and there is still no e2e, that is a finding.
 - **e2e lives in `e2e/*.spec.ts`** and runs with `bun run test:e2e`, which builds the app, serves it on `127.0.0.1:4173` against a fresh demo-seeded database, and drives it from the pinned Playwright container with `--network host`. Local Chromium does not run on this host — never try to run a browser directly. The suite shares one database and runs serially: check that a new case does not depend on another's data, and that it does not collide with the demo dataset (invent names the Brunners do not use).
-- **Read the spec's promises against the test body, sentence by sentence.** A `docs/02` clause is a list of promises, and each clause has to be findable as an assertion. "Everyone else is attached as a mention **and it shows up on their page too**" is two promises; a PR that tests the first has written a false spec. Where a promise turns out not to be assertable through the UI, the spec sentence is what changes — do not leave it standing as if a lower-layer unit test satisfied it.
+- **Read the spec's promises against the test body, sentence by sentence.** A `docs/dev/02` clause is a list of promises, and each clause has to be findable as an assertion. "Everyone else is attached as a mention **and it shows up on their page too**" is two promises; a PR that tests the first has written a false spec. Where a promise turns out not to be assertable through the UI, the spec sentence is what changes — do not leave it standing as if a lower-layer unit test satisfied it.
 - **Check the spec's claim against the screen, not only against the test.** The same reading catches a promise the *implementation* never made: if the docs say the household can be invited and the built app offers no such screen, the finding is a wrong doc sentence, not a missing test.
 - **Mutation-prove the case that owns the PR's headline defect.** Revert the fix in the production code, watch that exact case go red, restore. A case that stays green is not a test, whatever its name says — and this is the cheapest way to find one. `bun run test:e2e` rebuilds on every run, so a production-side edit is picked up; do not assume that of any other runner you reach for.
 - **Never judge visibility, layout or rendering from the source.** Render it and measure. Two shipped defects came from exactly that: a Cytoscape canvas that collapsed to zero height while its markup looked right, and a duplicated word in a template that only reading the screen revealed. Where a claim is about pixels, timing or resource use, take the measurement.
 - **Theming**: colours come from the semantic tokens in `src/app.css`. A hard-coded colour or a parallel colour system is a finding. Both themes must be designed, not inverted — check the change in light *and* dark.
-- **Accessibility** (`docs/05` §5.9): labelled controls, visible focus, correct roles. Svelte's a11y warnings are errors here — `bun run check` must be warning-free.
+- **Accessibility** (`docs/dev/05` §5.9): labelled controls, visible focus, correct roles. Svelte's a11y warnings are errors here — `bun run check` must be warning-free.

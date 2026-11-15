@@ -7,7 +7,7 @@ import { translator } from '$lib/server/i18n/say';
 import type { RequestHandler } from './$types';
 
 /*
- * What deleting a circle would take (docs/02 §2.4.2), for its confirm step. The step asks for it
+ * What deleting a circle would take (docs/dev/02 §2.4.2), for its confirm step. The step asks for it
  * only when it opens, so the circle page's `load` does not count photos for a step most visits
  * never open. A circle the viewer may not delete, cannot see, or that is gone answers 404.
  */

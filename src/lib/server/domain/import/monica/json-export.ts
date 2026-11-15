@@ -22,7 +22,7 @@ import type {
 } from './monica-export';
 
 /*
- * Monica's JSON export, read into the same `SourceExport` the SQL dump produces (docs/02
+ * Monica's JSON export, read into the same `SourceExport` the SQL dump produces (docs/dev/02
  * §2.16), so the mapping downstream never learns which file it came from.
  *
  * The shape follows Monica's own export resources (`app/ExportResources/*`): a record is

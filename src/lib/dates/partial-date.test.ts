@@ -7,7 +7,7 @@ import {
 	type PartialDate
 } from './partial-date';
 
-/* A date that may be known only in part (docs/03 §3.4). */
+/* A date that may be known only in part (docs/dev/03 §3.4). */
 
 const full = (value: string): PartialDate => ({ value, precision: 'full' });
 const monthDay = (value: string): PartialDate => ({ value, precision: 'month_day' });

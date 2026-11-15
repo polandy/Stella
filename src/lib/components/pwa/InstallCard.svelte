@@ -6,7 +6,7 @@
 	import Icon from '../ui/Icon.svelte';
 
 	/*
-	 * The standing offer to install Stella on this device (docs/02 §2.18).
+	 * The standing offer to install Stella on this device (docs/dev/02 §2.18).
 	 *
 	 * Deliberately in Settings rather than as a prompt over the app: an install banner on a
 	 * page somebody opened to read about their aunt is an interruption, and the browser
