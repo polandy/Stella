@@ -4,6 +4,7 @@
 	import DateField from '$lib/components/ui/DateField.svelte';
 	import Icon from '$lib/components/ui/Icon.svelte';
 	import CreatePersonPanel from '$lib/components/people/CreatePersonPanel.svelte';
+	import { deviceDay } from '$lib/dates/today';
 	import { useTranslate } from '$lib/i18n/context.svelte';
 	import { isKnownByMoreThanAFirstName, splitTypedName } from '$lib/people/new-person';
 	import type { SelectablePerson } from '$lib/people/select';
@@ -133,6 +134,7 @@
 					bind:value={draft.birthDate}
 					label={t('components.personSearch.birthDate')}
 					allowYearUnknown
+					ageOn={deviceDay()}
 				/>
 			</div>
 		</div>

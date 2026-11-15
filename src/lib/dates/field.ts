@@ -68,7 +68,7 @@ export function partsToIso(parts: DateParts): string {
 }
 
 /** What is wrong with the segments as they stand, in the field's own terms. */
-export type DateProblem = 'incomplete' | 'noSuchDay' | 'inFuture';
+export type DateProblem = 'incomplete' | 'noSuchDay' | 'inFuture' | 'ageUnreadable';
 
 /** What the field may be told about the date it is asking for. */
 export interface DateExpectation {
@@ -76,6 +76,8 @@ export interface DateExpectation {
 	allowYearUnknown?: boolean;
 	/** The latest day allowed, as a full ISO day. */
 	max?: string;
+	/** The age typed in place of the year, as typed. */
+	age?: string;
 }
 
 /**
@@ -91,6 +93,9 @@ export function dateProblem(parts: DateParts, expected: DateExpectation = {}): D
 	const month = parts.month.trim();
 	const year = parts.year.trim();
 	if (day === '' && month === '' && year === '') return null;
+	if ((expected.age ?? '').trim() !== '' && year === '' && day !== '' && month !== '') {
+		return 'ageUnreadable';
+	}
 
 	const yearAnswered = expected.allowYearUnknown === true || year !== '';
 	if (day === '' || month === '' || !yearAnswered) return 'incomplete';
@@ -112,4 +117,36 @@ export function isoToParts(value: string): DateParts {
 		month: String(Number(match[2])),
 		year: match[1] ?? ''
 	};
+}
+
+/** The oldest age the field takes: a typo beyond it would place a birthday centuries back. */
+const MAX_AGE = 150;
+
+/**
+ * The birth year for a day and month and the age someone is `today` (`YYYY-MM-DD`), as the
+ * field's year segment; empty while the day, month or age is missing or no whole age. A birthday
+ * on `today` has passed; 29 February counts as still to come until 1 March in a common year.
+ */
+export function birthYearFromAge(parts: DateParts, age: string, today: string): string {
+	const day = Number(parts.day.trim());
+	const month = Number(parts.month.trim());
+	const years = age.trim();
+	if (!day || !month || !/^\d{1,3}$/.test(years) || Number(years) > MAX_AGE) return '';
+
+	const [thisYear, thisMonth, thisDay] = today.split('-').map(Number);
+	const stillToCome = month > thisMonth || (month === thisMonth && day > thisDay);
+	return String(thisYear - Number(years) - (stillToCome ? 1 : 0));
+}
+
+/** A full ISO day with its weekday, e.g. `So., 15.11.2026`; null for a year-less day or none. */
+export function weekdayDate(iso: string, intlLocale: string): string | null {
+	const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso);
+	if (!match) return null;
+	return new Intl.DateTimeFormat(intlLocale, {
+		weekday: 'short',
+		day: '2-digit',
+		month: '2-digit',
+		year: 'numeric',
+		timeZone: 'UTC'
+	}).format(new Date(Date.UTC(Number(match[1]), Number(match[2]) - 1, Number(match[3]))));
 }

@@ -1,10 +1,12 @@
 import { describe, expect, it } from 'bun:test';
 import {
+	birthYearFromAge,
 	dateProblem,
 	isoToParts,
 	monthNames,
 	partsToIso,
 	segmentOrder,
+	weekdayDate,
 	type DateParts
 } from './field';
 
@@ -140,5 +142,87 @@ describe('dateProblem', () => {
 		expect(
 			dateProblem(parts({ day: '31', month: '12' }), { allowYearUnknown: true, max: '2026-09-13' })
 		).toBe(null);
+	});
+});
+
+describe('birthYearFromAge', () => {
+	const TODAY = '2026-11-15';
+
+	it('counts back the age when this year’s birthday has passed', () => {
+		expect(birthYearFromAge(parts({ day: '3', month: '4' }), '36', TODAY)).toBe('1990');
+	});
+
+	it('counts back one more year when this year’s birthday is still to come', () => {
+		expect(birthYearFromAge(parts({ day: '20', month: '12' }), '36', TODAY)).toBe('1989');
+	});
+
+	it('takes a birthday today as already passed', () => {
+		expect(birthYearFromAge(parts({ day: '15', month: '11' }), '36', TODAY)).toBe('1990');
+	});
+
+	it('places an age of 0 in this year or the last, never the future', () => {
+		expect(birthYearFromAge(parts({ day: '15', month: '11' }), '0', TODAY)).toBe('2026');
+		expect(birthYearFromAge(parts({ day: '1', month: '1' }), '0', TODAY)).toBe('2026');
+		expect(birthYearFromAge(parts({ day: '16', month: '11' }), '0', TODAY)).toBe('2025');
+	});
+
+	it('counts 29 February as not yet passed until March in a common year', () => {
+		const leapDay = parts({ day: '29', month: '2' });
+		expect(birthYearFromAge(leapDay, '6', '2027-02-28')).toBe('2020');
+		expect(birthYearFromAge(leapDay, '7', '2027-03-01')).toBe('2020');
+	});
+
+	it('hands back a year without that 29 February, for the field to refuse', () => {
+		const year = birthYearFromAge(parts({ day: '29', month: '2' }), '5', TODAY);
+		expect(year).toBe('2021');
+		expect(dateProblem(parts({ day: '29', month: '2', year }))).toBe('noSuchDay');
+	});
+
+	it('gives no year while the day or month is missing', () => {
+		expect(birthYearFromAge(parts({ month: '4' }), '36', TODAY)).toBe('');
+		expect(birthYearFromAge(parts({ day: '3' }), '36', TODAY)).toBe('');
+	});
+
+	it('gives no year for an age that is not a whole number of years', () => {
+		for (const age of ['', ' ', '-1', '3.5', 'abc', '151']) {
+			expect(birthYearFromAge(parts({ day: '3', month: '4' }), age, TODAY)).toBe('');
+		}
+	});
+
+	it('reads an age with surrounding spaces', () => {
+		expect(birthYearFromAge(parts({ day: '3', month: '4' }), ' 36 ', TODAY)).toBe('1990');
+	});
+});
+
+describe('weekdayDate', () => {
+	it('names the weekday with the date, in the reader’s language', () => {
+		expect(weekdayDate('2026-11-15', 'de-DE')).toBe('So., 15.11.2026');
+		expect(weekdayDate('2026-11-15', 'en-GB')).toBe('Sun, 15/11/2026');
+	});
+
+	it('finds the weekday of a leap day', () => {
+		expect(weekdayDate('2024-02-29', 'de-DE')).toBe('Do., 29.02.2024');
+	});
+
+	it('has nothing to say for a year-less day or no value', () => {
+		expect(weekdayDate('--04-03', 'de-DE')).toBeNull();
+		expect(weekdayDate('', 'de-DE')).toBeNull();
+	});
+});
+
+describe('dateProblem with an age typed', () => {
+	it('calls an age that gave no year unreadable once the day and month are in', () => {
+		expect(dateProblem(parts({ day: '3', month: '4' }), { age: 'abc' })).toBe('ageUnreadable');
+	});
+
+	it('leaves a usable age to the date it worked out', () => {
+		expect(dateProblem(parts({ day: '3', month: '4', year: '1990' }), { age: '36' })).toBeNull();
+	});
+
+	it('asks for the day and month first, and ignores an emptied age', () => {
+		expect(dateProblem(parts({ month: '4' }), { age: '36' })).toBe('incomplete');
+		expect(
+			dateProblem(parts({ day: '3', month: '4' }), { age: ' ', allowYearUnknown: true })
+		).toBeNull();
 	});
 });

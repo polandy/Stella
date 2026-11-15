@@ -221,6 +221,11 @@ family knowing, the rest of the household sees *"… removed …"* in the stream
 **Adding someone** takes a name and nothing else. Everything beyond that — gender,
 description, phone, email, address, birthday — is optional and can be filled in whenever.
 
+A **birthday** takes the day and the month, then either the year or, after *or*, how old the
+person is today — Stella works the year out from the age. Leave both blank if you do not know
+the year. Every date field shows the day it names with its weekday underneath, *Sun, 15/11/2026*,
+so a mistyped day stands out before you save.
+
 **Gender** is set with the name: tap the name (the pencil beside it), pick *Female*, *Male*,
 *Diverse* or *Not on record* below the name fields, and **Save**. It decides how Stella names
 relatives — *Aunt* or *Uncle* with female or male, *Aunt or uncle* otherwise.
