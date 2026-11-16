@@ -17,12 +17,6 @@ export const UPCOMING_HORIZON_DAYS = 30;
 /** Most upcoming dates Home shows at once. */
 export const UPCOMING_LIMIT = 5;
 
-/**
- * How close a date has to be for the rail to be worth the top of a phone screen
- * (docs/dev/05 §5.5). Beyond it the rail follows the stream instead of preceding it.
- */
-export const IMMINENT_HORIZON_DAYS = 14;
-
 export interface UpcomingSource {
 	/** The `important_date` row's id; null for a derived birthday, which has no row. */
 	dateId: string | null;
@@ -153,15 +147,4 @@ export function upcomingDates(
 				a.kind.localeCompare(b.kind)
 		)
 		.slice(0, limit);
-}
-
-/**
- * Whether anything is due within `withinDays` — the question Home asks to decide whether the
- * rail earns its place above the stream on a phone.
- */
-export function hasImminentDate(
-	dates: UpcomingDate[],
-	withinDays: number = IMMINENT_HORIZON_DAYS
-): boolean {
-	return dates.some((date) => date.daysUntil <= withinDays);
 }

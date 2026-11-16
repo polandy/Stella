@@ -183,18 +183,16 @@ test.describe('on a phone', () => {
 
 	test('keeps the person search above the rail', async ({ page }) => {
 		// The rail is worth the top of a phone screen; the field it would push off is worth more.
-		// The birthdays put the rail in front of the stream, which is the only arrangement in
-		// which it can push the field down — without them this would pass on the broken layout.
+		// The birthdays make sure there is a rail to measure.
 		await addBirthdaysSoon(page, ['Mara Aebi']);
 		const bar = await page.getByRole('combobox', { name: 'Find a person…' }).boundingBox();
 		const rail = await page.getByRole('complementary', { name: 'At a glance' }).boundingBox();
 		expect(bar!.y).toBeLessThan(rail!.y);
 	});
 
-	test('puts the rail above the stream while a date is days away', async ({ page }) => {
-		// Seeded dates drift with the calendar, so this makes its own. The other side of the
-		// rule — the rail below the stream — is `hasImminentDate`'s unit tests: nothing here
-		// can empty a household's calendar deterministically.
+	test('puts the rail above the stream, which loads on without end', async ({ page }) => {
+		// Seeded dates drift with the calendar, so this makes its own; the rail would stand above
+		// the stream without it too (docs/dev/05 §5.5.1).
 		await addBirthdaysSoon(page, ['Yannick Zwahlen'], 1);
 		await page.getByTestId('coming-up-toggle').click();
 

@@ -2,6 +2,7 @@ import { describe, expect, it } from 'bun:test';
 import {
 	assembleStream,
 	buildStream,
+	buildStreamUpTo,
 	CIRCLE_UPLOAD_GAP_MS,
 	type CirclePhotoUploadRow,
 	type InteractionRow,
@@ -318,5 +319,22 @@ describe('buildStream', () => {
 			}
 		]);
 		expect(items.map((i) => i.id)).toEqual(['m']);
+	});
+});
+
+describe('buildStreamUpTo', () => {
+	it('asks one past the limit, so it knows whether more is left', async () => {
+		const { stream, asked } = recordingRepository();
+		const page = await buildStreamUpTo({ stream }, viewer, NO_FILTER, 3);
+		expect(asked.every((a) => a.query.limit === 4)).toBe(true);
+		expect(page.items.map((i) => i.id)).toEqual(['x', 'i', 'm']);
+		expect(page.more).toBe(true);
+	});
+
+	it('says nothing is left when the stream fits', async () => {
+		const { stream } = recordingRepository();
+		const page = await buildStreamUpTo({ stream }, viewer, NO_FILTER, 5);
+		expect(page.items).toHaveLength(5);
+		expect(page.more).toBe(false);
 	});
 });

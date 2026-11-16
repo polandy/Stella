@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test';
-import { hasPressingTodo, todoBand, todoListGroups } from './household';
+import { todoBand, todoListGroups } from './household';
 import type { CardTodo } from './todos';
 
 /*
@@ -71,14 +71,6 @@ describe('todoBand', () => {
 
 	it('is empty when nothing is due that soon', () => {
 		expect(todoBand([row('later', '2026-11-20'), row('none', null)], TODAY).rows).toEqual([]);
-	});
-});
-
-describe('hasPressingTodo', () => {
-	it('is true for an overdue one or one due today, not for one later this week', () => {
-		expect(hasPressingTodo([{ dueOn: '2026-10-30' }], TODAY)).toBe(true);
-		expect(hasPressingTodo([{ dueOn: TODAY }], TODAY)).toBe(true);
-		expect(hasPressingTodo([{ dueOn: '2026-11-01' }, { dueOn: null }], TODAY)).toBe(false);
 	});
 });
 

@@ -1,4 +1,5 @@
 import { expect, test, type Locator, type Page } from '@playwright/test';
+import { MAX_STREAM_PAGES } from '../src/lib/stream/pages';
 import { signIn } from './app';
 
 /*
@@ -103,10 +104,31 @@ test.describe('on a phone', () => {
 		).toBeInViewport();
 	});
 
+	test('keeps the top bar away while the stream loads its next page', async ({ page }) => {
+		await signIn(page);
+		const flips = await recordFlips(page);
+
+		// Halfway down the bar has gone; the bottom zone only keeps whatever it found.
+		const { maxY } = await scrollPosition(page);
+		await scrollContentTo(page, Math.round(maxY / 2));
+		await expect(topBar(page)).toHaveAttribute('data-hidden', 'true');
+		// The foot comes into view and the next page loads in place (docs/dev/02 §2.22.2).
+		await scrollContentTo(page, 'end');
+		await expect(page).toHaveURL(/[?&]pages=2\b/);
+		await expect
+			.poll(() => page.getByTestId('stream').locator('article').count())
+			.toBeGreaterThan(40);
+
+		await expect(topBar(page)).toHaveAttribute('data-hidden', 'true');
+		expect(await flips()).toEqual(['true']);
+	});
+
 	test('keeps the top bar still at the bottom of a page, and brings it back on the way out', async ({
 		page
 	}) => {
 		await signIn(page);
+		// The last page Home loads, so its foot stays put instead of loading more (docs/dev/02 §2.22.2).
+		await page.goto(`/?pages=${MAX_STREAM_PAGES}`);
 		const barHeight = await topBar(page).evaluate((bar) => bar.getBoundingClientRect().height);
 		expect(barHeight).toBeGreaterThan(24);
 		const { maxY } = await scrollPosition(page);

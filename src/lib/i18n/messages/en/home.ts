@@ -78,6 +78,10 @@ export const home = {
 	'home.link.hint': 'They appear together in that moment. Pick how they are related.',
 	'home.link.confirm': 'Link',
 	'home.link.notNow': 'Not now',
+	// Further pages of the stream (docs/dev/02 §2.22.2).
+	'home.stream.more': 'Show older',
+	'home.stream.loading': 'Loading older entries…',
+	'home.stream.end': 'That is everything',
 	'home.stream.wroteIn': 'wrote in',
 	'home.stream.openMoment': 'Open this moment',
 	'home.stream.wroteInJournal': '’s journal',

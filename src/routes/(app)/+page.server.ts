@@ -2,7 +2,7 @@ import { fail, redirect } from '@sveltejs/kit';
 import { requireUser, requireViewer } from '$lib/server/auth/guards';
 import { listBrowsableNamesAmong } from '$lib/server/domain/contacts/contact-names';
 import { listPeopleEnoughForFirstRun } from '$lib/server/domain/contacts/directory';
-import { hasImminentDate, upcomingDates } from '$lib/server/domain/dates/upcoming';
+import { upcomingDates } from '$lib/server/domain/dates/upcoming';
 import { countOpenIdeas } from '$lib/server/domain/gifts/gifts';
 import { listHomeMembers } from '$lib/server/domain/homes/homes';
 import { dispatchCommand } from '$lib/server/domain/commands/dispatch';
@@ -12,7 +12,8 @@ import { MomentCaptureSchema } from '$lib/commands/payloads';
 import { ulidGenerator } from '$lib/server/id';
 import { systemClock } from '$lib/server/clock';
 import { membersViewerFirst } from '$lib/server/domain/household/members';
-import { buildStream } from '$lib/server/domain/stream/stream';
+import { buildStreamUpTo, STREAM_LIMIT } from '$lib/server/domain/stream/stream';
+import { offersMorePages, streamPagesOf } from '$lib/stream/pages';
 import { parseStreamFilter } from '$lib/stream/filter';
 import { homeTagChips, tagNarrowing } from '$lib/hashtags/tag-pages';
 import type { Actions, PageServerLoad } from './$types';
@@ -21,7 +22,6 @@ import type { MessageKey } from '$lib/i18n/translate';
 import { linkHintHref } from '$lib/stream/link-hint';
 import { welcomeSteps } from '$lib/stream/welcome';
 import { todayFor } from '$lib/dates/today';
-import { hasPressingTodo } from '$lib/todos/household';
 import { composerFor, linkSuggestionAmong, peopleNamedBy, photosPosted } from './home-view';
 import { householdTodoActions, readHouseholdTodos } from './_shared/household-todos';
 import { streamForView } from './_shared/stream-view';
@@ -47,14 +47,16 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 	);
 
 	const named = peopleNamedBy(url.searchParams);
+	// How far down the reader has scrolled, so the back button draws the same rows (§2.22.2).
+	const pages = streamPagesOf(url.searchParams);
 
 	// One reading of the clock, so the composer's day, the horizon and *On this day* cannot
 	// straddle midnight.
 	const day = todayFor(systemClock);
 
-	const [items, onList, dateSources, firstPeople, entryTags, todos, memories, homes] =
+	const [streamPage, onList, dateSources, firstPeople, entryTags, todos, memories, homes] =
 		await Promise.all([
-			buildStream(locals.services.media.streamDeps, viewer, filter),
+			buildStreamUpTo(locals.services.media.streamDeps, viewer, filter, pages * STREAM_LIMIT),
 			// Who the household can still act on — the browsing scope — among just those.
 			listBrowsableNamesAmong(locals.services.people.contactNameDeps, viewer, named.ids),
 			locals.services.records.importantDates.listSourcesVisibleTo(viewer),
@@ -72,6 +74,7 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 			// The composer offers whoever shares the moment's person's home (docs/dev/02 §2.20.3).
 			listHomeMembers(locals.services.records.homeListDeps, viewer)
 		]);
+	const items = streamPage.items;
 	const stream = await streamForView(locals.services.people.contactNameDeps, viewer, items);
 
 	const dates = upcomingDates(dateSources, day);
@@ -90,9 +93,6 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 		upcoming,
 		todos,
 		memories: memoryBandForView(memories),
-		// Below `lg` the rail only precedes the stream when a date is close or a to-do is due
-		// (docs/dev/05 §5.5.1).
-		railFirst: hasImminentDate(upcoming) || hasPressingTodo(todos, day),
 		linkSuggestion: linkSuggestionAmong(named, onList),
 		// The first-run card (docs/dev/02 §2.22.3), or null once the household has begun.
 		welcome: welcomeSteps({
@@ -104,7 +104,9 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 		members,
 		tagChips: homeTagChips(entryTags, filter.tags),
 		tagLine: tagNarrowing(filter.tags, filter.memberId, entryTags, items.length),
-		stream
+		stream,
+		pages,
+		morePages: offersMorePages(pages, streamPage.more)
 	};
 };
 
