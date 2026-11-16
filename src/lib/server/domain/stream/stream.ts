@@ -23,7 +23,7 @@ import {
  * this module only merges, orders and limits, so it stays pure.
  */
 
-/** Default number of items Home shows. */
+/** Number of items Home shows per page of its stream. */
 export const STREAM_LIMIT = 40;
 
 export interface StreamActor {
@@ -273,4 +273,24 @@ export async function buildStream(
 		viewer.id,
 		limit
 	);
+}
+
+/** A stream cut to a limit, and whether anything older is left beyond it. */
+export interface StreamPage {
+	items: StreamItem[];
+	more: boolean;
+}
+
+/**
+ * The viewer's stream up to `limit` items, read one past it so the page knows whether *more* is
+ * left (docs/dev/02 §2.22.2).
+ */
+export async function buildStreamUpTo(
+	deps: StreamDeps,
+	viewer: Viewer,
+	filter: StreamFilter,
+	limit: number
+): Promise<StreamPage> {
+	const items = await buildStream(deps, viewer, filter, limit + 1);
+	return { items: items.slice(0, limit), more: items.length > limit };
 }

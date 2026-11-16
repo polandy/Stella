@@ -12,7 +12,8 @@ import { MomentCaptureSchema } from '$lib/commands/payloads';
 import { ulidGenerator } from '$lib/server/id';
 import { systemClock } from '$lib/server/clock';
 import { membersViewerFirst } from '$lib/server/domain/household/members';
-import { buildStream } from '$lib/server/domain/stream/stream';
+import { buildStreamUpTo, STREAM_LIMIT } from '$lib/server/domain/stream/stream';
+import { offersMorePages, streamPagesOf } from '$lib/stream/pages';
 import { parseStreamFilter } from '$lib/stream/filter';
 import { homeTagChips, tagNarrowing } from '$lib/hashtags/tag-pages';
 import type { Actions, PageServerLoad } from './$types';
@@ -47,14 +48,16 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 	);
 
 	const named = peopleNamedBy(url.searchParams);
+	// How far down the reader has scrolled, so the back button draws the same rows (§2.22.2).
+	const pages = streamPagesOf(url.searchParams);
 
 	// One reading of the clock, so the composer's day, the horizon and *On this day* cannot
 	// straddle midnight.
 	const day = todayFor(systemClock);
 
-	const [items, onList, dateSources, firstPeople, entryTags, todos, memories, homes] =
+	const [streamPage, onList, dateSources, firstPeople, entryTags, todos, memories, homes] =
 		await Promise.all([
-			buildStream(locals.services.media.streamDeps, viewer, filter),
+			buildStreamUpTo(locals.services.media.streamDeps, viewer, filter, pages * STREAM_LIMIT),
 			// Who the household can still act on — the browsing scope — among just those.
 			listBrowsableNamesAmong(locals.services.people.contactNameDeps, viewer, named.ids),
 			locals.services.records.importantDates.listSourcesVisibleTo(viewer),
@@ -72,6 +75,7 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 			// The composer offers whoever shares the moment's person's home (docs/dev/02 §2.20.3).
 			listHomeMembers(locals.services.records.homeListDeps, viewer)
 		]);
+	const items = streamPage.items;
 	const stream = await streamForView(locals.services.people.contactNameDeps, viewer, items);
 
 	const dates = upcomingDates(dateSources, day);
@@ -104,7 +108,9 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 		members,
 		tagChips: homeTagChips(entryTags, filter.tags),
 		tagLine: tagNarrowing(filter.tags, filter.memberId, entryTags, items.length),
-		stream
+		stream,
+		pages,
+		morePages: offersMorePages(pages, streamPage.more)
 	};
 };
 

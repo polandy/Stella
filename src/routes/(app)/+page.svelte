@@ -19,6 +19,8 @@
 	import HomeRail from '$lib/components/stream/HomeRail.svelte';
 	import KeptList from '$lib/components/pwa/KeptList.svelte';
 	import StreamFilter from '$lib/components/stream/StreamFilter.svelte';
+	import StreamMore from '$lib/components/stream/StreamMore.svelte';
+	import { nextPagesHref } from '$lib/stream/pages';
 	import { outbox } from '$lib/pwa/outbox.svelte';
 	import { isKept, type KeptOf } from '$lib/pwa/outbox';
 	import WelcomeCard from '$lib/components/stream/WelcomeCard.svelte';
@@ -30,11 +32,19 @@
 	import { contactSectionPath } from '$lib/people/sections';
 	import { useI18n } from '$lib/i18n/context.svelte';
 	import { isNarrowed, NO_FILTER, streamFilterHref } from '$lib/stream/filter';
-	import type { ActionData, PageData } from './$types';
+	import type { ActionData, PageData, Snapshot } from './$types';
 
 	let { data, form }: { data: PageData; form: ActionData } = $props();
 	/** Whom a stream notice may link to: the people this reader can see. */
 	const peopleIds = $derived(new Set(data.people.map((p) => p.id)));
+
+	// The page scrolls in the shell's `#content`, which SvelteKit does not put back on *Back*; the
+	// rows are back by then, as the page count is in the URL (docs/dev/02 §2.22.2).
+	const scroller = () => document.getElementById('content');
+	export const snapshot: Snapshot<number> = {
+		capture: () => scroller()?.scrollTop ?? 0,
+		restore: (top) => scroller()?.scrollTo({ top })
+	};
 
 	const i18n = useI18n();
 	const t = i18n.t;
@@ -71,10 +81,13 @@
 	// *On this day* from Immich (docs/dev/02 §2.12.1), asked for once Home is drawn; without Immich it
 	// stays idle and empty.
 	const immichMemories = new ImmichMemories();
+	// Read through deriveds, so loading another page of the stream does not ask Immich again.
+	const library = $derived(data.immichLibrary);
+	const today = $derived(data.today);
 	$effect(() => {
-		if (!data.immichLibrary) return;
+		if (!library) return;
 		// The teardown forgets the day, so a late answer for it is dropped.
-		return immichMemories.load(data.today);
+		return immichMemories.load(today);
 	});
 	const hasMemories = $derived(!data.memories.empty || immichMemories.years.length > 0);
 	/** The rail stands while a date, a to-do or a memory is close; without any it is absent. */
@@ -274,6 +287,11 @@
 					</li>
 				{/each}
 			</ol>
+			<StreamMore
+				href={nextPagesHref(page.url, data.pages)}
+				more={data.morePages}
+				pages={data.pages}
+			/>
 		{:else if filtered}
 			<EmptyState
 				icon="write"

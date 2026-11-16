@@ -80,8 +80,12 @@
 	let topBar = $state(SHOWN_TOP_BAR);
 	let topBarHeight = $state(0);
 	let scroller: HTMLDivElement | undefined = $state();
-	// Every page opens with its bar, from wherever the shared scroller stands.
-	afterNavigate(() => (topBar = { ...SHOWN_TOP_BAR, y: scroller?.scrollTop ?? 0 }));
+	// Every page opens with its bar, from wherever the shared scroller stands; the same page
+	// reloaded in place — the stream's next page, a filter — keeps the bar as it was.
+	afterNavigate(({ from, to }) => {
+		if (from && from.url.pathname === to?.url.pathname) return;
+		topBar = { ...SHOWN_TOP_BAR, y: scroller?.scrollTop ?? 0 };
+	});
 	function onGlobalKeydown(event: KeyboardEvent) {
 		if (event.key.toLowerCase() !== 'k' || !(event.metaKey || event.ctrlKey)) return;
 		event.preventDefault();

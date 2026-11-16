@@ -80,6 +80,13 @@ first to find somebody, so there the page opens on the person search.
 - Each band is **absent when empty**, and the rail with all of them; neither has an empty state. From `lg`
   its column goes too and the stream takes the page's width.
 - A moment's body keeps a 72ch measure (§5.3).
+- **The stream's foot** (`StreamMore`) loads the next page of 40 once it comes within 600px of
+  view, through an `IntersectionObserver`; *Show older*, a quiet link to the same address, is the
+  keyboard and no-JavaScript path, and a polite live region says *Loading older entries…*.
+  When nothing older is left, a line says *That is everything* — only after the first page, so
+  a short stream ends quietly. The page count is `?pages=N` (`src/lib/stream/pages.ts`), replaced
+  rather than pushed; a page snapshot puts `#content`'s scroll back on *Back*, which SvelteKit
+  does only for the window.
 - Each stream row ends with the **time of day** it was written, in the viewer's locale
   (*08:41*), under *Today* and *Yesterday*; under an older day it ends with nothing. The full
   date and time are the time's tooltip. The grouping and that choice are the pure

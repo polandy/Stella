@@ -51,6 +51,10 @@ button above the stream: tap it and the same chips slide up from the bottom; the
 shows how many filters are on and what they are, so a narrowed stream never looks like a
 quiet one. *Done*, or a tap outside, puts the chips away.
 
+The stream shows forty entries at first; scroll to its end and the older ones load by
+themselves (*Show older* does the same by hand). Once nothing older is left it says *That is
+everything*. Open an entry far down and come *Back*: the stream is where you left it.
+
 Beside the stream sits a short list, **Coming up**: the next thirty days of birthdays and
 anniversaries. Each name offers one thing: *Write a moment*. Someone with gift ideas noted
 also shows *2 ideas* under their name, which takes you to their Gifts card. The list disappears when it has
