@@ -108,6 +108,10 @@ test.describe('on a phone', () => {
 		await signIn(page);
 		const flips = await recordFlips(page);
 
+		// Halfway down the bar has gone; the bottom zone only keeps whatever it found.
+		const { maxY } = await scrollPosition(page);
+		await scrollContentTo(page, Math.round(maxY / 2));
+		await expect(topBar(page)).toHaveAttribute('data-hidden', 'true');
 		// The foot comes into view and the next page loads in place (docs/dev/02 §2.22.2).
 		await scrollContentTo(page, 'end');
 		await expect(page).toHaveURL(/[?&]pages=2\b/);
