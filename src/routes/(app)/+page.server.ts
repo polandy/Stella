@@ -2,7 +2,7 @@ import { fail, redirect } from '@sveltejs/kit';
 import { requireUser, requireViewer } from '$lib/server/auth/guards';
 import { listBrowsableNamesAmong } from '$lib/server/domain/contacts/contact-names';
 import { listPeopleEnoughForFirstRun } from '$lib/server/domain/contacts/directory';
-import { hasImminentDate, upcomingDates } from '$lib/server/domain/dates/upcoming';
+import { upcomingDates } from '$lib/server/domain/dates/upcoming';
 import { countOpenIdeas } from '$lib/server/domain/gifts/gifts';
 import { listHomeMembers } from '$lib/server/domain/homes/homes';
 import { dispatchCommand } from '$lib/server/domain/commands/dispatch';
@@ -22,7 +22,6 @@ import type { MessageKey } from '$lib/i18n/translate';
 import { linkHintHref } from '$lib/stream/link-hint';
 import { welcomeSteps } from '$lib/stream/welcome';
 import { todayFor } from '$lib/dates/today';
-import { hasPressingTodo } from '$lib/todos/household';
 import { composerFor, linkSuggestionAmong, peopleNamedBy, photosPosted } from './home-view';
 import { householdTodoActions, readHouseholdTodos } from './_shared/household-todos';
 import { streamForView } from './_shared/stream-view';
@@ -94,9 +93,6 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 		upcoming,
 		todos,
 		memories: memoryBandForView(memories),
-		// Below `lg` the rail only precedes the stream when a date is close or a to-do is due
-		// (docs/dev/05 §5.5.1).
-		railFirst: hasImminentDate(upcoming) || hasPressingTodo(todos, day),
 		linkSuggestion: linkSuggestionAmong(named, onList),
 		// The first-run card (docs/dev/02 §2.22.3), or null once the household has begun.
 		welcome: welcomeSteps({

@@ -74,9 +74,7 @@ first to find somebody, so there the page opens on the person search.
   is not there and the band always stands open. Mockup:
   https://claude.ai/artifact/9hayQj8bvDjxia6EPbZcsS
 - Each band stops after **three rows**, with *Show all N* beneath it.
-- Below `lg` the rail stands **above** the stream only while a date is due **within 14 days**
-  (`IMMINENT_HORIZON_DAYS`) or a to-do is overdue or due today (`hasPressingTodo`); otherwise
-  it follows the stream.
+- Below `lg` the rail always stands **above** the stream, folded, under the person search.
 - Each band is **absent when empty**, and the rail with all of them; neither has an empty state. From `lg`
   its column goes too and the stream takes the page's width.
 - A moment's body keeps a 72ch measure (§5.3).
@@ -132,19 +130,20 @@ On a phone the chip rows would take several lines and push the stream past the f
 fold into the pill; the sheet holds the same links so the filter is one thing in two shapes.
 Nothing scrolls sideways because what lies off the right edge of a phone is not read.
 
-*Coming up* must not push the stream away, hence the three-row cap and the 14-day rule: when
-nothing is imminent it follows the stream, still one scroll away. It is absent rather than
+*Coming up* must not push the stream away, hence the three-row cap. It is absent rather than
 empty because a permanently empty panel teaches people to stop looking, and its rail column
 goes with it because a stable stream width was not worth a quarter of the screen standing
 blank most weeks. *To-dos* goes above *Coming up* because what the household owes is acted on
-now, a date is prepared for; a to-do only pulls the rail above the stream once it is due,
-not a week ahead, so a few far-off lines do not displace the stream. *On this day* goes last
-and never pulls the rail up: it is for enjoying, nothing in it asks to be acted on.
+now, a date is prepared for. *On this day* goes last: it is for enjoying, nothing in it asks
+to be acted on.
 
 On a phone the open bands still stood between the search field and the stream, three rows
 each, so the stream the page is for began a screen down. Folded, the rail costs three lines and
 still says what is waiting and the most pressing one; opening one band is a tap away. Folds are
-not remembered, so Home always opens on the stream.
+not remembered, so Home always opens on the stream. The rail once followed the stream while
+nothing was close; since the stream loads older pages as it is scrolled, nothing follows it any
+more, so the folded rail stays on top (the owner's choice, #503; mockup:
+https://claude.ai/artifact/Rs9EW821SE9wsKyeQff8LS).
 
 Older days need no time: their heading already says when. A moment names its people in its
 text, so an avatar row would say them twice; an interaction's participants are not in its

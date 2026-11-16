@@ -1,4 +1,5 @@
 import { expect, test, type Locator, type Page } from '@playwright/test';
+import { MAX_STREAM_PAGES } from '../src/lib/stream/pages';
 import { signIn } from './app';
 
 /*
@@ -107,6 +108,8 @@ test.describe('on a phone', () => {
 		page
 	}) => {
 		await signIn(page);
+		// The last page Home loads, so its foot stays put instead of loading more (docs/dev/02 §2.22.2).
+		await page.goto(`/?pages=${MAX_STREAM_PAGES}`);
 		const barHeight = await topBar(page).evaluate((bar) => bar.getBoundingClientRect().height);
 		expect(barHeight).toBeGreaterThan(24);
 		const { maxY } = await scrollPosition(page);

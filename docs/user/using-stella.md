@@ -58,17 +58,15 @@ everything*. Open an entry far down and come *Back*: the stream is where you lef
 Beside the stream sits a short list, **Coming up**: the next thirty days of birthdays and
 anniversaries. Each name offers one thing: *Write a moment*. Someone with gift ideas noted
 also shows *2 ideas* under their name, which takes you to their Gifts card. The list disappears when it has
-nothing to say, and on a wide screen the stream then takes its room. On a phone there is no room beside the stream, so it goes under it — and
-above it only while something is due within a fortnight, which is when it is worth the top
-of the screen. It shows three people there, with *Show all* underneath when there are more.
+nothing to say, and on a wide screen the stream then takes its room. On a phone there is no room beside the stream, so it stands above it,
+under the person search; the stream below loads on as you scroll. It shows three people there, with *Show all* underneath when there are more.
 
 Above it stands **To-dos**: up to three to-dos, for anyone, that are overdue or due within the
 week, each with the person's face, whom it is for and when. Tick the box on the right when it
 is done, just as on their page. *Show all* opens **To-dos**, every open to-do of the
 household on one page, grouped into *Overdue*, *This week*, *Later* and *No day*; you can tick
 them off there too. Changing or removing one is done on the person's page. The band is only
-there while something is due that soon, and on a phone it moves above the stream once
-something is overdue or due today.
+there while something is due that soon.
 
 Last in that list comes **On this day**: what the household wrote on today's date in earlier
 years — moments, calls and visits, and the photos taken that day — grouped as *1 year ago*,

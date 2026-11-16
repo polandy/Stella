@@ -53,14 +53,6 @@ export function todoBand<T extends Dated>(
 	return { rows: shown, open, due, showsAll: open > shown.filter((row) => !row.done).length };
 }
 
-/**
- * Whether a to-do is overdue or due today — then, below `lg`, the rail stands above the stream,
- * as it does for a date within 14 days (docs/dev/05 §5.5.1).
- */
-export function hasPressingTodo(todos: readonly Dated[], today: string): boolean {
-	return todos.some((todo) => todo.dueOn !== null && todo.dueOn <= today);
-}
-
 export type TodoGroupKey = 'overdue' | 'thisWeek' | 'later' | 'noDay';
 
 export interface TodoGroup<T> {

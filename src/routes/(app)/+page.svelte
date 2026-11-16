@@ -66,13 +66,6 @@
 
 	const filtered = $derived(isNarrowed(data.filter));
 
-	// Below `lg` the page is one column: heading, capture field, then either the rail and the
-	// stream or the stream and the rail — the rail earns the place above the stream only while
-	// a date is close (`railFirst`, docs/dev/05 §5.5). The capture field stays on top either way.
-	const RAIL_BEFORE_STREAM = 'max-lg:order-2';
-	const RAIL_AFTER_STREAM = 'max-lg:order-4';
-	const railOrder = $derived(data.railFirst ? RAIL_BEFORE_STREAM : RAIL_AFTER_STREAM);
-
 	// The *To-dos* band (docs/dev/02 §2.26.6): a row just ticked stays, struck through, while its
 	// toast stands, as on the person's card.
 	const justDone = new JustDoneTodos<PageData['todos'][number]>(useRemovals());
@@ -311,8 +304,9 @@
      that is permanently empty teaches people to stop looking at it; from lg its column goes with
      it, and the stream takes the width rather than leave a quarter of the screen blank. -->
 	{#if hasRail}
+		<!-- Below `lg` the folded rail stands above the stream, which loads on without end (docs/dev/05 §5.5.1). -->
 		<HomeRail
-			class={railOrder}
+			class="max-lg:order-2"
 			{band}
 			today={data.today}
 			{justDone}
