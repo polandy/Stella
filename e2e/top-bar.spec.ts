@@ -104,6 +104,21 @@ test.describe('on a phone', () => {
 		).toBeInViewport();
 	});
 
+	test('keeps the top bar away while the stream loads its next page', async ({ page }) => {
+		await signIn(page);
+		const flips = await recordFlips(page);
+
+		// The foot comes into view and the next page loads in place (docs/dev/02 §2.22.2).
+		await scrollContentTo(page, 'end');
+		await expect(page).toHaveURL(/[?&]pages=2\b/);
+		await expect
+			.poll(() => page.getByTestId('stream').locator('article').count())
+			.toBeGreaterThan(40);
+
+		await expect(topBar(page)).toHaveAttribute('data-hidden', 'true');
+		expect(await flips()).toEqual(['true']);
+	});
+
 	test('keeps the top bar still at the bottom of a page, and brings it back on the way out', async ({
 		page
 	}) => {

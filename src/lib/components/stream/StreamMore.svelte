@@ -7,7 +7,7 @@
 	 * The foot of Home's stream (docs/dev/02 §2.22.2): the next page loads by itself once the foot
 	 * scrolls into view, and *Show older* does the same by hand — by keyboard, or with JavaScript
 	 * off, as a plain link. The page count lives in the URL, replaced rather than pushed, so the
-	 * back button returns to the same rows and the browser restores the scroll.
+	 * back button returns to the same rows; Home's page snapshot puts the scroll back.
 	 */
 	let {
 		href,
