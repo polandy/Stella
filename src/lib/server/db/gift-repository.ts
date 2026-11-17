@@ -13,8 +13,7 @@ import { contact, gift, user } from './schema';
  * Drizzle adapter for the GiftRepository port (docs/dev/08 §8.3). Every read joins the person the
  * gift is for and is scoped through the central `giftVisibleTo`, so a private gift — or any gift
  * on a private person — reaches only those allowed to see it, and a surprise never the member it is
- * for (docs/dev/03 §3.7). Writes
- * act on a gift the use-case has already found through such a read.
+ * for (docs/dev/03 §3.7). Writes act on a gift the use-case has already found through such a read.
  */
 
 const columns = {

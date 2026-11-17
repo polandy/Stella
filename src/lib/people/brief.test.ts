@@ -342,13 +342,14 @@ describe('briefBlocks', () => {
 		expect(LATELY_COUNT).toBe(3);
 	});
 
-	it('takes only the open gift ideas, not what was given or received', () => {
+	it('takes only the open gift ideas, not what was bought, given or received', () => {
 		const blocks = briefBlocks<Rows>({
 			...nothing,
 			gifts: [
 				{ id: 'g1', state: 'given' },
 				{ id: 'g2', state: 'idea' },
-				{ id: 'g3', state: 'received' }
+				{ id: 'g3', state: 'received' },
+				{ id: 'g4', state: 'bought' }
 			]
 		});
 		expect(blocks).toEqual([{ kind: 'gifts', ideas: [{ id: 'g2', state: 'idea' }] }]);
