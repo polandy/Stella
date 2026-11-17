@@ -77,6 +77,7 @@ describe('the command vocabulary', () => {
 			'plan.unbook',
 			'plan.reopen',
 			'plan.answerWhen',
+			'plan.again',
 			'plan.remove'
 		] as const) {
 			expect(isQueueable(type)).toBe(false);

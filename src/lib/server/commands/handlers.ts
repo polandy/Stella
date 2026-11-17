@@ -36,6 +36,7 @@ import { assignTagByName } from '../domain/tags/tags';
 import { addTodo, editTodo, removeTodo, tickTodo, untickTodo } from '../domain/todos/todos';
 import { addPlan, answerPlanWhen, editPlan, removePlan } from '../domain/plans/plans';
 import { bookPlan, donePlan, reopenPlan, unbookPlan } from '../domain/plans/progress';
+import { againPlan, linkPlanMoment } from '../domain/plans/afterwards';
 import type { AppServices } from '../services/app-services';
 
 /*
@@ -94,8 +95,8 @@ export function createCommandHandlers(
 	return {
 		// A moment carries its own visibility, so it is also the author's default for anyone
 		// the moment creates inline — and what a photo sent after it inherits.
-		'moment.capture': async (actor, payload) => ({
-			...(await withNamesakeContext(namesakeContextDeps, viewerOf(actor), () =>
+		'moment.capture': async (actor, payload) => {
+			const captured = await withNamesakeContext(namesakeContextDeps, viewerOf(actor), () =>
 				captureMoment(
 					captureMomentDeps,
 					{
@@ -106,9 +107,16 @@ export function createCommandHandlers(
 					},
 					payload
 				)
-			)),
-			visibility: payload.visibility
-		}),
+			);
+			// A moment written for a done outing idea (§2.27.8) links to it on its person.
+			if (payload.planId)
+				await linkPlanMoment(plans.planDeps, actor, {
+					contactId: captured.anchorContactId,
+					planId: payload.planId,
+					momentId: captured.entryId
+				});
+			return { ...captured, visibility: payload.visibility };
+		},
 		'tag.assign': onVisibleContact(contacts, async (actor, payload) => ({
 			tagId: await assignTagByName(
 				tagDeps,
@@ -155,6 +163,7 @@ export function createCommandHandlers(
 		'plan.unbook': (actor, payload) => unbookPlan(plans.planDeps, actor, payload),
 		'plan.reopen': (actor, payload) => reopenPlan(plans.planDeps, actor, payload),
 		'plan.answerWhen': (actor, payload) => answerPlanWhen(plans.planDeps, actor, payload),
+		'plan.again': (actor, payload) => againPlan(plans.planDeps, actor, payload),
 		'plan.remove': (actor, payload) => removePlan(plans.planDeps, actor, payload),
 		'note.add': (actor, payload) =>
 			withNamesakeContext(namesakeContextDeps, viewerOf(actor), () =>

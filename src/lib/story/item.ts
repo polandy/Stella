@@ -75,7 +75,19 @@ export interface StoryTodoItem extends StoryItemBase {
 	title: string;
 }
 
-export type StoryItemView = StoryJournalItem | StoryInteractionItem | StoryGiftItem | StoryTodoItem;
+/**
+ * An outing idea ticked off with this person (docs/dev/02 §2.27.8), on the day it was done. It is
+ * changed on the Outings card, so the story offers no removal; the author is who ticked it.
+ */
+export interface StoryPlanItem extends StoryItemBase {
+	kind: 'plan';
+	title: string;
+	/** The moment written about it, when the viewer may see that moment too. */
+	momentId: string | null;
+}
+
+export type StoryItemView =
+	StoryJournalItem | StoryInteractionItem | StoryGiftItem | StoryTodoItem | StoryPlanItem;
 
 /** Where each source resumes; mirrors the domain's `StoryResume` across the wire. */
 export type StoryResumeView = { day: string; recordedAt: number } | 'top' | 'finished';
@@ -85,6 +97,7 @@ export interface StoryCursorView {
 	interactions: StoryResumeView;
 	gifts: StoryResumeView;
 	todos: StoryResumeView;
+	plans: StoryResumeView;
 }
 
 export interface StoryPageView {

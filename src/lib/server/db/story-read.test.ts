@@ -9,6 +9,7 @@ import { listStoryPage, type StoryCursor } from '../domain/story/story';
 import { createDrizzleGiftRepository } from './gift-repository';
 import { createDrizzleInteractionRepository } from './interaction-repository';
 import { createDrizzleJournalRepository } from './journal-repository';
+import { createDrizzlePlanRepository } from './plan-repository';
 import { createDrizzleTodoRepository } from './todo-repository';
 import * as schema from './schema';
 
@@ -44,7 +45,8 @@ function storyDeps() {
 		journal: createDrizzleJournalRepository(db, { next: nextId }),
 		interactions: createDrizzleInteractionRepository(db),
 		gifts: createDrizzleGiftRepository(db),
-		todos: createDrizzleTodoRepository(db)
+		todos: createDrizzleTodoRepository(db),
+		plans: createDrizzlePlanRepository(db)
 	};
 }
 

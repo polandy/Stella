@@ -82,7 +82,9 @@ export const MomentCaptureSchema = v.object({
 	 * Further people it is about, beside the anchor (docs/dev/02 §2.20.3): the composer's chips. A
 	 * phone that queued the moment before the field existed sends none, a moment about one.
 	 */
-	subjectIds: v.optional(v.array(nonEmpty))
+	subjectIds: v.optional(v.array(nonEmpty)),
+	/** The outing idea the moment tells of (docs/dev/02 §2.27.8): it links to it once saved. */
+	planId: v.optional(nonEmpty)
 });
 
 /** A note on a person (docs/dev/02 §2.5), as the person page's note form hands it over. */
@@ -182,6 +184,7 @@ export const COMMAND_PAYLOAD_SCHEMAS = {
 	'plan.unbook': PlanRefSchema,
 	'plan.reopen': PlanRefSchema,
 	'plan.answerWhen': PlanAnswerWhenSchema,
+	'plan.again': PlanRefSchema,
 	'plan.remove': PlanRefSchema,
 	'tag.assign': TagAssignSchema,
 	'circle.join': CircleJoinSchema,

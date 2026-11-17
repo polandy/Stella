@@ -13,7 +13,8 @@
 	/*
 	 * Booking an outing idea, or ticking it done (docs/dev/02 §2.27): saved at once through the
 	 * outbox, so it works on a phone out of reach too. The toast offers *Undo*, which posts the
-	 * opposite step; one still on the device is dropped there instead.
+	 * opposite step; one still on the device is dropped there instead. A done one may offer
+	 * *Write a moment* beside it, once Stella has it.
 	 */
 	interface Props {
 		plan: { id: string; title: string };
@@ -25,8 +26,10 @@
 		id?: string;
 		/** A button saying this instead of the done box, as Home's question asks it. */
 		label?: string;
+		/** Offered beside *Undo* once it is done: write the moment about it (§2.27.8). */
+		writeMoment?: () => void;
 	}
-	let { plan, contactId, step, kept, id, label }: Props = $props();
+	let { plan, contactId, step, kept, id, label, writeMoment }: Props = $props();
 
 	const t = useI18n().t;
 	const removals = useRemovals();
@@ -63,10 +66,16 @@
 				about: plan.title,
 				errorKey: 'planTickError',
 				onApplied: () => {
-					removals.notify(toast, undo);
+					const action =
+						step === 'done' && writeMoment
+							? { label: t('plans.writeMoment'), run: writeMoment }
+							: undefined;
+					removals.notify(toast, undo, action);
 				},
 				onKept: (command) => {
 					removals.notify(toast, () => void outbox.discard(command.id));
+					// The link needs the idea done on Stella's side, so the moment waits for it.
+					if (step === 'done' && writeMoment) removals.notify(t('plans.momentOffline'));
 				}
 			},
 			() => {}

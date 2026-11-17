@@ -11,7 +11,7 @@
 	import PrivateMark from '$lib/components/ui/PrivateMark.svelte';
 	import Swap from '$lib/components/ui/Swap.svelte';
 	import Veil from '$lib/components/ui/Veil.svelte';
-	import { contactSectionPath } from '$lib/people/sections';
+	import { contactSectionPath, journalEntryPath } from '$lib/people/sections';
 	import { dayHeading } from '$lib/dates/labels';
 	import { occasionLabel } from '$lib/gifts/labels';
 	import { useI18n } from '$lib/i18n/context.svelte';
@@ -34,7 +34,7 @@
 
 	/*
 	 * A person's story (docs/dev/02 §2.23): what people wrote about them, the times they were in
-	 * touch, the gifts that changed hands and the to-dos ticked off, in one order. Older pages load on demand from the story endpoint, which merges the
+	 * touch, the gifts that changed hands, the to-dos ticked off and the outings done, in one order. Older pages load on demand from the story endpoint, which merges the
 	 * sources server-side — the client only ever appends what it is handed.
 	 */
 	interface Props {
@@ -107,6 +107,13 @@
 		label: 'todos.story.done',
 		icon: 'done',
 		accent: 'var(--success)'
+	} as const;
+
+	/* An outing idea ticked off (docs/dev/02 §2.27.8): the icon Home gives an outing. */
+	const PLAN_PRESENTATION = {
+		label: 'plans.story.done',
+		icon: 'explore',
+		accent: 'var(--accent-lavender)'
 	} as const;
 
 	// Unticked from here, a to-do opens again on the card and leaves the story; the box stays
@@ -226,7 +233,9 @@
 									? GIFT_PRESENTATION[item.giftState]
 									: item.kind === 'todo'
 										? TODO_PRESENTATION
-										: null}
+										: item.kind === 'plan'
+											? PLAN_PRESENTATION
+											: null}
 						<li data-story-item class="group/item relative">
 							<span
 								class="absolute top-1.5 -left-[1.3125rem] size-2.5 rounded-full ring-4 ring-card"
@@ -247,7 +256,9 @@
 								{#if item.author}<span class="text-fg-subtle">· {item.author}</span>{/if}
 								{#if item.visibility === 'private'}
 									<PrivateMark
-										veilId={item.kind === 'gift' || item.kind === 'todo' ? undefined : veilId(item)}
+										veilId={item.kind === 'journal' || item.kind === 'interaction'
+											? veilId(item)
+											: undefined}
 									/>
 								{/if}
 								<!-- A gift is changed and removed on the Gifts card, where it lives; a done to-do's cross
@@ -369,6 +380,21 @@
 								>
 								{#if item.occasion}
 									<p class="text-sm text-fg-muted">{occasionLabel(t, item.occasion)}</p>
+								{/if}
+							{:else if item.kind === 'plan'}
+								<!-- Links to the card the idea lives on, and to the moment told of it. -->
+								<a
+									href={contactSectionPath(contactId, 'plans')}
+									class="mt-0.5 block font-medium text-fg hover:underline">{item.title}</a
+								>
+								{#if item.momentId}
+									<a
+										href={journalEntryPath(contactId, item.momentId)}
+										class="inline-flex items-center gap-1 text-sm text-primary hover:underline"
+										data-testid="story-plan-moment"
+									>
+										<Icon name="journal" size={13} />{t('plans.story.moment')}
+									</a>
 								{/if}
 							{:else if item.kind === 'todo'}
 								<div class="mt-0.5 flex items-start gap-2">

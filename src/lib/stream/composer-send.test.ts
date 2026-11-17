@@ -256,3 +256,63 @@ describe('saving a moment about several people (§2.20.3)', () => {
 		expect(submit && 'payload' in submit ? submit.payload : {}).not.toHaveProperty('subjectIds');
 	});
 });
+
+/*
+ * A moment written for an outing idea just done (docs/dev/02 §2.27.8): the draft names the idea
+ * and the day it was done; the save carries the idea, and a cancelled draft keeps both.
+ */
+describe('a moment for a done idea', () => {
+	const forIdea = () =>
+		composerAtOpen({
+			candidates: [anna],
+			kept: null,
+			held: {
+				body: 'Climbing hall',
+				visibility: 'private',
+				newPeople: [],
+				planId: 'plan-1',
+				entryDate: '2026-10-03'
+			},
+			draft: null,
+			anchorId: 'anna',
+			commandId: 'cmd-1'
+		});
+
+	it('starts on the day the idea was done', () => {
+		expect(forIdea().startDay).toBe('2026-10-03');
+		expect(opened().startDay).toBeNull();
+	});
+
+	it('names the idea in the save', () => {
+		const { state } = run(forIdea(), submitted);
+		expect(state.sending).toEqual({
+			body: 'Climbing hall',
+			entryDate: '2026-10-05',
+			visibility: 'private',
+			newPeople: [],
+			anchorId: 'anna',
+			planId: 'plan-1'
+		});
+	});
+
+	it('forgets the idea once saved', () => {
+		const { state } = run(forIdea(), submitted, prepared(true), applied(true));
+		expect(state).toMatchObject({ planId: null, startDay: null });
+	});
+
+	it('hands the idea and its day back with a cancelled draft', () => {
+		const { commands } = run(forIdea(), { type: 'cancelled', nextCommandId: 'cmd-2' });
+		expect(commands).toEqual([
+			{
+				kind: 'onCancel',
+				draft: {
+					body: 'Climbing hall',
+					visibility: 'private',
+					newPeople: [],
+					planId: 'plan-1',
+					entryDate: '2026-10-03'
+				}
+			}
+		]);
+	});
+});

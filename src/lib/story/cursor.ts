@@ -17,7 +17,7 @@ const PointSchema = v.object({
 const ResumeSchema = v.union([v.literal('top'), v.literal('finished'), PointSchema]);
 
 /*
- * Every source is required, gifts and to-dos included (docs/dev/02 §2.25, §2.26): a page opened
+ * Every source is required, gifts, to-dos and done outing ideas included (docs/dev/02 §2.25–§2.27): a page opened
  * before a source joined the story posts a cursor without it, and reading that as "from the
  * top" or "finished" would repeat or drop its items. It is refused, and the page's *Show
  * earlier* says so; a reload hands it a whole cursor.
@@ -26,7 +26,8 @@ const CursorSchema = v.object({
 	journal: ResumeSchema,
 	interactions: ResumeSchema,
 	gifts: ResumeSchema,
-	todos: ResumeSchema
+	todos: ResumeSchema,
+	plans: ResumeSchema
 });
 
 /** Parse a posted story cursor, or `null` when it is not one. */

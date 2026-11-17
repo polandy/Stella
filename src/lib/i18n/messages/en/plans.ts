@@ -41,7 +41,19 @@ export const plans = {
 	// The toasts, with *Undo* beside them.
 	'plans.doneToast': (p: { title: string }) => `Done: ${p.title}`,
 	'plans.bookedToast': (p: { title: string }) => `Booked: ${p.title}`,
-	'plans.removed': 'Idea removed'
+	'plans.removed': 'Idea removed',
+	// Afterwards (§2.27.8): a moment told of a done idea, and the idea noted once more.
+	'plans.writeMoment': 'Write a moment',
+	'plans.writeMomentLabel': (p: { title: string }) => `Write a moment about ${p.title}`,
+	'plans.momentOffline': 'You can write the moment once Stella is in reach.',
+	'plans.moment': 'The moment',
+	'plans.momentLabel': (p: { title: string }) => `Open the moment about ${p.title}`,
+	'plans.again': 'Note again',
+	'plans.againLabel': (p: { title: string }) => `Note again: ${p.title}`,
+	'plans.againToast': (p: { title: string }) => `Noted again: ${p.title}`,
+	// The story's line for an outing done.
+	'plans.story.done': 'Outing',
+	'plans.story.moment': 'The moment'
 };
 
 /** The key set every translation of this area has to provide. */

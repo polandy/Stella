@@ -687,6 +687,13 @@ concert*, *the lake by bike once she is ten*. What you owe someone belongs in a 
   on the card until it is done. *Not booked* takes that back.
 - **Tick the box** on the right once you have done it. It moves to the **Done** tab with its
   day; *Not done* there opens it again. Both say so in a message with *Undo*.
+- **After an outing**, the *Done* message offers **Write a moment**: the moment starts with the
+  idea's title on the day you did it, and you can add whoever else was there. Once saved, the
+  idea links to it — on the **Done** tab as *The moment*, and in the person's **Activity**,
+  where done outings stand like done to-dos. A done idea without a moment offers *Write a
+  moment* on the **Done** tab, and **Note again** notes it anew for some time. A private
+  idea, or one kept from the person, starts its moment private. Without a connection the tick
+  is kept, and writing the moment waits until Stella is reachable.
 - **Who sees it:** *Everyone*, *Only me*, or — when the person has their own Stella account —
   *Everyone but them*, so a surprise stays one. Anyone who can see an idea may book, tick,
   change or remove it; only whoever noted it changes who sees it.

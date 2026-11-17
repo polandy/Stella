@@ -16,10 +16,17 @@ describe('parseStoryCursor', () => {
 			journal: 'top',
 			interactions: 'finished',
 			gifts: 'top',
-			todos: 'finished'
+			todos: 'finished',
+			plans: 'top'
 		} as const;
 		expect(parseStoryCursor(states)).toEqual(states);
-		const points = { journal: point, interactions: point, gifts: point, todos: point };
+		const points = {
+			journal: point,
+			interactions: point,
+			gifts: point,
+			todos: point,
+			plans: point
+		};
 		expect(parseStoryCursor(points)).toEqual(points);
 	});
 
@@ -30,16 +37,26 @@ describe('parseStoryCursor', () => {
 		expect(parseStoryCursor({ journal: 'top', interactions: 'top' })).toBeNull();
 		// Nor one opened before to-dos were.
 		expect(parseStoryCursor({ journal: 'top', interactions: 'top', gifts: 'top' })).toBeNull();
+		// Nor one opened before done outing ideas were.
+		expect(
+			parseStoryCursor({ journal: 'top', interactions: 'top', gifts: 'top', todos: 'top' })
+		).toBeNull();
 	});
 
 	it('refuses a resume state it does not know', () => {
 		expect(
-			parseStoryCursor({ journal: 'restart', interactions: 'top', gifts: 'top', todos: 'top' })
+			parseStoryCursor({
+				journal: 'restart',
+				interactions: 'top',
+				gifts: 'top',
+				todos: 'top',
+				plans: 'top'
+			})
 		).toBeNull();
 	});
 
 	it('refuses a point that is not a real point', () => {
-		const rest = { interactions: 'top', gifts: 'top', todos: 'top' };
+		const rest = { interactions: 'top', gifts: 'top', todos: 'top', plans: 'top' };
 		expect(parseStoryCursor({ journal: { day: '2026-08-05' }, ...rest })).toBeNull();
 		expect(parseStoryCursor({ journal: { day: '', recordedAt: 1 }, ...rest })).toBeNull();
 		expect(

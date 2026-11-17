@@ -1,5 +1,6 @@
 import { and, eq, isNotNull, isNull, ne, or, sql, type AnyColumn, type SQL } from 'drizzle-orm';
-import { activityLog, circle, contact, user } from '../db/schema';
+import { alias } from 'drizzle-orm/sqlite-core';
+import { activityLog, circle, contact, journalEntry, user } from '../db/schema';
 import type { Remover, Viewer } from './visibility';
 
 /*
@@ -98,6 +99,18 @@ export function childRecordBrowsableBy(
 	record: { visibility: AnyColumn; createdBy: AnyColumn }
 ): SQL {
 	return and(childRecordVisibleTo(viewer, record), isNull(contact.archivedAt))!;
+}
+
+/**
+ * The moment a record links to (an outing idea's, docs/dev/02 §2.27.8) as a selected column, or
+ * null when the viewer may not see that journal entry — `canViewChildRecord` on it and its person.
+ */
+export function linkedMomentVisibleTo(viewer: Viewer, momentId: AnyColumn): SQL<string | null> {
+	const name = 'moment_person';
+	const person = alias(contact, name);
+	return sql<
+		string | null
+	>`(SELECT ${journalEntry.id} FROM ${journalEntry} INNER JOIN ${contact} ${sql.identifier(name)} ON ${person.id} = ${journalEntry.contactId} WHERE ${journalEntry.id} = ${momentId} AND ${contactColumnsVisibleTo(viewer, person)} AND (${journalEntry.visibility} = 'shared' OR ${journalEntry.createdBy} = ${viewer.id}))`;
 }
 
 /** The columns `surpriseVisibleTo` decides on. */

@@ -16,6 +16,7 @@ import {
 	removePlan
 } from '../domain/plans/plans';
 import { bookPlan, donePlan, reopenPlan, unbookPlan } from '../domain/plans/progress';
+import { againPlan } from '../domain/plans/afterwards';
 import type { IdGenerator } from '../id';
 import { createDrizzleContactRepository } from './contact-repository';
 import { createPlanServices } from '../services/plans';
@@ -104,7 +105,8 @@ describe.each<[string, Kept]>([
 		['plan.unbook', unbookPlan],
 		['plan.done', donePlan],
 		['plan.reopen', reopenPlan],
-		['plan.remove', removePlan]
+		['plan.remove', removePlan],
+		['plan.again', againPlan]
 	] as const)('answers %s from them as gone, and leaves it as it was', async (_type, step) => {
 		const planId = await noted(over);
 		const before = db.select().from(schema.activityIdea).all();

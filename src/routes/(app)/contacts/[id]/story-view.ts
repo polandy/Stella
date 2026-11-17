@@ -167,6 +167,26 @@ export function toStoryItem(item: StoryItem, ctx: StoryViewContext): StoryItemVi
 		};
 	}
 
+	if (item.kind === 'plan') {
+		const plan = item.plan;
+		return {
+			kind: 'plan',
+			id: plan.id,
+			day: item.day,
+			recordedAt: item.recordedAt,
+			visibility: plan.visibility,
+			mine: plan.createdBy === ctx.remover.id,
+			// An idea is changed on the Outings card, not from the story.
+			removable: false,
+			author:
+				plan.doneBy === null
+					? null
+					: authorLabel(plan.doneBy === ctx.remover.id, ctx.nameOfAuthor(plan.doneBy)),
+			title: plan.title,
+			momentId: plan.momentId
+		};
+	}
+
 	const interaction = item.interaction;
 	return {
 		kind: 'interaction',

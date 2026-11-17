@@ -290,6 +290,58 @@ describe('toStoryItem, done to-dos', () => {
 	});
 });
 
+describe('toStoryItem, done outing ideas', () => {
+	const planItem = (overrides: Record<string, unknown> = {}): StoryItem => ({
+		kind: 'plan',
+		day: '2026-11-14',
+		recordedAt: 900,
+		plan: {
+			id: 'p1',
+			contactId: 'c1',
+			createdBy: 'user-2',
+			visibility: 'shared',
+			hiddenFromPerson: false,
+			title: 'Climbing hall',
+			note: 'Bring the shoes',
+			url: null,
+			when: null,
+			bookedAt: null,
+			bookedBy: null,
+			doneAt: 900,
+			doneOn: '2026-11-14',
+			doneBy: VIEWER,
+			momentId: null,
+			createdAt: 100,
+			updatedAt: 900,
+			...overrides
+		}
+	});
+
+	it('says what was done, by whom it was ticked, and that no moment tells of it yet', () => {
+		expect(toStoryItem(planItem(), context())).toEqual({
+			kind: 'plan',
+			id: 'p1',
+			day: '2026-11-14',
+			recordedAt: 900,
+			visibility: 'shared',
+			mine: false,
+			removable: false,
+			author: 'you',
+			title: 'Climbing hall',
+			momentId: null
+		});
+	});
+
+	it('carries the moment written about it, for the link', () => {
+		const view = toStoryItem(planItem({ momentId: 'e9' }), context());
+		expect(view.kind === 'plan' && view.momentId).toBe('e9');
+	});
+
+	it('names nobody when the member who ticked it is gone', () => {
+		expect(toStoryItem(planItem({ doneBy: null }), context()).author).toBeNull();
+	});
+});
+
 describe('toStoryItem, who wrote it', () => {
 	it('names the viewer "you" on their own entry', () => {
 		const view = toStoryItem(journalItem(), context({ nameOfAuthor: () => 'Markus Brunner' }));

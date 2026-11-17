@@ -38,5 +38,15 @@ export const plans: PlansMessages = {
 	'plans.everyoneBut': (p) => `Alle außer ${p.name}`,
 	'plans.doneToast': (p) => `Gemacht: ${p.title}`,
 	'plans.bookedToast': (p) => `Fest: ${p.title}`,
-	'plans.removed': 'Idee entfernt'
+	'plans.removed': 'Idee entfernt',
+	'plans.writeMoment': 'Moment schreiben',
+	'plans.writeMomentLabel': (p) => `Moment schreiben über ${p.title}`,
+	'plans.momentOffline': 'Den Moment kannst du schreiben, sobald Stella erreichbar ist.',
+	'plans.moment': 'Zum Moment',
+	'plans.momentLabel': (p) => `Den Moment über ${p.title} öffnen`,
+	'plans.again': 'Nochmal vormerken',
+	'plans.againLabel': (p) => `Nochmal vormerken: ${p.title}`,
+	'plans.againToast': (p) => `Wieder vorgemerkt: ${p.title}`,
+	'plans.story.done': 'Unternommen',
+	'plans.story.moment': 'Zum Moment'
 };

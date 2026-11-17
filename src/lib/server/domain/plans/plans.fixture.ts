@@ -1,5 +1,5 @@
 import type { Viewer } from '../../access/visibility';
-import type { Plan, PlanRepository } from './plans';
+import type { DonePlan, Plan, PlanRepository } from './plans';
 
 /*
  * An in-memory PlanRepository for the use-case tests. It keeps the adapter's rule — a private
@@ -41,6 +41,25 @@ export function fakePlans(
 		},
 		async listForContactVisibleTo(viewer, contactId) {
 			return [...rows.values()].filter((p) => p.contactId === contactId && visible(viewer, p));
+		},
+		async listStoryPageForContactVisibleTo(viewer, contactId, opts) {
+			const before = opts.before;
+			return [...rows.values()]
+				.filter(
+					(p): p is DonePlan =>
+						p.contactId === contactId &&
+						p.doneOn !== null &&
+						p.doneAt !== null &&
+						visible(viewer, p)
+				)
+				.filter(
+					(p) =>
+						!before ||
+						p.doneOn < before.doneOn ||
+						(p.doneOn === before.doneOn && p.doneAt < before.doneAt)
+				)
+				.sort((a, b) => b.doneOn.localeCompare(a.doneOn) || b.doneAt - a.doneAt)
+				.slice(0, opts.limit);
 		},
 		async memberWhoseOwnPerson(_householdId, contactId) {
 			return ownPeople.get(contactId) ?? null;
