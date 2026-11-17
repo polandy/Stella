@@ -56,6 +56,16 @@ export interface SeedLink {
 }
 
 /** A circle and who holds which role in it, people by full name as `people` spells them. */
+/** A gift idea and its when, as `gift` stores it (docs/dev/03 §gift); `createdAt` in ISO. */
+export interface SeedGift {
+	title: string;
+	when?:
+		| { kind: 'from_age' | 'at_age'; age: number }
+		| { kind: 'on_date'; on: string }
+		| { kind: 'later' };
+	createdAt?: string;
+}
+
 export interface SeedCircle {
 	/** The circle's id on the map is `circleIdOf(name)`. */
 	name: string;
@@ -102,7 +112,9 @@ export async function seedHousehold(
 	/** Job title and company, by full name, likewise the setting of a case. */
 	jobs: Readonly<Record<string, { title?: string; company?: string }>> = {},
 	/** An own address, by full name, likewise the setting of a case. */
-	addresses: Readonly<Record<string, string>> = {}
+	addresses: Readonly<Record<string, string>> = {},
+	/** Gift ideas, by full name, likewise the setting of a case. */
+	gifts: Readonly<Record<string, readonly SeedGift[]>> = {}
 ): Promise<void> {
 	const document = {
 		format: ARCHIVE_FORMAT,
@@ -124,7 +136,17 @@ export async function seedHousehold(
 				fields:
 					addresses[name] === undefined
 						? []
-						: [{ id: idOf(`${name} address`), kind: 'address', value: addresses[name] }]
+						: [{ id: idOf(`${name} address`), kind: 'address', value: addresses[name] }],
+				gifts: (gifts[name] ?? []).map((gift) => ({
+					id: idOf(`${name} gift ${gift.title}`),
+					state: 'idea',
+					title: gift.title,
+					when_kind: gift.when?.kind ?? null,
+					when_on: gift.when?.kind === 'on_date' ? gift.when.on : null,
+					when_age: gift.when && 'age' in gift.when ? gift.when.age : null,
+					visibility: 'shared',
+					...(gift.createdAt !== undefined && { created_at: gift.createdAt })
+				}))
 			};
 		}),
 		relationship_types: types.map((type) => ({

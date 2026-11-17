@@ -14,8 +14,10 @@ the household at once, and to tick off what they bought without opening each per
   3 days · 2 Nov* (*today* and *tomorrow* in words), behind the calendar icon for a birthday and
   the gift for Christmas. Within 30 days the chip is `bg-warning-soft`, otherwise neutral.
 - Cards in the order of their occasion (docs/dev/02 §2.25.6); the rows inside as on the Gifts card,
-  each with *Mark as given…* (`IdeaListRow`), and an idea's time as its `WhenChip`. An idea still
-  waiting for its time is not listed (docs/dev/02 §2.25.8). The form opens in place, its occasion preset to
+  each with *Mark as given…* (`IdeaListRow`), and an idea's time as its `WhenChip` — *· in 34
+  days* while it comes near, `bg-warning-soft` and *· passed* once its occasion went by. An idea
+  still waiting for its time is not listed (docs/dev/02 §2.25.8); *Still current?* is asked on the
+  person's card only. The form opens in place, its occasion preset to
   the card's; *Cancel* closes it.
 - A given idea disappears at once and comes back on *Undo* in the toast, as a removed row does
   (`heldAnswer`); a card whose last idea went disappears with it.

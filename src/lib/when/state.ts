@@ -63,7 +63,8 @@ export function asks(state: WhenState): state is Extract<WhenState, { kind: 'pas
 
 /** The month and day of a birthday; none for a bare or estimated year. */
 function monthDayOf(birth: PartialDate | null): { month: number; day: number } | null {
-	if (birth === null || (birth.precision !== 'full' && birth.precision !== 'month_day')) return null;
+	if (birth === null || (birth.precision !== 'full' && birth.precision !== 'month_day'))
+		return null;
 	const parts = dayParts(birth.value);
 	return parts === null ? null : { month: parts.month, day: parts.day };
 }

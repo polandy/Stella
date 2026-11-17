@@ -162,13 +162,13 @@ describe('whenState, for later', () => {
 			'2027-12-15',
 			{ kind: 'review', on: '2028-03-14' }
 		],
-		['a birthday without its year still has its day', noted(heinz), '2027-02-10', { kind: 'waiting' }],
 		[
-			'without a birthday, before the anniversary',
-			noted(null),
-			'2027-08-18',
+			'a birthday without its year still has its day',
+			noted(heinz),
+			'2027-02-10',
 			{ kind: 'waiting' }
 		],
+		['without a birthday, before the anniversary', noted(null), '2027-08-18', { kind: 'waiting' }],
 		[
 			'without a birthday, 90 days before the anniversary',
 			noted(null),
