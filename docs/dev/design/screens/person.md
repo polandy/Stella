@@ -428,6 +428,13 @@ The card of docs/dev/02 §2.27, right after Gifts; no jump-bar link.
   end. A done row shows *done <day>* and a *Not done* text button instead of pencil and box.
 - Booking and ticking toast *Booked: …* / *Done: …* with *Undo*; kept on the device they show
   *not sent yet*, and *Undo* drops them from the device.
+- The *Done* toast also offers *Write a moment* before *Undo*: it opens the story's composer
+  with the title, the person and the done day; a private idea, or one hidden from the person,
+  starts the moment private. Kept on the device, the toast says the moment waits for Stella.
+- A done row links *The moment* once one tells of it, else offers *Write a moment*; *Note again*
+  notes it anew for some time (title, note, link, person, visibility) and toasts *Noted again*.
+- A done idea shows in the person's story as *Outing* with the explore icon, linking the card
+  and its moment; it is removed on the card only.
 - The form: *Outing with Mia*, *What do you want to do?*, the *when* picker (*Some time*,
   a day with *Saturday · Christmas · Birthday*, a month, an age), a *Note or link* disclosure,
   and the three-way visibility *Everyone · Everyone but Mia · Only me* — the middle one only
