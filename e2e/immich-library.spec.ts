@@ -124,6 +124,66 @@ test('the sheet searches the whole library, says when nothing matches, and goes 
 	await expect(tiles(page).first()).toBeVisible();
 });
 
+test('a month jumps to a week by its chip, and the tray keeps the ticks across views', async ({
+	page
+}) => {
+	await fromImmichInMenu(page, page.getByRole('button', { name: 'Add photos' }));
+	await toNewestDay(page);
+
+	// The demo library holds many photos a day, so August 2026 is several pages of 100.
+	await sheet(page).getByRole('button', { name: 'All years' }).click();
+	await sheet(page)
+		.getByTestId('immich-library-years')
+		.getByRole('button', { name: /2026/ })
+		.click();
+	await sheet(page)
+		.getByTestId('immich-library-months')
+		.getByRole('button', { name: /August/ })
+		.click();
+	const month = sheet(page).getByTestId('immich-library-month');
+	await expect(month).toBeVisible();
+	const weeks = sheet(page).getByTestId('immich-library-weeks');
+	await expect(weeks.getByRole('button')).toHaveText([
+		'Week 31',
+		'Week 32',
+		'Week 33',
+		'Week 34',
+		'Week 35',
+		'Week 36'
+	]);
+
+	// The last week lies beyond the first pages: the jump reads on until its day is there.
+	const lastDay = month.locator('[data-day="2026-08-31"]');
+	await expect(lastDay).toHaveCount(0);
+	await weeks.getByRole('button', { name: 'Jump to week 36' }).click();
+	await expect(lastDay).toBeInViewport();
+	await expect(weeks.getByRole('button', { name: 'Jump to week 36' })).toHaveAttribute(
+		'aria-current',
+		'true'
+	);
+	await lastDay.getByRole('button').nth(1).click();
+
+	await weeks.getByRole('button', { name: 'Jump to week 32' }).click();
+	const earlyDay = month.locator('[data-day="2026-08-03"]');
+	await expect(earlyDay).toBeInViewport();
+	await earlyDay.getByRole('button').nth(1).click();
+
+	const tray = sheet(page).getByTestId('immich-library-tray');
+	await expect(tray.getByRole('button')).toHaveCount(2);
+	await expect(sheet(page)).toContainText('2 ticked');
+
+	// A step up to the year keeps the tray; a tap on a thumbnail unticks that photo.
+	await sheet(page)
+		.getByTestId('immich-library-trail')
+		.getByRole('button', { name: '2026' })
+		.click();
+	await expect(tray.getByRole('button')).toHaveCount(2);
+	await tray.getByRole('button', { name: 'Untick photo 1' }).click();
+	await expect(tray.getByRole('button')).toHaveCount(1);
+	await expect(sheet(page)).toContainText('1 ticked');
+	await expect(sheet(page).getByRole('button', { name: 'Add 1 photo', exact: true })).toBeVisible();
+});
+
 test('a journal entry takes a photo from Immich through its photo menu', async ({ page }) => {
 	await addPerson(page, 'Journa', surname());
 	await page.getByRole('link', { name: 'Open journal' }).click();

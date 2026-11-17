@@ -1,7 +1,7 @@
 <!--
   @component
   *From Immich* (docs/dev/02 §2.24.9, docs/dev/design/screens/immich-library.md): a sheet from the bottom
-  that walks the whole library's timeline — all years, a year, a month, a day — whoever is in the
+  that walks the whole library's timeline — all years, a year, a month (with a chip per week), a day — whoever is in the
   photos, and a smart search across it. It opens on one day; the trail leads up from there. Taps tick photos, numbered in order; *Add N photos* copies them through Stella's signed
   proxy and hands them over as files, for the same pipeline as a pick from the device — or, with
   `onlink`, hands the photos themselves over, to be kept as references (docs/dev/04 ADR-132).
@@ -17,8 +17,15 @@
 	import { useI18n } from '$lib/i18n/context.svelte';
 	import type { LibraryPhoto } from '$lib/immich/library';
 	import { longDay, monthAndYear, shortDate } from '$lib/immich/library-labels';
-	import { crumbsOf, groupByDay, monthsOfYear, yearTotals } from '$lib/immich/library-nav';
-	import { LIBRARY_PICK_LIMIT, toggledTick } from '$lib/immich/library-pick';
+	import {
+		crumbsOf,
+		groupByDay,
+		monthsOfYear,
+		weeksOfMonth,
+		yearTotals,
+		type LibraryWeek
+	} from '$lib/immich/library-nav';
+	import { LIBRARY_PICK_LIMIT, tickTray, toggledTick } from '$lib/immich/library-pick';
 	import { copyImmichPhoto, type ImmichCopy } from '$lib/media/copy-immich-photo';
 	import { useRemovals } from '$lib/undo/context.svelte';
 	import LibraryCrumbs from './library/LibraryCrumbs.svelte';
@@ -27,6 +34,7 @@
 	import LibraryMonthGrid from './library/LibraryMonthGrid.svelte';
 	import LibraryMonths from './library/LibraryMonths.svelte';
 	import LibraryNotice from './library/LibraryNotice.svelte';
+	import LibraryWeeks from './library/LibraryWeeks.svelte';
 	import LibraryPhotos from './library/LibraryPhotos.svelte';
 	import LibraryYears from './library/LibraryYears.svelte';
 	import { LibraryBrowser } from './library/library-browser.svelte';
@@ -129,6 +137,19 @@
 				: timeline === null
 	);
 	const full = $derived(ticked.length >= LIBRARY_PICK_LIMIT);
+	let weekJumped = $state<{ month: string; week: number } | null>(null);
+	const currentWeek = $derived(read && weekJumped?.month === read.month ? weekJumped.week : null);
+
+	async function jumpToWeek(week: LibraryWeek) {
+		if (!read) return;
+		const month = read.month;
+		weekJumped = { month, week: week.week };
+		const day = await browser.reach(week);
+		if (day === null) return;
+		await tick();
+		body?.querySelector(`[data-day="${day}"]`)?.scrollIntoView({ block: 'start' });
+	}
+
 	const toggle = (id: string) => (ticked = toggledTick(ticked, id));
 </script>
 
@@ -185,6 +206,9 @@
 				overview={browser.overview}
 				onpick={(level) => browser.go(level)}
 			/>
+			{#if at.level === 'month' && read && read.photos.length > 0}
+				<LibraryWeeks weeks={weeksOfMonth(read.month)} current={currentWeek} onpick={jumpToWeek} />
+			{/if}
 			{#if at.level === 'day' && view?.state !== 'unreachable'}
 				{@const earlier = view?.state === 'day' ? view.earlier : null}
 				{@const later = view?.state === 'day' ? view.later : null}
@@ -307,9 +331,11 @@
 		<FormError message={copyError} />
 		<LibraryFooter
 			ticked={ticked.length}
+			tray={tickTray(ticked, browser.seen)}
 			{full}
 			{copying}
 			onclear={() => (ticked = [])}
+			onuntick={toggle}
 			onadd={add}
 		/>
 	</div>

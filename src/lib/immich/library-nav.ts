@@ -102,3 +102,37 @@ export function isoWeekOf(day: string): number {
 	const newYear = Date.UTC(thursday.getUTCFullYear(), 0, 1);
 	return Math.floor((thursday.getTime() - newYear) / DAY_MS / 7) + 1;
 }
+
+/** An ISO week as far as a month holds it: its number and the month's first and last day in it. */
+export interface LibraryWeek {
+	week: number;
+	from: string;
+	to: string;
+}
+
+/** The ISO weeks a month touches, in order — the chips that jump within it. */
+export function weeksOfMonth(month: string): LibraryWeek[] {
+	const last = Number(lastDayOf(month).slice(8));
+	const weeks: LibraryWeek[] = [];
+	for (let at = 1; at <= last; at++) {
+		const day = `${month}-${String(at).padStart(2, '0')}`;
+		const week = isoWeekOf(day);
+		const current = weeks.at(-1);
+		if (current?.week === week) current.to = day;
+		else weeks.push({ week, from: day, to: day });
+	}
+	return weeks;
+}
+
+/**
+ * Where a week's photos start among the days read so far. `settled` once that is known for good:
+ * a day of the week was read, or a later one — the order is oldest first, so none can follow.
+ */
+export function weekLookup(
+	days: readonly LibraryDayGroup[],
+	{ from, to }: LibraryWeek
+): { day: string | null; settled: boolean } {
+	const day = days.find((group) => group.day >= from)?.day ?? null;
+	if (day === null) return { day: null, settled: false };
+	return day <= to ? { day, settled: true } : { day: null, settled: true };
+}

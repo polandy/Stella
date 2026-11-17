@@ -1,5 +1,12 @@
 import { describe, expect, it } from 'bun:test';
-import { LIBRARY_PICK_LIMIT, libraryQueryUrl, tickNumber, toggledTick } from './library-pick';
+import type { LibraryPhoto } from './library';
+import {
+	LIBRARY_PICK_LIMIT,
+	libraryQueryUrl,
+	tickNumber,
+	tickTray,
+	toggledTick
+} from './library-pick';
 
 describe('ticking photos in the library picker', () => {
 	it('ticks in the order of the taps, and a second tap unticks', () => {
@@ -17,6 +24,28 @@ describe('ticking photos in the library picker', () => {
 		const full = Array.from({ length: LIBRARY_PICK_LIMIT }, (_, i) => `p${i}`);
 		expect(toggledTick(full, 'one-more')).toBe(full);
 		expect(toggledTick(full, 'p3')).toHaveLength(LIBRARY_PICK_LIMIT - 1);
+	});
+});
+
+describe('the tray of ticked photos', () => {
+	const photo = (id: string): LibraryPhoto => ({
+		id,
+		takenAt: null,
+		thumbnailUrl: `/t/${id}`,
+		previewUrl: `/p/${id}`
+	});
+
+	it('lists the ticks in the order of the taps with their numbers, whichever view they came from', () => {
+		const seen = new Map([photo('a'), photo('b'), photo('c')].map((p) => [p.id, p]));
+		expect(tickTray(['c', 'a'], seen)).toEqual([
+			{ number: 1, photo: photo('c') },
+			{ number: 2, photo: photo('a') }
+		]);
+	});
+
+	it('is empty without ticks and skips a tick whose photo was not seen', () => {
+		expect(tickTray([], new Map())).toEqual([]);
+		expect(tickTray(['gone'], new Map())).toEqual([]);
 	});
 });
 

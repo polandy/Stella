@@ -4,6 +4,8 @@
  * `$lib/components/immich/ImmichLibraryPicker.svelte`.
  */
 
+import type { LibraryPhoto } from './library';
+
 /** The most photos one pick copies: each is fetched and re-encoded in the browser, one by one. */
 export const LIBRARY_PICK_LIMIT = 20;
 
@@ -18,6 +20,17 @@ export function toggledTick(ticked: readonly string[], id: string): readonly str
 export function tickNumber(ticked: readonly string[], id: string): number | null {
 	const at = ticked.indexOf(id);
 	return at === -1 ? null : at + 1;
+}
+
+/** The ticked photos for the tray, each with its number; a tick whose photo was never seen is left out. */
+export function tickTray(
+	ticked: readonly string[],
+	seen: ReadonlyMap<string, LibraryPhoto>
+): { number: number; photo: LibraryPhoto }[] {
+	return ticked.flatMap((id, at) => {
+		const photo = seen.get(id);
+		return photo ? [{ number: at + 1, photo }] : [];
+	});
 }
 
 /**

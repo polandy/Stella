@@ -206,5 +206,9 @@ export const immich: ImmichMessages = {
 	'immich.library.noneInMonth': (p) => `Keine Fotos aus ${p.month} in Immich.`,
 	'immich.library.showDay': (p) => `Nur ${p.day} zeigen`,
 	'immich.library.loadMore': 'Weitere Fotos zeigen',
-	'immich.library.loading': 'Fotos werden geladen…'
+	'immich.library.loading': 'Fotos werden geladen…',
+	'immich.library.weeks': 'Wochen des Monats',
+	'immich.library.week': (p) => `KW ${p.week}`,
+	'immich.library.jumpToWeek': (p) => `Zu Kalenderwoche ${p.week} springen`,
+	'immich.library.untick': (p) => `Foto ${p.number} abwählen`
 };
