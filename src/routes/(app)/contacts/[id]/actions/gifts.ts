@@ -80,7 +80,7 @@ export const giftActions = {
 		);
 	},
 
-	/** *Bought*, or *Not bought yet* (§2.25.9): undone from its toast by posting the other way. */
+	/** *Bought*, or *Not bought yet* (§2.25.9): posted once its toast's undo window has closed. */
 	markGiftBought: async (event) => {
 		const form = await event.request.formData();
 		return onCard(

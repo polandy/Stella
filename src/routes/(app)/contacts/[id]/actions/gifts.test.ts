@@ -88,3 +88,79 @@ describe('answerGiftWhen', () => {
 		});
 	});
 });
+
+describe('markGiftBought on the card (§2.25.9)', () => {
+	it('marks the idea bought, and takes it back when the field is left out', async () => {
+		const marks: unknown[] = [];
+		const services = commanding({
+			'gift.markBought': async (_actor, payload) => {
+				marks.push(payload);
+				return { giftId: 'g1' };
+			}
+		});
+		const mark = (fields: Record<string, string>) =>
+			answerOf(
+				actions.markGiftBought(
+					routeEvent({
+						services,
+						params: { id: 'anna' },
+						form: formOf({ giftId: 'g1', ...fields })
+					})
+				)
+			);
+		expect(await mark({ bought: 'on' })).toMatchObject({ kind: 'redirect' });
+		await mark({});
+		expect(marks).toEqual([
+			{ contactId: 'anna', giftId: 'g1', bought: true },
+			{ contactId: 'anna', giftId: 'g1', bought: false }
+		]);
+	});
+});
+
+describe('the visibility choice on the card (§2.25.10)', () => {
+	const noting = (sent: unknown[]) =>
+		commanding({
+			'gift.add': async (_actor, payload) => {
+				sent.push(payload);
+				return { giftId: 'g1' };
+			},
+			'gift.edit': async (_actor, payload) => {
+				sent.push(payload);
+				return { giftId: 'g1' };
+			}
+		});
+	const fields = { title: 'Scarf', state: 'idea', whenKind: 'now' };
+
+	it('sends *Everyone but …* as a shared gift kept from its person, and *Everyone* as one kept from nobody', async () => {
+		const sent: unknown[] = [];
+		const services = noting(sent);
+		const add = (visibility: string) =>
+			answerOf(
+				actions.addGift(
+					routeEvent({ services, params: { id: 'anna' }, form: formOf({ ...fields, visibility }) })
+				)
+			);
+		expect(await add('surprise')).toMatchObject({ kind: 'redirect' });
+		await add('shared');
+		expect(sent).toMatchObject([
+			{ visibility: 'shared', hiddenFromRecipient: true },
+			{ visibility: 'shared', hiddenFromRecipient: false }
+		]);
+	});
+
+	it('sends a private gift as kept from nobody, on an edit too', async () => {
+		const sent: unknown[] = [];
+		await answerOf(
+			actions.editGift(
+				routeEvent({
+					services: noting(sent),
+					params: { id: 'anna' },
+					form: formOf({ giftId: 'g1', title: 'Scarf', visibility: 'private' })
+				})
+			)
+		);
+		expect(sent).toMatchObject([
+			{ giftId: 'g1', visibility: 'private', hiddenFromRecipient: false }
+		]);
+	});
+});
