@@ -14,7 +14,7 @@ someone, what is near first, and to tick off what they did without opening each 
   docs/dev/02 §2.27.9). A passed idea sits in *This month* with the card's passed chip — no nudge
   beyond it; Home asks.
 - Each row (`PlanListRow`): the person's 28 px face, the title linking to their Outings card,
-  *private* or the surprise icon before it, then a `text-xs` line *with Mia* (to the person) ·
+  *private* or the surprise icon before it, then a `text-xs` line *Outing with Mia* (to the person) ·
   *booked* · *not sent yet*, and the when chip (`WhenChip`) under it; the done box at the right
   end (§5.1), the card's `PlanStep`.
 - Ticking is the card's: the toast with *Undo*, the row gone while it stands; a tick kept on the
