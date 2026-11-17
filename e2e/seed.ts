@@ -68,6 +68,17 @@ export interface SeedGift {
 	visibility?: 'shared' | 'private';
 }
 
+/** An outing idea and its when, as `activity_idea` stores it (docs/dev/03 §activity_idea). */
+export interface SeedPlan {
+	title: string;
+	when?:
+		{ kind: 'from_age' | 'at_age'; age: number } | { kind: 'on_date' | 'in_month'; on: string };
+	/** Booked, in ISO. */
+	bookedAt?: string;
+	/** Private makes it the signed-in account's own: the household's other member cannot see it. */
+	visibility?: 'shared' | 'private';
+}
+
 export interface SeedCircle {
 	/** The circle's id on the map is `circleIdOf(name)`. */
 	name: string;
@@ -116,7 +127,9 @@ export async function seedHousehold(
 	/** An own address, by full name, likewise the setting of a case. */
 	addresses: Readonly<Record<string, string>> = {},
 	/** Gift ideas, by full name, likewise the setting of a case. */
-	gifts: Readonly<Record<string, readonly SeedGift[]>> = {}
+	gifts: Readonly<Record<string, readonly SeedGift[]>> = {},
+	/** Outing ideas, by full name, likewise the setting of a case. */
+	plans: Readonly<Record<string, readonly SeedPlan[]>> = {}
 ): Promise<void> {
 	const document = {
 		format: ARCHIVE_FORMAT,
@@ -148,6 +161,15 @@ export async function seedHousehold(
 					when_age: gift.when && 'age' in gift.when ? gift.when.age : null,
 					visibility: gift.visibility ?? 'shared',
 					...(gift.createdAt !== undefined && { created_at: gift.createdAt })
+				})),
+				plans: (plans[name] ?? []).map((plan) => ({
+					id: idOf(`${name} plan ${plan.title}`),
+					title: plan.title,
+					when_kind: plan.when?.kind ?? null,
+					when_on: plan.when && 'on' in plan.when ? plan.when.on : null,
+					when_age: plan.when && 'age' in plan.when ? plan.when.age : null,
+					booked_at: plan.bookedAt ?? null,
+					visibility: plan.visibility ?? 'shared'
 				}))
 			};
 		}),

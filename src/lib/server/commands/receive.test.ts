@@ -88,6 +88,7 @@ function fakes() {
 			'plan.edit': async () => ({ planId: 'p' }),
 			'plan.unbook': async () => ({ planId: 'p' }),
 			'plan.reopen': async () => ({ planId: 'p' }),
+			'plan.answerWhen': async () => ({ planId: 'p' }),
 			'plan.remove': async () => ({ planId: 'p' }),
 			'tag.assign': async () => ({ tagId: 't' }),
 			'circle.join': async () => ({ circleId: 'c' }),

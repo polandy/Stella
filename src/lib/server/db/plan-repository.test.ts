@@ -120,6 +120,73 @@ describe('createDrizzlePlanRepository', () => {
 		expect(listed.map((p) => p.id)).toEqual(['new', 'done', 'old']);
 	});
 
+	describe('the open ideas for Home', () => {
+		const homeIds = async (viewer: Viewer) =>
+			(await repo.listOpenVisibleTo(viewer)).map((p) => p.id).sort();
+
+		it('lists the open ones with their person and birth date, not the done', async () => {
+			db.update(schema.contact)
+				.set({ birthDate: '2019-06-02', birthDatePrecision: 'full', avatarPhotoId: null })
+				.where(eq(schema.contact.id, 'c-shared'))
+				.run();
+			await repo.insert(plan({ id: 'open', when: { kind: 'at_age', age: 8 } }));
+			await repo.insert(plan({ id: 'done', doneAt: 9, doneOn: '2026-11-01', doneBy: U1 }));
+			expect(await repo.listOpenVisibleTo(viewerU1)).toEqual([
+				{
+					...plan({ id: 'open', when: { kind: 'at_age', age: 8 } }),
+					contactName: 'S',
+					avatarPhotoId: null,
+					birth: { value: '2019-06-02', precision: 'full' }
+				}
+			]);
+		});
+
+		it('keeps a private idea, one on a private person and a surprise from whom they are kept', async () => {
+			db.update(schema.user).set({ selfContactId: 'c-shared' }).where(eq(schema.user.id, U2)).run();
+			await repo.insert(plan({ id: 'private', visibility: 'private' }));
+			await repo.insert(plan({ id: 'on-private', contactId: 'c-priv' }));
+			await repo.insert(plan({ id: 'surprise', hiddenFromPerson: true }));
+			await repo.insert(plan({ id: 'shared' }));
+			expect(await homeIds(viewerU2)).toEqual(['shared']);
+			expect(await homeIds(viewerU1)).toEqual(['on-private', 'private', 'shared', 'surprise']);
+		});
+
+		it('leaves out an archived person and one who died', async () => {
+			db.insert(schema.contact)
+				.values([
+					{
+						id: 'c-arch',
+						householdId: H,
+						createdBy: U1,
+						visibility: 'shared',
+						displayName: 'A',
+						archivedAt: 1
+					},
+					{
+						id: 'c-dead',
+						householdId: H,
+						createdBy: U1,
+						visibility: 'shared',
+						displayName: 'D',
+						isDeceased: 1
+					}
+				])
+				.run();
+			await repo.insert(plan({ id: 'archived', contactId: 'c-arch' }));
+			await repo.insert(plan({ id: 'deceased', contactId: 'c-dead' }));
+			expect(await homeIds(viewerU1)).toEqual([]);
+		});
+
+		it('keeps ideas of another household out', async () => {
+			db.insert(schema.household).values({ id: 'h-2', name: 'Other' }).run();
+			db.insert(schema.user)
+				.values({ id: 'u-x', householdId: 'h-2', email: 'x@x.test', name: 'X' })
+				.run();
+			await repo.insert(plan({ id: 'p-1' }));
+			expect(await homeIds({ id: 'u-x', householdId: 'h-2' })).toEqual([]);
+		});
+	});
+
 	it('stores a booking, a tick, a rewrite and a removal', async () => {
 		await repo.insert(plan({ id: 'p-1' }));
 		const changed = plan({

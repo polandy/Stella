@@ -58,7 +58,8 @@ everything*. Open an entry far down and come *Back*: the stream is where you lef
 Beside the stream sits a short list, **Coming up**: the next thirty days of birthdays and
 anniversaries. Each name offers one thing: *Write a moment*. Someone with gift ideas noted
 also shows *2 ideas* under their name, which takes you to their Gifts card, and *Ready: …* for a
-present already bought and not yet given. The list disappears when it has
+present already bought and not yet given. The next outings you have planned with a day join
+the list too (see *Outings* below). The list disappears when it has
 nothing to say, and on a wide screen the stream then takes its room. On a phone there is no room beside the stream, so it stands above it,
 under the person search; the stream below loads on as you scroll. It shows three people there, with *Show all* underneath when there are more.
 
@@ -691,6 +692,13 @@ concert*, *the lake by bike once she is ten*. What you owe someone belongs in a 
   change or remove it; only whoever noted it changes who sees it.
 - Without a connection, noting, booking and ticking are kept on your device and sent later;
   changing or removing one needs Stella to be reachable.
+- **On Home**, the next three ideas with a day appear in **Coming up**, among the birthdays:
+  *Zoo — Outing with Mia · on Saturday*. When a person's birthday is coming up anyway, their
+  line also says *booked: Zoo* and *1 idea together* for the ones without a day. Ideas without
+  a day never show on Home otherwise.
+- Once an idea's day has passed and it is not ticked, Home asks **Done? Still on?** for a week:
+  **Done**, **Next year** (the same day a year later), **Keep without a date**, or **Delete**.
+  After that week only its card still marks it.
 
 ### To-dos
 

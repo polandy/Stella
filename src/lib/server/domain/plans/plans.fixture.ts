@@ -34,6 +34,11 @@ export function fakePlans(
 		async remove(planId) {
 			rows.delete(planId);
 		},
+		async listOpenVisibleTo(viewer) {
+			return [...rows.values()]
+				.filter((p) => p.doneAt === null && visible(viewer, p))
+				.map((p) => ({ ...p, contactName: p.contactId, avatarPhotoId: null, birth: null }));
+		},
 		async listForContactVisibleTo(viewer, contactId) {
 			return [...rows.values()].filter((p) => p.contactId === contactId && visible(viewer, p));
 		},

@@ -1,6 +1,6 @@
 import * as v from 'valibot';
 import { PLAN_WHEN_KINDS } from '../plans/plans';
-import { optionalWhenOf } from '../when/schema';
+import { optionalWhenOf, whenSchemaOf } from '../when/schema';
 import { nonEmpty, optionalText, requiredText, visibility } from './payload-fields';
 
 /* What the outing commands carry (docs/dev/04 §4.11.2), one Valibot schema each. */
@@ -33,4 +33,11 @@ export const PlanEditSchema = v.object({
 export const PlanRefSchema = v.object({
 	contactId: nonEmpty,
 	planId: nonEmpty
+});
+
+/** A passed idea answered on Home (docs/dev/02 §2.27.7): a new when ahead, or null for *some time*. */
+export const PlanAnswerWhenSchema = v.object({
+	contactId: nonEmpty,
+	planId: nonEmpty,
+	when: v.nullable(whenSchemaOf(PLAN_WHEN_KINDS))
 });

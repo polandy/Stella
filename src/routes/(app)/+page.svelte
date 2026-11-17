@@ -84,7 +84,13 @@
 	});
 	const hasMemories = $derived(!data.memories.empty || immichMemories.years.length > 0);
 	/** The rail stands while a date, a to-do or a memory is close; without any it is absent. */
-	const hasRail = $derived(data.upcoming.length > 0 || band.rows.length > 0 || hasMemories);
+	const hasRail = $derived(
+		data.upcoming.length > 0 ||
+			data.plans.asking.length > 0 ||
+			data.plans.coming.length > 0 ||
+			band.rows.length > 0 ||
+			hasMemories
+	);
 
 	// On a phone the composer is a sheet over the stream, opened by the pencil in the tab bar
 	// (`/?compose`) and closed by handing the URL back — so the open state lives in the URL
@@ -313,6 +319,9 @@
 			{ticksKept}
 			todoTickError={form && 'todoTickError' in form ? (form.todoTickError ?? null) : null}
 			upcoming={data.upcoming}
+			plans={data.plans}
+			planRowError={form && 'planRowError' in form ? (form.planRowError ?? null) : null}
+			planTickError={form && 'planTickError' in form ? (form.planTickError ?? null) : null}
 			memories={data.memories}
 			{immichMemories}
 			{hasMemories}

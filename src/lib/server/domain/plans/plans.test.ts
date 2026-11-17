@@ -4,8 +4,10 @@ import { ContactGoneError } from '../contacts/require-visible';
 import { fakePlans } from './plans.fixture';
 import {
 	addPlan,
+	answerPlanWhen,
 	editPlan,
 	InvalidPlanError,
+	listOpenPlans,
 	listPlansForContact,
 	PlanGoneError,
 	removePlan,
@@ -263,5 +265,60 @@ describe('booking and ticking off', () => {
 		expect(await refusal(removePlan(deps, JULIA, { contactId: MIA, planId }))).toBe(
 			'This idea is no longer there.'
 		);
+	});
+});
+
+describe('answering a passed idea', () => {
+	async function passed() {
+		const { planId } = await addPlan(deps, ANDY, {
+			...zoo(),
+			when: { kind: 'on_date', on: '2026-11-20' }
+		});
+		await bookPlan(deps, ANDY, { contactId: MIA, planId });
+		// Two days after its day.
+		now = Date.UTC(2026, 10, 22, 9);
+		return { contactId: MIA, planId };
+	}
+
+	it('moves it a year on, the booking gone with the day', async () => {
+		const ref = await passed();
+		await answerPlanWhen(deps, JULIA, { ...ref, when: { kind: 'on_date', on: '2027-11-20' } });
+		expect(plans.rows.get(ref.planId)).toMatchObject({
+			when: { kind: 'on_date', on: '2027-11-20' },
+			bookedAt: null,
+			bookedBy: null
+		});
+	});
+
+	it('keeps it for some time', async () => {
+		const ref = await passed();
+		await answerPlanWhen(deps, JULIA, { ...ref, when: null });
+		expect(plans.rows.get(ref.planId)?.when).toBeNull();
+	});
+
+	it('refuses a day still gone by', async () => {
+		const ref = await passed();
+		expect(
+			await refusal(
+				answerPlanWhen(deps, JULIA, { ...ref, when: { kind: 'on_date', on: '2026-11-21' } })
+			)
+		).toBe('That day is over. Choose one still ahead.');
+	});
+
+	it('leaves one already done as it is', async () => {
+		const ref = await passed();
+		await donePlan(deps, ANDY, ref);
+		const before = { ...plans.rows.get(ref.planId) };
+		await answerPlanWhen(deps, JULIA, { ...ref, when: null });
+		expect(plans.rows.get(ref.planId)).toEqual(before as never);
+	});
+
+	it('lists the open ones for Home, not the done', async () => {
+		const ref = await passed();
+		await addPlan(deps, ANDY, zoo('Lake'));
+		await donePlan(deps, ANDY, ref);
+		expect(
+			(await listOpenPlans(deps, { id: 'andy', householdId: 'h1' })).map((p) => p.title)
+		).toEqual(['Lake']);
 	});
 });

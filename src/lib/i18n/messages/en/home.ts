@@ -24,6 +24,20 @@ export const home = {
 		p.count === 1 ? `1 gift idea for ${p.name}` : `${p.count} gift ideas for ${p.name}`,
 	// What is bought and waiting to be handed over (docs/dev/02 §2.25.9).
 	'home.ready': (p: { titles: string }) => `Ready: ${p.titles}`,
+	'home.plan': 'Outing',
+	'home.planWith': (p: { name: string }) => `Outing with ${p.name}`,
+	'home.planInMonth': (p: { month: string }) => `in ${p.month}`,
+	'home.planBooked': (p: { titles: string }) => `booked: ${p.titles}`,
+	'home.planIdeas': (p: { count: number }) =>
+		p.count === 1 ? '1 idea together' : `${p.count} ideas together`,
+	'home.planIdeasFor': (p: { count: number; name: string }) =>
+		p.count === 1 ? `1 outing idea with ${p.name}` : `${p.count} outing ideas with ${p.name}`,
+	'home.planAsk': 'Done? Still on?',
+	'home.planAsk.group': (p: { title: string }) => `Did “${p.title}” happen?`,
+	'home.planAsk.done': 'Done',
+	'home.planAsk.nextYear': 'Next year',
+	'home.planAsk.undated': 'Keep without a date',
+	'home.planAsk.remove': 'Delete',
 	'home.findPerson': 'Find a person…',
 	'home.showAll': (p: { count: number }) => `Show all ${p.count}`,
 	'home.outbox.label': 'Not sent yet',

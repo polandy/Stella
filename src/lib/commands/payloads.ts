@@ -13,7 +13,12 @@ import {
 	TodoEditSchema,
 	TodoRefSchema
 } from './gift-todo-payloads';
-import { PlanAddSchema, PlanEditSchema, PlanRefSchema } from './plan-payloads';
+import {
+	PlanAddSchema,
+	PlanAnswerWhenSchema,
+	PlanEditSchema,
+	PlanRefSchema
+} from './plan-payloads';
 import {
 	CommandIdSchema,
 	ISO_DAY,
@@ -176,6 +181,7 @@ export const COMMAND_PAYLOAD_SCHEMAS = {
 	'plan.edit': PlanEditSchema,
 	'plan.unbook': PlanRefSchema,
 	'plan.reopen': PlanRefSchema,
+	'plan.answerWhen': PlanAnswerWhenSchema,
 	'plan.remove': PlanRefSchema,
 	'tag.assign': TagAssignSchema,
 	'circle.join': CircleJoinSchema,

@@ -19,6 +19,21 @@ export const home: HomeMessages = {
 		p.count === 1 ? `1 Geschenkidee für ${p.name}` : `${p.count} Geschenkideen für ${p.name}`,
 	'home.ready': (p) => `Bereit: ${p.titles}`,
 	'home.findPerson': 'Person suchen…',
+	'home.plan': 'Vorhaben',
+	'home.planWith': (p) => `Vorhaben mit ${p.name}`,
+	'home.planInMonth': (p) => `im ${p.month}`,
+	'home.planBooked': (p) => `fest: ${p.titles}`,
+	'home.planIdeas': (p) => (p.count === 1 ? '1 Idee zusammen' : `${p.count} Ideen zusammen`),
+	'home.planIdeasFor': (p) =>
+		p.count === 1
+			? `1 Unternehmungsidee mit ${p.name}`
+			: `${p.count} Unternehmungsideen mit ${p.name}`,
+	'home.planAsk': 'Gemacht? Noch aktuell?',
+	'home.planAsk.group': (p) => `Habt ihr „${p.title}“ gemacht?`,
+	'home.planAsk.done': 'Gemacht',
+	'home.planAsk.nextYear': 'Nächstes Jahr',
+	'home.planAsk.undated': 'Ohne Datum behalten',
+	'home.planAsk.remove': 'Löschen',
 	'home.showAll': (p) => `Alle ${p.count} anzeigen`,
 	'home.outbox.label': 'Noch nicht gesendet',
 	'home.outbox.notSent': 'Noch nicht gesendet',
