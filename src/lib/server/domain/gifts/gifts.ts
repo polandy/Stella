@@ -4,7 +4,8 @@ import { FULL_DATE_SHAPE, isRealCalendarDay } from '../../../dates/calendar';
 import { giftLink, type GiftState } from '../../../gifts/gifts';
 import type { PartialDate } from '../../../dates/partial-date';
 import { todayFor } from '../../../dates/today';
-import { ideaWaits as waitsOn } from '../../../gifts/idea-when';
+import { ideaState, ideaWaits as waitsOn } from '../../../gifts/idea-when';
+import type { WhenState } from '../../../when/state';
 import { birthOf, checkWhen } from '../../../when/resolve';
 import { sameWhen, type When } from '../../../when/when';
 import type { Visibility, Viewer } from '../../access/visibility';
@@ -392,15 +393,16 @@ export async function countOpenIdeas(
 
 /**
  * Every open idea the viewer may see, with whom it is for — the household's list (§2.25.6) —
- * less those still waiting for their time.
+ * less those still waiting for their time; each says where it stands against its when.
  */
 export async function listOpenIdeas(
 	deps: Pick<GiftDeps, 'gifts' | 'clock'>,
 	viewer: Viewer
-): Promise<OpenIdea[]> {
+): Promise<(OpenIdea & { whenState: WhenState | null })[]> {
 	const today = todayFor(deps.clock);
 	const ideas = await deps.gifts.listOpenIdeasVisibleTo(viewer);
-	return ideas
-		.filter((idea) => !waitsOn(idea, idea.birth, today))
-		.map(({ birth: _birth, ...idea }) => idea);
+	return ideas.flatMap(({ birth, ...idea }) => {
+		const whenState = ideaState(idea, birth, today);
+		return whenState?.kind === 'waiting' ? [] : [{ ...idea, whenState }];
+	});
 }

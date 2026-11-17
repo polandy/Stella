@@ -24,9 +24,13 @@ export const when = {
 	'when.chip.fromAge': (p: { age: number }) => `From age ${p.age}`,
 	'when.chip.atAge': (p: { age: number }) => `For the ${ordinal(p.age)} birthday`,
 	'when.chip.onDay': (p: { day: string }) => `For ${p.day}`,
+	'when.chip.about': (p: { year: string }) => `about ${p.year}`,
+	'when.chip.tomorrow': 'tomorrow',
+	'when.chip.today': 'today',
+	'when.chip.passed': 'passed',
 
 	'when.preview.now': 'Shows among the ideas now.',
-	'when.preview.later': 'Waits under Later until you take it up.',
+	'when.preview.later': 'Waits under Later. Once a year it asks whether it is still current.',
 	'when.preview.ageReached': (p: { age: number }) =>
 		`Already ${p.age}, so it shows among the ideas now.`,
 	'when.preview.turns': (p: { age: number; day: string }) => `Turns ${p.age} on ${p.day}.`,
@@ -36,6 +40,12 @@ export const when = {
 	'when.preview.waits': (p: { day: string }) =>
 		`It waits until ${p.day}, then shows among the ideas.`,
 	'when.preview.open': 'It shows among the ideas now.',
+
+	'when.ask.passed': 'The occasion has passed. Still current?',
+	'when.ask.review': 'Noted for later. Still current?',
+	'when.ask.group': (p: { title: string }) => `Is “${p.title}” still current?`,
+	'when.ask.keep': 'Keep as idea',
+	'when.ask.move': 'New time',
 
 	'when.fold': (p: { count: number }) => `Later · ${p.count}`,
 	'when.allWaiting': 'Nothing due yet. The ideas for later wait below.'

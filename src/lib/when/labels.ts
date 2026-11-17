@@ -1,6 +1,7 @@
 import { dayLabel, type DateLanguage } from '../dates/labels';
 import { addDays } from '../dates/month';
 import { WHEN_LEAD_DAYS, type WhenOutlook } from './resolve';
+import type { WhenState } from './state';
 import type { When } from './when';
 
 /* How a when reads (docs/dev/02 §2.25.8): the chip on a row, and the line under the picker. */
@@ -20,6 +21,32 @@ export function whenChip(lang: DateLanguage, when: When): string {
 				: lang.t('when.chip.onDay', { day: dayLabel(lang, when.on) });
 		case 'later':
 			return lang.t('when.kind.later');
+	}
+}
+
+/** The chip once its day draws near or went by: *For the 6th birthday · in 34 days*. */
+export function whenStateChip(
+	lang: DateLanguage,
+	when: When,
+	state: WhenState | null,
+	today: string
+): string {
+	const chip = whenChip(lang, when);
+	switch (state?.kind) {
+		case 'soon': {
+			const ahead = state.approximate
+				? lang.t('when.chip.about', { year: state.on.slice(0, 4) })
+				: state.inDays === 1
+					? lang.t('when.chip.tomorrow')
+					: lang.t('dates.inDays', { days: state.inDays });
+			return `${chip} · ${ahead}`;
+		}
+		case 'due':
+			return state.on === today ? `${chip} · ${lang.t('when.chip.today')}` : chip;
+		case 'passed':
+			return `${chip} · ${lang.t('when.chip.passed')}`;
+		default:
+			return chip;
 	}
 }
 

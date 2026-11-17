@@ -307,6 +307,7 @@ export function buildArchiveDocument(
 					when_kind: text(g, 'when_kind'),
 					when_on: text(g, 'when_on'),
 					when_age: num(g, 'when_age'),
+					when_checked_on: text(g, 'when_checked_on'),
 					visibility: text(g, 'visibility'),
 					author: text(g, 'created_by'),
 					created_at: moment(g, 'created_at')
