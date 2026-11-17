@@ -4,6 +4,7 @@ import type { BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
 import { alias, type SQLiteColumn, type SQLiteTable } from 'drizzle-orm/sqlite-core';
 import type * as schema from '../db/schema';
 import {
+	activityIdea,
 	activityLog,
 	circle,
 	circleMembership,
@@ -28,6 +29,7 @@ import {
 	contactVisibleTo,
 	giftVisibleTo,
 	membershipVisibleTo,
+	surpriseVisibleTo,
 	relationshipVisibleTo
 } from './query-scoping';
 import { REMOVERS, seedParityDb, U1, U2, U3, VIEWERS } from './visibility-parity.fixture';
@@ -42,6 +44,7 @@ import {
 	canViewCirclePhoto,
 	canViewContact,
 	canViewGift,
+	canViewSurprise,
 	canViewMembership,
 	canViewRelationship,
 	type CircleAccess,
@@ -205,6 +208,44 @@ const giftPair: Pair = {
 		)
 };
 
+/** Outing ideas, as `canViewSurprise` sees them: kept from their person like a gift (§2.27). */
+const planPair: Pair = {
+	key: 'plan',
+	name: 'canViewSurprise ↔ surpriseVisibleTo',
+	ts: (viewer) => {
+		const contacts = contactsById();
+		const self = db.select().from(user).where(eq(user.id, viewer.id)).get()?.selfContactId ?? null;
+		return ids(
+			db
+				.select()
+				.from(activityIdea)
+				.all()
+				.filter((a) =>
+					canViewSurprise(
+						viewer,
+						{
+							ownerId: a.createdBy,
+							visibility: a.visibility,
+							contact: parentOf(contacts, a.contactId),
+							contactId: a.contactId,
+							hiddenFromPerson: a.hiddenFromPerson !== 0
+						},
+						self
+					)
+				)
+		);
+	},
+	sql: (viewer) =>
+		ids(
+			db
+				.select({ id: activityIdea.id })
+				.from(activityIdea)
+				.innerJoin(contact, eq(activityIdea.contactId, contact.id))
+				.where(surpriseVisibleTo(viewer, activityIdea))
+				.all()
+		)
+};
+
 const PAIRS: Pair[] = [
 	{
 		key: 'contact',
@@ -218,6 +259,7 @@ const PAIRS: Pair[] = [
 	childRecordPair('journal entry', { table: journalEntry, ...journalEntry }),
 	childRecordPair('interaction', { table: interaction, ...interaction }),
 	giftPair,
+	planPair,
 	childRecordPair('contact photo', { table: photo, ...photo }),
 	{
 		key: 'relationship',
@@ -398,6 +440,13 @@ const CASES: Record<string, Case[]> = {
 		['u4', 'g-foreign-priv-u3', 'g-foreign', "a foreign member's private record"],
 		['u2', 'g-surprise-u2', 'g-for-u2', 'a surprise for the viewer as its recipient'],
 		['u2', 'g-surprise-u2', 'g-surprise-by-u2', 'one they noted for themselves stays theirs']
+	],
+	plan: [
+		['u2', 'a-priv-u1', 'a-shared', "another member's private record"],
+		['u1', 'a-on-priv-u2', 'a-on-priv-u1', 'a shared record on a private contact'],
+		['u3', 'a-shared', 'a-foreign', 'another household'],
+		['u2', 'a-surprise-u2', 'a-for-u2', 'a surprise for the viewer as its person'],
+		['u2', 'a-surprise-u2', 'a-surprise-by-u2', 'one they noted for themselves stays theirs']
 	],
 	relationship: [
 		['u2', 'r-c-shared--c-priv-u1', 'r-c-shared--c-priv-u2', 'one end is hidden'],

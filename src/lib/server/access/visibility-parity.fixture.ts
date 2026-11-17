@@ -4,6 +4,7 @@ import { drizzle, type BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
 import { migrate } from 'drizzle-orm/bun-sqlite/migrator';
 import * as schema from '../db/schema';
 import {
+	activityIdea,
 	activityLog,
 	circle,
 	circleMembership,
@@ -159,6 +160,9 @@ export function seedParityDb(): BunSQLiteDatabase<typeof schema> {
 		db.insert(gift)
 			.values({ id: `g-${suffix}`, ...common, state: 'idea', title: suffix })
 			.run();
+		db.insert(activityIdea)
+			.values({ id: `a-${suffix}`, ...common, title: suffix })
+			.run();
 		const file = { filePath: `${suffix}.jpg`, thumbPath: `${suffix}_t.jpg`, mime: 'image/jpeg' };
 		const householdId = householdOfParent(parent);
 		db.insert(photo)
@@ -197,6 +201,25 @@ export function seedParityDb(): BunSQLiteDatabase<typeof schema> {
 				createdBy: U2,
 				hiddenFromRecipient: 1,
 				state: 'bought',
+				title: 'own'
+			}
+		])
+		.run();
+	db.insert(activityIdea)
+		.values([
+			{ id: 'a-for-u2', contactId: 'c-self-u2', createdBy: U1, title: 'open' },
+			{
+				id: 'a-surprise-u2',
+				contactId: 'c-self-u2',
+				createdBy: U1,
+				hiddenFromPerson: 1,
+				title: 'surprise'
+			},
+			{
+				id: 'a-surprise-by-u2',
+				contactId: 'c-self-u2',
+				createdBy: U2,
+				hiddenFromPerson: 1,
 				title: 'own'
 			}
 		])
