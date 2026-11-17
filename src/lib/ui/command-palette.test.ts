@@ -283,7 +283,7 @@ describe('a to-do from the palette (docs/dev/02 §2.26)', () => {
 	});
 });
 
-describe('an outing idea from the palette (docs/dev/02 §2.27.9)', () => {
+describe('an outing idea from the palette (docs/dev/02 §2.27.10)', () => {
 	it('is found by its name, and leads to a second step rather than a page', () => {
 		expect(paletteRows('outing w', people, labels)[0]).toMatchObject({
 			kind: 'step',

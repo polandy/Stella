@@ -125,7 +125,7 @@ const TRIGGERS: Record<string, string> = {
  */
 const todoContent = (t: string) => `coalesce(${t}.title,'')`;
 
-/* What of an outing idea is searchable: its title, note and link (docs/dev/02 §2.27.9). */
+/* What of an outing idea is searchable: its title, note and link (docs/dev/02 §2.27.10). */
 const planContent = (t: string) =>
 	`coalesce(${t}.title,'') || ' ' || coalesce(${t}.note,'') || ' ' || coalesce(${t}.url,'')`;
 

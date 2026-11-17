@@ -19,7 +19,7 @@ import { datesOnTheRadar, type UpcomingSource } from './upcoming';
  * them, without its 30-day horizon — every date on the radar of every person they may see,
  * read through the same scoped port — every open to-do of theirs with a day, on that day, and
  * every gift idea of theirs whose time draws near, on its day — and each dated outing idea once,
- * when its time starts to draw near (§2.27.9). The phone's calendar then does the reminding.
+ * when its time starts to draw near (§2.27.11). The phone's calendar then does the reminding.
  *
  * "Anna turns 11" cannot be said by one event that repeats every year, so an event names the
  * occasion and its description carries the year it began.

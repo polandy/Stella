@@ -83,7 +83,7 @@ export interface TodoHit {
 	contactName: string;
 }
 
-/** An outing idea found by its title, note or link, open or done, with its person (docs/dev/02 §2.27.9). */
+/** An outing idea found by its title, note or link, open or done, with its person (docs/dev/02 §2.27.10). */
 export interface PlanHit {
 	planId: string;
 	title: string;

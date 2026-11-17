@@ -207,7 +207,7 @@
 			{/if}
 
 			{#if data.results.plans.length > 0}
-				<!-- An outing idea leads to its card; a done one is still found, marked done (docs/dev/02 §2.27.9). -->
+				<!-- An outing idea leads to its card; a done one is still found, marked done (docs/dev/02 §2.27.10). -->
 				<section class="flex flex-col gap-1" data-testid="search-plans">
 					<h2 class="text-sm font-medium text-fg-muted">{t('search.plans')}</h2>
 					{#each data.results.plans as plan (plan.planId)}

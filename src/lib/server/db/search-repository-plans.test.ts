@@ -11,7 +11,7 @@ import { createDrizzleSearchRepository } from './search-repository';
 
 /*
  * Full search finds outing ideas by their title, note and link, done ones too and marked so
- * (docs/dev/02 §2.27.9), within the central visibility scoping (docs/dev/03 §3.7): a private one
+ * (docs/dev/02 §2.27.10), within the central visibility scoping (docs/dev/03 §3.7): a private one
  * only for its author, a surprise never for the member it is with.
  */
 

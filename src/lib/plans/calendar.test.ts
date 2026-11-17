@@ -3,7 +3,7 @@ import type { PartialDate } from '../dates/partial-date';
 import { planLeadDay } from './calendar';
 import type { PlanTiming } from './card';
 
-/* An outing idea in the phone's calendar (docs/dev/02 §2.27.9): one entry ahead, never on its day. */
+/* An outing idea in the phone's calendar (docs/dev/02 §2.27.11): one entry ahead, never on its day. */
 
 const born: PartialDate = { value: '2019-06-02', precision: 'full' };
 const NOTED = Date.UTC(2026, 0, 10, 12);
