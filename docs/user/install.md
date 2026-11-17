@@ -146,9 +146,10 @@ it appears.
 
 1. **Create a key in your own Immich account** — the admin's, not a shared one: *Account
    settings → API keys → New API key*. Give it only these read permissions: `user.read`,
-   `person.read`, `person.statistics`, `asset.read` and `asset.view`. Stella never writes to
-   Immich. A key made for an earlier Stella lacks the last two: Settings says so, and the
-   strip of photos stays away until the key has them.
+   `person.read`, `person.statistics`, `asset.read`, `asset.view` and `timeline.read`. Stella
+   never writes to Immich. A key made for an earlier Stella may lack `asset.read` and `asset.view`: Settings says so, and the
+   strip of photos stays away until the key has them. `timeline.read` is optional: without it
+   Settings warns, and the photo picker shows days and search but not the years and months.
 2. **Add three lines to `.env`:**
 
    ```

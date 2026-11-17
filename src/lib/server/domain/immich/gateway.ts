@@ -69,6 +69,15 @@ export interface ImmichTakenWindow {
 	before: string | null;
 }
 
+/**
+ * One month of the timeline (`GET /api/timeline/buckets`): `YYYY-MM` on the camera's clock, and how
+ * many assets Immich counts in it — videos too, so a count of photos is only about this many.
+ */
+export interface ImmichTimelineMonth {
+	month: string;
+	count: number;
+}
+
 /** A smart search's answer: the photos that match best, or that the library has it switched off. */
 export type ImmichSmartSearch = { enabled: true; assets: ImmichAsset[] } | { enabled: false };
 
@@ -146,6 +155,11 @@ export interface ImmichGateway {
 	 * library runs without machine learning.
 	 */
 	smartSearch(query: string, limit: number): Promise<ImmichOutcome<ImmichSmartSearch>>;
+	/**
+	 * Every month of the timeline that has anything in it, with its count (`timeline.read`).
+	 * Archived and locked assets are not counted.
+	 */
+	timelineMonths(): Promise<ImmichOutcome<ImmichTimelineMonth[]>>;
 	/** One photo, at one of the sizes Immich renders (`asset.view`). */
 	assetImage(assetId: string, size: ImmichImageSize): Promise<ImmichOutcome<ImmichImage>>;
 }
@@ -170,6 +184,9 @@ export function isServableImageType(contentType: string): boolean {
 /** The read scopes the key needs, named as Immich names them (docs/dev/02 §2.24.1). */
 export type ImmichScope =
 	'user.read' | 'person.read' | 'person.statistics' | 'asset.read' | 'asset.view';
+
+/** Scopes a feature needs that Stella can do without: lacking one hides only that feature. */
+export type ImmichOptionalScope = 'timeline.read';
 
 type Payload = Record<string, unknown>;
 
@@ -292,4 +309,25 @@ export function readAssetPage(payload: unknown): ImmichAssetPage | null {
 		assets: assets.items.map(readAsset).filter((asset): asset is ImmichAsset => asset !== null),
 		nextCursor: isAssetCursor(assets.nextCursor) ? assets.nextCursor : null
 	};
+}
+
+/** `YYYY-MM` of a bucket's `YYYY-MM-DD…` start. */
+const BUCKET_START = /^(\d{4}-(?:0[1-9]|1[0-2]))-\d{2}(?:T.*)?$/;
+
+/**
+ * The months of `GET /api/timeline/buckets` (measured against Immich v3.3.1), or null when any
+ * bucket is not one: a changed shape is refused whole rather than read as a smaller library.
+ */
+export function readTimelineMonths(payload: unknown): ImmichTimelineMonth[] | null {
+	if (!Array.isArray(payload)) return null;
+	const months: ImmichTimelineMonth[] = [];
+	for (const value of payload) {
+		const bucket = objectOf(value);
+		const start = typeof bucket?.timeBucket === 'string' ? bucket.timeBucket : '';
+		const month = BUCKET_START.exec(start)?.[1];
+		const assets = count(bucket?.count);
+		if (month === undefined || assets === null) return null;
+		months.push({ month, count: assets });
+	}
+	return months;
 }

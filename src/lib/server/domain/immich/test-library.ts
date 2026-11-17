@@ -31,7 +31,7 @@ export function testLibrary(): FakeImmichLibrary {
 /** A gateway whose whole library is these photos, each taken at its camera-clock time. */
 export function libraryOf(
 	taken: Record<string, string>
-): Pick<ImmichGateway, 'takenAssets' | 'smartSearch'> {
+): Pick<ImmichGateway, 'takenAssets' | 'smartSearch' | 'timelineMonths'> {
 	// Each photo's instant: the clock time at UTC−10, so the day's window must reach past midnight.
 	const listed: (ImmichAsset & { instant: string })[] = Object.entries(taken)
 		.map(([id, takenAt]) => ({
@@ -56,6 +56,13 @@ export function libraryOf(
 				}
 			};
 		},
-		smartSearch: async () => ({ ok: true, value: { enabled: false } })
+		smartSearch: async () => ({ ok: true, value: { enabled: false } }),
+		timelineMonths: async () => {
+			const counts = new Map<string, number>();
+			for (const takenAt of Object.values(taken).sort())
+				counts.set(takenAt.slice(0, 7), (counts.get(takenAt.slice(0, 7)) ?? 0) + 1);
+			const months = [...counts].map(([month, count]) => ({ month, count }));
+			return { ok: true, value: months.reverse() };
+		}
 	};
 }

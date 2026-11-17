@@ -24,5 +24,11 @@ describe('what the picker asks Stella for', () => {
 	it('asks for a day, or for a search', () => {
 		expect(libraryQueryUrl({ day: '2026-10-26' })).toBe('/immich/library?day=2026-10-26');
 		expect(libraryQueryUrl({ query: 'pumpkin & cake' })).toBe('/immich/library?q=pumpkin+%26+cake');
+		expect(libraryQueryUrl({ month: '2026-10', cursor: null })).toBe(
+			'/immich/library?month=2026-10'
+		);
+		expect(libraryQueryUrl({ month: '2026-10', cursor: 'a/b=' })).toBe(
+			'/immich/library?month=2026-10&cursor=a%2Fb%3D'
+		);
 	});
 });

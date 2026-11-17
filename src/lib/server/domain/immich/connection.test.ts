@@ -31,7 +31,17 @@ describe('createImmichConnection', () => {
 		expect(await connection.status()).toEqual({
 			state: 'connected',
 			version: '3.2.4',
-			owner: { name: 'Anna', email: 'anna@example.test' }
+			owner: { name: 'Anna', email: 'anna@example.test' },
+			lacking: []
+		});
+	});
+
+	it('stays connected without timeline.read, naming it as what the key lacks', async () => {
+		const { gateway, connection } = connect();
+		gateway.failing = { timelineMonths: 'forbidden' };
+		expect(await connection.status()).toMatchObject({
+			state: 'connected',
+			lacking: ['timeline.read']
 		});
 	});
 
@@ -77,7 +87,8 @@ describe('createImmichConnection', () => {
 			'listPeople',
 			'personStatistics',
 			'latestAssets',
-			'assetImage'
+			'assetImage',
+			'timelineMonths'
 		]);
 	});
 

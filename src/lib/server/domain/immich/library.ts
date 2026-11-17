@@ -14,7 +14,7 @@ import type { ImmichMediaSigner } from './signed-media';
  */
 
 export interface ImmichLibraryDeps {
-	gateway: Pick<ImmichGateway, 'takenAssets' | 'smartSearch'>;
+	gateway: Pick<ImmichGateway, 'takenAssets' | 'smartSearch' | 'timelineMonths'>;
 	signer: ImmichMediaSigner;
 }
 

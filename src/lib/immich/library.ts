@@ -27,10 +27,33 @@ export type LibraryView =
 			earlier: string | null;
 			later: string | null;
 	  }
+	| {
+			state: 'month';
+			/** The month on the camera's clock, `YYYY-MM`. */
+			month: string;
+			/** A page of its photos, oldest first; may be short, or empty, with more to come. */
+			photos: LibraryPhoto[];
+			/** Where the next page starts, or null once the month is read to its end. */
+			nextCursor: string | null;
+	  }
 	| { state: 'found'; photos: LibraryPhoto[] }
 	/** The library runs without machine learning, so there is no search by description. */
 	| { state: 'searchOff' }
 	| { state: 'unreachable' };
+
+/** A month of the timeline and how many assets it holds — videos included, so approximate. */
+export interface LibraryMonth {
+	/** `YYYY-MM`, on the camera's clock. */
+	month: string;
+	count: number;
+}
+
+/**
+ * The timeline's months for the years overview, newest first, as `/immich/library/months` answers;
+ * `forbidden` when the key lacks `timeline.read` — the picker then shows days only.
+ */
+export type LibraryMonths =
+	{ state: 'months'; months: LibraryMonth[] } | { state: 'forbidden' } | { state: 'unreachable' };
 
 /**
  * An Immich photo on a journal entry, kept as a reference (docs/dev/02 §2.20, docs/dev/04 ADR-132): both

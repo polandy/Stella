@@ -1,5 +1,11 @@
 import type { Clock } from '../../clock';
-import type { ImmichGateway, ImmichOwner, ImmichScope, ImmichVersion } from './gateway';
+import type {
+	ImmichGateway,
+	ImmichOptionalScope,
+	ImmichOwner,
+	ImmichScope,
+	ImmichVersion
+} from './gateway';
 
 /*
  * "Is Stella connected to Immich, and to whose?" (docs/dev/02 §2.24.1). Settings shows
@@ -18,7 +24,13 @@ export const FAILURE_RETRY_MS = 30 * 1000;
 
 /** What Settings can say. Each failure has its own sentence, naming what to fix. */
 export type ImmichStatus =
-	| { state: 'connected'; version: string; owner: ImmichOwner }
+	| {
+			state: 'connected';
+			version: string;
+			owner: ImmichOwner;
+			/** Scopes the key lacks that only cost a part of a screen, never the connection. */
+			lacking: ImmichOptionalScope[];
+	  }
 	| { state: 'unreachable' }
 	| { state: 'keyRejected' }
 	| { state: 'missingScope'; scope: ImmichScope }
@@ -82,7 +94,12 @@ async function probe(gateway: ImmichGateway): Promise<ImmichStatus> {
 		}
 	}
 
-	return { state: 'connected', version: shown(version.value), owner: owner.value };
+	// Without it the picker only loses its years overview (docs/dev/02 §2.24.9).
+	const months = await gateway.timelineMonths();
+	const lacking: ImmichOptionalScope[] =
+		!months.ok && months.failure === 'forbidden' ? ['timeline.read'] : [];
+
+	return { state: 'connected', version: shown(version.value), owner: owner.value, lacking };
 }
 
 export function createImmichConnection({ gateway, clock }: ImmichConnectionDeps): ImmichConnection {

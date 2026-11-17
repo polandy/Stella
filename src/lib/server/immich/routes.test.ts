@@ -11,6 +11,7 @@ import {
 	answerGlimpse,
 	answerImmichMedia,
 	answerLibrary,
+	answerLibraryMonths,
 	answerMatchHint,
 	IMMICH_MEDIA_CACHE_CONTROL
 } from './routes';
@@ -465,6 +466,26 @@ describe('answerMatchHint', () => {
 	});
 });
 
+describe('answerLibraryMonths', () => {
+	it('answers the timeline’s months as JSON that no cache keeps, and refuses as the library does', async () => {
+		const gateway = createFakeImmichGateway(testLibrary());
+		const deps = { gateway, signer };
+		const answer = await answerLibraryMonths(deps, viewer);
+		if (!(answer instanceof Response)) throw new Error(`refused with ${answer.status}`);
+		expect(answer.headers.get('cache-control')).toBe(IMMICH_MEDIA_CACHE_CONTROL);
+		const body = await answer.json();
+		expect([body.state, body.months[0]]).toEqual(['months', { month: '2026-09', count: 4 }]);
+		expect(await answerLibraryMonths(deps, null)).toEqual({
+			status: 401,
+			message: 'errors.notSignedIn'
+		});
+		expect(await answerLibraryMonths(null, viewer)).toEqual({
+			status: 404,
+			message: 'errors.notFound'
+		});
+	});
+});
+
 describe('answerLibrary', () => {
 	const libraryDeps = () => {
 		const gateway = createFakeImmichGateway(testLibrary());
@@ -478,6 +499,23 @@ describe('answerLibrary', () => {
 		expect(answer.headers.get('cache-control')).toBe(IMMICH_MEDIA_CACHE_CONTROL);
 		const body = await answer.json();
 		expect([body.state, body.photos.length, body.earlier]).toEqual(['day', 4, '2026-08-31']);
+	});
+
+	it('answers a page of a month, and a later page from its cursor', async () => {
+		const { deps } = libraryDeps();
+		const first = await answerLibrary(deps, viewer, { day: null, q: null, month: '2026-08' });
+		if (!(first instanceof Response)) throw new Error(`refused with ${first.status}`);
+		const page = await first.json();
+		expect([page.state, page.month, page.photos.length, page.nextCursor]).toEqual([
+			'month',
+			'2026-08',
+			80,
+			null
+		]);
+		const later = { day: null, q: null, month: '2026-08', cursor: '70' };
+		const next = await answerLibrary(deps, viewer, later);
+		if (!(next instanceof Response)) throw new Error(`refused with ${next.status}`);
+		expect((await next.json()).photos.length).toBeLessThan(80);
 	});
 
 	it('answers a search by description', async () => {
@@ -501,12 +539,37 @@ describe('answerLibrary', () => {
 			{ day: '2026-02-30', q: null },
 			{ day: '01.09.2026', q: null },
 			{ day: null, q: null },
-			{ day: '2026-09-01', q: 'both' }
+			{ day: '2026-09-01', q: 'both' },
+			{ day: null, q: null, month: '2026-13' },
+			{ day: null, q: null, month: '2026-9' },
+			{ day: '2026-09-01', q: null, month: '2026-09' },
+			{ day: '2026-09-01', q: null, cursor: '100' },
+			{ day: null, q: null, month: '2026-09', cursor: '' }
 		])
 			expect(await answerLibrary(deps, viewer, query)).toEqual({
 				status: 404,
 				message: 'errors.notFound'
 			});
 		expect(gateway.calls).toEqual([]);
+	});
+});
+
+describe('answerLibraryMonths', () => {
+	it('answers the timeline’s months as JSON that no cache keeps, and refuses as the library does', async () => {
+		const gateway = createFakeImmichGateway(testLibrary());
+		const deps = { gateway, signer };
+		const answer = await answerLibraryMonths(deps, viewer);
+		if (!(answer instanceof Response)) throw new Error(`refused with ${answer.status}`);
+		expect(answer.headers.get('cache-control')).toBe(IMMICH_MEDIA_CACHE_CONTROL);
+		const body = await answer.json();
+		expect([body.state, body.months[0]]).toEqual(['months', { month: '2026-09', count: 4 }]);
+		expect(await answerLibraryMonths(deps, null)).toEqual({
+			status: 401,
+			message: 'errors.notSignedIn'
+		});
+		expect(await answerLibraryMonths(null, viewer)).toEqual({
+			status: 404,
+			message: 'errors.notFound'
+		});
 	});
 });

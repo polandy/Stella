@@ -20,10 +20,20 @@ export function tickNumber(ticked: readonly string[], id: string): number | null
 	return at === -1 ? null : at + 1;
 }
 
-/** A day of the library, or a search across it — the route is `src/routes/(app)/immich/library`. */
-export type LibraryQuery = { day: string } | { query: string };
+/**
+ * A day of the library, a search across it, or a page of a month from `cursor` (null for the
+ * first) — the route is `src/routes/(app)/immich/library`.
+ */
+export type LibraryQuery =
+	{ day: string } | { query: string } | { month: string; cursor: string | null };
 
 export function libraryQueryUrl(asked: LibraryQuery): string {
-	const params = new URLSearchParams('day' in asked ? { day: asked.day } : { q: asked.query });
+	const params = new URLSearchParams(
+		'day' in asked
+			? { day: asked.day }
+			: 'query' in asked
+				? { q: asked.query }
+				: { month: asked.month, ...(asked.cursor === null ? {} : { cursor: asked.cursor }) }
+	);
 	return `/immich/library?${params}`;
 }

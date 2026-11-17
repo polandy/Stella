@@ -24,8 +24,8 @@ import { solidPng } from './png';
  * They come back only for a listing of everyone in them (`match: 'all'`), so one person's strip
  * stays exactly their own count, and a test of it is not disturbed by whom they share photos with.
  *
- * The whole library (`takenAssets`) is every person's photos and every group's, hidden faces
- * included — hiding a face does not hide a photo. Its smart search has no model: a word of the
+ * The whole library (`takenAssets`, `timelineMonths`) is every person's photos and every group's,
+ * hidden faces included — hiding a face does not hide a photo. Its smart search has no model: a word of the
  * query that is in a person's name finds their own photos, and nothing else finds anything.
  */
 
@@ -143,10 +143,7 @@ export function createFakeImmichGateway(library: FakeImmichLibrary): FakeImmichG
 		takenAssets: ({ from, before }, order, limit, cursor) =>
 			answer('takenAssets', () => {
 				// Every photo's instant is its clock time read as UTC, so the clock's order is the instant's.
-				const listed = [...library.people, ...(library.together ?? [])]
-					.flatMap((source) =>
-						Array.from({ length: source.assets }, (_, index) => photo(source.id, index))
-					)
+				const listed = everyPhoto()
 					.filter(({ takenAt }) => {
 						const instant = `${takenAt}.000Z`;
 						return (from === null || instant >= from) && (before === null || instant < before);
@@ -199,6 +196,17 @@ export function createFakeImmichGateway(library: FakeImmichLibrary): FakeImmichG
 				},
 				true
 			),
+		timelineMonths: () =>
+			answer('timelineMonths', () => {
+				const counted = new Map<string, number>();
+				for (const { takenAt } of everyPhoto()) {
+					const month = takenAt.slice(0, 7);
+					counted.set(month, (counted.get(month) ?? 0) + 1);
+				}
+				return [...counted]
+					.map(([month, count]) => ({ month, count }))
+					.sort((a, b) => b.month.localeCompare(a.month));
+			}),
 		assetImage: (assetId, size) =>
 			answer(
 				'assetImage',
@@ -216,6 +224,13 @@ export function createFakeImmichGateway(library: FakeImmichLibrary): FakeImmichG
 				true
 			)
 	};
+
+	/** The whole library: every person's photos and every group's. */
+	function everyPhoto() {
+		return [...library.people, ...(library.together ?? [])].flatMap((source) =>
+			Array.from({ length: source.assets }, (_, index) => photo(source.id, index))
+		);
+	}
 
 	/** One page of a listing; the cursor is where the next page starts. */
 	function paged(listed: ImmichAsset[], limit: number, cursor: string | null) {

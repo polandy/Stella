@@ -14,7 +14,18 @@ they already took, which live in Immich, without leaving Stella or downloading t
   Immich on the instance, the button stays the plain file picker and nothing else shows.
 - **Offline**, *From Immich* stays where it is, greyed out, with *Needs a connection* under it.
 - **The sheet** (`ImmichLibraryPicker`) slides up from the bottom like the circle picker: a title,
-  the search field, the day bar, the grid, and a footer that stays put.
+  the search field, the trail, the body of the level, and a footer that stays put.
+- **The trail** (`LibraryCrumbs`) names where the picker is: *All years › 2026 › October › Wed
+  21*. Every step but the last is a button back up; the last is plain text (`aria-current`).
+  Without the key's `timeline.read` it starts at the month.
+- **All years** (`LibraryYears`) is tiles in two columns, newest year first: the year, *about 812*,
+  and a thin bar against the busiest year. One quiet line under them says the counts include
+  videos, so they are approximate.
+- **A year** (`LibraryMonths`) is twelve month tiles in a grid, three on a phone, four wider, each
+  with its count; an empty month is greyed out and cannot be tapped.
+- **A month** (`LibraryMonthGrid`) is the grid grouped by day: each day's heading (*Wed 21*, a
+  › at its end) sticks to the top while its photos scroll, and a tap opens the day. Near the end
+  the next page loads by itself; *Show more photos* stays as the button for it.
 - **The day bar** heads with the day, *N photos* under it, ‹ and › on either side named *An
   earlier day with photos* and *A later day with photos*. It opens on the entry's day (a gallery: today).
 - **The grid** is three square columns on a phone, four on wider screens; each tile carries its
@@ -31,14 +42,18 @@ they already took, which live in Immich, without leaving Stella or downloading t
   the sheet at once and the picks wait beside the entry's photos with a dashed frame until
   *Save*. A referred photo Immich no longer serves is a dashed tile with the offline icon, named
   *Photo not available from Immich* — never a broken image.
-- **States:** skeleton tiles while loading; *No photos from 12 June in Immich.* with the arrows
+- **States:** skeleton tiles while loading; *Immich has no photos yet.* for an empty overview;
+*No photos from October 2026 in Immich.* for an empty month; *No photos from 12 June in Immich.* with the arrows
   still there and a line that they skip to a day with some; *Immich didn’t answer.* with *Try
   again*.
 
 ### Why
 
 A day is how a member remembers a moment, so the picker starts on the entry's day rather than a
-gallery of everything; the arrows skip empty days because a family's library has many. Numbers
+gallery of everything; the arrows skip empty days because a family's library has many. The trail
+up to months and years is for the photo whose day nobody remembers — the summer, not the date —
+and is the way Immich's own timeline reads, so it needs no learning. Counts say *about* because
+Immich counts videos the picker leaves out; a promise of 812 that shows 790 would read as a bug. Numbers
 on the ticks show the order the photos will appear in. The sheet is the circle picker's shape so
 it reads as part of the composer, not a trip to another app. The overlay on the photo is the one
 place black and white are used, as in the lightbox: it sits on a picture, not on a theme.
