@@ -21,8 +21,8 @@
 	/*
 	 * One outing idea on the Outings card (docs/dev/02 §2.27): what it is, when, who noted it, and
 	 * the done box on the right. *Booked* fixes it; a booked one says so and may be loosened
-	 * again. A done one shows its day and may be opened again, told of in a moment or noted anew. The pencil rewrites it in place;
-	 * removing it has the undo every removal has (docs/dev/02 §2.23).
+	 * again. A done one shows its day and may be opened again, told of in a moment or noted anew.
+	 * The pencil rewrites it in place; removing it has the undo every removal has (docs/dev/02 §2.23).
 	 */
 	interface Props {
 		plan: PersonPageData['plans'][number];

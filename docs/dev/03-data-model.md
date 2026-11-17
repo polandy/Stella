@@ -641,7 +641,7 @@ author may change its visibility or `hidden_from_person`.
 | when_age | int null | 1–150, for `at_age` and `from_age` only |
 | booked_at / booked_by | int null / text null fk → user.id | when and by whom it was fixed; null while only an idea |
 | done_at / done_on / done_by | int null / text null / text null fk → user.id | the tick, the household's day of it and who ticked; null while open |
-| moment_id | text null fk → journal_entry.id | set null on delete — the moment it became; not written yet |
+| moment_id | text null fk → journal_entry.id | set null on delete — the moment written about it once done (docs/dev/02 §2.27.8) |
 | created_at / updated_at | int | |
 
 The `when_*` columns move together (`src/lib/when/when.ts`); a triple that makes no outing
