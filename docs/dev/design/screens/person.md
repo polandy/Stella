@@ -363,6 +363,18 @@ the person, and that never leaves the page. Keeping the record tidy (archive, me
   occasion chips, *Cancel* and the filled *Mark as given* (German *Als verschenkt eintragen*). The pencil rewrites the row in place with the
   add form's fields; only the author is offered Shared/Private.
 - Removing follows the undo window of docs/dev/02 §2.23.
+- *Idea for Hilde* adds *When?* under *What?* (docs/dev/02 §2.25.8, `WhenPicker`): the chips
+  *Now · From age · For a birthday · On a day · Later* in the occasion chips' look, *Now* chosen.
+  An age opens a round −/+ stepper with the age between; *On a day* opens *Christmas YYYY* quick
+  picks and the day field. Without a birth year the two age chips are disabled (`opacity-50`)
+  and one muted line says why, ending in the link *Estimate age*, which opens the identity
+  card's dates editor (`?edit=dates`). Under it all a polite live line, `text-xs`, `--fg-muted`
+  — `--danger` while the choice cannot be kept — says what the choice comes to.
+- An idea with a time carries a small chip under its title (`WhenChip`: `bg-primary-soft`,
+  `--primary`, calendar icon): *From age 8*, *For the 10th birthday*, *Christmas 2027*, *Later*.
+  Waiting ideas sit under the open ones behind the fold *Later · n* (the year-divider style, a
+  chevron, collapsed), slightly faded, soonest first. They are not in the tab's count; with
+  only waiting ones the tab says *Nothing due yet. The ideas for later wait below.*
 
 #### To-dos card
 

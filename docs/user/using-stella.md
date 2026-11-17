@@ -612,6 +612,14 @@ and a good idea is still there on the birthday it was meant for.
   opens two more fields for the size or colour and the shop's web address. Ideas wait under the
   **Ideas** tab, which counts them: *Ideas · 2*. Each idea says when it was noted — *Added 3
   October 2026* — so you can tell an old wish from a fresh one.
+- **An idea for later.** Under *When?* an idea is for **Now** unless you choose otherwise:
+  **From age** or **For a birthday** (with − and + to pick the age), **On a day** (with
+  *Christmas* one tap away), or **Later**. The line underneath says what that means — *Turns 10
+  on 14 March 2028. It waits until 15 December 2027.* Such an idea stays out of the count, out of
+  *All gift ideas* and off Home until 90 days before its day, then it shows up by itself. Until
+  then it waits on the card under **Later · 1**; tap to see it. An age needs their birth year —
+  if Stella does not know it, **Estimate age** takes you to their dates, where an age alone will
+  do.
 - When you give it, press **Mark as given…** under the idea. Stella asks only for the day (today,
   unless you change it) and the occasion — *Birthday*, *Christmas*, *Anniversary*, or *Other…*
   in your own words. The idea moves to the **Given** tab, grouped by year, with its note and
