@@ -63,3 +63,36 @@ describe('markGiftGiven on the list', () => {
 		});
 	});
 });
+
+describe('markGiftBought on the list', () => {
+	const mark = (services: FakeServices, fields: Record<string, string>) =>
+		answerOf(
+			actions.markGiftBought(
+				routeEvent({
+					services,
+					params: {},
+					form: formOf({ giftId: 'g1', contactId: 'anna', ...fields })
+				})
+			)
+		);
+
+	it('marks the idea bought, and takes it back when the field is left out', async () => {
+		const marked: unknown[] = [];
+		const services = commanding({
+			'gift.markBought': async (_actor, payload) => {
+				marked.push(payload);
+				return { giftId: 'g1' };
+			}
+		});
+		expect(await mark(services, { bought: 'on' })).toEqual({
+			kind: 'redirect',
+			status: 303,
+			location: '/gifts'
+		});
+		await mark(services, {});
+		expect(marked).toEqual([
+			{ contactId: 'anna', giftId: 'g1', bought: true },
+			{ contactId: 'anna', giftId: 'g1', bought: false }
+		]);
+	});
+});

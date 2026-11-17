@@ -50,6 +50,7 @@ export interface CommandResults {
 	'gift.add': { giftId: string };
 	'gift.edit': { giftId: string };
 	'gift.markGiven': { giftId: string };
+	'gift.markBought': { giftId: string };
 	'gift.answerWhen': { giftId: string };
 	'gift.remove': { giftId: string };
 	'todo.add': { todoId: string };
@@ -220,6 +221,8 @@ function apply(
 		case 'gift.edit':
 			return handlers[command.type](actor, command.payload);
 		case 'gift.markGiven':
+			return handlers[command.type](actor, command.payload);
+		case 'gift.markBought':
 			return handlers[command.type](actor, command.payload);
 		case 'gift.answerWhen':
 			return handlers[command.type](actor, command.payload);

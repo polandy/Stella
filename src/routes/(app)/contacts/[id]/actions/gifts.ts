@@ -3,6 +3,7 @@ import {
 	GiftAddSchema,
 	GiftAnswerWhenSchema,
 	GiftEditSchema,
+	GiftMarkBoughtSchema,
 	GiftMarkGivenSchema,
 	GiftRemoveSchema
 } from '$lib/commands/gift-todo-payloads';
@@ -11,6 +12,7 @@ import type { RequestEvent } from '@sveltejs/kit';
 import {
 	applyGiftCommand,
 	occasionOf,
+	visibilityOf,
 	whenOf,
 	type GiftCommand
 } from '../../../_shared/gift-commands';
@@ -41,7 +43,12 @@ export const giftActions = {
 			event,
 			form,
 			'gift.add',
-			{ ...fromFormData(GiftAddSchema, form), occasion: occasionOf(form), when: whenOf(form) },
+			{
+				...fromFormData(GiftAddSchema, form),
+				...visibilityOf(form),
+				occasion: occasionOf(form),
+				when: whenOf(form)
+			},
 			'giftError'
 		);
 	},
@@ -52,7 +59,12 @@ export const giftActions = {
 			event,
 			form,
 			'gift.edit',
-			{ ...fromFormData(GiftEditSchema, form), occasion: occasionOf(form), when: whenOf(form) },
+			{
+				...fromFormData(GiftEditSchema, form),
+				...visibilityOf(form),
+				occasion: occasionOf(form),
+				when: whenOf(form)
+			},
 			'giftRowError'
 		);
 	},
@@ -64,6 +76,18 @@ export const giftActions = {
 			form,
 			'gift.markGiven',
 			{ ...fromFormData(GiftMarkGivenSchema, form), occasion: occasionOf(form) },
+			'giftRowError'
+		);
+	},
+
+	/** *Bought*, or *Not bought yet* (§2.25.9): undone from its toast by posting the other way. */
+	markGiftBought: async (event) => {
+		const form = await event.request.formData();
+		return onCard(
+			event,
+			form,
+			'gift.markBought',
+			fromFormData(GiftMarkBoughtSchema, form),
 			'giftRowError'
 		);
 	},

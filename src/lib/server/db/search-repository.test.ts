@@ -266,6 +266,18 @@ describe('searchGifts', () => {
 		expect(hits.map((h) => h.giftId)).toEqual(['g-book']);
 	});
 
+	it('never finds a surprise for the member it is for (docs/dev/02 §2.25.10)', async () => {
+		db.update(schema.user).set({ selfContactId: 'c-hans' }).where(eq(schema.user.id, U2)).run();
+		db.update(schema.gift)
+			.set({ hiddenFromRecipient: 1 })
+			.where(eq(schema.gift.id, 'g-book'))
+			.run();
+		expect(await repo.searchGifts(viewerU2, toFtsQuery('fotobuch'), 20)).toEqual([]);
+		expect(
+			(await repo.searchGifts(viewerU1, toFtsQuery('sommer'), 20)).map((h) => h.giftId)
+		).toEqual(['g-book']);
+	});
+
 	it('follows an edit and a removal', async () => {
 		db.update(schema.gift)
 			.set({ title: 'Kalender', note: null })

@@ -3,6 +3,7 @@ import { requireUser, requireViewer } from '$lib/server/auth/guards';
 import { listBrowsableNamesAmong } from '$lib/server/domain/contacts/contact-names';
 import { listPeopleEnoughForFirstRun } from '$lib/server/domain/contacts/directory';
 import { upcomingDates } from '$lib/server/domain/dates/upcoming';
+import { readyGifts } from '$lib/server/domain/gifts/bought';
 import { countOpenIdeas } from '$lib/server/domain/gifts/gifts';
 import { listHomeMembers } from '$lib/server/domain/homes/homes';
 import { dispatchCommand } from '$lib/server/domain/commands/dispatch';
@@ -78,13 +79,17 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 	const stream = await streamForView(locals.services.people.contactNameDeps, viewer, items);
 
 	const dates = upcomingDates(dateSources, day);
-	// A person coming up with open gift ideas says how many (docs/dev/02 §2.13.3).
-	const ideas = await countOpenIdeas(
-		locals.services.gifts.giftDeps,
-		viewer,
-		dates.map((date) => date.contactId)
-	);
-	const upcoming = dates.map((date) => ({ ...date, giftIdeas: ideas.get(date.contactId) ?? 0 }));
+	// A person coming up with open gift ideas says how many, and what is bought for them (§2.13.3).
+	const coming = dates.map((date) => date.contactId);
+	const [ideas, ready] = await Promise.all([
+		countOpenIdeas(locals.services.gifts.giftDeps, viewer, coming),
+		readyGifts(locals.services.gifts.giftDeps, viewer, coming)
+	]);
+	const upcoming = dates.map((date) => ({
+		...date,
+		giftIdeas: ideas.get(date.contactId) ?? 0,
+		readyGifts: ready.get(date.contactId) ?? []
+	}));
 
 	return {
 		today: day,

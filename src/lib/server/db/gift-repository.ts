@@ -1,18 +1,19 @@
-import { and, asc, desc, eq, inArray, lt, or, sql } from 'drizzle-orm';
+import { and, asc, desc, eq, inArray, isNull, lt, or, sql } from 'drizzle-orm';
 import type { BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
-import { childRecordBrowsableBy, childRecordVisibleTo } from '../access/query-scoping';
+import { giftBrowsableBy, giftVisibleTo, isMemberAccount } from '../access/query-scoping';
 import type { Viewer } from '../access/visibility';
 import type { DatedGift, Gift, GiftRepository } from '../domain/gifts/gifts';
 import { birthOf } from '../../when/resolve';
 import { whenColumns, whenOfColumns, type When, type WhenColumns } from '../../when/when';
 import type { DatePrecision } from '../../dates/partial-date';
 import type * as schema from './schema';
-import { contact, gift } from './schema';
+import { contact, gift, user } from './schema';
 
 /*
  * Drizzle adapter for the GiftRepository port (docs/dev/08 §8.3). Every read joins the person the
- * gift is for and is scoped through the central `childRecordVisibleTo`, so a private gift — or
- * any gift on a private person — reaches only those allowed to see it (docs/dev/03 §3.7). Writes
+ * gift is for and is scoped through the central `giftVisibleTo`, so a private gift — or any gift
+ * on a private person — reaches only those allowed to see it, and a surprise never the member it is
+ * for (docs/dev/03 §3.7). Writes
  * act on a gift the use-case has already found through such a read.
  */
 
@@ -21,6 +22,7 @@ const columns = {
 	contactId: gift.contactId,
 	createdBy: gift.createdBy,
 	visibility: gift.visibility,
+	hiddenFromRecipient: gift.hiddenFromRecipient,
 	state: gift.state,
 	title: gift.title,
 	note: gift.note,
@@ -53,6 +55,12 @@ function fromRow<R extends WhenColumns>(
 	return { ...rest, when: whenOfColumns({ whenKind, whenOn, whenAge }) };
 }
 
+/** A whole gift row as the domain reads it: its when as one, its surprise flag a boolean. */
+function giftOf<R extends WhenColumns & { hiddenFromRecipient: number }>(row: R) {
+	const { hiddenFromRecipient, ...rest } = fromRow(row);
+	return { ...rest, hiddenFromRecipient: hiddenFromRecipient !== 0 };
+}
+
 /** A row read with its person's birth date, as the domain reads that. */
 function withBirth<R extends WhenColumns & BirthColumns>(row: R) {
 	const { birthDate, birthDatePrecision, ...rest } = row;
@@ -61,18 +69,15 @@ function withBirth<R extends WhenColumns & BirthColumns>(row: R) {
 
 /** A gift as its row stores it: its when as the three when columns. */
 export function giftRow(g: Gift) {
-	const { when, ...rest } = g;
-	return { ...rest, ...whenColumns(when) };
+	const { when, hiddenFromRecipient, ...rest } = g;
+	return { ...rest, hiddenFromRecipient: hiddenFromRecipient ? 1 : 0, ...whenColumns(when) };
 }
 
 const DATED_STATES = ['given', 'received'] as const;
 
 export function createDrizzleGiftRepository(db: BunSQLiteDatabase<typeof schema>): GiftRepository {
 	const visibleOn = (viewer: Viewer, contactId: string) =>
-		and(
-			eq(gift.contactId, contactId),
-			childRecordVisibleTo(viewer, { visibility: gift.visibility, createdBy: gift.createdBy })
-		);
+		and(eq(gift.contactId, contactId), giftVisibleTo(viewer, gift));
 
 	return {
 		async insert(g: Gift) {
@@ -86,13 +91,14 @@ export function createDrizzleGiftRepository(db: BunSQLiteDatabase<typeof schema>
 				.innerJoin(contact, eq(gift.contactId, contact.id))
 				.where(and(eq(gift.id, giftId), visibleOn(viewer, contactId)))
 				.get();
-			return row ? fromRow(row) : null;
+			return row ? giftOf(row) : null;
 		},
 
 		async update(g: Gift) {
 			db.update(gift)
 				.set({
 					visibility: g.visibility,
+					hiddenFromRecipient: g.hiddenFromRecipient ? 1 : 0,
 					state: g.state,
 					title: g.title,
 					note: g.note,
@@ -121,7 +127,7 @@ export function createDrizzleGiftRepository(db: BunSQLiteDatabase<typeof schema>
 					// Ideas first (they have no day), newest noted first; then the newest day.
 					.orderBy(asc(sql`${gift.givenOn} IS NOT NULL`), desc(gift.givenOn), desc(gift.createdAt))
 					.all()
-					.map(fromRow)
+					.map(giftOf)
 			);
 		},
 
@@ -143,7 +149,7 @@ export function createDrizzleGiftRepository(db: BunSQLiteDatabase<typeof schema>
 					and(
 						inArray(gift.contactId, [...contactIds]),
 						eq(gift.state, 'idea'),
-						childRecordVisibleTo(viewer, { visibility: gift.visibility, createdBy: gift.createdBy })
+						giftVisibleTo(viewer, gift)
 					)
 				)
 				.all()
@@ -164,15 +170,12 @@ export function createDrizzleGiftRepository(db: BunSQLiteDatabase<typeof schema>
 					and(
 						eq(gift.state, 'idea'),
 						// A list to act on is a browsing surface: an archived person is out (docs/dev/04 §4.9).
-						childRecordBrowsableBy(viewer, {
-							visibility: gift.visibility,
-							createdBy: gift.createdBy
-						})
+						giftBrowsableBy(viewer, gift)
 					)
 				)
 				.orderBy(desc(gift.createdAt))
 				.all()
-				.map(withBirth);
+				.map((row) => ({ ...withBirth(row), hiddenFromRecipient: row.hiddenFromRecipient !== 0 }));
 		},
 
 		async listStoryPageForContactVisibleTo(viewer, contactId, opts) {
@@ -195,9 +198,45 @@ export function createDrizzleGiftRepository(db: BunSQLiteDatabase<typeof schema>
 				.orderBy(desc(gift.givenOn), desc(gift.createdAt))
 				.limit(opts.limit)
 				.all()
-				.map(fromRow);
+				.map(giftOf);
 			// A given or received gift always has its day (`domain/gifts`); the state filter says so.
-			return rows.filter((row): row is DatedGift => row.givenOn !== null && row.state !== 'idea');
+			return rows.filter(
+				(row): row is DatedGift =>
+					row.givenOn !== null && (row.state === 'given' || row.state === 'received')
+			);
+		},
+
+		async listBoughtVisibleTo(viewer, contactIds) {
+			if (contactIds.length === 0) return [];
+			return db
+				.select({ id: gift.id, contactId: gift.contactId, title: gift.title })
+				.from(gift)
+				.innerJoin(contact, eq(gift.contactId, contact.id))
+				.where(
+					and(
+						inArray(gift.contactId, [...contactIds]),
+						eq(gift.state, 'bought'),
+						giftVisibleTo(viewer, gift)
+					)
+				)
+				.orderBy(asc(gift.updatedAt), asc(gift.id))
+				.all();
+		},
+
+		async memberWhoseOwnPerson(householdId, contactId) {
+			const row = db
+				.select({ id: user.id })
+				.from(user)
+				.where(
+					and(
+						eq(user.householdId, householdId),
+						eq(user.selfContactId, contactId),
+						isNull(user.removedAt),
+						isMemberAccount()
+					)
+				)
+				.get();
+			return row?.id ?? null;
 		}
 	};
 }

@@ -6,7 +6,7 @@
 	import Icon from '$lib/components/ui/Icon.svelte';
 	import { dayLabel } from '$lib/dates/labels';
 	import { alreadyGiven, type GiftOnRecord } from '$lib/gifts/already-given';
-	import type { GiftState } from '$lib/gifts/gifts';
+	import { hasGiftDay, SURPRISE, type GiftState } from '$lib/gifts/gifts';
 	import { occasionLabel } from '$lib/gifts/labels';
 	import { useI18n } from '$lib/i18n/context.svelte';
 	import type { SubmitFunction } from '@sveltejs/kit';
@@ -34,6 +34,7 @@
 			givenOn: string | null;
 			occasion: string | null;
 			visibility: 'shared' | 'private';
+			hiddenFromRecipient: boolean;
 			when: When | null;
 		};
 		/** The person's gifts, for the *already given* hint. */
@@ -46,6 +47,8 @@
 		today: string;
 		/** Only the gift's author may make it private, or shared again. */
 		canChooseVisibility: boolean;
+		/** The person's name when they are a member, who may then be kept from it (§2.25.10). */
+		recipient?: string | null;
 		/** The person's birth date, which an idea's age is counted from (§2.25.8). */
 		birth: PartialDate | null;
 		/** Where their birth year can be estimated, for an age without one. */
@@ -64,6 +67,7 @@
 		submit,
 		today,
 		canChooseVisibility,
+		recipient = null,
 		birth,
 		estimateHref = null,
 		error = null,
@@ -80,7 +84,9 @@
 	// svelte-ignore state_referenced_locally
 	let showMore = $state(Boolean(gift?.note || gift?.url));
 	// svelte-ignore state_referenced_locally
-	let visibility = $state<'shared' | 'private'>(gift?.visibility ?? 'shared');
+	let visibility = $state<'shared' | 'private' | typeof SURPRISE>(
+		gift?.hiddenFromRecipient && recipient ? SURPRISE : (gift?.visibility ?? 'shared')
+	);
 </script>
 
 <form
@@ -125,7 +131,7 @@
 		</span>
 	</div>
 
-	{#if kind !== 'idea'}
+	{#if hasGiftDay(kind)}
 		<div class="flex flex-col gap-1">
 			<span class="text-xs font-medium text-fg-muted">{t('gifts.form.on')}</span>
 			<DateField
@@ -180,6 +186,12 @@
 					<input type="radio" name="visibility" value="shared" bind:group={visibility} />
 					{t('common.shared')}
 				</label>
+				{#if recipient}
+					<label class="flex items-center gap-1.5">
+						<input type="radio" name="visibility" value={SURPRISE} bind:group={visibility} />
+						{t('gifts.surprise.choice', { name: recipient })}
+					</label>
+				{/if}
 				<label class="flex items-center gap-1.5">
 					<input type="radio" name="visibility" value="private" bind:group={visibility} />
 					{t('common.private')}

@@ -65,7 +65,8 @@ export function planPersonRecords(exp: SourceExport, ctx: MonicaPlanContext): Pe
 				...made.gift,
 				occasion: null,
 				when: null,
-				whenCheckedOn: null
+				whenCheckedOn: null,
+				hiddenFromRecipient: false
 			});
 			continue;
 		}

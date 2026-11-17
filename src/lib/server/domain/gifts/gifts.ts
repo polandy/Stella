@@ -1,7 +1,7 @@
 import { TranslatableError } from '../../../i18n/translatable';
 import { phrase, type Phrase } from '../../../i18n/phrase';
 import { FULL_DATE_SHAPE, isRealCalendarDay } from '../../../dates/calendar';
-import { giftLink, type GiftState } from '../../../gifts/gifts';
+import { giftLink, hasGiftDay, type GiftState } from '../../../gifts/gifts';
 import type { PartialDate } from '../../../dates/partial-date';
 import { todayFor } from '../../../dates/today';
 import { ideaState, ideaWaits as waitsOn } from '../../../gifts/idea-when';
@@ -37,12 +37,14 @@ export interface Gift {
 	/** Who noted it; shown as *noted by*. Not who gave it — that is usually several people. */
 	createdBy: string;
 	visibility: Visibility;
+	/** A shared gift kept from the member whose own person it is for (§2.25.10); never a private one. */
+	hiddenFromRecipient: boolean;
 	state: GiftState;
 	title: string;
 	note: string | null;
 	/** A web address only (`giftLink`). */
 	url: string | null;
-	/** ISO `YYYY-MM-DD`; null while an idea, the day for a given or received gift. */
+	/** ISO `YYYY-MM-DD`; null while an idea or bought, the day for a given or received gift. */
 	givenOn: string | null;
 	/** A preset key (`GIFT_OCCASION_PRESETS`) or free text. */
 	occasion: string | null;
@@ -105,6 +107,13 @@ export interface GiftRepository {
 		contactId: string,
 		opts: { limit: number; before?: GiftStoryCursor }
 	): Promise<DatedGift[]>;
+	/** The bought gifts the viewer may see on `contactIds`, oldest bought first (§2.25.9). */
+	listBoughtVisibleTo(
+		viewer: Viewer,
+		contactIds: readonly string[]
+	): Promise<Pick<Gift, 'id' | 'contactId' | 'title'>[]>;
+	/** The current member whose own person `contactId` is, in the household, or null. */
+	memberWhoseOwnPerson(householdId: string, contactId: string): Promise<string | null>;
 }
 
 /** Collaborators the use-cases need, injected by the composition root. */
@@ -129,13 +138,15 @@ export interface GiftContent {
 	givenOn: string | null;
 	occasion: string | null;
 	visibility: Visibility;
+	/** Kept from the person it is for (§2.25.10); absent on an older command — no, or as it was. */
+	hiddenFromRecipient?: boolean;
 	/** An idea's when; absent on a command from before whens — *now*, or as it was on an edit. */
 	when?: When | null;
 }
 
 export interface AddGiftInput extends GiftContent {
 	contactId: string;
-	state: GiftState;
+	state: Exclude<GiftState, 'bought'>;
 }
 
 export interface EditGiftInput extends GiftContent {
@@ -192,9 +203,9 @@ function urlOf(raw: string | null): string | null {
 	return link.url;
 }
 
-/** The day a given or received gift needs; an idea has none. */
+/** The day a given or received gift needs; an idea or a bought one has none. */
 function dayOf(state: GiftState, raw: string | null): string | null {
-	if (state === 'idea') return null;
+	if (!hasGiftDay(state)) return null;
 	const day = (raw ?? '').trim();
 	if (!FULL_DATE_SHAPE.test(day)) throw new InvalidGiftError(phrase('errors.gift.needDay'));
 	if (!isRealCalendarDay(day)) throw new InvalidGiftError(phrase('errors.gift.noSuchDay', { day }));
@@ -227,16 +238,33 @@ function checkedContent(state: GiftState, content: GiftContent) {
 		url: urlOf(content.url),
 		givenOn: dayOf(state, content.givenOn),
 		// The occasion belongs to the day; an idea is asked for it when it is given.
-		occasion: state === 'idea' ? null : orNull(content.occasion)
+		occasion: hasGiftDay(state) ? orNull(content.occasion) : null
 	};
 }
 
-const viewerOf = (actor: GiftActor): Viewer => ({
+/**
+ * Whether a gift is kept from the person it is for: only a shared one can be, and never by the
+ * member whose own person that is — nobody keeps a surprise from themselves.
+ */
+async function hiddenOf(
+	deps: Pick<GiftDeps, 'gifts'>,
+	author: GiftActor,
+	contactId: string,
+	visibility: Visibility,
+	asked: boolean
+): Promise<boolean> {
+	if (!asked || visibility !== 'shared') return false;
+	const member = await deps.gifts.memberWhoseOwnPerson(author.householdId, contactId);
+	if (member === author.userId) throw new InvalidGiftError(phrase('errors.gift.ownSurprise'));
+	return true;
+}
+
+export const viewerOf = (actor: GiftActor): Viewer => ({
 	id: actor.userId,
 	householdId: actor.householdId
 });
 
-async function requireVisibleGift(
+export async function requireVisibleGift(
 	deps: Pick<GiftDeps, 'gifts'>,
 	actor: GiftActor,
 	contactId: string,
@@ -265,6 +293,13 @@ export async function addGift(
 		contactId: input.contactId,
 		createdBy: author.userId,
 		visibility: input.visibility,
+		hiddenFromRecipient: await hiddenOf(
+			deps,
+			author,
+			input.contactId,
+			input.visibility,
+			input.hiddenFromRecipient ?? false
+		),
 		state: input.state,
 		...content,
 		when,
@@ -286,6 +321,16 @@ export async function editGift(
 	const asked = input.when === undefined ? gift.when : input.when;
 	const today = todayFor(deps.clock);
 	const kept = gift.state !== 'idea' || sameWhen(asked, gift.when);
+	const mine = gift.createdBy === editor.userId;
+	const visibility = mine ? input.visibility : gift.visibility;
+	const asksHidden = mine
+		? (input.hiddenFromRecipient ?? gift.hiddenFromRecipient)
+		: gift.hiddenFromRecipient;
+	// Only a surprise asked for anew is checked; one already kept stays as it is.
+	const hidden =
+		asksHidden && gift.hiddenFromRecipient
+			? visibility === 'shared'
+			: await hiddenOf(deps, editor, gift.contactId, visibility, asksHidden);
 	const when = kept
 		? gift.when
 		: whenOf(asked, await birthOfVisible(deps, editor, gift.contactId), today);
@@ -295,20 +340,21 @@ export async function editGift(
 		when,
 		// A when chosen anew is an answer too: *later* is not asked about again straight away.
 		whenCheckedOn: kept ? gift.whenCheckedOn : today,
-		visibility: gift.createdBy === editor.userId ? input.visibility : gift.visibility,
+		visibility,
+		hiddenFromRecipient: hidden,
 		updatedAt: deps.clock.now()
 	});
 	return { giftId: gift.id };
 }
 
-/** An idea given (docs/dev/02 §2.25): the same record, now with its day and occasion. */
+/** An idea given, or a bought one handed over (§2.25, §2.25.9): the same record, now with its day. */
 export async function markGiftGiven(
 	deps: GiftDeps,
 	actor: GiftActor,
 	input: MarkGiftGivenInput
 ): Promise<{ giftId: string }> {
 	const gift = await requireVisibleGift(deps, actor, input.contactId, input.giftId);
-	if (gift.state !== 'idea') throw new InvalidGiftError(phrase('errors.gift.alreadyGiven'));
+	if (hasGiftDay(gift.state)) throw new InvalidGiftError(phrase('errors.gift.alreadyGiven'));
 	await deps.gifts.update({
 		...gift,
 		state: 'given',

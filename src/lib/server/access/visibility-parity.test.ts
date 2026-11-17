@@ -13,7 +13,8 @@ import {
 	journalEntry,
 	note,
 	photo,
-	relationship
+	relationship,
+	user
 } from '../db/schema';
 import {
 	activityVisibleTo,
@@ -25,6 +26,7 @@ import {
 	circleColumnsVisibleTo,
 	circlePhotoVisibleTo,
 	contactVisibleTo,
+	giftVisibleTo,
 	membershipVisibleTo,
 	relationshipVisibleTo
 } from './query-scoping';
@@ -39,6 +41,7 @@ import {
 	canViewCircle,
 	canViewCirclePhoto,
 	canViewContact,
+	canViewGift,
 	canViewMembership,
 	canViewRelationship,
 	type CircleAccess,
@@ -164,6 +167,44 @@ function childRecordPair(name: string, t: ChildTable): Pair {
 	};
 }
 
+/** Gifts, as `canViewGift` sees them: a child record that may be kept from the member it is for. */
+const giftPair: Pair = {
+	key: 'gift',
+	name: 'canViewGift ↔ giftVisibleTo',
+	ts: (viewer) => {
+		const contacts = contactsById();
+		const self = db.select().from(user).where(eq(user.id, viewer.id)).get()?.selfContactId ?? null;
+		return ids(
+			db
+				.select()
+				.from(gift)
+				.all()
+				.filter((g) =>
+					canViewGift(
+						viewer,
+						{
+							ownerId: g.createdBy,
+							visibility: g.visibility,
+							contact: parentOf(contacts, g.contactId),
+							contactId: g.contactId,
+							hiddenFromRecipient: g.hiddenFromRecipient !== 0
+						},
+						self
+					)
+				)
+		);
+	},
+	sql: (viewer) =>
+		ids(
+			db
+				.select({ id: gift.id })
+				.from(gift)
+				.innerJoin(contact, eq(gift.contactId, contact.id))
+				.where(giftVisibleTo(viewer, gift))
+				.all()
+		)
+};
+
 const PAIRS: Pair[] = [
 	{
 		key: 'contact',
@@ -176,7 +217,7 @@ const PAIRS: Pair[] = [
 	childRecordPair('note', { table: note, ...note }),
 	childRecordPair('journal entry', { table: journalEntry, ...journalEntry }),
 	childRecordPair('interaction', { table: interaction, ...interaction }),
-	childRecordPair('gift', { table: gift, ...gift }),
+	giftPair,
 	childRecordPair('contact photo', { table: photo, ...photo }),
 	{
 		key: 'relationship',
@@ -326,7 +367,6 @@ const CHILD_PREFIXES: Record<string, string> = {
 	note: 'n',
 	'journal entry': 'j',
 	interaction: 'i',
-	gift: 'g',
 	'contact photo': 'p'
 };
 
@@ -351,6 +391,14 @@ const CASES: Record<string, Case[]> = {
 			]
 		])
 	),
+	gift: [
+		['u2', 'g-priv-u1', 'g-shared', "another member's private record"],
+		['u1', 'g-on-priv-u2', 'g-on-priv-u1', 'a shared record on a private contact'],
+		['u3', 'g-shared', 'g-foreign', 'another household'],
+		['u4', 'g-foreign-priv-u3', 'g-foreign', "a foreign member's private record"],
+		['u2', 'g-surprise-u2', 'g-for-u2', 'a surprise for the viewer as its recipient'],
+		['u2', 'g-surprise-u2', 'g-surprise-by-u2', 'one they noted for themselves stays theirs']
+	],
 	relationship: [
 		['u2', 'r-c-shared--c-priv-u1', 'r-c-shared--c-priv-u2', 'one end is hidden'],
 		['u1', 'r-c-priv-u2--c-shared', 'r-c-priv-u1--c-shared', 'the other end, the other owner'],

@@ -4,8 +4,8 @@
  * for a link.
  */
 
-/** An idea becomes a given gift; a received one is noted as such from the start. */
-export const GIFT_STATES = ['idea', 'given', 'received'] as const;
+/** An idea may be bought, then becomes a given gift; a received one is noted as such from the start. */
+export const GIFT_STATES = ['idea', 'bought', 'given', 'received'] as const;
 
 /** One of `GIFT_STATES`. */
 export type GiftState = (typeof GIFT_STATES)[number];
@@ -13,6 +13,27 @@ export type GiftState = (typeof GIFT_STATES)[number];
 /** Whether `value` is one of `GIFT_STATES`. */
 export function isGiftState(value: string): value is GiftState {
 	return (GIFT_STATES as readonly string[]).includes(value);
+}
+
+/** The states a gift is added in: *bought* is only ever reached from an idea. */
+export const ADDABLE_GIFT_STATES = ['idea', 'given', 'received'] as const;
+
+/** One of `ADDABLE_GIFT_STATES`. */
+export type AddableGiftState = (typeof ADDABLE_GIFT_STATES)[number];
+
+/** Whether `value` is one of `ADDABLE_GIFT_STATES`. */
+export function isAddableGiftState(value: string): value is AddableGiftState {
+	return (ADDABLE_GIFT_STATES as readonly string[]).includes(value);
+}
+
+/** Whether a gift in `state` has its day: given and received ones do, an idea or a bought one not yet. */
+export function hasGiftDay(state: GiftState): state is 'given' | 'received' {
+	return state === 'given' || state === 'received';
+}
+
+/** Whether a gift in `state` is still to come — an idea, or one bought and not yet handed over. */
+export function isOpenGift(state: GiftState): state is 'idea' | 'bought' {
+	return !hasGiftDay(state);
 }
 
 /**
@@ -41,6 +62,17 @@ export const OTHER_OCCASION = 'other';
 export function occasionFromForm(choice: string | null, typed: string | null): string | null {
 	if (choice === OTHER_OCCASION) return (typed ?? '').trim() || null;
 	return choice !== null && isGiftOccasionPreset(choice) ? choice : null;
+}
+
+/** The form's three-way choice, *Everyone but them* being a shared gift kept from its person (§2.25.10). */
+export const SURPRISE = 'surprise';
+
+export function visibilityFromForm(chosen: string | null): {
+	visibility: 'shared' | 'private';
+	hiddenFromRecipient: boolean;
+} {
+	if (chosen === 'private') return { visibility: 'private', hiddenFromRecipient: false };
+	return { visibility: 'shared', hiddenFromRecipient: chosen === SURPRISE };
 }
 
 /** A link as the form gave it: a web address, none, or something that is not one. */

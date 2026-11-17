@@ -1,5 +1,5 @@
 import { fromFormData } from '$lib/commands/form-data';
-import { GiftMarkGivenSchema } from '$lib/commands/gift-todo-payloads';
+import { GiftMarkBoughtSchema, GiftMarkGivenSchema } from '$lib/commands/gift-todo-payloads';
 import { todayFor } from '$lib/dates/today';
 import { ideaListGroups } from '$lib/gifts/idea-list';
 import { requireViewer } from '$lib/server/auth/guards';
@@ -52,6 +52,19 @@ export const actions = {
 			form,
 			'gift.markGiven',
 			{ ...fromFormData(GiftMarkGivenSchema, form), occasion: occasionOf(form) },
+			'giftRowError',
+			{ contactId: textOf(form, 'contactId') ?? '', back: '/gifts' }
+		);
+	},
+
+	/** *Bought* on the list (§2.25.9): the idea leaves it, and its toast takes it back. */
+	markGiftBought: async ({ request, locals }) => {
+		const form = await request.formData();
+		return applyGiftCommand(
+			locals,
+			form,
+			'gift.markBought',
+			fromFormData(GiftMarkBoughtSchema, form),
 			'giftRowError',
 			{ contactId: textOf(form, 'contactId') ?? '', back: '/gifts' }
 		);

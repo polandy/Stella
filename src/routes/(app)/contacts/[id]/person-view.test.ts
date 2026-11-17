@@ -112,6 +112,7 @@ describe('giftView', () => {
 		occasion: null,
 		when: null,
 		whenCheckedOn: null,
+		hiddenFromRecipient: false,
 		createdAt: 1,
 		updatedAt: 2,
 		...overrides
@@ -128,6 +129,7 @@ describe('giftView', () => {
 			occasion: null,
 			when: null,
 			whenCheckedOn: null,
+			hiddenFromRecipient: false,
 			visibility: 'shared',
 			mine: false,
 			notedBy: 'Hans',

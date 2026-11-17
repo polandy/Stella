@@ -1,7 +1,7 @@
 import { dispatchCommand } from '$lib/server/domain/commands/dispatch';
 import { readCommand } from '$lib/server/commands/parse';
 import type { CommandType } from '$lib/commands/commands';
-import { occasionFromForm } from '$lib/gifts/gifts';
+import { occasionFromForm, visibilityFromForm } from '$lib/gifts/gifts';
 import { whenFromForm } from '$lib/when/form';
 import { GiftGoneError } from '$lib/server/domain/gifts/gifts';
 import { ulidGenerator } from '$lib/server/id';
@@ -22,6 +22,9 @@ export type GiftCommand = Extract<CommandType, `gift.${string}`>;
 /** The occasion the form chose, as the payload carries it. */
 export const occasionOf = (form: FormData) =>
 	occasionFromForm(textOf(form, 'occasionChoice'), textOf(form, 'occasionText'));
+
+/** Who may see it, as the three-way choice posted it (§2.25.10). */
+export const visibilityOf = (form: FormData) => visibilityFromForm(textOf(form, 'visibility'));
 
 /** When the idea is for, as the picker posted it; undefined where the form has no picker. */
 export const whenOf = (form: FormData) => whenFromForm((key) => textOf(form, key));

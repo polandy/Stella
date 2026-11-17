@@ -24,6 +24,7 @@ import {
 	markGiftGiven,
 	removeGift
 } from '../domain/gifts/gifts';
+import { markGiftBought } from '../domain/gifts/bought';
 import { logInteractionChecked } from '../domain/interactions/log-checked';
 import { writeJournalEntry } from '../domain/journal/write-entry';
 import { withNamesakeContext } from '../domain/mentions/namesake-context';
@@ -134,6 +135,7 @@ export function createCommandHandlers(
 		'gift.add': (actor, payload) => addGift(gifts.giftDeps, actor, payload),
 		'gift.edit': (actor, payload) => editGift(gifts.giftDeps, actor, payload),
 		'gift.markGiven': (actor, payload) => markGiftGiven(gifts.giftDeps, actor, payload),
+		'gift.markBought': (actor, payload) => markGiftBought(gifts.giftDeps, actor, payload),
 		'gift.answerWhen': (actor, payload) => answerIdeaWhen(gifts.giftDeps, actor, payload),
 		'gift.remove': (actor, payload) => removeGift(gifts.giftDeps, actor, payload),
 		// A to-do (docs/dev/02 §2.26): noted and ticked on a phone or online; the rest wait for Stella.

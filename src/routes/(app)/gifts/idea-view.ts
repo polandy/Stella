@@ -23,6 +23,7 @@ export function openIdeaView(
 		visibility: idea.visibility,
 		when: idea.when,
 		whenState: idea.whenState,
+		hiddenFromRecipient: idea.hiddenFromRecipient,
 		mine,
 		notedBy: mine ? null : authorLabel(false, nameOfAuthor(idea.createdBy))
 	};

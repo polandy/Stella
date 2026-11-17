@@ -1,6 +1,10 @@
 import { and, asc, eq, inArray, sql, type SQL } from 'drizzle-orm';
 import type { BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
-import { childRecordBrowsableBy, contactBrowsableBy } from '../access/query-scoping';
+import {
+	childRecordBrowsableBy,
+	contactBrowsableBy,
+	giftBrowsableBy
+} from '../access/query-scoping';
 import type { Viewer } from '../access/visibility';
 import type { SearchRepository } from '../domain/search/search';
 import {
@@ -139,15 +143,7 @@ export function createDrizzleSearchRepository(
 				.from(giftFts)
 				.innerJoin(gift, eq(giftFts.giftId, gift.id))
 				.innerJoin(contact, eq(gift.contactId, contact.id))
-				.where(
-					and(
-						sql`gift_fts MATCH ${ftsQuery}`,
-						childRecordBrowsableBy(viewer, {
-							visibility: gift.visibility,
-							createdBy: gift.createdBy
-						})
-					)
-				)
+				.where(and(sql`gift_fts MATCH ${ftsQuery}`, giftBrowsableBy(viewer, gift)))
 				.orderBy(sql`bm25(gift_fts)`)
 				.limit(limit)
 				.all();

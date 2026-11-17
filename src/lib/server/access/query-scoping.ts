@@ -100,6 +100,34 @@ export function childRecordBrowsableBy(
 	return and(childRecordVisibleTo(viewer, record), isNull(contact.archivedAt))!;
 }
 
+/** The gift columns `giftVisibleTo` decides on. */
+export interface GiftColumns {
+	visibility: AnyColumn;
+	createdBy: AnyColumn;
+	contactId: AnyColumn;
+	hiddenFromRecipient: AnyColumn;
+}
+
+/**
+ * Condition for a gift being visible — the SQL of `canViewGift`: a visible child record, and not
+ * one hidden from the viewer as the person it is for. The query must join `contact`.
+ */
+export function giftVisibleTo(viewer: Viewer, record: GiftColumns): SQL {
+	return and(
+		childRecordVisibleTo(viewer, record),
+		or(
+			eq(record.hiddenFromRecipient, 0),
+			eq(record.createdBy, viewer.id),
+			sql`NOT EXISTS (SELECT 1 FROM ${user} WHERE ${user.id} = ${viewer.id} AND ${user.selfContactId} = ${record.contactId})`
+		)
+	)!;
+}
+
+/** Condition for a gift on a surface the household browses: visible, its person not archived. */
+export function giftBrowsableBy(viewer: Viewer, record: GiftColumns): SQL {
+	return and(giftVisibleTo(viewer, record), isNull(contact.archivedAt))!;
+}
+
 /**
  * Condition for an authored record (note / journal entry / interaction / photo) being one the
  * remover may remove — the SQL of `canRemoveAuthored`: visible, and their own or, for an

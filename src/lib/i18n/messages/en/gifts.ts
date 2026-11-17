@@ -44,6 +44,15 @@ export const gifts = {
 	// The row button opens the form; the form's submit says the whole thing.
 	'gifts.markGiven.open': 'Mark as given…',
 	'gifts.markGiven.title': (p: { title: string }) => `“${p.title}” given`,
+	// Bought, waiting to be handed over (§2.25.9), and kept from the person it is for (§2.25.10).
+	'gifts.bought': 'Bought',
+	'gifts.bought.title': (p: { title: string }) => `“${p.title}” bought`,
+	'gifts.notBought': 'Not bought yet',
+	'gifts.notBought.title': (p: { title: string }) => `“${p.title}” back to the ideas`,
+	'gifts.ready': 'Ready to give',
+	'gifts.ideas.allBought': (p: { name: string }) => `Everything for ${p.name} is bought.`,
+	'gifts.surprise.choice': (p: { name: string }) => `Everyone but ${p.name}`,
+	'gifts.surprise.inline': (p: { name: string }) => `hidden from ${p.name}`,
 	// When an idea was noted, under its title.
 	'gifts.addedOn': (p: { day: string }) => `Added ${p.day}`,
 	'gifts.notedBy': (p: { name: string }) => `noted by ${p.name}`,
@@ -74,6 +83,7 @@ export const gifts = {
 
 	// Where a gift stands, as a search hit says it (docs/dev/02 §2.9).
 	'gifts.state.idea': 'Idea',
+	'gifts.state.bought': 'Bought',
 	'gifts.state.given': (p: { day: string }) => `Given on ${p.day}`,
 	'gifts.state.received': (p: { day: string }) => `Received on ${p.day}`,
 

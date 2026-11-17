@@ -11,7 +11,8 @@
 
 	/*
 	 * Home's *Coming up* (docs/dev/02 §2.13): the birthdays and anniversaries close ahead, each with
-	 * *Write a moment* and the gift ideas noted for it, in the rail beside or above the stream.
+	 * *Write a moment*, the gift ideas noted for it and what is bought and ready (§2.25.9), in the
+	 * rail beside or above the stream.
 	 */
 	let { upcoming }: { upcoming: PageData['upcoming'] } = $props();
 
@@ -81,6 +82,16 @@
 							><Icon name="gift" size={12} />{t('home.giftIdeas', {
 								count: item.giftIdeas
 							})}</a
+						>
+					{/if}
+					{#if item.readyGifts.length > 0}
+						<a
+							href={contactSectionPath(item.contactId, 'gifts')}
+							class="mt-0.5 flex items-center gap-1 text-xs text-fg-muted hover:underline"
+							data-testid="coming-up-ready"
+							><Icon name="bought" size={12} /><span class="truncate"
+								>{t('home.ready', { titles: item.readyGifts.join(', ') })}</span
+							></a
 						>
 					{/if}
 				</div>

@@ -166,9 +166,10 @@ export const interactionParticipant = sqliteTable(
 );
 
 /*
- * A present for one person (docs/dev/02 §2.25): an idea, a gift the household gave, or one it
- * received. An idea and the gift it became are one row — *Mark as given* sets `state` and the
- * day. Visibility follows the child-record rule (private ⇒ only the author).
+ * A present for one person (docs/dev/02 §2.25): an idea, one bought and waiting to be handed over,
+ * a gift the household gave, or one it received. An idea and the gift it became are one row —
+ * *Mark as given* sets `state` and the day. Visibility follows the child-record rule (private ⇒
+ * only the author); `hidden_from_recipient` also keeps a shared one from the member it is for.
  */
 export const gift = sqliteTable(
 	'gift',
@@ -181,7 +182,9 @@ export const gift = sqliteTable(
 			.notNull()
 			.references(() => user.id),
 		visibility: text('visibility').$type<Visibility>().notNull().default('shared'),
-		state: text('state').$type<'idea' | 'given' | 'received'>().notNull(),
+		// A surprise: shared, but never shown to the member whose own person it is for.
+		hiddenFromRecipient: integer('hidden_from_recipient').notNull().default(0),
+		state: text('state').$type<'idea' | 'bought' | 'given' | 'received'>().notNull(),
 		title: text('title').notNull(),
 		note: text('note'),
 		url: text('url'),

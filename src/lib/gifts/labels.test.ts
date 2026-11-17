@@ -45,6 +45,11 @@ describe('stateLabel', () => {
 		expect(stateLabel(de, { state: 'idea', givenOn: null })).toBe('Idee');
 	});
 
+	it('calls a bought gift bought, as it has no day yet', () => {
+		expect(stateLabel(en, { state: 'bought', givenOn: null })).toBe('Bought');
+		expect(stateLabel(de, { state: 'bought', givenOn: null })).toBe('Besorgt');
+	});
+
 	it('says on which day a gift was given or received', () => {
 		expect(stateLabel(en, { state: 'given', givenOn: '2025-12-24' })).toBe(
 			'Given on 24 December 2025'

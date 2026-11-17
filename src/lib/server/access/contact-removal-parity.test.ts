@@ -92,7 +92,7 @@ describe('each refused removal has an allowed control', () => {
 			mergeable.ts(REMOVERS.u1Admin),
 			mergeable.sql(REMOVERS.u1Admin)
 		]) {
-			expect(side).toEqual(['c-priv-u1', 'c-shared']);
+			expect(side).toEqual(['c-priv-u1', 'c-self-u2', 'c-shared']);
 		}
 	});
 

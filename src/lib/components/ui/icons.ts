@@ -27,6 +27,7 @@ import {
 	Expand,
 	ExternalLink,
 	EyeOff,
+	ShoppingBag,
 	Fingerprint,
 	Gift,
 	Handshake,
@@ -169,6 +170,9 @@ export const ICONS = {
 	// A gift — given, received, or not given yet — and the shop page it may link to (docs/dev/02 §2.25).
 	gift: Gift,
 	idea: Lightbulb,
+	// Bought and waiting to be handed over; kept from the person it is for (§2.25.9, §2.25.10).
+	bought: ShoppingBag,
+	surprise: EyeOff,
 	// A to-do on a person (docs/dev/02 §2.26).
 	todo: ListTodo,
 	// *On this day* — what the household wrote on today's date in earlier years (docs/dev/02 §2.12.1).

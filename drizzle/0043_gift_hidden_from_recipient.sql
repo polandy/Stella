@@ -1,0 +1,1 @@
+ALTER TABLE `gift` ADD `hidden_from_recipient` integer DEFAULT 0 NOT NULL;

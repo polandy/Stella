@@ -6,6 +6,7 @@ import {
 	canViewChildRecord,
 	canViewCirclePhoto,
 	canViewContact,
+	canViewGift,
 	canViewRelationship,
 	canEditAuthored,
 	canRemoveAuthored,
@@ -96,6 +97,35 @@ describe('canViewChildRecord (note / photo / interaction)', () => {
 		expect(canViewChildRecord(viewerOther, sharedChild)).toBe(false);
 		// ...but the owner of the private contact still sees it.
 		expect(canViewChildRecord(viewerOwner, sharedChild)).toBe(true);
+	});
+});
+
+describe('canViewGift (docs/dev/02 §2.25.10: everyone but the person it is for)', () => {
+	const RECIPIENT_PERSON = 'contact-other-member';
+	const surprise = {
+		...childOn(contact()),
+		contactId: RECIPIENT_PERSON,
+		hiddenFromRecipient: true
+	};
+
+	it('hides a surprise from the member whose own person it is for', () => {
+		expect(canViewGift(viewerOther, surprise, RECIPIENT_PERSON)).toBe(false);
+	});
+
+	it('shows it to everyone else in the household, and to a member without an own person', () => {
+		expect(canViewGift(viewerOther, surprise, 'contact-someone-else')).toBe(true);
+		expect(canViewGift(viewerOther, surprise, null)).toBe(true);
+	});
+
+	it('never hides it from its author, even once they are the person it is for', () => {
+		expect(canViewGift(viewerOwner, surprise, RECIPIENT_PERSON)).toBe(true);
+	});
+
+	it('shows an ordinary shared gift to the recipient, and follows the child-record rule first', () => {
+		const open = { ...surprise, hiddenFromRecipient: false };
+		expect(canViewGift(viewerOther, open, RECIPIENT_PERSON)).toBe(true);
+		expect(canViewGift(viewerForeign, open, null)).toBe(false);
+		expect(canViewGift(viewerOther, { ...open, visibility: 'private' }, null)).toBe(false);
 	});
 });
 

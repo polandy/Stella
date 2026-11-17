@@ -17,6 +17,7 @@ export const home: HomeMessages = {
 	'home.giftIdeas': (p) => (p.count === 1 ? '1 Idee' : `${p.count} Ideen`),
 	'home.giftIdeasFor': (p) =>
 		p.count === 1 ? `1 Geschenkidee für ${p.name}` : `${p.count} Geschenkideen für ${p.name}`,
+	'home.ready': (p) => `Bereit: ${p.titles}`,
 	'home.findPerson': 'Person suchen…',
 	'home.showAll': (p) => `Alle ${p.count} anzeigen`,
 	'home.outbox.label': 'Noch nicht gesendet',
