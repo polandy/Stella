@@ -64,6 +64,7 @@ export interface CommandResults {
 	'plan.edit': { planId: string };
 	'plan.unbook': { planId: string };
 	'plan.reopen': { planId: string };
+	'plan.answerWhen': { planId: string };
 	'plan.remove': { planId: string };
 	'tag.assign': { tagId: string };
 	'circle.join': { circleId: string };
@@ -256,6 +257,8 @@ function apply(
 		case 'plan.unbook':
 			return handlers[command.type](actor, command.payload);
 		case 'plan.reopen':
+			return handlers[command.type](actor, command.payload);
+		case 'plan.answerWhen':
 			return handlers[command.type](actor, command.payload);
 		case 'plan.remove':
 			return handlers[command.type](actor, command.payload);

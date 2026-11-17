@@ -72,7 +72,13 @@ describe('the command vocabulary', () => {
 		for (const type of ['plan.add', 'plan.book', 'plan.done'] as const) {
 			expect(isQueueable(type)).toBe(true);
 		}
-		for (const type of ['plan.edit', 'plan.unbook', 'plan.reopen', 'plan.remove'] as const) {
+		for (const type of [
+			'plan.edit',
+			'plan.unbook',
+			'plan.reopen',
+			'plan.answerWhen',
+			'plan.remove'
+		] as const) {
 			expect(isQueueable(type)).toBe(false);
 		}
 	});

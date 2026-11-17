@@ -41,6 +41,7 @@ const KINDS = {
 	'plan.edit': 'change',
 	'plan.unbook': 'change',
 	'plan.reopen': 'change',
+	'plan.answerWhen': 'change',
 	'plan.remove': 'remove',
 	'tag.assign': 'add',
 	'circle.join': 'add',

@@ -34,7 +34,7 @@ import { addRelationshipChecked } from '../domain/relationships/add-checked';
 import { addRelationshipsOrRefuse } from '../domain/relationships/add-many';
 import { assignTagByName } from '../domain/tags/tags';
 import { addTodo, editTodo, removeTodo, tickTodo, untickTodo } from '../domain/todos/todos';
-import { addPlan, editPlan, removePlan } from '../domain/plans/plans';
+import { addPlan, answerPlanWhen, editPlan, removePlan } from '../domain/plans/plans';
 import { bookPlan, donePlan, reopenPlan, unbookPlan } from '../domain/plans/progress';
 import type { AppServices } from '../services/app-services';
 
@@ -154,6 +154,7 @@ export function createCommandHandlers(
 		'plan.edit': (actor, payload) => editPlan(plans.planDeps, actor, payload),
 		'plan.unbook': (actor, payload) => unbookPlan(plans.planDeps, actor, payload),
 		'plan.reopen': (actor, payload) => reopenPlan(plans.planDeps, actor, payload),
+		'plan.answerWhen': (actor, payload) => answerPlanWhen(plans.planDeps, actor, payload),
 		'plan.remove': (actor, payload) => removePlan(plans.planDeps, actor, payload),
 		'note.add': (actor, payload) =>
 			withNamesakeContext(namesakeContextDeps, viewerOf(actor), () =>

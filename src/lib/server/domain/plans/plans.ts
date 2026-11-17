@@ -50,6 +50,13 @@ export interface Plan {
 	updatedAt: number;
 }
 
+/** An open idea with the person it is with, as Home lists it. */
+export interface OpenPlan extends Plan {
+	contactName: string;
+	avatarPhotoId: string | null;
+	birth: PartialDate | null;
+}
+
 /** Port the domain owns; the Drizzle adapter implements it with visibility-scoped reads. */
 export interface PlanRepository {
 	insert(plan: Plan): Promise<void>;
@@ -59,6 +66,8 @@ export interface PlanRepository {
 	update(plan: Plan): Promise<void>;
 	/** Remove an idea; the caller found it through `findVisibleTo`. */
 	remove(planId: string): Promise<void>;
+	/** Every open idea the viewer may see on a browsed person still alive, with that person. */
+	listOpenVisibleTo(viewer: Viewer): Promise<OpenPlan[]>;
 	/** Every idea on a person the viewer may see, open and done, newest noted first. */
 	listForContactVisibleTo(viewer: Viewer, contactId: string): Promise<Plan[]>;
 	/** The current member whose own person `contactId` is, in the household, or null. */
@@ -98,6 +107,13 @@ export interface AddPlanInput extends PlanContent {
 export interface EditPlanInput extends PlanContent {
 	contactId: string;
 	planId: string;
+}
+
+/** A passed idea's answer on Home: a new when ahead, or null to keep it for *some time*. */
+export interface AnswerPlanWhenInput {
+	contactId: string;
+	planId: string;
+	when: When | null;
 }
 
 /** Which idea a booking, a tick, an undo or a removal is about. */
@@ -258,6 +274,31 @@ export async function editPlan(
 	return { planId: plan.id };
 }
 
+/**
+ * Answer a passed idea on Home: *next year* or *some time*. The booking was for the day gone by,
+ * so it goes; one already done stays as it is, so a second phone's answer is harmless.
+ */
+export async function answerPlanWhen(
+	deps: PlanDeps,
+	actor: PlanActor,
+	input: AnswerPlanWhenInput
+): Promise<{ planId: string }> {
+	const plan = await requireVisiblePlan(deps, actor, input);
+	if (plan.doneAt !== null) return { planId: plan.id };
+	const when =
+		input.when === null
+			? null
+			: whenOf(input.when, await birthOfVisible(deps, actor, plan.contactId), todayFor(deps.clock));
+	await deps.plans.update({
+		...plan,
+		when,
+		bookedAt: null,
+		bookedBy: null,
+		updatedAt: deps.clock.now()
+	});
+	return { planId: plan.id };
+}
+
 /** Remove an idea the member can see, done or not. */
 export async function removePlan(
 	deps: PlanDeps,
@@ -267,6 +308,14 @@ export async function removePlan(
 	const plan = await requireVisiblePlan(deps, actor, ref);
 	await deps.plans.remove(plan.id);
 	return { planId: plan.id };
+}
+
+/** Every open idea the viewer may see, for Home (`src/lib/plans/home.ts` places them). */
+export async function listOpenPlans(
+	deps: Pick<PlanDeps, 'plans'>,
+	viewer: Viewer
+): Promise<OpenPlan[]> {
+	return deps.plans.listOpenVisibleTo(viewer);
 }
 
 /** The ideas on a person the viewer may see, open and done. */

@@ -1,8 +1,9 @@
 import { and, desc, eq, isNull } from 'drizzle-orm';
 import type { BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
-import { isMemberAccount, surpriseVisibleTo } from '../access/query-scoping';
+import { isMemberAccount, surpriseBrowsableBy, surpriseVisibleTo } from '../access/query-scoping';
 import type { Viewer } from '../access/visibility';
 import type { Plan, PlanRepository } from '../domain/plans/plans';
+import { birthOf } from '../../when/resolve';
 import { whenColumns, whenOfColumns } from '../../when/when';
 import type * as schema from './schema';
 import { activityIdea, contact, user } from './schema';
@@ -97,6 +98,35 @@ export function createDrizzlePlanRepository(db: BunSQLiteDatabase<typeof schema>
 
 		async remove(planId) {
 			db.delete(activityIdea).where(eq(activityIdea.id, planId)).run();
+		},
+
+		async listOpenVisibleTo(viewer) {
+			// Home places them (`src/lib/plans/home.ts`): the rules are pure and tested there.
+			return db
+				.select({
+					...columns,
+					contactName: contact.displayName,
+					avatarPhotoId: contact.avatarPhotoId,
+					birthDate: contact.birthDate,
+					birthDatePrecision: contact.birthDatePrecision
+				})
+				.from(activityIdea)
+				.innerJoin(contact, eq(activityIdea.contactId, contact.id))
+				.where(
+					and(
+						isNull(activityIdea.doneAt),
+						eq(contact.isDeceased, 0),
+						// Home is a browsing surface: an archived person is out (docs/dev/04 §4.9).
+						surpriseBrowsableBy(viewer, activityIdea)
+					)
+				)
+				.all()
+				.map(({ contactName, avatarPhotoId, birthDate, birthDatePrecision, ...row }) => ({
+					...planOf(row),
+					contactName,
+					avatarPhotoId,
+					birth: birthOf({ birthDate, birthDatePrecision })
+				}));
 		},
 
 		async listForContactVisibleTo(viewer, contactId) {
