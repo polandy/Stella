@@ -116,6 +116,7 @@ describe('breadcrumbs', () => {
 			['/(app)/on-this-day', 'On this day'],
 			['/(app)/gifts', 'Gift ideas'],
 			['/(app)/todos', 'To-dos'],
+			['/(app)/plans', 'Outings'],
 			['/(app)/share', 'Share to Stella']
 		])
 			expect(breadcrumbs(route, {}, {}, t)).toEqual([{ label: 'Home', href: '/' }, { label }]);

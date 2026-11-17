@@ -21,6 +21,7 @@ const UNDER_HOME: Record<string, PlainKey> = {
 	'/(app)/on-this-day': 'memories.title',
 	'/(app)/gifts': 'gifts.list.title',
 	'/(app)/todos': 'todos.list.title',
+	'/(app)/plans': 'plans.list.title',
 	'/(app)/share': 'share.title'
 };
 

@@ -706,6 +706,13 @@ concert*, *the lake by bike once she is ten*. What you owe someone belongs in a 
 - Once an idea's day has passed and it is not ticked, Home asks **Done? Still on?** for a week:
   **Done**, **Next year** (the same day a year later), **Keep without a date**, or **Delete**.
   After that week only its card still marks it.
+- **All outings** — in the card's **⋯** menu, or in the `⌘K` / `Ctrl-K` palette — lists every
+  open idea of the household: *This month*, *Later* and *Some time*. Ideas more than about three
+  months away and not booked wait behind *Show later ones too*; done ones stay on each card. Tick
+  one off right there; everything else is changed on the person's card.
+- From anywhere: `⌘K` / `Ctrl-K`, **Outing with …**, then the person's name and `Enter` opens
+  the card's form. **Search everything** finds an idea by its title, note or link, done ones
+  marked as done.
 
 ### To-dos
 
@@ -779,7 +786,9 @@ year round — private people only in your own — and your open to-dos that hav
 day, as *To-do: Give back the book (Anna)*, until you tick them. A to-do without a day is not
 in it, and one you have not ticked by its day stays on that day. A gift idea for a day or an age
 appears on that day once it is near — about three months ahead — as *Gift idea: Bike (Mia)*,
-until it is given; an idea for yourself never does, so the surprise stays one. When and whether it reminds you is set in the
+until it is given; an idea for yourself never does, so the surprise stays one. An outing idea
+with a day appears once, about three months before it — or on the day you noted it, if that was
+later — as *Outing ahead: Zoo (Mia)*, so there is time to plan; ideas without a day do not. When and whether it reminds you is set in the
 calendar app (one day before, say). Your phone checks for changes every few hours, so an edit
 in Stella shows up there with some delay. One difference from Home: a 29 February date shows
 on 28 February in other years.
@@ -1135,10 +1144,10 @@ your removing it never quietly takes it off someone else's private contact.
 ## Finding things
 
 `⌘K` / `Ctrl-K` — or the search button at the top — opens a palette that jumps straight to a
-person as you type, and offers *Write a moment*, *Gift idea for …*, *To-do for …*, *Brief for …*, *All gift ideas*, *All to-dos* and *Add person*
+person as you type, and offers *Write a moment*, *Gift idea for …*, *To-do for …*, *Outing with …*, *Brief for …*, *All gift ideas*, *All to-dos*, *All outings* and *Add person*
 as its first rows. Notes are
 not in it; the last row, *Search everything*, opens the full search, which looks through
-people, notes, gifts, to-dos and moments at once — a done to-do too, marked as done — matches partial words, and only ever returns what you are
+people, notes, gifts, to-dos, outing ideas and moments at once — a done to-do or outing too, marked as done — matches partial words, and only ever returns what you are
 allowed to see — a private gift only to whoever noted it. When it finds nothing it offers *Add "…"*, which opens *Add person* with what you typed
 already filled in as the name — and so does the filter on the People page.
 

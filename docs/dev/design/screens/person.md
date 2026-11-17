@@ -441,6 +441,8 @@ The card of docs/dev/02 §2.27, right after Gifts; no jump-bar link.
   when the person is another member's own record. Only the author is offered visibility.
 - Empty, it is one line (*No idea yet.*, *+ Idea*) with the help sentence beneath, which tells
   an outing from a to-do.
+- The header's ⋯ menu holds *All outings*, to `/plans` (§5.5.18). Arriving with `?plan=new` —
+  the palette's *Outing with …* — opens the form, on a navigation only.
 
 #### Notes, Photos, Mentioned in
 
