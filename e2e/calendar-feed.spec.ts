@@ -1,4 +1,5 @@
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Browser, type Page } from '@playwright/test';
+import { DEMO_ADMIN_PASSWORD, DEMO_MEMBER_EMAIL } from '../src/lib/server/db/demo-seed';
 import { addPerson, appReady, fillDate, isoDaysAfter, serverToday, signIn } from './app';
 import { seedHousehold } from './seed';
 
@@ -9,7 +10,8 @@ import { seedHousehold } from './seed';
  * ICSx⁵ on Android (docs/dev/08 §8.4.1).
  *
  * Every refusal is paired with the same link answering first, so no case can pass because
- * the feed answers nothing at all; a to-do left out is paired with one let in.
+ * the feed answers nothing at all; a to-do left out is paired with one let in, and another
+ * member's private gift idea with a shared one (docs/dev/02 §2.25.6).
  *
  * A member has one link, so its whole life is one case: two would replace each other's. The
  * suite shares one database, so the to-dos stand on a person of the case's own, on a day
@@ -46,6 +48,19 @@ async function addTodo(page: Page, title: string, dueOn?: string): Promise<void>
 /** The feed's text with its folded lines joined again (RFC 5545 §3.1). */
 async function feedText(page: Page, link: string): Promise<string> {
 	return (await (await page.request.get(link)).text()).replace(/\r\n /g, '');
+}
+
+/** A second browser signed in as the household's other member, Nina. */
+async function signInAsNina(browser: Browser): Promise<Page> {
+	const context = await browser.newContext({ storageState: { cookies: [], origins: [] } });
+	const page = await context.newPage();
+	await page.goto('/login');
+	await page.getByLabel('Email').fill(DEMO_MEMBER_EMAIL);
+	await page.getByLabel('Password').fill(DEMO_ADMIN_PASSWORD);
+	await page.getByRole('button', { name: 'Sign in', exact: true }).click();
+	await expect(page.getByRole('heading', { name: 'What happened?' })).toBeVisible();
+	await appReady(page);
+	return page;
 }
 
 /** Reads the link the settings page shows once after *Create*. */
@@ -151,4 +166,53 @@ test('a calendar link is shown once, serves the dates and dated to-dos, and stop
 	await expect(page.getByText('Calendar link revoked.')).toBeVisible();
 	await expect(page.getByRole('button', { name: 'Create calendar link' })).toBeVisible();
 	expect((await page.request.get(second)).status()).toBe(NOT_FOUND);
+});
+
+test("another member's calendar link holds a shared gift idea near its day, never a private one", async ({
+	page,
+	browser
+}) => {
+	await signIn(page);
+	const letters = runLetters();
+	const today = await serverToday(page);
+	const giftee = `Gesa Teilen${letters}`;
+	const soon = isoDaysAfter(today, 30);
+	await seedHousehold(
+		page,
+		[giftee],
+		[],
+		{},
+		[],
+		[],
+		[],
+		{},
+		{},
+		{},
+		{
+			[giftee]: [
+				{ title: `Kite ${letters}`, when: { kind: 'on_date', on: soon } },
+				{ title: `Secret ${letters}`, when: { kind: 'on_date', on: soon }, visibility: 'private' }
+			]
+		}
+	);
+	// Both stand on the list of the member who noted them.
+	await page.goto('/gifts');
+	await expect(page.getByText(`Secret ${letters}`)).toBeVisible();
+
+	const nina = await signInAsNina(browser);
+	await nina.goto('/settings/calendar');
+	// A repeated run finds the link this case made before; either way a fresh one is shown.
+	const create = nina.getByRole('button', { name: 'Create calendar link' });
+	const replace = nina.getByRole('button', { name: 'Create a new link…' });
+	await expect(create.or(replace)).toBeVisible();
+	if (await replace.isVisible()) {
+		await replace.click();
+		await nina.getByRole('button', { name: 'Create new link' }).click();
+	} else {
+		await create.click();
+	}
+	const feed = await feedText(nina, await shownLink(nina));
+	expect(feed).toContain(`SUMMARY:Gift idea: Kite ${letters} (${giftee})`);
+	expect(feed).not.toContain(`Secret ${letters}`);
+	await nina.context().close();
 });
