@@ -44,11 +44,17 @@ export interface Plan {
 	/** The household's ISO day it was ticked; null while open. */
 	doneOn: string | null;
 	doneBy: string | null;
-	/** The moment written about it (a later slice); null until then. */
+	/** The moment written about it once done (§2.27.8); null without one or once it is deleted. */
 	momentId: string | null;
 	createdAt: number;
 	updatedAt: number;
 }
+
+/**
+ * A done idea, as the person's story reads it (docs/dev/02 §2.23). Its `momentId` is null unless
+ * the viewer may see that moment too.
+ */
+export type DonePlan = Plan & { doneAt: number; doneOn: string };
 
 /** An open idea with the person it is with, as Home lists it. */
 export interface OpenPlan extends Plan {
@@ -70,6 +76,12 @@ export interface PlanRepository {
 	listOpenVisibleTo(viewer: Viewer): Promise<OpenPlan[]>;
 	/** Every idea on a person the viewer may see, open and done, newest noted first. */
 	listForContactVisibleTo(viewer: Viewer, contactId: string): Promise<Plan[]>;
+	/** One page of the done ideas on a person the viewer may see, latest ticked first. */
+	listStoryPageForContactVisibleTo(
+		viewer: Viewer,
+		contactId: string,
+		opts: { limit: number; before?: { doneOn: string; doneAt: number } }
+	): Promise<DonePlan[]>;
 	/** The current member whose own person `contactId` is, in the household, or null. */
 	memberWhoseOwnPerson(householdId: string, contactId: string): Promise<string | null>;
 }

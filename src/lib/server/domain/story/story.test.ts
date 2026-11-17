@@ -11,9 +11,10 @@ import type { JournalEntry } from '../journal/journal';
 import type { Interaction } from '../interactions/interactions';
 import type { DatedGift } from '../gifts/gifts';
 import type { DoneTodo } from '../todos/todos';
+import type { DonePlan } from '../plans/plans';
 
 /*
- * The story timeline (docs/dev/02 §2.23): one chronological read over four sources that are
+ * The story timeline (docs/dev/02 §2.23): one chronological read over five sources that are
  * paginated separately. The merge is pure, so every ordering and cursor rule is checked here
  * rather than through a route.
  */
@@ -104,6 +105,7 @@ function partial<T>(items: T[], resumeFrom: StoryResume = 'top'): StorySource<T>
 const NO_GIFTS = whole<DatedGift>([]);
 const NO_GIFTS_TOUCHPOINTS = whole<Interaction>([]);
 const NO_TODOS = whole<DoneTodo>([]);
+const NO_PLANS = whole<DonePlan>([]);
 
 const ids = (page: StoryPage): string[] =>
 	page.items.map((item) =>
@@ -113,7 +115,9 @@ const ids = (page: StoryPage): string[] =>
 				? item.interaction.id
 				: item.kind === 'gift'
 					? item.gift.id
-					: item.todo.id
+					: item.kind === 'todo'
+						? item.todo.id
+						: item.plan.id
 	);
 
 describe('mergeStory ordering', () => {
@@ -123,6 +127,7 @@ describe('mergeStory ordering', () => {
 			interactions: whole([touchpoint('2026-03-05', 5)]),
 			gifts: NO_GIFTS,
 			todos: NO_TODOS,
+			plans: NO_PLANS,
 			limit: 10
 		});
 
@@ -135,6 +140,7 @@ describe('mergeStory ordering', () => {
 			interactions: whole([touchpoint('2026-03-10', 200)]),
 			gifts: NO_GIFTS,
 			todos: NO_TODOS,
+			plans: NO_PLANS,
 			limit: 10
 		});
 
@@ -147,6 +153,7 @@ describe('mergeStory ordering', () => {
 			interactions: whole([touchpoint('2026-03-10', 100)]),
 			gifts: NO_GIFTS,
 			todos: NO_TODOS,
+			plans: NO_PLANS,
 			limit: 10
 		};
 
@@ -160,6 +167,7 @@ describe('mergeStory ordering', () => {
 			interactions: whole([touchpoint('2026-03-09', 9)]),
 			gifts: NO_GIFTS,
 			todos: NO_TODOS,
+			plans: NO_PLANS,
 			limit: 10
 		});
 
@@ -174,6 +182,7 @@ describe('mergeStory ordering', () => {
 			interactions: whole([touchpoint('2026-03-05', 5)]),
 			gifts: whole([present('2026-03-08', 8), present('2026-03-01', 1, 'received')]),
 			todos: NO_TODOS,
+			plans: NO_PLANS,
 			limit: 10
 		});
 
@@ -192,6 +201,7 @@ describe('mergeStory ordering', () => {
 			interactions: whole([touchpoint('2026-03-05', 5)]),
 			gifts: whole([present('2026-03-08', 8)]),
 			todos: whole([ticked('2026-03-09', 9), ticked('2026-03-01', 1)]),
+			plans: NO_PLANS,
 			limit: 10
 		});
 
@@ -211,6 +221,7 @@ describe('mergeStory ordering', () => {
 			interactions: whole([]),
 			gifts: NO_GIFTS,
 			todos: NO_TODOS,
+			plans: NO_PLANS,
 			limit: 10
 		});
 
@@ -226,6 +237,7 @@ describe('mergeStory paging', () => {
 			interactions: partial([touchpoint('2026-03-09', 9), touchpoint('2026-03-07', 7)]),
 			gifts: NO_GIFTS,
 			todos: NO_TODOS,
+			plans: NO_PLANS,
 			limit: 2
 		});
 
@@ -234,7 +246,8 @@ describe('mergeStory paging', () => {
 			journal: { day: '2026-03-10', recordedAt: 10 },
 			interactions: { day: '2026-03-09', recordedAt: 9 },
 			gifts: 'finished',
-			todos: 'finished'
+			todos: 'finished',
+			plans: 'finished'
 		});
 	});
 
@@ -245,6 +258,7 @@ describe('mergeStory paging', () => {
 			interactions: partial([touchpoint('2026-01-01', 1)], readFrom),
 			gifts: NO_GIFTS,
 			todos: NO_TODOS,
+			plans: NO_PLANS,
 			limit: 2
 		});
 
@@ -260,6 +274,7 @@ describe('mergeStory paging', () => {
 			interactions: whole([touchpoint('2026-03-09', 9)]),
 			gifts: NO_GIFTS,
 			todos: NO_TODOS,
+			plans: NO_PLANS,
 			limit: 10
 		});
 
@@ -272,6 +287,7 @@ describe('mergeStory paging', () => {
 			interactions: whole([touchpoint('2026-03-09', 9)]),
 			gifts: NO_GIFTS,
 			todos: NO_TODOS,
+			plans: NO_PLANS,
 			limit: 2
 		});
 
@@ -280,7 +296,8 @@ describe('mergeStory paging', () => {
 			journal: { day: '2026-03-10', recordedAt: 10 },
 			interactions: 'finished',
 			gifts: 'finished',
-			todos: 'finished'
+			todos: 'finished',
+			plans: 'finished'
 		});
 	});
 
@@ -290,6 +307,7 @@ describe('mergeStory paging', () => {
 			interactions: NO_GIFTS_TOUCHPOINTS,
 			gifts: partial([present('2026-03-09', 9), present('2026-03-01', 1)]),
 			todos: NO_TODOS,
+			plans: NO_PLANS,
 			limit: 2
 		});
 
@@ -298,7 +316,8 @@ describe('mergeStory paging', () => {
 			journal: 'finished',
 			interactions: 'finished',
 			gifts: { day: '2026-03-09', recordedAt: 9 },
-			todos: 'finished'
+			todos: 'finished',
+			plans: 'finished'
 		});
 	});
 
@@ -308,6 +327,7 @@ describe('mergeStory paging', () => {
 			interactions: NO_GIFTS_TOUCHPOINTS,
 			gifts: NO_GIFTS,
 			todos: partial([ticked('2026-03-09', 9), ticked('2026-03-01', 1)]),
+			plans: NO_PLANS,
 			limit: 1
 		});
 
@@ -316,7 +336,8 @@ describe('mergeStory paging', () => {
 			journal: 'finished',
 			interactions: 'finished',
 			gifts: 'finished',
-			todos: { day: '2026-03-09', recordedAt: 9 }
+			todos: { day: '2026-03-09', recordedAt: 9 },
+			plans: 'finished'
 		});
 	});
 
@@ -378,6 +399,7 @@ describe('mergeStory paging', () => {
 					cursor?.todos ?? 'top',
 					2
 				),
+				plans: NO_PLANS,
 				limit: 2
 			});
 

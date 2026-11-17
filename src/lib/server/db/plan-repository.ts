@@ -1,8 +1,13 @@
-import { and, desc, eq, isNull } from 'drizzle-orm';
+import { and, desc, eq, isNotNull, isNull, lt, or } from 'drizzle-orm';
 import type { BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
-import { isMemberAccount, surpriseBrowsableBy, surpriseVisibleTo } from '../access/query-scoping';
+import {
+	isMemberAccount,
+	linkedMomentVisibleTo,
+	surpriseBrowsableBy,
+	surpriseVisibleTo
+} from '../access/query-scoping';
 import type { Viewer } from '../access/visibility';
-import type { Plan, PlanRepository } from '../domain/plans/plans';
+import type { DonePlan, Plan, PlanRepository } from '../domain/plans/plans';
 import { birthOf } from '../../when/resolve';
 import { whenColumns, whenOfColumns } from '../../when/when';
 import type * as schema from './schema';
@@ -13,6 +18,8 @@ import { activityIdea, contact, user } from './schema';
  * idea is to be done with and is scoped through the central `surpriseVisibleTo`, so a private idea
  * — or any idea on a private person — reaches only those allowed to see it, and a surprise never
  * the member it is with (docs/dev/03 §3.7). Writes act on an idea already found through such a read.
+ * The lists name an idea's moment only to a viewer who may see it; `findVisibleTo` keeps it, so a
+ * write by somebody else does not drop the link.
  */
 
 const columns = {
@@ -56,6 +63,10 @@ export function planRow(p: Plan): typeof activityIdea.$inferInsert {
 export function createDrizzlePlanRepository(db: BunSQLiteDatabase<typeof schema>): PlanRepository {
 	const visibleOn = (viewer: Viewer, contactId: string) =>
 		and(eq(activityIdea.contactId, contactId), surpriseVisibleTo(viewer, activityIdea));
+	const listed = (viewer: Viewer) => ({
+		...columns,
+		momentId: linkedMomentVisibleTo(viewer, activityIdea.momentId)
+	});
 
 	return {
 		async insert(p) {
@@ -132,13 +143,37 @@ export function createDrizzlePlanRepository(db: BunSQLiteDatabase<typeof schema>
 		async listForContactVisibleTo(viewer, contactId) {
 			// The card sorts and folds them (`src/lib/plans/`): the rules are pure and tested there.
 			return db
-				.select(columns)
+				.select(listed(viewer))
 				.from(activityIdea)
 				.innerJoin(contact, eq(activityIdea.contactId, contact.id))
 				.where(visibleOn(viewer, contactId))
 				.orderBy(desc(activityIdea.createdAt), desc(activityIdea.id))
 				.all()
 				.map(planOf);
+		},
+
+		async listStoryPageForContactVisibleTo(viewer, contactId, opts) {
+			const conditions = [visibleOn(viewer, contactId), isNotNull(activityIdea.doneOn)];
+			if (opts.before) {
+				const { doneOn, doneAt } = opts.before;
+				// Keyset: strictly older than the cursor in (doneOn, doneAt) order.
+				conditions.push(
+					or(
+						lt(activityIdea.doneOn, doneOn),
+						and(eq(activityIdea.doneOn, doneOn), lt(activityIdea.doneAt, doneAt))
+					)!
+				);
+			}
+			return db
+				.select(listed(viewer))
+				.from(activityIdea)
+				.innerJoin(contact, eq(activityIdea.contactId, contact.id))
+				.where(and(...conditions))
+				.orderBy(desc(activityIdea.doneOn), desc(activityIdea.doneAt))
+				.limit(opts.limit)
+				.all()
+				.map(planOf)
+				.filter((p): p is DonePlan => p.doneOn !== null && p.doneAt !== null);
 		},
 
 		async memberWhoseOwnPerson(householdId, contactId) {
