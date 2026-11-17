@@ -46,12 +46,15 @@
 	// phone. Nothing scrolls sideways, so nothing hides off the right edge.
 	const LIST = 'flex flex-col';
 	const ROW =
-		'grid grid-cols-[28px_1fr] items-center gap-2.5 rounded-app px-1.5 py-1.5 transition-colors hover:bg-card';
+		'grid grid-cols-[28px_1fr] gap-2.5 rounded-app px-1.5 py-1.5 transition-colors hover:bg-card';
+	// A row that asks is tall; its avatar stays by the title rather than float to its middle.
 	// A phone shows the first few rows and keeps the rest one tap away; from lg the whole list
 	// is there (docs/dev/05 §5.5).
 	const CAP = 3;
 	const OVERFLOW = 'max-lg:hidden';
 	let showAll = $state(false);
+	// A passed idea asks for a week only, so it is never folded away; the cap counts the rest.
+	const asking = $derived(rows.filter((row) => row.kind === 'ask').length);
 
 	/** The folded line on a phone: *3 · Mia turns 7 · on Saturday* (docs/dev/05 §5.5.1). */
 	// It never names a private idea nor a surprise, as a phone's folded line is read in passing.
@@ -80,7 +83,12 @@
 	<!-- *Show all* opens the rest of the list in place (docs/dev/05 §5.11). -->
 	<ul class={LIST} use:glide={{ key: showAll }}>
 		{#each rows as row, i (rowKey(row))}
-			<li class="{ROW} {i >= CAP && !showAll ? OVERFLOW : ''}">
+			<li
+				class="{ROW} {row.kind === 'ask' ? 'items-start' : 'items-center'} {i - asking >= CAP &&
+				!showAll
+					? OVERFLOW
+					: ''}"
+			>
 				{#if row.kind !== 'date'}
 					<ComingUpPlan
 						{row}
@@ -167,7 +175,7 @@
 		{/each}
 	</ul>
 	<FormError message={planTickError} variant="inline" />
-	{#if rows.length > CAP && !showAll}
+	{#if rows.length - asking > CAP && !showAll}
 		<button
 			type="button"
 			class="self-start px-1.5 pt-1.5 text-xs font-medium text-link hover:underline lg:hidden"

@@ -45,5 +45,7 @@ export function passedPlanLabel(
 	placed: { on: string; approximate: boolean },
 	today: string
 ): string {
-	return whenStateChip(lang, when, { kind: 'passed', ...placed }, today);
+	// Spelled out: a row's own `kind` must not overwrite the state's.
+	const state = { kind: 'passed' as const, on: placed.on, approximate: placed.approximate };
+	return whenStateChip(lang, when, state, today);
 }

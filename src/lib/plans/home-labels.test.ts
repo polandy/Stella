@@ -62,4 +62,11 @@ describe('passedPlanLabel', () => {
 			passedPlanLabel(de, { kind: 'on_date', on: '2026-11-15' }, exact('2026-11-15'), TODAY)
 		).toBe('Zum 15. November 2026 · vorbei');
 	});
+
+	it('reads the same for a Coming up row, whose own kind is not the state', () => {
+		const row = { kind: 'ask' as const, ...exact('2026-11-15'), plan: {} };
+		expect(passedPlanLabel(de, { kind: 'on_date', on: '2026-11-15' }, row, TODAY)).toBe(
+			'Zum 15. November 2026 · vorbei'
+		);
+	});
 });

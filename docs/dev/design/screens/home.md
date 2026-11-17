@@ -48,7 +48,8 @@ first to find somebody, so there the page opens on the person search.
 - **Outing ideas in *Coming up*** (`ComingUpPlan`): the next three dated ones are rows of their
   own, sorted in among the dates — the person's avatar, the idea's title, then *Outing with
   Mia · on Saturday* in `text-xs`. A passed one stands first and asks *Done? Still on?* in a
-  `--warning-soft` group: *Done*, *Next year*, *Keep without a date* and *Delete*, all `sm`.
+  `--warning-soft` group: *Done*, *Next year*, *Keep without a date* and *Delete*, all `sm`;
+  on a phone it is never behind *Show all*, which counts the other rows.
   The folded line names the first date or shared idea, never a private one or a surprise.
 - **To-dos** (docs/dev/02 §2.26.6) is a band of its own **above *Coming up*** in the same rail
   (`TodoBand`): the to-do icon and *To-dos*, then up to three rows of what is overdue or due
