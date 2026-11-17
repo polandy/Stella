@@ -7,7 +7,7 @@ import type { RequestEvent } from '@sveltejs/kit';
 import { applyPlanCommand, planWhenOf, type PlanCommand, type PlanErrorKey } from './plan-commands';
 
 /*
- * The outing ideas on Home (docs/dev/02 §2.27.8): the dated ones mixed into *Coming up*, a passed
+ * The outing ideas on Home (docs/dev/02 §2.27.7): the dated ones mixed into *Coming up*, a passed
  * one asking for a week. Home has no person in its URL, so the form names them and the access
  * layer checks it, as for the household's to-dos (§2.26.6).
  */

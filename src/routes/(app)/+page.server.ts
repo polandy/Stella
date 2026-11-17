@@ -81,7 +81,7 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 
 	const dates = upcomingDates(dateSources, day);
 	// A person coming up with open gift ideas says how many, and what is bought for them (§2.13.3),
-	// and what outing is booked with them and how many wait without a day (§2.27.8).
+	// and what outing is booked with them and how many wait without a day (§2.27.7).
 	const coming = dates.map((date) => date.contactId);
 	const [ideas, ready, plans] = await Promise.all([
 		countOpenIdeas(locals.services.gifts.giftDeps, viewer, coming),
@@ -131,7 +131,7 @@ function captureProblem(field: string | null): MessageKey {
 export const actions: Actions = {
 	// The *To-dos* band ticks here (docs/dev/02 §2.26.6).
 	...householdTodoActions('/'),
-	// A passed outing idea is answered here, and *Undo* of its tick (docs/dev/02 §2.27.8).
+	// A passed outing idea is answered here, and *Undo* of its tick (docs/dev/02 §2.27.7).
 	...householdPlanActions('/'),
 	capture: async ({ request, locals }) => {
 		const viewer = requireViewer(locals);

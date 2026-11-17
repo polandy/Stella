@@ -43,6 +43,13 @@ first to find somebody, so there the page opens on the person search.
   accessible name says *2 gift ideas for Hilde*. Its own line, not on the *Write a moment*
   line, because the 17 rem rail would wrap them mid-phrase. A person with bought gifts still to
   hand over gets *Ready: Scarf, Teapot* the same way, with the bag icon (docs/dev/02 §2.25.9).
+  An outing booked with them reads *booked: Zoo* and the undated ideas *1 idea together*, with
+  the outing icon, to their Outings card (docs/dev/02 §2.27.7).
+- **Outing ideas in *Coming up*** (`ComingUpPlan`): the next three dated ones are rows of their
+  own, sorted in among the dates — the person's avatar, the idea's title, then *Outing with
+  Mia · on Saturday* in `text-xs`. A passed one stands first and asks *Done? Still on?* in a
+  `--warning-soft` group: *Done*, *Next year*, *Keep without a date* and *Delete*, all `sm`.
+  The folded line names the first date or shared idea, never a private one or a surprise.
 - **To-dos** (docs/dev/02 §2.26.6) is a band of its own **above *Coming up*** in the same rail
   (`TodoBand`): the to-do icon and *To-dos*, then up to three rows of what is overdue or due
   within the week. Each row (`HouseholdTodoRow`, `variant="band"`) is a 28 px avatar, the line
@@ -137,7 +144,9 @@ Nothing scrolls sideways because what lies off the right edge of a phone is not 
 empty because a permanently empty panel teaches people to stop looking, and its rail column
 goes with it because a stable stream width was not worth a quarter of the screen standing
 blank most weeks. *To-dos* goes above *Coming up* because what the household owes is acted on
-now, a date is prepared for. *On this day* goes last: it is for enjoying, nothing in it asks
+now, a date is prepared for. Outing ideas share *Coming up* rather than a band of their own:
+they are dates the family looks forward to as well, and a fourth band would push the stream
+further down. *On this day* goes last: it is for enjoying, nothing in it asks
 to be acted on.
 
 On a phone the open bands still stood between the search field and the stream, three rows

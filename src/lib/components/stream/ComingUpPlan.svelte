@@ -16,7 +16,7 @@
 	import type { PageData } from '../../../routes/(app)/$types';
 
 	/*
-	 * An outing idea in Home's *Coming up* (docs/dev/02 §2.27.8): what, with whom, when. One whose
+	 * An outing idea in Home's *Coming up* (docs/dev/02 §2.27.7): what, with whom, when. One whose
 	 * day went by asks *Done? Still on?* for a week: done, next year, keep without a date, or delete.
 	 */
 	interface Props {

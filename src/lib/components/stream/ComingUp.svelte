@@ -18,7 +18,7 @@
 	/*
 	 * Home's *Coming up* (docs/dev/02 §2.13): the birthdays and anniversaries close ahead, each with
 	 * *Write a moment*, the gift ideas noted for it and what is bought and ready (§2.25.9), in the
-	 * rail beside or above the stream; the dated outing ideas sorted in among them (§2.27.8).
+	 * rail beside or above the stream; the dated outing ideas sorted in among them (§2.27.7).
 	 */
 	interface Props {
 		upcoming: PageData['upcoming'];

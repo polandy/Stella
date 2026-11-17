@@ -2,7 +2,7 @@ import { dayLabel, whenLabel, type DateLanguage } from '../dates/labels';
 import { whenStateChip } from '../when/labels';
 import type { When } from '../when/when';
 
-/* How an idea's day reads on Home (docs/dev/02 §2.27.8): spoken near, dated far, a month by name. */
+/* How an idea's day reads on Home (docs/dev/02 §2.27.7): spoken near, dated far, a month by name. */
 
 const DAY_MS = 86_400_000;
 /** Beyond this, a weekday alone would leave the year to guess. */

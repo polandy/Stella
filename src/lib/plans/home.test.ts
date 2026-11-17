@@ -11,7 +11,7 @@ import {
 	type HomePlan
 } from './home';
 
-/* What Home shows of the outing ideas (docs/dev/02 §2.27.8): mixed into *Coming up*, asked once passed. */
+/* What Home shows of the outing ideas (docs/dev/02 §2.27.7): mixed into *Coming up*, asked once passed. */
 
 const TODAY = '2026-11-17';
 const mia: PartialDate = { value: '2019-06-02', precision: 'full' };

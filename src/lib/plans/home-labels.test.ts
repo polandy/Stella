@@ -4,7 +4,7 @@ import { INTL_LOCALES } from '../i18n/locales';
 import { createTranslator } from '../i18n/translate';
 import { passedPlanLabel, planDayLabel } from './home-labels';
 
-/* How an idea's day reads on Home (docs/dev/02 §2.27.8), in the real catalogues. */
+/* How an idea's day reads on Home (docs/dev/02 §2.27.7), in the real catalogues. */
 
 const en: DateLanguage = { t: createTranslator('en'), intlLocale: INTL_LOCALES.en };
 const de: DateLanguage = { t: createTranslator('de'), intlLocale: INTL_LOCALES.de };

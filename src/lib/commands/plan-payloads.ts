@@ -35,7 +35,7 @@ export const PlanRefSchema = v.object({
 	planId: nonEmpty
 });
 
-/** A passed idea answered on Home (docs/dev/02 §2.27.8): a new when ahead, or null for *some time*. */
+/** A passed idea answered on Home (docs/dev/02 §2.27.7): a new when ahead, or null for *some time*. */
 export const PlanAnswerWhenSchema = v.object({
 	contactId: nonEmpty,
 	planId: nonEmpty,

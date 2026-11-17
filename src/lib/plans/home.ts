@@ -1,5 +1,5 @@
 /*
- * What Home shows of the outing ideas (docs/dev/02 §2.27.8): the next dated ones mixed into
+ * What Home shows of the outing ideas (docs/dev/02 §2.27.7): the next dated ones mixed into
  * *Coming up*, a passed one asking for a week, and on a person's date line what is booked and how
  * many ideas wait without a day. Pure; the visibility scoping happened in the read.
  */
