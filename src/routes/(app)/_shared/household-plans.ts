@@ -3,6 +3,7 @@ import { PlanAnswerWhenSchema, PlanRefSchema } from '$lib/commands/plan-payloads
 import { requireViewer } from '$lib/server/auth/guards';
 import { listOpenPlans, type OpenPlan } from '$lib/server/domain/plans/plans';
 import { homePlans, type PlacedPlan } from '$lib/plans/home';
+import type { ListPlanView } from '$lib/plans/list';
 import type { RequestEvent } from '@sveltejs/kit';
 import { applyPlanCommand, planWhenOf, type PlanCommand, type PlanErrorKey } from './plan-commands';
 
@@ -58,14 +59,6 @@ export async function readHomePlans(
 			])
 		)
 	};
-}
-
-/** An open idea as `/plans` lists it (docs/dev/02 §2.27.9), and nothing more. */
-export interface ListPlanView extends HomePlanView {
-	bookedAt: number | null;
-	doneOn: null;
-	createdAt: number;
-	birth: OpenPlan['birth'];
 }
 
 /** Every open idea the reader may see, for the household's list; `planListGroups` groups them. */

@@ -13,6 +13,18 @@ export interface ListPlan extends PlanTiming {
 	birth: PartialDate | null;
 }
 
+/** An open idea as a `/plans` row shows it, and nothing more. */
+export interface ListPlanView extends ListPlan {
+	id: string;
+	contactId: string;
+	contactName: string;
+	avatarPhotoId: string | null;
+	title: string;
+	visibility: 'shared' | 'private';
+	hiddenFromPerson: boolean;
+	doneOn: null;
+}
+
 export type PlanGroupKey = 'thisMonth' | 'later' | 'someTime';
 
 export interface PlanListGroup<T> {

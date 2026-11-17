@@ -6,7 +6,7 @@
 	import { useI18n } from '$lib/i18n/context.svelte';
 	import { contactSectionPath } from '$lib/people/sections';
 	import { planState } from '$lib/plans/card';
-	import type { ListPlanView } from '../../../routes/(app)/_shared/household-plans';
+	import type { ListPlanView } from '$lib/plans/list';
 
 	/*
 	 * One idea on `/plans` (docs/dev/02 §2.27.9): the person's face, the line linking to their

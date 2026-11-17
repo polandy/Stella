@@ -66,7 +66,7 @@ async function openPlanList(page: Page): Promise<void> {
 	await appReady(page);
 }
 
-test('the list groups the open ideas, folds the far ones and ticks one off', async ({
+test('the list groups the open ideas, folds the far ones, ticks one off and is the card’s ⋯ away', async ({
 	page
 }, testInfo) => {
 	await page.clock.install();
@@ -113,6 +113,11 @@ test('the list groups the open ideas, folds the far ones and ticks one off', asy
 	await expect(page.locator('#section-plans').getByRole('tab', { name: /Done/ })).toHaveText(
 		'Done · 1'
 	);
+
+	// The card's ⋯ menu leads back to the list.
+	await page.locator('#section-plans').getByRole('button', { name: 'More for outings' }).click();
+	await page.getByRole('menuitem', { name: 'All outings' }).click();
+	await page.waitForURL('/plans');
 });
 
 test('the palette opens the list, and the card’s form for a person', async ({ page }) => {
