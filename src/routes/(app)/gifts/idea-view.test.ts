@@ -2,7 +2,7 @@ import { describe, expect, it } from 'bun:test';
 import type { OpenIdea } from '$lib/server/domain/gifts/gifts';
 import { openIdeaView } from './idea-view';
 
-const idea: OpenIdea = {
+const idea: OpenIdea & { whenState: null } = {
 	id: 'g-1',
 	contactId: 'c-1',
 	contactName: 'Hilde Brunner',
@@ -16,6 +16,8 @@ const idea: OpenIdea = {
 	givenOn: null,
 	occasion: null,
 	when: null,
+	whenCheckedOn: null,
+	whenState: null,
 	createdAt: 1,
 	updatedAt: 1
 };
@@ -33,6 +35,7 @@ describe('openIdeaView', () => {
 			url: 'https://shop.example',
 			visibility: 'shared',
 			when: null,
+			whenState: null,
 			mine: false,
 			notedBy: 'Sandra'
 		});

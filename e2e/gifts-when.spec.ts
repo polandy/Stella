@@ -56,7 +56,7 @@ test('an idea for a day or for later waits under Later, out of the count and the
 	const later = await startIdea(page, `Kite ${letters}`);
 	await later.getByTestId('when-picker').getByText('Later', { exact: true }).click();
 	await expect(later.getByTestId('when-preview')).toHaveText(
-		'Waits under Later until you take it up.'
+		'Waits under Later. Once a year it asks whether it is still current.'
 	);
 	await later.getByRole('button', { name: 'Save' }).click();
 	await expect(fold).toHaveText('Later · 2');

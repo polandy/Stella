@@ -23,6 +23,7 @@ const KINDS = {
 	// Somebody may have seen the gift already, so these wait for Stella rather than the device.
 	'gift.edit': 'change',
 	'gift.markGiven': 'change',
+	'gift.answerWhen': 'change',
 	'gift.remove': 'remove',
 	'todo.add': 'add',
 	// A tick only ever moves a to-do towards done and a replay changes nothing, so it may wait on

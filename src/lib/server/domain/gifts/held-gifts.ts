@@ -99,6 +99,7 @@ export async function convertHeldGifts(deps: ConvertHeldGiftsDeps): Promise<Held
 			...made.gift,
 			occasion: null,
 			when: null,
+			whenCheckedOn: null,
 			createdAt: note.createdAt,
 			updatedAt: note.updatedAt
 		});
@@ -115,6 +116,7 @@ export async function convertHeldGifts(deps: ConvertHeldGiftsDeps): Promise<Held
 				url: null,
 				occasion: null,
 				when: null,
+				whenCheckedOn: null,
 				createdAt: touch.createdAt,
 				updatedAt: touch.updatedAt
 			})

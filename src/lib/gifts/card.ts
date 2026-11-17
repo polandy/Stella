@@ -4,18 +4,18 @@
  */
 
 import type { PartialDate } from '../dates/partial-date';
-import { isWaiting, whenDay } from '../when/resolve';
-import type { When } from '../when/when';
+import { whenDay } from '../when/resolve';
+import { ideaWaits, type IdeaTiming } from './idea-when';
 
 /** The open ideas, and the ones waiting under *Later* — soonest first, *later* last (§2.25.8). */
-export function splitIdeas<T extends { when: When | null }>(
+export function splitIdeas<T extends IdeaTiming>(
 	ideas: readonly T[],
 	birth: PartialDate | null,
 	today: string
 ): { open: T[]; waiting: T[] } {
 	const open: T[] = [];
 	const waiting: T[] = [];
-	for (const idea of ideas) (isWaiting(idea.when, birth, today) ? waiting : open).push(idea);
+	for (const idea of ideas) (ideaWaits(idea, birth, today) ? waiting : open).push(idea);
 	// '~' sorts after every ISO day by code point, so *later* comes last.
 	const dueOf = (idea: T) => (idea.when ? (whenDay(idea.when, birth)?.on ?? '~') : '~');
 	waiting.sort((a, b) => (dueOf(a) < dueOf(b) ? -1 : dueOf(a) > dueOf(b) ? 1 : 0));

@@ -46,7 +46,14 @@ function whenOfRestored(row: Row, state: string) {
 				})
 			: null;
 	const { whenKind, whenOn, whenAge } = whenColumns(when);
-	return { when_kind: whenKind, when_on: whenOn, when_age: whenAge };
+	// The last answer only means something beside a when.
+	const checked = when === null ? null : str(row, 'when_checked_on');
+	return {
+		when_kind: whenKind,
+		when_on: whenOn,
+		when_age: whenAge,
+		when_checked_on: isRealDay(checked) ? checked : null
+	};
 }
 
 const isRealDay = (day: string | null): day is string =>

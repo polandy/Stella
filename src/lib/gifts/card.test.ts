@@ -62,7 +62,12 @@ describe('giftIdeaPath', () => {
 describe('splitIdeas', () => {
 	const birth = { value: '2018-03-14', precision: 'full' as const };
 	const today = '2026-10-08';
-	const idea = (id: string, when: When | null) => ({ id, when });
+	const idea = (id: string, when: When | null) => ({
+		id,
+		when,
+		whenCheckedOn: null,
+		createdAt: Date.parse('2026-10-08T12:00:00Z')
+	});
 
 	it('keeps what holds now open, and folds the waiting ones away, soonest first', () => {
 		const { open, waiting } = splitIdeas(
@@ -78,6 +83,25 @@ describe('splitIdeas', () => {
 		);
 		expect(open.map((i) => i.id)).toEqual(['now', 'christmas']);
 		expect(waiting.map((i) => i.id)).toEqual(['ninth', 'tenth', 'later']);
+	});
+
+	it('opens an idea within its lead time, gone by, or at the yearly look of later', () => {
+		const { open, waiting } = splitIdeas(
+			[
+				idea('ninth', { kind: 'at_age', age: 9 }),
+				idea('summer', { kind: 'on_date', on: '2026-12-01' }),
+				{ ...idea('long ago', { kind: 'later' }), createdAt: Date.parse('2025-11-01T12:00:00Z') },
+				{
+					...idea('answered', { kind: 'later' }),
+					createdAt: Date.parse('2025-11-01T12:00:00Z'),
+					whenCheckedOn: '2026-12-15'
+				}
+			],
+			birth,
+			'2026-12-20'
+		);
+		expect(open.map((i) => i.id)).toEqual(['ninth', 'summer', 'long ago']);
+		expect(waiting.map((i) => i.id)).toEqual(['answered']);
 	});
 
 	it('leaves an age open when the birth year went missing', () => {

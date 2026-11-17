@@ -183,6 +183,7 @@ function fullHousehold(): HouseholdSnapshot {
 					when_kind: 'at_age',
 					when_on: null,
 					when_age: 18,
+					when_checked_on: '2026-03-01',
 					created_at: EXPORTED
 				},
 				{
@@ -527,6 +528,7 @@ describe('the round trip', () => {
 			'when_kind',
 			'when_on',
 			'when_age',
+			'when_checked_on',
 			'created_at'
 		],
 		todo: [
@@ -1004,6 +1006,14 @@ describe('an archive that does not add up', () => {
 		expect(byId.get('g-idea')?.url).toBe('https://shop.example/teapot');
 		expect(byId.get('g-script')?.title).toBe('Book');
 		expect(byId.get('g-script')?.url).toBeNull();
+	});
+
+	it('keeps the last answer beside the when of an idea, and nowhere else', () => {
+		const byId = new Map(
+			rowsOf(planRestore(deps(), archived(), target()), 'gift').map((g) => [g.id, g])
+		);
+		expect(byId.get('g-idea')?.when_checked_on).toBe('2026-03-01');
+		expect(byId.get('g-given')?.when_checked_on).toBeNull();
 	});
 
 	it('gives a record with no id of its own a fresh one rather than dropping it', () => {

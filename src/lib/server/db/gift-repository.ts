@@ -30,6 +30,7 @@ const columns = {
 	whenKind: gift.whenKind,
 	whenOn: gift.whenOn,
 	whenAge: gift.whenAge,
+	whenCheckedOn: gift.whenCheckedOn,
 	createdAt: gift.createdAt,
 	updatedAt: gift.updatedAt
 };
@@ -99,6 +100,7 @@ export function createDrizzleGiftRepository(db: BunSQLiteDatabase<typeof schema>
 					givenOn: g.givenOn,
 					occasion: g.occasion,
 					...whenColumns(g.when),
+					whenCheckedOn: g.whenCheckedOn,
 					updatedAt: g.updatedAt
 				})
 				.where(eq(gift.id, g.id))
@@ -131,6 +133,8 @@ export function createDrizzleGiftRepository(db: BunSQLiteDatabase<typeof schema>
 					whenKind: gift.whenKind,
 					whenOn: gift.whenOn,
 					whenAge: gift.whenAge,
+					whenCheckedOn: gift.whenCheckedOn,
+					createdAt: gift.createdAt,
 					...birthColumns
 				})
 				.from(gift)

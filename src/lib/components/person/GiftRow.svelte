@@ -13,10 +13,13 @@
 	import { useRemovals } from '$lib/undo/context.svelte';
 	import { savedEnhance } from '$lib/undo/saved';
 	import WhenChip from '$lib/components/when/WhenChip.svelte';
+	import { ideaState } from '$lib/gifts/idea-when';
+	import { asks } from '$lib/when/state';
 	import { tick } from 'svelte';
 	import GiftForm from './GiftForm.svelte';
 	import GiftOccasionField from './GiftOccasionField.svelte';
 	import GiftStateMark from './GiftStateMark.svelte';
+	import GiftWhenAsk from './GiftWhenAsk.svelte';
 	import type { PersonPageData } from './types';
 
 	/*
@@ -75,6 +78,9 @@
 					.join(' · ')
 			: null
 	);
+	/** Where the idea stands against its when; a passed or yearly one asks whether it still stands. */
+	const whenState = $derived(gift.state === 'idea' ? ideaState(gift, birth, today) : null);
+
 	/** When an idea was noted: *Added 3 October 2026*, in the reader's time zone. */
 	const added = $derived(
 		gift.state === 'idea'
@@ -109,7 +115,7 @@
 				<div class="min-w-0 flex-1">
 					<p class="font-medium break-words text-fg">{gift.title}</p>
 					{#if when}<p class="text-sm text-fg-muted">{when}</p>{/if}
-					{#if gift.when}<WhenChip when={gift.when} />{/if}
+					{#if gift.when}<WhenChip when={gift.when} state={whenState} {today} />{/if}
 					{#if added}<p class="text-xs text-fg-muted" data-testid="gift-added">{added}</p>{/if}
 					{#if gift.note}
 						<p class="text-sm whitespace-pre-line text-fg-muted">{gift.note}</p>
@@ -139,6 +145,16 @@
 							</span>
 						{/if}
 					</p>
+					{#if gift.when && whenState && asks(whenState) && mode === 'view'}
+						<GiftWhenAsk
+							gift={{ id: gift.id, title: gift.title, when: gift.when }}
+							standing={whenState}
+							{birth}
+							{today}
+							{estimateHref}
+							{error}
+						/>
+					{/if}
 					<!-- Under the idea rather than beside it, so a phone keeps the title on one line. -->
 					{#if gift.state === 'idea' && mode === 'view'}
 						<!-- Outlined, not filled: one per idea, so a list of them must not shout over the card's own add actions. -->

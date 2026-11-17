@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'bun:test';
 import { INTL_LOCALES } from '../i18n/locales';
 import { createTranslator } from '../i18n/translate';
-import { whenChip, whenPreview } from './labels';
+import { whenChip, whenPreview, whenStateChip } from './labels';
 import { whenOutlook } from './resolve';
 
 /* How a when reads: the chip on a row, the line under the picker (docs/dev/02 §2.25.8). */
@@ -27,6 +27,52 @@ describe('whenChip', () => {
 	});
 });
 
+describe('whenStateChip', () => {
+	const six = { kind: 'at_age', age: 6 } as const;
+	it.each([
+		[{ kind: 'waiting' }, 'For the 6th birthday', 'Zum 6. Geburtstag'],
+		[
+			{ kind: 'soon', on: '2026-11-11', approximate: false, inDays: 34 },
+			'For the 6th birthday · in 34 days',
+			'Zum 6. Geburtstag · in 34 Tagen'
+		],
+		[
+			{ kind: 'soon', on: '2026-10-09', approximate: false, inDays: 1 },
+			'For the 6th birthday · tomorrow',
+			'Zum 6. Geburtstag · morgen'
+		],
+		[
+			{ kind: 'soon', on: '2027-01-01', approximate: true, inDays: 85 },
+			'For the 6th birthday · about 2027',
+			'Zum 6. Geburtstag · etwa 2027'
+		],
+		[
+			{ kind: 'due', on: today, approximate: false },
+			'For the 6th birthday · today',
+			'Zum 6. Geburtstag · heute'
+		],
+		[
+			{ kind: 'due', on: '2026-01-01', approximate: true },
+			'For the 6th birthday',
+			'Zum 6. Geburtstag'
+		],
+		[
+			{ kind: 'passed', on: '2026-10-01', approximate: false },
+			'For the 6th birthday · passed',
+			'Zum 6. Geburtstag · vorbei'
+		]
+	] as const)('%o reads “%s”', (state, english, german) => {
+		expect(whenStateChip(en, six, state, today)).toBe(english);
+		expect(whenStateChip(de, six, state, today)).toBe(german);
+	});
+
+	it('a later one at its look reads as later', () => {
+		expect(whenStateChip(en, { kind: 'later' }, { kind: 'review', on: '2027-03-14' }, today)).toBe(
+			'Later'
+		);
+	});
+});
+
 describe('whenPreview', () => {
 	const preview = (lang: typeof en, ...args: Parameters<typeof whenOutlook>) =>
 		whenPreview(lang, whenOutlook(...args));
@@ -34,7 +80,7 @@ describe('whenPreview', () => {
 	it('says now, and later, plainly', () => {
 		expect(preview(en, null, full, today)).toBe('Shows among the ideas now.');
 		expect(preview(de, { kind: 'later' }, full, today)).toBe(
-			'Wartet unter „Später“, bis du sie aufgreifst.'
+			'Wartet unter „Später“. Einmal im Jahr kommt die Frage, ob sie noch aktuell ist.'
 		);
 	});
 

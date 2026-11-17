@@ -606,6 +606,7 @@ may edit, give or remove it; only its author may change its visibility.
 | when_kind | text null | an idea's time (docs/dev/02 §2.25.8): `'from_age' \| 'at_age' \| 'on_date' \| 'later'`; null for *now*, and always on a given or received gift |
 | when_age | int null | 1–150, for `from_age` and `at_age` only |
 | when_on | text null | ISO `YYYY-MM-DD`, for `on_date` only |
+| when_checked_on | text null | ISO `YYYY-MM-DD`: the household's day somebody last answered *Still current?*, or chose the time anew (docs/dev/02 §2.25.8); null on a given or received gift |
 | created_at / updated_at | int | |
 
 The three `when_*` columns move together (`src/lib/when/when.ts`); a row whose triple does not

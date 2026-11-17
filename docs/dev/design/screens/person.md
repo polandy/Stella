@@ -375,6 +375,13 @@ the person, and that never leaves the page. Keeping the record tidy (archive, me
   Waiting ideas sit under the open ones behind the fold *Later · n* (the year-divider style, a
   chevron, collapsed), slightly faded, soonest first. They are not in the tab's count; with
   only waiting ones the tab says *Nothing due yet. The ideas for later wait below.*
+- Within 90 days of its day an idea is back among the open ones and its chip says how near:
+  *For the 6th birthday · in 34 days*, *· tomorrow*, *· today*. A passed occasion, or a *later*
+  idea at its yearly look, turns the chip `bg-warning-soft` (*For the 6th birthday · passed*)
+  and puts a small `bg-warning-soft` box under the row (`GiftWhenAsk`): *The occasion has passed.
+  Still current?* or *Noted for later. Still current?*, then three small outlined buttons, *Keep
+  as idea*, *New time* (opens `WhenPicker` in the box with *Cancel* and *Save*) and *Remove* (the
+  undo window). Asked, never decided: the row stays until somebody answers.
 
 #### To-dos card
 

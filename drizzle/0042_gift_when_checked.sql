@@ -1,0 +1,1 @@
+ALTER TABLE `gift` ADD `when_checked_on` text;

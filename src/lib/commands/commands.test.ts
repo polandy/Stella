@@ -47,7 +47,8 @@ describe('the command vocabulary', () => {
 		expect(kindOf('gift.edit')).toBe('change');
 		expect(kindOf('gift.markGiven')).toBe('change');
 		expect(kindOf('gift.remove')).toBe('remove');
-		for (const type of ['gift.edit', 'gift.markGiven', 'gift.remove'] as const) {
+		expect(kindOf('gift.answerWhen')).toBe('change');
+		for (const type of ['gift.edit', 'gift.markGiven', 'gift.answerWhen', 'gift.remove'] as const) {
 			expect(isQueueable(type)).toBe(false);
 		}
 	});

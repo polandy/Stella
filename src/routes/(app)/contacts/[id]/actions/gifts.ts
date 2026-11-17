@@ -1,6 +1,7 @@
 import { fromFormData } from '$lib/commands/form-data';
 import {
 	GiftAddSchema,
+	GiftAnswerWhenSchema,
 	GiftEditSchema,
 	GiftMarkGivenSchema,
 	GiftRemoveSchema
@@ -63,6 +64,18 @@ export const giftActions = {
 			form,
 			'gift.markGiven',
 			{ ...fromFormData(GiftMarkGivenSchema, form), occasion: occasionOf(form) },
+			'giftRowError'
+		);
+	},
+
+	/** *Still current?* answered (§2.25.8): kept as a plain idea, or given a new when. */
+	answerGiftWhen: async (event) => {
+		const form = await event.request.formData();
+		return onCard(
+			event,
+			form,
+			'gift.answerWhen',
+			{ ...fromFormData(GiftAnswerWhenSchema, form), when: whenOf(form) },
 			'giftRowError'
 		);
 	},

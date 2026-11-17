@@ -620,6 +620,12 @@ and a good idea is still there on the birthday it was meant for.
   then it waits on the card under **Later · 1**; tap to see it. An age needs their birth year —
   if Stella does not know it, **Estimate age** takes you to their dates, where an age alone will
   do.
+- **When the time comes.** Once it is back, the idea's label counts down — *For the 6th
+  birthday · in 34 days*. If the day goes by and it was not given, Stella does not throw it away:
+  the label says *passed* and the idea asks **Still current?** Choose **Keep as idea** (it stays,
+  for any time), **New time** (pick another age or day, or *Later*), or **Remove**. Ideas for
+  *Later* ask the same once a year, about three months before the person's birthday — or before
+  the day you noted it, if Stella does not know their birthday.
 - When you give it, press **Mark as given…** under the idea. Stella asks only for the day (today,
   unless you change it) and the occasion — *Birthday*, *Christmas*, *Anniversary*, or *Other…*
   in your own words. The idea moves to the **Given** tab, grouped by year, with its note and

@@ -1,6 +1,6 @@
 import * as v from 'valibot';
 import { GIFT_STATES } from '../gifts/gifts';
-import { optionalWhen } from '../when/schema';
+import { optionalWhen, WhenSchema } from '../when/schema';
 import { ISO_DAY, nonEmpty, optionalText, requiredText, visibility } from './payload-fields';
 
 /* What the gift and to-do commands carry (docs/dev/04 §4.11.2), one Valibot schema each. */
@@ -42,6 +42,13 @@ export const GiftMarkGivenSchema = v.object({
 	giftId: nonEmpty,
 	givenOn: v.pipe(v.string(), v.regex(ISO_DAY)),
 	occasion: optionalText
+});
+
+/** An idea's question answered (docs/dev/02 §2.25.8): kept as *now* (null), or given a new when. */
+export const GiftAnswerWhenSchema = v.object({
+	contactId: nonEmpty,
+	giftId: nonEmpty,
+	when: v.nullable(WhenSchema)
 });
 
 /** A gift taken off a person. */

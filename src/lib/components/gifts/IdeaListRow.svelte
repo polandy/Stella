@@ -13,6 +13,7 @@
 	import { heldAnswer } from '$lib/undo/held-answer';
 	import { removalKey } from '$lib/undo/keys';
 	import WhenChip from '$lib/components/when/WhenChip.svelte';
+	import type { WhenState } from '$lib/when/state';
 	import type { When } from '$lib/when/when';
 	import { tick } from 'svelte';
 
@@ -33,6 +34,7 @@
 			mine: boolean;
 			notedBy: string | null;
 			when: When | null;
+			whenState: WhenState | null;
 		};
 		/** The occasion the person's group is for; the form starts on it. */
 		next: NextOccasion;
@@ -83,7 +85,7 @@
 	<GiftStateMark state="idea" />
 	<div class="min-w-0 flex-1">
 		<p class="font-medium break-words text-fg">{idea.title}</p>
-		{#if idea.when}<WhenChip when={idea.when} />{/if}
+		{#if idea.when}<WhenChip when={idea.when} state={idea.whenState} {today} />{/if}
 		{#if idea.note}
 			<p class="text-sm whitespace-pre-line text-fg-muted">{idea.note}</p>
 		{/if}

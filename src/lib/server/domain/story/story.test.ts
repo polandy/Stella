@@ -67,6 +67,7 @@ function present(
 		givenOn: day,
 		occasion: null,
 		when: null,
+		whenCheckedOn: null,
 		createdAt: recordedAt,
 		updatedAt: recordedAt
 	};
