@@ -33,6 +33,15 @@ const KINDS = {
 	'todo.edit': 'change',
 	'todo.untick': 'change',
 	'todo.remove': 'remove',
+	'plan.add': 'add',
+	// Booking and ticking only move an idea forward and a replay changes nothing, so they may wait
+	// on a phone like an addition (docs/dev/02 §2.27). Rewriting, undoing and removing may not.
+	'plan.book': 'add',
+	'plan.done': 'add',
+	'plan.edit': 'change',
+	'plan.unbook': 'change',
+	'plan.reopen': 'change',
+	'plan.remove': 'remove',
 	'tag.assign': 'add',
 	'circle.join': 'add',
 	'relationship.add': 'add',

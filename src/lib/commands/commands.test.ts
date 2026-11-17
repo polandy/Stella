@@ -68,6 +68,15 @@ describe('the command vocabulary', () => {
 		}
 	});
 
+	it('lets an outing idea be noted, booked and ticked on a device, but nothing else done to it', () => {
+		for (const type of ['plan.add', 'plan.book', 'plan.done'] as const) {
+			expect(isQueueable(type)).toBe(true);
+		}
+		for (const type of ['plan.edit', 'plan.unbook', 'plan.reopen', 'plan.remove'] as const) {
+			expect(isQueueable(type)).toBe(false);
+		}
+	});
+
 	it('recognises its own types and nothing else', () => {
 		expect(isCommandType('moment.capture')).toBe(true);
 		expect(isCommandType('contact.delete')).toBe(false);
