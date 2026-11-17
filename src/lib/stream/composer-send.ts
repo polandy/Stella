@@ -40,7 +40,8 @@ function payloadOf(state: ComposerState, entryDate: string): MomentCapturePayloa
 		visibility: state.visibility,
 		newPeople: [...state.newPeople],
 		...(state.anchorId ? { anchorId: state.anchorId } : {}),
-		...(state.subjectIds.length > 0 ? { subjectIds: [...state.subjectIds] } : {})
+		...(state.subjectIds.length > 0 ? { subjectIds: [...state.subjectIds] } : {}),
+		...(state.planId ? { planId: state.planId } : {})
 	};
 }
 

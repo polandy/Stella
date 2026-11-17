@@ -123,3 +123,17 @@ describe('removePlan', () => {
 		});
 	});
 });
+
+describe('againPlan', () => {
+	it('notes a done idea again on the person the URL names', async () => {
+		const asked: unknown[] = [];
+		const services = commanding({
+			'plan.again': async (_actor, payload) => {
+				asked.push(payload);
+				return { planId: 'p2' };
+			}
+		});
+		expect(await post('againPlan', services, { planId: 'p1', contactId: 'x' })).toEqual(BACK);
+		expect(asked).toEqual([{ contactId: 'anna', planId: 'p1' }]);
+	});
+});

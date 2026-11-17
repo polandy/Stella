@@ -339,7 +339,17 @@
 	// Picks change only with the text, so the text and the chips say when the draft has changed.
 	$effect(() => {
 		if (!onDraft) return;
-		onDraft(draftOf({ body, visibility, newPeople, subjectIds, picks: untrack(() => picks) }));
+		onDraft(
+			draftOf({
+				body,
+				visibility,
+				newPeople,
+				subjectIds,
+				picks: untrack(() => picks),
+				planId: untrack(() => ui.planId),
+				startDay: untrack(() => ui.startDay)
+			})
+		);
 	});
 
 	async function onSubmit(event: SubmitEvent) {
@@ -500,7 +510,7 @@
 					onimmich={openLibrary}
 				/>
 			{/if}
-			<DayPill name="entryDate" value={kept?.entryDate ?? day} today={day} />
+			<DayPill name="entryDate" value={kept?.entryDate ?? ui.startDay ?? day} today={day} />
 		{/key}
 		<ComposerSaveHint {reading} anchored={anchorId !== null} />
 		<div class="ml-auto flex items-center gap-2">

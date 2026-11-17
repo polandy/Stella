@@ -57,6 +57,10 @@ export interface ComposerState {
 	anchorId: string | null;
 	/** Whom else it is about, beside the anchor (§2.20.3): chips, never preselected. */
 	subjectIds: readonly string[];
+	/** The outing idea the moment tells of, linked to it once saved (§2.27.8). */
+	planId: string | null;
+	/** The day the date field starts on instead of today, while this draft lasts. */
+	startDay: string | null;
 	/** The command this draft will be saved as; a new one after every save. */
 	commandId: string;
 	/**
@@ -157,6 +161,8 @@ export function composerAtOpen(at: ComposerOpening): ComposerState {
 		// A kept moment written on a person's page stays theirs, wherever it is opened again.
 		anchorId: at.anchorId ?? at.kept?.anchorId ?? null,
 		subjectIds: startFrom?.subjectIds ?? [],
+		planId: startFrom?.planId ?? null,
+		startDay: at.held?.entryDate ?? null,
 		commandId: at.commandId,
 		fresh: 0,
 		photos: [],

@@ -42,6 +42,8 @@ const KINDS = {
 	'plan.unbook': 'change',
 	'plan.reopen': 'change',
 	'plan.answerWhen': 'change',
+	// Noting a done idea again makes a new one, so a replay would make a second.
+	'plan.again': 'change',
 	'plan.remove': 'remove',
 	'tag.assign': 'add',
 	'circle.join': 'add',

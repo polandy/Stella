@@ -64,5 +64,6 @@ export const planActions = {
 	unbookPlan: (event) => onCard(event, 'plan.unbook', ref, 'planRowError'),
 	donePlan: (event) => onCard(event, 'plan.done', ref, 'planTickError'),
 	reopenPlan: (event) => onCard(event, 'plan.reopen', ref, 'planRowError'),
+	againPlan: (event) => onCard(event, 'plan.again', ref, 'planRowError'),
 	removePlan: (event) => onCard(event, 'plan.remove', ref, 'planRowError')
 } satisfies Actions;

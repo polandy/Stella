@@ -159,7 +159,7 @@ function whenOf(when: When | null, birth: PartialDate | null, today: string): Wh
 	return check.when;
 }
 
-const viewerOf = (actor: PlanActor): Viewer => ({
+export const viewerOf = (actor: PlanActor): Viewer => ({
 	id: actor.userId,
 	householdId: actor.householdId
 });

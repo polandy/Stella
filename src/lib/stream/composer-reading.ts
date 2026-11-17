@@ -120,13 +120,18 @@ export function composerReading(
 
 /** What is typed, in the form it is stored and started from again. */
 export function draftOf(
-	state: Pick<ComposerState, 'body' | 'picks' | 'visibility' | 'newPeople' | 'subjectIds'>
+	state: Pick<
+		ComposerState,
+		'body' | 'picks' | 'visibility' | 'newPeople' | 'subjectIds' | 'planId' | 'startDay'
+	>
 ): MomentDraft {
 	return {
 		body: toStored(state.body, state.picks),
 		visibility: state.visibility,
 		newPeople: [...state.newPeople],
-		...(state.subjectIds.length > 0 ? { subjectIds: [...state.subjectIds] } : {})
+		...(state.subjectIds.length > 0 ? { subjectIds: [...state.subjectIds] } : {}),
+		...(state.planId ? { planId: state.planId } : {}),
+		...(state.startDay ? { entryDate: state.startDay } : {})
 	};
 }
 
@@ -140,6 +145,8 @@ export function cleared(state: ComposerState, nextCommandId: string): ComposerSt
 		immichPhotos: [],
 		newPeople: [],
 		subjectIds: [],
+		planId: null,
+		startDay: null,
 		fresh: state.fresh + 1,
 		commandId: nextCommandId
 	};

@@ -9,8 +9,11 @@ import type { MomentCapturePayload } from '../commands/commands';
 /** What is typed in the moment composer, kept while it is folded away or offered back. */
 export type MomentDraft = Pick<
 	MomentCapturePayload,
-	'body' | 'visibility' | 'newPeople' | 'subjectIds'
->;
+	'body' | 'visibility' | 'newPeople' | 'subjectIds' | 'planId'
+> & {
+	/** The day to start from instead of today: the day an outing idea was done. */
+	entryDate?: string;
+};
 
 /** The forms that can open at the top of the Activity card. */
 export type StoryForm = 'moment' | 'log';
