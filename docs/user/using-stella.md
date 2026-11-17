@@ -57,7 +57,8 @@ everything*. Open an entry far down and come *Back*: the stream is where you lef
 
 Beside the stream sits a short list, **Coming up**: the next thirty days of birthdays and
 anniversaries. Each name offers one thing: *Write a moment*. Someone with gift ideas noted
-also shows *2 ideas* under their name, which takes you to their Gifts card. The list disappears when it has
+also shows *2 ideas* under their name, which takes you to their Gifts card, and *Ready: …* for a
+present already bought and not yet given. The list disappears when it has
 nothing to say, and on a wide screen the stream then takes its room. On a phone there is no room beside the stream, so it stands above it,
 under the person search; the stream below loads on as you scroll. It shows three people there, with *Show all* underneath when there are more.
 
@@ -627,6 +628,10 @@ and a good idea is still there on the birthday it was meant for.
   for any time), **New time** (pick another age or day, or *Later*), or **Remove**. Ideas for
   *Later* ask the same once a year, about three months before the person's birthday — or before
   the day you noted it, if Stella does not know their birthday.
+- **Bought it?** Press **Bought** under the idea. It leaves the ideas and *All gift ideas* —
+  nobody buys it twice — and waits on the card under **Ready to give**, and on Home as *Ready:
+  …* when their day comes up, until you mark it given. *Undo* in the message takes it back for
+  a few seconds; **Not bought yet** makes it an idea again later.
 - When you give it, press **Mark as given…** under the idea. Stella asks only for the day (today,
   unless you change it) and the occasion — *Birthday*, *Christmas*, *Anniversary*, or *Other…*
   in your own words. The idea moves to the **Given** tab, grouped by year, with its note and
@@ -639,6 +644,11 @@ and a good idea is still there on the birthday it was meant for.
 - Each gift says who noted it. The pencil changes it, the cross removes it (with *Undo* for a
   few seconds). Anyone who can see a gift can change it or mark it given — only the person who
   noted it can make it private.
+- **A surprise for someone in the household.** When the gift is for a member of Stella — their
+  own person page — the one who notes it can choose **Everyone but Mama**. Everybody else sees
+  it, marked *hidden from Mama*; Mama never does — not on her page, not in any count, on Home,
+  in *All gift ideas*, in search, in her calendar or, once given, under *Activity*. Only the
+  person who noted it can change that choice.
 - Given and received gifts also appear under **Activity** on their day. Ideas never do.
 - An idea can be noted from anywhere: `⌘K` / `Ctrl-K`, **Gift idea for …**, then the person's
   name and `Enter`. Their Gifts card opens with the idea form ready.

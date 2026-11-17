@@ -382,6 +382,13 @@ the person, and that never leaves the page. Keeping the record tidy (archive, me
   Still current?* or *Noted for later. Still current?*, then three small outlined buttons, *Keep
   as idea*, *New time* (opens `WhenPicker` in the box with *Cancel* and *Save*) and *Remove* (the
   undo window). Asked, never decided: the row stays until somebody answers.
+- An idea's outlined *Bought* (bag icon) stands before *Mark as given…* (docs/dev/02 §2.25.9).
+  The row leaves at once, the toast offers *Undo*, and it reappears under *Ready to give · n*
+  (the year-divider style) below the ideas, its tile the bag; there *Mark as given…* and a ghost
+  *Not bought yet*. With only bought ones left the tab says so in one muted line.
+- The Shared/Private radios gain *Everyone but Hilde* (eye-off icon) when Hilde is another
+  member's own record (docs/dev/02 §2.25.10); such a row says *hidden from Hilde* with the eye-off
+  icon in its subtle line, where *private* would stand.
 
 #### To-dos card
 
