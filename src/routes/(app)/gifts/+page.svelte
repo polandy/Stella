@@ -1,10 +1,13 @@
 <script lang="ts">
 	import { invalidateAll } from '$app/navigation';
+	import { onMount } from 'svelte';
 	import IdeaListRow from '$lib/components/gifts/IdeaListRow.svelte';
 	import Avatar from '$lib/components/ui/Avatar.svelte';
 	import EmptyState from '$lib/components/ui/EmptyState.svelte';
 	import Icon from '$lib/components/ui/Icon.svelte';
+	import { foldWaiting } from '$lib/gifts/idea-list';
 	import { nextOccasionLabel } from '$lib/gifts/labels';
+	import { waitingPreference, type WaitingPreference } from '$lib/gifts/waiting-preference';
 	import { useI18n } from '$lib/i18n/context.svelte';
 	import { contactSectionPath } from '$lib/people/sections';
 	import { useRemovals } from '$lib/undo/context.svelte';
@@ -15,7 +18,8 @@
 	/*
 	 * Every open gift idea of the household (docs/dev/02 §2.25.6), one card per person, whoever's
 	 * occasion comes next on top. An idea given here leaves the list while its undo window runs
-	 * and for as long as its answer is on the way.
+	 * and for as long as its answer is on the way. Ideas still waiting for their time stay folded
+	 * away unless the viewer chose to see them (§2.25.8).
 	 */
 	let { data, form }: { data: PageData; form: ActionData } = $props();
 
@@ -31,12 +35,38 @@
 	const shown = (giftId: string) =>
 		!sending.has(giftId) && !removals.isPending(removalKey('gift', giftId));
 
-	const groups = $derived(
-		data.groups
-			.map((group) => ({ ...group, ideas: group.ideas.filter((idea) => shown(idea.id)) }))
-			.filter((group) => group.ideas.length > 0)
+	let showWaiting = $state(false);
+	let preference: WaitingPreference | undefined;
+	onMount(() => {
+		try {
+			preference = waitingPreference(localStorage, data.viewerId);
+			showWaiting = preference.load();
+		} catch {
+			// Merely reading `localStorage` throws where storage is blocked; they stay hidden.
+		}
+	});
+	function toggleWaiting() {
+		showWaiting = !showWaiting;
+		preference?.save(showWaiting);
+	}
+
+	const listed = $derived(
+		data.groups.map((group) => ({
+			...group,
+			ideas: group.ideas.filter((idea) => shown(idea.id))
+		}))
 	);
-	const open = $derived(groups.reduce((sum, group) => sum + group.ideas.length, 0));
+	const hasWaiting = $derived(
+		listed.some((group) => group.ideas.some((idea) => idea.whenState?.kind === 'waiting'))
+	);
+	const folded = $derived(foldWaiting(listed, showWaiting));
+	const groups = $derived(folded.groups);
+	const open = $derived(
+		groups.reduce(
+			(sum, group) => sum + group.ideas.filter((idea) => idea.whenState?.kind !== 'waiting').length,
+			0
+		)
+	);
 
 	function settled(giftId: string, sent: boolean) {
 		// Fresh data first, then let go: by then the given idea is no longer in it.
@@ -61,6 +91,19 @@
 			{/if}
 		</h1>
 		<p class="text-sm text-fg-muted">{t('gifts.list.intro')}</p>
+		{#if hasWaiting}
+			<button
+				type="button"
+				class="mt-1 inline-flex items-center gap-1 self-start text-xs font-semibold tracking-wide text-fg-subtle uppercase hover:text-fg"
+				aria-pressed={showWaiting}
+				onclick={toggleWaiting}
+				data-testid="gift-list-waiting"
+			>
+				<Icon name={showWaiting ? 'collapse' : 'expand'} size={12} />{showWaiting
+					? t('gifts.list.hideWaiting')
+					: t('gifts.list.showWaiting', { count: folded.hidden })}
+			</button>
+		{/if}
 	</header>
 
 	{#if groups.length}
@@ -111,6 +154,10 @@
 				</ul>
 			</section>
 		{/each}
+	{:else if hasWaiting}
+		<p class="py-2 text-sm text-fg-muted" data-testid="gift-list-all-waiting">
+			{t('gifts.list.allWaiting')}
+		</p>
 	{:else}
 		<EmptyState icon="idea" title={t('gifts.list.empty')} hint={t('gifts.list.emptyHint')} />
 	{/if}

@@ -64,6 +64,8 @@ export interface SeedGift {
 		| { kind: 'on_date'; on: string }
 		| { kind: 'later' };
 	createdAt?: string;
+	/** Private makes it the signed-in account's own: the household's other member cannot see it. */
+	visibility?: 'shared' | 'private';
 }
 
 export interface SeedCircle {
@@ -144,7 +146,7 @@ export async function seedHousehold(
 					when_kind: gift.when?.kind ?? null,
 					when_on: gift.when?.kind === 'on_date' ? gift.when.on : null,
 					when_age: gift.when && 'age' in gift.when ? gift.when.age : null,
-					visibility: 'shared',
+					visibility: gift.visibility ?? 'shared',
 					...(gift.createdAt !== undefined && { created_at: gift.createdAt })
 				}))
 			};

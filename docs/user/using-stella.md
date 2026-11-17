@@ -616,7 +616,8 @@ and a good idea is still there on the birthday it was meant for.
   **From age** or **For a birthday** (with − and + to pick the age), **On a day** (with
   *Christmas* one tap away), or **Later**. The line underneath says what that means — *Turns 10
   on 14 March 2028. It waits until 15 December 2027.* Such an idea stays out of the count, out of
-  *All gift ideas* and off Home until 90 days before its day, then it shows up by itself. Until
+  *All gift ideas* (unless you show the ideas for later there) and off Home until 90 days before
+  its day, then it shows up by itself. Until
   then it waits on the card under **Later · 1**; tap to see it. An age needs their birth year —
   if Stella does not know it, **Estimate age** takes you to their dates, where an age alone will
   do.
@@ -645,7 +646,9 @@ and a good idea is still there on the birthday it was meant for.
   lists every open idea of the household on one page, for the shopping trip: one card per
   person, whoever's birthday or Christmas comes first on top, with how far off it is. **Mark as
   given…** works right there; the idea leaves the list, and *Undo* in the message brings it
-  back for a few seconds.
+  back for a few seconds. Ideas for later are folded away there too: **Show 3 ideas for later**
+  under the heading brings them in, dimmed below the others, and **Hide the ideas for later**
+  folds them again. Stella remembers your choice on this device.
 - When their birthday or another date comes up on Home, the number of open ideas is right
   there under their name.
 - **Search everything** finds a gift by what it is or by its note — *Fotobuch* finds the photo
@@ -729,7 +732,9 @@ straight away — it is shown only this once — and add it:
 The calendar then shows every date that has *Show on Home* on, of everyone you can see, all
 year round — private people only in your own — and your open to-dos that have a day, on that
 day, as *To-do: Give back the book (Anna)*, until you tick them. A to-do without a day is not
-in it, and one you have not ticked by its day stays on that day. When and whether it reminds you is set in the
+in it, and one you have not ticked by its day stays on that day. A gift idea for a day or an age
+appears on that day once it is near — about three months ahead — as *Gift idea: Bike (Mia)*,
+until it is given; an idea for yourself never does, so the surprise stays one. When and whether it reminds you is set in the
 calendar app (one day before, say). Your phone checks for changes every few hours, so an edit
 in Stella shows up there with some delay. One difference from Home: a 29 February date shows
 on 28 February in other years.

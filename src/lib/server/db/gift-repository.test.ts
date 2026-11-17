@@ -4,6 +4,8 @@ import { Database } from 'bun:sqlite';
 import { drizzle, type BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
 import { migrate } from 'drizzle-orm/bun-sqlite/migrator';
 import type { Viewer } from '../access/visibility';
+import { createTranslator } from '../../i18n/translate';
+import { calendarFeed } from '../domain/dates/calendar-feed';
 import type { Gift } from '../domain/gifts/gifts';
 import { createDrizzleGiftRepository } from './gift-repository';
 import * as schema from './schema';
@@ -240,6 +242,54 @@ describe('createDrizzleGiftRepository', () => {
 				.run();
 			await repo.insert(gift({ id: 'i-gone', contactId: 'c-gone' }));
 			expect(await repo.listOpenIdeasVisibleTo(viewerU1)).toEqual([]);
+		});
+	});
+
+	describe('in the calendar feed', () => {
+		// Christmas 2026 is 90 days off on 25 September: every idea below is near.
+		const near = { when: { kind: 'on_date', on: '2026-12-24' } } as const;
+		const feedOf = (viewer: Viewer, selfContactId: string | null = null) =>
+			calendarFeed(
+				{
+					dates: { listSourcesVisibleTo: async () => [] },
+					todos: { listOpenVisibleTo: async () => [] },
+					gifts: repo,
+					clock: { now: () => Date.UTC(2026, 10, 1) }
+				},
+				{
+					viewer,
+					translate: createTranslator('en'),
+					intlLocale: 'en-GB',
+					selfContactId,
+					origin: 'https://stella.example'
+				}
+			);
+
+		it('carries a shared idea to every member, a private one only to its author', async () => {
+			await repo.insert(gift({ ...near, id: 'i-shared', title: 'Snow globe' }));
+			await repo.insert(gift({ ...near, id: 'i-priv', title: 'Locket', visibility: 'private' }));
+			const mine = await feedOf(viewerU1);
+			const theirs = await feedOf(viewerU2);
+			expect(mine).toContain('SUMMARY:Gift idea: Locket (S)');
+			expect(theirs).toContain('SUMMARY:Gift idea: Snow globe (S)');
+			expect(theirs).not.toContain('Locket');
+		});
+
+		it('never carries an idea on a person the member cannot see, or an archived one', async () => {
+			db.insert(schema.contact)
+				.values({ id: 'c-gone', householdId: H, createdBy: U1, displayName: 'G', archivedAt: 5 })
+				.run();
+			await repo.insert(gift({ ...near, id: 'i-hidden', title: 'Kite', contactId: 'c-priv' }));
+			await repo.insert(gift({ ...near, id: 'i-gone', title: 'Scarf', contactId: 'c-gone' }));
+			expect(await feedOf(viewerU2)).not.toContain('Kite');
+			expect(await feedOf(viewerU1)).not.toContain('Scarf');
+		});
+
+		it('never carries an idea to the member it is for', async () => {
+			await repo.insert(gift({ ...near, id: 'i-me', title: 'Watch' }));
+			db.update(schema.user).set({ selfContactId: 'c-shared' }).where(eq(schema.user.id, U2)).run();
+			expect(await feedOf(viewerU2, 'c-shared')).not.toContain('Watch');
+			expect(await feedOf(viewerU1)).toContain('Watch');
 		});
 	});
 

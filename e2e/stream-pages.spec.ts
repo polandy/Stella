@@ -39,8 +39,9 @@ test('Show older loads the next page by keyboard', async ({ page }) => {
 
 test('back from a row on the second page returns to the same rows and place', async ({ page }) => {
 	await page.goto('/?pages=2');
-	// A row past the first page that links a person, whatever other specs have added above it.
-	const personLink = page.locator('a[href^="/contacts/"]');
+	// A row past the first page that links a person, whatever other specs have added above it;
+	// not the row's own cover link, whose middle a mention may sit over.
+	const personLink = page.locator('a[href^="/contacts/"]:not(.moment-open)');
 	const row = page
 		.getByTestId('stream')
 		.locator('article')
@@ -59,4 +60,39 @@ test('back from a row on the second page returns to the same rows and place', as
 	await expect(page).toHaveURL(address);
 	await expect(row).toBeVisible();
 	await expect.poll(() => contentTop(page)).toBe(scrolled);
+});
+
+test('a page loading by itself never takes the reader back from where they were going', async ({
+	page
+}) => {
+	// Hold People's data, so the reader's navigation is under way when the foot comes into view.
+	let asked!: () => void;
+	const askedFor = new Promise<void>((resolve) => (asked = resolve));
+	let release!: () => void;
+	const released = new Promise<void>((resolve) => (release = resolve));
+	await page.route('**/contacts/__data.json*', async (route) => {
+		asked();
+		await released;
+		await route.continue();
+	});
+	await page.getByRole('link', { name: 'People' }).first().click();
+	await askedFor;
+
+	// An observer made after the foot's own is told in the same task, after it has acted.
+	await page.getByTestId('stream-foot').evaluate(
+		(foot) =>
+			new Promise<void>((seen) => {
+				const observer = new IntersectionObserver(([entry]) => {
+					if (!entry?.isIntersecting) return;
+					observer.disconnect();
+					seen();
+				});
+				observer.observe(foot);
+				foot.scrollIntoView();
+			})
+	);
+	release();
+
+	await expect(page.getByRole('heading', { name: 'People' })).toBeVisible();
+	await expect(page).toHaveURL(/\/contacts$/);
 });

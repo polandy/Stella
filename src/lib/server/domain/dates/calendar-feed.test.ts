@@ -1,12 +1,15 @@
 import { describe, expect, test } from 'bun:test';
 import { createTranslator } from '../../../i18n/translate';
+import type { IdeaWithBirth, OpenIdea } from '../gifts/gifts';
 import type { HouseholdTodo } from '../todos/todos';
-import { calendarEvents, calendarFeed, todoEvents } from './calendar-feed';
+import { calendarEvents, calendarFeed, giftIdeaEvents, todoEvents } from './calendar-feed';
 import type { UpcomingSource } from './upcoming';
 
 const en = createTranslator('en');
 const de = createTranslator('de');
 const ORIGIN = 'https://stella.example';
+const enLang = { t: en, intlLocale: 'en-GB' };
+const deLang = { t: de, intlLocale: 'de-DE' };
 
 function source(over: Partial<UpcomingSource> = {}): UpcomingSource {
 	return {
@@ -186,8 +189,96 @@ describe('todoEvents', () => {
 	});
 });
 
+function idea(over: Partial<IdeaWithBirth<OpenIdea>> = {}): IdeaWithBirth<OpenIdea> {
+	return {
+		id: 'g1',
+		contactId: 'c1',
+		contactName: 'Mia Example',
+		avatarPhotoId: null,
+		createdBy: 'u1',
+		visibility: 'shared',
+		state: 'idea',
+		title: 'First bike',
+		note: null,
+		url: null,
+		givenOn: null,
+		occasion: null,
+		when: { kind: 'from_age', age: 6 },
+		whenCheckedOn: null,
+		createdAt: Date.UTC(2026, 0, 10),
+		updatedAt: 0,
+		birth: { value: '2021-03-14', precision: 'full' },
+		...over
+	};
+}
+
+describe('giftIdeaEvents', () => {
+	// Mia turns 6 on 14 March 2027: 90 days before is 14 December 2026.
+	const giftsOn = (ideas: IdeaWithBirth<OpenIdea>[], today: string, self: string | null = null) =>
+		giftIdeaEvents(ideas, today, enLang, ORIGIN, self);
+
+	test('an idea whose time draws near stands on its day, saying what it is for', () => {
+		expect(giftsOn([idea()], '2026-12-20')).toEqual([
+			{
+				uid: 'gift-g1@stella',
+				start: '2027-03-14',
+				yearly: false,
+				summary: 'Gift idea: First bike (Mia Example)',
+				description: 'From age 6',
+				url: 'https://stella.example/contacts/c1'
+			}
+		]);
+	});
+
+	test('a due idea stays on its day, a day the same', () => {
+		const onDay = idea({ id: 'g2', when: { kind: 'on_date', on: '2026-12-24' } });
+		expect(giftsOn([idea(), onDay], '2027-04-01').map((e) => [e.uid, e.start])).toEqual([
+			['gift-g1@stella', '2027-03-14']
+		]);
+		expect(giftsOn([onDay], '2026-12-24')[0]).toMatchObject({
+			start: '2026-12-24',
+			description: 'Christmas 2026'
+		});
+	});
+
+	test('a waiting idea is not in the calendar until its lead time begins', () => {
+		expect(giftsOn([idea()], '2026-12-13')).toEqual([]);
+		expect(giftsOn([idea()], '2026-12-14')).toHaveLength(1);
+	});
+
+	test('an idea for now, for later, an estimated year or a passed day stays out', () => {
+		const ideas = [
+			idea({ id: 'now', when: null }),
+			idea({ id: 'later', when: { kind: 'later' } }),
+			idea({ id: 'about', birth: { value: '2021', precision: 'year' } }),
+			idea({ id: 'passed', when: { kind: 'at_age', age: 6 } }),
+			idea({ id: 'no-year', birth: null })
+		];
+		expect(giftsOn(ideas, '2027-04-01')).toEqual([]);
+	});
+
+	test('an idea for the member themselves never reaches their calendar', () => {
+		expect(giftsOn([idea()], '2026-12-20', 'c1')).toEqual([]);
+		expect(giftsOn([idea({ contactId: 'c2' })], '2026-12-20', 'c1')).toHaveLength(1);
+	});
+
+	test('speaks the member’s language', () => {
+		const [event] = giftIdeaEvents([idea()], '2026-12-20', deLang, ORIGIN, null);
+		expect(event.summary).toBe('Geschenkidee: First bike (Mia Example)');
+		expect(event.description).toBe('Ab 6 Jahren');
+	});
+});
+
 describe('calendarFeed', () => {
 	const viewer = { id: 'u1', householdId: 'h1' };
+	const reader = {
+		viewer,
+		translate: en,
+		intlLocale: 'en-GB',
+		selfContactId: null,
+		origin: ORIGIN
+	};
+	const noGifts = { listOpenIdeasVisibleTo: async () => [] };
 
 	test('reads the viewer’s dates and stamps them with today, so a day’s fetches match', async () => {
 		const asked: unknown[] = [];
@@ -199,12 +290,13 @@ describe('calendarFeed', () => {
 				}
 			},
 			todos: { listOpenVisibleTo: async () => [] },
+			gifts: noGifts,
 			clock: { now: () => Date.UTC(2026, 10, 1, 9, 30) }
 		};
-		const morning = await calendarFeed(deps, { viewer, translate: en, origin: ORIGIN });
+		const morning = await calendarFeed(deps, reader);
 		const evening = await calendarFeed(
 			{ ...deps, clock: { now: () => Date.UTC(2026, 10, 1, 21, 0) } },
-			{ viewer, translate: en, origin: ORIGIN }
+			reader
 		);
 		expect(asked).toEqual([viewer, viewer]);
 		expect(morning).toContain('DTSTAMP:20261101T000000Z');
@@ -223,14 +315,37 @@ describe('calendarFeed', () => {
 						return [todo(), todo({ id: 't2', title: 'Call back', dueOn: null })];
 					}
 				},
+				gifts: noGifts,
 				clock: { now: () => Date.UTC(2026, 10, 1, 9, 30) }
 			},
-			{ viewer, translate: en, origin: ORIGIN }
+			reader
 		);
 		expect(asked).toEqual([viewer]);
 		expect(ics).toContain('UID:todo-t1@stella');
 		expect(ics).toContain('SUMMARY:To-do: Give back the book (Anna Example)');
 		expect(ics).not.toContain('Call back');
 		expect(ics).toContain("SUMMARY:Anna Example's birthday");
+	});
+
+	test('asks for the viewer’s own ideas and holds those whose time is near, on the household’s day', async () => {
+		const asked: unknown[] = [];
+		const ics = await calendarFeed(
+			{
+				dates: { listSourcesVisibleTo: async () => [] },
+				todos: { listOpenVisibleTo: async () => [] },
+				gifts: {
+					listOpenIdeasVisibleTo: async (v: typeof viewer) => {
+						asked.push(v);
+						return [idea(), idea({ id: 'g2', contactId: 'me', title: 'Watch' })];
+					}
+				},
+				clock: { now: () => Date.UTC(2026, 11, 20, 9, 30) }
+			},
+			{ ...reader, selfContactId: 'me' }
+		);
+		expect(asked).toEqual([viewer]);
+		expect(ics).toContain('UID:gift-g1@stella');
+		expect(ics).toContain('DTSTART;VALUE=DATE:20270314');
+		expect(ics).not.toContain('Watch');
 	});
 });

@@ -26,9 +26,9 @@ test.beforeEach(async ({ page }) => {
 	await signIn(page);
 });
 
-test('an idea for a day or for later waits under Later, out of the count and the household list', async ({
+test('an idea for a day or for later waits under Later, out of the count, folded away on the household list', async ({
 	page
-}) => {
+}, testInfo) => {
 	const next = Number((await serverToday(page)).slice(0, 4)) + 1;
 	const letters = runLetters();
 	await addPerson(page, 'Wendelin', `Wartmann${letters}`);
@@ -66,11 +66,28 @@ test('an idea for a day or for later waits under Later, out of the count and the
 	// Soonest first, *later* last.
 	await expect(waiting.getByTestId('when-chip')).toHaveText([`Christmas ${next}`, 'Later']);
 
-	// Not on the household's shopping list either.
+	// Folded away on the household's shopping list too, until this member asks for them.
 	await page.goto('/gifts');
 	await appReady(page);
 	await expect(page.getByText(`Sled ${letters}`)).toHaveCount(0);
 	await expect(page.getByText(`Kite ${letters}`)).toHaveCount(0);
+	const toggle = page.getByTestId('gift-list-waiting');
+	await expect(toggle).toHaveText(/^Show \d+ ideas for later$/);
+	await expect(toggle).toHaveAttribute('aria-pressed', 'false');
+	await page.screenshot({ path: testInfo.outputPath('gifts-list-folded.png') });
+	await toggle.click();
+	await expect(toggle).toHaveText('Hide the ideas for later');
+	const shown = page.locator('li[data-waiting]', { hasText: letters });
+	await expect(shown.getByTestId('when-chip')).toHaveText([`Christmas ${next}`, 'Later']);
+	await page.screenshot({ path: testInfo.outputPath('gifts-list-waiting.png') });
+
+	// Remembered on this device: read again, the list still shows them.
+	await page.reload();
+	await appReady(page);
+	await expect(toggle).toHaveAttribute('aria-pressed', 'true');
+	await expect(shown).toHaveCount(2);
+	await toggle.click();
+	await expect(shown).toHaveCount(0);
 });
 
 test('an age counts from an estimated birth year, and taken back to now the idea is open again, in the brief too', async ({

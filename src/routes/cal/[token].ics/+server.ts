@@ -1,5 +1,5 @@
 import { error } from '@sveltejs/kit';
-import { DEFAULT_LOCALE } from '$lib/i18n/locales';
+import { DEFAULT_LOCALE, INTL_LOCALES } from '$lib/i18n/locales';
 import { createTranslator } from '$lib/i18n/translate';
 import { authenticateCalendarLink } from '$lib/server/auth/calendar-link';
 import { calendarFeed } from '$lib/server/domain/dates/calendar-feed';
@@ -20,10 +20,13 @@ export const GET: RequestHandler = async ({ params, request, url, locals }) => {
 	const member = userId ? await auth.accounts.findById(userId) : null;
 	if (!member) error(404, say(locals, 'errors.notFound'));
 
+	// The member's own language, whatever the fetching app's headers ask for.
+	const locale = member.locale ?? locals.locale ?? DEFAULT_LOCALE;
 	const ics = await calendarFeed(records.calendarFeedDeps, {
 		viewer: { id: member.id, householdId: member.householdId },
-		// The member's own language, whatever the fetching app's headers ask for.
-		translate: createTranslator(member.locale ?? locals.locale ?? DEFAULT_LOCALE),
+		translate: createTranslator(locale),
+		intlLocale: INTL_LOCALES[locale],
+		selfContactId: member.selfContactId,
 		origin: url.origin
 	});
 	const body = new TextEncoder().encode(ics);

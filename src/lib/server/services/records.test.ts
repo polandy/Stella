@@ -7,6 +7,7 @@ import { hashPassword, verifyPassword } from '../auth/password';
 import type { Clock } from '../clock';
 import { createDrizzleAccountRepository } from '../db/account-repository';
 import { createDrizzleContactRepository } from '../db/contact-repository';
+import { createDrizzleGiftRepository } from '../db/gift-repository';
 import { createDrizzleTodoRepository } from '../db/todo-repository';
 import * as schema from '../db/schema';
 import {
@@ -66,7 +67,8 @@ beforeEach(async () => {
 		clock,
 		ids,
 		contacts: createDrizzleContactRepository(db),
-		todos: createDrizzleTodoRepository(db)
+		todos: createDrizzleTodoRepository(db),
+		gifts: createDrizzleGiftRepository(db)
 	};
 });
 
@@ -127,6 +129,7 @@ describe('createRecordServices', () => {
 	it('puts a dated to-do noted on a person into the calendar link', async () => {
 		const records = createRecordServices(wiring);
 		expect(records.calendarFeedDeps.todos).toBe(wiring.todos);
+		expect(records.calendarFeedDeps.gifts).toBe(wiring.gifts);
 		const anna = await addPerson('Anna');
 		await addTodo(
 			{ todos: wiring.todos, contacts: wiring.contacts, ids, clock },
@@ -137,6 +140,8 @@ describe('createRecordServices', () => {
 		const ics = await calendarFeed(records.calendarFeedDeps, {
 			viewer: viewerOf(admin),
 			translate: createTranslator('en'),
+			intlLocale: 'en-GB',
+			selfContactId: null,
 			origin: 'https://stella.example'
 		});
 		expect(ics).toContain('DTSTART;VALUE=DATE:20261012');

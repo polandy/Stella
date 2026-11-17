@@ -13,6 +13,7 @@ import type { ContactLookup } from '../domain/contacts/contacts';
 import type { HomeDeps, HomeListDeps } from '../domain/homes/homes';
 import type { SameAddressDeps } from '../domain/homes/same-address';
 import type { CalendarFeedDeps } from '../domain/dates/calendar-feed';
+import type { GiftRepository } from '../domain/gifts/gifts';
 import type { ImportantDateDeps, ImportantDateRepository } from '../domain/dates/important-dates';
 import type { TagListDeps } from '../domain/tags/tag-lists';
 import type { TagDeps, TagRepository } from '../domain/tags/tags';
@@ -55,6 +56,8 @@ export interface RecordWiring {
 	contacts: ContactLookup;
 	/** The to-dos group's repository: the calendar link holds the dated ones. */
 	todos: TodoRepository;
+	/** The gifts group's repository: the calendar link holds the ideas whose time is near. */
+	gifts: GiftRepository;
 }
 
 export function createRecordServices({
@@ -62,7 +65,8 @@ export function createRecordServices({
 	clock,
 	ids,
 	contacts,
-	todos
+	todos,
+	gifts
 }: RecordWiring): RecordServices {
 	const contactFields = createDrizzleContactFieldRepository(db);
 	const importantDates = createDrizzleImportantDateRepository(db);
@@ -83,7 +87,7 @@ export function createRecordServices({
 			clock
 		},
 		importantDateDeps: { dates: importantDates, contacts, ids, clock },
-		calendarFeedDeps: { dates: importantDates, todos, clock },
+		calendarFeedDeps: { dates: importantDates, todos, gifts, clock },
 		tagDeps: { tags, ids, clock },
 		tagListDeps: { tagLists: createDrizzleTagListReads(db) }
 	};

@@ -22,6 +22,8 @@ export const dates = {
 	'dates.feed.anniversary': (p: { name: string }) => `${p.name}'s anniversary`,
 	'dates.feed.custom': (p: { name: string; label: string }) => `${p.name}: ${p.label}`,
 	'dates.feed.todo': (p: { title: string; name: string }) => `To-do: ${p.title} (${p.name})`,
+	'dates.feed.giftIdea': (p: { title: string; name: string }) =>
+		`Gift idea: ${p.title} (${p.name})`,
 	'dates.feed.born': (p: { year: number }) => `Born ${p.year}`,
 	'dates.feed.since': (p: { year: number }) => `Since ${p.year}`
 };

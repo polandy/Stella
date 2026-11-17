@@ -6,7 +6,7 @@ import type { PartialDate } from '../../../dates/partial-date';
 import { todayFor } from '../../../dates/today';
 import { ideaState, ideaWaits as waitsOn } from '../../../gifts/idea-when';
 import type { WhenState } from '../../../when/state';
-import { birthOf, checkWhen } from '../../../when/resolve';
+import { birthOf, checkWhen, whenDay } from '../../../when/resolve';
 import { sameWhen, type When } from '../../../when/when';
 import type { Visibility, Viewer } from '../../access/visibility';
 import type { Clock } from '../../clock';
@@ -392,8 +392,8 @@ export async function countOpenIdeas(
 }
 
 /**
- * Every open idea the viewer may see, with whom it is for — the household's list (§2.25.6) —
- * less those still waiting for their time; each says where it stands against its when.
+ * Every open idea the viewer may see, with whom it is for — the household's list (§2.25.6); each
+ * says where it stands against its when, so the list can keep the waiting ones folded away.
  */
 export async function listOpenIdeas(
 	deps: Pick<GiftDeps, 'gifts' | 'clock'>,
@@ -401,8 +401,13 @@ export async function listOpenIdeas(
 ): Promise<(OpenIdea & { whenState: WhenState | null })[]> {
 	const today = todayFor(deps.clock);
 	const ideas = await deps.gifts.listOpenIdeasVisibleTo(viewer);
-	return ideas.flatMap(({ birth, ...idea }) => {
-		const whenState = ideaState(idea, birth, today);
-		return whenState?.kind === 'waiting' ? [] : [{ ...idea, whenState }];
-	});
+	const listed = ideas.map(({ birth, ...idea }) => ({
+		idea: { ...idea, whenState: ideaState(idea, birth, today) },
+		// '~' sorts after every ISO day by code point, so *later* comes last.
+		due: idea.when ? (whenDay(idea.when, birth)?.on ?? '~') : '~'
+	}));
+	const waits = (entry: (typeof listed)[number]) => entry.idea.whenState?.kind === 'waiting';
+	// The waiting ones soonest first, after the rest, as on the Gifts card (§2.25.8).
+	const waiting = listed.filter(waits).sort((a, b) => (a.due < b.due ? -1 : a.due > b.due ? 1 : 0));
+	return [...listed.filter((entry) => !waits(entry)), ...waiting].map((entry) => entry.idea);
 }

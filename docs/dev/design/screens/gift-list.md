@@ -16,8 +16,13 @@ the household at once, and to tick off what they bought without opening each per
 - Cards in the order of their occasion (docs/dev/02 §2.25.6); the rows inside as on the Gifts card,
   each with *Mark as given…* (`IdeaListRow`), and an idea's time as its `WhenChip` — *· in 34
   days* while it comes near, `bg-warning-soft` and *· passed* once its occasion went by. An idea
-  still waiting for its time is not listed (docs/dev/02 §2.25.8); *Still current?* is asked on the
-  person's card only. The form opens in place, its occasion preset to
+  still waiting for its time is folded away (docs/dev/02 §2.25.8): under the intro a small
+  uppercase toggle, the card's *Later* style, says *Show 3 ideas for later* (`aria-pressed`);
+  pressed, the waiting rows join their person's card after the others, soonest first, at
+  `opacity-80`, and it reads *Hide the ideas for later*. The choice is kept per member in this
+  browser (`waitingPreference`). The count beside the heading stays the open ideas only; with
+  only waiting ideas left, one muted line says so instead of the empty state. *Still current?*
+  is asked on the person's card only. The form opens in place, its occasion preset to
   the card's; *Cancel* closes it.
 - A given idea disappears at once and comes back on *Undo* in the toast, as a removed row does
   (`heldAnswer`); a card whose last idea went disappears with it.
