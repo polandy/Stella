@@ -131,6 +131,7 @@ describe('a surprise, in every read', () => {
 					dates: { listSourcesVisibleTo: async () => [] },
 					todos: { listOpenVisibleTo: async () => [] },
 					gifts: repo,
+					plans: { listOpenVisibleTo: async () => [] },
 					clock: { now: () => Date.UTC(2026, 10, 1) }
 				},
 				// No own person passed: the surprise rule, not the calendar's own, must keep it out.

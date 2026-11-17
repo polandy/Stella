@@ -37,6 +37,8 @@ const labels: PaletteLabels = {
 	todoFor: 'To-do for …',
 	briefFor: 'Brief for …',
 	allTodos: 'All to-dos',
+	planWith: 'Outing with …',
+	allPlans: 'All outings',
 	onThisDay: 'On this day',
 	addPerson: 'Add person',
 	searchEverything: (query) => `Search everything for “${query}”`
@@ -97,6 +99,7 @@ describe('paletteRows', () => {
 			'write',
 			'gift-ideas',
 			'all-todos',
+			'all-plans',
 			'on-this-day',
 			'add-person'
 		]);
@@ -165,6 +168,8 @@ describe('paletteRows', () => {
 			todoFor: 'Todo für …',
 			briefFor: 'Steckbrief für …',
 			allTodos: 'Alle Todos',
+			planWith: 'Unternehmung mit …',
+			allPlans: 'Alle Unternehmungen',
 			onThisDay: 'An diesem Tag',
 			addPerson: 'Person hinzufügen',
 			searchEverything: (query) => `Überall nach „${query}“ suchen`
@@ -204,11 +209,11 @@ describe('a gift idea from the palette (docs/dev/02 §2.25.2)', () => {
 			'write',
 			'gift-idea',
 			'todo',
+			'plan',
 			'brief',
 			'gift-ideas',
 			'all-todos',
-			'on-this-day',
-			'add-person'
+			'all-plans'
 		]);
 		expect(rows[1]).toMatchObject({ kind: 'step', step: 'giftIdea', label: 'Gift idea for …' });
 	});
@@ -274,6 +279,32 @@ describe('a to-do from the palette (docs/dev/02 §2.26)', () => {
 		expect(rows.every((r) => r.kind === 'person')).toBe(true);
 		expect(rows.find((r) => r.id === 'markus')).toMatchObject({
 			href: '/contacts/markus?todo=new'
+		});
+	});
+});
+
+describe('an outing idea from the palette (docs/dev/02 §2.27.9)', () => {
+	it('is found by its name, and leads to a second step rather than a page', () => {
+		expect(paletteRows('outing w', people, labels)[0]).toMatchObject({
+			kind: 'step',
+			id: 'plan',
+			step: 'plan'
+		});
+	});
+
+	it('then asks only whom it is with: people, each landing on their Outings card’s form', () => {
+		const rows = paletteRows('ma', people, labels, new Map(), 'plan');
+
+		expect(rows.every((r) => r.kind === 'person')).toBe(true);
+		expect(rows.find((r) => r.id === 'markus')).toMatchObject({
+			href: '/contacts/markus?plan=new'
+		});
+	});
+
+	it('offers the household’s list of every open idea', () => {
+		expect(paletteRows('all outings', people, labels)[0]).toMatchObject({
+			kind: 'action',
+			href: '/plans'
 		});
 	});
 });

@@ -8,6 +8,7 @@ import type { Clock } from '../clock';
 import { createDrizzleAccountRepository } from '../db/account-repository';
 import { createDrizzleContactRepository } from '../db/contact-repository';
 import { createDrizzleGiftRepository } from '../db/gift-repository';
+import { createDrizzlePlanRepository } from '../db/plan-repository';
 import { createDrizzleTodoRepository } from '../db/todo-repository';
 import * as schema from '../db/schema';
 import {
@@ -68,7 +69,8 @@ beforeEach(async () => {
 		ids,
 		contacts: createDrizzleContactRepository(db),
 		todos: createDrizzleTodoRepository(db),
-		gifts: createDrizzleGiftRepository(db)
+		gifts: createDrizzleGiftRepository(db),
+		plans: createDrizzlePlanRepository(db)
 	};
 });
 
@@ -130,6 +132,7 @@ describe('createRecordServices', () => {
 		const records = createRecordServices(wiring);
 		expect(records.calendarFeedDeps.todos).toBe(wiring.todos);
 		expect(records.calendarFeedDeps.gifts).toBe(wiring.gifts);
+		expect(records.calendarFeedDeps.plans).toBe(wiring.plans);
 		const anna = await addPerson('Anna');
 		await addTodo(
 			{ todos: wiring.todos, contacts: wiring.contacts, ids, clock },
@@ -146,6 +149,53 @@ describe('createRecordServices', () => {
 		});
 		expect(ics).toContain('DTSTART;VALUE=DATE:20261012');
 		expect(ics).toContain('SUMMARY:To-do: Give back the book (Anna Pollari)');
+	});
+
+	it('puts a dated outing idea into the calendar link once, ahead, and never to the wrong member', async () => {
+		const records = createRecordServices(wiring);
+		const heinz = await addPerson('Heinz');
+		const mia = await addPerson('Mia');
+		db.insert(schema.user)
+			.values({
+				id: 'member-2',
+				householdId: admin.householdId,
+				email: 'mia@example.test',
+				name: 'Mia',
+				selfContactId: mia
+			})
+			.run();
+		const idea = {
+			createdBy: admin.id,
+			whenKind: 'on_date' as const,
+			whenOn: '2026-12-06',
+			createdAt: Date.UTC(2026, 0, 10)
+		};
+		db.insert(schema.activityIdea)
+			.values([
+				{ id: 'p-shared', contactId: heinz, title: 'Zoo', ...idea },
+				{ id: 'p-private', contactId: heinz, title: 'Night tour', visibility: 'private', ...idea },
+				{ id: 'p-surprise', contactId: mia, title: 'Circus', hiddenFromPerson: 1, ...idea }
+			])
+			.run();
+		const feedFor = (viewer: { id: string; householdId: string }) =>
+			calendarFeed(records.calendarFeedDeps, {
+				viewer,
+				translate: createTranslator('en'),
+				intlLocale: 'en-GB',
+				selfContactId: null,
+				origin: 'https://stella.example'
+			});
+
+		const own = await feedFor(viewerOf(admin));
+		expect(own).toContain('SUMMARY:Outing ahead: Zoo (Heinz Pollari)');
+		expect(own).toContain('DTSTART;VALUE=DATE:20260907');
+		expect(own).not.toContain('DTSTART;VALUE=DATE:20261206');
+		expect(own).toContain('Night tour');
+		expect(own).toContain('Circus');
+		const other = await feedFor({ id: 'member-2', householdId: admin.householdId });
+		expect(other).toContain('UID:plan-p-shared@stella');
+		expect(other).not.toContain('Night tour');
+		expect(other).not.toContain('Circus');
 	});
 
 	it('removes a field and a date through the group, checking the person against the lookup', async () => {

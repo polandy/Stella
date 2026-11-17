@@ -30,6 +30,7 @@
 			data.results.notes.length +
 			data.results.gifts.length +
 			data.results.todos.length +
+			data.results.plans.length +
 			data.results.moments.length
 	);
 
@@ -193,6 +194,39 @@
 										t('search.todoFor', { name: todo.contactName }),
 										todo.done &&
 											[t('search.todoDone'), todo.doneOn && shortDate(todo.doneOn)]
+												.filter(Boolean)
+												.join(' ')
+									]
+										.filter(Boolean)
+										.join(' · ')}</span
+								>
+							</span>
+						</a>
+					{/each}
+				</section>
+			{/if}
+
+			{#if data.results.plans.length > 0}
+				<!-- An outing idea leads to its card; a done one is still found, marked done (docs/dev/02 §2.27.9). -->
+				<section class="flex flex-col gap-1" data-testid="search-plans">
+					<h2 class="text-sm font-medium text-fg-muted">{t('search.plans')}</h2>
+					{#each data.results.plans as plan (plan.planId)}
+						<a
+							href={contactSectionPath(plan.contactId, 'plans')}
+							class="flex items-center gap-3 rounded-app border border-transparent px-3 py-2 hover:border-border hover:bg-card"
+						>
+							<span class="shrink-0 {plan.done ? 'text-success-text' : 'text-fg-muted'}"
+								><Icon name={plan.done ? 'done' : 'explore'} size={16} /></span
+							>
+							<span class="flex min-w-0 flex-col">
+								<span class="break-words {plan.done ? 'text-fg-muted' : 'text-fg'}"
+									>{plan.title}</span
+								>
+								<span class="text-sm text-fg-muted"
+									>{[
+										t('search.planWith', { name: plan.contactName }),
+										plan.done &&
+											[t('search.planDone'), plan.doneOn && shortDate(plan.doneOn)]
 												.filter(Boolean)
 												.join(' ')
 									]

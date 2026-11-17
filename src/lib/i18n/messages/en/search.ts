@@ -1,4 +1,4 @@
-/* Full search across people, notes, gifts, to-dos and moments (docs/dev/02 §2.9), and the graph screen. */
+/* Full search across people, notes, gifts, to-dos, outings and moments (docs/dev/02 §2.9), and the graph screen. */
 
 export const search = {
 	'search.title': 'Search',
@@ -17,6 +17,9 @@ export const search = {
 	'search.todoFor': (p: { name: string }) => `for ${p.name}`,
 	// A done one stays findable, marked as done (docs/dev/02 §2.9).
 	'search.todoDone': 'done',
+	'search.plans': 'Outings',
+	'search.planWith': (p: { name: string }) => `with ${p.name}`,
+	'search.planDone': 'done',
 	'search.moments': 'Moments',
 	'search.momentOn': (p: { date: string; name: string }) => `${p.date} · on ${p.name}`,
 	// A `#tag` query finds the moments carrying the tag and nothing else (docs/dev/02 §2.20.2).

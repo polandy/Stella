@@ -255,6 +255,7 @@ describe('createDrizzleGiftRepository', () => {
 					dates: { listSourcesVisibleTo: async () => [] },
 					todos: { listOpenVisibleTo: async () => [] },
 					gifts: repo,
+					plans: { listOpenVisibleTo: async () => [] },
 					clock: { now: () => Date.UTC(2026, 10, 1) }
 				},
 				{

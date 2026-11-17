@@ -3,7 +3,8 @@ import type { SearchMessages } from '../en/search';
 /** German for `messages/en/search.ts`. */
 export const search: SearchMessages = {
 	'search.title': 'Suche',
-	'search.placeholder': 'Menschen, Notizen, Geschenke, Todos und Momente durchsuchen…',
+	'search.placeholder':
+		'Menschen, Notizen, Geschenke, Todos, Unternehmungen und Momente durchsuchen…',
 	'search.noResults': (p) => `Keine Treffer für „${p.query}“.`,
 	'search.noResultsHint':
 		'Niemand mit diesem Namen und keine Notiz, kein Geschenk, kein Todo und kein Moment, in dem es steht. Ist die Person neu, füge sie hinzu.',
@@ -17,6 +18,9 @@ export const search: SearchMessages = {
 	'search.todos': 'Todos',
 	'search.todoFor': (p) => `für ${p.name}`,
 	'search.todoDone': 'erledigt',
+	'search.plans': 'Unternehmungen',
+	'search.planWith': (p) => `mit ${p.name}`,
+	'search.planDone': 'gemacht',
 	'search.moments': 'Momente',
 	'search.momentOn': (p) => `${p.date} · zu ${p.name}`,
 	'search.tagNone': (p) => `Kein Moment trägt #${p.tag}.`,

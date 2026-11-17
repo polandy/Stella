@@ -1,4 +1,5 @@
 import { giftIdeaPath } from '$lib/gifts/card';
+import { newPlanPath } from '$lib/plans/plans';
 import { newTodoPath } from '$lib/todos/todos';
 import { briefPath } from '$lib/people/sections';
 import { foundByFormerName } from '$lib/people/former-name';
@@ -14,10 +15,10 @@ import { tellApart, type Distinction } from '$lib/people/namesakes';
  * ⌘K then Enter lands in the capture field — while letting the same keys reach a person or
  * an action. Notes are not searched here; a typed query always ends in the full search.
  *
- * Most rows go somewhere. *Gift idea for …*, *To-do for …* and *Brief for …* ask something
- * first: each turns the palette into a second step, `giftIdea`, `todo` or `brief`, which lists
- * only people, each leading to their idea form, their To-dos card's form (docs/dev/02 §2.26) or their
- * brief (docs/dev/02 §2.2.5).
+ * Most rows go somewhere. *Gift idea for …*, *To-do for …*, *Outing with …* and *Brief for …* ask
+ * something first: each turns the palette into a second step, `giftIdea`, `todo`, `plan` or
+ * `brief`, which lists only people, each leading to their idea form, their To-dos card's form
+ * (docs/dev/02 §2.26), their Outings card's form (§2.27) or their brief (docs/dev/02 §2.2.5).
  *
  * The wording arrives as `PaletteLabels` rather than being written here: this module is
  * pure and language-free, and the component hands it the viewer's language (docs/dev/02 §2.19).
@@ -48,12 +49,13 @@ export interface PalettePerson {
 }
 
 /** What the palette is asking: anything (`start`), whom a gift idea or a to-do is for. */
-export type PaletteStep = 'start' | 'giftIdea' | 'todo' | 'brief';
+export type PaletteStep = 'start' | 'giftIdea' | 'todo' | 'plan' | 'brief';
 
 /** Where each person of a second step leads. */
 const PERSON_STEP_PATH = {
 	giftIdea: giftIdeaPath,
 	todo: newTodoPath,
+	plan: newPlanPath,
 	brief: briefPath
 } as const satisfies Record<Exclude<PaletteStep, 'start'>, (contactId: string) => string>;
 
@@ -96,6 +98,10 @@ export interface PaletteLabels {
 	briefFor: string;
 	/** The household's list of every open to-do (docs/dev/02 §2.26.6). */
 	allTodos: string;
+	/** *Outing with …*, an outing idea with a person (docs/dev/02 §2.27). */
+	planWith: string;
+	/** The household's list of every open outing idea (docs/dev/02 §2.27.9). */
+	allPlans: string;
 	/** *On this day*, the household's earlier years on today's date (docs/dev/02 §2.12.1). */
 	onThisDay: string;
 	addPerson: string;
@@ -112,9 +118,11 @@ const ACTIONS: readonly ({ id: string; label: ActionLabel; icon: IconName } & (
 	{ id: 'write', label: 'write', icon: 'write', href: '/?compose' },
 	{ id: 'gift-idea', label: 'giftIdea', icon: 'gift', step: 'giftIdea' },
 	{ id: 'todo', label: 'todoFor', icon: 'todo', step: 'todo' },
+	{ id: 'plan', label: 'planWith', icon: 'explore', step: 'plan' },
 	{ id: 'brief', label: 'briefFor', icon: 'brief', step: 'brief' },
 	{ id: 'gift-ideas', label: 'giftIdeas', icon: 'idea', href: '/gifts' },
 	{ id: 'all-todos', label: 'allTodos', icon: 'todo', href: '/todos' },
+	{ id: 'all-plans', label: 'allPlans', icon: 'explore', href: '/plans' },
 	{ id: 'on-this-day', label: 'onThisDay', icon: 'memories', href: '/on-this-day' },
 	{ id: 'add-person', label: 'addPerson', icon: 'add', href: '/contacts/new' }
 ];

@@ -33,3 +33,8 @@ export const todoFts = sqliteTable('todo_fts', {
 	todoId: text('todo_id'),
 	content: text('content')
 });
+
+export const planFts = sqliteTable('plan_fts', {
+	planId: text('plan_id'),
+	content: text('content')
+});

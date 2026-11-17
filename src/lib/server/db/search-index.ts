@@ -3,7 +3,7 @@ import { MENTION_TOKEN_PREFIX } from '../../mentions/mentions';
 
 /*
  * Full-text search index (docs/dev/03 §3.5). Creates the FTS5 virtual tables and the triggers that
- * keep them in sync with `contact`, `note`, `gift`, `journal_entry` and `todo`, and builds the rows for everything already
+ * keep them in sync with `contact`, `note`, `gift`, `journal_entry`, `todo` and `activity_idea`, and builds the rows for everything already
  * stored. Runs on every startup and does nothing when the index on disk was built from the
  * same definitions — see `fingerprint`. Kept as raw SQL because FTS5 virtual tables are
  * outside Drizzle's schema management.
@@ -125,6 +125,10 @@ const TRIGGERS: Record<string, string> = {
  */
 const todoContent = (t: string) => `coalesce(${t}.title,'')`;
 
+/* What of an outing idea is searchable: its title, note and link (docs/dev/02 §2.27.9). */
+const planContent = (t: string) =>
+	`coalesce(${t}.title,'') || ' ' || coalesce(${t}.note,'') || ' ' || coalesce(${t}.url,'')`;
+
 /*
  * A part of the index over a table a database migrated only part of the way may not have yet
  * — which only a migration test builds, since startup runs every migration first. Such a part
@@ -140,7 +144,8 @@ interface OptionalPart {
 /*
  * A gift is added, edited, marked given and removed through `gift` alone — and restored,
  * merged and converted from a Monica note the same way — so its three triggers cover every
- * path. A to-do is written, ticked, reopened and removed through `todo` alone, likewise.
+ * path. A to-do is written, ticked, reopened and removed through `todo` alone, likewise, and an
+ * outing idea through `activity_idea`.
  */
 const OPTIONAL_PARTS: readonly OptionalPart[] = [
 	{
@@ -176,6 +181,23 @@ const OPTIONAL_PARTS: readonly OptionalPart[] = [
 		},
 		content: todoContent('todo'),
 		backfill: `INSERT INTO todo_fts(todo_id, content) SELECT id, ${todoContent('todo')} FROM todo;`
+	},
+	{
+		table: 'activity_idea',
+		triggers: {
+			plan_fts_ai: `AFTER INSERT ON activity_idea BEGIN
+			INSERT INTO plan_fts(plan_id, content) VALUES (new.id, ${planContent('new')});
+		END`,
+			plan_fts_ad: `AFTER DELETE ON activity_idea BEGIN
+			DELETE FROM plan_fts WHERE plan_id = old.id;
+		END`,
+			plan_fts_au: `AFTER UPDATE OF title, note, url ON activity_idea BEGIN
+			DELETE FROM plan_fts WHERE plan_id = old.id;
+			INSERT INTO plan_fts(plan_id, content) VALUES (new.id, ${planContent('new')});
+		END`
+		},
+		content: planContent('activity_idea'),
+		backfill: `INSERT INTO plan_fts(plan_id, content) SELECT id, ${planContent('activity_idea')} FROM activity_idea;`
 	}
 ];
 
@@ -195,6 +217,9 @@ const TABLES = `
 		);
 		CREATE VIRTUAL TABLE IF NOT EXISTS todo_fts USING fts5(
 			todo_id UNINDEXED, content, tokenize='unicode61 remove_diacritics 2'
+		);
+		CREATE VIRTUAL TABLE IF NOT EXISTS plan_fts USING fts5(
+			plan_id UNINDEXED, content, tokenize='unicode61 remove_diacritics 2'
 		);`;
 
 /** The optional parts whose table this database has. */
@@ -257,7 +282,8 @@ function rebuild(sqlite: Database, parts: readonly OptionalPart[]): void {
 		DELETE FROM journal_fts;
 		INSERT INTO journal_fts(entry_id, contact_id, content) SELECT id, contact_id, ${journalContent('journal_entry')} FROM journal_entry;
 		DELETE FROM gift_fts;
-		DELETE FROM todo_fts;`);
+		DELETE FROM todo_fts;
+		DELETE FROM plan_fts;`);
 	for (const part of parts) sqlite.exec(part.backfill);
 }
 

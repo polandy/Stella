@@ -24,6 +24,8 @@ export const dates = {
 	'dates.feed.todo': (p: { title: string; name: string }) => `To-do: ${p.title} (${p.name})`,
 	'dates.feed.giftIdea': (p: { title: string; name: string }) =>
 		`Gift idea: ${p.title} (${p.name})`,
+	// An outing idea's one entry, when its time starts to draw near (docs/dev/02 §2.27.9).
+	'dates.feed.plan': (p: { title: string; name: string }) => `Outing ahead: ${p.title} (${p.name})`,
 	'dates.feed.born': (p: { year: number }) => `Born ${p.year}`,
 	'dates.feed.since': (p: { year: number }) => `Since ${p.year}`
 };

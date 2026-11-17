@@ -3,11 +3,13 @@ import type { BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
 import {
 	childRecordBrowsableBy,
 	contactBrowsableBy,
-	giftBrowsableBy
+	giftBrowsableBy,
+	surpriseBrowsableBy
 } from '../access/query-scoping';
 import type { Viewer } from '../access/visibility';
 import type { SearchRepository } from '../domain/search/search';
 import {
+	activityIdea,
 	contact,
 	entryTag,
 	gift,
@@ -18,7 +20,7 @@ import {
 	todo
 } from './schema';
 import type * as schema from './schema';
-import { contactFts, giftFts, journalFts, noteFts, todoFts } from './search-schema';
+import { contactFts, giftFts, journalFts, noteFts, planFts, todoFts } from './search-schema';
 
 /*
  * Drizzle adapter for the SearchRepository port (docs/dev/08 §8.3). Matches via the FTS5 tables,
@@ -172,6 +174,26 @@ export function createDrizzleSearchRepository(
 					)
 				)
 				.orderBy(sql`${todo.doneAt} IS NOT NULL`, sql`bm25(todo_fts)`)
+				.limit(limit)
+				.all()
+				.map(({ doneAt, ...hit }) => ({ ...hit, done: doneAt !== null }));
+		},
+
+		async searchPlans(viewer: Viewer, ftsQuery: string, limit: number) {
+			return db
+				.select({
+					planId: activityIdea.id,
+					title: activityIdea.title,
+					doneAt: activityIdea.doneAt,
+					doneOn: activityIdea.doneOn,
+					contactId: contact.id,
+					contactName: contact.displayName
+				})
+				.from(planFts)
+				.innerJoin(activityIdea, eq(planFts.planId, activityIdea.id))
+				.innerJoin(contact, eq(activityIdea.contactId, contact.id))
+				.where(and(sql`plan_fts MATCH ${ftsQuery}`, surpriseBrowsableBy(viewer, activityIdea)))
+				.orderBy(sql`${activityIdea.doneAt} IS NOT NULL`, sql`bm25(plan_fts)`)
 				.limit(limit)
 				.all()
 				.map(({ doneAt, ...hit }) => ({ ...hit, done: doneAt !== null }));

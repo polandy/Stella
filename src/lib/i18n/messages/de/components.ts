@@ -41,6 +41,8 @@ export const components: ComponentsMessages = {
 	'components.palette.giftIdeaFor': 'Geschenkidee für wen?',
 	'components.palette.todoFor': 'Todo für …',
 	'components.palette.todoForWhom': 'Ein Todo für wen?',
+	'components.palette.planWith': 'Unternehmung mit …',
+	'components.palette.planWithWhom': 'Eine Unternehmung mit wem?',
 	'components.palette.briefFor': 'Steckbrief für …',
 	'components.palette.briefForWhom': 'Steckbrief für wen?',
 	'components.palette.back': 'Zurück',
