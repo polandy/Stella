@@ -78,9 +78,8 @@ export function whenDay(when: When, birth: PartialDate | null): WhenDay | null {
 }
 
 /**
- * Whether a record waits, out of every count and list: *later* always (its yearly look comes
- * with docs/dev/02 §2.25.8's next step), a day until `WHEN_LEAD_DAYS` before it. An age whose
- * birth year went missing no longer waits — it is never lost unnoticed.
+ * Whether a when, as just chosen, waits: *later* always, a day until `WHEN_LEAD_DAYS` before it.
+ * An age whose birth year went missing does not. A stored record's standing is `whenState`.
  */
 export function isWaiting(when: When | null, birth: PartialDate | null, today: string): boolean {
 	if (when === null) return false;
