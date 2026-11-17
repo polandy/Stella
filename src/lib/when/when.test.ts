@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'bun:test';
 import * as v from 'valibot';
 import { parsedWhenFromForm, whenFromForm } from './form';
-import { optionalWhen } from './schema';
+import { optionalWhen, optionalWhenOf } from './schema';
 import { sameWhen, whenColumns, whenFromOutside, whenOfColumns, type When } from './when';
 
 /* A when stored, posted and carried (docs/dev/02 §2.25.8). */
@@ -11,6 +11,7 @@ const WHENS: (When | null)[] = [
 	{ kind: 'from_age', age: 6 },
 	{ kind: 'at_age', age: 18 },
 	{ kind: 'on_date', on: '2027-12-24' },
+	{ kind: 'in_month', on: '2027-05' },
 	{ kind: 'later' }
 ];
 
@@ -46,7 +47,9 @@ describe('whenFromOutside', () => {
 		['an age out of range', outside('at_age', null, 151)],
 		['an age with a fraction', outside('from_age', null, 2.5)],
 		['an age missing', outside('at_age', null, null)],
-		['a day not shaped as one', outside('on_date', 'Christmas', null)]
+		['a day not shaped as one', outside('on_date', 'Christmas', null)],
+		['a month not shaped as one', outside('in_month', '2027-13', null)],
+		['a month that is a day', outside('in_month', '2027-05-01', null)]
 	])('takes %s as now', (_, when) => {
 		expect(when).toBeNull();
 	});
@@ -59,6 +62,7 @@ describe('whenFromForm', () => {
 		['now', { whenKind: 'now' }, null],
 		['an age', { whenKind: 'from_age', whenAge: '6' }, { kind: 'from_age', age: 6 }],
 		['a day', { whenKind: 'on_date', whenOn: '2027-12-24' }, { kind: 'on_date', on: '2027-12-24' }],
+		['a month', { whenKind: 'in_month', whenOn: '2027-05' }, { kind: 'in_month', on: '2027-05' }],
 		['later', { whenKind: 'later', whenAge: '6' }, { kind: 'later' }],
 		[
 			'an age left empty, for the schema to refuse',
@@ -70,11 +74,13 @@ describe('whenFromForm', () => {
 	});
 
 	it('is checked against the schema where a command is built in the browser', () => {
-		expect(parsedWhenFromForm(read({ whenKind: 'at_age', whenAge: '10' }))).toEqual({
+		const kinds = ['at_age', 'on_date'] as const;
+		expect(parsedWhenFromForm(read({ whenKind: 'at_age', whenAge: '10' }), kinds)).toEqual({
 			when: { kind: 'at_age', age: 10 }
 		});
-		expect(parsedWhenFromForm(read({}))).toEqual({ when: undefined });
-		expect(parsedWhenFromForm(read({ whenKind: 'at_age', whenAge: '' }))).toBeNull();
+		expect(parsedWhenFromForm(read({}), kinds)).toEqual({ when: undefined });
+		expect(parsedWhenFromForm(read({ whenKind: 'at_age', whenAge: '' }), kinds)).toBeNull();
+		expect(parsedWhenFromForm(read({ whenKind: 'later' }), kinds)).toBeNull();
 	});
 });
 
@@ -91,8 +97,24 @@ describe('optionalWhen', () => {
 		{ kind: 'from_age', age: 2.5 },
 		{ kind: 'at_age' },
 		{ kind: 'on_date', on: 'Christmas' },
+		{ kind: 'in_month', on: '2027-5' },
 		{ kind: 'someday' }
 	])('refuses %j', (when) => {
 		expect(v.is(optionalWhen, when)).toBe(false);
+	});
+});
+
+describe('optionalWhenOf', () => {
+	const some = optionalWhenOf(['on_date', 'in_month']);
+
+	it('takes the kinds it names, now and absent', () => {
+		for (const when of [undefined, null, { kind: 'in_month', on: '2027-05' }]) {
+			expect(v.is(some, when)).toBe(true);
+		}
+	});
+
+	it('refuses a kind the record does not have', () => {
+		expect(v.is(some, { kind: 'later' })).toBe(false);
+		expect(v.is(some, { kind: 'at_age', age: 6 })).toBe(false);
 	});
 });

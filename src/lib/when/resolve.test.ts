@@ -6,6 +6,7 @@ import {
 	checkWhen,
 	isWaiting,
 	knowsBirthYear,
+	monthEnd,
 	whenOutlook,
 	WHEN_LEAD_DAYS
 } from './resolve';
@@ -74,6 +75,14 @@ describe('isWaiting', () => {
 		['… and stays there once the day is over', fromSix, mia, '2030-01-01', false],
 		['an age without a birth year is open, never lost', fromSix, heinz, '2026-11-17', false],
 		['a day ahead waits', { kind: 'on_date', on: '2027-12-24' }, mia, '2026-11-17', true],
+		['a month ahead waits', { kind: 'in_month', on: '2027-05' }, mia, '2026-11-17', true],
+		[
+			'… from the lead time before its first day it does not',
+			{ kind: 'in_month', on: '2027-02' },
+			mia,
+			'2026-11-17',
+			false
+		],
 		[
 			'a day within the lead time does not',
 			{ kind: 'on_date', on: '2027-01-10' },
@@ -128,6 +137,20 @@ describe('whenOutlook', () => {
 		],
 		['a day gone by', { kind: 'on_date', on: '2026-11-16' }, mia, { kind: 'dayPassed' }],
 		['no such day', { kind: 'on_date', on: '2027-02-30' }, mia, { kind: 'noSuchDay' }],
+		['a month gone by', { kind: 'in_month', on: '2026-10' }, mia, { kind: 'monthPassed' }],
+		['no such month', { kind: 'in_month', on: '2026-13' }, mia, { kind: 'noSuchDay' }],
+		[
+			'the month we are in, from its first day',
+			{ kind: 'in_month', on: '2026-11' },
+			mia,
+			{
+				kind: 'due',
+				when: { kind: 'in_month', on: '2026-11' },
+				on: '2026-11-01',
+				approximate: false,
+				waits: false
+			}
+		],
 		['an age out of range', { kind: 'from_age', age: 0 }, mia, { kind: 'badAge' }],
 		[
 			'an age ahead',
@@ -155,6 +178,17 @@ describe('whenOutlook', () => {
 		]
 	] as const)('%s', (_, when, birth, expected) => {
 		expect(whenOutlook(when, birth, today)).toEqual(expected);
+	});
+});
+
+describe('monthEnd', () => {
+	it.each([
+		['2026-11', '2026-11-30'],
+		['2028-02', '2028-02-29'],
+		['2027-02', '2027-02-28'],
+		['2026-12', '2026-12-31']
+	])('%s ends on %s', (month, end) => {
+		expect(monthEnd(month)).toBe(end);
 	});
 });
 

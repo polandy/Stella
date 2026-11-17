@@ -4,6 +4,7 @@
 	import FormError from '$lib/components/ui/FormError.svelte';
 	import RemoveButton from '$lib/components/ui/RemoveButton.svelte';
 	import WhenPicker from '$lib/components/when/WhenPicker.svelte';
+	import { GIFT_WHEN_KINDS } from '$lib/gifts/idea-when';
 	import type { PartialDate } from '$lib/dates/partial-date';
 	import { useI18n } from '$lib/i18n/context.svelte';
 	import { reveal } from '$lib/motion/motion.svelte';
@@ -54,7 +55,7 @@
 			class="flex flex-col gap-3"
 		>
 			<input type="hidden" name="giftId" value={gift.id} />
-			<WhenPicker when={gift.when} {birth} {today} {estimateHref} />
+			<WhenPicker when={gift.when} {birth} {today} {estimateHref} kinds={GIFT_WHEN_KINDS} />
 			<FormError message={error} variant="inline" />
 			<div class="flex justify-end gap-2">
 				<Button variant="ghost" size="sm" type="button" onclick={() => (moving = false)}>

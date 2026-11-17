@@ -138,6 +138,7 @@ export const errors: ErrorsMessages = {
 	'errors.when.needsBirthYear': 'Für ein Alter braucht es das Geburtsjahr oder eine Schätzung.',
 	'errors.when.birthdayPassed': 'Dieser Geburtstag ist vorbei. Wähle einen späteren.',
 	'errors.when.dayPassed': 'Dieser Tag ist vorbei. Wähle einen, der noch kommt.',
+	'errors.when.monthPassed': 'Dieser Monat ist vorbei. Wähle einen, der noch kommt.',
 	'errors.when.noSuchDay': 'Diesen Tag gibt es nicht.',
 	'errors.when.badAge': 'Wähle ein Alter von 1 bis 150.',
 	'errors.todo.needTitle': 'Schreib, was zu tun ist.',

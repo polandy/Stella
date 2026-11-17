@@ -1,7 +1,7 @@
 import { dayParts, isRealCalendarDay, FULL_DATE_SHAPE } from '../dates/calendar';
 import { addDays } from '../dates/month';
 import type { PartialDate } from '../dates/partial-date';
-import { WHEN_AGE_MAX, WHEN_AGE_MIN, type When } from './when';
+import { MONTH_SHAPE, WHEN_AGE_MAX, WHEN_AGE_MIN, type When } from './when';
 
 /* When a when comes due, against the birth date and the household's day (docs/dev/02 §2.25.8). */
 
@@ -64,7 +64,16 @@ export function ageOn(birth: PartialDate | null, today: string): number | null {
 	return hadBirthday ? age : age - 1;
 }
 
-/** The day a when falls on; null for *later*, and for an age without a birth year. */
+/** The last day of a month `YYYY-MM`. */
+export function monthEnd(month: string): string {
+	const [year, index] = month.split('-').map(Number);
+	return new Date(Date.UTC(year, index, 0)).toISOString().slice(0, 10);
+}
+
+/**
+ * The day a when falls on — a month's first — null for *later*, and for an age without a
+ * birth year.
+ */
 export function whenDay(when: When, birth: PartialDate | null): WhenDay | null {
 	switch (when.kind) {
 		case 'from_age':
@@ -72,6 +81,8 @@ export function whenDay(when: When, birth: PartialDate | null): WhenDay | null {
 			return birthdayAtAge(birth, when.age);
 		case 'on_date':
 			return { on: when.on, approximate: false };
+		case 'in_month':
+			return { on: `${when.on}-01`, approximate: false };
 		case 'later':
 			return null;
 	}
@@ -99,11 +110,12 @@ export type WhenOutlook =
 	/** *For the Nth birthday* once that birthday is over. */
 	| { kind: 'birthdayPassed'; age: number }
 	| { kind: 'dayPassed' }
+	| { kind: 'monthPassed' }
 	| { kind: 'noSuchDay' }
 	| { kind: 'badAge' }
 	| {
 			kind: 'due';
-			when: When & { kind: 'from_age' | 'at_age' | 'on_date' };
+			when: When & { kind: 'from_age' | 'at_age' | 'on_date' | 'in_month' };
 			on: string;
 			approximate: boolean;
 			/** Whether it waits from today, rather than joining the open ones at once. */
@@ -128,6 +140,12 @@ export function whenOutlook(
 			approximate: false,
 			waits: isWaiting(when, birth, today)
 		};
+	}
+	if (when.kind === 'in_month') {
+		if (!MONTH_SHAPE.test(when.on)) return { kind: 'noSuchDay' };
+		if (monthEnd(when.on) < today) return { kind: 'monthPassed' };
+		const on = `${when.on}-01`;
+		return { kind: 'due', when, on, approximate: false, waits: isWaiting(when, birth, today) };
 	}
 	if (!Number.isInteger(when.age) || when.age < WHEN_AGE_MIN || when.age > WHEN_AGE_MAX)
 		return { kind: 'badAge' };

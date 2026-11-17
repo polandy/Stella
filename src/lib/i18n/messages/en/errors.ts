@@ -142,6 +142,7 @@ export const errors = {
 	'errors.when.needsBirthYear': 'An age needs their birth year, or an estimate of it.',
 	'errors.when.birthdayPassed': 'That birthday is over. Choose a later one.',
 	'errors.when.dayPassed': 'That day is over. Choose one still ahead.',
+	'errors.when.monthPassed': 'That month is over. Choose one still ahead.',
 	'errors.when.noSuchDay': 'There is no such day.',
 	'errors.when.badAge': 'Choose an age from 1 to 150.',
 	'errors.todo.needTitle': 'Write what needs doing.',

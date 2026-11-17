@@ -8,6 +8,15 @@ import type { When } from './when';
 
 const CHRISTMAS = '-12-24';
 
+/** A month `YYYY-MM` with its year: *May 2027*. */
+export function monthLabel(lang: DateLanguage, month: string): string {
+	return new Date(`${month}-01T00:00:00Z`).toLocaleDateString(lang.intlLocale, {
+		timeZone: 'UTC',
+		month: 'long',
+		year: 'numeric'
+	});
+}
+
 /** The chip on a waiting record's row: *From age 8*, *For the 10th birthday*, *Christmas 2027*. */
 export function whenChip(lang: DateLanguage, when: When): string {
 	switch (when.kind) {
@@ -19,6 +28,8 @@ export function whenChip(lang: DateLanguage, when: When): string {
 			return when.on.endsWith(CHRISTMAS)
 				? lang.t('when.christmas', { year: when.on.slice(0, 4) })
 				: lang.t('when.chip.onDay', { day: dayLabel(lang, when.on) });
+		case 'in_month':
+			return lang.t('when.chip.inMonth', { month: monthLabel(lang, when.on) });
 		case 'later':
 			return lang.t('when.kind.later');
 	}
@@ -42,7 +53,9 @@ export function whenStateChip(
 			return `${chip} · ${ahead}`;
 		}
 		case 'due':
-			return state.on === today ? `${chip} · ${lang.t('when.chip.today')}` : chip;
+			return state.on === today && when.kind !== 'in_month'
+				? `${chip} · ${lang.t('when.chip.today')}`
+				: chip;
 		case 'passed':
 			return `${chip} · ${lang.t('when.chip.passed')}`;
 		default:
@@ -64,9 +77,11 @@ export function whenPreview(lang: DateLanguage, outlook: WhenOutlook): string {
 			const day =
 				when.kind === 'on_date'
 					? lang.t('when.preview.onDay', { day: dayLabel(lang, on) })
-					: approximate
-						? lang.t('when.preview.turnsAbout', { age: when.age, year: on.slice(0, 4) })
-						: lang.t('when.preview.turns', { age: when.age, day: dayLabel(lang, on) });
+					: when.kind === 'in_month'
+						? lang.t('when.preview.inMonth', { month: monthLabel(lang, when.on) })
+						: approximate
+							? lang.t('when.preview.turnsAbout', { age: when.age, year: on.slice(0, 4) })
+							: lang.t('when.preview.turns', { age: when.age, day: dayLabel(lang, on) });
 			const stands = waits
 				? lang.t('when.preview.waits', { day: dayLabel(lang, addDays(on, -WHEN_LEAD_DAYS)) })
 				: lang.t('when.preview.open');

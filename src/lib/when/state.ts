@@ -1,7 +1,7 @@
 import { dayParts } from '../dates/calendar';
 import { addDays } from '../dates/month';
 import type { PartialDate } from '../dates/partial-date';
-import { WHEN_LEAD_DAYS, whenDay } from './resolve';
+import { monthEnd, WHEN_LEAD_DAYS, whenDay } from './resolve';
 import type { When } from './when';
 
 /* Where a record that waits for its time stands on a day (docs/dev/02 §2.25.8): derived, never stored. */
@@ -13,7 +13,7 @@ export type WhenState =
 	| { kind: 'soon'; on: string; approximate: boolean; inDays: number }
 	/** Its day is here, or an age holds from then on; `on` is null for an age whose birth year went. */
 	| { kind: 'due'; on: string | null; approximate: boolean }
-	/** A birthday or a day gone by: it asks whether it still stands. */
+	/** A birthday, a day or a month gone by: it asks whether it still stands. */
 	| { kind: 'passed'; on: string; approximate: boolean }
 	/** *Later*, at its yearly look before `on`: it asks whether it still stands. */
 	| { kind: 'review'; on: string };
@@ -40,7 +40,13 @@ export function whenState(when: When, history: WhenHistory, today: string): When
 	const { on, approximate } = day;
 	// An estimated year names no day: the year is the whole of what is known.
 	const reached = approximate ? on.slice(0, 4) <= today.slice(0, 4) : on <= today;
-	const over = approximate ? on.slice(0, 4) < today.slice(0, 4) : on < today;
+	// A month is over once its last day is.
+	const over =
+		when.kind === 'in_month'
+			? monthEnd(when.on) < today
+			: approximate
+				? on.slice(0, 4) < today.slice(0, 4)
+				: on < today;
 	if (!reached) {
 		return today < addDays(on, -WHEN_LEAD_DAYS)
 			? { kind: 'waiting' }

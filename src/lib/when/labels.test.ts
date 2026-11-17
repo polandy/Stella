@@ -20,6 +20,7 @@ describe('whenChip', () => {
 		[{ kind: 'at_age', age: 12 }, 'For the 12th birthday', 'Zum 12. Geburtstag'],
 		[{ kind: 'on_date', on: '2027-12-24' }, 'Christmas 2027', 'Weihnachten 2027'],
 		[{ kind: 'on_date', on: '2027-05-03' }, 'For 3 May 2027', 'Zum 3. Mai 2027'],
+		[{ kind: 'in_month', on: '2027-05' }, 'In May 2027', 'Im Mai 2027'],
 		[{ kind: 'later' }, 'Later', 'Später']
 	] as const)('%o reads “%s”', (when, english, german) => {
 		expect(whenChip(en, when)).toBe(english);
@@ -66,6 +67,12 @@ describe('whenStateChip', () => {
 		expect(whenStateChip(de, six, state, today)).toBe(german);
 	});
 
+	it('a month on its first day does not read as today', () => {
+		const may = { kind: 'in_month', on: '2026-10' } as const;
+		const due = { kind: 'due', on: '2026-10-01', approximate: false } as const;
+		expect(whenStateChip(en, may, due, '2026-10-01')).toBe('In October 2026');
+	});
+
 	it('a later one at its look reads as later', () => {
 		expect(whenStateChip(en, { kind: 'later' }, { kind: 'review', on: '2027-03-14' }, today)).toBe(
 			'Later'
@@ -108,6 +115,18 @@ describe('whenPreview', () => {
 		);
 		expect(preview(de, { kind: 'at_age', age: 12 }, estimated, today)).toBe(
 			'Wird ungefähr 2030 12. Sie wartet bis zum 3. Oktober 2029, dann steht sie bei den Ideen.'
+		);
+	});
+
+	it('names a month, and when it comes back', () => {
+		expect(preview(en, { kind: 'in_month', on: '2027-05' }, full, today)).toBe(
+			'In May 2027. It waits until 31 January 2027, then shows among the ideas.'
+		);
+		expect(preview(de, { kind: 'in_month', on: '2026-11' }, full, today)).toBe(
+			'Im November 2026. Sie steht gleich bei den Ideen.'
+		);
+		expect(preview(en, { kind: 'in_month', on: '2026-09' }, full, today)).toBe(
+			'That month is over. Choose one still ahead.'
 		);
 	});
 

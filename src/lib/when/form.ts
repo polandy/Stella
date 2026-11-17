@@ -1,6 +1,6 @@
 import * as v from 'valibot';
-import { optionalWhen } from './schema';
-import type { When } from './when';
+import { optionalWhenOf } from './schema';
+import type { When, WhenKind } from './when';
 
 /* A when as `WhenPicker.svelte` posts it, read into the payload's shape; `WhenSchema` judges it. */
 
@@ -15,14 +15,15 @@ export function whenFromForm(read: (key: string) => string | null): unknown {
 	if (kind === 'from_age' || kind === 'at_age') {
 		return { kind, age: Number(read(WHEN_FIELDS.age) ?? '') };
 	}
-	if (kind === 'on_date') return { kind, on: read(WHEN_FIELDS.on) ?? '' };
+	if (kind === 'on_date' || kind === 'in_month') return { kind, on: read(WHEN_FIELDS.on) ?? '' };
 	return { kind };
 }
 
-/** The posted when, checked as a command carries it; null when it is not one. */
+/** The posted when, checked as a command of a record offering `kinds` carries it; null when not one. */
 export function parsedWhenFromForm(
-	read: (key: string) => string | null
+	read: (key: string) => string | null,
+	kinds: readonly WhenKind[]
 ): { when: When | null | undefined } | null {
-	const parsed = v.safeParse(optionalWhen, whenFromForm(read));
+	const parsed = v.safeParse(optionalWhenOf(kinds), whenFromForm(read));
 	return parsed.success ? { when: parsed.output } : null;
 }
