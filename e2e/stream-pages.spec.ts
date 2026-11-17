@@ -39,8 +39,9 @@ test('Show older loads the next page by keyboard', async ({ page }) => {
 
 test('back from a row on the second page returns to the same rows and place', async ({ page }) => {
 	await page.goto('/?pages=2');
-	// A row past the first page that links a person, whatever other specs have added above it.
-	const personLink = page.locator('a[href^="/contacts/"]');
+	// A row past the first page that links a person, whatever other specs have added above it;
+	// not the row's own cover link, whose middle a mention may sit over.
+	const personLink = page.locator('a[href^="/contacts/"]:not(.moment-open)');
 	const row = page
 		.getByTestId('stream')
 		.locator('article')
