@@ -84,7 +84,9 @@ first to find somebody, so there the page opens on the person search.
   When nothing older is left, a line says *That is everything* — only after the first page, so
   a short stream ends quietly. The page count is `?pages=N` (`src/lib/stream/pages.ts`), replaced
   rather than pushed; a page snapshot puts `#content`'s scroll back on *Back*, which SvelteKit
-  does only for the window.
+  does only for the window. A load is a navigation, and the newest one wins: the foot does not
+  load by itself while the reader is going somewhere, or while the shell holds their navigation back
+  to send pending removals — it would take them back to Home.
 - Each stream row ends with the **time of day** it was written, in the viewer's locale
   (*08:41*), under *Today* and *Yesterday*; under an older day it ends with nothing. The full
   date and time are the time's tooltip. The grouping and that choice are the pure

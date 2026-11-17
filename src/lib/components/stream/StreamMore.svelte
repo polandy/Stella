@@ -1,5 +1,6 @@
 <script lang="ts">
-	import { goto } from '$app/navigation';
+	import { afterNavigate, beforeNavigate, goto } from '$app/navigation';
+	import { navigating } from '$app/state';
 	import Button from '$lib/components/ui/Button.svelte';
 	import { nearEnd } from '$lib/components/ui/near-end';
 	import { useTranslate } from '$lib/i18n/context.svelte';
@@ -27,6 +28,22 @@
 
 	let loading = $state(false);
 
+	// A load of its own is a navigation too, and the newest one wins: one started by the foot
+	// coming into view must not overtake the reader's, nor take the turn of one the shell holds
+	// back while it sends pending removals (docs/dev/04 §4.9).
+	let leaving = false;
+	beforeNavigate(() => {
+		if (!loading) leaving = true;
+	});
+	afterNavigate(() => {
+		leaving = false;
+	});
+
+	function loadNear() {
+		if (leaving || navigating.to) return;
+		void loadMore();
+	}
+
 	async function loadMore() {
 		if (loading) return;
 		loading = true;
@@ -39,7 +56,7 @@
 </script>
 
 <div
-	{@attach more && nearEnd(() => void loadMore(), { page: href })}
+	{@attach more && nearEnd(loadNear, { page: href })}
 	class="flex justify-center py-4"
 	data-testid="stream-foot"
 >
