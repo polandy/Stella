@@ -7,7 +7,8 @@ import { DEMO_ADMIN_PASSWORD, DEMO_MEMBER_EMAIL } from '../src/lib/server/db/dem
 /*
  * The Outings card on the person page (docs/dev/02 §2.27): the empty line and its help, an idea
  * for a day, a month or some time, one far ahead folded under *Later*, booking, ticking done and
- * opening again from *Done*; and an idea kept from the member it is with. The page's clock is
+ * opening again from *Done*; noting, booking and ticking while Stella is out of reach; and an idea
+ * kept from the member it is with. The page's clock is
  * the test's, so a toast stands until the case moves on; days come from the server's today.
  * The suite shares one database, so every person is the run's own.
  */
@@ -126,6 +127,62 @@ test('an idea is noted, folded when far, booked, done and opened again', async (
 	await expect(card.getByTestId('plan-done-list')).toHaveCount(0);
 	await card.getByRole('tab', { name: /Ideas/ }).click();
 	await expect(ideaRow(page, lake)).toHaveCount(1);
+});
+
+test('noting, booking and ticking are kept offline, and sent once back', async ({
+	page,
+	context
+}) => {
+	await signIn(page);
+	const letters = runLetters();
+	await addPerson(page, 'Ausflugine', `Funkloch${letters}`);
+	const booked = `Climbing hall ${letters}`;
+	const ticked = `Pancakes ${letters}`;
+	await addIdea(page, booked);
+	await addIdea(page, ticked);
+	await expect(ideaRow(page, ticked)).toHaveCount(1);
+
+	await context.setOffline(true);
+	const noted = `Ice rink ${letters}`;
+	await addIdea(page, noted);
+	const kept = plansCard(page).getByTestId('kept-plans').locator('li');
+	await expect(kept).toContainText(noted);
+	await expect(kept).toContainText('Not sent yet');
+
+	await ideaRow(page, booked).getByTestId('plan-book').click();
+	await expect(ideaRow(page, booked).getByTestId('plan-booked')).toHaveText('booked');
+	await expect(ideaRow(page, booked)).toContainText('Not sent yet');
+	await ideaRow(page, ticked)
+		.getByRole('checkbox', { name: `Done: ${ticked}` })
+		.check();
+	await expect(ideaRow(page, ticked)).toContainText('Not sent yet');
+
+	// Also on Home, seen there while the way to Stella is held shut.
+	const personPage = page.url();
+	await page.route('**/api/commands', (route) => route.abort());
+	await context.setOffline(false);
+	await page.goto('/');
+	const outbox = page.getByTestId('outbox');
+	await expect(outbox).toContainText(`outing with Ausflugine Funkloch${letters}`);
+	await expect(outbox).toContainText('outing booked');
+	await expect(outbox).toContainText('outing done');
+	await expect(outbox).toContainText(ticked);
+
+	await page.unroute('**/api/commands');
+	const sent = page.waitForResponse(
+		(response) => response.url().endsWith('/api/commands') && response.request().method() === 'POST'
+	);
+	await page.reload();
+	await sent;
+	await expect(outbox).toHaveCount(0);
+	await page.goto(personPage);
+	await appReady(page);
+	await expect(plansCard(page)).not.toContainText('Not sent yet');
+	await expect(ideaRow(page, noted)).toHaveCount(1);
+	await expect(ideaRow(page, booked).getByTestId('plan-booked')).toHaveText('booked');
+	await expect(ideaRow(page, ticked)).toHaveCount(0);
+	await plansCard(page).getByRole('tab', { name: /Done/ }).click();
+	await expect(plansCard(page).getByTestId('plan-done-list')).toContainText(ticked);
 });
 
 /** A second browser signed in as the household's other member, Nina. */

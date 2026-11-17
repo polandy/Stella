@@ -243,6 +243,40 @@ describe('a person', () => {
 		expect((p.interactions as Record<string, unknown>[])[0]).toMatchObject({ kind: 'call' });
 	});
 
+	it('brings the outings planned with them, booked, kept from them, or done', () => {
+		const h = fullHousehold();
+		h.tables.activity_idea = [
+			{
+				id: 'a-1',
+				contact_id: 'c-hans',
+				title: 'Zoo',
+				when_kind: 'in_month',
+				when_on: '2026-12-01',
+				booked_at: NOW,
+				booked_by: 'u-1',
+				visibility: 'shared',
+				hidden_from_person: 1,
+				created_by: 'u-1',
+				created_at: NOW
+			}
+		];
+		const person = buildArchiveDocument(h, NOW).people.find((p) => p.id === 'c-hans')!;
+		expect(person.plans).toEqual([
+			{
+				id: 'a-1',
+				title: 'Zoo',
+				when_kind: 'in_month',
+				when_on: '2026-12-01',
+				booked_at: '2026-09-07T09:30:00.000Z',
+				booked_by: 'u-1',
+				visibility: 'shared',
+				hidden_from_person: true,
+				author: 'u-1',
+				created_at: '2026-09-07T09:30:00.000Z'
+			}
+		]);
+	});
+
 	it('keeps the visibility each record was written with, private ones included', () => {
 		// The archive is a backup: a restore that loses a member's private journal is not one.
 		expect(doc().people.find((p) => p.id === 'c-rosa')!.visibility).toBe('private');
