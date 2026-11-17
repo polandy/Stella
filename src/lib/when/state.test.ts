@@ -139,7 +139,11 @@ describe('whenState, for a month', () => {
 	const may: When = { kind: 'in_month', on: '2027-05' };
 	it.each([
 		['before the lead time', '2027-01-30', { kind: 'waiting' }],
-		['from the lead time', '2027-01-31', { kind: 'soon', on: '2027-05-01', approximate: false, inDays: 90 }],
+		[
+			'from the lead time',
+			'2027-01-31',
+			{ kind: 'soon', on: '2027-05-01', approximate: false, inDays: 90 }
+		],
 		['its first day', '2027-05-01', { kind: 'due', on: '2027-05-01', approximate: false }],
 		['its last day', '2027-05-31', { kind: 'due', on: '2027-05-01', approximate: false }],
 		['once it is over', '2027-06-01', { kind: 'passed', on: '2027-05-01', approximate: false }]

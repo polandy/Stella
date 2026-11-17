@@ -52,6 +52,9 @@ export const home: HomeMessages = {
 	'home.outbox.giftFor': (p: { name: string }) => `· Geschenk für ${p.name}`,
 	'home.outbox.todoFor': (p: { name: string }) => `· Todo für ${p.name}`,
 	'home.outbox.todoDone': '· als erledigt abgehakt',
+	'home.outbox.planFor': (p) => `· Unternehmung mit ${p.name}`,
+	'home.outbox.planDone': '· Unternehmung gemacht',
+	'home.outbox.planBooked': '· Unternehmung fest',
 	'home.welcome.label': 'Erste Schritte',
 	'home.welcome.title': 'Willkommen bei Stella',
 	'home.welcome.intro':

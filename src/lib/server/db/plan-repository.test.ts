@@ -112,7 +112,9 @@ describe('createDrizzlePlanRepository', () => {
 
 	it('lists open and done ones, newest noted first', async () => {
 		await repo.insert(plan({ id: 'old', createdAt: 1 }));
-		await repo.insert(plan({ id: 'done', createdAt: 2, doneAt: 9, doneOn: '2026-11-01', doneBy: U2 }));
+		await repo.insert(
+			plan({ id: 'done', createdAt: 2, doneAt: 9, doneOn: '2026-11-01', doneBy: U2 })
+		);
 		await repo.insert(plan({ id: 'new', createdAt: 3 }));
 		const listed = await repo.listForContactVisibleTo(viewerU1, 'c-shared');
 		expect(listed.map((p) => p.id)).toEqual(['new', 'done', 'old']);

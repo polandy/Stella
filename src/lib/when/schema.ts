@@ -9,7 +9,10 @@ const age = v.pipe(v.number(), v.integer(), v.minValue(WHEN_AGE_MIN), v.maxValue
 const SHAPES = {
 	from_age: v.object({ kind: v.literal('from_age'), age }),
 	at_age: v.object({ kind: v.literal('at_age'), age }),
-	on_date: v.object({ kind: v.literal('on_date'), on: v.pipe(v.string(), v.regex(FULL_DATE_SHAPE)) }),
+	on_date: v.object({
+		kind: v.literal('on_date'),
+		on: v.pipe(v.string(), v.regex(FULL_DATE_SHAPE))
+	}),
 	in_month: v.object({ kind: v.literal('in_month'), on: v.pipe(v.string(), v.regex(MONTH_SHAPE)) }),
 	later: v.object({ kind: v.literal('later') })
 };

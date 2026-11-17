@@ -23,7 +23,8 @@ export function giftAddCommand(
 	const state = String(formData.get('state') ?? '');
 	const givenOn = text(formData, 'givenOn');
 	// A when the schema refuses goes to the server, which says why.
-	const when = state === 'idea' ? parsedWhenFromForm((key) => text(formData, key), GIFT_WHEN_KINDS) : {};
+	const when =
+		state === 'idea' ? parsedWhenFromForm((key) => text(formData, key), GIFT_WHEN_KINDS) : {};
 	if (!title || !isAddableGiftState(state) || (state !== 'idea' && !givenOn) || !when) return null;
 	return {
 		id,

@@ -13,6 +13,7 @@ import {
 } from '$lib/server/domain/dates/important-dates';
 import type { GraphModel } from '$lib/graph/model/types';
 import type { Gift } from '$lib/server/domain/gifts/gifts';
+import type { Plan } from '$lib/server/domain/plans/plans';
 import type { Todo } from '$lib/server/domain/todos/todos';
 import type { MentionedIn } from '$lib/server/domain/mentions/mentioned-in';
 import { renderMarkdownWithMentions } from '$lib/server/domain/notes/markdown';
@@ -114,6 +115,32 @@ export function giftView(gift: Gift, ctx: PersonViewContext) {
 		notedBy: mine ? null : authorLabel(false, ctx.nameOfAuthor(gift.createdBy)),
 		/** When it was noted, shown on an idea; given and received gifts show their day. */
 		createdAt: gift.createdAt
+	};
+}
+
+/**
+ * An outing idea as the Outings card shows it (docs/dev/02 §2.27): who noted it and who fixed it
+ * are named by first name; `mine` is what offers who may see it, which only the author sets.
+ */
+export function planView(plan: Plan, ctx: PersonViewContext) {
+	const mine = plan.createdBy === ctx.viewerId;
+	return {
+		id: plan.id,
+		title: plan.title,
+		note: plan.note,
+		url: plan.url,
+		when: plan.when,
+		bookedAt: plan.bookedAt,
+		/** Who fixed it, named only when it was somebody else. */
+		bookedBy:
+			plan.bookedBy && plan.bookedBy !== ctx.viewerId ? ctx.nameOfAuthor(plan.bookedBy) : null,
+		doneOn: plan.doneOn,
+		/** Kept from the member it is with; only ever true on a shared idea. */
+		hiddenFromPerson: plan.hiddenFromPerson,
+		visibility: plan.visibility,
+		mine,
+		notedBy: mine ? null : authorLabel(false, ctx.nameOfAuthor(plan.createdBy)),
+		createdAt: plan.createdAt
 	};
 }
 

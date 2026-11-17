@@ -40,8 +40,7 @@ beforeEach(() => {
 		contacts: {
 			async findByIdVisibleTo(_viewer, id) {
 				if (id === MIA) return { id, birthDate: '2022-03-14', birthDatePrecision: 'full' } as never;
-				if (id === JULIA_SELF)
-					return { id, birthDate: null, birthDatePrecision: 'full' } as never;
+				if (id === JULIA_SELF) return { id, birthDate: null, birthDatePrecision: 'full' } as never;
 				return null;
 			}
 		},

@@ -142,7 +142,19 @@ export function createServices(wiring: ServicesWiring): AppServices {
 	const release = createReleaseServices(wiring);
 	const offline = createOfflineServices({
 		...wiring,
-		contexts: { auth, people, relationships, circles, media, story, notes, records, gifts, todos, plans }
+		contexts: {
+			auth,
+			people,
+			relationships,
+			circles,
+			media,
+			story,
+			notes,
+			records,
+			gifts,
+			todos,
+			plans
+		}
 	});
 	return {
 		auth,

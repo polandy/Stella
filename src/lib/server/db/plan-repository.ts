@@ -36,7 +36,6 @@ const columns = {
 	updatedAt: activityIdea.updatedAt
 };
 
-
 /** A row as the domain reads it: its when as one, its surprise flag a boolean. */
 function planOf(row: typeof activityIdea.$inferSelect): Plan {
 	const { whenKind, whenOn, whenAge, hiddenFromPerson, ...rest } = row;

@@ -50,7 +50,9 @@
 	);
 	const quick = $derived(quickDays(picks, birth, today));
 	// svelte-ignore state_referenced_locally
-	let on = $state(when?.kind === 'on_date' ? when.on : (quickDays(picks, birth, today)[0]?.on ?? today));
+	let on = $state(
+		when?.kind === 'on_date' ? when.on : (quickDays(picks, birth, today)[0]?.on ?? today)
+	);
 	const thisMonth = $derived(today.slice(0, 7));
 	// svelte-ignore state_referenced_locally
 	let month = $state(when?.kind === 'in_month' ? when.on : shiftMonth(today.slice(0, 7), 1));
@@ -170,12 +172,7 @@
 	{:else if kind === 'in_month'}
 		<label class="flex flex-col gap-1 text-xs font-medium text-fg-muted">
 			{t('when.month')}
-			<select
-				name={WHEN_FIELDS.on}
-				bind:value={month}
-				class={INPUT}
-				data-testid="when-month"
-			>
+			<select name={WHEN_FIELDS.on} bind:value={month} class={INPUT} data-testid="when-month">
 				{#each months as value (value)}
 					<option {value}>{monthLabel(i18n, value)}</option>
 				{/each}

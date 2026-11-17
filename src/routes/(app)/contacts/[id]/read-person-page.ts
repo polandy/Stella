@@ -17,6 +17,7 @@ import { listGallery } from '$lib/server/domain/media/gallery';
 import { listMentionedIn } from '$lib/server/domain/mentions/mentioned-in';
 import { listNotesForContact } from '$lib/server/domain/notes/notes';
 import { listGiftsForContact } from '$lib/server/domain/gifts/gifts';
+import { listPlansForContact } from '$lib/server/domain/plans/plans';
 import { mayKeepFrom } from '$lib/server/domain/gifts/surprise';
 import { listOpenTodosForContact } from '$lib/server/domain/todos/todos';
 import { readFamilyOf } from '$lib/server/domain/relationships/family';
@@ -41,6 +42,7 @@ export function readPersonPage(
 		records,
 		household,
 		gifts,
+		plans,
 		todos
 	}: Pick<
 		AppServices,
@@ -53,6 +55,7 @@ export function readPersonPage(
 		| 'records'
 		| 'household'
 		| 'gifts'
+		| 'plans'
 		| 'todos'
 	>,
 	viewer: Viewer,
@@ -72,6 +75,8 @@ export function readPersonPage(
 		gifts: listGiftsForContact(gifts.giftDeps, viewer, contactId),
 		// Whether a gift may be kept from them, they being another member (§2.25.10).
 		recipientIsMember: mayKeepFrom(gifts.giftDeps, viewer, contactId),
+		// Outing ideas, open and done (§2.27); kept from them the way a gift is.
+		plans: listPlansForContact(plans.planDeps, viewer, contactId),
 		todos: listOpenTodosForContact(todos.todoDeps, viewer, contactId),
 		mentionedIn: listMentionedIn(notes.mentionedInDeps, viewer, contactId),
 		gallery: listGallery(media.galleryDeps, viewer, contactId),

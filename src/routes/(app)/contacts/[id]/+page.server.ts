@@ -3,6 +3,7 @@ import { dateActions } from './actions/dates';
 import { fieldActions } from './actions/fields';
 import { giftActions } from './actions/gifts';
 import { todoActions } from './actions/todos';
+import { planActions } from './actions/plans';
 import { homeActions } from './actions/homes';
 import { immichActions } from './actions/immich';
 import { noteActions } from './actions/notes';
@@ -29,6 +30,8 @@ export const actions = {
 	...noteActions,
 	// The Gifts card (docs/dev/02 §2.25).
 	...giftActions,
+	// The Outings card (docs/dev/02 §2.27).
+	...planActions,
 	// The To-dos card (docs/dev/02 §2.26).
 	...todoActions,
 	...fieldActions,

@@ -144,7 +144,8 @@ export const errors: ErrorsMessages = {
 	'errors.plan.needTitle': 'Schreib, was ihr machen wollt.',
 	'errors.plan.badLink': 'Der Link muss eine Webadresse sein.',
 	'errors.plan.gone': 'Diese Idee gibt es nicht mehr.',
-	'errors.plan.ownSurprise': 'Du kannst eine Idee nicht vor dir selbst verbergen — sie ist mit dir.',
+	'errors.plan.ownSurprise':
+		'Du kannst eine Idee nicht vor dir selbst verbergen — sie ist mit dir.',
 	'errors.plan.couldNotSave': 'Die Idee konnte nicht gespeichert werden.',
 	'errors.plan.badWhen': 'Bitte wähle, wann es sein soll.',
 	'errors.todo.needTitle': 'Schreib, was zu tun ist.',

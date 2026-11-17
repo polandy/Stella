@@ -101,7 +101,11 @@ export function canViewGift(
 	{ hiddenFromRecipient, ...gift }: GiftAccess,
 	viewerSelfContactId: string | null
 ): boolean {
-	return canViewSurprise(viewer, { ...gift, hiddenFromPerson: hiddenFromRecipient }, viewerSelfContactId);
+	return canViewSurprise(
+		viewer,
+		{ ...gift, hiddenFromPerson: hiddenFromRecipient },
+		viewerSelfContactId
+	);
 }
 
 /**

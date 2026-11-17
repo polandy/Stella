@@ -23,6 +23,7 @@ describe('CONTACT_SECTIONS', () => {
 			'story',
 			'notes',
 			'gifts',
+			'plans',
 			'todos',
 			'mentions'
 		]);

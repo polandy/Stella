@@ -15,6 +15,7 @@ export const REMOVAL_KINDS = [
 	'field',
 	'date',
 	'gift',
+	'plan',
 	'todo',
 	'tag',
 	'membership',
