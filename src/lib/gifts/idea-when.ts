@@ -1,9 +1,17 @@
 import type { PartialDate } from '../dates/partial-date';
 import { todayFor } from '../dates/today';
 import { whenState, type WhenState } from '../when/state';
-import type { When } from '../when/when';
+import type { When, WhenKind } from '../when/when';
 
 /* Where a gift idea stands against its when (docs/dev/02 §2.25.8); `src/lib/when` knows no gifts. */
+
+/** The whens a gift idea can be for; a month is an outing's (docs/dev/02 §2.27). */
+export const GIFT_WHEN_KINDS = [
+	'from_age',
+	'at_age',
+	'on_date',
+	'later'
+] as const satisfies readonly WhenKind[];
 
 /** What an idea's state is read from. */
 export interface IdeaTiming {

@@ -13,6 +13,7 @@ import {
 	TodoEditSchema,
 	TodoRefSchema
 } from './gift-todo-payloads';
+import { PlanAddSchema, PlanEditSchema, PlanRefSchema } from './plan-payloads';
 import {
 	CommandIdSchema,
 	ISO_DAY,
@@ -37,7 +38,7 @@ import {
  * by `POST /api/commands` for a phone's outbox and by the form action that builds the same
  * command. The payload types in `commands.ts` are what these schemas read, so a field is
  * added in one place. Pure and client-safe; the browser imports only the types. The gift and
- * to-do schemas are in `gift-todo-payloads.ts`, a person's own in `person-payloads.ts`; this
+ * to-do schemas are in `gift-todo-payloads.ts`, the outing ones in `plan-payloads.ts`, a person's own in `person-payloads.ts`; this
  * file holds the moment's, the journal's and the gallery's, and the table of them all.
  */
 
@@ -169,6 +170,13 @@ export const COMMAND_PAYLOAD_SCHEMAS = {
 	'todo.edit': TodoEditSchema,
 	'todo.untick': TodoRefSchema,
 	'todo.remove': TodoRefSchema,
+	'plan.add': PlanAddSchema,
+	'plan.book': PlanRefSchema,
+	'plan.done': PlanRefSchema,
+	'plan.edit': PlanEditSchema,
+	'plan.unbook': PlanRefSchema,
+	'plan.reopen': PlanRefSchema,
+	'plan.remove': PlanRefSchema,
 	'tag.assign': TagAssignSchema,
 	'circle.join': CircleJoinSchema,
 	'relationship.add': RelationshipAddSchema,

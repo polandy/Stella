@@ -25,6 +25,7 @@ import {
 	fieldView,
 	galleryPhotoView,
 	giftView,
+	planView,
 	todoView,
 	mentionedInView,
 	noteView,
@@ -165,6 +166,8 @@ export const load = (async ({ locals, params, url }) => {
 		// Ideas, given and received gifts (docs/dev/02 §2.25), already visibility-scoped.
 		gifts: read.gifts.map((gift) => giftView(gift, ctx)),
 		recipientIsMember: read.recipientIsMember,
+		// Outing ideas (docs/dev/02 §2.27), open and done, already visibility-scoped.
+		plans: read.plans.map((plan) => planView(plan, ctx)),
 		// What is still to do for them (docs/dev/02 §2.26): open ones, those with a day first.
 		todos: orderOpenTodos(read.todos).map((todo) => todoView(todo, ctx)),
 		// The household's day, which the card's *overdue* and *by Fri, 6 Nov* are read against.

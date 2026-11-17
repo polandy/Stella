@@ -11,6 +11,7 @@
 	import { useI18n } from '$lib/i18n/context.svelte';
 	import type { SubmitFunction } from '@sveltejs/kit';
 	import WhenPicker from '$lib/components/when/WhenPicker.svelte';
+	import { GIFT_WHEN_KINDS } from '$lib/gifts/idea-when';
 	import type { PartialDate } from '$lib/dates/partial-date';
 	import type { When } from '$lib/when/when';
 	import GiftOccasionField from './GiftOccasionField.svelte';
@@ -143,7 +144,7 @@
 		</div>
 		<GiftOccasionField occasion={gift?.occasion ?? null} />
 	{:else}
-		<WhenPicker when={gift?.when ?? null} {birth} {today} {estimateHref} />
+		<WhenPicker when={gift?.when ?? null} {birth} {today} {estimateHref} kinds={GIFT_WHEN_KINDS} />
 	{/if}
 
 	{#if showMore}

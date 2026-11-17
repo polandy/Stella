@@ -34,6 +34,8 @@ import { addRelationshipChecked } from '../domain/relationships/add-checked';
 import { addRelationshipsOrRefuse } from '../domain/relationships/add-many';
 import { assignTagByName } from '../domain/tags/tags';
 import { addTodo, editTodo, removeTodo, tickTodo, untickTodo } from '../domain/todos/todos';
+import { addPlan, editPlan, removePlan } from '../domain/plans/plans';
+import { bookPlan, donePlan, reopenPlan, unbookPlan } from '../domain/plans/progress';
 import type { AppServices } from '../services/app-services';
 
 /*
@@ -56,6 +58,7 @@ export type HandlerContexts = Pick<
 	| 'records'
 	| 'gifts'
 	| 'todos'
+	| 'plans'
 >;
 
 /** The offline context's own repositories a photo reads to find what it follows. */
@@ -79,7 +82,8 @@ export function createCommandHandlers(
 		notes,
 		records,
 		gifts,
-		todos
+		todos,
+		plans
 	}: HandlerContexts,
 	{ receipts, entries }: HandlerRepositories
 ): CommandHandlers {
@@ -144,6 +148,13 @@ export function createCommandHandlers(
 		'todo.edit': (actor, payload) => editTodo(todos.todoDeps, actor, payload),
 		'todo.untick': (actor, payload) => untickTodo(todos.todoDeps, actor, payload),
 		'todo.remove': (actor, payload) => removeTodo(todos.todoDeps, actor, payload),
+		'plan.add': (actor, payload) => addPlan(plans.planDeps, actor, payload),
+		'plan.book': (actor, payload) => bookPlan(plans.planDeps, actor, payload),
+		'plan.done': (actor, payload) => donePlan(plans.planDeps, actor, payload),
+		'plan.edit': (actor, payload) => editPlan(plans.planDeps, actor, payload),
+		'plan.unbook': (actor, payload) => unbookPlan(plans.planDeps, actor, payload),
+		'plan.reopen': (actor, payload) => reopenPlan(plans.planDeps, actor, payload),
+		'plan.remove': (actor, payload) => removePlan(plans.planDeps, actor, payload),
 		'note.add': (actor, payload) =>
 			withNamesakeContext(namesakeContextDeps, viewerOf(actor), () =>
 				writeNote({ ...notes.noteDeps, contacts, directory }, actor, payload)

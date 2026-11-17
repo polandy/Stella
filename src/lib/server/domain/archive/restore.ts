@@ -195,6 +195,7 @@ export function planRestore(
 			{ table: 'interaction_participant', rows: personRecords.participants },
 			{ table: 'gift', rows: personRecords.gifts },
 			{ table: 'todo', rows: personRecords.todos },
+			{ table: 'activity_idea', rows: personRecords.plans },
 			{ table: 'photo', rows: kept.photos },
 			{ table: 'circle', rows: circles },
 			{ table: 'circle_membership', rows: memberships },

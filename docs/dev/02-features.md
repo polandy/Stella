@@ -39,4 +39,5 @@ resolves by opening the matching file below).
 - [2.24 A person's photos, from Immich](features/2.24-immich.md) **[M3]** — optional
 - [2.25 Gift ideas and gifts given](features/2.25-gifts.md) **[M3]**
 - [2.26 To-dos per person](features/2.26-to-dos.md) **[after 1.0]**
+- [2.27 Outings with a person](features/2.27-plans.md) **[after 1.0]**
 - [2.21 Feature ↔ milestone summary](features/2.21-feature-milestone-summary.md)

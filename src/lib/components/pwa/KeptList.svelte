@@ -163,6 +163,24 @@
 						>{/snippet}
 					<p class="mt-1 text-fg">{item.command.payload.title}</p>
 				</KeptItem>
+			{:else if isKept(item, 'plan.add')}
+				<KeptItem {item} editHref={contactSectionPath(item.command.payload.contactId, 'plans')}>
+					{#snippet meta()}<span>{t('home.outbox.planFor', { name: item.about ?? '' })}</span
+						>{/snippet}
+					<p class="mt-1 text-fg">{item.command.payload.title}</p>
+				</KeptItem>
+			{:else if isKept(item, 'plan.book') || isKept(item, 'plan.done')}
+				<!-- A step carries only ids; `about` holds the idea's line, kept for this. -->
+				<KeptItem {item}>
+					{#snippet meta()}<span
+							>{t(
+								item.command.type === 'plan.done'
+									? 'home.outbox.planDone'
+									: 'home.outbox.planBooked'
+							)}</span
+						>{/snippet}
+					<p class="mt-1 text-fg">{item.about}</p>
+				</KeptItem>
 			{:else if isKept(item, 'todo.tick')}
 				<!-- A tick carries only ids; `about` holds the to-do's line, kept for this. -->
 				<KeptItem {item}>

@@ -1,5 +1,6 @@
 <script lang="ts">
 	import GiftsSection from '$lib/components/person/GiftsSection.svelte';
+	import PlansSection from '$lib/components/person/PlansSection.svelte';
 	import IdentityCard from '$lib/components/person/IdentityCard.svelte';
 	import JumpBar from '$lib/components/person/JumpBar.svelte';
 	import MentionsSection from '$lib/components/person/MentionsSection.svelte';
@@ -142,6 +143,7 @@
 
 	<!-- Ideas, and what was given and received (docs/dev/02 §2.25). -->
 	<GiftsSection {data} {form} />
+	<PlansSection {data} {form} />
 
 	{#if !todosFirst}<TodosSection {data} {form} rows={todoRows} {justDone} />{/if}
 

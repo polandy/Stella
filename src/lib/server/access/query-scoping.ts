@@ -100,6 +100,35 @@ export function childRecordBrowsableBy(
 	return and(childRecordVisibleTo(viewer, record), isNull(contact.archivedAt))!;
 }
 
+/** The columns `surpriseVisibleTo` decides on. */
+export interface SurpriseColumns {
+	visibility: AnyColumn;
+	createdBy: AnyColumn;
+	contactId: AnyColumn;
+	hiddenFromPerson: AnyColumn;
+}
+
+/**
+ * Condition for a surprise (a gift, an outing idea) being visible — the SQL of `canViewSurprise`:
+ * a visible child record, and not one hidden from the viewer as its person. The query must join
+ * `contact`.
+ */
+export function surpriseVisibleTo(viewer: Viewer, record: SurpriseColumns): SQL {
+	return and(
+		childRecordVisibleTo(viewer, record),
+		or(
+			eq(record.hiddenFromPerson, 0),
+			eq(record.createdBy, viewer.id),
+			sql`NOT EXISTS (SELECT 1 FROM ${user} WHERE ${user.id} = ${viewer.id} AND ${user.selfContactId} = ${record.contactId})`
+		)
+	)!;
+}
+
+/** Condition for a surprise on a surface the household browses: visible, its person not archived. */
+export function surpriseBrowsableBy(viewer: Viewer, record: SurpriseColumns): SQL {
+	return and(surpriseVisibleTo(viewer, record), isNull(contact.archivedAt))!;
+}
+
 /** The gift columns `giftVisibleTo` decides on. */
 export interface GiftColumns {
 	visibility: AnyColumn;
@@ -108,19 +137,9 @@ export interface GiftColumns {
 	hiddenFromRecipient: AnyColumn;
 }
 
-/**
- * Condition for a gift being visible — the SQL of `canViewGift`: a visible child record, and not
- * one hidden from the viewer as the person it is for. The query must join `contact`.
- */
+/** Condition for a gift being visible — the SQL of `canViewGift`, a surprise's. */
 export function giftVisibleTo(viewer: Viewer, record: GiftColumns): SQL {
-	return and(
-		childRecordVisibleTo(viewer, record),
-		or(
-			eq(record.hiddenFromRecipient, 0),
-			eq(record.createdBy, viewer.id),
-			sql`NOT EXISTS (SELECT 1 FROM ${user} WHERE ${user.id} = ${viewer.id} AND ${user.selfContactId} = ${record.contactId})`
-		)
-	)!;
+	return surpriseVisibleTo(viewer, { ...record, hiddenFromPerson: record.hiddenFromRecipient });
 }
 
 /** Condition for a gift on a surface the household browses: visible, its person not archived. */

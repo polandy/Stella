@@ -1,4 +1,4 @@
-/* When a gift idea is for: the picker, its preview and the row chip (docs/dev/02 §2.25.8). */
+/* When an idea is for: the picker, its preview and the row chip (docs/dev/02 §2.25.8). */
 
 /** 1st, 2nd, 3rd, 4th … 11th, 12th, 13th, 21st. */
 function ordinal(n: number): string {
@@ -12,11 +12,16 @@ export const when = {
 	'when.kind.from_age': 'From age',
 	'when.kind.at_age': 'For a birthday',
 	'when.kind.on_date': 'On a day',
+	'when.kind.in_month': 'In a month',
 	'when.kind.later': 'Later',
+	'when.kind.anytime': 'Some time',
 	'when.age': 'Age',
 	'when.older': 'One year older',
 	'when.younger': 'One year younger',
 	'when.day': 'Day',
+	'when.month': 'Month',
+	'when.saturday': 'Saturday',
+	'when.birthday': 'Birthday',
 	'when.christmas': (p: { year: string }) => `Christmas ${p.year}`,
 	'when.needsYear': 'An age needs their birth year.',
 	'when.estimate': 'Estimate age',
@@ -24,6 +29,7 @@ export const when = {
 	'when.chip.fromAge': (p: { age: number }) => `From age ${p.age}`,
 	'when.chip.atAge': (p: { age: number }) => `For the ${ordinal(p.age)} birthday`,
 	'when.chip.onDay': (p: { day: string }) => `For ${p.day}`,
+	'when.chip.inMonth': (p: { month: string }) => `In ${p.month}`,
 	'when.chip.about': (p: { year: string }) => `about ${p.year}`,
 	'when.chip.tomorrow': 'tomorrow',
 	'when.chip.today': 'today',
@@ -37,6 +43,7 @@ export const when = {
 	'when.preview.turnsAbout': (p: { age: number; year: string }) =>
 		`Turns ${p.age} in about ${p.year}.`,
 	'when.preview.onDay': (p: { day: string }) => `Due ${p.day}.`,
+	'when.preview.inMonth': (p: { month: string }) => `In ${p.month}.`,
 	'when.preview.waits': (p: { day: string }) =>
 		`It waits until ${p.day}, then shows among the ideas.`,
 	'when.preview.open': 'It shows among the ideas now.',

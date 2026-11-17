@@ -246,6 +246,48 @@ function fullHousehold(): HouseholdSnapshot {
 					created_at: EXPORTED
 				}
 			],
+			activity_idea: [
+				{
+					id: 'a-open',
+					contact_id: 'c-hans',
+					created_by: 'u-1',
+					visibility: 'shared',
+					hidden_from_person: 1,
+					title: 'Climbing hall',
+					note: 'Shoes from the hall',
+					url: 'https://example.test/climb',
+					when_kind: 'in_month',
+					when_on: '2026-12',
+					when_age: null,
+					booked_at: EXPORTED,
+					booked_by: 'u-1',
+					done_at: null,
+					done_on: null,
+					done_by: null,
+					moment_id: null,
+					created_at: EXPORTED
+				},
+				{
+					id: 'a-done',
+					contact_id: 'c-hans',
+					created_by: 'u-1',
+					visibility: 'private',
+					hidden_from_person: 0,
+					title: 'Zoo',
+					note: null,
+					url: null,
+					when_kind: null,
+					when_on: null,
+					when_age: null,
+					booked_at: null,
+					booked_by: null,
+					done_at: EXPORTED,
+					done_on: '2026-09-07',
+					done_by: 'u-1',
+					moment_id: 'j-1',
+					created_at: EXPORTED
+				}
+			],
 			photo: [
 				{
 					id: 'p-gallery',
@@ -561,6 +603,25 @@ describe('the round trip', () => {
 			'done_at',
 			'done_on',
 			'done_by',
+			'created_at'
+		],
+		activity_idea: [
+			'id',
+			'contact_id',
+			'visibility',
+			'hidden_from_person',
+			'title',
+			'note',
+			'url',
+			'when_kind',
+			'when_on',
+			'when_age',
+			'booked_at',
+			'booked_by',
+			'done_at',
+			'done_on',
+			'done_by',
+			'moment_id',
 			'created_at'
 		],
 		photo: [
@@ -1002,6 +1063,58 @@ describe('an archive that does not add up', () => {
 		const done = rowsOf(plan, 'todo').find((t) => t.id === 't-done');
 		expect(done?.done_at).toBe(EXPORTED);
 		expect(done?.done_by).toBeNull();
+	});
+
+	it('leaves out an outing idea without a line, and drops what it cannot keep of the rest', () => {
+		const plan = planRestore(
+			deps(),
+			archived(
+				bent((s) => {
+					const base = { contact_id: 'c-hans', created_by: 'u-1', created_at: EXPORTED };
+					s.tables.activity_idea.push(
+						{ ...base, id: 'a-untitled', title: '' },
+						{
+							...base,
+							id: 'a-odd',
+							title: 'Museum',
+							url: 'javascript:alert(1)',
+							when_kind: 'later',
+							visibility: 'private',
+							hidden_from_person: 1,
+							booked_at: EXPORTED,
+							booked_by: 'u-gone',
+							moment_id: 'j-gone'
+						}
+					);
+				})
+			),
+			target()
+		);
+		const byId = new Map(rowsOf(plan, 'activity_idea').map((a) => [a.id, a]));
+		expect([...byId.keys()].sort()).toEqual(['a-done', 'a-odd', 'a-open']);
+		expect(byId.get('a-odd')).toMatchObject({
+			url: null,
+			when_kind: null,
+			hidden_from_person: 0,
+			booked_at: EXPORTED,
+			booked_by: null,
+			moment_id: null
+		});
+		expect(plan.warnings).toContainEqual({ code: 'planIncomplete' });
+	});
+
+	it('restores no outing ideas from an archive written before there were any', () => {
+		const plan = planRestore(
+			deps(),
+			archived(
+				bent((s) => {
+					s.tables.activity_idea = [];
+				})
+			),
+			target()
+		);
+		expect(rowsOf(plan, 'activity_idea')).toEqual([]);
+		expect(plan.warnings).toEqual([]);
 	});
 
 	it('keeps a gift whose link is not a web address, without the link', () => {

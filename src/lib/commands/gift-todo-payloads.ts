@@ -1,6 +1,7 @@
 import * as v from 'valibot';
 import { ADDABLE_GIFT_STATES } from '../gifts/gifts';
-import { optionalWhen, WhenSchema } from '../when/schema';
+import { GIFT_WHEN_KINDS } from '../gifts/idea-when';
+import { optionalWhenOf, whenSchemaOf } from '../when/schema';
 import { ISO_DAY, nonEmpty, optionalText, requiredText, visibility } from './payload-fields';
 
 /* What the gift and to-do commands carry (docs/dev/04 §4.11.2), one Valibot schema each. */
@@ -22,12 +23,14 @@ const giftContent = {
 	hiddenFromRecipient: v.optional(v.boolean())
 };
 
+const giftWhen = optionalWhenOf(GIFT_WHEN_KINDS);
+
 /** A gift noted on a person: an idea, or one given or received (docs/dev/02 §2.25). */
 export const GiftAddSchema = v.object({
 	contactId: nonEmpty,
 	state: v.picklist(ADDABLE_GIFT_STATES),
 	...giftContent,
-	when: optionalWhen
+	when: giftWhen
 });
 
 /** A gift rewritten where it is listed; its state stays. */
@@ -35,7 +38,7 @@ export const GiftEditSchema = v.object({
 	contactId: nonEmpty,
 	giftId: nonEmpty,
 	...giftContent,
-	when: optionalWhen
+	when: giftWhen
 });
 
 /** An idea given: the day, and the occasion if there was one. */
@@ -57,7 +60,7 @@ export const GiftMarkBoughtSchema = v.object({
 export const GiftAnswerWhenSchema = v.object({
 	contactId: nonEmpty,
 	giftId: nonEmpty,
-	when: v.nullable(WhenSchema)
+	when: v.nullable(whenSchemaOf(GIFT_WHEN_KINDS))
 });
 
 /** A gift taken off a person. */

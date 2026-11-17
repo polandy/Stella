@@ -4,7 +4,7 @@ import { household, user } from './household';
 import { contact } from './people';
 import type { WhenKind } from '../../../when/when';
 
-/* What makes up a person's story: journal entries, touchpoints, gifts and to-dos (docs/dev/03 §3.0). */
+/* What makes up a person's story: journal entries, touchpoints, gifts, to-dos and outings (docs/dev/03 §3.0). */
 
 /*
  * A per-person diary (docs/dev/02 §2.20). Each entry belongs to a contact, is authored by a
@@ -239,5 +239,49 @@ export const todo = sqliteTable(
 		index('todo_done_due_idx').on(t.doneAt, t.dueOn),
 		// A person's story pages through the done ones by (doneOn, doneAt).
 		index('todo_contact_done_on_idx').on(t.contactId, t.doneOn, t.doneAt)
+	]
+);
+
+/*
+ * Something the household wants to do with one person (docs/dev/02 §2.27): an outing idea, maybe
+ * a when, *booked* once a date is fixed, then done — `done_at`, `done_on` and `done_by` say when,
+ * on which day and who. Visibility as a gift's: private ⇒ only the author, and shared may keep it
+ * from the member whose own person it is for.
+ */
+export const activityIdea = sqliteTable(
+	'activity_idea',
+	{
+		id: text('id').primaryKey(),
+		contactId: text('contact_id')
+			.notNull()
+			.references(() => contact.id, { onDelete: 'cascade' }),
+		createdBy: text('created_by')
+			.notNull()
+			.references(() => user.id),
+		visibility: text('visibility').$type<Visibility>().notNull().default('shared'),
+		// Shared, but never shown to the member whose own person it is for.
+		hiddenFromPerson: integer('hidden_from_person').notNull().default(0),
+		title: text('title').notNull(),
+		note: text('note'),
+		url: text('url'),
+		// When it is meant for (`src/lib/when`); all null for *some time*.
+		whenKind: text('when_kind').$type<WhenKind>(),
+		whenOn: text('when_on'),
+		whenAge: integer('when_age'),
+		bookedAt: integer('booked_at'),
+		bookedBy: text('booked_by').references(() => user.id),
+		doneAt: integer('done_at'),
+		// ISO YYYY-MM-DD, the household's day it was ticked.
+		doneOn: text('done_on'),
+		doneBy: text('done_by').references(() => user.id),
+		// The moment written about it, once there is one.
+		momentId: text('moment_id').references(() => journalEntry.id, { onDelete: 'set null' }),
+		createdAt: integer('created_at').notNull().default(now),
+		updatedAt: integer('updated_at').notNull().default(now)
+	},
+	(t) => [
+		// A person's open and done ideas, and the household's by when.
+		index('activity_idea_contact_done_idx').on(t.contactId, t.doneAt),
+		index('activity_idea_done_when_idx').on(t.doneAt, t.whenOn)
 	]
 );

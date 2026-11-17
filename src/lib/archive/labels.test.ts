@@ -41,6 +41,13 @@ describe('summariseRestore', () => {
 		expect(lines).toEqual([{ table: 'contact', added: 0, skipped: 12 }]);
 	});
 
+	it('reports the outing ideas a restore brought, after the to-dos, in both languages', () => {
+		const lines = summariseRestore({ activity_idea: 2, todo: 1 }, {});
+		expect(lines.map((l) => l.table)).toEqual(['todo', 'activity_idea']);
+		expect(countLabel(en, 'activity_idea', 2)).toBe('2 outing ideas');
+		expect(countLabel(de, 'activity_idea', 1)).toBe('1 Unternehmungsidee');
+	});
+
 	it('leaves out a kind the archive had none of', () => {
 		expect(summariseRestore({ contact: 1 }, { contact: 0 }).map((l) => l.table)).toEqual([
 			'contact'

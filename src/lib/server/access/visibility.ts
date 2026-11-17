@@ -65,27 +65,47 @@ export function canViewChildRecord(viewer: Viewer, record: ChildRecordAccess): b
 }
 
 /**
- * A gift, as `canViewGift` decides on it: a child record that may be kept from the member it is
- * for (docs/dev/02 §2.25.10).
+ * A surprise, as `canViewSurprise` decides on it: a child record — a gift, an outing idea — that
+ * may be kept from the member whose own person it is for (docs/dev/02 §2.25.10, §2.27).
  */
+export interface SurpriseAccess extends ChildRecordAccess {
+	hiddenFromPerson: boolean;
+	/** The person it is for. */
+	contactId: string;
+}
+
+/**
+ * A surprise is visible as a child record, except that one hidden from its person never reaches
+ * the member whose own person that is — unless they noted it themselves, so nobody loses their own.
+ */
+export function canViewSurprise(
+	viewer: Viewer,
+	record: SurpriseAccess,
+	viewerSelfContactId: string | null
+): boolean {
+	if (!canViewChildRecord(viewer, record)) return false;
+	if (!record.hiddenFromPerson || record.ownerId === viewer.id) return true;
+	return viewerSelfContactId === null || record.contactId !== viewerSelfContactId;
+}
+
+/** A gift, as `canViewGift` decides on it (docs/dev/02 §2.25.10). */
 export interface GiftAccess extends ChildRecordAccess {
 	hiddenFromRecipient: boolean;
 	/** The person it is for. */
 	contactId: string;
 }
 
-/**
- * A gift is visible as a child record, except that one hidden from its recipient never reaches the
- * member whose own person it is for — unless they noted it themselves, so nobody loses their own.
- */
+/** A gift is visible as a surprise. */
 export function canViewGift(
 	viewer: Viewer,
-	gift: GiftAccess,
+	{ hiddenFromRecipient, ...gift }: GiftAccess,
 	viewerSelfContactId: string | null
 ): boolean {
-	if (!canViewChildRecord(viewer, gift)) return false;
-	if (!gift.hiddenFromRecipient || gift.ownerId === viewer.id) return true;
-	return viewerSelfContactId === null || gift.contactId !== viewerSelfContactId;
+	return canViewSurprise(
+		viewer,
+		{ ...gift, hiddenFromPerson: hiddenFromRecipient },
+		viewerSelfContactId
+	);
 }
 
 /**

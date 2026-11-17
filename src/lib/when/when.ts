@@ -2,8 +2,8 @@
 
 import { FULL_DATE_SHAPE } from '../dates/calendar';
 
-/** The ways a record can wait: from an age on, for one birthday, for a day, or for later. */
-export const WHEN_KINDS = ['from_age', 'at_age', 'on_date', 'later'] as const;
+/** The ways a record can wait: from an age on, for one birthday, for a day or a month, or later. */
+export const WHEN_KINDS = ['from_age', 'at_age', 'on_date', 'in_month', 'later'] as const;
 
 export type WhenKind = (typeof WHEN_KINDS)[number];
 
@@ -11,10 +11,15 @@ export type WhenKind = (typeof WHEN_KINDS)[number];
 export const WHEN_AGE_MIN = 1;
 export const WHEN_AGE_MAX = 150;
 
-/** A when other than *now*: an age (from it on, or that one birthday), a day, or later. */
+/** A month as `YYYY-MM`. */
+export const MONTH_SHAPE = /^\d{4}-(0[1-9]|1[0-2])$/;
+
+/** A when other than *now*: an age (from it on, or that one birthday), a day, a month, or later. */
 export type When =
 	| { kind: 'from_age' | 'at_age'; age: number }
 	| { kind: 'on_date'; on: string }
+	/** `on` is the month, `YYYY-MM`. */
+	| { kind: 'in_month'; on: string }
 	| { kind: 'later' };
 
 /** The three columns a record keeps its when in; all null for *now*. */
@@ -32,6 +37,7 @@ export function whenColumns(when: When | null): WhenColumns {
 		case 'at_age':
 			return { whenKind: when.kind, whenOn: null, whenAge: when.age };
 		case 'on_date':
+		case 'in_month':
 			return { whenKind: when.kind, whenOn: when.on, whenAge: null };
 		case 'later':
 			return { whenKind: when.kind, whenOn: null, whenAge: null };
@@ -49,7 +55,8 @@ export function whenOfColumns(columns: WhenColumns): When | null {
 			if (whenAge === null) throw new Error(`A ${whenKind} when without an age`);
 			return { kind: whenKind, age: whenAge };
 		case 'on_date':
-			if (whenOn === null) throw new Error('An on_date when without a day');
+		case 'in_month':
+			if (whenOn === null) throw new Error(`An ${whenKind} when without a day`);
 			return { kind: whenKind, on: whenOn };
 		case 'later':
 			return { kind: whenKind };
@@ -75,6 +82,9 @@ export function whenFromOutside(columns: {
 	}
 	if (whenKind === 'on_date') {
 		return whenOn !== null && FULL_DATE_SHAPE.test(whenOn) ? { kind: whenKind, on: whenOn } : null;
+	}
+	if (whenKind === 'in_month') {
+		return whenOn !== null && MONTH_SHAPE.test(whenOn) ? { kind: whenKind, on: whenOn } : null;
 	}
 	return whenKind === 'later' ? { kind: whenKind } : null;
 }

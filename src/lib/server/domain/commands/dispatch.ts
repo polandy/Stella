@@ -58,6 +58,13 @@ export interface CommandResults {
 	'todo.edit': { todoId: string };
 	'todo.untick': { todoId: string };
 	'todo.remove': { todoId: string };
+	'plan.add': { planId: string };
+	'plan.book': { planId: string };
+	'plan.done': { planId: string };
+	'plan.edit': { planId: string };
+	'plan.unbook': { planId: string };
+	'plan.reopen': { planId: string };
+	'plan.remove': { planId: string };
 	'tag.assign': { tagId: string };
 	'circle.join': { circleId: string };
 	'relationship.add': { relationshipId: string };
@@ -237,6 +244,20 @@ function apply(
 		case 'todo.untick':
 			return handlers[command.type](actor, command.payload);
 		case 'todo.remove':
+			return handlers[command.type](actor, command.payload);
+		case 'plan.add':
+			return handlers[command.type](actor, command.payload);
+		case 'plan.book':
+			return handlers[command.type](actor, command.payload);
+		case 'plan.done':
+			return handlers[command.type](actor, command.payload);
+		case 'plan.edit':
+			return handlers[command.type](actor, command.payload);
+		case 'plan.unbook':
+			return handlers[command.type](actor, command.payload);
+		case 'plan.reopen':
+			return handlers[command.type](actor, command.payload);
+		case 'plan.remove':
 			return handlers[command.type](actor, command.payload);
 		case 'tag.assign':
 			return handlers[command.type](actor, command.payload);

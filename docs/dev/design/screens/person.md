@@ -13,8 +13,8 @@ the person, and that never leaves the page. Keeping the record tidy (archive, me
 #### Layout
 
 - One column of full-width cards, at most `66.25rem` (about 1060 px), in a fixed order: the
-  identity card, then **People · Photos · Activity and Notes · Gifts · Mentioned in**. No
-  page tabs (the Gifts card has tabs of its own, inside it).
+  identity card, then **People · Photos · Activity and Notes · Gifts · Outings · Mentioned in**.
+  No page tabs (the Gifts and Outings cards have tabs of their own, inside them).
 - The **To-dos** card is the one card that moves: right under the identity card (above the jump
   bar's slot and People) while a to-do is open, otherwise one line after Gifts (docs/dev/02
   §2.26.2).
@@ -414,6 +414,27 @@ the person, and that never leaves the page. Keeping the record tidy (archive, me
   as `?gift=idea` does.
 - When the first to-do is saved the card moves up, and the page scrolls it into view.
 
+#### Outings card
+
+The card of docs/dev/02 §2.27, right after Gifts; no jump-bar link.
+
+- Two tabs, *Ideas* (counting the open ideas not yet booked) and *Done*. *Ideas* lists open and
+  booked ideas in `splitPlans`'s order; those more than 90 days ahead fold under the quiet
+  *Later · n* toggle, as on the Gifts card. *Done* lists done ones, newest first.
+- A row: the title as the checkbox's `<label>`, the *when* chip (`WhenChip`, the gift idea's),
+  the note, then one subtle `text-xs` line — *booked* (or *booked by …*) with the done icon,
+  *noted by …*, the link, *hidden from …*, *private*. Under it a secondary *Booked* button, or a
+  quiet *Not booked* on a booked one; the pencil and the remove cross; the checkbox at the right
+  end. A done row shows *done <day>* and a *Not done* text button instead of pencil and box.
+- Booking and ticking toast *Booked: …* / *Done: …* with *Undo*; kept on the device they show
+  *not sent yet*, and *Undo* drops them from the device.
+- The form: *Outing with Mia*, *What do you want to do?*, the *when* picker (*Some time*,
+  a day with *Saturday · Christmas · Birthday*, a month, an age), a *Note or link* disclosure,
+  and the three-way visibility *Everyone · Everyone but Mia · Only me* — the middle one only
+  when the person is another member's own record. Only the author is offered visibility.
+- Empty, it is one line (*No idea yet.*, *+ Idea*) with the help sentence beneath, which tells
+  an outing from a to-do.
+
 #### Notes, Photos, Mentioned in
 
 - **Notes** are pinned-first. Someone else's note names its author after the title
@@ -486,10 +507,11 @@ the person, and that never leaves the page. Keeping the record tidy (archive, me
 #### Empty cards
 
 - `cardShape` (`$lib/people/empty-cards.ts`) decides each card's shape at zero.
-- An empty **Photos**, **Notes**, **Gifts** or **To-dos** is **one line** (`Section`'s `empty`): the title,
+- An empty **Photos**, **Notes**, **Gifts**, **Outings** or **To-dos** is **one line** (`Section`'s `empty`): the title,
   one short sentence cut off rather than wrapped (*No photos yet.*, *Nothing noted yet.*,
-  *No gift ideas yet.*, *Nothing open.*), and the card's actions — *+ Add* and, on Photos, the Immich menu; on
-  Gifts *+ Idea* and the ⋯ menu, which then holds *+ Given* too — with no count and no body.
+  *No gift ideas yet.*, *No idea yet.*, *Nothing open.*), and the card's actions — *+ Add* and, on Photos, the Immich menu; on
+  Gifts *+ Idea* and the ⋯ menu, which then holds *+ Given* too; on Outings *+ Idea* and a help
+  sentence beneath — with no count and no body.
 - Pressing *+ Add* grows it into the card with its form open; *Cancel* shrinks it back, and
   the button pressed is the one that closes it.
 - Photos counts as empty only with no photo, none kept on the device, no group photo and no

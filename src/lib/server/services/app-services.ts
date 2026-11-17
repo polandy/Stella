@@ -18,6 +18,7 @@ import {
 } from './relationships';
 import { createStoryServices, type StoryServices, type StoryWiring } from './story';
 import { createTodoServices, type TodoServices, type TodoWiring } from './todos';
+import { createPlanServices, type PlanServices, type PlanWiring } from './plans';
 
 /*
  * The application's object graph, grouped by bounded context (docs/dev/04 §4.3, docs/dev/08 §8.3).
@@ -46,13 +47,14 @@ export interface AppServices {
 	offline: OfflineServices;
 	gifts: GiftServices;
 	todos: TodoServices;
+	plans: PlanServices;
 }
 
 /**
  * What the graph is built from; each context's wiring joins this as it moves in. A context
  * that reads another grouped context's repository gets it from here, not from the wiring
  * (`people` reads `auth`'s accounts, the relationships context's kinship graph and `media`'s
- * store; `circles` and `story` read `people`'s contacts and `media`'s store; `gifts`, `todos` and
+ * store; `circles` and `story` read `people`'s contacts and `media`'s store; `gifts`, `todos`, `plans` and
  * `records` read `people`'s contacts and `story` reads `gifts`' repository; `archive` restores into `media`'s
  * store and hands what it restored to `gifts`' conversion; `immich` reads `people`'s contacts and `media`'s avatar deps; `nextcloud` reads `media`'s store and avatar deps; `offline`'s command
  * handlers read the contexts whose use-cases they call), so each repository exists once.
@@ -80,7 +82,8 @@ export type ServicesWiring = AuthWiring &
 	ReleaseWiring &
 	Omit<OfflineWiring, 'contexts'> &
 	Omit<GiftWiring, 'contacts'> &
-	Omit<TodoWiring, 'contacts'>;
+	Omit<TodoWiring, 'contacts'> &
+	Omit<PlanWiring, 'contacts'>;
 
 /** Wires every grouped context. Pure assembly: no I/O beyond what the adapters do when used. */
 export function createServices(wiring: ServicesWiring): AppServices {
@@ -100,6 +103,7 @@ export function createServices(wiring: ServicesWiring): AppServices {
 	});
 	const gifts = createGiftServices({ ...wiring, contacts: people.contacts });
 	const todos = createTodoServices({ ...wiring, contacts: people.contacts });
+	const plans = createPlanServices({ ...wiring, contacts: people.contacts });
 	const story = createStoryServices({
 		...wiring,
 		contacts: people.contacts,
@@ -138,7 +142,19 @@ export function createServices(wiring: ServicesWiring): AppServices {
 	const release = createReleaseServices(wiring);
 	const offline = createOfflineServices({
 		...wiring,
-		contexts: { auth, people, relationships, circles, media, story, notes, records, gifts, todos }
+		contexts: {
+			auth,
+			people,
+			relationships,
+			circles,
+			media,
+			story,
+			notes,
+			records,
+			gifts,
+			todos,
+			plans
+		}
 	});
 	return {
 		auth,
@@ -156,6 +172,7 @@ export function createServices(wiring: ServicesWiring): AppServices {
 		release,
 		offline,
 		gifts,
-		todos
+		todos,
+		plans
 	};
 }

@@ -51,10 +51,10 @@ describe('message catalogues', () => {
 		// Dead copy in two languages drifts unseen, and the parity check above keeps it alive.
 		const text = sourcesOutsideCatalogues();
 		const prefixes = [...text.matchAll(/[`'"]([a-zA-Z][\w.]*\.)\$\{/g)].map((m) => m[1]!);
+		// One pass over the text: a lookup per key, not a search of every file per key.
+		const quoted = new Set([...text.matchAll(/([`'"])([a-zA-Z][\w.-]*)\1/g)].map((m) => m[2]!));
 		const unused = Object.keys(en).filter(
-			(key) =>
-				![`'${key}'`, `"${key}"`, `\`${key}\``].some((quoted) => text.includes(quoted)) &&
-				!prefixes.some((prefix) => key.startsWith(prefix))
+			(key) => !quoted.has(key) && !prefixes.some((prefix) => key.startsWith(prefix))
 		);
 		expect(unused).toEqual([]);
 	});

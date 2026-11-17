@@ -309,6 +309,13 @@
       "when": 1794933952900,
       "tag": "0043_gift_hidden_from_recipient",
       "breakpoints": true
+    },
+    {
+      "idx": 44,
+      "version": "6",
+      "when": 1794938966396,
+      "tag": "0044_activity_idea",
+      "breakpoints": true
     }
   ]
 }
