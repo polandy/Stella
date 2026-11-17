@@ -94,6 +94,7 @@ describe('convertHeldGifts', () => {
 			givenOn: '2023-10-12',
 			occasion: null,
 			when: null,
+			whenCheckedOn: null,
 			createdAt: 1_000,
 			updatedAt: 1_000
 		});
@@ -132,6 +133,7 @@ describe('convertHeldGifts', () => {
 				givenOn: '2024-05-02',
 				occasion: null,
 				when: null,
+				whenCheckedOn: null,
 				createdAt: 2_000,
 				updatedAt: 3_000
 			},

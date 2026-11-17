@@ -105,6 +105,8 @@ export function giftView(gift: Gift, ctx: PersonViewContext) {
 		occasion: gift.occasion,
 		/** When an idea is for (§2.25.8); null on given and received gifts. */
 		when: gift.when,
+		/** The day somebody last answered whether it still stands (§2.25.8). */
+		whenCheckedOn: gift.whenCheckedOn,
 		visibility: gift.visibility,
 		mine,
 		notedBy: mine ? null : authorLabel(false, ctx.nameOfAuthor(gift.createdBy)),

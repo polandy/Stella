@@ -4,7 +4,8 @@ import { FULL_DATE_SHAPE, isRealCalendarDay } from '../../../dates/calendar';
 import { giftLink, type GiftState } from '../../../gifts/gifts';
 import type { PartialDate } from '../../../dates/partial-date';
 import { todayFor } from '../../../dates/today';
-import { birthOf, checkWhen, isWaiting } from '../../../when/resolve';
+import { ideaWaits as waitsOn } from '../../../gifts/idea-when';
+import { birthOf, checkWhen } from '../../../when/resolve';
 import { sameWhen, type When } from '../../../when/when';
 import type { Visibility, Viewer } from '../../access/visibility';
 import type { Clock } from '../../clock';
@@ -46,6 +47,8 @@ export interface Gift {
 	occasion: string | null;
 	/** When an idea is meant for (docs/dev/02 §2.25.8); null for *now*, and for any given gift. */
 	when: When | null;
+	/** The day somebody last answered whether the idea still stands (§2.25.8); null if never. */
+	whenCheckedOn: string | null;
 	createdAt: number;
 	updatedAt: number;
 }
@@ -86,7 +89,7 @@ export interface GiftRepository {
 	listOpenIdeaWhensVisibleTo(
 		viewer: Viewer,
 		contactIds: readonly string[]
-	): Promise<IdeaWithBirth<Pick<Gift, 'contactId' | 'when'>>[]>;
+	): Promise<IdeaWithBirth<Pick<Gift, 'contactId' | 'when' | 'whenCheckedOn' | 'createdAt'>>[]>;
 	/**
 	 * Every open idea the viewer may see, newest noted first, on the people the household still
 	 * browses — an archived person's ideas stay on their page only (docs/dev/02 §2.25.6).
@@ -144,6 +147,12 @@ export interface MarkGiftGivenInput {
 	giftId: string;
 	givenOn: string;
 	occasion: string | null;
+}
+
+export interface AnswerIdeaWhenInput {
+	contactId: string;
+	giftId: string;
+	when: When | null;
 }
 
 export interface RemoveGiftInput {
@@ -258,6 +267,7 @@ export async function addGift(
 		state: input.state,
 		...content,
 		when,
+		whenCheckedOn: null,
 		createdAt: now,
 		updatedAt: now
 	});
@@ -273,14 +283,17 @@ export async function editGift(
 	const gift = await requireVisibleGift(deps, editor, input.contactId, input.giftId);
 	// A when left as it was stays, even once its day is over; a new one must still be ahead.
 	const asked = input.when === undefined ? gift.when : input.when;
-	const when =
-		gift.state !== 'idea' || sameWhen(asked, gift.when)
-			? gift.when
-			: whenOf(asked, await birthOfVisible(deps, editor, gift.contactId), todayFor(deps.clock));
+	const today = todayFor(deps.clock);
+	const kept = gift.state !== 'idea' || sameWhen(asked, gift.when);
+	const when = kept
+		? gift.when
+		: whenOf(asked, await birthOfVisible(deps, editor, gift.contactId), today);
 	await deps.gifts.update({
 		...gift,
 		...checkedContent(gift.state, input),
 		when,
+		// A when chosen anew is an answer too: *later* is not asked about again straight away.
+		whenCheckedOn: kept ? gift.whenCheckedOn : today,
 		visibility: gift.createdBy === editor.userId ? input.visibility : gift.visibility,
 		updatedAt: deps.clock.now()
 	});
@@ -301,8 +314,30 @@ export async function markGiftGiven(
 		givenOn: dayOf('given', input.givenOn),
 		occasion: orNull(input.occasion),
 		when: null,
+		whenCheckedOn: null,
 		updatedAt: deps.clock.now()
 	});
+	return { giftId: gift.id };
+}
+
+/**
+ * *Still current?* answered for an idea whose day went by, or a *later* one at its yearly look
+ * (docs/dev/02 §2.25.8): kept as a plain idea (`when` null), or given a new when, checked
+ * against today like any other. Removing it is `removeGift`.
+ */
+export async function answerIdeaWhen(
+	deps: GiftDeps,
+	actor: GiftActor,
+	input: AnswerIdeaWhenInput
+): Promise<{ giftId: string }> {
+	const gift = await requireVisibleGift(deps, actor, input.contactId, input.giftId);
+	if (gift.state !== 'idea') throw new InvalidGiftError(phrase('errors.gift.alreadyGiven'));
+	const today = todayFor(deps.clock);
+	const when =
+		input.when === null
+			? null
+			: whenOf(input.when, await birthOfVisible(deps, actor, gift.contactId), today);
+	await deps.gifts.update({ ...gift, when, whenCheckedOn: today, updatedAt: deps.clock.now() });
 	return { giftId: gift.id };
 }
 
@@ -328,11 +363,11 @@ export async function listGiftsForContact(
 
 /** Whether an open idea still waits for its time, so only its person's card shows it (§2.25.8). */
 export function ideaWaits(
-	idea: Pick<Gift, 'state' | 'when'>,
+	idea: Pick<Gift, 'state' | 'when' | 'whenCheckedOn' | 'createdAt'>,
 	birth: PartialDate | null,
 	today: string
 ): boolean {
-	return idea.state === 'idea' && isWaiting(idea.when, birth, today);
+	return idea.state === 'idea' && waitsOn(idea, birth, today);
 }
 
 /**
@@ -349,7 +384,7 @@ export async function countOpenIdeas(
 	for (const idea of await deps.gifts.listOpenIdeaWhensVisibleTo(viewer, [
 		...new Set(contactIds)
 	])) {
-		if (isWaiting(idea.when, idea.birth, today)) continue;
+		if (waitsOn(idea, idea.birth, today)) continue;
 		counts.set(idea.contactId, (counts.get(idea.contactId) ?? 0) + 1);
 	}
 	return counts;
@@ -366,6 +401,6 @@ export async function listOpenIdeas(
 	const today = todayFor(deps.clock);
 	const ideas = await deps.gifts.listOpenIdeasVisibleTo(viewer);
 	return ideas
-		.filter((idea) => !isWaiting(idea.when, idea.birth, today))
+		.filter((idea) => !waitsOn(idea, idea.birth, today))
 		.map(({ birth: _birth, ...idea }) => idea);
 }

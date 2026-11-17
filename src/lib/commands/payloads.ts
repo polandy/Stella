@@ -4,6 +4,7 @@ import { INTERACTION_KINDS } from '../story/interaction-kinds';
 import type { CommandType } from './commands';
 import {
 	GiftAddSchema,
+	GiftAnswerWhenSchema,
 	GiftEditSchema,
 	GiftMarkGivenSchema,
 	GiftRemoveSchema,
@@ -159,6 +160,7 @@ export const COMMAND_PAYLOAD_SCHEMAS = {
 	'gift.add': GiftAddSchema,
 	'gift.edit': GiftEditSchema,
 	'gift.markGiven': GiftMarkGivenSchema,
+	'gift.answerWhen': GiftAnswerWhenSchema,
 	'gift.remove': GiftRemoveSchema,
 	'todo.add': TodoAddSchema,
 	'todo.tick': TodoRefSchema,

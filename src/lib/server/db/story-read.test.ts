@@ -62,6 +62,7 @@ async function giftForOma(id: string, state: 'idea' | 'given' | 'received', day:
 		givenOn: day,
 		occasion: null,
 		when: null,
+		whenCheckedOn: null,
 		createdAt: 1_000 + ++sequence,
 		updatedAt: 1_000 + sequence
 	});

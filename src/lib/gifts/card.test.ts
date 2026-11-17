@@ -62,7 +62,12 @@ describe('giftIdeaPath', () => {
 describe('splitIdeas', () => {
 	const birth = { value: '2018-03-14', precision: 'full' as const };
 	const today = '2026-10-08';
-	const idea = (id: string, when: When | null) => ({ id, when });
+	const idea = (id: string, when: When | null) => ({
+		id,
+		when,
+		whenCheckedOn: null,
+		createdAt: Date.parse('2026-10-08T12:00:00Z')
+	});
 
 	it('keeps what holds now open, and folds the waiting ones away, soonest first', () => {
 		const { open, waiting } = splitIdeas(

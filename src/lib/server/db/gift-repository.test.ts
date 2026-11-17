@@ -37,6 +37,7 @@ function gift(over: Partial<Gift>): Gift {
 		givenOn: null,
 		occasion: null,
 		when: null,
+		whenCheckedOn: null,
 		createdAt: 0,
 		updatedAt: 0,
 		...over
@@ -164,9 +165,17 @@ describe('createDrizzleGiftRepository', () => {
 			expect(whens).toContainEqual({
 				contactId: 'c-shared',
 				when: { kind: 'at_age', age: 10 },
+				whenCheckedOn: null,
+				createdAt: 0,
 				birth
 			});
-			expect(whens).toContainEqual({ contactId: 'c-shared', when: null, birth });
+			expect(whens).toContainEqual({
+				contactId: 'c-shared',
+				when: null,
+				whenCheckedOn: null,
+				createdAt: 0,
+				birth
+			});
 		});
 
 		it('reads only the ideas the viewer may see', async () => {

@@ -193,6 +193,8 @@ export const gift = sqliteTable(
 		whenKind: text('when_kind').$type<WhenKind>(),
 		whenOn: text('when_on'),
 		whenAge: integer('when_age'),
+		// The day somebody last answered whether a passed or *later* idea still stands.
+		whenCheckedOn: text('when_checked_on'),
 		createdAt: integer('created_at').notNull().default(now),
 		updatedAt: integer('updated_at').notNull().default(now)
 	},

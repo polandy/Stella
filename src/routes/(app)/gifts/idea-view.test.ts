@@ -16,6 +16,7 @@ const idea: OpenIdea = {
 	givenOn: null,
 	occasion: null,
 	when: null,
+	whenCheckedOn: null,
 	createdAt: 1,
 	updatedAt: 1
 };

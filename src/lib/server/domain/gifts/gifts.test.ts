@@ -58,7 +58,13 @@ function fakeGifts(): GiftRepository & { rows: Map<string, Gift> } {
 		async listOpenIdeaWhensVisibleTo(viewer, contactIds) {
 			return [...rows.values()]
 				.filter((g) => g.state === 'idea' && contactIds.includes(g.contactId) && visible(viewer, g))
-				.map((g) => ({ contactId: g.contactId, when: g.when, birth: hildeBirth }));
+				.map((g) => ({
+					contactId: g.contactId,
+					when: g.when,
+					whenCheckedOn: g.whenCheckedOn,
+					createdAt: g.createdAt,
+					birth: hildeBirth
+				}));
 		},
 		async listOpenIdeasVisibleTo(viewer) {
 			return [...rows.values()]
@@ -133,6 +139,7 @@ describe('addGift', () => {
 			givenOn: null,
 			occasion: null,
 			when: null,
+			whenCheckedOn: null,
 			createdAt: now,
 			updatedAt: now
 		});
@@ -432,20 +439,31 @@ describe('listGiftsForContact', () => {
 });
 
 describe('ideaWaits', () => {
+	const noted = { whenCheckedOn: null, createdAt: Date.parse('2026-10-07T12:00:00Z') };
 	const today = '2026-10-07';
 	it('tells an idea still waiting for its day or for later from one due now', () => {
-		expect(ideaWaits({ state: 'idea', when: { kind: 'later' } }, null, today)).toBe(true);
+		expect(ideaWaits({ state: 'idea', when: { kind: 'later' }, ...noted }, null, today)).toBe(true);
 		expect(
-			ideaWaits({ state: 'idea', when: { kind: 'on_date', on: '2027-06-01' } }, null, today)
+			ideaWaits(
+				{ state: 'idea', when: { kind: 'on_date', on: '2027-06-01' }, ...noted },
+				null,
+				today
+			)
 		).toBe(true);
 		expect(
-			ideaWaits({ state: 'idea', when: { kind: 'on_date', on: '2026-12-24' } }, null, today)
+			ideaWaits(
+				{ state: 'idea', when: { kind: 'on_date', on: '2026-12-24' }, ...noted },
+				null,
+				today
+			)
 		).toBe(false);
-		expect(ideaWaits({ state: 'idea', when: null }, null, today)).toBe(false);
+		expect(ideaWaits({ state: 'idea', when: null, ...noted }, null, today)).toBe(false);
 	});
 
 	it('never holds back a gift already given', () => {
-		expect(ideaWaits({ state: 'given', when: { kind: 'later' } }, null, today)).toBe(false);
+		expect(ideaWaits({ state: 'given', when: { kind: 'later' }, ...noted }, null, today)).toBe(
+			false
+		);
 	});
 });
 
