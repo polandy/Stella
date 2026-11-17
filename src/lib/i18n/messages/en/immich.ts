@@ -25,6 +25,8 @@ export const immich = {
 		'The key cannot count photos — it needs person.statistics.',
 	'immich.settings.scope.asset.read': 'The key cannot list photos — it needs asset.read.',
 	'immich.settings.scope.asset.view': 'The key cannot show photos — it needs asset.view.',
+	'immich.settings.scope.timeline.read':
+		'The key cannot read the timeline — it needs timeline.read. Until then the photo picker shows days and the search, without the years overview.',
 	'immich.settings.tooOld': (p: { version: string }) =>
 		`This Immich is version ${p.version}. Stella needs Immich 3.2 or newer.`,
 	'immich.settings.sharing':
@@ -207,7 +209,18 @@ export const immich = {
 	'immich.library.ready': (p: { count: number }) =>
 		p.count === 1 ? '1 photo from Immich' : `${p.count} photos from Immich`,
 	'immich.library.photo': (p: { when: string }) => `Photo, ${p.when}`,
-	'immich.library.photoUndated': 'Photo'
+	'immich.library.photoUndated': 'Photo',
+	'immich.library.trail': 'Where you are in the timeline',
+	'immich.library.allYears': 'All years',
+	'immich.library.years': 'Years with photos',
+	'immich.library.months': (p: { year: string }) => `Months of ${p.year}`,
+	'immich.library.aboutCount': (p: { count: string }) => `about ${p.count}`,
+	'immich.library.countsApproximate': 'Counts include videos, so they are approximate.',
+	'immich.library.timelineEmpty': 'Immich has no photos yet.',
+	'immich.library.noneInMonth': (p: { month: string }) => `No photos from ${p.month} in Immich.`,
+	'immich.library.showDay': (p: { day: string }) => `Show only ${p.day}`,
+	'immich.library.loadMore': 'Show more photos',
+	'immich.library.loading': 'Loading photos…'
 };
 
 /** The key set every translation of this area has to provide. */

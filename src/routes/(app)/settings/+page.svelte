@@ -28,6 +28,9 @@
 		'asset.read': 'immich.settings.scope.asset.read',
 		'asset.view': 'immich.settings.scope.asset.view'
 	} as const;
+	const OPTIONAL_SCOPE_MESSAGE = {
+		'timeline.read': 'immich.settings.scope.timeline.read'
+	} as const;
 
 	/*
 	 * Who the member says they are (docs/dev/02 §2.1.3). The picker holds an unsaved pick; whenever
@@ -259,6 +262,11 @@
 									version: status.version
 								})}
 							</p>
+							{#each status.lacking as scope (scope)}
+								<p class="text-sm text-warning" data-testid="immich-lacking">
+									{t(OPTIONAL_SCOPE_MESSAGE[scope])}
+								</p>
+							{/each}
 							<p class="text-sm text-fg-muted">{t('immich.settings.howToLink')}</p>
 						{:else}
 							<p class="font-medium text-danger" role="status" data-testid="immich-status">

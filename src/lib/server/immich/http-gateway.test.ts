@@ -340,6 +340,30 @@ describe('createHttpImmichGateway', () => {
 		});
 	});
 
+	it('reads the months of the timeline, counted on the timeline only', async () => {
+		const { gateway, calls } = stub(() =>
+			json([{ timeBucket: '2026-10-01T00:00:00.000Z', count: 812 }])
+		);
+		expect(await gateway.timelineMonths()).toEqual({
+			ok: true,
+			value: [{ month: '2026-10', count: 812 }]
+		});
+		expect(calls[0].url).toBe(`${BASE}/api/timeline/buckets?visibility=timeline`);
+		expect(calls[0].method).toBe('GET');
+	});
+
+	it('reads a key without timeline.read as forbidden, and a changed shape as unreadable, loudly', async () => {
+		expect(await stub(() => json({}, 403)).gateway.timelineMonths()).toEqual({
+			ok: false,
+			failure: 'forbidden'
+		});
+		const { gateway, logged } = stub(() => json([{ timeBucket: '2026-10', size: 812 }]));
+		expect(await gateway.timelineMonths()).toEqual({ ok: false, failure: 'unreachable' });
+		expect(logged).toEqual([
+			'[immich] /api/timeline/buckets answered with something Stella cannot read'
+		]);
+	});
+
 	it('searches the timeline by a description, best match first', async () => {
 		const { gateway, calls } = stub(() =>
 			json({

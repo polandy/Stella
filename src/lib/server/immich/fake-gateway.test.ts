@@ -145,3 +145,24 @@ describe('createFakeImmichGateway smartSearch', () => {
 		expect(await gateway.smartSearch('carl', 60)).toEqual({ ok: true, value: { enabled: false } });
 	});
 });
+
+describe('createFakeImmichGateway timelineMonths', () => {
+	it('counts everyone’s photos per month of the camera’s clock, newest month first', async () => {
+		const outcome = await createFakeImmichGateway(testLibrary()).timelineMonths();
+		if (!outcome.ok) throw new Error(outcome.failure);
+		// 1 September: one photo of each source; August: Bert 31, Carl 6, Dora 29, together 14.
+		expect(outcome.value.slice(0, 2)).toEqual([
+			{ month: '2026-09', count: 4 },
+			{ month: '2026-08', count: 80 }
+		]);
+		const total = outcome.value.reduce((sum, { count }) => sum + count, 0);
+		expect(total).toBe(1284 + 7 + 30 + 15);
+	});
+
+	it('gives the demo library years of months to browse', async () => {
+		const outcome = await createFakeImmichGateway(demoImmichLibrary()).timelineMonths();
+		if (!outcome.ok) throw new Error(outcome.failure);
+		const years = new Set(outcome.value.map(({ month }) => month.slice(0, 4)));
+		expect(years.size).toBeGreaterThan(5);
+	});
+});

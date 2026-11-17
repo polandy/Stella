@@ -7,6 +7,7 @@ import {
 	readPerson,
 	readPersonList,
 	readStatistics,
+	readTimelineMonths,
 	readVersion,
 	type ImmichFailure,
 	type ImmichGateway,
@@ -208,6 +209,12 @@ export function createHttpImmichGateway({
 				? { ok: true, value: { enabled: false } }
 				: failed(found.failure);
 		},
+		// Counted on the timeline only, as the photos are listed; Immich's default adds the archive.
+		timelineMonths: () =>
+			ask(
+				`/api/timeline/buckets?${new URLSearchParams({ visibility: 'timeline' })}`,
+				json(readTimelineMonths)
+			),
 		assetImage: (assetId: string, size: ImmichImageSize) => {
 			if (!isImmichId(assetId)) return Promise.resolve(failed('notFound'));
 			return ask(`/api/assets/${assetId}/thumbnail?${new URLSearchParams({ size })}`, image, true);

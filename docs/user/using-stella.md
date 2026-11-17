@@ -538,7 +538,11 @@ appear.
 circle's photos — you can take it from Immich too. On a moment or an entry, the photo button
 asks **From this device** or **From Immich**; on the Photos card, **From Immich** sits beside
 the file field. Immich opens on the day of what you're writing (today for a gallery), with every
-photo of that day; **‹** and **›** jump to the nearest day that has photos. Or type in the search
+photo of that day; **‹** and **›** jump to the nearest day that has photos. The line above the
+photos — *All years › 2026 › October › Wed 21* — takes you up: tap the month to see all of
+October grouped by day (tap a day's heading to open it), the year to pick another month, or *All
+years* to see how many photos each year holds. The counts are approximate because Immich counts
+videos too. If the Immich key lacks `timeline.read`, the line starts at the month. Or type in the search
 — *beach*, *birthday cake* — and Immich finds matching photos across the whole library. Tap the
 ones you want; they are numbered in the order you tap them, up to 20 at a time. **Add N photos**
 copies them into Stella, so they stay even if they are later deleted in Immich. A photo added to

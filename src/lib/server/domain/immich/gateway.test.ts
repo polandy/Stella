@@ -7,6 +7,7 @@ import {
 	readPerson,
 	readPersonList,
 	readStatistics,
+	readTimelineMonths,
 	readVersion
 } from './gateway';
 
@@ -210,6 +211,37 @@ describe('readAssetPage', () => {
 	it('refuses a body that is not a search page', () => {
 		for (const payload of [null, [], {}, { assets: [] }, { assets: { items: {} } }]) {
 			expect(readAssetPage(payload)).toBeNull();
+		}
+	});
+});
+
+describe('readTimelineMonths', () => {
+	it('reads each month of the timeline with how many assets Immich counts in it', () => {
+		// The shape Immich v3.3.1 answers `GET /api/timeline/buckets` with.
+		expect(
+			readTimelineMonths([
+				{ timeBucket: '2025-07-01T00:00:00.000Z', count: 412 },
+				{ timeBucket: '2025-06-01', count: 3 }
+			])
+		).toEqual([
+			{ month: '2025-07', count: 412 },
+			{ month: '2025-06', count: 3 }
+		]);
+		expect(readTimelineMonths([])).toEqual([]);
+	});
+
+	it('refuses the whole answer when any bucket is not one', () => {
+		for (const body of [
+			{ buckets: [] },
+			[{ timeBucket: '2025-07-01' }],
+			[{ timeBucket: 'July', count: 1 }],
+			[{ timeBucket: '2025-13-01', count: 1 }],
+			[{ timeBucket: '2025-07-01', count: -1 }],
+			[{ timeBucket: '2025-07-01', count: 1.5 }],
+			[null],
+			'2025-07'
+		]) {
+			expect(readTimelineMonths(body)).toBeNull();
 		}
 	});
 });

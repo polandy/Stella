@@ -1,8 +1,8 @@
 <!--
   @component
   *From Immich* (docs/dev/02 §2.24.9, docs/dev/design/screens/immich-library.md): a sheet from the bottom
-  with every photo Immich has from one day, whoever is in it, and a smart search across the whole
-  library. Taps tick photos, numbered in order; *Add N photos* copies them through Stella's signed
+  that walks the whole library's timeline — all years, a year, a month, a day — whoever is in the
+  photos, and a smart search across it. It opens on one day; the trail leads up from there. Taps tick photos, numbered in order; *Add N photos* copies them through Stella's signed
   proxy and hands them over as files, for the same pipeline as a pick from the device — or, with
   `onlink`, hands the photos themselves over, to be kept as references (docs/dev/04 ADR-132).
 -->
@@ -15,16 +15,21 @@
 	import FormError from '$lib/components/ui/FormError.svelte';
 	import Icon from '$lib/components/ui/Icon.svelte';
 	import { useI18n } from '$lib/i18n/context.svelte';
-	import type { LibraryPhoto, LibraryView } from '$lib/immich/library';
-	import {
-		LIBRARY_PICK_LIMIT,
-		libraryQueryUrl,
-		tickNumber,
-		toggledTick,
-		type LibraryQuery
-	} from '$lib/immich/library-pick';
+	import type { LibraryPhoto } from '$lib/immich/library';
+	import { longDay, monthAndYear, shortDate } from '$lib/immich/library-labels';
+	import { crumbsOf, groupByDay, monthsOfYear, yearTotals } from '$lib/immich/library-nav';
+	import { LIBRARY_PICK_LIMIT, toggledTick } from '$lib/immich/library-pick';
 	import { copyImmichPhoto, type ImmichCopy } from '$lib/media/copy-immich-photo';
 	import { useRemovals } from '$lib/undo/context.svelte';
+	import LibraryCrumbs from './library/LibraryCrumbs.svelte';
+	import LibraryDayBar from './library/LibraryDayBar.svelte';
+	import LibraryFooter from './library/LibraryFooter.svelte';
+	import LibraryMonthGrid from './library/LibraryMonthGrid.svelte';
+	import LibraryMonths from './library/LibraryMonths.svelte';
+	import LibraryNotice from './library/LibraryNotice.svelte';
+	import LibraryPhotos from './library/LibraryPhotos.svelte';
+	import LibraryYears from './library/LibraryYears.svelte';
+	import { LibraryBrowser } from './library/library-browser.svelte';
 
 	interface Props {
 		/** Bindable: set to open the sheet; it clears it when it closes. */
@@ -45,69 +50,40 @@
 	const uid = $props.id();
 	const titleId = `${uid}-title`;
 	let dialog = $state<HTMLDialogElement>();
-	let gridTop = $state<HTMLElement>();
+	let body = $state<HTMLElement>();
 
-	let asked = $state<LibraryQuery>({ day: '' });
-	let view = $state<LibraryView | null>(null);
+	const browser = new LibraryBrowser(async () => {
+		await tick();
+		body?.scrollTo({ top: 0 });
+	});
 	let query = $state('');
-	/** The day the arrows were last on, to come back to when the search is cleared. */
-	let lastDay = $state('');
 	let ticked = $state<readonly string[]>([]);
-	/** Every photo seen since opening, so a tick survives a step to another day. */
-	const seen = new Map<string, LibraryPhoto>();
 	let copying = $state<{ done: number; count: number } | null>(null);
 	let copyError = $state<string | null>(null);
 
 	$effect(() => {
 		syncModal(dialog, open, () => {
 			ticked = [];
-			seen.clear();
 			query = '';
 			copyError = null;
-			const first = day ?? deviceDay();
-			lastDay = first;
-			void load({ day: first });
+			browser.open(day ?? deviceDay());
 		});
 	});
-
-	// Only the latest question may fill the grid: a slower answer to an earlier one arrives last.
-	let latest = 0;
-	async function load(next: LibraryQuery) {
-		const mine = ++latest;
-		asked = next;
-		view = null;
-		if ('day' in next) lastDay = next.day;
-		let answer: LibraryView;
-		try {
-			const response = await fetch(libraryQueryUrl(next));
-			answer = response.ok ? ((await response.json()) as LibraryView) : { state: 'unreachable' };
-		} catch {
-			answer = { state: 'unreachable' };
-		}
-		if (mine !== latest) return;
-		if (answer.state === 'day' || answer.state === 'found') {
-			for (const photo of answer.photos) seen.set(photo.id, photo);
-		}
-		view = answer;
-		await tick();
-		gridTop?.scrollTo({ top: 0 });
-	}
 
 	// Enter searches — not a form of its own: the sheet may sit inside the upload's form.
 	function search(event: KeyboardEvent) {
 		if (event.key !== 'Enter') return;
 		event.preventDefault();
-		const words = query.trim();
-		void load(words === '' ? { day: lastDay } : { query: words });
+		browser.search(query.trim());
 	}
 
 	function clearSearch() {
 		query = '';
-		void load({ day: lastDay });
+		browser.search('');
 	}
 
 	async function add() {
-		const photos = ticked.flatMap((id) => seen.get(id) ?? []);
+		const photos = ticked.flatMap((id) => browser.seen.get(id) ?? []);
 		if (onlink) {
 			onlink(photos);
 			open = false;
@@ -132,32 +108,28 @@
 		open = false;
 	}
 
-	/** A day as the heading says it: *Sunday, 26 October 2026*. */
-	function longDay(value: string): string {
-		return new Date(`${value}T00:00:00Z`).toLocaleDateString(i18n.intlLocale, {
-			weekday: 'long',
-			day: 'numeric',
-			month: 'long',
-			year: 'numeric',
-			timeZone: 'UTC'
-		});
-	}
-
-	/** What a tile says: the time on a day, the date in a search. */
+	/** What a tile says: the time in the timeline, the date in a search. */
 	function when(photo: LibraryPhoto): string | null {
 		if (photo.takenAt === null) return null;
-		if (view?.state === 'day') return photo.takenAt.slice(11, 16);
-		return new Date(`${photo.takenAt.slice(0, 10)}T00:00:00Z`).toLocaleDateString(i18n.intlLocale, {
-			day: 'numeric',
-			month: 'short',
-			year: 'numeric',
-			timeZone: 'UTC'
-		});
+		if (browser.searched === null) return photo.takenAt.slice(11, 16);
+		return shortDate(photo.takenAt, i18n.intlLocale);
 	}
 
+	const at = $derived(browser.at);
+	const view = $derived(browser.view);
+	const timeline = $derived(browser.timeline);
+	const read = $derived(browser.month);
+	const searching = $derived(browser.searched !== null);
 	const photos = $derived(view?.state === 'day' || view?.state === 'found' ? view.photos : []);
-	const searching = $derived('query' in asked);
+	const loading = $derived(
+		at.level === 'day' || searching
+			? view === null
+			: at.level === 'month'
+				? read === null || (read.loading && read.photos.length === 0)
+				: timeline === null
+	);
 	const full = $derived(ticked.length >= LIBRARY_PICK_LIMIT);
+	const toggle = (id: string) => (ticked = toggledTick(ticked, id));
 </script>
 
 <dialog
@@ -198,148 +170,147 @@
 			/>
 		</div>
 
-		{#if searching}
+		{#if browser.searched !== null}
 			<div class="flex items-center justify-between gap-2 text-sm">
 				<span class="truncate text-fg-muted"
-					>{'query' in asked ? t('immich.library.bestMatches', { query: asked.query }) : ''}</span
+					>{t('immich.library.bestMatches', { query: browser.searched })}</span
 				>
 				<Button type="button" variant="ghost" size="sm" onclick={clearSearch}
 					>{t('immich.library.clearSearch')}</Button
 				>
 			</div>
-		{:else if view?.state !== 'unreachable'}
-			<div class="flex items-center gap-2" data-testid="immich-library-day">
-				<button
-					type="button"
-					class="grid size-9 place-items-center rounded-full text-fg-muted enabled:hover:bg-card-hover disabled:opacity-35"
-					aria-label={t('immich.library.earlier')}
-					disabled={view?.state !== 'day' || view.earlier === null}
-					onclick={() => view?.state === 'day' && view.earlier && load({ day: view.earlier })}
-					><Icon name="back" size={18} /></button
-				>
-				<div class="min-w-0 flex-1 text-center">
-					<p class="truncate text-sm font-semibold">{longDay(lastDay)}</p>
-					<p class="text-xs text-fg-subtle">
-						{view?.state === 'day' ? t('immich.library.photoCount', { count: photos.length }) : ' '}
-					</p>
-				</div>
-				<button
-					type="button"
-					class="grid size-9 place-items-center rounded-full text-fg-muted enabled:hover:bg-card-hover disabled:opacity-35"
-					aria-label={t('immich.library.later')}
-					disabled={view?.state !== 'day' || view.later === null}
-					onclick={() => view?.state === 'day' && view.later && load({ day: view.later })}
-					><Icon name="forward" size={18} /></button
-				>
-			</div>
+		{:else}
+			<LibraryCrumbs
+				crumbs={crumbsOf(at, browser.overview)}
+				overview={browser.overview}
+				onpick={(level) => browser.go(level)}
+			/>
+			{#if at.level === 'day' && view?.state !== 'unreachable'}
+				{@const earlier = view?.state === 'day' ? view.earlier : null}
+				{@const later = view?.state === 'day' ? view.later : null}
+				<LibraryDayBar
+					label={longDay(at.day, i18n.intlLocale)}
+					count={view?.state === 'day' ? photos.length : null}
+					onearlier={earlier ? () => browser.go({ level: 'day', day: earlier }) : null}
+					onlater={later ? () => browser.go({ level: 'day', day: later }) : null}
+				/>
+			{/if}
 		{/if}
 
-		<div
-			bind:this={gridTop}
-			class="-mx-1 min-h-0 flex-1 overflow-y-auto px-1"
-			aria-busy={view === null}
-		>
-			{#if view === null}
+		<div bind:this={body} class="-mx-1 min-h-0 flex-1 overflow-y-auto px-1" aria-busy={loading}>
+			{#if loading}
 				<ul class="grid grid-cols-3 gap-1.5 sm:grid-cols-4" aria-hidden="true">
 					{#each { length: 12 }, i (i)}
 						<li class="aspect-square animate-pulse rounded-control bg-bg-sunken"></li>
 					{/each}
 				</ul>
-			{:else if view.state === 'unreachable'}
-				<div class="flex flex-col items-center gap-2 py-10 text-center text-sm">
-					<Icon name="conflict" size={28} class="text-fg-subtle" />
-					<b>{t('immich.library.unreachable')}</b>
-					<span class="text-fg-muted">{t('immich.library.unreachableHint')}</span>
-					<Button type="button" size="sm" onclick={() => load(asked)}
-						>{t('immich.library.tryAgain')}</Button
-					>
-				</div>
-			{:else if view.state === 'searchOff'}
+			{:else if !searching && (at.level === 'years' || at.level === 'year')}
+				{#if timeline?.state !== 'months'}
+					<LibraryNotice
+						icon="conflict"
+						title={t('immich.library.unreachable')}
+						hint={t('immich.library.unreachableHint')}
+						onretry={() => browser.retry()}
+					/>
+				{:else if at.level === 'years' && yearTotals(timeline.months).length === 0}
+					<LibraryNotice icon="calendar" title={t('immich.library.timelineEmpty')} />
+				{:else}
+					{#if at.level === 'years'}
+						<LibraryYears
+							years={yearTotals(timeline.months)}
+							onpick={(year) => browser.go({ level: 'year', year })}
+						/>
+					{:else}
+						<LibraryMonths
+							year={at.year}
+							months={monthsOfYear(timeline.months, at.year)}
+							onpick={(month) => browser.go({ level: 'month', month })}
+						/>
+					{/if}
+					<p class="mt-3 text-xs text-fg-subtle">{t('immich.library.countsApproximate')}</p>
+				{/if}
+			{:else if !searching && at.level === 'month' && read}
+				{#if read.failed && read.photos.length === 0}
+					<LibraryNotice
+						icon="conflict"
+						title={t('immich.library.unreachable')}
+						hint={t('immich.library.unreachableHint')}
+						onretry={() => browser.retry()}
+					/>
+				{:else if read.photos.length === 0 && read.nextCursor === null}
+					<LibraryNotice
+						icon="calendar"
+						title={t('immich.library.noneInMonth', {
+							month: monthAndYear(read.month, i18n.intlLocale)
+						})}
+					/>
+				{:else}
+					<LibraryMonthGrid
+						days={groupByDay(read.photos)}
+						{ticked}
+						{full}
+						busy={copying !== null}
+						labelOf={when}
+						ontoggle={toggle}
+						onday={(day) => browser.go({ level: 'day', day })}
+						nextCursor={read.failed ? null : read.nextCursor}
+						loading={read.loading}
+						onmore={() => void browser.more()}
+						root={body ?? null}
+					/>
+					{#if read.failed}
+						<LibraryNotice
+							icon="conflict"
+							title={t('immich.library.unreachable')}
+							onretry={() => void browser.more()}
+						/>
+					{/if}
+				{/if}
+			{:else if view?.state === 'unreachable'}
+				<LibraryNotice
+					icon="conflict"
+					title={t('immich.library.unreachable')}
+					hint={t('immich.library.unreachableHint')}
+					onretry={() => browser.retry()}
+				/>
+			{:else if view?.state === 'searchOff'}
 				<p
 					class="rounded-control bg-bg-sunken p-3 text-sm text-fg-muted"
 					data-testid="immich-search-off"
 				>
 					{t('immich.library.searchOff')}
 				</p>
-			{:else if photos.length === 0}
-				<div class="flex flex-col items-center gap-2 py-10 text-center text-sm">
-					<Icon name="calendar" size={28} class="text-fg-subtle" />
-					{#if view.state === 'found'}
-						<b>{t('immich.library.noMatch', { query: 'query' in asked ? asked.query : '' })}</b>
-					{:else}
-						<b>{t('immich.library.noneOnDay', { day: longDay(view.day) })}</b>
-						{#if view.earlier || view.later}
-							<span class="text-fg-muted">{t('immich.library.arrowsSkip')}</span>
-						{/if}
-					{/if}
-				</div>
+			{:else if view?.state === 'found' && photos.length === 0}
+				<LibraryNotice
+					icon="calendar"
+					title={t('immich.library.noMatch', { query: browser.searched ?? '' })}
+				/>
+			{:else if view?.state === 'day' && photos.length === 0}
+				<LibraryNotice
+					icon="calendar"
+					title={t('immich.library.noneOnDay', { day: longDay(view.day, i18n.intlLocale) })}
+					hint={view.earlier || view.later ? t('immich.library.arrowsSkip') : null}
+				/>
 			{:else}
-				<ul class="grid grid-cols-3 gap-1.5 sm:grid-cols-4" data-testid="immich-library-photos">
-					{#each photos as photo (photo.id)}
-						{@const number = tickNumber(ticked, photo.id)}
-						{@const label = when(photo)}
-						<li>
-							<button
-								type="button"
-								class="group relative block aspect-square w-full overflow-hidden rounded-control bg-bg-sunken aria-pressed:ring-3 aria-pressed:ring-primary aria-pressed:ring-inset"
-								aria-pressed={number !== null}
-								aria-label={label
-									? t('immich.library.photo', { when: label })
-									: t('immich.library.photoUndated')}
-								disabled={copying !== null || (full && number === null)}
-								onclick={() => (ticked = toggledTick(ticked, photo.id))}
-							>
-								<img
-									src={photo.thumbnailUrl}
-									alt=""
-									loading="lazy"
-									class="size-full object-cover transition-opacity group-disabled:opacity-50"
-								/>
-								<span
-									class="absolute top-1.5 right-1.5 grid size-6 place-items-center rounded-full border-2 border-scrim-fg text-xs font-bold text-primary-fg tabular-nums shadow-card {number
-										? 'bg-primary'
-										: 'bg-scrim/20'}"
-									aria-hidden="true">{number ?? ''}</span
-								>
-								{#if label}
-									<span
-										class="absolute bottom-1 left-1 rounded bg-scrim/55 px-1 text-[11px] text-scrim-fg tabular-nums"
-										aria-hidden="true">{label}</span
-									>
-								{/if}
-							</button>
-						</li>
-					{/each}
-				</ul>
+				<LibraryPhotos
+					{photos}
+					{ticked}
+					{full}
+					busy={copying !== null}
+					labelOf={when}
+					ontoggle={toggle}
+					testid="immich-library-photos"
+				/>
 			{/if}
 		</div>
 
 		<FormError message={copyError} />
-		<div class="flex items-center justify-between gap-3 border-t border-border pt-3 text-sm">
-			{#if copying}
-				<span class="text-fg-muted" aria-live="polite"
-					>{t('immich.library.copying', { done: copying.done + 1, count: copying.count })}</span
-				>
-			{:else if ticked.length}
-				<span class="flex items-center gap-1 text-fg-muted">
-					<b class="text-fg">{t('immich.library.ticked', { count: ticked.length })}</b>
-					{#if full}· {t('immich.library.atMost', { count: LIBRARY_PICK_LIMIT })}{/if}
-					· <Button type="button" variant="ghost" size="sm" onclick={() => (ticked = [])}
-						>{t('immich.library.clear')}</Button
-					>
-				</span>
-			{:else}
-				<span class="text-fg-subtle">{t('immich.library.tapToTick')}</span>
-			{/if}
-			<Button
-				type="button"
-				variant="primary"
-				disabled={ticked.length === 0 || copying !== null}
-				onclick={add}
-				>{ticked.length
-					? t('immich.library.add', { count: ticked.length })
-					: t('immich.library.addPhotos')}</Button
-			>
-		</div>
+		<LibraryFooter
+			ticked={ticked.length}
+			{full}
+			{copying}
+			onclear={() => (ticked = [])}
+			onadd={add}
+		/>
 	</div>
 </dialog>

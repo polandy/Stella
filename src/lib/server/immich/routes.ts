@@ -1,8 +1,8 @@
 import { isWholeDay } from '../../dates/calendar';
 import type { MessageKey } from '../../i18n/translate';
+import { isMonth } from '../../immich/library-nav';
 import type { GlimpseScope } from '../../immich/strip';
 import type { Viewer } from '../access/visibility';
-import { isServableImageType, type ImmichFailure } from '../domain/immich/gateway';
 import {
 	faceUrlFor,
 	openImmichMedia,
@@ -11,7 +11,9 @@ import {
 	type ImmichMediaDeps,
 	type ImmichMediaRefusal
 } from '../domain/immich/glimpse';
+import { isAssetCursor, isServableImageType, type ImmichFailure } from '../domain/immich/gateway';
 import { readLibraryDay, searchLibrary, type ImmichLibraryDeps } from '../domain/immich/library';
+import { readLibraryMonth, readLibraryMonths } from '../domain/immich/library-timeline';
 import { findImmichFaces, type ImmichLinkDeps } from '../domain/immich/links';
 import { findLikelyMatchFor, type PersonMatchDeps } from '../domain/immich/person-match';
 import type { ImmichMediaSigner } from '../domain/immich/signed-media';
@@ -125,16 +127,19 @@ export async function answerGlimpse(
 	return Response.json(glimpse, { headers: { 'Cache-Control': IMMICH_MEDIA_CACHE_CONTROL } });
 }
 
-/** The library picker's `?day=` and `?q=`: exactly one is given. */
+/** The library picker's `?day=`, `?q=` and `?month=`: exactly one is given; `?cursor=` only with a month. */
 export interface LibraryQuery {
 	day: string | null;
 	q: string | null;
+	month?: string | null;
+	cursor?: string | null;
 }
 
 /**
- * `GET /immich/library?day=` or `?q=`: a day of the whole library, or a search of it, for the
- * picker beside a photo upload (docs/dev/02 §2.24.9) — for any member, every photo signed for their
- * household. A failure in Immich is said in the body; the picker shows it.
+ * `GET /immich/library?day=`, `?q=` or `?month=&cursor=`: a day of the whole library, a search of
+ * it, or a page of a month, for the picker beside a photo upload (docs/dev/02 §2.24.9) — for any
+ * member, every photo signed for their household. A failure in Immich is said in the body; the
+ * picker shows it.
  */
 export async function answerLibrary(
 	deps: ImmichLibraryDeps | null,
@@ -143,13 +148,33 @@ export async function answerLibrary(
 ): Promise<Response | RouteRefusal> {
 	if (!viewer) return NOT_SIGNED_IN;
 	if (!deps) return NOT_FOUND;
-	if ((query.day === null) === (query.q === null)) return NOT_FOUND;
-	if (query.day !== null && !isWholeDay(query.day)) return NOT_FOUND;
+	const { day, q, month = null, cursor = null } = query;
+	if ([day, q, month].filter((given) => given !== null).length !== 1) return NOT_FOUND;
+	if (day !== null && !isWholeDay(day)) return NOT_FOUND;
+	if (month !== null && !isMonth(month)) return NOT_FOUND;
+	if (cursor !== null && (month === null || !isAssetCursor(cursor))) return NOT_FOUND;
 	const view =
-		query.day !== null
-			? await readLibraryDay(deps, viewer, query.day)
-			: await searchLibrary(deps, viewer, query.q ?? '');
+		day !== null
+			? await readLibraryDay(deps, viewer, day)
+			: month !== null
+				? await readLibraryMonth(deps, viewer, month, cursor)
+				: await searchLibrary(deps, viewer, q ?? '');
 	return Response.json(view, { headers: { 'Cache-Control': IMMICH_MEDIA_CACHE_CONTROL } });
+}
+
+/**
+ * `GET /immich/library/months`: the timeline's months, for the picker's years overview
+ * (docs/dev/02 §2.24.9). A key without `timeline.read` answers `forbidden` in the body.
+ */
+export async function answerLibraryMonths(
+	deps: ImmichLibraryDeps | null,
+	viewer: Viewer | null
+): Promise<Response | RouteRefusal> {
+	if (!viewer) return NOT_SIGNED_IN;
+	if (!deps) return NOT_FOUND;
+	return Response.json(await readLibraryMonths(deps), {
+		headers: { 'Cache-Control': IMMICH_MEDIA_CACHE_CONTROL }
+	});
 }
 
 /** What the picker says when Immich did not give it faces. */

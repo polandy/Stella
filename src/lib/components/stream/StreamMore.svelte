@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import Button from '$lib/components/ui/Button.svelte';
+	import { nearEnd } from '$lib/components/ui/near-end';
 	import { useTranslate } from '$lib/i18n/context.svelte';
 
 	/*
@@ -25,7 +26,6 @@
 	const t = useTranslate();
 
 	let loading = $state(false);
-	let foot = $state<HTMLElement>();
 
 	async function loadMore() {
 		if (loading) return;
@@ -36,24 +36,13 @@
 			loading = false;
 		}
 	}
-
-	// One observer per page: a new one reports at once, so a foot still in view after a short
-	// page asks for the next without waiting for a scroll.
-	$effect(() => {
-		if (!more || !foot) return;
-		void href;
-		const observer = new IntersectionObserver(
-			([entry]) => {
-				if (entry?.isIntersecting) void loadMore();
-			},
-			{ rootMargin: '0px 0px 600px 0px' }
-		);
-		observer.observe(foot);
-		return () => observer.disconnect();
-	});
 </script>
 
-<div bind:this={foot} class="flex justify-center py-4" data-testid="stream-foot">
+<div
+	{@attach more && nearEnd(() => void loadMore(), { page: href })}
+	class="flex justify-center py-4"
+	data-testid="stream-foot"
+>
 	{#if more}
 		<Button
 			variant="ghost"

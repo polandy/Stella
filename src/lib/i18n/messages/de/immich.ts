@@ -28,6 +28,8 @@ export const immich: ImmichMessages = {
 		'Der Schlüssel kann keine Fotos auflisten – er braucht asset.read.',
 	'immich.settings.scope.asset.view':
 		'Der Schlüssel kann keine Fotos zeigen – er braucht asset.view.',
+	'immich.settings.scope.timeline.read':
+		'Der Schlüssel kann die Zeitleiste nicht lesen – er braucht timeline.read. Bis dahin zeigt die Fotoauswahl Tage und die Suche, ohne die Jahresübersicht.',
 	'immich.settings.tooOld': (p) =>
 		`Dieses Immich hat Version ${p.version}. Stella braucht Immich 3.2 oder neuer.`,
 	'immich.settings.sharing':
@@ -193,5 +195,16 @@ export const immich: ImmichMessages = {
 	'immich.library.ready': (p) =>
 		p.count === 1 ? '1 Foto aus Immich' : `${p.count} Fotos aus Immich`,
 	'immich.library.photo': (p) => `Foto, ${p.when}`,
-	'immich.library.photoUndated': 'Foto'
+	'immich.library.photoUndated': 'Foto',
+	'immich.library.trail': 'Wo du in der Zeitleiste bist',
+	'immich.library.allYears': 'Alle Jahre',
+	'immich.library.years': 'Jahre mit Fotos',
+	'immich.library.months': (p) => `Monate von ${p.year}`,
+	'immich.library.aboutCount': (p) => `etwa ${p.count}`,
+	'immich.library.countsApproximate': 'Die Zahlen enthalten auch Videos und sind daher ungefähr.',
+	'immich.library.timelineEmpty': 'Immich hat noch keine Fotos.',
+	'immich.library.noneInMonth': (p) => `Keine Fotos aus ${p.month} in Immich.`,
+	'immich.library.showDay': (p) => `Nur ${p.day} zeigen`,
+	'immich.library.loadMore': 'Weitere Fotos zeigen',
+	'immich.library.loading': 'Fotos werden geladen…'
 };

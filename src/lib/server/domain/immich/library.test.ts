@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'bun:test';
 import type { Viewer } from '../../access/visibility';
 import { createFakeImmichGateway, fakeAssetId } from '../../immich/fake-gateway';
-import type { ImmichGateway } from './gateway';
 import {
 	libraryCopyTakenAt,
 	photoTakenAt,
@@ -28,11 +27,7 @@ import { fixedClock } from '../testing';
 
 const viewer: Viewer = { id: 'u-anna', householdId: 'h1' };
 
-function setup(
-	gateway: Pick<ImmichGateway, 'takenAssets' | 'smartSearch'> = createFakeImmichGateway(
-		testLibrary()
-	)
-) {
+function setup(gateway: ImmichLibraryDeps['gateway'] = createFakeImmichGateway(testLibrary())) {
 	const signer = createImmichMediaSigner({
 		secret: 'test-secret',
 		clock: fixedClock(1_700_000_000_000)
