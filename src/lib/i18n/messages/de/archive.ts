@@ -42,6 +42,8 @@ export const archive: ArchiveMessages = {
 	'archive.table.interaction_participant': (p) => (p.count === 1 ? 'Beteiligter' : 'Beteiligte'),
 	'archive.table.gift': (p) => (p.count === 1 ? 'Geschenk' : 'Geschenke'),
 	'archive.table.todo': (p) => (p.count === 1 ? 'Todo' : 'Todos'),
+	'archive.table.activity_idea': (p) =>
+		p.count === 1 ? 'Unternehmungsidee' : 'Unternehmungsideen',
 	'archive.table.photo': (p) => (p.count === 1 ? 'Foto' : 'Fotos'),
 	'archive.table.tag': (p) => (p.count === 1 ? 'Schlagwort' : 'Schlagwörter'),
 	'archive.table.contact_tag': (p) =>
@@ -74,6 +76,7 @@ export const archive: ArchiveMessages = {
 	'archive.warning.giftIncomplete':
 		'Ein Geschenk ohne Namen, ohne bekannten Stand oder – verschenkt oder bekommen – ohne Tag wurde ausgelassen.',
 	'archive.warning.todoIncomplete': 'Ein Todo ohne Zeile wurde ausgelassen.',
+	'archive.warning.planIncomplete': 'Eine Unternehmungsidee ohne Zeile wurde ausgelassen.',
 	'archive.warning.tagWithoutName': 'Ein Schlagwort ohne Namen wurde ausgelassen.',
 	'archive.warning.tagsNotInList':
 		'Einige Schlagwörter an Menschen stehen nicht in der Schlagwortliste des Archivs und wurden ausgelassen.',

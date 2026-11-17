@@ -123,6 +123,7 @@ export function buildArchiveDocument(
 	const interactions = groupBy(t('interaction'), 'contact_id');
 	const gifts = groupBy(t('gift'), 'contact_id');
 	const todos = groupBy(t('todo'), 'contact_id');
+	const plans = groupBy(t('activity_idea'), 'contact_id');
 	const galleryPhotos = groupBy(
 		t('photo').filter((p) => text(p, 'journal_entry_id') === null && text(p, 'circle_id') === null),
 		'contact_id'
@@ -327,6 +328,29 @@ export function buildArchiveDocument(
 					visibility: text(td, 'visibility'),
 					author: text(td, 'created_by'),
 					created_at: moment(td, 'created_at')
+				})
+			),
+			// What the household wants to do with them, open, booked or done (docs/dev/02 §2.27).
+			plans: (plans.get(person) ?? []).map((p) =>
+				present({
+					id: id(p),
+					title: text(p, 'title'),
+					note: text(p, 'note'),
+					url: text(p, 'url'),
+					when_kind: text(p, 'when_kind'),
+					when_on: text(p, 'when_on'),
+					when_age: num(p, 'when_age'),
+					booked_at: moment(p, 'booked_at'),
+					booked_by: text(p, 'booked_by'),
+					done_at: moment(p, 'done_at'),
+					done_on: text(p, 'done_on'),
+					done_by: text(p, 'done_by'),
+					moment_id: text(p, 'moment_id'),
+					visibility: text(p, 'visibility'),
+					// Kept from the person it is with.
+					hidden_from_person: flag(p, 'hidden_from_person'),
+					author: text(p, 'created_by'),
+					created_at: moment(p, 'created_at')
 				})
 			),
 			photos: (galleryPhotos.get(person) ?? []).map(photo)

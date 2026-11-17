@@ -49,6 +49,8 @@ export const archive = {
 		p.count === 1 ? 'participant' : 'participants',
 	'archive.table.gift': (p: { count: number }): string => (p.count === 1 ? 'gift' : 'gifts'),
 	'archive.table.todo': (p: { count: number }): string => (p.count === 1 ? 'to-do' : 'to-dos'),
+	'archive.table.activity_idea': (p: { count: number }): string =>
+		p.count === 1 ? 'outing idea' : 'outing ideas',
 	'archive.table.photo': (p: { count: number }): string => (p.count === 1 ? 'photo' : 'photos'),
 	'archive.table.tag': (p: { count: number }): string => (p.count === 1 ? 'tag' : 'tags'),
 	'archive.table.contact_tag': (p: { count: number }): string =>
@@ -83,6 +85,7 @@ export const archive = {
 	'archive.warning.giftIncomplete':
 		'A gift without a name, a known state or — once given or received — a day was left out.',
 	'archive.warning.todoIncomplete': 'A to-do without a line was left out.',
+	'archive.warning.planIncomplete': 'An outing idea without a line was left out.',
 	'archive.warning.tagWithoutName': 'A tag without a name was left out.',
 	'archive.warning.tagsNotInList':
 		'Some tags on people are not in the archive’s tag list and were left out.',

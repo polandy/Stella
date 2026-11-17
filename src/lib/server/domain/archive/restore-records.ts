@@ -11,12 +11,13 @@ import { whenColumns, whenFromOutside } from '../../../when/when';
 import type { MentionKind, RestoreContext } from './restore-context';
 import { bool, ids, int, ms, records, str, visibilityOf, type Row } from './restore-fields';
 import type { PhotoPlan } from './restore-photos';
+import { planRowsOf } from './restore-plans';
 import { subjectKeyOf } from '../journal/subjects';
 import { isImmichId } from '../immich/gateway';
 
 /*
  * What each restored person carries (docs/dev/02 §2.15): contact fields, dates, notes, journal
- * entries, touchpoints, gifts, to-dos and photos. A record without the one thing that makes it
+ * entries, touchpoints, gifts, to-dos, outing ideas and photos. A record without the one thing that makes it
  * one — a note without text, a gift without its name — is left out and named in the report.
  */
 
@@ -33,6 +34,7 @@ export interface PersonRecordRows {
 	participants: Row[];
 	gifts: Row[];
 	todos: Row[];
+	plans: Row[];
 }
 
 /** A gift's link if it is a web address; anything else is dropped rather than kept as a link. */
@@ -83,7 +85,8 @@ export function planPersonRecords(
 		interactions: [],
 		participants: [],
 		gifts: [],
-		todos: []
+		todos: [],
+		plans: []
 	};
 
 	/** Mentions and participants can only point at people this archive brought along. */
@@ -287,6 +290,14 @@ export function planPersonRecords(
 
 		for (const image of records(person, 'photos'))
 			photos.add(image, { contactId, journalEntryId: null });
+	}
+
+	// An idea may point at a moment on anybody, so it waits until every entry is planned.
+	const entryIds = new Set(rows.journalEntries.map((e) => e.id as string));
+	for (const person of people) {
+		const contactId = str(person, 'id');
+		if (contactId === null || !knownPeople.has(contactId)) continue;
+		rows.plans.push(...planRowsOf(person, contactId, entryIds, ctx));
 	}
 
 	return rows;

@@ -23,6 +23,7 @@ const RESTORE_TABLES: readonly string[] = [
 	'interaction_participant',
 	'gift',
 	'todo',
+	'activity_idea',
 	'photo',
 	'tag',
 	'contact_tag',

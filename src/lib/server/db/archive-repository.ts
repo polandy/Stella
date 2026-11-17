@@ -73,6 +73,8 @@ export const EXPORTED_TABLES: readonly Scoped[] = [
 	{ table: 'gift', where: viaContact() },
 	// What the household still owes a person, open or ticked (docs/dev/02 §2.26).
 	{ table: 'todo', where: viaContact() },
+	// What the household wants to do with a person, open, booked or done (docs/dev/02 §2.27).
+	{ table: 'activity_idea', where: viaContact() },
 	{ table: 'photo', where: 't.household_id = ?' },
 	{ table: 'tag', where: 't.household_id = ?' },
 	{ table: 'contact_tag', where: viaContact() },
