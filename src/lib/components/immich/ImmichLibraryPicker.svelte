@@ -179,7 +179,7 @@
 					>{t('immich.library.clearSearch')}</Button
 				>
 			</div>
-		{:else}
+		{:else if open && (at.level !== 'day' || at.day !== '')}
 			<LibraryCrumbs
 				crumbs={crumbsOf(at, browser.overview)}
 				overview={browser.overview}
