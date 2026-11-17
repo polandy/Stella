@@ -125,6 +125,7 @@ describe('giftView', () => {
 			url: 'https://shop.example',
 			givenOn: null,
 			occasion: null,
+			when: null,
 			visibility: 'shared',
 			mine: false,
 			notedBy: 'Hans',

@@ -103,6 +103,8 @@ export function giftView(gift: Gift, ctx: PersonViewContext) {
 		url: gift.url,
 		givenOn: gift.givenOn,
 		occasion: gift.occasion,
+		/** When an idea is for (§2.25.8); null on given and received gifts. */
+		when: gift.when,
 		visibility: gift.visibility,
 		mine,
 		notedBy: mine ? null : authorLabel(false, ctx.nameOfAuthor(gift.createdBy)),

@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'bun:test';
-import { asksForGiftIdea, byYear, giftIdeaPath, giftTabs } from './card';
+import type { When } from '../when/when';
+import { asksForGiftIdea, byYear, giftIdeaPath, giftTabs, splitIdeas } from './card';
 
 /*
  * How the person page's Gifts card stands (docs/dev/02 §2.25, docs/dev/05 §5.5): which tabs it shows,
@@ -55,5 +56,33 @@ describe('giftIdeaPath', () => {
 
 	it('is not asked for by a plain link to the person', () => {
 		expect(asksForGiftIdea(new URL('https://stella.test/contacts/c1#section-gifts'))).toBe(false);
+	});
+});
+
+describe('splitIdeas', () => {
+	const birth = { value: '2018-03-14', precision: 'full' as const };
+	const today = '2026-10-08';
+	const idea = (id: string, when: When | null) => ({ id, when });
+
+	it('keeps what holds now open, and folds the waiting ones away, soonest first', () => {
+		const { open, waiting } = splitIdeas(
+			[
+				idea('later', { kind: 'later' }),
+				idea('now', null),
+				idea('tenth', { kind: 'at_age', age: 10 }),
+				idea('christmas', { kind: 'on_date', on: '2026-12-24' }),
+				idea('ninth', { kind: 'at_age', age: 9 })
+			],
+			birth,
+			today
+		);
+		expect(open.map((i) => i.id)).toEqual(['now', 'christmas']);
+		expect(waiting.map((i) => i.id)).toEqual(['ninth', 'tenth', 'later']);
+	});
+
+	it('leaves an age open when the birth year went missing', () => {
+		const { open, waiting } = splitIdeas([idea('tenth', { kind: 'at_age', age: 10 })], null, today);
+		expect(open).toHaveLength(1);
+		expect(waiting).toHaveLength(0);
 	});
 });

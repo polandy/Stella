@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'bun:test';
 import * as v from 'valibot';
-import { whenFromForm } from './form';
+import { parsedWhenFromForm, whenFromForm } from './form';
 import { optionalWhen } from './schema';
 import { sameWhen, whenColumns, whenFromOutside, whenOfColumns, type When } from './when';
 
@@ -67,6 +67,14 @@ describe('whenFromForm', () => {
 		]
 	] as const)('reads %s', (_, fields, expected) => {
 		expect(whenFromForm(read(fields))).toEqual(expected);
+	});
+
+	it('is checked against the schema where a command is built in the browser', () => {
+		expect(parsedWhenFromForm(read({ whenKind: 'at_age', whenAge: '10' }))).toEqual({
+			when: { kind: 'at_age', age: 10 }
+		});
+		expect(parsedWhenFromForm(read({}))).toEqual({ when: undefined });
+		expect(parsedWhenFromForm(read({ whenKind: 'at_age', whenAge: '' }))).toBeNull();
 	});
 });
 

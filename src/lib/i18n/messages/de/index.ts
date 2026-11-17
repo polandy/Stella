@@ -33,6 +33,7 @@ import { share } from './share';
 import { story } from './story';
 import { surnames } from './surnames';
 import { todos } from './todos';
+import { when } from './when';
 
 /** Every message Stella can say in German. */
 export const de = {
@@ -65,5 +66,6 @@ export const de = {
 	...share,
 	...story,
 	...surnames,
-	...todos
+	...todos,
+	...when
 };

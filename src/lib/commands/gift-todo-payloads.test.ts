@@ -22,7 +22,7 @@ describe('a gift command and its when', () => {
 	});
 
 	it('carries a when, and refuses a malformed one', () => {
-		const when = { kind: 'at_age', age: 18 };
+		const when = { kind: 'at_age' as const, age: 18 };
 		expect(v.parse(GiftAddSchema, { ...added, when }).when).toEqual(when);
 		expect(
 			v.safeParse(GiftEditSchema, { ...added, giftId: 'g-1', when: { kind: 'at_age' } }).success

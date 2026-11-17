@@ -261,3 +261,18 @@ export function recordMenu(viewer: {
 	if (viewer.isAdmin) entries.push('merge', 'delete');
 	return entries;
 }
+
+const EDIT_PARAM = 'edit';
+
+/**
+ * Where an age without a birth year sends the reader (docs/dev/02 §2.25.8): the person's page,
+ * the dates editor open, to note or estimate the birth year.
+ */
+export function datesEditorPath(contactId: string): string {
+	return `/contacts/${contactId}?${EDIT_PARAM}=dates`;
+}
+
+/** Whether a page address asks for the dates editor (`datesEditorPath`). */
+export function asksForDatesEditor(url: URL): boolean {
+	return url.searchParams.get(EDIT_PARAM) === 'dates';
+}

@@ -19,10 +19,20 @@ export interface WhenDay {
 	approximate: boolean;
 }
 
+/** A person's birth date as the record keeps it (docs/dev/03 §3.4), as one partial date. */
+export function birthOf(contact: {
+	birthDate: string | null;
+	birthDatePrecision: PartialDate['precision'];
+}): PartialDate | null {
+	return contact.birthDate === null
+		? null
+		: { value: contact.birthDate, precision: contact.birthDatePrecision };
+}
+
 const pad = (n: number) => String(n).padStart(2, '0');
 
 /** The birth year, and the day when there is one; null when no year is known. */
-function birthOf(birth: PartialDate | null): { year: number; month: number; day: number } | null {
+function bornIn(birth: PartialDate | null): { year: number; month: number; day: number } | null {
 	if (birth === null) return null;
 	if (birth.precision === 'year' || birth.precision === 'age') {
 		return /^\d{4}$/.test(birth.value) ? { year: Number(birth.value), month: 0, day: 0 } : null;
@@ -34,12 +44,12 @@ function birthOf(birth: PartialDate | null): { year: number; month: number; day:
 
 /** Whether an age can be named for someone born so: their birth year is known, or estimated. */
 export function knowsBirthYear(birth: PartialDate | null): boolean {
-	return birthOf(birth) !== null;
+	return bornIn(birth) !== null;
 }
 
 /** The birthday on which someone born so turns `age`; null without a birth year. */
 export function birthdayAtAge(birth: PartialDate | null, age: number): WhenDay | null {
-	const born = birthOf(birth);
+	const born = bornIn(birth);
 	if (born === null) return null;
 	const year = born.year + age;
 	if (born.month === 0) return { on: `${year}-01-01`, approximate: true };
@@ -50,7 +60,7 @@ export function birthdayAtAge(birth: PartialDate | null, age: number): WhenDay |
 
 /** How old someone born so is on `today`; null without a birth year. Estimated: by the year. */
 export function ageOn(birth: PartialDate | null, today: string): number | null {
-	const born = birthOf(birth);
+	const born = bornIn(birth);
 	const now = dayParts(today);
 	if (born === null || now === null || now.year === null) return null;
 	const age = now.year - born.year;

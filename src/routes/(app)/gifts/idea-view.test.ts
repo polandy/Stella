@@ -32,6 +32,7 @@ describe('openIdeaView', () => {
 			note: 'The black one',
 			url: 'https://shop.example',
 			visibility: 'shared',
+			when: null,
 			mine: false,
 			notedBy: 'Sandra'
 		});

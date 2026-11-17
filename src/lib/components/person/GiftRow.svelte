@@ -6,11 +6,13 @@
 	import Icon from '$lib/components/ui/Icon.svelte';
 	import RemoveButton from '$lib/components/ui/RemoveButton.svelte';
 	import { dayLabel } from '$lib/dates/labels';
+	import type { PartialDate } from '$lib/dates/partial-date';
 	import { addedLabel, occasionLabel } from '$lib/gifts/labels';
 	import { useI18n } from '$lib/i18n/context.svelte';
 	import { reveal } from '$lib/motion/motion.svelte';
 	import { useRemovals } from '$lib/undo/context.svelte';
 	import { savedEnhance } from '$lib/undo/saved';
+	import WhenChip from '$lib/components/when/WhenChip.svelte';
 	import { tick } from 'svelte';
 	import GiftForm from './GiftForm.svelte';
 	import GiftOccasionField from './GiftOccasionField.svelte';
@@ -29,12 +31,16 @@
 		gifts: PersonPageData['gifts'];
 		/** The day *Mark as given* starts on. */
 		today: string;
+		/** The person's birth date, for an idea's age (§2.25.8). */
+		birth: PartialDate | null;
+		/** Where their birth year can be estimated. */
+		estimateHref: string;
 		/** The refusal of this row's last save, if any. */
 		error: string | null;
 		/** The idea was given: the card shows where it went. */
 		onGiven: () => void;
 	}
-	let { gift, gifts, today, error, onGiven }: Props = $props();
+	let { gift, gifts, today, birth, estimateHref, error, onGiven }: Props = $props();
 
 	const i18n = useI18n();
 	const t = i18n.t;
@@ -92,6 +98,8 @@
 					submit={savedEdit}
 					{today}
 					canChooseVisibility={gift.mine}
+					{birth}
+					{estimateHref}
 					{error}
 					onCancel={close}
 				/>
@@ -101,6 +109,7 @@
 				<div class="min-w-0 flex-1">
 					<p class="font-medium break-words text-fg">{gift.title}</p>
 					{#if when}<p class="text-sm text-fg-muted">{when}</p>{/if}
+					{#if gift.when}<WhenChip when={gift.when} />{/if}
 					{#if added}<p class="text-xs text-fg-muted" data-testid="gift-added">{added}</p>{/if}
 					{#if gift.note}
 						<p class="text-sm whitespace-pre-line text-fg-muted">{gift.note}</p>

@@ -4,7 +4,7 @@ import { FULL_DATE_SHAPE, isRealCalendarDay } from '../../../dates/calendar';
 import { giftLink, type GiftState } from '../../../gifts/gifts';
 import type { PartialDate } from '../../../dates/partial-date';
 import { todayFor } from '../../../dates/today';
-import { checkWhen, isWaiting } from '../../../when/resolve';
+import { birthOf, checkWhen, isWaiting } from '../../../when/resolve';
 import { sameWhen, type When } from '../../../when/when';
 import type { Visibility, Viewer } from '../../access/visibility';
 import type { Clock } from '../../clock';
@@ -58,16 +58,6 @@ export type OpenIdea = Gift & { contactName: string; avatarPhotoId: string | nul
 
 /** An open idea read with its person's birth date, so whether it still waits can be told. */
 export type IdeaWithBirth<T extends Pick<Gift, 'when'>> = T & { birth: PartialDate | null };
-
-/** The person an idea is for, by how much of their birth date is known (docs/dev/03 §3.4). */
-export function birthOf(contact: {
-	birthDate: string | null;
-	birthDatePrecision: PartialDate['precision'];
-}): PartialDate | null {
-	return contact.birthDate === null
-		? null
-		: { value: contact.birthDate, precision: contact.birthDatePrecision };
-}
 
 /** Where a page of the story's gifts resumes: strictly older than this. */
 export interface GiftStoryCursor {
@@ -204,7 +194,7 @@ function dayOf(state: GiftState, raw: string | null): string | null {
 /** The when an idea for someone born so may keep, checked against the household's day. */
 function whenOf(when: When | null, birth: PartialDate | null, today: string): When | null {
 	const check = checkWhen(when, birth, today);
-	if (!check.ok) throw new InvalidGiftError(phrase(`errors.gift.when.${check.problem}`));
+	if (!check.ok) throw new InvalidGiftError(phrase(`errors.when.${check.problem}`));
 	return check.when;
 }
 

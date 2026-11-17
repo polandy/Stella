@@ -7,8 +7,10 @@
 	import { page } from '$app/state';
 	import { reachability } from '$lib/pwa/reachability.svelte';
 	import { useTranslate } from '$lib/i18n/context.svelte';
+	import { afterNavigate } from '$app/navigation';
 	import {
 		addMoreLabel,
+		asksForDatesEditor,
 		addressLines,
 		birthdayFact,
 		identityLayout,
@@ -197,6 +199,10 @@
 	function openEditor(name: EditedFact) {
 		visit = { ...current, editing: name };
 	}
+	// An age without a birth year links here to estimate it (docs/dev/02 §2.25.8).
+	afterNavigate(({ to }) => {
+		if (to && asksForDatesEditor(to.url)) openEditor('dates');
+	});
 	/** Closes the open editor and hands the cursor back to the fact it was opened from. */
 	async function closeEditor() {
 		const was = current.editing;

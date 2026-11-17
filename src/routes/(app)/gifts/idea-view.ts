@@ -20,6 +20,7 @@ export function openIdeaView(
 		note: idea.note,
 		url: idea.url,
 		visibility: idea.visibility,
+		when: idea.when,
 		mine,
 		notedBy: mine ? null : authorLabel(false, nameOfAuthor(idea.createdBy))
 	};
