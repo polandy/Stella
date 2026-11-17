@@ -10,6 +10,9 @@
 	import { occasionLabel } from '$lib/gifts/labels';
 	import { useI18n } from '$lib/i18n/context.svelte';
 	import type { SubmitFunction } from '@sveltejs/kit';
+	import WhenPicker from '$lib/components/when/WhenPicker.svelte';
+	import type { PartialDate } from '$lib/dates/partial-date';
+	import type { When } from '$lib/when/when';
 	import GiftOccasionField from './GiftOccasionField.svelte';
 	import { INPUT } from './inputs';
 
@@ -31,6 +34,7 @@
 			givenOn: string | null;
 			occasion: string | null;
 			visibility: 'shared' | 'private';
+			when: When | null;
 		};
 		/** The person's gifts, for the *already given* hint. */
 		gifts?: readonly GiftOnRecord[];
@@ -42,6 +46,10 @@
 		today: string;
 		/** Only the gift's author may make it private, or shared again. */
 		canChooseVisibility: boolean;
+		/** The person's birth date, which an idea's age is counted from (§2.25.8). */
+		birth: PartialDate | null;
+		/** Where their birth year can be estimated, for an age without one. */
+		estimateHref?: string | null;
 		/** Where the form shows its own refusal, when the card does not. */
 		error?: string | null;
 		/** Closes the form; a card's own add form is closed by the card's *Cancel*. */
@@ -56,6 +64,8 @@
 		submit,
 		today,
 		canChooseVisibility,
+		birth,
+		estimateHref = null,
 		error = null,
 		onCancel
 	}: Props = $props();
@@ -126,6 +136,8 @@
 			/>
 		</div>
 		<GiftOccasionField occasion={gift?.occasion ?? null} />
+	{:else}
+		<WhenPicker when={gift?.when ?? null} {birth} {today} {estimateHref} />
 	{/if}
 
 	{#if showMore}

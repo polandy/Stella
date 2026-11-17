@@ -261,3 +261,15 @@ export function recordMenu(viewer: {
 	if (viewer.isAdmin) entries.push('merge', 'delete');
 	return entries;
 }
+
+const EDIT_PARAM = 'edit';
+
+/** The person's page with the dates editor open, to estimate a birth year (docs/dev/02 §2.25.8). */
+export function datesEditorPath(contactId: string): string {
+	return `/contacts/${contactId}?${EDIT_PARAM}=dates`;
+}
+
+/** Whether a page address asks for the dates editor (`datesEditorPath`). */
+export function asksForDatesEditor(url: URL): boolean {
+	return url.searchParams.get(EDIT_PARAM) === 'dates';
+}

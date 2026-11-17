@@ -18,18 +18,17 @@ test.beforeEach(async ({ page }) => {
  * calendar looks like on the day the suite runs. Each caller brings its own names, so two
  * tests never fight over the same person.
  *
- * The band itself holds only `UPCOMING_LIMIT` people, and everything these tests add stays in
- * the database for the ones that follow — so a caller that has to see *its own* person listed
- * takes `firstInDays: 1` and is sorted in front of everybody else's.
+ * The band itself holds only `UPCOMING_LIMIT` people, and other specs add birthdays to the same
+ * database — so a test never counts on *its own* person being listed, it reads who leads.
  */
-async function addBirthdaysSoon(page: Page, names: string[], firstInDays = 2): Promise<void> {
+async function addBirthdaysSoon(page: Page, names: string[]): Promise<void> {
 	// Counted from the server's day, not the runner's: one clock (docs/dev/08 §8.4.2). Every day is at
 	// least a day ahead, so a run that steps over midnight still finds it inside the horizon.
 	const today = await serverToday(page);
 	for (const [i, name] of names.entries()) {
 		const [first, last] = name.split(' ');
 		// A leap year, so a 29 February birthday is a real date to type into the field.
-		const soon = isoDaysAfter(today, i + firstInDays).slice(5);
+		const soon = isoDaysAfter(today, i + 2).slice(5);
 		await page.goto('/contacts/new');
 		await page.getByLabel('First name').fill(first);
 		await page.getByLabel('Last name').fill(last);
@@ -138,20 +137,22 @@ test.describe('on a phone', () => {
 	});
 
 	test('folds each rail section to one line until it is tapped', async ({ page }) => {
-		// Ahead of everyone else's, so the folded line names this person.
-		await addBirthdaysSoon(page, ['Pirmin Quellet'], 1);
+		await addBirthdaysSoon(page, ['Pirmin Quellet']);
 		const toggle = page.getByTestId('coming-up-toggle');
-		const row = page.getByTestId('coming-up').getByRole('link', { name: 'Pirmin Quellet' });
+		// The folded line names whoever leads the band, whatever other specs added.
+		const row = page.getByTestId('coming-up').locator('li').first().locator('a').first();
+		const first = (await row.textContent())!.trim();
 
 		await expect(toggle).toHaveAttribute('aria-expanded', 'false');
-		await expect(toggle).toContainText(/Coming up\s*\d+ · Pirmin Quellet/);
+		await expect(toggle).toContainText(/Coming up\s*\d+ · /);
+		await expect(toggle).toContainText(first);
 		await expect(row).toBeHidden();
 
 		await toggle.click();
 		await expect(toggle).toHaveAttribute('aria-expanded', 'true');
 		await expect(row).toBeVisible();
 		// Open, the line is the heading alone: the rows say the rest.
-		await expect(toggle).not.toContainText('Pirmin Quellet');
+		await expect(toggle).not.toContainText(first);
 
 		await toggle.click();
 		await expect(row).toBeHidden();
@@ -193,12 +194,10 @@ test.describe('on a phone', () => {
 	test('puts the rail above the stream, which loads on without end', async ({ page }) => {
 		// Seeded dates drift with the calendar, so this makes its own; the rail would stand above
 		// the stream without it too (docs/dev/05 §5.5.1).
-		await addBirthdaysSoon(page, ['Yannick Zwahlen'], 1);
+		await addBirthdaysSoon(page, ['Yannick Zwahlen']);
 		await page.getByTestId('coming-up-toggle').click();
 
-		await expect(
-			page.getByTestId('coming-up').getByRole('link', { name: 'Yannick Zwahlen' })
-		).toBeVisible();
+		await expect(page.getByTestId('coming-up').locator('li').first()).toBeVisible();
 
 		const comingUp = await page.getByTestId('coming-up').boundingBox();
 		const stream = await page.getByTestId('stream').boundingBox();

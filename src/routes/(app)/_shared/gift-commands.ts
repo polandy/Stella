@@ -2,6 +2,7 @@ import { dispatchCommand } from '$lib/server/domain/commands/dispatch';
 import { readCommand } from '$lib/server/commands/parse';
 import type { CommandType } from '$lib/commands/commands';
 import { occasionFromForm } from '$lib/gifts/gifts';
+import { whenFromForm } from '$lib/when/form';
 import { GiftGoneError } from '$lib/server/domain/gifts/gifts';
 import { ulidGenerator } from '$lib/server/id';
 import { systemClock } from '$lib/server/clock';
@@ -13,7 +14,7 @@ import { say, translator } from '$lib/server/i18n/say';
  * A gift changed from a form (docs/dev/02 §2.25): the person's Gifts card and the household's list
  * of ideas (§2.25.6) post the same commands (docs/dev/04 §4.11.2) and answer the same way. The
  * occasion comes as two fields — a chip and the text beside *Other* — and is read the way the
- * outbox's `toCommand` reads it.
+ * outbox's `toCommand` reads it; so does when an idea is for (§2.25.8).
  */
 
 export type GiftCommand = Extract<CommandType, `gift.${string}`>;
@@ -22,10 +23,19 @@ export type GiftCommand = Extract<CommandType, `gift.${string}`>;
 export const occasionOf = (form: FormData) =>
 	occasionFromForm(textOf(form, 'occasionChoice'), textOf(form, 'occasionText'));
 
+/** When the idea is for, as the picker posted it; undefined where the form has no picker. */
+export const whenOf = (form: FormData) => whenFromForm((key) => textOf(form, key));
+
 export function textOf(form: FormData, key: string): string | null {
 	const value = form.get(key);
 	return typeof value === 'string' ? value : null;
 }
+
+/** What a form is told when a field of its payload fails; any other field is the title. */
+const PAYLOAD_FIELD_ERRORS: Record<string, 'errors.gift.needDay' | 'errors.gift.badWhen'> = {
+	givenOn: 'errors.gift.needDay',
+	when: 'errors.gift.badWhen'
+};
 
 /** Whose gift it is, and where the member lands once it worked. */
 export interface GiftTarget {
@@ -66,9 +76,7 @@ export async function applyGiftCommand(
 			say(
 				locals,
 				reading.part === 'payload'
-					? reading.field === 'givenOn'
-						? 'errors.gift.needDay'
-						: 'errors.gift.needTitle'
+					? (PAYLOAD_FIELD_ERRORS[reading.field ?? ''] ?? 'errors.gift.needTitle')
 					: 'errors.command.malformed'
 			)
 		);

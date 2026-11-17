@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'bun:test';
 import { createTranslator } from '$lib/i18n/translate';
 import {
+	asksForDatesEditor,
+	datesEditorPath,
 	addMoreLabel,
 	addressLines,
 	ageOn,
@@ -357,5 +359,14 @@ describe('metLine', () => {
 
 	it('is none when nothing is said', () => {
 		expect(metLine({ howWeMet: null, metPlace: null, metDate: null })).toBeNull();
+	});
+});
+
+describe('datesEditorPath', () => {
+	it('opens the dates editor on the person’s page, and only that asks for it', () => {
+		const path = datesEditorPath('c-1');
+		expect(path).toBe('/contacts/c-1?edit=dates');
+		expect(asksForDatesEditor(new URL(path, 'https://stella.test'))).toBe(true);
+		expect(asksForDatesEditor(new URL('/contacts/c-1', 'https://stella.test'))).toBe(false);
 	});
 });

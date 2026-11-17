@@ -1,5 +1,6 @@
 import * as v from 'valibot';
 import { GIFT_STATES } from '../gifts/gifts';
+import { optionalWhen } from '../when/schema';
 import { ISO_DAY, nonEmpty, optionalText, requiredText, visibility } from './payload-fields';
 
 /* What the gift and to-do commands carry (docs/dev/04 §4.11.2), one Valibot schema each. */
@@ -23,14 +24,16 @@ const giftContent = {
 export const GiftAddSchema = v.object({
 	contactId: nonEmpty,
 	state: v.picklist(GIFT_STATES),
-	...giftContent
+	...giftContent,
+	when: optionalWhen
 });
 
 /** A gift rewritten where it is listed; its state stays. */
 export const GiftEditSchema = v.object({
 	contactId: nonEmpty,
 	giftId: nonEmpty,
-	...giftContent
+	...giftContent,
+	when: optionalWhen
 });
 
 /** An idea given: the day, and the occasion if there was one. */

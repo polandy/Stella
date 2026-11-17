@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it } from 'bun:test';
+import type { PartialDate } from '../../../dates/partial-date';
 import { inEnglish } from '../../../i18n/phrase';
 import type { Viewer } from '../../access/visibility';
 import { ContactGoneError } from '../contacts/require-visible';
@@ -7,6 +8,7 @@ import {
 	countOpenIdeas,
 	editGift,
 	GiftGoneError,
+	ideaWaits,
 	InvalidGiftError,
 	listGiftsForContact,
 	listOpenIdeas,
@@ -53,19 +55,15 @@ function fakeGifts(): GiftRepository & { rows: Map<string, Gift> } {
 		async listStoryPageForContactVisibleTo() {
 			return [];
 		},
-		async countOpenIdeasVisibleTo(viewer, contactIds) {
-			const counts = new Map<string, number>();
-			for (const g of rows.values()) {
-				if (g.state !== 'idea' || !contactIds.includes(g.contactId) || !visible(viewer, g))
-					continue;
-				counts.set(g.contactId, (counts.get(g.contactId) ?? 0) + 1);
-			}
-			return counts;
+		async listOpenIdeaWhensVisibleTo(viewer, contactIds) {
+			return [...rows.values()]
+				.filter((g) => g.state === 'idea' && contactIds.includes(g.contactId) && visible(viewer, g))
+				.map((g) => ({ contactId: g.contactId, when: g.when, birth: hildeBirth }));
 		},
 		async listOpenIdeasVisibleTo(viewer) {
 			return [...rows.values()]
 				.filter((g) => g.state === 'idea' && visible(viewer, g))
-				.map((g) => ({ ...g, contactName: g.contactId, avatarPhotoId: null }));
+				.map((g) => ({ ...g, contactName: g.contactId, avatarPhotoId: null, birth: hildeBirth }));
 		}
 	};
 }
@@ -74,16 +72,23 @@ let gifts: ReturnType<typeof fakeGifts>;
 let deps: GiftDeps;
 let now: number;
 let counter: number;
+let hildeBirth: PartialDate | null;
 
 beforeEach(() => {
 	gifts = fakeGifts();
 	now = Date.UTC(2026, 9, 8, 9);
 	counter = 0;
+	hildeBirth = { value: '2018-03-14', precision: 'full' };
 	deps = {
 		gifts,
 		contacts: {
 			async findByIdVisibleTo(_viewer, id) {
-				return id === HILDE ? ({ id } as never) : null;
+				if (id !== HILDE) return null;
+				return {
+					id,
+					birthDate: hildeBirth?.value ?? null,
+					birthDatePrecision: hildeBirth?.precision ?? 'full'
+				} as never;
 			}
 		},
 		ids: { next: () => `gift-${++counter}` },
@@ -127,6 +132,7 @@ describe('addGift', () => {
 			url: null,
 			givenOn: null,
 			occasion: null,
+			when: null,
 			createdAt: now,
 			updatedAt: now
 		});
@@ -252,6 +258,99 @@ describe('markGiftGiven', () => {
 	});
 });
 
+describe('an idea for later', () => {
+	// The household's day is 2026-10-08; Hilde turns 9 on 2027-03-14.
+	it('keeps when an idea is for, as asked', async () => {
+		const forTen = await addGift(deps, ANDY, { ...idea(), when: { kind: 'at_age', age: 10 } });
+		const forXmas = await addGift(deps, ANDY, {
+			...idea(),
+			when: { kind: 'on_date', on: '2026-12-24' }
+		});
+		expect(gifts.rows.get(forTen.giftId)?.when).toEqual({ kind: 'at_age', age: 10 });
+		expect(gifts.rows.get(forXmas.giftId)?.when).toEqual({ kind: 'on_date', on: '2026-12-24' });
+	});
+
+	it('takes an age already reached as now, and an old command without a when as now', async () => {
+		const reached = await addGift(deps, ANDY, { ...idea(), when: { kind: 'from_age', age: 6 } });
+		const old = await addGift(deps, ANDY, idea());
+		expect(gifts.rows.get(reached.giftId)?.when).toBeNull();
+		expect(gifts.rows.get(old.giftId)?.when).toBeNull();
+	});
+
+	it('refuses a birthday or a day already over', async () => {
+		expect(
+			await refusal(addGift(deps, ANDY, { ...idea(), when: { kind: 'at_age', age: 8 } }))
+		).toBe('That birthday is over. Choose a later one.');
+		expect(
+			await refusal(addGift(deps, ANDY, { ...idea(), when: { kind: 'on_date', on: '2026-10-07' } }))
+		).toBe('That day is over. Choose one still ahead.');
+	});
+
+	it('refuses an age for someone whose birth year nobody knows', async () => {
+		hildeBirth = { value: '--03-14', precision: 'month_day' };
+		expect(
+			await refusal(addGift(deps, ANDY, { ...idea(), when: { kind: 'at_age', age: 10 } }))
+		).toBe('An age needs their birth year, or an estimate of it.');
+	});
+
+	it('gives a given gift no when, and drops it once an idea is given', async () => {
+		const given = await addGift(deps, ANDY, {
+			...idea(),
+			state: 'given',
+			givenOn: '2026-10-01',
+			when: { kind: 'later' }
+		});
+		expect(gifts.rows.get(given.giftId)?.when).toBeNull();
+
+		const later = await addGift(deps, ANDY, { ...idea(), when: { kind: 'later' } });
+		await markGiftGiven(deps, ANDY, {
+			contactId: HILDE,
+			giftId: later.giftId,
+			givenOn: '2026-10-08',
+			occasion: null
+		});
+		expect(gifts.rows.get(later.giftId)?.when).toBeNull();
+	});
+
+	it('keeps a when left as it was on edit, even once over, but checks a new one', async () => {
+		const { giftId } = await addGift(deps, ANDY, {
+			...idea(),
+			when: { kind: 'on_date', on: '2026-12-24' }
+		});
+		now = Date.UTC(2027, 0, 10, 9);
+		await editGift(deps, ANDY, { ...idea('Renamed'), giftId });
+		await editGift(deps, ANDY, {
+			...idea('Again'),
+			giftId,
+			when: { kind: 'on_date', on: '2026-12-24' }
+		});
+		expect(gifts.rows.get(giftId)?.when).toEqual({ kind: 'on_date', on: '2026-12-24' });
+		expect(
+			await refusal(
+				editGift(deps, ANDY, { ...idea(), giftId, when: { kind: 'on_date', on: '2027-01-01' } })
+			)
+		).toBe('That day is over. Choose one still ahead.');
+		await editGift(deps, ANDY, { ...idea(), giftId, when: null });
+		expect(gifts.rows.get(giftId)?.when).toBeNull();
+	});
+
+	it('leaves an idea that still waits out of the counts and the list of open ideas', async () => {
+		await addGift(deps, ANDY, idea('Now'));
+		await addGift(deps, ANDY, {
+			...idea('Christmas'),
+			when: { kind: 'on_date', on: '2026-12-24' }
+		});
+		await addGift(deps, ANDY, { ...idea('At ten'), when: { kind: 'at_age', age: 10 } });
+		await addGift(deps, ANDY, { ...idea('Some day'), when: { kind: 'later' } });
+
+		const viewer = { id: 'andy', householdId: 'h1' };
+		expect([...(await countOpenIdeas(deps, viewer, [HILDE]))]).toEqual([[HILDE, 2]]);
+		const listed = await listOpenIdeas(deps, viewer);
+		expect(listed.map((g) => g.title).sort()).toEqual(['Christmas', 'Now']);
+		expect(listed[0]).not.toHaveProperty('birth');
+	});
+});
+
 describe('editGift', () => {
 	it('rewrites what a gift says, keeping its state and author', async () => {
 		const { giftId } = await addGift(deps, JULIA, {
@@ -332,6 +431,24 @@ describe('listGiftsForContact', () => {
 	});
 });
 
+describe('ideaWaits', () => {
+	const today = '2026-10-07';
+	it('tells an idea still waiting for its day or for later from one due now', () => {
+		expect(ideaWaits({ state: 'idea', when: { kind: 'later' } }, null, today)).toBe(true);
+		expect(
+			ideaWaits({ state: 'idea', when: { kind: 'on_date', on: '2027-06-01' } }, null, today)
+		).toBe(true);
+		expect(
+			ideaWaits({ state: 'idea', when: { kind: 'on_date', on: '2026-12-24' } }, null, today)
+		).toBe(false);
+		expect(ideaWaits({ state: 'idea', when: null }, null, today)).toBe(false);
+	});
+
+	it('never holds back a gift already given', () => {
+		expect(ideaWaits({ state: 'given', when: { kind: 'later' } }, null, today)).toBe(false);
+	});
+});
+
 describe('countOpenIdeas', () => {
 	it('counts the open ideas the viewer may see, once per person however often asked', async () => {
 		await addGift(deps, ANDY, idea('Teapot'));
@@ -346,8 +463,8 @@ describe('countOpenIdeas', () => {
 		});
 
 		let asked: readonly string[] = [];
-		const counting = gifts.countOpenIdeasVisibleTo.bind(gifts);
-		gifts.countOpenIdeasVisibleTo = async (viewer, ids) => {
+		const counting = gifts.listOpenIdeaWhensVisibleTo.bind(gifts);
+		gifts.listOpenIdeaWhensVisibleTo = async (viewer, ids) => {
 			asked = ids;
 			return counting(viewer, ids);
 		};

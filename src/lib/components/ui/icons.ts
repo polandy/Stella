@@ -48,6 +48,7 @@ import {
 	Network,
 	Pencil,
 	Phone,
+	Minus,
 	Plus,
 	Printer,
 	Route,
@@ -100,6 +101,8 @@ export const ICONS = {
 	signOut: LogOut,
 	// Actions
 	add: Plus,
+	// A stepper's step down, beside `add` (docs/dev/02 §2.25.8).
+	subtract: Minus,
 	// A person added to the household — the top bar's quiet *Add person* (docs/dev/05 §5.4).
 	addPerson: UserPlus,
 	// The phone's Filter pill on Home (docs/dev/05 §5.5).

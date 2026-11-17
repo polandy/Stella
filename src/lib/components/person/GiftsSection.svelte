@@ -9,8 +9,9 @@
 	import Section from '$lib/components/ui/Section.svelte';
 	import Tabs from '$lib/components/ui/Tabs.svelte';
 	import { cardShape } from '$lib/people/empty-cards';
+	import { datesEditorPath } from '$lib/people/identity-card';
 	import { sectionAnchor } from '$lib/people/sections';
-	import { asksForGiftIdea, byYear, giftTabs, type GiftTab } from '$lib/gifts/card';
+	import { asksForGiftIdea, byYear, giftTabs, splitIdeas, type GiftTab } from '$lib/gifts/card';
 	import { isGiftState, occasionFromForm, type GiftState } from '$lib/gifts/gifts';
 	import { useI18n } from '$lib/i18n/context.svelte';
 	import { keepable } from '$lib/pwa/keepable';
@@ -19,7 +20,10 @@
 	import { useRemovals } from '$lib/undo/context.svelte';
 	import { removalKey } from '$lib/undo/keys';
 	import { savedEnhance } from '$lib/undo/saved';
+	import { parsedWhenFromForm } from '$lib/when/form';
+	import { birthOf } from '$lib/when/resolve';
 	import GiftForm from './GiftForm.svelte';
+	import GiftIdeas from './GiftIdeas.svelte';
 	import GiftRow from './GiftRow.svelte';
 	import type { PersonForm, PersonPageData } from './types';
 
@@ -40,11 +44,20 @@
 
 	// A gift on its way out (docs/dev/02 §2.23) is gone from the card while its undo window is open.
 	const shown = $derived(data.gifts.filter((g) => !removals.isPending(removalKey('gift', g.id))));
-	const ideas = $derived(shown.filter((g) => g.state === 'idea'));
+	const birth = $derived(birthOf(c));
+	const estimateHref = $derived(datesEditorPath(c.id));
+	// Ideas waiting for an age or a day are folded away, and out of the count (§2.25.8).
+	const ideas = $derived(
+		splitIdeas(
+			shown.filter((g) => g.state === 'idea'),
+			birth,
+			data.today
+		)
+	);
 	const given = $derived(shown.filter((g) => g.state === 'given'));
 	const received = $derived(shown.filter((g) => g.state === 'received'));
 	const tabs = $derived(
-		giftTabs({ ideas: ideas.length, given: given.length, received: received.length })
+		giftTabs({ ideas: ideas.open.length, given: given.length, received: received.length })
 	);
 
 	let tab = $state<GiftTab>('ideas');
@@ -102,7 +115,9 @@
 					const title = text(formData, 'title');
 					const state = String(formData.get('state') ?? '');
 					const givenOn = text(formData, 'givenOn');
-					if (!title || !isGiftState(state) || (state !== 'idea' && !givenOn)) return null;
+					// A when the schema refuses goes to the server, which says why.
+					const when = state === 'idea' ? parsedWhenFromForm((key) => text(formData, key)) : {};
+					if (!title || !isGiftState(state) || (state !== 'idea' && !givenOn) || !when) return null;
 					return {
 						id,
 						type: 'gift.add',
@@ -117,7 +132,8 @@
 								text(formData, 'occasionChoice'),
 								text(formData, 'occasionText')
 							),
-							visibility: formData.get('visibility') === 'private' ? 'private' : 'shared'
+							visibility: formData.get('visibility') === 'private' ? 'private' : 'shared',
+							...when
 						},
 						issuedAt: Date.now()
 					};
@@ -225,23 +241,17 @@
 
 		<div role="tabpanel" id="gift-panel" aria-labelledby="gift-tab-{current}" data-tab={current}>
 			{#if current === 'ideas'}
-				{#if ideas.length === 0}
-					<p class="py-2 text-sm text-fg-muted">
-						{t('gifts.ideas.empty', { name: c.displayName })}
-					</p>
-				{:else}
-					<ul class="flex flex-col" data-testid="gift-ideas">
-						{#each ideas as gift (gift.id)}
-							<GiftRow
-								{gift}
-								gifts={shown}
-								{today}
-								error={rowError(gift.id)}
-								onGiven={() => (tab = 'given')}
-							/>
-						{/each}
-					</ul>
-				{/if}
+				<GiftIdeas
+					open={ideas.open}
+					waiting={ideas.waiting}
+					gifts={shown}
+					name={c.displayName}
+					{today}
+					{birth}
+					{estimateHref}
+					{rowError}
+					onGiven={() => (tab = 'given')}
+				/>
 			{:else}
 				{@const list = current === 'given' ? given : received}
 				{#if list.length === 0}
@@ -259,6 +269,8 @@
 									{gift}
 									gifts={shown}
 									{today}
+									{birth}
+									{estimateHref}
 									error={rowError(gift.id)}
 									onGiven={() => (tab = 'given')}
 								/>
@@ -280,6 +292,8 @@
 				action="?/addGift"
 				submit={keepGift}
 				{today}
+				{birth}
+				{estimateHref}
 				canChooseVisibility
 			/>
 		{/key}

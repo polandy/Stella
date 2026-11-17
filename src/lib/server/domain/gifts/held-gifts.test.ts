@@ -93,6 +93,7 @@ describe('convertHeldGifts', () => {
 			url: 'https://shop.example/teapot',
 			givenOn: '2023-10-12',
 			occasion: null,
+			when: null,
 			createdAt: 1_000,
 			updatedAt: 1_000
 		});
@@ -130,6 +131,7 @@ describe('convertHeldGifts', () => {
 				url: null,
 				givenOn: '2024-05-02',
 				occasion: null,
+				when: null,
 				createdAt: 2_000,
 				updatedAt: 3_000
 			},

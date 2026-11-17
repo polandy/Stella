@@ -2,11 +2,15 @@ import { TranslatableError } from '../../../i18n/translatable';
 import { phrase, type Phrase } from '../../../i18n/phrase';
 import { FULL_DATE_SHAPE, isRealCalendarDay } from '../../../dates/calendar';
 import { giftLink, type GiftState } from '../../../gifts/gifts';
+import type { PartialDate } from '../../../dates/partial-date';
+import { todayFor } from '../../../dates/today';
+import { birthOf, checkWhen, isWaiting } from '../../../when/resolve';
+import { sameWhen, type When } from '../../../when/when';
 import type { Visibility, Viewer } from '../../access/visibility';
 import type { Clock } from '../../clock';
 import type { IdGenerator } from '../../id';
 import type { ContactLookup } from '../contacts/contacts';
-import { requireVisibleContact } from '../contacts/require-visible';
+import { ContactGoneError } from '../contacts/require-visible';
 
 /*
  * Gift use-cases (docs/dev/02 §2.25). A gift belongs to the one person it is for: an idea, a
@@ -40,6 +44,8 @@ export interface Gift {
 	givenOn: string | null;
 	/** A preset key (`GIFT_OCCASION_PRESETS`) or free text. */
 	occasion: string | null;
+	/** When an idea is meant for (docs/dev/02 §2.25.8); null for *now*, and for any given gift. */
+	when: When | null;
 	createdAt: number;
 	updatedAt: number;
 }
@@ -49,6 +55,9 @@ export type DatedGift = Gift & { state: 'given' | 'received'; givenOn: string };
 
 /** An open idea with the person it is for, as the household's list shows it (docs/dev/02 §2.25.6). */
 export type OpenIdea = Gift & { contactName: string; avatarPhotoId: string | null };
+
+/** An open idea read with its person's birth date, so whether it still waits can be told. */
+export type IdeaWithBirth<T extends Pick<Gift, 'when'>> = T & { birth: PartialDate | null };
 
 /** Where a page of the story's gifts resumes: strictly older than this. */
 export interface GiftStoryCursor {
@@ -71,18 +80,18 @@ export interface GiftRepository {
 	 */
 	listForContactVisibleTo(viewer: Viewer, contactId: string): Promise<Gift[]>;
 	/**
-	 * How many open ideas the viewer may see on each of `contactIds` — Home's *Coming up* hint
-	 * (docs/dev/02 §2.13.3). A person with none is left out.
+	 * When each open idea the viewer may see on `contactIds` is meant for, with its person's
+	 * birth date — what Home's *Coming up* hint counts (docs/dev/02 §2.13.3).
 	 */
-	countOpenIdeasVisibleTo(
+	listOpenIdeaWhensVisibleTo(
 		viewer: Viewer,
 		contactIds: readonly string[]
-	): Promise<Map<string, number>>;
+	): Promise<IdeaWithBirth<Pick<Gift, 'contactId' | 'when'>>[]>;
 	/**
 	 * Every open idea the viewer may see, newest noted first, on the people the household still
 	 * browses — an archived person's ideas stay on their page only (docs/dev/02 §2.25.6).
 	 */
-	listOpenIdeasVisibleTo(viewer: Viewer): Promise<OpenIdea[]>;
+	listOpenIdeasVisibleTo(viewer: Viewer): Promise<IdeaWithBirth<OpenIdea>[]>;
 	/**
 	 * One keyset page of the person's given and received gifts, newest day first, then latest
 	 * noted — the story's order (docs/dev/02 §2.23). Ideas are never in it.
@@ -116,6 +125,8 @@ export interface GiftContent {
 	givenOn: string | null;
 	occasion: string | null;
 	visibility: Visibility;
+	/** An idea's when; absent on a command from before whens — *now*, or as it was on an edit. */
+	when?: When | null;
 }
 
 export interface AddGiftInput extends GiftContent {
@@ -180,6 +191,24 @@ function dayOf(state: GiftState, raw: string | null): string | null {
 	return day;
 }
 
+/** The when an idea for someone born so may keep, checked against the household's day. */
+function whenOf(when: When | null, birth: PartialDate | null, today: string): When | null {
+	const check = checkWhen(when, birth, today);
+	if (!check.ok) throw new InvalidGiftError(phrase(`errors.when.${check.problem}`));
+	return check.when;
+}
+
+/** The birth date of the person a gift is for, who the author must be able to see. */
+async function birthOfVisible(
+	deps: Pick<GiftDeps, 'contacts'>,
+	actor: GiftActor,
+	contactId: string
+): Promise<PartialDate | null> {
+	const contact = await deps.contacts.findByIdVisibleTo(viewerOf(actor), contactId);
+	if (!contact) throw new ContactGoneError();
+	return birthOf(contact);
+}
+
 /** What a gift says once its content is checked, for its state. */
 function checkedContent(state: GiftState, content: GiftContent) {
 	return {
@@ -214,9 +243,12 @@ export async function addGift(
 	author: GiftActor,
 	input: AddGiftInput
 ): Promise<{ giftId: string }> {
-	await requireVisibleContact(deps.contacts, author, input.contactId);
+	const birth = await birthOfVisible(deps, author, input.contactId);
 	const content = checkedContent(input.state, input);
 	const now = deps.clock.now();
+	// Only an idea waits; what was given or received happened.
+	const when =
+		input.state === 'idea' ? whenOf(input.when ?? null, birth, todayFor(deps.clock)) : null;
 	const giftId = deps.ids.next();
 	await deps.gifts.insert({
 		id: giftId,
@@ -225,6 +257,7 @@ export async function addGift(
 		visibility: input.visibility,
 		state: input.state,
 		...content,
+		when,
 		createdAt: now,
 		updatedAt: now
 	});
@@ -238,9 +271,16 @@ export async function editGift(
 	input: EditGiftInput
 ): Promise<{ giftId: string }> {
 	const gift = await requireVisibleGift(deps, editor, input.contactId, input.giftId);
+	// A when left as it was stays, even once its day is over; a new one must still be ahead.
+	const asked = input.when === undefined ? gift.when : input.when;
+	const when =
+		gift.state !== 'idea' || sameWhen(asked, gift.when)
+			? gift.when
+			: whenOf(asked, await birthOfVisible(deps, editor, gift.contactId), todayFor(deps.clock));
 	await deps.gifts.update({
 		...gift,
 		...checkedContent(gift.state, input),
+		when,
 		visibility: gift.createdBy === editor.userId ? input.visibility : gift.visibility,
 		updatedAt: deps.clock.now()
 	});
@@ -260,6 +300,7 @@ export async function markGiftGiven(
 		state: 'given',
 		givenOn: dayOf('given', input.givenOn),
 		occasion: orNull(input.occasion),
+		when: null,
 		updatedAt: deps.clock.now()
 	});
 	return { giftId: gift.id };
@@ -285,19 +326,46 @@ export async function listGiftsForContact(
 	return deps.gifts.listForContactVisibleTo(viewer, contactId);
 }
 
-/** The open ideas the viewer may see on each of these people; one with none is left out. */
+/** Whether an open idea still waits for its time, so only its person's card shows it (§2.25.8). */
+export function ideaWaits(
+	idea: Pick<Gift, 'state' | 'when'>,
+	birth: PartialDate | null,
+	today: string
+): boolean {
+	return idea.state === 'idea' && isWaiting(idea.when, birth, today);
+}
+
+/**
+ * The open ideas the viewer may see on each of these people, less those still waiting; one with
+ * none is left out.
+ */
 export async function countOpenIdeas(
-	deps: Pick<GiftDeps, 'gifts'>,
+	deps: Pick<GiftDeps, 'gifts' | 'clock'>,
 	viewer: Viewer,
 	contactIds: readonly string[]
 ): Promise<Map<string, number>> {
-	return deps.gifts.countOpenIdeasVisibleTo(viewer, [...new Set(contactIds)]);
+	const today = todayFor(deps.clock);
+	const counts = new Map<string, number>();
+	for (const idea of await deps.gifts.listOpenIdeaWhensVisibleTo(viewer, [
+		...new Set(contactIds)
+	])) {
+		if (isWaiting(idea.when, idea.birth, today)) continue;
+		counts.set(idea.contactId, (counts.get(idea.contactId) ?? 0) + 1);
+	}
+	return counts;
 }
 
-/** Every open idea the viewer may see, with whom it is for — the household's list (§2.25.6). */
+/**
+ * Every open idea the viewer may see, with whom it is for — the household's list (§2.25.6) —
+ * less those still waiting for their time.
+ */
 export async function listOpenIdeas(
-	deps: Pick<GiftDeps, 'gifts'>,
+	deps: Pick<GiftDeps, 'gifts' | 'clock'>,
 	viewer: Viewer
 ): Promise<OpenIdea[]> {
-	return deps.gifts.listOpenIdeasVisibleTo(viewer);
+	const today = todayFor(deps.clock);
+	const ideas = await deps.gifts.listOpenIdeasVisibleTo(viewer);
+	return ideas
+		.filter((idea) => !isWaiting(idea.when, idea.birth, today))
+		.map(({ birth: _birth, ...idea }) => idea);
 }

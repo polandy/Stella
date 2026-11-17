@@ -603,7 +603,14 @@ may edit, give or remove it; only its author may change its visibility.
 | url | text null | an `http(s)` address only |
 | given_on | text null | ISO `YYYY-MM-DD`; null while an idea, required for given and received |
 | occasion | text null | a preset key (`birthday`, `christmas`, `anniversary`) or free text |
+| when_kind | text null | an idea's time (docs/dev/02 §2.25.8): `'from_age' \| 'at_age' \| 'on_date' \| 'later'`; null for *now*, and always on a given or received gift |
+| when_age | int null | 1–150, for `from_age` and `at_age` only |
+| when_on | text null | ISO `YYYY-MM-DD`, for `on_date` only |
 | created_at / updated_at | int | |
+
+The three `when_*` columns move together (`src/lib/when/when.ts`); a row whose triple does not
+make one *when* is refused on read, and restored from an archive as *now*. Whether an idea waits
+is worked out on read against the person's birth date and today, never stored.
 
 Indexed on `(contact_id, state, given_on)`: the card's tabs and the story's page of given and
 received gifts (newest `given_on`, then `created_at`) come from it. Exported and restored with
