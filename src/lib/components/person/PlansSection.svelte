@@ -10,6 +10,8 @@
 	import { cardShape } from '$lib/people/empty-cards';
 	import { datesEditorPath } from '$lib/people/identity-card';
 	import { sectionAnchor } from '$lib/people/sections';
+	import type { MomentDraft } from '$lib/people/story-forms';
+	import { momentDraftOf } from '$lib/plans/afterwards';
 	import { openIdeaCount, splitPlans, type PlanTab } from '$lib/plans/card';
 	import { keepable } from '$lib/pwa/keepable';
 	import { isKept, type KeptOf } from '$lib/pwa/outbox';
@@ -29,7 +31,16 @@
 	 * *Done* what was done. With nothing noted the card is one line (docs/dev/05 §5.5), and says
 	 * what it is for, since a to-do and an outing are easy to confuse.
 	 */
-	let { data, form }: { data: PersonPageData; form: PersonForm } = $props();
+	let {
+		data,
+		form,
+		writeMoment
+	}: {
+		data: PersonPageData;
+		form: PersonForm;
+		/** Opens the story's composer on this draft (docs/dev/02 §2.27.8). */
+		writeMoment: (draft: MomentDraft) => void;
+	} = $props();
 
 	const i18n = useI18n();
 	const t = i18n.t;
@@ -89,6 +100,12 @@
 		)
 	);
 
+	// Read when asked, after the tick's reload, so the moment starts on the day Stella recorded.
+	function momentAbout(planId: string) {
+		const plan = data.plans.find((p) => p.id === planId);
+		if (plan) writeMoment(momentDraftOf(plan, today));
+	}
+
 	const rowError = (planId: string): string | null =>
 		form?.planRowError && form.planRowError.planId === planId ? form.planRowError.message : null;
 </script>
@@ -106,6 +123,7 @@
 				personIsMember={data.recipientIsMember}
 				kept={keptSteps.get(plan.id) ?? null}
 				error={rowError(plan.id)}
+				writeMoment={momentAbout}
 			/>
 		{/each}
 	</ul>

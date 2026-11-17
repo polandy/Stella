@@ -46,6 +46,14 @@ export interface Notice {
 	undoable: boolean;
 	/** Where what it announces can be opened — *Lena Köhler added · Open* — or null. */
 	link: NoticeLink | null;
+	/** The label of a step on from what it announces, beside Undo — *Write a moment* — or null. */
+	action: string | null;
+}
+
+/** A step a notice offers on from what it announces; taking it closes the notice. */
+export interface NoticeAction {
+	label: string;
+	run: () => void;
 }
 
 /** A link a notice carries to what it announces. */
@@ -76,7 +84,7 @@ export interface PendingRemovals {
 	 * runs `takeBack` — which reports its own failure, since only it knows what went wrong.
 	 * Returns the notice's id, so a list can keep what it announces in view while it stands.
 	 */
-	notify(text: string, takeBack?: () => void): number;
+	notify(text: string, takeBack?: () => void, action?: NoticeAction): number;
 	/**
 	 * Shows a message with a link to what it announces, which was just made — for one window, or
 	 * for `windowMs` when the message is only a pointer and should not stand as long.
@@ -84,6 +92,8 @@ export interface PendingRemovals {
 	notifyWithLink(text: string, link: NoticeLink, windowMs?: number): void;
 	/** *Undo* on an undoable notice: drops it and runs its `takeBack`, once. Otherwise a no-op. */
 	takeBack(noticeId: number): void;
+	/** The step a notice offers: drops it and runs the step, once. Otherwise a no-op. */
+	act(noticeId: number): void;
 	/**
 	 * Stops every window while the reader is at the toasts — hovering them or focused in them —
 	 * so Undo cannot run out under their hand (WCAG 2.2.1). A second hold is a no-op.
@@ -115,6 +125,7 @@ interface ShownNotice {
 	/** How long it stands, when not one undo window. */
 	windowMs?: number;
 	takeBack?: () => void;
+	action?: NoticeAction;
 }
 
 /** Builds the store the app shell holds for one browser tab. */
@@ -203,16 +214,23 @@ export function createPendingRemovals(deps: PendingRemovalsDeps): PendingRemoval
 			for (const entry of entries) await perform(entry.removal);
 		},
 		isPending: (key) => pending.has(key),
-		notify(text, takeBack) {
+		notify(text, takeBack, action) {
 			return show({
-				notice: { id: nextNoticeId++, text, undoable: takeBack !== undefined, link: null },
+				notice: {
+					id: nextNoticeId++,
+					text,
+					undoable: takeBack !== undefined,
+					link: null,
+					action: action?.label ?? null
+				},
 				timer: undefined,
-				takeBack
+				takeBack,
+				action
 			});
 		},
 		notifyWithLink(text, link, ownWindowMs) {
 			void show({
-				notice: { id: nextNoticeId++, text, undoable: false, link },
+				notice: { id: nextNoticeId++, text, undoable: false, link, action: null },
 				timer: undefined,
 				windowMs: ownWindowMs
 			});
@@ -223,6 +241,13 @@ export function createPendingRemovals(deps: PendingRemovalsDeps): PendingRemoval
 			scheduler.clearTimeout(shown.timer);
 			dismissNotice(noticeId);
 			shown.takeBack();
+		},
+		act(noticeId) {
+			const shown = notices.find((candidate) => candidate.notice.id === noticeId);
+			if (!shown?.action) return;
+			scheduler.clearTimeout(shown.timer);
+			dismissNotice(noticeId);
+			shown.action.run();
 		},
 		hold() {
 			if (held) return;

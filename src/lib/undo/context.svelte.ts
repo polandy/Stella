@@ -1,6 +1,7 @@
 import { getContext, setContext } from 'svelte';
 import {
 	createPendingRemovals,
+	type NoticeAction,
 	type NoticeLink,
 	type Removal,
 	type RemovalsSnapshot
@@ -27,7 +28,7 @@ export interface Removals {
 	/** Reactive — reading it inside `$derived` tracks the pending list. */
 	isPending(key: string): boolean;
 	/** Returns the notice's id (`RemovalsSnapshot.notices`). */
-	notify(text: string, takeBack?: () => void): number;
+	notify(text: string, takeBack?: () => void, action?: NoticeAction): number;
 	/**
 	 * Moves focus to the *Undo* of the undoable notice `noticeId`, once the region has rendered
 	 * it; false when that notice is gone or has no Undo.
@@ -37,6 +38,8 @@ export interface Removals {
 	notifyWithLink(text: string, link: NoticeLink, windowMs?: number): void;
 	/** *Undo* on a notice announcing something that can be taken back. */
 	takeBack(noticeId: number): void;
+	/** The step on a notice offers beside Undo (`NoticeAction`). */
+	act(noticeId: number): void;
 	/** Stops the windows while the reader is at the toasts; `release` lets them run again. */
 	hold(): void;
 	release(): void;
@@ -72,6 +75,7 @@ export function provideRemovals(): Removals {
 		},
 		notifyWithLink: store.notifyWithLink,
 		takeBack: store.takeBack,
+		act: store.act,
 		hold: store.hold,
 		release: store.release
 	};

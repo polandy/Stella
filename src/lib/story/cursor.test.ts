@@ -20,7 +20,13 @@ describe('parseStoryCursor', () => {
 			plans: 'top'
 		} as const;
 		expect(parseStoryCursor(states)).toEqual(states);
-		const points = { journal: point, interactions: point, gifts: point, todos: point, plans: point };
+		const points = {
+			journal: point,
+			interactions: point,
+			gifts: point,
+			todos: point,
+			plans: point
+		};
 		expect(parseStoryCursor(points)).toEqual(points);
 	});
 

@@ -112,6 +112,13 @@
 		field?.setSelectionRange(field.value.length, field.value.length);
 	}
 
+	/** Open the composer on `draft` — a moment about a done outing idea (§2.27.8). */
+	export async function writeMomentFrom(draft: MomentDraft) {
+		momentDraft = draft;
+		composerRun++;
+		await writeMoment();
+	}
+
 	export function logContact() {
 		openForm = withLogAsked(openForm, true);
 	}

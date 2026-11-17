@@ -45,7 +45,13 @@ beforeEach(() => {
 		.run();
 	db.insert(schema.contact)
 		.values([
-			{ id: 'julia-self', householdId: H, createdBy: 'andy', visibility: 'shared', displayName: 'Julia' },
+			{
+				id: 'julia-self',
+				householdId: H,
+				createdBy: 'andy',
+				visibility: 'shared',
+				displayName: 'Julia'
+			},
 			{ id: MIA, householdId: H, createdBy: 'andy', visibility: 'shared', displayName: 'Mia' }
 		])
 		.run();
@@ -57,7 +63,11 @@ beforeEach(() => {
 });
 
 const viewer = (actor: typeof ANDY) => ({ id: actor.userId, householdId: actor.householdId });
-const story = (actor: typeof ANDY, contactId: string, before?: { doneOn: string; doneAt: number }) =>
+const story = (
+	actor: typeof ANDY,
+	contactId: string,
+	before?: { doneOn: string; doneAt: number }
+) =>
 	services.planDeps.plans.listStoryPageForContactVisibleTo(viewer(actor), contactId, {
 		limit: 10,
 		before

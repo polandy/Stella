@@ -143,7 +143,7 @@
 
 	<!-- Ideas, and what was given and received (docs/dev/02 §2.25). -->
 	<GiftsSection {data} {form} />
-	<PlansSection {data} {form} />
+	<PlansSection {data} {form} writeMoment={(draft) => void story?.writeMomentFrom(draft)} />
 
 	{#if !todosFirst}<TodosSection {data} {form} rows={todoRows} {justDone} />{/if}
 

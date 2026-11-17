@@ -7,6 +7,7 @@
 	import { enhance } from '$app/forms';
 	import type { PartialDate } from '$lib/dates/partial-date';
 	import { dayLabel } from '$lib/dates/labels';
+	import { journalEntryPath } from '$lib/people/sections';
 	import { useI18n } from '$lib/i18n/context.svelte';
 	import { reveal } from '$lib/motion/motion.svelte';
 	import { planState } from '$lib/plans/card';
@@ -20,7 +21,7 @@
 	/*
 	 * One outing idea on the Outings card (docs/dev/02 §2.27): what it is, when, who noted it, and
 	 * the done box on the right. *Booked* fixes it; a booked one says so and may be loosened
-	 * again. A done one shows its day and may be opened again. The pencil rewrites it in place;
+	 * again. A done one shows its day and may be opened again, told of in a moment or noted anew. The pencil rewrites it in place;
 	 * removing it has the undo every removal has (docs/dev/02 §2.23).
 	 */
 	interface Props {
@@ -37,9 +38,21 @@
 		kept: 'book' | 'done' | null;
 		/** The refusal of this row's last save, if any. */
 		error: string | null;
+		/** Opens the story's composer on a moment about this idea, once done (§2.27.8). */
+		writeMoment: (planId: string) => void;
 	}
-	let { plan, contactId, today, birth, estimateHref, name, personIsMember, kept, error }: Props =
-		$props();
+	let {
+		plan,
+		contactId,
+		today,
+		birth,
+		estimateHref,
+		name,
+		personIsMember,
+		kept,
+		error,
+		writeMoment
+	}: Props = $props();
 
 	const i18n = useI18n();
 	const t = i18n.t;
@@ -63,6 +76,9 @@
 	}
 	const savedEdit = savedEnhance(removals, t('components.saved'), close);
 	const saved = savedEnhance(removals, t('components.saved'), () => {});
+	const noted = $derived(
+		savedEnhance(removals, t('plans.againToast', { title: plan.title }), () => {})
+	);
 </script>
 
 <li bind:this={row} class="flex gap-3 border-t border-border-subtle py-2.5 first:border-t-0">
@@ -151,6 +167,40 @@
 					{/if}
 				</p>
 				<FormError message={error} variant="inline" />
+				{#if plan.doneOn}
+					<!-- Afterwards: the moment told of it, and the idea noted once more (§2.27.8). -->
+					<div class="mt-2 flex flex-wrap gap-2">
+						{#if plan.momentId}
+							<Button
+								variant="ghost"
+								size="sm"
+								icon="journal"
+								href={journalEntryPath(contactId, plan.momentId)}
+								label={t('plans.momentLabel', { title: plan.title })}
+								data-testid="plan-moment">{t('plans.moment')}</Button
+							>
+						{:else}
+							<Button
+								variant="secondary"
+								size="sm"
+								icon="journal"
+								type="button"
+								label={t('plans.writeMomentLabel', { title: plan.title })}
+								onclick={() => writeMoment(plan.id)}
+								data-testid="plan-write-moment">{t('plans.writeMoment')}</Button
+							>
+						{/if}
+						<form method="POST" action="?/againPlan" use:enhance={noted}>
+							<input type="hidden" name="planId" value={plan.id} />
+							<Button
+								variant="ghost"
+								size="sm"
+								label={t('plans.againLabel', { title: plan.title })}
+								data-testid="plan-again">{t('plans.again')}</Button
+							>
+						</form>
+					</div>
+				{/if}
 				{#if !done && !kept}
 					<!-- Under the idea rather than beside it, so a phone keeps the title on one line. -->
 					<div class="mt-2 flex flex-wrap gap-2">
@@ -205,7 +255,14 @@
 			</div>
 		</div>
 		{#if !plan.doneOn}
-			<PlanStep {plan} {contactId} step="done" kept={kept === 'done'} id={boxId} />
+			<PlanStep
+				{plan}
+				{contactId}
+				step="done"
+				kept={kept === 'done'}
+				id={boxId}
+				writeMoment={() => writeMoment(plan.id)}
+			/>
 		{/if}
 	{/if}
 </li>

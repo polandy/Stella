@@ -87,11 +87,7 @@ export interface StoryPlanItem extends StoryItemBase {
 }
 
 export type StoryItemView =
-	| StoryJournalItem
-	| StoryInteractionItem
-	| StoryGiftItem
-	| StoryTodoItem
-	| StoryPlanItem;
+	StoryJournalItem | StoryInteractionItem | StoryGiftItem | StoryTodoItem | StoryPlanItem;
 
 /** Where each source resumes; mirrors the domain's `StoryResume` across the wire. */
 export type StoryResumeView = { day: string; recordedAt: number } | 'top' | 'finished';

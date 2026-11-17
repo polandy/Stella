@@ -271,6 +271,65 @@ describe('a notice that can be taken back', () => {
 });
 
 /*
+ * A notice may offer one step on from what it announces beside Undo — *Done: Climbing hall ·
+ * Write a moment · Undo* (docs/dev/02 §2.27.8). Taking it closes the notice, so the step runs
+ * once and Undo is no longer offered.
+ */
+describe('a notice with a step on', () => {
+	it('names its step, and none without one', () => {
+		const { store } = setup();
+		store.notify('Saved');
+		store.notify('Done: Climbing hall', () => {}, { label: 'Write a moment', run: () => {} });
+		expect(store.snapshot().notices.map((n) => [n.undoable, n.action])).toEqual([
+			[false, null],
+			[true, 'Write a moment']
+		]);
+	});
+
+	it('runs the step once and drops the notice, without taking anything back', () => {
+		const { store } = setup();
+		const ran: string[] = [];
+		store.notify('Done: Climbing hall', () => ran.push('undo'), {
+			label: 'Write a moment',
+			run: () => ran.push('moment')
+		});
+		const [notice] = store.snapshot().notices;
+
+		store.act(notice.id);
+		store.act(notice.id);
+		store.takeBack(notice.id);
+
+		expect(ran).toEqual(['moment']);
+		expect(store.snapshot().notices).toEqual([]);
+	});
+
+	it('runs no step once Undo was pressed', () => {
+		const { store } = setup();
+		const ran: string[] = [];
+		store.notify('Done: Climbing hall', () => ran.push('undo'), {
+			label: 'Write a moment',
+			run: () => ran.push('moment')
+		});
+		const [notice] = store.snapshot().notices;
+
+		store.takeBack(notice.id);
+		store.act(notice.id);
+
+		expect(ran).toEqual(['undo']);
+	});
+
+	it('ignores the step on a notice that offers none', () => {
+		const { store } = setup();
+		store.notify('Saved');
+		const [notice] = store.snapshot().notices;
+
+		store.act(notice.id);
+
+		expect(store.snapshot().notices.map((n) => n.text)).toEqual(['Saved']);
+	});
+});
+
+/*
  * The window is not a fixed eight seconds for somebody still reading the toast or reaching
  * for its Undo (WCAG 2.2.1): while the toast region is hovered or holds focus, it stands still,
  * and once it is let go the window starts over in full.

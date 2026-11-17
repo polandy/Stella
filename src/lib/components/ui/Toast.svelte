@@ -72,6 +72,11 @@
 		{#if notice.undoable}
 			<div class="toast" data-testid="toast-undo">
 				<span class="pl-2">{notice.text}</span>
+				{#if notice.action}
+					<Button variant="primary" size="sm" onclick={() => removals.act(notice.id)}
+						>{notice.action}</Button
+					>
+				{/if}
 				<Button
 					variant="secondary"
 					size="sm"

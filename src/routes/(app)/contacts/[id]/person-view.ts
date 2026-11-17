@@ -135,6 +135,8 @@ export function planView(plan: Plan, ctx: PersonViewContext) {
 		bookedBy:
 			plan.bookedBy && plan.bookedBy !== ctx.viewerId ? ctx.nameOfAuthor(plan.bookedBy) : null,
 		doneOn: plan.doneOn,
+		/** The moment told of it once done, when the viewer may see it (the read masks it). */
+		momentId: plan.momentId,
 		/** Kept from the member it is with; only ever true on a shared idea. */
 		hiddenFromPerson: plan.hiddenFromPerson,
 		visibility: plan.visibility,

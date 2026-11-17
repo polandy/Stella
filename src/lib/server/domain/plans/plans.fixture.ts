@@ -47,7 +47,10 @@ export function fakePlans(
 			return [...rows.values()]
 				.filter(
 					(p): p is DonePlan =>
-						p.contactId === contactId && p.doneOn !== null && p.doneAt !== null && visible(viewer, p)
+						p.contactId === contactId &&
+						p.doneOn !== null &&
+						p.doneAt !== null &&
+						visible(viewer, p)
 				)
 				.filter(
 					(p) =>

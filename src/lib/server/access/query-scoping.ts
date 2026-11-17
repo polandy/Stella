@@ -108,7 +108,9 @@ export function childRecordBrowsableBy(
 export function linkedMomentVisibleTo(viewer: Viewer, momentId: AnyColumn): SQL<string | null> {
 	const name = 'moment_person';
 	const person = alias(contact, name);
-	return sql<string | null>`(SELECT ${journalEntry.id} FROM ${journalEntry} INNER JOIN ${contact} ${sql.identifier(name)} ON ${person.id} = ${journalEntry.contactId} WHERE ${journalEntry.id} = ${momentId} AND ${contactColumnsVisibleTo(viewer, person)} AND (${journalEntry.visibility} = 'shared' OR ${journalEntry.createdBy} = ${viewer.id}))`;
+	return sql<
+		string | null
+	>`(SELECT ${journalEntry.id} FROM ${journalEntry} INNER JOIN ${contact} ${sql.identifier(name)} ON ${person.id} = ${journalEntry.contactId} WHERE ${journalEntry.id} = ${momentId} AND ${contactColumnsVisibleTo(viewer, person)} AND (${journalEntry.visibility} = 'shared' OR ${journalEntry.createdBy} = ${viewer.id}))`;
 }
 
 /** The columns `surpriseVisibleTo` decides on. */
