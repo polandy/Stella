@@ -2,13 +2,15 @@ import { expect, test, type Page } from '@playwright/test';
 import { appReady, isoDaysAfter, serverToday, signIn } from './app';
 import { personIdOf, seedHousehold } from './seed';
 import { UNDO_WINDOW_MS } from '../src/lib/undo/pending-removals';
+import { DEMO_ADMIN_PASSWORD, DEMO_MEMBER_EMAIL } from '../src/lib/server/db/demo-seed';
 
 /*
  * The outing ideas on Home (docs/dev/02 §2.27.7): the next three dated ones sorted in among the
  * dates of *Coming up*, a booked one and the undated count on the person's date line, a passed one
- * asking *Done? Still on?* and each of its answers, and a phone's folded line that never names a
- * private idea. The page's clock is the test's; days come from the server's today. The suite
- * shares one database, so every person is the run's own, and the ideas are the soonest there are.
+ * asking *Done? Still on?* and each of its answers, a private idea the other member never sees,
+ * and a phone's folded line that never names one. The page's clock is the test's; days come from
+ * the server's today. The suite shares one database, so every person is the run's own, and the
+ * ideas are the soonest there are.
  */
 
 /** Six letters no other attempt shares. */
@@ -161,6 +163,31 @@ test('a passed idea deleted from Home is gone once the undo window closes', asyn
 	for (const title of [titles.walk, titles.run])
 		await ask(page, title).getByRole('button', { name: 'Keep without a date' }).click();
 	await expect(ask(page, titles.run)).toHaveCount(0);
+});
+
+test('the other member sees the shared ideas on Home, never a private one', async ({
+	page,
+	browser
+}) => {
+	await signIn(page);
+	const { titles } = await seedMia(page);
+	const context = await browser.newContext({ storageState: { cookies: [], origins: [] } });
+	const nina = await context.newPage();
+	await nina.clock.install();
+	await nina.goto('/login');
+	await nina.getByLabel('Email').fill(DEMO_MEMBER_EMAIL);
+	await nina.getByLabel('Password').fill(DEMO_ADMIN_PASSWORD);
+	await nina.getByRole('button', { name: 'Sign in', exact: true }).click();
+	await appReady(nina);
+
+	await expect(row(nina, titles.concert)).toContainText('Outing with');
+	await expect(ask(nina, titles.walk)).toBeVisible();
+	await expect(comingUp(nina)).not.toContainText(titles.secret);
+	// Answered here, so no later case finds them asking.
+	for (const title of [titles.walk, titles.swim, titles.run])
+		await ask(nina, title).getByRole('button', { name: 'Keep without a date' }).click();
+	await expect(comingUp(nina).getByTestId('plan-ask')).toHaveCount(0);
+	await context.close();
 });
 
 test.describe('on a phone', () => {
