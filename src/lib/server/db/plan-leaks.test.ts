@@ -83,9 +83,11 @@ async function noted(over: { hiddenFromPerson?: boolean; visibility?: 'shared' |
 	return planId;
 }
 
-describe.each([
+type Kept = Parameters<typeof noted>[0];
+
+describe.each<[string, Kept]>([
 	['kept from the member it is with', { hiddenFromPerson: true }],
-	['private to its author', { visibility: 'private' as const }]
+	['private to its author', { visibility: 'private' }]
 ])('an idea %s', (_name, over) => {
 	it('is not on their card, and not in its count', async () => {
 		await noted(over);

@@ -25,6 +25,7 @@ import { welcomeSteps } from '$lib/stream/welcome';
 import { todayFor } from '$lib/dates/today';
 import { composerFor, linkSuggestionAmong, peopleNamedBy, photosPosted } from './home-view';
 import { householdTodoActions, readHouseholdTodos } from './_shared/household-todos';
+import { householdPlanActions, readHomePlans } from './_shared/household-plans';
 import { streamForView } from './_shared/stream-view';
 import { memoryBandForView } from './_shared/memories-view';
 import { memoriesOn } from '$lib/server/domain/memories/memories';
@@ -79,16 +80,20 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 	const stream = await streamForView(locals.services.people.contactNameDeps, viewer, items);
 
 	const dates = upcomingDates(dateSources, day);
-	// A person coming up with open gift ideas says how many, and what is bought for them (§2.13.3).
+	// A person coming up with open gift ideas says how many, and what is bought for them (§2.13.3),
+	// and what outing is booked with them and how many wait without a day (§2.27.8).
 	const coming = dates.map((date) => date.contactId);
-	const [ideas, ready] = await Promise.all([
+	const [ideas, ready, plans] = await Promise.all([
 		countOpenIdeas(locals.services.gifts.giftDeps, viewer, coming),
-		readyGifts(locals.services.gifts.giftDeps, viewer, coming)
+		readyGifts(locals.services.gifts.giftDeps, viewer, coming),
+		readHomePlans(locals, coming, day)
 	]);
 	const upcoming = dates.map((date) => ({
 		...date,
 		giftIdeas: ideas.get(date.contactId) ?? 0,
-		readyGifts: ready.get(date.contactId) ?? []
+		readyGifts: ready.get(date.contactId) ?? [],
+		bookedPlans: plans.lines.get(date.contactId)?.booked ?? [],
+		planIdeas: plans.lines.get(date.contactId)?.undated ?? 0
 	}));
 
 	return {
@@ -96,6 +101,7 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 		homes,
 		...composerFor(url.searchParams, named, onList),
 		upcoming,
+		plans: { asking: plans.asking, coming: plans.coming },
 		todos,
 		memories: memoryBandForView(memories),
 		linkSuggestion: linkSuggestionAmong(named, onList),
@@ -125,6 +131,8 @@ function captureProblem(field: string | null): MessageKey {
 export const actions: Actions = {
 	// The *To-dos* band ticks here (docs/dev/02 §2.26.6).
 	...householdTodoActions('/'),
+	// A passed outing idea is answered here, and *Undo* of its tick (docs/dev/02 §2.27.8).
+	...householdPlanActions('/'),
 	capture: async ({ request, locals }) => {
 		const viewer = requireViewer(locals);
 		const author = {

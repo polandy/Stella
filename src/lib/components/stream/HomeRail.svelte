@@ -22,6 +22,9 @@
 		ticksKept: Map<string, KeptOf<'todo.tick'>>;
 		todoTickError: string | null;
 		upcoming: PageData['upcoming'];
+		plans: PageData['plans'];
+		planRowError: { planId: string | null; message: string } | null;
+		planTickError: string | null;
 		memories: PageData['memories'];
 		immichMemories: ImmichMemories;
 		hasMemories: boolean;
@@ -34,6 +37,9 @@
 		ticksKept,
 		todoTickError,
 		upcoming,
+		plans,
+		planRowError,
+		planTickError,
 		memories,
 		immichMemories,
 		hasMemories,
@@ -62,8 +68,8 @@
 			<TodoBand {band} {today} {justDone} {ticksKept} error={todoTickError} />
 		</RailSection>
 	{/if}
-	{#if upcoming.length}
-		<ComingUp {upcoming} />
+	{#if upcoming.length || plans.asking.length || plans.coming.length}
+		<ComingUp {upcoming} {plans} {today} {planRowError} {planTickError} />
 	{/if}
 	{#if hasMemories}
 		<RailSection

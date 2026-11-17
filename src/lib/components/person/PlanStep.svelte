@@ -23,8 +23,10 @@
 		kept: boolean;
 		/** The box's id, which the row's line names, so the whole line ticks. */
 		id?: string;
+		/** A button saying this instead of the done box, as Home's question asks it. */
+		label?: string;
 	}
-	let { plan, contactId, step, kept, id }: Props = $props();
+	let { plan, contactId, step, kept, id, label }: Props = $props();
 
 	const t = useI18n().t;
 	const removals = useRemovals();
@@ -85,7 +87,15 @@
 >
 	<input type="hidden" name="planId" value={plan.id} />
 	<input type="hidden" name="contactId" value={contactId} />
-	{#if step === 'done'}
+	{#if step === 'done' && label}
+		<Button
+			variant="secondary"
+			size="sm"
+			disabled={saving || kept}
+			label={t('plans.tick', { title: plan.title })}
+			data-testid="plan-done">{label}</Button
+		>
+	{:else if step === 'done'}
 		<!-- On the row's right end, where a right thumb finds it (docs/dev/05 §5.1). -->
 		<label class="tap-target flex cursor-pointer">
 			<input
