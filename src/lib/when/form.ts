@@ -2,10 +2,7 @@ import * as v from 'valibot';
 import { optionalWhen } from './schema';
 import type { When } from './when';
 
-/*
- * A when as the picker posts it (`WhenPicker.svelte`): `whenKind` with `now` for *now*, the age
- * or the day beside it. Read into the payload's shape, untrusted still — `WhenSchema` judges it.
- */
+/* A when as `WhenPicker.svelte` posts it, read into the payload's shape; `WhenSchema` judges it. */
 
 /** The fields the picker posts. */
 export const WHEN_FIELDS = { kind: 'whenKind', age: 'whenAge', on: 'whenOn' } as const;

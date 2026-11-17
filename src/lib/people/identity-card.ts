@@ -264,10 +264,7 @@ export function recordMenu(viewer: {
 
 const EDIT_PARAM = 'edit';
 
-/**
- * Where an age without a birth year sends the reader (docs/dev/02 §2.25.8): the person's page,
- * the dates editor open, to note or estimate the birth year.
- */
+/** The person's page with the dates editor open, to estimate a birth year (docs/dev/02 §2.25.8). */
 export function datesEditorPath(contactId: string): string {
 	return `/contacts/${contactId}?${EDIT_PARAM}=dates`;
 }

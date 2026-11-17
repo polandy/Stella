@@ -1,8 +1,4 @@
-/*
- * When an idea is meant for (docs/dev/02 §2.25.8): the intent, never a worked-out day, so it
- * follows a birthday that is corrected later. Shared by every record that can wait for its time;
- * `null` everywhere means *now*, which is what a record without a when has always meant.
- */
+/* When a record is meant for (docs/dev/02 §2.25.8); `null` everywhere means *now*. */
 
 import { FULL_DATE_SHAPE } from '../dates/calendar';
 
@@ -62,10 +58,7 @@ export function whenOfColumns(columns: WhenColumns): When | null {
 	}
 }
 
-/**
- * A when as a file outside Stella says it, such as an archive: one that does not hold together
- * — an unknown kind, an age out of range, a day not shaped as one — is taken as *now*.
- */
+/** A when as a file outside Stella says it, such as an archive; one that does not hold together is *now*. */
 export function whenFromOutside(columns: {
 	whenKind: string | null;
 	whenOn: string | null;

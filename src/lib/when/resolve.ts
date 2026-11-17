@@ -3,12 +3,7 @@ import { addDays } from '../dates/month';
 import type { PartialDate } from '../dates/partial-date';
 import { WHEN_AGE_MAX, WHEN_AGE_MIN, type When } from './when';
 
-/*
- * When a when comes due, against the person's birth date and the household's day (`todayFor`).
- * Pure and clock-free: every rule is a table test. A 29 February birthday falls on 1 March in a
- * common year, as on Home (`upcoming.ts`); an estimated birth year names no day, so an age then
- * resolves to 1 January of its year and is only ever said as *about*.
- */
+/* When a when comes due, against the birth date and the household's day (docs/dev/02 §2.25.8). */
 
 /** How long before its day a waiting record joins the open ones (owner decision 2026-11-17). */
 export const WHEN_LEAD_DAYS = 90;

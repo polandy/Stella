@@ -326,10 +326,7 @@ export async function listGiftsForContact(
 	return deps.gifts.listForContactVisibleTo(viewer, contactId);
 }
 
-/**
- * Whether an open idea still waits for its time (docs/dev/02 §2.25.8) — out of every count and
- * list but its person's own card.
- */
+/** Whether an open idea still waits for its time, so only its person's card shows it (§2.25.8). */
 export function ideaWaits(
 	idea: Pick<Gift, 'state' | 'when'>,
 	birth: PartialDate | null,

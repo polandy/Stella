@@ -5,10 +5,7 @@
 	import GiftRow from './GiftRow.svelte';
 	import type { PersonPageData } from './types';
 
-	/*
-	 * The Gifts card's *Ideas* tab: the open ideas, and folded beneath them the ones waiting for
-	 * an age or a day, or for *later* (docs/dev/02 §2.25.8) — out of the count, never out of reach.
-	 */
+	// The *Ideas* tab: open ideas, and the waiting ones folded under *Later* (docs/dev/02 §2.25.8).
 	interface Props {
 		open: PersonPageData['gifts'];
 		waiting: PersonPageData['gifts'];

@@ -8,12 +8,7 @@
 	import { WHEN_AGE_MAX, WHEN_AGE_MIN, WHEN_KINDS, type When, type WhenKind } from '$lib/when/when';
 	import { WHEN_FIELDS } from '$lib/when/form';
 
-	/*
-	 * When a record is for (docs/dev/02 §2.25.8): *Now* by default, an age, a birthday, a day, or
-	 * *Later* — chips, a stepper for the age, quick picks for Christmas, and one plain line saying
-	 * what the choice comes to. An age needs a birth year; without one its chips stay shut and
-	 * point at estimating it. Hidden fields carry the choice, read by `whenFromForm`.
-	 */
+	// When a record is for (docs/dev/02 §2.25.8); hidden fields carry it to `whenFromForm`.
 	interface Props {
 		/** The when kept so far; null or absent is *now*. */
 		when?: When | null;

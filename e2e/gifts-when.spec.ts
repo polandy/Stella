@@ -2,14 +2,7 @@ import { expect, test, type Page } from '@playwright/test';
 import { addPerson, appReady, serverToday, signIn } from './app';
 import { personIdOf, seedHousehold } from './seed';
 
-/*
- * When a gift idea is for (docs/dev/02 §2.25.8): an age, a birthday, a day or *later* keeps it
- * out of the count and folded under *Later* until 90 days before its day. Every day asserted is
- * far enough ahead to wait whatever today is; the years hang on the server's, never the runner's.
- *
- * The suite shares one database, so every case works on a person of its own, named with letters
- * no other attempt shares.
- */
+// An idea for later (docs/dev/02 §2.25.8); years come from the server's day, people are unique per run.
 
 /** Six letters no other attempt shares. */
 function runLetters(): string {
@@ -80,7 +73,7 @@ test('an idea for a day or for later waits under Later, out of the count and the
 	await expect(page.getByText(`Kite ${letters}`)).toHaveCount(0);
 });
 
-test('an age counts from an estimated birth year, and taken back to now the idea is open again', async ({
+test('an age counts from an estimated birth year, and taken back to now the idea is open again, in the brief too', async ({
 	page
 }) => {
 	const year = Number((await serverToday(page)).slice(0, 4));
@@ -101,6 +94,13 @@ test('an age counts from an estimated birth year, and taken back to now the idea
 	await form.getByRole('button', { name: 'Save' }).click();
 	await expect(form).toHaveCount(0);
 
+	// Not one to bring yet: the brief leaves it out.
+	await page.goto(`/contacts/${personIdOf(name)}/brief`);
+	await appReady(page);
+	await expect(page.getByText('Telescope')).toHaveCount(0);
+	await page.goto(`/contacts/${personIdOf(name)}`);
+	await appReady(page);
+
 	await card.getByTestId('gift-later').click();
 	const row = card.getByTestId('gift-waiting').locator('li', { hasText: 'Telescope' });
 	await expect(row.getByTestId('when-chip')).toHaveText('For the 40th birthday');
@@ -114,6 +114,10 @@ test('an age counts from an estimated birth year, and taken back to now the idea
 	);
 	await expect(card.getByTestId('gift-later')).toHaveCount(0);
 	await expect(card.getByRole('tab', { name: 'Ideas' })).toHaveText('Ideas · 1');
+
+	await page.goto(`/contacts/${personIdOf(name)}/brief`);
+	await appReady(page);
+	await expect(page.getByTestId('brief-gifts')).toContainText('Telescope');
 });
 
 test('an age without a birth year links to estimating it', async ({ page }) => {

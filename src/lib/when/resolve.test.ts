@@ -11,10 +11,7 @@ import {
 } from './resolve';
 import type { When } from './when';
 
-/*
- * When a when comes due (docs/dev/02 §2.25.8): fixed days only, no clock. Mia is born
- * 14 March 2022; Leap on 29 February 2020; Ruth's year is estimated, Heinz has no year.
- */
+/* When a when comes due (§2.25.8): Mia 2022-03-14, Leap 2020-02-29, Ruth estimated, Heinz no year. */
 
 const mia: PartialDate = { value: '2022-03-14', precision: 'full' };
 const leap: PartialDate = { value: '2020-02-29', precision: 'full' };

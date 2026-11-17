@@ -8,6 +8,7 @@ import {
 	countOpenIdeas,
 	editGift,
 	GiftGoneError,
+	ideaWaits,
 	InvalidGiftError,
 	listGiftsForContact,
 	listOpenIdeas,
@@ -427,6 +428,24 @@ describe('listGiftsForContact', () => {
 		await addGift(deps, JULIA, { ...idea('Hers'), visibility: 'private' });
 		const listed = await listGiftsForContact(deps, { id: 'andy', householdId: 'h1' }, HILDE);
 		expect(listed.map((g) => g.title)).toEqual(['Mine']);
+	});
+});
+
+describe('ideaWaits', () => {
+	const today = '2026-10-07';
+	it('tells an idea still waiting for its day or for later from one due now', () => {
+		expect(ideaWaits({ state: 'idea', when: { kind: 'later' } }, null, today)).toBe(true);
+		expect(
+			ideaWaits({ state: 'idea', when: { kind: 'on_date', on: '2027-06-01' } }, null, today)
+		).toBe(true);
+		expect(
+			ideaWaits({ state: 'idea', when: { kind: 'on_date', on: '2026-12-24' } }, null, today)
+		).toBe(false);
+		expect(ideaWaits({ state: 'idea', when: null }, null, today)).toBe(false);
+	});
+
+	it('never holds back a gift already given', () => {
+		expect(ideaWaits({ state: 'given', when: { kind: 'later' } }, null, today)).toBe(false);
 	});
 });
 
