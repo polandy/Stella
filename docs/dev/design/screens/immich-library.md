@@ -26,6 +26,10 @@ they already took, which live in Immich, without leaving Stella or downloading t
 - **A month** (`LibraryMonthGrid`) is the grid grouped by day: each day's heading (*Wed 21*, a
   › at its end) sticks to the top while its photos scroll, and a tap opens the day. Near the end
   the next page loads by itself; *Show more photos* stays as the button for it.
+- **The week chips** (`LibraryWeeks`) sit between the trail and the grid of a month: a row of
+  pills, *Week 40 … Week 44* (*KW* in German), scrolling sideways. A tap jumps the grid to that
+  week's first day with photos, reading further pages first when it is not there yet; the last
+  tapped chip is filled and `aria-current`. They are a jump within the month, not a level.
 - **The day bar** heads with the day, *N photos* under it, ‹ and › on either side named *An
   earlier day with photos* and *A later day with photos*. It opens on the entry's day (a gallery: today).
 - **The grid** is three square columns on a phone, four on wider screens; each tile carries its
@@ -34,6 +38,10 @@ they already took, which live in Immich, without leaving Stella or downloading t
   (`aria-pressed`) named *Photo, 14:32*.
 - **A search** replaces the day bar with *Best matches for "…"* and a clear button; clearing
   goes back to the day. Smart search off is a quiet note above the days, not an error.
+- **The tray** sits above the footer's line once something is ticked: small square thumbnails
+  (44 px) in the order of the taps, each with its number in a round badge at the corner, scrolling
+  sideways. It holds every tick, whichever level or search it came from; a tap on a thumbnail
+  unticks it (*Untick photo 2*). It is hidden at none.
 - **The footer** says *Tap photos to tick them*, then *N ticked* with *Clear*, and *Add N
   photos* as the primary button, disabled at none. At 20 it says *At most 20 at a time*, and a further tap does nothing.
   *Add* shows *Copying 3 of 5 photos from Immich…*, then closes the sheet and a toast says
@@ -54,6 +62,8 @@ gallery of everything; the arrows skip empty days because a family's library has
 up to months and years is for the photo whose day nobody remembers — the summer, not the date —
 and is the way Immich's own timeline reads, so it needs no learning. Counts say *about* because
 Immich counts videos the picker leaves out; a promise of 812 that shows 790 would read as a bug. Numbers
-on the ticks show the order the photos will appear in. The sheet is the circle picker's shape so
+on the ticks show the order the photos will appear in, and the tray shows them all, because a tick
+made in another month would otherwise be invisible. Weeks are chips and not a level because a week
+is a place to jump to in a month, not somewhere to stand; one more step would cost a tap each time. The sheet is the circle picker's shape so
 it reads as part of the composer, not a trip to another app. The overlay on the photo is the one
 place black and white are used, as in the lightbox: it sits on a picture, not on a theme.

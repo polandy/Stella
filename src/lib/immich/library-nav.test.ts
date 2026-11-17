@@ -7,6 +7,8 @@ import {
 	isoWeekOf,
 	lastDayOf,
 	monthsOfYear,
+	weekLookup,
+	weeksOfMonth,
 	yearTotals
 } from './library-nav';
 
@@ -149,5 +151,49 @@ describe('isoWeekOf', () => {
 		// 1 January 2027 is a Friday: it belongs to the last week of 2026.
 		expect(isoWeekOf('2027-01-01')).toBe(53);
 		expect(isoWeekOf('2024-12-30')).toBe(1);
+	});
+});
+
+describe('weeksOfMonth', () => {
+	it('lists the ISO weeks a month touches, each with the month’s days in it', () => {
+		expect(weeksOfMonth('2026-10')).toEqual([
+			{ week: 40, from: '2026-10-01', to: '2026-10-04' },
+			{ week: 41, from: '2026-10-05', to: '2026-10-11' },
+			{ week: 42, from: '2026-10-12', to: '2026-10-18' },
+			{ week: 43, from: '2026-10-19', to: '2026-10-25' },
+			{ week: 44, from: '2026-10-26', to: '2026-10-31' }
+		]);
+	});
+
+	it('numbers the first days of January by the year before when ISO does', () => {
+		expect(weeksOfMonth('2027-01')[0]).toEqual({ week: 53, from: '2027-01-01', to: '2027-01-03' });
+	});
+
+	it('refuses a value that is not a month', () => {
+		expect(() => weeksOfMonth('2026-13')).toThrow();
+	});
+});
+
+describe('weekLookup', () => {
+	const week = { week: 43, from: '2026-10-19', to: '2026-10-25' };
+	const days = (...list: string[]) => list.map((day) => ({ day, photos: [] }));
+
+	it('finds the week’s first day with photos, settled', () => {
+		expect(weekLookup(days('2026-10-02', '2026-10-21', '2026-10-23'), week)).toEqual({
+			day: '2026-10-21',
+			settled: true
+		});
+	});
+
+	it('settles on no day once a later week has been read, so the week is empty', () => {
+		expect(weekLookup(days('2026-10-02', '2026-10-27'), week)).toEqual({
+			day: null,
+			settled: true
+		});
+	});
+
+	it('is not settled while the pages read stop before the week', () => {
+		expect(weekLookup(days('2026-10-02'), week)).toEqual({ day: null, settled: false });
+		expect(weekLookup([], week)).toEqual({ day: null, settled: false });
 	});
 });

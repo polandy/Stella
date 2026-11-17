@@ -51,7 +51,7 @@
 <div class="flex flex-col gap-3" data-testid="immich-library-month">
 	{#each days as { day, photos } (day)}
 		{@const heading = dayHeading(day, i18n.intlLocale)}
-		<section class="flex flex-col gap-1.5">
+		<section class="flex flex-col gap-1.5" data-day={day}>
 			<h3 class="sticky top-0 z-10 bg-card py-1">
 				<button
 					type="button"

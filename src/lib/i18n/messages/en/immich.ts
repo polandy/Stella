@@ -220,7 +220,11 @@ export const immich = {
 	'immich.library.noneInMonth': (p: { month: string }) => `No photos from ${p.month} in Immich.`,
 	'immich.library.showDay': (p: { day: string }) => `Show only ${p.day}`,
 	'immich.library.loadMore': 'Show more photos',
-	'immich.library.loading': 'Loading photos…'
+	'immich.library.loading': 'Loading photos…',
+	'immich.library.weeks': 'Weeks of the month',
+	'immich.library.week': (p: { week: number }) => `Week ${p.week}`,
+	'immich.library.jumpToWeek': (p: { week: number }) => `Jump to week ${p.week}`,
+	'immich.library.untick': (p: { number: number }) => `Untick photo ${p.number}`
 };
 
 /** The key set every translation of this area has to provide. */

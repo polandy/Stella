@@ -1,5 +1,10 @@
 import type { LibraryMonths, LibraryPhoto, LibraryView } from '$lib/immich/library';
-import type { LibraryLevel } from '$lib/immich/library-nav';
+import {
+	groupByDay,
+	weekLookup,
+	type LibraryLevel,
+	type LibraryWeek
+} from '$lib/immich/library-nav';
 import { libraryQueryUrl, type LibraryQuery } from '$lib/immich/library-pick';
 
 /*
@@ -41,6 +46,7 @@ export class LibraryBrowser {
 
 	#latest = 0;
 	#timelineAsked = 0;
+	#paging: Promise<void> | null = null;
 	readonly #onshown: () => void;
 
 	/** `onshown` runs once a new level or search has been put up, to scroll it to its top. */
@@ -91,10 +97,30 @@ export class LibraryBrowser {
 		else this.go(this.at);
 	}
 
-	/** The month's next page, when there is one and none is on its way. */
-	async more() {
+	/** The month's next page, when there is one; one already on its way is the one awaited. */
+	more(): Promise<void> {
 		const read = this.month;
-		if (!read || read.loading || read.nextCursor === null) return;
+		if (read?.loading && this.#paging) return this.#paging;
+		if (!read || read.loading || read.nextCursor === null) return Promise.resolve();
+		this.#paging = this.#readNextPage(read);
+		return this.#paging;
+	}
+
+	/**
+	 * Reads on until the month shows where `week` starts: its first day with photos, or null for a
+	 * week without any, or when the month cannot be read that far.
+	 */
+	async reach(week: LibraryWeek): Promise<string | null> {
+		const read = this.month;
+		for (;;) {
+			if (!read || this.month !== read) return null;
+			const { day, settled } = weekLookup(groupByDay(read.photos), week);
+			if (settled || read.nextCursor === null || read.failed) return day;
+			await this.more();
+		}
+	}
+
+	async #readNextPage(read: MonthRead) {
 		const mine = this.#latest;
 		read.loading = true;
 		read.failed = false;
