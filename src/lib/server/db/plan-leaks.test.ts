@@ -5,6 +5,10 @@ import { drizzle, type BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
 import { migrate } from 'drizzle-orm/bun-sqlite/migrator';
 import { openIdeaCount, splitPlans } from '../../plans/card';
 import { comingUpFirst, comingUpRows, homePlans } from '../../plans/home';
+import { planListGroups } from '../../plans/list';
+import { createTranslator } from '../../i18n/translate';
+import { planEvents } from '../domain/dates/calendar-feed';
+import { toFtsQuery } from '../domain/search/query';
 import type { Clock } from '../clock';
 import {
 	addPlan,
@@ -19,12 +23,15 @@ import { bookPlan, donePlan, reopenPlan, unbookPlan } from '../domain/plans/prog
 import { againPlan } from '../domain/plans/afterwards';
 import type { IdGenerator } from '../id';
 import { createDrizzleContactRepository } from './contact-repository';
+import { ensureSearchIndex } from './search-index';
+import { createDrizzleSearchRepository } from './search-repository';
 import { createPlanServices } from '../services/plans';
 import * as schema from './schema';
 
 /*
  * Every way an outing idea kept from someone could still reach them (docs/dev/02 §2.27): the
- * card's list, its counter, Home's *Coming up* and its folded line, and each command a phone may send (the plan.* handlers pass
+ * card's list, its counter, Home's *Coming up* and its folded line, the household's list, full search,
+ * the calendar link, and each command a phone may send (the plan.* handlers pass
  * the payload straight to these), each against the real adapter.
  * An idea kept from a member, or private to another, answers as one that is not there.
  */
@@ -46,6 +53,7 @@ beforeEach(() => {
 	sqlite.exec('PRAGMA foreign_keys = ON;');
 	db = drizzle(sqlite, { schema });
 	migrate(db, { migrationsFolder: './drizzle' });
+	ensureSearchIndex(sqlite);
 	db.insert(schema.household).values({ id: H, name: 'H' }).run();
 	db.insert(schema.user)
 		.values([
@@ -138,6 +146,30 @@ describe.each<[string, Kept]>([
 		expect(own.coming.map((row) => row.plan.title)).toEqual(['Surprise trip to the sea']);
 		expect(own.lines.get('julia-self')?.undated).toBe(1);
 		expect(comingUpFirst(comingUpRows([], own.asking, own.coming))).toBeNull();
+	});
+
+	it('is not on their list of outings, nor in its hidden count', async () => {
+		await noted(over);
+		const open = await listOpenPlans(services.planDeps, viewer(JULIA));
+		expect(planListGroups(open, TODAY, false)).toEqual({ groups: [], hidden: 0 });
+		const own = await listOpenPlans(services.planDeps, viewer(ANDY));
+		expect(planListGroups(own, TODAY, false).groups.map((g) => g.key)).toEqual(['thisMonth']);
+	});
+
+	it('is not found by their search, by its title or its note', async () => {
+		const search = createDrizzleSearchRepository(db);
+		await noted(over);
+		expect(await search.searchPlans(viewer(JULIA), toFtsQuery('surprise'), 20)).toEqual([]);
+		expect(await search.searchPlans(viewer(ANDY), toFtsQuery('surprise'), 20)).toHaveLength(1);
+	});
+
+	it('is not in their calendar link', async () => {
+		await noted(over);
+		const lang = { t: createTranslator('en'), intlLocale: 'en-GB' };
+		const feed = async (actor: typeof ANDY) =>
+			planEvents(await listOpenPlans(services.planDeps, viewer(actor)), TODAY, lang, 'https://x');
+		expect(await feed(JULIA)).toEqual([]);
+		expect(await feed(ANDY)).toHaveLength(1);
 	});
 
 	it('answers a passed one from them as gone, and leaves it as it was', async () => {

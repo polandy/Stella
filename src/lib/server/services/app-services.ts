@@ -55,7 +55,7 @@ export interface AppServices {
  * that reads another grouped context's repository gets it from here, not from the wiring
  * (`people` reads `auth`'s accounts, the relationships context's kinship graph and `media`'s
  * store; `circles` and `story` read `people`'s contacts and `media`'s store; `gifts`, `todos`, `plans` and
- * `records` read `people`'s contacts and `story` reads `gifts`', `todos`' and `plans`' repositories; `archive` restores into `media`'s
+ * `records` read `people`'s contacts, `story` and `records` read `gifts`', `todos`' and `plans`' repositories; `archive` restores into `media`'s
  * store and hands what it restored to `gifts`' conversion; `immich` reads `people`'s contacts and `media`'s avatar deps; `nextcloud` reads `media`'s store and avatar deps; `offline`'s command
  * handlers read the contexts whose use-cases they call), so each repository exists once.
  */
@@ -66,7 +66,7 @@ export type ServicesWiring = AuthWiring &
 	Omit<CircleWiring, 'contacts' | 'media'> &
 	Omit<StoryWiring, 'contacts' | 'directory' | 'media' | 'gifts' | 'todos' | 'plans'> &
 	NoteWiring &
-	Omit<RecordWiring, 'contacts' | 'todos' | 'gifts'> &
+	Omit<RecordWiring, 'contacts' | 'todos' | 'gifts' | 'plans'> &
 	HouseholdWiring &
 	Omit<ArchiveWiring, 'media' | 'convertHeldGifts'> &
 	Omit<
@@ -118,7 +118,8 @@ export function createServices(wiring: ServicesWiring): AppServices {
 		...wiring,
 		contacts: people.contacts,
 		todos: todos.todoDeps.todos,
-		gifts: gifts.gifts
+		gifts: gifts.gifts,
+		plans: plans.planDeps.plans
 	});
 	const household = createHouseholdServices(wiring);
 	const archive = createArchiveServices({

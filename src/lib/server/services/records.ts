@@ -17,6 +17,7 @@ import type { GiftRepository } from '../domain/gifts/gifts';
 import type { ImportantDateDeps, ImportantDateRepository } from '../domain/dates/important-dates';
 import type { TagListDeps } from '../domain/tags/tag-lists';
 import type { TagDeps, TagRepository } from '../domain/tags/tags';
+import type { PlanRepository } from '../domain/plans/plans';
 import type { TodoRepository } from '../domain/todos/todos';
 import type { IdGenerator } from '../id';
 
@@ -58,6 +59,8 @@ export interface RecordWiring {
 	todos: TodoRepository;
 	/** The gifts group's repository: the calendar link holds the ideas whose time is near. */
 	gifts: GiftRepository;
+	/** The outings group's repository: the calendar link holds each dated idea once, ahead. */
+	plans: PlanRepository;
 }
 
 export function createRecordServices({
@@ -66,7 +69,8 @@ export function createRecordServices({
 	ids,
 	contacts,
 	todos,
-	gifts
+	gifts,
+	plans
 }: RecordWiring): RecordServices {
 	const contactFields = createDrizzleContactFieldRepository(db);
 	const importantDates = createDrizzleImportantDateRepository(db);
@@ -87,7 +91,7 @@ export function createRecordServices({
 			clock
 		},
 		importantDateDeps: { dates: importantDates, contacts, ids, clock },
-		calendarFeedDeps: { dates: importantDates, todos, gifts, clock },
+		calendarFeedDeps: { dates: importantDates, todos, gifts, plans, clock },
 		tagDeps: { tags, ids, clock },
 		tagListDeps: { tagLists: createDrizzleTagListReads(db) }
 	};

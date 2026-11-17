@@ -48,5 +48,19 @@ export const plans: PlansMessages = {
 	'plans.againLabel': (p) => `Nochmal vormerken: ${p.title}`,
 	'plans.againToast': (p) => `Wieder vorgemerkt: ${p.title}`,
 	'plans.story.done': 'Unternommen',
-	'plans.story.moment': 'Zum Moment'
+	'plans.story.moment': 'Zum Moment',
+	'plans.menu': 'Mehr zu Unternehmungen',
+	'plans.allIdeas': 'Alle Unternehmungen',
+	'plans.list.title': 'Unternehmungen',
+	'plans.list.intro': 'Alles, was ihr mit jemandem machen wollt, das Nächste zuerst.',
+	'plans.list.open': (p) => `${p.count} offen`,
+	'plans.list.thisMonth': 'Diesen Monat',
+	'plans.list.later': 'Später',
+	'plans.list.someTime': 'Irgendwann',
+	'plans.list.showLater': (p) => `Auch spätere zeigen (${p.count})`,
+	'plans.list.hideLater': 'Spätere ausblenden',
+	'plans.list.allLater': 'In den nächsten drei Monaten nichts. Alle Ideen warten auf später.',
+	'plans.list.empty': 'Keine offene Unternehmungsidee.',
+	'plans.list.emptyHint':
+		'Notiere eine auf der Karte Unternehmungen einer Person, dann steht sie hier.'
 };

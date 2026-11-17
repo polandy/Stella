@@ -1,8 +1,10 @@
 <script lang="ts">
 	import { browser } from '$app/environment';
+	import { afterNavigate } from '$app/navigation';
 	import KeptItem from '$lib/components/pwa/KeptItem.svelte';
 	import FormError from '$lib/components/ui/FormError.svelte';
 	import Icon from '$lib/components/ui/Icon.svelte';
+	import MenuButton from '$lib/components/ui/MenuButton.svelte';
 	import Section from '$lib/components/ui/Section.svelte';
 	import Tabs from '$lib/components/ui/Tabs.svelte';
 	import { deviceDay, writersDay } from '$lib/dates/today';
@@ -13,6 +15,7 @@
 	import type { MomentDraft } from '$lib/people/story-forms';
 	import { momentDraftOf } from '$lib/plans/afterwards';
 	import { openIdeaCount, splitPlans, type PlanTab } from '$lib/plans/card';
+	import { asksForNewPlan } from '$lib/plans/plans';
 	import { keepable } from '$lib/pwa/keepable';
 	import { isKept, type KeptOf } from '$lib/pwa/outbox';
 	import { outbox } from '$lib/pwa/outbox.svelte';
@@ -81,6 +84,10 @@
 	let unfolded = $state(false);
 	let open = $state(false);
 	const closeAdding = () => (open = false);
+	// The palette's *Outing with …* lands here with the form open, on a navigation only (as To-dos).
+	afterNavigate(({ to }) => {
+		if (to && asksForNewPlan(to.url)) open = true;
+	});
 
 	// Noting an idea saves through the outbox, keeping it when Stella cannot take it (§2.18).
 	const keepPlan = $derived(
@@ -108,6 +115,9 @@
 
 	const rowError = (planId: string): string | null =>
 		form?.planRowError && form.planRowError.planId === planId ? form.planRowError.message : null;
+
+	const MENU_ITEM =
+		'flex w-full items-center gap-2 rounded-control px-2.5 py-1.5 text-left text-sm text-fg hover:bg-primary-soft focus-visible:bg-primary-soft';
 </script>
 
 {#snippet rows(list: PersonPageData['plans'], testid: string)}
@@ -137,6 +147,18 @@
 	error={form?.planError ?? null}
 	bind:open
 >
+	{#snippet menu()}
+		<MenuButton label={t('plans.menu')} align="end" look="button">
+			{#snippet trigger()}<Icon name="more" size={16} />{/snippet}
+			{#snippet children({ close })}
+				<!-- Every open idea of the household on one page (docs/dev/02 §2.27.9). -->
+				<a href="/plans" role="menuitem" class={MENU_ITEM} onclick={close}>
+					<Icon name="explore" size={14} />{t('plans.allIdeas')}
+				</a>
+			{/snippet}
+		</MenuButton>
+	{/snippet}
+
 	<FormError message={form?.planTickError ?? null} variant="inline" />
 
 	{#if kept.length > 0}

@@ -279,6 +279,7 @@ describe('the calendar feed over SQLite', () => {
 				dates: repo,
 				todos: { listOpenVisibleTo: async () => [] },
 				gifts: { listOpenIdeasVisibleTo: async () => [] },
+				plans: { listOpenVisibleTo: async () => [] },
 				clock: { now: () => Date.UTC(2026, 10, 1) }
 			},
 			{

@@ -53,6 +53,8 @@
 				todoFor: t('components.palette.todoFor'),
 				briefFor: t('components.palette.briefFor'),
 				allTodos: t('components.palette.allTodos'),
+				planWith: t('components.palette.planWith'),
+				allPlans: t('plans.allIdeas'),
 				onThisDay: t('memories.title'),
 				addPerson: t('components.palette.addPerson'),
 				searchEverything: (q) => t('components.palette.searchEverything', { query: q })
@@ -66,6 +68,7 @@
 	const STEP_QUESTION = $derived({
 		giftIdea: t('components.palette.giftIdeaFor'),
 		todo: t('components.palette.todoForWhom'),
+		plan: t('components.palette.planWithWhom'),
 		brief: t('components.palette.briefForWhom')
 	});
 

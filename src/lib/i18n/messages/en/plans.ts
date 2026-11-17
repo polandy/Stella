@@ -53,7 +53,21 @@ export const plans = {
 	'plans.againToast': (p: { title: string }) => `Noted again: ${p.title}`,
 	// The story's line for an outing done.
 	'plans.story.done': 'Outing',
-	'plans.story.moment': 'The moment'
+	'plans.story.moment': 'The moment',
+	// The household's list of open ideas, `/plans` (docs/dev/02 §2.27.9).
+	'plans.menu': 'More for outings',
+	'plans.allIdeas': 'All outings',
+	'plans.list.title': 'Outings',
+	'plans.list.intro': 'Everything the household wants to do with someone, the soonest first.',
+	'plans.list.open': (p: { count: number }) => `${p.count} open`,
+	'plans.list.thisMonth': 'This month',
+	'plans.list.later': 'Later',
+	'plans.list.someTime': 'Some time',
+	'plans.list.showLater': (p: { count: number }) => `Show later ones too (${p.count})`,
+	'plans.list.hideLater': 'Hide the later ones',
+	'plans.list.allLater': 'Nothing in the next three months. Every idea waits for later.',
+	'plans.list.empty': 'No open outing idea.',
+	'plans.list.emptyHint': 'Note one on a person’s Outings card, and it shows up here.'
 };
 
 /** The key set every translation of this area has to provide. */

@@ -35,3 +35,18 @@ export function planVisibilityFromForm(chosen: string | null): {
 	if (chosen === 'private') return { visibility: 'private', hiddenFromPerson: false };
 	return { visibility: 'shared', hiddenFromPerson: chosen === SURPRISE };
 }
+
+const PLAN_PARAM = 'plan';
+
+/**
+ * Where the command palette's *Outing with …* lands (docs/dev/05 §5.4): the person's page with the
+ * Outings card's form open. No hash, for the reason `giftIdeaPath` gives.
+ */
+export function newPlanPath(contactId: string): string {
+	return `/contacts/${contactId}?${PLAN_PARAM}=new`;
+}
+
+/** Whether a page address asks for the form (`newPlanPath`). */
+export function asksForNewPlan(url: URL): boolean {
+	return url.searchParams.get(PLAN_PARAM) === 'new';
+}

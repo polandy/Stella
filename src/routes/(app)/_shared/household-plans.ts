@@ -3,6 +3,7 @@ import { PlanAnswerWhenSchema, PlanRefSchema } from '$lib/commands/plan-payloads
 import { requireViewer } from '$lib/server/auth/guards';
 import { listOpenPlans, type OpenPlan } from '$lib/server/domain/plans/plans';
 import { homePlans, type PlacedPlan } from '$lib/plans/home';
+import type { ListPlanView } from '$lib/plans/list';
 import type { RequestEvent } from '@sveltejs/kit';
 import { applyPlanCommand, planWhenOf, type PlanCommand, type PlanErrorKey } from './plan-commands';
 
@@ -58,6 +59,25 @@ export async function readHomePlans(
 			])
 		)
 	};
+}
+
+/** Every open idea the reader may see, for the household's list; `planListGroups` groups them. */
+export async function readHouseholdPlans(locals: RequestEvent['locals']): Promise<ListPlanView[]> {
+	const open = await listOpenPlans(locals.services.plans.planDeps, requireViewer(locals));
+	return open.map((plan) => ({
+		id: plan.id,
+		contactId: plan.contactId,
+		contactName: plan.contactName,
+		avatarPhotoId: plan.avatarPhotoId,
+		title: plan.title,
+		when: plan.when,
+		visibility: plan.visibility,
+		hiddenFromPerson: plan.hiddenFromPerson,
+		bookedAt: plan.bookedAt,
+		doneOn: null,
+		createdAt: plan.createdAt,
+		birth: plan.birth
+	}));
 }
 
 /** Ticking, its *Undo*, and the answers of a passed idea, on a page without a person, back to `back`. */

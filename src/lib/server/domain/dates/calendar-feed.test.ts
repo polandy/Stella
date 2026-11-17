@@ -1,8 +1,15 @@
 import { describe, expect, test } from 'bun:test';
 import { createTranslator } from '../../../i18n/translate';
 import type { IdeaWithBirth, OpenIdea } from '../gifts/gifts';
+import type { OpenPlan } from '../plans/plans';
 import type { HouseholdTodo } from '../todos/todos';
-import { calendarEvents, calendarFeed, giftIdeaEvents, todoEvents } from './calendar-feed';
+import {
+	calendarEvents,
+	calendarFeed,
+	giftIdeaEvents,
+	planEvents,
+	todoEvents
+} from './calendar-feed';
 import type { UpcomingSource } from './upcoming';
 
 const en = createTranslator('en');
@@ -270,6 +277,66 @@ describe('giftIdeaEvents', () => {
 	});
 });
 
+function plan(over: Partial<OpenPlan> = {}): OpenPlan {
+	return {
+		id: 'p1',
+		contactId: 'c1',
+		contactName: 'Heinz Example',
+		avatarPhotoId: null,
+		birth: null,
+		createdBy: 'u1',
+		visibility: 'shared',
+		hiddenFromPerson: false,
+		title: 'Zoo',
+		note: null,
+		url: null,
+		when: { kind: 'on_date', on: '2026-12-06' },
+		bookedAt: null,
+		bookedBy: null,
+		doneAt: null,
+		doneOn: null,
+		doneBy: null,
+		momentId: null,
+		createdAt: Date.UTC(2026, 0, 10, 12),
+		updatedAt: 0,
+		...over
+	};
+}
+
+describe('planEvents', () => {
+	test('one entry ninety days ahead of a dated idea, never one on its day (E15)', () => {
+		expect(planEvents([plan()], '2026-11-17', enLang, ORIGIN)).toEqual([
+			{
+				uid: 'plan-p1@stella',
+				start: '2026-09-07',
+				yearly: false,
+				summary: 'Outing ahead: Zoo (Heinz Example)',
+				description: 'For 6 December 2026',
+				url: `${ORIGIN}/contacts/c1`
+			}
+		]);
+	});
+
+	test('leaves out an undated idea and one whose day has gone by', () => {
+		expect(
+			planEvents(
+				[
+					plan({ id: 'p2', when: null }),
+					plan({ id: 'p3', when: { kind: 'on_date', on: '2026-11-01' } })
+				],
+				'2026-11-17',
+				enLang,
+				ORIGIN
+			)
+		).toEqual([]);
+	});
+
+	test('speaks the member’s language', () => {
+		const [event] = planEvents([plan()], '2026-11-17', deLang, ORIGIN);
+		expect(event.summary).toBe('Unternehmung steht an: Zoo (Heinz Example)');
+	});
+});
+
 describe('calendarFeed', () => {
 	const viewer = { id: 'u1', householdId: 'h1' };
 	const reader = {
@@ -280,6 +347,7 @@ describe('calendarFeed', () => {
 		origin: ORIGIN
 	};
 	const noGifts = { listOpenIdeasVisibleTo: async () => [] };
+	const noPlans = { listOpenVisibleTo: async () => [] };
 
 	test('reads the viewer’s dates and stamps them with today, so a day’s fetches match', async () => {
 		const asked: unknown[] = [];
@@ -292,6 +360,7 @@ describe('calendarFeed', () => {
 			},
 			todos: { listOpenVisibleTo: async () => [] },
 			gifts: noGifts,
+			plans: noPlans,
 			clock: { now: () => Date.UTC(2026, 10, 1, 9, 30) }
 		};
 		const morning = await calendarFeed(deps, reader);
@@ -317,6 +386,7 @@ describe('calendarFeed', () => {
 					}
 				},
 				gifts: noGifts,
+				plans: noPlans,
 				clock: { now: () => Date.UTC(2026, 10, 1, 9, 30) }
 			},
 			reader
@@ -340,6 +410,7 @@ describe('calendarFeed', () => {
 						return [idea(), idea({ id: 'g2', contactId: 'me', title: 'Watch' })];
 					}
 				},
+				plans: noPlans,
 				clock: { now: () => Date.UTC(2026, 11, 20, 9, 30) }
 			},
 			{ ...reader, selfContactId: 'me' }
@@ -348,5 +419,28 @@ describe('calendarFeed', () => {
 		expect(ics).toContain('UID:gift-g1@stella');
 		expect(ics).toContain('DTSTART;VALUE=DATE:20270314');
 		expect(ics).not.toContain('Watch');
+	});
+
+	test('asks for the outing ideas the viewer may see and holds their entry ahead', async () => {
+		const asked: unknown[] = [];
+		const ics = await calendarFeed(
+			{
+				dates: { listSourcesVisibleTo: async () => [] },
+				todos: { listOpenVisibleTo: async () => [] },
+				gifts: noGifts,
+				plans: {
+					listOpenVisibleTo: async (v: typeof viewer) => {
+						asked.push(v);
+						return [plan()];
+					}
+				},
+				clock: { now: () => Date.UTC(2026, 10, 17, 9, 30) }
+			},
+			reader
+		);
+		expect(asked).toEqual([viewer]);
+		expect(ics).toContain('UID:plan-p1@stella');
+		expect(ics).toContain('DTSTART;VALUE=DATE:20260907');
+		expect(ics).not.toContain('DTSTART;VALUE=DATE:20261206');
 	});
 });

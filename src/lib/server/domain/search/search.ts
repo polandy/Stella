@@ -83,12 +83,25 @@ export interface TodoHit {
 	contactName: string;
 }
 
+/** An outing idea found by its title, note or link, open or done, with its person (docs/dev/02 §2.27.10). */
+export interface PlanHit {
+	planId: string;
+	title: string;
+	/** Ticked — the result's *done* mark. */
+	done: boolean;
+	/** ISO YYYY-MM-DD, the household's day it was ticked; null while open. */
+	doneOn: string | null;
+	contactId: string;
+	contactName: string;
+}
+
 export interface SearchResults {
 	contacts: FoundContact[];
 	notes: NoteHit[];
 	gifts: GiftHit[];
 	moments: MomentHit[];
 	todos: TodoHit[];
+	plans: PlanHit[];
 	/** The tag key when the query was one `#tag`: then only the moments carrying it are found. */
 	tag: string | null;
 }
@@ -100,6 +113,8 @@ export interface SearchRepository {
 	searchMoments(viewer: Viewer, ftsQuery: string, limit: number): Promise<MomentHit[]>;
 	/** Open ones first, then by rank. */
 	searchTodos(viewer: Viewer, ftsQuery: string, limit: number): Promise<TodoHit[]>;
+	/** Open ones first, then by rank. */
+	searchPlans(viewer: Viewer, ftsQuery: string, limit: number): Promise<PlanHit[]>;
 	/** The moments carrying the tag of this key — matched by the tag, not the word. */
 	searchMomentsByTag(viewer: Viewer, tagKey: string, limit: number): Promise<MomentHit[]>;
 }
@@ -116,6 +131,7 @@ export const NOTHING_FOUND: SearchResults = {
 	gifts: [],
 	moments: [],
 	todos: [],
+	plans: [],
 	tag: null
 };
 
@@ -132,12 +148,13 @@ export async function search(
 	const ftsQuery = toFtsQuery(input);
 	if (ftsQuery === '') return NOTHING_FOUND;
 
-	const [contacts, notes, gifts, moments, todos] = await Promise.all([
+	const [contacts, notes, gifts, moments, todos, plans] = await Promise.all([
 		deps.search.searchContacts(viewer, ftsQuery, RESULT_LIMIT),
 		deps.search.searchNotes(viewer, ftsQuery, RESULT_LIMIT),
 		deps.search.searchGifts(viewer, ftsQuery, RESULT_LIMIT),
 		deps.search.searchMoments(viewer, ftsQuery, RESULT_LIMIT),
-		deps.search.searchTodos(viewer, ftsQuery, RESULT_LIMIT)
+		deps.search.searchTodos(viewer, ftsQuery, RESULT_LIMIT),
+		deps.search.searchPlans(viewer, ftsQuery, RESULT_LIMIT)
 	]);
 	return {
 		contacts: contacts.map((hit) => ({
@@ -149,6 +166,7 @@ export async function search(
 		gifts,
 		moments,
 		todos,
+		plans,
 		tag: null
 	};
 }

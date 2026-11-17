@@ -1126,7 +1126,7 @@ parity test.
 
 ## 3.5 Full-text search (FTS5)
 
-- Five FTS5 virtual tables: `contact_fts`, `note_fts`, `gift_fts`, `todo_fts` and `journal_fts`, each storing its own indexed text
+- Six FTS5 virtual tables: `contact_fts`, `note_fts`, `gift_fts`, `todo_fts`, `plan_fts` and `journal_fts`, each storing its own indexed text
   (not `content=`-linked to the base tables, since what is indexed is assembled rather than
   copied — see below), kept in sync via triggers on insert/update/delete.
 - A note's indexed content is **not** its raw body: the `@{contact:<id>}` tokens (§2.20.1) are
@@ -1151,6 +1151,9 @@ parity test.
   update of `title`; ticking changes nothing indexed. The `todo` table is guarded like `gift`'s:
   both are *optional parts* (`OPTIONAL_PARTS`, `db/search-index.ts`), built on the first start
   that has their table.
+- An outing idea's indexed content is its `title`, `note` and `url` (docs/dev/02 §2.27.10), open and
+  done alike. Its triggers are insert, delete and an update of those three columns; booking and
+  ticking change nothing indexed. The `activity_idea` table is an optional part like `todo`'s.
 - What a trigger writes is fixed when the trigger is created, so the index carries a
   **fingerprint** of the definitions that built it (`search_index_meta`). A startup whose
   definitions hash differently re-creates the triggers and rebuilds the rows; an unchanged one
