@@ -209,6 +209,7 @@ describe('toStoryItem, gifts', () => {
 			url: null,
 			givenOn: '2025-12-24',
 			occasion: 'christmas',
+			when: null,
 			createdAt: 300,
 			updatedAt: 300,
 			...overrides

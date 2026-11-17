@@ -2,6 +2,7 @@ import { index, integer, primaryKey, sqliteTable, text, unique } from 'drizzle-o
 import { monthDayOf, now, type Visibility } from './columns';
 import { household, user } from './household';
 import { contact } from './people';
+import type { WhenKind } from '../../../when/when';
 
 /* What makes up a person's story: journal entries, touchpoints, gifts and to-dos (docs/dev/03 §3.0). */
 
@@ -188,6 +189,10 @@ export const gift = sqliteTable(
 		givenOn: text('given_on'),
 		// A preset key (`birthday`, `christmas`, `anniversary`) or free text.
 		occasion: text('occasion'),
+		// When an idea is meant for (`src/lib/when`); all null for *now*.
+		whenKind: text('when_kind').$type<WhenKind>(),
+		whenOn: text('when_on'),
+		whenAge: integer('when_age'),
 		createdAt: integer('created_at').notNull().default(now),
 		updatedAt: integer('updated_at').notNull().default(now)
 	},

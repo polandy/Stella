@@ -1,6 +1,7 @@
 import { giftLink, isGiftState } from '../../../gifts/gifts';
 import { FULL_DATE_SHAPE, isRealCalendarDay } from '../../../dates/calendar';
 import { todayFor } from '../../../dates/today';
+import { whenColumns, whenFromOutside } from '../../../when/when';
 import type { MentionKind, RestoreContext } from './restore-context';
 import { bool, ids, int, ms, records, str, visibilityOf, type Row } from './restore-fields';
 import type { PhotoPlan } from './restore-photos';
@@ -32,6 +33,20 @@ export interface PersonRecordRows {
 function webLinkOf(raw: string | null): string | null {
 	const link = giftLink(raw ?? '');
 	return link.ok ? link.url : null;
+}
+
+/** An idea's when as the archive wrote it, in its columns; only an idea has one. */
+function whenOfRestored(row: Row, state: string) {
+	const when =
+		state === 'idea'
+			? whenFromOutside({
+					whenKind: str(row, 'when_kind'),
+					whenOn: str(row, 'when_on'),
+					whenAge: int(row, 'when_age')
+				})
+			: null;
+	const { whenKind, whenOn, whenAge } = whenColumns(when);
+	return { when_kind: whenKind, when_on: whenOn, when_age: whenAge };
 }
 
 const isRealDay = (day: string | null): day is string =>
@@ -222,6 +237,7 @@ export function planPersonRecords(
 				url: webLinkOf(str(giftRow, 'url')),
 				given_on: state === 'idea' ? null : givenOn,
 				occasion: str(giftRow, 'occasion'),
+				...whenOfRestored(giftRow, state),
 				...stamps(giftRow)
 			});
 		}

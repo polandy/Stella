@@ -133,6 +133,13 @@ export const errors: ErrorsMessages = {
 	'errors.gift.alreadyGiven': 'Dieses Geschenk wurde schon verschenkt.',
 	'errors.gift.gone': 'Dieses Geschenk gibt es nicht mehr.',
 	'errors.gift.couldNotSave': 'Das Geschenk konnte nicht gespeichert werden.',
+	'errors.gift.badWhen': 'Bitte wähle, wann die Idee gelten soll.',
+	'errors.gift.when.needsBirthYear':
+		'Für ein Alter braucht es das Geburtsjahr oder eine Schätzung.',
+	'errors.gift.when.birthdayPassed': 'Dieser Geburtstag ist vorbei. Wähle einen späteren.',
+	'errors.gift.when.dayPassed': 'Dieser Tag ist vorbei. Wähle einen, der noch kommt.',
+	'errors.gift.when.noSuchDay': 'Diesen Tag gibt es nicht.',
+	'errors.gift.when.badAge': 'Wähle ein Alter von 1 bis 150.',
 	'errors.todo.needTitle': 'Schreib, was zu tun ist.',
 	'errors.todo.needDay': 'Bitte wähle den Tag.',
 	'errors.todo.noSuchDay': (p: { day: string }) => `Den ${p.day} gibt es nicht.`,

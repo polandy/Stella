@@ -110,6 +110,7 @@ describe('giftView', () => {
 		url: 'https://shop.example',
 		givenOn: null,
 		occasion: null,
+		when: null,
 		createdAt: 1,
 		updatedAt: 2,
 		...overrides

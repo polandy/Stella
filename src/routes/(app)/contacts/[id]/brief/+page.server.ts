@@ -4,7 +4,7 @@ import { getContact } from '$lib/server/domain/contacts/contacts';
 import { listContactFields } from '$lib/server/domain/contact-fields/contact-fields';
 import { listImportantDates } from '$lib/server/domain/dates/important-dates';
 import { upcomingDates } from '$lib/server/domain/dates/upcoming';
-import { listGiftsForContact } from '$lib/server/domain/gifts/gifts';
+import { birthOf, ideaWaits, listGiftsForContact } from '$lib/server/domain/gifts/gifts';
 import { listHomesOf } from '$lib/server/domain/homes/homes';
 import { listNotesForContact } from '$lib/server/domain/notes/notes';
 import { readFamilyOf } from '$lib/server/domain/relationships/family';
@@ -80,7 +80,8 @@ export const load = (async ({ locals, params }) => {
 		notes: read.notes,
 		story: read.storyPage.items,
 		todos: orderOpenTodos(read.todos),
-		gifts: read.gifts,
+		// An idea for later is not one to bring yet (docs/dev/02 §2.25.8).
+		gifts: read.gifts.filter((gift) => !ideaWaits(gift, birthOf(contact), today)),
 		met: metLine(contact)
 	});
 	// The visible graph names everyone the viewer may see, so a mention keeps its name.

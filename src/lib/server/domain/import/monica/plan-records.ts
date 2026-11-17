@@ -63,7 +63,8 @@ export function planPersonRecords(exp: SourceExport, ctx: MonicaPlanContext): Pe
 				contactId: contactId(g.contactId),
 				...stamp,
 				...made.gift,
-				occasion: null
+				occasion: null,
+				when: null
 			});
 			continue;
 		}

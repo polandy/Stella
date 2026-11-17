@@ -2,6 +2,7 @@ import { and, eq } from 'drizzle-orm';
 import type { BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
 import type { ImportOutcome, ImportRepository } from '../domain/import/apply';
 import type { ImportCounts, ImportPlan } from '../domain/import/monica/plan';
+import { giftRow } from './gift-repository';
 import type * as schema from './schema';
 import {
 	contact,
@@ -120,7 +121,7 @@ export function writeImportPlan(tx: Db, plan: ImportPlan): ImportCounts {
 		const keptAsNote = tx.select({ id: note.id }).from(note).where(eq(note.id, g.id)).get();
 		if (keptAsNote) continue;
 		gifts += inserted(
-			tx.insert(gift).values(g).onConflictDoNothing().returning({ id: gift.id }).all()
+			tx.insert(gift).values(giftRow(g)).onConflictDoNothing().returning({ id: gift.id }).all()
 		);
 	}
 

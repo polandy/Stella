@@ -1,6 +1,7 @@
 import { and, eq, inArray, like } from 'drizzle-orm';
 import type { BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
 import type { HeldGiftsPort } from '../domain/gifts/held-gifts';
+import { giftRow } from './gift-repository';
 import type * as schema from './schema';
 import { gift, interaction, interactionParticipant, note, user } from './schema';
 
@@ -79,7 +80,7 @@ export function createDrizzleHeldGiftRepository(
 			return db.transaction((tx) => {
 				const written = tx
 					.insert(gift)
-					.values(made)
+					.values(giftRow(made))
 					.onConflictDoNothing()
 					.returning({ id: gift.id })
 					.all();
@@ -95,7 +96,7 @@ export function createDrizzleHeldGiftRepository(
 						? []
 						: tx
 								.insert(gift)
-								.values([...made])
+								.values(made.map(giftRow))
 								.onConflictDoNothing()
 								.returning({ id: gift.id })
 								.all();

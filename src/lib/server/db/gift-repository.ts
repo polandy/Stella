@@ -1,8 +1,10 @@
-import { and, asc, count, desc, eq, inArray, lt, or, sql } from 'drizzle-orm';
+import { and, asc, desc, eq, inArray, lt, or, sql } from 'drizzle-orm';
 import type { BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
 import { childRecordBrowsableBy, childRecordVisibleTo } from '../access/query-scoping';
 import type { Viewer } from '../access/visibility';
-import type { DatedGift, Gift, GiftRepository } from '../domain/gifts/gifts';
+import { birthOf, type DatedGift, type Gift, type GiftRepository } from '../domain/gifts/gifts';
+import { whenColumns, whenOfColumns, type When, type WhenColumns } from '../../when/when';
+import type { DatePrecision } from '../../dates/partial-date';
 import type * as schema from './schema';
 import { contact, gift } from './schema';
 
@@ -24,9 +26,42 @@ const columns = {
 	url: gift.url,
 	givenOn: gift.givenOn,
 	occasion: gift.occasion,
+	whenKind: gift.whenKind,
+	whenOn: gift.whenOn,
+	whenAge: gift.whenAge,
 	createdAt: gift.createdAt,
 	updatedAt: gift.updatedAt
 };
+
+interface BirthColumns {
+	birthDate: string | null;
+	birthDatePrecision: DatePrecision;
+}
+
+const birthColumns = {
+	birthDate: contact.birthDate,
+	birthDatePrecision: contact.birthDatePrecision
+};
+
+/** A row as the domain reads it: its three when columns as one when. */
+function fromRow<R extends WhenColumns>(
+	row: R
+): Omit<R, keyof WhenColumns> & { when: When | null } {
+	const { whenKind, whenOn, whenAge, ...rest } = row;
+	return { ...rest, when: whenOfColumns({ whenKind, whenOn, whenAge }) };
+}
+
+/** A row read with its person's birth date, as the domain reads that. */
+function withBirth<R extends WhenColumns & BirthColumns>(row: R) {
+	const { birthDate, birthDatePrecision, ...rest } = row;
+	return { ...fromRow(rest), birth: birthOf({ birthDate, birthDatePrecision }) };
+}
+
+/** A gift as its row stores it: its when as the three when columns. */
+export function giftRow(g: Gift) {
+	const { when, ...rest } = g;
+	return { ...rest, ...whenColumns(when) };
+}
 
 const DATED_STATES = ['given', 'received'] as const;
 
@@ -39,7 +74,7 @@ export function createDrizzleGiftRepository(db: BunSQLiteDatabase<typeof schema>
 
 	return {
 		async insert(g: Gift) {
-			db.insert(gift).values(g).run();
+			db.insert(gift).values(giftRow(g)).run();
 		},
 
 		async findVisibleTo(viewer, contactId, giftId) {
@@ -49,7 +84,7 @@ export function createDrizzleGiftRepository(db: BunSQLiteDatabase<typeof schema>
 				.innerJoin(contact, eq(gift.contactId, contact.id))
 				.where(and(eq(gift.id, giftId), visibleOn(viewer, contactId)))
 				.get();
-			return row ?? null;
+			return row ? fromRow(row) : null;
 		},
 
 		async update(g: Gift) {
@@ -62,6 +97,7 @@ export function createDrizzleGiftRepository(db: BunSQLiteDatabase<typeof schema>
 					url: g.url,
 					givenOn: g.givenOn,
 					occasion: g.occasion,
+					...whenColumns(g.when),
 					updatedAt: g.updatedAt
 				})
 				.where(eq(gift.id, g.id))
@@ -82,13 +118,20 @@ export function createDrizzleGiftRepository(db: BunSQLiteDatabase<typeof schema>
 					// Ideas first (they have no day), newest noted first; then the newest day.
 					.orderBy(asc(sql`${gift.givenOn} IS NOT NULL`), desc(gift.givenOn), desc(gift.createdAt))
 					.all()
+					.map(fromRow)
 			);
 		},
 
-		async countOpenIdeasVisibleTo(viewer, contactIds) {
-			if (contactIds.length === 0) return new Map();
-			const rows = db
-				.select({ contactId: gift.contactId, ideas: count() })
+		async listOpenIdeaWhensVisibleTo(viewer, contactIds) {
+			if (contactIds.length === 0) return [];
+			return db
+				.select({
+					contactId: gift.contactId,
+					whenKind: gift.whenKind,
+					whenOn: gift.whenOn,
+					whenAge: gift.whenAge,
+					...birthColumns
+				})
 				.from(gift)
 				.innerJoin(contact, eq(gift.contactId, contact.id))
 				.where(
@@ -98,9 +141,8 @@ export function createDrizzleGiftRepository(db: BunSQLiteDatabase<typeof schema>
 						childRecordVisibleTo(viewer, { visibility: gift.visibility, createdBy: gift.createdBy })
 					)
 				)
-				.groupBy(gift.contactId)
-				.all();
-			return new Map(rows.map((row) => [row.contactId, row.ideas]));
+				.all()
+				.map(withBirth);
 		},
 
 		async listOpenIdeasVisibleTo(viewer) {
@@ -108,7 +150,8 @@ export function createDrizzleGiftRepository(db: BunSQLiteDatabase<typeof schema>
 				.select({
 					...columns,
 					contactName: contact.displayName,
-					avatarPhotoId: contact.avatarPhotoId
+					avatarPhotoId: contact.avatarPhotoId,
+					...birthColumns
 				})
 				.from(gift)
 				.innerJoin(contact, eq(gift.contactId, contact.id))
@@ -123,7 +166,8 @@ export function createDrizzleGiftRepository(db: BunSQLiteDatabase<typeof schema>
 					)
 				)
 				.orderBy(desc(gift.createdAt))
-				.all();
+				.all()
+				.map(withBirth);
 		},
 
 		async listStoryPageForContactVisibleTo(viewer, contactId, opts) {
@@ -145,7 +189,8 @@ export function createDrizzleGiftRepository(db: BunSQLiteDatabase<typeof schema>
 				.where(and(...conditions))
 				.orderBy(desc(gift.givenOn), desc(gift.createdAt))
 				.limit(opts.limit)
-				.all();
+				.all()
+				.map(fromRow);
 			// A given or received gift always has its day (`domain/gifts`); the state filter says so.
 			return rows.filter((row): row is DatedGift => row.givenOn !== null && row.state !== 'idea');
 		}

@@ -7,7 +7,12 @@ import {
 } from '$lib/commands/gift-todo-payloads';
 import { contactSectionPath } from '$lib/people/sections';
 import type { RequestEvent } from '@sveltejs/kit';
-import { applyGiftCommand, occasionOf, type GiftCommand } from '../../../_shared/gift-commands';
+import {
+	applyGiftCommand,
+	occasionOf,
+	whenOf,
+	type GiftCommand
+} from '../../../_shared/gift-commands';
 import type { Actions } from '../$types';
 
 /*
@@ -35,7 +40,7 @@ export const giftActions = {
 			event,
 			form,
 			'gift.add',
-			{ ...fromFormData(GiftAddSchema, form), occasion: occasionOf(form) },
+			{ ...fromFormData(GiftAddSchema, form), occasion: occasionOf(form), when: whenOf(form) },
 			'giftError'
 		);
 	},
@@ -46,7 +51,7 @@ export const giftActions = {
 			event,
 			form,
 			'gift.edit',
-			{ ...fromFormData(GiftEditSchema, form), occasion: occasionOf(form) },
+			{ ...fromFormData(GiftEditSchema, form), occasion: occasionOf(form), when: whenOf(form) },
 			'giftRowError'
 		);
 	},

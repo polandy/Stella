@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it } from 'bun:test';
+import { eq } from 'drizzle-orm';
 import { Database } from 'bun:sqlite';
 import { drizzle, type BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
 import { migrate } from 'drizzle-orm/bun-sqlite/migrator';
@@ -35,6 +36,7 @@ function gift(over: Partial<Gift>): Gift {
 		url: null,
 		givenOn: null,
 		occasion: null,
+		when: null,
 		createdAt: 0,
 		updatedAt: 0,
 		...over
@@ -76,6 +78,23 @@ describe('createDrizzleGiftRepository', () => {
 		});
 		await repo.insert(stored);
 		expect(await repo.findVisibleTo(viewerU1, 'c-shared', 'g-1')).toEqual(stored);
+	});
+
+	it('reads each kind of when back as it was stored, and changes it on update', async () => {
+		const whens = [
+			{ kind: 'from_age', age: 8 },
+			{ kind: 'at_age', age: 18 },
+			{ kind: 'on_date', on: '2027-12-24' },
+			{ kind: 'later' }
+		] as const;
+		for (const [i, when] of whens.entries()) {
+			await repo.insert(gift({ id: `g-${i}`, when }));
+			expect(await repo.findVisibleTo(viewerU1, 'c-shared', `g-${i}`)).toEqual(
+				gift({ id: `g-${i}`, when })
+			);
+		}
+		await repo.update(gift({ id: 'g-0', when: null }));
+		expect((await repo.findVisibleTo(viewerU1, 'c-shared', 'g-0'))?.when).toBeNull();
 	});
 
 	it('hides a private gift from other members, but not from its author', async () => {
@@ -124,33 +143,44 @@ describe('createDrizzleGiftRepository', () => {
 		expect(await repo.findVisibleTo(viewerU1, 'c-shared', 'g-1')).toBeNull();
 	});
 
-	describe('countOpenIdeasVisibleTo', () => {
-		it('counts the open ideas of each person asked about, leaving out who has none', async () => {
+	describe('listOpenIdeaWhensVisibleTo', () => {
+		it('reads the when of every open idea of each person asked about, with their birth', async () => {
 			db.insert(schema.contact)
 				.values({ id: 'c-other', householdId: H, createdBy: U1, displayName: 'O' })
 				.run();
-			await repo.insert(gift({ id: 'i-1' }));
+			db.update(schema.contact)
+				.set({ birthDate: '2022-03-14', birthDatePrecision: 'full' })
+				.where(eq(schema.contact.id, 'c-shared'))
+				.run();
+			await repo.insert(gift({ id: 'i-1', when: { kind: 'at_age', age: 10 } }));
 			await repo.insert(gift({ id: 'i-2' }));
 			await repo.insert(gift({ id: 'given', state: 'given', givenOn: '2024-12-24' }));
 			await repo.insert(gift({ id: 'recv', state: 'received', givenOn: '2025-12-24' }));
 			await repo.insert(gift({ id: 'i-other', contactId: 'c-other' }));
 
-			const counts = await repo.countOpenIdeasVisibleTo(viewerU1, ['c-shared', 'c-priv']);
-			expect([...counts]).toEqual([['c-shared', 2]]);
+			const whens = await repo.listOpenIdeaWhensVisibleTo(viewerU1, ['c-shared', 'c-priv']);
+			const birth = { value: '2022-03-14', precision: 'full' as const };
+			expect(whens).toHaveLength(2);
+			expect(whens).toContainEqual({
+				contactId: 'c-shared',
+				when: { kind: 'at_age', age: 10 },
+				birth
+			});
+			expect(whens).toContainEqual({ contactId: 'c-shared', when: null, birth });
 		});
 
-		it('counts only the ideas the viewer may see', async () => {
+		it('reads only the ideas the viewer may see', async () => {
 			await repo.insert(gift({ id: 'i-shared' }));
 			await repo.insert(gift({ id: 'i-mine', visibility: 'private', createdBy: U2 }));
 			await repo.insert(gift({ id: 'i-theirs', visibility: 'private' }));
 			await repo.insert(gift({ id: 'i-hidden-person', contactId: 'c-priv' }));
 
-			const counts = await repo.countOpenIdeasVisibleTo(viewerU2, ['c-shared', 'c-priv']);
-			expect([...counts]).toEqual([['c-shared', 2]]);
+			const whens = await repo.listOpenIdeaWhensVisibleTo(viewerU2, ['c-shared', 'c-priv']);
+			expect(whens.map((w) => w.contactId)).toEqual(['c-shared', 'c-shared']);
 		});
 
 		it('asks nothing of the database for nobody', async () => {
-			expect((await repo.countOpenIdeasVisibleTo(viewerU1, [])).size).toBe(0);
+			expect(await repo.listOpenIdeaWhensVisibleTo(viewerU1, [])).toEqual([]);
 		});
 	});
 
@@ -178,7 +208,8 @@ describe('createDrizzleGiftRepository', () => {
 			expect(ideas[1]).toEqual({
 				...gift({ id: 'old', createdAt: 1 }),
 				contactName: 'S',
-				avatarPhotoId: null
+				avatarPhotoId: null,
+				birth: null
 			});
 		});
 

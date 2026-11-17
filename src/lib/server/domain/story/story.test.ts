@@ -66,6 +66,7 @@ function present(
 		url: null,
 		givenOn: day,
 		occasion: null,
+		when: null,
 		createdAt: recordedAt,
 		updatedAt: recordedAt
 	};

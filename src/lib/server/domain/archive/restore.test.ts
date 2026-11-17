@@ -180,6 +180,9 @@ function fullHousehold(): HouseholdSnapshot {
 					url: 'https://shop.example/teapot',
 					given_on: null,
 					occasion: null,
+					when_kind: 'at_age',
+					when_on: null,
+					when_age: 18,
 					created_at: EXPORTED
 				},
 				{
@@ -521,6 +524,9 @@ describe('the round trip', () => {
 			'url',
 			'given_on',
 			'occasion',
+			'when_kind',
+			'when_on',
+			'when_age',
 			'created_at'
 		],
 		todo: [

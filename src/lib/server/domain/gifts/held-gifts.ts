@@ -98,6 +98,7 @@ export async function convertHeldGifts(deps: ConvertHeldGiftsDeps): Promise<Held
 			visibility: note.visibility,
 			...made.gift,
 			occasion: null,
+			when: null,
 			createdAt: note.createdAt,
 			updatedAt: note.updatedAt
 		});
@@ -113,6 +114,7 @@ export async function convertHeldGifts(deps: ConvertHeldGiftsDeps): Promise<Held
 				...made,
 				url: null,
 				occasion: null,
+				when: null,
 				createdAt: touch.createdAt,
 				updatedAt: touch.updatedAt
 			})

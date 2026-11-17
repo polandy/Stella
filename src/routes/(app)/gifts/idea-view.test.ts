@@ -15,6 +15,7 @@ const idea: OpenIdea = {
 	url: 'https://shop.example',
 	givenOn: null,
 	occasion: null,
+	when: null,
 	createdAt: 1,
 	updatedAt: 1
 };
