@@ -93,3 +93,19 @@ export function ideaListGroups<I extends IdeaOnList>(
 		(a, b) => a.next.daysUntil - b.next.daysUntil || a.contactName.localeCompare(b.contactName)
 	);
 }
+
+/** What the list shows of the ideas still waiting for their time (§2.25.8), and how many it hides. */
+export function foldWaiting<
+	I extends { whenState: { kind: string } | null },
+	G extends { ideas: I[] }
+>(groups: readonly G[], showWaiting: boolean): { groups: G[]; hidden: number } {
+	let hidden = 0;
+	const shown = groups.flatMap((group) => {
+		const due = group.ideas.filter((idea) => idea.whenState?.kind !== 'waiting');
+		const waiting = group.ideas.filter((idea) => idea.whenState?.kind === 'waiting');
+		if (!showWaiting) hidden += waiting.length;
+		const ideas = showWaiting ? [...due, ...waiting] : due;
+		return ideas.length ? [{ ...group, ideas }] : [];
+	});
+	return { groups: shown, hidden };
+}

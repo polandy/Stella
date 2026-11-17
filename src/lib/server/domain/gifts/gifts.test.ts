@@ -342,19 +342,24 @@ describe('an idea for later', () => {
 		expect(gifts.rows.get(giftId)?.when).toBeNull();
 	});
 
-	it('leaves an idea that still waits out of the counts and the list of open ideas', async () => {
+	it('leaves an idea that still waits out of the counts, and lists it last, soonest first', async () => {
+		await addGift(deps, ANDY, { ...idea('Some day'), when: { kind: 'later' } });
 		await addGift(deps, ANDY, idea('Now'));
 		await addGift(deps, ANDY, {
 			...idea('Christmas'),
 			when: { kind: 'on_date', on: '2026-12-24' }
 		});
 		await addGift(deps, ANDY, { ...idea('At ten'), when: { kind: 'at_age', age: 10 } });
-		await addGift(deps, ANDY, { ...idea('Some day'), when: { kind: 'later' } });
 
 		const viewer = { id: 'andy', householdId: 'h1' };
 		expect([...(await countOpenIdeas(deps, viewer, [HILDE]))]).toEqual([[HILDE, 2]]);
 		const listed = await listOpenIdeas(deps, viewer);
-		expect(listed.map((g) => g.title).sort()).toEqual(['Christmas', 'Now']);
+		expect(listed.map((g) => [g.title, g.whenState?.kind ?? null])).toEqual([
+			['Now', null],
+			['Christmas', 'soon'],
+			['At ten', 'waiting'],
+			['Some day', 'waiting']
+		]);
 		expect(listed[0]).not.toHaveProperty('birth');
 	});
 });
@@ -514,10 +519,14 @@ describe('listOpenIdeas', () => {
 		await addGift(deps, ANDY, { ...idea('Bike'), when: { kind: 'at_age', age: 10 } });
 		const viewer = { id: 'andy', householdId: 'h1' };
 		expect((await listOpenIdeas(deps, viewer)).map((g) => [g.title, g.whenState])).toEqual([
-			['Sled', { kind: 'soon', on: '2026-12-24', approximate: false, inDays: 77 }]
+			['Sled', { kind: 'soon', on: '2026-12-24', approximate: false, inDays: 77 }],
+			['Bike', { kind: 'waiting' }]
 		]);
 		now = Date.UTC(2027, 0, 10, 9);
-		expect((await listOpenIdeas(deps, viewer)).map((g) => g.whenState?.kind)).toEqual(['passed']);
+		expect((await listOpenIdeas(deps, viewer)).map((g) => g.whenState?.kind)).toEqual([
+			'passed',
+			'waiting'
+		]);
 		expect([...(await countOpenIdeas(deps, viewer, [HILDE]))]).toEqual([[HILDE, 1]]);
 	});
 });

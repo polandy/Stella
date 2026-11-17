@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test';
-import { christmasFrom, ideaListGroups } from './idea-list';
+import { christmasFrom, foldWaiting, ideaListGroups } from './idea-list';
 
 /*
  * The household's list of open gift ideas (docs/dev/02 §2.25.6): one group per person, whoever's
@@ -85,5 +85,41 @@ describe('ideaListGroups', () => {
 
 	it('is empty without ideas', () => {
 		expect(ideaListGroups([], [], today)).toEqual([]);
+	});
+});
+
+describe('foldWaiting', () => {
+	const next = { kind: 'christmas' as const, date: '2026-12-24', daysUntil: 55 };
+	const listed = (id: string, waits: boolean) => ({
+		id,
+		whenState: waits ? { kind: 'waiting' as const } : null
+	});
+	const group = (contactId: string, ideas: ReturnType<typeof listed>[]) => ({
+		contactId,
+		contactName: contactId,
+		avatarPhotoId: null,
+		next,
+		ideas
+	});
+	const groups = [
+		group('mia', [listed('bike', true), listed('sled', false), listed('kite', true)]),
+		group('tom', [listed('lego', true)])
+	];
+
+	it('hides the waiting ideas and counts them, dropping a person left without any', () => {
+		const folded = foldWaiting(groups, false);
+		expect(folded.hidden).toBe(3);
+		expect(folded.groups.map((g) => [g.contactId, g.ideas.map((i) => i.id)])).toEqual([
+			['mia', ['sled']]
+		]);
+	});
+
+	it('shows them after the ideas whose time has come, hiding none', () => {
+		const folded = foldWaiting(groups, true);
+		expect(folded.hidden).toBe(0);
+		expect(folded.groups.map((g) => g.ideas.map((i) => i.id))).toEqual([
+			['sled', 'bike', 'kite'],
+			['lego']
+		]);
 	});
 });

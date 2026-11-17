@@ -278,9 +278,16 @@ describe('the calendar feed over SQLite', () => {
 			{
 				dates: repo,
 				todos: { listOpenVisibleTo: async () => [] },
+				gifts: { listOpenIdeasVisibleTo: async () => [] },
 				clock: { now: () => Date.UTC(2026, 10, 1) }
 			},
-			{ viewer, translate: createTranslator('en'), origin: 'https://stella.example' }
+			{
+				viewer,
+				translate: createTranslator('en'),
+				intlLocale: 'en-GB',
+				selfContactId: null,
+				origin: 'https://stella.example'
+			}
 		);
 
 	it('carries a private person only in its owner’s feed, and never the deceased', async () => {

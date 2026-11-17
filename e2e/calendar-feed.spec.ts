@@ -1,10 +1,11 @@
 import { expect, test, type Page } from '@playwright/test';
-import { addPerson, appReady, fillDate, signIn } from './app';
+import { addPerson, appReady, fillDate, isoDaysAfter, serverToday, signIn } from './app';
+import { seedHousehold } from './seed';
 
 /*
  * The calendar link (docs/dev/02 §2.13.4), end to end: a member makes it on Settings → Calendar,
- * sees it once, a calendar app fetches the household's dates and the member's open to-dos with
- * a day through it, and it stops the moment it is replaced or revoked. Written after the owner subscribed a phone to it with
+ * sees it once, a calendar app fetches the household's dates, the member's open to-dos with
+ * a day and the gift ideas whose day is near through it, and it stops the moment it is replaced or revoked. Written after the owner subscribed a phone to it with
  * ICSx⁵ on Android (docs/dev/08 §8.4.1).
  *
  * Every refusal is paired with the same link answering first, so no case can pass because
@@ -65,6 +66,27 @@ test('a calendar link is shown once, serves the dates and dated to-dos, and stop
 	const undated = `Send the recipe ${letters}`;
 	await addTodo(page, dated, '2031-05-14');
 	await addTodo(page, undated);
+	const today = await serverToday(page);
+	const giftee = `Gesa Geschenk${letters}`;
+	const soon = isoDaysAfter(today, 40);
+	await seedHousehold(
+		page,
+		[giftee],
+		[],
+		{},
+		[],
+		[],
+		[],
+		{},
+		{},
+		{},
+		{
+			[giftee]: [
+				{ title: `Lantern ${letters}`, when: { kind: 'on_date', on: soon } },
+				{ title: `Globe ${letters}`, when: { kind: 'on_date', on: isoDaysAfter(today, 200) } }
+			]
+		}
+	);
 
 	await page.goto('/settings');
 	await page.getByRole('link', { name: /Calendar/ }).click();
@@ -82,6 +104,10 @@ test('a calendar link is shown once, serves the dates and dated to-dos, and stop
 	expect(withTodos).toContain(`SUMMARY:To-do: ${dated} (Kalenda Imboden${letters})`);
 	expect(withTodos).toContain('DTSTART;VALUE=DATE:20310514');
 	expect(withTodos).not.toContain(undated);
+	// A gift idea comes onto the calendar on its day once that is near; one still waiting does not.
+	expect(withTodos).toContain(`SUMMARY:Gift idea: Lantern ${letters} (${giftee})`);
+	expect(withTodos).toContain(`DTSTART;VALUE=DATE:${soon.replaceAll('-', '')}`);
+	expect(withTodos).not.toContain(`Globe ${letters}`);
 
 	// Once dismissed, the page keeps only the link's row: the secret is not shown again.
 	await page.getByRole('button', { name: 'Done' }).click();

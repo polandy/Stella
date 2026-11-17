@@ -34,6 +34,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 	});
 	return {
 		today,
+		viewerId: viewer.id,
 		groups: ideaListGroups(
 			ideas.map((idea) => openIdeaView(idea, viewer.id, nameOfAuthor)),
 			ahead,

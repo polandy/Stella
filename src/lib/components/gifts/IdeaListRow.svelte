@@ -81,7 +81,12 @@
 	);
 </script>
 
-<li bind:this={row} class="flex gap-3 border-t border-border-subtle py-2.5 first:border-t-0">
+<li
+	bind:this={row}
+	class="flex gap-3 border-t border-border-subtle py-2.5 first:border-t-0"
+	class:opacity-80={idea.whenState?.kind === 'waiting'}
+	data-waiting={idea.whenState?.kind === 'waiting' || undefined}
+>
 	<GiftStateMark state="idea" />
 	<div class="min-w-0 flex-1">
 		<p class="font-medium break-words text-fg">{idea.title}</p>

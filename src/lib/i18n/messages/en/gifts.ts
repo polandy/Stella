@@ -64,6 +64,11 @@ export const gifts = {
 	// Under the person's name: *Birthday in 12 days · 11 Nov*.
 	'gifts.list.next': (p: { occasion: string; when: string; day: string }) =>
 		`${p.occasion} ${p.when} · ${p.day}`,
+	// Ideas waiting for an age or a day are folded away until asked for (§2.25.8).
+	'gifts.list.showWaiting': (p: { count: number }) =>
+		p.count === 1 ? 'Show 1 idea for later' : `Show ${p.count} ideas for later`,
+	'gifts.list.hideWaiting': 'Hide the ideas for later',
+	'gifts.list.allWaiting': 'Nothing due yet. Every idea waits for later.',
 	'gifts.list.empty': 'No open gift ideas.',
 	'gifts.list.emptyHint': 'Note one on a person’s Gifts card, and it shows up here.',
 
