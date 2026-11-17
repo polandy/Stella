@@ -23,6 +23,7 @@ const KINDS = {
 	// Somebody may have seen the gift already, so these wait for Stella rather than the device.
 	'gift.edit': 'change',
 	'gift.markGiven': 'change',
+	'gift.markBought': 'change',
 	'gift.answerWhen': 'change',
 	'gift.remove': 'remove',
 	'todo.add': 'add',

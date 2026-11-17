@@ -17,6 +17,7 @@ import { listGallery } from '$lib/server/domain/media/gallery';
 import { listMentionedIn } from '$lib/server/domain/mentions/mentioned-in';
 import { listNotesForContact } from '$lib/server/domain/notes/notes';
 import { listGiftsForContact } from '$lib/server/domain/gifts/gifts';
+import { mayKeepFrom } from '$lib/server/domain/gifts/surprise';
 import { listOpenTodosForContact } from '$lib/server/domain/todos/todos';
 import { readFamilyOf } from '$lib/server/domain/relationships/family';
 import { listTagsForContact } from '$lib/server/domain/tags/tag-lists';
@@ -69,6 +70,8 @@ export function readPersonPage(
 		lastContactedAt: lastContactedOn(story.interactionDeps, viewer, contactId),
 		notes: listNotesForContact(notes.noteDeps, viewer, contactId),
 		gifts: listGiftsForContact(gifts.giftDeps, viewer, contactId),
+		// Whether a gift may be kept from them, they being another member (§2.25.10).
+		recipientIsMember: mayKeepFrom(gifts.giftDeps, viewer, contactId),
 		todos: listOpenTodosForContact(todos.todoDeps, viewer, contactId),
 		mentionedIn: listMentionedIn(notes.mentionedInDeps, viewer, contactId),
 		gallery: listGallery(media.galleryDeps, viewer, contactId),

@@ -4,6 +4,7 @@
 	import DateField from '$lib/components/ui/DateField.svelte';
 	import FormError from '$lib/components/ui/FormError.svelte';
 	import Icon from '$lib/components/ui/Icon.svelte';
+	import GiftBoughtButton from '$lib/components/person/GiftBoughtButton.svelte';
 	import GiftOccasionField from '$lib/components/person/GiftOccasionField.svelte';
 	import GiftStateMark from '$lib/components/person/GiftStateMark.svelte';
 	import type { NextOccasion } from '$lib/gifts/idea-list';
@@ -19,18 +20,20 @@
 
 	/*
 	 * One open idea on the household's list (docs/dev/02 §2.25.6): what it is, its note, who noted
-	 * it — and *Mark as given*, asking only for the day and the occasion, with the occasion the
-	 * group is for already chosen. The answer is held for one undo window before it is sent
+	 * it — *Bought* (§2.25.9), and *Mark as given*, asking only for the day and the occasion, with
+	 * the occasion the group is for already chosen. The answer is held for one undo window before it is sent
 	 * (`heldAnswer`), so a mis-tap costs nothing; until then the row is hidden.
 	 */
 	interface Props {
 		idea: {
 			id: string;
 			contactId: string;
+			contactName: string;
 			title: string;
 			note: string | null;
 			url: string | null;
 			visibility: 'shared' | 'private';
+			hiddenFromRecipient: boolean;
 			mine: boolean;
 			notedBy: string | null;
 			when: When | null;
@@ -112,6 +115,12 @@
 					<Icon name="link" size={11} />{t('gifts.link')}
 				</a>
 			{/if}
+			{#if idea.hiddenFromRecipient}
+				<span aria-hidden="true">·</span>
+				<span class="inline-flex items-center gap-1" data-testid="gift-surprise">
+					<Icon name="surprise" size={11} />{t('gifts.surprise.inline', { name: idea.contactName })}
+				</span>
+			{/if}
 			{#if idea.visibility === 'private'}
 				<span aria-hidden="true">·</span>
 				<span class="inline-flex items-center gap-1" title={t('common.onlyYouSee')}>
@@ -152,16 +161,17 @@
 			</form>
 		{:else}
 			<!-- Outlined, not filled: one per idea, so a list of them must not shout. -->
-			<Button
-				variant="secondary"
-				size="sm"
-				type="button"
-				class="mt-2"
-				data-give-open
-				onclick={open}
-			>
-				{t('gifts.markGiven.open')}
-			</Button>
+			<div class="mt-2 flex flex-wrap gap-2">
+				<GiftBoughtButton
+					gift={idea}
+					bought
+					contactId={idea.contactId}
+					onAway={(away) => (away ? onSending(idea.id) : onSettled(idea.id, false))}
+				/>
+				<Button variant="secondary" size="sm" type="button" data-give-open onclick={open}>
+					{t('gifts.markGiven.open')}
+				</Button>
+			</div>
 		{/if}
 	</div>
 </li>

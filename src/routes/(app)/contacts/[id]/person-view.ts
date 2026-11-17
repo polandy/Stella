@@ -107,6 +107,8 @@ export function giftView(gift: Gift, ctx: PersonViewContext) {
 		when: gift.when,
 		/** The day somebody last answered whether it still stands (§2.25.8). */
 		whenCheckedOn: gift.whenCheckedOn,
+		/** Kept from the member it is for (§2.25.10); only ever true on a shared gift. */
+		hiddenFromRecipient: gift.hiddenFromRecipient,
 		visibility: gift.visibility,
 		mine,
 		notedBy: mine ? null : authorLabel(false, ctx.nameOfAuthor(gift.createdBy)),

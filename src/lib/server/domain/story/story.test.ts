@@ -68,6 +68,7 @@ function present(
 		occasion: null,
 		when: null,
 		whenCheckedOn: null,
+		hiddenFromRecipient: false,
 		createdAt: recordedAt,
 		updatedAt: recordedAt
 	};

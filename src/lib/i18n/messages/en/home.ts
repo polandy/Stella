@@ -22,6 +22,8 @@ export const home = {
 	'home.giftIdeas': (p: { count: number }) => (p.count === 1 ? '1 idea' : `${p.count} ideas`),
 	'home.giftIdeasFor': (p: { count: number; name: string }) =>
 		p.count === 1 ? `1 gift idea for ${p.name}` : `${p.count} gift ideas for ${p.name}`,
+	// What is bought and waiting to be handed over (docs/dev/02 §2.25.9).
+	'home.ready': (p: { titles: string }) => `Ready: ${p.titles}`,
 	'home.findPerson': 'Find a person…',
 	'home.showAll': (p: { count: number }) => `Show all ${p.count}`,
 	'home.outbox.label': 'Not sent yet',

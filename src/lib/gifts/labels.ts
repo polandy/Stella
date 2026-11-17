@@ -25,13 +25,14 @@ export function addedLabel(lang: DateLanguage, createdAt: number, timeZone: stri
 }
 
 /**
- * Where a gift stands, in one phrase: *Idea*, *Given on 24 December 2025*, *Received on …* —
+ * Where a gift stands, in one phrase: *Idea*, *Bought*, *Given on 24 December 2025*, *Received on …* —
  * how a search hit says which of a person's gifts it is (docs/dev/02 §2.9).
  */
 export function stateLabel(
 	lang: DateLanguage,
 	gift: { state: GiftState; givenOn: string | null }
 ): string {
+	if (gift.state === 'bought') return lang.t('gifts.state.bought');
 	if (gift.state === 'idea' || gift.givenOn === null) return lang.t('gifts.state.idea');
 	return lang.t(`gifts.state.${gift.state}`, { day: dayLabel(lang, gift.givenOn) });
 }

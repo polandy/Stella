@@ -1,4 +1,10 @@
-import { giftLink, isGiftState } from '../../../gifts/gifts';
+import {
+	giftLink,
+	hasGiftDay,
+	isGiftState,
+	isOpenGift,
+	type GiftState
+} from '../../../gifts/gifts';
 import { FULL_DATE_SHAPE, isRealCalendarDay } from '../../../dates/calendar';
 import { todayFor } from '../../../dates/today';
 import { whenColumns, whenFromOutside } from '../../../when/when';
@@ -35,16 +41,15 @@ function webLinkOf(raw: string | null): string | null {
 	return link.ok ? link.url : null;
 }
 
-/** An idea's when as the archive wrote it, in its columns; only an idea has one. */
-function whenOfRestored(row: Row, state: string) {
-	const when =
-		state === 'idea'
-			? whenFromOutside({
-					whenKind: str(row, 'when_kind'),
-					whenOn: str(row, 'when_on'),
-					whenAge: int(row, 'when_age')
-				})
-			: null;
+/** An idea's when as the archive wrote it, in its columns; only an open one has one. */
+function whenOfRestored(row: Row, state: GiftState) {
+	const when = isOpenGift(state)
+		? whenFromOutside({
+				whenKind: str(row, 'when_kind'),
+				whenOn: str(row, 'when_on'),
+				whenAge: int(row, 'when_age')
+			})
+		: null;
 	const { whenKind, whenOn, whenAge } = whenColumns(when);
 	// The last answer only means something beside a when.
 	const checked = when === null ? null : str(row, 'when_checked_on');
@@ -226,9 +231,9 @@ export function planPersonRecords(
 			const state = str(giftRow, 'state');
 			const title = str(giftRow, 'title');
 			const givenOn = str(giftRow, 'given_on');
-			// A gift needs its name and one of its three states; a given or received one, its day.
+			// A gift needs its name and one of its states; a given or received one, its day.
 			const known = state !== null && isGiftState(state);
-			if (!known || title === null || (state !== 'idea' && !isRealDay(givenOn))) {
+			if (!known || title === null || (hasGiftDay(state) && !isRealDay(givenOn))) {
 				warn({ code: 'giftIncomplete' });
 				continue;
 			}
@@ -237,12 +242,15 @@ export function planPersonRecords(
 				contact_id: contactId,
 				created_by: author(giftRow),
 				visibility: visibilityOf(giftRow),
+				// Only a shared gift can be kept from the person it is for.
+				hidden_from_recipient:
+					visibilityOf(giftRow) === 'shared' && bool(giftRow, 'hidden_from_recipient') ? 1 : 0,
 				state,
 				title,
 				note: str(giftRow, 'note'),
 				// Only a web address is kept, as the form keeps it: the card renders it as a link.
 				url: webLinkOf(str(giftRow, 'url')),
-				given_on: state === 'idea' ? null : givenOn,
+				given_on: hasGiftDay(state) ? givenOn : null,
 				occasion: str(giftRow, 'occasion'),
 				...whenOfRestored(giftRow, state),
 				...stamps(giftRow)

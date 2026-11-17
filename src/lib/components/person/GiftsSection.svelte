@@ -12,7 +12,7 @@
 	import { datesEditorPath } from '$lib/people/identity-card';
 	import { sectionAnchor } from '$lib/people/sections';
 	import { asksForGiftIdea, byYear, giftTabs, splitIdeas, type GiftTab } from '$lib/gifts/card';
-	import { isGiftState, occasionFromForm, type GiftState } from '$lib/gifts/gifts';
+	import type { AddableGiftState } from '$lib/gifts/gifts';
 	import { useI18n } from '$lib/i18n/context.svelte';
 	import { keepable } from '$lib/pwa/keepable';
 	import { isKept, type KeptOf } from '$lib/pwa/outbox';
@@ -20,8 +20,8 @@
 	import { useRemovals } from '$lib/undo/context.svelte';
 	import { removalKey } from '$lib/undo/keys';
 	import { savedEnhance } from '$lib/undo/saved';
-	import { parsedWhenFromForm } from '$lib/when/form';
 	import { birthOf } from '$lib/when/resolve';
+	import { giftAddCommand } from './gift-add-command';
 	import GiftForm from './GiftForm.svelte';
 	import GiftIdeas from './GiftIdeas.svelte';
 	import GiftRow from './GiftRow.svelte';
@@ -54,6 +54,8 @@
 			data.today
 		)
 	);
+	// Bought ones wait under *Ready to give*, out of the count like the waiting ones (§2.25.9).
+	const ready = $derived(shown.filter((g) => g.state === 'bought'));
 	const given = $derived(shown.filter((g) => g.state === 'given'));
 	const received = $derived(shown.filter((g) => g.state === 'received'));
 	const tabs = $derived(
@@ -76,11 +78,11 @@
 
 	// Which form the card's one form slot holds; *+ Idea* is its own button, so it is the rest.
 	let open = $state(false);
-	let adding = $state<GiftState>('idea');
+	let adding = $state<AddableGiftState>('idea');
 	$effect(() => {
 		if (!open) adding = 'idea';
 	});
-	function startAdding(kind: GiftState, close?: () => void) {
+	function startAdding(kind: AddableGiftState, close?: () => void) {
 		close?.();
 		adding = kind;
 		open = true;
@@ -91,7 +93,7 @@
 		if (to && asksForGiftIdea(to.url)) startAdding('idea');
 	});
 	/** Where a gift just saved shows: its own tab. */
-	function showTabOf(kind: GiftState) {
+	function showTabOf(kind: AddableGiftState) {
 		tab = kind === 'idea' ? 'ideas' : kind;
 	}
 
@@ -101,43 +103,13 @@
 		received: 'gifts.form.receivedFrom'
 	} as const;
 
-	const text = (data: FormData, key: string): string | null => {
-		const value = String(data.get(key) ?? '').trim();
-		return value.length > 0 ? value : null;
-	};
 	const closeAdding = () => (open = false);
 
 	// Noting a gift saves through the outbox, keeping it when Stella cannot take it (§2.18).
 	const keepGift = $derived(
 		keepable(
 			{
-				toCommand: (formData, id) => {
-					const title = text(formData, 'title');
-					const state = String(formData.get('state') ?? '');
-					const givenOn = text(formData, 'givenOn');
-					// A when the schema refuses goes to the server, which says why.
-					const when = state === 'idea' ? parsedWhenFromForm((key) => text(formData, key)) : {};
-					if (!title || !isGiftState(state) || (state !== 'idea' && !givenOn) || !when) return null;
-					return {
-						id,
-						type: 'gift.add',
-						payload: {
-							contactId: c.id,
-							state,
-							title,
-							note: text(formData, 'note'),
-							url: text(formData, 'url'),
-							givenOn: state === 'idea' ? null : givenOn,
-							occasion: occasionFromForm(
-								text(formData, 'occasionChoice'),
-								text(formData, 'occasionText')
-							),
-							visibility: formData.get('visibility') === 'private' ? 'private' : 'shared',
-							...when
-						},
-						issuedAt: Date.now()
-					};
-				},
+				toCommand: (formData, id) => giftAddCommand(formData, id, c.id, Date.now()),
 				about: c.displayName,
 				errorKey: 'giftError',
 				onApplied: (_result, command) => {
@@ -244,6 +216,7 @@
 				<GiftIdeas
 					open={ideas.open}
 					waiting={ideas.waiting}
+					{ready}
 					gifts={shown}
 					name={c.displayName}
 					{today}
@@ -251,6 +224,7 @@
 					{estimateHref}
 					{rowError}
 					onGiven={() => (tab = 'given')}
+					recipientIsMember={data.recipientIsMember}
 				/>
 			{:else}
 				{@const list = current === 'given' ? given : received}
@@ -273,6 +247,8 @@
 									{estimateHref}
 									error={rowError(gift.id)}
 									onGiven={() => (tab = 'given')}
+									name={c.displayName}
+									recipientIsMember={data.recipientIsMember}
 								/>
 							{/each}
 						</ul>
@@ -295,6 +271,7 @@
 				{birth}
 				{estimateHref}
 				canChooseVisibility
+				recipient={data.recipientIsMember ? c.displayName : null}
 			/>
 		{/key}
 	{/snippet}

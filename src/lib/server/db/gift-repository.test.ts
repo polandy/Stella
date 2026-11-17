@@ -32,6 +32,7 @@ function gift(over: Partial<Gift>): Gift {
 		contactId: 'c-shared',
 		createdBy: U1,
 		visibility: 'shared',
+		hiddenFromRecipient: false,
 		state: 'idea',
 		title: 'Teapot',
 		note: null,

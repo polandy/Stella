@@ -1,7 +1,6 @@
 import { beforeEach, describe, expect, it } from 'bun:test';
 import type { PartialDate } from '../../../dates/partial-date';
 import { inEnglish } from '../../../i18n/phrase';
-import type { Viewer } from '../../access/visibility';
 import { ContactGoneError } from '../contacts/require-visible';
 import {
 	addGift,
@@ -15,10 +14,9 @@ import {
 	listOpenIdeas,
 	markGiftGiven,
 	removeGift,
-	type Gift,
-	type GiftDeps,
-	type GiftRepository
+	type GiftDeps
 } from './gifts';
+import { fakeGifts } from './gifts.fixture';
 
 /*
  * The gift use-cases (docs/dev/02 §2.25), over an in-memory port. What the database scopes — a
@@ -31,50 +29,6 @@ const ANDY = { userId: 'andy', householdId: 'h1' };
 const JULIA = { userId: 'julia', householdId: 'h1' };
 const HILDE = 'hilde';
 
-function fakeGifts(): GiftRepository & { rows: Map<string, Gift> } {
-	const rows = new Map<string, Gift>();
-	const visible = (viewer: Viewer, gift: Gift) =>
-		gift.visibility === 'shared' || gift.createdBy === viewer.id;
-	return {
-		rows,
-		async insert(gift) {
-			rows.set(gift.id, { ...gift });
-		},
-		async findVisibleTo(viewer, contactId, giftId) {
-			const gift = rows.get(giftId);
-			return gift && gift.contactId === contactId && visible(viewer, gift) ? { ...gift } : null;
-		},
-		async update(gift) {
-			rows.set(gift.id, { ...gift });
-		},
-		async remove(giftId) {
-			rows.delete(giftId);
-		},
-		async listForContactVisibleTo(viewer, contactId) {
-			return [...rows.values()].filter((g) => g.contactId === contactId && visible(viewer, g));
-		},
-		async listStoryPageForContactVisibleTo() {
-			return [];
-		},
-		async listOpenIdeaWhensVisibleTo(viewer, contactIds) {
-			return [...rows.values()]
-				.filter((g) => g.state === 'idea' && contactIds.includes(g.contactId) && visible(viewer, g))
-				.map((g) => ({
-					contactId: g.contactId,
-					when: g.when,
-					whenCheckedOn: g.whenCheckedOn,
-					createdAt: g.createdAt,
-					birth: hildeBirth
-				}));
-		},
-		async listOpenIdeasVisibleTo(viewer) {
-			return [...rows.values()]
-				.filter((g) => g.state === 'idea' && visible(viewer, g))
-				.map((g) => ({ ...g, contactName: g.contactId, avatarPhotoId: null, birth: hildeBirth }));
-		}
-	};
-}
-
 let gifts: ReturnType<typeof fakeGifts>;
 let deps: GiftDeps;
 let now: number;
@@ -82,7 +36,7 @@ let counter: number;
 let hildeBirth: PartialDate | null;
 
 beforeEach(() => {
-	gifts = fakeGifts();
+	gifts = fakeGifts(() => hildeBirth);
 	now = Date.UTC(2026, 9, 8, 9);
 	counter = 0;
 	hildeBirth = { value: '2018-03-14', precision: 'full' };
@@ -133,6 +87,7 @@ describe('addGift', () => {
 			contactId: HILDE,
 			createdBy: 'andy',
 			visibility: 'shared',
+			hiddenFromRecipient: false,
 			state: 'idea',
 			title: 'Teapot',
 			note: null,

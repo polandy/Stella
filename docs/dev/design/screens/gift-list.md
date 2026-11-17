@@ -14,7 +14,8 @@ the household at once, and to tick off what they bought without opening each per
   3 days · 2 Nov* (*today* and *tomorrow* in words), behind the calendar icon for a birthday and
   the gift for Christmas. Within 30 days the chip is `bg-warning-soft`, otherwise neutral.
 - Cards in the order of their occasion (docs/dev/02 §2.25.6); the rows inside as on the Gifts card,
-  each with *Mark as given…* (`IdeaListRow`), and an idea's time as its `WhenChip` — *· in 34
+  each with *Bought* and *Mark as given…* (`IdeaListRow`) — a bought idea leaves the list as a
+  given one does, with the same *Undo* — and *hidden from Hilde* on a surprise, and an idea's time as its `WhenChip` — *· in 34
   days* while it comes near, `bg-warning-soft` and *· passed* once its occasion went by. An idea
   still waiting for its time is folded away (docs/dev/02 §2.25.8): under the intro a small
   uppercase toggle, the card's *Later* style, says *Show 3 ideas for later* (`aria-pressed`);

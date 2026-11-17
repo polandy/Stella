@@ -587,9 +587,9 @@ explicit row with `remind = 0`). See docs/dev/02 §2.13.
 
 ### gift  [M3]
 A present for one person (docs/dev/02 §2.25): an idea, a gift the household gave, or one it
-received. An idea and the gift it became are one row — *Mark as given* sets `state`,
-`given_on` and `occasion`. Child record of a contact; visibility per §3.7. Any member who sees a gift
-may edit, give or remove it; only its author may change its visibility.
+received. An idea and the gift it became are one row — *Bought* and *Mark as given* set
+`state`, the latter with `given_on` and `occasion`. Child record of a contact; visibility per §3.7. Any member who sees a gift
+may edit, give or remove it; only its author may change its visibility or `hidden_from_recipient`.
 
 | column | type | notes |
 |---|---|---|
@@ -597,13 +597,14 @@ may edit, give or remove it; only its author may change its visibility.
 | contact_id | text fk → contact.id | cascade delete — who it is for |
 | created_by | text fk → user.id | who noted it (*noted by*); not who gave it |
 | visibility | text | `'shared' \| 'private'`, default `'shared'` |
-| state | text | `'idea' \| 'given' \| 'received'` |
+| hidden_from_recipient | int (0/1) | default 0; 1 keeps a shared gift from the member whose own record `contact_id` is (docs/dev/02 §2.25.10); always 0 on a private gift |
+| state | text | `'idea' \| 'bought' \| 'given' \| 'received'` — *bought* only from an idea (§2.25.9) |
 | title | text | required |
 | note | text null | |
 | url | text null | an `http(s)` address only |
-| given_on | text null | ISO `YYYY-MM-DD`; null while an idea, required for given and received |
+| given_on | text null | ISO `YYYY-MM-DD`; null while an idea or bought, required for given and received |
 | occasion | text null | a preset key (`birthday`, `christmas`, `anniversary`) or free text |
-| when_kind | text null | an idea's time (docs/dev/02 §2.25.8): `'from_age' \| 'at_age' \| 'on_date' \| 'later'`; null for *now*, and always on a given or received gift |
+| when_kind | text null | an open gift's time, idea or bought (docs/dev/02 §2.25.8): `'from_age' \| 'at_age' \| 'on_date' \| 'later'`; null for *now*, and always on a given or received gift |
 | when_age | int null | 1–150, for `from_age` and `at_age` only |
 | when_on | text null | ISO `YYYY-MM-DD`, for `on_date` only |
 | when_checked_on | text null | ISO `YYYY-MM-DD`: the household's day somebody last answered *Still current?*, or chose the time anew (docs/dev/02 §2.25.8); null on a given or received gift |
@@ -1144,7 +1145,9 @@ A viewer `u` may read a record `r` iff:
 Contact visibility is the root: a `private` contact is visible only to its creator; a
 `shared` contact is visible to the whole household. Child records (`note`, `photo`, `gift`, `todo`,
 `interaction`) additionally hide when they are `private` and not owned by `u`, even on a
-shared contact. Relationships require **both** endpoints visible. A **circle** follows the
+shared contact. A **gift** kept from the person it is for (`hidden_from_recipient`) also hides
+from the member whose own record that person is, unless they noted it (`canViewGift` /
+`giftVisibleTo`, docs/dev/02 §2.25.10). Relationships require **both** endpoints visible. A **circle** follows the
 same contact-like rule (shared to the household, or private to its owner); a
 **circle_membership** — and any derived shared-context link — is visible only when both
 its circle and the member contact are visible. A **circle photo** is visible when its circle

@@ -1,4 +1,5 @@
 import { Database } from 'bun:sqlite';
+import { eq } from 'drizzle-orm';
 import { drizzle, type BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
 import { migrate } from 'drizzle-orm/bun-sqlite/migrator';
 import * as schema from '../db/schema';
@@ -167,6 +168,39 @@ export function seedParityDb(): BunSQLiteDatabase<typeof schema> {
 			])
 			.run();
 	}
+
+	// User 2's own person, and gifts for them: a surprise kept from them, and one they noted themselves.
+	db.insert(contact)
+		.values({
+			id: 'c-self-u2',
+			householdId: H1,
+			createdBy: U1,
+			visibility: 'shared',
+			displayName: 'u2'
+		})
+		.run();
+	db.update(schema.user).set({ selfContactId: 'c-self-u2' }).where(eq(schema.user.id, U2)).run();
+	db.insert(gift)
+		.values([
+			{ id: 'g-for-u2', contactId: 'c-self-u2', createdBy: U1, state: 'idea', title: 'open' },
+			{
+				id: 'g-surprise-u2',
+				contactId: 'c-self-u2',
+				createdBy: U1,
+				hiddenFromRecipient: 1,
+				state: 'idea',
+				title: 'surprise'
+			},
+			{
+				id: 'g-surprise-by-u2',
+				contactId: 'c-self-u2',
+				createdBy: U2,
+				hiddenFromRecipient: 1,
+				state: 'bought',
+				title: 'own'
+			}
+		])
+		.run();
 
 	// Every circle × contact within a household, and every ordered pair of distinct contacts.
 	for (const k of CIRCLES) {

@@ -17,6 +17,7 @@ const idea: OpenIdea & { whenState: null } = {
 	occasion: null,
 	when: null,
 	whenCheckedOn: null,
+	hiddenFromRecipient: false,
 	whenState: null,
 	createdAt: 1,
 	updatedAt: 1
@@ -36,6 +37,7 @@ describe('openIdeaView', () => {
 			visibility: 'shared',
 			when: null,
 			whenState: null,
+			hiddenFromRecipient: false,
 			mine: false,
 			notedBy: 'Sandra'
 		});

@@ -74,6 +74,7 @@ function fakes() {
 			'gift.add': async () => ({ giftId: 'g' }),
 			'gift.edit': async () => ({ giftId: 'g' }),
 			'gift.markGiven': async () => ({ giftId: 'g' }),
+			'gift.markBought': async () => ({ giftId: 'g' }),
 			'gift.answerWhen': async () => ({ giftId: 'g' }),
 			'gift.remove': async () => ({ giftId: 'g' }),
 			'todo.add': async () => ({ todoId: 't' }),

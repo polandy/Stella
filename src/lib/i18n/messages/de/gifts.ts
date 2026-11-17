@@ -41,6 +41,14 @@ export const gifts: GiftsMessages = {
 	'gifts.markGiven': 'Als verschenkt eintragen',
 	'gifts.markGiven.open': 'Verschenkt …',
 	'gifts.markGiven.title': (p) => `„${p.title}“ verschenkt`,
+	'gifts.bought': 'Besorgt',
+	'gifts.bought.title': (p) => `„${p.title}“ besorgt`,
+	'gifts.notBought': 'Doch noch nicht besorgt',
+	'gifts.notBought.title': (p) => `„${p.title}“ wieder bei den Ideen`,
+	'gifts.ready': 'Bereit zum Verschenken',
+	'gifts.ideas.allBought': (p) => `Für ${p.name} ist alles besorgt.`,
+	'gifts.surprise.choice': (p) => `Alle außer ${p.name}`,
+	'gifts.surprise.inline': (p) => `vor ${p.name} verborgen`,
 	// When an idea was noted, under its title.
 	'gifts.addedOn': (p) => `Notiert am ${p.day}`,
 	'gifts.notedBy': (p) => `notiert von ${p.name}`,
@@ -66,6 +74,7 @@ export const gifts: GiftsMessages = {
 	'gifts.list.emptyHint': 'Notiere eine auf der Geschenke-Karte einer Person, dann steht sie hier.',
 
 	'gifts.state.idea': 'Idee',
+	'gifts.state.bought': 'Besorgt',
 	'gifts.state.given': (p) => `Geschenkt am ${p.day}`,
 	'gifts.state.received': (p) => `Bekommen am ${p.day}`,
 

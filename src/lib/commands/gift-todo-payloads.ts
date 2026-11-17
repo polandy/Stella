@@ -1,5 +1,5 @@
 import * as v from 'valibot';
-import { GIFT_STATES } from '../gifts/gifts';
+import { ADDABLE_GIFT_STATES } from '../gifts/gifts';
 import { optionalWhen, WhenSchema } from '../when/schema';
 import { ISO_DAY, nonEmpty, optionalText, requiredText, visibility } from './payload-fields';
 
@@ -17,13 +17,15 @@ const giftContent = {
 	givenOn: optionalText,
 	/** A preset key (`GIFT_OCCASION_PRESETS`) or free text. */
 	occasion: optionalText,
-	visibility
+	visibility,
+	/** Kept from the member whose own person it is for (§2.25.10); left out, nobody is. */
+	hiddenFromRecipient: v.optional(v.boolean())
 };
 
 /** A gift noted on a person: an idea, or one given or received (docs/dev/02 §2.25). */
 export const GiftAddSchema = v.object({
 	contactId: nonEmpty,
-	state: v.picklist(GIFT_STATES),
+	state: v.picklist(ADDABLE_GIFT_STATES),
 	...giftContent,
 	when: optionalWhen
 });
@@ -42,6 +44,13 @@ export const GiftMarkGivenSchema = v.object({
 	giftId: nonEmpty,
 	givenOn: v.pipe(v.string(), v.regex(ISO_DAY)),
 	occasion: optionalText
+});
+
+/** An idea bought and waiting to be handed over, or back to an idea (docs/dev/02 §2.25.9). */
+export const GiftMarkBoughtSchema = v.object({
+	contactId: nonEmpty,
+	giftId: nonEmpty,
+	bought: v.boolean()
 });
 
 /** An idea's question answered (docs/dev/02 §2.25.8): kept as *now* (null), or given a new when. */

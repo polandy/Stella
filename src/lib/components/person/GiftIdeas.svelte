@@ -5,10 +5,12 @@
 	import GiftRow from './GiftRow.svelte';
 	import type { PersonPageData } from './types';
 
-	// The *Ideas* tab: open ideas, and the waiting ones folded under *Later* (docs/dev/02 §2.25.8).
+	// The *Ideas* tab: open ideas, the waiting ones folded under *Later* (docs/dev/02 §2.25.8), and
+	// the bought ones under *Ready to give* (§2.25.9).
 	interface Props {
 		open: PersonPageData['gifts'];
 		waiting: PersonPageData['gifts'];
+		ready: PersonPageData['gifts'];
 		gifts: PersonPageData['gifts'];
 		name: string;
 		today: string;
@@ -16,9 +18,21 @@
 		estimateHref: string;
 		rowError: (giftId: string) => string | null;
 		onGiven: () => void;
+		recipientIsMember: boolean;
 	}
-	let { open, waiting, gifts, name, today, birth, estimateHref, rowError, onGiven }: Props =
-		$props();
+	let {
+		open,
+		waiting,
+		ready,
+		gifts,
+		name,
+		today,
+		birth,
+		estimateHref,
+		rowError,
+		onGiven,
+		recipientIsMember
+	}: Props = $props();
 
 	const t = useI18n().t;
 	let unfolded = $state(false);
@@ -27,17 +41,39 @@
 {#snippet rows(list: PersonPageData['gifts'], testid: string)}
 	<ul class="flex flex-col" data-testid={testid}>
 		{#each list as gift (gift.id)}
-			<GiftRow {gift} {gifts} {today} {birth} {estimateHref} error={rowError(gift.id)} {onGiven} />
+			<GiftRow
+				{gift}
+				{gifts}
+				{today}
+				{birth}
+				{estimateHref}
+				error={rowError(gift.id)}
+				{onGiven}
+				{name}
+				{recipientIsMember}
+			/>
 		{/each}
 	</ul>
 {/snippet}
 
 {#if open.length > 0}
 	{@render rows(open, 'gift-ideas')}
+{:else if waiting.length > 0}
+	<p class="py-2 text-sm text-fg-muted">{t('when.allWaiting')}</p>
 {:else}
 	<p class="py-2 text-sm text-fg-muted">
-		{waiting.length > 0 ? t('when.allWaiting') : t('gifts.ideas.empty', { name })}
+		{ready.length > 0 ? t('gifts.ideas.allBought', { name }) : t('gifts.ideas.empty', { name })}
 	</p>
+{/if}
+
+{#if ready.length > 0}
+	<h3
+		class="mt-3 mb-0.5 text-[11px] font-semibold tracking-wide text-fg-subtle uppercase"
+		data-testid="gift-ready-heading"
+	>
+		{t('gifts.ready')}<span class="tabular-nums">{` · ${ready.length}`}</span>
+	</h3>
+	{@render rows(ready, 'gift-ready')}
 {/if}
 
 {#if waiting.length > 0}

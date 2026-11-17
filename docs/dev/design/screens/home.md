@@ -41,7 +41,8 @@ first to find somebody, so there the page opens on the person search.
   context and one action, *Write a moment*. A person with open gift ideas gets one more line
   beneath: the gift icon and *2 ideas* in `--link`, `text-xs`, to their Gifts card; its
   accessible name says *2 gift ideas for Hilde*. Its own line, not on the *Write a moment*
-  line, because the 17 rem rail would wrap them mid-phrase.
+  line, because the 17 rem rail would wrap them mid-phrase. A person with bought gifts still to
+  hand over gets *Ready: Scarf, Teapot* the same way, with the bag icon (docs/dev/02 §2.25.9).
 - **To-dos** (docs/dev/02 §2.26.6) is a band of its own **above *Coming up*** in the same rail
   (`TodoBand`): the to-do icon and *To-dos*, then up to three rows of what is overdue or due
   within the week. Each row (`HouseholdTodoRow`, `variant="band"`) is a 28 px avatar, the line

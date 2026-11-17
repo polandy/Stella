@@ -184,6 +184,25 @@ function fullHousehold(): HouseholdSnapshot {
 					when_on: null,
 					when_age: 18,
 					when_checked_on: '2026-03-01',
+					hidden_from_recipient: 0,
+					created_at: EXPORTED
+				},
+				{
+					id: 'g-bought',
+					contact_id: 'c-hans',
+					created_by: 'u-1',
+					visibility: 'shared',
+					hidden_from_recipient: 1,
+					state: 'bought',
+					title: 'Scarf',
+					note: null,
+					url: null,
+					given_on: null,
+					occasion: null,
+					when_kind: 'on_date',
+					when_on: '2026-12-24',
+					when_age: null,
+					when_checked_on: null,
 					created_at: EXPORTED
 				},
 				{
@@ -191,6 +210,7 @@ function fullHousehold(): HouseholdSnapshot {
 					contact_id: 'c-hans',
 					created_by: 'u-1',
 					visibility: 'shared',
+					hidden_from_recipient: 1,
 					state: 'given',
 					title: 'Slippers',
 					note: null,
@@ -529,6 +549,7 @@ describe('the round trip', () => {
 			'when_on',
 			'when_age',
 			'when_checked_on',
+			'hidden_from_recipient',
 			'created_at'
 		],
 		todo: [
@@ -930,7 +951,7 @@ describe('an archive that does not add up', () => {
 			rowsOf(plan, 'gift')
 				.map((g) => g.id)
 				.sort()
-		).toEqual(['g-given', 'g-idea']);
+		).toEqual(['g-bought', 'g-given', 'g-idea']);
 		expect(plan.warnings).toContainEqual({ code: 'giftIncomplete' });
 	});
 
@@ -1006,6 +1027,34 @@ describe('an archive that does not add up', () => {
 		expect(byId.get('g-idea')?.url).toBe('https://shop.example/teapot');
 		expect(byId.get('g-script')?.title).toBe('Book');
 		expect(byId.get('g-script')?.url).toBeNull();
+	});
+
+	it('keeps a private gift from being a surprise, which only a shared one can be', () => {
+		const plan = planRestore(
+			deps(),
+			archived(
+				bent((s) => {
+					s.tables.gift[0]!.hidden_from_recipient = 1;
+				})
+			),
+			target()
+		);
+		const idea = rowsOf(plan, 'gift').find((g) => g.id === 'g-idea');
+		expect(idea?.visibility).toBe('private');
+		expect(idea?.hidden_from_recipient).toBe(0);
+	});
+
+	it('restores a gift from an archive written before surprises as seen by everyone', () => {
+		const plan = planRestore(
+			deps(),
+			archived(
+				bent((s) => {
+					delete s.tables.gift[1]!.hidden_from_recipient;
+				})
+			),
+			target()
+		);
+		expect(rowsOf(plan, 'gift').find((g) => g.id === 'g-bought')?.hidden_from_recipient).toBe(0);
 	});
 
 	it('keeps the last answer beside the when of an idea, and nowhere else', () => {

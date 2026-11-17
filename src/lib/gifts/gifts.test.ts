@@ -1,10 +1,14 @@
 import { describe, expect, it } from 'bun:test';
 import {
 	giftLink,
+	hasGiftDay,
+	isAddableGiftState,
 	isGiftOccasionPreset,
 	isGiftState,
+	isOpenGift,
 	occasionFromForm,
-	OTHER_OCCASION
+	OTHER_OCCASION,
+	visibilityFromForm
 } from './gifts';
 
 /*
@@ -13,10 +17,26 @@ import {
  */
 
 describe('isGiftState', () => {
-	it('knows the three states and nothing else', () => {
-		expect(['idea', 'given', 'received'].every(isGiftState)).toBe(true);
+	it('knows the four states and nothing else', () => {
+		expect(['idea', 'bought', 'given', 'received'].every(isGiftState)).toBe(true);
 		expect(isGiftState('offered')).toBe(false);
 		expect(isGiftState('')).toBe(false);
+	});
+});
+
+describe('isAddableGiftState', () => {
+	it('adds an idea, a given or a received gift, never one already bought', () => {
+		expect(['idea', 'given', 'received'].every(isAddableGiftState)).toBe(true);
+		expect(isAddableGiftState('bought')).toBe(false);
+	});
+});
+
+describe('hasGiftDay and isOpenGift', () => {
+	it('gives a day to a given or received gift; an idea and a bought one are still to come', () => {
+		expect(hasGiftDay('given') && hasGiftDay('received')).toBe(true);
+		expect(hasGiftDay('idea') || hasGiftDay('bought')).toBe(false);
+		expect(isOpenGift('idea') && isOpenGift('bought')).toBe(true);
+		expect(isOpenGift('given')).toBe(false);
 	});
 });
 
@@ -75,5 +95,33 @@ describe('giftLink', () => {
 		expect(giftLink('mailto:hilde@example.test')).toEqual({ ok: false });
 		expect(giftLink('https://')).toEqual({ ok: false });
 		expect(giftLink('two words')).toEqual({ ok: false });
+	});
+});
+
+describe('visibilityFromForm', () => {
+	it('reads *Everyone but them* as a shared gift kept from the person it is for', () => {
+		expect(visibilityFromForm('surprise')).toEqual({
+			visibility: 'shared',
+			hiddenFromRecipient: true
+		});
+	});
+
+	it('reads *Private* and *Shared* as they are, kept from nobody', () => {
+		expect(visibilityFromForm('private')).toEqual({
+			visibility: 'private',
+			hiddenFromRecipient: false
+		});
+		expect(visibilityFromForm('shared')).toEqual({
+			visibility: 'shared',
+			hiddenFromRecipient: false
+		});
+	});
+
+	it('reads anything else, or nothing, as shared — the household default', () => {
+		expect(visibilityFromForm(null)).toEqual({ visibility: 'shared', hiddenFromRecipient: false });
+		expect(visibilityFromForm('everyone')).toEqual({
+			visibility: 'shared',
+			hiddenFromRecipient: false
+		});
 	});
 });

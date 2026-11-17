@@ -309,6 +309,8 @@ export function buildArchiveDocument(
 					when_age: num(g, 'when_age'),
 					when_checked_on: text(g, 'when_checked_on'),
 					visibility: text(g, 'visibility'),
+					// Kept from the person it is for (§2.25.10).
+					hidden_from_recipient: flag(g, 'hidden_from_recipient'),
 					author: text(g, 'created_by'),
 					created_at: moment(g, 'created_at')
 				})
