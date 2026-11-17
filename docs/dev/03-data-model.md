@@ -27,6 +27,7 @@ Detail stays in the feature doc the term points to.
 | **touchpoint** | A logged contact with a person — met, call, video, message, letter — on a day, with optional participants (docs/dev/02 §2.6). Buttons say *Log contact* / *Log interaction*. | `interaction`, `interaction_participant`, `domain/interactions/`, `lib/story/interaction-kinds.ts` | activity, event |
 | **gift** | A present for one person — an idea, given or received (docs/dev/02 §2.25). An idea and the gift it became are one record. | `gift`, `domain/gifts/`, `lib/gifts/`, `components/person/Gift*.svelte` | present, wish |
 | **to-do** | Something the household still owes one person, optionally by a day; open or done (docs/dev/02 §2.26). The UI names the card *To-dos* (German *Todo*) and one item *a to-do*, *To-do* at a sentence's start. | `todo`, `domain/todos/`, `lib/todos/`, `components/person/Todo*.svelte`, `components/todos/` | task, reminder |
+| **outing** | Something the household wants to do with one person — an *activity idea*, open, booked or done (docs/dev/02 §2.27). The UI names the card *Outings* (German *Unternehmungen*) and one item *an idea*. | `activity_idea`, `domain/plans/`, `lib/plans/`, `components/person/Plan*.svelte`, commands `plan.*` | activity, trip, event |
 | **story** | One person's timeline: their journal entries, touchpoints and given or received gifts in one order (docs/dev/02 §2.23). Its heading on the person page reads *Activity*. | `domain/story/`, `lib/story/`, `/contacts/[id]/story` | feed, history |
 | **stream** | The household's newest-first read of what the family did, on Home (docs/dev/02 §2.22.2): a query over the tables that still exist, plus the activity rows for what no table can report. | `domain/stream/`, `lib/stream/`, `db/stream-repository.ts` | feed, *What's new* (the older name, docs/dev/02 §2.11) |
 | **activity** | One row of the household's log, written only for what no remaining table can tell — deletions, merges, export and import, renames, last-name batches, Immich links (§3.3 `activity_log`). A context reports an `ActivityEvent` — what happened, as data — and `domain/activity/` turns it into the row and its line. | `activity_log`, `domain/activity/` | event for the row (an `ActivityEvent` is the report, not the row); the person page's *Activity* heading is the story, not this |
@@ -74,6 +75,7 @@ contact   1───* interaction
 contact   1───* important_date
 contact   1───* gift            (ideas, given and received)  [M3]
 contact   1───* todo            (open or done)
+contact   1───* activity_idea   (outings: open, booked or done)
 contact   1───* photo
 contact   *───* tag             (contact_tag)
 contact   *───* circle          (circle_membership → derived shared-context links)
@@ -618,6 +620,35 @@ Indexed on `(contact_id, state, given_on)`: the card's tabs and the story's page
 received gifts (newest `given_on`, then `created_at`) come from it. Exported and restored with
 the person (§2.15), repointed by a merge.
 
+### activity_idea
+Something the household wants to do with one person (docs/dev/02 §2.27): *the zoo*, *a concert*.
+Open while `done_at` is null; *booked* while `booked_at` is set. Child record of a contact;
+visibility per §3.7. Any member who sees an idea may book, tick, rewrite or remove it; only its
+author may change its visibility or `hidden_from_person`.
+
+| column | type | notes |
+|---|---|---|
+| id | text pk | |
+| contact_id | text fk → contact.id | cascade delete — who it is with; one person per idea |
+| created_by | text fk → user.id | who noted it (*noted by*) |
+| visibility | text | `'shared' \| 'private'`, default `'shared'` |
+| hidden_from_person | int (0/1) | default 0; 1 keeps a shared idea from the member whose own record `contact_id` is (*Everyone but …*); always 0 on a private idea |
+| title | text | required |
+| note | text null | |
+| url | text null | an `http(s)` address only |
+| when_kind | text null | `'on_date' \| 'in_month' \| 'at_age' \| 'from_age'`; null for *some time* |
+| when_on | text null | ISO `YYYY-MM-DD` for `on_date`, `YYYY-MM` for `in_month` |
+| when_age | int null | 1–150, for `at_age` and `from_age` only |
+| booked_at / booked_by | int null / text null fk → user.id | when and by whom it was fixed; null while only an idea |
+| done_at / done_on / done_by | int null / text null / text null fk → user.id | the tick, the household's day of it and who ticked; null while open |
+| moment_id | text null fk → journal_entry.id | set null on delete — the moment it became; not written yet |
+| created_at / updated_at | int | |
+
+The `when_*` columns move together (`src/lib/when/when.ts`); a triple that makes no outing
+*when* is refused on read, and restored as *some time*. Indexed on `(contact_id, done_at)` for
+a person's card and on `(done_at, when_on)` for the household's by day. Removing an idea deletes
+the row. Exported and restored with the person (§2.15), repointed by a merge.
+
 ### todo
 Something the household still owes one person (docs/dev/02 §2.26): *give the book back*. Open
 while `done_at` is null. Child record of a contact; visibility per §3.7. Any member who sees a
@@ -1144,10 +1175,11 @@ A viewer `u` may read a record `r` iff:
 
 Contact visibility is the root: a `private` contact is visible only to its creator; a
 `shared` contact is visible to the whole household. Child records (`note`, `photo`, `gift`, `todo`,
-`interaction`) additionally hide when they are `private` and not owned by `u`, even on a
+`activity_idea`, `interaction`) additionally hide when they are `private` and not owned by `u`, even on a
 shared contact. A **gift** kept from the person it is for (`hidden_from_recipient`) also hides
 from the member whose own record that person is, unless they noted it (`canViewGift` /
-`giftVisibleTo`, docs/dev/02 §2.25.10). Relationships require **both** endpoints visible. A **circle** follows the
+`giftVisibleTo`, docs/dev/02 §2.25.10); an **outing** kept from its person
+(`hidden_from_person`) likewise — both are a *surprise* (`canViewSurprise` / `surpriseVisibleTo`, docs/dev/02 §2.27.4). Relationships require **both** endpoints visible. A **circle** follows the
 same contact-like rule (shared to the household, or private to its owner); a
 **circle_membership** — and any derived shared-context link — is visible only when both
 its circle and the member contact are visible. A **circle photo** is visible when its circle

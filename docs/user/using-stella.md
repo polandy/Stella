@@ -334,10 +334,10 @@ related**, with a dashed ring and quieter text. The card's header holds **Edit**
 **⋯** holds *How are we connected?*, *Check relationships* and *Open in the graph*.
 
 After People come **Photos**, **Activity** and the **Notes** side by side (one under the other
-on a phone), then **Gifts**, and **Mentioned in** last. **To-dos** moves: it stands right under
+on a phone), then **Gifts** and **Outings**, and **Mentioned in** last. **To-dos** moves: it stands right under
 the name while something is open, and at the end otherwise. Nothing is behind a tab, so nothing has to be found
 before it can be read; each card says how many things are in it. A card with nothing in it yet
-keeps out of the way: empty **Photos**, **Notes** and **Gifts** are a single line with their
+keeps out of the way: empty **Photos**, **Notes**, **Gifts** and **Outings** are a single line with their
 **+ Add** button, an empty **Activity** says so in one sentence, and **Mentioned in** only appears once
 somebody has mentioned the person. Once you scroll past the top
 card a **jump bar** fades in at the top of the screen — *People · Photos · Activity · Notes ·
@@ -671,6 +671,26 @@ Gifts noted before this card existed have moved into it: a *Gift* logged with *L
 now a given gift on its day (one on each person it was logged with), and the gifts a Monica
 import brought in as notes are now ideas, given or received gifts. A gift note somebody had
 written in since the import stays a note, so nothing you wrote is lost.
+
+### Outings
+
+The **Outings** card, after Gifts, keeps what you want to *do* with someone — *the zoo*, *a
+concert*, *the lake by bike once she is ten*. What you owe someone belongs in a to-do instead.
+
+- **+ Idea** asks *what*, and optionally *when*: some time (the default), a day — *Saturday*,
+  *Christmas* and *Birthday* are one tap — a month, the birthday they turn a certain age, or
+  from an age on. The ages need a birth year; without one, *Estimate age* takes you to it.
+  A note and a link fit under *Note or link*.
+- Ideas come soonest first; those more than about three months away fold under *Later*.
+- **Booked** under an idea means the date is fixed: it stops counting as an open idea but stays
+  on the card until it is done. *Not booked* takes that back.
+- **Tick the box** on the right once you have done it. It moves to the **Done** tab with its
+  day; *Not done* there opens it again. Both say so in a message with *Undo*.
+- **Who sees it:** *Everyone*, *Only me*, or — when the person has their own Stella account —
+  *Everyone but them*, so a surprise stays one. Anyone who can see an idea may book, tick,
+  change or remove it; only whoever noted it changes who sees it.
+- Without a connection, noting, booking and ticking are kept on your device and sent later;
+  changing or removing one needs Stella to be reachable.
 
 ### To-dos
 
