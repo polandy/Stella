@@ -28,15 +28,11 @@ export function dragAlongRowsOn(cy: Core, onDrop: (id: string, at: Point) => voi
 	cy.on('grab', 'node', (e: EventObject) => {
 		const node = e.target as NodeSingular;
 		if (!on || node.hasClass(CAPTION_CLASS)) return;
-		const lines = node.connectedEdges();
+		const pinned = node.hasClass(SLOT_CLASS);
+		// A slot never moves, so its lines never tilt.
+		const lines = pinned ? cy.collection() : node.connectedEdges();
 		lines.addClass(DRAGGED_LINE_CLASS);
-		held = {
-			node,
-			at: { ...node.position() },
-			pinned: node.hasClass(SLOT_CLASS),
-			lines,
-			moved: false
-		};
+		held = { node, at: { ...node.position() }, pinned, lines, moved: false };
 	});
 	cy.on('drag', 'node', (e: EventObject) => {
 		if (!held || e.target !== held.node) return;

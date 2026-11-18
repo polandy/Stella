@@ -59,8 +59,12 @@ describe('dragging in the tree', () => {
 		const explorer = controller(cy, { onDropNode: (id) => drops.push(id) });
 		explorer.arrangeAt({ positions: place, bows: new Map() }, { rowDrags: true });
 
-		dragTo(cy.$id('a'), { x: 300, y: 90 });
+		let hiddenOnTheWay = false;
+		dragTo(cy.$id('a'), { x: 300, y: 90 }, () => {
+			hiddenOnTheWay = cy.$id('a-b').hasClass(DRAGGED_LINE_CLASS);
+		});
 
+		expect(hiddenOnTheWay).toBe(false);
 		expect(cy.$id('a').position()).toEqual({ x: 0, y: 0 });
 		expect(drops).toEqual([]);
 	});
