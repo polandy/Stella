@@ -93,6 +93,8 @@ export interface ArchiveDocument {
 	circles: Record<string, unknown>[];
 	/** Addresses several people share (docs/dev/02 §2.2), each with whoever lives there. */
 	homes: Record<string, unknown>[];
+	/** One idea for several people (docs/dev/02 §2.25.11); each gift of one names it. */
+	gift_groups: Record<string, unknown>[];
 	people: Record<string, unknown>[];
 	relationships: Record<string, unknown>[];
 	activity: Record<string, unknown>[];
@@ -312,6 +314,7 @@ export function buildArchiveDocument(
 					visibility: text(g, 'visibility'),
 					// Kept from the person it is for (§2.25.10).
 					hidden_from_recipient: flag(g, 'hidden_from_recipient'),
+					group: text(g, 'group_id'),
 					author: text(g, 'created_by'),
 					created_at: moment(g, 'created_at')
 				})
@@ -434,6 +437,22 @@ export function buildArchiveDocument(
 				author: text(h, 'created_by'),
 				created_at: moment(h, 'created_at'),
 				members: homeMembers.get(id(h)) ?? []
+			})
+		),
+		gift_groups: t('gift_group').map((g) =>
+			present({
+				id: id(g),
+				title: text(g, 'title'),
+				note: text(g, 'note'),
+				url: text(g, 'url'),
+				when_kind: text(g, 'when_kind'),
+				when_on: text(g, 'when_on'),
+				when_age: num(g, 'when_age'),
+				occasion: text(g, 'occasion'),
+				visibility: text(g, 'visibility'),
+				hidden_from_recipients: flag(g, 'hidden_from_recipients'),
+				author: text(g, 'created_by'),
+				created_at: moment(g, 'created_at')
 			})
 		),
 		relationships: t('relationship').map((r) =>

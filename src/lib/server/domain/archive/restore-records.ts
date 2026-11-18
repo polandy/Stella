@@ -38,7 +38,7 @@ export interface PersonRecordRows {
 }
 
 /** A gift's link if it is a web address; anything else is dropped rather than kept as a link. */
-function webLinkOf(raw: string | null): string | null {
+export function webLinkOf(raw: string | null): string | null {
 	const link = giftLink(raw ?? '');
 	return link.ok ? link.url : null;
 }
@@ -256,6 +256,8 @@ export function planPersonRecords(
 				given_on: hasGiftDay(state) ? givenOn : null,
 				occasion: str(giftRow, 'occasion'),
 				...whenOfRestored(giftRow, state),
+				// Checked against the archive's groups by `planGiftGroups`.
+				group_id: str(giftRow, 'group'),
 				...stamps(giftRow)
 			});
 		}
