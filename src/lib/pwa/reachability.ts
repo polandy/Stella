@@ -51,7 +51,7 @@ export function readCheck(data: unknown): { deviceOnline: boolean | null } | nul
 	return { deviceOnline: message.deviceOnline };
 }
 
-/** What the worker asks to find out: public, no database, and cheap enough for every check. */
+/** What the worker asks to find out: public, cheap, and a 503 while the database cannot save. */
 export const PROBE_PATH = '/healthz';
 
 /** The worker's answer, sent in reply and again whenever it changes. */

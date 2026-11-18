@@ -233,6 +233,18 @@ mkdir -p data && sudo chown -R 1000:1000 data
 A fresh named volume (the repo's own `docker-compose.yml`) needs nothing: Docker copies the
 image's ownership into it on first use.
 
+**The health check.** `GET /healthz` is public and answers `200` with
+`{"status":"ok","version":"0.1.10","migrations":46}` only while the database both reads and
+writes: it rewrites `user_version` with its own value inside a rolled-back `BEGIN IMMEDIATE`,
+because a plain read, and even `BEGIN IMMEDIATE` alone, pass on a file that lost its write
+permission. A database that is read-only, locked past the busy timeout or gone answers `503`
+with `{"status":"unavailable","version":…}`, so Docker marks the container unhealthy and
+`./deploy.sh` reports the failed start. The PWA's reachability probe asks the same endpoint, so
+the app counts as offline while Stella cannot save, and the outbox holds what is written meanwhile.
+`start_period: 20s` covers the start: migrations, the backup before them (7.10) and a full
+search-index rebuild take well under a second for a family (measured: 5,000 people and 50,000
+notes rebuild in 0.2 s).
+
 ### 7.5.2 Traefik labels (optional)
 
 If you use Traefik, add labels instead of a separate proxy config:
@@ -379,6 +391,8 @@ State is entirely in `/data`.
   and the importer's own 200 MB ceiling; a household bigger than that restores from the snapshot.
 - **Media:** back up `/data/media` (rsync/snapshot).
 - **Whole volume:** stopping the container and copying `./data` is always safe.
+- **Before migrations:** a start that is about to migrate copies the database first (7.10)
+  to `/data/backups/pre-<version>.db`. That covers a failed update, not a lost disk.
 - Automate with a cron job or your existing backup tooling. Test a restore periodically.
 
 Restore = stop container, replace `./data` contents, start container.
@@ -403,8 +417,18 @@ docker run --rm -v <volume>:/data alpine chown -R 1000:1000 /data
 docker compose up -d
 ```
 
-Migrations run automatically on startup and are forward-only. Take a backup (7.9)
-before major version bumps.
+Migrations run automatically on startup and are forward-only. Before a start applies any, it
+copies the database with `VACUUM INTO` (consistent while the file is open) to
+`/data/backups/pre-<version>.db`, named after the version about to migrate, and keeps the newest
+three such copies; other files in `backups/` are left alone. A fresh database gets no copy, and a
+retried start keeps the copy of its first attempt. To roll back a failed update, stop the
+container, put that file in place of `stella.db` (removing `stella.db-wal` and `stella.db-shm`),
+and start the previous image. Still take a regular backup (7.9): this copy sits on the same disk.
+
+An older image never starts on a database a newer one migrated: when `__drizzle_migrations`
+holds a migration the image's journal does not know, the start stops with
+`The database was migrated by a newer Stella`. Run the newer version again, or restore a backup
+taken before it.
 
 After the migrations, a start may convert data the new version reads differently, and says so
 in the server log (`docker compose logs stella`). The gift records (docs/dev/02 §2.25.4) are such a
@@ -449,4 +473,6 @@ admin. Everything else works identically.
 | Logout ends on a provider error page | `post_logout_redirect_uris` set but missing the `https://…/login?signedOut=1` entry. |
 | Images 404 / not persisted | `/data` volume not mounted, or `MEDIA_DIR` misconfigured. |
 | Exits at start-up: `attempt to write a readonly database` (`SQLITE_READONLY`) | `/data` not writable by uid 1000 (the server is not root) — `chown -R 1000:1000` it once (7.5.1, 7.10). |
+| Exits at start-up: `The database was migrated by a newer Stella` | An older image on a newer database, e.g. after `:latest` moved back — run the newer version, or restore `backups/pre-<version>.db` (7.10). |
+| Container `unhealthy`, `/healthz` answers 503 | The database cannot be written: permissions, a full disk or a lock held from outside (7.5.1). |
 | Locked out (IdP misconfig) | Sign in with the local break-glass admin (7.11 / `AUTH_LOCAL_ENABLED`). |

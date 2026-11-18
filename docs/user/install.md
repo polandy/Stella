@@ -258,8 +258,12 @@ git pull
 Without it, the container stops right after starting, complaining about a *readonly
 database*. A fresh install needs none of this.
 
-Database changes are applied automatically on startup and only ever move forward. Take a
-backup first if it has been a while since the last one. When an update also moves data into a
+Database changes are applied automatically on startup and only ever move forward. Before it
+applies any, Stella copies the database to `backups/pre-<version>.db` in the data volume and
+keeps the last three such copies, so a failed update can be rolled back (docs/dev/07 §7.10).
+That copy lives on the same disk, so keep taking the backup above as well. Going back to an
+older version on a database a newer one already changed is refused at start-up, with
+*The database was migrated by a newer Stella* in the log. When an update also moves data into a
 new shape — gifts imported from Monica as notes becoming entries on the **Gifts** card, say —
 the server log says what it moved and what it left as it was (`./deploy.sh logs`, or
 `docker compose logs stella`;
@@ -283,7 +287,7 @@ machine, install on the new one, restore the archive before the first start.
 | What you see | What it usually is |
 |---|---|
 | Every save fails, nothing is stored | `STELLA_URL` does not match the address in the browser's bar. |
-| The page never loads | Container not healthy — check `./deploy.sh logs`. |
+| The page never loads | Container not healthy — check `./deploy.sh logs`. Healthy means the database can be read and written. |
 | Photos vanish after a restart | The data volume is not mounted. |
 | "You are not authorized" after signing in with SSO | The account is missing the group listed in `OIDC_ALLOWED_GROUPS`. |
 | Locked out after an SSO change | Sign in with the local administrator account instead. |

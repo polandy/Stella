@@ -2,6 +2,7 @@ import { createArchiveServices, type ArchiveServices, type ArchiveWiring } from 
 import { createAuthServices, type AuthServices, type AuthWiring } from './auth';
 import { createCircleServices, type CircleServices, type CircleWiring } from './circles';
 import { createGiftServices, type GiftServices, type GiftWiring } from './gifts';
+import { createHealthServices, type HealthServices, type HealthWiring } from './health';
 import { createHouseholdServices, type HouseholdServices, type HouseholdWiring } from './household';
 import { createImmichServices, type ImmichServices, type ImmichWiring } from './immich';
 import { createMediaServices, type MediaServices, type MediaWiring } from './media';
@@ -44,6 +45,7 @@ export interface AppServices {
 	/** Null when this instance has no Nextcloud address book: the link then appears nowhere. */
 	nextcloud: NextcloudServices | null;
 	release: ReleaseServices;
+	health: HealthServices;
 	offline: OfflineServices;
 	gifts: GiftServices;
 	todos: TodoServices;
@@ -80,6 +82,7 @@ export type ServicesWiring = AuthWiring &
 	> &
 	Omit<NextcloudWiring, 'media' | 'avatarDeps'> &
 	ReleaseWiring &
+	HealthWiring &
 	Omit<OfflineWiring, 'contexts'> &
 	Omit<GiftWiring, 'contacts'> &
 	Omit<TodoWiring, 'contacts'> &
@@ -142,6 +145,7 @@ export function createServices(wiring: ServicesWiring): AppServices {
 		avatarDeps: media.avatarDeps
 	});
 	const release = createReleaseServices(wiring);
+	const health = createHealthServices(wiring);
 	const offline = createOfflineServices({
 		...wiring,
 		contexts: {
@@ -172,6 +176,7 @@ export function createServices(wiring: ServicesWiring): AppServices {
 		immich,
 		nextcloud,
 		release,
+		health,
 		offline,
 		gifts,
 		todos,
