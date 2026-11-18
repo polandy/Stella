@@ -153,7 +153,7 @@ test('an idea for several kept while Stella is out of reach waits on Home, then 
 	}
 });
 
-test('who has it: given for one, one more added, bought for all, changed for all, one detached', async ({
+test('who has it: given for one, one more added, bought for all, changed for all, one detached, the open removed, dissolved', async ({
 	page
 }, testInfo) => {
 	const letters = runLetters();
@@ -236,4 +236,34 @@ test('who has it: given for one, one more added, bought for all, changed for all
 	await expect(card.getByText(`Big drum ${letters}`)).toBeVisible();
 	await expect(also).not.toContainText(lea);
 	await expect(also).toContainText(finn);
+
+	// From Ben's card the open ones go, once the undo window has closed; his given gift stays.
+	await page.goto(`/contacts/${personIdOf(ben)}`);
+	await appReady(page);
+	await card.getByRole('tab', { name: /^Given/ }).click();
+	await also.click();
+	await panel.getByRole('button', { name: 'More for this idea' }).click();
+	await page.clock.pauseAt((await page.evaluate(() => Date.now())) + 1000);
+	await page.getByRole('menuitem', { name: /Remove all open \(2\)/ }).click();
+	const removed = page.waitForResponse(
+		(response) =>
+			response.request().method() === 'POST' && response.url().includes('removeGroupOpen')
+	);
+	await page.clock.runFor(UNDO_WINDOW_MS + 1);
+	await removed;
+	await page.clock.resume();
+	await expect(panel.getByTestId('group-member')).toHaveCount(1);
+	await expect(panel.getByText('Everyone has it')).toBeVisible();
+
+	await expect(also).toHaveCount(0);
+
+	// Dissolved, Ben's gift goes on alone.
+	await panel.getByRole('button', { name: 'More for this idea' }).click();
+	await page.getByRole('menuitem', { name: /Go on one by one/ }).click();
+	await expect(panel).toBeHidden();
+	await expect(page.getByTestId('toast-notice')).toContainText('Saved');
+	await page.reload();
+	await appReady(page);
+	await card.getByRole('tab', { name: /^Given/ }).click();
+	await expect(card.getByText(`Drum ${letters}`)).toBeVisible();
 });
