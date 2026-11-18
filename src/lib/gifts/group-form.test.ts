@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'bun:test';
 import type { PartialDate } from '../dates/partial-date';
 import {
+	groupLanding,
 	groupOccasion,
 	groupShortcuts,
 	groupSummary,
@@ -195,5 +196,14 @@ describe('groupOccasion', () => {
 		expect(groupOccasion({ kind: 'christmas_at_age', age: 5 })).toBe('christmas');
 		expect(groupOccasion({ kind: 'from_age', age: 5 })).toBeNull();
 		expect(groupOccasion(null)).toBeNull();
+	});
+});
+
+describe('groupLanding', () => {
+	it('lands on the person it was opened from while chosen, else on the first', () => {
+		const chosen = [{ contactId: 'ben' }, { contactId: 'mia' }];
+		expect(groupLanding(chosen, 'mia')).toBe('mia');
+		expect(groupLanding(chosen, 'noah')).toBe('ben');
+		expect(groupLanding(chosen, null)).toBe('ben');
 	});
 });

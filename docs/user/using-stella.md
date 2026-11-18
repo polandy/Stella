@@ -655,6 +655,13 @@ and a good idea is still there on the birthday it was meant for.
 - Given and received gifts also appear under **Activity** on their day. Ideas never do.
 - An idea can be noted from anywhere: `⌘K` / `Ctrl-K`, **Gift idea for …**, then the person's
   name and `Enter`. Their Gifts card opens with the idea form ready.
+- **One idea for several people.** In the Gifts card's **⋯** menu, **For several…** — or
+  **Gift idea for several …** in the `⌘K` / `Ctrl-K` palette — opens a page with that person
+  ticked. Add others by name, or tap *Children of Anna*, *Siblings of Mia*, a home or a circle
+  to tick them all. Choose the time once, say *For a birthday* at 5: each person gets a line
+  with their own day. Someone it does not fit is grey and says how to help — type their age
+  today, enter their birthday, or give them the next birthday or *now* instead. *Save* notes an
+  idea on each person's card, and the toast says for how many.
 - **All gift ideas** — in the `⌘K` / `Ctrl-K` palette, or in the Gifts card's **⋯** menu —
   lists every open idea of the household on one page, for the shopping trip: one card per
   person, whoever's birthday or Christmas comes first on top, with how far off it is. **Mark as

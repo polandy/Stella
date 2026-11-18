@@ -13,6 +13,16 @@ export function giftGroupPath(contactId: string): string {
 	return `/gifts/several?for=${encodeURIComponent(contactId)}`;
 }
 
+/** Whose Gifts card a saved idea lands on: the person it was opened from, if chosen, else the first. */
+export function groupLanding(
+	recipients: readonly { contactId: string }[],
+	anchorId: string | null
+): string {
+	return recipients.some((r) => r.contactId === anchorId) && anchorId !== null
+		? anchorId
+		: recipients[0].contactId;
+}
+
 /** A birth date as a person list carries it, without its precision: the shape says it. */
 export function storedBirth(value: string | null): PartialDate | null {
 	if (value === null) return null;

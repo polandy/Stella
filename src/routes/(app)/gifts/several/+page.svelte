@@ -14,6 +14,7 @@
 	import { deviceDay, writersDay } from '$lib/dates/today';
 	import { SURPRISE } from '$lib/gifts/gifts';
 	import {
+		groupLanding,
 		groupSummary,
 		previewRows,
 		recipientsField,
@@ -130,7 +131,7 @@
 							? t('gifts.several.notedBut', { count: noted, names: names(skipped) })
 							: t('gifts.several.noted', { count: noted })
 					);
-					await goto(contactSectionPath(command.payload.recipients[0].contactId, 'gifts'));
+					await goto(contactSectionPath(groupLanding(command.payload.recipients, anchor), 'gifts'));
 				},
 				onKept: () => goto(back)
 			},

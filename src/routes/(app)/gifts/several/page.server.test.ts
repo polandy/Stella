@@ -58,6 +58,15 @@ describe('add, one idea for several', () => {
 		]);
 	});
 
+	it('lands on the person it was opened from', async () => {
+		const services = commanding({
+			'giftGroup.add': async () => ({ groupId: 'g', giftIds: ['a', 'b'], skipped: [] })
+		});
+		expect(await add(services, { ...FIELDS, for: 'noah' })).toMatchObject({
+			location: '/contacts/noah#section-gifts'
+		});
+	});
+
 	it('asks for a title, and for someone to note it for', async () => {
 		const services = commanding({});
 		expect(await add(services, { ...FIELDS, title: '' })).toEqual({

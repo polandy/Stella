@@ -1,6 +1,7 @@
 import { fail, redirect } from '@sveltejs/kit';
 import { giftGroupPayload } from '$lib/components/gifts/gift-group-command';
 import { todayFor } from '$lib/dates/today';
+import { groupLanding } from '$lib/gifts/group-form';
 import { contactSectionPath } from '$lib/people/sections';
 import { requireViewer } from '$lib/server/auth/guards';
 import { systemClock } from '$lib/server/clock';
@@ -58,6 +59,11 @@ export const actions = {
 			return fail(400, { giftError: outcome.reason(translator(locals)) });
 		if (outcome.status !== 'applied')
 			return fail(400, { giftError: say(locals, 'errors.gift.couldNotSave') });
-		throw redirect(303, contactSectionPath(payload.recipients[0].contactId, 'gifts'));
+		const anchorId = form.get('for');
+		const landing = groupLanding(
+			payload.recipients,
+			typeof anchorId === 'string' ? anchorId : null
+		);
+		throw redirect(303, contactSectionPath(landing, 'gifts'));
 	}
 } satisfies Actions;
