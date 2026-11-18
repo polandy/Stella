@@ -1,7 +1,8 @@
 import type { BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
 import { mkdirSync } from 'node:fs';
 import { createRequire } from 'node:module';
-import { dirname } from 'node:path';
+import { dirname, join } from 'node:path';
+import { APP_VERSION } from '../../version';
 import { getConfig } from '../config';
 import * as schema from './schema';
 import { seedDemoData } from './demo-seed';
@@ -9,6 +10,7 @@ import { ensureSearchIndex } from './search-index';
 import { readEntryTagsOnce } from './entry-tags';
 import { ulidGenerator } from '../id';
 import { seedRelationshipTypes } from './seed';
+import { guardMigrations } from './pre-migration-backup';
 
 /*
  * Lazy, memoized database handle.
@@ -54,12 +56,22 @@ export function getDb(): BunSQLiteDatabase<typeof schema> {
 	// Sorts and groupings that no index serves stay in memory instead of a temp file.
 	sqlite.exec('PRAGMA temp_store = MEMORY;');
 
+	// Before the handle is kept, so a refused start leaves nothing a later call could use.
+	const migrationsFolder = './drizzle';
+	if (config.databasePath !== ':memory:') {
+		guardMigrations(sqlite, {
+			migrationsFolder,
+			backupDir: join(dirname(config.databasePath), 'backups'),
+			version: APP_VERSION
+		});
+	}
+
 	sqliteInstance = sqlite;
 	instance = drizzle(sqlite, { schema });
 
 	// Apply pending migrations on startup (forward-only). The `drizzle/` folder ships with
 	// the app and is resolved relative to the working directory.
-	migrate(instance, { migrationsFolder: './drizzle' });
+	migrate(instance, { migrationsFolder });
 	seedRelationshipTypes(instance);
 	// Gives the planner table statistics to choose indexes by; `0x10002` is SQLite's advice for
 	// a long-lived connection: analyse what has none yet, and keep each run short.
