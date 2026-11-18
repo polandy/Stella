@@ -12,7 +12,10 @@ if [[ $# -ne 2 ]]; then
 	echo "usage: $0 <archive> <volume-name-or-host-dir>" >&2
 	exit 2
 fi
-readonly archive="$1" target="$2"
+readonly archive="$1"
+# docker -v reads a relative path as a volume name, so a host folder is made absolute.
+if [[ "$2" == */* ]]; then target="$(realpath -e "$2")"; else target="$2"; fi
+readonly target
 
 tar -tzf "$archive" | grep -x 'stella.db' >/dev/null || { echo "$archive is not a Stella backup: no stella.db in it" >&2; exit 1; }
 if [[ -n "$(docker ps -q --filter "volume=$target")" ]]; then
