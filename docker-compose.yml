@@ -1,4 +1,4 @@
-# Simple, self-contained setup: builds the image and binds the port to localhost.
+# Simple, self-contained setup: builds the image and binds the port to localhost by default.
 # For the reverse-proxy + Authelia SSO deployment, see docs/dev/07-deployment.md §7.5.
 services:
   stella:
@@ -15,10 +15,17 @@ services:
       # Named volume (not a host folder) so state is easy to wipe:
       #   docker compose down -v   →   removes the DB + media for a clean slate.
       - stella-data:/data
-    # Bound on all interfaces so the container is reachable on the LAN (host firewall
-    # opens TCP 3000). STELLA_URL/ORIGIN in .env must match the address browsed to.
+    read_only: true
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    tmpfs:
+      - /tmp
+    # Loopback only by default; STELLA_BIND=0.0.0.0 in .env opens it to the LAN (docs/user/install.md).
+    # STELLA_URL/ORIGIN in .env must match the address browsed to.
     ports:
-      - '3000:3000'
+      - '${STELLA_BIND:-127.0.0.1}:3000:3000'
     healthcheck:
       test:
         [

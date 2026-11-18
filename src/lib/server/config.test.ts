@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'bun:test';
 import { join } from 'node:path';
-import { configKeys, getConfig } from './config';
+import { assertProductionSessionSecret, configKeys, getConfig } from './config';
 
 /*
  * `$env/dynamic/private` only resolves inside a running SvelteKit server;
@@ -13,6 +13,22 @@ describe('getConfig', () => {
 	it('builds from the stubbed empty env, local sign-in on and SSO off by default', () => {
 		const config = getConfig();
 		expect(config.auth).toEqual({ local: true, oidc: false });
+	});
+});
+
+describe('assertProductionSessionSecret', () => {
+	it('accepts `openssl rand -hex 32` output', () => {
+		expect(() => assertProductionSessionSecret('a1'.repeat(32))).not.toThrow();
+	});
+
+	it.each([
+		['the dev default', 'dev-insecure-secret-change-me'],
+		['the docs placeholder', 'change-me-64-hex-chars'],
+		['a placeholder padded past 32 characters', 'please-change-me-to-something-else-now'],
+		['a short secret', 'short-but-unique-123'],
+		['an empty secret', '']
+	])('refuses %s', (_name, secret) => {
+		expect(() => assertProductionSessionSecret(secret)).toThrow('SESSION_SECRET');
 	});
 });
 

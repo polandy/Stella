@@ -36,7 +36,7 @@ openssl rand -hex 32                 # paste into SESSION_SECRET
 
 `./deploy.sh` (also `bun run deploy`) rebuilds the image from the working tree and
 restarts the container, so re-running it redeploys the latest code. `./deploy.sh logs`
-follows logs, `./deploy.sh down` stops it. Open `http://localhost:3000` — the first visit
+follows logs, `./deploy.sh down` stops it. Open `http://localhost:3000` (the compose file binds `127.0.0.1` unless `STELLA_BIND` says otherwise; the container is `read_only` with `/tmp` as tmpfs, all capabilities dropped, `no-new-privileges`) — the first visit
 lands on `/setup` to create the local admin. State lives in `./data` (SQLite + media);
 delete it to start clean.
 
@@ -82,7 +82,7 @@ Copy `.env.example` (shipped in the repo) to `.env` and fill in secrets. Never c
 STELLA_URL=https://stella.example.home       # public base URL (used to build redirect URIs)
 DATABASE_PATH=/data/stella.db
 MEDIA_DIR=/data/media
-SESSION_SECRET=change-me-64-hex-chars        # `openssl rand -hex 32`
+SESSION_SECRET=<64 hex chars>                # `openssl rand -hex 32`; production refuses < 32 chars and `change-me` values
 TZ=Europe/Zurich
 BODY_SIZE_LIMIT=250M                          # request cap (uploads: restored archive, Monica dump, photos); the image sets it
 
