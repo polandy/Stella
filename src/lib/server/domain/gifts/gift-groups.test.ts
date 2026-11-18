@@ -25,7 +25,7 @@ const BIRTHS: Record<string, PartialDate | null> = {
 	andy: born('1985-04-02')
 };
 
-let stored: { group: GiftGroup; gifts: Gift[] }[];
+let stored: { group: GiftGroup; gifts: readonly Gift[] }[];
 let deps: GiftGroupDeps;
 let counter: number;
 
