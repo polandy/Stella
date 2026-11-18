@@ -11,11 +11,13 @@ import { applyFilters, mergeModels } from '$lib/graph/model/graph-model';
 import { hiddenNeighbourCounts } from '$lib/graph/model/hidden-neighbours';
 import { impliedKinshipEdgeIds } from '$lib/graph/model/implied-kinship';
 import {
-	drawnSlotLine,
 	isParentSlot,
 	missingParentSlots,
+	slotLine,
+	slotsShown,
 	type ParentSlot
 } from '$lib/graph/model/missing-parents';
+import { outsideTheFamily } from '$lib/graph/layout/family-tree';
 import { canExpand, hasLinks, ringsFrom } from '$lib/graph/model/rings';
 import {
 	groupByRole,
@@ -170,6 +172,10 @@ export function explorerView(input: ExplorerViewInput, t: Translate): ExplorerVi
 		return opened;
 	});
 	const drawnVisible = $derived(drawn === model() ? visible : applyFilters(drawn, buildFilters()));
+	// Who stands on the tree's shelf, placed by the links before any filter, as the layout does.
+	const shelved = $derived(
+		arrangedBy === 'tree' ? outsideTheFamily(drawnVisible, drawn.edges) : undefined
+	);
 	// The shelf beneath says who is who too: "Friend of Sandra", a circle's people on the map.
 	const shelf = $derived.by(() => {
 		const centre = centerId();
@@ -200,7 +206,8 @@ export function explorerView(input: ExplorerViewInput, t: Translate): ExplorerVi
 			edgeLabel,
 			hiddenNeighbours: hidden,
 			grouping: grouping ? { grouping, groupLabel, bundleLabel } : undefined,
-			roleOf
+			roleOf,
+			shelved
 		}),
 		...slotElements(slots, slotName)
 	];
@@ -265,11 +272,13 @@ export function explorerView(input: ExplorerViewInput, t: Translate): ExplorerVi
 			choices,
 			t
 		});
+	// A plus shows over the selected person only, or over everybody while the gaps are asked for.
 	const shownIds = () => {
 		const shown = shownOnCanvas(drawnVisible, implied, grouping);
-		for (const slot of slots) {
+		const asking = new Set(selected ? [selected] : []);
+		for (const slot of slotsShown(slots, { gaps: switches.gaps, selected: asking })) {
 			shown.nodes.add(slot.id);
-			shown.edges.add(drawnSlotLine(slot).id);
+			shown.edges.add(slotLine(slot).id);
 		}
 		return shown;
 	};

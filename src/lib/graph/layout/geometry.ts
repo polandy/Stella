@@ -48,8 +48,13 @@ export interface Arrangement {
 	bows: Map<string, number>;
 	/** Lines drawn as a run of straight pieces instead; a line is never both routed and bowed. */
 	routes?: Map<string, Route>;
-	/** The top left corner of the shelf of people outside the family, when there is one. */
-	outsideFamily?: Point;
+	/** The shelf of people outside the family, when there is one. */
+	outsideFamily?: Shelf;
+}
+
+/** Where the shelf outside the family begins (its top left corner), and how wide the family is. */
+export interface Shelf extends Point {
+	width: number;
 }
 
 /**

@@ -2,8 +2,7 @@ import type { Core, ElementDefinition } from 'cytoscape';
 import type { CyElement } from './elements';
 import { isFrame, peopleOn } from './canvas-nodes';
 import { placeNewcomers, type Placement, type Point } from './placement';
-import { HAS_MORE_CLASS, TUCKED_CLASS } from './canvas-classes';
-import { CAPTION_ID } from './tree-canvas';
+import { CAPTION_CLASS, HAS_MORE_CLASS, TUCKED_CLASS } from './canvas-classes';
 
 /*
  * Reconciling the canvas with a fresh element set: who stays keeps their place and takes on what
@@ -54,8 +53,8 @@ export function reconcile(
 		cy.elements().forEach((el) => {
 			const wanted = incoming.get(el.id());
 			if (!wanted) {
-				// The caption is the controller's own, never one of the elements.
-				if (el.id() !== CAPTION_ID) el.remove();
+				// The caption and its rule are the controller's own, never one of the elements.
+				if (!el.hasClass(CAPTION_CLASS)) el.remove();
 				return;
 			}
 			// Switching the grouping keeps most elements, but tucks lines away or brings

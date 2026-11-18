@@ -1,9 +1,9 @@
 import { avatarAccent } from '../../people/avatar';
 import { thumbnailUrl } from '../../media/urls';
 import type { EdgeBundle, RoleGroup, RoleGrouping } from '../model/role-groups';
-import { nodeDiameter } from '../layout/legibility';
+import { nodeDiameter, SHELF_NODE_DIAMETER } from '../layout/legibility';
 import { HAS_MORE_CLASS, SLOT_CLASS, TUCKED_CLASS } from './canvas-classes';
-import { drawnSlotLine, type ParentSlot } from '../model/missing-parents';
+import { SLOT_DIAMETER, slotLine, type ParentSlot } from '../model/missing-parents';
 import type { GraphEdge, GraphModel } from '../model/types';
 
 /*
@@ -45,6 +45,8 @@ export interface ElementOptions {
 	 * family tree writes it under the name (docs/dev/05 §5.8). Everybody else carries an empty role.
 	 */
 	roleOf?: (nodeId: string) => string | undefined;
+	/** Who stands on the family tree's shelf, outside the family: they take the smaller disc. */
+	shelved?: ReadonlySet<string>;
 }
 
 export function toCytoscapeElements(model: GraphModel, options: ElementOptions = {}): CyElement[] {
@@ -75,7 +77,9 @@ export function toCytoscapeElements(model: GraphModel, options: ElementOptions =
 				kind: n.kind,
 				accent: n.kind === 'circle' ? CIRCLE_ACCENT : avatarAccent(n.id),
 				degree: degree.get(n.id) ?? 0,
-				size: nodeDiameter(degree.get(n.id) ?? 0),
+				size: options.shelved?.has(n.id)
+					? SHELF_NODE_DIAMETER
+					: nodeDiameter(degree.get(n.id) ?? 0),
 				more,
 				// Always set, so a role a node no longer has is cleared rather than left behind.
 				role: options.roleOf?.(n.id) ?? '',
@@ -134,8 +138,8 @@ export function toCytoscapeElements(model: GraphModel, options: ElementOptions =
 }
 
 /**
- * The family tree's slots for missing parents (docs/dev/05 §5.8): a plus in a dashed ring, and the
- * one dashed line that ties it in. `name` is what tapping it adds ("Add a parent of Lena"),
+ * The family tree's slots for missing parents (docs/dev/05 §5.8): a small plus in a dashed ring,
+ * and the short dashed line down to its child. `name` is what tapping it adds ("Add a parent of Lena"),
  * which the keyboard walk reads out; the plus alone is drawn.
  */
 export function slotElements(
@@ -143,11 +147,11 @@ export function slotElements(
 	name: (slot: ParentSlot) => string
 ): CyElement[] {
 	return slots.flatMap((slot): CyElement[] => {
-		const line = drawnSlotLine(slot);
+		const line = slotLine(slot);
 		return [
 			{
 				group: 'nodes',
-				data: { id: slot.id, label: '+', name: name(slot), kind: 'slot', size: nodeDiameter(0) },
+				data: { id: slot.id, label: '+', name: name(slot), kind: 'slot', size: SLOT_DIAMETER },
 				classes: SLOT_CLASS
 			},
 			{

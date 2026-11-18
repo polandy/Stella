@@ -1388,7 +1388,8 @@ line down from its middle to their children. Under every name it says who that p
 the one in the middle — *Father*, *Grandmother*, *Cousin*, *Friend* — so the lines themselves
 carry no names there at first. Switch *Labels* on in the Filter menu to name them too — each
 child's line is named just above that child; leaving the tree brings back your usual setting. Friends, colleagues and circles stand
-on a shelf beneath, under *Outside the family*, without lines — tap someone to see theirs.
+on a shelf beneath, under a thin line and *Outside the family*, drawn a little smaller and
+without lines — tap someone to see theirs.
 Under each of them it says who they are: *Friend* for a friend of the person in the middle,
 *Friend of Sandra* for somebody's friend (with *+1* when they know more people on the map),
 and under a circle who on the map belongs to it (*Lena, Noah +2*).
@@ -1398,8 +1399,9 @@ the children even when no partnership is entered, and someone who married into t
 stands at the end of their partner's brothers and sisters. The Filter menu only hides lines in
 the tree: everybody stays where they are.
 Where a parent is missing above the person in the middle, their parents or their
-grandparents, the tree shows a dashed **+** in that place — above someone with no parents
-entered, or beside the one parent who is. Tap it (or reach it with the arrow keys and press
+grandparents, a small dashed **+** appears just above that person when you tap them (and above
+the person in the middle when the map opens); switch on *Show gaps* in the Filter menu to see
+every one at once. Tap the **+** (or reach it with the arrow keys and press
 Enter) and that person's page opens with *Add relationship* ready on *Child of*: pick or create
 the parent and save.
 To change who stands where in the tree, drag a person left or right along their row and let

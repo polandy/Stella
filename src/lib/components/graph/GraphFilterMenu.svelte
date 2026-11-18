@@ -28,6 +28,8 @@
 		labelsFit: boolean;
 		/** The family tree writes each person's role under their name instead of naming lines. */
 		rolesInstead: boolean;
+		/** Whether the family tree has a parent missing to offer, so the gaps switch means something. */
+		gapsOffered: boolean;
 		density: Density;
 		onChooseDensity: (density: Density) => void;
 		/** The views this device keeps, and the one the map shows now (docs/dev/02 §2.7). */
@@ -45,6 +47,7 @@
 		onSwitch,
 		labelsFit,
 		rolesInstead,
+		gapsOffered,
 		density,
 		onChooseDensity,
 		savedViews,
@@ -250,6 +253,21 @@
 					<span class="block text-[11px] text-fg-subtle">{t('graph.innerLinks.hint')}</span>
 				</span>
 				{@render toggle(switches.innerLinks)}
+			</button>
+		{/if}
+		{#if gapsOffered}
+			<button
+				type="button"
+				role="menuitemcheckbox"
+				aria-checked={switches.gaps}
+				onclick={() => onSwitch('gaps')}
+				class={MENU_ITEM}
+			>
+				<span class="flex-1">
+					{t('graph.gaps')}
+					<span class="block text-[11px] text-fg-subtle">{t('graph.gaps.hint')}</span>
+				</span>
+				{@render toggle(switches.gaps)}
 			</button>
 		{/if}
 		<!-- How close together people stand; a choice of three, kept by this browser. -->

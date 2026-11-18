@@ -83,6 +83,7 @@
 		onSwitch={flipSwitch}
 		labelsFit={view.labelsFit}
 		rolesInstead={view.rolesInstead}
+		gapsOffered={view.slots.length > 0}
 		{density}
 		onChooseDensity={(next) => dispatch({ type: 'densityChosen', density: next })}
 		{savedViews}

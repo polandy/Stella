@@ -3,7 +3,7 @@ import { slotElements, toCytoscapeElements } from './elements';
 import { avatarAccent } from '../../people/avatar';
 import { groupByRole } from '../model/role-groups';
 import type { GraphModel } from '../model/types';
-import { nodeDiameter } from '../layout/legibility';
+import { MIN_NODE_DIAMETER, nodeDiameter, SHELF_NODE_DIAMETER } from '../layout/legibility';
 
 /*
  * Pure GraphModel → Cytoscape element mapping (docs/dev/04 §4.11). No library, no DOM.
@@ -105,6 +105,15 @@ describe('toCytoscapeElements', () => {
 		expect(node('kegel')?.data.size).toBe(nodeDiameter(1));
 	});
 
+	it('draws somebody on the shelf outside the family smaller than anybody in it', () => {
+		const shelved = toCytoscapeElements(model, { shelved: new Set(['mara']) });
+		const size = (id: string) => shelved.find((e) => e.data.id === id)?.data.size;
+
+		expect(size('mara')).toBe(SHELF_NODE_DIAMETER);
+		expect(SHELF_NODE_DIAMETER).toBeLessThan(MIN_NODE_DIAMETER);
+		expect(size('kegel')).toBe(nodeDiameter(1));
+	});
+
 	it('says how many more a node would bring in, and nothing for one with none', () => {
 		const counted = toCytoscapeElements(model, { hiddenNeighbours: new Map([['walter', 4]]) });
 		const of = (id: string) => counted.find((e) => e.group === 'nodes' && e.data.id === id);
@@ -185,13 +194,14 @@ describe('slotElements', () => {
 		expect(slot?.data.name).toBe('Add a parent of lena');
 	});
 
-	it('draws one dashed line a slot: down to the child, or the bar beside the parent', () => {
+	it('draws a slot smaller than anybody, tied by one dashed line down to its child', () => {
+		expect(byId('slot:parent-of:lena')?.data.size).toBeLessThan(MIN_NODE_DIAMETER);
 		expect(byId('slot:parent-of:lena:line')?.data).toMatchObject({
 			source: 'slot:parent-of:lena',
 			target: 'lena'
 		});
-		expect(byId('slot:parent-of:peter:bar')?.data.target).toBe('georg');
-		expect(byId('slot:parent-of:peter:line')).toBeUndefined();
+		expect(byId('slot:parent-of:peter:line')?.data.target).toBe('peter');
+		expect(elements.some((e) => String(e.data.id).endsWith(':bar'))).toBe(false);
 		expect(elements.filter((e) => e.group === 'edges').every((e) => e.classes === 'slot')).toBe(
 			true
 		);

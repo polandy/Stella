@@ -1,12 +1,12 @@
 import { expect, test, type Page } from '@playwright/test';
 import { addPerson, pickPerson, signIn } from './app';
-import { arrangeBy, settled, stateOf } from './graph-canvas';
+import { arrangeBy, arrangement, filterMenu, settled, stateOf } from './graph-canvas';
 
 /*
- * The family tree's slots for missing parents (docs/dev/02 §2.7, docs/dev/05 §5.8): a "+" where a
- * parent of the centre's line is missing, read by the keyboard walk as the button it is, and
- * opening the child's page with the relationship form on *Child of*. Only in the tree, and no
- * kind of line the Filter counts. Written after the owner tried it on #376 (docs/dev/08 §8.4.1).
+ * The family tree's slots for missing parents (docs/dev/02 §2.7, docs/dev/05 §5.8): a "+" just over
+ * a person of the centre's line whose parent is missing, shown while they are selected or while
+ * *Show gaps* is on, read by the keyboard walk as the button it is, and opening the child's page
+ * with the relationship form on *Child of*. Only in the tree, and no kind of line the Filter counts. Written after the owner tried it on #376 (docs/dev/08 §8.4.1).
  *
  * The pair is made from scratch so nothing the demo family asserts elsewhere in the serial
  * suite shifts.
@@ -62,12 +62,15 @@ test('the tree offers a slot for each missing parent, walked to by keyboard, tha
 	await addPerson(page, CHILD.first, CHILD.last);
 	const child = contactId(page);
 
-	// Nobody on record: one slot over her, named for what it adds.
+	// Nobody on record: one slot just over her, named for what it adds, shown as she opens selected.
 	await openMap(page, child, 'Tree');
 	await expect
 		.poll(() => slotsOnCanvas(page))
 		.toEqual([{ id: slotOf(child), name: 'Add a parent of Annalena' }]);
 	await expect.poll(() => stateOf(page, slotOf(child))).toBe('drawn');
+	const placed = await arrangement(page);
+	expect(placed.get(slotOf(child))!.x).toBe(placed.get(child)!.x);
+	expect(placed.get(slotOf(child))!.y).toBeLessThan(placed.get(child)!.y);
 
 	// The free layout has no generations to offer a parent in: the slot goes.
 	await arrangeBy(page, 'Free');
@@ -101,8 +104,8 @@ test('the tree offers a slot for each missing parent, walked to by keyboard, tha
 			.filter({ hasText: fullName(PARENT) })
 	).toBeVisible();
 
-	// Back in the tree the parent stands where the slot was offered; the slot beside him now
-	// asks for her other parent, and one over him for his own.
+	// Back in the tree the parent stands over her; her slot now asks for her other parent, and
+	// one over him for his own — shown only once he is selected, or while the gaps are asked for.
 	await openMap(page, child, 'Tree');
 	await expect.poll(() => stateOf(page, parent)).toBe('drawn');
 	await expect
@@ -113,6 +116,16 @@ test('the tree offers a slot for each missing parent, walked to by keyboard, tha
 				{ id: slotOf(parent), name: 'Add a parent of Jachen' }
 			].sort((a, b) => a.id.localeCompare(b.id))
 		);
+	await expect.poll(() => stateOf(page, slotOf(child))).toBe('drawn');
+	expect(await stateOf(page, slotOf(parent))).toBe('filtered-out');
+	const gaps = (await filterMenu(page)).getByRole('menuitemcheckbox', { name: /^Show gaps/ });
+	await gaps.click();
+	await expect(gaps).toHaveAttribute('aria-checked', 'true');
+	await expect.poll(() => stateOf(page, slotOf(parent))).toBe('drawn');
+	await gaps.click();
+	await expect(gaps).toHaveAttribute('aria-checked', 'false');
+	await expect.poll(() => stateOf(page, slotOf(parent))).toBe('filtered-out');
+	await page.keyboard.press('Escape');
 
 	// A slot is no kind of line: the Filter sums up the same with the slots drawn or gone.
 	// Nor does the pill stand out as if the map had been narrowed.
