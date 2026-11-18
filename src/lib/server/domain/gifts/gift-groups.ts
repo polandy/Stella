@@ -11,7 +11,9 @@ import type { When } from '../../../when/when';
 import type { Visibility, Viewer } from '../../access/visibility';
 import type { Clock } from '../../clock';
 import type { IdGenerator } from '../../id';
+import { checkBirthEstimate } from '../contacts/birth-year';
 import type { ContactLookup } from '../contacts/contacts';
+import type { ImportantDateRepository } from '../dates/important-dates';
 import {
 	InvalidGiftError,
 	orNull,
@@ -60,8 +62,19 @@ export interface GiftGroupDeps {
 	groups: GiftGroupRepository;
 	gifts: Pick<GiftRepository, 'memberWhoseOwnPerson'>;
 	contacts: ContactLookup;
+	/** Where an estimated birth year named while noting is kept (D5). */
+	birthYears: Pick<ImportantDateRepository, 'setBirthYear'>;
 	ids: IdGenerator;
 	clock: Clock;
+}
+
+/** One person it is for. */
+export interface GroupRecipientInput {
+	contactId: string;
+	/** A when of their own instead of the shared one; absent: the shared one. */
+	when?: When | null;
+	/** Their estimated birth year, for someone with no birth date at all: kept on them once noted. */
+	birthYear?: string;
 }
 
 export interface AddGiftGroupInput {
@@ -74,8 +87,8 @@ export interface AddGiftGroupInput {
 	visibility: Visibility;
 	/** Kept from each person it is for (§2.25.10). */
 	hiddenFromRecipients?: boolean;
-	/** Who it is for, each maybe with a when of their own instead of the shared one. */
-	recipients: readonly { contactId: string; when?: When | null }[];
+	/** Who it is for, in the order named. */
+	recipients: readonly GroupRecipientInput[];
 }
 
 /** A person named who got no idea: why the when does not fit them, or `gone` — not to be seen. */
@@ -96,11 +109,18 @@ export async function addGiftGroup(
 	if (count === 0 || count > GIFT_GROUP_MAX_RECIPIENTS)
 		throw new InvalidGiftError(phrase('errors.giftGroup.recipients'));
 
+	const now = deps.clock.now();
 	const skipped: SkippedRecipient[] = [];
 	const seen: GroupRecipient[] = [];
-	for (const recipient of input.recipients) {
+	const estimates = new Map<string, string>();
+	for (const { birthYear, ...recipient } of input.recipients) {
+		if (birthYear !== undefined) checkBirthEstimate(birthYear, now);
 		const contact = await deps.contacts.findByIdVisibleTo(viewerOf(author), recipient.contactId);
-		if (contact) seen.push({ ...recipient, birth: birthOf(contact) });
+		// An estimate stands in only where nothing is on record, as `setBirthEstimate` keeps it.
+		if (contact && birthYear !== undefined && contact.birthDate === null) {
+			estimates.set(recipient.contactId, birthYear);
+			seen.push({ ...recipient, birth: { value: birthYear, precision: 'age' } });
+		} else if (contact) seen.push({ ...recipient, birth: birthOf(contact) });
 		else if (!skipped.some((s) => s.contactId === recipient.contactId))
 			skipped.push({ contactId: recipient.contactId, problem: 'gone' });
 	}
@@ -119,7 +139,6 @@ export async function addGiftGroup(
 		}
 	}
 
-	const now = deps.clock.now();
 	const group: GiftGroup = {
 		id: deps.ids.next(),
 		householdId: author.householdId,
@@ -154,6 +173,11 @@ export async function addGiftGroup(
 		updatedAt: now
 	}));
 	await deps.groups.insert(group, gifts);
+	for (const { contactId } of fitting) {
+		const year = estimates.get(contactId);
+		if (year !== undefined)
+			await deps.birthYears.setBirthYear(viewerOf(author), contactId, year, now);
+	}
 	const named = input.recipients.map((r) => r.contactId);
 	const left = [...unfit, ...skipped].sort(
 		(a, b) => named.indexOf(a.contactId) - named.indexOf(b.contactId)

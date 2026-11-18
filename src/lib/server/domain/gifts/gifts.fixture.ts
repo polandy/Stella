@@ -67,6 +67,9 @@ export function fakeGifts(
 		},
 		async memberWhoseOwnPerson(_householdId, contactId) {
 			return ownPeople.get(contactId) ?? null;
+		},
+		async membersOwnPeople() {
+			return [...ownPeople].map(([contactId, memberId]) => ({ memberId, contactId }));
 		}
 	};
 }

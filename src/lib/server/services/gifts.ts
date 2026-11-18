@@ -5,9 +5,14 @@ import { createTranslator } from '$lib/i18n/translate';
 import { createDrizzleGiftGroupRepository } from '../db/gift-group-repository';
 import { createDrizzleGiftRepository } from '../db/gift-repository';
 import { createDrizzleHeldGiftRepository } from '../db/held-gift-repository';
+import { createDrizzleImportantDateRepository } from '../db/important-date-repository';
+import { createDrizzleCircleMembershipReads } from '../db/circle-membership-reads';
+import { createDrizzleHomeReads } from '../db/home-repository';
+import { createDrizzleKinshipGraphReads } from '../db/kinship-graph-read';
 import type * as schema from '../db/schema';
 import type { GiftGroupDeps } from '../domain/gifts/gift-groups';
 import type { GiftDeps, GiftRepository } from '../domain/gifts/gifts';
+import type { GroupShortcutDeps } from '../domain/gifts/group-shortcuts';
 import { convertHeldGifts, type HeldGiftsReport } from '../domain/gifts/held-gifts';
 import type { IdGenerator } from '../id';
 
@@ -24,8 +29,10 @@ export interface GiftServices {
 	/** The one gift repository: the card, the use-cases and the story read it. */
 	gifts: GiftRepository;
 	giftDeps: GiftDeps;
-	/** One idea for several people (§2.25.11); no edge notes one yet. */
+	/** One idea for several people (§2.25.11), noted on `/gifts/several`. */
 	giftGroupDeps: GiftGroupDeps;
+	/** The family, homes and circles that form offers at one tap; read-only. */
+	giftGroupShortcutDeps: GroupShortcutDeps;
 	/**
 	 * Makes gift records of the gifts still held as Monica notes or gift touchpoints (docs/dev/02
 	 * §2.25.4); run at start and after a restore, writing what it did to the server log.
@@ -46,7 +53,19 @@ export function createGiftServices({ db, clock, ids, contacts }: GiftWiring): Gi
 	return {
 		gifts,
 		giftDeps: { gifts, contacts, ids, clock },
-		giftGroupDeps: { groups: createDrizzleGiftGroupRepository(db), gifts, contacts, ids, clock },
+		giftGroupDeps: {
+			groups: createDrizzleGiftGroupRepository(db),
+			gifts,
+			contacts,
+			birthYears: createDrizzleImportantDateRepository(db),
+			ids,
+			clock
+		},
+		giftGroupShortcutDeps: {
+			kinship: createDrizzleKinshipGraphReads(db),
+			homeReads: createDrizzleHomeReads(db),
+			memberships: createDrizzleCircleMembershipReads(db)
+		},
 		convertHeldGifts: () =>
 			convertHeldGifts({
 				held: createDrizzleHeldGiftRepository(db),

@@ -33,6 +33,29 @@ export const GiftAddSchema = v.object({
 	when: giftWhen
 });
 
+/** One person an idea for several is for (§2.25.11). */
+const GroupRecipientSchema = v.object({
+	contactId: nonEmpty,
+	/** A when of their own instead of the shared one, null for *now*; absent, the shared one. */
+	when: v.optional(v.nullable(whenSchemaOf(GIFT_WHEN_KINDS))),
+	/** An estimated birth year for someone with no birth date, kept on them once noted. */
+	birthYear: v.optional(v.pipe(v.string(), v.regex(/^\d{4}$/)))
+});
+
+/** One idea for several people (§2.25.11): a gift each, bound by one group. */
+export const GiftGroupAddSchema = v.object({
+	title: requiredText,
+	note: optionalText,
+	url: optionalText,
+	occasion: optionalText,
+	visibility,
+	/** Kept from each person it is for whose own person they are (§2.25.10). */
+	hiddenFromRecipients: v.optional(v.boolean()),
+	/** The shared when; null for *now*. */
+	when: v.nullable(whenSchemaOf(GIFT_WHEN_KINDS)),
+	recipients: v.pipe(v.array(GroupRecipientSchema), v.minLength(1))
+});
+
 /** A gift rewritten where it is listed; its state stays. */
 export const GiftEditSchema = v.object({
 	contactId: nonEmpty,

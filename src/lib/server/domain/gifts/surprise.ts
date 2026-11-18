@@ -15,3 +15,12 @@ export async function mayKeepFrom(
 	const member = await deps.gifts.memberWhoseOwnPerson(viewer.householdId, contactId);
 	return member !== null && member !== viewer.id;
 }
+
+/** The people `mayKeepFrom` answers yes for, all at once (§2.25.11). */
+export async function peopleToKeepFrom(
+	deps: Pick<GiftDeps, 'gifts'>,
+	viewer: Viewer
+): Promise<string[]> {
+	const owners = await deps.gifts.membersOwnPeople(viewer.householdId);
+	return owners.filter((o) => o.memberId !== viewer.id).map((o) => o.contactId);
+}

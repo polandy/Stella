@@ -157,6 +157,13 @@
 						>{/snippet}
 					<p class="mt-1 text-fg">{item.command.payload.title}</p>
 				</KeptItem>
+			{:else if isKept(item, 'giftGroup.add')}
+				<!-- `about` names everyone it is for. -->
+				<KeptItem {item}>
+					{#snippet meta()}<span>{t('home.outbox.giftFor', { name: item.about ?? '' })}</span
+						>{/snippet}
+					<p class="mt-1 text-fg">{item.command.payload.title}</p>
+				</KeptItem>
 			{:else if isKept(item, 'todo.add')}
 				<KeptItem {item} editHref={contactSectionPath(item.command.payload.contactId, 'todos')}>
 					{#snippet meta()}<span>{t('home.outbox.todoFor', { name: item.about ?? '' })}</span

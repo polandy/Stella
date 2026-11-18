@@ -116,6 +116,8 @@ export interface GiftRepository {
 	): Promise<Pick<Gift, 'id' | 'contactId' | 'title'>[]>;
 	/** The current member whose own person `contactId` is, in the household, or null. */
 	memberWhoseOwnPerson(householdId: string, contactId: string): Promise<string | null>;
+	/** Every current member of the household who has an own person, with that person. */
+	membersOwnPeople(householdId: string): Promise<{ memberId: string; contactId: string }[]>;
 }
 
 /** Collaborators the use-cases need, injected by the composition root. */

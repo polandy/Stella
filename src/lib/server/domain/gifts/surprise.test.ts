@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it } from 'bun:test';
 import { inEnglish } from '../../../i18n/phrase';
 import { readyGifts } from './bought';
 import { fakeGifts } from './gifts.fixture';
-import { mayKeepFrom } from './surprise';
+import { mayKeepFrom, peopleToKeepFrom } from './surprise';
 import {
 	addGift,
 	countOpenIdeas,
@@ -150,5 +150,12 @@ describe('mayKeepFrom', () => {
 	it('never offers it to that member, nor for a person who is nobody’s own', async () => {
 		expect(await mayKeepFrom(deps, viewer(JULIA), JULIA_PERSON)).toBe(false);
 		expect(await mayKeepFrom(deps, viewer(ANDY), 'hilde')).toBe(false);
+	});
+});
+
+describe('peopleToKeepFrom', () => {
+	it('names every member’s own person but the viewer’s, for a form with several people', async () => {
+		expect(await peopleToKeepFrom(deps, viewer(ANDY))).toEqual([JULIA_PERSON]);
+		expect(await peopleToKeepFrom(deps, viewer(JULIA))).toEqual([]);
 	});
 });

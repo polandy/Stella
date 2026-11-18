@@ -1,4 +1,4 @@
-import { and, asc, desc, eq, inArray, isNull, lt, or, sql } from 'drizzle-orm';
+import { and, asc, desc, eq, inArray, isNotNull, isNull, lt, or, sql } from 'drizzle-orm';
 import type { BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
 import { giftBrowsableBy, giftVisibleTo, isMemberAccount } from '../access/query-scoping';
 import type { Viewer } from '../access/visibility';
@@ -238,6 +238,24 @@ export function createDrizzleGiftRepository(db: BunSQLiteDatabase<typeof schema>
 				)
 				.get();
 			return row?.id ?? null;
+		},
+
+		async membersOwnPeople(householdId) {
+			const rows = db
+				.select({ memberId: user.id, contactId: user.selfContactId })
+				.from(user)
+				.where(
+					and(
+						eq(user.householdId, householdId),
+						isNotNull(user.selfContactId),
+						isNull(user.removedAt),
+						isMemberAccount()
+					)
+				)
+				.all();
+			return rows.flatMap(({ memberId, contactId }) =>
+				contactId === null ? [] : [{ memberId, contactId }]
+			);
 		}
 	};
 }

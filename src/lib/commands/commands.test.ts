@@ -44,6 +44,7 @@ describe('the command vocabulary', () => {
 	it('lets a gift idea wait on a device, but not a change to one somebody may have seen', () => {
 		expect(kindOf('gift.add')).toBe('add');
 		expect(isQueueable('gift.add')).toBe(true);
+		expect(isQueueable('giftGroup.add')).toBe(true);
 		expect(kindOf('gift.edit')).toBe('change');
 		expect(kindOf('gift.markGiven')).toBe('change');
 		expect(kindOf('gift.remove')).toBe('remove');

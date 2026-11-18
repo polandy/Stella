@@ -9,6 +9,7 @@ import { createDrizzleAccountRepository } from '../db/account-repository';
 import { createDrizzleContactRepository } from '../db/contact-repository';
 import * as schema from '../db/schema';
 import { createContact } from '../domain/contacts/create-contact';
+import { addGiftGroup } from '../domain/gifts/gift-groups';
 import { addGift, listGiftsForContact, markGiftGiven } from '../domain/gifts/gifts';
 import { listStoryPage } from '../domain/story/story';
 import type { IdGenerator } from '../id';
@@ -110,6 +111,22 @@ describe('createGiftServices', () => {
 		});
 		const listed = await listGiftsForContact(gifts.giftDeps, viewerOf(admin), hilde);
 		expect(listed.map((gift) => gift.id)).toEqual([giftId]);
+	});
+
+	it('keeps an estimated birth year named while noting an idea for several (D5)', async () => {
+		const gifts = createGiftServices(wiring);
+		const noah = await addPerson('Noah');
+		await addGiftGroup(gifts.giftGroupDeps, actorOf(admin), {
+			title: 'Puzzle',
+			note: null,
+			url: null,
+			when: { kind: 'at_age', age: 5 },
+			occasion: null,
+			visibility: 'shared',
+			recipients: [{ contactId: noah, birthYear: '2022' }]
+		});
+		const stored = await wiring.contacts.findByIdVisibleTo(viewerOf(admin), noah);
+		expect(stored).toMatchObject({ birthDate: '2022', birthDatePrecision: 'age' });
 	});
 });
 
