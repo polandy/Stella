@@ -16,9 +16,10 @@ import { inRememberedOrder, orderBreaks, type RowOrders } from './tree-order';
  * It starts from the usual barycentre passes (each unit under the mean of its neighbours on
  * the row above, then over the row below) and then improves the order by moving one unit at a
  * time — anywhere on its row, or turned round — for as long as that takes somebody out from
- * among strangers, removes a crossing or draws the bars shorter. Last, of the order and its mirror image, it keeps the one with more
- * husbands to the left of their wives, so a person's father's family stands on the left and
- * their mother's on the right, as a family tree is usually drawn. A row the reader ordered by
+ * among strangers, removes a crossing or draws the bars shorter. Last, of the order and its
+ * mirror image, it keeps the one with more husbands to the left of their wives, so a person's
+ * father's family stands on the left and their mother's on the right, as a family tree is
+ * usually drawn. A row the reader ordered by
  * dragging (`tree-order.ts`) keeps that order above all else. The search itself is
  * `row-order.ts`; this file packs the rows and straightens the drops to only children.
  */
@@ -60,8 +61,7 @@ export function arrangeFamily(
 	const familyEdges = model.edges.filter((e) => family.has(e.source) && family.has(e.target));
 	const members = new Set(family.keys());
 
-	// Rows of units: a couple, two parents of the same children, or a longer chain of either is
-	// one unit that moves together.
+	// Rows of units: a couple, two co-parents, or a longer chain of either moves together.
 	const together = couplesOf(family, familyEdges, partners);
 	let rows: Rows = [];
 	const assigned = new Set<string>();
@@ -143,10 +143,7 @@ export function arrangeFamily(
 	return { x, rows: chosen };
 }
 
-/**
- * Who stands beside whom in one unit: partners, and two parents of the same child on one row,
- * a partnership entered or not.
- */
+/** Who stands beside whom in a unit: partners, and two parents of one child on one row. */
 function couplesOf(
 	family: ReadonlyMap<string, number>,
 	familyEdges: readonly GraphEdge[],
@@ -179,10 +176,7 @@ function couplesOf(
 	return together;
 }
 
-/**
- * Everybody linked to `start` through `together`, in the order of the chain they make — from
- * one end, so somebody with children by two others stands between them.
- */
+/** Everybody linked to `start` through `together`, walked from one end of their chain. */
 function chainOf(start: string, together: ReadonlyMap<string, ReadonlySet<string>>): string[] {
 	const reached = [start];
 	for (let i = 0; i < reached.length; i++) {
@@ -200,10 +194,7 @@ function chainOf(start: string, together: ReadonlyMap<string, ReadonlySet<string
 	return chain;
 }
 
-/**
- * How many times somebody stands among a bar's children who does not hang from it: on their
- * row, between the outermost two — a partner amid their partner's siblings.
- */
+/** How often somebody stands between a bar's outermost children without hanging from it. */
 function strangersAmong(spans: readonly BarSpan[], positions: ReadonlyMap<string, Point>): number {
 	let strangers = 0;
 	for (const span of spans) {

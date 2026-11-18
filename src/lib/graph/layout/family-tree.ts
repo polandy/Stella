@@ -139,10 +139,7 @@ export function familyTreeLayout(
 	};
 }
 
-/**
- * The model's people with every unfiltered link among them, in the unfiltered order, and then
- * the model's own links the filters never saw: what the tree is placed by.
- */
+/** What the tree is placed by: every unfiltered link among the model's people, then its own. */
 function arrangedBy(model: GraphModel, unfiltered: readonly GraphEdge[]): GraphModel {
 	if (unfiltered.length === 0) return model;
 	const shown = new Set(model.nodes.map((n) => n.id));

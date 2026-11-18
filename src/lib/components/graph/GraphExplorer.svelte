@@ -340,8 +340,7 @@
 		controller?.focus(id);
 	}
 
-	// The slots stand in as parents, so their generation's row makes room for them; the people
-	// are placed by every link among them, so a filter only takes lines away.
+	// The slots make room in their row; placed by the unfiltered links, a filter only hides lines.
 	const treeLayout = (sizeOf: SizeOf) =>
 		familyTreeLayout(
 			withParentSlots(view.drawnVisible, view.slots),
