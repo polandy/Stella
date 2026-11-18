@@ -10,6 +10,7 @@ import {
 	circleMembership,
 	contact,
 	gift,
+	giftGroup,
 	interaction,
 	journalEntry,
 	note,
@@ -203,6 +204,17 @@ export function seedParityDb(): BunSQLiteDatabase<typeof schema> {
 				state: 'bought',
 				title: 'own'
 			}
+		])
+		.run();
+	// One surprise noted for user 2 and someone else at once: kept from user 2 on both (§2.25.11).
+	db.insert(giftGroup)
+		.values({ id: 'gg-surprise', householdId: H1, createdBy: U1, title: 'pair', hiddenFromRecipients: 1 })
+		.run();
+	db.insert(gift)
+		.values([
+			{ id: 'g-hidden-shared', contactId: 'c-shared', createdBy: U1, hiddenFromRecipient: 1, state: 'idea', title: 'alone' },
+			{ id: 'g-group-shared', contactId: 'c-shared', createdBy: U1, hiddenFromRecipient: 1, groupId: 'gg-surprise', state: 'idea', title: 'pair' },
+			{ id: 'g-group-u2', contactId: 'c-self-u2', createdBy: U1, hiddenFromRecipient: 1, groupId: 'gg-surprise', state: 'idea', title: 'pair' }
 		])
 		.run();
 	db.insert(activityIdea)

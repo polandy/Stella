@@ -177,12 +177,9 @@ const giftPair: Pair = {
 	ts: (viewer) => {
 		const contacts = contactsById();
 		const self = db.select().from(user).where(eq(user.id, viewer.id)).get()?.selfContactId ?? null;
+		const all = db.select().from(gift).all();
 		return ids(
-			db
-				.select()
-				.from(gift)
-				.all()
-				.filter((g) =>
+			all.filter((g) =>
 					canViewGift(
 						viewer,
 						{
@@ -190,7 +187,10 @@ const giftPair: Pair = {
 							visibility: g.visibility,
 							contact: parentOf(contacts, g.contactId),
 							contactId: g.contactId,
-							hiddenFromRecipient: g.hiddenFromRecipient !== 0
+							hiddenFromRecipient: g.hiddenFromRecipient !== 0,
+							groupRecipientIds: all
+								.filter((s) => g.groupId !== null && s.groupId === g.groupId)
+								.map((s) => s.contactId)
 						},
 						self
 					)
@@ -439,7 +439,8 @@ const CASES: Record<string, Case[]> = {
 		['u3', 'g-shared', 'g-foreign', 'another household'],
 		['u4', 'g-foreign-priv-u3', 'g-foreign', "a foreign member's private record"],
 		['u2', 'g-surprise-u2', 'g-for-u2', 'a surprise for the viewer as its recipient'],
-		['u2', 'g-surprise-u2', 'g-surprise-by-u2', 'one they noted for themselves stays theirs']
+		['u2', 'g-surprise-u2', 'g-surprise-by-u2', 'one they noted for themselves stays theirs'],
+		['u2', 'g-group-shared', 'g-hidden-shared', 'a surprise noted for them and someone else at once']
 	],
 	plan: [
 		['u2', 'a-priv-u1', 'a-shared', "another member's private record"],

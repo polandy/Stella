@@ -1,6 +1,6 @@
 import { and, eq, isNotNull, isNull, ne, or, sql, type AnyColumn, type SQL } from 'drizzle-orm';
 import { alias } from 'drizzle-orm/sqlite-core';
-import { activityLog, circle, contact, journalEntry, user } from '../db/schema';
+import { activityLog, circle, contact, gift, journalEntry, user } from '../db/schema';
 import type { Remover, Viewer } from './visibility';
 
 /*
@@ -148,11 +148,23 @@ export interface GiftColumns {
 	createdBy: AnyColumn;
 	contactId: AnyColumn;
 	hiddenFromRecipient: AnyColumn;
+	groupId: AnyColumn;
 }
 
-/** Condition for a gift being visible — the SQL of `canViewGift`, a surprise's. */
+/**
+ * Condition for a gift being visible — the SQL of `canViewGift`: a surprise's, and a hidden one in
+ * a group is also kept from the member whose own person another gift of that group is for.
+ */
 export function giftVisibleTo(viewer: Viewer, record: GiftColumns): SQL {
-	return surpriseVisibleTo(viewer, { ...record, hiddenFromPerson: record.hiddenFromRecipient });
+	const sibling = alias(gift, 'gift_sibling');
+	return and(
+		surpriseVisibleTo(viewer, { ...record, hiddenFromPerson: record.hiddenFromRecipient }),
+		or(
+			eq(record.hiddenFromRecipient, 0),
+			eq(record.createdBy, viewer.id),
+			sql`NOT EXISTS (SELECT 1 FROM ${gift} ${sql.identifier('gift_sibling')} INNER JOIN ${user} ON ${user.selfContactId} = ${sibling.contactId} WHERE ${sibling.groupId} = ${record.groupId} AND ${user.id} = ${viewer.id})`
+		)
+	)!;
 }
 
 /** Condition for a gift on a surface the household browses: visible, its person not archived. */
