@@ -33,6 +33,7 @@ function person(
 const labels: PaletteLabels = {
 	write: 'Write a moment',
 	giftIdea: 'Gift idea for …',
+	giftForSeveral: 'Gift idea for several …',
 	giftIdeas: 'All gift ideas',
 	todoFor: 'To-do for …',
 	briefFor: 'Brief for …',
@@ -164,6 +165,7 @@ describe('paletteRows', () => {
 		const german: PaletteLabels = {
 			write: 'Moment festhalten',
 			giftIdea: 'Geschenkidee für …',
+			giftForSeveral: 'Geschenkidee für mehrere …',
 			giftIdeas: 'Alle Geschenkideen',
 			todoFor: 'Todo für …',
 			briefFor: 'Steckbrief für …',
@@ -208,12 +210,12 @@ describe('a gift idea from the palette (docs/dev/02 §2.25.2)', () => {
 		expect(rows.slice(0, 8).map((r) => r.id)).toEqual([
 			'write',
 			'gift-idea',
+			'gift-several',
 			'todo',
 			'plan',
 			'brief',
 			'gift-ideas',
-			'all-todos',
-			'all-plans'
+			'all-todos'
 		]);
 		expect(rows[1]).toMatchObject({ kind: 'step', step: 'giftIdea', label: 'Gift idea for …' });
 	});
@@ -252,6 +254,15 @@ describe('a gift idea from the palette (docs/dev/02 §2.25.2)', () => {
 		expect(rows.every((r) => r.kind === 'person')).toBe(true);
 		expect(rows.map((r) => r.id)).toEqual(['lena', 'oma', 'markus']);
 		expect(rows[0]).toMatchObject({ href: '/contacts/lena?gift=idea' });
+	});
+
+	it('notes one for several, starting from the person picked (docs/dev/02 §2.25.11)', () => {
+		expect(paletteRows('several', people, labels)[0]).toMatchObject({
+			kind: 'step',
+			step: 'giftForSeveral'
+		});
+		const rows = paletteRows('', people, labels, new Map(), 'giftForSeveral');
+		expect(rows[0]).toMatchObject({ href: '/gifts/several?for=lena' });
 	});
 
 	it('narrows that list as a name is typed, and offers no full search there', () => {

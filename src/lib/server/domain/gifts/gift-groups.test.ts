@@ -219,10 +219,7 @@ describe('addGiftGroup', () => {
 			deps,
 			ANDY,
 			puzzle({
-				recipients: [
-					{ contactId: 'mia' },
-					{ contactId: 'noah', birthYear: '2015' }
-				]
+				recipients: [{ contactId: 'mia' }, { contactId: 'noah', birthYear: '2015' }]
 			})
 		);
 		expect(years).toEqual([]);

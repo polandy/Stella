@@ -175,7 +175,10 @@ describe('memberWhoseOwnPerson', () => {
 
 describe('membersOwnPeople', () => {
 	it('lists the current members who have an own person, and no one once removed', async () => {
-		expect(await repo.membersOwnPeople(H)).toContainEqual({ memberId: JULIA, contactId: JULIA_PERSON });
+		expect(await repo.membersOwnPeople(H)).toContainEqual({
+			memberId: JULIA,
+			contactId: JULIA_PERSON
+		});
 		expect(await repo.membersOwnPeople('household-2')).toEqual([]);
 		db.update(schema.user).set({ removedAt: 5 }).where(eq(schema.user.id, JULIA)).run();
 		expect(await repo.membersOwnPeople(H)).not.toContainEqual({

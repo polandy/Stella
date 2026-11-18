@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test';
-import { giftGroupAddCommand, giftGroupPayload } from './gift-group-command';
+import { giftGroupAddCommand, giftGroupPayload, groupNotedOf } from './gift-group-command';
 
 /*
  * The form for several people as the `giftGroup.add` command the outbox keeps (docs/dev/02
@@ -41,7 +41,11 @@ describe('giftGroupPayload', () => {
 		const payload = giftGroupPayload(
 			formOf({ title: 'Book', visibility: 'private', recipients: RECIPIENTS })
 		);
-		expect(payload).toMatchObject({ when: null, visibility: 'private', hiddenFromRecipients: false });
+		expect(payload).toMatchObject({
+			when: null,
+			visibility: 'private',
+			hiddenFromRecipients: false
+		});
 	});
 
 	it('is none without a title, without anyone, or with a broken field', () => {
@@ -49,7 +53,9 @@ describe('giftGroupPayload', () => {
 		expect(giftGroupPayload(formOf({ title: 'Book', recipients: '[]' }))).toBeNull();
 		expect(giftGroupPayload(formOf({ title: 'Book', recipients: '{' }))).toBeNull();
 		expect(
-			giftGroupPayload(formOf({ title: 'Book', whenKind: 'at_age', whenAge: '0', recipients: RECIPIENTS }))
+			giftGroupPayload(
+				formOf({ title: 'Book', whenKind: 'at_age', whenAge: '0', recipients: RECIPIENTS })
+			)
 		).toBeNull();
 	});
 });
@@ -59,5 +65,20 @@ describe('giftGroupAddCommand', () => {
 		const command = giftGroupAddCommand(formOf({ title: 'Book', recipients: RECIPIENTS }), 'c1', 7);
 		expect(command).toMatchObject({ id: 'c1', type: 'giftGroup.add', issuedAt: 7 });
 		expect(giftGroupAddCommand(formOf({}), 'c1', 7)).toBeNull();
+	});
+});
+
+describe('groupNotedOf', () => {
+	it('reads how many got it and who was left out', () => {
+		const result = {
+			groupId: 'g',
+			giftIds: ['a', 'b'],
+			skipped: [{ contactId: 'emma', problem: 'gone' }]
+		};
+		expect(groupNotedOf(result)).toEqual({ noted: 2, skipped: ['emma'] });
+	});
+
+	it('fails loud on an answer that is not one', () => {
+		expect(() => groupNotedOf({ groupId: 'g' })).toThrow();
 	});
 });

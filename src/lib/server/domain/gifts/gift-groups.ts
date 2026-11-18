@@ -13,7 +13,6 @@ import type { Clock } from '../../clock';
 import type { IdGenerator } from '../../id';
 import { checkBirthEstimate } from '../contacts/birth-year';
 import type { ContactLookup } from '../contacts/contacts';
-import type { ImportantDateRepository } from '../dates/important-dates';
 import {
 	InvalidGiftError,
 	orNull,
@@ -58,12 +57,22 @@ export interface GiftGroupRepository {
 	): Promise<{ group: GiftGroup; gifts: Gift[] } | null>;
 }
 
+/** Keeps a birth year, as the dates context's repository does; its own port, so no cycle. */
+export interface BirthYearWriter {
+	setBirthYear(
+		viewer: Viewer,
+		contactId: string,
+		year: string | null,
+		updatedAt: number
+	): Promise<boolean>;
+}
+
 export interface GiftGroupDeps {
 	groups: GiftGroupRepository;
 	gifts: Pick<GiftRepository, 'memberWhoseOwnPerson'>;
 	contacts: ContactLookup;
 	/** Where an estimated birth year named while noting is kept (D5). */
-	birthYears: Pick<ImportantDateRepository, 'setBirthYear'>;
+	birthYears: BirthYearWriter;
 	ids: IdGenerator;
 	clock: Clock;
 }

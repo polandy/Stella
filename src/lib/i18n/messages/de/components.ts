@@ -39,6 +39,8 @@ export const components: ComponentsMessages = {
 	'components.palette.addPerson': 'Person hinzufügen',
 	'components.palette.giftIdea': 'Geschenkidee für …',
 	'components.palette.giftIdeaFor': 'Geschenkidee für wen?',
+	'components.palette.giftForSeveral': 'Geschenkidee für mehrere …',
+	'components.palette.giftForSeveralFrom': 'Für mehrere – mit wem beginnen?',
 	'components.palette.todoFor': 'Todo für …',
 	'components.palette.todoForWhom': 'Ein Todo für wen?',
 	'components.palette.planWith': 'Unternehmung mit …',

@@ -8,6 +8,11 @@ import { GIFT_GROUP_MAX_RECIPIENTS, planGiftGroup, type RecipientProblem } from 
 
 /* The form that notes one idea for several people (docs/dev/02 §2.25.11): who, and what each gets. */
 
+/** The form for several, opened from one person: ticked, and the source of its shortcuts. */
+export function giftGroupPath(contactId: string): string {
+	return `/gifts/several?for=${encodeURIComponent(contactId)}`;
+}
+
 /** A birth date as a person list carries it, without its precision: the shape says it. */
 export function storedBirth(value: string | null): PartialDate | null {
 	if (value === null) return null;
@@ -45,7 +50,9 @@ export function groupShortcuts(from: ShortcutSources): GroupShortcut[] {
 	const { anchor, parentEdges } = from;
 	const parents = parentEdges.filter((e) => e.childId === anchor.id).map((e) => e.parentId);
 	const siblings = [
-		...from.siblingEdges.flatMap((p) => (p.a === anchor.id ? [p.b] : p.b === anchor.id ? [p.a] : [])),
+		...from.siblingEdges.flatMap((p) =>
+			p.a === anchor.id ? [p.b] : p.b === anchor.id ? [p.a] : []
+		),
 		...parents.flatMap((parent) => childrenOf(parentEdges, parent))
 	].filter((id) => id !== anchor.id);
 	const candidates: GroupShortcut[] = [
@@ -94,9 +101,7 @@ export interface InsteadOffer {
 
 /** How a grey row can be helped: an age typed, a birth date entered on the card, or a when instead. */
 export type RowFix =
-	| { kind: 'estimate' }
-	| { kind: 'birthYear' }
-	| { kind: 'instead'; offers: InsteadOffer[] };
+	{ kind: 'estimate' } | { kind: 'birthYear' } | { kind: 'instead'; offers: InsteadOffer[] };
 
 export interface PreviewRow {
 	contactId: string;
@@ -111,7 +116,11 @@ export interface PreviewRow {
 	estimate: string | null;
 }
 
-function offersFor(problem: RecipientProblem, birth: PartialDate | null, today: string): RowFix | null {
+function offersFor(
+	problem: RecipientProblem,
+	birth: PartialDate | null,
+	today: string
+): RowFix | null {
 	const now: InsteadOffer = { pick: 'now', when: null };
 	const day = (pick: 'birthday' | 'christmas') =>
 		quickDays([pick], birth, today)

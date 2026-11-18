@@ -53,3 +53,18 @@ export function giftGroupAddCommand(
 	const payload = giftGroupPayload(formData);
 	return payload === null ? null : { id, type: 'giftGroup.add', payload, issuedAt };
 }
+
+const GroupNotedSchema = v.object({
+	giftIds: v.array(v.string()),
+	skipped: v.array(v.object({ contactId: v.string() }))
+});
+
+/** What `giftGroup.add` answered: how many got the idea, and who was left out. */
+export function groupNotedOf(result: unknown): { noted: number; skipped: string[] } {
+	const parsed = v.safeParse(GroupNotedSchema, result);
+	if (!parsed.success) throw new Error('giftGroup.add answered without its gifts');
+	return {
+		noted: parsed.output.giftIds.length,
+		skipped: parsed.output.skipped.map((s) => s.contactId)
+	};
+}

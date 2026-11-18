@@ -41,6 +41,9 @@ export const components = {
 	'components.palette.giftIdea': 'Gift idea for …',
 	// The palette's second step after *Gift idea for …*: whom the idea is for.
 	'components.palette.giftIdeaFor': 'Gift idea for whom?',
+	// The palette's second step after *Gift idea for several …*: whom the form starts with.
+	'components.palette.giftForSeveral': 'Gift idea for several …',
+	'components.palette.giftForSeveralFrom': 'For several — starting with whom?',
 	'components.palette.todoFor': 'To-do for …',
 	// The palette's second step after *To-do for …*: whom the to-do is for.
 	'components.palette.todoForWhom': 'A to-do for whom?',

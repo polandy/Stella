@@ -22,7 +22,12 @@ const deps: GroupShortcutDeps = {
 		async listForContactVisibleTo(_viewer, contactId) {
 			return contactId === 'mia'
 				? [
-						{ id: 'h', label: null, value: 'Lindenweg 3', livesWith: [{ id: 'anna', displayName: 'Anna' }] },
+						{
+							id: 'h',
+							label: null,
+							value: 'Lindenweg 3',
+							livesWith: [{ id: 'anna', displayName: 'Anna' }]
+						},
 						{ id: 'g', label: 'Grandma', value: 'Hof 1', livesWith: [] }
 					]
 				: [];
@@ -31,7 +36,16 @@ const deps: GroupShortcutDeps = {
 	memberships: {
 		async listForContactVisibleTo(_viewer, contactId) {
 			return contactId === 'mia'
-				? [{ membershipId: 'm', circleId: 'kita', name: 'Kita', kind: 'group', color: 'blue', role: null }]
+				? [
+						{
+							membershipId: 'm',
+							circleId: 'kita',
+							name: 'Kita',
+							kind: 'school',
+							color: 'blue',
+							role: null
+						}
+					]
 				: [];
 		},
 		async listMembersVisibleTo(_viewer, circleId) {

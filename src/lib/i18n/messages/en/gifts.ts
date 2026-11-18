@@ -87,6 +87,35 @@ export const gifts = {
 	'gifts.state.given': (p: { day: string }) => `Given on ${p.day}`,
 	'gifts.state.received': (p: { day: string }) => `Received on ${p.day}`,
 
+	// One idea for several people (docs/dev/02 §2.25.11).
+	'gifts.several.title': 'Gift idea for several',
+	'gifts.several.menu': 'For several…',
+	'gifts.several.who': 'For whom?',
+	'gifts.several.search': 'Search a name…',
+	'gifts.several.childrenOf': (p: { name: string }) => `Children of ${p.name}`,
+	'gifts.several.siblingsOf': (p: { name: string }) => `Siblings of ${p.name}`,
+	'gifts.several.preview': 'What it comes to for each',
+	'gifts.several.include': (p: { name: string }) => `For ${p.name}`,
+	'gifts.several.ageToday': 'Age today, about',
+	'gifts.several.or': 'or',
+	'gifts.several.enterBirthday': 'Enter birthday',
+	'gifts.several.insteadLabel': 'instead:',
+	'gifts.several.instead.birthday': (p: { day: string }) => `next birthday, ${p.day}`,
+	'gifts.several.instead.christmas': (p: { year: string }) => `Christmas ${p.year}`,
+	'gifts.several.instead.now': 'now',
+	'gifts.several.own': 'own time',
+	'gifts.several.reset': 'reset',
+	'gifts.several.estimated': (p: { year: string; name: string }) =>
+		`estimated: about ${p.year} — noted on ${p.name} when saved`,
+	'gifts.several.for': (p: { chosen: number }) => `For ${p.chosen}`,
+	'gifts.several.forOf': (p: { chosen: number; total: number }) => `For ${p.chosen} of ${p.total}`,
+	'gifts.several.missing.needsBirthYear': (p: { names: string }) => `no birth year for ${p.names}`,
+	'gifts.several.missing.tooOld': (p: { names: string }) => `too old: ${p.names}`,
+	'gifts.several.missing.other': (p: { names: string }) => `does not fit: ${p.names}`,
+	'gifts.several.noted': (p: { count: number }) => `Noted for ${p.count}`,
+	'gifts.several.notedBut': (p: { count: number; names: string }) =>
+		`Noted for ${p.count} · not ${p.names}`,
+
 	// In the story (docs/dev/02 §2.23): what happened on the day.
 	'gifts.story.given': 'Given',
 	'gifts.story.received': 'Received'
