@@ -1,12 +1,11 @@
 import { json } from '@sveltejs/kit';
-import { MAX_COMMAND_BATCH } from '$lib/commands/commands';
-import { receiveQueued } from '$lib/server/commands/receive';
+import { readBatch, receiveQueued } from '$lib/server/commands/receive';
 import { translator } from '$lib/server/i18n/say';
 import type { RequestHandler } from './$types';
 
 /*
  * `POST /api/commands` (docs/dev/04 §4.11.2, ADR-108): where a phone's outbox sends what
- * it held back while Stella was out of reach. `{ commands: [...] }` in, one answer per command
+ * it held back while Stella was out of reach. `{ schemaVersion, commands: [...] }` in, one answer per command
  * out, in the same order. Signed in by the session cookie like any page — this is the app
  * talking to itself, not the scripting API under `/api/v1/`. Only `application/json` is read:
  * that cannot be posted cross-site without a CORS preflight, which Stella never grants, while a
@@ -26,9 +25,13 @@ export const POST: RequestHandler = async ({ locals, request }) => {
 	} catch {
 		return json({ error: { code: 'invalidJson' } }, { status: 400 });
 	}
-	const commands = (body as { commands?: unknown } | null)?.commands;
-	if (!Array.isArray(commands) || commands.length > MAX_COMMAND_BATCH) {
-		return json({ error: { code: 'invalidBatch' } }, { status: 400 });
+	const batch = readBatch(body);
+	if (!batch.ok) {
+		// A newer build's batch is kept on the phone until this server catches up.
+		return json(
+			{ error: { code: batch.code } },
+			{ status: batch.code === 'schemaAhead' ? 409 : 400 }
+		);
 	}
 
 	const actor = { userId: user.id, householdId: user.householdId, locale: locals.locale };
@@ -37,7 +40,7 @@ export const POST: RequestHandler = async ({ locals, request }) => {
 			locals.services.offline.commandDeps,
 			actor,
 			translator(locals),
-			commands
+			batch.commands
 		)
 	});
 };

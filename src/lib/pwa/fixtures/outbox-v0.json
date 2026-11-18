@@ -1,0 +1,114 @@
+[
+	{
+		"command": {
+			"id": "01K9V0A1B2C3D4E5F6G7H8J9KA",
+			"type": "moment.capture",
+			"payload": {
+				"body": "Coffee with @Julia",
+				"entryDate": "2026-11-02",
+				"visibility": "shared",
+				"newPeople": [],
+				"anchorId": "julia"
+			},
+			"issuedAt": 1793606400000
+		},
+		"memberId": "u-anna",
+		"state": "pending",
+		"reason": null,
+		"savedAt": 1793606400000,
+		"photos": [],
+		"about": "Julia",
+		"delivered": false
+	},
+	{
+		"command": {
+			"id": "01K9V0A1B2C3D4E5F6G7H8J9KB",
+			"type": "note.add",
+			"payload": {
+				"contactId": "julia",
+				"body": "Moving to Bern in spring",
+				"visibility": "private",
+				"isPinned": true
+			},
+			"issuedAt": 1793606460000
+		},
+		"memberId": "u-anna",
+		"state": "pending",
+		"reason": null,
+		"savedAt": 1793606460000,
+		"photos": [],
+		"about": "Julia",
+		"delivered": false,
+		"unanswered": true,
+		"changedAfterSending": true
+	},
+	{
+		"command": {
+			"id": "01K9V0A1B2C3D4E5F6G7H8J9KC",
+			"type": "interaction.log",
+			"payload": { "contactId": "oma", "kind": "call", "happenedAt": "2026-11-02" },
+			"issuedAt": 1793606520000
+		},
+		"memberId": "u-anna",
+		"state": "refused",
+		"reason": "This person is no longer here.",
+		"savedAt": 1793606520000,
+		"photos": [],
+		"about": "Oma",
+		"delivered": false
+	},
+	{
+		"command": {
+			"id": "01K9V0A1B2C3D4E5F6G7H8J9KD",
+			"type": "field.add",
+			"payload": { "contactId": "julia", "kind": "phone", "label": "", "value": "079 123 45 67" },
+			"issuedAt": 1793606580000
+		},
+		"memberId": "u-ben",
+		"state": "held",
+		"reason": null,
+		"savedAt": 1793606580000,
+		"photos": [],
+		"about": "Julia",
+		"delivered": false
+	},
+	{
+		"command": {
+			"id": "01K9V0A1B2C3D4E5F6G7H8J9KE",
+			"type": "relationship.addMany",
+			"payload": {
+				"contactId": "lio",
+				"typeChoice": "reverse:parent_child",
+				"status": "current",
+				"description": null,
+				"links": [
+					{ "targetId": "anna", "sinceDate": "2015-04-12" },
+					{ "targetId": "bert", "sinceDate": null }
+				]
+			},
+			"issuedAt": 1793606640000
+		},
+		"memberId": "u-anna",
+		"state": "sending",
+		"reason": null,
+		"savedAt": 1793606640000,
+		"photos": [],
+		"about": "Lio",
+		"delivered": false
+	},
+	{
+		"command": {
+			"id": "01K9V0A1B2C3D4E5F6G7H8J9KF",
+			"type": "contact.add",
+			"payload": { "firstName": "Vesna", "lastName": "", "birthDate": "1990-04-02" },
+			"issuedAt": 1793606700000
+		},
+		"memberId": "u-anna",
+		"state": "pending",
+		"reason": null,
+		"savedAt": 1793606700000,
+		"photos": [],
+		"about": null,
+		"delivered": false
+	}
+]

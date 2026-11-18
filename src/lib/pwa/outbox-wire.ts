@@ -1,4 +1,4 @@
-import type { CommandAnswer, JsonCommand } from '../commands/commands';
+import { COMMAND_SCHEMA_VERSION, type CommandAnswer, type JsonCommand } from '../commands/commands';
 import { COMMAND_PATIENCE_MS } from './outbox';
 import { PHOTO_PATIENCE_MS, photoAnswer, type PhotoUpload } from './outbox-photos';
 
@@ -21,13 +21,16 @@ async function answersFrom(response: Response): Promise<CommandAnswer[] | null> 
 	}
 }
 
-/** Send `batch`, and Stella's answer for each command in it. */
+/**
+ * Send `batch`, and Stella's answer for each command in it. A server older than this build
+ * refuses the whole batch (409), which is no answer: everything waits for it to catch up.
+ */
 export async function postCommands(batch: readonly JsonCommand[]): Promise<CommandAnswer[] | null> {
 	try {
 		const response = await fetch('/api/commands', {
 			method: 'POST',
 			headers: { 'content-type': 'application/json' },
-			body: JSON.stringify({ commands: batch }),
+			body: JSON.stringify({ schemaVersion: COMMAND_SCHEMA_VERSION, commands: batch }),
 			signal: AbortSignal.timeout(COMMAND_PATIENCE_MS)
 		});
 		return await answersFrom(response);

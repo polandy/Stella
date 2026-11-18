@@ -493,3 +493,22 @@ A migration that only puts data right has no schema change to generate from:
 `bunx drizzle-kit generate --custom --name <what_it_does>` gives it an empty file with its
 journal entry. Its test runs the migrator up to the step before it, writes the rows the old
 code could leave, then migrates the rest — `db/symmetric-link-order-migration.test.ts`.
+
+## 8.12 Queued command payloads only grow
+
+A phone may hold a command for days and send it to a newer Stella, so the payload schemas in
+`src/lib/commands/` change **additively only**: a new field is optional or has a default, a
+field is never renamed, retyped, narrowed or removed, and a command type is never dropped
+(`relationship.add` stays beside `relationship.addMany`). A change that cannot be additive
+raises `COMMAND_SCHEMA_VERSION` (`src/lib/commands/commands.ts`) and, in the same change:
+
+- adds a pure migration from the previous version to `MIGRATIONS` in
+  `src/lib/pwa/outbox-schema.ts`, which the outbox store runs on every read;
+- checks in the queue the previous release leaves on a device as
+  `src/lib/pwa/fixtures/outbox-v<N-1>.json` and lists it in `outbox-fixtures.ts`.
+
+The tests then hold it: every version below the current one has a migration and a fixture
+(`outbox-schema.test.ts`), and every fixture, migrated, reads as queueable commands on the
+server (`server/commands/parse.test.ts`). Each batch carries the version; a server older than
+the phone answers `409 schemaAhead` and the phone keeps the batch, and an item a newer build
+wrote is kept on the device but not sent.

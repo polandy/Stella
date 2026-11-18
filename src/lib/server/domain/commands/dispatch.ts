@@ -217,7 +217,12 @@ export async function dispatchCommand<C extends Command>(
 			return { status: 'refused', reason: err.phrase, error: err };
 		throw new CommandFailedError(command, err);
 	}
-	await deps.receipts.complete(command.id, result, deps.clock.now());
+	try {
+		await deps.receipts.complete(command.id, result, deps.clock.now());
+	} catch (err) {
+		// The change is made: the claim stays pending, so a resend is busy until it is stale.
+		throw new CommandFailedError(command, err);
+	}
 	return { status: 'applied', result, repeated: false };
 }
 
