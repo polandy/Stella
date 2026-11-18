@@ -25,6 +25,14 @@ import {
 	removeGift
 } from '../domain/gifts/gifts';
 import { markGiftBought } from '../domain/gifts/bought';
+import {
+	addToGiftGroup,
+	detachFromGiftGroup,
+	dissolveGiftGroup,
+	editGiftGroup,
+	markGiftGroupBought,
+	removeOpenOfGiftGroup
+} from '../domain/gifts/gift-group-follow-up';
 import { addGiftGroup } from '../domain/gifts/gift-groups';
 import { logInteractionChecked } from '../domain/interactions/log-checked';
 import { writeJournalEntry } from '../domain/journal/write-entry';
@@ -152,6 +160,17 @@ export function createCommandHandlers(
 		'gift.answerWhen': (actor, payload) => answerIdeaWhen(gifts.giftDeps, actor, payload),
 		'gift.remove': (actor, payload) => removeGift(gifts.giftDeps, actor, payload),
 		'giftGroup.add': (actor, payload) => addGiftGroup(gifts.giftGroupDeps, actor, payload),
+		'giftGroup.addRecipients': (actor, payload) =>
+			addToGiftGroup(gifts.giftGroupDeps, actor, payload),
+		'giftGroup.edit': (actor, payload) => editGiftGroup(gifts.giftGroupDeps, actor, payload),
+		'giftGroup.markBought': (actor, payload) =>
+			markGiftGroupBought(gifts.giftGroupDeps, actor, payload),
+		'giftGroup.dissolve': (actor, payload) =>
+			dissolveGiftGroup(gifts.giftGroupDeps, actor, payload),
+		'giftGroup.detach': (actor, payload) =>
+			detachFromGiftGroup(gifts.giftGroupDeps, actor, payload),
+		'giftGroup.removeOpen': (actor, payload) =>
+			removeOpenOfGiftGroup(gifts.giftGroupDeps, actor, payload),
 		// A to-do (docs/dev/02 §2.26): noted and ticked on a phone or online; the rest wait for Stella.
 		'todo.add': (actor, payload) => addTodo(todos.todoDeps, actor, payload),
 		'todo.tick': (actor, payload) => tickTodo(todos.todoDeps, actor, payload),

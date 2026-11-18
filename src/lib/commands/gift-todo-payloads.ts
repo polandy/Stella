@@ -56,6 +56,28 @@ export const GiftGroupAddSchema = v.object({
 	recipients: v.pipe(v.array(GroupRecipientSchema), v.minLength(1))
 });
 
+/** A group followed up as a whole (§2.25.11). */
+export const GiftGroupRefSchema = v.object({ groupId: nonEmpty });
+
+/** One gift of a group, to go on alone. */
+export const GiftGroupGiftSchema = v.object({ groupId: nonEmpty, giftId: nonEmpty });
+
+/** More people for a group; each gets the group's when, worked out for them. */
+export const GiftGroupAddRecipientsSchema = v.object({
+	groupId: nonEmpty,
+	recipients: v.pipe(v.array(GroupRecipientSchema), v.minLength(1))
+});
+
+/** A group rewritten: for one person's open gift, or for the group and every open one. */
+export const GiftGroupEditSchema = v.object({
+	groupId: nonEmpty,
+	giftId: v.optional(nonEmpty),
+	title: requiredText,
+	note: optionalText,
+	url: optionalText,
+	when: v.optional(v.nullable(whenSchemaOf(GIFT_WHEN_KINDS)))
+});
+
 /** A gift rewritten where it is listed; its state stays. */
 export const GiftEditSchema = v.object({
 	contactId: nonEmpty,

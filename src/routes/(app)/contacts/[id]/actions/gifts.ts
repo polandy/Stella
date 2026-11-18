@@ -14,7 +14,8 @@ import {
 	occasionOf,
 	visibilityOf,
 	whenOf,
-	type GiftCommand
+	type GiftCommand,
+	type GiftErrorKey
 } from '../../../_shared/gift-commands';
 import type { Actions } from '../$types';
 
@@ -24,12 +25,12 @@ import type { Actions } from '../$types';
  */
 
 /** One gift command on the person the URL names, back to their Gifts card when it worked. */
-const onCard = (
+export const onCard = (
 	{ params, locals }: Pick<RequestEvent, 'locals'> & { params: { id: string } },
 	form: FormData,
 	type: GiftCommand,
 	payload: Record<string, unknown>,
-	errorKey: 'giftError' | 'giftRowError'
+	errorKey: GiftErrorKey
 ) =>
 	applyGiftCommand(locals, form, type, payload, errorKey, {
 		contactId: params.id,

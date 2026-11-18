@@ -38,7 +38,11 @@ beforeEach(() => {
 			},
 			async findVisibleTo() {
 				return null;
-			}
+			},
+			async listForContactVisibleTo() {
+				return [];
+			},
+			async write() {}
 		},
 		gifts: {
 			async memberWhoseOwnPerson(_household, contactId) {

@@ -116,6 +116,44 @@ export const gifts = {
 	'gifts.several.notedBut': (p: { count: number; names: string }) =>
 		`Noted for ${p.count} · not ${p.names}`,
 
+	// Who has it, of one idea several people get (docs/dev/02 §2.25.11).
+	'gifts.group.alsoFor': (p: { names: string }) => `also for ${p.names}`,
+	'gifts.group.edit': 'Change',
+	'gifts.group.menu': 'More for this idea',
+	'gifts.group.now': 'now',
+	'gifts.group.dissolve': 'Go on one by one',
+	'gifts.group.dissolveHint': 'the gifts stay, only “also for” goes',
+	'gifts.group.removeOpen': (p: { count: number }) => `Remove all open (${p.count})`,
+	'gifts.group.removeOpenHint': 'given ones stay, with undo',
+	'gifts.group.removedOpen': (p: { count: number }) => `Removed for ${p.count}`,
+	'gifts.group.given': (p: { day: string }) => `given ${p.day}`,
+	'gifts.group.bought': 'bought',
+	'gifts.group.openNow': 'open now',
+	'gifts.group.ownWhen': 'own time',
+	'gifts.group.ownTitle': 'own title',
+	'gifts.group.rowMenu': (p: { name: string }) => `More for ${p.name}`,
+	'gifts.group.openCard': (p: { name: string }) => `Open ${p.name}’s card`,
+	'gifts.group.detach': 'Detach from the others',
+	'gifts.group.detachHint': (p: { name: string }) => `stays an idea of its own for ${p.name}`,
+	'gifts.group.removeFor': (p: { name: string }) => `Remove for ${p.name}`,
+	'gifts.group.allHave': 'Everyone has it — only the story is left here.',
+	'gifts.group.addPerson': 'Person',
+	'gifts.group.boughtAll': (p: { count: number }) =>
+		p.count ? `Bought for everyone (${p.count})` : 'Bought for everyone',
+	'gifts.group.boughtFor': (p: { count: number }) => `Bought for ${p.count}`,
+	'gifts.group.addIntro': (p: { rule: string }) =>
+		`Who else should get it? Stella applies “${p.rule}”; title, note and link come along.`,
+	'gifts.group.add': (p: { count: number }) => (p.count ? `Add (${p.count})` : 'Add'),
+	'gifts.group.scope': 'Who does the change apply to?',
+	'gifts.group.scopeAll': (p: { count: number }) => `For all open (${p.count})`,
+	'gifts.group.scopeAllHint': (p: { names: string }) =>
+		`${p.names} — what was given stays as it was given`,
+	'gifts.group.scopeOne': (p: { name: string }) => `Only for ${p.name}`,
+	'gifts.group.scopeOneHint': 'the others keep title and time',
+	'gifts.group.keeps': 'keeps its time',
+	'gifts.group.changedAll': (p: { count: number }) => `Changed for ${p.count} open`,
+	'gifts.group.changedOne': (p: { name: string }) => `Changed only for ${p.name}`,
+
 	// In the story (docs/dev/02 §2.23): what happened on the day.
 	'gifts.story.given': 'Given',
 	'gifts.story.received': 'Received'

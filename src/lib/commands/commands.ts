@@ -27,6 +27,12 @@ const KINDS = {
 	'gift.markBought': 'change',
 	'gift.answerWhen': 'change',
 	'gift.remove': 'remove',
+	'giftGroup.addRecipients': 'change',
+	'giftGroup.edit': 'change',
+	'giftGroup.markBought': 'change',
+	'giftGroup.dissolve': 'change',
+	'giftGroup.detach': 'change',
+	'giftGroup.removeOpen': 'remove',
 	'todo.add': 'add',
 	// A tick only ever moves a to-do towards done and a replay changes nothing, so it may wait on
 	// a phone like an addition (docs/dev/02 §2.26). Rewriting, opening again and removing may not.

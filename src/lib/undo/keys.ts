@@ -15,6 +15,8 @@ export const REMOVAL_KINDS = [
 	'field',
 	'date',
 	'gift',
+	/* *Bought for everyone* or *Remove all open* of one idea several people get; its id is `bought/group` or `remove/group`. */
+	'gift-group',
 	'plan',
 	'todo',
 	'tag',

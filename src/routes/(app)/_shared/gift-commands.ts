@@ -17,7 +17,10 @@ import { say, translator } from '$lib/server/i18n/say';
  * outbox's `toCommand` reads it; so does when an idea is for (§2.25.8).
  */
 
-export type GiftCommand = Extract<CommandType, `gift.${string}`>;
+export type GiftCommand = Extract<CommandType, `gift.${string}` | `giftGroup.${string}`>;
+
+/** Where a refusal shows: the card, a gift's row, or the panel of a group (§2.25.11). */
+export type GiftErrorKey = 'giftError' | 'giftRowError' | 'giftGroupError';
 
 /** The occasion the form chose, as the payload carries it. */
 export const occasionOf = (form: FormData) =>
@@ -55,16 +58,21 @@ export async function applyGiftCommand(
 	form: FormData,
 	type: GiftCommand,
 	payload: Record<string, unknown>,
-	errorKey: 'giftError' | 'giftRowError',
+	errorKey: GiftErrorKey,
 	target: GiftTarget
 ) {
 	const viewer = requireViewer(locals);
 	const giftId = textOf(form, 'giftId');
-	// A row's error is shown on its row, so it says which gift it is about.
+	const groupId = textOf(form, 'groupId');
+	// A row's or a panel's error is shown there, so it says which gift or group it is about.
 	const failure = (message: string, status = 400) =>
 		fail(
 			status,
-			errorKey === 'giftRowError' ? { giftRowError: { giftId, message } } : { giftError: message }
+			errorKey === 'giftRowError'
+				? { giftRowError: { giftId, message } }
+				: errorKey === 'giftGroupError'
+					? { giftGroupError: { groupId, message } }
+					: { giftError: message }
 		);
 
 	const reading = readCommand({

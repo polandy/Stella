@@ -56,6 +56,13 @@ export interface CommandResults {
 	'gift.remove': { giftId: string };
 	/** Who got an idea, and who was left out and why (§2.25.11). */
 	'giftGroup.add': { groupId: string; giftIds: string[]; skipped: SkippedRecipient[] };
+	'giftGroup.addRecipients': { groupId: string; giftIds: string[]; skipped: SkippedRecipient[] };
+	/** `kept`: the people whose idea kept its own when, the new one no longer fitting them (D6). */
+	'giftGroup.edit': { groupId: string; giftIds: string[]; kept: string[] };
+	'giftGroup.markBought': { groupId: string; giftIds: string[] };
+	'giftGroup.dissolve': { groupId: string; giftIds: string[] };
+	'giftGroup.detach': { groupId: string; giftId: string };
+	'giftGroup.removeOpen': { groupId: string; giftIds: string[] };
 	'todo.add': { todoId: string };
 	'todo.tick': { todoId: string };
 	'todo.edit': { todoId: string };
@@ -242,6 +249,18 @@ function apply(
 		case 'gift.remove':
 			return handlers[command.type](actor, command.payload);
 		case 'giftGroup.add':
+			return handlers[command.type](actor, command.payload);
+		case 'giftGroup.addRecipients':
+			return handlers[command.type](actor, command.payload);
+		case 'giftGroup.edit':
+			return handlers[command.type](actor, command.payload);
+		case 'giftGroup.markBought':
+			return handlers[command.type](actor, command.payload);
+		case 'giftGroup.dissolve':
+			return handlers[command.type](actor, command.payload);
+		case 'giftGroup.detach':
+			return handlers[command.type](actor, command.payload);
+		case 'giftGroup.removeOpen':
 			return handlers[command.type](actor, command.payload);
 		case 'todo.add':
 			return handlers[command.type](actor, command.payload);
