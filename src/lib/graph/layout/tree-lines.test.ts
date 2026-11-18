@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'bun:test';
 import { familyTreeLayout, TREE_SPACING } from './family-tree';
 import { DEFAULT_NODE_SIZE, type Point, type Route } from './geometry';
-import { TREE_LINES, treeRoutes } from './tree-lines';
+import { barSpans, TREE_LINES, treeRoutes } from './tree-lines';
 import type { GraphEdge, GraphModel, GraphNode } from '../model/types';
 
 /*
@@ -118,7 +118,7 @@ describe('treeRoutes', () => {
 		}
 	});
 
-	it('hangs the children of a former couple from each parent, never from their bar', () => {
+	it('drops a former couple’s children from the middle of their dashed bar', () => {
 		const exes: GraphModel = {
 			nodes: ['otto', 'rosa', 'bert'].map(person),
 			edges: [
@@ -128,16 +128,55 @@ describe('treeRoutes', () => {
 			]
 		};
 		const { positions, routes } = routed(exes);
+		const middle = (positions.get('otto')!.x + positions.get('rosa')!.x) / 2;
 
-		// Still a link: they stand side by side on one row, the bar between them drawn straight.
+		// They stand side by side on one row, the bar between them drawn straight.
 		expect(positions.get('otto')!.y).toBe(positions.get('rosa')!.y);
 		expect(routes.has('otto-spouse-rosa')).toBe(false);
-		// But not a parent pair: each line leaves from its own parent.
+		// One drop for both, from the middle of it.
 		for (const parent of ['otto', 'rosa']) {
 			const route = routes.get(`${parent}-parent_child-bert`)!;
-			expect(route.sourceEnd).toBeUndefined();
-			expect(route.waypoints[0].x).toBe(positions.get(parent)!.x);
+			expect(route.sourceEnd).toEqual({ x: middle, y: positions.get(parent)!.y });
+			expect(route.waypoints[0].x).toBe(middle);
 		}
+	});
+
+	it('runs both co-parents’ drops into one bar, each from its own parent', () => {
+		// No partnership entered between Otto and Rosa: no partner bar to drop from.
+		const positions = new Map<string, Point>([
+			['otto', { x: 0, y: 0 }],
+			['rosa', { x: 140, y: 0 }],
+			['bert', { x: -100, y: ROW }],
+			['carl', { x: 240, y: ROW }]
+		]);
+		const edges = ['bert', 'carl'].flatMap((child) => [
+			parentOf('otto', child),
+			parentOf('rosa', child)
+		]);
+		const routes = treeRoutes(edges, positions, new Set(positions.keys()), size, ROW);
+
+		for (const e of edges) {
+			const route = routes.get(e.id)!;
+			expect(route.sourceEnd).toBeUndefined();
+			expect(route.waypoints[0].x).toBe(positions.get(e.source)!.x);
+		}
+		// One bar: every line runs along it at the same height.
+		const heights = new Set(edges.map((e) => routes.get(e.id)!.waypoints.at(-1)!.y));
+		expect(heights.size).toBe(1);
+		const spans = barSpans(edges, positions, new Set(positions.keys()));
+		expect(spans.map(({ left, right }) => ({ left, right }))).toEqual([{ left: -100, right: 240 }]);
+	});
+
+	it('gives co-parents a bar each when somebody stands between them', () => {
+		const positions = new Map<string, Point>([
+			['otto', { x: 0, y: 0 }],
+			['ida', { x: 140, y: 0 }],
+			['rosa', { x: 280, y: 0 }],
+			['bert', { x: 140, y: ROW }]
+		]);
+		const edges = [parentOf('otto', 'bert'), parentOf('rosa', 'bert')];
+
+		expect(barSpans(edges, positions, new Set(positions.keys()))).toHaveLength(2);
 	});
 
 	it('joins a couple’s children on one bar, with a short drop to each', () => {
@@ -153,8 +192,8 @@ describe('treeRoutes', () => {
 			expect(bar.x).toBe(child.x);
 			expect(bar.y).toBeLessThan(child.y);
 		}
-		// Between the parents' row and the children's.
-		expect(bars[0].bar.y).toBeGreaterThan(positions.get('otto')!.y);
+		// Just above the children, not halfway down from the parents.
+		expect(bars[0].bar.y).toBe(positions.get('bert')!.y - TREE_LINES.above);
 	});
 
 	it('names each child’s drop once, however many parents’ lines run down it', () => {
@@ -292,11 +331,11 @@ describe('treeRoutes', () => {
 		const edges = parents.map((id) => parentOf(id, `${id}c`));
 		const routes = treeRoutes(edges, positions, new Set(positions.keys()), size, ROW);
 		const bars = edges.map((e) => routes.get(e.id)!.waypoints.at(-1)!.y);
-		const top = TREE_LINES.bar * ROW;
+		const lowest = ROW - TREE_LINES.above;
 
 		expect(new Set(bars).size).toBe(parents.length);
-		expect(Math.min(...bars)).toBe(top);
-		expect(Math.max(...bars)).toBeCloseTo(top + (TREE_LINES.lanes - 1) * TREE_LINES.lane, 9);
+		expect(Math.max(...bars)).toBe(lowest);
+		expect(Math.min(...bars)).toBeCloseTo(lowest - (TREE_LINES.lanes - 1) * TREE_LINES.lane, 9);
 	});
 
 	it('bends only the lines between members of the family', () => {

@@ -27,7 +27,7 @@ export interface Leg {
 export const laneKey = (leg: Leg) => `${leg.channel}|${leg.group}`;
 
 /**
- * How far below its gap's top bar each group of pieces runs: on the first lane, counted down,
+ * How far above its gap's lowest bar each group of pieces runs: on the first lane, counted up,
  * where it overlaps nobody already there — left to right, so the same map gets the same lanes.
  * A gap needing more lanes than it has room for squeezes them closer together, never two
  * groups onto one lane.

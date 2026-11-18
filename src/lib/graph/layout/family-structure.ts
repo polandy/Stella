@@ -18,8 +18,10 @@ export function isPartnerLine(edge: GraphEdge): boolean {
 
 /**
  * What both the lines and their crossings are read from: the family lines between members, and
- * where the line from a parent to a child leaves — the middle of the bar between the parent and
- * the partners who are this child's parents too, or the parent alone. One drop per couple.
+ * where the line from a parent to a child leaves. A child's parents standing side by side share
+ * one bar: partners, former or not, drop once from the middle of the line between them;
+ * co-parents with no partnership entered each drop from under their own name into it. A parent
+ * with nobody beside them, or somebody standing in between, has a bar of their own.
  */
 export function familyStructure(
 	edges: readonly GraphEdge[],
@@ -45,9 +47,7 @@ export function familyStructure(
 		map.get(a)!.add(b);
 	};
 	for (const e of familyLines) {
-		// A former partnership is still a line, but never the couple a child hangs from: their
-		// children drop from each parent, not from a bar saying the two are together (docs/dev/02 §2.7).
-		if (isPartnerLine(e) && !e.former) {
+		if (isPartnerLine(e)) {
 			link(partners, e.source, e.target);
 			link(partners, e.target, e.source);
 		}
@@ -65,18 +65,18 @@ export function familyStructure(
 		);
 
 	const dropOf = (parent: string, child: string) => {
-		const couple = [
+		const together = [
 			parent,
-			...[...(partners.get(parent) ?? [])].filter(
-				(p) => parents.get(child)?.has(p) && sameRow(at(p), at(parent))
-			)
+			...[...(parents.get(child) ?? [])].filter((p) => p !== parent && sameRow(at(p), at(parent)))
 		].sort();
-		const xs = couple.map((id) => at(id).x);
+		const xs = together.map((id) => at(id).x);
 		const apart =
-			couple.length === 1 || standsBetween(at(parent).y, Math.min(...xs), Math.max(...xs), couple);
-		return apart
-			? { group: `drop:${parent}`, x: at(parent).x, couple: [parent] }
-			: { group: `drop:${couple.join('+')}`, x: xs.reduce((a, b) => a + b, 0) / xs.length, couple };
+			together.length === 1 ||
+			standsBetween(at(parent).y, Math.min(...xs), Math.max(...xs), together);
+		if (apart) return { group: `drop:${parent}`, x: at(parent).x };
+		const group = `drop:${together.join('+')}`;
+		const couple = together.length === 2 && partners.get(together[0])?.has(together[1]);
+		return { group, x: couple ? (xs[0] + xs[1]) / 2 : at(parent).x };
 	};
 
 	return { at, sameRow, familyLines, standsBetween, dropOf };

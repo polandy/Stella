@@ -1366,8 +1366,8 @@ map as a thinner, dashed line in a paler colour, and its name ends in *· former
 map on the person's page draws it dashed too. If you would
 rather see only what holds today, switch off *Former links* in the Filter menu; the Filter
 button then stands out so you don't forget it is off. In the *Tree*, a couple who have
-separated still stand side by side, but their children's lines come down from each parent on
-their own rather than from the line between them.
+separated still stand side by side on their dashed line, and their children's line comes down
+from the middle of it.
 
 If you often look at the map the same way — only family, say, or circles grouped by role —
 set the menu up once and tap *Save this view…* at its top to give that setup a name. Next time
@@ -1393,7 +1393,8 @@ Under each of them it says who they are: *Friend* for a friend of the person in 
 *Friend of Sandra* for somebody's friend (with *+1* when they know more people on the map),
 and under a circle who on the map belongs to it (*Lena, Noah +2*).
 Each family stands together, the father's side on the left and the mother's on the right.
-Two parents of the same children stand side by side, and someone who married into the family
+Two parents of the same children stand side by side, both lines running into one line over
+the children even when no partnership is entered, and someone who married into the family
 stands at the end of their partner's brothers and sisters. The Filter menu only hides lines in
 the tree: everybody stays where they are.
 Where a parent is missing above the person in the middle, their parents or their

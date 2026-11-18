@@ -2,12 +2,13 @@ import { PARENT_CHILD_TYPE_KEY } from '../../relationships/type-keys';
 import type { GraphEdge } from '../model/types';
 import { familyStructure, isPartnerLine, SAME_ROW } from './family-structure';
 import { LINE_CLEARANCE, type Point, type Route, type SizeOf } from './geometry';
+import { MAX_NODE_DIAMETER } from './legibility';
 import { laneKey, laneOffsets, type Leg } from './tree-lanes';
 
 /*
  * The lines of the family tree (docs/dev/05 §5.8), drawn the way a family tree is drawn on paper:
- * partners joined by a short bar, one drop from the middle of it to a bar over their children,
- * and a short drop from that bar to each child — right angles instead of diagonals. Pure: the
+ * partners joined by a short bar, one drop from the middle of it to a bar just over their
+ * children, and a short drop from that bar to each child — right angles instead of diagonals. Pure: the
  * positions are worked out already, and this only says where each family line bends.
  *
  * Every horizontal piece runs in the gap between two rows, where nobody stands; every vertical
@@ -20,10 +21,10 @@ import { laneKey, laneOffsets, type Leg } from './tree-lanes';
 
 /** Distances of the tree's lines, in model units unless said otherwise. */
 export const TREE_LINES = {
-	/** Where a bar runs below the row above it, as a share of the distance between two rows. */
-	bar: 0.55,
-	/** Between two bars that would otherwise run along each other. */
-	lane: 14,
+	/** How far above the row below it a gap's lowest bar runs: clear of the biggest disc. */
+	above: MAX_NODE_DIAMETER / 2 + 22,
+	/** Between two bars that would otherwise run along each other; the next lane is higher up. */
+	lane: 18,
 	/** The lanes one gap between rows has room for; more are squeezed into the same room. */
 	lanes: 4,
 	/** The room left between two bars that end and begin on the same lane. */
@@ -123,7 +124,7 @@ export function treeRoutes(
 		const drop =
 			edge.typeKey === PARENT_CHILD_TYPE_KEY && upper === edge.source
 				? dropOf(upper, lower)
-				: { group: `line:${edge.id}:top`, x: u.x, couple: [upper] };
+				: { group: `line:${edge.id}:top`, x: u.x };
 		const start = drop.x === u.x ? undefined : { at: { x: drop.x, y: u.y }, upper };
 
 		if (l.y - u.y < row + SAME_ROW) {
@@ -165,7 +166,7 @@ export function treeRoutes(
 		plans.flatMap((p) => p.legs),
 		TREE_LINES
 	);
-	const yOf = (leg: Leg) => leg.channel + TREE_LINES.bar * row + offsetOf.get(laneKey(leg))!;
+	const yOf = (leg: Leg) => leg.channel + row - TREE_LINES.above - offsetOf.get(laneKey(leg))!;
 
 	const routes = new Map<string, Route>();
 	const named = new Set<string>();
@@ -222,9 +223,9 @@ export function barSpans(
 		const child = at(e.target).x;
 		spans.set(key, {
 			...known,
-			left: Math.min(known.left, child),
-			right: Math.max(known.right, child),
-			children: [...known.children, e.target]
+			left: Math.min(known.left, drop.x, child),
+			right: Math.max(known.right, drop.x, child),
+			children: known.children.includes(e.target) ? known.children : [...known.children, e.target]
 		});
 	}
 	return [...spans.values()];
