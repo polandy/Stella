@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'bun:test';
 import type { NodeSingular } from 'cytoscape';
 import { controller, linkedPair } from './explorer-fixtures';
-import { DRAGGED_LINE_CLASS } from './canvas-classes';
+import { DRAGGED_LINE_CLASS, SLOT_CLASS } from './canvas-classes';
 import type { Point } from '../layout/geometry';
 
 /*
@@ -49,6 +49,19 @@ describe('dragging in the tree', () => {
 		cy.$id('a').emit('grab');
 		cy.$id('a').emit('free');
 
+		expect(drops).toEqual([]);
+	});
+
+	it('keeps a missing parent’s slot where the tree put it, and reports no drop', () => {
+		const cy = linkedPair();
+		cy.$id('a').addClass(SLOT_CLASS);
+		const drops: string[] = [];
+		const explorer = controller(cy, { onDropNode: (id) => drops.push(id) });
+		explorer.arrangeAt({ positions: place, bows: new Map() }, { rowDrags: true });
+
+		dragTo(cy.$id('a'), { x: 300, y: 90 });
+
+		expect(cy.$id('a').position()).toEqual({ x: 0, y: 0 });
 		expect(drops).toEqual([]);
 	});
 

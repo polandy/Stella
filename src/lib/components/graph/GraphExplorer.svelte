@@ -577,7 +577,7 @@
 			bind:open={exporting}
 			defaultTitle={view.exportTitle}
 			privateCount={view.privateCount}
-			sceneFor={view.exportSceneFor}
+			sceneFor={(choices) => ({ ...view.exportSceneFor(choices), orders: treeOrders })}
 			edgeLabels={view.labelsFit}
 			outsideFamily={t('graph.tree.outsideFamily')}
 		/>
