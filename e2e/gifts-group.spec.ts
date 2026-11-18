@@ -2,7 +2,7 @@ import { expect, test, type Page } from '@playwright/test';
 import { appReady, isoDaysAfter, serverToday, signIn } from './app';
 import { LINK, personIdOf, seedHousehold } from './seed';
 
-// One idea for several people (docs/dev/02 §2.25.11); ages count from the server's day.
+// One idea for several people (docs/dev/02 §2.25.11), kept through the outbox (§2.18); ages count from the server's day.
 
 /** Six letters no other attempt shares. */
 function runLetters(): string {
@@ -108,4 +108,46 @@ test('one idea for a parent’s children: each previewed, the grey ones helped, 
 	await expect(page.getByTestId('identity-card')).toContainText(
 		String(Number(today.slice(0, 4)) - 1)
 	);
+});
+
+test('an idea for several kept while Stella is out of reach waits on Home, then is noted for each', async ({
+	page
+}) => {
+	const letters = runLetters();
+	const tim = `Tim Ferner${letters}`;
+	const ida = `Ida Ferner${letters}`;
+	const ole = `Ole Ferner${letters}`;
+	await seedHousehold(
+		page,
+		[tim, ida, ole],
+		[ida, ole].map((child) => ({ from: tim, to: child, type: LINK.parentOf }))
+	);
+	await page.goto(`/gifts/several?for=${personIdOf(ida)}`);
+	await appReady(page);
+	const form = page.getByTestId('gift-group-form');
+	await form.getByLabel('What?').fill(`Kite ${letters}`);
+	await form.getByRole('button', { name: `Children of ${tim}` }).click();
+	await expect(page.getByTestId('group-summary')).toHaveText('For 2');
+
+	// The way to Stella is held shut: the form keeps it and goes back to Ida's card.
+	await page.route('**/api/commands', (route) => route.abort());
+	await form.getByRole('button', { name: 'Save' }).click();
+	await expect(page).toHaveURL(new RegExp(`/contacts/${personIdOf(ida)}#section-gifts$`));
+	await page.goto('/');
+	const outbox = page.getByTestId('outbox');
+	await expect(outbox).toContainText(`gift for ${ida} and ${ole}`);
+	await expect(outbox).toContainText(`Kite ${letters}`);
+
+	await page.unroute('**/api/commands');
+	const sent = page.waitForResponse(
+		(response) => response.url().endsWith('/api/commands') && response.request().method() === 'POST'
+	);
+	await page.reload();
+	await sent;
+	await expect(outbox).toHaveCount(0);
+	for (const child of [ida, ole]) {
+		await page.goto(`/contacts/${personIdOf(child)}`);
+		await appReady(page);
+		await expect(page.locator('#section-gifts').getByText(`Kite ${letters}`)).toBeVisible();
+	}
 });
