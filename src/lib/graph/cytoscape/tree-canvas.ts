@@ -25,6 +25,8 @@ export interface Captions {
 	 * whose roles are what it is read by. The other arrangements frame the whole map.
 	 */
 	keepNamesDrawn?: boolean;
+	/** A drag keeps to the person's row and reports its drop (`tree-dragging.ts`): the tree. */
+	rowDrags?: boolean;
 }
 
 /** The one caption on the canvas; it is the controller's, never one of the elements. */

@@ -8,6 +8,9 @@ import { shelfCaptions } from './model/shelf-captions';
 import { rolesTowards } from './model/tree-roles';
 import { hiddenInTree } from './model/tree-shown';
 import type { GraphModel } from './model/types';
+import type { RowOrders } from './layout/tree-order';
+import { familyTreeLayout } from './layout/family-tree';
+import type { SizeOf } from './layout/geometry';
 import { exportedModel, lifeYearsOf, lifeYearsWords, type ExportChoices } from './tree-export';
 
 /*
@@ -39,6 +42,8 @@ export interface ExportScene {
 	elements: CyElement[];
 	/** Whether a second line goes under the names, so the stylesheet writes it. */
 	underNames: boolean;
+	/** The rows the reader dragged the tree on screen into, kept on the picture too. */
+	orders?: RowOrders;
 }
 
 export function exportScene(input: SceneInput): ExportScene {
@@ -84,4 +89,9 @@ export function exportScene(input: SceneInput): ExportScene {
 		elements,
 		underNames: around !== null || choices.dates
 	};
+}
+
+/** The scene laid out as the explorer lays the tree out, the reader's dragged rows kept. */
+export function sceneLayout(scene: ExportScene, sizeOf: SizeOf) {
+	return familyTreeLayout(scene.model, sizeOf, scene.orders);
 }

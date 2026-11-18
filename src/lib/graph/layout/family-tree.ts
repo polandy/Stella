@@ -13,6 +13,7 @@ import {
 } from './geometry';
 import { arrangeFamily } from './family-rows';
 import { treeRoutes } from './tree-lines';
+import type { RowOrders } from './tree-order';
 
 /*
  * The family-tree arrangement (docs/dev/02 §2.7, docs/dev/05 §5.8). Pure: positions from the model, no
@@ -22,7 +23,8 @@ import { treeRoutes } from './tree-lines';
  * circles — is shelved in rows beneath, rather than wedged into a generation they are not in.
  * Each node gets the room its name needs. The family lines are drawn at right angles, as on a
  * paper tree (`tree-lines.ts`); any other line that would pass through somebody on its way —
- * a friend's line down to the shelf — bends around them.
+ * a friend's line down to the shelf — bends around them. A row the reader ordered by dragging
+ * keeps that order (`tree-order.ts`).
  */
 
 /** Distances of the family tree, in model units. */
@@ -40,8 +42,20 @@ export const TREE_SPACING = {
 /** How wide the shelf is laid out when there is no family above it to keep within. */
 const SHELF_MIN_WIDTH = 600;
 
-/** Every node of `model` arranged as a family tree, each given the room `sizeOf` says it takes. */
-export function familyTreeLayout(model: GraphModel, sizeOf: SizeOf = defaultSizeOf): Arrangement {
+/** The family tree's arrangement, with each family's rows as units left to right. */
+export interface TreeArrangement extends Arrangement {
+	rows: string[][][];
+}
+
+/**
+ * Every node of `model` arranged as a family tree, each given the room `sizeOf` says it takes,
+ * every row in `orders` kept in the order the reader dragged it into.
+ */
+export function familyTreeLayout(
+	model: GraphModel,
+	sizeOf: SizeOf = defaultSizeOf,
+	orders: RowOrders = []
+): TreeArrangement {
 	const neighbours = new Map<string, Set<string>>();
 	const partners = new Map<string, Set<string>>();
 	const link = (map: Map<string, Set<string>>, a: string, b: string) => {
@@ -61,8 +75,19 @@ export function familyTreeLayout(model: GraphModel, sizeOf: SizeOf = defaultSize
 	const positions = new Map<string, Point>();
 	let left = 0;
 	let deepest = -1;
+	const rows: string[][][] = [];
 	for (const family of familiesOf(model)) {
-		const x = arrangeFamily(model, family, neighbours, partners, sizeOf, TREE_SPACING);
+		const arranged = arrangeFamily(
+			model,
+			family,
+			neighbours,
+			partners,
+			sizeOf,
+			TREE_SPACING,
+			orders
+		);
+		const x = arranged.x;
+		rows.push(...arranged.rows.filter((row) => row.length > 0));
 		const lefts = [...x].map(([id, at]) => at - sizeOf(id).width / 2);
 		const rights = [...x].map(([id, at]) => at + sizeOf(id).width / 2);
 		const shift = left - Math.min(...lefts);
@@ -103,6 +128,7 @@ export function familyTreeLayout(model: GraphModel, sizeOf: SizeOf = defaultSize
 	const straightOrBowed = model.edges.filter((e) => !routes.has(e.id));
 	return {
 		positions,
+		rows,
 		bows: bowsAround(positions, straightOrBowed, sizeOf, LINE_CLEARANCE),
 		routes,
 		// Named only beneath a family: on a map with none, everybody is on the shelf.

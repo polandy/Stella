@@ -24,7 +24,8 @@
 	import type { ArrangementKey } from '$lib/graph/layout/arrangements';
 	import { circleClustersLayout } from '$lib/graph/layout/circle-clusters';
 	import { familyTreeLayout } from '$lib/graph/layout/family-tree';
-	import { DEFAULT_NODE_SIZE } from '$lib/graph/layout/geometry';
+	import { ordersAfterDrop, type RowOrders } from '$lib/graph/layout/tree-order';
+	import { DEFAULT_NODE_SIZE, type SizeOf } from '$lib/graph/layout/geometry';
 	import { spacingFor } from '$lib/graph/layout/density';
 	import type { GraphModel } from '$lib/graph/model/types';
 	import { exploredMap } from './explored-map.svelte';
@@ -139,6 +140,9 @@
 
 	/** Where this browser keeps the reader's habits, once loaded (`kept-preferences.ts`). */
 	let stores: PreferenceStores = {};
+	/** The rows the reader dragged this centre's tree into (docs/dev/05 §5.8). */
+	let treeOrders: RowOrders = [];
+	const treeKey = untrack(() => centerId ?? '');
 
 	/** Moves the state on, then carries out what it asks for; settles once all of it has. */
 	async function dispatch(event: ExplorerEvent): Promise<void> {
@@ -336,21 +340,40 @@
 		controller?.focus(id);
 	}
 
+	// The slots stand in as parents, so their generation's row makes room for them.
+	const treeLayout = (sizeOf: SizeOf) =>
+		familyTreeLayout(withParentSlots(view.drawnVisible, view.slots), sizeOf, treeOrders);
+
+	/** A drop in the tree snaps the person into their row, and the tree is laid out around it. */
+	function onDropNode(id: string, at: { x: number }) {
+		const canvas = controller;
+		if (!canvas || arrangedBy !== 'tree') return;
+		const laid = treeLayout(measuredOn(canvas));
+		const next = ordersAfterDrop(laid.rows, laid.positions, id, at.x, treeOrders);
+		if (next) {
+			treeOrders = next;
+			stores.treeOrders?.save(treeKey, next);
+		}
+		arrangeNow('tree');
+	}
+
+	// The room each node really takes, its name included; a node the canvas is not drawing
+	// (filtered out) has none to measure, and is given the usual room.
+	const measuredOn = (canvas: ExplorerController) => (id: string) => {
+		const size = canvas.sizeOf(id);
+		return size.width > 0 ? size : DEFAULT_NODE_SIZE;
+	};
+
 	function arrangeNow(key: ArrangementKey) {
 		const canvas = controller;
 		if (!canvas) return;
 		if (key === 'force') return canvas.arrange();
-		// The room each node really takes, its name included; a node the canvas is not drawing
-		// (filtered out) has none to measure, and is given the usual room.
-		const sizeOf = (id: string) => {
-			const size = canvas.sizeOf(id);
-			return size.width > 0 ? size : DEFAULT_NODE_SIZE;
-		};
+		const sizeOf = measuredOn(canvas);
 		if (key === 'tree') {
-			// The slots stand in as parents, so their generation's row makes room for them.
-			canvas.arrangeAt(familyTreeLayout(withParentSlots(view.drawnVisible, view.slots), sizeOf), {
+			canvas.arrangeAt(treeLayout(sizeOf), {
 				outsideFamily: t('graph.tree.outsideFamily'),
-				keepNamesDrawn: true
+				keepNamesDrawn: true,
+				rowDrags: true
 			});
 			return;
 		}
@@ -447,6 +470,7 @@
 
 		const loaded = loadKeptPreferences(() => localStorage);
 		stores = loaded.stores;
+		treeOrders = stores.treeOrders?.load(treeKey) ?? [];
 		const kept = loaded.kept;
 		void dispatch({ type: 'preferencesLoaded', kept });
 
@@ -460,7 +484,8 @@
 			topInset: toolbarBottom(),
 			spacing: spacingFor(density),
 			onTapNode,
-			onTapBackground
+			onTapBackground,
+			onDropNode
 		});
 		if (disposed) {
 			explorer.destroy();
@@ -552,7 +577,7 @@
 			bind:open={exporting}
 			defaultTitle={view.exportTitle}
 			privateCount={view.privateCount}
-			sceneFor={view.exportSceneFor}
+			sceneFor={(choices) => ({ ...view.exportSceneFor(choices), orders: treeOrders })}
 			edgeLabels={view.labelsFit}
 			outsideFamily={t('graph.tree.outsideFamily')}
 		/>

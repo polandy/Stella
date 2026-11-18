@@ -1,7 +1,6 @@
 import type { Core, CytoscapeOptions, ElementDefinition } from 'cytoscape';
-import { familyTreeLayout } from '../layout/family-tree';
 import { DEFAULT_NODE_SIZE, type Size } from '../layout/geometry';
-import type { ExportScene } from '../tree-export-scene';
+import { sceneLayout, type ExportScene } from '../tree-export-scene';
 import { sizeOf } from './canvas-nodes';
 import { buildStylesheet, type CyStyle } from './stylesheet';
 import { bendLines, writeCaption } from './tree-canvas';
@@ -129,7 +128,7 @@ function stylesheetFor(palette: Palette, request: TreeImageRequest): CyStyle[] {
 
 /** Lays the tree out as the explorer does, and sets everybody straight down where they go. */
 function arrange(cy: Core, request: TreeImageRequest): void {
-	const arrangement = familyTreeLayout(request.scene.model, (id) => {
+	const arrangement = sceneLayout(request.scene, (id) => {
 		const node = cy.$id(id);
 		return node.empty() ? DEFAULT_NODE_SIZE : sizeOf(node);
 	});

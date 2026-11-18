@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'bun:test';
 import { createTranslator } from '$lib/i18n/translate';
-import { exportScene, type SceneInput } from './tree-export-scene';
+import { exportScene, sceneLayout, type SceneInput } from './tree-export-scene';
+import { brunnerKeller } from './layout/family-fixtures';
+import { DEFAULT_NODE_SIZE } from './layout/geometry';
 import type { GraphEdge, GraphModel, GraphNode } from './model/types';
 
 /*
@@ -110,5 +112,17 @@ describe('exportScene', () => {
 		const scene = exportScene(input({ graph: family, shown: family }));
 		expect(scene.model.edges.some((e) => e.id === derived.id)).toBe(true);
 		expect(scene.elements.some((e) => e.data.id === derived.id)).toBe(false);
+	});
+});
+
+describe('sceneLayout', () => {
+	const scene = { model: brunnerKeller, elements: [], underNames: false };
+	const xOf = (orders: string[][] | undefined, id: string) =>
+		sceneLayout({ ...scene, orders }, () => DEFAULT_NODE_SIZE).positions.get(id)!.x;
+
+	it('keeps the rows the reader dragged the tree on screen into', () => {
+		expect(xOf(undefined, 'hans')).toBeLessThan(xOf(undefined, 'peter'));
+		const dragged = [['peter', 'ursula', 'hans', 'rosa']];
+		expect(xOf(dragged, 'peter')).toBeLessThan(xOf(dragged, 'hans'));
 	});
 });
