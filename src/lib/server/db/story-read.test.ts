@@ -65,6 +65,7 @@ async function giftForOma(id: string, state: 'idea' | 'given' | 'received', day:
 		occasion: null,
 		when: null,
 		whenCheckedOn: null,
+		groupId: null,
 		hiddenFromRecipient: false,
 		createdAt: 1_000 + ++sequence,
 		updatedAt: 1_000 + sequence

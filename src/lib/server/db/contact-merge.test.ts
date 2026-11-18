@@ -477,6 +477,87 @@ describe('what would collide', () => {
 		expect(memberships.every((m) => m.contactId === 'keep')).toBe(true);
 	});
 
+	it('keeps one open idea of a group for the survivor, the other one alone (§2.25.11)', () => {
+		db.insert(schema.giftGroup)
+			.values({ id: 'gg', householdId: H, createdBy: U1, title: 'Puzzle' })
+			.run();
+		db.insert(schema.gift)
+			.values([
+				{
+					id: 'g-keep',
+					contactId: 'keep',
+					createdBy: U1,
+					state: 'idea',
+					title: 'Puzzle',
+					groupId: 'gg'
+				},
+				{
+					id: 'g-dup',
+					contactId: 'dup',
+					createdBy: U1,
+					state: 'bought',
+					title: 'Puzzle',
+					groupId: 'gg'
+				},
+				{
+					id: 'g-given',
+					contactId: 'dup',
+					createdBy: U1,
+					state: 'given',
+					title: 'Puzzle',
+					groupId: 'gg',
+					givenOn: '2025-12-24'
+				}
+			])
+			.run();
+
+		expect(merge()).toBe(true);
+
+		const gifts = db.select().from(schema.gift).all();
+		expect(gifts.map((g) => [g.id, g.contactId, g.groupId]).sort()).toEqual([
+			['g-dup', 'keep', null],
+			['g-given', 'keep', 'gg'],
+			['g-keep', 'keep', 'gg']
+		]);
+	});
+
+	it('leaves an open idea of a group in it when the survivor had none there', () => {
+		db.insert(schema.giftGroup)
+			.values({ id: 'gg', householdId: H, createdBy: U1, title: 'Puzzle' })
+			.run();
+		db.insert(schema.gift)
+			.values([
+				{
+					id: 'g-keep',
+					contactId: 'keep',
+					createdBy: U1,
+					state: 'given',
+					title: 'Puzzle',
+					groupId: 'gg',
+					givenOn: '2025-12-24'
+				},
+				{
+					id: 'g-dup',
+					contactId: 'dup',
+					createdBy: U1,
+					state: 'idea',
+					title: 'Puzzle',
+					groupId: 'gg'
+				}
+			])
+			.run();
+
+		expect(merge()).toBe(true);
+
+		expect(
+			db
+				.select()
+				.from(schema.gift)
+				.all()
+				.every((g) => g.groupId === 'gg')
+		).toBe(true);
+	});
+
 	it('keeps one mention where a note named both records', () => {
 		db.insert(schema.note)
 			.values({ id: 'n1', contactId: 'keep', createdBy: U1, body: 'about them' })

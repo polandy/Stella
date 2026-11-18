@@ -41,6 +41,7 @@ function gift(over: Partial<Gift>): Gift {
 		occasion: null,
 		when: null,
 		whenCheckedOn: null,
+		groupId: null,
 		createdAt: 0,
 		updatedAt: 0,
 		...over

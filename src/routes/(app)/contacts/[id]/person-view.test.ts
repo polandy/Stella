@@ -112,6 +112,7 @@ describe('giftView', () => {
 		occasion: null,
 		when: null,
 		whenCheckedOn: null,
+		groupId: null,
 		hiddenFromRecipient: false,
 		createdAt: 1,
 		updatedAt: 2,

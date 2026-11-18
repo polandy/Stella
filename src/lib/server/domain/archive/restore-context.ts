@@ -28,6 +28,8 @@ export type RestoreWarning =
 	| { code: 'journalEntryIncomplete' }
 	| { code: 'touchpointIncomplete' }
 	| { code: 'giftIncomplete' }
+	| { code: 'giftGroupMissing' }
+	| { code: 'giftGroupEmpty' }
 	| { code: 'todoIncomplete' }
 	| { code: 'planIncomplete' }
 	| { code: 'tagWithoutName' }

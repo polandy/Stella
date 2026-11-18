@@ -211,6 +211,7 @@ describe('toStoryItem, gifts', () => {
 			occasion: 'christmas',
 			when: null,
 			whenCheckedOn: null,
+			groupId: null,
 			hiddenFromRecipient: false,
 			createdAt: 300,
 			updatedAt: 300,

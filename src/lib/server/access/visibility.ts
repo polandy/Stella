@@ -93,19 +93,21 @@ export interface GiftAccess extends ChildRecordAccess {
 	hiddenFromRecipient: boolean;
 	/** The person it is for. */
 	contactId: string;
+	/** Everyone the idea it was noted with is for (§2.25.11); empty for a gift noted alone. */
+	groupRecipientIds: readonly string[];
 }
 
-/** A gift is visible as a surprise. */
+/** A gift is visible as a surprise; one in a group is kept from each member its group is for. */
 export function canViewGift(
 	viewer: Viewer,
-	{ hiddenFromRecipient, ...gift }: GiftAccess,
+	{ hiddenFromRecipient, groupRecipientIds, ...gift }: GiftAccess,
 	viewerSelfContactId: string | null
 ): boolean {
-	return canViewSurprise(
-		viewer,
-		{ ...gift, hiddenFromPerson: hiddenFromRecipient },
-		viewerSelfContactId
-	);
+	const asSurprise = { ...gift, hiddenFromPerson: hiddenFromRecipient };
+	if (!canViewSurprise(viewer, asSurprise, viewerSelfContactId)) return false;
+	if (!hiddenFromRecipient || gift.ownerId === viewer.id || viewerSelfContactId === null)
+		return true;
+	return !groupRecipientIds.includes(viewerSelfContactId);
 }
 
 /**

@@ -13,6 +13,7 @@ import { createDrizzleContactRepository } from '../db/contact-repository';
 import * as schema from '../db/schema';
 import { exportHousehold, serialiseDocument } from '../domain/archive/archive';
 import { importArchive } from '../domain/archive/import';
+import { addGiftGroup } from '../domain/gifts/gift-groups';
 import { createContact } from '../domain/contacts/create-contact';
 import type { IdGenerator } from '../id';
 import { createFileMediaStore } from '../media/file-store';
@@ -115,6 +116,47 @@ describe('createArchiveServices', () => {
 		expect(report.household).toBe('Pollari');
 		expect(report.skipped.contact).toBe(1);
 		expect(report.added.contact ?? 0).toBe(0);
+	});
+
+	it('brings one idea for several people back as one group, with a gift each', async () => {
+		const archive = createArchiveServices(wiring);
+		const gifts = createGiftServices({
+			db,
+			clock,
+			ids,
+			contacts: createDrizzleContactRepository(db)
+		});
+		const recipients = [await addPerson('Mia'), await addPerson('Ben')].map((contactId) => ({
+			contactId
+		}));
+		const { groupId } = await addGiftGroup(gifts.giftGroupDeps, actorOf(admin), {
+			title: 'Puzzle',
+			note: null,
+			url: null,
+			when: null,
+			occasion: null,
+			visibility: 'shared',
+			recipients
+		});
+		const exported = await exportHousehold(archive.archiveDeps, actorOf(admin));
+		db.delete(schema.gift).run();
+		db.delete(schema.giftGroup).run();
+
+		const report = await importArchive(
+			archive.importArchiveDeps,
+			actorOf(admin),
+			{ documentText: serialiseDocument(exported.document), media: new Map() },
+			'en'
+		);
+
+		expect(report.added.gift_group).toBe(1);
+		expect(report.added.gift).toBe(2);
+		const back = await gifts.giftGroupDeps.groups.findVisibleTo(
+			{ id: admin.id, householdId: admin.householdId },
+			groupId
+		);
+		expect(back?.group.title).toBe('Puzzle');
+		expect(back?.gifts.map((g) => g.groupId)).toEqual([groupId, groupId]);
 	});
 });
 

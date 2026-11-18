@@ -96,6 +96,7 @@ describe('addGift', () => {
 			occasion: null,
 			when: null,
 			whenCheckedOn: null,
+			groupId: null,
 			createdAt: now,
 			updatedAt: now
 		});

@@ -133,6 +133,9 @@ export const errors: ErrorsMessages = {
 	'errors.gift.alreadyGiven': 'Dieses Geschenk wurde schon verschenkt.',
 	'errors.gift.gone': 'Dieses Geschenk gibt es nicht mehr.',
 	'errors.gift.ownSurprise': 'Ein Geschenk für dich kannst du nicht vor dir selbst verbergen.',
+	'errors.giftGroup.recipients': 'Wähle, für wen die Idee ist – bis zu 50 Personen.',
+	'errors.giftGroup.nobody':
+		'Für diesen Zeitpunkt passt die Idee für niemanden. Wähle einen anderen.',
 	'errors.gift.couldNotSave': 'Das Geschenk konnte nicht gespeichert werden.',
 	'errors.gift.badWhen': 'Bitte wähle, wann die Idee gelten soll.',
 	'errors.when.needsBirthYear': 'Für ein Alter braucht es das Geburtsjahr oder eine Schätzung.',

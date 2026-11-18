@@ -26,6 +26,7 @@ Detail stays in the feature doc the term points to.
 | **note** | A reference fact about a person, pinnable, not dated by what it is about (docs/dev/02 §2.5). Not a journal entry. | `note`, `note_mention`, `domain/notes/` | memo, comment |
 | **touchpoint** | A logged contact with a person — met, call, video, message, letter — on a day, with optional participants (docs/dev/02 §2.6). Buttons say *Log contact* / *Log interaction*. | `interaction`, `interaction_participant`, `domain/interactions/`, `lib/story/interaction-kinds.ts` | activity, event |
 | **gift** | A present for one person — an idea, given or received (docs/dev/02 §2.25). An idea and the gift it became are one record. | `gift`, `domain/gifts/`, `lib/gifts/`, `components/person/Gift*.svelte` | present, wish |
+| **gift group** | One idea noted for several people at once (docs/dev/02 §2.25.11): an ordinary gift for each, bound by the group that keeps what they share. The UI's word is *an idea for several*. | `gift_group`, `gift.group_id`, `domain/gifts/gift-groups.ts`, `lib/gifts/group-plan.ts` | bundle, template |
 | **to-do** | Something the household still owes one person, optionally by a day; open or done (docs/dev/02 §2.26). The UI names the card *To-dos* (German *Todo*) and one item *a to-do*, *To-do* at a sentence's start. | `todo`, `domain/todos/`, `lib/todos/`, `components/person/Todo*.svelte`, `components/todos/` | task, reminder |
 | **outing** | Something the household wants to do with one person — an *activity idea*, open, booked or done (docs/dev/02 §2.27). The UI names the card *Outings* (German *Unternehmungen*) and one item *an idea*. | `activity_idea`, `domain/plans/`, `lib/plans/`, `components/person/Plan*.svelte`, commands `plan.*` | activity, trip, event |
 | **story** | One person's timeline: their journal entries, touchpoints and given or received gifts in one order (docs/dev/02 §2.23). Its heading on the person page reads *Activity*. | `domain/story/`, `lib/story/`, `/contacts/[id]/story` | feed, history |
@@ -74,6 +75,7 @@ contact   1───* journal_entry    (per-person diary)      [M2]
 contact   1───* interaction
 contact   1───* important_date
 contact   1───* gift            (ideas, given and received)  [M3]
+household 1───* gift_group 1───* gift   (one idea for several people)  [M3]
 contact   1───* todo            (open or done)
 contact   1───* activity_idea   (outings: open, booked or done)
 contact   1───* photo
@@ -587,6 +589,30 @@ Birthdays are **derived** from `contact.birth_date`, never duplicated as a row. 
 is how a birthday is corrected without touching the profile, and how it is muted (an
 explicit row with `remind = 0`). See docs/dev/02 §2.13.
 
+### gift_group  [M3]
+One idea for several people (docs/dev/02 §2.25.11, ADR-134): what their gifts share, as noted —
+the template for someone added later. A household record, not a person's: each gift of it is
+an ordinary `gift` of its own person, so every read of gifts stays as it is.
+
+| column | type | notes |
+|---|---|---|
+| id | text pk | |
+| household_id | text fk → household.id | cascade delete |
+| created_by | text fk → user.id | who noted it |
+| title | text | required; copied into each gift |
+| note | text null | copied into each gift |
+| url | text null | an `http(s)` address only |
+| when_kind / when_age / when_on | as on `gift` | the shared time as noted; each gift stores what it came to for its person, or its own |
+| occasion | text null | offered when one of its gifts is given; each gift's `occasion` stays null until then |
+| visibility | text | `'shared' \| 'private'`; every gift of the group has the same |
+| hidden_from_recipients | int (0/1) | default 0; 1 makes each gift a surprise (§2.25.10); always 0 on a private group |
+| created_at / updated_at | int | |
+
+At most one open gift per person in a group — `giftGroup.add` notes each person once, and a
+merge unlinks the merged person's duplicate open idea (docs/dev/02 §2.2, merge). A group is never
+read on its own: it is seen through the gifts of it a viewer sees (§3.7), and one with none left
+is not shown. Exported as the archive's top-level `gift_groups`, each gift naming its `group`.
+
 ### gift  [M3]
 A present for one person (docs/dev/02 §2.25): an idea, a gift the household gave, or one it
 received. An idea and the gift it became are one row — *Bought* and *Mark as given* set
@@ -610,6 +636,7 @@ may edit, give or remove it; only its author may change its visibility or `hidde
 | when_age | int null | 1–150, for `from_age`, `at_age` and `christmas_at_age` only |
 | when_on | text null | ISO `YYYY-MM-DD`, for `on_date` only |
 | when_checked_on | text null | ISO `YYYY-MM-DD`: the household's day somebody last answered *Still current?*, or chose the time anew (docs/dev/02 §2.25.8); null on a given or received gift |
+| group_id | text null fk → gift_group.id | the idea for several people it was noted with (§2.25.11); null for most. No `ON DELETE`: SQLite cannot add `SET NULL` to an existing table's column, so a group is unlinked from its gifts before it is removed (ADR-134) |
 | created_at / updated_at | int | |
 
 The three `when_*` columns move together (`src/lib/when/when.ts`); a row whose triple does not
@@ -1181,7 +1208,9 @@ Contact visibility is the root: a `private` contact is visible only to its creat
 `activity_idea`, `interaction`) additionally hide when they are `private` and not owned by `u`, even on a
 shared contact. A **gift** kept from the person it is for (`hidden_from_recipient`) also hides
 from the member whose own record that person is, unless they noted it (`canViewGift` /
-`giftVisibleTo`, docs/dev/02 §2.25.10); an **outing** kept from its person
+`giftVisibleTo`, docs/dev/02 §2.25.10). A surprise **for several people at once** (a `gift_group`
+with `hidden_from_recipients`) hides every gift of the group from each member whose own record
+any of them is for — Mama does not see Papa's gift of the joint idea either (ADR-134); an **outing** kept from its person
 (`hidden_from_person`) likewise — both are a *surprise* (`canViewSurprise` / `surpriseVisibleTo`, docs/dev/02 §2.27.4). Relationships require **both** endpoints visible. A **circle** follows the
 same contact-like rule (shared to the household, or private to its owner); a
 **circle_membership** — and any derived shared-context link — is visible only when both

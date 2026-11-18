@@ -137,6 +137,8 @@ export const errors = {
 	'errors.gift.alreadyGiven': 'This gift was already given.',
 	'errors.gift.gone': 'This gift is no longer there.',
 	'errors.gift.ownSurprise': 'You cannot keep a gift from yourself — it is for you.',
+	'errors.giftGroup.recipients': 'Choose who the idea is for — up to 50 people.',
+	'errors.giftGroup.nobody': 'Nobody can get this idea for that time. Choose another.',
 	'errors.gift.couldNotSave': 'Could not save the gift.',
 	'errors.gift.badWhen': 'Please choose when the idea is for.',
 	'errors.when.needsBirthYear': 'An age needs their birth year, or an estimate of it.',

@@ -17,6 +17,7 @@ const idea: OpenIdea & { whenState: null } = {
 	occasion: null,
 	when: null,
 	whenCheckedOn: null,
+	groupId: null,
 	hiddenFromRecipient: false,
 	whenState: null,
 	createdAt: 1,

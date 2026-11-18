@@ -105,7 +105,8 @@ describe('canViewGift (docs/dev/02 §2.25.10: everyone but the person it is for)
 	const surprise = {
 		...childOn(contact()),
 		contactId: RECIPIENT_PERSON,
-		hiddenFromRecipient: true
+		hiddenFromRecipient: true,
+		groupRecipientIds: [] as string[]
 	};
 
 	it('hides a surprise from the member whose own person it is for', () => {
@@ -126,6 +127,20 @@ describe('canViewGift (docs/dev/02 §2.25.10: everyone but the person it is for)
 		expect(canViewGift(viewerOther, open, RECIPIENT_PERSON)).toBe(true);
 		expect(canViewGift(viewerForeign, open, null)).toBe(false);
 		expect(canViewGift(viewerOther, { ...open, visibility: 'private' }, null)).toBe(false);
+	});
+
+	it('keeps a surprise noted for several people from each of them, not only its own one (§2.25.11)', () => {
+		const forSibling = {
+			...surprise,
+			contactId: 'contact-sibling',
+			groupRecipientIds: ['contact-sibling', RECIPIENT_PERSON]
+		};
+		expect(canViewGift(viewerOther, forSibling, RECIPIENT_PERSON)).toBe(false);
+		expect(canViewGift(viewerOther, forSibling, 'contact-someone-else')).toBe(true);
+		expect(canViewGift(viewerOwner, forSibling, RECIPIENT_PERSON)).toBe(true);
+		expect(
+			canViewGift(viewerOther, { ...forSibling, hiddenFromRecipient: false }, RECIPIENT_PERSON)
+		).toBe(true);
 	});
 });
 

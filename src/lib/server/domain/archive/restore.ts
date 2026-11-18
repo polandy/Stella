@@ -6,6 +6,7 @@ import { planAnswers } from './restore-answers';
 import { ARCHIVE_FORMAT, ARCHIVE_VERSION } from './document';
 import type { RestoreContext, RestoreWarning } from './restore-context';
 import { int, ms, record, records, str, visibilityOf, type Row } from './restore-fields';
+import { planGiftGroups } from './restore-gift-groups';
 import { planCircles, planHomes, planTags } from './restore-groups';
 import { planImmichIgnores, planPeople } from './restore-people';
 import { photoPlan } from './restore-photos';
@@ -155,6 +156,7 @@ export function planRestore(
 	const photos = photoPlan(ctx);
 	const { contacts, immichLinks, knownPeople } = planPeople(people, ctx);
 	const personRecords = planPersonRecords(people, knownPeople, photos, ctx);
+	const giftGroups = planGiftGroups(document, personRecords.gifts, ctx);
 	const { tags, contactTags } = planTags(document, people, knownPeople, target.tags, ctx);
 	const { circles, memberships } = planCircles(document, knownPeople, photos, ctx);
 	const { homes, homeMembers } = planHomes(document, knownPeople, ctx);
@@ -193,7 +195,8 @@ export function planRestore(
 			{ table: 'journal_immich_photo', rows: personRecords.journalImmichPhotos },
 			{ table: 'interaction', rows: personRecords.interactions },
 			{ table: 'interaction_participant', rows: personRecords.participants },
-			{ table: 'gift', rows: personRecords.gifts },
+			{ table: 'gift_group', rows: giftGroups.groups },
+			{ table: 'gift', rows: giftGroups.gifts },
 			{ table: 'todo', rows: personRecords.todos },
 			{ table: 'activity_idea', rows: personRecords.plans },
 			{ table: 'photo', rows: kept.photos },
