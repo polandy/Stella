@@ -1,7 +1,7 @@
 import { PARTNER_TYPE_KEYS } from '../../relationships/type-keys';
 import { familiesOf } from '../model/generations';
 import { hiddenInTree } from '../model/tree-shown';
-import type { GraphModel } from '../model/types';
+import type { GraphEdge, GraphModel } from '../model/types';
 import {
 	bowsAround,
 	defaultSizeOf,
@@ -49,20 +49,24 @@ export interface TreeArrangement extends Arrangement {
 
 /**
  * Every node of `model` arranged as a family tree, each given the room `sizeOf` says it takes,
- * every row in `orders` kept in the order the reader dragged it into.
+ * every row in `orders` kept in the order the reader dragged it into. `unfiltered` are the
+ * links before the reader's filters: the people are placed by those among them, so a filter
+ * takes lines away but never moves anybody; only `model`'s own links are drawn.
  */
 export function familyTreeLayout(
 	model: GraphModel,
 	sizeOf: SizeOf = defaultSizeOf,
-	orders: RowOrders = []
+	orders: RowOrders = [],
+	unfiltered: readonly GraphEdge[] = []
 ): TreeArrangement {
+	const arranged = arrangedBy(model, unfiltered);
 	const neighbours = new Map<string, Set<string>>();
 	const partners = new Map<string, Set<string>>();
 	const link = (map: Map<string, Set<string>>, a: string, b: string) => {
 		if (!map.has(a)) map.set(a, new Set());
 		map.get(a)!.add(b);
 	};
-	for (const edge of model.edges) {
+	for (const edge of arranged.edges) {
 		if (edge.source === edge.target) continue;
 		link(neighbours, edge.source, edge.target);
 		link(neighbours, edge.target, edge.source);
@@ -76,9 +80,9 @@ export function familyTreeLayout(
 	let left = 0;
 	let deepest = -1;
 	const rows: string[][][] = [];
-	for (const family of familiesOf(model)) {
-		const arranged = arrangeFamily(
-			model,
+	for (const family of familiesOf(arranged)) {
+		const { x, rows: familyRows } = arrangeFamily(
+			arranged,
 			family,
 			neighbours,
 			partners,
@@ -86,8 +90,7 @@ export function familyTreeLayout(
 			TREE_SPACING,
 			orders
 		);
-		const x = arranged.x;
-		rows.push(...arranged.rows.filter((row) => row.length > 0));
+		rows.push(...familyRows.filter((row) => row.length > 0));
 		const lefts = [...x].map(([id, at]) => at - sizeOf(id).width / 2);
 		const rights = [...x].map(([id, at]) => at + sizeOf(id).width / 2);
 		const shift = left - Math.min(...lefts);
@@ -134,4 +137,16 @@ export function familyTreeLayout(
 		// Named only beneath a family: on a map with none, everybody is on the shelf.
 		...(members.size > 0 && rest.length > 0 ? { outsideFamily: { x: 0, y: shelfTop } } : {})
 	};
+}
+
+/**
+ * The model's people with every unfiltered link among them, in the unfiltered order, and then
+ * the model's own links the filters never saw: what the tree is placed by.
+ */
+function arrangedBy(model: GraphModel, unfiltered: readonly GraphEdge[]): GraphModel {
+	if (unfiltered.length === 0) return model;
+	const shown = new Set(model.nodes.map((n) => n.id));
+	const among = unfiltered.filter((e) => shown.has(e.source) && shown.has(e.target));
+	const known = new Set(unfiltered.map((e) => e.id));
+	return { nodes: model.nodes, edges: [...among, ...model.edges.filter((e) => !known.has(e.id))] };
 }

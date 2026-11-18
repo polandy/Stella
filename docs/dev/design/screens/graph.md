@@ -31,7 +31,10 @@ card (§5.5.2); its styling is §5.8.
   each with a caption: a friend of the centre's their role, anybody else whom on the map they
   hang off (*Friend of Sandra +1*), a circle its people on the map (*Lena, Noah +2*).
   Each family stands as one block — siblings together, a person's father's family left, their
-  mother's right — so no couple's bar crosses another's. Only the tree's own lines are drawn:
+  mother's right — so no couple's bar crosses another's. Two parents of the same children stand
+  side by side even with no partnership entered, and somebody who married in stands at the edge
+  of their partner's siblings, never amid them. A filter only takes lines away: everybody
+  shown keeps their place. Only the tree's own lines are drawn:
   a grandparent, cousin or sibling line the bars already draw is left off, and friends,
   colleagues and circles show their lines only around a person the reader taps or finds — not
   around the opening centre, nor the person just expanded once the tree is laid out again. An
@@ -100,6 +103,11 @@ the strip too: at 820 px a full-height panel covered the right half of the map, 
 just tapped was often underneath it, while a strip leaves the whole width to the map. A phone frames
 a whole family far below full zoom, so the names around the selected person grow with it; the
 faded rest stays small, or the grown names would cover the people.
+
+Co-parents stand together whether or not the household entered their partnership, because
+their children are what the tree is about; apart, another family's drop ran between them.
+A filter leaves the arrangement as it was because the reader narrows the lines to read them,
+not to get a different tree; rebuilt, a couple lost its partner line and stood apart.
 
 A dragged person snaps into their row rather than standing where dropped because the tree's
 right-angled lines are only right at the places the tree worked out; a free drop tore them into

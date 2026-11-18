@@ -340,9 +340,15 @@
 		controller?.focus(id);
 	}
 
-	// The slots stand in as parents, so their generation's row makes room for them.
+	// The slots stand in as parents, so their generation's row makes room for them; the people
+	// are placed by every link among them, so a filter only takes lines away.
 	const treeLayout = (sizeOf: SizeOf) =>
-		familyTreeLayout(withParentSlots(view.drawnVisible, view.slots), sizeOf, treeOrders);
+		familyTreeLayout(
+			withParentSlots(view.drawnVisible, view.slots),
+			sizeOf,
+			treeOrders,
+			view.drawn.edges
+		);
 
 	/** A drop in the tree snaps the person into their row, and the tree is laid out around it. */
 	function onDropNode(id: string, at: { x: number }) {

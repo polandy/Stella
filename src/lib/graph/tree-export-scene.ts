@@ -7,7 +7,7 @@ import { impliedKinshipEdgeIds } from './model/implied-kinship';
 import { shelfCaptions } from './model/shelf-captions';
 import { rolesTowards } from './model/tree-roles';
 import { hiddenInTree } from './model/tree-shown';
-import type { GraphModel } from './model/types';
+import type { GraphEdge, GraphModel } from './model/types';
 import type { RowOrders } from './layout/tree-order';
 import { familyTreeLayout } from './layout/family-tree';
 import type { SizeOf } from './layout/geometry';
@@ -26,6 +26,8 @@ export interface SceneInput {
 	graph: GraphModel;
 	/** The tree as the explorer shows it: opened up, with the reader's filters applied. */
 	shown: GraphModel;
+	/** The same before the filters: the links the people are placed by, as on screen. */
+	unfiltered?: readonly GraphEdge[];
 	centerId: string | null;
 	/** The tree around a person, which writes everybody's role towards them under the name. */
 	rolesInstead: boolean;
@@ -44,6 +46,8 @@ export interface ExportScene {
 	underNames: boolean;
 	/** The rows the reader dragged the tree on screen into, kept on the picture too. */
 	orders?: RowOrders;
+	/** The links before the filters, so the picture places everybody as the screen does. */
+	unfiltered?: readonly GraphEdge[];
 }
 
 export function exportScene(input: SceneInput): ExportScene {
@@ -87,11 +91,12 @@ export function exportScene(input: SceneInput): ExportScene {
 	return {
 		model,
 		elements,
-		underNames: around !== null || choices.dates
+		underNames: around !== null || choices.dates,
+		unfiltered: input.unfiltered
 	};
 }
 
 /** The scene laid out as the explorer lays the tree out, the reader's dragged rows kept. */
 export function sceneLayout(scene: ExportScene, sizeOf: SizeOf) {
-	return familyTreeLayout(scene.model, sizeOf, scene.orders);
+	return familyTreeLayout(scene.model, sizeOf, scene.orders, scene.unfiltered);
 }

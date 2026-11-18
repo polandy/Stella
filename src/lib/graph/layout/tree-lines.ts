@@ -197,6 +197,8 @@ export interface BarSpan {
 	channel: number;
 	left: number;
 	right: number;
+	/** Who hangs from it. */
+	children: string[];
 }
 
 /** Every couple's (or lone parent's) bar over their children, as the stretch of its gap it takes. */
@@ -211,12 +213,18 @@ export function barSpans(
 		if (e.typeKey !== PARENT_CHILD_TYPE_KEY || at(e.source).y >= at(e.target).y) continue;
 		const drop = dropOf(e.source, e.target);
 		const key = `${at(e.source).y}|${drop.group}`;
-		const known = spans.get(key) ?? { channel: at(e.source).y, left: drop.x, right: drop.x };
+		const known = spans.get(key) ?? {
+			channel: at(e.source).y,
+			left: drop.x,
+			right: drop.x,
+			children: []
+		};
 		const child = at(e.target).x;
 		spans.set(key, {
 			...known,
 			left: Math.min(known.left, child),
-			right: Math.max(known.right, child)
+			right: Math.max(known.right, child),
+			children: [...known.children, e.target]
 		});
 	}
 	return [...spans.values()];
