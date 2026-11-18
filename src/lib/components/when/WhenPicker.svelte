@@ -7,7 +7,7 @@
 	import { ageOn, knowsBirthYear, whenOutlook } from '$lib/when/resolve';
 	import { monthLabel, whenPreview } from '$lib/when/labels';
 	import { quickDays, type QuickPick } from '$lib/when/quick-picks';
-	import { WHEN_AGE_MAX, WHEN_AGE_MIN, type When, type WhenKind } from '$lib/when/when';
+	import { isAgeKind, WHEN_AGE_MAX, WHEN_AGE_MIN, type When, type WhenKind } from '$lib/when/when';
 	import { WHEN_FIELDS } from '$lib/when/form';
 	import { shiftMonth } from '$lib/dates/month';
 	import { dayLabel } from '$lib/dates/labels';
@@ -99,13 +99,12 @@
 		'cursor-pointer rounded-full border border-border bg-bg px-3 py-1 text-[0.8125rem] text-fg-muted transition-colors has-checked:border-primary has-checked:bg-primary-soft has-checked:font-medium has-checked:text-primary has-focus-visible:outline-2 has-focus-visible:outline-focus-ring has-disabled:cursor-not-allowed has-disabled:opacity-50';
 	const STEP =
 		'grid size-8 place-items-center rounded-full border border-border text-fg-muted hover:bg-primary-soft disabled:opacity-40';
-	const isAge = (k: string) => k === 'from_age' || k === 'at_age';
 </script>
 
 <fieldset class="flex flex-col gap-1.5" aria-describedby={previewId} data-testid="when-picker">
 	<legend class="mb-1.5 text-xs font-medium text-fg-muted">{t('when.label')}</legend>
 	<input type="hidden" name={WHEN_FIELDS.kind} value={kind} />
-	{#if isAge(kind)}<input type="hidden" name={WHEN_FIELDS.age} value={age} />{/if}
+	{#if isAgeKind(kind)}<input type="hidden" name={WHEN_FIELDS.age} value={age} />{/if}
 	<div class="flex flex-wrap gap-1.5">
 		{#each ['now', ...kinds] as const as value (value)}
 			<label class={CHIP}>
@@ -113,7 +112,7 @@
 					type="radio"
 					{value}
 					bind:group={kind}
-					disabled={isAge(value) && !ageKnown}
+					disabled={isAgeKind(value) && !ageKnown}
 					class="sr-only"
 				/>
 				{t(value === 'now' ? `when.kind.${nowLabel}` : `when.kind.${value}`)}
@@ -121,7 +120,7 @@
 		{/each}
 	</div>
 
-	{#if !ageKnown && kinds.some(isAge)}
+	{#if !ageKnown && kinds.some(isAgeKind)}
 		<p class="text-xs text-fg-muted">
 			{t('when.needsYear')}
 			{#if estimateHref}
@@ -132,7 +131,7 @@
 		</p>
 	{/if}
 
-	{#if isAge(kind)}
+	{#if isAgeKind(kind)}
 		<div class="flex items-center gap-2" role="group" aria-label={t('when.age')}>
 			<button
 				type="button"

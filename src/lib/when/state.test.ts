@@ -124,6 +124,41 @@ describe('whenState, for an age or a day', () => {
 			{ kind: 'passed', on: '2030-01-01', approximate: true }
 		],
 		[
+			'Christmas at an age, before the lead time',
+			{ kind: 'christmas_at_age', age: 6 },
+			mia,
+			'2028-09-24',
+			{ kind: 'waiting' }
+		],
+		[
+			'Christmas at an age, soon',
+			{ kind: 'christmas_at_age', age: 6 },
+			mia,
+			'2028-09-25',
+			{ kind: 'soon', on: '2028-12-24', approximate: false, inDays: 90 }
+		],
+		[
+			'Christmas at an age, on Christmas Eve',
+			{ kind: 'christmas_at_age', age: 6 },
+			mia,
+			'2028-12-24',
+			{ kind: 'due', on: '2028-12-24', approximate: false }
+		],
+		[
+			'Christmas at an age, gone by',
+			{ kind: 'christmas_at_age', age: 6 },
+			mia,
+			'2028-12-25',
+			{ kind: 'passed', on: '2028-12-24', approximate: false }
+		],
+		[
+			'Christmas at an estimated age, passed only with the year',
+			{ kind: 'christmas_at_age', age: 80 },
+			ruth,
+			'2030-12-31',
+			{ kind: 'due', on: '2030-12-24', approximate: true }
+		],
+		[
 			'an age whose birth year went is due, never lost',
 			fromSix,
 			heinz,

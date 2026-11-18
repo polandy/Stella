@@ -2,8 +2,15 @@
 
 import { FULL_DATE_SHAPE } from '../dates/calendar';
 
-/** The ways a record can wait: from an age on, for one birthday, for a day or a month, or later. */
-export const WHEN_KINDS = ['from_age', 'at_age', 'on_date', 'in_month', 'later'] as const;
+/** The ways a record can wait: from an age on, for one birthday, for Christmas at an age, for a day or a month, or later. */
+export const WHEN_KINDS = [
+	'from_age',
+	'at_age',
+	'christmas_at_age',
+	'on_date',
+	'in_month',
+	'later'
+] as const;
 
 export type WhenKind = (typeof WHEN_KINDS)[number];
 
@@ -14,9 +21,18 @@ export const WHEN_AGE_MAX = 150;
 /** A month as `YYYY-MM`. */
 export const MONTH_SHAPE = /^\d{4}-(0[1-9]|1[0-2])$/;
 
-/** A when other than *now*: an age (from it on, or that one birthday), a day, a month, or later. */
+/** The kinds that name an age. */
+export const AGE_WHEN_KINDS = ['from_age', 'at_age', 'christmas_at_age'] as const;
+
+export type AgeWhenKind = (typeof AGE_WHEN_KINDS)[number];
+
+/** Whether a kind names an age. */
+export const isAgeKind = (kind: string): kind is AgeWhenKind =>
+	(AGE_WHEN_KINDS as readonly string[]).includes(kind);
+
+/** A when other than *now*: an age (from it on, that one birthday, or that Christmas), a day, a month, or later. */
 export type When =
-	| { kind: 'from_age' | 'at_age'; age: number }
+	| { kind: AgeWhenKind; age: number }
 	| { kind: 'on_date'; on: string }
 	/** `on` is the month, `YYYY-MM`. */
 	| { kind: 'in_month'; on: string }
@@ -35,6 +51,7 @@ export function whenColumns(when: When | null): WhenColumns {
 	switch (when.kind) {
 		case 'from_age':
 		case 'at_age':
+		case 'christmas_at_age':
 			return { whenKind: when.kind, whenOn: null, whenAge: when.age };
 		case 'on_date':
 		case 'in_month':
@@ -52,6 +69,7 @@ export function whenOfColumns(columns: WhenColumns): When | null {
 			return null;
 		case 'from_age':
 		case 'at_age':
+		case 'christmas_at_age':
 			if (whenAge === null) throw new Error(`A ${whenKind} when without an age`);
 			return { kind: whenKind, age: whenAge };
 		case 'on_date':
@@ -72,7 +90,7 @@ export function whenFromOutside(columns: {
 	whenAge: number | null;
 }): When | null {
 	const { whenKind, whenOn, whenAge } = columns;
-	if (whenKind === 'from_age' || whenKind === 'at_age') {
+	if (whenKind !== null && isAgeKind(whenKind)) {
 		const fits =
 			whenAge !== null &&
 			Number.isInteger(whenAge) &&

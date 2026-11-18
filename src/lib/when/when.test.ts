@@ -10,6 +10,7 @@ const WHENS: (When | null)[] = [
 	null,
 	{ kind: 'from_age', age: 6 },
 	{ kind: 'at_age', age: 18 },
+	{ kind: 'christmas_at_age', age: 6 },
 	{ kind: 'on_date', on: '2027-12-24' },
 	{ kind: 'in_month', on: '2027-05' },
 	{ kind: 'later' }
@@ -47,6 +48,7 @@ describe('whenFromOutside', () => {
 		['an age out of range', outside('at_age', null, 151)],
 		['an age with a fraction', outside('from_age', null, 2.5)],
 		['an age missing', outside('at_age', null, null)],
+		['a Christmas without an age', outside('christmas_at_age', null, null)],
 		['a day not shaped as one', outside('on_date', 'Christmas', null)],
 		['a month not shaped as one', outside('in_month', '2027-13', null)],
 		['a month that is a day', outside('in_month', '2027-05-01', null)]
@@ -61,6 +63,11 @@ describe('whenFromForm', () => {
 		['no picker', {}, undefined],
 		['now', { whenKind: 'now' }, null],
 		['an age', { whenKind: 'from_age', whenAge: '6' }, { kind: 'from_age', age: 6 }],
+		[
+			'Christmas at an age',
+			{ whenKind: 'christmas_at_age', whenAge: '6' },
+			{ kind: 'christmas_at_age', age: 6 }
+		],
 		['a day', { whenKind: 'on_date', whenOn: '2027-12-24' }, { kind: 'on_date', on: '2027-12-24' }],
 		['a month', { whenKind: 'in_month', whenOn: '2027-05' }, { kind: 'in_month', on: '2027-05' }],
 		['later', { whenKind: 'later', whenAge: '6' }, { kind: 'later' }],

@@ -141,6 +141,7 @@ export const errors = {
 	'errors.gift.badWhen': 'Please choose when the idea is for.',
 	'errors.when.needsBirthYear': 'An age needs their birth year, or an estimate of it.',
 	'errors.when.birthdayPassed': 'That birthday is over. Choose a later one.',
+	'errors.when.christmasPassed': 'That Christmas is over. Choose a later age.',
 	'errors.when.dayPassed': 'That day is over. Choose one still ahead.',
 	'errors.when.monthPassed': 'That month is over. Choose one still ahead.',
 	'errors.when.noSuchDay': 'There is no such day.',

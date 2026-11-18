@@ -27,6 +27,8 @@ describe('a gift command and its when', () => {
 		expect(
 			v.safeParse(GiftEditSchema, { ...added, giftId: 'g-1', when: { kind: 'at_age' } }).success
 		).toBe(false);
+		const christmas = { kind: 'christmas_at_age' as const, age: 6 };
+		expect(v.parse(GiftAddSchema, { ...added, when: christmas }).when).toEqual(christmas);
 	});
 });
 

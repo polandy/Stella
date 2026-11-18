@@ -60,7 +60,7 @@ export interface SeedLink {
 export interface SeedGift {
 	title: string;
 	when?:
-		| { kind: 'from_age' | 'at_age'; age: number }
+		| { kind: 'from_age' | 'at_age' | 'christmas_at_age'; age: number }
 		| { kind: 'on_date'; on: string }
 		| { kind: 'later' };
 	createdAt?: string;

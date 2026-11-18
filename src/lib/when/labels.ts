@@ -17,13 +17,15 @@ export function monthLabel(lang: DateLanguage, month: string): string {
 	});
 }
 
-/** The chip on a waiting record's row: *From age 8*, *For the 10th birthday*, *Christmas 2027*. */
+/** The chip on a waiting record's row: *From age 8*, *For the 10th birthday*, *Christmas at 6*, *Christmas 2027*. */
 export function whenChip(lang: DateLanguage, when: When): string {
 	switch (when.kind) {
 		case 'from_age':
 			return lang.t('when.chip.fromAge', { age: when.age });
 		case 'at_age':
 			return lang.t('when.chip.atAge', { age: when.age });
+		case 'christmas_at_age':
+			return lang.t('when.chip.christmasAtAge', { age: when.age });
 		case 'on_date':
 			return when.on.endsWith(CHRISTMAS)
 				? lang.t('when.christmas', { year: when.on.slice(0, 4) })
@@ -79,9 +81,14 @@ export function whenPreview(lang: DateLanguage, outlook: WhenOutlook): string {
 					? lang.t('when.preview.onDay', { day: dayLabel(lang, on) })
 					: when.kind === 'in_month'
 						? lang.t('when.preview.inMonth', { month: monthLabel(lang, when.on) })
-						: approximate
-							? lang.t('when.preview.turnsAbout', { age: when.age, year: on.slice(0, 4) })
-							: lang.t('when.preview.turns', { age: when.age, day: dayLabel(lang, on) });
+						: when.kind === 'christmas_at_age'
+							? lang.t(approximate ? 'when.preview.christmasAbout' : 'when.preview.christmas', {
+									age: when.age,
+									year: on.slice(0, 4)
+								})
+							: approximate
+								? lang.t('when.preview.turnsAbout', { age: when.age, year: on.slice(0, 4) })
+								: lang.t('when.preview.turns', { age: when.age, day: dayLabel(lang, on) });
 			const stands = waits
 				? lang.t('when.preview.waits', { day: dayLabel(lang, addDays(on, -WHEN_LEAD_DAYS)) })
 				: lang.t('when.preview.open');

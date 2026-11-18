@@ -9,6 +9,7 @@ import type { When, WhenKind } from '../when/when';
 export const GIFT_WHEN_KINDS = [
 	'from_age',
 	'at_age',
+	'christmas_at_age',
 	'on_date',
 	'later'
 ] as const satisfies readonly WhenKind[];

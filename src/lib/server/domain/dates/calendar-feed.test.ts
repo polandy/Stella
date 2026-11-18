@@ -249,6 +249,15 @@ describe('giftIdeaEvents', () => {
 		});
 	});
 
+	test('an idea for Christmas at an age stands on that Christmas Eve', () => {
+		const atSix = idea({ when: { kind: 'christmas_at_age', age: 6 } });
+		expect(giftsOn([atSix], '2027-09-24')).toEqual([]);
+		expect(giftsOn([atSix], '2027-09-25')[0]).toMatchObject({
+			start: '2027-12-24',
+			description: 'Christmas at 6'
+		});
+	});
+
 	test('a waiting idea is not in the calendar until its lead time begins', () => {
 		expect(giftsOn([idea()], '2026-12-13')).toEqual([]);
 		expect(giftsOn([idea()], '2026-12-14')).toHaveLength(1);

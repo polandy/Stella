@@ -137,6 +137,7 @@ export const errors: ErrorsMessages = {
 	'errors.gift.badWhen': 'Bitte wähle, wann die Idee gelten soll.',
 	'errors.when.needsBirthYear': 'Für ein Alter braucht es das Geburtsjahr oder eine Schätzung.',
 	'errors.when.birthdayPassed': 'Dieser Geburtstag ist vorbei. Wähle einen späteren.',
+	'errors.when.christmasPassed': 'Dieses Weihnachten ist vorbei. Wähle ein späteres Alter.',
 	'errors.when.dayPassed': 'Dieser Tag ist vorbei. Wähle einen, der noch kommt.',
 	'errors.when.monthPassed': 'Dieser Monat ist vorbei. Wähle einen, der noch kommt.',
 	'errors.when.noSuchDay': 'Diesen Tag gibt es nicht.',

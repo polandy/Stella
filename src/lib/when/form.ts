@@ -1,6 +1,6 @@
 import * as v from 'valibot';
 import { optionalWhenOf } from './schema';
-import type { When, WhenKind } from './when';
+import { isAgeKind, type When, type WhenKind } from './when';
 
 /* A when as `WhenPicker.svelte` posts it, read into the payload's shape; `WhenSchema` judges it. */
 
@@ -12,9 +12,7 @@ export function whenFromForm(read: (key: string) => string | null): unknown {
 	const kind = read(WHEN_FIELDS.kind);
 	if (kind === null || kind === '') return undefined;
 	if (kind === 'now') return null;
-	if (kind === 'from_age' || kind === 'at_age') {
-		return { kind, age: Number(read(WHEN_FIELDS.age) ?? '') };
-	}
+	if (isAgeKind(kind)) return { kind, age: Number(read(WHEN_FIELDS.age) ?? '') };
 	if (kind === 'on_date' || kind === 'in_month') return { kind, on: read(WHEN_FIELDS.on) ?? '' };
 	return { kind };
 }
