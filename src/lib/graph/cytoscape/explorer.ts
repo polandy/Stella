@@ -5,7 +5,7 @@ import { DEFAULT_DENSITY, spacingFor } from '../layout/density';
 import type { Point } from './placement';
 import { bendLines, writeCaption } from './tree-canvas';
 import { CAPTION_CLASS } from './canvas-classes';
-import { sizeOf } from './canvas-nodes';
+import { roomOf, sizeOf } from './canvas-nodes';
 import { trackMotion } from './motion';
 import { frameOn } from './framing';
 import { arrangeOn } from './arranging';
@@ -111,10 +111,10 @@ export function explorerFromCore(cy: Core, opts: ControllerOptions): ExplorerCon
 			arranging.glideTo(new Map([...positions, ...captioned]), !opts.reducedMotion, family);
 		},
 
-		sizeOf(nodeId) {
+		sizeOf(nodeId, { badge = true } = {}) {
 			const node = cy.$id(nodeId);
 			if (!alive() || node.empty()) return { width: 0, height: 0 };
-			return sizeOf(node);
+			return badge ? sizeOf(node) : roomOf(node);
 		},
 
 		setTopInset(pixels) {

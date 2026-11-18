@@ -141,3 +141,77 @@ export const twoHouseholds: GraphModel = {
 		...parentsOf('hugo', 'bert')
 	]
 };
+
+/**
+ * The Pollaris, as Leo's tree holds them: Francesco and Wing Kam have four children and no
+ * partnership entered, Andy married Sia from outside, and the slots for missing parents stand in
+ * as people. Listed with Kek Ly between Leo's grandparents and Sia among the siblings.
+ */
+export const pollari: GraphModel = {
+	nodes: [
+		person('pasquale', 'male'),
+		person('slotF', undefined),
+		person('francesco', 'male'),
+		person('slotS', undefined),
+		person('kekly', 'female'),
+		person('slotK', undefined),
+		person('wingkam', 'female'),
+		person('slotW', undefined),
+		person('linda', 'female'),
+		person('andy', 'male'),
+		person('sia', 'female'),
+		person('steve', 'male'),
+		person('sebi', 'male'),
+		person('ennio', 'male'),
+		person('leo', 'male'),
+		person('jera', 'male'),
+		person('fred', 'male')
+	],
+	edges: [
+		...parentsOf('francesco', 'pasquale', 'slotF'),
+		...parentsOf('kekly', 'slotK'),
+		...parentsOf('wingkam', 'slotW'),
+		...parentsOf('linda', 'francesco', 'wingkam'),
+		...parentsOf('andy', 'francesco', 'wingkam'),
+		...parentsOf('steve', 'francesco', 'wingkam'),
+		...parentsOf('sebi', 'francesco', 'wingkam'),
+		...parentsOf('sia', 'kekly', 'slotS'),
+		stored('andy', 'sia', 'spouse'),
+		...parentsOf('leo', 'andy', 'sia'),
+		...parentsOf('ennio', 'linda'),
+		...parentsOf('jera', 'steve'),
+		...parentsOf('fred', 'steve'),
+		kin('francesco', 'leo', 'grandparent'),
+		kin('wingkam', 'leo', 'grandparent'),
+		kin('kekly', 'leo', 'grandparent'),
+		kin('pasquale', 'leo', 'great-grandparent'),
+		kin('linda', 'leo', 'aunt-uncle'),
+		kin('steve', 'leo', 'aunt-uncle'),
+		kin('sebi', 'leo', 'aunt-uncle'),
+		kin('ennio', 'leo', 'cousin'),
+		kin('jera', 'leo', 'cousin'),
+		kin('fred', 'leo', 'cousin')
+	]
+};
+
+const pollariNames: Readonly<Record<string, string>> = {
+	pasquale: 'Pasquale Pollari',
+	francesco: 'Francesco Pollari',
+	wingkam: 'Wing Kam Pollari',
+	kekly: 'Kek Ly Lim',
+	linda: 'Linda Pollari',
+	andy: 'Andy Pollari',
+	sia: 'Sia Mouy Pollari',
+	steve: 'Steve Pollari',
+	sebi: 'Sebastian Paisal „Sebi“ Pollari',
+	ennio: 'Ennio Arcari',
+	leo: 'Leonardo Pollari',
+	jera: 'Jeremias „Jerä“ Rubin',
+	fred: 'Frederic Rubin'
+};
+
+/** The room the Pollaris' full names take, a slot the size of a node. */
+export const pollariSizeOf = (id: string) => ({
+	width: Math.max(56, 7 * (pollariNames[id]?.length ?? 0)),
+	height: 64
+});

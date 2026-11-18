@@ -2,8 +2,16 @@ import { describe, expect, it } from 'bun:test';
 import { familyTreeLayout } from './family-tree';
 import type { SizeOf } from './geometry';
 import { barSpans, crossingBars } from './tree-lines';
-import { brunnerKeller, brunnerKellerWidened, twoFamilies, twoHouseholds } from './family-fixtures';
-import type { GraphModel } from '../model/types';
+import {
+	brunnerKeller,
+	brunnerKellerWidened,
+	pollari,
+	pollariSizeOf,
+	twoFamilies,
+	twoHouseholds
+} from './family-fixtures';
+import { applyFilters } from '../model/graph-model';
+import type { GraphFilters, GraphModel } from '../model/types';
 
 /*
  * The order of each family's rows in the family tree (docs/dev/05 §5.8, `family-rows.ts`): no bar
@@ -102,5 +110,74 @@ describe('arrangeFamily', () => {
 		// Lena and her brothers stand together, their cousin outside the three.
 		const children = order(['lena', 'noah', 'elias', 'timo']);
 		expect(children[0] === 'timo' || children[3] === 'timo').toBe(true);
+	});
+
+	describe('stands co-parents and the partners who married in where the bars stay clear', () => {
+		const measured: SizeOf = (id) => ({ width: 50 + 9 * id.length, height: 64 });
+		/** Every order the people can arrive in: each rotation, forwards and backwards. */
+		const arrivals = (model: GraphModel) =>
+			model.nodes.flatMap((_, k) => {
+				const rotated = [...model.nodes.slice(k), ...model.nodes.slice(0, k)];
+				return [rotated, [...rotated].reverse()];
+			});
+		/** Who stands on the row strictly between the outermost of `ids`, apart from them. */
+		const between = (model: GraphModel, ids: string[]) => {
+			const sizeOf = model.nodes.some((n) => n.id === 'leo') ? pollariSizeOf : measured;
+			const { positions } = familyTreeLayout(model, sizeOf);
+			const xs = ids.map((id) => positions.get(id)!.x);
+			const y = positions.get(ids[0])!.y;
+			return [...positions]
+				.filter(([id, p]) => !ids.includes(id) && p.y === y)
+				.filter(([, p]) => p.x > Math.min(...xs) && p.x < Math.max(...xs))
+				.map(([id]) => id);
+		};
+
+		it('keeps two parents of the same children together without a partnership entered', () => {
+			const apart = arrivals(pollari).flatMap((nodes) => [
+				...between({ ...pollari, nodes }, ['francesco', 'wingkam']),
+				...between({ ...pollari, nodes }, ['pasquale', 'slotF'])
+			]);
+			expect(apart).toEqual([]);
+		});
+
+		it('turns co-parents husband-left like any couple', () => {
+			const { positions } = familyTreeLayout(pollari, pollariSizeOf);
+			const x = (id: string) => positions.get(id)!.x;
+			expect(x('francesco')).toBeLessThan(x('wingkam'));
+		});
+
+		it('sets a partner from outside at the edge of their partner’s siblings', () => {
+			const under = arrivals(pollari).flatMap((nodes) =>
+				between({ ...pollari, nodes }, ['linda', 'andy', 'steve', 'sebi'])
+			);
+			expect(under).toEqual([]);
+			const widened = arrivals(brunnerKellerWidened).flatMap((nodes) => [
+				...between({ ...brunnerKellerWidened, nodes }, ['daniel', 'markus']),
+				...between({ ...brunnerKellerWidened, nodes }, ['corinne', 'sandra'])
+			]);
+			expect(widened).toEqual([]);
+		});
+	});
+
+	describe('keeps its order when a filter takes lines away', () => {
+		const measured: SizeOf = (id) => ({ width: 50 + 9 * id.length, height: 64 });
+		const formerCouple: GraphModel = {
+			...twoFamilies,
+			edges: twoFamilies.edges.map((e) => (e.typeKey === 'spouse' ? { ...e, former: true } : e))
+		};
+		const cases: [string, GraphModel, GraphFilters][] = [
+			['pollari, family lines only', pollari, { categories: ['family'] }],
+			['brunnerKellerWidened, family lines only', brunnerKellerWidened, { categories: ['family'] }],
+			['a former couple, former links off', formerCouple, { hideFormer: true }]
+		];
+		for (const [name, model, filters] of cases) {
+			it(`in ${name}`, () => {
+				const whole = familyTreeLayout(model, measured).positions;
+				const filtered = applyFilters(model, filters);
+				expect(filtered.edges.length).toBeLessThan(model.edges.length);
+				const kept = familyTreeLayout(filtered, measured, [], model.edges).positions;
+				expect([...kept]).toEqual([...whole].filter(([id]) => kept.has(id)));
+			});
+		}
 	});
 });

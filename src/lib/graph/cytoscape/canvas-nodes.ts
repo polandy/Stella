@@ -28,3 +28,11 @@ export function sizeOf(node: NodeSingular): Size {
 	const box = node.boundingBox({ includeLabels: true });
 	return { width: box.w, height: box.h };
 }
+
+/** The room a layout gives a node: less the "+N" badge's reach, which a filter can take away. */
+export function roomOf(node: NodeSingular): Size {
+	const { width, height } = sizeOf(node);
+	const reach = (node.numericStyle('bounds-expansion') as number[] | undefined) ?? [0];
+	const [top, right = top, bottom = top, left = right] = reach;
+	return { width: width - left - right, height: height - top - bottom };
+}

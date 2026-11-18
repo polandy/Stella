@@ -1393,6 +1393,9 @@ Under each of them it says who they are: *Friend* for a friend of the person in 
 *Friend of Sandra* for somebody's friend (with *+1* when they know more people on the map),
 and under a circle who on the map belongs to it (*Lena, Noah +2*).
 Each family stands together, the father's side on the left and the mother's on the right.
+Two parents of the same children stand side by side, and someone who married into the family
+stands at the end of their partner's brothers and sisters. The Filter menu only hides lines in
+the tree: everybody stays where they are.
 Where a parent is missing above the person in the middle, their parents or their
 grandparents, the tree shows a dashed **+** in that place — above someone with no parents
 entered, or beside the one parent who is. Tap it (or reach it with the arrow keys and press

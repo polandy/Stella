@@ -258,6 +258,7 @@ export function explorerView(input: ExplorerViewInput, t: Translate): ExplorerVi
 		exportScene({
 			graph: graph(),
 			shown: drawnVisible,
+			unfiltered: drawn.edges,
 			centerId: centerId(),
 			rolesInstead,
 			allKinship: switches.allKinship,

@@ -115,6 +115,12 @@ describe('exportScene', () => {
 	});
 });
 
+// The Filter menu with the romantic lines off: no marriage left between the parents.
+const familyOnly: GraphModel = {
+	...brunnerKeller,
+	edges: brunnerKeller.edges.filter((e) => e.typeKey !== 'spouse')
+};
+
 describe('sceneLayout', () => {
 	const scene = { model: brunnerKeller, elements: [], underNames: false };
 	const xOf = (orders: string[][] | undefined, id: string) =>
@@ -124,5 +130,16 @@ describe('sceneLayout', () => {
 		expect(xOf(undefined, 'hans')).toBeLessThan(xOf(undefined, 'peter'));
 		const dragged = [['peter', 'ursula', 'hans', 'rosa']];
 		expect(xOf(dragged, 'peter')).toBeLessThan(xOf(dragged, 'hans'));
+	});
+
+	it('places everybody as the screen does, by the links the filters took away', () => {
+		const placed = sceneLayout(
+			exportScene(
+				input({ graph: brunnerKeller, shown: familyOnly, unfiltered: brunnerKeller.edges })
+			),
+			() => DEFAULT_NODE_SIZE
+		).positions;
+		const whole = sceneLayout(scene, () => DEFAULT_NODE_SIZE).positions;
+		expect([...placed]).toEqual([...whole].filter(([id]) => placed.has(id)));
 	});
 });

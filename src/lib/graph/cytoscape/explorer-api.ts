@@ -56,8 +56,8 @@ export interface ExplorerController {
 	 * begins, `captions` names it; with `rowDrags` a drag keeps to its row and reports its drop.
 	 */
 	arrangeAt(arrangement: Arrangement, captions?: Captions): void;
-	/** How much room a node takes on the canvas, its name included, in model units. */
-	sizeOf(nodeId: string): Size;
+	/** How much room a node takes, its name included, in model units; `badge: false` leaves out its "+N". */
+	sizeOf(nodeId: string, options?: { badge?: boolean }): Size;
 	/**
 	 * How many screen pixels at the top of the canvas something floats over (the toolbar).
 	 * Framing the map, and stepping back to show newcomers, keep the map below them.
