@@ -49,6 +49,7 @@
 			: []
 	);
 	const nameOf = (id: string) => open.find((m) => m.contactId === id)?.name ?? '';
+	// An action keeps its first argument: the arrow reads the scope at submit.
 	const saved = $derived(
 		savedEnhance(
 			removals,
@@ -63,7 +64,7 @@
 <form
 	method="POST"
 	action="?/editGiftGroup"
-	use:enhance={saved}
+	use:enhance={(input) => saved(input)}
 	class="flex flex-col gap-4"
 	data-testid="gift-group-edit"
 >

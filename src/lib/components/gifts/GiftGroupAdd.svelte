@@ -51,13 +51,14 @@
 	function change(next: GroupFormRow) {
 		rows = rows.map((row) => (row.contactId === next.contactId ? next : row));
 	}
+	// An action keeps its first argument: the arrow reads the count at submit.
 	const added = $derived(savedEnhance(removals, t('gifts.several.noted', { count }), onDone));
 </script>
 
 <form
 	method="POST"
 	action="?/addGroupRecipients"
-	use:enhance={added}
+	use:enhance={(input) => added(input)}
 	class="flex flex-col gap-3"
 	data-testid="gift-group-add"
 >

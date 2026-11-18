@@ -1,6 +1,7 @@
 import { expect, test, type Page } from '@playwright/test';
-import { appReady, isoDaysAfter, serverToday, signIn } from './app';
+import { appReady, isoDaysAfter, pickPerson, serverToday, signIn } from './app';
 import { LINK, personIdOf, seedHousehold } from './seed';
+import { UNDO_WINDOW_MS } from '../src/lib/undo/pending-removals';
 
 // One idea for several people (docs/dev/02 §2.25.11), kept through the outbox (§2.18); ages count from the server's day.
 
@@ -150,4 +151,89 @@ test('an idea for several kept while Stella is out of reach waits on Home, then 
 		await appReady(page);
 		await expect(page.locator('#section-gifts').getByText(`Kite ${letters}`)).toBeVisible();
 	}
+});
+
+test('who has it: given for one, one more added, bought for all, changed for all, one detached', async ({
+	page
+}, testInfo) => {
+	const letters = runLetters();
+	const anna = `Anna Kerner${letters}`;
+	const mia = `Mia Kerner${letters}`;
+	const ben = `Ben Kerner${letters}`;
+	const lea = `Lea Kerner${letters}`;
+	const finn = `Finn Kerner${letters}`;
+	await seedHousehold(
+		page,
+		[anna, mia, ben, lea, finn],
+		[mia, ben, lea].map((child) => ({ from: anna, to: child, type: LINK.parentOf }))
+	);
+	await page.goto(`/gifts/several?for=${personIdOf(mia)}`);
+	await appReady(page);
+	const form = page.getByTestId('gift-group-form');
+	await form.getByLabel('What?').fill(`Drum ${letters}`);
+	await form.getByRole('button', { name: `Children of ${anna}` }).click();
+	await form.getByRole('button', { name: 'Save' }).click();
+	await expect(page).toHaveURL(new RegExp(`/contacts/${personIdOf(mia)}#section-gifts$`));
+
+	// Mia's card names the others, and opens who has it.
+	const card = page.locator('#section-gifts');
+	const also = card.getByTestId('gift-also-for');
+	await expect(also).toContainText(ben);
+	await expect(also).toContainText(lea);
+	await also.click();
+	const panel = page.getByTestId('gift-group-panel');
+	await expect(panel.getByRole('heading', { name: `Drum ${letters}` })).toBeVisible();
+	const member = (name: string) =>
+		panel.locator(`[data-testid="group-member"][data-contact="${personIdOf(name)}"]`);
+	await expect(panel.getByTestId('group-member')).toHaveCount(3);
+
+	// Ben has it now; he moves to the top as given.
+	await member(ben).getByRole('button', { name: 'Mark as given…' }).click();
+	await member(ben).getByRole('button', { name: 'Mark as given', exact: true }).click();
+	await expect(member(ben)).toContainText('given');
+	await expect(panel.getByTestId('group-member').first()).toHaveAttribute(
+		'data-contact',
+		personIdOf(ben)
+	);
+
+	// Finn gets it too, at the group's when.
+	await panel.getByRole('button', { name: 'Person' }).click();
+	await pickPerson(panel.getByTestId('gift-group-add').getByRole('combobox'), finn);
+	await panel.getByRole('button', { name: 'Add (1)' }).click();
+	await expect(page.getByText('Noted for 1')).toBeVisible();
+	await expect(panel.getByTestId('group-member')).toHaveCount(4);
+	await panel.screenshot({ path: testInfo.outputPath('who-has-it.png') });
+
+	// Bought for the three still open, once the undo window has closed.
+	await page.clock.pauseAt((await page.evaluate(() => Date.now())) + 1000);
+	await panel.getByRole('button', { name: 'Bought for everyone (3)' }).click();
+	await expect(page.getByTestId('toast-undo')).toContainText('Bought for 3');
+	const bought = page.waitForResponse(
+		(response) =>
+			response.request().method() === 'POST' && response.url().includes('markGroupBought')
+	);
+	await page.clock.runFor(UNDO_WINDOW_MS + 1);
+	await bought;
+	await page.clock.resume();
+	for (const name of [mia, lea, finn]) await expect(member(name)).toContainText('bought');
+	await expect(panel.getByRole('button', { name: 'Bought for everyone' })).toBeDisabled();
+
+	// A new title for every open one; Ben's given gift stays as given.
+	await panel.getByRole('button', { name: 'Change' }).click();
+	await panel.getByLabel('What?').fill(`Big drum ${letters}`);
+	await panel.getByRole('button', { name: 'Save' }).click();
+	await expect(page.getByText('Changed for 3 open')).toBeVisible();
+	await expect(panel.getByRole('heading', { name: `Big drum ${letters}` })).toBeVisible();
+
+	// Lea goes on alone, and Mia's card no longer names her.
+	await member(lea)
+		.getByRole('button', { name: `More for ${lea}` })
+		.click();
+	await page.getByRole('menuitem', { name: /Detach from the others/ }).click();
+	await expect(panel.getByTestId('group-member')).toHaveCount(3);
+	await panel.getByRole('button', { name: 'Close' }).click();
+	await expect(panel).toBeHidden();
+	await expect(card.getByText(`Big drum ${letters}`)).toBeVisible();
+	await expect(also).not.toContainText(lea);
+	await expect(also).toContainText(finn);
 });

@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
+	import type { SubmitFunction } from '@sveltejs/kit';
 	import { invalidateAll } from '$app/navigation';
 	import Button from '$lib/components/ui/Button.svelte';
 	import FormError from '$lib/components/ui/FormError.svelte';
@@ -65,6 +66,7 @@
 	const avatarOf = (id: string) => people.find((p) => p.id === id)?.avatarPhotoId ?? null;
 	const rule = $derived(group.when ? whenChip(i18n, group.when) : t('gifts.group.now'));
 
+	// Called at submit, since an action keeps its first argument and counts change.
 	const held = (key: string, label: string) =>
 		heldAnswer(
 			{ holder: removals, fetch: (url, init) => window.fetch(url, init) },
@@ -77,6 +79,15 @@
 			}
 		);
 	const dissolved = savedEnhance(removals, t('components.saved'), () => (open = false));
+
+	// The menu closes once the submit has read the form: closing on click unmounts it first.
+	const thenClose =
+		(submit: SubmitFunction, close: () => void): SubmitFunction =>
+		(input) => {
+			const after = submit(input);
+			close();
+			return after;
+		};
 
 	const MENU_ITEM =
 		'flex w-full items-start gap-2 rounded-control px-2.5 py-1.5 text-left text-sm text-fg hover:bg-primary-soft focus-visible:bg-primary-soft';
@@ -108,9 +119,13 @@
 					<MenuButton label={t('gifts.group.menu')} align="end" look="icon">
 						{#snippet trigger()}<Icon name="more" size={16} />{/snippet}
 						{#snippet children({ close })}
-							<form method="POST" action="?/dissolveGiftGroup" use:enhance={dissolved}>
+							<form
+								method="POST"
+								action="?/dissolveGiftGroup"
+								use:enhance={thenClose(dissolved, close)}
+							>
 								<input type="hidden" name="groupId" value={group.id} />
-								<button type="submit" role="menuitem" class={MENU_ITEM} onclick={close}>
+								<button type="submit" role="menuitem" class={MENU_ITEM}>
 									<Icon name="unlink" size={14} /><span
 										>{t('gifts.group.dissolve')}<span class="block text-xs text-fg-subtle"
 											>{t('gifts.group.dissolveHint')}</span
@@ -122,18 +137,14 @@
 								<form
 									method="POST"
 									action="?/removeGroupOpen"
-									use:enhance={held(
-										removeKey,
-										t('gifts.group.removedOpen', { count: openMembers.length })
-									)}
+									use:enhance={(input) =>
+										thenClose(
+											held(removeKey, t('gifts.group.removedOpen', { count: openMembers.length })),
+											close
+										)(input)}
 								>
 									<input type="hidden" name="groupId" value={group.id} />
-									<button
-										type="submit"
-										role="menuitem"
-										class="{MENU_ITEM} text-danger"
-										onclick={close}
-									>
+									<button type="submit" role="menuitem" class="{MENU_ITEM} text-danger">
 										<Icon name="remove" size={14} /><span
 											>{t('gifts.group.removeOpen', { count: openMembers.length })}<span
 												class="block text-xs text-fg-subtle">{t('gifts.group.removeOpenHint')}</span
@@ -217,7 +228,8 @@
 					<form
 						method="POST"
 						action="?/markGroupBought"
-						use:enhance={held(boughtKey, t('gifts.group.boughtFor', { count: ideas }))}
+						use:enhance={(input) =>
+							held(boughtKey, t('gifts.group.boughtFor', { count: ideas }))(input)}
 					>
 						<input type="hidden" name="groupId" value={group.id} />
 						<Button variant="secondary" size="sm" icon="bought" disabled={ideas === 0}>

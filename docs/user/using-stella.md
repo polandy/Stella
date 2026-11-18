@@ -662,6 +662,13 @@ and a good idea is still there on the birthday it was meant for.
   with their own day. Someone it does not fit is grey and says how to help — type their age
   today, enter their birthday, or give them the next birthday or *now* instead. *Save* notes an
   idea on each person's card, and the toast says for how many.
+- **Who has it?** Such an idea reads *also for Ben and Lea ›* on each card; tap it for one list
+  of everyone: who was given it and when, who still waits and for which day. **Mark as given…**
+  on a row gives it to that one. **+ Person** adds someone at the same time, **Bought for
+  everyone** ticks the lot, and **✎** changes title, note, link or time for all still open — or
+  only for the person whose card you came from. A row's **⋯** detaches that one gift or removes
+  it; the panel's **⋯** lets every gift go on alone or removes all still open. Removing and
+  marking bought come with *Undo*.
 - **All gift ideas** — in the `⌘K` / `Ctrl-K` palette, or in the Gifts card's **⋯** menu —
   lists every open idea of the household on one page, for the shopping trip: one card per
   person, whoever's birthday or Christmas comes first on top, with how far off it is. **Mark as

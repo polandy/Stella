@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
+	import type { SubmitFunction } from '@sveltejs/kit';
 	import { invalidateAll } from '$app/navigation';
 	import GiftGiveForm from '$lib/components/person/GiftGiveForm.svelte';
 	import Avatar from '$lib/components/ui/Avatar.svelte';
@@ -69,6 +70,15 @@
 			}
 		);
 
+	// The menu closes once the submit has read the form: closing on click unmounts it first.
+	const thenClose =
+		(submit: SubmitFunction, close: () => void): SubmitFunction =>
+		(input) => {
+			const after = submit(input);
+			close();
+			return after;
+		};
+
 	const MENU_ITEM =
 		'flex w-full items-start gap-2 rounded-control px-2.5 py-1.5 text-left text-sm text-fg hover:bg-primary-soft focus-visible:bg-primary-soft';
 </script>
@@ -127,11 +137,15 @@
 			{#snippet trigger()}<Icon name="more" size={16} />{/snippet}
 			{#snippet children({ close })}
 				{#if member.state === 'bought'}
-					<form method="POST" action="?/markGroupGiftBought" use:enhance={held(true)}>
+					<form
+						method="POST"
+						action="?/markGroupGiftBought"
+						use:enhance={(input) => thenClose(held(true), close)(input)}
+					>
 						<input type="hidden" name="giftId" value={member.giftId} />
 						<input type="hidden" name="groupId" value={groupId} />
 						<input type="hidden" name="contactId" value={member.contactId} />
-						<button type="submit" role="menuitem" class={MENU_ITEM} onclick={close}>
+						<button type="submit" role="menuitem" class={MENU_ITEM}>
 							<Icon name="bought" size={14} />{t('gifts.notBought')}
 						</button>
 					</form>
@@ -146,10 +160,10 @@
 						<Icon name="forward" size={14} />{t('gifts.group.openCard', { name: member.name })}
 					</a>
 				{/if}
-				<form method="POST" action="?/detachGroupGift" use:enhance={saved}>
+				<form method="POST" action="?/detachGroupGift" use:enhance={thenClose(saved, close)}>
 					<input type="hidden" name="groupId" value={groupId} />
 					<input type="hidden" name="giftId" value={member.giftId} />
-					<button type="submit" role="menuitem" class={MENU_ITEM} onclick={close}>
+					<button type="submit" role="menuitem" class={MENU_ITEM}>
 						<Icon name="unlink" size={14} /><span
 							>{t('gifts.group.detach')}<span class="block text-xs text-fg-subtle"
 								>{t('gifts.group.detachHint', { name: member.name })}</span
@@ -158,11 +172,15 @@
 					</button>
 				</form>
 				{#if open}
-					<form method="POST" action="?/removeGroupGift" use:enhance={held(false)}>
+					<form
+						method="POST"
+						action="?/removeGroupGift"
+						use:enhance={(input) => thenClose(held(false), close)(input)}
+					>
 						<input type="hidden" name="giftId" value={member.giftId} />
 						<input type="hidden" name="groupId" value={groupId} />
 						<input type="hidden" name="contactId" value={member.contactId} />
-						<button type="submit" role="menuitem" class="{MENU_ITEM} text-danger" onclick={close}>
+						<button type="submit" role="menuitem" class="{MENU_ITEM} text-danger">
 							<Icon name="remove" size={14} />{t('gifts.group.removeFor', { name: member.name })}
 						</button>
 					</form>

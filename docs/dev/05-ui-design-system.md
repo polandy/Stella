@@ -32,6 +32,7 @@ like "docs/dev/05 §5.8" resolves by opening the matching file below.
   - [5.5.17 A person's brief](design/screens/person-brief.md)
   - [5.5.18 Outings](design/screens/plans.md)
   - [5.5.19 A gift idea for several](design/screens/gift-several.md)
+  - [5.5.20 Who has it?](design/screens/gift-group-panel.md)
 - [5.6 Color semantics (categories → accents)](design/5.6-color-semantics.md)
 - [5.7 Components (design-system inventory)](design/5.7-components.md)
 - [5.8 Relationship & context explorer styling](design/5.8-explorer-styling.md)
