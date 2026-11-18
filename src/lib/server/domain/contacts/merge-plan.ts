@@ -48,7 +48,12 @@ export type MergeSettlement =
 	 * the survivor with the survivor among its people; they go from that list. Runs after the
 	 * interactions and their participants have both been repointed.
 	 */
-	| 'drop-survivor-from-own-interactions';
+	| 'drop-survivor-from-own-interactions'
+	/**
+	 * A group of ideas holds one open idea per person (ADR-134): where both records have one in
+	 * the same group, the merged record's leaves the group and stays an idea of its own.
+	 */
+	| 'unlink-merged-duplicate-group-ideas';
 
 export type MergeStep =
 	| { kind: 'repoint'; table: string; column: string; onConflict: MergeConflictRule }
@@ -99,6 +104,7 @@ export const MERGE_PLAN: readonly MergeStep[] = [
 	repoint('interaction', 'contact_id', 'cannot-collide'),
 	settle('drop-survivor-from-own-interactions', 'interaction_participant'),
 	repoint('important_date', 'contact_id', 'cannot-collide'),
+	settle('unlink-merged-duplicate-group-ideas', 'gift'),
 	repoint('gift', 'contact_id', 'cannot-collide'),
 	repoint('todo', 'contact_id', 'cannot-collide'),
 	repoint('activity_idea', 'contact_id', 'cannot-collide'),

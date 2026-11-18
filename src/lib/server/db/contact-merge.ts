@@ -1,7 +1,8 @@
-import { and, eq, inArray, or, sql } from 'drizzle-orm';
+import { and, eq, inArray, isNotNull, or, sql } from 'drizzle-orm';
 import type { BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
 import { activityEntry, type ActivityOf } from '../domain/activity/activity';
 import { foldedLinkDetails } from '../../relationships/fold';
+import { GIFT_STATES, isOpenGift } from '../../gifts/gifts';
 import { linkAfterMerge } from '../domain/contacts/merge-links';
 import {
 	MERGE_PLAN,
@@ -20,6 +21,7 @@ import {
 	activityLog,
 	circleMembership,
 	contact,
+	gift,
 	interaction,
 	interactionParticipant,
 	relationship,
@@ -138,6 +140,29 @@ function dropMembershipsSurvivorHas(tx: Db, { keepId, mergedId }: Merging): void
 	}
 }
 
+const OPEN_GIFT_STATES = GIFT_STATES.filter(isOpenGift);
+
+/** One open idea per person in a group: the merged record's copy goes its own way. */
+function unlinkMergedDuplicateGroupIdeas(tx: Db, { keepId, mergedId }: Merging): void {
+	const open = (contactId: string) =>
+		and(
+			eq(gift.contactId, contactId),
+			inArray(gift.state, OPEN_GIFT_STATES),
+			isNotNull(gift.groupId)
+		);
+	const keepGroups = tx
+		.select({ groupId: gift.groupId })
+		.from(gift)
+		.where(open(keepId))
+		.all()
+		.flatMap((row) => (row.groupId ? [row.groupId] : []));
+	if (keepGroups.length === 0) return;
+	tx.update(gift)
+		.set({ groupId: null })
+		.where(and(open(mergedId), inArray(gift.groupId, keepGroups)))
+		.run();
+}
+
 /** Nobody is a participant of an interaction about themselves (SV-12). */
 function dropSurvivorFromOwnInteractions(tx: Db, { keepId }: Merging): void {
 	tx.delete(interactionParticipant)
@@ -164,6 +189,7 @@ const SETTLEMENTS: Record<MergeSettlement, (tx: Db, merging: Merging) => void> =
 	'drop-links-between-the-two': dropLinksBetweenTheTwo,
 	'drop-memberships-survivor-has': dropMembershipsSurvivorHas,
 	'drop-survivor-from-own-interactions': dropSurvivorFromOwnInteractions,
+	'unlink-merged-duplicate-group-ideas': unlinkMergedDuplicateGroupIdeas,
 	'turn-merged-cuts': (tx, { mergedId }) => keepUnwornCuts(tx, mergedId, { evenWorn: true })
 };
 
