@@ -2,9 +2,11 @@
 
 # The runtime is the `packageManager` pin in package.json; src/bun-version.test.ts keeps them equal.
 ARG BUN_VERSION=1.4.4
+# Digest of the slim index for that version; bump it together with BUN_VERSION.
+ARG BUN_DIGEST=sha256:1846adf22496bd711036aae8be147e57bdebbaea2e5264e3e0b5af1db187d9a4
 
 # --- Build stage: install everything and build the SvelteKit server ---
-FROM oven/bun:${BUN_VERSION}-slim AS build
+FROM oven/bun:${BUN_VERSION}-slim@${BUN_DIGEST} AS build
 WORKDIR /app
 
 COPY package.json bun.lock ./
@@ -14,7 +16,7 @@ COPY . .
 RUN bun run build
 
 # --- Runtime stage: production deps only + the built server ---
-FROM oven/bun:${BUN_VERSION}-slim AS runtime
+FROM oven/bun:${BUN_VERSION}-slim@${BUN_DIGEST} AS runtime
 WORKDIR /app
 ENV NODE_ENV=production \
     PORT=3000 \

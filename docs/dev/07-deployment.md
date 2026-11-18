@@ -179,6 +179,12 @@ stops the push. CI runs the same build and scan on every pull request. Each Sund
 a new digest carrying the current security fixes — same code, same version. A rebuild whose
 scan still fails (a fix that needs a dependency bump or a newer Bun) pushes nothing.
 
+`latest` moves only when the tag being published is the newest release, so re-publishing an
+old tag by hand cannot roll `latest` back. The base image is pinned by digest (`BUN_DIGEST` in
+the `Dockerfile`, bumped together with `BUN_VERSION`; `apt-get upgrade` still refreshes the
+Debian packages on every build), and every third-party action runs from a commit SHA with its
+version in a trailing comment. `ci.yml` runs with `contents: read`.
+
 Pin the **digest**, not a tag — a tag can be moved, a digest cannot:
 
 ```yaml
