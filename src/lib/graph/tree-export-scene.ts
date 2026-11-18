@@ -9,7 +9,7 @@ import { rolesTowards } from './model/tree-roles';
 import { hiddenInTree } from './model/tree-shown';
 import type { GraphEdge, GraphModel } from './model/types';
 import type { RowOrders } from './layout/tree-order';
-import { familyTreeLayout } from './layout/family-tree';
+import { familyTreeLayout, outsideTheFamily } from './layout/family-tree';
 import type { SizeOf } from './layout/geometry';
 import { exportedModel, lifeYearsOf, lifeYearsWords, type ExportChoices } from './tree-export';
 
@@ -86,7 +86,8 @@ export function exportScene(input: SceneInput): ExportScene {
 	const elements = toCytoscapeElements(model, {
 		centerId: centred,
 		edgeLabel: (edge) => edgeWords(t, edge),
-		roleOf
+		roleOf,
+		shelved: outsideTheFamily(model, input.unfiltered)
 	}).filter((element) => element.group === 'nodes' || !notDrawn.has(String(element.data.id)));
 	return {
 		model,

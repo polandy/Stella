@@ -58,6 +58,8 @@ export interface ExplorerController {
 	arrangeAt(arrangement: Arrangement, captions?: Captions): void;
 	/** How much room a node takes, its name included, in model units; `badge: false` leaves out its "+N". */
 	sizeOf(nodeId: string, options?: { badge?: boolean }): Size;
+	/** How wide a person's disc is drawn, in model units, without the name under it; 0 for nobody. */
+	discOf(nodeId: string): number;
 	/**
 	 * How many screen pixels at the top of the canvas something floats over (the toolbar).
 	 * Framing the map, and stepping back to show newcomers, keep the map below them.

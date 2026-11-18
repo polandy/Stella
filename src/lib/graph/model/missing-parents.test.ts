@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'bun:test';
-import { isParentSlot, missingParentSlots, withParentSlots } from './missing-parents';
+import {
+	isParentSlot,
+	missingParentSlots,
+	SLOT_DIAMETER,
+	slotPlaces,
+	slotsShown
+} from './missing-parents';
 import type { GraphEdge, GraphModel, GraphNode } from './types';
 
 /*
@@ -109,23 +115,47 @@ describe('missingParentSlots', () => {
 	});
 });
 
-describe('withParentSlots', () => {
-	it('stands a slot in as a parent, and beside the one parent as their partner', () => {
-		const graph = model(['lena', 'peter'], [parentOf('peter', 'lena')]);
-		const slots = missingParentSlots(graph, graph, 'lena');
+describe('slotPlaces', () => {
+	const slots = [
+		{ id: 'slot:parent-of:lena', childId: 'lena' },
+		{ id: 'slot:parent-of:jan', childId: 'jan' }
+	];
 
-		const laidOut = withParentSlots(graph, slots);
-		const slotId = 'slot:parent-of:lena';
+	it('stands a slot just over its child, clear of the top of their disc', () => {
+		const places = slotPlaces(slots, new Map([['lena', { x: 120, y: 460 }]]), () => 40);
 
-		expect(laidOut.nodes.map((n) => n.id)).toContain(slotId);
-		expect(laidOut.edges).toContainEqual(
-			expect.objectContaining({ source: slotId, target: 'lena', typeKey: 'parent_child' })
-		);
-		expect(laidOut.edges).toContainEqual(
-			expect.objectContaining({ source: slotId, target: 'peter', typeKey: 'partner' })
-		);
+		const plus = places.get('slot:parent-of:lena')!;
+		expect(plus.x).toBe(120);
+		expect(plus.y).toBeLessThan(460 - 20 - SLOT_DIAMETER / 2);
+		expect(plus.y).toBeGreaterThan(460 - 230 / 2);
 	});
 
+	it('places no slot whose child has no place', () => {
+		expect(
+			slotPlaces(slots, new Map([['lena', { x: 0, y: 0 }]]), () => 30).has('slot:parent-of:jan')
+		).toBe(false);
+	});
+});
+
+describe('slotsShown', () => {
+	const slots = [
+		{ id: 'slot:parent-of:lena', childId: 'lena' },
+		{ id: 'slot:parent-of:jan', childId: 'jan' }
+	];
+
+	it('shows only the slot over somebody selected', () => {
+		expect(
+			slotsShown(slots, { gaps: false, selected: new Set(['jan']) }).map((s) => s.childId)
+		).toEqual(['jan']);
+		expect(slotsShown(slots, { gaps: false, selected: new Set() })).toEqual([]);
+	});
+
+	it('shows every slot while the gaps are asked for', () => {
+		expect(slotsShown(slots, { gaps: true, selected: new Set() })).toHaveLength(2);
+	});
+});
+
+describe('isParentSlot', () => {
 	it('tells a slot from a person by its id', () => {
 		expect(isParentSlot('slot:parent-of:lena')).toBe(true);
 		expect(isParentSlot('lena')).toBe(false);

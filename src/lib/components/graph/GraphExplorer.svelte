@@ -19,13 +19,13 @@
 	import { canExpand } from '$lib/graph/model/rings';
 	import { withoutDerivedLinks } from '$lib/graph/model/graph-model';
 	import { inMemoryGraphSource } from '$lib/graph/model/in-memory-source';
-	import { isParentSlot, withParentSlots } from '$lib/graph/model/missing-parents';
+	import { isParentSlot, slotPlaces } from '$lib/graph/model/missing-parents';
 	import { openingFilterKeys } from '$lib/graph/model/view-filters';
 	import type { ArrangementKey } from '$lib/graph/layout/arrangements';
 	import { circleClustersLayout } from '$lib/graph/layout/circle-clusters';
 	import { familyTreeLayout } from '$lib/graph/layout/family-tree';
 	import { ordersAfterDrop, type RowOrders } from '$lib/graph/layout/tree-order';
-	import { DEFAULT_NODE_SIZE, type SizeOf } from '$lib/graph/layout/geometry';
+	import { DEFAULT_NODE_SIZE } from '$lib/graph/layout/geometry';
 	import { spacingFor } from '$lib/graph/layout/density';
 	import type { GraphModel } from '$lib/graph/model/types';
 	import { exploredMap } from './explored-map.svelte';
@@ -340,20 +340,23 @@
 		controller?.focus(id);
 	}
 
-	// The slots make room in their row; placed by the unfiltered links, a filter only hides lines.
-	const treeLayout = (sizeOf: SizeOf) =>
-		familyTreeLayout(
-			withParentSlots(view.drawnVisible, view.slots),
-			sizeOf,
+	// Placed by the unfiltered links, a filter only hides lines; each plus then stands over its child.
+	const treeLayout = (canvas: ExplorerController) => {
+		const laid = familyTreeLayout(
+			view.drawnVisible,
+			measuredOn(canvas, { badge: false }),
 			treeOrders,
 			view.drawn.edges
 		);
+		const slots = slotPlaces(view.slots, laid.positions, (id) => canvas.discOf(id));
+		return { ...laid, positions: new Map([...laid.positions, ...slots]) };
+	};
 
 	/** A drop in the tree snaps the person into their row, and the tree is laid out around it. */
 	function onDropNode(id: string, at: { x: number }) {
 		const canvas = controller;
 		if (!canvas || arrangedBy !== 'tree') return;
-		const laid = treeLayout(measuredOn(canvas, { badge: false }));
+		const laid = treeLayout(canvas);
 		const next = ordersAfterDrop(laid.rows, laid.positions, id, at.x, treeOrders);
 		if (next) {
 			treeOrders = next;
@@ -375,7 +378,7 @@
 		if (!canvas) return;
 		if (key === 'force') return canvas.arrange();
 		if (key === 'tree') {
-			canvas.arrangeAt(treeLayout(measuredOn(canvas, { badge: false })), {
+			canvas.arrangeAt(treeLayout(canvas), {
 				outsideFamily: t('graph.tree.outsideFamily'),
 				keepNamesDrawn: true,
 				rowDrags: true

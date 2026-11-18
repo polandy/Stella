@@ -142,7 +142,7 @@ describe('familyIn', () => {
 	]);
 
 	it('takes everyone above the shelf of people outside the family', () => {
-		expect(familyIn({ positions, outsideFamily: { x: 0, y: 300 } })).toEqual(
+		expect(familyIn({ positions, outsideFamily: { x: 0, y: 300, width: 600 } })).toEqual(
 			new Set(['anna', 'bert'])
 		);
 	});

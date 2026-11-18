@@ -16,8 +16,8 @@ card (§5.5.2); its styling is §5.8.
   second legend box.
 - Below the kinds sit the switches that change how the map is read rather than what it holds:
   **Labels** (names every line at once), **All kinship lines** (while the Kinship kind is on),
-  **Former links** (on by default; its row starts with the former line's dashed stroke) and
-  the grouping by role.
+  **Former links** (on by default; its row starts with the former line's dashed stroke), the
+  grouping by role and, in the tree with a parent missing, **Show gaps**.
 - A link marked former is a thinner, longer-dashed line in a muted shade of its category, and
   its name ends in *· former*; selected or hovered it stays thinner than a current line. With
   *Former links* off it leaves the map and the Filter pill stands out as narrowed, its name
@@ -27,7 +27,8 @@ card (§5.5.2); its styling is §5.8.
   leaving from its middle, and the role under the name says *Wife · former* — right angles throughout, each person's role towards the centre
   under their name instead of names on the lines — Labels starts off in the tree and its switch
   turns the names on there as anywhere, each on its child's own drop — the centre softly
-  lit, and everyone outside the family on a shelf beneath under a quiet *Outside the family*,
+  lit, and everyone outside the family on a shelf beneath, set off by a thin rule and a quiet
+  *Outside the family* heading, in smaller discs,
   each with a caption: a friend of the centre's their role, anybody else whom on the map they
   hang off (*Friend of Sandra +1*), a circle its people on the map (*Lena, Noah +2*).
   Each family stands as one block — siblings together, a person's father's family left, their
@@ -47,12 +48,15 @@ card (§5.5.2); its styling is §5.8.
   way; let go, they snap into the row with their partner beside them and the tree glides into
   its new order (at once under reduced motion). The order is kept on this device for the tree
   around that person; on the shelf a drag glides back.
-- In the tree around a person, a reader who may add a relationship sees a dashed **plus slot**
-  where a parent is missing up the centre's own line (centre, parents, grandparents): over a
-  child with no parent on record, or beside the one parent there on a dashed bar. It is no
-  person — no filter, badge or path counts it — but the keyboard walk steps onto it and reads it
-  as a button (*Add a parent of Lena*, *Add Lena's other parent*); tapping it or Enter opens the
-  child's page with *Add relationship* open on *Child of*, leaving full screen first.
+- In the tree around a person, a reader who may add a relationship sees a small dashed **plus**
+  where a parent is missing up the centre's own line (centre, parents, grandparents): just over
+  the person missing a parent, on a short dashed line, taking no room in the tree. It shows
+  while that person is selected (the centre the map opens with included), or for everybody at
+  once with **Show gaps** in the Filter menu (offered while there is a gap, kept on this device).
+  It is no person — no filter, badge or path counts it — but while it shows the keyboard walk
+  steps onto it (the arrow up from the person) and reads it as a button (*Add a parent of Lena*,
+  *Add Lena's other parent*); tapping it or Enter opens the person's page with *Add
+  relationship* open on *Child of*, leaving full screen first.
 - In the tree, **Export** (before Full screen in the toolbar) opens a dialog: on the left a
   preview of the sheet as it comes out — the page with its margins for a print, the picture
   alone for a PNG, white whatever the theme — and on the right the title, *Picture (PNG)* or

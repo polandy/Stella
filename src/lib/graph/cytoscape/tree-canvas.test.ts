@@ -1,7 +1,13 @@
 import { describe, expect, it } from 'bun:test';
 import cytoscape from 'cytoscape';
-import { bendLines, CAPTION_ID, writeCaption } from './tree-canvas';
-import { BOWED_CLASS, CAPTION_CLASS, ROUTE_FIELDS, ROUTED_CLASS } from './canvas-classes';
+import { bendLines, CAPTION_ID, CAPTION_RULE_ID, writeCaption } from './tree-canvas';
+import {
+	BOWED_CLASS,
+	CAPTION_CLASS,
+	CAPTION_RULE_CLASS,
+	ROUTE_FIELDS,
+	ROUTED_CLASS
+} from './canvas-classes';
 
 /*
  * The arranged maps' lines and the family tree's caption, against a headless core (docs/dev/05
@@ -52,22 +58,37 @@ describe('writeCaption', () => {
 	it('writes one caption above where the shelf begins, and renames it in place', () => {
 		const cy = core();
 
-		const placed = writeCaption(cy, { x: 0, y: 500 }, 'Outside the family');
-		writeCaption(cy, { x: 0, y: 500 }, 'Außerhalb der Familie');
+		const placed = writeCaption(cy, { x: 0, y: 500, width: 900 }, 'Outside the family');
+		writeCaption(cy, { x: 0, y: 500, width: 900 }, 'Außerhalb der Familie');
 
 		const caption = cy.$id(CAPTION_ID);
-		expect(cy.nodes(`.${CAPTION_CLASS}`).length).toBe(1);
+		expect(cy.nodes(`.${CAPTION_CLASS}`).length).toBe(2);
 		expect(caption.data('label')).toBe('Außerhalb der Familie');
 		expect(placed.get(CAPTION_ID)!.y).toBeLessThan(500);
 		expect(caption.grabbable()).toBe(false);
 	});
 
+	it('runs a thin rule across the family’s width over the caption', () => {
+		const cy = core();
+
+		const placed = writeCaption(cy, { x: 0, y: 500, width: 900 }, 'Outside the family');
+		writeCaption(cy, { x: 0, y: 500, width: 700 }, 'Outside the family');
+
+		const rule = cy.$id(CAPTION_RULE_ID);
+		expect(rule.hasClass(CAPTION_RULE_CLASS)).toBe(true);
+		expect(rule.hasClass(CAPTION_CLASS)).toBe(true);
+		expect(rule.data('width')).toBe(700);
+		expect(placed.get(CAPTION_RULE_ID)).toEqual({ x: 450, y: placed.get(CAPTION_ID)!.y - 16 });
+		expect(rule.grabbable()).toBe(false);
+	});
+
 	it('takes the caption away when there is no shelf or nothing to say', () => {
 		const cy = core();
-		writeCaption(cy, { x: 0, y: 500 }, 'Outside the family');
+		writeCaption(cy, { x: 0, y: 500, width: 900 }, 'Outside the family');
 
 		expect(writeCaption(cy, undefined, 'Outside the family').size).toBe(0);
 		expect(cy.$id(CAPTION_ID).empty()).toBe(true);
+		expect(cy.$id(CAPTION_RULE_ID).empty()).toBe(true);
 		expect(cy.nodes().length).toBe(3);
 	});
 });

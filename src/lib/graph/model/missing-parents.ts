@@ -1,4 +1,5 @@
 import { PARENT_CHILD_TYPE_KEY } from '../../relationships/type-keys';
+import type { Point } from '../layout/geometry';
 import type { GraphEdge, GraphModel } from './types';
 
 /*
@@ -8,8 +9,8 @@ import type { GraphEdge, GraphModel } from './types';
  *
  * Only the centre's own line asks: the centre, their parents and their grandparents. A gap is
  * a gap in what the viewer may see (`graph`), not in what the map has opened so far: a parent
- * still behind a "+N" is no gap. Nobody on record gives one slot over the child; one parent on
- * record gives one slot beside them, the couple the child hangs from.
+ * still behind a "+N" is no gap. Nobody on record, or one parent, gives one slot; it takes no
+ * room in the tree but stands just over the child, and shows only on demand.
  */
 
 /** How many generations up from the centre may have a gap offered: centre, parents, grandparents. */
@@ -23,7 +24,7 @@ export interface ParentSlot {
 	id: string;
 	/** Whose parent is missing. */
 	childId: string;
-	/** The one parent on record, whom the slot stands beside; absent when there is none. */
+	/** The one parent on record, whose partner the slot asks for; absent when there is none. */
 	besideParentId?: string;
 }
 
@@ -79,9 +80,14 @@ export function missingParentSlots(
 	return slots;
 }
 
-/** The lines a slot is tied in by: down to the child, and the bar to the parent beside it. */
-export function slotLines(slot: ParentSlot): { line: GraphEdge; bar?: GraphEdge } {
-	const line: GraphEdge = {
+/** A slot's disc: smaller than anybody's, a button rather than a person. */
+export const SLOT_DIAMETER = 22;
+/** How far over the top of the child's disc the slot's centre stands. */
+const SLOT_RISE = 30;
+
+/** The one line a slot is tied in by: the short one down to the child. */
+export function slotLine(slot: ParentSlot): GraphEdge {
+	return {
 		id: `${slot.id}:line`,
 		source: slot.id,
 		target: slot.childId,
@@ -89,43 +95,30 @@ export function slotLines(slot: ParentSlot): { line: GraphEdge; bar?: GraphEdge 
 		category: 'family',
 		typeKey: PARENT_CHILD_TYPE_KEY
 	};
-	if (slot.besideParentId === undefined) return { line };
-	return {
-		line,
-		bar: {
-			id: `${slot.id}:bar`,
-			source: slot.id,
-			target: slot.besideParentId,
-			kind: 'relationship',
-			category: 'romantic',
-			typeKey: 'partner'
-		}
-	};
 }
 
 /**
- * The one line the canvas draws for a slot: the bar beside a parent — the child's drop already
- * hangs from the couple — or, with nobody beside it, the line down to the child.
+ * Where each slot stands once the people are placed: just over its child, so it takes no room
+ * in the tree. `discOf` is a person's disc diameter; a slot whose child has no place has none.
  */
-export function drawnSlotLine(slot: ParentSlot): GraphEdge {
-	const { line, bar } = slotLines(slot);
-	return bar ?? line;
+export function slotPlaces(
+	slots: readonly ParentSlot[],
+	places: ReadonlyMap<string, Point>,
+	discOf: (id: string) => number
+): Map<string, Point> {
+	const placed = new Map<string, Point>();
+	for (const slot of slots) {
+		const child = places.get(slot.childId);
+		if (child)
+			placed.set(slot.id, { x: child.x, y: child.y - discOf(slot.childId) / 2 - SLOT_RISE });
+	}
+	return placed;
 }
 
-/** `model` with every slot standing in as a parent, for the tree to make room for it. */
-export function withParentSlots(model: GraphModel, slots: readonly ParentSlot[]): GraphModel {
-	if (slots.length === 0) return model;
-	return {
-		nodes: [
-			...model.nodes,
-			...slots.map((s) => ({ id: s.id, kind: 'person' as const, label: '' }))
-		],
-		edges: [
-			...model.edges,
-			...slots.flatMap((s) => {
-				const { line, bar } = slotLines(s);
-				return bar ? [line, bar] : [line];
-			})
-		]
-	};
+/** The slots that show: the selected people's, or every one while the gaps are asked for. */
+export function slotsShown(
+	slots: readonly ParentSlot[],
+	{ gaps, selected }: { gaps: boolean; selected: ReadonlySet<string> }
+): ParentSlot[] {
+	return gaps ? [...slots] : slots.filter((s) => selected.has(s.childId));
 }

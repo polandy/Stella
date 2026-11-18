@@ -7,7 +7,13 @@ import {
 	NODE_LABEL_WIDTH
 } from '../layout/legibility';
 import { expandBadge } from './badge';
-import { CAPTION_CLASS, HAS_MORE_CLASS, LIT_CLASS, SLOT_CLASS } from './canvas-classes';
+import {
+	CAPTION_CLASS,
+	CAPTION_RULE_CLASS,
+	HAS_MORE_CLASS,
+	LIT_CLASS,
+	SLOT_CLASS
+} from './canvas-classes';
 import { lineColour } from './stylesheet-edges';
 import type { CyStyle, StyleContext, StyledElement } from './stylesheet';
 
@@ -217,13 +223,15 @@ export function markStyles({ p }: StyleContext): CyStyle[] {
 			style: {
 				width: 'data(size)',
 				height: 'data(size)',
-				'background-opacity': 0,
-				'border-width': 2,
+				// Filled with the canvas: it stands over the child, where their drop may run in.
+				'background-color': p.bg,
+				'background-opacity': 1,
+				'border-width': 1.5,
 				'border-style': 'dashed',
 				'border-color': p.fgMuted,
 				label: 'data(label)',
 				color: p.fgMuted,
-				'font-size': 20,
+				'font-size': 16,
 				'font-family': p.fontSans,
 				'text-valign': 'center',
 				'text-halign': 'center',
@@ -257,6 +265,18 @@ export function markStyles({ p }: StyleContext): CyStyle[] {
 				'text-halign': 'right',
 				'min-zoomed-font-size': LABEL_MIN_ZOOMED_FONT_SIZE,
 				events: 'no'
+			}
+		},
+		// The thin rule over it, across the family's width: sets the shelf off as aside.
+		{
+			selector: `node.${CAPTION_RULE_CLASS}`,
+			style: {
+				shape: 'rectangle',
+				width: 'data(width)',
+				height: 1,
+				'background-color': p.border,
+				'background-opacity': 1,
+				label: ''
 			}
 		}
 	];

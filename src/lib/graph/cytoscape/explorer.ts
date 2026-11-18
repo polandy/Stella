@@ -117,6 +117,12 @@ export function explorerFromCore(cy: Core, opts: ControllerOptions): ExplorerCon
 			return badge ? sizeOf(node) : roomOf(node);
 		},
 
+		discOf(nodeId) {
+			if (!alive()) return 0;
+			const size: unknown = cy.$id(nodeId).data('size');
+			return typeof size === 'number' ? size : 0;
+		},
+
 		setTopInset(pixels) {
 			framing.setTopInset(pixels);
 		},

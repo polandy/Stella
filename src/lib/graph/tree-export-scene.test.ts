@@ -3,6 +3,7 @@ import { createTranslator } from '$lib/i18n/translate';
 import { exportScene, sceneLayout, type SceneInput } from './tree-export-scene';
 import { brunnerKeller } from './layout/family-fixtures';
 import { DEFAULT_NODE_SIZE } from './layout/geometry';
+import { SHELF_NODE_DIAMETER } from './layout/legibility';
 import type { GraphEdge, GraphModel, GraphNode } from './model/types';
 
 /*
@@ -63,6 +64,14 @@ describe('exportScene', () => {
 	it('takes a private person along when asked, with what they are to the family', () => {
 		const scene = exportScene(input({ choices: { dates: false, withPrivate: true } }));
 		expect(roleOf(scene, 'nicole')).toBe('Friend of Markus');
+	});
+
+	it('draws the friend on the shelf outside the family in the smaller disc, as on screen', () => {
+		const scene = exportScene(input({ choices: { dates: false, withPrivate: true } }));
+		const size = (id: string) => scene.elements.find((e) => e.data.id === id)?.data.size;
+
+		expect(size('nicole')).toBe(SHELF_NODE_DIAMETER);
+		expect(size('markus')).not.toBe(SHELF_NODE_DIAMETER);
 	});
 
 	it('writes each role towards the centre under the name', () => {

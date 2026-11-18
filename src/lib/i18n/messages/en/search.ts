@@ -62,6 +62,8 @@ export const search = {
 	'graph.allKinship.hint': 'Also the ones the entered links already explain',
 	'graph.formerLinks': 'Former links',
 	'graph.formerLinks.hint': 'Ties that have ended, such as an ex-partner, drawn dashed',
+	'graph.gaps': 'Show gaps',
+	'graph.gaps.hint': 'A plus over everybody up the line whose parent is missing',
 	'graph.former': (p: { words: string }) => `${p.words} · former`,
 	'graph.groupByRole': 'Group by role',
 	'graph.groupByRole.hint':

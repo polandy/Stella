@@ -135,8 +135,19 @@ export function familyTreeLayout(
 		bows: bowsAround(positions, straightOrBowed, sizeOf, LINE_CLEARANCE),
 		routes,
 		// Named only beneath a family: on a map with none, everybody is on the shelf.
-		...(members.size > 0 && rest.length > 0 ? { outsideFamily: { x: 0, y: shelfTop } } : {})
+		...(members.size > 0 && rest.length > 0 ? { outsideFamily: { x: 0, y: shelfTop, width } } : {})
 	};
+}
+
+/** The people the tree shelves outside the family, placed as `familyTreeLayout` places them. */
+export function outsideTheFamily(
+	model: GraphModel,
+	unfiltered: readonly GraphEdge[] = []
+): Set<string> {
+	const inFamily = new Set(familiesOf(arrangedBy(model, unfiltered)).flatMap((f) => [...f.keys()]));
+	return new Set(
+		model.nodes.filter((n) => n.kind === 'person' && !inFamily.has(n.id)).map((n) => n.id)
+	);
 }
 
 /** What the tree is placed by: every unfiltered link among the model's people, then its own. */

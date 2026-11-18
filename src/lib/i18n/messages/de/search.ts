@@ -63,6 +63,8 @@ export const search: SearchMessages = {
 	'graph.allKinship.hint': 'Auch die, die sich aus den eingetragenen Linien ergeben',
 	'graph.formerLinks': 'Ehemalige Beziehungen',
 	'graph.formerLinks.hint': 'Beendete Verbindungen, etwa zu Ex-Partnern, gestrichelt',
+	'graph.gaps': 'Lücken zeigen',
+	'graph.gaps.hint': 'Ein Plus über allen in der direkten Linie, denen ein Elternteil fehlt',
 	'graph.former': (p) => `${p.words} · ehemalig`,
 	'graph.groupByRole': 'Kreise nach Rolle bündeln',
 	'graph.groupByRole.hint':

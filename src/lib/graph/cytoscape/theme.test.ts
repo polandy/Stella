@@ -7,6 +7,7 @@ import { buildStylesheet, type CyStyle } from './stylesheet';
 import { grownNames } from './stylesheet-nodes';
 import {
 	CAPTION_CLASS,
+	CAPTION_RULE_CLASS,
 	CURSOR_CLASS,
 	HAS_MORE_CLASS,
 	HOVERED_CLASS,
@@ -300,7 +301,8 @@ describe('buildStylesheet as the family tree', () => {
 		const line = rulesFor(tree, `edge.${SLOT_CLASS}`)[0];
 
 		expect(ring).toMatchObject({ label: 'data(label)', 'border-style': 'dashed' });
-		expect(ring['background-opacity']).toBe(0);
+		// Filled with the canvas, so a drop running in under it never shows through the plus.
+		expect(ring).toMatchObject({ 'background-color': palette.bg, 'background-opacity': 1 });
 		expect(contrastRatio(String(ring['border-color']), palette.bg)).toBeGreaterThanOrEqual(3);
 		expect(contrastRatio(String(ring.color), palette.bg)).toBeGreaterThanOrEqual(3);
 		expect(line['line-style']).toBe('dashed');
@@ -313,6 +315,13 @@ describe('buildStylesheet as the family tree', () => {
 			events: 'no',
 			'background-opacity': 0,
 			'border-width': 0
+		});
+	});
+
+	it('runs the shelf’s rule in the quiet border colour', () => {
+		expect(rulesFor(tree, `node.${CAPTION_RULE_CLASS}`)[0]).toMatchObject({
+			'background-color': palette.border,
+			height: 1
 		});
 	});
 });

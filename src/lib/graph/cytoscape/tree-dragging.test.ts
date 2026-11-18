@@ -69,6 +69,27 @@ describe('dragging in the tree', () => {
 		expect(drops).toEqual([]);
 	});
 
+	it('takes the plus over a dragged person along with them, its short line still drawn', () => {
+		// The slot `a` asks for a parent of `b`: its line runs from the slot down to the child.
+		const cy = linkedPair();
+		cy.$id('a').addClass(SLOT_CLASS);
+		cy.$id('a-b').addClass(SLOT_CLASS);
+		const explorer = controller(cy, { onDropNode: () => {} });
+		const over = new Map([
+			['a', { x: 120, y: -60 }],
+			['b', { x: 120, y: 0 }]
+		]);
+		explorer.arrangeAt({ positions: over, bows: new Map() }, { rowDrags: true });
+
+		let lineOnTheWay = true;
+		dragTo(cy.$id('b'), { x: 300, y: 40 }, () => {
+			lineOnTheWay = !cy.$id('a-b').hasClass(DRAGGED_LINE_CLASS);
+		});
+
+		expect(cy.$id('a').position()).toEqual({ x: 300, y: -60 });
+		expect(lineOnTheWay).toBe(true);
+	});
+
 	it('leaves a drag free in any other arrangement', () => {
 		const cy = linkedPair();
 		const drops: string[] = [];

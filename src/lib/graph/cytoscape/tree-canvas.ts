@@ -1,17 +1,18 @@
 import type { Core, NodeSingular } from 'cytoscape';
-import type { Arrangement, Point } from '../layout/geometry';
+import type { Arrangement, Point, Shelf } from '../layout/geometry';
 import { segmentsOf } from './segments';
 import {
 	BOW_FIELD,
 	BOWED_CLASS,
 	CAPTION_CLASS,
+	CAPTION_RULE_CLASS,
 	ROUTE_FIELDS,
 	ROUTED_CLASS
 } from './canvas-classes';
 
 /*
  * What the canvas does for the arranged maps beyond moving people (docs/dev/05 §5.8): bending and
- * routing their lines, and writing the family tree's "Outside the family" caption. Split from
+ * routing their lines, and writing the family tree's "Outside the family" caption and its rule. Split from
  * `explorer.ts`, which drives the core and calls these; like the controller's other parts, it
  * touches the library only inside `cytoscape/`, and holds no domain rules.
  */
@@ -31,8 +32,12 @@ export interface Captions {
 
 /** The one caption on the canvas; it is the controller's, never one of the elements. */
 export const CAPTION_ID = 'caption:outside-family';
+/** The thin rule over it, across the family's width. */
+export const CAPTION_RULE_ID = 'caption:outside-family:rule';
 /** How far above the shelf its caption stands, in model units — clear of the first row. */
 const CAPTION_ABOVE = 16;
+/** How far above the caption its rule runs. */
+const RULE_ABOVE = 16;
 
 /**
  * Bends exactly the lines in `bows`, routes exactly those in `routes`, and straightens every
@@ -73,22 +78,25 @@ export function bendLines(
 }
 
 /**
- * Writes the shelf's caption where `at` says the shelf begins, or takes it away, and says where
- * it is to stand. It is words on the canvas, not somebody: no tap reaches it (`events: no`),
- * nobody drags it, and the keyboard, the framing and the filters all pass it by.
+ * Writes the shelf's caption, and the thin rule over it, where `at` says the shelf begins, or
+ * takes them away, and says where they are to stand. They are marks on the canvas, not somebody:
+ * no tap reaches them (`events: no`), nobody drags them, and the keyboard, the framing and the
+ * filters all pass them by.
  */
 export function writeCaption(
 	cy: Core,
-	at: Point | undefined,
+	at: Shelf | undefined,
 	words: string | undefined
 ): Map<string, Point> {
-	const existing = cy.$id(CAPTION_ID);
+	const caption = cy.$id(CAPTION_ID);
+	const rule = cy.$id(CAPTION_RULE_ID);
 	if (!at || !words) {
-		existing.remove();
+		caption.union(rule).remove();
 		return new Map();
 	}
 	const place = { x: at.x, y: at.y - CAPTION_ABOVE };
-	if (existing.empty()) {
+	const ruleAt = { x: at.x + at.width / 2, y: place.y - RULE_ABOVE };
+	if (caption.empty()) {
 		cy.add({
 			group: 'nodes',
 			data: { id: CAPTION_ID, label: words },
@@ -96,7 +104,20 @@ export function writeCaption(
 			position: { ...place }
 		}).ungrabify();
 	} else {
-		existing.data('label', words);
+		caption.data('label', words);
 	}
-	return new Map([[CAPTION_ID, place]]);
+	if (rule.empty()) {
+		cy.add({
+			group: 'nodes',
+			data: { id: CAPTION_RULE_ID, width: at.width },
+			classes: `${CAPTION_CLASS} ${CAPTION_RULE_CLASS}`,
+			position: { ...ruleAt }
+		}).ungrabify();
+	} else {
+		rule.data('width', at.width);
+	}
+	return new Map([
+		[CAPTION_ID, place],
+		[CAPTION_RULE_ID, ruleAt]
+	]);
 }

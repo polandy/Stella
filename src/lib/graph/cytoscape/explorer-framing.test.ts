@@ -54,7 +54,7 @@ describe('framing the map', () => {
 					['shelf', { x: 0, y: 4000 }]
 				]),
 				bows: new Map(),
-				outsideFamily: { x: 0, y: 3900 }
+				outsideFamily: { x: 0, y: 3900, width: 600 }
 			},
 			{ outsideFamily: 'Outside the family', keepNamesDrawn: true }
 		);

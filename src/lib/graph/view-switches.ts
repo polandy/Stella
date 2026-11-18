@@ -24,6 +24,8 @@ export interface ViewSwitches {
 	 * a family hangs together; the switch is for reading only what holds today.
 	 */
 	formerLinks: boolean;
+	/** A plus over everybody up the family tree's line with a parent missing, not only the selected. */
+	gaps: boolean;
 }
 
 export const DEFAULT_VIEW_SWITCHES: Readonly<ViewSwitches> = {
@@ -31,7 +33,8 @@ export const DEFAULT_VIEW_SWITCHES: Readonly<ViewSwitches> = {
 	groupRoles: false,
 	innerLinks: true,
 	allKinship: false,
-	formerLinks: true
+	formerLinks: true,
+	gaps: false
 };
 
 /** Where each switch has always been kept; changing one forgets every reader's choice. */
@@ -40,7 +43,8 @@ const KEYS: Record<keyof ViewSwitches, string> = {
 	groupRoles: 'stella.graph.groupByRole',
 	innerLinks: 'stella.graph.innerLinks',
 	allKinship: 'stella.graph.allKinship',
-	formerLinks: 'stella.graph.formerLinks'
+	formerLinks: 'stella.graph.formerLinks',
+	gaps: 'stella.graph.gaps'
 };
 
 export interface ViewSwitchPreference {
@@ -62,7 +66,8 @@ export function viewSwitchPreference(storage: PreferenceStorage): ViewSwitchPref
 					innerLinks: read('innerLinks'),
 					allKinship: read('allKinship'),
 					edgeLabels: read('edgeLabels'),
-					formerLinks: read('formerLinks')
+					formerLinks: read('formerLinks'),
+					gaps: read('gaps')
 				};
 			} catch {
 				// Storage can be blocked; the defaults stand.

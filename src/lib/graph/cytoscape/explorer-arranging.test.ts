@@ -158,15 +158,15 @@ describe('arranging the map', () => {
 	it('names the shelf beneath the family tree, as words nobody can tap or walk to', () => {
 		const cy = linkedPair();
 		const explorer = controller(cy);
-		const shelf = { x: 0, y: 300 };
+		const shelf = { x: 0, y: 300, width: 600 };
 
 		explorer.arrangeAt(
 			{ positions: new Map(), bows: new Map(), outsideFamily: shelf },
 			{ outsideFamily: 'Outside the family' }
 		);
-		const caption = cy.nodes(`.${CAPTION_CLASS}`).first();
+		const caption = cy.$id('caption:outside-family');
 
-		expect(cy.nodes(`.${CAPTION_CLASS}`).length).toBe(1);
+		expect(cy.nodes(`.${CAPTION_CLASS}`).length).toBe(2);
 		expect(caption.data('label')).toBe('Outside the family');
 		expect(caption.position().x).toBe(shelf.x);
 		expect(caption.position().y).toBeLessThan(shelf.y);
@@ -180,6 +180,15 @@ describe('arranging the map', () => {
 
 		explorer.arrange();
 		expect(cy.nodes(`.${CAPTION_CLASS}`).length).toBe(0);
+	});
+
+	it('reads how wide a person’s disc is drawn, and nothing for somebody not on the canvas', () => {
+		const cy = linkedPair();
+		cy.$id('a').data('size', 42);
+		const explorer = controller(cy);
+
+		expect(explorer.discOf('a')).toBe(42);
+		expect(explorer.discOf('nobody')).toBe(0);
 	});
 
 	it('writes no caption for an arrangement without a shelf to name', () => {

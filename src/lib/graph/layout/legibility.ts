@@ -116,6 +116,8 @@ export function linesDrawn(
 
 /** The smallest disc, for somebody with no lines on the map. */
 export const MIN_NODE_DIAMETER = 30;
+/** A disc on the family tree's shelf, outside the family: smaller than anybody in it. */
+export const SHELF_NODE_DIAMETER = 24;
 /** The largest disc: big enough to find a hub, small enough to leave its neighbours room. */
 export const MAX_NODE_DIAMETER = 64;
 /** How much each line grows a disc, before the square root flattens it. */
