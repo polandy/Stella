@@ -16,7 +16,8 @@ import { contact, gift, user } from './schema';
  * for (docs/dev/03 §3.7). Writes act on a gift the use-case has already found through such a read.
  */
 
-const columns = {
+/** A whole gift as the domain reads it; the query joins its person. */
+export const columns = {
 	id: gift.id,
 	contactId: gift.contactId,
 	createdBy: gift.createdBy,
@@ -56,7 +57,7 @@ function fromRow<R extends WhenColumns>(
 }
 
 /** A whole gift row as the domain reads it: its when as one, its surprise flag a boolean. */
-function giftOf<R extends WhenColumns & { hiddenFromRecipient: number }>(row: R) {
+export function giftOf<R extends WhenColumns & { hiddenFromRecipient: number }>(row: R) {
 	const { hiddenFromRecipient, ...rest } = fromRow(row);
 	return { ...rest, hiddenFromRecipient: hiddenFromRecipient !== 0 };
 }

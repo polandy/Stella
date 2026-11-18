@@ -108,7 +108,8 @@ export function canViewGift(
 ): boolean {
 	const asSurprise = { ...gift, hiddenFromPerson: hiddenFromRecipient };
 	if (!canViewSurprise(viewer, asSurprise, viewerSelfContactId)) return false;
-	if (!hiddenFromRecipient || gift.ownerId === viewer.id || viewerSelfContactId === null) return true;
+	if (!hiddenFromRecipient || gift.ownerId === viewer.id || viewerSelfContactId === null)
+		return true;
 	return !groupRecipientIds.includes(viewerSelfContactId);
 }
 

@@ -188,18 +188,21 @@ export class GiftGoneError extends TranslatableError {
 	}
 }
 
-const orNull = (value: string | null): string | null => {
+/** Text as stored: trimmed, null when empty. */
+export const orNull = (value: string | null): string | null => {
 	const trimmed = (value ?? '').trim();
 	return trimmed.length > 0 ? trimmed : null;
 };
 
-function titleOf(raw: string): string {
+/** A gift's title, required. */
+export function titleOf(raw: string): string {
 	const title = raw.trim();
 	if (title.length === 0) throw new InvalidGiftError(phrase('errors.gift.needTitle'));
 	return title;
 }
 
-function urlOf(raw: string | null): string | null {
+/** A gift's link, a web address or none. */
+export function urlOf(raw: string | null): string | null {
 	const link = giftLink(raw ?? '');
 	if (!link.ok) throw new InvalidGiftError(phrase('errors.gift.badLink'));
 	return link.url;

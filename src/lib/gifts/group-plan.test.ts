@@ -17,7 +17,11 @@ const jan: GroupRecipient = { contactId: 'jan', birth: born('2020-02-01') };
 describe('planGiftGroup', () => {
 	it('works out the fifth birthday for each child, and who waits', () => {
 		const plan = planGiftGroup({ kind: 'at_age', age: 5 }, [mia, ben, lea, tom], TODAY);
-		expect(plan.map((p) => (p.ok && p.outlook.kind === 'due' ? [p.contactId, p.outlook.on, p.outlook.waits] : p))).toEqual([
+		expect(
+			plan.map((p) =>
+				p.ok && p.outlook.kind === 'due' ? [p.contactId, p.outlook.on, p.outlook.waits] : p
+			)
+		).toEqual([
 			['mia', '2027-01-20', false],
 			['ben', '2027-08-02', true],
 			['lea', '2028-12-28', true],
