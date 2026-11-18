@@ -5,7 +5,7 @@ import { DEFAULT_DENSITY, spacingFor } from '../layout/density';
 import type { Point } from './placement';
 import { bendLines, writeCaption } from './tree-canvas';
 import { CAPTION_CLASS } from './canvas-classes';
-import { sizeOf } from './canvas-nodes';
+import { roomOf } from './canvas-nodes';
 import { trackMotion } from './motion';
 import { frameOn } from './framing';
 import { arrangeOn } from './arranging';
@@ -114,7 +114,7 @@ export function explorerFromCore(cy: Core, opts: ControllerOptions): ExplorerCon
 		sizeOf(nodeId) {
 			const node = cy.$id(nodeId);
 			if (!alive() || node.empty()) return { width: 0, height: 0 };
-			return sizeOf(node);
+			return roomOf(node);
 		},
 
 		setTopInset(pixels) {

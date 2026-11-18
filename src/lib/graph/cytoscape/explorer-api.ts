@@ -56,7 +56,7 @@ export interface ExplorerController {
 	 * begins, `captions` names it; with `rowDrags` a drag keeps to its row and reports its drop.
 	 */
 	arrangeAt(arrangement: Arrangement, captions?: Captions): void;
-	/** How much room a node takes on the canvas, its name included, in model units. */
+	/** How much room a layout gives a node, its name included, its "+N" badge not, in model units. */
 	sizeOf(nodeId: string): Size;
 	/**
 	 * How many screen pixels at the top of the canvas something floats over (the toolbar).
