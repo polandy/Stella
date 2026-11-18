@@ -26,6 +26,8 @@ export function birthOf(contact: {
 
 const pad = (n: number) => String(n).padStart(2, '0');
 
+const CHRISTMAS_EVE = '-12-24';
+
 /** The birth year, and the day when there is one; null when no year is known. */
 function bornIn(birth: PartialDate | null): { year: number; month: number; day: number } | null {
 	if (birth === null) return null;
@@ -51,6 +53,16 @@ export function birthdayAtAge(birth: PartialDate | null, age: number): WhenDay |
 	// `Date.UTC` rolls 29 February into 1 March in a common year, as `upcoming.ts` does.
 	const on = new Date(Date.UTC(year, born.month - 1, born.day)).toISOString().slice(0, 10);
 	return { on, approximate: false };
+}
+
+/** The Christmas Eve on which someone born so is `age` (ADR-135); null without a birth year. */
+export function christmasAtAge(birth: PartialDate | null, age: number): WhenDay | null {
+	const birthday = birthdayAtAge(birth, age);
+	if (birthday === null) return null;
+	const year = Number(birthday.on.slice(0, 4));
+	// Born 25–31 December, they are still `age - 1` on that year's Christmas Eve.
+	const later = !birthday.approximate && birthday.on.slice(5) > '12-24';
+	return { on: `${later ? year + 1 : year}${CHRISTMAS_EVE}`, approximate: birthday.approximate };
 }
 
 /** How old someone born so is on `today`; null without a birth year. Estimated: by the year. */
@@ -79,6 +91,8 @@ export function whenDay(when: When, birth: PartialDate | null): WhenDay | null {
 		case 'from_age':
 		case 'at_age':
 			return birthdayAtAge(birth, when.age);
+		case 'christmas_at_age':
+			return christmasAtAge(birth, when.age);
 		case 'on_date':
 			return { on: when.on, approximate: false };
 		case 'in_month':
@@ -109,13 +123,15 @@ export type WhenOutlook =
 	| { kind: 'ageReached'; age: number }
 	/** *For the Nth birthday* once that birthday is over. */
 	| { kind: 'birthdayPassed'; age: number }
+	/** *Christmas at N* once that Christmas is over. */
+	| { kind: 'christmasPassed'; age: number }
 	| { kind: 'dayPassed' }
 	| { kind: 'monthPassed' }
 	| { kind: 'noSuchDay' }
 	| { kind: 'badAge' }
 	| {
 			kind: 'due';
-			when: When & { kind: 'from_age' | 'at_age' | 'on_date' | 'in_month' };
+			when: Exclude<When, { kind: 'later' }>;
 			on: string;
 			approximate: boolean;
 			/** Whether it waits from today, rather than joining the open ones at once. */
@@ -149,13 +165,14 @@ export function whenOutlook(
 	}
 	if (!Number.isInteger(when.age) || when.age < WHEN_AGE_MIN || when.age > WHEN_AGE_MAX)
 		return { kind: 'badAge' };
-	const day = birthdayAtAge(birth, when.age);
+	const day = whenDay(when, birth);
 	if (day === null) return { kind: 'needsBirthYear' };
 	// An estimated year names no day: the year is the whole of what is known.
 	const over = day.approximate ? day.on.slice(0, 4) < today.slice(0, 4) : day.on < today;
 	const reached = day.approximate ? day.on.slice(0, 4) <= today.slice(0, 4) : day.on <= today;
 	if (when.kind === 'from_age' && reached) return { kind: 'ageReached', age: ageOn(birth, today)! };
 	if (when.kind === 'at_age' && over) return { kind: 'birthdayPassed', age: when.age };
+	if (when.kind === 'christmas_at_age' && over) return { kind: 'christmasPassed', age: when.age };
 	return { kind: 'due', when, ...day, waits: isWaiting(when, birth, today) };
 }
 

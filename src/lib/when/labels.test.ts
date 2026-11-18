@@ -18,6 +18,7 @@ describe('whenChip', () => {
 		[{ kind: 'at_age', age: 10 }, 'For the 10th birthday', 'Zum 10. Geburtstag'],
 		[{ kind: 'at_age', age: 21 }, 'For the 21st birthday', 'Zum 21. Geburtstag'],
 		[{ kind: 'at_age', age: 12 }, 'For the 12th birthday', 'Zum 12. Geburtstag'],
+		[{ kind: 'christmas_at_age', age: 6 }, 'Christmas at 6', 'Weihnachten mit 6'],
 		[{ kind: 'on_date', on: '2027-12-24' }, 'Christmas 2027', 'Weihnachten 2027'],
 		[{ kind: 'on_date', on: '2027-05-03' }, 'For 3 May 2027', 'Zum 3. Mai 2027'],
 		[{ kind: 'in_month', on: '2027-05' }, 'In May 2027', 'Im Mai 2027'],
@@ -115,6 +116,21 @@ describe('whenPreview', () => {
 		);
 		expect(preview(de, { kind: 'at_age', age: 12 }, estimated, today)).toBe(
 			'Wird ungefähr 2030 12. Sie wartet bis zum 3. Oktober 2029, dann steht sie bei den Ideen.'
+		);
+	});
+
+	it('names the Christmas at that age, and when it comes back', () => {
+		expect(preview(en, { kind: 'christmas_at_age', age: 10 }, full, today)).toBe(
+			'Christmas 2028, at age 10. It waits until 25 September 2028, then shows among the ideas.'
+		);
+		expect(preview(de, { kind: 'christmas_at_age', age: 10 }, full, today)).toBe(
+			'Weihnachten 2028, mit 10. Sie wartet bis zum 25. September 2028, dann steht sie bei den Ideen.'
+		);
+		expect(preview(en, { kind: 'christmas_at_age', age: 12 }, estimated, today)).toBe(
+			'About Christmas 2030, at age 12. It waits until 25 September 2030, then shows among the ideas.'
+		);
+		expect(preview(de, { kind: 'christmas_at_age', age: 7 }, full, today)).toBe(
+			'Dieses Weihnachten ist vorbei. Wähle ein späteres Alter.'
 		);
 	});
 

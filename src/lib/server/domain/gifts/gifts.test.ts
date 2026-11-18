@@ -249,6 +249,17 @@ describe('an idea for later', () => {
 		).toBe('That day is over. Choose one still ahead.');
 	});
 
+	it('keeps an idea for Christmas at an age, and refuses one whose Christmas is over', async () => {
+		const atEight = await addGift(deps, ANDY, {
+			...idea(),
+			when: { kind: 'christmas_at_age', age: 8 }
+		});
+		expect(gifts.rows.get(atEight.giftId)?.when).toEqual({ kind: 'christmas_at_age', age: 8 });
+		expect(
+			await refusal(addGift(deps, ANDY, { ...idea(), when: { kind: 'christmas_at_age', age: 7 } }))
+		).toBe('That Christmas is over. Choose a later age.');
+	});
+
 	it('refuses an age for someone whose birth year nobody knows', async () => {
 		hildeBirth = { value: '--03-14', precision: 'month_day' };
 		expect(

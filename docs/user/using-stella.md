@@ -615,8 +615,10 @@ and a good idea is still there on the birthday it was meant for.
   **Ideas** tab, which counts them: *Ideas · 2*. Each idea says when it was noted — *Added 3
   October 2026* — so you can tell an old wish from a fresh one.
 - **An idea for later.** Under *When?* an idea is for **Now** unless you choose otherwise:
-  **From age** or **For a birthday** (with − and + to pick the age), **On a day** (with
-  *Christmas* one tap away), or **Later**. The line underneath says what that means — *Turns 10
+  **From age**, **For a birthday** or **Christmas at age** (with − and + to pick the age),
+  **On a day** (with *Christmas* one tap away), or **Later**. *Christmas at age 6* is the
+  Christmas Eve on which they are 6 — for a child born between 25 and 31 December, that is the
+  year after they turn 6. The line underneath says what that means — *Turns 10
   on 14 March 2028. It waits until 15 December 2027.* Such an idea stays out of the count, out of
   *All gift ideas* (unless you show the ideas for later there) and off Home until 90 days before
   its day, then it shows up by itself. Until

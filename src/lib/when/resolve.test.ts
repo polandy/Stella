@@ -4,6 +4,7 @@ import {
 	ageOn,
 	birthdayAtAge,
 	checkWhen,
+	christmasAtAge,
 	isWaiting,
 	knowsBirthYear,
 	monthEnd,
@@ -36,6 +37,32 @@ describe('birthdayAtAge', () => {
 		['no birth date, none', null, 6, null]
 	] as const)('%s', (_, birth, age, expected) => {
 		expect(birthdayAtAge(birth, age)).toEqual(expected);
+	});
+});
+
+describe('christmasAtAge', () => {
+	const born = (value: string): PartialDate => ({ value, precision: 'full' });
+	it.each([
+		['a birthday before Christmas, that year', mia, 6, { on: '2028-12-24', approximate: false }],
+		[
+			'a birthday after Christmas, the next: on that Christmas they are still five',
+			born('2023-12-28'),
+			6,
+			{ on: '2030-12-24', approximate: false }
+		],
+		[
+			'a birthday on Christmas Eve, that very day',
+			born('2022-12-24'),
+			6,
+			{ on: '2028-12-24', approximate: false }
+		],
+		['29 February plays no part', leap, 6, { on: '2026-12-24', approximate: false }],
+		['a bare year, about that Christmas', tom, 6, { on: '2025-12-24', approximate: true }],
+		['an estimated year, the same', ruth, 80, { on: '2030-12-24', approximate: true }],
+		['no year, no Christmas', heinz, 6, null],
+		['no birth date, none', null, 6, null]
+	] as const)('%s', (_, birth, age, expected) => {
+		expect(christmasAtAge(birth, age)).toEqual(expected);
 	});
 });
 
@@ -151,6 +178,30 @@ describe('whenOutlook', () => {
 				waits: false
 			}
 		],
+		[
+			'Christmas at an age gone by',
+			{ kind: 'christmas_at_age', age: 3 },
+			mia,
+			{ kind: 'christmasPassed', age: 3 }
+		],
+		[
+			'Christmas at an age, this year',
+			{ kind: 'christmas_at_age', age: 4 },
+			mia,
+			{
+				kind: 'due',
+				when: { kind: 'christmas_at_age', age: 4 },
+				on: '2026-12-24',
+				approximate: false,
+				waits: false
+			}
+		],
+		[
+			'Christmas at an age without a birth year',
+			{ kind: 'christmas_at_age', age: 6 },
+			heinz,
+			{ kind: 'needsBirthYear' }
+		],
 		['an age out of range', { kind: 'from_age', age: 0 }, mia, { kind: 'badAge' }],
 		[
 			'an age ahead',
@@ -207,6 +258,10 @@ describe('checkWhen', () => {
 		expect(checkWhen({ kind: 'at_age', age: 2 }, mia, today)).toEqual({
 			ok: false,
 			problem: 'birthdayPassed'
+		});
+		expect(checkWhen({ kind: 'christmas_at_age', age: 3 }, mia, today)).toEqual({
+			ok: false,
+			problem: 'christmasPassed'
 		});
 		expect(checkWhen({ kind: 'from_age', age: 6 }, null, today)).toEqual({
 			ok: false,

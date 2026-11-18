@@ -606,8 +606,8 @@ may edit, give or remove it; only its author may change its visibility or `hidde
 | url | text null | an `http(s)` address only |
 | given_on | text null | ISO `YYYY-MM-DD`; null while an idea or bought, required for given and received |
 | occasion | text null | a preset key (`birthday`, `christmas`, `anniversary`) or free text |
-| when_kind | text null | an open gift's time, idea or bought (docs/dev/02 §2.25.8): `'from_age' \| 'at_age' \| 'on_date' \| 'later'`; null for *now*, and always on a given or received gift |
-| when_age | int null | 1–150, for `from_age` and `at_age` only |
+| when_kind | text null | an open gift's time, idea or bought (docs/dev/02 §2.25.8): `'from_age' \| 'at_age' \| 'christmas_at_age' \| 'on_date' \| 'later'`; null for *now*, and always on a given or received gift |
+| when_age | int null | 1–150, for `from_age`, `at_age` and `christmas_at_age` only |
 | when_on | text null | ISO `YYYY-MM-DD`, for `on_date` only |
 | when_checked_on | text null | ISO `YYYY-MM-DD`: the household's day somebody last answered *Still current?*, or chose the time anew (docs/dev/02 §2.25.8); null on a given or received gift |
 | created_at / updated_at | int | |
