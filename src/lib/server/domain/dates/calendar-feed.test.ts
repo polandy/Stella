@@ -212,6 +212,7 @@ function idea(over: Partial<IdeaWithBirth<OpenIdea>> = {}): IdeaWithBirth<OpenId
 		occasion: null,
 		when: { kind: 'from_age', age: 6 },
 		whenCheckedOn: null,
+		groupId: null,
 		hiddenFromRecipient: false,
 		createdAt: Date.UTC(2026, 0, 10),
 		updatedAt: 0,

@@ -69,6 +69,7 @@ function present(
 		occasion: null,
 		when: null,
 		whenCheckedOn: null,
+		groupId: null,
 		hiddenFromRecipient: false,
 		createdAt: recordedAt,
 		updatedAt: recordedAt

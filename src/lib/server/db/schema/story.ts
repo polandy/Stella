@@ -166,6 +166,33 @@ export const interactionParticipant = sqliteTable(
 );
 
 /*
+ * One idea noted for several people at once (docs/dev/02 §2.25.11, ADR-134): what they were given
+ * in common. Each person keeps their own `gift` row pointing here, so one can be bought, given or
+ * dropped alone; the group outlives none of that — it only says the ideas belong together.
+ */
+export const giftGroup = sqliteTable('gift_group', {
+	id: text('id').primaryKey(),
+	householdId: text('household_id')
+		.notNull()
+		.references(() => household.id, { onDelete: 'cascade' }),
+	createdBy: text('created_by')
+		.notNull()
+		.references(() => user.id),
+	title: text('title').notNull(),
+	note: text('note'),
+	url: text('url'),
+	// The shared when as noted (`src/lib/when`); each gift stores what it came to for its person.
+	whenKind: text('when_kind').$type<WhenKind>(),
+	whenOn: text('when_on'),
+	whenAge: integer('when_age'),
+	occasion: text('occasion'),
+	visibility: text('visibility').$type<Visibility>().notNull().default('shared'),
+	hiddenFromRecipients: integer('hidden_from_recipients').notNull().default(0),
+	createdAt: integer('created_at').notNull().default(now),
+	updatedAt: integer('updated_at').notNull().default(now)
+});
+
+/*
  * A present for one person (docs/dev/02 §2.25): an idea, one bought and waiting to be handed over,
  * a gift the household gave, or one it received. An idea and the gift it became are one row —
  * *Mark as given* sets `state` and the day. Visibility follows the child-record rule (private ⇒
@@ -198,12 +225,15 @@ export const gift = sqliteTable(
 		whenAge: integer('when_age'),
 		// The day somebody last answered whether a passed or *later* idea still stands.
 		whenCheckedOn: text('when_checked_on'),
+		// The idea it was noted with for several people (ADR-134); null for one noted alone.
+		groupId: text('group_id').references(() => giftGroup.id),
 		createdAt: integer('created_at').notNull().default(now),
 		updatedAt: integer('updated_at').notNull().default(now)
 	},
 	(t) => [
 		// A person's gifts by state, and their given and received ones in story order.
-		index('gift_contact_state_given_idx').on(t.contactId, t.state, t.givenOn)
+		index('gift_contact_state_given_idx').on(t.contactId, t.state, t.givenOn),
+		index('gift_group_idx').on(t.groupId)
 	]
 );
 

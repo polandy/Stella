@@ -52,6 +52,8 @@ export interface Gift {
 	when: When | null;
 	/** The day somebody last answered whether the idea still stands (§2.25.8); null if never. */
 	whenCheckedOn: string | null;
+	/** The idea it was noted with for several people (§2.25.11); null for one noted alone. */
+	groupId: string | null;
 	createdAt: number;
 	updatedAt: number;
 }
@@ -304,6 +306,7 @@ export async function addGift(
 		...content,
 		when,
 		whenCheckedOn: null,
+		groupId: null,
 		createdAt: now,
 		updatedAt: now
 	});

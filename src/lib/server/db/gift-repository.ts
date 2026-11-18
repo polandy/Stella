@@ -32,6 +32,7 @@ const columns = {
 	whenOn: gift.whenOn,
 	whenAge: gift.whenAge,
 	whenCheckedOn: gift.whenCheckedOn,
+	groupId: gift.groupId,
 	createdAt: gift.createdAt,
 	updatedAt: gift.updatedAt
 };

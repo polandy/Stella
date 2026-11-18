@@ -95,6 +95,7 @@ describe('convertHeldGifts', () => {
 			occasion: null,
 			when: null,
 			whenCheckedOn: null,
+			groupId: null,
 			hiddenFromRecipient: false,
 			createdAt: 1_000,
 			updatedAt: 1_000
@@ -135,6 +136,7 @@ describe('convertHeldGifts', () => {
 				occasion: null,
 				when: null,
 				whenCheckedOn: null,
+				groupId: null,
 				hiddenFromRecipient: false,
 				createdAt: 2_000,
 				updatedAt: 3_000

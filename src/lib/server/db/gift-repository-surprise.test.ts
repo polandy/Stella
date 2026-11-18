@@ -42,6 +42,7 @@ function gift(over: Partial<Gift>): Gift {
 		occasion: null,
 		when: { kind: 'on_date', on: '2026-12-24' },
 		whenCheckedOn: null,
+		groupId: null,
 		createdAt: 0,
 		updatedAt: 0,
 		...over
