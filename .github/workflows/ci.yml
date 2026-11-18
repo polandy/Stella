@@ -5,6 +5,9 @@ on:
     branches: [main]
   pull_request:
 
+permissions:
+  contents: read
+
 # A push that supersedes an earlier one on the same branch cancels its run; on main every
 # commit is kept, because release-please and the deploy read those results.
 concurrency:
@@ -24,11 +27,14 @@ jobs:
     # A hung dev-smoke or check must not sit on the runner for GitHub's six-hour default.
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v4
-      - uses: oven-sh/setup-bun@v2
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
         with:
           bun-version-file: package.json
       - run: bun install --frozen-lockfile
+      # Advisories appear without any change of ours, so a finding must not turn a PR red.
+      - run: bun audit
+        continue-on-error: true
       - run: bun run lint
       - run: bun run check
       - run: bun run test
@@ -43,7 +49,7 @@ jobs:
     # A cold build takes a few minutes; the scan adds one for its database.
     timeout-minutes: 20
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
       # No layer cache: a cached `apt-get upgrade` layer would scan last week's packages.
       - run: docker build --pull -t stella:ci .
       - run: ./scripts/scan-image.sh stella:ci
@@ -69,13 +75,13 @@ jobs:
       matrix:
         shard: [1, 2, 3, 4, 5, 6, 7, 8]
     steps:
-      - uses: actions/checkout@v4
-      - uses: oven-sh/setup-bun@v2
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
         with:
           bun-version-file: package.json
       - run: bun install --frozen-lockfile
       # The runner can drive Chromium directly, so CI skips e2e/run.sh's container.
-      - uses: actions/cache@v4
+      - uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
         id: browsers
         with:
           path: ~/.cache/ms-playwright
