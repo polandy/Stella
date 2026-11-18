@@ -47,6 +47,8 @@ jobs:
       # No layer cache: a cached `apt-get upgrade` layer would scan last week's packages.
       - run: docker build --pull -t stella:ci .
       - run: ./scripts/scan-image.sh stella:ci
+      # A backup taken from that image restores into a fresh container (docs/dev/07 §7.9).
+      - run: ./scripts/backup-restore-check.sh stella:ci
 
   e2e:
     runs-on: ubuntu-latest
