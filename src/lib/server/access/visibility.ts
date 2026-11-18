@@ -97,10 +97,7 @@ export interface GiftAccess extends ChildRecordAccess {
 	groupRecipientIds: readonly string[];
 }
 
-/**
- * A gift is visible as a surprise; one noted for several people at once is a surprise for each of
- * them, so it is kept from every member whose own person is among them, not only its own one.
- */
+/** A gift is visible as a surprise; one in a group is kept from each member its group is for. */
 export function canViewGift(
 	viewer: Viewer,
 	{ hiddenFromRecipient, groupRecipientIds, ...gift }: GiftAccess,

@@ -23,11 +23,7 @@ import {
 	type GiftRepository
 } from './gifts';
 
-/*
- * One idea for several people (docs/dev/02 §2.25.11, ADR-134): one ordinary gift per person, so
- * each is bought, given or dropped on its own, bound by a group that keeps what they share — the
- * title, the link and the when as noted — for whoever is added later.
- */
+// One idea for several people (docs/dev/02 §2.25.11, ADR-134): a gift each, bound by a group.
 
 /** What several people's ideas share, as noted. */
 export interface GiftGroup {
@@ -88,10 +84,7 @@ export interface SkippedRecipient {
 	problem: RecipientProblem | 'gone';
 }
 
-/**
- * Note one idea for several people: one gift each, with what the when comes to for them. Whoever
- * it does not fit is left out and named, so the others are not lost (F11); nobody left refuses.
- */
+/** Note one gift each; whoever the when does not fit is left out and named (F11). */
 export async function addGiftGroup(
 	deps: GiftGroupDeps,
 	author: GiftActor,

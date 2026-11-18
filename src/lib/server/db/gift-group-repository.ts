@@ -7,11 +7,7 @@ import { columns as giftColumns, giftOf, giftRow } from './gift-repository';
 import type * as schema from './schema';
 import { contact, gift, giftGroup } from './schema';
 
-/*
- * Drizzle adapter for the GiftGroupRepository port (docs/dev/02 §2.25.11, ADR-134). A group is read
- * through its gifts: the viewer sees it when they see one of them, scoped by the central
- * `giftVisibleTo`, so a surprise group never reaches a member whose own person it is for.
- */
+// Drizzle adapter for GiftGroupRepository (ADR-134): a group is read through its visible gifts.
 
 function groupRow(g: GiftGroup) {
 	const { when, hiddenFromRecipients, ...rest } = g;

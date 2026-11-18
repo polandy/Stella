@@ -2,11 +2,7 @@ import type { PartialDate } from '../dates/partial-date';
 import { checkWhen, whenOutlook, type WhenCheck, type WhenOutlook } from '../when/resolve';
 import type { When } from '../when/when';
 
-/*
- * One idea for several people (docs/dev/02 §2.25.11, ADR-134): what one shared when comes to for
- * each of them, worked out the same way as for one person. The form previews it and the use-case
- * applies it, so the two cannot disagree on who gets one and on which day.
- */
+// What one shared when comes to for each person (docs/dev/02 §2.25.11, ADR-134); form and use-case share it.
 
 /** The most people one idea is noted for at once; a guard, never a limit anybody meets. */
 export const GIFT_GROUP_MAX_RECIPIENTS = 50;

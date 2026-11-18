@@ -151,10 +151,7 @@ export interface GiftColumns {
 	groupId: AnyColumn;
 }
 
-/**
- * Condition for a gift being visible — the SQL of `canViewGift`: a surprise's, and a hidden one in
- * a group is also kept from the member whose own person another gift of that group is for.
- */
+/** The SQL of `canViewGift`: a surprise, kept from every member whose own person its group is for. */
 export function giftVisibleTo(viewer: Viewer, record: GiftColumns): SQL {
 	const sibling = alias(gift, 'gift_sibling');
 	return and(

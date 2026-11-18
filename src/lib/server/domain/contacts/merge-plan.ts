@@ -49,10 +49,7 @@ export type MergeSettlement =
 	 * interactions and their participants have both been repointed.
 	 */
 	| 'drop-survivor-from-own-interactions'
-	/**
-	 * A group of ideas holds one open idea per person (ADR-134): where both records have one in
-	 * the same group, the merged record's leaves the group and stays an idea of its own.
-	 */
+	/** One open idea per person in a group (ADR-134): the merged record's duplicate leaves it. */
 	| 'unlink-merged-duplicate-group-ideas';
 
 export type MergeStep =

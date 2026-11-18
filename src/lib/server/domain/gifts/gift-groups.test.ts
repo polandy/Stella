@@ -9,10 +9,7 @@ import {
 } from './gift-groups';
 import { InvalidGiftError, type Gift } from './gifts';
 
-/*
- * One idea for several people (docs/dev/02 §2.25.11, ADR-134), over an in-memory port: one gift
- * per person, bound by a group that keeps the shared when. Today is 2026-11-18.
- */
+// One idea for several people (docs/dev/02 §2.25.11, ADR-134) over an in-memory port; today is 2026-11-18.
 
 const ANDY = { userId: 'andy', householdId: 'h1' };
 const born = (value: string): PartialDate => ({ value, precision: 'full' });

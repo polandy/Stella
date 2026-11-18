@@ -165,11 +165,7 @@ export const interactionParticipant = sqliteTable(
 	]
 );
 
-/*
- * One idea noted for several people at once (docs/dev/02 §2.25.11, ADR-134): what they were given
- * in common. Each person keeps their own `gift` row pointing here, so one can be bought, given or
- * dropped alone; the group outlives none of that — it only says the ideas belong together.
- */
+// One idea for several people (docs/dev/02 §2.25.11, ADR-134); each person keeps their own `gift`.
 export const giftGroup = sqliteTable('gift_group', {
 	id: text('id').primaryKey(),
 	householdId: text('household_id')

@@ -3,10 +3,7 @@ import type { RestoreContext } from './restore-context';
 import { bool, int, records, str, visibilityOf, type Row } from './restore-fields';
 import { webLinkOf } from './restore-records';
 
-/*
- * One idea for several people in an archive (docs/dev/02 §2.25.11, ADR-134). A group only comes
- * back with a gift in it; a gift whose group the archive lost is kept as an idea of its own.
- */
+// A group comes back only with a gift in it; a gift that lost its group stands alone (ADR-134).
 
 export function planGiftGroups(
 	document: Row,

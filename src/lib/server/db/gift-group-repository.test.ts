@@ -9,11 +9,7 @@ import type { Gift } from '../domain/gifts/gifts';
 import { createDrizzleGiftGroupRepository } from './gift-group-repository';
 import * as schema from './schema';
 
-/*
- * The Drizzle GiftGroupRepository (docs/dev/02 §2.25.11): a group and its gifts are stored together,
- * and a group reads back with only the gifts the viewer may see — none of a surprise for the member
- * whose own person is among the people it is for.
- */
+// The Drizzle GiftGroupRepository (docs/dev/02 §2.25.11): stored together, read scoped by visibility.
 
 const H = 'h1';
 const ANDY = 'u-andy';

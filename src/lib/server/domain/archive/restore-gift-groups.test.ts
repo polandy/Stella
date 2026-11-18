@@ -5,10 +5,7 @@ import type { HouseholdSnapshot } from './archive';
 import { buildArchiveDocument } from './document';
 import { planRestore, type RestoreTarget } from './restore';
 
-/*
- * One idea for several people through an archive and back (docs/dev/02 §2.15, §2.25.11): the
- * group once, each gift pointing at it, and a gift whose group the archive lost kept on its own.
- */
+// One idea for several people through an archive and back (docs/dev/02 §2.15, §2.25.11).
 
 const clock: Clock = { now: () => Date.UTC(2026, 10, 18, 8, 0) };
 const CREATED = Date.UTC(2026, 10, 1);
