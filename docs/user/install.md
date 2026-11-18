@@ -32,7 +32,7 @@ Open `.env` and set:
 
 | Setting | What to put there |
 |---|---|
-| `SESSION_SECRET` | A long random string. Generate one with `openssl rand -hex 32`. |
+| `SESSION_SECRET` | A long random string, at least 32 characters. Generate one with `openssl rand -hex 32`. Stella refuses to start in production with a short one or the example value. |
 | `STELLA_URL` | **Exactly** the address you will type into the browser, including `http://` or `https://` and the port. |
 
 `STELLA_URL` matters more than it looks. Stella checks that form submissions come from the
@@ -40,6 +40,12 @@ address it expects, so if it says `http://localhost:3000` and you open
 `http://192.168.1.20:3000`, every save fails. Use the address the family will actually use.
 
 Everything else in `.env` has a sensible default; leave it alone for now.
+
+**Reaching it from other devices.** Stella listens on the machine itself only
+(`127.0.0.1:3000`), so nothing else on the network can reach it until you say so. To let the
+family's phones and laptops in over the LAN, add `STELLA_BIND=0.0.0.0` to `.env` and set
+`STELLA_URL` to the machine's LAN address, e.g. `http://192.168.1.20:3000`. Behind a reverse
+proxy on the same machine, leave the default and point the proxy at `127.0.0.1:3000`.
 
 ## 3. Start it
 

@@ -86,6 +86,17 @@ const RawSchema = v.object({
 /** Every variable the schema reads — `.env.example` and docs/dev/04 §4.5 list each one. */
 export const configKeys = Object.keys(RawSchema.entries);
 
+const MIN_SESSION_SECRET_LENGTH = 32;
+
+/** Refuses the dev default, a docs placeholder (`change-me…`) and anything short; throws at start. */
+export function assertProductionSessionSecret(secret: string): void {
+	if (secret.length < MIN_SESSION_SECRET_LENGTH || /change-?me/i.test(secret)) {
+		throw new Error(
+			`Configuration error: SESSION_SECRET must be a real secret of at least ${MIN_SESSION_SECRET_LENGTH} characters in production (generate one with \`openssl rand -hex 32\`).`
+		);
+	}
+}
+
 function build() {
 	const raw = v.parse(RawSchema, env);
 
@@ -101,9 +112,7 @@ function build() {
 	}
 
 	const isProd = process.env.NODE_ENV === 'production';
-	if (isProd && raw.SESSION_SECRET === 'dev-insecure-secret-change-me') {
-		throw new Error('Configuration error: SESSION_SECRET must be set in production.');
-	}
+	if (isProd) assertProductionSessionSecret(raw.SESSION_SECRET);
 
 	return {
 		url: raw.STELLA_URL.replace(/\/$/, ''),
