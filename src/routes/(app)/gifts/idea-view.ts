@@ -3,17 +3,17 @@ import { alsoFor, giftGroupPanelPath } from '$lib/gifts/group-panel';
 import { authorLabel } from '$lib/story/author';
 import type { WhenState } from '$lib/when/state';
 
-/*
- * An open idea as the household's list shows it (docs/dev/02 §2.25.6) — the same words as on the
- * person's Gifts card: who noted it by first name, its link, and whether only the viewer sees it;
- * an idea several people get names the others, linked to *Who has it?* on its person's card.
- */
 /** A group of the listed ideas, with everyone in it the viewer may see. */
 export interface IdeaGroup {
 	id: string;
 	members: readonly { contactId: string; name: string }[];
 }
 
+/*
+ * An open idea as the household's list shows it (docs/dev/02 §2.25.6) — the same words as on the
+ * person's Gifts card: who noted it by first name, its link, and whether only the viewer sees it;
+ * an idea several people get names the others, linked to *Who has it?* on its person's card.
+ */
 export function openIdeaView(
 	idea: OpenIdea & { whenState: WhenState | null },
 	viewerId: string,
