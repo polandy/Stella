@@ -4,6 +4,7 @@ import { TranslatableError } from '../../../i18n/translatable';
 import { phrase, type Phrase } from '../../../i18n/phrase';
 import type { Clock } from '../../clock';
 import type { CapturedMoment } from '../moments/moments';
+import type { SkippedRecipient } from '../gifts/gift-groups';
 import type { Visibility } from '../../access/visibility';
 
 /*
@@ -53,6 +54,8 @@ export interface CommandResults {
 	'gift.markBought': { giftId: string };
 	'gift.answerWhen': { giftId: string };
 	'gift.remove': { giftId: string };
+	/** Who got an idea, and who was left out and why (§2.25.11). */
+	'giftGroup.add': { groupId: string; giftIds: string[]; skipped: SkippedRecipient[] };
 	'todo.add': { todoId: string };
 	'todo.tick': { todoId: string };
 	'todo.edit': { todoId: string };
@@ -237,6 +240,8 @@ function apply(
 		case 'gift.answerWhen':
 			return handlers[command.type](actor, command.payload);
 		case 'gift.remove':
+			return handlers[command.type](actor, command.payload);
+		case 'giftGroup.add':
 			return handlers[command.type](actor, command.payload);
 		case 'todo.add':
 			return handlers[command.type](actor, command.payload);

@@ -49,6 +49,7 @@
 			{
 				write: t('components.palette.write'),
 				giftIdea: t('components.palette.giftIdea'),
+				giftForSeveral: t('components.palette.giftForSeveral'),
 				giftIdeas: t('components.palette.giftIdeas'),
 				todoFor: t('components.palette.todoFor'),
 				briefFor: t('components.palette.briefFor'),
@@ -67,6 +68,7 @@
 	// A second step asks only whom it is for (docs/dev/05 §5.4).
 	const STEP_QUESTION = $derived({
 		giftIdea: t('components.palette.giftIdeaFor'),
+		giftForSeveral: t('components.palette.giftForSeveralFrom'),
 		todo: t('components.palette.todoForWhom'),
 		plan: t('components.palette.planWithWhom'),
 		brief: t('components.palette.briefForWhom')

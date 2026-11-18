@@ -27,6 +27,10 @@
 		nowLabel?: 'now' | 'anytime';
 		/** The days offered at one tap beside the day field. */
 		picks?: readonly QuickPick[];
+		/** For several people (§2.25.11): every age is offered, and each person's line says the rest. */
+		several?: boolean;
+		/** Told every choice, for a form that previews it itself. */
+		onchoose?: (when: When | null) => void;
 	}
 	let {
 		when = null,
@@ -35,12 +39,14 @@
 		estimateHref = null,
 		kinds,
 		nowLabel = 'now',
-		picks = ['christmas']
+		picks = ['christmas'],
+		several = false,
+		onchoose
 	}: Props = $props();
 
 	const i18n = useI18n();
 	const t = i18n.t;
-	const ageKnown = $derived(knowsBirthYear(birth));
+	const ageKnown = $derived(several || knowsBirthYear(birth));
 
 	// svelte-ignore state_referenced_locally
 	let kind = $state<'now' | WhenKind>(when?.kind ?? 'now');
@@ -91,6 +97,7 @@
 						? { kind, on: month }
 						: { kind, age }
 	);
+	$effect(() => onchoose?.(chosen));
 	const outlook = $derived(whenOutlook(chosen, birth, today));
 	const problem = $derived(!['now', 'later', 'ageReached', 'due'].includes(outlook.kind));
 	const previewId = $props.id();
@@ -101,7 +108,11 @@
 		'grid size-8 place-items-center rounded-full border border-border text-fg-muted hover:bg-primary-soft disabled:opacity-40';
 </script>
 
-<fieldset class="flex flex-col gap-1.5" aria-describedby={previewId} data-testid="when-picker">
+<fieldset
+	class="flex flex-col gap-1.5"
+	aria-describedby={several ? undefined : previewId}
+	data-testid="when-picker"
+>
 	<legend class="mb-1.5 text-xs font-medium text-fg-muted">{t('when.label')}</legend>
 	<input type="hidden" name={WHEN_FIELDS.kind} value={kind} />
 	{#if isAgeKind(kind)}<input type="hidden" name={WHEN_FIELDS.age} value={age} />{/if}
@@ -179,12 +190,14 @@
 		</label>
 	{/if}
 
-	<p
-		id={previewId}
-		aria-live="polite"
-		class="text-xs {problem ? 'text-danger' : 'text-fg-muted'}"
-		data-testid="when-preview"
-	>
-		{whenPreview(i18n, outlook)}
-	</p>
+	{#if !several}
+		<p
+			id={previewId}
+			aria-live="polite"
+			class="text-xs {problem ? 'text-danger' : 'text-fg-muted'}"
+			data-testid="when-preview"
+		>
+			{whenPreview(i18n, outlook)}
+		</p>
+	{/if}
 </fieldset>

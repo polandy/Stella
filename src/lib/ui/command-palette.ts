@@ -1,4 +1,5 @@
 import { giftIdeaPath } from '$lib/gifts/card';
+import { giftGroupPath } from '$lib/gifts/group-form';
 import { newPlanPath } from '$lib/plans/plans';
 import { newTodoPath } from '$lib/todos/todos';
 import { briefPath } from '$lib/people/sections';
@@ -16,8 +17,9 @@ import { tellApart, type Distinction } from '$lib/people/namesakes';
  * an action. Notes are not searched here; a typed query always ends in the full search.
  *
  * Most rows go somewhere. *Gift idea for …*, *To-do for …*, *Outing with …* and *Brief for …* ask
- * something first: each turns the palette into a second step, `giftIdea`, `todo`, `plan` or
- * `brief`, which lists only people, each leading to their idea form, their To-dos card's form
+ * something first: each turns the palette into a second step, `giftIdea`, `giftForSeveral`,
+ * `todo`, `plan` or `brief`, which lists only people, each leading to their idea form (or the
+ * form for several, starting with them, §2.25.11), their To-dos card's form
  * (docs/dev/02 §2.26), their Outings card's form (§2.27) or their brief (docs/dev/02 §2.2.5).
  *
  * The wording arrives as `PaletteLabels` rather than being written here: this module is
@@ -49,11 +51,12 @@ export interface PalettePerson {
 }
 
 /** What the palette is asking: anything (`start`), whom a gift idea or a to-do is for. */
-export type PaletteStep = 'start' | 'giftIdea' | 'todo' | 'plan' | 'brief';
+export type PaletteStep = 'start' | 'giftIdea' | 'giftForSeveral' | 'todo' | 'plan' | 'brief';
 
 /** Where each person of a second step leads. */
 const PERSON_STEP_PATH = {
 	giftIdea: giftIdeaPath,
+	giftForSeveral: giftGroupPath,
 	todo: newTodoPath,
 	plan: newPlanPath,
 	brief: briefPath
@@ -90,6 +93,8 @@ export const PALETTE_PEOPLE_LIMIT = 6;
 export interface PaletteLabels {
 	write: string;
 	giftIdea: string;
+	/** *Gift idea for several …*, one idea for several people (docs/dev/02 §2.25.11). */
+	giftForSeveral: string;
 	/** The household's list of every open idea (docs/dev/02 §2.25.6). */
 	giftIdeas: string;
 	/** *To-do for …*, a to-do on a person (docs/dev/02 §2.26). */
@@ -117,6 +122,7 @@ const ACTIONS: readonly ({ id: string; label: ActionLabel; icon: IconName } & (
 ))[] = [
 	{ id: 'write', label: 'write', icon: 'write', href: '/?compose' },
 	{ id: 'gift-idea', label: 'giftIdea', icon: 'gift', step: 'giftIdea' },
+	{ id: 'gift-several', label: 'giftForSeveral', icon: 'people', step: 'giftForSeveral' },
 	{ id: 'todo', label: 'todoFor', icon: 'todo', step: 'todo' },
 	{ id: 'plan', label: 'planWith', icon: 'explore', step: 'plan' },
 	{ id: 'brief', label: 'briefFor', icon: 'brief', step: 'brief' },

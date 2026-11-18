@@ -20,6 +20,7 @@ const KINDS = {
 	'note.add': 'add',
 	'interaction.log': 'add',
 	'gift.add': 'add',
+	'giftGroup.add': 'add',
 	// Somebody may have seen the gift already, so these wait for Stella rather than the device.
 	'gift.edit': 'change',
 	'gift.markGiven': 'change',

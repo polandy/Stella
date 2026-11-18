@@ -23,11 +23,13 @@ const BIRTHS: Record<string, PartialDate | null> = {
 };
 
 let stored: { group: GiftGroup; gifts: readonly Gift[] }[];
+let years: { contactId: string; year: string | null }[];
 let deps: GiftGroupDeps;
 let counter: number;
 
 beforeEach(() => {
 	stored = [];
+	years = [];
 	counter = 0;
 	deps = {
 		groups: {
@@ -52,6 +54,12 @@ beforeEach(() => {
 					birthDate: birth?.value ?? null,
 					birthDatePrecision: birth?.precision ?? 'full'
 				} as never;
+			}
+		},
+		birthYears: {
+			async setBirthYear(_viewer, contactId, year) {
+				years.push({ contactId, year });
+				return true;
 			}
 		},
 		ids: { next: () => `id-${++counter}` },
@@ -187,5 +195,44 @@ describe('addGiftGroup', () => {
 		expect(stored[0].gifts.map((g) => g.when)).toEqual(
 			Array(3).fill({ kind: 'christmas_at_age', age: 6 })
 		);
+	});
+
+	it('plans with an estimated birth year and keeps it on the person once noted (D5)', async () => {
+		const result = await addGiftGroup(
+			deps,
+			ANDY,
+			puzzle({
+				recipients: [
+					{ contactId: 'mia', birthYear: '1990' },
+					{ contactId: 'noah', birthYear: '2022' }
+				]
+			})
+		);
+		expect(result.skipped).toEqual([]);
+		expect(stored[0].gifts.map((g) => g.contactId)).toEqual(['mia', 'noah']);
+		// Mia's day is on record: her estimate is no estimate and is never written.
+		expect(years).toEqual([{ contactId: 'noah', year: '2022' }]);
+	});
+
+	it('writes no estimate for a person the when still does not fit, nor when nothing is noted', async () => {
+		await addGiftGroup(
+			deps,
+			ANDY,
+			puzzle({
+				recipients: [{ contactId: 'mia' }, { contactId: 'noah', birthYear: '2015' }]
+			})
+		);
+		expect(years).toEqual([]);
+		await refusal(
+			addGiftGroup(deps, ANDY, puzzle({ recipients: [{ contactId: 'noah', birthYear: '2015' }] }))
+		);
+		expect(years).toEqual([]);
+	});
+
+	it('refuses an estimated year no one can be born in', async () => {
+		await expect(
+			addGiftGroup(deps, ANDY, puzzle({ recipients: [{ contactId: 'noah', birthYear: '2999' }] }))
+		).rejects.toThrow();
+		expect(stored).toEqual([]);
 	});
 });

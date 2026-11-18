@@ -1,6 +1,11 @@
 import { describe, expect, it } from 'bun:test';
 import * as v from 'valibot';
-import { GiftAddSchema, GiftEditSchema, GiftMarkBoughtSchema } from './gift-todo-payloads';
+import {
+	GiftAddSchema,
+	GiftEditSchema,
+	GiftGroupAddSchema,
+	GiftMarkBoughtSchema
+} from './gift-todo-payloads';
 
 /* What a gift command may carry about when the idea is for (docs/dev/02 §2.25.8). */
 
@@ -61,5 +66,35 @@ describe('a gift marked bought, or not bought after all', () => {
 		expect(v.safeParse(GiftMarkBoughtSchema, { contactId: 'hilde', giftId: 'g-1' }).success).toBe(
 			false
 		);
+	});
+});
+
+describe('one idea for several people (docs/dev/02 §2.25.11)', () => {
+	const several = {
+		title: 'Puzzle',
+		when: { kind: 'at_age', age: 5 },
+		recipients: [{ contactId: 'mia' }, { contactId: 'emma', when: null }]
+	};
+
+	it('carries each person, with a when of their own or none, and an estimated birth year', () => {
+		const parsed = v.parse(GiftGroupAddSchema, {
+			...several,
+			recipients: [...several.recipients, { contactId: 'noah', birthYear: '2022' }]
+		});
+		expect(parsed).toMatchObject({ note: null, url: null, occasion: null, visibility: 'shared' });
+		expect(parsed.recipients).toEqual([
+			{ contactId: 'mia' },
+			{ contactId: 'emma', when: null },
+			{ contactId: 'noah', birthYear: '2022' }
+		]);
+	});
+
+	it('refuses nobody, a nameless person, and a birth year that is not one', () => {
+		const refused = (payload: object) =>
+			v.safeParse(GiftGroupAddSchema, { ...several, ...payload }).success;
+		expect(refused({ recipients: [] })).toBe(false);
+		expect(refused({ recipients: [{ contactId: '' }] })).toBe(false);
+		expect(refused({ recipients: [{ contactId: 'noah', birthYear: 'about 2020' }] })).toBe(false);
+		expect(refused({ when: { kind: 'in_month', on: '2027-01' } })).toBe(false);
 	});
 });

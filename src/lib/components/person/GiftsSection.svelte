@@ -11,6 +11,7 @@
 	import { cardShape } from '$lib/people/empty-cards';
 	import { datesEditorPath } from '$lib/people/identity-card';
 	import { sectionAnchor } from '$lib/people/sections';
+	import { giftGroupPath } from '$lib/gifts/group-form';
 	import { asksForGiftIdea, byYear, giftTabs, splitIdeas, type GiftTab } from '$lib/gifts/card';
 	import type { AddableGiftState } from '$lib/gifts/gifts';
 	import { useI18n } from '$lib/i18n/context.svelte';
@@ -173,6 +174,10 @@
 				>
 					<Icon name="add" size={14} />{t('gifts.addReceived')}
 				</button>
+				<!-- One idea for them and others, each with what it comes to (docs/dev/02 §2.25.11). -->
+				<a href={giftGroupPath(c.id)} role="menuitem" class={MENU_ITEM} onclick={close}>
+					<Icon name="people" size={14} />{t('gifts.several.menu')}
+				</a>
 				<!-- Every idea of the household on one page (docs/dev/02 §2.25.6). -->
 				<a href="/gifts" role="menuitem" class={MENU_ITEM} onclick={close}>
 					<Icon name="idea" size={14} />{t('gifts.allIdeas')}

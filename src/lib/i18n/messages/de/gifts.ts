@@ -78,6 +78,33 @@ export const gifts: GiftsMessages = {
 	'gifts.state.given': (p) => `Geschenkt am ${p.day}`,
 	'gifts.state.received': (p) => `Bekommen am ${p.day}`,
 
+	'gifts.several.title': 'Geschenkidee für mehrere',
+	'gifts.several.menu': 'Für mehrere…',
+	'gifts.several.who': 'Für wen?',
+	'gifts.several.search': 'Name suchen…',
+	'gifts.several.childrenOf': (p) => `Kinder von ${p.name}`,
+	'gifts.several.siblingsOf': (p) => `Geschwister von ${p.name}`,
+	'gifts.several.preview': 'Was es für jede Person heißt',
+	'gifts.several.include': (p) => `Für ${p.name}`,
+	'gifts.several.ageToday': 'Alter heute ca.',
+	'gifts.several.or': 'oder',
+	'gifts.several.enterBirthday': 'Geburtstag eintragen',
+	'gifts.several.insteadLabel': 'stattdessen:',
+	'gifts.several.instead.birthday': (p) => `nächster Geburtstag, ${p.day}`,
+	'gifts.several.instead.christmas': (p) => `Weihnachten ${p.year}`,
+	'gifts.several.instead.now': 'jetzt',
+	'gifts.several.own': 'eigener Zeitpunkt',
+	'gifts.several.reset': 'zurücksetzen',
+	'gifts.several.estimated': (p) =>
+		`geschätzt: etwa ${p.year} – wird beim Sichern bei ${p.name} eingetragen`,
+	'gifts.several.for': (p) => `Für ${p.chosen}`,
+	'gifts.several.forOf': (p) => `Für ${p.chosen} von ${p.total}`,
+	'gifts.several.missing.needsBirthYear': (p) => `${p.names} fehlt das Geburtsjahr`,
+	'gifts.several.missing.tooOld': (p) => `zu alt: ${p.names}`,
+	'gifts.several.missing.other': (p) => `passt nicht: ${p.names}`,
+	'gifts.several.noted': (p) => `Für ${p.count} notiert`,
+	'gifts.several.notedBut': (p) => `Für ${p.count} notiert · ${p.names} nicht`,
+
 	'gifts.story.given': 'Geschenkt',
 	'gifts.story.received': 'Bekommen'
 };
