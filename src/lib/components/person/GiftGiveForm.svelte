@@ -15,15 +15,26 @@
 		error: string | null;
 		submit: SubmitFunction;
 		onCancel: () => void;
+		/** Posts to the card's own action, or to *Who has it?*'s with the row's fields. */
+		action?: string;
+		fields?: Record<string, string>;
 	}
-	let { gift, today, error, submit, onCancel }: Props = $props();
+	let {
+		gift,
+		today,
+		error,
+		submit,
+		onCancel,
+		action = '?/markGiftGiven',
+		fields = {}
+	}: Props = $props();
 
 	const t = useI18n().t;
 </script>
 
 <form
 	method="POST"
-	action="?/markGiftGiven"
+	{action}
 	use:enhance={submit}
 	transition:reveal
 	class="mt-3 flex flex-col gap-3 rounded-control bg-bg-sunken p-3"
@@ -33,6 +44,9 @@
 		{t('gifts.markGiven.title', { title: gift.title })}
 	</h3>
 	<input type="hidden" name="giftId" value={gift.id} />
+	{#each Object.entries(fields) as [name, value] (name)}
+		<input type="hidden" {name} {value} />
+	{/each}
 	<div class="flex flex-col gap-1">
 		<span class="text-xs font-medium text-fg-muted">{t('gifts.form.on')}</span>
 		<DateField name="givenOn" required value={today} label={t('gifts.form.on')} />

@@ -19,7 +19,7 @@
 	import GiftGiveForm from './GiftGiveForm.svelte';
 	import GiftStateMark from './GiftStateMark.svelte';
 	import GiftWhenAsk from './GiftWhenAsk.svelte';
-	import type { PersonPageData } from './types';
+	import type { GroupLink, PersonPageData } from './types';
 
 	/*
 	 * One gift on the Gifts card (docs/dev/02 §2.25): what it is, its note, when and why it was given,
@@ -46,13 +46,27 @@
 		name: string;
 		/** The person is a member other than the viewer, so a gift may be kept from them. */
 		recipientIsMember: boolean;
+		/** One idea several people get: who else, and how to open *Who has it?* (§2.25.11). */
+		group?: GroupLink | null;
 	}
-	let { gift, gifts, today, birth, estimateHref, error, onGiven, name, recipientIsMember }: Props =
-		$props();
+	let {
+		gift,
+		gifts,
+		today,
+		birth,
+		estimateHref,
+		error,
+		onGiven,
+		name,
+		recipientIsMember,
+		group = null
+	}: Props = $props();
 
 	const i18n = useI18n();
 	const t = i18n.t;
 	const removals = useRemovals();
+	const listOf = (names: string[]) =>
+		new Intl.ListFormat(i18n.intlLocale, { type: 'conjunction' }).format(names);
 
 	// A refused save leaves its form open (`savedEnhance` closes only on success), so the
 	// reason stands in the form it is about.
@@ -128,6 +142,16 @@
 					<p class="font-medium break-words text-fg">{gift.title}</p>
 					{#if when}<p class="text-sm text-fg-muted">{when}</p>{/if}
 					{#if gift.when}<WhenChip when={gift.when} state={whenState} {today} />{/if}
+					{#if group && group.names.length}
+						<button
+							type="button"
+							class="block text-left text-sm text-fg-muted hover:text-fg hover:underline"
+							onclick={group.open}
+							data-testid="gift-also-for"
+						>
+							{t('gifts.group.alsoFor', { names: listOf(group.names) })} ›
+						</button>
+					{/if}
 					{#if added}<p class="text-xs text-fg-muted" data-testid="gift-added">{added}</p>{/if}
 					{#if gift.note}
 						<p class="text-sm whitespace-pre-line text-fg-muted">{gift.note}</p>

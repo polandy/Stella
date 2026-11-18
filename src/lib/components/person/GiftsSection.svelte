@@ -24,9 +24,11 @@
 	import { birthOf } from '$lib/when/resolve';
 	import { giftAddCommand } from './gift-add-command';
 	import GiftForm from './GiftForm.svelte';
+	import GiftGroupPanel from '$lib/components/gifts/GiftGroupPanel.svelte';
+	import { alsoFor } from '$lib/gifts/group-panel';
 	import GiftIdeas from './GiftIdeas.svelte';
 	import GiftRow from './GiftRow.svelte';
-	import type { PersonForm, PersonPageData } from './types';
+	import type { GroupLink, PersonForm, PersonPageData } from './types';
 
 	/*
 	 * The Gifts card (docs/dev/02 §2.25): open ideas, what was given and what was received, one tab
@@ -43,8 +45,19 @@
 	// The writer's day, as the story's forms take it.
 	const today = $derived(writersDay(data.today, browser ? deviceDay() : null));
 
-	// A gift on its way out (docs/dev/02 §2.23) is gone from the card while its undo window is open.
-	const shown = $derived(data.gifts.filter((g) => !removals.isPending(removalKey('gift', g.id))));
+	// A gift on its way out (docs/dev/02 §2.23) is gone from the card while its undo window is open,
+	// and so is an open one whose group's *Remove all open* is (§2.25.11).
+	const shown = $derived(
+		data.gifts.filter(
+			(g) =>
+				!removals.isPending(removalKey('gift', g.id)) &&
+				!(
+					g.groupId &&
+					g.state !== 'given' &&
+					removals.isPending(removalKey('gift-group', `remove/${g.groupId}`))
+				)
+		)
+	);
 	const birth = $derived(birthOf(c));
 	const estimateHref = $derived(datesEditorPath(c.id));
 	// Ideas waiting for an age or a day are folded away, and out of the count (§2.25.8).
@@ -123,6 +136,15 @@
 			savedEnhance(removals, t('components.saved'), closeAdding)
 		)
 	);
+
+	// *Who has it?* for the one idea several people get that is open (§2.25.11).
+	let openGroupId = $state<string | null>(null);
+	const openGroup = $derived(data.giftGroups.find((group) => group.id === openGroupId) ?? null);
+	function groupOf(gift: PersonPageData['gifts'][number]): GroupLink | null {
+		const group = gift.groupId && data.giftGroups.find((found) => found.id === gift.groupId);
+		if (!group) return null;
+		return { names: alsoFor(group.members, c.id), open: () => (openGroupId = group.id) };
+	}
 
 	const rowError = (giftId: string): string | null =>
 		form?.giftRowError && form.giftRowError.giftId === giftId ? form.giftRowError.message : null;
@@ -230,6 +252,7 @@
 					{rowError}
 					onGiven={() => (tab = 'given')}
 					recipientIsMember={data.recipientIsMember}
+					{groupOf}
 				/>
 			{:else}
 				{@const list = current === 'given' ? given : received}
@@ -254,6 +277,7 @@
 									onGiven={() => (tab = 'given')}
 									name={c.displayName}
 									recipientIsMember={data.recipientIsMember}
+									group={groupOf(gift)}
 								/>
 							{/each}
 						</ul>
@@ -261,6 +285,17 @@
 				{/if}
 			{/if}
 		</div>
+	{/if}
+
+	{#if openGroup}
+		<GiftGroupPanel
+			group={openGroup}
+			contactId={c.id}
+			people={data.people}
+			{today}
+			error={form?.giftGroupError?.groupId === openGroup.id ? form.giftGroupError.message : null}
+			bind:open={() => openGroupId !== null, (next) => !next && (openGroupId = null)}
+		/>
 	{/if}
 
 	{#snippet editor()}

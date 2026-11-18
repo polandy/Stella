@@ -33,6 +33,7 @@ import {
 	withReasonsSaid,
 	type PersonViewContext
 } from './person-view';
+import { giftGroupView } from './gift-group-view';
 import { REVIEW_PARAM } from './review-path';
 import { immichPhotosOfEntries } from '$lib/server/domain/immich/entry-immich-photos';
 import { entryIdsOf, nameLookup, photosByEntry, toStoryItem } from './story-view';
@@ -165,6 +166,7 @@ export const load = (async ({ locals, params, url }) => {
 		),
 		// Ideas, given and received gifts (docs/dev/02 §2.25), already visibility-scoped.
 		gifts: read.gifts.map((gift) => giftView(gift, ctx)),
+		giftGroups: read.giftGroups.map((found) => giftGroupView(found, ctx)),
 		recipientIsMember: read.recipientIsMember,
 		// Outing ideas (docs/dev/02 §2.27), open and done, already visibility-scoped.
 		plans: read.plans.map((plan) => planView(plan, ctx)),

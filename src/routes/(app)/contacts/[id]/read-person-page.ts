@@ -18,6 +18,7 @@ import { listMentionedIn } from '$lib/server/domain/mentions/mentioned-in';
 import { listNotesForContact } from '$lib/server/domain/notes/notes';
 import { listGiftsForContact } from '$lib/server/domain/gifts/gifts';
 import { listPlansForContact } from '$lib/server/domain/plans/plans';
+import { readGiftGroupsOf } from '$lib/server/domain/gifts/gift-group-follow-up';
 import { mayKeepFrom } from '$lib/server/domain/gifts/surprise';
 import { listOpenTodosForContact } from '$lib/server/domain/todos/todos';
 import { readFamilyOf } from '$lib/server/domain/relationships/family';
@@ -73,6 +74,8 @@ export function readPersonPage(
 		lastContactedAt: lastContactedOn(story.interactionDeps, viewer, contactId),
 		notes: listNotesForContact(notes.noteDeps, viewer, contactId),
 		gifts: listGiftsForContact(gifts.giftDeps, viewer, contactId),
+		// The ideas they share with others, each with all of it the viewer sees (§2.25.11).
+		giftGroups: readGiftGroupsOf(gifts.giftGroupDeps, viewer, contactId),
 		// Whether a gift may be kept from them, they being another member (§2.25.10).
 		recipientIsMember: mayKeepFrom(gifts.giftDeps, viewer, contactId),
 		// Outing ideas, open and done (§2.27); kept from them the way a gift is.

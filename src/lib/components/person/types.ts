@@ -37,3 +37,9 @@ export type ExclusionOf = (
 
 /** A photo on the Photos card — a gallery photo or one from Immich — with where it lives. */
 export type CardEntry = CardPhoto<PersonPageData['gallery'][number], GlimpsePhoto>;
+
+/** A gift's way into *Who has it?* (docs/dev/02 §2.25.11): who else it is for, and how to open it. */
+export interface GroupLink {
+	names: string[];
+	open: () => void;
+}

@@ -108,6 +108,8 @@ export function giftView(gift: Gift, ctx: PersonViewContext) {
 		when: gift.when,
 		/** The day somebody last answered whether it still stands (§2.25.8). */
 		whenCheckedOn: gift.whenCheckedOn,
+		/** The idea it shares with others (§2.25.11), or null. */
+		groupId: gift.groupId,
 		/** Kept from the member it is for (§2.25.10); only ever true on a shared gift. */
 		hiddenFromRecipient: gift.hiddenFromRecipient,
 		visibility: gift.visibility,
