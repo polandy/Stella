@@ -68,14 +68,15 @@ describe('explorerFromCore', () => {
 		expect(size.height).toBeGreaterThan(0);
 	});
 
-	it('measures a node without the room its "+N" badge reaches out into', () => {
+	it('measures a node with or without the room its "+N" badge reaches out into', () => {
 		const cy = cytoscape({ headless: true, styleEnabled: true, elements: [{ data: { id: 'a' } }] });
 		const explorer = controller(cy);
 		const bare = explorer.sizeOf('a');
 
 		cy.$id('a').style('bounds-expansion', '16px 4px 8px 2px');
 
-		expect(explorer.sizeOf('a')).toEqual(bare);
+		expect(explorer.sizeOf('a', { badge: false })).toEqual(bare);
+		expect(explorer.sizeOf('a')).toEqual({ width: bare.width + 6, height: bare.height + 24 });
 	});
 
 	it('destroys the core once, however often it is asked', () => {

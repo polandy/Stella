@@ -353,7 +353,7 @@
 	function onDropNode(id: string, at: { x: number }) {
 		const canvas = controller;
 		if (!canvas || arrangedBy !== 'tree') return;
-		const laid = treeLayout(measuredOn(canvas));
+		const laid = treeLayout(measuredOn(canvas, { badge: false }));
 		const next = ordersAfterDrop(laid.rows, laid.positions, id, at.x, treeOrders);
 		if (next) {
 			treeOrders = next;
@@ -363,9 +363,10 @@
 	}
 
 	// The room each node really takes, its name included; a node the canvas is not drawing
-	// (filtered out) has none to measure, and is given the usual room.
-	const measuredOn = (canvas: ExplorerController) => (id: string) => {
-		const size = canvas.sizeOf(id);
+	// (filtered out) has none to measure, and is given the usual room. The tree leaves the badge
+	// out, which a filter can take away.
+	const measuredOn = (canvas: ExplorerController, options?: { badge: boolean }) => (id: string) => {
+		const size = canvas.sizeOf(id, options);
 		return size.width > 0 ? size : DEFAULT_NODE_SIZE;
 	};
 
@@ -373,16 +374,17 @@
 		const canvas = controller;
 		if (!canvas) return;
 		if (key === 'force') return canvas.arrange();
-		const sizeOf = measuredOn(canvas);
 		if (key === 'tree') {
-			canvas.arrangeAt(treeLayout(sizeOf), {
+			canvas.arrangeAt(treeLayout(measuredOn(canvas, { badge: false })), {
 				outsideFamily: t('graph.tree.outsideFamily'),
 				keepNamesDrawn: true,
 				rowDrags: true
 			});
 			return;
 		}
-		canvas.arrangeAt(circleClustersLayout(view.drawn, sizeOf, view.grouping ?? undefined));
+		canvas.arrangeAt(
+			circleClustersLayout(view.drawn, measuredOn(canvas), view.grouping ?? undefined)
+		);
 	}
 
 	// The one place a stylesheet is built: theme changes and the label toggle share it, so
