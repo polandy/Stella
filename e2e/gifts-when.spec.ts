@@ -2,7 +2,7 @@ import { expect, test, type Page } from '@playwright/test';
 import { addPerson, appReady, serverToday, signIn } from './app';
 import { personIdOf, seedHousehold } from './seed';
 
-// An idea for later (docs/dev/02 §2.25.8); years come from the server's day, people are unique per run.
+// An idea for later (docs/dev/02 §2.25.8, ADR-135); years come from the server's day, people are unique per run.
 
 /** Six letters no other attempt shares. */
 function runLetters(): string {
@@ -39,6 +39,7 @@ test('an idea for a day or for later waits under Later, out of the count, folded
 	const picker = form.getByTestId('when-picker');
 	await expect(picker.getByRole('radio', { name: 'From age' })).toBeDisabled();
 	await expect(picker.getByRole('radio', { name: 'For a birthday' })).toBeDisabled();
+	await expect(picker.getByRole('radio', { name: 'Christmas at age' })).toBeDisabled();
 	await expect(picker.getByTestId('when-estimate')).toBeVisible();
 
 	await picker.getByText('On a day', { exact: true }).click();
@@ -135,6 +136,37 @@ test('an age counts from an estimated birth year, and taken back to now the idea
 	await page.goto(`/contacts/${personIdOf(name)}/brief`);
 	await appReady(page);
 	await expect(page.getByTestId('brief-gifts')).toContainText('Telescope');
+});
+
+test('an idea for Christmas at an age names the Christmas Eve they are that age, a year on when born after it', async ({
+	page
+}) => {
+	const year = Number((await serverToday(page)).slice(0, 4));
+	const born = year - 5;
+	const name = `Noel Winterberg${runLetters()}`;
+	await seedHousehold(page, [name], [], {}, [], [], [], { [name]: `${born}-12-28` });
+	await page.goto(`/contacts/${personIdOf(name)}`);
+	await appReady(page);
+	const card = giftsCard(page);
+
+	const form = await startIdea(page, 'Sledge');
+	const picker = form.getByTestId('when-picker');
+	await picker.getByText('Christmas at age', { exact: true }).click();
+	await picker.getByRole('button', { name: 'One year older' }).click();
+	const age = Number(await picker.getByTestId('when-age').textContent());
+	// Born 28 December, they turn `age` after that year's Christmas Eve.
+	await expect(picker.getByTestId('when-preview')).toContainText(
+		`Christmas ${born + age + 1}, at age ${age}.`
+	);
+	await expect(picker.getByTestId('when-preview')).toContainText('It waits until');
+	await form.getByRole('button', { name: 'Save' }).click();
+	await expect(form).toHaveCount(0);
+
+	await expect(card.getByTestId('gift-later')).toHaveText('Later · 1');
+	await card.getByTestId('gift-later').click();
+	await expect(card.getByTestId('gift-waiting').getByTestId('when-chip')).toHaveText(
+		`Christmas at ${age}`
+	);
 });
 
 test('an age without a birth year links to estimating it', async ({ page }) => {
