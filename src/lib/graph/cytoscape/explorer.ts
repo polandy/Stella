@@ -10,6 +10,7 @@ import { trackMotion } from './motion';
 import { frameOn } from './framing';
 import { arrangeOn } from './arranging';
 import { growNamesOn } from './name-growth';
+import { dragAlongRowsOn } from './tree-dragging';
 import { reconcile } from './graph-diff';
 import {
 	highlightNeighborhood,
@@ -64,6 +65,7 @@ export function explorerFromCore(cy: Core, opts: ControllerOptions): ExplorerCon
 	});
 	nameLinesUnderPointer(cy);
 	const names = growNamesOn(cy);
+	const rowDrags = dragAlongRowsOn(cy, (id, at) => opts.onDropNode?.(id, at));
 
 	/** Nothing reaches a torn-down core: the calls still in flight at teardown fall away here. */
 	const alive = () => !cy.destroyed();
@@ -93,6 +95,7 @@ export function explorerFromCore(cy: Core, opts: ControllerOptions): ExplorerCon
 
 		arrange() {
 			if (!alive()) return;
+			rowDrags.setOn(false);
 			writeCaption(cy, undefined, undefined);
 			bendLines(cy, { bows: new Map() }, (node) => node.position());
 			arranging.glideTo(arranging.forcePositions(), !opts.reducedMotion);
@@ -100,6 +103,7 @@ export function explorerFromCore(cy: Core, opts: ControllerOptions): ExplorerCon
 
 		arrangeAt({ positions, bows, routes, outsideFamily }, captions = {}) {
 			if (!alive()) return;
+			rowDrags.setOn(captions.rowDrags === true);
 			bendLines(cy, { bows, routes }, (node) => positions.get(node.id()) ?? node.position());
 			const captioned = writeCaption(cy, outsideFamily, captions.outsideFamily);
 			// The family is what is framed first, should all of it not fit with its names drawn.

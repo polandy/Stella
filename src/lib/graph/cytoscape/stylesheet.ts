@@ -1,4 +1,4 @@
-import { CURSOR_CLASS, HOVERED_CLASS, TUCKED_CLASS } from './canvas-classes';
+import { CURSOR_CLASS, DRAGGED_LINE_CLASS, HOVERED_CLASS, TUCKED_CLASS } from './canvas-classes';
 import { edgeStyles, lineColour } from './stylesheet-edges';
 import { markStyles, nodeStyles } from './stylesheet-nodes';
 import type { Palette } from './theme';
@@ -113,6 +113,7 @@ export function buildStylesheet(p: Palette, options: StylesheetOptions = {}): Cy
 			style: { display: 'element' }
 		},
 		{ selector: '.filtered-out', style: { display: 'none' } },
+		{ selector: `edge.${DRAGGED_LINE_CLASS}`, style: { display: 'none' } },
 		// Split by kind: `width` is a line's thickness but a node's size.
 		{
 			selector: 'edge.onpath',

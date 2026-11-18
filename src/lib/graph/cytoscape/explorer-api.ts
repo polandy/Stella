@@ -13,6 +13,8 @@ import type { CyStyle } from './stylesheet';
 export interface ExplorerHandlers {
 	onTapNode: (id: string) => void;
 	onTapBackground: () => void;
+	/** A person let go after a drag while the arrangement keeps drags to their row. */
+	onDropNode?: (id: string, at: Point) => void;
 }
 
 /** What the controller needs beyond the core; the core already carries its own container. */
@@ -51,7 +53,7 @@ export interface ExplorerController {
 	 * circle) and frame it. A node without a place in it stays where it is; the lines it says
 	 * to bend go around whoever stands in their way, the lines it routes run at right angles,
 	 * and every other line is drawn straight. Where it says a shelf of people outside the family
-	 * begins, `captions` names it.
+	 * begins, `captions` names it; with `rowDrags` a drag keeps to its row and reports its drop.
 	 */
 	arrangeAt(arrangement: Arrangement, captions?: Captions): void;
 	/** How much room a node takes on the canvas, its name included, in model units. */

@@ -39,6 +39,10 @@ card (§5.5.2); its styling is §5.8.
   names vanish: a large tree is shown from its top at the smallest zoom that still draws them,
   the shelf below reached by panning. An expand
   in the tree lays the whole tree out again; everybody glides to their new place.
+- Dragging a person in the tree moves them sideways in their row only, their lines hidden on the
+  way; let go, they snap into the row with their partner beside them and the tree glides into
+  its new order (at once under reduced motion). The order is kept on this device for the tree
+  around that person; on the shelf a drag glides back.
 - In the tree around a person, a reader who may add a relationship sees a dashed **plus slot**
   where a parent is missing up the centre's own line (centre, parents, grandparents): over a
   child with no parent on record, or beside the one parent there on a dashed bar. It is no
@@ -96,6 +100,11 @@ the strip too: at 820 px a full-height panel covered the right half of the map, 
 just tapped was often underneath it, while a strip leaves the whole width to the map. A phone frames
 a whole family far below full zoom, so the names around the selected person grow with it; the
 faded rest stays small, or the grown names would cover the people.
+
+A dragged person snaps into their row rather than standing where dropped because the tree's
+right-angled lines are only right at the places the tree worked out; a free drop tore them into
+zigzags. Snapping keeps the reader's say over who stands beside whom, and remembering it per
+centre person keeps a drag from rearranging every other tree on the device.
 
 The slots for missing parents keep to the centre's own line because that is the question a tree
 around one person asks, and three generations cap a large family at seven plus signs. They are

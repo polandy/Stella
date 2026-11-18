@@ -3,6 +3,7 @@ import type { GraphEdge, GraphModel } from '../model/types';
 import type { SizeOf } from './geometry';
 import { barSpans, crossingBars } from './tree-lines';
 import { barycentreOrder, husbandsLeft, improve, mirrored, type Rows } from './row-order';
+import { inRememberedOrder, orderBreaks, type RowOrders } from './tree-order';
 
 /*
  * The order of each row of one family in the family tree (docs/dev/05 §5.8). Pure. A row is a list
@@ -16,7 +17,8 @@ import { barycentreOrder, husbandsLeft, improve, mirrored, type Rows } from './r
  * time — anywhere on its row, or turned round — for as long as that removes a crossing or
  * draws the bars shorter. Last, of the order and its mirror image, it keeps the one with more
  * husbands to the left of their wives, so a person's father's family stands on the left and
- * their mother's on the right, as a family tree is usually drawn. The search itself is
+ * their mother's on the right, as a family tree is usually drawn. A row the reader ordered by
+ * dragging (`tree-order.ts`) keeps that order above all else. The search itself is
  * `row-order.ts`; this file packs the rows and straightens the drops to only children.
  */
 
@@ -32,6 +34,14 @@ export interface RowSpacing {
 
 /** A crossing outweighs any length of bar: the search never buys shorter bars with one. */
 const CROSSING_WEIGHT = 1e6;
+/** A remembered order outweighs any crossing: what the reader dragged into place stays. */
+const ORDER_WEIGHT = 1e10;
+
+/** One family's arrangement: where each member stands, and the rows' units left to right. */
+export interface FamilyArrangement {
+	x: Map<string, number>;
+	rows: Rows;
+}
 
 /** Horizontal position of each member of one family, ordered row by row. */
 export function arrangeFamily(
@@ -40,8 +50,9 @@ export function arrangeFamily(
 	neighbours: ReadonlyMap<string, ReadonlySet<string>>,
 	partners: ReadonlyMap<string, ReadonlySet<string>>,
 	sizeOf: SizeOf,
-	spacing: RowSpacing
-): Map<string, number> {
+	spacing: RowSpacing,
+	orders: RowOrders = []
+): FamilyArrangement {
 	const wording = new Map(model.nodes.map((n) => [n.id, n.wording] as const));
 	const familyEdges = model.edges.filter((e) => family.has(e.source) && family.has(e.target));
 	const members = new Set(family.keys());
@@ -92,10 +103,12 @@ export function arrangeFamily(
 		);
 		const spans = barSpans(familyEdges, positions, members);
 		const length = spans.reduce((sum, s) => sum + s.right - s.left, 0);
-		return crossingBars(spans) * CROSSING_WEIGHT + length;
+		return (
+			orderBreaks(order, orders) * ORDER_WEIGHT + crossingBars(spans) * CROSSING_WEIGHT + length
+		);
 	};
 
-	rows = barycentreOrder(rows, family, neighbours, place);
+	rows = inRememberedOrder(barycentreOrder(rows, family, neighbours, place), orders);
 	rows = improve(rows, cost);
 	// A couple free to turn round puts the husband left. Which way the whole tree faces is
 	// decided by the couples joining two families on the map — Lena's parents, whose sides are
@@ -110,8 +123,9 @@ export function arrangeFamily(
 	const counts = anyJoin ? joinsFamilies : () => true;
 	const asIs = husbandsLeft(rows, partners, wording, cost, counts);
 	const mirror = husbandsLeft(mirrored(rows), partners, wording, cost, counts);
-	const chosen = mirror.balance > asIs.balance ? mirror.rows : asIs.rows;
-	return straightened(chosen, place(chosen), familyEdges, family, sizeOf, spacing, (x) =>
+	const mirrorKeepsOrders = orderBreaks(mirror.rows, orders) <= orderBreaks(asIs.rows, orders);
+	const chosen = mirror.balance > asIs.balance && mirrorKeepsOrders ? mirror.rows : asIs.rows;
+	const x = straightened(chosen, place(chosen), familyEdges, family, sizeOf, spacing, (x) =>
 		crossingBars(
 			barSpans(
 				familyEdges,
@@ -125,6 +139,7 @@ export function arrangeFamily(
 			)
 		)
 	);
+	return { x, rows: chosen };
 }
 
 /**

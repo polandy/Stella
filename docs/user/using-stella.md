@@ -1398,6 +1398,9 @@ grandparents, the tree shows a dashed **+** in that place — above someone with
 entered, or beside the one parent who is. Tap it (or reach it with the arrow keys and press
 Enter) and that person's page opens with *Add relationship* ready on *Child of*: pick or create
 the parent and save.
+To change who stands where in the tree, drag a person left or right along their row and let
+go: they snap into place with their partner, and the tree rearranges itself around the new
+order. Stella remembers that order on this device for the tree around the same person.
 Opening up someone's connections in the tree lays the whole tree out again, so the newcomers
 land in their own generation (or on the shelf) and everyone glides to their new place. *Connection path* traces how two people are linked, and it always answers
 with the people in between rather than the worked-out shortcut — that is the point of asking.

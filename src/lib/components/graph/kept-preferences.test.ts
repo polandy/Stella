@@ -18,7 +18,7 @@ describe('loadKeptPreferences', () => {
 		expect(kept.density).toBe('spacious');
 		expect(kept.switches).toBeDefined();
 		expect(kept.savedViews).toEqual([]);
-		expect(Object.keys(stores).sort()).toEqual(['density', 'switches', 'views']);
+		expect(Object.keys(stores).sort()).toEqual(['density', 'switches', 'treeOrders', 'views']);
 	});
 
 	test('a store saves to the storage it was loaded from', () => {
