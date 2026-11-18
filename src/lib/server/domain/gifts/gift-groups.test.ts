@@ -39,6 +39,9 @@ beforeEach(() => {
 			async findVisibleTo() {
 				return null;
 			},
+			async listVisibleTo() {
+				return [];
+			},
 			async listForContactVisibleTo() {
 				return [];
 			},

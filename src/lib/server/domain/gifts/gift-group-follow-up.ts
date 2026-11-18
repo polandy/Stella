@@ -83,6 +83,15 @@ export function readGiftGroupsOf(
 	return deps.groups.listForContactVisibleTo(viewer, contactId);
 }
 
+/** These groups as the viewer sees them, for `/gifts`' *also for* lines. */
+export function readGiftGroups(
+	deps: Pick<GiftGroupDeps, 'groups'>,
+	viewer: Viewer,
+	groupIds: readonly string[]
+): Promise<VisibleGiftGroup[]> {
+	return deps.groups.listVisibleTo(viewer, groupIds);
+}
+
 /** Add people to a group: each gets its idea at the group's when, worked out for them (F11). */
 export async function addToGiftGroup(
 	deps: GiftGroupDeps,

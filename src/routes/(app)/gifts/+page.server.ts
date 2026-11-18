@@ -5,6 +5,7 @@ import { ideaListGroups } from '$lib/gifts/idea-list';
 import { requireViewer } from '$lib/server/auth/guards';
 import { systemClock } from '$lib/server/clock';
 import { upcomingDates } from '$lib/server/domain/dates/upcoming';
+import { readGiftGroups } from '$lib/server/domain/gifts/gift-group-follow-up';
 import { listOpenIdeas } from '$lib/server/domain/gifts/gifts';
 import { authorNames } from '$lib/server/domain/household/members';
 import { applyGiftCommand, occasionOf, textOf } from '../_shared/gift-commands';
@@ -27,6 +28,13 @@ export const load: PageServerLoad = async ({ locals }) => {
 		locals.services.records.importantDates.listSourcesVisibleTo(viewer),
 		authorNames(locals.services.household.memberDeps, viewer.householdId)
 	]);
+	const groupIds = [...new Set(ideas.flatMap((idea) => (idea.groupId ? [idea.groupId] : [])))];
+	const groups = (await readGiftGroups(locals.services.gifts.giftGroupDeps, viewer, groupIds)).map(
+		({ group, gifts }) => ({
+			id: group.id,
+			members: gifts.map((gift) => ({ contactId: gift.contactId, name: gift.contactName }))
+		})
+	);
 	const today = todayFor(systemClock);
 	const ahead = upcomingDates(dateSources, today, {
 		horizonDays: BIRTHDAY_HORIZON_DAYS,
@@ -36,7 +44,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 		today,
 		viewerId: viewer.id,
 		groups: ideaListGroups(
-			ideas.map((idea) => openIdeaView(idea, viewer.id, nameOfAuthor)),
+			ideas.map((idea) => openIdeaView(idea, viewer.id, nameOfAuthor, groups)),
 			ahead,
 			today
 		)

@@ -267,3 +267,37 @@ test('who has it: given for one, one more added, bought for all, changed for all
 	await card.getByRole('tab', { name: /^Given/ }).click();
 	await expect(card.getByText(`Drum ${letters}`)).toBeVisible();
 });
+
+test('on the list of all ideas, an idea for several names the others and opens who has it', async ({
+	page
+}) => {
+	const letters = runLetters();
+	const anna = `Anna Lerner${letters}`;
+	const mia = `Mia Lerner${letters}`;
+	const ben = `Ben Lerner${letters}`;
+	await seedHousehold(
+		page,
+		[anna, mia, ben],
+		[mia, ben].map((child) => ({ from: anna, to: child, type: LINK.parentOf }))
+	);
+	await page.goto(`/gifts/several?for=${personIdOf(mia)}`);
+	await appReady(page);
+	const form = page.getByTestId('gift-group-form');
+	await form.getByLabel('What?').fill(`Kite ${letters}`);
+	await form.getByRole('button', { name: `Children of ${anna}` }).click();
+	await form.getByRole('button', { name: 'Save' }).click();
+	await expect(page).toHaveURL(new RegExp(`/contacts/${personIdOf(mia)}#section-gifts$`));
+
+	await page.goto('/gifts');
+	await appReady(page);
+	const bens = page
+		.getByTestId('gift-list-group')
+		.filter({ has: page.getByRole('heading', { name: ben }) });
+	const also = bens.getByTestId('gift-also-for');
+	await expect(also).toHaveText(`also for ${mia} ›`);
+	await also.click();
+	await expect(page).toHaveURL(new RegExp(`/contacts/${personIdOf(ben)}\\?group=`));
+	const panel = page.getByTestId('gift-group-panel');
+	await expect(panel.getByRole('heading', { name: `Kite ${letters}` })).toBeVisible();
+	await expect(panel.getByTestId('group-member')).toHaveCount(2);
+});

@@ -23,7 +23,9 @@ the household at once, and to tick off what they bought without opening each per
   `opacity-80`, and it reads *Hide the ideas for later*. The choice is kept per member in this
   browser (`waitingPreference`). The count beside the heading stays the open ideas only; with
   only waiting ideas left, one muted line says so instead of the empty state. *Still current?*
-  is asked on the person's card only. The form opens in place, its occasion preset to
+  is asked on the person's card only. An idea several people get (docs/dev/02 §2.25.11) carries
+  the card's *also for Ben and Lea ›* under its chip, a link to the person's Gifts card that
+  opens *Who has it?* (`giftGroupPanelPath`). The form opens in place, its occasion preset to
   the card's; *Cancel* closes it.
 - A given idea disappears at once and comes back on *Undo* in the toast, as a removed row does
   (`heldAnswer`); a card whose last idea went disappears with it.

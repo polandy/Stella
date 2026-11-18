@@ -147,6 +147,19 @@ describe('createDrizzleGiftGroupRepository', () => {
 		expect(await repo.listForContactVisibleTo(foreign, 'mia')).toEqual([]);
 	});
 
+	it('reads the groups asked for, each with all the viewer may see of it', async () => {
+		await repo.insert(group(), [giftFor('mia'), giftFor('ben')]);
+		await repo.insert(group({ id: 'other' }), [
+			giftFor('ben', { id: 'g-ben-2', groupId: 'other' })
+		]);
+		const read = await repo.listVisibleTo(andy, ['gg', 'missing']);
+		expect(read.map((r) => [r.group.id, r.gifts.map((g) => g.contactId)])).toEqual([
+			['gg', ['ben', 'mia']]
+		]);
+		expect(await repo.listVisibleTo(andy, [])).toEqual([]);
+		expect(await repo.listVisibleTo(foreign, ['gg'])).toEqual([]);
+	});
+
 	it('lists a private or surprise group on a card only for whom it is visible', async () => {
 		const priv = { visibility: 'private' as const };
 		await repo.insert(group({ id: 'priv', ...priv }), [

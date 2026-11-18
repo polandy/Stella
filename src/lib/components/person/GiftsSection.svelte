@@ -25,7 +25,7 @@
 	import { giftAddCommand } from './gift-add-command';
 	import GiftForm from './GiftForm.svelte';
 	import GiftGroupPanel from '$lib/components/gifts/GiftGroupPanel.svelte';
-	import { alsoFor } from '$lib/gifts/group-panel';
+	import { alsoFor, opensGiftGroup } from '$lib/gifts/group-panel';
 	import GiftIdeas from './GiftIdeas.svelte';
 	import GiftRow from './GiftRow.svelte';
 	import type { GroupLink, PersonForm, PersonPageData } from './types';
@@ -104,7 +104,10 @@
 	// The palette's *Gift idea for …* lands here with the idea form open (docs/dev/05 §5.4). On a
 	// navigation, not on every load: a save reloads the page, and must not open it again.
 	afterNavigate(({ to }) => {
-		if (to && asksForGiftIdea(to.url)) startAdding('idea');
+		if (!to) return;
+		if (asksForGiftIdea(to.url)) startAdding('idea');
+		const asked = opensGiftGroup(to.url);
+		if (asked && data.giftGroups.some((group) => group.id === asked)) openGroupId = asked;
 	});
 	/** Where a gift just saved shows: its own tab. */
 	function showTabOf(kind: AddableGiftState) {

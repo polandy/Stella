@@ -1,4 +1,5 @@
 import type { PartialDate } from '../dates/partial-date';
+import { contactSectionPath } from '../people/sections';
 import { whenDay } from '../when/resolve';
 import type { When } from '../when/when';
 import { hasGiftDay, type GiftState } from './gifts';
@@ -34,6 +35,21 @@ export function panelOrder<M extends PanelMember>(members: readonly M[]): M[] {
 }
 
 /** Everyone else the idea is for, as the card's *also for* line names them (D4). */
-export function alsoFor(members: readonly PanelMember[], contactId: string): string[] {
+export function alsoFor(
+	members: readonly Pick<PanelMember, 'contactId' | 'name'>[],
+	contactId: string
+): string[] {
 	return members.filter((m) => m.contactId !== contactId).map((m) => m.name);
+}
+
+const GROUP_PARAM = 'group';
+
+/** A link that opens *Who has it?* on this person's Gifts card — from `/gifts` or the calendar. */
+export function giftGroupPanelPath(contactId: string, groupId: string): string {
+	return contactSectionPath(contactId, 'gifts', `${GROUP_PARAM}=${encodeURIComponent(groupId)}`);
+}
+
+/** The group a page address asks to open (`giftGroupPanelPath`), if any. */
+export function opensGiftGroup(url: URL): string | null {
+	return url.searchParams.get(GROUP_PARAM);
 }

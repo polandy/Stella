@@ -101,6 +101,9 @@ Goal: sand the edges and add the nice-to-haves.
   per person on the Gifts card and in the story, the Monica gifts converted, the *already
   given* hint, the *Coming up* hint and *Gift idea for …* in the palette, and the household's list of every open idea, by whose
   occasion comes next (`/gifts`, §2.25.6).
+- ~~**One gift idea for several people**~~ — shipped (§2.25.11): noted once with a time per
+  person (*Christmas at N* among the times), followed up in *Who has it?*, one calendar event
+  for everyone on the same day.
 - ~~**Email and social sync**~~ — *address books shipped; mail and social moved to After 1.0.*
   Bring in what already knows about people, matched against the
   people already in Stella through a review list rather than merged silently, every write
