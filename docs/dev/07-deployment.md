@@ -375,11 +375,15 @@ After editing Authelia config, restart/reload Authelia.
 
 State is entirely in `/data`.
 
-- **Database (WAL-safe):**
-  ```bash
-  docker compose exec stella sqlite3 /data/stella.db ".backup '/data/backup-$(date +%F).db'"
-  ```
-  This is the byte-for-byte backup, and the one to restore from.
+- **Database and media, online:** `scripts/backup.sh [--container stella] [--keep 14] <out-dir>`
+  runs `VACUUM INTO` inside the running container (consistent under WAL, unlike a file copy),
+  checks the copy with `PRAGMA integrity_check`, and streams it with `/data/media` out as
+  `stella-backup-<UTC stamp>.tar.gz`, laid out like `/data`. It keeps the newest `--keep`
+  archives and deletes older ones only after the new one is written. It expects the image's
+  layout (`DATABASE_PATH=/data/stella.db`, `MEDIA_DIR=/data/media`) and stops otherwise. It leaves
+  out `backups/` (the pre-migration copies) and `import/` (uploads waiting for review). The
+  nightly timer and the restore steps are in `docs/user/install.md`, *Backups*. This is the
+  point-in-time backup, and the one to restore from.
 
   The admin button **Settings → Data → Download the archive** is a different thing: a portable
   `.tar` of `household.yaml` plus the images, readable by anything (docs/dev/02 §2.15). Keep it for
@@ -389,13 +393,18 @@ State is entirely in `/data`.
   does not undo edits. Rolling the whole installation back to a point in time is what the
   SQLite snapshot above is for. The upload goes through `BODY_SIZE_LIMIT` (250M in the image)
   and the importer's own 200 MB ceiling; a household bigger than that restores from the snapshot.
-- **Media:** back up `/data/media` (rsync/snapshot).
 - **Whole volume:** stopping the container and copying `./data` is always safe.
 - **Before migrations:** a start that is about to migrate copies the database first (7.10)
   to `/data/backups/pre-<version>.db`. That covers a failed update, not a lost disk.
-- Automate with a cron job or your existing backup tooling. Test a restore periodically.
-
-Restore = stop container, replace `./data` contents, start container.
+- **Restore:** stop the container, `scripts/restore.sh <archive> <volume-or-host-dir>`, start it.
+  The script refuses while a container runs on the volume. It deletes `stella.db`, its `-wal`
+  and `-shm` and `media/` first, because a stale WAL would be replayed onto the restored file. It
+  then hands `/data` to uid 1000.
+- **Proven in CI:** the `image` job runs `scripts/backup-restore-check.sh` on the image it built.
+  The check backs up a running demo-seeded container, restores the archive into a fresh volume
+  and starts a fresh container on it. It then requires `/healthz` to answer 200 and every
+  table's row count and every photo's checksum to match. SQLite's own `sqlite_*` tables are
+  left out, because the planner statistics are rebuilt at start.
 
 ## 7.10 Updates
 

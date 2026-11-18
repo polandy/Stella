@@ -221,18 +221,65 @@ everything Stella wrote to it.
 Everything Stella knows lives in one place: the `/data` volume, holding the database file
 and the photos. Nothing else needs backing up.
 
-The safe, boring way:
+`scripts/backup.sh` takes one while Stella keeps running. It writes a consistent copy of the
+database and the photos into a single archive, `stella-backup-<date and time>.tar.gz`, and keeps
+the newest 14 there:
 
 ```sh
-volume=$(docker volume ls -q --filter name=stella-data)   # the volume Stella uses
-./deploy.sh down                                          # stop it so nothing is mid-write
-docker run --rm -v "$volume":/data -v "$PWD":/out \
-  alpine tar czf /out/stella-backup-$(date +%F).tar.gz -C /data .
-./deploy.sh                                               # start it again
+scripts/backup.sh /srv/backups/stella               # keep the newest 14
+scripts/backup.sh --keep 30 /srv/backups/stella     # or another number
 ```
 
-Copy that archive somewhere else — another machine, an external disk, wherever your other
-backups go. Restoring is the same command with `tar xzf`, onto a stopped container.
+It works on the container named `stella`, the name `docker-compose.yml` gives it; add
+`--container <name>` for another one. Never copy `stella.db` by hand while Stella runs: the
+newest changes may still sit beside it in `stella.db-wal`, and the copy would be broken without
+saying so.
+
+**Every night, on its own.** With systemd, two small files do it. `/etc/systemd/system/stella-backup.service`:
+
+```ini
+[Unit]
+Description=Back up Stella
+
+[Service]
+Type=oneshot
+ExecStart=/opt/stella/scripts/backup.sh --keep 14 /srv/backups/stella
+```
+
+and `/etc/systemd/system/stella-backup.timer`:
+
+```ini
+[Unit]
+Description=Back up Stella every night
+
+[Timer]
+OnCalendar=*-*-* 03:15
+Persistent=true
+
+[Install]
+WantedBy=timers.target
+```
+
+Then `systemctl enable --now stella-backup.timer`. `Persistent=true` catches up on a night the
+machine was off; `systemctl list-timers stella-backup` shows the next run and
+`journalctl -u stella-backup` the last ones. Without systemd, a cron line does the same:
+`15 3 * * * /opt/stella/scripts/backup.sh /srv/backups/stella`. Point the paths at your checkout
+and wherever the archives should go.
+
+Copy the archives somewhere else as well — another machine, an external disk, wherever your
+other backups go. A backup on the same disk does not survive the disk.
+
+**Restoring** replaces the database and the photos with those from the archive:
+
+```sh
+./deploy.sh down
+volume=$(docker volume ls -q --filter name=stella-data)   # the volume Stella uses
+scripts/restore.sh /srv/backups/stella/stella-backup-<date>.tar.gz "$volume"
+./deploy.sh
+```
+
+`scripts/restore.sh` refuses while Stella still runs on that volume. It also takes a folder on
+the host in place of a volume name, if your `/data` is one.
 
 Test a restore once in a while. A backup nobody has ever restored is a hope, not a backup.
 
