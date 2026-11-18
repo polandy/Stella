@@ -1,5 +1,25 @@
 # Changelog
 
+## [0.1.9](https://github.com/polandy/Stella/compare/v0.1.8...v0.1.9) (2026-11-17)
+
+
+### Features
+
+* **dates:** state an estimated birth year as an age that counts on by itself ([#500](https://github.com/polandy/Stella/issues/500)) ([8671ad1](https://github.com/polandy/Stella/commit/8671ad1218b3502a06c1416c05414afdf58de212))
+* **dates:** take a birthday as an age and name each entered day's weekday ([#497](https://github.com/polandy/Stella/issues/497)) ([5f12247](https://github.com/polandy/Stella/commit/5f122473dd73f8a77cc050fdc7ac87c711b83669))
+* **dates:** take an age alone as an estimated birth year ([#501](https://github.com/polandy/Stella/issues/501)) ([6519c33](https://github.com/polandy/Stella/commit/6519c33c3d7efcd1c9d8432060c4c22a6454badb))
+* **gifts:** fold the ideas for later on the list, and put near ones in the calendar link ([#509](https://github.com/polandy/Stella/issues/509)) ([700ed3f](https://github.com/polandy/Stella/commit/700ed3f1edcc553a3f5c5e8905ae15724ba91881))
+* **gifts:** let an idea come due, and ask once its time has passed ([#508](https://github.com/polandy/Stella/issues/508)) ([f113e4c](https://github.com/polandy/Stella/commit/f113e4c8c7af40443c9966e2fe709fc42a5fa376))
+* **gifts:** mark an idea bought, and keep a gift from the person it is for ([#510](https://github.com/polandy/Stella/issues/510)) ([ab4b533](https://github.com/polandy/Stella/commit/ab4b533f999914b0768309928d964de934f6b719))
+* **gifts:** say when an idea is for, and let the waiting ones fold under Later ([#507](https://github.com/polandy/Stella/issues/507)) ([072f375](https://github.com/polandy/Stella/commit/072f375261fb4492e15ac4d7b2760b61a1df136d))
+* **home:** load older stream pages as the reader scrolls ([#504](https://github.com/polandy/Stella/issues/504)) ([1ee6ace](https://github.com/polandy/Stella/commit/1ee6ace59860ba14dbd68629ecd943f6a8a81bf8))
+* **immich:** browse the picker by years, months and days of the timeline ([#505](https://github.com/polandy/Stella/issues/505)) ([257ef4e](https://github.com/polandy/Stella/commit/257ef4ec2b71247b88a2201519d4137b7720cf2d))
+* **immich:** jump to a week of a month and see every tick in a tray ([#506](https://github.com/polandy/Stella/issues/506)) ([3851c1f](https://github.com/polandy/Stella/commit/3851c1f831f3525f82b1dedf25feb2d954a3fa8c))
+* **plans:** a moment from a done idea, noting it again, and the outing in Activity ([#513](https://github.com/polandy/Stella/issues/513)) ([1160c1a](https://github.com/polandy/Stella/commit/1160c1a8ac06219ff98c308c477922753a90249d))
+* **plans:** the household's list of outings, in the palette, search and calendar link ([#514](https://github.com/polandy/Stella/issues/514)) ([a6db84d](https://github.com/polandy/Stella/commit/a6db84dccb1798cdddc85d2c6dd51f8202b83ceb))
+* **plans:** the outing ideas on Home's Coming up, and a passed one asks ([#512](https://github.com/polandy/Stella/issues/512)) ([255335b](https://github.com/polandy/Stella/commit/255335b326de1daa2367a8eac7a11738a983ea86))
+* **plans:** the Outings card on the person page ([#511](https://github.com/polandy/Stella/issues/511)) ([396458b](https://github.com/polandy/Stella/commit/396458b8bde3d871727800bf346db2b97cd9170d))
+
 ## [0.1.8](https://github.com/polandy/Stella/compare/v0.1.7...v0.1.8) (2026-11-14)
 
 
