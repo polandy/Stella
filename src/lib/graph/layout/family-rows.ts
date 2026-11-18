@@ -7,15 +7,16 @@ import { inRememberedOrder, orderBreaks, type RowOrders } from './tree-order';
 
 /*
  * The order of each row of one family in the family tree (docs/dev/05 §5.8). Pure. A row is a list
- * of units — a couple, or a longer chain of partners, moves together — and the order is chosen
- * so that every couple's bar over their children stands clear of every other couple's: then no
- * family's drop runs through another family's bar, siblings stand side by side, and each
- * child's family hangs under its own parents.
+ * of units — a couple, two parents of the same children, or a longer chain of either, moves
+ * together — and the order is chosen so that nobody stands amid another family's children (a
+ * partner who married in stands at the edge of the siblings) and every couple's bar over their
+ * children stands clear of every other couple's: then no family's drop runs through another
+ * family's bar, siblings stand side by side, and each child's family hangs under its own parents.
  *
  * It starts from the usual barycentre passes (each unit under the mean of its neighbours on
  * the row above, then over the row below) and then improves the order by moving one unit at a
- * time — anywhere on its row, or turned round — for as long as that removes a crossing or
- * draws the bars shorter. Last, of the order and its mirror image, it keeps the one with more
+ * time — anywhere on its row, or turned round — for as long as that takes somebody out from
+ * among strangers, removes a crossing or draws the bars shorter. Last, of the order and its mirror image, it keeps the one with more
  * husbands to the left of their wives, so a person's father's family stands on the left and
  * their mother's on the right, as a family tree is usually drawn. A row the reader ordered by
  * dragging (`tree-order.ts`) keeps that order above all else. The search itself is
