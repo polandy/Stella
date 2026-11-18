@@ -222,14 +222,14 @@ describe('familyTreeLayout', () => {
 	});
 
 	it('leaves every gap between rows room for its lanes, clear of the names above and below', () => {
-		const bars = TREE_LINES.bar * TREE_SPACING.row;
-		const lastLane = bars + (TREE_LINES.lanes - 1) * TREE_LINES.lane;
+		const lowest = TREE_SPACING.row - TREE_LINES.above;
+		const highest = lowest - (TREE_LINES.lanes - 1) * TREE_LINES.lane;
 		// The name and role hang up to about 80 units under a disc; the biggest disc and its
 		// "+N" reach about 40 above its centre.
-		expect(bars).toBeGreaterThan(80 + TREE_LINES.lane);
-		expect(lastLane).toBeLessThan(TREE_SPACING.row - 40 - TREE_LINES.lane);
+		expect(highest).toBeGreaterThan(80 + TREE_LINES.lane);
+		expect(TREE_LINES.above).toBeGreaterThan(40);
 		// Lanes far enough apart to read as separate lines even on a phone.
-		expect(TREE_LINES.lane).toBeGreaterThanOrEqual(14);
+		expect(TREE_LINES.lane).toBeGreaterThanOrEqual(18);
 	});
 
 	describe('with the slots of missing parents (docs/dev/05 §5.8)', () => {

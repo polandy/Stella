@@ -23,8 +23,8 @@ card (§5.5.2); its styling is §5.8.
   *Former links* off it leaves the map and the Filter pill stands out as narrowed, its name
   ending in *former links hidden*.
 - **Tree** draws the family as a paper family tree (§5.8): partner bars, one drop per couple to
-  a bar over their children — a former couple stays side by side on a dashed bar, but each
-  parent drops on their own, and the role under the name says *Wife · former* — right angles throughout, each person's role towards the centre
+  a bar just over their children — a former couple stays side by side on a dashed bar, the drop
+  leaving from its middle, and the role under the name says *Wife · former* — right angles throughout, each person's role towards the centre
   under their name instead of names on the lines — Labels starts off in the tree and its switch
   turns the names on there as anywhere, each on its child's own drop — the centre softly
   lit, and everyone outside the family on a shelf beneath under a quiet *Outside the family*,
@@ -32,7 +32,8 @@ card (§5.5.2); its styling is §5.8.
   hang off (*Friend of Sandra +1*), a circle its people on the map (*Lena, Noah +2*).
   Each family stands as one block — siblings together, a person's father's family left, their
   mother's right — so no couple's bar crosses another's. Two parents of the same children stand
-  side by side even with no partnership entered, and somebody who married in stands at the edge
+  side by side even with no partnership entered, each dropping into one bar over the
+  children, and somebody who married in stands at the edge
   of their partner's siblings, never amid them. A filter only takes lines away: everybody
   shown keeps their place. Only the tree's own lines are drawn:
   a grandparent, cousin or sibling line the bars already draw is left off, and friends,
@@ -94,8 +95,7 @@ card (§5.5.2); its styling is §5.8.
 A legend that *is* the filter can never disagree with the lines it toggles, and there is no
 second box to keep in sync. Former links are a switch rather than a seventh chip because a
 former link already has a kind and a category; the switch cuts across them. They are shown by
-default because an ex-partner is still part of how a family hangs together, and a bar the
-children hang from would say the two are still a couple. On a phone both menu pills stand at the right, so a menu opening
+default because an ex-partner is still part of how a family hangs together. On a phone both menu pills stand at the right, so a menu opening
 from there would run off the screen unless it moves. The peek panel has no room beside the map
 on a phone, hence the bottom strip — kept to one row, because a second toolbar row, an empty
 hint bar and a tall card together left a 412 px phone a map the size of a stamp. A tablet takes
@@ -106,6 +106,10 @@ faded rest stays small, or the grown names would cover the people.
 
 Co-parents stand together whether or not the household entered their partnership, because
 their children are what the tree is about; apart, another family's drop ran between them.
+Their children hang from one bar, and a former couple's from one drop out of the middle of
+the dashed bar, because two bars over the same children, a lane apart, read as two families;
+the dash and the role already say the two are apart. A bar runs just above its children
+rather than halfway down the gap, so it is plainly theirs and not the row's above.
 A filter leaves the arrangement as it was because the reader narrows the lines to read them,
 not to get a different tree; rebuilt, a couple lost its partner line and stood apart.
 
