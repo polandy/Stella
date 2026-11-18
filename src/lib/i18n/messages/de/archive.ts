@@ -77,6 +77,8 @@ export const archive: ArchiveMessages = {
 		'Ein Geschenk ohne Namen, ohne bekannten Stand oder – verschenkt oder bekommen – ohne Tag wurde ausgelassen.',
 	'archive.warning.giftGroupMissing':
 		'Einige Ideen, die für mehrere Menschen zugleich notiert waren, haben ihre Verbindung verloren; jede wurde einzeln behalten.',
+	'archive.warning.giftGroupEmpty':
+		'Eine Idee für mehrere Menschen, von der keines ihrer Geschenke im Archiv blieb, wurde ausgelassen.',
 	'archive.warning.todoIncomplete': 'Ein Todo ohne Zeile wurde ausgelassen.',
 	'archive.warning.planIncomplete': 'Eine Unternehmungsidee ohne Zeile wurde ausgelassen.',
 	'archive.warning.tagWithoutName': 'Ein Schlagwort ohne Namen wurde ausgelassen.',

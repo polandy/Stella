@@ -86,6 +86,8 @@ export const archive = {
 		'A gift without a name, a known state or — once given or received — a day was left out.',
 	'archive.warning.giftGroupMissing':
 		'Some ideas noted for several people at once had lost what binds them; each was kept on its own.',
+	'archive.warning.giftGroupEmpty':
+		'An idea noted for several people at once, with none of its gifts left in the archive, was left out.',
 	'archive.warning.todoIncomplete': 'A to-do without a line was left out.',
 	'archive.warning.planIncomplete': 'An outing idea without a line was left out.',
 	'archive.warning.tagWithoutName': 'A tag without a name was left out.',

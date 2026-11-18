@@ -29,6 +29,7 @@ export type RestoreWarning =
 	| { code: 'touchpointIncomplete' }
 	| { code: 'giftIncomplete' }
 	| { code: 'giftGroupMissing' }
+	| { code: 'giftGroupEmpty' }
 	| { code: 'todoIncomplete' }
 	| { code: 'planIncomplete' }
 	| { code: 'tagWithoutName' }

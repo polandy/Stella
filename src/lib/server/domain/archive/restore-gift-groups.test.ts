@@ -130,7 +130,7 @@ describe('one idea for several people in an archive', () => {
 		expect(plan.warnings).toEqual([{ code: 'giftGroupMissing' }]);
 	});
 
-	it('leaves out a group without a title, and one none of whose gifts came back', () => {
+	it('leaves out a group without a title, and names one none of whose gifts came back', () => {
 		const built = buildArchiveDocument(snapshot, clock.now());
 		const document = {
 			...built,
@@ -140,7 +140,7 @@ describe('one idea for several people in an archive', () => {
 		const plan = planRestore({ ids: counter(), clock }, document, target);
 
 		expect(tableOf(plan, 'gift_group')).toEqual([]);
-		expect(plan.warnings).toEqual([]);
+		expect(plan.warnings).toEqual([{ code: 'giftGroupEmpty' }]);
 	});
 
 	it('never makes a private group a surprise', () => {

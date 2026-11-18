@@ -75,7 +75,12 @@ beforeEach(() => {
 		.run();
 	db.insert(schema.contact)
 		.values(
-			['mia', 'ben', 'julia'].map((id) => ({ id, householdId: H, createdBy: ANDY, displayName: id }))
+			['mia', 'ben', 'julia'].map((id) => ({
+				id,
+				householdId: H,
+				createdBy: ANDY,
+				displayName: id
+			}))
 		)
 		.run();
 	db.update(schema.user).set({ selfContactId: 'julia' }).where(eq(schema.user.id, JULIA)).run();

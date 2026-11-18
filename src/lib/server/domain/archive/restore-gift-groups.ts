@@ -33,6 +33,7 @@ export function planGiftGroups(
 	});
 	if (lost) ctx.warn({ code: 'giftGroupMissing' });
 
+	if ([...written.keys()].some((id) => !used.has(id))) ctx.warn({ code: 'giftGroupEmpty' });
 	const groups = [...written]
 		.filter(([id]) => used.has(id))
 		.map(([id, group]) => {
