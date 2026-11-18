@@ -240,7 +240,8 @@ test('a ticked to-do shows in Activity, and unticking it there opens it again', 
 	const box = item.getByRole('checkbox', { name: `Not done yet: ${title}` });
 	await expect(box).toBeChecked();
 
-	await box.uncheck();
+	// Not uncheck(): its re-read of the box races the item leaving Activity once Stella answers.
+	await box.click();
 	await expect(page.getByText(`Open again: ${title}`)).toBeVisible();
 	await expect(storyTodo(page, title)).toHaveCount(0);
 	const row = todoRow(page, title);
