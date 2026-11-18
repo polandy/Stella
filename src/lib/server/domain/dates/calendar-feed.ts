@@ -2,6 +2,7 @@ import { writeIcs, type IcsEvent } from '../../../calendar/ics';
 import { dayParts } from '../../../dates/calendar';
 import type { DateLanguage } from '../../../dates/labels';
 import { todayFor } from '../../../dates/today';
+import { giftGroupPanelPath } from '../../../gifts/group-panel';
 import { ideaState } from '../../../gifts/idea-when';
 import { planLeadDay } from '../../../plans/calendar';
 import type { Translate } from '../../../i18n/translate';
@@ -143,10 +144,15 @@ export function todoEvents(
 	);
 }
 
+/** An open idea that stands on its day in the calendar. */
+type DayIdea = { idea: IdeaWithBirth<OpenIdea>; on: string };
+
 /**
  * The events for these open gift ideas on `today`, in a fixed order: one whose time is near or
  * here stands on its day; a waiting one, one asking whether it still stands, one meant for now
  * and an estimated year, which names no day, stay out — and so does every idea for the member.
+ * The ideas of one group with the same title on the same day are one event naming everyone
+ * (§2.25.11).
  */
 export function giftIdeaEvents(
 	ideas: readonly IdeaWithBirth<OpenIdea>[],
@@ -155,24 +161,54 @@ export function giftIdeaEvents(
 	origin: string,
 	selfContactId: string | null
 ): IcsEvent[] {
+	const onTheirDay = ideas.flatMap((idea): DayIdea[] => {
+		if (idea.when === null || idea.contactId === selfContactId) return [];
+		const state = ideaState(idea, idea.birth, today);
+		if (state === null || (state.kind !== 'soon' && state.kind !== 'due')) return [];
+		if (state.on === null || state.approximate) return [];
+		return [{ idea, on: state.on }];
+	});
+	const together = new Map<string, DayIdea[]>();
+	for (const day of onTheirDay) {
+		const key = day.idea.groupId === null ? `gift-${day.idea.id}` : `${day.idea.groupId}/${day.on}`;
+		together.set(key, [...(together.get(key) ?? []), day]);
+	}
 	return byUid(
-		ideas.flatMap((idea) => {
-			if (idea.when === null || idea.contactId === selfContactId) return [];
-			const state = ideaState(idea, idea.birth, today);
-			if (state === null || (state.kind !== 'soon' && state.kind !== 'due')) return [];
-			if (state.on === null || state.approximate) return [];
-			return [
-				{
-					uid: `gift-${idea.id}@stella`,
-					start: state.on,
-					yearly: false,
-					summary: lang.t('dates.feed.giftIdea', { title: idea.title, name: idea.contactName }),
-					description: whenChip(lang, idea.when),
-					url: `${origin}/contacts/${idea.contactId}`
-				}
-			];
+		[...together.values()].flatMap((days) => {
+			const { groupId, title } = days[0].idea;
+			return groupId !== null && days.every(({ idea }) => idea.title === title)
+				? [giftEvent(days, groupId, lang, origin)]
+				: days.map((day) => giftEvent([day], null, lang, origin));
 		})
 	);
+}
+
+/** One event for these ideas on one day: a lone idea's own, or its group's naming everyone. */
+function giftEvent(
+	days: readonly DayIdea[],
+	groupId: string | null,
+	lang: DateLanguage,
+	origin: string
+): IcsEvent {
+	const sorted = [...days].sort((a, b) =>
+		a.idea.contactName.localeCompare(b.idea.contactName, lang.intlLocale)
+	);
+	const [{ idea, on }] = sorted;
+	return {
+		uid: groupId === null ? `gift-${idea.id}@stella` : `gift-group-${groupId}-${on}@stella`,
+		start: on,
+		yearly: false,
+		summary: lang.t('dates.feed.giftIdea', {
+			title: idea.title,
+			name: sorted.map((day) => day.idea.contactName).join(', ')
+		}),
+		description: idea.when === null ? null : whenChip(lang, idea.when),
+		url:
+			origin +
+			(groupId === null
+				? `/contacts/${idea.contactId}`
+				: giftGroupPanelPath(idea.contactId, groupId))
+	};
 }
 
 /**

@@ -668,7 +668,13 @@ and a good idea is still there on the birthday it was meant for.
   everyone** ticks the lot, and **✎** changes title, note, link or time for all still open — or
   only for the person whose card you came from. A row's **⋯** detaches that one gift or removes
   it; the panel's **⋯** lets every gift go on alone or removes all still open. Removing and
-  marking bought come with *Undo*.
+  marking bought come with *Undo*. In **All gift ideas** the idea stands under each person
+  with the same *also for …* line, which takes you to that list.
+- **For example:** the puzzle for the 5th birthday of Mia, Ben and Lea comes up for Mia in
+  January, for Ben in May and for Lea the year after — each on their own card when their day
+  nears, and *Mark as given…* on Mia's leaves Ben and Lea waiting. The Lego train for
+  *Christmas at 6* for five children waits for each one's Christmas Eve at 6 (a child born on
+  28 December is still 5 on that Eve, so theirs is a year later).
 - **All gift ideas** — in the `⌘K` / `Ctrl-K` palette, or in the Gifts card's **⋯** menu —
   lists every open idea of the household on one page, for the shopping trip: one card per
   person, whoever's birthday or Christmas comes first on top, with how far off it is. **Mark as
@@ -802,7 +808,9 @@ year round — private people only in your own — and your open to-dos that hav
 day, as *To-do: Give back the book (Anna)*, until you tick them. A to-do without a day is not
 in it, and one you have not ticked by its day stays on that day. A gift idea for a day or an age
 appears on that day once it is near — about three months ahead — as *Gift idea: Bike (Mia)*,
-until it is given; an idea for yourself never does, so the surprise stays one. An outing idea
+until it is given; an idea for yourself never does, so the surprise stays one. One idea for
+several people on the same day — the Lego train for Christmas at 6 for Mia and Ben, say — is
+one entry naming both, *Gift idea: Lego train (Ben, Mia)*, and opens *Who has it?*. An outing idea
 with a day appears once, about three months before it — or on the day you noted it, if that was
 later — as *Outing ahead: Zoo (Mia)*, so there is time to plan; ideas without a day do not. When and whether it reminds you is set in the
 calendar app (one day before, say). Your phone checks for changes every few hours, so an edit

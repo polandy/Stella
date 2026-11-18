@@ -280,6 +280,65 @@ describe('giftIdeaEvents', () => {
 		expect(giftsOn([idea({ contactId: 'c2' })], '2026-12-20', 'c1')).toHaveLength(1);
 	});
 
+	describe('one idea for several people', () => {
+		// Lego train for Christmas at 6: Mia and Ben are 6 on 24 December 2027, Lea a year later.
+		const train = (id: string, contactId: string, contactName: string, born: string) =>
+			idea({
+				id,
+				contactId,
+				contactName,
+				title: 'Lego train',
+				groupId: 'gg1',
+				when: { kind: 'christmas_at_age', age: 6 },
+				birth: { value: born, precision: 'full' }
+			});
+		const mia = train('g-mia', 'c-mia', 'Mia', '2021-01-20');
+		const ben = train('g-ben', 'c-ben', 'Ben', '2021-05-04');
+		const lea = train('g-lea', 'c-lea', 'Lea', '2021-12-28');
+
+		test('the group’s gifts on one day are one event naming everyone', () => {
+			expect(giftsOn([mia, lea, ben], '2027-12-01')).toEqual([
+				{
+					uid: 'gift-group-gg1-2027-12-24@stella',
+					start: '2027-12-24',
+					yearly: false,
+					summary: 'Gift idea: Lego train (Ben, Mia)',
+					description: 'Christmas at 6',
+					url: 'https://stella.example/contacts/c-ben?group=gg1#section-gifts'
+				}
+			]);
+		});
+
+		test('one left alone on its day keeps the group’s event, named for them', () => {
+			const [event] = giftsOn([mia, train('g-x', 'c-x', 'Xaver', '2016-01-01')], '2027-12-01');
+			expect(event).toMatchObject({
+				uid: 'gift-group-gg1-2027-12-24@stella',
+				summary: 'Gift idea: Lego train (Mia)'
+			});
+		});
+
+		test('each day of the group is its own event', () => {
+			const lea6 = '2028-12-01';
+			expect(giftsOn([mia, ben, lea], lea6).map((e) => [e.uid, e.summary])).toEqual([
+				['gift-group-gg1-2028-12-24@stella', 'Gift idea: Lego train (Lea)']
+			]);
+		});
+
+		test('a title changed for one alone stands apart, as an idea of its own', () => {
+			const own = { ...ben, title: 'Lego crane' };
+			expect(giftsOn([mia, own], '2027-12-01').map((e) => [e.uid, e.summary])).toEqual([
+				['gift-g-ben@stella', 'Gift idea: Lego crane (Ben)'],
+				['gift-g-mia@stella', 'Gift idea: Lego train (Mia)']
+			]);
+		});
+
+		test('the member’s own gift of the group stays out, the others still meet', () => {
+			expect(giftsOn([mia, ben], '2027-12-01', 'c-mia')[0].summary).toBe(
+				'Gift idea: Lego train (Ben)'
+			);
+		});
+	});
+
 	test('speaks the member’s language', () => {
 		const [event] = giftIdeaEvents([idea()], '2026-12-20', deLang, ORIGIN, null);
 		expect(event.summary).toBe('Geschenkidee: First bike (Mia Example)');

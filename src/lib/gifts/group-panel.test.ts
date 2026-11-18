@@ -1,6 +1,12 @@
 import { describe, expect, it } from 'bun:test';
 import type { PartialDate } from '../dates/partial-date';
-import { alsoFor, panelOrder, type PanelMember } from './group-panel';
+import {
+	alsoFor,
+	giftGroupPanelPath,
+	panelOrder,
+	opensGiftGroup,
+	type PanelMember
+} from './group-panel';
 
 // The order of *Who has it?* and the card's *also for* line (docs/dev/02 §2.25.11).
 
@@ -34,5 +40,14 @@ describe('alsoFor', () => {
 		const members = [member('mia'), member('ben', { state: 'given' }), member('lea')];
 		expect(alsoFor(members, 'mia')).toEqual(['ben', 'lea']);
 		expect(alsoFor([member('mia')], 'mia')).toEqual([]);
+	});
+});
+
+describe('giftGroupPanelPath', () => {
+	it('opens the group’s panel on the person’s Gifts card', () => {
+		const path = giftGroupPanelPath('mia', 'gg 1');
+		expect(path).toBe('/contacts/mia?group=gg%201#section-gifts');
+		expect(opensGiftGroup(new URL(path, 'https://stella.test'))).toBe('gg 1');
+		expect(opensGiftGroup(new URL('https://stella.test/contacts/mia#section-gifts'))).toBeNull();
 	});
 });

@@ -40,8 +40,25 @@ describe('openIdeaView', () => {
 			whenState: null,
 			hiddenFromRecipient: false,
 			mine: false,
-			notedBy: 'Sandra'
+			notedBy: 'Sandra',
+			group: null
 		});
+	});
+
+	it('names everyone else a group’s idea is for, linked to its panel (§2.25.11)', () => {
+		const grouped = { ...idea, groupId: 'gg' };
+		const group = {
+			id: 'gg',
+			members: [
+				{ contactId: 'c-1', name: 'Hilde Brunner' },
+				{ contactId: 'c-2', name: 'Ben Brunner' }
+			]
+		};
+		expect(openIdeaView(grouped, 'u-1', names, [group]).group).toEqual({
+			names: ['Ben Brunner'],
+			href: '/contacts/c-1?group=gg#section-gifts'
+		});
+		expect(openIdeaView(grouped, 'u-1', names, []).group).toBeNull();
 	});
 
 	it('says nothing more of the viewer’s own idea than that it is theirs', () => {

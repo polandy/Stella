@@ -9,7 +9,8 @@ it, who still waits and for which day, and the few things done to all of them at
 ### Rules
 
 - **Way in**: *also for Ben and Lea ›* under the gift's line on the Gifts card (`GiftRow`, the
-  names by `Intl.ListFormat`), on ideas, given and received gifts alike.
+  names by `Intl.ListFormat`), on ideas, given and received gifts alike; from `/gifts` and the
+  calendar link, `?group=<id>` on the person's page opens it.
 - **`GiftGroupPanel`** is a `<dialog>`: a bottom sheet on a phone (`rounded-t-app`, `mt-auto`),
   centred from `md`. Header: the title, ✎ *Change*, **⋯** (*Dissolve*, *Remove the open ones*
   in `text-danger`), close. Under it in `text-fg-muted`: the time as noted · visibility ·

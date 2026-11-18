@@ -94,6 +94,9 @@ beforeEach(() => {
 					}))
 				};
 			},
+			async listVisibleTo() {
+				return [];
+			},
 			async listForContactVisibleTo() {
 				return [];
 			},

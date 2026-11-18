@@ -38,6 +38,8 @@
 			notedBy: string | null;
 			when: When | null;
 			whenState: WhenState | null;
+			/** Everyone else an idea several people get is for, and where its panel opens. */
+			group: { names: string[]; href: string } | null;
 		};
 		/** The occasion the person's group is for; the form starts on it. */
 		next: NextOccasion;
@@ -94,6 +96,19 @@
 	<div class="min-w-0 flex-1">
 		<p class="font-medium break-words text-fg">{idea.title}</p>
 		{#if idea.when}<WhenChip when={idea.when} state={idea.whenState} {today} />{/if}
+		{#if idea.group && idea.group.names.length}
+			<a
+				href={idea.group.href}
+				class="block text-sm text-fg-muted hover:text-fg hover:underline"
+				data-testid="gift-also-for"
+			>
+				{t('gifts.group.alsoFor', {
+					names: new Intl.ListFormat(i18n.intlLocale, { type: 'conjunction' }).format(
+						idea.group.names
+					)
+				})} ›
+			</a>
+		{/if}
 		{#if idea.note}
 			<p class="text-sm whitespace-pre-line text-fg-muted">{idea.note}</p>
 		{/if}

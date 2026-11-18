@@ -72,6 +72,8 @@ export interface GiftGroupRepository {
 	insert(group: GiftGroup, gifts: readonly Gift[]): Promise<void>;
 	/** The group with the gifts of it the viewer may see; null when they see none of them. */
 	findVisibleTo(viewer: Viewer, groupId: string): Promise<VisibleGiftGroup | null>;
+	/** These groups, each with the gifts of it the viewer may see; one they see none of is left out. */
+	listVisibleTo(viewer: Viewer, groupIds: readonly string[]): Promise<VisibleGiftGroup[]>;
 	/** The groups with a gift the viewer may see on this person, each with all it shows them. */
 	listForContactVisibleTo(viewer: Viewer, contactId: string): Promise<VisibleGiftGroup[]>;
 	write(change: GroupWrite): Promise<void>;

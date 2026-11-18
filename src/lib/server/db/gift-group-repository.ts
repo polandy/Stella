@@ -76,6 +76,10 @@ export function createDrizzleGiftGroupRepository(
 			return readGroups(viewer, [groupId])[0] ?? null;
 		},
 
+		async listVisibleTo(viewer, groupIds) {
+			return readGroups(viewer, groupIds);
+		},
+
 		async listForContactVisibleTo(viewer, contactId) {
 			const ids = db
 				.selectDistinct({ groupId: gift.groupId })
