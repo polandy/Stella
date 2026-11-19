@@ -47,7 +47,7 @@ beforeEach(() => {
 			},
 			async write() {}
 		},
-		gifts: {
+		ownPeople: {
 			async memberWhoseOwnPerson(_household, contactId) {
 				return contactId === 'andy' ? 'andy' : null;
 			}

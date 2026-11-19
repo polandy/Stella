@@ -5,7 +5,7 @@
 	import Icon from '$lib/components/ui/Icon.svelte';
 	import WhenPicker from '$lib/components/when/WhenPicker.svelte';
 	import type { PartialDate } from '$lib/dates/partial-date';
-	import { SURPRISE } from '$lib/gifts/gifts';
+	import { SURPRISE } from '$lib/surprise/surprise';
 	import { useI18n } from '$lib/i18n/context.svelte';
 	import { PLAN_QUICK_PICKS, PLAN_WHEN_KINDS } from '$lib/plans/plans';
 	import type { When } from '$lib/when/when';

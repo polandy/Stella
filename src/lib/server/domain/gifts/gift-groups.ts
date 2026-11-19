@@ -14,16 +14,8 @@ import type { Clock } from '../../clock';
 import type { IdGenerator } from '../../id';
 import { checkBirthEstimate } from '../contacts/birth-year';
 import type { ContactLookup } from '../contacts/contacts';
-import {
-	InvalidGiftError,
-	orNull,
-	titleOf,
-	urlOf,
-	viewerOf,
-	type Gift,
-	type GiftActor,
-	type GiftRepository
-} from './gifts';
+import { orNull, viewerOf, type OwnPersonReads } from '../shared/idea-on-person';
+import { InvalidGiftError, titleOf, urlOf, type Gift, type GiftActor } from './gifts';
 
 // One idea for several people (docs/dev/02 §2.25.11, ADR-134): a gift each, bound by a group.
 
@@ -91,7 +83,7 @@ export interface BirthYearWriter {
 
 export interface GiftGroupDeps {
 	groups: GiftGroupRepository;
-	gifts: Pick<GiftRepository, 'memberWhoseOwnPerson'>;
+	ownPeople: Pick<OwnPersonReads, 'memberWhoseOwnPerson'>;
 	contacts: ContactLookup;
 	/** Where an estimated birth year named while noting is kept (D5). */
 	birthYears: BirthYearWriter;
@@ -208,12 +200,12 @@ export async function planRecipients(
 
 /** Nobody keeps a surprise from themselves (§2.25.10). */
 export async function refuseOwnSurprise(
-	deps: Pick<GiftGroupDeps, 'gifts'>,
+	deps: Pick<GiftGroupDeps, 'ownPeople'>,
 	author: GiftActor,
 	fitting: readonly { contactId: string }[]
 ): Promise<void> {
 	for (const { contactId } of fitting) {
-		const member = await deps.gifts.memberWhoseOwnPerson(author.householdId, contactId);
+		const member = await deps.ownPeople.memberWhoseOwnPerson(author.householdId, contactId);
 		if (member === author.userId) throw new InvalidGiftError(phrase('errors.gift.ownSurprise'));
 	}
 }

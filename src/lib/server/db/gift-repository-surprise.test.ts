@@ -156,34 +156,3 @@ describe('a surprise, in every read', () => {
 		expect(await repo.findVisibleTo(andy, JULIA_PERSON, 'surprise')).not.toBeNull();
 	});
 });
-
-describe('memberWhoseOwnPerson', () => {
-	it('names the current member whose own person it is, and nobody for anyone else', async () => {
-		db.insert(schema.contact)
-			.values({ id: 'c-hilde', householdId: H, createdBy: ANDY, displayName: 'Hilde' })
-			.run();
-		expect(await repo.memberWhoseOwnPerson(H, JULIA_PERSON)).toBe(JULIA);
-		expect(await repo.memberWhoseOwnPerson(H, 'c-hilde')).toBeNull();
-		expect(await repo.memberWhoseOwnPerson('household-2', JULIA_PERSON)).toBeNull();
-	});
-
-	it('names nobody once that member is removed', async () => {
-		db.update(schema.user).set({ removedAt: 5 }).where(eq(schema.user.id, JULIA)).run();
-		expect(await repo.memberWhoseOwnPerson(H, JULIA_PERSON)).toBeNull();
-	});
-});
-
-describe('membersOwnPeople', () => {
-	it('lists the current members who have an own person, and no one once removed', async () => {
-		expect(await repo.membersOwnPeople(H)).toContainEqual({
-			memberId: JULIA,
-			contactId: JULIA_PERSON
-		});
-		expect(await repo.membersOwnPeople('household-2')).toEqual([]);
-		db.update(schema.user).set({ removedAt: 5 }).where(eq(schema.user.id, JULIA)).run();
-		expect(await repo.membersOwnPeople(H)).not.toContainEqual({
-			memberId: JULIA,
-			contactId: JULIA_PERSON
-		});
-	});
-});

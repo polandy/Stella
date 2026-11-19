@@ -1,15 +1,23 @@
 import { TranslatableError } from '../../../i18n/translatable';
 import { phrase, type Phrase } from '../../../i18n/phrase';
-import { giftLink } from '../../../gifts/gifts';
 import type { PartialDate } from '../../../dates/partial-date';
 import { todayFor } from '../../../dates/today';
-import { birthOf, checkWhen } from '../../../when/resolve';
 import { sameWhen, type When } from '../../../when/when';
 import type { Visibility, Viewer } from '../../access/visibility';
 import type { Clock } from '../../clock';
 import type { IdGenerator } from '../../id';
 import type { ContactLookup } from '../contacts/contacts';
-import { ContactGoneError } from '../contacts/require-visible';
+import {
+	birthOfVisible,
+	checkedWhen,
+	keptFromPerson,
+	orNull,
+	requiredTitle,
+	viewerOf,
+	webLinkOf,
+	type IdeaActor,
+	type OwnPersonReads
+} from '../shared/idea-on-person';
 
 /*
  * Outing use-cases (docs/dev/02 §2.27). An outing idea belongs to the one person it is to be
@@ -32,7 +40,7 @@ export interface Plan {
 	hiddenFromPerson: boolean;
 	title: string;
 	note: string | null;
-	/** A web address only (`giftLink`). */
+	/** A web address only (`webLink`). */
 	url: string | null;
 	/** When it is meant for; null for *some time*. */
 	when: When | null;
@@ -82,23 +90,20 @@ export interface PlanRepository {
 		contactId: string,
 		opts: { limit: number; before?: { doneOn: string; doneAt: number } }
 	): Promise<DonePlan[]>;
-	/** The current member whose own person `contactId` is, in the household, or null. */
-	memberWhoseOwnPerson(householdId: string, contactId: string): Promise<string | null>;
 }
 
 /** Collaborators the use-cases need, injected by the composition root. */
 export interface PlanDeps {
 	plans: PlanRepository;
+	/** Who may be kept from a surprise. */
+	ownPeople: OwnPersonReads;
 	contacts: ContactLookup;
 	ids: IdGenerator;
 	clock: Clock;
 }
 
 /** The member doing it. */
-export interface PlanActor {
-	userId: string;
-	householdId: string;
-}
+export type PlanActor = IdeaActor;
 
 /** What an idea says, as a form or a command hands it over. */
 export interface PlanContent {
@@ -148,57 +153,31 @@ export class PlanGoneError extends TranslatableError {
 	}
 }
 
-const orNull = (value: string | null): string | null => {
-	const trimmed = (value ?? '').trim();
-	return trimmed.length > 0 ? trimmed : null;
-};
+const titleOf = (raw: string): string =>
+	requiredTitle(raw, () => new InvalidPlanError(phrase('errors.plan.needTitle')));
 
-function titleOf(raw: string): string {
-	const title = raw.trim();
-	if (title.length === 0) throw new InvalidPlanError(phrase('errors.plan.needTitle'));
-	return title;
-}
+const urlOf = (raw: string | null): string | null =>
+	webLinkOf(raw, () => new InvalidPlanError(phrase('errors.plan.badLink')));
 
-function urlOf(raw: string | null): string | null {
-	const link = giftLink(raw ?? '');
-	if (!link.ok) throw new InvalidPlanError(phrase('errors.plan.badLink'));
-	return link.url;
-}
-
-function whenOf(when: When | null, birth: PartialDate | null, today: string): When | null {
-	const check = checkWhen(when, birth, today);
-	if (!check.ok) throw new InvalidPlanError(phrase(`errors.when.${check.problem}`));
-	return check.when;
-}
-
-export const viewerOf = (actor: PlanActor): Viewer => ({
-	id: actor.userId,
-	householdId: actor.householdId
-});
-
-async function birthOfVisible(
-	deps: Pick<PlanDeps, 'contacts'>,
-	actor: PlanActor,
-	contactId: string
-): Promise<PartialDate | null> {
-	const contact = await deps.contacts.findByIdVisibleTo(viewerOf(actor), contactId);
-	if (!contact) throw new ContactGoneError();
-	return birthOf(contact);
-}
+const whenOf = (when: When | null, birth: PartialDate | null, today: string): When | null =>
+	checkedWhen(when, birth, today, (message) => new InvalidPlanError(message));
 
 /** Only a shared idea can be kept from its person, and never by that person's own member. */
-async function hiddenOf(
-	deps: Pick<PlanDeps, 'plans'>,
+const hiddenOf = (
+	deps: Pick<PlanDeps, 'ownPeople'>,
 	author: PlanActor,
 	contactId: string,
 	visibility: Visibility,
 	asked: boolean
-): Promise<boolean> {
-	if (!asked || visibility !== 'shared') return false;
-	const member = await deps.plans.memberWhoseOwnPerson(author.householdId, contactId);
-	if (member === author.userId) throw new InvalidPlanError(phrase('errors.plan.ownSurprise'));
-	return true;
-}
+): Promise<boolean> =>
+	keptFromPerson(
+		deps.ownPeople,
+		author,
+		contactId,
+		visibility,
+		asked,
+		() => new InvalidPlanError(phrase('errors.plan.ownSurprise'))
+	);
 
 export async function requireVisiblePlan(
 	deps: Pick<PlanDeps, 'plans'>,
@@ -216,7 +195,7 @@ export async function addPlan(
 	author: PlanActor,
 	input: AddPlanInput
 ): Promise<{ planId: string }> {
-	const birth = await birthOfVisible(deps, author, input.contactId);
+	const birth = await birthOfVisible(deps.contacts, author, input.contactId);
 	const title = titleOf(input.title);
 	const url = urlOf(input.url);
 	const when = whenOf(input.when ?? null, birth, todayFor(deps.clock));
@@ -262,7 +241,11 @@ export async function editPlan(
 	const asked = input.when === undefined ? plan.when : input.when;
 	const when = sameWhen(asked, plan.when)
 		? plan.when
-		: whenOf(asked, await birthOfVisible(deps, editor, plan.contactId), todayFor(deps.clock));
+		: whenOf(
+				asked,
+				await birthOfVisible(deps.contacts, editor, plan.contactId),
+				todayFor(deps.clock)
+			);
 	const mine = plan.createdBy === editor.userId;
 	const visibility = mine ? input.visibility : plan.visibility;
 	const asksHidden = mine
@@ -300,7 +283,11 @@ export async function answerPlanWhen(
 	const when =
 		input.when === null
 			? null
-			: whenOf(input.when, await birthOfVisible(deps, actor, plan.contactId), todayFor(deps.clock));
+			: whenOf(
+					input.when,
+					await birthOfVisible(deps.contacts, actor, plan.contactId),
+					todayFor(deps.clock)
+				);
 	await deps.plans.update({
 		...plan,
 		when,

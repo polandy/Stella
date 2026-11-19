@@ -1,7 +1,6 @@
 import { and, desc, eq, isNotNull, isNull, lt, or } from 'drizzle-orm';
 import type { BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
 import {
-	isMemberAccount,
 	linkedMomentVisibleTo,
 	surpriseBrowsableBy,
 	surpriseVisibleTo
@@ -11,7 +10,7 @@ import type { DonePlan, Plan, PlanRepository } from '../domain/plans/plans';
 import { birthOf } from '../../when/resolve';
 import { whenColumns, whenOfColumns } from '../../when/when';
 import type * as schema from './schema';
-import { activityIdea, contact, user } from './schema';
+import { activityIdea, contact } from './schema';
 
 /*
  * Drizzle adapter for the PlanRepository port (docs/dev/08 §8.3). Every read joins the person the
@@ -174,22 +173,6 @@ export function createDrizzlePlanRepository(db: BunSQLiteDatabase<typeof schema>
 				.all()
 				.map(planOf)
 				.filter((p): p is DonePlan => p.doneOn !== null && p.doneAt !== null);
-		},
-
-		async memberWhoseOwnPerson(householdId, contactId) {
-			const row = db
-				.select({ id: user.id })
-				.from(user)
-				.where(
-					and(
-						eq(user.householdId, householdId),
-						eq(user.selfContactId, contactId),
-						isNull(user.removedAt),
-						isMemberAccount()
-					)
-				)
-				.get();
-			return row?.id ?? null;
 		}
 	};
 }

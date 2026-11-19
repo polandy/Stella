@@ -1,8 +1,8 @@
 import { beforeEach, describe, expect, it } from 'bun:test';
+import { fakeOwnPeople } from '../shared/idea-on-person.fixture';
 import { inEnglish } from '../../../i18n/phrase';
 import { readyGifts } from './bought';
 import { fakeGifts } from './gifts.fixture';
-import { mayKeepFrom, peopleToKeepFrom } from './surprise';
 import {
 	addGift,
 	countOpenIdeas,
@@ -33,6 +33,7 @@ beforeEach(() => {
 	counter = 0;
 	deps = {
 		gifts,
+		ownPeople: fakeOwnPeople(new Map([[JULIA_PERSON, 'julia']])),
 		contacts: {
 			async findByIdVisibleTo(_viewer, id) {
 				return { id, birthDate: null, birthDatePrecision: 'full' } as never;
@@ -139,23 +140,5 @@ describe('editing a surprise', () => {
 		expect(await refusal(edit(JULIA, giftId))).toBe(
 			'You cannot keep a gift from yourself — it is for you.'
 		);
-	});
-});
-
-describe('mayKeepFrom', () => {
-	it('offers keeping a gift from a member whose own person it is for', async () => {
-		expect(await mayKeepFrom(deps, viewer(ANDY), JULIA_PERSON)).toBe(true);
-	});
-
-	it('never offers it to that member, nor for a person who is nobody’s own', async () => {
-		expect(await mayKeepFrom(deps, viewer(JULIA), JULIA_PERSON)).toBe(false);
-		expect(await mayKeepFrom(deps, viewer(ANDY), 'hilde')).toBe(false);
-	});
-});
-
-describe('peopleToKeepFrom', () => {
-	it('names every member’s own person but the viewer’s, for a form with several people', async () => {
-		expect(await peopleToKeepFrom(deps, viewer(ANDY))).toEqual([JULIA_PERSON]);
-		expect(await peopleToKeepFrom(deps, viewer(JULIA))).toEqual([]);
 	});
 });

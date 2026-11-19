@@ -49,6 +49,8 @@ const frameworkFreeFolders = [
 	'src/lib/when/**',
 	'src/lib/todos/**',
 	'src/lib/plans/**',
+	'src/lib/surprise/**',
+	'src/lib/links/**',
 	'src/lib/memories/**',
 	'src/lib/calendar/**',
 	'src/lib/import-match/**',

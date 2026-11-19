@@ -6,10 +6,10 @@
 
 import type { PartialDate } from '../dates/partial-date';
 import { monthEnd, whenDay } from '../when/resolve';
-import { planState, type PlanTiming } from './card';
+import { planState, type OpenPlanTiming } from './card';
 
 /** An open idea as the list needs it: its timing and its person's birth date, for an age. */
-export interface ListPlan extends PlanTiming {
+export interface ListPlan extends OpenPlanTiming {
 	birth: PartialDate | null;
 }
 
@@ -22,7 +22,6 @@ export interface ListPlanView extends ListPlan {
 	title: string;
 	visibility: 'shared' | 'private';
 	hiddenFromPerson: boolean;
-	doneOn: null;
 }
 
 export type PlanGroupKey = 'thisMonth' | 'later' | 'someTime';
@@ -55,9 +54,7 @@ export function planListGroups<T extends ListPlan>(
 	today: string,
 	showLater: boolean
 ): { groups: PlanListGroup<T>[]; hidden: number } {
-	const placed = plans
-		.filter((plan) => plan.doneOn === null)
-		.map((plan) => ({ plan, ...placeOf(plan, today) }));
+	const placed = plans.map((plan) => ({ plan, ...placeOf(plan, today) }));
 	const hidden = placed.filter((p) => p.folds).length;
 	const shown = placed
 		.filter((p) => showLater || !p.folds)

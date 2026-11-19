@@ -60,9 +60,6 @@ export function fakePlans(
 				)
 				.sort((a, b) => b.doneOn.localeCompare(a.doneOn) || b.doneAt - a.doneAt)
 				.slice(0, opts.limit);
-		},
-		async memberWhoseOwnPerson(_householdId, contactId) {
-			return ownPeople.get(contactId) ?? null;
 		}
 	};
 }

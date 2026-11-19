@@ -1,4 +1,4 @@
-import { giftLink } from '../../../gifts/gifts';
+import { webLink } from '../../../links/web-link';
 import { isPlanWhen } from '../../../plans/plans';
 import { FULL_DATE_SHAPE, isRealCalendarDay } from '../../../dates/calendar';
 import { todayFor } from '../../../dates/today';
@@ -36,7 +36,7 @@ export function planRowsOf(
 		});
 		const kept = when !== null && isPlanWhen(when) ? when : null;
 		const { whenKind, whenOn, whenAge } = whenColumns(kept);
-		const link = giftLink(str(planRow, 'url') ?? '');
+		const link = webLink(str(planRow, 'url') ?? '');
 		const bookedAt = ms(planRow, 'booked_at');
 		const doneAt = ms(planRow, 'done_at');
 		const doneOn = str(planRow, 'done_on');

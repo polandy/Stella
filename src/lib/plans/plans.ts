@@ -1,4 +1,4 @@
-import { SURPRISE } from '../gifts/gifts';
+import { surpriseFromForm } from '../surprise/surprise';
 import type { QuickPick } from '../when/quick-picks';
 import type { When, WhenKind } from '../when/when';
 
@@ -32,8 +32,8 @@ export function planVisibilityFromForm(chosen: string | null): {
 	visibility: 'shared' | 'private';
 	hiddenFromPerson: boolean;
 } {
-	if (chosen === 'private') return { visibility: 'private', hiddenFromPerson: false };
-	return { visibility: 'shared', hiddenFromPerson: chosen === SURPRISE };
+	const { visibility, keptFromPerson } = surpriseFromForm(chosen);
+	return { visibility, hiddenFromPerson: keptFromPerson };
 }
 
 const PLAN_PARAM = 'plan';
