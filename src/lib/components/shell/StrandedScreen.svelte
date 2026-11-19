@@ -63,7 +63,7 @@
 <svelte:head><title>{t('common.pageTitle', { page: t(way.title) })}</title></svelte:head>
 
 <main
-	class="mx-auto flex w-full max-w-2xl flex-col px-6 py-10"
+	class="mx-auto flex w-full max-w-2xl flex-col px-4 py-6 md:px-6 md:py-10"
 	data-testid="stranded"
 	data-place={place}
 >
