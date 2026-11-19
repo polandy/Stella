@@ -49,18 +49,30 @@ export async function pruneStagedDumps(
 	let names: string[];
 	try {
 		names = await readdir(dir);
-	} catch {
-		return 0; // nothing staged yet
+	} catch (e) {
+		if (isErrnoException(e) && e.code === 'ENOENT') return 0;
+		throw e;
 	}
 	const cutoff = now - maxAgeMs;
 	for (const name of names) {
 		if (!name.endsWith('.sql')) continue;
 		const path = join(dir, name);
-		const info = await stat(path);
+		let info: { mtimeMs: number };
+		try {
+			info = await stat(path);
+		} catch (e) {
+			if (isErrnoException(e) && e.code === 'ENOENT') continue;
+			throw e;
+		}
 		if (info.mtimeMs < cutoff) {
 			await rm(path, { force: true });
 			removed++;
 		}
 	}
 	return removed;
+}
+
+/** Narrow `unknown` to Node.js `SystemError`-like objects with a `.code` property. */
+function isErrnoException(e: unknown): e is { code: string } {
+	return e != null && typeof e === 'object' && 'code' in e;
 }

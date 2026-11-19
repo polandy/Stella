@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it } from 'bun:test';
-import { mkdtemp, readdir, rm, utimes } from 'node:fs/promises';
+import { mkdtemp, readdir, rm, utimes, symlink } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { discardStagedDump, pruneStagedDumps, readStagedDump, stageDump } from './staging';
@@ -51,5 +51,28 @@ describe('staging', () => {
 		expect(await readStagedDump(dir, fresh)).toBe('fresh');
 		expect(await readStagedDump(dir, edge)).toBe('edge');
 		expect((await readdir(dir)).sort()).toEqual([`${edge}.sql`, `${fresh}.sql`].sort());
+	});
+
+	it('returns 0 when the staging directory does not exist yet (ENOENT)', async () => {
+		const removed = await pruneStagedDumps('/nonexistent/staging-dir-404', DAY, NOW);
+		expect(removed).toBe(0);
+	});
+
+	it('throws when the staging directory is not readable (EACCES)', async () => {
+		const inaccessible = await mkdtemp(join(tmpdir(), 'stella-staging-eacces-'));
+		// Remove all permissions so readdir throws EACCES
+		await Bun.spawnSync(['chmod', '000', inaccessible]);
+		await expect(pruneStagedDumps(inaccessible, DAY, NOW)).rejects.toThrow(/EACCES|EPERM/);
+		// Restore permissions so afterEach can clean up
+		await Bun.spawnSync(['chmod', '755', inaccessible]);
+		await rm(inaccessible, { recursive: true, force: true });
+	});
+
+	it('skips a file removed between readdir and stat (ENOENT)', async () => {
+		// Create a dangling symlink as a .sql file: readdir lists it, stat throws ENOENT
+		const ghost = join(dir, 'ghost.sql');
+		await symlink('/nonexistent/target', ghost);
+		const removed = await pruneStagedDumps(dir, DAY, NOW);
+		expect(removed).toBe(0);
 	});
 });
