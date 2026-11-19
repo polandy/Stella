@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it } from 'bun:test';
+import { fakeOwnPeople } from '../shared/idea-on-person.fixture';
 import { inEnglish } from '../../../i18n/phrase';
 import { markGiftBought, readyGifts } from './bought';
 import { fakeGifts } from './gifts.fixture';
@@ -29,6 +30,7 @@ beforeEach(() => {
 	counter = 0;
 	deps = {
 		gifts,
+		ownPeople: fakeOwnPeople(),
 		contacts: {
 			async findByIdVisibleTo(_viewer, id) {
 				return { id, birthDate: '2018-03-14', birthDatePrecision: 'full' } as never;

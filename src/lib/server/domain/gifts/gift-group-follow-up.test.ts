@@ -111,7 +111,7 @@ beforeEach(() => {
 				}
 			}
 		},
-		gifts: {
+		ownPeople: {
 			async memberWhoseOwnPerson(_household, contactId) {
 				return contactId === 'andy' ? 'andy' : null;
 			}

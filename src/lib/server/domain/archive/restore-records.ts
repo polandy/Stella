@@ -1,10 +1,5 @@
-import {
-	giftLink,
-	hasGiftDay,
-	isGiftState,
-	isOpenGift,
-	type GiftState
-} from '../../../gifts/gifts';
+import { webLink } from '../../../links/web-link';
+import { hasGiftDay, isGiftState, isOpenGift, type GiftState } from '../../../gifts/gifts';
 import { FULL_DATE_SHAPE, isRealCalendarDay } from '../../../dates/calendar';
 import { todayFor } from '../../../dates/today';
 import { whenColumns, whenFromOutside } from '../../../when/when';
@@ -39,7 +34,7 @@ export interface PersonRecordRows {
 
 /** A gift's link if it is a web address; anything else is dropped rather than kept as a link. */
 export function webLinkOf(raw: string | null): string | null {
-	const link = giftLink(raw ?? '');
+	const link = webLink(raw ?? '');
 	return link.ok ? link.url : null;
 }
 

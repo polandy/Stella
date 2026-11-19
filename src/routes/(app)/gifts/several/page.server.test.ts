@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'bun:test';
 import { createTranslator } from '$lib/i18n/translate';
 import type { CommandHandlers } from '$lib/server/domain/commands/dispatch';
-import { fakeGifts } from '$lib/server/domain/gifts/gifts.fixture';
 import type { GiftDeps } from '$lib/server/domain/gifts/gifts';
+import { fakeOwnPeople } from '$lib/server/domain/shared/idea-on-person.fixture';
 import { commandDepsWith } from '$lib/server/domain/testing';
 import { answerOf, formOf, routeEvent, type FakeServices } from '$lib/server/testing';
 import { actions, load } from './+page.server';
@@ -84,7 +84,7 @@ describe('add, one idea for several', () => {
 
 describe('load', () => {
 	const gifts = (ownPeople: Map<string, string>) =>
-		({ gifts: fakeGifts(() => null, ownPeople) }) as unknown as GiftDeps;
+		({ ownPeople: fakeOwnPeople(ownPeople) }) as unknown as GiftDeps;
 
 	it('names the people a surprise is kept from, and offers no shortcuts without a person', async () => {
 		const services: FakeServices = {

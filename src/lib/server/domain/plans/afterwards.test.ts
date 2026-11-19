@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it } from 'bun:test';
+import { fakeOwnPeople } from '../shared/idea-on-person.fixture';
 import { fakePlans } from './plans.fixture';
 import { addPlan, PlanGoneError, type PlanDeps } from './plans';
 import { donePlan } from './progress';
@@ -23,6 +24,7 @@ beforeEach(() => {
 	counter = 0;
 	deps = {
 		plans,
+		ownPeople: fakeOwnPeople(new Map([[JULIA_SELF, 'julia']])),
 		contacts: {
 			async findByIdVisibleTo(_viewer, id) {
 				return id === MIA || id === JULIA_SELF

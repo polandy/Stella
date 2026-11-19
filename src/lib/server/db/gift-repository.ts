@@ -1,13 +1,13 @@
-import { and, asc, desc, eq, inArray, isNotNull, isNull, lt, or, sql } from 'drizzle-orm';
+import { and, asc, desc, eq, inArray, lt, or, sql } from 'drizzle-orm';
 import type { BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
-import { giftBrowsableBy, giftVisibleTo, isMemberAccount } from '../access/query-scoping';
+import { giftBrowsableBy, giftVisibleTo } from '../access/query-scoping';
 import type { Viewer } from '../access/visibility';
 import type { DatedGift, Gift, GiftRepository } from '../domain/gifts/gifts';
 import { birthOf } from '../../when/resolve';
 import { whenColumns, whenOfColumns, type When, type WhenColumns } from '../../when/when';
 import type { DatePrecision } from '../../dates/partial-date';
 import type * as schema from './schema';
-import { contact, gift, user } from './schema';
+import { contact, gift } from './schema';
 
 /*
  * Drizzle adapter for the GiftRepository port (docs/dev/08 §8.3). Every read joins the person the
@@ -222,40 +222,6 @@ export function createDrizzleGiftRepository(db: BunSQLiteDatabase<typeof schema>
 				)
 				.orderBy(asc(gift.updatedAt), asc(gift.id))
 				.all();
-		},
-
-		async memberWhoseOwnPerson(householdId, contactId) {
-			const row = db
-				.select({ id: user.id })
-				.from(user)
-				.where(
-					and(
-						eq(user.householdId, householdId),
-						eq(user.selfContactId, contactId),
-						isNull(user.removedAt),
-						isMemberAccount()
-					)
-				)
-				.get();
-			return row?.id ?? null;
-		},
-
-		async membersOwnPeople(householdId) {
-			const rows = db
-				.select({ memberId: user.id, contactId: user.selfContactId })
-				.from(user)
-				.where(
-					and(
-						eq(user.householdId, householdId),
-						isNotNull(user.selfContactId),
-						isNull(user.removedAt),
-						isMemberAccount()
-					)
-				)
-				.all();
-			return rows.flatMap(({ memberId, contactId }) =>
-				contactId === null ? [] : [{ memberId, contactId }]
-			);
 		}
 	};
 }

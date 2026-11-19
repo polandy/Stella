@@ -16,13 +16,12 @@ import {
 	type SkippedRecipient,
 	type VisibleGiftGroup
 } from './gift-groups';
+import { orNull, viewerOf } from '../shared/idea-on-person';
 import {
 	GiftGoneError,
 	InvalidGiftError,
-	orNull,
 	titleOf,
 	urlOf,
-	viewerOf,
 	type Gift,
 	type GiftActor
 } from './gifts';

@@ -9,12 +9,16 @@ import { todayFor } from '../dates/today';
 import { whenState, type WhenState } from '../when/state';
 import type { When } from '../when/when';
 
-/** What the card needs to know of an idea to place it. */
-export interface PlanTiming {
+/** What an open idea's place hangs on. */
+export interface OpenPlanTiming {
 	when: When | null;
 	bookedAt: number | null;
-	doneOn: string | null;
 	createdAt: number;
+}
+
+/** What the card needs to know of an idea, open or done, to place it. */
+export interface PlanTiming extends OpenPlanTiming {
+	doneOn: string | null;
 }
 
 /** The card's two tabs: what is still to do, and what was done. */
@@ -54,7 +58,7 @@ export function splitPlans<T extends PlanTiming>(
 
 /** Where an idea stands against its when on `today`; null for one meant for *some time*. */
 export function planState(
-	plan: PlanTiming,
+	plan: Pick<OpenPlanTiming, 'when' | 'createdAt'>,
 	birth: PartialDate | null,
 	today: string
 ): WhenState | null {
@@ -68,6 +72,6 @@ function waits(plan: PlanTiming, birth: PartialDate | null, today: string): bool
 }
 
 /** How many ideas are still only ideas: a booked one is no longer one to choose from. */
-export function openIdeaCount(open: readonly PlanTiming[]): number {
+export function openIdeaCount(open: readonly OpenPlanTiming[]): number {
 	return open.filter((plan) => plan.bookedAt === null).length;
 }

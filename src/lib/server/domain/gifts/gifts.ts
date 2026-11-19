@@ -1,18 +1,28 @@
 import { TranslatableError } from '../../../i18n/translatable';
 import { phrase, type Phrase } from '../../../i18n/phrase';
 import { FULL_DATE_SHAPE, isRealCalendarDay } from '../../../dates/calendar';
-import { giftLink, hasGiftDay, type GiftState } from '../../../gifts/gifts';
+import { hasGiftDay, type GiftState } from '../../../gifts/gifts';
 import type { PartialDate } from '../../../dates/partial-date';
 import { todayFor } from '../../../dates/today';
 import { ideaState, ideaWaits as waitsOn } from '../../../gifts/idea-when';
 import type { WhenState } from '../../../when/state';
-import { birthOf, checkWhen, whenDay } from '../../../when/resolve';
+import { whenDay } from '../../../when/resolve';
 import { sameWhen, type When } from '../../../when/when';
 import type { Visibility, Viewer } from '../../access/visibility';
 import type { Clock } from '../../clock';
 import type { IdGenerator } from '../../id';
 import type { ContactLookup } from '../contacts/contacts';
-import { ContactGoneError } from '../contacts/require-visible';
+import {
+	birthOfVisible,
+	checkedWhen,
+	keptFromPerson,
+	orNull,
+	requiredTitle,
+	viewerOf,
+	webLinkOf,
+	type IdeaActor,
+	type OwnPersonReads
+} from '../shared/idea-on-person';
 
 /*
  * Gift use-cases (docs/dev/02 §2.25). A gift belongs to the one person it is for: an idea, a
@@ -42,7 +52,7 @@ export interface Gift {
 	state: GiftState;
 	title: string;
 	note: string | null;
-	/** A web address only (`giftLink`). */
+	/** A web address only (`webLink`). */
 	url: string | null;
 	/** ISO `YYYY-MM-DD`; null while an idea or bought, the day for a given or received gift. */
 	givenOn: string | null;
@@ -114,25 +124,20 @@ export interface GiftRepository {
 		viewer: Viewer,
 		contactIds: readonly string[]
 	): Promise<Pick<Gift, 'id' | 'contactId' | 'title'>[]>;
-	/** The current member whose own person `contactId` is, in the household, or null. */
-	memberWhoseOwnPerson(householdId: string, contactId: string): Promise<string | null>;
-	/** Every current member of the household who has an own person, with that person. */
-	membersOwnPeople(householdId: string): Promise<{ memberId: string; contactId: string }[]>;
 }
 
 /** Collaborators the use-cases need, injected by the composition root. */
 export interface GiftDeps {
 	gifts: GiftRepository;
+	/** Who may be kept from a surprise (§2.25.10). */
+	ownPeople: OwnPersonReads;
 	contacts: ContactLookup;
 	ids: IdGenerator;
 	clock: Clock;
 }
 
 /** The member doing it. */
-export interface GiftActor {
-	userId: string;
-	householdId: string;
-}
+export type GiftActor = IdeaActor;
 
 /** What a gift says, as a form or a command hands it over. */
 export interface GiftContent {
@@ -190,25 +195,13 @@ export class GiftGoneError extends TranslatableError {
 	}
 }
 
-/** Text as stored: trimmed, null when empty. */
-export const orNull = (value: string | null): string | null => {
-	const trimmed = (value ?? '').trim();
-	return trimmed.length > 0 ? trimmed : null;
-};
-
 /** A gift's title, required. */
-export function titleOf(raw: string): string {
-	const title = raw.trim();
-	if (title.length === 0) throw new InvalidGiftError(phrase('errors.gift.needTitle'));
-	return title;
-}
+export const titleOf = (raw: string): string =>
+	requiredTitle(raw, () => new InvalidGiftError(phrase('errors.gift.needTitle')));
 
 /** A gift's link, a web address or none. */
-export function urlOf(raw: string | null): string | null {
-	const link = giftLink(raw ?? '');
-	if (!link.ok) throw new InvalidGiftError(phrase('errors.gift.badLink'));
-	return link.url;
-}
+export const urlOf = (raw: string | null): string | null =>
+	webLinkOf(raw, () => new InvalidGiftError(phrase('errors.gift.badLink')));
 
 /** The day a given or received gift needs; an idea or a bought one has none. */
 function dayOf(state: GiftState, raw: string | null): string | null {
@@ -220,22 +213,8 @@ function dayOf(state: GiftState, raw: string | null): string | null {
 }
 
 /** The when an idea for someone born so may keep, checked against the household's day. */
-function whenOf(when: When | null, birth: PartialDate | null, today: string): When | null {
-	const check = checkWhen(when, birth, today);
-	if (!check.ok) throw new InvalidGiftError(phrase(`errors.when.${check.problem}`));
-	return check.when;
-}
-
-/** The birth date of the person a gift is for, who the author must be able to see. */
-async function birthOfVisible(
-	deps: Pick<GiftDeps, 'contacts'>,
-	actor: GiftActor,
-	contactId: string
-): Promise<PartialDate | null> {
-	const contact = await deps.contacts.findByIdVisibleTo(viewerOf(actor), contactId);
-	if (!contact) throw new ContactGoneError();
-	return birthOf(contact);
-}
+const whenOf = (when: When | null, birth: PartialDate | null, today: string): When | null =>
+	checkedWhen(when, birth, today, (message) => new InvalidGiftError(message));
 
 /** What a gift says once its content is checked, for its state. */
 function checkedContent(state: GiftState, content: GiftContent) {
@@ -249,27 +228,22 @@ function checkedContent(state: GiftState, content: GiftContent) {
 	};
 }
 
-/**
- * Whether a gift is kept from the person it is for: only a shared one can be, and never by the
- * member whose own person that is — nobody keeps a surprise from themselves.
- */
-async function hiddenOf(
-	deps: Pick<GiftDeps, 'gifts'>,
+/** Whether a gift is kept from the person it is for (`keptFromPerson`). */
+const hiddenOf = (
+	deps: Pick<GiftDeps, 'ownPeople'>,
 	author: GiftActor,
 	contactId: string,
 	visibility: Visibility,
 	asked: boolean
-): Promise<boolean> {
-	if (!asked || visibility !== 'shared') return false;
-	const member = await deps.gifts.memberWhoseOwnPerson(author.householdId, contactId);
-	if (member === author.userId) throw new InvalidGiftError(phrase('errors.gift.ownSurprise'));
-	return true;
-}
-
-export const viewerOf = (actor: GiftActor): Viewer => ({
-	id: actor.userId,
-	householdId: actor.householdId
-});
+): Promise<boolean> =>
+	keptFromPerson(
+		deps.ownPeople,
+		author,
+		contactId,
+		visibility,
+		asked,
+		() => new InvalidGiftError(phrase('errors.gift.ownSurprise'))
+	);
 
 export async function requireVisibleGift(
 	deps: Pick<GiftDeps, 'gifts'>,
@@ -288,7 +262,7 @@ export async function addGift(
 	author: GiftActor,
 	input: AddGiftInput
 ): Promise<{ giftId: string }> {
-	const birth = await birthOfVisible(deps, author, input.contactId);
+	const birth = await birthOfVisible(deps.contacts, author, input.contactId);
 	const content = checkedContent(input.state, input);
 	const now = deps.clock.now();
 	// Only an idea waits; what was given or received happened.
@@ -341,7 +315,7 @@ export async function editGift(
 			: await hiddenOf(deps, editor, gift.contactId, visibility, asksHidden);
 	const when = kept
 		? gift.when
-		: whenOf(asked, await birthOfVisible(deps, editor, gift.contactId), today);
+		: whenOf(asked, await birthOfVisible(deps.contacts, editor, gift.contactId), today);
 	await deps.gifts.update({
 		...gift,
 		...checkedContent(gift.state, input),
@@ -391,7 +365,7 @@ export async function answerIdeaWhen(
 	const when =
 		input.when === null
 			? null
-			: whenOf(input.when, await birthOfVisible(deps, actor, gift.contactId), today);
+			: whenOf(input.when, await birthOfVisible(deps.contacts, actor, gift.contactId), today);
 	await deps.gifts.update({ ...gift, when, whenCheckedOn: today, updatedAt: deps.clock.now() });
 	return { giftId: gift.id };
 }

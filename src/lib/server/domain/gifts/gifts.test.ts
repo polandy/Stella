@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it } from 'bun:test';
+import { fakeOwnPeople } from '../shared/idea-on-person.fixture';
 import type { PartialDate } from '../../../dates/partial-date';
 import { inEnglish } from '../../../i18n/phrase';
 import { ContactGoneError } from '../contacts/require-visible';
@@ -42,6 +43,7 @@ beforeEach(() => {
 	hildeBirth = { value: '2018-03-14', precision: 'full' };
 	deps = {
 		gifts,
+		ownPeople: fakeOwnPeople(),
 		contacts: {
 			async findByIdVisibleTo(_viewer, id) {
 				if (id !== HILDE) return null;

@@ -6,7 +6,8 @@
 	import Icon from '$lib/components/ui/Icon.svelte';
 	import { dayLabel } from '$lib/dates/labels';
 	import { alreadyGiven, type GiftOnRecord } from '$lib/gifts/already-given';
-	import { hasGiftDay, SURPRISE, type GiftState } from '$lib/gifts/gifts';
+	import { hasGiftDay, type GiftState } from '$lib/gifts/gifts';
+	import { SURPRISE } from '$lib/surprise/surprise';
 	import { occasionLabel } from '$lib/gifts/labels';
 	import { useI18n } from '$lib/i18n/context.svelte';
 	import type { SubmitFunction } from '@sveltejs/kit';

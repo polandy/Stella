@@ -12,7 +12,7 @@
 	import WhenPicker from '$lib/components/when/WhenPicker.svelte';
 	import type { IconName } from '$lib/components/ui/icons';
 	import { deviceDay, writersDay } from '$lib/dates/today';
-	import { SURPRISE } from '$lib/gifts/gifts';
+	import { SURPRISE } from '$lib/surprise/surprise';
 	import {
 		groupLanding,
 		groupSummary,

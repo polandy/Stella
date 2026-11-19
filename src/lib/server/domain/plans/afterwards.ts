@@ -1,11 +1,5 @@
-import {
-	addPlan,
-	requireVisiblePlan,
-	viewerOf,
-	type PlanActor,
-	type PlanDeps,
-	type PlanRef
-} from './plans';
+import { viewerOf } from '../shared/idea-on-person';
+import { addPlan, requireVisiblePlan, type PlanActor, type PlanDeps, type PlanRef } from './plans';
 
 /*
  * What follows a done outing idea (docs/dev/02 §2.27.8): the moment written about it, linked to
