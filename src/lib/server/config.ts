@@ -34,6 +34,9 @@ const RawSchema = v.object({
 	AUTH_LOCAL_ENABLED: boolFrom(true),
 	AUTH_OIDC_ENABLED: boolFrom(false),
 
+	// `json` writes one access-log line per request to stdout (docs/dev/07 §7.4).
+	LOG_FORMAT: v.optional(v.picklist(['text', 'json']), 'text'),
+
 	// Serve the development-only workbench pages under /settings/debug from a build too.
 	// Off by default: they are diagnostics, untranslated, and of no use to a household.
 	DEBUG_PAGES: boolFrom(false),
@@ -123,6 +126,7 @@ function build() {
 		sessionSecret: raw.SESSION_SECRET,
 		isProd,
 		seedDemo: raw.SEED_DEMO,
+		logFormat: raw.LOG_FORMAT,
 		debugPages: raw.DEBUG_PAGES,
 		updateCheck: raw.UPDATE_CHECK,
 		updateFeedUrl: raw.UPDATE_FEED_URL,

@@ -91,6 +91,10 @@ AUTH_LOCAL_ENABLED=true                       # keep true for a break-glass admi
 AUTH_OIDC_ENABLED=true
 
 # --- Diagnostics (off by default) ---
+LOG_FORMAT=text                               # `json` writes one access-log line per request to stdout:
+                                              # {"msg":"request","requestId","method","path" (no query),"status","durationMs"}.
+                                              # The id is the proxy's X-Request-Id or a fresh one, and is the one
+                                              # an error's log line and the page's "quote this id" carry.
 DEBUG_PAGES=false                             # serves the workbench pages under /settings/debug from a build.
                                               # Development has them anyway; a household's instance never needs
                                               # them (they are diagnostics and untranslated), and with this off
@@ -174,7 +178,15 @@ release-please pushed the tag with.)
 
 Every build upgrades the base image's Debian packages and is scanned with Trivy
 (`scripts/scan-image.sh`) before anything is pushed: a CRITICAL vulnerability that has a fix
-stops the push. CI runs the same build and scan on every pull request. Each Sunday night the
+stops the push, a fixable HIGH one raises a warning. The pushed image carries SLSA provenance
+and an SBOM and is signed keyless with cosign, bound to the `publish.yml` workflow of this
+repository:
+
+```sh
+cosign verify ghcr.io/polandy/stella@sha256:<digest> \
+  --certificate-identity-regexp '^https://github.com/polandy/stella/\.github/workflows/publish\.yml@' \
+  --certificate-oidc-issuer https://token.actions.githubusercontent.com
+``` CI runs the same build and scan on every pull request. Each Sunday night the
 `rebuild` workflow rebuilds the **latest release** the same way, so its `X.Y.Z` tag moves to
 a new digest carrying the current security fixes — same code, same version. A rebuild whose
 scan still fails (a fix that needs a dependency bump or a newer Bun) pushes nothing.
