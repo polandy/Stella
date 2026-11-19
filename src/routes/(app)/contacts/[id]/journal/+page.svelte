@@ -87,7 +87,7 @@
 
 <svelte:head><title>{t('journal.title', { name: c.displayName })}</title></svelte:head>
 
-<main class="mx-auto flex w-full max-w-2xl flex-col gap-8 px-6 py-10">
+<main class="mx-auto flex w-full max-w-2xl flex-col gap-8 px-4 py-6 md:px-6 md:py-10">
 	<header class="flex items-center justify-between gap-4">
 		<div class="flex items-center gap-3">
 			<Avatar id={c.id} name={c.displayName} avatarPhotoId={c.avatarPhotoId} size={44} />
