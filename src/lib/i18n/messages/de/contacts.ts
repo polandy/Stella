@@ -19,7 +19,7 @@ export const contacts: ContactsMessages = {
 	'contacts.nothingWrittenYet': 'Noch nichts geschrieben',
 	'contacts.noMatch': (p) => `Niemand passt zu „${p.query}“.`,
 	'contacts.noMatchHint':
-		'Prüfe die Schreibweise — oder füge die Person gleich hinzu, wenn sie neu ist.',
+		'Prüfe die Schreibweise – oder füge die Person gleich hinzu, wenn sie neu ist.',
 	'contacts.addNamed': (p) => `„${p.name}“ hinzufügen`,
 	'contacts.emptyArchive.title': 'Nichts archiviert',
 	'contacts.emptyArchive.hint':
@@ -27,7 +27,7 @@ export const contacts: ContactsMessages = {
 	'contacts.emptyArchive.back': 'Zurück zu allen',
 	'contacts.empty.title': 'Noch keine Menschen',
 	'contacts.empty.hint':
-		'Lege die erste Person an — alles andere in Stella hängt an einem Menschen.',
+		'Lege die erste Person an – alles andere in Stella hängt an einem Menschen.',
 
 	'contacts.new.title': 'Person hinzufügen · Stella',
 	'contacts.new.kept': (p: { name: string }) =>
@@ -41,7 +41,7 @@ export const contacts: ContactsMessages = {
 	'contacts.new.firstName': 'Vorname',
 	'contacts.new.lastName': 'Nachname',
 	'contacts.new.alreadyHere': 'Schon in Stella?',
-	'contacts.new.reason.sameName': 'Gleicher Name — ist sie oder er das?',
+	'contacts.new.reason.sameName': 'Gleicher Name – ist sie oder er das?',
 	'contacts.new.reason.sameSurname': 'Gleicher Nachname',
 	'contacts.new.reason.similarSurname': 'Ähnlicher Nachname',
 	'contacts.new.linkAsRelative': 'Als verwandt verknüpfen',
@@ -54,7 +54,7 @@ export const contacts: ContactsMessages = {
 	'contacts.new.howWeMet': 'Wie wir uns kennengelernt haben',
 	'contacts.new.where': 'Wo',
 	'contacts.new.wherePlaceholder': 'am See',
-	'contacts.new.more': 'Mehr — Spitzname, Geburtstag, Geschlecht',
+	'contacts.new.more': 'Mehr – Spitzname, Geburtstag, Geschlecht',
 	'contacts.new.nickname': 'Spitzname',
 	'contacts.new.birthday': 'Geburtstag',
 	'contacts.new.visibility': 'Sichtbarkeit',

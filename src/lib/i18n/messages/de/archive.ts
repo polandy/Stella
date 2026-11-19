@@ -4,10 +4,10 @@ import type { ArchiveMessages } from '../en/archive';
 export const archive: ArchiveMessages = {
 	'archive.restore.title': 'Aus einem Archiv wiederherstellen',
 	'archive.restore.intro':
-		'Ein Stella-Archiv wieder einlesen: die Menschen, alles über sie Geschriebene und die Fotos daneben. Was dieser Haushalt schon hat, bleibt genau so, wie es ist — dasselbe Archiv zweimal einzulesen ändert also nichts.',
+		'Ein Stella-Archiv wieder einlesen: die Menschen, alles über sie Geschriebene und die Fotos daneben. Was dieser Haushalt schon hat, bleibt genau so, wie es ist – dasselbe Archiv zweimal einzulesen ändert also nichts.',
 	'archive.restore.fileLabel': 'Archivdatei (.tar)',
 	'archive.restore.fileHint':
-		'Die Datei, die dir Einstellungen → Archiv herunterladen gibt — oder ein Ordner, den du entpackt und mit tar wieder gepackt hast.',
+		'Die Datei, die dir Einstellungen → Archiv herunterladen gibt – oder ein Ordner, den du entpackt und mit tar wieder gepackt hast.',
 	'archive.restore.submit': 'Wiederherstellen',
 	'archive.restore.from': (p) => `Wiederhergestellt aus ${p.household}`,
 	'archive.restore.exportedOn': (p) => `, exportiert am ${p.day}`,
@@ -145,7 +145,7 @@ export const archive: ArchiveMessages = {
 
 	'archive.error.notAnArchive': 'Diese Datei enthält kein Stella-Archiv.',
 	'archive.error.noFormatLine':
-		'Diese Datei ist kein Stella-Archiv — ihr fehlt die Zeile „format: stella-archive“.',
+		'Diese Datei ist kein Stella-Archiv – ihr fehlt die Zeile „format: stella-archive“.',
 	'archive.error.noVersion': 'Dieses Archiv sagt nicht, welche Formatversion es hat.',
 	'archive.error.newerVersion': (p) =>
 		`Dieses Archiv wurde von einer neueren Stella-Version geschrieben (Format ${p.fileVersion}, diese liest ${p.reads}). Aktualisiere zuerst Stella.`,
@@ -154,7 +154,7 @@ export const archive: ArchiveMessages = {
 	'archive.error.badHeaderField': 'Das Archiv hat ein Kopffeld, das keine Zahl ist.',
 	'archive.error.notATar': 'Diese Datei ist kein Archiv.',
 	'archive.error.damaged':
-		'Diese Datei ist kein Stella-Archiv — oder sie wurde bei der Übertragung beschädigt.',
+		'Diese Datei ist kein Stella-Archiv – oder sie wurde bei der Übertragung beschädigt.',
 	'archive.error.truncated': (p) => `Das Archiv endet mitten in „${p.name}“.`,
 	'archive.error.unsupportedEntry': (p) =>
 		`„${p.name}“ ist eine Art von Archiveintrag (Typ ${p.typeflag}), die dieser Leser nicht annimmt.`

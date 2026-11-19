@@ -4,7 +4,7 @@ import type { RelationshipsMessages } from '../en/relationships';
 export const relationships: RelationshipsMessages = {
 	'relationshipTypes.title': 'Beziehungsarten',
 	'relationshipTypes.intro':
-		'Die Arten von Verbindungen, die dein Haushalt festhalten kann. Lege eigene an, wo die mitgelieferten es nicht treffen — Patin, Chorkollege, Vermieterin.',
+		'Die Arten von Verbindungen, die dein Haushalt festhalten kann. Lege eigene an, wo die mitgelieferten es nicht treffen – Patin, Chorkollege, Vermieterin.',
 	'relationshipTypes.own': 'Eigene',
 	'relationshipTypes.addType': 'Art hinzufügen',
 	'relationshipTypes.otherSide': (p) => `von der anderen Seite: ${p.label}`,
@@ -28,7 +28,7 @@ export const relationships: RelationshipsMessages = {
 	'relationshipTypes.merged': 'Beziehungsarten zusammengeführt',
 	'relationshipTypes.builtIn': 'Mitgeliefert',
 	'relationshipTypes.builtInHint':
-		'Diese bringt Stella mit und sie sind überall gleich — damit die Verwandtschaft, die Stella herleitet (Großeltern, Cousinen, Schwiegerfamilie), immer dasselbe bedeutet.',
+		'Diese bringt Stella mit und sie sind überall gleich – damit die Verwandtschaft, die Stella herleitet (Großeltern, Cousinen, Schwiegerfamilie), immer dasselbe bedeutet.',
 
 	'relationships.category.family': 'Familie',
 	'relationships.category.romantic': 'Liebe',
@@ -36,7 +36,7 @@ export const relationships: RelationshipsMessages = {
 	'relationships.category.professional': 'Beruflich',
 	'relationships.category.other': 'Sonstiges',
 
-	'relationships.blocked.group': (p) => `Nicht möglich — ${p.reason}`,
+	'relationships.blocked.group': (p) => `Nicht möglich – ${p.reason}`,
 	'relationships.blocked.alreadyTied': (p) => `schon ${p.tie} ${p.name}`,
 	'relationships.blocked.alreadyRomantic': (p) => `schon mit ${p.name} zusammen`,
 	'relationships.blocked.romanticTaken': (p) => `${p.name} ist schon mit ${p.partner} zusammen`,

@@ -157,8 +157,8 @@ describe('AA contrast, both themes (docs/dev/05 §5.9)', () => {
 		{ text: '--fg-muted', on: '--bg', floor: AA_TEXT },
 		{ text: '--fg-muted', on: '--bg-sunken', floor: AA_TEXT },
 		{ text: '--fg-subtle', on: '--card', floor: AA_TEXT },
-		// Meta text on the page ground: 3.9:1, so it only ever repeats what is already on screen.
-		{ text: '--fg-subtle', on: '--bg', floor: AA_LARGE },
+		{ text: '--fg-subtle', on: '--bg', floor: AA_TEXT },
+		{ text: '--fg-subtle', on: '--bg-sunken', floor: AA_TEXT },
 		{ text: '--primary-fg', on: '--primary', floor: AA_TEXT },
 		// Words written in a colour, wherever they land: a link, a primary action, a warning.
 		{ text: '--link', on: '--card', floor: AA_TEXT },

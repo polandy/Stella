@@ -19,7 +19,7 @@ export const auth: AuthMessages = {
 		'Dein Zugang zu diesem Haushalt wurde entfernt. Frag jemanden aus der Haushalts-Administration.',
 	'auth.sso.noAccount':
 		'Für dich gibt es noch kein Konto. Bitte eine Administratorin oder einen Administrator um eine Einladung.',
-	'auth.shell.tagline': 'Die Menschen in deinem Leben — gemeinsam in Erinnerung behalten.',
+	'auth.shell.tagline': 'Die Menschen in deinem Leben – gemeinsam in Erinnerung behalten.',
 	'auth.shell.blurb':
 		'Ein ruhiger Ort für alles, was eine Familie über die Menschen um sie herum weiß. Einmal aufgeschrieben, von euch allen bewahrt, von niemandem sonst gesehen.',
 	'auth.shell.footer': 'Selbst gehostet · deine Hardware · keine Telemetrie',

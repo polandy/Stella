@@ -9,7 +9,7 @@ export const search: SearchMessages = {
 	'search.noResultsHint':
 		'Niemand mit diesem Namen und keine Notiz, kein Geschenk, kein Todo und kein Moment, in dem es steht. Ist die Person neu, füge sie hinzu.',
 	'search.prompt':
-		'Tippe, um Menschen, Notizen, Geschenke, Todos und Momente zu durchsuchen – oder einen #Tag für die Momente, die ihn tragen.',
+		'Tippe, um Menschen, Notizen, Geschenke, Todos und Momente zu durchsuchen – oder ein #Schlagwort für die Momente, die es tragen.',
 	'search.people': 'Menschen',
 	'search.notes': 'Notizen',
 	'search.noteOn': (p) => `zu ${p.name}`,
@@ -25,7 +25,7 @@ export const search: SearchMessages = {
 	'search.momentOn': (p) => `${p.date} · zu ${p.name}`,
 	'search.tagNone': (p) => `Kein Moment trägt #${p.tag}.`,
 	'search.tagNoneHint':
-		'Ein Tag steht im Text eines Moments: Schreib #Wort hinein, dann findest du ihn hier.',
+		'Ein Schlagwort steht im Text eines Moments: Schreib #Wort hinein, dann findest du es hier.',
 	'search.tagAll': (p) =>
 		p.count === 1 ? `Der Moment mit #${p.tag}` : `Alle ${p.count} Momente mit #${p.tag}`,
 	'graph.title': 'Netz · Stella',
@@ -52,9 +52,9 @@ export const search: SearchMessages = {
 	'graph.labels': 'Bezeichnungen',
 	'graph.labels.hint': 'Jede Linie mit ihrer Beziehung benennen',
 	'graph.labels.tooMany': (p) =>
-		`Pausiert, solange mehr als ${p.count} Linien zu sehen sind — zeig auf eine Linie oder wähle jemanden aus, um seine zu lesen`,
+		`Pausiert, solange mehr als ${p.count} Linien zu sehen sind – zeig auf eine Linie oder wähle jemanden aus, um seine zu lesen`,
 	'graph.labels.inTree':
-		'Im Stammbaum zunächst aus, weil unter jedem Namen die Rolle steht — einschalten, um auch die Linien zu benennen',
+		'Im Stammbaum zunächst aus, weil unter jedem Namen die Rolle steht – einschalten, um auch die Linien zu benennen',
 	'graph.density': 'Abstand',
 	'graph.density.compact': 'Kompakt',
 	'graph.density.comfortable': 'Ausgewogen',
@@ -68,7 +68,7 @@ export const search: SearchMessages = {
 	'graph.former': (p) => `${p.words} · ehemalig`,
 	'graph.groupByRole': 'Kreise nach Rolle bündeln',
 	'graph.groupByRole.hint':
-		'Wer im Kreis dieselbe Rolle hat, steht als eine Gruppe beisammen — mit einer Linie zum Kreis',
+		'Wer im Kreis dieselbe Rolle hat, steht als eine Gruppe beisammen – mit einer Linie zum Kreis',
 	'graph.innerLinks': 'Beziehungen in der Gruppe',
 	'graph.innerLinks.hint':
 		'Familie, Freundschaft und Beruf zwischen den Menschen einer Gruppe zeigen',
@@ -113,7 +113,7 @@ export const search: SearchMessages = {
 	'graph.peek.inCircle': (p) => `im Kreis ${p.name}`,
 	'graph.peek.showIndividually': 'Einzeln zeigen',
 	'graph.peek.tip':
-		'Tipp: Klicke einen ausgewählten Knoten an, um ihn aufzuklappen — oder nutze den Verbindungsweg, um zu sehen, wie zwei Menschen verbunden sind.',
+		'Tipp: Klicke einen ausgewählten Knoten an, um ihn aufzuklappen – oder nutze den Verbindungsweg, um zu sehen, wie zwei Menschen verbunden sind.',
 	'graph.openInGraph': 'Im Netz öffnen',
 	'graph.backToPerson': (p) => `Zurück zu ${p.name}`,
 	'graph.backToCircle': (p) => `Zurück zum Kreis ${p.name}`,
