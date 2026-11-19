@@ -50,7 +50,7 @@ export async function pruneStagedDumps(
 	try {
 		names = await readdir(dir);
 	} catch (e) {
-		if (isErrnoException(e) && e.code === 'ENOENT') return 0;
+		if (isErrnoException(e) && e.code === 'ENOENT') return 0; // nothing staged yet
 		throw e;
 	}
 	const cutoff = now - maxAgeMs;
@@ -61,6 +61,7 @@ export async function pruneStagedDumps(
 		try {
 			info = await stat(path);
 		} catch (e) {
+			// Removed by someone else since the listing: already gone, which is the goal.
 			if (isErrnoException(e) && e.code === 'ENOENT') continue;
 			throw e;
 		}

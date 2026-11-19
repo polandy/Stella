@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it } from 'bun:test';
-import { mkdtemp, readdir, rm, utimes, symlink } from 'node:fs/promises';
+import { chmod, mkdir, mkdtemp, readdir, rm, symlink, utimes, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { discardStagedDump, pruneStagedDumps, readStagedDump, stageDump } from './staging';
@@ -54,19 +54,30 @@ describe('staging', () => {
 	});
 
 	it('returns 0 when the staging directory does not exist yet (ENOENT)', async () => {
-		const removed = await pruneStagedDumps('/nonexistent/staging-dir-404', DAY, NOW);
-		expect(removed).toBe(0);
+		expect(await pruneStagedDumps(join(dir, 'missing'), DAY, NOW)).toBe(0);
 	});
 
-	it('throws when the staging directory is not readable (EACCES)', async () => {
-		const inaccessible = await mkdtemp(join(tmpdir(), 'stella-staging-eacces-'));
-		// Remove all permissions so readdir throws EACCES
-		await Bun.spawnSync(['chmod', '000', inaccessible]);
-		await expect(pruneStagedDumps(inaccessible, DAY, NOW)).rejects.toThrow(/EACCES|EPERM/);
-		// Restore permissions so afterEach can clean up
-		await Bun.spawnSync(['chmod', '755', inaccessible]);
-		await rm(inaccessible, { recursive: true, force: true });
+	it('throws when a file stands where the staging directory should be (ENOTDIR)', async () => {
+		const file = join(dir, 'not-a-folder');
+		await writeFile(file, 'x');
+		await expect(pruneStagedDumps(file, DAY, NOW)).rejects.toThrow(/ENOTDIR/);
 	});
+
+	// Root reads any folder, so the denial cannot be staged there.
+	it.skipIf(process.getuid?.() === 0)(
+		'throws when the staging directory is not readable (EACCES)',
+		async () => {
+			const locked = join(dir, 'locked');
+			await mkdir(locked);
+			await chmod(locked, 0o000);
+			try {
+				await expect(pruneStagedDumps(locked, DAY, NOW)).rejects.toThrow(/EACCES/);
+			} finally {
+				// Readable again, so afterEach can remove it
+				await chmod(locked, 0o700);
+			}
+		}
+	);
 
 	it('skips a file removed between readdir and stat (ENOENT)', async () => {
 		// Create a dangling symlink as a .sql file: readdir lists it, stat throws ENOENT
