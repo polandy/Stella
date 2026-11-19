@@ -1,16 +1,13 @@
 import { readCapped } from '../http/read-capped';
 import { readLatestRelease, type LatestRelease, type ReleaseFeed } from '../domain/release/feed';
 
-/**
+/*
  * The release feed adapter (docs/dev/04 §4.9): GitHub's `releases/latest` endpoint, unauthenticated.
  * The only file that knows Stella's releases live on GitHub — the use-case sees a port.
  *
  * Deliberately not given the browser request's abort signal: the answer is cached for a day
  * for everyone, so a visitor closing the tab must not cancel the check and leave the next
  * visitor with "unreachable" until tomorrow.
- *
- * A redirect is never a release: it is a gateway in front of the target sending Stella
- * to a login page or elsewhere. Answered as-is, rather than followed.
  */
 
 /** Where Stella's own releases are published. */
@@ -44,9 +41,8 @@ export function createGitHubReleaseFeed({
 					accept: 'application/vnd.github+json',
 					'user-agent': `Stella/${version}`
 				},
-				// A redirect is never a release: it is a gateway in front of the target
-				// sending Stella to a login page or elsewhere. Answered as-is, rather
-				// than followed.
+				// Never followed: a redirect could point the instance at an internal address.
+				// Answered as-is, a 3xx is not ok and fails the check.
 				redirect: 'manual',
 				signal: AbortSignal.timeout(TIMEOUT_MS)
 			});

@@ -62,7 +62,9 @@ describe('createGitHubReleaseFeed', () => {
 			new Response(null, { status: 302, headers: { location: 'https://other.example.com/' } })
 		);
 
-		expect(createGitHubReleaseFeed({ version: '0.0.10', fetch }).latest()).rejects.toThrow('302');
+		await expect(createGitHubReleaseFeed({ version: '0.0.10', fetch }).latest()).rejects.toThrow(
+			'302'
+		);
 		expect(calls[0]!.redirect).toBe('manual');
 	});
 });
