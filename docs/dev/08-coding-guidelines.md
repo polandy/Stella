@@ -399,7 +399,9 @@ A change is done when:
   APIs; weigh transitive cost before adding.
 - **Dependabot proposes, we merge.** `.github/dependabot.yml` opens one grouped weekly PR
   each for GitHub Actions, the Dockerfile and the packages; the packages stay exact. CI runs
-  `bun audit` without blocking, so an advisory is visible but does not turn a PR red.
+  `bun audit` without blocking, so an advisory is visible but does not turn a PR red. A major
+  that needs a migration is held back with an `ignore` entry there and an item in `TODO.md`
+  until its own PR moves to it.
 - **Upgrades are intentional:** bump the exact version on purpose, run `bun test`, and
   commit the resulting `bun.lock` change in the same commit.
 
