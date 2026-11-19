@@ -55,6 +55,16 @@ export interface FakeImmichLibrary {
 	together?: FakeImmichGroupPhotos[];
 	/** False for a library without machine learning, whose smart search answers that it is off. */
 	smartSearch?: boolean;
+	/** The key owner's albums, own and shared; none when left out. */
+	albums?: FakeImmichAlbum[];
+}
+
+/** An album of photos from the library; its cover is its first photo unless set. */
+export interface FakeImmichAlbum {
+	id: string;
+	name: string;
+	assetIds: string[];
+	coverAssetId?: string | null;
 }
 
 /** Which calls fail, and how; the test (or nobody, on the demo server) sets it. */
@@ -207,17 +217,39 @@ export function createFakeImmichGateway(library: FakeImmichLibrary): FakeImmichG
 					.map(([month, count]) => ({ month, count }))
 					.sort((a, b) => b.month.localeCompare(a.month));
 			}),
+		albums: () =>
+			answer('albums', () =>
+				(library.albums ?? []).map(({ id, name, assetIds, coverAssetId }) => {
+					const days = albumPhotos(assetIds).map(({ takenAt }) => takenAt.slice(0, 10));
+					return {
+						id,
+						name,
+						count: assetIds.length,
+						coverAssetId: coverAssetId === undefined ? (assetIds[0] ?? null) : coverAssetId,
+						from: days[0] ?? null,
+						to: days.at(-1) ?? null
+					};
+				})
+			),
+		albumAssets: (albumId, limit, cursor) =>
+			answer(
+				'albumAssets',
+				() => {
+					const album = library.albums?.find(({ id }) => id === albumId);
+					return album ? paged(albumPhotos(album.assetIds), limit, cursor) : null;
+				},
+				true
+			),
+		timelinePhoto: (assetId) =>
+			answer('timelinePhoto', () => libraryPhoto(assetId)?.asset ?? null, true),
 		assetImage: (assetId, size) =>
 			answer(
 				'assetImage',
 				() => {
-					const index = Number.parseInt(assetId.slice(0, 8), 16);
-					const owner = [...library.people, ...(library.together ?? [])].find(
-						(p) => p.id.slice(8) === assetId.slice(8)
-					);
-					if (!owner || !(index < owner.assets)) return null;
+					const found = libraryPhoto(assetId);
+					if (!found) return null;
 					return {
-						bytes: solidPng(PHOTO_SIZE[size], shade(owner.color, index)),
+						bytes: solidPng(PHOTO_SIZE[size], shade(found.owner.color, found.index)),
 						contentType: 'image/png'
 					};
 				},
@@ -230,6 +262,23 @@ export function createFakeImmichGateway(library: FakeImmichLibrary): FakeImmichG
 		return [...library.people, ...(library.together ?? [])].flatMap((source) =>
 			Array.from({ length: source.assets }, (_, index) => photo(source.id, index))
 		);
+	}
+
+	/** The photo an id names, decoded from it: whose it is and its place among theirs. */
+	function libraryPhoto(assetId: string) {
+		const index = Number.parseInt(assetId.slice(0, 8), 16);
+		const owner = [...library.people, ...(library.together ?? [])].find(
+			(p) => p.id.slice(8) === assetId.slice(8)
+		);
+		if (!owner || !(index < owner.assets)) return null;
+		return { owner, index, asset: photo(owner.id, index) };
+	}
+
+	/** An album's photos that are in the library, oldest first. */
+	function albumPhotos(assetIds: readonly string[]) {
+		return assetIds
+			.flatMap((id) => libraryPhoto(id)?.asset ?? [])
+			.sort((a, b) => a.takenAt.localeCompare(b.takenAt) || a.id.localeCompare(b.id));
 	}
 
 	/** One page of a listing; the cursor is where the next page starts. */

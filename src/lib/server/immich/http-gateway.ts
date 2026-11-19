@@ -1,6 +1,5 @@
 import {
-	isImmichId,
-	isServableImageType,
+	readAlbums,
 	readAssetPage,
 	readOwner,
 	readPeoplePage,
@@ -8,7 +7,11 @@ import {
 	readPersonList,
 	readStatistics,
 	readTimelineMonths,
-	readVersion,
+	readVersion
+} from '../domain/immich/gateway-payloads';
+import {
+	isImmichId,
+	isServableImageType,
 	type ImmichFailure,
 	type ImmichGateway,
 	type ImmichImage,
@@ -215,6 +218,27 @@ export function createHttpImmichGateway({
 				`/api/timeline/buckets?${new URLSearchParams({ visibility: 'timeline' })}`,
 				json(readTimelineMonths)
 			),
+		albums: () => ask('/api/albums', json(readAlbums)),
+		albumAssets: (albumId, limit, cursor) => {
+			if (!isImmichId(albumId)) return Promise.resolve(failed('notFound'));
+			// An album Immich no longer has makes the search answer 400, like a person's.
+			return ask('/api/search/metadata', json(readAssetPage), true, {
+				filter: { albumIds: { any: [albumId] }, ...TIMELINE_IMAGES },
+				orderBy: { field: 'localDateTime', direction: 'asc' },
+				size: limit,
+				...(cursor === null ? {} : { cursor })
+			});
+		},
+		timelinePhoto: async (assetId) => {
+			if (!isImmichId(assetId)) return failed('notFound');
+			const found = await ask('/api/search/metadata', json(readAssetPage), false, {
+				filter: { id: { eq: assetId }, ...TIMELINE_IMAGES },
+				size: 1
+			});
+			if (!found.ok) return found;
+			const [photo] = found.value.assets;
+			return photo ? { ok: true, value: photo } : failed('notFound');
+		},
 		assetImage: (assetId: string, size: ImmichImageSize) => {
 			if (!isImmichId(assetId)) return Promise.resolve(failed('notFound'));
 			return ask(`/api/assets/${assetId}/thumbnail?${new URLSearchParams({ size })}`, image, true);

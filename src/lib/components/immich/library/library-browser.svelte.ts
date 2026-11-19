@@ -1,4 +1,5 @@
-import type { LibraryMonths, LibraryPhoto, LibraryView } from '$lib/immich/library';
+import type { LibraryAlbums, LibraryMonths, LibraryPhoto, LibraryView } from '$lib/immich/library';
+import { tabOf, type LibraryTab } from '$lib/immich/library-albums';
 import {
 	groupByDay,
 	weekLookup,
@@ -8,15 +9,18 @@ import {
 import { libraryQueryUrl, type LibraryQuery } from '$lib/immich/library-pick';
 
 /*
- * Where the photo picker is in the Immich timeline, and what it has read there (docs/dev/02
- * §2.24.9): the browser adapter of `$lib/immich/library-nav`, asking `/immich/library` and
- * `/immich/library/months`. Only the latest question may fill the body: a slower answer to an
- * earlier one arrives last and is dropped.
+ * Where the photo picker is in the Immich timeline or its albums, and what it has read there
+ * (docs/dev/02 §2.24.9): the browser adapter of `$lib/immich/library-nav`, asking
+ * `/immich/library`, `/immich/library/months` and `/immich/library/albums`. Only the latest
+ * question may fill the body: a slower answer to an earlier one arrives last and is dropped.
  */
 
-/** A month as read so far, a page at a time. */
-export interface MonthRead {
-	month: string;
+/** What is read a page at a time: a month of the timeline, or an album. */
+export type PagedSource = { month: string } | { album: string };
+
+/** A month or an album as read so far, a page at a time. */
+export interface PagedRead {
+	source: PagedSource;
 	photos: LibraryPhoto[];
 	nextCursor: string | null;
 	loading: boolean;
@@ -38,14 +42,24 @@ export class LibraryBrowser {
 	searched = $state<string | null>(null);
 	/** A day, or a search's matches; null while it loads. */
 	view = $state<LibraryView | null>(null);
-	month = $state<MonthRead | null>(null);
+	paged = $state<PagedRead | null>(null);
 	/** The years overview's months; null while they load. */
 	timeline = $state<LibraryMonths | null>(null);
+	/** The album list; null while it loads. */
+	albums = $state<LibraryAlbums | null>(null);
+	/** The album list's filter by name, kept while an album is open. */
+	albumFilter = $state('');
 	/** Every photo seen since opening, so a tick survives a step to another level. */
 	readonly seen = new Map<string, LibraryPhoto>();
 
 	#latest = 0;
 	#timelineAsked = 0;
+	#albumsAsked = 0;
+	/** Where each tab was last, for a switch back to it. */
+	#lastAt: Record<LibraryTab, LibraryLevel> = {
+		time: { level: 'day', day: '' },
+		albums: { level: 'albums' }
+	};
 	#paging: Promise<void> | null = null;
 	readonly #onshown: () => void;
 
@@ -59,10 +73,30 @@ export class LibraryBrowser {
 		return this.timeline?.state === 'months';
 	}
 
+	/** Whether the albums are offered: not while they load, nor to a key without `album.read`. */
+	get hasAlbums(): boolean {
+		return this.albums !== null && this.albums.state !== 'forbidden';
+	}
+
 	open(day: string) {
 		this.seen.clear();
+		this.albumFilter = '';
+		this.#lastAt = { time: { level: 'day', day }, albums: { level: 'albums' } };
 		void this.readTimeline();
+		void this.readAlbums();
 		this.go({ level: 'day', day });
+	}
+
+	async readAlbums() {
+		const mine = ++this.#albumsAsked;
+		this.albums = null;
+		const answer = await ask<LibraryAlbums>('/immich/library/albums', { state: 'unreachable' });
+		if (mine === this.#albumsAsked) this.albums = answer;
+	}
+
+	/** Goes back to where the tab was last. */
+	switchTo(tab: LibraryTab) {
+		this.go(this.#lastAt[tab]);
 	}
 
 	async readTimeline() {
@@ -75,8 +109,10 @@ export class LibraryBrowser {
 	go(at: LibraryLevel) {
 		this.searched = null;
 		this.at = at;
+		this.#lastAt[tabOf(at)] = at;
 		if (at.level === 'day') void this.#show({ day: at.day });
-		else if (at.level === 'month') void this.#readMonth(at.month);
+		else if (at.level === 'month') void this.#readFirstPage({ month: at.month });
+		else if (at.level === 'album') void this.#readFirstPage({ album: at.album });
 		else {
 			this.#latest++;
 			this.#onshown();
@@ -94,12 +130,13 @@ export class LibraryBrowser {
 	retry() {
 		if (this.searched !== null) void this.#show({ query: this.searched });
 		else if (this.at.level === 'years' || this.at.level === 'year') void this.readTimeline();
+		else if (this.at.level === 'albums') void this.readAlbums();
 		else this.go(this.at);
 	}
 
-	/** The month's next page, when there is one; one already on its way is the one awaited. */
+	/** The next page, when there is one; one already on its way is the one awaited. */
 	more(): Promise<void> {
-		const read = this.month;
+		const read = this.paged;
 		if (read?.loading && this.#paging) return this.#paging;
 		if (!read || read.loading || read.nextCursor === null) return Promise.resolve();
 		this.#paging = this.#readNextPage(read);
@@ -111,26 +148,26 @@ export class LibraryBrowser {
 	 * week without any, or when the month cannot be read that far.
 	 */
 	async reach(week: LibraryWeek): Promise<string | null> {
-		const read = this.month;
+		const read = this.paged;
 		for (;;) {
-			if (!read || this.month !== read) return null;
+			if (!read || this.paged !== read) return null;
 			const { day, settled } = weekLookup(groupByDay(read.photos), week);
 			if (settled || read.nextCursor === null || read.failed) return day;
 			await this.more();
 		}
 	}
 
-	async #readNextPage(read: MonthRead) {
+	async #readNextPage(read: PagedRead) {
 		const mine = this.#latest;
 		read.loading = true;
 		read.failed = false;
 		const answer = await ask<LibraryView>(
-			libraryQueryUrl({ month: read.month, cursor: read.nextCursor }),
+			libraryQueryUrl({ ...read.source, cursor: read.nextCursor }),
 			{ state: 'unreachable' }
 		);
 		if (mine !== this.#latest) return;
 		read.loading = false;
-		if (answer.state !== 'month') {
+		if (answer.state !== 'month' && answer.state !== 'album') {
 			read.failed = true;
 			return;
 		}
@@ -139,21 +176,21 @@ export class LibraryBrowser {
 		read.nextCursor = answer.nextCursor;
 	}
 
-	async #readMonth(month: string) {
+	async #readFirstPage(source: PagedSource) {
 		const mine = ++this.#latest;
-		this.month = { month, photos: [], nextCursor: null, loading: true, failed: false };
+		this.paged = { source, photos: [], nextCursor: null, loading: true, failed: false };
 		this.#onshown();
-		const answer = await ask<LibraryView>(libraryQueryUrl({ month, cursor: null }), {
+		const answer = await ask<LibraryView>(libraryQueryUrl({ ...source, cursor: null }), {
 			state: 'unreachable'
 		});
 		if (mine !== this.#latest) return;
-		if (answer.state !== 'month') {
-			this.month = { month, photos: [], nextCursor: null, loading: false, failed: true };
+		if (answer.state !== 'month' && answer.state !== 'album') {
+			this.paged = { source, photos: [], nextCursor: null, loading: false, failed: true };
 			return;
 		}
 		this.#remember(answer.photos);
-		this.month = {
-			month,
+		this.paged = {
+			source,
 			photos: answer.photos,
 			nextCursor: answer.nextCursor,
 			loading: false,

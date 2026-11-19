@@ -45,6 +45,15 @@ describe('createImmichConnection', () => {
 		});
 	});
 
+	it('stays connected without album.read, and names both optional scopes when both are missing', async () => {
+		const { gateway, connection } = connect();
+		gateway.failing = { albums: 'forbidden', timelineMonths: 'forbidden' };
+		expect(await connection.status()).toMatchObject({
+			state: 'connected',
+			lacking: ['timeline.read', 'album.read']
+		});
+	});
+
 	it('says plainly when the server is older than 3.2, and asks nothing else', async () => {
 		const { gateway, connection } = connect();
 		gateway.library.version = { major: 3, minor: 1, patch: 2 };
@@ -88,7 +97,8 @@ describe('createImmichConnection', () => {
 			'personStatistics',
 			'latestAssets',
 			'assetImage',
-			'timelineMonths'
+			'timelineMonths',
+			'albums'
 		]);
 	});
 

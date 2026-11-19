@@ -14,10 +14,22 @@ they already took, which live in Immich, without leaving Stella or downloading t
   Immich on the instance, the button stays the plain file picker and nothing else shows.
 - **Offline**, *From Immich* stays where it is, greyed out, with *Needs a connection* under it.
 - **The sheet** (`ImmichLibraryPicker`) slides up from the bottom like the circle picker: a title,
-  the search field, the trail, the body of the level, and a footer that stays put.
+  the search field, the tabs, the trail, the body of the level, and a footer that stays put.
+- **The tabs** (`LibraryTabs`) sit under the search: *Time* (calendar icon) and *Albums* (photo
+  icon), the body below their tab panel. Each tab returns to the level it was left on. Without
+  the key's `album.read` they are not there and the picker is the timeline alone.
 - **The trail** (`LibraryCrumbs`) names where the picker is: *All years › 2026 › October › Wed
   21*. Every step but the last is a button back up; the last is plain text (`aria-current`).
-  Without the key's `timeline.read` it starts at the month.
+  Without the key's `timeline.read` it starts at the month. In *Albums* it reads *All albums ›
+  Sommerferien Engadin*.
+- **All albums** (`LibraryAlbums`) is covers in two columns, three wider: a square cover, the
+  name in bold, *about 24 · Jul 2026* under it; a cover Immich would not show is a sunken
+  square with the photo icon. From 12 albums a filter field with the filter icon heads the list,
+  kept while the sheet is open;
+  *No album is called "…"* when nothing matches. The approximate-counts line sits under it.
+- **An album** (`LibraryPaged`, as a month) is its photos oldest first under sticking day
+  headings that name the year (*Thursday, 30 July 2026*), the next 100 loading near the end; *This album holds no photos Stella can show.*
+  when Immich has none of them on the timeline.
 - **All years** (`LibraryYears`) is tiles in two columns, newest year first: the year, *about 812*,
   and a thin bar against the busiest year. One quiet line under them says the counts include
   videos, so they are approximate.
@@ -51,7 +63,8 @@ they already took, which live in Immich, without leaving Stella or downloading t
   *Save*. A referred photo Immich no longer serves is a dashed tile with the offline icon, named
   *Photo not available from Immich* — never a broken image.
 - **States:** skeleton tiles while loading; *Immich has no photos yet.* for an empty overview;
-*No photos from October 2026 in Immich.* for an empty month; *No photos from 12 June in Immich.* with the arrows
+*No photos from October 2026 in Immich.* for an empty month; *Immich has no albums with photos yet.*
+for an empty album list; *No photos from 12 June in Immich.* with the arrows
   still there and a line that they skip to a day with some; *Immich didn’t answer.* with *Try
   again*.
 
@@ -64,6 +77,11 @@ and is the way Immich's own timeline reads, so it needs no learning. Counts say 
 Immich counts videos the picker leaves out; a promise of 812 that shows 790 would read as a bug. Numbers
 on the ticks show the order the photos will appear in, and the tray shows them all, because a tick
 made in another month would otherwise be invisible. Weeks are chips and not a level because a week
-is a place to jump to in a month, not somewhere to stand; one more step would cost a tap each time. The sheet is the circle picker's shape so
+is a place to jump to in a month, not somewhere to stand; one more step would cost a tap each time.
+Albums are a second way in, not a level under the years, because a family names its trips and
+birthdays in Immich and remembers them by that name; tabs keep the two ways apart and each keeps
+its place, so a look at an album costs nothing in the timeline. Oldest first inside an album
+tells the trip in the order it happened. The filter waits for 12 albums because a short list is
+faster to scan than to type into. The sheet is the circle picker's shape so
 it reads as part of the composer, not a trip to another app. The overlay on the photo is the one
 place black and white are used, as in the lightbox: it sits on a picture, not on a theme.

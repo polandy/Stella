@@ -1,11 +1,8 @@
 /*
  * What Stella asks of Immich, and how Immich's answers are read (docs/dev/04 §4.3, ADR-101). The
  * port is narrow and owned here; `src/lib/server/immich/http-gateway.ts` implements it over HTTP
- * and `fake-gateway.ts` in memory. Every answer is untrusted — another program wrote it — so it
- * is read by a pure parser below and anything that is not what it claims is refused.
+ * and `fake-gateway.ts` in memory. Every answer is untrusted, so `gateway-payloads.ts` reads it.
  */
-
-import { isTakenAt } from '../../../media/taken-at';
 
 /** A server version, as `GET /api/server/version` reports it. */
 export interface ImmichVersion {
@@ -76,6 +73,21 @@ export interface ImmichTakenWindow {
 export interface ImmichTimelineMonth {
 	month: string;
 	count: number;
+}
+
+/**
+ * An album the key's owner sees in Immich — their own and those shared with them (`GET /api/albums`).
+ * `from` and `to` are the days its first and last photo were taken (`YYYY-MM-DD`); an empty album
+ * has none, and no cover.
+ */
+export interface ImmichAlbum {
+	id: string;
+	name: string;
+	/** How many assets it holds — videos too, so a count of photos is only about this many. */
+	count: number;
+	coverAssetId: string | null;
+	from: string | null;
+	to: string | null;
 }
 
 /** A smart search's answer: the photos that match best, or that the library has it switched off. */
@@ -160,6 +172,23 @@ export interface ImmichGateway {
 	 * Archived and locked assets are not counted.
 	 */
 	timelineMonths(): Promise<ImmichOutcome<ImmichTimelineMonth[]>>;
+	/** Every album the key's owner sees, their own and those shared with them (`album.read`). */
+	albums(): Promise<ImmichOutcome<ImmichAlbum[]>>;
+	/**
+	 * The photos of one album in the timeline, oldest first by the camera's clock (`asset.read`),
+	 * `limit` of them from `cursor` on. An album Immich does not have, or an id that is not
+	 * Immich's, is `notFound`.
+	 */
+	albumAssets(
+		albumId: string,
+		limit: number,
+		cursor: string | null
+	): Promise<ImmichOutcome<ImmichAssetPage>>;
+	/**
+	 * One photo, when it is one Stella may show: an image in the timeline (`asset.read`). Archived,
+	 * locked, trashed or not there at all is `notFound`.
+	 */
+	timelinePhoto(assetId: string): Promise<ImmichOutcome<ImmichAsset>>;
 	/** One photo, at one of the sizes Immich renders (`asset.view`). */
 	assetImage(assetId: string, size: ImmichImageSize): Promise<ImmichOutcome<ImmichImage>>;
 }
@@ -186,12 +215,7 @@ export type ImmichScope =
 	'user.read' | 'person.read' | 'person.statistics' | 'asset.read' | 'asset.view';
 
 /** Scopes a feature needs that Stella can do without: lacking one hides only that feature. */
-export type ImmichOptionalScope = 'timeline.read';
-
-type Payload = Record<string, unknown>;
-
-const objectOf = (value: unknown): Payload | null =>
-	typeof value === 'object' && value !== null && !Array.isArray(value) ? (value as Payload) : null;
+export type ImmichOptionalScope = 'timeline.read' | 'album.read';
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -202,58 +226,6 @@ const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
  */
 export function isImmichId(value: unknown): value is string {
 	return typeof value === 'string' && UUID.test(value);
-}
-
-const count = (value: unknown): number | null =>
-	typeof value === 'number' && Number.isInteger(value) && value >= 0 ? value : null;
-
-/** The server version, or null when the body is not one. */
-export function readVersion(payload: unknown): ImmichVersion | null {
-	const body = objectOf(payload);
-	if (!body) return null;
-	const [major, minor, patch] = [count(body.major), count(body.minor), count(body.patch)];
-	if (major === null || minor === null || patch === null) return null;
-	return { major, minor, patch };
-}
-
-/** The key's owner, or null without an email — Settings names whose library Stella reads by it. */
-export function readOwner(payload: unknown): ImmichOwner | null {
-	const body = objectOf(payload);
-	if (!body || typeof body.email !== 'string' || body.email === '') return null;
-	return { name: typeof body.name === 'string' ? body.name : '', email: body.email };
-}
-
-/** One person, or null when the id is not an Immich id. */
-export function readPerson(payload: unknown): ImmichPerson | null {
-	const body = objectOf(payload);
-	if (!body || !isImmichId(body.id)) return null;
-	return {
-		id: body.id,
-		name: typeof body.name === 'string' ? body.name.trim() : '',
-		hidden: body.isHidden === true
-	};
-}
-
-/** The people of a search answer (a bare list); unreadable entries are dropped. */
-export function readPersonList(payload: unknown): ImmichPerson[] | null {
-	if (!Array.isArray(payload)) return null;
-	return payload.map(readPerson).filter((person): person is ImmichPerson => person !== null);
-}
-
-/** A page of the people listing, or null when the body is not one. */
-export function readPeoplePage(payload: unknown): ImmichPeoplePage | null {
-	const body = objectOf(payload);
-	if (!body) return null;
-	const people = readPersonList(body.people);
-	if (!people) return null;
-	return { people, hasNextPage: body.hasNextPage === true };
-}
-
-/** A person's photo count, or null when the body is not one. */
-export function readStatistics(payload: unknown): ImmichStatistics | null {
-	const body = objectOf(payload);
-	const assets = body ? count(body.assets) : null;
-	return assets === null ? null : { assets };
 }
 
 /** The longest cursor passed back to Immich; its own are far shorter. */
@@ -267,67 +239,4 @@ export function isAssetCursor(value: unknown): value is string {
 		value.length <= MAX_CURSOR_LENGTH &&
 		!/[\u0000-\u001f]/.test(value)
 	);
-}
-
-/** The `YYYY-MM-DDTHH:MM:SS` an Immich timestamp starts with, or null when it does not read as one. */
-function secondsOf(value: unknown): string | null {
-	if (typeof value !== 'string') return null;
-	const seconds = value.slice(0, 19);
-	return isTakenAt(seconds) ? seconds : null;
-}
-
-/**
- * When a photo was taken. `localDateTime` is the camera's wall clock, though Immich writes it with
- * a `Z`: kept without one, so the day is the one the photo was taken on where it was taken, as
- * Stella keeps an EXIF date (docs/dev/02 §2.14). `fileCreatedAt` is a true instant, kept as UTC.
- */
-function takenAtOf(body: Payload): string | null {
-	const local = secondsOf(body.localDateTime);
-	if (local !== null) return local;
-	const instant = secondsOf(body.fileCreatedAt);
-	return instant === null ? null : `${instant}Z`;
-}
-
-/**
- * One photo of a search page, or null when it is not one Stella may show. The search already
- * asks for images in the timeline only; this reads each answer as if it had not, so a photo
- * archived, locked away, hidden or trashed in Immich is never passed on (docs/dev/02 §2.24.3).
- */
-function readAsset(payload: unknown): ImmichAsset | null {
-	const body = objectOf(payload);
-	if (!body || !isImmichId(body.id)) return null;
-	if (body.type !== 'IMAGE' || body.visibility !== 'timeline' || body.isTrashed === true)
-		return null;
-	return { id: body.id, takenAt: takenAtOf(body) };
-}
-
-/** A page of `POST /api/search/metadata`, or null when the body is not one. */
-export function readAssetPage(payload: unknown): ImmichAssetPage | null {
-	const assets = objectOf(objectOf(payload)?.assets);
-	if (!assets || !Array.isArray(assets.items)) return null;
-	return {
-		assets: assets.items.map(readAsset).filter((asset): asset is ImmichAsset => asset !== null),
-		nextCursor: isAssetCursor(assets.nextCursor) ? assets.nextCursor : null
-	};
-}
-
-/** `YYYY-MM` of a bucket's `YYYY-MM-DD…` start. */
-const BUCKET_START = /^(\d{4}-(?:0[1-9]|1[0-2]))-\d{2}(?:T.*)?$/;
-
-/**
- * The months of `GET /api/timeline/buckets` (measured against Immich v3.3.1), or null when any
- * bucket is not one: a changed shape is refused whole rather than read as a smaller library.
- */
-export function readTimelineMonths(payload: unknown): ImmichTimelineMonth[] | null {
-	if (!Array.isArray(payload)) return null;
-	const months: ImmichTimelineMonth[] = [];
-	for (const value of payload) {
-		const bucket = objectOf(value);
-		const start = typeof bucket?.timeBucket === 'string' ? bucket.timeBucket : '';
-		const month = BUCKET_START.exec(start)?.[1];
-		const assets = count(bucket?.count);
-		if (month === undefined || assets === null) return null;
-		months.push({ month, count: assets });
-	}
-	return months;
 }

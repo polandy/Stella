@@ -166,3 +166,73 @@ describe('createFakeImmichGateway timelineMonths', () => {
 		expect(years.size).toBeGreaterThan(5);
 	});
 });
+
+describe('createFakeImmichGateway albums', () => {
+	const ALBUM = 'a1b0c0d0-0000-4000-8000-000000000001';
+	const EMPTY = 'a1b0c0d0-0000-4000-8000-000000000002';
+	const MISSING = fakeAssetId(CARL_ID, 99);
+	const withAlbums = () =>
+		createFakeImmichGateway({
+			...testLibrary(),
+			albums: [
+				{
+					id: ALBUM,
+					name: 'Holidays',
+					assetIds: [fakeAssetId(CARL_ID, 0), fakeAssetId(CARL_ID, 3)]
+				},
+				{ id: EMPTY, name: 'Empty', assetIds: [], coverAssetId: MISSING }
+			]
+		});
+
+	it('lists each album with its count, cover and the days of its first and last photo', async () => {
+		expect(await withAlbums().albums()).toEqual({
+			ok: true,
+			value: [
+				{
+					id: ALBUM,
+					name: 'Holidays',
+					count: 2,
+					coverAssetId: fakeAssetId(CARL_ID, 0),
+					from: '2026-08-29',
+					to: '2026-09-01'
+				},
+				{ id: EMPTY, name: 'Empty', count: 0, coverAssetId: MISSING, from: null, to: null }
+			]
+		});
+	});
+
+	it('pages an album oldest first, and an unknown one is not found', async () => {
+		const gateway = withAlbums();
+		const first = await gateway.albumAssets(ALBUM, 1, null);
+		expect(first).toEqual({
+			ok: true,
+			value: {
+				assets: [{ id: fakeAssetId(CARL_ID, 3), takenAt: '2026-08-29T15:30:00' }],
+				nextCursor: '1'
+			}
+		});
+		const second = await gateway.albumAssets(ALBUM, 1, '1');
+		expect(second.ok && second.value).toEqual({
+			assets: [{ id: fakeAssetId(CARL_ID, 0), takenAt: '2026-09-01T15:30:00' }],
+			nextCursor: null
+		});
+		expect(await gateway.albumAssets(EMPTY.replace('2', '9'), 1, null)).toEqual({
+			ok: false,
+			failure: 'notFound'
+		});
+	});
+
+	it('finds a photo of the library by id, and nothing for an id it does not hold', async () => {
+		const gateway = withAlbums();
+		expect(await gateway.timelinePhoto(fakeAssetId(CARL_ID, 3))).toEqual({
+			ok: true,
+			value: { id: fakeAssetId(CARL_ID, 3), takenAt: '2026-08-29T15:30:00' }
+		});
+		expect(await gateway.timelinePhoto(MISSING)).toEqual({ ok: false, failure: 'notFound' });
+	});
+
+	it('gives the demo enough albums for the name filter', async () => {
+		const listed = await createFakeImmichGateway(demoImmichLibrary()).albums();
+		expect(listed.ok && listed.value.length).toBeGreaterThanOrEqual(12);
+	});
+});

@@ -59,5 +59,7 @@ describe('what the picker asks Stella for', () => {
 		expect(libraryQueryUrl({ month: '2026-10', cursor: 'a/b=' })).toBe(
 			'/immich/library?month=2026-10&cursor=a%2Fb%3D'
 		);
+		expect(libraryQueryUrl({ album: 'a1', cursor: null })).toBe('/immich/library?album=a1');
+		expect(libraryQueryUrl({ album: 'a1', cursor: 'c' })).toBe('/immich/library?album=a1&cursor=c');
 	});
 });

@@ -31,17 +31,33 @@ export const shortDate = (takenAt: string, locale: string): string =>
 	format(takenAt.slice(0, 10), locale, { day: 'numeric', month: 'short', year: 'numeric' });
 
 /**
- * What a crumb of the trail says; `allYears` is the top's, already translated. Without the
- * overview the month is the top, so it names its year too.
+ * When an album's photos were taken, as briefly as its first and last day allow: *Jul 2026*,
+ * *Feb – Mar 2025*, *2019–2026*.
+ */
+export function albumRange(from: string, to: string, locale: string): string {
+	const month = (day: string, year: boolean) =>
+		format(day, locale, { month: 'short', ...(year ? { year: 'numeric' } : {}) });
+	if (from.slice(0, 7) === to.slice(0, 7)) return month(from, true);
+	if (from.slice(0, 4) === to.slice(0, 4)) return `${month(from, false)} – ${month(to, true)}`;
+	return `${from.slice(0, 4)}–${to.slice(0, 4)}`;
+}
+
+/**
+ * What a crumb of the trail says; `allYears` and `allAlbums` are the tops', already translated.
+ * Without the overview the month is the top, so it names its year too.
  */
 export function crumbLabel(
 	at: LibraryLevel,
 	locale: string,
-	{ overview, allYears }: { overview: boolean; allYears: string }
+	{ overview, allYears, allAlbums }: { overview: boolean; allYears: string; allAlbums: string }
 ): string {
 	switch (at.level) {
 		case 'years':
 			return allYears;
+		case 'albums':
+			return allAlbums;
+		case 'album':
+			return at.name;
 		case 'year':
 			return at.year;
 		case 'month':

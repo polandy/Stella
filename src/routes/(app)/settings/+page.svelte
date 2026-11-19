@@ -29,7 +29,8 @@
 		'asset.view': 'immich.settings.scope.asset.view'
 	} as const;
 	const OPTIONAL_SCOPE_MESSAGE = {
-		'timeline.read': 'immich.settings.scope.timeline.read'
+		'timeline.read': 'immich.settings.scope.timeline.read',
+		'album.read': 'immich.settings.scope.album.read'
 	} as const;
 
 	/*
