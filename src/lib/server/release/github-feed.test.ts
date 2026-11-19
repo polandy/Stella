@@ -42,13 +42,15 @@ describe('createGitHubReleaseFeed', () => {
 	it('refuses an answer GitHub could not give', async () => {
 		const { fetch } = stubFetch(body({ message: 'rate limited' }, { status: 403 }));
 
-		expect(createGitHubReleaseFeed({ version: '0.0.10', fetch }).latest()).rejects.toThrow('403');
+		await expect(createGitHubReleaseFeed({ version: '0.0.10', fetch }).latest()).rejects.toThrow(
+			'403'
+		);
 	});
 
 	it('refuses a body far larger than a release document', async () => {
 		const { fetch } = stubFetch(new Response('x'.repeat(65 * 1024)));
 
-		expect(createGitHubReleaseFeed({ version: '0.0.10', fetch }).latest()).rejects.toThrow(
+		await expect(createGitHubReleaseFeed({ version: '0.0.10', fetch }).latest()).rejects.toThrow(
 			'more than'
 		);
 	});
