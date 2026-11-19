@@ -4,7 +4,7 @@ import { mention, signIn } from './app';
 
 /*
  * A kept moment Stella keeps failing on gets stuck (docs/dev/02 §2.18.2, the arrival table's
- * "something on Stella's side failed" row). Written after the owner's OK (docs/dev/08 §8.4.1).
+ * "something on Stella's side failed" row). Written before the hand test on the owner's call.
  *
  * The failure is staged: the route answers `failed` for any batch carrying the doomed moment and
  * lets every other batch through. The save is the first failed round; later ones are started by
