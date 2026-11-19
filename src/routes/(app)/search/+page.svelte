@@ -17,6 +17,7 @@
 	import { contactSectionPath, journalEntryHref } from '$lib/people/sections';
 	import { useI18n } from '$lib/i18n/context.svelte';
 	import { useVeil } from '$lib/privacy/veil.svelte';
+	import type { Visibility } from '$lib/server/access/visibility';
 	import type { PageData } from './$types';
 
 	let { data }: { data: PageData } = $props();
@@ -53,6 +54,13 @@
 		});
 	}
 </script>
+
+{#snippet marks(hit: { visibility: Visibility; hiddenFromPerson?: boolean; contactName: string })}
+	{#if hit.visibility === 'private'}<PrivateMark class="text-xs" />{/if}
+	{#if hit.hiddenFromPerson}
+		<Icon name="surprise" size={12} label={t('gifts.surprise.inline', { name: hit.contactName })} />
+	{/if}
+{/snippet}
 
 <svelte:head><title>{t('common.pageTitle', { page: t('search.title') })}</title></svelte:head>
 
@@ -92,83 +100,112 @@
 		{:else}
 			{#if data.results.contacts.length > 0}
 				<section class="flex flex-col gap-1">
-					<h2 class="text-sm font-medium text-fg-muted">{t('search.people')}</h2>
-					{#each data.results.contacts as c (c.id)}
-						<a
-							href="/contacts/{c.id}"
-							class="flex items-center gap-3 rounded-app px-3 py-2 transition-colors hover:bg-card hover:shadow-card"
+					<h2 class="text-sm font-medium text-fg-muted">
+						{t('search.people')}
+						<span class="font-normal" data-testid="search-count"
+							>{data.results.contacts.length}</span
 						>
-							<Avatar id={c.id} name={c.displayName} avatarPhotoId={c.avatarPhotoId} size={32} />
-							<!-- The job gets its own line under the name and description (docs/dev/02 §2.9). -->
-							<span class="flex min-w-0 flex-col">
-								<span class="flex min-w-0 items-center gap-1">
-									<span class="shrink-0 text-fg"
-										>{c.displayName}<FormerlyMark name={c.formerly} /><FoundByJobMark
-											found={c.foundByJob}
-										/></span
-									>
-									{#if c.description}<span class="truncate text-sm text-fg-muted"
-											>· {c.description}</span
-										>{/if}
-								</span>
-								<JobLine job={c} />
-							</span>
-						</a>
-					{/each}
+					</h2>
+					<ul class="flex flex-col gap-1">
+						{#each data.results.contacts as c (c.id)}
+							<li>
+								<a
+									href="/contacts/{c.id}"
+									class="flex items-center gap-3 rounded-app px-3 py-2 transition-colors hover:bg-card hover:shadow-card"
+								>
+									<Avatar
+										id={c.id}
+										name={c.displayName}
+										avatarPhotoId={c.avatarPhotoId}
+										size={32}
+									/>
+									<!-- The job gets its own line under the name and description (docs/dev/02 §2.9). -->
+									<span class="flex min-w-0 flex-col">
+										<span class="flex min-w-0 items-center gap-1">
+											<span class="shrink-0 text-fg"
+												>{c.displayName}<FormerlyMark name={c.formerly} /><FoundByJobMark
+													found={c.foundByJob}
+												/></span
+											>
+											{#if c.description}<span class="truncate text-sm text-fg-muted"
+													>· {c.description}</span
+												>{/if}
+										</span>
+										<JobLine job={c} />
+									</span>
+								</a>
+							</li>
+						{/each}
+					</ul>
 				</section>
 			{/if}
 
 			{#if data.results.notes.length > 0}
 				<section class="flex flex-col gap-1">
-					<h2 class="text-sm font-medium text-fg-muted">{t('search.notes')}</h2>
-					{#each data.results.notes as n (n.noteId)}
-						<a
-							href="/contacts/{n.contactId}"
-							class="flex flex-col rounded-app border border-transparent px-3 py-2 hover:border-border hover:bg-card"
-						>
-							<span class="flex flex-wrap items-center gap-x-2 text-sm text-fg-muted">
-								<span
-									>{#if n.title && !(n.visibility === 'private' && veil.isVeiled(`note:${n.noteId}`))}{n.title}
-										·
-									{/if}{t('search.noteOn', { name: n.contactName })}</span
+					<h2 class="text-sm font-medium text-fg-muted">
+						{t('search.notes')}
+						<span class="font-normal" data-testid="search-count">{data.results.notes.length}</span>
+					</h2>
+					<ul class="flex flex-col gap-1">
+						{#each data.results.notes as n (n.noteId)}
+							<li>
+								<a
+									href="/contacts/{n.contactId}"
+									class="flex flex-col rounded-app border border-transparent px-3 py-2 hover:border-border hover:bg-card"
 								>
-								{#if n.visibility === 'private'}<PrivateMark class="text-xs" />{/if}
-							</span>
-							<!-- Search finds private words, it is the author's search; they stay blurred (docs/dev/02 §2.10.1). -->
-							<Veil
-								id="note:{n.noteId}"
-								isPrivate={n.visibility === 'private'}
-								label={t('privacy.veil.note')}
-								text={n.snippet}
-								textClass="truncate text-fg"
-								passive
-							>
-								<span class="block truncate text-fg">{n.snippet}</span>
-							</Veil>
-						</a>
-					{/each}
+									<span class="flex flex-wrap items-center gap-x-2 text-sm text-fg-muted">
+										<span
+											>{#if n.title && !(n.visibility === 'private' && veil.isVeiled(`note:${n.noteId}`))}{n.title}
+												·
+											{/if}{t('search.noteOn', { name: n.contactName })}</span
+										>
+										{#if n.visibility === 'private'}<PrivateMark class="text-xs" />{/if}
+									</span>
+									<!-- Search finds private words, it is the author's search; they stay blurred (docs/dev/02 §2.10.1). -->
+									<Veil
+										id="note:{n.noteId}"
+										isPrivate={n.visibility === 'private'}
+										label={t('privacy.veil.note')}
+										text={n.snippet}
+										textClass="truncate text-fg"
+										passive
+									>
+										<span class="block truncate text-fg">{n.snippet}</span>
+									</Veil>
+								</a>
+							</li>
+						{/each}
+					</ul>
 				</section>
 			{/if}
 
 			{#if data.results.gifts.length > 0}
 				<!-- A gift leads to the card it lives on, not just the person (docs/dev/02 §2.25.5). -->
 				<section class="flex flex-col gap-1">
-					<h2 class="text-sm font-medium text-fg-muted">{t('search.gifts')}</h2>
-					{#each data.results.gifts as g (g.giftId)}
-						<a
-							href={contactSectionPath(g.contactId, 'gifts')}
-							class="flex items-center gap-3 rounded-app border border-transparent px-3 py-2 hover:border-border hover:bg-card"
-						>
-							<GiftStateMark state={g.state} />
-							<span class="flex min-w-0 flex-col">
-								<span class="break-words text-fg">{g.title}</span>
-								<!-- Wraps rather than truncates: the day it was given is the point. -->
-								<span class="text-sm text-fg-muted"
-									>{t('search.giftFor', { name: g.contactName })} · {stateLabel(i18n, g)}</span
+					<h2 class="text-sm font-medium text-fg-muted">
+						{t('search.gifts')}
+						<span class="font-normal" data-testid="search-count">{data.results.gifts.length}</span>
+					</h2>
+					<ul class="flex flex-col gap-1">
+						{#each data.results.gifts as g (g.giftId)}
+							<li>
+								<a
+									href={contactSectionPath(g.contactId, 'gifts')}
+									class="flex items-center gap-3 rounded-app border border-transparent px-3 py-2 hover:border-border hover:bg-card"
 								>
-							</span>
-						</a>
-					{/each}
+									<GiftStateMark state={g.state} />
+									<span class="flex min-w-0 flex-col">
+										<span class="break-words text-fg">{g.title}</span>
+										<!-- Wraps rather than truncates: the day it was given is the point. -->
+										<span class="text-sm text-fg-muted"
+											>{t('search.giftFor', { name: g.contactName })} · {stateLabel(i18n, g)}
+											{@render marks(g)}</span
+										>
+									</span>
+								</a>
+							</li>
+						{/each}
+					</ul>
 				</section>
 			{/if}
 
@@ -176,72 +213,92 @@
 				<!-- A to-do leads to the card it lives on; a done one is still found, marked done
 				     (docs/dev/02 §2.9, §2.26.6). -->
 				<section class="flex flex-col gap-1" data-testid="search-todos">
-					<h2 class="text-sm font-medium text-fg-muted">{t('search.todos')}</h2>
-					{#each data.results.todos as todo (todo.todoId)}
-						<a
-							href={contactSectionPath(todo.contactId, 'todos')}
-							class="flex items-center gap-3 rounded-app border border-transparent px-3 py-2 hover:border-border hover:bg-card"
-						>
-							<span class="shrink-0 {todo.done ? 'text-success-text' : 'text-fg-muted'}"
-								><Icon name={todo.done ? 'done' : 'todo'} size={16} /></span
-							>
-							<span class="flex min-w-0 flex-col">
-								<span class="break-words {todo.done ? 'text-fg-muted line-through' : 'text-fg'}"
-									>{todo.title}</span
+					<h2 class="text-sm font-medium text-fg-muted">
+						{t('search.todos')}
+						<span class="font-normal" data-testid="search-count">{data.results.todos.length}</span>
+					</h2>
+					<ul class="flex flex-col gap-1">
+						{#each data.results.todos as todo (todo.todoId)}
+							<li>
+								<a
+									href={contactSectionPath(todo.contactId, 'todos')}
+									class="flex items-center gap-3 rounded-app border border-transparent px-3 py-2 hover:border-border hover:bg-card"
 								>
-								<span class="text-sm text-fg-muted"
-									>{[
-										t('search.todoFor', { name: todo.contactName }),
-										todo.done &&
-											[t('search.todoDone'), todo.doneOn && shortDate(todo.doneOn)]
+									<span class="shrink-0 {todo.done ? 'text-success-text' : 'text-fg-muted'}"
+										><Icon name={todo.done ? 'done' : 'todo'} size={16} /></span
+									>
+									<span class="flex min-w-0 flex-col">
+										<span class="break-words {todo.done ? 'text-fg-muted line-through' : 'text-fg'}"
+											>{todo.title}</span
+										>
+										<span class="text-sm text-fg-muted"
+											>{[
+												t('search.todoFor', { name: todo.contactName }),
+												todo.done &&
+													[t('search.todoDone'), todo.doneOn && shortDate(todo.doneOn)]
+														.filter(Boolean)
+														.join(' ')
+											]
 												.filter(Boolean)
-												.join(' ')
-									]
-										.filter(Boolean)
-										.join(' · ')}</span
-								>
-							</span>
-						</a>
-					{/each}
+												.join(' · ')}
+											{@render marks(todo)}</span
+										>
+									</span>
+								</a>
+							</li>
+						{/each}
+					</ul>
 				</section>
 			{/if}
 
 			{#if data.results.plans.length > 0}
 				<!-- An outing idea leads to its card; a done one is still found, marked done (docs/dev/02 §2.27.10). -->
 				<section class="flex flex-col gap-1" data-testid="search-plans">
-					<h2 class="text-sm font-medium text-fg-muted">{t('search.plans')}</h2>
-					{#each data.results.plans as plan (plan.planId)}
-						<a
-							href={contactSectionPath(plan.contactId, 'plans')}
-							class="flex items-center gap-3 rounded-app border border-transparent px-3 py-2 hover:border-border hover:bg-card"
-						>
-							<span class="shrink-0 {plan.done ? 'text-success-text' : 'text-fg-muted'}"
-								><Icon name={plan.done ? 'done' : 'explore'} size={16} /></span
-							>
-							<span class="flex min-w-0 flex-col">
-								<span class="break-words {plan.done ? 'text-fg-muted' : 'text-fg'}"
-									>{plan.title}</span
+					<h2 class="text-sm font-medium text-fg-muted">
+						{t('search.plans')}
+						<span class="font-normal" data-testid="search-count">{data.results.plans.length}</span>
+					</h2>
+					<ul class="flex flex-col gap-1">
+						{#each data.results.plans as plan (plan.planId)}
+							<li>
+								<a
+									href={contactSectionPath(plan.contactId, 'plans')}
+									class="flex items-center gap-3 rounded-app border border-transparent px-3 py-2 hover:border-border hover:bg-card"
 								>
-								<span class="text-sm text-fg-muted"
-									>{[
-										t('search.planWith', { name: plan.contactName }),
-										plan.done &&
-											[t('search.planDone'), plan.doneOn && shortDate(plan.doneOn)]
+									<span class="shrink-0 {plan.done ? 'text-success-text' : 'text-fg-muted'}"
+										><Icon name={plan.done ? 'done' : 'explore'} size={16} /></span
+									>
+									<span class="flex min-w-0 flex-col">
+										<span class="break-words {plan.done ? 'text-fg-muted' : 'text-fg'}"
+											>{plan.title}</span
+										>
+										<span class="text-sm text-fg-muted"
+											>{[
+												t('search.planWith', { name: plan.contactName }),
+												plan.done &&
+													[t('search.planDone'), plan.doneOn && shortDate(plan.doneOn)]
+														.filter(Boolean)
+														.join(' ')
+											]
 												.filter(Boolean)
-												.join(' ')
-									]
-										.filter(Boolean)
-										.join(' · ')}</span
-								>
-							</span>
-						</a>
-					{/each}
+												.join(' · ')}
+											{@render marks(plan)}</span
+										>
+									</span>
+								</a>
+							</li>
+						{/each}
+					</ul>
 				</section>
 			{/if}
 
 			{#if data.results.moments.length > 0}
 				<section class="flex flex-col gap-1">
-					<h2 class="text-sm font-medium text-fg-muted">{t('search.moments')}</h2>
+					<h2 class="text-sm font-medium text-fg-muted">
+						{t('search.moments')}
+						<span class="font-normal" data-testid="search-count">{data.results.moments.length}</span
+						>
+					</h2>
 					{#if tagHead}
 						<a
 							href={tagPageHref(tagHead.key)}
@@ -252,38 +309,42 @@
 							<Icon name="forward" size={16} />
 						</a>
 					{/if}
-					{#each data.results.moments as m (m.entryId)}
-						<a
-							href={momentHref(m.contactId, m.entryId)}
-							class="flex flex-col rounded-app border border-transparent px-3 py-2 hover:border-border hover:bg-card"
-						>
-							<span class="flex flex-wrap items-center gap-x-2 text-sm text-fg-muted">
-								<span
-									>{#if m.title && !(m.visibility === 'private' && veil.isVeiled(`journal:${m.entryId}`))}{m.title}
-										·
-									{/if}{t('search.momentOn', {
-										date: shortDate(m.entryDate),
-										name: new Intl.ListFormat(i18n.intlLocale, { type: 'conjunction' }).format([
-											m.contactName,
-											...m.otherNames
-										])
-									})}</span
+					<ul class="flex flex-col gap-1">
+						{#each data.results.moments as m (m.entryId)}
+							<li>
+								<a
+									href={momentHref(m.contactId, m.entryId)}
+									class="flex flex-col rounded-app border border-transparent px-3 py-2 hover:border-border hover:bg-card"
 								>
-								{#if m.visibility === 'private'}<PrivateMark class="text-xs" />{/if}
-							</span>
-							<!-- Private words stay blurred on the author's own search, as a note's do. -->
-							<Veil
-								id="journal:{m.entryId}"
-								isPrivate={m.visibility === 'private'}
-								label={t('privacy.veil.moment')}
-								text={m.snippet}
-								textClass="truncate text-fg"
-								passive
-							>
-								<span class="block truncate text-fg">{m.snippet}</span>
-							</Veil>
-						</a>
-					{/each}
+									<span class="flex flex-wrap items-center gap-x-2 text-sm text-fg-muted">
+										<span
+											>{#if m.title && !(m.visibility === 'private' && veil.isVeiled(`journal:${m.entryId}`))}{m.title}
+												·
+											{/if}{t('search.momentOn', {
+												date: shortDate(m.entryDate),
+												name: new Intl.ListFormat(i18n.intlLocale, { type: 'conjunction' }).format([
+													m.contactName,
+													...m.otherNames
+												])
+											})}</span
+										>
+										{#if m.visibility === 'private'}<PrivateMark class="text-xs" />{/if}
+									</span>
+									<!-- Private words stay blurred on the author's own search, as a note's do. -->
+									<Veil
+										id="journal:{m.entryId}"
+										isPrivate={m.visibility === 'private'}
+										label={t('privacy.veil.moment')}
+										text={m.snippet}
+										textClass="truncate text-fg"
+										passive
+									>
+										<span class="block truncate text-fg">{m.snippet}</span>
+									</Veil>
+								</a>
+							</li>
+						{/each}
+					</ul>
 				</section>
 			{/if}
 		{/if}

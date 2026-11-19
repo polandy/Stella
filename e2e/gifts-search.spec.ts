@@ -21,7 +21,7 @@ function runLetters(): string {
 
 const giftsCard = (page: Page) => page.locator('#section-gifts');
 const giftHits = (page: Page) =>
-	page.locator('section', { has: page.getByRole('heading', { name: 'Gifts', exact: true }) });
+	page.locator('section', { has: page.getByRole('heading', { name: /^Gifts \d+$/ }) });
 
 /** Notes an idea through the card's own *+ Idea*, with a note, link or privacy when given. */
 async function addIdea(

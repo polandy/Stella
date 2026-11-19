@@ -115,7 +115,7 @@ test('a surprise stays away from the member it is for, and a bought one waits as
 		await nina.goto(`/search?q=${letters}`);
 		await expect(nina.getByRole('heading', { name: 'Search', exact: true })).toBeVisible();
 		const giftHits = nina.locator('section', {
-			has: nina.getByRole('heading', { name: 'Gifts', exact: true })
+			has: nina.getByRole('heading', { name: /^Gifts \d+$/ })
 		});
 		await expect(giftHits.getByRole('link', { name: new RegExp(book) })).toHaveCount(1);
 		await expect(giftHits.getByRole('link', { name: new RegExp(scarf) })).toHaveCount(0);

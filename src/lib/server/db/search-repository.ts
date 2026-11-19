@@ -139,6 +139,8 @@ export function createDrizzleSearchRepository(
 					title: gift.title,
 					state: gift.state,
 					givenOn: gift.givenOn,
+					visibility: gift.visibility,
+					hiddenFromRecipient: gift.hiddenFromRecipient,
 					contactId: contact.id,
 					contactName: contact.displayName
 				})
@@ -148,7 +150,11 @@ export function createDrizzleSearchRepository(
 				.where(and(sql`gift_fts MATCH ${ftsQuery}`, giftBrowsableBy(viewer, gift)))
 				.orderBy(sql`bm25(gift_fts)`)
 				.limit(limit)
-				.all();
+				.all()
+				.map(({ hiddenFromRecipient, ...hit }) => ({
+					...hit,
+					hiddenFromPerson: hiddenFromRecipient !== 0
+				}));
 		},
 
 		async searchTodos(viewer: Viewer, ftsQuery: string, limit: number) {
@@ -158,6 +164,7 @@ export function createDrizzleSearchRepository(
 					title: todo.title,
 					doneAt: todo.doneAt,
 					doneOn: todo.doneOn,
+					visibility: todo.visibility,
 					contactId: contact.id,
 					contactName: contact.displayName
 				})
@@ -186,6 +193,8 @@ export function createDrizzleSearchRepository(
 					title: activityIdea.title,
 					doneAt: activityIdea.doneAt,
 					doneOn: activityIdea.doneOn,
+					visibility: activityIdea.visibility,
+					hiddenFromPerson: activityIdea.hiddenFromPerson,
 					contactId: contact.id,
 					contactName: contact.displayName
 				})
@@ -196,7 +205,11 @@ export function createDrizzleSearchRepository(
 				.orderBy(sql`${activityIdea.doneAt} IS NOT NULL`, sql`bm25(plan_fts)`)
 				.limit(limit)
 				.all()
-				.map(({ doneAt, ...hit }) => ({ ...hit, done: doneAt !== null }));
+				.map(({ doneAt, hiddenFromPerson, ...hit }) => ({
+					...hit,
+					done: doneAt !== null,
+					hiddenFromPerson: hiddenFromPerson !== 0
+				}));
 		},
 
 		async searchMoments(viewer: Viewer, ftsQuery: string, limit: number) {

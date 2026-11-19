@@ -99,9 +99,10 @@
 				onclick={toggleWaiting}
 				data-testid="gift-list-waiting"
 			>
-				<Icon name={showWaiting ? 'collapse' : 'expand'} size={12} />{showWaiting
-					? t('gifts.list.hideWaiting')
-					: t('gifts.list.showWaiting', { count: folded.hidden })}
+				<Icon name={showWaiting ? 'collapse' : 'expand'} size={12} />{t(
+					'gifts.list.waitingToggle',
+					{ count: folded.hidden }
+				)}
 			</button>
 		{/if}
 	</header>

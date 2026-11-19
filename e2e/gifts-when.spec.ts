@@ -73,11 +73,11 @@ test('an idea for a day or for later waits under Later, out of the count, folded
 	await expect(page.getByText(`Sled ${letters}`)).toHaveCount(0);
 	await expect(page.getByText(`Kite ${letters}`)).toHaveCount(0);
 	const toggle = page.getByTestId('gift-list-waiting');
-	await expect(toggle).toHaveText(/^Show \d+ ideas for later$/);
+	await expect(toggle).toHaveText(/^\d+ ideas for later$/);
 	await expect(toggle).toHaveAttribute('aria-pressed', 'false');
 	await page.screenshot({ path: testInfo.outputPath('gifts-list-folded.png') });
 	await toggle.click();
-	await expect(toggle).toHaveText('Hide the ideas for later');
+	await expect(toggle).toHaveAttribute('aria-pressed', 'true');
 	const shown = page.locator('li[data-waiting]', { hasText: letters });
 	await expect(shown.getByTestId('when-chip')).toHaveText([`Christmas ${next}`, 'Later']);
 	await page.screenshot({ path: testInfo.outputPath('gifts-list-waiting.png') });

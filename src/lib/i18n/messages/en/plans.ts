@@ -61,11 +61,11 @@ export const plans = {
 	'plans.list.intro': 'Everything the household wants to do with someone, the soonest first.',
 	'plans.list.open': (p: { count: number }) => `${p.count} open`,
 	'plans.list.thisMonth': 'This month',
-	'plans.list.later': 'Later',
+	'plans.list.later': 'Soon',
 	'plans.list.someTime': 'Some time',
-	'plans.list.showLater': (p: { count: number }) => `Show later ones too (${p.count})`,
-	'plans.list.hideLater': 'Hide the later ones',
-	'plans.list.allLater': 'Nothing in the next three months. Every idea waits for later.',
+	// The label stays put; `aria-pressed` says whether they are shown.
+	'plans.list.laterToggle': (p: { count: number }) => `Ideas beyond three months (${p.count})`,
+	'plans.list.allLater': 'Nothing in the next three months. Every idea is further out.',
 	'plans.list.empty': 'No open outing idea.',
 	'plans.list.emptyHint': 'Note one on a person’s Outings card, and it shows up here.'
 };

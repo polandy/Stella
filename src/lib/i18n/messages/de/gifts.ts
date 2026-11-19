@@ -66,9 +66,8 @@ export const gifts: GiftsMessages = {
 	'gifts.list.open': (p) => `${p.count} offen`,
 	'gifts.list.ideas': (p) => (p.count === 1 ? '1 Idee' : `${p.count} Ideen`),
 	'gifts.list.next': (p) => `${p.occasion} ${p.when} · ${p.day}`,
-	'gifts.list.showWaiting': (p) =>
-		p.count === 1 ? '1 Idee für später zeigen' : `${p.count} Ideen für später zeigen`,
-	'gifts.list.hideWaiting': 'Ideen für später ausblenden',
+	'gifts.list.waitingToggle': (p) =>
+		p.count === 1 ? '1 Idee für später' : `${p.count} Ideen für später`,
 	'gifts.list.allWaiting': 'Noch nichts fällig. Alle Ideen warten auf später.',
 	'gifts.list.empty': 'Keine offenen Geschenkideen.',
 	'gifts.list.emptyHint': 'Notiere eine auf der Geschenke-Karte einer Person, dann steht sie hier.',
