@@ -9,8 +9,8 @@ import { ContactGoneError } from '../contacts/require-visible';
 
 /*
  * The checks a record noted on one person shares — a gift idea (docs/dev/02 §2.25), an outing
- * (§2.27), a to-do (§2.26): its line, its link, its when, and whether it may be kept from its
- * person. Each context keeps its own entity, state machine and phrases; a check takes the error it
+ * (§2.27), a to-do (§2.26): its line and, for a gift or an outing, its link, its when, and
+ * whether it may be kept from its person. Each context keeps its own entity, state machine and phrases; a check takes the error it
  * throws, so `errors.gift.*` and `errors.plan.*` stay apart.
  */
 

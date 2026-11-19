@@ -7,7 +7,7 @@ import { user } from './schema';
 
 /*
  * Drizzle adapter for the OwnPersonReads port: which current member's own person a person is
- * (docs/dev/03 §3.7), the one fact a gift idea, an outing and a to-do ask to keep a surprise.
+ * (docs/dev/03 §3.7), the one fact a gift idea and an outing ask to keep a surprise.
  */
 
 export function createDrizzleOwnPersonReads(db: BunSQLiteDatabase<typeof schema>): OwnPersonReads {
