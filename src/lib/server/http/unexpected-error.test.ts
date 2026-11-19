@@ -1,6 +1,11 @@
 import { describe, expect, it } from 'bun:test';
 import { CommandFailedError } from '../domain/commands/dispatch';
-import { describeUnexpectedError, isUnexpected, requestIdFrom } from './unexpected-error';
+import {
+	describeUnexpectedError,
+	isUnexpected,
+	isUnplanned,
+	requestIdFrom
+} from './unexpected-error';
 
 /*
  * An error nobody planned for is logged once, at the edge, with the request's id; the member
@@ -33,6 +38,19 @@ describe('isUnexpected', () => {
 		expect(isUnexpected(503)).toBe(true);
 		expect(isUnexpected(404)).toBe(false);
 		expect(isUnexpected(400)).toBe(false);
+	});
+});
+
+describe('isUnplanned', () => {
+	it('logs what our code threw and what SvelteKit failed at itself', () => {
+		expect(isUnplanned('unknown', 500)).toBe(true);
+		expect(isUnplanned('framework', 500)).toBe(true);
+	});
+
+	it('leaves a planned error(…), a validation answer and a missing page unlogged', () => {
+		expect(isUnplanned('app', 500)).toBe(false);
+		expect(isUnplanned('validation', 500)).toBe(false);
+		expect(isUnplanned('framework', 404)).toBe(false);
 	});
 });
 

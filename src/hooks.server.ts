@@ -9,7 +9,7 @@ import { formActionDirective } from '#lib/server/http/csp.js';
 import { etagOf, isUnchanged, wantsEtag } from '#lib/server/http/etag.js';
 import {
 	describeUnexpectedError,
-	isUnexpected,
+	isUnplanned,
 	requestIdFrom
 } from '#lib/server/http/unexpected-error.js';
 import { createTranslator } from '#lib/i18n/translate.js';
@@ -116,9 +116,8 @@ const handleRequest: Handle = async ({ event, resolve }) => {
  * request's id, and the member is told only that it was ours, with the id to quote.
  */
 export const handleError: HandleServerError = (caught) => {
-	// Kit 3 hands every error here; `error(…)` and validation answers are planned ones.
 	const status = caught.kind === 'framework' ? caught.error.status : 500;
-	if (caught.kind === 'app' || caught.kind === 'validation' || !isUnexpected(status)) return;
+	if (!isUnplanned(caught.kind, status)) return;
 	const { error, event } = caught;
 	const requestId = event.locals.requestId ?? crypto.randomUUID();
 	console.error(

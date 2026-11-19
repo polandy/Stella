@@ -23,6 +23,14 @@ export function isUnexpected(status: number): boolean {
 	return status >= 500;
 }
 
+/** How SvelteKit 3 labels an error it hands to `handleError`. */
+export type CaughtKind = 'app' | 'framework' | 'validation' | 'unknown';
+
+/** Whether a caught error is ours to log: an `error(…)` or a validation answer was planned. */
+export function isUnplanned(kind: CaughtKind, status: number): boolean {
+	return (kind === 'framework' || kind === 'unknown') && isUnexpected(status);
+}
+
 interface FailedRequest {
 	requestId: string;
 	status: number;
