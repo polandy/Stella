@@ -438,6 +438,27 @@ describe('planEvents', () => {
 		expect(planEvents([booked], '2026-11-17', enLang, ORIGIN)).toEqual([]);
 	});
 
+	test('a booked idea still stands on its day when that day is today', () => {
+		const booked = plan({
+			id: 'p8',
+			bookedAt: Date.UTC(2026, 10, 15, 10),
+			when: { kind: 'on_date', on: '2026-12-06' }
+		});
+		expect(planEvents([booked], '2026-12-06', enLang, ORIGIN).map((e) => e.start)).toEqual([
+			'2026-12-06'
+		]);
+	});
+
+	test('a booked idea that is done gets no entry', () => {
+		const booked = plan({
+			id: 'p9',
+			bookedAt: Date.UTC(2026, 10, 15, 10),
+			doneOn: '2026-11-20',
+			when: { kind: 'on_date', on: '2026-12-06' }
+		});
+		expect(planEvents([booked], '2026-11-17', enLang, ORIGIN)).toEqual([]);
+	});
+
 	test("speaks the member's language for a booked idea", () => {
 		const booked = plan({
 			id: 'p7',

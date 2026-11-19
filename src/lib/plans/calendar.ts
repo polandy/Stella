@@ -1,7 +1,8 @@
 /*
  * An outing idea in the member's subscribed calendar (docs/dev/02 §2.27.11). Not a calendar of
  * outings: one entry when the idea's time starts to draw near, so the phone says *think of the
- * zoo* while there is still time to plan — never a second entry on the day itself.
+ * zoo* while there is still time to plan — never a second entry on the day itself. A booked
+ * idea is an appointment instead and stands on its own day (calendar-feed.ts `planEvents`).
  */
 
 import { addDays } from '../dates/month';

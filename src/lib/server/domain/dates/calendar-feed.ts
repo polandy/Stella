@@ -228,10 +228,10 @@ export function planEvents(
 		plans.flatMap((plan) => {
 			// Booked ideas: one entry on their own day (when conditions allow).
 			if (plan.bookedAt !== null) {
-				if (plan.when === null) return [];
-				if (plan.when.kind === 'in_month') return [];
+				if (plan.doneOn !== null || plan.when === null || plan.when.kind === 'in_month') return [];
 				const day = whenDay(plan.when, plan.birth);
-				if (!day || day.approximate || day.on <= today) return [];
+				// The day itself still counts: the entry is the appointment.
+				if (!day || day.approximate || day.on < today) return [];
 				return [
 					{
 						uid: `plan-${plan.id}@stella`,
