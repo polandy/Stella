@@ -489,5 +489,6 @@ admin. Everything else works identically.
 | Images 404 / not persisted | `/data` volume not mounted, or `MEDIA_DIR` misconfigured. |
 | Exits at start-up: `attempt to write a readonly database` (`SQLITE_READONLY`) | `/data` not writable by uid 1000 (the server is not root) — `chown -R 1000:1000` it once (7.5.1, 7.10). |
 | Exits at start-up: `The database was migrated by a newer Stella` | An older image on a newer database, e.g. after `:latest` moved back — run the newer version, or restore `backups/pre-<version>.db` (7.10). |
+| Exits at start-up: `Failed to run the query 'UPDATE …'` with `CHECK constraint failed: <rule>` | The database holds a row that breaks a rule an update added (docs/dev/03 §3.1); nothing was changed. Find and fix the row with the query in that release's notes, then start again. |
 | Container `unhealthy`, `/healthz` answers 503 | The database cannot be written: permissions, a full disk or a lock held from outside (7.5.1). |
 | Locked out (IdP misconfig) | Sign in with the local break-glass admin (7.11 / `AUTH_LOCAL_ENABLED`). |
