@@ -9,6 +9,7 @@
 	import NamesakeLine from '$lib/components/people/NamesakeLine.svelte';
 	import { useTranslate } from '$lib/i18n/context.svelte';
 	import {
+		paletteLabels,
 		paletteRows,
 		type PalettePerson,
 		type PaletteRow,
@@ -42,28 +43,7 @@
 
 	const t = useTranslate();
 	const peopleContext = usePeopleContext();
-	const rows = $derived(
-		paletteRows(
-			query,
-			people,
-			{
-				write: t('components.palette.write'),
-				giftIdea: t('components.palette.giftIdea'),
-				giftForSeveral: t('components.palette.giftForSeveral'),
-				giftIdeas: t('components.palette.giftIdeas'),
-				todoFor: t('components.palette.todoFor'),
-				briefFor: t('components.palette.briefFor'),
-				allTodos: t('components.palette.allTodos'),
-				planWith: t('components.palette.planWith'),
-				allPlans: t('plans.allIdeas'),
-				onThisDay: t('memories.title'),
-				addPerson: t('components.palette.addPerson'),
-				searchEverything: (q) => t('components.palette.searchEverything', { query: q })
-			},
-			peopleContext(),
-			step
-		)
-	);
+	const rows = $derived(paletteRows(query, people, paletteLabels(t), peopleContext(), step));
 
 	// A second step asks only whom it is for (docs/dev/05 §5.4).
 	const STEP_QUESTION = $derived({

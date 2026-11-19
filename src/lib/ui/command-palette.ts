@@ -8,6 +8,7 @@ import { foundByJob, jobOf, type Job } from '$lib/people/job';
 import type { IconName } from '$lib/components/ui/icons';
 import { matchesQuery, startsWithQuery } from '$lib/people/directory';
 import type { PersonContext } from '$lib/people/context';
+import type { Translate } from '$lib/i18n/translate';
 import { tellApart, type Distinction } from '$lib/people/namesakes';
 
 /*
@@ -86,6 +87,9 @@ export type PaletteRow =
 /** A row a search for people yields: a person, or the way into full search. Each goes somewhere. */
 export type PersonSearchRow = Extract<PaletteRow, { kind: 'person' | 'search' }>;
 
+/** A row of the home field: a person, the full search, or a list to open. */
+export type FinderRow = Extract<PaletteRow, { kind: 'person' | 'search' | 'action' }>;
+
 /** Most people shown at once; the query narrows the rest. */
 export const PALETTE_PEOPLE_LIMIT = 6;
 
@@ -114,6 +118,24 @@ export interface PaletteLabels {
 	searchEverything: (query: string) => string;
 }
 
+/** The viewer's wording for the rows, from the translator. */
+export function paletteLabels(t: Translate): PaletteLabels {
+	return {
+		write: t('components.palette.write'),
+		giftIdea: t('components.palette.giftIdea'),
+		giftForSeveral: t('components.palette.giftForSeveral'),
+		giftIdeas: t('components.palette.giftIdeas'),
+		todoFor: t('components.palette.todoFor'),
+		briefFor: t('components.palette.briefFor'),
+		allTodos: t('components.palette.allTodos'),
+		planWith: t('components.palette.planWith'),
+		allPlans: t('plans.allIdeas'),
+		onThisDay: t('memories.title'),
+		addPerson: t('components.palette.addPerson'),
+		searchEverything: (q) => t('components.palette.searchEverything', { query: q })
+	};
+}
+
 /** The label of an action row, by the field of `PaletteLabels` that words it. */
 type ActionLabel = Exclude<keyof PaletteLabels, 'searchEverything'>;
 
@@ -132,6 +154,9 @@ const ACTIONS: readonly ({ id: string; label: ActionLabel; icon: IconName } & (
 	{ id: 'on-this-day', label: 'onThisDay', icon: 'memories', href: '/on-this-day' },
 	{ id: 'add-person', label: 'addPerson', icon: 'add', href: '/contacts/new' }
 ];
+
+/** The household's lists: where a phone's Home field leads before a name is typed. */
+const FINDER_LIST_IDS: readonly string[] = ['gift-ideas', 'all-todos', 'all-plans', 'on-this-day'];
 
 /** The rows for a query, in the order they are shown. */
 export function paletteRows(
@@ -172,9 +197,27 @@ export function paletteRows(
 }
 
 /**
+ * The rows of the home screen's search field: the household's lists while it is empty
+ * (docs/dev/02 §2.22.1), the people search once something is typed.
+ */
+export function personFinderRows(
+	query: string,
+	people: PalettePerson[],
+	labels: PaletteLabels,
+	contexts: ReadonlyMap<string, PersonContext> = new Map()
+): FinderRow[] {
+	if (query.trim() !== '') {
+		return personSearchRows(query, people, labels.searchEverything, contexts);
+	}
+	return paletteRows('', [], labels).filter(
+		(row): row is FinderRow => row.kind === 'action' && FINDER_LIST_IDS.includes(row.id)
+	);
+}
+
+/**
  * The rows of a search for people alone — the home screen's search field (docs/dev/02 §2.22.1):
  * the people whose name matches, then a way into full search. The palette adds its actions
- * on top; the home field has none, and offers nothing until something is typed.
+ * on top; the home field has none (see `personFinderRows`).
  */
 export function personSearchRows(
 	query: string,

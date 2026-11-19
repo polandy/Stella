@@ -46,6 +46,19 @@ test.describe('on a phone', () => {
 		await expect(page.getByRole('heading', { level: 1, name: second })).toBeVisible();
 	});
 
+	test('lists the household pages while empty, and a tap opens one (docs/dev/02 §2.22.1)', async ({
+		page
+	}) => {
+		await finder(page).focus();
+
+		for (const name of ['All gift ideas', 'All to-dos', 'All outings', 'On this day']) {
+			await expect(page.getByRole('option', { name })).toBeVisible();
+		}
+		await page.getByRole('option', { name: 'All gift ideas' }).click();
+
+		await expect(page).toHaveURL('/gifts');
+	});
+
 	test('ends with the full search, which also reads notes', async ({ page }) => {
 		await finder(page).pressSequentially('garden gate');
 

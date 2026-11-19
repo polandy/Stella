@@ -31,7 +31,8 @@ the household at once, and to tick off what they bought without opening each per
   (`heldAnswer`); a card whose last idea went disappears with it.
 - With nothing open: `EmptyState` with the idea icon, *No open gift ideas.*, and the hint that an
   idea noted on a person's Gifts card shows up here.
-- Nothing in the navigation leads here: the palette's *All gift ideas* and the Gifts card's ⋯
+- Nothing in the navigation leads here: the palette's *All gift ideas*, a phone's empty Home field
+  (docs/dev/02 §2.22.1) and the Gifts card's ⋯
   menu do.
 
 ### Why
