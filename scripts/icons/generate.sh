@@ -11,7 +11,7 @@ set -euo pipefail
 cd "$(dirname "$0")/../.."
 
 # Must match the @playwright/test version in package.json.
-IMAGE="mcr.microsoft.com/playwright:v1.62.1-noble"
+IMAGE="mcr.microsoft.com/playwright:v1.65.1-noble"
 WORK="$(mktemp -d)"
 trap 'rm -rf "$WORK"' EXIT
 
