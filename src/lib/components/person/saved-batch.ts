@@ -1,9 +1,9 @@
 import { invalidateAll } from '$app/navigation';
-import type { Translate } from '$lib/i18n/translate';
-import { whilePending } from '$lib/sync/pending';
-import type { PendingSink } from '$lib/sync/pending-work';
-import type { Removals } from '$lib/undo/context.svelte';
-import { submitAction } from '$lib/undo/submit-action';
+import type { Translate } from '#lib/i18n/translate.js';
+import { whilePending } from '#lib/sync/pending.js';
+import type { PendingSink } from '#lib/sync/pending-work.js';
+import type { Removals } from '#lib/undo/context.svelte.js';
+import { submitAction } from '#lib/undo/submit-action.js';
 
 /*
  * A batch of links stored together (`relationship.addMany`, docs/dev/02 §2.4) gets one toast and

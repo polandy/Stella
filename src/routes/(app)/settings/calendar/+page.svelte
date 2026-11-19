@@ -1,10 +1,10 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
-	import Button from '$lib/components/ui/Button.svelte';
-	import Icon from '$lib/components/ui/Icon.svelte';
-	import { useI18n } from '$lib/i18n/context.svelte';
-	import { browserClipboard, copyText, selectText } from '$lib/ui/clipboard';
-	import { useRemovals } from '$lib/undo/context.svelte';
+	import Button from '#lib/components/ui/Button.svelte';
+	import Icon from '#lib/components/ui/Icon.svelte';
+	import { useI18n } from '#lib/i18n/context.svelte.js';
+	import { browserClipboard, copyText, selectText } from '#lib/ui/clipboard.js';
+	import { useRemovals } from '#lib/undo/context.svelte.js';
 	import type { ActionData, PageData } from './$types';
 
 	/*

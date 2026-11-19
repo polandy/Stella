@@ -1,4 +1,4 @@
-import { hasMessage, type Translate } from '$lib/i18n/translate';
+import { hasMessage, type Translate } from '#lib/i18n/translate.js';
 
 /*
  * What a restored table is called on screen (docs/dev/02 §2.15). The report comes back keyed by

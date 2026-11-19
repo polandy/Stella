@@ -1,12 +1,12 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { enhance } from '$app/forms';
-	import Button from '$lib/components/ui/Button.svelte';
-	import { circleDeletionSentences, type CircleDeletionCounts } from '$lib/circles/deletion';
-	import { useI18n } from '$lib/i18n/context.svelte';
-	import { reveal } from '$lib/motion/motion.svelte';
-	import { useRemovals } from '$lib/undo/context.svelte';
-	import type { SubmitFunction } from '@sveltejs/kit';
+	import Button from '#lib/components/ui/Button.svelte';
+	import { circleDeletionSentences, type CircleDeletionCounts } from '#lib/circles/deletion.js';
+	import { useI18n } from '#lib/i18n/context.svelte.js';
+	import { reveal } from '#lib/motion/motion.svelte.js';
+	import { useRemovals } from '#lib/undo/context.svelte.js';
+	import type { SubmitFunction } from '$app/forms';
 
 	/*
 	 * Deleting a circle (docs/dev/02 §2.4.2): the inline confirm step under the header, the person

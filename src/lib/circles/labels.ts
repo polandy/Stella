@@ -1,4 +1,4 @@
-import { hasMessage, type Translate } from '$lib/i18n/translate';
+import { hasMessage, type Translate } from '#lib/i18n/translate.js';
 
 /*
  * The kinds a circle can have are a closed vocabulary in the domain (`CIRCLE_KINDS`) but

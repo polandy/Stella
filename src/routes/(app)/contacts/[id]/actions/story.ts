@@ -1,19 +1,19 @@
-import { dispatchCommand } from '$lib/server/domain/commands/dispatch';
-import { readCommand } from '$lib/server/commands/parse';
-import { fromFormData } from '$lib/commands/form-data';
-import { InteractionLogSchema } from '$lib/commands/payloads';
-import { ulidGenerator } from '$lib/server/id';
-import { systemClock } from '$lib/server/clock';
+import { dispatchCommand } from '#lib/server/domain/commands/dispatch.js';
+import { readCommand } from '#lib/server/commands/parse.js';
+import { fromFormData } from '#lib/commands/form-data.js';
+import { InteractionLogSchema } from '#lib/commands/payloads.js';
+import { ulidGenerator } from '#lib/server/id.js';
+import { systemClock } from '#lib/server/clock.js';
 import { error, fail, redirect } from '@sveltejs/kit';
-import { requireRemover, requireViewer } from '$lib/server/auth/guards';
-import { getContact } from '$lib/server/domain/contacts/contacts';
-import { editInteraction } from '$lib/server/domain/interactions/edit-interaction';
-import { removeInteraction } from '$lib/server/domain/interactions/interactions';
-import { TranslatableError } from '$lib/i18n/translatable';
-import { isInteractionKind } from '$lib/story/interaction-kinds';
-import { removeJournalEntry } from '$lib/server/domain/journal/journal';
-import { contactSectionPath } from '$lib/people/sections';
-import { say, translator } from '$lib/server/i18n/say';
+import { requireRemover, requireViewer } from '#lib/server/auth/guards.js';
+import { getContact } from '#lib/server/domain/contacts/contacts.js';
+import { editInteraction } from '#lib/server/domain/interactions/edit-interaction.js';
+import { removeInteraction } from '#lib/server/domain/interactions/interactions.js';
+import { TranslatableError } from '#lib/i18n/translatable.js';
+import { isInteractionKind } from '#lib/story/interaction-kinds.js';
+import { removeJournalEntry } from '#lib/server/domain/journal/journal.js';
+import { contactSectionPath } from '#lib/people/sections.js';
+import { say, translator } from '#lib/server/i18n/say.js';
 import type { Actions } from '../$types';
 
 /** The story card: touchpoints logged and corrected, and entries taken back (docs/dev/02 §2.23). */

@@ -1,47 +1,47 @@
 <script lang="ts">
-	import FormError from '$lib/components/ui/FormError.svelte';
-	import { browser } from '$app/environment';
+	import FormError from '#lib/components/ui/FormError.svelte';
+	import { browser } from '$app/env';
 	import { goto } from '$app/navigation';
-	import Avatar from '$lib/components/ui/Avatar.svelte';
-	import Button from '$lib/components/ui/Button.svelte';
-	import DayPill from '$lib/components/ui/DayPill.svelte';
-	import ShareSwitch from '$lib/components/ui/ShareSwitch.svelte';
-	import ImmichLibraryPicker from '$lib/components/immich/ImmichLibraryPicker.svelte';
-	import CreatePersonPanel from '$lib/components/people/CreatePersonPanel.svelte';
-	import ComposerPeopleList from '$lib/components/stream/ComposerPeopleList.svelte';
-	import ComposerPhotos from '$lib/components/stream/ComposerPhotos.svelte';
-	import ComposerSaveHint from '$lib/components/stream/ComposerSaveHint.svelte';
-	import ComposerSubjects from '$lib/components/stream/ComposerSubjects.svelte';
-	import TagListbox from '$lib/components/ui/TagListbox.svelte';
-	import TagsLine from '$lib/components/ui/TagsLine.svelte';
-	import type { KnownTag } from '$lib/hashtags/picker';
-	import { TagPicker } from '$lib/hashtags/tag-picker.svelte';
-	import WhichNamesake from '$lib/components/ui/WhichNamesake.svelte';
-	import { useTranslate } from '$lib/i18n/context.svelte';
-	import { usePeopleContext } from '$lib/people/context.svelte';
-	import { tellApart } from '$lib/people/namesakes';
-	import { isKnownByMoreThanAFirstName } from '$lib/people/new-person';
-	import type { MomentDraft } from '$lib/people/story-forms';
-	import type { KeptOf } from '$lib/pwa/outbox';
-	import { reachability } from '$lib/pwa/reachability.svelte';
-	import { createPanelKey, keyupAsksPicker, textKey } from '$lib/stream/composer-keys';
-	import { SAVED_NOTICE_MS, savedMomentAnchor } from '$lib/stream/saved-moment';
-	import { useRemovals } from '$lib/undo/context.svelte';
-	import { deviceDay, writersDay } from '$lib/dates/today';
+	import Avatar from '#lib/components/ui/Avatar.svelte';
+	import Button from '#lib/components/ui/Button.svelte';
+	import DayPill from '#lib/components/ui/DayPill.svelte';
+	import ShareSwitch from '#lib/components/ui/ShareSwitch.svelte';
+	import ImmichLibraryPicker from '#lib/components/immich/ImmichLibraryPicker.svelte';
+	import CreatePersonPanel from '#lib/components/people/CreatePersonPanel.svelte';
+	import ComposerPeopleList from '#lib/components/stream/ComposerPeopleList.svelte';
+	import ComposerPhotos from '#lib/components/stream/ComposerPhotos.svelte';
+	import ComposerSaveHint from '#lib/components/stream/ComposerSaveHint.svelte';
+	import ComposerSubjects from '#lib/components/stream/ComposerSubjects.svelte';
+	import TagListbox from '#lib/components/ui/TagListbox.svelte';
+	import TagsLine from '#lib/components/ui/TagsLine.svelte';
+	import type { KnownTag } from '#lib/hashtags/picker.js';
+	import { TagPicker } from '#lib/hashtags/tag-picker.svelte.js';
+	import WhichNamesake from '#lib/components/ui/WhichNamesake.svelte';
+	import { useTranslate } from '#lib/i18n/context.svelte.js';
+	import { usePeopleContext } from '#lib/people/context.svelte.js';
+	import { tellApart } from '#lib/people/namesakes.js';
+	import { isKnownByMoreThanAFirstName } from '#lib/people/new-person.js';
+	import type { MomentDraft } from '#lib/people/story-forms.js';
+	import type { KeptOf } from '#lib/pwa/outbox.js';
+	import { reachability } from '#lib/pwa/reachability.svelte.js';
+	import { createPanelKey, keyupAsksPicker, textKey } from '#lib/stream/composer-keys.js';
+	import { SAVED_NOTICE_MS, savedMomentAnchor } from '#lib/stream/saved-moment.js';
+	import { useRemovals } from '#lib/undo/context.svelte.js';
+	import { deviceDay, writersDay } from '#lib/dates/today.js';
 	import {
 		composerPeople,
 		composerReading,
 		draftOf,
 		pickerRows
-	} from '$lib/stream/composer-reading';
+	} from '#lib/stream/composer-reading.js';
 	import {
 		composerAtOpen,
 		type ComposerCandidate,
 		type ComposerError,
 		type Creating
-	} from '$lib/stream/composer-state';
-	import { subjectsUnfit, type HomeMembers } from '$lib/stream/composer-subjects';
-	import { ComposerController } from '$lib/stream/composer.svelte';
+	} from '#lib/stream/composer-state.js';
+	import { subjectsUnfit, type HomeMembers } from '#lib/stream/composer-subjects.js';
+	import { ComposerController } from '#lib/stream/composer.svelte.js';
 	import { tick, untrack } from 'svelte';
 	import { ulid } from 'ulid';
 
@@ -169,7 +169,7 @@
 				createFirstName?.focus();
 			},
 			async backToStream(href, entryId) {
-				await goto(href, { invalidateAll: true });
+				await goto(href, { refreshAll: true });
 				// The sheet is gone and the moment somewhere in the stream: point to it (§2.22.1).
 				removals.notifyWithLink(
 					t('home.momentSaved'),

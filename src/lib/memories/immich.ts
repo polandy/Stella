@@ -1,4 +1,4 @@
-import type { ImmichMemoryPhoto, ImmichMemoryYear } from '$lib/immich/on-this-day';
+import type { ImmichMemoryPhoto, ImmichMemoryYear } from '#lib/immich/on-this-day.js';
 import { MEMORY_STRIP_CAP } from './memories';
 import type { MemoryYearView } from './view';
 

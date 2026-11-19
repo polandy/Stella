@@ -1,5 +1,5 @@
-import type { CommandType } from '$lib/commands/commands';
-import { TodoGoneError } from '$lib/server/domain/todos/todos';
+import type { CommandType } from '#lib/commands/commands.js';
+import { TodoGoneError } from '#lib/server/domain/todos/todos.js';
 import { fail, type RequestEvent } from '@sveltejs/kit';
 import {
 	applyCommandFromForm,

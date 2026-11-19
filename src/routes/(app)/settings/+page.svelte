@@ -1,15 +1,15 @@
 <script lang="ts">
-	import FormError from '$lib/components/ui/FormError.svelte';
-	import SignOutForm from '$lib/components/shell/SignOutForm.svelte';
-	import SettingsLink from '$lib/components/settings/SettingsLink.svelte';
-	import Button from '$lib/components/ui/Button.svelte';
-	import Icon from '$lib/components/ui/Icon.svelte';
-	import InstallCard from '$lib/components/pwa/InstallCard.svelte';
-	import LanguagePicker from '$lib/components/shell/LanguagePicker.svelte';
-	import PersonSearchSelect from '$lib/components/people/PersonSearchSelect.svelte';
-	import PrivacySettings from '$lib/components/privacy/PrivacySettings.svelte';
-	import { useI18n } from '$lib/i18n/context.svelte';
-	import { newPersonHref } from '$lib/people/new-person';
+	import FormError from '#lib/components/ui/FormError.svelte';
+	import SignOutForm from '#lib/components/shell/SignOutForm.svelte';
+	import SettingsLink from '#lib/components/settings/SettingsLink.svelte';
+	import Button from '#lib/components/ui/Button.svelte';
+	import Icon from '#lib/components/ui/Icon.svelte';
+	import InstallCard from '#lib/components/pwa/InstallCard.svelte';
+	import LanguagePicker from '#lib/components/shell/LanguagePicker.svelte';
+	import PersonSearchSelect from '#lib/components/people/PersonSearchSelect.svelte';
+	import PrivacySettings from '#lib/components/privacy/PrivacySettings.svelte';
+	import { useI18n } from '#lib/i18n/context.svelte.js';
+	import { newPersonHref } from '#lib/people/new-person.js';
 	import type { ActionData, PageData } from './$types';
 
 	let { data, form }: { data: PageData; form: ActionData } = $props();

@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'bun:test';
-import { createTranslator } from '$lib/i18n/translate';
-import type { CommandHandlers } from '$lib/server/domain/commands/dispatch';
-import { TodoGoneError } from '$lib/server/domain/todos/todos';
-import { commandDepsWith } from '$lib/server/domain/testing';
-import { answerOf, formOf, routeEvent, type FakeServices } from '$lib/server/testing';
+import { createTranslator } from '#lib/i18n/translate.js';
+import type { CommandHandlers } from '#lib/server/domain/commands/dispatch.js';
+import { TodoGoneError } from '#lib/server/domain/todos/todos.js';
+import { commandDepsWith } from '#lib/server/domain/testing/index.js';
+import { answerOf, formOf, routeEvent, type FakeServices } from '#lib/server/testing/index.js';
 import { todoActions as actions } from './todos';
 
 /*

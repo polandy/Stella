@@ -1,6 +1,6 @@
 import { json } from '@sveltejs/kit';
-import { readBatch, receiveQueued } from '$lib/server/commands/receive';
-import { translator } from '$lib/server/i18n/say';
+import { readBatch, receiveQueued } from '#lib/server/commands/receive.js';
+import { translator } from '#lib/server/i18n/say.js';
 import type { RequestHandler } from './$types';
 
 /*

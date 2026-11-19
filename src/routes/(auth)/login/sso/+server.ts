@@ -1,6 +1,6 @@
 import { redirect } from '@sveltejs/kit';
-import { setOidcTransaction } from '$lib/server/auth/cookies';
-import { createAuthorizationRequest } from '$lib/server/auth/oidc/login';
+import { setOidcTransaction } from '#lib/server/auth/cookies.js';
+import { createAuthorizationRequest } from '#lib/server/auth/oidc/login.js';
 import type { RequestHandler } from './$types';
 
 /*
@@ -19,5 +19,5 @@ export const GET: RequestHandler = async ({ cookies, locals }) => {
 		nonce: request.nonce,
 		codeVerifier: request.codeVerifier
 	});
-	throw redirect(302, request.url);
+	throw redirect(302, request.url, { external: true });
 };

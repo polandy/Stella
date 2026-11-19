@@ -1,14 +1,14 @@
 <script lang="ts">
-	import ComingUp from '$lib/components/stream/ComingUp.svelte';
-	import RailSection from '$lib/components/stream/RailSection.svelte';
-	import MemoryBand from '$lib/components/memories/MemoryBand.svelte';
-	import type { ImmichMemories } from '$lib/components/memories/immich-memories.svelte';
-	import TodoBand from '$lib/components/todos/TodoBand.svelte';
-	import { useTranslate } from '$lib/i18n/context.svelte';
-	import type { KeptOf } from '$lib/pwa/outbox';
-	import { memoryRail, railSummary, todoRailFirst } from '$lib/stream/rail-summary';
-	import type { HouseholdTodoView, TodoBand as Band } from '$lib/todos/household';
-	import type { JustDoneTodos } from '$lib/todos/just-done.svelte';
+	import ComingUp from '#lib/components/stream/ComingUp.svelte';
+	import RailSection from '#lib/components/stream/RailSection.svelte';
+	import MemoryBand from '#lib/components/memories/MemoryBand.svelte';
+	import type { ImmichMemories } from '#lib/components/memories/immich-memories.svelte.js';
+	import TodoBand from '#lib/components/todos/TodoBand.svelte';
+	import { useTranslate } from '#lib/i18n/context.svelte.js';
+	import type { KeptOf } from '#lib/pwa/outbox.js';
+	import { memoryRail, railSummary, todoRailFirst } from '#lib/stream/rail-summary.js';
+	import type { HouseholdTodoView, TodoBand as Band } from '#lib/todos/household.js';
+	import type { JustDoneTodos } from '#lib/todos/just-done.svelte.js';
 	import type { PageData } from '../../../routes/(app)/$types';
 
 	/*

@@ -1,14 +1,14 @@
-import type { MomentDraft } from '$lib/people/story-forms';
-import { allowedForAudience } from '$lib/mentions/audience';
+import type { MomentDraft } from '#lib/people/story-forms.js';
+import { allowedForAudience } from '#lib/mentions/audience.js';
 import {
 	createHandleResolver,
 	resolveMentions,
 	type MentionCandidate
-} from '$lib/mentions/mentions';
-import { pickableBeside, suggest, type ActiveHandle } from '$lib/mentions/picker';
-import { newPeopleAsCandidates, toStored } from '$lib/mentions/picks';
-import { unclearHandles, type UnclearHandle } from '$lib/mentions/unclear';
-import type { PersonContext } from '$lib/people/context';
+} from '#lib/mentions/mentions.js';
+import { pickableBeside, suggest, type ActiveHandle } from '#lib/mentions/picker.js';
+import { newPeopleAsCandidates, toStored } from '#lib/mentions/picks.js';
+import { unclearHandles, type UnclearHandle } from '#lib/mentions/unclear.js';
+import type { PersonContext } from '#lib/people/context.js';
 import type { ComposerCandidate, ComposerState, PickerRow } from './composer-state';
 
 /*

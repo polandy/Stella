@@ -2,19 +2,19 @@
 	import { onMount, tick, type Component } from 'svelte';
 	import { MediaQuery } from 'svelte/reactivity';
 	import { prefersReducedMotion } from 'svelte/motion';
-	import { scrollBehavior } from '$lib/motion/motion';
-	import EgoGraph from '$lib/components/graph/EgoGraph.svelte';
-	import Icon from '$lib/components/ui/Icon.svelte';
-	import { useTranslate } from '$lib/i18n/context.svelte';
-	import { dismissesFullscreenOnDrag } from '$lib/ui/fullscreen';
+	import { scrollBehavior } from '#lib/motion/motion.js';
+	import EgoGraph from '#lib/components/graph/EgoGraph.svelte';
+	import Icon from '#lib/components/ui/Icon.svelte';
+	import { useTranslate } from '#lib/i18n/context.svelte.js';
+	import { dismissesFullscreenOnDrag } from '#lib/ui/fullscreen.js';
 	import {
 		PHONE_MAP_AT_REST,
 		mapLayers,
 		phoneMapAfter,
 		type PhoneMapStep
-	} from '$lib/graph/phone-map';
-	import { PERSON_MAP_RINGS } from '$lib/graph/model/person-map';
-	import type { GraphModel } from '$lib/graph/model/types';
+	} from '#lib/graph/phone-map.js';
+	import { PERSON_MAP_RINGS } from '#lib/graph/model/person-map.js';
+	import type { GraphModel } from '#lib/graph/model/types.js';
 
 	/*
 	 * The map on a person's page (docs/dev/05 §5.5): the same explorer the graph route runs, with a

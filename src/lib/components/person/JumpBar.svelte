@@ -7,15 +7,15 @@
 		markedSection,
 		scrollsThePage,
 		type JumpSection
-	} from '$lib/people/jump-bar';
+	} from '#lib/people/jump-bar.js';
 	import { replaceState } from '$app/navigation';
 	import { page } from '$app/state';
-	import { bringCardIntoView } from '$lib/motion/scroll.svelte';
-	import { sectionAnchor } from '$lib/people/sections';
-	import { useI18n } from '$lib/i18n/context.svelte';
-	import { useRemovals } from '$lib/undo/context.svelte';
-	import { removalKey } from '$lib/undo/keys';
-	import type { MessageKey } from '$lib/i18n/translate';
+	import { bringCardIntoView } from '#lib/motion/scroll.svelte.js';
+	import { sectionAnchor } from '#lib/people/sections.js';
+	import { useI18n } from '#lib/i18n/context.svelte.js';
+	import { useRemovals } from '#lib/undo/context.svelte.js';
+	import { removalKey } from '#lib/undo/keys.js';
+	import type { MessageKey } from '#lib/i18n/translate.js';
 	import type { PersonPageData } from './types';
 
 	/*

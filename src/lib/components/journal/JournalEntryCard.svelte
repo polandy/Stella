@@ -1,17 +1,17 @@
 <script lang="ts">
-	import Swap from '$lib/components/ui/Swap.svelte';
-	import Icon from '$lib/components/ui/Icon.svelte';
-	import PrivateMark from '$lib/components/ui/PrivateMark.svelte';
-	import Veil from '$lib/components/ui/Veil.svelte';
-	import { placeholderFor } from '$lib/privacy/veil';
-	import { useVeil } from '$lib/privacy/veil.svelte';
-	import { journalEntryAnchor } from '$lib/people/sections';
-	import { useI18n } from '$lib/i18n/context.svelte';
+	import Swap from '#lib/components/ui/Swap.svelte';
+	import Icon from '#lib/components/ui/Icon.svelte';
+	import PrivateMark from '#lib/components/ui/PrivateMark.svelte';
+	import Veil from '#lib/components/ui/Veil.svelte';
+	import { placeholderFor } from '#lib/privacy/veil.js';
+	import { useVeil } from '#lib/privacy/veil.svelte.js';
+	import { journalEntryAnchor } from '#lib/people/sections.js';
+	import { useI18n } from '#lib/i18n/context.svelte.js';
 	import type { ComponentProps } from 'svelte';
 	import JournalEntryEditor from './JournalEntryEditor.svelte';
 	import MomentWith from './MomentWith.svelte';
-	import ImmichPhotoTile from '$lib/components/immich/ImmichPhotoTile.svelte';
-	import { othersThan, type SubjectFace } from '$lib/story/subjects';
+	import ImmichPhotoTile from '#lib/components/immich/ImmichPhotoTile.svelte';
+	import { othersThan, type SubjectFace } from '#lib/story/subjects.js';
 
 	type EditorProps = ComponentProps<typeof JournalEntryEditor>;
 

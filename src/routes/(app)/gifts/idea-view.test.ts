@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test';
-import type { OpenIdea } from '$lib/server/domain/gifts/gifts';
+import type { OpenIdea } from '#lib/server/domain/gifts/gifts.js';
 import { openIdeaView } from './idea-view';
 
 const idea: OpenIdea & { whenState: null } = {

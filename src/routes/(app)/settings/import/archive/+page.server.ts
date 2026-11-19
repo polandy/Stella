@@ -1,14 +1,14 @@
 import { fail } from '@sveltejs/kit';
-import { readTar, TarFormatError } from '$lib/archive/tar';
-import { requireAdmin } from '$lib/server/auth/guards';
-import { importArchive, splitArchive } from '$lib/server/domain/archive/import';
+import { readTar, TarFormatError } from '#lib/archive/tar.js';
+import { requireAdmin } from '#lib/server/auth/guards.js';
+import { importArchive, splitArchive } from '#lib/server/domain/archive/import.js';
 import {
 	ArchiveFormatError,
 	ArchiveVersionError,
 	ForeignHouseholdError
-} from '$lib/server/domain/archive/restore';
+} from '#lib/server/domain/archive/restore.js';
 import type { Actions, PageServerLoad } from './$types';
-import { say, translator } from '$lib/server/i18n/say';
+import { say, translator } from '#lib/server/i18n/say.js';
 
 /*
  * Restoring the household from an archive (docs/dev/02 §2.15). Admin only, like the export: the

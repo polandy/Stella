@@ -1,6 +1,6 @@
 <script lang="ts">
-	import { useTranslate } from '$lib/i18n/context.svelte';
-	import { describeDistinction, type Distinction } from '$lib/people/namesakes';
+	import { useTranslate } from '#lib/i18n/context.svelte.js';
+	import { describeDistinction, type Distinction } from '#lib/people/namesakes.js';
 
 	/*
 	 * The second line under a person in a list where someone else shares their name (docs/dev/02

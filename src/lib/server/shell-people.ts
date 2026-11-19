@@ -5,14 +5,14 @@ import { peopleStampOf } from './domain/contacts/people-stamp';
 import { namesakesOn } from '../people/namesakes';
 import type { PeopleServices } from './services/people';
 import { systemClock } from './clock';
-import { todayFor } from '$lib/dates/today';
+import { todayFor } from '#lib/dates/today.js';
 
 /*
  * The people the app shell carries for the ⌘K palette and every picker (docs/dev/05 §5.4), with
  * what the viewer may see of the links and circles of namesakes with nothing typed to tell
  * them apart (docs/dev/02 §2.2.3). One scoped read, sent once rather than again in each page's
  * data; the stamp lets a page that kept the shell tell whether it is still current
- * (`$lib/sync/people-freshness`, docs/dev/04 §4.9).
+ * (`#lib/sync/people-freshness.js`, docs/dev/04 §4.9).
  */
 
 /** What the shell's people are read with; the edge hands in `locals.services.people`. */

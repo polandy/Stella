@@ -1,20 +1,20 @@
 <script lang="ts">
-	import { FIELD } from '$lib/components/ui/field';
-	import Button from '$lib/components/ui/Button.svelte';
-	import FormError from '$lib/components/ui/FormError.svelte';
-	import PhotoCropper from '$lib/components/ui/PhotoCropper.svelte';
-	import { syncModal } from '$lib/components/ui/modal';
+	import { FIELD } from '#lib/components/ui/field.js';
+	import Button from '#lib/components/ui/Button.svelte';
+	import FormError from '#lib/components/ui/FormError.svelte';
+	import PhotoCropper from '#lib/components/ui/PhotoCropper.svelte';
+	import { syncModal } from '#lib/components/ui/modal.js';
 	import { tick, untrack } from 'svelte';
 	import { invalidateAll } from '$app/navigation';
-	import { dayLabel } from '$lib/dates/labels';
-	import { useI18n } from '$lib/i18n/context.svelte';
-	import { faceChoice, type FaceHolder } from '$lib/immich/face-pick';
-	import type { GlimpsePhoto } from '$lib/immich/strip';
-	import type { CropRect } from '$lib/media/crop';
-	import { loadFullPicture } from '$lib/media/send-cut';
-	import { sendImmichPhoto } from '$lib/media/send-immich-photo';
-	import { useRemovals } from '$lib/undo/context.svelte';
-	import { submitAction } from '$lib/undo/submit-action';
+	import { dayLabel } from '#lib/dates/labels.js';
+	import { useI18n } from '#lib/i18n/context.svelte.js';
+	import { faceChoice, type FaceHolder } from '#lib/immich/face-pick.js';
+	import type { GlimpsePhoto } from '#lib/immich/strip.js';
+	import type { CropRect } from '#lib/media/crop.js';
+	import { loadFullPicture } from '#lib/media/send-cut.js';
+	import { sendImmichPhoto } from '#lib/media/send-immich-photo.js';
+	import { useRemovals } from '#lib/undo/context.svelte.js';
+	import { submitAction } from '#lib/undo/submit-action.js';
 	import { ImmichPhotos } from './immich-photos.svelte';
 
 	/*

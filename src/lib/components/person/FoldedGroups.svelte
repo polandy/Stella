@@ -1,7 +1,7 @@
 <script lang="ts">
-	import Icon from '$lib/components/ui/Icon.svelte';
-	import { useI18n } from '$lib/i18n/context.svelte';
-	import { WORKED_OUT, type HiddenGroup } from '$lib/relationships/people-groups';
+	import Icon from '#lib/components/ui/Icon.svelte';
+	import { useI18n } from '#lib/i18n/context.svelte.js';
+	import { WORKED_OUT, type HiddenGroup } from '#lib/relationships/people-groups.js';
 
 	/*
 	 * What the relationships card's fold hides, by group: every group folded away whole with its

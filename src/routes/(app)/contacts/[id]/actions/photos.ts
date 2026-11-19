@@ -1,19 +1,19 @@
 import { fail, redirect } from '@sveltejs/kit';
-import { requireRemover, requireViewer } from '$lib/server/auth/guards';
+import { requireRemover, requireViewer } from '#lib/server/auth/guards.js';
 import * as v from 'valibot';
-import { InvalidAvatarError } from '$lib/server/domain/media/avatars';
+import { InvalidAvatarError } from '#lib/server/domain/media/avatars.js';
 import {
 	captionGalleryPhoto,
 	CaptionTooLongError,
 	pinGalleryPhoto,
 	removeGalleryPhoto,
 	setGalleryPhotoVisibility
-} from '$lib/server/domain/media/gallery';
-import { cutProfilePicture } from '$lib/server/domain/media/cuts';
-import { frameAsAvatar } from '$lib/server/domain/media/framing';
-import { readCutForm } from '$lib/server/http/cut-form';
-import { contactSectionPath } from '$lib/people/sections';
-import { say, translator } from '$lib/server/i18n/say';
+} from '#lib/server/domain/media/gallery.js';
+import { cutProfilePicture } from '#lib/server/domain/media/cuts.js';
+import { frameAsAvatar } from '#lib/server/domain/media/framing.js';
+import { readCutForm } from '#lib/server/http/cut-form.js';
+import { contactSectionPath } from '#lib/people/sections.js';
+import { say, translator } from '#lib/server/i18n/say.js';
 import type { Actions } from '../$types';
 
 const PhotoVisibilitySchema = v.object({

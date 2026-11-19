@@ -35,7 +35,7 @@ function valueImports(code: string): string[] {
  * for what it is.
  */
 function target(importer: string, specifier: string): string | null {
-	if (specifier.startsWith('$lib/')) return `src/lib/${specifier.slice('$lib/'.length)}`;
+	if (specifier.startsWith('#lib/')) return `src/lib/${specifier.slice('#lib/'.length)}`;
 	if (!specifier.startsWith('.')) return null;
 	return posix.join(posix.dirname(importer), specifier);
 }
@@ -60,9 +60,9 @@ describe('the composition root', () => {
 	it('catches the root however it is spelled, and lets a type-only import through', () => {
 		const at = 'src/lib/server/commands/handlers.ts';
 		const flagged = [
-			"import { getServices } from '$lib/server/services';",
-			"import { getServices } from '$lib/server/services/index.ts';",
-			"import { createServices } from '$lib/server/services/app-services';",
+			"import { getServices } from '#lib/server/services/index.js';",
+			"import { getServices } from '#lib/server/services/index.ts';",
+			"import { createServices } from '#lib/server/services/app-services.js';",
 			"import { createServices } from '../services/app-services';",
 			"import { createServices } from '../services';",
 			"import {\n\tcreateServices\n} from '../services/app-services';",
@@ -70,7 +70,7 @@ describe('the composition root', () => {
 		];
 		const allowed = [
 			"import type { AppServices } from '../services/app-services';",
-			"import type {\n\tPeopleServices\n} from '$lib/server/services/people';",
+			"import type {\n\tPeopleServices\n} from '#lib/server/services/people.js';",
 			"import { services } from './services';",
 			"import { getContact } from '../domain/contacts/contacts';"
 		];

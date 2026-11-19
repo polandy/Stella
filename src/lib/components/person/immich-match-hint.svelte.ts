@@ -2,7 +2,7 @@
  * The browser side of the Photos card's suggestion (docs/dev/02 §2.24.7): asks
  * `/contacts/{id}/immich/match` after the page has loaded — reading all of Immich's people never
  * holds the page up — and keeps the answer for the person it was asked about. When to ask and
- * what to show are decided in `$lib/immich/match-hint`.
+ * what to show are decided in `#lib/immich/match-hint.js`.
  *
  * Quiet on failure: a suggestion that cannot be had is simply not offered.
  */

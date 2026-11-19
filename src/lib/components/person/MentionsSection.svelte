@@ -1,13 +1,13 @@
 <script lang="ts">
-	import Icon from '$lib/components/ui/Icon.svelte';
-	import PrivateMark from '$lib/components/ui/PrivateMark.svelte';
-	import Veil from '$lib/components/ui/Veil.svelte';
-	import { placeholderFor } from '$lib/privacy/veil';
-	import Section from '$lib/components/ui/Section.svelte';
-	import { cardShape } from '$lib/people/empty-cards';
-	import { sectionAnchor } from '$lib/people/sections';
-	import { dayLabel } from '$lib/dates/labels';
-	import { useI18n } from '$lib/i18n/context.svelte';
+	import Icon from '#lib/components/ui/Icon.svelte';
+	import PrivateMark from '#lib/components/ui/PrivateMark.svelte';
+	import Veil from '#lib/components/ui/Veil.svelte';
+	import { placeholderFor } from '#lib/privacy/veil.js';
+	import Section from '#lib/components/ui/Section.svelte';
+	import { cardShape } from '#lib/people/empty-cards.js';
+	import { sectionAnchor } from '#lib/people/sections.js';
+	import { dayLabel } from '#lib/dates/labels.js';
+	import { useI18n } from '#lib/i18n/context.svelte.js';
 	import type { PersonPageData } from './types';
 
 	let { data }: { data: PersonPageData } = $props();

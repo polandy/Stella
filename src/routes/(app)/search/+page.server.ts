@@ -1,5 +1,5 @@
-import { requireViewer } from '$lib/server/auth/guards';
-import { NOTHING_FOUND, search } from '$lib/server/domain/search/search';
+import { requireViewer } from '#lib/server/auth/guards.js';
+import { NOTHING_FOUND, search } from '#lib/server/domain/search/search.js';
 import type { PageServerLoad } from './$types';
 import { searchForView } from './search-view';
 

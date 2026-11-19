@@ -1,10 +1,10 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
 	import type { Snippet } from 'svelte';
-	import Button from '$lib/components/ui/Button.svelte';
-	import Icon from '$lib/components/ui/Icon.svelte';
-	import { useTranslate } from '$lib/i18n/context.svelte';
-	import type { LastNameAnswers } from '$lib/components/surnames/last-name-answers.svelte';
+	import Button from '#lib/components/ui/Button.svelte';
+	import Icon from '#lib/components/ui/Icon.svelte';
+	import { useTranslate } from '#lib/i18n/context.svelte.js';
+	import type { LastNameAnswers } from '#lib/components/surnames/last-name-answers.svelte.js';
 	import type { SurnamePersonView } from './types';
 
 	/*

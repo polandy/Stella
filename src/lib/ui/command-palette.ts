@@ -1,15 +1,15 @@
-import { giftIdeaPath } from '$lib/gifts/card';
-import { giftGroupPath } from '$lib/gifts/group-form';
-import { newPlanPath } from '$lib/plans/plans';
-import { newTodoPath } from '$lib/todos/todos';
-import { briefPath } from '$lib/people/sections';
-import { foundByFormerName } from '$lib/people/former-name';
-import { foundByJob, jobOf, type Job } from '$lib/people/job';
-import type { IconName } from '$lib/components/ui/icons';
-import { matchesQuery, startsWithQuery } from '$lib/people/directory';
-import type { PersonContext } from '$lib/people/context';
-import type { Translate } from '$lib/i18n/translate';
-import { tellApart, type Distinction } from '$lib/people/namesakes';
+import { giftIdeaPath } from '#lib/gifts/card.js';
+import { giftGroupPath } from '#lib/gifts/group-form.js';
+import { newPlanPath } from '#lib/plans/plans.js';
+import { newTodoPath } from '#lib/todos/todos.js';
+import { briefPath } from '#lib/people/sections.js';
+import { foundByFormerName } from '#lib/people/former-name.js';
+import { foundByJob, jobOf, type Job } from '#lib/people/job.js';
+import type { IconName } from '#lib/components/ui/icons.js';
+import { matchesQuery, startsWithQuery } from '#lib/people/directory.js';
+import type { PersonContext } from '#lib/people/context.js';
+import type { Translate } from '#lib/i18n/translate.js';
+import { tellApart, type Distinction } from '#lib/people/namesakes.js';
 
 /*
  * The command palette (docs/dev/05 §5.4): the rows ⌘K shows for a query. The first row on an

@@ -1,4 +1,4 @@
-import type { GlimpseScope, ImmichGlimpse } from '$lib/immich/strip';
+import type { GlimpseScope, ImmichGlimpse } from '#lib/immich/strip.js';
 
 /*
  * A page of a linked person's latest photos from Immich, with signed URLs, as the Photos card,

@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'bun:test';
-import { mentionToken } from '$lib/mentions/mentions';
-import type { JournalEntry } from '$lib/server/domain/journal/journal';
-import { someJournalEntry } from '$lib/server/domain/testing';
-import type { Remover } from '$lib/server/access/visibility';
-import type { SubjectFace } from '$lib/story/subjects';
-import type { EntryImmichPhoto } from '$lib/immich/library';
+import { mentionToken } from '#lib/mentions/mentions.js';
+import type { JournalEntry } from '#lib/server/domain/journal/journal.js';
+import { someJournalEntry } from '#lib/server/domain/testing/index.js';
+import type { Remover } from '#lib/server/access/visibility.js';
+import type { SubjectFace } from '#lib/story/subjects.js';
+import type { EntryImmichPhoto } from '#lib/immich/library.js';
 import { activeTagsFor, journalEntriesFor } from './journal-view';
 
 /*

@@ -1,9 +1,9 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
-	import Button from '$lib/components/ui/Button.svelte';
-	import FormError from '$lib/components/ui/FormError.svelte';
-	import Icon from '$lib/components/ui/Icon.svelte';
-	import { useI18n } from '$lib/i18n/context.svelte';
+	import Button from '#lib/components/ui/Button.svelte';
+	import FormError from '#lib/components/ui/FormError.svelte';
+	import Icon from '#lib/components/ui/Icon.svelte';
+	import { useI18n } from '#lib/i18n/context.svelte.js';
 
 	/*
 	 * The household's linked Nextcloud book on the import page (docs/dev/02 §2.16.3): when it last

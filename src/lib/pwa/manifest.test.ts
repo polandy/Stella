@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test';
-import { createTranslator } from '$lib/i18n/translate';
+import { createTranslator } from '#lib/i18n/translate.js';
 import { APP_ICONS, APPLE_TOUCH_ICON, buildManifest } from './manifest';
 
 describe('the web app manifest', () => {

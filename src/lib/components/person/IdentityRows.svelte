@@ -1,8 +1,8 @@
 <script lang="ts">
-	import { reveal } from '$lib/motion/motion.svelte';
-	import Section from '$lib/components/ui/Section.svelte';
-	import { useTranslate } from '$lib/i18n/context.svelte';
-	import type { ProfileRow } from '$lib/people/identity-card';
+	import { reveal } from '#lib/motion/motion.svelte.js';
+	import Section from '#lib/components/ui/Section.svelte';
+	import { useTranslate } from '#lib/i18n/context.svelte.js';
+	import type { ProfileRow } from '#lib/people/identity-card.js';
 	import ContactFieldsRow from './ContactFieldsRow.svelte';
 	import TagsRow from './TagsRow.svelte';
 	import type { PersonForm, PersonPageData } from './types';

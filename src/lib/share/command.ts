@@ -1,4 +1,4 @@
-import type { JsonCommand } from '$lib/commands/commands';
+import type { JsonCommand } from '#lib/commands/commands.js';
 
 /*
  * The command a share is saved with (docs/dev/02 §2.18.3): the same ones the person page sends,

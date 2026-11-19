@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
-	import { crossfade, glide } from '$lib/motion/motion.svelte';
+	import { crossfade, glide } from '#lib/motion/motion.svelte.js';
 
 	/*
 	 * Two alternatives in one place — a line and the form that edits it, a question and its

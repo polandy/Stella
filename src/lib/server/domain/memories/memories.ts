@@ -6,7 +6,7 @@ import type { InteractionRow, MomentRow, StreamPerson } from '../stream/stream';
  * *On this day* (docs/dev/02 §2.12.1): the moments, touchpoints and gallery photos the viewer may
  * see that fall on a day's day and month in earlier years. A query over the existing tables,
  * like the stream (§2.22.2), whose row shapes it shares; the adapter owns the scoped reads, the
- * year grouping is the pure `$lib/memories`.
+ * year grouping is the pure `#lib/memories`.
  */
 
 /** A moment written on the day in an earlier year, as the stream reads one. */

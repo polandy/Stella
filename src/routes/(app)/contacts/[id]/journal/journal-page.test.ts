@@ -1,12 +1,12 @@
 import { describe, expect, it } from 'bun:test';
-import { createTranslator } from '$lib/i18n/translate';
-import { TranslatableError } from '$lib/i18n/translatable';
-import { phrase } from '$lib/i18n/phrase';
-import type { Locale } from '$lib/i18n/locales';
-import { mentionToken } from '$lib/mentions/mentions';
-import type { CommandHandlers } from '$lib/server/domain/commands/dispatch';
-import type { Contact } from '$lib/server/domain/contacts/contacts';
-import type { JournalRepository } from '$lib/server/domain/journal/journal';
+import { createTranslator } from '#lib/i18n/translate.js';
+import { TranslatableError } from '#lib/i18n/translatable.js';
+import { phrase } from '#lib/i18n/phrase.js';
+import type { Locale } from '#lib/i18n/locales.js';
+import { mentionToken } from '#lib/mentions/mentions.js';
+import type { CommandHandlers } from '#lib/server/domain/commands/dispatch.js';
+import type { Contact } from '#lib/server/domain/contacts/contacts.js';
+import type { JournalRepository } from '#lib/server/domain/journal/journal.js';
 import {
 	commandDepsWith,
 	contactRepositoryWith,
@@ -18,7 +18,7 @@ import {
 	sequentialIds,
 	somebody,
 	someJournalEntry
-} from '$lib/server/domain/testing';
+} from '#lib/server/domain/testing/index.js';
 import {
 	answerOf,
 	formOf,
@@ -26,7 +26,7 @@ import {
 	routeEvent,
 	type EdgeAnswer,
 	type FakeServices
-} from '$lib/server/testing';
+} from '#lib/server/testing/index.js';
 import { actions, load } from './+page.server';
 
 /*

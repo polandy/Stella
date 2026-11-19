@@ -2,7 +2,7 @@ import adapter from '@sveltejs/adapter-node';
 import { sveltekit } from '@sveltejs/kit/vite';
 import tailwindcss from '@tailwindcss/vite';
 import { defineConfig } from 'vite';
-import { CSP_DIRECTIVES } from './src/lib/server/http/csp';
+import { CSP_DIRECTIVES } from './src/lib/server/http/csp.ts';
 
 export default defineConfig({
 	plugins: [

@@ -1,11 +1,11 @@
 <script lang="ts">
-	import Button from '$lib/components/ui/Button.svelte';
-	import Icon from '$lib/components/ui/Icon.svelte';
-	import PersonSearchSelect from '$lib/components/people/PersonSearchSelect.svelte';
+	import Button from '#lib/components/ui/Button.svelte';
+	import Icon from '#lib/components/ui/Icon.svelte';
+	import PersonSearchSelect from '#lib/components/people/PersonSearchSelect.svelte';
 	import { enhance } from '$app/forms';
-	import { useI18n } from '$lib/i18n/context.svelte';
-	import { oneLine, sharingCandidates } from '$lib/people/home';
-	import type { SubmitFunction } from '@sveltejs/kit';
+	import { useI18n } from '#lib/i18n/context.svelte.js';
+	import { oneLine, sharingCandidates } from '#lib/people/home.js';
+	import type { SubmitFunction } from '$app/forms';
 	import type { Snippet } from 'svelte';
 	import type { PersonForm, PersonPageData } from './types';
 

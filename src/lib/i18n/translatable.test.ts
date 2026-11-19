@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'bun:test';
-import { createTranslator } from '$lib/i18n/translate';
-import { phrase } from '$lib/i18n/phrase';
+import { createTranslator } from '#lib/i18n/translate.js';
+import { phrase } from '#lib/i18n/phrase.js';
 import { TranslatableError } from './translatable';
 
 /*

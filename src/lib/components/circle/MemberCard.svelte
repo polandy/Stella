@@ -1,6 +1,6 @@
 <script lang="ts">
-	import Avatar from '$lib/components/ui/Avatar.svelte';
-	import { useTranslate } from '$lib/i18n/context.svelte';
+	import Avatar from '#lib/components/ui/Avatar.svelte';
+	import { useTranslate } from '#lib/i18n/context.svelte.js';
 	import type { CirclePageData } from './types';
 
 	/*

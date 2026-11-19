@@ -1,19 +1,19 @@
 import * as v from 'valibot';
-import type { Translate } from '$lib/i18n/translate';
-import type { Viewer } from '$lib/server/access/visibility';
-import { getContact, type ContactLookupDeps } from '$lib/server/domain/contacts/contacts';
+import type { Translate } from '#lib/i18n/translate.js';
+import type { Viewer } from '#lib/server/access/visibility.js';
+import { getContact, type ContactLookupDeps } from '#lib/server/domain/contacts/contacts.js';
 import {
 	ContradictoryRelationshipError,
 	DuplicateRelationshipError,
 	createRelationship,
 	type CreateRelationshipDeps
-} from '$lib/server/domain/relationships/relationships';
+} from '#lib/server/domain/relationships/relationships.js';
 import {
 	dismissSuggestion,
 	restoreSuggestion,
 	type SuggestionReviewDeps
-} from '$lib/server/domain/relationships/suggestion-review';
-import { RELATIONS } from '$lib/suggestions/types';
+} from '#lib/server/domain/relationships/suggestion-review.js';
+import { RELATIONS } from '#lib/suggestions/types.js';
 
 /*
  * Answering a suggestion, wherever it was offered (docs/dev/02 §2.4.1, docs/dev/04 ADR-117).

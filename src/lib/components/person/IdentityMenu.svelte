@@ -1,9 +1,9 @@
 <script lang="ts">
-	import Icon from '$lib/components/ui/Icon.svelte';
-	import MenuButton from '$lib/components/ui/MenuButton.svelte';
-	import { useTranslate } from '$lib/i18n/context.svelte';
-	import type { RecordMenuEntry } from '$lib/people/identity-card';
-	import { briefPath } from '$lib/people/sections';
+	import Icon from '#lib/components/ui/Icon.svelte';
+	import MenuButton from '#lib/components/ui/MenuButton.svelte';
+	import { useTranslate } from '#lib/i18n/context.svelte.js';
+	import type { RecordMenuEntry } from '#lib/people/identity-card.js';
+	import { briefPath } from '#lib/people/sections.js';
 
 	/*
 	 * The identity card's ⋯ menu: everything that is not the one thing to do here (docs/dev/05

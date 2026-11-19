@@ -1,21 +1,21 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
-	import Button from '$lib/components/ui/Button.svelte';
-	import DateField from '$lib/components/ui/DateField.svelte';
-	import FormError from '$lib/components/ui/FormError.svelte';
-	import Icon from '$lib/components/ui/Icon.svelte';
-	import GiftBoughtButton from '$lib/components/person/GiftBoughtButton.svelte';
-	import GiftOccasionField from '$lib/components/person/GiftOccasionField.svelte';
-	import GiftStateMark from '$lib/components/person/GiftStateMark.svelte';
-	import type { NextOccasion } from '$lib/gifts/idea-list';
-	import { useI18n } from '$lib/i18n/context.svelte';
-	import { reveal } from '$lib/motion/motion.svelte';
-	import { useRemovals } from '$lib/undo/context.svelte';
-	import { heldAnswer } from '$lib/undo/held-answer';
-	import { removalKey } from '$lib/undo/keys';
-	import WhenChip from '$lib/components/when/WhenChip.svelte';
-	import type { WhenState } from '$lib/when/state';
-	import type { When } from '$lib/when/when';
+	import Button from '#lib/components/ui/Button.svelte';
+	import DateField from '#lib/components/ui/DateField.svelte';
+	import FormError from '#lib/components/ui/FormError.svelte';
+	import Icon from '#lib/components/ui/Icon.svelte';
+	import GiftBoughtButton from '#lib/components/person/GiftBoughtButton.svelte';
+	import GiftOccasionField from '#lib/components/person/GiftOccasionField.svelte';
+	import GiftStateMark from '#lib/components/person/GiftStateMark.svelte';
+	import type { NextOccasion } from '#lib/gifts/idea-list.js';
+	import { useI18n } from '#lib/i18n/context.svelte.js';
+	import { reveal } from '#lib/motion/motion.svelte.js';
+	import { useRemovals } from '#lib/undo/context.svelte.js';
+	import { heldAnswer } from '#lib/undo/held-answer.js';
+	import { removalKey } from '#lib/undo/keys.js';
+	import WhenChip from '#lib/components/when/WhenChip.svelte';
+	import type { WhenState } from '#lib/when/state.js';
+	import type { When } from '#lib/when/when.js';
 	import { tick } from 'svelte';
 
 	/*

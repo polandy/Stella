@@ -1,8 +1,8 @@
 <script lang="ts">
-	import Avatar from '$lib/components/ui/Avatar.svelte';
-	import NamesakeLine from '$lib/components/ui/NamesakeLine.svelte';
-	import { useTranslate } from '$lib/i18n/context.svelte';
-	import type { Distinction } from '$lib/people/namesakes';
+	import Avatar from '#lib/components/ui/Avatar.svelte';
+	import NamesakeLine from '#lib/components/ui/NamesakeLine.svelte';
+	import { useTranslate } from '#lib/i18n/context.svelte.js';
+	import type { Distinction } from '#lib/people/namesakes.js';
 
 	/*
 	 * The `@` list under a note's or a journal entry's field (docs/dev/02 §2.20.1). A textarea cannot

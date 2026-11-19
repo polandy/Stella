@@ -31,7 +31,7 @@ const pureImports = [
 // `boundary.test.ts` says the same under `bun test`, resolving relative paths exactly.
 const servicesImports = [
 	{
-		regex: '^(\\$lib/server/|(\\.{1,2}/)+([\\w-]+/)*)services(/.*)?$',
+		regex: '^(#lib/server/|(\\.{1,2}/)+([\\w-]+/)*)services(/.*)?$',
 		allowTypeImports: true,
 		message: 'Only routes and hooks.server.ts wire concretes; take a `deps` argument instead.'
 	}

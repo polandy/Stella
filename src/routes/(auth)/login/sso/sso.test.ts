@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'bun:test';
 import { isRedirect, type Cookies } from '@sveltejs/kit';
-import { readOidcTransaction } from '$lib/server/auth/cookies';
-import type { AuthServices } from '$lib/server/services/auth';
-import type { AppServices } from '$lib/server/services/app-services';
+import { readOidcTransaction } from '#lib/server/auth/cookies.js';
+import type { AuthServices } from '#lib/server/services/auth.js';
+import type { AppServices } from '#lib/server/services/app-services.js';
 
 /*
  * The start of the SSO flow (docs/dev/04 §4.4) over a test-wired `locals.services`: it leaves the

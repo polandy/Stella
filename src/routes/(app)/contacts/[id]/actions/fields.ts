@@ -1,19 +1,19 @@
-import { dispatchCommand } from '$lib/server/domain/commands/dispatch';
-import { readCommand } from '$lib/server/commands/parse';
-import { fromFormData } from '$lib/commands/form-data';
-import { FieldAddSchema } from '$lib/commands/person-payloads';
-import { ulidGenerator } from '$lib/server/id';
-import { systemClock } from '$lib/server/clock';
+import { dispatchCommand } from '#lib/server/domain/commands/dispatch.js';
+import { readCommand } from '#lib/server/commands/parse.js';
+import { fromFormData } from '#lib/commands/form-data.js';
+import { FieldAddSchema } from '#lib/commands/person-payloads.js';
+import { ulidGenerator } from '#lib/server/id.js';
+import { systemClock } from '#lib/server/clock.js';
 import { error, fail, redirect } from '@sveltejs/kit';
-import { requireViewer } from '$lib/server/auth/guards';
+import { requireViewer } from '#lib/server/auth/guards.js';
 import * as v from 'valibot';
 import {
 	editContactField,
 	removeContactField
-} from '$lib/server/domain/contact-fields/contact-fields';
-import { getContact } from '$lib/server/domain/contacts/contacts';
-import { ContactGoneError } from '$lib/server/domain/contacts/require-visible';
-import { say, translator } from '$lib/server/i18n/say';
+} from '#lib/server/domain/contact-fields/contact-fields.js';
+import { getContact } from '#lib/server/domain/contacts/contacts.js';
+import { ContactGoneError } from '#lib/server/domain/contacts/require-visible.js';
+import { say, translator } from '#lib/server/i18n/say.js';
 import type { Actions } from '../$types';
 
 /** An address rewritten where it is read; its kind stays (docs/dev/02 §2.2). */

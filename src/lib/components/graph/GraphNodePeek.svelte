@@ -1,10 +1,10 @@
 <script lang="ts">
-	import Avatar from '$lib/components/ui/Avatar.svelte';
-	import Button from '$lib/components/ui/Button.svelte';
-	import { useTranslate } from '$lib/i18n/context.svelte';
-	import type { MessageKey } from '$lib/i18n/translate';
-	import type { CircleRole, CircleRoleOption } from '$lib/graph/model/ego-network';
-	import type { GraphNode } from '$lib/graph/model/types';
+	import Avatar from '#lib/components/ui/Avatar.svelte';
+	import Button from '#lib/components/ui/Button.svelte';
+	import { useTranslate } from '#lib/i18n/context.svelte.js';
+	import type { MessageKey } from '#lib/i18n/translate.js';
+	import type { CircleRole, CircleRoleOption } from '#lib/graph/model/ego-network.js';
+	import type { GraphNode } from '#lib/graph/model/types.js';
 
 	/** The peek panel for the selected person or circle (docs/dev/05 §5.8). */
 	interface Props {

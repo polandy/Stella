@@ -1,9 +1,9 @@
 <script lang="ts">
-	import Button from '$lib/components/ui/Button.svelte';
-	import EmptyState from '$lib/components/ui/EmptyState.svelte';
-	import Icon from '$lib/components/ui/Icon.svelte';
-	import GraphExplorer from '$lib/components/graph/GraphExplorer.svelte';
-	import { useTranslate } from '$lib/i18n/context.svelte';
+	import Button from '#lib/components/ui/Button.svelte';
+	import EmptyState from '#lib/components/ui/EmptyState.svelte';
+	import Icon from '#lib/components/ui/Icon.svelte';
+	import GraphExplorer from '#lib/components/graph/GraphExplorer.svelte';
+	import { useTranslate } from '#lib/i18n/context.svelte.js';
 	import type { PageData } from './$types';
 
 	let { data }: { data: PageData } = $props();

@@ -1,14 +1,14 @@
 <script lang="ts">
-	import { FIELD } from '$lib/components/ui/field';
-	import Swap from '$lib/components/ui/Swap.svelte';
+	import { FIELD } from '#lib/components/ui/field.js';
+	import Swap from '#lib/components/ui/Swap.svelte';
 	import { enhance } from '$app/forms';
-	import Button from '$lib/components/ui/Button.svelte';
-	import FormError from '$lib/components/ui/FormError.svelte';
-	import { useTranslate } from '$lib/i18n/context.svelte';
-	import { JOB_FIELD_MAX_LENGTH, type JobEditorPlace } from '$lib/people/job';
-	import { FocusReturn } from '$lib/ui/focus-return.svelte';
-	import { useRemovals } from '$lib/undo/context.svelte';
-	import { savedEnhance } from '$lib/undo/saved';
+	import Button from '#lib/components/ui/Button.svelte';
+	import FormError from '#lib/components/ui/FormError.svelte';
+	import { useTranslate } from '#lib/i18n/context.svelte.js';
+	import { JOB_FIELD_MAX_LENGTH, type JobEditorPlace } from '#lib/people/job.js';
+	import { FocusReturn } from '#lib/ui/focus-return.svelte.js';
+	import { useRemovals } from '#lib/undo/context.svelte.js';
+	import { savedEnhance } from '#lib/undo/saved.js';
 	import type { Snippet } from 'svelte';
 
 	/*

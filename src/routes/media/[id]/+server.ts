@@ -1,6 +1,6 @@
 import { error } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
-import { say } from '$lib/server/i18n/say';
+import { say } from '#lib/server/i18n/say.js';
 
 /*
  * Authenticated media delivery (docs/dev/04 §4.6). Media is never exposed as static files; every

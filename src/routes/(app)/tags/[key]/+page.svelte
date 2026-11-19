@@ -1,11 +1,11 @@
 <script lang="ts">
-	import Button from '$lib/components/ui/Button.svelte';
-	import EmptyState from '$lib/components/ui/EmptyState.svelte';
-	import StreamMoment from '$lib/components/stream/StreamMoment.svelte';
-	import TagChip from '$lib/components/journal/TagChip.svelte';
-	import { TAGS_PAGE, tagPageHref } from '$lib/hashtags/hashtags';
-	import { useI18n } from '$lib/i18n/context.svelte';
-	import { streamDays, streamTime } from '$lib/stream/days';
+	import Button from '#lib/components/ui/Button.svelte';
+	import EmptyState from '#lib/components/ui/EmptyState.svelte';
+	import StreamMoment from '#lib/components/stream/StreamMoment.svelte';
+	import TagChip from '#lib/components/journal/TagChip.svelte';
+	import { TAGS_PAGE, tagPageHref } from '#lib/hashtags/hashtags.js';
+	import { useI18n } from '#lib/i18n/context.svelte.js';
+	import { streamDays, streamTime } from '#lib/stream/days.js';
 	import type { PageData } from './$types';
 
 	/*

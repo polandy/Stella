@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'bun:test';
-import type { DateLanguage } from '$lib/dates/labels';
-import { INTL_LOCALES } from '$lib/i18n/locales';
-import { en as english } from '$lib/i18n/messages/en';
-import { createTranslator } from '$lib/i18n/translate';
+import type { DateLanguage } from '#lib/dates/labels.js';
+import { INTL_LOCALES } from '#lib/i18n/locales.js';
+import { en as english } from '#lib/i18n/messages/en/index.js';
+import { createTranslator } from '#lib/i18n/translate.js';
 import {
 	asksForNewTodo,
 	cardTodos,

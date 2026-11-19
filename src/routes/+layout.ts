@@ -1,4 +1,4 @@
-import { loadCatalog } from '$lib/i18n/translate';
+import { loadCatalog } from '#lib/i18n/translate.js';
 import type { LayoutLoad } from './$types';
 
 /*

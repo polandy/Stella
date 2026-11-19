@@ -1,11 +1,11 @@
 <script lang="ts">
-	import Icon from '$lib/components/ui/Icon.svelte';
-	import Veil from '$lib/components/ui/Veil.svelte';
-	import { glanceTiles, photoKey } from '$lib/people/photo-card';
-	import { dayLabel } from '$lib/dates/labels';
-	import { useI18n } from '$lib/i18n/context.svelte';
-	import { photoDay } from '$lib/media/taken-at';
-	import { thumbnailUrl } from '$lib/media/urls';
+	import Icon from '#lib/components/ui/Icon.svelte';
+	import Veil from '#lib/components/ui/Veil.svelte';
+	import { glanceTiles, photoKey } from '#lib/people/photo-card.js';
+	import { dayLabel } from '#lib/dates/labels.js';
+	import { useI18n } from '#lib/i18n/context.svelte.js';
+	import { photoDay } from '#lib/media/taken-at.js';
+	import { thumbnailUrl } from '#lib/media/urls.js';
 	import type { CardEntry } from './types';
 
 	/*

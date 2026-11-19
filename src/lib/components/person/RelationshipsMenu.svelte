@@ -1,9 +1,9 @@
 <script lang="ts">
-	import Icon from '$lib/components/ui/Icon.svelte';
-	import MenuButton from '$lib/components/ui/MenuButton.svelte';
-	import { contactSectionPath } from '$lib/people/sections';
-	import { useI18n } from '$lib/i18n/context.svelte';
-	import { REVIEW_PARAM } from '$lib/relationships/review-url';
+	import Icon from '#lib/components/ui/Icon.svelte';
+	import MenuButton from '#lib/components/ui/MenuButton.svelte';
+	import { contactSectionPath } from '#lib/people/sections.js';
+	import { useI18n } from '#lib/i18n/context.svelte.js';
+	import { REVIEW_PARAM } from '#lib/relationships/review-url.js';
 
 	/*
 	 * The relationships card's ⋯ (docs/dev/05 §5.5): what is asked less often — how two people are

@@ -1,9 +1,9 @@
 <script lang="ts">
-	import Avatar from '$lib/components/ui/Avatar.svelte';
-	import Button from '$lib/components/ui/Button.svelte';
-	import { useTranslate } from '$lib/i18n/context.svelte';
-	import type { RoleGroup } from '$lib/graph/model/role-groups';
-	import type { GraphNode } from '$lib/graph/model/types';
+	import Avatar from '#lib/components/ui/Avatar.svelte';
+	import Button from '#lib/components/ui/Button.svelte';
+	import { useTranslate } from '#lib/i18n/context.svelte.js';
+	import type { RoleGroup } from '#lib/graph/model/role-groups.js';
+	import type { GraphNode } from '#lib/graph/model/types.js';
 
 	/** The peek panel for a group of people standing together by role (docs/dev/02 §2.7). */
 	interface Props {

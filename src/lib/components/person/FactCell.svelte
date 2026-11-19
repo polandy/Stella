@@ -1,7 +1,7 @@
 <script lang="ts">
-	import Icon from '$lib/components/ui/Icon.svelte';
-	import { PENCIL_AT_VALUE_END, VALUE_WITH_PENCIL } from '$lib/components/ui/edit-pencil';
-	import type { IconName } from '$lib/components/ui/icons';
+	import Icon from '#lib/components/ui/Icon.svelte';
+	import { PENCIL_AT_VALUE_END, VALUE_WITH_PENCIL } from '#lib/components/ui/edit-pencil.js';
+	import type { IconName } from '#lib/components/ui/icons.js';
 	import type { Snippet } from 'svelte';
 
 	/*

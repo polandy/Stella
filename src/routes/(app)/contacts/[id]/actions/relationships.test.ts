@@ -1,28 +1,28 @@
 import { describe, expect, it } from 'bun:test';
-import { createTranslator } from '$lib/i18n/translate';
-import { phrase } from '$lib/i18n/phrase';
-import { proposeHref } from '$lib/people/propose';
-import { encodeRelationshipChoice } from '$lib/relationships/type-options';
-import { PARENT_CHILD_TYPE_KEY } from '$lib/relationships/type-keys';
-import type { Viewer } from '$lib/server/access/visibility';
-import type { Contact } from '$lib/server/domain/contacts/contacts';
-import type { CommandHandlers } from '$lib/server/domain/commands/dispatch';
-import { CommandFailedError } from '$lib/server/domain/commands/dispatch';
-import { RelationshipsRefusedError } from '$lib/server/domain/relationships/add-many';
+import { createTranslator } from '#lib/i18n/translate.js';
+import { phrase } from '#lib/i18n/phrase.js';
+import { proposeHref } from '#lib/people/propose.js';
+import { encodeRelationshipChoice } from '#lib/relationships/type-options.js';
+import { PARENT_CHILD_TYPE_KEY } from '#lib/relationships/type-keys.js';
+import type { Viewer } from '#lib/server/access/visibility.js';
+import type { Contact } from '#lib/server/domain/contacts/contacts.js';
+import type { CommandHandlers } from '#lib/server/domain/commands/dispatch.js';
+import { CommandFailedError } from '#lib/server/domain/commands/dispatch.js';
+import { RelationshipsRefusedError } from '#lib/server/domain/relationships/add-many.js';
 import {
 	ContradictoryRelationshipError,
 	DuplicateRelationshipError,
 	type RelationshipRepository,
 	type RelationshipType
-} from '$lib/server/domain/relationships/relationships';
-import { RelationshipExcludedError } from '$lib/server/domain/relationships/exclusions';
+} from '#lib/server/domain/relationships/relationships.js';
+import { RelationshipExcludedError } from '#lib/server/domain/relationships/exclusions.js';
 import {
 	commandDepsWith,
 	inMemoryKinshipGraph,
 	inMemoryReceipts,
 	inMemoryRelationshipTies,
 	relationshipRepositoryWith
-} from '$lib/server/domain/testing';
+} from '#lib/server/domain/testing/index.js';
 import {
 	answerOf,
 	formOf,
@@ -30,7 +30,7 @@ import {
 	routeEvent,
 	type EdgeAnswer,
 	type FakeServices
-} from '$lib/server/testing';
+} from '#lib/server/testing/index.js';
 import type { ClaimAnswerServices } from '../../../_shared/suggestion-answers';
 import { relationshipActions as actions } from './relationships';
 

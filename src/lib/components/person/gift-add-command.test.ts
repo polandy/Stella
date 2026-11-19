@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test';
-import { GiftAddSchema } from '$lib/commands/gift-todo-payloads';
+import { GiftAddSchema } from '#lib/commands/gift-todo-payloads.js';
 import * as v from 'valibot';
 import { giftAddCommand } from './gift-add-command';
 

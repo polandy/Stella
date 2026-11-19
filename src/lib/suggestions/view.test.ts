@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test';
-import type { KinshipGraph } from '$lib/kinship/kinship';
+import type { KinshipGraph } from '#lib/kinship/kinship.js';
 import { pairKey } from './claims';
 import { buildView } from './view';
 

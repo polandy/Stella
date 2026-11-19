@@ -1,38 +1,41 @@
 import { error, fail, redirect } from '@sveltejs/kit';
-import { requireRemover, requireViewer } from '$lib/server/auth/guards';
+import { requireRemover, requireViewer } from '#lib/server/auth/guards.js';
 import * as v from 'valibot';
-import { getContact } from '$lib/server/domain/contacts/contacts';
-import { listContactNamesAmong } from '$lib/server/domain/contacts/contact-names';
-import { listContacts } from '$lib/server/domain/contacts/directory';
-import { authorNames } from '$lib/server/domain/household/members';
+import { getContact } from '#lib/server/domain/contacts/contacts.js';
+import { listContactNamesAmong } from '#lib/server/domain/contacts/contact-names.js';
+import { listContacts } from '#lib/server/domain/contacts/directory.js';
+import { authorNames } from '#lib/server/domain/household/members.js';
 import {
 	removeJournalEntry,
 	editJournalEntry,
 	listJournalForContact
-} from '$lib/server/domain/journal/journal';
-import { addPhotoToOwnEntry, removePhotoFromOwnEntry } from '$lib/server/domain/media/entry-photos';
-import { InvalidImageError } from '$lib/server/domain/media/journal-photos';
+} from '#lib/server/domain/journal/journal.js';
+import {
+	addPhotoToOwnEntry,
+	removePhotoFromOwnEntry
+} from '#lib/server/domain/media/entry-photos.js';
+import { InvalidImageError } from '#lib/server/domain/media/journal-photos.js';
 import {
 	immichPhotosOfEntries,
 	linkImmichPhotosToOwnEntry,
 	unlinkImmichPhotoFromOwnEntry
-} from '$lib/server/domain/immich/entry-immich-photos';
-import { subjectsForAudience, withUnseenSubjects } from '$lib/server/domain/journal/subjects';
-import { extractMentionIds } from '$lib/mentions/mentions';
-import { resolveForAudience } from '$lib/server/domain/mentions/resolve-for-audience';
-import { withNamesakeContext } from '$lib/server/domain/mentions/namesake-context';
-import { readCommand } from '$lib/server/commands/parse';
-import { fromFormData } from '$lib/commands/form-data';
-import { JournalWriteSchema } from '$lib/commands/payloads';
-import { dispatchCommand } from '$lib/server/domain/commands/dispatch';
-import { systemClock } from '$lib/server/clock';
-import { ulidGenerator } from '$lib/server/id';
+} from '#lib/server/domain/immich/entry-immich-photos.js';
+import { subjectsForAudience, withUnseenSubjects } from '#lib/server/domain/journal/subjects.js';
+import { extractMentionIds } from '#lib/mentions/mentions.js';
+import { resolveForAudience } from '#lib/server/domain/mentions/resolve-for-audience.js';
+import { withNamesakeContext } from '#lib/server/domain/mentions/namesake-context.js';
+import { readCommand } from '#lib/server/commands/parse.js';
+import { fromFormData } from '#lib/commands/form-data.js';
+import { JournalWriteSchema } from '#lib/commands/payloads.js';
+import { dispatchCommand } from '#lib/server/domain/commands/dispatch.js';
+import { systemClock } from '#lib/server/clock.js';
+import { ulidGenerator } from '#lib/server/id.js';
 
 import type { Actions, PageServerLoad } from './$types';
-import { TranslatableError } from '$lib/i18n/translatable';
-import { say, translator } from '$lib/server/i18n/say';
-import type { MessageKey } from '$lib/i18n/translate';
-import { todayFor } from '$lib/dates/today';
+import { TranslatableError } from '#lib/i18n/translatable.js';
+import { say, translator } from '#lib/server/i18n/say.js';
+import type { MessageKey } from '#lib/i18n/translate.js';
+import { todayFor } from '#lib/dates/today.js';
 import { activeTagsFor, journalEntriesFor } from './journal-view';
 
 export const load: PageServerLoad = async ({ locals, params, url }) => {

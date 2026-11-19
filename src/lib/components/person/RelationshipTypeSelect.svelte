@@ -1,8 +1,8 @@
 <script lang="ts">
-	import { useTranslate } from '$lib/i18n/context.svelte';
-	import type { Exclusion } from '$lib/relationships/exclusions';
-	import { exclusionLabel, relationshipTypeLabel } from '$lib/relationships/labels';
-	import { groupByExclusion } from '$lib/relationships/picker-groups';
+	import { useTranslate } from '#lib/i18n/context.svelte.js';
+	import type { Exclusion } from '#lib/relationships/exclusions.js';
+	import { exclusionLabel, relationshipTypeLabel } from '#lib/relationships/labels.js';
+	import { groupByExclusion } from '#lib/relationships/picker-groups.js';
 	import { INPUT } from '../ui/inputs';
 	import type { RelationshipChoices } from './types';
 

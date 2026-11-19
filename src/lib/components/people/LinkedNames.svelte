@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { Segment } from '$lib/i18n/linked';
+	import type { Segment } from '#lib/i18n/linked.js';
 
 	/*
 	 * A sentence whose names are ways to those people (docs/dev/05 §5.4, docs/dev/02 §2.4.1).

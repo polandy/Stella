@@ -1,14 +1,14 @@
 import { error, fail } from '@sveltejs/kit';
-import { requireUser, requireViewer } from '$lib/server/auth/guards';
+import { requireUser, requireViewer } from '#lib/server/auth/guards.js';
 import * as v from 'valibot';
-import { describeContact, EmptyDescriptionError } from '$lib/server/domain/contacts/profile';
-import { listContacts } from '$lib/server/domain/contacts/directory';
-import { contextOfPeople } from '$lib/server/domain/contacts/person-context';
-import { say, translator } from '$lib/server/i18n/say';
-import { isKnownByAFirstNameOnly, suggestedDescription } from '$lib/people/namesakes';
+import { describeContact, EmptyDescriptionError } from '#lib/server/domain/contacts/profile.js';
+import { listContacts } from '#lib/server/domain/contacts/directory.js';
+import { contextOfPeople } from '#lib/server/domain/contacts/person-context.js';
+import { say, translator } from '#lib/server/i18n/say.js';
+import { isKnownByAFirstNameOnly, suggestedDescription } from '#lib/people/namesakes.js';
 import type { Actions, PageServerLoad } from './$types';
-import { systemClock } from '$lib/server/clock';
-import { todayFor } from '$lib/dates/today';
+import { systemClock } from '#lib/server/clock.js';
+import { todayFor } from '#lib/dates/today.js';
 
 /*
  * Tidying up the people known by a first name only (docs/dev/02 §2.2.3): everyone the viewer may

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test';
-import type { SubmitFunction } from '@sveltejs/kit';
+import type { SubmitFunction } from '$app/forms';
 import { reportNavigation, trackPending, whilePending } from './pending';
 import type { PendingSink } from './pending-work';
 

@@ -1,10 +1,10 @@
 import { error } from '@sveltejs/kit';
-import { DEFAULT_LOCALE, INTL_LOCALES } from '$lib/i18n/locales';
-import { createTranslator } from '$lib/i18n/translate';
-import { authenticateCalendarLink } from '$lib/server/auth/calendar-link';
-import { calendarFeed } from '$lib/server/domain/dates/calendar-feed';
-import { etagOf, isUnchanged } from '$lib/server/http/etag';
-import { say } from '$lib/server/i18n/say';
+import { DEFAULT_LOCALE, INTL_LOCALES } from '#lib/i18n/locales.js';
+import { createTranslator } from '#lib/i18n/translate.js';
+import { authenticateCalendarLink } from '#lib/server/auth/calendar-link.js';
+import { calendarFeed } from '#lib/server/domain/dates/calendar-feed.js';
+import { etagOf, isUnchanged } from '#lib/server/http/etag.js';
+import { say } from '#lib/server/i18n/say.js';
 import type { RequestHandler } from './$types';
 
 /*

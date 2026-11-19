@@ -1,13 +1,13 @@
 import { error, fail, redirect } from '@sveltejs/kit';
 import * as v from 'valibot';
-import { createTranslator, type MessageKey } from '$lib/i18n/translate';
-import { authenticateLocal } from '$lib/server/auth/accounts';
-import { setSessionCookie } from '$lib/server/auth/cookies';
-import { createSession } from '$lib/server/auth/session';
-import { getConfig } from '$lib/server/config';
-import { say } from '$lib/server/i18n/say';
-import type { LoginDenial } from '$lib/server/auth/oidc/types';
-import { DEMO_ADMIN_EMAIL, DEMO_ADMIN_PASSWORD } from '$lib/server/db/demo-constants';
+import { createTranslator, type MessageKey } from '#lib/i18n/translate.js';
+import { authenticateLocal } from '#lib/server/auth/accounts.js';
+import { setSessionCookie } from '#lib/server/auth/cookies.js';
+import { createSession } from '#lib/server/auth/session.js';
+import { getConfig } from '#lib/server/config.js';
+import { say } from '#lib/server/i18n/say.js';
+import type { LoginDenial } from '#lib/server/auth/oidc/types.js';
+import { DEMO_ADMIN_EMAIL, DEMO_ADMIN_PASSWORD } from '#lib/server/db/demo-constants.js';
 import type { Actions, PageServerLoad } from './$types';
 
 /*

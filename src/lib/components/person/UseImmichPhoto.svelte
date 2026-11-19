@@ -1,13 +1,13 @@
 <script lang="ts">
-	import Button from '$lib/components/ui/Button.svelte';
-	import FormError from '$lib/components/ui/FormError.svelte';
-	import PhotoCropper from '$lib/components/ui/PhotoCropper.svelte';
+	import Button from '#lib/components/ui/Button.svelte';
+	import FormError from '#lib/components/ui/FormError.svelte';
+	import PhotoCropper from '#lib/components/ui/PhotoCropper.svelte';
 	import { invalidateAll } from '$app/navigation';
-	import { useTranslate } from '$lib/i18n/context.svelte';
-	import type { CropRect } from '$lib/media/crop';
-	import { loadFullPicture } from '$lib/media/send-cut';
-	import { sendImmichPhoto } from '$lib/media/send-immich-photo';
-	import { useRemovals } from '$lib/undo/context.svelte';
+	import { useTranslate } from '#lib/i18n/context.svelte.js';
+	import type { CropRect } from '#lib/media/crop.js';
+	import { loadFullPicture } from '#lib/media/send-cut.js';
+	import { sendImmichPhoto } from '#lib/media/send-immich-photo.js';
+	import { useRemovals } from '#lib/undo/context.svelte.js';
 
 	/*
 	 * *Use as photo* on an Immich photo in the lightbox (docs/dev/02 §2.24.6): the one

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test';
-import { segmentsOf, textOf } from '$lib/i18n/linked';
+import { segmentsOf, textOf } from '#lib/i18n/linked.js';
 import { homesShown, livesWithSentence, movingOutKey, sharingCandidates } from './home';
 
 describe('livesWithSentence', () => {

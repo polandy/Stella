@@ -1,9 +1,9 @@
 import { error, json } from '@sveltejs/kit';
-import type { CircleDeletionCounts } from '$lib/circles/deletion';
-import { requireRemover } from '$lib/server/auth/guards';
-import { CircleGoneError } from '$lib/server/domain/circles/circle-details';
-import { circleDeletionPreview } from '$lib/server/domain/circles/delete-circle';
-import { translator } from '$lib/server/i18n/say';
+import type { CircleDeletionCounts } from '#lib/circles/deletion.js';
+import { requireRemover } from '#lib/server/auth/guards.js';
+import { CircleGoneError } from '#lib/server/domain/circles/circle-details.js';
+import { circleDeletionPreview } from '#lib/server/domain/circles/delete-circle.js';
+import { translator } from '#lib/server/i18n/say.js';
 import type { RequestHandler } from './$types';
 
 /*

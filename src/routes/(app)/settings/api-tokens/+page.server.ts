@@ -1,5 +1,5 @@
 import { fail } from '@sveltejs/kit';
-import { requireUser } from '$lib/server/auth/guards';
+import { requireUser } from '#lib/server/auth/guards.js';
 import * as v from 'valibot';
 import {
 	API_TOKEN_DEFAULT_LIFETIME_DAYS,
@@ -10,8 +10,8 @@ import {
 	listApiTokens,
 	revokeApiToken,
 	type ApiTokenLifetime
-} from '$lib/server/auth/api-tokens';
-import { say, translator } from '$lib/server/i18n/say';
+} from '#lib/server/auth/api-tokens.js';
+import { say, translator } from '#lib/server/i18n/say.js';
 import type { Actions, PageServerLoad } from './$types';
 
 /*

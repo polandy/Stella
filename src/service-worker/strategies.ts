@@ -5,15 +5,15 @@
  * behind it, a stand-in page, a share from another app, the sign-out purge.
  */
 
-import { version } from '$service-worker';
+import { version } from '$app/env';
 import {
 	OFFLINE_FALLBACK_PATH,
 	SHARE_PATH,
 	isPageData,
 	patienceFor,
 	purgedAtSignOut
-} from '$lib/pwa/cache-policy';
-import { keepShare, shareFrom } from '$lib/pwa/share-store';
+} from '#lib/pwa/cache-policy.js';
+import { keepShare, shareFrom } from '#lib/pwa/share-store.js';
 import { keepCopy } from './keep';
 import { isReachable, noteAnswered, noteReachability, noteServed, sendMark } from './reachability';
 import { PAGES, SHELL, describe, worker } from './scope';

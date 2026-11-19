@@ -1,11 +1,11 @@
 import { error, json } from '@sveltejs/kit';
-import { requireViewer } from '$lib/server/auth/guards';
+import { requireViewer } from '#lib/server/auth/guards.js';
 import * as v from 'valibot';
-import type { SelectablePerson } from '$lib/people/select';
-import { TranslatableError } from '$lib/i18n/translatable';
-import { createContact } from '$lib/server/domain/contacts/create-contact';
-import { getContact } from '$lib/server/domain/contacts/contacts';
-import { say, translator } from '$lib/server/i18n/say';
+import type { SelectablePerson } from '#lib/people/select.js';
+import { TranslatableError } from '#lib/i18n/translatable.js';
+import { createContact } from '#lib/server/domain/contacts/create-contact.js';
+import { getContact } from '#lib/server/domain/contacts/contacts.js';
+import { say, translator } from '#lib/server/i18n/say.js';
 import type { RequestHandler } from './$types';
 
 /*

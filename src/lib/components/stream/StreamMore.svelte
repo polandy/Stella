@@ -1,9 +1,9 @@
 <script lang="ts">
 	import { afterNavigate, beforeNavigate, goto } from '$app/navigation';
 	import { navigating } from '$app/state';
-	import Button from '$lib/components/ui/Button.svelte';
-	import { nearEnd } from '$lib/components/ui/near-end';
-	import { useTranslate } from '$lib/i18n/context.svelte';
+	import Button from '#lib/components/ui/Button.svelte';
+	import { nearEnd } from '#lib/components/ui/near-end.js';
+	import { useTranslate } from '#lib/i18n/context.svelte.js';
 
 	/*
 	 * The foot of Home's stream (docs/dev/02 §2.22.2): the next page loads by itself once the foot
@@ -48,7 +48,7 @@
 		if (loading) return;
 		loading = true;
 		try {
-			await goto(href, { replaceState: true, noScroll: true, keepFocus: true });
+			await goto(href, { replace: true, reset: false });
 		} finally {
 			loading = false;
 		}

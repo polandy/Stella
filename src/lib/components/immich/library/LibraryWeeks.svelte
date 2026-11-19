@@ -4,8 +4,8 @@
   jumping the grid to that week's first day. It is a jump within the month, not a level of its own.
 -->
 <script lang="ts">
-	import { useTranslate } from '$lib/i18n/context.svelte';
-	import type { LibraryWeek } from '$lib/immich/library-nav';
+	import { useTranslate } from '#lib/i18n/context.svelte.js';
+	import type { LibraryWeek } from '#lib/immich/library-nav.js';
 
 	interface Props {
 		weeks: readonly LibraryWeek[];

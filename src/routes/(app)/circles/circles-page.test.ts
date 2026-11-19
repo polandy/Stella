@@ -1,13 +1,13 @@
 import { describe, expect, it } from 'bun:test';
-import { createTranslator } from '$lib/i18n/translate';
-import type { NewCircle } from '$lib/server/domain/circles/circles';
+import { createTranslator } from '#lib/i18n/translate.js';
+import type { NewCircle } from '#lib/server/domain/circles/circles.js';
 import {
 	circleRepositoryWith,
 	fixedClock,
 	sequentialIds,
 	someCircle
-} from '$lib/server/domain/testing';
-import { answerOf, formOf, routeEvent, type FakeServices } from '$lib/server/testing';
+} from '#lib/server/domain/testing/index.js';
+import { answerOf, formOf, routeEvent, type FakeServices } from '#lib/server/testing/index.js';
 import { actions } from './+page.server';
 import { actions as circlePageActions } from './[id]/+page.server';
 

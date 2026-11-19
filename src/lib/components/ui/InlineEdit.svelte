@@ -1,14 +1,14 @@
 <script lang="ts">
-	import { FIELD } from '$lib/components/ui/field';
-	import FormError from '$lib/components/ui/FormError.svelte';
+	import { FIELD } from '#lib/components/ui/field.js';
+	import FormError from '#lib/components/ui/FormError.svelte';
 	import { enhance } from '$app/forms';
-	import Button from '$lib/components/ui/Button.svelte';
-	import Icon from '$lib/components/ui/Icon.svelte';
-	import { PENCIL_AT_VALUE_END, VALUE_WITH_PENCIL } from '$lib/components/ui/edit-pencil';
-	import { useTranslate } from '$lib/i18n/context.svelte';
-	import { useRemovals } from '$lib/undo/context.svelte';
-	import { savedEnhance } from '$lib/undo/saved';
-	import { FocusReturn } from '$lib/ui/focus-return.svelte';
+	import Button from '#lib/components/ui/Button.svelte';
+	import Icon from '#lib/components/ui/Icon.svelte';
+	import { PENCIL_AT_VALUE_END, VALUE_WITH_PENCIL } from '#lib/components/ui/edit-pencil.js';
+	import { useTranslate } from '#lib/i18n/context.svelte.js';
+	import { useRemovals } from '#lib/undo/context.svelte.js';
+	import { savedEnhance } from '#lib/undo/saved.js';
+	import { FocusReturn } from '#lib/ui/focus-return.svelte.js';
 
 	/*
 	 * Edit one line where it is read (docs/dev/02 §2.2, docs/dev/05 §5.7). Click the value, a field

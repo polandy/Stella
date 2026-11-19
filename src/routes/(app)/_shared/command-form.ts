@@ -1,12 +1,12 @@
-import { dispatchCommand } from '$lib/server/domain/commands/dispatch';
-import { readCommand, type CommandReading } from '$lib/server/commands/parse';
-import type { JsonCommand } from '$lib/commands/commands';
-import type { MessageKey, MessageParams } from '$lib/i18n/translate';
-import { ulidGenerator } from '$lib/server/id';
-import { systemClock } from '$lib/server/clock';
+import { dispatchCommand } from '#lib/server/domain/commands/dispatch.js';
+import { readCommand, type CommandReading } from '#lib/server/commands/parse.js';
+import type { JsonCommand } from '#lib/commands/commands.js';
+import type { MessageKey, MessageParams } from '#lib/i18n/translate.js';
+import { ulidGenerator } from '#lib/server/id.js';
+import { systemClock } from '#lib/server/clock.js';
 import { redirect, type RequestEvent } from '@sveltejs/kit';
-import { requireViewer } from '$lib/server/auth/guards';
-import { say, translator } from '$lib/server/i18n/say';
+import { requireViewer } from '#lib/server/auth/guards.js';
+import { say, translator } from '#lib/server/i18n/say.js';
 
 /*
  * A command applied from a form (docs/dev/04 §4.11.2): the one edge the gift, outing and to-do

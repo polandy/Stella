@@ -1,17 +1,17 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import Avatar from '$lib/components/ui/Avatar.svelte';
-	import Button from '$lib/components/ui/Button.svelte';
-	import EmptyState from '$lib/components/ui/EmptyState.svelte';
-	import Icon from '$lib/components/ui/Icon.svelte';
-	import PrivateMark from '$lib/components/ui/PrivateMark.svelte';
-	import Veil from '$lib/components/ui/Veil.svelte';
-	import TodoDue from '$lib/components/todos/TodoDue.svelte';
-	import { dayLabel, occasionLabel, whenLabel } from '$lib/dates/labels';
-	import { occasionLabel as giftOccasionLabel } from '$lib/gifts/labels';
-	import { useI18n } from '$lib/i18n/context.svelte';
-	import { roleTermLabel } from '$lib/relationships/roles';
-	import { KIND_PRESENTATION } from '$lib/story/interaction-kinds';
+	import Avatar from '#lib/components/ui/Avatar.svelte';
+	import Button from '#lib/components/ui/Button.svelte';
+	import EmptyState from '#lib/components/ui/EmptyState.svelte';
+	import Icon from '#lib/components/ui/Icon.svelte';
+	import PrivateMark from '#lib/components/ui/PrivateMark.svelte';
+	import Veil from '#lib/components/ui/Veil.svelte';
+	import TodoDue from '#lib/components/todos/TodoDue.svelte';
+	import { dayLabel, occasionLabel, whenLabel } from '#lib/dates/labels.js';
+	import { occasionLabel as giftOccasionLabel } from '#lib/gifts/labels.js';
+	import { useI18n } from '#lib/i18n/context.svelte.js';
+	import { roleTermLabel } from '#lib/relationships/roles.js';
+	import { KIND_PRESENTATION } from '#lib/story/interaction-kinds.js';
 	import type { PageData } from './$types';
 
 	/*

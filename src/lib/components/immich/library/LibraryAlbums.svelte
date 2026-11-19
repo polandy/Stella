@@ -5,12 +5,12 @@
   by name. A cover that is no timeline photo shows a placeholder.
 -->
 <script lang="ts">
-	import { FIELD } from '$lib/components/ui/field';
-	import Icon from '$lib/components/ui/Icon.svelte';
-	import { useI18n } from '$lib/i18n/context.svelte';
-	import type { LibraryAlbum } from '$lib/immich/library';
-	import { albumsNamed, showsAlbumFilter } from '$lib/immich/library-albums';
-	import { albumRange } from '$lib/immich/library-labels';
+	import { FIELD } from '#lib/components/ui/field.js';
+	import Icon from '#lib/components/ui/Icon.svelte';
+	import { useI18n } from '#lib/i18n/context.svelte.js';
+	import type { LibraryAlbum } from '#lib/immich/library.js';
+	import { albumsNamed, showsAlbumFilter } from '#lib/immich/library-albums.js';
+	import { albumRange } from '#lib/immich/library-labels.js';
 	import LibraryNotice from './LibraryNotice.svelte';
 
 	interface Props {

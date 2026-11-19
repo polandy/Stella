@@ -1,7 +1,7 @@
 import { redirect } from '@sveltejs/kit';
-import { requireRemover } from '$lib/server/auth/guards';
-import { CircleGoneError } from '$lib/server/domain/circles/circle-details';
-import { deleteCircle } from '$lib/server/domain/circles/delete-circle';
+import { requireRemover } from '#lib/server/auth/guards.js';
+import { CircleGoneError } from '#lib/server/domain/circles/circle-details.js';
+import { deleteCircle } from '#lib/server/domain/circles/delete-circle.js';
 import type { Actions } from '../$types';
 
 /*

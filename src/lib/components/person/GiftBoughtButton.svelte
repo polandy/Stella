@@ -1,11 +1,11 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
 	import { invalidateAll } from '$app/navigation';
-	import Button from '$lib/components/ui/Button.svelte';
-	import { useI18n } from '$lib/i18n/context.svelte';
-	import { useRemovals } from '$lib/undo/context.svelte';
-	import { heldAnswer } from '$lib/undo/held-answer';
-	import { removalKey } from '$lib/undo/keys';
+	import Button from '#lib/components/ui/Button.svelte';
+	import { useI18n } from '#lib/i18n/context.svelte.js';
+	import { useRemovals } from '#lib/undo/context.svelte.js';
+	import { heldAnswer } from '#lib/undo/held-answer.js';
+	import { removalKey } from '#lib/undo/keys.js';
 
 	/*
 	 * *Bought*, or *Not bought yet* (docs/dev/02 §2.25.9): held for one undo window before it is

@@ -1,5 +1,5 @@
 <script lang="ts" module>
-	import type { PersonContext } from '$lib/people/context';
+	import type { PersonContext } from '#lib/people/context.js';
 
 	/** Someone in Stella the face might be, as the comparison step shows them. */
 	export interface SimilarPersonView {
@@ -34,22 +34,22 @@
 </script>
 
 <script lang="ts">
-	import { FIELD_ON_BG } from '$lib/components/ui/field';
+	import { FIELD_ON_BG } from '#lib/components/ui/field.js';
 	import { enhance } from '$app/forms';
 	import { untrack } from 'svelte';
-	import type { SubmitFunction } from '@sveltejs/kit';
-	import Avatar from '$lib/components/ui/Avatar.svelte';
-	import Button from '$lib/components/ui/Button.svelte';
-	import FormError from '$lib/components/ui/FormError.svelte';
-	import Icon from '$lib/components/ui/Icon.svelte';
-	import KnowThemBy from '$lib/components/people/KnowThemBy.svelte';
-	import PersonSearchSelect from '$lib/components/people/PersonSearchSelect.svelte';
-	import { newPersonFromImmichName } from '$lib/immich/newcomers';
-	import { useI18n } from '$lib/i18n/context.svelte';
-	import { reveal } from '$lib/motion/motion.svelte';
-	import { describeDistinction } from '$lib/people/namesakes';
-	import { wantsSomethingToKnowThemBy } from '$lib/people/new-person';
-	import type { SelectablePerson } from '$lib/people/select';
+	import type { SubmitFunction } from '$app/forms';
+	import Avatar from '#lib/components/ui/Avatar.svelte';
+	import Button from '#lib/components/ui/Button.svelte';
+	import FormError from '#lib/components/ui/FormError.svelte';
+	import Icon from '#lib/components/ui/Icon.svelte';
+	import KnowThemBy from '#lib/components/people/KnowThemBy.svelte';
+	import PersonSearchSelect from '#lib/components/people/PersonSearchSelect.svelte';
+	import { newPersonFromImmichName } from '#lib/immich/newcomers.js';
+	import { useI18n } from '#lib/i18n/context.svelte.js';
+	import { reveal } from '#lib/motion/motion.svelte.js';
+	import { describeDistinction } from '#lib/people/namesakes.js';
+	import { wantsSomethingToKnowThemBy } from '#lib/people/new-person.js';
+	import type { SelectablePerson } from '#lib/people/select.js';
 
 	/*
 	 * One face of *New from Immich* (docs/dev/02 §2.24.7) and the steps *Assign…* opens in place.

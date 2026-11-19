@@ -1,8 +1,8 @@
 <script lang="ts">
-	import { FIELD_ON_BG } from '$lib/components/ui/field';
-	import { useTranslate } from '$lib/i18n/context.svelte';
-	import { matchPeople, peopleOf } from '$lib/graph/model/people-search';
-	import type { GraphModel } from '$lib/graph/model/types';
+	import { FIELD_ON_BG } from '#lib/components/ui/field.js';
+	import { useTranslate } from '#lib/i18n/context.svelte.js';
+	import { matchPeople, peopleOf } from '#lib/graph/model/people-search.js';
+	import type { GraphModel } from '#lib/graph/model/types.js';
 
 	interface Props {
 		/** The snapshot the explorer holds; suggestions come from it, not from the server. */

@@ -1,15 +1,15 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
-	import Button from '$lib/components/ui/Button.svelte';
-	import FormError from '$lib/components/ui/FormError.svelte';
-	import Icon from '$lib/components/ui/Icon.svelte';
-	import WhenPicker from '$lib/components/ui/WhenPicker.svelte';
-	import type { PartialDate } from '$lib/dates/partial-date';
-	import { SURPRISE } from '$lib/surprise/surprise';
-	import { useI18n } from '$lib/i18n/context.svelte';
-	import { PLAN_QUICK_PICKS, PLAN_WHEN_KINDS } from '$lib/plans/plans';
-	import type { When } from '$lib/when/when';
-	import type { SubmitFunction } from '@sveltejs/kit';
+	import Button from '#lib/components/ui/Button.svelte';
+	import FormError from '#lib/components/ui/FormError.svelte';
+	import Icon from '#lib/components/ui/Icon.svelte';
+	import WhenPicker from '#lib/components/ui/WhenPicker.svelte';
+	import type { PartialDate } from '#lib/dates/partial-date.js';
+	import { SURPRISE } from '#lib/surprise/surprise.js';
+	import { useI18n } from '#lib/i18n/context.svelte.js';
+	import { PLAN_QUICK_PICKS, PLAN_WHEN_KINDS } from '#lib/plans/plans.js';
+	import type { When } from '#lib/when/when.js';
+	import type { SubmitFunction } from '$app/forms';
 	import { INPUT } from '../ui/inputs';
 
 	/*

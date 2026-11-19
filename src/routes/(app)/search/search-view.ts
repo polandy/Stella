@@ -1,11 +1,11 @@
-import { extractMentionIds } from '$lib/mentions/mentions';
-import { matchSnippet } from '$lib/mentions/snippet';
-import type { Viewer } from '$lib/server/access/visibility';
+import { extractMentionIds } from '#lib/mentions/mentions.js';
+import { matchSnippet } from '#lib/mentions/snippet.js';
+import type { Viewer } from '#lib/server/access/visibility.js';
 import {
 	listContactNamesAmong,
 	type ContactNameDeps
-} from '$lib/server/domain/contacts/contact-names';
-import type { SearchResults } from '$lib/server/domain/search/search';
+} from '#lib/server/domain/contacts/contact-names.js';
+import type { SearchResults } from '#lib/server/domain/search/search.js';
 
 /*
  * Search results as the page shows them (docs/dev/02 §2.9): a note's or moment's body cut to a

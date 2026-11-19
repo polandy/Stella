@@ -1,7 +1,7 @@
 <script lang="ts">
-	import { INPUT } from '$lib/components/ui/inputs';
-	import { useI18n } from '$lib/i18n/context.svelte';
-	import type { ShareTarget } from '$lib/share/shared';
+	import { INPUT } from '#lib/components/ui/inputs.js';
+	import { useI18n } from '#lib/i18n/context.svelte.js';
+	import type { ShareTarget } from '#lib/share/shared.js';
 
 	/** What is saved for the picked target, editable before it is; the profile photo has none. */
 	let {

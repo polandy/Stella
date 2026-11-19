@@ -1,10 +1,14 @@
 import { describe, expect, it } from 'bun:test';
-import { createTranslator } from '$lib/i18n/translate';
-import { JOB_FIELD_MAX_LENGTH } from '$lib/people/job';
-import type { Contact, ContactRepository } from '$lib/server/domain/contacts/contacts';
-import type { NameWrite } from '$lib/server/domain/contacts/name-parts';
-import type { StoredPhoto } from '$lib/server/domain/media/avatars';
-import { contactRepositoryWith, fixedClock, sequentialIds } from '$lib/server/domain/testing';
+import { createTranslator } from '#lib/i18n/translate.js';
+import { JOB_FIELD_MAX_LENGTH } from '#lib/people/job.js';
+import type { Contact, ContactRepository } from '#lib/server/domain/contacts/contacts.js';
+import type { NameWrite } from '#lib/server/domain/contacts/name-parts.js';
+import type { StoredPhoto } from '#lib/server/domain/media/avatars.js';
+import {
+	contactRepositoryWith,
+	fixedClock,
+	sequentialIds
+} from '#lib/server/domain/testing/index.js';
 import {
 	answerOf,
 	formOf,
@@ -12,8 +16,8 @@ import {
 	routeEvent,
 	type EdgeAnswer,
 	type FakeServices
-} from '$lib/server/testing';
-import type { Locale } from '$lib/i18n/locales';
+} from '#lib/server/testing/index.js';
+import type { Locale } from '#lib/i18n/locales.js';
 import { profileActions as actions } from './profile';
 
 /*

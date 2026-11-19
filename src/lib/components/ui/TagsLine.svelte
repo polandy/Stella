@@ -1,8 +1,8 @@
 <script lang="ts">
-	import { accentChipStyle } from '$lib/design/tokens';
-	import { tagAccent } from '$lib/hashtags/hashtags';
-	import { tagsToSave, type KnownTag } from '$lib/hashtags/picker';
-	import { useTranslate } from '$lib/i18n/context.svelte';
+	import { accentChipStyle } from '#lib/design/tokens.js';
+	import { tagAccent } from '#lib/hashtags/hashtags.js';
+	import { tagsToSave, type KnownTag } from '#lib/hashtags/picker.js';
+	import { useTranslate } from '#lib/i18n/context.svelte.js';
 
 	/*
 	 * What saving the text will file it under (docs/dev/02 §2.20.2), read the way the server reads it:

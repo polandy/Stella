@@ -1,8 +1,8 @@
 <script lang="ts">
 	import MemberConfirmStep, {
 		type ConfirmLine
-	} from '$lib/components/members/MemberConfirmStep.svelte';
-	import { useTranslate } from '$lib/i18n/context.svelte';
+	} from '#lib/components/members/MemberConfirmStep.svelte';
+	import { useTranslate } from '#lib/i18n/context.svelte.js';
 
 	/*
 	 * Removing a member (docs/dev/02 §2.1): what the removal ends and what it keeps. Focus starts on

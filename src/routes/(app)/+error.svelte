@@ -1,5 +1,5 @@
 <script lang="ts">
-	import StrandedScreen from '$lib/components/shell/StrandedScreen.svelte';
+	import StrandedScreen from '#lib/components/shell/StrandedScreen.svelte';
 
 	// A missing person or setting, or a failed load, inside the app's own shell
 	// (docs/dev/design/screens/across-screens.md).

@@ -1,6 +1,6 @@
-import { requireUser, requireViewer } from '$lib/server/auth/guards';
-import { canAddRelationshipTo } from '$lib/server/access/visibility';
-import { getContact } from '$lib/server/domain/contacts/contacts';
+import { requireUser, requireViewer } from '#lib/server/auth/guards.js';
+import { canAddRelationshipTo } from '#lib/server/access/visibility.js';
+import { getContact } from '#lib/server/domain/contacts/contacts.js';
 import { chooseCenter, chosenPathTarget, wayBackTo } from './center';
 import type { PageServerLoad } from './$types';
 

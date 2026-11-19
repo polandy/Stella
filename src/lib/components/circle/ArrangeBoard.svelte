@@ -1,10 +1,10 @@
 <script lang="ts">
 	import { invalidateAll } from '$app/navigation';
 	import { tick } from 'svelte';
-	import { postArrange, postUndo } from '$lib/components/circle/arrange-post';
-	import Avatar from '$lib/components/ui/Avatar.svelte';
-	import Button from '$lib/components/ui/Button.svelte';
-	import Icon from '$lib/components/ui/Icon.svelte';
+	import { postArrange, postUndo } from '#lib/components/circle/arrange-post.js';
+	import Avatar from '#lib/components/ui/Avatar.svelte';
+	import Button from '#lib/components/ui/Button.svelte';
+	import Icon from '#lib/components/ui/Icon.svelte';
 	import {
 		alsoIn,
 		dragCarries,
@@ -17,9 +17,9 @@
 		type ArrangeMode,
 		type ArrangePickRef,
 		type ArrangeVerdict
-	} from '$lib/circles/arrange';
-	import { useI18n } from '$lib/i18n/context.svelte';
-	import { useRemovals } from '$lib/undo/context.svelte';
+	} from '#lib/circles/arrange.js';
+	import { useI18n } from '#lib/i18n/context.svelte.js';
+	import { useRemovals } from '#lib/undo/context.svelte.js';
 
 	/*
 	 * Arrange people (docs/dev/02 §2.4.2, ADR-127): one card per circle — the circle itself and each

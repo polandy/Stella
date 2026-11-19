@@ -1,9 +1,9 @@
 <script lang="ts">
-	import { useI18n } from '$lib/i18n/context.svelte';
-	import { dayLabel } from '$lib/dates/labels';
-	import { immichStrip } from '$lib/memories/immich';
-	import { MEMORY_STRIP_CAP } from '$lib/memories/memories';
-	import type { MemoryPhotoView, MemoryRowView } from '$lib/memories/view';
+	import { useI18n } from '#lib/i18n/context.svelte.js';
+	import { dayLabel } from '#lib/dates/labels.js';
+	import { immichStrip } from '#lib/memories/immich.js';
+	import { MEMORY_STRIP_CAP } from '#lib/memories/memories.js';
+	import type { MemoryPhotoView, MemoryRowView } from '#lib/memories/view.js';
 	import type { ImmichMemories } from './immich-memories.svelte';
 	import MemoryPhotos from './MemoryPhotos.svelte';
 	import MemoryRow from './MemoryRow.svelte';

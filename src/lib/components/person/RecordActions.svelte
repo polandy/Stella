@@ -1,16 +1,16 @@
 <script lang="ts">
-	import FormError from '$lib/components/ui/FormError.svelte';
-	import Button from '$lib/components/ui/Button.svelte';
-	import PersonSearchSelect from '$lib/components/people/PersonSearchSelect.svelte';
+	import FormError from '#lib/components/ui/FormError.svelte';
+	import Button from '#lib/components/ui/Button.svelte';
+	import PersonSearchSelect from '#lib/components/people/PersonSearchSelect.svelte';
 	import { enhance } from '$app/forms';
 	import { page } from '$app/state';
-	import { useI18n } from '$lib/i18n/context.svelte';
-	import { useRemovals } from '$lib/undo/context.svelte';
-	import { savedEnhance } from '$lib/undo/saved';
+	import { useI18n } from '#lib/i18n/context.svelte.js';
+	import { useRemovals } from '#lib/undo/context.svelte.js';
+	import { savedEnhance } from '#lib/undo/saved.js';
 	import { tick, untrack } from 'svelte';
 	import { prefersReducedMotion } from 'svelte/motion';
-	import { reveal } from '$lib/motion/motion.svelte';
-	import { scrollBehavior } from '$lib/motion/motion';
+	import { reveal } from '#lib/motion/motion.svelte.js';
+	import { scrollBehavior } from '#lib/motion/motion.js';
 	import { refusedMergeOf, type PersonForm, type PersonPageData } from './types';
 
 	/*

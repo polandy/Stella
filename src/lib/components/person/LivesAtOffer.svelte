@@ -1,7 +1,7 @@
 <script lang="ts">
-	import Avatar from '$lib/components/ui/Avatar.svelte';
-	import Icon from '$lib/components/ui/Icon.svelte';
-	import { useI18n } from '$lib/i18n/context.svelte';
+	import Avatar from '#lib/components/ui/Avatar.svelte';
+	import Icon from '#lib/components/ui/Icon.svelte';
+	import { useI18n } from '#lib/i18n/context.svelte.js';
 
 	/*
 	 * *Lives at …* (docs/dev/02 §2.4): the address offered to new children or a partner created in

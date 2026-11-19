@@ -8,7 +8,7 @@
 		nextMenuIndex,
 		type Band,
 		type Span
-	} from '$lib/ui/menu';
+	} from '#lib/ui/menu.js';
 	import Icon from './Icon.svelte';
 	import type { IconName } from './icons';
 

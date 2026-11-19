@@ -1,15 +1,15 @@
 <script lang="ts">
-	import FormerlyMark from '$lib/components/people/FormerlyMark.svelte';
-	import FoundByJobMark from '$lib/components/people/FoundByJobMark.svelte';
-	import JobLine from '$lib/components/people/JobLine.svelte';
-	import NamesakeLine from '$lib/components/ui/NamesakeLine.svelte';
-	import Avatar from '$lib/components/ui/Avatar.svelte';
-	import Icon from '$lib/components/ui/Icon.svelte';
-	import { useTranslate } from '$lib/i18n/context.svelte';
-	import { foundByFormerName } from '$lib/people/former-name';
-	import { foundByJob } from '$lib/people/job';
-	import type { Distinction } from '$lib/people/namesakes';
-	import type { SelectablePerson } from '$lib/people/select';
+	import FormerlyMark from '#lib/components/people/FormerlyMark.svelte';
+	import FoundByJobMark from '#lib/components/people/FoundByJobMark.svelte';
+	import JobLine from '#lib/components/people/JobLine.svelte';
+	import NamesakeLine from '#lib/components/ui/NamesakeLine.svelte';
+	import Avatar from '#lib/components/ui/Avatar.svelte';
+	import Icon from '#lib/components/ui/Icon.svelte';
+	import { useTranslate } from '#lib/i18n/context.svelte.js';
+	import { foundByFormerName } from '#lib/people/former-name.js';
+	import { foundByJob } from '#lib/people/job.js';
+	import type { Distinction } from '#lib/people/namesakes.js';
+	import type { SelectablePerson } from '#lib/people/select.js';
 
 	/*
 	 * What the person picker's search found, and under it the offer to add somebody new. The

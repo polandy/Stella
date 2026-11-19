@@ -1,33 +1,33 @@
 <script lang="ts">
 	import { onDestroy, onMount, tick, untrack } from 'svelte';
 	import { goto } from '$app/navigation';
-	import { addParentPath } from '$lib/people/sections';
-	import { useTranslate } from '$lib/i18n/context.svelte';
+	import { addParentPath } from '#lib/people/sections.js';
+	import { useTranslate } from '#lib/i18n/context.svelte.js';
 	import {
 		escapeLetsGo,
 		explorerAfter,
 		explorerAtOpen,
 		type ExplorerCommand,
 		type ExplorerEvent
-	} from '$lib/graph/explorer-state';
-	import { treeRelaidFor } from '$lib/graph/tree-view';
-	import { createExplorer, type ExplorerController } from '$lib/graph/cytoscape/explorer';
-	import { buildStylesheet } from '$lib/graph/cytoscape/stylesheet';
-	import { paletteFromDom } from '$lib/graph/cytoscape/theme';
-	import { findConnectionPath } from '$lib/graph/model/connection-path';
-	import { circleRoles } from '$lib/graph/model/ego-network';
-	import { canExpand } from '$lib/graph/model/rings';
-	import { withoutDerivedLinks } from '$lib/graph/model/graph-model';
-	import { inMemoryGraphSource } from '$lib/graph/model/in-memory-source';
-	import { isParentSlot, slotPlaces } from '$lib/graph/model/missing-parents';
-	import { openingFilterKeys } from '$lib/graph/model/view-filters';
-	import type { ArrangementKey } from '$lib/graph/layout/arrangements';
-	import { circleClustersLayout } from '$lib/graph/layout/circle-clusters';
-	import { familyTreeLayout } from '$lib/graph/layout/family-tree';
-	import { ordersAfterDrop, type RowOrders } from '$lib/graph/layout/tree-order';
-	import { DEFAULT_NODE_SIZE } from '$lib/graph/layout/geometry';
-	import { spacingFor } from '$lib/graph/layout/density';
-	import type { GraphModel } from '$lib/graph/model/types';
+	} from '#lib/graph/explorer-state.js';
+	import { treeRelaidFor } from '#lib/graph/tree-view.js';
+	import { createExplorer, type ExplorerController } from '#lib/graph/cytoscape/explorer.js';
+	import { buildStylesheet } from '#lib/graph/cytoscape/stylesheet.js';
+	import { paletteFromDom } from '#lib/graph/cytoscape/theme.js';
+	import { findConnectionPath } from '#lib/graph/model/connection-path.js';
+	import { circleRoles } from '#lib/graph/model/ego-network.js';
+	import { canExpand } from '#lib/graph/model/rings.js';
+	import { withoutDerivedLinks } from '#lib/graph/model/graph-model.js';
+	import { inMemoryGraphSource } from '#lib/graph/model/in-memory-source.js';
+	import { isParentSlot, slotPlaces } from '#lib/graph/model/missing-parents.js';
+	import { openingFilterKeys } from '#lib/graph/model/view-filters.js';
+	import type { ArrangementKey } from '#lib/graph/layout/arrangements.js';
+	import { circleClustersLayout } from '#lib/graph/layout/circle-clusters.js';
+	import { familyTreeLayout } from '#lib/graph/layout/family-tree.js';
+	import { ordersAfterDrop, type RowOrders } from '#lib/graph/layout/tree-order.js';
+	import { DEFAULT_NODE_SIZE } from '#lib/graph/layout/geometry.js';
+	import { spacingFor } from '#lib/graph/layout/density.js';
+	import type { GraphModel } from '#lib/graph/model/types.js';
 	import { exploredMap } from './explored-map.svelte';
 	import { explorerView } from './explorer-view.svelte';
 	import { frameFullscreen } from './frame-fullscreen.svelte';

@@ -8,18 +8,18 @@
 -->
 <script lang="ts">
 	import { tick } from 'svelte';
-	import { deviceDay } from '$lib/dates/today';
-	import Button from '$lib/components/ui/Button.svelte';
-	import { syncModal } from '$lib/components/ui/modal';
-	import FormError from '$lib/components/ui/FormError.svelte';
-	import { useI18n } from '$lib/i18n/context.svelte';
-	import type { LibraryPhoto } from '$lib/immich/library';
-	import { tabOf } from '$lib/immich/library-albums';
-	import { longDay, monthAndYear, shortDate } from '$lib/immich/library-labels';
-	import { crumbsOf, weeksOfMonth, type LibraryWeek } from '$lib/immich/library-nav';
-	import { LIBRARY_PICK_LIMIT, tickTray, toggledTick } from '$lib/immich/library-pick';
-	import { copyImmichPhoto, type ImmichCopy } from '$lib/media/copy-immich-photo';
-	import { useRemovals } from '$lib/undo/context.svelte';
+	import { deviceDay } from '#lib/dates/today.js';
+	import Button from '#lib/components/ui/Button.svelte';
+	import { syncModal } from '#lib/components/ui/modal.js';
+	import FormError from '#lib/components/ui/FormError.svelte';
+	import { useI18n } from '#lib/i18n/context.svelte.js';
+	import type { LibraryPhoto } from '#lib/immich/library.js';
+	import { tabOf } from '#lib/immich/library-albums.js';
+	import { longDay, monthAndYear, shortDate } from '#lib/immich/library-labels.js';
+	import { crumbsOf, weeksOfMonth, type LibraryWeek } from '#lib/immich/library-nav.js';
+	import { LIBRARY_PICK_LIMIT, tickTray, toggledTick } from '#lib/immich/library-pick.js';
+	import { copyImmichPhoto, type ImmichCopy } from '#lib/media/copy-immich-photo.js';
+	import { useRemovals } from '#lib/undo/context.svelte.js';
 	import LibraryAlbums from './library/LibraryAlbums.svelte';
 	import LibraryCrumbs from './library/LibraryCrumbs.svelte';
 	import LibraryDayBar from './library/LibraryDayBar.svelte';

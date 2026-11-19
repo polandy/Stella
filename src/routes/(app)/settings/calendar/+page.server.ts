@@ -1,10 +1,10 @@
-import { requireUser } from '$lib/server/auth/guards';
+import { requireUser } from '#lib/server/auth/guards.js';
 import {
 	CALENDAR_PATH_PREFIX,
 	calendarLinkOf,
 	issueCalendarLink,
 	revokeCalendarLink
-} from '$lib/server/auth/calendar-link';
+} from '#lib/server/auth/calendar-link.js';
 import type { Actions, PageServerLoad } from './$types';
 
 /*

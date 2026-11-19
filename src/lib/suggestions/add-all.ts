@@ -1,5 +1,5 @@
-import { MAX_PARENTS } from '$lib/relationships/exclusions';
-import type { RelationshipSide } from '$lib/relationships/type-options';
+import { MAX_PARENTS } from '#lib/relationships/exclusions.js';
+import type { RelationshipSide } from '#lib/relationships/type-options.js';
 import type { Relation } from './types';
 
 /*

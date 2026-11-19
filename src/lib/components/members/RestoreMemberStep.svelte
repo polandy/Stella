@@ -1,8 +1,8 @@
 <script lang="ts">
 	import MemberConfirmStep, {
 		type ConfirmLine
-	} from '$lib/components/members/MemberConfirmStep.svelte';
-	import { useTranslate } from '$lib/i18n/context.svelte';
+	} from '#lib/components/members/MemberConfirmStep.svelte';
+	import { useTranslate } from '#lib/i18n/context.svelte.js';
 
 	/*
 	 * Restoring a former member (docs/dev/02 §2.1): how they sign in again, that nothing signs them

@@ -1,6 +1,6 @@
-import { fromFormData } from '$lib/commands/form-data';
-import { PlanAddSchema, PlanEditSchema, PlanRefSchema } from '$lib/commands/plan-payloads';
-import { contactSectionPath } from '$lib/people/sections';
+import { fromFormData } from '#lib/commands/form-data.js';
+import { PlanAddSchema, PlanEditSchema, PlanRefSchema } from '#lib/commands/plan-payloads.js';
+import { contactSectionPath } from '#lib/people/sections.js';
 import type { RequestEvent } from '@sveltejs/kit';
 import {
 	applyPlanCommand,

@@ -1,7 +1,7 @@
 <script lang="ts">
-	import Icon from '$lib/components/ui/Icon.svelte';
-	import { dayLabel } from '$lib/dates/labels';
-	import { useI18n } from '$lib/i18n/context.svelte';
+	import Icon from '#lib/components/ui/Icon.svelte';
+	import { dayLabel } from '#lib/dates/labels.js';
+	import { useI18n } from '#lib/i18n/context.svelte.js';
 
 	/** The marks under a person's name: that this is you, that the record is private or archived. */
 	let {

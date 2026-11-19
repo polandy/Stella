@@ -1,6 +1,6 @@
 import { fail, redirect } from '@sveltejs/kit';
 import * as v from 'valibot';
-import { requireAdmin, requireViewer } from '$lib/server/auth/guards';
+import { requireAdmin, requireViewer } from '#lib/server/auth/guards.js';
 import {
 	BuiltInRelationshipTypeError,
 	InvalidRelationshipTypeError,
@@ -10,10 +10,10 @@ import {
 	editRelationshipType,
 	mergeRelationshipType,
 	removeRelationshipType
-} from '$lib/server/domain/relationships/relationship-types';
-import { builtInReplacingImportedType } from '$lib/server/domain/import/monica/relationship-types';
+} from '#lib/server/domain/relationships/relationship-types.js';
+import { builtInReplacingImportedType } from '#lib/server/domain/import/monica/relationship-types.js';
 import type { Actions, PageServerLoad } from './$types';
-import { say, translator } from '$lib/server/i18n/say';
+import { say, translator } from '#lib/server/i18n/say.js';
 
 /*
  * The household's relationship vocabulary (docs/dev/02 §2.4). Admin only: a type is shared by

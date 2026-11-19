@@ -1,11 +1,11 @@
-import { fromFormData } from '$lib/commands/form-data';
-import { TodoRefSchema } from '$lib/commands/gift-todo-payloads';
-import { requireViewer } from '$lib/server/auth/guards';
-import { authorNames } from '$lib/server/domain/household/members';
-import { listOpenTodos, type HouseholdTodo } from '$lib/server/domain/todos/todos';
-import { authorLabel } from '$lib/story/author';
-import type { HouseholdTodoView } from '$lib/todos/household';
-import { orderOpenTodos } from '$lib/todos/todos';
+import { fromFormData } from '#lib/commands/form-data.js';
+import { TodoRefSchema } from '#lib/commands/gift-todo-payloads.js';
+import { requireViewer } from '#lib/server/auth/guards.js';
+import { authorNames } from '#lib/server/domain/household/members.js';
+import { listOpenTodos, type HouseholdTodo } from '#lib/server/domain/todos/todos.js';
+import { authorLabel } from '#lib/story/author.js';
+import type { HouseholdTodoView } from '#lib/todos/household.js';
+import { orderOpenTodos } from '#lib/todos/todos.js';
 import type { RequestEvent } from '@sveltejs/kit';
 import { applyTodoCommand, type TodoCommand, type TodoErrorKey } from './todo-commands';
 

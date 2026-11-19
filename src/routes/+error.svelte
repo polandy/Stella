@@ -1,5 +1,5 @@
 <script lang="ts">
-	import StrandedScreen from '$lib/components/shell/StrandedScreen.svelte';
+	import StrandedScreen from '#lib/components/shell/StrandedScreen.svelte';
 
 	/*
 	 * An address no route answers, or a failure before the app's shell loaded: the same screen

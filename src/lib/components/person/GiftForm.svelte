@@ -1,20 +1,20 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
-	import Button from '$lib/components/ui/Button.svelte';
-	import DateField from '$lib/components/ui/DateField.svelte';
-	import FormError from '$lib/components/ui/FormError.svelte';
-	import Icon from '$lib/components/ui/Icon.svelte';
-	import { dayLabel } from '$lib/dates/labels';
-	import { alreadyGiven, type GiftOnRecord } from '$lib/gifts/already-given';
-	import { hasGiftDay, type GiftState } from '$lib/gifts/gifts';
-	import { SURPRISE } from '$lib/surprise/surprise';
-	import { occasionLabel } from '$lib/gifts/labels';
-	import { useI18n } from '$lib/i18n/context.svelte';
-	import type { SubmitFunction } from '@sveltejs/kit';
-	import WhenPicker from '$lib/components/ui/WhenPicker.svelte';
-	import { GIFT_WHEN_KINDS } from '$lib/gifts/idea-when';
-	import type { PartialDate } from '$lib/dates/partial-date';
-	import type { When } from '$lib/when/when';
+	import Button from '#lib/components/ui/Button.svelte';
+	import DateField from '#lib/components/ui/DateField.svelte';
+	import FormError from '#lib/components/ui/FormError.svelte';
+	import Icon from '#lib/components/ui/Icon.svelte';
+	import { dayLabel } from '#lib/dates/labels.js';
+	import { alreadyGiven, type GiftOnRecord } from '#lib/gifts/already-given.js';
+	import { hasGiftDay, type GiftState } from '#lib/gifts/gifts.js';
+	import { SURPRISE } from '#lib/surprise/surprise.js';
+	import { occasionLabel } from '#lib/gifts/labels.js';
+	import { useI18n } from '#lib/i18n/context.svelte.js';
+	import type { SubmitFunction } from '$app/forms';
+	import WhenPicker from '#lib/components/ui/WhenPicker.svelte';
+	import { GIFT_WHEN_KINDS } from '#lib/gifts/idea-when.js';
+	import type { PartialDate } from '#lib/dates/partial-date.js';
+	import type { When } from '#lib/when/when.js';
 	import GiftOccasionField from './GiftOccasionField.svelte';
 	import { INPUT } from '../ui/inputs';
 

@@ -1,7 +1,7 @@
 <script lang="ts">
-	import SignOutForm from '$lib/components/shell/SignOutForm.svelte';
-	import ThemePicker from '$lib/components/shell/ThemePicker.svelte';
-	import { useTranslate } from '$lib/i18n/context.svelte';
+	import SignOutForm from '#lib/components/shell/SignOutForm.svelte';
+	import ThemePicker from '#lib/components/shell/ThemePicker.svelte';
+	import { useTranslate } from '#lib/i18n/context.svelte.js';
 
 	/* The sidebar's foot: who is signed in, and under it the theme and the way out. */
 

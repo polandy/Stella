@@ -1,23 +1,23 @@
 <script lang="ts">
-	import { FIELD_FRAME } from '$lib/components/ui/field';
-	import Avatar from '$lib/components/ui/Avatar.svelte';
-	import Icon from '$lib/components/ui/Icon.svelte';
-	import PersonQuickAdd from '$lib/components/people/PersonQuickAdd.svelte';
-	import PersonSearchOptions from '$lib/components/people/PersonSearchOptions.svelte';
-	import { useTranslate } from '$lib/i18n/context.svelte';
-	import { usePeopleContext } from '$lib/people/context.svelte';
-	import { tellApart } from '$lib/people/namesakes';
-	import { isNameWorthCreating } from '$lib/people/new-person';
+	import { FIELD_FRAME } from '#lib/components/ui/field.js';
+	import Avatar from '#lib/components/ui/Avatar.svelte';
+	import Icon from '#lib/components/ui/Icon.svelte';
+	import PersonQuickAdd from '#lib/components/people/PersonQuickAdd.svelte';
+	import PersonSearchOptions from '#lib/components/people/PersonSearchOptions.svelte';
+	import { useTranslate } from '#lib/i18n/context.svelte.js';
+	import { usePeopleContext } from '#lib/people/context.svelte.js';
+	import { tellApart } from '#lib/people/namesakes.js';
+	import { isNameWorthCreating } from '#lib/people/new-person.js';
 	import {
 		filterPeople,
 		queryAfterPick,
 		stillNeedsAPick,
 		type SelectablePerson
-	} from '$lib/people/select';
-	import { watchPlacement } from '$lib/people/panel-placement.svelte';
-	import type { PanelPlacement } from '$lib/people/panel-placement';
-	import { useRemovals } from '$lib/undo/context.svelte';
-	import { BLUR_CLOSE_MS } from '$lib/components/ui/blur-close';
+	} from '#lib/people/select.js';
+	import { watchPlacement } from '#lib/people/panel-placement.svelte.js';
+	import type { PanelPlacement } from '#lib/people/panel-placement.js';
+	import { useRemovals } from '#lib/undo/context.svelte.js';
+	import { BLUR_CLOSE_MS } from '#lib/components/ui/blur-close.js';
 
 	/*
 	 * A person picker that filters by name as you type, for any form field where someone chooses

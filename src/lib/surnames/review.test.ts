@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'bun:test';
-import type { KinshipGraph } from '$lib/kinship/kinship';
-import type { SurnameDismissal } from '$lib/suggestions/rules/surnames';
+import type { KinshipGraph } from '#lib/kinship/kinship.js';
+import type { SurnameDismissal } from '#lib/suggestions/rules/surnames.js';
 import { awaitsLastName, clearsNoLastName, reviewList, type ReviewPerson } from './review';
 
 /*

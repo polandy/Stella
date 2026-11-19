@@ -1,11 +1,11 @@
 import { error, json } from '@sveltejs/kit';
-import { requireAdmin } from '$lib/server/auth/guards';
-import { getConfig } from '$lib/server/config';
-import { findForReview } from '$lib/server/domain/import/review-view';
-import { unansweredCards } from '$lib/server/domain/nextcloud/review';
-import { readStagedDump } from '$lib/server/import/staging';
+import { requireAdmin } from '#lib/server/auth/guards.js';
+import { getConfig } from '#lib/server/config.js';
+import { findForReview } from '#lib/server/domain/import/review-view.js';
+import { unansweredCards } from '#lib/server/domain/nextcloud/review.js';
+import { readStagedDump } from '#lib/server/import/staging.js';
 import { BOOK_TOKEN } from '../actions/staged';
-import { say } from '$lib/server/i18n/say';
+import { say } from '#lib/server/i18n/say.js';
 import type { RequestHandler } from './$types';
 
 /*

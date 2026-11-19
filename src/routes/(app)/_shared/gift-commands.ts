@@ -1,7 +1,7 @@
-import type { CommandType } from '$lib/commands/commands';
-import { occasionFromForm, visibilityFromForm } from '$lib/gifts/gifts';
-import { whenFromForm } from '$lib/when/form';
-import { GiftGoneError } from '$lib/server/domain/gifts/gifts';
+import type { CommandType } from '#lib/commands/commands.js';
+import { occasionFromForm, visibilityFromForm } from '#lib/gifts/gifts.js';
+import { whenFromForm } from '#lib/when/form.js';
+import { GiftGoneError } from '#lib/server/domain/gifts/gifts.js';
 import { fail, type RequestEvent } from '@sveltejs/kit';
 import {
 	applyCommandFromForm,

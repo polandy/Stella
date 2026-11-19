@@ -1,40 +1,40 @@
-import type { Translate } from '$lib/i18n/translate';
-import { captionWords } from '$lib/graph/caption-words';
-import { slotElements, toCytoscapeElements } from '$lib/graph/cytoscape/elements';
-import { edgeWords, treeRoleWords } from '$lib/graph/edge-words';
-import { groupingApplies, labelsSwitchOf } from '$lib/graph/explorer-look';
-import type { ExplorerState } from '$lib/graph/explorer-state';
-import { edgeLabelsFit, linesDrawn } from '$lib/graph/layout/legibility';
-import { expandWouldAdd } from '$lib/graph/model/expand-offer';
-import { familyLinksAmong } from '$lib/graph/model/generations';
-import { applyFilters, mergeModels } from '$lib/graph/model/graph-model';
-import { hiddenNeighbourCounts } from '$lib/graph/model/hidden-neighbours';
-import { impliedKinshipEdgeIds } from '$lib/graph/model/implied-kinship';
+import type { Translate } from '#lib/i18n/translate.js';
+import { captionWords } from '#lib/graph/caption-words.js';
+import { slotElements, toCytoscapeElements } from '#lib/graph/cytoscape/elements.js';
+import { edgeWords, treeRoleWords } from '#lib/graph/edge-words.js';
+import { groupingApplies, labelsSwitchOf } from '#lib/graph/explorer-look.js';
+import type { ExplorerState } from '#lib/graph/explorer-state.js';
+import { edgeLabelsFit, linesDrawn } from '#lib/graph/layout/legibility.js';
+import { expandWouldAdd } from '#lib/graph/model/expand-offer.js';
+import { familyLinksAmong } from '#lib/graph/model/generations.js';
+import { applyFilters, mergeModels } from '#lib/graph/model/graph-model.js';
+import { hiddenNeighbourCounts } from '#lib/graph/model/hidden-neighbours.js';
+import { impliedKinshipEdgeIds } from '#lib/graph/model/implied-kinship.js';
 import {
 	isParentSlot,
 	missingParentSlots,
 	slotLine,
 	slotsShown,
 	type ParentSlot
-} from '$lib/graph/model/missing-parents';
-import { outsideTheFamily } from '$lib/graph/layout/family-tree';
-import { canExpand, hasLinks, ringsFrom } from '$lib/graph/model/rings';
+} from '#lib/graph/model/missing-parents.js';
+import { outsideTheFamily } from '#lib/graph/layout/family-tree.js';
+import { canExpand, hasLinks, ringsFrom } from '#lib/graph/model/rings.js';
 import {
 	groupByRole,
 	linksOfGrouped,
 	type EdgeBundle,
 	type RoleGrouping,
 	type RoleGroup
-} from '$lib/graph/model/role-groups';
-import { shelfCaptions } from '$lib/graph/model/shelf-captions';
-import { shownOnCanvas } from '$lib/graph/model/shown-on-canvas';
-import { rolesTowards } from '$lib/graph/model/tree-roles';
-import { hiddenInTree } from '$lib/graph/model/tree-shown';
-import type { GraphEdge, GraphFilters, GraphModel, GraphNode } from '$lib/graph/model/types';
-import { graphFiltersFor } from '$lib/graph/model/view-filters';
-import { selectionAsked } from '$lib/graph/tree-view';
-import { privateCount, type ExportChoices } from '$lib/graph/tree-export';
-import { exportScene } from '$lib/graph/tree-export-scene';
+} from '#lib/graph/model/role-groups.js';
+import { shelfCaptions } from '#lib/graph/model/shelf-captions.js';
+import { shownOnCanvas } from '#lib/graph/model/shown-on-canvas.js';
+import { rolesTowards } from '#lib/graph/model/tree-roles.js';
+import { hiddenInTree } from '#lib/graph/model/tree-shown.js';
+import type { GraphEdge, GraphFilters, GraphModel, GraphNode } from '#lib/graph/model/types.js';
+import { graphFiltersFor } from '#lib/graph/model/view-filters.js';
+import { selectionAsked } from '#lib/graph/tree-view.js';
+import { privateCount, type ExportChoices } from '#lib/graph/tree-export.js';
+import { exportScene } from '#lib/graph/tree-export-scene.js';
 
 /**
  * What the explorer reads its view from. Each input is its own getter, so a value derived from

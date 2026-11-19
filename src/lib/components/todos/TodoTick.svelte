@@ -5,14 +5,14 @@
 	import { enhance } from '$app/forms';
 	import { invalidateAll } from '$app/navigation';
 	import { page } from '$app/state';
-	import { useI18n } from '$lib/i18n/context.svelte';
-	import { keepable } from '$lib/pwa/keepable';
-	import type { KeptOf } from '$lib/pwa/outbox';
-	import type { JustDoneTodos } from '$lib/todos/just-done.svelte';
-	import { recallKeptTick } from '$lib/todos/kept-ticks.svelte';
-	import { useRemovals } from '$lib/undo/context.svelte';
-	import { submitAction } from '$lib/undo/submit-action';
-	import type { SubmitFunction } from '@sveltejs/kit';
+	import { useI18n } from '#lib/i18n/context.svelte.js';
+	import { keepable } from '#lib/pwa/keepable.js';
+	import type { KeptOf } from '#lib/pwa/outbox.js';
+	import type { JustDoneTodos } from '#lib/todos/just-done.svelte.js';
+	import { recallKeptTick } from '#lib/todos/kept-ticks.svelte.js';
+	import { useRemovals } from '#lib/undo/context.svelte.js';
+	import { submitAction } from '#lib/undo/submit-action.js';
+	import type { SubmitFunction } from '$app/forms';
 
 	/*
 	 * A to-do's tick box, wherever a to-do is listed (docs/dev/02 §2.26): on the right of its row,

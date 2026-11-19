@@ -4,9 +4,9 @@
   without any is greyed and cannot be opened.
 -->
 <script lang="ts">
-	import { useI18n } from '$lib/i18n/context.svelte';
-	import type { LibraryMonth } from '$lib/immich/library';
-	import { monthName } from '$lib/immich/library-labels';
+	import { useI18n } from '#lib/i18n/context.svelte.js';
+	import type { LibraryMonth } from '#lib/immich/library.js';
+	import { monthName } from '#lib/immich/library-labels.js';
 
 	interface Props {
 		year: string;

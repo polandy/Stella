@@ -1,4 +1,4 @@
-import type { LinkedPhrase, PersonRef } from '$lib/i18n/linked';
+import type { LinkedPhrase, PersonRef } from '#lib/i18n/linked.js';
 
 /*
  * Why a last name is proposed (docs/dev/02 §2.2.4.1), as sentences that are said only

@@ -1,5 +1,5 @@
 import { fail } from '@sveltejs/kit';
-import { requireAdmin, requireRemover, requireUser } from '$lib/server/auth/guards';
+import { requireAdmin, requireRemover, requireUser } from '#lib/server/auth/guards.js';
 import {
 	CannotRemoveYourselfError,
 	listMemberAccounts,
@@ -11,8 +11,8 @@ import {
 	restoreMember,
 	type MemberRemovalPreview,
 	type MemberRestorePreview
-} from '$lib/server/domain/household/remove-member';
-import { say, translator } from '$lib/server/i18n/say';
+} from '#lib/server/domain/household/remove-member.js';
+import { say, translator } from '#lib/server/i18n/say.js';
 import type { Actions, PageServerLoad } from './$types';
 
 /**

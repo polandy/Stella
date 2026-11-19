@@ -1,8 +1,8 @@
 <script lang="ts">
-	import { FIELD_FRAME } from '$lib/components/ui/field';
-	import Icon from '$lib/components/ui/Icon.svelte';
-	import { useTranslate } from '$lib/i18n/context.svelte';
-	import type { ReviewCandidate } from '$lib/import-match/review';
+	import { FIELD_FRAME } from '#lib/components/ui/field.js';
+	import Icon from '#lib/components/ui/Icon.svelte';
+	import { useTranslate } from '#lib/i18n/context.svelte.js';
+	import type { ReviewCandidate } from '#lib/import-match/review.js';
 
 	/*
 	 * *Pick someone else* on a review card (docs/dev/02 §2.16): a name search among the people the

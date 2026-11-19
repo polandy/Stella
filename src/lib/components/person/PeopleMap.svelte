@@ -1,11 +1,11 @@
 <script lang="ts">
-	import RelationshipMap from '$lib/components/graph/RelationshipMap.svelte';
-	import { formerOnlyNeighbours } from '$lib/graph/model/person-map';
-	import { withoutRelationships } from '$lib/graph/model/without-pending';
-	import { groupPeople } from '$lib/relationships/people-groups';
-	import { otherEndRole } from '$lib/relationships/roles';
-	import { useRemovals } from '$lib/undo/context.svelte';
-	import { removalKey } from '$lib/undo/keys';
+	import RelationshipMap from '#lib/components/graph/RelationshipMap.svelte';
+	import { formerOnlyNeighbours } from '#lib/graph/model/person-map.js';
+	import { withoutRelationships } from '#lib/graph/model/without-pending.js';
+	import { groupPeople } from '#lib/relationships/people-groups.js';
+	import { otherEndRole } from '#lib/relationships/roles.js';
+	import { useRemovals } from '#lib/undo/context.svelte.js';
+	import { removalKey } from '#lib/undo/keys.js';
 	import type { PersonPageData } from './types';
 
 	/*

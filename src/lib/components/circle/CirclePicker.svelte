@@ -6,20 +6,20 @@
   circle into this one (`add`). A row that cannot be chosen stays and says why.
 -->
 <script lang="ts">
-	import { FIELD } from '$lib/components/ui/field';
+	import { FIELD } from '#lib/components/ui/field.js';
 	import { tick } from 'svelte';
-	import Button from '$lib/components/ui/Button.svelte';
-	import { syncModal } from '$lib/components/ui/modal';
-	import Icon from '$lib/components/ui/Icon.svelte';
+	import Button from '#lib/components/ui/Button.svelte';
+	import { syncModal } from '#lib/components/ui/modal.js';
+	import Icon from '#lib/components/ui/Icon.svelte';
 	import {
 		pickerRows,
 		searchPickerRows,
 		type PickerBlock,
 		type PickerMode
-	} from '$lib/circles/picker';
-	import { circleTree, type TreeCircle } from '$lib/circles/tree';
-	import { accentDotStyle } from '$lib/design/tokens';
-	import { useTranslate } from '$lib/i18n/context.svelte';
+	} from '#lib/circles/picker.js';
+	import { circleTree, type TreeCircle } from '#lib/circles/tree.js';
+	import { accentDotStyle } from '#lib/design/tokens.js';
+	import { useTranslate } from '#lib/i18n/context.svelte.js';
 
 	interface Props {
 		/** Every circle the reader sees, flat; the picker nests them. */

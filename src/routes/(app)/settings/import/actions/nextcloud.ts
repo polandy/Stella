@@ -1,7 +1,7 @@
 import { fail, type RequestEvent } from '@sveltejs/kit';
-import { requireAdmin } from '$lib/server/auth/guards';
-import { nextcloudWording } from '$lib/server/i18n/import-wording';
-import { say } from '$lib/server/i18n/say';
+import { requireAdmin } from '#lib/server/auth/guards.js';
+import { nextcloudWording } from '#lib/server/i18n/import-wording.js';
+import { say } from '#lib/server/i18n/say.js';
 import { reviewStep } from './review';
 import { bookStep } from './staged';
 

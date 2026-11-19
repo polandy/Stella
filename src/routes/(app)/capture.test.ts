@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'bun:test';
-import { createTranslator } from '$lib/i18n/translate';
-import type { CommandHandlers } from '$lib/server/domain/commands/dispatch';
-import { MomentNeedsPersonError, type CapturedMoment } from '$lib/server/domain/moments/moments';
-import { commandDepsWith, inMemoryReceipts } from '$lib/server/domain/testing';
-import { answerOf, formOf, MEMBER, routeEvent } from '$lib/server/testing';
+import { createTranslator } from '#lib/i18n/translate.js';
+import type { CommandHandlers } from '#lib/server/domain/commands/dispatch.js';
+import { MomentNeedsPersonError, type CapturedMoment } from '#lib/server/domain/moments/moments.js';
+import { commandDepsWith, inMemoryReceipts } from '#lib/server/domain/testing/index.js';
+import { answerOf, formOf, MEMBER, routeEvent } from '#lib/server/testing/index.js';
 import { actions } from './+page.server';
 
 /*

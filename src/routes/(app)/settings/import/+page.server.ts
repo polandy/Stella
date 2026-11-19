@@ -1,22 +1,22 @@
 import { fail, redirect } from '@sveltejs/kit';
 import * as v from 'valibot';
-import { detectImportFormat } from '$lib/server/domain/import/read';
-import { skippedContacts } from '$lib/server/domain/import/review-view';
-import { requireAdmin } from '$lib/server/auth/guards';
-import { getConfig } from '$lib/server/config';
-import { applyImport, previewImport } from '$lib/server/domain/import/apply';
-import { MonicaJsonError } from '$lib/server/domain/import/monica/json-export';
-import { SqlDumpError } from '$lib/server/domain/import/monica/sql-dump';
-import { VCardError } from '$lib/server/domain/import/vcard';
+import { detectImportFormat } from '#lib/server/domain/import/read.js';
+import { skippedContacts } from '#lib/server/domain/import/review-view.js';
+import { requireAdmin } from '#lib/server/auth/guards.js';
+import { getConfig } from '#lib/server/config.js';
+import { applyImport, previewImport } from '#lib/server/domain/import/apply.js';
+import { MonicaJsonError } from '#lib/server/domain/import/monica/json-export.js';
+import { SqlDumpError } from '#lib/server/domain/import/monica/sql-dump.js';
+import { VCardError } from '#lib/server/domain/import/vcard.js';
 import {
 	discardStagedDump,
 	pruneStagedDumps,
 	stageDump,
 	STAGED_DUMP_MAX_AGE_MS
-} from '$lib/server/import/staging';
-import { dumpTextOf } from '$lib/server/import/dump-text';
-import { importWording } from '$lib/server/i18n/import-wording';
-import { say, translator } from '$lib/server/i18n/say';
+} from '#lib/server/import/staging.js';
+import { dumpTextOf } from '#lib/server/import/dump-text.js';
+import { importWording } from '#lib/server/i18n/import-wording.js';
+import { say, translator } from '#lib/server/i18n/say.js';
 import type { Actions, PageServerLoad } from './$types';
 import { nextcloudActions, nextcloudPanel } from './actions/nextcloud';
 import { reviewActions, reviewStep } from './actions/review';

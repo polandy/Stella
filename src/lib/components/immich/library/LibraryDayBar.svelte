@@ -4,8 +4,8 @@
   nearest earlier and later day that has any.
 -->
 <script lang="ts">
-	import Icon from '$lib/components/ui/Icon.svelte';
-	import { useTranslate } from '$lib/i18n/context.svelte';
+	import Icon from '#lib/components/ui/Icon.svelte';
+	import { useTranslate } from '#lib/i18n/context.svelte.js';
 
 	interface Props {
 		/** The day, as the heading says it. */

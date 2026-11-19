@@ -1,4 +1,4 @@
-import type { LinkedPhrase, PersonRef } from '$lib/i18n/linked';
+import type { LinkedPhrase, PersonRef } from '#lib/i18n/linked.js';
 
 /*
  * The sentence a suggestion carries (docs/dev/04 ADR-014). A rule knows *why* it fires long

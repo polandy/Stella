@@ -1,6 +1,6 @@
-import type { JsonCommand } from '$lib/commands/commands';
-import { isPlanWhen, PLAN_WHEN_KINDS, planVisibilityFromForm } from '$lib/plans/plans';
-import { parsedWhenFromForm } from '$lib/when/form';
+import type { JsonCommand } from '#lib/commands/commands.js';
+import { isPlanWhen, PLAN_WHEN_KINDS, planVisibilityFromForm } from '#lib/plans/plans.js';
+import { parsedWhenFromForm } from '#lib/when/form.js';
 
 /*
  * The Outings card's add form as the `plan.add` command the outbox keeps (docs/dev/02 §2.18,

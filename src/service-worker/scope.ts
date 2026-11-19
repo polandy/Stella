@@ -6,13 +6,13 @@
  * the small helpers each of them asks a request through.
  */
 
-import { version } from '$service-worker';
+import { version } from '$app/env';
 import {
 	NETWORK_PATIENCE_MS,
 	pagesCacheNameFor,
 	shellCacheNameFor,
 	type CacheableRequest
-} from '$lib/pwa/cache-policy';
+} from '#lib/pwa/cache-policy.js';
 
 export const worker = self as unknown as ServiceWorkerGlobalScope;
 /** The build's assets and the offline page: nobody's data, so sign-out leaves it. */

@@ -1,14 +1,14 @@
 <script lang="ts">
-	import FormError from '$lib/components/ui/FormError.svelte';
-	import { useTranslate } from '$lib/i18n/context.svelte';
+	import FormError from '#lib/components/ui/FormError.svelte';
+	import { useTranslate } from '#lib/i18n/context.svelte.js';
 	import { tick, untrack, type Snippet } from 'svelte';
 	import Button from './Button.svelte';
 	import Icon from './Icon.svelte';
 	import { FIELD_SELECTOR, firstField } from './first-field';
-	import { FocusReturn } from '$lib/ui/focus-return.svelte';
-	import { reveal } from '$lib/motion/motion.svelte';
-	import { settleOpenedForm, showOpenedForm } from '$lib/motion/scroll.svelte';
-	import { openedFormGlide } from '$lib/motion/motion';
+	import { FocusReturn } from '#lib/ui/focus-return.svelte.js';
+	import { reveal } from '#lib/motion/motion.svelte.js';
+	import { settleOpenedForm, showOpenedForm } from '#lib/motion/scroll.svelte.js';
+	import { openedFormGlide } from '#lib/motion/motion.js';
 	import type { IconName } from './icons';
 
 	/*

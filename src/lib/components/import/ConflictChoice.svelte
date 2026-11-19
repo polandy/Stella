@@ -1,7 +1,7 @@
 <script lang="ts">
-	import Icon from '$lib/components/ui/Icon.svelte';
-	import { useTranslate } from '$lib/i18n/context.svelte';
-	import type { Conflict } from '$lib/import-match/merge-plan';
+	import Icon from '#lib/components/ui/Icon.svelte';
+	import { useTranslate } from '#lib/i18n/context.svelte.js';
+	import type { Conflict } from '#lib/import-match/merge-plan.js';
 
 	/*
 	 * One fact Stella and the card disagree on (docs/dev/02 §2.16): two chips side by side, Stella's

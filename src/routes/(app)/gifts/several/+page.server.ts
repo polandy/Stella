@@ -1,16 +1,16 @@
 import { fail, redirect } from '@sveltejs/kit';
-import { giftGroupPayload } from '$lib/components/gifts/gift-group-command';
-import { todayFor } from '$lib/dates/today';
-import { groupLanding } from '$lib/gifts/group-form';
-import { contactSectionPath } from '$lib/people/sections';
-import { requireViewer } from '$lib/server/auth/guards';
-import { systemClock } from '$lib/server/clock';
-import { readCommand } from '$lib/server/commands/parse';
-import { dispatchCommand } from '$lib/server/domain/commands/dispatch';
-import { readGroupShortcuts } from '$lib/server/domain/gifts/group-shortcuts';
-import { peopleToKeepFrom } from '$lib/server/domain/shared/idea-on-person';
-import { say, translator } from '$lib/server/i18n/say';
-import { ulidGenerator } from '$lib/server/id';
+import { giftGroupPayload } from '#lib/components/gifts/gift-group-command.js';
+import { todayFor } from '#lib/dates/today.js';
+import { groupLanding } from '#lib/gifts/group-form.js';
+import { contactSectionPath } from '#lib/people/sections.js';
+import { requireViewer } from '#lib/server/auth/guards.js';
+import { systemClock } from '#lib/server/clock.js';
+import { readCommand } from '#lib/server/commands/parse.js';
+import { dispatchCommand } from '#lib/server/domain/commands/dispatch.js';
+import { readGroupShortcuts } from '#lib/server/domain/gifts/group-shortcuts.js';
+import { peopleToKeepFrom } from '#lib/server/domain/shared/idea-on-person.js';
+import { say, translator } from '#lib/server/i18n/say.js';
+import { ulidGenerator } from '#lib/server/id.js';
 import type { Actions, PageServerLoad } from './$types';
 
 /*

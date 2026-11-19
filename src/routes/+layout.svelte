@@ -8,9 +8,9 @@
 	import '@fontsource-variable/newsreader';
 	import '@fontsource-variable/newsreader/wght-italic.css';
 	import '../app.css';
-	import { APP_BACKGROUND } from '$lib/design/app-colors';
-	import { provideI18n } from '$lib/i18n/context.svelte';
-	import { APPLE_TOUCH_ICON } from '$lib/pwa/manifest';
+	import { APP_BACKGROUND } from '#lib/design/app-colors.js';
+	import { provideI18n } from '#lib/i18n/context.svelte.js';
+	import { APPLE_TOUCH_ICON } from '#lib/pwa/manifest.js';
 	import type { LayoutData } from './$types';
 
 	let { data, children }: { data: LayoutData; children: import('svelte').Snippet } = $props();

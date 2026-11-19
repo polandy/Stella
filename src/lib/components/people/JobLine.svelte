@@ -1,7 +1,7 @@
 <script lang="ts">
-	import Icon from '$lib/components/ui/Icon.svelte';
-	import { useTranslate } from '$lib/i18n/context.svelte';
-	import { jobShortForm } from '$lib/people/job';
+	import Icon from '#lib/components/ui/Icon.svelte';
+	import { useTranslate } from '#lib/i18n/context.svelte.js';
+	import { jobShortForm } from '#lib/people/job.js';
 
 	/*
 	 * A person's job on its own line under their name in a list (docs/dev/02 §2.2, §2.9): a

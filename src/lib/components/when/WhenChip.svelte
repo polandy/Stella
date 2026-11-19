@@ -1,9 +1,9 @@
 <script lang="ts">
-	import Icon from '$lib/components/ui/Icon.svelte';
-	import { useI18n } from '$lib/i18n/context.svelte';
-	import { whenStateChip } from '$lib/when/labels';
-	import { asks, type WhenState } from '$lib/when/state';
-	import type { When } from '$lib/when/when';
+	import Icon from '#lib/components/ui/Icon.svelte';
+	import { useI18n } from '#lib/i18n/context.svelte.js';
+	import { whenStateChip } from '#lib/when/labels.js';
+	import { asks, type WhenState } from '#lib/when/state.js';
+	import type { When } from '#lib/when/when.js';
 
 	/* What a record waits for, on its row: *From age 8*, *For the 6th birthday · in 34 days* (docs/dev/02 §2.25.8). */
 	let {

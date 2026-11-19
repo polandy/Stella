@@ -5,9 +5,9 @@
   photo, the tile says so in place of a broken image.
 -->
 <script lang="ts">
-	import Icon from '$lib/components/ui/Icon.svelte';
-	import { useTranslate } from '$lib/i18n/context.svelte';
-	import type { EntryImmichPhoto } from '$lib/immich/library';
+	import Icon from '#lib/components/ui/Icon.svelte';
+	import { useTranslate } from '#lib/i18n/context.svelte.js';
+	import type { EntryImmichPhoto } from '#lib/immich/library.js';
 	import type { Attachment } from 'svelte/attachments';
 
 	interface Props {

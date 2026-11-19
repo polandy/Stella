@@ -3,7 +3,7 @@ import {
 	type MessageKey,
 	type MessageParams,
 	type Translate
-} from '$lib/i18n/translate';
+} from '#lib/i18n/translate.js';
 
 /*
  * What a route says back to the browser, in the language of the request (docs/dev/02 §2.19).

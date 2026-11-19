@@ -1,9 +1,9 @@
 <script lang="ts">
-	import Icon from '$lib/components/ui/Icon.svelte';
-	import StreamWhen from '$lib/components/stream/StreamWhen.svelte';
-	import type { StreamTime } from '$lib/stream/days';
-	import { useTranslate } from '$lib/i18n/context.svelte';
-	import type { NoticeContent, RemovedRecordKind } from '$lib/stream/notices';
+	import Icon from '#lib/components/ui/Icon.svelte';
+	import StreamWhen from '#lib/components/stream/StreamWhen.svelte';
+	import type { StreamTime } from '#lib/stream/days.js';
+	import { useTranslate } from '#lib/i18n/context.svelte.js';
+	import type { NoticeContent, RemovedRecordKind } from '#lib/stream/notices.js';
 
 	/*
 	 * A line of Home's stream that the activity log holds (docs/dev/02 §2.11). A removal is shown as

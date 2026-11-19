@@ -1,12 +1,12 @@
-import { faceLookup } from '$lib/story/subjects';
+import { faceLookup } from '#lib/story/subjects.js';
 import { error, json } from '@sveltejs/kit';
-import { requireRemover } from '$lib/server/auth/guards';
-import { getContact } from '$lib/server/domain/contacts/contacts';
-import { listContactNamesAmong } from '$lib/server/domain/contacts/contact-names';
-import { authorNames } from '$lib/server/domain/household/members';
-import { listStoryPage } from '$lib/server/domain/story/story';
-import { immichPhotosOfEntries } from '$lib/server/domain/immich/entry-immich-photos';
-import { parseStoryCursor } from '$lib/story/cursor';
+import { requireRemover } from '#lib/server/auth/guards.js';
+import { getContact } from '#lib/server/domain/contacts/contacts.js';
+import { listContactNamesAmong } from '#lib/server/domain/contacts/contact-names.js';
+import { authorNames } from '#lib/server/domain/household/members.js';
+import { listStoryPage } from '#lib/server/domain/story/story.js';
+import { immichPhotosOfEntries } from '#lib/server/domain/immich/entry-immich-photos.js';
+import { parseStoryCursor } from '#lib/story/cursor.js';
 import {
 	entryIdsOf,
 	namedIdsOf,
@@ -16,7 +16,7 @@ import {
 	toStoryItem
 } from '../story-view';
 import type { RequestHandler } from './$types';
-import { say } from '$lib/server/i18n/say';
+import { say } from '#lib/server/i18n/say.js';
 
 /*
  * Older pages of the story timeline (docs/dev/02 §2.23). The first page comes with the person's

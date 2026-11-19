@@ -1,6 +1,6 @@
 import { applyAction } from '$app/forms';
 import { invalidateAll } from '$app/navigation';
-import type { SubmitFunction } from '@sveltejs/kit';
+import type { SubmitFunction } from '$app/forms';
 import { ulid } from 'ulid';
 import type { JsonCommand } from '../commands/commands';
 import { whilePending } from '../sync/pending';
@@ -66,13 +66,14 @@ export function keepable(keep: Keepable, invalid: SubmitFunction): SubmitFunctio
 				await applyAction({
 					type: 'failure',
 					status: 400,
+					location: location.href,
 					data: { [keep.errorKey]: delivery.reason, ...refusals }
 				});
 			} else if (delivery.status === 'kept') {
 				keep.onKept(command);
 			} else {
 				// Clears an error an earlier try left on the form, as a successful action would.
-				await applyAction({ type: 'success', status: 200 });
+				await applyAction({ type: 'success', status: 200, location: location.href });
 				await invalidateAll();
 				await keep.onApplied(delivery.result, command);
 			}

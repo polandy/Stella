@@ -1,7 +1,7 @@
 <script lang="ts">
-	import Icon from '$lib/components/ui/Icon.svelte';
-	import type { IconName } from '$lib/components/ui/icons';
-	import { useTranslate } from '$lib/i18n/context.svelte';
+	import Icon from '#lib/components/ui/Icon.svelte';
+	import type { IconName } from '#lib/components/ui/icons.js';
+	import { useTranslate } from '#lib/i18n/context.svelte.js';
 	import type { FrameFullscreen } from './frame-fullscreen.svelte';
 
 	/*

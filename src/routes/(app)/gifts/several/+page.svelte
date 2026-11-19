@@ -1,18 +1,18 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
 	import { goto } from '$app/navigation';
-	import { browser } from '$app/environment';
-	import { giftGroupAddCommand, groupNotedOf } from '$lib/components/gifts/gift-group-command';
-	import GroupPreviewRow from '$lib/components/gifts/GroupPreviewRow.svelte';
-	import PersonSearchSelect from '$lib/components/people/PersonSearchSelect.svelte';
-	import { INPUT } from '$lib/components/ui/inputs';
-	import Button from '$lib/components/ui/Button.svelte';
-	import FormError from '$lib/components/ui/FormError.svelte';
-	import Icon from '$lib/components/ui/Icon.svelte';
-	import WhenPicker from '$lib/components/ui/WhenPicker.svelte';
-	import type { IconName } from '$lib/components/ui/icons';
-	import { deviceDay, writersDay } from '$lib/dates/today';
-	import { SURPRISE } from '$lib/surprise/surprise';
+	import { browser } from '$app/env';
+	import { giftGroupAddCommand, groupNotedOf } from '#lib/components/gifts/gift-group-command.js';
+	import GroupPreviewRow from '#lib/components/gifts/GroupPreviewRow.svelte';
+	import PersonSearchSelect from '#lib/components/people/PersonSearchSelect.svelte';
+	import { INPUT } from '#lib/components/ui/inputs.js';
+	import Button from '#lib/components/ui/Button.svelte';
+	import FormError from '#lib/components/ui/FormError.svelte';
+	import Icon from '#lib/components/ui/Icon.svelte';
+	import WhenPicker from '#lib/components/ui/WhenPicker.svelte';
+	import type { IconName } from '#lib/components/ui/icons.js';
+	import { deviceDay, writersDay } from '#lib/dates/today.js';
+	import { SURPRISE } from '#lib/surprise/surprise.js';
 	import {
 		groupLanding,
 		groupSummary,
@@ -22,14 +22,14 @@
 		storedBirth,
 		type GroupFormRow,
 		type GroupShortcut
-	} from '$lib/gifts/group-form';
-	import { GIFT_GROUP_MAX_RECIPIENTS } from '$lib/gifts/group-plan';
-	import { GIFT_WHEN_KINDS } from '$lib/gifts/idea-when';
-	import { useI18n } from '$lib/i18n/context.svelte';
-	import { contactSectionPath } from '$lib/people/sections';
-	import { keepable } from '$lib/pwa/keepable';
-	import { useRemovals } from '$lib/undo/context.svelte';
-	import type { When } from '$lib/when/when';
+	} from '#lib/gifts/group-form.js';
+	import { GIFT_GROUP_MAX_RECIPIENTS } from '#lib/gifts/group-plan.js';
+	import { GIFT_WHEN_KINDS } from '#lib/gifts/idea-when.js';
+	import { useI18n } from '#lib/i18n/context.svelte.js';
+	import { contactSectionPath } from '#lib/people/sections.js';
+	import { keepable } from '#lib/pwa/keepable.js';
+	import { useRemovals } from '#lib/undo/context.svelte.js';
+	import type { When } from '#lib/when/when.js';
 	import type { ActionData, PageData } from './$types';
 
 	/*

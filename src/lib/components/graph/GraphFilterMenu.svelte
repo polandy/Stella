@@ -1,14 +1,14 @@
 <script lang="ts">
-	import Icon from '$lib/components/ui/Icon.svelte';
-	import MenuButton from '$lib/components/ui/MenuButton.svelte';
-	import { filterSummary } from '$lib/ui/menu';
-	import { categoryVar } from '$lib/design/tokens';
-	import { useTranslate } from '$lib/i18n/context.svelte';
-	import { DENSITIES, type Density } from '$lib/graph/layout/density';
-	import { EDGE_LABEL_LIMIT, labelsHint } from '$lib/graph/layout/legibility';
-	import type { SavedView } from '$lib/graph/model/saved-views';
-	import type { FilterKey } from '$lib/graph/model/view-filters';
-	import type { ViewSwitches } from '$lib/graph/view-switches';
+	import Icon from '#lib/components/ui/Icon.svelte';
+	import MenuButton from '#lib/components/ui/MenuButton.svelte';
+	import { filterSummary } from '#lib/ui/menu.js';
+	import { categoryVar } from '#lib/design/tokens.js';
+	import { useTranslate } from '#lib/i18n/context.svelte.js';
+	import { DENSITIES, type Density } from '#lib/graph/layout/density.js';
+	import { EDGE_LABEL_LIMIT, labelsHint } from '#lib/graph/layout/legibility.js';
+	import type { SavedView } from '#lib/graph/model/saved-views.js';
+	import type { FilterKey } from '#lib/graph/model/view-filters.js';
+	import type { ViewSwitches } from '#lib/graph/view-switches.js';
 	import GraphSavedViews from './GraphSavedViews.svelte';
 	import { MENU_ITEM } from './menu-item';
 

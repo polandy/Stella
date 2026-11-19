@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { page } from '$app/state';
-	import { useI18n } from '$lib/i18n/context.svelte';
-	import { LOCALE_NAMES, LOCALES } from '$lib/i18n/locales';
+	import { useI18n } from '#lib/i18n/context.svelte.js';
+	import { LOCALE_NAMES, LOCALES } from '#lib/i18n/locales.js';
 
 	/*
 	 * Choosing the interface language (docs/dev/02 §2.19). A segmented control of plain submit

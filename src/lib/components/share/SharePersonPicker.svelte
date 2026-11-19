@@ -1,6 +1,6 @@
 <script lang="ts">
-	import { matchesQuery, type DirectoryPerson } from '$lib/people/directory';
-	import { useTranslate } from '$lib/i18n/context.svelte';
+	import { matchesQuery, type DirectoryPerson } from '#lib/people/directory.js';
+	import { useTranslate } from '#lib/i18n/context.svelte.js';
 	import Avatar from '../ui/Avatar.svelte';
 	import Icon from '../ui/Icon.svelte';
 	import { INPUT } from '../ui/inputs';

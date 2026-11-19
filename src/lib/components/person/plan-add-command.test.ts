@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test';
-import { PlanAddSchema } from '$lib/commands/plan-payloads';
+import { PlanAddSchema } from '#lib/commands/plan-payloads.js';
 import * as v from 'valibot';
 import { planAddCommand } from './plan-add-command';
 

@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { useTranslate } from '$lib/i18n/context.svelte';
+	import { useTranslate } from '#lib/i18n/context.svelte.js';
 	import type { Snippet } from 'svelte';
 
 	/*

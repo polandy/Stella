@@ -1,21 +1,21 @@
 <script lang="ts">
-	import { FIELD, FIELD_FRAME } from '$lib/components/ui/field';
-	import { reveal } from '$lib/motion/motion.svelte';
-	import FormError from '$lib/components/ui/FormError.svelte';
-	import Avatar from '$lib/components/ui/Avatar.svelte';
-	import Button from '$lib/components/ui/Button.svelte';
-	import ColourSwatches from '$lib/components/circle/ColourSwatches.svelte';
-	import ParentField from '$lib/components/circle/ParentField.svelte';
-	import EmptyState from '$lib/components/ui/EmptyState.svelte';
-	import Icon from '$lib/components/ui/Icon.svelte';
-	import { ALL_KINDS, activeKind, kindChips } from '$lib/circles/browse';
-	import { circleFamilies } from '$lib/circles/families';
-	import { circleKindLabel } from '$lib/circles/labels';
-	import { circleShortPeriodLabel } from '$lib/circles/period';
-	import { circleTree, isPastCircle } from '$lib/circles/tree';
-	import { useI18n, useTranslate } from '$lib/i18n/context.svelte';
-	import { accentDotStyle } from '$lib/design/tokens';
-	import { thumbnailUrl } from '$lib/media/urls';
+	import { FIELD, FIELD_FRAME } from '#lib/components/ui/field.js';
+	import { reveal } from '#lib/motion/motion.svelte.js';
+	import FormError from '#lib/components/ui/FormError.svelte';
+	import Avatar from '#lib/components/ui/Avatar.svelte';
+	import Button from '#lib/components/ui/Button.svelte';
+	import ColourSwatches from '#lib/components/circle/ColourSwatches.svelte';
+	import ParentField from '#lib/components/circle/ParentField.svelte';
+	import EmptyState from '#lib/components/ui/EmptyState.svelte';
+	import Icon from '#lib/components/ui/Icon.svelte';
+	import { ALL_KINDS, activeKind, kindChips } from '#lib/circles/browse.js';
+	import { circleFamilies } from '#lib/circles/families.js';
+	import { circleKindLabel } from '#lib/circles/labels.js';
+	import { circleShortPeriodLabel } from '#lib/circles/period.js';
+	import { circleTree, isPastCircle } from '#lib/circles/tree.js';
+	import { useI18n, useTranslate } from '#lib/i18n/context.svelte.js';
+	import { accentDotStyle } from '#lib/design/tokens.js';
+	import { thumbnailUrl } from '#lib/media/urls.js';
 	import type { ActionData, PageData } from './$types';
 
 	let { data, form }: { data: PageData; form: ActionData } = $props();

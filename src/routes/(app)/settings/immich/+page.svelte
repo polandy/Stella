@@ -1,21 +1,21 @@
 <script lang="ts">
 	import { applyAction, enhance } from '$app/forms';
 	import { invalidateAll } from '$app/navigation';
-	import type { SubmitFunction } from '@sveltejs/kit';
-	import Avatar from '$lib/components/ui/Avatar.svelte';
-	import Button from '$lib/components/ui/Button.svelte';
-	import EmptyState from '$lib/components/ui/EmptyState.svelte';
-	import FormError from '$lib/components/ui/FormError.svelte';
-	import NewFromImmich from '$lib/components/immich/NewFromImmich.svelte';
-	import SkeletonRows from '$lib/components/ui/SkeletonRows.svelte';
-	import Tabs from '$lib/components/ui/Tabs.svelte';
-	import { useI18n } from '$lib/i18n/context.svelte';
-	import { usePending } from '$lib/sync/context.svelte';
-	import { whilePending } from '$lib/sync/pending';
-	import { reveal } from '$lib/motion/motion.svelte';
-	import { useRemovals } from '$lib/undo/context.svelte';
-	import { deferredRemoval } from '$lib/undo/deferred-removal';
-	import { removalKey, type RemovalKind } from '$lib/undo/keys';
+	import type { SubmitFunction } from '$app/forms';
+	import Avatar from '#lib/components/ui/Avatar.svelte';
+	import Button from '#lib/components/ui/Button.svelte';
+	import EmptyState from '#lib/components/ui/EmptyState.svelte';
+	import FormError from '#lib/components/ui/FormError.svelte';
+	import NewFromImmich from '#lib/components/immich/NewFromImmich.svelte';
+	import SkeletonRows from '#lib/components/ui/SkeletonRows.svelte';
+	import Tabs from '#lib/components/ui/Tabs.svelte';
+	import { useI18n } from '#lib/i18n/context.svelte.js';
+	import { usePending } from '#lib/sync/context.svelte.js';
+	import { whilePending } from '#lib/sync/pending.js';
+	import { reveal } from '#lib/motion/motion.svelte.js';
+	import { useRemovals } from '#lib/undo/context.svelte.js';
+	import { deferredRemoval } from '#lib/undo/deferred-removal.js';
+	import { removalKey, type RemovalKind } from '#lib/undo/keys.js';
 	import type { ActionData, PageData } from './$types';
 
 	/*

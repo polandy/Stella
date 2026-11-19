@@ -1,11 +1,11 @@
 <script lang="ts">
-	import Button from '$lib/components/ui/Button.svelte';
-	import RemoveButton from '$lib/components/ui/RemoveButton.svelte';
+	import Button from '#lib/components/ui/Button.svelte';
+	import RemoveButton from '#lib/components/ui/RemoveButton.svelte';
 	import { enhance } from '$app/forms';
-	import { useI18n } from '$lib/i18n/context.svelte';
-	import type { Housemate } from '$lib/people/home';
-	import { useRemovals } from '$lib/undo/context.svelte';
-	import type { SubmitFunction } from '@sveltejs/kit';
+	import { useI18n } from '#lib/i18n/context.svelte.js';
+	import type { Housemate } from '#lib/people/home.js';
+	import { useRemovals } from '#lib/undo/context.svelte.js';
+	import type { SubmitFunction } from '$app/forms';
 	import ShareHome from './ShareHome.svelte';
 	import { EDIT_FRAME, INPUT } from '../ui/inputs';
 	import type { PersonForm, PersonPageData } from './types';

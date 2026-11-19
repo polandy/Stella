@@ -4,7 +4,7 @@
  * when ticked by hand, and the same name — folded, so *Brünner* is *Brunner* — is left alone.
  * With nobody to ask about there is nothing to confirm, so the panel writes straight away.
  */
-import { foldSurname } from '$lib/suggestions/rules/surnames';
+import { foldSurname } from '#lib/suggestions/rules/surnames.js';
 
 interface Chosen {
 	id: string;

@@ -4,11 +4,11 @@
 	 * 404 in a build — which is also why its copy is English in place and not in the message
 	 * catalogues: nobody in a household can reach it, so there is nothing to translate.
 	 */
-	import Button from '$lib/components/ui/Button.svelte';
-	import Section from '$lib/components/ui/Section.svelte';
-	import { usePending } from '$lib/sync/context.svelte';
-	import { whilePending } from '$lib/sync/pending';
-	import { MIN_VISIBLE_MS, SHOW_AFTER_MS } from '$lib/sync/pending-work';
+	import Button from '#lib/components/ui/Button.svelte';
+	import Section from '#lib/components/ui/Section.svelte';
+	import { usePending } from '#lib/sync/context.svelte.js';
+	import { whilePending } from '#lib/sync/pending.js';
+	import { MIN_VISIBLE_MS, SHOW_AFTER_MS } from '#lib/sync/pending-work.js';
 
 	const pending = usePending();
 

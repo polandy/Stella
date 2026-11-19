@@ -1,9 +1,9 @@
 <script lang="ts">
-	import Icon from '$lib/components/ui/Icon.svelte';
-	import { accentChipStyle } from '$lib/design/tokens';
-	import { tagAccent } from '$lib/hashtags/hashtags';
-	import type { TagRow } from '$lib/hashtags/picker';
-	import { useTranslate } from '$lib/i18n/context.svelte';
+	import Icon from '#lib/components/ui/Icon.svelte';
+	import { accentChipStyle } from '#lib/design/tokens.js';
+	import { tagAccent } from '#lib/hashtags/hashtags.js';
+	import type { TagRow } from '#lib/hashtags/picker.js';
+	import { useTranslate } from '#lib/i18n/context.svelte.js';
 
 	/*
 	 * The `#` list (docs/dev/02 §2.20.2): the household's tags matching what is typed, then the typed

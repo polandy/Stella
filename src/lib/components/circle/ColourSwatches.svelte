@@ -1,6 +1,6 @@
 <script lang="ts">
-	import { accentDotStyle, type Accent } from '$lib/design/tokens';
-	import { useTranslate } from '$lib/i18n/context.svelte';
+	import { accentDotStyle, type Accent } from '#lib/design/tokens.js';
+	import { useTranslate } from '#lib/i18n/context.svelte.js';
 
 	/*
 	 * A circle's colour as round swatches (docs/dev/05 §5.5), shared by the create form and the

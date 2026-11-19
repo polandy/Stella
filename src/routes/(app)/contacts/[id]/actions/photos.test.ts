@@ -1,11 +1,11 @@
 import { describe, expect, it } from 'bun:test';
-import { createTranslator } from '$lib/i18n/translate';
-import { contactSectionPath } from '$lib/people/sections';
-import type { Contact } from '$lib/server/domain/contacts/contacts';
-import type { GalleryPhoto, PhotoRepository } from '$lib/server/domain/media/avatars';
-import { CAPTION_MAX_LENGTH } from '$lib/server/domain/media/gallery';
-import type { GroupPhoto } from '$lib/server/domain/media/cuts';
-import type { StoredFraming } from '$lib/server/domain/media/framing';
+import { createTranslator } from '#lib/i18n/translate.js';
+import { contactSectionPath } from '#lib/people/sections.js';
+import type { Contact } from '#lib/server/domain/contacts/contacts.js';
+import type { GalleryPhoto, PhotoRepository } from '#lib/server/domain/media/avatars.js';
+import { CAPTION_MAX_LENGTH } from '#lib/server/domain/media/gallery.js';
+import type { GroupPhoto } from '#lib/server/domain/media/cuts.js';
+import type { StoredFraming } from '#lib/server/domain/media/framing.js';
 import {
 	cutRepositoryWith,
 	fixedClock,
@@ -14,7 +14,7 @@ import {
 	sequentialIds,
 	someGalleryPhoto,
 	someGroupPhoto
-} from '$lib/server/domain/testing';
+} from '#lib/server/domain/testing/index.js';
 import {
 	answerOf,
 	formOf,
@@ -22,7 +22,7 @@ import {
 	routeEvent,
 	type EdgeAnswer,
 	type FakeServices
-} from '$lib/server/testing';
+} from '#lib/server/testing/index.js';
 import { photoActions as actions } from './photos';
 
 /*

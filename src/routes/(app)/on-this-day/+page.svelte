@@ -1,16 +1,16 @@
 <script lang="ts">
-	import MemoryPhotos from '$lib/components/memories/MemoryPhotos.svelte';
-	import MemoryRow from '$lib/components/memories/MemoryRow.svelte';
-	import { ImmichMemories } from '$lib/components/memories/immich-memories.svelte';
-	import Button from '$lib/components/ui/Button.svelte';
-	import DateField from '$lib/components/ui/DateField.svelte';
-	import EmptyState from '$lib/components/ui/EmptyState.svelte';
-	import Icon from '$lib/components/ui/Icon.svelte';
-	import { dayLabel } from '$lib/dates/labels';
-	import { addDays } from '$lib/dates/month';
-	import { useI18n } from '$lib/i18n/context.svelte';
-	import { MEMORY_STRIP_CAP } from '$lib/memories/memories';
-	import { memoryCardsWithImmich } from '$lib/memories/immich';
+	import MemoryPhotos from '#lib/components/memories/MemoryPhotos.svelte';
+	import MemoryRow from '#lib/components/memories/MemoryRow.svelte';
+	import { ImmichMemories } from '#lib/components/memories/immich-memories.svelte.js';
+	import Button from '#lib/components/ui/Button.svelte';
+	import DateField from '#lib/components/ui/DateField.svelte';
+	import EmptyState from '#lib/components/ui/EmptyState.svelte';
+	import Icon from '#lib/components/ui/Icon.svelte';
+	import { dayLabel } from '#lib/dates/labels.js';
+	import { addDays } from '#lib/dates/month.js';
+	import { useI18n } from '#lib/i18n/context.svelte.js';
+	import { MEMORY_STRIP_CAP } from '#lib/memories/memories.js';
+	import { memoryCardsWithImmich } from '#lib/memories/immich.js';
 	import { untrack } from 'svelte';
 	import { afterNavigate, goto } from '$app/navigation';
 	import type { PageData } from './$types';
@@ -53,8 +53,7 @@
 	});
 	function visitPicked(event: Event) {
 		event.preventDefault();
-		if (picked !== '' && picked !== data.day)
-			void goto(hrefFor(picked), { keepFocus: true, noScroll: true });
+		if (picked !== '' && picked !== data.day) void goto(hrefFor(picked), { reset: false });
 	}
 	const STEP =
 		'inline-flex size-9 items-center justify-center rounded-app text-fg-muted hover:bg-card hover:text-fg';

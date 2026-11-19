@@ -1,15 +1,15 @@
-import { requireViewer } from '$lib/server/auth/guards';
+import { requireViewer } from '#lib/server/auth/guards.js';
 import {
 	countArchivedContacts,
 	listArchivedContacts,
 	listContacts
-} from '$lib/server/domain/contacts/directory';
-import { listContactsByTag, listTags } from '$lib/server/domain/tags/tag-lists';
-import { readSurnameHelp } from '$lib/server/domain/contacts/last-names';
+} from '#lib/server/domain/contacts/directory.js';
+import { listContactsByTag, listTags } from '#lib/server/domain/tags/tag-lists.js';
+import { readSurnameHelp } from '#lib/server/domain/contacts/last-names.js';
 import { lastNameActions } from '../_shared/last-names-actions';
 import type { Actions, PageServerLoad } from './$types';
-import { systemClock } from '$lib/server/clock';
-import { todayFor } from '$lib/dates/today';
+import { systemClock } from '#lib/server/clock.js';
+import { todayFor } from '#lib/dates/today.js';
 
 /*
  * People (docs/dev/02 §2.2): every person the viewer may see, with the last day anything was
@@ -40,7 +40,7 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 	const lastTouchedOn = new Map(touches.map((t) => [t.contactId, t.lastTouchedOn]));
 
 	return {
-		// What a row shows and the filter searches (`$lib/people/directory`), not the whole record.
+		// What a row shows and the filter searches (`#lib/people/directory.js`), not the whole record.
 		contacts: contacts.map((c) => ({
 			id: c.id,
 			displayName: c.displayName,

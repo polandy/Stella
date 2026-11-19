@@ -1,8 +1,8 @@
 <script lang="ts">
-	import Button from '$lib/components/ui/Button.svelte';
-	import { GLANCE_TILES, photoKey, type PhotoTab } from '$lib/people/photo-card';
-	import { useI18n } from '$lib/i18n/context.svelte';
-	import type { StripView } from '$lib/immich/together';
+	import Button from '#lib/components/ui/Button.svelte';
+	import { GLANCE_TILES, photoKey, type PhotoTab } from '#lib/people/photo-card.js';
+	import { useI18n } from '#lib/i18n/context.svelte.js';
+	import type { StripView } from '#lib/immich/together.js';
 	import { tick } from 'svelte';
 	import type { PhotoCardState, PhotoView } from './photo-card-state.svelte';
 	import PhotoGrid from './PhotoGrid.svelte';

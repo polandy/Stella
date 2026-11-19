@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'bun:test';
-import { textOf } from '$lib/i18n/linked';
-import { createTranslator } from '$lib/i18n/translate';
-import type { KinshipGraph } from '$lib/kinship/kinship';
+import { textOf } from '#lib/i18n/linked.js';
+import { createTranslator } from '#lib/i18n/translate.js';
+import type { KinshipGraph } from '#lib/kinship/kinship.js';
 import type { LinkSuggestion } from '../types';
 import { buildView } from '../view';
 import { K1 } from './kin';

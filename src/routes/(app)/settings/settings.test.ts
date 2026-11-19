@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'bun:test';
-import type { AccountRepository } from '$lib/server/auth/accounts';
-import { answerOf, formOf, MEMBER, routeEvent } from '$lib/server/testing';
+import type { AccountRepository } from '#lib/server/auth/accounts.js';
+import { answerOf, formOf, MEMBER, routeEvent } from '#lib/server/testing/index.js';
 import { actions } from './+page.server';
 
 /*

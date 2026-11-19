@@ -1,16 +1,20 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
 	import { invalidateAll } from '$app/navigation';
-	import Avatar from '$lib/components/ui/Avatar.svelte';
-	import Button from '$lib/components/ui/Button.svelte';
-	import EmptyState from '$lib/components/ui/EmptyState.svelte';
-	import Icon from '$lib/components/ui/Icon.svelte';
-	import { useI18n } from '$lib/i18n/context.svelte';
-	import { movingIn, type SameAddressFinding } from '$lib/people/same-address-check';
-	import { reachability } from '$lib/pwa/reachability.svelte';
-	import { wasTakenBack, type AnsweredClaims, type AnswerState } from '$lib/relationships/answered';
-	import { useRemovals } from '$lib/undo/context.svelte';
-	import { heldAnswer } from '$lib/undo/held-answer';
+	import Avatar from '#lib/components/ui/Avatar.svelte';
+	import Button from '#lib/components/ui/Button.svelte';
+	import EmptyState from '#lib/components/ui/EmptyState.svelte';
+	import Icon from '#lib/components/ui/Icon.svelte';
+	import { useI18n } from '#lib/i18n/context.svelte.js';
+	import { movingIn, type SameAddressFinding } from '#lib/people/same-address-check.js';
+	import { reachability } from '#lib/pwa/reachability.svelte.js';
+	import {
+		wasTakenBack,
+		type AnsweredClaims,
+		type AnswerState
+	} from '#lib/relationships/answered.js';
+	import { useRemovals } from '#lib/undo/context.svelte.js';
+	import { heldAnswer } from '#lib/undo/held-answer.js';
 	import type { PageData } from './$types';
 
 	/*

@@ -1,10 +1,10 @@
 <script lang="ts">
 	import { tick } from 'svelte';
-	import Veil from '$lib/components/ui/Veil.svelte';
-	import { useI18n } from '$lib/i18n/context.svelte';
-	import type { ImmichMemoryPhoto } from '$lib/immich/on-this-day';
-	import { thumbnailUrl } from '$lib/media/urls';
-	import type { MemoryPhotoView } from '$lib/memories/view';
+	import Veil from '#lib/components/ui/Veil.svelte';
+	import { useI18n } from '#lib/i18n/context.svelte.js';
+	import type { ImmichMemoryPhoto } from '#lib/immich/on-this-day.js';
+	import { thumbnailUrl } from '#lib/media/urls.js';
+	import type { MemoryPhotoView } from '#lib/memories/view.js';
 	import ImmichMemoryLightbox from './ImmichMemoryLightbox.svelte';
 
 	/*

@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'bun:test';
-import { textOf } from '$lib/i18n/linked';
-import { createTranslator } from '$lib/i18n/translate';
-import type { KinshipGraph } from '$lib/kinship/kinship';
-import { pairKey, type Dismissal } from '$lib/suggestions/claims';
+import { textOf } from '#lib/i18n/linked.js';
+import { createTranslator } from '#lib/i18n/translate.js';
+import type { KinshipGraph } from '#lib/kinship/kinship.js';
+import { pairKey, type Dismissal } from '#lib/suggestions/claims.js';
 import type { Viewer } from '../../access/visibility';
 import {
 	dismissSuggestion,

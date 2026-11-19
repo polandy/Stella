@@ -1,9 +1,9 @@
-import { dayLabel } from '$lib/dates/labels';
-import { INTL_LOCALES, LOCALES } from '$lib/i18n/locales';
-import { createTranslator } from '$lib/i18n/translate';
-import type { KnownLabel } from '$lib/import-match/card';
-import type { ImportWording } from '$lib/server/domain/import/monica/plan';
-import type { KnownLabelOf } from '$lib/server/domain/nextcloud/linked-person';
+import { dayLabel } from '#lib/dates/labels.js';
+import { INTL_LOCALES, LOCALES } from '#lib/i18n/locales.js';
+import { createTranslator } from '#lib/i18n/translate.js';
+import type { KnownLabel } from '#lib/import-match/card.js';
+import type { ImportWording } from '#lib/server/domain/import/monica/plan.js';
+import type { KnownLabelOf } from '#lib/server/domain/nextcloud/linked-person.js';
 
 /*
  * The words the importer writes *into* the household's data (docs/dev/02 §2.16): a gift note's

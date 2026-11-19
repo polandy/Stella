@@ -1,7 +1,7 @@
 <script lang="ts">
-	import { useTranslate } from '$lib/i18n/context.svelte';
-	import { install } from '$lib/pwa/install.svelte';
-	import { installRouteFor } from '$lib/pwa/install-route';
+	import { useTranslate } from '#lib/i18n/context.svelte.js';
+	import { install } from '#lib/pwa/install.svelte.js';
+	import { installRouteFor } from '#lib/pwa/install-route.js';
 	import Button from '../ui/Button.svelte';
 	import Icon from '../ui/Icon.svelte';
 

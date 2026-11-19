@@ -1,6 +1,6 @@
 <script lang="ts">
-	import Icon from '$lib/components/ui/Icon.svelte';
-	import type { GiftState } from '$lib/gifts/gifts';
+	import Icon from '#lib/components/ui/Icon.svelte';
+	import type { GiftState } from '#lib/gifts/gifts.js';
 
 	/*
 	 * The square beside a gift: a yellow bulb while it is an idea, a bag once it is bought, the gift

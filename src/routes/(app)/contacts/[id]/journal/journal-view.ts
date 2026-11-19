@@ -1,13 +1,17 @@
-import { canRemoveAuthored, type ContactAccess, type Remover } from '$lib/server/access/visibility';
-import { extractMentionIds } from '$lib/mentions/mentions';
-import { hashtagsIn, journalTagHref, tagKey } from '$lib/hashtags/hashtags';
-import type { KnownTag } from '$lib/hashtags/picker';
-import type { JournalEntry } from '$lib/server/domain/journal/journal';
-import type { JournalPhotoRef } from '$lib/server/domain/media/journal-photos';
-import type { EntryImmichPhoto } from '$lib/immich/library';
-import { renderMarkdownWithMentions } from '$lib/server/domain/notes/markdown';
-import { authorLabel } from '$lib/story/author';
-import { faceLookup, subjectFacesOf, type SubjectFace } from '$lib/story/subjects';
+import {
+	canRemoveAuthored,
+	type ContactAccess,
+	type Remover
+} from '#lib/server/access/visibility.js';
+import { extractMentionIds } from '#lib/mentions/mentions.js';
+import { hashtagsIn, journalTagHref, tagKey } from '#lib/hashtags/hashtags.js';
+import type { KnownTag } from '#lib/hashtags/picker.js';
+import type { JournalEntry } from '#lib/server/domain/journal/journal.js';
+import type { JournalPhotoRef } from '#lib/server/domain/media/journal-photos.js';
+import type { EntryImmichPhoto } from '#lib/immich/library.js';
+import { renderMarkdownWithMentions } from '#lib/server/domain/notes/markdown.js';
+import { authorLabel } from '#lib/story/author.js';
+import { faceLookup, subjectFacesOf, type SubjectFace } from '#lib/story/subjects.js';
 
 /*
  * The journal's entries as the page shows them (docs/dev/02 §2.20), as plain data so it is tested

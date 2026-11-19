@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'bun:test';
-import { BUILT_IN_RELATIONSHIP_TYPES } from '$lib/server/domain/relationships/built-in-types';
-import { RELATION_FOR_TYPE_KEY, TYPE_KEY_FOR_RELATION } from '$lib/relationships/type-keys';
+import { BUILT_IN_RELATIONSHIP_TYPES } from '#lib/server/domain/relationships/built-in-types.js';
+import { RELATION_FOR_TYPE_KEY, TYPE_KEY_FOR_RELATION } from '#lib/relationships/type-keys.js';
 import { RELATIONS } from './types';
 
 /*

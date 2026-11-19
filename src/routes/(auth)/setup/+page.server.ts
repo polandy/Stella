@@ -1,9 +1,9 @@
 import { fail, redirect } from '@sveltejs/kit';
 import * as v from 'valibot';
-import { createTranslator, messageKey, type MessageKey } from '$lib/i18n/translate';
-import { registerFirstAdmin, SetupAlreadyDoneError } from '$lib/server/auth/accounts';
-import { setSessionCookie } from '$lib/server/auth/cookies';
-import { createSession } from '$lib/server/auth/session';
+import { createTranslator, messageKey, type MessageKey } from '#lib/i18n/translate.js';
+import { registerFirstAdmin, SetupAlreadyDoneError } from '#lib/server/auth/accounts.js';
+import { setSessionCookie } from '#lib/server/auth/cookies.js';
+import { createSession } from '#lib/server/auth/session.js';
 import type { Actions, PageServerLoad } from './$types';
 
 /*

@@ -1,33 +1,33 @@
-import type { SubjectFace } from '$lib/story/subjects';
-import { SECTION_FOR_REFERENCE, contactSectionPath } from '$lib/people/sections';
-import { segmentsOf } from '$lib/i18n/linked';
-import type { Translate } from '$lib/i18n/translate';
-import { extractMentionIds } from '$lib/mentions/mentions';
-import { mentionSnippet } from '$lib/mentions/snippet';
-import { fieldHref, type ContactField } from '$lib/server/domain/contact-fields/contact-fields';
-import type { Contact } from '$lib/server/domain/contacts/contacts';
-import { namesADay } from '$lib/dates/partial-date';
+import type { SubjectFace } from '#lib/story/subjects.js';
+import { SECTION_FOR_REFERENCE, contactSectionPath } from '#lib/people/sections.js';
+import { segmentsOf } from '#lib/i18n/linked.js';
+import type { Translate } from '#lib/i18n/translate.js';
+import { extractMentionIds } from '#lib/mentions/mentions.js';
+import { mentionSnippet } from '#lib/mentions/snippet.js';
+import { fieldHref, type ContactField } from '#lib/server/domain/contact-fields/contact-fields.js';
+import type { Contact } from '#lib/server/domain/contacts/contacts.js';
+import { namesADay } from '#lib/dates/partial-date.js';
 import {
 	overridesDerivedBirthday,
 	type ImportantDate
-} from '$lib/server/domain/dates/important-dates';
-import type { GraphModel } from '$lib/graph/model/types';
-import type { Gift } from '$lib/server/domain/gifts/gifts';
-import type { Plan } from '$lib/server/domain/plans/plans';
-import type { Todo } from '$lib/server/domain/todos/todos';
-import type { MentionedIn } from '$lib/server/domain/mentions/mentioned-in';
-import { renderMarkdownWithMentions } from '$lib/server/domain/notes/markdown';
-import type { GalleryPhoto } from '$lib/server/domain/media/avatars';
-import type { Note } from '$lib/server/domain/notes/notes';
+} from '#lib/server/domain/dates/important-dates.js';
+import type { GraphModel } from '#lib/graph/model/types.js';
+import type { Gift } from '#lib/server/domain/gifts/gifts.js';
+import type { Plan } from '#lib/server/domain/plans/plans.js';
+import type { Todo } from '#lib/server/domain/todos/todos.js';
+import type { MentionedIn } from '#lib/server/domain/mentions/mentioned-in.js';
+import { renderMarkdownWithMentions } from '#lib/server/domain/notes/markdown.js';
+import type { GalleryPhoto } from '#lib/server/domain/media/avatars.js';
+import type { Note } from '#lib/server/domain/notes/notes.js';
 import {
 	canEditAuthored,
 	canRemoveAuthored,
 	type ContactAccess,
 	type Remover
-} from '$lib/server/access/visibility';
-import type { ProposedLink } from '$lib/server/domain/relationships/suggestion-review';
-import { authorLabel } from '$lib/story/author';
-import type { LinkSuggestion } from '$lib/suggestions/types';
+} from '#lib/server/access/visibility.js';
+import type { ProposedLink } from '#lib/server/domain/relationships/suggestion-review.js';
+import { authorLabel } from '#lib/story/author.js';
+import type { LinkSuggestion } from '#lib/suggestions/types.js';
 
 /*
  * Turn what the person page read into what it renders (docs/dev/02 §2.2). Presentation, so the

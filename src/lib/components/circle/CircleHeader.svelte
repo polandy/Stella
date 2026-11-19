@@ -1,24 +1,24 @@
 <script lang="ts">
-	import { FIELD } from '$lib/components/ui/field';
+	import { FIELD } from '#lib/components/ui/field.js';
 	import { tick } from 'svelte';
 	import { enhance } from '$app/forms';
-	import CircleDeleteStep from '$lib/components/circle/CircleDeleteStep.svelte';
-	import ColourSwatches from '$lib/components/circle/ColourSwatches.svelte';
-	import ParentField from '$lib/components/circle/ParentField.svelte';
-	import { offerUndo } from '$lib/components/circle/circle-moves';
-	import Button from '$lib/components/ui/Button.svelte';
-	import DateField from '$lib/components/ui/DateField.svelte';
-	import FormError from '$lib/components/ui/FormError.svelte';
-	import Icon from '$lib/components/ui/Icon.svelte';
-	import MenuButton from '$lib/components/ui/MenuButton.svelte';
-	import { circleKindLabel } from '$lib/circles/labels';
-	import { circlePeriodLabel } from '$lib/circles/period';
-	import type { TreeCircle } from '$lib/circles/tree';
-	import { accentDotStyle, type Accent } from '$lib/design/tokens';
-	import { useI18n } from '$lib/i18n/context.svelte';
-	import { reveal } from '$lib/motion/motion.svelte';
-	import { useRemovals } from '$lib/undo/context.svelte';
-	import type { SubmitFunction } from '@sveltejs/kit';
+	import CircleDeleteStep from '#lib/components/circle/CircleDeleteStep.svelte';
+	import ColourSwatches from '#lib/components/circle/ColourSwatches.svelte';
+	import ParentField from '#lib/components/circle/ParentField.svelte';
+	import { offerUndo } from '#lib/components/circle/circle-moves.js';
+	import Button from '#lib/components/ui/Button.svelte';
+	import DateField from '#lib/components/ui/DateField.svelte';
+	import FormError from '#lib/components/ui/FormError.svelte';
+	import Icon from '#lib/components/ui/Icon.svelte';
+	import MenuButton from '#lib/components/ui/MenuButton.svelte';
+	import { circleKindLabel } from '#lib/circles/labels.js';
+	import { circlePeriodLabel } from '#lib/circles/period.js';
+	import type { TreeCircle } from '#lib/circles/tree.js';
+	import { accentDotStyle, type Accent } from '#lib/design/tokens.js';
+	import { useI18n } from '#lib/i18n/context.svelte.js';
+	import { reveal } from '#lib/motion/motion.svelte.js';
+	import { useRemovals } from '#lib/undo/context.svelte.js';
+	import type { SubmitFunction } from '$app/forms';
 
 	/*
 	 * The circle page's header (docs/dev/02 §2.4.2, docs/dev/design/screens/circles.md): its colour, name

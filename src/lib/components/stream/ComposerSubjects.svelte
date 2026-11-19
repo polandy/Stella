@@ -1,17 +1,17 @@
 <script lang="ts">
-	import Avatar from '$lib/components/ui/Avatar.svelte';
-	import Icon from '$lib/components/ui/Icon.svelte';
-	import PersonSearchSelect from '$lib/components/people/PersonSearchSelect.svelte';
-	import { useTranslate } from '$lib/i18n/context.svelte';
-	import type { MentionAudience } from '$lib/mentions/audience';
-	import { subjectPool } from '$lib/story/subjects';
-	import type { ComposerCandidate } from '$lib/stream/composer-state';
+	import Avatar from '#lib/components/ui/Avatar.svelte';
+	import Icon from '#lib/components/ui/Icon.svelte';
+	import PersonSearchSelect from '#lib/components/people/PersonSearchSelect.svelte';
+	import { useTranslate } from '#lib/i18n/context.svelte.js';
+	import type { MentionAudience } from '#lib/mentions/audience.js';
+	import { subjectPool } from '#lib/story/subjects.js';
+	import type { ComposerCandidate } from '#lib/stream/composer-state.js';
 	import {
 		homeOffers,
 		journalCount,
 		subjectsUnfit,
 		type HomeMembers
-	} from '$lib/stream/composer-subjects';
+	} from '#lib/stream/composer-subjects.js';
 	import { tick } from 'svelte';
 
 	/*

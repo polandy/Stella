@@ -1,13 +1,13 @@
 <script lang="ts">
-	import Avatar from '$lib/components/ui/Avatar.svelte';
-	import Icon from '$lib/components/ui/Icon.svelte';
-	import PrivateMark from '$lib/components/ui/PrivateMark.svelte';
-	import Veil from '$lib/components/ui/Veil.svelte';
-	import StreamFace from '$lib/components/stream/StreamFace.svelte';
-	import StreamWhen from '$lib/components/stream/StreamWhen.svelte';
-	import { KIND_PRESENTATION } from '$lib/story/interaction-kinds';
-	import type { StreamTime } from '$lib/stream/days';
-	import { useTranslate } from '$lib/i18n/context.svelte';
+	import Avatar from '#lib/components/ui/Avatar.svelte';
+	import Icon from '#lib/components/ui/Icon.svelte';
+	import PrivateMark from '#lib/components/ui/PrivateMark.svelte';
+	import Veil from '#lib/components/ui/Veil.svelte';
+	import StreamFace from '#lib/components/stream/StreamFace.svelte';
+	import StreamWhen from '#lib/components/stream/StreamWhen.svelte';
+	import { KIND_PRESENTATION } from '#lib/story/interaction-kinds.js';
+	import type { StreamTime } from '#lib/stream/days.js';
+	import { useTranslate } from '#lib/i18n/context.svelte.js';
 	import type { PageData } from '../../../routes/(app)/$types';
 
 	/** The stream item as Home's `load` hands it over. */

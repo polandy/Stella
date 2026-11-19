@@ -9,7 +9,7 @@ import {
 	PARENT_IN_LAW_TYPE_KEY,
 	SIBLING_IN_LAW_TYPE_KEY,
 	SIBLING_TYPE_KEY
-} from '$lib/relationships/type-keys';
+} from '#lib/relationships/type-keys.js';
 import { claimEndpoints, confirmedClaimFor, directClaimFor } from './claims';
 import type { KinTerm } from './kinship';
 

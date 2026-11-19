@@ -1,5 +1,5 @@
-import type { LinkedPhrase } from '$lib/i18n/linked';
-import type { KinshipGraph } from '$lib/kinship/kinship';
+import type { LinkedPhrase } from '#lib/i18n/linked.js';
+import type { KinshipGraph } from '#lib/kinship/kinship.js';
 import { childOf, inCircle, parentOf, partnerOf, shownAs, siblingOf } from '../surname-reasons';
 import type { Confidence } from '../types';
 import { buildView } from '../view';

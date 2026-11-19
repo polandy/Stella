@@ -1,28 +1,28 @@
 import { error, fail, redirect } from '@sveltejs/kit';
-import { requireRemover, requireViewer } from '$lib/server/auth/guards';
-import { addMembers, removeMember, setMembersRole } from '$lib/server/domain/circles/members';
+import { requireRemover, requireViewer } from '#lib/server/auth/guards.js';
+import { addMembers, removeMember, setMembersRole } from '#lib/server/domain/circles/members.js';
 import {
 	CIRCLE_COLORS,
 	CIRCLE_KINDS,
 	getCircle,
 	suggestCircleColor
-} from '$lib/server/domain/circles/circles';
-import { groupMembersByRole, suggestRoles } from '$lib/server/domain/circles/role-groups';
-import { listMembers } from '$lib/server/domain/circles/memberships';
-import { readCircleTree } from '$lib/server/domain/circles/tree';
-import { circleTree } from '$lib/circles/tree';
-import { todayFor } from '$lib/dates/today';
+} from '#lib/server/domain/circles/circles.js';
+import { groupMembersByRole, suggestRoles } from '#lib/server/domain/circles/role-groups.js';
+import { listMembers } from '#lib/server/domain/circles/memberships.js';
+import { readCircleTree } from '#lib/server/domain/circles/tree.js';
+import { circleTree } from '#lib/circles/tree.js';
+import { todayFor } from '#lib/dates/today.js';
 import {
 	circlePhotoRemovable,
 	circlePhotoView,
 	photoRoleOptions
-} from '$lib/server/domain/circles/circle-photo-view';
-import { listCirclePhotos } from '$lib/server/domain/circles/circle-photos';
-import { circleDeletable } from '$lib/server/domain/circles/delete-circle';
-import { BlankRoleNameError, renameCircleRole } from '$lib/server/domain/circles/rename-role';
-import { listContactNamesAmong } from '$lib/server/domain/contacts/contact-names';
-import { listCircleCuts } from '$lib/server/domain/media/cuts';
-import { readSurnameHelp } from '$lib/server/domain/contacts/last-names';
+} from '#lib/server/domain/circles/circle-photo-view.js';
+import { listCirclePhotos } from '#lib/server/domain/circles/circle-photos.js';
+import { circleDeletable } from '#lib/server/domain/circles/delete-circle.js';
+import { BlankRoleNameError, renameCircleRole } from '#lib/server/domain/circles/rename-role.js';
+import { listContactNamesAmong } from '#lib/server/domain/contacts/contact-names.js';
+import { listCircleCuts } from '#lib/server/domain/media/cuts.js';
+import { readSurnameHelp } from '#lib/server/domain/contacts/last-names.js';
 import { deleteActions } from './actions/delete';
 import { detailsActions } from './actions/details';
 import { nestingActions } from './actions/nesting';
@@ -30,7 +30,7 @@ import { photoActions } from './actions/photos';
 import { readPeopleAndRole } from './people-form';
 import { lastNameActions } from '../../_shared/last-names-actions';
 import type { Actions, PageServerLoad } from './$types';
-import { say, translator } from '$lib/server/i18n/say';
+import { say, translator } from '#lib/server/i18n/say.js';
 
 /*
  * Circle detail (docs/dev/02 §2.4.2): the circle, its visible members grouped by role, and a picker to

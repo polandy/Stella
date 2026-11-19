@@ -1,17 +1,17 @@
 <script lang="ts">
-	import type { SubmitFunction } from '@sveltejs/kit';
+	import type { SubmitFunction } from '$app/forms';
 	import { enhance } from '$app/forms';
 	import { invalidateAll } from '$app/navigation';
-	import Button from '$lib/components/ui/Button.svelte';
-	import { useI18n } from '$lib/i18n/context.svelte';
-	import { reachability } from '$lib/pwa/reachability.svelte';
-	import { giveFromChip, type ChipGiveDeps } from '$lib/surnames/chip-give';
-	import { useHeldNames } from '$lib/surnames/held-names.svelte';
-	import { passOnOffer } from '$lib/surnames/pass-on';
-	import { renameOffer } from '$lib/surnames/rename-offer';
-	import { usePending } from '$lib/sync/context.svelte';
-	import { useRemovals } from '$lib/undo/context.svelte';
-	import { submitAction } from '$lib/undo/submit-action';
+	import Button from '#lib/components/ui/Button.svelte';
+	import { useI18n } from '#lib/i18n/context.svelte.js';
+	import { reachability } from '#lib/pwa/reachability.svelte.js';
+	import { giveFromChip, type ChipGiveDeps } from '#lib/surnames/chip-give.js';
+	import { useHeldNames } from '#lib/surnames/held-names.svelte.js';
+	import { passOnOffer } from '#lib/surnames/pass-on.js';
+	import { renameOffer } from '#lib/surnames/rename-offer.js';
+	import { usePending } from '#lib/sync/context.svelte.js';
+	import { useRemovals } from '#lib/undo/context.svelte.js';
+	import { submitAction } from '#lib/undo/submit-action.js';
 	import type { PersonPageData } from './types';
 
 	/*

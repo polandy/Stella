@@ -1,14 +1,14 @@
 <script lang="ts">
-	import PlanListRow from '$lib/components/plans/PlanListRow.svelte';
-	import EmptyState from '$lib/components/ui/EmptyState.svelte';
-	import FormError from '$lib/components/ui/FormError.svelte';
-	import Icon from '$lib/components/ui/Icon.svelte';
-	import { useI18n } from '$lib/i18n/context.svelte';
-	import { planListGroups, type PlanGroupKey } from '$lib/plans/list';
-	import { isKept } from '$lib/pwa/outbox';
-	import { outbox } from '$lib/pwa/outbox.svelte';
-	import { useRemovals } from '$lib/undo/context.svelte';
-	import { removalKey } from '$lib/undo/keys';
+	import PlanListRow from '#lib/components/plans/PlanListRow.svelte';
+	import EmptyState from '#lib/components/ui/EmptyState.svelte';
+	import FormError from '#lib/components/ui/FormError.svelte';
+	import Icon from '#lib/components/ui/Icon.svelte';
+	import { useI18n } from '#lib/i18n/context.svelte.js';
+	import { planListGroups, type PlanGroupKey } from '#lib/plans/list.js';
+	import { isKept } from '#lib/pwa/outbox.js';
+	import { outbox } from '#lib/pwa/outbox.svelte.js';
+	import { useRemovals } from '#lib/undo/context.svelte.js';
+	import { removalKey } from '#lib/undo/keys.js';
 	import type { ActionData, PageData } from './$types';
 
 	/*

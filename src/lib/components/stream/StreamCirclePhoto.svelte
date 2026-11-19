@@ -1,12 +1,12 @@
 <script lang="ts">
-	import Icon from '$lib/components/ui/Icon.svelte';
-	import PrivateMark from '$lib/components/ui/PrivateMark.svelte';
-	import Veil from '$lib/components/ui/Veil.svelte';
-	import { useVeil } from '$lib/privacy/veil.svelte';
-	import StreamWhen from '$lib/components/stream/StreamWhen.svelte';
-	import type { StreamTime } from '$lib/stream/days';
-	import { useTranslate } from '$lib/i18n/context.svelte';
-	import { thumbnailUrl } from '$lib/media/urls';
+	import Icon from '#lib/components/ui/Icon.svelte';
+	import PrivateMark from '#lib/components/ui/PrivateMark.svelte';
+	import Veil from '#lib/components/ui/Veil.svelte';
+	import { useVeil } from '#lib/privacy/veil.svelte.js';
+	import StreamWhen from '#lib/components/stream/StreamWhen.svelte';
+	import type { StreamTime } from '#lib/stream/days.js';
+	import { useTranslate } from '#lib/i18n/context.svelte.js';
+	import { thumbnailUrl } from '#lib/media/urls.js';
 	import type { PageData } from '../../../routes/(app)/$types';
 
 	/** The stream item as Home's `load` hands it over. */

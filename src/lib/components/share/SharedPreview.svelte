@@ -1,7 +1,7 @@
 <script lang="ts">
-	import Icon from '$lib/components/ui/Icon.svelte';
-	import { useI18n } from '$lib/i18n/context.svelte';
-	import { MAX_SHARED_PHOTOS, type Shared } from '$lib/share/shared';
+	import Icon from '#lib/components/ui/Icon.svelte';
+	import { useI18n } from '#lib/i18n/context.svelte.js';
+	import { MAX_SHARED_PHOTOS, type Shared } from '#lib/share/shared.js';
 
 	/** What arrived, shown before anything is saved: the photos, or the words and the link. */
 	let {

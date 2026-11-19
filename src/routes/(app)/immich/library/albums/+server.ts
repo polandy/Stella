@@ -1,11 +1,11 @@
 import { error } from '@sveltejs/kit';
-import { answerLibraryAlbums } from '$lib/server/immich/routes';
-import { say } from '$lib/server/i18n/say';
+import { answerLibraryAlbums } from '#lib/server/immich/routes.js';
+import { say } from '#lib/server/i18n/say.js';
 import type { RequestHandler } from './$types';
 
 /*
  * The Immich albums, own and shared, for the photo picker's album list (docs/dev/02 §2.24.9).
- * What it answers is decided and tested in `$lib/server/immich/routes.ts`; this only wires it.
+ * What it answers is decided and tested in `#lib/server/immich/routes.ts`; this only wires it.
  */
 export const GET: RequestHandler = async ({ locals }) => {
 	const viewer = locals.user ? { id: locals.user.id, householdId: locals.user.householdId } : null;

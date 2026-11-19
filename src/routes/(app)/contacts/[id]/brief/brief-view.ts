@@ -1,14 +1,14 @@
-import { mentionSnippet } from '$lib/mentions/snippet';
-import { addressLines } from '$lib/people/identity-card';
-import type { BriefBlock, FamilyMember } from '$lib/people/brief';
-import { contactSectionPath, journalEntryPath } from '$lib/people/sections';
-import type { InteractionKind } from '$lib/story/interaction-kinds';
-import type { UpcomingDate } from '$lib/server/domain/dates/upcoming';
-import type { Gift } from '$lib/server/domain/gifts/gifts';
-import type { HomeOf } from '$lib/server/domain/homes/homes';
-import type { Note } from '$lib/server/domain/notes/notes';
-import type { StoryItem } from '$lib/server/domain/story/story';
-import type { Todo } from '$lib/server/domain/todos/todos';
+import { mentionSnippet } from '#lib/mentions/snippet.js';
+import { addressLines } from '#lib/people/identity-card.js';
+import type { BriefBlock, FamilyMember } from '#lib/people/brief.js';
+import { contactSectionPath, journalEntryPath } from '#lib/people/sections.js';
+import type { InteractionKind } from '#lib/story/interaction-kinds.js';
+import type { UpcomingDate } from '#lib/server/domain/dates/upcoming.js';
+import type { Gift } from '#lib/server/domain/gifts/gifts.js';
+import type { HomeOf } from '#lib/server/domain/homes/homes.js';
+import type { Note } from '#lib/server/domain/notes/notes.js';
+import type { StoryItem } from '#lib/server/domain/story/story.js';
+import type { Todo } from '#lib/server/domain/todos/todos.js';
 
 /*
  * The brief's blocks as the page renders them (docs/dev/02 §2.2.5): one short line per row and the

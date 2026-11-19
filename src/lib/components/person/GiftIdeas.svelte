@@ -1,7 +1,7 @@
 <script lang="ts">
-	import Icon from '$lib/components/ui/Icon.svelte';
-	import type { PartialDate } from '$lib/dates/partial-date';
-	import { useI18n } from '$lib/i18n/context.svelte';
+	import Icon from '#lib/components/ui/Icon.svelte';
+	import type { PartialDate } from '#lib/dates/partial-date.js';
+	import { useI18n } from '#lib/i18n/context.svelte.js';
 	import GiftRow from './GiftRow.svelte';
 	import type { GroupLink, PersonPageData } from './types';
 

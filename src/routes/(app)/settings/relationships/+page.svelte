@@ -1,18 +1,18 @@
 <script lang="ts">
-	import { FIELD_ON_BG } from '$lib/components/ui/field';
-	import FormError from '$lib/components/ui/FormError.svelte';
-	import Avatar from '$lib/components/ui/Avatar.svelte';
-	import Button from '$lib/components/ui/Button.svelte';
-	import EmptyState from '$lib/components/ui/EmptyState.svelte';
-	import Icon from '$lib/components/ui/Icon.svelte';
-	import KinSuggestions from '$lib/components/people/KinSuggestions.svelte';
-	import { useTranslate } from '$lib/i18n/context.svelte';
-	import { answerKey } from '$lib/relationships/answer-key';
-	import { allSent, answeredCount, type AnsweredClaims } from '$lib/relationships/answered';
-	import { REVIEW_PARAM, QUERY_PARAM, reviewHref } from '$lib/relationships/review-url';
-	import { contactSectionPath } from '$lib/people/sections';
-	import { PEOPLE_PER_PAGE } from '$lib/suggestions/paging';
-	import type { Relation } from '$lib/suggestions/types';
+	import { FIELD_ON_BG } from '#lib/components/ui/field.js';
+	import FormError from '#lib/components/ui/FormError.svelte';
+	import Avatar from '#lib/components/ui/Avatar.svelte';
+	import Button from '#lib/components/ui/Button.svelte';
+	import EmptyState from '#lib/components/ui/EmptyState.svelte';
+	import Icon from '#lib/components/ui/Icon.svelte';
+	import KinSuggestions from '#lib/components/people/KinSuggestions.svelte';
+	import { useTranslate } from '#lib/i18n/context.svelte.js';
+	import { answerKey } from '#lib/relationships/answer-key.js';
+	import { allSent, answeredCount, type AnsweredClaims } from '#lib/relationships/answered.js';
+	import { REVIEW_PARAM, QUERY_PARAM, reviewHref } from '#lib/relationships/review-url.js';
+	import { contactSectionPath } from '#lib/people/sections.js';
+	import { PEOPLE_PER_PAGE } from '#lib/suggestions/paging.js';
+	import type { Relation } from '#lib/suggestions/types.js';
 	import type { ActionData, PageData } from './$types';
 
 	/*

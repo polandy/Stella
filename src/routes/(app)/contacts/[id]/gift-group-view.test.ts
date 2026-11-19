@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'bun:test';
-import type { VisibleGiftGroup } from '$lib/server/domain/gifts/gift-groups';
-import type { Gift } from '$lib/server/domain/gifts/gifts';
+import type { VisibleGiftGroup } from '#lib/server/domain/gifts/gift-groups.js';
+import type { Gift } from '#lib/server/domain/gifts/gifts.js';
 import { giftGroupView } from './gift-group-view';
 
 // What *Who has it?* is handed for one group (docs/dev/02 §2.25.11).

@@ -8,7 +8,7 @@ import {
 	PARENT_IN_LAW_TYPE_KEY,
 	SIBLING_IN_LAW_TYPE_KEY,
 	SIBLING_TYPE_KEY
-} from '$lib/relationships/type-keys';
+} from '#lib/relationships/type-keys.js';
 import type { KinTerm } from './kinship';
 
 /*

@@ -1,9 +1,9 @@
 import { error, fail } from '@sveltejs/kit';
 import * as v from 'valibot';
-import { requireViewer } from '$lib/server/auth/guards';
-import { answerConflict, conflictsToShow } from '$lib/server/domain/nextcloud/conflicts';
-import { nextcloudWording } from '$lib/server/i18n/import-wording';
-import { say } from '$lib/server/i18n/say';
+import { requireViewer } from '#lib/server/auth/guards.js';
+import { answerConflict, conflictsToShow } from '#lib/server/domain/nextcloud/conflicts.js';
+import { nextcloudWording } from '#lib/server/i18n/import-wording.js';
+import { say } from '#lib/server/i18n/say.js';
 import type { Actions, PageServerLoad } from './$types';
 
 /*

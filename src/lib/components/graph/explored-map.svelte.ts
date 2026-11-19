@@ -4,9 +4,9 @@ import {
 	rebuildExplored,
 	rolesOpenAfter,
 	type CircleRole
-} from '$lib/graph/model/ego-network';
-import { emptyModel, mergeModels } from '$lib/graph/model/graph-model';
-import type { GraphDataSource, GraphModel } from '$lib/graph/model/types';
+} from '#lib/graph/model/ego-network.js';
+import { emptyModel, mergeModels } from '#lib/graph/model/graph-model.js';
+import type { GraphDataSource, GraphModel } from '#lib/graph/model/types.js';
 
 /** What the reader has opened up of the graph, and how to open up more of it. */
 export interface ExploredMap {

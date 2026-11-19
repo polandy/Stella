@@ -1,7 +1,7 @@
 <script lang="ts">
-	import Icon from '$lib/components/ui/Icon.svelte';
-	import type { IconName } from '$lib/components/ui/icons';
-	import { FIELD_SELECTOR, firstField } from '$lib/components/ui/first-field';
+	import Icon from '#lib/components/ui/Icon.svelte';
+	import type { IconName } from '#lib/components/ui/icons.js';
+	import { FIELD_SELECTOR, firstField } from '#lib/components/ui/first-field.js';
 	import { onMount, type Snippet } from 'svelte';
 	import { EDIT_FRAME } from '../ui/inputs';
 

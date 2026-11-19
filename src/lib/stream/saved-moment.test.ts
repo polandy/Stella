@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'bun:test';
 import { SAVED_NOTICE_MS, savedMomentAnchor } from './saved-moment';
-import { UNDO_WINDOW_MS } from '$lib/undo/pending-removals';
+import { UNDO_WINDOW_MS } from '#lib/undo/pending-removals.js';
 
 describe('a moment just saved', () => {
 	it('is found by the id of its journal entry', () => {

@@ -1,6 +1,6 @@
 import * as v from 'valibot';
-import type { ConfirmedMatch } from '$lib/server/domain/immich/links';
-import type { NewcomerName } from '$lib/server/domain/immich/add-from-immich';
+import type { ConfirmedMatch } from '#lib/server/domain/immich/links.js';
+import type { NewcomerName } from '#lib/server/domain/immich/add-from-immich.js';
 
 /*
  * What the forms of *Find your people* post (docs/dev/02 §2.24.7), read as plain data so it is

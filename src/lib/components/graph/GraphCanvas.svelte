@@ -1,8 +1,8 @@
 <script lang="ts">
-	import { useTranslate } from '$lib/i18n/context.svelte';
-	import { graphKeyAction } from '$lib/graph/keyboard';
-	import type { Point } from '$lib/graph/layout/geometry';
-	import type { RoleGroup, RoleGrouping } from '$lib/graph/model/role-groups';
+	import { useTranslate } from '#lib/i18n/context.svelte.js';
+	import { graphKeyAction } from '#lib/graph/keyboard.js';
+	import type { Point } from '#lib/graph/layout/geometry.js';
+	import type { RoleGroup, RoleGrouping } from '#lib/graph/model/role-groups.js';
 
 	/*
 	 * The element the canvas is drawn into, and the keyboard's way around it (docs/dev/05 §5.8):

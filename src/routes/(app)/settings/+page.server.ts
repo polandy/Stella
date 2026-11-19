@@ -1,12 +1,15 @@
 import { fail } from '@sveltejs/kit';
-import { changeBlurPrivate } from '$lib/server/auth/accounts';
-import { requireUser, requireViewer } from '$lib/server/auth/guards';
-import { say, translator } from '$lib/server/i18n/say';
-import { setSelfContact, UnknownSelfContactError } from '$lib/server/domain/household/self-contact';
-import { countKnownByAFirstNameOnly } from '$lib/server/domain/contacts/directory';
-import { countLastNames } from '$lib/server/domain/contacts/last-names';
-import { waitingConflicts } from '$lib/server/domain/nextcloud/conflicts';
-import { APP_VERSION } from '$lib/version';
+import { changeBlurPrivate } from '#lib/server/auth/accounts.js';
+import { requireUser, requireViewer } from '#lib/server/auth/guards.js';
+import { say, translator } from '#lib/server/i18n/say.js';
+import {
+	setSelfContact,
+	UnknownSelfContactError
+} from '#lib/server/domain/household/self-contact.js';
+import { countKnownByAFirstNameOnly } from '#lib/server/domain/contacts/directory.js';
+import { countLastNames } from '#lib/server/domain/contacts/last-names.js';
+import { waitingConflicts } from '#lib/server/domain/nextcloud/conflicts.js';
+import { APP_VERSION } from '#lib/version.js';
 import type { Actions, PageServerLoad } from './$types';
 
 /**

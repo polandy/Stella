@@ -1,12 +1,12 @@
 <script lang="ts">
-	import { FIELD } from '$lib/components/ui/field';
-	import FormError from '$lib/components/ui/FormError.svelte';
+	import { FIELD } from '#lib/components/ui/field.js';
+	import FormError from '#lib/components/ui/FormError.svelte';
 	import { enhance } from '$app/forms';
 	import { page } from '$app/state';
-	import Button from '$lib/components/ui/Button.svelte';
-	import Icon from '$lib/components/ui/Icon.svelte';
-	import { useI18n } from '$lib/i18n/context.svelte';
-	import { browserClipboard, copyText, selectText } from '$lib/ui/clipboard';
+	import Button from '#lib/components/ui/Button.svelte';
+	import Icon from '#lib/components/ui/Icon.svelte';
+	import { useI18n } from '#lib/i18n/context.svelte.js';
+	import { browserClipboard, copyText, selectText } from '#lib/ui/clipboard.js';
 	import type { ActionData, PageData } from './$types';
 
 	/*

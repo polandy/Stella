@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type { MessageKey } from '$lib/i18n/translate';
-	import { useTranslate } from '$lib/i18n/context.svelte';
-	import type { ShareChoice, ShareTarget } from '$lib/share/shared';
+	import type { MessageKey } from '#lib/i18n/translate.js';
+	import { useTranslate } from '#lib/i18n/context.svelte.js';
+	import type { ShareChoice, ShareTarget } from '#lib/share/shared.js';
 	import type { IconName } from '../ui/icons';
 	import Icon from '../ui/Icon.svelte';
 

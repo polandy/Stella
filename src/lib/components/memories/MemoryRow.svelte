@@ -1,10 +1,10 @@
 <script lang="ts">
-	import Avatar from '$lib/components/ui/Avatar.svelte';
-	import PrivateMark from '$lib/components/ui/PrivateMark.svelte';
-	import Veil from '$lib/components/ui/Veil.svelte';
-	import { useI18n } from '$lib/i18n/context.svelte';
-	import { KIND_PRESENTATION } from '$lib/story/interaction-kinds';
-	import { MEMORY_FACES, type MemoryRowView } from '$lib/memories/view';
+	import Avatar from '#lib/components/ui/Avatar.svelte';
+	import PrivateMark from '#lib/components/ui/PrivateMark.svelte';
+	import Veil from '#lib/components/ui/Veil.svelte';
+	import { useI18n } from '#lib/i18n/context.svelte.js';
+	import { KIND_PRESENTATION } from '#lib/story/interaction-kinds.js';
+	import { MEMORY_FACES, type MemoryRowView } from '#lib/memories/view.js';
 
 	/*
 	 * One memory of *On this day* (docs/dev/02 §2.12.1): the faces, the first line, who wrote it.

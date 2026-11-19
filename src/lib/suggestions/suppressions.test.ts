@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'bun:test';
-import type { KinshipGraph } from '$lib/kinship/kinship';
-import { deriveKinship } from '$lib/kinship/kinship';
+import type { KinshipGraph } from '#lib/kinship/kinship.js';
+import { deriveKinship } from '#lib/kinship/kinship.js';
 import { isDerivable, isRefusedByRules } from './suppressions';
 import { buildView } from './view';
 

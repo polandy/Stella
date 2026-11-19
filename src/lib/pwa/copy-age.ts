@@ -1,4 +1,4 @@
-import type { DateLanguage } from '$lib/dates/labels';
+import type { DateLanguage } from '#lib/dates/labels.js';
 
 /*
  * How old the page on screen is, as the offline line says it (docs/dev/02 §2.18,

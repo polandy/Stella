@@ -1,9 +1,9 @@
-import { mentionSnippet } from '$lib/mentions/snippet';
-import { contactSectionPath, journalEntryPath } from '$lib/people/sections';
-import type { Memories, Memory, MemoryPhoto } from '$lib/server/domain/memories/memories';
-import type { StreamPerson } from '$lib/server/domain/stream/stream';
-import { memoryBand, type MemoryYear } from '$lib/memories/memories';
-import type { MemoryPhotoView, MemoryRowView, MemoryYearView } from '$lib/memories/view';
+import { mentionSnippet } from '#lib/mentions/snippet.js';
+import { contactSectionPath, journalEntryPath } from '#lib/people/sections.js';
+import type { Memories, Memory, MemoryPhoto } from '#lib/server/domain/memories/memories.js';
+import type { StreamPerson } from '#lib/server/domain/stream/stream.js';
+import { memoryBand, type MemoryYear } from '#lib/memories/memories.js';
+import type { MemoryPhotoView, MemoryRowView, MemoryYearView } from '#lib/memories/view.js';
 
 /** How long a moment's line runs before it is cut: one line of the 17 rem rail. */
 const MEMORY_LINE_LENGTH = 90;

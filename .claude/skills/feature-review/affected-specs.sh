@@ -59,14 +59,14 @@ done < "$changed"
 mapfile -t sources < <(grep -E '^src/.*\.(ts|svelte)$' "$changed" \
   | grep -vE '\.test\.ts$|^src/lib/i18n/messages/' || true)
 
-# Files under src/ that import `$1` — by the `$lib` alias, or relatively.
+# Files under src/ that import `$1` — by the `#lib` alias, or relatively.
 importers() {
   local file="$1" bare base
   bare="${file%.*}"
   base="$(basename "$bare")"
   {
     grep -rlE --include='*.ts' --include='*.svelte' \
-      "\\\$lib/${bare#src/lib/}(\\.svelte|\\.ts)?['\"]" src 2>/dev/null || true
+      "#lib/${bare#src/lib/}(\\.svelte|\\.js)?['\"]" src 2>/dev/null || true
     grep -rlE --include='*.ts' --include='*.svelte' \
       "\\.\\.?/([^'\"]*/)?${base}(\\.svelte|\\.ts)?['\"]" src 2>/dev/null || true
   } | grep -vE '\.test\.ts$' | grep -vxF "$file" | sort -u

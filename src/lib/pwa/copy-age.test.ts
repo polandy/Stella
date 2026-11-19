@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'bun:test';
-import type { DateLanguage } from '$lib/dates/labels';
-import { INTL_LOCALES } from '$lib/i18n/locales';
-import { createTranslator } from '$lib/i18n/translate';
+import type { DateLanguage } from '#lib/dates/labels.js';
+import { INTL_LOCALES } from '#lib/i18n/locales.js';
+import { createTranslator } from '#lib/i18n/translate.js';
 import { copyAge } from './copy-age';
 
 /*

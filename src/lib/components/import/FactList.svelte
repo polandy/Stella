@@ -1,7 +1,7 @@
 <script lang="ts">
-	import { useI18n } from '$lib/i18n/context.svelte';
-	import type { CardPhoto } from '$lib/import-match/card';
-	import type { Fact } from '$lib/import-match/merge-plan';
+	import { useI18n } from '#lib/i18n/context.svelte.js';
+	import type { CardPhoto } from '#lib/import-match/card.js';
+	import type { Fact } from '#lib/import-match/merge-plan.js';
 	import { factLabel, factValue, labelText } from './review-text';
 
 	/*

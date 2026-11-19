@@ -1,9 +1,9 @@
 <script lang="ts">
-	import FormError from '$lib/components/ui/FormError.svelte';
-	import { useI18n } from '$lib/i18n/context.svelte';
-	import type { KeptOf } from '$lib/pwa/outbox';
-	import type { HouseholdTodoView, TodoBand } from '$lib/todos/household';
-	import type { JustDoneTodos } from '$lib/todos/just-done.svelte';
+	import FormError from '#lib/components/ui/FormError.svelte';
+	import { useI18n } from '#lib/i18n/context.svelte.js';
+	import type { KeptOf } from '#lib/pwa/outbox.js';
+	import type { HouseholdTodoView, TodoBand } from '#lib/todos/household.js';
+	import type { JustDoneTodos } from '#lib/todos/just-done.svelte.js';
 	import HouseholdTodoRow from './HouseholdTodoRow.svelte';
 
 	/*

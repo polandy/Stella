@@ -1,8 +1,8 @@
-import { requireViewer } from '$lib/server/auth/guards';
-import { systemClock } from '$lib/server/clock';
-import { todayFor } from '$lib/dates/today';
-import { pickedDay } from '$lib/memories/memories';
-import { memoriesOn } from '$lib/server/domain/memories/memories';
+import { requireViewer } from '#lib/server/auth/guards.js';
+import { systemClock } from '#lib/server/clock.js';
+import { todayFor } from '#lib/dates/today.js';
+import { pickedDay } from '#lib/memories/memories.js';
+import { memoriesOn } from '#lib/server/domain/memories/memories.js';
 import { memoryYearsForView } from '../_shared/memories-view';
 import type { PageServerLoad } from './$types';
 

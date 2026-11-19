@@ -4,10 +4,10 @@
   or, while they are copied, how far that has come.
 -->
 <script lang="ts">
-	import Button from '$lib/components/ui/Button.svelte';
-	import { useTranslate } from '$lib/i18n/context.svelte';
-	import type { LibraryPhoto } from '$lib/immich/library';
-	import { LIBRARY_PICK_LIMIT } from '$lib/immich/library-pick';
+	import Button from '#lib/components/ui/Button.svelte';
+	import { useTranslate } from '#lib/i18n/context.svelte.js';
+	import type { LibraryPhoto } from '#lib/immich/library.js';
+	import { LIBRARY_PICK_LIMIT } from '#lib/immich/library-pick.js';
 
 	interface Props {
 		ticked: number;

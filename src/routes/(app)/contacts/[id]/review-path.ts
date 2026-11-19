@@ -1,4 +1,4 @@
-import { contactSectionPath } from '$lib/people/sections';
+import { contactSectionPath } from '#lib/people/sections.js';
 
 /*
  * The on-demand review (docs/dev/02 §2.4.1) hangs on the URL

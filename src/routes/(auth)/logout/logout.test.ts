@@ -1,10 +1,10 @@
 import { beforeEach, describe, expect, it } from 'bun:test';
 import { isRedirect, type Cookies } from '@sveltejs/kit';
-import type { AuthServices } from '$lib/server/services/auth';
-import type { AppServices } from '$lib/server/services/app-services';
-import { SIGNED_OUT_PATH } from '$lib/server/auth/oidc/logout';
-import { hashSessionToken } from '$lib/server/auth/tokens';
-import type { SessionRecord, SessionRepository } from '$lib/server/auth/session';
+import type { AuthServices } from '#lib/server/services/auth.js';
+import type { AppServices } from '#lib/server/services/app-services.js';
+import { SIGNED_OUT_PATH } from '#lib/server/auth/oidc/logout.js';
+import { hashSessionToken } from '#lib/server/auth/tokens.js';
+import type { SessionRecord, SessionRepository } from '#lib/server/auth/session.js';
 
 /*
  * The sign-out edge (docs/dev/02 §2.1) over a test-wired `locals.services` (AR-01): the route

@@ -1,4 +1,4 @@
-import type { CardTodo } from '$lib/todos/todos';
+import type { CardTodo } from '#lib/todos/todos.js';
 
 /*
  * The phone's one line per rail section (docs/dev/05 §5.5.1): Home's rail folds to *To-dos*,

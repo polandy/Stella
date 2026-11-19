@@ -1,15 +1,15 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
-	import { INPUT } from '$lib/components/ui/inputs';
-	import Button from '$lib/components/ui/Button.svelte';
-	import WhenPicker from '$lib/components/ui/WhenPicker.svelte';
-	import { previewRows } from '$lib/gifts/group-form';
-	import { GIFT_WHEN_KINDS } from '$lib/gifts/idea-when';
-	import { useI18n } from '$lib/i18n/context.svelte';
-	import { useRemovals } from '$lib/undo/context.svelte';
-	import { savedEnhance } from '$lib/undo/saved';
-	import { whenPreview } from '$lib/when/labels';
-	import { sameWhen, type When } from '$lib/when/when';
+	import { INPUT } from '#lib/components/ui/inputs.js';
+	import Button from '#lib/components/ui/Button.svelte';
+	import WhenPicker from '#lib/components/ui/WhenPicker.svelte';
+	import { previewRows } from '#lib/gifts/group-form.js';
+	import { GIFT_WHEN_KINDS } from '#lib/gifts/idea-when.js';
+	import { useI18n } from '#lib/i18n/context.svelte.js';
+	import { useRemovals } from '#lib/undo/context.svelte.js';
+	import { savedEnhance } from '#lib/undo/saved.js';
+	import { whenPreview } from '#lib/when/labels.js';
+	import { sameWhen, type When } from '#lib/when/when.js';
 	import type { GiftGroupView } from '../../../routes/(app)/contacts/[id]/gift-group-view';
 
 	/*

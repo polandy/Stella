@@ -1,4 +1,4 @@
-import type { Translate } from '$lib/i18n/translate';
+import type { Translate } from '#lib/i18n/translate.js';
 
 /*
  * What a circle's confirm step says goes and what stays (docs/dev/02 §2.4.2), from the counts the

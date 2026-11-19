@@ -1,11 +1,11 @@
 <script lang="ts">
-	import { FIELD } from '$lib/components/ui/field';
+	import { FIELD } from '#lib/components/ui/field.js';
 	import { enhance } from '$app/forms';
-	import type { SubmitFunction } from '@sveltejs/kit';
-	import Button from '$lib/components/ui/Button.svelte';
-	import Combobox from '$lib/components/ui/Combobox.svelte';
-	import { useTranslate } from '$lib/i18n/context.svelte';
-	import { planLastName, replaceAll } from '$lib/surnames/plan';
+	import type { SubmitFunction } from '$app/forms';
+	import Button from '#lib/components/ui/Button.svelte';
+	import Combobox from '#lib/components/ui/Combobox.svelte';
+	import { useTranslate } from '#lib/i18n/context.svelte.js';
+	import { planLastName, replaceAll } from '#lib/surnames/plan.js';
 
 	/*
 	 * *Set last name* for the people selected (docs/dev/02 §2.2.4.3): one field, with

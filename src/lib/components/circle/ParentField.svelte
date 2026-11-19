@@ -6,13 +6,13 @@
   saved until the form is.
 -->
 <script lang="ts">
-	import { FIELD } from '$lib/components/ui/field';
-	import CirclePicker from '$lib/components/circle/CirclePicker.svelte';
-	import FormError from '$lib/components/ui/FormError.svelte';
-	import Icon from '$lib/components/ui/Icon.svelte';
-	import { circleTree, type TreeCircle } from '$lib/circles/tree';
-	import { accentDotStyle } from '$lib/design/tokens';
-	import { useTranslate } from '$lib/i18n/context.svelte';
+	import { FIELD } from '#lib/components/ui/field.js';
+	import CirclePicker from '#lib/components/circle/CirclePicker.svelte';
+	import FormError from '#lib/components/ui/FormError.svelte';
+	import Icon from '#lib/components/ui/Icon.svelte';
+	import { circleTree, type TreeCircle } from '#lib/circles/tree.js';
+	import { accentDotStyle } from '#lib/design/tokens.js';
+	import { useTranslate } from '#lib/i18n/context.svelte.js';
 
 	interface Props {
 		/** Every circle the reader sees, flat. */

@@ -1,5 +1,5 @@
 import { error, fail, type RequestEvent } from '@sveltejs/kit';
-import { requireRemover, requireViewer } from '$lib/server/auth/guards';
+import { requireRemover, requireViewer } from '#lib/server/auth/guards.js';
 import * as v from 'valibot';
 import {
 	captionCirclePhoto,
@@ -8,13 +8,13 @@ import {
 	setCirclePhotoRole,
 	setCirclePhotoVisibility,
 	UnknownPhotoRoleError
-} from '$lib/server/domain/circles/circle-photos';
-import { getCircle } from '$lib/server/domain/circles/circles';
-import { InvalidAvatarError } from '$lib/server/domain/media/avatars';
-import { cutProfilePicture } from '$lib/server/domain/media/cuts';
-import { CaptionTooLongError } from '$lib/server/domain/media/gallery';
-import { say, translator } from '$lib/server/i18n/say';
-import { readCutForm } from '$lib/server/http/cut-form';
+} from '#lib/server/domain/circles/circle-photos.js';
+import { getCircle } from '#lib/server/domain/circles/circles.js';
+import { InvalidAvatarError } from '#lib/server/domain/media/avatars.js';
+import { cutProfilePicture } from '#lib/server/domain/media/cuts.js';
+import { CaptionTooLongError } from '#lib/server/domain/media/gallery.js';
+import { say, translator } from '#lib/server/i18n/say.js';
+import { readCutForm } from '#lib/server/http/cut-form.js';
 import type { Actions } from '../$types';
 
 /*

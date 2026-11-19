@@ -1,5 +1,5 @@
-import { mentionToken } from '$lib/mentions/mentions';
-import { LINK_PARAM } from '$lib/stream/link-hint';
+import { mentionToken } from '#lib/mentions/mentions.js';
+import { LINK_PARAM } from '#lib/stream/link-hint.js';
 
 /*
  * What Home reads off its address and its capture form (docs/dev/02 §2.22), as plain data so it is

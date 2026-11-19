@@ -2,11 +2,14 @@ import {
 	densityPreference,
 	type DensityPreference,
 	type PreferenceStorage
-} from '$lib/graph/density-preference';
-import type { KeptPreferences } from '$lib/graph/explorer-state';
-import { savedViewsPreference, type SavedViewsPreference } from '$lib/graph/saved-views-preference';
-import { treeOrderPreference, type TreeOrderPreference } from '$lib/graph/tree-order-preference';
-import { viewSwitchPreference, type ViewSwitchPreference } from '$lib/graph/view-switches';
+} from '#lib/graph/density-preference.js';
+import type { KeptPreferences } from '#lib/graph/explorer-state.js';
+import {
+	savedViewsPreference,
+	type SavedViewsPreference
+} from '#lib/graph/saved-views-preference.js';
+import { treeOrderPreference, type TreeOrderPreference } from '#lib/graph/tree-order-preference.js';
+import { viewSwitchPreference, type ViewSwitchPreference } from '#lib/graph/view-switches.js';
 
 /** Where the explorer keeps each habit; one is missing when storage refused it. */
 export interface PreferenceStores {

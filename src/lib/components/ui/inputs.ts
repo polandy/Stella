@@ -1,4 +1,4 @@
-import { FIELD } from '$lib/components/ui/field';
+import { FIELD } from '#lib/components/ui/field.js';
 
 /** One class for every text input on the page, so they cannot drift apart. */
 export const INPUT = `${FIELD} px-3 py-2 text-sm`;

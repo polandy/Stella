@@ -1,6 +1,6 @@
 import { json } from '@sveltejs/kit';
-import { unauthorized } from '$lib/server/api/responses';
-import { findPeople } from '$lib/server/domain/import/api/lookup';
+import { unauthorized } from '#lib/server/api/responses.js';
+import { findPeople } from '#lib/server/domain/import/api/lookup.js';
 import type { RequestHandler } from './$types';
 
 /*

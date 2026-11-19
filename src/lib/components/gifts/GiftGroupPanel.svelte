@@ -1,25 +1,25 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
-	import type { SubmitFunction } from '@sveltejs/kit';
+	import type { SubmitFunction } from '$app/forms';
 	import { invalidateAll } from '$app/navigation';
-	import Button from '$lib/components/ui/Button.svelte';
-	import FormError from '$lib/components/ui/FormError.svelte';
-	import Icon from '$lib/components/ui/Icon.svelte';
-	import MenuButton from '$lib/components/ui/MenuButton.svelte';
-	import { syncModal } from '$lib/components/ui/modal';
-	import { isOpenGift } from '$lib/gifts/gifts';
-	import { panelOrder } from '$lib/gifts/group-panel';
-	import { useI18n } from '$lib/i18n/context.svelte';
-	import { useRemovals } from '$lib/undo/context.svelte';
-	import { heldAnswer } from '$lib/undo/held-answer';
-	import { removalKey } from '$lib/undo/keys';
-	import { savedEnhance } from '$lib/undo/saved';
-	import { whenChip } from '$lib/when/labels';
+	import Button from '#lib/components/ui/Button.svelte';
+	import FormError from '#lib/components/ui/FormError.svelte';
+	import Icon from '#lib/components/ui/Icon.svelte';
+	import MenuButton from '#lib/components/ui/MenuButton.svelte';
+	import { syncModal } from '#lib/components/ui/modal.js';
+	import { isOpenGift } from '#lib/gifts/gifts.js';
+	import { panelOrder } from '#lib/gifts/group-panel.js';
+	import { useI18n } from '#lib/i18n/context.svelte.js';
+	import { useRemovals } from '#lib/undo/context.svelte.js';
+	import { heldAnswer } from '#lib/undo/held-answer.js';
+	import { removalKey } from '#lib/undo/keys.js';
+	import { savedEnhance } from '#lib/undo/saved.js';
+	import { whenChip } from '#lib/when/labels.js';
 	import type { GiftGroupView } from '../../../routes/(app)/contacts/[id]/gift-group-view';
 	import GiftGroupAdd from './GiftGroupAdd.svelte';
 	import GiftGroupEdit from './GiftGroupEdit.svelte';
 	import GiftGroupMember from './GiftGroupMember.svelte';
-	import type { SelectablePerson } from '$lib/people/select';
+	import type { SelectablePerson } from '#lib/people/select.js';
 
 	/*
 	 * *Who has it?* (docs/dev/02 §2.25.11): one idea several people get, followed up from any of them —

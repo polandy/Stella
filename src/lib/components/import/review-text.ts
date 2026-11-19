@@ -1,8 +1,8 @@
-import type { PartialDate } from '$lib/dates/partial-date';
-import { dayLabel } from '$lib/dates/labels';
-import type { I18n } from '$lib/i18n/context.svelte';
-import type { CardLabel } from '$lib/import-match/card';
-import type { Fact } from '$lib/import-match/merge-plan';
+import type { PartialDate } from '#lib/dates/partial-date.js';
+import { dayLabel } from '#lib/dates/labels.js';
+import type { I18n } from '#lib/i18n/context.svelte.js';
+import type { CardLabel } from '#lib/import-match/card.js';
+import type { Fact } from '#lib/import-match/merge-plan.js';
 
 /*
  * How the review step words a card's facts (docs/dev/02 §2.16): one place, so both sides of a

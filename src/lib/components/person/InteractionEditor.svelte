@@ -1,15 +1,15 @@
 <script lang="ts">
-	import Button from '$lib/components/ui/Button.svelte';
-	import DateField from '$lib/components/ui/DateField.svelte';
-	import FormError from '$lib/components/ui/FormError.svelte';
-	import PersonSearchSelect from '$lib/components/people/PersonSearchSelect.svelte';
+	import Button from '#lib/components/ui/Button.svelte';
+	import DateField from '#lib/components/ui/DateField.svelte';
+	import FormError from '#lib/components/ui/FormError.svelte';
+	import PersonSearchSelect from '#lib/components/people/PersonSearchSelect.svelte';
 	import { deserialize } from '$app/forms';
 	import { invalidateAll } from '$app/navigation';
-	import { useI18n } from '$lib/i18n/context.svelte';
-	import type { SelectablePerson } from '$lib/people/select';
-	import { INTERACTION_KINDS, KIND_PRESENTATION } from '$lib/story/interaction-kinds';
-	import type { StoryInteractionItem } from '$lib/story/item';
-	import { useRemovals } from '$lib/undo/context.svelte';
+	import { useI18n } from '#lib/i18n/context.svelte.js';
+	import type { SelectablePerson } from '#lib/people/select.js';
+	import { INTERACTION_KINDS, KIND_PRESENTATION } from '#lib/story/interaction-kinds.js';
+	import type { StoryInteractionItem } from '#lib/story/item.js';
+	import { useRemovals } from '#lib/undo/context.svelte.js';
 	import { INPUT } from '../ui/inputs';
 
 	/*

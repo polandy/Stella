@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test';
-import { MAX_SHARED_PHOTOS } from '$lib/share/shared';
+import { MAX_SHARED_PHOTOS } from '#lib/share/shared.js';
 import { shareFrom } from './share-store';
 
 function photo(name: string, type = 'image/jpeg'): File {

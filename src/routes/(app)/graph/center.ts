@@ -1,4 +1,4 @@
-import type { NodeKind } from '$lib/graph/model/types';
+import type { NodeKind } from '#lib/graph/model/types.js';
 
 /*
  * Which node the explorer opens on — a person or a circle (docs/dev/02 §2.7). Pure, so the order

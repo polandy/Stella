@@ -1,7 +1,7 @@
-import { authorLabel } from '$lib/story/author';
-import { hasGiftDay } from '$lib/gifts/gifts';
-import { sameWhen } from '$lib/when/when';
-import type { VisibleGiftGroup } from '$lib/server/domain/gifts/gift-groups';
+import { authorLabel } from '#lib/story/author.js';
+import { hasGiftDay } from '#lib/gifts/gifts.js';
+import { sameWhen } from '#lib/when/when.js';
+import type { VisibleGiftGroup } from '#lib/server/domain/gifts/gift-groups.js';
 import type { PersonViewContext } from './person-view';
 
 /** A group on this person's card, as *Who has it?* lists it (docs/dev/02 §2.25.11). */

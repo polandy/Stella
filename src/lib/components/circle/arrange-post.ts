@@ -1,6 +1,6 @@
 import { deserialize } from '$app/forms';
-import type { ArrangeMode, ArrangePickRef } from '$lib/circles/arrange';
-import { ACTION_HEADER } from '$lib/undo/submit-action';
+import type { ArrangeMode, ArrangePickRef } from '#lib/circles/arrange.js';
+import { ACTION_HEADER } from '#lib/undo/submit-action.js';
 
 /*
  * The arrange screen's two posts, without the navigation a form would make (docs/dev/02 §2.4.2,

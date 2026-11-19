@@ -1,12 +1,12 @@
 import { fail, type ActionFailure } from '@sveltejs/kit';
 import * as v from 'valibot';
-import { getConfig } from '$lib/server/config';
-import type { NextcloudSource } from '$lib/import-match/card';
-import type { Visibility } from '$lib/server/access/visibility';
-import type { ImportedPhoto } from '$lib/server/domain/import/monica/plan';
-import { unansweredCards } from '$lib/server/domain/nextcloud/review';
-import { readStagedDump } from '$lib/server/import/staging';
-import { say } from '$lib/server/i18n/say';
+import { getConfig } from '#lib/server/config.js';
+import type { NextcloudSource } from '#lib/import-match/card.js';
+import type { Visibility } from '#lib/server/access/visibility.js';
+import type { ImportedPhoto } from '#lib/server/domain/import/monica/plan.js';
+import { unansweredCards } from '#lib/server/domain/nextcloud/review.js';
+import { readStagedDump } from '#lib/server/import/staging.js';
+import { say } from '#lib/server/i18n/say.js';
 
 /*
  * What the wizard's steps share (docs/dev/02 §2.16): the staging token every step after the upload

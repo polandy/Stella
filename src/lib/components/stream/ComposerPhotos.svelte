@@ -1,7 +1,7 @@
 <script lang="ts">
-	import Icon from '$lib/components/ui/Icon.svelte';
-	import PhotoSourceMenu from '$lib/components/immich/PhotoSourceMenu.svelte';
-	import { useTranslate } from '$lib/i18n/context.svelte';
+	import Icon from '#lib/components/ui/Icon.svelte';
+	import PhotoSourceMenu from '#lib/components/immich/PhotoSourceMenu.svelte';
+	import { useTranslate } from '#lib/i18n/context.svelte.js';
 
 	/*
 	 * The moment composer's photo button: an icon button, as it acts at once (docs/dev/05 §5.7),

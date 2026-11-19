@@ -6,13 +6,13 @@
   deletes it in Immich.
 -->
 <script lang="ts">
-	import Button from '$lib/components/ui/Button.svelte';
-	import Icon from '$lib/components/ui/Icon.svelte';
-	import ImmichLibraryPicker from '$lib/components/immich/ImmichLibraryPicker.svelte';
-	import ImmichPhotoTile from '$lib/components/immich/ImmichPhotoTile.svelte';
-	import PhotoSourceMenu from '$lib/components/immich/PhotoSourceMenu.svelte';
-	import { useI18n } from '$lib/i18n/context.svelte';
-	import type { EntryImmichPhoto, LibraryPhoto } from '$lib/immich/library';
+	import Button from '#lib/components/ui/Button.svelte';
+	import Icon from '#lib/components/ui/Icon.svelte';
+	import ImmichLibraryPicker from '#lib/components/immich/ImmichLibraryPicker.svelte';
+	import ImmichPhotoTile from '#lib/components/immich/ImmichPhotoTile.svelte';
+	import PhotoSourceMenu from '#lib/components/immich/PhotoSourceMenu.svelte';
+	import { useI18n } from '#lib/i18n/context.svelte.js';
+	import type { EntryImmichPhoto, LibraryPhoto } from '#lib/immich/library.js';
 	import { onDestroy } from 'svelte';
 
 	interface Props {
