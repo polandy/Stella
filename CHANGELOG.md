@@ -1,5 +1,37 @@
 # Changelog
 
+## [0.1.10](https://github.com/polandy/Stella/compare/v0.1.9...v0.1.10) (2026-11-19)
+
+
+### Features
+
+* **db:** the database refuses rows that break the visibility, surprise, state, when and done rules ([#533](https://github.com/polandy/Stella/issues/533)) ([4740ee6](https://github.com/polandy/Stella/commit/4740ee6743825c265788ea997c53ce796a90d384))
+* **gifts:** an idea for Christmas at age N ([#520](https://github.com/polandy/Stella/issues/520)) ([fe12204](https://github.com/polandy/Stella/commit/fe122047af3851ddb89ce70fb75bf2608e174e37))
+* **gifts:** note one idea for several people ([#522](https://github.com/polandy/Stella/issues/522)) ([9f9bf7e](https://github.com/polandy/Stella/commit/9f9bf7e83e04189d24b5cbb543017d1b675d98aa))
+* **gifts:** one idea for several people, the model ([#521](https://github.com/polandy/Stella/issues/521)) ([7f2786f](https://github.com/polandy/Stella/commit/7f2786f62865efbf9ca7fc358be54dced117e2d2))
+* **gifts:** the calendar names everyone on one day ([#524](https://github.com/polandy/Stella/issues/524)) ([3af64a8](https://github.com/polandy/Stella/commit/3af64a8de782aeea5510f83a365df1de5de650b4))
+* **gifts:** who has it, who is still to get it ([#523](https://github.com/polandy/Stella/issues/523)) ([444d9cc](https://github.com/polandy/Stella/commit/444d9cce75c06b82803064b4364d17dd02eec22d))
+* **graph:** a missing parent's plus shows over the tapped person or with Show gaps, the shelf set off by a rule and smaller discs ([#519](https://github.com/polandy/Stella/issues/519)) ([2906044](https://github.com/polandy/Stella/commit/2906044e32f989cc873eae4e89cf8ea656c4e3e5))
+* **graph:** co-parents drop into one bar, a former couple from the middle of their dashed line, bars just over the children ([#518](https://github.com/polandy/Stella/issues/518)) ([5bf5883](https://github.com/polandy/Stella/commit/5bf58837ca634657bdbf520c6d91da8231e772e3))
+* **graph:** co-parents stand together in the family tree, an in-law at their siblings' edge, a filter only hides lines ([#517](https://github.com/polandy/Stella/issues/517)) ([1b5dbfc](https://github.com/polandy/Stella/commit/1b5dbfc54795ffcca8261d27943737d6a17374f3))
+* **home:** an empty, focused phone search field lists the household's pages ([#537](https://github.com/polandy/Stella/issues/537)) ([30e321a](https://github.com/polandy/Stella/commit/30e321a685b4aba420037653c815f62c5b270bad))
+* **immich:** albums in the photo picker, soft fallback without album.read ([#542](https://github.com/polandy/Stella/issues/542)) ([6f70952](https://github.com/polandy/Stella/commit/6f709525a7bfdc7496eaf4b4fb895466eb868ea9))
+* **ops:** JSON access log behind LOG_FORMAT=json; signed, attested image (O-09, O-10) ([#539](https://github.com/polandy/Stella/issues/539)) ([a461995](https://github.com/polandy/Stella/commit/a46199550afc57ecb704825fd7244ca8a286f9c9))
+* **ops:** online backup with rotation; a backup is restored in CI ([#526](https://github.com/polandy/Stella/issues/526)) ([5c829ca](https://github.com/polandy/Stella/commit/5c829cae59c7e519989a020cecf1bd257cc7cca7))
+* **outbox:** a command Stella keeps failing on gets stuck instead of blocking the queue ([#532](https://github.com/polandy/Stella/issues/532)) ([3663c6a](https://github.com/polandy/Stella/commit/3663c6ac344a1922dec7e77074f1ca6aefa69c8d))
+* **outbox:** version queued commands and migrate an older queue; error-path tests ([#531](https://github.com/polandy/Stella/issues/531)) ([3170e0f](https://github.com/polandy/Stella/commit/3170e0f5fd9cae97bbcc917de495faa7aaf9fef2))
+* **palette:** rows grouped under New, Lists and People; one form edge names the field at fault (A-03, A-07, P-06) ([#540](https://github.com/polandy/Stella/issues/540)) ([9d15042](https://github.com/polandy/Stella/commit/9d15042398a5cadeb7e07af8d8d15ad9103038e7))
+
+
+### Bug Fixes
+
+* **a11y:** offline banner, toggles, headings, search lists and marks, outing group names ([#535](https://github.com/polandy/Stella/issues/535)) ([2d2744c](https://github.com/polandy/Stella/commit/2d2744c0b1ba770441d1f6c269c24c5a461de5d8))
+* **graph:** a person dragged in the family tree snaps into their row, the order kept per tree ([#515](https://github.com/polandy/Stella/issues/515)) ([5af5f00](https://github.com/polandy/Stella/commit/5af5f00155a12f3163352960a209e0dc8980acdb))
+* **ops:** /healthz checks the database; back up before migrating, refuse a downgrade ([#525](https://github.com/polandy/Stella/issues/525)) ([0601b42](https://github.com/polandy/Stella/commit/0601b4248bdfc36630c84186b642d06fc7f56a00))
+* **ops:** refuse a weak SESSION_SECRET in production; compose binds loopback and drops privileges ([#530](https://github.com/polandy/Stella/issues/530)) ([7183307](https://github.com/polandy/Stella/commit/7183307f2b3d77013a449e2828a45a4e3e9787cf))
+* **ui:** --fg-subtle clears AA for small text; German says Schlagwort and one dash ([#538](https://github.com/polandy/Stella/issues/538)) ([e8891a2](https://github.com/polandy/Stella/commit/e8891a2aff3336102c658c4ca912a11ac26c316b))
+* **ui:** phone-first page padding on every main; InlineEdit sized for a finger on touch ([#536](https://github.com/polandy/Stella/issues/536)) ([b71264a](https://github.com/polandy/Stella/commit/b71264a06b8f614f8ed6c5d6ac57f268897cb9f2))
+
 ## [0.1.9](https://github.com/polandy/Stella/compare/v0.1.8...v0.1.9) (2026-11-17)
 
 
