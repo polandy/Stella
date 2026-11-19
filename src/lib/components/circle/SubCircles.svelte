@@ -11,7 +11,7 @@
 -->
 <script lang="ts">
 	import { FIELD } from '#lib/components/ui/field.js';
-	import { enhance } from '$app/forms';
+	import { enhance } from '#lib/forms/enhance.js';
 	import CirclePicker from '#lib/components/circle/CirclePicker.svelte';
 	import ColourSwatches from '#lib/components/circle/ColourSwatches.svelte';
 	import ParentField from '#lib/components/circle/ParentField.svelte';

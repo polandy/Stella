@@ -35,7 +35,7 @@
 
 <script lang="ts">
 	import { FIELD_ON_BG } from '#lib/components/ui/field.js';
-	import { enhance } from '$app/forms';
+	import { enhance } from '#lib/forms/enhance.js';
 	import { untrack } from 'svelte';
 	import type { SubmitFunction } from '$app/forms';
 	import Avatar from '#lib/components/ui/Avatar.svelte';

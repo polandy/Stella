@@ -1,7 +1,7 @@
 import { mock } from 'bun:test';
 
 /*
- * Preloaded by `bun test` (bunfig.toml), once, before any test file runs. `$env/dynamic/private`
+ * Preloaded by `bun test` (bunfig.toml), once, before any test file runs. `$app/env/private`
  * only resolves inside a running SvelteKit server, so a route test that imports anything on the
  * `config.ts` chain (via `auth/cookies`, …) needs it stubbed to get the config's defaults.
  *
@@ -11,4 +11,4 @@ import { mock } from 'bun:test';
  * per-file mock would make any other test's result depend on run order. Stubbing it once here,
  * before any file loads, keeps every file's result independent of when it runs.
  */
-mock.module('$env/dynamic/private', () => ({ env: {} }));
+mock.module('$app/env/private', () => ({}));

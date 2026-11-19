@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { FIELD } from '#lib/components/ui/field.js';
 	import { onMount } from 'svelte';
-	import { enhance } from '$app/forms';
+	import { enhance } from '#lib/forms/enhance.js';
 	import { invalidateAll } from '$app/navigation';
 	import Button from '#lib/components/ui/Button.svelte';
 	import CircleHeader from '#lib/components/circle/CircleHeader.svelte';

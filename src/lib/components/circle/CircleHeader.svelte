@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { FIELD } from '#lib/components/ui/field.js';
 	import { tick } from 'svelte';
-	import { enhance } from '$app/forms';
+	import { enhance } from '#lib/forms/enhance.js';
 	import CircleDeleteStep from '#lib/components/circle/CircleDeleteStep.svelte';
 	import ColourSwatches from '#lib/components/circle/ColourSwatches.svelte';
 	import ParentField from '#lib/components/circle/ParentField.svelte';

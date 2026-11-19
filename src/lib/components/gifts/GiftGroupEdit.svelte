@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { enhance } from '$app/forms';
+	import { enhance } from '#lib/forms/enhance.js';
 	import { INPUT } from '#lib/components/ui/inputs.js';
 	import Button from '#lib/components/ui/Button.svelte';
 	import WhenPicker from '#lib/components/ui/WhenPicker.svelte';

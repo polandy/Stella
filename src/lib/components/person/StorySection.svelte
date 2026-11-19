@@ -6,7 +6,7 @@
 	import PersonSearchSelect from '#lib/components/people/PersonSearchSelect.svelte';
 	import Section from '#lib/components/ui/Section.svelte';
 	import StoryTimeline from '#lib/components/stream/StoryTimeline.svelte';
-	import { enhance } from '$app/forms';
+	import { enhance } from '#lib/forms/enhance.js';
 	import { goto, invalidateAll } from '$app/navigation';
 	import type { JsonCommand } from '#lib/commands/commands.js';
 	import { contactSectionPath, sectionAnchor } from '#lib/people/sections.js';

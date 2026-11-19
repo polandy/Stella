@@ -2,7 +2,7 @@
 	import { FIELD } from '#lib/components/ui/field.js';
 	import { reveal } from '#lib/motion/motion.svelte.js';
 	import FormError from '#lib/components/ui/FormError.svelte';
-	import { enhance } from '$app/forms';
+	import { enhance } from '#lib/forms/enhance.js';
 	import Button from '#lib/components/ui/Button.svelte';
 	import DateField from '#lib/components/ui/DateField.svelte';
 	import Icon from '#lib/components/ui/Icon.svelte';

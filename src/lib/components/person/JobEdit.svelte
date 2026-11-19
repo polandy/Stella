@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { FIELD } from '#lib/components/ui/field.js';
 	import Swap from '#lib/components/ui/Swap.svelte';
-	import { enhance } from '$app/forms';
+	import { enhance } from '#lib/forms/enhance.js';
 	import Button from '#lib/components/ui/Button.svelte';
 	import FormError from '#lib/components/ui/FormError.svelte';
 	import { useTranslate } from '#lib/i18n/context.svelte.js';

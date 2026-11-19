@@ -4,7 +4,7 @@
 	import Icon from '#lib/components/ui/Icon.svelte';
 	import RemoveButton from '#lib/components/ui/RemoveButton.svelte';
 	import WhenChip from '#lib/components/when/WhenChip.svelte';
-	import { enhance } from '$app/forms';
+	import { enhance } from '#lib/forms/enhance.js';
 	import type { PartialDate } from '#lib/dates/partial-date.js';
 	import { dayLabel } from '#lib/dates/labels.js';
 	import { journalEntryPath } from '#lib/people/sections.js';

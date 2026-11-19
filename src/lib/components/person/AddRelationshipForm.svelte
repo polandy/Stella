@@ -1,7 +1,7 @@
 <script lang="ts">
 	import Button from '#lib/components/ui/Button.svelte';
 	import PersonSearchSelect from '#lib/components/people/PersonSearchSelect.svelte';
-	import { enhance } from '$app/forms';
+	import { enhance } from '#lib/forms/enhance.js';
 	import { goto } from '$app/navigation';
 	import { proposeHref } from '#lib/people/propose.js';
 	import { useTranslate } from '#lib/i18n/context.svelte.js';

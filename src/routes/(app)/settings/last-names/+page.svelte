@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { enhance } from '$app/forms';
+	import { enhance } from '#lib/forms/enhance.js';
 	import Button from '#lib/components/ui/Button.svelte';
 	import EmptyState from '#lib/components/ui/EmptyState.svelte';
 	import LastNameChoices from '#lib/components/surnames/LastNameChoices.svelte';

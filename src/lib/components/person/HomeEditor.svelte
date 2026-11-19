@@ -1,7 +1,7 @@
 <script lang="ts">
 	import Button from '#lib/components/ui/Button.svelte';
 	import RemoveButton from '#lib/components/ui/RemoveButton.svelte';
-	import { enhance } from '$app/forms';
+	import { enhance } from '#lib/forms/enhance.js';
 	import { useI18n } from '#lib/i18n/context.svelte.js';
 	import type { Housemate } from '#lib/people/home.js';
 	import { useRemovals } from '#lib/undo/context.svelte.js';

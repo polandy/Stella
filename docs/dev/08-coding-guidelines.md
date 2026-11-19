@@ -71,12 +71,12 @@ rule and pragmatism genuinely conflict, favor readability and testability.
     `no-restricted-imports`: no `$app` / `$env` / `@sveltejs/kit` under
     `src/lib/server/{domain,access}` or a folder CLAUDE.md calls *pure*, no Svelte runtime
     (`svelte`, `svelte/*` but `svelte/easing`) in such a folder's plain `.ts` (its
-    `*.svelte.ts` browser adapter may), and no `$lib/server/services` outside `src/routes/`
+    `*.svelte.ts` browser adapter may), and no `#lib/server/services` outside `src/routes/`
     and `src/hooks.server.ts` (§8.3). And it
     keeps the edge's boilerplate in one place: no hand-written `if (!locals.user) throw
     redirect(…)` (use `requireViewer` / `requireUser`, docs/dev/04 §4.4), no `new Date(` or
     `Date.now()` in a route module (`todayFor(clock)`, item 10), no local `key()` helper (`messageKey()` from
-    `$lib/i18n/translate`). A file that breaks a boundary today is listed, with the reason,
+    `#lib/i18n/translate`). A file that breaks a boundary today is listed, with the reason,
     in the config's exception lists — shrink them, never grow them without a reason.
     Markdown is not formatted. The one-time reformat is listed in `.git-blame-ignore-revs`
     (`git config blame.ignoreRevsFile .git-blame-ignore-revs`).

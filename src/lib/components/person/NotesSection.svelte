@@ -4,7 +4,7 @@
 	import MentionTextarea from '#lib/components/ui/MentionTextarea.svelte';
 	import NoteItem from './NoteItem.svelte';
 	import Section from '#lib/components/ui/Section.svelte';
-	import { enhance } from '$app/forms';
+	import { enhance } from '#lib/forms/enhance.js';
 	import { cardShape } from '#lib/people/empty-cards.js';
 	import { sectionAnchor } from '#lib/people/sections.js';
 	import { useI18n } from '#lib/i18n/context.svelte.js';

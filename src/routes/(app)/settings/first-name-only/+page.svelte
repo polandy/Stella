@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { FIELD_ON_BG } from '#lib/components/ui/field.js';
-	import { enhance } from '$app/forms';
+	import { enhance } from '#lib/forms/enhance.js';
 	import Avatar from '#lib/components/ui/Avatar.svelte';
 	import Button from '#lib/components/ui/Button.svelte';
 	import EmptyState from '#lib/components/ui/EmptyState.svelte';

@@ -5,7 +5,7 @@
 	import KeptChip from '#lib/components/pwa/KeptChip.svelte';
 	import RemoveButton from '#lib/components/ui/RemoveButton.svelte';
 	import { browser } from '$app/env';
-	import { enhance } from '$app/forms';
+	import { enhance } from '#lib/forms/enhance.js';
 	import { isImportantDateKind } from '#lib/dates/kinds.js';
 	import { dayLabel } from '#lib/dates/labels.js';
 	import { estimatedAge } from '#lib/dates/partial-date.js';

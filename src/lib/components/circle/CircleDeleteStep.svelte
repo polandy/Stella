@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { enhance } from '$app/forms';
+	import { enhance } from '#lib/forms/enhance.js';
 	import Button from '#lib/components/ui/Button.svelte';
 	import { circleDeletionSentences, type CircleDeletionCounts } from '#lib/circles/deletion.js';
 	import { useI18n } from '#lib/i18n/context.svelte.js';

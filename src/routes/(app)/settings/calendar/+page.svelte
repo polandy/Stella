@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { enhance } from '$app/forms';
+	import { enhance } from '#lib/forms/enhance.js';
 	import Button from '#lib/components/ui/Button.svelte';
 	import Icon from '#lib/components/ui/Icon.svelte';
 	import { useI18n } from '#lib/i18n/context.svelte.js';

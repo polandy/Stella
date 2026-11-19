@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { FIELD } from '#lib/components/ui/field.js';
 	import FormError from '#lib/components/ui/FormError.svelte';
-	import { enhance } from '$app/forms';
+	import { enhance } from '#lib/forms/enhance.js';
 	import Button from '#lib/components/ui/Button.svelte';
 	import Icon from '#lib/components/ui/Icon.svelte';
 	import { PENCIL_AT_VALUE_END, VALUE_WITH_PENCIL } from '#lib/components/ui/edit-pencil.js';

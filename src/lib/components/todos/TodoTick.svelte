@@ -2,7 +2,7 @@
 	lang="ts"
 	generics="T extends { id: string; title: string; dueOn: string | null; createdAt: number }"
 >
-	import { enhance } from '$app/forms';
+	import { enhance } from '#lib/forms/enhance.js';
 	import { invalidateAll } from '$app/navigation';
 	import { page } from '$app/state';
 	import { useI18n } from '#lib/i18n/context.svelte.js';

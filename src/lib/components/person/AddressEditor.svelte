@@ -3,7 +3,7 @@
 	import FormError from '#lib/components/ui/FormError.svelte';
 	import KeptChip from '#lib/components/pwa/KeptChip.svelte';
 	import RemoveButton from '#lib/components/ui/RemoveButton.svelte';
-	import { enhance } from '$app/forms';
+	import { enhance } from '#lib/forms/enhance.js';
 	import { useI18n } from '#lib/i18n/context.svelte.js';
 	import { keepable } from '#lib/pwa/keepable.js';
 	import { isKept, type KeptOf } from '#lib/pwa/outbox.js';

@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { FIELD } from '#lib/components/ui/field.js';
 	import { reveal } from '#lib/motion/motion.svelte.js';
-	import { enhance } from '$app/forms';
+	import { enhance } from '#lib/forms/enhance.js';
 	import Button from '#lib/components/ui/Button.svelte';
 	import RemoveButton from '#lib/components/ui/RemoveButton.svelte';
 	import Section from '#lib/components/ui/Section.svelte';

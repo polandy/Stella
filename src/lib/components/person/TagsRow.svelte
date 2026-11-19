@@ -3,7 +3,7 @@
 	import KeptChip from '#lib/components/pwa/KeptChip.svelte';
 	import RemoveButton from '#lib/components/ui/RemoveButton.svelte';
 	import Section from '#lib/components/ui/Section.svelte';
-	import { enhance } from '$app/forms';
+	import { enhance } from '#lib/forms/enhance.js';
 	import { accentChipStyle } from '#lib/design/tokens.js';
 	import { useI18n } from '#lib/i18n/context.svelte.js';
 	import { keepable } from '#lib/pwa/keepable.js';

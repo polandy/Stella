@@ -1,5 +1,6 @@
 <script lang="ts">
-	import { applyAction, enhance } from '$app/forms';
+	import { applyAction } from '$app/forms';
+	import { enhance } from '#lib/forms/enhance.js';
 	import { invalidateAll } from '$app/navigation';
 	import type { SubmitFunction } from '$app/forms';
 	import Button from '#lib/components/ui/Button.svelte';

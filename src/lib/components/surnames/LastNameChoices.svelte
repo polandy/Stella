@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { enhance } from '$app/forms';
+	import { enhance } from '#lib/forms/enhance.js';
 	import type { SubmitFunction } from '$app/forms';
 	import Avatar from '#lib/components/ui/Avatar.svelte';
 	import LinkedNames from '#lib/components/people/LinkedNames.svelte';

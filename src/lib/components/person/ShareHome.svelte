@@ -2,7 +2,7 @@
 	import Button from '#lib/components/ui/Button.svelte';
 	import Icon from '#lib/components/ui/Icon.svelte';
 	import PersonSearchSelect from '#lib/components/people/PersonSearchSelect.svelte';
-	import { enhance } from '$app/forms';
+	import { enhance } from '#lib/forms/enhance.js';
 	import { useI18n } from '#lib/i18n/context.svelte.js';
 	import { oneLine, sharingCandidates } from '#lib/people/home.js';
 	import type { SubmitFunction } from '$app/forms';

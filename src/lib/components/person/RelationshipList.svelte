@@ -5,7 +5,7 @@
 	import DateField from '#lib/components/ui/DateField.svelte';
 	import EmptyState from '#lib/components/ui/EmptyState.svelte';
 	import RemoveButton from '#lib/components/ui/RemoveButton.svelte';
-	import { enhance } from '$app/forms';
+	import { enhance } from '#lib/forms/enhance.js';
 	import { dayLabel } from '#lib/dates/labels.js';
 	import { useI18n } from '#lib/i18n/context.svelte.js';
 	import {

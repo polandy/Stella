@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { enhance } from '$app/forms';
+	import { enhance } from '#lib/forms/enhance.js';
 	import { dateText } from '#lib/components/import/review-text.js';
 	import Avatar from '#lib/components/ui/Avatar.svelte';
 	import Button from '#lib/components/ui/Button.svelte';

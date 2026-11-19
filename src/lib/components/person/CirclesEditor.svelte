@@ -3,7 +3,7 @@
 	import Button from '#lib/components/ui/Button.svelte';
 	import FormError from '#lib/components/ui/FormError.svelte';
 	import RemoveButton from '#lib/components/ui/RemoveButton.svelte';
-	import { enhance } from '$app/forms';
+	import { enhance } from '#lib/forms/enhance.js';
 	import { accentDotStyle } from '#lib/design/tokens.js';
 	import { useI18n } from '#lib/i18n/context.svelte.js';
 	import { keepable } from '#lib/pwa/keepable.js';

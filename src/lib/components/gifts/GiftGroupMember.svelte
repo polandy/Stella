@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { enhance } from '$app/forms';
+	import { enhance } from '#lib/forms/enhance.js';
 	import type { SubmitFunction } from '$app/forms';
 	import { invalidateAll } from '$app/navigation';
 	import GiftGiveForm from '#lib/components/person/GiftGiveForm.svelte';
