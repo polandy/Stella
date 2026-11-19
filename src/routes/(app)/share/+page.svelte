@@ -230,7 +230,7 @@
 
 <svelte:head><title>{t('share.title')}</title></svelte:head>
 
-<div class="mx-auto flex w-full max-w-xl flex-col gap-5 px-4 pt-3 pb-8" data-testid="share-sheet">
+<main class="mx-auto flex w-full max-w-xl flex-col gap-5 px-4 pt-3 pb-8" data-testid="share-sheet">
 	<header class="-ml-2 flex items-center gap-2">
 		<Button variant="ghost" icon="remove" label={t('share.close')} onclick={close} />
 		<h1 class="text-lg font-semibold text-fg">{t('share.title')}</h1>
@@ -305,6 +305,6 @@
 			</div>
 		{/if}
 	{/if}
-</div>
+</main>
 
 <PhotoCropper file={cropping} onconfirm={setAvatar} oncancel={() => (cropping = null)} />

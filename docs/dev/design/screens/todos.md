@@ -23,8 +23,8 @@ most pressing first, and to tick off what is done without opening each person.
 - No pencil and no remove: those stay on the person's card, where the name leads.
 - With nothing open: `EmptyState` with the to-do icon, *Nothing open.*, and the hint that a
   to-do noted on a person's page shows up here.
-- Nothing in the navigation leads here: Home's *Show all N* under the *To-dos* band and the
-  palette's *All to-dos* do.
+- Nothing in the navigation leads here: Home's *Show all N* under the *To-dos* band, the
+  palette's *All to-dos* and a phone's empty Home field do.
 
 ### Why
 

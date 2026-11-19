@@ -3,7 +3,7 @@ import {
 	DEMO_ADMIN_PASSWORD,
 	DEMO_MEMBER_EMAIL,
 	DEMO_THIRD_MEMBER_EMAIL
-} from '../src/lib/server/db/demo-seed';
+} from '../src/lib/server/db/demo-constants';
 import { appReady, openPerson, signIn } from './app';
 
 /*

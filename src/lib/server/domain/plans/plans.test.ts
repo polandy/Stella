@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it } from 'bun:test';
+import { fakeOwnPeople } from '../shared/idea-on-person.fixture';
 import { inEnglish } from '../../../i18n/phrase';
 import { ContactGoneError } from '../contacts/require-visible';
 import { fakePlans } from './plans.fixture';
@@ -39,6 +40,7 @@ beforeEach(() => {
 	counter = 0;
 	deps = {
 		plans,
+		ownPeople: fakeOwnPeople(new Map([[JULIA_SELF, 'julia']])),
 		contacts: {
 			async findByIdVisibleTo(_viewer, id) {
 				if (id === MIA) return { id, birthDate: '2022-03-14', birthDatePrecision: 'full' } as never;

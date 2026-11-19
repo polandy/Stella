@@ -3,14 +3,14 @@
 	import Button from '$lib/components/ui/Button.svelte';
 	import FormError from '$lib/components/ui/FormError.svelte';
 	import Icon from '$lib/components/ui/Icon.svelte';
-	import WhenPicker from '$lib/components/when/WhenPicker.svelte';
+	import WhenPicker from '$lib/components/ui/WhenPicker.svelte';
 	import type { PartialDate } from '$lib/dates/partial-date';
-	import { SURPRISE } from '$lib/gifts/gifts';
+	import { SURPRISE } from '$lib/surprise/surprise';
 	import { useI18n } from '$lib/i18n/context.svelte';
 	import { PLAN_QUICK_PICKS, PLAN_WHEN_KINDS } from '$lib/plans/plans';
 	import type { When } from '$lib/when/when';
 	import type { SubmitFunction } from '@sveltejs/kit';
-	import { INPUT } from './inputs';
+	import { INPUT } from '../ui/inputs';
 
 	/*
 	 * Noting an outing idea, or rewriting one (docs/dev/02 §2.27). It asks for what it is and when;

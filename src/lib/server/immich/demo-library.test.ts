@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'bun:test';
-import { isImmichId, readPerson } from '../domain/immich/gateway';
-import { DEMO_ADMIN_EMAIL } from '../db/demo-seed';
+import { isImmichId } from '../domain/immich/gateway';
+import { readPerson } from '../domain/immich/gateway-payloads';
+import { DEMO_ADMIN_EMAIL } from '../db/demo-constants';
 import { demoImmichLibrary } from './demo-library';
 import { solidPng } from './png';
 

@@ -27,6 +27,8 @@ export const immich = {
 	'immich.settings.scope.asset.view': 'The key cannot show photos — it needs asset.view.',
 	'immich.settings.scope.timeline.read':
 		'The key cannot read the timeline — it needs timeline.read. Until then the photo picker shows days and the search, without the years overview.',
+	'immich.settings.scope.album.read':
+		'The key cannot read albums — it needs album.read. Until then the photo picker shows the timeline, without albums.',
 	'immich.settings.tooOld': (p: { version: string }) =>
 		`This Immich is version ${p.version}. Stella needs Immich 3.2 or newer.`,
 	'immich.settings.sharing':
@@ -210,7 +212,7 @@ export const immich = {
 		p.count === 1 ? '1 photo from Immich' : `${p.count} photos from Immich`,
 	'immich.library.photo': (p: { when: string }) => `Photo, ${p.when}`,
 	'immich.library.photoUndated': 'Photo',
-	'immich.library.trail': 'Where you are in the timeline',
+	'immich.library.trail': 'Where you are in the library',
 	'immich.library.allYears': 'All years',
 	'immich.library.years': 'Years with photos',
 	'immich.library.months': (p: { year: string }) => `Months of ${p.year}`,
@@ -224,7 +226,16 @@ export const immich = {
 	'immich.library.weeks': 'Weeks of the month',
 	'immich.library.week': (p: { week: number }) => `Week ${p.week}`,
 	'immich.library.jumpToWeek': (p: { week: number }) => `Jump to week ${p.week}`,
-	'immich.library.untick': (p: { number: number }) => `Untick photo ${p.number}`
+	'immich.library.untick': (p: { number: number }) => `Untick photo ${p.number}`,
+	'immich.library.ways': 'Browse by',
+	'immich.library.tabTime': 'Time',
+	'immich.library.tabAlbums': 'Albums',
+	'immich.library.allAlbums': 'All albums',
+	'immich.library.albums': 'Albums',
+	'immich.library.albumFilter': 'Filter albums by name',
+	'immich.library.noAlbums': 'Immich has no albums with photos yet.',
+	'immich.library.noAlbumNamed': (p: { name: string }) => `No album is called “${p.name}”.`,
+	'immich.library.albumEmpty': 'This album holds no photos Stella can show.'
 };
 
 /** The key set every translation of this area has to provide. */

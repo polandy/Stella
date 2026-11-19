@@ -106,6 +106,8 @@ A few things worth knowing:
   over the stream. After *Save*, *Moment saved* shows for a few seconds; tap *Show* to
   jump to it. The top of a phone's Home is a search field for people instead: start
   typing a name and the people who match appear right under it; tap one to open their page.
+  Tap the empty field and it lists the household's pages instead: **All gift ideas**,
+  **All to-dos**, **All outings** and **On this day**.
   The last row, *Search everything*, also looks through notes. It works offline too, for
   everyone Stella already showed you. Because that field is the search on Home, the top bar
   there has no search button; every other page keeps it in the top bar. On a phone the top bar
@@ -544,7 +546,12 @@ photo of that day; **‹** and **›** jump to the nearest day that has photos. 
 photos — *All years › 2026 › October › Wed 21* — takes you up: tap the month to see all of
 October grouped by day (tap a day's heading to open it, or a *Week 43* chip to jump to that week), the year to pick another month, or *All
 years* to see how many photos each year holds. The counts are approximate because Immich counts
-videos too. If the Immich key lacks `timeline.read`, the line starts at the month. Or type in the search
+videos too. If the Immich key lacks `timeline.read`, the line starts at the month. **Albums**,
+the tab beside **Time** under the search, lists the albums of the Immich library — the ones
+made there and the ones shared with its owner — the latest first; with many of them, type part
+of a name to narrow the list. Tap one to see its photos, oldest first; *All albums* takes you
+back, and **Time** returns to where you were in the timeline. Ticks stay ticked across both.
+Without the tab, the Immich key lacks `album.read` (Settings says so). Or type in the search
 — *beach*, *birthday cake* — and Immich finds matching photos across the whole library. Tap the
 ones you want; they are numbered in the order you tap them, up to 20 at a time, and a row of small thumbnails at the bottom keeps all of them in view whichever month you are in — tap one to untick it. **Add N photos**
 copies them into Stella, so they stay even if they are later deleted in Immich. A photo added to
@@ -729,8 +736,8 @@ concert*, *the lake by bike once she is ten*. What you owe someone belongs in a 
   **Done**, **Next year** (the same day a year later), **Keep without a date**, or **Delete**.
   After that week only its card still marks it.
 - **All outings** — in the card's **⋯** menu, or in the `⌘K` / `Ctrl-K` palette — lists every
-  open idea of the household: *This month*, *Later* and *Some time*. Ideas more than about three
-  months away and not booked wait behind *Show later ones too*; done ones stay on each card. Tick
+  open idea of the household: *This month*, *Soon* and *Some time*. Ideas more than about three
+  months away and not booked wait behind *Ideas beyond three months*; done ones stay on each card. Tick
   one off right there; everything else is changed on the person's card.
 - From anywhere: `⌘K` / `Ctrl-K`, **Outing with …**, then the person's name and `Enter` opens
   the card's form. **Search everything** finds an idea by its title, note or link, done ones
@@ -1168,8 +1175,10 @@ your removing it never quietly takes it off someone else's private contact.
 ## Finding things
 
 `⌘K` / `Ctrl-K` — or the search button at the top — opens a palette that jumps straight to a
-person as you type, and offers *Write a moment*, *Gift idea for …*, *To-do for …*, *Outing with …*, *Brief for …*, *All gift ideas*, *All to-dos*, *All outings* and *Add person*
-as its first rows. Notes are
+person as you type. Before you type, it lists its rows under three headings: **New** (*Write
+a moment*, *Add person*, *Gift idea for …*, *Gift idea for several …*, *To-do for …*, *Outing
+with …*), **Lists** (*All gift ideas*, *All to-dos*, *All outings*, *On this day*, *Brief for …*)
+and **People**. Notes are
 not in it; the last row, *Search everything*, opens the full search, which looks through
 people, notes, gifts, to-dos, outing ideas and moments at once — a done to-do or outing too, marked as done — matches partial words, and only ever returns what you are
 allowed to see — a private gift only to whoever noted it. When it finds nothing it offers *Add "…"*, which opens *Add person* with what you typed
@@ -1532,6 +1541,10 @@ the middle of saving does it turn into *Not sent yet*, and it is sent later like
 never twice. If you change it while it waits and Stella turns out to have got the
 first version after all, it says so under *Could not send*: save it again to send your change
 as well, or discard it to leave the first version as it is.
+
+Should Stella itself keep failing on something you saved, your phone stops trying after a few
+attempts over several minutes and shows it as *Stuck*, so that what you saved after it still
+goes through. Edit it to try again, or discard it.
 
 Signing out clears the pages your phone was keeping, so handing a device on does not hand on
 the household with it. If moments you wrote are still waiting, Stella asks first whether to keep

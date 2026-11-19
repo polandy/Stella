@@ -1,5 +1,5 @@
 <script lang="ts">
-	import NamesakeLine from '$lib/components/people/NamesakeLine.svelte';
+	import NamesakeLine from '$lib/components/ui/NamesakeLine.svelte';
 	import Avatar from '$lib/components/ui/Avatar.svelte';
 	import { useTranslate } from '$lib/i18n/context.svelte';
 	import { listPlacement, type ListPlacement } from '$lib/mentions/picker';

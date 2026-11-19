@@ -13,7 +13,7 @@ export const settings: SettingsMessages = {
 	'settings.self.heading': 'Du',
 	'settings.self.label': 'Welche dieser Personen bist du',
 	'settings.self.hint':
-		'Sag Stella, welcher Eintrag du bist — dann weiss Stella, bei wem die Karte öffnet und welche Zeile du bist.',
+		'Sag Stella, welcher Eintrag du bist – dann weiss Stella, bei wem die Karte öffnet und welche Zeile du bist.',
 	'settings.self.placeholder': 'Dich selbst über den Namen suchen',
 	'settings.self.clear': 'Keine davon bin ich',
 	'settings.self.saved': 'Gespeichert.',
@@ -76,16 +76,16 @@ export const settings: SettingsMessages = {
 	'settings.data.heading': 'Daten',
 	'settings.data.importPeople': 'Menschen importieren',
 	'settings.data.importPeopleBlurb':
-		'Hol deine Menschen, Beziehungen, Notizen und Fotos aus einem Monica-Export herüber — oder Kontakte aus einer vCard.',
+		'Hol deine Menschen, Beziehungen, Notizen und Fotos aus einem Monica-Export herüber – oder Kontakte aus einer vCard.',
 	'settings.data.download': 'Archiv herunterladen',
 	'settings.data.downloadBlurb':
-		'Alles, was der Haushalt hat, als eine lesbare Textdatei mit den Fotos daneben — dir gehörend und mit allem lesbar.',
+		'Alles, was der Haushalt hat, als eine lesbare Textdatei mit den Fotos daneben – dir gehörend und mit allem lesbar.',
 	'settings.data.restore': 'Aus einem Archiv wiederherstellen',
 	'settings.data.restoreBlurb':
 		'Ein Stella-Archiv wieder einlesen. Was dieser Haushalt schon hat, bleibt unangetastet.',
 	'settings.data.relationshipTypes': 'Beziehungsarten',
 	'settings.data.relationshipTypesBlurb':
-		'Benenne die Arten von Verbindungen, die dein Haushalt festhält — über die hinaus, die Stella mitbringt.',
+		'Benenne die Arten von Verbindungen, die dein Haushalt festhält – über die hinaus, die Stella mitbringt.',
 	'settings.data.adminOnly':
 		'Import, Sicherungen und die Beziehungsarten sind der Haushalts-Administration vorbehalten.',
 	'settings.quality.heading': 'Datenqualität',
@@ -94,7 +94,7 @@ export const settings: SettingsMessages = {
 	'settings.firstNameOnly.blurb':
 		'Alle, von denen nur der Vorname bekannt ist und sonst nichts, um sie zu unterscheiden.',
 	'settings.firstNameOnly.intro':
-		'Nur ein Vorname — kein Nachname, keine Beschreibung, kein Ort oder Datum des Kennenlernens. Ergänze, woran du sie jeweils erkennst. Zum Zusammenführen oder Archivieren öffne die Person.',
+		'Nur ein Vorname – kein Nachname, keine Beschreibung, kein Ort oder Datum des Kennenlernens. Ergänze, woran du sie jeweils erkennst. Zum Zusammenführen oder Archivieren öffne die Person.',
 	'settings.firstNameOnly.knowThemBy': (p) => `Woran erkennst du ${p.name}?`,
 	'settings.firstNameOnly.empty.title': 'Alle sind unterscheidbar',
 	'settings.firstNameOnly.empty.hint': 'Niemand mehr, von dem nur der Vorname bekannt ist.',
@@ -103,7 +103,7 @@ export const settings: SettingsMessages = {
 	'settings.sameAddress.blurb':
 		'Wer an derselben Adresse wohnt, aber noch kein gemeinsames Zuhause hat.',
 	'settings.sameAddress.intro':
-		'Personen, deren eigene Adresszeilen dasselbe sagen — Gross- und Kleinschreibung, Leer- und Satzzeichen ausgenommen. Ein Zuhause hält eine Adresse für alle — ein Umzug ändert sie einmal.',
+		'Personen, deren eigene Adresszeilen dasselbe sagen – Gross- und Kleinschreibung, Leer- und Satzzeichen ausgenommen. Ein Zuhause hält eine Adresse für alle – ein Umzug ändert sie einmal.',
 	'settings.sameAddress.idle': 'Noch nichts geprüft',
 	'settings.sameAddress.idleHint':
 		'Die Prüfung vergleicht die Adresszeilen aller. Von sich aus ändert sie nichts.',
@@ -116,13 +116,13 @@ export const settings: SettingsMessages = {
 	'settings.sameAddress.notSame': 'Nicht dieselbe',
 	'settings.sameAddress.madeHome': (p) => `${p.names} wohnen jetzt in einem Zuhause`,
 	'settings.sameAddress.joined': (p) => `${p.names} eingezogen`,
-	'settings.sameAddress.notSameDone': 'Nicht dieselbe — die Prüfung fragt nicht mehr',
+	'settings.sameAddress.notSameDone': 'Nicht dieselbe – die Prüfung fragt nicht mehr',
 	'settings.sameAddress.done': 'Alles geprüft',
 	'settings.sameAddress.doneHint':
 		'Jede gleiche Adresse ist jetzt ein Zuhause oder als nicht dieselbe markiert.',
 	'settings.sameAddress.declined': (p) => `Nicht dieselbe (${p.count})`,
 	'settings.sameAddress.askAgain': 'Wieder fragen',
-	'settings.sameAddress.offline': 'Offline — Antworten warten auf eine Verbindung.',
+	'settings.sameAddress.offline': 'Offline – Antworten warten auf eine Verbindung.',
 	'settings.relationships.title': 'Beziehungen prüfen',
 	'settings.relationships.intro':
 		'Stella geht alle Personen durch, die du sehen kannst, und zeigt die Familienverbindungen, die sich aus dem Eingetragenen ergeben. Gespeichert wird erst, was du übernimmst.',
@@ -169,7 +169,7 @@ export const settings: SettingsMessages = {
 	'settings.api.heading': 'API',
 	'settings.api.title': 'API-Tokens',
 	'settings.api.blurb':
-		'Lass ein Skript oder einen Assistenten Menschen für dich erfassen — etwa aus einer Klassenliste.',
+		'Lass ein Skript oder einen Assistenten Menschen für dich erfassen – etwa aus einer Klassenliste.',
 	'settings.apiTokens.intro':
 		'Mit einem Token handelt ein Skript über Stellas API in deinem Namen: Es findet und erfasst genau das, was du könntest, und nicht mehr. Behandle es wie ein Passwort.',
 	'settings.apiTokens.create': 'Neues Token',
@@ -204,11 +204,11 @@ export const settings: SettingsMessages = {
 	'settings.calendar.intro':
 		'Geburtstage, Jahrestage, deine anderen Daten und deine Todos im eigenen Kalender deines Handys. Ans Erinnern denkt der Kalender.',
 	'settings.calendar.what': (p: { toggle: string; comingUp: string }): string =>
-		`Jedes Datum mit „${p.toggle}“, von allen, die du sehen kannst — dieselben Daten wie unter ${p.comingUp}, das ganze Jahr — und jedes offene Todo mit Tag, an seinem Tag, bis es abgehakt ist. Private Personen und private Todos nur in deinem eigenen Kalender.`,
+		`Jedes Datum mit „${p.toggle}“, von allen, die du sehen kannst – dieselben Daten wie unter ${p.comingUp}, das ganze Jahr – und jedes offene Todo mit Tag, an seinem Tag, bis es abgehakt ist. Private Personen und private Todos nur in deinem eigenen Kalender.`,
 	'settings.calendar.create': 'Kalender-Link erstellen',
 	'settings.calendar.createdHeading': 'Dein Kalender-Link',
 	'settings.calendar.createdHint':
-		'Kopiere ihn jetzt — er wird nur dieses eine Mal gezeigt. Wer den Link hat, kann diese Daten lesen, also behalte ihn für dich.',
+		'Kopiere ihn jetzt – er wird nur dieses eine Mal gezeigt. Wer den Link hat, kann diese Daten lesen, also behalte ihn für dich.',
 	'settings.calendar.copy': 'Kopieren',
 	'settings.calendar.copied': 'Kopiert',
 	'settings.calendar.copyFailed': 'Markieren und kopieren',
@@ -240,7 +240,7 @@ export const settings: SettingsMessages = {
 	'settings.calendar.replace': 'Neuen Link erstellen …',
 	'settings.calendar.revoke': 'Widerrufen …',
 	'settings.calendar.lost':
-		'Link verloren? Erstelle einen neuen — der alte funktioniert dann nicht mehr.',
+		'Link verloren? Erstelle einen neuen – der alte funktioniert dann nicht mehr.',
 	'settings.calendar.confirmReplace.heading': 'Link ersetzen?',
 	'settings.calendar.confirmReplace.body':
 		'Kalender, die den alten Link abonniert haben, werden nicht mehr aktualisiert. Den neuen fügst du auf jedem Gerät einmal hinzu.',

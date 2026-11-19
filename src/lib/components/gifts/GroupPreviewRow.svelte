@@ -1,6 +1,6 @@
 <script lang="ts">
 	import Avatar from '$lib/components/ui/Avatar.svelte';
-	import { INPUT } from '$lib/components/person/inputs';
+	import { INPUT } from '$lib/components/ui/inputs';
 	import { dayLabel } from '$lib/dates/labels';
 	import type { GroupFormRow, InsteadOffer, PreviewRow } from '$lib/gifts/group-form';
 	import { useI18n } from '$lib/i18n/context.svelte';

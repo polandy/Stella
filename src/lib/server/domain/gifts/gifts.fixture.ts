@@ -64,12 +64,6 @@ export function fakeGifts(
 					(g) => g.state === 'bought' && contactIds.includes(g.contactId) && visible(viewer, g)
 				)
 				.map(({ id, contactId, title }) => ({ id, contactId, title }));
-		},
-		async memberWhoseOwnPerson(_householdId, contactId) {
-			return ownPeople.get(contactId) ?? null;
-		},
-		async membersOwnPeople() {
-			return [...ownPeople].map(([contactId, memberId]) => ({ memberId, contactId }));
 		}
 	};
 }

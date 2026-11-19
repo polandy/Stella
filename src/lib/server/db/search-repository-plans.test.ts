@@ -107,9 +107,17 @@ describe('searchPlans', () => {
 			title: 'Zoo Zürich',
 			done: false,
 			doneOn: null,
+			visibility: 'shared',
+			hiddenFromPerson: false,
 			contactId: 'c-hans',
 			contactName: 'Hans'
 		});
+	});
+
+	it('tells a private idea and a surprise apart in the hit', async () => {
+		const hits = await repo.searchPlans(viewerU1, toFtsQuery('zoo'), 20);
+		expect(hits.find((h) => h.planId === 'p-private')).toMatchObject({ visibility: 'private' });
+		expect(hits.find((h) => h.planId === 'p-surprise')).toMatchObject({ hiddenFromPerson: true });
 	});
 
 	it('matches the note and the link too', async () => {

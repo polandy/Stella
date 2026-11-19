@@ -91,7 +91,9 @@ test('finds a person by the nickname given when they were added', async ({ page 
 	await expect(directory.getByRole('link', { name: /Hans Brunner/ })).toHaveCount(0);
 
 	await page.getByPlaceholder('Find someone…').fill('nobody-by-this-name');
-	await expect(page.getByRole('status')).toHaveText(/Nobody matches/);
+	await expect(page.getByRole('status').filter({ hasText: 'Nobody matches' })).toHaveText(
+		/Nobody matches/
+	);
 });
 
 test('jumps to a person from anywhere with ⌘K, type, Enter', async ({ page }) => {

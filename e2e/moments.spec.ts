@@ -53,7 +53,7 @@ test('creates the people it mentions and offers to link the first two', async ({
 	await expect(added.filter({ hasText: 'Yorick' })).toHaveCount(1);
 
 	// The relationship is offered, never guessed: the hint links to the other person's page.
-	const hint = page.getByRole('status');
+	const hint = page.getByRole('status').filter({ hasText: 'Link Zelda and Yorick?' });
 	await expect(hint).toContainText('Link Zelda and Yorick?');
 	await hint.getByRole('link', { name: 'Link' }).click();
 	await expect(page).toHaveURL(/\/contacts\/[^/?]+\?relate=[^#]+#section-relationships$/);

@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { useTranslate } from '$lib/i18n/context.svelte';
 	import type { MessageKey } from '$lib/i18n/translate';
-	import type { OutboxItem } from '$lib/pwa/outbox';
+	import { recallable, type OutboxItem } from '$lib/pwa/outbox';
 	import { outbox } from '$lib/pwa/outbox.svelte';
 	import Icon from '../ui/Icon.svelte';
 
@@ -9,7 +9,7 @@
 	 * A tag or circle added while Stella was out of reach, kept on this device (docs/dev/02 §2.18):
 	 * the chip it will become, in a dashed outline, beside the real ones. A single word is
 	 * quicker typed again than edited, so it offers only *Discard*, and without asking twice —
-	 * what is lost is the word on the chip. A refused one turns to `--danger` and says why.
+	 * what is lost is the word on the chip. A refused or stuck one turns to `--danger` and says why.
 	 */
 
 	interface Props {
@@ -23,9 +23,10 @@
 		pending: 'home.outbox.notSent',
 		held: 'home.outbox.editing',
 		sending: 'home.outbox.sending',
-		refused: 'home.outbox.couldNotSend'
+		refused: 'home.outbox.couldNotSend',
+		stuck: 'home.outbox.stuck'
 	};
-	const refused = $derived(item.state === 'refused');
+	const refused = $derived(item.state === 'refused' || item.state === 'stuck');
 </script>
 
 <li
@@ -38,7 +39,7 @@
 	<Icon name="offline" size={12} />
 	<span class="truncate">{label}</span>
 	<span class="sr-only">— {item.reason ?? t(STATUS[item.state])}</span>
-	{#if item.state === 'pending' || item.state === 'refused'}
+	{#if recallable(item)}
 		<!-- 24px square (WCAG 2.5.8); the negative margin keeps the chip its own height. -->
 		<button
 			type="button"

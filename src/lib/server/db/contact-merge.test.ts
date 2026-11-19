@@ -171,7 +171,15 @@ describe('what follows the person', () => {
 		db.insert(schema.todo)
 			.values([
 				{ id: 't1', contactId: 'dup', createdBy: U1, title: 'Give the book back' },
-				{ id: 't2', contactId: 'dup', createdBy: U1, title: 'Call', doneAt: 1, doneBy: U1 }
+				{
+					id: 't2',
+					contactId: 'dup',
+					createdBy: U1,
+					title: 'Call',
+					doneAt: 1,
+					doneOn: '2026-11-01',
+					doneBy: U1
+				}
 			])
 			.run();
 

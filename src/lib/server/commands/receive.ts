@@ -1,4 +1,10 @@
-import { isQueueable, type Command, type CommandAnswer } from '../../commands/commands';
+import {
+	COMMAND_SCHEMA_VERSION,
+	isQueueable,
+	MAX_COMMAND_BATCH,
+	type Command,
+	type CommandAnswer
+} from '../../commands/commands';
 import type { Translate } from '../../i18n/translate';
 import { dispatchCommand, type CommandActor, type CommandDeps } from '../domain/commands/dispatch';
 import { RelationshipsRefusedError } from '../domain/relationships/add-many';
@@ -57,6 +63,27 @@ export async function answerFor(
 		console.error(err);
 		return { id: command.id, status: 'failed' };
 	}
+}
+
+/** A batch's commands, still unread, or why the batch is not read at all. */
+export type BatchReading =
+	{ ok: true; commands: unknown[] } | { ok: false; code: 'invalidBatch' | 'schemaAhead' };
+
+/**
+ * The envelope of a phone's batch: `{ schemaVersion, commands }`. A batch from a build before
+ * versions has none and is read as it always was; one from a newer build is not read at all,
+ * since its fields this build does not know would be dropped, and the phone keeps it.
+ */
+export function readBatch(body: unknown): BatchReading {
+	if (typeof body !== 'object' || body === null) return { ok: false, code: 'invalidBatch' };
+	const { schemaVersion, commands } = body as Record<string, unknown>;
+	if (!Array.isArray(commands) || commands.length > MAX_COMMAND_BATCH) {
+		return { ok: false, code: 'invalidBatch' };
+	}
+	if (schemaVersion === undefined) return { ok: true, commands };
+	if (!Number.isInteger(schemaVersion)) return { ok: false, code: 'invalidBatch' };
+	if ((schemaVersion as number) > COMMAND_SCHEMA_VERSION) return { ok: false, code: 'schemaAhead' };
+	return { ok: true, commands };
 }
 
 /** Apply `raws` for `actor` in order, answering each. */

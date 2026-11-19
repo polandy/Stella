@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'bun:test';
 import {
 	paletteRows,
+	paletteSections,
+	personFinderRows,
 	personSearchRows,
 	PALETTE_PEOPLE_LIMIT,
 	type PaletteLabels,
@@ -98,11 +100,11 @@ describe('paletteRows', () => {
 		expect(rows[0]).toMatchObject({ kind: 'action', id: 'write', href: '/?compose' });
 		expect(rows.filter((r) => r.kind === 'action').map((r) => r.id)).toEqual([
 			'write',
+			'add-person',
 			'gift-ideas',
 			'all-todos',
 			'all-plans',
-			'on-this-day',
-			'add-person'
+			'on-this-day'
 		]);
 	});
 
@@ -204,20 +206,20 @@ describe('paletteRows', () => {
 });
 
 describe('a gift idea from the palette (docs/dev/02 §2.25.2)', () => {
-	it('sits next to writing a moment, and leads to a second step rather than a page', () => {
+	it('sits with the other new things, and leads to a second step rather than a page', () => {
 		const rows = paletteRows('', people, labels);
 
 		expect(rows.slice(0, 8).map((r) => r.id)).toEqual([
 			'write',
+			'add-person',
 			'gift-idea',
 			'gift-several',
 			'todo',
 			'plan',
-			'brief',
 			'gift-ideas',
 			'all-todos'
 		]);
-		expect(rows[1]).toMatchObject({ kind: 'step', step: 'giftIdea', label: 'Gift idea for …' });
+		expect(rows[2]).toMatchObject({ kind: 'step', step: 'giftIdea', label: 'Gift idea for …' });
 	});
 
 	it('is found by what it does', () => {
@@ -379,5 +381,69 @@ describe('personSearchRows', () => {
 		expect(
 			personSearchRows('anna', many, searchEverything).filter((r) => r.kind === 'person')
 		).toHaveLength(PALETTE_PEOPLE_LIMIT);
+	});
+});
+
+describe('personFinderRows', () => {
+	const searchEverything = labels.searchEverything;
+
+	it('offers the household lists when nothing is typed', () => {
+		const rows = personFinderRows('  ', people, labels);
+		expect(rows.map((r) => [r.id, r.kind])).toEqual([
+			['gift-ideas', 'action'],
+			['all-todos', 'action'],
+			['all-plans', 'action'],
+			['on-this-day', 'action']
+		]);
+		expect(rows[0]).toMatchObject({ label: 'All gift ideas', href: '/gifts' });
+	});
+
+	it('is the people search as soon as something is typed', () => {
+		expect(personFinderRows('lena', people, labels)).toEqual(
+			personSearchRows('lena', people, searchEverything)
+		);
+	});
+});
+
+describe('paletteSections', () => {
+	it('files an empty palette under New, Lists and People, with Write a moment still first', () => {
+		const sections = paletteSections(paletteRows('', people, labels), '');
+
+		expect(sections.map((s) => s.group)).toEqual(['new', 'lists', 'people']);
+		expect(sections[0].rows.map((r) => r.id)).toEqual([
+			'write',
+			'add-person',
+			'gift-idea',
+			'gift-several',
+			'todo',
+			'plan'
+		]);
+		expect(sections[1].rows.map((r) => r.id)).toEqual([
+			'gift-ideas',
+			'all-todos',
+			'all-plans',
+			'on-this-day',
+			'brief'
+		]);
+		expect(sections[2].rows.map((r) => r.id)).toEqual(['lena', 'oma', 'markus']);
+	});
+
+	it('keeps every row, in the order paletteRows gave them', () => {
+		const rows = paletteRows('', people, labels);
+		expect(paletteSections(rows, '').flatMap((s) => s.rows)).toEqual(rows);
+	});
+
+	it('shows a typed query as one ranked list without headings', () => {
+		const rows = paletteRows('lena', people, labels);
+		expect(paletteSections(rows, 'lena')).toEqual([{ group: null, rows }]);
+	});
+
+	it('shows a second step as people alone, without headings', () => {
+		const rows = paletteRows('', people, labels, new Map(), 'todo');
+		expect(paletteSections(rows, '', 'todo')).toEqual([{ group: null, rows }]);
+	});
+
+	it('has no section when nothing matched', () => {
+		expect(paletteSections([], 'zzz')).toEqual([]);
 	});
 });

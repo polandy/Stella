@@ -8,7 +8,7 @@ export const nav: NavMessages = {
 	'nav.graph': 'Netz',
 	'nav.settings': 'Einstellungen',
 	'nav.search': 'Suche',
-	'nav.tags': 'Tags',
+	'nav.tags': '#Tags',
 	'nav.brief': 'Steckbrief',
 	'nav.journal': 'Tagebuch',
 	'nav.newPerson': 'Neue Person',

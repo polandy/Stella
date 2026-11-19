@@ -18,9 +18,9 @@ the household at once, and to tick off what they bought without opening each per
   given one does, with the same *Undo* — and *hidden from Hilde* on a surprise, and an idea's time as its `WhenChip` — *· in 34
   days* while it comes near, `bg-warning-soft` and *· passed* once its occasion went by. An idea
   still waiting for its time is folded away (docs/dev/02 §2.25.8): under the intro a small
-  uppercase toggle, the card's *Later* style, says *Show 3 ideas for later* (`aria-pressed`);
+  uppercase toggle, the card's *Later* style, says *3 ideas for later* (`aria-pressed`, the label never changes);
   pressed, the waiting rows join their person's card after the others, soonest first, at
-  `opacity-80`, and it reads *Hide the ideas for later*. The choice is kept per member in this
+  `opacity-80`, and the chevron turns. The choice is kept per member in this
   browser (`waitingPreference`). The count beside the heading stays the open ideas only; with
   only waiting ideas left, one muted line says so instead of the empty state. *Still current?*
   is asked on the person's card only. An idea several people get (docs/dev/02 §2.25.11) carries
@@ -31,7 +31,8 @@ the household at once, and to tick off what they bought without opening each per
   (`heldAnswer`); a card whose last idea went disappears with it.
 - With nothing open: `EmptyState` with the idea icon, *No open gift ideas.*, and the hint that an
   idea noted on a person's Gifts card shows up here.
-- Nothing in the navigation leads here: the palette's *All gift ideas* and the Gifts card's ⋯
+- Nothing in the navigation leads here: the palette's *All gift ideas*, a phone's empty Home field
+  (docs/dev/02 §2.22.1) and the Gifts card's ⋯
   menu do.
 
 ### Why

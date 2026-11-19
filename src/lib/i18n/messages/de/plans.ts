@@ -55,11 +55,11 @@ export const plans: PlansMessages = {
 	'plans.list.intro': 'Alles, was ihr mit jemandem machen wollt, das Nächste zuerst.',
 	'plans.list.open': (p) => `${p.count} offen`,
 	'plans.list.thisMonth': 'Diesen Monat',
-	'plans.list.later': 'Später',
+	'plans.list.later': 'Bald',
 	'plans.list.someTime': 'Irgendwann',
-	'plans.list.showLater': (p) => `Auch spätere zeigen (${p.count})`,
-	'plans.list.hideLater': 'Spätere ausblenden',
-	'plans.list.allLater': 'In den nächsten drei Monaten nichts. Alle Ideen warten auf später.',
+	'plans.list.laterToggle': (p) => `Ideen in mehr als drei Monaten (${p.count})`,
+	'plans.list.allLater':
+		'In den nächsten drei Monaten nichts. Alle Ideen liegen weiter in der Zukunft.',
 	'plans.list.empty': 'Keine offene Unternehmungsidee.',
 	'plans.list.emptyHint':
 		'Notiere eine auf der Karte Unternehmungen einer Person, dann steht sie hier.'

@@ -29,7 +29,7 @@
 
 <svelte:head><title>{t('common.pageTitle', { page: `#${data.tag.name}` })}</title></svelte:head>
 
-<main class="mx-auto flex w-full max-w-2xl flex-col gap-6 px-6 py-10">
+<main class="mx-auto flex w-full max-w-2xl flex-col gap-6 px-4 py-6 md:px-6 md:py-10">
 	{#if data.summary}
 		{@const summary = data.summary}
 		<header class="flex flex-wrap items-center justify-between gap-3">

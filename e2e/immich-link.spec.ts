@@ -1,6 +1,6 @@
 import { expect, test, type Browser, type Page } from '@playwright/test';
 import { addPerson, appReady, openPerson, signIn } from './app';
-import { DEMO_ADMIN_PASSWORD, DEMO_MEMBER_EMAIL } from '../src/lib/server/db/demo-seed';
+import { DEMO_ADMIN_PASSWORD, DEMO_MEMBER_EMAIL } from '../src/lib/server/db/demo-constants';
 
 /*
  * Connecting Stella to Immich and linking a person to their Immich face (docs/dev/02 §2.24.1–

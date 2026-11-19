@@ -2,7 +2,7 @@ import { expect, test, type Browser, type Page } from '@playwright/test';
 import { appReady, isoDaysAfter, pickPerson, releaseSelfClaim, serverToday, signIn } from './app';
 import { personIdOf, seedHousehold } from './seed';
 import { UNDO_WINDOW_MS } from '../src/lib/undo/pending-removals';
-import { DEMO_ADMIN_PASSWORD, DEMO_MEMBER_EMAIL } from '../src/lib/server/db/demo-seed';
+import { DEMO_ADMIN_PASSWORD, DEMO_MEMBER_EMAIL } from '../src/lib/server/db/demo-constants';
 
 /*
  * A gift bought and waiting to be handed over (docs/dev/02 §2.25.9), and one kept from the member
@@ -115,7 +115,7 @@ test('a surprise stays away from the member it is for, and a bought one waits as
 		await nina.goto(`/search?q=${letters}`);
 		await expect(nina.getByRole('heading', { name: 'Search', exact: true })).toBeVisible();
 		const giftHits = nina.locator('section', {
-			has: nina.getByRole('heading', { name: 'Gifts', exact: true })
+			has: nina.getByRole('heading', { name: /^Gifts \d+$/ })
 		});
 		await expect(giftHits.getByRole('link', { name: new RegExp(book) })).toHaveCount(1);
 		await expect(giftHits.getByRole('link', { name: new RegExp(scarf) })).toHaveCount(0);

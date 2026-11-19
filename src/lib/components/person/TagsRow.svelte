@@ -13,7 +13,7 @@
 	import { removalKey, type RemovalKind } from '$lib/undo/keys';
 	import { savedEnhance } from '$lib/undo/saved';
 	import type { TagColor } from '$lib/design/tag-colors';
-	import { INPUT } from './inputs';
+	import { INPUT } from '../ui/inputs';
 	import type { PersonForm, PersonPageData } from './types';
 
 	// Someone's tags (docs/dev/02 §2.8): a row of the person page's profile card.

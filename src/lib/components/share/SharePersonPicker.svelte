@@ -3,7 +3,7 @@
 	import { useTranslate } from '$lib/i18n/context.svelte';
 	import Avatar from '../ui/Avatar.svelte';
 	import Icon from '../ui/Icon.svelte';
-	import { INPUT } from '../person/inputs';
+	import { INPUT } from '../ui/inputs';
 
 	/*
 	 * Whom a share is about (docs/dev/02 §2.18.3): one person. Before anything is typed, the few

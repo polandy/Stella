@@ -6,7 +6,7 @@
 
 import { addDays } from '../dates/month';
 import type { PartialDate } from '../dates/partial-date';
-import { todayFor } from '../dates/today';
+import { dayOfInstant } from '../dates/today';
 import { WHEN_LEAD_DAYS, whenDay } from '../when/resolve';
 import { planState, type PlanTiming } from './card';
 
@@ -27,6 +27,6 @@ export function planLeadDay(
 	// An age reached holds from then on: there is no day left to stand before.
 	if (plan.when.kind === 'from_age' && state.kind === 'due') return null;
 	const lead = addDays(day.on, -WHEN_LEAD_DAYS);
-	const noted = todayFor({ now: () => plan.createdAt });
+	const noted = dayOfInstant(plan.createdAt);
 	return lead > noted ? lead : noted;
 }

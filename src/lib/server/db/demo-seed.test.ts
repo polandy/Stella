@@ -4,12 +4,8 @@ import { drizzle, type BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
 import { migrate } from 'drizzle-orm/bun-sqlite/migrator';
 import { eq } from 'drizzle-orm';
 import { ARGON2ID_PREFIX } from '../auth/password';
-import {
-	DEMO_ADMIN_PASSWORD,
-	DEMO_MEMBER_EMAIL,
-	DEMO_THIRD_MEMBER_EMAIL,
-	seedDemoData
-} from './demo-seed';
+import { DEMO_ADMIN_PASSWORD, DEMO_MEMBER_EMAIL, DEMO_THIRD_MEMBER_EMAIL } from './demo-constants';
+import { seedDemoData } from './demo-seed';
 import * as schema from './schema';
 import { seedRelationshipTypes } from './seed';
 import { fixedClock } from '../domain/testing';

@@ -1,5 +1,6 @@
 import type { BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
 import type { Clock } from '../clock';
+import { createDrizzleOwnPersonReads } from '../db/own-person-reads';
 import { createDrizzlePlanRepository } from '../db/plan-repository';
 import type * as schema from '../db/schema';
 import type { PlanDeps } from '../domain/plans/plans';
@@ -23,5 +24,13 @@ export interface PlanWiring {
 }
 
 export function createPlanServices({ db, clock, ids, contacts }: PlanWiring): PlanServices {
-	return { planDeps: { plans: createDrizzlePlanRepository(db), contacts, ids, clock } };
+	return {
+		planDeps: {
+			plans: createDrizzlePlanRepository(db),
+			ownPeople: createDrizzleOwnPersonReads(db),
+			contacts,
+			ids,
+			clock
+		}
+	};
 }

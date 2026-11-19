@@ -55,7 +55,7 @@ test.describe('read in German', () => {
 		await page.getByRole('button', { name: 'Deutsch' }).click();
 		await expect(page.getByRole('heading', { name: /^Einstellungen$/ })).toBeVisible();
 
-		await openQuickAdd(page, 'Mehr — Spitzname, Geburtstag');
+		await openQuickAdd(page, 'Mehr – Spitzname, Geburtstag');
 		const birthday = page.getByRole('group', { name: 'Geburtstag' });
 
 		const labels = await segments(birthday).evaluateAll((els) =>

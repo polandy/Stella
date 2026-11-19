@@ -1,7 +1,7 @@
-import { giftLink } from '../../../gifts/gifts';
+import { webLink } from '../../../links/web-link';
 import { isPlanWhen } from '../../../plans/plans';
 import { FULL_DATE_SHAPE, isRealCalendarDay } from '../../../dates/calendar';
-import { todayFor } from '../../../dates/today';
+import { dayOfInstant } from '../../../dates/today';
 import { whenColumns, whenFromOutside } from '../../../when/when';
 import type { RestoreContext } from './restore-context';
 import { bool, int, ms, records, str, visibilityOf, type Row } from './restore-fields';
@@ -36,7 +36,7 @@ export function planRowsOf(
 		});
 		const kept = when !== null && isPlanWhen(when) ? when : null;
 		const { whenKind, whenOn, whenAge } = whenColumns(kept);
-		const link = giftLink(str(planRow, 'url') ?? '');
+		const link = webLink(str(planRow, 'url') ?? '');
 		const bookedAt = ms(planRow, 'booked_at');
 		const doneAt = ms(planRow, 'done_at');
 		const doneOn = str(planRow, 'done_on');
@@ -58,8 +58,7 @@ export function planRowsOf(
 			booked_at: bookedAt,
 			booked_by: bookedAt === null ? null : member(str(planRow, 'booked_by')),
 			done_at: doneAt,
-			done_on:
-				doneAt === null ? null : isRealDay(doneOn) ? doneOn : todayFor({ now: () => doneAt }),
+			done_on: doneAt === null ? null : isRealDay(doneOn) ? doneOn : dayOfInstant(doneAt),
 			done_by: doneAt === null ? null : member(str(planRow, 'done_by')),
 			moment_id: momentId !== null && restoredEntries.has(momentId) ? momentId : null,
 			...ctx.stamps(planRow)

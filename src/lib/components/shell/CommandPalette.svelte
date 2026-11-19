@@ -6,10 +6,13 @@
 	import Avatar from '$lib/components/ui/Avatar.svelte';
 	import Icon from '$lib/components/ui/Icon.svelte';
 	import { syncModal } from '$lib/components/ui/modal';
-	import NamesakeLine from '$lib/components/people/NamesakeLine.svelte';
+	import NamesakeLine from '$lib/components/ui/NamesakeLine.svelte';
 	import { useTranslate } from '$lib/i18n/context.svelte';
 	import {
+		paletteLabels,
 		paletteRows,
+		paletteSections,
+		type PaletteGroup,
 		type PalettePerson,
 		type PaletteRow,
 		type PaletteStep
@@ -42,28 +45,15 @@
 
 	const t = useTranslate();
 	const peopleContext = usePeopleContext();
-	const rows = $derived(
-		paletteRows(
-			query,
-			people,
-			{
-				write: t('components.palette.write'),
-				giftIdea: t('components.palette.giftIdea'),
-				giftForSeveral: t('components.palette.giftForSeveral'),
-				giftIdeas: t('components.palette.giftIdeas'),
-				todoFor: t('components.palette.todoFor'),
-				briefFor: t('components.palette.briefFor'),
-				allTodos: t('components.palette.allTodos'),
-				planWith: t('components.palette.planWith'),
-				allPlans: t('plans.allIdeas'),
-				onThisDay: t('memories.title'),
-				addPerson: t('components.palette.addPerson'),
-				searchEverything: (q) => t('components.palette.searchEverything', { query: q })
-			},
-			peopleContext(),
-			step
-		)
-	);
+	const rows = $derived(paletteRows(query, people, paletteLabels(t), peopleContext(), step));
+	const sections = $derived(paletteSections(rows, query, step));
+
+	// An empty palette files its rows under headings (docs/dev/05 §5.4).
+	const GROUP_HEADING = $derived<Record<PaletteGroup, string>>({
+		new: t('components.palette.groupNew'),
+		lists: t('components.palette.groupLists'),
+		people: t('components.palette.groupPeople')
+	});
 
 	// A second step asks only whom it is for (docs/dev/05 §5.4).
 	const STEP_QUESTION = $derived({
@@ -123,6 +113,55 @@
 	}
 </script>
 
+{#snippet option(row: PaletteRow, i: number)}
+	<!-- The link itself is the option: an option may not hold an interactive child. -->
+	<li role="none">
+		<a
+			id="palette-{row.kind}-{row.id}"
+			role="option"
+			aria-selected={i === selected}
+			href={row.kind === 'step' ? undefined : row.href}
+			onclick={(e) => {
+				e.preventDefault();
+				follow(row);
+			}}
+			onpointerenter={() => (selected = i)}
+			tabindex="-1"
+			class="flex items-center gap-2.5 rounded-control px-2.5 py-2 text-sm text-fg aria-selected:bg-primary-soft"
+		>
+			{#if row.kind === 'person'}
+				<Avatar id={row.id} name={row.label} avatarPhotoId={row.avatarPhotoId} size={24} />
+			{:else}
+				<span class="grid size-6 place-items-center text-fg-subtle"
+					><Icon name={row.icon} size={15} /></span
+				>
+			{/if}
+			{#if row.kind === 'person' && (row.distinction || row.job)}
+				<span class="min-w-0">
+					<span class="block truncate"
+						>{row.label}<FormerlyMark name={row.formerly} /><FoundByJobMark
+							found={row.foundByJob}
+						/></span
+					>
+					{#if row.distinction}<NamesakeLine distinction={row.distinction} />{/if}
+					<JobLine job={row.job} small />
+				</span>
+			{:else}
+				<span class="truncate"
+					>{row.label}{#if row.kind === 'person'}<FormerlyMark name={row.formerly} /><FoundByJobMark
+							found={row.foundByJob}
+						/>{/if}</span
+				>
+			{/if}
+			{#if row.kind !== 'person'}<span class="ml-auto text-xs text-fg-subtle"
+					>{row.kind === 'search'
+						? t('components.palette.kindSearch')
+						: t('components.palette.kindAction')}</span
+				>{/if}
+		</a>
+	</li>
+{/snippet}
+
 <dialog
 	bind:this={dialog}
 	onclose={() => (open = false)}
@@ -164,53 +203,27 @@
 		>
 	</div>
 	<ul id="palette-rows" role="listbox" class="max-h-[60vh] overflow-y-auto p-1.5">
-		{#each rows as row, i (row.kind + row.id)}
-			<!-- The link itself is the option: an option may not hold an interactive child. -->
-			<li role="none">
-				<a
-					id="palette-{row.kind}-{row.id}"
-					role="option"
-					aria-selected={i === selected}
-					href={row.kind === 'step' ? undefined : row.href}
-					onclick={(e) => {
-						e.preventDefault();
-						follow(row);
-					}}
-					onpointerenter={() => (selected = i)}
-					tabindex="-1"
-					class="flex items-center gap-2.5 rounded-control px-2.5 py-2 text-sm text-fg aria-selected:bg-primary-soft"
-				>
-					{#if row.kind === 'person'}
-						<Avatar id={row.id} name={row.label} avatarPhotoId={row.avatarPhotoId} size={24} />
-					{:else}
-						<span class="grid size-6 place-items-center text-fg-subtle"
-							><Icon name={row.icon} size={15} /></span
+		{#each sections as section (section.group ?? 'all')}
+			{#if section.group}
+				<li role="none">
+					<ul role="group" aria-labelledby="palette-group-{section.group}">
+						<li
+							role="presentation"
+							id="palette-group-{section.group}"
+							class="px-2.5 pt-2 pb-1 text-xs font-medium text-fg-muted"
 						>
-					{/if}
-					{#if row.kind === 'person' && (row.distinction || row.job)}
-						<span class="min-w-0">
-							<span class="block truncate"
-								>{row.label}<FormerlyMark name={row.formerly} /><FoundByJobMark
-									found={row.foundByJob}
-								/></span
-							>
-							{#if row.distinction}<NamesakeLine distinction={row.distinction} />{/if}
-							<JobLine job={row.job} small />
-						</span>
-					{:else}
-						<span class="truncate"
-							>{row.label}{#if row.kind === 'person'}<FormerlyMark
-									name={row.formerly}
-								/><FoundByJobMark found={row.foundByJob} />{/if}</span
-						>
-					{/if}
-					{#if row.kind !== 'person'}<span class="ml-auto text-xs text-fg-subtle"
-							>{row.kind === 'search'
-								? t('components.palette.kindSearch')
-								: t('components.palette.kindAction')}</span
-						>{/if}
-				</a>
-			</li>
+							{GROUP_HEADING[section.group]}
+						</li>
+						{#each section.rows as row (row.kind + row.id)}
+							{@render option(row, rows.indexOf(row))}
+						{/each}
+					</ul>
+				</li>
+			{:else}
+				{#each section.rows as row (row.kind + row.id)}
+					{@render option(row, rows.indexOf(row))}
+				{/each}
+			{/if}
 		{:else}
 			<li role="presentation" class="px-2.5 py-4 text-center text-sm text-fg-muted">
 				{t('components.palette.empty')}

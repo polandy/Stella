@@ -9,6 +9,7 @@ import { createDrizzleImportantDateRepository } from '../db/important-date-repos
 import { createDrizzleCircleMembershipReads } from '../db/circle-membership-reads';
 import { createDrizzleHomeReads } from '../db/home-repository';
 import { createDrizzleKinshipGraphReads } from '../db/kinship-graph-read';
+import { createDrizzleOwnPersonReads } from '../db/own-person-reads';
 import type * as schema from '../db/schema';
 import type { GiftGroupDeps } from '../domain/gifts/gift-groups';
 import type { GiftDeps, GiftRepository } from '../domain/gifts/gifts';
@@ -50,12 +51,13 @@ export interface GiftWiring {
 
 export function createGiftServices({ db, clock, ids, contacts }: GiftWiring): GiftServices {
 	const gifts = createDrizzleGiftRepository(db);
+	const ownPeople = createDrizzleOwnPersonReads(db);
 	return {
 		gifts,
-		giftDeps: { gifts, contacts, ids, clock },
+		giftDeps: { gifts, ownPeople, contacts, ids, clock },
 		giftGroupDeps: {
 			groups: createDrizzleGiftGroupRepository(db),
-			gifts,
+			ownPeople,
 			contacts,
 			birthYears: createDrizzleImportantDateRepository(db),
 			ids,

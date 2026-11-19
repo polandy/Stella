@@ -145,7 +145,7 @@
 
 <svelte:head><title>{t('contacts.new.title')}</title></svelte:head>
 
-<main class="mx-auto flex w-full max-w-lg flex-col gap-6 px-6 py-10">
+<main class="mx-auto flex w-full max-w-lg flex-col gap-6 px-4 py-6 md:px-6 md:py-10">
 	<header>
 		<h1 class="text-2xl font-semibold text-fg">
 			{data.isSelf ? t('contacts.new.selfHeading') : t('contacts.new.heading')}

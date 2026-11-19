@@ -1,6 +1,6 @@
 import { expect, test, type Browser, type Locator, type Page } from '@playwright/test';
 import { addPerson, appReady, signIn } from './app';
-import { DEMO_ADMIN_PASSWORD, DEMO_MEMBER_EMAIL } from '../src/lib/server/db/demo-seed';
+import { DEMO_ADMIN_PASSWORD, DEMO_MEMBER_EMAIL } from '../src/lib/server/db/demo-constants';
 
 /*
  * Editing a note (docs/dev/02 §2.5, docs/dev/03 §3.7): its author alone, title and body, in place; an

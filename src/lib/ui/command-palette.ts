@@ -8,6 +8,7 @@ import { foundByJob, jobOf, type Job } from '$lib/people/job';
 import type { IconName } from '$lib/components/ui/icons';
 import { matchesQuery, startsWithQuery } from '$lib/people/directory';
 import type { PersonContext } from '$lib/people/context';
+import type { Translate } from '$lib/i18n/translate';
 import { tellApart, type Distinction } from '$lib/people/namesakes';
 
 /*
@@ -86,6 +87,9 @@ export type PaletteRow =
 /** A row a search for people yields: a person, or the way into full search. Each goes somewhere. */
 export type PersonSearchRow = Extract<PaletteRow, { kind: 'person' | 'search' }>;
 
+/** A row of the home field: a person, the full search, or a list to open. */
+export type FinderRow = Extract<PaletteRow, { kind: 'person' | 'search' | 'action' }>;
+
 /** Most people shown at once; the query narrows the rest. */
 export const PALETTE_PEOPLE_LIMIT = 6;
 
@@ -114,24 +118,88 @@ export interface PaletteLabels {
 	searchEverything: (query: string) => string;
 }
 
+/** The viewer's wording for the rows, from the translator. */
+export function paletteLabels(t: Translate): PaletteLabels {
+	return {
+		write: t('components.palette.write'),
+		giftIdea: t('components.palette.giftIdea'),
+		giftForSeveral: t('components.palette.giftForSeveral'),
+		giftIdeas: t('components.palette.giftIdeas'),
+		todoFor: t('components.palette.todoFor'),
+		briefFor: t('components.palette.briefFor'),
+		allTodos: t('components.palette.allTodos'),
+		planWith: t('components.palette.planWith'),
+		allPlans: t('plans.allIdeas'),
+		onThisDay: t('memories.title'),
+		addPerson: t('components.palette.addPerson'),
+		searchEverything: (q) => t('components.palette.searchEverything', { query: q })
+	};
+}
+
 /** The label of an action row, by the field of `PaletteLabels` that words it. */
 type ActionLabel = Exclude<keyof PaletteLabels, 'searchEverything'>;
 
-const ACTIONS: readonly ({ id: string; label: ActionLabel; icon: IconName } & (
-	{ href: string } | { step: PaletteStep }
-))[] = [
-	{ id: 'write', label: 'write', icon: 'write', href: '/?compose' },
-	{ id: 'gift-idea', label: 'giftIdea', icon: 'gift', step: 'giftIdea' },
-	{ id: 'gift-several', label: 'giftForSeveral', icon: 'people', step: 'giftForSeveral' },
-	{ id: 'todo', label: 'todoFor', icon: 'todo', step: 'todo' },
-	{ id: 'plan', label: 'planWith', icon: 'explore', step: 'plan' },
-	{ id: 'brief', label: 'briefFor', icon: 'brief', step: 'brief' },
-	{ id: 'gift-ideas', label: 'giftIdeas', icon: 'idea', href: '/gifts' },
-	{ id: 'all-todos', label: 'allTodos', icon: 'todo', href: '/todos' },
-	{ id: 'all-plans', label: 'allPlans', icon: 'explore', href: '/plans' },
-	{ id: 'on-this-day', label: 'onThisDay', icon: 'memories', href: '/on-this-day' },
-	{ id: 'add-person', label: 'addPerson', icon: 'add', href: '/contacts/new' }
+/** The heading an empty palette files a row under (docs/dev/05 §5.4). */
+export type PaletteGroup = 'new' | 'lists' | 'people';
+
+/* In the order shown, a group's rows together; *Write a moment* stays first. */
+const ACTIONS: readonly ({
+	id: string;
+	label: ActionLabel;
+	icon: IconName;
+	group: Exclude<PaletteGroup, 'people'>;
+} & ({ href: string } | { step: PaletteStep }))[] = [
+	{ id: 'write', label: 'write', icon: 'write', href: '/?compose', group: 'new' },
+	{ id: 'add-person', label: 'addPerson', icon: 'add', href: '/contacts/new', group: 'new' },
+	{ id: 'gift-idea', label: 'giftIdea', icon: 'gift', step: 'giftIdea', group: 'new' },
+	{
+		id: 'gift-several',
+		label: 'giftForSeveral',
+		icon: 'people',
+		step: 'giftForSeveral',
+		group: 'new'
+	},
+	{ id: 'todo', label: 'todoFor', icon: 'todo', step: 'todo', group: 'new' },
+	{ id: 'plan', label: 'planWith', icon: 'explore', step: 'plan', group: 'new' },
+	{ id: 'gift-ideas', label: 'giftIdeas', icon: 'idea', href: '/gifts', group: 'lists' },
+	{ id: 'all-todos', label: 'allTodos', icon: 'todo', href: '/todos', group: 'lists' },
+	{ id: 'all-plans', label: 'allPlans', icon: 'explore', href: '/plans', group: 'lists' },
+	{ id: 'on-this-day', label: 'onThisDay', icon: 'memories', href: '/on-this-day', group: 'lists' },
+	{ id: 'brief', label: 'briefFor', icon: 'brief', step: 'brief', group: 'lists' }
 ];
+
+const GROUP_OF_ACTION: ReadonlyMap<string, PaletteGroup> = new Map(
+	ACTIONS.map((action) => [action.id, action.group])
+);
+
+/** A run of rows under one heading; `group` is null where the palette shows no headings. */
+export interface PaletteSection {
+	group: PaletteGroup | null;
+	rows: PaletteRow[];
+}
+
+/**
+ * `rows` under their headings: only an empty palette at its start is grouped — a typed query is
+ * one ranked list, and a second step lists people alone.
+ */
+export function paletteSections(
+	rows: PaletteRow[],
+	query: string,
+	step: PaletteStep = 'start'
+): PaletteSection[] {
+	if (query.trim() !== '' || step !== 'start') return rows.length ? [{ group: null, rows }] : [];
+	const sections: PaletteSection[] = [];
+	for (const row of rows) {
+		const group = row.kind === 'person' ? 'people' : (GROUP_OF_ACTION.get(row.id) ?? null);
+		const last = sections.at(-1);
+		if (last && last.group === group) last.rows.push(row);
+		else sections.push({ group, rows: [row] });
+	}
+	return sections;
+}
+
+/** The household's lists: where a phone's Home field leads before a name is typed. */
+const FINDER_LIST_IDS: readonly string[] = ['gift-ideas', 'all-todos', 'all-plans', 'on-this-day'];
 
 /** The rows for a query, in the order they are shown. */
 export function paletteRows(
@@ -172,9 +240,27 @@ export function paletteRows(
 }
 
 /**
+ * The rows of the home screen's search field: the household's lists while it is empty
+ * (docs/dev/02 §2.22.1), the people search once something is typed.
+ */
+export function personFinderRows(
+	query: string,
+	people: PalettePerson[],
+	labels: PaletteLabels,
+	contexts: ReadonlyMap<string, PersonContext> = new Map()
+): FinderRow[] {
+	if (query.trim() !== '') {
+		return personSearchRows(query, people, labels.searchEverything, contexts);
+	}
+	return paletteRows('', [], labels).filter(
+		(row): row is FinderRow => row.kind === 'action' && FINDER_LIST_IDS.includes(row.id)
+	);
+}
+
+/**
  * The rows of a search for people alone — the home screen's search field (docs/dev/02 §2.22.1):
  * the people whose name matches, then a way into full search. The palette adds its actions
- * on top; the home field has none, and offers nothing until something is typed.
+ * on top; the home field has none (see `personFinderRows`).
  */
 export function personSearchRows(
 	query: string,

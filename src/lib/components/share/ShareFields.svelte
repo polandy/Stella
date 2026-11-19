@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { INPUT } from '$lib/components/person/inputs';
+	import { INPUT } from '$lib/components/ui/inputs';
 	import { useI18n } from '$lib/i18n/context.svelte';
 	import type { ShareTarget } from '$lib/share/shared';
 

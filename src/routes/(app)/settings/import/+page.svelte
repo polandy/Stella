@@ -51,7 +51,7 @@
 
 <svelte:head><title>{t('common.pageTitle', { page: t('import.title') })}</title></svelte:head>
 
-<main class="mx-auto flex w-full max-w-2xl flex-col gap-8 px-6 py-10">
+<main class="mx-auto flex w-full max-w-2xl flex-col gap-8 px-4 py-6 md:px-6 md:py-10">
 	<header>
 		<h1 class="text-2xl font-semibold text-fg">{t('import.title')}</h1>
 		<p class="text-fg-muted">{t('import.intro')}</p>

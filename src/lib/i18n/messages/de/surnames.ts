@@ -23,7 +23,7 @@ export const surnames: SurnamesMessages = {
 	'surnames.page.pageTitle': 'Nachnamen · Stella',
 	'surnames.page.title': 'Nachnamen',
 	'surnames.page.intro':
-		'Alle ohne Nachnamen. Wo eine Verbindung, ein Kreis oder ihr eigener Eintrag ihn verrät, schlägt Stella ihn vor — gespeichert wird erst, wenn du ihn übernimmst.',
+		'Alle ohne Nachnamen. Wo eine Verbindung, ein Kreis oder ihr eigener Eintrag ihn verrät, schlägt Stella ihn vor – gespeichert wird erst, wenn du ihn übernimmst.',
 	'surnames.page.empty.title': 'Alle haben einen Nachnamen oder brauchen keinen',
 	'surnames.page.empty.hint': 'Wer ohne Nachnamen hinzukommt, erscheint hier.',
 	'surnames.blurb': 'Personen ohne Nachnamen, und welche Stella herausfinden kann',
@@ -38,7 +38,7 @@ export const surnames: SurnamesMessages = {
 	'surnames.instead': (p) => `oder: ${p.name}`,
 	'surnames.notThisName': (p) => `Nicht ${p.name}`,
 	'surnames.declined': (p) => `Abgelehnte Namen (${p.count})`,
-	'surnames.declinedRow': (p) => `${p.person} — nicht ${p.name}`,
+	'surnames.declinedRow': (p) => `${p.person} – nicht ${p.name}`,
 	'surnames.offerAgain': 'Wieder vorschlagen',
 	'surnames.noLastName': 'Kein Nachname',
 	'surnames.noLastNameHint': 'Hat keinen, und das ist in Ordnung. Stella fragt nicht mehr.',
@@ -58,12 +58,12 @@ export const surnames: SurnamesMessages = {
 	'surnames.set': 'Setzen',
 	'surnames.confirm': (p) =>
 		p.count === 1 ? `${p.name} für 1 Person setzen.` : `${p.name} für ${p.count} Personen setzen.`,
-	'surnames.replace': (p) => `${p.person} hat schon den Nachnamen ${p.name} — ersetzen`,
+	'surnames.replace': (p) => `${p.person} hat schon den Nachnamen ${p.name} – ersetzen`,
 	'surnames.replaceAll': (p) => `Alle ${p.count} ersetzen`,
 	'surnames.count': (p) =>
 		`${p.missing === 1 ? '1 Person hat' : `${p.missing} Personen haben`} keinen Nachnamen · ${p.suggested} mit Vorschlag`,
 	'surnames.toast.passOn': (p) =>
-		`Nachname gespeichert. ${p.people} ${p.count === 1 ? 'hat' : 'haben'} noch keinen — auch ${p.name}?`,
+		`Nachname gespeichert. ${p.people} ${p.count === 1 ? 'hat' : 'haben'} noch keinen – auch ${p.name}?`,
 	'surnames.toast.yes': 'Ja',
 	'surnames.chip': (p) => `${p.name}?`,
 	'surnames.chipHint': (p) => `Nachnamen ${p.name} geben`,
@@ -72,11 +72,11 @@ export const surnames: SurnamesMessages = {
 	'surnames.chipUndoFailed':
 		'Der Nachname konnte nicht zurückgenommen werden. Bitte nochmal versuchen.',
 	'surnames.passOnPrompt': (p) =>
-		`${p.people} ${p.count === 1 ? 'hat' : 'haben'} noch keinen Nachnamen — auch ${p.name}?`,
+		`${p.people} ${p.count === 1 ? 'hat' : 'haben'} noch keinen Nachnamen – auch ${p.name}?`,
 	'surnames.renamePrompt': (p) =>
 		p.count === 1
-			? `Diese Person aus der Familie heißt noch ${p.from} — auch in ${p.name} ändern?`
-			: `Diese Personen aus der Familie heißen noch ${p.from} — auch in ${p.name} ändern?`,
+			? `Diese Person aus der Familie heißt noch ${p.from} – auch in ${p.name} ändern?`
+			: `Diese Personen aus der Familie heißen noch ${p.from} – auch in ${p.name} ändern?`,
 	'surnames.renameApply': (p) =>
 		p.count === 1 ? 'Für 1 Person ändern' : `Für ${p.count} Personen ändern`,
 	'surnames.no': 'Nein'

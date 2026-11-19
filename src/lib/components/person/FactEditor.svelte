@@ -3,7 +3,7 @@
 	import type { IconName } from '$lib/components/ui/icons';
 	import { FIELD_SELECTOR, firstField } from '$lib/components/ui/first-field';
 	import { onMount, type Snippet } from 'svelte';
-	import { EDIT_FRAME } from './inputs';
+	import { EDIT_FRAME } from '../ui/inputs';
 
 	/*
 	 * A fact of the identity card being edited where it is read (docs/dev/05 §5.5): its label over

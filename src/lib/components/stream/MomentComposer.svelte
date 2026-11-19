@@ -12,11 +12,11 @@
 	import ComposerPhotos from '$lib/components/stream/ComposerPhotos.svelte';
 	import ComposerSaveHint from '$lib/components/stream/ComposerSaveHint.svelte';
 	import ComposerSubjects from '$lib/components/stream/ComposerSubjects.svelte';
-	import TagListbox from '$lib/components/journal/TagListbox.svelte';
-	import TagsLine from '$lib/components/journal/TagsLine.svelte';
+	import TagListbox from '$lib/components/ui/TagListbox.svelte';
+	import TagsLine from '$lib/components/ui/TagsLine.svelte';
 	import type { KnownTag } from '$lib/hashtags/picker';
 	import { TagPicker } from '$lib/hashtags/tag-picker.svelte';
-	import WhichNamesake from '$lib/components/people/WhichNamesake.svelte';
+	import WhichNamesake from '$lib/components/ui/WhichNamesake.svelte';
 	import { useTranslate } from '$lib/i18n/context.svelte';
 	import { usePeopleContext } from '$lib/people/context.svelte';
 	import { tellApart } from '$lib/people/namesakes';

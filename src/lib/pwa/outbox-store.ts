@@ -1,4 +1,5 @@
 import type { OutboxItem } from './outbox';
+import { migrateOutbox } from './outbox-schema';
 
 /*
  * Keeps the outbox on the device (docs/dev/02 §2.18.1). An adapter: it holds
@@ -9,6 +10,8 @@ import type { OutboxItem } from './outbox';
  * IndexedDB rather than `localStorage`: it survives the storage pressure that evicts caches
  * first, it is reachable from a service worker should one ever send, and it will hold photos
  * as they are rather than as base64 strings.
+ *
+ * What an older build kept is brought up to this one as it is read (`outbox-schema.ts`).
  */
 
 const DATABASE = 'stella-outbox';
@@ -30,7 +33,8 @@ export async function readOutbox(): Promise<OutboxItem[]> {
 	try {
 		return await new Promise((resolve, reject) => {
 			const request = db.transaction(STORE, 'readonly').objectStore(STORE).get(KEY);
-			request.onsuccess = () => resolve((request.result as OutboxItem[] | undefined) ?? []);
+			request.onsuccess = () =>
+				resolve(migrateOutbox((request.result as unknown[] | undefined) ?? []));
 			request.onerror = () => reject(request.error);
 		});
 	} finally {
@@ -56,7 +60,7 @@ export async function updateOutbox(
 			let written: OutboxItem[] = [];
 			const read = store.get(KEY);
 			read.onsuccess = () => {
-				written = change((read.result as OutboxItem[] | undefined) ?? []);
+				written = change(migrateOutbox((read.result as unknown[] | undefined) ?? []));
 				store.put(written, KEY);
 			};
 			tx.oncomplete = () => resolve(written);

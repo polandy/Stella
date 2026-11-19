@@ -51,6 +51,10 @@ export interface GiftHit {
 	state: GiftState;
 	/** ISO YYYY-MM-DD; null while an idea. */
 	givenOn: string | null;
+	/** A private one carries the Private mark in the result list. */
+	visibility: Visibility;
+	/** A surprise: shared, but kept from the member it is for. */
+	hiddenFromPerson: boolean;
 	contactId: string;
 	contactName: string;
 }
@@ -79,6 +83,7 @@ export interface TodoHit {
 	done: boolean;
 	/** ISO YYYY-MM-DD, the household's day it was ticked; null while open, and on one ticked before the day was kept. */
 	doneOn: string | null;
+	visibility: Visibility;
 	contactId: string;
 	contactName: string;
 }
@@ -91,6 +96,9 @@ export interface PlanHit {
 	done: boolean;
 	/** ISO YYYY-MM-DD, the household's day it was ticked; null while open. */
 	doneOn: string | null;
+	visibility: Visibility;
+	/** A surprise: shared, but kept from the member it is with. */
+	hiddenFromPerson: boolean;
 	contactId: string;
 	contactName: string;
 }

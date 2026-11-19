@@ -364,6 +364,112 @@ describe('createHttpImmichGateway', () => {
 		]);
 	});
 
+	it('lists the albums the key owner sees in one call', async () => {
+		const { gateway, calls } = stub(() =>
+			json([
+				{
+					id: ID,
+					albumName: 'Summer',
+					assetCount: 3,
+					albumThumbnailAssetId: ASSET,
+					startDate: '2026-07-04T00:00:00.000Z',
+					endDate: '2026-07-19T00:00:00.000Z'
+				}
+			])
+		);
+		expect(await gateway.albums()).toEqual({
+			ok: true,
+			value: [
+				{
+					id: ID,
+					name: 'Summer',
+					count: 3,
+					coverAssetId: ASSET,
+					from: '2026-07-04',
+					to: '2026-07-19'
+				}
+			]
+		});
+		expect(calls[0].url).toBe(`${BASE}/api/albums`);
+		expect(calls[0].method).toBe('GET');
+	});
+
+	it('reads a key without album.read as forbidden, and a changed shape as unreadable, loudly', async () => {
+		expect(await stub(() => json({}, 403)).gateway.albums()).toEqual({
+			ok: false,
+			failure: 'forbidden'
+		});
+		const { gateway, logged } = stub(() => json([{ id: ID, name: 'Summer', assetCount: 3 }]));
+		expect(await gateway.albums()).toEqual({ ok: false, failure: 'unreachable' });
+		expect(logged).toEqual(['[immich] /api/albums answered with something Stella cannot read']);
+	});
+
+	it("reads an album's photos in the timeline, oldest first, from the cursor on", async () => {
+		const { gateway, calls } = stub(() =>
+			json({
+				assets: {
+					items: [
+						{
+							id: ASSET,
+							type: 'IMAGE',
+							visibility: 'timeline',
+							localDateTime: '2026-07-04T10:00:00.000Z'
+						}
+					],
+					nextCursor: 'c2'
+				}
+			})
+		);
+		expect(await gateway.albumAssets(ID, 100, 'c1')).toEqual({
+			ok: true,
+			value: { assets: [{ id: ASSET, takenAt: '2026-07-04T10:00:00' }], nextCursor: 'c2' }
+		});
+		expect(calls[0].url).toBe(`${BASE}/api/search/metadata`);
+		expect(calls[0].body).toEqual({
+			filter: { albumIds: { any: [ID] }, type: { eq: 'IMAGE' }, visibility: { eq: 'timeline' } },
+			orderBy: { field: 'localDateTime', direction: 'asc' },
+			size: 100,
+			cursor: 'c1'
+		});
+	});
+
+	it('reads an album Immich no longer has as not found, and never asks for an id not its own', async () => {
+		// Immich v3.3.1 answers 400 "Not found or no album.read access".
+		expect(await stub(() => json({}, 400)).gateway.albumAssets(ID, 100, null)).toEqual({
+			ok: false,
+			failure: 'notFound'
+		});
+		const { gateway, calls } = stub(() => json({}));
+		expect(await gateway.albumAssets('../albums', 100, null)).toEqual({
+			ok: false,
+			failure: 'notFound'
+		});
+		expect(calls).toEqual([]);
+	});
+
+	it('finds one photo only while it is an image in the timeline', async () => {
+		const photo = {
+			id: ASSET,
+			type: 'IMAGE',
+			visibility: 'timeline',
+			localDateTime: '2026-07-04T10:00:00.000Z'
+		};
+		const { gateway, calls } = stub(() => json({ assets: { items: [photo], nextCursor: null } }));
+		expect(await gateway.timelinePhoto(ASSET)).toEqual({
+			ok: true,
+			value: { id: ASSET, takenAt: '2026-07-04T10:00:00' }
+		});
+		expect(calls[0].body).toEqual({
+			filter: { id: { eq: ASSET }, type: { eq: 'IMAGE' }, visibility: { eq: 'timeline' } },
+			size: 1
+		});
+		const archived = stub(() => json({ assets: { items: [], nextCursor: null } }));
+		expect(await archived.gateway.timelinePhoto(ASSET)).toEqual({ ok: false, failure: 'notFound' });
+		const odd = stub(() => json({}));
+		expect(await odd.gateway.timelinePhoto('cover')).toEqual({ ok: false, failure: 'notFound' });
+		expect(odd.calls).toEqual([]);
+	});
+
 	it('searches the timeline by a description, best match first', async () => {
 		const { gateway, calls } = stub(() =>
 			json({

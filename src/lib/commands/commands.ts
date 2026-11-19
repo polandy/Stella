@@ -169,6 +169,13 @@ export function isQueueable(type: CommandType): boolean {
 	return kindOf(type) === 'add';
 }
 
+/**
+ * The shape of a queued command and of the outbox item holding it (docs/dev/04 §4.11.2). A
+ * device stamps it on what it keeps and on every batch it sends; raised only together with a
+ * migration in `$lib/pwa/outbox-schema.ts` and a fixture of the queue it replaces.
+ */
+export const COMMAND_SCHEMA_VERSION = 1;
+
 /** The most commands one request to `POST /api/commands` may carry. */
 export const MAX_COMMAND_BATCH = 50;
 

@@ -5,9 +5,9 @@
 	import { goto } from '$app/navigation';
 	import Avatar from '$lib/components/ui/Avatar.svelte';
 	import Icon from '$lib/components/ui/Icon.svelte';
-	import NamesakeLine from '$lib/components/people/NamesakeLine.svelte';
+	import NamesakeLine from '$lib/components/ui/NamesakeLine.svelte';
 	import { useTranslate } from '$lib/i18n/context.svelte';
-	import { personSearchRows, type PalettePerson } from '$lib/ui/command-palette';
+	import { paletteLabels, personFinderRows, type PalettePerson } from '$lib/ui/command-palette';
 	import { usePeopleContext } from '$lib/people/context.svelte';
 	import { BLUR_CLOSE_MS } from '$lib/components/ui/blur-close';
 	import { nextMenuIndex } from '$lib/ui/menu';
@@ -16,7 +16,8 @@
 	 * The home screen's search field (docs/dev/02 §2.22.1, docs/dev/05 §5.4): people matching the
 	 * typed name, straight under the field, then a way into full search. It matches against the
 	 * people the shell already carries, so it answers as you type and keeps working while
-	 * Stella is out of reach. The rows come from the pure `personSearchRows`; this only draws
+	 * Stella is out of reach. Empty and focused, it lists the household's lists instead (Gifts,
+	 * To-dos, Outings …), which have no tab. The rows come from the pure `personFinderRows`; this only draws
 	 * them and follows one.
 	 *
 	 * Without JavaScript it is a plain GET form into /search.
@@ -35,37 +36,35 @@
 	let query = $state('');
 	let open = $state(false);
 	let highlighted = $state(0);
+	// Lists show on an empty field without being aimed at, so Enter there stays put.
+	let aimed = $state(false);
+	const active = $derived(query.trim() === '' && !aimed ? -1 : highlighted);
 	let root: HTMLFormElement | undefined = $state();
 
-	const rows = $derived(
-		personSearchRows(
-			query,
-			people,
-			(q) => t('components.palette.searchEverything', { query: q }),
-			peopleContext()
-		)
-	);
+	const rows = $derived(personFinderRows(query, people, paletteLabels(t), peopleContext()));
 	const showList = $derived(open && rows.length > 0);
 
 	function follow(href: string) {
 		open = false;
 		query = '';
+		aimed = false;
 		void goto(href);
 	}
 
 	function onKeydown(event: KeyboardEvent) {
 		// Home and End stay with the text cursor; only the arrows move through the rows.
 		const next = event.key.startsWith('Arrow')
-			? nextMenuIndex(highlighted, rows.length, event.key)
+			? nextMenuIndex(active, rows.length, event.key)
 			: null;
 		if (next !== null) {
 			event.preventDefault();
 			open = true;
+			aimed = true;
 			highlighted = next;
 		} else if (event.key === 'Enter') {
 			// Nothing typed means no rows: stay put rather than open an empty full search.
 			event.preventDefault();
-			const row = rows[highlighted];
+			const row = rows[active];
 			if (row) follow(row.href);
 		} else if (event.key === 'Escape') {
 			if (!showList && query === '') return;
@@ -101,8 +100,12 @@
 			oninput={() => {
 				open = true;
 				highlighted = 0;
+				aimed = false;
 			}}
-			onfocus={() => (open = true)}
+			onfocus={() => {
+				open = true;
+				aimed = false;
+			}}
 			onblur={() => setTimeout(closeIfFocusLeft, BLUR_CLOSE_MS)}
 			onkeydown={onKeydown}
 			placeholder={t('home.findPerson')}
@@ -110,8 +113,8 @@
 			aria-expanded={showList}
 			aria-controls={LISTBOX_ID}
 			aria-autocomplete="list"
-			aria-activedescendant={showList && rows[highlighted]
-				? `person-finder-${rows[highlighted].kind}-${rows[highlighted].id}`
+			aria-activedescendant={showList && rows[active]
+				? `person-finder-${rows[active].kind}-${rows[active].id}`
 				: undefined}
 			autocomplete="off"
 			enterkeyhint="search"
@@ -131,14 +134,17 @@
 					<a
 						id="person-finder-{row.kind}-{row.id}"
 						role="option"
-						aria-selected={i === highlighted}
+						aria-selected={i === active}
 						href={row.href}
 						onmousedown={(e) => e.preventDefault()}
 						onclick={(e) => {
 							e.preventDefault();
 							follow(row.href);
 						}}
-						onpointerenter={() => (highlighted = i)}
+						onpointerenter={() => {
+							aimed = true;
+							highlighted = i;
+						}}
 						tabindex="-1"
 						class="flex items-center gap-2.5 rounded-control px-2.5 py-2 text-sm text-fg aria-selected:bg-primary-soft"
 					>

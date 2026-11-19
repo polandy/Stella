@@ -1,7 +1,8 @@
+import { surpriseFromForm } from '../surprise/surprise';
+
 /*
  * The words a gift is made of (docs/dev/02 §2.25). Pure and client-safe, so the form, the command's
- * payload schema and the use-case read one list of states, one list of occasions and one rule
- * for a link.
+ * payload schema and the use-case read one list of states and one list of occasions.
  */
 
 /** An idea may be bought, then becomes a given gift; a received one is noted as such from the start. */
@@ -65,40 +66,10 @@ export function occasionFromForm(choice: string | null, typed: string | null): s
 }
 
 /** The form's three-way choice, *Everyone but them* being a shared gift kept from its person (§2.25.10). */
-export const SURPRISE = 'surprise';
-
 export function visibilityFromForm(chosen: string | null): {
 	visibility: 'shared' | 'private';
 	hiddenFromRecipient: boolean;
 } {
-	if (chosen === 'private') return { visibility: 'private', hiddenFromRecipient: false };
-	return { visibility: 'shared', hiddenFromRecipient: chosen === SURPRISE };
-}
-
-/** A link as the form gave it: a web address, none, or something that is not one. */
-export type GiftLink = { ok: true; url: string | null } | { ok: false };
-
-const WEB_SCHEME = /^https?:\/\//i;
-/** Any scheme at all (`javascript:`, `mailto:`, …) — refused unless it is the web's. */
-const ANY_SCHEME = /^[a-z][a-z0-9+.-]*:/i;
-
-/**
- * The link a gift may carry (docs/dev/02 §2.25): the shop page. Only a web address is kept, because
- * the card renders it as a link and a `javascript:` one would run when tapped. An address pasted
- * without its scheme — `shop.example/teapot` — is read as `https://`.
- */
-export function giftLink(raw: string): GiftLink {
-	const text = raw.trim();
-	if (text.length === 0) return { ok: true, url: null };
-	if (/\s/.test(text)) return { ok: false };
-	const candidate = WEB_SCHEME.test(text) ? text : ANY_SCHEME.test(text) ? null : `https://${text}`;
-	if (candidate === null) return { ok: false };
-	try {
-		const parsed = new URL(candidate);
-		if (parsed.hostname.length === 0) return { ok: false };
-	} catch {
-		// `new URL` throws on what is not an address; that is the answer, not a failure.
-		return { ok: false };
-	}
-	return { ok: true, url: candidate };
+	const { visibility, keptFromPerson } = surpriseFromForm(chosen);
+	return { visibility, hiddenFromRecipient: keptFromPerson };
 }

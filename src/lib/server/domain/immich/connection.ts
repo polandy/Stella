@@ -94,10 +94,11 @@ async function probe(gateway: ImmichGateway): Promise<ImmichStatus> {
 		}
 	}
 
-	// Without it the picker only loses its years overview (docs/dev/02 §2.24.9).
-	const months = await gateway.timelineMonths();
-	const lacking: ImmichOptionalScope[] =
-		!months.ok && months.failure === 'forbidden' ? ['timeline.read'] : [];
+	// Without them the picker only loses its years overview, or its albums (docs/dev/02 §2.24.9).
+	const [months, albums] = await Promise.all([gateway.timelineMonths(), gateway.albums()]);
+	const lacking: ImmichOptionalScope[] = [];
+	if (!months.ok && months.failure === 'forbidden') lacking.push('timeline.read');
+	if (!albums.ok && albums.failure === 'forbidden') lacking.push('album.read');
 
 	return { state: 'connected', version: shown(version.value), owner: owner.value, lacking };
 }

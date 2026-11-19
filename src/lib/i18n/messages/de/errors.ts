@@ -3,7 +3,7 @@ import type { ErrorsMessages } from '../en/errors';
 /** German for `messages/en/errors.ts`. */
 export const errors: ErrorsMessages = {
 	'errors.contact.birthDateFormat':
-		'Ein Geburtsdatum muss JJJJ-MM-TT lauten — oder --MM-TT, wenn das Jahr unbekannt ist.',
+		'Ein Geburtsdatum muss JJJJ-MM-TT lauten – oder --MM-TT, wenn das Jahr unbekannt ist.',
 	'errors.contact.namePartsInvalid':
 		'Die Namensteile konnten nicht gelesen werden. Bitte nochmals versuchen.',
 	'errors.contact.emptyLastName': 'Ein Nachname darf nicht leer sein.',
@@ -60,7 +60,7 @@ export const errors: ErrorsMessages = {
 		'Zusammenführen lassen sich nur Arten, die beide von jeder Seite gleich lauten oder beide verschieden.',
 
 	'errors.date.unknownKind': (p) => `Unbekannte Art von Datum: ${p.kind}`,
-	'errors.date.format': 'Ein Datum muss JJJJ-MM-TT lauten — oder --MM-TT ohne Jahr.',
+	'errors.date.format': 'Ein Datum muss JJJJ-MM-TT lauten – oder --MM-TT ohne Jahr.',
 	'errors.date.noSuchDay': (p) => `Diesen Tag gibt es im Kalender nicht: ${p.day}.`,
 	'errors.date.needsLabel': 'Gib dem Datum einen Namen, damit es später etwas bedeutet.',
 	'errors.date.couldNotAdd': 'Das Datum konnte nicht hinzugefügt werden.',
@@ -149,7 +149,7 @@ export const errors: ErrorsMessages = {
 	'errors.plan.badLink': 'Der Link muss eine Webadresse sein.',
 	'errors.plan.gone': 'Diese Idee gibt es nicht mehr.',
 	'errors.plan.ownSurprise':
-		'Du kannst eine Idee nicht vor dir selbst verbergen — sie ist mit dir.',
+		'Du kannst eine Idee nicht vor dir selbst verbergen – sie ist mit dir.',
 	'errors.plan.couldNotSave': 'Die Idee konnte nicht gespeichert werden.',
 	'errors.plan.badWhen': 'Bitte wähle, wann es sein soll.',
 	'errors.todo.needTitle': 'Schreib, was zu tun ist.',

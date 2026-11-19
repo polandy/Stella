@@ -7,6 +7,7 @@ import type { Clock } from '../../clock';
 import type { IdGenerator } from '../../id';
 import type { ContactLookup } from '../contacts/contacts';
 import { requireVisibleContact } from '../contacts/require-visible';
+import { requiredTitle, viewerOf, type IdeaActor } from '../shared/idea-on-person';
 
 /*
  * To-do use-cases (docs/dev/02 §2.26). A to-do belongs to the one person it is about: a short
@@ -82,10 +83,7 @@ export interface TodoDeps {
 }
 
 /** The member doing it. */
-export interface TodoActor {
-	userId: string;
-	householdId: string;
-}
+export type TodoActor = IdeaActor;
 
 /** What a to-do says, as a form or a command hands it over. */
 export interface TodoContent {
@@ -123,11 +121,8 @@ export class TodoGoneError extends TranslatableError {
 	}
 }
 
-function titleOf(raw: string): string {
-	const title = raw.trim();
-	if (title.length === 0) throw new InvalidTodoError(phrase('errors.todo.needTitle'));
-	return title;
-}
+const titleOf = (raw: string): string =>
+	requiredTitle(raw, () => new InvalidTodoError(phrase('errors.todo.needTitle')));
 
 /** The day it is due by; empty means none. */
 function dueOnOf(raw: string | null): string | null {
@@ -137,11 +132,6 @@ function dueOnOf(raw: string | null): string | null {
 	if (!isRealCalendarDay(day)) throw new InvalidTodoError(phrase('errors.todo.noSuchDay', { day }));
 	return day;
 }
-
-const viewerOf = (actor: TodoActor): Viewer => ({
-	id: actor.userId,
-	householdId: actor.householdId
-});
 
 async function requireVisibleTodo(
 	deps: Pick<TodoDeps, 'todos'>,

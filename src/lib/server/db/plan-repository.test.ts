@@ -205,10 +205,4 @@ describe('createDrizzlePlanRepository', () => {
 		await repo.remove('p-1');
 		expect(await repo.findVisibleTo(viewerU1, 'c-shared', 'p-1')).toBeNull();
 	});
-
-	it('names the member whose own person it is, and nobody for anyone else', async () => {
-		db.update(schema.user).set({ selfContactId: 'c-shared' }).where(eq(schema.user.id, U2)).run();
-		expect(await repo.memberWhoseOwnPerson(H, 'c-shared')).toBe(U2);
-		expect(await repo.memberWhoseOwnPerson(H, 'c-priv')).toBeNull();
-	});
 });

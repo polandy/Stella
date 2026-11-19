@@ -114,7 +114,7 @@
 	<form
 		method="POST"
 		{action}
-		class="flex items-center gap-2"
+		class="flex items-center gap-2 pointer-coarse:gap-3"
 		use:enhance={saved}
 		onfocusin={focusBack.focusin}
 		onfocusout={focusBack.focusout}
@@ -131,12 +131,25 @@
 			aria-invalid={error ? 'true' : undefined}
 			aria-describedby={error ? errorId : undefined}
 			onkeydown={onKeydown}
-			class="{FIELD} min-w-0 flex-1 px-2 py-1"
+			class="{FIELD} min-w-0 flex-1 px-2 py-1 pointer-coarse:min-h-11 {heading
+				? ''
+				: 'pointer-coarse:text-base'}"
 			class:text-2xl={heading}
 			class:font-semibold={heading}
 		/>
-		<Button variant="primary" size="sm">{t('common.save')}</Button>
-		<Button variant="ghost" size="sm" type="button" onclick={cancel}>{t('common.cancel')}</Button>
+		<Button
+			variant="primary"
+			size="sm"
+			class="pointer-coarse:min-h-11 pointer-coarse:min-w-11 pointer-coarse:px-4"
+			>{t('common.save')}</Button
+		>
+		<Button
+			variant="ghost"
+			size="sm"
+			type="button"
+			class="pointer-coarse:min-h-11 pointer-coarse:min-w-11 pointer-coarse:px-4"
+			onclick={cancel}>{t('common.cancel')}</Button
+		>
 	</form>
 	<FormError message={error} id={errorId} variant="inline" class="mt-1" />
 {:else}
@@ -150,7 +163,7 @@
 		type="button"
 		onclick={start}
 		title={label}
-		class="group/inline -mx-1 flex max-w-full items-center gap-1.5 rounded-control px-1 text-left transition-colors hover:bg-card-hover"
+		class="group/inline -mx-1 flex max-w-full items-center gap-1.5 rounded-control px-1 text-left transition-colors hover:bg-card-hover pointer-coarse:min-h-11"
 		class:min-h-8={pencil}
 	>
 		<!-- The pencil follows the value with no whitespace, which would join a heading's text. A

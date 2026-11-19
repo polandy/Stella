@@ -7,7 +7,7 @@ export const brief: BriefMessages = {
 	'brief.printedOn': (p) => `Steckbrief · ${p.day}`,
 	'brief.wholePage': 'Ganze Seite öffnen',
 	'brief.empty':
-		'Noch nichts erfasst, worüber der Steckbrief berichten könnte — auf der Personenseite kommt es dazu.',
+		'Noch nichts erfasst, worüber der Steckbrief berichten könnte – auf der Personenseite kommt es dazu.',
 	'brief.born': (p) => `geboren am ${p.day}`,
 	'brief.bornAround': (p) => `geboren um ${p.year}`,
 	'brief.next.line': (p) => `${p.name} ${p.occasion}`,

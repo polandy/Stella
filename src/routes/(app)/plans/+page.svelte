@@ -12,8 +12,8 @@
 	import type { ActionData, PageData } from './$types';
 
 	/*
-	 * Every open outing idea of the household (docs/dev/02 §2.27.9): *This month*, *Later*, *Some
-	 * time*. What is more than three months ahead waits behind *Show later ones too*, as on `/gifts`.
+	 * Every open outing idea of the household (docs/dev/02 §2.27.9): *This month*, *Soon*, *Some
+	 * time*. What is more than three months ahead waits behind *Ideas beyond three months*, as on `/gifts`.
 	 * A tick here is the card's tick; everything else about an idea stays on the person's card.
 	 */
 	let { data, form }: { data: PageData; form: ActionData } = $props();
@@ -85,9 +85,9 @@
 			onclick={() => (showLater = !showLater)}
 			data-testid="plan-list-later"
 		>
-			<Icon name={showLater ? 'collapse' : 'expand'} size={14} />{showLater
-				? t('plans.list.hideLater')
-				: t('plans.list.showLater', { count: listed.hidden })}
+			<Icon name={showLater ? 'collapse' : 'expand'} size={14} />{t('plans.list.laterToggle', {
+				count: listed.hidden
+			})}
 		</button>
 		{#if listed.groups.length === 0}
 			<p class="text-sm text-fg-muted" data-testid="plan-list-all-later">

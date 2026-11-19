@@ -8,7 +8,7 @@ import { systemClock } from '$lib/server/clock';
 import { readCommand } from '$lib/server/commands/parse';
 import { dispatchCommand } from '$lib/server/domain/commands/dispatch';
 import { readGroupShortcuts } from '$lib/server/domain/gifts/group-shortcuts';
-import { peopleToKeepFrom } from '$lib/server/domain/gifts/surprise';
+import { peopleToKeepFrom } from '$lib/server/domain/shared/idea-on-person';
 import { say, translator } from '$lib/server/i18n/say';
 import { ulidGenerator } from '$lib/server/id';
 import type { Actions, PageServerLoad } from './$types';
@@ -26,7 +26,7 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 		anchorId === null
 			? []
 			: readGroupShortcuts(locals.services.gifts.giftGroupShortcutDeps, viewer, anchorId),
-		peopleToKeepFrom(locals.services.gifts.giftDeps, viewer)
+		peopleToKeepFrom(locals.services.gifts.giftDeps.ownPeople, viewer)
 	]);
 	return { today: todayFor(systemClock), anchorId, shortcuts, keptFrom };
 };

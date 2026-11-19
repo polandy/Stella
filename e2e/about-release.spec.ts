@@ -30,7 +30,7 @@ test.describe('Settings → About', () => {
 
 		const notice = page.getByText(`${STUB_RELEASE_TAG} is available`);
 		await expect(notice).toBeVisible();
-		await expect(page.getByText('New', { exact: true })).toBeVisible();
+		await expect(page.locator('#content').getByText('New', { exact: true })).toBeVisible();
 
 		const link = page.getByRole('link', { name: 'Release notes' });
 		await expect(link).toHaveAttribute('href', STUB_RELEASE_URL);
@@ -55,7 +55,8 @@ test.describe('Settings → About', () => {
 		await expect(page.getByRole('heading', { name: 'Über Stella' })).toBeVisible();
 		await expect(page.getByText(`${STUB_RELEASE_TAG} ist verfügbar`)).toBeVisible();
 		// Upper case in the card is `text-transform`, so the text itself is still "Neu".
-		await expect(page.getByText('Neu', { exact: true })).toBeVisible();
+		// Scoped to the page: the closed ⌘K palette holds a *Neu* heading of its own.
+		await expect(page.locator('#content').getByText('Neu', { exact: true })).toBeVisible();
 
 		// Every other spec starts from English, and the language is stored on the profile.
 		await page.locator('button[name="locale"][value="en"]').click();

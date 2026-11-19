@@ -1,6 +1,6 @@
 <script lang="ts">
 	import DateField from '$lib/components/ui/DateField.svelte';
-	import { INPUT } from '$lib/components/person/inputs';
+	import { INPUT } from '$lib/components/ui/inputs';
 	import Icon from '$lib/components/ui/Icon.svelte';
 	import type { PartialDate } from '$lib/dates/partial-date';
 	import { useI18n } from '$lib/i18n/context.svelte';

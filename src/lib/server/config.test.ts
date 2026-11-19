@@ -14,6 +14,10 @@ describe('getConfig', () => {
 		const config = getConfig();
 		expect(config.auth).toEqual({ local: true, oidc: false });
 	});
+
+	it('logs plain text unless LOG_FORMAT says json', () => {
+		expect(getConfig().logFormat).toBe('text');
+	});
 });
 
 describe('assertProductionSessionSecret', () => {

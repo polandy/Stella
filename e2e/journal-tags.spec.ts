@@ -1,6 +1,6 @@
 import { expect, test, type Browser, type Page } from '@playwright/test';
 import { addPerson, appReady, fillDate, openPerson, signIn } from './app';
-import { DEMO_ADMIN_PASSWORD, DEMO_MEMBER_EMAIL } from '../src/lib/server/db/demo-seed';
+import { DEMO_ADMIN_PASSWORD, DEMO_MEMBER_EMAIL } from '../src/lib/server/db/demo-constants';
 
 /*
  * Tags on moments (docs/dev/02 §2.20.2): written as `#word` with the `#` list, drawn as chips, a

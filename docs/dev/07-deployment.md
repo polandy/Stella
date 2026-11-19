@@ -91,6 +91,10 @@ AUTH_LOCAL_ENABLED=true                       # keep true for a break-glass admi
 AUTH_OIDC_ENABLED=true
 
 # --- Diagnostics (off by default) ---
+LOG_FORMAT=text                               # `json` writes one access-log line per request to stdout:
+                                              # {"msg":"request","requestId","method","path" (no query),"status","durationMs"}.
+                                              # The id is the proxy's X-Request-Id or a fresh one, and is the one
+                                              # an error's log line and the page's "quote this id" carry.
 DEBUG_PAGES=false                             # serves the workbench pages under /settings/debug from a build.
                                               # Development has them anyway; a household's instance never needs
                                               # them (they are diagnostics and untranslated), and with this off
@@ -174,7 +178,15 @@ release-please pushed the tag with.)
 
 Every build upgrades the base image's Debian packages and is scanned with Trivy
 (`scripts/scan-image.sh`) before anything is pushed: a CRITICAL vulnerability that has a fix
-stops the push. CI runs the same build and scan on every pull request. Each Sunday night the
+stops the push, a fixable HIGH one raises a warning. The pushed image carries SLSA provenance
+and an SBOM and is signed keyless with cosign, bound to the `publish.yml` workflow of this
+repository:
+
+```sh
+cosign verify ghcr.io/polandy/stella@sha256:<digest> \
+  --certificate-identity-regexp '^https://github.com/polandy/stella/\.github/workflows/publish\.yml@' \
+  --certificate-oidc-issuer https://token.actions.githubusercontent.com
+``` CI runs the same build and scan on every pull request. Each Sunday night the
 `rebuild` workflow rebuilds the **latest release** the same way, so its `X.Y.Z` tag moves to
 a new digest carrying the current security fixes — same code, same version. A rebuild whose
 scan still fails (a fix that needs a dependency bump or a newer Bun) pushes nothing.
@@ -489,5 +501,6 @@ admin. Everything else works identically.
 | Images 404 / not persisted | `/data` volume not mounted, or `MEDIA_DIR` misconfigured. |
 | Exits at start-up: `attempt to write a readonly database` (`SQLITE_READONLY`) | `/data` not writable by uid 1000 (the server is not root) — `chown -R 1000:1000` it once (7.5.1, 7.10). |
 | Exits at start-up: `The database was migrated by a newer Stella` | An older image on a newer database, e.g. after `:latest` moved back — run the newer version, or restore `backups/pre-<version>.db` (7.10). |
+| Exits at start-up: `Failed to run the query 'UPDATE …'` with `CHECK constraint failed: <rule>` | The database holds a row that breaks a rule an update added (docs/dev/03 §3.1); nothing was changed. The `WHERE` of the logged query selects the row; fix it (or restore an older backup), then start again. |
 | Container `unhealthy`, `/healthz` answers 503 | The database cannot be written: permissions, a full disk or a lock held from outside (7.5.1). |
 | Locked out (IdP misconfig) | Sign in with the local break-glass admin (7.11 / `AUTH_LOCAL_ENABLED`). |

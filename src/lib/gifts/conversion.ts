@@ -1,5 +1,6 @@
 import { INTL_LOCALES } from '../i18n/locales';
-import { giftLink, type GiftState } from './gifts';
+import { webLink } from '../links/web-link';
+import type { GiftState } from './gifts';
 
 /*
  * Gifts Stella already held in other shapes, made gift records (docs/dev/02 §2.25.4): the notes the
@@ -65,7 +66,7 @@ export function giftFromMonica(fields: MonicaGiftFields): GiftConversion {
 	if (state !== 'idea' && fields.day === null) return { ok: false, reason: 'noDay' };
 
 	const rawUrl = blankToNull(fields.url);
-	const link = rawUrl === null ? null : giftLink(rawUrl);
+	const link = rawUrl === null ? null : webLink(rawUrl);
 	const url = link?.ok ? link.url : null;
 	const notes = [blankToNull(fields.comment), link?.ok === false ? rawUrl : null].filter(
 		(part): part is string => part !== null

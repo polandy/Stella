@@ -41,6 +41,15 @@ Detail stays in the feature doc the term points to.
 | **newcomer** | A face in Immich nobody in Stella is linked to yet, offered as a row of *New from Immich* (docs/dev/02 §2.24.7). | `domain/immich/newcomer-rows.ts`, `components/immich/NewcomerRow.svelte` | new person (a person just added in Stella) |
 | **namesake** | A person whose shown name another person on the list shares; a second line tells them apart (docs/dev/02 §2.2.3). | `lib/people/namesakes.ts`, `lib/surnames/` | duplicate (a namesake is a different person) |
 
+**Domain → table.** Where the code's word and the table's name differ, SQL reads this way (nothing is renamed):
+
+| Domain word | Table | Note |
+|---|---|---|
+| outing (`plan`, `domain/plans/`) | `activity_idea` | the UI says *Outings* / *Unternehmungen* |
+| moment | `journal_entry` | Home's capture and the journal entry are one row |
+| touchpoint | `interaction` | participants in `interaction_participant` |
+| hidden from the person | `gift.hidden_from_recipient`, `activity_idea.hidden_from_person` | the same rule under two names (`access/query-scoping.ts`) |
+
 ## 3.1 Conventions
 
 - **IDs:** text primary keys using a sortable unique id (UUIDv7 or ULID; rows brought in
@@ -53,7 +62,19 @@ Detail stays in the feature doc the term points to.
 - **Visibility:** where present, `visibility` is `'shared' | 'private'` and
   `created_by` references the owning user. These two together drive access control
   (see [02-features.md §2.10](features/2.10-privacy-model.md#210-privacy-model-shared-vs-private-m1)).
-- **Enums** are stored as text with a CHECK constraint (SQLite has no native enum).
+- **Enums** are stored as text (SQLite has no native enum); the database holds the ones listed
+  under *Row rules*, the rest only the domain.
+- **Row rules** the database holds itself, so a writer that skips the domain (restore, import,
+  raw SQL) cannot store a row `access/` would misread: every `visibility` is `shared` or
+  `private`; a surprise (`gift.hidden_from_recipient`, `gift_group.hidden_from_recipients`,
+  `activity_idea.hidden_from_person`) is 0 or 1 and 1 only on a shared row; `gift.state` and
+  every `when_kind` (null or one of `src/lib/when` `WHEN_KINDS`) are known values; on `todo` and
+  `activity_idea`, `done_at` and `done_on` are set together and `done_by` only on a done row (it
+  may stay null: a restore drops a ticker who is not a member there). Migration `0046_row_rules`
+  adds them as `BEFORE INSERT` / `BEFORE UPDATE` triggers that abort with
+  `CHECK constraint failed: <rule>` — a real CHECK needs a table rebuild, unsafe here (ADR-137) —
+  and stops loudly on a database that already holds a row breaking one. A new enum column or
+  visibility table adds its rule the same way.
 - **Booleans** are integers 0/1.
 - **Money/none here.**
 

@@ -1,11 +1,11 @@
 import { expect, test, type Page } from '@playwright/test';
 import { appReady, isoDaysAfter, serverToday, signIn } from './app';
 import { personIdOf, seedHousehold } from './seed';
-import { DEMO_ADMIN_PASSWORD, DEMO_MEMBER_EMAIL } from '../src/lib/server/db/demo-seed';
+import { DEMO_ADMIN_PASSWORD, DEMO_MEMBER_EMAIL } from '../src/lib/server/db/demo-constants';
 
 /*
  * The household's outing ideas beyond one person (docs/dev/02 §2.27.9–10): `/plans` and its
- * groups, *Show later ones too*, ticking there, *All outings* and *Outing with …* in the palette,
+ * groups, *Ideas beyond three months*, ticking there, *All outings* and *Outing with …* in the palette,
  * full search, and a private idea the other member finds nowhere. The page's clock is the test's;
  * days come from the server's today. The suite shares one database, so every case reads only the
  * rows of its own person, named with letters no other attempt shares.
@@ -76,20 +76,20 @@ test('the list groups the open ideas, folds the far ones, ticks one off and is t
 
 	await expect(page.getByRole('heading', { name: /^Outings/, level: 1 })).toBeVisible();
 	await expect(group(page, 'This month')).toContainText(titles.today);
-	await expect(group(page, 'Later')).toContainText(titles.soon);
+	await expect(group(page, 'Soon')).toContainText(titles.soon);
 	await expect(group(page, 'Some time')).toContainText(titles.someTime);
 	await expect(group(page, 'Some time')).toContainText(titles.secret);
 	await expect(page.getByTestId('plan-list-group').filter({ hasText: titles.far })).toHaveCount(0);
-	await expect(group(page, 'Later').locator('li', { hasText: titles.soon })).toContainText(
+	await expect(group(page, 'Soon').locator('li', { hasText: titles.soon })).toContainText(
 		`with ${name}`
 	);
 
-	// Half a year ahead waits behind the toggle, then joins *Later* after the six weeks.
+	// Half a year ahead waits behind the toggle, then joins *Soon* after the six weeks.
 	const later = page.getByTestId('plan-list-later');
-	await expect(later).toContainText(/^Show later ones too \(\d+\)$/);
+	await expect(later).toContainText(/^Ideas beyond three months \(\d+\)$/);
 	await later.click();
-	await expect(later).toHaveText('Hide the later ones');
-	const rows = await group(page, 'Later')
+	await expect(later).toHaveAttribute('aria-pressed', 'true');
+	const rows = await group(page, 'Soon')
 		.locator('li')
 		.evaluateAll((items) => items.map((item) => item.textContent ?? ''));
 	const at = (text: string) => rows.findIndex((row) => row.includes(text));

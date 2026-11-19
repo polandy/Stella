@@ -11,7 +11,6 @@ const plan = (id: string, over: Partial<ListPlan> = {}): ListPlan & { id: string
 	id,
 	when: null,
 	bookedAt: null,
-	doneOn: null,
 	createdAt: Date.parse('2026-10-01T12:00:00Z'),
 	birth: born,
 	...over
@@ -82,10 +81,6 @@ describe('planListGroups', () => {
 				plan('unknown', { when: { kind: 'at_age', age: 10 }, birth: null, createdAt: 0 })
 			]).groups
 		).toEqual([['someTime', ['reached', 'unknown']]]);
-	});
-
-	it('leaves the done ones out', () => {
-		expect(shape([plan('done', { doneOn: '2026-11-01' })])).toEqual({ groups: [], hidden: 0 });
 	});
 
 	it('reads a new month from its first day', () => {

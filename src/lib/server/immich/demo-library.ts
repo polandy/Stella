@@ -1,5 +1,11 @@
-import { DEMO_ADMIN_EMAIL } from '../db/demo-seed';
-import type { FakeImmichGroupPhotos, FakeImmichLibrary, FakeImmichPerson } from './fake-gateway';
+import { DEMO_ADMIN_EMAIL } from '../db/demo-constants';
+import {
+	fakeAssetId,
+	type FakeImmichAlbum,
+	type FakeImmichGroupPhotos,
+	type FakeImmichLibrary,
+	type FakeImmichPerson
+} from './fake-gateway';
 
 /*
  * The demo household's Immich (`IMMICH_DEMO=true`): faces named like the people the demo seed
@@ -32,6 +38,7 @@ export function demoImmichLibrary(): FakeImmichLibrary {
 		version: { major: 3, minor: 2, patch: 4 },
 		owner: { name: 'Demo', email: DEMO_ADMIN_EMAIL },
 		together: demoTogether(),
+		albums: demoAlbums(),
 		people: [
 			face('d0000000-0000-4000-8000-000000000001', 'Markus Brunner', 2841, '#1e66f5'),
 			face('d0000000-0000-4000-8000-000000000002', 'Sandra Brunner', 2310, '#8839ef'),
@@ -106,5 +113,42 @@ function demoTogether(): FakeImmichGroupPhotos[] {
 		group(5, [SANDRA, ELIAS], 22, '#fe640b'),
 		group(6, [HANS, ROSA], 40, '#e64553'),
 		group(7, [HANS, ROSA, MARKUS], 15, '#8839ef')
+	];
+}
+
+/**
+ * The demo's albums (docs/dev/02 §2.24.9): enough for the album list's name filter, one longer
+ * than a page, one whose cover is no timeline photo, and one empty, which the list leaves out.
+ * Ids under `a…-a000-…`; each album is a run of one face's photos, `count` from the `first`-th.
+ */
+function demoAlbums(): FakeImmichAlbum[] {
+	const album = (
+		n: number,
+		name: string,
+		source: string,
+		first: number,
+		count: number,
+		coverAssetId?: string | null
+	): FakeImmichAlbum => ({
+		id: `a0000000-0000-4000-a000-${n.toString(16).padStart(12, '0')}`,
+		name,
+		assetIds: Array.from({ length: count }, (_, index) => fakeAssetId(source, first + index)),
+		...(coverAssetId === undefined ? {} : { coverAssetId })
+	});
+	return [
+		album(1, 'Sommerferien Engadin', MARKUS, 10, 24),
+		album(2, 'Lenas Geburtstag', LENA, 40, 9),
+		album(3, 'Weihnachten bei Grosi', ROSA, 60, 14),
+		album(4, 'Skiweekend Davos', NOAH, 200, 18),
+		album(5, 'Hochzeit Hans & Rosa', HANS, 280, 30),
+		album(6, 'Garten', SANDRA, 0, 150),
+		album(7, 'Elias erste Schritte', ELIAS, 700, 12),
+		album(8, 'Velotour Bodensee', MARKUS, 400, 16),
+		album(9, 'Fasnacht', SANDRA, 520, 11),
+		album(10, 'Herbstwanderung', LENA, 900, 20),
+		album(11, 'Zoo Zürich', NOAH, 1100, 8),
+		album(12, 'Umzug', MARKUS, 1500, 7, fakeAssetId(MARKUS, 99_999)),
+		album(13, 'Silvester', ELIAS, 300, 5),
+		album(14, 'Leer', MARKUS, 0, 0)
 	];
 }

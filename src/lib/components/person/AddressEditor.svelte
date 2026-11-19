@@ -17,7 +17,7 @@
 	import FactEditor from './FactEditor.svelte';
 	import HomeEditor from './HomeEditor.svelte';
 	import ShareHome from './ShareHome.svelte';
-	import { EDIT_FRAME, INPUT } from './inputs';
+	import { EDIT_FRAME, INPUT } from '../ui/inputs';
 	import type { PersonForm, PersonPageData } from './types';
 
 	/*

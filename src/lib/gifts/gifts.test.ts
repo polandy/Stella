@@ -1,6 +1,5 @@
 import { describe, expect, it } from 'bun:test';
 import {
-	giftLink,
 	hasGiftDay,
 	isAddableGiftState,
 	isGiftOccasionPreset,
@@ -12,8 +11,8 @@ import {
 } from './gifts';
 
 /*
- * The words a gift is made of (docs/dev/02 §2.25): its states, the occasions the form offers, and
- * the link it may carry. Pure, so the form, the command schema and the use-case agree on them.
+ * The words a gift is made of (docs/dev/02 §2.25): its states, and the occasions the form offers.
+ * Pure, so the form, the command schema and the use-case agree on them.
  */
 
 describe('isGiftState', () => {
@@ -65,36 +64,6 @@ describe('occasionFromForm', () => {
 		expect(occasionFromForm(null, 'typed but not chosen')).toBeNull();
 		expect(occasionFromForm('', null)).toBeNull();
 		expect(occasionFromForm('easter', null)).toBeNull();
-	});
-});
-
-describe('giftLink', () => {
-	it('keeps a web address as it was typed', () => {
-		expect(giftLink('https://shop.example/teapot?id=4')).toEqual({
-			ok: true,
-			url: 'https://shop.example/teapot?id=4'
-		});
-		expect(giftLink('http://shop.example')).toEqual({ ok: true, url: 'http://shop.example' });
-	});
-
-	it('reads an address pasted without its scheme as a secure web address', () => {
-		expect(giftLink('  shop.example/teapot ')).toEqual({
-			ok: true,
-			url: 'https://shop.example/teapot'
-		});
-	});
-
-	it('reads nothing as no link', () => {
-		expect(giftLink('   ')).toEqual({ ok: true, url: null });
-	});
-
-	it('refuses anything that is not a web address, so a link can never run script', () => {
-		expect(giftLink('javascript:alert(1)')).toEqual({ ok: false });
-		expect(giftLink('JavaScript:alert(1)')).toEqual({ ok: false });
-		expect(giftLink('data:text/html,hi')).toEqual({ ok: false });
-		expect(giftLink('mailto:hilde@example.test')).toEqual({ ok: false });
-		expect(giftLink('https://')).toEqual({ ok: false });
-		expect(giftLink('two words')).toEqual({ ok: false });
 	});
 });
 

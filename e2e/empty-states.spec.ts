@@ -106,13 +106,17 @@ test('People offers to add a name that matches nobody, but not from the archive'
 	await page.goto('/contacts');
 	await appReady(page);
 	await page.getByRole('searchbox', { name: 'Find someone' }).fill(name);
-	await expect(page.getByRole('status')).toContainText(`Nobody matches “${name}”.`);
+	await expect(page.getByRole('status').filter({ hasText: 'Nobody matches' })).toContainText(
+		`Nobody matches “${name}”.`
+	);
 	await expect(page.getByRole('link', { name: `Add “${name}”` })).toBeVisible();
 
 	await page.goto('/contacts?archived');
 	await appReady(page);
 	await page.getByRole('searchbox', { name: 'Find someone' }).fill(name);
-	await expect(page.getByRole('status')).toContainText(`Nobody matches “${name}”.`);
+	await expect(page.getByRole('status').filter({ hasText: 'Nobody matches' })).toContainText(
+		`Nobody matches “${name}”.`
+	);
 	await expect(page.getByRole('link', { name: `Add “${name}”` })).toHaveCount(0);
 
 	await page.goto(archived);

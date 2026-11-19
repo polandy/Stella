@@ -1,6 +1,6 @@
 import { expect, test, type Browser, type Page } from '@playwright/test';
 import { addPerson, appReady, signIn } from './app';
-import { DEMO_ADMIN_PASSWORD, DEMO_MEMBER_EMAIL } from '../src/lib/server/db/demo-seed';
+import { DEMO_ADMIN_PASSWORD, DEMO_MEMBER_EMAIL } from '../src/lib/server/db/demo-constants';
 
 /*
  * Gifts in the full search (docs/dev/02 §2.9, §2.25.5): found on the search page by their title or
@@ -21,7 +21,7 @@ function runLetters(): string {
 
 const giftsCard = (page: Page) => page.locator('#section-gifts');
 const giftHits = (page: Page) =>
-	page.locator('section', { has: page.getByRole('heading', { name: 'Gifts', exact: true }) });
+	page.locator('section', { has: page.getByRole('heading', { name: /^Gifts \d+$/ }) });
 
 /** Notes an idea through the card's own *+ Idea*, with a note, link or privacy when given. */
 async function addIdea(

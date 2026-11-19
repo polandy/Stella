@@ -20,6 +20,12 @@ const photo = (id: string, takenAt: string | null): LibraryPhoto => ({
 });
 
 describe('crumbsOf', () => {
+	it('leads from all albums to the open one, overview or not', () => {
+		const holidays = { level: 'album', album: 'a1', name: 'Holidays' } as const;
+		expect(crumbsOf({ level: 'albums' }, true)).toEqual([{ level: 'albums' }]);
+		expect(crumbsOf(holidays, false)).toEqual([{ level: 'albums' }, holidays]);
+	});
+
 	it('leads from all years down to where the picker is, the last crumb being there', () => {
 		expect(crumbsOf({ level: 'years' }, true)).toEqual([{ level: 'years' }]);
 		expect(crumbsOf({ level: 'year', year: '2026' }, true)).toEqual([

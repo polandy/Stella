@@ -152,10 +152,11 @@ it appears.
 
 1. **Create a key in your own Immich account** — the admin's, not a shared one: *Account
    settings → API keys → New API key*. Give it only these read permissions: `user.read`,
-   `person.read`, `person.statistics`, `asset.read`, `asset.view` and `timeline.read`. Stella
+   `person.read`, `person.statistics`, `asset.read`, `asset.view`, `timeline.read` and `album.read`. Stella
    never writes to Immich. A key made for an earlier Stella may lack `asset.read` and `asset.view`: Settings says so, and the
    strip of photos stays away until the key has them. `timeline.read` is optional: without it
    Settings warns, and the photo picker shows days and search but not the years and months.
+   `album.read` is optional too: without it Settings warns, and the picker has no albums.
 2. **Add three lines to `.env`:**
 
    ```
@@ -186,8 +187,8 @@ many photos of a linked person it holds and their latest photos, following who m
 person in Stella, and gets *Open in Immich*. Stella fetches those photos itself and keeps none
 of them, on the server or on anyone's device. That link shows the photos only to you, signed into your own Immich account;
 everyone else lands on Immich's sign-in or an empty page.
-Beyond the linked people, every member can browse **your whole library** by day and search it
-when they add a photo to a moment, a journal entry or a gallery, and copy the photos they pick
+Beyond the linked people, every member can browse **your whole library** by day, search it and
+open your albums — those you made and those shared with you in Immich — when they add a photo to a moment, a journal entry or a gallery, and copy the photos they pick
 into Stella. Archived, locked and trashed photos never show. If that is more than you want to
 share, leave Immich unconnected.
 
@@ -316,7 +317,9 @@ applies any, Stella copies the database to `backups/pre-<version>.db` in the dat
 keeps the last three such copies, so a failed update can be rolled back (docs/dev/07 §7.10).
 That copy lives on the same disk, so keep taking the backup above as well. Going back to an
 older version on a database a newer one already changed is refused at start-up, with
-*The database was migrated by a newer Stella* in the log. When an update also moves data into a
+*The database was migrated by a newer Stella* in the log. An update that adds a rule a stored row
+already breaks stops at start-up too, changing nothing and naming the rule
+(`CHECK constraint failed: …`). When an update also moves data into a
 new shape — gifts imported from Monica as notes becoming entries on the **Gifts** card, say —
 the server log says what it moved and what it left as it was (`./deploy.sh logs`, or
 `docker compose logs stella`;
@@ -344,6 +347,7 @@ machine, install on the new one, restore the archive before the first start.
 | Photos vanish after a restart | The data volume is not mounted. |
 | "You are not authorized" after signing in with SSO | The account is missing the group listed in `OIDC_ALLOWED_GROUPS`. |
 | Locked out after an SSO change | Sign in with the local administrator account instead. |
+| Stops at start-up with `CHECK constraint failed: …` | A stored row breaks a rule the update added; nothing was changed. See 07 §7.12. |
 
 A longer table, including the OIDC-specific failures, is in
 [07 — Deployment §7.12](../dev/07-deployment.md#712-troubleshooting).

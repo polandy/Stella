@@ -1,5 +1,5 @@
 import type { PartialDate } from '../dates/partial-date';
-import { todayFor } from '../dates/today';
+import { dayOfInstant } from '../dates/today';
 import { whenState, type WhenState } from '../when/state';
 import type { When, WhenKind } from '../when/when';
 
@@ -28,7 +28,7 @@ export function ideaState(
 	today: string
 ): WhenState | null {
 	if (idea.when === null) return null;
-	const notedOn = todayFor({ now: () => idea.createdAt });
+	const notedOn = dayOfInstant(idea.createdAt);
 	return whenState(idea.when, { birth, notedOn, checkedOn: idea.whenCheckedOn }, today);
 }
 

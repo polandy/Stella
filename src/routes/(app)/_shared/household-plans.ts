@@ -74,7 +74,6 @@ export async function readHouseholdPlans(locals: RequestEvent['locals']): Promis
 		visibility: plan.visibility,
 		hiddenFromPerson: plan.hiddenFromPerson,
 		bookedAt: plan.bookedAt,
-		doneOn: null,
 		createdAt: plan.createdAt,
 		birth: plan.birth
 	}));

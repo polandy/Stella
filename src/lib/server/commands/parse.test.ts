@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'bun:test';
-import { COMMAND_TYPES, isPhotoCommandType } from '../../commands/commands';
+import { COMMAND_TYPES, isPhotoCommandType, isQueueable } from '../../commands/commands';
+import { OUTBOX_FIXTURES } from '../../pwa/fixtures/outbox-fixtures';
+import { migrateOutbox } from '../../pwa/outbox-schema';
 import { parseCommand, parsePhotoCommand, readCommand } from './parse';
 
 /*
@@ -570,4 +572,16 @@ describe('readCommand', () => {
 			});
 		}
 	});
+});
+
+describe('a queue an older release left on a phone (docs/dev/08 §8.12)', () => {
+	for (const fixture of OUTBOX_FIXTURES) {
+		it(`reads every command of version ${fixture.version}, migrated, as a queueable command`, () => {
+			for (const { command } of migrateOutbox(fixture.items)) {
+				const parsed = parseCommand(command);
+				expect(parsed?.id).toBe(command.id);
+				expect(parsed && isQueueable(parsed.type)).toBe(true);
+			}
+		});
+	}
 });

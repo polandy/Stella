@@ -1,7 +1,7 @@
 import { expect, test, type Browser, type Locator, type Page } from '@playwright/test';
 import { readFileSync } from 'node:fs';
 import { addPerson, appReady, pickPerson, signIn } from './app';
-import { DEMO_ADMIN_PASSWORD, DEMO_MEMBER_EMAIL } from '../src/lib/server/db/demo-seed';
+import { DEMO_ADMIN_PASSWORD, DEMO_MEMBER_EMAIL } from '../src/lib/server/db/demo-constants';
 
 /*
  * A circle's photos by role (docs/dev/02 §2.4.2): a photo without a role is the circle's cover, a

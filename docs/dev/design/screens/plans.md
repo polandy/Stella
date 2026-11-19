@@ -9,7 +9,7 @@ someone, what is near first, and to tick off what they did without opening each 
 
 - **`/plans`** heads with *Outings* (*Unternehmungen*), the count *4 open* beside it, and one line
   on what the page is. Concept: https://claude.ai/artifact/WDNvm8UqZPLnmTtUco39jg
-- One card per **group** (`bg-card`, `shadow-card`): *This month*, *Later*, *Some time*, each
+- One card per **group** (`bg-card`, `shadow-card`): *This month*, *Soon*, *Some time*, each
   heading with its count in `--fg-muted`; an empty group is left out (`planListGroups`,
   docs/dev/02 §2.27.9). A passed idea sits in *This month* with the card's passed chip — no nudge
   beyond it; Home asks.
@@ -19,13 +19,13 @@ someone, what is near first, and to tick off what they did without opening each 
   end (§5.1), the card's `PlanStep`.
 - Ticking is the card's: the toast with *Undo*, the row gone while it stands; a tick kept on the
   device says *not sent yet* on the row. A refusal says why above the groups.
-- **Show later ones too (n)** under the groups, with the chevron, while unbooked ideas wait more
-  than 90 days ahead; *Hide the later ones* folds them again. With only such ideas, a line says
-  every idea waits for later.
+- **Ideas beyond three months (n)** under the groups, with the chevron, while unbooked ideas wait
+  more than 90 days ahead. The label never changes; `aria-pressed` says whether they are shown, and
+  the chevron turns. With only such ideas, a line says every idea is further out.
 - No pencil, no booking and no remove: those stay on the person's card, where the name leads.
 - With nothing open: `EmptyState` with the explore icon, *No open outing idea.*, and the hint that
   an idea noted on a person's Outings card shows up here.
-- Reached from the Outings card's ⋯ menu (*All outings*) and the palette's *All outings*; the top
+- Reached from the Outings card's ⋯ menu (*All outings*) the palette's *All outings* and a phone's empty Home field; the top
   bar's trail is *Home › Outings*.
 
 ### Why

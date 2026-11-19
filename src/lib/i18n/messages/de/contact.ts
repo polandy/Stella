@@ -91,7 +91,7 @@ export const contact: ContactMessages = {
 	// Eine Anschrift, die alle teilen, die dort wohnen (docs/dev/02 §2.2, *A shared home*).
 	'contact.home.livesWith': (p) => `wohnt mit ${p.names} zusammen`,
 	'contact.home.shared': (p) => `Geteilt · ${p.count} Personen`,
-	'contact.home.everyone': (p) => `Alle hier — ${p.names}`,
+	'contact.home.everyone': (p) => `Alle hier – ${p.names}`,
 	'contact.home.everyoneHint': 'Sie sind umgezogen, oder die Anschrift war falsch.',
 	'contact.home.only': (p) => `Nur für ${p.name}`,
 	'contact.home.onlyHint': 'Zieht hier aus und behält die neue Anschrift als eigene.',
@@ -153,18 +153,18 @@ export const contact: ContactMessages = {
 	'contact.self.thisIsMe': 'Das bin ich',
 	'contact.self.notMe': 'Das bin ich nicht',
 	'contact.self.hint':
-		'Sag Stella, dass dieser Eintrag du bist — dann öffnet die Karte bei deinen eigenen Leuten.',
+		'Sag Stella, dass dieser Eintrag du bist – dann öffnet die Karte bei deinen eigenen Leuten.',
 	'contact.self.isMeHint': 'Stella hält diesen Eintrag für dich.',
 	'contact.self.badgeHint': 'Die Person, die du laut deiner Angabe bist.',
 	'contact.archive.archive': 'Diese Person archivieren',
 	'contact.archive.archivedHint':
-		'Sie ist aus dem Verzeichnis, der Suche und den Erinnerungen auf der Startseite verschwunden — ihre Seite, ihr Verlauf und die Familienkarte bleiben unberührt.',
+		'Sie ist aus dem Verzeichnis, der Suche und den Erinnerungen auf der Startseite verschwunden – ihre Seite, ihr Verlauf und die Familienkarte bleiben unberührt.',
 	'contact.archive.hint':
 		'Nimmt sie aus dem Verzeichnis, der Suche und den Erinnerungen auf der Startseite. Nichts wird gelöscht, und die Familienkarte behält sie.',
 
 	'contact.merge.open': 'Jemanden in diese Person zusammenführen',
 	'contact.merge.explain': (p) =>
-		`Die gewählte Person wird in ${p.name} aufgenommen — alles von ihr kommt herüber, ihr eigener Datensatz verschwindet. Das lässt sich nicht rückgängig machen.`,
+		`Die gewählte Person wird in ${p.name} aufgenommen – alles von ihr kommt herüber, ihr eigener Datensatz verschwindet. Das lässt sich nicht rückgängig machen.`,
 	'contact.merge.who': 'Wer ist dieselbe Person?',
 	'contact.merge.choose': 'Jemanden wählen…',
 	'contact.merge.submit': (p) => `In ${p.name} zusammenführen`,
@@ -172,7 +172,7 @@ export const contact: ContactMessages = {
 	'contact.delete.open': 'Endgültig löschen',
 	'contact.delete.keep': 'Doch behalten',
 	'contact.delete.explain': (p) =>
-		`Das entfernt ${p.name} und alles über sie — Notizen, Fotos, Daten, ihr Tagebuch und jede Verbindung zu ihr. Das lässt sich nicht rückgängig machen.`,
+		`Das entfernt ${p.name} und alles über sie – Notizen, Fotos, Daten, ihr Tagebuch und jede Verbindung zu ihr. Das lässt sich nicht rückgängig machen.`,
 	'contact.delete.submit': (p) => `${p.name} löschen`,
 
 	'contact.interaction.titlePlaceholder': 'Was ist passiert? (optional)',
@@ -187,7 +187,7 @@ export const contact: ContactMessages = {
 	'contact.relationships.none': (p) => `${p.name} ist noch mit niemandem verknüpft`,
 	'contact.relationships.addFirst': (p) => `${p.name} mit jemandem verknüpfen`,
 	'contact.relationships.noneHint':
-		'Füge Familie, Partner, Freunde oder Kollegen hinzu — daraus zeichnet sich die Karte, wen sie kennen.',
+		'Füge Familie, Partner, Freunde oder Kollegen hinzu – daraus zeichnet sich die Karte, wen sie kennen.',
 	'contact.relationships.remove': (p) => `Verbindung zu ${p.name} entfernen`,
 	'contact.relationships.removed': 'Beziehung entfernt',
 	'contact.relationships.group.family': 'Familie',
@@ -218,9 +218,9 @@ export const contact: ContactMessages = {
 	'contact.relationships.parentsRoom': (p) =>
 		p.count >= 2 ? 'Bis zu zwei Eltern.' : 'Noch ein Elternteil: einer ist schon erfasst.',
 	'contact.relationships.parentsOnRecord':
-		'Zwei Eltern sind schon erfasst — mehr sind bei „Kind von“ nicht möglich.',
-	'contact.relationships.parentsFull': 'Zwei Eltern — mehr sind bei „Kind von“ nicht möglich.',
-	'contact.relationships.partnerFull': 'Eine Person — eine Partnerschaft ist zu zweit.',
+		'Zwei Eltern sind schon erfasst – mehr sind bei „Kind von“ nicht möglich.',
+	'contact.relationships.parentsFull': 'Zwei Eltern – mehr sind bei „Kind von“ nicht möglich.',
+	'contact.relationships.partnerFull': 'Eine Person – eine Partnerschaft ist zu zweit.',
 	'contact.relationships.capFullPlaceholder': 'Mehr geht bei diesem Typ nicht',
 	'contact.relationships.overCap': (p) =>
 		`„${p.type}“ nimmt ${p.max === 0 ? 'niemanden mehr' : p.max === 1 ? 'eine Person' : `${p.max} Personen`}. Entferne ${p.extra === 1 ? 'eine' : p.extra}, um hinzuzufügen.`,
@@ -246,7 +246,7 @@ export const contact: ContactMessages = {
 	'contact.relationships.livesAt': (p) => `Wohnt auch hier: ${p.line}`,
 	'contact.relationships.livesAtWith': (p) => `mit ${p.names}`,
 	'contact.relationships.livesAtFailed':
-		'Die Beziehung ist gespeichert, die Anschrift aber nicht geteilt — „Wohnt auch hier …“ bei der Anschrift nutzen.',
+		'Die Beziehung ist gespeichert, die Anschrift aber nicht geteilt – „Wohnt auch hier …“ bei der Anschrift nutzen.',
 	'contact.relationships.addAllParentsOf': (p) => `${p.parents} als Eltern von ${p.child}`,
 	'contact.relationships.addAllChildrenOf': (p) => `${p.parent} als Elternteil von ${p.children}`,
 	'contact.relationships.addAll': (p) => `Alle ${p.count} hinzufügen`,
@@ -259,7 +259,7 @@ export const contact: ContactMessages = {
 	'contact.relationships.acceptedSibling': (p) =>
 		`${p.one} und ${p.other} als Geschwister übernommen`,
 	'contact.relationships.acceptedClaim': (p) => `Eingetragen: ${p.claim}`,
-	'contact.relationships.declinedNotice': 'Abgelehnt — wird nicht mehr vorgeschlagen',
+	'contact.relationships.declinedNotice': 'Abgelehnt – wird nicht mehr vorgeschlagen',
 	'contact.relationships.accept': 'Übernehmen',
 	'contact.relationships.decline': 'Ablehnen',
 	'contact.relationships.review': 'Beziehungen prüfen',
@@ -302,7 +302,7 @@ export const contact: ContactMessages = {
 	'contact.photos.add': 'Fotos hinzufügen',
 	'contact.photos.none': 'Noch keine Fotos.',
 	'contact.photos.of': (p) => `Foto von ${p.name}`,
-	'contact.photos.privateHint': 'Privat — das siehst nur du',
+	'contact.photos.privateHint': 'Privat – das siehst nur du',
 	'contact.photos.pictures': 'Bilder',
 	'contact.photos.adding': 'Wird hinzugefügt…',
 	'contact.photos.uploadFailed': 'Diese Fotos konnten nicht hinzugefügt werden.',
@@ -313,7 +313,7 @@ export const contact: ContactMessages = {
 	'contact.photos.share': 'Mit dem Haushalt teilen',
 	'contact.photos.makePrivate': 'Privat machen',
 	'contact.photos.removed': 'Foto entfernt',
-	'contact.photos.removedWorn': (p) => `Foto entfernt — auch das Bild von ${p.name}`,
+	'contact.photos.removedWorn': (p) => `Foto entfernt – auch das Bild von ${p.name}`,
 	'contact.photos.favourite': 'Favorit',
 	'contact.photos.takenOn': (p) => `Aufgenommen am ${p.date}`,
 	'contact.photos.pin': 'Als Favorit anheften',
