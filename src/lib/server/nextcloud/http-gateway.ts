@@ -134,6 +134,9 @@ export function createHttpAddressBookGateway({
 				method,
 				body: init.body,
 				headers: { authorization, ...init.headers },
+				// A redirect would send the Basic header to wherever it points; refuse to
+				// follow. Seen as unreachable, rather than followed to an unknown target.
+				redirect: 'manual',
 				signal: AbortSignal.timeout(TIMEOUT_MS)
 			});
 			const text = new TextDecoder().decode(await readCapped(response, MAX_BYTES));

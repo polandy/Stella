@@ -3,9 +3,13 @@ import { createGitHubReleaseFeed, STELLA_RELEASE_FEED } from './github-feed';
 
 /** A `fetch` that answers with what the test planted and records how it was called. */
 function stubFetch(response: Response) {
-	const calls: Array<{ url: string; headers: Headers }> = [];
+	const calls: Array<{ url: string; headers: Headers; redirect: string | undefined }> = [];
 	const fetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
-		calls.push({ url: String(input), headers: new Headers(init?.headers) });
+		calls.push({
+			url: String(input),
+			headers: new Headers(init?.headers),
+			redirect: init?.redirect
+		});
 		return response;
 	}) as typeof globalThis.fetch;
 	return { fetch, calls };
@@ -51,5 +55,14 @@ describe('createGitHubReleaseFeed', () => {
 		expect(createGitHubReleaseFeed({ version: '0.0.10', fetch }).latest()).rejects.toThrow(
 			'more than'
 		);
+	});
+
+	it('does not follow a redirect, treating it as a failure', async () => {
+		const { fetch, calls } = stubFetch(
+			new Response(null, { status: 302, headers: { location: 'https://other.example.com/' } })
+		);
+
+		expect(createGitHubReleaseFeed({ version: '0.0.10', fetch }).latest()).rejects.toThrow('302');
+		expect(calls[0]!.redirect).toBe('manual');
 	});
 });

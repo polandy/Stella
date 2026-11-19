@@ -10,6 +10,7 @@ interface Seen {
 	url: string;
 	headers: Headers;
 	body: string;
+	redirect: string | undefined;
 }
 
 /** A fetch that answers each request with the next canned response, recording what it saw. */
@@ -20,7 +21,8 @@ function fakeFetch(answers: (Response | ((seen: Seen) => Response))[]) {
 			method: init?.method ?? 'GET',
 			url: String(input),
 			headers: new Headers(init?.headers),
-			body: typeof init?.body === 'string' ? init.body : ''
+			body: typeof init?.body === 'string' ? init.body : '',
+			redirect: init?.redirect
 		};
 		seen.push(request);
 		const next = answers.shift();
@@ -160,5 +162,15 @@ describe('the CardDAV address book', () => {
 			await expect(book.put(href, card('a'), '"e1"')).rejects.toThrow(AddressBookUnreachableError);
 		}
 		expect(seen).toEqual([]);
+	});
+
+	it('does not follow a redirect, refusing it as unreachable', async () => {
+		const { fetch, seen } = fakeFetch([
+			new Response(null, { status: 302, headers: { location: 'https://other.example.com/' } })
+		]);
+		const read = gateway(fetch).changesSince(null);
+		const error = await read.catch((err: unknown) => err);
+		expect(error).toBeInstanceOf(AddressBookUnreachableError);
+		expect(seen[0]!.redirect).toBe('manual');
 	});
 });
