@@ -139,21 +139,64 @@ export function paletteLabels(t: Translate): PaletteLabels {
 /** The label of an action row, by the field of `PaletteLabels` that words it. */
 type ActionLabel = Exclude<keyof PaletteLabels, 'searchEverything'>;
 
-const ACTIONS: readonly ({ id: string; label: ActionLabel; icon: IconName } & (
-	{ href: string } | { step: PaletteStep }
-))[] = [
-	{ id: 'write', label: 'write', icon: 'write', href: '/?compose' },
-	{ id: 'gift-idea', label: 'giftIdea', icon: 'gift', step: 'giftIdea' },
-	{ id: 'gift-several', label: 'giftForSeveral', icon: 'people', step: 'giftForSeveral' },
-	{ id: 'todo', label: 'todoFor', icon: 'todo', step: 'todo' },
-	{ id: 'plan', label: 'planWith', icon: 'explore', step: 'plan' },
-	{ id: 'brief', label: 'briefFor', icon: 'brief', step: 'brief' },
-	{ id: 'gift-ideas', label: 'giftIdeas', icon: 'idea', href: '/gifts' },
-	{ id: 'all-todos', label: 'allTodos', icon: 'todo', href: '/todos' },
-	{ id: 'all-plans', label: 'allPlans', icon: 'explore', href: '/plans' },
-	{ id: 'on-this-day', label: 'onThisDay', icon: 'memories', href: '/on-this-day' },
-	{ id: 'add-person', label: 'addPerson', icon: 'add', href: '/contacts/new' }
+/** The heading an empty palette files a row under (docs/dev/05 §5.4). */
+export type PaletteGroup = 'new' | 'lists' | 'people';
+
+/* In the order shown, a group's rows together; *Write a moment* stays first. */
+const ACTIONS: readonly ({
+	id: string;
+	label: ActionLabel;
+	icon: IconName;
+	group: Exclude<PaletteGroup, 'people'>;
+} & ({ href: string } | { step: PaletteStep }))[] = [
+	{ id: 'write', label: 'write', icon: 'write', href: '/?compose', group: 'new' },
+	{ id: 'add-person', label: 'addPerson', icon: 'add', href: '/contacts/new', group: 'new' },
+	{ id: 'gift-idea', label: 'giftIdea', icon: 'gift', step: 'giftIdea', group: 'new' },
+	{
+		id: 'gift-several',
+		label: 'giftForSeveral',
+		icon: 'people',
+		step: 'giftForSeveral',
+		group: 'new'
+	},
+	{ id: 'todo', label: 'todoFor', icon: 'todo', step: 'todo', group: 'new' },
+	{ id: 'plan', label: 'planWith', icon: 'explore', step: 'plan', group: 'new' },
+	{ id: 'gift-ideas', label: 'giftIdeas', icon: 'idea', href: '/gifts', group: 'lists' },
+	{ id: 'all-todos', label: 'allTodos', icon: 'todo', href: '/todos', group: 'lists' },
+	{ id: 'all-plans', label: 'allPlans', icon: 'explore', href: '/plans', group: 'lists' },
+	{ id: 'on-this-day', label: 'onThisDay', icon: 'memories', href: '/on-this-day', group: 'lists' },
+	{ id: 'brief', label: 'briefFor', icon: 'brief', step: 'brief', group: 'lists' }
 ];
+
+const GROUP_OF_ACTION: ReadonlyMap<string, PaletteGroup> = new Map(
+	ACTIONS.map((action) => [action.id, action.group])
+);
+
+/** A run of rows under one heading; `group` is null where the palette shows no headings. */
+export interface PaletteSection {
+	group: PaletteGroup | null;
+	rows: PaletteRow[];
+}
+
+/**
+ * `rows` under their headings: only an empty palette at its start is grouped — a typed query is
+ * one ranked list, and a second step lists people alone.
+ */
+export function paletteSections(
+	rows: PaletteRow[],
+	query: string,
+	step: PaletteStep = 'start'
+): PaletteSection[] {
+	if (query.trim() !== '' || step !== 'start') return rows.length ? [{ group: null, rows }] : [];
+	const sections: PaletteSection[] = [];
+	for (const row of rows) {
+		const group = row.kind === 'person' ? 'people' : (GROUP_OF_ACTION.get(row.id) ?? null);
+		const last = sections.at(-1);
+		if (last && last.group === group) last.rows.push(row);
+		else sections.push({ group, rows: [row] });
+	}
+	return sections;
+}
 
 /** The household's lists: where a phone's Home field leads before a name is typed. */
 const FINDER_LIST_IDS: readonly string[] = ['gift-ideas', 'all-todos', 'all-plans', 'on-this-day'];

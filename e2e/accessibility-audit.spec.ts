@@ -159,6 +159,24 @@ test('the ⌘K palette points at its rows as options, and Enter follows the high
 	await expect(page).toHaveURL(new RegExp(`${href}$`));
 });
 
+test('the empty ⌘K palette files its rows under New, Lists and People', async ({ page }) => {
+	await page.keyboard.press('ControlOrMeta+k');
+	const rows = page.locator('#palette-rows');
+	await expect(rows.getByRole('group')).toHaveCount(3);
+	await expect(rows.getByRole('group', { name: 'New' }).getByRole('option').first()).toHaveText(
+		/Write a moment/
+	);
+	await expect(
+		rows.getByRole('group', { name: 'Lists' }).getByRole('option', { name: /All outings/ })
+	).toBeVisible();
+	await expect(
+		rows.getByRole('group', { name: 'People' }).getByRole('option').first()
+	).toBeVisible();
+
+	await page.getByRole('combobox', { name: 'Jump to' }).fill('Lehmann');
+	await expect(rows.getByRole('group')).toHaveCount(0);
+});
+
 test.describe('focus after a form closes', () => {
 	test('saving a note or a logged contact hands focus back to the section button', async ({
 		page

@@ -1170,8 +1170,10 @@ your removing it never quietly takes it off someone else's private contact.
 ## Finding things
 
 `⌘K` / `Ctrl-K` — or the search button at the top — opens a palette that jumps straight to a
-person as you type, and offers *Write a moment*, *Gift idea for …*, *To-do for …*, *Outing with …*, *Brief for …*, *All gift ideas*, *All to-dos*, *All outings* and *Add person*
-as its first rows. Notes are
+person as you type. Before you type, it lists its rows under three headings: **New** (*Write
+a moment*, *Add person*, *Gift idea for …*, *Gift idea for several …*, *To-do for …*, *Outing
+with …*), **Lists** (*All gift ideas*, *All to-dos*, *All outings*, *On this day*, *Brief for …*)
+and **People**. Notes are
 not in it; the last row, *Search everything*, opens the full search, which looks through
 people, notes, gifts, to-dos, outing ideas and moments at once — a done to-do or outing too, marked as done — matches partial words, and only ever returns what you are
 allowed to see — a private gift only to whoever noted it. When it finds nothing it offers *Add "…"*, which opens *Add person* with what you typed
