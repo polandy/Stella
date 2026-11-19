@@ -40,6 +40,11 @@ export const home: HomeMessages = {
 	'home.outbox.editing': 'Wird bearbeitet',
 	'home.outbox.sending': 'Wird gesendet…',
 	'home.outbox.couldNotSend': 'Konnte nicht gesendet werden',
+	'home.outbox.stuck': 'Hängt fest',
+	'home.outbox.stuckEditable':
+		'Stella konnte das auch nach mehreren Versuchen nicht speichern. Bearbeite es, um es neu zu senden, oder verwirf es.',
+	'home.outbox.stuckDiscardOnly':
+		'Stella konnte das auch nach mehreren Versuchen nicht speichern. Verwirf es und lege es neu an.',
 	'home.outbox.edit': 'Bearbeiten',
 	'home.outbox.discard': 'Verwerfen',
 	'home.outbox.discardQuestion': 'Nur dieses Gerät hat eine Kopie.',

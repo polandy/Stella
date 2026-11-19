@@ -13,7 +13,7 @@
 	 * entry on their journal page. It looks like the item it will become, inside a dashed
 	 * outline, and says where it stands. Until it is on its way it can be edited — `onEdit`
 	 * here, or `editHref` on the page that owns it — and discarded, which asks twice because
-	 * this device holds the only copy.
+	 * this device holds the only copy. A stuck one says so, and that it waits for one of the two.
 	 */
 
 	interface Props {
@@ -36,16 +36,19 @@
 		pending: 'home.outbox.notSent',
 		held: 'home.outbox.editing',
 		sending: 'home.outbox.sending',
-		refused: 'home.outbox.couldNotSend'
+		refused: 'home.outbox.couldNotSend',
+		stuck: 'home.outbox.stuck'
 	};
 	// Once Stella has the moment, only its photos are still on their way.
 	const DELIVERED_LABEL: Record<OutboxItem['state'], MessageKey> = {
 		pending: 'home.outbox.photosWaiting',
 		held: 'home.outbox.photosWaiting',
 		sending: 'home.outbox.sendingPhotos',
-		refused: 'home.outbox.photoRefused'
+		refused: 'home.outbox.photoRefused',
+		stuck: 'home.outbox.photosWaiting'
 	};
-	const refused = $derived(item.state === 'refused');
+	// Stuck asks the member to act, as a refusal does.
+	const refused = $derived(item.state === 'refused' || item.state === 'stuck');
 	const editable = $derived(!item.delivered && (onEdit !== undefined || editHref !== undefined));
 </script>
 
@@ -83,6 +86,9 @@
 		</div>
 		{@render children?.()}
 		{#if item.reason}<p class="mt-1 text-sm text-danger">{item.reason}</p>{/if}
+		{#if item.state === 'stuck'}<p class="mt-1 text-sm text-danger">
+				{t(editable ? 'home.outbox.stuckEditable' : 'home.outbox.stuckDiscardOnly')}
+			</p>{/if}
 		{#if recallable(item)}
 			<div class="mt-1.5 flex flex-wrap gap-1.5">
 				{#if confirming}

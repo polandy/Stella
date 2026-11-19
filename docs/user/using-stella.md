@@ -1533,6 +1533,10 @@ never twice. If you change it while it waits and Stella turns out to have got th
 first version after all, it says so under *Could not send*: save it again to send your change
 as well, or discard it to leave the first version as it is.
 
+Should Stella itself keep failing on something you saved, your phone stops trying after a few
+attempts over several minutes and shows it as *Stuck*, so that what you saved after it still
+goes through. Edit it to try again, or discard it.
+
 Signing out clears the pages your phone was keeping, so handing a device on does not hand on
 the household with it. If moments you wrote are still waiting, Stella asks first whether to keep
 them or throw them away. Kept, they are yours: they are sent the next time you sign in, and

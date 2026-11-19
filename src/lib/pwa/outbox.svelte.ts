@@ -223,7 +223,7 @@ async function sendCommands(member: string): Promise<boolean> {
 		let answered: CommandAnswer[] = answers;
 		await apply((list) => {
 			answered = refuseLostEdits(list, answered, reasons.earlierVersion);
-			return settle(list, answered);
+			return settle(list, answered, Date.now());
 		});
 		// Reading the page again first: a form told afterwards may navigate, which must win.
 		if (answered.some((a) => a.status === 'applied')) whenApplied();

@@ -4,6 +4,7 @@ import {
 	type CommandPayloads,
 	type JsonCommand
 } from '../commands/commands';
+import { failedAt, restingState } from './outbox-failures';
 
 /*
  * The outbox (docs/dev/02 §2.18.1): what a phone holds back while Stella is
@@ -26,9 +27,10 @@ export const COMMAND_PATIENCE_MS = 10_000;
 
 /**
  * Where an item stands. `pending` waits to be sent; `held` is open in the composer; `sending`
- * is in a request with no answer yet; `refused` came back with a reason the member can act on.
+ * is in a request with no answer yet; `refused` came back with a reason the member can act on;
+ * `stuck` failed on Stella's side too often to be sent again on its own (`outbox-failures.ts`).
  */
-export type OutboxState = 'pending' | 'held' | 'sending' | 'refused';
+export type OutboxState = 'pending' | 'held' | 'sending' | 'refused' | 'stuck';
 
 /** A photo kept with an entry or a gallery upload, already processed (downscaled, location stripped). */
 export interface KeptPhoto {
@@ -90,6 +92,10 @@ export interface OutboxItem {
 	 * that it already had that id, what it has is the earlier version (`refuseLostEdits`).
 	 */
 	changedAfterSending?: true;
+	/** Rounds in which Stella failed on it (`outbox-failures.ts`); absent until the first. */
+	attempts?: number;
+	/** When the last counted failure was (epoch ms). */
+	lastFailedAt?: number;
 }
 
 /** Append a newly written item. */
@@ -159,12 +165,13 @@ export function takeBatch(
 
 /**
  * Apply Stella's answers to what was in flight. *Applied* leaves — or, with photos still to
- * send, stays as delivered; *refused* stays with its reason; *busy*, *failed* and anything
- * left unanswered go back to waiting.
+ * send, stays as delivered; *refused* stays with its reason; *failed* is counted at `now` and
+ * waits again until it is stuck; *busy* and anything left unanswered go back to waiting.
  */
 export function settle(
 	items: readonly OutboxItem[],
-	answers: readonly CommandAnswer[]
+	answers: readonly CommandAnswer[],
+	now: number
 ): OutboxItem[] {
 	const byId = new Map(answers.map((a) => [a.id, a]));
 	const next: OutboxItem[] = [];
@@ -178,11 +185,10 @@ export function settle(
 			if (item.photos.length > 0) next.push({ ...item, state: 'pending', delivered: true });
 			continue;
 		}
-		next.push(
-			answer?.status === 'refused'
-				? { ...item, state: 'refused', reason: answer.reason }
-				: { ...item, state: 'pending', unanswered: true }
-		);
+		if (answer?.status === 'refused')
+			next.push({ ...item, state: 'refused', reason: answer.reason });
+		else if (answer?.status === 'failed') next.push(failedAt(item, now));
+		else next.push({ ...item, state: 'pending', unanswered: true });
 	}
 	return next;
 }
@@ -231,9 +237,7 @@ export function hold(items: readonly OutboxItem[], id: string): OutboxItem[] | n
 /** Close an edit without saving: the item goes back to where it was. */
 export function release(items: readonly OutboxItem[], id: string): OutboxItem[] {
 	return items.map((i) =>
-		i.command.id === id && i.state === 'held'
-			? { ...i, state: i.reason === null ? 'pending' : 'refused' }
-			: i
+		i.command.id === id && i.state === 'held' ? { ...i, state: restingState(i) } : i
 	);
 }
 
@@ -242,8 +246,8 @@ export function release(items: readonly OutboxItem[], id: string): OutboxItem[] 
  * a new command under `freshId`: Stella has already answered the old id, and the corrected
  * one is a different request. A pending item keeps its id, so a copy that did reach Stella
  * earlier is still recognised — and if it may have (`unanswered`), the edit is marked, so
- * that recognition refuses it rather than drop it (`refuseLostEdits`). Null when the item is
- * not held.
+ * that recognition refuses it rather than drop it (`refuseLostEdits`). A stuck item keeps its
+ * id too and starts its count of failures afresh. Null when the item is not held.
  */
 export function revise<T extends JsonCommand['type']>(
 	items: readonly OutboxItem[],
@@ -259,7 +263,13 @@ export function revise<T extends JsonCommand['type']>(
 		id: keepsId ? item.command.id : freshId,
 		payload
 	} as JsonCommand;
-	const { unanswered, changedAfterSending, ...rest } = item;
+	const {
+		unanswered,
+		changedAfterSending,
+		attempts: _attempts,
+		lastFailedAt: _failedAt,
+		...rest
+	} = item;
 	const revised: OutboxItem = { ...rest, command, state: 'pending', reason: null };
 	if (keepsId && (unanswered || changedAfterSending)) {
 		revised.unanswered = true;
@@ -268,9 +278,9 @@ export function revise<T extends JsonCommand['type']>(
 	return items.map((i) => (i === item ? revised : i));
 }
 
-/** Whether the member can still take it back here: waiting or refused, not on its way or open. */
+/** Whether the member can still take it back here: waiting, refused or stuck, not on its way or open. */
 export function recallable(item: OutboxItem): boolean {
-	return item.state === 'pending' || item.state === 'refused';
+	return item.state === 'pending' || item.state === 'refused' || item.state === 'stuck';
 }
 
 /** The member does not want it any more. Null when it is on its way and cannot be recalled. */
@@ -294,7 +304,5 @@ export function discardAllOf(items: readonly OutboxItem[], memberId: string): Ou
  * Both go back to where they would be; a resend is safe, because Stella knows every id.
  */
 export function recover(items: readonly OutboxItem[]): OutboxItem[] {
-	return unsend(items).map((i) =>
-		i.state === 'held' ? { ...i, state: i.reason === null ? 'pending' : 'refused' } : i
-	);
+	return unsend(items).map((i) => (i.state === 'held' ? { ...i, state: restingState(i) } : i));
 }
