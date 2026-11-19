@@ -4,7 +4,7 @@ import type { CommandDeps, CommandReceipt } from '../domain/commands/dispatch';
 import { MomentNeedsPersonError, type CapturedMoment } from '../domain/moments/moments';
 import { RelationshipsRefusedError } from '../domain/relationships/add-many';
 import { phrase } from '../../i18n/phrase';
-import { COMMAND_SCHEMA_VERSION } from '../../commands/commands';
+import { COMMAND_SCHEMA_VERSION, MAX_COMMAND_BATCH } from '../../commands/commands';
 import { readBatch, receiveQueued } from './receive';
 
 /*
@@ -274,7 +274,9 @@ describe('readBatch', () => {
 			ok: false,
 			code: 'invalidBatch'
 		});
-		expect(readBatch({ commands: Array.from({ length: 51 }, () => commands[0]) })).toEqual({
+		expect(
+			readBatch({ commands: Array.from({ length: MAX_COMMAND_BATCH + 1 }, () => commands[0]) })
+		).toEqual({
 			ok: false,
 			code: 'invalidBatch'
 		});
