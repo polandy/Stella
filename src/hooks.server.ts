@@ -4,6 +4,7 @@ import { resolveLocale } from '$lib/i18n/resolve';
 import { loadCatalog } from '$lib/i18n/translate';
 import { clearSessionCookie, SESSION_COOKIE, setLocaleCookie } from '$lib/server/auth/cookies';
 import { resolveRequestIdentity } from '$lib/server/auth/request-identity';
+import { accessLogLine } from '$lib/server/http/access-log';
 import { formActionDirective } from '$lib/server/http/csp';
 import { etagOf, isUnchanged, wantsEtag } from '$lib/server/http/etag';
 import {
@@ -39,7 +40,24 @@ export const init: ServerInit = async () => {
 	await getServices().gifts.convertHeldGifts();
 };
 
-export const handle: Handle = async ({ event, resolve }) => {
+export const handle: Handle = async (input) => {
+	const startedAt = performance.now();
+	const answer = await handleRequest(input);
+	if (getConfig().logFormat === 'json') {
+		console.log(
+			accessLogLine({
+				requestId: input.event.locals.requestId,
+				method: input.event.request.method,
+				url: input.event.request.url,
+				status: answer.status,
+				durationMs: performance.now() - startedAt
+			})
+		);
+	}
+	return answer;
+};
+
+const handleRequest: Handle = async ({ event, resolve }) => {
 	// First, so even a failure while finding out who is asking is logged under an id.
 	event.locals.requestId = requestIdFrom(event.request.headers.get('x-request-id'), () =>
 		crypto.randomUUID()
