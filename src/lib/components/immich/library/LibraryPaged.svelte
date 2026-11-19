@@ -50,6 +50,7 @@
 		{labelOf}
 		{ontoggle}
 		{onday}
+		withYear={'album' in read.source}
 		nextCursor={read.failed ? null : read.nextCursor}
 		loading={read.loading}
 		{onmore}

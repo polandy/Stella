@@ -24,10 +24,11 @@ they already took, which live in Immich, without leaving Stella or downloading t
   Sommerferien Engadin*.
 - **All albums** (`LibraryAlbums`) is covers in two columns, three wider: a square cover, the
   name in bold, *about 24 · Jul 2026* under it; a cover Immich would not show is a sunken
-  square with the photo icon. From 12 albums a filter field with the filter icon heads the list;
+  square with the photo icon. From 12 albums a filter field with the filter icon heads the list,
+  kept while the sheet is open;
   *No album is called "…"* when nothing matches. The approximate-counts line sits under it.
 - **An album** (`LibraryPaged`, as a month) is its photos oldest first under sticking day
-  headings, the next 100 loading near the end; *This album holds no photos Stella can show.*
+  headings that name the year (*Thursday, 30 July 2026*), the next 100 loading near the end; *This album holds no photos Stella can show.*
   when Immich has none of them on the timeline.
 - **All years** (`LibraryYears`) is tiles in two columns, newest year first: the year, *about 812*,
   and a thin bar against the busiest year. One quiet line under them says the counts include

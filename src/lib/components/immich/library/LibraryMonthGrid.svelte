@@ -1,6 +1,6 @@
 <!--
   @component
-  A month's photos, grouped by day under headings that stay at the top while their day scrolls by
+  A month's or an album's photos, grouped by day under headings that stay at the top while their day scrolls by
   (docs/dev/02 §2.24.9). A heading opens its day; the next page loads by itself near the end, or
   by *Show more photos*.
 -->
@@ -10,7 +10,7 @@
 	import { nearEnd } from '$lib/components/ui/near-end';
 	import { useI18n } from '$lib/i18n/context.svelte';
 	import type { LibraryPhoto } from '$lib/immich/library';
-	import { dayHeading } from '$lib/immich/library-labels';
+	import { dayHeading, longDay } from '$lib/immich/library-labels';
 	import type { LibraryDayGroup } from '$lib/immich/library-nav';
 	import LibraryPhotos from './LibraryPhotos.svelte';
 
@@ -22,6 +22,8 @@
 		labelOf: (photo: LibraryPhoto) => string | null;
 		ontoggle: (id: string) => void;
 		onday: (day: string) => void;
+		/** Whether the headings name the year — an album can span several. */
+		withYear?: boolean;
 		/** Where the next page starts, or null at the month's end. */
 		nextCursor: string | null;
 		loading: boolean;
@@ -38,6 +40,7 @@
 		labelOf,
 		ontoggle,
 		onday,
+		withYear = false,
 		nextCursor,
 		loading,
 		onmore,
@@ -50,7 +53,7 @@
 
 <div class="flex flex-col gap-3" data-testid="immich-library-month">
 	{#each days as { day, photos } (day)}
-		{@const heading = dayHeading(day, i18n.intlLocale)}
+		{@const heading = withYear ? longDay(day, i18n.intlLocale) : dayHeading(day, i18n.intlLocale)}
 		<section class="flex flex-col gap-1.5" data-day={day}>
 			<h3 class="sticky top-0 z-10 bg-card py-1">
 				<button
