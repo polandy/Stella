@@ -2,6 +2,15 @@
 
 Open implementation work, in order. A finished item is deleted in the PR that finishes it.
 
+## SvelteKit 3 migration (from Dependabot #528, 2026-11-19)
+
+`@sveltejs/kit` 2.70.4, `@sveltejs/adapter-node` 5.5.8 and `typescript` 6.0.3 are held back, and
+`.github/dependabot.yml` ignores their majors. Kit 3 drops `$lib` for `#lib` (about 600 files),
+moves the hook types (`Handle`, `ServerInit`, …) and wants `tsconfig.json` to extend
+`$app/tsconfig` (plus one for `src/service-worker`); it peers on TypeScript 6, and TypeScript 7
+(the native compiler) has no `ts.sys`, which Kit's sync reads. One PR: move to Kit 3 and
+adapter-node 6, drop the three ignores, then TypeScript 7 once Kit supports it.
+
 ## Photos in a diary entry (owner request 2026-11-13)
 
 Step 1 (adding and removing own photos while editing a moment) is built. Left:

@@ -68,7 +68,6 @@
 		max,
 		ageOn,
 		initialAge = '',
-		// eslint-disable-next-line @typescript-eslint/no-unused-vars -- written for the parent's bind:estimate
 		estimate = $bindable(''),
 		estimateName,
 		required = false,

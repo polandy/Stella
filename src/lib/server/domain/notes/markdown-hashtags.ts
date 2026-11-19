@@ -1,5 +1,4 @@
-import type MarkdownIt from 'markdown-it';
-import type StateInline from 'markdown-it/lib/rules_inline/state_inline.mjs';
+import type { MarkdownIt } from 'markdown-it';
 import { hashtagAt, tagAccent, tagKey } from '../../../hashtags/hashtags';
 import { accentChipStyle } from '../../../design/tokens';
 
@@ -11,12 +10,9 @@ import { accentChipStyle } from '../../../design/tokens';
  */
 
 /** What a render needs to make chips: where a tag leads. Absent, a `#` stays text. */
-export interface TagRenderEnv {
+export type TagRenderEnv = {
 	tagHref?: (key: string) => string;
-}
-
-/** markdown-it counts the links it is inside (its own linkify reads it); the typings lag. */
-type LinkAwareState = StateInline & { linkLevel: number };
+};
 
 const escapeHtml = (s: string): string =>
 	s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c] ?? c);
@@ -24,7 +20,7 @@ const escapeHtml = (s: string): string =>
 export function hashtagPlugin(md: MarkdownIt): void {
 	md.inline.ruler.after('escape', 'hashtag', (state, silent) => {
 		const env = state.env as TagRenderEnv | undefined;
-		if (!env?.tagHref || (state as LinkAwareState).linkLevel > 0) return false;
+		if (!env?.tagHref || state.linkLevel > 0) return false;
 		if (state.src.charCodeAt(state.pos) !== 0x23 /* # */) return false;
 		const tag = hashtagAt(state.src, state.pos);
 		if (!tag) return false;
@@ -33,9 +29,9 @@ export function hashtagPlugin(md: MarkdownIt): void {
 		return true;
 	});
 
-	md.renderer.rules.hashtag = (tokens, idx, _options, env: TagRenderEnv) => {
+	md.renderer.rules.hashtag = (tokens, idx, _options, env) => {
 		const name = tokens[idx].content;
-		const href = env.tagHref!(tagKey(name));
+		const href = (env as TagRenderEnv).tagHref!(tagKey(name));
 		const style = accentChipStyle(tagAccent(name));
 		return `<a class="hashtag" href="${escapeHtml(href)}" style="${style}">#${escapeHtml(name)}</a>`;
 	};

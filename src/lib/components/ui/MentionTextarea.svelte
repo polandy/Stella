@@ -80,7 +80,6 @@
 		placeholder,
 		label,
 		class: className = '',
-		// eslint-disable-next-line @typescript-eslint/no-unused-vars -- written for the parent's bind:unclear
 		unclear = $bindable(false),
 		tags
 	}: Props = $props();

@@ -21,3 +21,11 @@ updates:
     groups:
       npm:
         patterns: ['*']
+    # Majors held back until the SvelteKit 3 migration (TODO.md).
+    ignore:
+      - dependency-name: '@sveltejs/kit'
+        update-types: ['version-update:semver-major']
+      - dependency-name: '@sveltejs/adapter-node'
+        update-types: ['version-update:semver-major']
+      - dependency-name: 'typescript'
+        update-types: ['version-update:semver-major']
