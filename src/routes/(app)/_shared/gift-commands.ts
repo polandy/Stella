@@ -1,14 +1,16 @@
-import { dispatchCommand } from '$lib/server/domain/commands/dispatch';
-import { readCommand } from '$lib/server/commands/parse';
 import type { CommandType } from '$lib/commands/commands';
 import { occasionFromForm, visibilityFromForm } from '$lib/gifts/gifts';
 import { whenFromForm } from '$lib/when/form';
 import { GiftGoneError } from '$lib/server/domain/gifts/gifts';
-import { ulidGenerator } from '$lib/server/id';
-import { systemClock } from '$lib/server/clock';
-import { fail, redirect, type RequestEvent } from '@sveltejs/kit';
-import { requireViewer } from '$lib/server/auth/guards';
-import { say, translator } from '$lib/server/i18n/say';
+import { fail, type RequestEvent } from '@sveltejs/kit';
+import {
+	applyCommandFromForm,
+	textOf,
+	type CommandFormEdge,
+	type CommandFormTarget
+} from './command-form';
+
+export { textOf };
 
 /*
  * A gift changed from a form (docs/dev/02 §2.25): the person's Gifts card and the household's list
@@ -32,22 +34,21 @@ export const visibilityOf = (form: FormData) => visibilityFromForm(textOf(form, 
 /** When the idea is for, as the picker posted it; undefined where the form has no picker. */
 export const whenOf = (form: FormData) => whenFromForm((key) => textOf(form, key));
 
-export function textOf(form: FormData, key: string): string | null {
-	const value = form.get(key);
-	return typeof value === 'string' ? value : null;
-}
-
-/** What a form is told when a field of its payload fails; any other field is the title. */
-const PAYLOAD_FIELD_ERRORS: Record<string, 'errors.gift.needDay' | 'errors.gift.badWhen'> = {
-	givenOn: 'errors.gift.needDay',
-	when: 'errors.gift.badWhen'
+/** Which field names which mistake; a gift group's form answers the same way. */
+const GIFT_FORM: CommandFormEdge = {
+	fieldErrors: {
+		title: 'errors.gift.needTitle',
+		url: 'errors.gift.badLink',
+		givenOn: 'errors.gift.needDay',
+		when: 'errors.gift.badWhen',
+		recipients: 'errors.giftGroup.recipients'
+	},
+	couldNotSave: 'errors.gift.couldNotSave',
+	isGone: (error) => error instanceof GiftGoneError
 };
 
 /** Whose gift it is, and where the member lands once it worked. */
-export interface GiftTarget {
-	contactId: string;
-	back: string;
-}
+export type GiftTarget = CommandFormTarget;
 
 /**
  * Apply one gift command for the member and answer as the form expects: back to `target.back`
@@ -61,11 +62,10 @@ export async function applyGiftCommand(
 	errorKey: GiftErrorKey,
 	target: GiftTarget
 ) {
-	const viewer = requireViewer(locals);
 	const giftId = textOf(form, 'giftId');
 	const groupId = textOf(form, 'groupId');
 	// A row's or a panel's error is shown there, so it says which gift or group it is about.
-	const failure = (message: string, status = 400) =>
+	const failure = (message: string, status: number) =>
 		fail(
 			status,
 			errorKey === 'giftRowError'
@@ -74,35 +74,5 @@ export async function applyGiftCommand(
 					? { giftGroupError: { groupId, message } }
 					: { giftError: message }
 		);
-
-	const reading = readCommand({
-		id: form.get('commandId') || ulidGenerator.next(),
-		type,
-		// The target goes last, so a posted field cannot overrule it.
-		payload: { ...payload, contactId: target.contactId },
-		issuedAt: systemClock.now()
-	});
-	if (!reading.ok) {
-		return failure(
-			say(
-				locals,
-				reading.part === 'payload'
-					? (PAYLOAD_FIELD_ERRORS[reading.field ?? ''] ?? 'errors.gift.needTitle')
-					: 'errors.command.malformed'
-			)
-		);
-	}
-	const actor = { userId: viewer.id, householdId: viewer.householdId, locale: locals.locale };
-	const outcome = await dispatchCommand(
-		locals.services.offline.commandDeps,
-		actor,
-		reading.command
-	);
-	if (outcome.status === 'refused') {
-		// A gift already gone answers 404: a held remove reads that as done (docs/dev/02 §2.23).
-		const gone = outcome.error instanceof GiftGoneError;
-		return failure(outcome.reason(translator(locals)), gone ? 404 : 400);
-	}
-	if (outcome.status !== 'applied') return failure(say(locals, 'errors.gift.couldNotSave'));
-	throw redirect(303, target.back);
+	return applyCommandFromForm(locals, form, type, payload, GIFT_FORM, target, failure);
 }

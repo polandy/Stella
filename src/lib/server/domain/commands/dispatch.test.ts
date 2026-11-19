@@ -155,7 +155,7 @@ function fakes(handler: () => Promise<CapturedMoment> = async () => captured) {
 		receipts,
 		applied: () => applied,
 		linkBatches: () => linkBatches,
-		failComplete: (err: Error) => (completeFails = err),
+		failComplete: (err: Error | null) => (completeFails = err),
 		advance: (ms: number) => (now += ms)
 	};
 }
@@ -304,6 +304,21 @@ describe('dispatchCommand, when the receipt book fails', () => {
 		expect(f.receipts.get('cmd1')?.status).toBe('pending');
 		expect(await dispatchCommand(f.deps, actor, moment())).toEqual({ status: 'busy' });
 		expect(f.applied()).toBe(1);
+	});
+
+	it('applies it again once that claim is stale: at least once in the crash window (ADR-075)', async () => {
+		const f = fakes();
+		f.failComplete(new Error('database is locked'));
+		await dispatchCommand(f.deps, actor, moment()).catch(() => undefined);
+		f.failComplete(null);
+		f.advance(CLAIM_STALE_AFTER_MS + 1);
+
+		expect(await dispatchCommand(f.deps, actor, moment())).toEqual({
+			status: 'applied',
+			result,
+			repeated: false
+		});
+		expect(f.applied()).toBe(2);
 	});
 
 	it('lets one of two runs take over an abandoned claim, and tells the other it is busy', async () => {
