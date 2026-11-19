@@ -106,6 +106,8 @@ A few things worth knowing:
   over the stream. After *Save*, *Moment saved* shows for a few seconds; tap *Show* to
   jump to it. The top of a phone's Home is a search field for people instead: start
   typing a name and the people who match appear right under it; tap one to open their page.
+  Tap the empty field and it lists the household's pages instead: **All gift ideas**,
+  **All to-dos**, **All outings** and **On this day**.
   The last row, *Search everything*, also looks through notes. It works offline too, for
   everyone Stella already showed you. Because that field is the search on Home, the top bar
   there has no search button; every other page keeps it in the top bar. On a phone the top bar

@@ -25,7 +25,7 @@ someone, what is near first, and to tick off what they did without opening each 
 - No pencil, no booking and no remove: those stay on the person's card, where the name leads.
 - With nothing open: `EmptyState` with the explore icon, *No open outing idea.*, and the hint that
   an idea noted on a person's Outings card shows up here.
-- Reached from the Outings card's ⋯ menu (*All outings*) and the palette's *All outings*; the top
+- Reached from the Outings card's ⋯ menu (*All outings*) the palette's *All outings* and a phone's empty Home field; the top
   bar's trail is *Home › Outings*.
 
 ### Why

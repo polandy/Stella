@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'bun:test';
 import {
 	paletteRows,
+	personFinderRows,
 	personSearchRows,
 	PALETTE_PEOPLE_LIMIT,
 	type PaletteLabels,
@@ -379,5 +380,26 @@ describe('personSearchRows', () => {
 		expect(
 			personSearchRows('anna', many, searchEverything).filter((r) => r.kind === 'person')
 		).toHaveLength(PALETTE_PEOPLE_LIMIT);
+	});
+});
+
+describe('personFinderRows', () => {
+	const searchEverything = labels.searchEverything;
+
+	it('offers the household lists when nothing is typed', () => {
+		const rows = personFinderRows('  ', people, labels);
+		expect(rows.map((r) => [r.id, r.kind])).toEqual([
+			['gift-ideas', 'action'],
+			['all-todos', 'action'],
+			['all-plans', 'action'],
+			['on-this-day', 'action']
+		]);
+		expect(rows[0]).toMatchObject({ label: 'All gift ideas', href: '/gifts' });
+	});
+
+	it('is the people search as soon as something is typed', () => {
+		expect(personFinderRows('lena', people, labels)).toEqual(
+			personSearchRows('lena', people, searchEverything)
+		);
 	});
 });
