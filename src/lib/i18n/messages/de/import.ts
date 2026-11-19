@@ -10,16 +10,16 @@ export const importer: ImportMessages = {
 	'import.step.preview': 'vorschau',
 	'import.step.photos': 'Import & Fotos',
 	'import.fileLabel':
-		'Monica-Export — JSON (.json) oder Datenbank-Dump (.sql) — oder eine vCard (.vcf), einfach oder gzip-gepackt',
+		'Monica-Export – JSON (.json) oder Datenbank-Dump (.sql) – oder eine vCard (.vcf), einfach oder gzip-gepackt',
 	'import.fileHint.monica':
-		'In Monica: Settings → Export data liefert die JSON-Datei samt Bildern. Eine vCard kommt aus jedem Adressbuch — Telefon, Mailprogramm, Google Contacts — und enthält nur die Menschen. Für einen Dump auf einem selbst gehosteten Monica stattdessen:',
+		'In Monica: Settings → Export data liefert die JSON-Datei samt Bildern. Eine vCard kommt aus jedem Adressbuch – Telefon, Mailprogramm, Google Contacts – und enthält nur die Menschen. Für einen Dump auf einem selbst gehosteten Monica stattdessen:',
 	'import.visibilityLegend': 'Alles Importierte ist',
 	'import.visibility.shared': 'Mit dem Haushalt geteilt',
 	'import.visibility.private': 'Privat für mich',
 	'import.preview': 'Vorschau',
 	'import.whatWillBeImported': 'Was importiert wird',
 	'import.newTypes': 'Neue Beziehungsarten, weil Stella keine mitgelieferte Entsprechung hat:',
-	'import.leftOut': 'Ausgelassen — und warum',
+	'import.leftOut': 'Ausgelassen – und warum',
 	'import.startOver': 'Von vorn beginnen',
 	'import.importNow': 'Jetzt importieren',
 	'import.done': (p) =>
@@ -81,7 +81,7 @@ export const importer: ImportMessages = {
 	'import.warning.manyUsers': (p) =>
 		`Monica hatte ${p.count} Benutzerkonten; alles wird dem importierenden Mitglied zugeschrieben.`,
 	'import.warning.vcardPeopleOnly':
-		'Eine vCard enthält nur Menschen — Beziehungen, Kontakte oder Tagebucheinträge werden daraus nicht gelesen.',
+		'Eine vCard enthält nur Menschen – Beziehungen, Kontakte oder Tagebucheinträge werden daraus nicht gelesen.',
 	'import.warning.jsonNoHowWeMet':
 		'Monicas JSON-Export enthält weder „wie ihr euch kennengelernt habt“ noch wo; dieser Freitext steht nicht in der Datei.',
 
@@ -122,11 +122,11 @@ export const importer: ImportMessages = {
 	'import.error.vcardOverlap': 'Eine Karte in dieser Datei beginnt, bevor die vorige endete.',
 	'import.error.vcardEndWithoutBegin': 'Diese Datei beendet eine Karte, die nie begonnen hat.',
 	'import.error.vcardUnclosed': 'Eine Karte in dieser Datei wurde nie mit END:VCARD geschlossen.',
-	'import.error.notVcard': 'Diese Datei ist keine vCard — sie enthält kein BEGIN:VCARD.',
+	'import.error.notVcard': 'Diese Datei ist keine vCard – sie enthält kein BEGIN:VCARD.',
 	'import.error.contactsCsv':
 		'Das ist eine CSV-Datei. Stella liest Kontakte als vCard: in Google Kontakte Exportieren → vCard (für iOS-Kontakte) wählen.',
 	'import.error.vcardNameless': (p) =>
-		`Eine Karte in dieser Datei nennt niemanden — sie hat weder Name noch Firma, E-Mail oder Nummer (Karte ${p.index}).`,
+		`Eine Karte in dieser Datei nennt niemanden – sie hat weder Name noch Firma, E-Mail oder Nummer (Karte ${p.index}).`,
 	'import.error.dumpMalformedInsert': (p) =>
 		`Fehlerhaftes INSERT für die Tabelle ${p.table}: ${p.what}.`,
 	'import.error.notSqlDump':
@@ -137,7 +137,7 @@ export const importer: ImportMessages = {
 	'import.error.noSuchTable': (p) => `Der Dump hat keine Tabelle namens ${p.name}.`,
 	'import.error.noSuchColumn': (p) => `Die Tabelle ${p.table} hat keine Spalte ${p.column}.`,
 	'import.error.notMonicaDump': (p) =>
-		`Dieser Dump hat keine Tabelle ${p.table} — ist es wirklich eine Monica-Datenbank?`,
+		`Dieser Dump hat keine Tabelle ${p.table} – ist es wirklich eine Monica-Datenbank?`,
 	'import.error.photoNotInImport': 'Dieses Foto gehört nicht zum Import.',
 	'import.error.pictureNotCarried':
 		'Dieser Export trägt das Bild nicht in sich; zeige auf Monicas Fotoordner.',

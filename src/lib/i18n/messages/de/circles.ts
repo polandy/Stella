@@ -5,7 +5,7 @@ export const circles: CirclesMessages = {
 	'circles.title': 'Kreise · Stella',
 	'circles.heading': 'Kreise',
 	'circles.intro':
-		'Die Zusammenhänge, die Menschen teilen — eine Klasse, ein Verein, ein Team, ein Chor.',
+		'Die Zusammenhänge, die Menschen teilen – eine Klasse, ein Verein, ein Team, ein Chor.',
 	'circles.new': 'Neuer Kreis',
 	'circles.create': 'Kreis anlegen',
 	'circles.name': 'Name',
@@ -20,7 +20,7 @@ export const circles: CirclesMessages = {
 		'Ein Kreis ist ein Zusammenhang, den Menschen teilen. Lege den ersten an und setze Menschen hinein.',
 	'circles.noMatch.title': 'Kein Kreis passt',
 	'circles.noMatch.hint':
-		'Versuche einen Teil des Namens oder ein Wort aus der Beschreibung — oder leg den Kreis gleich an.',
+		'Versuche einen Teil des Namens oder ein Wort aus der Beschreibung – oder leg den Kreis gleich an.',
 	'circles.noMatch.create': (p) => `„${p.name}“ anlegen`,
 	'circles.memberCount': (p) => (p.count === 1 ? '1 Mitglied' : `${p.count} Mitglieder`),
 	'circles.nobodyYet': 'Noch niemand darin',
@@ -188,7 +188,7 @@ export const circles: CirclesMessages = {
 	'circles.sub.previous': (p) => `Vorheriger: ${p.name}`,
 	'circles.sub.next': (p) => `Nächster: ${p.name}`,
 	'circles.sub.directlyNobody': (p) =>
-		`Direkt gehört niemand zu ${p.name} — die Personen sind in den Unterkreisen.`,
+		`Direkt gehört niemand zu ${p.name} – die Personen sind in den Unterkreisen.`,
 	'circles.sub.empty': 'Noch keine Unterkreise.',
 	'circles.sub.create': 'Unterkreis anlegen',
 	'circles.sub.createLabel': (p) => `Neuer Unterkreis von ${p.name}`,
