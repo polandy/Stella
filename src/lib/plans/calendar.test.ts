@@ -56,4 +56,10 @@ describe('planLeadDay', () => {
 	it('has none once done', () => {
 		expect(planLeadDay(plan({ doneOn: '2026-11-01' }), born, '2026-11-17')).toBeNull();
 	});
+
+	it('has none once booked — the day itself carries the entry instead', () => {
+		expect(
+			planLeadDay(plan({ bookedAt: Date.UTC(2026, 10, 15, 10) }), born, '2026-11-17')
+		).toBeNull();
+	});
 });

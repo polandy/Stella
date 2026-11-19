@@ -26,6 +26,8 @@ export const dates = {
 		`Gift idea: ${p.title} (${p.name})`,
 	// An outing idea's one entry, when its time starts to draw near (docs/dev/02 §2.27.11).
 	'dates.feed.plan': (p: { title: string; name: string }) => `Outing ahead: ${p.title} (${p.name})`,
+	// A booked outing idea's entry on its own day.
+	'dates.feed.planBooked': (p: { title: string; name: string }) => `Outing: ${p.title} (${p.name})`,
 	'dates.feed.born': (p: { year: number }) => `Born ${p.year}`,
 	'dates.feed.since': (p: { year: number }) => `Since ${p.year}`
 };

@@ -7,6 +7,7 @@ import { ideaState } from '../../../gifts/idea-when';
 import { planLeadDay } from '../../../plans/calendar';
 import type { Translate } from '../../../i18n/translate';
 import { whenChip } from '../../../when/labels';
+import { whenDay } from '../../../when/resolve';
 import type { Viewer } from '../../access/visibility';
 import type { Clock } from '../../clock';
 import type { GiftRepository, IdeaWithBirth, OpenIdea } from '../gifts/gifts';
@@ -212,8 +213,10 @@ function giftEvent(
 }
 
 /**
- * The events for these open outing ideas on `today`, in a fixed order: one each, on the day its
- * time starts to draw near (`planLeadDay`) — never on the idea's own day, which is no appointment.
+ * The events for these open outing ideas on `today`, in a fixed order: open ideas get one entry
+ * on their lead day (§2.27.11); booked ideas get one entry on their own day when the day is
+ * exact, not in the past, and not a month — no entry for *some time*, estimated year, or age
+ * already reached.
  */
 export function planEvents(
 	plans: readonly OpenPlan[],
@@ -223,6 +226,26 @@ export function planEvents(
 ): IcsEvent[] {
 	return byUid(
 		plans.flatMap((plan) => {
+			// Booked ideas: one entry on their own day (when conditions allow).
+			if (plan.bookedAt !== null) {
+				if (plan.when === null) return [];
+				if (plan.when.kind === 'in_month') return [];
+				const day = whenDay(plan.when, plan.birth);
+				if (!day || day.approximate || day.on <= today) return [];
+				return [
+					{
+						uid: `plan-${plan.id}@stella`,
+						start: day.on,
+						yearly: false,
+						summary: lang.t('dates.feed.planBooked', {
+							title: plan.title,
+							name: plan.contactName
+						}),
+						description: whenChip(lang, plan.when),
+						url: `${origin}/contacts/${plan.contactId}`
+					}
+				];
+			}
 			const start = planLeadDay(plan, plan.birth, today);
 			if (start === null || plan.when === null) return [];
 			return [

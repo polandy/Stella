@@ -20,7 +20,7 @@ export function planLeadDay(
 	birth: PartialDate | null,
 	today: string
 ): string | null {
-	if (plan.doneOn !== null || plan.when === null) return null;
+	if (plan.doneOn !== null || plan.when === null || plan.bookedAt !== null) return null;
 	const state = planState(plan, birth, today);
 	const day = whenDay(plan.when, birth);
 	if (!state || !day || day.approximate || state.kind === 'passed') return null;

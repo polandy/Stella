@@ -20,6 +20,7 @@ export const dates: DatesMessages = {
 	'dates.feed.todo': (p) => `Zu tun: ${p.title} (${p.name})`,
 	'dates.feed.giftIdea': (p) => `Geschenkidee: ${p.title} (${p.name})`,
 	'dates.feed.plan': (p) => `Unternehmung steht an: ${p.title} (${p.name})`,
+	'dates.feed.planBooked': (p) => `Unternehmung: ${p.title} (${p.name})`,
 	'dates.feed.born': (p) => `Geboren ${p.year}`,
 	'dates.feed.since': (p) => `Seit ${p.year}`
 };

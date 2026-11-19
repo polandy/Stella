@@ -404,6 +404,49 @@ describe('planEvents', () => {
 		const [event] = planEvents([plan()], '2026-11-17', deLang, ORIGIN);
 		expect(event.summary).toBe('Unternehmung steht an: Zoo (Heinz Example)');
 	});
+
+	test('a booked idea gets no lead-day entry, one on its own day instead', () => {
+		const booked = plan({
+			id: 'p4',
+			bookedAt: Date.UTC(2026, 10, 15, 10),
+			when: { kind: 'on_date', on: '2026-12-06' }
+		});
+		const events = planEvents([booked], '2026-11-17', enLang, ORIGIN);
+		expect(events).toHaveLength(1);
+		expect(events[0]).toMatchObject({
+			uid: 'plan-p4@stella',
+			start: '2026-12-06',
+			summary: 'Outing: Zoo (Heinz Example)'
+		});
+	});
+
+	test('a booked idea for a month gets no entry — in_month names no day', () => {
+		const booked = plan({
+			id: 'p5',
+			bookedAt: Date.UTC(2026, 10, 15, 10),
+			when: { kind: 'in_month', on: '2027-03' }
+		});
+		expect(planEvents([booked], '2026-11-17', enLang, ORIGIN)).toEqual([]);
+	});
+
+	test('a booked idea whose day is in the past gets no entry', () => {
+		const booked = plan({
+			id: 'p6',
+			bookedAt: Date.UTC(2026, 10, 15, 10),
+			when: { kind: 'on_date', on: '2026-11-01' }
+		});
+		expect(planEvents([booked], '2026-11-17', enLang, ORIGIN)).toEqual([]);
+	});
+
+	test("speaks the member's language for a booked idea", () => {
+		const booked = plan({
+			id: 'p7',
+			bookedAt: Date.UTC(2026, 10, 15, 10),
+			when: { kind: 'on_date', on: '2026-12-06' }
+		});
+		const [event] = planEvents([booked], '2026-11-17', deLang, ORIGIN);
+		expect(event.summary).toBe('Unternehmung: Zoo (Heinz Example)');
+	});
 });
 
 describe('calendarFeed', () => {
