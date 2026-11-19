@@ -1,5 +1,5 @@
 import { expect, test, type Browser, type BrowserContext } from '@playwright/test';
-import { DEMO_ADMIN_PASSWORD, DEMO_MEMBER_EMAIL } from '../src/lib/server/db/demo-seed';
+import { DEMO_ADMIN_PASSWORD, DEMO_MEMBER_EMAIL } from '../src/lib/server/db/demo-constants';
 import { appReady, signIn } from './app';
 import { personIdOf, seedHousehold } from './seed';
 

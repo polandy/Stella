@@ -1,4 +1,4 @@
-import { DEMO_ADMIN_EMAIL } from '../db/demo-seed';
+import { DEMO_ADMIN_EMAIL } from '../db/demo-constants';
 import type { FakeImmichGroupPhotos, FakeImmichLibrary, FakeImmichPerson } from './fake-gateway';
 
 /*

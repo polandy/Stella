@@ -11,7 +11,7 @@
 	import { mediaUrl } from '$lib/media/urls';
 	import { photoAfterKey } from '$lib/media/photo-walk';
 	import GalleryPhotoActions from './GalleryPhotoActions.svelte';
-	import LightboxFrame from './LightboxFrame.svelte';
+	import LightboxFrame from '../ui/LightboxFrame.svelte';
 	import UseImmichPhoto from './UseImmichPhoto.svelte';
 	import type { CardEntry, PersonPageData } from './types';
 

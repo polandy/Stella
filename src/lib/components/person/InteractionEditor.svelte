@@ -10,7 +10,7 @@
 	import { INTERACTION_KINDS, KIND_PRESENTATION } from '$lib/story/interaction-kinds';
 	import type { StoryInteractionItem } from '$lib/story/item';
 	import { useRemovals } from '$lib/undo/context.svelte';
-	import { INPUT } from './inputs';
+	import { INPUT } from '../ui/inputs';
 
 	/*
 	 * A touchpoint corrected in place (docs/dev/02 §2.6): the log form's fields but who sees it,

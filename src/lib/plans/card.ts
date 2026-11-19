@@ -5,7 +5,7 @@
 
 import type { PartialDate } from '../dates/partial-date';
 import { whenDay } from '../when/resolve';
-import { todayFor } from '../dates/today';
+import { dayOfInstant } from '../dates/today';
 import { whenState, type WhenState } from '../when/state';
 import type { When } from '../when/when';
 
@@ -63,7 +63,7 @@ export function planState(
 	today: string
 ): WhenState | null {
 	if (plan.when === null) return null;
-	const notedOn = todayFor({ now: () => plan.createdAt });
+	const notedOn = dayOfInstant(plan.createdAt);
 	return whenState(plan.when, { birth, notedOn, checkedOn: null }, today);
 }
 

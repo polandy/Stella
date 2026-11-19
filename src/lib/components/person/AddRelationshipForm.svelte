@@ -35,7 +35,7 @@
 	import { trackPending } from '$lib/sync/pending';
 	import { useRemovals } from '$lib/undo/context.svelte';
 	import { savedEnhance } from '$lib/undo/saved';
-	import { INPUT } from './inputs';
+	import { INPUT } from '../ui/inputs';
 	import LivesAtOffer from './LivesAtOffer.svelte';
 	import { postLivesAt } from './lives-at-post';
 	import RelationshipTypeSelect from './RelationshipTypeSelect.svelte';

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test';
-import { todayFor, writersDay } from './today';
+import { dayOfInstant, todayFor, writersDay } from './today';
 
 /*
  * "Today" is the server's calendar day, read off the injected clock. The instants are built
@@ -9,6 +9,13 @@ import { todayFor, writersDay } from './today';
 
 const at = (...parts: [number, number, number, number, number]) => ({
 	now: () => new Date(...parts).getTime()
+});
+
+describe('dayOfInstant', () => {
+	it('names the local calendar day of an instant', () => {
+		expect(dayOfInstant(new Date(2026, 9, 7, 23, 59).getTime())).toBe('2026-10-07');
+		expect(dayOfInstant(new Date(2027, 0, 1, 0, 0).getTime())).toBe('2027-01-01');
+	});
 });
 
 describe('todayFor', () => {

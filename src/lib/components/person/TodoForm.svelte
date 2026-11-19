@@ -6,7 +6,7 @@
 	import Icon from '$lib/components/ui/Icon.svelte';
 	import { useI18n } from '$lib/i18n/context.svelte';
 	import type { SubmitFunction } from '@sveltejs/kit';
-	import { INPUT } from './inputs';
+	import { INPUT } from '../ui/inputs';
 
 	/*
 	 * Noting a to-do, or rewriting one (docs/dev/02 §2.26): one line, and a day only when asked for —

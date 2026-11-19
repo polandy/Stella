@@ -5,7 +5,7 @@
 	import { goto } from '$app/navigation';
 	import Avatar from '$lib/components/ui/Avatar.svelte';
 	import Icon from '$lib/components/ui/Icon.svelte';
-	import NamesakeLine from '$lib/components/people/NamesakeLine.svelte';
+	import NamesakeLine from '$lib/components/ui/NamesakeLine.svelte';
 	import { useTranslate } from '$lib/i18n/context.svelte';
 	import { paletteLabels, personFinderRows, type PalettePerson } from '$lib/ui/command-palette';
 	import { usePeopleContext } from '$lib/people/context.svelte';

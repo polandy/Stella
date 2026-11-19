@@ -7,7 +7,7 @@ import { createSession } from '$lib/server/auth/session';
 import { getConfig } from '$lib/server/config';
 import { say } from '$lib/server/i18n/say';
 import type { LoginDenial } from '$lib/server/auth/oidc/types';
-import { DEMO_ADMIN_EMAIL, DEMO_ADMIN_PASSWORD } from '$lib/server/db/demo-seed';
+import { DEMO_ADMIN_EMAIL, DEMO_ADMIN_PASSWORD } from '$lib/server/db/demo-constants';
 import type { Actions, PageServerLoad } from './$types';
 
 /*

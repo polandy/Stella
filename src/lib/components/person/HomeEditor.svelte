@@ -7,7 +7,7 @@
 	import { useRemovals } from '$lib/undo/context.svelte';
 	import type { SubmitFunction } from '@sveltejs/kit';
 	import ShareHome from './ShareHome.svelte';
-	import { EDIT_FRAME, INPUT } from './inputs';
+	import { EDIT_FRAME, INPUT } from '../ui/inputs';
 	import type { PersonForm, PersonPageData } from './types';
 
 	/*

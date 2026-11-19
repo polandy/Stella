@@ -7,10 +7,15 @@
 
 const pad = (n: number) => String(n).padStart(2, '0');
 
+/** The calendar day of an instant (epoch ms) as `YYYY-MM-DD`. */
+export function dayOfInstant(ms: number): string {
+	const d = new Date(ms);
+	return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+}
+
 /** The clock's calendar day as `YYYY-MM-DD`. */
 export function todayFor(clock: { now(): number }): string {
-	const d = new Date(clock.now());
-	return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+	return dayOfInstant(clock.now());
 }
 
 /**

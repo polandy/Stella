@@ -2,7 +2,7 @@ import { expect, test, type Browser, type Page } from '@playwright/test';
 import { addPerson, appReady, pickPerson, releaseSelfClaim, serverToday, signIn } from './app';
 import { personIdOf, seedHousehold } from './seed';
 import { UNDO_WINDOW_MS } from '../src/lib/undo/pending-removals';
-import { DEMO_ADMIN_PASSWORD, DEMO_MEMBER_EMAIL } from '../src/lib/server/db/demo-seed';
+import { DEMO_ADMIN_PASSWORD, DEMO_MEMBER_EMAIL } from '../src/lib/server/db/demo-constants';
 
 /*
  * The Outings card on the person page (docs/dev/02 §2.27): the empty line and its help, an idea

@@ -11,12 +11,12 @@
 	import { occasionLabel } from '$lib/gifts/labels';
 	import { useI18n } from '$lib/i18n/context.svelte';
 	import type { SubmitFunction } from '@sveltejs/kit';
-	import WhenPicker from '$lib/components/when/WhenPicker.svelte';
+	import WhenPicker from '$lib/components/ui/WhenPicker.svelte';
 	import { GIFT_WHEN_KINDS } from '$lib/gifts/idea-when';
 	import type { PartialDate } from '$lib/dates/partial-date';
 	import type { When } from '$lib/when/when';
 	import GiftOccasionField from './GiftOccasionField.svelte';
-	import { INPUT } from './inputs';
+	import { INPUT } from '../ui/inputs';
 
 	/*
 	 * Noting a gift, or rewriting one (docs/dev/02 §2.25). An idea asks only for what it is — the note

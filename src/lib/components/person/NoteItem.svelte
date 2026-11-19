@@ -3,7 +3,7 @@
 	import Button from '$lib/components/ui/Button.svelte';
 	import FormError from '$lib/components/ui/FormError.svelte';
 	import Icon from '$lib/components/ui/Icon.svelte';
-	import MentionTextarea from '$lib/components/stream/MentionTextarea.svelte';
+	import MentionTextarea from '$lib/components/ui/MentionTextarea.svelte';
 	import PrivateMark from '$lib/components/ui/PrivateMark.svelte';
 	import RemoveButton from '$lib/components/ui/RemoveButton.svelte';
 	import Swap from '$lib/components/ui/Swap.svelte';
@@ -16,7 +16,7 @@
 	import { useVeil } from '$lib/privacy/veil.svelte';
 	import { useRemovals } from '$lib/undo/context.svelte';
 	import { menuShift, nearMiss } from '$lib/ui/menu';
-	import { INPUT } from './inputs';
+	import { INPUT } from '../ui/inputs';
 	import type { PersonPageData } from './types';
 
 	// One note on the person page (docs/dev/02 §2.5): the text, and its editor in place.

@@ -1,7 +1,7 @@
 import { expect, test, type Page } from '@playwright/test';
 import { appReady, isoDaysAfter, serverToday, signIn } from './app';
 import { personIdOf, seedHousehold } from './seed';
-import { DEMO_ADMIN_PASSWORD, DEMO_MEMBER_EMAIL } from '../src/lib/server/db/demo-seed';
+import { DEMO_ADMIN_PASSWORD, DEMO_MEMBER_EMAIL } from '../src/lib/server/db/demo-constants';
 
 /*
  * The household's outing ideas beyond one person (docs/dev/02 §2.27.9–10): `/plans` and its

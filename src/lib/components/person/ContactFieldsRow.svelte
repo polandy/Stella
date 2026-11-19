@@ -13,7 +13,7 @@
 	import { useRemovals } from '$lib/undo/context.svelte';
 	import { removalKey, type RemovalKind } from '$lib/undo/keys';
 	import { savedEnhance } from '$lib/undo/saved';
-	import { INPUT } from './inputs';
+	import { INPUT } from '../ui/inputs';
 	import type { PersonForm, PersonPageData } from './types';
 
 	/*

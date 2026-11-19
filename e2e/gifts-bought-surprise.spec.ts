@@ -2,7 +2,7 @@ import { expect, test, type Browser, type Page } from '@playwright/test';
 import { appReady, isoDaysAfter, pickPerson, releaseSelfClaim, serverToday, signIn } from './app';
 import { personIdOf, seedHousehold } from './seed';
 import { UNDO_WINDOW_MS } from '../src/lib/undo/pending-removals';
-import { DEMO_ADMIN_PASSWORD, DEMO_MEMBER_EMAIL } from '../src/lib/server/db/demo-seed';
+import { DEMO_ADMIN_PASSWORD, DEMO_MEMBER_EMAIL } from '../src/lib/server/db/demo-constants';
 
 /*
  * A gift bought and waiting to be handed over (docs/dev/02 §2.25.9), and one kept from the member

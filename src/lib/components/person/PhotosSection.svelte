@@ -25,7 +25,7 @@
 	import ImmichLine from './ImmichLine.svelte';
 	import { ImmichMatchHint as MatchHint } from './immich-match-hint.svelte';
 	import ImmichMatchHint from './ImmichMatchHint.svelte';
-	import { INPUT } from './inputs';
+	import { INPUT } from '../ui/inputs';
 	import PhotoCardBody from './PhotoCardBody.svelte';
 	import { PhotoCardState, type PhotoView } from './photo-card-state.svelte';
 	import PhotoTabs from './PhotoTabs.svelte';

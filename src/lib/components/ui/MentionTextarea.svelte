@@ -1,10 +1,10 @@
 <script lang="ts">
-	import MentionListbox from '$lib/components/stream/MentionListbox.svelte';
-	import TagListbox from '$lib/components/journal/TagListbox.svelte';
-	import TagsLine from '$lib/components/journal/TagsLine.svelte';
+	import MentionListbox from '$lib/components/ui/MentionListbox.svelte';
+	import TagListbox from '$lib/components/ui/TagListbox.svelte';
+	import TagsLine from '$lib/components/ui/TagsLine.svelte';
 	import type { KnownTag } from '$lib/hashtags/picker';
 	import { TagPicker } from '$lib/hashtags/tag-picker.svelte';
-	import WhichNamesake from '$lib/components/people/WhichNamesake.svelte';
+	import WhichNamesake from '$lib/components/ui/WhichNamesake.svelte';
 	import { allowedForAudience } from '$lib/mentions/audience';
 	import {
 		activeHandle,

@@ -2,7 +2,7 @@
 	import { FIELD } from '$lib/components/ui/field';
 	import Button from '$lib/components/ui/Button.svelte';
 	import FormError from '$lib/components/ui/FormError.svelte';
-	import MentionTextarea from '$lib/components/stream/MentionTextarea.svelte';
+	import MentionTextarea from '$lib/components/ui/MentionTextarea.svelte';
 	import PersonSearchSelect from '$lib/components/people/PersonSearchSelect.svelte';
 	import { subjectPool, type SubjectFace } from '$lib/story/subjects';
 	import { deserialize } from '$app/forms';

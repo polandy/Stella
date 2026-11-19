@@ -61,6 +61,8 @@ rule and pragmatism genuinely conflict, favor readability and testability.
 16. **YAGNI.** Build what the current milestone needs. The specs leave doors open (e.g.
     multi-tenancy) without paying for them now.
 17. **Consistency.** Follow existing patterns in the codebase over personal preference.
+    A source file past 350 lines draws a `max-lines` warning; the files already past it are listed
+    in `eslint.config.js` (`longFileExceptions`) and the list only shrinks.
 18. **Automated formatting & linting.** Formatting is not a code-review topic; a tool
     decides it. Prettier (`.prettierrc`: tabs, single quotes, width 100, with the Svelte and
     Tailwind plugins — the latter orders classes) formats; ESLint (`eslint.config.js`:

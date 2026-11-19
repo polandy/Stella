@@ -2,7 +2,7 @@
 	import FormerlyMark from '$lib/components/people/FormerlyMark.svelte';
 	import FoundByJobMark from '$lib/components/people/FoundByJobMark.svelte';
 	import JobLine from '$lib/components/people/JobLine.svelte';
-	import NamesakeLine from '$lib/components/people/NamesakeLine.svelte';
+	import NamesakeLine from '$lib/components/ui/NamesakeLine.svelte';
 	import Avatar from '$lib/components/ui/Avatar.svelte';
 	import Icon from '$lib/components/ui/Icon.svelte';
 	import { useTranslate } from '$lib/i18n/context.svelte';
