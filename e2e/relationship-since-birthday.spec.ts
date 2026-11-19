@@ -60,9 +60,9 @@ test('dates a parent–child link from the child, whichever side the sentence is
 test('dates a sibling link from the later birth, and suggests nothing outside the family', async ({
 	page
 }) => {
-	// Neither side of "Sibling of" says who is older, so the two birthdays decide: Bettina Roth
-	// 1990, Jan Steiner 2017.
-	await openPerson(page, /Bettina Roth/);
+	// Neither side of "Sibling of" says who is older, so the two birthdays decide: Timo Brunner
+	// 2016, Jan Steiner 2017 — children no spec partners, since a partner greys out "Partner of".
+	await openPerson(page, /Timo Brunner/);
 	const form = await openRelationshipForm(page);
 	await say(form, 'Sibling of', 'Jan Steiner');
 	await expect(sinceValue(form)).toHaveValue('2017-07-14');
