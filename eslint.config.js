@@ -87,6 +87,42 @@ const frameworkExceptions = [
 	'src/lib/privacy/device-unlock.svelte.ts'
 ];
 
+// Files already past the size at which a module is worth splitting; the list only shrinks.
+const longFileExceptions = [
+	'src/lib/components/circle/ArrangeBoard.svelte',
+	'src/lib/components/graph/GraphExplorer.svelte',
+	'src/lib/components/graph/explorer-view.svelte.ts',
+	'src/lib/components/immich/NewcomerRow.svelte',
+	'src/lib/components/people/KinSuggestions.svelte',
+	'src/lib/components/people/PersonSearchSelect.svelte',
+	'src/lib/components/person/AddRelationshipForm.svelte',
+	'src/lib/components/person/IdentityCard.svelte',
+	'src/lib/components/person/ImmichFacePicker.svelte',
+	'src/lib/components/person/RelationshipList.svelte',
+	'src/lib/components/person/RelationshipsSection.svelte',
+	'src/lib/components/person/StorySection.svelte',
+	'src/lib/components/stream/MomentComposer.svelte',
+	'src/lib/components/stream/StoryTimeline.svelte',
+	'src/lib/i18n/messages/en/contact.ts',
+	'src/lib/server/db/api-import-repository.ts',
+	'src/lib/server/db/demo-people.ts',
+	'src/lib/server/db/demo-seed.ts',
+	'src/lib/server/domain/activity/activity.ts',
+	'src/lib/server/domain/archive/document.ts',
+	'src/lib/server/domain/circles/arrange-people.ts',
+	'src/lib/server/domain/circles/circle-photos.ts',
+	'src/lib/server/domain/contacts/last-names.ts',
+	'src/lib/server/domain/gifts/gifts.ts',
+	'src/lib/server/domain/homes/homes.ts',
+	'src/lib/server/domain/import/monica/json-export.ts',
+	'src/lib/server/domain/import/monica/monica-export.ts',
+	'src/routes/(app)/+layout.svelte',
+	'src/routes/(app)/circles/\\[id\\]/+page.svelte',
+	'src/routes/(app)/search/+page.svelte',
+	'src/routes/(app)/settings/+page.svelte',
+	'src/routes/(app)/settings/immich/+page.svelte'
+];
+
 // A command's refusal is already an answer; anything it throws is ours, and must reach
 // `handleError` to be logged rather than turn into a form message (docs/dev/04 §4.4).
 const failLoudSyntax = [
@@ -224,6 +260,14 @@ export default ts.config(
 		ignores: [...frameworkExceptions, '**/*.svelte.ts'],
 		rules: {
 			'no-restricted-imports': ['error', { patterns: pureImports }]
+		}
+	},
+	{
+		// A long module is a prompt to split it by concern, not a failure: a warning, not an error.
+		files: ['src/**/*.{ts,svelte}'],
+		ignores: ['**/*.test.ts', ...longFileExceptions],
+		rules: {
+			'max-lines': ['warn', { max: 350 }]
 		}
 	}
 );

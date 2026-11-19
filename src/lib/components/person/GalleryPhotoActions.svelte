@@ -2,7 +2,7 @@
 	import Button from '$lib/components/ui/Button.svelte';
 	import RemoveButton from '$lib/components/ui/RemoveButton.svelte';
 	import { useI18n } from '$lib/i18n/context.svelte';
-	import { INPUT } from './inputs';
+	import { INPUT } from '../ui/inputs';
 	import type { PersonPageData } from './types';
 
 	/*

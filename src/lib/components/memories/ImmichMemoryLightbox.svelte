@@ -1,7 +1,7 @@
 <script lang="ts">
 	import Button from '$lib/components/ui/Button.svelte';
 	import Icon from '$lib/components/ui/Icon.svelte';
-	import LightboxFrame from '$lib/components/person/LightboxFrame.svelte';
+	import LightboxFrame from '$lib/components/ui/LightboxFrame.svelte';
 	import { dayLabel } from '$lib/dates/labels';
 	import { useI18n } from '$lib/i18n/context.svelte';
 	import type { ImmichMemoryPhoto } from '$lib/immich/on-this-day';

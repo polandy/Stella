@@ -24,7 +24,7 @@
 	import { trackPending } from '$lib/sync/pending';
 	import { useRemovals } from '$lib/undo/context.svelte';
 	import { savedEnhance } from '$lib/undo/saved';
-	import { INPUT } from './inputs';
+	import { INPUT } from '../ui/inputs';
 	import type { ExclusionOf, PersonPageData, RelationshipChoices } from './types';
 
 	/*

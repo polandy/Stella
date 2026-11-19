@@ -1,7 +1,7 @@
 import { expect, test, type Browser, type Page } from '@playwright/test';
 import { appReady, signIn } from './app';
 import { circleIdOf, seedHousehold } from './seed';
-import { DEMO_ADMIN_PASSWORD, DEMO_MEMBER_EMAIL } from '../src/lib/server/db/demo-seed';
+import { DEMO_ADMIN_PASSWORD, DEMO_MEMBER_EMAIL } from '../src/lib/server/db/demo-constants';
 
 /*
  * Deleting a circle (docs/dev/02 §2.4.2): its creator always, an admin when it is shared. The confirm

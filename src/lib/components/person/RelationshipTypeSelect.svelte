@@ -3,7 +3,7 @@
 	import type { Exclusion } from '$lib/relationships/exclusions';
 	import { exclusionLabel, relationshipTypeLabel } from '$lib/relationships/labels';
 	import { groupByExclusion } from '$lib/relationships/picker-groups';
-	import { INPUT } from './inputs';
+	import { INPUT } from '../ui/inputs';
 	import type { RelationshipChoices } from './types';
 
 	/*

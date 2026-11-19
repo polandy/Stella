@@ -1,7 +1,7 @@
 <script lang="ts">
 	import Button from '$lib/components/ui/Button.svelte';
 	import KeptItem from '$lib/components/pwa/KeptItem.svelte';
-	import MentionTextarea from '$lib/components/stream/MentionTextarea.svelte';
+	import MentionTextarea from '$lib/components/ui/MentionTextarea.svelte';
 	import NoteItem from './NoteItem.svelte';
 	import Section from '$lib/components/ui/Section.svelte';
 	import { enhance } from '$app/forms';
@@ -17,7 +17,7 @@
 	import { savedEnhance } from '$lib/undo/saved';
 	import type { SubmitFunction } from '@sveltejs/kit';
 	import { ulid } from 'ulid';
-	import { INPUT } from './inputs';
+	import { INPUT } from '../ui/inputs';
 	import type { PersonForm, PersonPageData } from './types';
 
 	// What was written down about someone (docs/dev/02 §2.5): the person page's notes card.

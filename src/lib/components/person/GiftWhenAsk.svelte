@@ -3,7 +3,7 @@
 	import Button from '$lib/components/ui/Button.svelte';
 	import FormError from '$lib/components/ui/FormError.svelte';
 	import RemoveButton from '$lib/components/ui/RemoveButton.svelte';
-	import WhenPicker from '$lib/components/when/WhenPicker.svelte';
+	import WhenPicker from '$lib/components/ui/WhenPicker.svelte';
 	import { GIFT_WHEN_KINDS } from '$lib/gifts/idea-when';
 	import type { PartialDate } from '$lib/dates/partial-date';
 	import { useI18n } from '$lib/i18n/context.svelte';

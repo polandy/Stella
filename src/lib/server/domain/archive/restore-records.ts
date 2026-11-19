@@ -1,7 +1,7 @@
 import { webLink } from '../../../links/web-link';
 import { hasGiftDay, isGiftState, isOpenGift, type GiftState } from '../../../gifts/gifts';
 import { FULL_DATE_SHAPE, isRealCalendarDay } from '../../../dates/calendar';
-import { todayFor } from '../../../dates/today';
+import { dayOfInstant } from '../../../dates/today';
 import { whenColumns, whenFromOutside } from '../../../when/when';
 import type { MentionKind, RestoreContext } from './restore-context';
 import { bool, ids, int, ms, records, str, visibilityOf, type Row } from './restore-fields';
@@ -277,8 +277,7 @@ export function planPersonRecords(
 				due_on: isRealDay(dueOn) ? dueOn : null,
 				done_at: doneAt,
 				// The day it was ticked, as written; an archive without one takes the tick's day here.
-				done_on:
-					doneAt === null ? null : isRealDay(doneOn) ? doneOn : todayFor({ now: () => doneAt }),
+				done_on: doneAt === null ? null : isRealDay(doneOn) ? doneOn : dayOfInstant(doneAt),
 				// Who ticked it only when they are a member here; the tick itself stays.
 				done_by: doneAt !== null && doneBy !== null && ctx.members.has(doneBy) ? doneBy : null,
 				...stamps(todoRow)

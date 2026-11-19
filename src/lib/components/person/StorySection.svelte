@@ -39,7 +39,7 @@
 	import { browser } from '$app/environment';
 	import { deviceDay, writersDay } from '$lib/dates/today';
 	import { ulid } from 'ulid';
-	import { INPUT } from './inputs';
+	import { INPUT } from '../ui/inputs';
 	import type { PersonForm, PersonPageData } from './types';
 
 	/*

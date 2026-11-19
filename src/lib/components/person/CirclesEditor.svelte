@@ -11,7 +11,7 @@
 	import { removalKey } from '$lib/undo/keys';
 	import { savedEnhance } from '$lib/undo/saved';
 	import { onMount } from 'svelte';
-	import { INPUT } from './inputs';
+	import { INPUT } from '../ui/inputs';
 	import type { PersonForm, PersonPageData } from './types';
 
 	/*

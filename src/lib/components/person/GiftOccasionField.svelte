@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { GIFT_OCCASION_PRESETS, isGiftOccasionPreset, OTHER_OCCASION } from '$lib/gifts/gifts';
 	import { useI18n } from '$lib/i18n/context.svelte';
-	import { INPUT } from './inputs';
+	import { INPUT } from '../ui/inputs';
 
 	/*
 	 * A gift's occasion (docs/dev/02 §2.25): Birthday, Christmas, Anniversary as chips, or *Other…*

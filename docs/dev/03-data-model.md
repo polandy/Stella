@@ -41,6 +41,15 @@ Detail stays in the feature doc the term points to.
 | **newcomer** | A face in Immich nobody in Stella is linked to yet, offered as a row of *New from Immich* (docs/dev/02 §2.24.7). | `domain/immich/newcomer-rows.ts`, `components/immich/NewcomerRow.svelte` | new person (a person just added in Stella) |
 | **namesake** | A person whose shown name another person on the list shares; a second line tells them apart (docs/dev/02 §2.2.3). | `lib/people/namesakes.ts`, `lib/surnames/` | duplicate (a namesake is a different person) |
 
+**Domain → table.** Where the code's word and the table's name differ, SQL reads this way (nothing is renamed):
+
+| Domain word | Table | Note |
+|---|---|---|
+| outing (`plan`, `domain/plans/`) | `activity_idea` | the UI says *Outings* / *Unternehmungen* |
+| moment | `journal_entry` | Home's capture and the journal entry are one row |
+| touchpoint | `interaction` | participants in `interaction_participant` |
+| hidden from the person | `gift.hidden_from_recipient`, `activity_idea.hidden_from_person` | the same rule under two names (`access/query-scoping.ts`) |
+
 ## 3.1 Conventions
 
 - **IDs:** text primary keys using a sortable unique id (UUIDv7 or ULID; rows brought in

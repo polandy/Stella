@@ -20,7 +20,7 @@
 	import { savedEnhance } from '$lib/undo/saved';
 	import { tick } from 'svelte';
 	import FactEditor from './FactEditor.svelte';
-	import { INPUT } from './inputs';
+	import { INPUT } from '../ui/inputs';
 	import type { PersonForm, PersonPageData } from './types';
 
 	/*

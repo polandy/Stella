@@ -1,8 +1,8 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
-	import { INPUT } from '$lib/components/person/inputs';
+	import { INPUT } from '$lib/components/ui/inputs';
 	import Button from '$lib/components/ui/Button.svelte';
-	import WhenPicker from '$lib/components/when/WhenPicker.svelte';
+	import WhenPicker from '$lib/components/ui/WhenPicker.svelte';
 	import { previewRows } from '$lib/gifts/group-form';
 	import { GIFT_WHEN_KINDS } from '$lib/gifts/idea-when';
 	import { useI18n } from '$lib/i18n/context.svelte';

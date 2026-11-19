@@ -5,11 +5,11 @@
 	import { giftGroupAddCommand, groupNotedOf } from '$lib/components/gifts/gift-group-command';
 	import GroupPreviewRow from '$lib/components/gifts/GroupPreviewRow.svelte';
 	import PersonSearchSelect from '$lib/components/people/PersonSearchSelect.svelte';
-	import { INPUT } from '$lib/components/person/inputs';
+	import { INPUT } from '$lib/components/ui/inputs';
 	import Button from '$lib/components/ui/Button.svelte';
 	import FormError from '$lib/components/ui/FormError.svelte';
 	import Icon from '$lib/components/ui/Icon.svelte';
-	import WhenPicker from '$lib/components/when/WhenPicker.svelte';
+	import WhenPicker from '$lib/components/ui/WhenPicker.svelte';
 	import type { IconName } from '$lib/components/ui/icons';
 	import { deviceDay, writersDay } from '$lib/dates/today';
 	import { SURPRISE } from '$lib/surprise/surprise';
