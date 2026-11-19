@@ -27,9 +27,11 @@ describe('photos kept with a moment', () => {
 		queue([], { command: moment(id), memberId: 'u1', savedAt: 1, photos: photoIds.map(photo) });
 
 	it('keeps a delivered moment until its photos are sent too, and never sends it again', () => {
-		let items = settle(takeBatch(withPhotos('a', 'p1', 'p2'), 'u1', 10).items, [
-			{ id: 'a', status: 'applied', result: {} }
-		]);
+		let items = settle(
+			takeBatch(withPhotos('a', 'p1', 'p2'), 'u1', 10).items,
+			[{ id: 'a', status: 'applied', result: {} }],
+			0
+		);
 		expect(items).toHaveLength(1);
 		expect(items[0]).toMatchObject({ delivered: true, state: 'pending' });
 		expect(takeBatch(items, 'u1', 10).batch).toEqual([]);
@@ -53,9 +55,11 @@ describe('photos kept with a moment', () => {
 	it('sends a kept photo with the capture date it was kept with', () => {
 		const dated = { ...photo('p1'), takenAt: '2026-09-27T18:04:00+02:00' };
 		const kept = queue([], { command: moment('a'), memberId: 'u1', savedAt: 1, photos: [dated] });
-		const delivered = settle(takeBatch(kept, 'u1', 10).items, [
-			{ id: 'a', status: 'applied', result: {} }
-		]);
+		const delivered = settle(
+			takeBatch(kept, 'u1', 10).items,
+			[{ id: 'a', status: 'applied', result: {} }],
+			0
+		);
 		expect(takePhoto(delivered, 'u1')?.upload.photo.takenAt).toBe('2026-09-27T18:04:00+02:00');
 	});
 
@@ -71,9 +75,11 @@ describe('photos kept with a moment', () => {
 			savedAt: 1,
 			photos: [photo('p1')]
 		});
-		const delivered = settle(takeBatch(gallery, 'u1', 10).items, [
-			{ id: 'g', status: 'applied', result: {} }
-		]);
+		const delivered = settle(
+			takeBatch(gallery, 'u1', 10).items,
+			[{ id: 'g', status: 'applied', result: {} }],
+			0
+		);
 		expect(takePhoto(delivered, 'u1')?.upload).toMatchObject({
 			parentId: 'g',
 			type: 'gallery.photo'
@@ -92,9 +98,11 @@ describe('photos kept with a moment', () => {
 			savedAt: 1,
 			photos: [photo('p1')]
 		});
-		const delivered = settle(takeBatch(upload, 'u1', 10).items, [
-			{ id: 'k', status: 'applied', result: {} }
-		]);
+		const delivered = settle(
+			takeBatch(upload, 'u1', 10).items,
+			[{ id: 'k', status: 'applied', result: {} }],
+			0
+		);
 		expect(takePhoto(delivered, 'u1')?.upload).toMatchObject({
 			parentId: 'k',
 			type: 'circleGallery.photo'
@@ -106,9 +114,11 @@ describe('photos kept with a moment', () => {
 	});
 
 	it('keeps the photo waiting when its upload got no answer or a "not now"', () => {
-		const delivered = settle(takeBatch(withPhotos('a', 'p1'), 'u1', 10).items, [
-			{ id: 'a', status: 'applied', result: {} }
-		]);
+		const delivered = settle(
+			takeBatch(withPhotos('a', 'p1'), 'u1', 10).items,
+			[{ id: 'a', status: 'applied', result: {} }],
+			0
+		);
 		const lost = settlePhoto(takePhoto(delivered, 'u1')!.items, 'a', 'p1', null);
 		expect(lost[0]).toMatchObject({ state: 'pending', delivered: true });
 		expect(lost[0].photos.map((p) => p.id)).toEqual(['p1']);
@@ -120,9 +130,11 @@ describe('photos kept with a moment', () => {
 	});
 
 	it('shows a refused photo with the reason; a delivered moment can be discarded but not edited', () => {
-		const delivered = settle(takeBatch(withPhotos('a', 'p1'), 'u1', 10).items, [
-			{ id: 'a', status: 'applied', result: {} }
-		]);
+		const delivered = settle(
+			takeBatch(withPhotos('a', 'p1'), 'u1', 10).items,
+			[{ id: 'a', status: 'applied', result: {} }],
+			0
+		);
 		const refused = settlePhoto(takePhoto(delivered, 'u1')!.items, 'a', 'p1', {
 			id: 'p1',
 			status: 'refused',

@@ -57,10 +57,14 @@ describe('queue and takeBatch', () => {
 	it('does not send an item that is being edited, or one Stella refused', () => {
 		let items = add(add(add([], 'a'), 'b'), 'c');
 		items = hold(items, 'a')!;
-		items = settle(takeBatch(items, 'u1', 10).items, [
-			{ id: 'b', status: 'refused', reason: 'nobody' },
-			{ id: 'c', status: 'busy' }
-		]);
+		items = settle(
+			takeBatch(items, 'u1', 10).items,
+			[
+				{ id: 'b', status: 'refused', reason: 'nobody' },
+				{ id: 'c', status: 'busy' }
+			],
+			0
+		);
 		expect(takeBatch(items, 'u1', 10).batch.map((c) => c.id)).toEqual(['c']);
 	});
 });
@@ -74,7 +78,7 @@ describe('settle', () => {
 			{ id: 'c', status: 'failed' }
 			// 'd' went unanswered.
 		];
-		const items = settle(sent, answers);
+		const items = settle(sent, answers, 0);
 
 		expect(states(items)).toEqual([
 			['b', 'refused'],
@@ -106,9 +110,11 @@ describe('editing before it is sent', () => {
 	});
 
 	it('gives a refused item a fresh id when it is corrected, so it is a new command', () => {
-		let items = settle(takeBatch(add([], 'a'), 'u1', 10).items, [
-			{ id: 'a', status: 'refused', reason: 'nobody' }
-		]);
+		let items = settle(
+			takeBatch(add([], 'a'), 'u1', 10).items,
+			[{ id: 'a', status: 'refused', reason: 'nobody' }],
+			0
+		);
 		items = revise(hold(items, 'a')!, 'a', { ...moment('a').payload, body: 'with @Julia' }, 'a2')!;
 
 		expect(items[0].command.id).toBe('a2');
@@ -117,10 +123,14 @@ describe('editing before it is sent', () => {
 	});
 
 	it('returns a held item to where it was when the edit is abandoned', () => {
-		let items = settle(takeBatch(add(add([], 'a'), 'b'), 'u1', 10).items, [
-			{ id: 'a', status: 'refused', reason: 'nobody' },
-			{ id: 'b', status: 'failed' }
-		]);
+		let items = settle(
+			takeBatch(add(add([], 'a'), 'b'), 'u1', 10).items,
+			[
+				{ id: 'a', status: 'refused', reason: 'nobody' },
+				{ id: 'b', status: 'failed' }
+			],
+			0
+		);
 		items = release(release(hold(hold(items, 'a')!, 'b')!, 'a'), 'b');
 		expect(states(items)).toEqual([
 			['a', 'refused'],
@@ -147,7 +157,7 @@ describe('an edit made after a send went unanswered', () => {
 	/** One round whose answers went through `refuseLostEdits` first, as the adapter sends them. */
 	const round = (items: OutboxItem[], answers: CommandAnswer[]) => {
 		const sent = takeBatch(items, 'u1', 10).items;
-		return settle(sent, refuseLostEdits(sent, answers, EARLIER));
+		return settle(sent, refuseLostEdits(sent, answers, EARLIER), 0);
 	};
 
 	it('is refused when Stella answers that it already had the command, so the edit is not lost', () => {
@@ -192,7 +202,7 @@ describe('an edit made after a send went unanswered', () => {
 
 describe('recover', () => {
 	it('picks up where a closed app left off: nothing stays in flight or held', () => {
-		let items = settle(takeBatch(add(add(add([], 'a'), 'b'), 'c'), 'u1', 1).items, []);
+		let items = settle(takeBatch(add(add(add([], 'a'), 'b'), 'c'), 'u1', 1).items, [], 0);
 		items = takeBatch(items, 'u1', 1).items; // 'a' is in flight again
 		items = hold(items, 'b')!;
 		items = [...items, { ...items[2], command: moment('d'), state: 'refused', reason: 'nobody' }];
@@ -245,9 +255,11 @@ describe('recallable', () => {
 	it('is what can still be taken back on this device: waiting or refused, not on its way', () => {
 		const items = add(add([], 'a'), 'b');
 		const { items: sending } = takeBatch(items.slice(0, 1), 'u1', 1);
-		const refused = settle(takeBatch(add([], 'c'), 'u1', 1).items, [
-			{ id: 'c', status: 'refused', reason: 'no' }
-		]);
+		const refused = settle(
+			takeBatch(add([], 'c'), 'u1', 1).items,
+			[{ id: 'c', status: 'refused', reason: 'no' }],
+			0
+		);
 
 		expect(recallable(items[1]!)).toBe(true);
 		expect(recallable(sending[0]!)).toBe(false);

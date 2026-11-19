@@ -45,6 +45,11 @@ export const home = {
 	'home.outbox.editing': 'Being edited',
 	'home.outbox.sending': 'Sending…',
 	'home.outbox.couldNotSend': 'Could not send',
+	'home.outbox.stuck': 'Stuck',
+	'home.outbox.stuckEditable':
+		'Stella could not save this, even after several tries. Edit it to try again, or discard it.',
+	'home.outbox.stuckDiscardOnly':
+		'Stella could not save this, even after several tries. Discard it and add it again.',
 	'home.outbox.edit': 'Edit',
 	'home.outbox.discard': 'Discard',
 	'home.outbox.discardQuestion': 'This device holds the only copy.',
