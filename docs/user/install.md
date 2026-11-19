@@ -316,7 +316,9 @@ applies any, Stella copies the database to `backups/pre-<version>.db` in the dat
 keeps the last three such copies, so a failed update can be rolled back (docs/dev/07 §7.10).
 That copy lives on the same disk, so keep taking the backup above as well. Going back to an
 older version on a database a newer one already changed is refused at start-up, with
-*The database was migrated by a newer Stella* in the log. When an update also moves data into a
+*The database was migrated by a newer Stella* in the log. An update that adds a rule a stored row
+already breaks stops at start-up too, changing nothing and naming the rule
+(`CHECK constraint failed: …`). When an update also moves data into a
 new shape — gifts imported from Monica as notes becoming entries on the **Gifts** card, say —
 the server log says what it moved and what it left as it was (`./deploy.sh logs`, or
 `docker compose logs stella`;
@@ -344,6 +346,7 @@ machine, install on the new one, restore the archive before the first start.
 | Photos vanish after a restart | The data volume is not mounted. |
 | "You are not authorized" after signing in with SSO | The account is missing the group listed in `OIDC_ALLOWED_GROUPS`. |
 | Locked out after an SSO change | Sign in with the local administrator account instead. |
+| Stops at start-up with `CHECK constraint failed: …` | A stored row breaks a rule the update added; nothing was changed. See 07 §7.12. |
 
 A longer table, including the OIDC-specific failures, is in
 [07 — Deployment §7.12](../dev/07-deployment.md#712-troubleshooting).

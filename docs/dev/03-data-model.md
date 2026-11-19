@@ -53,7 +53,8 @@ Detail stays in the feature doc the term points to.
 - **Visibility:** where present, `visibility` is `'shared' | 'private'` and
   `created_by` references the owning user. These two together drive access control
   (see [02-features.md §2.10](features/2.10-privacy-model.md#210-privacy-model-shared-vs-private-m1)).
-- **Enums** are stored as text with a CHECK constraint (SQLite has no native enum).
+- **Enums** are stored as text (SQLite has no native enum); the database holds the ones listed
+  under *Row rules*, the rest only the domain.
 - **Row rules** the database holds itself, so a writer that skips the domain (restore, import,
   raw SQL) cannot store a row `access/` would misread: every `visibility` is `shared` or
   `private`; a surprise (`gift.hidden_from_recipient`, `gift_group.hidden_from_recipients`,
