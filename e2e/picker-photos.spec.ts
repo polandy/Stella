@@ -113,6 +113,6 @@ test('shows the photo in the search results', async ({ page }) => {
 	// whether its rows are rendered yet is a race that must not decide this case.
 	const results = page
 		.locator('section')
-		.filter({ has: page.getByRole('heading', { name: 'People', exact: true }) });
+		.filter({ has: page.getByRole('heading', { name: /^People \d+$/ }) });
 	await expect(photoIn(results.locator(`a[href="/contacts/${id}"]`), src)).toBeVisible();
 });
