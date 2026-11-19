@@ -1,16 +1,18 @@
 import type { LibraryMonth, LibraryPhoto } from './library';
 
 /*
- * How the photo picker walks the Immich timeline — all years, one year, one month, one day
- * (docs/dev/02 §2.24.9). Pure: the sheet renders these decisions, the server pages the photos.
+ * How the photo picker walks the Immich timeline — all years, one year, one month, one day — and
+ * its albums (docs/dev/02 §2.24.9). Pure: the sheet renders these decisions, the server pages the photos.
  */
 
-/** Where in the timeline the picker is. */
+/** Where in the timeline, or among the albums, the picker is. */
 export type LibraryLevel =
 	| { level: 'years' }
 	| { level: 'year'; year: string }
 	| { level: 'month'; month: string }
-	| { level: 'day'; day: string };
+	| { level: 'day'; day: string }
+	| { level: 'albums' }
+	| { level: 'album'; album: string; name: string };
 
 export interface LibraryYear {
 	year: string;
@@ -42,8 +44,11 @@ export function lastDayOf(month: string): string {
 /**
  * The trail from all years down to `at`, the last crumb being `at` itself. Without the overview
  * (the key lacks `timeline.read`) there are no years to go back to: the trail starts at the month.
+ * An album's trail starts at all albums.
  */
 export function crumbsOf(at: LibraryLevel, overview: boolean): LibraryLevel[] {
+	if (at.level === 'albums') return [at];
+	if (at.level === 'album') return [{ level: 'albums' }, at];
 	const day = at.level === 'day' ? at.day : null;
 	const month = at.level === 'month' ? at.month : day?.slice(0, 7);
 	const year = at.level === 'year' ? at.year : month?.slice(0, 4);

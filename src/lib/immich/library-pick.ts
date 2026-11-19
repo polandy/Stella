@@ -34,19 +34,19 @@ export function tickTray(
 }
 
 /**
- * A day of the library, a search across it, or a page of a month from `cursor` (null for the
+ * A day of the library, a search across it, or a page of a month or an album from `cursor` (null for the
  * first) — the route is `src/routes/(app)/immich/library`.
  */
 export type LibraryQuery =
-	{ day: string } | { query: string } | { month: string; cursor: string | null };
+	| { day: string }
+	| { query: string }
+	| { month: string; cursor: string | null }
+	| { album: string; cursor: string | null };
 
 export function libraryQueryUrl(asked: LibraryQuery): string {
-	const params = new URLSearchParams(
-		'day' in asked
-			? { day: asked.day }
-			: 'query' in asked
-				? { q: asked.query }
-				: { month: asked.month, ...(asked.cursor === null ? {} : { cursor: asked.cursor }) }
-	);
+	if ('day' in asked) return `/immich/library?${new URLSearchParams({ day: asked.day })}`;
+	if ('query' in asked) return `/immich/library?${new URLSearchParams({ q: asked.query })}`;
+	const { cursor, ...source } = asked;
+	const params = new URLSearchParams({ ...source, ...(cursor === null ? {} : { cursor }) });
 	return `/immich/library?${params}`;
 }

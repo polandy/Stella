@@ -30,6 +30,8 @@ export const immich: ImmichMessages = {
 		'Der Schlüssel kann keine Fotos zeigen – er braucht asset.view.',
 	'immich.settings.scope.timeline.read':
 		'Der Schlüssel kann die Zeitleiste nicht lesen – er braucht timeline.read. Bis dahin zeigt die Fotoauswahl Tage und die Suche, ohne die Jahresübersicht.',
+	'immich.settings.scope.album.read':
+		'Der Schlüssel kann keine Alben lesen – er braucht album.read. Bis dahin zeigt die Fotoauswahl die Zeitleiste, ohne Alben.',
 	'immich.settings.tooOld': (p) =>
 		`Dieses Immich hat Version ${p.version}. Stella braucht Immich 3.2 oder neuer.`,
 	'immich.settings.sharing':
@@ -196,7 +198,7 @@ export const immich: ImmichMessages = {
 		p.count === 1 ? '1 Foto aus Immich' : `${p.count} Fotos aus Immich`,
 	'immich.library.photo': (p) => `Foto, ${p.when}`,
 	'immich.library.photoUndated': 'Foto',
-	'immich.library.trail': 'Wo du in der Zeitleiste bist',
+	'immich.library.trail': 'Wo du in der Bibliothek bist',
 	'immich.library.allYears': 'Alle Jahre',
 	'immich.library.years': 'Jahre mit Fotos',
 	'immich.library.months': (p) => `Monate von ${p.year}`,
@@ -210,5 +212,14 @@ export const immich: ImmichMessages = {
 	'immich.library.weeks': 'Wochen des Monats',
 	'immich.library.week': (p) => `KW ${p.week}`,
 	'immich.library.jumpToWeek': (p) => `Zu Kalenderwoche ${p.week} springen`,
-	'immich.library.untick': (p) => `Foto ${p.number} abwählen`
+	'immich.library.untick': (p) => `Foto ${p.number} abwählen`,
+	'immich.library.ways': 'Durchsuchen nach',
+	'immich.library.tabTime': 'Zeit',
+	'immich.library.tabAlbums': 'Alben',
+	'immich.library.allAlbums': 'Alle Alben',
+	'immich.library.albums': 'Alben',
+	'immich.library.albumFilter': 'Alben nach Name filtern',
+	'immich.library.noAlbums': 'Immich hat noch keine Alben mit Fotos.',
+	'immich.library.noAlbumNamed': (p) => `Kein Album heißt „${p.name}“.`,
+	'immich.library.albumEmpty': 'Dieses Album hat keine Fotos, die Stella zeigen kann.'
 };

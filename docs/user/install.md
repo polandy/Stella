@@ -152,10 +152,11 @@ it appears.
 
 1. **Create a key in your own Immich account** — the admin's, not a shared one: *Account
    settings → API keys → New API key*. Give it only these read permissions: `user.read`,
-   `person.read`, `person.statistics`, `asset.read`, `asset.view` and `timeline.read`. Stella
+   `person.read`, `person.statistics`, `asset.read`, `asset.view`, `timeline.read` and `album.read`. Stella
    never writes to Immich. A key made for an earlier Stella may lack `asset.read` and `asset.view`: Settings says so, and the
    strip of photos stays away until the key has them. `timeline.read` is optional: without it
    Settings warns, and the photo picker shows days and search but not the years and months.
+   `album.read` is optional too: without it Settings warns, and the picker has no albums.
 2. **Add three lines to `.env`:**
 
    ```
@@ -186,8 +187,8 @@ many photos of a linked person it holds and their latest photos, following who m
 person in Stella, and gets *Open in Immich*. Stella fetches those photos itself and keeps none
 of them, on the server or on anyone's device. That link shows the photos only to you, signed into your own Immich account;
 everyone else lands on Immich's sign-in or an empty page.
-Beyond the linked people, every member can browse **your whole library** by day and search it
-when they add a photo to a moment, a journal entry or a gallery, and copy the photos they pick
+Beyond the linked people, every member can browse **your whole library** by day, search it and
+open your albums — those you made and those shared with you in Immich — when they add a photo to a moment, a journal entry or a gallery, and copy the photos they pick
 into Stella. Archived, locked and trashed photos never show. If that is more than you want to
 share, leave Immich unconnected.
 

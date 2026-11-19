@@ -11,8 +11,14 @@ import {
 	type ImmichMediaDeps,
 	type ImmichMediaRefusal
 } from '../domain/immich/glimpse';
-import { isAssetCursor, isServableImageType, type ImmichFailure } from '../domain/immich/gateway';
+import {
+	isAssetCursor,
+	isImmichId,
+	isServableImageType,
+	type ImmichFailure
+} from '../domain/immich/gateway';
 import { readLibraryDay, searchLibrary, type ImmichLibraryDeps } from '../domain/immich/library';
+import { readLibraryAlbum, readLibraryAlbums } from '../domain/immich/library-albums';
 import { readLibraryMonth, readLibraryMonths } from '../domain/immich/library-timeline';
 import { findImmichFaces, type ImmichLinkDeps } from '../domain/immich/links';
 import { findLikelyMatchFor, type PersonMatchDeps } from '../domain/immich/person-match';
@@ -127,17 +133,21 @@ export async function answerGlimpse(
 	return Response.json(glimpse, { headers: { 'Cache-Control': IMMICH_MEDIA_CACHE_CONTROL } });
 }
 
-/** The library picker's `?day=`, `?q=` and `?month=`: exactly one is given; `?cursor=` only with a month. */
+/**
+ * The library picker's `?day=`, `?q=`, `?month=` and `?album=`: exactly one is given; `?cursor=`
+ * only with a month or an album.
+ */
 export interface LibraryQuery {
 	day: string | null;
 	q: string | null;
 	month?: string | null;
+	album?: string | null;
 	cursor?: string | null;
 }
 
 /**
- * `GET /immich/library?day=`, `?q=` or `?month=&cursor=`: a day of the whole library, a search of
- * it, or a page of a month, for the picker beside a photo upload (docs/dev/02 §2.24.9) — for any
+ * `GET /immich/library?day=`, `?q=`, `?month=&cursor=` or `?album=&cursor=`: a day of the whole
+ * library, a search of it, or a page of a month or an album, for the picker beside a photo upload (docs/dev/02 §2.24.9) — for any
  * member, every photo signed for their household. A failure in Immich is said in the body; the
  * picker shows it.
  */
@@ -148,17 +158,21 @@ export async function answerLibrary(
 ): Promise<Response | RouteRefusal> {
 	if (!viewer) return NOT_SIGNED_IN;
 	if (!deps) return NOT_FOUND;
-	const { day, q, month = null, cursor = null } = query;
-	if ([day, q, month].filter((given) => given !== null).length !== 1) return NOT_FOUND;
+	const { day, q, month = null, album = null, cursor = null } = query;
+	if ([day, q, month, album].filter((given) => given !== null).length !== 1) return NOT_FOUND;
 	if (day !== null && !isWholeDay(day)) return NOT_FOUND;
 	if (month !== null && !isMonth(month)) return NOT_FOUND;
-	if (cursor !== null && (month === null || !isAssetCursor(cursor))) return NOT_FOUND;
+	if (album !== null && !isImmichId(album)) return NOT_FOUND;
+	const paged = month !== null || album !== null;
+	if (cursor !== null && (!paged || !isAssetCursor(cursor))) return NOT_FOUND;
 	const view =
 		day !== null
 			? await readLibraryDay(deps, viewer, day)
 			: month !== null
 				? await readLibraryMonth(deps, viewer, month, cursor)
-				: await searchLibrary(deps, viewer, q ?? '');
+				: album !== null
+					? await readLibraryAlbum(deps, viewer, album, cursor)
+					: await searchLibrary(deps, viewer, q ?? '');
 	return Response.json(view, { headers: { 'Cache-Control': IMMICH_MEDIA_CACHE_CONTROL } });
 }
 
@@ -173,6 +187,21 @@ export async function answerLibraryMonths(
 	if (!viewer) return NOT_SIGNED_IN;
 	if (!deps) return NOT_FOUND;
 	return Response.json(await readLibraryMonths(deps), {
+		headers: { 'Cache-Control': IMMICH_MEDIA_CACHE_CONTROL }
+	});
+}
+
+/**
+ * `GET /immich/library/albums`: the albums, for the picker's album list (docs/dev/02 §2.24.9). A
+ * key without `album.read` answers `forbidden` in the body.
+ */
+export async function answerLibraryAlbums(
+	deps: ImmichLibraryDeps | null,
+	viewer: Viewer | null
+): Promise<Response | RouteRefusal> {
+	if (!viewer) return NOT_SIGNED_IN;
+	if (!deps) return NOT_FOUND;
+	return Response.json(await readLibraryAlbums(deps, viewer), {
 		headers: { 'Cache-Control': IMMICH_MEDIA_CACHE_CONTROL }
 	});
 }

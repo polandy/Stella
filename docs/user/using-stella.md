@@ -546,7 +546,12 @@ photo of that day; **‹** and **›** jump to the nearest day that has photos. 
 photos — *All years › 2026 › October › Wed 21* — takes you up: tap the month to see all of
 October grouped by day (tap a day's heading to open it, or a *Week 43* chip to jump to that week), the year to pick another month, or *All
 years* to see how many photos each year holds. The counts are approximate because Immich counts
-videos too. If the Immich key lacks `timeline.read`, the line starts at the month. Or type in the search
+videos too. If the Immich key lacks `timeline.read`, the line starts at the month. **Albums**,
+the tab beside **Time** under the search, lists the albums of the Immich library — the ones
+made there and the ones shared with its owner — the latest first; with many of them, type part
+of a name to narrow the list. Tap one to see its photos, oldest first; *All albums* takes you
+back, and **Time** returns to where you were in the timeline. Ticks stay ticked across both.
+Without the tab, the Immich key lacks `album.read` (Settings says so). Or type in the search
 — *beach*, *birthday cake* — and Immich finds matching photos across the whole library. Tap the
 ones you want; they are numbered in the order you tap them, up to 20 at a time, and a row of small thumbnails at the bottom keeps all of them in view whichever month you are in — tap one to untick it. **Add N photos**
 copies them into Stella, so they stay even if they are later deleted in Immich. A photo added to

@@ -51,6 +51,10 @@ describe('what may be kept on the device', () => {
 		expect(verdictFor(asset('/immich/library?day=2026-09-01'))).toBe('skip');
 		expect(verdictFor(asset('/immich/library?month=2026-09&cursor=100'))).toBe('skip');
 		expect(verdictFor(asset('/immich/library/months'))).toBe('skip');
+		expect(verdictFor(asset('/immich/library/albums'))).toBe('skip');
+		expect(verdictFor(asset('/immich/library?album=a0000000-0000-4000-a000-000000000001'))).toBe(
+			'skip'
+		);
 		expect(verdictFor(asset('/immich/on-this-day?day=2026-11-02'))).toBe('skip');
 		// The matching list: Immich's names and counts, and the faces' signed URLs.
 		expect(verdictFor(page('/settings/immich'))).toBe('skip');

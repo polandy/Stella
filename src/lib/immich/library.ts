@@ -36,6 +36,15 @@ export type LibraryView =
 			/** Where the next page starts, or null once the month is read to its end. */
 			nextCursor: string | null;
 	  }
+	| {
+			state: 'album';
+			/** Immich's id for the album. */
+			album: string;
+			/** A page of its photos, oldest first. */
+			photos: LibraryPhoto[];
+			/** Where the next page starts, or null once the album is read to its end. */
+			nextCursor: string | null;
+	  }
 	| { state: 'found'; photos: LibraryPhoto[] }
 	/** The library runs without machine learning, so there is no search by description. */
 	| { state: 'searchOff' }
@@ -54,6 +63,26 @@ export interface LibraryMonth {
  */
 export type LibraryMonths =
 	{ state: 'months'; months: LibraryMonth[] } | { state: 'forbidden' } | { state: 'unreachable' };
+
+/** An album the key's owner has or was shared, as the album list shows it. */
+export interface LibraryAlbum {
+	id: string;
+	name: string;
+	/** How many assets it holds — videos included, so approximate. */
+	count: number;
+	/** The days of its first and last photo, `YYYY-MM-DD`. */
+	from: string;
+	to: string;
+	/** Its cover, signed at `thumbnail` size; null when the cover is not a timeline photo. */
+	coverUrl: string | null;
+}
+
+/**
+ * The albums for the picker's album list, last photo first, as `/immich/library/albums` answers;
+ * `forbidden` when the key lacks `album.read` — the picker then shows the timeline only.
+ */
+export type LibraryAlbums =
+	{ state: 'albums'; albums: LibraryAlbum[] } | { state: 'forbidden' } | { state: 'unreachable' };
 
 /**
  * An Immich photo on a journal entry, kept as a reference (docs/dev/02 §2.20, docs/dev/04 ADR-132): both

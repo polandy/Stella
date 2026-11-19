@@ -1,5 +1,6 @@
 import type { FakeImmichLibrary } from '../../immich/fake-gateway';
-import type { ImmichAsset, ImmichGateway } from './gateway';
+import type { ImmichAsset } from './gateway';
+import type { ImmichLibraryDeps } from './library';
 
 /*
  * The library the Immich use-case tests start from: the key belongs to Anna, and her Immich
@@ -28,10 +29,8 @@ export function testLibrary(): FakeImmichLibrary {
 	};
 }
 
-/** A gateway whose whole library is these photos, each taken at its camera-clock time. */
-export function libraryOf(
-	taken: Record<string, string>
-): Pick<ImmichGateway, 'takenAssets' | 'smartSearch' | 'timelineMonths'> {
+/** A gateway whose whole library is these photos, each taken at its camera-clock time; no albums. */
+export function libraryOf(taken: Record<string, string>): ImmichLibraryDeps['gateway'] {
 	// Each photo's instant: the clock time at UTC−10, so the day's window must reach past midnight.
 	const listed: (ImmichAsset & { instant: string })[] = Object.entries(taken)
 		.map(([id, takenAt]) => ({
@@ -63,6 +62,14 @@ export function libraryOf(
 				counts.set(takenAt.slice(0, 7), (counts.get(takenAt.slice(0, 7)) ?? 0) + 1);
 			const months = [...counts].map(([month, count]) => ({ month, count }));
 			return { ok: true, value: months.reverse() };
+		},
+		albums: async () => ({ ok: true, value: [] }),
+		albumAssets: async () => ({ ok: false, failure: 'notFound' }),
+		timelinePhoto: async (assetId) => {
+			const takenAt = taken[assetId];
+			return takenAt
+				? { ok: true, value: { id: assetId, takenAt } }
+				: { ok: false, failure: 'notFound' };
 		}
 	};
 }

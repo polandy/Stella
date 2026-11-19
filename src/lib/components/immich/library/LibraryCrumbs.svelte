@@ -1,6 +1,7 @@
 <!--
   @component
-  The picker's trail through the timeline (docs/dev/02 §2.24.9): *All years › 2026 › October › Wed 21*.
+  The picker's trail through the timeline (docs/dev/02 §2.24.9): *All years › 2026 › October › Wed 21*,
+  or *All albums › Holidays*.
   Each crumb above the current one goes back up to it; the last one is where the picker is.
 -->
 <script lang="ts">
@@ -20,7 +21,11 @@
 	const i18n = useI18n();
 	const t = i18n.t;
 	const label = (at: LibraryLevel) =>
-		crumbLabel(at, i18n.intlLocale, { overview, allYears: t('immich.library.allYears') });
+		crumbLabel(at, i18n.intlLocale, {
+			overview,
+			allYears: t('immich.library.allYears'),
+			allAlbums: t('immich.library.allAlbums')
+		});
 </script>
 
 <nav aria-label={t('immich.library.trail')} data-testid="immich-library-trail">

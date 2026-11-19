@@ -1,0 +1,280 @@
+import { describe, expect, it } from 'bun:test';
+import {
+	readAlbums,
+	readAssetPage,
+	readOwner,
+	readPeoplePage,
+	readPerson,
+	readPersonList,
+	readStatistics,
+	readTimelineMonths,
+	readVersion
+} from './gateway-payloads';
+
+const ANNA = '6f1c2a8e-3b4d-4e5f-8a9b-0c1d2e3f4a5b';
+const BERT = '7a2b3c4d-5e6f-4a1b-9c2d-3e4f5a6b7c8d';
+const CARL = '8b3c4d5e-6f7a-4b2c-8d3e-4f5a6b7c8d9e';
+
+describe('readVersion', () => {
+	it('reads the three numbers of the server version', () => {
+		expect(readVersion({ major: 3, minor: 2, patch: 4 })).toEqual({ major: 3, minor: 2, patch: 4 });
+	});
+
+	it('refuses a body that is not one', () => {
+		for (const payload of [
+			null,
+			'v3.2.4',
+			{ major: 3, minor: 2 },
+			{ major: '3', minor: 2, patch: 4 },
+			{ major: -1, minor: 0, patch: 0 }
+		]) {
+			expect(readVersion(payload)).toBeNull();
+		}
+	});
+});
+
+describe('readOwner', () => {
+	it('reads who the key belongs to', () => {
+		expect(
+			readOwner({ id: 'u1', name: 'Anna', email: 'anna@example.test', isAdmin: true })
+		).toEqual({
+			name: 'Anna',
+			email: 'anna@example.test'
+		});
+	});
+
+	it('refuses an owner without an email, since that is how the owner is recognised', () => {
+		expect(readOwner({ name: 'Anna' })).toBeNull();
+		expect(readOwner({ name: 'Anna', email: '' })).toBeNull();
+		expect(readOwner(null)).toBeNull();
+	});
+
+	it('keeps an owner who never gave a name', () => {
+		expect(readOwner({ email: 'anna@example.test' })).toEqual({
+			name: '',
+			email: 'anna@example.test'
+		});
+	});
+});
+
+describe('readPerson', () => {
+	it('reads a person, their name trimmed', () => {
+		expect(
+			readPerson({ id: ANNA, name: ' Anna Example ', isHidden: false, thumbnailPath: '/x' })
+		).toEqual({
+			id: ANNA,
+			name: 'Anna Example',
+			hidden: false
+		});
+	});
+
+	it('reads a person without the hidden flag as shown', () => {
+		expect(readPerson({ id: ANNA, name: 'Anna' })?.hidden).toBe(false);
+	});
+
+	it('refuses a person whose id is not an Immich id', () => {
+		expect(readPerson({ id: '../users/me', name: 'Anna' })).toBeNull();
+		expect(readPerson({ name: 'Anna' })).toBeNull();
+	});
+});
+
+describe('readPersonList and readPeoplePage', () => {
+	const people = [
+		{ id: ANNA, name: 'Anna', isHidden: false },
+		{ id: 'nope', name: 'Broken' },
+		{ id: BERT, name: 'Bert', isHidden: true }
+	];
+
+	it('keeps the readable people of a search and drops the rest', () => {
+		expect(readPersonList(people)).toEqual([
+			{ id: ANNA, name: 'Anna', hidden: false },
+			{ id: BERT, name: 'Bert', hidden: true }
+		]);
+		expect(readPersonList({ people })).toBeNull();
+	});
+
+	it('reads a page of the people listing', () => {
+		expect(readPeoplePage({ people, total: 3, hidden: 1, hasNextPage: true })).toEqual({
+			people: [
+				{ id: ANNA, name: 'Anna', hidden: false },
+				{ id: BERT, name: 'Bert', hidden: true }
+			],
+			hasNextPage: true
+		});
+		expect(readPeoplePage({ people: [] })).toEqual({ people: [], hasNextPage: false });
+		expect(readPeoplePage([])).toBeNull();
+	});
+});
+
+describe('readStatistics', () => {
+	it('reads how many photos a person is in', () => {
+		expect(readStatistics({ assets: 1284 })).toEqual({ assets: 1284 });
+	});
+
+	it('refuses a count that is not one', () => {
+		for (const payload of [null, {}, { assets: '12' }, { assets: -1 }, { assets: 1.5 }]) {
+			expect(readStatistics(payload)).toBeNull();
+		}
+	});
+});
+
+describe('readAssetPage', () => {
+	const asset = (id: string, extra: Record<string, unknown> = {}) => ({
+		id,
+		type: 'IMAGE',
+		visibility: 'timeline',
+		isTrashed: false,
+		localDateTime: '2026-08-14T18:30:00.000Z',
+		fileCreatedAt: '2026-08-14T16:30:00.000Z',
+		...extra
+	});
+
+	it('reads the photos of a search page, with when they were taken on the clock where they were taken', () => {
+		// Immich writes `localDateTime` with a `Z`, but it is the camera's wall clock, not UTC.
+		expect(
+			readAssetPage({ assets: { items: [asset(ANNA), asset(BERT)], nextCursor: 'next-1' } })
+		).toEqual({
+			assets: [
+				{ id: ANNA, takenAt: '2026-08-14T18:30:00' },
+				{ id: BERT, takenAt: '2026-08-14T18:30:00' }
+			],
+			nextCursor: 'next-1'
+		});
+	});
+
+	it('falls back to the file date, an instant in UTC, and to no date at all', () => {
+		const page = readAssetPage({
+			assets: {
+				items: [
+					asset(ANNA, { localDateTime: null }),
+					asset(BERT, { localDateTime: 'x', fileCreatedAt: 'y' }),
+					asset(CARL, {
+						localDateTime: '2026-02-30T10:00:00.000Z',
+						fileCreatedAt: '2026-13-01T00:00:00Z'
+					})
+				],
+				nextCursor: null
+			}
+		});
+		expect(page?.assets).toEqual([
+			{ id: ANNA, takenAt: '2026-08-14T16:30:00Z' },
+			{ id: BERT, takenAt: null },
+			{ id: CARL, takenAt: null }
+		]);
+		expect(page?.nextCursor).toBeNull();
+	});
+
+	it('never passes on what Immich hides: archived, locked, hidden or trashed photos, nor videos', () => {
+		const page = readAssetPage({
+			assets: {
+				items: [
+					asset(ANNA, { visibility: 'archive' }),
+					asset(ANNA, { visibility: 'locked' }),
+					asset(ANNA, { visibility: 'hidden' }),
+					asset(ANNA, { isTrashed: true }),
+					asset(ANNA, { type: 'VIDEO' }),
+					asset('../x'),
+					'nonsense',
+					asset(BERT)
+				],
+				nextCursor: ''
+			}
+		});
+		expect(page).toEqual({
+			assets: [{ id: BERT, takenAt: '2026-08-14T18:30:00' }],
+			nextCursor: null
+		});
+	});
+
+	it('refuses a body that is not a search page', () => {
+		for (const payload of [null, [], {}, { assets: [] }, { assets: { items: {} } }]) {
+			expect(readAssetPage(payload)).toBeNull();
+		}
+	});
+});
+
+describe('readTimelineMonths', () => {
+	it('reads each month of the timeline with how many assets Immich counts in it', () => {
+		// The shape Immich v3.3.1 answers `GET /api/timeline/buckets` with.
+		expect(
+			readTimelineMonths([
+				{ timeBucket: '2025-07-01T00:00:00.000Z', count: 412 },
+				{ timeBucket: '2025-06-01', count: 3 }
+			])
+		).toEqual([
+			{ month: '2025-07', count: 412 },
+			{ month: '2025-06', count: 3 }
+		]);
+		expect(readTimelineMonths([])).toEqual([]);
+	});
+
+	it('refuses the whole answer when any bucket is not one', () => {
+		for (const body of [
+			{ buckets: [] },
+			[{ timeBucket: '2025-07-01' }],
+			[{ timeBucket: 'July', count: 1 }],
+			[{ timeBucket: '2025-13-01', count: 1 }],
+			[{ timeBucket: '2025-07-01', count: -1 }],
+			[{ timeBucket: '2025-07-01', count: 1.5 }],
+			[null],
+			'2025-07'
+		]) {
+			expect(readTimelineMonths(body)).toBeNull();
+		}
+	});
+});
+
+describe('readAlbums', () => {
+	// The fields of `GET /api/albums` Stella reads, as Immich v3.3.1 answers it.
+	const album = {
+		id: ANNA,
+		albumName: 'Summer in Ticino',
+		assetCount: 214,
+		albumThumbnailAssetId: BERT,
+		startDate: '2026-07-04T00:00:00.000Z',
+		endDate: '2026-07-19T00:00:00.000Z',
+		shared: true
+	};
+
+	it('reads each album with its count, cover and the days its photos span', () => {
+		expect(readAlbums([album])).toEqual([
+			{
+				id: ANNA,
+				name: 'Summer in Ticino',
+				count: 214,
+				coverAssetId: BERT,
+				from: '2026-07-04',
+				to: '2026-07-19'
+			}
+		]);
+		expect(readAlbums([])).toEqual([]);
+	});
+
+	it('reads an empty album, which has no cover and no dates', () => {
+		const empty = {
+			id: ANNA,
+			albumName: 'Summer in Ticino',
+			assetCount: 0,
+			albumThumbnailAssetId: null
+		};
+		expect(readAlbums([empty])).toEqual([
+			{ id: ANNA, name: 'Summer in Ticino', count: 0, coverAssetId: null, from: null, to: null }
+		]);
+	});
+
+	it('refuses the whole answer when any album is not one', () => {
+		for (const body of [
+			{ albums: [] },
+			[{ ...album, id: '../users/me' }],
+			[{ ...album, albumName: 7 }],
+			[{ ...album, assetCount: -1 }],
+			[{ ...album, assetCount: '214' }],
+			[{ ...album, albumThumbnailAssetId: 'cover' }],
+			[{ ...album, startDate: 'July' }],
+			[{ ...album, endDate: null }],
+			[album, null]
+		]) {
+			expect(readAlbums(body)).toBeNull();
+		}
+	});
+});

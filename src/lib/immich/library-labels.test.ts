@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'bun:test';
 import {
+	albumRange,
 	crumbLabel,
 	dayHeading,
 	longDay,
@@ -8,7 +9,7 @@ import {
 	shortDate
 } from './library-labels';
 
-const top = { overview: true, allYears: 'All years' };
+const top = { overview: true, allYears: 'All years', allAlbums: 'All albums' };
 
 describe('the picker’s labels', () => {
 	it('names days and months in the reader’s language', () => {
@@ -33,5 +34,16 @@ describe('the picker’s labels', () => {
 		expect(
 			crumbLabel({ level: 'month', month: '2026-10' }, 'en-GB', { ...top, overview: false })
 		).toBe('October 2026');
+		expect(crumbLabel({ level: 'albums' }, 'en-GB', top)).toBe('All albums');
+		expect(crumbLabel({ level: 'album', album: 'a1', name: 'Holidays' }, 'en-GB', top)).toBe(
+			'Holidays'
+		);
+	});
+
+	it('says an album’s span as briefly as its days allow', () => {
+		expect(albumRange('2026-07-03', '2026-07-28', 'en-GB')).toBe('Jul 2026');
+		expect(albumRange('2025-02-14', '2025-03-01', 'en-GB')).toBe('Feb – Mar 2025');
+		expect(albumRange('2025-02-14', '2025-03-01', 'de-DE')).toBe('Feb – März 2025');
+		expect(albumRange('2019-06-15', '2026-01-02', 'en-GB')).toBe('2019–2026');
 	});
 });
