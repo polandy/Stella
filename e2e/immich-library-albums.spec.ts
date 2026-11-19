@@ -4,7 +4,8 @@ import { signIn } from './app';
 /*
  * Albums in the Immich photo picker (docs/dev/02 §2.24.9): the Albums tab under the search, the
  * album list with its name filter and a cover placeholder, an album's photos, ticks that survive
- * the switch between the tabs, and each tab keeping its level.
+ * the switch between the tabs, and each tab keeping its level. Without `album.read` only the
+ * albums go: the tabs are not shown and the picker is the timeline.
  *
  * The e2e server runs with `IMMICH_DEMO=true`: the in-memory demo library holds thirteen albums
  * with photos, so the filter shows; *Garten* holds the newest photos and comes first, *Umzug*
@@ -103,4 +104,22 @@ test('an album longer than a page reads on, and a day heading opens that day und
 		.click();
 	await expect(tab(page, 'Time')).toHaveAttribute('aria-selected', 'true');
 	await expect(sheet(page).getByTestId('immich-library-day')).toBeVisible();
+});
+
+test('a key without album.read loses only the albums: no tabs, the timeline as before', async ({
+	page
+}) => {
+	// The demo key has every scope, so the album list answers as Immich does without album.read.
+	await page.route('**/immich/library/albums', (route) =>
+		route.fulfill({ json: { state: 'forbidden' } })
+	);
+	const asked = page.waitForResponse('**/immich/library/albums');
+	await openPicker(page);
+	await asked;
+	await expect(sheet(page).getByTestId('immich-library-day')).toBeVisible();
+	await expect(sheet(page).getByTestId('immich-library-tabs')).toHaveCount(0);
+	await sheet(page).getByRole('button', { name: 'An earlier day with photos' }).click();
+	await expect(
+		sheet(page).getByTestId('immich-library-photos').getByRole('button').first()
+	).toBeVisible();
 });
