@@ -67,6 +67,8 @@ function fakeRepo() {
 					title: 'Fotobuch',
 					state: 'given',
 					givenOn: '2025-12-24',
+					visibility: 'shared',
+					hiddenFromPerson: false,
 					contactId: 'c1',
 					contactName: 'Hans'
 				}
@@ -80,6 +82,7 @@ function fakeRepo() {
 					title: 'Reifen',
 					done: false,
 					doneOn: null,
+					visibility: 'shared',
 					contactId: 'c1',
 					contactName: 'Hans'
 				}
@@ -93,6 +96,8 @@ function fakeRepo() {
 					title: 'Zoo',
 					done: false,
 					doneOn: null,
+					visibility: 'shared',
+					hiddenFromPerson: false,
 					contactId: 'c1',
 					contactName: 'Hans'
 				}

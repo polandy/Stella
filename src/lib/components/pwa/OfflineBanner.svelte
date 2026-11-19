@@ -26,13 +26,15 @@
 	);
 </script>
 
-{#if !reachability.reachable}
-	<p
-		data-testid="offline-banner"
-		role="status"
-		class="flex items-center justify-center gap-2 border-y border-warning/40 bg-warning-soft px-4 py-1.5 text-center text-sm font-medium text-fg"
-	>
-		<Icon name="offline" size={15} class="text-warning" />
-		{line}
-	</p>
-{/if}
+<!-- The live region stays in the page so a screen reader announces the change (docs/dev/05 §5.9). -->
+<div role="status" data-testid="offline-banner-region">
+	{#if !reachability.reachable}
+		<p
+			data-testid="offline-banner"
+			class="flex items-center justify-center gap-2 border-y border-warning/40 bg-warning-soft px-4 py-1.5 text-center text-sm font-medium text-fg"
+		>
+			<Icon name="offline" size={15} class="text-warning" />
+			{line}
+		</p>
+	{/if}
+</div>

@@ -21,7 +21,7 @@
 <svelte:head><title>{t('pwa.offline.title')}</title></svelte:head>
 
 <main class="mx-auto grid min-h-dvh max-w-md place-items-center px-6">
-	<EmptyState icon="offline" title={t('pwa.offline.title')} hint={t('pwa.offline.body')}>
+	<EmptyState heading icon="offline" title={t('pwa.offline.title')} hint={t('pwa.offline.body')}>
 		<Button variant="secondary" onclick={retry}>{t('pwa.offline.retry')}</Button>
 	</EmptyState>
 </main>

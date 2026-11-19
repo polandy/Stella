@@ -729,8 +729,8 @@ concert*, *the lake by bike once she is ten*. What you owe someone belongs in a 
   **Done**, **Next year** (the same day a year later), **Keep without a date**, or **Delete**.
   After that week only its card still marks it.
 - **All outings** — in the card's **⋯** menu, or in the `⌘K` / `Ctrl-K` palette — lists every
-  open idea of the household: *This month*, *Later* and *Some time*. Ideas more than about three
-  months away and not booked wait behind *Show later ones too*; done ones stay on each card. Tick
+  open idea of the household: *This month*, *Soon* and *Some time*. Ideas more than about three
+  months away and not booked wait behind *Ideas beyond three months*; done ones stay on each card. Tick
   one off right there; everything else is changed on the person's card.
 - From anywhere: `⌘K` / `Ctrl-K`, **Outing with …**, then the person's name and `Enter` opens
   the card's form. **Search everything** finds an idea by its title, note or link, done ones

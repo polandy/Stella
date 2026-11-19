@@ -251,6 +251,22 @@ describe('searchGifts', () => {
 		});
 	});
 
+	it('tells a private gift and a surprise apart in the hit', async () => {
+		db.update(schema.gift)
+			.set({ hiddenFromRecipient: 1 })
+			.where(eq(schema.gift.id, 'g-book'))
+			.run();
+		const hits = await repo.searchGifts(viewerU1, toFtsQuery('fotobuch'), 20);
+		expect(hits.find((h) => h.giftId === 'g-private')).toMatchObject({
+			visibility: 'private',
+			hiddenFromPerson: false
+		});
+		expect(hits.find((h) => h.giftId === 'g-book')).toMatchObject({
+			visibility: 'shared',
+			hiddenFromPerson: true
+		});
+	});
+
 	it('matches the note', async () => {
 		const hits = await repo.searchGifts(viewerU1, toFtsQuery('zeltlager'), 20);
 		expect(hits.map((h) => h.giftId)).toEqual(['g-book']);

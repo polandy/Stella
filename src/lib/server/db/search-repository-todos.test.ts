@@ -96,6 +96,7 @@ describe('searchTodos', () => {
 			title: 'Reifen wechseln',
 			done: false,
 			doneOn: null,
+			visibility: 'shared',
 			contactId: 'c-hans',
 			contactName: 'Hans Müller'
 		});
