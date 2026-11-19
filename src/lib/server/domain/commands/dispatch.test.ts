@@ -58,13 +58,15 @@ function fakes(handler: () => Promise<CapturedMoment> = async () => captured) {
 	let now = 1_000;
 	let applied = 0;
 	let linkBatches = 0;
+	let completeFails: Error | null = null;
 	const repo: CommandReceiptRepository = {
 		async find(id) {
 			return receipts.get(id) ?? null;
 		},
 		async claim(r) {
 			const existing = receipts.get(r.id);
-			if (existing) return existing;
+			// A copy, as a row read back from the store is.
+			if (existing) return { ...existing };
 			receipts.set(r.id, { ...r, status: 'pending', result: null });
 			return null;
 		},
@@ -75,6 +77,7 @@ function fakes(handler: () => Promise<CapturedMoment> = async () => captured) {
 			return true;
 		},
 		async complete(id, result) {
+			if (completeFails) throw completeFails;
 			const r = receipts.get(id)!;
 			r.status = 'applied';
 			r.result = result;
@@ -152,6 +155,7 @@ function fakes(handler: () => Promise<CapturedMoment> = async () => captured) {
 		receipts,
 		applied: () => applied,
 		linkBatches: () => linkBatches,
+		failComplete: (err: Error) => (completeFails = err),
 		advance: (ms: number) => (now += ms)
 	};
 }
@@ -272,6 +276,58 @@ describe('dispatchCommand', () => {
 			repeated: false
 		});
 		expect(f.applied()).toBe(1);
+	});
+});
+
+describe('dispatchCommand, when the receipt book fails', () => {
+	const pendingSince = (claimedAt: number): CommandReceipt => ({
+		id: 'cmd1',
+		memberId: 'u1',
+		householdId: 'h1',
+		type: 'moment.capture',
+		status: 'pending',
+		result: null,
+		claimedAt
+	});
+
+	it('names the command when its result cannot be kept, and keeps the claim, since the change is made', async () => {
+		const f = fakes();
+		const locked = new Error('database is locked');
+		f.failComplete(locked);
+
+		const thrown = await dispatchCommand(f.deps, actor, moment()).catch((err: unknown) => err);
+
+		expect(thrown).toBeInstanceOf(CommandFailedError);
+		expect(thrown).toMatchObject({ commandType: 'moment.capture', commandId: 'cmd1' });
+		expect((thrown as CommandFailedError).cause).toBe(locked);
+		// Released, a resend would apply it a second time at once; pending, it is busy until stale.
+		expect(f.receipts.get('cmd1')?.status).toBe('pending');
+		expect(await dispatchCommand(f.deps, actor, moment())).toEqual({ status: 'busy' });
+		expect(f.applied()).toBe(1);
+	});
+
+	it('lets one of two runs take over an abandoned claim, and tells the other it is busy', async () => {
+		const f = fakes();
+		f.receipts.set('cmd1', pendingSince(1_000));
+		f.advance(CLAIM_STALE_AFTER_MS + 1);
+
+		const outcomes = await Promise.all([
+			dispatchCommand(f.deps, actor, moment()),
+			dispatchCommand(f.deps, actor, moment())
+		]);
+
+		expect(outcomes.map((o) => o.status).sort()).toEqual(['applied', 'busy']);
+		expect(f.applied()).toBe(1);
+	});
+
+	it('says busy without applying when the takeover is lost to another run', async () => {
+		const f = fakes();
+		f.receipts.set('cmd1', pendingSince(1_000));
+		f.advance(CLAIM_STALE_AFTER_MS + 1);
+		f.deps.receipts.reclaim = async () => false;
+
+		expect(await dispatchCommand(f.deps, actor, moment())).toEqual({ status: 'busy' });
+		expect(f.applied()).toBe(0);
 	});
 });
 

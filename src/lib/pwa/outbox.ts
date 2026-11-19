@@ -1,4 +1,9 @@
-import type { CommandAnswer, CommandPayloads, JsonCommand } from '../commands/commands';
+import {
+	COMMAND_SCHEMA_VERSION,
+	type CommandAnswer,
+	type CommandPayloads,
+	type JsonCommand
+} from '../commands/commands';
 
 /*
  * The outbox (docs/dev/02 §2.18.1): what a phone holds back while Stella is
@@ -49,6 +54,11 @@ export interface KeptPhoto {
 
 /** One thing a member added while Stella could not be reached. */
 export interface OutboxItem {
+	/**
+	 * The `COMMAND_SCHEMA_VERSION` it was written in; an older one is migrated as it is read
+	 * (`outbox-schema.ts`), a newer one is kept but never sent by this build.
+	 */
+	schemaVersion: number;
 	command: JsonCommand;
 	/** Whose it is: a different member signing in on the device never sees or sends it. */
 	memberId: string;
@@ -97,6 +107,7 @@ export function queue(
 		...items,
 		{
 			...added,
+			schemaVersion: COMMAND_SCHEMA_VERSION,
 			photos: added.photos ?? [],
 			about: added.about ?? null,
 			state: 'pending',
@@ -121,7 +132,8 @@ export function isKept<T extends JsonCommand['type']>(
 
 /**
  * Take up to `max` of `memberId`'s pending items, oldest first, marking them *sending*.
- * Oldest first because a later item may name something an earlier one created.
+ * Oldest first because a later item may name something an earlier one created. An item a
+ * newer build wrote waits: this build's server half would drop the fields it does not know.
  */
 export function takeBatch(
 	items: readonly OutboxItem[],
@@ -134,7 +146,8 @@ export function takeBatch(
 			batch.length >= max ||
 			item.memberId !== memberId ||
 			item.state !== 'pending' ||
-			item.delivered
+			item.delivered ||
+			item.schemaVersion > COMMAND_SCHEMA_VERSION
 		) {
 			return item;
 		}

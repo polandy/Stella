@@ -4,7 +4,8 @@ import type { CommandDeps, CommandReceipt } from '../domain/commands/dispatch';
 import { MomentNeedsPersonError, type CapturedMoment } from '../domain/moments/moments';
 import { RelationshipsRefusedError } from '../domain/relationships/add-many';
 import { phrase } from '../../i18n/phrase';
-import { receiveQueued } from './receive';
+import { COMMAND_SCHEMA_VERSION, MAX_COMMAND_BATCH } from '../../commands/commands';
+import { readBatch, receiveQueued } from './receive';
 
 /*
  * `POST /api/commands` behind its route (docs/dev/04 §4.11.2): a phone's
@@ -242,5 +243,42 @@ describe('receiveQueued', () => {
 			{ id: ids[1], status: 'applied', result }
 		]);
 		expect(logged).toHaveLength(1); // logged here, where it happened
+	});
+});
+
+describe('readBatch', () => {
+	const commands = [moment(ids[0])];
+
+	it('reads the commands of a batch this build wrote', () => {
+		expect(readBatch({ schemaVersion: COMMAND_SCHEMA_VERSION, commands })).toEqual({
+			ok: true,
+			commands
+		});
+	});
+
+	it('reads a batch from a build before versions, whose commands have the same shape', () => {
+		expect(readBatch({ commands })).toEqual({ ok: true, commands });
+	});
+
+	it('leaves a batch from a newer build alone, so the phone keeps it rather than lose its new fields', () => {
+		expect(readBatch({ schemaVersion: COMMAND_SCHEMA_VERSION + 1, commands })).toEqual({
+			ok: false,
+			code: 'schemaAhead'
+		});
+	});
+
+	it('refuses what is not a batch', () => {
+		expect(readBatch(null)).toEqual({ ok: false, code: 'invalidBatch' });
+		expect(readBatch({ commands: 'x' })).toEqual({ ok: false, code: 'invalidBatch' });
+		expect(readBatch({ schemaVersion: '1', commands })).toEqual({
+			ok: false,
+			code: 'invalidBatch'
+		});
+		expect(
+			readBatch({ commands: Array.from({ length: MAX_COMMAND_BATCH + 1 }, () => commands[0]) })
+		).toEqual({
+			ok: false,
+			code: 'invalidBatch'
+		});
 	});
 });
