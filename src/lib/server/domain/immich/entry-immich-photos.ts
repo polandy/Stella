@@ -28,12 +28,21 @@ export interface OwnEntryImmichPhotos {
 
 /** The references a reader may see. */
 export interface EntryImmichPhotoReads {
-	/** The references on the entries among `entryIds` about the person, visible to the viewer, oldest first. */
+	/**
+	 * The references on the entries among `entryIds` about the person (about anyone when null, for a
+	 * stream), visible to the viewer, oldest first.
+	 */
 	listOfEntries(
 		viewer: Viewer,
-		contactId: string,
+		contactId: string | null,
 		entryIds: readonly string[]
 	): Promise<EntryImmichPhotoRef[]>;
+}
+
+/** Reading an entry's references, signed for the reader; `signer` is null without Immich. */
+export interface EntryImmichPhotoReadDeps {
+	reads: EntryImmichPhotoReads;
+	signer: ImmichMediaSigner | null;
 }
 
 export interface EntryImmichPhotoDeps {
@@ -64,6 +73,28 @@ export async function linkImmichPhotosToOwnEntry(
 		assetIds.push(media.assetId);
 	}
 	return (await deps.entries.linkOwn(viewer.id, input.entryId, assetIds)) ? 'linked' : 'gone';
+}
+
+/**
+ * The assets the composer's `tokens` name, read before its entry is written (ADR-132): each must be
+ * a `library` token Stella signed for the viewer's household. One past its lifetime still counts,
+ * since the outbox may send a day later; the signature is what proves Stella listed the photo.
+ */
+export async function sentImmichAssets(
+	signer: ImmichMediaSigner | null,
+	viewer: Viewer,
+	tokens: readonly string[]
+): Promise<string[] | 'notConfigured' | 'invalid'> {
+	if (!signer) return 'notConfigured';
+	const assetIds: string[] = [];
+	for (const token of tokens) {
+		const verified = await signer.verify(token);
+		if (!verified.ok && verified.reason === 'invalid') return 'invalid';
+		const { media } = verified;
+		if (media.kind !== 'library' || media.householdId !== viewer.householdId) return 'invalid';
+		assetIds.push(media.assetId);
+	}
+	return assetIds;
 }
 
 /** Take a reference off the author's own entry. Immich is not asked: the photo stays there. */
@@ -110,11 +141,14 @@ async function signedPhoto(
 	};
 }
 
-/** The person's entries among `entryIds` with the Immich photos the viewer may see on them, signed. */
+/**
+ * The person's entries among `entryIds` (anyone's when `contactId` is null) with the Immich photos
+ * the viewer may see on them, signed.
+ */
 export async function immichPhotosOfEntries(
-	deps: { reads: EntryImmichPhotoReads; signer: ImmichMediaSigner | null },
+	deps: EntryImmichPhotoReadDeps,
 	viewer: Viewer,
-	contactId: string,
+	contactId: string | null,
 	entryIds: readonly string[]
 ): Promise<Map<string, EntryImmichPhoto[]>> {
 	if (entryIds.length === 0) return new Map();

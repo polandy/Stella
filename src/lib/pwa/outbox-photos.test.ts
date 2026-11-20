@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'bun:test';
 import type { CommandAnswer, JsonCommand } from '../commands/commands';
 import { discard, hold, queue, settle, takeBatch } from './outbox';
-import { photoAnswer, settlePhoto, takePhoto } from './outbox-photos';
+import { keptPhotoCount, photoAnswer, settlePhoto, takePhoto } from './outbox-photos';
 
 /*
  * The photos kept with an outbox item (docs/dev/02 §2.18.1): sent one at a time after the item,
@@ -170,5 +170,34 @@ describe('photoAnswer', () => {
 	it('leaves any other failure waiting, since it may pass on the next try', () => {
 		expect(photoAnswer('p1', 502, null, TOO_LARGE)).toBeNull();
 		expect(photoAnswer('p1', 500, null, TOO_LARGE)).toBeNull();
+	});
+});
+
+describe('the photo count a kept item shows', () => {
+	const withImmich = (immichTokens?: string[]): JsonCommand => ({
+		id: 'm1',
+		type: 'moment.capture',
+		payload: {
+			body: 'tea',
+			entryDate: '2026-09-27',
+			visibility: 'shared',
+			newPeople: [],
+			...(immichTokens ? { immichTokens } : {})
+		},
+		issuedAt: 1
+	});
+	const kept = (command: JsonCommand, photos: number) => ({
+		command,
+		photos: Array.from({ length: photos }, (_, at) => `p${at}`),
+		delivered: false
+	});
+
+	it('counts the device’s photos and the Immich photos it refers to', () => {
+		expect(keptPhotoCount(kept(withImmich(['t-a', 't-b']), 1))).toBe(3);
+		expect(keptPhotoCount(kept(withImmich(), 2))).toBe(2);
+	});
+
+	it('counts only the device’s once Stella has the item: the references came with it', () => {
+		expect(keptPhotoCount({ ...kept(withImmich(['t-a']), 1), delivered: true })).toBe(1);
 	});
 });

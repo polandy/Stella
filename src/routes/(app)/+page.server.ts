@@ -77,7 +77,17 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 			listHomeMembers(locals.services.records.homeListDeps, viewer)
 		]);
 	const items = streamPage.items;
-	const stream = await streamForView(locals.services.people.contactNameDeps, viewer, items);
+	const stream = await streamForView(
+		{
+			names: locals.services.people.contactNameDeps,
+			immichPhotos: {
+				reads: locals.services.media.entryImmichPhotos,
+				signer: locals.services.immich?.signer ?? null
+			}
+		},
+		viewer,
+		items
+	);
 
 	const dates = upcomingDates(dateSources, day);
 	// A person coming up with open gift ideas says how many, and what is bought for them (§2.13.3),

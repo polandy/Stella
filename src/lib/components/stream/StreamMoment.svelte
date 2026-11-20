@@ -1,4 +1,5 @@
 <script lang="ts">
+	import ImmichPhotoTile from '#lib/components/immich/ImmichPhotoTile.svelte';
 	import PrivateMark from '#lib/components/ui/PrivateMark.svelte';
 	import Veil from '#lib/components/ui/Veil.svelte';
 	import StreamFace from '#lib/components/stream/StreamFace.svelte';
@@ -92,7 +93,8 @@
 	>
 		<div class="note-body text-fg">{@html item.bodyHtml}</div>
 	</Veil>
-	{#if item.photoIds.length}
+	{#if item.photoIds.length || item.immichPhotos.length}
+		{@const count = item.photoIds.length + item.immichPhotos.length}
 		<Veil
 			id="journal:{item.id}"
 			isPrivate={item.visibility === 'private'}
@@ -100,7 +102,7 @@
 			photo
 			class="mt-2 w-fit"
 		>
-			<div class="flex gap-1.5">
+			<div class="flex flex-wrap gap-1.5">
 				{#each item.photoIds as photoId, index (photoId)}
 					<a
 						href="/media/{photoId}"
@@ -110,14 +112,18 @@
 					>
 						<img
 							src="/media/{photoId}?thumb"
-							alt={t('components.photo.open', {
-								n: index + 1,
-								count: item.photoIds.length
-							})}
+							alt={t('components.photo.open', { n: index + 1, count })}
 							loading="lazy"
 							class="size-16 object-cover"
 						/>
 					</a>
+				{/each}
+				{#each item.immichPhotos as photo, index (photo.assetId)}
+					<ImmichPhotoTile
+						{photo}
+						alt={t('components.photo.open', { n: item.photoIds.length + index + 1, count })}
+						class="size-16 rounded-md border border-border"
+					/>
 				{/each}
 			</div>
 		</Veil>

@@ -60,7 +60,9 @@ they already took, which live in Immich, without leaving Stella or downloading t
   *5 photos from Immich added*; a failed copy says so and keeps the ticks.
 - **In a journal entry's editor** nothing is copied (docs/dev/04 ADR-132): *Add N photos* closes
   the sheet at once and the picks wait beside the entry's photos with a dashed frame until
-  *Save*. A referred photo Immich no longer serves is a dashed tile with the offline icon, named
+  *Save*. **In the moment composer and a journal page's new entry** the same: the sheet closes
+  at once, no toast, and the picks join the composer's photo count; a kept moment counts them
+  too. A referred photo Immich no longer serves is a dashed tile with the offline icon, named
   *Photo not available from Immich* — never a broken image.
 - **States:** skeleton tiles while loading; *Immich has no photos yet.* for an empty overview;
 *No photos from October 2026 in Immich.* for an empty month; *Immich has no albums with photos yet.*

@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'bun:test';
 import { newPersonMentionId } from '#lib/commands/commands.js';
+import type { LibraryPhoto } from '#lib/immich/library.js';
 import { handleFor } from '#lib/mentions/picker.js';
 import { composerPeople, composerReading, draftOf, pickerRows } from './composer-reading';
 import {
@@ -100,6 +101,18 @@ describe('opening', () => {
 		};
 		expect(opened({ kept }).anchorId).toBe('anna');
 		expect(opened({ kept, anchorId: 't1' }).anchorId).toBe('t1');
+	});
+
+	it('keeps a kept moment’s Immich photos, so an edit sends them still', () => {
+		const kept = {
+			body: 'tea',
+			entryDate: '2026-10-01',
+			visibility: 'shared' as const,
+			newPeople: [],
+			immichTokens: ['t-a']
+		};
+		expect(opened({ kept }).immichTokens).toEqual(['t-a']);
+		expect(opened().immichTokens).toEqual([]);
 	});
 });
 
@@ -243,25 +256,36 @@ describe('photos', () => {
 		expect(run(added, { type: 'photosPicked', files: [] }).state.photos).toEqual([]);
 	});
 
-	it('adds photos from Immich to the ones before, and a new pick from the device keeps them', () => {
-		const once = run(opened(), { type: 'immichPhotosAdded', files: [photo] }).state;
-		const twice = run(once, { type: 'immichPhotosAdded', files: [photo, photo] }).state;
-		expect(twice.immichPhotos).toHaveLength(3);
-		const picked = run(twice, { type: 'photosPicked', files: [photo] }).state;
-		expect(picked.photos).toHaveLength(1);
-		expect(picked.immichPhotos).toHaveLength(3);
+	const fromImmich = (id: string): LibraryPhoto => ({
+		id,
+		takenAt: null,
+		thumbnailUrl: `/media/immich/t-${id}`,
+		previewUrl: `/media/immich/p-${id}`
 	});
 
-	it('prepares the device’s photos and Immich’s together when the moment is saved', () => {
+	it('adds photos from Immich to the ones before, once, and a new pick from the device keeps them', () => {
+		const once = run(opened(), { type: 'immichPhotosAdded', photos: [fromImmich('a')] }).state;
+		const twice = run(once, {
+			type: 'immichPhotosAdded',
+			photos: [fromImmich('a'), fromImmich('b')]
+		}).state;
+		expect(twice.immichTokens).toEqual(['t-a', 't-b']);
+		const picked = run(twice, { type: 'photosPicked', files: [photo] }).state;
+		expect(picked.photos).toHaveLength(1);
+		expect(picked.immichTokens).toEqual(['t-a', 't-b']);
+	});
+
+	it('prepares only the device’s photos, and sends Immich’s as references (ADR-132)', () => {
 		let state = run(opened(), { type: 'photosPicked', files: [photo] }).state;
-		state = run(state, { type: 'immichPhotosAdded', files: [photo] }).state;
+		state = run(state, { type: 'immichPhotosAdded', photos: [fromImmich('a')] }).state;
 		state = run(state, typed('Saw Lena')).state;
-		const { commands } = run(state, {
+		const step = run(state, {
 			type: 'submitted',
 			entryDate: '2026-10-26',
 			editing: null
 		});
-		expect(commands).toContainEqual({ kind: 'preparePhotos', files: [photo, photo] });
+		expect(step.commands).toContainEqual({ kind: 'preparePhotos', files: [photo] });
+		expect(step.state.sending).toMatchObject({ immichTokens: ['t-a'] });
 	});
 });
 

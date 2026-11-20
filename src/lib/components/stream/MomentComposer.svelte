@@ -193,7 +193,7 @@
 	const anchorId = $derived(ui.anchorId);
 	const subjectIds = $derived(ui.subjectIds);
 	const fresh = $derived(ui.fresh);
-	const photoCount = $derived(ui.photos.length + ui.immichPhotos.length);
+	const photoCount = $derived(ui.photos.length + ui.immichTokens.length);
 	/*
 	 * *From Immich* opens on the moment's day as the day field says it now (docs/dev/02 §2.24.9).
 	 */
@@ -228,7 +228,7 @@
 	const namesakes = $derived(tellApart(audience, peopleContext()));
 	const reading = $derived(
 		composerReading(
-			{ body, picks, anchorId, sending, photos: ui.photos, immichPhotos: ui.immichPhotos },
+			{ body, picks, anchorId, sending, photos: ui.photos, immichTokens: ui.immichTokens },
 			known,
 			peopleContext(),
 			subjectsUnfit(subjectIds, visibility, candidates)
@@ -541,6 +541,6 @@
 	<ImmichLibraryPicker
 		bind:open={libraryOpen}
 		day={libraryDay}
-		onadd={(copies) => dispatch({ type: 'immichPhotosAdded', files: copies.map((c) => c.file) })}
+		onlink={(photos) => dispatch({ type: 'immichPhotosAdded', photos })}
 	/>
 {/if}

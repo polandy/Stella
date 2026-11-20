@@ -3,6 +3,8 @@ import type { LibraryPhoto } from './library';
 import {
 	LIBRARY_PICK_LIMIT,
 	libraryQueryUrl,
+	pickedTokens,
+	SENT_IMMICH_LIMIT,
 	tickNumber,
 	tickTray,
 	toggledTick
@@ -61,5 +63,29 @@ describe('what the picker asks Stella for', () => {
 		);
 		expect(libraryQueryUrl({ album: 'a1', cursor: null })).toBe('/immich/library?album=a1');
 		expect(libraryQueryUrl({ album: 'a1', cursor: 'c' })).toBe('/immich/library?album=a1&cursor=c');
+	});
+});
+
+describe('the tokens a composer sends for its picks', () => {
+	const picked = (id: string): LibraryPhoto => ({
+		id,
+		takenAt: null,
+		thumbnailUrl: `/media/immich/t-${id}`,
+		previewUrl: `/media/immich/p-${id}`
+	});
+
+	it('adds each pick’s thumbnail token after the ones before, once', () => {
+		const once = pickedTokens([], [picked('a'), picked('b')]);
+		expect(once).toEqual(['t-a', 't-b']);
+		expect(pickedTokens(once, [picked('b'), picked('c')])).toEqual(['t-a', 't-b', 't-c']);
+	});
+
+	it('stops at the most one entry may refer to', () => {
+		const many = Array.from({ length: SENT_IMMICH_LIMIT + 3 }, (_, at) => picked(`p${at}`));
+		expect(pickedTokens([], many)).toHaveLength(SENT_IMMICH_LIMIT);
+	});
+
+	it('leaves out a URL that is not the proxy’s', () => {
+		expect(pickedTokens([], [{ ...picked('a'), thumbnailUrl: 'https://elsewhere/a' }])).toEqual([]);
 	});
 });

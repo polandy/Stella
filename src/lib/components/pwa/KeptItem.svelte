@@ -3,6 +3,7 @@
 	import { useTranslate } from '#lib/i18n/context.svelte.js';
 	import type { MessageKey } from '#lib/i18n/translate.js';
 	import { recallable, type OutboxItem } from '#lib/pwa/outbox.js';
+	import { keptPhotoCount } from '#lib/pwa/outbox-photos.js';
 	import { outbox } from '#lib/pwa/outbox.svelte.js';
 	import Button from '../ui/Button.svelte';
 	import Icon from '../ui/Icon.svelte';
@@ -49,6 +50,7 @@
 	};
 	// Stuck asks the member to act, as a refusal does.
 	const refused = $derived(item.state === 'refused' || item.state === 'stuck');
+	const photoCount = $derived(keptPhotoCount(item));
 	const editable = $derived(!item.delivered && (onEdit !== undefined || editHref !== undefined));
 </script>
 
@@ -71,10 +73,9 @@
 			<b class="font-semibold {refused ? 'text-danger' : 'text-fg'}"
 				>{t((item.delivered ? DELIVERED_LABEL : LABEL)[item.state])}</b
 			>
-			{#if item.photos.length}<span
-					class="inline-flex items-center gap-1 text-[11px] text-fg-subtle"
+			{#if photoCount}<span class="inline-flex items-center gap-1 text-[11px] text-fg-subtle"
 					><Icon name="photo" size={11} />{t('home.outbox.photoCount', {
-						count: item.photos.length
+						count: photoCount
 					})}</span
 				>{/if}
 			{#if 'visibility' in item.command.payload && item.command.payload.visibility === 'private'}<span

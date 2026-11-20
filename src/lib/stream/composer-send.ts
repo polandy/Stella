@@ -41,7 +41,8 @@ function payloadOf(state: ComposerState, entryDate: string): MomentCapturePayloa
 		newPeople: [...state.newPeople],
 		...(state.anchorId ? { anchorId: state.anchorId } : {}),
 		...(state.subjectIds.length > 0 ? { subjectIds: [...state.subjectIds] } : {}),
-		...(state.planId ? { planId: state.planId } : {})
+		...(state.planId ? { planId: state.planId } : {}),
+		...(state.immichTokens.length > 0 ? { immichTokens: [...state.immichTokens] } : {})
 	};
 }
 
@@ -50,8 +51,7 @@ function submitted(state: ComposerState, entryDate: string, editing: string | nu
 	const sending = { ...state, sending: payload, error: null };
 	if (editing) return only(sending, [{ kind: 'revise', id: editing, payload }]);
 	// Processed once per save, so a save that ends up kept sends the very same photos.
-	const files = [...state.photos, ...state.immichPhotos];
-	return only(sending, [{ kind: 'preparePhotos', files }]);
+	return only(sending, [{ kind: 'preparePhotos', files: state.photos }]);
 }
 
 function answered(state: ComposerState, event: Extract<SendEvent, { type: 'answered' }>) {

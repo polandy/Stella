@@ -554,12 +554,13 @@ back, and **Time** returns to where you were in the timeline. Ticks stay ticked 
 Without the tab, the Immich key lacks `album.read` (Settings says so). Or type in the search
 — *beach*, *birthday cake* — and Immich finds matching photos across the whole library. Tap the
 ones you want; they are numbered in the order you tap them, up to 20 at a time, and a row of small thumbnails at the bottom keeps all of them in view whichever month you are in — tap one to untick it. **Add N photos**
-copies them into Stella, so they stay even if they are later deleted in Immich. A photo added to
-someone's gallery this way keeps the date Immich has for it. You need a connection for this:
+copies them into a person's or a circle's photos, so they stay even if they are later deleted in
+Immich. A photo added to someone's gallery this way keeps the date Immich has for it. You need a connection for this:
 offline, **From Immich** is greyed out.
 
-**Editing a journal entry** is the exception: photos you add there from Immich are not copied —
-the entry only points at them, so there is no second copy in Stella. If Immich is down or the
+**Moments and journal entries** are the exception: photos you add to them from Immich — writing
+a moment or an entry, or editing one — are not copied. The entry only points at them, so there
+is no second copy in Stella; a moment kept on your device while offline keeps them too. If Immich is down or the
 photo was deleted there, the entry shows *Photo not available from Immich* in its place. Taking
 such a photo off the entry with × never deletes it in Immich.
 

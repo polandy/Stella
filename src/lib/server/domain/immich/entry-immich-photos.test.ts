@@ -6,6 +6,7 @@ import { fixedClock } from '../testing';
 import {
 	immichPhotosOfEntries,
 	linkImmichPhotosToOwnEntry,
+	sentImmichAssets,
 	signEntryImmichPhotos,
 	unlinkImmichPhotoFromOwnEntry,
 	type OwnEntryImmichPhotos
@@ -113,6 +114,40 @@ describe('linkImmichPhotosToOwnEntry', () => {
 		});
 		expect(outcome).toBe('gone');
 		expect(linked).toEqual([]);
+	});
+});
+
+describe('sentImmichAssets', () => {
+	it('reads the assets the composer’s tokens name, in order', async () => {
+		const signer = signerAt();
+		const tokens = [await libraryToken(signer), await libraryToken(signer, 'h1', OTHER_ASSET)];
+		expect(await sentImmichAssets(signer, anna, tokens)).toEqual([ASSET, OTHER_ASSET]);
+	});
+
+	it('still reads a token past its lifetime: the outbox may send it a day later', async () => {
+		const token = await libraryToken(signerAt(NOW - 25 * 60 * 60 * 1000));
+		expect(await sentImmichAssets(signerAt(), anna, [token])).toEqual([ASSET]);
+	});
+
+	it('refuses a token of another household, another kind or a forged one', async () => {
+		const signer = signerAt();
+		const refused = [
+			await libraryToken(signer, 'h2'),
+			await signer.sign({ kind: 'face', contactId: 'c1', personId: ASSET }),
+			`${(await libraryToken(signer)).split('.')[0]}.forged`,
+			ASSET
+		];
+		for (const token of refused) {
+			expect(await sentImmichAssets(signer, anna, [await libraryToken(signer), token])).toBe(
+				'invalid'
+			);
+		}
+	});
+
+	it('says not configured when Immich is not on the instance', async () => {
+		expect(await sentImmichAssets(null, anna, [await libraryToken(signerAt())])).toBe(
+			'notConfigured'
+		);
 	});
 });
 

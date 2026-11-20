@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'bun:test';
 import { COMMAND_TYPES, isPhotoCommandType, isQueueable } from '../../commands/commands';
+import { SENT_IMMICH_LIMIT } from '../../immich/library-pick';
 import { OUTBOX_FIXTURES } from '../../pwa/fixtures/outbox-fixtures';
 import { migrateOutbox } from '../../pwa/outbox-schema';
 import { parseCommand, parsePhotoCommand, readCommand } from './parse';
@@ -54,6 +55,11 @@ describe('parseCommand', () => {
 		expect(
 			parseCommand({ ...good, payload: { ...good.payload, subjectIds: ['sandra', ''] } })
 		).toBeNull();
+	});
+
+	it('reads the Immich photos a moment refers to (ADR-132)', () => {
+		const parsed = parseCommand({ ...good, payload: { ...good.payload, immichTokens: ['a.b'] } });
+		expect(parsed?.payload).toMatchObject({ immichTokens: ['a.b'] });
 	});
 
 	it('defaults a moment to shared and to nobody new, as the form does', () => {
@@ -336,6 +342,14 @@ describe('parseCommand, for a journal-page entry', () => {
 		expect(
 			parseCommand({ ...entry, payload: { ...entry.payload, title: '  ' } })?.payload
 		).toMatchObject({ title: null });
+	});
+
+	it('reads the Immich photos it refers to, and refuses an empty token or too many (ADR-132)', () => {
+		const tokens = (immichTokens: string[]) =>
+			parseCommand({ ...entry, payload: { ...entry.payload, immichTokens } });
+		expect(tokens(['a.b'])?.payload).toMatchObject({ immichTokens: ['a.b'] });
+		expect(tokens([''])).toBeNull();
+		expect(tokens(Array.from({ length: SENT_IMMICH_LIMIT + 1 }, () => 'a.b'))).toBeNull();
 	});
 
 	it('refuses an empty entry, or one on no day', () => {
