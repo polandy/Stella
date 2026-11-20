@@ -55,7 +55,7 @@ the person, and that never leaves the page. Keeping the record tidy (archive, me
     a quiet *· around 1992* for an estimated year, *Born · around 1940* once they have died);
   - **every other date** as a fact of its own with the years since (*Hochzeitstag · 13 June
     2009 · 17 years*);
-  - the addresses among the contact details, one line each, and each shared home's line with
+  - the addresses among the contact details, one line each, each with a quiet *Map* link (OpenStreetMap, new tab), and each shared home's line with
     *lives with …* under it in the small muted type, every name a link;
   - the job's short form;
   - the last contact, **only when there is one**; it follows the Activity card and is read

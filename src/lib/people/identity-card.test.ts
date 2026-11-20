@@ -5,6 +5,7 @@ import {
 	datesEditorPath,
 	addMoreLabel,
 	addressLines,
+	mapHref,
 	ageOn,
 	birthdayFact,
 	identityLayout,
@@ -300,6 +301,12 @@ describe('addressLines', () => {
 			{ id: 'a', label: 'Home', line: 'Thunstrasse 12, 3074 Muri bei Bern' },
 			{ id: 'b', label: null, line: 'Elsewhere' }
 		]);
+	});
+
+	it('links each line to an OpenStreetMap search', () => {
+		expect(mapHref('Thunstrasse 12, 3074 Muri bei Bern')).toBe(
+			'https://www.openstreetmap.org/search?query=Thunstrasse%2012%2C%203074%20Muri%20bei%20Bern'
+		);
 	});
 
 	it('is empty without one', () => {

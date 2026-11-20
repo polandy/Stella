@@ -10,6 +10,7 @@
 	import { hasMessage } from '#lib/i18n/translate.js';
 	import type { BirthdayFact, IdentityFact } from '#lib/people/identity-card.js';
 	import { oneLine } from '#lib/people/home.js';
+	import { mapHref } from '#lib/people/identity-card.js';
 	import type { KeptOf } from '#lib/pwa/outbox.js';
 	import AddressEditor from './AddressEditor.svelte';
 	import CirclesFact from './CirclesFact.svelte';
@@ -171,11 +172,25 @@
 					key="address"
 				/>
 			{:else}
+				{#snippet mapLink(line: string)}
+					<a
+						href={mapHref(line)}
+						target="_blank"
+						rel="noreferrer noopener"
+						class="ml-2 text-xs text-link hover:underline"
+						data-map-link
+						aria-label={t('contact.facts.mapOf', { address: line })}>{t('contact.facts.map')}</a
+					>
+				{/snippet}
 				{#snippet addressValue()}
 					<!-- Lines broken inline rather than as blocks, so the pencil can follow the last. -->
 					{#each addresses as address, i (address.id)}{#if i > 0}<br
-							/>{/if}{address.line}{/each}{#each homes as home, i (home.id)}{#if i > 0 || addresses.length > 0}<br
-							/>{/if}<span data-home={home.id}>{oneLine(home.value)}</span>{/each}
+							/>{/if}{address.line}{@render mapLink(
+							address.line
+						)}{/each}{#each homes as home, i (home.id)}{#if i > 0 || addresses.length > 0}<br
+							/>{/if}<span data-home={home.id}>{oneLine(home.value)}</span>{@render mapLink(
+							oneLine(home.value)
+						)}{/each}
 				{/snippet}
 				{#snippet livesWith()}
 					{#each sharedHomes as home (home.id)}
