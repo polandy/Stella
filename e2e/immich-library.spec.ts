@@ -3,8 +3,9 @@ import { addPerson, appReady, signIn } from './app';
 
 /*
  * Photos from the whole Immich library wherever a photo can be added (docs/dev/02 §2.24.9): the
- * photo menu of a moment and of a journal entry, *or From Immich* beside a person's and a
- * circle's gallery, the sheet's day arrows, ticks and smart search. Written after the owner
+ * photo menu of a moment and of a journal entry, which refer to the picks (ADR-132) and show them
+ * on Home too (§2.22), *or From Immich* beside a person's and a circle's gallery, which copy, the
+ * sheet's day arrows, ticks and smart search. Written after the owner
  * tried #407 in the preview (docs/dev/08 §8.4.1). Offline, *From Immich* is greyed out; that needs
  * the service worker's reachability, so it is a case of `pwa-offline.spec.ts`.
  *
@@ -13,7 +14,7 @@ import { addPerson, appReady, signIn } from './app';
  * which is later, so *An earlier day with photos* lands on that day whenever the suite runs.
  * Its smart search finds a person's own photos by a word of their name, and nothing else.
  *
- * Each case adds the people and circle it saves to, invented here and in no seed: copies land
+ * Each case adds the people and circle it saves to, invented here and in no seed: its photos land
  * on nobody another spec counts.
  */
 
@@ -98,6 +99,14 @@ test('a moment takes photos from Immich through the photo menu, ticked in order'
 		.filter({ hasText: 'a picnic by the lake, photos from Immich' });
 	// A reference, not a copy (ADR-132): the photos show through the Immich proxy.
 	await expect(saved.locator('img[src^="/media/immich/"]')).toHaveCount(2);
+
+	await page.goto('/');
+	await appReady(page);
+	const onHome = page
+		.getByTestId('stream')
+		.locator('article')
+		.filter({ hasText: 'a picnic by the lake, photos from Immich' });
+	await expect(onHome.locator('img[src^="/media/immich/"]')).toHaveCount(2);
 });
 
 test('the sheet searches the whole library, says when nothing matches, and goes back to the day', async ({
