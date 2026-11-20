@@ -26,6 +26,7 @@ import {
 } from './plan-payloads';
 import {
 	CommandIdSchema,
+	immichTokens,
 	ISO_DAY,
 	nonEmpty,
 	optionalText,
@@ -89,7 +90,8 @@ export const MomentCaptureSchema = v.object({
 	 */
 	subjectIds: v.optional(v.array(nonEmpty)),
 	/** The outing idea the moment tells of (docs/dev/02 §2.27.8): it links to it once saved. */
-	planId: v.optional(nonEmpty)
+	planId: v.optional(nonEmpty),
+	immichTokens
 });
 
 /** A note on a person (docs/dev/02 §2.5), as the person page's note form hands it over. */
@@ -121,7 +123,8 @@ export const JournalWriteSchema = v.object({
 	title: optionalText,
 	/** Markdown with typed `@Handle`s and/or canonical mention tokens. */
 	body: requiredText,
-	visibility
+	visibility,
+	immichTokens
 });
 
 /**

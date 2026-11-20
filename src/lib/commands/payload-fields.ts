@@ -1,4 +1,5 @@
 import * as v from 'valibot';
+import { SENT_IMMICH_LIMIT } from '../immich/library-pick';
 
 /*
  * The fields every command payload is built from (docs/dev/04 §4.11.2): ids, days, visibility and
@@ -30,4 +31,9 @@ export const optionalText = v.optional(
 		)
 	),
 	null
+);
+
+/** Immich photos a new entry refers to, as the picker's signed tokens (docs/dev/04 ADR-132). */
+export const immichTokens = v.optional(
+	v.pipe(v.array(v.pipe(v.string(), v.minLength(1))), v.maxLength(SENT_IMMICH_LIMIT))
 );

@@ -66,6 +66,28 @@ export async function linkImmichPhotosToOwnEntry(
 	return (await deps.entries.linkOwn(viewer.id, input.entryId, assetIds)) ? 'linked' : 'gone';
 }
 
+/**
+ * The assets the composer's `tokens` name, read before its entry is written (ADR-132): each must be
+ * a `library` token Stella signed for the viewer's household. One past its lifetime still counts,
+ * since the outbox may send a day later; the signature is what proves Stella listed the photo.
+ */
+export async function sentImmichAssets(
+	signer: ImmichMediaSigner | null,
+	viewer: Viewer,
+	tokens: readonly string[]
+): Promise<string[] | 'notConfigured' | 'invalid'> {
+	if (!signer) return 'notConfigured';
+	const assetIds: string[] = [];
+	for (const token of tokens) {
+		const verified = await signer.verify(token);
+		if (!verified.ok && verified.reason === 'invalid') return 'invalid';
+		const { media } = verified;
+		if (media.kind !== 'library' || media.householdId !== viewer.householdId) return 'invalid';
+		assetIds.push(media.assetId);
+	}
+	return assetIds;
+}
+
 /** Take a reference off the author's own entry. Immich is not asked: the photo stays there. */
 export function unlinkImmichPhotoFromOwnEntry(
 	deps: Pick<EntryImmichPhotoDeps, 'entries'>,

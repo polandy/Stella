@@ -5,9 +5,25 @@
  */
 
 import type { LibraryPhoto } from './library';
+import { immichMediaToken } from './media-url';
 
 /** The most photos one pick copies: each is fetched and re-encoded in the browser, one by one. */
 export const LIBRARY_PICK_LIMIT = 20;
+
+/** The most Immich photos a new entry refers to from the composer: bounds what one command carries. */
+export const SENT_IMMICH_LIMIT = 60;
+
+/**
+ * The tokens a composer sends for its Immich picks (docs/dev/04 ADR-132): each pick's thumbnail
+ * token after the ones before, once, up to `SENT_IMMICH_LIMIT`.
+ */
+export function pickedTokens(
+	tokens: readonly string[],
+	picks: readonly LibraryPhoto[]
+): readonly string[] {
+	const added = picks.flatMap((pick) => immichMediaToken(pick.thumbnailUrl) ?? []);
+	return [...new Set([...tokens, ...added])].slice(0, SENT_IMMICH_LIMIT);
+}
 
 /** The ticks after a tap on `id`: unticked when it was ticked, else ticked last while there is room. */
 export function toggledTick(ticked: readonly string[], id: string): readonly string[] {

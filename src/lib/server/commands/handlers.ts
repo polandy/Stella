@@ -12,6 +12,7 @@ import {
 	attachMomentPhoto,
 	type EntryOwnership
 } from '../domain/commands/photos';
+import { writeReferringToImmich } from '../domain/commands/immich-references';
 import { addContactField } from '../domain/contact-fields/contact-fields';
 import { addPerson } from '../domain/contacts/add-person';
 import { onVisibleContact } from '../domain/contacts/require-visible';
@@ -69,6 +70,7 @@ export type HandlerContexts = Pick<
 	| 'gifts'
 	| 'todos'
 	| 'plans'
+	| 'immich'
 >;
 
 /** The offline context's own repositories a photo reads to find what it follows. */
@@ -93,7 +95,8 @@ export function createCommandHandlers(
 		records,
 		gifts,
 		todos,
-		plans
+		plans,
+		immich
 	}: HandlerContexts,
 	{ receipts, entries }: HandlerRepositories
 ): CommandHandlers {
@@ -101,21 +104,28 @@ export function createCommandHandlers(
 	const { captureMomentDeps, interactionDeps, journalDeps } = story;
 	const { contactFieldDeps, importantDateDeps, tagDeps } = records;
 	const relationshipDeps = { ...relationships.relationshipDeps, contacts };
+	const immichPhotoDeps = immich?.entryImmichPhotoDeps ?? null;
 	return {
 		// A moment carries its own visibility, so it is also the author's default for anyone
 		// the moment creates inline — and what a photo sent after it inherits.
 		'moment.capture': async (actor, payload) => {
-			const captured = await withNamesakeContext(namesakeContextDeps, viewerOf(actor), () =>
-				captureMoment(
-					captureMomentDeps,
-					{
-						userId: actor.userId,
-						householdId: actor.householdId,
-						locale: actor.locale,
-						defaultVisibility: payload.visibility
-					},
-					payload
-				)
+			const captured = await writeReferringToImmich(
+				immichPhotoDeps,
+				viewerOf(actor),
+				payload.immichTokens,
+				() =>
+					withNamesakeContext(namesakeContextDeps, viewerOf(actor), () =>
+						captureMoment(
+							captureMomentDeps,
+							{
+								userId: actor.userId,
+								householdId: actor.householdId,
+								locale: actor.locale,
+								defaultVisibility: payload.visibility
+							},
+							payload
+						)
+					)
 			);
 			// A moment written for a done outing idea (§2.27.8) links to it on its person.
 			if (payload.planId)
@@ -193,8 +203,10 @@ export function createCommandHandlers(
 		'moment.photo': (actor, payload) =>
 			attachMomentPhoto({ receipts, entries, photos: media.journalPhotoDeps }, actor, payload),
 		'journal.write': (actor, payload) =>
-			withNamesakeContext(namesakeContextDeps, viewerOf(actor), () =>
-				writeJournalEntry({ ...journalDeps, contacts, directory }, actor, payload)
+			writeReferringToImmich(immichPhotoDeps, viewerOf(actor), payload.immichTokens, () =>
+				withNamesakeContext(namesakeContextDeps, viewerOf(actor), () =>
+					writeJournalEntry({ ...journalDeps, contacts, directory }, actor, payload)
+				)
 			),
 		'field.add': onVisibleContact(contacts, async (_actor, payload) => ({
 			fieldId: await addContactField(contactFieldDeps, payload)

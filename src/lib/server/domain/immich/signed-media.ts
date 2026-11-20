@@ -83,8 +83,11 @@ export interface ImmichCompanion {
 /** What a token names, and until when it does. */
 export type SignedImmichMedia = SignableImmichMedia & { expiresAt: number };
 
+/** An expired token still says what it was signed for: a reference outlives the page (ADR-132). */
 export type VerifiedImmichMedia =
-	{ ok: true; media: SignedImmichMedia } | { ok: false; reason: 'invalid' | 'expired' };
+	| { ok: true; media: SignedImmichMedia }
+	| { ok: false; reason: 'invalid' }
+	| { ok: false; reason: 'expired'; media: SignedImmichMedia };
 
 export interface ImmichMediaSigner {
 	/** A token for `media`, valid for `IMMICH_MEDIA_TTL_MS` from now. */
@@ -245,7 +248,7 @@ export function createImmichMediaSigner({
 			if (!genuine) return invalid;
 			const media = readPayload(payload);
 			if (!media) return invalid;
-			if (clock.now() >= media.expiresAt) return { ok: false, reason: 'expired' };
+			if (clock.now() >= media.expiresAt) return { ok: false, reason: 'expired', media };
 			return { ok: true, media };
 		}
 	};

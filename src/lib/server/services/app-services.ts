@@ -159,7 +159,8 @@ export function createServices(wiring: ServicesWiring): AppServices {
 			records,
 			gifts,
 			todos,
-			plans
+			plans,
+			immich
 		}
 	});
 	return {

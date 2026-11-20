@@ -181,7 +181,11 @@ describe('createImmichMediaSigner', () => {
 		clock.advance(IMMICH_MEDIA_TTL_MS - 1);
 		expect((await signer.verify(token)).ok).toBe(true);
 		clock.advance(1);
-		expect(await signer.verify(token)).toEqual({ ok: false, reason: 'expired' });
+		expect(await signer.verify(token)).toEqual({
+			ok: false,
+			reason: 'expired',
+			media: { ...photo, expiresAt: 1_700_000_000_000 + IMMICH_MEDIA_TTL_MS }
+		});
 	});
 
 	it('refuses a token whose content was changed, even into a well-formed one', async () => {
