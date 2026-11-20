@@ -129,7 +129,9 @@ export async function seedHousehold(
 	/** Gift ideas, by full name, likewise the setting of a case. */
 	gifts: Readonly<Record<string, readonly SeedGift[]>> = {},
 	/** Outing ideas, by full name, likewise the setting of a case. */
-	plans: Readonly<Record<string, readonly SeedPlan[]>> = {}
+	plans: Readonly<Record<string, readonly SeedPlan[]>> = {},
+	/** Who is private, by full name: the signed-in account's own, unseen by the other member. */
+	privatePeople: readonly string[] = []
 ): Promise<void> {
 	const document = {
 		format: ARCHIVE_FORMAT,
@@ -144,6 +146,7 @@ export async function seedHousehold(
 				last_name: rest.join(' '),
 				gender: genders[name] ?? null,
 				deceased: deceased.includes(name) ? true : null,
+				visibility: privatePeople.includes(name) ? 'private' : 'shared',
 				birth_date: births[name] ?? null,
 				...(/^\d{4}$/.test(births[name] ?? '') && { birth_date_precision: 'age' }),
 				job_title: jobs[name]?.title ?? null,
