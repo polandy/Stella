@@ -240,13 +240,19 @@ reading inside the element that owns the claim. Without that pair a case passes 
 its own inverse and says nothing, which is how one came to be withdrawn.
 `e2e/tags.spec.ts` is the worked example.
 
-A second, tiny server runs beside the app: `e2e/release-feed-stub.ts`, the stand-in for
+Two tiny servers run beside the app. The first is `e2e/release-feed-stub.ts`, the stand-in for
 GitHub's `releases/latest` that the About card reads (`UPDATE_CHECK=true` plus
 `UPDATE_FEED_URL` in the `e2e:server` script). It exists so the card has a fixed release to
-render instead of whatever is published today, and so the suite needs no network. Both
-servers are declared in `playwright.config.ts`, so CI starts them itself; `run.sh` starts
-them on the host, because the container has no Bun. One server means one release state per
+render instead of whatever is published today, and so the suite needs no network. The app and
+both stubs are declared in `playwright.config.ts`, so CI starts them itself; `run.sh` starts
+them on the host, because the container has no Bun. One feed means one release state per
 run — the card's *current*, *unreachable* and *off* branches stay unit-covered only.
+
+The second stands in for the identity provider: `e2e/oidc-stub.ts` serves discovery, an authorize
+page that links one entry per identity in `e2e/oidc.ts`, the token endpoint (client secret and
+PKCE checked) and the JWKS of a key made fresh on each start. The `e2e:server` script turns SSO
+on against it beside the local sign-in, so the SSO sign-in (docs/dev/02 §2.1.2) runs end to end
+in `e2e/sso.spec.ts`; the branches with SSO off stay unit-covered only.
 
 ### 8.4.1 Feature delivery loop (implement → verify → e2e)
 

@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test';
+import { STUB_ISSUER } from './oidc';
 
 /*
  * The security baseline a browser actually receives (docs/dev/04 §4.7): the page's
@@ -19,8 +20,8 @@ test('a page runs only scripts carrying its own nonce, and forms post only home'
 	expect(nonce, csp).toBeTruthy();
 	expect(csp).toContain("frame-ancestors 'none'");
 	expect(csp).toContain("object-src 'none'");
-	// The demo instance runs without SSO, so sign-out hands over to no identity provider.
-	expect(csp).toMatch(/form-action 'self'$/);
+	// Sign-out may hand over to the suite's identity provider (`oidc-stub.ts`), and to nowhere else.
+	expect(csp.endsWith(`form-action 'self' ${STUB_ISSUER}`), csp).toBe(true);
 
 	// Every inline script on the page is the one the policy lets run.
 	const scripts = page.locator('script:not([src])');

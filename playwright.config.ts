@@ -15,6 +15,9 @@ const BASE_URL = `http://127.0.0.1:${PORT}`;
 // answer to render (`e2e/release-feed-stub.ts`).
 const FEED_PORT = Number(process.env.E2E_FEED_PORT ?? 4174);
 
+// The identity provider the SSO sign-in goes through (`e2e/oidc-stub.ts`).
+const OIDC_PORT = Number(process.env.E2E_OIDC_PORT ?? 4175);
+
 /** The one spec that belongs to the `setup` project and to no other. */
 const SETUP_SPEC = /auth\.setup\.ts$/;
 
@@ -113,6 +116,13 @@ export default defineConfig({
 			command: 'bun e2e/release-feed-stub.ts',
 			url: `http://127.0.0.1:${FEED_PORT}/latest`,
 			env: { PORT: String(FEED_PORT) },
+			timeout: 30_000,
+			reuseExistingServer: true
+		},
+		{
+			command: 'bun e2e/oidc-stub.ts',
+			url: `http://127.0.0.1:${OIDC_PORT}/.well-known/openid-configuration`,
+			env: { PORT: String(OIDC_PORT) },
 			timeout: 30_000,
 			reuseExistingServer: true
 		}
