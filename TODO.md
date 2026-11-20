@@ -8,15 +8,6 @@ Open implementation work, in order. A finished item is deleted in the PR that fi
 TypeScript 6, and TypeScript 7 (the native compiler) has no `ts.sys`, which Kit's sync reads.
 Move once Kit supports it, and drop the ignore.
 
-## Photos in a diary entry (owner request 2026-11-13)
-
-Step 1 (adding and removing own photos while editing a moment) is built. Left:
-
-- **Immich photos as a reference in the composer.** The moment editor already refers to Immich
-  photos instead of copying them (ADR-132); the composer, which writes through the offline
-  outbox, still copies. Make its *From Immich* a reference too, the outbox carrying the signed
-  tokens.
-
 ## e2e gaps (analysis 2026-11-15)
 
 Each is one PR; the owner OKs the behaviour first (`docs/dev/08` §8.4.1).
