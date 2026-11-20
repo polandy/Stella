@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'bun:test';
-import { createTranslator } from '$lib/i18n/translate';
-import { sameAddressKey } from '$lib/people/same-address-check';
-import type { HomeChange } from '$lib/server/domain/homes/homes';
-import type { SameAddressDeps } from '$lib/server/domain/homes/same-address';
-import { fixedClock, sequentialIds } from '$lib/server/domain/testing';
-import { answerOf, formOf, routeEvent, type FakeServices } from '$lib/server/testing';
+import { createTranslator } from '#lib/i18n/translate.js';
+import { sameAddressKey } from '#lib/people/same-address-check.js';
+import type { HomeChange } from '#lib/server/domain/homes/homes.js';
+import type { SameAddressDeps } from '#lib/server/domain/homes/same-address.js';
+import { fixedClock, sequentialIds } from '#lib/server/domain/testing/index.js';
+import { answerOf, formOf, routeEvent, type FakeServices } from '#lib/server/testing/index.js';
 import { actions, load } from './+page.server';
 
 /*

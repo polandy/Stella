@@ -1,5 +1,5 @@
-import { isKept, type KeptOf } from '$lib/pwa/outbox';
-import { outbox } from '$lib/pwa/outbox.svelte';
+import { isKept, type KeptOf } from '#lib/pwa/outbox.js';
+import { outbox } from '#lib/pwa/outbox.svelte.js';
 
 /*
  * The browser side of a tick kept on the device while Stella was out of reach (docs/dev/02 §2.18):

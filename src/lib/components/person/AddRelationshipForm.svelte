@@ -1,18 +1,18 @@
 <script lang="ts">
-	import Button from '$lib/components/ui/Button.svelte';
-	import PersonSearchSelect from '$lib/components/people/PersonSearchSelect.svelte';
-	import { enhance } from '$app/forms';
+	import Button from '#lib/components/ui/Button.svelte';
+	import PersonSearchSelect from '#lib/components/people/PersonSearchSelect.svelte';
+	import { enhance } from '#lib/forms/enhance.js';
 	import { goto } from '$app/navigation';
-	import { proposeHref } from '$lib/people/propose';
-	import { useTranslate } from '$lib/i18n/context.svelte';
-	import type { SelectablePerson } from '$lib/people/select';
-	import { keepable } from '$lib/pwa/keepable';
+	import { proposeHref } from '#lib/people/propose.js';
+	import { useTranslate } from '#lib/i18n/context.svelte.js';
+	import type { SelectablePerson } from '#lib/people/select.js';
+	import { keepable } from '#lib/pwa/keepable.js';
 	import {
 		exclusionLabel,
 		relationshipStatusLabel,
 		relationshipTypeLabel,
 		towardsSubject
-	} from '$lib/relationships/labels';
+	} from '#lib/relationships/labels.js';
 	import {
 		capState,
 		chipRefusals,
@@ -24,17 +24,17 @@
 		sharedSince,
 		sincePerPair,
 		type ServerRefusal
-	} from '$lib/relationships/multi-pick';
-	import { addRelationshipCommand } from '$lib/relationships/add-command';
-	import { livesAtOffer } from '$lib/relationships/lives-at';
-	import { firstPickable } from '$lib/relationships/picker-groups';
-	import { sinceDateFromBirth } from '$lib/relationships/since';
-	import { PARENT_CHILD_TYPE_KEY, PARTNER_TYPE_KEYS } from '$lib/relationships/type-keys';
-	import { CURRENT_RELATIONSHIP_STATUS, RELATIONSHIP_STATUSES } from '$lib/relationships/status';
-	import { usePending } from '$lib/sync/context.svelte';
-	import { trackPending } from '$lib/sync/pending';
-	import { useRemovals } from '$lib/undo/context.svelte';
-	import { savedEnhance } from '$lib/undo/saved';
+	} from '#lib/relationships/multi-pick.js';
+	import { addRelationshipCommand } from '#lib/relationships/add-command.js';
+	import { livesAtOffer } from '#lib/relationships/lives-at.js';
+	import { firstPickable } from '#lib/relationships/picker-groups.js';
+	import { sinceDateFromBirth } from '#lib/relationships/since.js';
+	import { PARENT_CHILD_TYPE_KEY, PARTNER_TYPE_KEYS } from '#lib/relationships/type-keys.js';
+	import { CURRENT_RELATIONSHIP_STATUS, RELATIONSHIP_STATUSES } from '#lib/relationships/status.js';
+	import { usePending } from '#lib/sync/context.svelte.js';
+	import { trackPending } from '#lib/sync/pending.js';
+	import { useRemovals } from '#lib/undo/context.svelte.js';
+	import { savedEnhance } from '#lib/undo/saved.js';
 	import { INPUT } from '../ui/inputs';
 	import LivesAtOffer from './LivesAtOffer.svelte';
 	import { postLivesAt } from './lives-at-post';
@@ -157,19 +157,16 @@
 								c.id,
 								command.payload.links.map((link) => link.targetId)
 							),
-							{ noScroll: true, keepFocus: true }
+							{ reset: false }
 						);
 					} else {
 						removals.notify(t('components.saved'));
 						closeRelate();
 						if (command.type === 'relationship.add') {
 							// Back on the card naming the new pair, so what it implies is offered (§2.4.1).
-							// keepFocus: the closed form hands focus back to its button (Section), and a
+							// reset: false — the closed form hands focus back to its button (Section), and a
 							// navigation's own focus reset would drop it on the page again.
-							await goto(proposeHref(c.id, [command.payload.targetId]), {
-								noScroll: true,
-								keepFocus: true
-							});
+							await goto(proposeHref(c.id, [command.payload.targetId]), { reset: false });
 						}
 					}
 					if (moveInFailed) removals.notify(t('contact.relationships.livesAtFailed'));

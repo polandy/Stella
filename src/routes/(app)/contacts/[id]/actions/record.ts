@@ -1,12 +1,20 @@
 import { error, fail, redirect } from '@sveltejs/kit';
 import * as v from 'valibot';
-import { requireAdmin, requireRemover, requireUser, requireViewer } from '$lib/server/auth/guards';
-import { archiveContact, restoreContact } from '$lib/server/domain/contacts/contacts';
-import { MergeWouldHideRecordsError } from '$lib/server/domain/contacts/merge-plan';
-import { deleteContact, mergeContacts } from '$lib/server/domain/contacts/remove-contact';
-import { pruneOrphanTags } from '$lib/server/domain/tags/tags';
-import { setSelfContact, UnknownSelfContactError } from '$lib/server/domain/household/self-contact';
-import { say, translator } from '$lib/server/i18n/say';
+import {
+	requireAdmin,
+	requireRemover,
+	requireUser,
+	requireViewer
+} from '#lib/server/auth/guards.js';
+import { archiveContact, restoreContact } from '#lib/server/domain/contacts/contacts.js';
+import { MergeWouldHideRecordsError } from '#lib/server/domain/contacts/merge-plan.js';
+import { deleteContact, mergeContacts } from '#lib/server/domain/contacts/remove-contact.js';
+import { pruneOrphanTags } from '#lib/server/domain/tags/tags.js';
+import {
+	setSelfContact,
+	UnknownSelfContactError
+} from '#lib/server/domain/household/self-contact.js';
+import { say, translator } from '#lib/server/i18n/say.js';
 import type { Actions } from '../$types';
 
 /** The record itself, from the foot of the profile card (docs/dev/02 §2.2, §2.1.3). */

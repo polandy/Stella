@@ -1,4 +1,4 @@
-import { groupShortcuts, type GroupShortcut } from '$lib/gifts/group-form';
+import { groupShortcuts, type GroupShortcut } from '#lib/gifts/group-form.js';
 import type { Viewer } from '../../access/visibility';
 import type { CircleMembershipReads } from '../circles/memberships';
 import type { HomeReads } from '../homes/homes';

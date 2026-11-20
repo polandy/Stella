@@ -1,9 +1,9 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
-	import { useTranslate } from '$lib/i18n/context.svelte';
-	import type { MessageKey } from '$lib/i18n/translate';
-	import { recallable, type OutboxItem } from '$lib/pwa/outbox';
-	import { outbox } from '$lib/pwa/outbox.svelte';
+	import { useTranslate } from '#lib/i18n/context.svelte.js';
+	import type { MessageKey } from '#lib/i18n/translate.js';
+	import { recallable, type OutboxItem } from '#lib/pwa/outbox.js';
+	import { outbox } from '#lib/pwa/outbox.svelte.js';
 	import Button from '../ui/Button.svelte';
 	import Icon from '../ui/Icon.svelte';
 

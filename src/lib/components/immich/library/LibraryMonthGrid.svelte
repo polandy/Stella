@@ -5,13 +5,13 @@
   by *Show more photos*.
 -->
 <script lang="ts">
-	import Button from '$lib/components/ui/Button.svelte';
-	import Icon from '$lib/components/ui/Icon.svelte';
-	import { nearEnd } from '$lib/components/ui/near-end';
-	import { useI18n } from '$lib/i18n/context.svelte';
-	import type { LibraryPhoto } from '$lib/immich/library';
-	import { dayHeading, longDay } from '$lib/immich/library-labels';
-	import type { LibraryDayGroup } from '$lib/immich/library-nav';
+	import Button from '#lib/components/ui/Button.svelte';
+	import Icon from '#lib/components/ui/Icon.svelte';
+	import { nearEnd } from '#lib/components/ui/near-end.js';
+	import { useI18n } from '#lib/i18n/context.svelte.js';
+	import type { LibraryPhoto } from '#lib/immich/library.js';
+	import { dayHeading, longDay } from '#lib/immich/library-labels.js';
+	import type { LibraryDayGroup } from '#lib/immich/library-nav.js';
 	import LibraryPhotos from './LibraryPhotos.svelte';
 
 	interface Props {

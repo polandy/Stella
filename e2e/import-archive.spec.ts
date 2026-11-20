@@ -19,7 +19,9 @@ const PIXEL = readFileSync('e2e/fixtures/monica-photos/photos/ottilie-avatar.png
 
 /** The archive as the export hands it out, fetched with the signed-in session. */
 async function takeArchive(page: Page): Promise<Buffer> {
-	const response = await page.request.post('/settings/export');
+	// The Origin a browser's form submission carries; SvelteKit 3 refuses a bodyless POST without it.
+	const origin = new URL(page.url()).origin;
+	const response = await page.request.post('/settings/export', { headers: { origin } });
 	expect(response.status()).toBe(200);
 	const bytes = Buffer.from(await response.body());
 	// A tar of a demo household is never this small; a 0-byte "archive" would make every

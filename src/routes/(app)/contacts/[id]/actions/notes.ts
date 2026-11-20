@@ -1,17 +1,17 @@
-import { dispatchCommand } from '$lib/server/domain/commands/dispatch';
-import { readCommand } from '$lib/server/commands/parse';
-import { fromFormData } from '$lib/commands/form-data';
-import { NoteAddSchema } from '$lib/commands/payloads';
-import { ulidGenerator } from '$lib/server/id';
-import { systemClock } from '$lib/server/clock';
+import { dispatchCommand } from '#lib/server/domain/commands/dispatch.js';
+import { readCommand } from '#lib/server/commands/parse.js';
+import { fromFormData } from '#lib/commands/form-data.js';
+import { NoteAddSchema } from '#lib/commands/payloads.js';
+import { ulidGenerator } from '#lib/server/id.js';
+import { systemClock } from '#lib/server/clock.js';
 import { error, fail, redirect } from '@sveltejs/kit';
-import { requireRemover, requireViewer } from '$lib/server/auth/guards';
-import { getContact } from '$lib/server/domain/contacts/contacts';
-import { TranslatableError } from '$lib/i18n/translatable';
-import { withNamesakeContext } from '$lib/server/domain/mentions/namesake-context';
-import { editNote } from '$lib/server/domain/notes/edit-note';
-import { removeNote } from '$lib/server/domain/notes/remove-note';
-import { say, translator } from '$lib/server/i18n/say';
+import { requireRemover, requireViewer } from '#lib/server/auth/guards.js';
+import { getContact } from '#lib/server/domain/contacts/contacts.js';
+import { TranslatableError } from '#lib/i18n/translatable.js';
+import { withNamesakeContext } from '#lib/server/domain/mentions/namesake-context.js';
+import { editNote } from '#lib/server/domain/notes/edit-note.js';
+import { removeNote } from '#lib/server/domain/notes/remove-note.js';
+import { say, translator } from '#lib/server/i18n/say.js';
 import type { Actions } from '../$types';
 
 /** The notes card (docs/dev/02 §2.5). */

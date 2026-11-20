@@ -1,12 +1,12 @@
 <script lang="ts">
-	import Button from '$lib/components/ui/Button.svelte';
-	import Icon from '$lib/components/ui/Icon.svelte';
-	import TagChip from '$lib/components/journal/TagChip.svelte';
-	import { TAGS_PAGE } from '$lib/hashtags/hashtags';
-	import type { KnownTag } from '$lib/hashtags/picker';
-	import type { TagsNarrowing } from '$lib/hashtags/tag-pages';
-	import { useI18n } from '$lib/i18n/context.svelte';
-	import type { MessageKey } from '$lib/i18n/translate';
+	import Button from '#lib/components/ui/Button.svelte';
+	import Icon from '#lib/components/ui/Icon.svelte';
+	import TagChip from '#lib/components/journal/TagChip.svelte';
+	import { TAGS_PAGE } from '#lib/hashtags/hashtags.js';
+	import type { KnownTag } from '#lib/hashtags/picker.js';
+	import type { TagsNarrowing } from '#lib/hashtags/tag-pages.js';
+	import { useI18n } from '#lib/i18n/context.svelte.js';
+	import type { MessageKey } from '#lib/i18n/translate.js';
 	import {
 		isNarrowed,
 		NO_FILTER,
@@ -18,8 +18,8 @@
 		withoutTags,
 		type StreamFilter,
 		type StreamKind
-	} from '$lib/stream/filter';
-	import { filterPill } from '$lib/stream/filter-pill';
+	} from '#lib/stream/filter.js';
+	import { filterPill } from '#lib/stream/filter-pill.js';
 
 	/*
 	 * Home's stream filter (docs/dev/02 §2.22.2, docs/dev/design/screens/home.md): What, Who and Tags as

@@ -1,12 +1,12 @@
-import { mixPhotos, photoTabs, type PhotoTab } from '$lib/people/photo-card';
-import { stripViews, viewShown, type StripView } from '$lib/immich/together';
+import { mixPhotos, photoTabs, type PhotoTab } from '#lib/people/photo-card.js';
+import { stripViews, viewShown, type StripView } from '#lib/immich/together.js';
 import { ImmichPhotos } from './immich-photos.svelte';
 import type { CardEntry, PersonPageData } from './types';
 
 /*
  * What the person page's Photos card shows (docs/dev/02 §2.14, §2.24.3, §2.24.8), shared by its
  * header — the tabs and their counts — and its body. The decisions are pure in
- * `$lib/people/photo-card` and `$lib/immich/together`; this is where the page's data, the
+ * `#lib/people/photo-card.js` and `#lib/immich/together.js`; this is where the page's data, the
  * reader's choices and the Immich lists that load after the page meet.
  */
 

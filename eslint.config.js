@@ -31,7 +31,7 @@ const pureImports = [
 // `boundary.test.ts` says the same under `bun test`, resolving relative paths exactly.
 const servicesImports = [
 	{
-		regex: '^(\\$lib/server/|(\\.{1,2}/)+([\\w-]+/)*)services(/.*)?$',
+		regex: '^(#lib/server/|(\\.{1,2}/)+([\\w-]+/)*)services(/.*)?$',
 		allowTypeImports: true,
 		message: 'Only routes and hooks.server.ts wire concretes; take a `deps` argument instead.'
 	}
@@ -141,18 +141,18 @@ const edgeBoilerplateSyntax = [
 		selector:
 			"IfStatement[test.operator='!'][test.argument.object.name='locals'][test.argument.property.name='user'] > ThrowStatement.consequent > CallExpression.argument[callee.name='redirect']",
 		message:
-			'Use requireViewer(locals) / requireUser(locals) from $lib/server/auth/guards instead of a hand-written login redirect.'
+			'Use requireViewer(locals) / requireUser(locals) from #lib/server/auth/guards instead of a hand-written login redirect.'
 	},
 	{
 		selector:
 			"NewExpression[callee.name='Date'], CallExpression[callee.object.name='Date'][callee.property.name='now']",
 		message:
-			'The edge reads time off the injected clock: todayFor(systemClock) from $lib/dates/today, or clock.now() (docs/dev/08 §8.2 item 10).'
+			'The edge reads time off the injected clock: todayFor(systemClock) from #lib/dates/today, or clock.now() (docs/dev/08 §8.2 item 10).'
 	},
 	{
 		selector:
 			"FunctionDeclaration[id.name='key'], VariableDeclarator[id.name='key'][init.type=/FunctionExpression$/]",
-		message: 'Use messageKey() from $lib/i18n/translate instead of a local key() helper.'
+		message: 'Use messageKey() from #lib/i18n/translate instead of a local key() helper.'
 	}
 ];
 
@@ -246,6 +246,25 @@ export default ts.config(
 		ignores: ['src/routes/**', 'src/hooks.server.ts', 'src/lib/server/services/**', '**/*.test.ts'],
 		rules: {
 			'@typescript-eslint/no-restricted-imports': ['error', { patterns: servicesImports }]
+		}
+	},
+	{
+		// Kit 3's `enhance` navigates to the action's URL; the wrapper keeps the answer on the page.
+		files: ['src/**/*.{ts,svelte}'],
+		ignores: ['src/lib/forms/enhance.ts'],
+		rules: {
+			'no-restricted-imports': [
+				'error',
+				{
+					paths: [
+						{
+							name: '$app/forms',
+							importNames: ['enhance'],
+							message: 'Use enhance from #lib/forms/enhance.js (it stays on the page).'
+						}
+					]
+				}
+			]
 		}
 	},
 	{

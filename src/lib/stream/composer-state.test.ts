@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'bun:test';
-import { newPersonMentionId } from '$lib/commands/commands';
-import { handleFor } from '$lib/mentions/picker';
+import { newPersonMentionId } from '#lib/commands/commands.js';
+import { handleFor } from '#lib/mentions/picker.js';
 import { composerPeople, composerReading, draftOf, pickerRows } from './composer-reading';
 import {
 	composerAfter,

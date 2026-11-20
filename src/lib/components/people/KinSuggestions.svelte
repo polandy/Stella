@@ -1,27 +1,31 @@
 <script lang="ts">
-	import { enhance } from '$app/forms';
+	import { enhance } from '#lib/forms/enhance.js';
 	import { MediaQuery } from 'svelte/reactivity';
-	import Button from '$lib/components/ui/Button.svelte';
-	import LinkedNames from '$lib/components/people/LinkedNames.svelte';
-	import { dayLabel } from '$lib/dates/labels';
-	import { useI18n } from '$lib/i18n/context.svelte';
-	import { segmentsOf, textOf, type Segment } from '$lib/i18n/linked';
-	import type { KinVariant } from '$lib/kinship/kinship';
-	import type { Relation } from '$lib/suggestions/types';
-	import { ANSWER_ANCHOR_FIELD, answerAnchor, answerKey } from '$lib/relationships/answer-key';
+	import Button from '#lib/components/ui/Button.svelte';
+	import LinkedNames from '#lib/components/people/LinkedNames.svelte';
+	import { dayLabel } from '#lib/dates/labels.js';
+	import { useI18n } from '#lib/i18n/context.svelte.js';
+	import { segmentsOf, textOf, type Segment } from '#lib/i18n/linked.js';
+	import type { KinVariant } from '#lib/kinship/kinship.js';
+	import type { Relation } from '#lib/suggestions/types.js';
+	import { ANSWER_ANCHOR_FIELD, answerAnchor, answerKey } from '#lib/relationships/answer-key.js';
 	import {
 		focusAfterAnswer,
 		owesFocus,
 		type AnswerControl,
 		type FocusNow
-	} from '$lib/relationships/answer-focus';
-	import { wasTakenBack, type AnswerState, type AnsweredClaims } from '$lib/relationships/answered';
-	import { claimSentence } from '$lib/relationships/claim-sentence';
-	import { RETURN_TO_FIELD } from '$lib/relationships/review-url';
-	import { TYPE_KEY_FOR_RELATION } from '$lib/relationships/type-keys';
-	import { LEAVE_MS, leaving } from '$lib/ui/leaving';
-	import { useRemovals } from '$lib/undo/context.svelte';
-	import { heldAnswer } from '$lib/undo/held-answer';
+	} from '#lib/relationships/answer-focus.js';
+	import {
+		wasTakenBack,
+		type AnswerState,
+		type AnsweredClaims
+	} from '#lib/relationships/answered.js';
+	import { claimSentence } from '#lib/relationships/claim-sentence.js';
+	import { RETURN_TO_FIELD } from '#lib/relationships/review-url.js';
+	import { TYPE_KEY_FOR_RELATION } from '#lib/relationships/type-keys.js';
+	import { LEAVE_MS, leaving } from '#lib/ui/leaving.js';
+	import { useRemovals } from '#lib/undo/context.svelte.js';
+	import { heldAnswer } from '#lib/undo/held-answer.js';
 
 	/*
 	 * The rows of a suggestion block (docs/dev/02 §2.4.1). One component for both places a
@@ -43,13 +47,13 @@
 	 * Every control is a form action and the declined list is a `<details>`, so the whole panel
 	 * works with no JavaScript at all. With JavaScript, an answered row *goes at once* — fading
 	 * as it closes, while the list gives its height back to the scroll offset so the rows below
-	 * stay under the reader's hand (`$lib/ui/leaving.ts`). The answer itself is still held for
+	 * stay under the reader's hand (`#lib/ui/leaving.ts`). The answer itself is still held for
 	 * one undo window and sent only when that window closes (docs/dev/02 §2.23): what leaves the
 	 * screen and what reaches the server are two different promises.
 	 *
 	 * Keyboard focus is kept as the scroll offset is: the button that had it leaves with its
 	 * row, so once the row has gone focus moves to the same button of the row that took its
-	 * place (`$lib/relationships/answer-focus.ts`). The rows are read across the nearest
+	 * place (`#lib/relationships/answer-focus.ts`). The rows are read across the nearest
 	 * `data-kin-scope` ancestor, so on the review page a person's last answer carries on into the
 	 * next person's card; with no row left, focus goes to that scope's `data-kin-heading`.
 	 */

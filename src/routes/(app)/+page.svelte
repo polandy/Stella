@@ -1,37 +1,37 @@
 <script lang="ts">
-	import { reveal } from '$lib/motion/motion.svelte';
+	import { reveal } from '#lib/motion/motion.svelte.js';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
 	import { MediaQuery } from 'svelte/reactivity';
-	import Button from '$lib/components/ui/Button.svelte';
-	import EmptyState from '$lib/components/ui/EmptyState.svelte';
-	import MomentComposer from '$lib/components/stream/MomentComposer.svelte';
-	import PersonFinder from '$lib/components/people/PersonFinder.svelte';
-	import StreamNotice from '$lib/components/stream/StreamNotice.svelte';
-	import StreamCirclePhoto from '$lib/components/stream/StreamCirclePhoto.svelte';
-	import { savedMomentAnchor } from '$lib/stream/saved-moment';
-	import { streamDays, streamTime } from '$lib/stream/days';
-	import StreamMoment from '$lib/components/stream/StreamMoment.svelte';
-	import StreamPersonAdded from '$lib/components/stream/StreamPersonAdded.svelte';
-	import StreamInteraction from '$lib/components/stream/StreamInteraction.svelte';
-	import StreamRelationship from '$lib/components/stream/StreamRelationship.svelte';
-	import ComposeSheet from '$lib/components/stream/ComposeSheet.svelte';
-	import HomeRail from '$lib/components/stream/HomeRail.svelte';
-	import KeptList from '$lib/components/pwa/KeptList.svelte';
-	import StreamFilter from '$lib/components/stream/StreamFilter.svelte';
-	import StreamMore from '$lib/components/stream/StreamMore.svelte';
-	import { nextPagesHref } from '$lib/stream/pages';
-	import { outbox } from '$lib/pwa/outbox.svelte';
-	import { isKept, type KeptOf } from '$lib/pwa/outbox';
-	import WelcomeCard from '$lib/components/stream/WelcomeCard.svelte';
-	import { ImmichMemories } from '$lib/components/memories/immich-memories.svelte';
-	import { todoBand } from '$lib/todos/household';
-	import { JustDoneTodos } from '$lib/todos/just-done.svelte';
-	import { keptTicks } from '$lib/todos/kept-ticks.svelte';
-	import { useRemovals } from '$lib/undo/context.svelte';
-	import { contactSectionPath } from '$lib/people/sections';
-	import { useI18n } from '$lib/i18n/context.svelte';
-	import { isNarrowed, NO_FILTER, streamFilterHref } from '$lib/stream/filter';
+	import Button from '#lib/components/ui/Button.svelte';
+	import EmptyState from '#lib/components/ui/EmptyState.svelte';
+	import MomentComposer from '#lib/components/stream/MomentComposer.svelte';
+	import PersonFinder from '#lib/components/people/PersonFinder.svelte';
+	import StreamNotice from '#lib/components/stream/StreamNotice.svelte';
+	import StreamCirclePhoto from '#lib/components/stream/StreamCirclePhoto.svelte';
+	import { savedMomentAnchor } from '#lib/stream/saved-moment.js';
+	import { streamDays, streamTime } from '#lib/stream/days.js';
+	import StreamMoment from '#lib/components/stream/StreamMoment.svelte';
+	import StreamPersonAdded from '#lib/components/stream/StreamPersonAdded.svelte';
+	import StreamInteraction from '#lib/components/stream/StreamInteraction.svelte';
+	import StreamRelationship from '#lib/components/stream/StreamRelationship.svelte';
+	import ComposeSheet from '#lib/components/stream/ComposeSheet.svelte';
+	import HomeRail from '#lib/components/stream/HomeRail.svelte';
+	import KeptList from '#lib/components/pwa/KeptList.svelte';
+	import StreamFilter from '#lib/components/stream/StreamFilter.svelte';
+	import StreamMore from '#lib/components/stream/StreamMore.svelte';
+	import { nextPagesHref } from '#lib/stream/pages.js';
+	import { outbox } from '#lib/pwa/outbox.svelte.js';
+	import { isKept, type KeptOf } from '#lib/pwa/outbox.js';
+	import WelcomeCard from '#lib/components/stream/WelcomeCard.svelte';
+	import { ImmichMemories } from '#lib/components/memories/immich-memories.svelte.js';
+	import { todoBand } from '#lib/todos/household.js';
+	import { JustDoneTodos } from '#lib/todos/just-done.svelte.js';
+	import { keptTicks } from '#lib/todos/kept-ticks.svelte.js';
+	import { useRemovals } from '#lib/undo/context.svelte.js';
+	import { contactSectionPath } from '#lib/people/sections.js';
+	import { useI18n } from '#lib/i18n/context.svelte.js';
+	import { isNarrowed, NO_FILTER, streamFilterHref } from '#lib/stream/filter.js';
 	import type { ActionData, PageData, Snapshot } from './$types';
 
 	let { data, form }: { data: PageData; form: ActionData } = $props();
@@ -114,7 +114,7 @@
 	function closeSheet() {
 		if (editing) return void stopEditing();
 		if (page.state.compose) return history.back();
-		void goto('/', { replaceState: true, noScroll: true });
+		void goto('/', { replace: true, reset: false });
 	}
 
 	/*

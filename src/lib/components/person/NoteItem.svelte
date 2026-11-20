@@ -1,21 +1,21 @@
 <script lang="ts">
 	import { tick } from 'svelte';
-	import Button from '$lib/components/ui/Button.svelte';
-	import FormError from '$lib/components/ui/FormError.svelte';
-	import Icon from '$lib/components/ui/Icon.svelte';
-	import MentionTextarea from '$lib/components/ui/MentionTextarea.svelte';
-	import PrivateMark from '$lib/components/ui/PrivateMark.svelte';
-	import RemoveButton from '$lib/components/ui/RemoveButton.svelte';
-	import Swap from '$lib/components/ui/Swap.svelte';
-	import Veil from '$lib/components/ui/Veil.svelte';
+	import Button from '#lib/components/ui/Button.svelte';
+	import FormError from '#lib/components/ui/FormError.svelte';
+	import Icon from '#lib/components/ui/Icon.svelte';
+	import MentionTextarea from '#lib/components/ui/MentionTextarea.svelte';
+	import PrivateMark from '#lib/components/ui/PrivateMark.svelte';
+	import RemoveButton from '#lib/components/ui/RemoveButton.svelte';
+	import Swap from '#lib/components/ui/Swap.svelte';
+	import Veil from '#lib/components/ui/Veil.svelte';
 	import { deserialize } from '$app/forms';
 	import { invalidateAll } from '$app/navigation';
-	import { createdLabel, createdOnLabel } from '$lib/dates/labels';
-	import { useI18n } from '$lib/i18n/context.svelte';
-	import { placeholderFor } from '$lib/privacy/veil';
-	import { useVeil } from '$lib/privacy/veil.svelte';
-	import { useRemovals } from '$lib/undo/context.svelte';
-	import { menuShift, nearMiss } from '$lib/ui/menu';
+	import { createdLabel, createdOnLabel } from '#lib/dates/labels.js';
+	import { useI18n } from '#lib/i18n/context.svelte.js';
+	import { placeholderFor } from '#lib/privacy/veil.js';
+	import { useVeil } from '#lib/privacy/veil.svelte.js';
+	import { useRemovals } from '#lib/undo/context.svelte.js';
+	import { menuShift, nearMiss } from '#lib/ui/menu.js';
 	import { INPUT } from '../ui/inputs';
 	import type { PersonPageData } from './types';
 

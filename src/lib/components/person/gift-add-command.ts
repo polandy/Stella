@@ -1,7 +1,7 @@
-import type { JsonCommand } from '$lib/commands/commands';
-import { isAddableGiftState, occasionFromForm, visibilityFromForm } from '$lib/gifts/gifts';
-import { GIFT_WHEN_KINDS } from '$lib/gifts/idea-when';
-import { parsedWhenFromForm } from '$lib/when/form';
+import type { JsonCommand } from '#lib/commands/commands.js';
+import { isAddableGiftState, occasionFromForm, visibilityFromForm } from '#lib/gifts/gifts.js';
+import { GIFT_WHEN_KINDS } from '#lib/gifts/idea-when.js';
+import { parsedWhenFromForm } from '#lib/when/form.js';
 
 /*
  * The Gifts card's add form as the `gift.add` command the outbox keeps (docs/dev/02 §2.18,

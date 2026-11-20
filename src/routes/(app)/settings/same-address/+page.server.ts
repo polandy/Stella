@@ -1,14 +1,14 @@
 import { error } from '@sveltejs/kit';
 import * as v from 'valibot';
-import { requireViewer } from '$lib/server/auth/guards';
-import { HomeGoneError } from '$lib/server/domain/homes/homes';
+import { requireViewer } from '#lib/server/auth/guards.js';
+import { HomeGoneError } from '#lib/server/domain/homes/homes.js';
 import {
 	askAgainSameAddress,
 	checkSameAddresses,
 	declineSameAddress,
 	makeOneHome
-} from '$lib/server/domain/homes/same-address';
-import { say, translator } from '$lib/server/i18n/say';
+} from '#lib/server/domain/homes/same-address.js';
+import { say, translator } from '#lib/server/i18n/say.js';
 import type { Actions, PageServerLoad } from './$types';
 
 /*

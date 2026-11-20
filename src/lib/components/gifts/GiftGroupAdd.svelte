@@ -1,19 +1,19 @@
 <script lang="ts">
-	import { enhance } from '$app/forms';
-	import PersonSearchSelect from '$lib/components/people/PersonSearchSelect.svelte';
-	import Button from '$lib/components/ui/Button.svelte';
+	import { enhance } from '#lib/forms/enhance.js';
+	import PersonSearchSelect from '#lib/components/people/PersonSearchSelect.svelte';
+	import Button from '#lib/components/ui/Button.svelte';
 	import {
 		groupSummary,
 		previewRows,
 		recipientsField,
 		storedBirth,
 		type GroupFormRow
-	} from '$lib/gifts/group-form';
-	import { GIFT_GROUP_MAX_RECIPIENTS } from '$lib/gifts/group-plan';
-	import { useI18n } from '$lib/i18n/context.svelte';
-	import type { SelectablePerson } from '$lib/people/select';
-	import { useRemovals } from '$lib/undo/context.svelte';
-	import { savedEnhance } from '$lib/undo/saved';
+	} from '#lib/gifts/group-form.js';
+	import { GIFT_GROUP_MAX_RECIPIENTS } from '#lib/gifts/group-plan.js';
+	import { useI18n } from '#lib/i18n/context.svelte.js';
+	import type { SelectablePerson } from '#lib/people/select.js';
+	import { useRemovals } from '#lib/undo/context.svelte.js';
+	import { savedEnhance } from '#lib/undo/saved.js';
 	import type { GiftGroupView } from '../../../routes/(app)/contacts/[id]/gift-group-view';
 	import GroupPreviewRow from './GroupPreviewRow.svelte';
 

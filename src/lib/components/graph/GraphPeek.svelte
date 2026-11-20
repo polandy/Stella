@@ -1,6 +1,6 @@
 <script lang="ts">
-	import type { ExplorerEvent, ExplorerState } from '$lib/graph/explorer-state';
-	import type { GraphNode } from '$lib/graph/model/types';
+	import type { ExplorerEvent, ExplorerState } from '#lib/graph/explorer-state.js';
+	import type { GraphNode } from '#lib/graph/model/types.js';
 	import type { ExplorerView } from './explorer-view.svelte';
 	import GraphGroupPeek from './GraphGroupPeek.svelte';
 	import GraphNodePeek from './GraphNodePeek.svelte';

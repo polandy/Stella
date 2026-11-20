@@ -1,14 +1,14 @@
 <script lang="ts">
 	import { tick } from 'svelte';
-	import { enhance } from '$app/forms';
-	import Button from '$lib/components/ui/Button.svelte';
-	import Icon from '$lib/components/ui/Icon.svelte';
-	import type { IconName } from '$lib/components/ui/icons';
-	import { dayLabel } from '$lib/dates/labels';
-	import { useI18n } from '$lib/i18n/context.svelte';
-	import { reveal } from '$lib/motion/motion.svelte';
-	import { useVeil } from '$lib/privacy/veil.svelte';
-	import { useRemovals } from '$lib/undo/context.svelte';
+	import { enhance } from '#lib/forms/enhance.js';
+	import Button from '#lib/components/ui/Button.svelte';
+	import Icon from '#lib/components/ui/Icon.svelte';
+	import type { IconName } from '#lib/components/ui/icons.js';
+	import { dayLabel } from '#lib/dates/labels.js';
+	import { useI18n } from '#lib/i18n/context.svelte.js';
+	import { reveal } from '#lib/motion/motion.svelte.js';
+	import { useVeil } from '#lib/privacy/veil.svelte.js';
+	import { useRemovals } from '#lib/undo/context.svelte.js';
 
 	/*
 	 * Settings · Privacy (docs/dev/02 §2.10.1): *Blur my private entries*, the member's own and on

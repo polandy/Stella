@@ -1,19 +1,19 @@
 <script lang="ts">
-	import { FIELD } from '$lib/components/ui/field';
-	import { enhance } from '$app/forms';
-	import Button from '$lib/components/ui/Button.svelte';
-	import FormError from '$lib/components/ui/FormError.svelte';
-	import Icon from '$lib/components/ui/Icon.svelte';
-	import PrivateMark from '$lib/components/ui/PrivateMark.svelte';
-	import Veil from '$lib/components/ui/Veil.svelte';
-	import { useVeil } from '$lib/privacy/veil.svelte';
-	import RemoveButton from '$lib/components/ui/RemoveButton.svelte';
-	import type { CandidatePerson } from '$lib/circles/cut-candidates';
-	import { useI18n } from '$lib/i18n/context.svelte';
-	import type { CropRect } from '$lib/media/crop';
-	import type { Dated } from '$lib/media/taken-at';
+	import { FIELD } from '#lib/components/ui/field.js';
+	import { enhance } from '#lib/forms/enhance.js';
+	import Button from '#lib/components/ui/Button.svelte';
+	import FormError from '#lib/components/ui/FormError.svelte';
+	import Icon from '#lib/components/ui/Icon.svelte';
+	import PrivateMark from '#lib/components/ui/PrivateMark.svelte';
+	import Veil from '#lib/components/ui/Veil.svelte';
+	import { useVeil } from '#lib/privacy/veil.svelte.js';
+	import RemoveButton from '#lib/components/ui/RemoveButton.svelte';
+	import type { CandidatePerson } from '#lib/circles/cut-candidates.js';
+	import { useI18n } from '#lib/i18n/context.svelte.js';
+	import type { CropRect } from '#lib/media/crop.js';
+	import type { Dated } from '#lib/media/taken-at.js';
 	import CutForPerson from './CutForPerson.svelte';
-	import { viewUrl } from '$lib/media/urls';
+	import { viewUrl } from '#lib/media/urls.js';
 	import type { CirclePagePhoto } from './types';
 
 	let {

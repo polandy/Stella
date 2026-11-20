@@ -1,7 +1,7 @@
-import { INTL_LOCALES } from '$lib/i18n/locales';
-import { createTranslator } from '$lib/i18n/translate';
-import type { ActivityWording } from '$lib/server/domain/activity/activity';
-import { sourceWord } from '$lib/import-match/card';
+import { INTL_LOCALES } from '#lib/i18n/locales.js';
+import { createTranslator } from '#lib/i18n/translate.js';
+import type { ActivityWording } from '#lib/server/domain/activity/activity.js';
+import { sourceWord } from '#lib/import-match/card.js';
 
 /*
  * The activity log's localized lines (docs/dev/02 §2.19), from the catalogues. The entry is data the

@@ -3,10 +3,10 @@ import {
 	clearOidcTransaction,
 	readOidcTransaction,
 	setSessionCookie
-} from '$lib/server/auth/cookies';
-import { completeOidcLogin } from '$lib/server/auth/oidc/login';
-import { createSession } from '$lib/server/auth/session';
-import { say } from '$lib/server/i18n/say';
+} from '#lib/server/auth/cookies.js';
+import { completeOidcLogin } from '#lib/server/auth/oidc/login.js';
+import { createSession } from '#lib/server/auth/session.js';
+import { say } from '#lib/server/i18n/say.js';
 import type { RequestHandler } from './$types';
 
 /*

@@ -1,24 +1,24 @@
 <script lang="ts">
-	import MentionListbox from '$lib/components/ui/MentionListbox.svelte';
-	import TagListbox from '$lib/components/ui/TagListbox.svelte';
-	import TagsLine from '$lib/components/ui/TagsLine.svelte';
-	import type { KnownTag } from '$lib/hashtags/picker';
-	import { TagPicker } from '$lib/hashtags/tag-picker.svelte';
-	import WhichNamesake from '$lib/components/ui/WhichNamesake.svelte';
-	import { allowedForAudience } from '$lib/mentions/audience';
+	import MentionListbox from '#lib/components/ui/MentionListbox.svelte';
+	import TagListbox from '#lib/components/ui/TagListbox.svelte';
+	import TagsLine from '#lib/components/ui/TagsLine.svelte';
+	import type { KnownTag } from '#lib/hashtags/picker.js';
+	import { TagPicker } from '#lib/hashtags/tag-picker.svelte.js';
+	import WhichNamesake from '#lib/components/ui/WhichNamesake.svelte';
+	import { allowedForAudience } from '#lib/mentions/audience.js';
 	import {
 		activeHandle,
 		handleFor,
 		insertHandle,
 		suggest,
 		type ActiveHandle
-	} from '$lib/mentions/picker';
-	import { shiftPicks, toEditable, toStored, type MentionPick } from '$lib/mentions/picks';
-	import { unclearHandles } from '$lib/mentions/unclear';
-	import { usePeopleContext } from '$lib/people/context.svelte';
-	import { tellApart } from '$lib/people/namesakes';
+	} from '#lib/mentions/picker.js';
+	import { shiftPicks, toEditable, toStored, type MentionPick } from '#lib/mentions/picks.js';
+	import { unclearHandles } from '#lib/mentions/unclear.js';
+	import { usePeopleContext } from '#lib/people/context.svelte.js';
+	import { tellApart } from '#lib/people/namesakes.js';
 	import { onMount, tick } from 'svelte';
-	import { BLUR_CLOSE_MS } from '$lib/components/ui/blur-close';
+	import { BLUR_CLOSE_MS } from '#lib/components/ui/blur-close.js';
 
 	/*
 	 * A textarea that offers people while you type `@` (docs/dev/02 §2.20.1). The picker is an

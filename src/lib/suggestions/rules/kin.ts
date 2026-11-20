@@ -1,11 +1,11 @@
-import { claimEndpoints, confirmedClaimFor } from '$lib/kinship/claims';
+import { claimEndpoints, confirmedClaimFor } from '#lib/kinship/claims.js';
 import {
 	deriveKinship,
 	deriveKinshipForAll,
 	variantFor,
 	type DerivedKin
-} from '$lib/kinship/kinship';
-import { RELATION_FOR_TYPE_KEY } from '$lib/relationships/type-keys';
+} from '#lib/kinship/kinship.js';
+import { RELATION_FOR_TYPE_KEY } from '#lib/relationships/type-keys.js';
 import { workedOutThrough } from '../reasons';
 import { isDirected, type LinkSuggestion, type Rule, type Trigger } from '../types';
 import type { SuggestionView } from '../view';

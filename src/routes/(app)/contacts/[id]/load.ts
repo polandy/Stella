@@ -1,23 +1,23 @@
-import { faceLookup } from '$lib/story/subjects';
+import { faceLookup } from '#lib/story/subjects.js';
 import { error, redirect } from '@sveltejs/kit';
-import { requireRemover, requireUser, requireViewer } from '$lib/server/auth/guards';
-import { CONTACT_FIELD_KINDS } from '$lib/people/contact-fields';
-import { parseProposePairs } from '$lib/people/propose';
-import { getContact } from '$lib/server/domain/contacts/contacts';
-import { shownNameIsChosen } from '$lib/people/display-name';
-import { IMPORTANT_DATE_KINDS } from '$lib/dates/kinds';
-import { INTERACTION_KINDS } from '$lib/server/domain/interactions/interactions';
-import { contactSectionPath, RELATE_AS_PARAM, sectionForLegacyTab } from '$lib/people/sections';
-import { personMap } from '$lib/graph/model/person-map';
-import { orderOpenTodos } from '$lib/todos/todos';
-import { todayFor } from '$lib/dates/today';
-import { systemClock } from '$lib/server/clock';
-import { TAG_COLORS } from '$lib/design/tag-colors';
-import { readTogetherOffers } from '$lib/server/domain/immich/glimpse';
-import { readImmichLink, readLinkedPerson } from '$lib/server/domain/immich/links';
-import { togetherCandidates } from '$lib/immich/together';
-import { canAddRelationshipTo } from '$lib/server/access/visibility';
-import { say, translator } from '$lib/server/i18n/say';
+import { requireRemover, requireUser, requireViewer } from '#lib/server/auth/guards.js';
+import { CONTACT_FIELD_KINDS } from '#lib/people/contact-fields.js';
+import { parseProposePairs } from '#lib/people/propose.js';
+import { getContact } from '#lib/server/domain/contacts/contacts.js';
+import { shownNameIsChosen } from '#lib/people/display-name.js';
+import { IMPORTANT_DATE_KINDS } from '#lib/dates/kinds.js';
+import { INTERACTION_KINDS } from '#lib/server/domain/interactions/interactions.js';
+import { contactSectionPath, RELATE_AS_PARAM, sectionForLegacyTab } from '#lib/people/sections.js';
+import { personMap } from '#lib/graph/model/person-map.js';
+import { orderOpenTodos } from '#lib/todos/todos.js';
+import { todayFor } from '#lib/dates/today.js';
+import { systemClock } from '#lib/server/clock.js';
+import { TAG_COLORS } from '#lib/design/tag-colors.js';
+import { readTogetherOffers } from '#lib/server/domain/immich/glimpse.js';
+import { readImmichLink, readLinkedPerson } from '#lib/server/domain/immich/links.js';
+import { togetherCandidates } from '#lib/immich/together.js';
+import { canAddRelationshipTo } from '#lib/server/access/visibility.js';
+import { say, translator } from '#lib/server/i18n/say.js';
 import {
 	birthdayOf,
 	declinedBy,
@@ -35,7 +35,7 @@ import {
 } from './person-view';
 import { giftGroupView } from './gift-group-view';
 import { REVIEW_PARAM } from './review-path';
-import { immichPhotosOfEntries } from '$lib/server/domain/immich/entry-immich-photos';
+import { immichPhotosOfEntries } from '#lib/server/domain/immich/entry-immich-photos.js';
 import { entryIdsOf, nameLookup, photosByEntry, toStoryItem } from './story-view';
 import { lastNameChips, readPersonPage } from './read-person-page';
 import type { PageServerLoad } from './$types';

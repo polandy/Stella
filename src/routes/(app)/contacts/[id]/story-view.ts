@@ -3,16 +3,16 @@ import {
 	canRemoveAuthored,
 	type ContactAccess,
 	type Remover
-} from '$lib/server/access/visibility';
-import type { EntryImmichPhoto } from '$lib/immich/library';
-import type { JournalPhotoRef } from '$lib/server/domain/media/journal-photos';
-import { renderMarkdownWithMentions } from '$lib/server/domain/notes/markdown';
-import { tagPageHref } from '$lib/hashtags/hashtags';
-import type { StoryItem } from '$lib/server/domain/story/story';
-import { extractMentionIds } from '$lib/mentions/mentions';
-import { authorLabel } from '$lib/story/author';
-import type { StoryItemView } from '$lib/story/item';
-import { subjectFacesOf, type SubjectFace } from '$lib/story/subjects';
+} from '#lib/server/access/visibility.js';
+import type { EntryImmichPhoto } from '#lib/immich/library.js';
+import type { JournalPhotoRef } from '#lib/server/domain/media/journal-photos.js';
+import { renderMarkdownWithMentions } from '#lib/server/domain/notes/markdown.js';
+import { tagPageHref } from '#lib/hashtags/hashtags.js';
+import type { StoryItem } from '#lib/server/domain/story/story.js';
+import { extractMentionIds } from '#lib/mentions/mentions.js';
+import { authorLabel } from '#lib/story/author.js';
+import type { StoryItemView } from '#lib/story/item.js';
+import { subjectFacesOf, type SubjectFace } from '#lib/story/subjects.js';
 
 /*
  * Turn a domain story item into what the timeline renders (docs/dev/02 §2.23). This is the edge's

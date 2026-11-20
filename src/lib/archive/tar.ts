@@ -1,4 +1,4 @@
-// Relative rather than `$lib`: the e2e suite builds archives with this writer (`e2e/seed.ts`),
+// Relative rather than `#lib`: the e2e suite builds archives with this writer (`e2e/seed.ts`),
 // and Playwright's runner does not know SvelteKit's aliases.
 import { TranslatableError } from '../i18n/translatable';
 import { phrase, type Phrase } from '../i18n/phrase';

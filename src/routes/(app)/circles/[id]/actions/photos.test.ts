@@ -1,14 +1,14 @@
 import { describe, expect, it } from 'bun:test';
-import { createTranslator } from '$lib/i18n/translate';
+import { createTranslator } from '#lib/i18n/translate.js';
 import type {
 	CirclePhoto,
 	CirclePhotoDescription,
 	CirclePhotoRepository
-} from '$lib/server/domain/circles/circle-photos';
-import type { Contact } from '$lib/server/domain/contacts/contacts';
-import type { GroupPhoto } from '$lib/server/domain/media/cuts';
-import type { StoredFraming } from '$lib/server/domain/media/framing';
-import { CAPTION_MAX_LENGTH } from '$lib/server/domain/media/gallery';
+} from '#lib/server/domain/circles/circle-photos.js';
+import type { Contact } from '#lib/server/domain/contacts/contacts.js';
+import type { GroupPhoto } from '#lib/server/domain/media/cuts.js';
+import type { StoredFraming } from '#lib/server/domain/media/framing.js';
+import { CAPTION_MAX_LENGTH } from '#lib/server/domain/media/gallery.js';
 import {
 	circleRepositoryWith,
 	cutRepositoryWith,
@@ -19,7 +19,7 @@ import {
 	someCircle,
 	someGroupPhoto,
 	type FakeMembership
-} from '$lib/server/domain/testing';
+} from '#lib/server/domain/testing/index.js';
 import {
 	answerOf,
 	formOf,
@@ -27,7 +27,7 @@ import {
 	routeEvent,
 	type EdgeAnswer,
 	type FakeServices
-} from '$lib/server/testing';
+} from '#lib/server/testing/index.js';
 import { photoActions as actions } from './photos';
 
 /*

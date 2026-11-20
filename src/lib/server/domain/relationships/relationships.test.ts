@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test';
-import { textOf } from '$lib/i18n/linked';
+import { textOf } from '#lib/i18n/linked.js';
 import { createTranslator } from '../../../i18n/translate';
 import type { Clock } from '../../clock';
 import type { IdGenerator } from '../../id';

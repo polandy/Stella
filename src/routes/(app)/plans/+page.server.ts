@@ -1,5 +1,5 @@
-import { todayFor } from '$lib/dates/today';
-import { systemClock } from '$lib/server/clock';
+import { todayFor } from '#lib/dates/today.js';
+import { systemClock } from '#lib/server/clock.js';
 import { householdPlanActions, readHouseholdPlans } from '../_shared/household-plans';
 import type { Actions, PageServerLoad } from './$types';
 

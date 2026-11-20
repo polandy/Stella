@@ -1,16 +1,16 @@
 import { error, fail, redirect } from '@sveltejs/kit';
-import { requireViewer } from '$lib/server/auth/guards';
-import { contactSectionPath } from '$lib/people/sections';
-import { ContactGoneError } from '$lib/server/domain/contacts/require-visible';
-import { ignoreMatch } from '$lib/server/domain/immich/ignores';
+import { requireViewer } from '#lib/server/auth/guards.js';
+import { contactSectionPath } from '#lib/people/sections.js';
+import { ContactGoneError } from '#lib/server/domain/contacts/require-visible.js';
+import { ignoreMatch } from '#lib/server/domain/immich/ignores.js';
 import {
 	ImmichLinkRefusedError,
 	linkToImmich,
 	unlinkFromImmich
-} from '$lib/server/domain/immich/links';
-import { useImmichPhoto } from '$lib/server/domain/immich/use-as-photo';
-import { InvalidAvatarError } from '$lib/server/domain/media/avatars';
-import { say, translator } from '$lib/server/i18n/say';
+} from '#lib/server/domain/immich/links.js';
+import { useImmichPhoto } from '#lib/server/domain/immich/use-as-photo.js';
+import { InvalidAvatarError } from '#lib/server/domain/media/avatars.js';
+import { say, translator } from '#lib/server/i18n/say.js';
 import type { Actions } from '../$types';
 
 /*

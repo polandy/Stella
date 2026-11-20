@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'bun:test';
-import type { ContactNameDeps } from '$lib/server/domain/contacts/contact-names';
-import type { StreamItem } from '$lib/server/domain/stream/stream';
+import type { ContactNameDeps } from '#lib/server/domain/contacts/contact-names.js';
+import type { StreamItem } from '#lib/server/domain/stream/stream.js';
 import { streamForView } from './stream-view';
 
 /*

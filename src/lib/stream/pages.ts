@@ -23,7 +23,7 @@ export function offersMorePages(pages: number, more: boolean): boolean {
 }
 
 /** The address of `url` showing one page more, every other parameter kept. */
-export function nextPagesHref(url: URL, pages: number): string {
+export function nextPagesHref(url: Pick<URL, 'pathname' | 'search'>, pages: number): string {
 	const params = new URLSearchParams(url.search);
 	params.set(STREAM_PAGES_PARAM, String(pages + 1));
 	return `${url.pathname}?${params}`;

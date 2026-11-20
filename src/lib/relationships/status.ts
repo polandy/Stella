@@ -5,7 +5,7 @@
  * someone ends it, so "not said" would be a question no one can answer.
  *
  * It lives beside the type keys rather than in the domain because the person page offers the
- * choice, and a component cannot import from `$lib/server`.
+ * choice, and a component cannot import from `#lib/server`.
  */
 
 export const RELATIONSHIP_STATUSES = ['current', 'former'] as const;

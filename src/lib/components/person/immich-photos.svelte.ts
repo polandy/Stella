@@ -1,4 +1,4 @@
-import { withPage, type GlimpsePhoto, type GlimpseScope } from '$lib/immich/strip';
+import { withPage, type GlimpsePhoto, type GlimpseScope } from '#lib/immich/strip.js';
 import { fetchGlimpse } from './immich-glimpse';
 
 /*

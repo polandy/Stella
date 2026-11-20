@@ -1,5 +1,5 @@
 <script lang="ts" module>
-	import type { IconName } from '$lib/components/ui/icons';
+	import type { IconName } from '#lib/components/ui/icons.js';
 
 	/** One sentence of the step, with its icon. */
 	export interface ConfirmLine {
@@ -13,12 +13,12 @@
 <script lang="ts">
 	import { tick } from 'svelte';
 	import { prefersReducedMotion } from 'svelte/motion';
-	import { enhance } from '$app/forms';
-	import Button from '$lib/components/ui/Button.svelte';
-	import FormError from '$lib/components/ui/FormError.svelte';
-	import Icon from '$lib/components/ui/Icon.svelte';
-	import { scrollBehavior } from '$lib/motion/motion';
-	import { reveal } from '$lib/motion/motion.svelte';
+	import { enhance } from '#lib/forms/enhance.js';
+	import Button from '#lib/components/ui/Button.svelte';
+	import FormError from '#lib/components/ui/FormError.svelte';
+	import Icon from '#lib/components/ui/Icon.svelte';
+	import { scrollBehavior } from '#lib/motion/motion.js';
+	import { reveal } from '#lib/motion/motion.svelte.js';
 
 	/*
 	 * The confirm step under a member's row (docs/dev/02 §2.1): the person page's sunken box, not a

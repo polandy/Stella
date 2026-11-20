@@ -6,7 +6,7 @@ import {
 	type KinshipGraph,
 	type KinTerm
 } from './kinship';
-import { createTranslator } from '$lib/i18n/translate';
+import { createTranslator } from '#lib/i18n/translate.js';
 import { directClaimLabel, kinshipLabel } from './labels';
 import { directClaimFor } from './claims';
 

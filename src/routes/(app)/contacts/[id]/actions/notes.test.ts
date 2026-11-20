@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'bun:test';
-import { createTranslator } from '$lib/i18n/translate';
-import type { Remover } from '$lib/server/access/visibility';
-import type { Contact } from '$lib/server/domain/contacts/contacts';
-import type { NoteRepository } from '$lib/server/domain/notes/notes';
-import { contactRepositoryWith } from '$lib/server/domain/testing';
+import { createTranslator } from '#lib/i18n/translate.js';
+import type { Remover } from '#lib/server/access/visibility.js';
+import type { Contact } from '#lib/server/domain/contacts/contacts.js';
+import type { NoteRepository } from '#lib/server/domain/notes/notes.js';
+import { contactRepositoryWith } from '#lib/server/domain/testing/index.js';
 import {
 	answerOf,
 	formOf,
@@ -11,7 +11,7 @@ import {
 	routeEvent,
 	type EdgeAnswer,
 	type FakeServices
-} from '$lib/server/testing';
+} from '#lib/server/testing/index.js';
 import { noteActions as actions } from './notes';
 
 /*

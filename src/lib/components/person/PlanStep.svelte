@@ -1,14 +1,14 @@
 <script lang="ts">
-	import { enhance } from '$app/forms';
+	import { enhance } from '#lib/forms/enhance.js';
 	import { invalidateAll } from '$app/navigation';
 	import { page } from '$app/state';
-	import Button from '$lib/components/ui/Button.svelte';
-	import { useI18n } from '$lib/i18n/context.svelte';
-	import { keepable } from '$lib/pwa/keepable';
-	import { outbox } from '$lib/pwa/outbox.svelte';
-	import { useRemovals } from '$lib/undo/context.svelte';
-	import { submitAction } from '$lib/undo/submit-action';
-	import type { SubmitFunction } from '@sveltejs/kit';
+	import Button from '#lib/components/ui/Button.svelte';
+	import { useI18n } from '#lib/i18n/context.svelte.js';
+	import { keepable } from '#lib/pwa/keepable.js';
+	import { outbox } from '#lib/pwa/outbox.svelte.js';
+	import { useRemovals } from '#lib/undo/context.svelte.js';
+	import { submitAction } from '#lib/undo/submit-action.js';
+	import type { SubmitFunction } from '$app/forms';
 
 	/*
 	 * Booking an outing idea, or ticking it done (docs/dev/02 §2.27): saved at once through the

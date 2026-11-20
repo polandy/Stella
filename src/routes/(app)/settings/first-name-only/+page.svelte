@@ -1,11 +1,11 @@
 <script lang="ts">
-	import { FIELD_ON_BG } from '$lib/components/ui/field';
-	import { enhance } from '$app/forms';
-	import Avatar from '$lib/components/ui/Avatar.svelte';
-	import Button from '$lib/components/ui/Button.svelte';
-	import EmptyState from '$lib/components/ui/EmptyState.svelte';
-	import { sinceLabel } from '$lib/dates/labels';
-	import { useI18n } from '$lib/i18n/context.svelte';
+	import { FIELD_ON_BG } from '#lib/components/ui/field.js';
+	import { enhance } from '#lib/forms/enhance.js';
+	import Avatar from '#lib/components/ui/Avatar.svelte';
+	import Button from '#lib/components/ui/Button.svelte';
+	import EmptyState from '#lib/components/ui/EmptyState.svelte';
+	import { sinceLabel } from '#lib/dates/labels.js';
+	import { useI18n } from '#lib/i18n/context.svelte.js';
 	import type { ActionData, PageData } from './$types';
 
 	/*

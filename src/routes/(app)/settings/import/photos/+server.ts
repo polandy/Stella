@@ -1,18 +1,18 @@
 import { error, json } from '@sveltejs/kit';
-import { decodeDataUrl } from '$lib/media/data-url';
-import type { Visibility } from '$lib/server/access/visibility';
-import { requireAdmin } from '$lib/server/auth/guards';
-import { getConfig } from '$lib/server/config';
-import { previewImport } from '$lib/server/domain/import/apply';
-import { detectImportFormat } from '$lib/server/domain/import/read';
-import { reviewedPhotoTarget } from '$lib/server/domain/import/review-view';
-import { attachImportedPhoto } from '$lib/server/domain/import/monica/photos';
-import { InvalidImageError } from '$lib/server/domain/media/journal-photos';
-import { readStagedDump } from '$lib/server/import/staging';
+import { decodeDataUrl } from '#lib/media/data-url.js';
+import type { Visibility } from '#lib/server/access/visibility.js';
+import { requireAdmin } from '#lib/server/auth/guards.js';
+import { getConfig } from '#lib/server/config.js';
+import { previewImport } from '#lib/server/domain/import/apply.js';
+import { detectImportFormat } from '#lib/server/domain/import/read.js';
+import { reviewedPhotoTarget } from '#lib/server/domain/import/review-view.js';
+import { attachImportedPhoto } from '#lib/server/domain/import/monica/photos.js';
+import { InvalidImageError } from '#lib/server/domain/media/journal-photos.js';
+import { readStagedDump } from '#lib/server/import/staging.js';
 import type { RequestHandler } from './$types';
-import { importWording } from '$lib/server/i18n/import-wording';
-import { takenAtField } from '$lib/server/http/taken-at-field';
-import { say, translator } from '$lib/server/i18n/say';
+import { importWording } from '#lib/server/i18n/import-wording.js';
+import { takenAtField } from '#lib/server/http/taken-at-field.js';
+import { say, translator } from '#lib/server/i18n/say.js';
 
 /*
  * One imported photo per request (docs/dev/02 §2.16). The plan is re-derived from the staged

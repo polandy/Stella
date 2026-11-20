@@ -1,17 +1,17 @@
 <script lang="ts">
 	import { invalidateAll } from '$app/navigation';
 	import { onMount } from 'svelte';
-	import IdeaListRow from '$lib/components/gifts/IdeaListRow.svelte';
-	import Avatar from '$lib/components/ui/Avatar.svelte';
-	import EmptyState from '$lib/components/ui/EmptyState.svelte';
-	import Icon from '$lib/components/ui/Icon.svelte';
-	import { foldWaiting } from '$lib/gifts/idea-list';
-	import { nextOccasionLabel } from '$lib/gifts/labels';
-	import { waitingPreference, type WaitingPreference } from '$lib/gifts/waiting-preference';
-	import { useI18n } from '$lib/i18n/context.svelte';
-	import { contactSectionPath } from '$lib/people/sections';
-	import { useRemovals } from '$lib/undo/context.svelte';
-	import { removalKey } from '$lib/undo/keys';
+	import IdeaListRow from '#lib/components/gifts/IdeaListRow.svelte';
+	import Avatar from '#lib/components/ui/Avatar.svelte';
+	import EmptyState from '#lib/components/ui/EmptyState.svelte';
+	import Icon from '#lib/components/ui/Icon.svelte';
+	import { foldWaiting } from '#lib/gifts/idea-list.js';
+	import { nextOccasionLabel } from '#lib/gifts/labels.js';
+	import { waitingPreference, type WaitingPreference } from '#lib/gifts/waiting-preference.js';
+	import { useI18n } from '#lib/i18n/context.svelte.js';
+	import { contactSectionPath } from '#lib/people/sections.js';
+	import { useRemovals } from '#lib/undo/context.svelte.js';
+	import { removalKey } from '#lib/undo/keys.js';
 	import { SvelteSet } from 'svelte/reactivity';
 	import type { ActionData, PageData } from './$types';
 

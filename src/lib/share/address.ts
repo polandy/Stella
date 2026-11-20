@@ -18,7 +18,7 @@ export function sheetAddressFor(parts: ShareParts): string {
 }
 
 /** What the sheet's address carries, as `sheetAddressFor` wrote it. */
-export function partsFromAddress(search: URLSearchParams): {
+export function partsFromAddress(search: Pick<URLSearchParams, 'get'>): {
 	parts: ShareParts;
 	photosLeftBehind: boolean;
 } {

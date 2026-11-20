@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type { SubmitFunction } from '@sveltejs/kit';
-	import Button from '$lib/components/ui/Button.svelte';
-	import { useTranslate } from '$lib/i18n/context.svelte';
+	import type { SubmitFunction } from '$app/forms';
+	import Button from '#lib/components/ui/Button.svelte';
+	import { useTranslate } from '#lib/i18n/context.svelte.js';
 	import SetLastNamePanel from './SetLastNamePanel.svelte';
 
 	/*

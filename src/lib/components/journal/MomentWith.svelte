@@ -1,9 +1,9 @@
 <script lang="ts">
-	import LinkedNames from '$lib/components/people/LinkedNames.svelte';
-	import Avatar from '$lib/components/ui/Avatar.svelte';
-	import { useI18n } from '$lib/i18n/context.svelte';
-	import { listSentence, segmentsOf } from '$lib/i18n/linked';
-	import type { SubjectFace } from '$lib/story/subjects';
+	import LinkedNames from '#lib/components/people/LinkedNames.svelte';
+	import Avatar from '#lib/components/ui/Avatar.svelte';
+	import { useI18n } from '#lib/i18n/context.svelte.js';
+	import { listSentence, segmentsOf } from '#lib/i18n/linked.js';
+	import type { SubjectFace } from '#lib/story/subjects.js';
 
 	/*
 	 * *with Sandra, Lea and Tim* under a moment's kind line (docs/dev/02 §2.20.3): the others it is

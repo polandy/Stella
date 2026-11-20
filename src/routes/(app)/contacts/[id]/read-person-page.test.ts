@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'bun:test';
-import type { LinkedPhrase } from '$lib/i18n/linked';
-import { createTranslator } from '$lib/i18n/translate';
+import type { LinkedPhrase } from '#lib/i18n/linked.js';
+import { createTranslator } from '#lib/i18n/translate.js';
 import { lastNameChips } from './read-person-page';
 
 const t = createTranslator('en');

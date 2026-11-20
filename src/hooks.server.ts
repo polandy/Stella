@@ -1,20 +1,20 @@
-import type { Handle, HandleServerError, ServerInit } from '@sveltejs/kit';
-import { DEFAULT_LOCALE, LOCALE_COOKIE, LOCALES } from '$lib/i18n/locales';
-import { resolveLocale } from '$lib/i18n/resolve';
-import { loadCatalog } from '$lib/i18n/translate';
-import { clearSessionCookie, SESSION_COOKIE, setLocaleCookie } from '$lib/server/auth/cookies';
-import { resolveRequestIdentity } from '$lib/server/auth/request-identity';
-import { accessLogLine } from '$lib/server/http/access-log';
-import { formActionDirective } from '$lib/server/http/csp';
-import { etagOf, isUnchanged, wantsEtag } from '$lib/server/http/etag';
+import type { Handle, HandleServerError, ServerInit } from '@sveltejs/kit/hooks';
+import { DEFAULT_LOCALE, LOCALE_COOKIE, LOCALES } from '#lib/i18n/locales.js';
+import { resolveLocale } from '#lib/i18n/resolve.js';
+import { loadCatalog } from '#lib/i18n/translate.js';
+import { clearSessionCookie, SESSION_COOKIE, setLocaleCookie } from '#lib/server/auth/cookies.js';
+import { resolveRequestIdentity } from '#lib/server/auth/request-identity.js';
+import { accessLogLine } from '#lib/server/http/access-log.js';
+import { formActionDirective } from '#lib/server/http/csp.js';
+import { etagOf, isUnchanged, wantsEtag } from '#lib/server/http/etag.js';
 import {
 	describeUnexpectedError,
-	isUnexpected,
+	isUnplanned,
 	requestIdFrom
-} from '$lib/server/http/unexpected-error';
-import { createTranslator } from '$lib/i18n/translate';
-import { getConfig } from '$lib/server/config';
-import { getServices } from '$lib/server/services';
+} from '#lib/server/http/unexpected-error.js';
+import { createTranslator } from '#lib/i18n/translate.js';
+import { getConfig } from '#lib/server/config.js';
+import { getServices } from '#lib/server/services/index.js';
 
 /*
  * Request entry point (docs/dev/04 §4.4). Resolves the session cookie to `locals.user`, settles
@@ -115,8 +115,10 @@ const handleRequest: Handle = async ({ event, resolve }) => {
  * never get this far; their edge answers them (docs/dev/04 §4.4). It is logged once, under the
  * request's id, and the member is told only that it was ours, with the id to quote.
  */
-export const handleError: HandleServerError = ({ error, event, status, message }) => {
-	if (!isUnexpected(status)) return { message };
+export const handleError: HandleServerError = (caught) => {
+	const status = caught.kind === 'framework' ? caught.error.status : 500;
+	if (!isUnplanned(caught.kind, status)) return;
+	const { error, event } = caught;
 	const requestId = event.locals.requestId ?? crypto.randomUUID();
 	console.error(
 		describeUnexpectedError({

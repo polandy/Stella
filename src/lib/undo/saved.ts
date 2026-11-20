@@ -1,4 +1,4 @@
-import type { SubmitFunction } from '@sveltejs/kit';
+import type { SubmitFunction } from '$app/forms';
 
 /** The one thing this needs from the removals store, so the rule is testable without it. */
 interface Notifier {

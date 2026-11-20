@@ -1,14 +1,14 @@
 <script lang="ts">
-	import Avatar from '$lib/components/ui/Avatar.svelte';
-	import Button from '$lib/components/ui/Button.svelte';
-	import Icon from '$lib/components/ui/Icon.svelte';
-	import { useI18n } from '$lib/i18n/context.svelte';
-	import { contactSectionPath } from '$lib/people/sections';
-	import { recallable, type KeptOf } from '$lib/pwa/outbox';
-	import type { HouseholdTodoView } from '$lib/todos/household';
-	import type { JustDoneTodos } from '$lib/todos/just-done.svelte';
-	import { recallKeptTick } from '$lib/todos/kept-ticks.svelte';
-	import { useRemovals } from '$lib/undo/context.svelte';
+	import Avatar from '#lib/components/ui/Avatar.svelte';
+	import Button from '#lib/components/ui/Button.svelte';
+	import Icon from '#lib/components/ui/Icon.svelte';
+	import { useI18n } from '#lib/i18n/context.svelte.js';
+	import { contactSectionPath } from '#lib/people/sections.js';
+	import { recallable, type KeptOf } from '#lib/pwa/outbox.js';
+	import type { HouseholdTodoView } from '#lib/todos/household.js';
+	import type { JustDoneTodos } from '#lib/todos/just-done.svelte.js';
+	import { recallKeptTick } from '#lib/todos/kept-ticks.svelte.js';
+	import { useRemovals } from '#lib/undo/context.svelte.js';
 	import TodoDue from './TodoDue.svelte';
 	import TodoTick from './TodoTick.svelte';
 

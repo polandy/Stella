@@ -1,22 +1,22 @@
 <script lang="ts">
-	import GiftsSection from '$lib/components/person/GiftsSection.svelte';
-	import PlansSection from '$lib/components/person/PlansSection.svelte';
-	import IdentityCard from '$lib/components/person/IdentityCard.svelte';
-	import JumpBar from '$lib/components/person/JumpBar.svelte';
-	import MentionsSection from '$lib/components/person/MentionsSection.svelte';
-	import NotesSection from '$lib/components/person/NotesSection.svelte';
-	import PhotosSection from '$lib/components/person/PhotosSection.svelte';
-	import type { PhotoView } from '$lib/components/person/photo-card-state.svelte';
-	import RelationshipsSection from '$lib/components/person/RelationshipsSection.svelte';
-	import StorySection from '$lib/components/person/StorySection.svelte';
-	import TodosSection from '$lib/components/person/TodosSection.svelte';
-	import { metLine as metLineOf } from '$lib/people/identity-card';
-	import { sectionAnchor } from '$lib/people/sections';
-	import { deviceStorage, openedHere } from '$lib/share/opened-here';
-	import { useI18n } from '$lib/i18n/context.svelte';
-	import { showOpenedForm } from '$lib/motion/scroll.svelte';
-	import { JustDoneTodos } from '$lib/todos/just-done.svelte';
-	import { useRemovals } from '$lib/undo/context.svelte';
+	import GiftsSection from '#lib/components/person/GiftsSection.svelte';
+	import PlansSection from '#lib/components/person/PlansSection.svelte';
+	import IdentityCard from '#lib/components/person/IdentityCard.svelte';
+	import JumpBar from '#lib/components/person/JumpBar.svelte';
+	import MentionsSection from '#lib/components/person/MentionsSection.svelte';
+	import NotesSection from '#lib/components/person/NotesSection.svelte';
+	import PhotosSection from '#lib/components/person/PhotosSection.svelte';
+	import type { PhotoView } from '#lib/components/person/photo-card-state.svelte.js';
+	import RelationshipsSection from '#lib/components/person/RelationshipsSection.svelte';
+	import StorySection from '#lib/components/person/StorySection.svelte';
+	import TodosSection from '#lib/components/person/TodosSection.svelte';
+	import { metLine as metLineOf } from '#lib/people/identity-card.js';
+	import { sectionAnchor } from '#lib/people/sections.js';
+	import { deviceStorage, openedHere } from '#lib/share/opened-here.js';
+	import { useI18n } from '#lib/i18n/context.svelte.js';
+	import { showOpenedForm } from '#lib/motion/scroll.svelte.js';
+	import { JustDoneTodos } from '#lib/todos/just-done.svelte.js';
+	import { useRemovals } from '#lib/undo/context.svelte.js';
 	import { tick } from 'svelte';
 	import type { ActionData, PageData } from './$types';
 
@@ -28,7 +28,7 @@
 	 * card's ⋯ menu.
 	 *
 	 * Every form is closed until asked for, so the page reads as a person rather than as a stack
-	 * of empty inputs. Each card is its own component under `$lib/components/person/`; this page
+	 * of empty inputs. Each card is its own component under `#lib/components/person/`; this page
 	 * lays them out and holds only what more than one of them shares.
 	 */
 	let { data, form }: { data: PageData; form: ActionData } = $props();

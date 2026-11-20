@@ -1,8 +1,8 @@
 <script lang="ts">
-	import { FIELD, FIELD_ON_BG } from '$lib/components/ui/field';
-	import KnowThemBy from '$lib/components/people/KnowThemBy.svelte';
-	import { useTranslate } from '$lib/i18n/context.svelte';
-	import { wantsSomethingToKnowThemBy } from '$lib/people/new-person';
+	import { FIELD, FIELD_ON_BG } from '#lib/components/ui/field.js';
+	import KnowThemBy from '#lib/components/people/KnowThemBy.svelte';
+	import { useTranslate } from '#lib/i18n/context.svelte.js';
+	import { wantsSomethingToKnowThemBy } from '#lib/people/new-person.js';
 	import type { Snippet } from 'svelte';
 	import type { HTMLAttributes } from 'svelte/elements';
 

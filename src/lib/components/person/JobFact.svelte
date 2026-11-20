@@ -1,8 +1,8 @@
 <script lang="ts">
-	import Icon from '$lib/components/ui/Icon.svelte';
-	import { PENCIL_AT_VALUE_END, VALUE_WITH_PENCIL } from '$lib/components/ui/edit-pencil';
-	import { useTranslate } from '$lib/i18n/context.svelte';
-	import { jobErrorFor } from '$lib/people/job';
+	import Icon from '#lib/components/ui/Icon.svelte';
+	import { PENCIL_AT_VALUE_END, VALUE_WITH_PENCIL } from '#lib/components/ui/edit-pencil.js';
+	import { useTranslate } from '#lib/i18n/context.svelte.js';
+	import { jobErrorFor } from '#lib/people/job.js';
 	import JobEdit from './JobEdit.svelte';
 	import type { PersonForm, PersonPageData } from './types';
 

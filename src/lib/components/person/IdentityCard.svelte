@@ -1,12 +1,12 @@
 <script lang="ts">
-	import { reveal } from '$lib/motion/motion.svelte';
-	import AvatarUploader from '$lib/components/person/AvatarUploader.svelte';
-	import Button from '$lib/components/ui/Button.svelte';
-	import FormError from '$lib/components/ui/FormError.svelte';
-	import InlineEdit from '$lib/components/ui/InlineEdit.svelte';
+	import { reveal } from '#lib/motion/motion.svelte.js';
+	import AvatarUploader from '#lib/components/person/AvatarUploader.svelte';
+	import Button from '#lib/components/ui/Button.svelte';
+	import FormError from '#lib/components/ui/FormError.svelte';
+	import InlineEdit from '#lib/components/ui/InlineEdit.svelte';
 	import { page } from '$app/state';
-	import { reachability } from '$lib/pwa/reachability.svelte';
-	import { useTranslate } from '$lib/i18n/context.svelte';
+	import { reachability } from '#lib/pwa/reachability.svelte.js';
+	import { useTranslate } from '#lib/i18n/context.svelte.js';
 	import { afterNavigate } from '$app/navigation';
 	import {
 		addMoreLabel,
@@ -19,16 +19,16 @@
 		recordMenu,
 		type Fillable,
 		type Missing
-	} from '$lib/people/identity-card';
-	import { useRemovals } from '$lib/undo/context.svelte';
-	import { removalKey } from '$lib/undo/keys';
-	import { isKept, type KeptOf } from '$lib/pwa/outbox';
-	import { outbox } from '$lib/pwa/outbox.svelte';
-	import { jobShortForm } from '$lib/people/job';
-	import { homesShown } from '$lib/people/home';
+	} from '#lib/people/identity-card.js';
+	import { useRemovals } from '#lib/undo/context.svelte.js';
+	import { removalKey } from '#lib/undo/keys.js';
+	import { isKept, type KeptOf } from '#lib/pwa/outbox.js';
+	import { outbox } from '#lib/pwa/outbox.svelte.js';
+	import { jobShortForm } from '#lib/people/job.js';
+	import { homesShown } from '#lib/people/home.js';
 	import { tick, untrack } from 'svelte';
-	import { browser } from '$app/environment';
-	import { deviceDay, writersDay } from '$lib/dates/today';
+	import { browser } from '$app/env';
+	import { deviceDay, writersDay } from '#lib/dates/today.js';
 	import IdentityFacts, { type EditedFact } from './IdentityFacts.svelte';
 	import IdentityMarkers from './IdentityMarkers.svelte';
 	import IdentityMenu from './IdentityMenu.svelte';

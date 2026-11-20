@@ -1,12 +1,12 @@
 <script lang="ts">
-	import HouseholdTodoRow from '$lib/components/todos/HouseholdTodoRow.svelte';
-	import EmptyState from '$lib/components/ui/EmptyState.svelte';
-	import FormError from '$lib/components/ui/FormError.svelte';
-	import { useI18n } from '$lib/i18n/context.svelte';
-	import { todoListGroups, type TodoGroupKey } from '$lib/todos/household';
-	import { JustDoneTodos } from '$lib/todos/just-done.svelte';
-	import { keptTicks } from '$lib/todos/kept-ticks.svelte';
-	import { useRemovals } from '$lib/undo/context.svelte';
+	import HouseholdTodoRow from '#lib/components/todos/HouseholdTodoRow.svelte';
+	import EmptyState from '#lib/components/ui/EmptyState.svelte';
+	import FormError from '#lib/components/ui/FormError.svelte';
+	import { useI18n } from '#lib/i18n/context.svelte.js';
+	import { todoListGroups, type TodoGroupKey } from '#lib/todos/household.js';
+	import { JustDoneTodos } from '#lib/todos/just-done.svelte.js';
+	import { keptTicks } from '#lib/todos/kept-ticks.svelte.js';
+	import { useRemovals } from '#lib/undo/context.svelte.js';
 	import type { ActionData, PageData } from './$types';
 
 	/*

@@ -1,7 +1,7 @@
 <script lang="ts">
 	import Icon from './Icon.svelte';
-	import { useTranslate } from '$lib/i18n/context.svelte';
-	import { useVeil } from '$lib/privacy/veil.svelte';
+	import { useTranslate } from '#lib/i18n/context.svelte.js';
+	import { useVeil } from '#lib/privacy/veil.svelte.js';
 
 	/*
 	 * The *Private* mark beside an entry only its author sees (docs/dev/02 §2.10). When a tap of its

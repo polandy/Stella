@@ -1,12 +1,12 @@
 <script lang="ts">
-	import { FIELD } from '$lib/components/ui/field';
-	import { enhance } from '$app/forms';
-	import type { SubmitFunction } from '@sveltejs/kit';
-	import Avatar from '$lib/components/ui/Avatar.svelte';
-	import Button from '$lib/components/ui/Button.svelte';
-	import Combobox from '$lib/components/ui/Combobox.svelte';
-	import { useTranslate } from '$lib/i18n/context.svelte';
-	import type { LastNameAnswers } from '$lib/components/surnames/last-name-answers.svelte';
+	import { FIELD } from '#lib/components/ui/field.js';
+	import { enhance } from '#lib/forms/enhance.js';
+	import type { SubmitFunction } from '$app/forms';
+	import Avatar from '#lib/components/ui/Avatar.svelte';
+	import Button from '#lib/components/ui/Button.svelte';
+	import Combobox from '#lib/components/ui/Combobox.svelte';
+	import { useTranslate } from '#lib/i18n/context.svelte.js';
+	import type { LastNameAnswers } from '#lib/components/surnames/last-name-answers.svelte.js';
 	import LastNameRowMenu from './LastNameRowMenu.svelte';
 	import LastNameSelectionBar from './LastNameSelectionBar.svelte';
 	import type { SurnamePersonView } from './types';

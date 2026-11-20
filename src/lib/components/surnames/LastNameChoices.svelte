@@ -1,11 +1,11 @@
 <script lang="ts">
-	import { enhance } from '$app/forms';
-	import type { SubmitFunction } from '@sveltejs/kit';
-	import Avatar from '$lib/components/ui/Avatar.svelte';
-	import LinkedNames from '$lib/components/people/LinkedNames.svelte';
-	import { useTranslate } from '$lib/i18n/context.svelte';
-	import type { Segment } from '$lib/i18n/linked';
-	import type { LastNameAnswers } from '$lib/components/surnames/last-name-answers.svelte';
+	import { enhance } from '#lib/forms/enhance.js';
+	import type { SubmitFunction } from '$app/forms';
+	import Avatar from '#lib/components/ui/Avatar.svelte';
+	import LinkedNames from '#lib/components/people/LinkedNames.svelte';
+	import { useTranslate } from '#lib/i18n/context.svelte.js';
+	import type { Segment } from '#lib/i18n/linked.js';
+	import type { LastNameAnswers } from '#lib/components/surnames/last-name-answers.svelte.js';
 	import LastNameRowMenu from './LastNameRowMenu.svelte';
 	import type { SurnamePersonView } from './types';
 

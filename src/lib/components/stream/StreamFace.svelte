@@ -1,6 +1,6 @@
 <script lang="ts">
-	import Avatar from '$lib/components/ui/Avatar.svelte';
-	import { showsActorBadge } from '$lib/stream/actor-badge';
+	import Avatar from '#lib/components/ui/Avatar.svelte';
+	import { showsActorBadge } from '#lib/stream/actor-badge.js';
 
 	/*
 	 * A stream row leads with its subject's face; on a row another member wrote, their own small

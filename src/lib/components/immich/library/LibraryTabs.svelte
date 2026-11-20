@@ -4,10 +4,10 @@
   where it was last.
 -->
 <script lang="ts">
-	import Icon from '$lib/components/ui/Icon.svelte';
-	import Tabs from '$lib/components/ui/Tabs.svelte';
-	import { useTranslate } from '$lib/i18n/context.svelte';
-	import type { LibraryTab } from '$lib/immich/library-albums';
+	import Icon from '#lib/components/ui/Icon.svelte';
+	import Tabs from '#lib/components/ui/Tabs.svelte';
+	import { useTranslate } from '#lib/i18n/context.svelte.js';
+	import type { LibraryTab } from '#lib/immich/library-albums.js';
 
 	interface Props {
 		chosen: LibraryTab;

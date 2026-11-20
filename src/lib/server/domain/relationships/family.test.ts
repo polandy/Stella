@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'bun:test';
-import type { GraphModel } from '$lib/graph/model/types';
-import { textOf } from '$lib/i18n/linked';
-import { createTranslator } from '$lib/i18n/translate';
-import type { KinshipGraph } from '$lib/kinship/kinship';
-import { pairKey, type Dismissal } from '$lib/suggestions/claims';
+import type { GraphModel } from '#lib/graph/model/types.js';
+import { textOf } from '#lib/i18n/linked.js';
+import { createTranslator } from '#lib/i18n/translate.js';
+import type { KinshipGraph } from '#lib/kinship/kinship.js';
+import { pairKey, type Dismissal } from '#lib/suggestions/claims.js';
 import type { Viewer } from '../../access/visibility';
 import { readFamilyOf, type FamilyReadDeps } from './family';
 import { readExclusionFacts } from './exclusions';

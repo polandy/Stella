@@ -1,20 +1,20 @@
 import { error, fail, redirect } from '@sveltejs/kit';
-import { requireViewer } from '$lib/server/auth/guards';
+import { requireViewer } from '#lib/server/auth/guards.js';
 import * as v from 'valibot';
-import { GENDERS } from '$lib/people/gender';
-import { JOB_EDITOR_PLACES } from '$lib/people/job';
+import { GENDERS } from '#lib/people/gender.js';
+import { JOB_EDITOR_PLACES } from '#lib/people/job.js';
 import {
 	editProfile,
 	EmptyContactNameError,
 	JobFieldTooLongError,
 	setGender,
 	setJob
-} from '$lib/server/domain/contacts/profile';
-import { getContact } from '$lib/server/domain/contacts/contacts';
-import { InvalidAvatarError, setContactAvatar } from '$lib/server/domain/media/avatars';
-import { editNameParts } from '$lib/server/domain/contacts/name-parts';
-import { takenAtField } from '$lib/server/http/taken-at-field';
-import { say, translator } from '$lib/server/i18n/say';
+} from '#lib/server/domain/contacts/profile.js';
+import { getContact } from '#lib/server/domain/contacts/contacts.js';
+import { InvalidAvatarError, setContactAvatar } from '#lib/server/domain/media/avatars.js';
+import { editNameParts } from '#lib/server/domain/contacts/name-parts.js';
+import { takenAtField } from '#lib/server/http/taken-at-field.js';
+import { say, translator } from '#lib/server/i18n/say.js';
 import type { Actions } from '../$types';
 
 /** The description as the page posts it; trimming is the use-case's. */

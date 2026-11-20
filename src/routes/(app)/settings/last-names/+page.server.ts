@@ -1,20 +1,20 @@
 import { error } from '@sveltejs/kit';
-import { requireViewer } from '$lib/server/auth/guards';
+import { requireViewer } from '#lib/server/auth/guards.js';
 import * as v from 'valibot';
-import { segmentsOf, type LinkedPhrase } from '$lib/i18n/linked';
+import { segmentsOf, type LinkedPhrase } from '#lib/i18n/linked.js';
 import {
 	dismissLastName,
 	readSurnameHelp,
 	restoreLastName,
 	reviewLastNames,
 	type SurnameListPerson
-} from '$lib/server/domain/contacts/last-names';
+} from '#lib/server/domain/contacts/last-names.js';
 import {
 	askAgainForLastName,
 	settleWithoutLastName
-} from '$lib/server/domain/contacts/without-last-name';
+} from '#lib/server/domain/contacts/without-last-name.js';
 import { lastNameActions } from '../../_shared/last-names-actions';
-import { say, translator } from '$lib/server/i18n/say';
+import { say, translator } from '#lib/server/i18n/say.js';
 import type { Actions, PageServerLoad } from './$types';
 
 /*

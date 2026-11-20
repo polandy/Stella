@@ -1,13 +1,13 @@
 <script lang="ts">
-	import { FIELD } from '$lib/components/ui/field';
-	import FormError from '$lib/components/ui/FormError.svelte';
-	import Button from '$lib/components/ui/Button.svelte';
-	import { useTranslate } from '$lib/i18n/context.svelte';
-	import { hasMessage } from '$lib/i18n/translate';
-	import ContactReview from '$lib/components/import/ContactReview.svelte';
-	import ImportPhotos from '$lib/components/import/ImportPhotos.svelte';
-	import NextcloudPanel from '$lib/components/import/NextcloudPanel.svelte';
-	import SkippedContacts from '$lib/components/import/SkippedContacts.svelte';
+	import { FIELD } from '#lib/components/ui/field.js';
+	import FormError from '#lib/components/ui/FormError.svelte';
+	import Button from '#lib/components/ui/Button.svelte';
+	import { useTranslate } from '#lib/i18n/context.svelte.js';
+	import { hasMessage } from '#lib/i18n/translate.js';
+	import ContactReview from '#lib/components/import/ContactReview.svelte';
+	import ImportPhotos from '#lib/components/import/ImportPhotos.svelte';
+	import NextcloudPanel from '#lib/components/import/NextcloudPanel.svelte';
+	import SkippedContacts from '#lib/components/import/SkippedContacts.svelte';
 	import type { ActionData, PageData } from './$types';
 
 	/*

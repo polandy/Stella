@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'bun:test';
-import { createTranslator } from '$lib/i18n/translate';
-import type { CircleDeletionFacts } from '$lib/server/domain/circles/delete-circle';
-import { circleRepositoryWith } from '$lib/server/domain/testing';
-import { answerOf, routeEvent, type FakeServices } from '$lib/server/testing';
+import { createTranslator } from '#lib/i18n/translate.js';
+import type { CircleDeletionFacts } from '#lib/server/domain/circles/delete-circle.js';
+import { circleRepositoryWith } from '#lib/server/domain/testing/index.js';
+import { answerOf, routeEvent, type FakeServices } from '#lib/server/testing/index.js';
 import { GET } from './+server';
 
 /*

@@ -1,10 +1,10 @@
-import type { SubmitFunction } from '@sveltejs/kit';
+import type { SubmitFunction } from '$app/forms';
 import { invalidateAll } from '$app/navigation';
-import { useI18n } from '$lib/i18n/context.svelte';
-import { whilePending } from '$lib/sync/pending';
-import { usePending } from '$lib/sync/context.svelte';
-import { useRemovals } from '$lib/undo/context.svelte';
-import { submitAction } from '$lib/undo/submit-action';
+import { useI18n } from '#lib/i18n/context.svelte.js';
+import { whilePending } from '#lib/sync/pending.js';
+import { usePending } from '#lib/sync/context.svelte.js';
+import { useRemovals } from '#lib/undo/context.svelte.js';
+import { submitAction } from '#lib/undo/submit-action.js';
 import { held, hiddenIds, sending, settle, takenBack, type Batches } from './batches';
 import { useGivenNames } from './given-names.svelte';
 import { passOnOffer, type PassOnMap } from './pass-on';

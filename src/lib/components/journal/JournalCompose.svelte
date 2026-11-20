@@ -1,19 +1,19 @@
 <script lang="ts">
-	import { FIELD } from '$lib/components/ui/field';
-	import { reveal } from '$lib/motion/motion.svelte';
-	import FormError from '$lib/components/ui/FormError.svelte';
-	import { enhance } from '$app/forms';
-	import Button from '$lib/components/ui/Button.svelte';
-	import DateField from '$lib/components/ui/DateField.svelte';
-	import Icon from '$lib/components/ui/Icon.svelte';
-	import ImmichLibraryPicker from '$lib/components/immich/ImmichLibraryPicker.svelte';
-	import PhotoSourceMenu from '$lib/components/immich/PhotoSourceMenu.svelte';
-	import MentionTextarea from '$lib/components/ui/MentionTextarea.svelte';
-	import { processImage } from '$lib/media/process-image';
-	import { keepable } from '$lib/pwa/keepable';
-	import type { KeptPhoto } from '$lib/pwa/outbox';
+	import { FIELD } from '#lib/components/ui/field.js';
+	import { reveal } from '#lib/motion/motion.svelte.js';
+	import FormError from '#lib/components/ui/FormError.svelte';
+	import { enhance } from '#lib/forms/enhance.js';
+	import Button from '#lib/components/ui/Button.svelte';
+	import DateField from '#lib/components/ui/DateField.svelte';
+	import Icon from '#lib/components/ui/Icon.svelte';
+	import ImmichLibraryPicker from '#lib/components/immich/ImmichLibraryPicker.svelte';
+	import PhotoSourceMenu from '#lib/components/immich/PhotoSourceMenu.svelte';
+	import MentionTextarea from '#lib/components/ui/MentionTextarea.svelte';
+	import { processImage } from '#lib/media/process-image.js';
+	import { keepable } from '#lib/pwa/keepable.js';
+	import type { KeptPhoto } from '#lib/pwa/outbox.js';
 	import { ulid } from 'ulid';
-	import { useI18n } from '$lib/i18n/context.svelte';
+	import { useI18n } from '#lib/i18n/context.svelte.js';
 	import type { ComponentProps } from 'svelte';
 
 	/*

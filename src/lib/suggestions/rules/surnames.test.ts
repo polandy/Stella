@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'bun:test';
-import { textOf } from '$lib/i18n/linked';
-import { createTranslator } from '$lib/i18n/translate';
-import type { KinshipGraph } from '$lib/kinship/kinship';
+import { textOf } from '#lib/i18n/linked.js';
+import { createTranslator } from '#lib/i18n/translate.js';
+import type { KinshipGraph } from '#lib/kinship/kinship.js';
 import {
 	buildSurnameView,
 	foldSurname,
@@ -59,7 +59,7 @@ function facts(
 
 /** The proposal as plain values, its reasons said in English. */
 function said(proposal: SurnameProposal) {
-	const reasons = (list: readonly import('$lib/i18n/linked').LinkedPhrase[]) =>
+	const reasons = (list: readonly import('#lib/i18n/linked.js').LinkedPhrase[]) =>
 		list.map((r) => textOf(r(en)));
 	switch (proposal.kind) {
 		case 'none':

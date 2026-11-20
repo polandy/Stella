@@ -20,8 +20,8 @@ const folderOf = (path: string) => path.slice(ROOT.length).split('/')[0]!;
 
 /** The component folder a specifier lands in, or null when it leaves `components/`. */
 function folderImported(importer: string, specifier: string): string | null {
-	const path = specifier.startsWith('$lib/')
-		? `src/lib/${specifier.slice('$lib/'.length)}`
+	const path = specifier.startsWith('#lib/')
+		? `src/lib/${specifier.slice('#lib/'.length)}`
 		: specifier.startsWith('.')
 			? posix.join(posix.dirname(importer), specifier)
 			: null;

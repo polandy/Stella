@@ -1,8 +1,8 @@
 import { deserialize } from '$app/forms';
 import { invalidateAll } from '$app/navigation';
-import type { Translate } from '$lib/i18n/translate';
-import type { Removals } from '$lib/undo/context.svelte';
-import { ACTION_HEADER } from '$lib/undo/submit-action';
+import type { Translate } from '#lib/i18n/translate.js';
+import type { Removals } from '#lib/undo/context.svelte.js';
+import { ACTION_HEADER } from '#lib/undo/submit-action.js';
 
 /*
  * Moving a circle from its page without a form (docs/dev/02 §2.4.2): the sub-circles card's *Add

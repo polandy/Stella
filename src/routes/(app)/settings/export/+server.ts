@@ -1,14 +1,14 @@
 import { error } from '@sveltejs/kit';
-import { requireUser } from '$lib/server/auth/guards';
+import { requireUser } from '#lib/server/auth/guards.js';
 import {
 	archiveEntries,
 	exportHousehold,
 	planArchive,
 	serialiseDocument
-} from '$lib/server/domain/archive/archive';
-import { tarEntry, tarTrailer } from '$lib/archive/tar';
+} from '#lib/server/domain/archive/archive.js';
+import { tarEntry, tarTrailer } from '#lib/archive/tar.js';
 import type { RequestHandler } from './$types';
-import { say } from '$lib/server/i18n/say';
+import { say } from '#lib/server/i18n/say.js';
 
 /*
  * Downloading the household archive (docs/dev/02 §2.15).

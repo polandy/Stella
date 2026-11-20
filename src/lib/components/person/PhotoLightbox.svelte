@@ -1,15 +1,15 @@
 <script lang="ts">
-	import Button from '$lib/components/ui/Button.svelte';
-	import FrameAsAvatar from '$lib/components/person/FrameAsAvatar.svelte';
-	import Icon from '$lib/components/ui/Icon.svelte';
-	import PrivateMark from '$lib/components/ui/PrivateMark.svelte';
-	import Veil from '$lib/components/ui/Veil.svelte';
-	import { useVeil } from '$lib/privacy/veil.svelte';
-	import { dayLabel } from '$lib/dates/labels';
-	import { useI18n } from '$lib/i18n/context.svelte';
-	import { photoDay } from '$lib/media/taken-at';
-	import { mediaUrl } from '$lib/media/urls';
-	import { photoAfterKey } from '$lib/media/photo-walk';
+	import Button from '#lib/components/ui/Button.svelte';
+	import FrameAsAvatar from '#lib/components/person/FrameAsAvatar.svelte';
+	import Icon from '#lib/components/ui/Icon.svelte';
+	import PrivateMark from '#lib/components/ui/PrivateMark.svelte';
+	import Veil from '#lib/components/ui/Veil.svelte';
+	import { useVeil } from '#lib/privacy/veil.svelte.js';
+	import { dayLabel } from '#lib/dates/labels.js';
+	import { useI18n } from '#lib/i18n/context.svelte.js';
+	import { photoDay } from '#lib/media/taken-at.js';
+	import { mediaUrl } from '#lib/media/urls.js';
+	import { photoAfterKey } from '#lib/media/photo-walk.js';
 	import GalleryPhotoActions from './GalleryPhotoActions.svelte';
 	import LightboxFrame from '../ui/LightboxFrame.svelte';
 	import UseImmichPhoto from './UseImmichPhoto.svelte';

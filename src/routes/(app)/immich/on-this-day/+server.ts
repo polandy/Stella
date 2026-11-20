@@ -1,12 +1,12 @@
 import { error } from '@sveltejs/kit';
-import { answerImmichMemories } from '$lib/server/immich/memories-route';
-import { say } from '$lib/server/i18n/say';
+import { answerImmichMemories } from '#lib/server/immich/memories-route.js';
+import { say } from '#lib/server/i18n/say.js';
 import type { RequestHandler } from './$types';
 
 /*
  * *On this day* from Immich (`?day=YYYY-MM-DD`, and for *Show more* `&year=&from=`), loaded by
  * Home's band and `/on-this-day` after they are drawn (docs/dev/02 §2.12.1). What it answers is
- * decided and tested in `$lib/server/immich/memories-route.ts`; this only wires it.
+ * decided and tested in `#lib/server/immich/memories-route.ts`; this only wires it.
  */
 export const GET: RequestHandler = async ({ locals, url }) => {
 	const viewer = locals.user ? { id: locals.user.id, householdId: locals.user.householdId } : null;

@@ -1,8 +1,8 @@
 <script lang="ts">
-	import Icon from '$lib/components/ui/Icon.svelte';
-	import NamesakeLine from '$lib/components/ui/NamesakeLine.svelte';
-	import { useTranslate } from '$lib/i18n/context.svelte';
-	import type { UnclearHandle } from '$lib/mentions/unclear';
+	import Icon from '#lib/components/ui/Icon.svelte';
+	import NamesakeLine from '#lib/components/ui/NamesakeLine.svelte';
+	import { useTranslate } from '#lib/i18n/context.svelte.js';
+	import type { UnclearHandle } from '#lib/mentions/unclear.js';
 
 	/*
 	 * Asks which one a typed `@Thomas` means while the text is written (docs/dev/02 §2.2.3): one line,

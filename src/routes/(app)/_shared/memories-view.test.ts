@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test';
-import type { Memory, MemoryPhoto } from '$lib/server/domain/memories/memories';
+import type { Memory, MemoryPhoto } from '#lib/server/domain/memories/memories.js';
 import { memoryBandForView, memoryRowOf, memoryYearsForView } from './memories-view';
 
 /* *On this day* rows (docs/dev/02 §2.12.1): faces, the first line, the link and the veil key. */

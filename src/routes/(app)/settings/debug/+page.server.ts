@@ -1,6 +1,6 @@
-import { dev } from '$app/environment';
+import { dev } from '$app/env';
 import { error } from '@sveltejs/kit';
-import { getConfig } from '$lib/server/config';
+import { getConfig } from '#lib/server/config.js';
 import type { PageServerLoad } from './$types';
 
 /**

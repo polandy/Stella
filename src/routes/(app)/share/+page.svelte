@@ -3,28 +3,28 @@
 	import { page } from '$app/state';
 	import { onDestroy, onMount } from 'svelte';
 	import { ulid } from 'ulid';
-	import ShareFields from '$lib/components/share/ShareFields.svelte';
-	import SharedPreview from '$lib/components/share/SharedPreview.svelte';
-	import SharePersonPicker from '$lib/components/share/SharePersonPicker.svelte';
-	import ShareTargetPicker from '$lib/components/share/ShareTargetPicker.svelte';
-	import Button from '$lib/components/ui/Button.svelte';
-	import FormError from '$lib/components/ui/FormError.svelte';
-	import Icon from '$lib/components/ui/Icon.svelte';
-	import PhotoCropper from '$lib/components/ui/PhotoCropper.svelte';
-	import { useI18n } from '$lib/i18n/context.svelte';
-	import type { CropRect } from '$lib/media/crop';
-	import { processAvatar } from '$lib/media/process-avatar';
-	import { processImage } from '$lib/media/process-image';
-	import { deviceDay, writersDay } from '$lib/dates/today';
-	import type { KeptPhoto } from '$lib/pwa/outbox';
-	import { install } from '$lib/pwa/install.svelte';
-	import { outbox } from '$lib/pwa/outbox.svelte';
-	import { reachability } from '$lib/pwa/reachability.svelte';
-	import { forgetShare, readShare, type SharedPhoto } from '$lib/pwa/share-store';
-	import { partsFromAddress } from '$lib/share/address';
-	import { commandFor, type ShareDraft } from '$lib/share/command';
-	import { deviceStorage, openedHere } from '$lib/share/opened-here';
-	import { peopleToOffer } from '$lib/share/recent';
+	import ShareFields from '#lib/components/share/ShareFields.svelte';
+	import SharedPreview from '#lib/components/share/SharedPreview.svelte';
+	import SharePersonPicker from '#lib/components/share/SharePersonPicker.svelte';
+	import ShareTargetPicker from '#lib/components/share/ShareTargetPicker.svelte';
+	import Button from '#lib/components/ui/Button.svelte';
+	import FormError from '#lib/components/ui/FormError.svelte';
+	import Icon from '#lib/components/ui/Icon.svelte';
+	import PhotoCropper from '#lib/components/ui/PhotoCropper.svelte';
+	import { useI18n } from '#lib/i18n/context.svelte.js';
+	import type { CropRect } from '#lib/media/crop.js';
+	import { processAvatar } from '#lib/media/process-avatar.js';
+	import { processImage } from '#lib/media/process-image.js';
+	import { deviceDay, writersDay } from '#lib/dates/today.js';
+	import type { KeptPhoto } from '#lib/pwa/outbox.js';
+	import { install } from '#lib/pwa/install.svelte.js';
+	import { outbox } from '#lib/pwa/outbox.svelte.js';
+	import { reachability } from '#lib/pwa/reachability.svelte.js';
+	import { forgetShare, readShare, type SharedPhoto } from '#lib/pwa/share-store.js';
+	import { partsFromAddress } from '#lib/share/address.js';
+	import { commandFor, type ShareDraft } from '#lib/share/command.js';
+	import { deviceStorage, openedHere } from '#lib/share/opened-here.js';
+	import { peopleToOffer } from '#lib/share/recent.js';
 	import {
 		choicesFor,
 		giftIdeaFrom,
@@ -33,8 +33,8 @@
 		todoTitleFrom,
 		type Shared,
 		type ShareTarget
-	} from '$lib/share/shared';
-	import { useRemovals } from '$lib/undo/context.svelte';
+	} from '#lib/share/shared.js';
+	import { useRemovals } from '#lib/undo/context.svelte.js';
 	import type { PageData } from './$types';
 
 	/*
@@ -137,7 +137,7 @@
 		if (pendingId) await forgetShare(pendingId);
 		const contactId = person?.id;
 		removals.notify(said);
-		await goto(contactId ? `/contacts/${contactId}` : '/', { invalidateAll: true });
+		await goto(contactId ? `/contacts/${contactId}` : '/', { refreshAll: true });
 	}
 
 	function savedLine(): string {

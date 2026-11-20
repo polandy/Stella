@@ -1,4 +1,4 @@
-import { dayHeading, type DateLanguage } from '$lib/dates/labels';
+import { dayHeading, type DateLanguage } from '#lib/dates/labels.js';
 
 /*
  * Home's stream by day (docs/dev/02 §2.22.2): newest first under a heading per calendar day —

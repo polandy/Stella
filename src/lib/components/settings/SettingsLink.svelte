@@ -1,7 +1,7 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
-	import Icon from '$lib/components/ui/Icon.svelte';
-	import type { IconName } from '$lib/components/ui/icons';
+	import Icon from '#lib/components/ui/Icon.svelte';
+	import type { IconName } from '#lib/components/ui/icons.js';
 
 	/*
 	 * One card of Settings that opens a page of its own: an icon, a title, a line under it and,

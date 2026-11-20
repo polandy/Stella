@@ -1,16 +1,16 @@
 <script lang="ts">
-	import { FIELD } from '$lib/components/ui/field';
-	import Button from '$lib/components/ui/Button.svelte';
-	import FormError from '$lib/components/ui/FormError.svelte';
-	import MentionTextarea from '$lib/components/ui/MentionTextarea.svelte';
-	import PersonSearchSelect from '$lib/components/people/PersonSearchSelect.svelte';
-	import { subjectPool, type SubjectFace } from '$lib/story/subjects';
+	import { FIELD } from '#lib/components/ui/field.js';
+	import Button from '#lib/components/ui/Button.svelte';
+	import FormError from '#lib/components/ui/FormError.svelte';
+	import MentionTextarea from '#lib/components/ui/MentionTextarea.svelte';
+	import PersonSearchSelect from '#lib/components/people/PersonSearchSelect.svelte';
+	import { subjectPool, type SubjectFace } from '#lib/story/subjects.js';
 	import { deserialize } from '$app/forms';
 	import { invalidateAll } from '$app/navigation';
-	import { useI18n } from '$lib/i18n/context.svelte';
-	import { processImage } from '$lib/media/process-image';
-	import { immichMediaToken } from '$lib/immich/media-url';
-	import type { EntryImmichPhoto, LibraryPhoto } from '$lib/immich/library';
+	import { useI18n } from '#lib/i18n/context.svelte.js';
+	import { processImage } from '#lib/media/process-image.js';
+	import { immichMediaToken } from '#lib/immich/media-url.js';
+	import type { EntryImmichPhoto, LibraryPhoto } from '#lib/immich/library.js';
 	import type { ComponentProps } from 'svelte';
 	import EntryEditorPhotos from './EntryEditorPhotos.svelte';
 

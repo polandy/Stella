@@ -8,10 +8,10 @@
 -->
 <script lang="ts">
 	import type { Snippet } from 'svelte';
-	import Icon from '$lib/components/ui/Icon.svelte';
-	import MenuButton from '$lib/components/ui/MenuButton.svelte';
-	import { useTranslate } from '$lib/i18n/context.svelte';
-	import { reachability } from '$lib/pwa/reachability.svelte';
+	import Icon from '#lib/components/ui/Icon.svelte';
+	import MenuButton from '#lib/components/ui/MenuButton.svelte';
+	import { useTranslate } from '#lib/i18n/context.svelte.js';
+	import { reachability } from '#lib/pwa/reachability.svelte.js';
 
 	interface Props {
 		/** The button's accessible name: *Add photos*. */

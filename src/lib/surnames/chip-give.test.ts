@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, spyOn } from 'bun:test';
-import { createTranslator } from '$lib/i18n/translate';
-import { ActionFailedError } from '$lib/undo/submit-action';
+import { createTranslator } from '#lib/i18n/translate.js';
+import { ActionFailedError } from '#lib/undo/submit-action.js';
 import {
 	giveFromChip,
 	LAST_NAME_CHANGED_STATUS,

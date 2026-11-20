@@ -1,6 +1,6 @@
 <script lang="ts">
-	import { useI18n } from '$lib/i18n/context.svelte';
-	import { dueLabel, dueStanding } from '$lib/todos/todos';
+	import { useI18n } from '#lib/i18n/context.svelte.js';
+	import { dueLabel, dueStanding } from '#lib/todos/todos.js';
 
 	/*
 	 * The day a to-do is due by, as every list of to-dos says it (docs/dev/02 §2.26): weighted while

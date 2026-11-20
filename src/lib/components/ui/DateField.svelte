@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { FIELD } from '$lib/components/ui/field';
+	import { FIELD } from '#lib/components/ui/field.js';
 	import { untrack } from 'svelte';
 	import {
 		birthYearFromAge,
@@ -11,9 +11,9 @@
 		segmentOrder,
 		weekdayDate,
 		type DateParts
-	} from '$lib/dates/field';
-	import { estimatedAge } from '$lib/dates/partial-date';
-	import { useI18n } from '$lib/i18n/context.svelte';
+	} from '#lib/dates/field.js';
+	import { estimatedAge } from '#lib/dates/partial-date.js';
+	import { useI18n } from '#lib/i18n/context.svelte.js';
 
 	/*
 	 * A date field in the language Stella is being read in (docs/dev/05 §5.7).

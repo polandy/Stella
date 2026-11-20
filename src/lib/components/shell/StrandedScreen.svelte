@@ -1,11 +1,11 @@
 <script lang="ts">
 	import { page } from '$app/state';
-	import Button from '$lib/components/ui/Button.svelte';
-	import EmptyState from '$lib/components/ui/EmptyState.svelte';
-	import type { IconName } from '$lib/components/ui/icons';
-	import { useI18n } from '$lib/i18n/context.svelte';
-	import type { MessageKey } from '$lib/i18n/translate';
-	import { strandedPlace, type StrandedPlace } from '$lib/ui/stranded';
+	import Button from '#lib/components/ui/Button.svelte';
+	import EmptyState from '#lib/components/ui/EmptyState.svelte';
+	import type { IconName } from '#lib/components/ui/icons.js';
+	import { useI18n } from '#lib/i18n/context.svelte.js';
+	import type { MessageKey } from '#lib/i18n/translate.js';
+	import { strandedPlace, type StrandedPlace } from '#lib/ui/stranded.js';
 
 	/*
 	 * Where an address that leads nowhere lands (docs/dev/design/screens/across-screens.md): an

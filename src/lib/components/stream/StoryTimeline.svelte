@@ -1,35 +1,35 @@
 <script lang="ts">
 	import { invalidateAll } from '$app/navigation';
-	import Avatar from '$lib/components/ui/Avatar.svelte';
-	import Button from '$lib/components/ui/Button.svelte';
-	import Icon from '$lib/components/ui/Icon.svelte';
-	import InteractionEditor from '$lib/components/person/InteractionEditor.svelte';
-	import JournalEntryEditor from '$lib/components/journal/JournalEntryEditor.svelte';
-	import ImmichPhotoTile from '$lib/components/immich/ImmichPhotoTile.svelte';
-	import MomentWith from '$lib/components/journal/MomentWith.svelte';
-	import { othersThan } from '$lib/story/subjects';
-	import PrivateMark from '$lib/components/ui/PrivateMark.svelte';
-	import Swap from '$lib/components/ui/Swap.svelte';
-	import Veil from '$lib/components/ui/Veil.svelte';
-	import { contactSectionPath, journalEntryPath } from '$lib/people/sections';
-	import { dayHeading } from '$lib/dates/labels';
-	import { occasionLabel } from '$lib/gifts/labels';
-	import { useI18n } from '$lib/i18n/context.svelte';
-	import { KIND_PRESENTATION } from '$lib/story/interaction-kinds';
-	import { groupStoryByDay } from '$lib/story/grouping';
-	import type { SelectablePerson } from '$lib/people/select';
+	import Avatar from '#lib/components/ui/Avatar.svelte';
+	import Button from '#lib/components/ui/Button.svelte';
+	import Icon from '#lib/components/ui/Icon.svelte';
+	import InteractionEditor from '#lib/components/person/InteractionEditor.svelte';
+	import JournalEntryEditor from '#lib/components/journal/JournalEntryEditor.svelte';
+	import ImmichPhotoTile from '#lib/components/immich/ImmichPhotoTile.svelte';
+	import MomentWith from '#lib/components/journal/MomentWith.svelte';
+	import { othersThan } from '#lib/story/subjects.js';
+	import PrivateMark from '#lib/components/ui/PrivateMark.svelte';
+	import Swap from '#lib/components/ui/Swap.svelte';
+	import Veil from '#lib/components/ui/Veil.svelte';
+	import { contactSectionPath, journalEntryPath } from '#lib/people/sections.js';
+	import { dayHeading } from '#lib/dates/labels.js';
+	import { occasionLabel } from '#lib/gifts/labels.js';
+	import { useI18n } from '#lib/i18n/context.svelte.js';
+	import { KIND_PRESENTATION } from '#lib/story/interaction-kinds.js';
+	import { groupStoryByDay } from '#lib/story/grouping.js';
+	import type { SelectablePerson } from '#lib/people/select.js';
 	import type {
 		StoryCursorView,
 		StoryItemView,
 		StoryPageView,
 		StoryTodoItem
-	} from '$lib/story/item';
-	import { placeholderFor } from '$lib/privacy/veil';
-	import { useVeil } from '$lib/privacy/veil.svelte';
-	import { useRemovals } from '$lib/undo/context.svelte';
-	import { removalKey as buildKey } from '$lib/undo/keys';
-	import { removeThroughAction } from '$lib/undo/deferred-removal';
-	import { submitAction } from '$lib/undo/submit-action';
+	} from '#lib/story/item.js';
+	import { placeholderFor } from '#lib/privacy/veil.js';
+	import { useVeil } from '#lib/privacy/veil.svelte.js';
+	import { useRemovals } from '#lib/undo/context.svelte.js';
+	import { removalKey as buildKey } from '#lib/undo/keys.js';
+	import { removeThroughAction } from '#lib/undo/deferred-removal.js';
+	import { submitAction } from '#lib/undo/submit-action.js';
 	import type { ComponentProps } from 'svelte';
 
 	/*

@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'bun:test';
-import { createTranslator } from '$lib/i18n/translate';
-import type { CirclePhoto } from '$lib/server/domain/circles/circle-photos';
-import type { NewMembership, RoleRename } from '$lib/server/domain/circles/circles';
-import type { SurnameListPerson } from '$lib/server/domain/contacts/last-names';
-import type { CircleCutRow } from '$lib/server/domain/media/cuts';
+import { createTranslator } from '#lib/i18n/translate.js';
+import type { CirclePhoto } from '#lib/server/domain/circles/circle-photos.js';
+import type { NewMembership, RoleRename } from '#lib/server/domain/circles/circles.js';
+import type { SurnameListPerson } from '#lib/server/domain/contacts/last-names.js';
+import type { CircleCutRow } from '#lib/server/domain/media/cuts.js';
 import {
 	circleRepositoryWith,
 	cutRepositoryWith,
@@ -15,9 +15,9 @@ import {
 	sequentialIds,
 	someCircle,
 	treeNode
-} from '$lib/server/domain/testing';
-import type { TreeCircle } from '$lib/circles/tree';
-import type { Locale } from '$lib/i18n/locales';
+} from '#lib/server/domain/testing/index.js';
+import type { TreeCircle } from '#lib/circles/tree.js';
+import type { Locale } from '#lib/i18n/locales.js';
 import {
 	answerOf,
 	formOf,
@@ -25,7 +25,7 @@ import {
 	routeEvent,
 	type EdgeAnswer,
 	type FakeServices
-} from '$lib/server/testing';
+} from '#lib/server/testing/index.js';
 import { actions, load } from './+page.server';
 import type { PageServerData } from './$types';
 

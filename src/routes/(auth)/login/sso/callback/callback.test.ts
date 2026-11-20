@@ -1,10 +1,10 @@
 import { afterEach, beforeEach, describe, expect, it, spyOn } from 'bun:test';
 import { isHttpError, isRedirect, type Cookies } from '@sveltejs/kit';
-import { setOidcTransaction, type OidcTransaction } from '$lib/server/auth/cookies';
-import type { OidcClaims } from '$lib/server/auth/oidc/types';
-import type { SessionRecord } from '$lib/server/auth/session';
-import type { AuthServices } from '$lib/server/services/auth';
-import type { AppServices } from '$lib/server/services/app-services';
+import { setOidcTransaction, type OidcTransaction } from '#lib/server/auth/cookies.js';
+import type { OidcClaims } from '#lib/server/auth/oidc/types.js';
+import type { SessionRecord } from '#lib/server/auth/session.js';
+import type { AuthServices } from '#lib/server/services/auth.js';
+import type { AppServices } from '#lib/server/services/app-services.js';
 
 /*
  * The SSO callback (docs/dev/04 §4.4) over a test-wired `locals.services`: the provider is a fake,

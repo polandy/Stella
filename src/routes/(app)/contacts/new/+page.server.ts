@@ -1,14 +1,14 @@
 import { fail, redirect } from '@sveltejs/kit';
-import { requireViewer } from '$lib/server/auth/guards';
-import { createTranslator } from '$lib/i18n/translate';
-import { readCommand } from '$lib/server/commands/parse';
-import { fromFormData } from '$lib/commands/form-data';
-import { ContactAddSchema } from '$lib/commands/person-payloads';
-import { systemClock } from '$lib/server/clock';
-import { dispatchCommand } from '$lib/server/domain/commands/dispatch';
-import { ulidGenerator } from '$lib/server/id';
-import { readNewPersonRequest } from '$lib/people/new-person';
-import { todayFor } from '$lib/dates/today';
+import { requireViewer } from '#lib/server/auth/guards.js';
+import { createTranslator } from '#lib/i18n/translate.js';
+import { readCommand } from '#lib/server/commands/parse.js';
+import { fromFormData } from '#lib/commands/form-data.js';
+import { ContactAddSchema } from '#lib/commands/person-payloads.js';
+import { systemClock } from '#lib/server/clock.js';
+import { dispatchCommand } from '#lib/server/domain/commands/dispatch.js';
+import { ulidGenerator } from '#lib/server/id.js';
+import { readNewPersonRequest } from '#lib/people/new-person.js';
+import { todayFor } from '#lib/dates/today.js';
 import type { Actions, PageServerLoad } from './$types';
 
 /*

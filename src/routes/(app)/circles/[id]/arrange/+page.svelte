@@ -1,6 +1,6 @@
 <script lang="ts">
-	import ArrangeBoard from '$lib/components/circle/ArrangeBoard.svelte';
-	import { useI18n } from '$lib/i18n/context.svelte';
+	import ArrangeBoard from '#lib/components/circle/ArrangeBoard.svelte';
+	import { useI18n } from '#lib/i18n/context.svelte.js';
 	import type { PageData } from './$types';
 
 	/*

@@ -1,28 +1,28 @@
 <script lang="ts">
 	import { afterNavigate, onNavigate, pushState } from '$app/navigation';
 	import { navigating, page } from '$app/state';
-	import Button from '$lib/components/ui/Button.svelte';
-	import ActivityIndicator from '$lib/components/ui/ActivityIndicator.svelte';
-	import CommandPalette from '$lib/components/shell/CommandPalette.svelte';
-	import Icon from '$lib/components/ui/Icon.svelte';
-	import { useI18n, useTranslate } from '$lib/i18n/context.svelte';
-	import { provideGivenNames } from '$lib/surnames/given-names.svelte';
-	import { withGivenNames } from '$lib/surnames/given-names';
-	import type { IconName } from '$lib/components/ui/icons';
-	import type { MessageKey } from '$lib/i18n/translate';
-	import Logo from '$lib/components/shell/Logo.svelte';
-	import OfflineBanner from '$lib/components/pwa/OfflineBanner.svelte';
-	import VeilLock from '$lib/components/shell/VeilLock.svelte';
-	import AccountMenu from '$lib/components/shell/AccountMenu.svelte';
-	import Toast from '$lib/components/ui/Toast.svelte';
-	import { provideRemovals } from '$lib/undo/context.svelte';
-	import { providePending } from '$lib/sync/context.svelte';
-	import { providePeopleContext } from '$lib/people/context.svelte';
-	import { createDeviceUnlock } from '$lib/privacy/device-unlock.svelte';
-	import { provideVeil } from '$lib/privacy/veil.svelte';
-	import { reportNavigation } from '$lib/sync/pending';
-	import { followScroll, offersAddPerson, SHOWN_TOP_BAR } from '$lib/ui/top-bar';
-	import { breadcrumbs, type CrumbData } from '$lib/ui/breadcrumbs';
+	import Button from '#lib/components/ui/Button.svelte';
+	import ActivityIndicator from '#lib/components/ui/ActivityIndicator.svelte';
+	import CommandPalette from '#lib/components/shell/CommandPalette.svelte';
+	import Icon from '#lib/components/ui/Icon.svelte';
+	import { useI18n, useTranslate } from '#lib/i18n/context.svelte.js';
+	import { provideGivenNames } from '#lib/surnames/given-names.svelte.js';
+	import { withGivenNames } from '#lib/surnames/given-names.js';
+	import type { IconName } from '#lib/components/ui/icons.js';
+	import type { MessageKey } from '#lib/i18n/translate.js';
+	import Logo from '#lib/components/shell/Logo.svelte';
+	import OfflineBanner from '#lib/components/pwa/OfflineBanner.svelte';
+	import VeilLock from '#lib/components/shell/VeilLock.svelte';
+	import AccountMenu from '#lib/components/shell/AccountMenu.svelte';
+	import Toast from '#lib/components/ui/Toast.svelte';
+	import { provideRemovals } from '#lib/undo/context.svelte.js';
+	import { providePending } from '#lib/sync/context.svelte.js';
+	import { providePeopleContext } from '#lib/people/context.svelte.js';
+	import { createDeviceUnlock } from '#lib/privacy/device-unlock.svelte.js';
+	import { provideVeil } from '#lib/privacy/veil.svelte.js';
+	import { reportNavigation } from '#lib/sync/pending.js';
+	import { followScroll, offersAddPerson, SHOWN_TOP_BAR } from '#lib/ui/top-bar.js';
+	import { breadcrumbs, type CrumbData } from '#lib/ui/breadcrumbs.js';
 	import { onMount, untrack, type Snippet } from 'svelte';
 	import type { LayoutData } from './$types';
 	import { keepShellCurrent } from './shell-lifecycle.svelte';
@@ -113,7 +113,7 @@
 	const pending = providePending();
 	// A navigation is work like any other, and reported the same way, so a short one stays
 	// under the store's own delay instead of flashing the indicator for a frame. The rule
-	// itself is in `$lib/sync/pending`, where a unit test can drive it.
+	// itself is in `#lib/sync/pending.js`, where a unit test can drive it.
 	$effect(() => {
 		// The teardown ends the navigation it began.
 		return reportNavigation(pending, navigating.to);

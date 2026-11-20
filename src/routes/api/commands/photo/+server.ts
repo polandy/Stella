@@ -1,10 +1,10 @@
 import { json } from '@sveltejs/kit';
-import type { CommandAnswer } from '$lib/commands/commands';
-import { systemClock } from '$lib/server/clock';
-import { parsePhotoCommand } from '$lib/server/commands/parse';
-import { photoTakenAt } from '$lib/server/domain/immich/library';
-import { answerFor } from '$lib/server/commands/receive';
-import { translator } from '$lib/server/i18n/say';
+import type { CommandAnswer } from '#lib/commands/commands.js';
+import { systemClock } from '#lib/server/clock.js';
+import { parsePhotoCommand } from '#lib/server/commands/parse.js';
+import { photoTakenAt } from '#lib/server/domain/immich/library.js';
+import { answerFor } from '#lib/server/commands/receive.js';
+import { translator } from '#lib/server/i18n/say.js';
 import type { RequestHandler } from './$types';
 
 /*

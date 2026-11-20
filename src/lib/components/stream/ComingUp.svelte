@@ -1,16 +1,16 @@
 <script lang="ts">
-	import Avatar from '$lib/components/ui/Avatar.svelte';
-	import Icon from '$lib/components/ui/Icon.svelte';
-	import { occasionLabel, whenLabel } from '$lib/dates/labels';
-	import { useI18n } from '$lib/i18n/context.svelte';
-	import FormError from '$lib/components/ui/FormError.svelte';
-	import { glide } from '$lib/motion/motion.svelte';
-	import { contactSectionPath } from '$lib/people/sections';
-	import { comingUpFirst, comingUpRows } from '$lib/plans/home';
-	import { passedPlanLabel, planDayLabel } from '$lib/plans/home-labels';
-	import { railSummary } from '$lib/stream/rail-summary';
-	import { useRemovals } from '$lib/undo/context.svelte';
-	import { removalKey } from '$lib/undo/keys';
+	import Avatar from '#lib/components/ui/Avatar.svelte';
+	import Icon from '#lib/components/ui/Icon.svelte';
+	import { occasionLabel, whenLabel } from '#lib/dates/labels.js';
+	import { useI18n } from '#lib/i18n/context.svelte.js';
+	import FormError from '#lib/components/ui/FormError.svelte';
+	import { glide } from '#lib/motion/motion.svelte.js';
+	import { contactSectionPath } from '#lib/people/sections.js';
+	import { comingUpFirst, comingUpRows } from '#lib/plans/home.js';
+	import { passedPlanLabel, planDayLabel } from '#lib/plans/home-labels.js';
+	import { railSummary } from '#lib/stream/rail-summary.js';
+	import { useRemovals } from '#lib/undo/context.svelte.js';
+	import { removalKey } from '#lib/undo/keys.js';
 	import type { PageData } from '../../../routes/(app)/$types';
 	import ComingUpPlan from './ComingUpPlan.svelte';
 	import RailSection from './RailSection.svelte';

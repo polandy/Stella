@@ -1,4 +1,4 @@
-import type { Removals } from '$lib/undo/context.svelte';
+import type { Removals } from '#lib/undo/context.svelte.js';
 import { cardTodos, type CardTodo, type JustDone } from './todos';
 
 /*

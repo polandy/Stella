@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'bun:test';
-import type { MomentCapturePayload } from '$lib/commands/commands';
-import type { MentionCandidate } from '$lib/mentions/mentions';
-import { handleFor } from '$lib/mentions/picker';
+import type { MomentCapturePayload } from '#lib/commands/commands.js';
+import type { MentionCandidate } from '#lib/mentions/mentions.js';
+import { handleFor } from '#lib/mentions/picker.js';
 import { composerReading } from './composer-reading';
 import type { ComposerState } from './composer-state';
 

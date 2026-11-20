@@ -1,6 +1,6 @@
 import type { Cookies } from '@sveltejs/kit';
-import { LOCALE_COOKIE, LOCALE_COOKIE_MAX_AGE, type Locale } from '$lib/i18n/locales';
-import { getConfig } from '$lib/server/config';
+import { LOCALE_COOKIE, LOCALE_COOKIE_MAX_AGE, type Locale } from '#lib/i18n/locales.js';
+import { getConfig } from '#lib/server/config.js';
 import {
 	openOidcTransaction,
 	sealOidcTransaction,

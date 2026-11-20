@@ -1,8 +1,8 @@
 // See https://svelte.dev/docs/kit/types#app.d.ts
 // for information about these interfaces
-import type { Locale } from '$lib/i18n/locales';
-import type { AuthUser } from '$lib/server/auth/accounts';
-import type { AppServices } from '$lib/server/services/app-services';
+import type { Locale } from '#lib/i18n/locales.js';
+import type { AuthUser } from '#lib/server/auth/accounts.js';
+import type { AppServices } from '#lib/server/services/app-services.js';
 
 declare global {
 	namespace App {

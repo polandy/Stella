@@ -1,11 +1,11 @@
 <script lang="ts">
 	import { tick } from 'svelte';
-	import DayCalendar from '$lib/components/ui/DayCalendar.svelte';
-	import Icon from '$lib/components/ui/Icon.svelte';
-	import MenuButton from '$lib/components/ui/MenuButton.svelte';
-	import { pickedDayLabel, recentDays } from '$lib/dates/recent';
-	import { menuOpensUpward, menuShift } from '$lib/ui/menu';
-	import { useI18n } from '$lib/i18n/context.svelte';
+	import DayCalendar from '#lib/components/ui/DayCalendar.svelte';
+	import Icon from '#lib/components/ui/Icon.svelte';
+	import MenuButton from '#lib/components/ui/MenuButton.svelte';
+	import { pickedDayLabel, recentDays } from '#lib/dates/recent.js';
+	import { menuOpensUpward, menuShift } from '#lib/ui/menu.js';
+	import { useI18n } from '#lib/i18n/context.svelte.js';
 
 	/*
 	 * The day of a moment, as one pill beside Shared and Photo (docs/dev/02 §2.22.1, docs/dev/05 §5.7).

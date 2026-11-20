@@ -1,6 +1,6 @@
 <script lang="ts">
-	import { useI18n } from '$lib/i18n/context.svelte';
-	import type { StripView } from '$lib/immich/together';
+	import { useI18n } from '#lib/i18n/context.svelte.js';
+	import type { StripView } from '#lib/immich/together.js';
 
 	/*
 	 * Photos together (docs/dev/02 §2.24.8): which of the person's Immich lists the Immich tab shows —

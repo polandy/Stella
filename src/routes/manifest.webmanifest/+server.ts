@@ -1,6 +1,6 @@
 import { json, type RequestHandler } from '@sveltejs/kit';
-import { createTranslator } from '$lib/i18n/translate';
-import { buildManifest } from '$lib/pwa/manifest';
+import { createTranslator } from '#lib/i18n/translate.js';
+import { buildManifest } from '#lib/pwa/manifest.js';
 
 /*
  * The install manifest (docs/dev/02 §2.18). A route rather than a file in `static/` because the

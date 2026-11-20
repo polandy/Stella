@@ -1,8 +1,8 @@
 <script lang="ts">
-	import LinkedNames from '$lib/components/people/LinkedNames.svelte';
-	import { useI18n } from '$lib/i18n/context.svelte';
-	import { segmentsOf } from '$lib/i18n/linked';
-	import { livesWithSentence, type Housemate } from '$lib/people/home';
+	import LinkedNames from '#lib/components/people/LinkedNames.svelte';
+	import { useI18n } from '#lib/i18n/context.svelte.js';
+	import { segmentsOf } from '#lib/i18n/linked.js';
+	import { livesWithSentence, type Housemate } from '#lib/people/home.js';
 
 	/*
 	 * *lives with Anna and Peter Brunner* under a shared home's line (docs/dev/02 §2.2), each name a

@@ -1,25 +1,25 @@
 import { error, fail } from '@sveltejs/kit';
-import { requireUser, requireViewer } from '$lib/server/auth/guards';
-import { TranslatableError } from '$lib/i18n/translatable';
-import type { MessageKey } from '$lib/i18n/translate';
-import type { ImmichFailure } from '$lib/server/domain/immich/gateway';
-import { getContact } from '$lib/server/domain/contacts/contacts';
-import { ContactGoneError } from '$lib/server/domain/contacts/require-visible';
-import { authorNames } from '$lib/server/domain/household/members';
+import { requireUser, requireViewer } from '#lib/server/auth/guards.js';
+import { TranslatableError } from '#lib/i18n/translatable.js';
+import type { MessageKey } from '#lib/i18n/translate.js';
+import type { ImmichFailure } from '#lib/server/domain/immich/gateway.js';
+import { getContact } from '#lib/server/domain/contacts/contacts.js';
+import { ContactGoneError } from '#lib/server/domain/contacts/require-visible.js';
+import { authorNames } from '#lib/server/domain/household/members.js';
 import {
 	addPersonFromImmich,
 	assignNewcomer,
 	WouldReplaceLinkError
-} from '$lib/server/domain/immich/add-from-immich';
-import { faceUrlFor } from '$lib/server/domain/immich/glimpse';
-import { ignoreMatch, proposeAgain } from '$lib/server/domain/immich/ignores';
-import { ImmichLinkRefusedError, linkMatches } from '$lib/server/domain/immich/links';
-import { findImmichMatches } from '$lib/server/domain/immich/matching';
-import { ignoreNewcomer, proposeNewcomerAgain } from '$lib/server/domain/immich/name-ignores';
-import { say, translator } from '$lib/server/i18n/say';
+} from '#lib/server/domain/immich/add-from-immich.js';
+import { faceUrlFor } from '#lib/server/domain/immich/glimpse.js';
+import { ignoreMatch, proposeAgain } from '#lib/server/domain/immich/ignores.js';
+import { ImmichLinkRefusedError, linkMatches } from '#lib/server/domain/immich/links.js';
+import { findImmichMatches } from '#lib/server/domain/immich/matching.js';
+import { ignoreNewcomer, proposeNewcomerAgain } from '#lib/server/domain/immich/name-ignores.js';
+import { say, translator } from '#lib/server/i18n/say.js';
 import type { Actions, PageServerLoad } from './$types';
-import { systemClock } from '$lib/server/clock';
-import { todayFor } from '$lib/dates/today';
+import { systemClock } from '#lib/server/clock.js';
+import { todayFor } from '#lib/dates/today.js';
 import { newcomerOf, newcomerToAdd, pairsOf, rowOf } from './immich-form';
 
 /*

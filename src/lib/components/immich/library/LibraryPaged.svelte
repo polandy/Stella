@@ -4,9 +4,9 @@
   page by itself near the end — or why there are none, and *Try again* when Immich did not answer.
 -->
 <script lang="ts">
-	import { useTranslate } from '$lib/i18n/context.svelte';
-	import type { LibraryPhoto } from '$lib/immich/library';
-	import { groupByDay } from '$lib/immich/library-nav';
+	import { useTranslate } from '#lib/i18n/context.svelte.js';
+	import type { LibraryPhoto } from '#lib/immich/library.js';
+	import { groupByDay } from '#lib/immich/library-nav.js';
 	import LibraryMonthGrid from './LibraryMonthGrid.svelte';
 	import LibraryNotice from './LibraryNotice.svelte';
 	import type { PagedRead } from './library-browser.svelte';

@@ -1,7 +1,7 @@
 import { redirect } from '@sveltejs/kit';
-import { clearSessionCookie, SESSION_COOKIE } from '$lib/server/auth/cookies';
-import { planRpLogout, SIGNED_OUT_PATH } from '$lib/server/auth/oidc/logout';
-import { signOut } from '$lib/server/auth/session';
+import { clearSessionCookie, SESSION_COOKIE } from '#lib/server/auth/cookies.js';
+import { planRpLogout, SIGNED_OUT_PATH } from '#lib/server/auth/oidc/logout.js';
+import { signOut } from '#lib/server/auth/session.js';
 import type { RequestHandler } from './$types';
 
 /*
@@ -19,5 +19,5 @@ export const POST: RequestHandler = async ({ cookies, locals }) => {
 	clearSessionCookie(cookies);
 
 	const providerLogout = await planRpLogout(locals.services.auth.rpLogoutDeps, oidcIdToken);
-	throw redirect(303, providerLogout ?? SIGNED_OUT_PATH);
+	throw redirect(303, providerLogout ?? SIGNED_OUT_PATH, { external: true });
 };

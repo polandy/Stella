@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'bun:test';
-import { createTranslator } from '$lib/i18n/translate';
-import type { CommandHandlers } from '$lib/server/domain/commands/dispatch';
-import { GiftGoneError } from '$lib/server/domain/gifts/gifts';
-import { commandDepsWith } from '$lib/server/domain/testing';
-import { answerOf, formOf, routeEvent, type FakeServices } from '$lib/server/testing';
+import { createTranslator } from '#lib/i18n/translate.js';
+import type { CommandHandlers } from '#lib/server/domain/commands/dispatch.js';
+import { GiftGoneError } from '#lib/server/domain/gifts/gifts.js';
+import { commandDepsWith } from '#lib/server/domain/testing/index.js';
+import { answerOf, formOf, routeEvent, type FakeServices } from '#lib/server/testing/index.js';
 import { giftActions as actions } from './gifts';
 
 /*

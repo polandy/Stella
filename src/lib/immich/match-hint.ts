@@ -1,7 +1,7 @@
 /*
  * The Photos card's suggestion for an unlinked person (docs/dev/02 §2.24.7): the face *Find your
  * people* would link in one tap, offered on the person's own page. Pure: the card's adapter
- * (`$lib/components/person/immich-match-hint.svelte.ts`) asks the server, and this decides when
+ * (`#lib/components/person/immich-match-hint.svelte.ts`) asks the server, and this decides when
  * to ask and what to show.
  *
  * Nothing from Immich is shown offline (docs/dev/02 §2.24.3), so neither is the suggestion; a

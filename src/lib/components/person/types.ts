@@ -1,8 +1,8 @@
-import type { CardPhoto } from '$lib/people/photo-card';
-import type { GlimpsePhoto } from '$lib/immich/strip';
-import type { RelationshipCategory } from '$lib/relationships/categories';
-import type { Exclusion } from '$lib/relationships/exclusions';
-import type { RelationshipTypeOption } from '$lib/relationships/type-options';
+import type { CardPhoto } from '#lib/people/photo-card.js';
+import type { GlimpsePhoto } from '#lib/immich/strip.js';
+import type { RelationshipCategory } from '#lib/relationships/categories.js';
+import type { Exclusion } from '#lib/relationships/exclusions.js';
+import type { RelationshipTypeOption } from '#lib/relationships/type-options.js';
 import type { ActionData, PageData } from '../../../routes/(app)/contacts/[id]/$types';
 
 /*

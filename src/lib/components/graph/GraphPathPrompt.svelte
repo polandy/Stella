@@ -1,6 +1,6 @@
 <script lang="ts">
-	import { useTranslate } from '$lib/i18n/context.svelte';
-	import type { ConnectionPath } from '$lib/graph/model/types';
+	import { useTranslate } from '#lib/i18n/context.svelte.js';
+	import type { ConnectionPath } from '#lib/graph/model/types.js';
 
 	interface Props {
 		/** The chain traced, once two people were picked and one was found. */

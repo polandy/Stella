@@ -5,8 +5,8 @@
  * its oldest photos wherever the write came from (docs/dev/02 §2.18).
  */
 
-import { holdsPageData } from '$lib/pwa/cache-policy';
-import { isStorageFull, mediaToEvict } from '$lib/pwa/storage-full';
+import { holdsPageData } from '#lib/pwa/cache-policy.js';
+import { isStorageFull, mediaToEvict } from '#lib/pwa/storage-full.js';
 import { isOwnAnswer, worker } from './scope';
 
 /**

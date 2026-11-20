@@ -1,8 +1,8 @@
 <script lang="ts">
-	import Icon from '$lib/components/ui/Icon.svelte';
-	import MenuButton from '$lib/components/ui/MenuButton.svelte';
-	import { useTranslate } from '$lib/i18n/context.svelte';
-	import { ARRANGEMENTS, type ArrangementKey } from '$lib/graph/layout/arrangements';
+	import Icon from '#lib/components/ui/Icon.svelte';
+	import MenuButton from '#lib/components/ui/MenuButton.svelte';
+	import { useTranslate } from '#lib/i18n/context.svelte.js';
+	import { ARRANGEMENTS, type ArrangementKey } from '#lib/graph/layout/arrangements.js';
 	import { MENU_ITEM } from './menu-item';
 
 	interface Props {

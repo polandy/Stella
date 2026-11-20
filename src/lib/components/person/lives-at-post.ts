@@ -1,5 +1,5 @@
 import { deserialize } from '$app/forms';
-import { ACTION_HEADER } from '$lib/undo/submit-action';
+import { ACTION_HEADER } from '#lib/undo/submit-action.js';
 
 /*
  * Moving the people just created into the address the relationship form offered them (docs/dev/02

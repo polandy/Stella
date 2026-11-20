@@ -1,7 +1,7 @@
-import type { CommandType } from '$lib/commands/commands';
-import { planVisibilityFromForm } from '$lib/plans/plans';
-import { whenFromForm } from '$lib/when/form';
-import { PlanGoneError } from '$lib/server/domain/plans/plans';
+import type { CommandType } from '#lib/commands/commands.js';
+import { planVisibilityFromForm } from '#lib/plans/plans.js';
+import { whenFromForm } from '#lib/when/form.js';
+import { PlanGoneError } from '#lib/server/domain/plans/plans.js';
 import { fail, type RequestEvent } from '@sveltejs/kit';
 import {
 	applyCommandFromForm,

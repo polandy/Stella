@@ -1,4 +1,4 @@
-// Imported relatively rather than through `$lib`: the domain words its refusals with
+// Imported relatively rather than through `#lib`: the domain words its refusals with
 // `exclusionLabel`, and domain code carries no SvelteKit alias in its path (docs/dev/08 §8.3).
 import { hasMessage, type Translate } from '../i18n/translate';
 import { MAX_PARENTS, type Exclusion } from './exclusions';

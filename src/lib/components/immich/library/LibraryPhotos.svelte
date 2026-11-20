@@ -4,9 +4,9 @@
   of the taps, and a second tap unticks it; once the limit is reached the unticked ones rest.
 -->
 <script lang="ts">
-	import { useTranslate } from '$lib/i18n/context.svelte';
-	import type { LibraryPhoto } from '$lib/immich/library';
-	import { tickNumber } from '$lib/immich/library-pick';
+	import { useTranslate } from '#lib/i18n/context.svelte.js';
+	import type { LibraryPhoto } from '#lib/immich/library.js';
+	import { tickNumber } from '#lib/immich/library-pick.js';
 
 	interface Props {
 		photos: readonly LibraryPhoto[];

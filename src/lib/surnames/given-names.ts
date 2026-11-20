@@ -41,7 +41,7 @@ export function namesGiven(given: Given): ReadonlyMap<string, string> {
 /**
  * `people` as they read with the names given: the last name, and the shown name made again
  * where the parts made it. The very list comes back when nothing is given, since the shell
- * tells a reloaded list from a kept one by identity (`$lib/sync/people-freshness`).
+ * tells a reloaded list from a kept one by identity (`#lib/sync/people-freshness.js`).
  */
 export function withGivenNames<T extends StoredName & { id: string }>(
 	people: T[],

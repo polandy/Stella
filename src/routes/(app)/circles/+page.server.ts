@@ -1,14 +1,14 @@
 import { fail, redirect } from '@sveltejs/kit';
-import { requireViewer } from '$lib/server/auth/guards';
+import { requireViewer } from '#lib/server/auth/guards.js';
 import {
 	CIRCLE_COLORS,
 	CIRCLE_KINDS,
 	suggestCircleColor
-} from '$lib/server/domain/circles/circles';
-import { listCircles } from '$lib/server/domain/circles/directory';
-import { listCircleCovers } from '$lib/server/domain/circles/circle-photos';
-import { readCircleTree } from '$lib/server/domain/circles/tree';
-import { todayFor } from '$lib/dates/today';
+} from '#lib/server/domain/circles/circles.js';
+import { listCircles } from '#lib/server/domain/circles/directory.js';
+import { listCircleCovers } from '#lib/server/domain/circles/circle-photos.js';
+import { readCircleTree } from '#lib/server/domain/circles/tree.js';
+import { todayFor } from '#lib/dates/today.js';
 import type { Actions, PageServerLoad } from './$types';
 import { createCircleFromForm } from './create-circle-form';
 

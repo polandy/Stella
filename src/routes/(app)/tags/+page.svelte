@@ -1,10 +1,10 @@
 <script lang="ts">
-	import Button from '$lib/components/ui/Button.svelte';
-	import EmptyState from '$lib/components/ui/EmptyState.svelte';
-	import Icon from '$lib/components/ui/Icon.svelte';
-	import TagChip from '$lib/components/journal/TagChip.svelte';
-	import { tagPageHref } from '$lib/hashtags/hashtags';
-	import { useI18n } from '$lib/i18n/context.svelte';
+	import Button from '#lib/components/ui/Button.svelte';
+	import EmptyState from '#lib/components/ui/EmptyState.svelte';
+	import Icon from '#lib/components/ui/Icon.svelte';
+	import TagChip from '#lib/components/journal/TagChip.svelte';
+	import { tagPageHref } from '#lib/hashtags/hashtags.js';
+	import { useI18n } from '#lib/i18n/context.svelte.js';
 	import { COMPOSE_TAG_HREF } from '../home-view';
 	import type { PageData } from './$types';
 

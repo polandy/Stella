@@ -1,6 +1,6 @@
 <script lang="ts">
-	import { useTranslate } from '$lib/i18n/context.svelte';
-	import type { MessageKey } from '$lib/i18n/translate';
+	import { useTranslate } from '#lib/i18n/context.svelte.js';
+	import type { MessageKey } from '#lib/i18n/translate.js';
 	import { onMount } from 'svelte';
 
 	// Same contract as the no-flash init in app.html (stella-theme).

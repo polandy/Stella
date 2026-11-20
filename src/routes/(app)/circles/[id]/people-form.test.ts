@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test';
-import { formOf } from '$lib/server/testing';
+import { formOf } from '#lib/server/testing/index.js';
 import { readPeopleAndRole } from './people-form';
 
 /*

@@ -1,13 +1,13 @@
 <script lang="ts">
 	import { untrack } from 'svelte';
-	import Avatar from '$lib/components/ui/Avatar.svelte';
-	import Button from '$lib/components/ui/Button.svelte';
-	import Icon from '$lib/components/ui/Icon.svelte';
-	import { useI18n } from '$lib/i18n/context.svelte';
-	import { cardFacts } from '$lib/import-match/card-facts';
-	import { sourceWord, type ContactSource, type SourceWord } from '$lib/import-match/card';
-	import type { Conflict } from '$lib/import-match/merge-plan';
-	import type { ReviewAnswer, ReviewCandidate, ReviewCard } from '$lib/import-match/review';
+	import Avatar from '#lib/components/ui/Avatar.svelte';
+	import Button from '#lib/components/ui/Button.svelte';
+	import Icon from '#lib/components/ui/Icon.svelte';
+	import { useI18n } from '#lib/i18n/context.svelte.js';
+	import { cardFacts } from '#lib/import-match/card-facts.js';
+	import { sourceWord, type ContactSource, type SourceWord } from '#lib/import-match/card.js';
+	import type { Conflict } from '#lib/import-match/merge-plan.js';
+	import type { ReviewAnswer, ReviewCandidate, ReviewCard } from '#lib/import-match/review.js';
 	import ConflictChoice from './ConflictChoice.svelte';
 	import FactList from './FactList.svelte';
 	import PersonPicker from './PersonPicker.svelte';

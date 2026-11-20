@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'bun:test';
 import { fail, isActionFailure, isHttpError } from '@sveltejs/kit';
-import { createTranslator } from '$lib/i18n/translate';
-import type { Viewer } from '$lib/server/access/visibility';
-import type { Contact } from '$lib/server/domain/contacts/contacts';
-import type { NameWrite } from '$lib/server/domain/contacts/name-parts';
-import { LAST_NAME_CHANGED_STATUS } from '$lib/surnames/chip-give';
+import { createTranslator } from '#lib/i18n/translate.js';
+import type { Viewer } from '#lib/server/access/visibility.js';
+import type { Contact } from '#lib/server/domain/contacts/contacts.js';
+import type { NameWrite } from '#lib/server/domain/contacts/name-parts.js';
+import { LAST_NAME_CHANGED_STATUS } from '#lib/surnames/chip-give.js';
 import {
 	setLastNamesFromForm,
 	takeBackLastNameFromForm,

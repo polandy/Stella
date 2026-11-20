@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'bun:test';
-import { commandDepsWith } from '$lib/server/domain/testing';
-import { answerOf, formOf, routeEvent } from '$lib/server/testing';
+import { commandDepsWith } from '#lib/server/domain/testing/index.js';
+import { answerOf, formOf, routeEvent } from '#lib/server/testing/index.js';
 import { actions } from './+page.server';
 
 /* A tick on `/todos` (docs/dev/02 §2.26.6) names its person in the form and returns to the list. */

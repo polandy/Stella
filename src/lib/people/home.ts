@@ -1,7 +1,7 @@
-import { listSentence, type LinkedSentence } from '$lib/i18n/linked';
-import type { RelationshipCategory } from '$lib/relationships/categories';
-import type { RelationshipStatus } from '$lib/relationships/status';
-import { removalKey } from '$lib/undo/keys';
+import { listSentence, type LinkedSentence } from '#lib/i18n/linked.js';
+import type { RelationshipCategory } from '#lib/relationships/categories.js';
+import type { RelationshipStatus } from '#lib/relationships/status.js';
+import { removalKey } from '#lib/undo/keys.js';
 
 /*
  * A shared home as the person page shows and edits it (docs/dev/02 §2.2, *A shared home*): whom

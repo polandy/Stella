@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'bun:test';
-import { routeEvent } from '$lib/server/testing';
-import type { HealthReport } from '$lib/server/services/health';
+import { routeEvent } from '#lib/server/testing/index.js';
+import type { HealthReport } from '#lib/server/services/health.js';
 import { GET } from './+server';
 
 /* `/healthz` (docs/dev/07 §7.5.1): 200 only while the database reads and writes, 503 otherwise. */

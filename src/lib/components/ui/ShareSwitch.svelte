@@ -1,6 +1,6 @@
 <script lang="ts">
 	import Icon from './Icon.svelte';
-	import { useI18n } from '$lib/i18n/context.svelte';
+	import { useI18n } from '#lib/i18n/context.svelte.js';
 
 	/*
 	 * Shared or private, as a switch, because it is one (docs/dev/05 §5.7): a checkbox in the switch

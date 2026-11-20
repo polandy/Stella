@@ -1,13 +1,13 @@
 <script lang="ts">
 	import { invalidateAll } from '$app/navigation';
-	import Button from '$lib/components/ui/Button.svelte';
-	import Icon from '$lib/components/ui/Icon.svelte';
-	import type { IconName } from '$lib/components/ui/icons';
-	import { useRemovals } from '$lib/undo/context.svelte';
-	import { deferredRemoval } from '$lib/undo/deferred-removal';
-	import { removalKey, type RemovalKind } from '$lib/undo/keys';
-	import type { PendingSink } from '$lib/sync/pending-work';
-	import { neighbourAfterLeaving } from '$lib/ui/focus-return';
+	import Button from '#lib/components/ui/Button.svelte';
+	import Icon from '#lib/components/ui/Icon.svelte';
+	import type { IconName } from '#lib/components/ui/icons.js';
+	import { useRemovals } from '#lib/undo/context.svelte.js';
+	import { deferredRemoval } from '#lib/undo/deferred-removal.js';
+	import { removalKey, type RemovalKind } from '#lib/undo/keys.js';
+	import type { PendingSink } from '#lib/sync/pending-work.js';
+	import { neighbourAfterLeaving } from '#lib/ui/focus-return.js';
 	import { tick } from 'svelte';
 
 	/*

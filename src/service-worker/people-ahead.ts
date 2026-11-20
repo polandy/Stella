@@ -2,10 +2,10 @@
 
 /*
  * Keeping pages before they are read: the `KEPT_AHEAD` pages and every person the member can
- * see (docs/dev/02 §2.18, docs/dev/04 ADR-114). `$lib/pwa/people-ahead` decides; this runs the plan.
+ * see (docs/dev/02 §2.18, docs/dev/04 ADR-114). `#lib/pwa/people-ahead.js` decides; this runs the plan.
  */
 
-import { KEPT_AHEAD, NETWORK_PATIENCE_MS, cacheKeyFor } from '$lib/pwa/cache-policy';
+import { KEPT_AHEAD, NETWORK_PATIENCE_MS, cacheKeyFor } from '#lib/pwa/cache-policy.js';
 import {
 	VISIBLE_PEOPLE_PATH,
 	isNewerCopy,
@@ -13,7 +13,7 @@ import {
 	parseVisiblePeople,
 	peopleToKeep,
 	refreshDue
-} from '$lib/pwa/people-ahead';
+} from '#lib/pwa/people-ahead.js';
 import { keepCopy, put } from './keep';
 import { isReachable } from './reachability';
 import { PAGES, fetchAhead, isOwnAnswer, worker } from './scope';

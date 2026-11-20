@@ -1,5 +1,5 @@
-import { dismissesFullscreenOnDrag, leavesOverlayOn } from '$lib/ui/fullscreen';
-import { scrollingAncestor } from '$lib/ui/keep-place';
+import { dismissesFullscreenOnDrag, leavesOverlayOn } from '#lib/ui/fullscreen.js';
+import { scrollingAncestor } from '#lib/ui/keep-place.js';
 
 /** Full screen for the explorer's frame, whichever way this device supports it. */
 export interface FrameFullscreen {

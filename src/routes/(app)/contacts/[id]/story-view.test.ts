@@ -7,7 +7,7 @@ import {
 	toStoryItem,
 	type StoryViewContext
 } from './story-view';
-import type { StoryItem } from '$lib/server/domain/story/story';
+import type { StoryItem } from '#lib/server/domain/story/story.js';
 
 /*
  * What the story timeline is handed (docs/dev/02 §2.23). The merge decides the order; this decides

@@ -1,13 +1,13 @@
 import * as v from 'valibot';
-import { DATE_SHAPE, FULL_DATE_SHAPE, isRealCalendarDay } from '$lib/dates/calendar';
-import { CIRCLE_KINDS } from '$lib/server/domain/circles/circles';
-import { CONTACT_FIELD_KINDS } from '$lib/people/contact-fields';
+import { DATE_SHAPE, FULL_DATE_SHAPE, isRealCalendarDay } from '#lib/dates/calendar.js';
+import { CIRCLE_KINDS } from '#lib/server/domain/circles/circles.js';
+import { CONTACT_FIELD_KINDS } from '#lib/people/contact-fields.js';
 import type {
 	ApiCircle,
 	ApiExistingCircle,
 	ApiImportDocument,
 	ApiPerson
-} from '$lib/server/domain/import/api/document';
+} from '#lib/server/domain/import/api/document.js';
 
 /*
  * The import API's front door (docs/dev/02 §2.16.1). The body is untrusted JSON from a script, so

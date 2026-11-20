@@ -1,7 +1,7 @@
-import type { OpenIdea } from '$lib/server/domain/gifts/gifts';
-import { alsoFor, giftGroupPanelPath } from '$lib/gifts/group-panel';
-import { authorLabel } from '$lib/story/author';
-import type { WhenState } from '$lib/when/state';
+import type { OpenIdea } from '#lib/server/domain/gifts/gifts.js';
+import { alsoFor, giftGroupPanelPath } from '#lib/gifts/group-panel.js';
+import { authorLabel } from '#lib/story/author.js';
+import type { WhenState } from '#lib/when/state.js';
 
 /** A group of the listed ideas, with everyone in it the viewer may see. */
 export interface IdeaGroup {

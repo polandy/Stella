@@ -1,12 +1,12 @@
 import { error, fail, redirect } from '@sveltejs/kit';
-import { requireViewer } from '$lib/server/auth/guards';
-import { CircleGoneError } from '$lib/server/domain/circles/circle-details';
+import { requireViewer } from '#lib/server/auth/guards.js';
+import { CircleGoneError } from '#lib/server/domain/circles/circle-details.js';
 import {
 	CircleLoopError,
 	CircleParentGoneError,
 	moveCircle
-} from '$lib/server/domain/circles/nesting';
-import { say, translator } from '$lib/server/i18n/say';
+} from '#lib/server/domain/circles/nesting.js';
+import { say, translator } from '#lib/server/i18n/say.js';
 import type { Actions } from '../$types';
 import { createCircleFromForm } from '../../create-circle-form';
 

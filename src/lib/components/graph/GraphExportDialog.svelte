@@ -5,14 +5,14 @@
   comes out. The tree is drawn by `cytoscape/tree-image.ts`; this only asks and hands it on.
 -->
 <script lang="ts">
-	import { FIELD } from '$lib/components/ui/field';
+	import { FIELD } from '#lib/components/ui/field.js';
 	import { onDestroy, untrack } from 'svelte';
-	import Button from '$lib/components/ui/Button.svelte';
-	import { syncModal } from '$lib/components/ui/modal';
-	import FormError from '$lib/components/ui/FormError.svelte';
-	import { useI18n } from '$lib/i18n/context.svelte';
-	import { drawTreeImage, type TreeImage } from '$lib/graph/cytoscape/tree-image';
-	import { lightPaletteFromDom } from '$lib/graph/cytoscape/theme';
+	import Button from '#lib/components/ui/Button.svelte';
+	import { syncModal } from '#lib/components/ui/modal.js';
+	import FormError from '#lib/components/ui/FormError.svelte';
+	import { useI18n } from '#lib/i18n/context.svelte.js';
+	import { drawTreeImage, type TreeImage } from '#lib/graph/cytoscape/tree-image.js';
+	import { lightPaletteFromDom } from '#lib/graph/cytoscape/theme.js';
 	import {
 		fileNameFor,
 		NAME_PT_FOR_A3,
@@ -21,8 +21,8 @@
 		type ExportChoices,
 		type ExportFormat,
 		type Paper
-	} from '$lib/graph/tree-export';
-	import type { ExportScene } from '$lib/graph/tree-export-scene';
+	} from '#lib/graph/tree-export.js';
+	import type { ExportScene } from '#lib/graph/tree-export-scene.js';
 	import ExportSheet from './ExportSheet.svelte';
 	import { printPicture } from './print-picture';
 

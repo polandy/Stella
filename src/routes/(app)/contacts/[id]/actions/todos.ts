@@ -1,6 +1,6 @@
-import { fromFormData } from '$lib/commands/form-data';
-import { TodoAddSchema, TodoEditSchema, TodoRefSchema } from '$lib/commands/gift-todo-payloads';
-import { contactSectionPath } from '$lib/people/sections';
+import { fromFormData } from '#lib/commands/form-data.js';
+import { TodoAddSchema, TodoEditSchema, TodoRefSchema } from '#lib/commands/gift-todo-payloads.js';
+import { contactSectionPath } from '#lib/people/sections.js';
 import type { RequestEvent } from '@sveltejs/kit';
 import {
 	applyTodoCommand,

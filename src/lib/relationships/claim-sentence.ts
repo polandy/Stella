@@ -1,4 +1,4 @@
-import type { LinkedPhrase, PersonRef } from '$lib/i18n/linked';
+import type { LinkedPhrase, PersonRef } from '#lib/i18n/linked.js';
 import type { KinVariant } from '../kinship/kinship';
 import type { Relation } from '../suggestions/types';
 

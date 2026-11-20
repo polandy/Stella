@@ -1,8 +1,8 @@
 <script lang="ts">
-	import Icon from '$lib/components/ui/Icon.svelte';
-	import { useTranslate } from '$lib/i18n/context.svelte';
-	import { revealPath, timeLeftLabel } from '$lib/privacy/veil';
-	import { useVeil } from '$lib/privacy/veil.svelte';
+	import Icon from '#lib/components/ui/Icon.svelte';
+	import { useTranslate } from '#lib/i18n/context.svelte.js';
+	import { revealPath, timeLeftLabel } from '#lib/privacy/veil.js';
+	import { useVeil } from '#lib/privacy/veil.svelte.js';
 
 	/*
 	 * The page header's lock (docs/dev/02 §2.10.1, docs/dev/05 §5.4): *3 private* while the page holds

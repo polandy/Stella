@@ -14,15 +14,15 @@
 	 * the people past its last place folded into a "+N" disc (`namedRing`). `strip` is a wide
 	 * card's 7.5 rem strip: a sideways fan with every first name (`stripFan`).
 	 */
-	import { accentDiscFill, accentVar, categoryVar } from '$lib/design/tokens';
-	import { avatarAccent, initials } from '$lib/people/avatar';
-	import { namedRing } from '$lib/graph/layout/named-ring';
-	import { stripFan } from '$lib/graph/layout/strip-fan';
-	import { thumbnailUrl } from '$lib/media/urls';
+	import { accentDiscFill, accentVar, categoryVar } from '#lib/design/tokens.js';
+	import { avatarAccent, initials } from '#lib/people/avatar.js';
+	import { namedRing } from '#lib/graph/layout/named-ring.js';
+	import { stripFan } from '#lib/graph/layout/strip-fan.js';
+	import { thumbnailUrl } from '#lib/media/urls.js';
 	import {
 		RELATIONSHIP_CATEGORIES,
 		type RelationshipCategory
-	} from '$lib/relationships/categories';
+	} from '#lib/relationships/categories.js';
 
 	interface EgoNode {
 		id: string;

@@ -1,6 +1,6 @@
-import type { InteractionKind } from '$lib/story/interaction-kinds';
-import type { EntryImmichPhoto } from '$lib/immich/library';
-import type { SubjectFace } from '$lib/story/subjects';
+import type { InteractionKind } from '#lib/story/interaction-kinds.js';
+import type { EntryImmichPhoto } from '#lib/immich/library.js';
+import type { SubjectFace } from '#lib/story/subjects.js';
 
 /*
  * What the story timeline renders (docs/dev/02 §2.23). Client-safe: the type lives here so the

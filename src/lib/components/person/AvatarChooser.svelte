@@ -1,5 +1,5 @@
 <script lang="ts" module>
-	import type { CropRect } from '$lib/media/crop';
+	import type { CropRect } from '#lib/media/crop.js';
 
 	/** A photo of one of the person's circles their picture can be cut from. */
 	export interface GroupPhotoChoice {
@@ -11,10 +11,10 @@
 </script>
 
 <script lang="ts">
-	import { useI18n } from '$lib/i18n/context.svelte';
-	import { dayLabel } from '$lib/dates/labels';
-	import type { GlimpsePhoto } from '$lib/immich/strip';
-	import { thumbnailUrl } from '$lib/media/urls';
+	import { useI18n } from '#lib/i18n/context.svelte.js';
+	import { dayLabel } from '#lib/dates/labels.js';
+	import type { GlimpsePhoto } from '#lib/immich/strip.js';
+	import { thumbnailUrl } from '#lib/media/urls.js';
 	import Button from '../ui/Button.svelte';
 	import { syncModal } from '../ui/modal';
 	import { fetchGlimpse } from './immich-glimpse';
@@ -31,7 +31,7 @@
 		contactId: string;
 		name: string;
 		groupPhotos: readonly GroupPhotoChoice[];
-		/** The Immich section: their photos, the face picker, or none (`$lib/people/avatar-chooser`). */
+		/** The Immich section: their photos, the face picker, or none (`#lib/people/avatar-chooser.js`). */
 		immich: 'photos' | 'find' | null;
 		/** Bindable: set to open the dialog; the dialog clears it when it closes. */
 		open?: boolean;

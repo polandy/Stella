@@ -1,8 +1,8 @@
 <script lang="ts">
 	import { SvelteSet } from 'svelte/reactivity';
-	import Button from '$lib/components/ui/Button.svelte';
-	import { useTranslate } from '$lib/i18n/context.svelte';
-	import type { ReviewCard } from '$lib/import-match/review';
+	import Button from '#lib/components/ui/Button.svelte';
+	import { useTranslate } from '#lib/i18n/context.svelte.js';
+	import type { ReviewCard } from '#lib/import-match/review.js';
 
 	/*
 	 * The contacts nobody in Stella matches (docs/dev/02 §2.16), as one checklist: an address

@@ -1,9 +1,9 @@
-import { fromFormData } from '$lib/commands/form-data';
-import { PlanAnswerWhenSchema, PlanRefSchema } from '$lib/commands/plan-payloads';
-import { requireViewer } from '$lib/server/auth/guards';
-import { listOpenPlans, type OpenPlan } from '$lib/server/domain/plans/plans';
-import { homePlans, type PlacedPlan } from '$lib/plans/home';
-import type { ListPlanView } from '$lib/plans/list';
+import { fromFormData } from '#lib/commands/form-data.js';
+import { PlanAnswerWhenSchema, PlanRefSchema } from '#lib/commands/plan-payloads.js';
+import { requireViewer } from '#lib/server/auth/guards.js';
+import { listOpenPlans, type OpenPlan } from '#lib/server/domain/plans/plans.js';
+import { homePlans, type PlacedPlan } from '#lib/plans/home.js';
+import type { ListPlanView } from '#lib/plans/list.js';
 import type { RequestEvent } from '@sveltejs/kit';
 import { applyPlanCommand, planWhenOf, type PlanCommand, type PlanErrorKey } from './plan-commands';
 

@@ -1,11 +1,11 @@
 <script lang="ts">
-	import { enhance } from '$app/forms';
-	import Button from '$lib/components/ui/Button.svelte';
-	import DateField from '$lib/components/ui/DateField.svelte';
-	import FormError from '$lib/components/ui/FormError.svelte';
-	import { useI18n } from '$lib/i18n/context.svelte';
-	import { reveal } from '$lib/motion/motion.svelte';
-	import type { SubmitFunction } from '@sveltejs/kit';
+	import { enhance } from '#lib/forms/enhance.js';
+	import Button from '#lib/components/ui/Button.svelte';
+	import DateField from '#lib/components/ui/DateField.svelte';
+	import FormError from '#lib/components/ui/FormError.svelte';
+	import { useI18n } from '#lib/i18n/context.svelte.js';
+	import { reveal } from '#lib/motion/motion.svelte.js';
+	import type { SubmitFunction } from '$app/forms';
 	import GiftOccasionField from './GiftOccasionField.svelte';
 
 	// *Mark as given* on the Gifts card (docs/dev/02 §2.25): only the day and the occasion.

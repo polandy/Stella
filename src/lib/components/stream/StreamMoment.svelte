@@ -1,13 +1,13 @@
 <script lang="ts">
-	import PrivateMark from '$lib/components/ui/PrivateMark.svelte';
-	import Veil from '$lib/components/ui/Veil.svelte';
-	import StreamFace from '$lib/components/stream/StreamFace.svelte';
-	import StreamWhen from '$lib/components/stream/StreamWhen.svelte';
-	import type { StreamTime } from '$lib/stream/days';
-	import { journalTagHref } from '$lib/hashtags/hashtags';
-	import { journalEntryHref } from '$lib/people/sections';
-	import { useI18n } from '$lib/i18n/context.svelte';
-	import { listSentence, segmentsOf } from '$lib/i18n/linked';
+	import PrivateMark from '#lib/components/ui/PrivateMark.svelte';
+	import Veil from '#lib/components/ui/Veil.svelte';
+	import StreamFace from '#lib/components/stream/StreamFace.svelte';
+	import StreamWhen from '#lib/components/stream/StreamWhen.svelte';
+	import type { StreamTime } from '#lib/stream/days.js';
+	import { journalTagHref } from '#lib/hashtags/hashtags.js';
+	import { journalEntryHref } from '#lib/people/sections.js';
+	import { useI18n } from '#lib/i18n/context.svelte.js';
+	import { listSentence, segmentsOf } from '#lib/i18n/linked.js';
 	import type { PageData } from '../../../routes/(app)/$types';
 
 	/** The moment as the stream's `load` hands it over (`streamForView`). */

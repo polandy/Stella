@@ -1,17 +1,17 @@
 <script lang="ts">
-	import { FIELD } from '$lib/components/ui/field';
-	import Swap from '$lib/components/ui/Swap.svelte';
-	import { enhance } from '$app/forms';
-	import Button from '$lib/components/ui/Button.svelte';
-	import FormError from '$lib/components/ui/FormError.svelte';
-	import Icon from '$lib/components/ui/Icon.svelte';
-	import { useI18n } from '$lib/i18n/context.svelte';
-	import { withNameParts } from '$lib/people/display-name';
-	import { GENDERS, type Gender } from '$lib/people/gender';
-	import { reachability } from '$lib/pwa/reachability.svelte';
-	import { FocusReturn } from '$lib/ui/focus-return.svelte';
-	import { useRemovals } from '$lib/undo/context.svelte';
-	import { savedEnhance } from '$lib/undo/saved';
+	import { FIELD } from '#lib/components/ui/field.js';
+	import Swap from '#lib/components/ui/Swap.svelte';
+	import { enhance } from '#lib/forms/enhance.js';
+	import Button from '#lib/components/ui/Button.svelte';
+	import FormError from '#lib/components/ui/FormError.svelte';
+	import Icon from '#lib/components/ui/Icon.svelte';
+	import { useI18n } from '#lib/i18n/context.svelte.js';
+	import { withNameParts } from '#lib/people/display-name.js';
+	import { GENDERS, type Gender } from '#lib/people/gender.js';
+	import { reachability } from '#lib/pwa/reachability.svelte.js';
+	import { FocusReturn } from '#lib/ui/focus-return.svelte.js';
+	import { useRemovals } from '#lib/undo/context.svelte.js';
+	import { savedEnhance } from '#lib/undo/saved.js';
 
 	/*
 	 * The person's name, edited where it is read (docs/dev/02 §2.2).

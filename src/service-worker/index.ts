@@ -5,7 +5,7 @@
  * The offline shell (docs/dev/02 §2.18).
  *
  * A thin adapter: every question of *what* may be kept is answered by the pure
- * `$lib/pwa/cache-policy`, which is unit-tested; this folder only asks those questions of real
+ * `#lib/pwa/cache-policy.js`, which is unit-tested; this folder only asks those questions of real
  * requests and does what it is told. Nothing that decides anything belongs here, because a
  * service worker can only be observed by driving a browser.
  *
@@ -19,7 +19,7 @@
  * `keep.ts` is the one write to the pages cache.
  */
 
-import { build, files } from '$service-worker';
+import { assets, immutable } from '$app/manifest';
 import {
 	OFFLINE_FALLBACK_PATH,
 	cacheKeyFor,
@@ -29,8 +29,8 @@ import {
 	isStellaCache,
 	standInFor,
 	verdictFor
-} from '$lib/pwa/cache-policy';
-import { ASK_REACHABILITY, readCheck } from '$lib/pwa/reachability';
+} from '#lib/pwa/cache-policy.js';
+import { ASK_REACHABILITY, readCheck } from '#lib/pwa/reachability.js';
 import { keepAhead, refreshPeople } from './people-ahead';
 import { checkReachability, reportFor } from './reachability';
 import { PAGES, SHELL, describe, worker } from './scope';
@@ -43,7 +43,7 @@ import {
 } from './strategies';
 
 /** The build's own output plus `static/` — immutable, and enough to paint a shell. */
-const PRECACHED = [...build, ...files];
+const PRECACHED = [...immutable, ...assets].map(({ path }) => `/${path}`);
 
 /** Everything precached, as a set, so a lookup does not scan the list on every fetch. */
 const PRECACHED_PATHS = new Set(PRECACHED);

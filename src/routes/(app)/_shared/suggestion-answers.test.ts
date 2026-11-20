@@ -1,12 +1,15 @@
 import { describe, expect, it } from 'bun:test';
-import { createTranslator } from '$lib/i18n/translate';
-import { PARENT_CHILD_TYPE_KEY } from '$lib/relationships/type-keys';
-import type { Relation } from '$lib/suggestions/types';
-import type { Viewer } from '$lib/server/access/visibility';
-import type { Contact } from '$lib/server/domain/contacts/contacts';
-import type { RelationshipType } from '$lib/server/domain/relationships/relationships';
-import type { NewDismissal } from '$lib/server/domain/relationships/suggestion-review';
-import { inMemoryKinshipGraph, inMemoryRelationshipTies } from '$lib/server/domain/testing';
+import { createTranslator } from '#lib/i18n/translate.js';
+import { PARENT_CHILD_TYPE_KEY } from '#lib/relationships/type-keys.js';
+import type { Relation } from '#lib/suggestions/types.js';
+import type { Viewer } from '#lib/server/access/visibility.js';
+import type { Contact } from '#lib/server/domain/contacts/contacts.js';
+import type { RelationshipType } from '#lib/server/domain/relationships/relationships.js';
+import type { NewDismissal } from '#lib/server/domain/relationships/suggestion-review.js';
+import {
+	inMemoryKinshipGraph,
+	inMemoryRelationshipTies
+} from '#lib/server/domain/testing/index.js';
 import {
 	acceptClaim,
 	declineClaim,

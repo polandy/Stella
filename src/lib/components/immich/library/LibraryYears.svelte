@@ -4,8 +4,8 @@
   about how many it holds and a meter against the busiest year.
 -->
 <script lang="ts">
-	import { useI18n } from '$lib/i18n/context.svelte';
-	import type { LibraryYear } from '$lib/immich/library-nav';
+	import { useI18n } from '#lib/i18n/context.svelte.js';
+	import type { LibraryYear } from '#lib/immich/library-nav.js';
 
 	interface Props {
 		years: readonly LibraryYear[];

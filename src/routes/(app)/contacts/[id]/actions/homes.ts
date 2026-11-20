@@ -1,15 +1,15 @@
 import { error, fail, redirect } from '@sveltejs/kit';
 import * as v from 'valibot';
-import { requireViewer } from '$lib/server/auth/guards';
-import { ContactGoneError } from '$lib/server/domain/contacts/require-visible';
+import { requireViewer } from '#lib/server/auth/guards.js';
+import { ContactGoneError } from '#lib/server/domain/contacts/require-visible.js';
 import {
 	changeHomeLine,
 	HomeGoneError,
 	leaveHome,
 	shareAddress,
 	type SharedAddress
-} from '$lib/server/domain/homes/homes';
-import { say, translator } from '$lib/server/i18n/say';
+} from '#lib/server/domain/homes/homes.js';
+import { say, translator } from '#lib/server/i18n/say.js';
 import type { Actions, RequestEvent } from '../$types';
 
 /*

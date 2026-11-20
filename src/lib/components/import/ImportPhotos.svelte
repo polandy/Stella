@@ -1,9 +1,9 @@
 <script lang="ts">
-	import { FIELD } from '$lib/components/ui/field';
-	import Button from '$lib/components/ui/Button.svelte';
+	import { FIELD } from '#lib/components/ui/field.js';
+	import Button from '#lib/components/ui/Button.svelte';
 	import type { Snippet } from 'svelte';
-	import { useTranslate } from '$lib/i18n/context.svelte';
-	import { processImage } from '$lib/media/process-image';
+	import { useTranslate } from '#lib/i18n/context.svelte.js';
+	import { processImage } from '#lib/media/process-image.js';
 
 	/*
 	 * The wizard's last step (docs/dev/02 §2.16), in the browser: the pictures come either from the

@@ -1,5 +1,5 @@
 import * as v from 'valibot';
-import { ARRANGE_MODES } from '$lib/circles/arrange';
+import { ARRANGE_MODES } from '#lib/circles/arrange.js';
 
 /*
  * The arrange screen's two posts, read at the edge (docs/dev/02 §2.4.2, ADR-127). The page sends

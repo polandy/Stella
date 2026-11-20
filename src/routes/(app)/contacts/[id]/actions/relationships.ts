@@ -1,27 +1,27 @@
-import { dispatchCommand } from '$lib/server/domain/commands/dispatch';
-import { readCommand } from '$lib/server/commands/parse';
-import { fromFormData } from '$lib/commands/form-data';
-import { RelationshipAddManySchema, RelationshipAddSchema } from '$lib/commands/person-payloads';
-import { ulidGenerator } from '$lib/server/id';
-import { systemClock } from '$lib/server/clock';
+import { dispatchCommand } from '#lib/server/domain/commands/dispatch.js';
+import { readCommand } from '#lib/server/commands/parse.js';
+import { fromFormData } from '#lib/commands/form-data.js';
+import { RelationshipAddManySchema, RelationshipAddSchema } from '#lib/commands/person-payloads.js';
+import { ulidGenerator } from '#lib/server/id.js';
+import { systemClock } from '#lib/server/clock.js';
 import { fail, redirect } from '@sveltejs/kit';
-import { requireViewer } from '$lib/server/auth/guards';
+import { requireViewer } from '#lib/server/auth/guards.js';
 import * as v from 'valibot';
-import { proposeHref } from '$lib/people/propose';
-import { decodeRelationshipChoice } from '$lib/relationships/type-options';
-import { contactSectionPath } from '$lib/people/sections';
+import { proposeHref } from '#lib/people/propose.js';
+import { decodeRelationshipChoice } from '#lib/relationships/type-options.js';
+import { contactSectionPath } from '#lib/people/sections.js';
 import {
 	ContradictoryRelationshipError,
 	DuplicateRelationshipError,
 	removeRelationship,
 	removeRelationships
-} from '$lib/server/domain/relationships/relationships';
-import { InvalidRelationshipDetailsError } from '$lib/server/domain/relationships/details';
-import { editRelationship } from '$lib/server/domain/relationships/edit';
-import { RelationshipExcludedError } from '$lib/server/domain/relationships/exclusions';
+} from '#lib/server/domain/relationships/relationships.js';
+import { InvalidRelationshipDetailsError } from '#lib/server/domain/relationships/details.js';
+import { editRelationship } from '#lib/server/domain/relationships/edit.js';
+import { RelationshipExcludedError } from '#lib/server/domain/relationships/exclusions.js';
 import { acceptClaim, declineClaim, restoreClaim } from '../../../_shared/suggestion-answers';
-import { RelationshipsRefusedError } from '$lib/server/domain/relationships/add-many';
-import { say, translator } from '$lib/server/i18n/say';
+import { RelationshipsRefusedError } from '#lib/server/domain/relationships/add-many.js';
+import { say, translator } from '#lib/server/i18n/say.js';
 import { reviewPath } from '../review-path';
 import type { Actions } from '../$types';
 

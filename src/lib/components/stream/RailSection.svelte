@@ -1,8 +1,8 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
-	import Icon from '$lib/components/ui/Icon.svelte';
-	import type { IconName } from '$lib/components/ui/icons';
-	import { glide } from '$lib/motion/motion.svelte';
+	import Icon from '#lib/components/ui/Icon.svelte';
+	import type { IconName } from '#lib/components/ui/icons.js';
+	import { glide } from '#lib/motion/motion.svelte.js';
 
 	/*
 	 * One section of Home's rail (docs/dev/05 §5.5.1). From `lg` it stands open beside the stream

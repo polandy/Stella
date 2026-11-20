@@ -1,15 +1,15 @@
-import { dispatchCommand } from '$lib/server/domain/commands/dispatch';
-import { readCommand } from '$lib/server/commands/parse';
-import { fromFormData } from '$lib/commands/form-data';
-import { CircleJoinSchema } from '$lib/commands/person-payloads';
-import { ulidGenerator } from '$lib/server/id';
-import { systemClock } from '$lib/server/clock';
+import { dispatchCommand } from '#lib/server/domain/commands/dispatch.js';
+import { readCommand } from '#lib/server/commands/parse.js';
+import { fromFormData } from '#lib/commands/form-data.js';
+import { CircleJoinSchema } from '#lib/commands/person-payloads.js';
+import { ulidGenerator } from '#lib/server/id.js';
+import { systemClock } from '#lib/server/clock.js';
 import { error, fail, redirect } from '@sveltejs/kit';
-import { requireViewer } from '$lib/server/auth/guards';
+import { requireViewer } from '#lib/server/auth/guards.js';
 import * as v from 'valibot';
-import { getContact } from '$lib/server/domain/contacts/contacts';
-import { removeMember, setMembersRole } from '$lib/server/domain/circles/members';
-import { say, translator } from '$lib/server/i18n/say';
+import { getContact } from '#lib/server/domain/contacts/contacts.js';
+import { removeMember, setMembersRole } from '#lib/server/domain/circles/members.js';
+import { say, translator } from '#lib/server/i18n/say.js';
 import type { Actions } from '../$types';
 
 /** One membership's role from the circles editor; blank takes the role away. */

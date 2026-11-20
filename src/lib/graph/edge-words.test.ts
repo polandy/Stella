@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test';
-import { createTranslator } from '$lib/i18n/translate';
+import { createTranslator } from '#lib/i18n/translate.js';
 import { edgeWords, treeRoleWords } from './edge-words';
 
 /*

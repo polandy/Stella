@@ -1,43 +1,43 @@
 <script lang="ts">
-	import Button from '$lib/components/ui/Button.svelte';
-	import DateField from '$lib/components/ui/DateField.svelte';
-	import KeptItem from '$lib/components/pwa/KeptItem.svelte';
-	import MomentComposer from '$lib/components/stream/MomentComposer.svelte';
-	import PersonSearchSelect from '$lib/components/people/PersonSearchSelect.svelte';
-	import Section from '$lib/components/ui/Section.svelte';
-	import StoryTimeline from '$lib/components/stream/StoryTimeline.svelte';
-	import { enhance } from '$app/forms';
+	import Button from '#lib/components/ui/Button.svelte';
+	import DateField from '#lib/components/ui/DateField.svelte';
+	import KeptItem from '#lib/components/pwa/KeptItem.svelte';
+	import MomentComposer from '#lib/components/stream/MomentComposer.svelte';
+	import PersonSearchSelect from '#lib/components/people/PersonSearchSelect.svelte';
+	import Section from '#lib/components/ui/Section.svelte';
+	import StoryTimeline from '#lib/components/stream/StoryTimeline.svelte';
+	import { enhance } from '#lib/forms/enhance.js';
 	import { goto, invalidateAll } from '$app/navigation';
-	import type { JsonCommand } from '$lib/commands/commands';
-	import { contactSectionPath, sectionAnchor } from '$lib/people/sections';
+	import type { JsonCommand } from '#lib/commands/commands.js';
+	import { contactSectionPath, sectionAnchor } from '#lib/people/sections.js';
 	import {
 		draftWorthUndo,
 		withLogAsked,
 		withMomentAsked,
 		type MomentDraft,
 		type StoryForm
-	} from '$lib/people/story-forms';
-	import { dayLabel } from '$lib/dates/labels';
-	import { useI18n } from '$lib/i18n/context.svelte';
+	} from '#lib/people/story-forms.js';
+	import { dayLabel } from '#lib/dates/labels.js';
+	import { useI18n } from '#lib/i18n/context.svelte.js';
 	import {
 		INTERACTION_KINDS,
 		isInteractionKind,
 		KIND_PRESENTATION,
 		type InteractionKind
-	} from '$lib/story/interaction-kinds';
-	import { asTyped, newPeopleAsCandidates } from '$lib/mentions/picks';
-	import { reveal } from '$lib/motion/motion.svelte';
-	import { settleOpenedForm, showOpenedForm } from '$lib/motion/scroll.svelte';
-	import { openedFormGlide } from '$lib/motion/motion';
-	import { keepable } from '$lib/pwa/keepable';
-	import { isKept, type KeptOf } from '$lib/pwa/outbox';
-	import { outbox } from '$lib/pwa/outbox.svelte';
-	import { useRemovals } from '$lib/undo/context.svelte';
-	import { savedEnhance } from '$lib/undo/saved';
-	import type { SubmitFunction } from '@sveltejs/kit';
+	} from '#lib/story/interaction-kinds.js';
+	import { asTyped, newPeopleAsCandidates } from '#lib/mentions/picks.js';
+	import { reveal } from '#lib/motion/motion.svelte.js';
+	import { settleOpenedForm, showOpenedForm } from '#lib/motion/scroll.svelte.js';
+	import { openedFormGlide } from '#lib/motion/motion.js';
+	import { keepable } from '#lib/pwa/keepable.js';
+	import { isKept, type KeptOf } from '#lib/pwa/outbox.js';
+	import { outbox } from '#lib/pwa/outbox.svelte.js';
+	import { useRemovals } from '#lib/undo/context.svelte.js';
+	import { savedEnhance } from '#lib/undo/saved.js';
+	import type { SubmitFunction } from '$app/forms';
 	import { tick, untrack } from 'svelte';
-	import { browser } from '$app/environment';
-	import { deviceDay, writersDay } from '$lib/dates/today';
+	import { browser } from '$app/env';
+	import { deviceDay, writersDay } from '#lib/dates/today.js';
 	import { ulid } from 'ulid';
 	import { INPUT } from '../ui/inputs';
 	import type { PersonForm, PersonPageData } from './types';
@@ -281,7 +281,8 @@
 				// Back on the story card it was logged from, not at the top of the page.
 				onApplied: async () => {
 					savedThen(closeLog)();
-					await goto(contactSectionPath(c.id, 'story'), { keepFocus: true });
+					await goto(contactSectionPath(c.id, 'story'), { reset: false });
+					document.getElementById(sectionAnchor('story'))?.scrollIntoView();
 				},
 				onKept: closeLog
 			},

@@ -1,17 +1,17 @@
 <script lang="ts">
-	import { FIELD } from '$lib/components/ui/field';
-	import { reveal } from '$lib/motion/motion.svelte';
-	import { enhance } from '$app/forms';
-	import Button from '$lib/components/ui/Button.svelte';
-	import RemoveButton from '$lib/components/ui/RemoveButton.svelte';
-	import Section from '$lib/components/ui/Section.svelte';
-	import { categoryVar } from '$lib/design/tokens';
-	import { useTranslate } from '$lib/i18n/context.svelte';
-	import { RELATIONSHIP_CATEGORIES } from '$lib/relationships/categories';
-	import { relationshipCategoryLabel, relationshipTypeLabel } from '$lib/relationships/labels';
-	import { useRemovals } from '$lib/undo/context.svelte';
-	import { removalKey } from '$lib/undo/keys';
-	import { savedEnhance } from '$lib/undo/saved';
+	import { FIELD } from '#lib/components/ui/field.js';
+	import { reveal } from '#lib/motion/motion.svelte.js';
+	import { enhance } from '#lib/forms/enhance.js';
+	import Button from '#lib/components/ui/Button.svelte';
+	import RemoveButton from '#lib/components/ui/RemoveButton.svelte';
+	import Section from '#lib/components/ui/Section.svelte';
+	import { categoryVar } from '#lib/design/tokens.js';
+	import { useTranslate } from '#lib/i18n/context.svelte.js';
+	import { RELATIONSHIP_CATEGORIES } from '#lib/relationships/categories.js';
+	import { relationshipCategoryLabel, relationshipTypeLabel } from '#lib/relationships/labels.js';
+	import { useRemovals } from '#lib/undo/context.svelte.js';
+	import { removalKey } from '#lib/undo/keys.js';
+	import { savedEnhance } from '#lib/undo/saved.js';
 	import type { ActionData, PageData } from './$types';
 
 	/*

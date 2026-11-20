@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'bun:test';
 import { isHttpError, isRedirect, type Cookies } from '@sveltejs/kit';
-import type { AuthServices } from '$lib/server/services/auth';
-import type { AppServices } from '$lib/server/services/app-services';
+import type { AuthServices } from '#lib/server/services/auth.js';
+import type { AppServices } from '#lib/server/services/app-services.js';
 
 /*
  * The password sign-in action (docs/dev/02 §2.1.1) over a test-wired `locals.services`: the sign-in

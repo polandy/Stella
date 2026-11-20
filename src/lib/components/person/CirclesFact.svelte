@@ -1,10 +1,10 @@
 <script lang="ts">
-	import { reveal } from '$lib/motion/motion.svelte';
-	import Icon from '$lib/components/ui/Icon.svelte';
-	import KeptChip from '$lib/components/pwa/KeptChip.svelte';
-	import { accentDotStyle } from '$lib/design/tokens';
-	import { useTranslate } from '$lib/i18n/context.svelte';
-	import type { KeptOf } from '$lib/pwa/outbox';
+	import { reveal } from '#lib/motion/motion.svelte.js';
+	import Icon from '#lib/components/ui/Icon.svelte';
+	import KeptChip from '#lib/components/pwa/KeptChip.svelte';
+	import { accentDotStyle } from '#lib/design/tokens.js';
+	import { useTranslate } from '#lib/i18n/context.svelte.js';
+	import type { KeptOf } from '#lib/pwa/outbox.js';
 	import CirclesEditor from './CirclesEditor.svelte';
 	import type { PersonForm, PersonPageData } from './types';
 

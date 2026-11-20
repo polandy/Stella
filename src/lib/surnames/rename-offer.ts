@@ -1,4 +1,4 @@
-import { foldSurname } from '$lib/suggestions/rules/surnames';
+import { foldSurname } from '#lib/suggestions/rules/surnames.js';
 
 /*
  * Correcting a last name (docs/dev/02 §2.2.4.7), on the screen's side: the profile is handed the

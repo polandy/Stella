@@ -1,5 +1,5 @@
-import type { LinkedPhrase } from '$lib/i18n/linked';
-import type { KinVariant } from '$lib/kinship/kinship';
+import type { LinkedPhrase } from '#lib/i18n/linked.js';
+import type { KinVariant } from '#lib/kinship/kinship.js';
 import type { Answer } from './claims';
 import type { SuggestionView } from './view';
 

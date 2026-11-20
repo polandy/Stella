@@ -1,12 +1,16 @@
 import { describe, expect, it } from 'bun:test';
-import { createTranslator } from '$lib/i18n/translate';
-import type { ImmichFailure, ImmichGateway } from '$lib/server/domain/immich/gateway';
-import type { ImmichIgnore } from '$lib/server/domain/immich/ignores';
-import type { ImmichLink } from '$lib/server/domain/immich/links';
-import type { ImmichNameIgnore } from '$lib/server/domain/immich/name-ignores';
-import type { ImmichServices } from '$lib/server/services/immich';
-import type { Contact } from '$lib/server/domain/contacts/contacts';
-import { contactRepositoryWith, fixedClock, sequentialIds } from '$lib/server/domain/testing';
+import { createTranslator } from '#lib/i18n/translate.js';
+import type { ImmichFailure, ImmichGateway } from '#lib/server/domain/immich/gateway.js';
+import type { ImmichIgnore } from '#lib/server/domain/immich/ignores.js';
+import type { ImmichLink } from '#lib/server/domain/immich/links.js';
+import type { ImmichNameIgnore } from '#lib/server/domain/immich/name-ignores.js';
+import type { ImmichServices } from '#lib/server/services/immich.js';
+import type { Contact } from '#lib/server/domain/contacts/contacts.js';
+import {
+	contactRepositoryWith,
+	fixedClock,
+	sequentialIds
+} from '#lib/server/domain/testing/index.js';
 import {
 	answerOf,
 	formOf,
@@ -14,7 +18,7 @@ import {
 	routeEvent,
 	type EdgeAnswer,
 	type FakeServices
-} from '$lib/server/testing';
+} from '#lib/server/testing/index.js';
 import { actions, load } from './+page.server';
 
 /*

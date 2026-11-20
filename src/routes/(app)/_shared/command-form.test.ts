@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'bun:test';
-import { createTranslator } from '$lib/i18n/translate';
-import type { CommandHandlers } from '$lib/server/domain/commands/dispatch';
-import { commandDepsWith } from '$lib/server/domain/testing';
-import { PlanGoneError } from '$lib/server/domain/plans/plans';
-import { answerOf, formOf, routeEvent, type FakeServices } from '$lib/server/testing';
+import { createTranslator } from '#lib/i18n/translate.js';
+import type { CommandHandlers } from '#lib/server/domain/commands/dispatch.js';
+import { commandDepsWith } from '#lib/server/domain/testing/index.js';
+import { PlanGoneError } from '#lib/server/domain/plans/plans.js';
+import { answerOf, formOf, routeEvent, type FakeServices } from '#lib/server/testing/index.js';
 import { applyPlanCommand } from './plan-commands';
 import { applyTodoCommand } from './todo-commands';
 import { applyGiftCommand } from './gift-commands';

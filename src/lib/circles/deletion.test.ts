@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'bun:test';
-import { INTL_LOCALES } from '$lib/i18n/locales';
-import { createTranslator } from '$lib/i18n/translate';
+import { INTL_LOCALES } from '#lib/i18n/locales.js';
+import { createTranslator } from '#lib/i18n/translate.js';
 import { circleDeletionSentences, type CircleDeletionCounts } from './deletion';
 
 /*

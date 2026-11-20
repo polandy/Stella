@@ -1,9 +1,9 @@
 import { error, fail, type RequestEvent } from '@sveltejs/kit';
 import * as v from 'valibot';
-import type { Locale } from '$lib/i18n/locales';
-import type { Translate } from '$lib/i18n/translate';
-import type { Viewer } from '$lib/server/access/visibility';
-import { requireViewer } from '$lib/server/auth/guards';
+import type { Locale } from '#lib/i18n/locales.js';
+import type { Translate } from '#lib/i18n/translate.js';
+import type { Viewer } from '#lib/server/access/visibility.js';
+import { requireViewer } from '#lib/server/auth/guards.js';
 import {
 	EmptyLastNameError,
 	LastNameChangedError,
@@ -11,9 +11,9 @@ import {
 	setLastNames,
 	takeBackLastName,
 	type LastNameDeps
-} from '$lib/server/domain/contacts/last-names';
-import { translator } from '$lib/server/i18n/say';
-import { LAST_NAME_CHANGED_STATUS } from '$lib/surnames/chip-give';
+} from '#lib/server/domain/contacts/last-names.js';
+import { translator } from '#lib/server/i18n/say.js';
+import { LAST_NAME_CHANGED_STATUS } from '#lib/surnames/chip-give.js';
 
 /*
  * The one form action behind every path that gives several people a last name

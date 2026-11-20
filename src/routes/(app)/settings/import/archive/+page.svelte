@@ -1,10 +1,10 @@
 <script lang="ts">
-	import { FIELD } from '$lib/components/ui/field';
-	import FormError from '$lib/components/ui/FormError.svelte';
-	import Button from '$lib/components/ui/Button.svelte';
-	import { countLabel, summariseRestore, tableLabel } from '$lib/archive/labels';
-	import { useI18n } from '$lib/i18n/context.svelte';
-	import type { RestoreWarning } from '$lib/server/domain/archive/restore-context';
+	import { FIELD } from '#lib/components/ui/field.js';
+	import FormError from '#lib/components/ui/FormError.svelte';
+	import Button from '#lib/components/ui/Button.svelte';
+	import { countLabel, summariseRestore, tableLabel } from '#lib/archive/labels.js';
+	import { useI18n } from '#lib/i18n/context.svelte.js';
+	import type { RestoreWarning } from '#lib/server/domain/archive/restore-context.js';
 	import type { ActionData } from './$types';
 
 	/*

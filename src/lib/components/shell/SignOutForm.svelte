@@ -1,8 +1,8 @@
 <script lang="ts">
-	import { reveal } from '$lib/motion/motion.svelte';
+	import { reveal } from '#lib/motion/motion.svelte.js';
 	import type { Snippet } from 'svelte';
-	import { useTranslate } from '$lib/i18n/context.svelte';
-	import { outbox } from '$lib/pwa/outbox.svelte';
+	import { useTranslate } from '#lib/i18n/context.svelte.js';
+	import { outbox } from '#lib/pwa/outbox.svelte.js';
 	import Button from '../ui/Button.svelte';
 
 	/*

@@ -1,4 +1,4 @@
-import type { InteractionKind } from '$lib/story/interaction-kinds';
+import type { InteractionKind } from '#lib/story/interaction-kinds.js';
 
 /*
  * *On this day* rows as the band and the page show them (docs/dev/02 §2.12.1) — the shape the server

@@ -1,10 +1,10 @@
 <script lang="ts">
-	import RemoveMemberStep from '$lib/components/members/RemoveMemberStep.svelte';
-	import RestoreMemberStep from '$lib/components/members/RestoreMemberStep.svelte';
-	import Avatar from '$lib/components/ui/Avatar.svelte';
-	import Button from '$lib/components/ui/Button.svelte';
-	import { useI18n } from '$lib/i18n/context.svelte';
-	import { useRemovals } from '$lib/undo/context.svelte';
+	import RemoveMemberStep from '#lib/components/members/RemoveMemberStep.svelte';
+	import RestoreMemberStep from '#lib/components/members/RestoreMemberStep.svelte';
+	import Avatar from '#lib/components/ui/Avatar.svelte';
+	import Button from '#lib/components/ui/Button.svelte';
+	import { useI18n } from '#lib/i18n/context.svelte.js';
+	import { useRemovals } from '#lib/undo/context.svelte.js';
 	import type { PageData } from './$types';
 
 	/*

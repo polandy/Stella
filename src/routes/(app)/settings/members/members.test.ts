@@ -1,12 +1,18 @@
 import { beforeEach, describe, expect, it } from 'bun:test';
 import { eq } from 'drizzle-orm';
-import { createTranslator } from '$lib/i18n/translate';
-import type { AuthUser } from '$lib/server/auth/accounts';
-import { createDrizzleMemberAccountRepository } from '$lib/server/db/member-account-repository';
-import * as schema from '$lib/server/db/schema';
-import { fixedClock, sequentialIds } from '$lib/server/domain/testing';
-import { ADMIN, AUTHOR, H, MEMBER as MIA, removalDb } from '$lib/server/domain/testing/removal-db';
-import { answerOf, formOf, routeEvent, type FakeServices } from '$lib/server/testing';
+import { createTranslator } from '#lib/i18n/translate.js';
+import type { AuthUser } from '#lib/server/auth/accounts.js';
+import { createDrizzleMemberAccountRepository } from '#lib/server/db/member-account-repository.js';
+import * as schema from '#lib/server/db/schema/index.js';
+import { fixedClock, sequentialIds } from '#lib/server/domain/testing/index.js';
+import {
+	ADMIN,
+	AUTHOR,
+	H,
+	MEMBER as MIA,
+	removalDb
+} from '#lib/server/domain/testing/removal-db.js';
+import { answerOf, formOf, routeEvent, type FakeServices } from '#lib/server/testing/index.js';
 import { actions, load } from './+page.server';
 
 /*

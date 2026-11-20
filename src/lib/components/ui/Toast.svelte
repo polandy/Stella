@@ -1,7 +1,7 @@
 <script lang="ts">
-	import Button from '$lib/components/ui/Button.svelte';
-	import { useTranslate } from '$lib/i18n/context.svelte';
-	import { useRemovals } from '$lib/undo/context.svelte';
+	import Button from '#lib/components/ui/Button.svelte';
+	import { useTranslate } from '#lib/i18n/context.svelte.js';
+	import { useRemovals } from '#lib/undo/context.svelte.js';
 
 	/*
 	 * The toast region (docs/dev/05 §5.7): bottom-left, one card per message. A removal's card

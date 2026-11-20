@@ -5,10 +5,10 @@
   Offline the button is greyed out and says it needs a connection.
 -->
 <script lang="ts">
-	import Button from '$lib/components/ui/Button.svelte';
-	import { useTranslate } from '$lib/i18n/context.svelte';
-	import type { ImmichCopy } from '$lib/media/copy-immich-photo';
-	import { reachability } from '$lib/pwa/reachability.svelte';
+	import Button from '#lib/components/ui/Button.svelte';
+	import { useTranslate } from '#lib/i18n/context.svelte.js';
+	import type { ImmichCopy } from '#lib/media/copy-immich-photo.js';
+	import { reachability } from '#lib/pwa/reachability.svelte.js';
 	import ImmichLibraryPicker from './ImmichLibraryPicker.svelte';
 
 	interface Props {

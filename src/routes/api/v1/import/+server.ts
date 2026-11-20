@@ -1,7 +1,7 @@
 import { json } from '@sveltejs/kit';
-import { badRequest, unauthorized } from '$lib/server/api/responses';
-import { importViaApi } from '$lib/server/domain/import/api/api-import';
-import { readApiImportDocument } from '$lib/server/import/api-document';
+import { badRequest, unauthorized } from '#lib/server/api/responses.js';
+import { importViaApi } from '#lib/server/domain/import/api/api-import.js';
+import { readApiImportDocument } from '#lib/server/import/api-document.js';
 import type { RequestHandler } from './$types';
 
 /*

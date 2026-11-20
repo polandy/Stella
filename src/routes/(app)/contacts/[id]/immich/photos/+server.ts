@@ -1,6 +1,6 @@
 import { error } from '@sveltejs/kit';
-import { answerGlimpse } from '$lib/server/immich/routes';
-import { say } from '$lib/server/i18n/say';
+import { answerGlimpse } from '#lib/server/immich/routes.js';
+import { say } from '#lib/server/i18n/say.js';
 import type { RequestHandler } from './$types';
 
 /*
@@ -8,7 +8,7 @@ import type { RequestHandler } from './$types';
  * §2.24.3), from `?cursor=` on — or, with `?with=`, of the photos they are in
  * together with that other person (§2.24.8); or, with `?of=`, another linked person's photos for
  * *Find in Immich* to offer as this person's picture (§2.24.2). Fetched after the page, so a slow Immich never
- * holds the page up. What it answers is decided and tested in `$lib/server/immich/routes.ts`;
+ * holds the page up. What it answers is decided and tested in `#lib/server/immich/routes.ts`;
  * this only wires it.
  */
 export const GET: RequestHandler = async ({ locals, params, url }) => {

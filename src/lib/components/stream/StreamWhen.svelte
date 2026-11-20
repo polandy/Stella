@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { StreamTime } from '$lib/stream/days';
+	import type { StreamTime } from '#lib/stream/days.js';
 
 	/*
 	 * The time beside a stream item (docs/dev/02 §2.22.2): the time of day under *Today* and

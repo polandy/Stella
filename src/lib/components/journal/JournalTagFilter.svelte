@@ -1,8 +1,8 @@
 <script lang="ts">
-	import TagChip from '$lib/components/journal/TagChip.svelte';
-	import { journalTagToggle } from '$lib/hashtags/hashtags';
-	import type { KnownTag } from '$lib/hashtags/picker';
-	import { useI18n } from '$lib/i18n/context.svelte';
+	import TagChip from '#lib/components/journal/TagChip.svelte';
+	import { journalTagToggle } from '#lib/hashtags/hashtags.js';
+	import type { KnownTag } from '#lib/hashtags/picker.js';
+	import { useI18n } from '#lib/i18n/context.svelte.js';
 
 	/*
 	 * The journal filtered by tags (docs/dev/02 §2.20.2, docs/dev/design/screens/person.md). Each chip is

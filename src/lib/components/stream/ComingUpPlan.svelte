@@ -1,18 +1,18 @@
 <script lang="ts">
-	import { enhance } from '$app/forms';
-	import PlanStep from '$lib/components/person/PlanStep.svelte';
-	import Avatar from '$lib/components/ui/Avatar.svelte';
-	import Button from '$lib/components/ui/Button.svelte';
-	import FormError from '$lib/components/ui/FormError.svelte';
-	import Icon from '$lib/components/ui/Icon.svelte';
-	import RemoveButton from '$lib/components/ui/RemoveButton.svelte';
-	import { useI18n } from '$lib/i18n/context.svelte';
-	import { contactSectionPath } from '$lib/people/sections';
-	import { nextYearWhen } from '$lib/plans/home';
-	import { passedPlanLabel, planDayLabel } from '$lib/plans/home-labels';
-	import { useRemovals } from '$lib/undo/context.svelte';
-	import { savedEnhance } from '$lib/undo/saved';
-	import { WHEN_FIELDS } from '$lib/when/form';
+	import { enhance } from '#lib/forms/enhance.js';
+	import PlanStep from '#lib/components/person/PlanStep.svelte';
+	import Avatar from '#lib/components/ui/Avatar.svelte';
+	import Button from '#lib/components/ui/Button.svelte';
+	import FormError from '#lib/components/ui/FormError.svelte';
+	import Icon from '#lib/components/ui/Icon.svelte';
+	import RemoveButton from '#lib/components/ui/RemoveButton.svelte';
+	import { useI18n } from '#lib/i18n/context.svelte.js';
+	import { contactSectionPath } from '#lib/people/sections.js';
+	import { nextYearWhen } from '#lib/plans/home.js';
+	import { passedPlanLabel, planDayLabel } from '#lib/plans/home-labels.js';
+	import { useRemovals } from '#lib/undo/context.svelte.js';
+	import { savedEnhance } from '#lib/undo/saved.js';
+	import { WHEN_FIELDS } from '#lib/when/form.js';
 	import type { PageData } from '../../../routes/(app)/$types';
 
 	/*

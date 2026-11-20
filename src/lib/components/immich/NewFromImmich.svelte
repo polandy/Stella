@@ -5,20 +5,20 @@
 
 <script lang="ts">
 	import { invalidateAll } from '$app/navigation';
-	import Button from '$lib/components/ui/Button.svelte';
-	import EmptyState from '$lib/components/ui/EmptyState.svelte';
+	import Button from '#lib/components/ui/Button.svelte';
+	import EmptyState from '#lib/components/ui/EmptyState.svelte';
 	import NewcomerRow, {
 		type Added,
 		type Assigned,
 		type NewcomerView
-	} from '$lib/components/immich/NewcomerRow.svelte';
-	import { useI18n } from '$lib/i18n/context.svelte';
-	import { sendImmichFace } from '$lib/media/send-immich-face';
-	import { reveal } from '$lib/motion/motion.svelte';
-	import type { SelectablePerson } from '$lib/people/select';
-	import { useRemovals } from '$lib/undo/context.svelte';
-	import { deferredRemoval } from '$lib/undo/deferred-removal';
-	import { removalKey, type RemovalKind } from '$lib/undo/keys';
+	} from '#lib/components/immich/NewcomerRow.svelte';
+	import { useI18n } from '#lib/i18n/context.svelte.js';
+	import { sendImmichFace } from '#lib/media/send-immich-face.js';
+	import { reveal } from '#lib/motion/motion.svelte.js';
+	import type { SelectablePerson } from '#lib/people/select.js';
+	import { useRemovals } from '#lib/undo/context.svelte.js';
+	import { deferredRemoval } from '#lib/undo/deferred-removal.js';
+	import { removalKey, type RemovalKind } from '#lib/undo/keys.js';
 
 	/*
 	 * The *New from Immich* tab of *Find your people* (docs/dev/02 §2.24.7): faces named in Immich

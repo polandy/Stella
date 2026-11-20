@@ -4,13 +4,13 @@
 </script>
 
 <script lang="ts">
-	import { reveal } from '$lib/motion/motion.svelte';
-	import { dayLabel } from '$lib/dates/labels';
-	import { useI18n } from '$lib/i18n/context.svelte';
-	import { hasMessage } from '$lib/i18n/translate';
-	import type { BirthdayFact, IdentityFact } from '$lib/people/identity-card';
-	import { oneLine } from '$lib/people/home';
-	import type { KeptOf } from '$lib/pwa/outbox';
+	import { reveal } from '#lib/motion/motion.svelte.js';
+	import { dayLabel } from '#lib/dates/labels.js';
+	import { useI18n } from '#lib/i18n/context.svelte.js';
+	import { hasMessage } from '#lib/i18n/translate.js';
+	import type { BirthdayFact, IdentityFact } from '#lib/people/identity-card.js';
+	import { oneLine } from '#lib/people/home.js';
+	import type { KeptOf } from '#lib/pwa/outbox.js';
 	import AddressEditor from './AddressEditor.svelte';
 	import CirclesFact from './CirclesFact.svelte';
 	import DatesEditor from './DatesEditor.svelte';

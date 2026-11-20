@@ -1,9 +1,9 @@
 <script lang="ts">
-	import PrivateMark from '$lib/components/ui/PrivateMark.svelte';
-	import StreamFace from '$lib/components/stream/StreamFace.svelte';
-	import StreamWhen from '$lib/components/stream/StreamWhen.svelte';
-	import type { StreamTime } from '$lib/stream/days';
-	import { useTranslate } from '$lib/i18n/context.svelte';
+	import PrivateMark from '#lib/components/ui/PrivateMark.svelte';
+	import StreamFace from '#lib/components/stream/StreamFace.svelte';
+	import StreamWhen from '#lib/components/stream/StreamWhen.svelte';
+	import type { StreamTime } from '#lib/stream/days.js';
+	import { useTranslate } from '#lib/i18n/context.svelte.js';
 	import type { PageData } from '../../../routes/(app)/$types';
 
 	/** The stream item as Home's `load` hands it over. */

@@ -1,4 +1,4 @@
-import type { DateLanguage } from '$lib/dates/labels';
+import type { DateLanguage } from '#lib/dates/labels.js';
 
 /*
  * A circle's period as its page's header line shows it (docs/dev/02 §2.4.2). A circle's period is

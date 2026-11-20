@@ -1,9 +1,9 @@
 <script lang="ts">
-	import Button from '$lib/components/ui/Button.svelte';
-	import EmptyState from '$lib/components/ui/EmptyState.svelte';
-	import { useTranslate } from '$lib/i18n/context.svelte';
-	import { addRelationshipPath } from '$lib/people/sections';
-	import type { GraphNode } from '$lib/graph/model/types';
+	import Button from '#lib/components/ui/Button.svelte';
+	import EmptyState from '#lib/components/ui/EmptyState.svelte';
+	import { useTranslate } from '#lib/i18n/context.svelte.js';
+	import { addRelationshipPath } from '#lib/people/sections.js';
+	import type { GraphNode } from '#lib/graph/model/types.js';
 
 	/*
 	 * A centre linked to nobody draws one lonely dot: the explorer route says why and offers the

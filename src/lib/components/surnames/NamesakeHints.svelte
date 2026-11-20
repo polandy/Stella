@@ -1,6 +1,6 @@
 <script lang="ts">
-	import { useTranslate } from '$lib/i18n/context.svelte';
-	import type { NamesakeAfterNaming } from '$lib/surnames/namesakes';
+	import { useTranslate } from '#lib/i18n/context.svelte.js';
+	import type { NamesakeAfterNaming } from '#lib/surnames/namesakes.js';
 
 	/*
 	 * *The household might already have them* (docs/dev/02 §2.2.4.4): after a name is

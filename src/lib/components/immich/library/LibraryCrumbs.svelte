@@ -5,9 +5,9 @@
   Each crumb above the current one goes back up to it; the last one is where the picker is.
 -->
 <script lang="ts">
-	import { useI18n } from '$lib/i18n/context.svelte';
-	import { crumbLabel } from '$lib/immich/library-labels';
-	import type { LibraryLevel } from '$lib/immich/library-nav';
+	import { useI18n } from '#lib/i18n/context.svelte.js';
+	import { crumbLabel } from '#lib/immich/library-labels.js';
+	import type { LibraryLevel } from '#lib/immich/library-nav.js';
 
 	interface Props {
 		crumbs: readonly LibraryLevel[];

@@ -284,7 +284,7 @@ the person, and that never leaves the page. Keeping the record tidy (archive, me
 - Its header holds *Log contact* as a quiet ghost button, opening the card's own form, and
   beside it *Open journal* (book icon), leading to the journal page.
 - The top of the card holds **one form at a time** (`StorySection`,
-  `$lib/people/story-forms.ts`): the moment composer or the log form. Opening one folds the
+  `#lib/people/story-forms.ts`): the moment composer or the log form. Opening one folds the
   other away (§5.11) and keeps what was typed in it until it is saved or cancelled.
 - The composer is Home's `MomentComposer` with an `anchor`: a non-removable chip with the
   person's avatar and name, *· goes to Markus's journal*, above the serif field; the sharing
@@ -473,7 +473,7 @@ The card of docs/dev/02 §2.27, right after Gifts; no jump-bar link.
   row scrolls sideways. *All* is a glance: one row of seven on a wide card, two rows of three on
   a phone, the last tile *All 1,769 photos* once there are more than fit; that tile opens *All*
   out in place, and *Show more* under it adds Immich's next twelve. *All* mixes the gallery
-  and the latest Immich photos (`mixPhotos`, `$lib/people/photo-card.ts`): favourites first,
+  and the latest Immich photos (`mixPhotos`, `#lib/people/photo-card.ts`): favourites first,
   then newest first by when each was taken; an Immich tile wears a small *Immich* badge there.
   *Stella* is the whole gallery; *Immich* the loaded Immich photos, growing downward by twelve
   with *Show more*.
@@ -516,7 +516,7 @@ The card of docs/dev/02 §2.27, right after Gifts; no jump-bar link.
 
 #### Empty cards
 
-- `cardShape` (`$lib/people/empty-cards.ts`) decides each card's shape at zero.
+- `cardShape` (`#lib/people/empty-cards.ts`) decides each card's shape at zero.
 - An empty **Photos**, **Notes**, **Gifts**, **Outings** or **To-dos** is **one line** (`Section`'s `empty`): the title,
   one short sentence cut off rather than wrapped (*No photos yet.*, *Nothing noted yet.*,
   *No gift ideas yet.*, *No idea yet.*, *Nothing open.*), and the card's actions — *+ Add* and, on Photos, the Immich menu; on

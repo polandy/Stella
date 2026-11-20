@@ -1,21 +1,21 @@
 <script lang="ts">
 	import { invalidateAll } from '$app/navigation';
-	import Avatar from '$lib/components/ui/Avatar.svelte';
-	import Button from '$lib/components/ui/Button.svelte';
-	import { dayHeading } from '$lib/dates/labels';
-	import EmptyState from '$lib/components/ui/EmptyState.svelte';
-	import JournalCompose from '$lib/components/journal/JournalCompose.svelte';
-	import JournalEntryCard from '$lib/components/journal/JournalEntryCard.svelte';
-	import JournalTagFilter from '$lib/components/journal/JournalTagFilter.svelte';
-	import { asTyped } from '$lib/mentions/picks';
-	import KeptItem from '$lib/components/pwa/KeptItem.svelte';
-	import { isKept, type KeptOf } from '$lib/pwa/outbox';
-	import { outbox } from '$lib/pwa/outbox.svelte';
-	import { useRemovals } from '$lib/undo/context.svelte';
-	import { removalKey as buildKey } from '$lib/undo/keys';
-	import { removeThroughAction } from '$lib/undo/deferred-removal';
+	import Avatar from '#lib/components/ui/Avatar.svelte';
+	import Button from '#lib/components/ui/Button.svelte';
+	import { dayHeading } from '#lib/dates/labels.js';
+	import EmptyState from '#lib/components/ui/EmptyState.svelte';
+	import JournalCompose from '#lib/components/journal/JournalCompose.svelte';
+	import JournalEntryCard from '#lib/components/journal/JournalEntryCard.svelte';
+	import JournalTagFilter from '#lib/components/journal/JournalTagFilter.svelte';
+	import { asTyped } from '#lib/mentions/picks.js';
+	import KeptItem from '#lib/components/pwa/KeptItem.svelte';
+	import { isKept, type KeptOf } from '#lib/pwa/outbox.js';
+	import { outbox } from '#lib/pwa/outbox.svelte.js';
+	import { useRemovals } from '#lib/undo/context.svelte.js';
+	import { removalKey as buildKey } from '#lib/undo/keys.js';
+	import { removeThroughAction } from '#lib/undo/deferred-removal.js';
 	import type { ActionData, PageData } from './$types';
-	import { useI18n } from '$lib/i18n/context.svelte';
+	import { useI18n } from '#lib/i18n/context.svelte.js';
 
 	let { data, form }: { data: PageData; form: ActionData } = $props();
 	// People the @-picker may offer — the shell's list — minus the person whose journal this is:

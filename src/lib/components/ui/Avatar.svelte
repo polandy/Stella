@@ -1,7 +1,7 @@
 <script lang="ts">
-	import { avatarAccent, initials } from '$lib/people/avatar';
-	import { accentAvatarStyle } from '$lib/design/tokens';
-	import { thumbnailUrl } from '$lib/media/urls';
+	import { avatarAccent, initials } from '#lib/people/avatar.js';
+	import { accentAvatarStyle } from '#lib/design/tokens.js';
+	import { thumbnailUrl } from '#lib/media/urls.js';
 
 	interface Props {
 		id: string;

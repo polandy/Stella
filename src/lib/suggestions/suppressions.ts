@@ -1,5 +1,5 @@
-import { deriveKinship, type KinTerm } from '$lib/kinship/kinship';
-import { MAX_PARENTS } from '$lib/relationships/exclusions';
+import { deriveKinship, type KinTerm } from '#lib/kinship/kinship.js';
+import { MAX_PARENTS } from '#lib/relationships/exclusions.js';
 import type { Relation } from './types';
 import type { SuggestionView } from './view';
 

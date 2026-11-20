@@ -1,8 +1,8 @@
 import { redirect } from '@sveltejs/kit';
-import { todayFor } from '$lib/dates/today';
-import { requireViewer } from '$lib/server/auth/guards';
-import { systemClock } from '$lib/server/clock';
-import { sheetAddressFor } from '$lib/share/address';
+import { todayFor } from '#lib/dates/today.js';
+import { requireViewer } from '#lib/server/auth/guards.js';
+import { systemClock } from '#lib/server/clock.js';
+import { sheetAddressFor } from '#lib/share/address.js';
 import type { Actions, PageServerLoad } from './$types';
 
 /*

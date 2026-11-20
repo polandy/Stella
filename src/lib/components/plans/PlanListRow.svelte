@@ -1,12 +1,12 @@
 <script lang="ts">
-	import PlanStep from '$lib/components/person/PlanStep.svelte';
-	import Avatar from '$lib/components/ui/Avatar.svelte';
-	import Icon from '$lib/components/ui/Icon.svelte';
-	import WhenChip from '$lib/components/when/WhenChip.svelte';
-	import { useI18n } from '$lib/i18n/context.svelte';
-	import { contactSectionPath } from '$lib/people/sections';
-	import { planState } from '$lib/plans/card';
-	import type { ListPlanView } from '$lib/plans/list';
+	import PlanStep from '#lib/components/person/PlanStep.svelte';
+	import Avatar from '#lib/components/ui/Avatar.svelte';
+	import Icon from '#lib/components/ui/Icon.svelte';
+	import WhenChip from '#lib/components/when/WhenChip.svelte';
+	import { useI18n } from '#lib/i18n/context.svelte.js';
+	import { contactSectionPath } from '#lib/people/sections.js';
+	import { planState } from '#lib/plans/card.js';
+	import type { ListPlanView } from '#lib/plans/list.js';
 
 	/*
 	 * One idea on `/plans` (docs/dev/02 §2.27.9): the person's face, the line linking to their

@@ -1,8 +1,8 @@
 import * as v from 'valibot';
-import type { Viewer } from '$lib/server/access/visibility';
-import { CIRCLE_COLORS, CIRCLE_KINDS, createCircle } from '$lib/server/domain/circles/circles';
-import { CircleParentGoneError } from '$lib/server/domain/circles/nesting';
-import { say, translator } from '$lib/server/i18n/say';
+import type { Viewer } from '#lib/server/access/visibility.js';
+import { CIRCLE_COLORS, CIRCLE_KINDS, createCircle } from '#lib/server/domain/circles/circles.js';
+import { CircleParentGoneError } from '#lib/server/domain/circles/nesting.js';
+import { say, translator } from '#lib/server/i18n/say.js';
 
 /*
  * The one way a new circle is made from a screen (docs/dev/02 §2.4.2): the circles list's *New

@@ -1,17 +1,17 @@
-import type { MomentNewPerson } from '$lib/commands/commands';
-import { mentionKey } from '$lib/mentions/mentions';
-import { activeHandle, handleFor, insertHandle, type ActiveHandle } from '$lib/mentions/picker';
+import type { MomentNewPerson } from '#lib/commands/commands.js';
+import { mentionKey } from '#lib/mentions/mentions.js';
+import { activeHandle, handleFor, insertHandle, type ActiveHandle } from '#lib/mentions/picker.js';
 import {
 	isQueuedName,
 	newPeopleAsCandidates,
 	shiftPicks,
 	type MentionPick
-} from '$lib/mentions/picks';
+} from '#lib/mentions/picks.js';
 import {
 	capitalisedIfTypedLowercase,
 	isKnownByMoreThanAFirstName,
 	splitTypedName
-} from '$lib/people/new-person';
+} from '#lib/people/new-person.js';
 import type {
 	ComposerCandidate,
 	ComposerCommand,

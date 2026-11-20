@@ -1,5 +1,5 @@
-import { MAX_SHARED_PHOTOS } from '$lib/share/shared';
-import { stalePendingShares } from '$lib/share/pending';
+import { MAX_SHARED_PHOTOS } from '#lib/share/shared.js';
+import { stalePendingShares } from '#lib/share/pending.js';
 
 /*
  * Keeps a share from another app on the device (docs/dev/02 §2.18.3), from the moment the service

@@ -6,16 +6,16 @@
   in the title never draws the tree again.
 -->
 <script lang="ts">
-	import { useI18n } from '$lib/i18n/context.svelte';
-	import { HEADER_LAYOUT, type TreeImage } from '$lib/graph/cytoscape/tree-image';
-	import type { Palette } from '$lib/graph/cytoscape/theme';
+	import { useI18n } from '#lib/i18n/context.svelte.js';
+	import { HEADER_LAYOUT, type TreeImage } from '#lib/graph/cytoscape/tree-image.js';
+	import type { Palette } from '#lib/graph/cytoscape/theme.js';
 	import {
 		PAGE_MARGIN_MM,
 		PAPER_MM,
 		printedSize,
 		type ExportFormat,
 		type Paper
-	} from '$lib/graph/tree-export';
+	} from '#lib/graph/tree-export.js';
 
 	interface Props {
 		/** The light theme's colours: paper is white whatever the screen's theme. */

@@ -1,14 +1,18 @@
 import { describe, expect, it } from 'bun:test';
-import { createTranslator } from '$lib/i18n/translate';
-import type { Contact } from '$lib/server/domain/contacts/contacts';
-import { contactRepositoryWith, fixedClock, sequentialIds } from '$lib/server/domain/testing';
+import { createTranslator } from '#lib/i18n/translate.js';
+import type { Contact } from '#lib/server/domain/contacts/contacts.js';
+import {
+	contactRepositoryWith,
+	fixedClock,
+	sequentialIds
+} from '#lib/server/domain/testing/index.js';
 import {
 	answerOf,
 	formOf,
 	routeEvent,
 	type EdgeAnswer,
 	type FakeServices
-} from '$lib/server/testing';
+} from '#lib/server/testing/index.js';
 import { storyActions as actions } from './story';
 
 /*

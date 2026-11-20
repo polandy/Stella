@@ -1,14 +1,14 @@
 import { describe, expect, it } from 'bun:test';
-import { createTranslator } from '$lib/i18n/translate';
-import type { AuthUser } from '$lib/server/auth/accounts';
-import { BUILT_IN_RELATIONSHIP_TYPES } from '$lib/server/domain/relationships/built-in-types';
+import { createTranslator } from '#lib/i18n/translate.js';
+import type { AuthUser } from '#lib/server/auth/accounts.js';
+import { BUILT_IN_RELATIONSHIP_TYPES } from '#lib/server/domain/relationships/built-in-types.js';
 import {
 	CUSTOM_TYPE_SORT_ORDER,
 	type NewRelationshipType,
 	type RelationshipTypeFields
-} from '$lib/server/domain/relationships/relationship-types';
-import type { RelationshipType } from '$lib/server/domain/relationships/relationships';
-import { relationshipTypeRepositoryWith, sequentialIds } from '$lib/server/domain/testing';
+} from '#lib/server/domain/relationships/relationship-types.js';
+import type { RelationshipType } from '#lib/server/domain/relationships/relationships.js';
+import { relationshipTypeRepositoryWith, sequentialIds } from '#lib/server/domain/testing/index.js';
 import {
 	answerOf,
 	formOf,
@@ -16,8 +16,8 @@ import {
 	routeEvent,
 	type EdgeAnswer,
 	type FakeServices
-} from '$lib/server/testing';
-import type { Locale } from '$lib/i18n/locales';
+} from '#lib/server/testing/index.js';
+import type { Locale } from '#lib/i18n/locales.js';
 import { actions, load } from './+page.server';
 
 /*

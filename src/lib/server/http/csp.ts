@@ -1,6 +1,6 @@
-import type { KitConfig } from '@sveltejs/kit';
+import type { Config } from '@sveltejs/kit/vite';
 
-type CspDirectives = NonNullable<NonNullable<KitConfig['csp']>['directives']>;
+type CspDirectives = NonNullable<NonNullable<Config['csp']>['directives']>;
 
 /*
  * The Content-Security-Policy (docs/dev/04 §4.7). SvelteKit sends it from these directives and adds

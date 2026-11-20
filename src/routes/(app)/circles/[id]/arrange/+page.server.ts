@@ -1,6 +1,6 @@
 import { error, fail } from '@sveltejs/kit';
-import { circleTree } from '$lib/circles/tree';
-import { requireViewer } from '$lib/server/auth/guards';
+import { circleTree } from '#lib/circles/tree.js';
+import { requireViewer } from '#lib/server/auth/guards.js';
 import {
 	ArrangeNothingToDoError,
 	ArrangeScopeError,
@@ -8,9 +8,9 @@ import {
 	arrangePeople,
 	readArrangement,
 	undoArrangement
-} from '$lib/server/domain/circles/arrange-people';
-import { readCircleTree } from '$lib/server/domain/circles/tree';
-import { say, translator } from '$lib/server/i18n/say';
+} from '#lib/server/domain/circles/arrange-people.js';
+import { readCircleTree } from '#lib/server/domain/circles/tree.js';
+import { say, translator } from '#lib/server/i18n/say.js';
 import type { Actions, PageServerLoad } from './$types';
 import { readArrangeForm, readUndoForm } from './arrange-form';
 

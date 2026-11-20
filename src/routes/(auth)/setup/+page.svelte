@@ -1,8 +1,8 @@
 <script lang="ts">
-	import { FIELD } from '$lib/components/ui/field';
-	import FormError from '$lib/components/ui/FormError.svelte';
-	import Button from '$lib/components/ui/Button.svelte';
-	import { useTranslate } from '$lib/i18n/context.svelte';
+	import { FIELD } from '#lib/components/ui/field.js';
+	import FormError from '#lib/components/ui/FormError.svelte';
+	import Button from '#lib/components/ui/Button.svelte';
+	import { useTranslate } from '#lib/i18n/context.svelte.js';
 	import type { ActionData } from './$types';
 
 	let { form }: { form: ActionData } = $props();

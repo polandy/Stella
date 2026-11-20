@@ -1,10 +1,10 @@
 <script lang="ts">
-	import FormError from '$lib/components/ui/FormError.svelte';
+	import FormError from '#lib/components/ui/FormError.svelte';
 	import { invalidateAll } from '$app/navigation';
-	import { useTranslate } from '$lib/i18n/context.svelte';
-	import type { CropRect } from '$lib/media/crop';
-	import { processAvatar } from '$lib/media/process-avatar';
-	import { mediaUrl } from '$lib/media/urls';
+	import { useTranslate } from '#lib/i18n/context.svelte.js';
+	import type { CropRect } from '#lib/media/crop.js';
+	import { processAvatar } from '#lib/media/process-avatar.js';
+	import { mediaUrl } from '#lib/media/urls.js';
 	import Button from '../ui/Button.svelte';
 	import PhotoCropper from '../ui/PhotoCropper.svelte';
 

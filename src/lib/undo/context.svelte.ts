@@ -6,7 +6,7 @@ import {
 	type Removal,
 	type RemovalsSnapshot
 } from './pending-removals';
-import { useTranslate } from '$lib/i18n/context.svelte';
+import { useTranslate } from '#lib/i18n/context.svelte.js';
 
 /*
  * The app shell owns one removals store per tab and hands it down through context, so a

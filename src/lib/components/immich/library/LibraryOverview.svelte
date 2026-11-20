@@ -4,9 +4,9 @@
   nothing to show.
 -->
 <script lang="ts">
-	import { useTranslate } from '$lib/i18n/context.svelte';
-	import type { LibraryMonths as Timeline } from '$lib/immich/library';
-	import { monthsOfYear, yearTotals } from '$lib/immich/library-nav';
+	import { useTranslate } from '#lib/i18n/context.svelte.js';
+	import type { LibraryMonths as Timeline } from '#lib/immich/library.js';
+	import { monthsOfYear, yearTotals } from '#lib/immich/library-nav.js';
 	import LibraryMonths from './LibraryMonths.svelte';
 	import LibraryNotice from './LibraryNotice.svelte';
 	import LibraryYears from './LibraryYears.svelte';

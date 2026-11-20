@@ -1,8 +1,8 @@
 <script lang="ts">
-	import DateField from '$lib/components/ui/DateField.svelte';
-	import Swap from '$lib/components/ui/Swap.svelte';
-	import { useTranslate } from '$lib/i18n/context.svelte';
-	import type { PairSince } from '$lib/relationships/multi-pick';
+	import DateField from '#lib/components/ui/DateField.svelte';
+	import Swap from '#lib/components/ui/Swap.svelte';
+	import { useTranslate } from '#lib/i18n/context.svelte.js';
+	import type { PairSince } from '#lib/relationships/multi-pick.js';
 
 	/*
 	 * The add form's since day (docs/dev/02 §2.4): one field, or — with several people picked whose

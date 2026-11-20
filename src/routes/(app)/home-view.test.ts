@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test';
-import { mentionToken } from '$lib/mentions/mentions';
+import { mentionToken } from '#lib/mentions/mentions.js';
 import { composerFor, linkSuggestionAmong, peopleNamedBy, photosPosted } from './home-view';
 
 /*

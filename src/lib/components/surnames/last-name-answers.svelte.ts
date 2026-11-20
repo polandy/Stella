@@ -1,8 +1,8 @@
-import type { SubmitFunction } from '@sveltejs/kit';
+import type { SubmitFunction } from '$app/forms';
 import { invalidateAll } from '$app/navigation';
-import { useTranslate } from '$lib/i18n/context.svelte';
-import { useRemovals } from '$lib/undo/context.svelte';
-import { submitAction } from '$lib/undo/submit-action';
+import { useTranslate } from '#lib/i18n/context.svelte.js';
+import { useRemovals } from '#lib/undo/context.svelte.js';
+import { submitAction } from '#lib/undo/submit-action.js';
 
 /*
  * The *Last names* list's two answers (docs/dev/02 §2.2.4.2), as the browser gives them: *Not

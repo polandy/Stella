@@ -1,7 +1,7 @@
 <script lang="ts">
-	import KeptItem from '$lib/components/pwa/KeptItem.svelte';
-	import { isKept, type KeptOf } from '$lib/pwa/outbox';
-	import { outbox } from '$lib/pwa/outbox.svelte';
+	import KeptItem from '#lib/components/pwa/KeptItem.svelte';
+	import { isKept, type KeptOf } from '#lib/pwa/outbox.js';
+	import { outbox } from '#lib/pwa/outbox.svelte.js';
 
 	/*
 	 * Links entered on this person while Stella was out of reach, kept until they are sent (docs/dev/02

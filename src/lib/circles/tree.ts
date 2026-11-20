@@ -7,7 +7,7 @@
  * cut where the tree is built, and every walk still keeps its own visited set.
  */
 
-import type { Accent } from '$lib/design/tokens';
+import type { Accent } from '#lib/design/tokens.js';
 
 /** A circle as the tree knows it — already scoped to the reader by the access layer. */
 export interface TreeCircle {

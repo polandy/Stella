@@ -1,30 +1,30 @@
-import { listContactFields } from '$lib/server/domain/contact-fields/contact-fields';
+import { listContactFields } from '#lib/server/domain/contact-fields/contact-fields.js';
 import {
 	listCirclesForContact,
 	listRoleSuggestionsByCircleName
-} from '$lib/server/domain/circles/memberships';
-import { listHomesOf } from '$lib/server/domain/homes/homes';
-import { readSurnameHelp } from '$lib/server/domain/contacts/last-names';
-import { textOf } from '$lib/i18n/linked';
-import type { SurnameOption, SurnameProposal } from '$lib/suggestions/rules/surnames';
-import type { Translate } from '$lib/i18n/translate';
-import { listImportantDates } from '$lib/server/domain/dates/important-dates';
-import { lastContactedOn } from '$lib/server/domain/interactions/interactions';
-import { authorNames } from '$lib/server/domain/household/members';
-import { listStoryPage } from '$lib/server/domain/story/story';
-import { listGroupPhotosOf, listGroupPhotosToCut } from '$lib/server/domain/media/cuts';
-import { listGallery } from '$lib/server/domain/media/gallery';
-import { listMentionedIn } from '$lib/server/domain/mentions/mentioned-in';
-import { listNotesForContact } from '$lib/server/domain/notes/notes';
-import { listGiftsForContact } from '$lib/server/domain/gifts/gifts';
-import { listPlansForContact } from '$lib/server/domain/plans/plans';
-import { readGiftGroupsOf } from '$lib/server/domain/gifts/gift-group-follow-up';
-import { mayKeepFrom } from '$lib/server/domain/shared/idea-on-person';
-import { listOpenTodosForContact } from '$lib/server/domain/todos/todos';
-import { readFamilyOf } from '$lib/server/domain/relationships/family';
-import { listTagsForContact } from '$lib/server/domain/tags/tag-lists';
-import type { Viewer } from '$lib/server/access/visibility';
-import type { AppServices } from '$lib/server/services/app-services';
+} from '#lib/server/domain/circles/memberships.js';
+import { listHomesOf } from '#lib/server/domain/homes/homes.js';
+import { readSurnameHelp } from '#lib/server/domain/contacts/last-names.js';
+import { textOf } from '#lib/i18n/linked.js';
+import type { SurnameOption, SurnameProposal } from '#lib/suggestions/rules/surnames.js';
+import type { Translate } from '#lib/i18n/translate.js';
+import { listImportantDates } from '#lib/server/domain/dates/important-dates.js';
+import { lastContactedOn } from '#lib/server/domain/interactions/interactions.js';
+import { authorNames } from '#lib/server/domain/household/members.js';
+import { listStoryPage } from '#lib/server/domain/story/story.js';
+import { listGroupPhotosOf, listGroupPhotosToCut } from '#lib/server/domain/media/cuts.js';
+import { listGallery } from '#lib/server/domain/media/gallery.js';
+import { listMentionedIn } from '#lib/server/domain/mentions/mentioned-in.js';
+import { listNotesForContact } from '#lib/server/domain/notes/notes.js';
+import { listGiftsForContact } from '#lib/server/domain/gifts/gifts.js';
+import { listPlansForContact } from '#lib/server/domain/plans/plans.js';
+import { readGiftGroupsOf } from '#lib/server/domain/gifts/gift-group-follow-up.js';
+import { mayKeepFrom } from '#lib/server/domain/shared/idea-on-person.js';
+import { listOpenTodosForContact } from '#lib/server/domain/todos/todos.js';
+import { readFamilyOf } from '#lib/server/domain/relationships/family.js';
+import { listTagsForContact } from '#lib/server/domain/tags/tag-lists.js';
+import type { Viewer } from '#lib/server/access/visibility.js';
+import type { AppServices } from '#lib/server/services/app-services.js';
 import { allOf } from './all-of';
 import { STORY_PAGE_SIZE } from './story-view';
 

@@ -1,8 +1,8 @@
 <script lang="ts">
-	import type { ExplorerEvent, ExplorerState } from '$lib/graph/explorer-state';
-	import { currentViewOf } from '$lib/graph/explorer-look';
-	import type { GraphModel } from '$lib/graph/model/types';
-	import type { ViewSwitches } from '$lib/graph/view-switches';
+	import type { ExplorerEvent, ExplorerState } from '#lib/graph/explorer-state.js';
+	import { currentViewOf } from '#lib/graph/explorer-look.js';
+	import type { GraphModel } from '#lib/graph/model/types.js';
+	import type { ViewSwitches } from '#lib/graph/view-switches.js';
 	import type { ExplorerView } from './explorer-view.svelte';
 	import type { FrameFullscreen } from './frame-fullscreen.svelte';
 	import GraphArrangeMenu from './GraphArrangeMenu.svelte';

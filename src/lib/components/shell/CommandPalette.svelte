@@ -1,13 +1,13 @@
 <script lang="ts">
-	import FormerlyMark from '$lib/components/people/FormerlyMark.svelte';
-	import FoundByJobMark from '$lib/components/people/FoundByJobMark.svelte';
-	import JobLine from '$lib/components/people/JobLine.svelte';
+	import FormerlyMark from '#lib/components/people/FormerlyMark.svelte';
+	import FoundByJobMark from '#lib/components/people/FoundByJobMark.svelte';
+	import JobLine from '#lib/components/people/JobLine.svelte';
 	import { goto } from '$app/navigation';
-	import Avatar from '$lib/components/ui/Avatar.svelte';
-	import Icon from '$lib/components/ui/Icon.svelte';
-	import { syncModal } from '$lib/components/ui/modal';
-	import NamesakeLine from '$lib/components/ui/NamesakeLine.svelte';
-	import { useTranslate } from '$lib/i18n/context.svelte';
+	import Avatar from '#lib/components/ui/Avatar.svelte';
+	import Icon from '#lib/components/ui/Icon.svelte';
+	import { syncModal } from '#lib/components/ui/modal.js';
+	import NamesakeLine from '#lib/components/ui/NamesakeLine.svelte';
+	import { useTranslate } from '#lib/i18n/context.svelte.js';
 	import {
 		paletteLabels,
 		paletteRows,
@@ -16,8 +16,8 @@
 		type PalettePerson,
 		type PaletteRow,
 		type PaletteStep
-	} from '$lib/ui/command-palette';
-	import { usePeopleContext } from '$lib/people/context.svelte';
+	} from '#lib/ui/command-palette.js';
+	import { usePeopleContext } from '#lib/people/context.svelte.js';
 	import { tick, untrack } from 'svelte';
 
 	/*

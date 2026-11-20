@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'bun:test';
-import { createTranslator } from '$lib/i18n/translate';
-import { createImmichMediaSigner } from '$lib/server/domain/immich/signed-media';
-import type { OwnEntryImmichPhotos } from '$lib/server/domain/immich/entry-immich-photos';
+import { createTranslator } from '#lib/i18n/translate.js';
+import { createImmichMediaSigner } from '#lib/server/domain/immich/signed-media.js';
+import type { OwnEntryImmichPhotos } from '#lib/server/domain/immich/entry-immich-photos.js';
 import {
 	fixedClock,
 	inMemoryContactDirectory,
@@ -9,8 +9,8 @@ import {
 	sequentialIds,
 	somebody,
 	someJournalEntry
-} from '$lib/server/domain/testing';
-import { answerOf, formOf, routeEvent, type FakeServices } from '$lib/server/testing';
+} from '#lib/server/domain/testing/index.js';
+import { answerOf, formOf, routeEvent, type FakeServices } from '#lib/server/testing/index.js';
 import { actions } from './+page.server';
 
 /*

@@ -1,6 +1,6 @@
 import { json } from '@sveltejs/kit';
-import { requireViewer } from '$lib/server/auth/guards';
-import { suggestNameCandidates } from '$lib/server/domain/contacts/suggestions';
+import { requireViewer } from '#lib/server/auth/guards.js';
+import { suggestNameCandidates } from '#lib/server/domain/contacts/suggestions.js';
 import type { RequestHandler } from './$types';
 
 /*

@@ -1,16 +1,16 @@
 <script lang="ts">
-	import { enhance } from '$app/forms';
-	import Button from '$lib/components/ui/Button.svelte';
-	import EmptyState from '$lib/components/ui/EmptyState.svelte';
-	import LastNameChoices from '$lib/components/surnames/LastNameChoices.svelte';
-	import LastNameFields from '$lib/components/surnames/LastNameFields.svelte';
-	import LastNameGroup from '$lib/components/surnames/LastNameGroup.svelte';
-	import NamesakeHints from '$lib/components/surnames/NamesakeHints.svelte';
-	import { useTranslate } from '$lib/i18n/context.svelte';
-	import { reachability } from '$lib/pwa/reachability.svelte';
-	import { useLastNameAnswers } from '$lib/components/surnames/last-name-answers.svelte';
-	import { useHeldNames, type HeldBatch } from '$lib/surnames/held-names.svelte';
-	import { namesakesAfterNaming, type NamesakeAfterNaming } from '$lib/surnames/namesakes';
+	import { enhance } from '#lib/forms/enhance.js';
+	import Button from '#lib/components/ui/Button.svelte';
+	import EmptyState from '#lib/components/ui/EmptyState.svelte';
+	import LastNameChoices from '#lib/components/surnames/LastNameChoices.svelte';
+	import LastNameFields from '#lib/components/surnames/LastNameFields.svelte';
+	import LastNameGroup from '#lib/components/surnames/LastNameGroup.svelte';
+	import NamesakeHints from '#lib/components/surnames/NamesakeHints.svelte';
+	import { useTranslate } from '#lib/i18n/context.svelte.js';
+	import { reachability } from '#lib/pwa/reachability.svelte.js';
+	import { useLastNameAnswers } from '#lib/components/surnames/last-name-answers.svelte.js';
+	import { useHeldNames, type HeldBatch } from '#lib/surnames/held-names.svelte.js';
+	import { namesakesAfterNaming, type NamesakeAfterNaming } from '#lib/surnames/namesakes.js';
 	import type { PageData } from './$types';
 
 	/*

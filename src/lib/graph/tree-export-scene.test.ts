@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test';
-import { createTranslator } from '$lib/i18n/translate';
+import { createTranslator } from '#lib/i18n/translate.js';
 import { exportScene, sceneLayout, type SceneInput } from './tree-export-scene';
 import { brunnerKeller } from './layout/family-fixtures';
 import { DEFAULT_NODE_SIZE } from './layout/geometry';

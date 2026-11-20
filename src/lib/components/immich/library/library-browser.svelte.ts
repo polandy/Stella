@@ -1,16 +1,21 @@
-import type { LibraryAlbums, LibraryMonths, LibraryPhoto, LibraryView } from '$lib/immich/library';
-import { tabOf, type LibraryTab } from '$lib/immich/library-albums';
+import type {
+	LibraryAlbums,
+	LibraryMonths,
+	LibraryPhoto,
+	LibraryView
+} from '#lib/immich/library.js';
+import { tabOf, type LibraryTab } from '#lib/immich/library-albums.js';
 import {
 	groupByDay,
 	weekLookup,
 	type LibraryLevel,
 	type LibraryWeek
-} from '$lib/immich/library-nav';
-import { libraryQueryUrl, type LibraryQuery } from '$lib/immich/library-pick';
+} from '#lib/immich/library-nav.js';
+import { libraryQueryUrl, type LibraryQuery } from '#lib/immich/library-pick.js';
 
 /*
  * Where the photo picker is in the Immich timeline or its albums, and what it has read there
- * (docs/dev/02 §2.24.9): the browser adapter of `$lib/immich/library-nav`, asking
+ * (docs/dev/02 §2.24.9): the browser adapter of `#lib/immich/library-nav.js`, asking
  * `/immich/library`, `/immich/library/months` and `/immich/library/albums`. Only the latest
  * question may fill the body: a slower answer to an earlier one arrives last and is dropped.
  */

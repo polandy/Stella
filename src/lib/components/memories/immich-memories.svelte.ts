@@ -2,8 +2,8 @@ import type {
 	ImmichMemories as ImmichMemoriesAnswer,
 	ImmichMemoryPage,
 	ImmichMemoryYear
-} from '$lib/immich/on-this-day';
-import { withNextPage } from '$lib/memories/immich';
+} from '#lib/immich/on-this-day.js';
+import { withNextPage } from '#lib/memories/immich.js';
 
 /*
  * *On this day* from Immich (docs/dev/02 §2.12.1), as Home's band and `/on-this-day` load it: asked

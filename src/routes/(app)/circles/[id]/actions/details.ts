@@ -1,14 +1,14 @@
 import { error, fail, redirect } from '@sveltejs/kit';
 import * as v from 'valibot';
-import { requireViewer } from '$lib/server/auth/guards';
+import { requireViewer } from '#lib/server/auth/guards.js';
 import {
 	BlankCircleNameError,
 	CircleGoneError,
 	CirclePeriodBackwardsError
-} from '$lib/server/domain/circles/circle-details';
-import { CircleLoopError, CircleParentGoneError } from '$lib/server/domain/circles/nesting';
-import { updateCircle } from '$lib/server/domain/circles/update-circle';
-import { say, translator } from '$lib/server/i18n/say';
+} from '#lib/server/domain/circles/circle-details.js';
+import { CircleLoopError, CircleParentGoneError } from '#lib/server/domain/circles/nesting.js';
+import { updateCircle } from '#lib/server/domain/circles/update-circle.js';
+import { say, translator } from '#lib/server/i18n/say.js';
 import type { Actions } from '../$types';
 
 /*

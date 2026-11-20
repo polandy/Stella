@@ -1,23 +1,23 @@
 <script lang="ts">
-	import { enhance } from '$app/forms';
-	import type { SubmitFunction } from '@sveltejs/kit';
+	import { enhance } from '#lib/forms/enhance.js';
+	import type { SubmitFunction } from '$app/forms';
 	import { invalidateAll } from '$app/navigation';
-	import GiftGiveForm from '$lib/components/person/GiftGiveForm.svelte';
-	import Avatar from '$lib/components/ui/Avatar.svelte';
-	import Button from '$lib/components/ui/Button.svelte';
-	import Icon from '$lib/components/ui/Icon.svelte';
-	import MenuButton from '$lib/components/ui/MenuButton.svelte';
-	import WhenChip from '$lib/components/when/WhenChip.svelte';
-	import { dayLabel } from '$lib/dates/labels';
-	import { isOpenGift } from '$lib/gifts/gifts';
-	import { ideaState } from '$lib/gifts/idea-when';
-	import { occasionLabel } from '$lib/gifts/labels';
-	import { useI18n } from '$lib/i18n/context.svelte';
-	import { contactSectionPath } from '$lib/people/sections';
-	import { useRemovals } from '$lib/undo/context.svelte';
-	import { heldAnswer } from '$lib/undo/held-answer';
-	import { removalKey } from '$lib/undo/keys';
-	import { savedEnhance } from '$lib/undo/saved';
+	import GiftGiveForm from '#lib/components/person/GiftGiveForm.svelte';
+	import Avatar from '#lib/components/ui/Avatar.svelte';
+	import Button from '#lib/components/ui/Button.svelte';
+	import Icon from '#lib/components/ui/Icon.svelte';
+	import MenuButton from '#lib/components/ui/MenuButton.svelte';
+	import WhenChip from '#lib/components/when/WhenChip.svelte';
+	import { dayLabel } from '#lib/dates/labels.js';
+	import { isOpenGift } from '#lib/gifts/gifts.js';
+	import { ideaState } from '#lib/gifts/idea-when.js';
+	import { occasionLabel } from '#lib/gifts/labels.js';
+	import { useI18n } from '#lib/i18n/context.svelte.js';
+	import { contactSectionPath } from '#lib/people/sections.js';
+	import { useRemovals } from '#lib/undo/context.svelte.js';
+	import { heldAnswer } from '#lib/undo/held-answer.js';
+	import { removalKey } from '#lib/undo/keys.js';
+	import { savedEnhance } from '#lib/undo/saved.js';
 	import type { GiftGroupView } from '../../../routes/(app)/contacts/[id]/gift-group-view';
 
 	/*

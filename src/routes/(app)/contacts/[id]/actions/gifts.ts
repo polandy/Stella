@@ -1,4 +1,4 @@
-import { fromFormData } from '$lib/commands/form-data';
+import { fromFormData } from '#lib/commands/form-data.js';
 import {
 	GiftAddSchema,
 	GiftAnswerWhenSchema,
@@ -6,8 +6,8 @@ import {
 	GiftMarkBoughtSchema,
 	GiftMarkGivenSchema,
 	GiftRemoveSchema
-} from '$lib/commands/gift-todo-payloads';
-import { contactSectionPath } from '$lib/people/sections';
+} from '#lib/commands/gift-todo-payloads.js';
+import { contactSectionPath } from '#lib/people/sections.js';
 import type { RequestEvent } from '@sveltejs/kit';
 import {
 	applyGiftCommand,

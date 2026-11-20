@@ -1,7 +1,7 @@
 <script lang="ts">
-	import Button from '$lib/components/ui/Button.svelte';
-	import { useI18n } from '$lib/i18n/context.svelte';
-	import { sourceWord, type ContactSource } from '$lib/import-match/card';
+	import Button from '#lib/components/ui/Button.svelte';
+	import { useI18n } from '#lib/i18n/context.svelte.js';
+	import { sourceWord, type ContactSource } from '#lib/import-match/card.js';
 
 	/*
 	 * *Skipped contacts* on the import page (docs/dev/02 §2.16): a skip is for good, so this is the

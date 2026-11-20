@@ -1,6 +1,6 @@
 <script lang="ts" generics="T extends string">
 	import type { Snippet } from 'svelte';
-	import { tabAfterKey } from '$lib/ui/tabs';
+	import { tabAfterKey } from '#lib/ui/tabs.js';
 
 	/*
 	 * The pill-shaped tab list (docs/dev/05 §5.7): the Gifts card, the Photos card, the Immich

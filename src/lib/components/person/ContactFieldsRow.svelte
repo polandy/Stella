@@ -1,18 +1,18 @@
 <script lang="ts">
-	import Button from '$lib/components/ui/Button.svelte';
-	import KeptChip from '$lib/components/pwa/KeptChip.svelte';
-	import RemoveButton from '$lib/components/ui/RemoveButton.svelte';
-	import Section from '$lib/components/ui/Section.svelte';
-	import { enhance } from '$app/forms';
-	import { isContactFieldKind } from '$lib/people/contact-fields';
-	import { useI18n } from '$lib/i18n/context.svelte';
-	import { hasMessage } from '$lib/i18n/translate';
-	import { keepable } from '$lib/pwa/keepable';
-	import { isKept, type KeptOf } from '$lib/pwa/outbox';
-	import { outbox } from '$lib/pwa/outbox.svelte';
-	import { useRemovals } from '$lib/undo/context.svelte';
-	import { removalKey, type RemovalKind } from '$lib/undo/keys';
-	import { savedEnhance } from '$lib/undo/saved';
+	import Button from '#lib/components/ui/Button.svelte';
+	import KeptChip from '#lib/components/pwa/KeptChip.svelte';
+	import RemoveButton from '#lib/components/ui/RemoveButton.svelte';
+	import Section from '#lib/components/ui/Section.svelte';
+	import { enhance } from '#lib/forms/enhance.js';
+	import { isContactFieldKind } from '#lib/people/contact-fields.js';
+	import { useI18n } from '#lib/i18n/context.svelte.js';
+	import { hasMessage } from '#lib/i18n/translate.js';
+	import { keepable } from '#lib/pwa/keepable.js';
+	import { isKept, type KeptOf } from '#lib/pwa/outbox.js';
+	import { outbox } from '#lib/pwa/outbox.svelte.js';
+	import { useRemovals } from '#lib/undo/context.svelte.js';
+	import { removalKey, type RemovalKind } from '#lib/undo/keys.js';
+	import { savedEnhance } from '#lib/undo/saved.js';
 	import { INPUT } from '../ui/inputs';
 	import type { PersonForm, PersonPageData } from './types';
 

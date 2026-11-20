@@ -1,29 +1,29 @@
 <script lang="ts">
-	import { reveal } from '$lib/motion/motion.svelte';
-	import Avatar from '$lib/components/ui/Avatar.svelte';
-	import Button from '$lib/components/ui/Button.svelte';
-	import DateField from '$lib/components/ui/DateField.svelte';
-	import EmptyState from '$lib/components/ui/EmptyState.svelte';
-	import RemoveButton from '$lib/components/ui/RemoveButton.svelte';
-	import { enhance } from '$app/forms';
-	import { dayLabel } from '$lib/dates/labels';
-	import { useI18n } from '$lib/i18n/context.svelte';
+	import { reveal } from '#lib/motion/motion.svelte.js';
+	import Avatar from '#lib/components/ui/Avatar.svelte';
+	import Button from '#lib/components/ui/Button.svelte';
+	import DateField from '#lib/components/ui/DateField.svelte';
+	import EmptyState from '#lib/components/ui/EmptyState.svelte';
+	import RemoveButton from '#lib/components/ui/RemoveButton.svelte';
+	import { enhance } from '#lib/forms/enhance.js';
+	import { dayLabel } from '#lib/dates/labels.js';
+	import { useI18n } from '#lib/i18n/context.svelte.js';
 	import {
 		exclusionLabel,
 		relationshipStatusLabel,
 		relationshipTypeLabel
-	} from '$lib/relationships/labels';
-	import { foldPeople, groupPeople } from '$lib/relationships/people-groups';
-	import { groupByExclusion } from '$lib/relationships/picker-groups';
-	import { otherEndRole, relationshipRoleLabel } from '$lib/relationships/roles';
-	import { FORMER_RELATIONSHIP_STATUS, RELATIONSHIP_STATUSES } from '$lib/relationships/status';
-	import { offersTogether } from '$lib/immich/together';
-	import { reachability } from '$lib/pwa/reachability.svelte';
-	import { isChoiceOfLink } from '$lib/relationships/type-options';
-	import { usePending } from '$lib/sync/context.svelte';
-	import { trackPending } from '$lib/sync/pending';
-	import { useRemovals } from '$lib/undo/context.svelte';
-	import { savedEnhance } from '$lib/undo/saved';
+	} from '#lib/relationships/labels.js';
+	import { foldPeople, groupPeople } from '#lib/relationships/people-groups.js';
+	import { groupByExclusion } from '#lib/relationships/picker-groups.js';
+	import { otherEndRole, relationshipRoleLabel } from '#lib/relationships/roles.js';
+	import { FORMER_RELATIONSHIP_STATUS, RELATIONSHIP_STATUSES } from '#lib/relationships/status.js';
+	import { offersTogether } from '#lib/immich/together.js';
+	import { reachability } from '#lib/pwa/reachability.svelte.js';
+	import { isChoiceOfLink } from '#lib/relationships/type-options.js';
+	import { usePending } from '#lib/sync/context.svelte.js';
+	import { trackPending } from '#lib/sync/pending.js';
+	import { useRemovals } from '#lib/undo/context.svelte.js';
+	import { savedEnhance } from '#lib/undo/saved.js';
 	import { INPUT } from '../ui/inputs';
 	import type { ExclusionOf, PersonPageData, RelationshipChoices } from './types';
 

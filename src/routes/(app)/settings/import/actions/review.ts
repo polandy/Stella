@@ -1,16 +1,16 @@
 import { fail, type RequestEvent } from '@sveltejs/kit';
 import * as v from 'valibot';
-import type { NextcloudSource } from '$lib/import-match/card';
-import { requireAdmin } from '$lib/server/auth/guards';
+import type { NextcloudSource } from '#lib/import-match/card.js';
+import { requireAdmin } from '#lib/server/auth/guards.js';
 import {
 	applyContactReview,
 	ReviewUnansweredError
-} from '$lib/server/domain/import/contact-review';
-import { ContactGoneError } from '$lib/server/domain/contacts/require-visible';
-import { askAgain, prepareContactReview } from '$lib/server/domain/import/review-view';
-import { applyBookReview, prepareBookReview } from '$lib/server/domain/nextcloud/review';
-import { importWording } from '$lib/server/i18n/import-wording';
-import { say, translator } from '$lib/server/i18n/say';
+} from '#lib/server/domain/import/contact-review.js';
+import { ContactGoneError } from '#lib/server/domain/contacts/require-visible.js';
+import { askAgain, prepareContactReview } from '#lib/server/domain/import/review-view.js';
+import { applyBookReview, prepareBookReview } from '#lib/server/domain/nextcloud/review.js';
+import { importWording } from '#lib/server/i18n/import-wording.js';
+import { say, translator } from '#lib/server/i18n/say.js';
 import { parseAnswers } from './answers';
 import { photoManifest, stagedStep, type StagedStep } from './staged';
 

@@ -1,11 +1,11 @@
 import { describe, expect, it } from 'bun:test';
-import type { GraphModel } from '$lib/graph/model/types';
-import type { MentionedIn } from '$lib/server/domain/mentions/mentioned-in';
-import type { Gift } from '$lib/server/domain/gifts/gifts';
-import type { Todo } from '$lib/server/domain/todos/todos';
-import type { ContactAccess, Remover } from '$lib/server/access/visibility';
-import type { Note } from '$lib/server/domain/notes/notes';
-import { someGalleryPhoto } from '$lib/server/domain/testing';
+import type { GraphModel } from '#lib/graph/model/types.js';
+import type { MentionedIn } from '#lib/server/domain/mentions/mentioned-in.js';
+import type { Gift } from '#lib/server/domain/gifts/gifts.js';
+import type { Todo } from '#lib/server/domain/todos/todos.js';
+import type { ContactAccess, Remover } from '#lib/server/access/visibility.js';
+import type { Note } from '#lib/server/domain/notes/notes.js';
+import { someGalleryPhoto } from '#lib/server/domain/testing/index.js';
 import {
 	birthdayOf,
 	declinedBy,

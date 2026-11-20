@@ -1,9 +1,9 @@
 import { error, redirect, type RequestHandler } from '@sveltejs/kit';
-import { isLocale } from '$lib/i18n/locales';
-import { createTranslator } from '$lib/i18n/translate';
-import { changeLocale } from '$lib/server/auth/accounts';
-import { setLocaleCookie } from '$lib/server/auth/cookies';
-import { safeDestination } from '$lib/server/http/safe-redirect';
+import { isLocale } from '#lib/i18n/locales.js';
+import { createTranslator } from '#lib/i18n/translate.js';
+import { changeLocale } from '#lib/server/auth/accounts.js';
+import { setLocaleCookie } from '#lib/server/auth/cookies.js';
+import { safeDestination } from '#lib/server/http/safe-redirect.js';
 
 /*
  * The one place the interface language is chosen (docs/dev/02 §2.19). It answers the picker in

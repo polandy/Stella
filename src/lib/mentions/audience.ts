@@ -6,7 +6,7 @@
  * Pure and framework-agnostic, and deliberately not under `server/`: the picker in the browser
  * and the resolver on the server narrow by this one function instead of each keeping a copy.
  * The union is spelled out rather than imported so a component can use it without reaching
- * into `$lib/server`; the server's `Visibility` is assignable to it.
+ * into `#lib/server`; the server's `Visibility` is assignable to it.
  */
 
 /** Audience of the text being written. */

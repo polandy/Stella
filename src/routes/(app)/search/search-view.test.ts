@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'bun:test';
-import type { ContactNameDeps } from '$lib/server/domain/contacts/contact-names';
-import { NOTHING_FOUND, type MomentHit, type NoteHit } from '$lib/server/domain/search/search';
+import type { ContactNameDeps } from '#lib/server/domain/contacts/contact-names.js';
+import { NOTHING_FOUND, type MomentHit, type NoteHit } from '#lib/server/domain/search/search.js';
 import { searchForView } from './search-view';
 
 /*

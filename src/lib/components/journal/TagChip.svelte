@@ -1,9 +1,9 @@
 <script lang="ts">
-	import Icon from '$lib/components/ui/Icon.svelte';
-	import { accentChipStyle } from '$lib/design/tokens';
-	import { tagAccent } from '$lib/hashtags/hashtags';
-	import type { KnownTag } from '$lib/hashtags/picker';
-	import { useI18n } from '$lib/i18n/context.svelte';
+	import Icon from '#lib/components/ui/Icon.svelte';
+	import { accentChipStyle } from '#lib/design/tokens.js';
+	import { tagAccent } from '#lib/hashtags/hashtags.js';
+	import type { KnownTag } from '#lib/hashtags/picker.js';
+	import { useI18n } from '#lib/i18n/context.svelte.js';
 
 	/*
 	 * A tag the viewer can see, as a link (docs/dev/02 §2.20.2): its colour, its count, and a lock

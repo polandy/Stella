@@ -5,9 +5,9 @@
  * than in its markup.
  */
 
-import { compareMonthDay, dayParts } from '$lib/dates/calendar';
-import { estimatedAge } from '$lib/dates/partial-date';
-import type { Translate } from '$lib/i18n/translate';
+import { compareMonthDay, dayParts } from '#lib/dates/calendar.js';
+import { estimatedAge } from '#lib/dates/partial-date.js';
+import type { Translate } from '#lib/i18n/translate.js';
 
 /** A fact the card states, in the order it states them. */
 export type IdentityFact = 'birthday' | 'dates' | 'address' | 'job' | 'lastContact' | 'circles';

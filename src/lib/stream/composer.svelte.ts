@@ -1,8 +1,8 @@
-import { processImage } from '$lib/media/process-image';
-import type { MomentDraft } from '$lib/people/story-forms';
-import type { KeptPhoto } from '$lib/pwa/outbox';
-import { outbox } from '$lib/pwa/outbox.svelte';
-import { reachability } from '$lib/pwa/reachability.svelte';
+import { processImage } from '#lib/media/process-image.js';
+import type { MomentDraft } from '#lib/people/story-forms.js';
+import type { KeptPhoto } from '#lib/pwa/outbox.js';
+import { outbox } from '#lib/pwa/outbox.svelte.js';
+import { reachability } from '#lib/pwa/reachability.svelte.js';
 import { untrack } from 'svelte';
 import { ulid } from 'ulid';
 import {

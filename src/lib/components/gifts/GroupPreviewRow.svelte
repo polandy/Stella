@@ -1,12 +1,12 @@
 <script lang="ts">
-	import Avatar from '$lib/components/ui/Avatar.svelte';
-	import { INPUT } from '$lib/components/ui/inputs';
-	import { dayLabel } from '$lib/dates/labels';
-	import type { GroupFormRow, InsteadOffer, PreviewRow } from '$lib/gifts/group-form';
-	import { useI18n } from '$lib/i18n/context.svelte';
-	import { datesEditorPath } from '$lib/people/identity-card';
-	import { whenPreview } from '$lib/when/labels';
-	import type { When } from '$lib/when/when';
+	import Avatar from '#lib/components/ui/Avatar.svelte';
+	import { INPUT } from '#lib/components/ui/inputs.js';
+	import { dayLabel } from '#lib/dates/labels.js';
+	import type { GroupFormRow, InsteadOffer, PreviewRow } from '#lib/gifts/group-form.js';
+	import { useI18n } from '#lib/i18n/context.svelte.js';
+	import { datesEditorPath } from '#lib/people/identity-card.js';
+	import { whenPreview } from '#lib/when/labels.js';
+	import type { When } from '#lib/when/when.js';
 
 	/*
 	 * One person on the form for several (docs/dev/02 §2.25.11): what the shared when comes to for

@@ -1,4 +1,4 @@
-import type { LinkedPhrase } from '$lib/i18n/linked';
+import type { LinkedPhrase } from '#lib/i18n/linked.js';
 import { foldSurname, type SurnameOption, type SurnameProposal } from './rules/surnames';
 import type { Confidence } from './types';
 

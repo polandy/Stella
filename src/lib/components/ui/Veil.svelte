@@ -1,10 +1,10 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
 	import Icon from './Icon.svelte';
-	import { useTranslate } from '$lib/i18n/context.svelte';
-	import { unveil } from '$lib/motion/motion.svelte';
-	import { placeholderFor, revealPath } from '$lib/privacy/veil';
-	import { useVeil } from '$lib/privacy/veil.svelte';
+	import { useTranslate } from '#lib/i18n/context.svelte.js';
+	import { unveil } from '#lib/motion/motion.svelte.js';
+	import { placeholderFor, revealPath } from '#lib/privacy/veil.js';
+	import { useVeil } from '#lib/privacy/veil.svelte.js';
 
 	/*
 	 * A private entry's content, blurred on its author's screen until they ask for it

@@ -1,6 +1,6 @@
 import { json } from '@sveltejs/kit';
-import type { VisiblePerson } from '$lib/pwa/people-ahead';
-import { listContacts } from '$lib/server/domain/contacts/directory';
+import type { VisiblePerson } from '#lib/pwa/people-ahead.js';
+import { listContacts } from '#lib/server/domain/contacts/directory.js';
 import type { RequestHandler } from './$types';
 
 /*

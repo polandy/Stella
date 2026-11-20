@@ -10,24 +10,24 @@
   no confirmation step (ADR-126).
 -->
 <script lang="ts">
-	import { FIELD } from '$lib/components/ui/field';
-	import { enhance } from '$app/forms';
-	import CirclePicker from '$lib/components/circle/CirclePicker.svelte';
-	import ColourSwatches from '$lib/components/circle/ColourSwatches.svelte';
-	import ParentField from '$lib/components/circle/ParentField.svelte';
-	import { moveWithUndo } from '$lib/components/circle/circle-moves';
-	import Button from '$lib/components/ui/Button.svelte';
-	import Icon from '$lib/components/ui/Icon.svelte';
-	import Section from '$lib/components/ui/Section.svelte';
-	import { circleKindLabel } from '$lib/circles/labels';
-	import { subCircleKindFor } from '$lib/circles/picker';
-	import { circlePeriodLabel } from '$lib/circles/period';
-	import { circleTimeline } from '$lib/circles/timeline';
-	import type { TreeCircle } from '$lib/circles/tree';
-	import { accentDotStyle, type Accent } from '$lib/design/tokens';
-	import { useI18n } from '$lib/i18n/context.svelte';
-	import { reveal } from '$lib/motion/motion.svelte';
-	import { useRemovals } from '$lib/undo/context.svelte';
+	import { FIELD } from '#lib/components/ui/field.js';
+	import { enhance } from '#lib/forms/enhance.js';
+	import CirclePicker from '#lib/components/circle/CirclePicker.svelte';
+	import ColourSwatches from '#lib/components/circle/ColourSwatches.svelte';
+	import ParentField from '#lib/components/circle/ParentField.svelte';
+	import { moveWithUndo } from '#lib/components/circle/circle-moves.js';
+	import Button from '#lib/components/ui/Button.svelte';
+	import Icon from '#lib/components/ui/Icon.svelte';
+	import Section from '#lib/components/ui/Section.svelte';
+	import { circleKindLabel } from '#lib/circles/labels.js';
+	import { subCircleKindFor } from '#lib/circles/picker.js';
+	import { circlePeriodLabel } from '#lib/circles/period.js';
+	import { circleTimeline } from '#lib/circles/timeline.js';
+	import type { TreeCircle } from '#lib/circles/tree.js';
+	import { accentDotStyle, type Accent } from '#lib/design/tokens.js';
+	import { useI18n } from '#lib/i18n/context.svelte.js';
+	import { reveal } from '#lib/motion/motion.svelte.js';
+	import { useRemovals } from '#lib/undo/context.svelte.js';
 
 	interface Props {
 		/** The circle whose card this is. */

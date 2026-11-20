@@ -152,8 +152,8 @@ describe('the testing folders', () => {
 	const FOLDERS = ['src/lib/server/domain/testing/', 'src/lib/server/testing/'];
 	const IMPORT = /\b(?:import|export)\s+(?:type\s+)?(?:[^;'"]*?\s+from\s+)?['"]([^'"]+)['"]/g;
 	const target = (importer: string, specifier: string) =>
-		specifier.startsWith('$lib/')
-			? `src/lib/${specifier.slice('$lib/'.length)}`
+		specifier.startsWith('#lib/')
+			? `src/lib/${specifier.slice('#lib/'.length)}`
 			: specifier.startsWith('.')
 				? posix.join(posix.dirname(importer), specifier)
 				: null;
@@ -175,9 +175,11 @@ describe('the testing folders', () => {
 	it('catch a folder however it is reached', () => {
 		const at = 'src/lib/server/domain/contacts/contacts.ts';
 		expect(reachesTesting(at, "import { fixedClock } from '../testing';")).toBe(true);
-		expect(reachesTesting(at, "import type { X } from '$lib/server/domain/testing/c';")).toBe(true);
+		expect(reachesTesting(at, "import type { X } from '#lib/server/domain/testing/c';")).toBe(true);
 		expect(reachesTesting(at, "import { x } from './testing-notes';")).toBe(false);
-		expect(reachesTesting(at, "import { routeEvent } from '$lib/server/testing';")).toBe(true);
+		expect(reachesTesting(at, "import { routeEvent } from '#lib/server/testing/index.js';")).toBe(
+			true
+		);
 		expect(reachesTesting('src/routes/x.ts', "import { x } from '../lib/server/testing/r';")).toBe(
 			true
 		);

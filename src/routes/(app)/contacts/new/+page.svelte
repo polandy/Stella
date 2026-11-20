@@ -1,25 +1,25 @@
 <script lang="ts">
-	import { FIELD, FIELD_ON_BG } from '$lib/components/ui/field';
-	import { reveal } from '$lib/motion/motion.svelte';
-	import FormError from '$lib/components/ui/FormError.svelte';
-	import { enhance } from '$app/forms';
+	import { FIELD, FIELD_ON_BG } from '#lib/components/ui/field.js';
+	import { reveal } from '#lib/motion/motion.svelte.js';
+	import FormError from '#lib/components/ui/FormError.svelte';
+	import { enhance } from '#lib/forms/enhance.js';
 	import { goto } from '$app/navigation';
-	import Button from '$lib/components/ui/Button.svelte';
-	import { keepable } from '$lib/pwa/keepable';
-	import DateField from '$lib/components/ui/DateField.svelte';
-	import { browser } from '$app/environment';
-	import { deviceDay, writersDay } from '$lib/dates/today';
+	import Button from '#lib/components/ui/Button.svelte';
+	import { keepable } from '#lib/pwa/keepable.js';
+	import DateField from '#lib/components/ui/DateField.svelte';
+	import { browser } from '$app/env';
+	import { deviceDay, writersDay } from '#lib/dates/today.js';
 	import { onMount, untrack } from 'svelte';
 	import type { ActionData, PageData } from './$types';
 
-	import Icon from '$lib/components/ui/Icon.svelte';
-	import ShareSwitch from '$lib/components/ui/ShareSwitch.svelte';
-	import KnowThemBy from '$lib/components/people/KnowThemBy.svelte';
-	import { useTranslate } from '$lib/i18n/context.svelte';
-	import type { MessageKey } from '$lib/i18n/translate';
-	import { wantsSomethingToKnowThemBy } from '$lib/people/new-person';
-	import { GENDERS, type Gender } from '$lib/people/gender';
-	import type { RankedCandidate } from '$lib/server/domain/contacts/suggestions';
+	import Icon from '#lib/components/ui/Icon.svelte';
+	import ShareSwitch from '#lib/components/ui/ShareSwitch.svelte';
+	import KnowThemBy from '#lib/components/people/KnowThemBy.svelte';
+	import { useTranslate } from '#lib/i18n/context.svelte.js';
+	import type { MessageKey } from '#lib/i18n/translate.js';
+	import { wantsSomethingToKnowThemBy } from '#lib/people/new-person.js';
+	import { GENDERS, type Gender } from '#lib/people/gender.js';
+	import type { RankedCandidate } from '#lib/server/domain/contacts/suggestions.js';
 
 	let { data, form }: { data: PageData; form: ActionData } = $props();
 

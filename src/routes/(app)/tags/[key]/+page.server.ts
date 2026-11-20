@@ -1,8 +1,8 @@
-import { requireViewer } from '$lib/server/auth/guards';
-import { membersViewerFirst } from '$lib/server/domain/household/members';
-import { buildStream } from '$lib/server/domain/stream/stream';
-import { tagKey } from '$lib/hashtags/hashtags';
-import { TAG_PAGE_LIMIT, tagSummary } from '$lib/hashtags/tag-pages';
+import { requireViewer } from '#lib/server/auth/guards.js';
+import { membersViewerFirst } from '#lib/server/domain/household/members.js';
+import { buildStream } from '#lib/server/domain/stream/stream.js';
+import { tagKey } from '#lib/hashtags/hashtags.js';
+import { TAG_PAGE_LIMIT, tagSummary } from '#lib/hashtags/tag-pages.js';
 import type { PageServerLoad } from './$types';
 import { streamForView } from '../../_shared/stream-view';
 

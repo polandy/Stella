@@ -1,5 +1,5 @@
-import type { DateLanguage } from '$lib/dates/labels';
-import { addDays } from '$lib/dates/month';
+import type { DateLanguage } from '#lib/dates/labels.js';
+import { addDays } from '#lib/dates/month.js';
 
 /*
  * How an open to-do stands and reads (docs/dev/02 §2.26). Pure and handed *today* — the server's

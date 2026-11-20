@@ -1,12 +1,12 @@
 import { describe, expect, it } from 'bun:test';
-import type { Note } from '$lib/server/domain/notes/notes';
-import type { StoryItem } from '$lib/server/domain/story/story';
-import type { UpcomingDate } from '$lib/server/domain/dates/upcoming';
+import type { Note } from '#lib/server/domain/notes/notes.js';
+import type { StoryItem } from '#lib/server/domain/story/story.js';
+import type { UpcomingDate } from '#lib/server/domain/dates/upcoming.js';
 import { briefBlockView, briefHomes, type BriefViewContext } from './brief-view';
 
 /*
  * What the brief's blocks say and where each row leads (docs/dev/02 §2.2.5). Which blocks stand and
- * in what order is `$lib/people/brief`'s; this is only the last step to the page.
+ * in what order is `#lib/people/brief.js`'s; this is only the last step to the page.
  */
 
 const ctx: BriefViewContext = {

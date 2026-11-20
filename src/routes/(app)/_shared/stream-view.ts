@@ -1,12 +1,12 @@
-import { extractMentionIds } from '$lib/mentions/mentions';
-import { tagPageHref } from '$lib/hashtags/hashtags';
-import type { Viewer } from '$lib/server/access/visibility';
+import { extractMentionIds } from '#lib/mentions/mentions.js';
+import { tagPageHref } from '#lib/hashtags/hashtags.js';
+import type { Viewer } from '#lib/server/access/visibility.js';
 import {
 	listContactNamesAmong,
 	type ContactNameDeps
-} from '$lib/server/domain/contacts/contact-names';
-import { renderMarkdownWithMentions } from '$lib/server/domain/notes/markdown';
-import type { StreamItem } from '$lib/server/domain/stream/stream';
+} from '#lib/server/domain/contacts/contact-names.js';
+import { renderMarkdownWithMentions } from '#lib/server/domain/notes/markdown.js';
+import type { StreamItem } from '#lib/server/domain/stream/stream.js';
 
 /*
  * Stream items as a page shows them (docs/dev/02 §2.22.2): a moment's Markdown rendered here, its

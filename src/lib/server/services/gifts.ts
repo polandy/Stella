@@ -1,7 +1,7 @@
 import type { BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
 import type { Clock } from '../clock';
-import { DEFAULT_LOCALE } from '$lib/i18n/locales';
-import { createTranslator } from '$lib/i18n/translate';
+import { DEFAULT_LOCALE } from '#lib/i18n/locales.js';
+import { createTranslator } from '#lib/i18n/translate.js';
 import { createDrizzleGiftGroupRepository } from '../db/gift-group-repository';
 import { createDrizzleGiftRepository } from '../db/gift-repository';
 import { createDrizzleHeldGiftRepository } from '../db/held-gift-repository';

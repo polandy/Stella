@@ -1,11 +1,11 @@
 <script lang="ts">
-	import Button from '$lib/components/ui/Button.svelte';
-	import Icon from '$lib/components/ui/Icon.svelte';
-	import LightboxFrame from '$lib/components/ui/LightboxFrame.svelte';
-	import { dayLabel } from '$lib/dates/labels';
-	import { useI18n } from '$lib/i18n/context.svelte';
-	import type { ImmichMemoryPhoto } from '$lib/immich/on-this-day';
-	import { photoAfterKey } from '$lib/media/photo-walk';
+	import Button from '#lib/components/ui/Button.svelte';
+	import Icon from '#lib/components/ui/Icon.svelte';
+	import LightboxFrame from '#lib/components/ui/LightboxFrame.svelte';
+	import { dayLabel } from '#lib/dates/labels.js';
+	import { useI18n } from '#lib/i18n/context.svelte.js';
+	import type { ImmichMemoryPhoto } from '#lib/immich/on-this-day.js';
+	import { photoAfterKey } from '#lib/media/photo-walk.js';
 
 	/*
 	 * An Immich photo of *On this day* (docs/dev/02 §2.12.1), opened from the band or a year card: when

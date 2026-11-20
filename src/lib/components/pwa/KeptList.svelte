@@ -1,13 +1,13 @@
 <script lang="ts">
-	import KeptItem from '$lib/components/pwa/KeptItem.svelte';
-	import { dayLabel as calendarDayLabel } from '$lib/dates/labels';
-	import { useI18n } from '$lib/i18n/context.svelte';
-	import type { MentionCandidate } from '$lib/mentions/mentions';
-	import { asTyped, newPeopleAsCandidates } from '$lib/mentions/picks';
-	import { contactSectionPath } from '$lib/people/sections';
-	import { isKept, type KeptOf } from '$lib/pwa/outbox';
-	import { outbox } from '$lib/pwa/outbox.svelte';
-	import { KIND_PRESENTATION } from '$lib/story/interaction-kinds';
+	import KeptItem from '#lib/components/pwa/KeptItem.svelte';
+	import { dayLabel as calendarDayLabel } from '#lib/dates/labels.js';
+	import { useI18n } from '#lib/i18n/context.svelte.js';
+	import type { MentionCandidate } from '#lib/mentions/mentions.js';
+	import { asTyped, newPeopleAsCandidates } from '#lib/mentions/picks.js';
+	import { contactSectionPath } from '#lib/people/sections.js';
+	import { isKept, type KeptOf } from '#lib/pwa/outbox.js';
+	import { outbox } from '#lib/pwa/outbox.svelte.js';
+	import { KIND_PRESENTATION } from '#lib/story/interaction-kinds.js';
 
 	/*
 	 * Everything this member kept on this device while Stella was out of reach (docs/dev/02 §2.18.1),

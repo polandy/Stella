@@ -1,10 +1,10 @@
 <script lang="ts">
-	import NamesakeLine from '$lib/components/ui/NamesakeLine.svelte';
-	import Avatar from '$lib/components/ui/Avatar.svelte';
-	import { useTranslate } from '$lib/i18n/context.svelte';
-	import { listPlacement, type ListPlacement } from '$lib/mentions/picker';
-	import type { Distinction } from '$lib/people/namesakes';
-	import type { PickerRow } from '$lib/stream/composer-state';
+	import NamesakeLine from '#lib/components/ui/NamesakeLine.svelte';
+	import Avatar from '#lib/components/ui/Avatar.svelte';
+	import { useTranslate } from '#lib/i18n/context.svelte.js';
+	import { listPlacement, type ListPlacement } from '#lib/mentions/picker.js';
+	import type { Distinction } from '#lib/people/namesakes.js';
+	import type { PickerRow } from '#lib/stream/composer-state.js';
 
 	/*
 	 * The moment composer's @-list: the people a handle could mean, and the offer to create one.

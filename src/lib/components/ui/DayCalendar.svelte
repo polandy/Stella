@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { FIELD } from '$lib/components/ui/field';
+	import { FIELD } from '#lib/components/ui/field.js';
 	import { tick, untrack } from 'svelte';
 	import {
 		addDays,
@@ -11,8 +11,8 @@
 		shiftMonth,
 		weekdayNames,
 		yearsBack
-	} from '$lib/dates/month';
-	import { useI18n } from '$lib/i18n/context.svelte';
+	} from '#lib/dates/month.js';
+	import { useI18n } from '#lib/i18n/context.svelte.js';
 
 	/*
 	 * A month to pick a day from, in the language Stella is read in (docs/dev/05 §5.7) — not the

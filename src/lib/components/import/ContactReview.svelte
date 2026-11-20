@@ -1,9 +1,9 @@
 <script lang="ts">
 	import { untrack } from 'svelte';
-	import Button from '$lib/components/ui/Button.svelte';
-	import FormError from '$lib/components/ui/FormError.svelte';
-	import { useTranslate } from '$lib/i18n/context.svelte';
-	import { sourceWord } from '$lib/import-match/card';
+	import Button from '#lib/components/ui/Button.svelte';
+	import FormError from '#lib/components/ui/FormError.svelte';
+	import { useTranslate } from '#lib/i18n/context.svelte.js';
+	import { sourceWord } from '#lib/import-match/card.js';
 	import {
 		answer,
 		answerNew,
@@ -18,7 +18,7 @@
 		unanswered,
 		type ContactReview,
 		type ReviewKind
-	} from '$lib/import-match/review';
+	} from '#lib/import-match/review.js';
 	import NewContacts from './NewContacts.svelte';
 	import ReviewCard from './ReviewCard.svelte';
 

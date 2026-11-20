@@ -1,5 +1,5 @@
 import { isActionFailure, isHttpError, isRedirect } from '@sveltejs/kit';
-import type { Locale } from '$lib/i18n/locales';
+import type { Locale } from '#lib/i18n/locales.js';
 import type { AuthUser } from '../auth/accounts';
 import type { AppServices } from '../services/app-services';
 

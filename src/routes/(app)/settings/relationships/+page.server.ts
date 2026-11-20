@@ -1,5 +1,5 @@
 import { fail, redirect } from '@sveltejs/kit';
-import { requireViewer } from '$lib/server/auth/guards';
+import { requireViewer } from '#lib/server/auth/guards.js';
 import {
 	DECLINED_PER_PAGE,
 	declinedFitsInline,
@@ -8,9 +8,9 @@ import {
 	pageOf,
 	reviewPage,
 	type FoldedGroup
-} from '$lib/suggestions/paging';
-import { segmentsOf, type Segment } from '$lib/i18n/linked';
-import { ANSWER_ANCHOR_FIELD, withAnchor } from '$lib/relationships/answer-key';
+} from '#lib/suggestions/paging.js';
+import { segmentsOf, type Segment } from '#lib/i18n/linked.js';
+import { ANSWER_ANCHOR_FIELD, withAnchor } from '#lib/relationships/answer-key.js';
 import {
 	RETURN_TO_FIELD,
 	placeOf,
@@ -20,12 +20,12 @@ import {
 	reviewLocationFrom,
 	reviewQuery,
 	type ReviewLocation
-} from '$lib/relationships/review-url';
-import { authorNames } from '$lib/server/domain/household/members';
+} from '#lib/relationships/review-url.js';
+import { authorNames } from '#lib/server/domain/household/members.js';
 import {
 	reviewHousehold,
 	type ProposedLink
-} from '$lib/server/domain/relationships/suggestion-review';
+} from '#lib/server/domain/relationships/suggestion-review.js';
 import {
 	acceptClaim,
 	declineClaim,
@@ -33,8 +33,8 @@ import {
 	type ClaimAnswerServices,
 	type RefusedAnswer
 } from '../../_shared/suggestion-answers';
-import { translator } from '$lib/server/i18n/say';
-import type { Translate } from '$lib/i18n/translate';
+import { translator } from '#lib/server/i18n/say.js';
+import type { Translate } from '#lib/i18n/translate.js';
 import type { Actions, PageServerLoad } from './$types';
 
 /*

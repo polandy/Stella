@@ -1,10 +1,10 @@
 import * as v from 'valibot';
-import type { JsonCommand } from '$lib/commands/commands';
-import { GiftGroupAddSchema } from '$lib/commands/gift-todo-payloads';
-import { groupOccasion } from '$lib/gifts/group-form';
-import { visibilityFromForm } from '$lib/gifts/gifts';
-import { GIFT_WHEN_KINDS } from '$lib/gifts/idea-when';
-import { parsedWhenFromForm } from '$lib/when/form';
+import type { JsonCommand } from '#lib/commands/commands.js';
+import { GiftGroupAddSchema } from '#lib/commands/gift-todo-payloads.js';
+import { groupOccasion } from '#lib/gifts/group-form.js';
+import { visibilityFromForm } from '#lib/gifts/gifts.js';
+import { GIFT_WHEN_KINDS } from '#lib/gifts/idea-when.js';
+import { parsedWhenFromForm } from '#lib/when/form.js';
 
 /*
  * The form for several people as the `giftGroup.add` command the outbox keeps (docs/dev/02

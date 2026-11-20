@@ -33,7 +33,7 @@ function specifiers(code: string): string[] {
 /** The domain folder a file or specifier lands in, or null when it lands outside `domain/`. */
 function contextOf(importer: string, specifier: string): string | null {
 	let path: string;
-	if (specifier.startsWith('$lib/')) path = `src/lib/${specifier.slice('$lib/'.length)}`;
+	if (specifier.startsWith('#lib/')) path = `src/lib/${specifier.slice('#lib/'.length)}`;
 	else if (specifier.startsWith('.')) path = posix.join(posix.dirname(importer), specifier);
 	else return null;
 	if (!path.startsWith(DOMAIN)) return null;
@@ -133,14 +133,14 @@ describe('the domain contexts', () => {
 			"export * from '../media';",
 			"const m = await import('../media/avatars');",
 			"type A = import('../media/avatars').A;",
-			"import { a } from '$lib/server/domain/media/avatars';",
+			"import { a } from '#lib/server/domain/media/avatars.js';",
 			"import '../media/avatars';"
 		];
 		const allowed = [
 			"import { a } from './contacts';",
 			"import { a } from '../../access/visibility';",
 			"import { a } from '../../../people/display-name';",
-			"import { a } from '$lib/server/db/media';",
+			"import { a } from '#lib/server/db/media';",
 			"// import { a } from '../media/avatars';",
 			'const s = "from \'../media/avatars\'";'
 		];

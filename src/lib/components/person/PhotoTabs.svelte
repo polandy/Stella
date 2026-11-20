@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type { PhotoTab } from '$lib/people/photo-card';
-	import { useI18n } from '$lib/i18n/context.svelte';
-	import Tabs from '$lib/components/ui/Tabs.svelte';
+	import type { PhotoTab } from '#lib/people/photo-card.js';
+	import { useI18n } from '#lib/i18n/context.svelte.js';
+	import Tabs from '#lib/components/ui/Tabs.svelte';
 
 	/*
 	 * The Photos card's segmented control (docs/dev/design/screens/person.md): *All · Stella 5 ·

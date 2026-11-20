@@ -1,6 +1,6 @@
 <script lang="ts">
-	import { useTranslate } from '$lib/i18n/context.svelte';
-	import type { ComposerReading } from '$lib/stream/composer-reading';
+	import { useTranslate } from '#lib/i18n/context.svelte.js';
+	import type { ComposerReading } from '#lib/stream/composer-reading.js';
 
 	/*
 	 * The line beside Save: why it is off, or else where the moment will go (docs/dev/02 §2.22.1).

@@ -1,5 +1,5 @@
-import type { KinPerson, ParentEdge, PartnerEdge } from '$lib/kinship/kinship';
-import { MAX_PARENTS } from '$lib/relationships/exclusions';
+import type { KinPerson, ParentEdge, PartnerEdge } from '#lib/kinship/kinship.js';
+import { MAX_PARENTS } from '#lib/relationships/exclusions.js';
 import { parentThroughSibling, partnerOfParent } from '../reasons';
 import type { LinkSuggestion, PrimaryLink, Rule, RuleId, Trigger } from '../types';
 import type { SuggestionView } from '../view';

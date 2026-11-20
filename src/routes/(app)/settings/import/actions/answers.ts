@@ -1,5 +1,5 @@
 import * as v from 'valibot';
-import type { CardAnswer } from '$lib/server/domain/import/contact-review';
+import type { CardAnswer } from '#lib/server/domain/import/contact-review.js';
 
 /** The review step's answers by card key, as its form sends them. */
 const AnswersSchema = v.record(

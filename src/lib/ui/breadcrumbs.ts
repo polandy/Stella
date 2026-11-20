@@ -1,4 +1,4 @@
-import type { MessageKey, Messages, Translate } from '$lib/i18n/translate';
+import type { MessageKey, Messages, Translate } from '#lib/i18n/translate.js';
 
 /** One step of the top bar's trail; the current page's step carries no link. */
 export type Crumb = { label: string; href?: string };

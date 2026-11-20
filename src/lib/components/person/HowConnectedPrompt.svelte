@@ -1,8 +1,8 @@
 <script lang="ts">
-	import Button from '$lib/components/ui/Button.svelte';
-	import PersonSearchSelect from '$lib/components/people/PersonSearchSelect.svelte';
-	import { useI18n } from '$lib/i18n/context.svelte';
-	import { reveal } from '$lib/motion/motion.svelte';
+	import Button from '#lib/components/ui/Button.svelte';
+	import PersonSearchSelect from '#lib/components/people/PersonSearchSelect.svelte';
+	import { useI18n } from '#lib/i18n/context.svelte.js';
+	import { reveal } from '#lib/motion/motion.svelte.js';
 	import type { ComponentProps } from 'svelte';
 
 	/*

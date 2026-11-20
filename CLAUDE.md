@@ -34,7 +34,7 @@ Bun · SvelteKit (Svelte 5, runes) · SQLite WAL + Drizzle · Tailwind v4 + Catp
 | Path | Responsibility |
 |---|---|
 | `src/lib/server/services/` | the composition root — the only module wiring adapters into `deps`; builds `AppServices` once per process, handed to routes as `locals.services`; only routes and hooks import it by value |
-| `src/lib/server/config.ts` | env parsing (Valibot) — the only `$env` reader |
+| `src/lib/server/config.ts` | env parsing (Valibot) — the only `$app/env/private` reader; `src/env.ts` declares the variables |
 | `src/lib/server/db/` | Drizzle schema in `schema/`, one file per context (`docs/dev/03`), `bun:sqlite` client, one adapter per port |
 | `src/lib/server/access/` | **central** ACL / visibility (`docs/dev/03` §3.7) — the *only* authz path |
 | `src/lib/server/domain/` | use-cases, test-first; `commands/` applies a command once |
@@ -42,7 +42,7 @@ Bun · SvelteKit (Svelte 5, runes) · SQLite WAL + Drizzle · Tailwind v4 + Catp
 | `src/lib/{calendar,commands,people,gifts,plans,todos,surprise,links,memories,hashtags,immich,import-match,kinship,motion,privacy,pwa,share,stream,suggestions,surnames,sync,ui,when}/` | **pure** decisions, test-first; a `*.svelte.ts` beside one is its browser adapter |
 | `src/lib/graph/` | pure `model/`, `layout/`, `keyboard.ts`, `phone-map.ts`; `cytoscape/` renders, no logic |
 | `src/routes/` | thin edges: `load` / form actions / `+server.ts`; big pages colocate `load.ts` + `actions/` |
-| `src/lib/{relationships,circles,story,mentions,dates,media,undo,archive}/` | client-safe helpers per concept, not lint-guarded as pure |
+| `src/lib/{relationships,circles,story,mentions,dates,media,undo,archive,forms}/` | client-safe helpers per concept, not lint-guarded as pure |
 | `src/lib/components/` | `ui/` the design system, `<feature>/` the rest (`docs/dev/05` §5.7) |
 | `src/lib/i18n/` | languages, catalogues `en` + `de`, translator — **all UI copy** (`docs/dev/02` §2.19) |
 | `src/lib/design/tokens.ts`, `src/app.css` | the token table and its three layers — the only places that build a colour token |

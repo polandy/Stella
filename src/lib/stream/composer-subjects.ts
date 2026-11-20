@@ -1,4 +1,4 @@
-import { allowedForAudience, type MentionAudience } from '$lib/mentions/audience';
+import { allowedForAudience, type MentionAudience } from '#lib/mentions/audience.js';
 
 /*
  * Whom a moment is about beside its anchor, as the composer offers them (docs/dev/02 §2.20.3,

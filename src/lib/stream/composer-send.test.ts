@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'bun:test';
-import type { MomentCapturePayload } from '$lib/commands/commands';
-import type { KeptPhoto } from '$lib/pwa/outbox';
+import type { MomentCapturePayload } from '#lib/commands/commands.js';
+import type { KeptPhoto } from '#lib/pwa/outbox.js';
 import {
 	composerAfter,
 	composerAtOpen,

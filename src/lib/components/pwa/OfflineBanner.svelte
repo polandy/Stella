@@ -1,7 +1,7 @@
 <script lang="ts">
-	import { useI18n } from '$lib/i18n/context.svelte';
-	import { copyAge } from '$lib/pwa/copy-age';
-	import { reachability } from '$lib/pwa/reachability.svelte';
+	import { useI18n } from '#lib/i18n/context.svelte.js';
+	import { copyAge } from '#lib/pwa/copy-age.js';
+	import { reachability } from '#lib/pwa/reachability.svelte.js';
 	import Icon from '../ui/Icon.svelte';
 
 	/*
@@ -10,7 +10,7 @@
 	 * somebody added ten minutes ago looks like it was never written.
 	 *
 	 * The service worker is what knows, so the worker is what it listens to — see
-	 * `$lib/pwa/reachability` for why `navigator.onLine` cannot answer this. Nothing is
+	 * `#lib/pwa/reachability.js` for why `navigator.onLine` cannot answer this. Nothing is
 	 * polled: the worker reports when the answer changes.
 	 *
 	 * When the worker knows when the page on screen was kept, the line says so: an old copy is

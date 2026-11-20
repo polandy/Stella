@@ -1,13 +1,13 @@
 <script lang="ts">
-	import { FIELD } from '$lib/components/ui/field';
-	import Button from '$lib/components/ui/Button.svelte';
-	import DateField from '$lib/components/ui/DateField.svelte';
-	import Icon from '$lib/components/ui/Icon.svelte';
-	import CreatePersonPanel from '$lib/components/people/CreatePersonPanel.svelte';
-	import { deviceDay } from '$lib/dates/today';
-	import { useTranslate } from '$lib/i18n/context.svelte';
-	import { isKnownByMoreThanAFirstName, splitTypedName } from '$lib/people/new-person';
-	import type { SelectablePerson } from '$lib/people/select';
+	import { FIELD } from '#lib/components/ui/field.js';
+	import Button from '#lib/components/ui/Button.svelte';
+	import DateField from '#lib/components/ui/DateField.svelte';
+	import Icon from '#lib/components/ui/Icon.svelte';
+	import CreatePersonPanel from '#lib/components/people/CreatePersonPanel.svelte';
+	import { deviceDay } from '#lib/dates/today.js';
+	import { useTranslate } from '#lib/i18n/context.svelte.js';
+	import { isKnownByMoreThanAFirstName, splitTypedName } from '#lib/people/new-person.js';
+	import type { SelectablePerson } from '#lib/people/select.js';
 	import { untrack } from 'svelte';
 
 	/*

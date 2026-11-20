@@ -17,7 +17,7 @@ import { FULL_DATE_SHAPE, isRealCalendarDay } from '../../../dates/calendar';
  * to keep in sync.
  */
 
-/** The kinds a touchpoint can have; shared with the UI (see `$lib/story/interaction-kinds`). */
+/** The kinds a touchpoint can have; shared with the UI (see `#lib/story/interaction-kinds.js`). */
 export { INTERACTION_KINDS, type InteractionKind };
 
 /** The member logging an interaction, with the visibility their entries default to. */

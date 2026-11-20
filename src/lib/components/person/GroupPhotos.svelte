@@ -1,8 +1,8 @@
 <script lang="ts">
-	import { dayLabel } from '$lib/dates/labels';
-	import { useI18n } from '$lib/i18n/context.svelte';
-	import { photoDay } from '$lib/media/taken-at';
-	import { thumbnailUrl } from '$lib/media/urls';
+	import { dayLabel } from '#lib/dates/labels.js';
+	import { useI18n } from '#lib/i18n/context.svelte.js';
+	import { photoDay } from '#lib/media/taken-at.js';
+	import { thumbnailUrl } from '#lib/media/urls.js';
 	import type { PersonPageData } from './types';
 
 	/*

@@ -5,13 +5,13 @@
  * is — told to the pages so the offline banner matches reality (docs/dev/02 §2.18, *Saying so*).
  */
 
-import { isPageData, keptAt } from '$lib/pwa/cache-policy';
+import { isPageData, keptAt } from '#lib/pwa/cache-policy.js';
 import {
 	PROBE_PATH,
 	REPORT_REACHABILITY,
 	probeSays,
 	type ReachabilityReport
-} from '$lib/pwa/reachability';
+} from '#lib/pwa/reachability.js';
 import { describe, fetchAhead, worker } from './scope';
 
 /*

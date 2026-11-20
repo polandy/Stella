@@ -1,15 +1,15 @@
 import { describe, expect, it } from 'bun:test';
-import { createTranslator } from '$lib/i18n/translate';
-import type { Contact } from '$lib/server/domain/contacts/contacts';
+import { createTranslator } from '#lib/i18n/translate.js';
+import type { Contact } from '#lib/server/domain/contacts/contacts.js';
 import {
 	circleRepositoryWith,
 	contactRepositoryWith,
 	fixedClock,
 	inMemoryCircleMemberships,
 	membership
-} from '$lib/server/domain/testing';
-import type { Locale } from '$lib/i18n/locales';
-import { answerOf, formOf, routeEvent, type EdgeAnswer } from '$lib/server/testing';
+} from '#lib/server/domain/testing/index.js';
+import type { Locale } from '#lib/i18n/locales.js';
+import { answerOf, formOf, routeEvent, type EdgeAnswer } from '#lib/server/testing/index.js';
 import { circleActions as actions } from './circles';
 
 /*

@@ -1,4 +1,4 @@
-import type { KinshipGraph } from '$lib/kinship/kinship';
+import type { KinshipGraph } from '#lib/kinship/kinship.js';
 import { indexDismissals, pairKey, type AnswerTo, type Dismissal } from './claims';
 import type { PrimaryLink } from './types';
 

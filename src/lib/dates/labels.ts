@@ -1,4 +1,4 @@
-import type { Translate } from '$lib/i18n/translate';
+import type { Translate } from '#lib/i18n/translate.js';
 
 /*
  * How a date reads on screen (docs/dev/02 §2.13.3). Pure and framework-free so the wording is

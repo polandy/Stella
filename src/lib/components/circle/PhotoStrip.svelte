@@ -1,6 +1,6 @@
 <script lang="ts">
-	import Icon from '$lib/components/ui/Icon.svelte';
-	import { viewUrl } from '$lib/media/urls';
+	import Icon from '#lib/components/ui/Icon.svelte';
+	import { viewUrl } from '#lib/media/urls.js';
 
 	/*
 	 * A circle photo as a wide strip (docs/dev/02 §2.4.2, docs/dev/05 §5.5): the circle's cover at the top

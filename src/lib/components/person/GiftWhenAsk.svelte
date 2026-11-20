@@ -1,18 +1,18 @@
 <script lang="ts">
-	import { enhance } from '$app/forms';
-	import Button from '$lib/components/ui/Button.svelte';
-	import FormError from '$lib/components/ui/FormError.svelte';
-	import RemoveButton from '$lib/components/ui/RemoveButton.svelte';
-	import WhenPicker from '$lib/components/ui/WhenPicker.svelte';
-	import { GIFT_WHEN_KINDS } from '$lib/gifts/idea-when';
-	import type { PartialDate } from '$lib/dates/partial-date';
-	import { useI18n } from '$lib/i18n/context.svelte';
-	import { reveal } from '$lib/motion/motion.svelte';
-	import { useRemovals } from '$lib/undo/context.svelte';
-	import { savedEnhance } from '$lib/undo/saved';
-	import { WHEN_FIELDS } from '$lib/when/form';
-	import type { WhenState } from '$lib/when/state';
-	import type { When } from '$lib/when/when';
+	import { enhance } from '#lib/forms/enhance.js';
+	import Button from '#lib/components/ui/Button.svelte';
+	import FormError from '#lib/components/ui/FormError.svelte';
+	import RemoveButton from '#lib/components/ui/RemoveButton.svelte';
+	import WhenPicker from '#lib/components/ui/WhenPicker.svelte';
+	import { GIFT_WHEN_KINDS } from '#lib/gifts/idea-when.js';
+	import type { PartialDate } from '#lib/dates/partial-date.js';
+	import { useI18n } from '#lib/i18n/context.svelte.js';
+	import { reveal } from '#lib/motion/motion.svelte.js';
+	import { useRemovals } from '#lib/undo/context.svelte.js';
+	import { savedEnhance } from '#lib/undo/saved.js';
+	import { WHEN_FIELDS } from '#lib/when/form.js';
+	import type { WhenState } from '#lib/when/state.js';
+	import type { When } from '#lib/when/when.js';
 
 	/*
 	 * *Still current?* on an idea whose occasion went by, or a *later* one at its yearly look

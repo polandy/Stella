@@ -1,16 +1,16 @@
 <script lang="ts">
-	import FormerlyMark from '$lib/components/people/FormerlyMark.svelte';
-	import FoundByJobMark from '$lib/components/people/FoundByJobMark.svelte';
-	import JobLine from '$lib/components/people/JobLine.svelte';
+	import FormerlyMark from '#lib/components/people/FormerlyMark.svelte';
+	import FoundByJobMark from '#lib/components/people/FoundByJobMark.svelte';
+	import JobLine from '#lib/components/people/JobLine.svelte';
 	import { goto } from '$app/navigation';
-	import Avatar from '$lib/components/ui/Avatar.svelte';
-	import Icon from '$lib/components/ui/Icon.svelte';
-	import NamesakeLine from '$lib/components/ui/NamesakeLine.svelte';
-	import { useTranslate } from '$lib/i18n/context.svelte';
-	import { paletteLabels, personFinderRows, type PalettePerson } from '$lib/ui/command-palette';
-	import { usePeopleContext } from '$lib/people/context.svelte';
-	import { BLUR_CLOSE_MS } from '$lib/components/ui/blur-close';
-	import { nextMenuIndex } from '$lib/ui/menu';
+	import Avatar from '#lib/components/ui/Avatar.svelte';
+	import Icon from '#lib/components/ui/Icon.svelte';
+	import NamesakeLine from '#lib/components/ui/NamesakeLine.svelte';
+	import { useTranslate } from '#lib/i18n/context.svelte.js';
+	import { paletteLabels, personFinderRows, type PalettePerson } from '#lib/ui/command-palette.js';
+	import { usePeopleContext } from '#lib/people/context.svelte.js';
+	import { BLUR_CLOSE_MS } from '#lib/components/ui/blur-close.js';
+	import { nextMenuIndex } from '#lib/ui/menu.js';
 
 	/*
 	 * The home screen's search field (docs/dev/02 §2.22.1, docs/dev/05 §5.4): people matching the

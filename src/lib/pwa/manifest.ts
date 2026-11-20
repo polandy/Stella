@@ -6,8 +6,8 @@
  * (docs/dev/08 §8.7). Pure: the route hands it a translator and serialises what comes back.
  */
 
-import { DEFAULT_APP_BACKGROUND } from '$lib/design/app-colors';
-import type { Translate } from '$lib/i18n/translate';
+import { DEFAULT_APP_BACKGROUND } from '#lib/design/app-colors.js';
+import type { Translate } from '#lib/i18n/translate.js';
 
 /** How a launcher is allowed to treat an icon: crop it to its own shape, or leave it be. */
 export type IconPurpose = 'any' | 'maskable';

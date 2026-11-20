@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { useTranslate } from '$lib/i18n/context.svelte';
+	import { useTranslate } from '#lib/i18n/context.svelte.js';
 
 	/*
 	 * A small *Job* tag after a name, when a search found the person by their job title or

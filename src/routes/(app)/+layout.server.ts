@@ -1,7 +1,7 @@
 import { redirect } from '@sveltejs/kit';
-import { nextcloudWording } from '$lib/server/i18n/import-wording';
-import { syncOnOpen } from '$lib/server/nextcloud/sync-on-open';
-import { readShellPeople } from '$lib/server/shell-people';
+import { nextcloudWording } from '#lib/server/i18n/import-wording.js';
+import { syncOnOpen } from '#lib/server/nextcloud/sync-on-open.js';
+import { readShellPeople } from '#lib/server/shell-people.js';
 import type { LayoutServerLoad } from './$types';
 
 /*
@@ -21,7 +21,7 @@ import type { LayoutServerLoad } from './$types';
  * the page waiting for it.
  */
 
-/** What the shell invalidates to reload its people (`$lib/sync/people-freshness`). */
+/** What the shell invalidates to reload its people (`#lib/sync/people-freshness.js`). */
 const PEOPLE_DEPENDENCY = 'app:people';
 
 export const load: LayoutServerLoad = async ({ locals, depends }) => {

@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'bun:test';
-import { createTranslator } from '$lib/i18n/translate';
-import type { Locale } from '$lib/i18n/locales';
-import type { StoredPhoto } from '$lib/server/domain/media/avatars';
-import type { EntryPhotoDeps } from '$lib/server/domain/media/entry-photos';
+import { createTranslator } from '#lib/i18n/translate.js';
+import type { Locale } from '#lib/i18n/locales.js';
+import type { StoredPhoto } from '#lib/server/domain/media/avatars.js';
+import type { EntryPhotoDeps } from '#lib/server/domain/media/entry-photos.js';
 import {
 	fixedClock,
 	inMemoryContactDirectory,
@@ -10,8 +10,8 @@ import {
 	sequentialIds,
 	somebody,
 	someJournalEntry
-} from '$lib/server/domain/testing';
-import { answerOf, formOf, routeEvent, type FakeServices } from '$lib/server/testing';
+} from '#lib/server/domain/testing/index.js';
+import { answerOf, formOf, routeEvent, type FakeServices } from '#lib/server/testing/index.js';
 import { actions } from './+page.server';
 
 /*

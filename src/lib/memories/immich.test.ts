@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test';
-import type { ImmichMemoryPhoto, ImmichMemoryYear } from '$lib/immich/on-this-day';
+import type { ImmichMemoryPhoto, ImmichMemoryYear } from '#lib/immich/on-this-day.js';
 import { immichStrip, memoryCardsWithImmich, withNextPage } from './immich';
 import type { MemoryYearView } from './view';
 

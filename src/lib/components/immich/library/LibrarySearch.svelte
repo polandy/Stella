@@ -4,9 +4,9 @@
   not a form of its own, as the sheet may sit inside the upload's form.
 -->
 <script lang="ts">
-	import { FIELD } from '$lib/components/ui/field';
-	import Icon from '$lib/components/ui/Icon.svelte';
-	import { useTranslate } from '$lib/i18n/context.svelte';
+	import { FIELD } from '#lib/components/ui/field.js';
+	import Icon from '#lib/components/ui/Icon.svelte';
+	import { useTranslate } from '#lib/i18n/context.svelte.js';
 
 	interface Props {
 		/** Bindable: the words typed. */

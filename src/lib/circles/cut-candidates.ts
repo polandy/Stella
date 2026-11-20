@@ -1,4 +1,4 @@
-import { filterPeople, type SelectablePerson } from '$lib/people/select';
+import { filterPeople, type SelectablePerson } from '#lib/people/select.js';
 import { roleKey } from './role-key';
 
 /*

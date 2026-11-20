@@ -1,4 +1,4 @@
-import { foldSurname } from '$lib/suggestions/rules/surnames';
+import { foldSurname } from '#lib/suggestions/rules/surnames.js';
 
 /*
  * Passing a last name on (docs/dev/02 §2.2.4.5), on the screen's side: the page is

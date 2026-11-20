@@ -1,8 +1,8 @@
 <script lang="ts">
-	import Icon from '$lib/components/ui/Icon.svelte';
-	import type { IconName } from '$lib/components/ui/icons';
-	import { useTranslate } from '$lib/i18n/context.svelte';
-	import type { Missing } from '$lib/people/identity-card';
+	import Icon from '#lib/components/ui/Icon.svelte';
+	import type { IconName } from '#lib/components/ui/icons.js';
+	import { useTranslate } from '#lib/i18n/context.svelte.js';
+	import type { Missing } from '#lib/people/identity-card.js';
 
 	/** A fact the record does not hold yet, once the quiet button was pressed: a dashed slot. */
 	let {

@@ -1,13 +1,17 @@
 import { describe, expect, it } from 'bun:test';
-import type { Circle } from '$lib/server/domain/circles/circles';
-import { circleRepositoryWith, fixedClock, sequentialIds } from '$lib/server/domain/testing';
+import type { Circle } from '#lib/server/domain/circles/circles.js';
+import {
+	circleRepositoryWith,
+	fixedClock,
+	sequentialIds
+} from '#lib/server/domain/testing/index.js';
 import {
 	answerOf,
 	MEMBER,
 	routeEvent,
 	type EdgeAnswer,
 	type FakeServices
-} from '$lib/server/testing';
+} from '#lib/server/testing/index.js';
 import { deleteActions as actions } from './delete';
 
 /*

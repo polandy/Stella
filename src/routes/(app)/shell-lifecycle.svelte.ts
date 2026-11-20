@@ -1,9 +1,9 @@
 import { afterNavigate, beforeNavigate, goto, invalidate, invalidateAll } from '$app/navigation';
-import { outbox } from '$lib/pwa/outbox.svelte';
-import { reachability } from '$lib/pwa/reachability.svelte';
-import { refreshPeopleIfChanged, shellReloads } from '$lib/sync/people-freshness';
-import type { Removals } from '$lib/undo/context.svelte';
-import { navigationTurns } from '$lib/undo/navigation-turns';
+import { outbox } from '#lib/pwa/outbox.svelte.js';
+import { reachability } from '#lib/pwa/reachability.svelte.js';
+import { refreshPeopleIfChanged, shellReloads } from '#lib/sync/people-freshness.js';
+import type { Removals } from '#lib/undo/context.svelte.js';
+import { navigationTurns } from '#lib/undo/navigation-turns.js';
 import { onMount, untrack } from 'svelte';
 
 /*
@@ -59,11 +59,12 @@ export function keepShellCurrent({ data, removals, outboxPhrases }: ShellLifecyc
 			void removals.flush();
 			return;
 		}
-		const { to, type, delta } = navigation;
+		const { to } = navigation;
+		const delta = navigation.type === 'popstate' ? navigation.delta : 0;
 		navigation.cancel();
 		void removals.flush().then(() => {
 			if (!stillLatest()) return;
-			if (type === 'popstate' && delta) history.go(delta);
+			if (delta) history.go(delta);
 			else void goto(to.url);
 		});
 	});

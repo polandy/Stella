@@ -1,16 +1,22 @@
 <script lang="ts">
-	import DateField from '$lib/components/ui/DateField.svelte';
-	import { INPUT } from '$lib/components/ui/inputs';
-	import Icon from '$lib/components/ui/Icon.svelte';
-	import type { PartialDate } from '$lib/dates/partial-date';
-	import { useI18n } from '$lib/i18n/context.svelte';
-	import { ageOn, knowsBirthYear, whenOutlook } from '$lib/when/resolve';
-	import { monthLabel, whenPreview } from '$lib/when/labels';
-	import { quickDays, type QuickPick } from '$lib/when/quick-picks';
-	import { isAgeKind, WHEN_AGE_MAX, WHEN_AGE_MIN, type When, type WhenKind } from '$lib/when/when';
-	import { WHEN_FIELDS } from '$lib/when/form';
-	import { shiftMonth } from '$lib/dates/month';
-	import { dayLabel } from '$lib/dates/labels';
+	import DateField from '#lib/components/ui/DateField.svelte';
+	import { INPUT } from '#lib/components/ui/inputs.js';
+	import Icon from '#lib/components/ui/Icon.svelte';
+	import type { PartialDate } from '#lib/dates/partial-date.js';
+	import { useI18n } from '#lib/i18n/context.svelte.js';
+	import { ageOn, knowsBirthYear, whenOutlook } from '#lib/when/resolve.js';
+	import { monthLabel, whenPreview } from '#lib/when/labels.js';
+	import { quickDays, type QuickPick } from '#lib/when/quick-picks.js';
+	import {
+		isAgeKind,
+		WHEN_AGE_MAX,
+		WHEN_AGE_MIN,
+		type When,
+		type WhenKind
+	} from '#lib/when/when.js';
+	import { WHEN_FIELDS } from '#lib/when/form.js';
+	import { shiftMonth } from '#lib/dates/month.js';
+	import { dayLabel } from '#lib/dates/labels.js';
 
 	// When a record is for (docs/dev/02 §2.25.8); hidden fields carry it to `whenFromForm`.
 	interface Props {

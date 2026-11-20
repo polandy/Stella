@@ -3,12 +3,12 @@ import {
 	proposeSurname,
 	type SurnameFacts,
 	type SurnamePerson
-} from '$lib/suggestions/rules/surnames';
+} from '#lib/suggestions/rules/surnames.js';
 import {
 	groupBySurname,
 	householdSpellings,
 	type SurnameList
-} from '$lib/suggestions/surname-groups';
+} from '#lib/suggestions/surname-groups.js';
 
 /*
  * Who the *Last names* list asks about (docs/dev/02 §2.2.4.2). A declined name drops only that

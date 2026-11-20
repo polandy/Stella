@@ -3,7 +3,7 @@ import { join } from 'node:path';
 import { assertProductionSessionSecret, configKeys, getConfig } from './config';
 
 /*
- * `$env/dynamic/private` only resolves inside a running SvelteKit server;
+ * `$app/env/private` only resolves inside a running SvelteKit server;
  * `env-test-preload.ts` (bunfig.toml) stubs it to an empty env before any test file loads, so
  * `getConfig()` falls back to the schema's defaults here regardless of which other test ran
  * first (docs/dev/08 §8.4 — no test may depend on run order). Guards against the stub moving back

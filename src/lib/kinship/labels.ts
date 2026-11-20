@@ -1,5 +1,5 @@
-import { hasMessage, type Translate } from '$lib/i18n/translate';
-import { SIBLING_TYPE_KEY } from '$lib/relationships/type-keys';
+import { hasMessage, type Translate } from '#lib/i18n/translate.js';
+import { SIBLING_TYPE_KEY } from '#lib/relationships/type-keys.js';
 import type { DirectClaim } from './claims';
 import type { KinTerm, KinVariant } from './kinship';
 
