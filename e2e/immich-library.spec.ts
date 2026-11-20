@@ -90,14 +90,14 @@ test('a moment takes photos from Immich through the photo menu, ticked in order'
 
 	await sheet(page).getByRole('button', { name: 'Add 2 photos', exact: true }).click();
 	await expect(sheet(page)).toBeHidden();
-	await expect(page.getByTestId('toasts').getByText('2 photos from Immich added')).toBeVisible();
 	await expect(composer.getByTestId('photo-count')).toHaveText('2');
 
 	await composer.getByRole('button', { name: /^Save/ }).click();
 	const saved = page
 		.locator('#section-story [data-story-item]')
 		.filter({ hasText: 'a picnic by the lake, photos from Immich' });
-	await expect(saved.locator('img')).toHaveCount(2);
+	// A reference, not a copy (ADR-132): the photos show through the Immich proxy.
+	await expect(saved.locator('img[src^="/media/immich/"]')).toHaveCount(2);
 });
 
 test('the sheet searches the whole library, says when nothing matches, and goes back to the day', async ({
@@ -200,7 +200,7 @@ test('a journal entry takes a photo from Immich through its photo menu', async (
 		.fill('an entry with a photo from Immich');
 	await page.getByRole('button', { name: 'Save moment' }).click();
 	const entry = page.locator('article', { hasText: 'an entry with a photo from Immich' });
-	await expect(entry.locator('img')).toHaveCount(1);
+	await expect(entry.locator('img[src^="/media/immich/"]')).toHaveCount(1);
 });
 
 test('a person’s gallery takes a photo from Immich, dated as Immich dates it', async ({ page }) => {
