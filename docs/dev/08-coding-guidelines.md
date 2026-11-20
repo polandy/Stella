@@ -322,14 +322,14 @@ cross midnight the two collapse into the one day it always checked.
 - **Unit-tested (test-first, always):** access-control/visibility rules, session lifecycle
   logic, relationship reciprocity & guardrails, partial-date handling, OIDC claim→user
   mapping (group→role, allowlist), feed visibility filtering, input validation.
-- **Unit-tested (test-first, always):** access-control/visibility rules, session lifecycle
-  logic, relationship reciprocity & guardrails, partial-date handling, OIDC claim→user
-  mapping (group→role, allowlist), feed visibility filtering, input validation.
 - **Thin edges (covered by integration/e2e, kept trivial):** SvelteKit `load`/actions,
   `hooks.server.ts`, adapter/config wiring, Svelte components’ markup. These contain no
   branching business logic worth unit-testing; if they grow logic, extract it into the
   domain layer and test it there.
-- **Feature coverage notation:** To distinguish between features covered by e2e specs and those covered by unit tests, append `[unit]` to the heading in `docs/dev/features/*.md`. The `scripts/spec-coverage.sh` script uses this to report only the gaps in e2e coverage.
+- **Feature coverage notation:** a heading in `docs/dev/features/*.md` that unit tests cover
+  instead of an e2e spec ends in `[unit]` (per heading, never per file).
+  `scripts/spec-coverage.sh` lists the subsections that neither carry it nor are cited by an e2e
+  header.
 - **Route edges with branching of their own** — the form read, each outcome or refusal turned
   into a status and a sentence, where a success redirects — earn a `bun test` suite beside the
   route, failure paths included (refused input, not found, not visible, each with its positive

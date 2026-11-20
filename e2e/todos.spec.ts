@@ -7,7 +7,6 @@ import { addPerson, appReady, fillDate, signIn } from './app';
  * is open, *To-do for …* in the palette, and noting and ticking while Stella is out of reach;
  * a ticked one in the person's Activity (§2.23), unticked or removed from there. Written after
  * the owner tried the card and the Activity row in the app (docs/dev/08 §8.4.1).
- * (docs/dev/02 §2.26.6–7)
  *
  * The suite shares one database, so every case works on a person of its own, named with letters
  * no other attempt shares. The days are fixed far from today, so no case reads the clock.
