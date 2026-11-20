@@ -28,12 +28,21 @@ export interface OwnEntryImmichPhotos {
 
 /** The references a reader may see. */
 export interface EntryImmichPhotoReads {
-	/** The references on the entries among `entryIds` about the person, visible to the viewer, oldest first. */
+	/**
+	 * The references on the entries among `entryIds` about the person (about anyone when null, for a
+	 * stream), visible to the viewer, oldest first.
+	 */
 	listOfEntries(
 		viewer: Viewer,
-		contactId: string,
+		contactId: string | null,
 		entryIds: readonly string[]
 	): Promise<EntryImmichPhotoRef[]>;
+}
+
+/** Reading an entry's references, signed for the reader; `signer` is null without Immich. */
+export interface EntryImmichPhotoReadDeps {
+	reads: EntryImmichPhotoReads;
+	signer: ImmichMediaSigner | null;
 }
 
 export interface EntryImmichPhotoDeps {
@@ -132,11 +141,14 @@ async function signedPhoto(
 	};
 }
 
-/** The person's entries among `entryIds` with the Immich photos the viewer may see on them, signed. */
+/**
+ * The person's entries among `entryIds` (anyone's when `contactId` is null) with the Immich photos
+ * the viewer may see on them, signed.
+ */
 export async function immichPhotosOfEntries(
-	deps: { reads: EntryImmichPhotoReads; signer: ImmichMediaSigner | null },
+	deps: EntryImmichPhotoReadDeps,
 	viewer: Viewer,
-	contactId: string,
+	contactId: string | null,
 	entryIds: readonly string[]
 ): Promise<Map<string, EntryImmichPhoto[]>> {
 	if (entryIds.length === 0) return new Map();

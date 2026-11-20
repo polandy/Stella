@@ -28,7 +28,17 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 	]);
 	// A read narrowed to a tag holds only moments; the narrowing here says so to the types.
 	const moments = (
-		await streamForView(locals.services.people.contactNameDeps, viewer, items)
+		await streamForView(
+			{
+				names: locals.services.people.contactNameDeps,
+				immichPhotos: {
+					reads: locals.services.media.entryImmichPhotos,
+					signer: locals.services.immich?.signer ?? null
+				}
+			},
+			viewer,
+			items
+		)
 	).filter((item) => item.kind === 'moment');
 	const summary = tagSummary(key, entryTags, moments);
 

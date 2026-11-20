@@ -63,7 +63,7 @@ export function createDrizzleEntryImmichPhotoReads(db: Db): EntryImmichPhotoRead
 	return {
 		async listOfEntries(
 			viewer: Viewer,
-			contactId: string,
+			contactId: string | null,
 			entryIds: readonly string[]
 		): Promise<EntryImmichPhotoRef[]> {
 			if (entryIds.length === 0) return [];
@@ -77,7 +77,7 @@ export function createDrizzleEntryImmichPhotoReads(db: Db): EntryImmichPhotoRead
 				.innerJoin(contact, eq(journalEntry.contactId, contact.id))
 				.where(
 					and(
-						journalAbout(contactId),
+						contactId === null ? undefined : journalAbout(contactId),
 						inArray(journalImmichPhoto.journalEntryId, [...entryIds]),
 						childRecordVisibleTo(viewer, {
 							visibility: journalEntry.visibility,

@@ -122,4 +122,23 @@ describe('readable Immich references', () => {
 		expect(await reads.listOfEntries({ id: 'u1', householdId: 'other' }, 'c', all)).toEqual([]);
 		expect(await reads.listOfEntries({ id: 'u1', householdId: 'h' }, 'c', [])).toEqual([]);
 	});
+
+	it('answers the entries about anyone for a stream, scoped the same', async () => {
+		const own = createDrizzleOwnEntryImmichPhotos(db);
+		await own.linkOwn('u1', 'e1', [A1]);
+		await own.linkOwn('u1', 'e2', [A1]);
+		await own.linkOwn('u1', 'e4', [A2]);
+		const reads = createDrizzleEntryImmichPhotoReads(db);
+		const all = ['e1', 'e2', 'e4'];
+
+		expect(await reads.listOfEntries({ id: 'u1', householdId: 'h' }, null, all)).toEqual([
+			{ journalEntryId: 'e1', assetId: A1 },
+			{ journalEntryId: 'e2', assetId: A1 },
+			{ journalEntryId: 'e4', assetId: A2 }
+		]);
+		// u2 sees neither u1's private entry nor the private person's.
+		expect(await reads.listOfEntries({ id: 'u2', householdId: 'h' }, null, all)).toEqual([
+			{ journalEntryId: 'e1', assetId: A1 }
+		]);
+	});
 });
