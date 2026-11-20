@@ -1,5 +1,6 @@
 import { expect, test, type Locator, type Page } from '@playwright/test';
 import { appReady, signIn } from './app';
+import { unlinkFace } from './photo-card';
 
 /*
  * *Settings → Immich → Find your people* (docs/dev/02 §2.24.7): the
@@ -28,23 +29,8 @@ test.beforeEach(async ({ page }) => {
 const linkedHere: string[] = [];
 
 test.afterEach(async ({ page }) => {
-	while (linkedHere.length > 0) await unlink(page, linkedHere.pop()!);
+	while (linkedHere.length > 0) await unlinkFace(page, linkedHere.pop()!);
 });
-
-/** Unlinks the person at `href` through their Photos card, if the case got as far as linking. */
-async function unlink(page: Page, href: string): Promise<void> {
-	await page.goto(href);
-	await appReady(page);
-	await page.getByRole('button', { name: 'Photo library options' }).click();
-	const unlinkItem = page.getByRole('menuitem', { name: 'Unlink from Immich' });
-	const findItem = page.getByRole('menuitem', { name: 'Find in Immich' });
-	await expect(unlinkItem.or(findItem)).toBeVisible();
-	if (!(await unlinkItem.isVisible())) return;
-	await unlinkItem.click();
-	await appReady(page);
-	await page.getByRole('button', { name: 'Photo library options' }).click();
-	await expect(findItem).toBeVisible();
-}
 
 const rows = (page: Page) => page.getByTestId('immich-match');
 const row = (page: Page, name: string) => rows(page).filter({ hasText: name });

@@ -10,6 +10,7 @@ import {
 	signIn,
 	unfoldPeople
 } from './app';
+import { unlinkFace } from './photo-card';
 
 /*
  * Photos of two people together, from Immich (docs/dev/02 §2.24.8): the chips over a person's
@@ -54,7 +55,7 @@ test.afterEach(async ({ page }) => {
 	await expect(english).toBeVisible();
 	if ((await english.getAttribute('aria-current')) !== 'true') await english.click();
 	await releaseSelfClaim(page);
-	while (linkedHere.length > 0) await unlink(page, linkedHere.pop()!);
+	while (linkedHere.length > 0) await unlinkFace(page, linkedHere.pop()!);
 });
 
 /** Opens a person's page and waits until its scripts answer. */
@@ -100,21 +101,6 @@ async function linkFace(page: Page, personName: string, faceName: string): Promi
 async function openAndLink(page: Page, person: DemoPerson): Promise<void> {
 	await open(page, person);
 	await linkFace(page, person.name, person.face);
-}
-
-/** Unlinks the person at `href` through their Photos card, if the case got as far as linking. */
-async function unlink(page: Page, href: string): Promise<void> {
-	await page.goto(href);
-	await appReady(page);
-	await page.getByRole('button', { name: 'Photo library options' }).click();
-	const unlinkItem = page.getByRole('menuitem', { name: 'Unlink from Immich' });
-	const findItem = page.getByRole('menuitem', { name: 'Find in Immich' });
-	await expect(unlinkItem.or(findItem)).toBeVisible();
-	if (!(await unlinkItem.isVisible())) return;
-	await unlinkItem.click();
-	await appReady(page);
-	await page.getByRole('button', { name: 'Photo library options' }).click();
-	await expect(findItem).toBeVisible();
 }
 
 /** Markus is the viewer (*This is me*) and is linked; Sandra, his wife, is linked too. */
@@ -378,7 +364,7 @@ test('a photo of both stops loading once one of them is unlinked', async ({ page
 	expect((await page.request.get(togetherSrc!)).status()).toBe(200);
 
 	// Markus — the other one of the pair — is unlinked.
-	await unlink(page, `/contacts/${MARKUS.id}`);
+	await unlinkFace(page, `/contacts/${MARKUS.id}`);
 
 	// Sandra's own photos still load, so the refusal is the pair's, not the proxy's.
 	expect((await page.request.get(ownSrc!)).status()).toBe(200);

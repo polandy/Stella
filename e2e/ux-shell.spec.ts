@@ -2,7 +2,7 @@ import { expect, test, type Locator, type Page } from '@playwright/test';
 import { addPerson, appReady, signIn } from './app';
 
 /*
- * The shell's two review fixes (docs/dev/concepts/review-2026-11.md UX-07, UX-08). An address that
+ * The shell's two fixes. An address that
  * leads nowhere lands on Stella's own screen — inside the shell when it is the app's — with
  * the way back to its list (docs/dev/design/screens/across-screens.md); and on a touch screen the
  * small controls answer a fingertip around them (docs/dev/05 §5.9). Written after the owner tried
