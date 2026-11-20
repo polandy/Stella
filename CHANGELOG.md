@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.1.11](https://github.com/polandy/Stella/compare/v0.1.10...v0.1.11) (2026-11-20)
+
+
+### Features
+
+* **contacts:** a Map link beside each address fact ([#561](https://github.com/polandy/Stella/issues/561)) ([dd33b82](https://github.com/polandy/Stella/commit/dd33b823a5aa058ee9b9a70addd918bb85caea7b))
+* **journal:** the composers refer to Immich picks instead of copying them ([#546](https://github.com/polandy/Stella/issues/546)) ([e1fb080](https://github.com/polandy/Stella/commit/e1fb0801b959e2fad238d12291b2ccf99374c502))
+
 ## [0.1.10](https://github.com/polandy/Stella/compare/v0.1.9...v0.1.10) (2026-11-19)
 
 
