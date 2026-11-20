@@ -63,12 +63,10 @@ function seedJournalEntry(
 		.run();
 }
 
-function seedPhoto(over: Partial<typeof schema.photo.$inferInsert>) {
+function seedPhoto(over: Partial<typeof schema.photo.$inferInsert> & { id: string }) {
 	db.insert(schema.photo)
 		.values({
-			id: over.id!,
 			householdId: H,
-			contactId: over.contactId!,
 			createdBy: U1,
 			visibility: 'shared',
 			filePath: `${over.id}.jpg`,
@@ -134,24 +132,7 @@ describe('orphan detection', () => {
 		seedContact('c1');
 		seedPhoto({ id: 'p1', contactId: 'c1' });
 		// Plant an orphan: a photo pointing to a non-existent photo
-		db.insert(schema.photo)
-			.values({
-				id: 'p-orphan',
-				householdId: H,
-				contactId: 'c1',
-				createdBy: U1,
-				visibility: 'shared',
-				filePath: 'p-orphan.jpg',
-				thumbPath: 'p-orphan_t.jpg',
-				mime: 'image/jpeg',
-				width: 100,
-				height: 100,
-				sizeBytes: 100,
-				takenAt: null,
-				createdAt: 0,
-				framingOf: 'non-existent-photo'
-			})
-			.run();
+		seedPhoto({ id: 'p-orphan', contactId: 'c1', framingOf: 'non-existent-photo' });
 
 		const orphans = findOrphanedPhotos(db);
 		expect(orphans.length).toBe(1);
@@ -161,6 +142,7 @@ describe('orphan detection', () => {
 	it('cleans up after contact deletion (including photos)', async () => {
 		seedContact('c1');
 		seedPhoto({ id: 'p1', contactId: 'c1' });
+		seedPhoto({ id: 'p1-framing', contactId: 'c1', framingOf: 'p1' });
 		const repo = createDrizzleContactRepository(db);
 		const audit = makeAudit({
 			kind: 'contact.deleted',
@@ -180,9 +162,10 @@ describe('orphan detection', () => {
 	it('cleans up after circle deletion (including group photos and cuts)', async () => {
 		seedContact('c1');
 		seedCircle('circ1', ['c1']);
-		seedPhoto({ id: 'group-p', contactId: 'c1', circleId: 'circ1' });
-		// A cut of the group photo
+		seedPhoto({ id: 'group-p', contactId: null, circleId: 'circ1' });
+		// A cut of the group photo, and an earlier cut that already became c1's own photo
 		seedPhoto({ id: 'cut-p', contactId: 'c1', framingOf: 'group-p' });
+		seedPhoto({ id: 'own-p', contactId: 'c1', cutFrom: 'group-p' });
 
 		const repo = createDrizzleCircleRepository(db);
 		const audit = makeAudit({
@@ -203,6 +186,8 @@ describe('orphan detection', () => {
 		const cutRow = db.select().from(schema.photo).where(eq(schema.photo.id, 'cut-p')).get();
 		expect(cutRow).toBeDefined();
 		expect(cutRow?.framingOf).toBeNull();
+		const ownRow = db.select().from(schema.photo).where(eq(schema.photo.id, 'own-p')).get();
+		expect(ownRow).toMatchObject({ contactId: 'c1', cutFrom: null });
 		expect(findOrphanedPhotos(db)).toEqual([]);
 	});
 
