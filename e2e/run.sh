@@ -20,6 +20,10 @@ export E2E_PORT="$PORT"
 FEED_PORT="${E2E_FEED_PORT:-$((PORT + 1))}"
 FEED_URL="http://127.0.0.1:$FEED_PORT/latest"
 export E2E_FEED_PORT="$FEED_PORT"
+# The identity provider the SSO sign-in goes through (see `oidc-stub.ts`).
+OIDC_PORT="${E2E_OIDC_PORT:-$((PORT + 2))}"
+OIDC_URL="http://127.0.0.1:$OIDC_PORT/.well-known/openid-configuration"
+export E2E_OIDC_PORT="$OIDC_PORT"
 
 # A server already on this port belongs to somebody else — very likely another worktree's
 # build. Reusing it would run this branch's specs against that branch's app and pass, so
@@ -32,16 +36,25 @@ if curl -sf "$FEED_URL" >/dev/null 2>&1; then
   echo "Port $FEED_PORT is already serving something. Run with E2E_FEED_PORT=<free port>." >&2
   exit 1
 fi
+if curl -sf "$OIDC_URL" >/dev/null 2>&1; then
+  echo "Port $OIDC_PORT is already serving something. Run with E2E_OIDC_PORT=<free port>." >&2
+  exit 1
+fi
 
 echo "▶ Starting the release feed stub…"
 PORT="$FEED_PORT" bun e2e/release-feed-stub.ts &
 feed_pid=$!
 trap 'kill "$feed_pid" 2>/dev/null || true' EXIT
 
+echo "▶ Starting the OIDC stub…"
+PORT="$OIDC_PORT" bun e2e/oidc-stub.ts &
+oidc_pid=$!
+trap 'kill "$feed_pid" "$oidc_pid" 2>/dev/null || true' EXIT
+
 echo "▶ Building and starting the test server…"
 bun run e2e:server &
 server_pid=$!
-trap 'kill "$server_pid" "$feed_pid" 2>/dev/null || true' EXIT
+trap 'kill "$server_pid" "$feed_pid" "$oidc_pid" 2>/dev/null || true' EXIT
 
 for _ in $(seq 1 90); do
   if curl -sf "$BASE_URL/healthz" >/dev/null; then break; fi
@@ -61,4 +74,5 @@ docker run --rm --network host \
   -e TZ=UTC \
   -e E2E_PORT="$PORT" \
   -e E2E_FEED_PORT="$FEED_PORT" \
+  -e E2E_OIDC_PORT="$OIDC_PORT" \
   "$IMAGE" npx playwright test "$@"
