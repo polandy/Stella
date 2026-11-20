@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs';
 import { expect, test, type Page } from '@playwright/test';
 import { appReady, mention, pickPerson, signIn } from './app';
 import { personIdOf, seedHousehold } from './seed';
@@ -14,6 +15,8 @@ import { personIdOf, seedHousehold } from './seed';
  */
 
 test.describe.configure({ mode: 'serial' });
+
+const PIXEL = readFileSync('e2e/fixtures/monica-photos/photos/ottilie-avatar.png');
 
 const ANCHOR = 'Ruedi Hochuli';
 const OTHERS = ['Vreni Hochuli', 'Lea Hochuli', 'Tim Hochuli'];
@@ -157,4 +160,46 @@ test('a private person greys with a lock once the moment is shared, and Save wai
 
 	await jonas.getByRole('button', { name: 'Remove Jonas Hochuli' }).click();
 	await expect(save).toBeEnabled();
+});
+
+test('photos are added and taken off in the editor, for every subject', async ({ page }) => {
+	await openJournal(page, ANCHOR);
+	const entry = page.locator('article', { hasText: 'Abend am Aareufer mit Fondue' });
+	const stored = entry.locator('img[src^="/media/"]');
+	await expect(stored).toHaveCount(0);
+
+	await entry.getByRole('button', { name: 'Edit moment' }).click();
+	const editor = page.getByTestId('journal-entry-editor');
+	await editor.getByRole('button', { name: 'Add photos' }).click();
+	const chooser = page.waitForEvent('filechooser');
+	await page.getByRole('menuitem', { name: 'From this device' }).click();
+	await (
+		await chooser
+	).setFiles([
+		{ name: 'one.png', mimeType: 'image/png', buffer: PIXEL },
+		{ name: 'two.png', mimeType: 'image/png', buffer: PIXEL }
+	]);
+	// A picture dropped before saving is never stored.
+	await editor.getByRole('button', { name: 'Drop new photo 2 of 2' }).click();
+	await expect(editor.getByRole('button', { name: /^Drop new photo/ })).toHaveCount(1);
+	await editor.getByRole('button', { name: 'Save changes' }).click();
+	await expect(editor).toBeHidden();
+	await expect(stored).toHaveCount(1);
+
+	// The photo follows the moment into another subject's journal.
+	await openJournal(page, OTHERS[0]);
+	await expect(entry.locator('img[src^="/media/"]')).toHaveCount(1);
+
+	// Taking it off is held until Save, and Undo brings it back.
+	await entry.getByRole('button', { name: 'Edit moment' }).click();
+	await editor.getByRole('button', { name: 'Remove photo 1 of 1' }).click();
+	await expect(editor.getByRole('status')).toHaveText('1 photo goes when you save');
+	await editor.getByRole('button', { name: 'Undo' }).click();
+	await editor.getByRole('button', { name: 'Remove photo 1 of 1' }).click();
+	await editor.getByRole('button', { name: 'Save changes' }).click();
+	await expect(editor).toBeHidden();
+	await expect(entry.locator('img[src^="/media/"]')).toHaveCount(0);
+
+	await openJournal(page, ANCHOR);
+	await expect(entry.locator('img[src^="/media/"]')).toHaveCount(0);
 });
