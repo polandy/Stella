@@ -13,7 +13,7 @@ Move once Kit supports it, and drop the ignore.
 Each is one PR; the owner OKs the behaviour first (`docs/dev/08` §8.4.1).
 
 - **Shared → private warning** (§2.10): owner decision open, see issue #548; the e2e follows its answer.
-- **Family-name correction** (§2.2.4.7) and the **notices** *renamed* and *last names given* (§2.11).
+- The **notices** *renamed* and *last names given* (§2.11).
 - **Contact-field links** (§2.3): `tel:`, `mailto:`, social, URL and map link; also move the `new Date()` specs (`gallery`, `mentioned-in`, `note-date`) to fixed days or `page.clock`, replace the `concepts/review-2026-11.md` citation in `ux-shell.spec.ts`, and merge the three duplicated unlink helpers.
 - **A report-only `scripts/spec-coverage.sh`**: lists each `docs/dev/features` subsection that no e2e header cites and that is not marked unit.
 - **SSO sign-in** (§2.1.2): an OIDC stub like `release-feed-stub.ts` and an e2e for the sign-in.
