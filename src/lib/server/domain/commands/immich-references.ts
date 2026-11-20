@@ -1,4 +1,4 @@
-import { phrase } from '../../../i18n/phrase';
+import { phrase, type Phrase } from '../../../i18n/phrase';
 import { TranslatableError } from '../../../i18n/translatable';
 import type { Viewer } from '../../access/visibility';
 import { sentImmichAssets, type EntryImmichPhotoDeps } from '../immich/entry-immich-photos';
@@ -9,6 +9,13 @@ import { sentImmichAssets, type EntryImmichPhotoDeps } from '../immich/entry-imm
  * refusal writes nothing, and the entry the write lands in — a new one or one it joined — refers
  * to the photos. Nothing is copied and Immich is not asked.
  */
+
+/** A pick the entry cannot refer to: Immich left the instance, or a token is not this household's. */
+export class ImmichReferenceError extends TranslatableError {
+	constructor(reason: Phrase) {
+		super(reason, 'ImmichReferenceError');
+	}
+}
 
 /**
  * Run `write`, then refer to the photos `tokens` name from the entry it wrote. `deps` is null when
@@ -23,9 +30,9 @@ export async function writeReferringToImmich<R extends { entryId: string }>(
 	if (!tokens?.length) return write();
 	const assetIds = await sentImmichAssets(deps?.signer ?? null, viewer, tokens);
 	if (assetIds === 'notConfigured' || !deps) {
-		throw new TranslatableError(phrase('errors.photo.immichNotConnected'));
+		throw new ImmichReferenceError(phrase('errors.photo.immichNotConnected'));
 	}
-	if (assetIds === 'invalid') throw new TranslatableError(phrase('errors.photo.fromImmichGone'));
+	if (assetIds === 'invalid') throw new ImmichReferenceError(phrase('errors.photo.fromImmichGone'));
 	const written = await write();
 	if (!(await deps.entries.linkOwn(viewer.id, written.entryId, assetIds))) {
 		throw new Error(`entry ${written.entryId} was just written, yet is not the author's`);

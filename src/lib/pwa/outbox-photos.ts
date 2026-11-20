@@ -6,6 +6,19 @@ import type { KeptPhoto, OutboxItem } from './outbox';
  * item they follow, and what an upload's answer does to it. Pure, like `outbox.ts`.
  */
 
+/**
+ * The photos a kept item shows it carries: the device's, and the Immich photos its text refers to
+ * (ADR-132), which reach Stella with the item itself.
+ */
+export function keptPhotoCount(
+	item: Pick<OutboxItem, 'command' | 'delivered'> & { photos: readonly unknown[] }
+): number {
+	const { payload } = item.command;
+	const referred =
+		!item.delivered && 'immichTokens' in payload ? (payload.immichTokens?.length ?? 0) : 0;
+	return item.photos.length + referred;
+}
+
 /** The same for one photo, which is megabytes rather than a few lines of text. */
 export const PHOTO_PATIENCE_MS = 60_000;
 

@@ -75,7 +75,7 @@ export interface ComposerReading {
 }
 
 export function composerReading(
-	state: Pick<ComposerState, 'body' | 'picks' | 'anchorId' | 'sending' | 'photos' | 'immichPhotos'>,
+	state: Pick<ComposerState, 'body' | 'picks' | 'anchorId' | 'sending' | 'photos' | 'immichTokens'>,
 	known: readonly MentionCandidate[],
 	contexts: ReadonlyMap<string, PersonContext>,
 	/** The chips the audience may not name (`subjectsUnfit`). */
@@ -98,7 +98,7 @@ export function composerReading(
 						: state.anchorId === null && referenced.length === 0
 							? 'noPerson'
 							: null;
-	const started = hasText || state.photos.length + state.immichPhotos.length > 0;
+	const started = hasText || state.photos.length + state.immichTokens.length > 0;
 	const saveHint: SaveHint | null = !started
 		? null
 		: blocked === 'noText'
@@ -142,7 +142,7 @@ export function cleared(state: ComposerState, nextCommandId: string): ComposerSt
 		body: '',
 		picks: [],
 		photos: [],
-		immichPhotos: [],
+		immichTokens: [],
 		newPeople: [],
 		subjectIds: [],
 		planId: null,

@@ -1,4 +1,6 @@
 import type { MomentCapturePayload, MomentNewPerson } from '#lib/commands/commands.js';
+import type { LibraryPhoto } from '#lib/immich/library.js';
+import { pickedTokens } from '#lib/immich/library-pick.js';
 import type { MentionAudience } from '#lib/mentions/audience.js';
 import type { MentionCandidate } from '#lib/mentions/mentions.js';
 import { handleFor, type ActiveHandle } from '#lib/mentions/picker.js';
@@ -70,8 +72,8 @@ export interface ComposerState {
 	fresh: number;
 	/** Picked on the device; a new pick there replaces them. */
 	photos: readonly File[];
-	/** Copied from Immich (docs/dev/02 §2.24.9); each pick adds to them. */
-	immichPhotos: readonly File[];
+	/** Picked from Immich as signed tokens, sent as references (ADR-132); each pick adds to them. */
+	immichTokens: readonly string[];
 	/** The handle under the caret, while the list is open for it. */
 	active: ActiveHandle | null;
 	highlighted: number;
@@ -103,7 +105,7 @@ export type ComposerEvent =
 	| { type: 'subjectsAdded'; ids: readonly string[]; anchorId: string | null }
 	| { type: 'subjectRemoved'; id: string }
 	| { type: 'photosPicked'; files: readonly File[] }
-	| { type: 'immichPhotosAdded'; files: readonly File[] }
+	| { type: 'immichPhotosAdded'; photos: readonly LibraryPhoto[] }
 	| { type: 'cancelled'; nextCommandId: string }
 	| SendEvent;
 
@@ -166,7 +168,7 @@ export function composerAtOpen(at: ComposerOpening): ComposerState {
 		commandId: at.commandId,
 		fresh: 0,
 		photos: [],
-		immichPhotos: [],
+		immichTokens: at.kept?.immichTokens ?? [],
 		active: null,
 		highlighted: 0,
 		creating: null,
@@ -214,7 +216,7 @@ export function composerAfter(state: ComposerState, event: ComposerEvent): Compo
 		case 'photosPicked':
 			return only({ ...state, photos: [...event.files] });
 		case 'immichPhotosAdded':
-			return only({ ...state, immichPhotos: [...state.immichPhotos, ...event.files] });
+			return only({ ...state, immichTokens: pickedTokens(state.immichTokens, event.photos) });
 		case 'cancelled':
 			return only(cleared(state, event.nextCommandId), [
 				{ kind: 'onCancel', draft: draftOf(state) }

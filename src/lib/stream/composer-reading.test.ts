@@ -18,7 +18,7 @@ const known = [anna, thomasWork, thomasNext];
 
 type Reading = Pick<
 	ComposerState,
-	'body' | 'picks' | 'anchorId' | 'sending' | 'photos' | 'immichPhotos'
+	'body' | 'picks' | 'anchorId' | 'sending' | 'photos' | 'immichTokens'
 >;
 
 const onItsWay: MomentCapturePayload = {
@@ -34,7 +34,7 @@ const empty: Reading = {
 	anchorId: null,
 	sending: null,
 	photos: [],
-	immichPhotos: []
+	immichTokens: []
 };
 
 const read = (more: Partial<Reading>) => composerReading({ ...empty, ...more }, known, new Map());
@@ -51,7 +51,7 @@ describe('why Save is off', () => {
 
 	it('wants words first, even with a photo and the page’s person', () => {
 		expect(read({ photos: [photo], anchorId: 'anna' }).blocked).toBe('noText');
-		expect(read({ body: '   ', immichPhotos: [photo] }).blocked).toBe('noText');
+		expect(read({ body: '   ', immichTokens: ['t-a'] }).blocked).toBe('noText');
 	});
 
 	it('wants a person once there are words', () => {
@@ -82,7 +82,7 @@ describe('the line beside Save', () => {
 
 	it('asks for an @mention when the words name nobody', () => {
 		expect(read({ body: 'Nice day' }).saveHint).toBe('mentionSomeone');
-		expect(read({ body: 'Nice day', immichPhotos: [photo] }).saveHint).toBe('mentionSomeone');
+		expect(read({ body: 'Nice day', immichTokens: ['t-a'] }).saveHint).toBe('mentionSomeone');
 	});
 
 	it('says nothing for a namesake or a moment on its way, which have their own words', () => {

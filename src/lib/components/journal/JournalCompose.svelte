@@ -8,6 +8,7 @@
 	import Icon from '#lib/components/ui/Icon.svelte';
 	import ImmichLibraryPicker from '#lib/components/immich/ImmichLibraryPicker.svelte';
 	import PhotoSourceMenu from '#lib/components/immich/PhotoSourceMenu.svelte';
+	import { pickedTokens } from '#lib/immich/library-pick.js';
 	import MentionTextarea from '#lib/components/ui/MentionTextarea.svelte';
 	import { processImage } from '#lib/media/process-image.js';
 	import { keepable } from '#lib/pwa/keepable.js';
@@ -63,10 +64,11 @@
 	}
 
 	/*
-	 * Photos copied from Immich (docs/dev/02 §2.24.9) add to the entry's, and a new pick on the device
-	 * keeps them. The picker opens on the day the entry's field says.
+	 * Photos picked from Immich (docs/dev/02 §2.24.9) travel as references, their signed tokens in the
+	 * command (ADR-132); each pick adds to them, and a new pick on the device keeps them. The picker
+	 * opens on the day the entry's field says.
 	 */
-	let fromImmich = $state<File[]>([]);
+	let immichTokens = $state<readonly string[]>([]);
 	let libraryOpen = $state(false);
 	let libraryDay = $state('');
 	function openLibrary() {
@@ -84,7 +86,7 @@
 	function doneComposing() {
 		composeForm?.reset();
 		picked = [];
-		fromImmich = [];
+		immichTokens = [];
 		entryVisibility = 'shared';
 		onDone();
 	}
@@ -103,7 +105,8 @@
 							entryDate,
 							title: String(form.get('title') ?? '').trim() || null,
 							body,
-							visibility: form.get('visibility') === 'private' ? 'private' : 'shared'
+							visibility: form.get('visibility') === 'private' ? 'private' : 'shared',
+							...(immichTokens.length ? { immichTokens: [...immichTokens] } : {})
 						},
 						issuedAt: Date.now()
 					};
@@ -115,8 +118,7 @@
 					uploadError = null;
 					try {
 						const photos: KeptPhoto[] = [];
-						for (const file of [...picked, ...fromImmich])
-							photos.push({ id: ulid(), ...(await processImage(file)) });
+						for (const file of picked) photos.push({ id: ulid(), ...(await processImage(file)) });
 						return photos;
 					} catch {
 						uploadError = t('journal.uploadFailed');
@@ -188,9 +190,9 @@
 					<input type="file" accept="image/*" multiple onchange={onFiles} class="sr-only" />
 				</label>
 			{/if}
-			{#if picked.length + fromImmich.length}
+			{#if picked.length + immichTokens.length}
 				<span class="text-sm text-fg-subtle">
-					{t('journal.photosReady', { count: picked.length + fromImmich.length })}
+					{t('journal.photosReady', { count: picked.length + immichTokens.length })}
 				</span>
 			{/if}
 		</div>
@@ -220,6 +222,6 @@
 	<ImmichLibraryPicker
 		bind:open={libraryOpen}
 		day={libraryDay}
-		onadd={(copies) => (fromImmich = [...fromImmich, ...copies.map((copy) => copy.file)])}
+		onlink={(photos) => (immichTokens = pickedTokens(immichTokens, photos))}
 	/>
 {/if}

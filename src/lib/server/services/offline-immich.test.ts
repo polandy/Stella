@@ -140,8 +140,8 @@ describe('the composer’s Immich picks through the command path', () => {
 			entry([await signedPick()])
 		);
 		expect(outcome.status).toBe('applied');
-		if (outcome.status !== 'applied') return;
-		expect(references()).toEqual([{ journalEntryId: outcome.result.entryId, assetId: ASSET }]);
+		const [written] = db.select({ id: schema.journalEntry.id }).from(schema.journalEntry).all();
+		expect(references()).toEqual([{ journalEntryId: written!.id, assetId: ASSET }]);
 		expect(db.select().from(schema.photo).all()).toEqual([]);
 	});
 
