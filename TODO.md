@@ -12,6 +12,4 @@ Move once Kit supports it, and drop the ignore.
 
 Each is one PR; the owner OKs the behaviour first (`docs/dev/08` §8.4.1).
 
-- **Shared → private warning** (§2.10): owner decision open, see issue #548; the e2e follows its answer.
-- **Cleanup of the older e2e specs**: the `new Date()` specs (`gallery`, `mentioned-in`, `note-date`) wait on issue #556 (the server stamps the day, so `page.clock` cannot pin it). The map link and social links of §2.3 wait on issue #554 (the e2e for `tel:`, `mailto:` and URL is in).
 - **A report-only `scripts/spec-coverage.sh`**: lists each `docs/dev/features` subsection that no e2e header cites and that is not marked unit.

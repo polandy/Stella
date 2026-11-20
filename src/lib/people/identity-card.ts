@@ -195,6 +195,11 @@ export function metLine(contact: {
 	return parts.length > 0 ? parts.join(' · ') : null;
 }
 
+/** A map search for an address line; shown as a link that opens in a new tab. */
+export function mapHref(line: string): string {
+	return `https://www.openstreetmap.org/search?query=${encodeURIComponent(line)}`;
+}
+
 /** Where they live: every address among the contact details, each on one line. */
 export function addressLines(
 	fields: readonly { id: string; kind: string; label: string | null; value: string }[]

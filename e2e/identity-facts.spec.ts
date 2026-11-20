@@ -144,6 +144,15 @@ test('the address is added through its slot, edited and saved, joined by another
 	await expect(address).toContainText('Seestrasse 1, 8000 Zürich');
 	await expect(editor).toHaveCount(0);
 
+	// A quiet Map link beside it: an OpenStreetMap search, in a new tab (§2.3).
+	const map = address.getByRole('link', { name: /on a map$/ });
+	await expect(map).toHaveText('Map');
+	await expect(map).toHaveAttribute('target', '_blank');
+	await expect(map).toHaveAttribute(
+		'href',
+		'https://www.openstreetmap.org/search?query=Seestrasse%201%2C%208000%20Z%C3%BCrich'
+	);
+
 	// Edited in place.
 	await address.getByRole('button', { name: /^Edit address/ }).click();
 	editor = editorOf(page, 'address');

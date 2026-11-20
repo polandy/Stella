@@ -44,6 +44,8 @@ export const contact = {
 	'contact.identity.missing.circles': 'circles',
 	'contact.facts.editDates': 'Edit dates',
 	'contact.facts.editAddress': 'Edit address',
+	'contact.facts.map': 'Map',
+	'contact.facts.mapOf': (p: { address: string }) => `Show ${p.address} on a map`,
 	'contact.facts.birthday': 'Birthday',
 	'contact.facts.born': 'Born',
 	'contact.facts.age': (p: { age: number }) => (p.age === 1 ? '1 year' : `${p.age} years`),

@@ -32,13 +32,8 @@ describe('fieldHref', () => {
 		expect(fieldHref('url', 'http://example.test')).toBe('http://example.test');
 	});
 
-	it('builds a map search link for addresses', () => {
-		expect(fieldHref('address', 'Bahnhofstrasse 1, Zürich')).toContain(
-			'openstreetmap.org/search?query=Bahnhofstrasse'
-		);
-	});
-
 	it('returns null for kinds without a natural link', () => {
+		expect(fieldHref('address', 'Bahnhofstrasse 1, Zürich')).toBeNull();
 		expect(fieldHref('social', '@handle')).toBeNull();
 		expect(fieldHref('custom', 'anything')).toBeNull();
 	});

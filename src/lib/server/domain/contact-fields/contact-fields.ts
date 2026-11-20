@@ -23,8 +23,6 @@ export function fieldHref(kind: ContactFieldKind, value: string): string | null 
 			return `mailto:${trimmed}`;
 		case 'url':
 			return /^https?:\/\//i.test(trimmed) ? trimmed : `https://${trimmed}`;
-		case 'address':
-			return `https://www.openstreetmap.org/search?query=${encodeURIComponent(trimmed)}`;
 		default:
 			return null;
 	}

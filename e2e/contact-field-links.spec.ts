@@ -6,8 +6,8 @@ import { addPerson, profileRow, signIn } from './app';
  * a website opens as written or with `https://` put in front. Written after the row was seen in
  * the running app (docs/dev/08 §8.4.1).
  *
- * Addresses have no map link on the page and a social handle no link at all; that gap waits
- * on the owner (issue #554), so only the handle's listing is held here.
+ * A social handle is plain text, so only its listing is held here; the address's map link is in
+ * identity-facts.spec.ts.
  */
 
 test.beforeEach(async ({ page }) => {
