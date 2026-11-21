@@ -13,6 +13,7 @@ import {
 	type SizeOf
 } from './geometry';
 import { arrangeFamily } from './family-rows';
+import { bridgesOf, drawnLine } from './tree-bridges';
 import { treeRoutes } from './tree-lines';
 import type { RowOrders } from './tree-order';
 
@@ -129,6 +130,13 @@ export function familyTreeLayout(
 		sizeOf,
 		TREE_SPACING.row
 	);
+	const edgeById = new Map(model.edges.map((e) => [e.id, e]));
+	const bridges = bridgesOf(
+		[...routes].map(([id, route]) => {
+			const { source, target } = edgeById.get(id)!;
+			return drawnLine(id, route, positions.get(source)!, positions.get(target)!);
+		})
+	);
 	const straightOrBowed = model.edges.filter((e) => !routes.has(e.id));
 	// A cousin's or an in-law's line among the family takes no lane: dotted, around a selection.
 	const dottedLines = new Set(
@@ -142,6 +150,7 @@ export function familyTreeLayout(
 		bows: bowsAround(positions, straightOrBowed, sizeOf, LINE_CLEARANCE),
 		routes,
 		dottedLines,
+		...(bridges.length > 0 ? { bridges } : {}),
 		// Named only beneath a family: on a map with none, everybody is on the shelf.
 		...(members.size > 0 && rest.length > 0 ? { outsideFamily: { x: 0, y: shelfTop, width } } : {})
 	};

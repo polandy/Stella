@@ -13,7 +13,8 @@ card (§5.5.2); its styling is §5.8.
   person's avatar, name and two actions.
 - The Filter menu **is the legend**: each line kind is an item drawn in its own line style
   (solid per category, dashed for circles, dotted for kinship) in its token. There is no
-  second legend box.
+  second legend box. While Family is on, a small key under the chips shows the four **parent
+  kinds** by stroke: solid biological, double adoptive, dash-dot foster, short-dash step.
 - Below the kinds sit the switches that change how the map is read rather than what it holds:
   **Labels** (names every line at once), **All kinship lines** (while the Kinship kind is on),
   **Former links** (on by default; its row starts with the former line's dashed stroke), the
@@ -36,7 +37,10 @@ card (§5.5.2); its styling is §5.8.
   Each family stands as one block — siblings together, a person's father's family left, their
   mother's right — so no couple's bar crosses another's. Two parents of the same children stand
   side by side even with no partnership entered, each dropping into one bar over the
-  children, and somebody who married in stands at the edge
+  children. A child with several parent pairs (birth, adoptive, foster, step) hangs from each:
+  every pair its own bar, lane and docking point on top of the child, the family the child
+  lives with nearest, the birth parents beside it, an ended foster family farthest out; a
+  crossing nothing avoids is drawn as a bridge, a gap in the bar. And somebody who married in stands at the edge
   of their partner's siblings, never amid them. A filter only takes lines away: everybody
   shown keeps their place. Only the tree's own lines are drawn:
   a grandparent, cousin or sibling line the bars already draw is left off. A cousin or in-law
@@ -123,7 +127,12 @@ Co-parents stand together whether or not the household entered their partnership
 their children are what the tree is about; apart, another family's drop ran between them.
 Their children hang from one bar, and a former couple's from one drop out of the middle of
 the dashed bar, because two bars over the same children, a lane apart, read as two families;
-the dash and the role already say the two are apart. A bar runs just above its children
+the dash and the role already say the two are apart.
+A child's parent pairs get bars of their own rather than one shared bar because a step-
+or foster parent on the biological parents' bar reads as a third birth parent; the stroke,
+not the colour, tells the kinds apart, so the family colour still says "family" and the
+kind holds without colour. The family the child lives with stands nearest because it is the
+one the reader looks for first. A bar runs just above its children
 rather than halfway down the gap, so it is plainly theirs and not the row's above.
 A wide tree is framed on the core family rather than whole because one long cousin row on a
 portrait tablet shrank everybody to dots in an empty canvas: names that are drawn but a few

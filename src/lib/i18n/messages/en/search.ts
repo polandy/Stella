@@ -60,6 +60,7 @@ export const search = {
 	'graph.density.spacious': 'Spacious',
 	'graph.allKinship': 'All kinship lines',
 	'graph.allKinship.hint': 'Also the ones the entered links already explain',
+	'graph.parentKinds': 'Parent kinds',
 	'graph.formerLinks': 'Former links',
 	'graph.formerLinks.hint': 'Ties that have ended, such as an ex-partner, drawn dashed',
 	'graph.gaps': 'Show gaps',

@@ -3,7 +3,7 @@ import { DEFAULT_NODE_SIZE, type Size } from '../layout/geometry';
 import { sceneLayout, type ExportScene } from '../tree-export-scene';
 import { sizeOf } from './canvas-nodes';
 import { buildStylesheet, type CyStyle } from './stylesheet';
-import { bendLines, writeCaption } from './tree-canvas';
+import { bendLines, writeBridges, writeCaption } from './tree-canvas';
 import { lightPaletteFromDom, type Palette } from './theme';
 
 /*
@@ -133,7 +133,8 @@ function arrange(cy: Core, request: TreeImageRequest): void {
 		return node.empty() ? DEFAULT_NODE_SIZE : sizeOf(node);
 	});
 	const captioned = writeCaption(cy, arrangement.outsideFamily, request.outsideFamily);
-	const places = new Map([...arrangement.positions, ...captioned]);
+	const masks = writeBridges(cy, arrangement.bridges);
+	const places = new Map([...arrangement.positions, ...captioned, ...masks]);
 	cy.batch(() => {
 		cy.nodes().forEach((node) => {
 			const at = places.get(node.id());

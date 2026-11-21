@@ -393,6 +393,7 @@ describe('buildStylesheet', () => {
 		expect(named?.style).toEqual({ 'text-opacity': 1 });
 	});
 
+	// A double line's core is the ground: its arrowhead takes the colour of its rims.
 	it('draws each arrowhead in the colour of its own line', () => {
 		const lineRules = styles.filter(
 			(s) => s.selector.startsWith('edge') && s.style['line-color'] !== undefined
@@ -401,7 +402,7 @@ describe('buildStylesheet', () => {
 		for (const rule of lineRules) {
 			expect({ selector: rule.selector, arrow: rule.style['target-arrow-color'] }).toEqual({
 				selector: rule.selector,
-				arrow: rule.style['line-color']
+				arrow: rule.style['line-outline-color'] ?? rule.style['line-color']
 			});
 		}
 		// The direction rule only switches the arrow on; it must not repaint it.

@@ -14,6 +14,7 @@ import type { VisibleFamily, VisibleFamilySource } from '../domain/relationships
 import { kinshipGraphOf } from '../../kinship/graph-of';
 import { variantFor } from '../../kinship/kinship';
 import { FORMER_RELATIONSHIP_STATUS } from '../../relationships/status';
+import type { ParentKind } from '../../relationships/parent-kinds';
 import type * as schema from './schema';
 import { circle, circleMembership, contact, relationship, relationshipType } from './schema';
 
@@ -112,7 +113,8 @@ export function createDrizzleGraphRepository(
 			label: r.forwardLabel,
 			typeKey: r.typeKey,
 			directed: r.symmetric !== 1,
-			...(r.status === FORMER_RELATIONSHIP_STATUS ? { former: true as const } : {})
+			...(r.status === FORMER_RELATIONSHIP_STATUS ? { former: true as const } : {}),
+			...kindOtherThanBiological(r.parentKind)
 		}));
 
 		// Circles (shared contexts) become their own node kind; memberships become edges
@@ -182,4 +184,9 @@ export function createDrizzleGraphRepository(
 			return (await loadVisibleGraphWithKinship(viewer)).graph;
 		}
 	};
+}
+
+/** A parent link's kind for the graph, which leaves the biological default unsaid. */
+function kindOtherThanBiological(kind: ParentKind | null): Pick<GraphEdge, 'parentKind'> {
+	return kind === null || kind === 'biological' ? {} : { parentKind: kind };
 }

@@ -1,5 +1,11 @@
 import { LABEL_MIN_ZOOMED_FONT_SIZE } from '../layout/legibility';
-import { CAPTION_CLASS, CAPTION_RULE_CLASS, SLOT_CLASS, SLOT_WORDED_CLASS } from './canvas-classes';
+import {
+	BRIDGE_CLASS,
+	CAPTION_CLASS,
+	CAPTION_RULE_CLASS,
+	SLOT_CLASS,
+	SLOT_WORDED_CLASS
+} from './canvas-classes';
 import type { CyStyle, StyleContext } from './stylesheet';
 import { lineColour } from './stylesheet-edges';
 
@@ -83,6 +89,21 @@ export function markStyles({ p }: StyleContext): CyStyle[] {
 				'background-color': p.border,
 				'background-opacity': 1,
 				label: ''
+			}
+		},
+		// A bridge (`tree-bridges.ts`): a gap in the ground colour where another line crosses a
+		// bar, above every line but the crossing one (`BRIDGE_OVER_CLASS`).
+		{
+			selector: `node.${BRIDGE_CLASS}`,
+			style: {
+				shape: 'rectangle',
+				width: 8,
+				height: 7,
+				'background-color': p.bg,
+				'background-opacity': 1,
+				label: '',
+				'z-index-compare': 'manual',
+				'z-index': 1
 			}
 		}
 	];

@@ -52,6 +52,14 @@ export interface Arrangement {
 	dottedLines?: Set<string>;
 	/** The shelf of people outside the family, when there is one. */
 	outsideFamily?: Shelf;
+	/** Gaps in the tree's bars where another line crosses them (`tree-bridges.ts`). */
+	bridges?: Bridge[];
+}
+
+/** A gap in a bar where a line crosses it: at `at`, the lines in `over` run on through. */
+export interface Bridge {
+	at: Point;
+	over: string[];
 }
 
 /** Where the shelf outside the family begins (its top left corner), and how wide the family is. */

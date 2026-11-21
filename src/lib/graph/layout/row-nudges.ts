@@ -3,7 +3,7 @@ import type { GraphEdge } from '../model/types';
 import type { SizeOf } from './geometry';
 import type { RowSpacing } from './family-rows';
 import type { Rows } from './row-order';
-import { reachesBack, type BarSpan } from './tree-lines';
+import { reachesBack, type BarSpan } from './bar-spans';
 
 /*
  * The small moves the family tree makes after its rows are ordered (docs/dev/05 §5.8), for
@@ -160,4 +160,64 @@ export function clearOfCouples(
 			tryMove(unitsToward(parent, -outward as -1 | 1), delta);
 		if (!moved) given.add(parent);
 	}
+}
+
+/**
+ * The positions with each child of several parent pairs moved toward the drop of the pair it
+ * lives or grew up with (`parent-pairs.ts`), as far as its row has room. A move is kept only
+ * where it puts more of the child's pairs in their order and adds no crossing.
+ */
+export function towardHome(
+	rows: Rows,
+	x: Map<string, number>,
+	family: ReadonlyMap<string, number>,
+	sizeOf: SizeOf,
+	spacing: RowSpacing,
+	spansAt: (x: ReadonlyMap<string, number>) => BarSpan[],
+	crossingsAt: (x: ReadonlyMap<string, number>) => number,
+	breaksAt: (x: ReadonlyMap<string, number>) => number
+): void {
+	const unitOf = (id: string) => rows.flat().find((unit) => unit.includes(id))!;
+	const bars = new Map<string, number>();
+	for (const span of spansAt(x)) for (const c of span.children) bars.set(c, (bars.get(c) ?? 0) + 1);
+	const children = [...bars].filter(([, count]) => count > 1).map(([child]) => child);
+	for (const child of children.sort()) {
+		const pairs = spansAt(x).filter((s) => s.children.includes(child));
+		const rankOf = (s: BarSpan) => s.ranks[s.children.indexOf(child)];
+		const home = pairs.reduce((a, b) => (rankOf(b) < rankOf(a) ? b : a));
+		const delta = home.drop - x.get(child)!;
+		const unit = unitOf(child);
+		const room = roomToward(
+			unit,
+			Math.sign(delta),
+			rows[family.get(child)!],
+			x,
+			sizeOf,
+			spacing.gap
+		);
+		const step = Math.sign(delta) * Math.min(Math.abs(delta), room);
+		if (step === 0) continue;
+		const [crossings, breaks] = [crossingsAt(x), breaksAt(x)];
+		for (const id of unit) x.set(id, x.get(id)! + step);
+		if (crossingsAt(x) <= crossings && breaksAt(x) < breaks) continue;
+		for (const id of unit) x.set(id, x.get(id)! - step);
+	}
+}
+
+/** How far `unit` can move toward `side` before it comes within `gap` of a neighbour. */
+function roomToward(
+	unit: string[],
+	side: number,
+	row: readonly string[][],
+	x: ReadonlyMap<string, number>,
+	sizeOf: SizeOf,
+	gap: number
+): number {
+	const edge = (u: string[], s: number) =>
+		s * Math.max(...u.map((id) => s * (x.get(id)! + (s * sizeOf(id).width) / 2)));
+	const own = edge(unit, side);
+	const ahead = row
+		.filter((other) => other !== unit && (edge(other, -side) - own) * side >= 0)
+		.map((other) => (edge(other, -side) - own) * side - gap);
+	return Math.max(0, Math.min(Infinity, ...ahead));
 }

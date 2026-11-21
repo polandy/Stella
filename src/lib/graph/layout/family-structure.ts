@@ -2,6 +2,7 @@ import { PARENT_CHILD_TYPE_KEY, PARTNER_TYPE_KEYS } from '../../relationships/ty
 import { isFamilyLink } from '../model/generations';
 import type { GraphEdge } from '../model/types';
 import type { Point, SizeOf } from './geometry';
+import { dockOffsets, parentKindOf } from './parent-pairs';
 
 /*
  * What the family tree's lines and their crossings are both read from (docs/dev/05 §5.8), for
@@ -35,7 +36,9 @@ export function isPartnerLine(edge: GraphEdge): boolean {
  * co-parents with no partnership entered each drop from under their own name into it. A parent
  * with nobody beside them, or somebody standing in between, has a bar of their own — dropped from
  * their outer edge, away from the one beside them they share another bar with, so the two bars
- * never share a stretch under the couple.
+ * never share a stretch under the couple. Parents of different kinds never share a bar: a
+ * step-parent's, a foster family's and the biological parents' are each their own, and a child
+ * with several docks on top of it, one per bar, so their drops never run down one line.
  */
 export function familyStructure(
 	edges: readonly GraphEdge[],
@@ -57,6 +60,8 @@ export function familyStructure(
 
 	const partners = new Map<string, Set<string>>();
 	const parents = new Map<string, Set<string>>();
+	const kinds = new Map<string, string>();
+	const kindOf = (parent: string, child: string) => kinds.get(`${parent}|${child}`);
 	const link = (map: Map<string, Set<string>>, a: string, b: string) => {
 		if (!map.has(a)) map.set(a, new Set());
 		map.get(a)!.add(b);
@@ -66,8 +71,14 @@ export function familyStructure(
 			link(partners, e.source, e.target);
 			link(partners, e.target, e.source);
 		}
-		if (e.typeKey === PARENT_CHILD_TYPE_KEY) link(parents, e.target, e.source);
+		if (e.typeKey === PARENT_CHILD_TYPE_KEY) {
+			link(parents, e.target, e.source);
+			kinds.set(`${e.source}|${e.target}`, parentKindOf(e));
+		}
 	}
+	/** The parents of `child` who share a bar's kind with `parent` over that child. */
+	const ofKind = (parent: string, child: string) =>
+		[...(parents.get(child) ?? [])].filter((p) => kindOf(p, child) === kindOf(parent, child));
 
 	/** Whether somebody other than `except` stands on the row at `y`, strictly between x1 and x2. */
 	const standsBetween = (y: number, x1: number, x2: number, except: readonly string[]) =>
@@ -82,8 +93,9 @@ export function familyStructure(
 	/** Who shares a bar with `parent` over another child: their co-parents on the map. */
 	const coParentsOf = (parent: string) => {
 		const coParents = new Set<string>();
-		for (const together of parents.values()) {
-			if (together.has(parent)) for (const p of together) if (p !== parent) coParents.add(p);
+		for (const [child, together] of parents) {
+			if (!together.has(parent)) continue;
+			for (const p of ofKind(parent, child)) if (p !== parent) coParents.add(p);
 		}
 		return coParents;
 	};
@@ -106,7 +118,7 @@ export function familyStructure(
 	const dropOf = (parent: string, child: string): Drop => {
 		const together = [
 			parent,
-			...[...(parents.get(child) ?? [])].filter((p) => p !== parent && sameRow(at(p), at(parent)))
+			...ofKind(parent, child).filter((p) => p !== parent && sameRow(at(p), at(parent)))
 		].sort();
 		const xs = together.map((id) => at(id).x);
 		const apart =
@@ -123,5 +135,29 @@ export function familyStructure(
 		return { group, x: couple ? (xs[0] + xs[1]) / 2 : at(parent).x };
 	};
 
-	return { at, sameRow, familyLines, standsBetween, dropOf };
+	/** The bars a child hangs from, left to right as their drops stand. */
+	const barsOf = (child: string): string[] => {
+		const drops = new Map<string, number>();
+		for (const p of parents.get(child) ?? []) {
+			if (at(p).y >= at(child).y - SAME_ROW) continue;
+			const drop = dropOf(p, child);
+			drops.set(drop.group, drop.x);
+		}
+		return [...drops]
+			.sort(([ga, a], [gb, b]) => a - b || (ga < gb ? -1 : 1))
+			.map(([group]) => group);
+	};
+	const barsOver = (child: string) => barsOf(child).length;
+
+	/**
+	 * The x where the line from `parent` docks on top of `child`: the child's centre under one bar,
+	 * one dock per bar under several, left to right as their drops stand.
+	 */
+	const dockOf = (parent: string, child: string): number => {
+		const bars = barsOf(child);
+		const index = bars.indexOf(dropOf(parent, child).group);
+		return at(child).x + (dockOffsets(bars.length)[index] ?? 0);
+	};
+
+	return { at, sameRow, familyLines, standsBetween, dropOf, dockOf, barsOver };
 }

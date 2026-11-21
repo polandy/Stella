@@ -2,6 +2,7 @@ import { CURSOR_CLASS, DRAGGED_LINE_CLASS, HOVERED_CLASS, TUCKED_CLASS } from '.
 import { edgeStyles, lineColour } from './stylesheet-edges';
 import { markStyles } from './stylesheet-marks';
 import { nodeStyles } from './stylesheet-nodes';
+import { parentKindStates } from './stylesheet-parent-kinds';
 import type { Palette } from './theme';
 
 /*
@@ -123,6 +124,7 @@ export function buildStylesheet(p: Palette, options: StylesheetOptions = {}): Cy
 		{
 			selector: 'node.onpath',
 			style: { opacity: 1, 'border-color': p.lines.path, 'border-width': 5, 'z-index': 30 }
-		}
+		},
+		...parentKindStates(context)
 	];
 }

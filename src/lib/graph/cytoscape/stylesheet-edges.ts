@@ -1,6 +1,7 @@
 import { RELATIONSHIP_CATEGORIES } from '../../relationships/categories';
 import { LABEL_MIN_ZOOMED_FONT_SIZE, SMALLEST_LABEL_FONT_SIZE } from '../layout/legibility';
 import { BOW_FIELD, BOWED_CLASS, DOTTED_CLASS, ROUTE_FIELDS, ROUTED_CLASS } from './canvas-classes';
+import { parentKindStyles } from './stylesheet-parent-kinds';
 import type { CyStyle, StyleContext, StyledElement } from './stylesheet';
 
 /* The lines of the graph stylesheet (docs/dev/05 §5.8): their kinds, bends and routes. */
@@ -15,7 +16,8 @@ const ROUTE_NAME_OFFSET = 22;
 /** Each line is drawn in one colour, its arrowhead included (docs/dev/05 §5.8). */
 export const lineColour = (hex: string) => ({ 'line-color': hex, 'target-arrow-color': hex });
 
-export function edgeStyles({ p, options, transition }: StyleContext): CyStyle[] {
+export function edgeStyles(context: StyleContext): CyStyle[] {
+	const { p, options, transition } = context;
 	// A routed line reads its bends and ends off its own data (`segments.ts`).
 	const field = (name: string) => (ele: StyledElement) => ele.data(name);
 	const nameAt = (end: 'source' | 'target') => (ele: StyledElement) =>
@@ -84,6 +86,7 @@ export function edgeStyles({ p, options, transition }: StyleContext): CyStyle[] 
 			selector: `edge.former[category = "${c}"]`,
 			style: lineColour(p.lines.former[c])
 		})),
+		...parentKindStyles(context),
 		{
 			selector: 'edge[directed = 1]',
 			style: { 'target-arrow-shape': 'triangle', 'arrow-scale': 0.8 }

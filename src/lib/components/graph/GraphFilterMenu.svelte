@@ -10,11 +10,13 @@
 	import type { FilterKey } from '#lib/graph/model/view-filters.js';
 	import type { ViewSwitches } from '#lib/graph/view-switches.js';
 	import GraphSavedViews from './GraphSavedViews.svelte';
+	import ParentKindLegend from './ParentKindLegend.svelte';
 	import { MENU_ITEM } from './menu-item';
 
 	/*
 	 * The Filter menu: the kinds of line and their names live in one menu. It is the legend
-	 * too, each kind drawn in its colour and line style (docs/dev/05 §5.8).
+	 * too, each kind drawn in its colour and line style, the family's parent kinds by stroke
+	 * (docs/dev/05 §5.8).
 	 */
 	interface Props {
 		/** The kinds of line switched on. */
@@ -172,6 +174,9 @@
 				</button>
 			{/each}
 		</div>
+		{#if active.has('family')}
+			<ParentKindLegend />
+		{/if}
 		<div role="separator" class="mx-1 my-1 border-t border-border"></div>
 		<button
 			type="button"

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'bun:test';
 import { familyTreeLayout } from './family-tree';
 import { defaultSizeOf, type SizeOf } from './geometry';
-import { barSpans, crossingBars } from './tree-lines';
+import { barSpans, crossingBars } from './bar-spans';
 import {
 	brunnerKeller,
 	brunnerKellerWidened,
