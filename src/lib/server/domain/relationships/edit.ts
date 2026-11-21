@@ -134,6 +134,16 @@ export async function editRelationship(
 			details.status
 		);
 		if (!retype) return false;
+	} else if (details.status !== FORMER_RELATIONSHIP_STATUS) {
+		// A former partnership made current again is a new claim against the one-partner rule.
+		const current = await deps.relationships.findVisibleTo(viewer, input.relationshipId);
+		if (!current) return false;
+		const type = await deps.types.getType(viewer, current.typeId);
+		if (type && otherEndpointOf(current, input.perspectiveContactId) !== null) {
+			await guardExclusions(deps, viewer, current, type, input.perspectiveContactId, {
+				exceptId: current.id
+			});
+		}
 	}
 
 	return deps.relationships.updateVisibleTo(

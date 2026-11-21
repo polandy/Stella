@@ -957,6 +957,32 @@ describe('createRelationship — what is already on record', () => {
 		expect(f.inserted).toBeNull();
 	});
 
+	it('allows a former spouse beside a marriage that holds, and refuses making it current', async () => {
+		const stored = { id: 'rel-9', fromContactId: 'anna', toContactId: 'bert', typeId: 'spouse' };
+		const f = fakeRepo({ type: spouse, graph: married('anna', 'carl'), stored });
+		await createRelationship(
+			{ ...f.deps, ids: idGen('rel-x'), clock },
+			{ id: 'u', householdId: 'h' },
+			{
+				fromContactId: 'anna',
+				toContactId: 'bert',
+				typeId: 'spouse',
+				perspectiveContactId: 'anna',
+				status: 'former'
+			}
+		);
+		expect(f.inserted).toMatchObject({ status: 'former' });
+
+		const edit = (status: string) =>
+			editRelationship(
+				{ ...f.deps, clock },
+				{ id: 'u', householdId: 'h' },
+				{ relationshipId: 'rel-9', perspectiveContactId: 'anna', status }
+			);
+		expect(await edit('former')).toBe(true);
+		await expect(edit('current')).rejects.toBeInstanceOf(RelationshipExcludedError);
+	});
+
 	it('allows it once that marriage is former — the way back in', async () => {
 		const f = fakeRepo({ type: spouse, graph: married('anna', 'carl', true) });
 		await create(f, 'anna', 'bert', 'spouse');
