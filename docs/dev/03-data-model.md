@@ -410,7 +410,7 @@ An instance connecting two contacts.
 | description | text null | free-text: how these two connect (see §2.4). Column name `note`. |
 | since_date | text null | full ISO day, validated against the calendar |
 | until_date | text null | full ISO day, never before `since_date`; a day before today stores the link as `former` whatever status was sent (§2.4) |
-| parent_kind | text null | `'biological' \| 'adoptive' \| 'foster' \| 'step'` on a `parent_child` link and only there (null on every other type); migration `0048` gave every parent link stored before `'biological'`. At most two parents of a child per kind for biological and adoptive (§2.4) |
+| parent_kind | text null | `'biological' \| 'adoptive' \| 'foster' \| 'step'` on a `parent_child` link and only there (null on every other type); migration `0048` gave every parent link stored before `'biological'`. At most two parents of a child per kind for biological and adoptive (§2.4); foster and step parents derive one sibling kind only (§2.4.1) |
 | status | text not null, default `'current'` | `'current' \| 'former'` — there is no unset state: a link that is on record holds until someone ends it, so anything else reads as `current`. `former` on a partner link stops all kinship derivation through it (§2.4.1) |
 | created_by | text fk → user.id | |
 | created_at / updated_at | int | |

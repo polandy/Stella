@@ -37,6 +37,7 @@ const ROLE_ORDER: readonly RoleTerm[] = [
 	'sibling',
 	'half-sibling',
 	'step-sibling',
+	'foster-sibling',
 	'grandparent',
 	'grandchild',
 	'great-grandparent',

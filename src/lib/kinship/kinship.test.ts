@@ -326,6 +326,7 @@ describe('reciprocalKinTerm', () => {
 			'step-parent',
 			'step-child',
 			'step-sibling',
+			'foster-sibling',
 			'parent-in-law',
 			'child-in-law',
 			'sibling-in-law'

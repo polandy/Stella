@@ -1,21 +1,35 @@
+import type { ParentKind } from '../relationships/parent-kinds';
 import type { KinshipGraph } from './kinship';
 
 /*
  * The links of a kinship graph as adjacency (docs/dev/02 §2.4.1): who is whose parent, partner
- * and sibling, read by `kinship.ts`.
+ * and sibling, read by `kinship.ts`. Only biological and adoptive parents are `parents`; foster
+ * and recorded step parents are kept apart, because each derives one kind of sibling only.
  */
+
+/** The parent kinds the whole family derives through. */
+const FULL_PARENT_KINDS: ReadonlySet<ParentKind> = new Set<ParentKind>(['biological', 'adoptive']);
 
 /** Adjacency built once per inference; every lookup reads from these. */
 export class Links {
 	readonly parents = new Map<string, Set<string>>();
 	readonly children = new Map<string, Set<string>>();
+	readonly fosterParents = new Map<string, Set<string>>();
+	readonly fosterChildren = new Map<string, Set<string>>();
+	readonly stepParents = new Map<string, Set<string>>();
+	readonly stepChildren = new Map<string, Set<string>>();
 	readonly partners = new Map<string, Set<string>>();
 	readonly explicitSiblings = new Map<string, Set<string>>();
 
 	constructor(graph: KinshipGraph) {
-		for (const { parentId, childId } of graph.parentEdges) {
-			add(this.parents, childId, parentId);
-			add(this.children, parentId, childId);
+		for (const { parentId, childId, kind = 'biological' } of graph.parentEdges) {
+			const [up, down] = FULL_PARENT_KINDS.has(kind)
+				? [this.parents, this.children]
+				: kind === 'foster'
+					? [this.fosterParents, this.fosterChildren]
+					: [this.stepParents, this.stepChildren];
+			add(up, childId, parentId);
+			add(down, parentId, childId);
 		}
 		for (const { a, b, former } of graph.partnerEdges) {
 			// A partnership that is over carries no step- or in-law family with it.

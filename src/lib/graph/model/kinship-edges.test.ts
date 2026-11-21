@@ -85,6 +85,29 @@ describe('deriveKinshipEdges', () => {
 		expect(edges[0].kin).toMatchObject({ term: 'sibling', variant: 'male' });
 	});
 
+	it('leaves a foster-sibling line undirected', () => {
+		const fostered: KinshipGraph = {
+			people: [
+				person('mother', 'Mother'),
+				person('lisa', 'Lisa', 'female'),
+				person('hans', 'Hans', 'male')
+			],
+			parentEdges: [
+				{ parentId: 'mother', childId: 'lisa' },
+				{ parentId: 'mother', childId: 'hans', kind: 'foster' }
+			],
+			siblingEdges: [],
+			partnerEdges: [],
+			storedPairs: []
+		};
+
+		const edges = deriveKinshipEdges(fostered);
+
+		expect(edges).toHaveLength(1);
+		expect(edges[0]).toMatchObject({ id: 'kin:hans:lisa', directed: false });
+		expect(edges[0].kin?.term).toBe('foster-sibling');
+	});
+
 	it('never re-derives a pair the household has already linked itself', () => {
 		const graph = threeGenerations();
 		// The household entered "Otto grandparent of Hans" by hand; the derived line must go.

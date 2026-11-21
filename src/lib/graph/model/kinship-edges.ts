@@ -18,6 +18,7 @@ const SYMMETRIC_TERMS: ReadonlySet<KinTerm> = new Set<KinTerm>([
 	'half-sibling',
 	'cousin',
 	'step-sibling',
+	'foster-sibling',
 	'sibling-in-law'
 ]);
 

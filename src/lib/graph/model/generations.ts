@@ -53,6 +53,7 @@ const KIN_OFFSET: Readonly<Record<KinTerm, number>> = {
 	'step-parent': 1,
 	'step-child': -1,
 	'step-sibling': 0,
+	'foster-sibling': 0,
 	'parent-in-law': 1,
 	'child-in-law': -1,
 	'sibling-in-law': 0

@@ -1,4 +1,5 @@
 import type { ParentKind } from '../relationships/parent-kinds';
+
 /*
  * Kinship inference (docs/dev/02 §2.4.1).
  *
@@ -25,7 +26,7 @@ export interface KinPerson {
 export interface ParentEdge {
 	parentId: string;
 	childId: string;
-	/** The link's kind; biological when unsaid. The derivation reads every kind alike for now. */
+	/** The link's kind; biological when unsaid. Foster and step parents derive one sibling kind only. */
 	kind?: ParentKind;
 }
 
@@ -69,6 +70,7 @@ export type KinTerm =
 	| 'step-parent'
 	| 'step-child'
 	| 'step-sibling'
+	| 'foster-sibling'
 	| 'parent-in-law'
 	| 'child-in-law'
 	| 'sibling-in-law';
@@ -104,9 +106,10 @@ const TERM_RANK: Record<KinTerm, number> = {
 	'step-parent': 9,
 	'step-child': 10,
 	'step-sibling': 11,
-	'parent-in-law': 12,
-	'child-in-law': 13,
-	'sibling-in-law': 14
+	'foster-sibling': 12,
+	'parent-in-law': 13,
+	'child-in-law': 14,
+	'sibling-in-law': 15
 };
 
 /** Which wording a term takes for a person. */
@@ -126,6 +129,7 @@ const RECIPROCAL: Readonly<Record<KinTerm, KinTerm>> = {
 	'step-parent': 'step-child',
 	'step-child': 'step-parent',
 	'step-sibling': 'step-sibling',
+	'foster-sibling': 'foster-sibling',
 	'parent-in-law': 'child-in-law',
 	'child-in-law': 'parent-in-law',
 	'sibling-in-law': 'sibling-in-law'
@@ -223,6 +227,32 @@ class Inference {
 					claim(stepSibling, 'step-sibling', [stepParent]);
 				}
 			}
+			// The children a parent is recorded as step parent to are step-siblings too.
+			for (const stepSibling of links.get(links.stepChildren, parent)) {
+				if (links.sharedParentIds(subjectId, stepSibling).length > 0) continue;
+				claim(stepSibling, 'step-sibling', [parent]);
+			}
+			// A foster child in the subject's home is a foster sibling.
+			for (const fosterSibling of links.get(links.fosterChildren, parent)) {
+				claim(fosterSibling, 'foster-sibling', [parent]);
+			}
+		}
+
+		// A recorded step parent's own children are step-siblings; nothing else runs through it.
+		for (const stepParent of links.get(links.stepParents, subjectId)) {
+			for (const stepSibling of links.get(links.children, stepParent)) {
+				if (links.sharedParentIds(subjectId, stepSibling).length > 0) continue;
+				claim(stepSibling, 'step-sibling', [stepParent]);
+			}
+		}
+
+		// A foster parent's other children, own or fostered, are foster siblings; nothing else is.
+		for (const fosterParent of links.get(links.fosterParents, subjectId)) {
+			const home = [
+				...links.get(links.children, fosterParent),
+				...links.get(links.fosterChildren, fosterParent)
+			];
+			for (const fosterSibling of home) claim(fosterSibling, 'foster-sibling', [fosterParent]);
 		}
 
 		for (const child of children) {
