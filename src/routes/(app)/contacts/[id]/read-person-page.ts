@@ -17,6 +17,7 @@ import { listGallery } from '#lib/server/domain/media/gallery.js';
 import { listMentionedIn } from '#lib/server/domain/mentions/mentioned-in.js';
 import { listNotesForContact } from '#lib/server/domain/notes/notes.js';
 import { listGiftsForContact } from '#lib/server/domain/gifts/gifts.js';
+import { giftPlaces } from '#lib/server/domain/gifts/bought.js';
 import { listPlansForContact } from '#lib/server/domain/plans/plans.js';
 import { readGiftGroupsOf } from '#lib/server/domain/gifts/gift-group-follow-up.js';
 import { mayKeepFrom } from '#lib/server/domain/shared/idea-on-person.js';
@@ -78,6 +79,8 @@ export function readPersonPage(
 		// The ideas they share with others, each with all of it the viewer sees (§2.25.11).
 		giftGroups: readGiftGroupsOf(gifts.giftGroupDeps, viewer, contactId),
 		// Whether a gift may be kept from them, they being another member (§2.25.10).
+		// Where bought gifts already wait, offered on *Besorgt…* (§2.25.9).
+		giftPlaces: giftPlaces(gifts.giftDeps, viewer),
 		recipientIsMember: mayKeepFrom(gifts.giftDeps.ownPeople, viewer, contactId),
 		// The members' own people, whom *Wer schenkt?* suggests with their children (§2.25.12).
 		memberPeople: membersOwnPeopleOf(gifts.giftDeps, {

@@ -40,6 +40,7 @@ const group = (over: Partial<GiftGroup> = {}): GiftGroup => ({
 const giftFor = (contactId: string, over: Partial<Gift> = {}): Gift => ({
 	id: `g-${contactId}`,
 	...NO_GIVER,
+	storedAt: null,
 	contactId,
 	createdBy: ANDY,
 	visibility: 'shared',

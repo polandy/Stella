@@ -642,10 +642,19 @@ and a good idea is still there on the birthday it was meant for.
   for any time), **New time** (pick another age or day, or *Later*), or **Remove**. Ideas for
   *Later* ask the same once a year, about three months before the person's birthday — or before
   the day you noted it, if Stella does not know their birthday.
-- **Bought it?** Press **Bought** under the idea. It leaves the ideas and *All gift ideas* —
-  nobody buys it twice — and waits on the card under **Ready to give**, and on Home as *Ready:
-  …* when their day comes up, until you mark it given. *Undo* in the message takes it back for
-  a few seconds; **Not bought yet** makes it an idea again later.
+- **Bought it?** Press **Bought…** under the idea. Stella asks where it is kept — *attic, box 3*
+  — if you want to say; places you used before are one tap away. It leaves the ideas and *All
+  gift ideas* — nobody buys it twice — and waits on the card, showing where it is, and on Home as
+  *Ready: …* when their day comes up, until you mark it given. *Undo* in the message takes it
+  back for a few seconds; **Not bought yet** makes it an idea again later. When the gift is for
+  someone in the household, *Keep it from Mama* is ticked for you: a present in the cupboard is
+  a surprise.
+- **Someone else is giving it?** Then the button says **Done**: one tap notes that the aunt has
+  it covered, with nothing to ask. **Not done yet** takes it back.
+- **By occasion.** Once an idea has a giver or a day, the card sorts the gifts by occasion —
+  *Christmas 2026 · in 33 days*, then the next birthday, *Without an occasion* last — and each
+  says how far it is: *1 done · 2 assigned · 1 free*. An idea nobody gives yet says *still free*;
+  the ones already bought or done stand at the end of their occasion.
 - When you give it, press **Mark as given…** under the idea. Stella asks only for the day (today,
   unless you change it) and the occasion — *Birthday*, *Christmas*, *Anniversary*, or *Other…*
   in your own words. The idea moves to the **Given** tab, grouped by year, with its note and

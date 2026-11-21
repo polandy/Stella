@@ -85,6 +85,7 @@ describe('convertHeldGifts', () => {
 		expect(state.gifts.get('monica:gift:1')).toEqual({
 			id: 'monica:gift:1',
 			...NO_GIVER,
+			storedAt: null,
 			contactId: 'hilde',
 			createdBy: 'anna',
 			visibility: 'private',
@@ -127,6 +128,7 @@ describe('convertHeldGifts', () => {
 			{
 				id: 'touch-1',
 				...NO_GIVER,
+				storedAt: null,
 				contactId: 'hilde',
 				createdBy: 'ben',
 				visibility: 'private',

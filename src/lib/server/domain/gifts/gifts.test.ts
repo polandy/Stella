@@ -88,6 +88,7 @@ describe('addGift', () => {
 		expect(gifts.rows.get(giftId)).toEqual({
 			id: giftId,
 			...NO_GIVER,
+			storedAt: null,
 			contactId: HILDE,
 			createdBy: 'andy',
 			visibility: 'shared',

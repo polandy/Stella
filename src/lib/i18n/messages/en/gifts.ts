@@ -50,6 +50,21 @@ export const gifts = {
 	'gifts.notBought': 'Not bought yet',
 	'gifts.notBought.title': (p: { title: string }) => `“${p.title}” back to the ideas`,
 	'gifts.ready': 'Ready to give',
+	// D17: the household hands it over itself (*Bought…*, asks where it waits), or someone else does (*Done*).
+	'gifts.buy.open': 'Bought…',
+	'gifts.buy.title': (p: { title: string; name: string }) => `“${p.title}” for ${p.name}, bought`,
+	'gifts.buy.where': 'Where is it kept? (optional)',
+	'gifts.buy.wherePlaceholder': 'e.g. attic, box 3',
+	'gifts.buy.hint': 'Only those who see the gift see where it is kept.',
+	'gifts.done': 'Done',
+	'gifts.done.title': (p: { title: string }) => `“${p.title}” done`,
+	'gifts.notDone': 'Not done yet',
+	'gifts.storedAt': 'Where it is kept',
+	// The card by occasion (§2.25.13).
+	'gifts.byOccasion.none': 'Without an occasion',
+	'gifts.byOccasion.tally': (p: { done: number; assigned: number; free: number }) =>
+		`${p.done} done · ${p.assigned} assigned · ${p.free} free`,
+	'gifts.free': 'still free',
 	'gifts.ideas.allBought': (p: { name: string }) => `Everything for ${p.name} is bought.`,
 	'gifts.surprise.choice': (p: { name: string }) => `Everyone but ${p.name}`,
 	'gifts.surprise.inline': (p: { name: string }) => `hidden from ${p.name}`,

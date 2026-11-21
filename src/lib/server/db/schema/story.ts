@@ -229,6 +229,8 @@ export const gift = sqliteTable(
 		giverIsHousehold: integer('giver_is_household').notNull().default(0),
 		// The giver's name, kept when their record is deleted; written by that delete alone.
 		giverLeftName: text('giver_left_name'),
+		// Where a bought gift waits to be handed over (*Estrich, Box 3*); cleared with *Not bought yet*.
+		storedAt: text('stored_at'),
 		createdAt: integer('created_at').notNull().default(now),
 		updatedAt: integer('updated_at').notNull().default(now)
 	},

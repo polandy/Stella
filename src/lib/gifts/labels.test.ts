@@ -1,7 +1,14 @@
 import { describe, expect, it } from 'bun:test';
 import { INTL_LOCALES } from '../i18n/locales';
 import { createTranslator } from '../i18n/translate';
-import { addedLabel, giverLabel, nextOccasionLabel, occasionLabel, stateLabel } from './labels';
+import {
+	addedLabel,
+	giverLabel,
+	nextOccasionLabel,
+	occasionHeading,
+	occasionLabel,
+	stateLabel
+} from './labels';
 
 /*
  * An occasion as the reader reads it (docs/dev/02 §2.25): a preset in their language, whoever
@@ -103,5 +110,35 @@ describe('giverLabel', () => {
 	it('says nothing when nobody is named, or on a gift received', () => {
 		expect(giverLabel(de, { kind: 'none' }, 'idea')).toBeNull();
 		expect(giverLabel(de, { kind: 'household' }, 'received')).toBeNull();
+	});
+});
+
+describe('occasionHeading (§2.25.13)', () => {
+	const en = { t: createTranslator('en'), intlLocale: INTL_LOCALES.en };
+	const de = { t: createTranslator('de'), intlLocale: INTL_LOCALES.de };
+	const sixth = { on: '2027-03-04', when: { kind: 'at_age', age: 6 } as const };
+
+	it('names Christmas Eve by its year, whatever the when was', () => {
+		const eve = { on: '2026-12-24', when: { kind: 'christmas_at_age', age: 5 } as const };
+		expect(occasionHeading(de, eve, '2026-11-21')).toEqual({
+			title: 'Weihnachten 2026',
+			near: 'in 33 Tagen · 24. Dez.'
+		});
+	});
+
+	it('names any other day by its when, and says how near it is', () => {
+		expect(occasionHeading(en, sixth, '2027-03-03')).toEqual({
+			title: 'For the 6th birthday',
+			near: 'tomorrow · 4 Mar'
+		});
+		expect(occasionHeading(en, sixth, '2027-03-04').near).toBe('today');
+		expect(occasionHeading(en, sixth, '2027-03-05').near).toBe('passed');
+	});
+
+	it('gives the gifts without an occasion a heading and no nearness', () => {
+		expect(occasionHeading(de, { on: null, when: null }, '2026-11-21')).toEqual({
+			title: 'Ohne Anlass',
+			near: null
+		});
 	});
 });

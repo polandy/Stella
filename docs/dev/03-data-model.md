@@ -664,6 +664,7 @@ may edit, give or remove it; only its author may change its visibility or `hidde
 | giver_contact_id | text null fk → contact.id | who gives or gave it (docs/dev/02 §2.25.12); never `contact_id`; null on a received gift. No `ON DELETE`: the contact delete moves the name to `giver_left_name` first |
 | giver_is_household | int (0/1) | default 0; 1 is *Wir*, the household itself; 0 whenever `giver_contact_id` is set |
 | giver_left_name | text null | the display name a deleted giver left; cleared once someone else gives it |
+| stored_at | text null | where a bought gift waits (*attic, box 3*, docs/dev/02 §2.25.9); set only while `state = 'bought'`, cleared on *Not bought yet* |
 | group_id | text null fk → gift_group.id | the idea for several people it was noted with (§2.25.11); null for most. No `ON DELETE`: SQLite cannot add `SET NULL` to an existing table's column, so a group is unlinked from its gifts before it is removed (ADR-134) |
 | created_at / updated_at | int | |
 

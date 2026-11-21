@@ -64,6 +64,12 @@ export function fakeGifts(
 					(g) => g.state === 'bought' && contactIds.includes(g.contactId) && visible(viewer, g)
 				)
 				.map(({ id, contactId, title }) => ({ id, contactId, title }));
+		},
+		async listStoredPlacesVisibleTo(viewer) {
+			const latest = [...rows.values()]
+				.filter((g) => g.storedAt !== null && visible(viewer, g))
+				.sort((a, b) => b.updatedAt - a.updatedAt);
+			return [...new Set(latest.map((g) => g.storedAt!))];
 		}
 	};
 }

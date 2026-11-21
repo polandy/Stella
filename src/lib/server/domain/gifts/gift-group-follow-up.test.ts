@@ -37,6 +37,7 @@ let counter: number;
 const giftFor = (contactId: string, over: Partial<Gift> = {}): Gift => ({
 	id: `g-${contactId}`,
 	...NO_GIVER,
+	storedAt: null,
 	contactId,
 	createdBy: 'andy',
 	visibility: 'shared',

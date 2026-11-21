@@ -68,6 +68,7 @@ export function planPersonRecords(exp: SourceExport, ctx: MonicaPlanContext): Pe
 				whenCheckedOn: null,
 				groupId: null,
 				...NO_GIVER,
+				storedAt: null,
 				hiddenFromRecipient: false
 			});
 			continue;

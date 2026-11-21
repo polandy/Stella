@@ -5,6 +5,7 @@ import { openIdeaView } from './idea-view';
 const idea: OpenIdea & { whenState: null } = {
 	id: 'g-1',
 	...NO_GIVER,
+	storedAt: null,
 	contactId: 'c-1',
 	contactName: 'Hilde Brunner',
 	avatarPhotoId: 'p-1',

@@ -1,5 +1,5 @@
 import { fromFormData } from '#lib/commands/form-data.js';
-import { GiftMarkBoughtSchema, GiftMarkGivenSchema } from '#lib/commands/gift-todo-payloads.js';
+import { GiftMarkGivenSchema } from '#lib/commands/gift-todo-payloads.js';
 import { todayFor } from '#lib/dates/today.js';
 import { ideaListGroups } from '#lib/gifts/idea-list.js';
 import { requireViewer } from '#lib/server/auth/guards.js';
@@ -8,7 +8,7 @@ import { upcomingDates } from '#lib/server/domain/dates/upcoming.js';
 import { readGiftGroups } from '#lib/server/domain/gifts/gift-group-follow-up.js';
 import { listOpenIdeas } from '#lib/server/domain/gifts/gifts.js';
 import { authorNames } from '#lib/server/domain/household/members.js';
-import { applyGiftCommand, occasionOf, textOf } from '../_shared/gift-commands';
+import { applyGiftCommand, boughtOf, occasionOf, textOf } from '../_shared/gift-commands';
 import { openIdeaView } from './idea-view';
 import type { Actions, PageServerLoad } from './$types';
 
@@ -68,13 +68,9 @@ export const actions = {
 	/** *Bought* on the list (§2.25.9): the idea leaves it, and its toast takes it back. */
 	markGiftBought: async ({ request, locals }) => {
 		const form = await request.formData();
-		return applyGiftCommand(
-			locals,
-			form,
-			'gift.markBought',
-			fromFormData(GiftMarkBoughtSchema, form),
-			'giftRowError',
-			{ contactId: textOf(form, 'contactId') ?? '', back: '/gifts' }
-		);
+		return applyGiftCommand(locals, form, 'gift.markBought', boughtOf(form), 'giftRowError', {
+			contactId: textOf(form, 'contactId') ?? '',
+			back: '/gifts'
+		});
 	}
 } satisfies Actions;

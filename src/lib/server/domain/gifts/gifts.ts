@@ -64,6 +64,8 @@ interface GiftRecord {
 	whenCheckedOn: string | null;
 	/** The idea it was noted with for several people (§2.25.11); null for one noted alone. */
 	groupId: string | null;
+	/** Where a bought gift waits to be handed over (D20); null when nobody said, or not bought. */
+	storedAt: string | null;
 	createdAt: number;
 	updatedAt: number;
 }
@@ -150,6 +152,8 @@ export interface GiftRepository {
 		viewer: Viewer,
 		contactIds: readonly string[]
 	): Promise<Pick<Gift, 'id' | 'contactId' | 'title'>[]>;
+	/** The places the viewer's visible gifts were stored at, latest used first, each once (D20). */
+	listStoredPlacesVisibleTo(viewer: Viewer): Promise<string[]>;
 }
 
 /** Collaborators the use-cases need, injected by the composition root. */
@@ -334,6 +338,7 @@ export async function addGift(
 		when,
 		whenCheckedOn: null,
 		groupId: null,
+		storedAt: null,
 		...(await giverOf(deps, author, input, input.giver)),
 		createdAt: now,
 		updatedAt: now

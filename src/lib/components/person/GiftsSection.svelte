@@ -95,6 +95,9 @@
 		};
 	});
 
+	// Whose gifts the household hands over itself, *besorgt* rather than *erledigt* (D17).
+	const householdGiverIds = $derived(new Set(data.householdGivers.map((giver) => giver.id)));
+
 	let tab = $state<GiftTab>('ideas');
 	// The Received tab leaves with its last gift; the card falls back to the ideas.
 	const current = $derived(tabs.some((entry) => entry.tab === tab) ? tab : 'ideas');
@@ -276,6 +279,8 @@
 					recipientIsMember={data.recipientIsMember}
 					{groupOf}
 					{givers}
+					householdGivers={householdGiverIds}
+					places={data.giftPlaces}
 				/>
 			{:else}
 				{@const list = current === 'given' ? given : received}
@@ -302,6 +307,8 @@
 									recipientIsMember={data.recipientIsMember}
 									group={groupOf(gift)}
 									{givers}
+									householdGivers={householdGiverIds}
+									places={data.giftPlaces}
 								/>
 							{/each}
 						</ul>

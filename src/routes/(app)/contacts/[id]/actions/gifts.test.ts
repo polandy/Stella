@@ -115,6 +115,34 @@ describe('markGiftBought on the card (§2.25.9)', () => {
 			{ contactId: 'anna', giftId: 'g1', bought: false }
 		]);
 	});
+
+	it('carries where it waits and the surprise its author kept', async () => {
+		const marks: unknown[] = [];
+		const services = commanding({
+			'gift.markBought': async (_actor, payload) => {
+				marks.push(payload);
+				return { giftId: 'g1' };
+			}
+		});
+		await answerOf(
+			actions.markGiftBought(
+				routeEvent({
+					services,
+					params: { id: 'anna' },
+					form: formOf({ giftId: 'g1', bought: 'on', storedAt: 'cellar', surprise: 'kept' })
+				})
+			)
+		);
+		expect(marks).toEqual([
+			{
+				contactId: 'anna',
+				giftId: 'g1',
+				bought: true,
+				storedAt: 'cellar',
+				hiddenFromRecipient: true
+			}
+		]);
+	});
 });
 
 describe('assignGift on the card (§2.25.12)', () => {

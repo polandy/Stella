@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it } from 'bun:test';
 import { fakeOwnPeople } from '../shared/idea-on-person.fixture';
 import { inEnglish } from '../../../i18n/phrase';
-import { markGiftBought, readyGifts } from './bought';
+import { giftPlaces, markGiftBought, readyGifts } from './bought';
 import { fakeGifts } from './gifts.fixture';
 import {
 	addGift,
@@ -125,6 +125,89 @@ describe('markGiftBought', () => {
 			occasion: 'christmas',
 			when: null
 		});
+	});
+});
+
+describe('where a bought gift is kept (D20)', () => {
+	const boughtAt = (giftId: string, storedAt: string | null) =>
+		markGiftBought(deps, JULIA, { contactId: HILDE, giftId, bought: true, storedAt });
+
+	it('keeps the place it is stored at, trimmed, and forgets it once it is an idea again', async () => {
+		const giftId = await noteIdea('Bike');
+		await boughtAt(giftId, '  Estrich, Box 3 ');
+		expect(gifts.rows.get(giftId)).toMatchObject({ state: 'bought', storedAt: 'Estrich, Box 3' });
+		await bought(giftId, false);
+		expect(gifts.rows.get(giftId)?.storedAt).toBeNull();
+	});
+
+	it('stores no place for a blank one, and none at all without one', async () => {
+		const blank = await noteIdea('Bike');
+		await boughtAt(blank, '   ');
+		expect(gifts.rows.get(blank)?.storedAt).toBeNull();
+		const plain = await noteIdea('Book');
+		await bought(plain);
+		expect(gifts.rows.get(plain)?.storedAt).toBeNull();
+	});
+
+	it('moves a bought gift to another place, as a second *Bought…* would', async () => {
+		const giftId = await noteIdea('Bike');
+		await boughtAt(giftId, 'Estrich');
+		await boughtAt(giftId, 'Keller');
+		expect(gifts.rows.get(giftId)?.storedAt).toBe('Keller');
+	});
+
+	it('offers the places already used, latest first, each once', async () => {
+		const a = await noteIdea('Bike');
+		const b = await noteIdea('Book');
+		const c = await noteIdea('Ball');
+		await boughtAt(a, 'Estrich');
+		now += 1000;
+		await boughtAt(b, 'Keller');
+		now += 1000;
+		await boughtAt(c, 'Estrich');
+		expect(await giftPlaces(deps, VIEWER)).toEqual(['Estrich', 'Keller']);
+	});
+});
+
+describe('bought for a member, kept from them (D23)', () => {
+	const MAMA = 'mama';
+	const keeping = (giftId: string, hiddenFromRecipient: boolean, actor = ANDY) =>
+		markGiftBought(deps, actor, {
+			contactId: MAMA,
+			giftId,
+			bought: true,
+			hiddenFromRecipient
+		});
+
+	beforeEach(() => {
+		gifts = fakeGifts(() => null, new Map([[MAMA, 'julia']]));
+		deps = { ...deps, gifts, ownPeople: fakeOwnPeople(new Map([[MAMA, 'julia']])) };
+	});
+
+	async function ideaForMama() {
+		const { giftId } = await addGift(deps, ANDY, {
+			contactId: MAMA,
+			state: 'idea',
+			title: 'Scarf',
+			note: null,
+			url: null,
+			givenOn: null,
+			occasion: null,
+			visibility: 'shared'
+		});
+		return giftId;
+	}
+
+	it('keeps it from her when its author asks, as *Bought…* offers', async () => {
+		const giftId = await ideaForMama();
+		await keeping(giftId, true);
+		expect(gifts.rows.get(giftId)).toMatchObject({ state: 'bought', hiddenFromRecipient: true });
+	});
+
+	it('leaves the surprise as it was when someone else marks it bought', async () => {
+		const giftId = await ideaForMama();
+		await keeping(giftId, true, { userId: 'papa', householdId: 'h1' });
+		expect(gifts.rows.get(giftId)?.hiddenFromRecipient).toBe(false);
 	});
 });
 

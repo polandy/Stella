@@ -1,4 +1,6 @@
 import type { CommandType } from '#lib/commands/commands.js';
+import { fromFormData } from '#lib/commands/form-data.js';
+import { GiftMarkBoughtSchema } from '#lib/commands/gift-todo-payloads.js';
 import { giverFromForm, occasionFromForm, visibilityFromForm } from '#lib/gifts/gifts.js';
 import { whenFromForm } from '#lib/when/form.js';
 import { GiftGoneError } from '#lib/server/domain/gifts/gifts.js';
@@ -43,6 +45,13 @@ export function surpriseOf(form: FormData): boolean | undefined {
 	const asked = textOf(form, 'surprise');
 	return asked === null ? undefined : asked === 'kept';
 }
+
+/** *Besorgt…*, *Erledigt* or undone (§2.25.9): a box the form leaves out is never sent as *no*. */
+export const boughtOf = (form: FormData) => ({
+	...fromFormData(GiftMarkBoughtSchema, form),
+	storedAt: textOf(form, 'storedAt') ?? undefined,
+	hiddenFromRecipient: surpriseOf(form)
+});
 
 /** Which field names which mistake; a gift group's form answers the same way. */
 const GIFT_FORM: CommandFormEdge = {

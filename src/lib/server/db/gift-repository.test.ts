@@ -30,6 +30,7 @@ function gift(over: Partial<Gift>): Gift {
 	return {
 		id: 'g',
 		...NO_GIVER,
+		storedAt: null,
 		contactId: 'c-shared',
 		createdBy: U1,
 		visibility: 'shared',
@@ -176,6 +177,36 @@ describe('createDrizzleGiftRepository', () => {
 		});
 		await repo.remove('g-1');
 		expect(await repo.findVisibleTo(viewerU1, 'c-shared', 'g-1')).toBeNull();
+	});
+
+	it('keeps where a bought gift is stored, and changes it on update (D20)', async () => {
+		await repo.insert(gift({ id: 'g-1', state: 'bought', storedAt: 'Estrich' }));
+		expect((await repo.findVisibleTo(viewerU1, 'c-shared', 'g-1'))?.storedAt).toBe('Estrich');
+		await repo.update(gift({ id: 'g-1', state: 'idea', storedAt: null }));
+		expect((await repo.findVisibleTo(viewerU1, 'c-shared', 'g-1'))?.storedAt).toBeNull();
+	});
+
+	describe('listStoredPlacesVisibleTo', () => {
+		it('names each place once, latest used first', async () => {
+			await repo.insert(gift({ id: 'g-1', state: 'bought', storedAt: 'Estrich', updatedAt: 1 }));
+			await repo.insert(gift({ id: 'g-2', state: 'given', storedAt: 'Keller', updatedAt: 2 }));
+			await repo.insert(gift({ id: 'g-3', state: 'bought', storedAt: 'Estrich', updatedAt: 3 }));
+			await repo.insert(gift({ id: 'g-4', state: 'idea' }));
+			expect(await repo.listStoredPlacesVisibleTo(viewerU1)).toEqual(['Estrich', 'Keller']);
+		});
+
+		it('never names the place of a gift the viewer may not see', async () => {
+			await repo.insert(
+				gift({ id: 'g-1', visibility: 'private', state: 'bought', storedAt: 'Tresor' })
+			);
+			await repo.insert(
+				gift({ id: 'g-2', contactId: 'c-priv', state: 'bought', storedAt: 'Safe' })
+			);
+			expect(await repo.listStoredPlacesVisibleTo(viewerU2)).toEqual([]);
+			expect(await repo.listStoredPlacesVisibleTo(viewerU1)).toEqual(
+				expect.arrayContaining(['Tresor', 'Safe'])
+			);
+		});
 	});
 
 	it('goes with the person it is for', async () => {

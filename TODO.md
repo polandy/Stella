@@ -10,10 +10,12 @@ Move once Kit supports it, and drop the ignore.
 
 ## Gifts: givers, occasions and stock (owner study 2026-11, ADR-140)
 
-PR 1, the giver on a gift, is done (docs/dev/02 §2.25.12). The rest, one PR each, in order:
+PR 1, the giver on a gift, and PR 2, the card by occasion with *Erledigt* / *Besorgt…* and
+`stored_at` (docs/dev/02 §2.25.9, §2.25.13), are done. The rest, one PR each, in order:
 
-- **Card grouped by occasion, done and procured**: *Erledigt* / *Besorgt…* by giver, `stored_at`
-  with a places sheet, the tally *erledigt · vergeben · frei*, *Für jemand anderen…*.
+- **The rest of the card**: *Für jemand anderen…* on a bought gift (D22); *Verschenkt* with a
+  giver takes the occasion's day as its default, the story line says *Bekommen von Sandra*, and
+  *Already given* names the giver.
 - **Nachtragen**: the batch sheet for gifts given at a passed occasion, *Für: Uns* as received.
 - **`/gifts` by occasion**: every recipient, the tally, *Nachtragen…*; the household list shows
   the giver.

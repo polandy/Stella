@@ -59,6 +59,7 @@ function present(
 	return {
 		id,
 		...NO_GIVER,
+		storedAt: null,
 		contactId: 'c1',
 		createdBy: 'u1',
 		visibility: 'shared',

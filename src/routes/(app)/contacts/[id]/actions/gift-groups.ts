@@ -3,13 +3,18 @@ import {
 	GiftGroupEditSchema,
 	GiftGroupGiftSchema,
 	GiftGroupRefSchema,
-	GiftMarkBoughtSchema,
 	GiftMarkGivenSchema,
 	GiftRemoveSchema
 } from '#lib/commands/gift-todo-payloads.js';
 import { contactSectionPath } from '#lib/people/sections.js';
 import type { RequestEvent } from '@sveltejs/kit';
-import { applyGiftCommand, occasionOf, textOf, whenOf } from '../../../_shared/gift-commands';
+import {
+	applyGiftCommand,
+	boughtOf,
+	occasionOf,
+	textOf,
+	whenOf
+} from '../../../_shared/gift-commands';
 import type { Actions } from '../$types';
 import { onCard } from './gifts';
 
@@ -105,7 +110,7 @@ export const giftGroupActions = {
 
 	markGroupGiftBought: async (event) => {
 		const form = await event.request.formData();
-		return onRow(event, form, 'gift.markBought', fromFormData(GiftMarkBoughtSchema, form));
+		return onRow(event, form, 'gift.markBought', boughtOf(form));
 	},
 
 	removeGroupGift: async (event) => {
