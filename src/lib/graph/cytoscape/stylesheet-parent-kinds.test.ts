@@ -1,11 +1,11 @@
 import { describe, expect, it } from 'bun:test';
 import cytoscape, { type Core } from 'cytoscape';
-
-cytoscape.warnings(false);
 import { resolveColor, tokensFor } from '../../design/css-tokens';
 import { BRIDGE_CLASS, BRIDGE_OVER_CLASS, CAPTION_CLASS } from './canvas-classes';
 import { buildStylesheet } from './stylesheet';
 import { resolvePalette } from './theme';
+
+cytoscape.warnings(false);
 
 /*
  * A parent line's stroke says its kind (docs/dev/05 §5.8): solid biological, double adoptive,

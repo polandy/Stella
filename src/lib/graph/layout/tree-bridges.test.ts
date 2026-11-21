@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test';
-import { bridgesOf, drawnLine } from './tree-bridges';
+import { bridgesOf, drawnLine, routeBridges } from './tree-bridges';
 
 /*
  * Where a line of the family tree crosses another's bar, the bar gets a gap the crossing line
@@ -42,6 +42,49 @@ describe('bridgesOf', () => {
 			{ x: 0, y: 0 },
 			{ x: 0, y: 50 },
 			{ x: 0, y: 90 }
+		]);
+	});
+});
+
+describe('routeBridges', () => {
+	it('bridges a routed drop over another couple’s bar, read from where its people stand', () => {
+		const parentChild = (id: string, source: string, target: string) => ({
+			id,
+			source,
+			target,
+			kind: 'relationship' as const
+		});
+		const positions = new Map([
+			['p', { x: 0, y: 0 }],
+			['c', { x: 200, y: 200 }],
+			['q', { x: 100, y: 0 }],
+			['d', { x: 50, y: 200 }]
+		]);
+		const routes = new Map([
+			[
+				'p-c',
+				{
+					waypoints: [
+						{ x: 0, y: 100 },
+						{ x: 200, y: 100 }
+					],
+					nameEnd: null
+				}
+			],
+			[
+				'q-d',
+				{
+					waypoints: [
+						{ x: 100, y: 150 },
+						{ x: 50, y: 150 }
+					],
+					nameEnd: null
+				}
+			]
+		]);
+		const edges = [parentChild('p-c', 'p', 'c'), parentChild('q-d', 'q', 'd')];
+		expect(routeBridges(routes, edges, positions)).toEqual([
+			{ at: { x: 100, y: 100 }, over: ['q-d'] }
 		]);
 	});
 });

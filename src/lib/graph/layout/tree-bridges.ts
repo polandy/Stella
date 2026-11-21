@@ -1,3 +1,4 @@
+import type { GraphEdge } from '../model/types';
 import type { Bridge, Point, Route } from './geometry';
 
 /*
@@ -49,4 +50,19 @@ export function drawnLine(id: string, route: Route, source: Point, target: Point
 		id,
 		points: [route.sourceEnd ?? source, ...route.waypoints, route.targetEnd ?? target]
 	};
+}
+
+/** The bridges of the tree's routed lines, each read from where its two people stand. */
+export function routeBridges(
+	routes: ReadonlyMap<string, Route>,
+	edges: readonly GraphEdge[],
+	positions: ReadonlyMap<string, Point>
+): Bridge[] {
+	const edgeById = new Map(edges.map((e) => [e.id, e]));
+	return bridgesOf(
+		[...routes].map(([id, route]) => {
+			const { source, target } = edgeById.get(id)!;
+			return drawnLine(id, route, positions.get(source)!, positions.get(target)!);
+		})
+	);
 }

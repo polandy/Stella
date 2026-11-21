@@ -5,14 +5,14 @@
 
 	/*
 	 * Under the Family filter: how a parent line's stroke tells its kind, as the canvas draws it
-	 * (docs/dev/05 §5.8). A key, not a switch; each line's name says its kind too.
+	 * (docs/dev/05 §5.8). A key to strokes, hidden from assistive tech: the person page names each kind.
 	 */
 	const t = useTranslate();
 	const family = categoryVar('family');
 	const dashes = { biological: '', adoptive: '', foster: '9 3 2 3', step: '4 4' } as const;
 </script>
 
-<div role="none" class="grid grid-cols-2 gap-x-3 gap-y-1 px-2.5 py-1">
+<div aria-hidden="true" class="grid grid-cols-2 gap-x-3 gap-y-1 px-2.5 py-1">
 	<span class="col-span-2 text-[11px] text-fg-subtle">{t('graph.parentKinds')}</span>
 	{#each PARENT_KINDS as kind (kind)}
 		<span class="flex items-center gap-2 text-[12px] text-fg-muted">
