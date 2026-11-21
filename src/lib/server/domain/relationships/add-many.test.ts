@@ -110,6 +110,7 @@ function household(rows: StoredRow[] = [], hidden: string[] = []) {
 							description: null,
 							sinceDate: null,
 							untilDate: null,
+							parentKind: type.id === 'parent_child' ? 'biological' : null,
 							status: CURRENT_RELATIONSHIP_STATUS
 						};
 					})
@@ -148,6 +149,7 @@ function batch(
 		status: CURRENT_RELATIONSHIP_STATUS,
 		description: null,
 		untilDate: null,
+		parentKind: null,
 		links: links.map((link) =>
 			typeof link === 'string' ? { targetId: link, sinceDate: null } : link
 		),
@@ -186,6 +188,7 @@ describe('addRelationships', () => {
 				typeId: 'parent_child',
 				sinceDate: '2015-04-12',
 				untilDate: null,
+				parentKind: 'biological',
 				createdBy: 'u1',
 				householdId: 'h1'
 			},

@@ -30,7 +30,8 @@ const RelationshipDetailsSchema = {
 	description: v.optional(v.pipe(v.string(), v.trim())),
 	sinceDate: v.optional(v.pipe(v.string(), v.trim())),
 	untilDate: v.optional(v.pipe(v.string(), v.trim())),
-	status: v.optional(v.pipe(v.string(), v.trim()))
+	status: v.optional(v.pipe(v.string(), v.trim())),
+	parentKind: v.optional(v.pipe(v.string(), v.trim()))
 };
 
 const EditRelationshipSchema = v.object({
@@ -158,7 +159,8 @@ export const relationshipActions = {
 			description: form.get('description') || undefined,
 			sinceDate: form.get('sinceDate') || undefined,
 			untilDate: form.get('untilDate') || undefined,
-			status: form.get('status') || undefined
+			status: form.get('status') || undefined,
+			parentKind: form.get('parentKind') || undefined
 		});
 		if (!parsed.success)
 			return fail(400, { error: say(locals, 'errors.relationship.couldNotSave') });
@@ -179,7 +181,8 @@ export const relationshipActions = {
 				description: parsed.output.description ?? null,
 				sinceDate: parsed.output.sinceDate ?? null,
 				untilDate: parsed.output.untilDate ?? null,
-				status: parsed.output.status ?? null
+				status: parsed.output.status ?? null,
+				parentKind: parsed.output.parentKind ?? null
 			});
 			if (!saved) return fail(404, { error: say(locals, 'errors.relationship.notFound') });
 		} catch (err) {

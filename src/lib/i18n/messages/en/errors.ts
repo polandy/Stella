@@ -40,6 +40,8 @@ export const errors = {
 	'errors.relationship.adoptiveParentsComplete': (p: { name: string; max: number }) =>
 		`${p.name} already has ${p.max} adoptive parents. Correct one of them instead of adding another.`,
 	'errors.relationship.noSuchDay': (p: { day: string }) => `${p.day} is not a day that exists.`,
+	'errors.relationship.parentKindOnlyForParents': 'Only a parent link has a kind.',
+	'errors.relationship.noSuchParentKind': 'That kind of parent does not exist.',
 	'errors.relationship.untilBeforeSince': 'A relationship cannot end before it began.',
 	'errors.relationship.currentOrFormer': 'A relationship is either current or former.',
 	/** One refused person of a batch, by name, before the reason (docs/dev/02 §2.4). */

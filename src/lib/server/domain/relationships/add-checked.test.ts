@@ -64,6 +64,7 @@ const link = (side: 'forward' | 'reverse' = 'reverse') => ({
 	description: null,
 	sinceDate: null,
 	untilDate: null,
+	parentKind: null,
 	status: null
 });
 

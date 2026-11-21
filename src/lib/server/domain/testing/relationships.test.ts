@@ -23,6 +23,7 @@ describe('someTie', () => {
 			description: null,
 			sinceDate: null,
 			untilDate: null,
+			parentKind: null,
 			status: 'current'
 		});
 	});

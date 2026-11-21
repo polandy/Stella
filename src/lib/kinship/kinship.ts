@@ -1,3 +1,4 @@
+import type { ParentKind } from '../relationships/parent-kinds';
 /*
  * Kinship inference (docs/dev/02 §2.4.1).
  *
@@ -24,6 +25,8 @@ export interface KinPerson {
 export interface ParentEdge {
 	parentId: string;
 	childId: string;
+	/** The link's kind; biological when unsaid. The derivation reads every kind alike for now. */
+	kind?: ParentKind;
 }
 
 /** An undirected link between two people. */

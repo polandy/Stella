@@ -1,5 +1,6 @@
 import { sql } from 'drizzle-orm';
 import { check, index, integer, sqliteTable, text, unique } from 'drizzle-orm/sqlite-core';
+import type { ParentKind } from '../../../relationships/parent-kinds';
 import { CURRENT_RELATIONSHIP_STATUS } from '../../../relationships/status';
 import { now } from './columns';
 import { household, user } from './household';
@@ -39,6 +40,8 @@ export const relationship = sqliteTable(
 		note: text('note'),
 		sinceDate: text('since_date'),
 		untilDate: text('until_date'),
+		// Set on a `parent_child` row only, never null there; a trigger holds it (docs/dev/03).
+		parentKind: text('parent_kind').$type<ParentKind>(),
 		// A link that is on record holds until someone ends it, so there is no unset status:
 		// a row that says nothing says `current` (docs/dev/03 §relationship).
 		status: text('status').notNull().default(CURRENT_RELATIONSHIP_STATUS),

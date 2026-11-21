@@ -1,4 +1,5 @@
 import { CURRENT_RELATIONSHIP_STATUS } from '../../../../relationships/status';
+import { defaultParentKindFor } from '../../../../relationships/parent-kinds';
 import { relationshipPair } from '../../../../relationships/endpoints';
 import { BUILT_IN_RELATIONSHIP_TYPES } from '../../relationships/built-in-types';
 import type { NewRelationship } from '../../relationships/relationships';
@@ -69,6 +70,7 @@ export function planRelationships(
 			// record is one that holds, which is what `current` says (docs/dev/02 §2.4).
 			sinceDate: null,
 			untilDate: null,
+			parentKind: defaultParentKindFor(mapped.key),
 			status: CURRENT_RELATIONSHIP_STATUS,
 			createdBy: opts.userId,
 			createdAt: opts.now,

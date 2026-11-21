@@ -51,6 +51,7 @@ describe('addRelationshipCommand', () => {
 				description: null,
 				sinceDate: '2001-05-01',
 				untilDate: null,
+				parentKind: null,
 				status: 'former'
 			},
 			issuedAt: AT
@@ -91,6 +92,7 @@ describe('addRelationshipCommand', () => {
 				status: 'current',
 				description: 'Twins',
 				untilDate: null,
+				parentKind: null,
 				links: [
 					{ targetId: 'c-bert', sinceDate: '2010-01-01' },
 					{ targetId: 'c-cleo', sinceDate: '2010-01-01' }

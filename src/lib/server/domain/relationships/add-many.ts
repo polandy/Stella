@@ -68,7 +68,8 @@ export async function addRelationships(
 				description: input.description,
 				sinceDate,
 				untilDate: input.untilDate,
-				status: input.status
+				status: input.status,
+				parentKind: input.parentKind ?? null
 			});
 			links.push({ targetId, relationshipId });
 		} catch (err) {

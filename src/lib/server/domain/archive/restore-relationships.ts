@@ -1,4 +1,6 @@
+import { BIOLOGICAL_PARENT_KIND, isParentKind } from '../../../relationships/parent-kinds';
 import { CURRENT_RELATIONSHIP_STATUS } from '../../../relationships/status';
+import { PARENT_CHILD_TYPE_KEY } from '../../../relationships/type-keys';
 import { relationshipPair } from '../../../relationships/endpoints';
 import { foldedLinkDetails } from '../../../relationships/fold';
 import type { RestoreContext } from './restore-context';
@@ -98,6 +100,7 @@ export function planRelationships(
 			note: str(link, 'description'),
 			since_date: str(link, 'since'),
 			until_date: str(link, 'until'),
+			parent_kind: parentKindOf(link, type),
 			// An archive from before the status meant anything carries none; a link that is on
 			// record holds until someone ends it (docs/dev/02 §2.4).
 			status: str(link, 'status') ?? CURRENT_RELATIONSHIP_STATUS,
@@ -126,4 +129,11 @@ export function planRelationships(
 		symmetricLinks.set(key, { row, givenSorted });
 	}
 	return { relationshipTypes, relationships };
+}
+
+/** A parent link's kind; an archive from before kinds, or with one Stella does not know, says biological. */
+function parentKindOf(link: Row, typeId: string): string | null {
+	if (typeId !== PARENT_CHILD_TYPE_KEY) return null;
+	const kind = str(link, 'parent_kind');
+	return kind !== null && isParentKind(kind) ? kind : BIOLOGICAL_PARENT_KIND;
 }

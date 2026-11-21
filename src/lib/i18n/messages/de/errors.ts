@@ -38,6 +38,8 @@ export const errors: ErrorsMessages = {
 	'errors.relationship.adoptiveParentsComplete': (p) =>
 		`${p.name} hat bereits ${p.max} Adoptivelternteile. Ändere einen davon, statt einen weiteren anzulegen.`,
 	'errors.relationship.noSuchDay': (p) => `${p.day} ist kein Tag, den es gibt.`,
+	'errors.relationship.parentKindOnlyForParents': 'Nur eine Eltern-Verbindung hat eine Art.',
+	'errors.relationship.noSuchParentKind': 'Diese Art Elternteil gibt es nicht.',
 	'errors.relationship.untilBeforeSince':
 		'Eine Beziehung kann nicht enden, bevor sie begonnen hat.',
 	'errors.relationship.currentOrFormer': 'Eine Beziehung ist entweder aktuell oder ehemalig.',

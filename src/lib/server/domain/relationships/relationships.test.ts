@@ -235,7 +235,8 @@ describe('createRelationship', () => {
 				toContactId: 'bettina',
 				typeId: 'parent_child',
 				status: 'current',
-				untilDate: '2000-01-01'
+				untilDate: '2000-01-01',
+				parentKind: 'biological'
 			}
 		);
 		expect(f.inserted).toMatchObject({ untilDate: '2000-01-01', status: 'former' });
@@ -548,13 +549,14 @@ describe('readKinship', () => {
 describe('parseRelationshipDetails', () => {
 	const TODAY = '2026-11-21';
 	const parse = (input: Parameters<typeof parseRelationshipDetails>[0]) =>
-		parseRelationshipDetails(input, TODAY);
+		parseRelationshipDetails(input, 'friend', TODAY);
 
 	it('keeps the text as written, trimmed', () => {
 		expect(parse({ description: '  met at the ski course ' })).toEqual({
 			description: 'met at the ski course',
 			sinceDate: null,
 			untilDate: null,
+			parentKind: null,
 			status: 'current'
 		});
 	});
@@ -564,12 +566,14 @@ describe('parseRelationshipDetails', () => {
 			description: null,
 			sinceDate: null,
 			untilDate: null,
+			parentKind: null,
 			status: 'current'
 		});
 		expect(parse({ description: '   ', sinceDate: '', status: '' })).toEqual({
 			description: null,
 			sinceDate: null,
 			untilDate: null,
+			parentKind: null,
 			status: 'current'
 		});
 	});
@@ -655,6 +659,7 @@ describe('createRelationship with details', () => {
 				description: 'met at the ski course',
 				sinceDate: '2019-06-01',
 				untilDate: null,
+				parentKind: null,
 				status: 'former'
 			}
 		);
@@ -663,6 +668,7 @@ describe('createRelationship with details', () => {
 			description: 'met at the ski course',
 			sinceDate: '2019-06-01',
 			untilDate: null,
+			parentKind: null,
 			status: 'former'
 		});
 	});
@@ -689,9 +695,16 @@ describe('createRelationship with details', () => {
 describe('editRelationship', () => {
 	const viewer: Viewer = { id: 'u1', householdId: 'h1' };
 	const deps = (f: ReturnType<typeof fakeRepo>) => ({ ...f.deps, clock });
+	const stored: StoredRelationship = {
+		id: 'rel-1',
+		fromContactId: 'a',
+		toContactId: 'b',
+		typeId: 'friend',
+		parentKind: null
+	};
 
 	it('writes the checked details, stamped from the clock, leaving the type alone', async () => {
-		const f = fakeRepo({});
+		const f = fakeRepo({ stored });
 
 		const written = await editRelationship(deps(f), viewer, {
 			relationshipId: 'rel-1',
@@ -699,6 +712,7 @@ describe('editRelationship', () => {
 			description: '  they met skiing ',
 			sinceDate: '2019-06-01',
 			untilDate: null,
+			parentKind: null,
 			status: 'former'
 		});
 
@@ -710,6 +724,7 @@ describe('editRelationship', () => {
 					description: 'they met skiing',
 					sinceDate: '2019-06-01',
 					untilDate: null,
+					parentKind: null,
 					status: 'former',
 					retype: null
 				},
@@ -718,8 +733,8 @@ describe('editRelationship', () => {
 		]);
 	});
 
-	it('refuses an unreal detail without going near the repository', async () => {
-		const f = fakeRepo({});
+	it('refuses an unreal detail without writing it', async () => {
+		const f = fakeRepo({ stored });
 
 		await expect(
 			editRelationship(deps(f), viewer, {
@@ -762,7 +777,13 @@ describe('editRelationship', () => {
 		it('carries a symmetric link over to another type, keeping the canonical pair', async () => {
 			const f = fakeRepo({
 				typesById,
-				stored: { id: 'rel-1', fromContactId: 'anna', toContactId: 'bert', typeId: 'partner' }
+				stored: {
+					id: 'rel-1',
+					fromContactId: 'anna',
+					toContactId: 'bert',
+					typeId: 'partner',
+					parentKind: null
+				}
 			});
 
 			const written = await editRelationship(deps(f), viewer, {
@@ -787,7 +808,8 @@ describe('editRelationship', () => {
 					id: 'rel-1',
 					fromContactId: 'bettina',
 					toContactId: 'hans',
-					typeId: 'parent_child'
+					typeId: 'parent_child',
+					parentKind: 'biological'
 				}
 			});
 
@@ -817,7 +839,8 @@ describe('editRelationship', () => {
 					id: 'rel-1',
 					fromContactId: 'bettina',
 					toContactId: 'hans',
-					typeId: 'parent_child'
+					typeId: 'parent_child',
+					parentKind: 'biological'
 				},
 				existsFor: (from, to, _typeId, exceptId) => {
 					asked.push({ from, to, exceptId });
@@ -839,7 +862,13 @@ describe('editRelationship', () => {
 		it('refuses a type that would duplicate another link between the two', async () => {
 			const f = fakeRepo({
 				typesById,
-				stored: { id: 'rel-1', fromContactId: 'anna', toContactId: 'bert', typeId: 'partner' },
+				stored: {
+					id: 'rel-1',
+					fromContactId: 'anna',
+					toContactId: 'bert',
+					typeId: 'partner',
+					parentKind: null
+				},
 				exists: true
 			});
 
@@ -856,7 +885,13 @@ describe('editRelationship', () => {
 		it('refuses a generation that another link already claims the other way round', async () => {
 			const f = fakeRepo({
 				typesById,
-				stored: { id: 'rel-1', fromContactId: 'bettina', toContactId: 'hans', typeId: 'partner' },
+				stored: {
+					id: 'rel-1',
+					fromContactId: 'bettina',
+					toContactId: 'hans',
+					typeId: 'partner',
+					parentKind: null
+				},
 				// Hans is already stored as Bettina's parent by some other row.
 				existsFor: (from, to, typeId, exceptId) =>
 					from === 'hans' && to === 'bettina' && typeId === 'parent_child' && exceptId === 'rel-1'
@@ -888,7 +923,13 @@ describe('editRelationship', () => {
 		it('reports false when the edit comes from a profile that is not an endpoint', async () => {
 			const f = fakeRepo({
 				typesById,
-				stored: { id: 'rel-1', fromContactId: 'anna', toContactId: 'bert', typeId: 'partner' }
+				stored: {
+					id: 'rel-1',
+					fromContactId: 'anna',
+					toContactId: 'bert',
+					typeId: 'partner',
+					parentKind: null
+				}
 			});
 
 			expect(
@@ -904,7 +945,13 @@ describe('editRelationship', () => {
 		it('refuses a type it cannot resolve, and writes nothing', async () => {
 			const f = fakeRepo({
 				typesById,
-				stored: { id: 'rel-1', fromContactId: 'anna', toContactId: 'bert', typeId: 'partner' }
+				stored: {
+					id: 'rel-1',
+					fromContactId: 'anna',
+					toContactId: 'bert',
+					typeId: 'partner',
+					parentKind: null
+				}
 			});
 
 			await expect(
@@ -1010,7 +1057,13 @@ describe('createRelationship — what is already on record', () => {
 	});
 
 	it('allows a former spouse beside a marriage that holds, and refuses making it current', async () => {
-		const stored = { id: 'rel-9', fromContactId: 'anna', toContactId: 'bert', typeId: 'spouse' };
+		const stored = {
+			id: 'rel-9',
+			fromContactId: 'anna',
+			toContactId: 'bert',
+			typeId: 'spouse',
+			parentKind: null
+		};
 		const f = fakeRepo({ type: spouse, graph: married('anna', 'carl'), stored });
 		await createRelationship(
 			{ ...f.deps, ids: idGen('rel-x'), clock },
@@ -1190,7 +1243,13 @@ describe('editRelationship — what is already on record', () => {
 	it('lets a partner be retyped to a spouse — that is an edit, not a second partnership', async () => {
 		const f = fakeRepo({
 			typesById: { spouse },
-			stored: { id: 'r1', fromContactId: 'anna', toContactId: 'bert', typeId: 'partner' },
+			stored: {
+				id: 'r1',
+				fromContactId: 'anna',
+				toContactId: 'bert',
+				typeId: 'partner',
+				parentKind: null
+			},
 			ties: [
 				tie('r1', 'bert', 'romantic', {
 					typeKey: 'partner',
@@ -1213,7 +1272,13 @@ describe('editRelationship — what is already on record', () => {
 	it('refuses a retype that would make a married person married twice', async () => {
 		const f = fakeRepo({
 			typesById: { spouse },
-			stored: { id: 'r1', fromContactId: 'anna', toContactId: 'bert', typeId: 'friend' },
+			stored: {
+				id: 'r1',
+				fromContactId: 'anna',
+				toContactId: 'bert',
+				typeId: 'friend',
+				parentKind: null
+			},
 			graph: {
 				people: peopleNamed('anna', 'carl'),
 				partnerEdges: [{ a: 'anna', b: 'carl' }]

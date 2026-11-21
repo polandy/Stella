@@ -37,7 +37,8 @@ export function addRelationshipCommand(
 				description: text(fields.get('description')),
 				sinceDate: text(fields.get('sinceDate')),
 				untilDate: text(fields.get('untilDate')),
-				status: text(fields.get('status'))
+				status: text(fields.get('status')),
+				parentKind: text(fields.get('parentKind'))
 			},
 			issuedAt
 		};
@@ -55,6 +56,7 @@ export function addRelationshipCommand(
 			status: status ?? CURRENT_RELATIONSHIP_STATUS,
 			description: text(fields.get('description')),
 			untilDate: text(fields.get('untilDate')),
+			parentKind: text(fields.get('parentKind')),
 			links: targetIds.map((targetId, index) => ({
 				targetId,
 				sinceDate: text(sinceDates.length === 1 ? sinceDates[0] : sinceDates[index])

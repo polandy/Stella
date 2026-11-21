@@ -1,6 +1,7 @@
 import type { KinshipGraph } from '../../../../kinship/kinship';
 import { exclusionFor, type SubjectTie } from '../../../../relationships/exclusions';
 import { CURRENT_RELATIONSHIP_STATUS } from '../../../../relationships/status';
+import { defaultParentKindFor } from '../../../../relationships/parent-kinds';
 import {
 	GENERATION_TYPE_KEYS,
 	PARENT_CHILD_TYPE_KEY,
@@ -186,6 +187,7 @@ export function planRelationships(
 			description: null,
 			sinceDate: null,
 			untilDate: null,
+			parentKind: defaultParentKindFor(type.key),
 			status: CURRENT_RELATIONSHIP_STATUS,
 			createdBy: context.actorId,
 			createdAt: context.now,

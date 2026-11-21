@@ -116,6 +116,8 @@
 						status: CURRENT_RELATIONSHIP_STATUS,
 						description: null,
 						untilDate: null,
+						// Worked-out parents are biological; the kind is set on the row afterwards.
+						parentKind: null,
 						links: batch.targetIds.map((targetId) => ({ targetId, sinceDate: null }))
 					},
 					issuedAt: Date.now()

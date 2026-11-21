@@ -2,6 +2,12 @@ import { TranslatableError } from '../../../i18n/translatable';
 import { phrase, type Phrase } from '../../../i18n/phrase';
 import { isWholeDay } from '../../../dates/calendar';
 import {
+	BIOLOGICAL_PARENT_KIND,
+	isParentKind,
+	type ParentKind
+} from '../../../relationships/parent-kinds';
+import { PARENT_CHILD_TYPE_KEY } from '../../../relationships/type-keys';
+import {
 	CURRENT_RELATIONSHIP_STATUS,
 	FORMER_RELATIONSHIP_STATUS,
 	RELATIONSHIP_STATUSES,
@@ -23,6 +29,8 @@ export interface RelationshipDetails {
 	untilDate: string | null;
 	/** Whether the tie still holds. A link that exists is `current` until someone ends it. */
 	status: RelationshipStatus;
+	/** A parent link's kind (biological, adoptive, foster, step); null on every other type. */
+	parentKind: ParentKind | null;
 }
 
 /**
@@ -35,6 +43,7 @@ export interface RelationshipDetailsInput {
 	sinceDate?: string | null;
 	untilDate?: string | null;
 	status?: string | null;
+	parentKind?: string | null;
 }
 
 export class InvalidRelationshipDetailsError extends TranslatableError {
@@ -62,6 +71,7 @@ function wholeDayOrNull(value: string | null | undefined): string | null {
  */
 export function parseRelationshipDetails(
 	input: RelationshipDetailsInput,
+	typeKey: string,
 	today: string
 ): RelationshipDetails {
 	const sinceDate = wholeDayOrNull(input.sinceDate);
@@ -78,6 +88,7 @@ export function parseRelationshipDetails(
 	// A tie that ended before today is a former one; the status stays the saved truth.
 	const ended = untilDate !== null && untilDate < today;
 	return {
+		parentKind: parentKindFor(typeKey, input.parentKind),
 		description: blankToNull(input.description),
 		sinceDate,
 		untilDate,
@@ -85,4 +96,28 @@ export function parseRelationshipDetails(
 			? FORMER_RELATIONSHIP_STATUS
 			: ((status as RelationshipStatus | null) ?? CURRENT_RELATIONSHIP_STATUS)
 	};
+}
+
+/**
+ * A parent link's kind, biological when unsaid; any other type carries none, and naming one
+ * there is refused rather than dropped, so a caller that sends it learns it is wrong.
+ */
+export function parentKindFor(
+	typeKey: string,
+	value: string | null | undefined
+): ParentKind | null {
+	const kind = blankToNull(value);
+	if (typeKey !== PARENT_CHILD_TYPE_KEY) {
+		if (kind) {
+			throw new InvalidRelationshipDetailsError(
+				phrase('errors.relationship.parentKindOnlyForParents')
+			);
+		}
+		return null;
+	}
+	if (kind === null) return BIOLOGICAL_PARENT_KIND;
+	if (!isParentKind(kind)) {
+		throw new InvalidRelationshipDetailsError(phrase('errors.relationship.noSuchParentKind'));
+	}
+	return kind;
 }

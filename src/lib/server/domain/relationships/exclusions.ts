@@ -10,6 +10,7 @@ import {
 	type ExclusionReason
 } from '../../../relationships/exclusions';
 import { relationshipRowLabel } from '../../../relationships/labels';
+import type { ParentKind } from '../../../relationships/parent-kinds';
 import type { Viewer } from '../../access/visibility';
 import type { RelationshipTieReads, RelationshipType, RelationshipView } from './relationships';
 import type { KinshipGraphReads } from './suggestion-review';
@@ -121,7 +122,8 @@ export function exclusionFactsFrom(
 			.map((edge) => ({ a: edge.a, b: edge.b, sinceDate: edge.sinceDate ?? null })),
 		parentEdges: graph.parentEdges.map((edge) => ({
 			parentId: edge.parentId,
-			childId: edge.childId
+			childId: edge.childId,
+			kind: edge.kind
 		}))
 	};
 }
@@ -149,7 +151,7 @@ export async function guardExclusions(
 	endpoints: Endpoints,
 	type: RelationshipType,
 	perspectiveContactId: string,
-	claim: { exceptId?: string; former?: boolean } = {}
+	claim: { exceptId?: string; former?: boolean; parentKind?: ParentKind } = {}
 ): Promise<void> {
 	const fromPerspective = perspectiveContactId === endpoints.fromContactId;
 	const targetId = fromPerspective ? endpoints.toContactId : endpoints.fromContactId;
@@ -160,7 +162,8 @@ export async function guardExclusions(
 		type: { key: type.key, category: type.category },
 		side: fromPerspective ? 'forward' : 'reverse',
 		exceptId: claim.exceptId,
-		former: claim.former
+		former: claim.former,
+		parentKind: claim.parentKind
 	});
 	if (exclusion) {
 		throw new RelationshipExcludedError(exclusion, nameOf);

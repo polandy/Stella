@@ -40,7 +40,8 @@ export function loadKinshipGraph(
 			toId: relationship.toContactId,
 			key: relationshipType.key,
 			status: relationship.status,
-			sinceDate: relationship.sinceDate
+			sinceDate: relationship.sinceDate,
+			parentKind: relationship.parentKind
 		})
 		.from(relationship)
 		.innerJoin(relationshipType, eq(relationship.typeId, relationshipType.id))

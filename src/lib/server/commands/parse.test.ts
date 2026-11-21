@@ -218,6 +218,7 @@ describe('parseCommand, for a relationship', () => {
 			description: null,
 			sinceDate: null,
 			untilDate: null,
+			parentKind: null,
 			status: null
 		});
 		expect(parseCommand({ ...link, payload: { ...link.payload, targetId: '' } })).toBeNull();
@@ -248,6 +249,7 @@ describe('parseCommand, for several links at once', () => {
 			status: 'current',
 			description: null,
 			untilDate: null,
+			parentKind: null,
 			links: [
 				{ targetId: 'anna', sinceDate: '2015-04-12' },
 				{ targetId: 'bert', sinceDate: null }

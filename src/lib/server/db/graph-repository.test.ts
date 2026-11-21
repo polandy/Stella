@@ -40,7 +40,15 @@ function seedContact(
 }
 function rel(id: string, from: string, to: string, typeId: string) {
 	db.insert(schema.relationship)
-		.values({ id, householdId: H, fromContactId: from, toContactId: to, typeId, createdBy: U1 })
+		.values({
+			id,
+			householdId: H,
+			fromContactId: from,
+			toContactId: to,
+			typeId,
+			parentKind: typeId === 'parent_child' ? 'biological' : null,
+			createdBy: U1
+		})
 		.run();
 }
 

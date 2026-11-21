@@ -1,6 +1,7 @@
 import { phrase } from '../../../i18n/phrase';
 import { relationshipPair } from '../../../relationships/endpoints';
-import { FORMER_RELATIONSHIP_STATUS, type RelationshipStatus } from '../../../relationships/status';
+import type { ParentKind } from '../../../relationships/parent-kinds';
+import { FORMER_RELATIONSHIP_STATUS } from '../../../relationships/status';
 import { endpointsForSide, type RelationshipSide } from '../../../relationships/type-options';
 import { GENERATION_TYPE_KEYS } from '../../../relationships/type-keys';
 import type { Viewer } from '../../access/visibility';
@@ -16,6 +17,7 @@ import {
 	ContradictoryRelationshipError,
 	DuplicateRelationshipError,
 	type RelationshipRepository,
+	type RelationshipType,
 	type Retype,
 	type StoredRelationship
 } from './relationships';
@@ -63,13 +65,10 @@ async function planRetype(
 	deps: EditRelationshipDeps,
 	viewer: Viewer,
 	current: StoredRelationship,
+	type: RelationshipType,
 	perspectiveContactId: string,
-	choice: { typeId: string; side: RelationshipSide },
-	status: RelationshipStatus
+	choice: { side: RelationshipSide; former: boolean; parentKind?: ParentKind }
 ): Promise<Retype | null> {
-	const type = await deps.types.getType(viewer, choice.typeId);
-	if (!type) throw new InvalidRelationshipTypeError(phrase('errors.relationshipType.gone'));
-
 	const otherContactId = otherEndpointOf(current, perspectiveContactId);
 	if (otherContactId === null) return null;
 
@@ -100,7 +99,8 @@ async function planRetype(
 
 	await guardExclusions(deps, viewer, endpoints, type, perspectiveContactId, {
 		exceptId: current.id,
-		former: status === FORMER_RELATIONSHIP_STATUS
+		former: choice.former,
+		parentKind: choice.parentKind
 	});
 
 	return { endpoints, typeId: type.id };
@@ -120,31 +120,41 @@ export async function editRelationship(
 	viewer: Viewer,
 	input: EditRelationshipInput
 ): Promise<boolean> {
-	const details = parseRelationshipDetails(input, todayFor(deps.clock));
+	const current = await deps.relationships.findVisibleTo(viewer, input.relationshipId);
+	if (!current) return false;
+	const type = await deps.types.getType(viewer, input.typeChoice?.typeId ?? current.typeId);
+	if (!type && input.typeChoice) {
+		throw new InvalidRelationshipTypeError(phrase('errors.relationshipType.gone'));
+	}
+	// The kind belongs to the type the link carries once saved; unsaid keeps the stored one.
+	const sameType = !input.typeChoice || input.typeChoice.typeId === current.typeId;
+	const details = parseRelationshipDetails(
+		{ ...input, parentKind: input.parentKind ?? (sameType ? current.parentKind : null) },
+		type?.key ?? '',
+		todayFor(deps.clock)
+	);
+	const parentKind = details.parentKind ?? undefined;
 
 	let retype: Retype | null = null;
-	if (input.typeChoice) {
-		const current = await deps.relationships.findVisibleTo(viewer, input.relationshipId);
-		if (!current) return false;
-		retype = await planRetype(
-			deps,
-			viewer,
-			current,
-			input.perspectiveContactId,
-			input.typeChoice,
-			details.status
-		);
+	if (input.typeChoice && type) {
+		retype = await planRetype(deps, viewer, current, type, input.perspectiveContactId, {
+			side: input.typeChoice.side,
+			former: details.status === FORMER_RELATIONSHIP_STATUS,
+			parentKind
+		});
 		if (!retype) return false;
-	} else if (details.status !== FORMER_RELATIONSHIP_STATUS) {
-		// A former partnership made current again is a new claim against the one-partner rule.
-		const current = await deps.relationships.findVisibleTo(viewer, input.relationshipId);
-		if (!current) return false;
-		const type = await deps.types.getType(viewer, current.typeId);
-		if (type && otherEndpointOf(current, input.perspectiveContactId) !== null) {
-			await guardExclusions(deps, viewer, current, type, input.perspectiveContactId, {
-				exceptId: current.id
-			});
-		}
+	} else if (
+		type &&
+		// A former partnership made current again is a new claim against the one-partner rule,
+		// and a parent link given another kind is one more parent of that kind.
+		(details.status !== FORMER_RELATIONSHIP_STATUS || parentKind) &&
+		otherEndpointOf(current, input.perspectiveContactId) !== null
+	) {
+		await guardExclusions(deps, viewer, current, type, input.perspectiveContactId, {
+			exceptId: current.id,
+			former: details.status === FORMER_RELATIONSHIP_STATUS,
+			parentKind
+		});
 	}
 
 	return deps.relationships.updateVisibleTo(

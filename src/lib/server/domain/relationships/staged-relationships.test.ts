@@ -31,6 +31,7 @@ const link = (from: string, typeId: string, to: string): NewRelationship => ({
 	description: null,
 	sinceDate: null,
 	untilDate: null,
+	parentKind: typeId === 'parent_child' ? ('biological' as const) : null,
 	status: 'current'
 });
 
@@ -119,7 +120,7 @@ describe('stageRelationships', () => {
 		expect(reads.graph).toBe(1);
 		expect(graph.parentEdges).toEqual([
 			{ parentId: 'anna', childId: 'lio' },
-			{ parentId: 'bert', childId: 'lio' }
+			{ parentId: 'bert', childId: 'lio', kind: 'biological' }
 		]);
 		expect(graph.partnerEdges).toEqual([{ a: 'anna', b: 'bert', former: false, sinceDate: null }]);
 		expect(graph.storedPairs).toHaveLength(3);
@@ -145,6 +146,7 @@ describe('stageRelationships', () => {
 			description: null,
 			sinceDate: null,
 			untilDate: null,
+			parentKind: 'biological',
 			status: 'current'
 		});
 	});

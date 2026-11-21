@@ -80,6 +80,7 @@ describe('listForContactVisibleTo', () => {
 			description: null,
 			sinceDate: null,
 			untilDate: null,
+			parentKind: 'biological',
 			status: CURRENT_RELATIONSHIP_STATUS,
 			createdBy: U1,
 			createdAt: 0,
@@ -109,6 +110,7 @@ describe('listForContactVisibleTo', () => {
 			description: 'met at the ski course',
 			sinceDate: '2019-06-01',
 			untilDate: null,
+			parentKind: null,
 			status: 'former',
 			createdBy: U1,
 			createdAt: 0,
@@ -126,6 +128,7 @@ describe('listForContactVisibleTo', () => {
 				description: 'met at the ski course',
 				sinceDate: '2019-06-01',
 				untilDate: null,
+				parentKind: null,
 				status: 'former'
 			});
 		}
@@ -160,6 +163,7 @@ describe('listForContactVisibleTo', () => {
 			description: null,
 			sinceDate: null,
 			untilDate: null,
+			parentKind: null,
 			status: CURRENT_RELATIONSHIP_STATUS,
 			createdBy: U1,
 			createdAt: 0,
@@ -196,6 +200,7 @@ describe('loadKinshipGraphVisibleTo (docs/dev/02 §2.4.1)', () => {
 				description: null,
 				sinceDate: null,
 				untilDate: null,
+				parentKind: typeId === 'parent_child' ? ('biological' as const) : null,
 				status: CURRENT_RELATIONSHIP_STATUS,
 				createdBy: U1,
 				createdAt: 1,
@@ -213,8 +218,8 @@ describe('loadKinshipGraphVisibleTo (docs/dev/02 §2.4.1)', () => {
 		expect(graph.people.map((p) => p.id).sort()).toEqual(['bettina', 'hans', 'kurt', 'otto']);
 		expect(graph.people.find((p) => p.id === 'bettina')?.gender).toBe('female');
 		expect(graph.parentEdges).toEqual([
-			{ parentId: 'otto', childId: 'bettina' },
-			{ parentId: 'bettina', childId: 'hans' }
+			{ parentId: 'otto', childId: 'bettina', kind: 'biological' },
+			{ parentId: 'bettina', childId: 'hans', kind: 'biological' }
 		]);
 		expect(graph.partnerEdges).toEqual([
 			{ a: 'bettina', b: 'kurt', former: false, sinceDate: null }
@@ -261,11 +266,19 @@ describe('loadKinshipGraphVisibleTo (docs/dev/02 §2.4.1)', () => {
 	it('hides a private person’s links from everyone but their author', async () => {
 		const forU1 = await kinship.loadKinshipGraphVisibleTo(viewerU1);
 		expect(forU1.people.map((p) => p.id)).not.toContain('secret');
-		expect(forU1.parentEdges).not.toContainEqual({ parentId: 'secret', childId: 'hans' });
+		expect(forU1.parentEdges).not.toContainEqual({
+			parentId: 'secret',
+			childId: 'hans',
+			kind: 'biological'
+		});
 		// Positive control: the author sees both the person and the link.
 		const forU2 = await kinship.loadKinshipGraphVisibleTo(viewerU2);
 		expect(forU2.people.map((p) => p.id)).toContain('secret');
-		expect(forU2.parentEdges).toContainEqual({ parentId: 'secret', childId: 'hans' });
+		expect(forU2.parentEdges).toContainEqual({
+			parentId: 'secret',
+			childId: 'hans',
+			kind: 'biological'
+		});
 	});
 });
 

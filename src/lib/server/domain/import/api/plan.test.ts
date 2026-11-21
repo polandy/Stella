@@ -213,6 +213,7 @@ describe('relationships', () => {
 				description: null,
 				sinceDate: null,
 				untilDate: null,
+				parentKind: 'biological',
 				status: 'current',
 				createdBy: ME,
 				createdAt: NOW,

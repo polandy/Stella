@@ -4,6 +4,8 @@
  * module, like `status.ts`, because the person page offers the choice.
  */
 
+import { PARENT_CHILD_TYPE_KEY } from './type-keys';
+
 export const PARENT_KINDS = ['biological', 'adoptive', 'foster', 'step'] as const;
 
 export type ParentKind = (typeof PARENT_KINDS)[number];
@@ -24,3 +26,7 @@ export const maxParentsOf = (kind: ParentKind): number | null => MAX_PARENTS_OF_
 
 export const isParentKind = (value: string): value is ParentKind =>
 	(PARENT_KINDS as readonly string[]).includes(value);
+
+/** The kind a link of this type is stored with when nobody said one: biological for a parent link. */
+export const defaultParentKindFor = (typeKey: string): ParentKind | null =>
+	typeKey === PARENT_CHILD_TYPE_KEY ? BIOLOGICAL_PARENT_KIND : null;
