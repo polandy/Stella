@@ -25,8 +25,11 @@ export function atRowEnds(
 	const onTree = new Set(x.keys());
 	const xs = [...x.values()];
 	const middle = xs.length > 0 ? (Math.min(...xs) + Math.max(...xs)) / 2 : 0;
-	const anchorOf = (id: string) => looseAnchor(id, edges, new Set(everyone.keys()), loose) ?? '';
-	const ordered = [...loose].sort((a, b) => anchorOf(a).localeCompare(anchorOf(b)));
+	const members = new Set(everyone.keys());
+	const anchor = new Map(
+		[...loose].map((id) => [id, looseAnchor(id, edges, members, loose) ?? ''])
+	);
+	const ordered = [...loose].sort((a, b) => anchor.get(a)!.localeCompare(anchor.get(b)!));
 	for (const generation of new Set([...loose].map((id) => everyone.get(id)!))) {
 		const row = [...onTree].filter((id) => everyone.get(id) === generation);
 		// Past the outermost name on that side, or either side of the middle on a row of none.

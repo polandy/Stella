@@ -338,6 +338,12 @@ describe('buildStylesheet', () => {
 		expect(has('node.center')).toBe(true);
 	});
 
+	it('dots a loose relative’s line along a tree row and keeps its colour', () => {
+		const rule = styles.find((s) => s.selector === 'edge.dotted')?.style;
+		expect(rule).toMatchObject({ 'line-style': 'dotted' });
+		expect(rule?.['line-color']).toBeUndefined();
+	});
+
 	it('draws a former link dashed, thinner and in a muted shade of its category', () => {
 		const p = resolvePalette(read);
 		const rule = (selector: string) => styles.find((s) => s.selector === selector)?.style;
