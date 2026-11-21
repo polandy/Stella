@@ -205,11 +205,22 @@ test.describe('on a phone', () => {
 		for (const title of [titles.walk, titles.swim, titles.run])
 			await ask(page, title).getByRole('button', { name: 'Keep without a date' }).click();
 		await expect(comingUp(page).getByTestId('plan-ask')).toHaveCount(0);
+		// What the line may name is read off the settled list, not assumed: the shared database
+		// holds other birthdays today (the demo seed's among them) that sort before this Mia.
+		// Attributes, not roles: past the phone's first rows the list is hidden until *Show all*.
+		const veiled = page.locator(
+			'[role="img"][aria-label="private"], [role="img"][aria-label^="hidden from "]'
+		);
+		const rows = comingUp(page).locator('li');
+		await expect(rows.first().locator(veiled)).toHaveCount(1);
+		const nameable = rows.filter({ hasNot: veiled }).first();
+		const named = (await nameable.locator('a').first().textContent())?.trim() ?? '';
+		expect(named).not.toBe('');
 
-		// Folded, it names the first birthday instead: a Mia of this file, born today.
+		// Folded, it names that row instead.
 		await toggle.click();
 		await expect(toggle).not.toContainText('Secret');
-		await expect(toggle).toContainText(/Mia Ausflug\w+ turns 7/);
+		await expect(toggle).toContainText(named);
 		await page
 			.getByTestId('coming-up')
 			.screenshot({ path: testInfo.outputPath('phone-folded.png') });
