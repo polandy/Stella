@@ -251,3 +251,26 @@ export const siaCousins: GraphModel = {
 		...parentsOf('leo', 'andy', 'sia')
 	]
 };
+
+/**
+ * Francesco and Wing Kam as a former couple, as the owner's second screenshot holds them: Linda
+ * and Andy entered under both, Sebi and Steve under Francesco alone. Listed with the lone
+ * parent's children between the couple's, so the arrangement has to sort them out itself.
+ */
+export const loneParentOfCouple: GraphModel = {
+	nodes: [
+		person('wingkam', 'female'),
+		person('linda', 'female'),
+		person('sebi', 'male'),
+		person('francesco', 'male'),
+		person('andy', 'male'),
+		person('steve', 'male')
+	],
+	edges: [
+		{ ...stored('francesco', 'wingkam', 'spouse'), former: true },
+		...parentsOf('linda', 'francesco', 'wingkam'),
+		...parentsOf('andy', 'francesco', 'wingkam'),
+		...parentsOf('sebi', 'francesco'),
+		...parentsOf('steve', 'francesco')
+	]
+};

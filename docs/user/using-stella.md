@@ -1430,7 +1430,10 @@ Under each of them it says who they are: *Friend* for a friend of the person in 
 and under a circle who on the map belongs to it (*Lena, Noah +2*).
 Each family stands together, the father's side on the left and the mother's on the right.
 Two parents of the same children stand side by side, both lines running into one line over
-the children even when no partnership is entered, and someone who married into the family
+the children even when no partnership is entered. A child entered under only one of the two
+stands on that parent's outer side, on a line of its own from that parent's outer edge, so it
+never runs into the couple's line; enter the second parent to bring the child in under both.
+Someone who married into the family
 stands at the end of their partner's brothers and sisters. Cousins or in-laws entered without
 the people in between — a cousin with no aunt or uncle on record — stand together at the end
 of their row, on the side of the parent they are related through when Stella can tell, and

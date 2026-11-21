@@ -1,7 +1,13 @@
 import { PARENT_CHILD_TYPE_KEY } from '../../relationships/type-keys';
 import { isLooseLine } from '../model/loose-relatives';
 import type { GraphEdge } from '../model/types';
-import { familyStructure, isPartnerLine, SAME_ROW } from './family-structure';
+import {
+	familyStructure,
+	isPartnerLine,
+	SAME_ROW,
+	type Drop,
+	type Outward
+} from './family-structure';
 import { LINE_CLEARANCE, type Point, type Route, type SizeOf } from './geometry';
 import { MAX_NODE_DIAMETER } from './legibility';
 import { laneKey, laneOffsets, type Leg } from './tree-lanes';
@@ -61,7 +67,8 @@ export function treeRoutes(
 	const { at, sameRow, familyLines, standsBetween, dropOf } = familyStructure(
 		edges,
 		positions,
-		members
+		members,
+		sizeOf
 	);
 	const parents = new Map<string, Set<string>>();
 	for (const e of familyLines) {
@@ -124,11 +131,13 @@ export function treeRoutes(
 
 		const [upper, lower] = s.y < t.y ? [edge.source, edge.target] : [edge.target, edge.source];
 		const [u, l] = [at(upper), at(lower)];
-		const drop =
+		const drop: Drop =
 			edge.typeKey === PARENT_CHILD_TYPE_KEY && upper === edge.source
 				? dropOf(upper, lower)
 				: { group: `line:${edge.id}:top`, x: u.x };
-		const start = drop.x === u.x ? undefined : { at: { x: drop.x, y: u.y }, upper };
+		const start = drop.x === u.x || drop.outward ? undefined : { at: { x: drop.x, y: u.y }, upper };
+		// From an outer edge the line leaves the disc sideways, then drops clear of the name.
+		const out = drop.outward ? [{ x: drop.x, y: u.y }] : [];
 
 		if (l.y - u.y < row + SAME_ROW) {
 			const leg = { channel: u.y, group: drop.group, x1: drop.x, x2: l.x };
@@ -138,10 +147,7 @@ export function treeRoutes(
 				start,
 				nameKey: `${drop.group}|${lower}`,
 				lower,
-				points: (yOf) => [
-					{ x: drop.x, y: yOf(leg) },
-					{ x: l.x, y: yOf(leg) }
-				]
+				points: (yOf) => [...out, { x: drop.x, y: yOf(leg) }, { x: l.x, y: yOf(leg) }]
 			});
 			continue;
 		}
@@ -157,6 +163,7 @@ export function treeRoutes(
 			nameKey: edge.id,
 			lower,
 			points: (yOf) => [
+				...out,
 				{ x: drop.x, y: yOf(top) },
 				{ x: column, y: yOf(top) },
 				{ x: column, y: yOf(bottom) },
@@ -203,15 +210,22 @@ export interface BarSpan {
 	right: number;
 	/** Who hangs from it. */
 	children: string[];
+	/** Who drops into it. */
+	parents: string[];
+	/** Where the drop from the parents meets it. */
+	drop: number;
+	/** Set for a lone parent's bar leaving from their outer edge, away from their couple. */
+	outward?: Outward;
 }
 
 /** Every couple's (or lone parent's) bar over their children, as the stretch of its gap it takes. */
 export function barSpans(
 	edges: readonly GraphEdge[],
 	positions: ReadonlyMap<string, Point>,
-	members: ReadonlySet<string>
+	members: ReadonlySet<string>,
+	sizeOf: SizeOf
 ): BarSpan[] {
-	const { at, familyLines, dropOf } = familyStructure(edges, positions, members);
+	const { at, familyLines, dropOf } = familyStructure(edges, positions, members, sizeOf);
 	const spans = new Map<string, BarSpan>();
 	for (const e of familyLines) {
 		if (e.typeKey !== PARENT_CHILD_TYPE_KEY || at(e.source).y >= at(e.target).y) continue;
@@ -221,14 +235,18 @@ export function barSpans(
 			channel: at(e.source).y,
 			left: drop.x,
 			right: drop.x,
-			children: []
+			children: [],
+			parents: [],
+			drop: drop.x,
+			...(drop.outward ? { outward: drop.outward } : {})
 		};
 		const child = at(e.target).x;
 		spans.set(key, {
 			...known,
 			left: Math.min(known.left, drop.x, child),
 			right: Math.max(known.right, drop.x, child),
-			children: known.children.includes(e.target) ? known.children : [...known.children, e.target]
+			children: known.children.includes(e.target) ? known.children : [...known.children, e.target],
+			parents: known.parents.includes(e.source) ? known.parents : [...known.parents, e.source]
 		});
 	}
 	return [...spans.values()];
@@ -237,9 +255,11 @@ export function barSpans(
 /**
  * How many pairs of bars share a stretch of one gap. Each such pair crosses: one family's drop
  * runs down through the other's bar, and the reader can no longer tell whose children are whose.
+ * A lone parent's bar running back under their couple counts too: its children no longer read
+ * as that parent's alone, and two drops stand under one couple.
  */
 export function crossingBars(spans: readonly BarSpan[]): number {
-	let crossings = 0;
+	let crossings = spans.filter(reachesBack).length;
 	for (let i = 0; i < spans.length; i++) {
 		for (let j = i + 1; j < spans.length; j++) {
 			const [a, b] = [spans[i], spans[j]];
@@ -247,6 +267,13 @@ export function crossingBars(spans: readonly BarSpan[]): number {
 		}
 	}
 	return crossings;
+}
+
+/** Whether a lone parent's bar runs back from their outer edge, in under their couple. */
+export function reachesBack(span: BarSpan): boolean {
+	if (span.outward === -1) return span.right > span.drop;
+	if (span.outward === 1) return span.left < span.drop;
+	return false;
 }
 
 /** The points with any that repeat the one before dropped: a drop straight down has no corner. */

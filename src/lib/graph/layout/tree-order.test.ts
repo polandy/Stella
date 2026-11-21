@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'bun:test';
 import { familyTreeLayout } from './family-tree';
+import { defaultSizeOf } from './geometry';
 import { barSpans, crossingBars } from './tree-lines';
 import { brunnerKeller, twoFamilies } from './family-fixtures';
 import { inRememberedOrder, orderBreaks, ordersAfterDrop } from './tree-order';
@@ -15,7 +16,12 @@ const xOf = (arrangement: ReturnType<typeof familyTreeLayout>, id: string) =>
 
 const crossings = (model: GraphModel, arrangement: ReturnType<typeof familyTreeLayout>) =>
 	crossingBars(
-		barSpans(model.edges, arrangement.positions, new Set(arrangement.rows.flat().flat()))
+		barSpans(
+			model.edges,
+			arrangement.positions,
+			new Set(arrangement.rows.flat().flat()),
+			defaultSizeOf
+		)
 	);
 
 describe('ordersAfterDrop', () => {

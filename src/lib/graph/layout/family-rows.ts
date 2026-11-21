@@ -4,6 +4,7 @@ import type { GraphEdge, GraphModel } from '../model/types';
 import type { Point, SizeOf } from './geometry';
 import { atRowEnds } from './row-ends';
 import { barSpans, crossingBars, type BarSpan } from './tree-lines';
+import { clearOfCouples, straightened } from './row-nudges';
 import { barycentreOrder, husbandsLeft, improve, mirrored, type Rows } from './row-order';
 import { inRememberedOrder, orderBreaks, type RowOrders } from './tree-order';
 
@@ -23,7 +24,9 @@ import { inRememberedOrder, orderBreaks, type RowOrders } from './tree-order';
  * father's family stands on the left and their mother's on the right, as a family tree is
  * usually drawn. A row the reader ordered by
  * dragging (`tree-order.ts`) keeps that order above all else. The search itself is
- * `row-order.ts`; this file packs the rows and straightens the drops to only children.
+ * `row-order.ts`; this file packs the rows, straightens the drops to only children and moves
+ * a lone parent's children out past that parent's outer edge where the packing left them under
+ * the parent's couple.
  *
  * A relative with no bar to hang from — a cousin entered with no aunt or uncle on record — takes
  * no part in the search: they stand at the end of their row, a family's distance out, on the
@@ -112,7 +115,7 @@ export function arrangeFamily(
 		const positions = new Map(
 			[...family].map(([id, generation]) => [id, { x: x.get(id)!, y: generation * spacing.row }])
 		);
-		const spans = barSpans(familyEdges, positions, members);
+		const spans = barSpans(familyEdges, positions, members, sizeOf);
 		const length = spans.reduce((sum, s) => sum + s.right - s.left, 0);
 		return (
 			orderBreaks(order, orders) * ORDER_WEIGHT +
@@ -139,20 +142,18 @@ export function arrangeFamily(
 	const mirror = husbandsLeft(mirrored(rows), together, wording, cost, counts);
 	const mirrorKeepsOrders = orderBreaks(mirror.rows, orders) <= orderBreaks(asIs.rows, orders);
 	const chosen = mirror.balance > asIs.balance && mirrorKeepsOrders ? mirror.rows : asIs.rows;
-	const x = straightened(chosen, place(chosen), familyEdges, family, sizeOf, spacing, (x) =>
-		crossingBars(
-			barSpans(
-				familyEdges,
-				new Map(
-					[...family].map(([id, generation]) => [
-						id,
-						{ x: x.get(id)!, y: generation * spacing.row }
-					])
-				),
-				members
-			)
-		)
-	);
+	const spansAt = (x: ReadonlyMap<string, number>) =>
+		barSpans(
+			familyEdges,
+			new Map(
+				[...family].map(([id, generation]) => [id, { x: x.get(id)!, y: generation * spacing.row }])
+			),
+			members,
+			sizeOf
+		);
+	const crossingsAt = (x: ReadonlyMap<string, number>) => crossingBars(spansAt(x));
+	const x = straightened(chosen, place(chosen), familyEdges, family, sizeOf, spacing, crossingsAt);
+	clearOfCouples(chosen, x, family, sizeOf, spacing, spansAt, crossingsAt);
 	atRowEnds(x, loose, everyone, allEdges, sizeOf, spacing);
 	return { x, rows: chosen };
 }
@@ -223,90 +224,4 @@ function strangersAmong(spans: readonly BarSpan[], positions: ReadonlyMap<string
 		}
 	}
 	return strangers;
-}
-
-/**
- * The positions with every only child's drop made one straight line: the child set right under
- * the parents' drop, or — where the child's row has no room — a lone parent set right over the
- * child. A move is kept only where it keeps every name its gap from its neighbours and adds no
- * crossing; otherwise the drop keeps its small jog.
- */
-function straightened(
-	rows: Rows,
-	start: Map<string, number>,
-	familyEdges: readonly GraphEdge[],
-	family: ReadonlyMap<string, number>,
-	sizeOf: SizeOf,
-	spacing: RowSpacing,
-	crossings: (x: ReadonlyMap<string, number>) => number
-): Map<string, number> {
-	const x = new Map(start);
-	const parentsOf = new Map<string, string[]>();
-	for (const e of familyEdges) {
-		if (e.typeKey !== PARENT_CHILD_TYPE_KEY) continue;
-		if (family.get(e.source) !== family.get(e.target)! - 1) continue;
-		parentsOf.set(e.target, [...(parentsOf.get(e.target) ?? []), e.source]);
-	}
-	const byDrop = new Map<string, string[]>();
-	for (const [child, parents] of parentsOf) {
-		const key = [...parents].sort().join('+');
-		byDrop.set(key, [...(byDrop.get(key) ?? []), child]);
-	}
-	const unitOf = (id: string) => rows.flat().find((unit) => unit.includes(id))!;
-	const rowOf = (id: string) => rows[family.get(id)!];
-	/** Whether moving `unit` by `delta` keeps it its gap clear of the units beside it. */
-	const fits = (unit: string[], delta: number) => {
-		const edges = (u: string[]) => ({
-			left: Math.min(...u.map((id) => x.get(id)! - sizeOf(id).width / 2)),
-			right: Math.max(...u.map((id) => x.get(id)! + sizeOf(id).width / 2))
-		});
-		const moved = edges(unit);
-		const [left, right] = [moved.left + delta, moved.right + delta];
-		return rowOf(unit[0])
-			.filter((other) => other !== unit)
-			.every((other) => {
-				const box = edges(other);
-				return box.right + spacing.gap <= left || right + spacing.gap <= box.left;
-			});
-	};
-	const move = (unit: string[], delta: number) => {
-		const before = crossings(x);
-		for (const id of unit) x.set(id, x.get(id)! + delta);
-		if (crossings(x) <= before) return true;
-		for (const id of unit) x.set(id, x.get(id)! - delta);
-		return false;
-	};
-
-	// From the top down: straightening a drop may move its parents' unit, so the drop over them
-	// is straightened first, or the one beneath would be left pointing where they used to stand.
-	const generationOf = (key: string) => family.get(key.split('+')[0])!;
-	const topDown = [...byDrop].sort(([a], [b]) => generationOf(a) - generationOf(b));
-	// The units a straight drop already rests on: moving one again would bend that drop — a
-	// couple whose partners each hang from a lone parent of their own would line up under the
-	// second and leave the first askew.
-	const settled = new Set<string[]>();
-	for (const [key, children] of topDown) {
-		if (children.length !== 1) continue;
-		const parents = key.split('+');
-		const parentUnit = unitOf(parents[0]);
-		// One drop: a lone parent, or partners standing side by side in one unit.
-		if (!parents.every((p) => parentUnit.includes(p))) continue;
-		const dropX = parents.reduce((sum, p) => sum + x.get(p)!, 0) / parents.length;
-		const child = children[0];
-		const delta = dropX - x.get(child)!;
-		const childUnit = unitOf(child);
-		const straight =
-			delta === 0 ||
-			(!settled.has(childUnit) && fits(childUnit, delta) && move(childUnit, delta)) ||
-			(parents.length === 1 &&
-				parentUnit.length === 1 &&
-				!settled.has(parentUnit) &&
-				fits(parentUnit, -delta) &&
-				move(parentUnit, -delta));
-		if (straight) {
-			settled.add(childUnit);
-			settled.add(parentUnit);
-		}
-	}
-	return x;
 }
