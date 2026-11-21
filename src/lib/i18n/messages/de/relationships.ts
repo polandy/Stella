@@ -179,5 +179,17 @@ export const relationships: RelationshipsMessages = {
 	'relationships.towardsYou.cares_for.forward': 'Deine Betreuungsperson',
 	'relationships.towardsYou.cares_for.reverse': 'Von dir betreut',
 	'relationships.towardsYou.other.forward': 'Verbunden mit dir',
-	'relationships.towardsYou.other.reverse': 'Verbunden mit dir'
+	'relationships.towardsYou.other.reverse': 'Verbunden mit dir',
+	'relationships.parentKindLabel': 'Art',
+	'relationships.parentKind.biological': 'Leiblich',
+	'relationships.parentKind.adoptive': 'Adoptiv',
+	'relationships.parentKind.foster': 'Pflege',
+	'relationships.parentKind.step': 'Stief',
+	'relationships.parentKindHint.biological': 'Höchstens zwei leibliche Eltern.',
+	'relationships.parentKindHint.adoptive':
+		'Höchstens zwei Adoptiveltern, getrennt von den leiblichen gezählt.',
+	'relationships.parentKindHint.foster':
+		'Mehrere Pflegefamilien nacheinander sind möglich; Seit und Bis sagen, wann.',
+	'relationships.parentKindHint.step':
+		'Nur nötig, wenn die Partnerschaft zum Elternteil fehlt oder beendet ist; sonst leitet Stella den Stiefelternteil selbst ab.'
 };

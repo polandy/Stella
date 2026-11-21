@@ -198,7 +198,20 @@ export const relationships = {
 	'relationships.towardsYou.cares_for.forward': 'Your carer',
 	'relationships.towardsYou.cares_for.reverse': 'Someone you look after',
 	'relationships.towardsYou.other.forward': 'Connected to you',
-	'relationships.towardsYou.other.reverse': 'Connected to you'
+	'relationships.towardsYou.other.reverse': 'Connected to you',
+	// A parent link's kind (docs/dev/02 §2.4), with what each one means in the tree.
+	'relationships.parentKindLabel': 'Kind',
+	'relationships.parentKind.biological': 'Biological',
+	'relationships.parentKind.adoptive': 'Adoptive',
+	'relationships.parentKind.foster': 'Foster',
+	'relationships.parentKind.step': 'Step',
+	'relationships.parentKindHint.biological': 'At most two biological parents.',
+	'relationships.parentKindHint.adoptive':
+		'At most two adoptive parents, counted apart from the biological ones.',
+	'relationships.parentKindHint.foster':
+		'Several foster families in turn are fine; Since and Until say when.',
+	'relationships.parentKindHint.step':
+		'Only needed when the partnership to the parent is missing or over; otherwise Stella works the step-parent out itself.'
 };
 
 /** The key set every translation of this area has to provide. */

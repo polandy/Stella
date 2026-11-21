@@ -2,30 +2,22 @@
 	import { reveal } from '#lib/motion/motion.svelte.js';
 	import Avatar from '#lib/components/ui/Avatar.svelte';
 	import Button from '#lib/components/ui/Button.svelte';
-	import DateField from '#lib/components/ui/DateField.svelte';
 	import EmptyState from '#lib/components/ui/EmptyState.svelte';
 	import RemoveButton from '#lib/components/ui/RemoveButton.svelte';
-	import { enhance } from '#lib/forms/enhance.js';
 	import { dayLabel } from '#lib/dates/labels.js';
 	import { useI18n } from '#lib/i18n/context.svelte.js';
-	import {
-		exclusionLabel,
-		relationshipStatusLabel,
-		relationshipTypeLabel
-	} from '#lib/relationships/labels.js';
+	import { relationshipStatusLabel } from '#lib/relationships/labels.js';
 	import { foldPeople, groupPeople } from '#lib/relationships/people-groups.js';
 	import { yearSpan } from '#lib/relationships/period.js';
-	import { groupByExclusion } from '#lib/relationships/picker-groups.js';
 	import { otherEndRole, relationshipRoleLabel } from '#lib/relationships/roles.js';
-	import { FORMER_RELATIONSHIP_STATUS, RELATIONSHIP_STATUSES } from '#lib/relationships/status.js';
+	import { FORMER_RELATIONSHIP_STATUS } from '#lib/relationships/status.js';
 	import { offersTogether } from '#lib/immich/together.js';
 	import { reachability } from '#lib/pwa/reachability.svelte.js';
-	import { isChoiceOfLink } from '#lib/relationships/type-options.js';
 	import { usePending } from '#lib/sync/context.svelte.js';
 	import { trackPending } from '#lib/sync/pending.js';
 	import { useRemovals } from '#lib/undo/context.svelte.js';
 	import { savedEnhance } from '#lib/undo/saved.js';
-	import { INPUT } from '../ui/inputs';
+	import RelationshipEditForm from './RelationshipEditForm.svelte';
 	import type { ExclusionOf, PersonPageData, RelationshipChoices } from './types';
 
 	/*
@@ -256,93 +248,14 @@
 						{#if editingRelationship === rel.id}
 							<!-- Across the whole grid, under the tile it corrects. -->
 							<li class="col-span-full" transition:reveal>
-								<form
-									method="POST"
-									action="?/editRelationship"
-									use:enhance={savedRelationshipEdit}
-									class="my-1 flex flex-wrap items-end gap-2 rounded-control bg-bg-sunken p-3"
-								>
-									<input type="hidden" name="relationshipId" value={rel.id} />
-									<label class="flex flex-col gap-1">
-										<span class="text-xs text-fg-muted">{t('contact.relationships.typeLabel')}</span
-										>
-										<!-- Both sides again, so a partner who became a spouse — or a generation
-										     entered the wrong way round — is one pick, not a re-entry (docs/dev/02 §2.4). -->
-										<select name="typeChoice" class={INPUT}>
-											{#each groupByExclusion( relationshipChoices, (option) => exclusionOf(option, rel.otherContactId, rel.id, rel.status === FORMER_RELATIONSHIP_STATUS) ) as choices (choices.options[0].value)}
-												{#if choices.exclusion}
-													<optgroup
-														label={t('relationships.blocked.group', {
-															reason: exclusionLabel(t, choices.exclusion, nameOfContact)
-														})}
-													>
-														{#each choices.options as option (option.value)}
-															<option value={option.value} disabled>
-																{relationshipTypeLabel(t, option.type, option.side)}
-															</option>
-														{/each}
-													</optgroup>
-												{:else}
-													{#each choices.options as option (option.value)}
-														<option value={option.value} selected={isChoiceOfLink(option, rel)}>
-															{relationshipTypeLabel(t, option.type, option.side)}
-														</option>
-													{/each}
-												{/if}
-											{/each}
-										</select>
-									</label>
-									<label class="flex min-w-40 flex-1 flex-col gap-1">
-										<span class="text-xs text-fg-muted"
-											>{t('contact.relationships.howConnect')}</span
-										>
-										<input
-											name="description"
-											value={rel.description ?? ''}
-											placeholder={t('contact.relationships.howConnectPlaceholder')}
-											class={INPUT}
-										/>
-									</label>
-									<label class="flex flex-col gap-1">
-										<span class="text-xs text-fg-muted"
-											>{t('contact.relationships.sinceLabel')}</span
-										>
-										<DateField
-											name="sinceDate"
-											value={rel.sinceDate ?? ''}
-											label={t('contact.relationships.sinceLabel')}
-										/>
-									</label>
-									<label class="flex flex-col gap-1">
-										<span class="text-xs text-fg-muted"
-											>{t('contact.relationships.untilLabel')}</span
-										>
-										<DateField
-											name="untilDate"
-											value={rel.untilDate ?? ''}
-											label={t('contact.relationships.untilLabel')}
-										/>
-									</label>
-									<label class="flex flex-col gap-1">
-										<span class="text-xs text-fg-muted">{t('contact.relationships.status')}</span>
-										<select name="status" class={INPUT}>
-											{#each RELATIONSHIP_STATUSES as status (status)}
-												<option value={status} selected={rel.status === status}>
-													{relationshipStatusLabel(t, status)}
-												</option>
-											{/each}
-										</select>
-									</label>
-									<Button variant="primary" size="sm">{t('common.save')}</Button>
-									<Button
-										type="button"
-										variant="ghost"
-										size="sm"
-										onclick={() => (editingRelationship = null)}
-									>
-										{t('common.cancel')}
-									</Button>
-								</form>
+								<RelationshipEditForm
+									{rel}
+									{relationshipChoices}
+									{exclusionOf}
+									{nameOfContact}
+									enhanced={savedRelationshipEdit}
+									oncancel={() => (editingRelationship = null)}
+								/>
 							</li>
 						{/if}
 					{/each}

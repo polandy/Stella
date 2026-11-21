@@ -38,6 +38,7 @@ type Link = {
 	description?: string;
 	since?: string;
 	until?: string;
+	parent_kind?: string;
 	status?: string;
 };
 
@@ -74,6 +75,29 @@ const linksOf = (planned: ReturnType<typeof planRestore>) =>
 
 const ends = (planned: ReturnType<typeof planRestore>) =>
 	linksOf(planned).map(({ id, from, to }) => ({ id, from, to }));
+
+describe('a parent link’s kind', () => {
+	const kinds = (links: Link[]) =>
+		plan(links)
+			.tables.find((t) => t.table === 'relationship')!
+			.rows.map((row) => row.parent_kind);
+
+	it('arrives as archived, and as biological from an archive from before kinds', () => {
+		expect(
+			kinds([
+				{ id: 'r-1', from: 'anna', to: 'bea', type: 'parent_child', parent_kind: 'foster' },
+				{ id: 'r-2', from: 'carl', to: 'bea', type: 'parent_child' },
+				{ id: 'r-3', from: 'anna', to: 'carl', type: 'parent_child', parent_kind: 'godparent' }
+			])
+		).toEqual(['foster', 'biological', 'biological']);
+	});
+
+	it('is left off every other link', () => {
+		expect(
+			kinds([{ id: 'r-1', from: 'anna', to: 'carl', type: 'friend', parent_kind: 'step' }])
+		).toEqual([null]);
+	});
+});
 
 describe('a symmetric link is stored with its ends sorted', () => {
 	it('turns a symmetric link written the wrong way round', () => {
